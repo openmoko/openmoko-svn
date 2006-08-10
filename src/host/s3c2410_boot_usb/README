@@ -1,0 +1,20 @@
+qt2410_boot_usb - QT-2410 USB RAM loader
+(C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
+================================================================
+
+Using this ram loader it is possible to download (and execute) code 
+from the host PC into the SDRAM of a QT-2410 development board.
+
+Use the following steps:
+
+1) power-off QT-2410
+2) put the small dip switch on the CPU "KERNEL" board into setting NOR
+3) connect USB Device port with USB hob of host PC
+3) power-on QT-2410
+4) start the ram loader by running
+
+	loadeboot_usb 0x30008000 /file/to/code
+
+   to download /file/to/code into RAM address 0x30008000
+
+You can watch the progress of the download on the serial port of QT-2410 (115200 bps)
