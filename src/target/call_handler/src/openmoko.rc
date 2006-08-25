@@ -1,0 +1,73 @@
+style "send"
+{
+	fg[NORMAL] = {0.0, 0.0, 0.0}
+	bg[NORMAL] = {1.0, 0.5, 1.0}
+	fg[PRELIGHT] = {0.0, 0.0, 1.0}
+	bg[PRELIGHT] = {1.0, 0.5, 1.0}
+	font = "-*-*-bold-*-normal--20-200-75-75-p-70-iso8859-1"
+}
+
+style "save"
+{
+	fg[NORMAL] = {1.0, 1.0, 0.0}
+	bg[NORMAL] = {1.0, 0.0, 0.0}
+	fg[PRELIGHT] = {1.0, 1.0, 0.0}
+	bg[PRELIGHT] = {1.0, 0.0, 0.0}
+	fg[ACTIVE] = {1.0, 1.0, 0.0}
+	bg[ACTIVE] = {1.0, 0.0, 0.0}
+	fg[INSENSITIVE] = {1.0, 1.0, 0.0}
+	bg[INSENSITIVE] = {1.0, 0.0, 0.0}
+	font = "-*-*-bold-*-normal--14-140-75-75-p-70-iso8859-1"
+}
+
+style "answer"
+{
+	fg[NORMAL] = {1.0, 1.0, 0.0}
+	bg[NORMAL] = { 0.0,1.0, 0.0}
+	fg[PRELIGHT] = {1.0, 1.0, 0.0}
+	bg[PRELIGHT] = { 0.0,1.0, 0.0}
+	fg[ACTIVE] = {1.0, 1.0, 0.0}
+	bg[ACTIVE] = {0.0, 1.0, 0.0}
+	fg[INSENSITIVE] = {1.0, 1.0, 0.0}
+	bg[INSENSITIVE] = {0.0, 1.0, 0.0}
+	font = "-*-*-bold-*-normal--14-140-75-75-p-70-iso8859-1"
+}
+
+style "title"
+{
+	fg[NORMAL] = {1.0, 1.0, 0.0}
+	bg[NORMAL] = {0.0, 0.75, 0.0}
+	fg[PRELIGHT] = {1.0, 1.0, 0.0}
+	bg[PRELIGHT] = {0.0, 0.75, 0.0}
+	fg[ACTIVE] = {1.0, 1.0, 0.0}
+	bg[ACTIVE] = {0.0, 0.75, 0.0}
+	fg[INSENSITIVE] = {1.0, 1.0, 0.0}
+	bg[INSENSITIVE] = {0.0, 0.75, 0.0}
+}
+
+style "selector"
+{
+	fg[NORMAL] = {0.0, 0.0, 0.0}
+	bg[NORMAL] = {1.0, 0.75, 0.0}
+	fg[ACTIVE] = {0.0, 0.0, 0.0}
+	bg[ACTIVE] = {1.0, 0.75, 0.0}
+	fg[PRELIGHT] = {0.0, 0.0, 0.0}
+	bg[PRELIGHT] = {1.0, 0.75, 0.0}
+	fg[INSENSITIVE] = {0.0, 1.0, 0.0}
+	bg[INSENSITIVE] = {1.0, 0.75, 0.0}
+}
+
+style "main"
+{
+	fg[NORMAL] = {0.0, 0.0, 0.0}
+	bg[NORMAL] = {1.0, 1.0, 1.0}
+	fg[PRELIGHT] = {0.0, 0.0, 0.0}
+	bg[PRELIGHT] = {1.0, 1.0, 1.0}
+}
+
+widget "*sendbutton" style "send"
+widget "*savebutton" style "save"
+widget "*answerbutton" style "answer"
+widget "*selector" style "selector"
+widget "*titleMenu" style "title"
+widget "*main" style "main"

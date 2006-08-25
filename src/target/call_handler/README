@@ -1,0 +1,33 @@
+DESCRIPTION
+	This program is used for call handlering in openmoko project.
+	The executable files include openmoko-callhandlering openmoko.rc gnome-emacs.png and they must be placed in the same directory.
+
+USAGE
+	You can call this program by executing
+	%openmoko-callhandlering [OPTION] [INFO]
+	When you call this application, make sure you use absolute directory.
+	
+	OPTION 
+		must be ans or dial, other options would cause error. 
+		ans	for answering a coming call 
+		dial	for outgoing a call  
+
+	INFO	
+		You can specify what you want to display such as ID,fullname,phonenum
+		They will be interpreted by the sepearator ','
+
+The interface include Title menu which is colored in green and the Selector menu which is colored in yellow. You can click on each menu to select what you want to do.
+
+Menu Function implemented:
+Title Menu:
+        Quit: quit the program
+
+Button:
+       Answer:  get into the in call interface
+       Ingnor:	quit the program
+       Record:	display the starting record information on terminal
+       Hangup:	quit the program
+       Cancel:	quit the program
+					
+	
+	
