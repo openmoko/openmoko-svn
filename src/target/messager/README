@@ -1,0 +1,27 @@
+DESCRIPTION
+        This program is used for SMS Email IM input in openmoko project.
+        The executable file is messenger .
+
+USAGE
+        You can call this program by executing
+        %messenger [INFO]
+
+	INFO:	
+		You can specify what you want to display such as phonenum
+		It will display in the input entry after "To" label
+
+The interface include Title menu which is colored in green and the Selector menu which is colored in yellow. You can click on each menu to select what you want to do.
+
+Menu Function implemented:
+Title Menu:
+	Quit: quit the program
+
+Selector Menu:
+	SMS:	display the sms input interface
+	IM:	display the IM input interface
+	Email:	display the Email input interface
+
+Button:
+	Send:	get the input information filled in the input entries and print the message in the terminal
+
+While you are typing, the label above the textview widget will display how many characters you have input. If your input characters more than 158, than you will send two or more messages at a time.
