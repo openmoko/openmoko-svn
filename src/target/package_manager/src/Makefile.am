@@ -31,7 +31,8 @@ appmgr_SOURCES = \
 	pkgmgr.c\
 	pkgmgr.h\
 	detareamgr.c\
-	detareamgr.h
+	detareamgr.h\
+	ipkg_cmd.h
 
 appmgr_LDFLAGS = 
 
