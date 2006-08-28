@@ -28,14 +28,6 @@
 #include "support.h"
 
 /**
- * @brief For dependencies list
- */
-enum {
-  DEP_COL_PACKAGE = 0,
-  DEP_COL_NUMS
-};
-
-/**
  * @brief For details list
  */
 enum {
@@ -44,47 +36,15 @@ enum {
   DET_COL_NUMS
 };
 
-
 /**
- * @brief Init the dependency view in details area, add a empty store to it
+ * @brief init_detail_info_view
+ * Init the view and store of the detail info in details area. 
  *
- * This function should be called once at the initial process.
- *
+ * @param window Any widget pointer in the package manager window
  * @return Error code
+ * @retval OP_SUCCESS Operation success
+ * @retval OP_WINDOW_SIZE_WIDGET_NOT_FIND Can't find the detail info widget
  */
-/*
-static gint
-init_depend_info_view (GtkWidget *window)
-{
-  GtkWidget   *depview;
-
-  GtkTreeViewColumn   *col;
-  GtkCellRenderer     *renderer;
-  GtkTreeStore        *treestore;
-
-  depview = lookup_widget (window, STRING_TEXT_VIEW_DEPEND);
-  if (depview == NULL)
-    return OP_WINDOW_SIZE_WIDGET_NOT_FIND;
-
-  col = gtk_tree_view_column_new ();
-
-  gtk_tree_view_column_set_title (col, _("Package"));
-  gtk_tree_view_append_column (GTK_TREE_VIEW (depview), col);
-  renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_column_pack_start (col, renderer, TRUE);
-  gtk_tree_view_column_add_attribute (col, renderer, "text", DEP_COL_PACKAGE);
-
-  treestore = gtk_tree_store_new (DEP_COL_NUMS,
-                                  G_TYPE_STRING);
-
-  gtk_tree_view_set_model (GTK_TREE_VIEW(depview), GTK_TREE_MODEL (treestore));
-  g_object_unref (GTK_TREE_MODEL (treestore));
-
-  return OP_SUCCESS;
-
-}
-*/
-
 static gint
 init_detail_info_view (GtkWidget *window)
 {
@@ -136,7 +96,6 @@ init_detail_info_view (GtkWidget *window)
 gint
 init_details_area (GtkWidget *window)
 {
-  //init_depend_info_view (window);
   init_detail_info_view (window);
 
   update_details_area (window);
@@ -144,6 +103,9 @@ init_details_area (GtkWidget *window)
   return OP_SUCCESS;
 }
 
+/**
+ * @brief Update the detail info view
+ */
 static void
 update_detail_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
 {
@@ -212,6 +174,9 @@ update_detail_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
 
 }
 
+/**
+ * @brief Update the depends info view
+ */
 static void
 update_depend_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
 {
@@ -228,6 +193,9 @@ update_depend_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
 
 }
 
+/**
+ * @brief Update the summary info view
+ */
 static void
 update_summary_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
 {
