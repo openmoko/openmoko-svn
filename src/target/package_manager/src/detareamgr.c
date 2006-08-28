@@ -188,7 +188,10 @@ update_depend_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
   if (depview != NULL)
     {
       buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (depview));
-      gtk_text_buffer_set_text (buffer, detail->depends, -1);
+      if (detail->depends != NULL)
+        gtk_text_buffer_set_text (buffer, detail->depends, -1);
+      else
+        gtk_text_buffer_set_text (buffer, "", -1);
     }
 
 }
@@ -207,7 +210,10 @@ update_summary_info_view (GtkWidget *window, PACKAGE_DETAIL_INFO *detail)
   if (tvsummary != NULL)
     {
       buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (tvsummary));
-      gtk_text_buffer_set_text (buffer, detail->description, -1);
+      if (detail->description != NULL)
+        gtk_text_buffer_set_text (buffer, detail->description, -1);
+      else
+        gtk_text_buffer_set_text (buffer, "", -1);
     }
 
 }
