@@ -1,0 +1,500 @@
+ccu -l /dev/ttU yUSB0 -s 15200
+cu: Unsupported baud rate 15200
+[1m[3m%[23m[1m[m                                                                                                        [m[23m[24m[J[3mlaforge@rama%pts/11 (20:27)[23m phone/src/libgsmd/atcmd > [K[46C [1m2/1[m[50Dcu -l /dev/ttyUSB0 -s 1520015200
+Connected.
+
+OK
+ATV1
+OK
+AT+COPS=?
+ERROR
+AT+COPS=?
+ERROR
+AT+COPS?
++COPS: 0
+
+OK
+AT+COPS=?
+ERROR
+
+OK
+
+OK
+AT+CRC=1
+OK
+AT+CRC=?
++CRC: (0,1)
+
+OK
+AT+CGMI
+<manufacturer>
+
+OK
+AT+GMM
+<model>
+
+OK
+AT+CGSI
+EXT: I
+
+ERROR
+AT+CGSS
+EXT: I
+
+ERROR
+AT+CGSS=?
+EXT: I
+
+ERROR
+AT+CGSS?
+EXT: I
+
+ERROR
+AT+CGSN
+<serial number>
+
+OK
+AT+CSCS?
++CSCS: "IRA"
+
+OK
+AT+CSCS=?
++CSCS: "GSM","IRA","PCCP437","PCDN","8859-1","HEX","UCS2"
+
+OK
+AT+CIMI?
+ERROR
+AT+CIMI
+262074992516579
+
+OK
+AT+M
+EXT: I
+
+ERROR
+AT+CMUX?
+OK
+AT-Command Interpreter ready
+
+OK
+AT+CMUX=?
++CMUX: (1),(0),(1-5),(10-100),(1-255),(0-100),(2-255),(1-255),(1-7)
+
+OK
+AT-Command Interpreter ready
+AT+CSTA
+ERROR
+AT+CSTA?
++CSTA: 129
+
+OK
+AT+CSTA=?
++CSTA: (129,145)
+
+OK
+AT+CPIN?
++CPIN: SIM PIN
+
+OK
+ATP
+ERROR
+AT+CPIN=9450
+ERROR
+AT+CMOD?
++CMOD: 0
+
+OK
+AT+CMOD=?
++CMOD: (0-3)
+
+OK
+
+OK
+AT+CHUP
+OK
+AT+CBST=?
++CBST: (0-7,12,14,65,66,68,70,71,75),(0),(0-3)
+
+OK
+AT
+ERROR
+AT+CRLP=?
++CRLP: (0-61),(0-61),(39-255),(1-255)
+
+OK
+
+OK
+AT+CR?
++CR: 0
+
+OK
+AT+CR=?
++CR: (0,1)
+
+OK
+AT+CR=1
+OK
+
+OK
+
+OK
+
+OK
+AT+CEER=1
++CEER: 0,1,1,255,no error
+
+OK
+AT+CEER?
+ERROR
+AT+CEER=?
+OK
+
+OK
+AT+CRC=1
+OK
+AT+CRC=?
++CRC: (0,1)
+
+OK
+AT+CSNS=?
+ERROR
+AT+CSNS?
++CSNS: 0
+
+OK
+AT+CSNS=?
++CSNS: (0-7)
+
+OK
+
+OK
+AT+CHVU?
+EXT: I
+
+ERROR
+AT+CVUHU?
+EXT: I
+
+ERROR
+AT+CVHU?
+EXT: I
+
+ERROR
+AT+CVHU=?
+EXT: I
+
+ERROR
+
+OK
+AT+CV120?
+EXT: I
+
+ERROR
+AT+CV120=?
+EXT: I
+
+ERROR
+
+OK
+AT+CNUM?
+ERROR
+AT+CNUM=?
+OK
+AT+CNUM?
+ERROR
+AT+CNUM=?
+OK
+AT+CREG?
++CREG: 0,2
+
+OK
+AT+CREG=?
++CREG: (0-2)
+
+OK
+AT
+ERROR
+ATC
+EXT: I
+
+ERROR
+AT+CREG=2
+OK
+
+OK
+AT+COPS=?
+ERROR
+AT+COPS?
++COPS: 0
+
+OK
+AT+COPS=?
+ERROR
+
+OK
+AT+CLKS=?
+EXT: I
+
+ERROR
+AT+CLCK=?
++CLCK: ("SC","AO","OI","OX","AI","IR","AB","AG","AC","FD","PS","PN","PU","PP","PC","PF","AL")
+
+OK
+
+OK
+AT+CLIP=?
++CLIP: (0,1)
+
+OK
+ATP
+ERROR
+AT+CLIP?
++CLIP: 0,2
+
+OK
+AT+CLIR=?
++CLIR: (0,1,2)
+
+OK
+AT+CLIR?
++CLIR: 0,2
+
+OK
+AT+COPLP+
+EXT: I
+
+ERROR
+AT+COLP?
++COLP: 0,2
+
+OK
+AT+COLP=?
++COLP: (0,1)
+
+OK
+AT+CCFG
+EXT: I
+
+ERROR
+a
+ERROR
+AT+CCFC?
+ERROR
+AT+CCFC=?
++CCFC: (0-5)
+
+OK
+AT+CCWA
+OK
+AT+CCWA?
++CCWA: 0
+
+OK
+AT+CCWA=?
++CCWA: (0,1)
+
+OK
+
+OK
+AT+CCWA=1
+OK
+
+OK
+AT+CTFR=?
+OK
+AT+CTFR?
+ERROR
+
+OK
+AT+CUSD=?
++CUSD: (0,1,2)
+
+OK
+AT+CUSD?
++CUSD: 0
+
+OK
+AT+CUSD=1
+OK
+AT+CCSN?
+EXT: I
+
+ERROR
+AT+CCSN=?
+EXT: I
+
+ERROR
+
+OK
+AT+CCSI?
+EXT: I
+
+ERROR
+AT
+ERROR
+AT+CLCC?
+ERROR
+AT+CLCC=?
+OK
+
+OK
+AT+CPOL?
+ERROR
+AT+CPOL=?
+ERROR
+AT+
+ERROR
+AT+COPN?
+ERROR
+AT+COPN=?
+OK
+
+OK
+AT+CPAS?
+ERROR
+AT+CPAS=?
++CPAS: (0-5)
+
+OK
+AT+CPAS
++CPAS: 0
+
+OK
+
+OK
+AT+CMEC?
+EXT: I
+
+ERROR
+AT+CMEC=?
+EXT: I
+
+ERROR
+AT+CFUN?
++CFUN: 1
+
+OK
+AT+CFUN=?
++CFUN: (0,1,4),(0)
+
+OK
+
+OK
+AT+PIN
+EXT: I
+
+ERROR
+AT+CPIN?
++CPIN: SIM PIN
+
+OK
+AT+CPIN?
++CPIN: SIM PIN
+
+OK
+AT+CPIN=9450
+ERROR
+
++CREG: 2
+
+OK
+AT+CPIN?
++CPIN: READY
+
+OK
+AT+CBC?
+ERROR
+AT+CBC=?
++CBC: (0-3),(0-100)
+
+OK
+AT+CBC
++CBC: 0,0
+
+OK
+AT+CBC
++CBC: 0,0
+
+OK
+AT+CBC
++CBC: 0,0
+
+OK
+AT+CSQ?
+ERROR
+AT+COPS?
++COPS: 0
+
+OK
+AT+COPS=?AT-Command Interpreter ready
+
+OK
+
+OK
+AT+CPIN
+ERROR
+AT+CPIN?
++CPIN: SIM PIN
+
+OK
+AT+COPS?
++COPS: 0
+
+OK
+AT+COPS?
++COPS: 0
+
+OK
+AT+CPAS?
+ERROR
+AT+CAP
+EXT: I
+
+ERROR
+AT+CPAS
++CPAS: 0
+
+OK
+AT+COPS?
++COPS: 0
+
+OK
+AT+COPS=?AT-Command Interpreter ready
+AT+CPIN?
++CPIN: READY
+
+OK
+AT+CMEC
+EXT: I
+
+ERROR
+AT+CMEC?
+EXT: I
+
+ERROR
+AT+CDIS?
+EXT: I
+
+ERROR
+AT+CIND?
++CIND: 0,0
+
+OK
+AT+CIND=/?
+OK
+AT+CIND=?
++CIND: ("signal", (0-5)), ("smsfull", (0-1))
+
+OK
+AT+CMER?
++CMER: 0,0,0,0,0
+
+OK
+AT+CMER=?
++CMER: (0-2), (0), (0), (0-2), (0,1)
+
+OK
+cu: Got hangup signal
+
+Disconnected.
+[1m[3m%[23m[1m[m                                                                                                        [m[23m[24m[J[3mlaforge@rama%pts/11 (22:31)[23m phone/src/libgsmd/atcmd > [K[46C [1m3/0[m[50D
