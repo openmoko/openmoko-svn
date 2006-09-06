@@ -1,4 +1,8 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "pin2410.h"
 #include "jtag.h"
 #include "k9s1208.h"
@@ -31,6 +35,7 @@ static void NF_Init(void);
 
 void K9S1208_PrintBlock(void);
 void K9S1208_Program(void);
+void K9S1208_Read(void);
 
 
 static U32 targetBlock;	    // Block number (0 ~ 4095)
@@ -41,6 +46,7 @@ static void *function[][2]=
 {
     (void *)K9S1208_Program,		"K9S1208 Program     ",
     (void *)K9S1208_PrintBlock,		"K9S1208 Pr BlkPage  ",
+    (void *)K9S1208_Read,		"K9S1208 Read Flash  ",
     (void *)1,			    	"Exit                ",
     0,0
 };
@@ -169,8 +175,29 @@ void K9S1208_Program(void)
     }
 }
 
+void K9S1208_Read(void)
+{
+	int of, block, page;
+	unsigned char buffer[512];
 
+	printf("\n[SMC(K9S1208V0M) NAND Flash Reading Program]\n");
 
+	of = creat("flash-read.bin", 0660);
+	if (of < 0) {
+		printf("error opening out file");
+		return;
+	}
+
+	for (block = 0; block < 4096; block++) {
+		for (page = 0; page < 32; page++) {
+			NF_ReadPage(block, page, buffer,NULL);
+			write(of, buffer, 512);
+		}
+	}
+
+	close(of);
+}
+   
 
 void K9S1208_PrintBlock(void)// Printf one page
 {
