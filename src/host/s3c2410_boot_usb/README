@@ -13,8 +13,8 @@ Use the following steps:
 3) power-on QT-2410
 4) start the ram loader by running
 
-	loadeboot_usb 0x30008000 /file/to/code
+	s3c2410_boot_usb /path/to/code 0x30008000
 
-   to download /file/to/code into RAM address 0x30008000
+   to download /path/to/code into RAM address 0x30008000
 
 You can watch the progress of the download on the serial port of QT-2410 (115200 bps)
