@@ -1,0 +1,2 @@
+export OPENMOKODIR=$PWD
+
