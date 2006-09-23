@@ -6,7 +6,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r3"
+PR = "r6"
 
 PACKAGES = "\
   task-openmoko-core \
@@ -17,6 +17,7 @@ PACKAGES = "\
   task-openmoko-pim \
   \
   task-openmoko-devel \
+  task-openmoko-sdk-native \
 "
 
 RDEPENDS_task-openmoko-everything := "${PACKAGES}"
@@ -38,6 +39,7 @@ RDEPENDS_task-openmoko-core = "\
 
 #
 # task-openmoko-net
+#
 DESCRIPTION_task-openmoko-net = "OpenMoko: Linux Networking"
 RDEPENDS_task-openmoko-net = "\
   bluez-utils \
@@ -51,7 +53,9 @@ RDEPENDS_task-openmoko-ui = "\
   gtk+ \
   matchbox-wm \
   matchbox-themes-gtk \
+  matchbox-desktop \
   matchbox-panel-manager \
+  matchbox-panel \
   xserver-kdrive-fbdev \
 "
 
@@ -80,10 +84,10 @@ RDEPENDS_task-openmoko-pim = "\
 #
 # task-openmoko-devel
 #
-DESCRIPTION_task-openmoko-devel = "OpenMoko: Development Tools"
+DESCRIPTION_task-openmoko-devel = "OpenMoko: Debugging Tools"
 RDEPENDS_task-openmoko-devel = "\
   strace \
-  ltrace \
+#  ltrace \
   gdb \
   gdbserver \
   tcpdump \
@@ -96,3 +100,20 @@ RDEPENDS_task-openmoko-devel = "\
   uucp \
 "
 
+#
+# task-openmoko-sdk-native
+#
+DESCRIPTION_task-openmoko-sdk-native = "OpenMoko: Native SDK"
+RDEPENDS_task-openmoko-sdk-native = "\
+  binutils \
+  gcc \
+  gcc-symlinks \
+  cpp \
+  cpp-symlinks \
+  libc6-dev \
+  glibc-utils \
+  ldd \
+  g++ \
+  g++-symlinks \
+  libstdc++-dev \
+"
