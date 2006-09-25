@@ -1,5 +1,5 @@
-#ifndef __OPENMOKO_FOOTER_H__
-#define __OPENMOKO_FOOTER_H__
+#ifndef OPENMOKO_FOOTER_H
+#define OPENMOKO_FOOTER_H
 
 #include <glib.h>
 #include <glib-object.h>
@@ -36,6 +36,8 @@ GType          footer_get_type        (void);
 GtkWidget*     footer_new             (void);
 void           footer_clear           (Footer *f);
 
+void           footer_set_status      (Footer *f, const char* s);
+
 G_END_DECLS
 
-#endif /* __OPENMOKO_FOOTER_H__ */
+#endif /* OPENMOKO_FOOTER_H */

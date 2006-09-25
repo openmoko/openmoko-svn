@@ -37,7 +37,6 @@ GType footer_get_type (void) /* Typechecking */
 
 static void footer_class_init (FooterClass *klass) /* Class Initialization */
 {
-    g_printf( "footer_class_init\n" );
     footer_signals[FOOTER_SIGNAL] = g_signal_new ("footer",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
@@ -71,12 +70,14 @@ static void footer_init (Footer *f) /* Instance Construction */
 
 GtkWidget* footer_new() /* Construction */
 {
-    g_printf( "footer_new\n" );
     return GTK_WIDGET(g_object_new(footer_get_type(), NULL));
 }
 
-void footer_clear (Footer *f) /* Destruction */
+void footer_clear(Footer *f) /* Destruction */
 {
-    g_printf( "footer_clear\n" );
 }
 
+void footer_set_status(Footer *f, const char* s)
+{
+    gtk_statusbar_push( f->statusbar, 1, s );
+}
