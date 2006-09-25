@@ -1,5 +1,4 @@
-CONFIG = console link_pkgconfig warn_on debug
-QMAKE_CFLAGS += -lstd=c99 -pedantic
+include (../../openmoko-include.pro)
 
 DESTDIR = $(OPENMOKODIR)/lib
 

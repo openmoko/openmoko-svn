@@ -2,8 +2,6 @@
 #include "footer.h"
 #include "main.h"
 
-#include <gtk/gtk.h>
-
 /* footer */
 void footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data)
 {
