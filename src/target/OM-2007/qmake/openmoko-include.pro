@@ -1,13 +1,7 @@
-CONFIG = debug warn_on link_pkgconfig console
-
-# handle pkg-config files (from qt4)
-for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
-	QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
-	QMAKE_CFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
-	LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
-}
+CONFIG = debug warn_on link_pkgconfig console $$MOKOCONFIG
 
 QMAKE_CFLAGS += -std=c99 -pedantic
+INCLUDEPATH += $(OPENMOKODIR)
 
 MOC_DIR=.moc/$(PLATFORM)
 OBJECTS_DIR=.obj/$(PLATFORM)
@@ -20,3 +14,28 @@ dbus-binding-tool.CONFIG = no_link
 dbus-binding-tool.variable_out = HEADERS
 dbus-binding-tool = SERVICES
 QMAKE_EXTRA_UNIX_COMPILERS += dbus-binding-tool
+
+mokocore {
+	LIBS += -lmokocore -L${OPENMOKODIR}/lib
+}
+
+mokoui {
+	PKGCONFIG += gtk+-2.0
+	LIBS += -lmokoui -L${OPENMOKODIR}/lib
+}
+
+mokopim {
+	LIBS += -lmokopim -L${OPENMOKODIR}/lib
+}
+
+mokonet {
+	LIBS += -lmokonet -L${OPENMOKODIR}/lib
+}
+
+# handle pkg-config files (from qt4)
+for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
+        QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
+        QMAKE_CFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
+        LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
+}
+

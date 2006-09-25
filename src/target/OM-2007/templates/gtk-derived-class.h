@@ -28,12 +28,12 @@ struct _MyobjectClass
 {
     /* add your parent class here */
     MyObjectParentClass parent_class;
-    void (*myobject) (Myobject *f);
+    void (*myobject) (Myobject *self);
 };
 
 GType          myobject_get_type        (void);
 GtkWidget*     myobject_new             (void);
-void           myobject_clear           (Myobject *f);
+void           myobject_clear           (Myobject *self);
 
 /* add additional methods here */
 

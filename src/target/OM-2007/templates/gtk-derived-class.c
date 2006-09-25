@@ -7,15 +7,15 @@ enum {
 };
 
 static void myobject_class_init          (MyobjectClass *klass);
-static void myobject_init                (Myobject      *f);
+static void myobject_init                (Myobject      *self);
 
 static guint myobject_signals[LAST_SIGNAL] = { 0 };
 
 GType myobject_get_type (void) /* Typechecking */
 {
-    static GType f_type = 0;
+    static GType self_type = 0;
 
-    if (!f_type)
+    if (!self_type)
     {
         static const GTypeInfo f_info =
         {
@@ -31,10 +31,10 @@ GType myobject_get_type (void) /* Typechecking */
         };
 
         /* add the type of your parent class here */
-        f_type = g_type_register_static(MYOBJECT_PARENT, "Myobject", &f_info, 0);
+        self_type = g_type_register_static(MYOBJECT_PARENT, "Myobject", &f_info, 0);
     }
 
-    return f_type;
+    return self_type;
 }
 
 static void myobject_class_init (MyobjectClass *klass) /* Class Initialization */
@@ -49,7 +49,7 @@ static void myobject_class_init (MyobjectClass *klass) /* Class Initialization *
             G_TYPE_NONE, 0);
 }
 
-static void myobject_init (Myobject *f) /* Instance Construction */
+static void myobject_init (Myobject *self) /* Instance Construction */
 {
     /* populate your widget here */
 }
@@ -59,7 +59,7 @@ GtkWidget* myobject_new() /* Construction */
     return GTK_WIDGET(g_object_new(myobject_get_type(), NULL));
 }
 
-void myobject_clear(Myobject *f) /* Destruction */
+void myobject_clear(Myobject *self) /* Destruction */
 {
     /* destruct your widgets here */
 }
