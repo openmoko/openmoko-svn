@@ -16,19 +16,23 @@ dbus-binding-tool = SERVICES
 QMAKE_EXTRA_UNIX_COMPILERS += dbus-binding-tool
 
 mokocore {
+	INCLUDEPATH += ${OPENMOKODIR}/libraries
 	LIBS += -lmokocore -L${OPENMOKODIR}/lib
 }
 
 mokoui {
+	INCLUDEPATH += ${OPENMOKODIR}/libraries
 	PKGCONFIG += gtk+-2.0
 	LIBS += -lmokoui -L${OPENMOKODIR}/lib
 }
 
 mokopim {
+	INCLUDEPATH += ${OPENMOKODIR}/libraries
 	LIBS += -lmokopim -L${OPENMOKODIR}/lib
 }
 
 mokonet {
+	INCLUDEPATH += ${OPENMOKODIR}/libraries
 	LIBS += -lmokonet -L${OPENMOKODIR}/lib
 }
 
@@ -37,5 +41,15 @@ for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
         QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
         QMAKE_CFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
         LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
+}
+
+contains( TEMPLATE, app ) {
+	message( configuring application $$TARGET )
+	DESTDIR = ${OPENMOKODIR}/bin
+}
+
+contains( TEMPLATE, lib ) {
+	message( configuring library $$TARGET )
+	DESTDIR = ${OPENMOKODIR}/lib
 }
 

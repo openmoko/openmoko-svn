@@ -6,4 +6,4 @@ SOURCES = moko-application.c moko-window.c moko-menubar.c
 
 PKGCONFIG += gtk+-2.0
 
-include ( ../include.pro )
+include ( $(OPENMOKODIR)/qmake/openmoko-include.pro )
