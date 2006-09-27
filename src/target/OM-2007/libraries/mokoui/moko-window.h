@@ -25,11 +25,11 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_WINDOW_TYPE            (moko_window_get_type())
-#define MOKO_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_WINDOW_TYPE, MokoWindow))
-#define MOKO_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_WINDOW_TYPE, MokoWindowClass))
-#define IS_MOKO_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_WINDOW_TYPE))
-#define IS_MOKO_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_WINDOW_TYPE))
+#define MOKO_TYPE_WINDOW            (moko_window_get_type())
+#define MOKO_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_WINDOW, MokoWindow))
+#define MOKO_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_WINDOW, MokoWindowClass))
+#define IS_MOKO_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_WINDOW))
+#define IS_MOKO_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_WINDOW))
 
 typedef struct _MokoWindow       MokoWindow;
 typedef struct _MokoWindowClass  MokoWindowClass;

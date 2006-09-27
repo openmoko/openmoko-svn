@@ -25,11 +25,11 @@
 
 G_BEGIN_DECLS
 
-#define MENUBAR_TYPE            (moko_menu_bar_get_type())
-#define MENUBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MENUBAR_TYPE, MokoMenuBar))
-#define MENUBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MENUBAR_TYPE, MokoMenuBarClass))
-#define IS_MENUBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MENUBAR_TYPE))
-#define IS_MENUBAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MENUBAR_TYPE))
+#define MOKO_TYPE_MENUBAR            (moko_menu_bar_get_type())
+#define MENUBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_MENUBAR, MokoMenuBar))
+#define MENUBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_MENUBAR, MokoMenuBarClass))
+#define IS_MENUBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_MENUBAR))
+#define IS_MENUBAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_MENUBAR))
 
 typedef struct _MokoMenuBar       MokoMenuBar;
 typedef struct _MokoMenuBarClass  MokoMenuBarClass;

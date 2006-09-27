@@ -3,8 +3,10 @@ CONFIG = debug warn_on link_pkgconfig console $$MOKOCONFIG
 QMAKE_CFLAGS += -std=c99 -pedantic
 INCLUDEPATH += $(OPENMOKODIR)
 
-MOC_DIR=.moc/$(PLATFORM)
-OBJECTS_DIR=.obj/$(PLATFORM)
+PLATFORM = $$system(uname -m)
+
+MOC_DIR=.moc/$$PLATFORM
+OBJECTS_DIR=.obj/$$PLATFORM
 
 QMAKE_DBUS_CC  = dbus-binding-tool
 dbus-binding-tool.commands = $${QMAKE_DBUS_CC} --mode=glib-server ${QMAKE_FILE_IN} >${QMAKE_FILE_OUT}
@@ -16,24 +18,24 @@ dbus-binding-tool = SERVICES
 QMAKE_EXTRA_UNIX_COMPILERS += dbus-binding-tool
 
 mokocore {
-	INCLUDEPATH += ${OPENMOKODIR}/libraries
-	LIBS += -lmokocore -L${OPENMOKODIR}/lib
+	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	LIBS += -lmokocore -L$(OPENMOKODIR)/lib
 }
 
 mokoui {
-	INCLUDEPATH += ${OPENMOKODIR}/libraries
+	INCLUDEPATH += $(OPENMOKODIR)/libraries
 	PKGCONFIG += gtk+-2.0
-	LIBS += -lmokoui -L${OPENMOKODIR}/lib
+	LIBS += -lmokoui -L$(OPENMOKODIR)/lib
 }
 
 mokopim {
-	INCLUDEPATH += ${OPENMOKODIR}/libraries
-	LIBS += -lmokopim -L${OPENMOKODIR}/lib
+	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	LIBS += -lmokopim -L$(OPENMOKODIR)/lib
 }
 
 mokonet {
-	INCLUDEPATH += ${OPENMOKODIR}/libraries
-	LIBS += -lmokonet -L${OPENMOKODIR}/lib
+	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	LIBS += -lmokonet -L$(OPENMOKODIR)/lib
 }
 
 # handle pkg-config files (from qt4)
@@ -45,11 +47,11 @@ for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
 
 contains( TEMPLATE, app ) {
 	message( configuring application $$TARGET )
-	DESTDIR = ${OPENMOKODIR}/bin
+	DESTDIR = $(OPENMOKODIR)/bin
 }
 
 contains( TEMPLATE, lib ) {
 	message( configuring library $$TARGET )
-	DESTDIR = ${OPENMOKODIR}/lib
+	DESTDIR = $(OPENMOKODIR)/lib
 }
 
