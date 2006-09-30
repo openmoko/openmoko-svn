@@ -1,5 +1,5 @@
 /*
- *  3 Part Demo -- OpenMoko Demo Application
+ *  Paned-Demo -- OpenMoko Demo Application
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *

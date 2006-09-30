@@ -1,5 +1,5 @@
 /*
- *  3 Part Demo -- OpenMoko Demo Application
+ *  Paned-Demo -- OpenMoko Demo Application
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
@@ -18,7 +18,7 @@
  */
 
 #include <mokoui/moko-application.h>
-#include <mokoui/moko-window.h>
+#include <mokoui/moko-paned-window.h>
 #include <mokoui/moko-menubar.h>
 #include <mokoui/moko-toolbar.h>
 
@@ -136,53 +136,40 @@ static GtkWidget* get_menubar_menu( GtkWindow* window )
 
 int main( int argc, char** argv )
 {
+    g_debug( "OPENMOKO-PANED-DEMO starting up" );
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
 
-    MokoApplication* app = MOKO_APPLICATION( moko_application_get_instance() );
-    g_set_application_name( "Hello OpenMoko!" );
+    /* application object */
+    MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
+    g_set_application_name( "OpenMoko-Paned-Demo" );
 
-    MokoWindow* window = MOKO_WINDOW(moko_window_new());
-    // moko_application_set_main_window( window );
+    /* main window */
+    MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());
 
-    /* Set up application menu */
+    /* application menu */
     GtkMenu* appmenu = gtk_menu_new();
     GtkMenuItem* closeitem = gtk_menu_item_new_with_label( "Close" );
-    g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK( gtk_main_quit ), NULL );
+    g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
     gtk_menu_shell_append( appmenu, closeitem );
+    moko_paned_window_set_application_menu( window, appmenu );
 
-    GtkMenuItem* appitem = gtk_menu_item_new_with_label( "File" );
-    gtk_menu_item_set_submenu( appitem, appmenu );
-
-    gtk_widget_show( closeitem );
-
-    /* Set up upper frame */
-    GtkVBox* upperframe = gtk_vbox_new( FALSE, 0 );
-    MokoMenuBar* menubar = GTK_MENU_BAR(moko_menu_bar_new());
-    gtk_menu_shell_append( GTK_MENU_BAR(menubar), appitem );
-
-    //MokoMenuBar* menubar = get_menubar_menu( window );
-
-    gtk_box_pack_start( GTK_BOX(upperframe), GTK_WIDGET(menubar), TRUE, TRUE, 0 );
-    GtkButton* navigationlist = gtk_button_new_with_label( "Hello Navigation Area!" );
-    gtk_box_pack_start( GTK_BOX(upperframe), GTK_WIDGET(navigationlist), TRUE, TRUE, 0 );
-
-    /* Set up lower frame */
-    GtkVBox* lowerframe = gtk_vbox_new( FALSE, 0 );
-
-    GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );
-    gtk_box_pack_start( GTK_BOX(lowerframe), GTK_WIDGET(detailslist), TRUE, TRUE, 0 );
-
-    GtkVPaned* outerframe = gtk_vpaned_new();
-    gtk_paned_add1( GTK_PANED(outerframe), GTK_WIDGET(upperframe) );
-    gtk_paned_add2( GTK_PANED(outerframe), GTK_WIDGET(lowerframe) );
-    
-    gtk_container_add( GTK_CONTAINER(window), outerframe );
-
+    /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
+    /* navigation area */
+    GtkButton* navigationlist = gtk_button_new_with_label( "Hello Navigation Area!" );
+    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationlist) );
+
+    /* details area */
+    GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );
+    moko_paned_window_set_lower_pane( window, GTK_WIDGET(detailslist) );
+
+    /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
+    g_debug( "OPENMOKO-PANED-DEMO entering main loop" );
     gtk_main();
+    g_debug( "OPENMOKO-PANED-DEMO left main loop" );
 
     return 0;
 }

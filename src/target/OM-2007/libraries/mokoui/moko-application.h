@@ -23,7 +23,6 @@
 #include <glib-object.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtktoolbar.h>
-//#include "hildon-window.h"
 
 G_BEGIN_DECLS
 
@@ -39,12 +38,6 @@ typedef struct _MokoApplication
 typedef struct _MokoApplicationClass
 {
     GObjectClass parent;
-
-    /* Padding for future extension */
-    void (*_moko_reserved1)(void);
-    void (*_moko_reserved2)(void);
-    void (*_moko_reserved3)(void);
-    void (*_moko_reserved4)(void);
 } MokoApplicationClass;
 
 GType moko_application_get_type (void);

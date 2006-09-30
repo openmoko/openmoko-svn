@@ -75,6 +75,7 @@ GType moko_application_get_type (void)
 
 static void moko_application_init (MokoApplication *self)
 {
+    g_debug( "moko_application_init" );
     MokoApplicationPriv *priv = MOKO_APPLICATION_GET_PRIVATE (self);
 
     priv->killable = FALSE;
@@ -89,6 +90,7 @@ static void moko_application_init (MokoApplication *self)
 
 static void moko_application_finalize (GObject *self)
 {
+    g_debug( "moko_application_finalize", self );
     MokoApplicationPriv *priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
 
     if (priv->common_toolbar)
