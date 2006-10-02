@@ -116,13 +116,13 @@ static GtkWidget* get_menubar_menu( GtkWindow* window )
     gtk_action_group_add_actions (action_group, entries, G_N_ELEMENTS (entries), window);
     gtk_action_group_add_toggle_actions (action_group, toggle_entries, G_N_ELEMENTS (toggle_entries), window);
     gtk_action_group_add_radio_actions (action_group, radio_entries, G_N_ELEMENTS (radio_entries), 0, print_selected, window);
-    
+
     GtkUIManager* ui_manager = gtk_ui_manager_new ();
     gtk_ui_manager_insert_action_group (ui_manager, action_group, 0);
-    
+
     GtkAccelGroup* accel_group = gtk_ui_manager_get_accel_group (ui_manager);
     gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
-    
+
     GError* error = NULL;
     if (!gtk_ui_manager_add_ui_from_string (ui_manager, ui_description, -1, &error))
     {
@@ -130,7 +130,7 @@ static GtkWidget* get_menubar_menu( GtkWindow* window )
         g_error_free (error);
         exit (EXIT_FAILURE);
     }
-    
+
     return gtk_ui_manager_get_widget (ui_manager, "/MainMenu");
 }
 
@@ -148,8 +148,8 @@ int main( int argc, char** argv )
     MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());
 
     /* application menu */
-    GtkMenu* appmenu = gtk_menu_new();
-    GtkMenuItem* closeitem = gtk_menu_item_new_with_label( "Close" );
+    GtkMenu* appmenu = GTK_MENU(gtk_menu_new());
+    GtkMenuItem* closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Close" ));
     g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
     gtk_menu_shell_append( appmenu, closeitem );
     moko_paned_window_set_application_menu( window, appmenu );
@@ -160,6 +160,9 @@ int main( int argc, char** argv )
     /* navigation area */
     GtkButton* navigationlist = gtk_button_new_with_label( "Hello Navigation Area!" );
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationlist) );
+
+    /* tool bar */
+    MokoToolBar* toolbar = MOKO_TOOLBAR(moko_tool_bar_new());
 
     /* details area */
     GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );

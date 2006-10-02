@@ -22,6 +22,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtkmenu.h>
+#include <gtk/gtktoolbar.h>
 #include "moko-window.h"
 
 G_BEGIN_DECLS
@@ -54,9 +55,13 @@ void           moko_paned_window_clear           (MokoPanedWindow *self);
 
 /* add additional methods here */
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu);
+//TODO GtkMenu* moko_paned_window_get_application_menu(MokoPanedWindow* self);
 
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child);
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child);
+
+void moko_paned_window_add_toolbar(MokoPanedWindow* self, GtkToolbar* toolbar);
+//TODO void moko_paned_window_remove_toolbar(MokoPanedWindow* self, GtkToolbar* toolbar);
 
 G_END_DECLS
 

@@ -26,10 +26,10 @@
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_TOOLBAR            (moko_tool_bar_get_type())
-#define TOOLBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOLBAR, MokoToolBar))
-#define TOOLBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOLBAR, MokoToolBarClass))
-#define IS_TOOLBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOLBAR))
-#define IS_TOOLBAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOLBAR))
+#define MOKO_TOOLBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOLBAR, MokoToolBar))
+#define MOKO_TOOLBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOLBAR, MokoToolBarClass))
+#define IS_MOKO_TOOLBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOLBAR))
+#define IS_MOKO_TOOLBAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOLBAR))
 
 typedef struct _MokoToolBar       MokoToolBar;
 typedef struct _MokoToolBarClass  MokoToolBarClass;
