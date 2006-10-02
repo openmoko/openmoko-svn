@@ -19,7 +19,6 @@
 
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
-#include <mokoui/moko-menubar.h>
 #include <mokoui/moko-toolbar.h>
 
 #include <gtk/gtkactiongroup.h>
@@ -27,6 +26,7 @@
 #include <gtk/gtkcheckmenuitem.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
+#include <gtk/gtkmenutoolbutton.h>
 #include <gtk/gtkstock.h>
 #include <gtk/gtktoolbutton.h>
 #include <gtk/gtkuimanager.h>
@@ -35,109 +35,9 @@
 
 #include <stdlib.h>
 
-/* Obligatory basic callback */
-static void print_hello( GtkWidget *w,
-                         gpointer   data )
-{
-    g_message ("Hello, World!\n");
-}
-
-/* For the check button */
-static void print_toggle( gpointer   callback_data,
-                          guint      callback_action,
-                          GtkWidget *menu_item )
-{
-    g_message ("Check button state - %d\n",
-               GTK_CHECK_MENU_ITEM (menu_item)->active);
-}
-
-/* For the radio buttons */
-static void print_selected( gpointer   callback_data,
-                            guint      callback_action,
-                            GtkWidget *menu_item )
-{
-    if(GTK_CHECK_MENU_ITEM(menu_item)->active)
-        g_message ("Radio button %d selected\n", callback_action);
-}
-
-/* Normal items */
-static const GtkActionEntry entries[] = {
-    { "FileMenu", NULL, "_File" },
-    { "ViewMenu", NULL, "_View" },
-    { "Open", GTK_STOCK_OPEN, "_Open", "<control>O", "Open a file", print_hello },
-    { "Exit", GTK_STOCK_QUIT, "E_xit", "<control>Q", "Exit the program", print_hello },
-    { "ZoomIn", GTK_STOCK_ZOOM_IN, "Zoom _In", "plus", "Zoom into the image", print_hello },
-    { "ZoomOut", GTK_STOCK_ZOOM_OUT, "Zoom _Out", "minus", "Zoom away from the image", print_hello },
-};
-
-/* Toggle items */
-static const GtkToggleActionEntry toggle_entries[] = {
-    { "FullScreen", NULL, "_Full Screen", "F11", "Switch between full screen and windowed mode", print_hello, FALSE }
-};
-
-/* Radio items */
-static const GtkRadioActionEntry radio_entries[] = {
-    { "HighQuality", "my-stock-high-quality", "_High Quality", NULL, "Display images in high quality, slow mode", 0 },
-    { "NormalQuality", "my-stock-normal-quality", "_Normal Quality", NULL, "Display images in normal quality", 1 },
-    { "LowQuality", "my-stock-low-quality", "_Low Quality", NULL, "Display images in low quality, fast mode", 2 }
-};
-
-static const char* application_menu_ui =
-        "<ui>"
-        "   <menu action='ApplicationMenu'>"
-        "       <menuitem action='Open'/>"
-        "       <menuitem action='Exit'/>"
-        "   </menu>"
-        "</ui>"
-        ;
-
-static const char *ui_description =
-        "<ui>"
-        "  <menubar name='MainMenu'>"
-        "    <menu action='FileMenu'>"
-        "      <menuitem action='Open'/>"
-        "      <menuitem action='Exit'/>"
-        "    </menu>"
-        "    <menu action='ViewMenu'>"
-        "      <menuitem action='ZoomIn'/>"
-        "      <menuitem action='ZoomOut'/>"
-        "      <separator/>"
-        "      <menuitem action='FullScreen'/>"
-        "      <separator/>"
-        "      <menuitem action='HighQuality'/>"
-        "      <menuitem action='NormalQuality'/>"
-        "      <menuitem action='LowQuality'/>"
-        "    </menu>"
-        "  </menubar>"
-        "</ui>";
-
-static GtkWidget* get_menubar_menu( GtkWindow* window )
-{
-    GtkActionGroup* action_group = gtk_action_group_new ("MenuActions");
-    gtk_action_group_add_actions (action_group, entries, G_N_ELEMENTS (entries), window);
-    gtk_action_group_add_toggle_actions (action_group, toggle_entries, G_N_ELEMENTS (toggle_entries), window);
-    gtk_action_group_add_radio_actions (action_group, radio_entries, G_N_ELEMENTS (radio_entries), 0, print_selected, window);
-
-    GtkUIManager* ui_manager = gtk_ui_manager_new ();
-    gtk_ui_manager_insert_action_group (ui_manager, action_group, 0);
-
-    GtkAccelGroup* accel_group = gtk_ui_manager_get_accel_group (ui_manager);
-    gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
-
-    GError* error = NULL;
-    if (!gtk_ui_manager_add_ui_from_string (ui_manager, ui_description, -1, &error))
-    {
-        g_message ("building menus failed: s", error->message);
-        g_error_free (error);
-        exit (EXIT_FAILURE);
-    }
-
-    return gtk_ui_manager_get_widget (ui_manager, "/MainMenu");
-}
-
 int main( int argc, char** argv )
 {
-    g_debug( "OPENMOKO-PANED-DEMO starting up" );
+    g_debug( "openmoko-paned-demo starting up" );
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
 
@@ -171,14 +71,23 @@ int main( int argc, char** argv )
     GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, 1 );
 
-    GtkToolButton* tool_action2 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action2" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action2, 2 );
+    GtkMenu* actionmenu = GTK_MENU(gtk_menu_new());
+    GtkMenuItem* fooitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Foo" ));
+    GtkMenuItem* baritem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Bar" ));
+    gtk_widget_show( GTK_WIDGET(fooitem) );
+    gtk_widget_show( GTK_WIDGET(baritem) );
+    gtk_menu_shell_append( actionmenu, fooitem );
+    gtk_menu_shell_append( actionmenu, baritem );
+
+    GtkMenuToolButton* tool_menu = GTK_MENU_TOOL_BUTTON(gtk_menu_tool_button_new( NULL, "amenu" ));
+    gtk_menu_tool_button_set_menu( tool_menu, actionmenu );
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), GTK_TOOL_BUTTON(tool_menu), 2 );
 
     GtkToolButton* tool_action3 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action3" ));
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action3, 3 );
 
     GtkToolButton* tool_action4 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action4" ));
-     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, 4 );
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, 4 );
 
     /* details area */
     GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );
@@ -186,9 +95,9 @@ int main( int argc, char** argv )
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
-    g_debug( "OPENMOKO-PANED-DEMO entering main loop" );
+    g_debug( "openmoko-paned-demo entering main loop" );
     gtk_main();
-    g_debug( "OPENMOKO-PANED-DEMO left main loop" );
+    g_debug( "openmoko-paned-demo left main loop" );
 
     return 0;
 }
