@@ -55,6 +55,13 @@ int main( int argc, char** argv )
     gtk_menu_shell_append( appmenu, closeitem );
     moko_paned_window_set_application_menu( window, appmenu );
 
+    /* filter menu */
+    GSList* list = NULL;
+    list = g_slist_append( list, "All" );
+    list = g_slist_append( list, "Odd" );
+    list = g_slist_append( list, "Even" );
+    moko_paned_window_set_filter_menu( window, list );
+
     /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 

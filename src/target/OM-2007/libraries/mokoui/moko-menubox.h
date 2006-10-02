@@ -53,7 +53,7 @@ GtkWidget*     moko_menubox_new         (void);
 void           moko_menubox_clear       (MokoMenuBox *self);
 
 void           moko_menubox_set_application_menu(MokoMenuBox* self, GtkMenu* menu);
-void           moko_menubox_set_filter_menu(MokoMenuBox* self, GtkMenu* menu);
+void           moko_menubox_set_filter_menu(MokoMenuBox* self, GSList* entries);
 
 G_END_DECLS
 

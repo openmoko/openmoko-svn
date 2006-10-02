@@ -20,14 +20,14 @@
 
 #include <gtk/gtkmenubar.h>
 #include <gtk/gtkmenuitem.h>
-#include <gtk/gtkoptionmenu.h>
+#include <gtk/gtkcombobox.h>
 
 #define MOKO_MENU_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_MENUBOX, MokoMenuBoxPriv));
 
 typedef struct _MokoMenuBoxPriv
 {
     GtkMenuBar* menubar;
-    GtkOptionMenu* optionmenu;
+    GtkComboBox* combobox;
 } MokoMenuBoxPriv;
 
 /* add your signals here */
@@ -87,7 +87,7 @@ static void moko_menubox_init (MokoMenuBox *self) /* Instance Construction */
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 
     priv->menubar = NULL;
-    priv->optionmenu = NULL;
+    priv->combobox = NULL;
 
 }
 
@@ -109,23 +109,35 @@ void moko_menubox_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     if (!priv->menubar )
     {
         priv->menubar = gtk_menu_bar_new();
-        gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar), FALSE, FALSE, 0 );
+        gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar), TRUE, TRUE, 0 );
     }
     GtkMenuItem* appitem = gtk_menu_item_new_with_label( g_get_application_name() );
     gtk_menu_item_set_submenu( appitem, menu );
     gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar), appitem );
 }
 
-void moko_menubox_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
+void moko_menubox_set_filter_menu(MokoMenuBox* self, GSList* entries)
 {
+    void _populate_filter_menu(gpointer data, gpointer user_data)
+    {
+        g_debug( "_populate_filter_menu %s", (gchar*) data );
+        GtkComboBox* cb = GTK_COMBO_BOX(user_data);
+        gtk_combo_box_append_text( cb, data );
+
+    }
+
     g_debug( "moko_menubox_set_filter_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
-    if (!priv->optionmenu )
+    if (!priv->combobox )
     {
-        priv->optionmenu = gtk_option_menu_new();
-        gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->optionmenu), FALSE, FALSE, 0 );
+        priv->combobox = gtk_combo_box_new_text();
+        gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->combobox), TRUE, TRUE, 0 );
     }
-    gtk_option_menu_set_menu( priv->optionmenu, menu );
+    g_assert( entries );
+    g_slist_foreach( entries, &_populate_filter_menu, priv->combobox );
+    g_slist_free( entries );
+
+    gtk_combo_box_set_active( priv->combobox, 0 );
 }
 
