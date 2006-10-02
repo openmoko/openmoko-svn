@@ -118,7 +118,7 @@ void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     if (!priv->menubar )
     {
-        priv->menubar = moko_menu_bar_new();
+        priv->menubar = moko_menubar_new();
         gtk_box_pack_start( GTK_BOX(priv->upper), GTK_WIDGET(priv->menubar), FALSE, FALSE, 0 );
     }
     GtkMenuItem* appitem = gtk_menu_item_new_with_label( g_get_application_name() );
@@ -129,7 +129,7 @@ void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 {
     g_debug( "moko_paned_window_set_upper_pane" );
-    
+
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     gtk_box_pack_end( GTK_BOX(priv->upper), child, TRUE, TRUE, 0 );
 }
@@ -137,7 +137,15 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
 {
     g_debug( "moko_paned_window_set_lower_pane" );
-    
+
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     gtk_box_pack_start( GTK_BOX(priv->lower), child, TRUE, TRUE, 0 );
+}
+
+void moko_paned_window_add_toolbar(MokoPanedWindow* self, GtkToolbar* toolbar)
+{
+    g_debug( "moko_paned_window_add_toolbar" );
+    MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
+    gtk_box_pack_end( GTK_BOX(priv->upper), toolbar, FALSE, FALSE, 0 );
+    gtk_box_reorder_child( GTK_BOX(priv->upper), toolbar, 1 );
 }

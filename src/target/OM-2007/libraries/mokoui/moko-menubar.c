@@ -24,12 +24,12 @@ enum {
     LAST_SIGNAL
 };
 
-static void moko_menu_bar_class_init          (MokoMenuBarClass *klass);
-static void moko_menu_bar_init                (MokoMenuBar      *f);
+static void moko_menubar_class_init          (MokoMenuBarClass *klass);
+static void moko_menubar_init                (MokoMenuBar      *f);
 
-static guint moko_menu_bar_signals[LAST_SIGNAL] = { 0 };
+static guint moko_menubar_signals[LAST_SIGNAL] = { 0 };
 
-GType moko_menu_bar_get_type (void) /* Typechecking */
+GType moko_menubar_get_type (void) /* Typechecking */
 {
     static GType self_type = 0;
 
@@ -40,12 +40,12 @@ GType moko_menu_bar_get_type (void) /* Typechecking */
             sizeof (MokoMenuBarClass),
             NULL, /* base_init */
             NULL, /* base_finalize */
-            (GClassInitFunc) moko_menu_bar_class_init,
+            (GClassInitFunc) moko_menubar_class_init,
             NULL, /* class_finalize */
             NULL, /* class_data */
             sizeof (MokoMenuBar),
             0,
-            (GInstanceInitFunc) moko_menu_bar_init,
+            (GInstanceInitFunc) moko_menubar_init,
         };
 
         /* add the type of your parent class here */
@@ -55,29 +55,29 @@ GType moko_menu_bar_get_type (void) /* Typechecking */
     return self_type;
 }
 
-static void moko_menu_bar_class_init (MokoMenuBarClass *klass) /* Class Initialization */
+static void moko_menubar_class_init (MokoMenuBarClass *klass) /* Class Initialization */
 {
-    moko_menu_bar_signals[MOKO_MENUBAR_SIGNAL] = g_signal_new ("moko_menu_bar",
+    moko_menubar_signals[MOKO_MENUBAR_SIGNAL] = g_signal_new ("moko_menubar",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-            G_STRUCT_OFFSET (MokoMenuBarClass, moko_menu_bar),
+            G_STRUCT_OFFSET (MokoMenuBarClass, moko_menubar),
             NULL,
             NULL,
             g_cclosure_marshal_VOID__VOID,
             G_TYPE_NONE, 0);
 }
 
-static void moko_menu_bar_init (MokoMenuBar *f) /* Instance Construction */
+static void moko_menubar_init (MokoMenuBar *f) /* Instance Construction */
 {
     /* populate your widget here */
 }
 
-GtkWidget* moko_menu_bar_new() /* Construction */
+GtkWidget* moko_menubar_new() /* Construction */
 {
-    return GTK_WIDGET(g_object_new(moko_menu_bar_get_type(), NULL));
+    return GTK_WIDGET(g_object_new(moko_menubar_get_type(), NULL));
 }
 
-void moko_menu_bar_clear(MokoMenuBar *f) /* Destruction */
+void moko_menubar_clear(MokoMenuBar *f) /* Destruction */
 {
     /* destruct your widgets here */
 }

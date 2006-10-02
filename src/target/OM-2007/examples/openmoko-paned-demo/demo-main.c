@@ -28,6 +28,7 @@
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkstock.h>
+#include <gtk/gtktoolbutton.h>
 #include <gtk/gtkuimanager.h>
 #include <gtk/gtkvpaned.h>
 #include <gtk/gtkvbox.h>
@@ -162,7 +163,22 @@ int main( int argc, char** argv )
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationlist) );
 
     /* tool bar */
-    MokoToolBar* toolbar = MOKO_TOOLBAR(moko_tool_bar_new());
+    MokoToolBar* toolbar = MOKO_TOOLBAR(moko_toolbar_new());
+    GtkToolButton* tool_search = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "search" ));
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_search, 0 );
+    moko_paned_window_add_toolbar( window, GTK_TOOLBAR(toolbar) );
+
+    GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, 1 );
+
+    GtkToolButton* tool_action2 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action2" ));
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action2, 2 );
+
+    GtkToolButton* tool_action3 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action3" ));
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action3, 3 );
+
+    GtkToolButton* tool_action4 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action4" ));
+     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, 4 );
 
     /* details area */
     GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );

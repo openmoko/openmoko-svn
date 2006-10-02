@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_MENUBAR            (moko_menu_bar_get_type())
+#define MOKO_TYPE_MENUBAR            (moko_menubar_get_type())
 #define MOKO_MENUBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_MENUBAR, MokoMenuBar))
 #define MOKO_MENUBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_MENUBAR, MokoMenuBarClass))
 #define IS_MOKO_MENUBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_MENUBAR))
@@ -44,12 +44,12 @@ struct _MokoMenuBarClass
 {
     /* add your parent class here */
     GtkMenuBarClass parent_class;
-    void (*moko_menu_bar) (MokoMenuBar *self);
+    void (*moko_menubar) (MokoMenuBar *self);
 };
 
-GType          moko_menu_bar_get_type    (void);
-GtkWidget*     moko_menu_bar_new         (void);
-void           moko_menu_bar_clera       (MokoMenuBar *self);
+GType          moko_menubar_get_type    (void);
+GtkWidget*     moko_menubar_new         (void);
+void           moko_menubar_clera       (MokoMenuBar *self);
 
 /* add additional methods here */
 

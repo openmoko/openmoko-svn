@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_TOOLBAR            (moko_tool_bar_get_type())
+#define MOKO_TYPE_TOOLBAR            (moko_toolbar_get_type())
 #define MOKO_TOOLBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOLBAR, MokoToolBar))
 #define MOKO_TOOLBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOLBAR, MokoToolBarClass))
 #define IS_MOKO_TOOLBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOLBAR))
@@ -44,12 +44,12 @@ struct _MokoToolBarClass
 {
     /* add your parent class here */
     GtkToolbarClass parent_class;
-    void (*moko_tool_bar) (MokoToolBar *self);
+    void (*moko_toolbar) (MokoToolBar *self);
 };
 
-GType          moko_tool_bar_get_type    (void);
-GtkWidget*     moko_tool_bar_new         (void);
-void           moko_tool_bar_clera       (MokoToolBar *self);
+GType          moko_toolbar_get_type    (void);
+GtkWidget*     moko_toolbar_new         (void);
+void           moko_toolbar_clera       (MokoToolBar *self);
 
 /* add additional methods here */
 
