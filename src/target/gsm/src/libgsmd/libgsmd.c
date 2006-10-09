@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -11,6 +12,29 @@
 #include <libgsmd/libgsmd.h>
 
 #include "lgsm_internals.h"
+
+static int lgsm_get_packet(struct lgsm_handle *lh)
+{
+	static char buf[GSMD_MSGSIZE_MAX];
+	struct gsmd_msg_hdr *hdr = (struct gsmd_msg_hdr *) buf;
+	int rc = read(lh->fd, buf, sizeof(buf));
+	if (rc <= 0)
+		return rc;
+
+	if (hdr->version != GSMD_PROTO_VERSION)
+		return -EINVAL;
+	
+	switch (hdr->msg_type) {
+	case GSMD_MSG_PASSTHROUGH:
+		
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 
 static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 {
@@ -33,14 +57,15 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 			lh->fd = -1;
 			return rc;
 		}
-	} else {
-		/* use direct access to device node ([virtual] tty device) */
-		lh->fd = open(device, O_RDWR);
-		if (lh->fd < 0)
-			return lh->fd;
-	}
-	
+	} else 	
+		return -EINVAL;
+
 	return 0;
+}
+
+int lgsm_fd(struct lgsm_handle *lh)
+{
+	return lh->fd;
 }
 
 struct lgsm_handle *lgsm_init(const char *device)

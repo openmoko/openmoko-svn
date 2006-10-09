@@ -34,6 +34,9 @@ extern struct lgsm_handle *lgsm_init(void);
 /* Terminate usage of libgsmd */
 extern int lgsm_exit(struct lgsm_handle *lh); 
 
+/* Obtain file descriptor (e.g. for select-loop under app control) */
+extern int lgsm_fd(struct lgsm_handle *lh);
+
 /* Refer to GSM 04.08 [8] subclause 10.5.4.7 */
 enum lgsm_addr_type {
 	LGSM_ATYPE_ISDN_UNKN		= 161,

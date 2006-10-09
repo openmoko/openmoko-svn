@@ -34,6 +34,12 @@ static int gsmd_test(struct gsmd *gsmd)
 	return atcmd_submit(gsmd, cmd);
 }
 
+static int gsmd_initsettings(struct gsmd *gsmd)
+{
+	struct gsmd_atcmd *cmd;
+	//cmd = atcmd_fill("ATV1;+CRC=1;+CREG=2;+CLIP=1;+COLP=1", 255, &f
+}
+
 struct bdrt {
 	int bps;
 	u_int32_t b;
