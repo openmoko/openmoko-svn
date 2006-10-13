@@ -1,4 +1,4 @@
-/*  moko_finger_window.h
+/*  moko-finger-window.h
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *

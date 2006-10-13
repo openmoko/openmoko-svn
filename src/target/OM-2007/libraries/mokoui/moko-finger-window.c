@@ -1,5 +1,4 @@
-
-/*  moko_finger_window.c
+/*  moko-finger-window.c
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
@@ -18,6 +17,10 @@
  */
 
 #include "moko-finger-window.h"
+#include <gtk/gtkhbox.h>
+#include <gtk/gtkvbox.h>
+#include <gtk/gtklabel.h>
+#include <gtk/gtkbutton.h>
 
 G_DEFINE_TYPE (MokoFingerWindow, moko_finger_window, MOKO_TYPE_WINDOW);
 
@@ -27,6 +30,10 @@ typedef struct _MokoFingerWindowPrivate MokoFingerWindowPrivate;
 
 struct _MokoFingerWindowPrivate
 {
+    GtkVBox* vbox;
+    GtkHBox* hbox;
+    GtkLabel* label;
+    GtkButton* scroller;
 };
 
 static void
@@ -56,10 +63,30 @@ moko_finger_window_class_init (MokoFingerWindowClass *klass)
 static void
 moko_finger_window_init (MokoFingerWindow *self)
 {
+    g_debug( "moko_finger_window_init" );
+
+    MokoFingerWindowPrivate* priv = FINGER_WINDOW_PRIVATE(self);
+    priv->vbox = gtk_vbox_new( FALSE, 0 );
+    priv->hbox = gtk_hbox_new( FALSE, 0 );
+    priv->scroller = gtk_button_new_with_label( "Hello" );
+    priv->label = gtk_label_new( "Yo Yo" );
+    gtk_box_pack_end( GTK_BOX(priv->vbox), GTK_WIDGET(priv->hbox), FALSE, FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->scroller), FALSE, FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->label), FALSE, FALSE, 0 );
+    gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
 }
 
 MokoFingerWindow*
 moko_finger_window_new (void)
 {
   return g_object_new (MOKO_TYPE_FINGER_WINDOW, NULL);
+}
+
+static void
+moko_finger_window_set_contents (MokoFingerWindow* self, GtkWidget* child )
+{
+    g_debug( "moko_finger_window_init" );
+    MokoFingerWindowPrivate* priv = FINGER_WINDOW_PRIVATE(self);
+
+    gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(child), TRUE, TRUE, 0 );
 }

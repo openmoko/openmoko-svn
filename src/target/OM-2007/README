@@ -1,2 +1,11 @@
 This is the SVN repository for the OpenMoko Phone Platform 2007
+----------------------------------------------------------------
+Dependencies:
+* Gtk+ >= 2.6.10
+* dbus >= 0.92
+* dbus-glib >= 0.72
 
+
+Steps to build everything in one run using qmake (from Qt4):
+1.) . makevars.sh
+2.) make
