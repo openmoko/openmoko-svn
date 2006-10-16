@@ -2,10 +2,9 @@ DESCRIPTION = "2.6 Linux Development Kernel for Armzone QT2410"
 SECTION = "kernel"
 AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
-MAINTAINER = "Michael 'Mickey' Lauer <mickey@vanille.de>"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-qt2410"
-PR = "r2"
+PR = "r3"
 
 inherit kernel
 

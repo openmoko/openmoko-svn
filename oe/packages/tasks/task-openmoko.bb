@@ -6,7 +6,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r6"
+PR = "r8"
 
 PACKAGES = "\
   task-openmoko-core \
@@ -17,7 +17,7 @@ PACKAGES = "\
   task-openmoko-pim \
   \
   task-openmoko-devel \
-  task-openmoko-sdk-native \
+  task-openmoko-native-sdk \
 "
 
 RDEPENDS_task-openmoko-everything := "${PACKAGES}"
@@ -103,17 +103,36 @@ RDEPENDS_task-openmoko-devel = "\
 #
 # task-openmoko-sdk-native
 #
-DESCRIPTION_task-openmoko-sdk-native = "OpenMoko: Native SDK"
-RDEPENDS_task-openmoko-sdk-native = "\
+DESCRIPTION_task-openmoko-native-sdk = "OpenMoko: Native SDK"
+RDEPENDS_task-openmoko-native-sdk = "\
   binutils \
+  binutils-symlinks \
   gcc \
   gcc-symlinks \
   cpp \
   cpp-symlinks \
   libc6-dev \
+  libgcc-dev \
+  libgcc-s-dev \
   glibc-utils \
   ldd \
   g++ \
   g++-symlinks \
   libstdc++-dev \
+  \
+  make \
+  flex \
+  flex-dev \
+  bison \
+  gawk \
+  grep \
+  sed \
+  automake \
+  autoconf \
+  patch \
+  patchutils \
+  diffstat \
+  diffutils \
+  libtool \
+  pkgconfig \
 "
