@@ -1,0 +1,74 @@
+# Wasp metatheme
+# (c) 2002-2003 McClintock
+# (c) 2002-2003 Christian Schaller <Uraeus@gnome.org>
+
+[Desktop Entry]
+Name=AquaX
+Name[az]=AquaX
+Name[ca]=AquaX
+Name[cs]=Vosa
+Name[da]=Hveps
+Name[de]=AquaX
+Name[el]=AquaX
+Name[en_CA]=AquaX
+Name[en_GB]=AquaX
+Name[es]=Avispa
+Name[fr]=Guêpe
+Name[he]=צרעה
+Name[it]=Vespa
+Name[ja]="スズメバチ"
+Name[ko]=Wasp
+Name[lt]=Wasp
+Name[nl]=Wesp
+Name[no]=Veps
+Name[pa]=ਵਾਸਪ
+Name[pl]=Osa
+Name[pt]=Vespa
+Name[pt_BR]=Vespa
+Name[ru]=Оса
+Name[sk]=Osa
+Name[sq]=Grenza
+Name[sr]=Оса
+Name[sr@Latn]=Osa
+Name[sv]=Geting
+Name[tr]=Wasp
+Name[zh_CN]=黄蜂
+Name[zh_TW]=黃蜂
+Type=X-GNOME-Metatheme
+Comment=openmoko theme
+Comment[az]=BeOS tərzi örtük
+Comment[ca]=Tema amb un estil BeOS
+Comment[cs]=Téma ve stylu BeOS
+Comment[da]=BeOS-lignende tema
+Comment[de]=Thema im BeOS-Stil
+Comment[el]=Θέμα στυλ  BeOS
+Comment[en_CA]=AquaX theme
+Comment[en_GB]=AquaX theme
+Comment[es]=Tema de estilo BeOS
+Comment[fr]=Thème Style BeOS
+Comment[he]=ערכת נושא בסגנון BeOS
+Comment[it]=Tema in stile BeOS
+Comment[ja]=BeOS なスタイルのテーマ
+Comment[ko]=BeOS 모양 테마
+Comment[lt]=BeOS stiliaus tema
+Comment[nl]=Het BeOS-thema
+Comment[no]=BoOS-lignende tema
+Comment[pa]=BeOS ਸਟਾਇਲ ਥੀਮ
+Comment[pl]=Motyw w stylu BeOS
+Comment[pt]=Tema estilo BeOS
+Comment[pt_BR]=Tema estilo BeOS
+Comment[ru]=Стиль BeOS
+Comment[sk]=Téma v štýle BeOS
+Comment[sq]=Temë në stil BeOS
+Comment[sr]=BeOS стил тема
+Comment[sr@Latn]=BeOS stil tema
+Comment[sv]=Tema i BeOS-stil
+Comment[tr]=BeOS stili
+Comment[zh_CN]=BeOS 风格主题
+Comment[zh_TW]=BeOS 款式的佈景主題
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=openmoko
+MetacityTheme=AquaX
+IconTheme=AquaX
