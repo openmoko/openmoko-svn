@@ -15,6 +15,8 @@ S = "${WORKDIR}/Xoo"
 inherit autotools
 
 do_install_append() {
-	install -m 0644 ${WORKDIR}/*.png ${WORKDIR}/*.png ${D}${datadir}/
+	for i in ${WORKDIR}/*.png ${WORKDIR}/*.xml; do
+		install -m 0644 $i ${D}${datadir}/${PN}/
+	done
 }
 
