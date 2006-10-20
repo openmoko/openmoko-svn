@@ -6,7 +6,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r8"
+PR = "r11"
 
 PACKAGES = "\
   task-openmoko-core \
@@ -51,12 +51,17 @@ RDEPENDS_task-openmoko-net = "\
 DESCRIPTION_task-openmoko-ui = "OpenMoko: The X11/Gtk+2 based native User Interface"
 RDEPENDS_task-openmoko-ui = "\
   gtk+ \
+  matchbox-common \
   matchbox-wm \
   matchbox-themes-gtk \
   matchbox-desktop \
   matchbox-panel-manager \
   matchbox-panel \
+  xserver-kdrive-common \
   xserver-kdrive-fbdev \
+  xserver-nodm-init \
+  openmoko-common \
+  openmoko-session \
 "
 
 #
