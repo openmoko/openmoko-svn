@@ -18,6 +18,7 @@ struct gsmd_atcmd {
 	u_int8_t flags;
 	int32_t ret;
 	u_int32_t buflen;
+	char *resp;
 	char buf[];
 };
 

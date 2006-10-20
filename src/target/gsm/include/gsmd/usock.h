@@ -4,9 +4,12 @@
 #include <gsmd/event.h>
 
 #define GSMD_UNIX_SOCKET "\0gsmd"
-#define GSMD_UNIX_SOCKET_TYPE SOCK_SEQPACKET
+//#define GSMD_UNIX_SOCKET_TYPE SOCK_SEQPACKET
+#define GSMD_UNIX_SOCKET_TYPE SOCK_STREAM
 
 #define GSMD_PROTO_VERSION	1
+
+#define GSMD_MSGSIZE_MAX	4096
 
 enum gsmd_prot_cmd {
 	GSMD_PCMD_NONE,
@@ -70,7 +73,7 @@ struct gsmd_evt_auxdata {
 			u_int16_t ci;
 		} netreg;
 	} u;
-};
+} __attribute__((packed));
 
 struct gsmd_msg_hdr {
 	u_int8_t version;

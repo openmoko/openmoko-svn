@@ -28,8 +28,10 @@
 /* Opaque data structure, content only known to libgsm implementation */
 struct lgsm_handle;
 
+#define LGSMD_DEVICE_GSMD	"gsmd"
+
 /* initialize usage of libgsmd, obtain handle for othe API calls */
-extern struct lgsm_handle *lgsm_init(void);
+extern struct lgsm_handle *lgsm_init(const char *device);
 
 /* Terminate usage of libgsmd */
 extern int lgsm_exit(struct lgsm_handle *lh); 
@@ -40,8 +42,8 @@ extern int lgsm_fd(struct lgsm_handle *lh);
 /* Refer to GSM 04.08 [8] subclause 10.5.4.7 */
 enum lgsm_addr_type {
 	LGSM_ATYPE_ISDN_UNKN		= 161,
-	LGSM_ATYPE_ISDN_INTL		= ,
-	LGSM_ATYPE_ISDN_NATIONAL	= ,
+	//LGSM_ATYPE_ISDN_INTL		= ,
+	//LGSM_ATYPE_ISDN_NATIONAL	= ,
 };
 
 #define LGSM_ADDR_MAXLEN	31

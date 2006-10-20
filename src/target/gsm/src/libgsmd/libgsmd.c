@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <gsmd/usock.h>
 #include <libgsmd/libgsmd.h>
 
 #include "lgsm_internals.h"
@@ -40,7 +41,7 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 {
 	int rc;
 
-	if (!strcmp(device, "gsmd")) {
+	if (!strcmp(device, LGSMD_DEVICE_GSMD)) {
 		struct sockaddr_un sun;
 		
 		/* use unix domain socket to gsm daemon */
@@ -48,8 +49,10 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 		if (lh->fd < 0)
 			return lh->fd;
 		
+		memset(&sun, 0, sizeof(sun));
 		sun.sun_family = AF_UNIX;
 		memcpy(sun.sun_path, GSMD_UNIX_SOCKET, sizeof(GSMD_UNIX_SOCKET));
+		printf("sizeof(GSMD_UNIX_SOCKET) = %u\n", sizeof(GSMD_UNIX_SOCKET));
 
 		rc = connect(lh->fd, (struct sockaddr *)&sun, sizeof(sun));
 		if (rc < 0) {

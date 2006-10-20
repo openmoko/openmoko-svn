@@ -22,7 +22,7 @@
 
 static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx)
 {
-	printf("returned: `%s'\n", cmd->buf);
+	printf("`%s' returned `%s'\n", cmd->buf, cmd->resp);
 	free(cmd);
 	return 0;
 }
@@ -34,10 +34,25 @@ static int gsmd_test(struct gsmd *gsmd)
 	return atcmd_submit(gsmd, cmd);
 }
 
-static int gsmd_initsettings(struct gsmd *gsmd)
+static int atcmd_test(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
-	//cmd = atcmd_fill("ATV1;+CRC=1;+CREG=2;+CLIP=1;+COLP=1", 255, &f
+	cmd = atcmd_fill("ATE0", 255, &gsmd_test_atcb, NULL);
+	return atcmd_submit(gsmd, cmd);
+}
+
+static int gsmd_initsettings(struct gsmd *gsmd)
+{
+	int rc;
+	struct gsmd_atcmd *cmd;
+
+	cmd = atcmd_fill("ATV1", 255, &gsmd_test_atcb, NULL);
+	rc = atcmd_submit(gsmd, cmd);
+	if (rc < 0)
+		return rc;
+
+	cmd = atcmd_fill("+CRC=1;+CREG=2;+CMEE=2;+CLIP=1;+COLP=1", 255, &gsmd_test_atcb, NULL);
+	return atcmd_submit(gsmd, cmd);
 }
 
 struct bdrt {
@@ -85,6 +100,13 @@ static int set_baudrate(int fd, int baudrate)
 
 static struct gsmd g;
 
+static int gsmd_initialize(struct gsmd *g)
+{
+	INIT_LLIST_HEAD(&g->users);
+
+	return 0;
+}
+
 static struct option opts[] = {
 	{ "version", 0, NULL, 'V' },
 	{ "daemon", 0, NULL, 'd' },
@@ -92,6 +114,19 @@ static struct option opts[] = {
 	{ "device", 1, NULL, 'p' },
 	{ "speed", 1, NULL, 's' },
 };
+
+static void print_help(void)
+{
+	printf("gsmd - (C) 2006 by Harald Welte <laforge@gnumonks.org>\n"
+	       "This program is FREE SOFTWARE under the terms of GNU GPL\n\n"
+	       "Usage:\n"
+	       "\t-v\t--version\tDisplay program version\n"
+	       "\t-d\t--daemon\tDeamonize\n"
+	       "\t-h\t--help\t\tDisplay this help message\n"
+	       "\t-p dev\t--device dev\tSpecify serial device to be used\n"
+	       "\t-s spd\t--speed spd\tSpecify speed in bps (9600,38400,115200,...)\n"
+	       );
+}
 
 int main(int argc, char **argv)
 {
@@ -102,7 +137,7 @@ int main(int argc, char **argv)
 	char *device = "/dev/ttyUSB0";
 
 	/*FIXME: parse commandline, set daemonize, device, ... */
-	while ((argch = getopt_long(argc, argv, "Vdhps:", opts, NULL)) != -1) {
+	while ((argch = getopt_long(argc, argv, "Vdhp:s:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
 			/* FIXME */
@@ -112,6 +147,8 @@ int main(int argc, char **argv)
 			break;
 		case 'h':
 			/* FIXME */
+			print_help();
+			exit(0);
 			break;
 		case 'p':
 			device = optarg;
@@ -135,10 +172,16 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	if (gsmd_initialize(&g) < 0) {
+		fprintf(stderr, "internal error\n");
+		exit(1);
+	}
+
 	if (atcmd_init(&g, fd) < 0) {
 		fprintf(stderr, "can't initialize UART device\n");
 		exit(1);
 	}
+	atcmd_drain(fd);
 
 	if (usock_init(&g) < 0) {
 		fprintf(stderr, "can't open unix socket\n");
@@ -155,7 +198,9 @@ int main(int argc, char **argv)
 		setsid();
 	}
 
+	atcmd_test(&g);
 	gsmd_test(&g);
+	gsmd_initsettings(&g);
 
 	while (1) {
 		int ret = gsmd_select_main();

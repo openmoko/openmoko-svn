@@ -13,6 +13,7 @@ enum gsmd_events {
 	GSMD_EVT_OUT_STATUS	= 8,	/* Outgoing call status */
 	GSMD_EVT_OUT_COLP	= 9,	/* Outgoing COLP */
 	GSMD_EVT_CALL_WAIT	= 10,	/* Call Waiting */
+	__NUM_GSMD_EVT
 };
 
 /* Chapter 8.3 */
@@ -33,6 +34,7 @@ enum gsmd_pin_type {			/* waiting for ... */
 	GSMD_PIN_PH_SP_PUK	= 13,	/* service provider personalisation PUK */
 	GSMD_PIN_PH_CORP_PIN	= 14,	/* corporate personalisation PIN */
 	GSMD_PIN_PH_CORP_PUK	= 15,	/* corporate personalisation PUK */
+	__NUM_GSMD_PIN
 };
 
 enum gsmd_call_type {
@@ -43,10 +45,12 @@ enum gsmd_call_type {
 	GSMD_CALL_DATA_SYNC	= 5,
 	GSMD_CALL_DATA_REL_ASYNC= 6,
 	GSMD_CALL_DATA_REL_SYNC	= 7,
+	__NUM_GSMD_CALL
 };
 
 enum gsmd_netreg_state {
 	GSMD_NETREG_NONE	= 0,
+	__NUM_GSMD_NETREG
 };
 
 #endif

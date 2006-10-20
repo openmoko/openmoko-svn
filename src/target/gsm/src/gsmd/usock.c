@@ -57,6 +57,15 @@ static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)
 			return atcmd_submit(gu->gsmd, cmd);
 		}
 		break;
+	case GSMD_PCMD_EVT_SUBSCRIPTIONS:
+		{
+			u_int32_t *evtmask = (u_int32_t *) (buf + sizeof(*gph));
+			if (len < sizeof(*gph) + sizeof(u_int32_t))
+				return -EINVAL;
+
+			gu->subscriptions = *evtmask;
+		}
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -76,7 +85,18 @@ static int gsmd_usock_user_cb(int fd, unsigned int what, void *data)
 		int rcvlen;
 		/* read data from socket, determine what he wants */
 		rcvlen = read(fd, buf, sizeof(buf));
-		return usock_rcv_pcmd(gu, buf, rcvlen);
+		if (rcvlen == 0) {
+			/* EOF, this client has just vanished */
+			gsmd_unregister_fd(&gu->gfd);
+			close(fd);
+			/* destroy whole user structure */
+			llist_del(&gu->list);
+			/* FIXME: delete budy ucmds from finished_ucmds */
+			return 0;
+		} else if (rcvlen < 0)
+			return rcvlen;
+		else
+			return usock_rcv_pcmd(gu, buf, rcvlen);
 	}
 
 	if (what & GSMD_FD_WRITE) {
@@ -133,6 +153,7 @@ static int gsmd_usock_cb(int fd, unsigned int what, void *data)
 		newuser->gsmd = g;
 
 		llist_add(&newuser->list, &g->users);
+		gsmd_register_fd(&newuser->gfd);
 	}
 
 	return 0;
@@ -148,10 +169,17 @@ int usock_init(struct gsmd *g)
 	if (fd < 0)
 		return fd;
 	
+	memset(&sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
 	memcpy(sun.sun_path, GSMD_UNIX_SOCKET, sizeof(GSMD_UNIX_SOCKET));
 
 	rc = bind(fd, (struct sockaddr *)&sun, sizeof(sun));
+	if (rc < 0) {
+		close(fd);
+		return rc;
+	}
+
+	rc = listen(fd, 10);
 	if (rc < 0) {
 		close(fd);
 		return rc;

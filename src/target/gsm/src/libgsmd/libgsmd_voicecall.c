@@ -2,7 +2,7 @@
 
 #include <libgsmd/voicecall.h>
 
-#include "libgsmd/internals.h"
+#include "lgsm_internals.h"
 
 
 int lgsm_voice_out_init(struct lgsm_handle *lh,
