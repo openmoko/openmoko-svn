@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r14"
+PR = "r15"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -79,6 +79,7 @@ RDEPENDS_task-openmoko-ui = "\
   xrandr \
   openmoko-common \
   openmoko-session \
+  openmoko-theme-standard \
 #  psplash \
 "
 
