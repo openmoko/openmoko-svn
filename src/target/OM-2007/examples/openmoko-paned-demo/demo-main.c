@@ -43,7 +43,7 @@ int main( int argc, char** argv )
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-    g_set_application_name( "OpenMoko-Paned-Demo" );
+    g_set_application_name( "Paned-Demo" );
 
     /* main window */
     MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());
@@ -56,11 +56,14 @@ int main( int argc, char** argv )
     moko_paned_window_set_application_menu( window, appmenu );
 
     /* filter menu */
-    GSList* list = NULL;
-    list = g_slist_append( list, "All" );
-    list = g_slist_append( list, "Odd" );
-    list = g_slist_append( list, "Even" );
-    moko_paned_window_set_filter_menu( window, list );
+    GtkMenu* filtmenu = GTK_MENU(gtk_menu_new());
+    GtkMenuItem* item1 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "All" ));
+    gtk_menu_shell_append( filtmenu, item1 );
+    GtkMenuItem* item2 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Odd" ));
+    gtk_menu_shell_append( filtmenu, item2 );
+    GtkMenuItem* item3 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Even" ));
+    gtk_menu_shell_append( filtmenu, item3 );
+    moko_paned_window_set_filter_menu( window, filtmenu );
 
     /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );

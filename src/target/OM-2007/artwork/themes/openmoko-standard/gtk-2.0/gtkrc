@@ -51,7 +51,7 @@ style "app-menu" {
     }
     xthickness = 30
 }
-class "GtkMenuBar" style "app-menu"
+widget "*moko_application_menu_bar" style "app-menu"
 
 #----------------------------------------------------------------------------
 style "filter-menu" {
@@ -67,13 +67,8 @@ style "filter-menu" {
         }
     }
     xthickness = 30
-    GtkComboBox::add-tearoffs = 1
 }
-
-# for debugging, disable this in final version
-widget_class "*GtkComboBox*" style "filter-menu"
-# enable this in final version!
-# widget_class "*MokoMenuBox*GtkComboBox*" style "filter-menu"
+widget "*moko_filter_menu_bar" style "filter-menu"
 
 #----------------------------------------------------------------------------
 style "popup-menus" {

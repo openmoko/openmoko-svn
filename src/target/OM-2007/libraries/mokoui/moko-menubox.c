@@ -18,16 +18,16 @@
  */
 #include "moko-menubox.h"
 
+#include <gtk/gtklabel.h>
 #include <gtk/gtkmenubar.h>
 #include <gtk/gtkmenuitem.h>
-#include <gtk/gtkcombobox.h>
 
 #define MOKO_MENU_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_MENUBOX, MokoMenuBoxPriv));
 
 typedef struct _MokoMenuBoxPriv
 {
-    GtkMenuBar* menubar;
-    GtkComboBox* combobox;
+    GtkMenuBar* menubar_l;
+    GtkMenuBar* menubar_r;
 } MokoMenuBoxPriv;
 
 /* add your signals here */
@@ -86,8 +86,8 @@ static void moko_menubox_init (MokoMenuBox *self) /* Instance Construction */
     g_debug( "moko_paned_window_init" );
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 
-    priv->menubar = NULL;
-    priv->combobox = NULL;
+    priv->menubar_l = NULL;
+    priv->menubar_r = NULL;
 
 }
 
@@ -106,41 +106,51 @@ void moko_menubox_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     g_debug( "moko_menubox_set_application_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
-    if (!priv->menubar )
+    if (!priv->menubar_l )
     {
-        priv->menubar = gtk_menu_bar_new();
-        gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar), TRUE, TRUE, 0 );
+        priv->menubar_l = gtk_menu_bar_new();
+        gtk_widget_set_name( GTK_WIDGET(priv->menubar_l), "moko_application_menu_bar" );
+        gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar_l), TRUE, TRUE, 0 );
     }
     GtkMenuItem* appitem = gtk_menu_item_new_with_label( g_get_application_name() );
     gtk_menu_item_set_submenu( appitem, menu );
-    gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar), appitem );
+    gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_l), appitem );
 }
 
-void moko_menubox_set_filter_menu(MokoMenuBox* self, GSList* entries)
+void moko_menubox_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
 {
-    void _populate_filter_menu(gpointer data, gpointer user_data)
+    void filter_menu_update( GtkMenu* menu, GtkMenuItem* filtitem )
     {
-        g_debug( "_populate_filter_menu %s", (gchar*) data );
-        GtkComboBox* cb = GTK_COMBO_BOX(user_data);
-        gtk_combo_box_append_text( cb, data );
-
+        gchar* text;
+        GtkMenuItem* item = gtk_menu_get_active( menu );
+        if (GTK_BIN(item)->child)
+        {
+            GtkWidget *child = GTK_BIN(item)->child;
+            g_assert( GTK_IS_LABEL(child) );
+            gtk_label_get(GTK_LABEL (child), &text);
+            g_debug(" selection done. menu item text: %s", text );
+        }
+        if (GTK_BIN(filtitem)->child)
+        {
+            GtkWidget *child = GTK_BIN(filtitem)->child;
+            g_assert( GTK_IS_LABEL(child) );
+            gtk_label_set(GTK_LABEL (child), text);
+            g_debug(" selection done. menu label updated." );
+        }
     }
-
     g_debug( "moko_menubox_set_filter_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
-    if (!priv->combobox )
+    if (!priv->menubar_r )
     {
-        priv->combobox = gtk_combo_box_new_text();
-        gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->combobox), TRUE, TRUE, 0 );
+        priv->menubar_r = gtk_menu_bar_new();
+        gtk_widget_set_name( GTK_WIDGET(priv->menubar_r), "moko_filter_menu_bar" );
+        gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->menubar_r), TRUE, TRUE, 0 );
     }
-    g_assert( entries );
-    g_slist_foreach( entries, &_populate_filter_menu, priv->combobox );
-    g_slist_free( entries );
-
-    g_object_set( GTK_OBJECT(priv->combobox), "can-focus", 0, NULL );
-    gtk_combo_box_set_active( priv->combobox, 0 );
-    gtk_combo_box_set_focus_on_click( priv->combobox, FALSE );
-    gtk_widget_set_state( priv->combobox, GTK_STATE_NORMAL );
+    GtkMenuItem* filtitem = gtk_menu_item_new_with_label( "Filter Menu" );
+    g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(filter_menu_update), filtitem );
+    gtk_menu_item_set_submenu( filtitem, menu );
+    gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_r), filtitem );
 }
+
 
