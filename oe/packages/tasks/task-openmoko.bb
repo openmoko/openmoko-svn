@@ -1,21 +1,21 @@
 DESCRIPTION = "OpenMoko: Tasks for the OpenMoko Linux Distribution"
-MAINTAINER = "Michael 'Mickey' Lauer <mickey@Vanille.de>"
 SECTION = "openmoko/base"
 ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r11"
+PR = "r14"
 
 PACKAGES = "\
-  task-openmoko-core \
+  task-openmoko-linux \
   task-openmoko-net \
   task-openmoko-ui \
   task-openmoko-base \
   task-openmoko-finger \
   task-openmoko-pim \
   \
+  task-openmoko-demo \
   task-openmoko-devel \
   task-openmoko-native-sdk \
 "
@@ -25,22 +25,31 @@ RDEPENDS_task-openmoko-everything := "${PACKAGES}"
 #
 # task-openmoko-core
 #
-DESCRIPTION_task-openmoko-core = "OpenMoko: Linux Core Services"
-RDEPENDS_task-openmoko-core = "\
+DESCRIPTION_task-openmoko-linux = "OpenMoko: Linux Core Services"
+RDEPENDS_task-openmoko-linux = "\
   task-base \
   base-files \
   base-passwd \
   busybox \
-  initscripts \
-  sysvinit \
-  tinylogin \
   dropbear \
+  fuser \
+  initscripts \
+  netbase \
+  sysfsutils \
+  setserial \
+  sysvinit \
+  sysvinit-pidof \
+  tinylogin \
+  modutils-initscripts \
+  module-init-tools-depmod \
+  udev \
+#  update-alternatives \
 "
 
 #
 # task-openmoko-net
 #
-DESCRIPTION_task-openmoko-net = "OpenMoko: Linux Networking"
+DESCRIPTION_task-openmoko-net = "OpenMoko: Linux Advanced Networking"
 RDEPENDS_task-openmoko-net = "\
   bluez-utils \
 "
@@ -50,18 +59,27 @@ RDEPENDS_task-openmoko-net = "\
 #
 DESCRIPTION_task-openmoko-ui = "OpenMoko: The X11/Gtk+2 based native User Interface"
 RDEPENDS_task-openmoko-ui = "\
+  gdk-pixbuf-loader-png \
+  gdk-pixbuf-loader-gif \
+  gdk-pixbuf-loader-xpm \
+  gdk-pixbuf-loader-jpeg \
+  pango-module-basic-x \
+  pango-module-basic-fc \
   gtk+ \
   matchbox-common \
   matchbox-wm \
-  matchbox-themes-gtk \
-  matchbox-desktop \
-  matchbox-panel-manager \
   matchbox-panel \
-  xserver-kdrive-common \
   xserver-kdrive-fbdev \
+  xserver-kdrive-common \
   xserver-nodm-init \
+  ttf-bitstream-vera \
+  xauth \
+  xhost \
+  xset \
+  xrandr \
   openmoko-common \
   openmoko-session \
+#  psplash \
 "
 
 #
@@ -87,10 +105,40 @@ RDEPENDS_task-openmoko-pim = "\
 "
 
 #
+# task-openmoko-demo
+#
+DESCRIPTION_task-openmoko-demo = "OpenMoko: Demo Applications"
+RDEPENDS_task-openmoko-demo = "\
+  matchbox-desktop \
+  matchbox-keyboard \
+  matchbox-stroke \
+  matchbox-config-gtk \
+  matchbox-panel-manager \
+  matchbox-panel-hacks \
+  matchbox-themes-extra \
+  matchbox-themes-gtk \
+  matchbox-applet-inputmanager \
+  matchbox-applet-startup-monitor \
+  xcursor-transparent-theme \
+  settings-daemon \
+  gtk-clearlooks-engine \
+  gtk-theme-clearlooks \
+  contacts \
+  dates \
+  web \
+  rxvt-unicode \
+  gnome-vfs-plugin-dbus \
+  gnome-vfs-plugin-file \
+  gnome-vfs-plugin-http \
+"
+
+#
 # task-openmoko-devel
 #
 DESCRIPTION_task-openmoko-devel = "OpenMoko: Debugging Tools"
 RDEPENDS_task-openmoko-devel = "\
+  alsa-utils-amixer \
+  alsa-utils-aplay \
   strace \
 #  ltrace \
   gdb \

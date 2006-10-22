@@ -7,7 +7,7 @@ export IMAGE_LINGUAS = ""
 
 export IPKG_INSTALL = "\
   ${MACHINE_TASK_PROVIDER} \
-  task-openmoko-core \
+  task-openmoko-linux \
   task-openmoko-net \
   task-openmoko-ui \
   task-openmoko-base \

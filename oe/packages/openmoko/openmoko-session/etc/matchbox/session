@@ -19,11 +19,36 @@ case `module_id` in
 		;;
 esac
 
-## All this should be done by themeing/xsettings.. ## 
-matchbox-desktop --icon-size 48 \
-                 --icon-padding 64 \
-                 --font sans-8:bold \
-                 --titlefont sans-8:bold &
+matchbox-panel -display $DISPLAY \
+               --id 1 \
+               --orientation north \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-header-background.png &
+
+matchbox-panel -display $DISPLAY \
+               --id 2 \
+               --orientation south \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-footer-background.png &
+
+matchbox-window-manager -display $DISPLAY \
+                        -use_titlebar yes \
+                        -use_super_modal yes \
+                        -use_lowlight yes \
+                        -use_dialog_mode static \
+                        -use_desktop_mode plain \
+                        -use_cursor no &
+
+matchbox-desktop --icon-size 96 \
+                 --icon-padding 128 \
+                 --font sans-24:bold \
+                 --titlefont sans-24:bold &
 
 mb-applet-startup-monitor &                 
 
@@ -31,7 +56,7 @@ matchbox-panel --orientation east \
                --padding 4 \
                --no-menu \
                --no-session \
-               --default-apps mb-applet-home,mb-applet-clock,mb-applet-battery &
+               --default-apps mb-applet-home,mb-applet-clock &
 
 exec matchbox-window-manager -use_cursor $SHOWCURSOR $@
 
