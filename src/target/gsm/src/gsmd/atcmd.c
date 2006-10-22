@@ -48,7 +48,7 @@ static inline int llparse_append(struct llparser *llp, char byte)
 		*(llp->cur++) = byte;
 		return 0;
 	} else {
-		printf("llp->cur too big!!!\n");
+		DEBUGP("llp->cur too big!!!\n");
 		return -EFBIG;
 	}
 }
@@ -160,12 +160,12 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		/* an extended response */
 		const char *colon = strchr(buf, ':');
 		if (!colon) {
-			fprintf(stderr, "no colon in extd response `%s'\n",
+			gsmd_log(GSMD_ERROR, "no colon in extd response `%s'\n",
 				buf);
 			return -EINVAL;
 		}
 		if (cmd->buf[2] != '+') {
-			fprintf(stderr, "extd reply to non-extd command?\n");
+			gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
 			return -EINVAL;
 		}
 
@@ -238,7 +238,7 @@ final_cb:
 			g->gfd_uart.when |= GSMD_FD_WRITE;
 
 		if (!cmd->cb) {
-			fprintf(stderr, "command without cb!!!\n");
+			gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 			return -EINVAL;
 		}
 		return cmd->cb(cmd, cmd->ctx);
@@ -260,13 +260,13 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 			if (len < 0) {
 				if (errno == EAGAIN)
 					return 0;
-				DEBUGP("ERROR reading from fd %u: %d (%s)\n", fd, len,
+				gsmd_log(GSMD_NOTICE, "ERROR reading from fd %u: %d (%s)\n", fd, len,
 					strerror(errno));
 					return len;
 			}
 			rc = llparse_string(&g->llp, rxbuf, len);
 			if (rc < 0) {
-				DEBUGP("ERROR during llparse_string: %d\n", rc);
+				gsmd_log(GSMD_ERROR, "ERROR during llparse_string: %d\n", rc);
 				return rc;
 			}
 		}
@@ -279,15 +279,15 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 			len = strlen(pos->buf);
 			rc = write(fd, pos->buf, strlen(pos->buf));
 			if (rc == 0) {
-				DEBUGP("write returns 0, aborting\n");
+				gsmd_log(GSMD_ERROR, "write returns 0, aborting\n");
 				break;
 			} else if (rc < 0) {
-				DEBUGP("error during write to fd %d: %d\n",
+				gsmd_log(GSMD_ERROR, "error during write to fd %d: %d\n",
 					fd, rc);
 				return rc;
 			}
 			if (rc < len) {
-				fprintf(stderr, "short write!!! FIXME!\n");
+				gsmd_log(GSMD_FATAL, "short write!!! FIXME!\n");
 				exit(3);
 			}
 			write(fd, "\r", 1);
@@ -351,7 +351,7 @@ void atcmd_drain(int fd)
 	struct termios t;
 	rc = tcflush(fd, TCIOFLUSH);
 	rc = tcgetattr(fd, &t);
-	printf("c_iflag = 0x%08x, c_oflag = 0x%08x, c_cflag = 0x%08x, c_lflag = 0x%08x\n",
+	DEBUGP("c_iflag = 0x%08x, c_oflag = 0x%08x, c_cflag = 0x%08x, c_lflag = 0x%08x\n",
 		t.c_iflag, t.c_oflag, t.c_cflag, t.c_lflag);
 	t.c_iflag = t.c_oflag = 0;
 	rc = tcsetattr(fd, TCSANOW, &t);

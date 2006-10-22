@@ -65,5 +65,19 @@ struct gsmd_user {
 	u_int32_t subscriptions;		/* bitmaks of subscribed event groups */
 };
 
-#define DEBUGP(x, args ...)	printf("%s:%s(%d):" x, __FILE__, __FUNCTION__, __LINE__, ## args)
-#endif
+#define GSMD_DEBUG	1	/* debugging information */
+#define GSMD_INFO	3
+#define GSMD_NOTICE	5	/* abnormal/unexpected condition */
+#define GSMD_ERROR	7	/* error condition, requires user action */
+#define GSMD_FATAL	8	/* fatal, program aborted */
+
+extern int gsmdlog_init(const char *path);
+/* write a message to the daemons' logfile */
+void __gsmd_log(int level, const char *file, int line, const char *message, ...);
+/* macro for logging including filename and line number */
+#define gsmd_log(level, format, args...) \
+	__gsmd_log(level, __FILE__, __LINE__, format, ## args)
+
+#define DEBUGP(x, args ...)	gsmd_log(GSMD_DEBUG, x, ## args)
+
+#endif /* __GSMD_H */

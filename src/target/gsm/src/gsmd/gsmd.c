@@ -113,6 +113,7 @@ static struct option opts[] = {
 	{ "help", 0, NULL, 'h' },
 	{ "device", 1, NULL, 'p' },
 	{ "speed", 1, NULL, 's' },
+	{ "logfile", 1, NULL, 'l' },
 };
 
 static void print_help(void)
@@ -125,6 +126,7 @@ static void print_help(void)
 	       "\t-h\t--help\t\tDisplay this help message\n"
 	       "\t-p dev\t--device dev\tSpecify serial device to be used\n"
 	       "\t-s spd\t--speed spd\tSpecify speed in bps (9600,38400,115200,...)\n"
+	       "\t-l file\t--logfile file\tSpecify a logfile to log to\n"
 	       );
 }
 
@@ -135,9 +137,10 @@ int main(int argc, char **argv)
 	int daemonize = 0;
 	int bps = 115200;
 	char *device = "/dev/ttyUSB0";
+	char *logfile = "syslog";
 
 	/*FIXME: parse commandline, set daemonize, device, ... */
-	while ((argch = getopt_long(argc, argv, "Vdhp:s:", opts, NULL)) != -1) {
+	while ((argch = getopt_long(argc, argv, "Vdhp:s:l:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
 			/* FIXME */
@@ -155,6 +158,12 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			bps = atoi(optarg);
+			break;
+		case 'l':
+			if (gsmdlog_init(optarg)) {
+				fprintf(stderr, "can't open logfile `%s'\n", optarg);
+				exit(2);
+			}
 			break;
 		}
 	}
