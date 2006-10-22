@@ -6,4 +6,4 @@ SOURCES =
 
 PKGCONFIG += dbus-glib-1
 
-include ( $(OPENMOKODIR)/qmake/openmoko-include.pro )
+include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )

@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Dependencies:
+# - Xephyr (xorg)
+# - xoo (ohand svn)
+# - matchbox-panel (ohand svn)
+# - matchbox-window-manager (ohand svn)
+#
+SVN_TRUNK=/local/pkg/openmoko/trunk
+PKG=$SVN_TRUNK/oe/packages
+
+xoo -xd :1 -xn `which Xephyr` -t 'OpenMoko running on FIC GTA01' -d $PKG/xoo/files/gta01.xml &
+
+sleep 2
+
+export DISPLAY=:1
+
+matchbox-panel -display $DISPLAY \
+               --id 1 \
+               --orientation north \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-header-background.png &
+
+sleep 1
+
+matchbox-panel -display $DISPLAY \
+               --id 2 \
+               --orientation south \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-footer-background.png &
+
+sleep 1
+
+matchbox-desktop -display $DISPLAY \
+                 --icon-size 96 \
+                 --icon-padding 128 \
+                 --font sans-24:bold \
+                 --titlefont sans-24:bold &
+
+sleep 1
+
+matchbox-window-manager -display $DISPLAY \
+                        -use_titlebar yes \
+                        -use_super_modal yes \
+                        -use_lowlight yes \
+                        -use_dialog_mode static \
+                        -use_desktop_mode plain \
+                        -use_cursor no &

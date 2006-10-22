@@ -138,6 +138,9 @@ void moko_menubox_set_filter_menu(MokoMenuBox* self, GSList* entries)
     g_slist_foreach( entries, &_populate_filter_menu, priv->combobox );
     g_slist_free( entries );
 
+    g_object_set( GTK_OBJECT(priv->combobox), "can-focus", 0, NULL );
     gtk_combo_box_set_active( priv->combobox, 0 );
+    gtk_combo_box_set_focus_on_click( priv->combobox, FALSE );
+    gtk_widget_set_state( priv->combobox, GTK_STATE_NORMAL );
 }
 

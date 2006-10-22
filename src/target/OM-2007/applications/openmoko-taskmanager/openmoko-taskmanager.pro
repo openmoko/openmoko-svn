@@ -7,4 +7,4 @@ SERVICES = services.xml
 
 DEFINES += DBUS_API_SUBJECT_TO_CHANGE
 
-include ( ../../qmake/openmoko-include.pro )
+include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )

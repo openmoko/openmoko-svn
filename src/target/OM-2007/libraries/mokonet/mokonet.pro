@@ -4,4 +4,4 @@ VERSION = 0.0.1
 HEADERS = 
 SOURCES = 
 
-include ( $(OPENMOKODIR)/qmake/openmoko-include.pro )
+include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
