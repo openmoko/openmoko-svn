@@ -36,7 +36,6 @@ static int lgsm_get_packet(struct lgsm_handle *lh)
 	return 0;
 }
 
-
 static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 {
 	int rc;
@@ -52,7 +51,6 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 		memset(&sun, 0, sizeof(sun));
 		sun.sun_family = AF_UNIX;
 		memcpy(sun.sun_path, GSMD_UNIX_SOCKET, sizeof(GSMD_UNIX_SOCKET));
-		printf("sizeof(GSMD_UNIX_SOCKET) = %u\n", sizeof(GSMD_UNIX_SOCKET));
 
 		rc = connect(lh->fd, (struct sockaddr *)&sun, sizeof(sun));
 		if (rc < 0) {
@@ -64,6 +62,49 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 		return -EINVAL;
 
 	return 0;
+}
+
+/* handle a packet that was received on the gsmd socket */
+int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len)
+{
+	struct gsmd_msg_hdr *gmh = (struct gsmd_msg_hdr *)buf;
+	if (len < sizeof(*gmh))
+		return -EINVAL;
+	
+	if (len - sizeof(*gmh) < gmh->len)
+		return -EINVAL;
+	
+	if (gmh->msg_type >= __NUM_GSMD_MSGS)
+		return -EINVAL;
+	
+	return lh->handler[gmh->msg_type](lh, gmh);
+}
+
+/* blocking read and processing of packets until packet matching 'id' is found */
+int lgsm_blocking_wait_packet(struct lgsm_handle *lh, u_int16_t id, 
+			      struct gsmd_msg_hdr *gmh, int rlen)
+{
+	int rc;
+	fd_set readset;
+
+	FD_ZERO(&readset);
+
+	while (1) {
+		FD_SET(lh->fd, &readset);
+		rc = select(lh->fd+1, &readset, NULL, NULL, NULL);
+		if (rc <= 0)
+			return rc;
+
+		rc = read(lh->fd, (char *)gmh, rlen);
+		if (rc <= 0)
+			return rc;
+
+		if (gmh->id == id) {
+			/* we've found the matching packet, return to calling function */
+			return rc;
+		} else
+			rc = lgsm_handle_packet(lh, (char *)gmh, rc);
+	}
 }
 
 int lgsm_fd(struct lgsm_handle *lh)

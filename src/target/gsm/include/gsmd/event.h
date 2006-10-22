@@ -13,6 +13,7 @@ enum gsmd_events {
 	GSMD_EVT_OUT_STATUS	= 8,	/* Outgoing call status */
 	GSMD_EVT_OUT_COLP	= 9,	/* Outgoing COLP */
 	GSMD_EVT_CALL_WAIT	= 10,	/* Call Waiting */
+	GSMD_EVT_TIMEZONE	= 11,	/* Timezone change */
 	__NUM_GSMD_EVT
 };
 

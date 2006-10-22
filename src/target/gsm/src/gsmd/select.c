@@ -53,7 +53,7 @@ void gsmd_unregister_fd(struct gsmd_fd *fd)
 
 int gsmd_select_main()
 {
-	struct gsmd_fd *ufd;
+	struct gsmd_fd *ufd, *ufd2;
 	fd_set readset, writeset, exceptset;
 	int i;
 
@@ -76,7 +76,7 @@ int gsmd_select_main()
 	i = select(maxfd+1, &readset, &writeset, &exceptset, NULL);
 	if (i > 0) {
 		/* call registered callback functions */
-		llist_for_each_entry(ufd, &gsmd_fds, list) {
+		llist_for_each_entry_safe(ufd, ufd2, &gsmd_fds, list) {
 			int flags = 0;
 
 			if (FD_ISSET(ufd->fd, &readset))

@@ -59,7 +59,7 @@ static int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t e
 	return num_sent;
 }
 
-static int ring_parse(const char *buf, int len, const char *param,
+static int ring_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: generate ring event */
@@ -76,7 +76,7 @@ static int ring_parse(const char *buf, int len, const char *param,
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CALL);
 }
 
-static int cring_parse(const char *buf, int len, const char *param, struct gsmd *gsmd)
+static int cring_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
 					     sizeof(struct gsmd_evt_auxdata));
@@ -108,7 +108,7 @@ static int cring_parse(const char *buf, int len, const char *param, struct gsmd 
 }
 
 /* Chapter 7.2, network registration */
-static int creg_parse(const char *buf, int len, const char *param,
+static int creg_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	const char *comma = strchr(param, ',');
@@ -121,25 +121,54 @@ static int creg_parse(const char *buf, int len, const char *param,
 
 	aux->u.netreg.state = atoi(param);
 	if (comma) {
-		/* FIXME: we also have location area code and cell id to parse (hex) */
+		/* we also have location area code and cell id to parse (hex) */
+		aux->u.netreg.lac = atoi(comma+1);
+		comma = strchr(comma+1, ',');
+		if (!comma)
+			return -EINVAL;
+		aux->u.netreg.ci = atoi(comma+1);
 	}
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_NETREG);
 }
 
 /* Chapter 7.11, call waiting */
-static int ccwa_parse(const char *buf, int len, const char *param,
+static int ccwa_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
-	const char *number;
-	u_int8_t type, class;
+	const char *token;
+	unsigned int type;
+	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_CALL_WAIT,
+					     sizeof(struct gsmd_addr));
+	struct gsmd_addr *gaddr;
 
-	/* FIXME: parse */
-	return 0;
+	if (!ucmd)
+		return -ENOMEM;
+
+	gaddr = (struct gsmd_addr *) ucmd->buf;
+	memset(gaddr, 0, sizeof(*gaddr));
+
+	/* parse address (phone number) */
+	token = strtok(buf, ",");
+	if (!token)
+		return -EINVAL;
+	strncpy(gaddr->number, token, GSMD_ADDR_MAXLEN);
+
+	/* parse type */
+	token = strtok(NULL, ",");
+	if (!token)
+		return -EINVAL;
+	type = atoi(token) & 0xff;
+	gaddr->type = type;
+
+	/* FIXME: parse class */
+	token = strtok(NULL, ",");
+
+	return usock_evt_send(gsmd, ucmd, GSMD_EVT_CALL_WAIT);
 }
 
 /* Chapter 7.14, unstructured supplementary service data */
-static int cusd_parse(const char *buf, int len, const char *param,
+static int cusd_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -147,7 +176,7 @@ static int cusd_parse(const char *buf, int len, const char *param,
 }
 
 /* Chapter 7.15, advise of charge */
-static int cccm_parse(const char *buf, int len, const char *param,
+static int cccm_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -155,7 +184,7 @@ static int cccm_parse(const char *buf, int len, const char *param,
 }
 
 /* Chapter 10.1.13, GPRS event reporting */
-static int cgev_parse(const char *buf, int len, const char *param,
+static int cgev_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -163,7 +192,7 @@ static int cgev_parse(const char *buf, int len, const char *param,
 }
 
 /* Chapter 10.1.14, GPRS network registration status */
-static int cgreg_parse(const char *buf, int len, const char *param,
+static int cgreg_parse(char *buf, int len, const char *param,
 		       struct gsmd *gsmd)
 {
 	/* FIXME: parse */
@@ -171,7 +200,7 @@ static int cgreg_parse(const char *buf, int len, const char *param,
 }
 
 /* Chapter 7.6, calling line identification presentation */
-static int clip_parse(const char *buf, int len, const char *param,
+static int clip_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CLIP,
@@ -197,7 +226,7 @@ static int clip_parse(const char *buf, int len, const char *param,
 }
 
 /* Chapter 7.9, calling line identification presentation */
-static int colp_parse(const char *buf, int len, const char *param,
+static int colp_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_OUT_COLP,
@@ -222,22 +251,47 @@ static int colp_parse(const char *buf, int len, const char *param,
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_COLP);
 }
 
+static int ctzv_parse(char *buf, int len, const char *param,
+		      struct gsmd *gsmd)
+{
+	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_TIMEZONE,
+					     sizeof(struct gsmd_evt_auxdata));
+	struct gsmd_evt_auxdata *aux;
+	int tz;
+
+	if (!ucmd)
+		return -ENOMEM;
+	
+	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
+
+	/* timezones are expressed in quarters of hours +/- GMT (-48...+48) */
+	tz = atoi(param);
+
+	if (tz < -48  || tz > 48)
+		return -EINVAL;
+	
+	aux->u.timezone.tz = tz;
+
+	return usock_evt_send(gsmd, ucmd, GSMD_EVT_TIMEZONE);
+}
+
 struct gsmd_unsolicit {
 	const char *prefix;
-	int (*parse)(const char *unsol, int len, const char *param, struct gsmd *gsmd);
+	int (*parse)(char *unsol, int len, const char *param, struct gsmd *gsmd);
 };
 
 static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 	{ "RING",	&ring_parse },
 	{ "+CRING", 	&cring_parse },
-	{ "+CREG",	&creg_parse },
-	{ "+CCWA",	&ccwa_parse },
-	{ "+CUSD",	&cusd_parse },
-	{ "+CCCM",	&cccm_parse },
-	{ "+CGEV",	&cgev_parse },
-	{ "+CGREG",	&cgreg_parse },
+	{ "+CREG",	&creg_parse },	/* Network registration */
+	{ "+CCWA",	&ccwa_parse },	/* Call waiting */
+	{ "+CUSD",	&cusd_parse },	/* Unstructured supplementary data */
+	{ "+CCCM",	&cccm_parse },	/* Advice of Charge */
+	{ "+CGEV",	&cgev_parse },	/* GPRS Event */
+	{ "+CGREG",	&cgreg_parse },	/* GPRS Registration */
 	{ "+CLIP",	&clip_parse },
 	{ "+COLP",	&colp_parse },
+	{ "+CTZV",	&ctzv_parse },	/* Timezone */
 	/*
 	{ "+CKEV",	&ckev_parse },
 	{ "+CDEV",	&cdev_parse },
@@ -250,7 +304,7 @@ static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 };
 
 /* called by midlevel parser if a response seems unsolicited */
-int unsolicited_parse(struct gsmd *g, const char *buf, int len, const char *param)
+int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 {
 	int i;
 

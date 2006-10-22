@@ -11,34 +11,44 @@
 
 #define GSMD_MSGSIZE_MAX	4096
 
-enum gsmd_prot_cmd {
-	GSMD_PCMD_NONE,
-	GSMD_PCMD_EVT_SUBSCRIPTIONS,		/* alter event subscriptions */
-	GSMD_PCMD_PASSTHROUGH,			/* transparent atcmd passthrough */
-};
-
-enum gsmd_pcmd_result {
-	GSMD_PCMD_OK		= 0,
-	GSMD_PCMD_ERR_UNSPEC	= 0xff,
-};
-
-struct gsmd_prot_hdr {
-	u_int16_t cmd;
-	u_int8_t result;
-	u_int8_t version;
-} __attribute__((packed));
-
-
 enum gsmd_msg_type {
 	GSMD_MSG_NONE		= 0,
 	GSMD_MSG_EVENT		= 1,
 	GSMD_MSG_PASSTHROUGH	= 2,
+	GSMD_MSG_VOICECALL	= 3,
+	GSMD_MSG_DATACALL	= 4,
+	GSMD_MSG_PHONEBOOK	= 5,
+	GSMD_MSG_NETWORK	= 6,
+	GSMD_MSG_PHONE		= 7,
+	GSMD_MSG_PIN		= 8,
+	__NUM_GSMD_MSGS
 };
 
 enum gsmd_passthrough_type {
 	GSMD_PASSTHROUGH_NONE	= 0,
 	GSMD_PASSTHROUGH_REQ	= 1,
 	GSMD_PASSTHROUGH_RESP	= 2,
+};
+
+enum gsmd_event_type {
+	GSMD_EVENT_NONE		= 0,
+	GSMD_EVENT_SUBSCRIPTIONS= 1,
+	GSMD_EVENT_HAPPENED	= 2,
+};
+
+enum gsmd_msg_voicecall_type {
+	GSMD_VOICECALL_DIAL	= 1,
+	GSMD_VOICECALL_HANGUP	= 2,
+};
+
+/* Handset / MT related commands */
+enum gsmd_msg_phone_type {
+	GSMD_PHONE_VOLUME	= 1,
+	GSMD_PHONE_VIBRATOR	= 2,
+};
+
+enum gsmd_msg_pin_type {
+	GSMD_PIN_INPUT		= 1,
 };
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
@@ -72,6 +82,9 @@ struct gsmd_evt_auxdata {
 			u_int16_t lac;
 			u_int16_t ci;
 		} netreg;
+		struct {
+			u_int8_t tz;
+		} timezone;
 	} u;
 } __attribute__((packed));
 
@@ -79,7 +92,9 @@ struct gsmd_msg_hdr {
 	u_int8_t version;
 	u_int8_t msg_type;
 	u_int8_t msg_subtype;
-	u_int8_t len;
+	u_int8_t _pad;
+	u_int16_t id;
+	u_int16_t len;
 } __attribute__((packed));
 
 

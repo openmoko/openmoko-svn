@@ -39,38 +39,93 @@ static int usock_cmd_cb(struct gsmd_atcmd *cmd, void *ctx)
 	return 0;
 }
 
-static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)
-{
-	struct gsmd_msg_hdr *gph = (struct gsmd_msg_hdr *)buf;
+typedef int usock_msg_handler(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len);
 
-	if (gph->version != GSMD_PROTO_VERSION)
+static int usock_rcv_passthrough(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
+{
+	struct gsmd_atcmd *cmd;
+	cmd = atcmd_fill((char *)gph+sizeof(*gph), 255, &usock_cmd_cb, gu);
+	if (!cmd)
+		return -ENOMEM;
+
+	return atcmd_submit(gu->gsmd, cmd);
+}
+
+static int usock_rcv_event(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
+{
+	u_int32_t *evtmask = (u_int32_t *) ((char *)gph + sizeof(*gph));
+
+	if (len < sizeof(*gph) + sizeof(u_int32_t))
 		return -EINVAL;
 
-	switch (gph->msg_type) {
-	case GSMD_MSG_PASSTHROUGH: 
-		{
-			struct gsmd_atcmd *cmd;
-			cmd = atcmd_fill((char *)gph+sizeof(*gph),
-					 255, &usock_cmd_cb, gu);
-			if (!cmd)
-				return -ENOMEM;
-			return atcmd_submit(gu->gsmd, cmd);
-		}
-		break;
-	case GSMD_PCMD_EVT_SUBSCRIPTIONS:
-		{
-			u_int32_t *evtmask = (u_int32_t *) (buf + sizeof(*gph));
-			if (len < sizeof(*gph) + sizeof(u_int32_t))
-				return -EINVAL;
+	if (gph->msg_subtype != GSMD_EVENT_SUBSCRIPTIONS)
+		return -EINVAL;
 
-			gu->subscriptions = *evtmask;
-		}
+	gu->subscriptions = *evtmask;
+}
+
+static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
+{
+	struct gsmd_atcmd *cmd;
+
+	switch (gph->msg_subtype) {
+	case GSMD_VOICECALL_DIAL:
+		/* FIXME */
+		break;
+	case GSMD_VOICECALL_HANGUP:
+		cmd = atcmd_fill("ATH0", 5, &usock_cmd_cb, gu);
 		break;
 	default:
 		return -EINVAL;
 	}
 
 	return 0;
+}
+
+#define GSMD_PIN_MAXLEN 16
+
+static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
+{
+	u_int8_t *pin = (u_int8_t *)gph + sizeof(*gph);
+	int pin_len = len - sizeof(*gph);
+	char pinbuf[GSMD_PIN_MAXLEN + 11]; /* `AT+CPIN=""\0' */
+
+	snprintf(pinbuf, sizeof(pinbuf), "AT+CPIN=\"%s\"", pin);
+
+	switch (gph->msg_subtype) {
+	case GSMD_PIN_INPUT:
+		/* FIXME */
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static usock_msg_handler *pcmd_type_handlers[] = {
+	[GSMD_MSG_PASSTHROUGH]	= &usock_rcv_passthrough,
+	[GSMD_MSG_EVENT]	= &usock_rcv_event,
+	[GSMD_MSG_VOICECALL]	= &usock_rcv_voicecall,
+	[GSMD_MSG_PIN]		= &usock_rcv_pin,
+};
+
+static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)
+{
+	struct gsmd_msg_hdr *gph = (struct gsmd_msg_hdr *)buf;
+	usock_msg_handler *umh;
+
+	if (gph->version != GSMD_PROTO_VERSION)
+		return -EINVAL;
+
+	if (gph->msg_type >= ARRAY_SIZE(pcmd_type_handlers))
+		return -EINVAL;
+	
+	umh = pcmd_type_handlers[gph->msg_type];
+	if (!umh)
+		return -EINVAL;
+
+	return umh(gu, gph, len);
 }
 
 /* callback for read/write on client (libgsmd) socket */

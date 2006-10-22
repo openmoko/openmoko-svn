@@ -2,13 +2,35 @@
 
 1. GSMD api towards libgsmd 
 	- provides api for other processes to interact with GSM subsystem
+	- is not documented and subject to change
 
 2. GSMD api towards vendor-specific plugins
 	- implement vendor-specific AT commands
+	- is not documented and will initially only support TI 
+	- later, a Motorola plugin is planned.
 
 3. libgsmd api towards applications
 	- wraps GSMD-libgsmd api into C functions that can be used by applications
+	- will be documented and is supposed to be stable.
 
+3.1. Events
+
+The application registers callback handlers for events.  libgsmd can call these callback
+handlers at any given time.  Events include "incoming call", "remote end hangup", ...
+
+3.2. Commands
+
+Commands have the form of command-reply.  Usually they will be performed
+synchronously, i.e. the the caller will be blocked until a response to the command has been
+received.
+
+If this behaviour is not desired, a completion handler callback function can be
+registered.  In this case, the function call will return immediately after the
+command has been sent to gsmd.  Further incoming packets on the gsmd socket
+will be handled to libgsmd by calling lgsm_handle_packet().  If one such packet is the
+response to a currently-executing command, the completion handler will be
+called from within lgsm_handle_packet().  Matching of responses to requests is done by 
+assigning a unique id to each request.  gsmd responses will have a matching id.
 
 
 code flow in gsmd:

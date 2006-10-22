@@ -51,7 +51,7 @@ static int gsmd_initsettings(struct gsmd *gsmd)
 	if (rc < 0)
 		return rc;
 
-	cmd = atcmd_fill("+CRC=1;+CREG=2;+CMEE=2;+CLIP=1;+COLP=1", 255, &gsmd_test_atcb, NULL);
+	cmd = atcmd_fill("+CRC=1;+CREG=2;+CMEE=2;+CLIP=1;+COLP=1;+CTZR=1", 255, &gsmd_test_atcb, NULL);
 	return atcmd_submit(gsmd, cmd);
 }
 

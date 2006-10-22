@@ -1,0 +1,51 @@
+0. general
+
+commands
+- power up/down phone
+- operator selection
+- get list of operators
+- get operator name / id list
+- get (and edit) preferred operator list
+- get manufacturer/device/serial info
+- get IMSI
+- obtain network registration status
+
+
+events
+- some pin required
+- network registration status
+- time zone update
+
+
+1. voice calls
+
+commands (request/response)
+- dial outgoing call
+- send dtmf digit (during call)
+- hang up (incoming/outgoing)
+- accept currently pending incoming call
+- enable/disable clip
+- enable/disable colp
+- enable/disable clir
+- call forwarding
+- call deflection
+
+events
+- incoming call
+- clip
+- colp
+- call waiting
+- 
+
+2. SMS
+
+commands
+- send outgoing message
+
+3. data calls
+
+TBD
+
+4. GPRS
+
+TBD
