@@ -43,10 +43,12 @@ static int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t e
 	struct gsmd_user *gu;
 	int num_sent = 0;
 
+	DEBUGP("entering evt=%u\n", evt);
+
 	llist_for_each_entry(gu, &gsmd->users, list) {
 		if (gu->subscriptions & (1 << evt)) {
 			struct gsmd_ucmd *cpy = ucmd_copy(ucmd);
-			llist_add_tail(&ucmd->list, &gu->finished_ucmds);
+			usock_cmd_enqueue(ucmd, gu);
 			num_sent++;
 			ucmd = cpy;
 			if (!ucmd) {

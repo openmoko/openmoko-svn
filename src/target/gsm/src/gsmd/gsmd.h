@@ -14,11 +14,12 @@
 struct gsmd_atcmd {
 	struct llist_head list;
 	void *ctx;
-	int (*cb)(struct gsmd_atcmd *, void *);
-	u_int8_t flags;
+	int (*cb)(struct gsmd_atcmd *cmd, void *ctx, char *resp);
+	char *resp;
 	int32_t ret;
 	u_int32_t buflen;
-	char *resp;
+	u_int16_t id;
+	u_int8_t flags;
 	char buf[];
 };
 
@@ -73,10 +74,10 @@ struct gsmd_user {
 
 extern int gsmdlog_init(const char *path);
 /* write a message to the daemons' logfile */
-void __gsmd_log(int level, const char *file, int line, const char *message, ...);
+void __gsmd_log(int level, const char *file, int line, const char *function, const char *message, ...);
 /* macro for logging including filename and line number */
 #define gsmd_log(level, format, args...) \
-	__gsmd_log(level, __FILE__, __LINE__, format, ## args)
+	__gsmd_log(level, __FILE__, __LINE__, __FUNCTION__, format, ## args)
 
 #define DEBUGP(x, args ...)	gsmd_log(GSMD_DEBUG, x, ## args)
 

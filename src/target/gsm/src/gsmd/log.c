@@ -31,7 +31,8 @@ static inline int gsmd2syslog_level(int level)
 	return gsmd2syslog[level];
 }
 
-void __gsmd_log(int level, const char *file, int line, const char *format, ...)
+void __gsmd_log(int level, const char *file, int line, const char *function,
+		const char *format, ...)
 {
 	char *timestr;
 	va_list ap;
@@ -54,7 +55,8 @@ void __gsmd_log(int level, const char *file, int line, const char *format, ...)
 		tm = time(NULL);
 		timestr = ctime(&tm);
 		timestr[strlen(timestr)-1] = '\0';
-		fprintf(outfd, "%s <%1.1d> %s:%d ", timestr, level, file, line);
+		fprintf(outfd, "%s <%1.1d> %s:%d:%s() ", timestr, level, file, 
+			line, function);
 
 		va_start(ap, format);
 		vfprintf(outfd, format, ap);

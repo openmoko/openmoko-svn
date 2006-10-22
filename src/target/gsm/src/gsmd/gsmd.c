@@ -20,24 +20,23 @@
 #include "usock.h"
 #include "vendorplugin.h"
 
-static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx)
+static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	printf("`%s' returned `%s'\n", cmd->buf, cmd->resp);
-	free(cmd);
+	printf("`%s' returned `%s'\n", cmd->buf, resp);
 	return 0;
 }
 
 static int gsmd_test(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill("AT+CRC?", 255, &gsmd_test_atcb, NULL);
+	cmd = atcmd_fill("AT+CRC?", 255, &gsmd_test_atcb, NULL, 0);
 	return atcmd_submit(gsmd, cmd);
 }
 
 static int atcmd_test(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill("ATE0", 255, &gsmd_test_atcb, NULL);
+	cmd = atcmd_fill("ATE0", 255, &gsmd_test_atcb, NULL, 0);
 	return atcmd_submit(gsmd, cmd);
 }
 
@@ -46,12 +45,12 @@ static int gsmd_initsettings(struct gsmd *gsmd)
 	int rc;
 	struct gsmd_atcmd *cmd;
 
-	cmd = atcmd_fill("ATV1", 255, &gsmd_test_atcb, NULL);
+	cmd = atcmd_fill("ATV1", 255, &gsmd_test_atcb, NULL, 0);
 	rc = atcmd_submit(gsmd, cmd);
 	if (rc < 0)
 		return rc;
 
-	cmd = atcmd_fill("+CRC=1;+CREG=2;+CMEE=2;+CLIP=1;+COLP=1;+CTZR=1", 255, &gsmd_test_atcb, NULL);
+	cmd = atcmd_fill("+CRC=1;+CREG=2;+CMEE=2;+CLIP=1;+COLP=1;+CTZR=1", 255, &gsmd_test_atcb, NULL, 0);
 	return atcmd_submit(gsmd, cmd);
 }
 

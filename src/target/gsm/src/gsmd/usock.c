@@ -15,11 +15,24 @@
 #include "atcmd.h"
 #include "usock.h"
 
+void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu)
+{
+	DEBUGP("enqueueing usock cmd %p for user %p\n", ucmd, gu);
+
+	/* add to per-user list of finished cmds */
+	llist_add_tail(&ucmd->list, &gu->finished_ucmds);
+
+	/* mark socket of user as we-want-to-write */
+	gu->gfd.when |= GSMD_FD_WRITE;
+}
+
 /* callback for completed passthrough gsmd_atcmd's */
-static int usock_cmd_cb(struct gsmd_atcmd *cmd, void *ctx)
+static int usock_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd)+cmd->buflen);
+
+	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
 
 	if (!ucmd)
 		return -ENOMEM;
@@ -27,14 +40,11 @@ static int usock_cmd_cb(struct gsmd_atcmd *cmd, void *ctx)
 	ucmd->hdr.version = GSMD_PROTO_VERSION;
 	ucmd->hdr.msg_type = GSMD_MSG_PASSTHROUGH;
 	ucmd->hdr.msg_subtype = GSMD_PASSTHROUGH_RESP;
-	ucmd->hdr.len = cmd->buflen;
-	memcpy(ucmd->buf, cmd->buf, ucmd->hdr.len);
+	ucmd->hdr.len = strlen(resp)+1;
+	ucmd->hdr.id = cmd->id;
+	memcpy(ucmd->buf, resp, ucmd->hdr.len);
 
-	/* add to per-user list of finished cmds */
-	llist_add_tail(&ucmd->list, &gu->finished_ucmds);
-
-	/* mark socket of user as we-want-to-write */
-	gu->gfd.when |= GSMD_FD_WRITE;
+	usock_cmd_enqueue(ucmd, gu);
 
 	return 0;
 }
@@ -44,16 +54,18 @@ typedef int usock_msg_handler(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, in
 static int usock_rcv_passthrough(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill((char *)gph+sizeof(*gph), 255, &usock_cmd_cb, gu);
+	cmd = atcmd_fill((char *)gph+sizeof(*gph), gph->len, &usock_cmd_cb, gu, gph->id);
 	if (!cmd)
 		return -ENOMEM;
+
+	DEBUGP("submitting cmd=%p, gu=%p\n", cmd, gu);
 
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
 static int usock_rcv_event(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 {
-	u_int32_t *evtmask = (u_int32_t *) ((char *)gph + sizeof(*gph));
+	u_int32_t *evtmask = (u_int32_t *) ((char *)gph + sizeof(*gph), gph->id);
 
 	if (len < sizeof(*gph) + sizeof(u_int32_t))
 		return -EINVAL;
@@ -73,7 +85,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, i
 		/* FIXME */
 		break;
 	case GSMD_VOICECALL_HANGUP:
-		cmd = atcmd_fill("ATH0", 5, &usock_cmd_cb, gu);
+		cmd = atcmd_fill("ATH0", 5, &usock_cmd_cb, gu, gph->id);
 		break;
 	default:
 		return -EINVAL;
@@ -178,6 +190,8 @@ static int gsmd_usock_user_cb(int fd, unsigned int what, void *data)
 			llist_del(&ucmd->list);
 			free(ucmd);
 		}
+		if (llist_empty(&gu->finished_ucmds))
+			gu->gfd.when &= ~GSMD_FD_WRITE;
 	}
 
 	return 0;
@@ -206,6 +220,8 @@ static int gsmd_usock_cb(int fd, unsigned int what, void *data)
 		newuser->gfd.data = newuser;
 		newuser->gfd.cb = &gsmd_usock_user_cb;
 		newuser->gsmd = g;
+		newuser->subscriptions = 0xffffffff;
+		INIT_LLIST_HEAD(&newuser->finished_ucmds);
 
 		llist_add(&newuser->list, &g->users);
 		gsmd_register_fd(&newuser->gfd);

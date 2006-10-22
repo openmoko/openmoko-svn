@@ -68,6 +68,8 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len)
 {
 	struct gsmd_msg_hdr *gmh = (struct gsmd_msg_hdr *)buf;
+	lgsm_msg_handler *handler; 
+	
 	if (len < sizeof(*gmh))
 		return -EINVAL;
 	
@@ -77,7 +79,12 @@ int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len)
 	if (gmh->msg_type >= __NUM_GSMD_MSGS)
 		return -EINVAL;
 	
-	return lh->handler[gmh->msg_type](lh, gmh);
+	handler = lh->handler[gmh->msg_type];
+	
+	if (handler)
+		handler(lh, gmh);
+	else
+		fprintf(stderr, "unable to handle packet type=%u\n", gmh->msg_type);
 }
 
 /* blocking read and processing of packets until packet matching 'id' is found */
@@ -123,9 +130,6 @@ struct lgsm_handle *lgsm_init(const char *device)
 		free(lh);
 		return NULL;
 	}
-
-	/* send some initial commands, such as ATV1 (verbose response)
-	 * and +CRC=1 (which we currently require!) */
 
 	return lh;
 }

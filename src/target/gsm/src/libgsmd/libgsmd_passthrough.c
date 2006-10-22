@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #include <sys/types.h>
+#include <sys/socket.h>
 
 #include <gsmd/usock.h>
 #include <libgsmd/libgsmd.h>
@@ -16,7 +17,7 @@ static u_int16_t next_msg_id;
 static int lgsm_send(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	gmh->id = next_msg_id++;
-	return send(lh->fd, (char *) gmh, sizeof(*gmh) + gmh->len);
+	return send(lh->fd, (char *) gmh, sizeof(*gmh) + gmh->len, 0);
 }
 
 #define PT_BUF_SIZE	1024
@@ -37,8 +38,8 @@ int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned 
 
 	gmh->version = GSMD_PROTO_VERSION;
 	gmh->msg_type = GSMD_MSG_PASSTHROUGH;
-	gmh->msg_subtype = GSMD_PASSTHROUGH_REQUEST;
-	gmh->len = len;
+	gmh->msg_subtype = GSMD_PASSTHROUGH_REQ;
+	gmh->len = len+1;
 	strcpy(tx_buf, tx);
 
 	rc = lgsm_send(lh, gmh);

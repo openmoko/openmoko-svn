@@ -101,6 +101,7 @@ static int llparse_byte(struct llparser *llp, char byte)
 			/* re-set cursor to start of buffer */
 			llp->cur = llp->buf;
 			llp->state = LLPARSE_STATE_IDLE;
+			memset(llp->buf, 0, LLPARSE_BUF_SIZE);
 		}
 		break;
 	case LLPARSE_STATE_ERROR:
@@ -151,14 +152,27 @@ static int ml_parse(const char *buf, int len, void *ctx)
 {
 	struct gsmd *g = ctx;
 	struct gsmd_atcmd *cmd;
-	int rc, final = 0;
+	int rc = 0, final = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
 	
 	/* responses come in order, so first response has to be for first
 	 * command we sent, i.e. first entry in list */
 	cmd = llist_entry(g->busy_atcmds.next, struct gsmd_atcmd, list);
-	cmd->resp = buf;
+
+	/* we have to differentiate between the following cases:
+	 *
+	 * A) an information response ("+whatever: ...")
+	 *    we just pass it up the callback
+	 * B) an unsolicited message ("+whateverelse: ... ")
+	 *    we call the unsolicited.c handlers
+	 * C) a final response ("OK", "+CME ERROR", ...)
+	 *    in this case, we need to check whether we already sent some
+	 *    previous data to the callback (information response).  If yes,
+	 *    we do nothing.  If no, we need to call the callback.
+	 * D) an intermediate response ("CONNECTED", "BUSY", "NO DIALTONE")
+	 *    TBD
+	 */
 
 	if (buf[0] == '+') {
 		/* an extended response */
@@ -169,6 +183,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			return -EINVAL;
 		}
 		if (!strncmp(buf+1, "CME ERROR", 9)) {
+			/* Part of Case 'C' */
 			unsigned long err_nr;
 			err_nr = strtoul(colon+1, NULL, 10);
 			DEBUGP("error number %lu\n", err_nr);
@@ -178,6 +193,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		}
 
 		if (strncmp(buf, &cmd->buf[2], colon-buf)) {
+			/* Assuming Case 'B' */
 			DEBUGP("extd reply `%s' to cmd `%s', must be "
 			       "unsolicited\n", buf, &cmd->buf[2]);
 			colon++;
@@ -186,8 +202,11 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			rc = unsolicited_parse(g, buf, len, colon);
 			/* if unsolicited parser didn't handle this 'reply', then we 
 			 * need to continue and try harder and see what it is */
-			if (rc != -ENOENT)
+			if (rc != -ENOENT) {
+				/* Case 'B' finished */
 				return rc;
+			}
+			/* contine, not 'B' */
 		}
 
 		if (cmd->buf[2] != '+') {
@@ -196,21 +215,23 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		}
 
 		/* if we survive till here, it's a valid extd response
-		 * to an extended command */
-
+		 * to an extended command and thus Case 'A' */
+	
 		/* FIXME: solve multi-line responses ! */
 		if (cmd->buflen < len)
 			len = cmd->buflen;
 
 		memcpy(cmd->buf, buf, len);
 	} else {
-
-		/* this is the only non-extended unsolicited return code */
-		if (!strcmp(buf, "RING"))
+		if (!strcmp(buf, "RING")) {
+			/* this is the only non-extended unsolicited return
+			 * code, part of Case 'B' */
 			return unsolicited_parse(g, buf, len, NULL);
+		}
 
 		if (!strcmp(buf, "ERROR") ||
-		    ((g->flags & GSMD_FLAG_V0) && cmd->buf[0] == '4')){
+		    ((g->flags & GSMD_FLAG_V0) && cmd->buf[0] == '4')) {
+			/* Part of Case 'C' */
 			DEBUGP("unspecified error\n");
 			cmd->ret = 4;
 			final = 1;
@@ -219,6 +240,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 		if (!strncmp(buf, "OK", 2)
 		    || ((g->flags & GSMD_FLAG_V0) && cmd->buf[0] == '0')) {
+			/* Part of Case 'C' */
 			cmd->ret = 0;
 			final = 1;
 			goto final_cb;
@@ -227,32 +249,49 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		/* FIXME: handling of those special commands in response to
 		 * ATD / ATA */
 		if (!strncmp(buf, "NO CARRIER", 10)) {
+			/* Part of Case 'D' */
+			goto final_cb;
 		}
 
 		if (!strncmp(buf, "BUSY", 4)) {
+			/* Part of Case 'D' */
+			goto final_cb;
 		}
 	}
 
+	/* we reach here, if we are at an information response that needs to be
+	 * passed on */
+
 final_cb:
+	/* if we reach here, the final result code of a command has been reached */
+
+
 	if (cmd->ret != 0)
 		generate_event_from_cme(g, cmd->ret);
+
+	if (!cmd->cb) {
+		gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
+	} else {
+		if (!final || !cmd->resp) {
+			/* if we reach here, we didn't send any information responses yet */
+			DEBUGP("Calling cmd->cb()\n");
+			cmd->resp = buf;
+			rc = cmd->cb(cmd, cmd->ctx, buf);
+		}
+	}
+
 	if (final) {
 		/* remove from list of currently executing cmds */
 		llist_del(&cmd->list);
+		free(cmd);
 
 		/* if we're finished with current commands, but still have pending
 		 * commands: we want to WRITE again */
 		if (llist_empty(&g->busy_atcmds) && !llist_empty(&g->pending_atcmds))
 			g->gfd_uart.when |= GSMD_FD_WRITE;
-
-		if (!cmd->cb) {
-			gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
-			return -EINVAL;
-		}
-		return cmd->cb(cmd, cmd->ctx);
 	}
 
-	return 0;
+	return rc;
 }	
 
 /* callback to be called if [virtual] UART has some data for us */
@@ -321,7 +360,7 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 
 
 struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
-			      atcmd_cb_t cb, void *ctx)
+			      atcmd_cb_t cb, void *ctx, u_int16_t id)
 {
 	int buflen = strlen(cmd);
 	struct gsmd_atcmd *atcmd;
@@ -334,11 +373,13 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 		return NULL;
 
 	atcmd->ctx = ctx;
+	atcmd->id = id;
 	atcmd->flags = 0;
 	atcmd->ret = -255;
 	atcmd->buflen = buflen;
 	atcmd->buf[buflen-1] = '\0';
 	atcmd->cb = cb;
+	atcmd->resp = NULL;
 	strncpy(atcmd->buf, cmd, buflen-1);
 
 	return atcmd;

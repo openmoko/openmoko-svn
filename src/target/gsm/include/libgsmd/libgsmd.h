@@ -52,4 +52,5 @@ struct lgsm_addr {
 	enum lgsm_addr_type tyoe;
 };
 
+extern int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned int *rx_len);
 #endif
