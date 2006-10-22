@@ -55,5 +55,5 @@ contains( TEMPLATE, lib ) {
 	DESTDIR = $(OPENMOKODIR)/lib
 }
 
-DEFINES += G_LOG_DOMAIN=\"$$TARGET\"
+#DEFINES += 'G_LOG_DOMAIN=\"$$TARGET\"'
 
