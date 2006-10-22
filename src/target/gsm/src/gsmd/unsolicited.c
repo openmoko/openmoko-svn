@@ -322,7 +322,7 @@ int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 	}
 
 	/* FIXME: call vendor-specific unsolicited code parser */
-	return -EINVAL;
+	return -ENOENT;
 }
 
 static unsigned int errors_creating_events[] = {

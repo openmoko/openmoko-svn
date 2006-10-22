@@ -103,7 +103,7 @@ static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len
 	return 0;
 }
 
-static usock_msg_handler *pcmd_type_handlers[] = {
+static usock_msg_handler *pcmd_type_handlers[__NUM_GSMD_MSGS] = {
 	[GSMD_MSG_PASSTHROUGH]	= &usock_rcv_passthrough,
 	[GSMD_MSG_EVENT]	= &usock_rcv_event,
 	[GSMD_MSG_VOICECALL]	= &usock_rcv_voicecall,
@@ -118,7 +118,7 @@ static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)
 	if (gph->version != GSMD_PROTO_VERSION)
 		return -EINVAL;
 
-	if (gph->msg_type >= ARRAY_SIZE(pcmd_type_handlers))
+	if (gph->msg_type >= __NUM_GSMD_MSGS)
 		return -EINVAL;
 	
 	umh = pcmd_type_handlers[gph->msg_type];

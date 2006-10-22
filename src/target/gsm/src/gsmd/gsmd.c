@@ -30,7 +30,7 @@ static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx)
 static int gsmd_test(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill("AT+CLCK=?", 255, &gsmd_test_atcb, NULL);
+	cmd = atcmd_fill("AT+CRC?", 255, &gsmd_test_atcb, NULL);
 	return atcmd_submit(gsmd, cmd);
 }
 
@@ -114,6 +114,7 @@ static struct option opts[] = {
 	{ "device", 1, NULL, 'p' },
 	{ "speed", 1, NULL, 's' },
 	{ "logfile", 1, NULL, 'l' },
+	{ 0, 0, 0, 0 }
 };
 
 static void print_help(void)

@@ -97,8 +97,11 @@ static int llparse_byte(struct llparser *llp, char byte)
 			ret = llparse_append(llp, byte);
 		break;
 	case LLPARSE_STATE_RESULT_CR:
-		if (byte == '\n')
+		if (byte == '\n') {
+			/* re-set cursor to start of buffer */
+			llp->cur = llp->buf;
 			llp->state = LLPARSE_STATE_IDLE;
+		}
 		break;
 	case LLPARSE_STATE_ERROR:
 		break;
@@ -117,9 +120,8 @@ static int llparse_string(struct llparser *llp, char *buf, unsigned int len)
 		/* if _after_ parsing the current byte we have finished,
 		 * let the caller know that there is something to handle */
 		if (llp->state == LLPARSE_STATE_RESULT_CR) {
+			/* FIXME: what to do with return value ? */
 			llp->cb(llp->buf, llp->cur - llp->buf, llp->ctx);
-			/* re-set cursor to start of buffer */
-			llp->cur = llp->buf;
 		}
 	}
 
@@ -149,7 +151,9 @@ static int ml_parse(const char *buf, int len, void *ctx)
 {
 	struct gsmd *g = ctx;
 	struct gsmd_atcmd *cmd;
-	int final = 0;
+	int rc, final = 0;
+
+	DEBUGP("buf=`%s'(%d)\n", buf, len);
 	
 	/* responses come in order, so first response has to be for first
 	 * command we sent, i.e. first entry in list */
@@ -164,11 +168,6 @@ static int ml_parse(const char *buf, int len, void *ctx)
 				buf);
 			return -EINVAL;
 		}
-		if (cmd->buf[2] != '+') {
-			gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
-			return -EINVAL;
-		}
-
 		if (!strncmp(buf+1, "CME ERROR", 9)) {
 			unsigned long err_nr;
 			err_nr = strtoul(colon+1, NULL, 10);
@@ -184,7 +183,16 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			colon++;
 			if (colon > buf+len)
 				colon = NULL;
-			return unsolicited_parse(g, buf, len, colon);
+			rc = unsolicited_parse(g, buf, len, colon);
+			/* if unsolicited parser didn't handle this 'reply', then we 
+			 * need to continue and try harder and see what it is */
+			if (rc != -ENOENT)
+				return rc;
+		}
+
+		if (cmd->buf[2] != '+') {
+			gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
+			return -EINVAL;
 		}
 
 		/* if we survive till here, it's a valid extd response
@@ -354,6 +362,7 @@ void atcmd_drain(int fd)
 	DEBUGP("c_iflag = 0x%08x, c_oflag = 0x%08x, c_cflag = 0x%08x, c_lflag = 0x%08x\n",
 		t.c_iflag, t.c_oflag, t.c_cflag, t.c_lflag);
 	t.c_iflag = t.c_oflag = 0;
+	cfmakeraw(&t);
 	rc = tcsetattr(fd, TCSANOW, &t);
 }
 
