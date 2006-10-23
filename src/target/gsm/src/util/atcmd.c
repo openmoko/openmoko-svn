@@ -4,8 +4,6 @@
 #include <unistd.h>
 
 #include <libgsmd/libgsmd.h>
-#include <libgsmd/voicecall.h>
-#include <libgsmd/misc.h>
 
 #define STDIN_BUF_SIZE	1024
 
@@ -16,18 +14,7 @@ static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	printf("RSTR=`%s'\n", payload);
 }
 
-static int shell_help(void)
-{
-	printf( "\tA\tAnswer incoming call\n"
-		"\tD\tDial outgoing number\n"
-		"\tH\tHangup call\n"
-		"\tO\tPower On\n"
-		"\to\tPower Off\n"
-		"\tR\tRegister Netowrk\n"
-		);
-}
-
-int shell_main(struct lgsm_handle *lgsmh)
+int atcmd_main(struct lgsm_handle *lgsmh)
 {
 	int rc;
 	char buf[STDIN_BUF_SIZE+1];
@@ -61,7 +48,6 @@ int shell_main(struct lgsm_handle *lgsmh)
 		if (FD_ISSET(0, &readset)) {
 			/* we've received something on stdin.  send it as passthrough
 			 * to gsmd */
-			printf("# ");
 			rc = fscanf(stdin, "%s", buf);
 			if (rc == EOF) {
 				printf("EOF\n");
@@ -71,32 +57,10 @@ int shell_main(struct lgsm_handle *lgsmh)
 				printf("NULL\n");
 				continue;
 			}
-			if (!strcmp(buf, "h")) {
-				shell_help();
-			} else if (!strcmp(buf, "?")) {
-				shell_help();
-			} else if (!strcmp(buf, "H")) {
-				printf("Hangup\n");
-				lgsm_voice_hangup(lgsmh);
-			} else if (buf[0] == 'D') {
-				struct lgsm_addr addr;
-				printf("Dial %s\n", buf+1);
-				addr.type = 129;
-				strncpy(addr.addr, buf+1, sizeof(addr.addr)-1);
-				addr.addr[sizeof(addr.addr)-1] = '\0';
-				lgsm_voice_out_init(lgsmh, &addr);
-			} else if (!strcmp(buf, "A")) {
-				printf("Answer\n");
-				lgsm_voice_in_accept(lgsmh);
-			} else if (!strcmp(buf, "O")) {
-				lgsm_phone_power(lgsmh, 1);
-			} else if (!strcmp(buf, "o")) {
-				lgsm_phone_power(lgsmh, 0);
-			} else if (!strcmp(buf, "R")) {
-				lgsm_netreg_register(lgsmh, 0);
-			} else {
-				printf("Unknown command `%s'\n", buf);
-			}
+			printf("STR=`%s'\n", buf);
 		}
+		/* this is a synchronous call for a passthrough command */
+		lgsm_passthrough(lgsmh, buf, rbuf, &rlen);
+		printf("RSTR=`%s'\n", rbuf);
 	}
 }

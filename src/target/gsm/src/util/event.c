@@ -20,7 +20,32 @@ static int clip_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata
 
 static int netreg_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
-	printf("EVENT: Netreg\n");
+	printf("EVENT: Netreg ");
+
+	switch (aux->u.netreg.state) {
+	case 0:
+		printf("not searching for network ");
+		break;
+	case 1:
+		printf("registered (home network) ");
+		break;
+	case 2:
+		printf("searching for network ");
+		break;
+	case 3:
+		printf("registration denied ");
+		break;
+	case 5:
+		printf("registered (roaming) ");
+		break;
+	}
+
+	if (aux->u.netreg.lac)
+		printf("LocationAreaCode=0x%04X ", aux->u.netreg.lac);
+	if (aux->u.netreg.ci)
+		printf("CellID=0x%04X ", aux->u.netreg.ci);
+	
+	printf("\n");
 
 	return 0;
 }

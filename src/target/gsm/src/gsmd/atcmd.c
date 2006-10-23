@@ -156,6 +156,11 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
 	
+	if (!strcmp(buf, "AT-Command Interpreter ready")) {
+		gsmd_initsettings(g);
+		return 0;
+	}
+
 	/* responses come in order, so first response has to be for first
 	 * command we sent, i.e. first entry in list */
 	cmd = llist_entry(g->busy_atcmds.next, struct gsmd_atcmd, list);
@@ -248,13 +253,15 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 		/* FIXME: handling of those special commands in response to
 		 * ATD / ATA */
-		if (!strncmp(buf, "NO CARRIER", 10)) {
+		if (!strncmp(buf, "NO CARRIER", 11)) {
 			/* Part of Case 'D' */
+			final = 1;
 			goto final_cb;
 		}
 
 		if (!strncmp(buf, "BUSY", 4)) {
 			/* Part of Case 'D' */
+			final = 1;
 			goto final_cb;
 		}
 	}
@@ -388,6 +395,8 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 /* submit an atcmd in the global queue of pending atcmds */
 int atcmd_submit(struct gsmd *g, struct gsmd_atcmd *cmd)
 {
+	DEBUGP("submitting command `%s'\n", cmd->buf);
+
 	llist_add_tail(&cmd->list, &g->pending_atcmds);
 	g->gfd_uart.when |= GSMD_FD_WRITE;
 

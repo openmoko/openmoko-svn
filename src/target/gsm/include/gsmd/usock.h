@@ -46,6 +46,15 @@ enum gsmd_msg_pin_type {
 	GSMD_PIN_INPUT		= 1,
 };
 
+enum gsmd_msg_phone {
+	GSMD_PHONE_POWERUP	= 1,
+	GSMD_PHONE_POWERDOWN	= 2,
+};
+
+enum gsmd_msg_network {
+	GSMD_NETWORK_REGISTER	= 1,
+};
+
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
 
 #define GSMD_ADDR_MAXLEN	32

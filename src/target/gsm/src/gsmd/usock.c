@@ -88,7 +88,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	case GSMD_VOICECALL_DIAL:
 		if (len < sizeof(*gph) + sizeof(*ga))
 			return -EINVAL;
-		ga = (struct gsmd_addr *) (void *)gph + sizeof(*gph);
+		ga = (struct gsmd_addr *) ((void *)gph + sizeof(*gph));
 		ga->number[GSMD_ADDR_MAXLEN] = '\0';
 		cmd = atcmd_fill("ATD", 5 + strlen(ga->number),
 				 &usock_cmd_cb, gu, gph->id);
@@ -145,11 +145,57 @@ static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
+static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
+			   int len)
+{
+	struct gsmd_atcmd *cmd;
+
+	switch (gph->msg_subtype) {
+	case GSMD_PHONE_POWERUP:
+		cmd = atcmd_fill("AT+CFUN=1", 9+1,
+				 &null_cmd_cb, gu, 0);
+		break;
+
+	case GSMD_PHONE_POWERDOWN:
+		cmd = atcmd_fill("AT+CFUN=0", 9+1,
+				 &null_cmd_cb, gu, 0);
+		break;
+	default:
+		return -EINVAL;
+	}
+	if (!cmd)
+		return -ENOMEM;
+
+	return atcmd_submit(gu->gsmd, cmd);
+}
+
+static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
+			     int len)
+{
+	struct gsmd_atcmd *cmd;
+
+	switch (gph->msg_subtype) {
+	case GSMD_NETWORK_REGISTER:
+		cmd = atcmd_fill("AT+COPS", 9+1,
+				 &null_cmd_cb, gu, 0);
+		break;
+	default:
+		return -EINVAL;
+	}
+	if (!cmd)
+		return -ENOMEM;
+
+	return atcmd_submit(gu->gsmd, cmd);
+}
+
+
 static usock_msg_handler *pcmd_type_handlers[__NUM_GSMD_MSGS] = {
 	[GSMD_MSG_PASSTHROUGH]	= &usock_rcv_passthrough,
 	[GSMD_MSG_EVENT]	= &usock_rcv_event,
 	[GSMD_MSG_VOICECALL]	= &usock_rcv_voicecall,
 	[GSMD_MSG_PIN]		= &usock_rcv_pin,
+	[GSMD_MSG_PHONE]	= &usock_rcv_phone,
+	[GSMD_MSG_NETWORK]	= &usock_rcv_network,
 };
 
 static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)

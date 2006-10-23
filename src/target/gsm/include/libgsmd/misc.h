@@ -8,6 +8,8 @@
 
 #include <libgsmd/libgsmd.h>
 
+extern int lgsm_phone_power(struct lgsm_handle *lh, int power);
+
 enum lgsm_netreg_state {
 	LGSM_NETREG_ST_NOTREG		= 0,
 	LGSM_NETREG_ST_REG_HOME		= 1,
@@ -20,6 +22,8 @@ enum lgsm_netreg_state {
 /* Get the current network registration status */
 extern int lgsm_get_netreg_state(struct lgsm_handle *lh,
 				 enum lgsm_netreg_state *state);
+
+extern int lgsm_netreg_register(struct lgsm_handle *lh, int oper);
 
 enum lgsm_info_type {
 	LGSM_INFO_TYPE_NONE		= 0,

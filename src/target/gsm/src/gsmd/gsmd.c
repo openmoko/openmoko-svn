@@ -26,32 +26,24 @@ static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
-static int gsmd_test(struct gsmd *gsmd)
+static int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill("AT+CRC?", 255, &gsmd_test_atcb, NULL, 0);
+	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0);
+	if (!cmd)
+		return -ENOMEM;
+	
 	return atcmd_submit(gsmd, cmd);
 }
 
-static int atcmd_test(struct gsmd *gsmd)
-{
-	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill("ATE0", 255, &gsmd_test_atcb, NULL, 0);
-	return atcmd_submit(gsmd, cmd);
-}
-
-static int gsmd_initsettings(struct gsmd *gsmd)
+int gsmd_initsettings(struct gsmd *gsmd)
 {
 	int rc;
-	struct gsmd_atcmd *cmd;
+	
+	rc |= gsmd_simplecmd(gsmd, "ATE0V1");
+	rc |= gsmd_simplecmd(gsmd, "AT+CRC=1;+CREG=2;+CMEE=1;+CLIP=1;+COLP=1;+CTZR=1;+CFUN=1");
 
-	cmd = atcmd_fill("ATV1", 255, &gsmd_test_atcb, NULL, 0);
-	rc = atcmd_submit(gsmd, cmd);
-	if (rc < 0)
-		return rc;
-
-	cmd = atcmd_fill("+CRC=1;+CREG=2;+CMEE=2;+CLIP=1;+COLP=1;+CTZR=1", 255, &gsmd_test_atcb, NULL, 0);
-	return atcmd_submit(gsmd, cmd);
+	return rc;
 }
 
 struct bdrt {
@@ -207,8 +199,6 @@ int main(int argc, char **argv)
 		setsid();
 	}
 
-	atcmd_test(&g);
-	gsmd_test(&g);
 	gsmd_initsettings(&g);
 
 	while (1) {

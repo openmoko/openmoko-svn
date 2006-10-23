@@ -10,6 +10,8 @@
 
 #include "pin.h"
 #include "event.h"
+#include "shell.h"
+#include "atcmd.h"
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
@@ -22,12 +24,14 @@ enum mode_enum {
 	MODE_NONE,
 	MODE_SHELL,
 	MODE_EVENTLOG,
+	MODE_ATCMD,
 };
 
 static char *modes[] = {
 	[MODE_NONE]	= "",
 	[MODE_SHELL]	= "shell",
 	[MODE_EVENTLOG]	= "eventlog",
+	[MODE_ATCMD]	= "atcmd",
 };
 
 static int parse_mode(char *modestr)
@@ -56,7 +60,9 @@ static void help(void)
 	printf("Usage:\n"
 		"\t-h\t--help\tPrint this Help message\n"
 		"\t-V\t--version\tPrint version number\n"
-		"\t-v\t--verbose\tBe more verbose\n");
+		"\t-v\t--verbose\tBe more verbose\n"
+		"\t-m\t--mode\tSet mode {passthrough,atcmd}\n"
+		);
 }
 
 int main(int argc, char **argv)
@@ -107,6 +113,9 @@ int main(int argc, char **argv)
 	event_init(lgsmh);
 
 	switch (mode) {
+	case MODE_ATCMD:
+		atcmd_main(lgsmh);
+		break;
 	case MODE_SHELL:
 		shell_main(lgsmh);
 		break;

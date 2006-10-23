@@ -22,7 +22,7 @@ static int pin_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata 
 	} else {
 		do {
 			printf("Please enter PIN: ");
-			rc = fscanf(stdin, "%32s\n", &pinbuf);
+			rc = fscanf(stdin, "%32s", &pinbuf);
 		} while (rc < 1);
 
 		return lgsm_pin(lh, pinbuf);
