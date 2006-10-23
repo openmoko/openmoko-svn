@@ -16,7 +16,15 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#include "moko-toolbar.h"
+#include "moko-toolbox.h"
+
+#define MOKO_TOOL_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_TOOL_BOX, MokoToolBoxPriv));
+
+typedef struct _MokoToolBoxPriv
+{
+    GtkToolbar* toolbar;
+    GtkVBox* searchbar;
+} MokoToolBoxPriv;
 
 /* add your signals here */
 enum {
@@ -25,7 +33,7 @@ enum {
 };
 
 static void moko_tool_box_class_init          (MokoToolBoxClass *klass);
-static void moko_tool_box_init                (MokoToolBox      *f);
+static void moko_tool_box_init                (MokoToolBox      *self);
 
 static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
 
@@ -35,7 +43,7 @@ GType moko_tool_box_get_type (void) /* Typechecking */
 
     if (!self_type)
     {
-        static const GTypeInfo f_info =
+        static const GTypeInfo self_info =
         {
             sizeof (MokoToolBoxClass),
             NULL, /* base_init */
@@ -49,7 +57,7 @@ GType moko_tool_box_get_type (void) /* Typechecking */
         };
 
         /* add the type of your parent class here */
-        self_type = g_type_register_static(GTK_TYPE_TOOLBAR, "MokoToolBox", &f_info, 0);
+        self_type = g_type_register_static(GTK_TYPE_VBOX, "MokoToolBox", &self_info, 0);
     }
 
     return self_type;
@@ -57,6 +65,8 @@ GType moko_tool_box_get_type (void) /* Typechecking */
 
 static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initialization */
 {
+    g_type_class_add_private(klass, sizeof(MokoToolBoxPriv));
+
     moko_tool_box_signals[MOKO_TOOL_BOX_SIGNAL] = g_signal_new ("moko_tool_box",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
@@ -67,8 +77,12 @@ static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initiali
             G_TYPE_NONE, 0);
 }
 
-static void moko_tool_box_init (MokoToolBox *f) /* Instance Construction */
+static void moko_tool_box_init(MokoToolBox* self) /* Instance Construction */
 {
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    priv->toolbar = gtk_toolbar_new();
+    gtk_box_pack_start( GTK_BOX(self), priv->toolbar, TRUE, TRUE, 0 );
+
     /* populate your widget here */
 }
 
@@ -77,9 +91,15 @@ GtkWidget* moko_tool_box_new() /* Construction */
     return GTK_WIDGET(g_object_new(moko_tool_box_get_type(), NULL));
 }
 
-void moko_tool_box_clear(MokoToolBox *f) /* Destruction */
+void moko_tool_box_clear(MokoToolBox* self) /* Destruction */
 {
     /* destruct your widgets here */
 }
 
 /* add new methods here */
+
+GtkToolbar* moko_tool_box_get_tool_bar(MokoToolBox* self)
+{
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    return priv->toolbar;
+}

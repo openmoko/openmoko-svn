@@ -21,37 +21,39 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <gtk/gtkvbox.h>
 #include <gtk/gtktoolbar.h>
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_TOOLBAR            (moko_tool_box_get_type())
-#define MOKO_TOOL_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOLBAR, MokoToolBox))
-#define MOKO_TOOL_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOLBAR, MokoToolBoxClass))
-#define IS_MOKO_TOOL_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOLBAR))
-#define IS_MOKO_TOOL_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOLBAR))
+#define MOKO_TYPE_TOOL_BOX            (moko_tool_box_get_type())
+#define MOKO_TOOL_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOL_BOX, MokoToolBox))
+#define MOKO_TOOL_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOL_BOX, MokoToolBoxClass))
+#define IS_MOKO_TOOL_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOL_BOX))
+#define IS_MOKO_TOOL_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOL_BOX))
 
 typedef struct _MokoToolBox       MokoToolBox;
 typedef struct _MokoToolBoxClass  MokoToolBoxClass;
 
 struct _MokoToolBox
 {
-    GtkToolbar parent;
+    GtkVBox parent;
     /* add pointers to new members here */
 };
 
 struct _MokoToolBoxClass
 {
     /* add your parent class here */
-    GtkToolbarClass parent_class;
+    GtkVBoxClass parent_class;
     void (*moko_tool_box) (MokoToolBox *self);
 };
 
 GType          moko_tool_box_get_type    (void);
 GtkWidget*     moko_tool_box_new         (void);
-void           moko_tool_box_clear       (MokoToolBox *self);
+void           moko_tool_box_clear       (MokoToolBox* self);
 
 /* add additional methods here */
+GtkToolbar*    moko_tool_box_get_tool_bar(MokoToolBox* self);
 
 G_END_DECLS
 

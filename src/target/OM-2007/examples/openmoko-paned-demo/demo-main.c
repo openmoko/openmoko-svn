@@ -19,7 +19,7 @@
 
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
-#include <mokoui/moko-toolbar.h>
+#include <mokoui/moko-toolbox.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
@@ -73,10 +73,12 @@ int main( int argc, char** argv )
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationlist) );
 
     /* tool bar */
-    MokoToolBar* toolbar = MOKO_TOOLBAR(moko_toolbar_new());
+    MokoToolBox* toolbox = MOKO_TOOL_BOX(moko_tool_box_new());
+    GtkToolbar* toolbar = moko_tool_box_get_tool_bar(toolbox);
     GtkToolButton* tool_search = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "search" ));
+    //moko_tool_box_show_search_button( toolbox, TRUE )
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_search, 0 );
-    moko_paned_window_add_toolbar( window, GTK_TOOLBAR(toolbar) );
+    moko_paned_window_add_toolbox( window, toolbox );
 
     GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, 1 );

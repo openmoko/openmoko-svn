@@ -18,8 +18,9 @@
  */
 #include "moko-paned-window.h"
 #include "moko-menubox.h"
-#include "moko-toolbar.h"
+#include "moko-toolbox.h"
 
+#include <gtk/gtktoolbar.h>
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkvpaned.h>
 
@@ -31,7 +32,7 @@ typedef struct _MokoPanedWindowPriv
     GtkVBox* upper;
     GtkVBox* lower;
     MokoMenuBox* menubox;
-    MokoToolBox* toolbar;
+    MokoToolBox* toolbox;
 
 } MokoPanedWindowPriv;
 
@@ -97,7 +98,7 @@ static void moko_paned_window_init (MokoPanedWindow *self) /* Instance Construct
     priv->lower = gtk_vbox_new( FALSE, 0 );
     gtk_paned_add2( GTK_PANED(priv->outerframe), GTK_WIDGET(priv->lower) );
     priv->menubox = NULL;
-    priv->toolbar = NULL;
+    priv->toolbox = NULL;
 }
 
 GtkWidget* moko_paned_window_new() /* Construction */
@@ -153,12 +154,12 @@ void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
     gtk_box_pack_start( GTK_BOX(priv->lower), child, TRUE, TRUE, 0 );
 }
 
-void moko_paned_window_add_toolbar(MokoPanedWindow* self, GtkToolbar* toolbar)
+void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)
 {
-    g_debug( "moko_paned_window_add_toolbar" );
+    g_debug( "moko_paned_window_add_toolbox" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    gtk_box_pack_end( GTK_BOX(priv->upper), toolbar, FALSE, FALSE, 0 );
-    gtk_box_reorder_child( GTK_BOX(priv->upper), toolbar, 1 );
+    gtk_box_pack_end( GTK_BOX(priv->upper), toolbox, FALSE, FALSE, 0 );
+    gtk_box_reorder_child( GTK_BOX(priv->upper), toolbox, 1 );
 }
 
 GtkMenuBar* moko_paned_window_get_menubox(MokoPanedWindow* self)

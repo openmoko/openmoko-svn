@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = openmoko-panel-search
+SUBDIRS = 
+# SUBDIRS = openmoko-panel-search
 
 
