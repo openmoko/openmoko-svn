@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#include <gsmd/usock.h>
+
 /* Generic Information
  *
  * Return value:
@@ -28,6 +30,21 @@
 /* Opaque data structure, content only known to libgsm implementation */
 struct lgsm_handle;
 
+/* Refer to GSM 04.08 [8] subclause 10.5.4.7 */
+enum lgsm_addr_type {
+	LGSM_ATYPE_ISDN_UNKN		= 161,
+	//LGSM_ATYPE_ISDN_INTL		= ,
+	//LGSM_ATYPE_ISDN_NATIONAL	= ,
+};
+
+#define LGSM_ADDR_MAXLEN	31
+struct lgsm_addr {
+	enum lgsm_addr_type type;
+	char addr[LGSM_ADDR_MAXLEN+1];
+};
+
+typedef int lgsm_msg_handler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh);
+
 #define LGSMD_DEVICE_GSMD	"gsmd"
 
 /* initialize usage of libgsmd, obtain handle for othe API calls */
@@ -39,18 +56,12 @@ extern int lgsm_exit(struct lgsm_handle *lh);
 /* Obtain file descriptor (e.g. for select-loop under app control) */
 extern int lgsm_fd(struct lgsm_handle *lh);
 
-/* Refer to GSM 04.08 [8] subclause 10.5.4.7 */
-enum lgsm_addr_type {
-	LGSM_ATYPE_ISDN_UNKN		= 161,
-	//LGSM_ATYPE_ISDN_INTL		= ,
-	//LGSM_ATYPE_ISDN_NATIONAL	= ,
-};
+extern int lgsm_register_handler(struct lgsm_handle *lh, int type, lgsm_msg_handler *handler);
+extern void lgsm_unregister_handler(struct lgsm_handle *lh, int type);
 
-#define LGSM_ADDR_MAXLEN	31
-struct lgsm_addr {
-	char addr[LGSM_ADDR_MAXLEN+1];
-	enum lgsm_addr_type tyoe;
-};
-
+extern int lgsm_passthrough_send(struct lgsm_handle *lh, const char *tx);
 extern int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned int *rx_len);
+extern int lgsm_subscriptions(struct lgsm_handle *lh, u_int32_t subscriptions);
+
+extern int lgsm_pin(struct lgsm_handle *lh, char *pin);
 #endif

@@ -30,15 +30,10 @@ enum gsmd_passthrough_type {
 	GSMD_PASSTHROUGH_RESP	= 2,
 };
 
-enum gsmd_event_type {
-	GSMD_EVENT_NONE		= 0,
-	GSMD_EVENT_SUBSCRIPTIONS= 1,
-	GSMD_EVENT_HAPPENED	= 2,
-};
-
 enum gsmd_msg_voicecall_type {
 	GSMD_VOICECALL_DIAL	= 1,
 	GSMD_VOICECALL_HANGUP	= 2,
+	GSMD_VOICECALL_ANSWER	= 3,
 };
 
 /* Handset / MT related commands */
@@ -53,7 +48,7 @@ enum gsmd_msg_pin_type {
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
 
-#define GSMD_ADDR_MAXLEN	13
+#define GSMD_ADDR_MAXLEN	32
 struct gsmd_addr {
 	u_int8_t type;
 	char number[GSMD_ADDR_MAXLEN+1];
@@ -95,6 +90,7 @@ struct gsmd_msg_hdr {
 	u_int8_t _pad;
 	u_int16_t id;
 	u_int16_t len;
+	u_int8_t data[];
 } __attribute__((packed));
 
 

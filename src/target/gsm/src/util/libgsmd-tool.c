@@ -8,6 +8,9 @@
 
 #include <libgsmd/libgsmd.h>
 
+#include "pin.h"
+#include "event.h"
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
@@ -44,6 +47,7 @@ static struct option opts[] = {
 	{ "version", 0, 0, 'V' },
 	{ "verbose", 0, 0, 'v' },
 	{ "mode", 1, 0, 'm' },
+	{ "pin", 1, 0, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -57,6 +61,7 @@ static void help(void)
 
 int main(int argc, char **argv)
 {
+	char *pin = NULL;
 	int rc, i, mode;
 
 	printf("libgsm-tool - (C) 2006 by Harald Welte\n"
@@ -64,7 +69,7 @@ int main(int argc, char **argv)
 
 	while (1) {
 		int c, option_index = 0;
-		c = getopt_long(argc, argv, "vVhm:", opts, &option_index);
+		c = getopt_long(argc, argv, "vVhm:p:", opts, &option_index);
 		if (c == -1)
 			break;
 
@@ -86,6 +91,9 @@ int main(int argc, char **argv)
 				exit(2);
 			}
 			break;
+		case 'p':
+			pin = optarg;
+			break;
 		}
 	}
 
@@ -94,6 +102,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Can't connect to gsmd\n");
 		exit(1);
 	}
+
+	pin_init(lgsmh, pin);
+	event_init(lgsmh);
 
 	switch (mode) {
 	case MODE_SHELL:

@@ -217,6 +217,7 @@ static int clip_parse(char *buf, int len, const char *param,
 
 	if (!comma)
 		return -EINVAL;
+
 	
 	if (comma - param > GSMD_ADDR_MAXLEN)
 		return -EINVAL;
@@ -308,7 +309,7 @@ static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 /* called by midlevel parser if a response seems unsolicited */
 int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 {
-	int i;
+	int i, rc;
 
 	for (i = 0; i < ARRAY_SIZE(gsm0707_unsolicit); i++) {
 		const char *colon;
@@ -316,14 +317,20 @@ int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 			     strlen(gsm0707_unsolicit[i].prefix)))
 			continue;
 		
-		colon = strchr(buf, ':') + 1;
+		colon = strchr(buf, ':') + 2;
 		if (colon > buf+len)
 			colon = NULL;
 
-		return gsm0707_unsolicit[i].parse(buf, len, colon, g);
+		rc = gsm0707_unsolicit[i].parse(buf, len, colon, g);
+		if (rc < 0) 
+			gsmd_log(GSMD_ERROR, "error %d during parse of "
+				 "unsolicied response `%s'\n", rc, buf);
+		return rc;
 	}
 
 	/* FIXME: call vendor-specific unsolicited code parser */
+	gsmd_log(GSMD_NOTICE, "no parser for unsolicited response `%s'\n", buf);
+
 	return -ENOENT;
 }
 

@@ -87,6 +87,22 @@ int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len)
 		fprintf(stderr, "unable to handle packet type=%u\n", gmh->msg_type);
 }
 
+int lgsm_register_handler(struct lgsm_handle *lh, int type, lgsm_msg_handler *handler)
+{
+	if (type >= __NUM_GSMD_MSGS)
+		return -EINVAL;
+
+	lh->handler[type] = handler;
+
+	return 0;
+}
+
+void lgsm_unregister_handler(struct lgsm_handle *lh, int type)
+{
+	if (type < __NUM_GSMD_MSGS)
+		lh->handler[type] = NULL;
+}
+
 /* blocking read and processing of packets until packet matching 'id' is found */
 int lgsm_blocking_wait_packet(struct lgsm_handle *lh, u_int16_t id, 
 			      struct gsmd_msg_hdr *gmh, int rlen)
@@ -131,6 +147,8 @@ struct lgsm_handle *lgsm_init(const char *device)
 		return NULL;
 	}
 
+	lgsm_evt_init(lh);
+
 	return lh;
 }
 
@@ -139,4 +157,48 @@ int lgsm_exit(struct lgsm_handle *lh)
 	free(lh);
 
 	return 0;
+}
+
+
+static u_int16_t next_msg_id;
+
+int lgsm_send(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	gmh->id = next_msg_id++;
+	return send(lh->fd, (char *) gmh, sizeof(*gmh) + gmh->len, 0);
+}
+
+struct gsmd_msg_hdr *lgsm_gmh_fill(int type, int subtype, int payload_len)
+{
+	struct gsmd_msg_hdr *gmh = malloc(sizeof(*gmh)+payload_len);
+	if (!gmh)
+		return NULL;
+
+	memset(gmh, 0, sizeof(*gmh));
+
+	gmh->version = GSMD_PROTO_VERSION;
+	gmh->msg_type = type;
+	gmh->msg_subtype = subtype;
+	gmh->len = payload_len;
+
+	return gmh;
+}
+
+
+int lgsm_pin(struct lgsm_handle *lh, char *pin)
+{
+	int rc;
+	struct gsmd_msg_hdr *gmh;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_PIN, GSMD_PIN_INPUT, strlen(pin)+1);
+	if (!gmh)
+		return -ENOMEM;
+
+	gmh->data[0] = '\0';
+	strcat(gmh->data, pin);
+
+	rc = lgsm_send(lh, gmh);
+	free(gmh);
+
+	return rc;
 }

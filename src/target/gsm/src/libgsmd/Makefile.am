@@ -5,5 +5,5 @@ AM_CFLAGS = -std=gnu99
 lib_LTLIBRARIES = libgsmd.la
 
 libgsmd_la_LDFLAGS = -Wc,-nostartfiles -version-info $(LIBVERSION)
-libgsmd_la_SOURCES = libgsmd.c libgsmd_input.c libgsmd_voicecall.c libgsmd_passthrough.c
+libgsmd_la_SOURCES = libgsmd.c libgsmd_input.c libgsmd_voicecall.c libgsmd_passthrough.c libgsmd_event.c
 

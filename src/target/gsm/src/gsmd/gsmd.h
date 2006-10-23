@@ -76,7 +76,7 @@ extern int gsmdlog_init(const char *path);
 /* write a message to the daemons' logfile */
 void __gsmd_log(int level, const char *file, int line, const char *function, const char *message, ...);
 /* macro for logging including filename and line number */
-#define gsmd_log(level, format, args...) \
+#define gsmd_log(level, format, args ...) \
 	__gsmd_log(level, __FILE__, __LINE__, __FUNCTION__, format, ## args)
 
 #define DEBUGP(x, args ...)	gsmd_log(GSMD_DEBUG, x, ## args)
