@@ -22,7 +22,7 @@
 #include <gtk/gtkmenubar.h>
 #include <gtk/gtkmenuitem.h>
 
-#define MOKO_MENU_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_MENUBOX, MokoMenuBoxPriv));
+#define MOKO_MENU_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_MENU_BOX, MokoMenuBoxPriv));
 
 typedef struct _MokoMenuBoxPriv
 {
@@ -32,16 +32,16 @@ typedef struct _MokoMenuBoxPriv
 
 /* add your signals here */
 enum {
-    MOKO_MENUBOX_SIGNAL,
+    MOKO_MENU_BOX_SIGNAL,
     LAST_SIGNAL
 };
 
-static void moko_menubox_class_init          (MokoMenuBoxClass *klass);
-static void moko_menubox_init                (MokoMenuBox      *f);
+static void moko_menu_box_class_init          (MokoMenuBoxClass *klass);
+static void moko_menu_box_init                (MokoMenuBox      *f);
 
-static guint moko_menubox_signals[LAST_SIGNAL] = { 0 };
+static guint moko_menu_box_signals[LAST_SIGNAL] = { 0 };
 
-GType moko_menubox_get_type (void) /* Typechecking */
+GType moko_menu_box_get_type (void) /* Typechecking */
 {
     static GType self_type = 0;
 
@@ -52,12 +52,12 @@ GType moko_menubox_get_type (void) /* Typechecking */
             sizeof (MokoMenuBoxClass),
             NULL, /* base_init */
             NULL, /* base_finalize */
-            (GClassInitFunc) moko_menubox_class_init,
+            (GClassInitFunc) moko_menu_box_class_init,
             NULL, /* class_finalize */
             NULL, /* class_data */
             sizeof (MokoMenuBox),
             0,
-            (GInstanceInitFunc) moko_menubox_init,
+            (GInstanceInitFunc) moko_menu_box_init,
         };
 
         /* add the type of your parent class here */
@@ -67,21 +67,21 @@ GType moko_menubox_get_type (void) /* Typechecking */
     return self_type;
 }
 
-static void moko_menubox_class_init (MokoMenuBoxClass *klass) /* Class Initialization */
+static void moko_menu_box_class_init (MokoMenuBoxClass *klass) /* Class Initialization */
 {
     g_type_class_add_private(klass, sizeof(MokoMenuBoxPriv));
 
-    moko_menubox_signals[MOKO_MENUBOX_SIGNAL] = g_signal_new ("moko_menubox",
+    moko_menu_box_signals[MOKO_MENU_BOX_SIGNAL] = g_signal_new ("moko_menu_box",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-            G_STRUCT_OFFSET (MokoMenuBoxClass, moko_menubox),
+            G_STRUCT_OFFSET (MokoMenuBoxClass, moko_menu_box),
             NULL,
             NULL,
             g_cclosure_marshal_VOID__VOID,
             G_TYPE_NONE, 0);
 }
 
-static void moko_menubox_init (MokoMenuBox *self) /* Instance Construction */
+static void moko_menu_box_init (MokoMenuBox *self) /* Instance Construction */
 {
     g_debug( "moko_paned_window_init" );
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
@@ -91,19 +91,19 @@ static void moko_menubox_init (MokoMenuBox *self) /* Instance Construction */
 
 }
 
-GtkWidget* moko_menubox_new() /* Construction */
+GtkWidget* moko_menu_box_new() /* Construction */
 {
-    return GTK_WIDGET(g_object_new(moko_menubox_get_type(), NULL));
+    return GTK_WIDGET(g_object_new(moko_menu_box_get_type(), NULL));
 }
 
-void moko_menubox_clear(MokoMenuBox *f) /* Destruction */
+void moko_menu_box_clear(MokoMenuBox *f) /* Destruction */
 {
     /* destruct your widgets here */
 }
 
-void moko_menubox_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
+void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
 {
-    g_debug( "moko_menubox_set_application_menu" );
+    g_debug( "moko_menu_box_set_application_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
     if (!priv->menubar_l )
@@ -117,7 +117,7 @@ void moko_menubox_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_l), appitem );
 }
 
-void moko_menubox_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
+void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
 {
     void filter_menu_update( GtkMenu* menu, GtkMenuItem* filtitem )
     {
@@ -138,7 +138,7 @@ void moko_menubox_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
             g_debug(" selection done. menu label updated." );
         }
     }
-    g_debug( "moko_menubox_set_filter_menu" );
+    g_debug( "moko_menu_box_set_filter_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
     if (!priv->menubar_r )

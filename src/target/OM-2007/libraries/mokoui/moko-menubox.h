@@ -16,8 +16,8 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#ifndef _MOKO_MENUBOX_H_
-#define _MOKO_MENUBOX_H_
+#ifndef _MOKO_MENU_BOX_H_
+#define _MOKO_MENU_BOX_H_
 
 #include <glib.h>
 #include <glib-object.h>
@@ -26,11 +26,11 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_MENUBOX            (moko_menubox_get_type())
-#define MOKO_MENUBOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_MENUBOX, MokoMenuBox))
-#define MOKO_MENUBOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_MENUBOX, MokoMenuBoxClass))
-#define IS_MOKO_MENUBOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_MENUBOX))
-#define IS_MOKO_MENUBOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_MENUBOX))
+#define MOKO_TYPE_MENU_BOX            (moko_menu_box_get_type())
+#define MOKO_MENU_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_MENU_BOX, MokoMenuBox))
+#define MOKO_MENU_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_MENU_BOX, MokoMenuBoxClass))
+#define IS_MOKO_MENU_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_MENU_BOX))
+#define IS_MOKO_MENU_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_MENU_BOX))
 
 typedef struct _MokoMenuBox       MokoMenuBox;
 typedef struct _MokoMenuBoxClass  MokoMenuBoxClass;
@@ -45,16 +45,16 @@ struct _MokoMenuBoxClass
 {
     /* add your parent class here */
     GtkHBoxClass parent_class;
-    void (*moko_menubox) (MokoMenuBox *self);
+    void (*moko_menu_box) (MokoMenuBox *self);
 };
 
-GType          moko_menubox_get_type    (void);
-GtkWidget*     moko_menubox_new         (void);
-void           moko_menubox_clear       (MokoMenuBox *self);
+GType          moko_menu_box_get_type    (void);
+GtkWidget*     moko_menu_box_new         (void);
+void           moko_menu_box_clear       (MokoMenuBox *self);
 
-void           moko_menubox_set_application_menu(MokoMenuBox* self, GtkMenu* menu);
-void           moko_menubox_set_filter_menu(MokoMenuBox* self, GtkMenu* menu);
+void           moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu);
+void           moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu);
 
 G_END_DECLS
 
-#endif /* _MOKO_MENUBOX_H_ */
+#endif /* _MOKO_MENU_BOX_H_ */

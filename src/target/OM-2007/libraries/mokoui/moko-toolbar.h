@@ -16,8 +16,8 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#ifndef _MOKO_TOOLBAR_H_
-#define _MOKO_TOOLBAR_H_
+#ifndef _MOKO_TOOL_BOX_H_
+#define _MOKO_TOOL_BOX_H_
 
 #include <glib.h>
 #include <glib-object.h>
@@ -25,34 +25,34 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_TOOLBAR            (moko_toolbar_get_type())
-#define MOKO_TOOLBAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOLBAR, MokoToolBar))
-#define MOKO_TOOLBAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOLBAR, MokoToolBarClass))
-#define IS_MOKO_TOOLBAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOLBAR))
-#define IS_MOKO_TOOLBAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOLBAR))
+#define MOKO_TYPE_TOOLBAR            (moko_tool_box_get_type())
+#define MOKO_TOOL_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOLBAR, MokoToolBox))
+#define MOKO_TOOL_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOLBAR, MokoToolBoxClass))
+#define IS_MOKO_TOOL_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOLBAR))
+#define IS_MOKO_TOOL_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOLBAR))
 
-typedef struct _MokoToolBar       MokoToolBar;
-typedef struct _MokoToolBarClass  MokoToolBarClass;
+typedef struct _MokoToolBox       MokoToolBox;
+typedef struct _MokoToolBoxClass  MokoToolBoxClass;
 
-struct _MokoToolBar
+struct _MokoToolBox
 {
     GtkToolbar parent;
     /* add pointers to new members here */
 };
 
-struct _MokoToolBarClass
+struct _MokoToolBoxClass
 {
     /* add your parent class here */
     GtkToolbarClass parent_class;
-    void (*moko_toolbar) (MokoToolBar *self);
+    void (*moko_tool_box) (MokoToolBox *self);
 };
 
-GType          moko_toolbar_get_type    (void);
-GtkWidget*     moko_toolbar_new         (void);
-void           moko_toolbar_clera       (MokoToolBar *self);
+GType          moko_tool_box_get_type    (void);
+GtkWidget*     moko_tool_box_new         (void);
+void           moko_tool_box_clear       (MokoToolBox *self);
 
 /* add additional methods here */
 
 G_END_DECLS
 
-#endif /* _MOKO_TOOLBAR_H_ */
+#endif /* _MOKO_TOOL_BOX_H_ */

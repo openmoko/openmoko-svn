@@ -20,16 +20,16 @@
 
 /* add your signals here */
 enum {
-    MOKO_TOOLBAR_SIGNAL,
+    MOKO_TOOL_BOX_SIGNAL,
     LAST_SIGNAL
 };
 
-static void moko_toolbar_class_init          (MokoToolBarClass *klass);
-static void moko_toolbar_init                (MokoToolBar      *f);
+static void moko_tool_box_class_init          (MokoToolBoxClass *klass);
+static void moko_tool_box_init                (MokoToolBox      *f);
 
-static guint moko_toolbar_signals[LAST_SIGNAL] = { 0 };
+static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
 
-GType moko_toolbar_get_type (void) /* Typechecking */
+GType moko_tool_box_get_type (void) /* Typechecking */
 {
     static GType self_type = 0;
 
@@ -37,47 +37,47 @@ GType moko_toolbar_get_type (void) /* Typechecking */
     {
         static const GTypeInfo f_info =
         {
-            sizeof (MokoToolBarClass),
+            sizeof (MokoToolBoxClass),
             NULL, /* base_init */
             NULL, /* base_finalize */
-            (GClassInitFunc) moko_toolbar_class_init,
+            (GClassInitFunc) moko_tool_box_class_init,
             NULL, /* class_finalize */
             NULL, /* class_data */
-            sizeof (MokoToolBar),
+            sizeof (MokoToolBox),
             0,
-            (GInstanceInitFunc) moko_toolbar_init,
+            (GInstanceInitFunc) moko_tool_box_init,
         };
 
         /* add the type of your parent class here */
-        self_type = g_type_register_static(GTK_TYPE_TOOLBAR, "MokoToolBar", &f_info, 0);
+        self_type = g_type_register_static(GTK_TYPE_TOOLBAR, "MokoToolBox", &f_info, 0);
     }
 
     return self_type;
 }
 
-static void moko_toolbar_class_init (MokoToolBarClass *klass) /* Class Initialization */
+static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initialization */
 {
-    moko_toolbar_signals[MOKO_TOOLBAR_SIGNAL] = g_signal_new ("moko_toolbar",
+    moko_tool_box_signals[MOKO_TOOL_BOX_SIGNAL] = g_signal_new ("moko_tool_box",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-            G_STRUCT_OFFSET (MokoToolBarClass, moko_toolbar),
+            G_STRUCT_OFFSET (MokoToolBoxClass, moko_tool_box),
             NULL,
             NULL,
             g_cclosure_marshal_VOID__VOID,
             G_TYPE_NONE, 0);
 }
 
-static void moko_toolbar_init (MokoToolBar *f) /* Instance Construction */
+static void moko_tool_box_init (MokoToolBox *f) /* Instance Construction */
 {
     /* populate your widget here */
 }
 
-GtkWidget* moko_toolbar_new() /* Construction */
+GtkWidget* moko_tool_box_new() /* Construction */
 {
-    return GTK_WIDGET(g_object_new(moko_toolbar_get_type(), NULL));
+    return GTK_WIDGET(g_object_new(moko_tool_box_get_type(), NULL));
 }
 
-void moko_toolbar_clear(MokoToolBar *f) /* Destruction */
+void moko_tool_box_clear(MokoToolBox *f) /* Destruction */
 {
     /* destruct your widgets here */
 }
