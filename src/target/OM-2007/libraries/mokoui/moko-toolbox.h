@@ -29,8 +29,8 @@ G_BEGIN_DECLS
 #define MOKO_TYPE_TOOL_BOX            (moko_tool_box_get_type())
 #define MOKO_TOOL_BOX(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_TOOL_BOX, MokoToolBox))
 #define MOKO_TOOL_BOX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_TOOL_BOX, MokoToolBoxClass))
-#define IS_MOKO_TOOL_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOL_BOX))
-#define IS_MOKO_TOOL_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOL_BOX))
+#define MOKO_IS_TOOL_BOX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_TOOL_BOX))
+#define MOKO_IS_TOOL_BOX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_TOOL_BOX))
 
 typedef struct _MokoToolBox       MokoToolBox;
 typedef struct _MokoToolBoxClass  MokoToolBoxClass;
@@ -53,6 +53,7 @@ GtkWidget*     moko_tool_box_new         (void);
 void           moko_tool_box_clear       (MokoToolBox* self);
 
 /* add additional methods here */
+void moko_tool_box_add_search_button(MokoToolBox* self );
 GtkToolbar*    moko_tool_box_get_tool_bar(MokoToolBox* self);
 
 G_END_DECLS

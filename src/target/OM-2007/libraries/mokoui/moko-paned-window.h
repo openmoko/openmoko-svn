@@ -31,8 +31,8 @@ G_BEGIN_DECLS
 #define MOKO_TYPE_PANED_WINDOW            (moko_paned_window_get_type())
 #define MOKO_PANED_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_PANED_WINDOW, MokoPanedWindow))
 #define MOKO_PANED_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_PANED_WINDOW, MokoPanedWindowClass))
-#define IS_MOKO_PANED_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_PANED_WINDOW))
-#define IS_MOKO_PANED_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_PANED_WINDOW))
+#define MOKO_IS_PANED_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_PANED_WINDOW))
+#define MOKO_IS_PANED_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_PANED_WINDOW))
 
 typedef struct _MokoPanedWindow       MokoPanedWindow;
 typedef struct _MokoPanedWindowClass  MokoPanedWindowClass;

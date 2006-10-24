@@ -69,7 +69,8 @@ static void moko_window_class_init (MokoWindowClass *klass) /* Class Initializat
 
 static void moko_window_init (MokoWindow *self) /* Instance Construction */
 {
-    /* populate your widget here */
+    g_debug( "moko_window_init" );
+    gtk_widget_set_size_request( GTK_WIDGET(self), 480, 640 ); //FIXME get from style
 }
 
 GtkWidget* moko_window_new() /* Construction */

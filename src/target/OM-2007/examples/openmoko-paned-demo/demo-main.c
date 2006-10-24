@@ -73,11 +73,8 @@ int main( int argc, char** argv )
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationlist) );
 
     /* tool bar */
-    MokoToolBox* toolbox = MOKO_TOOL_BOX(moko_tool_box_new());
+    MokoToolBox* toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
     GtkToolbar* toolbar = moko_tool_box_get_tool_bar(toolbox);
-    GtkToolButton* tool_search = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "search" ));
-    //moko_tool_box_show_search_button( toolbox, TRUE )
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_search, 0 );
     moko_paned_window_add_toolbox( window, toolbox );
 
     GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
