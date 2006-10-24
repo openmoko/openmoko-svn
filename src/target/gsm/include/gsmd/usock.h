@@ -53,6 +53,9 @@ enum gsmd_msg_phone {
 
 enum gsmd_msg_network {
 	GSMD_NETWORK_REGISTER	= 1,
+	GSMD_NETWORK_SIGQ_GET	= 2,
+	GSMD_NETWORK_VMAIL_GET	= 3,
+	GSMD_NETWORK_VMAIL_SET	= 4,
 };
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
@@ -61,7 +64,17 @@ enum gsmd_msg_network {
 struct gsmd_addr {
 	u_int8_t type;
 	char number[GSMD_ADDR_MAXLEN+1];
-};
+} __attribute__ ((packed));
+
+struct gsmd_signal_quality {
+	u_int8_t rssi;
+	u_int8_t ber;
+} __attribute__ ((packed));
+
+struct gsmd_voicemail {
+	u_int8_t enable;
+	struct gsmd_addr addr;
+} __attribute__ ((packed));
 
 struct gsmd_evt_auxdata {
 	union {
@@ -89,6 +102,9 @@ struct gsmd_evt_auxdata {
 		struct {
 			u_int8_t tz;
 		} timezone;
+		struct {
+			struct gsmd_signal_quality sigq;
+		} signal;
 	} u;
 } __attribute__((packed));
 
@@ -103,4 +119,27 @@ struct gsmd_msg_hdr {
 } __attribute__((packed));
 
 
+#ifdef __GSMD__
+
+#include <common/linux_list.h>
+
+#include <gsmd/usock.h>
+#include <gsmd/gsmd.h>
+
+struct gsmd_user;
+
+struct gsmd_ucmd {
+	struct llist_head list;
+	struct gsmd_msg_hdr hdr;
+	char buf[];
+} __attribute__ ((packed));
+
+extern int usock_init(struct gsmd *g);
+extern void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu);
+extern struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t len);
+extern int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt);
+
+#endif /* __GSMD__ */
+
 #endif
+

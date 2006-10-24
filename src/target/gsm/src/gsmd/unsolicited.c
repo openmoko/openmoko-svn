@@ -5,14 +5,14 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "gsmd.h"
+
 #include <gsmd/usock.h>
 #include <gsmd/event.h>
 #include <gsmd/ts0707.h>
+#include <gsmd/unsolicited.h>
 
-#include "gsmd.h"
-#include "usock.h"
-
-static struct gsmd_ucmd *build_event(u_int8_t type, u_int8_t subtype, u_int8_t len)
+struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t len)
 {
 	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd)+len);
 
@@ -38,7 +38,7 @@ static struct gsmd_ucmd *ucmd_copy(const struct gsmd_ucmd *orig)
 	return copy;
 }
 
-static int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt)
+int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt)
 {
 	struct gsmd_user *gu;
 	int num_sent = 0;
@@ -65,7 +65,7 @@ static int ring_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	/* FIXME: generate ring event */
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
 					     sizeof(struct gsmd_evt_auxdata));	
 	struct gsmd_evt_auxdata *aux;
 	if (!ucmd)
@@ -80,7 +80,7 @@ static int ring_parse(char *buf, int len, const char *param,
 
 static int cring_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
 	if (!ucmd)
@@ -114,7 +114,7 @@ static int creg_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	const char *comma = strchr(param, ',');
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_NETREG,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_NETREG,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
 	if (!ucmd)
@@ -124,11 +124,11 @@ static int creg_parse(char *buf, int len, const char *param,
 	aux->u.netreg.state = atoi(param);
 	if (comma) {
 		/* we also have location area code and cell id to parse (hex) */
-		aux->u.netreg.lac = atoi(comma+1);
+		aux->u.netreg.lac = strtoul(comma+2, NULL, 16);
 		comma = strchr(comma+1, ',');
 		if (!comma)
 			return -EINVAL;
-		aux->u.netreg.ci = atoi(comma+1);
+		aux->u.netreg.ci = strtoul(comma+2, NULL, 16);
 	}
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_NETREG);
@@ -140,7 +140,7 @@ static int ccwa_parse(char *buf, int len, const char *param,
 {
 	const char *token;
 	unsigned int type;
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_CALL_WAIT,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_CALL_WAIT,
 					     sizeof(struct gsmd_addr));
 	struct gsmd_addr *gaddr;
 
@@ -205,7 +205,7 @@ static int cgreg_parse(char *buf, int len, const char *param,
 static int clip_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CLIP,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CLIP,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
 	const char *comma = strchr(param, ',');
@@ -232,7 +232,7 @@ static int clip_parse(char *buf, int len, const char *param,
 static int colp_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_OUT_COLP,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_OUT_COLP,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
 	const char *comma = strchr(param, ',');
@@ -257,7 +257,7 @@ static int colp_parse(char *buf, int len, const char *param,
 static int ctzv_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
-	struct gsmd_ucmd *ucmd = build_event(GSMD_MSG_EVENT, GSMD_EVT_TIMEZONE,
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_TIMEZONE,
 					     sizeof(struct gsmd_evt_auxdata));
 	struct gsmd_evt_auxdata *aux;
 	int tz;
@@ -277,11 +277,6 @@ static int ctzv_parse(char *buf, int len, const char *param,
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_TIMEZONE);
 }
-
-struct gsmd_unsolicit {
-	const char *prefix;
-	int (*parse)(char *unsol, int len, const char *param, struct gsmd *gsmd);
-};
 
 static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 	{ "RING",	&ring_parse },
@@ -310,7 +305,29 @@ static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 {
 	int i, rc;
+	struct gsmd_vendor_plugin *vpl = g->vendorpl;
 
+	/* call vendor-specific unsolicited code parser */
+	if (vpl && vpl->num_unsolicit) {
+		for (i = 0; i < vpl->num_unsolicit; i++) {
+			const char *colon;
+			if (strncmp(buf, vpl->unsolicit[i].prefix,
+				     strlen(vpl->unsolicit[i].prefix)))
+				continue;
+
+			colon = strchr(buf, ':') + 2;
+			if (colon > buf+len)
+				colon = NULL;
+
+			rc = vpl->unsolicit[i].parse(buf, len, colon, g);
+			if (rc < 0) 
+				gsmd_log(GSMD_ERROR, "error %d during parse of "
+					 "unsolicied response `%s'\n", rc, buf);
+			return rc;
+		}
+	}
+
+	/* call generic unsolicited code parser */
 	for (i = 0; i < ARRAY_SIZE(gsm0707_unsolicit); i++) {
 		const char *colon;
 		if (strncmp(buf, gsm0707_unsolicit[i].prefix,
@@ -328,7 +345,6 @@ int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 		return rc;
 	}
 
-	/* FIXME: call vendor-specific unsolicited code parser */
 	gsmd_log(GSMD_NOTICE, "no parser for unsolicited response `%s'\n", buf);
 
 	return -ENOENT;
@@ -382,7 +398,7 @@ int generate_event_from_cme(struct gsmd *g, unsigned int cme_error)
 			 ARRAY_SIZE(errors_creating_events)))
 		return 0;
 	
-	gu = build_event(GSMD_MSG_EVENT, GSMD_EVT_PIN, sizeof(*eaux));
+	gu = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_PIN, sizeof(*eaux));
 	if (!gu)
 		return -1;
 	eaux = ((void *)gu) + sizeof(*gu);

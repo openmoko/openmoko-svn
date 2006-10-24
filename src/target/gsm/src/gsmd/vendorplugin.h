@@ -1,6 +1,8 @@
 #ifndef __GSMD_VENDORPLUG_H
 #define __GSMD_VENDORPLUG_H
 
+#ifdef __GSMD__
+
 #include "gsmd.h"
 
 /* gsmd vendor-specific plugin */
@@ -25,5 +27,7 @@ struct gsmd_vendorspecific {
 };
 
 /* ciphering indications */
+
+#endif /* __GSMD__ */
 
 #endif

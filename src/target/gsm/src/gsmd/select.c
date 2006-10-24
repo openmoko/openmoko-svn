@@ -19,7 +19,10 @@
 
 #include <fcntl.h>
 #include <common/linux_list.h>
-#include "select.h"
+
+#include "gsmd.h"
+
+#include <gsmd/select.h>
 
 static int maxfd = 0;
 static LLIST_HEAD(gsmd_fds);

@@ -1,6 +1,8 @@
 #ifndef __GSMD_SELECT_H
 #define __GSMD_SELECT_H
 
+#ifdef __GSMD__
+
 #include <common/linux_list.h>
 
 #define GSMD_FD_READ	0x0001
@@ -15,8 +17,10 @@ struct gsmd_fd {
 	void *data;			/* void * to pass to callback */
 };
 
-int gsmd_register_fd(struct gsmd_fd *ufd);
-void gsmd_unregister_fd(struct gsmd_fd *ufd);
-int gsmd_select_main(void);
+extern int gsmd_register_fd(struct gsmd_fd *ufd);
+extern void gsmd_unregister_fd(struct gsmd_fd *ufd);
+extern int gsmd_select_main(void);
+
+#endif /* __GSMD__ */
 
 #endif

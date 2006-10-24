@@ -82,9 +82,11 @@ int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len)
 	handler = lh->handler[gmh->msg_type];
 	
 	if (handler)
-		handler(lh, gmh);
-	else
+		return handler(lh, gmh);
+	else {
 		fprintf(stderr, "unable to handle packet type=%u\n", gmh->msg_type);
+		return 0;
+	}
 }
 
 int lgsm_register_handler(struct lgsm_handle *lh, int type, lgsm_msg_handler *handler)

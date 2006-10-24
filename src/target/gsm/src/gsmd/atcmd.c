@@ -8,11 +8,13 @@
 #include <sys/types.h>
 
 #include <common/linux_list.h>
-#include <gsmd/ts0707.h>
 
 #include "gsmd.h"
-#include "atcmd.h"
-#include "unsolicited.h"
+
+#include <gsmd/ts0707.h>
+#include <gsmd/gsmd.h>
+#include <gsmd/atcmd.h>
+#include <gsmd/unsolicited.h>
 
 /* libgsmd / gsmd AT command interpreter / parser / constructor
  * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
@@ -179,7 +181,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	 *    TBD
 	 */
 
-	if (buf[0] == '+') {
+	if (buf[0] == '+' || buf[0] == '%') {
 		/* an extended response */
 		const char *colon = strchr(buf, ':');
 		if (!colon) {

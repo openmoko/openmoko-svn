@@ -16,3 +16,7 @@ int lgsm_netreg_register(struct lgsm_handle *lh, int oper)
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_REGISTER);
 }
 
+int lgsm_signal_quality(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_SIGQ_GET);
+}

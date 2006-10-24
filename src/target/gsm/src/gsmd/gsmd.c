@@ -12,13 +12,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <gsmd/gsmd.h>
-
 #include "gsmd.h"
-#include "atcmd.h"
-#include "select.h"
-#include "usock.h"
-#include "vendorplugin.h"
+
+#include <gsmd/gsmd.h>
+#include <gsmd/atcmd.h>
+#include <gsmd/select.h>
+#include <gsmd/usock.h>
+#include <gsmd/vendorplugin.h>
 
 static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
@@ -26,7 +26,7 @@ static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
-static int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
+int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 {
 	struct gsmd_atcmd *cmd;
 	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0);
@@ -43,7 +43,10 @@ int gsmd_initsettings(struct gsmd *gsmd)
 	rc |= gsmd_simplecmd(gsmd, "ATE0V1");
 	rc |= gsmd_simplecmd(gsmd, "AT+CRC=1;+CREG=2;+CMEE=1;+CLIP=1;+COLP=1;+CTZR=1;+CFUN=1");
 
-	return rc;
+	if (gsmd->vendorpl && gsmd->vendorpl->initsettings)
+		return gsmd->vendorpl->initsettings(gsmd);
+	else
+		return rc;
 }
 
 struct bdrt {
@@ -198,6 +201,11 @@ int main(int argc, char **argv)
 		fclose(stdin);
 		setsid();
 	}
+
+	/* FIXME: do this dynamically */
+	ticalypso_init();
+
+	gsmd_vendor_plugin_find(&g);
 
 	gsmd_initsettings(&g);
 

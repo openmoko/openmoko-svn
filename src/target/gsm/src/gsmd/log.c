@@ -11,6 +11,8 @@
 
 #include "gsmd.h"
 
+#include <gsmd/gsmd.h>
+
 static FILE *logfile;
 static FILE syslog_dummy;
 static int loglevel;

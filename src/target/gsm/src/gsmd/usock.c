@@ -7,13 +7,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include "gsmd.h"
+
 #include <gsmd/gsmd.h>
 #include <gsmd/usock.h>
-
-#include "gsmd.h"
-#include "select.h"
-#include "atcmd.h"
-#include "usock.h"
+#include <gsmd/select.h>
+#include <gsmd/atcmd.h>
+#include <gsmd/usock.h>
 
 void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu)
 {
@@ -169,15 +169,122 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
+static int network_vmail_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_voicemail *vmail;
+	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd)+sizeof(*vmail));
+	char *comma;
+
+	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
+
+	if (!ucmd)
+		return -ENOMEM;
+	
+	/* FIXME: pass error values back somehow */
+	ucmd->hdr.version = GSMD_PROTO_VERSION;
+	ucmd->hdr.msg_type = GSMD_MSG_NETWORK;
+	ucmd->hdr.len = sizeof(*vmail);
+	ucmd->hdr.id = cmd->id;
+
+	if (cmd->buf[7] == '=') {
+		/* response to set command */
+		ucmd->hdr.msg_subtype = GSMD_NETWORK_VMAIL_SET;
+		/* FIXME: */
+		return 0;
+	} else {
+		/* response to get command */
+		char *tok = strtok(resp, ",");
+		if (!tok)
+			goto out_free_einval;
+		ucmd->hdr.msg_subtype = GSMD_NETWORK_VMAIL_GET;
+		vmail->enable = atoi(tok);
+
+		tok = strtok(NULL, ",");
+		if (!tok)
+			goto out_free_einval;
+		strncpy(vmail->addr.number, tok, GSMD_ADDR_MAXLEN);
+		vmail->addr.number[GSMD_ADDR_MAXLEN] = '\0';
+
+		tok = strtok(NULL, ",");
+		if (!tok)
+			goto out_free_einval;
+		vmail->addr.type = atoi(tok);
+	}
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+
+out_free_einval:
+	gsmd_log(GSMD_ERROR, "can't understand voicemail response\n");
+	free(ucmd);
+	return -EINVAL;
+}
+
+static struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type, u_int8_t msg_subtype,
+					u_int16_t id)
+{
+	struct gsmd_ucmd *ucmd;
+
+	ucmd = malloc(sizeof(*ucmd)+len);
+	if (!ucmd)
+		return NULL;
+	
+	ucmd->hdr.version = GSMD_PROTO_VERSION;
+	ucmd->hdr.msg_type = msg_type;
+	ucmd->hdr.msg_subtype = msg_subtype;
+	ucmd->hdr.len = len;
+	ucmd->hdr.id = id;
+
+	return ucmd;
+}
+
+static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_signal_quality *gsq;
+	struct gsmd_ucmd *ucmd;
+	char *comma;
+	
+	ucmd = gsmd_ucmd_fill(sizeof(*gsq), GSMD_MSG_NETWORK,
+			      GSMD_NETWORK_SIGQ_GET, 0);
+	if (!ucmd)
+		return -ENOMEM;
+	
+	gsq = (struct gsmd_signal_quality *) ucmd->buf;
+	gsq->rssi = atoi(resp);
+	comma = strchr(resp, ',');
+	if (!comma) {
+		free(ucmd);
+		return -EIO;
+	}
+	gsq->ber = atoi(comma+1);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
 static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			     int len)
 {
 	struct gsmd_atcmd *cmd;
+	struct gsmd_voicemail *vmail = (struct gsmd_voicemail *) gph->data;
 
 	switch (gph->msg_subtype) {
 	case GSMD_NETWORK_REGISTER:
 		cmd = atcmd_fill("AT+COPS", 9+1,
 				 &null_cmd_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_VMAIL_GET:
+		cmd = atcmd_fill("AT+CSVM?", 8+1, &network_vmail_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_VMAIL_SET:
+		cmd = atcmd_fill("AT+CSVM=", 8+1, &network_vmail_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_SIGQ_GET:
+		cmd = atcmd_fill("AT+CSQ", 6+1, &network_sigq_cb, gu, 0);
 		break;
 	default:
 		return -EINVAL;
