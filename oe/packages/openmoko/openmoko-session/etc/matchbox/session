@@ -19,6 +19,8 @@ case `module_id` in
 		;;
 esac
 
+if [ -e /etc/openmoko ]; then
+
 matchbox-panel -display $DISPLAY \
                --id 1 \
                --orientation north \
@@ -26,7 +28,7 @@ matchbox-panel -display $DISPLAY \
                --no-session \
                --no-menu \
                --no-flip \
-               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-header-background.png &
+               --bgpixmap /usr/share/openmoko/pixmaps/openmoko-header-background.png &
 
 matchbox-panel -display $DISPLAY \
                --id 2 \
@@ -35,15 +37,16 @@ matchbox-panel -display $DISPLAY \
                --no-session \
                --no-menu \
                --no-flip \
-               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-footer-background.png &
+               --bgpixmap /usr/share/openmoko/pixmaps/openmoko-footer-background.png &
 
-matchbox-window-manager -display $DISPLAY \
-                        -use_titlebar yes \
-                        -use_super_modal yes \
-                        -use_lowlight yes \
-                        -use_dialog_mode static \
-                        -use_desktop_mode plain \
-                        -use_cursor no &
+#matchbox-window-manager -display $DISPLAY \
+#                        -use_titlebar yes \
+#                        -use_super_modal yes \
+#                        -use_lowlight yes \
+#                        -use_dialog_mode static \
+#                        -use_desktop_mode plain \
+#                        -use_cursor no &
+#
 
 matchbox-desktop --icon-size 96 \
                  --icon-padding 128 \
@@ -52,11 +55,11 @@ matchbox-desktop --icon-size 96 \
 
 mb-applet-startup-monitor &                 
 
-matchbox-panel --orientation east \
-               --padding 4 \
-               --no-menu \
-               --no-session \
-               --default-apps mb-applet-home,mb-applet-clock &
+#matchbox-panel --orientation east \
+#               --padding 4 \
+#               --no-menu \
+#               --no-session \
+#               --default-apps mb-applet-home,mb-applet-clock &
 
 exec matchbox-window-manager -use_cursor $SHOWCURSOR $@
 
