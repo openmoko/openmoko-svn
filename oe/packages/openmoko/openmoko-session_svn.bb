@@ -1,12 +1,12 @@
-DESCRIPTION = "Custom matchbox session files for OpenMoko"
+DESCRIPTION = "Matchbox session files for OpenMoko"
 HOMEPAGE = "http://www.openmoko.org"
 SECTION = "openmoko/base"
 LICENSE = "GPL"
 RDEPENDS = "matchbox matchbox-applet-startup-monitor gtk-theme-clearlooks"
-PR = "r0"
+PV = "0.0+svn${SRCDATE}"
 
-SRC_URI = "file://etc"
-S = ${WORKDIR}
+SRC_URI = "${OPENMOKO_MIRROR};module=etc;proto=http"
+S = "${WORKDIR}"
 
 do_install() {
 	cp -R ${S}/etc ${D}/etc
