@@ -3,11 +3,10 @@ HOMEPAGE = "http://www.openmoko.org"
 SECTION = "openmoko/base"
 LICENSE = "GPL"
 
-SRC_URI = "file://openmoko-standard"
+SRC_URI = "${OPENMOKO_MIRROR}/artwork;module=themes;proto=http"
+S = "${WORKDIR}"
 
-FILESPATH += ":/local/pkg/openmoko/OM-2007/artwork/themes/"
-
-dirs = "openmoko-standard"
+dirs = "themes/openmoko-standard"
 
 do_install() {
 	find ${WORKDIR} -name ".svn" | xargs rm -rf
