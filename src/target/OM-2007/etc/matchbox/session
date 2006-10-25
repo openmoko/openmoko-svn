@@ -1,0 +1,65 @@
+#!/bin/sh
+
+module_id() {
+    awk 'BEGIN { FS=": " } /Hardware/ { print $2 } ' </proc/cpuinfo
+}
+
+SHOWCURSOR="no"
+
+## Start up machine specific input devices. Really needs to go in its own session
+case `module_id` in
+	# On Zaurus models, zaurusd takes care of mbinputmgr for us in its hinge scripts
+	"Generic OMAP1510/1610/1710")
+		/usr/bin/mbinputmgr &
+		;;
+        # qemu machines.. likely need better detection 
+	"ARM-IntegratorCP" | "ARM-Versatile PB")
+		/usr/bin/mbinputmgr &
+		SHOWCURSOR="yes"
+		;;
+esac
+
+if [ -e /etc/openmoko ]; then
+
+matchbox-panel -display $DISPLAY \
+               --id 1 \
+               --orientation north \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap /usr/share/openmoko/pixmaps/openmoko-header-background.png &
+
+matchbox-panel -display $DISPLAY \
+               --id 2 \
+               --orientation south \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap /usr/share/openmoko/pixmaps/openmoko-footer-background.png &
+
+#matchbox-window-manager -display $DISPLAY \
+#                        -use_titlebar yes \
+#                        -use_super_modal yes \
+#                        -use_lowlight yes \
+#                        -use_dialog_mode static \
+#                        -use_desktop_mode plain \
+#                        -use_cursor no &
+#
+
+matchbox-desktop --icon-size 96 \
+                 --icon-padding 128 \
+                 --font sans-24:bold \
+                 --titlefont sans-24:bold &
+
+mb-applet-startup-monitor &                 
+
+#matchbox-panel --orientation east \
+#               --padding 4 \
+#               --no-menu \
+#               --no-session \
+#               --default-apps mb-applet-home,mb-applet-clock &
+
+exec matchbox-window-manager -use_cursor $SHOWCURSOR $@
+
