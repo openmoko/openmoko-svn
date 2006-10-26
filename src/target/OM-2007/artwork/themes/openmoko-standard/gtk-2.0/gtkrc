@@ -1,6 +1,6 @@
 gtk-font-name = "Vera Sans 16"
 
-include "gtknotebook"
+include "mokotoolbox"
 
 # pixmap_path "/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0"
 
@@ -198,68 +198,3 @@ style "scrollbar" {
   }
 }
 class "GtkScrollbar" style "scrollbar"
-
-#----------------------------------------------------------------------------
-style "MokoToolBox" {
-#----------------------------------------------------------------------------
-    engine "pixmap" {
-        image {
-            function        = BOX
-            recolorable     = TRUE
-            # shadow          = IN
-            file            = "openmoko-mokotoolbox-background.png"
-            border          = { 0, 0, 1, 1 }
-            stretch         = TRUE
-        }
-    }
-}
-widget "*.moko_toolbar1" style "MokoToolBox"
-
-#----------------------------------------------------------------------------
-style "MokoToolSearch" {
-#----------------------------------------------------------------------------
-    engine "pixmap" {
-        image {
-            function        = BOX
-            recolorable     = TRUE
-            file            = "openmoko-mokosearchbar-background.png"
-            border          = { 0, 0, 1, 1 }
-            stretch         = TRUE
-        }
-    }
-    xthickness = 40
-}
-widget "*.moko_toolbar2" style "MokoToolSearch"
-
-#----------------------------------------------------------------------------
-style "MokoToolSearchEntry" {
-#----------------------------------------------------------------------------
-    engine "pixmap" {
-        image {
-            function        = FLAT_BOX
-            recolorable     = TRUE
-            file            = "openmoko-search-entry-background.png"
-            border          = { 0, 0, 0, 0 }
-            stretch         = TRUE
-        }
-    }
-}
-widget "*.moko_search_entry" style "MokoToolSearchEntry"
-
-
-#----------------------------------------------------------------------------
-style "mokosearchbutton" {
-#----------------------------------------------------------------------------
-    engine "pixmap" {
-        image {
-            function        = BOX
-            recolorable     = TRUE
-            # shadow          = IN
-            file            = "openmoko-search-button.png"
-            border          = { 0, 4, 1, 1 }
-            stretch         = TRUE
-        }
-    }
-}
-#class "GtkToolButton" style "mokosearchbutton"
-widget "*moko_search_button*GtkAccelLabel" style "mokosearchbutton"
