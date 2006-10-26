@@ -77,6 +77,7 @@ int main( int argc, char** argv )
     GtkToolbar* toolbar = moko_tool_box_get_tool_bar(toolbox);
     moko_paned_window_add_toolbox( window, toolbox );
 
+#if 0
     GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, 1 );
 
@@ -97,7 +98,7 @@ int main( int argc, char** argv )
 
     GtkToolButton* tool_action4 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action4" ));
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, 4 );
-
+#endif
     /* details area */
     GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );
     moko_paned_window_set_lower_pane( window, GTK_WIDGET(detailslist) );

@@ -21,7 +21,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
-#include <gtk/gtkvbox.h>
+#include <gtk/gtknotebook.h>
 #include <gtk/gtktoolbar.h>
 
 G_BEGIN_DECLS
@@ -37,14 +37,14 @@ typedef struct _MokoToolBoxClass  MokoToolBoxClass;
 
 struct _MokoToolBox
 {
-    GtkVBox parent;
+    GtkNotebook parent;
     /* add pointers to new members here */
 };
 
 struct _MokoToolBoxClass
 {
     /* add your parent class here */
-    GtkVBoxClass parent_class;
+    GtkNotebookClass parent_class;
     void (*moko_tool_box) (MokoToolBox *self);
 };
 

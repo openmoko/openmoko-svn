@@ -2,7 +2,8 @@ TEMPLATE = lib
 VERSION = 0.0.1
 
 HEADERS = \
-    moko-pixmap-container.h \
+	moko-pixmap-container.h \
+	moko-pixmap-button.h \
 	moko-application.h \
 	moko-window.h \
 	moko-finger-window.h \
@@ -12,6 +13,7 @@ HEADERS = \
 	moko-search-bar.h
 SOURCES = \
     moko-pixmap-container.c \
+	moko-pixmap-button.c \
 	moko-application.c \
 	moko-window.c \
 	moko-finger-window.c \
