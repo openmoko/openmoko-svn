@@ -17,6 +17,8 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 #include "moko-paned-window.h"
+
+#include "moko-alignment.h"
 #include "moko-menubox.h"
 #include "moko-toolbox.h"
 
@@ -30,6 +32,7 @@ typedef struct _MokoPanedWindowPriv
 {
     GtkVPaned* outerframe;
     GtkVBox* upper;
+    MokoAlignment* upperenclosing;
     GtkVBox* lower;
     MokoMenuBox* menubox;
     MokoToolBox* toolbox;
@@ -143,7 +146,12 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
     g_debug( "moko_paned_window_set_upper_pane" );
 
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    gtk_box_pack_end( GTK_BOX(priv->upper), child, TRUE, TRUE, 0 );
+
+    priv->upperenclosing = moko_alignment_new();
+    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 10, 10, 10, 10 ); //FIXME get from style
+    gtk_box_pack_end( GTK_BOX(priv->upper), GTK_WIDGET(priv->upperenclosing), TRUE, TRUE, 0 );
+    gtk_container_add( GTK_CONTAINER(priv->upperenclosing), child );
+    //gtk_box_pack_end( GTK_BOX(priv->upper), child, TRUE, TRUE, 0 );
 }
 
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
