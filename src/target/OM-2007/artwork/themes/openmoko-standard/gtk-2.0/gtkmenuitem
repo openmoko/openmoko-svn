@@ -1,0 +1,12 @@
+style "gtkmenuitem" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            file            = "transparent100.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+}
+class "GtkMenuItem" style "gtkmenuitem"

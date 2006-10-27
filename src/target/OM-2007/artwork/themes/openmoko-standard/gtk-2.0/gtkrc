@@ -1,15 +1,14 @@
 gtk-font-name = "Vera Sans 16"
 
+include "gtkmenuitem"
+include "gtkscrollbar"
+
 include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
 
-# pixmap_path "/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0"
-
-#----------------------------------------------------------------------------
 style "default" {
-#----------------------------------------------------------------------------
-# bg_pixmap[NORMAL] = "light-brushed.png"
+#    bg_pixmap[NORMAL] = "light-brushed.png"
 
     fg[NORMAL]        = "#201d15" # very dark brown
     fg[PRELIGHT]      = "#201d15" # very dark brown
@@ -36,134 +35,5 @@ style "default" {
     text[INSENSITIVE] = "#a69872" # very dark brown
 
 }
-
-# common default
 # class "GtkWidget" style "default"
 
-
-#----------------------------------------------------------------------------
-style "popup-menus" {
-#----------------------------------------------------------------------------
-   engine "pixmap" {
-        image {
-            function        = BOX
-            recolorable     = TRUE
-            # shadow          = IN
-            file            = "gold-button.png"
-            border          = { 10, 10, 6, 6 }
-            stretch         = TRUE
-        }
-    }
-    GtkMenuItem       ::selected_shadow_type = etched-out
-}
-class "GtkMenuItem" style "popup-menus"
-
-#----------------------------------------------------------------------------
-style "scrollbar" {
-#----------------------------------------------------------------------------
-#
-# properties
-#
-    GtkScrollbar::slider_width = 32
-    GtkScrollbar::stepper_size = 24
-    GtkScrollbar::stepper_spacing = 8
-
-    GtkScrollbar::has_backward_stepper = 1
-    GtkScrollbar::has_secondary_forward_stepper = 1
-
-    GtkScrollbar::has_forward_stepper = 1
-    GtkScrollbar::has_secondary_backward_stepper = 1
-
-    engine "pixmap" {
-#
-# sliders
-#
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        detail          = "slider"
-        file            = "openmoko-scrollbar-horizontal.png"
-        border          = { 13, 12, 2, 2 }
-        stretch         = TRUE
-        orientation     = HORIZONTAL
-      }
-
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        detail          = "slider"
-        file            = "openmoko-scrollbar-vertical.png"
-        border          = { 2, 2, 15, 15 }
-        stretch         = TRUE
-        orientation     = VERTICAL
-      }
-#
-# through
-#
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        detail          = "trough"
-        file            = "vtrough.png"
-        border          = { 3, 3, 23, 23 }
-        stretch         = TRUE
-        orientation     = VERTICAL
-      }
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        detail          = "trough"
-        file            = "htrough.png"
-        border          = { 23, 23, 3, 3 }
-        stretch         = TRUE
-        orientation     = HORIZONTAL
-      }
-#
-# arrows
-#
-    image {
-        function        = BOX
-        recolorable     = TRUE
-        file            = "arrow-background.png"
-        border          = { 0, 0, 0, 0 }
-        stretch         = TRUE
-      }
-    image {
-        function        = ARROW
-        recolorable     = TRUE
-        overlay_file    = "arrow-up.png"
-        overlay_border	= { 0, 0, 0, 0 }
-        overlay_stretch	= TRUE
-        arrow_direction	= UP
-      }
-    image {
-        function        = ARROW
-        recolorable     = TRUE
-        overlay_file    = "arrow-down.png"
-        overlay_border  = { 0, 0, 0, 0 }
-        overlay_stretch = TRUE
-        arrow_direction = DOWN
-      }
-    image {
-        function        = ARROW
-        recolorable     = TRUE
-        overlay_file    = "arrow-left.png"
-        overlay_border  = { 0, 0, 0, 0 }
-        overlay_stretch = TRUE
-        arrow_direction = LEFT
-      }
-    image {
-        function        = ARROW
-        recolorable     = TRUE
-        overlay_file    = "arrow-right.png"
-        overlay_border  = { 0, 0, 0, 0 }
-        overlay_stretch = TRUE
-        arrow_direction = RIGHT
-      }
-  }
-}
-class "GtkScrollbar" style "scrollbar"
