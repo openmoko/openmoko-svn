@@ -22,7 +22,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtknotebook.h>
-#include <gtk/gtktoolbar.h>
+#include <gtk/gtkhbox.h>
 
 G_BEGIN_DECLS
 
@@ -54,7 +54,8 @@ void           moko_tool_box_clear       (MokoToolBox* self);
 
 /* add additional methods here */
 void moko_tool_box_add_search_button(MokoToolBox* self );
-GtkToolbar*    moko_tool_box_get_tool_bar(MokoToolBox* self);
+GtkHBox* moko_tool_box_get_button_box( MokoToolBox* self );
+void moko_tool_box_add_action_button(MokoToolBox* self );
 
 G_END_DECLS
 

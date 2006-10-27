@@ -45,3 +45,17 @@ style "mokotoolbox-search-entry" {
 }
 widget "*.mokotoolbox-search-entry" style "mokotoolbox-search-entry"
 
+style "mokotoolbox-action-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            file            = "openmoko-mokotoolbox-action-button-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+    MokoPixmapButton::size-request = { 0, 82, 0, 38 }
+}
+widget "*.mokotoolbox-action-button" style "mokotoolbox-action-button"
+

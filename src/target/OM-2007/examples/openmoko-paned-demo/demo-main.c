@@ -74,12 +74,16 @@ int main( int argc, char** argv )
 
     /* tool bar */
     MokoToolBox* toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
-    GtkToolbar* toolbar = moko_tool_box_get_tool_bar(toolbox);
     moko_paned_window_add_toolbox( window, toolbox );
+
+    moko_tool_box_add_action_button( toolbox );
+    moko_tool_box_add_action_button( toolbox );
+    moko_tool_box_add_action_button( toolbox );
+    moko_tool_box_add_action_button( toolbox );
 
 #if 0
     GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, 1 );
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, -1 );
 
     GtkMenu* actionmenu = GTK_MENU(gtk_menu_new());
     GtkMenuItem* fooitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Foo" ));
@@ -91,13 +95,13 @@ int main( int argc, char** argv )
 
     GtkMenuToolButton* tool_menu = GTK_MENU_TOOL_BUTTON(gtk_menu_tool_button_new( NULL, "amenu" ));
     gtk_menu_tool_button_set_menu( tool_menu, actionmenu );
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), GTK_TOOL_BUTTON(tool_menu), 2 );
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), GTK_TOOL_BUTTON(tool_menu), -1 );
 
     GtkToolButton* tool_action3 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action3" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action3, 3 );
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action3, -1 );
 
     GtkToolButton* tool_action4 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action4" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, 4 );
+    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, -1 );
 #endif
     /* details area */
     GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );
