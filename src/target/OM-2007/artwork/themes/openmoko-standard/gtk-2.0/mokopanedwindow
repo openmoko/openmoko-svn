@@ -1,0 +1,6 @@
+style "mokopanedwindow-upper-enclosing" {
+    #FIXME find out why this doesn't work with a pixmap engine
+    bg_pixmap[NORMAL] = "openmoko-box-background.png"
+    MokoAlignment::padding = { 15, 15, 15, 15 }
+}
+widget "*.mokopanedwindow-upper-enclosing" style "mokopanedwindow-upper-enclosing"

@@ -131,7 +131,6 @@ void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu
 void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
 {
     g_debug( "moko_paned_window_set_filter_menu" );
-
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     if (!priv->menubox )
     {
@@ -144,20 +143,19 @@ void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 {
     g_debug( "moko_paned_window_set_upper_pane" );
-
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
 
     priv->upperenclosing = moko_alignment_new();
-    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 10, 10, 10, 10 ); //FIXME get from style
+    gtk_widget_set_name( GTK_WIDGET(priv->upperenclosing), "mokopanedwindow-upper-enclosing" );
+    //FIXME put into MokoAlignment class
+    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 17, 17, 17, 17 ); //FIXME get from style (MokoAlignment::padding)
     gtk_box_pack_end( GTK_BOX(priv->upper), GTK_WIDGET(priv->upperenclosing), TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->upperenclosing), child );
-    //gtk_box_pack_end( GTK_BOX(priv->upper), child, TRUE, TRUE, 0 );
 }
 
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
 {
     g_debug( "moko_paned_window_set_lower_pane" );
-
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     gtk_box_pack_start( GTK_BOX(priv->lower), child, TRUE, TRUE, 0 );
 }

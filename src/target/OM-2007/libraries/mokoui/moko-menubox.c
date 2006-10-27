@@ -103,6 +103,7 @@ void moko_menu_box_clear(MokoMenuBox *f) /* Destruction */
 
 static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkMenuShell* menu)
 {
+    //FIXME don't open menu when it is already opened
     g_debug( "menu open forwarder..." );
     gtk_menu_shell_select_first( GTK_MENU_SHELL(widget), TRUE );
 }
@@ -135,7 +136,7 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     if (!priv->menubar_l )
     {
         priv->menubar_l = gtk_menu_bar_new();
-        gtk_widget_set_name( GTK_WIDGET(priv->menubar_l), "moko_application_menu_bar" );
+        gtk_widget_set_name( GTK_WIDGET(priv->menubar_l), "mokomenubox-application-menubar" );
         gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar_l), TRUE, TRUE, 0 );
     }
     GtkMenuItem* appitem = gtk_menu_item_new_with_label( g_get_application_name() );
@@ -154,7 +155,7 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
     if (!priv->menubar_r )
     {
         priv->menubar_r = gtk_menu_bar_new();
-        gtk_widget_set_name( GTK_WIDGET(priv->menubar_r), "moko_filter_menu_bar" );
+        gtk_widget_set_name( GTK_WIDGET(priv->menubar_r), "mokomenubox-filter-menubar" );
         gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->menubar_r), TRUE, TRUE, 0 );
     }
     GtkMenuItem* filtitem = gtk_menu_item_new_with_label( "Filter Menu" );

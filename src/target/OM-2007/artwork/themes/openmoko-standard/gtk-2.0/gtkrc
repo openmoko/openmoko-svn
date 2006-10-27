@@ -1,5 +1,7 @@
 gtk-font-name = "Vera Sans 16"
 
+include "mokomenubox"
+include "mokopanedwindow"
 include "mokotoolbox"
 
 # pixmap_path "/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0"
@@ -38,39 +40,6 @@ style "default" {
 # common default
 # class "GtkWidget" style "default"
 
-#----------------------------------------------------------------------------
-style "app-menu" {
-#----------------------------------------------------------------------------
-    engine "pixmap" {
-        image {
-            function        = BOX
-            recolorable     = TRUE
-            # shadow          = IN
-            file            = "openmoko-application-menu-bg.png"
-            border          = { 40, 20, 0, 0 }
-            stretch         = TRUE
-        }
-    }
-    xthickness = 30
-}
-widget "*moko_application_menu_bar" style "app-menu"
-
-#----------------------------------------------------------------------------
-style "filter-menu" {
-#----------------------------------------------------------------------------
-    engine "pixmap" {
-        image {
-            function        = BOX
-            recolorable     = TRUE
-            # shadow          = IN
-            file            = "openmoko-filter-menu-bg.png"
-            border          = { 30, 30, 0, 0 }
-            stretch         = TRUE
-        }
-    }
-    xthickness = 30
-}
-widget "*moko_filter_menu_bar" style "filter-menu"
 
 #----------------------------------------------------------------------------
 style "popup-menus" {
