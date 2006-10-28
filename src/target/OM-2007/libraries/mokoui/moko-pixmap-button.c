@@ -72,7 +72,6 @@ static void
 moko_pixmap_button_init (MokoPixmapButton *self)
 {
     g_debug( "moko_pixmap_button_init" );
-    gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE );
 }
 
 MokoPixmapButton*
@@ -91,7 +90,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
     gint focus_width;
     gint focus_pad;
 
-    //gtk_button_get_props (button, &default_border, NULL, NULL);
+    //gtk_button_get_props (button, &default_border, NULL, NULL); //FIXME what are we going to do w/ default borders?
     gtk_widget_style_get (GTK_WIDGET (widget),
                           "focus-line-width", &focus_width,
                           "focus-padding", &focus_pad,

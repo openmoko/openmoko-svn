@@ -22,24 +22,24 @@
 #include <mokoui/moko-toolbox.h>
 
 #include <gtk/gtkactiongroup.h>
-#include <gtk/gtkbutton.h>
+#include <gtk/gtklabel.h>
 #include <gtk/gtkcheckmenuitem.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
-#include <gtk/gtkmenutoolbutton.h>
-#include <gtk/gtkstock.h>
-#include <gtk/gtktoolbutton.h>
-#include <gtk/gtkuimanager.h>
-#include <gtk/gtkvpaned.h>
-#include <gtk/gtkvbox.h>
 
-#include <stdlib.h>
+static gboolean searchmode = TRUE;
 
 int main( int argc, char** argv )
 {
     g_debug( "openmoko-paned-demo starting up" );
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
+
+    if ( argc > 1 && strcmp( argv[1], "-no-search" ) == 0)
+    {
+        g_debug( "disabling search mode" );
+        searchmode = FALSE;
+    }
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
@@ -69,17 +69,27 @@ int main( int argc, char** argv )
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
     /* navigation area */
-    GtkButton* navigationlist = gtk_button_new_with_label( "Hello Navigation Area!" );
-    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationlist) );
+    GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
+    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
 
     /* tool bar */
-    MokoToolBox* toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
+    MokoToolBox* toolbox;
+    if (!searchmode)
+    {
+        toolbox = MOKO_TOOL_BOX(moko_tool_box_new());
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+    } else {
+        toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+        moko_tool_box_add_action_button( toolbox );
+    }
     moko_paned_window_add_toolbox( window, toolbox );
-
-    moko_tool_box_add_action_button( toolbox );
-    moko_tool_box_add_action_button( toolbox );
-    moko_tool_box_add_action_button( toolbox );
-    moko_tool_box_add_action_button( toolbox );
 
 #if 0
     GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
@@ -103,9 +113,9 @@ int main( int argc, char** argv )
     GtkToolButton* tool_action4 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action4" ));
     gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, -1 );
 #endif
-    /* details area */
-    GtkButton* detailslist = gtk_button_new_with_label( "Hello Details Area!" );
-    moko_paned_window_set_lower_pane( window, GTK_WIDGET(detailslist) );
+                                                                                /* details area */
+    GtkLabel* details = gtk_label_new( "Add your widget for showing\ndetails for the selected\ndata entry here" );
+    moko_paned_window_set_lower_pane( window, GTK_WIDGET(details) );
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );

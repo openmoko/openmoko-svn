@@ -91,9 +91,21 @@ static void moko_tool_box_init(MokoToolBox* self) /* Instance Construction */
     gtk_notebook_set_show_tabs( GTK_NOTEBOOK(self), FALSE );
 }
 
+//FIXME 1st: rewrite moko_tool_box_new / moko_tool_box_new_with_search for using g_object properties
+//FIXME 2nd: support enabling/disabling search mode on-the-fly
 GtkWidget* moko_tool_box_new() /* Construction */
 {
-    return GTK_WIDGET(g_object_new(moko_tool_box_get_type(), NULL));
+    MokoToolBox* self = MOKO_TOOL_BOX(g_object_new(MOKO_TYPE_TOOL_BOX, NULL));
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+
+    priv->toolbar_page = moko_pixmap_container_new();
+    gtk_widget_set_name( GTK_WIDGET(priv->toolbar_page), "mokotoolbox-normal-mode" );
+    priv->buttonbox = gtk_hbox_new( FALSE, 17 ); //FIXME need to get from style
+    gtk_fixed_put( GTK_FIXED(priv->toolbar_page), GTK_WIDGET(priv->buttonbox), 1, 7 ); //FIXME need to get from style
+
+    gtk_notebook_append_page( GTK_NOTEBOOK(self), priv->toolbar_page, NULL );
+
+    return GTK_WIDGET(self);
 }
 
 GtkWidget* moko_tool_box_new_with_search()
@@ -105,7 +117,7 @@ GtkWidget* moko_tool_box_new_with_search()
         g_debug( "button_release: current_page is now: %d", current_page );
         current_page = 1 - current_page;
     }
-    MokoToolBox* self = MOKO_TOOL_BOX(moko_tool_box_new());
+    MokoToolBox* self = MOKO_TOOL_BOX(g_object_new(MOKO_TYPE_TOOL_BOX, NULL));
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
 
     priv->toolbar_page = moko_pixmap_container_new();
@@ -116,7 +128,6 @@ GtkWidget* moko_tool_box_new_with_search()
     gtk_fixed_put( GTK_FIXED(priv->toolbar_page), search, 0, 0 );
     priv->buttonbox = gtk_hbox_new( FALSE, 17 ); //FIXME need to get from style
     gtk_fixed_put( GTK_FIXED(priv->toolbar_page), GTK_WIDGET(priv->buttonbox), 84, 7 ); //FIXME need to get from style
-    //gtk_widget_set_size_request( GTK_WIDGET(priv->buttonbox), 400, 52 ); //FIXME need to get from style
 
     gtk_notebook_append_page( GTK_NOTEBOOK(self), priv->toolbar_page, NULL );
 

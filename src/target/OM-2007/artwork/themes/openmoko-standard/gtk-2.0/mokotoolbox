@@ -12,7 +12,7 @@ style "mokotoolbox-search-mode" {
 }
 widget "*.mokotoolbox-search-mode" style "mokotoolbox-search-mode"
 
-style "mokotoolbox-normal-mode-search-button" {   
+style "mokotoolbox-normal-mode-search-button" {
     engine "pixmap" {
         image {
             function        = BOX
@@ -23,6 +23,7 @@ style "mokotoolbox-normal-mode-search-button" {
         }
     }
     MokoPixmapButton::size-request = { 0, 68, 0, 52 }
+    GtkButton::focus-line-width = 0
 }
 widget "*.mokotoolbox-search-button" style "mokotoolbox-normal-mode-search-button"
 
@@ -37,6 +38,7 @@ style "mokotoolbox-search-mode-back-button" {
         }
     }
     MokoPixmapButton::size-request = { 0, 80, 0, 52 }
+    GtkButton::focus-line-width = 0
 }
 widget "*.mokotoolbox-back-button" style "mokotoolbox-search-mode-back-button"
 
@@ -56,6 +58,7 @@ style "mokotoolbox-action-button" {
         }
     }
     MokoPixmapButton::size-request = { 0, 82, 0, 38 }
+    GtkButton::focus-line-width = 0
 }
 widget "*.mokotoolbox-action-button" style "mokotoolbox-action-button"
 
