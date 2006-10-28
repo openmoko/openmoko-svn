@@ -62,3 +62,7 @@ style "mokotoolbox-action-button" {
 }
 widget "*.mokotoolbox-action-button" style "mokotoolbox-action-button"
 
+style "mokotoolbox-action-button-label" {
+    font_name = "Vera Sans 12"
+}
+widget "*.mokotoolbox-action-button.GtkLabel" style "mokotoolbox-action-button-label"

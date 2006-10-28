@@ -158,7 +158,7 @@ void moko_tool_box_clear(MokoToolBox* self) /* Destruction */
 
 /* add new methods here */
 
-void moko_tool_box_add_search_button(MokoToolBox* self )
+void moko_tool_box_add_search_button(MokoToolBox* self)
 {
 #if 0
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
@@ -176,7 +176,7 @@ GtkHBox* moko_tool_box_get_button_box(MokoToolBox* self)
     return priv->buttonbox;
 }
 
-void moko_tool_box_add_action_button(MokoToolBox* self)
+MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self)
 {
     g_debug( "moko_tool_box_add_action_button" );
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
@@ -185,4 +185,6 @@ void moko_tool_box_add_action_button(MokoToolBox* self)
     gtk_widget_set_name( GTK_WIDGET(button), "mokotoolbox-action-button" );
 
     gtk_box_pack_start( GTK_BOX(priv->buttonbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
+
+    return button;
 }

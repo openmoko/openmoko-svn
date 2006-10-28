@@ -22,10 +22,31 @@
 #include <mokoui/moko-toolbox.h>
 
 #include <gtk/gtkactiongroup.h>
+#include <gtk/gtkbutton.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkcheckmenuitem.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
+
+void cb_button1_clicked(GtkButton *button, gpointer user_data)
+{
+    g_debug( "openmoko-paned-demo: button1 clicked" );
+}
+
+void cb_button2_clicked(GtkButton *button, gpointer user_data)
+{
+    g_debug( "openmoko-paned-demo: button2 clicked" );
+}
+
+void cb_button3_clicked(GtkButton *button, gpointer user_data)
+{
+    g_debug( "openmoko-paned-demo: button3 clicked" );
+}
+
+void cb_button4_clicked(GtkButton *button, gpointer user_data)
+{
+    g_debug( "openmoko-paned-demo: button4 clicked" );
+}
 
 static gboolean searchmode = TRUE;
 
@@ -72,28 +93,33 @@ int main( int argc, char** argv )
     GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
 
+    GtkButton* button1;
+    GtkButton* button2;
+    GtkButton* button3;
+    GtkButton* button4;
+
     /* tool bar */
     MokoToolBox* toolbox;
     if (!searchmode)
     {
         toolbox = MOKO_TOOL_BOX(moko_tool_box_new());
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
     } else {
         toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
-        moko_tool_box_add_action_button( toolbox );
     }
+    button1 = moko_tool_box_add_action_button( toolbox );
+    gtk_button_set_label( button1, "Action 1" );
+    button2 = moko_tool_box_add_action_button( toolbox );
+    gtk_button_set_label( button2, "Action 2" );
+    button3 = moko_tool_box_add_action_button( toolbox );
+    gtk_button_set_label( button3, "ActMenu" );
+    button4 = moko_tool_box_add_action_button( toolbox );
+    gtk_button_set_label( button4, "Action 4" );
     moko_paned_window_add_toolbox( window, toolbox );
 
-#if 0
-    GtkToolButton* tool_action1 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action1" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action1, -1 );
+    g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_button1_clicked), NULL );
+    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_button2_clicked), NULL );
+    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_button3_clicked), NULL );
+    g_signal_connect( G_OBJECT(button4), "clicked", G_CALLBACK(cb_button4_clicked), NULL );
 
     GtkMenu* actionmenu = GTK_MENU(gtk_menu_new());
     GtkMenuItem* fooitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Foo" ));
@@ -102,18 +128,10 @@ int main( int argc, char** argv )
     gtk_widget_show( GTK_WIDGET(baritem) );
     gtk_menu_shell_append( actionmenu, fooitem );
     gtk_menu_shell_append( actionmenu, baritem );
+    moko_pixmap_button_set_menu( MOKO_PIXMAP_BUTTON(button3), actionmenu );
+    gtk_widget_show_all( actionmenu );
 
-    GtkMenuToolButton* tool_menu = GTK_MENU_TOOL_BUTTON(gtk_menu_tool_button_new( NULL, "amenu" ));
-    gtk_menu_tool_button_set_menu( tool_menu, actionmenu );
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), GTK_TOOL_BUTTON(tool_menu), -1 );
-
-    GtkToolButton* tool_action3 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action3" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action3, -1 );
-
-    GtkToolButton* tool_action4 = GTK_TOOL_BUTTON(gtk_tool_button_new( NULL, "action4" ));
-    gtk_toolbar_insert( GTK_TOOLBAR(toolbar), tool_action4, -1 );
-#endif
-                                                                                /* details area */
+    /* details area */
     GtkLabel* details = gtk_label_new( "Add your widget for showing\ndetails for the selected\ndata entry here" );
     moko_paned_window_set_lower_pane( window, GTK_WIDGET(details) );
 

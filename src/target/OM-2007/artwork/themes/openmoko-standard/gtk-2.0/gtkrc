@@ -1,5 +1,3 @@
-gtk-font-name = "Vera Sans 16"
-
 include "gtkmenuitem"
 include "gtkscrollbar"
 
@@ -34,6 +32,8 @@ style "default" {
     text[SELECTED]    = "#ffffff" # white
     text[INSENSITIVE] = "#a69872" # very dark brown
 
+    font_name = "Vera Sans 16"
+
 }
-# class "GtkWidget" style "default"
+class "GtkWidget" style "default"
 

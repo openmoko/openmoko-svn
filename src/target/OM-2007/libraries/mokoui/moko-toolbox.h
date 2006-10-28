@@ -19,10 +19,14 @@
 #ifndef _MOKO_TOOL_BOX_H_
 #define _MOKO_TOOL_BOX_H_
 
-#include <glib.h>
-#include <glib-object.h>
+#include "moko-pixmap-button.h"
+
 #include <gtk/gtknotebook.h>
 #include <gtk/gtkhbox.h>
+
+#include <glib.h>
+#include <glib-object.h>
+
 
 G_BEGIN_DECLS
 
@@ -53,9 +57,8 @@ GtkWidget*     moko_tool_box_new         (void);
 void           moko_tool_box_clear       (MokoToolBox* self);
 
 /* add additional methods here */
-void moko_tool_box_add_search_button(MokoToolBox* self );
 GtkHBox* moko_tool_box_get_button_box( MokoToolBox* self );
-void moko_tool_box_add_action_button(MokoToolBox* self );
+MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self);
 
 G_END_DECLS
 

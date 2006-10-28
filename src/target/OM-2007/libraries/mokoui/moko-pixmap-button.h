@@ -20,6 +20,8 @@
 #define _MOKO_PIXMAP_BUTTON_H_
 
 #include <gtk/gtkbutton.h>
+#include <gtk/gtkmenu.h>
+
 #include <glib-object.h>
 
 G_BEGIN_DECLS
@@ -39,9 +41,10 @@ typedef struct {
     GtkButtonClass parent_class;
 } MokoPixmapButtonClass;
 
-GType moko_pixmap_button_get_type (void);
+GType moko_pixmap_button_get_type(void);
 
-MokoPixmapButton* moko_pixmap_button_new (void);
+MokoPixmapButton* moko_pixmap_button_new(void);
+void moko_pixmap_button_set_menu(MokoPixmapButton* self, GtkMenu* menu);
 
 G_END_DECLS
 
