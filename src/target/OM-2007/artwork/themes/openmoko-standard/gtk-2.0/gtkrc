@@ -5,7 +5,7 @@ include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
 
-style "default" {
+style "moko-window-default" {
 #    bg_pixmap[NORMAL] = "light-brushed.png"
 
     fg[NORMAL]        = "#201d15" # very dark brown
@@ -35,5 +35,10 @@ style "default" {
     font_name = "Vera Sans 16"
 
 }
-class "GtkWidget" style "default"
+
+# enable for final version
+#class "GtkWidget" style "moko-window-default"
+
+# enable for debugging on host
+widget "MokoPanedWindow.*" style "moko-window-default"
 
