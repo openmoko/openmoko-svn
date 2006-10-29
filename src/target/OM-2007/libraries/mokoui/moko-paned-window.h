@@ -19,12 +19,14 @@
 #ifndef _MOKO_PANED_WINDOW_H_
 #define _MOKO_PANED_WINDOW_H_
 
+#include "moko-window.h"
+#include "moko-menubox.h"
+#include "moko-toolbox.h"
+
+#include <gtk/gtkmenu.h>
+
 #include <glib.h>
 #include <glib-object.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtkmenubar.h>
-#include "moko-window.h"
-#include "moko-toolbox.h"
 
 G_BEGIN_DECLS
 
@@ -54,16 +56,17 @@ GType          moko_paned_window_get_type        (void);
 GtkWidget*     moko_paned_window_new             (void);
 void           moko_paned_window_clear           (MokoPanedWindow *self);
 
-/* add additional methods here */
-//TODO: Getters
-
+/* menu */
+MokoMenuBox* moko_paned_window_get_menubox(MokoPanedWindow* self);
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu);
 void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu);
 
+/* toolbox */
+void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox);
+
+/* panes */
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child);
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child);
-
-void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox);
 
 G_END_DECLS
 

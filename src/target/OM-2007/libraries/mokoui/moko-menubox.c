@@ -36,14 +36,14 @@ typedef struct _MokoMenuBoxPriv
 
 /* add your signals here */
 enum {
-    MOKO_MENU_BOX_SIGNAL,
+    FILTER_CHANGED,
     LAST_SIGNAL
 };
 
 static void moko_menu_box_class_init          (MokoMenuBoxClass *klass);
 static void moko_menu_box_init                (MokoMenuBox      *f);
 
-static guint moko_menu_box_signals[LAST_SIGNAL] = { 0 };
+static guint moko_menu_box_signals[LAST_SIGNAL] = { 0, };
 
 GType moko_menu_box_get_type (void) /* Typechecking */
 {
@@ -75,14 +75,17 @@ static void moko_menu_box_class_init (MokoMenuBoxClass *klass) /* Class Initiali
 {
     g_type_class_add_private(klass, sizeof(MokoMenuBoxPriv));
 
-    moko_menu_box_signals[MOKO_MENU_BOX_SIGNAL] = g_signal_new ("moko_menu_box",
+    moko_menu_box_signals[FILTER_CHANGED] =
+            g_signal_new ("filter-changed",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-            G_STRUCT_OFFSET (MokoMenuBoxClass, moko_menu_box),
+            G_STRUCT_OFFSET(MokoMenuBoxClass, filter_changed),
             NULL,
             NULL,
-            g_cclosure_marshal_VOID__VOID,
-            G_TYPE_NONE, 0);
+            g_cclosure_marshal_VOID__STRING,
+            G_TYPE_NONE, 1, G_TYPE_STRING );
+
+    g_debug( "filter-signal-changed ID = %d", moko_menu_box_signals[FILTER_CHANGED] );
 }
 
 static void moko_menu_box_init (MokoMenuBox *self) /* Instance Construction */
@@ -125,8 +128,10 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
     }
 }
 
-static void cb_filter_menu_update( GtkMenu* menu, GtkMenuItem* filtitem )
+static void cb_filter_menu_update( GtkMenu* menu, MokoMenuBox* self )
 {
+    MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
+
     gchar* text;
     GtkMenuItem* item = gtk_menu_get_active( menu );
     if (GTK_BIN(item)->child)
@@ -136,13 +141,15 @@ static void cb_filter_menu_update( GtkMenu* menu, GtkMenuItem* filtitem )
         gtk_label_get(GTK_LABEL (child), &text);
         g_debug(" selection done. menu item text: %s", text );
     }
-    if (GTK_BIN(filtitem)->child)
+    if (GTK_BIN(priv->filteritem)->child)
     {
-        GtkWidget *child = GTK_BIN(filtitem)->child;
+        GtkWidget *child = GTK_BIN(priv->filteritem)->child;
         g_assert( GTK_IS_LABEL(child) );
         gtk_label_set(GTK_LABEL (child), text);
         g_debug(" selection done. menu label updated." );
     }
+
+    g_signal_emit( G_OBJECT(self), moko_menu_box_signals[FILTER_CHANGED], 0, text );
 }
 
 void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
@@ -181,7 +188,7 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
     GtkMenuItem* filtitem = gtk_menu_item_new_with_label( "Filter Menu" );
     priv->filteritem = filtitem;
     priv->filtermenu = menu;
-    g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), filtitem );
+    g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), self );
     gtk_menu_item_set_submenu( filtitem, menu );
     gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_r), filtitem );
 
@@ -189,3 +196,13 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
     //g_signal_connect( GTK_WIDGET(priv->menubar_r), "button-release-event", G_CALLBACK(cb_button_release), menu );
 }
 
+void
+moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
+{
+    g_debug( "moko_menu_box_set_active_filter" );
+
+    // wander through all filter menu items, check their labels
+    // if one is matching, then select it
+
+    /* ... */
+}

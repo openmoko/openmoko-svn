@@ -5,7 +5,6 @@ HEADERS = \
 	moko-alignment.h \
 	moko-pixmap-container.h \
 	moko-pixmap-button.h \
-	moko-vbox.h \
 	moko-application.h \
 	moko-window.h \
 	moko-finger-window.h \
@@ -17,7 +16,6 @@ SOURCES = \
 	moko-alignment.c \
     moko-pixmap-container.c \
 	moko-pixmap-button.c \
-	moko-vbox.c \
 	moko-application.c \
 	moko-window.c \
 	moko-finger-window.c \

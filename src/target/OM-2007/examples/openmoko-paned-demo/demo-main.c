@@ -28,6 +28,11 @@
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
 
+void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
+{
+    g_debug( "openmoko-paned-demo: filter changed to '%s'", text );
+}
+
 void cb_button1_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-paned-demo: button1 clicked" );
@@ -64,7 +69,7 @@ int main( int argc, char** argv )
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-    g_set_application_name( "Paned-Demo" );
+    g_set_application_name( "OpenMoko Demo" );
 
     /* main window */
     MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());
@@ -85,9 +90,11 @@ int main( int argc, char** argv )
     GtkMenuItem* item3 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Even" ));
     gtk_menu_shell_append( filtmenu, item3 );
     moko_paned_window_set_filter_menu( window, filtmenu );
+    MokoMenuBox* menubox = moko_paned_window_get_menubox( window );
+    g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), NULL );
 
     /* connect close event */
-    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
+    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL );
 
     /* navigation area */
     GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );

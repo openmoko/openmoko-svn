@@ -45,7 +45,19 @@ struct _MokoMenuBoxClass
 {
     /* add your parent class here */
     GtkHBoxClass parent_class;
-    void (*moko_menu_box) (MokoMenuBox *self);
+    /* signals */
+
+    /**
+     * MokoMenuBox::filter_changed:
+     * @widget: the object which received the signal
+     * @text: the new menu text
+     *
+     * The changed signal gets emitted when the active
+     * filter menu item is changed. The can be due to
+     * the user selecting a different item from the list,
+     * or due to a call to moko_menubox_set_active_filter().
+     */
+    void (*filter_changed) (MokoMenuBox *widget, gchar* text);
 };
 
 GType          moko_menu_box_get_type    (void);
@@ -54,6 +66,8 @@ void           moko_menu_box_clear       (MokoMenuBox *self);
 
 void           moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu);
 void           moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu);
+
+void           moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text);
 
 G_END_DECLS
 

@@ -30,6 +30,12 @@
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
 
+gboolean cb_filter_changed(GtkWidget* widget, gchar* text, gpointer user_data)
+{
+    g_debug( "openmoko-chordmaster: filter changed" );
+    return FALSE;
+}
+
 void cb_button1_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-chordmaster: button1 clicked" );
@@ -83,6 +89,9 @@ int main( int argc, char** argv )
         gtk_menu_shell_append( filtmenu, gtk_menu_item_new_with_label( category ) );
     }
     moko_paned_window_set_filter_menu( window, filtmenu );
+    MokoMenuBox* menubox = moko_paned_window_get_menubox( window );
+    g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), NULL );
+
 
     /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );

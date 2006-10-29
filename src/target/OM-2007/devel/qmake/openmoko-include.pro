@@ -1,7 +1,10 @@
 CONFIG = debug warn_on link_pkgconfig console $$MOKOCONFIG
 
-QMAKE_CFLAGS += -std=c99 -pedantic
-INCLUDEPATH += $(OPENMOKODIR)
+QMAKE_LINK              = gcc
+QMAKE_LINK_SHLIB        = gcc
+QMAKE_RPATH             =
+QMAKE_CFLAGS           += -std=c99 -pedantic
+INCLUDEPATH            += $(OPENMOKODIR)
 
 PLATFORM = $$system(uname -m)
 
@@ -38,11 +41,11 @@ mokonet {
 	LIBS += -lmokonet -L$(OPENMOKODIR)/lib
 }
 
-# handle pkg-config files (from qt4)
+# handle pkgconfig for CFLAGS, CXXFLAGS and LIBS already handled by qmake
 for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
-        QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
+#        QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
         QMAKE_CFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
-        LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
+#        LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
 }
 
 contains( TEMPLATE, app ) {

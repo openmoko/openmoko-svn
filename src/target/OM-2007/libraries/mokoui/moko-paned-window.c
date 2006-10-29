@@ -115,6 +115,14 @@ void moko_paned_window_clear(MokoPanedWindow *self) /* Destruction */
     /* destruct your widgets here */
 }
 
+/* PUBLIC API */
+
+MokoMenuBox* moko_paned_window_get_menubox(MokoPanedWindow* self)
+{
+    MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
+    return priv->menubox;
+}
+
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu)
 {
     g_debug( "moko_paned_window_set_application_menu" );
@@ -166,10 +174,4 @@ void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     gtk_box_pack_end( GTK_BOX(priv->upper), toolbox, FALSE, FALSE, 0 );
     gtk_box_reorder_child( GTK_BOX(priv->upper), toolbox, 1 );
-}
-
-GtkMenuBar* moko_paned_window_get_menubox(MokoPanedWindow* self)
-{
-    MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    return priv->menubox;
 }

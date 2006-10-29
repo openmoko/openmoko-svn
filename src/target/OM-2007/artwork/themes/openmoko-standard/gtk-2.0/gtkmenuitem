@@ -10,3 +10,4 @@ style "gtkmenuitem" {
     }
 }
 class "GtkMenuItem" style "gtkmenuitem"
+

@@ -30,10 +30,11 @@ style "moko-window-default" {
 }
 
 # enable for final version
-#class "GtkWidget" style "moko-window-default"
+class "GtkWidget" style "moko-window-default"
 
 # enable for debugging on host
-widget "MokoPanedWindow.*" style "moko-window-default"
+# widget "MokoPanedWindow.*" style "moko-window-default"
+# class "GtkMenuItem" style "moko-window-default"
 
 include "gtkmenuitem"
 include "gtkscrollbar"
