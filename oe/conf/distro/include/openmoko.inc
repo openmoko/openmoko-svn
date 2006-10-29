@@ -49,6 +49,7 @@ DISTRO_FEATURES = "alsa bluetooth ext2 ipsec nfs ppp smbfs usbgadget"
 #
 # Bootstrap & Init
 #
+MACHINE_TASK_PROVIDER = "task-base"
 require conf/distro/include/sane-srcdates.inc
 
 #
