@@ -65,15 +65,6 @@ PREFERRED_PROVIDER_xserver ?= "xserver-kdrive"
 require conf/distro/include/preferred-xorg-versions-X11R7.1.inc
 
 #
-# Core System
-#
-PREFERRED_PROVIDER_dbus-glib = "dbus-glib"
-PREFERRED_PROVIDER_gconf = "gconf-dbus"
-PREFERRED_PROVIDER_gnome-vfs = "gnome-vfs-dbus"
-PREFERRED_PROVIDER_bluez-utils = "bluez-utils-dbus"
-PREFERRED_VERSION_qemu-native = "0.8.2"
-
-#
 # Opie
 #
 QTE_VERSION = "2.3.10"
