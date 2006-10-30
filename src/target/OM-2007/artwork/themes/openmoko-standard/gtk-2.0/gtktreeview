@@ -1,6 +1,6 @@
 style "gtktreeview" {
     GtkTreeView::allow_rules = 1
-    GtkTreeView::vertical_separator = 5
+    GtkTreeView::vertical_separator = 6
     GtkTreeView::even_row_color = "#f7f7f7"
     GtkTreeView::odd_row_color = "#e7e7e7"
 }

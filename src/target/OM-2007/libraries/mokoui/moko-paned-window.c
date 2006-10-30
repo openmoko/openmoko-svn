@@ -33,6 +33,7 @@ typedef struct _MokoPanedWindowPriv
     GtkVPaned* outerframe;
     GtkVBox* upper;
     MokoAlignment* upperenclosing;
+    MokoAlignment* lowerenclosing;
     GtkVBox* lower;
     MokoMenuBox* menubox;
     MokoToolBox* toolbox;
@@ -156,7 +157,7 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
     priv->upperenclosing = moko_alignment_new();
     gtk_widget_set_name( GTK_WIDGET(priv->upperenclosing), "mokopanedwindow-upper-enclosing" );
     //FIXME put into MokoAlignment class
-    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 17, 17, 17, 17 ); //FIXME get from style (MokoAlignment::padding)
+    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
     gtk_box_pack_end( GTK_BOX(priv->upper), GTK_WIDGET(priv->upperenclosing), TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->upperenclosing), child );
 }
@@ -165,7 +166,17 @@ void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
 {
     g_debug( "moko_paned_window_set_lower_pane" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
+
+#if 0
     gtk_box_pack_start( GTK_BOX(priv->lower), child, TRUE, TRUE, 0 );
+#else
+    priv->lowerenclosing = moko_alignment_new();
+    gtk_widget_set_name( GTK_WIDGET(priv->lowerenclosing), "mokopanedwindow-lower-enclosing" );
+    //FIXME put into MokoAlignment class
+    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
+    gtk_box_pack_end( GTK_BOX(priv->lower), GTK_WIDGET(priv->lowerenclosing), TRUE, TRUE, 0 );
+    gtk_container_add( GTK_CONTAINER(priv->lowerenclosing), child );
+#endif
 }
 
 void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)

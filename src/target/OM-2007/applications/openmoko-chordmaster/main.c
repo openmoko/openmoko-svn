@@ -153,15 +153,16 @@ void populate_navigation_area( ChordMasterData* d )
     }
 
     GtkTreeView* view = gtk_tree_view_new_with_model( list );
+    gtk_tree_view_set_rules_hint( view, TRUE );
     GtkTreeViewColumn* col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( col, "Name" );
+    gtk_tree_view_column_set_title( col, "   Name   " );
     gtk_tree_view_append_column( view, col );
     GtkCellRenderer* ren = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start( col, ren, TRUE );
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_NAME );
 
     col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( col, "Frets" );
+    gtk_tree_view_column_set_title( col, "   Frets   " );
     gtk_tree_view_append_column( view, col );
     ren = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start( col, ren, TRUE );
