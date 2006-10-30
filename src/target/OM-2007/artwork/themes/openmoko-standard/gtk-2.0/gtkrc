@@ -1,4 +1,5 @@
 style "moko-window-default" {
+# FIXME do we want a general background brush?
 #    bg_pixmap[NORMAL] = "light-brushed.png"
 
     fg[NORMAL]        = "#201d15" # very dark brown
@@ -24,6 +25,43 @@ style "moko-window-default" {
     text[ACTIVE]      = "#ffffff" # white
     text[SELECTED]    = "#ffffff" # white
     text[INSENSITIVE] = "#a69872" # very dark brown
+#
+# How to draw shadows in general
+#
+    engine "pixmap" {
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = IN
+            file            = "openmoko-shadow-in.png"
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = OUT
+            file            = "openmoko-shadow-in.png" # FIXME add proper shadow
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = ETCHED_IN
+            file            = "openmoko-shadow-in.png" # FIXME add proper shadow
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = ETCHED_OUT
+            file            = "openmoko-shadow-in.png" # FIXME add proper shadow
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+    }
 
     font_name = "Vera Sans 16"
 }
