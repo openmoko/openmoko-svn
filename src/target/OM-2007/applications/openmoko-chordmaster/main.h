@@ -17,3 +17,19 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include "chordsdb.h"
+
+#include <mokoui/moko-application.h>
+#include <mokoui/moko-paned-window.h>
+#include <mokoui/moko-toolbox.h>
+
+typedef struct _ChordMasterData {
+    MokoApplication* app;
+    MokoPanedWindow* window;
+    GtkMenu* menu;
+    MokoToolBox* toolbox;
+    ChordsDB* chordsdb;
+} ChordMasterData;
+
+void setup_ui( ChordMasterData* );
+void populate_navigation_area( ChordMasterData* d );

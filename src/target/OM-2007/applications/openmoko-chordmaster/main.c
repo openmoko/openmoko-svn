@@ -17,44 +17,27 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include "callbacks.h"
 #include "chordsdb.h"
+#include "main.h"
 
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
 #include <mokoui/moko-toolbox.h>
 
-#include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
 #include <gtk/gtklabel.h>
-#include <gtk/gtkmenuitem.h>
+#include <gtk/gtkliststore.h>
 #include <gtk/gtkmain.h>
+#include <gtk/gtkmenuitem.h>
 #include <gtk/gtkmenu.h>
+#include <gtk/gtktreeview.h>
 
-gboolean cb_filter_changed(GtkWidget* widget, gchar* text, gpointer user_data)
-{
-    g_debug( "openmoko-chordmaster: filter changed" );
-    return FALSE;
-}
-
-void cb_button1_clicked(GtkButton *button, gpointer user_data)
-{
-    g_debug( "openmoko-chordmaster: button1 clicked" );
-}
-
-void cb_button2_clicked(GtkButton *button, gpointer user_data)
-{
-    g_debug( "openmoko-chordmaster: button2 clicked" );
-}
-
-void cb_button3_clicked(GtkButton *button, gpointer user_data)
-{
-    g_debug( "openmoko-chordmaster: button3 clicked" );
-}
-
-void cb_button4_clicked(GtkButton *button, gpointer user_data)
-{
-    g_debug( "openmoko-chordmaster: button4 clicked" );
-}
+enum {
+    COLUMN_NAME,
+    COLUMN_FRETS,
+    NUM_COLS,
+};
 
 int main( int argc, char** argv )
 {
@@ -62,44 +45,58 @@ int main( int argc, char** argv )
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
 
+    /* application data object */
+    ChordMasterData* d = g_new( ChordMasterData, 1 );
+
     /* chords database */
-    ChordsDB* chordsdb = chordsdb_new();
+    d->chordsdb = chordsdb_new();
 
     /* application object */
-    MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
+    d->app = MOKO_APPLICATION(moko_application_get_instance());
     g_set_application_name( "ChordMaster" );
 
+    /* ui */
+    setup_ui( d );
+
+    /* show everything and run main loop */
+    gtk_widget_show_all( GTK_WIDGET(d->window) );
+    gtk_main();
+
+    return 0;
+}
+
+void setup_ui( ChordMasterData* d )
+{
     /* main window */
-    MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());
+    d->window = MOKO_PANED_WINDOW(moko_paned_window_new());
 
     /* application menu */
-    GtkMenu* appmenu = GTK_MENU(gtk_menu_new());
+    d->menu = gtk_menu_new();
     GtkMenuItem* closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Close" ));
     g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
-    gtk_menu_shell_append( appmenu, closeitem );
-    moko_paned_window_set_application_menu( window, appmenu );
+    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), GTK_WIDGET(closeitem) );
+    moko_paned_window_set_application_menu( d->window, GTK_MENU(d->menu) );
 
     /* filter menu */
     GtkMenu* filtmenu = GTK_MENU(gtk_menu_new());
     gtk_menu_shell_append( filtmenu, gtk_menu_item_new_with_label( "All" ) );
-    for (GSList* c = chordsdb_get_categories( chordsdb ); c; c = g_slist_next(c) )
+    for (GSList* c = chordsdb_get_categories( d->chordsdb ); c; c = g_slist_next(c) )
     {
         gchar* category = (gchar*) c->data;
         g_debug( "adding category '%s'", category );
         gtk_menu_shell_append( filtmenu, gtk_menu_item_new_with_label( category ) );
     }
-    moko_paned_window_set_filter_menu( window, filtmenu );
-    MokoMenuBox* menubox = moko_paned_window_get_menubox( window );
+    moko_paned_window_set_filter_menu( d->window, filtmenu );
+    MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), NULL );
-    //moko_menu_box_set_active_filter( menubox, "All" );
-    moko_menu_box_set_active_filter( menubox, "Seppel" );
+    moko_menu_box_set_active_filter( menubox, "All" );
 
     /* connect close event */
-    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
+    g_signal_connect( G_OBJECT(d->window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
-    /* navigation area */
-    GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
-    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
+    populate_navigation_area( d );
+
+    /* toolboox */
 
     GtkButton* button1;
     GtkButton* button2;
@@ -118,7 +115,7 @@ int main( int argc, char** argv )
     gtk_button_set_label( button3, "ActMenu" );
     button4 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button4, "Action 4" );
-    moko_paned_window_add_toolbox( window, toolbox );
+    moko_paned_window_add_toolbox( d->window, toolbox );
 
     g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_button1_clicked), NULL );
     g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_button2_clicked), NULL );
@@ -130,20 +127,45 @@ int main( int argc, char** argv )
     GtkMenuItem* baritem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Bar" ));
     gtk_widget_show( GTK_WIDGET(fooitem) );
     gtk_widget_show( GTK_WIDGET(baritem) );
-    gtk_menu_shell_append( actionmenu, fooitem );
-    gtk_menu_shell_append( actionmenu, baritem );
+    gtk_menu_shell_append( GTK_MENU_SHELL(actionmenu), GTK_WIDGET(fooitem) );
+    gtk_menu_shell_append( GTK_MENU_SHELL(actionmenu), GTK_WIDGET(baritem) );
     moko_pixmap_button_set_menu( MOKO_PIXMAP_BUTTON(button3), actionmenu );
     gtk_widget_show_all( actionmenu );
 
     /* details area */
     GtkLabel* details = gtk_label_new( "Add your widget for showing\ndetails for the selected\ndata entry here" );
-    moko_paned_window_set_lower_pane( window, GTK_WIDGET(details) );
+    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(details) );
+}
 
-    /* show everything and run main loop */
-    gtk_widget_show_all( GTK_WIDGET(window) );
-    g_debug( "openmoko-chordmaster entering main loop" );
-    gtk_main();
-    g_debug( "openmoko-chordmaster left main loop" );
+void populate_navigation_area( ChordMasterData* d )
+{
 
-    return 0;
+    GtkListStore* list = gtk_list_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_STRING );
+    GtkTreeIter iter;
+
+    GSList* chords = chordsdb_get_chords( d->chordsdb );
+    for ( ; chords; chords = g_slist_next( chords ) )
+    {
+        Chord* chord = chords->data;
+        g_debug( "chordmaster: adding chord '%s' = '%s'", chord->name, chord->frets );
+        gtk_list_store_append( list, &iter );
+        gtk_list_store_set( list, &iter, COLUMN_NAME, chord->name, COLUMN_FRETS, chord->frets, -1 );
+    }
+
+    GtkTreeView* view = gtk_tree_view_new_with_model( list );
+    GtkTreeViewColumn* col = gtk_tree_view_column_new();
+    gtk_tree_view_column_set_title( col, "Name" );
+    gtk_tree_view_append_column( view, col );
+    GtkCellRenderer* ren = gtk_cell_renderer_text_new();
+    gtk_tree_view_column_pack_start( col, ren, TRUE );
+    gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_NAME );
+
+    col = gtk_tree_view_column_new();
+    gtk_tree_view_column_set_title( col, "Frets" );
+    gtk_tree_view_append_column( view, col );
+    ren = gtk_cell_renderer_text_new();
+    gtk_tree_view_column_pack_start( col, ren, TRUE );
+    gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_FRETS );
+
+    moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(view) );
 }

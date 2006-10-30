@@ -97,3 +97,9 @@ GSList* chordsdb_get_categories(ChordsDB* self)
     ChordsDBClass* klass = CHORDSDB_GET_CLASS(self);
     return klass->categories;
 }
+
+GSList* chordsdb_get_chords(ChordsDB* self )
+{
+    ChordsDBClass* klass = CHORDSDB_GET_CLASS(self);
+    return klass->chords;
+}

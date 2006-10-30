@@ -52,9 +52,10 @@ struct _MokoToolBoxClass
     void (*moko_tool_box) (MokoToolBox *self);
 };
 
-GType          moko_tool_box_get_type    (void);
-GtkWidget*     moko_tool_box_new         (void);
-void           moko_tool_box_clear       (MokoToolBox* self);
+GType          moko_tool_box_get_type();
+GtkWidget*     moko_tool_box_new();
+GtkWidget*     moko_tool_box_new_with_search();
+void           moko_tool_box_clear(MokoToolBox* self);
 
 /* add additional methods here */
 GtkHBox* moko_tool_box_get_button_box( MokoToolBox* self );

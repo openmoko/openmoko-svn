@@ -48,6 +48,7 @@ typedef struct {
 GType chordsdb_get_type (void);
 ChordsDB* chordsdb_new (void);
 GSList* chordsdb_get_categories(ChordsDB* self);
+GSList* chordsdb_get_chords(ChordsDB* self );
 
 G_END_DECLS
 
