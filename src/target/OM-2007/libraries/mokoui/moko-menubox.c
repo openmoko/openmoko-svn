@@ -22,6 +22,8 @@
 #include <gtk/gtkmenubar.h>
 #include <gtk/gtkmenuitem.h>
 
+#include <string.h>
+
 #define MOKO_MENU_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_MENU_BOX, MokoMenuBoxPriv));
 
 typedef struct _MokoMenuBoxPriv
@@ -117,8 +119,8 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
     GtkAllocation* a = &GTK_WIDGET(children->data)->allocation;
     g_debug( "allocate is %d, %d * %d, %d", a->x, a->y, a->width, a->height );
 
-    if ( event->x > a->x && event->x < (a->x+a->width) &&
-         event->y > a->y && event->y < (a->y+a->height) )
+    if ( event->x >= a->x && event->x <= (a->x+a->width) &&
+         event->y >= a->y && event->y <= (a->y+a->height) )
     {
         g_debug( "INSIDE ITEM" );
         return FALSE;
@@ -214,10 +216,30 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
 void
 moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
 {
+    //FIXME this only works with text labels
     g_debug( "moko_menu_box_set_active_filter" );
 
     // wander through all filter menu items, check their labels
     // if one is matching, then select it
 
-    /* ... */
+    MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
+
+    GList* child = gtk_container_get_children( GTK_CONTAINER(priv->filtermenu) );
+    while (child && GTK_IS_MENU_ITEM(child->data))
+    {
+        GtkWidget *label = GTK_BIN(child->data)->child;
+        g_assert( GTK_IS_LABEL(label) );
+        gchar* ltext;
+        gtk_label_get( GTK_LABEL(label), &ltext );
+        if ( strcmp( ltext, text ) == 0 )
+        {
+            g_debug( "moko_menu_box_set_active_filter: match found" );
+            gtk_menu_item_activate( child->data );
+            cb_filter_menu_update( priv->filtermenu, self ); //need to sync. manually, since we it didn't go through popupmenu
+            break;
+        }
+        child = g_list_next(child);
+    }
+    if (!child)
+        g_warning( "moko_menu_box_set_active_filter: filter menu entry '%s' not found", text );
 }

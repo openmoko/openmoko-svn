@@ -91,7 +91,8 @@ int main( int argc, char** argv )
     moko_paned_window_set_filter_menu( window, filtmenu );
     MokoMenuBox* menubox = moko_paned_window_get_menubox( window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), NULL );
-
+    //moko_menu_box_set_active_filter( menubox, "All" );
+    moko_menu_box_set_active_filter( menubox, "Seppel" );
 
     /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
