@@ -1,0 +1,28 @@
+style "gtktreeview" {
+    GtkTreeView::allow_rules = 1
+    GtkTreeView::vertical_separator = 5
+    GtkTreeView::even_row_color = "#f7f7f7"
+    GtkTreeView::odd_row_color = "#e7e7e7"
+}
+class "GtkTreeView" style "gtktreeview"
+
+style "gtktreeview-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            #state           = NORMAL
+            file            = "gtktreeview-gtkbutton.png"
+            border          = { 5, 5, 5, 5 }
+            stretch         = TRUE
+        }
+    }
+}
+widget_class "*.GtkTreeView.GtkButton" style "gtktreeview-button"
+
+style "gtktreeview-button-label"
+{
+    font_name = "Vera Sans Bold 14"
+    fg[NORMAL] = "#999999"
+}
+widget "*.GtkTreeView.*.GtkLabel" style "gtktreeview-button-label"

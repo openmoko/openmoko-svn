@@ -26,7 +26,6 @@ style "moko-window-default" {
     text[INSENSITIVE] = "#a69872" # very dark brown
 
     font_name = "Vera Sans 16"
-
 }
 
 # enable for final version
@@ -39,6 +38,7 @@ class "GtkWidget" style "moko-window-default"
 include "gtkmenuitem"
 include "gtkpaned"
 include "gtkscrollbar"
+include "gtktreeview"
 
 include "mokomenubox"
 include "mokopanedwindow"

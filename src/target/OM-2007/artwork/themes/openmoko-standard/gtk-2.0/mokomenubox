@@ -26,3 +26,16 @@ style "mokomenubox-filter-menubar" {
 }
 widget "*.mokomenubox-filter-menubar" style "mokomenubox-filter-menubar"
 
+style "mokomenubox-application-menubar-items" {
+    font_name = "Vera Sans 16"
+    fg[NORMAL] = "#333333"
+    fg[PRELIGHT] = "#333333"
+}
+widget "*.mokomenubox-application-menubar.*.GtkAccelLabel" style "mokomenubox-application-menubar-items"
+
+style "mokomenubox-filter-menubar-items" {
+    font_name = "Vera Sans 16"
+    fg[NORMAL] = "#ffffff"
+    fg[PRELIGHT] = "#ffffff"
+}
+widget "*.mokomenubox-filter-menubar.*.GtkAccelLabel" style "mokomenubox-filter-menubar-items"
