@@ -1,0 +1,12 @@
+1.) sync. filenames with layout images given by designer:
+
+DONE:
+	bar_separate*.png
+
+MISSING:
+	all others
+
+
+2.) grep for FIXME through the individual gtkrc files
+
+3.) for the final version, concatenate style files? (for optimization)
