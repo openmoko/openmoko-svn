@@ -189,4 +189,6 @@ RDEPENDS_task-openmoko-native-sdk = "\
   diffutils \
   libtool \
   pkgconfig \
+  \
+  xoo \
 "

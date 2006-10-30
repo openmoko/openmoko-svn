@@ -1,23 +1,20 @@
-DESCRIPTION = "2.6 Linux Development Kernel for Armzone QT2410"
+DESCRIPTION = "2.6 Linux Development Kernel for FIC GTA01"
 SECTION = "kernel"
 AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
-DEPENDS += "quilt-native uboot-qt2410"
-PR = "r3"
+DEPENDS += "quilt-native uboot-gta01"
+PR = "r4"
 
 inherit kernel
 
-FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-qt2410"
+FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
 HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
 
 ##############################################################
 # source and patches
 #
-SRC_URI = "http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.7.tar.bz2 \
-           file://patches-2.6.17.7-qt2401-20060806.tar.bz2 \
-           file://qt2410-biglcd.patch;patch=1 \
-           file://qt2410-touchscreen.patch;patch=1 \
+SRC_URI = "http://people.gta01.hmw-consulting.de/laforge/tmp/linux-2.6.17.7-gta01-lcm.tar.bz2"
            file://defconfig-${MACHINE}"
 S = "${WORKDIR}/linux-2.6.17.7"
 
@@ -28,7 +25,7 @@ FILES_kernel-image = ""
 ALLOW_EMPTY = "1"
 
 COMPATIBLE_HOST = "arm.*-linux"
-COMPATIBLE_MACHINE = 'armzone-qt2410'
+COMPATIBLE_MACHINE = 'fic-gta01'
 
 CMDLINE_CON = "console=ttySAC0,115200n8"
 #CMDLINE_ROOT = "root=/dev/mmcblk0p1 rootfstype=ext3 rootdelay=5"
