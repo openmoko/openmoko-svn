@@ -1,0 +1,39 @@
+#
+# FIXME: orientation = VERTICAL
+#
+
+style "gtkpaned" {
+    engine "pixmap" {
+#
+# The handle on Handleboxes
+#
+        image {
+            function        = HANDLE
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "bar_separate.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+            overlay_file    = "bar_separate_btn.png"
+            overlay_border  = { 0, 0, 0, 0 }
+            overlay_stretch = FALSE
+            orientation     = HORIZONTAL
+        }
+
+        image {
+            function        = HANDLE
+            state           = PRELIGHT
+            recolorable     = TRUE
+            file            = "bar_separate_p.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+            overlay_file    = "bar_separate_btn_p.png"
+            overlay_border  = { 0, 0, 0, 0 }
+            overlay_stretch = FALSE
+            orientation     = HORIZONTAL
+        }
+    }
+    GtkPaned::handle-size   = 15
+}
+
+class "GtkWidget" style "gtkpaned"

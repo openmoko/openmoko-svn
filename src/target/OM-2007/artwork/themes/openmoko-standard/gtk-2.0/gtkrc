@@ -37,6 +37,7 @@ class "GtkWidget" style "moko-window-default"
 # class "GtkMenuItem" style "moko-window-default"
 
 include "gtkmenuitem"
+include "gtkpaned"
 include "gtkscrollbar"
 
 include "mokomenubox"
