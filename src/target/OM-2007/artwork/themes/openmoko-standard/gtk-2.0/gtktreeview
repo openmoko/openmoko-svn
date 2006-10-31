@@ -1,8 +1,29 @@
 style "gtktreeview" {
+    engine "pixmap" {
+
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = SELECTED
+            file            = "list_bg_row_sel_stretch.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        /*
+        image {
+            function        = FOCUS
+            recolorable     = FALSE
+            file            = "list_bg_row_sel_stretch.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        */
+    }
     GtkTreeView::allow_rules = 1
     GtkTreeView::vertical_separator = 6
     GtkTreeView::even_row_color = "#f7f7f7"
     GtkTreeView::odd_row_color = "#e7e7e7"
+    GtkButton::focus-line-width = 0
 }
 class "GtkTreeView" style "gtktreeview"
 
@@ -22,7 +43,8 @@ widget_class "*.GtkTreeView.GtkButton" style "gtktreeview-button"
 
 style "gtktreeview-button-label"
 {
-    font_name = "Vera Sans Bold 14"
+    font_name = "Vera Sans Bold 13"
     fg[NORMAL] = "#999999"
 }
 widget "*.GtkTreeView.*.GtkLabel" style "gtktreeview-button-label"
+

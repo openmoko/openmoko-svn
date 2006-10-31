@@ -62,7 +62,6 @@ style "moko-window-default" {
             stretch         = TRUE
         }
     }
-
     font_name = "Vera Sans 16"
 }
 
