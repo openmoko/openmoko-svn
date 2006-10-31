@@ -1,12 +1,13 @@
 style "moko-window-default" {
-# FIXME do we want a general background brush?
-#    bg_pixmap[NORMAL] = "light-brushed.png"
+    # FIXME do we want a general background brush? Or just a color?
+	# NOTE bg_pixmap[NORMAL] _must_ match with the SHADOW pixmaps
+    bg_pixmap[NORMAL] = "openmoko-shadow-bg-brush.png"
 
     fg[NORMAL]        = "#201d15" # very dark brown
     fg[PRELIGHT]      = "#201d15" # very dark brown
     fg[ACTIVE]        = "#201d15" # very dark brown
     fg[SELECTED]      = "#201d15" # very dark brown
-    fg[INSENSITIVE]   = "#b5b3ac" # grey
+    fg[INSENSITIVE]   = "#ffb3ac" # grey
 
     bg[NORMAL]        = "#ece9d8" # beige
     bg[PRELIGHT]      = "#f1efe3" # light beige
