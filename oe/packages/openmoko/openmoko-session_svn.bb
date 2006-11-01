@@ -5,7 +5,8 @@ LICENSE = "GPL"
 RDEPENDS = "matchbox matchbox-applet-startup-monitor gtk-theme-clearlooks"
 PV = "0.0+svn${SRCDATE}"
 
-SRC_URI = "${OPENMOKO_MIRROR};module=etc;proto=http"
+SRC_URI = "${OPENMOKO_MIRROR};module=etc;proto=http \
+           file://session"
 S = "${WORKDIR}"
 
 do_install() {
@@ -13,6 +14,8 @@ do_install() {
 	rm -fR ${D}/etc/.svn
 	rm -fR ${D}/etc/matchbox/.svn
 	chmod -R 755 ${D}/etc
+        # DEMO only!
+	install -m 0755 ${WORKDIR}/session ${D}/etc/matchbox/session
 }
 
 pkg_postinst_openmoko-session () {
