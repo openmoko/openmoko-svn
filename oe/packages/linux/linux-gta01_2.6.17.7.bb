@@ -14,9 +14,9 @@ HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
 ##############################################################
 # source and patches
 #
-SRC_URI = "http://people.gta01.hmw-consulting.de/laforge/tmp/linux-2.6.17.7-gta01-lcm.tar.bz2"
+SRC_URI = "http://people.gta01.hmw-consulting.de/laforge/tmp/linux-2.6.17.7-gta01-lcm.tar.bz2 \
            file://defconfig-${MACHINE}"
-S = "${WORKDIR}/linux-2.6.17.7"
+S = "${WORKDIR}/linux-2.6.17.7-new"
 
 ##############################################################
 # kernel image resides on a seperate flash partition (for now)
