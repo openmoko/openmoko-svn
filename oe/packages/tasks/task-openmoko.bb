@@ -5,11 +5,12 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r15"
+PR = "r16"
 
 PACKAGES = "\
   task-openmoko-linux \
   task-openmoko-net \
+  task-openmoko-phone \
   task-openmoko-ui \
   task-openmoko-base \
   task-openmoko-finger \
@@ -44,6 +45,15 @@ RDEPENDS_task-openmoko-linux = "\
   module-init-tools-depmod \
   udev \
 #  update-alternatives \
+"
+
+#
+# task-openmoko-phone
+#
+DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
+RDEPENDS_task-openmoko-linux = "\
+  gsm-tools \
+  gsm-daemon \
 "
 
 #
