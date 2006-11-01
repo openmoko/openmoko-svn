@@ -150,7 +150,7 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
             return FALSE;
         }
     }
-    g_debug( "Jenseits von Gut und Böse..." );
+    g_debug( "Jenseits von Gut und Bï¿½e..." );
     return TRUE;
 }
 

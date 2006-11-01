@@ -96,6 +96,7 @@ void setup_ui( ChordMasterData* d )
     g_signal_connect( G_OBJECT(d->window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
     populate_navigation_area( d );
+    populate_details_area( d );
 
     /* toolboox */
 
@@ -132,10 +133,6 @@ void setup_ui( ChordMasterData* d )
     gtk_menu_shell_append( GTK_MENU_SHELL(actionmenu), GTK_WIDGET(baritem) );
     moko_pixmap_button_set_menu( MOKO_PIXMAP_BUTTON(button3), actionmenu );
     gtk_widget_show_all( actionmenu );
-
-    /* details area */
-    GtkLabel* details = gtk_label_new( "Add your widget for showing\ndetails for the selected\ndata entry here" );
-    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(details) );
 }
 
 void populate_navigation_area( ChordMasterData* d )
@@ -193,3 +190,51 @@ void populate_navigation_area( ChordMasterData* d )
     gtk_scrolled_window_add_with_viewport( scrollwin, GTK_WIDGET(view) );
     moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(scrollwin) );
 }
+
+gboolean
+        expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data);
+
+void populate_details_area( ChordMasterData* d )
+{
+/*    GtkImage* image = gtk_image_new_from_file( RESOURCE_PATH "fretboard.png" );
+    GdkPixbuf* pixbuf = gtk_image_get_pixbuf( image );*/
+
+    GtkWidget* drawing_area = gtk_drawing_area_new ();
+    gtk_widget_set_size_request (drawing_area, 450, 348);
+    g_signal_connect (G_OBJECT (drawing_area), "expose_event",
+                      G_CALLBACK (expose_event_callback), NULL);
+
+    
+    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(drawing_area) );
+}
+
+/* fretboard widget */
+
+gboolean
+        expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+    g_debug( "expose event callback" );
+    GError* error = NULL;
+
+    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file( RESOURCE_PATH "fretboard.png", &error );
+    gdk_draw_pixbuf( widget->window, 
+                     widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+            pixbuf,
+            0,
+            0,
+            20,
+            0,
+            -1,
+            -1,
+            GDK_RGB_DITHER_MAX,
+            0,
+            0);
+
+    /*gdk_draw_arc (widget->window,
+                  widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
+                  TRUE,
+                  0, 0, widget->allocation.width, widget->allocation.height,
+                  0, 64 * 360);*/
+    return TRUE;
+}
+

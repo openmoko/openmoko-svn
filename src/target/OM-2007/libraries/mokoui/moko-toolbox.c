@@ -144,7 +144,7 @@ GtkWidget* moko_tool_box_new_with_search()
 
     priv->entry = gtk_entry_new();
     gtk_entry_set_has_frame( priv->entry, FALSE );
-    gtk_entry_set_inner_border( priv->entry, FALSE );
+    // gtk_entry_set_inner_border( priv->entry, FALSE );
     gtk_widget_set_name( GTK_WIDGET(priv->entry), "mokotoolbox-search-entry" );
     moko_pixmap_container_set_cargo( priv->searchbar_page, GTK_WIDGET(priv->entry) );
 

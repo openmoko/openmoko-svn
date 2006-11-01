@@ -33,3 +33,4 @@ typedef struct _ChordMasterData {
 
 void setup_ui( ChordMasterData* );
 void populate_navigation_area( ChordMasterData* d );
+void populate_details_area( ChordMasterData* d );

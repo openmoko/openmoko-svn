@@ -58,4 +58,14 @@ contains( TEMPLATE, lib ) {
 	DESTDIR = $(OPENMOKODIR)/lib
 }
 
+contains( CONFIG, debug ) {
+	APPDIR = $(OPENMOKODIR)/applications/$$TARGET
+	DEFINES += RESOURCE_PATH=\\\"$$APPDIR/\\\"
+}
+!contains( CONFIG, debug ) {
+    APPDIR = /usr/share/$$TARGET
+    DEFINES += RESOURCE_PATH=\\\"$$APPDIR/\\\"
+}
+
+
 DEFINES += G_LOG_DOMAIN=\\\"$$TARGET\\\"
