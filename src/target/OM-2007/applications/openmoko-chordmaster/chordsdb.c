@@ -18,6 +18,8 @@
 
 #include "chordsdb.h"
 
+#include <stdio.h>
+
 G_DEFINE_TYPE (ChordsDB, chordsdb, G_TYPE_OBJECT);
 
 #define CHORDSDB_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_CHORDSDB, ChordsDBPrivate))
@@ -66,19 +68,29 @@ chordsdb_class_init (ChordsDBClass *klass)
     object_class->dispose = chordsdb_dispose;
     object_class->finalize = chordsdb_finalize;
 
-    //FIXME read from chords file
-    klass->categories = g_slist_append( klass->categories, "C" );
-    klass->categories = g_slist_append( klass->categories, "D" );
-    klass->categories = g_slist_append( klass->categories, "E" );
-    klass->categories = g_slist_append( klass->categories, "F" );
-    klass->categories = g_slist_append( klass->categories, "G" );
-    klass->categories = g_slist_append( klass->categories, "A" );
-    klass->categories = g_slist_append( klass->categories, "B" );
-
-    //FIXME read from chords file
-    klass->chords = g_slist_append( klass->chords, chord_new( "A", "002220" ) );
-    klass->chords = g_slist_append( klass->chords, chord_new( "A", "577655" ) );
-    klass->chords = g_slist_append( klass->chords, chord_new( "A", "x02220" ) );
+    FILE* file = g_fopen( RESOURCE_PATH "accords.chords", "r" );
+    g_assert( file ); //FIXME error handling, if chord file is not present
+    gchar line[256];
+    gchar category[2] = { 0, 0 };
+    while( fgets(&line, sizeof(line), file) ) {
+        g_debug( "read line '%s'", &line );
+        if ( strncmp( "CATEGORY=", &line, 8 ) == 0 )
+        {
+            g_debug( "adding category %c", line[9] );
+            category[0] = line[9];
+            klass->categories = g_slist_append( klass->categories, strdup(&category) );
+        }
+        else
+        {
+            gchar* key = strtok( &line, "=\n" );
+            g_assert( key );
+            gchar* val = strtok( NULL, "=\n" );
+            g_assert( val );
+            g_debug( "adding chord '%s' = '%s'", key, val );
+            klass->chords = g_slist_append( klass->chords, chord_new( strdup(key), strdup(val) ) );
+        }
+    }
+    fclose( file );
 }
 
 static void
