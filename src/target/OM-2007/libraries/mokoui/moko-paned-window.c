@@ -173,7 +173,7 @@ void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
     priv->lowerenclosing = moko_alignment_new();
     gtk_widget_set_name( GTK_WIDGET(priv->lowerenclosing), "mokopanedwindow-lower-enclosing" );
     //FIXME put into MokoAlignment class
-    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
+    gtk_alignment_set_padding( GTK_ALIGNMENT(priv->lowerenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
     gtk_box_pack_end( GTK_BOX(priv->lower), GTK_WIDGET(priv->lowerenclosing), TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->lowerenclosing), child );
 #endif
