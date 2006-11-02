@@ -38,6 +38,7 @@ style "gtktreeview-button" {
             stretch         = TRUE
         }
     }
+    GtkButton::focus-line-width = 0
 }
 widget_class "*.GtkTreeView.GtkButton" style "gtktreeview-button"
 

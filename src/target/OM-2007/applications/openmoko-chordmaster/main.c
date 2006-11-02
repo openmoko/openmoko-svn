@@ -168,6 +168,12 @@ void populate_navigation_area( ChordMasterData* d )
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_NAME );
     g_object_set_property( G_OBJECT(ren), "foreground-gdk", &v );
 
+    g_object_set( G_OBJECT(col),
+                  "resizable", TRUE,
+                  "reorderable", TRUE,
+                  "sort-indicator", TRUE,
+                  NULL );
+
     col = gtk_tree_view_column_new();
     gtk_tree_view_column_set_title( col, "Fingers on Fretboard" );
     gtk_tree_view_column_set_alignment( col, 0.5 );
@@ -177,6 +183,12 @@ void populate_navigation_area( ChordMasterData* d )
     gtk_tree_view_column_pack_start( col, ren, TRUE );
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_FRETS );
     g_object_set_property( G_OBJECT(ren), "foreground-gdk", &v );
+
+    g_object_set( G_OBJECT(col),
+                  "resizable", TRUE,
+                  "reorderable", TRUE,
+                  "sort-indicator", TRUE,
+                  NULL );
 
     GtkScrolledWindow* scrollwin = gtk_scrolled_window_new( NULL, NULL );
     //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
