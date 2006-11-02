@@ -37,7 +37,10 @@ _expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
     GdkGC* gc = gdk_gc_new( widget->window );
 
-    const gchar* frets = CHORD_FRETBOARD(widget)->frets;
+    gchar* frets = NULL;
+    if ( CHORD_FRETBOARD(widget)->frets )
+        frets = g_strdup( CHORD_FRETBOARD(widget)->frets );
+
     gdk_gc_set_line_attributes(gc, 2, GDK_LINE_SOLID, GDK_CAP_ROUND, GDK_JOIN_MITER );
 
     // background
@@ -108,16 +111,30 @@ _expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
     }
 
     // barree
-    gint barree = 0;
-    gint max = 0;
+    gint maxfinger = 0;
+    gint minfinger = 10;
+
     for ( int i = 0; i < 6; ++i )
     {
-
-
-    gint position = ( frets[5-i] - 0x30 );
-
-            gint position = ( frets[5-i] - 0x30 );
-
+        if ( frets[i] == 'x' || frets[i] == 'X' || frets[i] == '0' ) continue;
+        gint position = frets[i] - 0x30;
+        if ( position > maxfinger ) maxfinger = position;
+        if ( position < minfinger ) minfinger = position;
+    }
+    if ( maxfinger > 5 )
+    {
+        for ( int i = 0; i < 6; ++i )
+        {
+            if ( frets[i] == 'x' || frets[i] == 'X' || frets[i] == '0' ) continue;
+            frets[i] = ( frets[i]-= minfinger);
+        }
+        gchar barree = 0x30 + minfinger;
+        GdkColor barreecolor = { 0, 0xee <<8, 0x22 <<8, 0x44 <<8 };
+        pango_layout_set_text( layout, &barree, 1 );
+        gdk_gc_set_rgb_fg_color( gc, &barreecolor );
+        //FIXME take font size into account
+        gdk_draw_layout( widget->window, gc, 25, 260, layout );
+    }
 
     // finger positions
     for ( int i = 0; i < 6; ++i )
@@ -134,6 +151,7 @@ _expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 -1, -1,
                 GDK_RGB_DITHER_MAX, 0, 0);
     }
+    g_free( frets );
     return TRUE;
 }
 
