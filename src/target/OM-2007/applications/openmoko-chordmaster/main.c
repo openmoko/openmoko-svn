@@ -19,6 +19,7 @@
 
 #include "callbacks.h"
 #include "chordsdb.h"
+#include "fretboard-widget.h"
 #include "main.h"
 
 #include <mokoui/moko-application.h>
@@ -33,12 +34,6 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkscrolledwindow.h>
 #include <gtk/gtktreeview.h>
-
-enum {
-    COLUMN_NAME,
-    COLUMN_FRETS,
-    NUM_COLS,
-};
 
 int main( int argc, char** argv )
 {
@@ -108,11 +103,12 @@ void setup_ui( ChordMasterData* d )
     /* tool bar */
     MokoToolBox* toolbox;
     toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
+    gtk_widget_grab_focus( GTK_WIDGET(toolbox) );
 
     button1 = moko_tool_box_add_action_button( toolbox );
-    gtk_button_set_label( button1, "Action 1" );
+    gtk_button_set_label( button1, "Add" );
     button2 = moko_tool_box_add_action_button( toolbox );
-    gtk_button_set_label( button2, "Action 2" );
+    gtk_button_set_label( button2, "Remove" );
     button3 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button3, "ActMenu" );
     button4 = moko_tool_box_add_action_button( toolbox );
@@ -184,57 +180,20 @@ void populate_navigation_area( ChordMasterData* d )
 
     GtkScrolledWindow* scrollwin = gtk_scrolled_window_new( NULL, NULL );
     //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
-    gtk_widget_set_size_request( GTK_WIDGET(scrollwin), 0, 170 );
+    gtk_widget_set_size_request( GTK_WIDGET(scrollwin), 0, 230 );
     gtk_scrolled_window_set_policy( scrollwin, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS );
+
+    g_object_set( G_OBJECT(view), "can-focus", FALSE, NULL );
 
     gtk_scrolled_window_add_with_viewport( scrollwin, GTK_WIDGET(view) );
     moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(scrollwin) );
-}
 
-gboolean
-        expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data);
+    GtkTreeSelection* selection = gtk_tree_view_get_selection( view );
+    g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d );
+}
 
 void populate_details_area( ChordMasterData* d )
 {
-/*    GtkImage* image = gtk_image_new_from_file( RESOURCE_PATH "fretboard.png" );
-    GdkPixbuf* pixbuf = gtk_image_get_pixbuf( image );*/
-
-    GtkWidget* drawing_area = gtk_drawing_area_new ();
-    gtk_widget_set_size_request (drawing_area, 450, 348);
-    g_signal_connect (G_OBJECT (drawing_area), "expose_event",
-                      G_CALLBACK (expose_event_callback), NULL);
-
-    
-    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(drawing_area) );
+    d->fretboard = fretboard_widget_new();
+    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(d->fretboard) );
 }
-
-/* fretboard widget */
-
-gboolean
-        expose_event_callback (GtkWidget *widget, GdkEventExpose *event, gpointer data)
-{
-    g_debug( "expose event callback" );
-    GError* error = NULL;
-
-    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file( RESOURCE_PATH "fretboard.png", &error );
-    gdk_draw_pixbuf( widget->window, 
-                     widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-            pixbuf,
-            0,
-            0,
-            20,
-            0,
-            -1,
-            -1,
-            GDK_RGB_DITHER_MAX,
-            0,
-            0);
-
-    /*gdk_draw_arc (widget->window,
-                  widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
-                  TRUE,
-                  0, 0, widget->allocation.width, widget->allocation.height,
-                  0, 64 * 360);*/
-    return TRUE;
-}
-

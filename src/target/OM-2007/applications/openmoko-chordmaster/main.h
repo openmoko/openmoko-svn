@@ -17,7 +17,11 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#ifndef __MAIN__H_
+#define __MAIN__H_
+
 #include "chordsdb.h"
+#include "fretboard-widget.h"
 
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
@@ -29,8 +33,17 @@ typedef struct _ChordMasterData {
     GtkMenu* menu;
     MokoToolBox* toolbox;
     ChordsDB* chordsdb;
+    FretboardWidget* fretboard;
 } ChordMasterData;
+
+enum {
+    COLUMN_NAME,
+    COLUMN_FRETS,
+    NUM_COLS,
+};
 
 void setup_ui( ChordMasterData* );
 void populate_navigation_area( ChordMasterData* d );
 void populate_details_area( ChordMasterData* d );
+
+#endif
