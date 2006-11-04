@@ -102,6 +102,8 @@ void setup_ui( ChordMasterData* d )
     MokoToolBox* toolbox;
     toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
     gtk_widget_grab_focus( GTK_WIDGET(toolbox) );
+    g_signal_connect( G_OBJECT(toolbox), "searchbox_visible", G_CALLBACK(cb_search_visible), d );
+    g_signal_connect( G_OBJECT(toolbox), "searchbox_invisible", G_CALLBACK(cb_search_invisible), d );
 
     button1 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button1, "Add" );
@@ -113,10 +115,10 @@ void setup_ui( ChordMasterData* d )
     gtk_button_set_label( button4, "Action 4" );
     moko_paned_window_add_toolbox( d->window, toolbox );
 
-    g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_button1_clicked), NULL );
-    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_button2_clicked), NULL );
-    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_button3_clicked), NULL );
-    g_signal_connect( G_OBJECT(button4), "clicked", G_CALLBACK(cb_button4_clicked), NULL );
+    g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_button1_clicked), d );
+    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_button2_clicked), d );
+    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_button3_clicked), d );
+    g_signal_connect( G_OBJECT(button4), "clicked", G_CALLBACK(cb_button4_clicked), d );
 
     GtkMenu* actionmenu = GTK_MENU(gtk_menu_new());
     GtkMenuItem* fooitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Foo" ));

@@ -42,14 +42,13 @@ typedef struct _MokoToolBoxClass  MokoToolBoxClass;
 struct _MokoToolBox
 {
     GtkNotebook parent;
-    /* add pointers to new members here */
 };
 
 struct _MokoToolBoxClass
 {
-    /* add your parent class here */
     GtkNotebookClass parent_class;
-    void (*moko_tool_box) (MokoToolBox *self);
+    void (*searchbox_visible) (MokoToolBox *self);
+    void (*searchbox_invisible) (MokoToolBox *self);
 };
 
 GType          moko_tool_box_get_type();

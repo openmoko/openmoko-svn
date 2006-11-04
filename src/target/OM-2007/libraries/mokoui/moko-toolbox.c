@@ -35,7 +35,8 @@ typedef struct _MokoToolBoxPriv
 
 /* add your signals here */
 enum {
-    MOKO_TOOL_BOX_SIGNAL,
+    SEARCHBOX_VISIBLE,
+    SEARCHBOX_INVISIBLE,
     LAST_SIGNAL
 };
 
@@ -43,6 +44,15 @@ static void moko_tool_box_class_init          (MokoToolBoxClass *klass);
 static void moko_tool_box_init                (MokoToolBox      *self);
 
 static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
+
+static void _button_release(GtkWidget* w, MokoToolBox* self)
+{
+    static int current_page = 1;
+    gtk_notebook_set_current_page( GTK_NOTEBOOK(self), current_page );
+    g_debug( "moko_tool_box_button_release: current_page is now: %d", current_page );
+    current_page = 1 - current_page;
+    g_signal_emit( G_OBJECT(self), current_page ? moko_tool_box_signals[SEARCHBOX_INVISIBLE] : moko_tool_box_signals[SEARCHBOX_VISIBLE], 0, NULL );
+}
 
 GType moko_tool_box_get_type (void) /* Typechecking */
 {
@@ -74,10 +84,19 @@ static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initiali
 {
     g_type_class_add_private(klass, sizeof(MokoToolBoxPriv));
 
-    moko_tool_box_signals[MOKO_TOOL_BOX_SIGNAL] = g_signal_new ("moko_tool_box",
+    moko_tool_box_signals[SEARCHBOX_VISIBLE] = g_signal_new ("searchbox_visible",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-            G_STRUCT_OFFSET (MokoToolBoxClass, moko_tool_box),
+            G_STRUCT_OFFSET (MokoToolBoxClass, searchbox_visible),
+            NULL,
+            NULL,
+            g_cclosure_marshal_VOID__VOID,
+            G_TYPE_NONE, 0);
+
+    moko_tool_box_signals[SEARCHBOX_INVISIBLE] = g_signal_new ("searchbox_invisible",
+            G_TYPE_FROM_CLASS (klass),
+            G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+            G_STRUCT_OFFSET (MokoToolBoxClass, searchbox_invisible),
             NULL,
             NULL,
             g_cclosure_marshal_VOID__VOID,
@@ -110,13 +129,6 @@ GtkWidget* moko_tool_box_new() /* Construction */
 
 GtkWidget* moko_tool_box_new_with_search()
 {
-    void button_release(GtkWidget* w, MokoToolBox* self)
-    {
-        static int current_page = 1;
-        gtk_notebook_set_current_page( GTK_NOTEBOOK(self), current_page );
-        g_debug( "button_release: current_page is now: %d", current_page );
-        current_page = 1 - current_page;
-    }
     MokoToolBox* self = MOKO_TOOL_BOX(g_object_new(MOKO_TYPE_TOOL_BOX, NULL));
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
 
@@ -131,7 +143,7 @@ GtkWidget* moko_tool_box_new_with_search()
 
     gtk_notebook_append_page( GTK_NOTEBOOK(self), priv->toolbar_page, NULL );
 
-    g_signal_connect( G_OBJECT(search), "clicked", G_CALLBACK(button_release), self );
+    g_signal_connect( G_OBJECT(search), "clicked", G_CALLBACK(_button_release), self );
 
     priv->searchbar_page = moko_pixmap_container_new();
     gtk_widget_set_name( GTK_WIDGET(priv->searchbar_page), "mokotoolbox-search-mode" );
@@ -140,7 +152,7 @@ GtkWidget* moko_tool_box_new_with_search()
     MokoPixmapButton* back = moko_pixmap_button_new();
     gtk_widget_set_name( GTK_WIDGET(back), "mokotoolbox-back-button" );
     gtk_fixed_put( GTK_FIXED(priv->searchbar_page), back, 400, 0 ); //FIXME need to get from style
-    g_signal_connect( G_OBJECT(back), "clicked", G_CALLBACK(button_release), self );
+    g_signal_connect( G_OBJECT(back), "clicked", G_CALLBACK(_button_release), self );
 
     priv->entry = gtk_entry_new();
     gtk_entry_set_has_frame( priv->entry, FALSE );

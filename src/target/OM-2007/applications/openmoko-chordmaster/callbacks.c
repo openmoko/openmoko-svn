@@ -33,24 +33,34 @@ gboolean cb_filter_changed(GtkWidget* widget, gchar* text, ChordMasterData* d)
     return FALSE;
 }
 
-void cb_button1_clicked(GtkButton *button, gpointer user_data)
+void cb_button1_clicked(GtkButton *button, ChordMasterData* d)
 {
     g_debug( "openmoko-chordmaster: button1 clicked" );
 }
 
-void cb_button2_clicked(GtkButton *button, gpointer user_data)
+void cb_button2_clicked(GtkButton *button, ChordMasterData* d)
 {
     g_debug( "openmoko-chordmaster: button2 clicked" );
 }
 
-void cb_button3_clicked(GtkButton *button, gpointer user_data)
+void cb_button3_clicked(GtkButton *button, ChordMasterData* d)
 {
     g_debug( "openmoko-chordmaster: button3 clicked" );
 }
 
-void cb_button4_clicked(GtkButton *button, gpointer user_data)
+void cb_button4_clicked(GtkButton *button, ChordMasterData* d)
 {
     g_debug( "openmoko-chordmaster: button4 clicked" );
+}
+
+void cb_search_visible(MokoToolBox* toolbox, ChordMasterData* d)
+{
+    g_debug( "openmoko-chordmaster: searchbox visible" );
+}
+
+void cb_search_invisible(MokoToolBox* toolbox, ChordMasterData* d)
+{
+    g_debug( "openmoko-chordmaster: searchbox INvisible" );
 }
 
 void cb_cursor_changed(GtkTreeSelection* selection, ChordMasterData* d)
@@ -68,4 +78,3 @@ void cb_cursor_changed(GtkTreeSelection* selection, ChordMasterData* d)
     fretboard_widget_set_frets( d->fretboard, frets );
     gtk_widget_queue_draw( GTK_WIDGET(d->fretboard) );
 }
-

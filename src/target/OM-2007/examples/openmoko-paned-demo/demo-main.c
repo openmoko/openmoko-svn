@@ -28,6 +28,18 @@
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
 
+void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
+{
+    g_debug( "openmoko-paned-demo: searchbox now visible" );
+    // populate the entry completion here and/or connect signals to entry
+}
+
+void cb_searchbox_invisible(MokoToolBox* toolbox, gpointer user_data)
+{
+    g_debug( "openmoko-paned-demo: searchbox now invisible" );
+    // free resources and/or disconnect signals
+}
+
 void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
 {
     g_debug( "openmoko-paned-demo: filter changed to '%s'", text );
@@ -125,6 +137,10 @@ int main( int argc, char** argv )
     } else {
         toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
     }
+
+    g_signal_connect( G_OBJECT(toolbox), "searchbox_visible", G_CALLBACK(cb_searchbox_visible), NULL );
+    g_signal_connect( G_OBJECT(toolbox), "searchbox_invisible", G_CALLBACK(cb_searchbox_invisible), NULL );
+
     button1 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button1, "Action 1" );
     button2 = moko_tool_box_add_action_button( toolbox );
