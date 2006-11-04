@@ -76,6 +76,16 @@ int main( int argc, char** argv )
 
     /* application menu */
     GtkMenu* appmenu = GTK_MENU(gtk_menu_new());
+    GtkMenuItem* item = gtk_menu_item_new_with_label( "Some" );
+    gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), item );
+    item = gtk_menu_item_new_with_label( "Sample" );
+    gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), item );
+    item = gtk_menu_item_new_with_label( "Menu" );
+    gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), item );
+    item = gtk_menu_item_new_with_label( "Entries" );
+    gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), item );
+    item = gtk_separator_menu_item_new();
+    gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), item );
     GtkMenuItem* closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Close" ));
     g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
     gtk_menu_shell_append( appmenu, closeitem );
@@ -84,13 +94,13 @@ int main( int argc, char** argv )
     /* filter menu */
     GtkMenu* filtmenu = GTK_MENU(gtk_menu_new());
     GtkMenuItem* item1 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Some" ));
-    gtk_menu_shell_append( filtmenu, item1 );
+    gtk_menu_shell_append( GTK_MENU_SHELL(filtmenu), item1 );
     GtkMenuItem* item2 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Sample" ));
-    gtk_menu_shell_append( filtmenu, item2 );
+    gtk_menu_shell_append( GTK_MENU_SHELL(filtmenu), item2 );
     GtkMenuItem* item3 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Filter" ));
-    gtk_menu_shell_append( filtmenu, item3 );
+    gtk_menu_shell_append( GTK_MENU_SHELL(filtmenu), item3 );
     GtkMenuItem* item4 = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Entries" ));
-    gtk_menu_shell_append( filtmenu, item4 );
+    gtk_menu_shell_append( GTK_MENU_SHELL(filtmenu), item4 );
     moko_paned_window_set_filter_menu( window, filtmenu );
     MokoMenuBox* menubox = moko_paned_window_get_menubox( window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), NULL );

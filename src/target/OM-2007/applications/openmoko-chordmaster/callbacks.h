@@ -9,7 +9,7 @@
 
 #include <glib.h>
 
-gboolean cb_filter_changed(GtkWidget* widget, gchar* text, gpointer user_data);
+gboolean cb_filter_changed(GtkWidget* widget, gchar* text, ChordMasterData* d);
 void cb_button1_clicked(GtkButton *button, gpointer user_data);
 void cb_button2_clicked(GtkButton *button, gpointer user_data);
 void cb_button3_clicked(GtkButton *button, gpointer user_data);

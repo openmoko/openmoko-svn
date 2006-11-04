@@ -92,7 +92,7 @@ static void moko_menu_box_class_init (MokoMenuBoxClass *klass) /* Class Initiali
 
 static void moko_menu_box_init (MokoMenuBox *self) /* Instance Construction */
 {
-    g_debug( "moko_paned_window_init" );
+    g_debug( "moko_menu_box_init" );
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 
     priv->menubar_l = NULL;

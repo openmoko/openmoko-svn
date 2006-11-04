@@ -54,6 +54,7 @@ chordsdb_finalize (GObject *object)
 static void
 chordsdb_class_init (ChordsDBClass *klass)
 {
+    g_debug( "chordsdb_class_init" );
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     /* register private data */

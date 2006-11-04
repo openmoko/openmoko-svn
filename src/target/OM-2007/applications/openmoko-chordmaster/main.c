@@ -43,8 +43,6 @@ int main( int argc, char** argv )
 
     /* application data object */
     ChordMasterData* d = g_new( ChordMasterData, 1 );
-
-    /* chords database */
     d->chordsdb = chordsdb_new();
 
     /* application object */
@@ -84,7 +82,7 @@ void setup_ui( ChordMasterData* d )
     }
     moko_paned_window_set_filter_menu( d->window, filtmenu );
     MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
-    g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), NULL );
+    g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_active_filter( menubox, "All" );
 
     /* connect close event */
@@ -133,18 +131,7 @@ void setup_ui( ChordMasterData* d )
 
 void populate_navigation_area( ChordMasterData* d )
 {
-
-    GtkListStore* list = gtk_list_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_STRING );
-    GtkTreeIter iter;
-
-    GSList* chords = chordsdb_get_chords( d->chordsdb );
-    for ( ; chords; chords = g_slist_next( chords ) )
-    {
-        Chord* chord = chords->data;
-        g_debug( "chordmaster: adding chord '%s' = '%s'", chord->name, chord->frets );
-        gtk_list_store_append( list, &iter );
-        gtk_list_store_set( list, &iter, COLUMN_NAME, chord->name, COLUMN_FRETS, chord->frets, -1 );
-    }
+    g_assert( d->liststore ); // created in callback
 
     //FIXME get color from style
     GdkColor color;
@@ -156,7 +143,7 @@ void populate_navigation_area( ChordMasterData* d )
     g_value_init (&v, GDK_TYPE_COLOR);
     g_value_set_boxed( &v, &color);
 
-    GtkTreeView* view = gtk_tree_view_new_with_model( list );
+    GtkTreeView* view = gtk_tree_view_new_with_model( d->liststore );
     gtk_tree_view_set_rules_hint( view, TRUE );
     GtkTreeViewColumn* col = gtk_tree_view_column_new();
     gtk_tree_view_column_set_title( col, "Name of the Chord" );
