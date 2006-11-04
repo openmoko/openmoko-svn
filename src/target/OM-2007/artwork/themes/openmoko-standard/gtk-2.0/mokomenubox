@@ -11,6 +11,7 @@ style "mokomenubox-application-menubar" {
     xthickness = 30
 }
 widget "*.mokomenubox-application-menubar" style "mokomenubox-application-menubar"
+class "GtkMenuBar" style "mokomenubox-application-menubar"
 
 style "mokomenubox-filter-menubar" {
     engine "pixmap" {
@@ -32,6 +33,7 @@ style "mokomenubox-application-menubar-items" {
     fg[PRELIGHT] = "#333333"
 }
 widget "*.mokomenubox-application-menubar.*.GtkAccelLabel" style "mokomenubox-application-menubar-items"
+class "GtkAccelLabel" style "mokomenubox-application-menubar-items"
 
 style "mokomenubox-filter-menubar-items" {
     font_name = "Vera Sans 16"

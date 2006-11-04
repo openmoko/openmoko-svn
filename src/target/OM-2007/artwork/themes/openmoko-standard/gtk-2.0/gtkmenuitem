@@ -13,9 +13,13 @@ class "GtkMenuItem" style "gtkmenuitem"
 
 style "gtkmenuitem-label" {
     font_name = "Vera Sans 16"
-    fg[NORMAL] = "#ffffff"
+    fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
     xthickness = 100
 }
 widget "*.GtkMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
 widget "*.GtkImageMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
+
+widget_class "*.GtkMenu.GtkMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
+widget_class "*.GtkMenu.GtkImageMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
+
