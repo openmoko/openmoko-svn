@@ -83,3 +83,4 @@ include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
 
+include "transparent"
