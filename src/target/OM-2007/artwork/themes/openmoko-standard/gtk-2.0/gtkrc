@@ -70,7 +70,11 @@ style "moko-window-default" {
             file            = "hline.png"
             stretch         = TRUE
         }
-
+        image {
+            function        = VLINE
+            file            = "hline.png" # FIXME add proper vline
+            stretch         = TRUE
+        }	
     }
     font_name = "Vera Sans 16"
 }
