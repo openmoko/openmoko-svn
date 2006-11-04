@@ -213,20 +213,30 @@ moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 
+    guint index = 0;
     GList* child = gtk_container_get_children( GTK_CONTAINER(priv->filtermenu) );
-    while (child && GTK_IS_MENU_ITEM(child->data))
+    while (child && GTK_IS_MENU_ITEM(child->data) )
     {
         GtkWidget *label = GTK_BIN(child->data)->child;
+        if ( !label )
+        {
+            ++index;
+            child = g_list_next(child);
+            continue;
+        }
         g_assert( GTK_IS_LABEL(label) );
         gchar* ltext;
         gtk_label_get( GTK_LABEL(label), &ltext );
+        g_debug( "moko_menu_box_set_active_filter: comparing '%s' with '%s'", ltext, text );
         if ( strcmp( ltext, text ) == 0 )
         {
             g_debug( "moko_menu_box_set_active_filter: match found" );
-            gtk_menu_item_activate( child->data );
+            //FIXME this is a bit hackish or is it?
+            gtk_menu_set_active( GTK_MENU(priv->filtermenu), index );
             cb_filter_menu_update( priv->filtermenu, self ); //need to sync. manually, since we it didn't go through popupmenu
             break;
         }
+        ++index;
         child = g_list_next(child);
     }
     if (!child)

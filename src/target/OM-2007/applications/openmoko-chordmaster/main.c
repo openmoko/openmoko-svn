@@ -73,13 +73,15 @@ void setup_ui( ChordMasterData* d )
 
     /* filter menu */
     GtkMenu* filtmenu = GTK_MENU(gtk_menu_new());
-    gtk_menu_shell_append( filtmenu, gtk_menu_item_new_with_label( "All" ) );
     for (GSList* c = chordsdb_get_categories( d->chordsdb ); c; c = g_slist_next(c) )
     {
         gchar* category = (gchar*) c->data;
         g_debug( "adding category '%s'", category );
         gtk_menu_shell_append( filtmenu, gtk_menu_item_new_with_label( category ) );
     }
+    gtk_menu_shell_append( filtmenu, gtk_separator_menu_item_new() );
+    gtk_menu_shell_append( filtmenu, gtk_menu_item_new_with_label( "All" ) );
+
     moko_paned_window_set_filter_menu( d->window, filtmenu );
     MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
