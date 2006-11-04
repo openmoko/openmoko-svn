@@ -169,6 +169,7 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
 
     }
     GtkMenuItem* appitem = gtk_menu_item_new_with_label( g_get_application_name() );
+    gtk_widget_set_name( GTK_WIDGET(appitem), "transparent" );
     priv->appitem = appitem;
     priv->appmenu = menu;
     gtk_menu_item_set_submenu( appitem, menu );
@@ -190,6 +191,7 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
         gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->menubar_r), TRUE, TRUE, 0 );
     }
     GtkMenuItem* filtitem = gtk_menu_item_new_with_label( "Filter Menu" );
+    gtk_widget_set_name( GTK_WIDGET(filtitem), "transparent" );
     priv->filteritem = filtitem;
     priv->filtermenu = menu;
     g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), self );
