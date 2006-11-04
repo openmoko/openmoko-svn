@@ -112,46 +112,24 @@ void moko_menu_box_clear(MokoMenuBox *f) /* Destruction */
 
 static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkMenu* menu)
 {
-    g_debug( "menu open forwarder activated on widget '%s'...", gtk_widget_get_name(widget) );
-    //g_debug( "relative clicked on %f, %f", event->x, event->y );
+    g_debug( "menu open forwarder: clicked on %f, %f", event->x, event->y );
+    g_debug( "menu open forwarder: clicked on window %p, whereas our window is %p", event->window, widget->window );
 
-    //FIXME works only with one menu per menubar
-    GtkAllocation* my_a = &widget->allocation;
-    g_debug( "my allocate is %d, %d * %d, %d", my_a->x, my_a->y, my_a->width, my_a->height );
+    if ( event->window != widget->window ) return FALSE;
 
-    gint relx = event->x + my_a->x;
-    gint rely = event->y + my_a->y;
-    g_debug( "clicked on %d, %d", relx, rely );
-
-    GList* children = gtk_container_get_children( GTK_CONTAINER(widget) );
-    GtkAllocation* a = &GTK_WIDGET(children->data)->allocation;
-    g_debug( "menu-allocate is %d, %d * %d, %d", a->x, a->y, a->width, a->height );
-
-    if ( relx >= my_a->x + a->x && relx <= (my_a->x + a->x+a->width) &&
-         rely >= my_a->y + a->y && rely <= (my_a->y + a->y+a->height) )
+    if ( !GTK_WIDGET_VISIBLE(menu) )
     {
-        g_debug( "INSIDE ITEM" );
+        g_debug( "menu open forwarder: not yet open -- popping up" );
+        gtk_menu_shell_select_first( GTK_MENU_SHELL(widget), FALSE );
+        return TRUE;
+    }
+    {
+        g_debug( "menu open forwarder: already open -- ignoring" );
+        gtk_menu_popdown( menu );
         return FALSE;
     }
-    if ( relx >= my_a->x && relx <= (my_a->x+my_a->width) &&
-         rely >= my_a->y && rely <= (my_a->y+my_a->height) )
-    {
-        g_debug( "INSIDE MENUBOX" );
-
-        if ( !GTK_WIDGET_VISIBLE(menu) )
-        {
-            g_debug( "menu open forwarder: not yet open -- popping up" );
-            gtk_menu_shell_select_first( GTK_MENU_SHELL(widget), FALSE );
-            return TRUE;
-        }
-        {
-            g_debug( "menu open forwarder: already open -- ignoring" );
-            gtk_menu_popdown( menu );
-            return FALSE;
-        }
-    }
-    g_debug( "Jenseits von Gut und B�e..." );
-    return TRUE;
+    g_debug( "menu open forwarder: out of bounds" );
+    return FALSE;
 }
 
 static void cb_filter_menu_update( GtkMenu* menu, MokoMenuBox* self )
@@ -197,7 +175,7 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_l), appitem );
 
     //FIXME hack to popup the first menu if user clicks on menubar
-    g_signal_connect( GTK_WIDGET(priv->menubar_l), "button-release-event", G_CALLBACK(cb_button_release), menu );
+    g_signal_connect( GTK_WIDGET(priv->menubar_l), "button-press-event", G_CALLBACK(cb_button_release), menu );
 }
 
 void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
@@ -219,7 +197,7 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
     gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_r), filtitem );
 
     //FIXME hack to popup the first menu if user clicks on menubar
-    g_signal_connect( GTK_WIDGET(priv->menubar_r), "button-release-event", G_CALLBACK(cb_button_release), menu );
+    g_signal_connect( GTK_WIDGET(priv->menubar_r), "button-press-event", G_CALLBACK(cb_button_release), menu );
 }
 
 void
