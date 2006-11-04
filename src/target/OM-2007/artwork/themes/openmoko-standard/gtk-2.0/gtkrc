@@ -62,6 +62,15 @@ style "moko-window-default" {
             border          = { 6, 6, 6, 6 }
             stretch         = TRUE
         }
+#
+# How to draw lines in general
+#
+        image {
+            function        = HLINE
+            file            = "hline.png"
+            stretch         = TRUE
+        }
+
     }
     font_name = "Vera Sans 16"
 }
