@@ -86,8 +86,6 @@ static void moko_menu_box_class_init (MokoMenuBoxClass *klass) /* Class Initiali
             NULL,
             g_cclosure_marshal_VOID__STRING,
             G_TYPE_NONE, 1, G_TYPE_STRING );
-
-    g_debug( "filter-signal-changed ID = %d", moko_menu_box_signals[FILTER_CHANGED] );
 }
 
 static void moko_menu_box_init (MokoMenuBox *self) /* Instance Construction */
@@ -112,6 +110,8 @@ void moko_menu_box_clear(MokoMenuBox *f) /* Destruction */
 
 static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkMenu* menu)
 {
+    MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE( MOKO_MENU_BOX(widget->parent) );
+
     g_debug( "menu open forwarder: clicked on %f, %f", event->x, event->y );
     g_debug( "menu open forwarder: clicked on window %p, whereas our window is %p", event->window, widget->window );
 
@@ -120,9 +120,13 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
     if ( !GTK_WIDGET_VISIBLE(menu) )
     {
         g_debug( "menu open forwarder: not yet open -- popping up" );
-        gtk_menu_shell_select_first( GTK_MENU_SHELL(widget), FALSE );
+        /* this is kind of funny, if you don't add the grab manually,
+           then Gtk+ won't recognize the next click (selection) */
+        gtk_grab_add(GTK_WIDGET(widget) );
+        gtk_menu_shell_select_first( GTK_MENU_SHELL(widget), TRUE );
         return TRUE;
     }
+    else
     {
         g_debug( "menu open forwarder: already open -- ignoring" );
         gtk_menu_popdown( menu );
