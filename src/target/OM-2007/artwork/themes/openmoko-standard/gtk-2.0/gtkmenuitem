@@ -21,7 +21,7 @@ style "gtkmenuitem" {
 class "GtkMenuItem" style "gtkmenuitem"
 
 style "gtkmenuitem-label" {
-    font_name = "Vera Sans 16"
+    font_name = "Vera Sans 13"
     fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
     xthickness = 100

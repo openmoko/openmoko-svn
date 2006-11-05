@@ -181,6 +181,10 @@ void populate_navigation_area( ChordMasterData* d )
                   "sort-indicator", TRUE,
                   NULL );
 
+    //gtk_tree_view_set_headers_clickable( view, TRUE );
+    gtk_tree_view_set_headers_visible( view, TRUE );
+    //gtk_tree_view_set_search_column( view, COLUMN_NAME );
+
     GtkScrolledWindow* scrollwin = gtk_scrolled_window_new( NULL, NULL );
     //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
     gtk_widget_set_size_request( GTK_WIDGET(scrollwin), 0, 230 );
