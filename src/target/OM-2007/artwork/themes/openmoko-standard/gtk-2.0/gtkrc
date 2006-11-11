@@ -1,31 +1,31 @@
 style "moko-window-default" {
     # FIXME do we want a general background brush? Or just a color?
 	# NOTE bg_pixmap[NORMAL] _must_ match with the SHADOW pixmaps
-    bg_pixmap[NORMAL] = "openmoko-shadow-bg-brush.png"
+    bg_pixmap[NORMAL] = "gtkwidget.png"
 
-    fg[NORMAL]        = "#201d15" # very dark brown
-    fg[PRELIGHT]      = "#201d15" # very dark brown
-    fg[ACTIVE]        = "#201d15" # very dark brown
-    fg[SELECTED]      = "#201d15" # very dark brown
-    fg[INSENSITIVE]   = "#ffb3ac" # grey
+    fg[NORMAL]        = "#e5e5e5" # very dark brown
+    fg[PRELIGHT]      = "#ff0000" # very dark brown
+    fg[ACTIVE]        = "#e5e5e5" # very dark brown
+    fg[SELECTED]      = "#0000ff" # very dark brown
+    fg[INSENSITIVE]   = "#00ff00" # grey
 
-    bg[NORMAL]        = "#ece9d8" # beige
-    bg[PRELIGHT]      = "#f1efe3" # light beige
-    bg[ACTIVE]        = "#cdc7b0" # dark beige
-    bg[SELECTED]      = "#b4c994" # olive
-    bg[INSENSITIVE]   = "#ece9d8" # beige
+    bg[NORMAL]        = "#ff0000" # beige
+    bg[PRELIGHT]      = "#ff0000" # light beige
+    bg[ACTIVE]        = "#ff0000" # dark beige
+    bg[SELECTED]      = "#ff0000" # olive
+    bg[INSENSITIVE]   = "#ff0000" # beige
 
-    base[NORMAL]      = "#ffffff" # white
-    base[PRELIGHT]    = "#b4c994" # olive
-    base[ACTIVE]      = "#aba897" # dark olive
-    base[SELECTED]    = "#b4c994" # olive
-    base[INSENSITIVE] = "#ece9d8" # beige
+    base[NORMAL]      = "#ff0000" # white
+    base[PRELIGHT]    = "#ff0000" # olive
+    base[ACTIVE]      = "#ff0000" # dark olive
+    base[SELECTED]    = "#ff0000" # olive
+    base[INSENSITIVE] = "#ff0000" # beige
 
-    text[NORMAL]      = "#000000" # black
-    text[PRELIGHT]    = "#000000" # black
-    text[ACTIVE]      = "#ffffff" # white
-    text[SELECTED]    = "#ffffff" # white
-    text[INSENSITIVE] = "#a69872" # very dark brown
+    text[NORMAL]      = "#e5e5e5" # black
+    text[PRELIGHT]    = "#ff0000" # black
+    text[ACTIVE]      = "#e5e5e5" # white
+    text[SELECTED]    = "#0000ff" # white
+    text[INSENSITIVE] = "#00ff00" # very dark brown
 #
 # How to draw shadows in general
 #
@@ -80,7 +80,9 @@ style "moko-window-default" {
 }
 
 # enable for final version
-class "GtkWidget" style "moko-window-default"
+# class "GtkWidget" style "moko-window-default"
+
+widget "*" style "moko-window-default"
 
 # enable for debugging on host
 # widget "MokoPanedWindow.*" style "moko-window-default"

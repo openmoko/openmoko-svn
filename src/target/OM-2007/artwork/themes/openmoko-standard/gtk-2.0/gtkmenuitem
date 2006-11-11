@@ -24,10 +24,11 @@ style "gtkmenuitem-label" {
     font_name = "Vera Sans 13"
     fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
-    xthickness = 100
 }
-widget "*.GtkMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
-widget "*.GtkImageMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
+widget "*.GtkMenuItem.*" style "gtkmenuitem-label"
+widget "*.GtkImageMenuItem.*" style "gtkmenuitem-label"
 
-widget_class "*.GtkMenu.GtkMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
-widget_class "*.GtkMenu.GtkImageMenuItem.GtkAccelLabel" style "gtkmenuitem-label"
+class "GtkMenuItem" style "gtkmenuitem-label"
+
+class "GtkCellView" style "gtkmenuitem-label"
+

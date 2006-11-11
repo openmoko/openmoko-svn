@@ -6,10 +6,14 @@
 # - matchbox-panel (ohand svn)
 # - matchbox-window-manager (ohand svn)
 #
-SVN_TRUNK=/local/pkg/openmoko/trunk
-PKG=$SVN_TRUNK/oe/packages
+SERVER=Xephyr
+#SERVER=Xnest
+SVN_TRUNK=/local/pkg/openmoko/
+export PATH=$SVN_TRUNK/OM-2007/bin:$PATH
+export LD_LIBRARY_PATH=$SVN_TRUNK/OM-2007/lib:/usr/local/lib
 
-xoo -xd :1 -xn `which Xephyr` -t 'OpenMoko running on FIC GTA01' -d $PKG/xoo/files/gta01.xml &
+xoo -xo '-dpi 104 -ac' -xd :1 -xn `which $SERVER` -t 'OpenMoko running on FIC GTA01' -d \
+$SVN_TRUNK/oe/packages/xoo/files/gta01.xml &
 
 sleep 2
 
@@ -22,9 +26,7 @@ matchbox-panel -display $DISPLAY \
                --no-session \
                --no-menu \
                --no-flip \
-               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-header-background.png &
-
-sleep 1
+               --bgpixmap $SVN_TRUNK/OM-2007/artwork/images/pixmaps/openmoko-header-background.png &
 
 matchbox-panel -display $DISPLAY \
                --id 2 \
@@ -33,22 +35,17 @@ matchbox-panel -display $DISPLAY \
                --no-session \
                --no-menu \
                --no-flip \
-               --bgpixmap $PKG/openmoko/openmoko-common/pixmaps/openmoko-footer-background.png &
+               --bgpixmap $SVN_TRUNK/OM-2007/artwork/images/pixmaps/openmoko-footer-background.png &
 
-sleep 1
+matchbox-desktop --icon-size 100 \
+                 --icon-padding 60 \
+                 --font sans-16 \
+                 --titlefont sans-20:bold --bg \
+img-tiled:/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0/mokopanedwindow-upper-enclosing.png &
 
-matchbox-desktop -display $DISPLAY \
-                 --icon-size 96 \
-                 --icon-padding 128 \
-                 --font sans-24:bold \
-                 --titlefont sans-24:bold &
-
-sleep 1
-
-matchbox-window-manager -display $DISPLAY \
-                        -use_titlebar yes \
+exec matchbox-window-manager -display $DISPLAY \
+                        -use_titlebar no \
                         -use_super_modal yes \
                         -use_lowlight yes \
                         -use_dialog_mode static \
-                        -use_desktop_mode plain \
-                        -use_cursor no &
+                        -use_cursor yes

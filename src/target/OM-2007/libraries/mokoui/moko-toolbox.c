@@ -200,3 +200,9 @@ MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self)
 
     return button;
 }
+
+GtkEntry* moko_tool_box_get_entry(MokoToolBox* self)
+{
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    return priv->entry;
+}

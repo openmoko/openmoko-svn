@@ -133,7 +133,7 @@ _expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data)
         pango_layout_set_text( layout, &barree, 1 );
         gdk_gc_set_rgb_fg_color( gc, &barreecolor );
         //FIXME take font size into account
-        gdk_draw_layout( widget->window, gc, 25, 260, layout );
+        gdk_draw_layout( widget->window, gc, 13, 0, layout );
     }
 
     // finger positions

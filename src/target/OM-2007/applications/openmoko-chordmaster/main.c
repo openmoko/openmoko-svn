@@ -85,37 +85,31 @@ void setup_ui( ChordMasterData* d )
     moko_paned_window_set_filter_menu( d->window, filtmenu );
     MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
-    moko_menu_box_set_active_filter( menubox, "All" );
 
     /* connect close event */
     g_signal_connect( G_OBJECT(d->window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
-    populate_navigation_area( d );
-    populate_details_area( d );
-
     /* toolboox */
-
     GtkButton* button1;
     GtkButton* button2;
     GtkButton* button3;
     GtkButton* button4;
 
     /* tool bar */
-    MokoToolBox* toolbox;
-    toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
-    gtk_widget_grab_focus( GTK_WIDGET(toolbox) );
-    g_signal_connect( G_OBJECT(toolbox), "searchbox_visible", G_CALLBACK(cb_search_visible), d );
-    g_signal_connect( G_OBJECT(toolbox), "searchbox_invisible", G_CALLBACK(cb_search_invisible), d );
+    d->toolbox = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
+    gtk_widget_grab_focus( GTK_WIDGET(d->toolbox) );
+    g_signal_connect( G_OBJECT(d->toolbox), "searchbox_visible", G_CALLBACK(cb_search_visible), d );
+    g_signal_connect( G_OBJECT(d->toolbox), "searchbox_invisible", G_CALLBACK(cb_search_invisible), d );
 
-    button1 = moko_tool_box_add_action_button( toolbox );
+    button1 = moko_tool_box_add_action_button( d->toolbox );
     gtk_button_set_label( button1, "Add" );
-    button2 = moko_tool_box_add_action_button( toolbox );
+    button2 = moko_tool_box_add_action_button( d->toolbox );
     gtk_button_set_label( button2, "Remove" );
-    button3 = moko_tool_box_add_action_button( toolbox );
+    button3 = moko_tool_box_add_action_button( d->toolbox );
     gtk_button_set_label( button3, "ActMenu" );
-    button4 = moko_tool_box_add_action_button( toolbox );
+    button4 = moko_tool_box_add_action_button( d->toolbox );
     gtk_button_set_label( button4, "Action 4" );
-    moko_paned_window_add_toolbox( d->window, toolbox );
+    moko_paned_window_add_toolbox( d->window, d->toolbox );
 
     g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_button1_clicked), d );
     g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_button2_clicked), d );
@@ -131,11 +125,16 @@ void setup_ui( ChordMasterData* d )
     gtk_menu_shell_append( GTK_MENU_SHELL(actionmenu), GTK_WIDGET(baritem) );
     moko_pixmap_button_set_menu( MOKO_PIXMAP_BUTTON(button3), actionmenu );
     gtk_widget_show_all( actionmenu );
+
+    populate_navigation_area( d );
+    populate_details_area( d );
+
+    moko_menu_box_set_active_filter( menubox, "All" );
 }
 
 void populate_navigation_area( ChordMasterData* d )
 {
-    g_assert( d->liststore ); // created in callback
+    d->liststore = gtk_list_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_STRING );
 
     //FIXME get color from style
     GdkColor color;
@@ -147,13 +146,13 @@ void populate_navigation_area( ChordMasterData* d )
     g_value_init (&v, GDK_TYPE_COLOR);
     g_value_set_boxed( &v, &color);
 
-    GtkTreeView* view = gtk_tree_view_new_with_model( d->liststore );
-    gtk_tree_view_set_rules_hint( view, TRUE );
+    d->view = gtk_tree_view_new_with_model( d->liststore );
+    gtk_tree_view_set_rules_hint( d->view, TRUE );
     GtkTreeViewColumn* col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( col, "Name of the Chord" );
+    gtk_tree_view_column_set_title( col, "Chordname" );
     gtk_tree_view_column_set_alignment( col, 0.5 );
     gtk_tree_view_column_set_spacing( col, 4 );
-    gtk_tree_view_append_column( view, col );
+    gtk_tree_view_append_column( d->view, col );
     GtkCellRenderer* ren = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start( col, ren, TRUE );
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_NAME );
@@ -166,10 +165,10 @@ void populate_navigation_area( ChordMasterData* d )
                   NULL );
 
     col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( col, "Fingers on Fretboard" );
+    gtk_tree_view_column_set_title( col, "Fretboard" );
     gtk_tree_view_column_set_alignment( col, 0.5 );
     gtk_tree_view_column_set_spacing( col, 4 );
-    gtk_tree_view_append_column( view, col );
+    gtk_tree_view_append_column( d->view, col );
     ren = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start( col, ren, TRUE );
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_FRETS );
@@ -182,21 +181,30 @@ void populate_navigation_area( ChordMasterData* d )
                   NULL );
 
     //gtk_tree_view_set_headers_clickable( view, TRUE );
-    gtk_tree_view_set_headers_visible( view, TRUE );
+    gtk_tree_view_set_headers_visible( d->view, TRUE );
     //gtk_tree_view_set_search_column( view, COLUMN_NAME );
 
     GtkScrolledWindow* scrollwin = gtk_scrolled_window_new( NULL, NULL );
     //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
-    gtk_widget_set_size_request( GTK_WIDGET(scrollwin), 0, 230 );
+    gtk_widget_set_size_request( GTK_WIDGET(scrollwin), 0, 170 );
     gtk_scrolled_window_set_policy( scrollwin, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS );
 
-    g_object_set( G_OBJECT(view), "can-focus", FALSE, NULL );
+    //g_object_set( G_OBJECT(d->view), "can-focus", FALSE, NULL );
 
-    gtk_scrolled_window_add_with_viewport( scrollwin, GTK_WIDGET(view) );
+    //gtk_scrolled_window_add_with_viewport( scrollwin, GTK_WIDGET(d->view) );
+    gtk_container_add( scrollwin, GTK_WIDGET(d->view) );
     moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(scrollwin) );
 
-    GtkTreeSelection* selection = gtk_tree_view_get_selection( view );
+    GtkTreeSelection* selection = gtk_tree_view_get_selection( d->view );
     g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d );
+
+    GtkEntryCompletion* ec = gtk_entry_completion_new();
+    gtk_entry_completion_set_model( ec, d->liststore );
+    gtk_entry_completion_set_text_column( ec, COLUMN_NAME );
+    GtkEntry* entry = moko_tool_box_get_entry( d->toolbox );
+    //FIXME what happens in case the toolbox has no entry?
+    gtk_entry_set_completion( entry, ec );
+    g_signal_connect( G_OBJECT(ec), "match-selected", G_CALLBACK(cb_entry_completion_completed), d );
 }
 
 void populate_details_area( ChordMasterData* d )

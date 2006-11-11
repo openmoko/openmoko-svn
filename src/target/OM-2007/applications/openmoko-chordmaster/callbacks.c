@@ -6,15 +6,32 @@
 
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkbutton.h>
+#include <gtk/gtktreeselection.h>
 #include <gtk/gtktreeview.h>
 #include <gtk/gtktreemodel.h>
+
+gboolean cb_entry_completion_completed(GtkEntryCompletion *widget, GtkTreeModel *model, GtkTreeIter *iter, ChordMasterData* d)
+{
+    g_debug( "openmoko-chordmaster: entry completion completed" );
+    gchar* name = NULL;
+    gtk_tree_model_get( GTK_TREE_MODEL(model), iter, COLUMN_NAME, &name, -1 );
+    g_debug( "-- selected entry = '%s'", name );
+    GtkTreeIter myiter;
+    gtk_tree_model_filter_convert_iter_to_child_iter( model, &myiter, iter );
+    //GtkTreeSelection* selection = gtk_tree_view_get_selection( d->view );
+    //gtk_tree_selection_select_iter( selection, &myiter );
+    GtkTreePath* path = gtk_tree_model_get_path( d->liststore, &myiter );
+    gtk_tree_view_set_cursor( d->view, path, COLUMN_NAME, FALSE );
+    //gtk_tree_view_scroll_to_cell( d->view, path, NULL, FALSE, 0.5, 0.5 );
+    gtk_tree_path_free( path );
+    return FALSE;
+}
 
 gboolean cb_filter_changed(GtkWidget* widget, gchar* text, ChordMasterData* d)
 {
     g_debug( "openmoko-chordmaster: filter changed" );
     g_assert( d->chordsdb );
-    if ( !d->liststore )
-        d->liststore = gtk_list_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_STRING );
+    g_assert( d->liststore );
     gtk_list_store_clear( d->liststore );
     GtkTreeIter iter;
     GSList* chords = chordsdb_get_chords( d->chordsdb );
