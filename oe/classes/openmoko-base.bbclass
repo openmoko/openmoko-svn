@@ -1,0 +1,16 @@
+HOMEPAGE ?= "http://www.openmoko.org"
+LICENSE ?= "GPL"
+OPENMOKO_RELEASE ?= "OM-2007"
+OPENMOKO_MIRROR ?= "svn://svn.gta01.hmw-consulting.de/trunk"
+
+def openmoko_base_get_subdir(d):
+    import bb
+    openmoko, section = bb.data.getVar('SECTION', d, 1).split("/")
+    if section == 'base' or section == 'libs': return ""
+    else: return section
+
+SUBDIR = "${@openmoko_base_get_subdir(d)}"
+
+SRC_URI := "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/${SUBDIR};module=${PN};proto=http"
+S = "${WORKDIR}/${PN}"
+
