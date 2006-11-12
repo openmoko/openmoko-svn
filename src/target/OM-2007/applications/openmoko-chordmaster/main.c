@@ -25,6 +25,7 @@
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
 #include <mokoui/moko-tool-box.h>
+#include <mokoui/moko-tree-view.h>
 
 #include <gtk/gtkbutton.h>
 #include <gtk/gtklabel.h>
@@ -33,7 +34,6 @@
 #include <gtk/gtkmenuitem.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkscrolledwindow.h>
-#include <gtk/gtktreeview.h>
 
 int main( int argc, char** argv )
 {
@@ -135,65 +135,19 @@ void setup_ui( ChordMasterData* d )
 void populate_navigation_area( ChordMasterData* d )
 {
     d->liststore = gtk_list_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_STRING );
+    d->view = moko_tree_view_new_with_model( d->liststore );
 
-    //FIXME get color from style
-    GdkColor color;
-    color.red = 0x7f << 8;
-    color.green = 0x7f << 8;
-    color.blue = 0x7f << 8;
-
-    GValue v = { 0, };
-    g_value_init (&v, GDK_TYPE_COLOR);
-    g_value_set_boxed( &v, &color);
-
-    d->view = gtk_tree_view_new_with_model( d->liststore );
-    gtk_tree_view_set_rules_hint( d->view, TRUE );
-    GtkTreeViewColumn* col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( col, "Chordname" );
-    gtk_tree_view_column_set_alignment( col, 0.5 );
-    gtk_tree_view_column_set_spacing( col, 4 );
-    gtk_tree_view_append_column( d->view, col );
+    GtkTreeViewColumn* col = moko_tree_view_append_column_new_with_name( d->view, "Chordname" );
     GtkCellRenderer* ren = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start( col, ren, TRUE );
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_NAME );
-    g_object_set_property( G_OBJECT(ren), "foreground-gdk", &v );
 
-    g_object_set( G_OBJECT(col),
-                  "resizable", TRUE,
-                  "reorderable", TRUE,
-                  "sort-indicator", TRUE,
-                  NULL );
-
-    col = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( col, "Fretboard" );
-    gtk_tree_view_column_set_alignment( col, 0.5 );
-    gtk_tree_view_column_set_spacing( col, 4 );
-    gtk_tree_view_append_column( d->view, col );
+    col = moko_tree_view_append_column_new_with_name( d->view, "Fretboard" );
     ren = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start( col, ren, TRUE );
     gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_FRETS );
-    g_object_set_property( G_OBJECT(ren), "foreground-gdk", &v );
 
-    g_object_set( G_OBJECT(col),
-                  "resizable", TRUE,
-                  "reorderable", TRUE,
-                  "sort-indicator", TRUE,
-                  NULL );
-
-    //gtk_tree_view_set_headers_clickable( view, TRUE );
-    gtk_tree_view_set_headers_visible( d->view, TRUE );
-    //gtk_tree_view_set_search_column( view, COLUMN_NAME );
-
-    GtkScrolledWindow* scrollwin = gtk_scrolled_window_new( NULL, NULL );
-    //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
-    gtk_widget_set_size_request( GTK_WIDGET(scrollwin), 0, 170 );
-    gtk_scrolled_window_set_policy( scrollwin, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS );
-
-    //g_object_set( G_OBJECT(d->view), "can-focus", FALSE, NULL );
-
-    //gtk_scrolled_window_add_with_viewport( scrollwin, GTK_WIDGET(d->view) );
-    gtk_container_add( scrollwin, GTK_WIDGET(d->view) );
-    moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(scrollwin) );
+    moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(d->view)) );
 
     GtkTreeSelection* selection = gtk_tree_view_get_selection( d->view );
     g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d );

@@ -26,9 +26,8 @@
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
 #include <mokoui/moko-tool-box.h>
-
+#include <mokoui/moko-tree-view.h>
 #include <gtk/gtkliststore.h>
-#include <gtk/gtktreeview.h>
 
 typedef struct _ChordMasterData {
     MokoApplication* app;
@@ -38,7 +37,7 @@ typedef struct _ChordMasterData {
     ChordsDB* chordsdb;
     FretboardWidget* fretboard;
     GtkListStore* liststore;
-    GtkTreeView* view;
+    MokoTreeView* view;
 } ChordMasterData;
 
 enum {
