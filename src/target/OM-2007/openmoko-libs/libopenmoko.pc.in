@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libopenmoko
+Description: OpenMoko Application Framework Library
+Version: @VERSION@
+Cflags: -I${includedir}
+Requires: glib-2.0 gtk+-2.0
