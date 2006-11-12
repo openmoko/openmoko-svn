@@ -190,8 +190,8 @@ static void
 fretboard_widget_init (FretboardWidget *self)
 {
     GError* error = NULL;
-    self->texture = gdk_pixbuf_new_from_file( RESOURCE_PATH "wood.png", &error );
-    self->fingerpoint = gdk_pixbuf_new_from_file( RESOURCE_PATH "ball.png", &error );
+    self->texture = gdk_pixbuf_new_from_file( PKGDATADIR "/wood.png", &error );
+    self->fingerpoint = gdk_pixbuf_new_from_file( PKGDATADIR "/ball.png", &error );
 
     gtk_widget_set_size_request(self, 450, 270);
     g_signal_connect (G_OBJECT(self), "expose_event",

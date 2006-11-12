@@ -69,7 +69,7 @@ chordsdb_class_init (ChordsDBClass *klass)
     object_class->dispose = chordsdb_dispose;
     object_class->finalize = chordsdb_finalize;
 
-    FILE* file = g_fopen( RESOURCE_PATH "accords.chords", "r" );
+    FILE* file = g_fopen( PKGDATADIR "/accords.chords", "r" );
     g_assert( file ); //FIXME error handling, if chord file is not present
     gchar line[256];
     gchar category[2] = { 0, 0 };
