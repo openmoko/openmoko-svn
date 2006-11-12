@@ -35,7 +35,7 @@ AC_SUBST(GLIB_GENMARSHAL)
 # output stuff
 AC_OUTPUT([
 Makefile
-libopenmoko.pc
+openmoko-libs.pc
 libmokocore/Makefile
 libmokoui/Makefile
 libmokopim/Makefile
