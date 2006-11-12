@@ -1,5 +1,6 @@
 TEMPLATE = lib
 VERSION = 0.0.1
+TARGET = mokoui
 
 HEADERS = \
     moko-alignment.h \

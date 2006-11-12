@@ -17,9 +17,9 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#include <mokoui/moko-application.h>
-#include <mokoui/moko-paned-window.h>
-#include <mokoui/moko-tool-box.h>
+#include <libmokoui/moko-application.h>
+#include <libmokoui/moko-paned-window.h>
+#include <libmokoui/moko-tool-box.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>

@@ -17,9 +17,9 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#include <mokoui/moko-application.h>
-#include <mokoui/moko-finger-window.h>
-#include <mokoui/moko-pixmap-container.h>
+#include <libmokoui/moko-application.h>
+#include <libmokoui/moko-finger-window.h>
+#include <libmokoui/moko-pixmap-container.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>

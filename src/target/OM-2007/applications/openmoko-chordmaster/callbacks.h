@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-#include <mokoui/moko-tool-box.h>
+#include <libmokoui/moko-tool-box.h>
 
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkwidget.h>

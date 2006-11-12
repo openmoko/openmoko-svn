@@ -22,10 +22,10 @@
 #include "fretboard-widget.h"
 #include "main.h"
 
-#include <mokoui/moko-application.h>
-#include <mokoui/moko-paned-window.h>
-#include <mokoui/moko-tool-box.h>
-#include <mokoui/moko-tree-view.h>
+#include <libmokoui/moko-application.h>
+#include <libmokoui/moko-paned-window.h>
+#include <libmokoui/moko-tool-box.h>
+#include <libmokoui/moko-tree-view.h>
 
 #include <gtk/gtkbutton.h>
 #include <gtk/gtklabel.h>

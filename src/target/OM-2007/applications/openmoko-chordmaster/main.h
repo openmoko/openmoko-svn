@@ -23,10 +23,10 @@
 #include "chordsdb.h"
 #include "fretboard-widget.h"
 
-#include <mokoui/moko-application.h>
-#include <mokoui/moko-paned-window.h>
-#include <mokoui/moko-tool-box.h>
-#include <mokoui/moko-tree-view.h>
+#include <libmokoui/moko-application.h>
+#include <libmokoui/moko-paned-window.h>
+#include <libmokoui/moko-tool-box.h>
+#include <libmokoui/moko-tree-view.h>
 #include <gtk/gtkliststore.h>
 
 typedef struct _ChordMasterData {
