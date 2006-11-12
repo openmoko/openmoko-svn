@@ -1,11 +1,11 @@
 DESCRIPTION = "Standard Gtk+ theme for the OpenMoko distribution"
-HOMEPAGE = "http://www.openmoko.org"
 SECTION = "openmoko/base"
-LICENSE = "GPL"
 PV = "0.0+svn${SRCDATE}"
 PR = "r1"
 
-SRC_URI = "${OPENMOKO_MIRROR}/artwork;module=themes;proto=http"
+inherit openmoko-base
+
+SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/artwork;module=themes;proto=http"
 S = "${WORKDIR}"
 
 dirs = "themes/openmoko-standard"

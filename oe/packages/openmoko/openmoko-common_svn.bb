@@ -1,10 +1,10 @@
 DESCRIPTION = "Common files for the OpenMoko distribution"
-HOMEPAGE = "http://www.openmoko.org"
 SECTION = "openmoko/base"
-LICENSE = "GPL"
 PV = "0.0+svn${SRCDATE}"
 
-SRC_URI = "${OPENMOKO_MIRROR}/artwork;module=images;proto=http"
+inherit openmoko-base
+
+SRC_URI = "${OPENMOKO_MIRROR}/src/target/artwork;module=images;proto=http"
 S = "${WORKDIR}"
 
 dirs = "images/pixmaps"
