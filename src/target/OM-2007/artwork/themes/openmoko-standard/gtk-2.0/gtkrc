@@ -3,17 +3,17 @@ style "moko-window-default" {
 	# NOTE bg_pixmap[NORMAL] _must_ match with the SHADOW pixmaps
     bg_pixmap[NORMAL] = "gtkwidget.png"
 
-    bg[NORMAL]        = "#ff0000" # beige
+    bg[NORMAL]        = "#666666" # 
     bg[PRELIGHT]      = "#ff0000" # light beige
     bg[ACTIVE]        = "#ff0000" # dark beige
     bg[SELECTED]      = "#ff0000" # olive
     bg[INSENSITIVE]   = "#ff0000" # beige
 
-    base[NORMAL]      = "#ff0000" # white
-    base[PRELIGHT]    = "#ff0000" # olive
-    base[ACTIVE]      = "#ff0000" # dark olive
-    base[SELECTED]    = "#ff0000" # olive
-    base[INSENSITIVE] = "#ff0000" # beige
+    base[NORMAL]      = "#ffeddb" # light cherry
+    base[PRELIGHT]    = "#00ff00" # 
+    base[ACTIVE]      = "#00ff00" # 
+    base[SELECTED]    = "#00ff00" # 
+    base[INSENSITIVE] = "#00ff00" # 
 
     fg[NORMAL]      = "#d3d3d3" # light grey
     fg[PRELIGHT]    = "#ffffff" # white
@@ -21,7 +21,7 @@ style "moko-window-default" {
     fg[SELECTED]    = "#ffffff" # white
     fg[INSENSITIVE] = "#223344" # dark grey
 
-    text[NORMAL]      = "#d3d3d3" # light grey
+    text[NORMAL]      = "#666666" # mid grey
     text[PRELIGHT]    = "#ffffff" # white
     text[ACTIVE]      = "#e5e5e5" # light grey
     text[SELECTED]    = "#ffffff" # white
@@ -97,5 +97,6 @@ include "gtktreeview"
 include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
+include "mokotreeview"
 
 include "transparent"

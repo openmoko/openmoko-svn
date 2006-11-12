@@ -1,0 +1,54 @@
+style "mokotreeview" {
+    engine "pixmap" {
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = SELECTED
+            file            = "list_bg_row_sel_stretch.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+      image {
+          function        = FOCUS
+          recolorable     = FALSE
+          file            = "list_bg_row_sel_stretch.png"
+          border          = { 0, 0, 0, 0 }
+          stretch         = TRUE
+      }
+    }
+    GtkTreeView::allow_rules = 1
+    GtkTreeView::vertical_separator = 6
+    GtkTreeView::even_row_color = "#f7f7f7"
+    GtkTreeView::odd_row_color = "#e7e7e7"
+
+    GtkButton::focus-line-width = 0
+}
+class "MokoTreeView" style "mokotreeview"
+
+style "mokotreeview-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            file            = "mokotreeview-gtkbutton.png"
+            border          = { 5, 5, 5, 5 }
+            stretch         = TRUE
+        }
+    }
+    GtkButton::focus-line-width = 0
+}
+widget_class "*.MokoTreeView.GtkButton" style "mokotreeview-button"
+
+style "mokotreeview-button-label"
+{
+    font_name = "Vera Sans Bold 13"
+    fg[NORMAL] = "#999999"
+}
+widget "*.MokoTreeView.*.GtkLabel" style "mokotreeview-button-label"
+
+style "mokotreeview-cellrenderer"
+{
+	font_name = "Vera Sans 30"
+}
+widget "*.MokoTreeView.GtkCellRenderer" style "mokotreeview-cellrenderer"
+
