@@ -1,6 +1,15 @@
 style "gtktreeview" {
     engine "pixmap" {
-
+      
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "gtkwidget.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+      
       image {
             function        = FLAT_BOX
             recolorable     = TRUE
@@ -23,6 +32,7 @@ style "gtktreeview" {
     GtkTreeView::vertical_separator = 6
     GtkTreeView::even_row_color = "#f7f7f7"
     GtkTreeView::odd_row_color = "#e7e7e7"
+
     GtkButton::focus-line-width = 0
 }
 class "GtkTreeView" style "gtktreeview"

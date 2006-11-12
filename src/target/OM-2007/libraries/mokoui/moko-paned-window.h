@@ -20,8 +20,8 @@
 #define _MOKO_PANED_WINDOW_H_
 
 #include "moko-window.h"
-#include "moko-menubox.h"
-#include "moko-toolbox.h"
+#include "moko-menu-box.h"
+#include "moko-tool-box.h"
 
 #include <gtk/gtkmenu.h>
 

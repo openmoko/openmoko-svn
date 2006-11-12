@@ -16,7 +16,7 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#include "moko-menubox.h"
+#include "moko-menu-box.h"
 
 #include <gtk/gtklabel.h>
 #include <gtk/gtkmenubar.h>

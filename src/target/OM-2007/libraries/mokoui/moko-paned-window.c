@@ -17,10 +17,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 #include "moko-paned-window.h"
-
 #include "moko-alignment.h"
-#include "moko-menubox.h"
-#include "moko-toolbox.h"
 
 #include <gtk/gtktoolbar.h>
 #include <gtk/gtkvbox.h>

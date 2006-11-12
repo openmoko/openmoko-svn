@@ -2,27 +2,30 @@ TEMPLATE = lib
 VERSION = 0.0.1
 
 HEADERS = \
-	moko-alignment.h \
-	moko-pixmap-container.h \
-	moko-pixmap-button.h \
-	moko-application.h \
-	moko-window.h \
-	moko-finger-window.h \
-	moko-paned-window.h \
-	moko-menubox.h \
-	moko-toolbox.h \
-	moko-search-bar.h
+    moko-alignment.h \
+    moko-application.h \
+    moko-finger-window.h \
+    moko-menu-box.h \
+    moko-pixmap-container.h \
+    moko-pixmap-button.h \
+    moko-paned-window.h \
+    moko-search-bar.h \
+    moko-tool-box.h \
+    moko-tree-view.h \
+    moko-window.h
+
 SOURCES = \
-	moko-alignment.c \
+    moko-alignment.c \
+    moko-application.c \
+    moko-finger-window.c \
+    moko-menu-box.c \
     moko-pixmap-container.c \
-	moko-pixmap-button.c \
-	moko-application.c \
-	moko-window.c \
-	moko-finger-window.c \
-	moko-paned-window.c \
-	moko-menubox.c \
-	moko-toolbox.c \
-	moko-search-bar.c
+    moko-pixmap-button.c \
+    moko-paned-window.c \
+    moko-search-bar.c \
+    moko-tree-view.c \
+    moko-tool-box.c \
+    moko-window.c
 
 PKGCONFIG += gtk+-2.0
 

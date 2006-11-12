@@ -16,9 +16,8 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#include "moko-toolbox.h"
+#include "moko-tool-box.h"
 #include "moko-pixmap-container.h"
-#include "moko-pixmap-button.h"
 
 #include <gtk/gtkentry.h>
 #include <gtk/gtkvbox.h>

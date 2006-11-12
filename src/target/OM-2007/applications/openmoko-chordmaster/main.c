@@ -24,7 +24,7 @@
 
 #include <mokoui/moko-application.h>
 #include <mokoui/moko-paned-window.h>
-#include <mokoui/moko-toolbox.h>
+#include <mokoui/moko-tool-box.h>
 
 #include <gtk/gtkbutton.h>
 #include <gtk/gtklabel.h>
