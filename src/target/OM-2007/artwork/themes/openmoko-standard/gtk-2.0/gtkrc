@@ -96,6 +96,7 @@ include "gtktreeview"
 include "gtkbutton"
 
 include "mokofingerbutton"
+include "mokofingerwheel"
 include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"

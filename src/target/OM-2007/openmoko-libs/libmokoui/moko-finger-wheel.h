@@ -42,7 +42,7 @@ typedef struct {
 
 GType moko_finger_wheel_get_type (void);
 
-MokoFingerWheel* moko_finger_wheel_new (void);
+GtkWidget* moko_finger_wheel_new (void);
 
 G_END_DECLS
 

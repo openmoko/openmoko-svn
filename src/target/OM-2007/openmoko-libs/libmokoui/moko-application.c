@@ -22,13 +22,15 @@
 #include <X11/Xatom.h>
 #include <gdk/gdkx.h>
 
-#define MOKO_APPLICATION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_APPLICATION, MokoApplicationPriv));
+G_DEFINE_TYPE (MokoApplication, moko_application, G_TYPE_OBJECT)
 
-typedef struct _MokoApplicationPriv
+#define MOKO_APPLICATION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_APPLICATION, MokoApplicationPrivate));
+
+typedef struct _MokoApplicationPrivate
 {
+    //FIXME hildon cruft, do we need all this?
     gboolean killable;
     gboolean is_topmost;
-    GdkWindow *group_leader;
     guint window_count;
     GtkWidget *common_application_menu;
     GtkWidget *common_filter_menu;
@@ -36,7 +38,11 @@ typedef struct _MokoApplicationPriv
     GSList *windows;
     Window window_group;
     gchar *name;
-} MokoApplicationPriv;
+
+    // our stuff
+    MokoWindow* main_window;
+
+} MokoApplicationPrivate;
 
 enum
 {
@@ -50,32 +56,9 @@ static void moko_application_init (MokoApplication *self);
 static void moko_application_set_property (GObject * object, guint property_id, const GValue * value, GParamSpec * pspec);
 static void moko_application_get_property (GObject * object, guint property_id, GValue * value, GParamSpec * pspec);
 
-GType moko_application_get_type (void)
-{
-    static GType program_type = 0;
-
-    if (!program_type)
-    {
-        static const GTypeInfo program_info =
-        {
-            sizeof(MokoApplicationClass),
-            NULL,       /* base_init */
-            NULL,       /* base_finalize */
-            (GClassInitFunc) moko_application_class_init,
-            NULL,       /* class_finalize */
-            NULL,       /* class_data */
-            sizeof(MokoApplication),
-            0,  /* n_preallocs */
-            (GInstanceInitFunc) moko_application_init,
-        };
-        program_type = g_type_register_static(G_TYPE_OBJECT, "MokoApplication", &program_info, 0);
-    }
-    return program_type;
-}
-
 static void moko_application_init (MokoApplication *self)
 {
-    MokoApplicationPriv *priv = MOKO_APPLICATION_GET_PRIVATE (self);
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (self);
 
     priv->killable = FALSE;
     priv->window_count = 0;
@@ -89,7 +72,7 @@ static void moko_application_init (MokoApplication *self)
 
 static void moko_application_finalize (GObject *self)
 {
-    MokoApplicationPriv *priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
 
     if (priv->common_toolbar)
     {
@@ -117,7 +100,7 @@ static void moko_application_class_init (MokoApplicationClass *self)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(self);
 
-    g_type_class_add_private (self, sizeof(MokoApplicationPriv));
+    g_type_class_add_private (self, sizeof(MokoApplicationPrivate));
 
     /* Set up object virtual functions */
     object_class->finalize = moko_application_finalize;
@@ -162,7 +145,7 @@ static void moko_application_set_property (GObject * object, guint property_id, 
 
 static void moko_application_get_property (GObject * object, guint property_id, GValue * value, GParamSpec * pspec)
 {
-    MokoApplicationPriv *priv = MOKO_APPLICATION_GET_PRIVATE (object);
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (object);
 
     switch (property_id)
     {
@@ -210,12 +193,12 @@ static GdkFilterReturn moko_application_root_window_event_filter(
     return GDK_FILTER_CONTINUE;
 }
 
-/* Public methods */
+/* Public API */
 
 /**
  * moko_application_get_instance:
  *
- * Return value: Returns the #MokoApplication for the current process.
+ * @return the #MokoApplication for the current process.
  * The object is created on the first call.
  **/
 MokoApplication* moko_application_get_instance (void)
@@ -224,9 +207,30 @@ MokoApplication* moko_application_get_instance (void)
 
     if (!program)
     {
-        program = g_object_new (MOKO_TYPE_APPLICATION, NULL);
+        program = g_object_new(MOKO_TYPE_APPLICATION, NULL);
     }
 
     return program;
 }
 
+/** moko_application_get_main_window
+ *
+ * @return the main #MokoWindow for the current #MokoApplication.
+ **/
+MokoWindow* moko_application_get_main_window(MokoApplication* self)
+{
+    MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
+    return priv->main_window;
+}
+/** moko_application_set_main_window
+ *
+ * set the main #MokoWindow for this application
+ * @note usually there is no need to call this explicitly since
+ * it happens automatically when you create the first #MokoWindow
+ **/
+void moko_application_set_main_window(MokoApplication* self, MokoWindow* window)
+{
+    MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
+    priv->main_window = window;
+    //FIXME g_object_ref the window?
+}

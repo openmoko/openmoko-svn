@@ -16,6 +16,8 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
+
+#include "moko-application.h"
 #include "moko-window.h"
 
 /* add your signals here */
@@ -47,6 +49,9 @@ static void moko_window_init (MokoWindow *self) /* Instance Construction */
 {
     g_debug( "moko_window_init" );
     gtk_widget_set_size_request( GTK_WIDGET(self), 480, 640 ); //FIXME get from style
+    MokoApplication* app = moko_application_get_instance();
+    g_assert( !moko_application_get_main_window( app ) ); // fail if someone creates more than one MokoWindow per application
+    moko_application_set_main_window( app, self );
 }
 
 GtkWidget* moko_window_new() /* Construction */

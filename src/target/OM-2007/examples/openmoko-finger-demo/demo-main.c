@@ -35,8 +35,6 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkentry.h>
 
-#include <stdlib.h>
-
 void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
 {
     g_debug( "openmoko-finger-demo: orange button clicked" );

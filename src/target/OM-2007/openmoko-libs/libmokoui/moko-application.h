@@ -20,9 +20,12 @@
 #ifndef _MOKO_APPLICATION_H_
 #define _MOKO_APPLICATION_H_
 
-#include <glib-object.h>
+#include "moko-window.h"
+
 #include <gtk/gtkmenu.h>
 #include <gtk/gtktoolbar.h>
+
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
@@ -44,8 +47,9 @@ GType moko_application_get_type (void);
 
 /* Public methods */
 MokoApplication* moko_application_get_instance(void);
-
-gboolean moko_application_get_is_topmost (MokoApplication* self);
+gboolean moko_application_get_is_topmost(MokoApplication* self);
+void moko_application_set_main_window(MokoApplication* self, MokoWindow* window);
+MokoWindow* moko_application_get_main_window(MokoApplication* self);
 
 G_END_DECLS
 #endif /* _MOKO_APPLICATION_H_ */
