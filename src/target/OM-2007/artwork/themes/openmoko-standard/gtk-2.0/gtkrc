@@ -93,6 +93,7 @@ include "gtkmenuitem"
 include "gtkpaned"
 include "gtkscrollbar"
 include "gtktreeview"
+include "gtkbutton"
 
 include "mokomenubox"
 include "mokopanedwindow"

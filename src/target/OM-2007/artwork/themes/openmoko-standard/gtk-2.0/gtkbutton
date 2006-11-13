@@ -1,0 +1,38 @@
+style "gtkbutton" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "gtkbutton.png"
+            border          = { 22, 33, 18, 25 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "gtkbutton_p.png"
+            border          = { 22, 33, 18, 25 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "gtkbutton_p.png"
+            border          = { 22, 33, 18, 25 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 22
+    ythickness = 10
+}
+class "GtkButton" style "gtkbutton"
+
+style "gtkbutton-label" {
+    font_name = "Vera Sans 10"
+    fg[NORMAL] = "#e5e5e5"
+    fg[PRELIGHT] = "#ffffff"
+}
+widget "*.GtkButton.*" style "gtkbutton-label"
