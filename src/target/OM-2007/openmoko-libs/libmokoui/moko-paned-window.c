@@ -23,6 +23,8 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkvpaned.h>
 
+G_DEFINE_TYPE (MokoPanedWindow, moko_paned_window, MOKO_TYPE_WINDOW)
+
 #define MOKO_PANED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_PANED_WINDOW, MokoPanedWindowPriv));
 
 typedef struct _MokoPanedWindowPriv
@@ -47,32 +49,6 @@ static void moko_paned_window_class_init          (MokoPanedWindowClass *klass);
 static void moko_paned_window_init                (MokoPanedWindow      *self);
 
 static guint moko_paned_window_signals[LAST_SIGNAL] = { 0 };
-
-GType moko_paned_window_get_type (void) /* Typechecking */
-{
-    static GType self_type = 0;
-
-    if (!self_type)
-    {
-        static const GTypeInfo f_info =
-        {
-            sizeof (MokoPanedWindowClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moko_paned_window_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MokoPanedWindow),
-            0,
-            (GInstanceInitFunc) moko_paned_window_init,
-        };
-
-        /* add the type of your parent class here */
-        self_type = g_type_register_static(MOKO_TYPE_WINDOW, "MokoPanedWindow", &f_info, 0);
-    }
-
-    return self_type;
-}
 
 static void moko_paned_window_class_init (MokoPanedWindowClass *klass) /* Class Initialization */
 {

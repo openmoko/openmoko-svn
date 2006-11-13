@@ -17,76 +17,86 @@
  */
 
 #include "moko-finger-window.h"
+
+#include "moko-menu-box.h"
+
 #include <gtk/gtkhbox.h>
 #include <gtk/gtkvbox.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkbutton.h>
 
-G_DEFINE_TYPE (MokoFingerWindow, moko_finger_window, MOKO_TYPE_WINDOW);
+G_DEFINE_TYPE (MokoFingerWindow, moko_finger_window, MOKO_TYPE_WINDOW)
 
-#define FINGER_WINDOW_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_WINDOW, MokoFingerWindowPrivate))
+#define MOKO_FINGER_WINDOW_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_WINDOW, MokoFingerWindowPriv))
 
-typedef struct _MokoFingerWindowPrivate MokoFingerWindowPrivate;
-
-struct _MokoFingerWindowPrivate
+typedef struct _MokoFingerWindowPriv
 {
     GtkVBox* vbox;
     GtkHBox* hbox;
     GtkLabel* label;
     GtkButton* scroller;
-};
+    MokoMenuBox* menubox;
+} MokoFingerWindowPriv;
 
-static void
-moko_finger_window_dispose (GObject *object)
+static void moko_finger_window_dispose (GObject *object)
 {
-  if (G_OBJECT_CLASS (moko_finger_window_parent_class)->dispose)
-    G_OBJECT_CLASS (moko_finger_window_parent_class)->dispose (object);
+    if (G_OBJECT_CLASS (moko_finger_window_parent_class)->dispose)
+        G_OBJECT_CLASS (moko_finger_window_parent_class)->dispose (object);
 }
 
-static void
-moko_finger_window_finalize (GObject *object)
+static void moko_finger_window_finalize (GObject *object)
 {
-  G_OBJECT_CLASS (moko_finger_window_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moko_finger_window_parent_class)->finalize (object);
 }
 
-static void
-moko_finger_window_class_init (MokoFingerWindowClass *klass)
+static void moko_finger_window_class_init (MokoFingerWindowClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    g_debug( "moko_finger_window_class_init" );
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MokoFingerWindowPrivate));
+    g_type_class_add_private (klass, sizeof (MokoFingerWindowPriv));
 
-  object_class->dispose = moko_finger_window_dispose;
-  object_class->finalize = moko_finger_window_finalize;
+    object_class->dispose = moko_finger_window_dispose;
+    object_class->finalize = moko_finger_window_finalize;
 }
 
-static void
-moko_finger_window_init (MokoFingerWindow *self)
+static void moko_finger_window_init (MokoFingerWindow *self)
 {
     g_debug( "moko_finger_window_init" );
 
-    MokoFingerWindowPrivate* priv = FINGER_WINDOW_PRIVATE(self);
+    MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     priv->vbox = gtk_vbox_new( FALSE, 0 );
-    priv->hbox = gtk_hbox_new( FALSE, 0 );
-    priv->scroller = gtk_button_new_with_label( "Hello" );
-    priv->label = gtk_label_new( "Yo Yo" );
-    gtk_box_pack_end( GTK_BOX(priv->vbox), GTK_WIDGET(priv->hbox), FALSE, FALSE, 0 );
-    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->scroller), FALSE, FALSE, 0 );
-    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->label), FALSE, FALSE, 0 );
+//    priv->hbox = gtk_hbox_new( FALSE, 0 );
+//    priv->scroller = gtk_button_new_with_label( "Hello" );
+//    priv->label = gtk_label_new( "Yo Yo" );
+//    gtk_box_pack_end( GTK_BOX(priv->vbox), GTK_WIDGET(priv->hbox), FALSE, FALSE, 0 );
+//    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->scroller), FALSE, FALSE, 0 );
+//    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->label), FALSE, FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
 }
 
-MokoFingerWindow*
-moko_finger_window_new (void)
+GtkWidget* moko_finger_window_new() /* Construction */
 {
-  return g_object_new (MOKO_TYPE_FINGER_WINDOW, NULL);
+    return GTK_WIDGET(g_object_new(moko_finger_window_get_type(), NULL));
 }
 
-static void
-moko_finger_window_set_contents (MokoFingerWindow* self, GtkWidget* child )
+void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* menu)
 {
-    g_debug( "moko_finger_window_init" );
-    MokoFingerWindowPrivate* priv = FINGER_WINDOW_PRIVATE(self);
+    g_debug( "moko_finger_window_set_application_menu" );
+
+    MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
+    if (!priv->menubox )
+    {
+        priv->menubox = moko_menu_box_new();
+        gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->menubox), FALSE, FALSE, 0 );
+    }
+    moko_menu_box_set_application_menu( priv->menubox, menu );
+}
+
+void moko_finger_window_set_contents (MokoFingerWindow* self, GtkWidget* child )
+{
+    g_debug( "moko_finger_window_set_contents" );
+    MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
 
     gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(child), TRUE, TRUE, 0 );
 }

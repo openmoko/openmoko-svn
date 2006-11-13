@@ -21,23 +21,23 @@ dbus-binding-tool = SERVICES
 QMAKE_EXTRA_UNIX_COMPILERS += dbus-binding-tool
 
 mokocore {
-	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
 	LIBS += -lmokocore -L$(OPENMOKODIR)/lib
 }
 
 mokoui {
-	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
 	PKGCONFIG += gtk+-2.0
 	LIBS += -lmokoui -L$(OPENMOKODIR)/lib
 }
 
 mokopim {
-	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
 	LIBS += -lmokopim -L$(OPENMOKODIR)/lib
 }
 
 mokonet {
-	INCLUDEPATH += $(OPENMOKODIR)/libraries
+	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
 	LIBS += -lmokonet -L$(OPENMOKODIR)/lib
 }
 
@@ -59,12 +59,12 @@ contains( TEMPLATE, lib ) {
 }
 
 contains( CONFIG, debug ) {
-	APPDIR = $(OPENMOKODIR)/applications/$$TARGET
-	DEFINES += RESOURCE_PATH=\\\"$$APPDIR/\\\"
+	APPDIR = $(OPENMOKODIR)/applications/$$TARGET/data
+	DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
 }
 !contains( CONFIG, debug ) {
     APPDIR = /usr/share/$$TARGET
-    DEFINES += RESOURCE_PATH=\\\"$$APPDIR/\\\"
+    DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
 }
 
 

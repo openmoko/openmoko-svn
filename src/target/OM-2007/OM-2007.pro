@@ -1,4 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = libraries applications panel-plugins daemons examples
-
+SUBDIRS = openmoko-libs examples applications panel-plugins daemons
 

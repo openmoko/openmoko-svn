@@ -45,49 +45,28 @@ int main( int argc, char** argv )
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-    g_set_application_name( "OpenMoko-Finger-Demo" );
+    g_set_application_name( "Finger-Demo" );
 
     /* main window */
-    //MokoFingerWindow* window = MOKO_FINGER_WINDOW(moko_finger_window_new());
-    GtkWindow* window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
+    MokoFingerWindow* window = MOKO_FINGER_WINDOW(moko_finger_window_new());
 
     /* application menu */
     GtkMenu* appmenu = GTK_MENU(gtk_menu_new());
     GtkMenuItem* closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Close" ));
     g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
     gtk_menu_shell_append( appmenu, closeitem );
-    //moko_finger_window_set_application_menu( window, appmenu );
+    moko_finger_window_set_application_menu( window, appmenu );
 
-    GtkVBox* vbox = gtk_vbox_new( TRUE, 10 );
-
-    gtk_container_add( GTK_CONTAINER(window), vbox );
     /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
-#if 0
-
-    g_print( "gdkwindow for vbox = %p", GTK_WIDGET(vbox)->window );
-    gtk_widget_set_name( GTK_WIDGET(vbox), "mywidget" );
-
-
-    /* navigation area */
-
-    GtkNotebook* nb = gtk_notebook_new();
-    gtk_notebook_append_page( nb, button1, NULL );
-    gtk_notebook_append_page( nb, button2, NULL );
-
-    gtk_box_pack_start( vbox, GTK_WIDGET(nb), TRUE, TRUE, 20 );
-#endif
-
+    /* contents */
+    GtkVBox* vbox = gtk_vbox_new( TRUE, 10 );
     GtkEntry* entry = gtk_entry_new();
     gtk_entry_set_text( entry, "This is a line of text" );
+    gtk_box_pack_start( vbox, GTK_WIDGET(entry), TRUE, TRUE, 10 );
 
-    MokoPixmapContainer* fixed = moko_pixmap_container_new();
-    moko_pixmap_container_set_cargo( fixed, GTK_WIDGET(entry) );
-
-    gtk_box_pack_start( vbox, GTK_WIDGET(fixed), TRUE, TRUE, 10 );
-
-    //moko_finger_window_set_contents( window, GTK_WIDGET(nb) );
+    moko_finger_window_set_contents( window, GTK_WIDGET(vbox) );
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );

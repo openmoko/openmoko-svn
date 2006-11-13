@@ -19,9 +19,9 @@
 #ifndef _MOKO_WINDOW_H_
 #define _MOKO_WINDOW_H_
 
-#include <glib.h>
-#include <glib-object.h>
 #include <gtk/gtkwindow.h>
+
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
@@ -31,22 +31,18 @@ G_BEGIN_DECLS
 #define MOKO_IS_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_WINDOW))
 #define MOKO_IS_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_WINDOW))
 
-typedef struct _MokoWindow       MokoWindow;
-typedef struct _MokoWindowClass  MokoWindowClass;
-
-struct _MokoWindow
+typedef struct _MokoWindow
 {
     GtkWindow parent;
     /* add pointers to new members here */
+} MokoWindow;
 
-};
-
-struct _MokoWindowClass
+typedef struct _MokoWindowClass
 {
     /* add your parent class here */
     GtkWindowClass parent_class;
     void (*moko_window) (MokoWindow *self);
-};
+} MokoWindowClass;
 
 GType          moko_window_get_type        (void);
 GtkWidget*     moko_window_new             (void);

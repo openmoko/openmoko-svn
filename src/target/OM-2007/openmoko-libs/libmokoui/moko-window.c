@@ -29,31 +29,7 @@ static void moko_window_init                (MokoWindow      *self);
 
 static guint moko_window_signals[LAST_SIGNAL] = { 0 };
 
-GType moko_window_get_type (void) /* Typechecking */
-{
-    static GType self_type = 0;
-
-    if (!self_type)
-    {
-        static const GTypeInfo f_info =
-        {
-            sizeof (MokoWindowClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moko_window_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MokoWindow),
-            0,
-            (GInstanceInitFunc) moko_window_init,
-        };
-
-        /* add the type of your parent class here */
-        self_type = g_type_register_static(GTK_TYPE_WINDOW, "MokoWindow", &f_info, 0);
-    }
-
-    return self_type;
-}
+G_DEFINE_TYPE (MokoWindow, moko_window, GTK_TYPE_WINDOW)
 
 static void moko_window_class_init (MokoWindowClass *klass) /* Class Initialization */
 {
