@@ -1,39 +1,39 @@
-style "gtkbutton" {
+style "mokofingerbutton-orange" {
    engine "pixmap" {
         image {
             function        = BOX
             recolorable     = TRUE
             state           = NORMAL
-            file            = "gtkbutton.png"
-            border          = { 22, 33, 18, 25 }
+            file            = "btn_type01.png"
+            border          = { 17, 17, 17, 17 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             recolorable     = TRUE
             state           = PRELIGHT
-            file            = "gtkbutton.png"
-            border          = { 22, 33, 18, 25 }
+            file            = "btn_type01.png"
+            border          = { 17, 17, 17, 17 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             recolorable     = TRUE
             state           = ACTIVE
-            file            = "gtkbutton_p.png"
-            border          = { 22, 33, 18, 25 }
+            file            = "btn_type01_p.png"
+            border          = { 17, 17, 17, 17 }
             stretch         = TRUE
         }
     }
-    xthickness = 22
+    xthickness = 10
     ythickness = 10
     GtkButton::focus-line-width = 0
 }
-class "GtkButton" style "gtkbutton"
+widget "*.mokofingerbutton-orange" style "mokofingerbutton-orange"
 
-style "gtkbutton-label" {
-    font_name = "Vera Sans 10"
-    fg[NORMAL] = "#e5e5e5"
-    fg[PRELIGHT] = "#ffffff"
-}
-widget "*.GtkButton.*" style "gtkbutton-label"
+#style "gtkbutton-label" {
+#    font_name = "Vera Sans 10"
+#    fg[NORMAL] = "#e5e5e5"
+#    fg[PRELIGHT] = "#ffffff"
+#}
+#widget "*.GtkButton.*" style "gtkbutton-label"

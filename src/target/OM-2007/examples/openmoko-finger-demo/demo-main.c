@@ -21,7 +21,7 @@
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-pixmap-container.h>
 
-#include <gtk/gtkactiongroup.h>
+#include <gtk/gtkalignment.h>
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkcheckmenuitem.h>
 #include <gtk/gtkfixed.h>
@@ -36,6 +36,11 @@
 #include <gtk/gtkentry.h>
 
 #include <stdlib.h>
+
+void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
+{
+    g_debug( "openmoko-finger-demo: orange button clicked" );
+}
 
 int main( int argc, char** argv )
 {
@@ -61,10 +66,20 @@ int main( int argc, char** argv )
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
     /* contents */
-    GtkVBox* vbox = gtk_vbox_new( TRUE, 10 );
-    GtkEntry* entry = gtk_entry_new();
-    gtk_entry_set_text( entry, "This is a line of text" );
-    gtk_box_pack_start( vbox, GTK_WIDGET(entry), TRUE, TRUE, 10 );
+    GtkVBox* vbox = gtk_vbox_new( TRUE, 0 );
+    GtkEntry* label1 = gtk_label_new( "Populate this area with finger widgets\nas you like..." );
+    GtkEntry* label2 = gtk_label_new( "Click the finger button to enable or disable\nthe finger scrolling wheel\n\n\n" );
+
+    GtkAlignment* align = gtk_alignment_new( 0.5, 0.5, 0.5, 0.5 );
+
+    GtkButton* button = gtk_button_new();
+    g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
+    gtk_widget_set_name( GTK_WIDGET(button), "mokofingerbutton-orange" );
+    gtk_container_add( GTK_CONTAINER(align), GTK_WIDGET(button) );
+
+    gtk_box_pack_start( vbox, GTK_WIDGET(label1), TRUE, TRUE, 0 );
+    gtk_box_pack_start( vbox, GTK_WIDGET(align), TRUE, TRUE, 0 );
+    gtk_box_pack_start( vbox, GTK_WIDGET(label2), TRUE, TRUE, 0 );
 
     moko_finger_window_set_contents( window, GTK_WIDGET(vbox) );
 

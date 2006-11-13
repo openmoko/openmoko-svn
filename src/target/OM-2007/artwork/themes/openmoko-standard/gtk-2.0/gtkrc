@@ -95,6 +95,7 @@ include "gtkscrollbar"
 include "gtktreeview"
 include "gtkbutton"
 
+include "mokofingerbutton"
 include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
