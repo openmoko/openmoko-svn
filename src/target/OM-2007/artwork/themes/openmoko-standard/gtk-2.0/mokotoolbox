@@ -1,14 +1,14 @@
 style "mokotoolbox-normal-mode" {
     bg_pixmap[NORMAL] = "openmoko-mokotoolbox-normal-mode-background.png"
-    MokoPixmapContainer::size-request = { 0, 480, 0, 52 }
-    MokoPixmapContainer::cargo-border = { 80, 480, 0, 52 }
+    MokoFixed::size-request = { 0, 480, 0, 52 }
+    MokoFixed::cargo-border = { 80, 480, 0, 52 }
 }
 widget "*.mokotoolbox-normal-mode" style "mokotoolbox-normal-mode"
 
 style "mokotoolbox-search-mode" {
     bg_pixmap[NORMAL] = "openmoko-mokotoolbox-search-mode-background.png"
-    MokoPixmapContainer::size-request = { 0, 480, 0, 52 }
-    MokoPixmapContainer::cargo-border = { 36, 340, 17, 40 }
+    MokoFixed::size-request = { 0, 480, 0, 52 }
+    MokoFixed::cargo-border = { 36, 340, 17, 40 }
 }
 widget "*.mokotoolbox-search-mode" style "mokotoolbox-search-mode"
 

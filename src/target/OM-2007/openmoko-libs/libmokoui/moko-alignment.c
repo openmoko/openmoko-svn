@@ -19,7 +19,7 @@
 
 #include "moko-alignment.h"
 
-G_DEFINE_TYPE (MokoAlignment, moko_alignment, GTK_TYPE_ALIGNMENT);
+G_DEFINE_TYPE (MokoAlignment, moko_alignment, GTK_TYPE_ALIGNMENT)
 
 #define MOKO_ALIGNMENT_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_ALIGNMENT, MokoAlignmentPrivate))
 

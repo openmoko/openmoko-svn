@@ -1,5 +1,5 @@
 
-/*  moko_pixmap_container.c
+/*  moko_fixed.c
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
@@ -17,15 +17,15 @@
  *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: mickey $]
  */
 
-#include "moko-pixmap-container.h"
+#include "moko-fixed.h"
 
-G_DEFINE_TYPE (MokoPixmapContainer, moko_pixmap_container, GTK_TYPE_FIXED);
+G_DEFINE_TYPE (MokoFixed, moko_fixed, GTK_TYPE_FIXED);
 
-#define PIXMAP_CONTAINER_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_PIXMAP_CONTAINER, MokoPixmapContainerPrivate))
+#define PIXMAP_CONTAINER_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FIXED, MokoFixedPrivate))
 
-typedef struct _MokoPixmapContainerPrivate MokoPixmapContainerPrivate;
+typedef struct _MokoFixedPrivate MokoFixedPrivate;
 
-struct _MokoPixmapContainerPrivate
+struct _MokoFixedPrivate
 {
 };
 
@@ -33,27 +33,27 @@ static GtkFixedClass *parent_class = NULL;
 
 /* declare virtual methods */
 static void
-moko_pixmap_container_realize(GtkWidget *widget);
+moko_fixed_realize(GtkWidget *widget);
 static void
-moko_pixmap_container_size_request(GtkWidget *widget, GtkRequisition *requisition);
+moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition);
 static void
-moko_pixmap_container_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
+moko_fixed_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 
 static void
-moko_pixmap_container_dispose (GObject *object)
+moko_fixed_dispose (GObject *object)
 {
-  if (G_OBJECT_CLASS (moko_pixmap_container_parent_class)->dispose)
-    G_OBJECT_CLASS (moko_pixmap_container_parent_class)->dispose (object);
+  if (G_OBJECT_CLASS (moko_fixed_parent_class)->dispose)
+    G_OBJECT_CLASS (moko_fixed_parent_class)->dispose (object);
 }
 
 static void
-moko_pixmap_container_finalize (GObject *object)
+moko_fixed_finalize (GObject *object)
 {
-  G_OBJECT_CLASS (moko_pixmap_container_parent_class)->finalize (object);
+  G_OBJECT_CLASS (moko_fixed_parent_class)->finalize (object);
 }
 
 static void
-moko_pixmap_container_class_init (MokoPixmapContainerClass *klass)
+moko_fixed_class_init (MokoFixedClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
@@ -62,12 +62,12 @@ moko_pixmap_container_class_init (MokoPixmapContainerClass *klass)
     parent_class = g_type_class_peek_parent(klass);
 
     /* add private data */
-    g_type_class_add_private (klass, sizeof (MokoPixmapContainerPrivate));
+    g_type_class_add_private (klass, sizeof (MokoFixedPrivate));
 
     /* hook virtual methods */
-    widget_class->realize = moko_pixmap_container_realize;
-    widget_class->size_request = moko_pixmap_container_size_request;
-    widget_class->size_allocate = moko_pixmap_container_size_allocate;
+    widget_class->realize = moko_fixed_realize;
+    widget_class->size_request = moko_fixed_size_request;
+    widget_class->size_allocate = moko_fixed_size_allocate;
 
     /* install properties */
     gtk_widget_class_install_style_property( widget_class, g_param_spec_boxed(
@@ -84,22 +84,22 @@ moko_pixmap_container_class_init (MokoPixmapContainerClass *klass)
 }
 
 static void
-moko_pixmap_container_init(MokoPixmapContainer *self)
+moko_fixed_init(MokoFixed *self)
 {
-    g_debug( "moko_pixmap_container_init" );
+    g_debug( "moko_fixed_init" );
     gtk_fixed_set_has_window( self, TRUE );
 }
 
-MokoPixmapContainer*
-moko_pixmap_container_new (void)
+MokoFixed*
+moko_fixed_new (void)
 {
-    return g_object_new(MOKO_TYPE_PIXMAP_CONTAINER, NULL);
+    return g_object_new(MOKO_TYPE_FIXED, NULL);
 }
 
 static void
-moko_pixmap_container_realize(GtkWidget *widget)
+moko_fixed_realize(GtkWidget *widget)
 {
-    g_debug( "moko_pixmap_container_realize" );
+    g_debug( "moko_fixed_realize" );
 
     GdkWindowAttr attributes;
     gint attributes_mask;
@@ -133,9 +133,9 @@ moko_pixmap_container_realize(GtkWidget *widget)
 }
 
 static void
-moko_pixmap_container_size_request(GtkWidget *widget, GtkRequisition *requisition)
+moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition)
 {
-    g_debug( "moko_pixmap_container_size_request" );
+    g_debug( "moko_fixed_size_request" );
 
     GtkBorder* size_request;
     GtkBorder* cargo_border;
@@ -161,7 +161,7 @@ moko_pixmap_container_size_request(GtkWidget *widget, GtkRequisition *requisitio
         if ( cargo_border && cargo_border->left + cargo_border->right + cargo_border->top + cargo_border->bottom
              && child->x == -1 && child->y == -1 )
         {
-            g_warning( "moko_pixmap_container_set_cargo: style requested cargo = '%d, %d x %d, %d'", size_request->left, size_request->top, size_request->right, size_request->bottom );
+            g_warning( "moko_fixed_set_cargo: style requested cargo = '%d, %d x %d, %d'", size_request->left, size_request->top, size_request->right, size_request->bottom );
             gtk_widget_set_size_request( child->widget, cargo_border->right - cargo_border->left, cargo_border->bottom - cargo_border->top );
             child->x = cargo_border->left;
             child->y = cargo_border->top;
@@ -185,16 +185,16 @@ moko_pixmap_container_size_request(GtkWidget *widget, GtkRequisition *requisitio
 
     if ( size_request && size_request->left + size_request->right + size_request->top + size_request->bottom )
     {
-        g_warning( "moko_pixmap_container_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
+        g_warning( "moko_fixed_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
         requisition->height = MAX( requisition->height, size_request->bottom );
         requisition->width = MAX( requisition->height, size_request->right );
     }
 }
 
 static void
-moko_pixmap_container_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+moko_fixed_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
-    g_debug( "moko_pixmap_container_size_allocate" );
+    g_debug( "moko_fixed_size_allocate" );
     GtkFixed *fixed;
     GtkFixedChild *child;
     GtkAllocation child_allocation;
@@ -249,7 +249,7 @@ moko_pixmap_container_size_allocate (GtkWidget *widget, GtkAllocation *allocatio
 }
 
 void
-moko_pixmap_container_set_cargo(MokoPixmapContainer* self, GtkWidget* child)
+moko_fixed_set_cargo(MokoFixed* self, GtkWidget* child)
 {
     gtk_fixed_put( GTK_FIXED(self), child, -1, -1 );
 }

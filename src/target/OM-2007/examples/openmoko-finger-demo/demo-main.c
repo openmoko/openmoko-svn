@@ -19,7 +19,7 @@
 
 #include <libmokoui/moko-application.h>
 #include <libmokoui/moko-finger-window.h>
-#include <libmokoui/moko-pixmap-container.h>
+#include <libmokoui/moko-finger-wheel.h>
 
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkbutton.h>
@@ -40,6 +40,17 @@
 void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
 {
     g_debug( "openmoko-finger-demo: orange button clicked" );
+    static gboolean show = TRUE;
+    static MokoFingerWheel* wheel = NULL;
+
+    if (!wheel) wheel = moko_finger_wheel_new();
+
+    if ( show )
+        gtk_widget_show( GTK_WIDGET(wheel) );
+    else
+        gtk_widget_hide( GTK_WIDGET(wheel) );
+
+    show = !show;
 }
 
 int main( int argc, char** argv )

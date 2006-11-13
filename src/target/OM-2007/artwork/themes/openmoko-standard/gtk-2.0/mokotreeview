@@ -36,6 +36,8 @@ style "mokotreeview-button" {
         }
     }
     GtkButton::focus-line-width = 0
+    xthickness = 0
+    ythickness = 5
 }
 widget_class "*.MokoTreeView.GtkButton" style "mokotreeview-button"
 

@@ -17,7 +17,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 #include "moko-tool-box.h"
-#include "moko-pixmap-container.h"
+#include "moko-fixed.h"
 
 #include <gtk/gtkentry.h>
 #include <gtk/gtkvbox.h>
@@ -26,9 +26,9 @@
 
 typedef struct _MokoToolBoxPriv
 {
-    MokoPixmapContainer* toolbar_page;
+    MokoFixed* toolbar_page;
     GtkHBox* buttonbox;
-    MokoPixmapContainer* searchbar_page;
+    MokoFixed* searchbar_page;
     GtkEntry* entry;
 } MokoToolBoxPriv;
 
@@ -116,7 +116,7 @@ GtkWidget* moko_tool_box_new() /* Construction */
     MokoToolBox* self = MOKO_TOOL_BOX(g_object_new(MOKO_TYPE_TOOL_BOX, NULL));
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
 
-    priv->toolbar_page = moko_pixmap_container_new();
+    priv->toolbar_page = moko_fixed_new();
     gtk_widget_set_name( GTK_WIDGET(priv->toolbar_page), "mokotoolbox-normal-mode" );
     priv->buttonbox = gtk_hbox_new( FALSE, 17 ); //FIXME need to get from style
     gtk_fixed_put( GTK_FIXED(priv->toolbar_page), GTK_WIDGET(priv->buttonbox), 1, 7 ); //FIXME need to get from style
@@ -131,7 +131,7 @@ GtkWidget* moko_tool_box_new_with_search()
     MokoToolBox* self = MOKO_TOOL_BOX(g_object_new(MOKO_TYPE_TOOL_BOX, NULL));
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
 
-    priv->toolbar_page = moko_pixmap_container_new();
+    priv->toolbar_page = moko_fixed_new();
     gtk_widget_set_name( GTK_WIDGET(priv->toolbar_page), "mokotoolbox-normal-mode" );
 
     MokoPixmapButton* search = moko_pixmap_button_new();
@@ -144,7 +144,7 @@ GtkWidget* moko_tool_box_new_with_search()
 
     g_signal_connect( G_OBJECT(search), "clicked", G_CALLBACK(_button_release), self );
 
-    priv->searchbar_page = moko_pixmap_container_new();
+    priv->searchbar_page = moko_fixed_new();
     gtk_widget_set_name( GTK_WIDGET(priv->searchbar_page), "mokotoolbox-search-mode" );
     gtk_notebook_append_page( GTK_NOTEBOOK(self), priv->searchbar_page, NULL );
 
@@ -157,7 +157,7 @@ GtkWidget* moko_tool_box_new_with_search()
     gtk_entry_set_has_frame( priv->entry, FALSE );
     // gtk_entry_set_inner_border( priv->entry, FALSE );
     gtk_widget_set_name( GTK_WIDGET(priv->entry), "mokotoolbox-search-entry" );
-    moko_pixmap_container_set_cargo( priv->searchbar_page, GTK_WIDGET(priv->entry) );
+    moko_fixed_set_cargo( priv->searchbar_page, GTK_WIDGET(priv->entry) );
 
     return GTK_WIDGET(self);
 }

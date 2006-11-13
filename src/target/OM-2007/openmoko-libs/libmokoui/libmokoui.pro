@@ -7,8 +7,8 @@ HEADERS = \
     moko-application.h \
     moko-finger-wheel.h \
     moko-finger-window.h \
+    moko-fixed.h \
     moko-menu-box.h \
-    moko-pixmap-container.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-search-bar.h \
@@ -21,8 +21,8 @@ SOURCES = \
     moko-application.c \
     moko-finger-wheel.c \
     moko-finger-window.c \
+    moko-fixed.c \
     moko-menu-box.c \
-    moko-pixmap-container.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-search-bar.c \
