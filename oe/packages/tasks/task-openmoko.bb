@@ -51,9 +51,9 @@ RDEPENDS_task-openmoko-linux = "\
 # task-openmoko-phone
 #
 DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
-RDEPENDS_task-openmoko-linux = "\
-  gsm-tools \
-  gsm-daemon \
+RDEPENDS_task-openmoko-phone = "\
+  libgsmd-daemon \
+  libgsmd-tools \
 "
 
 #

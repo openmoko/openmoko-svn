@@ -15,3 +15,5 @@ RPROVIDES_${PN}-tools = "gsm-tools"
 FILES_${PN}-daemon = "${bindir}/gsmd"
 RPROVIDES_${PN}-daemon = "gsm-daemon"
 
+PACKAGES_DYNAMIC = "libgsmd*"
+
