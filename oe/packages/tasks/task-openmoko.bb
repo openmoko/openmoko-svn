@@ -162,6 +162,7 @@ RDEPENDS_task-openmoko-devel = "\
   udev-utils \
   usbutils \
   uucp \
+  cu \
 "
 
 #
