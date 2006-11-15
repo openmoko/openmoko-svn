@@ -34,11 +34,15 @@ typedef struct _MokoFingerWheelPrivate
 } MokoFingerWheelPrivate;
 
 /* forward declarations */
-static void moko_finger_wheel_show (GtkWidget* widget);
-static void moko_finger_wheel_hide (GtkWidget* widget);
+static void moko_finger_wheel_realize(GtkWidget* widget);
+static void moko_finger_wheel_show(GtkWidget* widget);
+static void moko_finger_wheel_hide(GtkWidget* widget);
+static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event);
+static gint moko_finger_wheel_motion_notify(GtkWidget* widget, GdkEventMotion* event);
+static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* event);
 
 static void
-moko_finger_wheel_dispose (GObject *object)
+moko_finger_wheel_dispose(GObject *object)
 {
     if (G_OBJECT_CLASS (moko_finger_wheel_parent_class)->dispose)
         G_OBJECT_CLASS (moko_finger_wheel_parent_class)->dispose (object);
@@ -51,7 +55,7 @@ moko_finger_wheel_finalize (GObject *object)
 }
 
 static void
-moko_finger_wheel_class_init (MokoFingerWheelClass *klass)
+moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     parent_class = g_type_class_peek_parent(klass);
@@ -61,10 +65,12 @@ moko_finger_wheel_class_init (MokoFingerWheelClass *klass)
 
     /* hook virtual methods */
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->realize = moko_finger_wheel_realize;
     widget_class->show = moko_finger_wheel_show;
     widget_class->hide = moko_finger_wheel_hide;
-    //widget_class->show_all = moko_finger_wheel_show;
-    //widget_class->hide_all = moko_finger_wheel_hide;
+    widget_class->button_press_event = moko_finger_wheel_button_press;
+    widget_class->motion_notify_event = moko_finger_wheel_motion_notify;
+    widget_class->button_release_event = moko_finger_wheel_button_release;
 
     /* install properties */
     /* ... */
@@ -74,18 +80,46 @@ moko_finger_wheel_class_init (MokoFingerWheelClass *klass)
 }
 
 static void
-moko_finger_wheel_init (MokoFingerWheel *self)
+moko_finger_wheel_init(MokoFingerWheel *self)
 {
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingerwheel" );
 }
 
 GtkWidget*
-moko_finger_wheel_new (void)
+moko_finger_wheel_new(void)
 {
     return GTK_WIDGET(g_object_new(moko_finger_wheel_get_type(), NULL));
 }
 
-static void moko_finger_wheel_show (GtkWidget* widget)
+static void
+moko_finger_wheel_realize(GtkWidget *widget)
+{
+    GdkWindowAttr attributes;
+    gint attributes_mask;
+
+    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+
+    attributes.window_type = GDK_WINDOW_CHILD;
+    attributes.x = widget->allocation.x;
+    attributes.y = widget->allocation.y;
+    attributes.width = widget->allocation.width;
+    attributes.height = widget->allocation.height;
+    attributes.wclass = GDK_INPUT_OUTPUT;
+    attributes.visual = gtk_widget_get_visual (widget);
+    attributes.colormap = gtk_widget_get_colormap (widget);
+    attributes.event_mask = gtk_widget_get_events (widget);
+    attributes.event_mask |= GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK;
+
+    attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
+
+    widget->window = gdk_window_new (gtk_widget_get_parent_window (widget), &attributes, attributes_mask);
+    gdk_window_set_user_data (widget->window, widget);
+
+    widget->style = gtk_style_attach (widget->style, widget->window);
+    gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
+}
+
+static void moko_finger_wheel_show(GtkWidget* widget)
 {
     gtk_widget_ensure_style( widget ); //FIXME needed here?
     g_debug( "moko_finger_wheel_show" );
@@ -94,7 +128,8 @@ static void moko_finger_wheel_show (GtkWidget* widget)
     if ( !priv->popup )
     {
         priv->popup = gtk_window_new(GTK_WINDOW_POPUP);
-        gtk_widget_set_name( GTK_WIDGET(priv->popup), "transparent" );
+        //FIXME Setting it to transparent is probably not necessary since we issue a mask anyway, right?
+        //gtk_widget_set_name( GTK_WIDGET(priv->popup), "transparent" );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
         GtkRequisition req;
@@ -123,7 +158,7 @@ static void moko_finger_wheel_show (GtkWidget* widget)
     gtk_widget_show( priv->popup );
 }
 
-static void moko_finger_wheel_hide (GtkWidget* widget)
+static void moko_finger_wheel_hide(GtkWidget* widget)
 {
     g_debug( "moko_finger_wheel_hide" );
     GTK_WIDGET_CLASS(parent_class)->hide(widget);
@@ -131,3 +166,42 @@ static void moko_finger_wheel_hide (GtkWidget* widget)
     gtk_widget_hide( priv->popup );
 }
 
+static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event)
+{
+    g_debug( "moko_finger_wheel_button_press" );
+
+    gtk_grab_add( widget );
+    gtk_widget_set_state( widget, GTK_STATE_ACTIVE );
+    gtk_style_set_background (widget->style, widget->window, GTK_STATE_ACTIVE);
+    return TRUE;
+}
+
+//FIXME Right now this is hardcoded to relative mode. Implement absolute mode as well
+static gint moko_finger_wheel_motion_notify(GtkWidget* widget, GdkEventMotion* event)
+{
+    int x, y;
+    GdkModifierType state;
+
+    if (event->is_hint)
+        gdk_window_get_pointer (event->window, &x, &y, &state);
+    else
+    {
+        x = event->x;
+        y = event->y;
+        state = event->state;
+    }
+
+    if (state & GDK_BUTTON1_MASK)
+        g_debug( "FIXME: emit scroll values here..." );
+
+    return TRUE;
+}
+
+static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* event)
+{
+    g_debug( "moko_finger_wheel_button_release" );
+    gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
+    gtk_widget_set_state( widget, GTK_STATE_NORMAL );
+    gtk_grab_remove( widget );
+    return TRUE;
+}

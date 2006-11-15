@@ -23,13 +23,12 @@
 
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkbutton.h>
-#include <gtk/gtkfixed.h>
+#include <gtk/gtkhbox.h>
+#include <gtk/gtklabel.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
-#include <gtk/gtkstock.h>
-#include <gtk/gtkhbox.h>
+#include <gtk/gtktogglebutton.h>
 #include <gtk/gtkvbox.h>
-#include <gtk/gtkentry.h>
 
 void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
 {
@@ -45,6 +44,24 @@ void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
         gtk_widget_hide( GTK_WIDGET(wheel) );
 
     show = !show;
+}
+
+void cb_black_button_clicked( GtkButton* button, MokoFingerWindow* window )
+{
+    g_debug( "openmoko-finger-demo: black button clicked" );
+#if 0
+    static gboolean show = TRUE;
+    static MokoFingerTools* tools = NULL;
+
+    if (!tools) tools = moko_finger_tools_new();
+
+    if ( show )
+        gtk_widget_show( GTK_WIDGET(tools) );
+    else
+        gtk_widget_hide( GTK_WIDGET(tools) );
+
+    show = !show;
+#endif
 }
 
 int main( int argc, char** argv )
@@ -72,9 +89,9 @@ int main( int argc, char** argv )
 
     /* contents */
     GtkVBox* vbox = gtk_vbox_new( TRUE, 0 );
-    GtkEntry* label1 = gtk_label_new( "Populate this area with finger widgets\n \nThere are three types of finger buttons:" );
+    GtkLabel* label1 = gtk_label_new( "Populate this area with finger widgets\n \nThere are three types of finger buttons:" );
 
-    GtkEntry* label2 = gtk_label_new( "Orange button toggles finger scrolling wheel" );
+    GtkLabel* label2 = gtk_label_new( "Orange button toggles finger scrolling wheel\nBlack button toggles finger toolbar\nDialer Button does nothing :)" );
 
     GtkHBox* hbox = gtk_hbox_new( TRUE, 10 );
 
@@ -84,12 +101,13 @@ int main( int argc, char** argv )
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button1), TRUE, TRUE, 5 );
 
     GtkButton* button2 = gtk_button_new();
-    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
+    //FIXME toggle buttons look odd... needs working on styling
+    //gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button2), TRUE);
     gtk_widget_set_name( GTK_WIDGET(button2), "mokofingerbutton-dialer" );
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button2), TRUE, TRUE, 5 );
 
     GtkButton* button3 = gtk_button_new();
-    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
+    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_black_button_clicked), window );
     gtk_widget_set_name( GTK_WIDGET(button3), "mokofingerbutton-black" );
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button3), TRUE, TRUE, 5 );
 
