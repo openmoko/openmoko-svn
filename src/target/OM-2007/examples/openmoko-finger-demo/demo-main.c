@@ -23,15 +23,11 @@
 
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkbutton.h>
-#include <gtk/gtkcheckmenuitem.h>
 #include <gtk/gtkfixed.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
-#include <gtk/gtkmenutoolbutton.h>
 #include <gtk/gtkstock.h>
-#include <gtk/gtktoolbutton.h>
-#include <gtk/gtkuimanager.h>
-#include <gtk/gtknotebook.h>
+#include <gtk/gtkhbox.h>
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkentry.h>
 
@@ -76,18 +72,29 @@ int main( int argc, char** argv )
 
     /* contents */
     GtkVBox* vbox = gtk_vbox_new( TRUE, 0 );
-    GtkEntry* label1 = gtk_label_new( "Populate this area with finger widgets\nas you like..." );
-    GtkEntry* label2 = gtk_label_new( "Click the finger button to enable or disable\nthe finger scrolling wheel\n\n\n" );
+    GtkEntry* label1 = gtk_label_new( "Populate this area with finger widgets\n \nThere are three types of finger buttons:" );
 
-    GtkAlignment* align = gtk_alignment_new( 0.5, 0.5, 0.5, 0.5 );
+    GtkEntry* label2 = gtk_label_new( "Orange button toggles finger scrolling wheel" );
 
-    GtkButton* button = gtk_button_new();
-    g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
-    gtk_widget_set_name( GTK_WIDGET(button), "mokofingerbutton-orange" );
-    gtk_container_add( GTK_CONTAINER(align), GTK_WIDGET(button) );
+    GtkHBox* hbox = gtk_hbox_new( TRUE, 10 );
+
+    GtkButton* button1 = gtk_button_new();
+    g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
+    gtk_widget_set_name( GTK_WIDGET(button1), "mokofingerbutton-orange" );
+    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button1), TRUE, TRUE, 5 );
+
+    GtkButton* button2 = gtk_button_new();
+    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
+    gtk_widget_set_name( GTK_WIDGET(button2), "mokofingerbutton-dialer" );
+    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button2), TRUE, TRUE, 5 );
+
+    GtkButton* button3 = gtk_button_new();
+    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
+    gtk_widget_set_name( GTK_WIDGET(button3), "mokofingerbutton-black" );
+    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button3), TRUE, TRUE, 5 );
 
     gtk_box_pack_start( vbox, GTK_WIDGET(label1), TRUE, TRUE, 0 );
-    gtk_box_pack_start( vbox, GTK_WIDGET(align), TRUE, TRUE, 0 );
+    gtk_box_pack_start( vbox, GTK_WIDGET(hbox), TRUE, TRUE, 0 );
     gtk_box_pack_start( vbox, GTK_WIDGET(label2), TRUE, TRUE, 0 );
 
     moko_finger_window_set_contents( window, GTK_WIDGET(vbox) );

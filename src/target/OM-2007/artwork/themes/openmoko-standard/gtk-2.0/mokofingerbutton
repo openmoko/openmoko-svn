@@ -31,9 +31,69 @@ style "mokofingerbutton-orange" {
 }
 widget "*.mokofingerbutton-orange" style "mokofingerbutton-orange"
 
-#style "gtkbutton-label" {
-#    font_name = "Vera Sans 10"
-#    fg[NORMAL] = "#e5e5e5"
-#    fg[PRELIGHT] = "#ffffff"
-#}
-#widget "*.GtkButton.*" style "gtkbutton-label"
+style "mokofingerbutton-black" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_type04.png"
+            border          = { 27, 27, 29, 29 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_type04.png"
+            border          = { 27, 27, 29, 29 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_type04_p.png"
+            border          = { 27, 27, 29, 29 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 10
+    ythickness = 10
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-black" style "mokofingerbutton-black"
+
+style "mokofingerbutton-dialer" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_type05.png"
+            border          = { 40, 20, 8, 7 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_type05.png"
+            border          = { 40, 20, 8, 7 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_type05_p.png"
+            border          = { 40, 20, 8, 7 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 10
+    ythickness = 10
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-dialer" style "mokofingerbutton-dialer"
+
