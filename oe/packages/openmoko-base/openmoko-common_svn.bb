@@ -4,7 +4,7 @@ PV = "0.0+svn${SRCDATE}"
 
 inherit openmoko-base
 
-SRC_URI = "${OPENMOKO_MIRROR}/src/target/artwork;module=images;proto=http"
+SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/artwork;module=images;proto=http"
 S = "${WORKDIR}"
 
 dirs = "images/pixmaps"
