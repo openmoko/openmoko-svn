@@ -4,7 +4,7 @@ source_h = \
     moko-finger-tool-box.h \
     moko-finger-wheel.h \
     moko-finger-window.h \
-    moko-fixed.h
+    moko-fixed.h \
     moko-menu-box.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
@@ -19,7 +19,7 @@ source_c = \
     moko-finger-tool-box.c \
     moko-finger-wheel.c \
     moko-finger-window.c \
-    moko-fixed.c
+    moko-fixed.c \
     moko-menu-box.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
