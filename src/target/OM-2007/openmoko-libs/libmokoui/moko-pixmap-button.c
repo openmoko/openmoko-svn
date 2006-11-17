@@ -176,10 +176,10 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
 }
 
 /* public API */
-MokoPixmapButton*
+GtkWidget*
 moko_pixmap_button_new (void)
 {
-    return g_object_new (MOKO_TYPE_PIXMAP_BUTTON, NULL);
+    return GTK_WIDGET(g_object_new(moko_pixmap_button_get_type(), NULL));
 }
 
 void

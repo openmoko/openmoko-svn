@@ -47,31 +47,7 @@ static void moko_menu_box_init                (MokoMenuBox      *f);
 
 static guint moko_menu_box_signals[LAST_SIGNAL] = { 0, };
 
-GType moko_menu_box_get_type (void) /* Typechecking */
-{
-    static GType self_type = 0;
-
-    if (!self_type)
-    {
-        static const GTypeInfo f_info =
-        {
-            sizeof (MokoMenuBoxClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moko_menu_box_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MokoMenuBox),
-            0,
-            (GInstanceInitFunc) moko_menu_box_init,
-        };
-
-        /* add the type of your parent class here */
-        self_type = g_type_register_static(GTK_TYPE_HBOX, "MokoMenuBox", &f_info, 0);
-    }
-
-    return self_type;
-}
+G_DEFINE_TYPE (MokoMenuBox, moko_menu_box, GTK_TYPE_HBOX)
 
 static void moko_menu_box_class_init (MokoMenuBoxClass *klass) /* Class Initialization */
 {

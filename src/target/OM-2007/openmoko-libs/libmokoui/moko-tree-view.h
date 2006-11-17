@@ -42,7 +42,8 @@ typedef struct {
 } MokoTreeViewClass;
 
 GType moko_tree_view_get_type (void);
-MokoTreeView* moko_tree_view_new (void);
+GtkWidget* moko_tree_view_new (void);
+GtkWidget* moko_tree_view_new_with_model(GtkTreeModel* model);
 
 GtkTreeViewColumn* moko_tree_view_append_column_new_with_name(MokoTreeView* self, gchar* name);
 GtkScrolledWindow* moko_tree_view_put_into_scrolled_window(MokoTreeView* self);

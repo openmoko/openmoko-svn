@@ -43,7 +43,7 @@ typedef struct {
 
 GType moko_pixmap_button_get_type(void);
 
-MokoPixmapButton* moko_pixmap_button_new(void);
+GtkWidget* moko_pixmap_button_new(void);
 void moko_pixmap_button_set_menu(MokoPixmapButton* self, GtkMenu* menu);
 
 G_END_DECLS

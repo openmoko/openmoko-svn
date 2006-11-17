@@ -5,6 +5,7 @@ TARGET = mokoui
 HEADERS = \
     moko-alignment.h \
     moko-application.h \
+    moko-finger-tool-box.h \
     moko-finger-wheel.h \
     moko-finger-window.h \
     moko-fixed.h \
@@ -19,6 +20,7 @@ HEADERS = \
 SOURCES = \
     moko-alignment.c \
     moko-application.c \
+    moko-finger-tool-box.c \
     moko-finger-wheel.c \
     moko-finger-window.c \
     moko-fixed.c \

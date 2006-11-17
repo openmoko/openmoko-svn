@@ -3,17 +3,17 @@ style "moko-window-default" {
 	# NOTE bg_pixmap[NORMAL] _must_ match with the SHADOW pixmaps
     bg_pixmap[NORMAL] = "gtkwidget.png"
 
-    bg[NORMAL]        = "#666666" # 
+    bg[NORMAL]        = "#666666" #
     bg[PRELIGHT]      = "#ff0000" # light beige
     bg[ACTIVE]        = "#ff0000" # dark beige
     bg[SELECTED]      = "#ff0000" # olive
     bg[INSENSITIVE]   = "#ff0000" # beige
 
     base[NORMAL]      = "#ffeddb" # light cherry
-    base[PRELIGHT]    = "#00ff00" # 
-    base[ACTIVE]      = "#00ff00" # 
-    base[SELECTED]    = "#00ff00" # 
-    base[INSENSITIVE] = "#00ff00" # 
+    base[PRELIGHT]    = "#00ff00" #
+    base[ACTIVE]      = "#00ff00" #
+    base[SELECTED]    = "#00ff00" #
+    base[INSENSITIVE] = "#00ff00" #
 
     fg[NORMAL]      = "#d3d3d3" # light grey
     fg[PRELIGHT]    = "#ffffff" # white
@@ -74,7 +74,7 @@ style "moko-window-default" {
             function        = VLINE
             file            = "hline.png" # FIXME add proper vline
             stretch         = TRUE
-        }	
+        }
     }
     font_name = "Vera Sans 16"
 }
@@ -88,18 +88,22 @@ widget "*" style "moko-window-default"
 # widget "MokoPanedWindow.*" style "moko-window-default"
 # class "GtkMenuItem" style "moko-window-default"
 
+include "transparent"
+
 include "gtkmenu"
 include "gtkmenuitem"
 include "gtkpaned"
+include "gtkscrolledwindow"
 include "gtkscrollbar"
 include "gtktreeview"
 include "gtkbutton"
 
 include "mokofingerbutton"
+include "mokofingertoolbox"
 include "mokofingerwheel"
 include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
 include "mokotreeview"
 
-include "transparent"
+class "GtkViewport" style "transparent"

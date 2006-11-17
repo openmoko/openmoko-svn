@@ -47,7 +47,7 @@ typedef struct {
 
 GType moko_fixed_get_type (void);
 
-MokoFixed* moko_fixed_new (void);
+GtkWidget* moko_fixed_new (void);
 
 void moko_fixed_set_cargo(MokoFixed* self, GtkWidget* child);
 

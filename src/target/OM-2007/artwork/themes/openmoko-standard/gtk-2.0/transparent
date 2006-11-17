@@ -8,6 +8,16 @@ style "transparent" {
             border          = { 0, 0, 0, 0 }
             stretch         = TRUE
         }
+        image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            # state = ALL
+            file            = "transparency100.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+
     }
 }
 widget "*.transparent" style "transparent"
+

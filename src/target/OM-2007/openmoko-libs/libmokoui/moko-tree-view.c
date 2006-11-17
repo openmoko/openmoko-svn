@@ -67,16 +67,16 @@ moko_tree_view_init (MokoTreeView *self)
     gtk_tree_view_set_headers_visible( GTK_TREE_VIEW(self), TRUE );
 }
 
-MokoTreeView*
+GtkWidget*
 moko_tree_view_new (void)
 {
-    return g_object_new (MOKO_TYPE_TREE_VIEW, NULL);
+    return GTK_WIDGET(g_object_new(moko_tree_view_get_type(), NULL));
 }
 
-MokoTreeView*
+GtkWidget*
 moko_tree_view_new_with_model (GtkTreeModel *model)
 {
-    return g_object_new (MOKO_TYPE_TREE_VIEW, "model", model, NULL);
+    return GTK_WIDGET(g_object_new(moko_tree_view_get_type(), "model", model, NULL));
 }
 
 GtkTreeViewColumn* moko_tree_view_append_column_new_with_name(MokoTreeView* self, gchar* name)

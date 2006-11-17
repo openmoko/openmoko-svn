@@ -90,10 +90,10 @@ moko_fixed_init(MokoFixed *self)
     gtk_fixed_set_has_window( self, TRUE );
 }
 
-MokoFixed*
+GtkWidget*
 moko_fixed_new (void)
 {
-    return g_object_new(MOKO_TYPE_FIXED, NULL);
+    return GTK_WIDGET(g_object_new(moko_fixed_get_type(), NULL));
 }
 
 static void

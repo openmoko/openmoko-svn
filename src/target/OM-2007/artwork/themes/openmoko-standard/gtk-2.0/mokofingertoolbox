@@ -1,0 +1,105 @@
+style "mokofingertoolbox-leftarrow" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_dialog_prev.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_dialog_prev.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_dialog_prev_p.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+    MokoPixmapButton::size-request = { 0, 47, 0, 90 }
+    xthickness = 0
+    ythickness = 0
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingertoolbox-leftarrow" style "mokofingertoolbox-leftarrow"
+
+style "mokofingertoolbox-rightarrow" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_dialog_next.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_dialog_next.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_dialog_next_p.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+    MokoPixmapButton::size-request = { 0, 47, 0, 90 }
+    xthickness = 0
+    ythickness = 0
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingertoolbox-rightarrow" style "mokofingertoolbox-rightarrow"
+
+style "mokofingertoolbox-toolbutton" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_type03.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_type03.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_type03_p.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+    #FIXME this button is vertically one pixel too large
+    MokoPixmapButton::size-request = { 0, 69, 0, 91 }
+    xthickness = 0
+    ythickness = 0
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingertoolbox-toolbutton" style "mokofingertoolbox-toolbutton"
+
+widget_class "*.MokoFingerToolBox.*" style "transparent"
+

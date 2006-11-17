@@ -42,7 +42,7 @@ typedef struct {
 
 GType moko_alignment_get_type (void);
 
-MokoAlignment* moko_alignment_new (void);
+GtkWidget* moko_alignment_new (void);
 
 G_END_DECLS
 

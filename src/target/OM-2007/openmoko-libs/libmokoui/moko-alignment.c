@@ -172,8 +172,8 @@ moko_alignment_init (MokoAlignment *self)
     GTK_WIDGET_UNSET_FLAGS( GTK_WIDGET(self), GTK_NO_WINDOW );
 }
 
-MokoAlignment*
+GtkWidget*
 moko_alignment_new (void)
 {
-    return g_object_new (MOKO_TYPE_ALIGNMENT, NULL);
+    return GTK_WIDGET(g_object_new(moko_alignment_get_type(), NULL));
 }
