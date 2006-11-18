@@ -30,6 +30,7 @@ style "gtktreeview" {
     GtkTreeView::odd_row_color = "#e7e7e7"
 
     GtkButton::focus-line-width = 0
+
 }
 widget "*.GtkTreeView" style "gtktreeview"
 

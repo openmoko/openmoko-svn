@@ -25,10 +25,16 @@ style "gtkmenuitem-label" {
     fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
 }
-widget "*.GtkMenuItem.*" style "gtkmenuitem-label"
-widget "*.GtkImageMenuItem.*" style "gtkmenuitem-label"
-
-class "GtkMenuItem" style "gtkmenuitem-label"
-
+widget "*.GtkMenu.GtkMenuItem.*" style "gtkmenuitem-label"
+widget "*.GtkMenu.GtkImageMenuItem.*" style "gtkmenuitem-label"
+widget "*.GtkMenu.GtkRadioMenuItem.*" style "gtkmenuitem-label"
 class "GtkCellView" style "gtkmenuitem-label"
+
+style "gtkmenubar-gtkmenuitem-label" {
+    font_name = "Vera Sans 13"
+    fg[NORMAL] = "#000000"
+    fg[PRELIGHT] = "#000000"
+}
+widget_class "*.GtkMenuBar.GtkMenuItem.GtkAccelLabel" style "gtkmenubar-gtkmenuitem-label"
+widget_class "*.GtkMenuBar.GtkImageMenuItem.GtkAccelLabel" style "gtkmenubar-gtkmenuitem-label"
 
