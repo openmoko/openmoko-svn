@@ -25,7 +25,7 @@ style "mokofingertoolbox-leftarrow" {
             stretch         = TRUE
         }
     }
-    MokoPixmapButton::size-request = { 0, 47, 0, 90 }
+    MokoPixmapButton::size-request = { 0, 47, 0, 104 }
     xthickness = 0
     ythickness = 0
     GtkButton::focus-line-width = 0
@@ -59,7 +59,7 @@ style "mokofingertoolbox-rightarrow" {
             stretch         = TRUE
         }
     }
-    MokoPixmapButton::size-request = { 0, 47, 0, 90 }
+    MokoPixmapButton::size-request = { 0, 47, 0, 104 }
     xthickness = 0
     ythickness = 0
     GtkButton::focus-line-width = 0
@@ -93,13 +93,18 @@ style "mokofingertoolbox-toolbutton" {
             stretch         = TRUE
         }
     }
-    #FIXME this button is vertically one pixel too large
-    MokoPixmapButton::size-request = { 0, 69, 0, 91 }
+    MokoPixmapButton::size-request = { 0, 69, 0, 104 }
     xthickness = 0
     ythickness = 0
     GtkButton::focus-line-width = 0
 }
 widget "*.mokofingertoolbox-toolbutton" style "mokofingertoolbox-toolbutton"
 
-widget_class "*.MokoFingerToolBox.*" style "transparent"
+style "mokofingertoolbox"
+{
+    bg_pixmap[NORMAL] = "mokofingertoolbox-viewport.png"
+    MokoAlignment::padding = { 0, 0, 0, 0 }
+}
+widget "*.mokofingertoolbox" style "mokofingertoolbox"
+
 

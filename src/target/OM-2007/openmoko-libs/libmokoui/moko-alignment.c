@@ -37,6 +37,8 @@ typedef struct _MokoAlignmentPrivate
 {
 } MokoAlignmentPrivate;
 
+//FIXME read padding from style and apply somewhere...
+
 /* forward declarations */
 static void
 moko_alignment_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
@@ -56,7 +58,7 @@ moko_alignment_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
     widget->allocation = *allocation;
 
     // <sync. with gdk window>
-    if (GTK_WIDGET_REALIZED (widget))
+    if (GTK_WIDGET_REALIZED (widget) &!GTK_WIDGET_NO_WINDOW (widget))
         gdk_window_move_resize (widget->window,
                                 allocation->x,
                                 allocation->y,

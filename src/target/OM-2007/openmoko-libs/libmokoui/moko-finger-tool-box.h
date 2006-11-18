@@ -19,8 +19,9 @@
 #ifndef _MOKO_FINGER_TOOL_BOX_H_
 #define _MOKO_FINGER_TOOL_BOX_H_
 
+#include "moko-alignment.h"
+
 #include <gtk/gtkbutton.h>
-#include <gtk/gtkhbox.h>
 
 #include <glib-object.h>
 
@@ -34,11 +35,11 @@ G_BEGIN_DECLS
 #define MOKO_FINGER_TOOL_BOX_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj),     MOKO_TYPE_FINGER_TOOL_BOX, MokoFingerToolBoxClass))
 
 typedef struct {
-    GtkHBox parent;
+    MokoAlignment parent;
 } MokoFingerToolBox;
 
 typedef struct {
-    GtkHBoxClass parent_class;
+    MokoAlignmentClass parent_class;
 } MokoFingerToolBoxClass;
 
 GType moko_finger_tool_box_get_type (void);

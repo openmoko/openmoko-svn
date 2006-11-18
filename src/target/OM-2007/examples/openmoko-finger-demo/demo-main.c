@@ -58,9 +58,8 @@ void cb_black_button_clicked( GtkButton* button, MokoFingerWindow* window )
     if (!tools)
     {
         tools = moko_finger_tool_box_new();
-        for ( int i = 0; i < 10; ++i )
+        for ( int i = 0; i < 1; ++i )
             moko_finger_tool_box_add_button( tools );
-        gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(tools), FALSE, FALSE, 0 );
     }
 
     if ( show )
@@ -69,6 +68,12 @@ void cb_black_button_clicked( GtkButton* button, MokoFingerWindow* window )
         gtk_widget_hide( GTK_WIDGET(tools) );
 
     show = !show;
+}
+
+void cb_dialer_button_clicked( GtkButton* button, MokoFingerWindow* window )
+{
+    if (!tools) return;
+    moko_finger_tool_box_add_button( tools );
 }
 
 int main( int argc, char** argv )
@@ -110,6 +115,7 @@ int main( int argc, char** argv )
     GtkButton* button2 = gtk_button_new();
     //FIXME toggle buttons look odd... needs working on styling
     //gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button2), TRUE);
+    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_dialer_button_clicked), window );
     gtk_widget_set_name( GTK_WIDGET(button2), "mokofingerbutton-dialer" );
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button2), TRUE, TRUE, 5 );
 
