@@ -100,11 +100,11 @@ style "mokofingertoolbox-toolbutton" {
 }
 widget "*.mokofingertoolbox-toolbutton" style "mokofingertoolbox-toolbutton"
 
-#style "mokofingertoolbox"
-#{
-#    bg_pixmap[NORMAL] = "mokofingertoolbox-viewport.png"
-#    MokoAlignment::padding = { 0, 0, 0, 0 }
-#}
-#widget "*.mokofingertoolbox" style "mokofingertoolbox"
+style "mokofingertoolbox"
+{
+    bg_pixmap[NORMAL] = "mokofingertoolbox.png"
+    MokoAlignment::padding = { 0, 0, 0, 0 }
+}
+widget "*.mokofingertoolbox" style "mokofingertoolbox"
 
 
