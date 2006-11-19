@@ -82,6 +82,8 @@ style "moko-window-default" {
 # enable for final version
 class "GtkWidget" style "moko-window-default"
 
+#FIXME How to say widget "*" style "moko-window-default", but change menuitem color afterwards. that doesn't seem to work!?
+
 include "transparent"
 
 include "gtkmenu"
