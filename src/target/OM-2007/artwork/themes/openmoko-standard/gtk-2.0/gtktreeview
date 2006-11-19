@@ -31,6 +31,11 @@ style "gtktreeview" {
 
     GtkButton::focus-line-width = 0
 
+    text[NORMAL]      = "#666666" # mid grey
+    text[PRELIGHT]    = "#ffffff" # white
+    text[ACTIVE]      = "#e5e5e5" # light grey
+    text[SELECTED]    = "#ffffff" # white
+    text[INSENSITIVE] = "#223344" # dark grey
 }
 widget "*.GtkTreeView" style "gtktreeview"
 
@@ -49,6 +54,7 @@ style "gtktreeview-button" {
 }
 widget_class "*.GtkTreeView.GtkButton" style "gtktreeview-button"
 
+#FIXME why does this not work with GtkTreeView, but does with MokoTreeView?
 style "gtktreeview-button-label"
 {
     font_name = "Vera Sans Bold 13"

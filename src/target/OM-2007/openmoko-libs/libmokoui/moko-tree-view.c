@@ -79,10 +79,8 @@ moko_tree_view_new_with_model (GtkTreeModel *model)
     return GTK_WIDGET(g_object_new(moko_tree_view_get_type(), "model", model, NULL));
 }
 
-GtkTreeViewColumn* moko_tree_view_append_column_new_with_name(MokoTreeView* self, gchar* name)
+void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column)
 {
-    GtkTreeViewColumn* column = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title( column, name );
     gtk_tree_view_column_set_alignment( column, 0.5 );
     gtk_tree_view_column_set_spacing( column, 4 );
     gtk_tree_view_append_column( GTK_TREE_VIEW(self), column );
@@ -92,7 +90,6 @@ GtkTreeViewColumn* moko_tree_view_append_column_new_with_name(MokoTreeView* self
                   "reorderable", TRUE,
                   "sort-indicator", TRUE,
                   NULL );
-    return column;
 }
 
 GtkScrolledWindow* moko_tree_view_put_into_scrolled_window(MokoTreeView* self)

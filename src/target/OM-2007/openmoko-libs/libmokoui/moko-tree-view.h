@@ -20,6 +20,7 @@
 #define _MOKO_TREE_VIEW_H_
 
 #include <gtk/gtktreeview.h>
+#include <gtk/gtktreeviewcolumn.h>
 #include <gtk/gtkscrolledwindow.h>
 
 #include <glib-object.h>
@@ -45,7 +46,7 @@ GType moko_tree_view_get_type (void);
 GtkWidget* moko_tree_view_new (void);
 GtkWidget* moko_tree_view_new_with_model(GtkTreeModel* model);
 
-GtkTreeViewColumn* moko_tree_view_append_column_new_with_name(MokoTreeView* self, gchar* name);
+void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column);
 GtkScrolledWindow* moko_tree_view_put_into_scrolled_window(MokoTreeView* self);
 
 G_END_DECLS

@@ -22,8 +22,15 @@ style "mokotreeview" {
     GtkTreeView::odd_row_color = "#e7e7e7"
 
     GtkButton::focus-line-width = 0
+
+    text[NORMAL]      = "#666666" # mid grey
+    text[PRELIGHT]    = "#ffffff" # white
+    text[ACTIVE]      = "#e5e5e5" # light grey
+    text[SELECTED]    = "#ffffff" # white
+    text[INSENSITIVE] = "#223344" # dark grey
 }
-class "MokoTreeView" style "mokotreeview"
+#FIXME Why does class "MokoTreeView" doesn't work here... does class "foo" only work with built-in Gtk+ types?
+widget "*.MokoTreeView" style "mokotreeview"
 
 style "mokotreeview-button" {
     engine "pixmap" {
@@ -51,6 +58,13 @@ widget "*.MokoTreeView.*.GtkLabel" style "mokotreeview-button-label"
 style "mokotreeview-cellrenderer"
 {
 	font_name = "Vera Sans 30"
+    text[NORMAL] = "#ff0000"
+    fg[NORMAL] = "#ff0000"
 }
 widget "*.MokoTreeView.GtkCellRenderer" style "mokotreeview-cellrenderer"
+
+widget "*.MokoTreeView.GtkCellRendererText" style "mokotreeview-cellrenderer"
+
+
+#widget_class "*.MokoTreeView.GtkCellRenderer" style "mokotreeview-cellrenderer"
 

@@ -137,15 +137,13 @@ void populate_navigation_area( ChordMasterData* d )
     d->liststore = gtk_list_store_new( NUM_COLS, G_TYPE_STRING, G_TYPE_STRING );
     d->view = moko_tree_view_new_with_model( d->liststore );
 
-    GtkTreeViewColumn* col = moko_tree_view_append_column_new_with_name( d->view, "Chordname" );
     GtkCellRenderer* ren = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start( col, ren, TRUE );
-    gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_NAME );
+    GtkTreeViewColumn* column = gtk_tree_view_column_new_with_attributes( "Chordname", ren, "text", COLUMN_NAME, NULL );
+    moko_tree_view_append_column( d->view, column );
 
-    col = moko_tree_view_append_column_new_with_name( d->view, "Fretboard" );
     ren = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start( col, ren, TRUE );
-    gtk_tree_view_column_add_attribute( col, ren, "text", COLUMN_FRETS );
+    column = gtk_tree_view_column_new_with_attributes( "Fretboard", ren, "text", COLUMN_FRETS, NULL );
+    moko_tree_view_append_column( d->view, column );
 
     moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(d->view)) );
 
