@@ -1,0 +1,34 @@
+# List of source files containing translatable strings.
+
+## Created by Anjuta - will be overwritten
+## If you don't want it to overwrite it,
+## 	Please disable it in the Anjuta project configuration
+
+# Source files
+src/support.h
+src/support.c
+src/main.c
+src/interface.h
+src/interface.c
+src/callbacks.h
+src/callbacks.c
+src/errorcode.h
+src/ipkgapi.c
+src/ipkgapi.h
+src/ipkg_cmd.h
+src/widgets.c
+src/widgets.h
+src/iconmgr.c
+src/iconmgr.h
+src/pkglist.c
+src/pkglist.h
+src/menumgr.c
+src/menumgr.h
+src/treeview.c
+src/treeview.h
+src/alldialog.c
+src/alldialog.h
+src/initwidgets.c
+src/initwidgets.h
+
+
