@@ -1,0 +1,104 @@
+
+
+style "menu"
+{
+   bg_pixmap[NORMAL]  = "bg_menu.png" # menu background image
+   
+#   engine "pixmap" {
+#     image
+#       {
+#         function        = BOX
+#         recolorable     = TRUE
+#         state           = NORMAL
+#         file            = "bg_menu.png"
+#         border          = { 3, 3, 3, 3 }
+#         stretch         = TRUE
+#
+#       }
+#   }
+}
+class "GtkMenu" style "menu"
+
+style "menuitem"
+{
+#   bg[NORMAL]        = "#c4d2ca"
+  
+  engine "pixmap" {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "bg_menu_selected.png"
+        border          = { 8, 8, 8, 8 }
+        stretch         = TRUE
+      }
+      
+  }
+}
+
+class "GtkMenuItem" style "menuitem"
+
+
+style "menubar"
+{
+  #bg[NORMAL]        = "#4c4c4c"
+  engine "pixmap" {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        file            = "bg_menubar.png"
+        border          = { 3, 3, 3, 3 }
+        stretch         = TRUE
+      }
+  }
+}
+
+class "GtkMenuBar" style "menubar"
+
+
+
+#style "optionmenu"
+#{
+#  engine "pixmap" {
+#    image
+#      {
+#        function        = BOX
+#        recolorable     = TRUE
+#        file            = "option_menu.png"
+#        border          = { 12, 32, 2, 3 }
+#        stretch         = TRUE
+#      }
+#  }
+#}
+
+#class "GtkOptionMenu" style "optionmenu"
+
+
+###### Dialer menu setup ######
+style "dial_menu"
+{
+   bg_pixmap[NORMAL]  = "bg_dialer_menu.png"
+   
+}
+widget "*dial_menu" style "dial_menu"
+
+style "dial_menuitem"
+{
+#  bg[NORMAL]        = "#c4d2ca"
+  
+  engine "pixmap" {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "highlight_bar_type03.png"
+        border          = { 8, 8, 8, 8 }
+        stretch         = TRUE
+      }
+      
+  }
+}
+widget "*dial_menuitem" style "dial_menuitem"

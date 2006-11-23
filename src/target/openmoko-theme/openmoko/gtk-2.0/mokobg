@@ -1,0 +1,144 @@
+
+# set window background,works ok for notebook,button background
+style "window"
+{
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        file            = "bg_dialer.png"
+        stretch         = TRUE
+      }
+  }
+}
+class "GtkWindow" style "window"
+
+style "bg_dialer"
+{
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        file            = "bg_dialer.png"
+        stretch         = TRUE
+      }
+  }
+}
+widget "bg_dialer" style "bg_dialer"
+
+style "bg_dialog"
+{
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        file            = "bg_dialog.png"
+        stretch         = TRUE
+      }
+  }
+}
+widget "bg_dialog" style "bg_dialog"
+
+style "bg_popup_dialog"
+{
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        file            = "bg_popup_dialog.png"
+        stretch         = TRUE
+      }
+  }
+}
+widget "bg_popup_dialog" style "bg_popup_dialog"
+
+
+style "bg_footer"
+{
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        file            = "bg_footer.png"
+        stretch         = TRUE
+      }
+  }
+}
+widget "bg_footer" style "bg_footer"
+
+
+style "bg_navigation_list" {
+
+#  bg_pixmap[NORMAL] = "bg_navigation_list.png"
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        detail          = "viewportbin"
+        file            = "bg_navigation_list.png"
+        stretch         = TRUE
+      }      
+      
+  }  
+}
+widget "*bg_navigation_list" style "bg_navigation_list"
+
+
+style "bg_navigation_list_head" {
+  bg_pixmap[NORMAL] = "bg_navigation_list_head.png"
+}
+widget "*bg_navigation_list_head" style "bg_navigation_list_head"
+
+style "bg_detail_area" {
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        detail          = "viewportbin"
+        file            = "bg_detail_area.png"
+        stretch         = TRUE
+      }
+   
+  }
+}
+widget "*bg_detail_area" style "bg_detail_area"
+
+
+
+style "bg_normal_toolbar" {
+  bg_pixmap[NORMAL] = "bg_normal_toolbar.png"
+}
+widget "*bg_normal_toolbar" style "bg_normal_toolbar"
+
+
+style "bg_search_toolbar" {
+    bg_pixmap[NORMAL] = "bg_search_toolbar.png"
+}
+widget "*bg_search_toolbar" style "bg_search_toolbar"
+
+style "bg_search_toolbar_focusout" {
+    bg_pixmap[NORMAL] = "bg_search_toolbar_focusout.png"
+}
+widget "*bg_search_toolbar_focusout" style "bg_search_toolbar_focusout"
+
+
+style "bg_bar_separate" {
+    bg_pixmap[NORMAL] = "bg_bar_separate.png"
+#    bg_pixmap[ACTIVE] = "bg_bar_separate_p.png"
+}
+widget "*bg_bar_separate" style "bg_bar_separate"
+
+

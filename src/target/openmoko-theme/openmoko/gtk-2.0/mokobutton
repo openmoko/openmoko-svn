@@ -1,0 +1,585 @@
+
+# Normal button for stylus application
+style "button"
+{
+
+  fg[NORMAL]        = "#ffffff"
+  fg[ACTIVE]        = "#ffffff"
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_toolbar_action.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_toolbar_action.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_toolbar_action_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+
+
+# Dialer number button
+style "btn_dial_pad"
+{
+  
+  #fg[NORMAL]        = "#eee08a"
+  #fg[NORMAL]        = "#000000"
+  #fg[ACTIVE]        = "#000000"
+
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        shadow          = OUT
+        file            = "btn_dial_pad.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        shadow          = OUT
+        file            = "btn_dial_pad.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        shadow          = IN
+        file            = "btn_dial_pad_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+   }
+}
+
+
+# Left menu button for stylus application
+style "btn_menu_left"
+{
+
+  fg[NORMAL]        = "#ffffff" # 
+  fg[ACTIVE]        = "#ffffff" # 
+
+  #text[NORMAL]      = "#000000" # 
+  #text[PRELIGHT]    = "#ffffff" # 
+  #text[ACTIVE]      = "#ffffff" # 
+  #text[SELECTED]    = "#ffffff" # 
+  #text[INSENSITIVE] = "#696969" # 
+  
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        file            = "btn_menu_left.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+
+# Filter menu button for stylus application
+style "btn_filter_menu"
+{
+
+  fg[NORMAL]        = "#ffffff" # 
+  fg[ACTIVE]        = "#ffffff" # 
+
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_filter_menu.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_filter_menu.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_filter_menu_p.png"
+        stretch         = TRUE
+      }
+   }
+}
+
+
+
+# Dialer phone button
+style "btn_dial_call"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_dial_call.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_dial_call.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_dial_call_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+# Dialer history/delete button
+style "btn_dial_his_del"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_type01.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_type01.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_type01_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+# Popup dialer button
+style "btn_type02"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_type02.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_type02.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_type02_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+# Dialog circle button
+style "btn_type03"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_type03.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_type03.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_type03_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = INSENSITIVE
+        file            = "btn_type03_disable.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+
+# Dialog next button
+style "btn_dialog_next"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_dialog_next.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_dialog_next.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_dialog_next_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+# Dialog preview button
+style "btn_dialog_prev"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_dialog_prev.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_dialog_prev.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_dialog_prev_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+
+
+# Dialer wheel button
+style "btn_wheel"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_wheel.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_wheel.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_wheel_p.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+
+   }
+}
+
+style "btn_bar_separate"
+{
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_bar_separate.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_bar_separate.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_bar_separate_p.png"
+        stretch         = TRUE
+      }
+   }
+}
+
+style "btn_toolbar_search"
+{
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_toolbar_search.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_toolbar_search.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_toolbar_search_p.png"
+        stretch         = TRUE
+      }
+   }
+}
+
+style "btn_toolbar_search_on"
+{
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_toolbar_search_on.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_toolbar_search_on.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_toolbar_search_on_p.png"
+        stretch         = TRUE
+      }
+   }
+}
+
+
+class "GtkButton" style "button"
+
+widget "*.btn_dial_pad"             style "btn_dial_pad"
+widget "*.btn_dial_pad.*"           style "label_btn_dial_pad"
+
+widget "*.btn_menu_left"            style "btn_menu_left"
+widget "*.btn_filter_menu"          style "btn_filter_menu"
+
+
+widget "*.btn_dial_call"            style "btn_dial_call"
+widget "*.btn_dial_call.*"          style "label_hoariness"
+
+widget "*.btn_dial_his_del"         style "btn_dial_his_del"
+widget "*.btn_dial_his_del.*"       style "label_hoariness"
+
+widget "*.btn_type03"               style "btn_type03"
+widget "*.btn_type03.*"             style "label_white"
+
+widget "*.btn_type02"               style "btn_type02"
+widget "*.btn_type02.*"             style "label_white"
+
+
+widget "*.btn_dialog_prev"          style "btn_dialog_prev"
+widget "*.btn_dialog_next"          style "btn_dialog_next"
+
+
+widget "*.btn_wheel"                style "btn_wheel"
+widget "*btn_bar_separate"          style "btn_bar_separate"
+widget "*btn_toolbar_search"        style "btn_toolbar_search"
+widget "*btn_toolbar_search_on"     style "btn_toolbar_search_on"
+
+
+
+style "togglebutton"
+{
+   engine "pixmap" {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        shadow          = IN
+        file            = "btn_toggle.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        shadow          = OUT
+        file            = "btn_toggle.png"
+        border          = { 9,9,9,9 }
+        stretch         = TRUE
+      }
+  }
+}
+
+class "GtkToggleButton" style "togglebutton"
+

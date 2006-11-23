@@ -1,0 +1,167 @@
+
+
+style "eventbox_dial" {
+  bg[NORMAL]      = "#443d35"
+  bg[INSENSITIVE] = "#443d35"
+  bg[PRELIGHT]    = "#443d35"
+  bg[SELECTED]    = "#443d35"
+  bg[ACTIVE]      = "#443d35"
+}
+
+widget "*.eventbox_dial" style "eventbox_dial"
+
+
+style "checkradiobutton" {
+
+  engine "pixmap" {
+    image
+      {
+        function        = CHECK
+        state           = NORMAL
+        recolorable     = TRUE
+        shadow          = OUT
+        overlay_file    = "checkbox_off.png"
+        overlay_stretch = TRUE
+      }
+
+    image
+      {
+        function        = CHECK
+        state           = PRELIGHT
+        recolorable     = TRUE
+        shadow          = OUT
+        overlay_file    = "checkbox_off.png"
+        overlay_stretch = TRUE
+      }
+
+    image
+     {
+        function        = CHECK
+        state           = ACTIVE
+        recolorable     = TRUE
+        shadow          = OUT
+        overlay_file    = "checkbox_off.png"
+        overlay_stretch = TRUE
+     }
+
+    image
+      {
+        function        = CHECK
+        state           = INSENSITIVE
+        recolorable     = TRUE
+        shadow          = OUT
+        overlay_file    = "checkbox_off_disable.png"
+        overlay_stretch = TRUE
+      }
+
+      
+    image
+      {
+        function        = CHECK
+        state           = NORMAL
+        recolorable     = TRUE
+        shadow          = IN
+        overlay_file    = "checkbox_on.png"
+        overlay_stretch = TRUE
+      }
+    image
+      {
+        function        = CHECK
+        state           = PRELIGHT
+        recolorable     = TRUE
+        shadow          = IN
+        overlay_file    = "checkbox_on.png"
+        overlay_stretch = TRUE
+      }
+    image
+     {
+        function        = CHECK
+        state           = ACTIVE
+        recolorable     = TRUE
+        shadow          = IN
+        overlay_file    = "checkbox_on.png"
+        overlay_stretch = TRUE
+     }
+      
+    image
+      {
+        function        = CHECK
+        state           = INSENSITIVE
+        recolorable     = TRUE
+        shadow          = IN
+        overlay_file    = "checkbox_on_disable.png"
+        overlay_stretch = TRUE
+      }
+
+
+
+  
+#    image
+#      {
+#        function        = OPTION
+#        recolorable     = TRUE
+#        shadow          = OUT
+#        overlay_file    = "option1.png"
+#        overlay_border  = { 0, 0, 0, 0 }
+#        overlay_stretch = FALSE
+#      }
+#    image
+#      {
+#        function        = OPTION
+#        recolorable     = TRUE
+#        shadow          = IN
+#        overlay_file    = "option2.png"
+#        overlay_border  = { 0, 0, 0, 0 }
+#        overlay_stretch = FALSE
+#      }      
+
+# check/radio button flat box
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        file            = "button5.png"
+        border          = { 10,5,5,10 }
+        stretch         = TRUE
+      }
+
+      
+  }
+}
+
+#class "GtkRadioButton" style "checkradiobutton"
+class "GtkCheckButton" style "checkradiobutton"
+
+
+
+# Dialer application textview background
+style "textview_dial"
+{
+  base[NORMAL] = "#000000"
+}
+widget "*.textview_dial" style "textview_dial"
+
+# Stylus application detail area textview background
+style "textview_detail_area"
+{
+  base[NORMAL] = "#e5e5e5"
+  text[NORMAL] = "#000000"
+
+}
+widget "*.textview_detail_area" style "textview_detail_area"
+
+
+# Search toolbox entry
+style "entry_search_toolbar"
+{
+  base[NORMAL] = "#ffeddb"
+}
+
+# Search toolbox entry focus out
+style "entry_search_toolbar_focusout"
+{
+  base[NORMAL] = "#fdfdfd"
+}
+widget "*entry_search_toolbar" style "entry_search_toolbar"
+widget "*entry_search_toolbar_focusout" style "entry_search_toolbar_focusout"
+widget "*entry_search_toolbar*" style "label_search_toolbar"
