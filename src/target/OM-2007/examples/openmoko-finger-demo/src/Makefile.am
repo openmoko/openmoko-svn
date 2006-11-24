@@ -1,8 +1,8 @@
 INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
 
-bin_PROGRAMS = %(APPNAME)
+bin_PROGRAMS = openmoko-finger-demo
 
-%(APPCNAME)_SOURCES = demo-main.c
+openmoko_finger_demo_SOURCES = demo-main.c
 
-$(APPCNAME)_LDADD = @OPENMOKO_LIBS@
+openmoko_finger_demo_LDADD = @OPENMOKO_LIBS@
 
