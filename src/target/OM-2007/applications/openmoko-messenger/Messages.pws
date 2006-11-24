@@ -1,0 +1,75 @@
+
+[filenumbers]
+0=11
+1=136
+2=1
+3=3
+4=81
+5=36
+6=9
+7=56
+8=116
+9=44
+10=41
+11=254
+12=1
+13=50
+14=64
+15=79
+16=79
+
+[filemarkers]
+0=
+1=
+2=
+3=
+4=
+5=
+6=
+7=17,98,572,
+8=316,500,
+9=
+10=
+11=
+12=
+13=
+14=
+15=
+16=
+
+[File View]
+filter.file.unmatch=*.so *.o *.a *.la
+filter.file.ignore.hidden=0
+filter.dir.ignore.hidden=0
+
+[executer]
+RunInTerminal=true
+
+[Project State]
+clean before build=false
+
+[filelist]
+0=/home/alex/Projects/Messages/src/folder.h
+1=/home/alex/Projects/Messages/src/folder.c
+2=/home/alex/Projects/Messages/ChangeLog
+3=/home/alex/Projects/Messages/src/message.c
+4=/home/alex/Projects/Messages/src/message.h
+5=/home/alex/Projects/Messages/src/callbacks.h
+6=/home/alex/Projects/Messages/src/interface.c
+7=/home/alex/Projects/Messages/src/callbacks.c
+8=/home/alex/Projects/Messages/src/main.c
+
+[Project Tree]
+0=0
+1=0:0
+2=0:1
+3=0:2
+
+[Symbol Tree]
+0=3
+1=4
+2=5
+
+[File Tree]
+0=0
+1=0:6
