@@ -1,0 +1,127 @@
+
+style "bg_normal_toolbar" {
+  bg_pixmap[NORMAL] = "bg_normal_toolbar.png"
+  MokoFixed::size-request = { 0, 480, 0, 52 }
+  MokoFixed::cargo-border = { 80, 480, 0, 52 }
+}
+widget "*bg_normal_toolbar" style "bg_normal_toolbar"
+widget "*mokotoolbox-normal-mode" style "bg_normal_toolbar"
+
+
+style "bg_search_toolbar" {
+  bg_pixmap[NORMAL] = "bg_search_toolbar.png"
+  MokoFixed::size-request = { 0, 480, 0, 52 }
+  MokoFixed::cargo-border = { 36, 340, 17, 40 }
+}
+widget "*bg_search_toolbar" style "bg_search_toolbar"
+widget "*.mokotoolbox-search-mode" style "bg_search_toolbar"
+
+
+style "bg_search_toolbar_focusout" {
+  bg_pixmap[NORMAL] = "bg_search_toolbar_focusout.png"
+  MokoFixed::size-request = { 0, 480, 0, 52 }
+  MokoFixed::cargo-border = { 36, 340, 17, 40 }
+    
+}
+widget "*bg_search_toolbar_focusout" style "bg_search_toolbar_focusout"
+widget "*mokotoolbox-search-mode-focusout" style "bg_search_toolbar_focusout"
+
+
+
+
+style "btn_toolbar_search"
+{
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_toolbar_search.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_toolbar_search.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_toolbar_search_p.png"
+        stretch         = TRUE
+      }
+   }
+   
+   MokoPixmapButton::size-request = { 0, 68, 0, 52 }
+}
+
+style "btn_toolbar_search_on"
+{
+  engine "pixmap"
+    {
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "btn_toolbar_search_on.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "btn_toolbar_search_on.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "btn_toolbar_search_on_p.png"
+        stretch         = TRUE
+      }
+   }
+   MokoPixmapButton::size-request = { 0, 80, 0, 52 }
+}
+
+widget "*btn_toolbar_search"        style "btn_toolbar_search"
+widget "*btn_toolbar_search_on"     style "btn_toolbar_search_on"
+widget "*mokotoolbox-search-button" style "btn_toolbar_search"
+widget "*mokotoolbox-back-button"   style "btn_toolbar_search_on"
+
+
+
+# Search toolbox entry
+style "entry_search_toolbar"
+{
+  base[NORMAL] = "#ffeddb"
+}
+
+# Search toolbox entry focus out
+style "entry_search_toolbar_focusout"
+{
+  base[NORMAL] = "#fdfdfd"
+}
+widget "*entry_search_toolbar"          style "entry_search_toolbar"
+widget "*entry_search_toolbar*"         style "label_search_toolbar"
+widget "*entry_search_toolbar_focusout" style "entry_search_toolbar_focusout"
+
+widget "*mokotoolbox-search-entry"           style "entry_search_toolbar"
+widget "*mokotoolbox-search-entry*"          style "label_search_toolbar"
+widget "*mokotoolbox-search-entry-focusout"  style "entry_search_toolbar_focusout"
+
+
+
+
+
+
