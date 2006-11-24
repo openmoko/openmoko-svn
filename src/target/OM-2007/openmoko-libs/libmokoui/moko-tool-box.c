@@ -46,12 +46,36 @@ static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
 
 static void _button_release(GtkWidget* w, MokoToolBox* self)
 {
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
     static int current_page = 1;
     gtk_notebook_set_current_page( GTK_NOTEBOOK(self), current_page );
     g_debug( "moko_tool_box_button_release: current_page is now: %d", current_page );
+    
+    if( current_page == 1 )
+        gtk_widget_grab_focus( priv->entry );
+    
     current_page = 1 - current_page;
     g_signal_emit( G_OBJECT(self), current_page ? moko_tool_box_signals[SEARCHBOX_INVISIBLE] : moko_tool_box_signals[SEARCHBOX_VISIBLE], 0, NULL );
+    
 }
+
+
+gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
+{
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    gtk_widget_set_name( widget, "mokotoolbox-search-entry" );
+    gtk_widget_set_name( GTK_WIDGET(priv->searchbar_page), "mokotoolbox-search-mode" );
+    return FALSE;
+}
+
+gboolean _entry_focus_out(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
+{
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    gtk_widget_set_name( widget, "mokotoolbox-search-entry-focusout" );
+    gtk_widget_set_name( GTK_WIDGET(priv->searchbar_page), "mokotoolbox-search-mode-focusout" );
+    return FALSE;
+}
+
 
 GType moko_tool_box_get_type (void) /* Typechecking */
 {
@@ -158,6 +182,13 @@ GtkWidget* moko_tool_box_new_with_search()
     // gtk_entry_set_inner_border( priv->entry, FALSE );
     gtk_widget_set_name( GTK_WIDGET(priv->entry), "mokotoolbox-search-entry" );
     moko_fixed_set_cargo( priv->searchbar_page, GTK_WIDGET(priv->entry) );
+    g_signal_connect ((gpointer) priv->entry, "focus_in_event",
+                      G_CALLBACK (_entry_focus_in),
+                      self);
+    g_signal_connect ((gpointer) priv->entry, "focus_out_event",
+                      G_CALLBACK (_entry_focus_out),
+                      self);    
+    
 
     return GTK_WIDGET(self);
 }
@@ -195,7 +226,8 @@ MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self)
     MokoPixmapButton* button = moko_pixmap_button_new();
     gtk_widget_set_name( GTK_WIDGET(button), "mokotoolbox-action-button" );
 
-    gtk_box_pack_start( GTK_BOX(priv->buttonbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
+    //gtk_box_pack_start( GTK_BOX(priv->buttonbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
+    gtk_box_pack_end( GTK_BOX(priv->buttonbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
 
     return button;
 }
