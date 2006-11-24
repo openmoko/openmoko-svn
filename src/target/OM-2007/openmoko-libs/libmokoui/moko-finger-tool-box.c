@@ -26,6 +26,9 @@ G_DEFINE_TYPE (MokoFingerToolBox, moko_finger_tool_box, MOKO_TYPE_ALIGNMENT)
 
 #define MOKO_FINGER_TOOL_BOX_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_TOOL_BOX, MokoFingerToolBoxPrivate))
 
+#define OUTER_PADDING 35
+#define INNER_PADDING 10
+
 static void moko_finger_tool_box_show(GtkWidget* widget);
 static void moko_finger_tool_box_hide(GtkWidget* widget);
 
@@ -33,6 +36,8 @@ static MokoAlignmentClass *parent_class = NULL;
 
 typedef struct _MokoFingerToolBoxPrivate
 {
+    GdkBitmap* mask;
+
     MokoPixmapButton* leftarrow;
     GtkHBox* hbox;
     MokoPixmapButton* rightarrow;
@@ -82,12 +87,10 @@ moko_finger_tool_box_class_init (MokoFingerToolBoxClass *klass)
     object_class->finalize = moko_finger_tool_box_finalize;
 }
 
-static gboolean
-cb_expose(GtkWidget *widget, GdkEventExpose *event, MokoFingerToolBox* self)
+static void
+cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox* self)
 {
-    if ( GTK_WIDGET(self)->window != event->window )
-        return;
-    g_debug( "configure" );
+    g_debug( "size allocate %d, %d, %d, %d", allocation->x, allocation->y, allocation->width, allocation->height );
 
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
 
@@ -145,7 +148,56 @@ cb_expose(GtkWidget *widget, GdkEventExpose *event, MokoFingerToolBox* self)
 
     g_debug( "left button = %d, right button = %d", priv->leftArrowVisible, priv->rightArrowVisible );
 
-    return FALSE;
+
+    //g_object_unref(G_OBJECT(alphapixbuf));
+    //g_object_unref(G_OBJECT(pixbuf));
+    //gtk_widget_shape_combine_mask(priv->popup, mask, 0, 0);
+
+}
+
+static void
+cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
+{
+    //FIXME unref all existing pixmaps, check whether we really need to draw new ones
+
+    g_debug( "generating pixmaps for size = %d, %d", a->width, a->height );
+
+    MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
+
+    //FIXME generate all possible combinations of mask images, not just one w/ 4 buttons
+
+    gtk_widget_ensure_style( GTK_WIDGET(self) );
+    GtkStyle* style = gtk_rc_get_style( GTK_WIDGET(self) );
+    g_assert( style->rc_style );
+
+    GdkPixbuf* background = gdk_pixbuf_new_from_file( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
+    GdkPixbuf* pixbuf = gdk_pixbuf_scale_simple( background, a->width, a->height, GDK_INTERP_BILINEAR );
+    GdkPixbuf* button = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_type03.png", NULL ), NULL );
+    guint w = gdk_pixbuf_get_width( button );
+    guint h = gdk_pixbuf_get_height( button );
+    guint x = OUTER_PADDING - 1;
+    guint y = 0;
+
+    gdk_pixbuf_copy_area( background, 0, 0, gdk_pixbuf_get_width( background ), gdk_pixbuf_get_height( background ), pixbuf, 0, 0 );
+
+    for ( int i = 0; i < 4; ++i )
+    {
+        //gdk_pixbuf_copy_area( button, 0, 0, w, h, pixbuf, x, y );
+
+        gdk_pixbuf_composite( button, pixbuf, x, y, w, h, x, y+2, 1, 1, GDK_INTERP_NEAREST, 255 );
+        x += w + INNER_PADDING - 2;
+    }
+#ifdef CRAZY_DEBUG_CODE
+    GtkWindow* window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
+    GtkImage* image = gtk_image_new_from_pixbuf( pixbuf );
+    gtk_container_add( GTK_CONTAINER(window), GTK_WIDGET(image) );
+    gtk_widget_show( image );
+    gtk_widget_show( window );
+#endif
+    GdkPixmap* pixmap;
+    gdk_pixbuf_render_pixmap_and_mask( pixbuf, &pixmap, &priv->mask, 1);
+    g_object_unref( pixmap );
+    gtk_widget_shape_combine_mask(priv->popup, priv->mask, 0, 0);
 }
 
 static void
@@ -154,9 +206,7 @@ cb_left_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
     g_debug( "left button pressed" );
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     priv->leftButton -= priv->maxButtonsPerPage;
-    // force redraw
-    gtk_widget_queue_draw( priv->hbox );
-
+    //FIXME force redraw
 }
 
 static void
@@ -166,12 +216,12 @@ cb_right_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     priv->leftButton += priv->maxButtonsPerPage;
     // force redraw
-    gtk_widget_queue_draw( priv->hbox );
+    //FIXME force redraw
 }
 
 static void moko_finger_tool_box_show(GtkWidget* widget)
 {
-    gtk_widget_ensure_style( widget ); //FIXME needed here?
+    //gtk_widget_ensure_style( widget ); //FIXME needed here?
     g_debug( "moko_finger_wheel_show" );
     GTK_WIDGET_CLASS(parent_class)->show(widget);
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
@@ -190,19 +240,13 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
         //g_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
         int absx;
         int absy;
+
+        g_signal_connect_after( G_OBJECT(widget), "size_allocate", G_CALLBACK(cb_size_allocate), widget );
+
         gdk_window_get_origin( GTK_WIDGET(window)->window, &absx, &absy );
         GtkAllocation* alloc = &GTK_WIDGET(window)->allocation;
         //g_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
         gtk_window_move( priv->popup, absx + w - req.width, absy + h - req.height );
-
-        //FIXME Isn't there a way to get this as a mask directly from the style without having to reload it?
-        GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(GTK_WIDGET(widget)->style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
-        GdkPixmap* pixmap;
-        GdkBitmap* mask;
-        gdk_pixbuf_render_pixmap_and_mask(pixbuf, &pixmap, &mask, 128);
-        g_object_unref(G_OBJECT(pixbuf));
-
-        //gtk_widget_shape_combine_mask(priv->popup, mask, 0, 0);
     }
     gtk_widget_show( priv->popup );
 }
@@ -220,13 +264,14 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
 {
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingertoolbox" );
-    gtk_alignment_set_padding( GTK_ALIGNMENT(self), 0, 0, 35, 0 );
+    //FIXME get from theme
+    gtk_alignment_set_padding( GTK_ALIGNMENT(self), 0, 0, OUTER_PADDING, 0 );
     priv->leftarrow = MOKO_PIXMAP_BUTTON( moko_pixmap_button_new() );
     gtk_widget_set_name( GTK_WIDGET(priv->leftarrow), "mokofingertoolbox-leftarrow" );
     priv->rightarrow = MOKO_PIXMAP_BUTTON( moko_pixmap_button_new() );
     gtk_widget_set_name( GTK_WIDGET(priv->rightarrow), "mokofingertoolbox-rightarrow" );
 
-    priv->hbox = gtk_hbox_new( FALSE, 10 );
+    priv->hbox = gtk_hbox_new( FALSE, INNER_PADDING );
     gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->hbox) );
 
     gtk_box_pack_start( GTK_BOX(priv->hbox), priv->leftarrow, FALSE, FALSE, 0 );
@@ -234,10 +279,10 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
 
     gtk_widget_show( GTK_WIDGET(priv->hbox) );
 
-    g_signal_connect( G_OBJECT(self), "expose-event", G_CALLBACK(cb_expose), self );
-
     g_signal_connect( G_OBJECT(priv->leftarrow), "clicked", G_CALLBACK(cb_left_button_pressed), self );
     g_signal_connect( G_OBJECT(priv->rightarrow), "clicked", G_CALLBACK(cb_right_button_pressed), self );
+
+    g_signal_connect_after( G_OBJECT(self), "size-allocate", G_CALLBACK(cb_configure), self );
 
     //FIXME link with wheel
     gtk_widget_set_size_request( GTK_WIDGET(self), 350, 104 );
@@ -266,6 +311,8 @@ moko_finger_tool_box_add_button(MokoFingerToolBox* self)
 
     gtk_box_pack_start( GTK_BOX(priv->hbox), b, FALSE, FALSE, 0 );
     gtk_widget_show( GTK_WIDGET(b) );
+    // save button for inside the expose event we want to get its shape
+    //if ( !priv->button ) priv->button = b;
 
     // force redraw
     gtk_widget_queue_draw( priv->hbox );

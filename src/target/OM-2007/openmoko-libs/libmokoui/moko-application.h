@@ -51,5 +51,7 @@ gboolean moko_application_get_is_topmost(MokoApplication* self);
 void moko_application_set_main_window(MokoApplication* self, MokoWindow* window);
 MokoWindow* moko_application_get_main_window(MokoApplication* self);
 
+gchar* moko_application_get_style_pixmap_dir(void);
+
 G_END_DECLS
 #endif /* _MOKO_APPLICATION_H_ */

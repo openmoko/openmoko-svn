@@ -93,7 +93,6 @@ static void moko_application_finalize (GObject *self)
     }
 
     g_free (priv->name);
-
 }
 
 static void moko_application_class_init (MokoApplicationClass *self)
@@ -233,4 +232,15 @@ void moko_application_set_main_window(MokoApplication* self, MokoWindow* window)
     MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
     priv->main_window = window;
     //FIXME g_object_ref the window?
+}
+
+/** moko_application_get_style_pixmap_dir
+ *
+ * @return the style pixmap directory
+ * @note this is not necessarily $GTK_DATA_DIR/themes/$THEME_NAME/gtk-2.0/
+ **/
+gchar* moko_application_get_style_pixmap_dir()
+{
+    GtkStyle* style = gtk_rc_get_style_by_paths( gtk_settings_get_default(), "GtkWidget", "GtkWidget", GTK_TYPE_WIDGET );
+    return g_path_get_dirname( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL] );
 }
