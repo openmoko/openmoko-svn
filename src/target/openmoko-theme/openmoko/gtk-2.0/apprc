@@ -151,17 +151,3 @@ style "textview_detail_area"
 widget "*.textview_detail_area" style "textview_detail_area"
 
 
-# Search toolbox entry
-style "entry_search_toolbar"
-{
-  base[NORMAL] = "#ffeddb"
-}
-
-# Search toolbox entry focus out
-style "entry_search_toolbar_focusout"
-{
-  base[NORMAL] = "#fdfdfd"
-}
-widget "*entry_search_toolbar" style "entry_search_toolbar"
-widget "*entry_search_toolbar_focusout" style "entry_search_toolbar_focusout"
-widget "*entry_search_toolbar*" style "label_search_toolbar"

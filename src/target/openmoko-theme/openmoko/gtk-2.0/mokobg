@@ -118,23 +118,6 @@ widget "*bg_detail_area" style "bg_detail_area"
 
 
 
-style "bg_normal_toolbar" {
-  bg_pixmap[NORMAL] = "bg_normal_toolbar.png"
-}
-widget "*bg_normal_toolbar" style "bg_normal_toolbar"
-
-
-style "bg_search_toolbar" {
-    bg_pixmap[NORMAL] = "bg_search_toolbar.png"
-}
-widget "*bg_search_toolbar" style "bg_search_toolbar"
-
-style "bg_search_toolbar_focusout" {
-    bg_pixmap[NORMAL] = "bg_search_toolbar_focusout.png"
-}
-widget "*bg_search_toolbar_focusout" style "bg_search_toolbar_focusout"
-
-
 style "bg_bar_separate" {
     bg_pixmap[NORMAL] = "bg_bar_separate.png"
 #    bg_pixmap[ACTIVE] = "bg_bar_separate_p.png"

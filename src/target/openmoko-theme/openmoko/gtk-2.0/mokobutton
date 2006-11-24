@@ -38,6 +38,10 @@ style "button"
       }
 
    }
+   
+   MokoPixmapButton::size-request = { 0, 82, 0, 38 }
+   GtkButton::focus-line-width = 0
+   
 }
 
 
@@ -461,70 +465,10 @@ style "btn_bar_separate"
    }
 }
 
-style "btn_toolbar_search"
-{
-  engine "pixmap"
-    {
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        state           = NORMAL
-        file            = "btn_toolbar_search.png"
-        stretch         = TRUE
-      }
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        state           = PRELIGHT
-        file            = "btn_toolbar_search.png"
-        stretch         = TRUE
-      }
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        state           = ACTIVE
-        file            = "btn_toolbar_search_p.png"
-        stretch         = TRUE
-      }
-   }
-}
-
-style "btn_toolbar_search_on"
-{
-  engine "pixmap"
-    {
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        state           = NORMAL
-        file            = "btn_toolbar_search_on.png"
-        stretch         = TRUE
-      }
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        state           = PRELIGHT
-        file            = "btn_toolbar_search_on.png"
-        stretch         = TRUE
-      }
-    image
-      {
-        function        = BOX
-        recolorable     = TRUE
-        state           = ACTIVE
-        file            = "btn_toolbar_search_on_p.png"
-        stretch         = TRUE
-      }
-   }
-}
 
 
 class "GtkButton" style "button"
+widget "*mokotoolbox-action-button" style "button"
 
 widget "*.btn_dial_pad"             style "btn_dial_pad"
 widget "*.btn_dial_pad.*"           style "label_btn_dial_pad"
@@ -552,8 +496,7 @@ widget "*.btn_dialog_next"          style "btn_dialog_next"
 
 widget "*.btn_wheel"                style "btn_wheel"
 widget "*btn_bar_separate"          style "btn_bar_separate"
-widget "*btn_toolbar_search"        style "btn_toolbar_search"
-widget "*btn_toolbar_search_on"     style "btn_toolbar_search_on"
+
 
 
 
