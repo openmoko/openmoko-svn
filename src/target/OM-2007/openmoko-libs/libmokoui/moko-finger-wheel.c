@@ -22,11 +22,19 @@
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkwindow.h>
 
+enum {
+    PRESS_LEFT_UP,
+    PRESS_RIGHT_DOWN,
+    PRESS_BOTTOM,
+    LAST_SIGNAL
+};
+
 G_DEFINE_TYPE (MokoFingerWheel, moko_finger_wheel, MOKO_TYPE_FIXED)
 
 #define MOKO_FINGER_WHEEL_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_WHEEL, MokoFingerWheelPrivate))
 
 static MokoFixedClass *parent_class = NULL;
+static guint wheel_signals[LAST_SIGNAL] = { 0 };
 
 typedef struct _MokoFingerWheelPrivate
 {
@@ -77,11 +85,48 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
 
     object_class->dispose = moko_finger_wheel_dispose;
     object_class->finalize = moko_finger_wheel_finalize;
+
+    /** Init the moko finger wheel signal to null */
+    klass->press_left_up = NULL;
+    klass->press_right_down = NULL;
+    klass->press_bottom = NULL;
+
+    /** Press the left up area */
+    wheel_signals[PRESS_LEFT_UP] = 
+                 g_signal_new ("press_left_up",
+                 G_OBJECT_CLASS_TYPE (object_class),
+                 G_SIGNAL_RUN_FIRST,
+                 G_STRUCT_OFFSET (MokoFingerWheelClass, press_left_up),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE, 0);
+
+    /** Press the right down area */
+    wheel_signals[PRESS_RIGHT_DOWN] = 
+                 g_signal_new ("press_right_down",
+                 G_OBJECT_CLASS_TYPE (object_class),
+                 G_SIGNAL_RUN_FIRST,
+                 G_STRUCT_OFFSET (MokoFingerWheelClass, press_right_down),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE, 0);
+
+    /** Press the bottom area */
+    wheel_signals[PRESS_BOTTOM] = 
+                 g_signal_new ("press_bottom",
+                 G_OBJECT_CLASS_TYPE (object_class),
+                 G_SIGNAL_RUN_FIRST,
+                 G_STRUCT_OFFSET (MokoFingerWheelClass, press_bottom),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE, 0);
+
 }
 
 static void
 moko_finger_wheel_init(MokoFingerWheel *self)
 {
+    self->area_id = LAST_SIGNAL;
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingerwheel" );
 }
 
@@ -166,6 +211,59 @@ static void moko_finger_wheel_hide(GtkWidget* widget)
     gtk_widget_hide( priv->popup );
 }
 
+/**
+ * @brief Caculate the area that user checked
+ */
+static void moko_finger_wheel_button_check_area (GtkWidget* widget, GdkEventButton* event)
+{
+    GtkRequisition req;
+
+    g_return_if_fail (MOKO_IS_FINGER_WHEEL (widget));
+
+    gtk_widget_size_request( widget, &req );
+    g_debug ("moko_finger_wheel_button_check_area");
+    g_debug ("The event x=%d, y=%d", (int)event->x, (int)event->y);
+    g_debug ("The req width=%d, height=%d", req.width, req.height);
+    if ( ((int)event->x) < ((int)req.width/2))
+    {
+        if ( ((int)event->y) < ((int)req.height/2))
+        {
+            MOKO_FINGER_WHEEL (widget)->area_id = PRESS_LEFT_UP;
+        }
+        else
+        {
+            MOKO_FINGER_WHEEL (widget)->area_id = PRESS_BOTTOM;
+        }
+    }
+    else
+    {
+        if ( ((int)event->y) < ((int)req.height/2))
+        {
+            MOKO_FINGER_WHEEL (widget)->area_id = LAST_SIGNAL;
+        }
+        else
+        {
+            MOKO_FINGER_WHEEL (widget)->area_id = PRESS_RIGHT_DOWN;
+        }
+    }
+}
+
+/**
+ * @brief Emit the signal
+ */
+static void moko_finger_wheel_button_emit_signal (GtkWidget* widget, GdkEventButton* event)
+{
+    g_return_if_fail (MOKO_IS_FINGER_WHEEL (widget));
+
+    if ((MOKO_FINGER_WHEEL (widget)->area_id <PRESS_LEFT_UP) ||
+        (MOKO_FINGER_WHEEL (widget)->area_id >= LAST_SIGNAL))
+    {
+        return;
+    }
+
+    g_signal_emit (widget, wheel_signals[MOKO_FINGER_WHEEL (widget)->area_id], 0);
+}
+
 static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event)
 {
     g_debug( "moko_finger_wheel_button_press" );
@@ -173,6 +271,9 @@ static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* ev
     gtk_grab_add( widget );
     gtk_widget_set_state( widget, GTK_STATE_ACTIVE );
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_ACTIVE);
+
+    moko_finger_wheel_button_check_area (widget, event);
+
     return TRUE;
 }
 
@@ -203,5 +304,7 @@ static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* 
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
     gtk_widget_set_state( widget, GTK_STATE_NORMAL );
     gtk_grab_remove( widget );
+
+    moko_finger_wheel_button_emit_signal (widget, event);
     return TRUE;
 }

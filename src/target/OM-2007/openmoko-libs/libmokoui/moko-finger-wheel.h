@@ -34,10 +34,15 @@ G_BEGIN_DECLS
 
 typedef struct {
     MokoFixed parent;
+    gint area_id;
 } MokoFingerWheel;
 
 typedef struct {
     MokoFixedClass parent_class;
+
+    void (* press_left_up) (GtkWidget *button);
+    void (* press_right_down) (GtkWidget *button);
+    void (* press_bottom) (GtkWidget *button);
 } MokoFingerWheelClass;
 
 GType moko_finger_wheel_get_type (void);
