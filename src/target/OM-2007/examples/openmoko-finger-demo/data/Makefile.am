@@ -1,5 +1,5 @@
-EXTRA_DIST = accords.chords wood.png ball.png
+EXTRA_DIST = 
 
 resourcedir = $(pkgdatadir)
-resource_DATA = accords.chords wood.png ball.png
+resource_DATA = 
 
