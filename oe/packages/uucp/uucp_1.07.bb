@@ -9,7 +9,6 @@ S = "${WORKDIR}/uucp-${PV}"
 
 inherit autotools
 
-
 do_configure() {
 	gnu-configize
 	oe_runconf

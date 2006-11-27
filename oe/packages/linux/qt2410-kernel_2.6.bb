@@ -1,1 +1,1 @@
-require linux-qt2410_2.6.17.7.bb
+require linux-qt2410_2.6.17.14.bb

@@ -8,7 +8,7 @@ PR = "r2"
 
 inherit kernel
 
-FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-qt2410"
+FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
 HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
 
 ##############################################################
