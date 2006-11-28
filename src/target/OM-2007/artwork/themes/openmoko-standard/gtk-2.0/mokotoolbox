@@ -12,6 +12,13 @@ style "mokotoolbox-search-mode" {
 }
 widget "*.mokotoolbox-search-mode" style "mokotoolbox-search-mode"
 
+style "mokotoolbox-search-mode-focusout" {
+    bg_pixmap[NORMAL] = "openmoko-mokotoolbox-search-mode-focusout-background.png"
+    MokoFixed::size-request = { 0, 480, 0, 52 }
+    MokoFixed::cargo-border = { 36, 340, 17, 40 }
+}
+widget "*.mokotoolbox-search-mode-focusout" style "mokotoolbox-search-mode-focusout"
+
 style "mokotoolbox-normal-mode-search-button" {
     engine "pixmap" {
         image {
@@ -46,6 +53,11 @@ style "mokotoolbox-search-entry" {
     base[NORMAL] = "#ffeddb"
 }
 widget "*.mokotoolbox-search-entry" style "mokotoolbox-search-entry"
+
+style "mokotoolbox-search-entry-focusout" {
+    base[NORMAL] = "#fdfdfd"
+}
+widget "*.mokotoolbox-search-entry-focusout"  style "mokotoolbox-search-entry-focusout"
 
 style "mokotoolbox-action-button" {
     engine "pixmap" {
