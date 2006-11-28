@@ -24,10 +24,28 @@ style "mokotoolbox-normal-mode-search-button" {
         image {
             function        = BOX
             recolorable     = TRUE
+            state           = NORMAL
             file            = "openmoko-mokotoolbox-search-button.png"
             border          = { 0, 0, 0, 0 }
             stretch         = FALSE
         }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "openmoko-mokotoolbox-search-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "openmoko-mokotoolbox-search-button-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        
     }
     MokoPixmapButton::size-request = { 0, 68, 0, 52 }
     GtkButton::focus-line-width = 0
@@ -39,7 +57,24 @@ style "mokotoolbox-search-mode-back-button" {
         image {
             function        = BOX
             recolorable     = TRUE
+            state           = NORMAL
             file            = "openmoko-mokotoolbox-back-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "openmoko-mokotoolbox-back-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "openmoko-mokotoolbox-back-button-pressed.png"
             border          = { 0, 0, 0, 0 }
             stretch         = FALSE
         }
