@@ -1,6 +1,6 @@
 /**
- *  @file appmanager-window.h
- *  @brief The application manager in the Openmoko
+ *  @file tool-box.c
+ *  @brief The tool box in the main window
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *
@@ -18,14 +18,23 @@
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
 
-#ifndef _FIC_APPMANAGER_WINDOW_H
-#define _FIC_APPMANAGER_WINDOW_H
+#include "tool-box.h"
 
 /**
- * @brief The multilanguage macro
- *
- * It will be fixed at the feature
+ * @brief Create a new tool box for the main window
+ * @param window The main window
+ * @return The toplevel widget of the tool box
  */
-#define _(String) (String)
+MokoToolBox *
+tool_box_new_for_window (MokoPanedWindow *window)
+{
+  MokoToolBox *toolbox;
+  MokoPixmapButton *buttonapply;
 
-#endif 
+  toolbox = MOKO_TOOL_BOX (moko_tool_box_new_with_search ());
+
+  buttonapply = moko_tool_box_add_action_button (toolbox);
+  gtk_button_set_label (GTK_BUTTON (buttonapply), "Apply");
+
+  return toolbox;
+}

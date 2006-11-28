@@ -1,6 +1,6 @@
 /**
- *  @file appmanager-window.h
- *  @brief The application manager in the Openmoko
+ *  @file tool-box.h
+ *  @brief The tool box in the main window
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *
@@ -17,15 +17,15 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
+#ifndef _FIC_TOOL_BAR_H
+#define _FIC_TOOL_BAR_H
 
-#ifndef _FIC_APPMANAGER_WINDOW_H
-#define _FIC_APPMANAGER_WINDOW_H
+#include <gtk/gtk.h>
 
-/**
- * @brief The multilanguage macro
- *
- * It will be fixed at the feature
- */
-#define _(String) (String)
+#include <libmokoui/moko-paned-window.h>
+#include <libmokoui/moko-tool-box.h>
 
-#endif 
+MokoToolBox *tool_box_new_for_window (MokoPanedWindow *window);
+
+#endif
+
