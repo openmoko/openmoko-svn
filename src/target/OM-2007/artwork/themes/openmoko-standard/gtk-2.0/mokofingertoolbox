@@ -103,7 +103,7 @@ widget "*.mokofingertoolbox-toolbutton" style "mokofingertoolbox-toolbutton"
 style "mokofingertoolbox"
 {
     bg_pixmap[NORMAL] = "mokofingertoolbox.png"
-    MokoAlignment::padding = { 0, 0, 0, 0 }
+    MokoAlignment::padding = { 35, 0, 0, 0 }
 }
 widget "*.mokofingertoolbox" style "mokofingertoolbox"
 

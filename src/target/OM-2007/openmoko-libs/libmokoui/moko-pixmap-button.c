@@ -20,9 +20,17 @@
 
 #include <gtk/gtkmenu.h>
 
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
 G_DEFINE_TYPE (MokoPixmapButton, moko_pixmap_button, GTK_TYPE_BUTTON);
 
 #define MOKO_PIXMAP_BUTTON_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_PIXMAP_BUTTON, MokoPixmapButtonPrivate))
+
 #define CHILD_SPACING 1
 
 typedef struct _MokoPixmapButtonPrivate
@@ -80,14 +88,14 @@ cb_menu_position_func (GtkMenu *menu, int *x, int *y, gboolean *push_in, MokoPix
     GtkTextDirection direction;
 
     gdk_window_get_origin(GTK_BUTTON(button)->event_window, x, y);
-    g_debug( "menu popup @ %d, %d", *x, *y );
+    moko_debug( "menu popup @ %d, %d", *x, *y );
 
     *y += allocation->height;
 
-    g_debug( "size allocate = %d, %d * %d, %d", allocation->x, allocation->y, allocation->width, allocation->height );
+    moko_debug( "size allocate = %d, %d * %d, %d", allocation->x, allocation->y, allocation->width, allocation->height );
     *push_in = TRUE;
 
-    g_debug( "menu popup @ %d, %d", *x, *y );
+    moko_debug( "menu popup @ %d, %d", *x, *y );
 }
 
 static void
@@ -111,7 +119,7 @@ cb_button_clicked(MokoPixmapButton* self, gpointer data)
 static void
 moko_pixmap_button_init (MokoPixmapButton *self)
 {
-    g_debug( "moko_pixmap_button_init" );
+    moko_debug( "moko_pixmap_button_init" );
     gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE ); //FIXME probably don't need this when focus is invisible
     g_object_set_property( GTK_BUTTON(self), "can-focus", FALSE ); //FIXME probably don't need this when focus is invisible
 
@@ -121,7 +129,7 @@ moko_pixmap_button_init (MokoPixmapButton *self)
 static void
 moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
-    g_debug( "moko_pixmap_button_size_request" );
+    moko_debug( "moko_pixmap_button_size_request" );
     GtkButton *button = GTK_BUTTON (widget);
     GtkBorder default_border;
     GtkBorder* size_request; // modified
@@ -137,7 +145,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
 
     if ( size_request && size_request->left + size_request->right + size_request->top + size_request->bottom ) // new fixed thing
     {
-        g_debug( "moko_pixmap_button_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
+        moko_debug( "moko_pixmap_button_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
         requisition->width = size_request->right;
         requisition->height = size_request->bottom;
 

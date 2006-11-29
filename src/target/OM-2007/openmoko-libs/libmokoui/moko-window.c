@@ -63,5 +63,3 @@ void moko_window_clear(MokoWindow *self) /* Destruction */
 {
     /* destruct your widgets here */
 }
-
-/* add new methods here */

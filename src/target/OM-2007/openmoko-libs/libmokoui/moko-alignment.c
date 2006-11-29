@@ -23,6 +23,8 @@ G_DEFINE_TYPE (MokoAlignment, moko_alignment, GTK_TYPE_ALIGNMENT)
 
 #define MOKO_ALIGNMENT_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_ALIGNMENT, MokoAlignmentPrivate))
 
+static GtkAlignmentClass* parent_class = NULL;
+
 //FIXME this is a bit hackish
 #define GTK_ALIGNMENT_GET_PRIVATE(o)  (G_TYPE_INSTANCE_GET_PRIVATE ((o), GTK_TYPE_ALIGNMENT, GtkAlignmentPrivate))
 typedef struct _GtkAlignmentPrivate
@@ -37,12 +39,92 @@ typedef struct _MokoAlignmentPrivate
 {
 } MokoAlignmentPrivate;
 
-//FIXME read padding from style and apply somewhere...
-
 /* forward declarations */
+static void moko_alignment_realize(GtkWidget* widget);
+static void moko_alignment_size_request(GtkWidget* widget, GtkRequisition* requisition);
+static void moko_alignment_size_allocate(GtkWidget* widget, GtkAllocation* allocation);
+
+
 static void
-moko_alignment_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+moko_alignment_class_init (MokoAlignmentClass *klass)
 {
+    /* hook parent */
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    parent_class = g_type_class_peek_parent(klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+    /* register private data */
+    g_type_class_add_private (klass, sizeof (MokoAlignmentPrivate));
+
+    /* hook virtual methods */
+    widget_class->realize = moko_alignment_realize;
+    widget_class->size_request = moko_alignment_size_request;
+    widget_class->size_allocate = moko_alignment_size_allocate;
+
+    /* install properties */
+    gtk_widget_class_install_style_property( widget_class, g_param_spec_boxed(
+    "padding",
+    "Alignment Padding",
+    "Sets the padding to a fixed value",
+    GTK_TYPE_BORDER, G_PARAM_READABLE) );
+}
+
+static void
+moko_alignment_init (MokoAlignment *self)
+{
+    //FIXME do we need this?
+    //gtk_widget_set_redraw_on_allocate( GTK_WIDGET(self), TRUE );
+    GTK_WIDGET_UNSET_FLAGS( GTK_WIDGET(self), GTK_NO_WINDOW );
+}
+
+GtkWidget*
+moko_alignment_new (void)
+{
+    return GTK_WIDGET(g_object_new(moko_alignment_get_type(), NULL));
+}
+
+static void moko_alignment_size_request(GtkWidget* widget, GtkRequisition* requisition)
+{
+    g_debug( "moko_alignment_size_request" );
+    GtkBorder* padding = NULL;
+
+    gtk_widget_style_get(GTK_WIDGET (widget),
+                         "padding", &padding,
+                         NULL);
+
+    GtkAlignmentPrivate *priv = GTK_ALIGNMENT_GET_PRIVATE(widget);
+    if ( padding )
+    {
+        priv->padding_top = padding->top;
+        priv->padding_bottom = padding->bottom;
+        priv->padding_left = padding->left;
+        priv->padding_right = padding->right;
+    }
+
+    GtkBin* bin = GTK_BIN(widget);
+
+    requisition->width = GTK_CONTAINER (widget)->border_width * 2;
+    requisition->height = GTK_CONTAINER (widget)->border_width * 2;
+
+    if (bin->child && GTK_WIDGET_VISIBLE (bin->child))
+    {
+        GtkRequisition child_requisition;
+
+        gtk_widget_size_request (bin->child, &child_requisition);
+
+        requisition->width += child_requisition.width;
+        requisition->height += child_requisition.height;
+
+        /* Request extra space for the padding: */
+        requisition->width += (priv->padding_left + priv->padding_right);
+        requisition->height += (priv->padding_top + priv->padding_bottom);
+    }
+}
+
+static void
+moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
+{
+    g_debug( "moko_alignment_size_allocate" );
     GtkAlignment *alignment;
     GtkBin *bin;
     GtkAllocation child_allocation;
@@ -119,7 +201,7 @@ moko_alignment_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 }
 
 static void
-moko_alignment_realize (GtkWidget* widget)
+moko_alignment_realize(GtkWidget* widget)
 {
     g_debug( "moko_alignment_realize" );
 
@@ -146,36 +228,6 @@ moko_alignment_realize (GtkWidget* widget)
 
     widget->style = gtk_style_attach (widget->style, widget->window);
     //FIXME find out why a pixmap engine doesn't want to draw on an Alignment even though it has a GdkWindow
+    //Answer: because the background pixmap gets drawn by the X server, no one calls gtk_paint_flat_box or so
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
-}
-
-static void
-moko_alignment_class_init (MokoAlignmentClass *klass)
-{
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-
-    /* register private data */
-    g_type_class_add_private (klass, sizeof (MokoAlignmentPrivate));
-
-    /* hook virtual methods */
-    widget_class->realize = moko_alignment_realize;
-    widget_class->size_allocate = moko_alignment_size_allocate;
-
-    /* install properties */
-    /* ... */
-}
-
-static void
-moko_alignment_init (MokoAlignment *self)
-{
-    //FIXME do we need this?
-    //gtk_widget_set_redraw_on_allocate( GTK_WIDGET(self), TRUE );
-    GTK_WIDGET_UNSET_FLAGS( GTK_WIDGET(self), GTK_NO_WINDOW );
-}
-
-GtkWidget*
-moko_alignment_new (void)
-{
-    return GTK_WIDGET(g_object_new(moko_alignment_get_type(), NULL));
 }

@@ -25,6 +25,13 @@
 #include <gtk/gtklabel.h>
 #include <gtk/gtkbutton.h>
 
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
 G_DEFINE_TYPE (MokoFingerWindow, moko_finger_window, MOKO_TYPE_WINDOW)
 
 #define MOKO_FINGER_WINDOW_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_WINDOW, MokoFingerWindowPriv))
@@ -51,7 +58,7 @@ static void moko_finger_window_finalize (GObject *object)
 
 static void moko_finger_window_class_init (MokoFingerWindowClass *klass)
 {
-    g_debug( "moko_finger_window_class_init" );
+    moko_debug( "moko_finger_window_class_init" );
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     g_type_class_add_private (klass, sizeof (MokoFingerWindowPriv));
@@ -62,16 +69,9 @@ static void moko_finger_window_class_init (MokoFingerWindowClass *klass)
 
 static void moko_finger_window_init (MokoFingerWindow *self)
 {
-    g_debug( "moko_finger_window_init" );
-
+    moko_debug( "moko_finger_window_init" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     priv->vbox = gtk_vbox_new( FALSE, 0 );
-//    priv->hbox = gtk_hbox_new( FALSE, 0 );
-//    priv->scroller = gtk_button_new_with_label( "Hello" );
-//    priv->label = gtk_label_new( "Yo Yo" );
-//    gtk_box_pack_end( GTK_BOX(priv->vbox), GTK_WIDGET(priv->hbox), FALSE, FALSE, 0 );
-//    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->scroller), FALSE, FALSE, 0 );
-//    gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->label), FALSE, FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
 }
 
@@ -82,8 +82,7 @@ GtkWidget* moko_finger_window_new() /* Construction */
 
 void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* menu)
 {
-    g_debug( "moko_finger_window_set_application_menu" );
-
+    moko_debug( "moko_finger_window_set_application_menu" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     if (!priv->menubox )
     {
@@ -93,10 +92,23 @@ void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* me
     moko_menu_box_set_application_menu( priv->menubox, menu );
 }
 
-void moko_finger_window_set_contents (MokoFingerWindow* self, GtkWidget* child )
+void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child)
 {
-    g_debug( "moko_finger_window_set_contents" );
+    moko_debug( "moko_finger_window_set_contents" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
 
     gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(child), TRUE, TRUE, 0 );
+}
+
+void moko_finger_window_show_wheel(MokoFingerWindow* self)
+{
+}
+void moko_finger_window_hide_wheel(MokoFingerWindow* self)
+{
+}
+void moko_finger_window_show_tools(MokoFingerWindow* self)
+{
+}
+void moko_finger_window_hide_tools(MokoFingerWindow* self)
+{
 }

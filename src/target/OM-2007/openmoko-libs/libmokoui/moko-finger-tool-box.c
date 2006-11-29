@@ -22,32 +22,34 @@
 
 #include <gtk/gtkhbox.h>
 
+#define DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
 G_DEFINE_TYPE (MokoFingerToolBox, moko_finger_tool_box, MOKO_TYPE_ALIGNMENT)
 
 #define MOKO_FINGER_TOOL_BOX_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_TOOL_BOX, MokoFingerToolBoxPrivate))
 
-#define OUTER_PADDING 35
 #define INNER_PADDING 10
-
 static void moko_finger_tool_box_show(GtkWidget* widget);
 static void moko_finger_tool_box_hide(GtkWidget* widget);
 
-static MokoAlignmentClass *parent_class = NULL;
+static MokoAlignmentClass* parent_class = NULL;
 
 typedef struct _MokoFingerToolBoxPrivate
 {
     GdkBitmap* mask;
-
-    MokoPixmapButton* leftarrow;
     GtkHBox* hbox;
     MokoPixmapButton* rightarrow;
+    gboolean rightArrowVisible;
 
     guint maxButtonsPerPage;
     guint numberOfButtons;
     guint leftButton;
-
-    gboolean leftArrowVisible;
-    gboolean rightArrowVisible;
+    guint buttonWidth;
 
     GtkWindow* popup;
 
@@ -90,14 +92,14 @@ moko_finger_tool_box_class_init (MokoFingerToolBoxClass *klass)
 static void
 cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox* self)
 {
-    g_debug( "size allocate %d, %d, %d, %d", allocation->x, allocation->y, allocation->width, allocation->height );
+    moko_debug( "size allocate %d, %d, %d, %d", allocation->x, allocation->y, allocation->width, allocation->height );
 
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
 
     GtkAllocation* a = &GTK_WIDGET(priv->hbox)->allocation;
 
     //FIXME get from style
-    priv->maxButtonsPerPage = a->width / 71;
+    priv->maxButtonsPerPage = a->width / priv->buttonWidth;
 
     GtkRequisition* r = &GTK_WIDGET(priv->hbox)->requisition;
 
@@ -107,66 +109,64 @@ cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox
     {
         MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
         guint maxButtonsPerPage = priv->maxButtonsPerPage;
-        if ( priv->rightArrowVisible || priv->leftArrowVisible ) maxButtonsPerPage--;
+        if ( priv->rightArrowVisible ) maxButtonsPerPage--;
 
-        g_debug( "child: '%s'", gtk_widget_get_name( child ) );
+        moko_debug( "maxButtonsPerPage = %d", maxButtonsPerPage );
+
+        moko_debug( "child: '%s'", gtk_widget_get_name( child ) );
         if ( strcmp( "mokofingertoolbox-toolbutton", gtk_widget_get_name( child ) ) == 0 )
         {
-            if ( numChild < priv->leftButton || numChild > priv->leftButton + maxButtonsPerPage )
+            if ( numChild < priv->leftButton || numChild > priv->leftButton + maxButtonsPerPage-1 )
             {
-                g_debug( "hiding child %d", numChild );
+                moko_debug( "hiding child %d", numChild );
                 gtk_widget_hide( child );
             }
             else
             {
-                g_debug( "showing child %d", numChild );
+                moko_debug( "showing child %d", numChild );
                 gtk_widget_show( child );
             }
         }
         numChild++;
     }
 
-    gboolean oldLeftArrowVisible = priv->leftArrowVisible;
     gboolean oldRightArrowVisible = priv->rightArrowVisible;
 
-    if /* ( r->width > a->width ) */ ( priv->numberOfButtons > priv->maxButtonsPerPage )
-    {
-        priv->leftArrowVisible = priv->leftButton > 0;
-        priv->rightArrowVisible = priv->leftButton + priv->maxButtonsPerPage < priv->numberOfButtons;
-    }
+    priv->rightArrowVisible = priv->numberOfButtons > priv->maxButtonsPerPage;
 
     gtk_container_foreach( GTK_CONTAINER(priv->hbox), &checkstatus, self );
 
-    if ( priv->leftArrowVisible )
-        gtk_widget_show( GTK_WIDGET(priv->leftarrow) );
-    else
-        gtk_widget_hide( GTK_WIDGET(priv->leftarrow) );
     if ( priv->rightArrowVisible )
         gtk_widget_show( GTK_WIDGET(priv->rightarrow) );
     else
         gtk_widget_hide( GTK_WIDGET(priv->rightarrow) );
 
-    g_debug( "left button = %d, right button = %d", priv->leftArrowVisible, priv->rightArrowVisible );
-
-
-    //g_object_unref(G_OBJECT(alphapixbuf));
-    //g_object_unref(G_OBJECT(pixbuf));
-    //gtk_widget_shape_combine_mask(priv->popup, mask, 0, 0);
-
+    moko_debug( "right button = %d", priv->rightArrowVisible );
 }
 
 static void
 cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
 {
+    guint padding_top;
+    guint padding_bottom;
+    guint padding_left;
+    guint padding_right;
+
+    gtk_alignment_get_padding( GTK_ALIGNMENT(widget), &padding_top, &padding_bottom, &padding_left, &padding_right );
+    moko_debug( "my padding is %d, %d, %d, %d", padding_left, padding_top, padding_right, padding_bottom );
+
     //FIXME unref all existing pixmaps, check whether we really need to draw new ones
 
-    g_debug( "generating pixmaps for size = %d, %d", a->width, a->height );
+    moko_debug( "generating pixmaps for size = %d, %d", a->width, a->height );
 
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
+    guint maxButtonsPerPage = priv->maxButtonsPerPage;
+    if ( priv->rightArrowVisible ) maxButtonsPerPage--;
+    moko_debug( "max buttons per page is %d", maxButtonsPerPage );
 
     //FIXME generate all possible combinations of mask images, not just one w/ 4 buttons
 
-    gtk_widget_ensure_style( GTK_WIDGET(self) );
+    //gtk_widget_ensure_style( GTK_WIDGET(self) );
     GtkStyle* style = gtk_rc_get_style( GTK_WIDGET(self) );
     g_assert( style->rc_style );
 
@@ -175,7 +175,7 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     GdkPixbuf* button = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_type03.png", NULL ), NULL );
     guint w = gdk_pixbuf_get_width( button );
     guint h = gdk_pixbuf_get_height( button );
-    guint x = OUTER_PADDING - 1;
+    guint x = padding_left - 1;
     guint y = 0;
 
     gdk_pixbuf_copy_area( background, 0, 0, gdk_pixbuf_get_width( background ), gdk_pixbuf_get_height( background ), pixbuf, 0, 0 );
@@ -187,6 +187,7 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
         gdk_pixbuf_composite( button, pixbuf, x, y, w, h, x, y+2, 1, 1, GDK_INTERP_NEAREST, 255 );
         x += w + INNER_PADDING - 2;
     }
+
 #ifdef CRAZY_DEBUG_CODE
     GtkWindow* window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     GtkImage* image = gtk_image_new_from_pixbuf( pixbuf );
@@ -198,23 +199,17 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     gdk_pixbuf_render_pixmap_and_mask( pixbuf, &pixmap, &priv->mask, 1);
     g_object_unref( pixmap );
     gtk_widget_shape_combine_mask(priv->popup, priv->mask, 0, 0);
-}
 
-static void
-cb_left_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
-{
-    g_debug( "left button pressed" );
-    MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
-    priv->leftButton -= priv->maxButtonsPerPage;
-    //FIXME force redraw
+    priv->buttonWidth = w;
 }
 
 static void
 cb_right_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
 {
-    g_debug( "right button pressed" );
+    moko_debug( "right button pressed" );
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
-    priv->leftButton += priv->maxButtonsPerPage;
+    priv->leftButton += priv->maxButtonsPerPage; // % priv->numberOfButtons;
+    if ( priv->leftButton > priv->numberOfButtons ) priv->leftButton = 0;
     // force redraw
     //FIXME force redraw
 }
@@ -222,7 +217,7 @@ cb_right_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
 static void moko_finger_tool_box_show(GtkWidget* widget)
 {
     //gtk_widget_ensure_style( widget ); //FIXME needed here?
-    g_debug( "moko_finger_wheel_show" );
+    moko_debug( "moko_finger_wheel_show" );
     GTK_WIDGET_CLASS(parent_class)->show(widget);
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
     if ( !priv->popup )
@@ -234,10 +229,10 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
         GtkRequisition req;
         gtk_widget_size_request( widget, &req );
-        //g_debug( "My requisition is %d, %d", req.width, req.height );
+        //moko_debug( "My requisition is %d, %d", req.width, req.height );
         int x, y, w, h;
         gdk_window_get_geometry( GTK_WIDGET(window)->window, &x, &y, &w, &h, NULL );
-        //g_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
+        //moko_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
         int absx;
         int absy;
 
@@ -245,7 +240,7 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
 
         gdk_window_get_origin( GTK_WIDGET(window)->window, &absx, &absy );
         GtkAllocation* alloc = &GTK_WIDGET(window)->allocation;
-        //g_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
+        //moko_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
         gtk_window_move( priv->popup, absx + w - req.width, absy + h - req.height );
     }
     gtk_widget_show( priv->popup );
@@ -253,7 +248,7 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
 
 static void moko_finger_tool_box_hide(GtkWidget* widget)
 {
-    g_debug( "moko_finger_tool_box_hide" );
+    moko_debug( "moko_finger_tool_box_hide" );
     GTK_WIDGET_CLASS(parent_class)->hide(widget);
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
     gtk_widget_hide( priv->popup );
@@ -265,23 +260,18 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingertoolbox" );
     //FIXME get from theme
-    gtk_alignment_set_padding( GTK_ALIGNMENT(self), 0, 0, OUTER_PADDING, 0 );
-    priv->leftarrow = MOKO_PIXMAP_BUTTON( moko_pixmap_button_new() );
-    gtk_widget_set_name( GTK_WIDGET(priv->leftarrow), "mokofingertoolbox-leftarrow" );
+    //gtk_alignment_set_padding( GTK_ALIGNMENT(self), 0, 0, OUTER_PADDING, 0 );
     priv->rightarrow = MOKO_PIXMAP_BUTTON( moko_pixmap_button_new() );
     gtk_widget_set_name( GTK_WIDGET(priv->rightarrow), "mokofingertoolbox-rightarrow" );
 
     priv->hbox = gtk_hbox_new( FALSE, INNER_PADDING );
     gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->hbox) );
 
-    gtk_box_pack_start( GTK_BOX(priv->hbox), priv->leftarrow, FALSE, FALSE, 0 );
     gtk_box_pack_end( GTK_BOX(priv->hbox), priv->rightarrow, FALSE, FALSE, 0 );
 
     gtk_widget_show( GTK_WIDGET(priv->hbox) );
 
-    g_signal_connect( G_OBJECT(priv->leftarrow), "clicked", G_CALLBACK(cb_left_button_pressed), self );
     g_signal_connect( G_OBJECT(priv->rightarrow), "clicked", G_CALLBACK(cb_right_button_pressed), self );
-
     g_signal_connect_after( G_OBJECT(self), "size-allocate", G_CALLBACK(cb_configure), self );
 
     //FIXME link with wheel
@@ -289,7 +279,6 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
 }
 
 /* public API */
-
 GtkWidget*
 moko_finger_tool_box_new (void)
 {

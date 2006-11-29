@@ -45,7 +45,11 @@ typedef struct {
 GType moko_finger_window_get_type (void);
 GtkWidget* moko_finger_window_new (void);
 void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* menu);
-void moko_finger_window_set_contents (MokoFingerWindow* self, GtkWidget* child );
+void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child);
+void moko_finger_window_show_wheel(MokoFingerWindow* self);
+void moko_finger_window_hide_wheel(MokoFingerWindow* self);
+void moko_finger_window_show_tools(MokoFingerWindow* self);
+void moko_finger_window_hide_tools(MokoFingerWindow* self);
 
 G_END_DECLS
 
