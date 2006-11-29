@@ -22,8 +22,8 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokoui/moko-paned-window.h>
+#include "appmanager-data.h"
 
-GtkMenu *application_menu_new_for_window (MokoPanedWindow *window);
+GtkMenu *application_menu_new (ApplicationManagerData *appdata);
 
 #endif

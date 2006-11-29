@@ -26,7 +26,7 @@
  * @return The toplevel widget of the tool box
  */
 MokoToolBox *
-tool_box_new_for_window (MokoPanedWindow *window)
+tool_box_new (ApplicationManagerData *appdata)
 {
   MokoToolBox *toolbox;
   MokoPixmapButton *buttonapply;

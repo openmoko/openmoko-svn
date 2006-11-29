@@ -1,6 +1,6 @@
 /**
- *  @file detail-area.h
- *  @brief The detail area in the main window
+ *  @file package-list.h
+ *  @brief The package list that get from the lib ipkg
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *
@@ -17,14 +17,10 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#ifndef _FIC_DETAIL_AREA_H
-#define _FIC_DETAIL_AREA_H
+#ifndef _FIC_PACKAGE_LIST_H
+#define _FIC_PACKAGE_LIST_H
 
 #include <gtk/gtk.h>
 
-#include "appmanager-data.h"
-
-GtkWidget *detail_area_new (ApplicationManagerData *appdata);
 
 #endif
-

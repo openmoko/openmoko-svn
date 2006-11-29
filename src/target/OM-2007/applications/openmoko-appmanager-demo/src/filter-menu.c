@@ -65,7 +65,7 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
  * @return The filter menu.
  */
 GtkMenu *
-filter_menu_new_for_window (MokoPanedWindow *window)
+filter_menu_new (ApplicationManagerData *appdata)
 {
   GtkMenu   *menu;
   GtkWidget *menuitem1;
@@ -81,25 +81,25 @@ filter_menu_new_for_window (MokoPanedWindow *window)
   gtk_widget_show (menuitem1);
   gtk_container_add (GTK_CONTAINER (menu), menuitem1);
   g_signal_connect ((gpointer) menuitem1, "activate",
-                    G_CALLBACK (on_search_result_activate), window);
+                    G_CALLBACK (on_search_result_activate), appdata);
 
   menuitem2 = gtk_menu_item_new_with_label (_("Installed"));
   gtk_widget_show (menuitem2);
   gtk_container_add (GTK_CONTAINER (menu), menuitem2);
   g_signal_connect ((gpointer) menuitem2, "activate",
-                    G_CALLBACK (on_installed_activate), window);
+                    G_CALLBACK (on_installed_activate), appdata);
 
   menuitem3 = gtk_menu_item_new_with_label (_("Upgradeable"));
   gtk_widget_show (menuitem3);
   gtk_container_add (GTK_CONTAINER (menu), menuitem3);
   g_signal_connect ((gpointer) menuitem3, "activate",
-                    G_CALLBACK (on_upgradeable_activate), window);
+                    G_CALLBACK (on_upgradeable_activate), appdata);
 
   menuitem4 = gtk_menu_item_new_with_label (_("Selected"));
   gtk_widget_show (menuitem4);
   gtk_container_add (GTK_CONTAINER (menu), menuitem4);
   g_signal_connect ((gpointer) menuitem4, "activate",
-                    G_CALLBACK (on_selected_activate), window);
+                    G_CALLBACK (on_selected_activate), appdata);
 
   return menu;
 }

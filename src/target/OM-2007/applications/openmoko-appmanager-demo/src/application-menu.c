@@ -74,7 +74,7 @@ on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
  * it will return NULL.
  */
 GtkMenu *
-application_menu_new_for_window (MokoPanedWindow *window)
+application_menu_new (ApplicationManagerData *appdata)
 {
   GtkMenu *menu;
   GtkWidget   *menuitem1;
@@ -90,31 +90,31 @@ application_menu_new_for_window (MokoPanedWindow *window)
   gtk_widget_show (menuitem1);
   gtk_container_add (GTK_CONTAINER (menu), menuitem1);
   g_signal_connect ((gpointer) menuitem1, "activate",
-                    G_CALLBACK (on_showstatus_activate), window);
+                    G_CALLBACK (on_showstatus_activate), appdata);
 
   menuitem2 = gtk_menu_item_new_with_mnemonic (_("Show source"));
   gtk_widget_show (menuitem2);
   gtk_container_add (GTK_CONTAINER (menu), menuitem2);
   g_signal_connect ((gpointer) menuitem2, "activate",
-                    G_CALLBACK (on_showsource_activate), window);
+                    G_CALLBACK (on_showsource_activate), appdata);
 
   menuitem3 = gtk_menu_item_new_with_mnemonic (_("Install single application"));
   gtk_widget_show (menuitem3);
   gtk_container_add (GTK_CONTAINER (menu), menuitem3);
   g_signal_connect ((gpointer) menuitem3, "activate",
-                    G_CALLBACK (on_install_single_application_activate), window);
+                    G_CALLBACK (on_install_single_application_activate), appdata);
 
   menuitem4 = gtk_menu_item_new_with_mnemonic (_("Show help"));
   gtk_widget_show (menuitem4);
   gtk_container_add (GTK_CONTAINER (menu), menuitem4);
   g_signal_connect ((gpointer) menuitem4, "activate",
-                    G_CALLBACK (on_showhelp_activate), window);
+                    G_CALLBACK (on_showhelp_activate), appdata);
 
   menuitem5 = gtk_menu_item_new_with_mnemonic (_("Quit"));
   gtk_widget_show (menuitem5);
   gtk_container_add (GTK_CONTAINER (menu), menuitem5);
   g_signal_connect ((gpointer) menuitem5, "activate",
-                    G_CALLBACK (on_quit_activate), window);
+                    G_CALLBACK (on_quit_activate), appdata);
 
   return menu;
 }

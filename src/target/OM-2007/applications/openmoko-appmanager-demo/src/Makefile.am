@@ -8,7 +8,10 @@ openmoko_appmanager_SOURCES = appmanager-window.c\
                               ipkgapi.c\
                               navigation-area.c\
                               tool-box.c\
-                              detail-area.c
+                              detail-area.c\
+                              appmanager-data.c\
+                              package-list.c\
+                              pixbuf-list.c
 
 openmoko_appmanager_LDADD = @OPENMOKO_LIBS@
 

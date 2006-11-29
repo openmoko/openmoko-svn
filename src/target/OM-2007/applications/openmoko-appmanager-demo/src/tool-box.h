@@ -24,8 +24,9 @@
 
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
+#include "appmanager-data.h"
 
-MokoToolBox *tool_box_new_for_window (MokoPanedWindow *window);
+MokoToolBox *tool_box_new (ApplicationManagerData *appdata);
 
 #endif
 

@@ -30,6 +30,7 @@
 #include "navigation-area.h"
 #include "tool-box.h"
 #include "detail-area.h"
+#include "appmanager-data.h"
 
 /**
  * @brief The start function.
@@ -37,6 +38,7 @@
 int 
 main (int argc, char* argv[])
 {
+  ApplicationManagerData *appdata;
   MokoApplication *app;
   MokoPanedWindow *window;
   GtkMenu         *appmenu;
@@ -54,26 +56,34 @@ main (int argc, char* argv[])
       //Add init code.
     }
 
+  appdata = application_manager_data_new ();
+  if (appdata == NULL)
+    {
+      g_debug ("Create main data struct error. Abort.");
+      return -1;
+    }
+
   app = MOKO_APPLICATION (moko_application_get_instance ());
   g_set_application_name (_("Application manager"));
 
   window = MOKO_PANED_WINDOW (moko_paned_window_new ());
   g_signal_connect (G_OBJECT (window), "delete_event", 
                     G_CALLBACK (gtk_main_quit), NULL);
+  application_manager_data_set_main_window (appdata, window);
 
-  appmenu = application_menu_new_for_window (window);
+  appmenu = application_menu_new (appdata);
   moko_paned_window_set_application_menu (window, appmenu);
 
-  filtermenu = filter_menu_new_for_window (window);
+  filtermenu = filter_menu_new (appdata);
   moko_paned_window_set_filter_menu (window, filtermenu);
 
-  navigation = navigation_area_new_for_window (window);
+  navigation = navigation_area_new (appdata);
   moko_paned_window_set_upper_pane (window, navigation);
 
-  toolbox = tool_box_new_for_window (window);
+  toolbox = tool_box_new (appdata);
   moko_paned_window_add_toolbox (window, toolbox);
 
-  detail = detail_area_new_for_window (window);
+  detail = detail_area_new (appdata);
   moko_paned_window_set_lower_pane (window, detail);
 
   gtk_widget_show_all (GTK_WIDGET (window));

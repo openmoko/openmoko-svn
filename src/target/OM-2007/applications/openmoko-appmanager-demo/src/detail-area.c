@@ -26,7 +26,7 @@
  * @return The toplevel widget of detail area
  */
 GtkWidget *
-detail_area_new_for_window (MokoPanedWindow *window)
+detail_area_new (ApplicationManagerData *appdata)
 {
   GtkWidget    *scrollwindow;
   GtkWidget    *text;
@@ -43,6 +43,7 @@ detail_area_new_for_window (MokoPanedWindow *window)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text), GTK_WRAP_WORD);
 
   gtk_container_add (GTK_CONTAINER (scrollwindow), text);
+  application_manager_data_set_tvdetail (appdata, text);
 
   return scrollwindow;
 }

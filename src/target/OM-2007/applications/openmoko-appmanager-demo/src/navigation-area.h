@@ -22,8 +22,16 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokoui/moko-paned-window.h>
+#include "appmanager-data.h"
 
-GtkWidget *navigation_area_new_for_window (MokoPanedWindow *window);
+enum {
+  COL_STATUS = 0,
+  COL_NAME,
+  COL_SIZE,
+  COL_POINTER,
+  NUM_COL
+};
+
+GtkWidget *navigation_area_new (ApplicationManagerData *appdata);
 
 #endif
