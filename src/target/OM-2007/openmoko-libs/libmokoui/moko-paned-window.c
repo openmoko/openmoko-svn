@@ -23,6 +23,13 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkvpaned.h>
 
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
 G_DEFINE_TYPE (MokoPanedWindow, moko_paned_window, MOKO_TYPE_WINDOW)
 
 #define MOKO_PANED_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_PANED_WINDOW, MokoPanedWindowPriv));
@@ -66,7 +73,7 @@ static void moko_paned_window_class_init (MokoPanedWindowClass *klass) /* Class 
 
 static void moko_paned_window_init (MokoPanedWindow *self) /* Instance Construction */
 {
-    g_debug( "moko_paned_window_init" );
+    moko_debug( "moko_paned_window_init" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     priv->outerframe = gtk_vpaned_new();
     gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->outerframe) );
@@ -85,7 +92,7 @@ GtkWidget* moko_paned_window_new() /* Construction */
 
 void moko_paned_window_clear(MokoPanedWindow *self) /* Destruction */
 {
-    g_debug( "moko_paned_window_clear" );
+    moko_debug( "moko_paned_window_clear" );
     /* destruct your widgets here */
 }
 
@@ -99,7 +106,7 @@ MokoMenuBox* moko_paned_window_get_menubox(MokoPanedWindow* self)
 
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu)
 {
-    g_debug( "moko_paned_window_set_application_menu" );
+    moko_debug( "moko_paned_window_set_application_menu" );
 
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     if (!priv->menubox )
@@ -112,7 +119,7 @@ void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu
 
 void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
 {
-    g_debug( "moko_paned_window_set_filter_menu" );
+    moko_debug( "moko_paned_window_set_filter_menu" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     if (!priv->menubox )
     {
@@ -124,7 +131,7 @@ void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
 
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 {
-    g_debug( "moko_paned_window_set_upper_pane" );
+    moko_debug( "moko_paned_window_set_upper_pane" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
 
     priv->upperenclosing = moko_alignment_new();
@@ -137,7 +144,7 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
 {
-    g_debug( "moko_paned_window_set_lower_pane" );
+    moko_debug( "moko_paned_window_set_lower_pane" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
 
 #if 0
@@ -154,7 +161,7 @@ void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
 
 void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)
 {
-    g_debug( "moko_paned_window_add_toolbox" );
+    moko_debug( "moko_paned_window_add_toolbox" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     gtk_box_pack_end( GTK_BOX(priv->upper), toolbox, FALSE, FALSE, 0 );
     gtk_box_reorder_child( GTK_BOX(priv->upper), toolbox, 1 );

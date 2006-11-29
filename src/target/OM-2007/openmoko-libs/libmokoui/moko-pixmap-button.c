@@ -13,7 +13,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: mickey $]
+ *  Current Version: $Rev$ ($Date) [$Author: mickey $]
  */
 
 #include "moko-pixmap-button.h"
@@ -121,7 +121,7 @@ moko_pixmap_button_init (MokoPixmapButton *self)
 {
     moko_debug( "moko_pixmap_button_init" );
     gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE ); //FIXME probably don't need this when focus is invisible
-    g_object_set_property( GTK_BUTTON(self), "can-focus", FALSE ); //FIXME probably don't need this when focus is invisible
+    g_object_set_property( G_OBJECT(self), "can-focus", FALSE ); //FIXME probably don't need this when focus is invisible
 
     g_signal_connect( G_OBJECT(self), "clicked", G_CALLBACK(cb_button_clicked), NULL );
 }
@@ -137,7 +137,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
     gint focus_pad;
 
     //gtk_button_get_props (button, &default_border, NULL, NULL); //FIXME what are we going to do w/ default borders?
-    gtk_widget_style_get (GTK_WIDGET (widget),
+    gtk_widget_style_get (widget,
                           "focus-line-width", &focus_width,
                           "focus-padding", &focus_pad,
                           "size-request", &size_request, // modified

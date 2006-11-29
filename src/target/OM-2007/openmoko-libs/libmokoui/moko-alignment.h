@@ -13,7 +13,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: mickey $]
+ *  Current Version: $Rev$ ($Date) [$Author: mickey $]
  */
 
 #ifndef _MOKO_ALIGNMENT_H_

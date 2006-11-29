@@ -20,6 +20,13 @@
 #include "moko-application.h"
 #include "moko-window.h"
 
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
 /* add your signals here */
 enum {
     MOKO_WINDOW_SIGNAL,
@@ -47,7 +54,7 @@ static void moko_window_class_init (MokoWindowClass *klass) /* Class Initializat
 
 static void moko_window_init (MokoWindow *self) /* Instance Construction */
 {
-    g_debug( "moko_window_init" );
+    moko_debug( "moko_window_init" );
     gtk_widget_set_size_request( GTK_WIDGET(self), 480, 640 ); //FIXME get from style
     MokoApplication* app = moko_application_get_instance();
     g_assert( !moko_application_get_main_window( app ) ); // fail if someone creates more than one MokoWindow per application

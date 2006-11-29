@@ -22,6 +22,13 @@
 #include <gtk/gtkentry.h>
 #include <gtk/gtkvbox.h>
 
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
 #define MOKO_TOOL_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_TOOL_BOX, MokoToolBoxPriv));
 
 typedef struct _MokoToolBoxPriv
@@ -49,14 +56,14 @@ static void _button_release(GtkWidget* w, MokoToolBox* self)
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
     static int current_page = 1;
     gtk_notebook_set_current_page( GTK_NOTEBOOK(self), current_page );
-    g_debug( "moko_tool_box_button_release: current_page is now: %d", current_page );
-    
+    moko_debug( "moko_tool_box_button_release: current_page is now: %d", current_page );
+
     if( current_page == 1 )
         gtk_widget_grab_focus( priv->entry );
-    
+
     current_page = 1 - current_page;
     g_signal_emit( G_OBJECT(self), current_page ? moko_tool_box_signals[SEARCHBOX_INVISIBLE] : moko_tool_box_signals[SEARCHBOX_VISIBLE], 0, NULL );
-    
+
 }
 
 
@@ -128,7 +135,7 @@ static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initiali
 
 static void moko_tool_box_init(MokoToolBox* self) /* Instance Construction */
 {
-    g_debug( "moko_tool_box_init" );
+    moko_debug( "moko_tool_box_init" );
     gtk_notebook_set_show_border( GTK_NOTEBOOK(self), FALSE );
     gtk_notebook_set_show_tabs( GTK_NOTEBOOK(self), FALSE );
 }
@@ -187,8 +194,8 @@ GtkWidget* moko_tool_box_new_with_search()
                       self);
     g_signal_connect ((gpointer) priv->entry, "focus_out_event",
                       G_CALLBACK (_entry_focus_out),
-                      self);    
-    
+                      self);
+
 
     return GTK_WIDGET(self);
 }
@@ -220,7 +227,7 @@ GtkHBox* moko_tool_box_get_button_box(MokoToolBox* self)
 
 MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self)
 {
-    g_debug( "moko_tool_box_add_action_button" );
+    moko_debug( "moko_tool_box_add_action_button" );
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
 
     MokoPixmapButton* button = moko_pixmap_button_new();

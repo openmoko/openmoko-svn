@@ -14,10 +14,17 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: mickey $]
+ *  Current Version: $Rev$ ($Date) [$Author: mickey $]
  */
 
 #include "moko-alignment.h"
+
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
 
 G_DEFINE_TYPE (MokoAlignment, moko_alignment, GTK_TYPE_ALIGNMENT)
 
@@ -85,10 +92,10 @@ moko_alignment_new (void)
 
 static void moko_alignment_size_request(GtkWidget* widget, GtkRequisition* requisition)
 {
-    g_debug( "moko_alignment_size_request" );
+    moko_debug( "moko_alignment_size_request" );
     GtkBorder* padding = NULL;
 
-    gtk_widget_style_get(GTK_WIDGET (widget),
+    gtk_widget_style_get(widget,
                          "padding", &padding,
                          NULL);
 
@@ -124,7 +131,7 @@ static void moko_alignment_size_request(GtkWidget* widget, GtkRequisition* requi
 static void
 moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 {
-    g_debug( "moko_alignment_size_allocate" );
+    moko_debug( "moko_alignment_size_allocate" );
     GtkAlignment *alignment;
     GtkBin *bin;
     GtkAllocation child_allocation;
@@ -203,7 +210,7 @@ moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 static void
 moko_alignment_realize(GtkWidget* widget)
 {
-    g_debug( "moko_alignment_realize" );
+    moko_debug( "moko_alignment_realize" );
 
     GdkWindowAttr attributes;
     gint attributes_mask;

@@ -22,7 +22,12 @@
 #include <gtk/gtkmenubar.h>
 #include <gtk/gtkmenuitem.h>
 
-#include <string.h>
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
 
 #define MOKO_MENU_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_MENU_BOX, MokoMenuBoxPriv));
 
@@ -66,7 +71,7 @@ static void moko_menu_box_class_init (MokoMenuBoxClass *klass) /* Class Initiali
 
 static void moko_menu_box_init (MokoMenuBox *self) /* Instance Construction */
 {
-    g_debug( "moko_menu_box_init" );
+    moko_debug( "moko_menu_box_init" );
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 
     priv->menubar_l = NULL;
@@ -88,14 +93,14 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
 {
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE( MOKO_MENU_BOX(widget->parent) );
 
-    g_debug( "menu open forwarder: clicked on %f, %f", event->x, event->y );
-    g_debug( "menu open forwarder: clicked on window %p, whereas our window is %p", event->window, widget->window );
+    moko_debug( "menu open forwarder: clicked on %f, %f", event->x, event->y );
+    moko_debug( "menu open forwarder: clicked on window %p, whereas our window is %p", event->window, widget->window );
 
     if ( event->window != widget->window ) return FALSE;
 
     if ( !GTK_WIDGET_VISIBLE(menu) )
     {
-        g_debug( "menu open forwarder: not yet open -- popping up" );
+        moko_debug( "menu open forwarder: not yet open -- popping up" );
         /* this is kind of funny, if you don't add the grab manually,
            then Gtk+ won't recognize the next click (selection) */
         gtk_grab_add(GTK_WIDGET(widget) );
@@ -104,11 +109,11 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
     }
     else
     {
-        g_debug( "menu open forwarder: already open -- ignoring" );
+        moko_debug( "menu open forwarder: already open -- ignoring" );
         gtk_menu_popdown( menu );
         return FALSE;
     }
-    g_debug( "menu open forwarder: out of bounds" );
+    moko_debug( "menu open forwarder: out of bounds" );
     return FALSE;
 }
 
@@ -123,14 +128,14 @@ static void cb_filter_menu_update( GtkMenu* menu, MokoMenuBox* self )
         GtkWidget *child = GTK_BIN(item)->child;
         g_assert( GTK_IS_LABEL(child) );
         gtk_label_get(GTK_LABEL (child), &text);
-        g_debug(" selection done. menu item text: %s", text );
+        moko_debug(" selection done. menu item text: %s", text );
     }
     if (GTK_BIN(priv->filteritem)->child)
     {
         GtkWidget *child = GTK_BIN(priv->filteritem)->child;
         g_assert( GTK_IS_LABEL(child) );
         gtk_label_set(GTK_LABEL (child), text);
-        g_debug(" selection done. menu label updated." );
+        moko_debug(" selection done. menu label updated." );
     }
 
     g_signal_emit( G_OBJECT(self), moko_menu_box_signals[FILTER_CHANGED], 0, text );
@@ -138,7 +143,7 @@ static void cb_filter_menu_update( GtkMenu* menu, MokoMenuBox* self )
 
 void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
 {
-    g_debug( "moko_menu_box_set_application_menu" );
+    moko_debug( "moko_menu_box_set_application_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
     if (!priv->menubar_l )
@@ -161,7 +166,7 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
 
 void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
 {
-    g_debug( "moko_menu_box_set_filter_menu" );
+    moko_debug( "moko_menu_box_set_filter_menu" );
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
     if (!priv->menubar_r )
@@ -186,7 +191,7 @@ void
 moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
 {
     //FIXME this only works with text labels
-    g_debug( "moko_menu_box_set_active_filter" );
+    moko_debug( "moko_menu_box_set_active_filter" );
 
     // wander through all filter menu items, check their labels
     // if one is matching, then select it
@@ -207,10 +212,10 @@ moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
         g_assert( GTK_IS_LABEL(label) );
         gchar* ltext;
         gtk_label_get( GTK_LABEL(label), &ltext );
-        g_debug( "moko_menu_box_set_active_filter: comparing '%s' with '%s'", ltext, text );
-        if ( strcmp( ltext, text ) == 0 )
+        moko_debug( "moko_menu_box_set_active_filter: comparing '%s' with '%s'", ltext, text );
+        if ( g_strcmp( ltext, text ) == 0 )
         {
-            g_debug( "moko_menu_box_set_active_filter: match found" );
+            moko_debug( "moko_menu_box_set_active_filter: match found" );
             //FIXME this is a bit hackish or is it?
             gtk_menu_set_active( GTK_MENU(priv->filtermenu), index );
             cb_filter_menu_update( priv->filtermenu, self ); //need to sync. manually, since we it didn't go through popupmenu

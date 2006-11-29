@@ -14,12 +14,19 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: mickey $]
+ *  Current Version: $Rev$ ($Date) [$Author: mickey $]
  */
 
 #include "moko-fixed.h"
 
-G_DEFINE_TYPE (MokoFixed, moko_fixed, GTK_TYPE_FIXED);
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
+
+G_DEFINE_TYPE (MokoFixed, moko_fixed, GTK_TYPE_FIXED)
 
 #define PIXMAP_CONTAINER_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FIXED, MokoFixedPrivate))
 
@@ -32,12 +39,9 @@ struct _MokoFixedPrivate
 static GtkFixedClass *parent_class = NULL;
 
 /* declare virtual methods */
-static void
-moko_fixed_realize(GtkWidget *widget);
-static void
-moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition);
-static void
-moko_fixed_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
+static void moko_fixed_realize(GtkWidget *widget);
+static void moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition);
+static void moko_fixed_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 
 static void
 moko_fixed_dispose (GObject *object)
@@ -86,8 +90,8 @@ moko_fixed_class_init (MokoFixedClass *klass)
 static void
 moko_fixed_init(MokoFixed *self)
 {
-    g_debug( "moko_fixed_init" );
-    gtk_fixed_set_has_window( self, TRUE );
+    moko_debug( "moko_fixed_init" );
+    gtk_fixed_set_has_window( GTK_FIXED(self), TRUE );
 }
 
 GtkWidget*
@@ -99,7 +103,7 @@ moko_fixed_new (void)
 static void
 moko_fixed_realize(GtkWidget *widget)
 {
-    g_debug( "moko_fixed_realize" );
+    moko_debug( "moko_fixed_realize" );
 
     GdkWindowAttr attributes;
     gint attributes_mask;
@@ -135,7 +139,7 @@ moko_fixed_realize(GtkWidget *widget)
 static void
 moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition)
 {
-    g_debug( "moko_fixed_size_request" );
+    moko_debug( "moko_fixed_size_request" );
 
     GtkBorder* size_request;
     GtkBorder* cargo_border;
@@ -161,7 +165,7 @@ moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition)
         if ( cargo_border && cargo_border->left + cargo_border->right + cargo_border->top + cargo_border->bottom
              && child->x == -1 && child->y == -1 )
         {
-            g_warning( "moko_fixed_set_cargo: style requested cargo = '%d, %d x %d, %d'", size_request->left, size_request->top, size_request->right, size_request->bottom );
+            moko_debug( "moko_fixed_set_cargo: style requested cargo = '%d, %d x %d, %d'", size_request->left, size_request->top, size_request->right, size_request->bottom );
             gtk_widget_set_size_request( child->widget, cargo_border->right - cargo_border->left, cargo_border->bottom - cargo_border->top );
             child->x = cargo_border->left;
             child->y = cargo_border->top;
@@ -185,7 +189,7 @@ moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition)
 
     if ( size_request && size_request->left + size_request->right + size_request->top + size_request->bottom )
     {
-        g_warning( "moko_fixed_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
+        moko_debug( "moko_fixed_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
         requisition->height = MAX( requisition->height, size_request->bottom );
         requisition->width = MAX( requisition->height, size_request->right );
     }
@@ -194,7 +198,7 @@ moko_fixed_size_request(GtkWidget *widget, GtkRequisition *requisition)
 static void
 moko_fixed_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 {
-    g_debug( "moko_fixed_size_allocate" );
+    moko_debug( "moko_fixed_size_allocate" );
     GtkFixed *fixed;
     GtkFixedChild *child;
     GtkAllocation child_allocation;
@@ -206,7 +210,7 @@ moko_fixed_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 
     widget->allocation = *allocation;
 
-    g_debug( "widget allocation is: %d %d, %d %d", allocation->x,
+    moko_debug( "widget allocation is: %d %d, %d %d", allocation->x,
                                     allocation->y,
                                     allocation->width,
                                     allocation->height);
