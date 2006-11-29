@@ -1,12 +1,19 @@
 (Ordered by Priority)
 
-- FingerWindow
-
-- Theming for Dialogs
-
-- MokoBanner (see HildonBanner)
-
+- Finish Finger Application Framework
+- Implement Popup and FullScreen-Dialogs for Stylus Application Framework
+- Add Theming for Dialogs
+- Add MokoBanner (see HildonBanner)
+- Start Footer Application and implement Status Bar Interface
+- Add Status Bar Interface to MokoApplication
+- Start with Panel Plugins
+- Main Menu
+- Add automatic .desktop file generation for OE
+- Add MIME handling
+- Add dbus service interfaces
 - Refactor moko_paned_window_set_application_menu and moko_finger_window_set_application_menu
   into common MokoWindow class (moko_window_set_application_menu) and make it a virtual method.
-
+- OE-SDK
+- Native SDK
+- Scratchbox
 - Maemo Interoperability Interface (MII)
