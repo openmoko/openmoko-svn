@@ -213,7 +213,7 @@ moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
         gchar* ltext;
         gtk_label_get( GTK_LABEL(label), &ltext );
         moko_debug( "moko_menu_box_set_active_filter: comparing '%s' with '%s'", ltext, text );
-        if ( g_strcmp( ltext, text ) == 0 )
+        if ( ltext && text && strcmp( ltext, text ) == 0 )
         {
             moko_debug( "moko_menu_box_set_active_filter: match found" );
             //FIXME this is a bit hackish or is it?
