@@ -99,7 +99,24 @@ style "mokotoolbox-action-button" {
         image {
             function        = BOX
             recolorable     = TRUE
+            state           = NORMAL
             file            = "openmoko-mokotoolbox-action-button-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "openmoko-mokotoolbox-action-button-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "openmoko-mokotoolbox-action-button-pressed-background.png"
             border          = { 0, 0, 0, 0 }
             stretch         = TRUE
         }
