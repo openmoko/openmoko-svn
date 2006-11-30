@@ -21,8 +21,8 @@
 #include "detail-area.h"
 
 /**
- * @brief Create a detail area to the main window
- * @param window The main window
+ * @brief Create a detail area to the application manager data
+ * @param appdata The application manager data
  * @return The toplevel widget of detail area
  */
 GtkWidget *

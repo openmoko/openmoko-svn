@@ -21,8 +21,8 @@
 #include "tool-box.h"
 
 /**
- * @brief Create a new tool box for the main window
- * @param window The main window
+ * @brief Create a new tool box for the application manager data
+ * @param appdata The application manager data
  * @return The toplevel widget of the tool box
  */
 MokoToolBox *

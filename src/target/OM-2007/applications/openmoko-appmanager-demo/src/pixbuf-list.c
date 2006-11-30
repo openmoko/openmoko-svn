@@ -20,3 +20,35 @@
 
 #include "pixbuf-list.h"
 
+/**
+ * @brief Create a pixbuf by the filename from the PKGDATADIR
+ * @param filename The filename of the pixbuf file
+ * @return The GdkPixbuf. If can not find the file, it will return NULL.
+ */
+GdkPixbuf *
+create_pixbuf (const gchar *filename)
+{
+  gchar     *pathname;
+  GdkPixbuf *pixbuf = NULL;
+  GError    *error = NULL;
+
+  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              filename);
+  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+    {
+      pixbuf = gdk_pixbuf_new_from_file (pathname, &error);
+      if (!pixbuf)
+        {
+          fprintf (stderr, "Fail to load pixbuf file %s: %s\n", 
+                   pathname, error->message);
+          g_error_free (error);
+        }
+    }
+  else
+    {
+      g_debug ("Can not find the file %s", pathname);
+    }
+  g_free (pathname);
+  return pixbuf;
+}
+

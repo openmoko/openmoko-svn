@@ -1,6 +1,6 @@
 /**
- *  @file package-list.h
- *  @brief The package list that get from the lib ipkg
+ *  @file errorcode.h
+ *  @brief The error code of the all function return
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *
@@ -17,11 +17,20 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#ifndef _FIC_PACKAGE_LIST_H
-#define _FIC_PACKAGE_LIST_H
+#ifndef _FIC_ERROR_CODE_H
+#define _FIC_ERROR_CODE_H
 
-#include <gtk/gtk.h>
+/**
+ * @brief All available error code
+ */
+typedef enum {
+  OP_SUCCESS = 0,                ///<! Operation success
+  OP_MAMORY_MALLOC_ERROR,        ///<! Mamory malloc error
 
-gint init_package_list (ApplicationManagerData *appdata);
+  OP_SECTION_NAME_NULL,          ///<! The section of a package is NULL
+
+  OP_ERROR                       ///<! Operation error
+} ErrorCode;
 
 #endif
+

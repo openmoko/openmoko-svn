@@ -23,11 +23,15 @@
 #include <gtk/gtk.h>
 
 #include <libmokoui/moko-paned-window.h>
+#include "pixbuf-list.h"
 
 /**
  * @brief The all data that will be used in the application manager
  *
- * 
+ * Acturally, it need not load the pixbuf to memory and keep them.
+ * But these pixbuf are used so many times. So it is worthy to load them
+ * and keep them in the memory.
+ * FIXME Maybe use a GObject as the base class is the better.
  */
 typedef struct _ApplicationManagerData {
   MokoPanedWindow  *mwindow;           ///<! The main window
@@ -38,7 +42,7 @@ typedef struct _ApplicationManagerData {
   gpointer         installedlist;      ///<! The list of all installed packages
   gpointer         upgradelist;        ///<! The list of all upgradeable packages
   gpointer         selectedlist;       ///<! The list of packages that user selected
-  GdkPixbuf        *statusPix[PkgStatusId];    ///<! The all pixbufs that need by the package list store
+  GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
 } ApplicationManagerData;
 
 ApplicationManagerData *application_manager_data_new (void);
@@ -66,5 +70,35 @@ void application_manager_data_set_upgrade_list (ApplicationManagerData *appdata,
 
 void application_manager_data_set_selected_list (ApplicationManagerData *appdata,
                                                  gpointer selectedlist);
+
+void init_pixbuf_list (ApplicationManagerData *appdata);
+
+MokoPanedWindow *
+     application_manager_get_main_window (ApplicationManagerData *appdata);
+
+GtkWidget *
+     application_manager_get_tvpkglist (ApplicationManagerData *appdata);
+
+GtkWidget *
+     application_manager_get_tvdetail (ApplicationManagerData *appdata);
+
+gpointer 
+     application_manager_data_get_pkglist (ApplicationManagerData *appdata);
+
+gpointer 
+     application_manager_data_get_sectionlist (ApplicationManagerData *appdata);
+
+gpointer 
+     application_manager_data_get_installedlist (ApplicationManagerData *appdata);
+
+gpointer 
+     application_manager_data_get_upgradelist (ApplicationManagerData *appdata);
+
+gpointer 
+     application_manager_data_get_selectedlist (ApplicationManagerData *appdata);
+
+GdkPixbuf *
+     application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata, 
+                                                 guint id);
 
 #endif

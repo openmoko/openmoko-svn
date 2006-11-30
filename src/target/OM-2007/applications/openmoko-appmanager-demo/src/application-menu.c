@@ -68,8 +68,8 @@ on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
 }
 
 /**
- * @brief Create a new application menu for a window.
- * @param window The main window that the menu will add to.
+ * @brief Create a new application menu for the application manager
+ * @param appdata The application manager data
  * @return The GtkMenu widget. If there is error, 
  * it will return NULL.
  */

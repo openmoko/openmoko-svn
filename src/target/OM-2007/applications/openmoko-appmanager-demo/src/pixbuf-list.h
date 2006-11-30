@@ -22,6 +22,11 @@
 
 #include <gtk/gtk.h>
 
+/**
+ * @brief The package status id
+ *
+ * The id is used to find the related pixbuf from pixbuf list.
+ */
 typedef enum _pkgstatusid {
   PKG_STATUS_AVAILABLE = 0,                ///<Package is available and not installed.
   PKG_STATUS_INSTALLED,                    ///<Package is installed and can not be upgrade.
@@ -32,6 +37,9 @@ typedef enum _pkgstatusid {
   PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE,  ///<Upgradeable package is mark for remove.
   N_COUNT_PKG_STATUS                       ///<The number of valid status.
 } PkgStatusId;
+
+GdkPixbuf *create_pixbuf (const gchar *filename);
+
 
 #endif
 

@@ -58,10 +58,11 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
 }
 
 /**
- * @brief Create a new filter menu for a window
+ * @brief Create a new filter menu for the application manager
  * 
- * At this function, it only can 
- * @param window The main window that the filter menu will add to.
+ * At this function, it only can create the static menu items.
+ * It must add the dynamic menu items late.
+ * @param appdata The application manager data
  * @return The filter menu.
  */
 GtkMenu *

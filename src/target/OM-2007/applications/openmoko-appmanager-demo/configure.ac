@@ -22,4 +22,5 @@ CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBIPKG_CFLAGS -DIPKG_LIB"
 AC_OUTPUT([
 Makefile
 src/Makefile
+data/Makefile
 ])

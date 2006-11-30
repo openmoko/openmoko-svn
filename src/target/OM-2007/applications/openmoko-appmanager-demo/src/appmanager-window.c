@@ -31,6 +31,8 @@
 #include "tool-box.h"
 #include "detail-area.h"
 #include "appmanager-data.h"
+#include "errorcode.h"
+#include "package-list.h"
 
 /**
  * @brief The start function.
@@ -47,6 +49,8 @@ main (int argc, char* argv[])
   MokoToolBox     *toolbox;
   GtkWidget       *detail;
 
+  gint            ret;
+
   g_debug ("appplication manager start up");
 
   gtk_init (&argc, &argv);
@@ -62,6 +66,8 @@ main (int argc, char* argv[])
       g_debug ("Create main data struct error. Abort.");
       return -1;
     }
+
+  init_pixbuf_list (appdata);
 
   app = MOKO_APPLICATION (moko_application_get_instance ());
   g_set_application_name (_("Application manager"));
@@ -85,6 +91,14 @@ main (int argc, char* argv[])
 
   detail = detail_area_new (appdata);
   moko_paned_window_set_lower_pane (window, detail);
+
+  //Load the list of all package in the memory
+  ret = init_package_list (appdata);
+  if (ret != OP_SUCCESS)
+    {
+      g_debug ("Can not initial the libipkg, the result is%d", ret);
+      return -1;
+    }
 
   gtk_widget_show_all (GTK_WIDGET (window));
   g_debug ("application manager enter main loop");

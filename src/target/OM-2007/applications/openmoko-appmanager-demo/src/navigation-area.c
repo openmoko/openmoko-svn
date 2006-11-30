@@ -36,9 +36,9 @@ create_package_list_store (void)
 
 
 /**
- * @brief Create all widgets in the navigation area for the main window.
+ * @brief Create all widgets in the navigation area for the application manager data.
  *
- * @param window The main window
+ * @param appdata The application manager data
  * @return The toplevel widget in the navigation area
  */
 GtkWidget *
@@ -58,7 +58,8 @@ navigation_area_new (ApplicationManagerData *appdata)
   ///<! Add the status as the first column.
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("S"));
-  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+  //gtk_tree_view_column_set_fixed_width (col, 20);
 
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
@@ -66,12 +67,13 @@ navigation_area_new (ApplicationManagerData *appdata)
                                        "pixbuf", COL_STATUS,
                                        NULL);
 
-  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
+  moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
 
   ///<! Add the name as the second column.
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("Name"));
-  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+  //gtk_tree_view_column_set_fixed_width (col, 240);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
@@ -79,7 +81,7 @@ navigation_area_new (ApplicationManagerData *appdata)
                                        "text", COL_NAME,
                                        NULL);
 
-  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
+  moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
 
   ///<! Add the size as the third column.
   col = gtk_tree_view_column_new ();
@@ -87,11 +89,12 @@ navigation_area_new (ApplicationManagerData *appdata)
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
+  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
   gtk_tree_view_column_set_attributes (col, renderer,
                                        "text", COL_SIZE,
                                        NULL);
 
-  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
+  moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
 
   model = GTK_TREE_MODEL (create_package_list_store ());
   gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), model);
