@@ -30,7 +30,7 @@
 #include "navigation-area.h"
 #include "tool-box.h"
 #include "detail-area.h"
-#include "appmanager-data.h"
+//#include "appmanager-data.h"
 #include "errorcode.h"
 #include "package-list.h"
 
