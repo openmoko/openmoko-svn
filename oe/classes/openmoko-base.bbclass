@@ -7,6 +7,7 @@ def openmoko_base_get_subdir(d):
     import bb
     openmoko, section = bb.data.getVar('SECTION', d, 1).split("/")
     if section == 'base' or section == 'libs': return ""
+    elif section in 'apps tools pim'.split(): return "applications"
     else: return section
 
 SUBDIR = "${@openmoko_base_get_subdir(d)}"
