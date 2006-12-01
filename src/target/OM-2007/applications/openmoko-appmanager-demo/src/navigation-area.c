@@ -21,6 +21,32 @@
 
 #include "appmanager-window.h"
 #include "navigation-area.h"
+#include "errorcode.h"
+#include "detail-area.h"
+
+/**
+ * @brief The callback function of the signal "cursor-changed"
+ */
+void 
+on_treeview_cursor_changed (GtkTreeView *treeview, 
+                            gpointer     user_data)
+{
+  g_debug ("Call the on_treeview_cursor_changed");
+
+  detail_area_update_info ((ApplicationManagerData *) user_data);
+}
+
+/**
+ * @brief The callback function of the signal "unselect-all"
+ */
+gboolean 
+on_treeview_unselect_all (GtkTreeView *treeview,
+                          gpointer     user_data)
+{
+  g_debug ("Call the on_treeview_unselect_all");
+
+  return FALSE;
+}
 
 static GtkListStore *
 create_package_list_store (void)
@@ -59,7 +85,6 @@ navigation_area_new (ApplicationManagerData *appdata)
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("S"));
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
-  //gtk_tree_view_column_set_fixed_width (col, 20);
 
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
@@ -73,7 +98,6 @@ navigation_area_new (ApplicationManagerData *appdata)
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("Name"));
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
-  //gtk_tree_view_column_set_fixed_width (col, 240);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
@@ -99,9 +123,121 @@ navigation_area_new (ApplicationManagerData *appdata)
   model = GTK_TREE_MODEL (create_package_list_store ());
   gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), model);
   g_object_unref (model);
+  // FIXME Set the treeview as the single selection mode now.
+  // Maybe it uses the multi selection mode in the feature. 
+  gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
+                               GTK_SELECTION_SINGLE);
 
   scrollwindow = GTK_WIDGET (moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (treeview)));
   application_manager_data_set_tvpkglist (appdata, treeview);
 
+  // Connect signal to the treeview
+  g_signal_connect ((gpointer) treeview, "cursor_changed",
+                    G_CALLBACK (on_treeview_cursor_changed),
+                    appdata);
+
+  g_signal_connect ((gpointer) treeview, "unselect_all",
+                    G_CALLBACK (on_treeview_cursor_changed),
+                    appdata);
+
+
   return scrollwindow;
+}
+
+/**
+ * @brief Insert test data
+ */
+gint 
+navigation_area_insert_test_data (ApplicationManagerData *appdata)
+{
+  GtkWidget  *treeview;
+
+  GtkTreeModel  *model;
+  GtkListStore  *store;
+  GtkTreeIter   iter;
+  GdkPixbuf     *pix = NULL;
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  if (treeview == NULL)
+    {
+      g_debug ("Treeview not init correctly");
+      return OP_ERROR;
+    }
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+  store = GTK_LIST_STORE (model);
+  if (store == NULL)
+    {
+      g_debug ("The store of package list not init correctly");
+      return OP_ERROR;
+    }
+
+  g_object_ref (model);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
+  gtk_list_store_clear (store);
+
+  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_AVAILABLE);
+  gtk_list_store_append (store, &iter);
+  gtk_list_store_set (store, &iter,
+                      COL_STATUS, pix,
+                      COL_NAME, "test-core",
+                      COL_SIZE, "11k",
+                      COL_POINTER, NULL,
+                      -1);
+
+  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_INSTALLED);
+  gtk_list_store_append (store, &iter);
+  gtk_list_store_set (store, &iter,
+                      COL_STATUS, pix,
+                      COL_NAME, "test-vim",
+                      COL_SIZE, "21k",
+                      COL_POINTER, NULL,
+                      -1);
+
+  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_UPGRADEABLE);
+  gtk_list_store_append (store, &iter);
+  gtk_list_store_set (store, &iter,
+                      COL_STATUS, pix,
+                      COL_NAME, "test-game",
+                      COL_SIZE, "188k",
+                      COL_POINTER, NULL,
+                      -1);
+
+  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL);
+  gtk_list_store_append (store, &iter);
+  gtk_list_store_set (store, &iter,
+                      COL_STATUS, pix,
+                      COL_NAME, "test-dialer",
+                      COL_SIZE, "211k",
+                      COL_POINTER, NULL,
+                      -1);
+
+  gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
+  g_object_unref (model);
+
+  return OP_SUCCESS;
+}
+
+/**
+ * @brief Get the name that the roll was selected from the treeview
+ * @param treeview The treeview
+ * @return The package name. 
+ *   -If there is not any row selected, it will return NULL.
+ *   -If the return is not NULL, it must be freed by g_free.
+ */
+gchar *
+treeview_get_selected_name (GtkWidget *treeview)
+{
+  GtkTreeModel     *model;
+  GtkTreeIter      iter;
+  GtkTreeSelection *selection;
+  gchar            *name = NULL;
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+  if (gtk_tree_selection_get_selected (selection, &model, &iter))
+    {
+      gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
+      return name;
+    }
+
+  return NULL;
 }

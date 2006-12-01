@@ -93,12 +93,15 @@ main (int argc, char* argv[])
   moko_paned_window_set_lower_pane (window, detail);
 
   //Load the list of all package in the memory
+  /*
   ret = init_package_list (appdata);
   if (ret != OP_SUCCESS)
     {
       g_debug ("Can not initial the libipkg, the result is%d", ret);
       return -1;
     }
+  */
+  ret = navigation_area_insert_test_data (appdata);
 
   gtk_widget_show_all (GTK_WIDGET (window));
   g_debug ("application manager enter main loop");

@@ -19,6 +19,7 @@
  */
 
 #include "detail-area.h"
+#include "navigation-area.h"
 
 /**
  * @brief Create a detail area to the application manager data
@@ -46,4 +47,49 @@ detail_area_new (ApplicationManagerData *appdata)
   application_manager_data_set_tvdetail (appdata, text);
 
   return scrollwindow;
+}
+
+/**
+ * @brief Update the detail area infomation base on the package that selected
+ * @param appdata The application manager data
+ */
+void 
+detail_area_update_info (ApplicationManagerData *appdata)
+{
+  GtkWidget      *textview;
+  GtkTextBuffer  *buffer;
+  GtkTextIter    iter;
+  GdkPixbuf      *pix;
+  gchar          *name = NULL;
+  gchar          str[256];
+
+  g_debug ("Update the info in the detail area");
+
+  g_return_if_fail (appdata != NULL);
+
+  textview = application_manager_get_tvdetail (appdata);
+  if (textview == NULL)
+    {
+      g_debug ("Textview is NULL");
+      return;
+    }
+
+  buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
+  if (buffer == NULL)
+    {
+      g_debug ("Textview not init correctly, textbuffer is NULL");
+      return;
+    }
+
+  name = treeview_get_selected_name (application_manager_get_tvpkglist (appdata));
+
+  pix = create_pixbuf ("unkown.png");
+
+  sprintf (str, "The selected package name is:%s", name);
+  gtk_text_buffer_set_text (buffer, str, -1);
+
+  gtk_text_buffer_get_start_iter (buffer, &iter);
+  gtk_text_buffer_insert_pixbuf (buffer, &iter, pix);
+
+  g_object_unref (pix);
 }

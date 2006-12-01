@@ -236,36 +236,16 @@ packaeg_list_free_section_list (SectionList *seclist)
   g_free (seclist);
 }
 
-
 /**
- * @brief Build a detailed index for the packages list in the application
- * manager data
- * @param appdata The application manager data
- * @return If success, return OP_SUCCESS, else return error code
+ * @brief Clear the old index
  */
-gint 
-package_list_build_index (ApplicationManagerData *appdata)
+static void 
+package_list_clear_old_index (ApplicationManagerData *appdata)
 {
-  PKG_LIST_HEAD *pkglist;
-
   SectionList *sectionlist = NULL;
   PackageList *installed = NULL;
   PackageList *upgrade = NULL;
   PackageList *selected = NULL;
-
-  // Get the package list from application manager data
-  pkglist = (PKG_LIST_HEAD *) application_manager_data_get_pkglist (appdata);
-  if (pkglist == NULL)
-    {
-      g_debug ("The package list is not available");
-      return OP_ERROR;
-    }
-
-  if (pkglist->pkg_list == NULL)
-    {
-      g_debug ("The package list is not available");
-      return OP_ERROR;
-    }
 
   // Get the section list from the application manager data
   // If the section list is not NULL, clear it.
@@ -309,8 +289,43 @@ package_list_build_index (ApplicationManagerData *appdata)
       selected = NULL;
       application_manager_data_set_upgrade_list (appdata, selected);
     }
+}
+
+
+/**
+ * @brief Build a detailed index for the packages list in the application
+ * manager data
+ * @param appdata The application manager data
+ * @return If success, return OP_SUCCESS, else return error code
+ */
+gint 
+package_list_build_index (ApplicationManagerData *appdata)
+{
+  PKG_LIST_HEAD *pkglist;
+
+  SectionList *sectionlist = NULL;
+  //PackageList *installed = NULL;
+  //PackageList *upgrade = NULL;
+  //PackageList *selected = NULL;
+
+  // Get the package list from application manager data
+  pkglist = (PKG_LIST_HEAD *) application_manager_data_get_pkglist (appdata);
+  if (pkglist == NULL)
+    {
+      g_debug ("The package list is not available");
+      return OP_ERROR;
+    }
+
+  if (pkglist->pkg_list == NULL)
+    {
+      g_debug ("The package list is not available");
+      return OP_ERROR;
+    }
+
+  package_list_clear_old_index (appdata);
 
   sectionlist = g_malloc (sizeof (SectionList));
 
   return OP_SUCCESS;
 }
+

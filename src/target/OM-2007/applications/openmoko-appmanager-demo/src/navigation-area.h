@@ -34,4 +34,8 @@ enum {
 
 GtkWidget *navigation_area_new (ApplicationManagerData *appdata);
 
+gint navigation_area_insert_test_data (ApplicationManagerData *appdata);
+
+gchar *treeview_get_selected_name (GtkWidget *treeview);
+
 #endif

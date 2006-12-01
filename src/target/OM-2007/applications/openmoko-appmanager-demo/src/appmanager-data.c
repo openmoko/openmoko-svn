@@ -367,5 +367,5 @@ application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata,
   g_return_val_if_fail (appdata != NULL, NULL);
   g_return_val_if_fail (id < N_COUNT_PKG_STATUS, NULL);
 
-  return appdata->selectedlist;
+  return appdata->statuspix[id];
 }
