@@ -100,7 +100,8 @@ cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox
     GtkAllocation* a = &GTK_WIDGET(priv->hbox)->allocation;
 
     //FIXME get from style
-    priv->maxButtonsPerPage = a->width / priv->buttonWidth;
+    priv->maxButtonsPerPage = a->width / ( priv->buttonWidth + (INNER_PADDING/2) );
+    moko_debug( "-- width % buttonWidth = %d", a->width % priv->buttonWidth );
 
     GtkRequisition* r = &GTK_WIDGET(priv->hbox)->requisition;
 
