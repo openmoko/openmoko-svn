@@ -21,6 +21,9 @@
 
 #include "moko-window.h"
 
+#include "moko-finger-tool-box.h"
+#include "moko-finger-wheel.h"
+
 #include <gtk/gtkmenu.h>
 
 #include <glib-object.h>
@@ -46,10 +49,8 @@ GType moko_finger_window_get_type (void);
 GtkWidget* moko_finger_window_new (void);
 void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* menu);
 void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child);
-void moko_finger_window_show_wheel(MokoFingerWindow* self);
-void moko_finger_window_hide_wheel(MokoFingerWindow* self);
-void moko_finger_window_show_tools(MokoFingerWindow* self);
-void moko_finger_window_hide_tools(MokoFingerWindow* self);
+MokoFingerWheel* moko_finger_window_get_wheel(MokoFingerWindow* self);
+MokoFingerToolBox* moko_finger_window_get_toolbox(MokoFingerWindow* self);
 
 G_END_DECLS
 

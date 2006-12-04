@@ -45,9 +45,9 @@ typedef struct {
     void (* press_bottom) (GtkWidget *button);
 } MokoFingerWheelClass;
 
-GType moko_finger_wheel_get_type (void);
-
-GtkWidget* moko_finger_wheel_new (void);
+GType moko_finger_wheel_get_type();
+GtkWidget* moko_finger_wheel_new();
+void moko_finger_wheel_raise(MokoFingerWheel* self);
 
 G_END_DECLS
 

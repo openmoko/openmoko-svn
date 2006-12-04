@@ -17,6 +17,7 @@
  */
 
 #include "moko-finger-tool-box.h"
+#include "moko-finger-window.h"
 #include "moko-pixmap-button.h"
 #include "moko-window.h"
 
@@ -216,6 +217,28 @@ cb_right_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
 
 static void moko_finger_tool_box_show(GtkWidget* widget)
 {
+    MokoFingerWheel* wheel = NULL;
+    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    if ( MOKO_IS_FINGER_WINDOW(window) )
+    {
+        wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
+        if ( GTK_WIDGET_VISIBLE(wheel) )
+        {
+            moko_debug( "moko_finger_tool_box: wheel is visible" );
+            //FIXME get from theme
+            gtk_widget_set_size_request( widget, 350, 104 );
+        }
+        else
+        {
+            moko_debug( "moko_finger_tool_box: wheel not visible" );
+            //FIXME get from theme
+            gtk_widget_set_size_request( widget, 640, 104 );
+        }
+    }
+    else
+    {
+        g_warning( "moko_finger_tool_box: main window not a finger window" );
+    }
     //gtk_widget_ensure_style( widget ); //FIXME needed here?
     moko_debug( "moko_finger_wheel_show" );
     GTK_WIDGET_CLASS(parent_class)->show(widget);
@@ -244,6 +267,8 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
         gtk_window_move( priv->popup, absx + w - req.width, absy + h - req.height );
     }
     gtk_widget_show( priv->popup );
+    if ( wheel && GTK_WIDGET_VISIBLE(wheel) )
+        moko_finger_wheel_raise( wheel );
 }
 
 static void moko_finger_tool_box_hide(GtkWidget* widget)
@@ -259,8 +284,7 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
 {
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingertoolbox" );
-    //FIXME get from theme
-    //gtk_alignment_set_padding( GTK_ALIGNMENT(self), 0, 0, OUTER_PADDING, 0 );
+
     priv->rightarrow = MOKO_PIXMAP_BUTTON( moko_pixmap_button_new() );
     gtk_widget_set_name( GTK_WIDGET(priv->rightarrow), "mokofingertoolbox-rightarrow" );
 
@@ -273,9 +297,6 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
 
     g_signal_connect( G_OBJECT(priv->rightarrow), "clicked", G_CALLBACK(cb_right_button_pressed), self );
     g_signal_connect_after( G_OBJECT(self), "size-allocate", G_CALLBACK(cb_configure), self );
-
-    //FIXME link with wheel
-    gtk_widget_set_size_request( GTK_WIDGET(self), 350, 104 );
 }
 
 /* public API */

@@ -16,11 +16,21 @@
  *  Current Version: $Rev$ ($Date) [$Author: mickey $]
  */
 
-#include "moko-application.h"
 #include "moko-finger-wheel.h"
+
+#include "moko-application.h"
+#include "moko-finger-tool-box.h"
+#include "moko-finger-window.h"
 
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkwindow.h>
+
+#define DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
 
 enum {
     PRESS_LEFT_UP,
@@ -92,7 +102,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
     klass->press_bottom = NULL;
 
     /** Press the left up area */
-    wheel_signals[PRESS_LEFT_UP] = 
+    wheel_signals[PRESS_LEFT_UP] =
                  g_signal_new ("press_left_up",
                  G_OBJECT_CLASS_TYPE (object_class),
                  G_SIGNAL_RUN_FIRST,
@@ -102,7 +112,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  G_TYPE_NONE, 0);
 
     /** Press the right down area */
-    wheel_signals[PRESS_RIGHT_DOWN] = 
+    wheel_signals[PRESS_RIGHT_DOWN] =
                  g_signal_new ("press_right_down",
                  G_OBJECT_CLASS_TYPE (object_class),
                  G_SIGNAL_RUN_FIRST,
@@ -112,7 +122,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  G_TYPE_NONE, 0);
 
     /** Press the bottom area */
-    wheel_signals[PRESS_BOTTOM] = 
+    wheel_signals[PRESS_BOTTOM] =
                  g_signal_new ("press_bottom",
                  G_OBJECT_CLASS_TYPE (object_class),
                  G_SIGNAL_RUN_FIRST,
@@ -167,7 +177,7 @@ moko_finger_wheel_realize(GtkWidget *widget)
 static void moko_finger_wheel_show(GtkWidget* widget)
 {
     gtk_widget_ensure_style( widget ); //FIXME needed here?
-    g_debug( "moko_finger_wheel_show" );
+    moko_debug( "moko_finger_wheel_show" );
     GTK_WIDGET_CLASS(parent_class)->show(widget);
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
     if ( !priv->popup )
@@ -179,15 +189,15 @@ static void moko_finger_wheel_show(GtkWidget* widget)
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
         GtkRequisition req;
         gtk_widget_size_request( widget, &req );
-        //g_debug( "My requisition is %d, %d", req.width, req.height );
+        //moko_debug( "My requisition is %d, %d", req.width, req.height );
         int x, y, w, h;
         gdk_window_get_geometry( GTK_WIDGET(window)->window, &x, &y, &w, &h, NULL );
-        //g_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
+        //moko_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
         int absx;
         int absy;
         gdk_window_get_origin( GTK_WIDGET(window)->window, &absx, &absy );
         GtkAllocation* alloc = &GTK_WIDGET(window)->allocation;
-        //g_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
+        //moko_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
         gtk_window_move( priv->popup, absx, absy + h - req.height );
 
         //FIXME Isn't there a way to get this as a mask directly from the style without having to reload it?
@@ -201,14 +211,41 @@ static void moko_finger_wheel_show(GtkWidget* widget)
         gtk_widget_shape_combine_mask(priv->popup, mask, 0, 0);
     }
     gtk_widget_show( priv->popup );
+
+    /* resize FingerToolBox, if visible */
+    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    if ( MOKO_IS_FINGER_WINDOW(window) )
+    {
+        MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW(window) );
+        if ( GTK_WIDGET_VISIBLE(toolbox) )
+        {
+            moko_debug( "moko_finger_wheel: toolbox is visible, sending resize" );
+        }
+        else
+        {
+            moko_debug( "moko_finger_wheel: toolbox not visible, doing nothing" );
+        }
+    }
+    else
+    {
+        g_warning( "moko_finger_wheel: main window is not a finger window" );
+    }
 }
 
 static void moko_finger_wheel_hide(GtkWidget* widget)
 {
-    g_debug( "moko_finger_wheel_hide" );
+    moko_debug( "moko_finger_wheel_hide" );
     GTK_WIDGET_CLASS(parent_class)->hide(widget);
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
     gtk_widget_hide( priv->popup );
+}
+
+void moko_finger_wheel_raise(MokoFingerWheel* self)
+{
+    moko_debug( "moko_finger_wheel_raise" );
+    MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(self);
+    g_return_if_fail(priv->popup);
+    gdk_window_raise( GTK_WIDGET(priv->popup)->window );
 }
 
 /**
@@ -221,9 +258,9 @@ static void moko_finger_wheel_button_check_area (GtkWidget* widget, GdkEventButt
     g_return_if_fail (MOKO_IS_FINGER_WHEEL (widget));
 
     gtk_widget_size_request( widget, &req );
-    g_debug ("moko_finger_wheel_button_check_area");
-    g_debug ("The event x=%d, y=%d", (int)event->x, (int)event->y);
-    g_debug ("The req width=%d, height=%d", req.width, req.height);
+    moko_debug ("moko_finger_wheel_button_check_area");
+    moko_debug ("The event x=%d, y=%d", (int)event->x, (int)event->y);
+    moko_debug ("The req width=%d, height=%d", req.width, req.height);
     if ( ((int)event->x) < ((int)req.width/2))
     {
         if ( ((int)event->y) < ((int)req.height/2))
@@ -266,7 +303,7 @@ static void moko_finger_wheel_button_emit_signal (GtkWidget* widget, GdkEventBut
 
 static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event)
 {
-    g_debug( "moko_finger_wheel_button_press" );
+    moko_debug( "moko_finger_wheel_button_press" );
 
     gtk_grab_add( widget );
     gtk_widget_set_state( widget, GTK_STATE_ACTIVE );
@@ -293,14 +330,14 @@ static gint moko_finger_wheel_motion_notify(GtkWidget* widget, GdkEventMotion* e
     }
 
     if (state & GDK_BUTTON1_MASK)
-        g_debug( "FIXME: emit scroll values here..." );
+        moko_debug( "FIXME: emit scroll values here..." );
 
     return TRUE;
 }
 
 static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* event)
 {
-    g_debug( "moko_finger_wheel_button_release" );
+    moko_debug( "moko_finger_wheel_button_release" );
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
     gtk_widget_set_state( widget, GTK_STATE_NORMAL );
     gtk_grab_remove( widget );

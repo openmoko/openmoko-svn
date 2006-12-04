@@ -38,14 +38,11 @@ void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
 {
     g_debug( "openmoko-finger-demo: orange button clicked" );
     static gboolean show = TRUE;
-    static MokoFingerWheel* wheel = NULL;
-
-    if (!wheel) wheel = moko_finger_wheel_new();
 
     if ( show )
-        gtk_widget_show( GTK_WIDGET(wheel) );
+        gtk_widget_show( GTK_WIDGET(moko_finger_window_get_wheel(window)) );
     else
-        gtk_widget_hide( GTK_WIDGET(wheel) );
+        gtk_widget_hide( GTK_WIDGET(moko_finger_window_get_wheel(window)) );
 
     show = !show;
 }
@@ -57,7 +54,7 @@ void cb_black_button_clicked( GtkButton* button, MokoFingerWindow* window )
 
     if (!tools)
     {
-        tools = moko_finger_tool_box_new();
+        tools = moko_finger_window_get_toolbox(window);
         for ( int i = 0; i < 1; ++i )
             moko_finger_tool_box_add_button( tools );
     }
@@ -97,13 +94,13 @@ int main( int argc, char** argv )
     moko_finger_window_set_application_menu( window, appmenu );
 
     /* connect close event */
-    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
+    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL );
 
     /* contents */
     vbox = gtk_vbox_new( TRUE, 0 );
     GtkLabel* label1 = gtk_label_new( "Populate this area with finger widgets\n \nThere are three types of finger buttons:" );
 
-    GtkLabel* label2 = gtk_label_new( "Orange button toggles finger scrolling wheel\nBlack button toggles finger toolbar\nDialer Button does nothing :)" );
+    GtkLabel* label2 = gtk_label_new( "Orange button toggles finger scrolling wheel\nBlack button toggles finger toolbar\nDialer Button adds a tool button" );
 
     GtkHBox* hbox = gtk_hbox_new( TRUE, 10 );
 

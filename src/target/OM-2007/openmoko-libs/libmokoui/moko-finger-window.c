@@ -41,8 +41,9 @@ typedef struct _MokoFingerWindowPriv
     GtkVBox* vbox;
     GtkHBox* hbox;
     GtkLabel* label;
-    GtkButton* scroller;
     MokoMenuBox* menubox;
+    MokoFingerWheel* wheel;
+    MokoFingerToolBox* tools;
 } MokoFingerWindowPriv;
 
 static void moko_finger_window_dispose (GObject *object)
@@ -96,19 +97,20 @@ void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child)
 {
     moko_debug( "moko_finger_window_set_contents" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
-
     gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(child), TRUE, TRUE, 0 );
 }
 
-void moko_finger_window_show_wheel(MokoFingerWindow* self)
+MokoFingerWheel* moko_finger_window_get_wheel(MokoFingerWindow* self)
 {
+    moko_debug( "moko_finger_window_get_wheel" );
+    MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
+    if (!priv->wheel) priv->wheel = moko_finger_wheel_new();
+    return priv->wheel;
 }
-void moko_finger_window_hide_wheel(MokoFingerWindow* self)
+MokoFingerToolBox* moko_finger_window_get_toolbox(MokoFingerWindow* self)
 {
-}
-void moko_finger_window_show_tools(MokoFingerWindow* self)
-{
-}
-void moko_finger_window_hide_tools(MokoFingerWindow* self)
-{
+    moko_debug( "moko_finger_window_get_toolbox" );
+    MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
+    if (!priv->tools) priv->tools = moko_finger_tool_box_new();
+    return priv->tools;
 }
