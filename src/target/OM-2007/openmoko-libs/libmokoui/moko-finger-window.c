@@ -25,7 +25,7 @@
 #include <gtk/gtklabel.h>
 #include <gtk/gtkbutton.h>
 
-#undef DEBUG_THIS_FILE
+#define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #else
@@ -107,10 +107,68 @@ MokoFingerWheel* moko_finger_window_get_wheel(MokoFingerWindow* self)
     if (!priv->wheel) priv->wheel = moko_finger_wheel_new();
     return priv->wheel;
 }
+
 MokoFingerToolBox* moko_finger_window_get_toolbox(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_toolbox" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     if (!priv->tools) priv->tools = moko_finger_tool_box_new();
     return priv->tools;
+}
+
+gboolean moko_finger_window_get_geometry_hint(MokoFingerWindow* self, GtkWidget* hintee, GtkAllocation* allocation)
+{
+    //FIXME get geometry hints from theme
+    moko_debug( "moko_finger_window_geometry_hint" );
+
+    GtkRequisition req;
+    gtk_widget_size_request( hintee, &req );
+    int x, y, w, h;
+    gdk_window_get_geometry( GTK_WIDGET(self)->window, &x, &y, &w, &h, NULL );
+    int absx;
+    int absy;
+    gdk_window_get_origin( GTK_WIDGET(self)->window, &absx, &absy );
+
+    moko_debug( "hintee requisition is %d, %d", req.width, req.height );
+    moko_debug( "finger window geometry is %d, %d * %d, %d", x, y, w, h );
+
+    if ( MOKO_IS_FINGER_WHEEL(hintee) )
+    {
+        allocation->x = absx;
+        allocation->y = absy + h - req.height;
+        allocation->width = w;
+        allocation->height = h;
+        return TRUE;
+    }
+    else if ( MOKO_IS_FINGER_TOOL_BOX(hintee) )
+    {
+        MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
+        if ( priv->wheel && GTK_WIDGET_VISIBLE(priv->wheel) )
+        {
+            moko_debug( "-- wheel is visible" );
+            GtkAllocation* wheelalloc = &(GTK_WIDGET(priv->wheel)->allocation);
+            moko_debug( "-- wheel alloc is %d, %d, %d, %d", wheelalloc->x, wheelalloc->y, wheelalloc->width, wheelalloc->height );
+            //FIXME get from theme: 22 is the overlap factor for wheel + toolbox
+#define WHEEL_TOOL_BOX_OVERLAP 22
+#define TOOL_BOX_HEIGHT 104
+            allocation->x = absx + wheelalloc->x + wheelalloc->width - WHEEL_TOOL_BOX_OVERLAP;
+            allocation->y = absy + h - req.height;
+            //allocation->width = w - allocation->x;
+            allocation->width = w - wheelalloc->width + WHEEL_TOOL_BOX_OVERLAP;
+            //FIXME compute
+            allocation->height = TOOL_BOX_HEIGHT;
+            return TRUE;
+        }
+        else
+        {
+            moko_debug( "-- wheel not visible" );
+            allocation->x = absx;
+            allocation->y = absy + h - req.height;
+            allocation->width = w;
+            //FIXME compute
+            allocation->height = TOOL_BOX_HEIGHT;
+        }
+        return TRUE;
+    }
+    return FALSE;
 }

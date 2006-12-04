@@ -187,18 +187,11 @@ static void moko_finger_wheel_show(GtkWidget* widget)
         //gtk_widget_set_name( GTK_WIDGET(priv->popup), "transparent" );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
-        GtkRequisition req;
-        gtk_widget_size_request( widget, &req );
-        //moko_debug( "My requisition is %d, %d", req.width, req.height );
-        int x, y, w, h;
-        gdk_window_get_geometry( GTK_WIDGET(window)->window, &x, &y, &w, &h, NULL );
-        //moko_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
-        int absx;
-        int absy;
-        gdk_window_get_origin( GTK_WIDGET(window)->window, &absx, &absy );
-        GtkAllocation* alloc = &GTK_WIDGET(window)->allocation;
-        //moko_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
-        gtk_window_move( priv->popup, absx, absy + h - req.height );
+        //FIXME check if it's a finger window
+
+        GtkAllocation geometry;
+        gboolean valid = moko_finger_window_get_geometry_hint( window, widget, &geometry );
+        gtk_window_move( GTK_WIDGET(priv->popup), geometry.x, geometry.y );
 
         //FIXME Isn't there a way to get this as a mask directly from the style without having to reload it?
         GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(GTK_WIDGET(widget)->style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);

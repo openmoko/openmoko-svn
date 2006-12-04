@@ -217,28 +217,6 @@ cb_right_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
 
 static void moko_finger_tool_box_show(GtkWidget* widget)
 {
-    MokoFingerWheel* wheel = NULL;
-    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
-    if ( MOKO_IS_FINGER_WINDOW(window) )
-    {
-        wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
-        if ( GTK_WIDGET_VISIBLE(wheel) )
-        {
-            moko_debug( "moko_finger_tool_box: wheel is visible" );
-            //FIXME get from theme
-            gtk_widget_set_size_request( widget, 350, 104 );
-        }
-        else
-        {
-            moko_debug( "moko_finger_tool_box: wheel not visible" );
-            //FIXME get from theme
-            gtk_widget_set_size_request( widget, 640, 104 );
-        }
-    }
-    else
-    {
-        g_warning( "moko_finger_tool_box: main window not a finger window" );
-    }
     //gtk_widget_ensure_style( widget ); //FIXME needed here?
     moko_debug( "moko_finger_wheel_show" );
     GTK_WIDGET_CLASS(parent_class)->show(widget);
@@ -246,29 +224,23 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
     if ( !priv->popup )
     {
         priv->popup = gtk_window_new(GTK_WINDOW_POPUP);
-        //FIXME Setting it to transparent is probably not necessary since we issue a mask anyway, right?
-        //gtk_widget_set_name( GTK_WIDGET(priv->popup), "transparent" );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
-        GtkRequisition req;
-        gtk_widget_size_request( widget, &req );
-        //moko_debug( "My requisition is %d, %d", req.width, req.height );
-        int x, y, w, h;
-        gdk_window_get_geometry( GTK_WIDGET(window)->window, &x, &y, &w, &h, NULL );
-        //moko_debug( "WINDOW geometry is %d, %d * %d, %d", x, y, w, h );
-        int absx;
-        int absy;
-
+        g_return_if_fail( MOKO_IS_FINGER_WINDOW(window) );
+        GtkAllocation geometry;
+        gboolean valid = moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW(window), widget, &geometry );
         g_signal_connect_after( G_OBJECT(widget), "size_allocate", G_CALLBACK(cb_size_allocate), widget );
-
-        gdk_window_get_origin( GTK_WIDGET(window)->window, &absx, &absy );
-        GtkAllocation* alloc = &GTK_WIDGET(window)->allocation;
-        //moko_debug( "WINDOW allocation is %d, %d * %d, %d", alloc->x, alloc->y, alloc->width, alloc->height );
-        gtk_window_move( priv->popup, absx + w - req.width, absy + h - req.height );
+        gtk_window_move( priv->popup, geometry.x, geometry.y );
+        gtk_widget_set_size_request( GTK_WIDGET(widget), geometry.width, geometry.height );
+        gtk_window_resize( priv->popup, geometry.width, geometry.height );
     }
     gtk_widget_show( priv->popup );
-    if ( wheel && GTK_WIDGET_VISIBLE(wheel) )
-        moko_finger_wheel_raise( wheel );
+    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    if ( MOKO_IS_FINGER_WINDOW(window) )
+    {
+        MokoFingerWheel* wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
+        if ( wheel && GTK_WIDGET_VISIBLE(wheel) ) moko_finger_wheel_raise( wheel );
+    }
 }
 
 static void moko_finger_tool_box_hide(GtkWidget* widget)

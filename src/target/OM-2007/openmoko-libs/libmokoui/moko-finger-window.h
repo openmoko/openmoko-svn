@@ -38,11 +38,11 @@ G_BEGIN_DECLS
 #define MOKO_FINGER_WINDOW_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),   MOKO_TYPE_FINGER_WINDOW, MokoFingerWindowClass))
 
 typedef struct {
-  MokoWindow parent;
+    MokoWindow parent;
 } MokoFingerWindow;
 
 typedef struct {
-  MokoWindowClass parent_class;
+    MokoWindowClass parent_class;
 } MokoFingerWindowClass;
 
 GType moko_finger_window_get_type (void);
@@ -51,6 +51,7 @@ void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* me
 void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child);
 MokoFingerWheel* moko_finger_window_get_wheel(MokoFingerWindow* self);
 MokoFingerToolBox* moko_finger_window_get_toolbox(MokoFingerWindow* self);
+gboolean moko_finger_window_get_geometry_hint(MokoFingerWindow* self, GtkWidget* hintee, GtkAllocation* allocation);
 
 G_END_DECLS
 
