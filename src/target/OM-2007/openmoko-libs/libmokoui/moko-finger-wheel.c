@@ -213,6 +213,8 @@ static void moko_finger_wheel_show(GtkWidget* widget)
         if ( GTK_WIDGET_VISIBLE(toolbox) )
         {
             moko_debug( "moko_finger_wheel: toolbox is visible, sending resize" );
+            gtk_widget_hide( GTK_WIDGET(toolbox) );
+            gtk_widget_show( GTK_WIDGET(toolbox) );
         }
         else
         {
@@ -231,6 +233,27 @@ static void moko_finger_wheel_hide(GtkWidget* widget)
     GTK_WIDGET_CLASS(parent_class)->hide(widget);
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
     gtk_widget_hide( priv->popup );
+
+    /* resize FingerToolBox, if visible */
+    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    if ( MOKO_IS_FINGER_WINDOW(window) )
+    {
+        MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW(window) );
+        if ( GTK_WIDGET_VISIBLE(toolbox) )
+        {
+            moko_debug( "moko_finger_wheel: toolbox is visible, sending resize" );
+            gtk_widget_hide( GTK_WIDGET(toolbox) );
+            gtk_widget_show( GTK_WIDGET(toolbox) );
+        }
+        else
+        {
+            moko_debug( "moko_finger_wheel: toolbox not visible, doing nothing" );
+        }
+    }
+    else
+    {
+        g_warning( "moko_finger_wheel: main window is not a finger window" );
+    }
 }
 
 void moko_finger_wheel_raise(MokoFingerWheel* self)

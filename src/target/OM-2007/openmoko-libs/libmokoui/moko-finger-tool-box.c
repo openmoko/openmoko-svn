@@ -70,7 +70,7 @@ moko_finger_tool_box_finalize (GObject *object)
 }
 
 static void
-moko_finger_tool_box_class_init (MokoFingerToolBoxClass *klass)
+moko_finger_tool_box_class_init(MokoFingerToolBoxClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     parent_class = g_type_class_peek_parent(klass);
@@ -225,22 +225,20 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
     {
         priv->popup = gtk_window_new(GTK_WINDOW_POPUP);
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
-        MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
-        g_return_if_fail( MOKO_IS_FINGER_WINDOW(window) );
-        GtkAllocation geometry;
-        gboolean valid = moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW(window), widget, &geometry );
-        g_signal_connect_after( G_OBJECT(widget), "size_allocate", G_CALLBACK(cb_size_allocate), widget );
-        gtk_window_move( priv->popup, geometry.x, geometry.y );
-        gtk_widget_set_size_request( GTK_WIDGET(widget), geometry.width, geometry.height );
-        gtk_window_resize( priv->popup, geometry.width, geometry.height );
     }
-    gtk_widget_show( priv->popup );
+
     MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
-    if ( MOKO_IS_FINGER_WINDOW(window) )
-    {
-        MokoFingerWheel* wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
-        if ( wheel && GTK_WIDGET_VISIBLE(wheel) ) moko_finger_wheel_raise( wheel );
-    }
+    g_return_if_fail( MOKO_IS_FINGER_WINDOW(window) );
+    GtkAllocation geometry;
+    gboolean valid = moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW(window), widget, &geometry );
+    g_signal_connect_after( G_OBJECT(widget), "size_allocate", G_CALLBACK(cb_size_allocate), widget );
+    gtk_window_move( priv->popup, geometry.x, geometry.y );
+    gtk_widget_set_size_request( GTK_WIDGET(widget), geometry.width, geometry.height );
+    gtk_window_resize( priv->popup, geometry.width, geometry.height );
+
+    gtk_widget_show( priv->popup );
+    MokoFingerWheel* wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
+    if ( wheel && GTK_WIDGET_VISIBLE(wheel) ) moko_finger_wheel_raise( wheel );
 }
 
 static void moko_finger_tool_box_hide(GtkWidget* widget)
@@ -252,7 +250,7 @@ static void moko_finger_tool_box_hide(GtkWidget* widget)
 }
 
 static void
-moko_finger_tool_box_init (MokoFingerToolBox *self)
+moko_finger_tool_box_init(MokoFingerToolBox *self)
 {
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingertoolbox" );
@@ -273,7 +271,7 @@ moko_finger_tool_box_init (MokoFingerToolBox *self)
 
 /* public API */
 GtkWidget*
-moko_finger_tool_box_new (void)
+moko_finger_tool_box_new(void)
 {
     return GTK_WIDGET(g_object_new(moko_finger_tool_box_get_type(), NULL));
 }
