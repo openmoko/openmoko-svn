@@ -62,16 +62,18 @@ contains( CONFIG, debug ) {
 	!contains( TEMPLATE, lib ) {
 		APPDIR = $(OPENMOKODIR)/applications/$$TARGET/data
 		DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
+		DEFINES += DATADIR=\\\"$$APPDIR/\\\"
+		system( ln -sf . $OPENMOKODIR/applications/$$TARGET/data/icons )
 	}
     contains( TEMPLATE, lib ) {
 		APPDIR = $(OPENMOKODIR)/openmoko-libs/data
 		DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
+		DEFINES += DATADIR=\\\"$$APPDIR/\\\"
 	}
 }
 !contains( CONFIG, debug ) {
     APPDIR = /usr/share/$$TARGET
     DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
 }
-
 
 DEFINES += G_LOG_DOMAIN=\\\"$$TARGET\\\"
