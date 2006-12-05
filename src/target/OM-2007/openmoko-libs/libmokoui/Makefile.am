@@ -11,6 +11,7 @@ source_h = \
     moko-search-bar.h \
     moko-tool-box.h \
     moko-tree-view.h \
+    moko-navigation-list.h \
     moko-window.h
 
 source_c = \
@@ -26,6 +27,7 @@ source_c = \
     moko-search-bar.c \
     moko-tree-view.c \
     moko-tool-box.c \
+    moko-navigation-list.c \
     moko-window.c
 
 DATADIR=$(datadir)
