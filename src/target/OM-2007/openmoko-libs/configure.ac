@@ -40,4 +40,5 @@ libmokocore/Makefile
 libmokoui/Makefile
 libmokopim/Makefile
 libmokonet/Makefile
+data/Makefile
 ])

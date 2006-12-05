@@ -1,5 +1,5 @@
 # SUBDIRS = libmokocore libmokoui libmokopim libmokonet
-SUBDIRS = libmokoui
+SUBDIRS = libmokoui data
 
 pcdata_DATA= openmoko-libs.pc
 pcdatadir= $(libdir)/pkgconfig
