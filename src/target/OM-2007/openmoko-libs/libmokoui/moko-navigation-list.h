@@ -26,6 +26,7 @@
 #include <gtk/gtkfixed.h>
 #include <gtk/gtktreeview.h>
 #include <gtk/gtkalignment.h>
+#include <gtk/gtkliststore.h>
 
 #include <glib-object.h>
 
@@ -50,7 +51,7 @@ GType moko_navigation_list_get_type (void);
 MokoNavigationList* moko_navigation_list_new (void);
 MokoNavigationList* moko_navigation_list_new_with_model (GtkTreeModel *model);
 
-
+void moko_navigation_list_append_column (MokoNavigationList* self, GtkTreeViewColumn* column);
 MokoTreeView* moko_navigation_list_get_tree_view(MokoNavigationList* self);
 
 G_END_DECLS

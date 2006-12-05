@@ -18,7 +18,7 @@
 
 #include "moko-navigation-list.h"
 
-G_DEFINE_TYPE (MokoNavigationList, moko_navigation_list, GTK_TYPE_VIEWPORT);
+G_DEFINE_TYPE (MokoNavigationList, moko_navigation_list, GTK_TYPE_VIEWPORT)
 
 #define NAVIGATION_LIST_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_NAVIGATION_LIST, MokoNavigationListPrivate))
 
@@ -336,11 +336,12 @@ moko_navigation_list_new (void)
     priv->treeview = (MokoTreeView *) moko_tree_view_new ();
     priv->navigationsw = moko_tree_view_put_into_scrolled_window (priv->treeview);
     
-    gtk_widget_set_size_request ( GTK_VIEWPORT (self), 458, 160 );
-    gtk_fixed_put ( GTK_CONTAINER (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
+    
+    gtk_widget_set_size_request ( GTK_WIDGET (self), 458, 160 );
+    gtk_fixed_put ( GTK_FIXED (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
     
     
-    return GTK_WIDGET(self);
+    return self;
 }
 
 MokoNavigationList*
@@ -359,17 +360,23 @@ moko_navigation_list_new_with_model (GtkTreeModel *model)
     priv->treeview = (MokoTreeView *) moko_tree_view_new_with_model (model);
     priv->navigationsw = moko_tree_view_put_into_scrolled_window (priv->treeview);
     
-    gtk_widget_set_size_request ( GTK_VIEWPORT (self), 458, 160 );
-    gtk_fixed_put ( GTK_CONTAINER (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
+    gtk_widget_set_size_request ( GTK_WIDGET (self), 458, 160 );
+    gtk_fixed_put ( GTK_FIXED (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
     
     
-    return GTK_WIDGET(self);
+    return self;
 }
 
 
-MokoTreeView* moko_navigation_list_get_tree_view(MokoNavigationList* self)
+void moko_navigation_list_append_column (MokoNavigationList* self, GtkTreeViewColumn* column)
 {
-    MokoNavigationListPrivate* priv = NAVIGATION_LIST_PRIVATE(self);
+    MokoNavigationListPrivate* priv = NAVIGATION_LIST_PRIVATE (self);
+    moko_tree_view_append_column( MOKO_TREE_VIEW (priv->treeview), column );
+}
+
+MokoTreeView* moko_navigation_list_get_tree_view (MokoNavigationList* self)
+{
+    MokoNavigationListPrivate* priv = NAVIGATION_LIST_PRIVATE (self);
     return priv->treeview;
 }
 
