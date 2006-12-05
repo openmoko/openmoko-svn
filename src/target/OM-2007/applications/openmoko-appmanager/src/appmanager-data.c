@@ -36,6 +36,7 @@ application_manager_data_init (ApplicationManagerData *data)
   gint  i;
 
   data->mwindow = NULL;
+  data->filtermenu = NULL;
   data->tvpkglist = NULL;
   data->tvdetail = NULL;
   data->pkglist = NULL;
@@ -85,33 +86,6 @@ moko_type_application_manager_data_get_type (void)
 ApplicationManagerData *
 application_manager_data_new (void)
 {
-/*
-  ApplicationManagerData *data;
-  int i;
-
-  data = g_malloc (sizeof (ApplicationManagerData));
-  if (data == NULL)
-    {
-      g_debug ("Can not malloc memory for the init data struct, process will be abort");
-      return NULL;
-    }
-
-  data->mwindow = NULL;
-  data->tvpkglist = NULL;
-  data->tvdetail = NULL;
-  data->pkglist = NULL;
-  data->sectionlist = NULL;
-  data->installedlist = NULL;
-  data->upgradelist = NULL;
-  data->selectedlist = NULL;
-
-  for (i = 0; i < N_COUNT_PKG_STATUS; i++)
-    {
-      data->statuspix[i] = NULL;
-    }
-
-  return data;
-*/
   return MOKO_APPLICATION_MANAGER_DATA (g_object_new \
                                         (moko_type_application_manager_data_get_type (), \
                                         NULL));
@@ -129,6 +103,20 @@ application_manager_data_set_main_window (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->mwindow = window;
+}
+
+/**
+ * @brief Set the filter menu to the application manager data
+ * @param appdata The application manager data struct
+ * @param filtermenu The filter menu
+ */
+void 
+application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
+                                          GtkMenu *filtermenu)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->filtermenu = filtermenu;
 }
 
 /**
@@ -315,9 +303,22 @@ init_pixbuf_list (ApplicationManagerData *appdata)
 MokoPanedWindow *
 application_manager_get_main_window (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->mwindow;
+}
+
+/**
+ * @brief Get the filter menu from the application manager data
+ * @param appdata The application manager data
+ * @return The filter menu
+ */
+GtkMenu *
+application_manager_get_filter_menu (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->filtermenu;
 }
 
 /**
@@ -330,7 +331,7 @@ application_manager_get_main_window (ApplicationManagerData *appdata)
 GtkWidget *
 application_manager_get_tvpkglist (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->tvpkglist;
 }
@@ -345,7 +346,7 @@ application_manager_get_tvpkglist (ApplicationManagerData *appdata)
 GtkWidget *
 application_manager_get_tvdetail (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->tvdetail;
 }
@@ -360,7 +361,7 @@ application_manager_get_tvdetail (ApplicationManagerData *appdata)
 gpointer 
 application_manager_data_get_pkglist (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->pkglist;
 }
@@ -373,7 +374,7 @@ application_manager_data_get_pkglist (ApplicationManagerData *appdata)
 gpointer 
 application_manager_data_get_sectionlist (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->sectionlist;
 }
@@ -386,7 +387,7 @@ application_manager_data_get_sectionlist (ApplicationManagerData *appdata)
 gpointer 
 application_manager_data_get_installedlist (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->installedlist;
 }
@@ -399,7 +400,7 @@ application_manager_data_get_installedlist (ApplicationManagerData *appdata)
 gpointer 
 application_manager_data_get_upgradelist (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->upgradelist;
 }
@@ -412,7 +413,7 @@ application_manager_data_get_upgradelist (ApplicationManagerData *appdata)
 gpointer 
 application_manager_data_get_selectedlist (ApplicationManagerData *appdata)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->selectedlist;
 }
@@ -427,7 +428,7 @@ GdkPixbuf *
 application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata, 
                                             guint id)
 {
-  g_return_val_if_fail (appdata != NULL, NULL);
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
   g_return_val_if_fail (id < N_COUNT_PKG_STATUS, NULL);
 
   return appdata->statuspix[id];

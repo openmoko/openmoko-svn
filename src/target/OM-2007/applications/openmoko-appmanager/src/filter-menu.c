@@ -58,6 +58,15 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
 }
 
 /**
+ * @brief The callback function of the dynamic menuitem.
+ */
+void 
+on_dynamic_menu_item_activate (GtkMenuItem *menuitem, gpointer userdata)
+{
+  g_debug ("Click the dynamic menuitem");
+}
+
+/**
  * @brief Create a new filter menu for the application manager
  * 
  * At this function, it only can create the static menu items.
@@ -68,40 +77,62 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
 GtkMenu *
 filter_menu_new (ApplicationManagerData *appdata)
 {
-  GtkMenu   *menu;
-  GtkWidget *menuitem1;
-  GtkWidget *menuitem2;
-  GtkWidget *menuitem3;
-  GtkWidget *menuitem4;
+  GtkMenu   *filtermenu;
+  GtkWidget *searchresult;
+  GtkWidget *installed;
+  GtkWidget *upgradeable;
+  GtkWidget *selected;
 
-  g_debug ("Init the filter menu");
+  g_debug ("Init the filter filtermenu");
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
-  menu = GTK_MENU (gtk_menu_new ());
+  filtermenu = GTK_MENU (gtk_menu_new ());
 
-  menuitem1 = gtk_menu_item_new_with_label (_("Search Results"));
-  gtk_widget_show (menuitem1);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem1);
-  g_signal_connect ((gpointer) menuitem1, "activate",
+  searchresult = gtk_menu_item_new_with_label (_("Search Results"));
+  gtk_widget_show (searchresult);
+  gtk_container_add (GTK_CONTAINER (filtermenu), searchresult);
+  g_signal_connect ((gpointer) searchresult, "activate",
                     G_CALLBACK (on_search_result_activate), appdata);
 
-  menuitem2 = gtk_menu_item_new_with_label (_("Installed"));
-  gtk_widget_show (menuitem2);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem2);
-  g_signal_connect ((gpointer) menuitem2, "activate",
+  installed = gtk_menu_item_new_with_label (_("Installed"));
+  gtk_widget_show (installed);
+  gtk_container_add (GTK_CONTAINER (filtermenu), installed);
+  g_signal_connect ((gpointer) installed, "activate",
                     G_CALLBACK (on_installed_activate), appdata);
 
-  menuitem3 = gtk_menu_item_new_with_label (_("Upgradeable"));
-  gtk_widget_show (menuitem3);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem3);
-  g_signal_connect ((gpointer) menuitem3, "activate",
+  upgradeable = gtk_menu_item_new_with_label (_("Upgradeable"));
+  gtk_widget_show (upgradeable);
+  gtk_container_add (GTK_CONTAINER (filtermenu), upgradeable);
+  g_signal_connect ((gpointer) upgradeable, "activate",
                     G_CALLBACK (on_upgradeable_activate), appdata);
 
-  menuitem4 = gtk_menu_item_new_with_label (_("Selected"));
-  gtk_widget_show (menuitem4);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem4);
-  g_signal_connect ((gpointer) menuitem4, "activate",
+  selected = gtk_menu_item_new_with_label (_("Selected"));
+  gtk_widget_show (selected);
+  gtk_container_add (GTK_CONTAINER (filtermenu), selected);
+  g_signal_connect ((gpointer) selected, "activate",
                     G_CALLBACK (on_selected_activate), appdata);
 
-  return menu;
+  return filtermenu;
 }
 
+/**
+ * @brief Add a menu item to the filter menu
+ * 
+ * @param filtermenu The filter menu
+ * @param name The label name of the menu item
+ */
+void 
+filter_menu_add_item (GtkMenu *filtermenu, const gchar *name, 
+                      ApplicationManagerData *appdata)
+{
+  GtkWidget *dymenuitem;
+
+  g_return_if_fail (GTK_IS_MENU (filtermenu));
+
+  dymenuitem = gtk_menu_item_new_with_label (name);
+  gtk_widget_show (dymenuitem);
+  gtk_container_add (GTK_CONTAINER (filtermenu), dymenuitem);
+  g_signal_connect ((gpointer) dymenuitem, "activate",
+                    G_CALLBACK (on_dynamic_menu_item_activate), appdata);
+
+}

@@ -76,45 +76,47 @@ on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
 GtkMenu *
 application_menu_new (ApplicationManagerData *appdata)
 {
-  GtkMenu *menu;
-  GtkWidget   *menuitem1;
-  GtkWidget   *menuitem2;
-  GtkWidget   *menuitem3;
-  GtkWidget   *menuitem4;
-  GtkWidget   *menuitem5;
+  GtkMenu     *appmenu;
+  GtkWidget   *showstatus;
+  GtkWidget   *showsource;
+  GtkWidget   *installsingleapp;
+  GtkWidget   *showhelp;
+  GtkWidget   *quit;
 
-  g_debug ("Init the application menu");
-  menu = GTK_MENU (gtk_menu_new ());
+  g_debug ("Init the application appmenu");
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
-  menuitem1 = gtk_menu_item_new_with_mnemonic (_("Shows tatus"));
-  gtk_widget_show (menuitem1);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem1);
-  g_signal_connect ((gpointer) menuitem1, "activate",
+  appmenu = GTK_MENU (gtk_menu_new ());
+
+  showstatus = gtk_menu_item_new_with_mnemonic (_("Shows tatus"));
+  gtk_widget_show (showstatus);
+  gtk_container_add (GTK_CONTAINER (appmenu), showstatus);
+  g_signal_connect ((gpointer) showstatus, "activate",
                     G_CALLBACK (on_showstatus_activate), appdata);
 
-  menuitem2 = gtk_menu_item_new_with_mnemonic (_("Show source"));
-  gtk_widget_show (menuitem2);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem2);
-  g_signal_connect ((gpointer) menuitem2, "activate",
+  showsource = gtk_menu_item_new_with_mnemonic (_("Show source"));
+  gtk_widget_show (showsource);
+  gtk_container_add (GTK_CONTAINER (appmenu), showsource);
+  g_signal_connect ((gpointer) showsource, "activate",
                     G_CALLBACK (on_showsource_activate), appdata);
 
-  menuitem3 = gtk_menu_item_new_with_mnemonic (_("Install single application"));
-  gtk_widget_show (menuitem3);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem3);
-  g_signal_connect ((gpointer) menuitem3, "activate",
+  installsingleapp = gtk_menu_item_new_with_mnemonic (_("Install single application"));
+  gtk_widget_show (installsingleapp);
+  gtk_container_add (GTK_CONTAINER (appmenu), installsingleapp);
+  g_signal_connect ((gpointer) installsingleapp, "activate",
                     G_CALLBACK (on_install_single_application_activate), appdata);
 
-  menuitem4 = gtk_menu_item_new_with_mnemonic (_("Show help"));
-  gtk_widget_show (menuitem4);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem4);
-  g_signal_connect ((gpointer) menuitem4, "activate",
+  showhelp = gtk_menu_item_new_with_mnemonic (_("Show help"));
+  gtk_widget_show (showhelp);
+  gtk_container_add (GTK_CONTAINER (appmenu), showhelp);
+  g_signal_connect ((gpointer) showhelp, "activate",
                     G_CALLBACK (on_showhelp_activate), appdata);
 
-  menuitem5 = gtk_menu_item_new_with_mnemonic (_("Quit"));
-  gtk_widget_show (menuitem5);
-  gtk_container_add (GTK_CONTAINER (menu), menuitem5);
-  g_signal_connect ((gpointer) menuitem5, "activate",
+  quit = gtk_menu_item_new_with_mnemonic (_("Quit"));
+  gtk_widget_show (quit);
+  gtk_container_add (GTK_CONTAINER (appmenu), quit);
+  g_signal_connect ((gpointer) quit, "activate",
                     G_CALLBACK (on_quit_activate), appdata);
 
-  return menu;
+  return appmenu;
 }

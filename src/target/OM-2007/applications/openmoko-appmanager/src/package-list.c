@@ -304,9 +304,9 @@ package_list_build_index (ApplicationManagerData *appdata)
   PKG_LIST_HEAD *pkglist;
 
   SectionList *sectionlist = NULL;
-  //PackageList *installed = NULL;
-  //PackageList *upgrade = NULL;
-  //PackageList *selected = NULL;
+  PackageList *installed = NULL;
+  PackageList *upgrade = NULL;
+  PackageList *selected = NULL;
 
   // Get the package list from application manager data
   pkglist = (PKG_LIST_HEAD *) application_manager_data_get_pkglist (appdata);
@@ -325,6 +325,32 @@ package_list_build_index (ApplicationManagerData *appdata)
   package_list_clear_old_index (appdata);
 
   sectionlist = g_malloc (sizeof (SectionList));
+  if (sectionlist == NULL)
+    {
+      g_debug ("Can not malloc memory for the section list");
+      return OP_ERROR;
+    }
+
+  installed = g_malloc (sizeof (PackageList));
+  if (installed == NULL)
+    {
+      g_debug ("Can not malloc memory for the package list");
+      return OP_ERROR;
+    }
+
+  upgrade = g_malloc (sizeof (PackageList));
+  if (upgrade == NULL)
+    {
+      g_debug ("Can not malloc memory for the package list");
+      return OP_ERROR;
+    }
+
+  selected = g_malloc (sizeof (PackageList));
+  if (selected == NULL)
+    {
+      g_debug ("Can not malloc memory for the package list");
+      return OP_ERROR;
+    }
 
   return OP_SUCCESS;
 }
