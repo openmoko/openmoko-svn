@@ -6,7 +6,7 @@ style "scrollbar" {
     GtkScrollbar::stepper_size = 24
     GtkScrollbar::stepper_spacing = 0
 
-    GtkScrollbar::has_backward_stepper = 1
+    GtkScrollbar::has_backward_stepper = 0
     GtkScrollbar::has_secondary_forward_stepper = 0
 
     GtkScrollbar::has_forward_stepper = 1
@@ -60,16 +60,79 @@ style "scrollbar" {
         stretch         = TRUE
         orientation     = HORIZONTAL
       }
+
+
+# steppers
+    image
+      {
+        function              = STEPPER
+        state                 = NORMAL
+        file                  = "openmoko-scroll-action-btn-up.png"
+        border                = { 1,1,4,4 }
+        stretch               = TRUE
+        arrow_direction       = UP
+      }
+
+    image
+      {
+        function              = STEPPER
+        state                 = PRELIGHT
+        file                  = "openmoko-scroll-action-btn-up.png"
+        border                = { 1,1,4,4 }
+        stretch               = TRUE
+        arrow_direction       = UP
+      }
+
+    image
+      {
+        function              = STEPPER
+        state                 = ACTIVE
+        file                  = "openmoko-scroll-action-btn-up-pressed.png"
+        border                = { 1,1,4,4 }
+        stretch               = TRUE
+        arrow_direction       = UP
+      }
+
+    image
+      {
+        function              = STEPPER
+        state                 = NORMAL
+        file                  = "openmoko-scroll-action-btn-down.png"
+        border                = { 1,1,4,4 }
+        stretch               = TRUE
+        arrow_direction       = DOWN
+      }
+
+    image
+      {
+        function              = STEPPER
+        state                 = PRELIGHT
+        file                  = "openmoko-scroll-action-btn-down.png"
+        border                = { 1,1,4,4 }
+        stretch               = TRUE
+        arrow_direction       = DOWN
+      }
+
+    image
+      {
+        function              = STEPPER
+        state                 = ACTIVE
+        file                  = "openmoko-scroll-action-btn-down-pressed.png"
+        border                = { 1,1,4,4 }
+        stretch               = TRUE
+        arrow_direction       = DOWN
+      }
+
 #
 # arrows
 #
-    image {
-        function        = BOX
-        recolorable     = TRUE
-        file            = "arrow-background.png"
-        border          = { 0, 0, 0, 0 }
-        stretch         = TRUE
-      }
+#    image {
+#        function        = BOX
+#        recolorable     = TRUE
+#        file            = "arrow-background.png"
+#        border          = { 0, 0, 0, 0 }
+#        stretch         = TRUE
+#      }
     image {
         function        = ARROW
         recolorable     = TRUE
