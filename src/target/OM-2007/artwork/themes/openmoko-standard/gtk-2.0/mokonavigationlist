@@ -1,0 +1,16 @@
+style "mokonavigationlist-background" {
+
+
+  engine "pixmap" {
+    image
+      {
+        function        = FLAT_BOX
+        recolorable     = TRUE
+        detail          = "viewportbin"
+        file            = "openmoko-navigation-list-background.png"
+        stretch         = TRUE
+      }      
+      
+  }  
+}
+widget "*.mokonavigationlist-background" style "mokonavigationlist-background"
