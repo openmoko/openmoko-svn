@@ -18,6 +18,8 @@
  */
 #include "moko-menu-box.h"
 
+#include <gtk/gtkimage.h>
+#include <gtk/gtkimagemenuitem.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkmenubar.h>
 #include <gtk/gtkmenuitem.h>
@@ -34,7 +36,7 @@
 typedef struct _MokoMenuBoxPriv
 {
     GtkMenuBar* menubar_l;
-    GtkMenuItem* appitem;
+    GtkImageMenuItem* appitem;
     GtkMenu* appmenu;
     GtkMenuBar* menubar_r;
     GtkMenuItem* filteritem;
@@ -153,7 +155,10 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
         gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar_l), TRUE, TRUE, 0 );
 
     }
-    GtkMenuItem* appitem = gtk_menu_item_new_with_label( g_get_application_name() );
+    GtkImageMenuItem* appitem = gtk_image_menu_item_new_with_label( g_get_application_name() );
+    //FIXME implement icon handling properly in moko_application
+    GtkImage* appicon = gtk_image_new_from_file( PKGDATADIR "/unknown" ); // openmoko-logo-alpha.png" );
+    gtk_image_menu_item_set_image( appitem, appicon );
     gtk_widget_set_name( GTK_WIDGET(appitem), "transparent" );
     priv->appitem = appitem;
     priv->appmenu = menu;
@@ -187,8 +192,7 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
     g_signal_connect( GTK_WIDGET(priv->menubar_r), "button-press-event", G_CALLBACK(cb_button_release), menu );
 }
 
-void
-moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
+void moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
 {
     //FIXME this only works with text labels
     moko_debug( "moko_menu_box_set_active_filter" );

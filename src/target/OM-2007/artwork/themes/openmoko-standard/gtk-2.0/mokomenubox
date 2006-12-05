@@ -4,11 +4,11 @@ style "mokomenubox-application-menubar" {
             function        = BOX
             recolorable     = TRUE
             file            = "openmoko-application-menu-bg.png"
-            border          = { 40, 20, 0, 0 }
+            border          = { 0, 20, 0, 0 }
             stretch         = TRUE
         }
     }
-    xthickness = 30
+    xthickness = 5
 }
 widget "*.mokomenubox-application-menubar" style "mokomenubox-application-menubar"
 class "GtkMenuBar" style "mokomenubox-application-menubar"

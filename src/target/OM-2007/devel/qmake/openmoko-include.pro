@@ -59,8 +59,14 @@ contains( TEMPLATE, lib ) {
 }
 
 contains( CONFIG, debug ) {
-	APPDIR = $(OPENMOKODIR)/applications/$$TARGET/data
-	DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
+	!contains( TEMPLATE, lib ) {
+		APPDIR = $(OPENMOKODIR)/applications/$$TARGET/data
+		DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
+	}
+    contains( TEMPLATE, lib ) {
+		APPDIR = $(OPENMOKODIR)/openmoko-libs/data
+		DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
+	}
 }
 !contains( CONFIG, debug ) {
     APPDIR = /usr/share/$$TARGET
