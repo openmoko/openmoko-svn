@@ -157,7 +157,7 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     }
     GtkImageMenuItem* appitem = gtk_image_menu_item_new_with_label( g_get_application_name() );
     //FIXME implement icon handling properly in moko_application
-    GtkImage* appicon = gtk_image_new_from_file( PKGDATADIR "/unknown" ); // openmoko-logo-alpha.png" );
+    GtkImage* appicon = gtk_image_new_from_stock( "openmoko-default-application", GTK_ICON_SIZE_MENU );
     gtk_image_menu_item_set_image( appitem, appicon );
     gtk_widget_set_name( GTK_WIDGET(appitem), "transparent" );
     priv->appitem = appitem;

@@ -43,15 +43,16 @@ typedef struct _MokoApplicationClass
     GObjectClass parent;
 } MokoApplicationClass;
 
-GType moko_application_get_type (void);
+GType moko_application_get_type();
 
 /* Public methods */
-MokoApplication* moko_application_get_instance(void);
+MokoApplication* moko_application_get_instance();
 gboolean moko_application_get_is_topmost(MokoApplication* self);
 void moko_application_set_main_window(MokoApplication* self, MokoWindow* window);
 MokoWindow* moko_application_get_main_window(MokoApplication* self);
 
-gchar* moko_application_get_style_pixmap_dir(void);
+gchar* moko_application_get_style_pixmap_dir();
+void moko_application_add_stock_icons(MokoApplication* self, ...);
 
 G_END_DECLS
 #endif /* _MOKO_APPLICATION_H_ */

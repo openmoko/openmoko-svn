@@ -10,6 +10,7 @@ HEADERS = \
     moko-finger-window.h \
     moko-fixed.h \
     moko-menu-box.h \
+    moko-nativation-list.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-search-bar.h \
@@ -25,6 +26,7 @@ SOURCES = \
     moko-finger-window.c \
     moko-fixed.c \
     moko-menu-box.c \
+    moko-navigation-list.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-search-bar.c \

@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(libopenmoko, 0.0.1, http://www.openmoko.org/)
+AC_INIT(openmoko-libs, 0.0.1, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(libmokoui/moko-window.c)
 AM_CONFIG_HEADER(config.h)

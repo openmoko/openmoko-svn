@@ -18,9 +18,21 @@
  */
 #include "moko-application.h"
 
+#include <gtk/gtkiconfactory.h>
+
+#include <gdk/gdkx.h>
+
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-#include <gdk/gdkx.h>
+
+#include <stdarg.h>
+
+#define DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#else
+#define moko_debug(fmt,...)
+#endif
 
 G_DEFINE_TYPE (MokoApplication, moko_application, G_TYPE_OBJECT)
 
@@ -41,6 +53,7 @@ typedef struct _MokoApplicationPrivate
 
     // our stuff
     MokoWindow* main_window;
+    GtkIconFactory* icon_factory;
 
 } MokoApplicationPrivate;
 
@@ -51,15 +64,25 @@ enum
     PROP_KILLABLE
 };
 
-static void moko_application_class_init (MokoApplicationClass *self);
-static void moko_application_init (MokoApplication *self);
-static void moko_application_set_property (GObject * object, guint property_id, const GValue * value, GParamSpec * pspec);
-static void moko_application_get_property (GObject * object, guint property_id, GValue * value, GParamSpec * pspec);
+static void moko_application_class_init(MokoApplicationClass *self);
+static void moko_application_init(MokoApplication *self);
+static void moko_application_set_property(GObject * object, guint property_id, const GValue * value, GParamSpec * pspec);
+static void moko_application_get_property(GObject * object, guint property_id, GValue * value, GParamSpec * pspec);
 
-static void moko_application_init (MokoApplication *self)
+static void moko_application_init(MokoApplication *self)
 {
+    moko_debug( "moko_application_init" );
     MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (self);
 
+    /* create our own icon factory and add some defaults to it */
+    priv->icon_factory = gtk_icon_factory_new();
+    gtk_icon_factory_add_default( priv->icon_factory );
+
+    moko_application_add_stock_icons( self,
+                                      "openmoko-default-application",
+                                      NULL );
+
+    // cruft necessary?
     priv->killable = FALSE;
     priv->window_count = 0;
     priv->is_topmost = FALSE;
@@ -124,7 +147,6 @@ static void moko_application_class_init (MokoApplicationClass *self)
                                              G_PARAM_READWRITE));
     return;
 }
-
 
 static void moko_application_set_property (GObject * object, guint property_id, const GValue * value, GParamSpec * pspec)
 {
@@ -243,4 +265,28 @@ gchar* moko_application_get_style_pixmap_dir()
 {
     GtkStyle* style = gtk_rc_get_style_by_paths( gtk_settings_get_default(), "GtkWidget", "GtkWidget", GTK_TYPE_WIDGET );
     return g_path_get_dirname( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL] );
+}
+
+void moko_application_add_stock_icons(MokoApplication* self, ...)
+{
+    moko_debug( "moko_application_add_stock_icon" );
+    MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
+
+    va_list valist;
+    gchar* name;
+    va_start(valist, self);
+
+    while ( name = va_arg(valist, gchar*) )
+    {
+        gchar* filename = g_strconcat( name, ".png", NULL );
+        moko_debug( "-- adding stock icon '%s' from pixmap %s", name, g_build_filename( DATADIR "icons", filename, NULL ) );
+        GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file( g_build_filename( DATADIR "icons", filename, NULL ), NULL );
+        GtkIconSet* iconset = gtk_icon_set_new_from_pixbuf( pixbuf );
+        gtk_icon_factory_add( priv->icon_factory, name, iconset);
+        gtk_icon_set_unref( iconset );
+        g_free( filename );
+        g_object_unref( pixbuf );
+    };
+
+    va_end(valist);
 }

@@ -6,12 +6,12 @@ source_h = \
     moko-finger-window.h \
     moko-fixed.h \
     moko-menu-box.h \
+    moko-navigation-list.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-search-bar.h \
     moko-tool-box.h \
     moko-tree-view.h \
-    moko-navigation-list.h \
     moko-window.h
 
 source_c = \
@@ -22,17 +22,20 @@ source_c = \
     moko-finger-window.c \
     moko-fixed.c \
     moko-menu-box.c \
+    moko-navigation-list.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-search-bar.c \
     moko-tree-view.c \
     moko-tool-box.c \
-    moko-navigation-list.c \
     moko-window.c
 
 DATADIR=$(datadir)
 
-AM_CFLAGS = -Wall -pedantic -std=c99 -DDATADIR=\"$(datadir)\libopenmoko\"
+AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
+              -DPKGDATADIR=\"$(pkgdatadir)\"
+
+AM_CFLAGS = -Wall -pedantic -std=c99
 
 lib_LTLIBRARIES      = libmokoui.la
 libmokoui_la_SOURCES     = $(source_c) $(source_h)
