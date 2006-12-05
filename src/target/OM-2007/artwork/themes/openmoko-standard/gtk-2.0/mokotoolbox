@@ -121,6 +121,9 @@ style "mokotoolbox-action-button" {
             stretch         = TRUE
         }
     }
+
+    xthickness = 0
+    ythickness = 0
     MokoPixmapButton::size-request = { 0, 82, 0, 38 }
     GtkButton::focus-line-width = 0
 }
