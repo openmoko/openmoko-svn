@@ -25,6 +25,24 @@
 #include <libmokoui/moko-paned-window.h>
 #include "pixbuf-list.h"
 
+G_BEGIN_DECLS
+
+#define MOKO_TYPE_APPLICATION_MANAGER_DATA  (moko_type_application_manager_data_get_type ())
+#define MOKO_APPLICATION_MANAGER_DATA(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+                                            MOKO_TYPE_APPLICATION_MANAGER_DATA, \
+                                            ApplicationManagerData))
+#define MOKO_APPLICATION_MANAGER_DATA_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), \
+                                                    MOKO_TYPE_APPLICATION_MANAGER_DATA, \
+                                                    ApplicationManagerDataClass))
+#define MOKO_IS_APPLICATION_MANAGER_DATA(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
+                                               MOKO_TYPE_APPLICATION_MANAGER_DATA))
+#define MOKO_IS_APPLICATION_MANAGER_DATA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), \
+                                                       MOKO_TYPE_APPLICATION_MANAGER_DATA))
+#define MOKO_APPLICATION_MANAGER_DATA_GET_TYPE(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
+                                                     MOKO_TYPE_APPLICATION_MANAGER_DATA, \
+                                                     ApplicationManagerDataClass))
+
+
 /**
  * @brief The all data that will be used in the application manager
  *
@@ -34,6 +52,8 @@
  * FIXME Maybe use a GObject as the base class is the better.
  */
 typedef struct _ApplicationManagerData {
+  GObject          parent;             ///<! The parent of the struct
+
   MokoPanedWindow  *mwindow;           ///<! The main window
   GtkWidget        *tvpkglist;         ///<! The treeview of the package list
   GtkWidget        *tvdetail;          ///<! The textview of the details info
@@ -44,6 +64,16 @@ typedef struct _ApplicationManagerData {
   gpointer         selectedlist;       ///<! The list of packages that user selected
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
 } ApplicationManagerData;
+
+/**
+ * @brief The class struct of application manager data
+ */
+typedef struct _ApplicationManagerDataClass {
+  GObjectClass    parent_class;        ///<! The parent class
+} ApplicationManagerDataClass;
+
+GType moko_type_application_manager_data_get_type (void);
+
 
 ApplicationManagerData *application_manager_data_new (void);
 
@@ -100,5 +130,7 @@ gpointer
 GdkPixbuf *
      application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata, 
                                                  guint id);
+
+G_END_DECLS
 
 #endif

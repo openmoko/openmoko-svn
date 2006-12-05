@@ -20,6 +20,64 @@
 
 #include "appmanager-data.h"
 
+static void application_manager_data_class_init (ApplicationManagerDataClass *klass);
+static void application_manager_data_init (ApplicationManagerData *data);
+
+G_DEFINE_TYPE (ApplicationManagerData, application_manager_data, G_TYPE_OBJECT)
+
+static void 
+application_manager_data_class_init (ApplicationManagerDataClass *klass)
+{
+}
+
+static void 
+application_manager_data_init (ApplicationManagerData *data)
+{
+  gint  i;
+
+  data->mwindow = NULL;
+  data->tvpkglist = NULL;
+  data->tvdetail = NULL;
+  data->pkglist = NULL;
+  data->sectionlist = NULL;
+  data->installedlist = NULL;
+  data->upgradelist = NULL;
+  data->selectedlist = NULL;
+
+  for (i = 0; i < N_COUNT_PKG_STATUS; i++)
+    {
+      data->statuspix[i] = NULL;
+    }
+
+}
+
+GType 
+moko_type_application_manager_data_get_type (void)
+{
+  static GType self_type = 0;
+
+  if (!self_type)
+    {
+      static const GTypeInfo self_info =
+        {
+          sizeof (ApplicationManagerDataClass),
+          NULL, /* base_init */
+          NULL, /* base_finalize */
+          (GClassInitFunc) application_manager_data_class_init,
+          NULL, /* class_finalize */
+          NULL, /* class_data */
+          sizeof (ApplicationManagerData),
+          0,
+          (GInstanceInitFunc) application_manager_data_init,
+        };
+
+      // add the type of your parent class here
+      self_type = g_type_register_static (G_TYPE_OBJECT, "ApplicationManagerData", &self_info, 0);
+    }
+
+  return self_type;
+}
+
 /**
  * @brief Create a new ApplicationManagerData
  * @return The ApplicationManagerData. If fail to create, it will return NULL.
@@ -27,6 +85,7 @@
 ApplicationManagerData *
 application_manager_data_new (void)
 {
+/*
   ApplicationManagerData *data;
   int i;
 
@@ -52,6 +111,10 @@ application_manager_data_new (void)
     }
 
   return data;
+*/
+  return MOKO_APPLICATION_MANAGER_DATA (g_object_new \
+                                        (moko_type_application_manager_data_get_type (), \
+                                        NULL));
 }
 
 /**
@@ -63,7 +126,7 @@ void
 application_manager_data_set_main_window (ApplicationManagerData *appdata, 
                                           MokoPanedWindow *window)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->mwindow = window;
 }
@@ -78,7 +141,7 @@ void
 application_manager_data_set_tvpkglist (ApplicationManagerData *appdata,
                                        GtkWidget *tvpkglist)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->tvpkglist = tvpkglist;
 }
@@ -92,7 +155,7 @@ void
 application_manager_data_set_tvdetail (ApplicationManagerData *appdata,
                                        GtkWidget *tvdetail)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->tvdetail = tvdetail;
 }
@@ -106,7 +169,7 @@ void
 application_manager_data_set_pkglist (ApplicationManagerData *appdata,
                                       gpointer pkglist)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->pkglist = pkglist;
 }
@@ -120,7 +183,7 @@ void
 application_manager_data_set_section_list (ApplicationManagerData *appdata,
                                            gpointer sectionlist)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->sectionlist = sectionlist;
 }
@@ -134,7 +197,7 @@ void
 application_manager_data_set_installed_list (ApplicationManagerData *appdata,
                                              gpointer installedlist)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->installedlist = installedlist;
 }
@@ -148,7 +211,7 @@ void
 application_manager_data_set_upgrade_list (ApplicationManagerData *appdata,
                                            gpointer upgradelist)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->upgradelist = upgradelist;
 }
@@ -162,7 +225,7 @@ void
 application_manager_data_set_selected_list (ApplicationManagerData *appdata,
                                             gpointer selectedlist)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->selectedlist = selectedlist;
 }
@@ -178,7 +241,7 @@ application_manager_data_set_status_pixbuf (ApplicationManagerData *appdata,
                                             GdkPixbuf *pixbuf,
                                             guint id)
 {
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
   g_return_if_fail (id < N_COUNT_PKG_STATUS);
 
   appdata->statuspix[id] = pixbuf;
@@ -196,7 +259,7 @@ init_pixbuf_list (ApplicationManagerData *appdata)
 {
   GdkPixbuf  *pixbuf;
 
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   pixbuf = create_pixbuf ("package-available.png");
   if (pixbuf != NULL)
