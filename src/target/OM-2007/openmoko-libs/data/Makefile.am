@@ -1,5 +1,5 @@
 icondir = $(datadir)/icons/
-icon_DATA = openmoko-default-application.png
+icon_DATA = 
 
 EXTRA_DIST = $(icon_DATA)
 

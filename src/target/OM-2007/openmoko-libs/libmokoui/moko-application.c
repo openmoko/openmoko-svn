@@ -78,9 +78,11 @@ static void moko_application_init(MokoApplication *self)
     priv->icon_factory = gtk_icon_factory_new();
     gtk_icon_factory_add_default( priv->icon_factory );
 
+#if 0
     moko_application_add_stock_icons( self,
                                       "openmoko-default-application",
                                       NULL );
+#endif
 
     // cruft necessary?
     priv->killable = FALSE;

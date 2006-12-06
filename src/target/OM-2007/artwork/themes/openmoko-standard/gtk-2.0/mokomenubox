@@ -19,11 +19,11 @@ style "mokomenubox-filter-menubar" {
             function        = BOX
             recolorable     = TRUE
             file            = "openmoko-filter-menu-bg.png"
-            border          = { 30, 30, 0, 0 }
+            border          = { 0, 30, 0, 0 }
             stretch         = TRUE
         }
     }
-    xthickness = 30
+    xthickness = 5
 }
 widget "*.mokomenubox-filter-menubar" style "mokomenubox-filter-menubar"
 
