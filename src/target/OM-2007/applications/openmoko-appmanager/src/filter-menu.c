@@ -128,6 +128,7 @@ filter_menu_add_item (GtkMenu *filtermenu, const gchar *name,
   GtkWidget *dymenuitem;
 
   g_return_if_fail (GTK_IS_MENU (filtermenu));
+  g_debug ("Insert filter menu:%s", name);
 
   dymenuitem = gtk_menu_item_new_with_label (name);
   gtk_widget_show (dymenuitem);

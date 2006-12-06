@@ -30,7 +30,7 @@
 #include "navigation-area.h"
 #include "tool-box.h"
 #include "detail-area.h"
-//#include "appmanager-data.h"
+#include "appmanager-data.h"
 #include "errorcode.h"
 #include "package-list.h"
 
@@ -82,6 +82,7 @@ main (int argc, char* argv[])
 
   filtermenu = filter_menu_new (appdata);
   moko_paned_window_set_filter_menu (window, filtermenu);
+  application_manager_data_set_filter_menu (appdata, filtermenu);
 
   navigation = navigation_area_new (appdata);
   moko_paned_window_set_upper_pane (window, navigation);
@@ -93,14 +94,21 @@ main (int argc, char* argv[])
   moko_paned_window_set_lower_pane (window, detail);
 
   //Load the list of all package in the memory
-  /*
   ret = init_package_list (appdata);
   if (ret != OP_SUCCESS)
     {
       g_debug ("Can not initial the libipkg, the result is%d", ret);
       return -1;
     }
-  */
+  ret = package_list_build_index (appdata);
+  if (ret != OP_SUCCESS)
+    {
+      g_debug ("Can not build index for packages");
+      return -1;
+    }
+
+  package_list_add_section_to_filter_menu (appdata);
+
   ret = navigation_area_insert_test_data (appdata);
 
   gtk_widget_show_all (GTK_WIDGET (window));

@@ -24,4 +24,8 @@
 
 gint init_package_list (ApplicationManagerData *appdata);
 
+gint package_list_build_index (ApplicationManagerData *appdata);
+
+void package_list_add_section_to_filter_menu (ApplicationManagerData *appdata);
+
 #endif

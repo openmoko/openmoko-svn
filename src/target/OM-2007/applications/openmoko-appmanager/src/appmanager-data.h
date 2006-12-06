@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_APPLICATION_MANAGER_DATA  (moko_type_application_manager_data_get_type ())
+#define MOKO_TYPE_APPLICATION_MANAGER_DATA  (application_manager_data_get_type ())
 #define MOKO_APPLICATION_MANAGER_DATA(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
                                             MOKO_TYPE_APPLICATION_MANAGER_DATA, \
                                             ApplicationManagerData))
@@ -63,6 +63,7 @@ typedef struct _ApplicationManagerData {
   gpointer         installedlist;      ///<! The list of all installed packages
   gpointer         upgradelist;        ///<! The list of all upgradeable packages
   gpointer         selectedlist;       ///<! The list of packages that user selected
+  gpointer         nosecpkglist;       ///<! The list of packages whose section name is NULL
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
 } ApplicationManagerData;
 
@@ -73,7 +74,7 @@ typedef struct _ApplicationManagerDataClass {
   GObjectClass    parent_class;        ///<! The parent class
 } ApplicationManagerDataClass;
 
-GType moko_type_application_manager_data_get_type (void);
+GType application_manager_data_get_type (void);
 
 
 ApplicationManagerData *application_manager_data_new (void);
@@ -105,6 +106,9 @@ void application_manager_data_set_upgrade_list (ApplicationManagerData *appdata,
 void application_manager_data_set_selected_list (ApplicationManagerData *appdata,
                                                  gpointer selectedlist);
 
+void application_manager_data_set_nosecpkg_list (ApplicationManagerData *appdata,
+                                                 gpointer nosecpkglist);
+
 void init_pixbuf_list (ApplicationManagerData *appdata);
 
 MokoPanedWindow *
@@ -134,9 +138,13 @@ gpointer
 gpointer 
      application_manager_data_get_selectedlist (ApplicationManagerData *appdata);
 
+gpointer
+     application_manager_data_get_nosecpkglist (ApplicationManagerData *appdata);
+
 GdkPixbuf *
      application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata, 
                                                  guint id);
+
 
 G_END_DECLS
 

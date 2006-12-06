@@ -21,6 +21,7 @@
 #include "appmanager-data.h"
 #include "package-list.h"
 #include "ipkgapi.h"
+#include "filter-menu.h"
 #include "errorcode.h"
 
 /**
@@ -41,6 +42,59 @@ typedef struct section_list {
   PackageList head;               ///<The first node of package list at this section
   struct section_list *next;       ///<The next section list node
 } SectionList;
+
+static gint package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg);
+
+/**
+ * @brief Version compare
+ *
+ * This function is copy from ipkg.(pkg.c)
+ * The verrevcmp() function compares the two version string "val" and
+ * "ref". It returns an integer less than, equal to, or greater than 
+ * zero if "val" is found, respectively, to be less than, to match, or
+ * be greater than "ref".
+ */
+static int 
+verrevcmp(const char *val, const char *ref)
+{
+  int vc, rc;
+  long vl, rl;
+  const char *vp, *rp;
+  const char *vsep, *rsep;
+
+  if (!val) val= "";
+  if (!ref) ref= "";
+  for (;;) 
+    {
+      vp= val;  while (*vp && !isdigit(*vp)) vp++;
+      rp= ref;  while (*rp && !isdigit(*rp)) rp++;
+      for (;;) 
+        {
+          vc= (val == vp) ? 0 : *val++;
+          rc= (ref == rp) ? 0 : *ref++;
+          if (!rc && !vc) break;
+          if (vc && !isalpha(vc)) vc += 256;
+          if (rc && !isalpha(rc)) rc += 256;
+          if (vc != rc) return vc - rc;
+        }
+      val= vp;
+      ref= rp;
+      vl=0;  if (isdigit(*vp)) vl= strtol(val,(char**)&val,10);
+      rl=0;  if (isdigit(*rp)) rl= strtol(ref,(char**)&ref,10);
+      if (vl != rl) return vl - rl;
+
+      vc = *val;
+      rc = *ref;
+      vsep = strchr(".-", vc);
+      rsep = strchr(".-", rc);
+      if (vsep && !rsep) return -1;
+      if (!vsep && rsep) return +1;
+
+      if (!*val && !*ref) return 0;
+      if (!*val) return -1;
+      if (!*ref) return +1;
+    }
+}
 
 /**
  * @brief Get the list of all packages from lib ipkg
@@ -246,6 +300,7 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
   PackageList *installed = NULL;
   PackageList *upgrade = NULL;
   PackageList *selected = NULL;
+  PackageList *nosecpkg = NULL;
 
   // Get the section list from the application manager data
   // If the section list is not NULL, clear it.
@@ -289,8 +344,228 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
       selected = NULL;
       application_manager_data_set_upgrade_list (appdata, selected);
     }
+
+  // Get the nosecpkg list from the application manager data
+  // If the selected list is not NULL, clear it.
+  nosecpkg = (PackageList *)application_manager_data_get_upgradelist (appdata);
+  if (nosecpkg != NULL)
+    {
+      package_list_free_package_list (nosecpkg);
+      g_free (nosecpkg);
+      nosecpkg = NULL;
+      application_manager_data_set_upgrade_list (appdata, nosecpkg);
+    }
 }
 
+/**
+ * @brief Inist the SectionList struct
+ */
+static void 
+section_list_init_node (SectionList *sec)
+{
+  sec->name = NULL;
+  sec->next = NULL;
+  sec->head.pkg = NULL;
+  sec->head.pre = &(sec->head);
+  sec->head.next = &(sec->head);
+}
+
+/**
+ * @brief Init the PackageList struct
+ */
+static void 
+package_list_init_node (PackageList *pkg)
+{
+  pkg->pkg = NULL;
+  pkg->pre = pkg;
+  pkg->next = pkg;
+}
+
+/**
+ * @brief Check the packages, if the installed package is upgradeable,
+ * put them to the "upgrade" package list.
+ *
+ * @param pkglist The package list
+ * @param pkg The package node
+ */
+static gint 
+check_package_upgradeable (PackageList *pkglist, IPK_PACKAGE *pkg,
+                           PackageList *upgrade)
+{
+  IPK_PACKAGE   *tmp;
+  gint   ret;
+
+  tmp = pkglist->pkg;
+  if (tmp->state_status != SS_INSTALLED)
+    {
+      // If the package in the list is not installed, 
+      // check the other one.
+      if (pkg->state_status == SS_INSTALLED)
+        {
+          // If the other one is installed, exchange them
+          pkglist->pkg = pkg;
+          pkg = tmp;
+          tmp = pkglist->pkg;
+        }
+      else
+        {
+          // If the other one is not installed either, 
+          // set the package with high version to the list.
+          ret = verrevcmp (tmp->version, pkg->version);
+          if (ret < 0)
+            {
+              pkglist->pkg = pkg;
+            }
+          return OP_SUCCESS;
+        }
+    }
+
+  ret = verrevcmp (tmp->version, pkg->version);
+  if (ret >= 0)
+    {
+      return OP_SUCCESS;
+    }
+
+  tmp->mark = PKG_STATUS_UPGRADEABLE;
+  ret = package_list_insert_node_without_check (upgrade, tmp);
+  if (ret == OP_SUCCESS)
+    {
+      return OP_SUCCESS;
+    }
+
+  return ret;
+}
+
+/**
+ * @brief Insert a package node to the package list without check whether 
+ * the package is upgradeable
+ *
+ * @param pkglist The package list
+ * @param pkg The package node
+ * @return The result code
+ */
+static gint 
+package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg)
+{
+  PackageList  *tmp;
+  PackageList  *ins;
+  gint   ret;
+
+  tmp = pkglist->pre;
+
+  while ((tmp != pkglist) && (tmp != NULL))
+    {
+      ret = strcmp (pkg->name, tmp->pkg->name);
+
+      if (ret > 0) 
+        {
+          //The name of package is larger then the name of node
+          ins = (PackageList *) g_malloc (sizeof (PackageList));
+          if (ins == NULL)
+            {
+              g_debug ("Can not malloc memory for package node, the package name is:%s", pkg->name);
+              return OP_MAMORY_MALLOC_ERROR;
+            }
+          ins->pkg = pkg;
+          ins->pre = tmp;
+          ins->next = tmp->next;
+
+          tmp->next->pre = ins;
+          tmp->next = ins;
+
+          return OP_SUCCESS;
+        }
+      // FIXME  Ignore the names of two packages are equal
+      // At this condition, if there are two packages with the same name,
+      // add every of them to the package list
+
+      //The name of package is small then the name of node, search the pre node.
+      tmp = tmp->pre;
+    }
+
+  ins = (PackageList *) g_malloc (sizeof (PackageList));
+  if (ins == NULL)
+    {
+      g_debug ("Can not malloc memory for package node, the package name is:%s", pkg->name);
+      return OP_MAMORY_MALLOC_ERROR;
+    }
+  ins->pkg = pkg;
+  ins->pre = tmp;
+  ins->next = tmp->next;
+
+  tmp->next->pre = ins;
+  tmp->next = ins;
+
+  return OP_SUCCESS;
+}
+
+/**
+ * @brief Insert a package node to the package list.
+ *
+ * @param pkglist The package list
+ * @param pkg The package node
+ * @param upgrade The package list of upgradeable packages
+ * @return The result code
+ */
+static gint 
+package_list_insert_node (PackageList *pkglist, IPK_PACKAGE *pkg, PackageList *upgrade)
+{
+  PackageList  *tmp;
+  PackageList  *ins;
+  gint         ret;
+
+  tmp = pkglist->pre;
+
+  while ((tmp != pkglist) && (tmp != NULL))
+    {
+      ret = strcmp (pkg->name, tmp->pkg->name);
+
+      if (ret > 0) 
+        {
+          //The name of package is larger then the name of node
+          ins = (PackageList *) g_malloc (sizeof (PackageList));
+          if (ins == NULL)
+            {
+              g_debug ("Can not malloc memory for package node, the package name is:%s", pkg->name);
+              return OP_MAMORY_MALLOC_ERROR;
+            }
+          ins->pkg = pkg;
+          ins->pre = tmp;
+          ins->next = tmp->next;
+
+          tmp->next->pre = ins;
+          tmp->next = ins;
+
+          return OP_SUCCESS;
+        }
+      else if (ret == 0)
+        {
+          //The name of package is equal to the name of node.
+          //The package maybe an upgradeable package.
+          g_debug ("The package maybe upgradeable. Package name is:%s", pkg->name);
+          g_debug ("The pkg version 1 is:%s, The version 2 is:%s", tmp->pkg->version, pkg->version);
+          return check_package_upgradeable (tmp, pkg, upgrade);
+        }
+
+      //The name of package is small then the name of node, search the pre node.
+      tmp = tmp->pre;
+    }
+
+  ins = (PackageList *) g_malloc (sizeof (PackageList));
+  if (ins == NULL)
+    {
+      g_debug ("Can not malloc memory for package node, the package name is:%s", pkg->name);
+      return OP_MAMORY_MALLOC_ERROR;
+    }
+  ins->pkg = pkg;
+  ins->pre = tmp;
+  ins->next = tmp->next;
+
+  tmp->next->pre = ins;
+  tmp->next = ins;
+
+  return OP_SUCCESS;
+}
 
 /**
  * @brief Build a detailed index for the packages list in the application
@@ -302,11 +577,16 @@ gint
 package_list_build_index (ApplicationManagerData *appdata)
 {
   PKG_LIST_HEAD *pkglist;
+  IPK_PACKAGE   *pkg;
 
-  SectionList *sectionlist = NULL;
-  PackageList *installed = NULL;
-  PackageList *upgrade = NULL;
-  PackageList *selected = NULL;
+  SectionList   *sectionlist = NULL;
+  PackageList   *installed = NULL;
+  PackageList   *upgrade = NULL;
+  PackageList   *selected = NULL;
+  PackageList   *nosecpkg = NULL;
+
+  SectionList   *tmpsec = NULL;
+  gint          ret;
 
   // Get the package list from application manager data
   pkglist = (PKG_LIST_HEAD *) application_manager_data_get_pkglist (appdata);
@@ -322,36 +602,164 @@ package_list_build_index (ApplicationManagerData *appdata)
       return OP_ERROR;
     }
 
+  // Clear the old data
   package_list_clear_old_index (appdata);
 
+  // Malloc memory for the head
   sectionlist = g_malloc (sizeof (SectionList));
   if (sectionlist == NULL)
     {
       g_debug ("Can not malloc memory for the section list");
-      return OP_ERROR;
+      return OP_MAMORY_MALLOC_ERROR;
     }
 
   installed = g_malloc (sizeof (PackageList));
   if (installed == NULL)
     {
       g_debug ("Can not malloc memory for the package list");
-      return OP_ERROR;
+      g_free (sectionlist);
+      return OP_MAMORY_MALLOC_ERROR;
     }
 
   upgrade = g_malloc (sizeof (PackageList));
   if (upgrade == NULL)
     {
       g_debug ("Can not malloc memory for the package list");
-      return OP_ERROR;
+      g_free (sectionlist);
+      g_free (installed);
+      return OP_MAMORY_MALLOC_ERROR;
     }
 
   selected = g_malloc (sizeof (PackageList));
   if (selected == NULL)
     {
       g_debug ("Can not malloc memory for the package list");
-      return OP_ERROR;
+      g_free (sectionlist);
+      g_free (installed);
+      g_free (upgrade);
+      return OP_MAMORY_MALLOC_ERROR;
+    }
+
+  nosecpkg = g_malloc (sizeof (PackageList));
+  if (nosecpkg == NULL)
+    {
+      g_debug ("Can not malloc memory for the package list");
+      g_free (sectionlist);
+      g_free (installed);
+      g_free (upgrade);
+      g_free (selected);
+      return OP_MAMORY_MALLOC_ERROR;
+    }
+
+  // Init each list
+  g_debug ("Begin init each list");
+
+  section_list_init_node (sectionlist);
+
+  package_list_init_node (installed);
+  package_list_init_node (upgrade);
+  package_list_init_node (selected);
+  package_list_init_node (nosecpkg);
+
+  // Set the header of each list to the application manager data
+  application_manager_data_set_section_list (appdata, sectionlist);
+  application_manager_data_set_installed_list (appdata, installed);
+  application_manager_data_set_upgrade_list (appdata, upgrade);
+  application_manager_data_set_selected_list (appdata, selected);
+  application_manager_data_set_nosecpkg_list (appdata, nosecpkg);
+
+  // Start to build the index for all packages
+  pkg = pkglist->pkg_list;
+
+  while (pkg != NULL)
+    {
+      // Check wheather the package was installed
+      if (pkg->state_status == SS_INSTALLED)
+        {
+          pkg->mark = PKG_STATUS_INSTALLED;
+          ret = package_list_insert_node_without_check (installed, pkg);
+          if (ret != OP_SUCCESS)
+            {
+              return ret;
+            }
+        }
+      else
+        {
+          pkg->mark = PKG_STATUS_AVAILABLE;
+        }
+
+      //Search the section node of package.
+      ret = package_list_search_section_node (pkg->section, &tmpsec, sectionlist);
+      if (ret == OP_SUCCESS)
+        {
+          ret = package_list_insert_node (&(tmpsec->head), pkg, upgrade);
+          if (ret != OP_SUCCESS)
+            {
+              return ret;
+            }
+        }
+      else if (ret == OP_SECTION_NAME_NULL)
+        {
+          ret = package_list_insert_node (nosecpkg, pkg, upgrade);
+          if (ret != OP_SUCCESS)
+            {
+              return ret;
+            }
+        }
+      else
+        {
+          return ret;
+        }
+
+      pkg = pkg->next;
     }
 
   return OP_SUCCESS;
 }
 
+/**
+ * @brief Add the sections to the filter menu
+ *
+ * @param appdata The application manager data
+ */
+void 
+package_list_add_section_to_filter_menu (ApplicationManagerData *appdata)
+{
+  SectionList  *seclist;
+  SectionList  *tmpsec;
+  GtkMenu      *filtermenu;
+  PackageList  *tmppkg;
+
+  seclist = application_manager_data_get_sectionlist (appdata);
+  if (seclist == NULL)
+    {
+      g_debug ("Section list is empty, not need add anything to filter menu");
+      return;
+    }
+
+  filtermenu = application_manager_get_filter_menu (appdata);
+  if (filtermenu == NULL)
+    {
+      g_debug ("Filter menu not init correctly");
+      return;
+    }
+
+  tmpsec = seclist->next;
+
+  while (tmpsec != NULL)
+    {
+      filter_menu_add_item (filtermenu, tmpsec->name, appdata);
+      tmpsec = tmpsec->next;
+    }
+
+  tmppkg = application_manager_data_get_nosecpkglist (appdata);
+  if (tmppkg == NULL)
+    {
+      return;
+    }
+
+  if (tmppkg->next != tmppkg)
+    {
+      filter_menu_add_item (filtermenu, "no section", appdata);
+    }
+}

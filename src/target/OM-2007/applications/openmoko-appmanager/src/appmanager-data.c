@@ -43,6 +43,7 @@ application_manager_data_init (ApplicationManagerData *data)
   data->sectionlist = NULL;
   data->installedlist = NULL;
   data->upgradelist = NULL;
+  data->nosecpkglist = NULL;
   data->selectedlist = NULL;
 
   for (i = 0; i < N_COUNT_PKG_STATUS; i++)
@@ -50,33 +51,6 @@ application_manager_data_init (ApplicationManagerData *data)
       data->statuspix[i] = NULL;
     }
 
-}
-
-GType 
-moko_type_application_manager_data_get_type (void)
-{
-  static GType self_type = 0;
-
-  if (!self_type)
-    {
-      static const GTypeInfo self_info =
-        {
-          sizeof (ApplicationManagerDataClass),
-          NULL, /* base_init */
-          NULL, /* base_finalize */
-          (GClassInitFunc) application_manager_data_class_init,
-          NULL, /* class_finalize */
-          NULL, /* class_data */
-          sizeof (ApplicationManagerData),
-          0,
-          (GInstanceInitFunc) application_manager_data_init,
-        };
-
-      // add the type of your parent class here
-      self_type = g_type_register_static (G_TYPE_OBJECT, "ApplicationManagerData", &self_info, 0);
-    }
-
-  return self_type;
 }
 
 /**
@@ -87,7 +61,7 @@ ApplicationManagerData *
 application_manager_data_new (void)
 {
   return MOKO_APPLICATION_MANAGER_DATA (g_object_new \
-                                        (moko_type_application_manager_data_get_type (), \
+                                        (MOKO_TYPE_APPLICATION_MANAGER_DATA, \
                                         NULL));
 }
 
@@ -216,6 +190,21 @@ application_manager_data_set_selected_list (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->selectedlist = selectedlist;
+}
+
+/**
+ * @brief Set the header of the package list whose section name is null 
+ * to the application manager data
+ * @param appdata The application manager data struct
+ * @param nosecpkglist The header of the selected list
+ */
+void 
+application_manager_data_set_nosecpkg_list (ApplicationManagerData *appdata,
+                                            gpointer nosecpkglist)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->nosecpkglist = nosecpkglist;
 }
 
 /**
@@ -416,6 +405,19 @@ application_manager_data_get_selectedlist (ApplicationManagerData *appdata)
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->selectedlist;
+}
+
+/**
+ * @brief Get the nosecpkg list from the application manager data
+ * @param appdata The application manager data
+ * @return The selected list
+ */
+gpointer 
+application_manager_data_get_nosecpkglist (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->nosecpkglist;
 }
 
 /**
