@@ -219,7 +219,6 @@ int main( int argc, char** argv )
     //moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_navigation_list) );
     
-    gtk_widget_show_all (moko_navigation_list);
     
 
     GtkButton* button1;
@@ -242,7 +241,7 @@ int main( int argc, char** argv )
     button1 = moko_tool_box_add_action_button( toolbox );
     //gtk_button_set_label( button1, "Action 1" );
     moko_pixmap_button_set_action_btn_upper_stock (button1, "icon_message");
-    moko_pixmap_button_set_action_btn_lower_label (button1, "Action 1");
+    moko_pixmap_button_set_action_btn_lower_label (button1, "Edit");
     button2 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button2, "Action 2" );
     button3 = moko_tool_box_add_action_button( toolbox );
