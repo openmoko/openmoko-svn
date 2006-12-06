@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(openmoko-paned-demo, 1.0.0, http://www.openmoko.org/)
+AC_INIT(openmoko-paned-demo-simple, 1.0.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/demo-main.c)
 AM_CONFIG_HEADER(config.h)

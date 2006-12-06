@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = openmoko-paned-demo openmoko-finger-demo
+SUBDIRS = openmoko-paned-demo-simple openmoko-paned-demo openmoko-finger-demo
 

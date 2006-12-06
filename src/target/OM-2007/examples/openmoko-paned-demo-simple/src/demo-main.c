@@ -30,88 +30,6 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtktreeview.h>
 
-
-static GtkTreeModel *
-create_model (void)
-{
-
-  GtkListStore *store;
-  GtkTreeIter iter;
-  gint i;
-  gchar *stuff[19][2] = { { "Sean", "1111111111" },
-	 		{ "Tom", "22222222222" },
-	 		{ "Steven", "02134567890" },
-	 		{ "Tony", "02178789999" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "jeff", "02133333333" } };
-
-  /* create list store */
-  
-  store = gtk_list_store_new (2,
-			      G_TYPE_STRING,
-			      G_TYPE_STRING);
-  /* add data to the list store */
-  for (i = 0; i < 19; i++)
-    {
-      gtk_list_store_append (store, &iter);
-      gtk_list_store_set (store, &iter,
-			  0, stuff[i][0],
-			  1, stuff[i][1],
-				-1);
-    }
-
-  return GTK_TREE_MODEL (store);
-}
-
-
-void clist_insert(MokoTreeView *clist)
-{
-     GtkCellRenderer *renderer;
-     GtkTreeViewColumn *column;
-
-     renderer = gtk_cell_renderer_text_new();
-     column = gtk_tree_view_column_new_with_attributes("Name",
-						       renderer,
-						       "text",
-						       0,
-						       NULL);
-
-
-     gtk_tree_view_column_set_sort_column_id(column, 0);
-     gtk_tree_view_append_column(clist, column);
-     gtk_tree_view_column_set_min_width(column, 142);
-     
-     renderer = gtk_cell_renderer_text_new();
-
-     column = gtk_tree_view_column_new_with_attributes("Cell Phone",
-						       renderer,
-						       "text",
-							1,
-						       NULL);
-
-     gtk_tree_view_column_set_sort_column_id(column, 1);
-     gtk_tree_view_append_column(clist, column);
-     gtk_tree_view_column_set_min_width(column, 156);
-
-
-     return;
-}
-
-
-
 void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
 {
     g_debug( "openmoko-paned-demo: searchbox now visible" );
@@ -205,22 +123,9 @@ int main( int argc, char** argv )
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL );
 
     /* navigation area */
-    //GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
+    GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
+    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
     
-    MokoTreeView *moko_treeview;
-    GtkTreeModel *model = create_model ();
-    MokoNavigationList *moko_navigation_list;
-    
-    moko_navigation_list = moko_navigation_list_new ();
-    moko_treeview = moko_navigation_list_get_tree_view (moko_navigation_list);
-    gtk_tree_view_set_model (moko_treeview, GTK_TREE_MODEL (model) );
-    clist_insert(moko_treeview);
-    
-    //moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
-    moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_navigation_list) );
-    
-    
-
     GtkButton* button1;
     GtkButton* button2;
     GtkButton* button3;
@@ -239,9 +144,7 @@ int main( int argc, char** argv )
     g_signal_connect( G_OBJECT(toolbox), "searchbox_invisible", G_CALLBACK(cb_searchbox_invisible), NULL );
 
     button1 = moko_tool_box_add_action_button( toolbox );
-    //gtk_button_set_label( button1, "Action 1" );
-    moko_pixmap_button_set_action_btn_upper_stock (button1, "icon_message");
-    moko_pixmap_button_set_action_btn_lower_label (button1, "Edit");
+    gtk_button_set_label( button1, "Action 1" );
     button2 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button2, "Action 2" );
     button3 = moko_tool_box_add_action_button( toolbox );
