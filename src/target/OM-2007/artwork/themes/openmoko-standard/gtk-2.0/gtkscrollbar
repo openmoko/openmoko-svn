@@ -16,8 +16,7 @@ style "scrollbar" {
 #
 # sliders
 #
-    image
-      {
+    image {
         function        = BOX
         recolorable     = TRUE
         detail          = "slider"
@@ -25,10 +24,9 @@ style "scrollbar" {
         border          = { 13, 12, 2, 2 }
         stretch         = TRUE
         orientation     = HORIZONTAL
-      }
+    }
 
-    image
-      {
+    image {
         function        = BOX
         recolorable     = TRUE
         detail          = "slider"
@@ -36,12 +34,11 @@ style "scrollbar" {
         border          = { 2, 2, 15, 15 }
         stretch         = TRUE
         orientation     = VERTICAL
-      }
+    }
 #
 # through
 #
-    image
-      {
+    image {
         function        = BOX
         recolorable     = TRUE
         detail          = "trough"
@@ -49,9 +46,8 @@ style "scrollbar" {
         border          = { 3, 3, 23, 23 }
         stretch         = TRUE
         orientation     = VERTICAL
-      }
-    image
-      {
+    }
+    image {
         function        = BOX
         recolorable     = TRUE
         detail          = "trough"
@@ -59,69 +55,82 @@ style "scrollbar" {
         border          = { 23, 23, 3, 3 }
         stretch         = TRUE
         orientation     = HORIZONTAL
-      }
+    }
 
+#FIXME need to provide different images for insensitive buttons
 
 # steppers
-    image
-      {
-        function              = STEPPER
-        state                 = NORMAL
-        file                  = "openmoko-scroll-action-btn-up.png"
-        border                = { 1,1,4,4 }
-        stretch               = TRUE
-        arrow_direction       = UP
-      }
+    image {
+        function        = STEPPER
+        state           = INSENSITIVE
+        file            = "openmoko-scroll-action-btn-up.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = UP
+    }
 
-    image
-      {
-        function              = STEPPER
-        state                 = PRELIGHT
-        file                  = "openmoko-scroll-action-btn-up.png"
-        border                = { 1,1,4,4 }
-        stretch               = TRUE
-        arrow_direction       = UP
-      }
+    image {
+        function        = STEPPER
+        state           = NORMAL
+        file            = "openmoko-scroll-action-btn-up.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = UP
+    }
 
-    image
-      {
-        function              = STEPPER
-        state                 = ACTIVE
-        file                  = "openmoko-scroll-action-btn-up-pressed.png"
-        border                = { 1,1,4,4 }
-        stretch               = TRUE
-        arrow_direction       = UP
-      }
+    image {
+        function        = STEPPER
+        state           = PRELIGHT
+        file            = "openmoko-scroll-action-btn-up.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = UP
+    }
 
-    image
-      {
-        function              = STEPPER
-        state                 = NORMAL
-        file                  = "openmoko-scroll-action-btn-down.png"
-        border                = { 1,1,4,4 }
-        stretch               = TRUE
-        arrow_direction       = DOWN
-      }
+    image {
+        function        = STEPPER
+        state           = ACTIVE
+        file            = "openmoko-scroll-action-btn-up-pressed.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = UP
+    }
 
-    image
-      {
-        function              = STEPPER
-        state                 = PRELIGHT
-        file                  = "openmoko-scroll-action-btn-down.png"
-        border                = { 1,1,4,4 }
-        stretch               = TRUE
-        arrow_direction       = DOWN
-      }
+    image {
+        function        = STEPPER
+        state           = INSENSITIVE
+        file            = "openmoko-scroll-action-btn-down.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = DOWN
+    }
 
-    image
-      {
-        function              = STEPPER
-        state                 = ACTIVE
-        file                  = "openmoko-scroll-action-btn-down-pressed.png"
-        border                = { 1,1,4,4 }
-        stretch               = TRUE
-        arrow_direction       = DOWN
-      }
+    image {
+        function        = STEPPER
+        state           = NORMAL
+        file            = "openmoko-scroll-action-btn-down.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = DOWN
+    }
+
+    image {
+        function        = STEPPER
+        state           = PRELIGHT
+        file            = "openmoko-scroll-action-btn-down.png"
+        border          = { 1, 1, 4, 4 }
+        stretch         = TRUE
+        arrow_direction = DOWN
+    }
+
+    image {
+        function        = STEPPER
+        state           = ACTIVE
+        file            = "openmoko-scroll-action-btn-down-pressed.png"
+        border          = { 1,1,4,4 }
+        stretch         = TRUE
+        arrow_direction = DOWN
+    }
 
 #
 # arrows
@@ -132,7 +141,7 @@ style "scrollbar" {
 #        file            = "arrow-background.png"
 #        border          = { 0, 0, 0, 0 }
 #        stretch         = TRUE
-#      }
+#    }
     image {
         function        = ARROW
         recolorable     = TRUE
@@ -140,7 +149,7 @@ style "scrollbar" {
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
         arrow_direction = UP
-      }
+    }
     image {
         function        = ARROW
         recolorable     = TRUE
@@ -148,7 +157,7 @@ style "scrollbar" {
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
         arrow_direction = DOWN
-      }
+    }
     image {
         function        = ARROW
         recolorable     = TRUE
@@ -156,7 +165,7 @@ style "scrollbar" {
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
         arrow_direction = LEFT
-      }
+    }
     image {
         function        = ARROW
         recolorable     = TRUE
@@ -164,7 +173,7 @@ style "scrollbar" {
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
         arrow_direction = RIGHT
-      }
+    }
   }
 }
 class "GtkScrollbar" style "scrollbar"
