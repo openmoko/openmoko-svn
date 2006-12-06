@@ -36,6 +36,7 @@ G_DEFINE_TYPE (MokoPixmapButton, moko_pixmap_button, GTK_TYPE_BUTTON);
 typedef struct _MokoPixmapButtonPrivate
 {
     GtkMenu *menu;
+    GtkWidget *buttonvbox;
 } MokoPixmapButtonPrivate;
 
 static void
@@ -101,28 +102,33 @@ cb_menu_position_func (GtkMenu *menu, int *x, int *y, gboolean *push_in, MokoPix
 static void
 cb_button_clicked(MokoPixmapButton* self, gpointer data)
 {
-  MokoPixmapButtonPrivate *priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    MokoPixmapButtonPrivate *priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
 
-  if (!priv->menu)
-    return;
+    if (!priv->menu)
+        return;
 
-  if (!GTK_WIDGET_VISIBLE(priv->menu))
+    if (!GTK_WIDGET_VISIBLE(priv->menu))
     {
-      /* we get here only when the menu is activated by a key
-       * press, so that we can select the first menu item */
-          gtk_menu_popup (priv->menu, NULL, NULL,
-                  (GtkMenuPositionFunc) cb_menu_position_func,
-                  self, 0, gtk_get_current_event_time ());
-}
+        /* we get here only when the menu is activated by a key
+         * press, so that we can select the first menu item */
+        gtk_menu_popup (priv->menu, NULL, NULL,
+                        (GtkMenuPositionFunc) cb_menu_position_func,
+                        self, 0, gtk_get_current_event_time ());
+    }
 }
 
 static void
 moko_pixmap_button_init (MokoPixmapButton *self)
 {
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    
     moko_debug( "moko_pixmap_button_init" );
     gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE ); //FIXME probably don't need this when focus is invisible
     g_object_set_property( G_OBJECT(self), "can-focus", FALSE ); //FIXME probably don't need this when focus is invisible
 
+    priv->buttonvbox = gtk_vbox_new (FALSE, 0);
+    gtk_container_add (GTK_CONTAINER (self), priv->buttonvbox);
+    
     g_signal_connect( G_OBJECT(self), "clicked", G_CALLBACK(cb_button_clicked), NULL );
 }
 
@@ -142,7 +148,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
                           "focus-padding", &focus_pad,
                           "size-request", &size_request, // modified
                           NULL);
-
+    
     if ( size_request && size_request->left + size_request->right + size_request->top + size_request->bottom ) // new fixed thing
     {
         moko_debug( "moko_pixmap_button_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
@@ -197,3 +203,37 @@ moko_pixmap_button_set_menu (MokoPixmapButton* self, GtkMenu* menu)
     g_assert( !priv->menu ); //FIXME what's canon for these things? a) Error out or b) just don't do it or c) free the old menu and set the new one?
     priv->menu = menu;
 }
+
+
+void
+moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gchar *stock_name)
+{
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+	  
+	  GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
+    
+    GtkWidget *stock_image = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_BUTTON);
+    gtk_container_add (GTK_CONTAINER (upperalignment), stock_image);
+	  
+    gtk_misc_set_alignment (GTK_MISC (stock_image), 1, 0.2);
+}
+
+void
+moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gchar *label)
+{
+    
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    
+    GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
+    
+    GtkWidget *lowerlabel = gtk_label_new (label);
+    gtk_container_add (GTK_CONTAINER (loweralignment), lowerlabel);
+    
+    gtk_misc_set_alignment (GTK_MISC (lowerlabel), 0.5, 0);
+    
+}
+
+
+
