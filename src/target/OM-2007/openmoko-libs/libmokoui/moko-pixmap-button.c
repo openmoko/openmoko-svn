@@ -37,6 +37,8 @@ typedef struct _MokoPixmapButtonPrivate
 {
     GtkMenu *menu;
     GtkWidget *buttonvbox;
+    GtkWidget *actionbtnlowerlabel;
+    GtkWidget *actionbtnstockimage;
 } MokoPixmapButtonPrivate;
 
 static void
@@ -102,7 +104,7 @@ cb_menu_position_func (GtkMenu *menu, int *x, int *y, gboolean *push_in, MokoPix
 static void
 cb_button_clicked(MokoPixmapButton* self, gpointer data)
 {
-    MokoPixmapButtonPrivate *priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    MokoPixmapButtonPrivate *priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
 
     if (!priv->menu)
         return;
@@ -120,7 +122,7 @@ cb_button_clicked(MokoPixmapButton* self, gpointer data)
 static void
 moko_pixmap_button_init (MokoPixmapButton *self)
 {
-    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
     
     moko_debug( "moko_pixmap_button_init" );
     gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE ); //FIXME probably don't need this when focus is invisible
@@ -160,6 +162,16 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
             GtkRequisition child_requisition;
             gtk_widget_size_request (GTK_BIN (button)->child, &child_requisition);
         }
+        
+        //Set label width/height on action button for better view
+        //FIXME try to adjust alignment to implement this fuction.
+        MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (widget);
+        if ( priv->actionbtnlowerlabel )
+        {
+            //gtk_widget_set_size_request(priv->actionbtnstockimage, size_request->right, size_request->bottom/2 - 1);
+            gtk_widget_set_size_request(priv->actionbtnlowerlabel, size_request->right, size_request->bottom/2 + 1);
+        }
+        
     }
     else // old dynamic routine
     {
@@ -199,7 +211,7 @@ moko_pixmap_button_new (void)
 void
 moko_pixmap_button_set_menu (MokoPixmapButton* self, GtkMenu* menu)
 {
-    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
     g_assert( !priv->menu ); //FIXME what's canon for these things? a) Error out or b) just don't do it or c) free the old menu and set the new one?
     priv->menu = menu;
 }
@@ -208,30 +220,36 @@ moko_pixmap_button_set_menu (MokoPixmapButton* self, GtkMenu* menu)
 void
 moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gchar *stock_name)
 {
-    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
+	  
+	  if ( priv->actionbtnstockimage )
+	      return;
 	  
 	  GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
     
-    GtkWidget *stock_image = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_BUTTON);
-    gtk_container_add (GTK_CONTAINER (upperalignment), stock_image);
+    priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_BUTTON);
+    gtk_container_add (GTK_CONTAINER (upperalignment), priv->actionbtnstockimage);
 	  
-    gtk_misc_set_alignment (GTK_MISC (stock_image), 1, 0.2);
+    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
 }
 
 void
 moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gchar *label)
 {
-    
-    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE(self);
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
+
+	  if ( priv->actionbtnlowerlabel )
+	      return;
     
     GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
     
-    GtkWidget *lowerlabel = gtk_label_new (label);
-    gtk_container_add (GTK_CONTAINER (loweralignment), lowerlabel);
+    priv->actionbtnlowerlabel = gtk_label_new (label);
     
-    gtk_misc_set_alignment (GTK_MISC (lowerlabel), 0.5, 0);
+    gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnlowerlabel);
+    
+    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnlowerlabel), 0.5, 0);
     
 }
 
