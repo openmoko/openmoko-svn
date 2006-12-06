@@ -1,0 +1,16 @@
+
+style "icons" {
+  stock["icon_message"]		      = {{"icon_message.png"}}
+#  stock["icon_phone"]		        = {{"icon_phone.png"}}
+#  stock["icon_dialer_people"]		= {{"icon_dialer_people.png"}}
+  stock["icon_app_history"]	    = {{"icon_app_history.png"}}
+  stock["icon_app_toggle"]		  = {{"icon_app_toggle.png"}}
+	
+#  stock["icon_outgoing_call"]		= {{"icon_outgoing_call.png"}}
+#  stock["icon_incoming_call"]		= {{"icon_incoming_call.png"}}
+#  stock["icon_missing_call"]		= {{"icon_missing_call.png"}}
+#  stock["icon_all_call"]		    = {{"icon_all_call.png"}}
+}
+widget_class "GtkWidget" style "icons"
+class "GtkWidget" style "icons"
+

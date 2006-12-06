@@ -109,3 +109,4 @@ include "mokotoolbox"
 include "mokotreeview"
 include "mokonavigationlist"
 
+include "mokoicons"
