@@ -23,6 +23,7 @@
 #include "ipkgapi.h"
 #include "filter-menu.h"
 #include "errorcode.h"
+#include "navigation-area.h"
 
 /**
  * @brief The structor of Package list node
@@ -760,6 +761,87 @@ package_list_add_section_to_filter_menu (ApplicationManagerData *appdata)
 
   if (tmppkg->next != tmppkg)
     {
-      filter_menu_add_item (filtermenu, "no section", appdata);
+      filter_menu_add_item (filtermenu, PACKAGE_LIST_NO_SECTION_STRING, appdata);
     }
+}
+
+/**
+ * @brief Insert node to store
+ */
+static void 
+insert_node_to_store (ApplicationManagerData *appdata, 
+                      GtkListStore *store, 
+                      IPK_PACKAGE *pkg)
+{
+  GtkTreeIter   iter;
+  GdkPixbuf    *pix = NULL;
+
+  pix = application_manager_data_get_status_pixbuf (appdata, pkg->mark);
+
+  gtk_list_store_append (store, &iter);
+
+  gtk_list_store_set (store, &iter,
+                      COL_STATUS, pix,
+                      COL_NAME, pkg->name,
+                      COL_SIZE, pkg->size,
+                      COL_POINTER, pkg,
+                      -1);
+
+}
+
+/**
+ * @brief Put the nodes in the package list to the GtkListStore
+ *
+ * @param appdata The application manager data
+ * @param store The list store
+ * @param pkglist The package list
+ */
+void 
+translate_package_list_to_store (ApplicationManagerData *appdata, 
+                                 GtkListStore *store, 
+                                 gpointer pkglist)
+{
+  PackageList *pkglisthead = (PackageList *)pkglist;
+  PackageList *tmplist;
+
+  tmplist = pkglisthead->next;
+  while (tmplist != pkglisthead)
+    {
+      insert_node_to_store (appdata, store, tmplist->pkg);
+      tmplist = tmplist->next;
+    }
+}
+
+/**
+ * @brief Get the package list which section name equals the "name"
+ * from the dynamic section list
+ * @param appdata The application manager data
+ * @param name The section name
+ */
+gpointer 
+package_list_get_with_name (ApplicationManagerData *appdata,
+                            const gchar *name)
+{
+  SectionList  *seclist;
+
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  seclist = application_manager_data_get_sectionlist (appdata);
+  if (seclist == NULL)
+    {
+      g_debug ("Section list is NULL");
+      return NULL;
+    }
+
+  seclist = seclist->next;
+  while (seclist != NULL)
+    {
+      if ( 0 == strcmp (name, seclist->name))
+        {
+          return &(seclist->head);
+        }
+      seclist = seclist->next;
+    }
+
+  return NULL;
 }

@@ -38,4 +38,7 @@ gint navigation_area_insert_test_data (ApplicationManagerData *appdata);
 
 gchar *treeview_get_selected_name (GtkWidget *treeview);
 
+void navigation_area_refresh_with_package_list (ApplicationManagerData *appdata, 
+                                                gpointer pkglist);
+
 #endif

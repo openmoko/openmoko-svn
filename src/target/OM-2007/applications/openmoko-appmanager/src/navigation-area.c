@@ -23,6 +23,7 @@
 #include "navigation-area.h"
 #include "errorcode.h"
 #include "detail-area.h"
+#include "package-list.h"
 
 /**
  * @brief The callback function of the signal "cursor-changed"
@@ -240,4 +241,32 @@ treeview_get_selected_name (GtkWidget *treeview)
     }
 
   return NULL;
+}
+
+/**
+ * @brief Refresh the navigation area with the package list
+ */
+void 
+navigation_area_refresh_with_package_list (ApplicationManagerData *appdata, 
+                                           gpointer pkglist)
+{
+  GtkWidget     *treeview;
+  GtkTreeModel  *model;
+  GtkListStore  *store;
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
+
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_MODEL (model));
+  store = GTK_LIST_STORE (model);
+
+  g_object_ref (model);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
+  gtk_list_store_clear (store);
+
+  translate_package_list_to_store (appdata, store, pkglist);
+
+  gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
+  g_object_unref (model);
 }

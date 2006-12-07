@@ -22,10 +22,19 @@
 
 #include <gtk/gtk.h>
 
+#define PACKAGE_LIST_NO_SECTION_STRING "no section"
+
 gint init_package_list (ApplicationManagerData *appdata);
 
 gint package_list_build_index (ApplicationManagerData *appdata);
 
 void package_list_add_section_to_filter_menu (ApplicationManagerData *appdata);
+
+void translate_package_list_to_store (ApplicationManagerData *appdata, 
+                                      GtkListStore *store, 
+                                      gpointer pkglist);
+
+gpointer package_list_get_with_name (ApplicationManagerData *appdata,
+                                     const gchar *name);
 
 #endif

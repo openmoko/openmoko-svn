@@ -17,9 +17,12 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
+#include <string.h>
 
 #include "filter-menu.h"
 #include "appmanager-window.h"
+#include "navigation-area.h"
+#include "package-list.h"
 
 /**
  * @brief The callback function of the search result menuitem.
@@ -36,7 +39,16 @@ on_search_result_activate (GtkMenuItem *menuitem, gpointer userdata)
 void 
 on_installed_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
+  gpointer     pkglist;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (userdata));
   g_debug ("Clicked the installed menuitem");
+
+  pkglist = application_manager_data_get_installedlist (
+                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+
+  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
+                                             pkglist);
 }
 
 /**
@@ -45,7 +57,16 @@ on_installed_activate (GtkMenuItem *menuitem, gpointer userdata)
 void 
 on_upgradeable_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
+  gpointer     pkglist;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (userdata));
   g_debug ("Clicked the upgradeable menuitem");
+
+  pkglist = application_manager_data_get_upgradelist (
+                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+
+  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
+                                             pkglist);
 }
 
 /**
@@ -54,7 +75,16 @@ on_upgradeable_activate (GtkMenuItem *menuitem, gpointer userdata)
 void 
 on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
+  gpointer     pkglist;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (userdata));
   g_debug ("Click the selected menuitem");
+
+  pkglist = application_manager_data_get_selectedlist (
+                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+
+  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
+                                             pkglist);
 }
 
 /**
@@ -63,7 +93,38 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
 void 
 on_dynamic_menu_item_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
+  const gchar  *secname;
+  GtkWidget    *label;
+  gint         ret;
+  gpointer     pkglist;
+
   g_debug ("Click the dynamic menuitem");
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (userdata));
+  label = gtk_bin_get_child (GTK_BIN (menuitem));
+  g_return_if_fail (GTK_IS_LABEL (label));
+
+  secname = gtk_label_get_text (GTK_LABEL (label));
+  g_debug ("Chose the menuitem:%s", secname);
+  ret = strcmp (secname, PACKAGE_LIST_NO_SECTION_STRING);
+  if (ret == 0)
+    {
+      pkglist = application_manager_data_get_nosecpkglist (
+                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+      navigation_area_refresh_with_package_list (
+                      MOKO_APPLICATION_MANAGER_DATA (userdata), 
+                      pkglist);
+      return;
+    }
+
+  pkglist = package_list_get_with_name (MOKO_APPLICATION_MANAGER_DATA (userdata),
+                                        secname);
+  if (pkglist == NULL)
+    {
+      g_debug ("Can not find the section that named:%s", secname);
+      return;
+    }
+  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
+                                             pkglist);
 }
 
 /**
@@ -137,3 +198,4 @@ filter_menu_add_item (GtkMenu *filtermenu, const gchar *name,
                     G_CALLBACK (on_dynamic_menu_item_activate), appdata);
 
 }
+

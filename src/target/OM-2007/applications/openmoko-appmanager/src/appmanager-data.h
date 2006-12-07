@@ -38,9 +38,9 @@ G_BEGIN_DECLS
                                                MOKO_TYPE_APPLICATION_MANAGER_DATA))
 #define MOKO_IS_APPLICATION_MANAGER_DATA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), \
                                                        MOKO_TYPE_APPLICATION_MANAGER_DATA))
-#define MOKO_APPLICATION_MANAGER_DATA_GET_TYPE(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-                                                     MOKO_TYPE_APPLICATION_MANAGER_DATA, \
-                                                     ApplicationManagerDataClass))
+#define MOKO_APPLICATION_MANAGER_DATA_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
+                                                      MOKO_TYPE_APPLICATION_MANAGER_DATA, \
+                                                      ApplicationManagerDataClass))
 
 
 /**
