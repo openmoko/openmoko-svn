@@ -1,3 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = openmoko-chordmaster
+SUBDIRS = openmoko-chordmaster 
+#openmoko-appmanager openmoko-dialer
 
