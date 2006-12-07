@@ -57,8 +57,10 @@ static void moko_window_init (MokoWindow *self) /* Instance Construction */
     moko_debug( "moko_window_init" );
     gtk_widget_set_size_request( GTK_WIDGET(self), 480, 640 ); //FIXME get from style
     MokoApplication* app = moko_application_get_instance();
-    g_assert( !moko_application_get_main_window( app ) ); // fail if someone creates more than one MokoWindow per application
-    moko_application_set_main_window( app, self );
+    if ( !moko_application_get_main_window( app ) )
+        moko_application_set_main_window( app, self );
+    else
+        g_warning( "moko_window_init: there is already a main window" );
 }
 
 GtkWidget* moko_window_new() /* Construction */

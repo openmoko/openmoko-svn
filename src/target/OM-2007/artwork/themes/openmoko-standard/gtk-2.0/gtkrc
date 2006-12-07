@@ -102,6 +102,7 @@ include "gtkbutton"
 include "gtkcheckbutton"
 
 include "mokodetailswindow"
+include "mokodialogwindow"
 include "mokofingerbutton"
 include "mokofingertoolbox"
 include "mokofingerwheel"

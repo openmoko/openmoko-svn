@@ -1,0 +1,13 @@
+style "mokodialogwindow-title-labelbox"
+{
+    bg_pixmap[NORMAL] = "<none>"
+    bg[NORMAL] = "#000000"
+}
+widget "*.mokodialogwindow-title-labelbox" style "mokodialogwindow-title-labelbox"
+
+style "mokodialogwindow-title-label"
+{
+    font_name = "Vera Sans 14"
+    fg[NORMAL] = "#cccccc"
+}
+widget "*.mokodialogwindow-title-label" style "mokodialogwindow-title-label"

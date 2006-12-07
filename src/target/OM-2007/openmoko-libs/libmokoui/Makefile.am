@@ -2,6 +2,7 @@ source_h = \
     moko-alignment.h \
     moko-application.h \
     moko-details-window.h \
+    moko-dialog-window.h \
     moko-finger-tool-box.h \
     moko-finger-wheel.h \
     moko-finger-window.h \
@@ -19,6 +20,7 @@ source_c = \
     moko-alignment.c \
     moko-application.c \
     moko-details-window.c \
+    moko-dialog-window.c \
     moko-finger-tool-box.c \
     moko-finger-wheel.c \
     moko-finger-window.c \

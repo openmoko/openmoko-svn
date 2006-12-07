@@ -19,6 +19,7 @@
 
 #include <libmokoui/moko-application.h>
 #include <libmokoui/moko-details-window.h>
+#include <libmokoui/moko-dialog-window.h>
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-navigation-list.h>
@@ -135,6 +136,11 @@ void cb_button1_clicked(GtkButton *button, gpointer user_data)
 void cb_button2_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-paned-demo: button2 clicked" );
+    MokoDialogWindow* dialog = moko_dialog_window_new();
+    moko_dialog_window_set_title( dialog, "Example Full Screen Dialog Window" );
+    g_debug( "--> dialog main loop" );
+    gtk_widget_show_all( GTK_WIDGET(dialog) );
+    g_debug( "<-- dialog returns" );
 }
 
 void cb_button3_clicked(GtkButton *button, gpointer user_data)
