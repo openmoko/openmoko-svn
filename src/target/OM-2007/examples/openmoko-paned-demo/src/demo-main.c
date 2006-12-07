@@ -38,82 +38,77 @@ static GtkTreeModel *
 create_model (void)
 {
 
-  GtkListStore *store;
-  GtkTreeIter iter;
-  gint i;
-  gchar *stuff[19][2] = { { "Sean", "1111111111" },
-	 		{ "Tom", "22222222222" },
-	 		{ "Steven", "02134567890" },
-	 		{ "Tony", "02178789999" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "Gordon", "02122222222" },
-	 		{ "jeff", "02133333333" } };
+    GtkListStore *store;
+    GtkTreeIter iter;
+    gint i;
+    gchar *stuff[19][2] = { { "Sean", "1111111111" },
+        { "Tom", "22222222222" },
+        { "Steven", "02134567890" },
+        { "Tony", "02178789999" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "Gordon", "02122222222" },
+        { "jeff", "02133333333" } };
 
-  /* create list store */
+        /* create list store */
 
-  store = gtk_list_store_new (2,
-			      G_TYPE_STRING,
-			      G_TYPE_STRING);
-  /* add data to the list store */
-  for (i = 0; i < 19; i++)
-    {
-      gtk_list_store_append (store, &iter);
-      gtk_list_store_set (store, &iter,
-			  0, stuff[i][0],
-			  1, stuff[i][1],
-				-1);
-    }
+        store = gtk_list_store_new (2,
+                                    G_TYPE_STRING,
+                                    G_TYPE_STRING);
+        /* add data to the list store */
+        for (i = 0; i < 19; i++)
+        {
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter,
+                                0, stuff[i][0],
+                                1, stuff[i][1],
+                                -1);
+        }
 
-  return GTK_TREE_MODEL (store);
+        return GTK_TREE_MODEL (store);
 }
 
 
 void clist_insert(MokoTreeView *clist)
 {
-     GtkCellRenderer *renderer;
-     GtkTreeViewColumn *column;
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;
 
-     renderer = gtk_cell_renderer_text_new();
-     column = gtk_tree_view_column_new_with_attributes("Name",
-						       renderer,
-						       "text",
-						       0,
-						       NULL);
-
-
-     gtk_tree_view_column_set_sort_column_id(column, 0);
-     gtk_tree_view_append_column(clist, column);
-     gtk_tree_view_column_set_min_width(column, 142);
-
-     renderer = gtk_cell_renderer_text_new();
-
-     column = gtk_tree_view_column_new_with_attributes("Cell Phone",
-						       renderer,
-						       "text",
-							1,
-						       NULL);
-
-     gtk_tree_view_column_set_sort_column_id(column, 1);
-     gtk_tree_view_append_column(clist, column);
-     gtk_tree_view_column_set_min_width(column, 156);
+    renderer = gtk_cell_renderer_text_new();
+    column = gtk_tree_view_column_new_with_attributes("Name",
+            renderer,
+            "text",
+            0,
+            NULL);
 
 
-     return;
+    gtk_tree_view_column_set_sort_column_id(column, 0);
+    gtk_tree_view_append_column(clist, column);
+    gtk_tree_view_column_set_min_width(column, 142);
+
+    renderer = gtk_cell_renderer_text_new();
+
+    column = gtk_tree_view_column_new_with_attributes("Cell Phone",
+            renderer,
+            "text",
+            1,
+            NULL);
+
+    gtk_tree_view_column_set_sort_column_id(column, 1);
+    gtk_tree_view_append_column(clist, column);
+    gtk_tree_view_column_set_min_width(column, 156);
 }
-
-
 
 void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
 {
@@ -243,10 +238,10 @@ int main( int argc, char** argv )
 
     button1 = moko_tool_box_add_action_button( toolbox );
     //gtk_button_set_label( button1, "Action 1" );
-    moko_pixmap_button_set_action_btn_upper_stock (button1, "icon_message");
+    moko_pixmap_button_set_action_btn_upper_stock (button1, "openmoko-action-button-message-icon");
     moko_pixmap_button_set_action_btn_lower_label (button1, "Edit");
     button2 = moko_tool_box_add_action_button( toolbox );
-    gtk_button_set_label( button2, "Action 2" );
+    gtk_button_set_label( button2, "Dialog" );
     button3 = moko_tool_box_add_action_button( toolbox );
     gtk_button_set_label( button3, "ActMenu" );
     button4 = moko_tool_box_add_action_button( toolbox );
