@@ -68,6 +68,9 @@ void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox);
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child);
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child);
 
+/* fullscreen */
+void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b);
+
 G_END_DECLS
 
 #endif /* _MOKO_PANED_WINDOW_H_ */

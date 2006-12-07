@@ -29,6 +29,8 @@
 #define moko_debug(fmt,...)
 #endif
 
+G_DEFINE_TYPE (MokoToolBox, moko_tool_box, GTK_TYPE_NOTEBOOK)
+
 #define MOKO_TOOL_BOX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_TOOL_BOX, MokoToolBoxPriv));
 
 typedef struct _MokoToolBoxPriv
@@ -66,8 +68,7 @@ static void _button_release(GtkWidget* w, MokoToolBox* self)
 
 }
 
-
-gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
+static gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
 {
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( widget, "mokotoolbox-search-entry" );
@@ -75,39 +76,12 @@ gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* s
     return FALSE;
 }
 
-gboolean _entry_focus_out(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
+static gboolean _entry_focus_out(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
 {
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( widget, "mokotoolbox-search-entry-focusout" );
     gtk_widget_set_name( GTK_WIDGET(priv->searchbar_page), "mokotoolbox-search-mode-focusout" );
     return FALSE;
-}
-
-
-GType moko_tool_box_get_type (void) /* Typechecking */
-{
-    static GType self_type = 0;
-
-    if (!self_type)
-    {
-        static const GTypeInfo self_info =
-        {
-            sizeof (MokoToolBoxClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moko_tool_box_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MokoToolBox),
-            0,
-            (GInstanceInitFunc) moko_tool_box_init,
-        };
-
-        /* add the type of your parent class here */
-        self_type = g_type_register_static(GTK_TYPE_NOTEBOOK, "MokoToolBox", &self_info, 0);
-    }
-
-    return self_type;
 }
 
 static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initialization */

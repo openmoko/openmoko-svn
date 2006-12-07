@@ -166,3 +166,17 @@ void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)
     gtk_box_pack_end( GTK_BOX(priv->upper), toolbox, FALSE, FALSE, 0 );
     gtk_box_reorder_child( GTK_BOX(priv->upper), toolbox, 1 );
 }
+
+void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b)
+{
+    moko_debug( "moko_paned_window_set_fullscreen" );
+    MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
+    if ( b )
+    {
+        gtk_widget_hide( GTK_WIDGET(priv->upper) );
+    }
+    else
+    {
+        gtk_widget_show( GTK_WIDGET(priv->upper) );
+    }
+}

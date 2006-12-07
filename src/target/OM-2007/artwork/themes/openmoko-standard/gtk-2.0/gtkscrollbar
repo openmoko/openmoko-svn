@@ -2,8 +2,8 @@ style "scrollbar" {
 #
 # properties
 #
-    GtkScrollbar::slider_width = 32
-    GtkScrollbar::stepper_size = 24
+    GtkScrollbar::slider_width = 37
+    GtkScrollbar::stepper_size = 26
     GtkScrollbar::stepper_spacing = 0
 
     GtkScrollbar::has_backward_stepper = 0

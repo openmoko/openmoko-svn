@@ -18,16 +18,19 @@
  */
 
 #include <libmokoui/moko-application.h>
+#include <libmokoui/moko-details-window.h>
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-navigation-list.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
+#include <gtk/gtktogglebutton.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkcheckmenuitem.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
+#include <gtk/gtktable.h>
 #include <gtk/gtktreeview.h>
 
 
@@ -59,7 +62,7 @@ create_model (void)
 	 		{ "jeff", "02133333333" } };
 
   /* create list store */
-  
+
   store = gtk_list_store_new (2,
 			      G_TYPE_STRING,
 			      G_TYPE_STRING);
@@ -93,7 +96,7 @@ void clist_insert(MokoTreeView *clist)
      gtk_tree_view_column_set_sort_column_id(column, 0);
      gtk_tree_view_append_column(clist, column);
      gtk_tree_view_column_set_min_width(column, 142);
-     
+
      renderer = gtk_cell_renderer_text_new();
 
      column = gtk_tree_view_column_new_with_attributes("Cell Phone",
@@ -206,20 +209,20 @@ int main( int argc, char** argv )
 
     /* navigation area */
     //GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
-    
+
     MokoTreeView *moko_treeview;
     GtkTreeModel *model = create_model ();
     MokoNavigationList *moko_navigation_list;
-    
-    moko_navigation_list = moko_navigation_list_new ();
+
+    moko_navigation_list = moko_navigation_list_new();
     moko_treeview = moko_navigation_list_get_tree_view (moko_navigation_list);
     gtk_tree_view_set_model (moko_treeview, GTK_TREE_MODEL (model) );
     clist_insert(moko_treeview);
-    
+
     //moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_navigation_list) );
-    
-    
+
+
 
     GtkButton* button1;
     GtkButton* button2;
@@ -266,8 +269,14 @@ int main( int argc, char** argv )
     gtk_widget_show_all( actionmenu );
 
     /* details area */
-    GtkLabel* details = gtk_label_new( "Add your widget for showing\ndetails for the selected\ndata entry here" );
-    moko_paned_window_set_lower_pane( window, GTK_WIDGET(details) );
+    GtkLabel* details = gtk_label_new( "\n \n \nAdd your widget for showing\n \ndetails for the selected\n"
+            "\ndata entry here\n \n \n \n \n \n \n \nThis particular label\n \nis very long\n"
+            "\nto make the fullscreen\n \ntrigger more interesting\n \n \n" );
+
+    MokoDetailsWindow* detailswindow = moko_details_window_new();
+    gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(detailswindow), GTK_WIDGET(details) );
+
+    moko_paned_window_set_lower_pane( window, GTK_WIDGET(moko_details_window_put_in_box(detailswindow) ) );
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
