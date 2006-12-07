@@ -99,6 +99,7 @@ include "gtkscrolledwindow"
 include "gtkscrollbar"
 include "gtktreeview"
 include "gtkbutton"
+include "gtkcheckbutton"
 
 include "mokodetailswindow"
 include "mokofingerbutton"
