@@ -1,0 +1,18 @@
+This is openmoko-taskmanager application.
+
+usage:
+1. install patch for matchbox-window-manager-1.0 (more see README in patch), and then reninstall your matchbox-window-manager-1.0.
+
+2. install openmoko-taskmanager 
+
+make sure the openmoko-taskmanager works under matchbox-window-manager-1.0, which has been patched.
+
+NOTE: an unpatched matchbox-window-manager-1.0 will make the application inefficent.
+
+HOWTO run the application:
+openmoko-taskmanager will be launched when openmoko-footer's left button clicked. so before you use this application, you must make sure you have intalled the openmoko-footer correctly (more see README of openmoko-footer), or a more straight way is that you can test it in a terminal, but make sure you have run matchbox window manager first. 
+
+TODO:
+UI spec 
+Treeview item select
+warring message and error handle
