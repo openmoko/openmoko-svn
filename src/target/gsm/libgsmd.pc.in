@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libgsmd
+Description: GSM 07.10 Multiplexer Library
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lgsmd
+Requires:
+
