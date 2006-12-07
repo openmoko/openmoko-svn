@@ -14,6 +14,7 @@ style "scrollbar" {
 
 #FIXME this is the old (gtk1.x) way of specifying the look of scrollbars
 #FIXME do this in the new way to make styling more efficient, i.e. function = SLIDER
+#FIXME add INSENSITIVE state for scrollbars
 
     engine "pixmap" {
 #
@@ -28,15 +29,22 @@ style "scrollbar" {
         stretch         = TRUE
         orientation     = HORIZONTAL
     }
-
-
-
     image {
         function        = BOX
         recolorable     = TRUE
         detail          = "slider"
         state           = NORMAL
         file            = "openmoko-scrollbar-vertical.png"
+        border          = { 2, 2, 15, 15 }
+        stretch         = TRUE
+        orientation     = VERTICAL
+    }
+    image {
+        function        = BOX
+        recolorable     = TRUE
+        detail          = "slider"
+        state           = PRELIGHT
+        file            = "openmoko-scrollbar-vertical-pressed.png"
         border          = { 2, 2, 15, 15 }
         stretch         = TRUE
         orientation     = VERTICAL
