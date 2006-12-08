@@ -18,6 +18,7 @@
  */
 
 #include <libmokoui/moko-application.h>
+#include <libmokoui/moko-details-window.h>
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-navigation-list.h>
@@ -123,9 +124,9 @@ int main( int argc, char** argv )
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL );
 
     /* navigation area */
-    GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
+    GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\n \nthrough appplication specific\n \ndata here" );
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
-    
+
     GtkButton* button1;
     GtkButton* button2;
     GtkButton* button3;
@@ -169,8 +170,14 @@ int main( int argc, char** argv )
     gtk_widget_show_all( actionmenu );
 
     /* details area */
-    GtkLabel* details = gtk_label_new( "Add your widget for showing\ndetails for the selected\ndata entry here" );
-    moko_paned_window_set_lower_pane( window, GTK_WIDGET(details) );
+    GtkLabel* details = gtk_label_new( "\n \n \nAdd your widget for showing\n \ndetails for the selected\n"
+            "\ndata entry here\n \n \n \n \n \n \n \nThis particular label\n \nis very long\n"
+            "\nto make the fullscreen\n \ntrigger more interesting\n \n \n" );
+
+    MokoDetailsWindow* detailswindow = moko_details_window_new();
+    gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(detailswindow), GTK_WIDGET(details) );
+
+    moko_paned_window_set_lower_pane( window, GTK_WIDGET(moko_details_window_put_in_box(detailswindow) ) );
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
