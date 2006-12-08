@@ -55,10 +55,15 @@ style "gtktreeview-button" {
 widget_class "*.GtkTreeView.GtkButton" style "gtktreeview-button"
 
 #FIXME why does this not work with GtkTreeView, but does with MokoTreeView?
+# In mokobutton, "*.GtkButton.*" has been defined. So this style does not work.
+# GtkLabel on MokoTreeView can work because it derives from the style of MokoTreeView.
+# The possible solution is to disable GtkLable define in mokobutton 
+# and set the style like the following:
+# widget_class "*.GtkTreeView.GtkButton.*" style "gtktreeview-button-label"
+# But this will affect normal GtkButton, is there a better solution?
 style "gtktreeview-button-label"
 {
     font_name = "Vera Sans Bold 13"
     fg[NORMAL] = "#999999"
 }
 widget "*.GtkTreeView.*.GtkLabel" style "gtktreeview-button-label"
-
