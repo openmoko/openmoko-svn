@@ -163,8 +163,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
             gtk_widget_size_request (GTK_BIN (button)->child, &child_requisition);
         }
         
-        //Set label width/height on action button for better view
-        //FIXME try to adjust alignment to implement this fuction.
+        //FIXME why should I resize label to set right position on MokoPixmapButton
         MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (widget);
         if ( priv->actionbtnlowerlabel )
         {
