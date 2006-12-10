@@ -163,6 +163,7 @@ RDEPENDS_task-openmoko-devel = "\
   usbutils \
   uucp \
   cu \
+  sensors-i2cdetect sensors-i2cdump sensors-i2cset \
 "
 
 #
