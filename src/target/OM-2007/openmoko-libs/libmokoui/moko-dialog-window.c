@@ -19,8 +19,11 @@
 #include "moko-dialog-window.h"
 
 #include <gtk/gtkeventbox.h>
+#include <gtk/gtkdialog.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkvbox.h>
+
+#include <glib/gmain.h>
 
 #undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
@@ -41,6 +44,66 @@ struct _MokoDialogWindowPrivate
     GtkEventBox* eventbox;
     GtkLabel* label;
 };
+
+typedef struct _MokoDialogRunInfo
+{
+    MokoDialogWindow *dialog;
+    gint response_id;
+    GMainLoop *loop;
+    gboolean destroyed;
+} MokoDialogRunInfo;
+
+static void
+shutdown_loop (MokoDialogRunInfo *ri)
+{
+    if (g_main_loop_is_running (ri->loop))
+        g_main_loop_quit (ri->loop);
+}
+
+static void
+run_unmap_handler (MokoDialogWindow* dialog, gpointer data)
+{
+    MokoDialogRunInfo *ri = data;
+
+    shutdown_loop (ri);
+}
+
+static void
+run_response_handler (MokoDialogWindow* dialog,
+                              gint response_id,
+                              gpointer data)
+{
+    MokoDialogRunInfo *ri;
+
+    ri = data;
+
+    ri->response_id = response_id;
+
+    shutdown_loop (ri);
+}
+
+static gint
+        run_delete_handler (MokoDialogWindow* dialog,
+                            GdkEventAny *event,
+                            gpointer data)
+{
+    MokoDialogRunInfo *ri = data;
+
+    shutdown_loop (ri);
+
+    return TRUE; /* Do not destroy */
+}
+
+static void
+        run_destroy_handler (MokoDialogWindow* dialog, gpointer data)
+{
+    MokoDialogRunInfo *ri = data;
+
+    /* shutdown_loop will be called by run_unmap_handler */
+
+    ri->destroyed = TRUE;
+}
+
 
 static void
 moko_dialog_window_dispose(GObject* object)
@@ -91,12 +154,15 @@ void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title)
     if ( !priv->label )
     {
         priv->label = gtk_label_new( title );
+        gtk_window_set_title( GTK_WINDOW(self), title );
         gtk_widget_set_name( GTK_WIDGET(priv->label), "mokodialogwindow-title-label" );
         priv->eventbox = gtk_event_box_new();
         gtk_container_add( GTK_CONTAINER(priv->eventbox), GTK_WIDGET(priv->label) );
         gtk_widget_set_name( GTK_WIDGET(priv->eventbox), "mokodialogwindow-title-labelbox" );
         //FIXME get from theme
         gtk_misc_set_padding( GTK_MISC(priv->label), 0, 6 );
+        gtk_widget_show( GTK_WIDGET(priv->label) );
+        gtk_widget_show( GTK_WIDGET(priv->eventbox) );
     }
     else
     {
@@ -108,5 +174,85 @@ void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title)
         priv->vbox = gtk_vbox_new( FALSE, 0 );
         gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
         gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
+        gtk_widget_show( GTK_WIDGET(priv->vbox) );
     }
+}
+
+void moko_dialog_window_set_contents(MokoDialogWindow* self, GtkWidget* contents)
+{
+    moko_debug( "moko_dialog_window_set_contents" );
+    MokoDialogWindowPrivate* priv = MOKO_DIALOG_WINDOW_GET_PRIVATE(self);
+    g_return_if_fail( priv->vbox );
+    gtk_box_pack_start( GTK_BOX(priv->vbox), contents, FALSE, FALSE, 0 );
+}
+
+guint moko_dialog_window_run(MokoDialogWindow* dialog)
+{
+    moko_debug( "moko_dialog_window_run" );
+
+    MokoDialogRunInfo ri = { NULL, GTK_RESPONSE_NONE, NULL, FALSE };
+    gboolean was_modal;
+    gulong response_handler;
+    gulong unmap_handler;
+    gulong destroy_handler;
+    gulong delete_handler;
+
+    g_return_val_if_fail (MOKO_IS_DIALOG_WINDOW(dialog), -1);
+
+    g_object_ref (dialog);
+
+    was_modal = GTK_WINDOW (dialog)->modal;
+    if (!was_modal)
+        gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
+
+    if (!GTK_WIDGET_VISIBLE (dialog))
+        gtk_widget_show (GTK_WIDGET (dialog));
+
+    response_handler =
+            g_signal_connect (dialog,
+                              "response",
+                              G_CALLBACK (run_response_handler),
+                              &ri);
+
+    unmap_handler =
+            g_signal_connect (dialog,
+                              "unmap",
+                              G_CALLBACK (run_unmap_handler),
+                              &ri);
+
+    delete_handler =
+            g_signal_connect (dialog,
+                              "delete-event",
+                              G_CALLBACK (run_delete_handler),
+                              &ri);
+
+    destroy_handler =
+            g_signal_connect (dialog,
+                              "destroy",
+                              G_CALLBACK (run_destroy_handler),
+                              &ri);
+
+    ri.loop = g_main_loop_new (NULL, FALSE);
+
+    GDK_THREADS_LEAVE ();
+    g_main_loop_run (ri.loop);
+    GDK_THREADS_ENTER ();
+
+    g_main_loop_unref (ri.loop);
+    ri.loop = NULL;
+
+    if (!ri.destroyed)
+    {
+        if (!was_modal)
+            gtk_window_set_modal (GTK_WINDOW(dialog), FALSE);
+
+        g_signal_handler_disconnect (dialog, response_handler);
+        g_signal_handler_disconnect (dialog, unmap_handler);
+        g_signal_handler_disconnect (dialog, delete_handler);
+        g_signal_handler_disconnect (dialog, destroy_handler);
+    }
+
+    g_object_unref (dialog);
+
+    return ri.response_id;
 }

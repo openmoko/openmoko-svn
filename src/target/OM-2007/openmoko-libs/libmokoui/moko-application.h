@@ -21,6 +21,7 @@
 #define _MOKO_APPLICATION_H_
 
 #include "moko-window.h"
+#include "moko-dialog-window.h"
 
 #include <gtk/gtkmenu.h>
 #include <gtk/gtktoolbar.h>
@@ -53,6 +54,8 @@ MokoWindow* moko_application_get_main_window(MokoApplication* self);
 
 gchar* moko_application_get_style_pixmap_dir();
 void moko_application_add_stock_icons(MokoApplication* self, ...);
+
+MokoDialogWindow* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents);
 
 G_END_DECLS
 #endif /* _MOKO_APPLICATION_H_ */

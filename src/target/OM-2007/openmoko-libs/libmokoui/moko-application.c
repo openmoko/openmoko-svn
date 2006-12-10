@@ -18,6 +18,7 @@
  */
 #include "moko-application.h"
 
+#include <gtk/gtkwidget.h>
 #include <gtk/gtkiconfactory.h>
 
 #include <gdk/gdkx.h>
@@ -291,4 +292,13 @@ void moko_application_add_stock_icons(MokoApplication* self, ...)
     };
 
     va_end(valist);
+}
+
+MokoDialogWindow* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents)
+{
+    MokoDialogWindow* dialog = moko_dialog_window_new();
+    moko_dialog_window_set_title( dialog, title );
+    moko_dialog_window_set_contents( dialog, contents );
+    moko_dialog_window_run( dialog );
+    return dialog;
 }

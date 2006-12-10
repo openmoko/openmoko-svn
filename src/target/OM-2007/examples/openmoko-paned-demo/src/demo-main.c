@@ -26,11 +26,12 @@
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
-#include <gtk/gtktogglebutton.h>
-#include <gtk/gtklabel.h>
+#include <gtk/gtkcheckbutton.h>
 #include <gtk/gtkcheckmenuitem.h>
+#include <gtk/gtklabel.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
+#include <gtk/gtkradiobutton.h>
 #include <gtk/gtktable.h>
 #include <gtk/gtktreeview.h>
 
@@ -136,11 +137,39 @@ void cb_button1_clicked(GtkButton *button, gpointer user_data)
 void cb_button2_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-paned-demo: button2 clicked" );
-    MokoDialogWindow* dialog = moko_dialog_window_new();
-    moko_dialog_window_set_title( dialog, "Example Full Screen Dialog Window" );
-    g_debug( "--> dialog main loop" );
-    gtk_widget_show_all( GTK_WIDGET(dialog) );
-    g_debug( "<-- dialog returns" );
+
+    /* prepare contents of dialog */
+
+    GtkVBox* controls = gtk_vbox_new( FALSE, 0 );
+    GtkCheckButton* check1 = gtk_check_button_new_with_label( "Use GtkCheckButton for on/off options" );
+    GtkCheckButton* check2 = gtk_check_button_new_with_label( "Be concise, but don't abbreviate" );
+    GtkCheckButton* check3 = gtk_check_button_new_with_label( "Less Options are less confusing = good!" );
+
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(check1) );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(check2) );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(check3) );
+
+    GSList* group = NULL;
+    GtkRadioButton* radio1 = gtk_radio_button_new_with_label( group, "Use Radio Buttons only for few(!) options" );
+    group = gtk_radio_button_get_group( radio1 );
+    GtkRadioButton* radio2 = gtk_radio_button_new_with_label( group, "Use GtkComboBoxes for many options" );
+    group = gtk_radio_button_get_group( radio2 );
+    GtkRadioButton* radio3 = gtk_radio_button_new_with_label( group, "Always Group Radio Buttons in a Frame" );
+
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(radio1) );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(radio2) );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(radio3) );
+
+    gtk_widget_show_all( GTK_WIDGET(controls) );
+
+    /* run dialog */
+
+    MokoDialogWindow* dialog = moko_application_execute_dialog( moko_application_get_instance(),
+            "Example Full Screen Dialog Window",
+            GTK_WIDGET(controls) );
+    /* process results */
+
+    gtk_widget_destroy( GTK_WIDGET(dialog) );
 }
 
 void cb_button3_clicked(GtkButton *button, gpointer user_data)
@@ -222,8 +251,6 @@ int main( int argc, char** argv )
 
     //moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
     moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_navigation_list) );
-
-
 
     GtkButton* button1;
     GtkButton* button2;
