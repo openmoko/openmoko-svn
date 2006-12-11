@@ -27,6 +27,8 @@ int main( int argc, char **argv )
     OMTaskManager* app;
     DBusError error;
     dbus_error_init(&error);
+    GtkStyle *style = gtk_style_new ();
+    style->bg_pixmap[GTK_STATE_NORMAL] = gdk_pixmap_new_from_file (PKGDATADIR"/bg_footer.png");
 
     if (!(app = g_malloc ( sizeof (OMTaskManager)))){
     		fprintf (stderr,"Openmoko-taskmanager: footer UI initialized failed, app space malloc failed!");
@@ -58,7 +60,7 @@ int main( int argc, char **argv )
     					G_CALLBACK (footer_leftbutton_clicked), app);
     g_signal_connect ( G_OBJECT (app->footer->RightEventBox), "button_press_event",
     					G_CALLBACK (footer_rightbutton_clicked), app);
-
+   
 ///Add OpenMoko Footer to Top Level windonw
     gtk_container_add( GTK_CONTAINER(app->toplevel_win), GTK_WIDGET(app->footer) );
     // this violates the privacy concept, but it's a demo for now...

@@ -1,4 +1,8 @@
-INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
+#INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
+AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
+              -DPKGDATADIR=\"$(pkgdatadir)\"
+
+AM_CFLAGS = -Wall -std=c99 -pedantic @OPENMOKO_CFLAGS@
 
 bin_PROGRAMS = openmoko-footer
 

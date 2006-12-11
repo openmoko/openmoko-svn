@@ -94,7 +94,7 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_widget_set_events (GTK_EVENT_BOX (f->LeftEventBox), GDK_BUTTON_PRESS_MASK);
        
 
-    f->LeftImage = gtk_image_new_from_stock ("icon_app_history", GTK_ICON_SIZE_BUTTON);
+    f->LeftImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_history.png");
     gtk_widget_show (GTK_WIDGET (f->LeftImage));
     gtk_container_add (f->LeftEventBox, f->LeftImage);
 
@@ -120,7 +120,7 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_widget_set_events (f->RightEventBox,GDK_BUTTON_PRESS_MASK);
        
 
-    f->RightImage = gtk_image_new_from_stock ("icon_app_toggle", GTK_ICON_SIZE_BUTTON);
+    f->RightImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_toggle.png");
     gtk_widget_show (GTK_WIDGET (f->RightImage));
     gtk_container_add (GTK_CONTAINER (f->RightEventBox), f->RightImage);
 
