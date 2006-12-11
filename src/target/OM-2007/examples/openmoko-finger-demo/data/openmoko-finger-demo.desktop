@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko Finger Demo
+Comment=Demonstrates a typical OpenMoko Finger Application
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-finger-demo
+Icon=openmoko-finger-demo.png
+Terminal=false
+SingleInstance=true
+StartupNotify=true
