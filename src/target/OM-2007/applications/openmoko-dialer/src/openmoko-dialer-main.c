@@ -11,7 +11,7 @@
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Public License for more details.
+ *  GNU Lesser Public License for more details.
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
@@ -31,10 +31,18 @@
 #include "moko-digit-button.h"
 #include "moko-dialer-panel.h"
 #include "openmoko-dialer-main.h"
+#include "moko-dialer-textview.h"
 void
 on_dialer_panel_user_input(GtkWidget * widget,gchar parac,
                                         gpointer         user_data)
 {
+char input[2];
+input[0]=parac;
+input[1]=0;
+
+MokoDialerTextview *moko_dialer_text_view=(MokoDialerTextview *)user_data;
+
+moko_dialer_textview_insert(moko_dialer_text_view, input);
 
 g_print("on_dialer_panel_user_input:%c\n", parac);
 }
@@ -109,21 +117,24 @@ int main( int argc, char** argv )
 */
 
     GtkHBox* hbox = gtk_hbox_new( TRUE, 10 );
+
+
+    MokoDialerTextview * mokotextview=moko_dialer_textview_new();
+    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokotextview), FALSE,FALSE, 5 );
+
+
     MokoDialerPanel* mokodialerpanel=moko_dialer_panel_new();
 
     g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_input",
-			    G_CALLBACK (on_dialer_panel_user_input),0);
+			    G_CALLBACK (on_dialer_panel_user_input),mokotextview);
 
   
     g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_hold",
-			    G_CALLBACK ( on_dialer_panel_user_hold),0);
+			    G_CALLBACK ( on_dialer_panel_user_hold),mokotextview);
    	
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(mokodialerpanel), TRUE, TRUE, 5 );
 
 
-    MokoDigitButton*  mokobutton=moko_digit_button_new_with_labels("1","ABC");
-    moko_digit_button_set_numbers(mokobutton,'1', '*');
-    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokobutton), FALSE,FALSE, 5 );
 
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 5 );
 	
