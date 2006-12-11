@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko Stylus Demo
+Comment=Demonstrates an OpenMoko Stylus Application
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-stylus-demo
+Icon=openmoko-stylus-demo.png
+Terminal=false
+SingleInstance=true
+StartupNotify=true
