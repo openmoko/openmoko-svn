@@ -36,8 +36,12 @@ enum {
     PRESS_LEFT_UP,
     PRESS_RIGHT_DOWN,
     PRESS_BOTTOM,
+    LONG_PRESS_LEFT_UP,
+    LONG_PRESS_RIGHT_DOWN,
     LAST_SIGNAL
 };
+
+#define FINGER_WHEEL_LONG_PRESS_TIMEOUT 1000
 
 G_DEFINE_TYPE (MokoFingerWheel, moko_finger_wheel, MOKO_TYPE_FIXED)
 
@@ -58,6 +62,7 @@ static void moko_finger_wheel_hide(GtkWidget* widget);
 static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event);
 static gint moko_finger_wheel_motion_notify(GtkWidget* widget, GdkEventMotion* event);
 static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* event);
+static gboolean moko_finger_wheel_button_long_press(gpointer data);
 
 static void
 moko_finger_wheel_dispose(GObject *object)
@@ -100,6 +105,8 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
     klass->press_left_up = NULL;
     klass->press_right_down = NULL;
     klass->press_bottom = NULL;
+    klass->long_press_left_up = NULL;
+    klass->long_press_right_down = NULL;
 
     /** Press the left up area */
     wheel_signals[PRESS_LEFT_UP] =
@@ -127,6 +134,26 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  G_OBJECT_CLASS_TYPE (object_class),
                  G_SIGNAL_RUN_FIRST,
                  G_STRUCT_OFFSET (MokoFingerWheelClass, press_bottom),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE, 0);
+
+    /** Long press the left up area */
+    wheel_signals[LONG_PRESS_LEFT_UP] =
+                 g_signal_new ("long_press_left_up",
+                 G_OBJECT_CLASS_TYPE (object_class),
+                 G_SIGNAL_RUN_FIRST,
+                 G_STRUCT_OFFSET (MokoFingerWheelClass, long_press_left_up),
+                 NULL, NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE, 0);
+
+    /** Long press the right down area */
+    wheel_signals[LONG_PRESS_RIGHT_DOWN] =
+                 g_signal_new ("long_press_right_down",
+                 G_OBJECT_CLASS_TYPE (object_class),
+                 G_SIGNAL_RUN_FIRST,
+                 G_STRUCT_OFFSET (MokoFingerWheelClass, long_press_right_down),
                  NULL, NULL,
                  g_cclosure_marshal_VOID__VOID,
                  G_TYPE_NONE, 0);
@@ -320,13 +347,18 @@ static void moko_finger_wheel_button_emit_signal (GtkWidget* widget, GdkEventBut
 static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event)
 {
     moko_debug( "moko_finger_wheel_button_press" );
-
+    
+    MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
+    
     gtk_grab_add( widget );
     gtk_widget_set_state( widget, GTK_STATE_ACTIVE );
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_ACTIVE);
 
     moko_finger_wheel_button_check_area (widget, event);
-
+    
+    g_source_remove_by_user_data((gpointer) widget);
+    g_timeout_add (FINGER_WHEEL_LONG_PRESS_TIMEOUT, (GSourceFunc) moko_finger_wheel_button_long_press, (gpointer) widget);
+    
     return TRUE;
 }
 
@@ -354,10 +386,40 @@ static gint moko_finger_wheel_motion_notify(GtkWidget* widget, GdkEventMotion* e
 static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* event)
 {
     moko_debug( "moko_finger_wheel_button_release" );
+    
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
     gtk_widget_set_state( widget, GTK_STATE_NORMAL );
     gtk_grab_remove( widget );
 
     moko_finger_wheel_button_emit_signal (widget, event);
+    
+    g_source_remove_by_user_data((gpointer) widget);
     return TRUE;
+}
+
+
+static gboolean moko_finger_wheel_button_long_press(gpointer data)
+{
+    
+    GtkWidget* widget = (GtkWidget*) data;
+    
+    if (MOKO_FINGER_WHEEL (widget)->area_id == PRESS_LEFT_UP)
+    {
+        moko_debug( "moko_finger_wheel_button_long_press_left_up" );
+        g_source_remove_by_user_data((gpointer) widget);
+        g_timeout_add (FINGER_WHEEL_LONG_PRESS_TIMEOUT/4, (GSourceFunc) moko_finger_wheel_button_long_press, (gpointer) widget);
+        g_signal_emit (widget, wheel_signals[LONG_PRESS_LEFT_UP], 0);
+        return TRUE;
+    }
+    else if (MOKO_FINGER_WHEEL (widget)->area_id == PRESS_RIGHT_DOWN)
+    {
+        moko_debug( "moko_finger_wheel_button_long_press_right_down" );
+        g_source_remove_by_user_data((gpointer) widget);
+        g_timeout_add (FINGER_WHEEL_LONG_PRESS_TIMEOUT/4, (GSourceFunc) moko_finger_wheel_button_long_press, (gpointer) widget);
+
+        g_signal_emit (widget, wheel_signals[LONG_PRESS_RIGHT_DOWN], 0);
+        return TRUE;
+    }
+    
+    return FALSE;
 }
