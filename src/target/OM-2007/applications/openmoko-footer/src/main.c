@@ -28,7 +28,7 @@ int main( int argc, char **argv )
     DBusError error;
     dbus_error_init(&error);
     GtkStyle *style = gtk_style_new ();
-    style->bg_pixmap[GTK_STATE_NORMAL] = gdk_pixmap_new_from_file (PKGDATADIR"/bg_footer.png");
+  //  style->bg_pixmap[GTK_STATE_NORMAL] = gdk_pixmap_new_from_file (PKGDATADIR"/bg_footer.png");
 
     if (!(app = g_malloc ( sizeof (OMTaskManager)))){
     		fprintf (stderr,"Openmoko-taskmanager: footer UI initialized failed, app space malloc failed!");
