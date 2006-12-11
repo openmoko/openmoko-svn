@@ -1,5 +1,5 @@
 /*
- *  Paned-Demo -- OpenMoko Demo Application
+ *  Stylus Demo -- OpenMoko Demo Application
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
@@ -114,29 +114,29 @@ void clist_insert(MokoTreeView *clist)
 
 void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
 {
-    g_debug( "openmoko-paned-demo: searchbox now visible" );
+    g_debug( "openmoko-stylus-demo: searchbox now visible" );
     // populate the entry completion here and/or connect signals to entry
 }
 
 void cb_searchbox_invisible(MokoToolBox* toolbox, gpointer user_data)
 {
-    g_debug( "openmoko-paned-demo: searchbox now invisible" );
+    g_debug( "openmoko-stylus-demo: searchbox now invisible" );
     // free resources and/or disconnect signals
 }
 
 void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
 {
-    g_debug( "openmoko-paned-demo: filter changed to '%s'", text );
+    g_debug( "openmoko-stylus-demo: filter changed to '%s'", text );
 }
 
 void cb_button1_clicked(GtkButton *button, gpointer user_data)
 {
-    g_debug( "openmoko-paned-demo: button1 clicked" );
+    g_debug( "openmoko-stylus-demo: button1 clicked" );
 }
 
 void cb_button2_clicked(GtkButton *button, gpointer user_data)
 {
-    g_debug( "openmoko-paned-demo: button2 clicked" );
+    g_debug( "openmoko-stylus-demo: button2 clicked" );
 
     /* prepare contents of dialog */
 
@@ -174,19 +174,19 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
 
 void cb_button3_clicked(GtkButton *button, gpointer user_data)
 {
-    g_debug( "openmoko-paned-demo: button3 clicked" );
+    g_debug( "openmoko-stylus-demo: button3 clicked" );
 }
 
 void cb_button4_clicked(GtkButton *button, gpointer user_data)
 {
-    g_debug( "openmoko-paned-demo: button4 clicked" );
+    g_debug( "openmoko-stylus-demo: button4 clicked" );
 }
 
 static gboolean searchmode = TRUE;
 
 int main( int argc, char** argv )
 {
-    g_debug( "openmoko-paned-demo starting up" );
+    g_debug( "openmoko-stylus-demo starting up" );
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
 
@@ -308,9 +308,9 @@ int main( int argc, char** argv )
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
-    g_debug( "openmoko-paned-demo entering main loop" );
+    g_debug( "openmoko-stylus-demo entering main loop" );
     gtk_main();
-    g_debug( "openmoko-paned-demo left main loop" );
+    g_debug( "openmoko-stylus-demo left main loop" );
 
     return 0;
 }
