@@ -4,17 +4,18 @@ AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-qt2410"
-PR = "r3"
+PR = "r4"
 
 inherit kernel
 
 FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-qt2410"
+HWSRC = "http://people.openmoko.org/laforge"
 
 ##############################################################
 # source and patches
 #
 SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.14.tar.bz2 \
-           file://patches-2.6.17.14-fic3.tar.bz2 \
+           file://patches-fic4.tar.bz2 \
            file://defconfig-${MACHINE}"
 S = "${WORKDIR}/linux-2.6.17.14"
 
