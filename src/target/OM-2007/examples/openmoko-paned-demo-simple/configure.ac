@@ -20,4 +20,5 @@ CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
 AC_OUTPUT([
 Makefile
 src/Makefile
+data/Makefile
 ])
