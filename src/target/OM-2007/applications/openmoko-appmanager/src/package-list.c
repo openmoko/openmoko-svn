@@ -861,3 +861,66 @@ package_list_get_package_status (gpointer data)
   tmp = (IPK_PACKAGE *)data;
   return tmp->mark;
 }
+
+/**
+ * @brief Set the select status to package infomation
+ * @param data The package infomation
+ * @param status The new select status
+ */
+void 
+package_list_set_package_status (gpointer data, gint status)
+{
+  IPK_PACKAGE *tmp;
+
+  g_return_if_fail (data != NULL);
+  g_return_if_fail ((status >= PKG_STATUS_AVAILABLE) && (status < N_COUNT_PKG_STATUS));
+
+  tmp = (IPK_PACKAGE *)data;
+  tmp->mark = status;
+}
+
+/**
+ * @brief Remove a package node from the selected package list
+ * @brief appdata The application manager data
+ * @param pkg The package infomation
+ */
+void 
+package_list_remove_package_from_selected_list (ApplicationManagerData *appdata,
+                                                gpointer pkg)
+{
+  PackageList  *selectedlist;
+  PackageList  *tmplist;
+
+  selectedlist = (PackageList *)application_manager_data_get_selectedlist (appdata);
+  g_return_if_fail (selectedlist != NULL);
+
+  tmplist = selectedlist;
+
+  while (tmplist != selectedlist)
+    {
+      if(tmplist->pkg == pkg)
+        {
+          tmplist->next->pre = tmplist->pre;
+          tmplist->pre->next = tmplist->next;
+          g_free (tmplist);
+        }
+      tmplist = tmplist->next;
+    }
+}
+
+/**
+ * @brief Add a new package node to the selected package list
+ * @param appdata The application manager data
+ * @param pkg The package infomation
+ */
+void 
+package_list_add_node_to_selected_list (ApplicationManagerData *appdata,
+                                        gpointer pkg)
+{
+  PackageList  *selectedlist;
+
+  selectedlist = (PackageList *)application_manager_data_get_selectedlist (appdata);
+  g_return_if_fail (selectedlist != NULL);
+
+  package_list_insert_node_without_check (selectedlist, (IPK_PACKAGE *)pkg);
+}

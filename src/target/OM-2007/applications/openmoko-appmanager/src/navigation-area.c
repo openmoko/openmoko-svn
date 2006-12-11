@@ -333,6 +333,8 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   gtk_list_store_clear (store);
 
   translate_package_list_to_store (appdata, store, pkglist);
+  // Save current list to the application manager data
+  application_manager_data_set_current_list (appdata, pkglist);
 
   gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
   g_object_unref (model);

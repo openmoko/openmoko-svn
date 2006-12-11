@@ -65,6 +65,7 @@ typedef struct _ApplicationManagerData {
   gpointer         upgradelist;        ///<! The list of all upgradeable packages
   gpointer         selectedlist;       ///<! The list of packages that user selected
   gpointer         nosecpkglist;       ///<! The list of packages whose section name is NULL
+  gpointer         currentlist;        ///<! The current list that display on the navigation list
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
 } ApplicationManagerData;
 
@@ -110,6 +111,9 @@ void application_manager_data_set_upgrade_list (ApplicationManagerData *appdata,
 void application_manager_data_set_selected_list (ApplicationManagerData *appdata,
                                                  gpointer selectedlist);
 
+void application_manager_data_set_current_list (ApplicationManagerData *appdata,
+                                                gpointer currentlist);
+
 void application_manager_data_set_nosecpkg_list (ApplicationManagerData *appdata,
                                                  gpointer nosecpkglist);
 
@@ -147,6 +151,9 @@ gpointer
 
 gpointer
      application_manager_data_get_nosecpkglist (ApplicationManagerData *appdata);
+
+gpointer
+     application_manager_data_get_currentlist (ApplicationManagerData *appdata);
 
 GdkPixbuf *
      application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata, 

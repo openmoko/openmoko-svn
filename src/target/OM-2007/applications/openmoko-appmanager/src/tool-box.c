@@ -30,8 +30,12 @@ tool_box_new (ApplicationManagerData *appdata)
 {
   MokoToolBox *toolbox;
   MokoPixmapButton *buttonapply;
+  MokoPixmapButton *bupgrade;
 
   toolbox = MOKO_TOOL_BOX (moko_tool_box_new_with_search ());
+
+  bupgrade = moko_tool_box_add_action_button (toolbox);
+  gtk_button_set_label (GTK_BUTTON (bupgrade), "Upgrade");
 
   buttonapply = moko_tool_box_add_action_button (toolbox);
   gtk_button_set_label (GTK_BUTTON (buttonapply), "Apply");

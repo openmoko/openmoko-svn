@@ -39,4 +39,12 @@ gpointer package_list_get_with_name (ApplicationManagerData *appdata,
 
 gint package_list_get_package_status (gpointer data);
 
+void package_list_set_package_status (gpointer data, gint status);
+
+void package_list_remove_package_from_selected_list (ApplicationManagerData *appdata,
+                                                     gpointer pkg);
+
+void package_list_add_node_to_selected_list (ApplicationManagerData *appdata,
+                                             gpointer pkg);
+
 #endif

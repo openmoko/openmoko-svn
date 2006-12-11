@@ -17,11 +17,13 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
+#include <libmokoui/moko-tree-view.h>
 
 #include "select-menu.h"
 #include "appmanager-window.h"
 #include "pixbuf-list.h"
 #include "package-list.h"
+#include "navigation-area.h"
 
 static void moko_select_menu_class_init (MokoSelectMenuClass *klass);
 static void moko_select_menu_init (MokoSelectMenu *data);
@@ -43,7 +45,60 @@ typedef struct _MokoSelectMenuPriv {
 void 
 on_unmark_activate (GtkMenuItem *unmark, gpointer data)
 {
+  GtkTreeModel     *model;
+  GtkTreeSelection *selection;
+  GtkTreeIter      iter;
+  gpointer         pkg = NULL;
+  GtkWidget        *treeview;
+  GdkPixbuf        *pkgpix;
+
+  ApplicationManagerData  *appdata;
+  PkgStatusId      pkgid;
+
   g_debug ("The unmark menuitem activated");
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data));
+  appdata = MOKO_APPLICATION_MANAGER_DATA (data);
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    {
+      return;
+    }
+
+  gtk_tree_model_get (model, &iter, COL_POINTER, (gpointer *)&pkg, -1);
+  g_return_if_fail (pkg != NULL);
+
+  pkgid = package_list_get_package_status (pkg);
+  switch (pkgid)
+    {
+      case PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL:
+        pkgid = PKG_STATUS_AVAILABLE;
+        break;
+
+      case PKG_STATUS_INSTALLED_MARK_FOR_REMOVE:
+        pkgid = PKG_STATUS_INSTALLED;
+        break;
+
+      case PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE:
+      case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:
+        pkgid = PKG_STATUS_UPGRADEABLE;
+        break;
+
+      default:
+        pkgid = PKG_STATUS_AVAILABLE;
+    }
+
+  package_list_set_package_status (pkg, pkgid);
+  pkgpix = application_manager_data_get_status_pixbuf (appdata, pkgid);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+                      COL_STATUS, pkgpix,
+                      -1);
+
+  package_list_remove_package_from_selected_list (appdata, pkg);
 }
 
 /**
@@ -52,7 +107,51 @@ on_unmark_activate (GtkMenuItem *unmark, gpointer data)
 void 
 on_mark_install_activate (GtkMenuItem *markinstall, gpointer data)
 {
+  GtkTreeModel     *model;
+  GtkTreeSelection *selection;
+  GtkTreeIter      iter;
+  gpointer         pkg = NULL;
+  GtkWidget        *treeview;
+  GdkPixbuf        *pkgpix;
+
+  ApplicationManagerData  *appdata;
+  PkgStatusId      pkgid;
+
   g_debug ("The mark install menuitem activated");
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data));
+  appdata = MOKO_APPLICATION_MANAGER_DATA (data);
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    {
+      return;
+    }
+
+  gtk_tree_model_get (model, &iter, COL_POINTER, (gpointer *)&pkg, -1);
+  g_return_if_fail (pkg != NULL);
+
+  pkgid = package_list_get_package_status (pkg);
+  switch (pkgid)
+    {
+      case PKG_STATUS_AVAILABLE:
+        pkgid = PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL;
+        // FIXME Add the package to the mark list
+        package_list_add_node_to_selected_list (appdata, pkg);
+        break;
+
+      default:
+        pkgid = PKG_STATUS_AVAILABLE;
+    }
+
+  package_list_set_package_status (pkg, pkgid);
+  pkgpix = application_manager_data_get_status_pixbuf (appdata, pkgid);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+                      COL_STATUS, pkgpix,
+                      -1);
 }
 
 /**
@@ -61,7 +160,53 @@ on_mark_install_activate (GtkMenuItem *markinstall, gpointer data)
 void 
 on_mark_upgrade_activate (GtkMenuItem *markupgrade, gpointer data)
 {
+  GtkTreeModel     *model;
+  GtkTreeSelection *selection;
+  GtkTreeIter      iter;
+  gpointer         pkg = NULL;
+  GtkWidget        *treeview;
+  GdkPixbuf        *pkgpix;
+
+  ApplicationManagerData  *appdata;
+  PkgStatusId      pkgid;
+
   g_debug ("The mark upgrade menuitem activated");
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data));
+  appdata = MOKO_APPLICATION_MANAGER_DATA (data);
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    {
+      return;
+    }
+
+  gtk_tree_model_get (model, &iter, COL_POINTER, (gpointer *)&pkg, -1);
+  g_return_if_fail (pkg != NULL);
+
+  pkgid = package_list_get_package_status (pkg);
+  switch (pkgid)
+    {
+      case PKG_STATUS_UPGRADEABLE:
+        //FIXME Add insert pkg to the select list
+        package_list_add_node_to_selected_list (appdata, pkg);
+
+      case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:
+        pkgid = PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE;
+        break;
+
+      default:
+        pkgid = PKG_STATUS_AVAILABLE;
+    }
+
+  package_list_set_package_status (pkg, pkgid);
+  pkgpix = application_manager_data_get_status_pixbuf (appdata, pkgid);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+                      COL_STATUS, pkgpix,
+                      -1);
 }
 
 /**
@@ -70,7 +215,56 @@ on_mark_upgrade_activate (GtkMenuItem *markupgrade, gpointer data)
 void 
 on_mark_remove_activate (GtkMenuItem *markremove, gpointer data)
 {
+  GtkTreeModel     *model;
+  GtkTreeSelection *selection;
+  GtkTreeIter      iter;
+  gpointer         pkg = NULL;
+  GtkWidget        *treeview;
+  GdkPixbuf        *pkgpix;
+
+  ApplicationManagerData  *appdata;
+  PkgStatusId      pkgid;
+
   g_debug ("The mark remove menuitem activated");
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data));
+  appdata = MOKO_APPLICATION_MANAGER_DATA (data);
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    {
+      return;
+    }
+
+  gtk_tree_model_get (model, &iter, COL_POINTER, (gpointer *)&pkg, -1);
+  g_return_if_fail (pkg != NULL);
+
+  pkgid = package_list_get_package_status (pkg);
+  switch (pkgid)
+    {
+      case PKG_STATUS_INSTALLED:
+        package_list_add_node_to_selected_list (appdata, pkg);
+        pkgid = PKG_STATUS_INSTALLED_MARK_FOR_REMOVE;
+        break;
+
+      case PKG_STATUS_UPGRADEABLE:
+        package_list_add_node_to_selected_list (appdata, pkg);
+      case PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE:
+        pkgid = PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE;
+        break;
+
+      default:
+        pkgid = PKG_STATUS_AVAILABLE;
+    }
+
+  package_list_set_package_status (pkg, pkgid);
+  pkgpix = application_manager_data_get_status_pixbuf (appdata, pkgid);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+                      COL_STATUS, pkgpix,
+                      -1);
 }
 
 static void 

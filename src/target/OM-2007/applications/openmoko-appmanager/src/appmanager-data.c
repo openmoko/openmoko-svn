@@ -45,6 +45,7 @@ application_manager_data_init (ApplicationManagerData *data)
   data->installedlist = NULL;
   data->upgradelist = NULL;
   data->nosecpkglist = NULL;
+  data->currentlist = NULL;
   data->selectedlist = NULL;
 
   for (i = 0; i < N_COUNT_PKG_STATUS; i++)
@@ -220,6 +221,20 @@ application_manager_data_set_nosecpkg_list (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->nosecpkglist = nosecpkglist;
+}
+
+/**
+ * @brief Set the current list to the application manager data
+ * @param appdata The application manager data struct
+ * @param currentlist The current list that display on the navigation list
+ */
+void 
+application_manager_data_set_current_list (ApplicationManagerData *appdata,
+                                           gpointer currentlist)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->currentlist = currentlist;
 }
 
 /**
@@ -446,6 +461,19 @@ application_manager_data_get_nosecpkglist (ApplicationManagerData *appdata)
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->nosecpkglist;
+}
+
+/**
+ * @brief Get the current list from the application manager data
+ * @param appdata The application manager data
+ * @return The current list that display in the navigation list
+ */
+gpointer 
+application_manager_data_get_currentlist (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->currentlist;
 }
 
 /**
