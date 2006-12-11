@@ -37,4 +37,6 @@ void translate_package_list_to_store (ApplicationManagerData *appdata,
 gpointer package_list_get_with_name (ApplicationManagerData *appdata,
                                      const gchar *name);
 
+gint package_list_get_package_status (gpointer data);
+
 #endif

@@ -33,6 +33,7 @@
 #include "appmanager-data.h"
 #include "errorcode.h"
 #include "package-list.h"
+#include "select-menu.h"
 
 /**
  * @brief The start function.
@@ -45,6 +46,7 @@ main (int argc, char* argv[])
   MokoPanedWindow *window;
   GtkMenu         *appmenu;
   GtkMenu         *filtermenu;
+  GtkMenu         *selectmenu;
   GtkWidget       *navigation;
   MokoToolBox     *toolbox;
   GtkWidget       *detail;
@@ -84,6 +86,10 @@ main (int argc, char* argv[])
   moko_paned_window_set_filter_menu (window, filtermenu);
   application_manager_data_set_filter_menu (appdata, filtermenu);
 
+  selectmenu = GTK_MENU (moko_select_menu_new (appdata));
+  gtk_widget_show (GTK_WIDGET (selectmenu));
+  application_manager_data_set_select_menu (appdata, selectmenu);
+
   navigation = navigation_area_new (appdata);
   moko_paned_window_set_upper_pane (window, navigation);
 
@@ -108,8 +114,6 @@ main (int argc, char* argv[])
     }
 
   package_list_add_section_to_filter_menu (appdata);
-
-  ret = navigation_area_insert_test_data (appdata);
 
   gtk_widget_show_all (GTK_WIDGET (window));
   g_debug ("application manager enter main loop");

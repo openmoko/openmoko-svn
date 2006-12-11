@@ -56,6 +56,7 @@ typedef struct _ApplicationManagerData {
 
   MokoPanedWindow  *mwindow;           ///<! The main window
   GtkMenu          *filtermenu;        ///<! The filter menu
+  GtkMenu          *selectmenu;        ///<! The select menu
   GtkWidget        *tvpkglist;         ///<! The treeview of the package list
   GtkWidget        *tvdetail;          ///<! The textview of the details info
   gpointer         pkglist;            ///<! The package list get from lib ipkg
@@ -84,6 +85,9 @@ void application_manager_data_set_main_window (ApplicationManagerData *appdata,
 
 void application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
                                                GtkMenu *filtermenu);
+
+void application_manager_data_set_select_menu (ApplicationManagerData *appdata,
+                                               GtkMenu *selectmenu);
 
 void application_manager_data_set_tvpkglist (ApplicationManagerData *appdata,
                                              GtkWidget *tvpkglist);
@@ -116,6 +120,9 @@ MokoPanedWindow *
 
 GtkMenu *
      application_manager_get_filter_menu (ApplicationManagerData *appdata);
+
+GtkMenu *
+     application_manager_get_select_menu (ApplicationManagerData *appdata);
 
 GtkWidget *
      application_manager_get_tvpkglist (ApplicationManagerData *appdata);

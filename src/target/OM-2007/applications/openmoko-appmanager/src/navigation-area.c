@@ -18,12 +18,14 @@
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
 #include <libmokoui/moko-tree-view.h>
+#include <string.h>
 
 #include "appmanager-window.h"
 #include "navigation-area.h"
 #include "errorcode.h"
 #include "detail-area.h"
 #include "package-list.h"
+#include "select-menu.h"
 
 /**
  * @brief The callback function of the signal "cursor-changed"
@@ -45,6 +47,68 @@ on_treeview_unselect_all (GtkTreeView *treeview,
                           gpointer     user_data)
 {
   g_debug ("Call the on_treeview_unselect_all");
+
+  return FALSE;
+}
+
+/**
+ * @brief The callback function of the signal "button_press_event"
+ */
+gboolean 
+on_treeview_button_press_event (GtkWidget *treeview, 
+                                GdkEventButton *event,
+                                gpointer data)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data), FALSE);
+
+  if (event->type == GDK_BUTTON_PRESS)
+    {
+      GtkTreeSelection *selection;
+      GtkTreeIter iter;
+      GtkTreePath *path;
+      GtkTreeModel  *model;
+      GtkTreeViewColumn *column;
+      GtkTreeViewColumn *firstcol;
+      gpointer  pkg;
+
+      GtkMenu   *selectmenu;
+
+      if (!(event->window == gtk_tree_view_get_bin_window (GTK_TREE_VIEW (treeview))))
+        {
+          g_debug ("Not a package list view event");
+          return FALSE;
+        }
+
+      if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview),
+                                         (int)event->x, (int)event->y,
+                                         &path, &column, NULL, NULL))
+        {
+          selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
+          firstcol = gtk_tree_view_get_column (GTK_TREE_VIEW (treeview), 0);
+          gtk_tree_selection_unselect_all (selection);
+          gtk_tree_view_set_cursor (GTK_TREE_VIEW (treeview), path, NULL, FALSE);
+
+          if (!((event->button == 1) && (strcmp(firstcol->title, column->title) == 0)))
+            {
+              return TRUE;
+            }
+
+          if (gtk_tree_selection_get_selected (selection, &model, &iter))
+            {
+              gtk_tree_model_get (model, &iter, COL_POINTER, &pkg, -1);
+              selectmenu = application_manager_get_select_menu (
+                              MOKO_APPLICATION_MANAGER_DATA (data));
+              g_return_val_if_fail (MOKO_IS_SELECT_MENU (selectmenu), TRUE);
+              g_debug ("popup menu");
+              moko_select_menu_popup (MOKO_SELECT_MENU (selectmenu), 
+                                      event, 
+                                      MOKO_APPLICATION_MANAGER_DATA (data),
+                                      pkg);
+            }
+          return TRUE;
+        }
+
+    }
 
   return FALSE;
 }
@@ -141,6 +205,9 @@ navigation_area_new (ApplicationManagerData *appdata)
                     G_CALLBACK (on_treeview_cursor_changed),
                     appdata);
 
+  g_signal_connect ((gpointer) treeview, "button_press_event",
+                    G_CALLBACK (on_treeview_button_press_event),
+                    appdata);
 
   return scrollwindow;
 }

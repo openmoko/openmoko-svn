@@ -34,19 +34,24 @@ G_BEGIN_DECLS
 #define MOKO_SELECT_MENU_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_SELECT_MENU, MokoSelectMenuClass))
 
 typedef struct _MokoSelectMenu MokoSelectMenu;
-typedef struct _MOkoSelectMenuClass MokoSelectMenuClass;
+typedef struct _MokoSelectMenuClass MokoSelectMenuClass;
 
 struct _MokoSelectMenu {
-  GtkMenu   *parent;
+  GtkMenu   parent;
 };
 
-struct _MOkoSelectMenuClass {
-  GtkMenuClass  *parent_class;
+struct _MokoSelectMenuClass {
+  GtkMenuClass  parent_class;
 };
 
 GType moko_select_menu_get_type (void);
 
 MokoSelectMenu *moko_select_menu_new (ApplicationManagerData *appdata);
+
+void moko_select_menu_popup (MokoSelectMenu *menu, 
+                             GdkEventButton *event,
+                             ApplicationManagerData *appdata, 
+                             gpointer pkg);
 
 G_END_DECLS
 

@@ -845,3 +845,19 @@ package_list_get_with_name (ApplicationManagerData *appdata,
 
   return NULL;
 }
+
+/**
+ * @brief Get the select status from package infomation.
+ * @param data The package infomation
+ * @return The select status
+ */
+gint 
+package_list_get_package_status (gpointer data)
+{
+  IPK_PACKAGE *tmp;
+
+  g_return_val_if_fail (data != NULL, -1);
+
+  tmp = (IPK_PACKAGE *)data;
+  return tmp->mark;
+}
