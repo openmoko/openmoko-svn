@@ -28,6 +28,7 @@
 #include <gtk/gtktable.h>
 #include <gtk/gtkobject.h>
 #include <gtk/gtksignal.h>
+
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_DIALER_PANEL                (moko_dialer_panel_get_type())

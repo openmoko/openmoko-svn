@@ -17,7 +17,7 @@
  */
 
  #include "moko-dialer-textview.h"
-
+ #include "error.h"
 G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
 
 
@@ -92,7 +92,7 @@ GtkTextBuffer *buffer;
 
 
 
-			  gtk_widget_set_size_request (textview, 480, 92);
+			  gtk_widget_set_size_request (GTK_WIDGET(textview), 480, 92);
 			  GTK_WIDGET_UNSET_FLAGS (textview, GTK_CAN_FOCUS);
 			  gtk_text_view_set_editable (GTK_TEXT_VIEW (textview), FALSE);
 			  gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (textview), FALSE);
@@ -134,11 +134,11 @@ return GTK_WIDGET(dp);
 }
 
 /**
- * @brief settextviewcolor(GtkWidget *text_view)
+ * @brief moko_dialer_textview_set_color(MokoDialerTextview *moko_dialer_textview)
  *
  * set the text left to the cursor to black, and right to red.
  *
- * @param text_view the display area
+ * @param moko_dialer_textview the display area
  * @param len the char length,if it exceeds 13,then automatically decrease the size.
  * @return  void
  * @retval void
@@ -176,7 +176,7 @@ if(cur>0)
  }	
  else
  {//cur==0
-	gtk_text_buffer_apply_tag_by_name (buffer, moko_dialer_textview->tag_for_autofilled, &cursoriter, &end);	 	 
+	gtk_text_buffer_apply_tag (buffer, moko_dialer_textview->tag_for_autofilled, &cursoriter, &end);	 	 
  }
 
 	 
@@ -217,16 +217,15 @@ if(cur>0)
 {
 
 gint len=0;
-GtkWidget *text_view;
+
 GtkTextBuffer *buffer;
 GtkTextIter start;
 GtkTextIter end;
 GtkTextIter selectioniter,insertiter;
 GtkTextMark *selectmark,*insertmark;
 
-text_view= moko_dialer_textview;
  /* Obtaining the buffer associated with the widget. */
-buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text_view));
+buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 	
 selectmark=gtk_text_buffer_get_selection_bound(buffer);
 insertmark=	gtk_text_buffer_get_insert(buffer);
@@ -275,12 +274,136 @@ if(gtk_text_iter_get_offset(&insertiter)!=gtk_text_iter_get_offset(&selectionite
 		rebuild_contact_view(text_view,1);		
 	}
 */
-	//settextviewcolor(text_view);
+
 	moko_dialer_textview_set_color(moko_dialer_textview);
 	return len;
 }
 
 
+//get the input section of the textview 
+//if ALL=true, get whole text
+//else only get the inputed digits.
+int  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar** input,int ALL)
+{
+gchar* codestring;
+GtkTextBuffer *buffer;
+GtkTextIter start;
+GtkTextIter end;
+GtkTextIter insertiter;
+GtkTextMark *insertmark;
+	
+
+
+/* Obtaining the buffer associated with the widget. */
+buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
+	
+//get current cursor iterator
+insertmark=	gtk_text_buffer_get_insert(buffer);
+gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
+//get start & end iterator
+gtk_text_buffer_get_start_iter (buffer, &start);
+gtk_text_buffer_get_end_iter (buffer, &end);
+
+if(gtk_text_iter_get_offset(&insertiter)==gtk_text_iter_get_offset(&start))
+{
+	strcpy(*input,"");
+	return 0;
+}
+  
+if(ALL)
+	/* Get the entire buffer text. */
+	codestring = gtk_text_buffer_get_text (buffer, &start, &end,FALSE);
+else
+	codestring = gtk_text_buffer_get_text (buffer, &start, &insertiter, FALSE);
+strcpy(*input,codestring);
+g_free(codestring);
+return 1;
+}
+
+//autofill the string to the inputed digits string on the textview
+
+int  moko_dialer_textview_fill_it(MokoDialerTextview *moko_dialer_textview,gchar* string)
+{
+
+
+GtkTextBuffer *buffer;
+GtkTextIter start;
+GtkTextIter end;
+GtkTextIter insertiter;
+GtkTextMark *insertmark;
+gint offset;
+gint offsetend;	
+gint offsetstart;	
+
+DBG_ENTER();
+DBG_MESSAGE("Sensative string:%s",string);
+
+/* Obtaining the buffer associated with the widget. */
+buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
+
+//get current cursor iterator
+insertmark=	gtk_text_buffer_get_insert(buffer);
+gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
+//get start & end iterator
+gtk_text_buffer_get_start_iter (buffer, &start);
+gtk_text_buffer_get_end_iter (buffer, &end);
+offsetend=gtk_text_iter_get_offset(&end);
+offset=gtk_text_iter_get_offset(&insertiter);
+//if startpos=endpos, that means we didn't input anything
+//so we just insert the text.
+
+offsetstart=gtk_text_iter_get_offset(&start);
+if(offsetend==offsetstart)
+{
+	
+	gtk_text_buffer_set_text(buffer,string,-1);
+	
+	gtk_text_buffer_get_start_iter (buffer, &start);
+	gtk_text_buffer_place_cursor(buffer,&start);
+	moko_dialer_textview_set_color(moko_dialer_textview);
+	
+	//gtk_widget_grab_focus(text_view);
+	return 1;
+
+}
+
+/* Get the entire buffer text. */
+
+//codestring = gtk_text_buffer_get_text (buffer, &start, &insertiter, FALSE);
+
+gtk_text_buffer_delete(buffer,&insertiter,&end);
+
+
+//reget current cursor iterator
+insertmark=	gtk_text_buffer_get_insert(buffer);
+gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
+
+//here we have to call the get sensentivestring to get "139" or something.
+//gtk_text_buffer_insert_with_tags_by_name(buffer,&insertiter,"139",3,tag_name);
+if(string!=0)
+{
+	if(strlen(string)>0)
+	{
+	gtk_text_buffer_insert( buffer,&insertiter,string,strlen(string));
+
+//reget current cursor iterator
+	insertmark=	gtk_text_buffer_get_insert(buffer);
+	gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
+	gtk_text_iter_set_offset(&insertiter,offset);
+	}
+}
+
+//setback the cursor position
+gtk_text_buffer_place_cursor(buffer,&insertiter);
+	
+moko_dialer_textview_set_color(moko_dialer_textview);
+
+//gtk_widget_grab_focus(text_view);
+//g_free (codestring );
+
+DBG_LEAVE();
+return 1;
+}
 
  
 

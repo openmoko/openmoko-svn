@@ -16,7 +16,7 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
 #include "moko-dialer-panel.h"
-
+#include "error.h"
 G_DEFINE_TYPE (MokoDialerPanel, moko_dialer_panel, GTK_TYPE_VBOX)
 
 enum {
@@ -80,6 +80,7 @@ g_print("moko_dialer_panel:signal register end,got the id :%d\n", moko_dialer_pa
 static void
 moko_dialer_panel_init (MokoDialerPanel *moko_dialer_panel)
 {
+DBG_ENTER();
 
  gchar* left[4][3]=
  	{
@@ -196,6 +197,8 @@ else if(event->button==1)
 
 GtkWidget*      moko_dialer_panel_new()
 {
+DBG_ENTER();
+
 MokoDialerPanel * dp;
 
 dp=(MokoDialerPanel * )g_object_new (MOKO_TYPE_DIALER_PANEL, NULL);

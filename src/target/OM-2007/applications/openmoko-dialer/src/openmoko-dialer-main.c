@@ -32,6 +32,7 @@
 #include "moko-dialer-panel.h"
 #include "openmoko-dialer-main.h"
 #include "moko-dialer-textview.h"
+#include "moko-dialer-autolist.h"
 void
 on_dialer_panel_user_input(GtkWidget * widget,gchar parac,
                                         gpointer         user_data)
@@ -139,6 +140,9 @@ int main( int argc, char** argv )
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 5 );
 	
 
+    MokoDialerAutolist* autolist=moko_dialer_autolist_new();
+    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), TRUE, TRUE, 5 );
+    
     moko_finger_window_set_contents( window, GTK_WIDGET(vbox) );
 /*
 

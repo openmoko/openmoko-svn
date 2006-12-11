@@ -28,6 +28,7 @@
 #include <gtk/gtkobject.h>
 #include <gtk/gtksignal.h>
 #include <gtk/gtktextview.h>
+
 G_BEGIN_DECLS
 
 #define MOKO_DIALER_TEXT_VIEW_MAXDIALNUMBERLEN 128
