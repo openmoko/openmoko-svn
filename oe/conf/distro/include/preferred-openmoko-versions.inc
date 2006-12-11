@@ -15,7 +15,8 @@ SRCDATE_openmoko-libs = "now"
 #
 # Examples
 #
-SRCDATE_openmoko-paned-demo = "now"
+SRCDATE_openmoko-stylus-demo = "now"
+SRCDATE_openmoko-stylus-demo-simple = "now"
 SRCDATE_openmoko-finger-demo = "now"
 
 #

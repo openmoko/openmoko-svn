@@ -40,7 +40,8 @@ TARGET_FPU_arm = "soft"
 TARGET_FPU_armeb = "soft"
 PREFERRED_PROVIDER_virtual/libiconv = "glibc"
 PREFERRED_PROVIDER_virtual/libintl = "glibc"
-
+PREFERRED_VERSION_linux-libc-headers_x86 = "2.6.15.99"
+PREFERRED_VERSION_linux-libc_headers = "2.6.18"
 #
 # Features
 #

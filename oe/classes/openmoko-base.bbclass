@@ -1,4 +1,4 @@
-HOMEPAGE ?= "http://www.openmoko.org"
+HOMEPAGE = "http://www.openmoko.org"
 LICENSE ?= "GPL"
 OPENMOKO_RELEASE ?= "OM-2007"
 OPENMOKO_MIRROR ?= "svn://svn.gta01.hmw-consulting.de/trunk"
@@ -15,3 +15,4 @@ SUBDIR = "${@openmoko_base_get_subdir(d)}"
 SRC_URI := "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/${SUBDIR};module=${PN};proto=http"
 S = "${WORKDIR}/${PN}"
 
+FILES_${PN} += "${datadir}/icons"
