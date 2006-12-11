@@ -81,17 +81,17 @@ style "moko-window-default" {
 
 class "GtkWidget" style "moko-window-default"
 class "GtkLabel" style "moko-window-default"
-class "GtkFrame" style "moko-window-default"
 
 #FIXME that doesn't look correct, but is there a better way to get
 #a) Frames and Labels inherit the default color
 #b) items on menubar _not_ the default color
-widget_class "*.GtkFrame*" style "moko-window-default"
 widget_class "*.GtkLabel*" style "moko-window-default"
 #FIXME e.g. how to say widget "*" style "moko-window-default", but change menuitem color afterwards. that doesn't seem to work!?
 
 include "transparent"
 
+include "gtkcombobox"
+include "gtkframe"
 include "gtkmenu"
 include "gtkmenuitem"
 include "gtkpaned"

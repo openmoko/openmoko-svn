@@ -1,0 +1,10 @@
+#FIXME I can't get a stock GtkComboBox created with gtk_combo_box_new_text to show white text
+
+style "gtkcombobox-cellrenderer"
+{
+    font_name = "Vera Sans 16"
+    text[NORMAL] = "#ff0000"
+    fg[NORMAL] = "#ff0000"
+}
+widget_class "*.GtkComboBox.GtkCellRenderer*" style "gtkcombobox-cellrenderer"
+widget "GtkCellRendererText" style "gtkcombobox-cellrenderer"

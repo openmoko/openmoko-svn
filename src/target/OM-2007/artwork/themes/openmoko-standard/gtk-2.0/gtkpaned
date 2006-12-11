@@ -1,7 +1,3 @@
-#
-# FIXME: orientation = VERTICAL
-#
-
 style "gtkpaned" {
     engine "pixmap" {
 #

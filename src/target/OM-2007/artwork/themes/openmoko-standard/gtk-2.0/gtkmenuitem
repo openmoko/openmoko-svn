@@ -28,6 +28,11 @@ style "gtkmenuitem-label" {
 widget "*.GtkMenu.GtkMenuItem.*" style "gtkmenuitem-label"
 widget "*.GtkMenu.GtkImageMenuItem.*" style "gtkmenuitem-label"
 widget "*.GtkMenu.GtkRadioMenuItem.*" style "gtkmenuitem-label"
+widget "*.GtkMenu.GtkCellView.*" style "gtkmenuitem-label"
+widget_class "*.GtkMenu.GtkMenuItem.*" style "gtkmenuitem-label"
+widget_class "*.GtkMenu.GtkImageMenuItem.*" style "gtkmenuitem-label"
+widget_class "*.GtkMenu.GtkRadioMenuItem.*" style "gtkmenuitem-label"
+widget_class "*.GtkMenu.GtkCellView.*" style "gtkmenuitem-label"
 class "GtkCellView" style "gtkmenuitem-label"
 
 style "gtkmenubar-gtkmenuitem-label" {
@@ -37,4 +42,3 @@ style "gtkmenubar-gtkmenuitem-label" {
 }
 widget_class "*.GtkMenuBar.GtkMenuItem.GtkAccelLabel" style "gtkmenubar-gtkmenuitem-label"
 widget_class "*.GtkMenuBar.GtkImageMenuItem.GtkAccelLabel" style "gtkmenubar-gtkmenuitem-label"
-
