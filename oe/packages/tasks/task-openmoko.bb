@@ -157,6 +157,7 @@ RDEPENDS_task-openmoko-devel = "\
   tcpdump \
   tslib-calibrate \
   tslib-tests \
+  fstests \
   lsof \
   lrzsz \
   udev-utils \

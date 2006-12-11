@@ -4,19 +4,17 @@ AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-qt2410"
-PR = "r2"
+PR = "r3"
 
 inherit kernel
 
-FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
-HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
+FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-qt2410"
 
 ##############################################################
 # source and patches
 #
 SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.14.tar.bz2 \
-           file://patches-2.6.17.7-fic1.tar.bz2 \
-	   file://udc-nomodule-misccr.patch;patch=1 \
+           file://patches-2.6.17.14-fic3.tar.bz2 \
            file://defconfig-${MACHINE}"
 S = "${WORKDIR}/linux-2.6.17.14"
 
