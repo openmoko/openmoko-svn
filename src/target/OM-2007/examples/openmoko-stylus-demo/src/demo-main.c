@@ -28,6 +28,8 @@
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkcheckbutton.h>
 #include <gtk/gtkcheckmenuitem.h>
+#include <gtk/gtkcombobox.h>
+#include <gtk/gtkframe.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
@@ -43,12 +45,13 @@ create_model (void)
     GtkListStore *store;
     GtkTreeIter iter;
     gint i;
-    gchar *stuff[19][2] = { { "Sean", "1111111111" },
+    gchar *stuff[19][2] = {
+        { "Sean", "1111111111" },
+        { "Mickey", "22222222222" },
+        { "Harald", "33333333333" },
         { "Tom", "22222222222" },
         { "Steven", "02134567890" },
         { "Tony", "02178789999" },
-        { "Gordon", "02122222222" },
-        { "Gordon", "02122222222" },
         { "Gordon", "02122222222" },
         { "Gordon", "02122222222" },
         { "Gordon", "02122222222" },
@@ -149,6 +152,11 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
     gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(check2) );
     gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(check3) );
 
+    GtkFrame* frame = gtk_frame_new( "Choose your favourite gift" );
+    GtkVBox* framevbox = gtk_vbox_new( TRUE, 0 );
+    g_object_set( G_OBJECT(frame), "border-width", 10, NULL );
+    gtk_container_add( GTK_CONTAINER(frame), GTK_WIDGET(framevbox) );
+
     GSList* group = NULL;
     GtkRadioButton* radio1 = gtk_radio_button_new_with_label( group, "Use Radio Buttons only for few(!) options" );
     group = gtk_radio_button_get_group( radio1 );
@@ -156,9 +164,22 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
     group = gtk_radio_button_get_group( radio2 );
     GtkRadioButton* radio3 = gtk_radio_button_new_with_label( group, "Always Group Radio Buttons in a Frame" );
 
-    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(radio1) );
-    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(radio2) );
-    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(radio3) );
+    gtk_box_pack_start_defaults( GTK_BOX(framevbox), GTK_WIDGET(radio1) );
+    gtk_box_pack_start_defaults( GTK_BOX(framevbox), GTK_WIDGET(radio2) );
+    gtk_box_pack_start_defaults( GTK_BOX(framevbox), GTK_WIDGET(radio3) );
+
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(frame) );
+
+    GtkComboBox* combo = gtk_combo_box_new_text();
+    gtk_combo_box_append_text( combo, "Use" );
+    gtk_combo_box_append_text( combo, "the" );
+    gtk_combo_box_append_text( combo, "GtkComboBox" );
+    gtk_combo_box_append_text( combo, "widget" );
+    gtk_combo_box_append_text( combo, "if you have" );
+    gtk_combo_box_append_text( combo, "a lot of" );
+    gtk_combo_box_append_text( combo, "different options" );
+    gtk_combo_box_append_text( combo, "for one setting" );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(combo) );
 
     gtk_widget_show_all( GTK_WIDGET(controls) );
 
@@ -198,7 +219,7 @@ int main( int argc, char** argv )
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-    g_set_application_name( "OpenMoko Demo" );
+    g_set_application_name( "Stylus Demo" );
 
     /* main window */
     MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());

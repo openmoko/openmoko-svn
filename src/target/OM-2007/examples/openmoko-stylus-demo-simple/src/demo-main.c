@@ -84,7 +84,7 @@ int main( int argc, char** argv )
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-    g_set_application_name( "OpenMoko Demo" );
+    g_set_application_name( "Simple Stylus Demo" );
 
     /* main window */
     MokoPanedWindow* window = MOKO_PANED_WINDOW(moko_paned_window_new());
