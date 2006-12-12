@@ -2,7 +2,7 @@ INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -peda
 
 bin_PROGRAMS = openmoko-mainmenu
 
-openmoko_mainmenu_SOURCES = main.c mainmenu.c callbacks.c menu-list.c support.c md5.c
+openmoko_mainmenu_SOURCES = main.c mainmenu.c callbacks.c menu-list.c support.c 
 
 openmoko_mainmenu_LDADD = @OPENMOKO_LIBS@
 
