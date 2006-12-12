@@ -83,7 +83,7 @@ om_add_window (Display *dpy, Window w, GtkListStore *list_store){
     Atom type;
 
     icon = om_get_window_icon (dpy, w);
-    //name = om_get_window_name(dpy, w);
+    name = om_get_window_name(dpy, w);
     gtk_list_store_append (list_store, &iter);
     gtk_list_store_set (list_store, &iter, 0, name, 1, w, -1);
     //gtk_list_store_set (list_store, &iter, 1, w, -1);

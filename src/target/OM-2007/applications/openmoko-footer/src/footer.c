@@ -83,8 +83,7 @@ static void footer_class_init (FooterClass *Klass) /* Class Initialization */
 */
 static void footer_init (Footer *f) /* Instance Construction */
 {
-  PangoFontDescription* PangoFontDesc;
-  //PangoLayout* PangoLayoud;
+    PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
   
 /*left image*/
     f->LeftEventBox = gtk_event_box_new (); 
@@ -104,9 +103,9 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_widget_set_name (GTK_WIDGET (f->CenterLabel), "label_footer");
     gtk_misc_set_alignment (GTK_MISC (f->CenterLabel), LABEL_ALIGNMENT_X, LABEL_ALIGNMENT_Y);
     gtk_label_set_single_line_mode (f->CenterLabel, TRUE);
-    if (PangoFontDesc = pango_font_description_from_string (FONT_STRING)){
-	pango_font_description_set_size (PangoFontDesc, FONT_SIZE);
-	gtk_widget_modify_font (GTK_WIDGET (f->CenterLabel), PangoFontDesc);
+    if (PangoFont){
+	pango_font_description_set_size (PangoFont, FONT_SIZE);
+	gtk_widget_modify_font (GTK_WIDGET (f->CenterLabel), PangoFont);
     }
     gtk_label_set_ellipsize (f->CenterLabel, PANGO_ELLIPSIZE_END);
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET (f->CenterLabel), TRUE, TRUE, LABEL_PADDING);

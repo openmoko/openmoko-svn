@@ -41,10 +41,7 @@ G_BEGIN_DECLS
 #define LABEL_ALIGNMENT_Y 0.7
 
 /*Pango Font spec*/
-//#define FONT_STRING ("-*-*bold-r-normal-*-120-*-*-*-*-iso8859-1")
-#define FONT_STRING ""
-#define FONT_SIZE 12*PANGO_SCALE
-#define FONT_MAX_LENGTH 3
+#define FONT_SIZE 11*PANGO_SCALE
 
 #define FOOTER_TYPE            (footer_get_type())
 #define FOOTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), FOOTER_TYPE, Footer))
