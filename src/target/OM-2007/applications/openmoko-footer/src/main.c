@@ -26,9 +26,12 @@ int main( int argc, char **argv )
 {
     OMTaskManager* app;
     DBusError error;
-    dbus_error_init(&error);
-    GtkStyle *style = gtk_style_new ();
+    GError* err = NULL;
+    GdkPixbuf *pixbuf;
+    GtkStyle *style;// = gtk_style_new ();
   //  style->bg_pixmap[GTK_STATE_NORMAL] = gdk_pixmap_new_from_file (PKGDATADIR"/bg_footer.png");
+
+    dbus_error_init(&error);
 
     if (!(app = g_malloc ( sizeof (OMTaskManager)))){
     		fprintf (stderr,"Openmoko-taskmanager: footer UI initialized failed, app space malloc failed!");
@@ -52,7 +55,12 @@ int main( int argc, char **argv )
     gtk_window_set_type_hint (GTK_WINDOW(app->toplevel_win), GDK_WINDOW_TYPE_HINT_DOCK);
     gtk_window_set_default_size (app->toplevel_win, FOOTER_PROPERTY_WIDTH, FOOTER_PROPERTY_HEIGHT);
     gtk_widget_set_uposition (app->toplevel_win, FOOTER_PROPERTY_X, FOOTER_PROPERTY_Y);
+    gtk_widget_show (app->toplevel_win);
+
+    pixbuf = gdk_pixbuf_new_from_file( PKGDATADIR "/bg_footer.png", &err );
     
+
+    //style = gtk_rc_get_style (app->toplevel_win);
 ///initialize OpenMoko Footer Widget
     app->footer = FOOTER(footer_new()); 
     gtk_widget_show_all (app->footer);
@@ -62,14 +70,22 @@ int main( int argc, char **argv )
     					G_CALLBACK (footer_rightbutton_clicked), app);
    
 ///Add OpenMoko Footer to Top Level windonw
-    gtk_container_add( GTK_CONTAINER(app->toplevel_win), GTK_WIDGET(app->footer) );
+    //gtk_container_add( GTK_CONTAINER(app->toplevel_win), GTK_WIDGET(app->footer) );
     // this violates the privacy concept, but it's a demo for now...
   
     dbus_connection_setup_with_g_main (app->bus, NULL);
     dbus_bus_add_match (app->bus, "type='signal',interface='org.openmoko.dbus.TaskManager'", &error );
     dbus_connection_add_filter (app->bus, signal_filter, app, NULL );
 
+    //gtk_widget_show (app->footer);
     gtk_widget_show_all (app->toplevel_win);
+
+    gdk_draw_pixbuf( app->toplevel_win->window, NULL,
+            				pixbuf, 
+            				0, 0,
+            				0, 0,
+            				-1, -1,
+            				GDK_RGB_DITHER_MAX, 0, 0);
    
     g_main_loop_run ( app->loop );
             
