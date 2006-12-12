@@ -260,6 +260,7 @@ moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gc
     if ( priv->actionbtnstockimage )
         return;
 
+    //FIXME why should we use two alignments to center stock image?
     GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
 
