@@ -47,4 +47,14 @@ void package_list_remove_package_from_selected_list (ApplicationManagerData *app
 void package_list_add_node_to_selected_list (ApplicationManagerData *appdata,
                                              gpointer pkg);
 
+char *package_list_get_package_version (gpointer pkg);
+
+char *package_list_get_package_name (gpointer pkg);
+
+char *package_list_get_package_depends (gpointer pkg);
+
+char *package_list_get_package_description (gpointer pkg);
+
+char *package_list_get_package_maintainer (gpointer pkg);
+
 #endif

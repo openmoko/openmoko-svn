@@ -34,9 +34,19 @@ void
 on_treeview_cursor_changed (GtkTreeView *treeview, 
                             gpointer     user_data)
 {
-  g_debug ("Call the on_treeview_cursor_changed");
+  GtkTreeModel     *model;
+  GtkTreeIter      iter;
+  GtkTreeSelection *selection;
+  gpointer         pkg;
 
-  detail_area_update_info ((ApplicationManagerData *) user_data);
+  g_debug ("Call the on_treeview_cursor_changed");
+  selection = gtk_tree_view_get_selection (treeview);
+
+  if (gtk_tree_selection_get_selected (selection, &model, &iter))
+    {
+      gtk_tree_model_get (model, &iter, COL_POINTER, &pkg, -1);
+      detail_area_update_info ((ApplicationManagerData *) user_data, pkg);
+    }
 }
 
 /**

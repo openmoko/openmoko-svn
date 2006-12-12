@@ -924,3 +924,98 @@ package_list_add_node_to_selected_list (ApplicationManagerData *appdata,
 
   package_list_insert_node_without_check (selectedlist, (IPK_PACKAGE *)pkg);
 }
+
+/**
+ * @brief Get the package version from package node
+ *
+ * @param pkg The package infomation
+ * @return A pointer to the version of the package. The string points to the 
+ *  internally allocated storage and must not be free, modified or stored.
+ */
+char *
+package_list_get_package_version (gpointer pkg)
+{
+  IPK_PACKAGE *package;
+
+  g_return_val_if_fail (pkg != NULL, NULL);
+
+  package = (IPK_PACKAGE *)pkg;
+
+  return package->version;
+}
+
+/**
+ * @brief Get the package name from package node
+ *
+ * @param pkg The package infomation
+ * @return A pointer to the name of the package. The string points to the 
+ *  internally allocated storage and must not be free, modified or stored.
+ */
+char *
+package_list_get_package_name (gpointer pkg)
+{
+  IPK_PACKAGE *package;
+
+  g_return_val_if_fail (pkg != NULL, NULL);
+
+  package = (IPK_PACKAGE *)pkg;
+
+  return package->name;
+}
+
+/**
+ * @brief Get the package depends from package node
+ *
+ * @param pkg The package infomation
+ * @return A pointer to the depends of the package. The string points to the 
+ *  internally allocated storage and must not be free, modified or stored.
+ */
+char *
+package_list_get_package_depends (gpointer pkg)
+{
+  IPK_PACKAGE *package;
+
+  g_return_val_if_fail (pkg != NULL, NULL);
+
+  package = (IPK_PACKAGE *)pkg;
+
+  return package->depends;
+}
+
+/**
+ * @brief Get the package description from package node
+ *
+ * @param pkg The package infomation
+ * @return A pointer to the description of the package. The string points to the 
+ *  internally allocated storage and must not be free, modified or stored.
+ */
+char *
+package_list_get_package_description (gpointer pkg)
+{
+  IPK_PACKAGE *package;
+
+  g_return_val_if_fail (pkg != NULL, NULL);
+
+  package = (IPK_PACKAGE *)pkg;
+
+  return package->description;
+}
+
+/**
+ * @brief Get the package maintainer from package node
+ *
+ * @param pkg The package infomation
+ * @return A pointer to the maintainer of the package. The string points to the 
+ *  internally allocated storage and must not be free, modified or stored.
+ */
+char *
+package_list_get_package_maintainer (gpointer pkg)
+{
+  IPK_PACKAGE *package;
+
+  g_return_val_if_fail (pkg != NULL, NULL);
+
+  package = (IPK_PACKAGE *)pkg;
+
+  return package->maintainer;
+}

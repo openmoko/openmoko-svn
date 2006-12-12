@@ -21,6 +21,24 @@
 #include "tool-box.h"
 
 /**
+ * @brief The callback function of the button "upgrade"
+ */
+void 
+on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
+{
+  g_debug ("Clicked the button upgrade");
+}
+
+/**
+ * @brief The callback function of the button "Apply"
+ */
+void 
+on_apply_clicked (GtkButton *bapply, gpointer data)
+{
+  g_debug ("Clicked the button apply");
+}
+
+/**
  * @brief Create a new tool box for the application manager data
  * @param appdata The application manager data
  * @return The toplevel widget of the tool box
@@ -29,16 +47,26 @@ MokoToolBox *
 tool_box_new (ApplicationManagerData *appdata)
 {
   MokoToolBox *toolbox;
-  MokoPixmapButton *buttonapply;
+  MokoPixmapButton *bapply;
   MokoPixmapButton *bupgrade;
+  GtkEntry    *searchentry;
 
   toolbox = MOKO_TOOL_BOX (moko_tool_box_new_with_search ());
 
   bupgrade = moko_tool_box_add_action_button (toolbox);
   gtk_button_set_label (GTK_BUTTON (bupgrade), "Upgrade");
+  g_signal_connect ((gpointer)bupgrade, "clicked",
+                    G_CALLBACK (on_upgrade_clicked), 
+                    appdata);
 
-  buttonapply = moko_tool_box_add_action_button (toolbox);
-  gtk_button_set_label (GTK_BUTTON (buttonapply), "Apply");
+  bapply = moko_tool_box_add_action_button (toolbox);
+  gtk_button_set_label (GTK_BUTTON (bapply), "Apply");
+  g_signal_connect ((gpointer)bapply, "clicked",
+                    G_CALLBACK (on_apply_clicked), 
+                    appdata);
+
+  searchentry = moko_tool_box_get_entry (toolbox);
+  application_manager_data_set_search_entry (appdata, searchentry);
 
   return toolbox;
 }

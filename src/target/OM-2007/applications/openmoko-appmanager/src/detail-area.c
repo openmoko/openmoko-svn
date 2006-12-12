@@ -17,9 +17,11 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
+#include <libmokoui/moko-details-window.h>
 
 #include "detail-area.h"
 #include "navigation-area.h"
+#include "package-list.h"
 
 /**
  * @brief Create a detail area to the application manager data
@@ -29,13 +31,12 @@
 GtkWidget *
 detail_area_new (ApplicationManagerData *appdata)
 {
-  GtkWidget    *scrollwindow;
   GtkWidget    *text;
+  MokoDetailsWindow  *detail;
+  GtkBox             *box;
 
-  scrollwindow = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_show (scrollwindow);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwindow), 
-                                  GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  detail = moko_details_window_new ();
+  box = moko_details_window_put_in_box (detail);
 
   text = gtk_text_view_new ();
   gtk_widget_show (text);
@@ -43,10 +44,10 @@ detail_area_new (ApplicationManagerData *appdata)
   gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (text), FALSE);
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text), GTK_WRAP_WORD);
 
-  gtk_container_add (GTK_CONTAINER (scrollwindow), text);
+  gtk_container_add (GTK_CONTAINER (detail), text);
   application_manager_data_set_tvdetail (appdata, text);
 
-  return scrollwindow;
+  return GTK_WIDGET (box);
 }
 
 /**
@@ -54,42 +55,74 @@ detail_area_new (ApplicationManagerData *appdata)
  * @param appdata The application manager data
  */
 void 
-detail_area_update_info (ApplicationManagerData *appdata)
+detail_area_update_info (ApplicationManagerData *appdata, 
+                         gpointer pkg)
 {
   GtkWidget      *textview;
   GtkTextBuffer  *buffer;
-  GtkTextIter    iter;
+  GtkTextIter    start, end;
   GdkPixbuf      *pix;
-  gchar          *name = NULL;
-  gchar          str[256];
+  GtkTextTagTable   *tagtable;
 
   g_debug ("Update the info in the detail area");
 
-  g_return_if_fail (appdata != NULL);
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   textview = application_manager_get_tvdetail (appdata);
-  if (textview == NULL)
-    {
-      g_debug ("Textview is NULL");
-      return;
-    }
+  g_return_if_fail (GTK_IS_TEXT_VIEW (textview));
 
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
-  if (buffer == NULL)
+  gtk_text_buffer_set_text (buffer, "", -1);
+
+  // Init tag
+  tagtable = gtk_text_buffer_get_tag_table (buffer);
+  if (gtk_text_tag_table_lookup (tagtable, "bold") == NULL)
     {
-      g_debug ("Textview not init correctly, textbuffer is NULL");
-      return;
+      gtk_text_buffer_create_tag (buffer, "bold",
+                                  "weight", PANGO_WEIGHT_BOLD,
+                                  "scale", 1.1,
+                                  NULL);
     }
 
-  name = treeview_get_selected_name (application_manager_get_tvpkglist (appdata));
-
+  // Insert the pixmap of the package
+  // FIXME It needs a way to lookup the picture
   pix = create_pixbuf ("unkown.png");
 
-  sprintf (str, "The selected package name is:%s", name);
-  gtk_text_buffer_set_text (buffer, str, -1);
+  gtk_text_buffer_get_start_iter (buffer, &start);
+  gtk_text_buffer_insert_pixbuf (buffer, &start, pix);
 
-  gtk_text_buffer_get_start_iter (buffer, &iter);
-  gtk_text_buffer_insert_pixbuf (buffer, &iter, pix);
+  // Insert package name
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  gtk_text_buffer_insert (buffer, &end, 
+                          package_list_get_package_name (pkg),
+                          -1);
+
+  // Insert the "\n"
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  gtk_text_buffer_insert (buffer, &end, "\n", -1);
+
+  // Insert the maintainer
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  gtk_text_buffer_insert (buffer, &end, 
+                          package_list_get_package_maintainer (pkg),
+                          -1);
+
+  // Set bold to the first line
+  gtk_text_buffer_get_start_iter (buffer, &start);
+  gtk_text_buffer_get_start_iter (buffer, &end);
+  gtk_text_iter_forward_line (&end);
+  gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
+
+  // Insert the "\n"
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  gtk_text_buffer_insert (buffer, &end, "\n", -1);
+
+  // Set the descript
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  gtk_text_buffer_insert (buffer, &end, 
+                          package_list_get_package_description (pkg),
+                          -1);
+
 
   g_object_unref (pix);
 }

@@ -38,6 +38,7 @@ application_manager_data_init (ApplicationManagerData *data)
   data->mwindow = NULL;
   data->filtermenu = NULL;
   data->selectmenu = NULL;
+  data->searchentry = NULL;
   data->tvpkglist = NULL;
   data->tvdetail = NULL;
   data->pkglist = NULL;
@@ -107,6 +108,20 @@ application_manager_data_set_select_menu (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->selectmenu = selectmenu;
+}
+
+/**
+ * @brief Set the search entry to the application manager data
+ * @param appdata The application manager data struct
+ * @param entry The search entry
+ */
+void 
+application_manager_data_set_search_entry (ApplicationManagerData *appdata,
+                                           GtkEntry *entry)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->searchentry = entry;
 }
 
 /**
@@ -351,6 +366,19 @@ application_manager_get_select_menu (ApplicationManagerData *appdata)
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->selectmenu;
+}
+
+/**
+ * @brief Get the search entry from the application manager data
+ * @param appdata The application manager data
+ * @return The search entry
+ */
+GtkEntry *
+application_manager_get_search_entry (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->searchentry;
 }
 
 /**

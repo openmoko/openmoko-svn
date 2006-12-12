@@ -26,7 +26,8 @@
 
 GtkWidget *detail_area_new (ApplicationManagerData *appdata);
 
-void detail_area_update_info (ApplicationManagerData *appdata);
+void detail_area_update_info (ApplicationManagerData *appdata, 
+                              gpointer pkg);
 
 #endif
 
