@@ -271,14 +271,18 @@ int main( int argc, char** argv )
 
     button1 = moko_tool_box_add_action_button( toolbox );
     //gtk_button_set_label( button1, "Action 1" );
-    moko_pixmap_button_set_action_btn_upper_stock (button1, "openmoko-action-button-message-icon");
-    moko_pixmap_button_set_action_btn_lower_label (button1, "Edit");
+    //moko_pixmap_button_set_action_btn_upper_stock (button1, "openmoko-action-button-message-icon");
+    //moko_pixmap_button_set_action_btn_lower_label (button1, "Edit");
+    moko_pixmap_button_set_action_btn_center_stock (button1, "openmoko-action-button-group-icon");
     button2 = moko_tool_box_add_action_button( toolbox );
-    gtk_button_set_label( button2, "Dialog" );
+    //gtk_button_set_label( button2, "Dialog" );
+    moko_pixmap_button_set_action_btn_center_stock (button2, "openmoko-action-button-history-icon");
     button3 = moko_tool_box_add_action_button( toolbox );
-    gtk_button_set_label( button3, "ActMenu" );
+    //gtk_button_set_label( button3, "ActMenu" );
+    moko_pixmap_button_set_action_btn_center_stock (button3, "openmoko-action-button-edit-icon");
     button4 = moko_tool_box_add_action_button( toolbox );
-    gtk_button_set_label( button4, "Action 4" );
+    //gtk_button_set_label( button4, "Action 4" );
+    moko_pixmap_button_set_action_btn_center_stock (button4, "openmoko-action-button-view-icon");
     moko_paned_window_add_toolbox( window, toolbox );
 
     g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_button1_clicked), NULL );
