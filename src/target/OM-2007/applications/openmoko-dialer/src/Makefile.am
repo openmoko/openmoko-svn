@@ -7,7 +7,8 @@ moko-digit-button.c\
 moko-dialer-panel.c\
 moko-dialer-textview.c\
 moko-dialer-tip.c\
-moko-dialer-autolist.c
+moko-dialer-autolist.c\
+contacts.c
 
 openmoko_dialer_LDADD = @OPENMOKO_LIBS@
 

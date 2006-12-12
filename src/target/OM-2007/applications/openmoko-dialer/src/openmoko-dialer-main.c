@@ -28,11 +28,9 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtktogglebutton.h>
 #include <gtk/gtkvbox.h>
-#include "moko-digit-button.h"
-#include "moko-dialer-panel.h"
+
 #include "openmoko-dialer-main.h"
-#include "moko-dialer-textview.h"
-#include "moko-dialer-autolist.h"
+
 void
 on_dialer_panel_user_input(GtkWidget * widget,gchar parac,
                                         gpointer         user_data)
@@ -40,10 +38,16 @@ on_dialer_panel_user_input(GtkWidget * widget,gchar parac,
 char input[2];
 input[0]=parac;
 input[1]=0;
+char codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
 
-MokoDialerTextview *moko_dialer_text_view=(MokoDialerTextview *)user_data;
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+MokoDialerTextview *moko_dialer_text_view=appdata->moko_dialer_text_view;
 
 moko_dialer_textview_insert(moko_dialer_text_view, input);
+
+moko_dialer_textview_get_input(moko_dialer_text_view,&codesinput, 0);
+
+moko_dialer_autolist_refresh_by_string(appdata->moko_dialer_autolist,codesinput);
 
 g_print("on_dialer_panel_user_input:%c\n", parac);
 }
@@ -59,10 +63,14 @@ g_print("on_dialer_panel_user_hold:%c\n", parac);
 int main( int argc, char** argv )
 {
 
-	GtkVBox* vbox = NULL;
+    MOKO_DIALER_APP_DATA* p_dialer_data;
+    p_dialer_data=calloc(1,sizeof(MOKO_DIALER_APP_DATA));
+    GtkVBox* vbox = NULL;
 	static MokoFingerToolBox* tools = NULL;
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
+
+   contact_init_contact_data(&(p_dialer_data->g_contactlist));
 
     /* application object */
     MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
@@ -86,52 +94,26 @@ int main( int argc, char** argv )
     /* contents */
     vbox = gtk_vbox_new( FALSE, 0 );
 
-/*
-    GtkLabel* label1 = gtk_label_new( "Populate this area with finger widgets\n \nThere are three types of finger buttons:" );
-
-    GtkLabel* label2 = gtk_label_new( "Orange button toggles finger scrolling wheel\nBlack button toggles finger toolbar\nDialer Button does nothing :)" );
-
-
-
-    GtkButton* button1 = gtk_button_new();
-    g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_orange_button_clicked), window );
-    gtk_widget_set_name( GTK_WIDGET(button1), "mokofingerbutton-orange" );
-    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button1), TRUE, TRUE, 5 );
-
-    GtkButton* button2 = gtk_button_new();
-    //FIXME toggle buttons look odd... needs working on styling
-    //gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (button2), TRUE);
-    g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_dialer_button_clicked), window );
-    gtk_widget_set_name( GTK_WIDGET(button2), "mokofingerbutton-dialer" );
-    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button2), TRUE, TRUE, 5 );
-
-    GtkButton* button3 = gtk_button_new();
-    g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_black_button_clicked), window );
-    gtk_widget_set_name( GTK_WIDGET(button3), "mokofingerbutton-black" );
-    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(button3), TRUE, TRUE, 5 );
-
-    MokoDigitButton*  mokobutton=moko_digit_button_new_with_labels("1","ABC");
-    moko_digit_button_set_numbers(mokobutton,'1', '*');
-    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(mokobutton), TRUE, TRUE, 5 );
-
-
-*/
 
     GtkHBox* hbox = gtk_hbox_new( TRUE, 10 );
 
 
     MokoDialerTextview * mokotextview=moko_dialer_textview_new();
+    p_dialer_data->moko_dialer_text_view=mokotextview;
+
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokotextview), FALSE,FALSE, 5 );
 
 
     MokoDialerPanel* mokodialerpanel=moko_dialer_panel_new();
 
+
+
     g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_input",
-			    G_CALLBACK (on_dialer_panel_user_input),mokotextview);
+			    G_CALLBACK (on_dialer_panel_user_input),p_dialer_data);
 
   
     g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_hold",
-			    G_CALLBACK ( on_dialer_panel_user_hold),mokotextview);
+			    G_CALLBACK ( on_dialer_panel_user_hold),p_dialer_data);
    	
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(mokodialerpanel), TRUE, TRUE, 5 );
 
@@ -142,24 +124,17 @@ int main( int argc, char** argv )
 
     MokoDialerAutolist* autolist=moko_dialer_autolist_new();
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), TRUE, TRUE, 5 );
+
+    p_dialer_data->moko_dialer_autolist=autolist;
     
     moko_finger_window_set_contents( window, GTK_WIDGET(vbox) );
-/*
 
-    MokoDigitButton*  mokobutton=moko_digit_button_new_with_labels("1","ABC");
-    moko_digit_button_set_numbers(mokobutton,'1', '*');
-    gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(mokobutton), TRUE, TRUE, 5 );
-
- 
-    gtk_box_pack_start( vbox, GTK_WIDGET(label1), TRUE, TRUE, 0 );
-    gtk_box_pack_start( vbox, GTK_WIDGET(hbox), TRUE, TRUE, 0 );
-    gtk_box_pack_start( vbox, GTK_WIDGET(label2), TRUE, TRUE, 0 );
-
-
-*/
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
 
+
+    contact_release_contact_list(&(p_dialer_data->g_contactlist));
+    
     gtk_main();
  
 

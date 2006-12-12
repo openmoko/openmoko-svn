@@ -29,10 +29,10 @@
 #include <gtk/gtksignal.h>
 #include <gtk/gtktextview.h>
 #include "moko-dialer-tip.h"
-
+#include "moko-dialer-includes.h"
 G_BEGIN_DECLS
 
-#define MOKO_DIALER_MAX_TIPS 3
+
 
 #define MOKO_TYPE_DIALER_AUTOLIST                (moko_dialer_autolist_get_type())
 #define MOKO_DIALER_AUTOLIST (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_AUTOLIST, MokoDialerAutolist))
@@ -49,6 +49,19 @@ typedef struct _MokoDialerAutolist        MokoDialerAutolist;
 struct _MokoDialerAutolist
 {
   GtkHBox hbox;
+  DIALER_CONTACTS_LIST_HEAD* head;
+
+  HISTORY_ENTRY * g_currentselected; ///<pointer to the history entry which in the GUI the user selects.
+
+//static PangoFontDescription *font_desc=NULL; ///<the PangoFontDescription which a lot of widget will use it.
+
+ DIALER_READY_CONTACT readycontacts[MOKO_DIALER_MAX_TIPS]; ///<the prepared contact list which will display to the user when he/she inputs part of the digits he/she wants to dial out
+
+ gint g_selected;///<indicates the offset of the selected ready contacts list
+
+ gint g_alternatecount;///<indicates how many alternative is ready in the ready list array.
+
+
   GtkWidget *tips[MOKO_DIALER_MAX_TIPS];
 
 };

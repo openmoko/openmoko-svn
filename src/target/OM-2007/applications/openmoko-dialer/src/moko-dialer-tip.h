@@ -62,9 +62,12 @@ struct _MokoDialerTipClass
 GType          moko_dialer_tip_get_type         (void) ;
 
 GtkWidget*      moko_dialer_tip_new();
+
 GtkWidget*      moko_dialer_tip_new_with_label_and_index(const gchar * stringname,const gint index);
 
 gint moko_dialer_tip_get_index(MokoDialerTip* tip);
+gboolean moko_dialer_tip_set_label(GtkWidget* widget,const gchar * stringname);
+gboolean moko_dialer_tip_set_index(GtkWidget* widget,const gint index);
 
 G_END_DECLS
 

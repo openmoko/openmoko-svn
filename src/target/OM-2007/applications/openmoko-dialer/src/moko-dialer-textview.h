@@ -40,11 +40,10 @@ G_BEGIN_DECLS
 #define MOKO_IS_DIALER_TEXTVIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_DIALER_TEXTVIEW))
 #define MOKO_DIALER_TEXTVIEW_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_DIALER_TEXTVIEW, MokoDialerTextviewClass))
 
-
-
 typedef struct _MokoDialerTextviewClass   MokoDialerTextviewClass;
 
 typedef struct _MokoDialerTextview        MokoDialerTextview;
+
 struct _MokoDialerTextview
 {
 GtkTextView textview; ///<the main widget
@@ -52,7 +51,6 @@ PangoFontDescription * font_desc_textview; ///< the font description of this tex
 GtkTextTag*  tag_for_inputed; ///<the formating tag for the digits user already inputed
 GtkTextTag*  tag_for_cursor; ///<the formatting tag  for the right digit user just inputed.
 GtkTextTag*  tag_for_autofilled;///<the formatting tag for the autofilled digits if any.
-
 };
 
 struct _MokoDialerTextviewClass

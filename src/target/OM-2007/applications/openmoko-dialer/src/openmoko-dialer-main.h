@@ -15,3 +15,4 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
+ #include "moko-dialer-includes.h"
