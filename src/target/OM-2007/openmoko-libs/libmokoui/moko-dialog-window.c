@@ -25,7 +25,7 @@
 
 #include <glib/gmain.h>
 
-#undef DEBUG_THIS_FILE
+#define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #else
@@ -142,7 +142,9 @@ moko_dialog_window_init(MokoDialogWindow* self)
     if ( parent )
     {
         gtk_window_set_transient_for( GTK_WINDOW(self), parent );
+#ifndef DEBUG_THIS_FILE
         gtk_window_set_modal( GTK_WINDOW(self), TRUE );
+#endif
         gtk_window_set_destroy_with_parent( GTK_WINDOW(self), TRUE );
     }
 }
@@ -201,9 +203,11 @@ guint moko_dialog_window_run(MokoDialogWindow* dialog)
 
     g_object_ref (dialog);
 
+#ifndef DEBUG_THIS_FILE
     was_modal = GTK_WINDOW (dialog)->modal;
     if (!was_modal)
         gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
+#endif
 
     if (!GTK_WIDGET_VISIBLE (dialog))
         gtk_widget_show (GTK_WIDGET (dialog));

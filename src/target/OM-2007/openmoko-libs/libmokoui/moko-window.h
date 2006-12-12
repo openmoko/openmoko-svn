@@ -23,6 +23,8 @@
 
 #include <glib-object.h>
 
+#include <X11/X.h>
+
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_WINDOW            (moko_window_get_type())
@@ -44,11 +46,11 @@ typedef struct _MokoWindowClass
     void (*moko_window) (MokoWindow *self);
 } MokoWindowClass;
 
-GType          moko_window_get_type        (void);
-GtkWidget*     moko_window_new             (void);
-void           moko_window_clear           (MokoWindow *self);
+GType moko_window_get_type();
+GtkWidget* moko_window_new();
+void moko_window_clear(MokoWindow *self);
 
-/* add additional methods here */
+Window moko_window_get_active_window();
 
 G_END_DECLS
 

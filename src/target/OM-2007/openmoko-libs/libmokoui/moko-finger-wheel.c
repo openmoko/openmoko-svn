@@ -80,11 +80,11 @@ moko_finger_wheel_finalize (GObject *object)
 static void
 moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     parent_class = g_type_class_peek_parent(klass);
 
     /* register private data */
-    g_type_class_add_private (klass, sizeof (MokoFingerWheelPrivate));
+    g_type_class_add_private( klass, sizeof(MokoFingerWheelPrivate) );
 
     /* hook virtual methods */
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
@@ -179,7 +179,7 @@ moko_finger_wheel_realize(GtkWidget *widget)
     GdkWindowAttr attributes;
     gint attributes_mask;
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
 
     attributes.window_type = GDK_WINDOW_CHILD;
     attributes.x = widget->allocation.x;
@@ -210,6 +210,7 @@ static void moko_finger_wheel_show(GtkWidget* widget)
     if ( !priv->popup )
     {
         priv->popup = gtk_window_new(GTK_WINDOW_POPUP);
+        //gtk_window_set_decorated( priv->popup, FALSE );
         //FIXME Setting it to transparent is probably not necessary since we issue a mask anyway, right?
         //gtk_widget_set_name( GTK_WIDGET(priv->popup), "transparent" );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
@@ -347,18 +348,18 @@ static void moko_finger_wheel_button_emit_signal (GtkWidget* widget, GdkEventBut
 static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event)
 {
     moko_debug( "moko_finger_wheel_button_press" );
-    
+
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
-    
+
     gtk_grab_add( widget );
     gtk_widget_set_state( widget, GTK_STATE_ACTIVE );
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_ACTIVE);
 
     moko_finger_wheel_button_check_area (widget, event);
-    
+
     g_source_remove_by_user_data((gpointer) widget);
     g_timeout_add (FINGER_WHEEL_LONG_PRESS_TIMEOUT, (GSourceFunc) moko_finger_wheel_button_long_press, (gpointer) widget);
-    
+
     return TRUE;
 }
 
@@ -386,13 +387,13 @@ static gint moko_finger_wheel_motion_notify(GtkWidget* widget, GdkEventMotion* e
 static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* event)
 {
     moko_debug( "moko_finger_wheel_button_release" );
-    
+
     gtk_style_set_background (widget->style, widget->window, GTK_STATE_NORMAL);
     gtk_widget_set_state( widget, GTK_STATE_NORMAL );
     gtk_grab_remove( widget );
 
     moko_finger_wheel_button_emit_signal (widget, event);
-    
+
     g_source_remove_by_user_data((gpointer) widget);
     return TRUE;
 }
@@ -400,9 +401,9 @@ static gint moko_finger_wheel_button_release(GtkWidget* widget, GdkEventButton* 
 
 static gboolean moko_finger_wheel_button_long_press(gpointer data)
 {
-    
+
     GtkWidget* widget = (GtkWidget*) data;
-    
+
     if (MOKO_FINGER_WHEEL (widget)->area_id == PRESS_LEFT_UP)
     {
         moko_debug( "moko_finger_wheel_button_long_press_left_up" );
@@ -420,6 +421,6 @@ static gboolean moko_finger_wheel_button_long_press(gpointer data)
         g_signal_emit (widget, wheel_signals[LONG_PRESS_RIGHT_DOWN], 0);
         return TRUE;
     }
-    
+
     return FALSE;
 }
