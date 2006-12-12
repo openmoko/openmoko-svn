@@ -49,6 +49,7 @@ void moko_pixmap_button_set_menu(MokoPixmapButton* self, GtkMenu* menu);
 
 void moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gchar *stock_name);
 void moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gchar *label);
+void moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gchar *stock_name);
 
 G_END_DECLS
 

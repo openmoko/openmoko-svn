@@ -221,10 +221,10 @@ moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gch
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
 	  
-	  if ( priv->actionbtnstockimage )
-	      return;
+    if ( priv->actionbtnstockimage )
+        return;
 	  
-	  GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
+    GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
     
     priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_BUTTON);
@@ -238,8 +238,8 @@ moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gch
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
 
-	  if ( priv->actionbtnlowerlabel )
-	      return;
+    if ( priv->actionbtnlowerlabel )
+        return;
     
     GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
@@ -252,5 +252,24 @@ moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gch
     
 }
 
+void
+moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gchar *stock_name)
+{
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
+	  
+    if ( priv->actionbtnstockimage )
+        return;
 
+    GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
+
+    GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
+
+
+    priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_DND);
+    gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnstockimage);
+	  
+    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
+}
 
