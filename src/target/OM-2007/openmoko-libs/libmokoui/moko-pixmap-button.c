@@ -126,7 +126,7 @@ moko_pixmap_button_init (MokoPixmapButton *self)
     
     moko_debug( "moko_pixmap_button_init" );
     gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE ); //FIXME probably don't need this when focus is invisible
-    GTK_WIDGET_UNSET_FLAGS( (GTK_WIDGET(self), GTK_CAN_FOCUS); // The default value of can-focus is TRUE, So it is necessory
+    GTK_WIDGET_UNSET_FLAGS( (GTK_WIDGET(self), GTK_CAN_FOCUS)); // The default value of can-focus is TRUE, So it is necessory
 
     priv->buttonvbox = gtk_vbox_new (FALSE, 0);
     gtk_container_add (GTK_CONTAINER (self), priv->buttonvbox);
