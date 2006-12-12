@@ -8,13 +8,16 @@ style "mokotreeview" {
             border          = { 0, 0, 0, 0 }
             stretch         = TRUE
       }
-      image {
-          function        = FOCUS
-          recolorable     = FALSE
-          file            = "list_bg_row_sel_stretch.png"
-          border          = { 0, 0, 0, 0 }
-          stretch         = TRUE
-      }
+#
+# disable this section to show rows of MokoTreeView rightly
+#
+#      image {
+#          function        = FOCUS
+#          recolorable     = FALSE
+#          file            = "list_bg_row_sel_stretch.png"
+#          border          = { 0, 0, 0, 0 }
+#          stretch         = TRUE
+#      }
     }
     GtkTreeView::allow_rules = 1
     GtkTreeView::vertical_separator = 6
