@@ -91,6 +91,7 @@ widget_class "*.GtkLabel*" style "moko-window-default"
 include "transparent"
 
 include "gtkcombobox"
+include "gtkentry"
 include "gtkframe"
 include "gtkmenu"
 include "gtkmenuitem"
