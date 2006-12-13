@@ -42,5 +42,23 @@
 #define TASK_MANAGER_PROPERTY_Y 		45 
 
 #define _(string) (string)
+
+typedef struct _MokoTaskManager MokoTaskManager;
+
+struct _MokoTaskManager {
+    MokoApplication *app;
+    
+    MokoFingerWindow *window;//??
+    GtkWidget *gtk_window;//??
+    MokoFingerWheel *wheel;
+    MokoFingerToolBox *toolbox;
+
+    GtkButton *close;
+    GtkButton *close_all;
+    GtkButton *quit;
+
+//template
+    List *l;
+    };
  
 #endif /*taskmanager.h*/

@@ -167,7 +167,8 @@ om_set_list_highlight (Display *dpy, List *l) {
                         if (iw == w)	{
                             GtkTreePath *path;
                             path = gtk_tree_model_get_path (GTK_TREE_MODEL (l->list_store), &iter);
-                            gtk_tree_view_set_cursor (GTK_TREE_VIEW (l->mokolist_view), path, NULL, FALSE);
+                            //gtk_tree_view_set_cursor (GTK_TREE_VIEW (l->mokolist_view), path, NULL, FALSE);
+                            gtk_tree_view_set_cursor (GTK_TREE_VIEW (l->list_view), path, NULL, FALSE);
                             gtk_tree_path_free (path);
                             break;
                             }
@@ -187,8 +188,8 @@ om_tab_event_cb (GtkButton *btn, List *l) {
     GtkTreeViewColumn *col;
     GtkTreeModel *model;
 
-    //gtk_tree_view_get_cursor(l->list_view, &path, &col);
-    gtk_tree_view_get_cursor(l->mokolist_view, &path, &col);
+    gtk_tree_view_get_cursor(l->list_view, &path, &col);
+    //gtk_tree_view_get_cursor(l->mokolist_view, &path, &col);
 
     model = GTK_TREE_MODEL (l->list_store);
 

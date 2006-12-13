@@ -87,29 +87,29 @@ static void /* Instance Construction */
 list_init (List *l) { 
     GtkWidget *ico;
     l->list_store = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_OBJECT);
-    //l->list_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (l->list_store));
-    l->mokolist_view = moko_tree_view_new_with_model (GTK_TREE_MODEL (l->list_store));
-    //gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (l->list_view), FALSE);
-    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (l->mokolist_view), FALSE);
+    l->list_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (l->list_store));
+    //l->mokolist_view = moko_tree_view_new_with_model (GTK_TREE_MODEL (l->list_store));
+    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (l->list_view), FALSE);
+    //gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (l->mokolist_view), FALSE);
     
     l->renderer = gtk_cell_renderer_pixbuf_new ();
     l->column = gtk_tree_view_column_new_with_attributes ("Icon", l->renderer, "pixbuf", 2, NULL);
-    //gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), l->column);
-    moko_tree_view_append_column (GTK_TREE_VIEW (l->mokolist_view), l->column);
+    gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), l->column);
+    //moko_tree_view_append_column (GTK_TREE_VIEW (l->mokolist_view), l->column);
 
     l->renderer = gtk_cell_renderer_text_new ();
     l->column = gtk_tree_view_column_new_with_attributes ("Running programs", l->renderer, 
     													"text", 0, NULL);
-    //gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), l->column);
+   gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), l->column);
   	//	*/
-    moko_tree_view_append_column (GTK_TREE_VIEW (l->mokolist_view), l->column);
+   // moko_tree_view_append_column (GTK_TREE_VIEW (l->mokolist_view), l->column);
 		
-    /*l->scrolled = gtk_scrolled_window_new (NULL, NULL);
+    l->scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (l->scrolled),
 				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
     gtk_container_add (GTK_CONTAINER (l->scrolled), l->list_view);
-    */
-    l->scrolled = moko_tree_view_put_into_scrolled_window (l->mokolist_view);
+    
+    //l->scrolled = moko_tree_view_put_into_scrolled_window (l->mokolist_view);
 
     l->btn_close = gtk_button_new ();
     ico = gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_SMALL_TOOLBAR);

@@ -49,11 +49,11 @@ struct _List
 	GtkHBox *hbox;
 	GtkButton *btn_close;
 	GtkListStore *list_store;
-	//GtkWidget *list_view;
+	GtkWidget *list_view;
 	GtkWidget *scrolled;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
-	MokoTreeView *mokolist_view;
+	//MokoTreeView *mokolist_view;
 
 	/*temporary */
 	GtkButton *tab, *tabhold;

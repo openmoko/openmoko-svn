@@ -22,13 +22,15 @@
 void
 om_kill_task_cb(GtkMenuItem *item, List *l) {
     g_debug ("kill task cb");
-    om_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_CLIENT);
+    //om_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_CLIENT);
+    om_wm_cmd(item, l->list_view, MB_CMD_REMOVE_CLIENT);
     }
 
 void 
 om_kill_and_swith_cb(GtkMenuItem *item, List *l) {
     g_debug ("call kill and switch task function");
-    om_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_AND_ACTIVE);
+    //om_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_AND_ACTIVE);
+    om_wm_cmd(item, l->list_view, MB_CMD_REMOVE_AND_ACTIVE);
     }
 
 void
