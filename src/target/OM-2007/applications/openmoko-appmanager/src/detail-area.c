@@ -18,6 +18,7 @@
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
 #include <libmokoui/moko-details-window.h>
+#include <string.h>
 
 #include "detail-area.h"
 #include "navigation-area.h"
@@ -51,8 +52,38 @@ detail_area_new (ApplicationManagerData *appdata)
 }
 
 /**
+ * @brief Format the depends list of package.
+ * @param depends The depends list
+ * @param The dest string
+ */
+static void 
+format_depends_list (char *dest, char *depends, int size)
+{
+  int i = 0;
+  char *src;
+
+  src = depends;
+  dest[i++] = '\t';
+  dest[i++] = '*';
+  while (*src)
+    {
+      if (*src == ',')
+        {
+          dest[i++] = '\n';
+          dest[i++] = '\t';
+          dest[i++] = '*';
+          src++;
+        }
+      dest[i++] = *src;
+      src++;
+    }
+  dest[i] = 0;
+}
+
+/**
  * @brief Update the detail area infomation base on the package that selected
  * @param appdata The application manager data
+ * @param pkg The package infomation
  */
 void 
 detail_area_update_info (ApplicationManagerData *appdata, 
@@ -63,6 +94,8 @@ detail_area_update_info (ApplicationManagerData *appdata,
   GtkTextIter    start, end;
   GdkPixbuf      *pix;
   GtkTextTagTable   *tagtable;
+  gint           pstart, pend;
+  char           *depends;
 
   g_debug ("Update the info in the detail area");
 
@@ -73,6 +106,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
 
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
   gtk_text_buffer_set_text (buffer, "", -1);
+  g_return_if_fail (pkg != NULL);
 
   // Init tag
   tagtable = gtk_text_buffer_get_tag_table (buffer);
@@ -93,6 +127,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
 
   // Insert package name
   gtk_text_buffer_get_end_iter (buffer, &end);
+  pstart = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
                           package_list_get_package_name (pkg),
                           -1);
@@ -103,26 +138,70 @@ detail_area_update_info (ApplicationManagerData *appdata,
 
   // Insert the maintainer
   gtk_text_buffer_get_end_iter (buffer, &end);
+  pend = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
                           package_list_get_package_maintainer (pkg),
                           -1);
 
   // Set bold to the first line
-  gtk_text_buffer_get_start_iter (buffer, &start);
-  gtk_text_buffer_get_start_iter (buffer, &end);
-  gtk_text_iter_forward_line (&end);
+  gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
+  gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
   gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
-  // Insert the "\n"
+  // Set the Version
   gtk_text_buffer_get_end_iter (buffer, &end);
-  gtk_text_buffer_insert (buffer, &end, "\n", -1);
+  pstart = gtk_text_iter_get_offset (&end);
+  gtk_text_buffer_insert (buffer, &end, "\nVersion\n\t", -1);
+
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  pend = gtk_text_iter_get_offset (&end);
+  gtk_text_buffer_insert (buffer, &end, 
+                          package_list_get_package_version (pkg),
+                          -1);
+  gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
+  gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
+  gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
   // Set the descript
   gtk_text_buffer_get_end_iter (buffer, &end);
+  pstart = gtk_text_iter_get_offset (&end);
+  gtk_text_buffer_insert (buffer, &end, "\nDescription\n\t", -1);
+
+  gtk_text_buffer_get_end_iter (buffer, &end);
+  pend = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
                           package_list_get_package_description (pkg),
                           -1);
+  gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
+  gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
+  gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
+  // Set the depends
+  depends = package_list_get_package_depends (pkg);
+  if (depends != NULL)
+    {
+      char *dep;
+      int size = strlen (depends) *2 +8;
+      dep = g_malloc (size);
+      g_return_if_fail (dep != NULL);
+
+      format_depends_list (dep, depends, size);
+
+      gtk_text_buffer_get_end_iter (buffer, &end);
+      pstart = gtk_text_iter_get_offset (&end);
+      gtk_text_buffer_insert (buffer, &end, "\nDepends\n", -1);
+
+      gtk_text_buffer_get_end_iter (buffer, &end);
+      pend = gtk_text_iter_get_offset (&end);
+      gtk_text_buffer_insert (buffer, &end, 
+                              dep,
+                              -1);
+      gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
+      gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
+      gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
+
+      g_free (dep);
+    }
 
   g_object_unref (pix);
 }

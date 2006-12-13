@@ -68,6 +68,7 @@ typedef struct _ApplicationManagerData {
   gpointer         nosecpkglist;       ///<! The list of packages whose section name is NULL
   gpointer         currentlist;        ///<! The current list that display on the navigation list
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
+  gchar            *searchhistory;     ///<! The search history
 } ApplicationManagerData;
 
 /**
@@ -123,6 +124,9 @@ void application_manager_data_set_nosecpkg_list (ApplicationManagerData *appdata
 
 void init_pixbuf_list (ApplicationManagerData *appdata);
 
+void application_manager_data_set_search_history (ApplicationManagerData *appdata,
+                                                 gchar *searchhistory);
+
 MokoPanedWindow *
      application_manager_get_main_window (ApplicationManagerData *appdata);
 
@@ -166,6 +170,8 @@ GdkPixbuf *
      application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata, 
                                                  guint id);
 
+gchar *
+     application_manager_data_get_search_history (ApplicationManagerData *appdata);
 
 G_END_DECLS
 

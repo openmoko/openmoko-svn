@@ -26,6 +26,8 @@
 #include <libmokoui/moko-tool-box.h>
 #include "appmanager-data.h"
 
+#define MAX_SEARCH_ENTRY_TEXT_LENGTH   50
+
 MokoToolBox *tool_box_new (ApplicationManagerData *appdata);
 
 #endif

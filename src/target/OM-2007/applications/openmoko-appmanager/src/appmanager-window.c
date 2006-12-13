@@ -42,7 +42,7 @@ int
 main (int argc, char* argv[])
 {
   ApplicationManagerData *appdata;
-  MokoApplication *app;
+  //MokoApplication *app;
   MokoPanedWindow *window;
   GtkMenu         *appmenu;
   GtkMenu         *filtermenu;
@@ -71,8 +71,8 @@ main (int argc, char* argv[])
 
   init_pixbuf_list (appdata);
 
-  app = MOKO_APPLICATION (moko_application_get_instance ());
-  g_set_application_name (_("Application manager"));
+  //app = MOKO_APPLICATION (moko_application_get_instance ());
+  //g_set_application_name (_("Application manager"));
 
   window = MOKO_PANED_WINDOW (moko_paned_window_new ());
   g_signal_connect (G_OBJECT (window), "delete_event", 

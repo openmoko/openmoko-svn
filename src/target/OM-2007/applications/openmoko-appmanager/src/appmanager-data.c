@@ -53,6 +53,7 @@ application_manager_data_init (ApplicationManagerData *data)
     {
       data->statuspix[i] = NULL;
     }
+  data->searchhistory = NULL;
 
 }
 
@@ -267,6 +268,20 @@ application_manager_data_set_status_pixbuf (ApplicationManagerData *appdata,
   g_return_if_fail (id < N_COUNT_PKG_STATUS);
 
   appdata->statuspix[id] = pixbuf;
+}
+
+/**
+ * @brief Set the search history to the application manager data
+ * @param appdata The application manager data struct
+ * @param pixbuf A GdkPixbuf
+ */
+void 
+application_manager_data_set_search_history (ApplicationManagerData *appdata,
+                                             gchar *searchhistory)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->searchhistory = searchhistory;
 }
 
 /**
@@ -518,4 +533,17 @@ application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata,
   g_return_val_if_fail (id < N_COUNT_PKG_STATUS, NULL);
 
   return appdata->statuspix[id];
+}
+
+/**
+ * @brief Get the search history from the application manager data
+ * @param appdata The application manager data
+ * @return The search history
+ */
+gchar *
+application_manager_data_get_search_history (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->searchhistory;
 }

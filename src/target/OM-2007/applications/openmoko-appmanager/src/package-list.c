@@ -1019,3 +1019,4 @@ package_list_get_package_maintainer (gpointer pkg)
 
   return package->maintainer;
 }
+
