@@ -1,6 +1,6 @@
 #FIXME looks ugly, needs styling
 
-style "gtkentry" {
+style "gtkspinbutton" {
     bg_pixmap[NORMAL] = "<none>"
     bg[NORMAL] = "#555555"
     base[NORMAL] = "#555555"
@@ -9,6 +9,9 @@ style "gtkentry" {
     bg[ACTIVE] = "#fdfdfd"
     base[ACTIVE] = "#fdfdfd"
     fg[ACTIVE] = "#ffffff"
+
+    GtkSpinButton::shadow_type = GTK_SHADOW_NONE
 }
-class "GtkEntry" style "gtkentry"
-widget_class "*.GtkEntry" style "gtkentry"
+class "GtkSpinButton" style "gtkspinbutton"
+widget_class "*.GtkSpinButton" style "gtkspinbutton"
+

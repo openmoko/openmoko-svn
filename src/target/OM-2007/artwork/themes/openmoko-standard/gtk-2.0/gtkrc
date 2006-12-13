@@ -26,6 +26,8 @@ style "moko-window-default" {
     text[ACTIVE]      = "#e5e5e5" # light grey
     text[SELECTED]    = "#ffffff" # white
     text[INSENSITIVE] = "#223344" # dark grey
+
+    GtkFrame::shadow_type = GTK_SHADOW_NONE
 #
 # How to draw shadows in general
 #
@@ -98,6 +100,7 @@ include "gtkmenuitem"
 include "gtkpaned"
 include "gtkscrolledwindow"
 include "gtkscrollbar"
+include "gtkspinbutton"
 include "gtktreeview"
 include "gtkbutton"
 include "gtkcheckbutton"
