@@ -26,6 +26,8 @@
 #include <gtk/gtkiconview.h>
 #include <gtk/gtkliststore.h>
 
+#include "mokoiconview.h"
+
 enum { 
     PIXBUF_COLUMN,
     TEXT_COLUMN,
@@ -65,8 +67,11 @@ typedef struct _MokoMainMenuClass 	MokoMainMenuClass;
 
 struct _MokoMainMenu {
     GtkVBox vbox;
+    //GtkWidget widget;
 
-    GtkIconView *icon_view;
+    //GtkIconView *icon_view;
+    //GtkWidget *icon_view;
+    MokoIconView *icon_view;
     GtkListStore *list_store;
     GtkWidget *scrolled;
     GtkHBox *hbox;
@@ -77,7 +82,8 @@ struct _MokoMainMenu {
 
 struct _MokoMainMenuClass {
     GtkVBoxClass parent_class;
-    void(*menu) (MokoMainMenu *mm);
+    //GtkWidgetClass parent_class;
+    void(*moko_main_menu_function)(MokoMainMenu *mm);
     };
 
 GType 

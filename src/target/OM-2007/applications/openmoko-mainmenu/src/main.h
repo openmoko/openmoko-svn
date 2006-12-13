@@ -44,8 +44,11 @@ struct _MokoMainmenuApp {
     
     MokoFingerWindow *window;
     MokoFingerWheel *wheel;
+    MokoFingerToolBox *toolbox;
     MokoMainMenu *mm;
     MokoMenuList *list;
+
+    GtkButton *history[3];
 
 };
 

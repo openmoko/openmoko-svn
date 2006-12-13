@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(%(APPNAME), %(APPVERSION), %(APPCONTACT))
+AC_INIT(%(openmoko-mainmenu), %(0.0.1), %(http://www.openmoko.org))
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/main.c)
 AM_CONFIG_HEADER(config.h)
