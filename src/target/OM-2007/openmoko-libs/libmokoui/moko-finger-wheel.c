@@ -101,14 +101,14 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
     object_class->dispose = moko_finger_wheel_dispose;
     object_class->finalize = moko_finger_wheel_finalize;
 
-    /** Init the moko finger wheel signal to null */
+    /* Init the moko finger wheel signal to null */
     klass->press_left_up = NULL;
     klass->press_right_down = NULL;
     klass->press_bottom = NULL;
     klass->long_press_left_up = NULL;
     klass->long_press_right_down = NULL;
 
-    /** Press the left up area */
+    /* Press the left up area */
     wheel_signals[PRESS_LEFT_UP] =
                  g_signal_new ("press_left_up",
                  G_OBJECT_CLASS_TYPE (object_class),
@@ -118,7 +118,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  g_cclosure_marshal_VOID__VOID,
                  G_TYPE_NONE, 0);
 
-    /** Press the right down area */
+    /* Press the right down area */
     wheel_signals[PRESS_RIGHT_DOWN] =
                  g_signal_new ("press_right_down",
                  G_OBJECT_CLASS_TYPE (object_class),
@@ -128,7 +128,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  g_cclosure_marshal_VOID__VOID,
                  G_TYPE_NONE, 0);
 
-    /** Press the bottom area */
+    /* Press the bottom area */
     wheel_signals[PRESS_BOTTOM] =
                  g_signal_new ("press_bottom",
                  G_OBJECT_CLASS_TYPE (object_class),
@@ -138,7 +138,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  g_cclosure_marshal_VOID__VOID,
                  G_TYPE_NONE, 0);
 
-    /** Long press the left up area */
+    /* Long press the left up area */
     wheel_signals[LONG_PRESS_LEFT_UP] =
                  g_signal_new ("long_press_left_up",
                  G_OBJECT_CLASS_TYPE (object_class),
@@ -148,7 +148,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
                  g_cclosure_marshal_VOID__VOID,
                  G_TYPE_NONE, 0);
 
-    /** Long press the right down area */
+    /* Long press the right down area */
     wheel_signals[LONG_PRESS_RIGHT_DOWN] =
                  g_signal_new ("long_press_right_down",
                  G_OBJECT_CLASS_TYPE (object_class),

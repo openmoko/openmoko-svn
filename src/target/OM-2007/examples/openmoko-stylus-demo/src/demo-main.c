@@ -34,6 +34,7 @@
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkradiobutton.h>
+#include <gtk/gtkspinbutton.h>
 #include <gtk/gtktable.h>
 #include <gtk/gtktreeview.h>
 
@@ -141,7 +142,7 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-stylus-demo: button2 clicked" );
 
-    /* prepare contents of dialog */
+    /* prepare contents of dialog. Yes, eventually we want to use libglade for the dialogs */
 
     GtkVBox* controls = gtk_vbox_new( FALSE, 0 );
     GtkCheckButton* check1 = gtk_check_button_new_with_label( "Use GtkCheckButton for on/off options" );
@@ -181,10 +182,29 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
     gtk_combo_box_append_text( combo, "for one setting" );
     gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(combo) );
 
+    GtkHBox* hb1 = gtk_hbox_new( FALSE, 0 );
+    GtkLabel* l1 = gtk_label_new( "Text Entry: " );
+    gtk_misc_set_alignment( GTK_MISC(l1), 0, 0.5 );
+    gtk_misc_set_padding( GTK_MISC(l1), 8, 8 );
+    GtkEntry* e1 = gtk_entry_new();
+    g_object_set( G_OBJECT(e1), "has-frame", FALSE, NULL );
+    gtk_box_pack_start( GTK_BOX(hb1), GTK_WIDGET(l1), FALSE, FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(hb1), GTK_WIDGET(e1), TRUE, TRUE, 10 );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(hb1) );
+
+    GtkHBox* hb2 = gtk_hbox_new( FALSE, 0 );
+    GtkLabel* l2 = gtk_label_new( "SpinBox Entry: " );
+    gtk_misc_set_alignment( GTK_MISC(l2), 0, 0.5 );
+    gtk_misc_set_padding( GTK_MISC(l2), 8, 8 );
+    GtkSpinButton* e2 = gtk_spin_button_new_with_range( -20, 20, 5 );
+    g_object_set( G_OBJECT(e2), "has-frame", FALSE, NULL );
+    gtk_box_pack_start( GTK_BOX(hb2), GTK_WIDGET(l2), FALSE, FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(hb2), GTK_WIDGET(e2), TRUE, TRUE, 10 );
+    gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(hb2) );
+
     gtk_widget_show_all( GTK_WIDGET(controls) );
 
     /* run dialog */
-
     MokoDialogWindow* dialog = moko_application_execute_dialog( moko_application_get_instance(),
             "Example Full Screen Dialog Window",
             GTK_WIDGET(controls) );
