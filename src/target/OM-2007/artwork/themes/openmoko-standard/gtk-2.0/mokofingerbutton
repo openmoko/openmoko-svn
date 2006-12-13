@@ -97,3 +97,42 @@ style "mokofingerbutton-dialer" {
 }
 widget "*.mokofingerbutton-dialer" style "mokofingerbutton-dialer"
 
+
+
+#
+# Main menu icon button
+#
+style "mokofingerbutton-main-menu-icon"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "transparency100.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "main_menu_sel_icon.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "main_menu_sel_icon.png"
+        stretch         = TRUE
+      }
+
+   }
+}
+widget "*.mokofingerbutton-main-menu-icon" style "mokofingerbutton-main-menu-icon"
