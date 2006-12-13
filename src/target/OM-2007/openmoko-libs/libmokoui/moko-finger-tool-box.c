@@ -224,12 +224,14 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
     if ( !priv->popup )
     {
-        priv->popup = gtk_window_new(GTK_WINDOW_POPUP);
+        priv->popup = gtk_window_new(GTK_WINDOW_TOPLEVEL); //GTK_WINDOW_POPUP
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
     }
 
     MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
     g_return_if_fail( MOKO_IS_FINGER_WINDOW(window) );
+    //FIXME set also transient for all other windows belonging to this app?
+    gtk_window_set_transient_for( priv->popup, window );
     GtkAllocation geometry;
     gboolean valid = moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW(window), widget, &geometry );
     g_signal_connect_after( G_OBJECT(widget), "size_allocate", G_CALLBACK(cb_size_allocate), widget );
@@ -239,7 +241,8 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
 
     gtk_widget_show( priv->popup );
     MokoFingerWheel* wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
-    if ( wheel && GTK_WIDGET_VISIBLE(wheel) ) moko_finger_wheel_raise( wheel );
+    if ( wheel && GTK_WIDGET_VISIBLE(wheel) )
+        moko_finger_wheel_set_transient_for( wheel, priv->popup ); //moko_finger_wheel_raise( wheel );
 }
 
 static void moko_finger_tool_box_hide(GtkWidget* widget)

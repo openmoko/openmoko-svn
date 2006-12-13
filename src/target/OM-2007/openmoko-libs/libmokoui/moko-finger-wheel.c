@@ -209,13 +209,15 @@ static void moko_finger_wheel_show(GtkWidget* widget)
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
     if ( !priv->popup )
     {
-        priv->popup = gtk_window_new(GTK_WINDOW_POPUP);
+        priv->popup = gtk_window_new(GTK_WINDOW_TOPLEVEL); // GTK_WINDOW_POPUP
         //gtk_window_set_decorated( priv->popup, FALSE );
         //FIXME Setting it to transparent is probably not necessary since we issue a mask anyway, right?
         //gtk_widget_set_name( GTK_WIDGET(priv->popup), "transparent" );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
         //FIXME check if it's a finger window
+        //FIXME set it not only transient for the main window, but also for other window belonging to this application
+        gtk_window_set_transient_for(priv->popup, window );
 
         GtkAllocation geometry;
         gboolean valid = moko_finger_window_get_geometry_hint( window, widget, &geometry );
@@ -290,6 +292,14 @@ void moko_finger_wheel_raise(MokoFingerWheel* self)
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(self);
     g_return_if_fail(priv->popup);
     gdk_window_raise( GTK_WIDGET(priv->popup)->window );
+}
+
+void moko_finger_wheel_set_transient_for(MokoFingerWheel* self, GtkWindow* window)
+{
+    moko_debug( "moko_finger_wheel_set_transient_for" );
+    MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(self);
+    g_return_if_fail(priv->popup);
+    gtk_window_set_transient_for( priv->popup, window );
 }
 
 /**
