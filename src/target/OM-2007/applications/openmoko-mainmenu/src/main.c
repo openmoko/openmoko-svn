@@ -45,6 +45,7 @@ main( int argc, char** argv ) {
     
     /* main window */
     mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
+    gtk_widget_show (GTK_WIDGET (mma->window));
     mma->wheel = moko_finger_window_get_wheel (mma->window);
     mma->toolbox = moko_finger_window_get_toolbox(mma->window);
 
@@ -64,10 +65,9 @@ main( int argc, char** argv ) {
     
     pixbuf = gdk_pixbuf_new_from_file ( PKGDATADIR"/bg_mainmenu.png", &err );
     gdk_pixbuf_render_pixmap_and_mask (pixbuf, &pixmap, &bitmap, NULL);
-    //style = gtk_rc_get_style (mm->scrolled);
+    //style = gtk_rc_get_style (mma->mm->scrolled);
     //style->bg_pixmap[GTK_STATE_NORMAL] = pixmap;
-    //gtk_style_set_background (style, gtk_widget_get_parent_window (mm->scrolled), GTK_STATE_NORMAL);
- 
+   // gtk_style_set_background (style, gtk_widget_get_parent_window (mma->mm->scrolled), GTK_STATE_NORMAL);
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(mma->window) );
 
@@ -76,16 +76,16 @@ main( int argc, char** argv ) {
     gtk_widget_show (GTK_WIDGET (mma->toolbox));
     //gtk_widget_reparent (GTK_WIDGET (mma->toolbox), GTK_WIDGET (mma->window));
 
-    //g_debug ("**************");
+    g_debug ("**************");
     //gdk_window_set_back_pixmap (gtk_widget_get_parent_window (mma->mm->icon_view), pixmap, FALSE);
-    //style = gtk_rc_get_style (mma->mm->icon_view);
+    style = gtk_rc_get_style (mma->mm->icon_view);
     //style->bg_pixmap[GTK_STATE_NORMAL] = pixmap;
     //gtk_style_set_background (style, mma->mm->icon_view->window, GTK_STATE_NORMAL);
 
     //if (GTK_WIDGET_NO_WINDOW(mma->mm->icon_view)) 
     	  //g_debug ("no window");
-   //g_debug ("**************");
-    //sleep (2);
+    g_debug ("**************");
+    sleep (2);
 
     //g_debug( "openmoko-finger-demo entering main loop" );
     gtk_main();

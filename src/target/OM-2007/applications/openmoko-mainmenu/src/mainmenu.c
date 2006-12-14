@@ -121,7 +121,9 @@ moko_main_menu_init(MokoMainMenu *mm) {
     	  g_debug("FAILED to load FONT ");
     	  }
 */
-   /* mm->icon_view = gtk_icon_view_new ();
+    //mm->icon_view = gtk_icon_view_new ();
+    mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
+    gtk_widget_show (mm->icon_view);
     gtk_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
     //gtk_icon_view_set_margin (mm->icon_view, ICON_MARGIN);
     //gtk_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
@@ -142,9 +144,9 @@ moko_main_menu_init(MokoMainMenu *mm) {
    // gtk_scrolled_window_add_with_viewport (GTK_CONTAINER (mm->scrolled),
     //						mm->icon_view);
     gtk_container_add (GTK_CONTAINER (mm->scrolled), mm->icon_view);
-*/
-    mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
-    gtk_widget_show (mm->icon_view);
+
+//    mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
+  //  gtk_widget_show (mm->icon_view);
  
     mm->hbox = gtk_hbox_new (FALSE, FALSE);
     gtk_widget_show (mm->hbox);
@@ -152,8 +154,8 @@ moko_main_menu_init(MokoMainMenu *mm) {
     gtk_box_pack_start (mm, mm->hbox, FALSE, FALSE, 0);
     gtk_box_pack_start (mm->hbox, mm->section_name, TRUE, TRUE, 10);
     gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 10);
-    //gtk_box_pack_end (mm, mm->scrolled, TRUE, TRUE, 0);
-    gtk_box_pack_end (mm, mm->icon_view, TRUE, TRUE, 0);
+    gtk_box_pack_end (mm, mm->scrolled, TRUE, TRUE, 0);
+    //gtk_box_pack_end (mm, mm->icon_view, TRUE, TRUE, 0);
 
 
     moko_sample_model_fill(mm->list_store);

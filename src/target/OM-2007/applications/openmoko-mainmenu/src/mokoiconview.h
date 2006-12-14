@@ -25,36 +25,19 @@ typedef void
 
 struct _MokoIconView 
 {
-  GtkVBox vbox;
+  //GtkVBox vbox;
 
-  GtkWidget *btns[3][3];
+  //GtkWidget *btns[3][3];
+  GtkIconView parent;
   
 };
 
 struct _MokoIconViewClass
 {
-  GtkVBoxClass parent_class;
+  GtkIconViewClass parent_class;
 
   void(*moko_icon_view_function)(MokoIconView *self);
 
-  /*void    (* set_scroll_adjustments) (GtkIconView      *icon_view,
-				      GtkAdjustment    *hadjustment,
-				      GtkAdjustment    *vadjustment);
-  
-  void    (* item_activated)         (GtkIconView      *icon_view,
-				      GtkTreePath      *path);
-  void    (* selection_changed)      (GtkIconView      *icon_view);
-
-  /* Key binding signals */
-  /*void    (* select_all)             (GtkIconView      *icon_view);
-  void    (* unselect_all)           (GtkIconView      *icon_view);
-  void    (* select_cursor_item)     (GtkIconView      *icon_view);
-  void    (* toggle_cursor_item)     (GtkIconView      *icon_view);
-  gboolean (* move_cursor)           (GtkIconView      *icon_view,
-				      GtkMovementStep   step,
-				      gint              count);
-  gboolean (* activate_cursor_item)  (GtkIconView      *icon_view);
-  */
 };
 
 GType 
