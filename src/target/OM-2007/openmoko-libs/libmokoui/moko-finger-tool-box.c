@@ -1,8 +1,8 @@
 /*  moko-finger-tool-box.c
  *
- *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006 Vanille-Media
+ *  Copyright (C) 2006 First International Computer Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser Public License as published by
@@ -26,6 +26,7 @@
 #define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
 #define moko_debug(fmt,...)
 #endif
@@ -224,7 +225,9 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
     if ( !priv->popup )
     {
-        priv->popup = gtk_window_new(GTK_WINDOW_TOPLEVEL); //GTK_WINDOW_POPUP
+        priv->popup = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_type_hint( priv->popup, GDK_WINDOW_TYPE_HINT_DIALOG );
+        gtk_window_set_decorated( priv->popup, FALSE );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
     }
 

@@ -1,8 +1,8 @@
 /*  moko-navigation-list.h
  *
- *  Authored By Ken Zhao <ken_zhao@fic-sh.com.cn>
+ *  Authored by Ken Zhao <ken_zhao@fic-sh.com.cn>
  *
- *  Copyright (C) 2006 Vanille-Media
+ *  Copyright (C) 2006 First International Computer Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser Public License as published by

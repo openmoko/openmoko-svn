@@ -1,8 +1,8 @@
 /*  moko-tree-view.h
  *
- *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006 Vanille-Media
+ *  Copyright (C) 2006 First International Computer Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser Public License as published by

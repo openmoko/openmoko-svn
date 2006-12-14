@@ -1,6 +1,6 @@
 /*  contacts.c
  *
- *  Authored By Tony Guan<tonyguan@fic-sh.com.cn>
+ *  Authored by Tony Guan<tonyguan@fic-sh.com.cn>
  *
  *  Copyright (C) 2006 FIC Shanghai Lab
  *

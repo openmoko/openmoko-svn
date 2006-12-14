@@ -1,8 +1,8 @@
 /*
  *  libmokoui -- OpenMoko Application Framework UI Library
  *
- *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
- *  Based on hildon-program.c (C) 2006 Nokia Corporation.
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *  Inspired by hildon-program.c (C) 2006 Nokia Corporation.
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *
@@ -32,6 +32,7 @@
 #define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
 #define moko_debug(fmt,...)
 #endif
@@ -42,17 +43,16 @@ G_DEFINE_TYPE (MokoApplication, moko_application, G_TYPE_OBJECT)
 
 typedef struct _MokoApplicationPrivate
 {
-    gboolean killable;
-    gboolean is_topmost;
-    guint window_count;
-    GtkWidget *common_application_menu;
-    GtkWidget *common_filter_menu;
-    GtkWidget *common_toolbar;
-    GSList *windows; // all windows belonging to this application
-    Window window_group;
-    gchar *name;
+    /* Window Manager Collaboration */
+    Atom mb_current_app_window_atom; // _MB_CURRENT_APP_WINDOW
+    Atom net_current_window_atom; // _NET_CURRENT_WINDOW
+    gboolean seen_matchbox_atom; // TRUE, if we received _MB_CURRENT_APP_WINDOW at least once
+    Window window_group; // X11 Window Group (one group per application)
+    gboolean is_topmost; // whether one of the application windows is topmost
+    GSList* windows; // contains all windows belonging to this application
+    gchar* name;
 
-    // our stuff
+    /* Common Utilities */
     MokoWindow* main_window;
     GtkIconFactory* icon_factory;
 
@@ -65,60 +65,14 @@ enum
     PROP_KILLABLE,
 };
 
+/* forwards */
 static void moko_application_class_init(MokoApplicationClass *self);
 static void moko_application_init(MokoApplication *self);
+static void moko_application_finalize (GObject *self);
 static void moko_application_set_property(GObject * object, guint property_id, const GValue * value, GParamSpec * pspec);
 static void moko_application_get_property(GObject * object, guint property_id, GValue * value, GParamSpec * pspec);
 
-static void moko_application_init(MokoApplication *self)
-{
-    moko_debug( "moko_application_init" );
-    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (self);
-
-    /* create our own icon factory and add some defaults to it */
-    priv->icon_factory = gtk_icon_factory_new();
-    gtk_icon_factory_add_default( priv->icon_factory );
-
-#if 0
-    moko_application_add_stock_icons( self,
-                                      "openmoko-default-application",
-                                      NULL );
-#endif
-    priv->killable = FALSE;
-    priv->window_count = 0;
-    priv->is_topmost = FALSE;
-    priv->window_group = GDK_WINDOW_XID(gdk_display_get_default_group(gdk_display_get_default()));
-    priv->common_application_menu = NULL;
-    priv->common_filter_menu = NULL;
-    priv->common_toolbar = NULL;
-    priv->name = NULL;
-}
-
-static void moko_application_finalize (GObject *self)
-{
-    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
-
-    if (priv->common_toolbar)
-    {
-        g_object_unref (priv->common_toolbar);
-        priv->common_toolbar = NULL;
-    }
-
-    if (priv->common_application_menu)
-    {
-        g_object_unref (priv->common_application_menu);
-        priv->common_application_menu = NULL;
-    }
-
-    if (priv->common_filter_menu)
-    {
-        g_object_unref (priv->common_filter_menu);
-        priv->common_filter_menu = NULL;
-    }
-
-    g_free (priv->name);
-}
-
+/* private API */
 static void moko_application_class_init (MokoApplicationClass *self)
 {
     GObjectClass *object_class = G_OBJECT_CLASS(self);
@@ -149,6 +103,36 @@ static void moko_application_class_init (MokoApplicationClass *self)
     return;
 }
 
+static void moko_application_init(MokoApplication *self)
+{
+    moko_debug_minder( self && MOKO_IS_APPLICATION(self) );
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (self);
+
+    /* create our own icon factory and add some defaults to it */
+    priv->icon_factory = gtk_icon_factory_new();
+    gtk_icon_factory_add_default( priv->icon_factory );
+
+#if 0
+    moko_application_add_stock_icons( self,
+                                      "openmoko-default-application",
+                                      NULL );
+#endif
+    priv->windows = NULL;
+    priv->is_topmost = FALSE;
+    priv->window_group = GDK_WINDOW_XID(gdk_display_get_default_group(gdk_display_get_default()));
+    priv->name = NULL;
+
+    priv->mb_current_app_window_atom = XInternAtom( GDK_DISPLAY(), "_MB_CURRENT_APP_WINDOW", False );
+    priv->net_current_window_atom = XInternAtom( GDK_DISPLAY(), "_NET_ACTIVE_WINDOW", False );
+    priv->seen_matchbox_atom = FALSE;
+}
+
+static void moko_application_finalize (GObject *self)
+{
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
+    g_free( priv->name );
+}
+
 static void moko_application_set_property (GObject * object, guint property_id, const GValue * value, GParamSpec * pspec)
 {
     switch (property_id){
@@ -171,9 +155,6 @@ static void moko_application_get_property (GObject * object, guint property_id, 
 
     switch (property_id)
     {
-        case PROP_KILLABLE:
-            g_value_set_boolean (value, priv->killable);
-            break;
         case PROP_IS_TOPMOST:
             g_value_set_boolean (value, priv->is_topmost);
             break;
@@ -260,34 +241,42 @@ moko_application_root_window_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
     moko_debug( "moko_application_root_window_event_filter" );
 
     XAnyEvent *eventti = xevent;
-    MokoApplication *program = MOKO_APPLICATION(data);
-    Atom active_app_atom = XInternAtom( GDK_DISPLAY(), "_MB_CURRENT_APP_WINDOW", False );
+    MokoApplication* program = MOKO_APPLICATION(data);
+    MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(program);
 
     if (eventti->type == PropertyNotify)
     {
         XPropertyEvent* pevent = xevent;
         moko_debug( "-- got PropertyNotify for Atom '%s'", XGetAtomName( GDK_DISPLAY(), pevent->atom ) );
 
-        if (pevent->atom == active_app_atom)
+        if ( (pevent->atom == priv->net_current_window_atom) && (!priv->seen_matchbox_atom) )
         {
-            moko_debug( "-- ActiveAppAtom" );
+            moko_debug( "-- got _NET_CURRENT_WINDOW atom" );
             moko_application_update_top_most( program );
+            return GDK_FILTER_CONTINUE;
+        }
+        if (pevent->atom == priv->mb_current_app_window_atom)
+        {
+            moko_debug( "-- got _MB_CURRENT_APP_WINDOW atom" );
+            priv->seen_matchbox_atom = TRUE;
+            moko_application_update_top_most( program );
+            return GDK_FILTER_CONTINUE;
         }
     }
     return GDK_FILTER_CONTINUE;
 }
 
-/* Public API */
+/* public API */
 
 /**
  * moko_application_get_instance:
  *
  * @return the #MokoApplication for the current process.
- * The object is created on the first call.
+ * @note The object is created on the first call.
  **/
 MokoApplication* moko_application_get_instance (void)
 {
-    static MokoApplication *program = NULL;
+    static MokoApplication* program = NULL;
 
     if (!program)
     {
@@ -297,12 +286,18 @@ MokoApplication* moko_application_get_instance (void)
     return program;
 }
 
+/**
+ * moko_application_add_window:
+ *
+ * add #MokoWindow to the list of windows for this application
+ * @note usually there's no need to call this explicitly, since it's called automatically in the constructor of #MokoWindow
+ * @note the first #MokoWindow constructed in an application is treated as the main window
+ **/
 void
 moko_application_add_window(MokoApplication* self, MokoWindow* window)
 {
+    moko_debug_minder( self && MOKO_IS_APPLICATION(self) );
     MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE(self);
-
-    g_return_if_fail (self && MOKO_IS_APPLICATION (self));
 
     if ( g_slist_find_custom(priv->windows, window, moko_application_window_list_compare) )
     {
@@ -311,26 +306,35 @@ moko_application_add_window(MokoApplication* self, MokoWindow* window)
         return;
     }
 
-    if (!priv->window_count)
+    if (!priv->windows)
     {
         moko_debug( "need to update top most window now..." );
         /* program_update_top_most (self); */
 
-        /* Now that we have a window we should start keeping track of
-         * the root window */
+        /* Now that we have a window we should start keeping track of the root window */
         gdk_window_set_events( gdk_get_default_root_window(), gdk_window_get_events(gdk_get_default_root_window ()) | GDK_PROPERTY_CHANGE_MASK);
         gdk_window_add_filter( gdk_get_default_root_window(), moko_application_root_window_event_filter, self );
     }
 
-    /*window_set_can_hibernate_property (window, &priv->killable);*/
-    /*_window_set_program (window, G_OBJECT (self));*/
-
-    priv->windows = g_slist_append (priv->windows, window);
-    priv->window_count ++;
+    priv->windows = g_slist_append( priv->windows, window );
 }
 
+/**
+ * moko_application_remove_window:
+ *
+ * remove #MokoWindow from the list of windows for this application
+ * @note usually there's no need to call this explicitly, since it's called automatically in the destructor of #MokoWindow
+ **/
+void
+moko_application_remove_window(MokoApplication* self, MokoWindow* window)
+{
+    moko_debug_minder( self && MOKO_IS_APPLICATION(self) );
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE(self);
 
-/** moko_application_get_main_window
+    priv->windows = g_slist_remove( priv->windows, window );
+}
+/**
+ * moko_application_get_main_window:
  *
  * @return the main #MokoWindow for the current #MokoApplication.
  **/
@@ -339,7 +343,8 @@ MokoWindow* moko_application_get_main_window(MokoApplication* self)
     MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
     return priv->main_window;
 }
-/** moko_application_set_main_window
+/**
+ * moko_application_set_main_window:
  *
  * set the main #MokoWindow for this application
  * @note usually there is no need to call this explicitly since
@@ -352,7 +357,8 @@ void moko_application_set_main_window(MokoApplication* self, MokoWindow* window)
     //FIXME g_object_ref the window?
 }
 /**
- * moko_application_get_is_topmost
+ * moko_application_get_is_topmost:
+ *
  * @returns whether one of the program's windows or dialogs is currently
  * activated by the window manager.
  **/
@@ -364,9 +370,10 @@ moko_application_get_is_topmost(MokoApplication* self)
     return priv->is_topmost;
 }
 
-/** moko_application_get_style_pixmap_dir
+/**
+ * moko_application_get_style_pixmap_dir:
  *
- * @return the style pixmap directory
+ * @returns the style pixmap directory
  * @note this is not necessarily $GTK_DATA_DIR/themes/$THEME_NAME/gtk-2.0/
  **/
 gchar* moko_application_get_style_pixmap_dir()
@@ -375,9 +382,15 @@ gchar* moko_application_get_style_pixmap_dir()
     return g_path_get_dirname( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL] );
 }
 
+/**
+ * moko_application_add_stock_icons:
+ *
+ * register a number of stock icons given by name
+ * @note name of stock icon must match filename in pixmap directory
+ **/
 void moko_application_add_stock_icons(MokoApplication* self, ...)
 {
-    moko_debug( "moko_application_add_stock_icon" );
+    moko_debug_minder( self && MOKO_IS_APPLICATION(self) );
     MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
 
     va_list valist;
@@ -399,6 +412,11 @@ void moko_application_add_stock_icons(MokoApplication* self, ...)
     va_end(valist);
 }
 
+/**
+ * moko_application_execute_dialog:
+ *
+ * create a modal dialog window with @a title and @a contents
+ **/
 MokoDialogWindow* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents)
 {
     MokoDialogWindow* dialog = moko_dialog_window_new();

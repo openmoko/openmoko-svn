@@ -1,6 +1,6 @@
 /* moko-dialer-tip.h
  *  MokoDialerTip, for the autofill feature, this widget shows the current hints for the end user.
- *  Authored By Tony Guan<tonyguan@fic-sh.com.cn>
+ *  Authored by Tony Guan<tonyguan@fic-sh.com.cn>
  *
  *  Copyright (C) 2006 FIC Shanghai Lab
  *

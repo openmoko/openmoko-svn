@@ -1,7 +1,7 @@
 /*
  *  openmoko-mainmenu
  *
- *  Authored By Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
+ *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *

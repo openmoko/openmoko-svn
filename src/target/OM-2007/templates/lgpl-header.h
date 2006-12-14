@@ -1,7 +1,7 @@
 /*
  *  <LibName> -- <Purpose of the Library>
  *
- *  Authored By <Add your Name here>
+ *  Authored by <Add your Name here>
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *

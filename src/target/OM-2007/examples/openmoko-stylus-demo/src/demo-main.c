@@ -1,7 +1,7 @@
 /*
  *  Stylus Demo -- OpenMoko Demo Application
  *
- *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *

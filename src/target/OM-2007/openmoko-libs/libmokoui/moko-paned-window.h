@@ -1,7 +1,7 @@
 /*
  *  libmokoui -- OpenMoko Application Framework UI Library
  *
- *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  *  Copyright (C) 2006 First International Computer Inc.
  *
