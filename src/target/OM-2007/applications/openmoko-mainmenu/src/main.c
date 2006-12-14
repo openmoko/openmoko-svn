@@ -19,52 +19,8 @@
 
 #include "main.h"
 
-static GtkVBox* vbox = NULL;
-static MokoFingerToolBox* tools = NULL;
-
-void cb_orange_button_clicked( GtkButton* button, MokoFingerWindow* window )
-{
-    g_debug( "openmoko-finger-demo: orange button clicked" );
-    static gboolean show = TRUE;
-    static MokoFingerWheel* wheel = NULL;
-
-    if (!wheel) wheel = moko_finger_wheel_new();
-
-    if ( show )
-        gtk_widget_show( GTK_WIDGET(wheel) );
-    else
-        gtk_widget_hide( GTK_WIDGET(wheel) );
-
-    show = !show;
-}
-
-void cb_black_button_clicked( GtkButton* button, MokoFingerWindow* window )
-{
-    g_debug( "openmoko-finger-demo: black button clicked" );
-    static gboolean show = TRUE;
-
-    if (!tools)
-    {
-        tools = moko_finger_tool_box_new();
-        for ( int i = 0; i < 1; ++i )
-            moko_finger_tool_box_add_button( tools );
-    }
-
-    if ( show )
-        gtk_widget_show( GTK_WIDGET(tools) );
-    else
-        gtk_widget_hide( GTK_WIDGET(tools) );
-
-    show = !show;
-}
-
-void cb_dialer_button_clicked( GtkButton* button, MokoFingerWindow* window )
-{
-    if (!tools) return;
-    moko_finger_tool_box_add_button( tools );
-}
-
-int main( int argc, char** argv ) {
+int 
+main( int argc, char** argv ) {
     MokoMainmenuApp *mma;
 
     GError* err = NULL;
@@ -116,7 +72,9 @@ int main( int argc, char** argv ) {
     gtk_widget_show_all( GTK_WIDGET(mma->window) );
 
     gtk_widget_show (GTK_WIDGET (mma->wheel));
+    //gtk_widget_reparent (GTK_WIDGET (mma->wheel), GTK_WIDGET (mma->window));
     gtk_widget_show (GTK_WIDGET (mma->toolbox));
+    //gtk_widget_reparent (GTK_WIDGET (mma->toolbox), GTK_WIDGET (mma->window));
 
     //g_debug ("**************");
     //gdk_window_set_back_pixmap (gtk_widget_get_parent_window (mma->mm->icon_view), pixmap, FALSE);
