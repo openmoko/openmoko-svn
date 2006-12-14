@@ -45,7 +45,7 @@ typedef struct _MokoApplicationPrivate
 {
     /* Window Manager Collaboration */
     Atom mb_current_app_window_atom; // _MB_CURRENT_APP_WINDOW
-    Atom net_current_window_atom; // _NET_CURRENT_WINDOW
+    Atom net_active_window_atom; // _NET_ACTIVE_WINDOW
     gboolean seen_matchbox_atom; // TRUE, if we received _MB_CURRENT_APP_WINDOW at least once
     Window window_group; // X11 Window Group (one group per application)
     gboolean is_topmost; // whether one of the application windows is topmost
@@ -123,13 +123,13 @@ static void moko_application_init(MokoApplication *self)
     priv->name = NULL;
 
     priv->mb_current_app_window_atom = XInternAtom( GDK_DISPLAY(), "_MB_CURRENT_APP_WINDOW", False );
-    priv->net_current_window_atom = XInternAtom( GDK_DISPLAY(), "_NET_ACTIVE_WINDOW", False );
+    priv->net_active_window_atom = XInternAtom( GDK_DISPLAY(), "_NET_ACTIVE_WINDOW", False );
     priv->seen_matchbox_atom = FALSE;
 }
 
 static void moko_application_finalize (GObject *self)
 {
-    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
+    MokoApplicationPrivate *priv = MOKO_APPLICATION_GET_PRIVATE(MOKO_APPLICATION(self));
     g_free( priv->name );
 }
 
@@ -166,6 +166,56 @@ static void moko_application_get_property (GObject * object, guint property_id, 
 }
 
 /* Utilities */
+
+/*
+ * Checks the root window to know which is the topmost window
+ */
+Window
+moko_application_get_active_window(MokoApplication* self)
+{
+    Atom realtype;
+    int format;
+    int status;
+    Window ret;
+    unsigned long n;
+    unsigned long extra;
+    union
+    {
+        Window *win;
+        unsigned char *char_pointer;
+    } win;
+
+    MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE (MOKO_APPLICATION(self));
+    Atom active_app_atom = priv->seen_matchbox_atom ? priv->mb_current_app_window_atom : priv->net_active_window_atom;
+
+    win.win = NULL;
+
+    status = XGetWindowProperty( GDK_DISPLAY(),
+                                 GDK_ROOT_WINDOW(),
+                                 active_app_atom,
+                                 0L,
+                                 16L,
+                                 0,
+                                 XA_WINDOW,
+                                 &realtype,
+                                 &format,
+                                 &n,
+                                 &extra,
+                                 &win.char_pointer);
+    if ( !(status == Success && realtype == XA_WINDOW && format == 32 && n == 1 && win.win != NULL) )
+    {
+        if (win.win != NULL) XFree (win.char_pointer);
+        return None;
+    }
+
+    ret = win.win[0];
+
+    if (win.win != NULL)
+        XFree(win.char_pointer);
+
+    return ret;
+}
+
 static gint
 moko_application_window_list_compare(gconstpointer window_a, gconstpointer window_b)
 {
@@ -187,17 +237,16 @@ moko_application_list_is_is_topmost(gpointer data, gpointer window_id_)
 }
 
 /*
- * Check the _MB_CURRENT_APP_WINDOW on the root window, and update
- * the top_most status accordingly
+ * Check the _MB_CURRENT_APP_WINDOW / _NET_ACTIVE_WINDOW on the root window, and update
+ * the topmost status accordingly
  */
 static void
 moko_application_update_top_most(MokoApplication* self)
 {
-    moko_debug( "moko_application_update_top_most" );
-    moko_debug( "-- status has changed for '%s'", g_get_application_name() );
+    moko_debug( "moko_application_update_top_most '%s'", g_get_application_name() );
 
     MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
-    Window active_window = moko_window_get_active_window();
+    Window active_window = moko_application_get_active_window(self);
 
     if (active_window)
     {
@@ -205,7 +254,6 @@ moko_application_update_top_most(MokoApplication* self)
 
         if (wm_hints)
         {
-
             if (wm_hints->window_group == priv->window_group)
             {
                 if (!priv->is_topmost)
@@ -225,8 +273,10 @@ moko_application_update_top_most(MokoApplication* self)
         XFree (wm_hints);
     }
 
-    /* Check each window if it was is_topmost */
+    /* Update topmost status for every window */
+#if 1
     g_slist_foreach(priv->windows, (GFunc)moko_application_list_is_is_topmost, &active_window);
+#endif
 }
 
 /* Event filter */
@@ -249,16 +299,17 @@ moko_application_root_window_event_filter(GdkXEvent *xevent, GdkEvent *event, gp
         XPropertyEvent* pevent = xevent;
         moko_debug( "-- got PropertyNotify for Atom '%s'", XGetAtomName( GDK_DISPLAY(), pevent->atom ) );
 
-        if ( (pevent->atom == priv->net_current_window_atom) && (!priv->seen_matchbox_atom) )
-        {
-            moko_debug( "-- got _NET_CURRENT_WINDOW atom" );
-            moko_application_update_top_most( program );
-            return GDK_FILTER_CONTINUE;
-        }
         if (pevent->atom == priv->mb_current_app_window_atom)
         {
             moko_debug( "-- got _MB_CURRENT_APP_WINDOW atom" );
             priv->seen_matchbox_atom = TRUE;
+            moko_application_update_top_most( program );
+            return GDK_FILTER_CONTINUE;
+        }
+        else
+        if ( (pevent->atom == priv->net_active_window_atom) && (!priv->seen_matchbox_atom) )
+        {
+            moko_debug( "-- got _NET_ACTIVE_WINDOW atom" );
             moko_application_update_top_most( program );
             return GDK_FILTER_CONTINUE;
         }
@@ -308,9 +359,6 @@ moko_application_add_window(MokoApplication* self, MokoWindow* window)
 
     if (!priv->windows)
     {
-        moko_debug( "need to update top most window now..." );
-        /* program_update_top_most (self); */
-
         /* Now that we have a window we should start keeping track of the root window */
         gdk_window_set_events( gdk_get_default_root_window(), gdk_window_get_events(gdk_get_default_root_window ()) | GDK_PROPERTY_CHANGE_MASK);
         gdk_window_add_filter( gdk_get_default_root_window(), moko_application_root_window_event_filter, self );

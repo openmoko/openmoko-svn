@@ -47,18 +47,18 @@ typedef struct _MokoFingerWindowPriv
     MokoFingerToolBox* tools;
 } MokoFingerWindowPriv;
 
-static void moko_finger_window_dispose (GObject *object)
+static void moko_finger_window_dispose(GObject *object)
 {
     if (G_OBJECT_CLASS (moko_finger_window_parent_class)->dispose)
         G_OBJECT_CLASS (moko_finger_window_parent_class)->dispose (object);
 }
 
-static void moko_finger_window_finalize (GObject *object)
+static void moko_finger_window_finalize(GObject *object)
 {
     G_OBJECT_CLASS (moko_finger_window_parent_class)->finalize (object);
 }
 
-static void moko_finger_window_class_init (MokoFingerWindowClass *klass)
+static void moko_finger_window_class_init(MokoFingerWindowClass *klass)
 {
     moko_debug( "moko_finger_window_class_init" );
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -69,7 +69,7 @@ static void moko_finger_window_class_init (MokoFingerWindowClass *klass)
     object_class->finalize = moko_finger_window_finalize;
 }
 
-static void moko_finger_window_init (MokoFingerWindow *self)
+static void moko_finger_window_init(MokoFingerWindow *self)
 {
     moko_debug( "moko_finger_window_init" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);

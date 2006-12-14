@@ -71,6 +71,7 @@ typedef struct _MokoWindowPrivate
 
 static void moko_window_class_init(MokoWindowClass *klass) /* Class Initialization */
 {
+    moko_debug( "moko_window_class_init" );
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
@@ -144,11 +145,11 @@ moko_window_get_property(GObject* object, guint property_id, GValue* value, GPar
     switch (property_id) {
 
     case PROP_IS_TOPMOST:
-            g_value_set_boolean (value, priv->is_topmost);
+            g_value_set_boolean( value, priv->is_topmost );
         break;
 
     default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+        G_OBJECT_WARN_INVALID_PROPERTY_ID( object, property_id, pspec );
         break;
     }
 }
@@ -156,7 +157,7 @@ moko_window_get_property(GObject* object, guint property_id, GValue* value, GPar
 static void
 moko_window_notify(GObject* gobject, GParamSpec* param)
 {
-    moko_debug( "moko_window_notify" );
+    moko_debug( "moko_window_notify '%s'", param->name );
     MokoWindow* window = MOKO_WINDOW(gobject);
 
     if (strcmp(param->name, "title") == 0)
@@ -164,13 +165,13 @@ moko_window_notify(GObject* gobject, GParamSpec* param)
         moko_debug( "update window title" );
         //moko_window_update_title(window);
     }
-    else if (strcmp(param->name, "is-topmost"))
+    else if (strcmp(param->name, "is-topmost") == 0)
     {
         moko_window_is_topmost_notify(window);
     }
 
     if (G_OBJECT_CLASS(parent_class)->notify)
-        G_OBJECT_CLASS(parent_class)->notify (gobject, param);
+        G_OBJECT_CLASS(parent_class)->notify( gobject, param );
 }
 
 static void
@@ -205,7 +206,6 @@ moko_window_update_topmost(MokoWindow* self, Window window_id)
         if (!priv->is_topmost)
         {
             priv->is_topmost = TRUE;
-            moko_window_is_topmost_notify( self );
             g_object_notify( G_OBJECT(self), "is-topmost" );
         }
     }
@@ -220,53 +220,7 @@ moko_window_update_topmost(MokoWindow* self, Window window_id)
             gtk_im_context_focus_out(GTK_TEXT_VIEW(focus)->im_context);
 
         priv->is_topmost = FALSE;
-        moko_window_is_topmost_notify(self);
         g_object_notify( G_OBJECT(self), "is-topmost" );
     }
 }
 
-/*
- * Checks the root window to know which is the topmost window
- */
-Window
-moko_window_get_active_window()
-{
-    Atom realtype;
-    int format;
-    int status;
-    Window ret;
-    unsigned long n;
-    unsigned long extra;
-    union
-    {
-        Window *win;
-        unsigned char *char_pointer;
-    } win;
-    Atom active_app_atom = XInternAtom( GDK_DISPLAY(), "_MB_CURRENT_APP_WINDOW", False );
-    win.win = NULL;
-
-    status = XGetWindowProperty( GDK_DISPLAY(),
-                                 GDK_ROOT_WINDOW(),
-                                 active_app_atom,
-                                 0L,
-                                 16L,
-                                 0,
-                                 XA_WINDOW,
-                                 &realtype,
-                                 &format,
-                                 &n,
-                                 &extra,
-                                 &win.char_pointer);
-    if ( !(status == Success && realtype == XA_WINDOW && format == 32 && n == 1 && win.win != NULL) )
-    {
-        if (win.win != NULL) XFree (win.char_pointer);
-        return None;
-    }
-
-    ret = win.win[0];
-
-    if (win.win != NULL)
-        XFree(win.char_pointer);
-
-    return ret;
-}

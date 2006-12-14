@@ -13,6 +13,9 @@
 - Add dbus service interfaces
 - Refactor moko_paned_window_set_application_menu and moko_finger_window_set_application_menu
   into common MokoWindow class (moko_window_set_application_menu) and make it a virtual method.
+- Rethink whether MokoFingerWheel and MokoFingerToolBox "belong" to a moko_window or a moko_finger_window
+- Rethink whether they belong to one window or more windows per app. I guess we only want one wheel + toolbox per app
+- Rethink whether MokoFingerWheel and MokoFingerToolBox might be GTK_WINDOW_POPUP + manual hide/show on changing current application / window
 - OE-SDK
 - Native SDK
 - Scratchbox
