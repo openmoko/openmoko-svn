@@ -63,8 +63,8 @@ int main( int argc, char **argv )
     pixbuf = gdk_pixbuf_new_from_file ( PKGDATADIR "/bg_footer.png", &err );
     gdk_pixbuf_render_pixmap_and_mask(pixbuf, &pixmap, &bitmap, NULL);
     style = gtk_rc_get_style (app->toplevel_win);
-    style->bg_pixmap[GTK_STATE_NORMAL] = pixmap;
-    gtk_style_set_background (style, app->toplevel_win->window, GTK_STATE_NORMAL);
+    style->bg_pixmap[app->toplevel_win->state] = pixmap;
+    gtk_style_set_background (style, app->toplevel_win->window, app->toplevel_win->state);
 
 ///initialize OpenMoko Footer Widget
     app->footer = FOOTER(footer_new()); 
