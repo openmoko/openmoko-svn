@@ -203,7 +203,7 @@ moko_icon_view_init(MokoIconView *self)
     GdkBitmap *bitmap;
   
   g_debug ("**************");
-  gtk_widget_set_name( GTK_WIDGET(self), "mokofingerwheel" );
+  //gtk_widget_set_name( GTK_WIDGET(self), "mokofingerwheel" );
     //pixbuf = gdk_pixbuf_new_from_file ( PKGDATADIR"/bg_mainmenu.png", &err );
     //gdk_pixbuf_render_pixmap_and_mask (pixbuf, &pixmap, &bitmap, NULL);
     //gdk_window_set_back_pixmap (gtk_widget_get_parent_window (mma->mm->icon_view), pixmap, FALSE);
