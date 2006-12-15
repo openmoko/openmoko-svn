@@ -40,6 +40,7 @@ typedef struct _MokoPixmapButtonPrivate
     GtkWidget *buttonvbox;
     GtkWidget *actionbtnlowerlabel;
     GtkWidget *actionbtnstockimage;
+    GtkWidget *fingertoolboxbtnimage;
 } MokoPixmapButtonPrivate;
 
 static void
@@ -171,6 +172,12 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
             //gtk_widget_set_size_request(priv->actionbtnstockimage, size_request->right, size_request->bottom/2 - 1);
             gtk_widget_set_size_request(priv->actionbtnlowerlabel, size_request->right, size_request->bottom/2 + 1);
         }
+
+        if ( priv->fingertoolboxbtnimage )
+        {
+            gtk_widget_set_size_request(priv->fingertoolboxbtnimage, size_request->right, size_request->bottom*7/10);
+        }
+
         
     }
     else // old dynamic routine
@@ -273,5 +280,31 @@ moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gc
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnstockimage);
 	  
     gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
+}
+
+
+
+void
+moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, GtkWidget* image)
+{
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
+	  
+    if ( priv->fingertoolboxbtnimage )
+        return;
+
+    GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
+
+    GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
+    
+    GdkPixbuf *src_pixbuf, *dest_pixbuf;
+    src_pixbuf = gtk_image_get_pixbuf (image);
+    dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, 35, 35, GDK_INTERP_NEAREST);
+    
+    priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);;
+    gtk_container_add (GTK_CONTAINER (loweralignment), priv->fingertoolboxbtnimage);
+	  
+    gtk_misc_set_alignment (GTK_MISC (priv->fingertoolboxbtnimage), 0.5, 0);
 }
 
