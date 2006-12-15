@@ -105,6 +105,7 @@ include "gtktreeview"
 include "gtkbutton"
 include "gtkcheckbutton"
 include "gtkradiobutton"
+include "gtkeventbox"
 
 include "mokodetailswindow"
 include "mokodialogwindow"
