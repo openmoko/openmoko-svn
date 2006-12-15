@@ -41,6 +41,7 @@ typedef struct _MokoPixmapButtonPrivate
     GtkWidget *actionbtnlowerlabel;
     GtkWidget *actionbtnstockimage;
     GtkWidget *fingertoolboxbtnimage;
+    GtkWidget *fingertoolboxbtnloweralignment;
 } MokoPixmapButtonPrivate;
 
 static void
@@ -289,22 +290,26 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, 
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
 	  
-    if ( priv->fingertoolboxbtnimage )
-        return;
-
-    GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
-    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
-
-    GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
-    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
-    
     GdkPixbuf *src_pixbuf, *dest_pixbuf;
     src_pixbuf = gtk_image_get_pixbuf (image);
     dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, 35, 35, GDK_INTERP_NEAREST);
+
+    if ( priv->fingertoolboxbtnimage == NULL )
+    {
+        GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
+        gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
+
+        priv->fingertoolboxbtnloweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+        gtk_box_pack_start (GTK_BOX (priv->buttonvbox), priv->fingertoolboxbtnloweralignment, TRUE, TRUE, 0);
     
-    priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);;
-    gtk_container_add (GTK_CONTAINER (loweralignment), priv->fingertoolboxbtnimage);
+    }
+    else
+    {
+        gtk_container_remove (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
+    }
 	  
+    priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
+    gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
     gtk_misc_set_alignment (GTK_MISC (priv->fingertoolboxbtnimage), 0.5, 0);
 }
 
