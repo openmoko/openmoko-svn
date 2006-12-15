@@ -57,4 +57,8 @@ char *package_list_get_package_description (gpointer pkg);
 
 char *package_list_get_package_maintainer (gpointer pkg);
 
+void search_and_translate_package_list_to_store (ApplicationManagerData *appdata, 
+                                                 GtkListStore *store, 
+                                                 gpointer pkglist,
+                                                 const gchar *str);
 #endif

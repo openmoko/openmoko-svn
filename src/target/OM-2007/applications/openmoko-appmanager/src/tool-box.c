@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "tool-box.h"
+#include "navigation-area.h"
 
 /**
  * @brief The callback function of the button "upgrade"
@@ -64,6 +65,7 @@ on_search_entry_changed (GtkEditable *entryedit, gpointer data)
     {
       //FIXME Add code later
       g_debug ("The length of search string is 0");
+      navigation_area_rebuild_from_latest (appdata);
       return;
     }
 
@@ -79,13 +81,13 @@ on_search_entry_changed (GtkEditable *entryedit, gpointer data)
 
   if (strstr ((char *)searchstr, (char *)searchhistory) != NULL)
     {
-      //FIXME Add code later
       g_debug ("Increase search");
+      navigation_area_increase_search (appdata, searchstr);
     }
   else 
     {
-      //FIXME Add code later
       g_debug ("Search from the beginning");
+      navigation_area_rebuild_search_result (appdata, searchstr);
     }
 
   strncpy (searchhistory, searchstr, MAX_SEARCH_ENTRY_TEXT_LENGTH);

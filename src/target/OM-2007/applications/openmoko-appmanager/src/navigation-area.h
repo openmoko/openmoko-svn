@@ -41,4 +41,13 @@ gchar *treeview_get_selected_name (GtkWidget *treeview);
 void navigation_area_refresh_with_package_list (ApplicationManagerData *appdata, 
                                                 gpointer pkglist);
 
+void navigation_area_rebuild_from_latest (ApplicationManagerData *appdata);
+
+void navigation_area_rebuild_search_result (ApplicationManagerData *appdata,
+                                            const gchar *str);
+
+void 
+navigation_area_increase_search (ApplicationManagerData *appdata,
+                                 const gchar *str);
+
 #endif

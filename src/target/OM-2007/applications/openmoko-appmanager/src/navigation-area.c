@@ -320,6 +320,8 @@ treeview_get_selected_name (GtkWidget *treeview)
   GtkTreeSelection *selection;
   gchar            *name = NULL;
 
+  g_return_val_if_fail (GTK_IS_TREE_VIEW (treeview), NULL);
+
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
   if (gtk_tree_selection_get_selected (selection, &model, &iter))
     {
@@ -332,6 +334,8 @@ treeview_get_selected_name (GtkWidget *treeview)
 
 /**
  * @brief Refresh the navigation area with the package list
+ * @param appdata The application manager data
+ * @param pkglist The pachage list
  */
 void 
 navigation_area_refresh_with_package_list (ApplicationManagerData *appdata, 
@@ -340,6 +344,8 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   GtkWidget     *treeview;
   GtkTreeModel  *model;
   GtkListStore  *store;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   treeview = application_manager_get_tvpkglist (appdata);
   g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
@@ -355,6 +361,115 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   translate_package_list_to_store (appdata, store, pkglist);
   // Save current list to the application manager data
   application_manager_data_set_current_list (appdata, pkglist);
+
+  gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
+  g_object_unref (model);
+}
+
+/**
+ * @brief Rebuild the navigation list from the latest package list
+ * @param appdata The application manager data
+ */
+void 
+navigation_area_rebuild_from_latest (ApplicationManagerData *appdata)
+{
+  gpointer       pkglist;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  pkglist = application_manager_data_get_currentlist (appdata);
+
+  navigation_area_refresh_with_package_list (appdata, pkglist);
+}
+
+/**
+ * @brief Rebuild the navigagion list from the search result of the latest
+ * package list
+ * @param appdata The application manager data
+ * @param str The search string
+ */
+void 
+navigation_area_rebuild_search_result (ApplicationManagerData *appdata,
+                                       const gchar *str)
+{
+  GtkWidget     *treeview;
+  GtkTreeModel  *model;
+  GtkListStore  *store;
+
+  gpointer       pkglist;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  pkglist = application_manager_data_get_currentlist (appdata);
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
+
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_MODEL (model));
+  store = GTK_LIST_STORE (model);
+
+  g_object_ref (model);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
+  gtk_list_store_clear (store);
+
+  //FIXME Add search and build the store
+  search_and_translate_package_list_to_store (appdata, store, pkglist, str);
+
+  gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
+  g_object_unref (model);
+}
+
+/**
+ * @brief Increase search for the package list
+ * @param appdata The application manager data
+ * @param str The search string
+ */
+void 
+navigation_area_increase_search (ApplicationManagerData *appdata,
+                                 const gchar *str)
+{
+  GtkWidget     *treeview;
+  GtkTreeModel  *model;
+  GtkTreeIter   iter, next;
+  gint          res;
+  gchar         *pkgname = NULL;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  treeview = application_manager_get_tvpkglist (appdata);
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
+
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_MODEL (model));
+
+  g_object_ref (model);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
+
+  res = gtk_tree_model_get_iter_first (model, &next);
+  while (res)
+    {
+      iter = next;
+      res = gtk_tree_model_iter_next (model, &next);
+
+      gtk_tree_model_get (model, &iter, COL_NAME, &pkgname, -1);
+      if (pkgname == NULL)
+        {
+          g_debug ("Can not the package name in a row");
+          continue;
+        }
+      
+      if (strstr ((char *)pkgname, (char *)str) != NULL)
+        {
+          g_free (pkgname);
+          pkgname = NULL;
+          continue;
+        }
+
+      gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
+      g_free (pkgname);
+      pkgname = NULL;
+    }
 
   gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
   g_object_unref (model);

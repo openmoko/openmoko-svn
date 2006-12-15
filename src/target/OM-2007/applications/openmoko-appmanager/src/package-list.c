@@ -1020,3 +1020,28 @@ package_list_get_package_maintainer (gpointer pkg)
   return package->maintainer;
 }
 
+/**
+ * @brief Put the nodes in the package list to the GtkListStore
+ *
+ * @param appdata The application manager data
+ * @param store The list store
+ * @param pkglist The package list
+ * @param str The search string
+ */
+void 
+search_and_translate_package_list_to_store (ApplicationManagerData *appdata, 
+                                            GtkListStore *store, 
+                                            gpointer pkglist,
+                                            const gchar *str)
+{
+  PackageList *pkglisthead = (PackageList *)pkglist;
+  PackageList *tmplist;
+
+  tmplist = pkglisthead->next;
+  while (tmplist != pkglisthead)
+    {
+      if (strstr (tmplist->pkg->name, str) != NULL)
+        insert_node_to_store (appdata, store, tmplist->pkg);
+      tmplist = tmplist->next;
+    }
+}
