@@ -194,44 +194,6 @@ void
 moko_icon_view_init(MokoIconView *self)
 {
   PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
-  GtkWidget *table;
-  gint i,j;
-      GError* err = NULL;
-    GdkPixbuf *pixbuf;
-    GtkStyle *style;    
-    GdkPixmap *pixmap;
-    GdkBitmap *bitmap;
-  
-  g_debug ("**************");
-  //gtk_widget_set_name( GTK_WIDGET(self), "mokofingerwheel" );
-    //pixbuf = gdk_pixbuf_new_from_file ( PKGDATADIR"/bg_mainmenu.png", &err );
-    //gdk_pixbuf_render_pixmap_and_mask (pixbuf, &pixmap, &bitmap, NULL);
-    //gdk_window_set_back_pixmap (gtk_widget_get_parent_window (mma->mm->icon_view), pixmap, FALSE);
-    //style = gtk_rc_get_style (self);
-    //style->bg_pixmap[GTK_STATE_NORMAL] = pixmap;
-    //gtk_style_set_background (style, mma->mm->icon_view->window, GTK_STATE_NORMAL);
-
-    //if (GTK_WIDGET_NO_WINDOW(mma->mm->icon_view)) 
-    	  //g_debug ("no window");
-    g_debug ("**************");
- /* table = gtk_table_new (3, 3, TRUE);
-  gtk_container_add (GTK_CONTAINER(self), table);
-  gtk_widget_show (table);
-
-  for (i=0;i<3; i++)
-    for (j=0;j<3; j++)
-      {
-	self->btns[i][j] = gtk_toggle_button_new ();
-	gtk_table_attach_defaults (GTK_TABLE(table), self->btns[i][j], 
-				   i, i+1, j, j+1);
-	gtk_signal_connect (GTK_OBJECT (self->btns[i][j]), "clicked",
-			    GTK_SIGNAL_FUNC (moko_item_select_cb), NULL);
-	gtk_widget_set_size_request (self->btns[i][j], 20, 20);
-	gtk_widget_show (self->btns[i][j]);
-//	gtk_misc_set_padding (GTK_MISC (self->btns[i][j]), 30, 30);
-//	sleep (1);
-      }
-*/
   if (PangoFont)
     pango_font_description_free (PangoFont);
 }

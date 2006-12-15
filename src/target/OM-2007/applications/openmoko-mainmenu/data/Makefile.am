@@ -1,5 +1,5 @@
-EXTRA_DIST = bg_mainmenu.png
+EXTRA_DIST = 
 
 resourcedir = $(pkgdatadir)
-resource_DATA = bg_mainmenu.png
+resource_DATA = 
 
