@@ -62,7 +62,7 @@ static void _button_release(GtkWidget* w, MokoToolBox* self)
     moko_debug( "moko_tool_box_button_release: current_page is now: %d", current_page );
 
     if( current_page == 1 )
-        gtk_widget_grab_focus( priv->entry );
+        gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
 
     current_page = 1 - current_page;
     g_signal_emit( G_OBJECT(self), current_page ? moko_tool_box_signals[SEARCHBOX_INVISIBLE] : moko_tool_box_signals[SEARCHBOX_VISIBLE], 0, NULL );

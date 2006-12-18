@@ -28,7 +28,7 @@
 #define moko_debug(fmt,...)
 #endif
 
-G_DEFINE_TYPE (MokoPixmapButton, moko_pixmap_button, GTK_TYPE_BUTTON);
+G_DEFINE_TYPE (MokoPixmapButton, moko_pixmap_button, GTK_TYPE_BUTTON)
 
 #define MOKO_PIXMAP_BUTTON_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_PIXMAP_BUTTON, MokoPixmapButtonPrivate))
 
@@ -297,7 +297,7 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, 
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
 	  
     GdkPixbuf *src_pixbuf, *dest_pixbuf;
-    src_pixbuf = gtk_image_get_pixbuf (image);
+    src_pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image));
     dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, 35, 35, GDK_INTERP_NEAREST);
 
     if ( priv->fingertoolboxbtnimage == NULL )

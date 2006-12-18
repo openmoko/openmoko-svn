@@ -22,6 +22,9 @@
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkvbox.h>
+#include <gtk/gtklabel.h>
+#include <gtk/gtkalignment.h>
+#include <gtk/gtkmain.h>
 
 #include <glib-object.h>
 
