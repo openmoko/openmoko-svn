@@ -32,7 +32,8 @@ int contact_init_contact_data(DIALER_CONTACTS_LIST_HEAD   *p_contactlist)
   {
     res = contact_init_from_cmd (p_contactlist);
   }
-  //DBG_MESSAGE("CONTACTS:%d,list@0x%x,first@0x%x",contactlist.length,&contactlist,contactlist.contacts);
+  DBG_MESSAGE("CONTACTS:%d,list@0x%x,first@0x%x",p_contactlist->length,p_contactlist,p_contactlist->contacts);
+  
   DBG_LEAVE();
   
   return res;
@@ -374,7 +375,7 @@ DIALER_CONTACT_ENTRY* entry;
 int contact_string_has_sensentive (char * content, char *string)
 {
 	int i;
-	//g_printf("hassensentive:%s,%s\n",content,string);
+	g_printf("hassensentive:%s,%s\n",content,string);
 	if(content==0) 
 	return 0;
 	
@@ -396,4 +397,28 @@ int contact_string_has_sensentive (char * content, char *string)
 	}
 	return 1;
 }
+int contact_print_contact_list(DIALER_CONTACTS_LIST_HEAD * head)
+{
+DIALER_CONTACT* contacts;
+DIALER_CONTACT_ENTRY* entry;
+ contacts=head->contacts;
 
+DBG_MESSAGE("\n\nThere are %d contacts here:",head->length);
+
+   while(contacts!= 0)
+   {
+   DBG_MESSAGE("CONTACT: name:%s",contacts->name);
+     entry=contacts->entry;
+
+	 while(entry)
+	 {
+	
+	 DBG_MESSAGE("--%s:%s",entry->desc,entry->content);
+        entry=entry->next;
+	 }
+
+      contacts= contacts->next;
+  }
+  return 0;
+
+}

@@ -111,12 +111,20 @@ moko_dialer_autolist->head=0;
 
     
 }
-
+/**
+ * @brief please call this function first before the autolist start to work.
+*/
 gboolean moko_dialer_autolist_set_data (MokoDialerAutolist *moko_dialer_autolist,DIALER_CONTACTS_LIST_HEAD* head)
 {
+/*
 if(moko_dialer_autolist->head)
 	contact_release_contact_list(moko_dialer_autolist->head);
+	*/
+	
 moko_dialer_autolist->head=head;
+
+contact_print_contact_list(moko_dialer_autolist->head);
+
 return TRUE;
 }
 /**
@@ -135,6 +143,8 @@ gint i;
 DBG_ENTER();
 
 
+moko_dialer_autolist->g_alternatecount=count;
+
 if(count>0)
 {
 	//init the labels.
@@ -144,6 +154,7 @@ if(count>0)
 	moko_dialer_tip_set_index(moko_dialer_autolist->tips[i],i);
 	gtk_widget_show(moko_dialer_autolist->tips[i]);
 	}
+
 	for(;i<MOKO_DIALER_MAX_TIPS;i++)
 	{
 	moko_dialer_tip_set_index(moko_dialer_autolist->tips[i],-1);
@@ -169,11 +180,13 @@ else
 gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_autolist,gchar * string)
 {
 //first, we fill the ready list
-  DIALER_CONTACT* contacts=moko_dialer_autolist->head->contacts;
+
+  DIALER_CONTACT* contacts;//=moko_dialer_autolist->head->contacts;
 
   DIALER_CONTACT_ENTRY* entry;
 
   int inserted=0;
+
   
   int len;
   
@@ -181,22 +194,28 @@ gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_au
 	  len=strlen(string);
   else
 	  len=0;
-  //DBG_TRACE();
+  DBG_TRACE();
   
-   while(contacts!= NULL&&inserted<MOKO_DIALER_MAX_DISP_NAME_LEN)
+
+ contacts=moko_dialer_autolist->head->contacts;
+
+  DBG_MESSAGE("CONTACTS:%d,list@0x%x,first@0x%x",moko_dialer_autolist->head->length,moko_dialer_autolist->head,moko_dialer_autolist->head->contacts);
+
+	  DBG_TRACE();  
+   while(contacts!= NULL&&inserted<MOKO_DIALER_MAX_TIPS)
    {
-	//  DBG_TRACE();
+	  DBG_TRACE();
       entry=contacts->entry;
 	//  DBG_TRACE();
-	 while(entry!=NULL&&inserted<MOKO_DIALER_MAX_DISP_NAME_LEN)
+	 while(entry!=NULL&&inserted<MOKO_DIALER_MAX_TIPS)
 	 {
-	// DBG_TRACE();
+	 DBG_TRACE();
 	 //judge if the entry includes the string
 	 if(contact_string_has_sensentive(entry->content,string))
 	 {	
 		//if the person not inserted, then insert first
 
-	 //DBG_MESSAGE("%dth contacts:%s,%s,%s",inserted,contacts->name,entry->desc,entry->content);
+	DBG_MESSAGE("%dth contacts:%s,%s,%s",inserted,contacts->name,entry->desc,entry->content);
 
 		 if(strlen(contacts->name)<=MOKO_DIALER_MAX_DISP_NAME_LEN)
 		strcpy(moko_dialer_autolist->readycontacts[inserted].name,contacts->name);
@@ -221,8 +240,8 @@ gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_au
 	 contacts= contacts->next;
 	
   }
-  //DBG_LEAVE();
-  
+
+DBG_MESSAGE("inserted=%d",inserted);
 moko_dialer_autolist_fill_alternative(moko_dialer_autolist,inserted);
 /*
 if(ret>0&&autofill!=0)
@@ -230,6 +249,7 @@ if(ret>0&&autofill!=0)
 else
 	setselected(text_view,0);
 */
+DBG_LEAVE();
   return inserted;
 }
 
@@ -239,8 +259,21 @@ gboolean on_tip_press_event (MokoDialerTip       *tip,GdkEventButton  *event,gpo
 DBG_ENTER();
 MokoDialerAutolist *moko_dialer_autolist;
 moko_dialer_autolist=(MokoDialerAutolist *)user_data;
+gint selected=moko_dialer_tip_get_index(tip);
+moko_dialer_tip_set_selected( tip, TRUE);
 
-DBG_MESSAGE("selected:%d",moko_dialer_tip_get_index(tip));
+
+if(selected!=-1)
+{
+		for(gint i=0;i<moko_dialer_autolist->g_alternatecount;i++)
+		{
+		if(i!=selected)
+		{//set selected to false;
+		moko_dialer_tip_set_selected( moko_dialer_autolist->tips[i], FALSE);
+		}
+		}
+}
+//emit new message for the textview to add string.
 
  return FALSE;
 }

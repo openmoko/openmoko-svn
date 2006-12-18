@@ -84,8 +84,8 @@ int contact_release_contact_list(DIALER_CONTACTS_LIST_HEAD * head);
 int contact_init_from_cmd(DIALER_CONTACTS_LIST_HEAD * head);
 int contact_get_info_from_number(DIALER_CONTACT* contacts,char* name,char* picpath,const char* number);
 int contact_init_contact_data(DIALER_CONTACTS_LIST_HEAD   *p_contactlist);
+int contact_print_contact_list(DIALER_CONTACTS_LIST_HEAD * head);
 //int contact_string_has_sensentive(gchar* content,gchar *string);
-
 
 
 #ifdef __cplusplus

@@ -40,23 +40,30 @@ input[0]=parac;
 input[1]=0;
 char codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
 
+
 MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
 MokoDialerTextview *moko_dialer_text_view=appdata->moko_dialer_text_view;
 
+//DBG_TRACE();
 moko_dialer_textview_insert(moko_dialer_text_view, input);
 
-moko_dialer_textview_get_input(moko_dialer_text_view,&codesinput, 0);
+//DBG_TRACE();
+
+moko_dialer_textview_get_input(moko_dialer_text_view,codesinput, 0);
+
+//DBG_MESSAGE("codesinput:%s,appdata->moko_dialer_autolist=0x%x",codesinput,appdata->moko_dialer_autolist);
 
 moko_dialer_autolist_refresh_by_string(appdata->moko_dialer_autolist,codesinput);
 
-g_print("on_dialer_panel_user_input:%c\n", parac);
+//DBG_TRACE();
+//g_print("on_dialer_panel_user_input:%c\n", parac);
 }
 void
 on_dialer_panel_user_hold(GtkWidget * widget,gchar parac,
                                         gpointer         user_data)
 {
 
-g_print("on_dialer_panel_user_hold:%c\n", parac);
+//g_print("on_dialer_panel_user_hold:%c\n", parac);
 }
 
 
@@ -70,6 +77,8 @@ int main( int argc, char** argv )
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
 
+
+    //init application data
    contact_init_contact_data(&(p_dialer_data->g_contactlist));
 
     /* application object */
@@ -123,9 +132,13 @@ int main( int argc, char** argv )
 	
 
     MokoDialerAutolist* autolist=moko_dialer_autolist_new();
+    moko_dialer_autolist_set_data	(autolist,&(p_dialer_data->g_contactlist));
+    p_dialer_data->moko_dialer_autolist=autolist;
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), TRUE, TRUE, 5 );
 
-    p_dialer_data->moko_dialer_autolist=autolist;
+    
+   
+    
     
     moko_finger_window_set_contents( window, GTK_WIDGET(vbox) );
 
@@ -133,10 +146,9 @@ int main( int argc, char** argv )
     gtk_widget_show_all( GTK_WIDGET(window) );
 
 
-    contact_release_contact_list(&(p_dialer_data->g_contactlist));
-    
     gtk_main();
- 
+    
+    contact_release_contact_list(&(p_dialer_data->g_contactlist)); 
 
     return 0;
 }

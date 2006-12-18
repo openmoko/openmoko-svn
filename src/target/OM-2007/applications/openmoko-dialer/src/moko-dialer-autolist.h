@@ -29,7 +29,11 @@
 #include <gtk/gtksignal.h>
 #include <gtk/gtktextview.h>
 #include "moko-dialer-tip.h"
-#include "moko-dialer-includes.h"
+#include "moko-dialer-declares.h"
+#include "contacts.h"
+#include "history.h"
+//#include "moko-dialer-includes.h"
+
 G_BEGIN_DECLS
 
 

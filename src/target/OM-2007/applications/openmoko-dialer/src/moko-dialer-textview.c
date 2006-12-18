@@ -283,7 +283,7 @@ if(gtk_text_iter_get_offset(&insertiter)!=gtk_text_iter_get_offset(&selectionite
 //get the input section of the textview 
 //if ALL=true, get whole text
 //else only get the inputed digits.
-int  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar** input,int ALL)
+int  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar* input,int ALL)
 {
 gchar* codestring;
 GtkTextBuffer *buffer;
@@ -292,7 +292,7 @@ GtkTextIter end;
 GtkTextIter insertiter;
 GtkTextMark *insertmark;
 	
-
+DBG_ENTER();
 
 /* Obtaining the buffer associated with the widget. */
 buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
@@ -306,16 +306,18 @@ gtk_text_buffer_get_end_iter (buffer, &end);
 
 if(gtk_text_iter_get_offset(&insertiter)==gtk_text_iter_get_offset(&start))
 {
-	strcpy(*input,"");
+	strcpy(input,"");
 	return 0;
 }
-  
+ DBG_TRACE();
 if(ALL)
 	/* Get the entire buffer text. */
 	codestring = gtk_text_buffer_get_text (buffer, &start, &end,FALSE);
 else
 	codestring = gtk_text_buffer_get_text (buffer, &start, &insertiter, FALSE);
-strcpy(*input,codestring);
+DBG_MESSAGE("%s",codestring);
+strcpy(input,codestring);
+ DBG_TRACE();
 g_free(codestring);
 return 1;
 }

@@ -102,13 +102,14 @@ typedef struct _dialer_data
 {
  //the global data area begins here
 
-HISTORY_LIST_HEAD g_historylist; ///< the whole list of the talk history
-
-DIALER_CONTACTS_LIST_HEAD       g_contactlist; ///< the whole list of the contacts from the contact book.
 
 MokoDialerTextview *moko_dialer_text_view;
 
 MokoDialerAutolist *moko_dialer_autolist;
+
+DIALER_CONTACTS_LIST_HEAD       g_contactlist; ///< the whole list of the contacts from the contact book.
+
+HISTORY_LIST_HEAD g_historylist; ///< the whole list of the talk history
 
 GLOBAL_STATE g_state; ///< the global states holder. we count on it a lot.
 
