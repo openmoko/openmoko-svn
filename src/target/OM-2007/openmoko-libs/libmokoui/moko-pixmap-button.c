@@ -240,6 +240,8 @@ moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gch
     gtk_container_add (GTK_CONTAINER (upperalignment), priv->actionbtnstockimage);
 	  
     gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
+    
+    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
 void
@@ -258,6 +260,8 @@ moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gch
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnlowerlabel);
     
     gtk_misc_set_alignment (GTK_MISC (priv->actionbtnlowerlabel), 0.5, 0);
+    
+    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
     
 }
 
@@ -281,6 +285,8 @@ moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gc
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnstockimage);
 	  
     gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
+    
+    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
 
@@ -311,6 +317,8 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, 
     priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
     gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
     gtk_misc_set_alignment (GTK_MISC (priv->fingertoolboxbtnimage), 0.5, 0);
+    
+    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
 
@@ -339,4 +347,6 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (MokoPixmapButton*
     priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
     gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
     gtk_misc_set_alignment (GTK_MISC (priv->fingertoolboxbtnimage), 0.5, 0);
+    
+    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
