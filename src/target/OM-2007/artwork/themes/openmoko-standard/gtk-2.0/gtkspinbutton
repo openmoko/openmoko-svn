@@ -4,7 +4,7 @@ style "gtkspinbutton" {
     bg_pixmap[NORMAL] = "<none>"
     bg[NORMAL] = "#555555"
     base[NORMAL] = "#555555"
-    text[NORMAL] = "#d9d9d9"
+    text[NORMAL] = "#000000"
 
     bg[ACTIVE] = "#fdfdfd"
     base[ACTIVE] = "#fdfdfd"

@@ -1,14 +1,17 @@
-#FIXME looks ugly, needs styling
-
 style "gtkentry" {
-    bg_pixmap[NORMAL] = "<none>"
-    bg[NORMAL] = "#555555"
-    base[NORMAL] = "#555555"
-    text[NORMAL] = "#d9d9d9"
+    engine "pixmap" {
+        image {
+            function        = FLAT_BOX
+            file            = "gtkentry.png"
+            recolorable     = TRUE
+            border          = { 17, 17, 15, 15 }
+        }
+    }
+    
+    GtkEntry::inner-border  = { 17, 17, 5, 5 }
 
-    bg[ACTIVE] = "#fdfdfd"
-    base[ACTIVE] = "#fdfdfd"
-    fg[ACTIVE] = "#ffffff"
+    text[NORMAL] = "#000000"
+    fg[NORMAL] = "#000000"
 }
 class "GtkEntry" style "gtkentry"
-widget_class "*.GtkEntry" style "gtkentry"
+widget_class "*.GtkEntry*" style "gtkentry"
