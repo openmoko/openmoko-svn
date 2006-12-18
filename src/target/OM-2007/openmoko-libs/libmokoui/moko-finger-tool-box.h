@@ -47,6 +47,7 @@ GType moko_finger_tool_box_get_type (void);
 GtkWidget* moko_finger_tool_box_new (void);
 
 GtkButton* moko_finger_tool_box_add_button(MokoFingerToolBox* self);
+GtkButton* moko_finger_tool_box_add_button_without_label(MokoFingerToolBox* self);
 
 G_END_DECLS
 

@@ -306,3 +306,25 @@ moko_finger_tool_box_add_button(MokoFingerToolBox* self)
 
     return b;
 }
+
+
+GtkButton*
+moko_finger_tool_box_add_button_without_label(MokoFingerToolBox* self)
+{
+    MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
+
+    MokoPixmapButton* b = moko_pixmap_button_new();
+    gtk_widget_set_name( GTK_WIDGET(b), "mokofingertoolbox-toolbutton" );
+
+    priv->numberOfButtons++;
+
+    gtk_box_pack_start( GTK_BOX(priv->hbox), b, FALSE, FALSE, 0 );
+    gtk_widget_show( GTK_WIDGET(b) );
+    // save button for inside the expose event we want to get its shape
+    //if ( !priv->button ) priv->button = b;
+
+    // force redraw
+    gtk_widget_queue_draw( priv->hbox );
+
+    return b;
+}
