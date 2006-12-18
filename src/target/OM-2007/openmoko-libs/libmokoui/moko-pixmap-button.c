@@ -166,20 +166,6 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
             gtk_widget_size_request (GTK_BIN (button)->child, &child_requisition);
         }
         
-        //FIXME why should I resize label to set right position on MokoPixmapButton
-        MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (widget);
-        if ( priv->actionbtnlowerlabel )
-        {
-            //gtk_widget_set_size_request(priv->actionbtnstockimage, size_request->right, size_request->bottom/2 - 1);
-            gtk_widget_set_size_request(priv->actionbtnlowerlabel, size_request->right, size_request->bottom/2 + 1);
-        }
-
-        if ( priv->fingertoolboxbtnimage )
-        {
-            gtk_widget_set_size_request(priv->fingertoolboxbtnimage, size_request->right, size_request->bottom*7/10);
-        }
-
-        
     }
     else // old dynamic routine
     {
@@ -233,13 +219,13 @@ moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gch
     if ( priv->actionbtnstockimage )
         return;
 	  
-    GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
+    GtkWidget *upperalignment = gtk_alignment_new (0.5, 0.5, 1, 1);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
     
     priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_BUTTON);
     gtk_container_add (GTK_CONTAINER (upperalignment), priv->actionbtnstockimage);
 	  
-    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
+    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0.0);
     
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
@@ -252,14 +238,15 @@ moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gch
     if ( priv->actionbtnlowerlabel )
         return;
     
-    GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+    GtkWidget *loweralignment = gtk_alignment_new (0.5, 0.5, 1, 1);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
     
     priv->actionbtnlowerlabel = gtk_label_new (label);
     
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnlowerlabel);
     
-    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnlowerlabel), 0.5, 0);
+    gtk_widget_set_size_request (priv->actionbtnlowerlabel, 38, 23);  //FIXME get size from style
+    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnlowerlabel), 0.5, 0.0);
     
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
     
@@ -273,19 +260,12 @@ moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gc
     if ( priv->actionbtnstockimage )
         return;
 
-    //FIXME why should we use two alignments to center stock image?
-    GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
-    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
-
-    GtkWidget *loweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+    GtkWidget *loweralignment = gtk_alignment_new (0.5, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
-
 
     priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_DND);
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnstockimage);
 	  
-    gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0);
-    
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
@@ -302,12 +282,8 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, 
 
     if ( priv->fingertoolboxbtnimage == NULL )
     {
-        GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
-        gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
-
-        priv->fingertoolboxbtnloweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+        priv->fingertoolboxbtnloweralignment = gtk_alignment_new (0.45, 0.28, 0, 0);
         gtk_box_pack_start (GTK_BOX (priv->buttonvbox), priv->fingertoolboxbtnloweralignment, TRUE, TRUE, 0);
-    
     }
     else
     {
@@ -316,7 +292,6 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, 
 	  
     priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
     gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
-    gtk_misc_set_alignment (GTK_MISC (priv->fingertoolboxbtnimage), 0.5, 0);
     
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
@@ -332,10 +307,7 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (MokoPixmapButton*
 
     if ( priv->fingertoolboxbtnimage == NULL )
     {
-        GtkWidget *upperalignment = gtk_alignment_new (1, 0.5, 0, 0);
-        gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
-
-        priv->fingertoolboxbtnloweralignment = gtk_alignment_new (1, 0.5, 0, 0);
+        priv->fingertoolboxbtnloweralignment = gtk_alignment_new (0.45, 0.28, 0, 0);
         gtk_box_pack_start (GTK_BOX (priv->buttonvbox), priv->fingertoolboxbtnloweralignment, TRUE, TRUE, 0);
     
     }
@@ -346,7 +318,6 @@ moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (MokoPixmapButton*
 	  
     priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
     gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
-    gtk_misc_set_alignment (GTK_MISC (priv->fingertoolboxbtnimage), 0.5, 0);
     
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
