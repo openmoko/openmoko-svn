@@ -17,9 +17,11 @@
  */
 
 #include "moko-dialog-window.h"
+#include "moko-pixmap-button.h"
 
 #include <gtk/gtkeventbox.h>
 #include <gtk/gtkdialog.h>
+#include <gtk/gtkhbox.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkvbox.h>
 
@@ -42,8 +44,10 @@ typedef struct _MokoDialogWindowPrivate MokoDialogWindowPrivate;
 struct _MokoDialogWindowPrivate
 {
     GtkVBox* vbox;
+    GtkHBox* hbox;
     GtkEventBox* eventbox;
     GtkLabel* label;
+    MokoPixmapButton* closebutton;
 };
 
 typedef struct _MokoDialogRunInfo
@@ -53,6 +57,8 @@ typedef struct _MokoDialogRunInfo
     GMainLoop *loop;
     gboolean destroyed;
 } MokoDialogRunInfo;
+
+static void moko_dialog_window_close(MokoDialogWindow* self);
 
 static void
 shutdown_loop (MokoDialogRunInfo *ri)
@@ -159,12 +165,20 @@ void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title)
         priv->label = gtk_label_new( title );
         gtk_window_set_title( GTK_WINDOW(self), title );
         gtk_widget_set_name( GTK_WIDGET(priv->label), "mokodialogwindow-title-label" );
+        priv->hbox = gtk_hbox_new( FALSE, 0 );
         priv->eventbox = gtk_event_box_new();
+        gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->eventbox), TRUE, TRUE, 0 );
+        priv->closebutton = moko_pixmap_button_new();
+        gtk_widget_set_name( GTK_WIDGET(priv->closebutton), "mokodialogwindow-closebutton" );
+        g_signal_connect_swapped( G_OBJECT(priv->closebutton), "clicked", G_CALLBACK(moko_dialog_window_close), self );
+        gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->closebutton), FALSE, FALSE, 0 );
         gtk_container_add( GTK_CONTAINER(priv->eventbox), GTK_WIDGET(priv->label) );
         gtk_widget_set_name( GTK_WIDGET(priv->eventbox), "mokodialogwindow-title-labelbox" );
         //FIXME get from theme
         gtk_misc_set_padding( GTK_MISC(priv->label), 0, 6 );
+        gtk_widget_show( GTK_WIDGET(priv->hbox) );
         gtk_widget_show( GTK_WIDGET(priv->label) );
+        gtk_widget_show( GTK_WIDGET(priv->closebutton) );
         gtk_widget_show( GTK_WIDGET(priv->eventbox) );
     }
     else
@@ -175,7 +189,7 @@ void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title)
     if ( !priv->vbox )
     {
         priv->vbox = gtk_vbox_new( FALSE, 0 );
-        gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
+        gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->hbox), FALSE, FALSE, 0 );
         gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
         gtk_widget_show( GTK_WIDGET(priv->vbox) );
     }
@@ -187,6 +201,22 @@ void moko_dialog_window_set_contents(MokoDialogWindow* self, GtkWidget* contents
     MokoDialogWindowPrivate* priv = MOKO_DIALOG_WINDOW_GET_PRIVATE(self);
     g_return_if_fail( priv->vbox );
     gtk_box_pack_start( GTK_BOX(priv->vbox), contents, FALSE, FALSE, 0 );
+}
+
+static void moko_dialog_window_close(MokoDialogWindow* self)
+{
+    /* Synthesize delete_event to close dialog. */
+
+    GtkWidget *widget = GTK_WIDGET(self);
+    GdkEvent *event;
+
+    event = gdk_event_new( GDK_DELETE );
+
+    event->any.window = g_object_ref(widget->window);
+    event->any.send_event = TRUE;
+
+    gtk_main_do_event( event );
+    gdk_event_free( event );
 }
 
 guint moko_dialog_window_run(MokoDialogWindow* dialog)

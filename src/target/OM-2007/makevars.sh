@@ -5,6 +5,7 @@ rm -rf ./lib/lib*
 rm -rf ./bin/*-*
 qmake
 make clean
+make
 
 export LD_LIBRARY_PATH=$OPENMOKODIR/lib
 
