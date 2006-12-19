@@ -274,26 +274,8 @@ moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gc
 void
 moko_pixmap_button_set_finger_toolbox_btn_center_image (MokoPixmapButton* self, GtkWidget* image)
 {
-    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
-	  
-    GdkPixbuf *src_pixbuf, *dest_pixbuf;
-    src_pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image));
-    dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, 35, 35, GDK_INTERP_NEAREST);
-
-    if ( priv->fingertoolboxbtnimage == NULL )
-    {
-        priv->fingertoolboxbtnloweralignment = gtk_alignment_new (0.45, 0.28, 0, 0);
-        gtk_box_pack_start (GTK_BOX (priv->buttonvbox), priv->fingertoolboxbtnloweralignment, TRUE, TRUE, 0);
-    }
-    else
-    {
-        gtk_container_remove (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
-    }
-	  
-    priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
-    gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
-    
-    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
+    GdkPixbuf *src_pixbuf = gtk_image_get_pixbuf (GTK_IMAGE (image));
+    moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (self, src_pixbuf);
 }
 
 
