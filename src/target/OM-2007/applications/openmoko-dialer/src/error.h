@@ -45,7 +45,7 @@ extern "C"
 	
 #ifdef  _FIC_DEBUG
 /** @brief Define a debug message output */
-#define DBG_MESSAGE(x...)   {if(DBG_MESSAGE_ON) {g_print("MESSAGE:\n");g_print(x);g_print("\n");}}
+#define DBG_MESSAGE(x...)   {if(DBG_MESSAGE_ON) {g_print(x);g_print("\n");}}
 
 /** @brief Define a error message output */
 #define DBG_ERROR(x...)  {if(DBG_ERROR_ON) {g_print("%s : %s : %d\nERROR:\n",__FILE__,__FUNCTION__,__LINE__);g_print(x);g_print("\n");}}

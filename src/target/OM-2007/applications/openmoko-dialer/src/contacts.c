@@ -275,31 +275,31 @@ int contact_init_from_cmd(DIALER_CONTACTS_LIST_HEAD * head)
 {
 	DIALER_CONTACT* contact;
 	if(head==0)return 0;
-	contact=contact_new_contact("Tony Guan","./tony.png");
+	contact=contact_new_contact("Tony Guan","tony.png");
 	contact_add_entry(contact,"cell","13917209523");
 	contact_add_entry(contact,"work","02162495726");
 	contact_add_contact_to_list(head,contact);
 	
-	contact=contact_new_contact("Sally Xu","./sally.png");
+	contact=contact_new_contact("Sally Xu","sally.png");
 	contact_add_entry(contact,"cell","13361900551");
 	contact_add_entry(contact,"work","02165538452");
 	contact_add_contact_to_list(head,contact);
 	
-	contact=contact_new_contact("Chaowei Song","./chaowei.png");
+	contact=contact_new_contact("Chaowei Song","chaowei.png");
 	contact_add_entry(contact,"work1","02162495727");
 	contact_add_entry(contact,"work4","02162495730");
 	contact_add_entry(contact,"work5","02162495731");
 	contact_add_contact_to_list(head,contact);
 	
-	contact=contact_new_contact("Ken Zhao","./ken.png");
+	contact=contact_new_contact("Ken Zhao","ken.png");
 	contact_add_entry(contact,"work2","02162495728");
 	contact_add_contact_to_list(head,contact);
 	
-	contact=contact_new_contact("Steven Chen","./steven.png");
+	contact=contact_new_contact("Steven Chen","steven.png");
 	contact_add_entry(contact,"work3","02162495729");
 	contact_add_contact_to_list(head,contact);
 	
-	contact=contact_new_contact("10086","");
+	contact=contact_new_contact("10086","10086.png");
 	contact_add_entry(contact,"work","10086");
 	contact_add_contact_to_list(head,contact);
 
@@ -407,7 +407,7 @@ DBG_MESSAGE("\n\nThere are %d contacts here:",head->length);
 
    while(contacts!= 0)
    {
-   DBG_MESSAGE("CONTACT: name:%s",contacts->name);
+   DBG_MESSAGE("%s",contacts->name);
      entry=contacts->entry;
 
 	 while(entry)

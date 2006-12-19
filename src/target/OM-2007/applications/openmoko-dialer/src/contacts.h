@@ -34,15 +34,7 @@ extern "C"
 #endif
 
 
-/**
- * @brief the structure for intelligent search results.
- */	
-typedef struct dialer_ready_contact
-{
-	char name[MOKO_DIALER_MAX_DISP_NAME_LEN+1];///<the name of the result.
-	char picpath[MOKO_DIALER_MAX_PATH_LEN+1];///<the picture path of the contact.
-	char number[MOKO_DIALER_MAX_NUMBER_LEN+1];///<the number which contains the input digits.
-}DIALER_READY_CONTACT;
+
 	
 /**
  * @brief phone number entry for the contact  structure in open dialer.
@@ -67,6 +59,15 @@ typedef struct dialer_contact {
   struct dialer_contact* next;         ///<pointer to next contact
 }DIALER_CONTACT;
 
+
+/**
+ * @brief the structure for intelligent search results.
+ */	
+typedef struct dialer_ready_contact
+{
+	DIALER_CONTACT_ENTRY* p_entry;
+	DIALER_CONTACT* p_contact;
+}DIALER_READY_CONTACT;
 
 /**
  * @brief contacts list head structure.

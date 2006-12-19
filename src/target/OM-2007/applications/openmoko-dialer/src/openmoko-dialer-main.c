@@ -28,8 +28,57 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtktogglebutton.h>
 #include <gtk/gtkvbox.h>
-
+#include "contacts.h"
 #include "openmoko-dialer-main.h"
+
+void
+on_dialer_autolist_user_selected(GtkWidget * widget,gpointer para_pointer,
+                                        gpointer         user_data)
+{
+gchar codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
+gint lenstring=0;
+gint leninput=0;
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+MokoDialerTextview *moko_dialer_text_view=appdata->moko_dialer_text_view;
+DIALER_READY_CONTACT * ready_contact=(DIALER_READY_CONTACT * )para_pointer;
+DBG_MESSAGE("GOT THE MESSAGE OF SELECTED:%s",ready_contact->p_entry->content);
+moko_dialer_textview_get_input(moko_dialer_text_view,codesinput, 0);
+lenstring=strlen(ready_contact->p_entry->content);
+leninput=strlen(codesinput);
+if(lenstring>=leninput)
+{
+
+moko_dialer_textview_fill_it(moko_dialer_text_view,&(ready_contact->p_entry->content[leninput]));
+
+}
+
+}
+
+void
+on_dialer_autolist_user_confirmed(GtkWidget * widget,gpointer para_pointer,
+                                        gpointer         user_data)
+{
+
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+MokoDialerTextview *moko_dialer_text_view=appdata->moko_dialer_text_view;
+DIALER_READY_CONTACT * ready_contact=(DIALER_READY_CONTACT * )para_pointer;
+DBG_MESSAGE("GOT THE MESSAGE OF confirmed:%s",ready_contact->p_entry->content);
+moko_dialer_textview_confirm_it(moko_dialer_text_view,ready_contact->p_entry->content);
+DBG_MESSAGE("And here we are supposed to call out directly");
+
+}
+void
+on_dialer_autolist_nomatch(GtkWidget * widget,gpointer         user_data)
+{
+
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+MokoDialerTextview *moko_dialer_text_view=appdata->moko_dialer_text_view;
+
+DBG_MESSAGE("GOT THE MESSAGE OF no match");
+moko_dialer_textview_fill_it(moko_dialer_text_view,"");
+
+}
+
 
 void
 on_dialer_panel_user_input(GtkWidget * widget,gchar parac,
@@ -44,26 +93,19 @@ char codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
 MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
 MokoDialerTextview *moko_dialer_text_view=appdata->moko_dialer_text_view;
 
-//DBG_TRACE();
 moko_dialer_textview_insert(moko_dialer_text_view, input);
-
-//DBG_TRACE();
 
 moko_dialer_textview_get_input(moko_dialer_text_view,codesinput, 0);
 
-//DBG_MESSAGE("codesinput:%s,appdata->moko_dialer_autolist=0x%x",codesinput,appdata->moko_dialer_autolist);
-
 moko_dialer_autolist_refresh_by_string(appdata->moko_dialer_autolist,codesinput);
 
-//DBG_TRACE();
-//g_print("on_dialer_panel_user_input:%c\n", parac);
 }
 void
 on_dialer_panel_user_hold(GtkWidget * widget,gchar parac,
                                         gpointer         user_data)
 {
 
-//g_print("on_dialer_panel_user_hold:%c\n", parac);
+g_print("on_dialer_panel_user_hold:%c\n", parac);
 }
 
 
@@ -100,11 +142,29 @@ int main( int argc, char** argv )
     /* connect close event */
     g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
 
+
     /* contents */
     vbox = gtk_vbox_new( FALSE, 0 );
 
 
     GtkHBox* hbox = gtk_hbox_new( TRUE, 10 );
+
+
+    MokoDialerAutolist* autolist=moko_dialer_autolist_new();
+    moko_dialer_autolist_set_data	(autolist,&(p_dialer_data->g_contactlist));
+    p_dialer_data->moko_dialer_autolist=autolist;
+    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), FALSE, FALSE, 5 );
+
+
+    g_signal_connect (GTK_OBJECT (autolist), "user_selected",
+			    G_CALLBACK (on_dialer_autolist_user_selected),p_dialer_data);
+
+  
+    g_signal_connect (GTK_OBJECT (autolist), "user_confirmed",
+			    G_CALLBACK ( on_dialer_autolist_user_confirmed),p_dialer_data);
+
+    g_signal_connect (GTK_OBJECT (autolist), "autolist_nomatch",
+			    G_CALLBACK ( on_dialer_autolist_nomatch),p_dialer_data);
 
 
     MokoDialerTextview * mokotextview=moko_dialer_textview_new();
@@ -131,10 +191,6 @@ int main( int argc, char** argv )
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 5 );
 	
 
-    MokoDialerAutolist* autolist=moko_dialer_autolist_new();
-    moko_dialer_autolist_set_data	(autolist,&(p_dialer_data->g_contactlist));
-    p_dialer_data->moko_dialer_autolist=autolist;
-    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), TRUE, TRUE, 5 );
 
     
    

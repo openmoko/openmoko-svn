@@ -42,37 +42,6 @@ moko_dialer_textview_class_init (MokoDialerTextviewClass *class)
 
   object_class = (GtkObjectClass*) class;
 
-g_print("moko_dialer_textview:start signal register\n");
-
-   class->moko_dialer_textview_input = NULL;
-  class->moko_dialer_textview_hold= NULL;  
-
- 
-  moko_dialer_textview_signals[CLICKED_SIGNAL] = 
-  		g_signal_new ("user_input",
-               G_OBJECT_CLASS_TYPE (object_class),
-		G_SIGNAL_RUN_FIRST,
-		 G_STRUCT_OFFSET (MokoDialerTextviewClass, moko_dialer_textview_input),
-               NULL,NULL,
-               g_cclosure_marshal_VOID__CHAR,
-		G_TYPE_NONE, 1,g_type_from_name("gchar"));
-
-  //                G_TYPE_NONE, 0);
-
-g_print("moko_dialer_textview:signal register end,got the id :%d\n", moko_dialer_textview_signals[CLICKED_SIGNAL]);
-
-  moko_dialer_textview_signals[HOLD_SIGNAL] = 
-  		g_signal_new ("user_hold",
-               G_OBJECT_CLASS_TYPE (object_class),
-		G_SIGNAL_RUN_FIRST,
-		 G_STRUCT_OFFSET (MokoDialerTextviewClass, moko_dialer_textview_hold),
-               NULL,NULL,
-               g_cclosure_marshal_VOID__CHAR,
-		G_TYPE_NONE, 1,g_type_from_name("gchar"));
-
-  //                G_TYPE_NONE, 0);
-
-g_print("moko_dialer_textview:signal register end,got the id :%d\n", moko_dialer_textview_signals[HOLD_SIGNAL]);
 
 }
 
@@ -213,7 +182,7 @@ if(cur>0)
  * @retval 
  */
  
- int moko_dialer_textview_insert(MokoDialerTextview *moko_dialer_textview, const gchar* number)
+ gint moko_dialer_textview_insert(MokoDialerTextview *moko_dialer_textview, const gchar* number)
 {
 
 gint len=0;
@@ -283,7 +252,7 @@ if(gtk_text_iter_get_offset(&insertiter)!=gtk_text_iter_get_offset(&selectionite
 //get the input section of the textview 
 //if ALL=true, get whole text
 //else only get the inputed digits.
-int  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar* input,int ALL)
+gint  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar* input,int ALL)
 {
 gchar* codestring;
 GtkTextBuffer *buffer;
@@ -405,6 +374,26 @@ moko_dialer_textview_set_color(moko_dialer_textview);
 
 DBG_LEAVE();
 return 1;
+}
+
+gint moko_dialer_textview_confirm_it(MokoDialerTextview *moko_dialer_textview,const gchar* string)
+{
+
+GtkTextBuffer *buffer;
+GtkTextIter end;
+
+buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
+
+
+gtk_text_buffer_set_text (buffer,string,-1);
+
+
+gtk_text_buffer_get_end_iter (buffer, &end);
+//set the cursor to the end of the buffer
+gtk_text_buffer_place_cursor(buffer,&end);
+	
+return 1;
+
 }
 
  

@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(%(APPNAME), %(APPVERSION), %(APPCONTACT))
+AC_INIT(openmoko-dialer, %(APPVERSION), %(APPCONTACT))
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/openmoko-dialer-main.c)
 AM_CONFIG_HEADER(config.h)

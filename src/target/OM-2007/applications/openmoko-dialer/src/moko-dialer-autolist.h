@@ -53,6 +53,7 @@ typedef struct _MokoDialerAutolist        MokoDialerAutolist;
 struct _MokoDialerAutolist
 {
   GtkHBox hbox;
+  
   DIALER_CONTACTS_LIST_HEAD* head;
 
   HISTORY_ENTRY * g_currentselected; ///<pointer to the history entry which in the GUI the user selects.
@@ -65,16 +66,19 @@ struct _MokoDialerAutolist
 
  gint g_alternatecount;///<indicates how many alternative is ready in the ready list array.
 
+ gboolean tipscreated;///<gtk_widget_show_all disables the tips hide attribute, so we have to create the tips for the first time we use it.
 
   GtkWidget *tips[MOKO_DIALER_MAX_TIPS];
+  GtkWidget *imagePerson;
 
 };
 
 struct _MokoDialerAutolistClass
 {
   GtkHBoxClass parent_class;
-  void (* moko_dialer_autolist_selected) (MokoDialerAutolist *moko_dialer_autolist,gchar parac);
-  void (* moko_dialer_autolist_confirmed) (MokoDialerAutolist *moko_dialer_autolist,gchar parac);
+  void (* moko_dialer_autolist_selected) (MokoDialerAutolist *moko_dialer_autolist,gpointer para_pointer);
+  void (* moko_dialer_autolist_confirmed) (MokoDialerAutolist *moko_dialer_autolist,gpointer para_pointer);
+  void (* moko_dialer_autolist_nomatch) (MokoDialerAutolist *moko_dialer_autolist);
 };
 
 
@@ -82,6 +86,7 @@ GType          moko_dialer_autolist_get_type         (void) ;
 
 GtkWidget*      moko_dialer_autolist_new();
 
+gboolean moko_dialer_autolist_set_select(MokoDialerAutolist *moko_dialer_autolist,gint selected);
 
 
 

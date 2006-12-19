@@ -95,10 +95,12 @@ GtkWidget*  label= gtk_label_new(stringname);
 	priv->label=label;
 
  	gdk_color_parse("black",&color);
+
  	
 	gtk_widget_modify_fg(GTK_WIDGET(dialertip),GTK_STATE_NORMAL,&color); 	
 
- return GTK_WIDGET(dialertip);
+//	gtk_widget_hide(GTK_WIDGET(dialertip));
+	 return GTK_WIDGET(dialertip);
 
 }
 
@@ -178,7 +180,7 @@ return(priv->index);
 
 }
 
-gboolean moko_dialer_tip_set_selected(MokoDialerTip* tip,gboolean selected)
+gboolean moko_dialer_tip_set_selected(GtkWidget* tip,gboolean selected)
 {
 g_return_val_if_fail(MOKO_IS_DIALER_TIP(tip),FALSE);
 
@@ -205,7 +207,7 @@ return TRUE;
 
 }
 
-gboolean  moko_dialer_tip_is_selected(MokoDialerTip* tip)
+gboolean  moko_dialer_tip_is_selected(GtkWidget* tip)
 {
 g_return_val_if_fail(MOKO_IS_DIALER_TIP(tip),FALSE);
 

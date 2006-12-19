@@ -1,0 +1,135 @@
+/*  common.c
+ *
+ *  Authored By Tony Guan<tonyguan@fic-sh.com.cn>
+ *
+ *  Copyright (C) 2006 FIC Shanghai Lab
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Public License as published by
+ *  the Free Software Foundation; version 2.1 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
+ */
+
+ #include "common.h"
+ #include "error.h"
+/**
+ * @brief Create a pixbuf by the filename from the PKGDATADIR
+ * @param filename The filename of the pixbuf file
+ * @return The GdkPixbuf. If can not find the file, it will return NULL.
+ */
+GdkPixbuf *
+create_pixbuf (const gchar *filename)
+{
+  gchar     *pathname;
+  GdkPixbuf *pixbuf = NULL;
+  GError    *error = NULL;
+
+  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              filename);
+  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+    {
+      pixbuf = gdk_pixbuf_new_from_file (pathname, &error);
+      if (!pixbuf)
+        {
+          fprintf (stderr, "Fail to load pixbuf file %s: %s\n", 
+                   pathname, error->message);
+          g_error_free (error);
+        }
+    }
+  else
+    {
+      g_debug ("Can not find the file %s", pathname);
+    }
+  g_free (pathname);
+  return pixbuf;
+}
+
+/**
+ * @brief Create a filepath by the filename from the PKGDATADIR
+ * @param filename The filename of the pixbuf file
+ * @return TURE, FALSE
+ */
+
+gboolean file_create_data_path_for_the_file(const gchar* filename, gchar* path)
+{
+  gchar     *pathname;
+
+  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              filename);
+  
+  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+    {
+    strcpy(path,pathname);
+    g_free (pathname);
+    return TRUE;
+    
+    }
+  else
+    {
+      g_debug ("Can not find the file %s", pathname);
+      g_free (pathname);
+      return FALSE;
+    }
+
+
+}
+
+
+/**
+ * @brief load the person's image file by the filename from the PKGDATADIR
+ * @param rela_path The filename of the pixbuf file
+ * @param widget, the gtkImage to load the file.
+ * @return TURE, FALSE
+ */
+gboolean file_load_person_image_from_relative_path(GtkWidget *widget,char * rela_path)
+{
+
+  gchar     *pathname;
+  GtkImage *image=GTK_IMAGE(widget);	  
+
+  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              rela_path);
+
+
+  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+    {
+	    gtk_image_set_from_file(image,pathname);   	
+	    g_free (pathname);
+	    return TRUE;
+    }
+  else
+    {
+	      g_debug ("Can not find the file %s", pathname);
+	       gtk_image_set_from_stock(image,"gtk-yes",GTK_ICON_SIZE_LARGE_TOOLBAR);
+	      g_free (pathname);
+	      return FALSE;
+    }
+
+/*
+GtkImage *image=GTK_IMAGE(widget);	
+
+struct stat statdata;
+
+if(image==NULL)
+	{
+		DBG_ERROR("Can not find widget ");
+		return 0;
+		}
+ if(lstat(path,&statdata)==-1)
+ {
+	 gtk_image_set_from_stock(image,"icon_dialer_people",GTK_ICON_SIZE_LARGE_TOOLBAR);
+ }
+ else
+	gtk_image_set_from_file(image,path);
+ return 1;
+*/
+
+}
+
+

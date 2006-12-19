@@ -56,8 +56,6 @@ GtkTextTag*  tag_for_autofilled;///<the formatting tag for the autofilled digits
 struct _MokoDialerTextviewClass
 {
   GtkTextViewClass parent_class;
-  void (* moko_dialer_textview_input) (MokoDialerTextview *moko_dialer_textview,gchar parac);
-  void (* moko_dialer_textview_hold) (MokoDialerTextview *moko_dialer_textview,gchar parac);
 };
 
 

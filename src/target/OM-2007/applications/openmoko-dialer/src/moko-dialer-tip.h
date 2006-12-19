@@ -54,8 +54,7 @@ struct _MokoDialerTip
 struct _MokoDialerTipClass
 {
   GtkEventBoxClass parent_class;
-  void (* moko_dialer_tip_input) (MokoDialerTip *moko_dialer_tip,gchar parac);
-  void (* moko_dialer_tip_hold) (MokoDialerTip *moko_dialer_tip,gchar parac);
+
 };
 
 
@@ -69,6 +68,9 @@ gint moko_dialer_tip_get_index(MokoDialerTip* tip);
 gboolean moko_dialer_tip_set_label(GtkWidget* widget,const gchar * stringname);
 gboolean moko_dialer_tip_set_index(GtkWidget* widget,const gint index);
 
+gboolean  moko_dialer_tip_is_selected(GtkWidget* tip);
+
+gboolean moko_dialer_tip_set_selected(GtkWidget* tip,gboolean selected);
 G_END_DECLS
 
 #endif // 
