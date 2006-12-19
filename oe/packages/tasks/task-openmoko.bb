@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r16"
+PR = "r17"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -17,6 +17,7 @@ PACKAGES = "\
   task-openmoko-pim \
   \
   task-openmoko-demo \
+  task-openmoko-examples \
   task-openmoko-devel \
   task-openmoko-native-sdk \
 "
@@ -142,6 +143,16 @@ RDEPENDS_task-openmoko-demo = "\
   gnome-vfs-plugin-file \
   gnome-vfs-plugin-http \
 "
+
+#
+# task-openmoko-examples
+#
+DESCRIPTION_task-openmoko-examples = "OpenMoko: Example Applications"
+RDEPENDS_task-openmoko-examples = "\
+  openmoko-stylus-demo-simple \
+  openmoko-stylus-demo \
+  openmoko-finger-demo \
+  openmoko-chordmaster"
 
 #
 # task-openmoko-devel

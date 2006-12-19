@@ -85,6 +85,8 @@ PREFERRED_VERSION_glib-2.0 = "2.6.4"
 PREFERRED_VERSION_gtk+ = "2.6.10"
 PREFERRED_VERSION_gtk-engines = "2.6.5"
 
+PREFERRED_VERSION_fontconfig = "2.4.1"
+
 #
 # OHand
 #
