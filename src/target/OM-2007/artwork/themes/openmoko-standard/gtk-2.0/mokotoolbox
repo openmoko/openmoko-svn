@@ -85,11 +85,26 @@ style "mokotoolbox-search-mode-back-button" {
 widget "*.mokotoolbox-back-button" style "mokotoolbox-search-mode-back-button"
 
 style "mokotoolbox-search-entry" {
+    engine "pixmap" {
+        image {
+            function        = FLAT_BOX
+            file            = "transparency100.png"
+            recolorable     = TRUE
+        }
+    }
     base[NORMAL] = "#ffeddb"
 }
 widget "*.mokotoolbox-search-entry" style "mokotoolbox-search-entry"
 
 style "mokotoolbox-search-entry-focusout" {
+    engine "pixmap" {
+        image {
+            function        = FLAT_BOX
+            file            = "transparency100.png"
+            recolorable     = TRUE
+        }
+    }
+
     base[NORMAL] = "#fdfdfd"
 }
 widget "*.mokotoolbox-search-entry-focusout"  style "mokotoolbox-search-entry-focusout"
