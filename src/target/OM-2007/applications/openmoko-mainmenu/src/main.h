@@ -23,6 +23,7 @@
 #include <libmokoui/moko-finger-tool-box.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
+#include <libmokoui/moko-pixmap-button.h>
 
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkbutton.h>
@@ -48,7 +49,8 @@ struct _MokoMainmenuApp {
     MokoMainMenu *mm;
     MokoMenuList *list;
 
-    GtkButton *history[3];
+    //GtkButton *history[3];
+    MokoPixmapButton *history[4]
 
 };
 

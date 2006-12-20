@@ -45,7 +45,7 @@ main( int argc, char** argv ) {
 
     for (i=0; i<4; i++)
     	{
-    	    mma->history[i] =  moko_finger_tool_box_add_button( mma->toolbox );
+    	    mma->history[i] =  moko_finger_tool_box_add_button (mma->toolbox);
            gtk_widget_show (mma->history[i]);
     	}
    
@@ -61,13 +61,11 @@ main( int argc, char** argv ) {
     gtk_widget_show_all( GTK_WIDGET(mma->window) );
 
     gtk_widget_show (GTK_WIDGET (mma->wheel));
-    //gtk_widget_reparent (GTK_WIDGET (mma->wheel), GTK_WIDGET (mma->window));
     gtk_widget_show (GTK_WIDGET (mma->toolbox));
-    //gtk_widget_reparent (GTK_WIDGET (mma->toolbox), GTK_WIDGET (mma->window));
 
-    //g_debug( "openmoko-finger-demo entering main loop" );
+    moko_sample_hisory_app_fill (mma->history[0]);
+
     gtk_main();
-    //g_debug( "openmoko-finger-demo left main loop" );
 
     if (mma)
     	  g_free (mma);

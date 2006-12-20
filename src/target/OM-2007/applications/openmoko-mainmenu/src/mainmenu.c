@@ -140,22 +140,23 @@ moko_main_menu_init(MokoMainMenu *mm) {
     //mm->icon_view = gtk_icon_view_new ();
     mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
     gtk_widget_show (mm->icon_view);
-    gtk_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
-    //gtk_icon_view_set_margin (mm->icon_view, ICON_MARGIN);
-    //gtk_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
-    //gtk_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
-    //gtk_icon_view_set_selection_mode (mm->icon_view, GTK_SELECTION_SINGLE);
-    gtk_widget_show (mm->icon_view);
+    //moko_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
+    //moko_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
+    moko_icon_view_set_margin (mm->icon_view, ITEM_MARGIN);
+    moko_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
+    //moko_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
+    //moko_icon_view_set_selection_mode (mm->icon_view, GTK_SELECTION_SINGLE);
 
     mm->list_store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_POINTER);
 
-    gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW (mm->icon_view), PIXBUF_COLUMN);
-    gtk_icon_view_set_text_column (GTK_ICON_VIEW (mm->icon_view), TEXT_COLUMN);
-    gtk_icon_view_set_model (GTK_ICON_VIEW (mm->icon_view), GTK_TREE_MODEL (mm->list_store));
+    moko_icon_view_set_pixbuf_column (GTK_ICON_VIEW (mm->icon_view), PIXBUF_COLUMN);
+    moko_icon_view_set_text_column (GTK_ICON_VIEW (mm->icon_view), TEXT_COLUMN);
+    //gtk_icon_view_set_model (GTK_ICON_VIEW (mm->icon_view), GTK_TREE_MODEL (mm->list_store));
+    moko_icon_view_set_model (GTK_ICON_VIEW (mm->icon_view), GTK_TREE_MODEL (mm->list_store));
 
     mm->scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (mm->scrolled),
-				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+				  GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
     gtk_widget_show (mm->scrolled);
    // gtk_scrolled_window_add_with_viewport (GTK_CONTAINER (mm->scrolled),
     //						mm->icon_view);
@@ -167,7 +168,7 @@ moko_main_menu_init(MokoMainMenu *mm) {
     mm->hbox = gtk_hbox_new (FALSE, FALSE);
     gtk_widget_show (mm->hbox);
     
-    gtk_box_pack_start (mm, bg_main, FALSE, FALSE, 0);
+    //gtk_box_pack_start (mm, bg_main, FALSE, FALSE, 0);
     gtk_container_add (bg_main, mm->hbox); 
     gtk_box_pack_start (mm->hbox, mm->section_name, TRUE, TRUE, 10);
     gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 10);

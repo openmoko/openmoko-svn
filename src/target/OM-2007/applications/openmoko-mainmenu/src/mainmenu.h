@@ -38,12 +38,16 @@ enum {
 G_BEGIN_DECLS
 /*widgets property(s)*/
 #define COLUMN_NUM 		3
-#define ICON_SIZE_W 		100
-#define ICON_SIZE_H 			100
-#define ICON_MARGIN 		30
-#define ROW_SPACING 		30
-#define COLUMN_SPACING 	30
+#define ITEM_WIDTH 			140
+#define ITEM_HEIGHT 		120
+#define ITEM_MARGIN 		0
+#define ROW_SPACING 		20
+#define COLUMN_SPACING 	0
 #define ITME_TOTAL_WIDTH 	7
+
+#define PIXBUF_WIDTH		100
+#define PIXBUF_HEIGHT		100
+
 #define SECTION_ALG_X 		0.6
 #define SECTION_ALG_Y 		0.5
 #define SECTION_X_PADDING 	0

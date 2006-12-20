@@ -19,11 +19,7 @@
 
 #include "support.h"
 
-#include <string.h>
-#include <gtk/gtk.h>
-#include <glib.h>
-#include <gdk/gdk.h>
-#include <glib-object.h>
+#include <libmokoui/moko-pixmap-button.h>
 
  
  /**
@@ -42,21 +38,17 @@ moko_fill_model(GtkListStore *store, const char* icon_path, const char* icon_nam
     GdkPixbuf *pixbuf;
 
     gtk_list_store_append (store, &iter);
-    pixbuf = gdk_pixbuf_new_from_file_at_size (icon_path, ICON_SIZE_W, ICON_SIZE_H, NULL);// ADD Gerro handle later
+    pixbuf = gdk_pixbuf_new_from_file_at_size (icon_path, PIXBUF_WIDTH, PIXBUF_HEIGHT, NULL);// ADD Gerro handle later
 
     gtk_list_store_set (store, &iter, PIXBUF_COLUMN, pixbuf, TEXT_COLUMN, icon_name, -1);
     g_object_unref (pixbuf);
 
     return TRUE;
 }
-
+/*test code, delete later*/
 void 
 moko_sample_model_fill(GtkListStore *store) {
-    moko_fill_model(store,"/usr/share/pixmaps/abiword.png","abiword");
-    moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
-    moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
-    moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
-    moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
+    moko_fill_model(store,"/usr/share/pixmaps/abiword.png","1234567890123456789");
     moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
     moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
     moko_fill_model(store,"/usr/share/pixmaps/battstat.png","battstat");
@@ -65,6 +57,17 @@ moko_sample_model_fill(GtkListStore *store) {
     moko_fill_model(store,"/usr/share/pixmaps/gnome-eyes.png","gnome-eyes");
     moko_fill_model(store,"/usr/share/pixmaps/gnome-geg12.png","gnome-geg12");
     moko_fill_model(store,"/usr/share/pixmaps/gdm.xpm","gdm");
+}
+
+/*test code, delete later*/
+void
+moko_sample_hisory_app_fill(MokoPixmapButton *btn)
+{
+   GtkWidget *image;
+
+   image = gtk_image_new_from_file ("/usr/share/pixmaps/gdm.png");
+
+   moko_pixmap_button_set_finger_toolbox_btn_center_image(btn, image);
 }
 
 void
