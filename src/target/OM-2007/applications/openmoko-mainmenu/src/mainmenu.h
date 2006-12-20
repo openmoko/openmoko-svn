@@ -39,14 +39,13 @@ G_BEGIN_DECLS
 /*widgets property(s)*/
 #define COLUMN_NUM 		3
 #define ITEM_WIDTH 			140
-#define ITEM_HEIGHT 		120
 #define ITEM_MARGIN 		0
-#define ROW_SPACING 		20
+#define ROW_SPACING 		40
 #define COLUMN_SPACING 	0
 #define ITME_TOTAL_WIDTH 	7
 
-#define PIXBUF_WIDTH		100
-#define PIXBUF_HEIGHT		100
+#define PIXBUF_WIDTH		120 //? useless
+#define PIXBUF_HEIGHT		120//? useless
 
 #define SECTION_ALG_X 		0.6
 #define SECTION_ALG_Y 		0.5
@@ -74,8 +73,8 @@ struct _MokoMainMenu {
     //GtkWidget widget;
 
     //GtkIconView *icon_view;
-    //GtkWidget *icon_view;
-    MokoIconView *icon_view;
+    GtkWidget *icon_view;
+    //MokoIconView *icon_view;
     GtkListStore *list_store;
     GtkWidget *scrolled;
     GtkHBox *hbox;

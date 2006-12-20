@@ -137,15 +137,23 @@ moko_main_menu_init(MokoMainMenu *mm) {
     //gtk_widget_set_name (bg_item, "gtkeventbox-black");
     //gtk_container_add (bg_item, mm->item_total);
 
-    //mm->icon_view = gtk_icon_view_new ();
     mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
-    gtk_widget_show (mm->icon_view);
-    //moko_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
-    //moko_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
+    //gtk_widget_set_direction (GTK_WIDGET (mm->icon_view), GTK_TEXT_DIR_RTL); 
+    moko_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
+    moko_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
     moko_icon_view_set_margin (mm->icon_view, ITEM_MARGIN);
     moko_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
-    //moko_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
+    moko_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
+
+    //mm->icon_view = gtk_icon_view_new ();
+    //gtk_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
+    //gtk_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
+    //gtk_icon_view_set_margin (mm->icon_view, ITEM_MARGIN);
+    //gtk_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
+    //gtk_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
+
     //moko_icon_view_set_selection_mode (mm->icon_view, GTK_SELECTION_SINGLE);
+    gtk_widget_show (mm->icon_view);
 
     mm->list_store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_POINTER);
 
@@ -168,7 +176,7 @@ moko_main_menu_init(MokoMainMenu *mm) {
     mm->hbox = gtk_hbox_new (FALSE, FALSE);
     gtk_widget_show (mm->hbox);
     
-    //gtk_box_pack_start (mm, bg_main, FALSE, FALSE, 0);
+    gtk_box_pack_start (mm, bg_main, FALSE, FALSE, 0);
     gtk_container_add (bg_main, mm->hbox); 
     gtk_box_pack_start (mm->hbox, mm->section_name, TRUE, TRUE, 10);
     gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 10);
