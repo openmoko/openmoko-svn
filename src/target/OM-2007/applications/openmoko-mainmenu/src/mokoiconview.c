@@ -2682,10 +2682,6 @@ moko_icon_view_update_item_text (MokoIconView     *icon_view,
 			  -1);
       if (strlen(text) > icon_view->priv->max_text_len)
       	{
-      	   char *tmp = text[icon_view->priv->max_text_len-3];
-          g_debug ("%s", tmp);
-          sleep (3);
-          memset (tmp, ".", 3);
       	   pango_layout_set_text (icon_view->priv->layout, text, icon_view->priv->max_text_len);
       	}
       else
