@@ -62,7 +62,7 @@ struct _MokoDialerAutolist
 
  DIALER_READY_CONTACT readycontacts[MOKO_DIALER_MAX_TIPS]; ///<the prepared contact list which will display to the user when he/she inputs part of the digits he/she wants to dial out
 
- gint g_selected;///<indicates the offset of the selected ready contacts list
+ gboolean selected;///<indicates wether some tip is currently selected.
 
  gint g_alternatecount;///<indicates how many alternative is ready in the ready list array.
 
@@ -88,8 +88,11 @@ GtkWidget*      moko_dialer_autolist_new();
 
 gboolean moko_dialer_autolist_set_select(MokoDialerAutolist *moko_dialer_autolist,gint selected);
 
+gboolean moko_dialer_autolist_has_selected(MokoDialerAutolist *moko_dialer_autolist);
 
+gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_autolist,gchar * string,gboolean selectdefault);
 
+gint moko_dialer_autolist_hide_all_tips(MokoDialerAutolist *moko_dialer_autolist);
 G_END_DECLS
 
 #endif // 

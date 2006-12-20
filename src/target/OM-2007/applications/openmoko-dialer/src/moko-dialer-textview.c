@@ -14,6 +14,7 @@
  *  GNU Lesser Public License for more details.
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
+ 
  */
 
  #include "moko-dialer-textview.h"
@@ -49,8 +50,8 @@ moko_dialer_textview_class_init (MokoDialerTextviewClass *class)
 static void moko_dialer_textview_init (MokoDialerTextview *moko_dialer_textview)
 {
 
-GtkTextView *textview=0;
-GtkTextBuffer *buffer;
+			GtkTextView *textview=0;
+			GtkTextBuffer *buffer;
 
 			textview=&moko_dialer_textview->textview;
 			buffer = gtk_text_view_get_buffer (textview);	
@@ -88,7 +89,7 @@ GtkTextBuffer *buffer;
 		moko_dialer_textview->tag_for_inputed= gtk_text_buffer_create_tag (buffer, "tag_input","foreground", "#FF8000", NULL); 
 		moko_dialer_textview->tag_for_cursor=  gtk_text_buffer_create_tag (buffer, "tag_cursor","weight","PANGO_WEIGHT_BOLD",	NULL); 
 		moko_dialer_textview->tag_for_autofilled=  gtk_text_buffer_create_tag (buffer, "tag_filled","foreground", "#FFFF00", NULL); 
-
+		moko_dialer_textview->sensed=FALSE;
     
 }
 
@@ -261,7 +262,7 @@ GtkTextIter end;
 GtkTextIter insertiter;
 GtkTextMark *insertmark;
 	
-DBG_ENTER();
+//DBG_ENTER();
 
 /* Obtaining the buffer associated with the widget. */
 buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
@@ -278,17 +279,54 @@ if(gtk_text_iter_get_offset(&insertiter)==gtk_text_iter_get_offset(&start))
 	strcpy(input,"");
 	return 0;
 }
- DBG_TRACE();
+// DBG_TRACE();
 if(ALL)
 	/* Get the entire buffer text. */
 	codestring = gtk_text_buffer_get_text (buffer, &start, &end,FALSE);
 else
 	codestring = gtk_text_buffer_get_text (buffer, &start, &insertiter, FALSE);
-DBG_MESSAGE("%s",codestring);
+//DBG_MESSAGE("%s",codestring);
 strcpy(input,codestring);
- DBG_TRACE();
+// DBG_TRACE();
 g_free(codestring);
 return 1;
+}
+
+///delete the selection or one character.
+int  moko_dialer_textview_delete(MokoDialerTextview *moko_dialer_textview)
+{
+GtkTextBuffer *buffer;
+GtkTextIter selectioniter,insertiter;
+GtkTextMark *selectmark,*insertmark;
+gint len;
+
+buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
+
+selectmark=gtk_text_buffer_get_selection_bound(buffer);
+insertmark=	gtk_text_buffer_get_insert(buffer);
+//get current cursor iterator
+gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
+gtk_text_buffer_get_iter_at_mark(buffer,&selectioniter,selectmark);
+	//to see whether there is a selection range.
+	if(gtk_text_iter_get_offset(&insertiter)!=gtk_text_iter_get_offset(&selectioniter))
+	{
+		//yes, first delete the range.
+	gtk_text_buffer_delete(buffer,&selectioniter,&insertiter);
+	}
+	else
+	{
+		//no selection, then just perform backspace.
+	gtk_text_buffer_backspace(buffer,&insertiter,TRUE,TRUE);
+	}
+
+//now we get the inputed string length.	
+	insertmark=	gtk_text_buffer_get_insert(buffer);
+	//get current cursor iterator
+	gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
+	len=gtk_text_iter_get_offset(&insertiter);
+
+	return 1;
+
 }
 
 //autofill the string to the inputed digits string on the textview
@@ -306,8 +344,8 @@ gint offset;
 gint offsetend;	
 gint offsetstart;	
 
-DBG_ENTER();
-DBG_MESSAGE("Sensative string:%s",string);
+//DBG_ENTER();
+//DBG_MESSAGE("Sensative string:%s",string);
 
 /* Obtaining the buffer associated with the widget. */
 buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
@@ -332,7 +370,7 @@ if(offsetend==offsetstart)
 	gtk_text_buffer_get_start_iter (buffer, &start);
 	gtk_text_buffer_place_cursor(buffer,&start);
 	moko_dialer_textview_set_color(moko_dialer_textview);
-	
+	moko_dialer_textview->sensed=TRUE;
 	//gtk_widget_grab_focus(text_view);
 	return 1;
 
@@ -361,6 +399,7 @@ if(string!=0)
 	insertmark=	gtk_text_buffer_get_insert(buffer);
 	gtk_text_buffer_get_iter_at_mark(buffer,&insertiter,insertmark);
 	gtk_text_iter_set_offset(&insertiter,offset);
+	//set the private data of sensed.
 	}
 }
 
@@ -372,7 +411,7 @@ moko_dialer_textview_set_color(moko_dialer_textview);
 //gtk_widget_grab_focus(text_view);
 //g_free (codestring );
 
-DBG_LEAVE();
+//DBG_LEAVE();
 return 1;
 }
 
@@ -391,6 +430,9 @@ gtk_text_buffer_set_text (buffer,string,-1);
 gtk_text_buffer_get_end_iter (buffer, &end);
 //set the cursor to the end of the buffer
 gtk_text_buffer_place_cursor(buffer,&end);
+
+moko_dialer_textview_set_color(moko_dialer_textview);
+//
 	
 return 1;
 

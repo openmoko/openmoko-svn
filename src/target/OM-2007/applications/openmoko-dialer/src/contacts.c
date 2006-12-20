@@ -375,7 +375,7 @@ DIALER_CONTACT_ENTRY* entry;
 int contact_string_has_sensentive (char * content, char *string)
 {
 	int i;
-	g_printf("hassensentive:%s,%s\n",content,string);
+//	g_printf("hassensentive:%s,%s\n",content,string);
 	if(content==0) 
 	return 0;
 	

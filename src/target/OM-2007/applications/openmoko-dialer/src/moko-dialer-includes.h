@@ -98,30 +98,5 @@ enum {
 	N_COLUMN
 };
 
-typedef struct _dialer_data
-{
- //the global data area begins here
-
-
-MokoDialerTextview *moko_dialer_text_view;
-
-MokoDialerAutolist *moko_dialer_autolist;
-
-DIALER_CONTACTS_LIST_HEAD       g_contactlist; ///< the whole list of the contacts from the contact book.
-
-HISTORY_LIST_HEAD g_historylist; ///< the whole list of the talk history
-
-GLOBAL_STATE g_state; ///< the global states holder. we count on it a lot.
-
-gint g_ptimeout; ///< the timer hanle
-
-TIMER_DATA g_timer_data;///< the data used by the timers
-
-// GtkListStore  *g_list_store_filter;///<the list store used by the gtktreeview, for displaying the history list dynamically.
-
-// HISTORY_TYPE g_historyfiltertype;///<indicates the current history filter type, the gtktreeview will be filtered on the value.
-
-// GdkPixbuf * g_iconReceived,*g_iconMissed,*g_iconDialed;///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
-}MOKO_DIALER_APP_DATA;
 
 #endif

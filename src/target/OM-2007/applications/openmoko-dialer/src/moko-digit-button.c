@@ -70,7 +70,8 @@ GtkWidget*      moko_digit_button_new_with_labels(const gchar * string_digit, co
   gtk_widget_show (GTK_WIDGET(digitbutton));
   gtk_widget_set_size_request (digitbutton, 64, 64);
 
-  GtkWidget * hbox = gtk_hbox_new (TRUE, 0);
+//  GtkWidget * hbox = gtk_hbox_new (TRUE, 0);
+  GtkWidget * hbox = gtk_hbox_new (FALSE, 0);
   gtk_widget_show (hbox);
   gtk_container_add (GTK_CONTAINER (digitbutton), hbox);
 

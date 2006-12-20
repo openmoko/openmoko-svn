@@ -96,7 +96,8 @@ moko_dialer_autolist->  tipscreated=FALSE;
 moko_dialer_autolist->head=0;
 moko_dialer_autolist->g_alternatecount=0;
 moko_dialer_autolist->imagePerson=0;
-    
+gtk_widget_set_size_request (GTK_WIDGET(moko_dialer_autolist), 480, 40); 
+
 }
 /**
  * @brief please call this function first before the autolist start to work.
@@ -114,6 +115,26 @@ moko_dialer_autolist->head=head;
 
 return TRUE;
 }
+
+gint moko_dialer_autolist_hide_all_tips(MokoDialerAutolist *moko_dialer_autolist)
+{
+
+if(moko_dialer_autolist->tipscreated)
+{
+		moko_dialer_autolist->selected=FALSE;
+			//no alternative, hide all 3 labels.
+		for(gint i=0;i<MOKO_DIALER_MAX_TIPS;i++)
+		{
+		moko_dialer_tip_set_selected(moko_dialer_autolist->tips[i],FALSE);
+		gtk_widget_hide(moko_dialer_autolist->tips[i]);
+		}
+		//hide the imagePerson
+		gtk_widget_hide(moko_dialer_autolist->imagePerson);
+}
+		return 1;
+
+}
+
 /**
  * @brief initiate the font for widget of textviewCodes 
  *
@@ -121,14 +142,16 @@ return TRUE;
  *
  * @param text_view GtkWidget*, any widget which can help to lookup for labelcontactN
  * @param count gint, the count of the alternative, max set to MAXDISPNAMENUM.
+ * @param selectdefault if selectdefault, then we will automatically emit the message to fill the sensed string,
+ *  else, we only refresh our tip list.
  * @retval 
  */
 
-int moko_dialer_autolist_fill_alternative(MokoDialerAutolist *moko_dialer_autolist,gint count)
+int moko_dialer_autolist_fill_alternative(MokoDialerAutolist *moko_dialer_autolist,gint count,gboolean selectdefault)
 {
 gint i;
 //DBG_ENTER();
-
+moko_dialer_autolist->selected=FALSE;
 
 moko_dialer_autolist->g_alternatecount=count;
 
@@ -151,20 +174,15 @@ if(count>0)
 	moko_dialer_tip_set_selected(moko_dialer_autolist->tips[i],FALSE);
 	}
 
-	//we set the first one as defaultly selected
-	moko_dialer_autolist_set_select(moko_dialer_autolist, 0);
+	if(selectdefault)
+	{
+		//we set the first one as defaultly selected
+		moko_dialer_autolist_set_select(moko_dialer_autolist, 0);
+	}
 }	
 else
 	{
-	
-			//no alternative, hide all 3 labels.
-		for(i=0;i<MOKO_DIALER_MAX_TIPS;i++)
-		{
-		moko_dialer_tip_set_selected(moko_dialer_autolist->tips[i],FALSE);
-		gtk_widget_hide(moko_dialer_autolist->tips[i]);
-		}
-		//hide the imagePerson
-		gtk_widget_hide(moko_dialer_autolist->imagePerson);
+	moko_dialer_autolist_hide_all_tips(moko_dialer_autolist);	
 		//notify the client that no match has been foudn
 //		autolist_nomatch
    g_signal_emit (moko_dialer_autolist,   moko_dialer_autolist_signals[NOMATCH_SIGNAL],0,0);
@@ -172,8 +190,9 @@ else
 	return 1;
 }
 
-
-gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_autolist,gchar * string)
+//if selectdefault, then we will automatically emit the message to fill the sensed string
+//else, we only refresh our tip list.
+gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_autolist,gchar * string,gboolean selectdefault)
 {
 //first, we fill the ready list
 
@@ -190,7 +209,7 @@ gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_au
 	  len=strlen(string);
   else
 	  len=0;
-  DBG_TRACE();
+//  DBG_TRACE();
   
 //insert the tips here to avoid the _show_all show it from the start.
   GtkWidget * imagePerson;
@@ -207,9 +226,13 @@ if(!moko_dialer_autolist->tipscreated)
   	{
   	imagePerson=gtk_image_new_from_stock("gtk-yes",GTK_ICON_SIZE_DND);
   	}
-  gtk_widget_hide (imagePerson);
-  gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, TRUE, 0);
- moko_dialer_autolist->imagePerson=imagePerson;
+ gtk_widget_hide (imagePerson);
+ gtk_widget_set_size_request (imagePerson, 40, 40);	
+//  gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, TRUE, 0);
+//gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, FALSE, 0);
+ gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, FALSE, FALSE, 0);
+  
+  moko_dialer_autolist->imagePerson=imagePerson;
 
   for(int i=0;i<MOKO_DIALER_MAX_TIPS;i++)
   	{
@@ -222,10 +245,13 @@ if(!moko_dialer_autolist->tipscreated)
 	moko_dialer_tip_set_selected(tip,FALSE);
 
 	 gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, TRUE, TRUE, 0);  	
-		 
+//	 gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, FALSE,FALSE, 0);  		
+//	 gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, FALSE,TRUE, 0);
+//			 gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, TRUE, FALSE,0);
+	
 	  g_signal_connect ((gpointer) tip, "button_press_event",G_CALLBACK (on_tip_press_event),moko_dialer_autolist);
 
-	gtk_widget_set_size_request (tip, 20, 20);	
+//	gtk_widget_set_size_request (tip, 20, 20);	
 
 	gtk_widget_hide(tip);
 
@@ -264,9 +290,9 @@ if(!moko_dialer_autolist->tipscreated)
   }
 
 //DBG_MESSAGE("inserted=%d",inserted);
-moko_dialer_autolist_fill_alternative(moko_dialer_autolist,inserted);
+moko_dialer_autolist_fill_alternative(moko_dialer_autolist,inserted,selectdefault);
 
-DBG_LEAVE();
+//DBG_LEAVE();
   return inserted;
 }
 
@@ -295,10 +321,32 @@ return FALSE;
 
 
 }
+
+gboolean moko_dialer_autolist_has_selected(MokoDialerAutolist *moko_dialer_autolist)
+{
+	return moko_dialer_autolist->selected;
+}
+
+// selected ==-1 means there are no selected tips
 gboolean moko_dialer_autolist_set_select(MokoDialerAutolist *moko_dialer_autolist,gint selected)
 {
 
-if(selected!=-1&&selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternatecount)
+		if(selected==-1)
+		{
+
+			//set the selected status to be false
+			for(gint i=0;i<moko_dialer_autolist->g_alternatecount;i++)
+			{
+			moko_dialer_tip_set_selected( moko_dialer_autolist->tips[i], FALSE);
+			}
+			//set
+			gtk_widget_hide(moko_dialer_autolist->imagePerson);	
+			moko_dialer_autolist->selected=FALSE;
+			return TRUE;
+		}
+
+
+if(selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternatecount)
 	{
 	//first of all, determin if this tip is already selected previously.
 	if(moko_dialer_tip_is_selected(moko_dialer_autolist->tips[selected]))
@@ -312,8 +360,9 @@ if(selected!=-1&&selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternat
 			gtk_widget_hide( moko_dialer_autolist->tips[i]);
 			}
 		}
+	moko_dialer_autolist->selected=FALSE;
 	//emit confirm message;
-		DBG_MESSAGE("we confirm %s is right.",moko_dialer_autolist->readycontacts[selected].p_contact->name);			
+//		DBG_MESSAGE("we confirm %s is right.",moko_dialer_autolist->readycontacts[selected].p_contact->name);			
 	g_signal_emit (moko_dialer_autolist,   moko_dialer_autolist_signals[CONFIRMED_SIGNAL],0,&(moko_dialer_autolist->readycontacts[selected]));
 
 	}
@@ -333,8 +382,9 @@ if(selected!=-1&&selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternat
 			else
 			moko_dialer_tip_set_selected( moko_dialer_autolist->tips[i], TRUE);
 		}
+	moko_dialer_autolist->selected=TRUE;
 		//emit selected message
-		DBG_MESSAGE(" %s is selectd.",moko_dialer_autolist->readycontacts[selected].p_contact->name);
+//		DBG_MESSAGE(" %s is selectd.",moko_dialer_autolist->readycontacts[selected].p_contact->name);
 		g_signal_emit (moko_dialer_autolist,   moko_dialer_autolist_signals[SELECTED_SIGNAL],0,&(moko_dialer_autolist->readycontacts[selected]));	
 	}
 		return TRUE;

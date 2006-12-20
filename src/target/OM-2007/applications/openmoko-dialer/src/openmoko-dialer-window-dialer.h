@@ -1,6 +1,6 @@
-/*  moko-dialer-declares.h
+/*  openmoko-dialer-window-dialer.h
  *
- *  Authored by Tony Guan<tonyguan@fic-sh.com.cn>
+ *  Authored By Tony Guan<tonyguan@fic-sh.com.cn>
  *
  *  Copyright (C) 2006 FIC Shanghai Lab
  *
@@ -15,16 +15,6 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-#ifndef _MOKO_DIALER_DECLARES_H_
-#define _MOKO_DIALER_DECLARES_H_
-
-#define MOKO_DIALER_MAX_NUMBER_LEN	(64)
-#define MOKO_DIALER_MAX_DISP_NAME_LEN (20)
-#define MOKO_DIALER_MAX_PATH_LEN (128)	
-//MAXDISPNAMENUM MUST >=1 & <=9!
-//only when user inputs at least MINSENSATIVELEN, should we start to search.
-#define MOKO_DIALER_MIN_SENSATIVE_LEN (3)
-#define MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH ("./default.png")
-#define MOKO_DIALER_MAX_TIPS (3)
-
-#endif
+ #include "moko-dialer-includes.h"
+ 
+gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data);
