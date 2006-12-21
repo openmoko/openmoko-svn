@@ -44,8 +44,8 @@ G_BEGIN_DECLS
 #define COLUMN_SPACING 	0
 #define ITME_TOTAL_WIDTH 	7
 
-#define PIXBUF_WIDTH		120 //? useless
-#define PIXBUF_HEIGHT		120//? useless
+#define PIXBUF_WIDTH		120 
+#define PIXBUF_HEIGHT		120
 
 #define SECTION_ALG_X 		0.6
 #define SECTION_ALG_Y 		0.5

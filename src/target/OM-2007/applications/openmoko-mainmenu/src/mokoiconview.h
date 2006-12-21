@@ -145,6 +145,30 @@ moko_icon_view_set_margin (MokoIconView *icon_view, gint margin);
 gint
 moko_icon_view_get_margin (MokoIconView *icon_view);
 
+void
+moko_icon_view_set_decoration_bg (MokoIconView *icon_view, const gchar *bg_decoration);
+
+void
+moko_icon_view_set_text_bg (MokoIconView *icon_view, const gchar *bg_layout);
+
+void 
+moko_icon_view_set_decoration_width (MokoIconView *icon_view, gint decr_width);
+
+gint 
+moko_icon_view_get_decoration_width (MokoIconView *icon_view);
+
+void
+moko_icon_view_set_decorated (MokoIconView *icon_view, gboolean decorated);
+
+gboolean
+moko_icon_view_get_decorated (MokoIconView *icon_view);
+
+void
+moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint *max_text_length);
+
+gint
+moko_icon_view_get_max_text_length (MokoIconView *icon_view);
+
 GtkTreePath *
 moko_icon_view_get_path_at_pos (MokoIconView *icon_view, gint x, gint y);
 

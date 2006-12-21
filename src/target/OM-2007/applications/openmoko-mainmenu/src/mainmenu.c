@@ -144,6 +144,10 @@ moko_main_menu_init(MokoMainMenu *mm) {
     moko_icon_view_set_margin (mm->icon_view, ITEM_MARGIN);
     moko_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
     moko_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
+    moko_icon_view_set_decoration_width (mm->icon_view, 30);
+    moko_icon_view_set_decoration_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_icon.png");
+    moko_icon_view_set_text_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_text.png");
+    moko_icon_view_set_decorated (mm->icon_view, TRUE);
 
     //mm->icon_view = gtk_icon_view_new ();
     //gtk_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
@@ -164,7 +168,7 @@ moko_main_menu_init(MokoMainMenu *mm) {
 
     mm->scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (mm->scrolled),
-				  GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
     gtk_widget_show (mm->scrolled);
    // gtk_scrolled_window_add_with_viewport (GTK_CONTAINER (mm->scrolled),
     //						mm->icon_view);

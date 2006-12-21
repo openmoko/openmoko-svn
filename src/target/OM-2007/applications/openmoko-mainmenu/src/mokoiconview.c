@@ -3,14 +3,11 @@
 
 #define DEBUG(obj) 		g_debug ("***********************");\
 						g_debug ("%s",obj);
-						
-						
 
-#define MOKO_MAX(arg1,arg2)		arg1>arg2?arg1:arg2
-
-#define MOKO_MIN(arg1,arg2)		arg1<arg2?arg1:arg2
-
-#define P_(obj)		(obj)
+#define MOKO_MAX(arg1, arg2)	MAX(arg1, arg2)
+#define MOKO_MIN(arg1, arg2)		MIN(arg1, arg2)
+#define MOKO_ABS(arg1, arg2)		ABS(arg1, arg2)
+#define P_(obj)					(obj)
 
 #define MOKO_ICON_VIEW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_ICON_VIEW, MokoIconViewPrivate))
 
@@ -33,14 +30,11 @@ typedef struct
   /* Bounding boxes */
   gint x, y;
   gint width, height;
-  gint colspan;
 
   gint pixbuf_x, pixbuf_y;
-  gint pixbuf_offset_x, pixbuf_offset_y;
   gint pixbuf_height, pixbuf_width;
 
   gint layout_x, layout_y;
-  gint layout_offset_x, layout_offset_y;
   gint layout_width, layout_height;
 
   guint selected : 1;
@@ -79,16 +73,11 @@ struct _MokoIconViewPrivate
   MokoIconViewItem *anchor_item;
   MokoIconViewItem *cursor_item;
 
-  GdkPixbuf *decoration; //Item decorated image.
-
-  gint pixbuf_offset_x, pixbuf_offset_y;
-  gint pixbuf_height, pixbuf_width;
-
-  gint layout_offset_x, layout_offset_y;
-  gint layout_width, layout_height;
-
+  GdkPixbuf *bg_decoration; //Item decorated image.
+  GdkPixbuf *bg_layout;//text layout background image.
   gint max_text_len;
-
+  gint decr_width;
+  gboolean decorated;
 
   guint ctrl_pressed : 1;
   guint shift_pressed : 1;
@@ -144,7 +133,12 @@ enum
   PROP_SPACING,
   PROP_ROW_SPACING,
   PROP_COLUMN_SPACING,
-  PROP_MARGIN
+  PROP_MARGIN,
+  PROP_BG_DECORATION,
+  PROP_BG_LAYOUT,
+  PROP_DECORATION_WIDTH,
+  PROP_DECORATED,
+  PROP_MAX_TEXT_LENGTH
 };
 
 /* GObject signals */
@@ -489,10 +483,10 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   widget_class->size_request = moko_icon_view_size_request;
   widget_class->size_allocate = moko_icon_view_size_allocate;
   widget_class->expose_event = moko_icon_view_expose;
-  widget_class->motion_notify_event = moko_icon_view_motion;
+  //widget_class->motion_notify_event = moko_icon_view_motion;
   widget_class->button_press_event = moko_icon_view_button_press;
   widget_class->button_release_event = moko_icon_view_button_release;
-  widget_class->get_accessible = moko_icon_view_get_accessible;
+  //widget_class->get_accessible = moko_icon_view_get_accessible;
 
 
   klass->set_scroll_adjustments = moko_icon_view_set_adjustments;
@@ -505,6 +499,90 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 
 
   /* Properties */
+/*New properties for MokoIconView*/
+   /**
+   * MokoIconView:::
+   *
+   * The decoration-width property specifies the decorated width to use for each item. 
+   * If it is set to -1, the icon view will automatically determine a 
+   * suitable item size.
+   *
+   * Since: 2.6
+   */
+    g_object_class_install_property (gobject_class,
+				   PROP_BG_DECORATION,
+				   g_param_spec_object ("bg_decoraton",
+                                                        P_("Decoration Background"),
+                                                        P_("Decoration background used to decorated selected icon(s)."),
+                                                        GDK_TYPE_PIXBUF,
+                                                        G_PARAM_READWRITE)); 
+ /**
+   * MokoIconView::decoration-width:
+   *
+   * The decoration-width property specifies the decorated width to use for each item. 
+   * If it is set to -1, the icon view will automatically determine a 
+   * suitable item size.
+   *
+   * Since: 2.6
+   */
+    g_object_class_install_property (gobject_class,
+				   PROP_BG_LAYOUT,
+				   g_param_spec_object ("bg_layout",
+                                                        P_("text Layout Background"),
+                                                        P_("Decoration background used to decorated selected text."),
+                                                        GDK_TYPE_PIXBUF,
+                                                        G_PARAM_READWRITE)); 
+
+   /**
+   * MokoIconView::decoration-width:
+   *
+   * The decoration-width property specifies the decorated width to use for each item. 
+   * If it is set to -1, the icon view will automatically determine a 
+   * suitable item size.
+   *
+   * Since: 2.6
+   */
+    g_object_class_install_property (gobject_class,
+				   PROP_DECORATION_WIDTH,
+				   g_param_spec_int ("decr_width",
+						     P_("Width for Decoration"),
+						     P_("The width used for scale icon and draw decoration"),
+						     -1, G_MAXINT, -1,
+						     G_PARAM_READWRITE)); 
+     /**
+   * MokoIconView::decoration-width:
+   *
+   * The decoration-width property specifies the decorated width to use for each item. 
+   * If it is set to -1, the icon view will automatically determine a 
+   * suitable item size.
+   *
+   * Since: 2.6
+   */
+    g_object_class_install_property (gobject_class,
+				   PROP_DECORATED,
+				  g_param_spec_boolean ("decorated",
+                                                         P_("Decorated"),
+                                                         P_("Whether decorated the icon and text with custom image when selected"),
+                                                         FALSE,
+                                                         G_PARAM_READWRITE));
+     /**
+   * MokoIconView::decoration-width:
+   *
+   * The decoration-width property specifies the decorated width to use for each item. 
+   * If it is set to -1, the icon view will automatically determine a 
+   * suitable item size.
+   *
+   * Since: 2.6
+   */
+    g_object_class_install_property (gobject_class,
+				   PROP_MAX_TEXT_LENGTH,
+				   g_param_spec_int ("max_text_len",
+						     P_("Maximum Text column Length"),
+						     P_("The width used for scale icon and draw decoration"),
+						     -1, G_MAXINT, -1,
+						     G_PARAM_READWRITE)); 
+     
+/*Old properties of GtkIconView*/
   /**
    * MokoIconView:selection-mode:
    * 
@@ -785,16 +863,12 @@ moko_icon_view_init(MokoIconView *icon_view)
   icon_view->priv->markup_column = -1;  
   icon_view->priv->pixbuf_column = -1;
 
-  icon_view->priv->pixbuf_offset_x = 20;
-  icon_view->priv->pixbuf_offset_y = 20;
-  icon_view->priv->layout_offset_x = 0;
-  icon_view->priv->layout_offset_y = 0;
-  icon_view->priv->max_text_len = 30;
-  
   icon_view->priv->layout = gtk_widget_create_pango_layout (GTK_WIDGET (icon_view), NULL);
 
-  icon_view->priv->decoration = gdk_pixbuf_new_from_file (PKGDATADIR"/main_menu_sel_icon.png", NULL);
-
+  icon_view->priv->max_text_len = 30;
+  icon_view->priv->decr_width = 15;
+  icon_view->priv->decorated = FALSE;
+  
   pango_layout_set_wrap (icon_view->priv->layout, PANGO_WRAP_WORD_CHAR);
 
   GTK_WIDGET_SET_FLAGS (icon_view, GTK_CAN_FOCUS);
@@ -872,7 +946,7 @@ DEBUG("ICON VIEW REALIZE");
 			   GDK_KEY_PRESS_MASK |
 			   GDK_KEY_RELEASE_MASK) |
     gtk_widget_get_events (widget);
-  
+
   icon_view->priv->bin_window = gdk_window_new (widget->window,
 						&attributes, attributes_mask);
   gdk_window_set_user_data (icon_view->priv->bin_window, widget);
@@ -973,48 +1047,6 @@ create_colorized_pixbuf (GdkPixbuf *src, GdkColor *new_color)
 	return dest;
 }
 
-static GdkPixbuf *
-moko_composite_selected_pixbuf (GdkPixbuf *src, GdkPixbuf *decoration)
-{
-  int dest_x, dest_y, width, height;
-  double offset_x, offset_y, scale_x, scale_y;
-  gint alpha;
-  GdkPixbuf *dest;
-
-  dest_x = 0;
-  dest_y = 0;
-  offset_x = 10;
-  offset_y = 10;
-  width = gdk_pixbuf_get_width (src) + 2*offset_x;
-  height = gdk_pixbuf_get_height (src) + 2*offset_y;
-  scale_x = width;
-  scale_y = height;
-  alpha = gdk_pixbuf_get_has_alpha (src);
-
-  dest = gdk_pixbuf_new (gdk_pixbuf_get_colorspace (src),
-			       TRUE,
-			       gdk_pixbuf_get_bits_per_sample (src),
-			       width,
-			       height);
-  
-  g_debug ("test1---------------------");
-  g_debug ("width = %d, height = %d", width, height);
-  /*gdk_pixbuf_copy_area (src,
-                                     0, 0, width, height,
-                                     dest, 0, 0);
- */
-  g_debug ("test2---------------------");
-  gdk_pixbuf_composite (src, decoration,
-                                   dest_x, dest_y, 
-                                   width, height,
-                                   offset_x, offset_y,
-                                   scale_x, scale_y,
-                                   GDK_INTERP_NEAREST,
-                                   alpha);
-    g_debug ("test3---------------------");
-  return src;
-}
-
 static void
 moko_icon_view_paint_item (MokoIconView     *icon_view,
 			  MokoIconViewItem *item,
@@ -1025,12 +1057,6 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
   GtkStateType state;
   gboolean rtl = gtk_widget_get_direction (GTK_WIDGET (icon_view)) == GTK_TEXT_DIR_RTL;
 
-  
-  if (!icon_view->priv->decoration)
-  {
-      g_debug ("Error: can't get decoration image");
-  }
-g_debug (":)  begin-----------------");
 
   if (!VALID_MODEL_AND_COLUMNS (icon_view))
     return;
@@ -1048,24 +1074,22 @@ g_debug (":)  begin-----------------");
   if (icon_view->priv->pixbuf_column != -1)
     {
       pixbuf = moko_icon_view_get_item_icon (icon_view, item);
-
-
       
-    if (item->selected)
-	{
-	    gint decr_width = 10;
+      if (item->selected && icon_view->priv->decorated)
+      	 {
+	    gint decr_width = icon_view->priv->decr_width;
   	    gint scaled_w, scaled_h;
  	    gint scaled_x, scaled_y;
-      scaled_w =  item->pixbuf_width - 2*decr_width;
-      scaled_h = item->pixbuf_height - 2*decr_width;
-      scaled_x = item->pixbuf_x + decr_width;
-      scaled_y = item->pixbuf_y + decr_width;
+          scaled_w =  item->pixbuf_width - 2*decr_width;
+          scaled_h = item->pixbuf_height - 2*decr_width;
+          scaled_x = item->pixbuf_x + decr_width;
+          scaled_y = item->pixbuf_y + decr_width;
       
          scaled = gdk_pixbuf_scale_simple (pixbuf, 
       				scaled_w, scaled_h, GDK_INTERP_NEAREST);
 
-	  tmp = gdk_pixbuf_scale_simple (icon_view->priv->decoration, 
-	  					item->pixbuf_width, item->pixbuf_width,
+	  tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_decoration, 
+	  					item->pixbuf_width, item->pixbuf_height,
 	  					GDK_INTERP_NEAREST);
 
 	  gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, 
@@ -1075,17 +1099,32 @@ g_debug (":)  begin-----------------");
 		       			item->pixbuf_width,  item->pixbuf_height,
 		       			GDK_RGB_DITHER_NORMAL,
 		       			item->pixbuf_width,  item->pixbuf_height);
-	  g_debug ("frame(%d,%d)", item->x, item->y);
+
 	  gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, scaled,
 		      			0, 0,
 		      			scaled_x, scaled_y,
 		       		scaled_w, scaled_h,
 		       		GDK_RGB_DITHER_NORMAL,
 		       		scaled_w, scaled_h);
+	  
 	  g_object_unref (tmp);
 	  g_object_unref (scaled);
-
+	  g_object_unref (pixbuf);
 	}
+      else if (item->selected && !icon_view->priv->decorated)
+      	{ 
+      	  tmp = moko_icon_view_get_item_icon (icon_view, item);
+      	  pixbuf = create_colorized_pixbuf (tmp,
+					    &GTK_WIDGET (icon_view)->style->base[state]);
+      	  gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, pixbuf,
+		      			0, 0,
+		      			item->pixbuf_x, item->pixbuf_y,
+		       		item->pixbuf_width, item->pixbuf_height,
+		       		GDK_RGB_DITHER_NORMAL,
+		       		item->pixbuf_width, item->pixbuf_height);
+         g_object_unref (pixbuf);
+	  g_object_unref (tmp);
+      	}
       else
       	{
           gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, pixbuf,
@@ -1094,26 +1133,43 @@ g_debug (":)  begin-----------------");
 		       		item->pixbuf_width, item->pixbuf_height,
 		       		GDK_RGB_DITHER_NORMAL,
 		       		item->pixbuf_width, item->pixbuf_height);
+          g_object_unref (pixbuf);
       	}
               
     }
-g_debug (":) 4 -----------------");
 
   if (icon_view->priv->text_column != -1 ||
       icon_view->priv->markup_column != -1)
     {
-      if (item->selected)
+      if (item->selected && icon_view->priv->decorated)
 	{
-	 /* gdk_draw_rectangle (icon_view->priv->bin_window,
+	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_layout, 
+	  					 item->layout_width + 2 * ICON_TEXT_PADDING,
+	  					  item->layout_height + 2 * ICON_TEXT_PADDING,
+	  					GDK_INTERP_NEAREST);
+
+	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, 
+	  					tmp,
+		       			0, 0,
+		       			item->layout_x - ICON_TEXT_PADDING,
+		       			item->layout_y - ICON_TEXT_PADDING,
+		       			item->layout_width + 2 * ICON_TEXT_PADDING,
+		       			item->layout_height + 2 * ICON_TEXT_PADDING,
+		       			GDK_RGB_DITHER_NORMAL,
+		       			item->layout_width + 2 * ICON_TEXT_PADDING,
+		       			item->layout_height + 2 * ICON_TEXT_PADDING);
+	 g_object_unref (tmp);
+	}
+      else if (item->selected && !icon_view->priv->decorated) 
+      	{
+      	    gdk_draw_rectangle (icon_view->priv->bin_window,
 			      GTK_WIDGET (icon_view)->style->base_gc[state],
 			      TRUE,
 			      item->layout_x - ICON_TEXT_PADDING,
 			      item->layout_y - ICON_TEXT_PADDING,
 			      item->layout_width + 2 * ICON_TEXT_PADDING,
 			      item->layout_height + 2 * ICON_TEXT_PADDING);
-			      */
-	g_debug ("draw pango layout");
-	}
+      	}
 
       moko_icon_view_update_item_text (icon_view, item);
       pango_layout_set_alignment (icon_view->priv->layout, rtl ? PANGO_ALIGN_RIGHT: PANGO_ALIGN_LEFT);
@@ -1165,8 +1221,8 @@ moko_icon_view_paint_rubberband (MokoIconView     *icon_view,
   guint fill_color;
   guchar fill_color_alpha;
 
-  rubber_rect.x = MOKO_MAX (icon_view->priv->rubberband_x1, icon_view->priv->rubberband_x2);
-  rubber_rect.y = MOKO_MAX (icon_view->priv->rubberband_y1, icon_view->priv->rubberband_y2);
+  rubber_rect.x = MOKO_MIN (icon_view->priv->rubberband_x1, icon_view->priv->rubberband_x2);
+  rubber_rect.y = MOKO_MIN (icon_view->priv->rubberband_y1, icon_view->priv->rubberband_y2);
   rubber_rect.width = ABS (icon_view->priv->rubberband_x1 - icon_view->priv->rubberband_x2) + 1;
   rubber_rect.height = ABS (icon_view->priv->rubberband_y1 - icon_view->priv->rubberband_y2) + 1;
 
@@ -1218,7 +1274,6 @@ moko_icon_view_expose (GtkWidget *widget,
 {
   MokoIconView *icon_view;
   GList *icons;
-g_debug ("Call moko icon view expose event callback :)  -----------------");
   icon_view = MOKO_ICON_VIEW (widget);
 
   if (expose->window != icon_view->priv->bin_window)
@@ -1284,7 +1339,7 @@ scroll_timeout (gpointer data)
   
   icon_view = data;
 
-  value = MIN (icon_view->priv->vadjustment->value +
+  value = MOKO_MIN (icon_view->priv->vadjustment->value +
 	       icon_view->priv->scroll_value_diff,
 	       icon_view->priv->vadjustment->upper -
 	       icon_view->priv->vadjustment->page_size);
@@ -1839,90 +1894,6 @@ moko_icon_view_real_toggle_cursor_item (MokoIconView *icon_view)
 }
 
 static void
-gtk_icon_view_calculate_item_size (MokoIconView     *icon_view,
-				   MokoIconViewItem *item,
-				   gint             item_width)
-{
-  gint focus_width, focus_pad;
-  gint layout_width, layout_height;
-  gint maximum_layout_width;
-  gint spacing, padding;
-  gint colspan;
-  GdkPixbuf *pixbuf;
-  
-  if (item->width != -1 && item->height != -1) 
-    return;
-
-  gtk_widget_style_get (GTK_WIDGET (icon_view),
-			"focus-line-width", &focus_width,
-			"focus-padding", &focus_pad,
-			NULL);
-
-  spacing = icon_view->priv->spacing;
-
-  if (icon_view->priv->pixbuf_column != -1)
-    {
-      pixbuf = moko_icon_view_get_item_icon (icon_view, item);
-      item->pixbuf_width = gdk_pixbuf_get_width (pixbuf);
-      item->pixbuf_height = gdk_pixbuf_get_height (pixbuf);
-      g_object_unref (pixbuf);
-    }
-  else
-    {
-      item->pixbuf_width = 0;
-      item->pixbuf_height = 0;
-      spacing = 0;
-    }
-  
-  if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL &&
-      item_width > 0)
-    {
-      colspan = item->pixbuf_width / item_width + 1;
-      maximum_layout_width = MOKO_MAX (colspan * item_width - item->pixbuf_width - icon_view->priv->spacing - 2 * (ICON_TEXT_PADDING + focus_width + focus_pad), 50);
-    }
-  else
-    maximum_layout_width = MOKO_MAX (item_width, item->pixbuf_width);
-    
-  if (icon_view->priv->markup_column != -1 ||
-      icon_view->priv->text_column != -1)
-    {
-      moko_icon_view_update_item_text (icon_view, item);
-
-      pango_layout_set_alignment (icon_view->priv->layout, PANGO_ALIGN_CENTER);
-      pango_layout_set_width (icon_view->priv->layout, maximum_layout_width * PANGO_SCALE);
-      
-      pango_layout_get_pixel_size (icon_view->priv->layout, &layout_width, &layout_height);
-      
-      item->layout_width = layout_width;
-      item->layout_height = layout_height;
-      padding = 2 * (ICON_TEXT_PADDING + focus_width + focus_pad);
-    }
-  else
-    {
-      item->layout_width = 0;
-      item->layout_height = 0;
-      spacing = 0;
-      padding = 0;
-    }
-
-  if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL)
-    {
-      item->width = item->layout_width + padding + spacing + item->pixbuf_width;
-      item->height = MOKO_MAX (item->layout_height + padding, item->pixbuf_height);
-      g_debug ("Hlayout_width = %d, padding = %d, spacing = %d, pixbuf_width = %d",
-      	  			item->layout_width, padding, spacing, item->pixbuf_width);
-    }
-  else
-    {
-      item->width = MOKO_MAX (item->layout_width + padding, item->pixbuf_width);
-      item->height = item->layout_height + padding + spacing + item->pixbuf_height;
-      g_debug ("Vlayout_width = %d, padding = %d, spacing = %d, pixbuf_width = %d",
-      	  			item->layout_width, padding, spacing, item->pixbuf_width);
-    }
-  
-}
-
-static void
 moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
 				   MokoIconViewItem *item,
 				   gint             item_width)
@@ -1962,13 +1933,10 @@ moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
       item_width > 0)
     {
       colspan = item->pixbuf_width / item_width + 1;
-      maximum_layout_width = MOKO_MAX (colspan * item_width - item->pixbuf_width - icon_view->priv->spacing - 2 * (ICON_TEXT_PADDING + focus_width + focus_pad), 50);
-      g_debug ("maximum_layout_width = %d", maximum_layout_width);
+      maximum_layout_width = MAX (colspan * item_width - item->pixbuf_width - icon_view->priv->spacing - 2 * (ICON_TEXT_PADDING + focus_width + focus_pad), 50);
     }
   else
-    maximum_layout_width = MOKO_MAX (item_width, item->pixbuf_width);
-        g_debug ("maximum_layout_width = %d", maximum_layout_width);
-
+    maximum_layout_width = MAX (item_width, item->pixbuf_width);
     
   if (icon_view->priv->markup_column != -1 ||
       icon_view->priv->text_column != -1)
@@ -1995,19 +1963,14 @@ moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
   if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
       item->width = item->layout_width + padding + spacing + item->pixbuf_width;
-      item->height = MOKO_MAX (item->layout_height + padding, item->pixbuf_height);
+      item->height = MAX (item->layout_height + padding, item->pixbuf_height);
     }
   else
     {
-      item->width = MOKO_MAX (item->layout_width + padding, item->pixbuf_width);
+      item->width = MAX (item->layout_width + padding, item->pixbuf_width);
       item->height = item->layout_height + padding + spacing + item->pixbuf_height;
     }
-  g_debug ("WH: item(%d,%d) pixbuf(%d,%d) layout(%d,%d)", 
-  			item->width, item->height,
-  			item->pixbuf_width, item->pixbuf_height,
-  			item->layout_width, item->layout_height);
 }
-
 
 /* Internal functions */
 static void
@@ -2029,150 +1992,6 @@ moko_icon_view_adjustment_changed (GtkAdjustment *adjustment,
 
 static GList *
 moko_icon_view_layout_single_row (MokoIconView *icon_view, 
-				 GList       *first_item, 
-				 gint         item_width,
-				 gint         row,
-				 gint        *y, 
-				 gint        *maximum_width)
-{
-  gint focus_width, focus_pad;
-  gint x, current_width, max_height, max_pixbuf_height;
-  GList *items, *last_item;
-  gint col;
-  gint colspan;
-  gboolean rtl = gtk_widget_get_direction (GTK_WIDGET (icon_view)) == GTK_TEXT_DIR_RTL;
-
-   x = 0;
-  col = 0;
-  max_height = 0;
-  max_pixbuf_height = 0;
-  items = first_item;
-  current_width = 0;
-
-  gtk_widget_style_get (GTK_WIDGET (icon_view),
-			"focus-line-width", &focus_width,
-			"focus-padding", &focus_pad,
-			NULL);
-  g_debug ("focus_w = %d, focus_pad = %d", focus_width, focus_pad);
-
-  x += icon_view->priv->margin;
-  current_width += 2 * icon_view->priv->margin;
-  items = first_item;
-
-  while (items)
-    {
-      gint last_width;
-      MokoIconViewItem *item = items->data;
-
-      moko_icon_view_calculate_item_size (icon_view, item, item_width);
-
-      colspan = 1 + (item->width - 1) / (item_width + icon_view->priv->column_spacing);
-      last_width = current_width;
-      current_width += colspan * (item_width + icon_view->priv->column_spacing);
-
-       
-      if (items != first_item)
-	{
-	  if ((icon_view->priv->columns <= 0 && current_width > GTK_WIDGET (icon_view)->allocation.width) ||
-	      (icon_view->priv->columns > 0 && col >= icon_view->priv->columns))
-	    break;
-	}
-
-      item->y = *y + icon_view->priv->row_spacing/2;//SUNZY
-      item->x = rtl ? GTK_WIDGET (icon_view)->allocation.width - MOKO_MAX (item_width, item->width) - x : x;
-
-      if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL)
-	{
-	  if (rtl)
-	    {
-	      item->layout_x = item->x + ICON_TEXT_PADDING + focus_width + focus_pad;
-	      if (icon_view->priv->text_column != -1 ||
-		  icon_view->priv->markup_column != -1)
-		item->pixbuf_x = item->x + 2 * (ICON_TEXT_PADDING + focus_width + focus_pad) + icon_view->priv->spacing + item->layout_width;
-	      else
-		item->pixbuf_x = item->x;
-	    }
-	  else 
-	    {
-	      item->pixbuf_x = item->x;
-	      if (icon_view->priv->pixbuf_column != -1)
-		item->layout_x = item->x + item->pixbuf_width + icon_view->priv->spacing + ICON_TEXT_PADDING + focus_width + focus_pad;
-	      else
-		item->layout_x = item->x + ICON_TEXT_PADDING + focus_width + focus_pad;
-	    }
-	}
-      else
-	{
-	  if (item->width < colspan * item_width + (colspan - 1) * icon_view->priv->column_spacing)
-	    item->x += (colspan * item_width + (colspan - 1) * icon_view->priv->column_spacing - item->width) / 2;
-
-	  item->pixbuf_x = item->x + (item->width - item->pixbuf_width) / 2;
-	  item->layout_x = item->x + (item->width - item->layout_width) / 2;
-	}
-
-      x = current_width - icon_view->priv->margin; 
-
-      max_height = MOKO_MAX (max_height, item->height);
-      max_pixbuf_height = MOKO_MAX (max_pixbuf_height, item->pixbuf_height);
-      
-      if (current_width > *maximum_width)
-	*maximum_width = current_width;
-
-      item->row = row;
-      item->col = col;
-
-      col += colspan;
-      item->x = last_width;
-      g_debug("item: (%d,%d) pixbuf (%d,%d) layout (%d,%d), current_width = %d",
-      				item->x, item->y, item->pixbuf_x, item->pixbuf_y,
-      				item->layout_x, item->layout_y, 
-      				current_width);
-
-      items = items->next;
-    }
-
-  last_item = items;
-
-  *y += max_height + icon_view->priv->row_spacing;
-
-
-  /* Now go through the row again and align the icons */
-  for (items = first_item; items != last_item; items = items->next)
-    {
-      MokoIconViewItem *item = items->data;
-
-      if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL)
-	{
-	  item->pixbuf_y = item->y;
-	  item->layout_y = item->y + ICON_TEXT_PADDING + focus_width + focus_pad;
-	}
-      else 
-	{
-	  item->pixbuf_y = item->y + (max_pixbuf_height - item->pixbuf_height);
-	  if (icon_view->priv->pixbuf_column != -1)
-	    item->layout_y = item->pixbuf_y + item->pixbuf_height + icon_view->priv->spacing + ICON_TEXT_PADDING + focus_width + focus_pad;
-	  else
-	    item->layout_y = item->y + ICON_TEXT_PADDING + focus_width + focus_pad;
-      }
-      /* Update the bounding box */
-      item->y = item->pixbuf_y;
-
-      /* We may want to readjust the new y coordinate. */
-      if (item->y + item->height > *y)
-	*y = item->y + item->height;
-
-      if (rtl)
-	item->col = col - 1 - item->col;
-            g_debug("LAST TIME item: (%d,%d) pixbuf (%d,%d) layout (%d,%d)",
-      				item->x, item->y, item->pixbuf_x, item->pixbuf_y,
-      				item->layout_x, item->layout_y);
-    }
-  
-  return last_item;
-}
-
-static GList *
-gtk_icon_view_layout_single_row (MokoIconView *icon_view, 
 				 GList       *first_item, 
 				 gint         item_width,
 				 gint         row,
@@ -2208,20 +2027,18 @@ gtk_icon_view_layout_single_row (MokoIconView *icon_view,
 
       moko_icon_view_calculate_item_size (icon_view, item, item_width);
 
-      //colspan = 1 + (item->width - 1) / (item_width + icon_view->priv->column_spacing);
-      //current_width += colspan * (item_width + icon_view->priv->column_spacing);
-      current_width += icon_view->priv->width + icon_view->priv->column_spacing; 
-g_debug ("draw signal row: ");
-g_debug ("colspan:%d, current:%d, item->width:%d, item_width:%d, maximum_width:%d", colspan, current_width, item->width, item_width, *maximum_width);
+      colspan = 1 + (item->width - 1) / (item_width + icon_view->priv->column_spacing);
+      current_width += colspan * (item_width + icon_view->priv->column_spacing);
+	
       if (items != first_item)
-      	{
+	{
 	  if ((icon_view->priv->columns <= 0 && current_width > GTK_WIDGET (icon_view)->allocation.width) ||
 	      (icon_view->priv->columns > 0 && col >= icon_view->priv->columns))
 	    break;
 	}
 
-      item->y = *y+(icon_view->priv->row_spacing/2);//SUNZY:modify item box y coordinate, originalty value is "y = *y".
-      item->x = rtl ? GTK_WIDGET (icon_view)->allocation.width - icon_view->priv->width-x : x;
+      item->y = *y;
+      item->x = rtl ? GTK_WIDGET (icon_view)->allocation.width - MAX (item_width, item->width) - x : x;
 
       if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL)
 	{
@@ -2254,8 +2071,8 @@ g_debug ("colspan:%d, current:%d, item->width:%d, item_width:%d, maximum_width:%
 
       x = current_width - icon_view->priv->margin; 
 
-      max_height = MOKO_MAX (max_height, item->height);
-      max_pixbuf_height = MOKO_MAX (max_pixbuf_height, item->pixbuf_height);
+      max_height = MAX (max_height, item->height);
+      max_pixbuf_height = MAX (max_pixbuf_height, item->pixbuf_height);
       
       if (current_width > *maximum_width)
 	*maximum_width = current_width;
@@ -2263,7 +2080,7 @@ g_debug ("colspan:%d, current:%d, item->width:%d, item_width:%d, maximum_width:%
       item->row = row;
       item->col = col;
 
-      col ++;//= colspan;
+      col += colspan;
       items = items->next;
     }
 
@@ -2290,10 +2107,10 @@ g_debug ("colspan:%d, current:%d, item->width:%d, item_width:%d, maximum_width:%
 	    item->layout_y = item->y + ICON_TEXT_PADDING + focus_width + focus_pad;
       }
       /* Update the bounding box */
-     // item->y = item->pixbuf_y;
+      item->y = item->pixbuf_y;
 
       /* We may want to readjust the new y coordinate. */
-      if ((item->y + item->height) > *y)
+      if (item->y + item->height > *y)
 	*y = item->y + item->height;
 
       if (rtl)
@@ -2523,7 +2340,22 @@ DEBUG("ICON VIEW SET PROPERTY");
     case PROP_MARGIN:
       moko_icon_view_set_margin (icon_view, g_value_get_int (value));
       break;
-      
+    case PROP_BG_DECORATION:
+      moko_icon_view_set_decoration_bg (icon_view, g_value_get_string (value));
+      break;
+    case PROP_BG_LAYOUT:
+      moko_icon_view_set_text_bg (icon_view, g_value_get_string (value));
+      break;
+    case PROP_DECORATION_WIDTH:
+      moko_icon_view_set_decoration_width (icon_view, g_value_get_int (value));
+      break;
+    case PROP_DECORATED:
+      moko_icon_view_set_decorated (icon_view, g_value_get_boolean (value));
+      break;
+    case PROP_MAX_TEXT_LENGTH:
+      moko_icon_view_set_max_text_length (icon_view, g_value_get_int (value));
+      break;
+    	
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -2579,6 +2411,15 @@ DEBUG("ICON VIEW GET PROPERTY");
       break;
     case PROP_MARGIN:
       g_value_set_int (value, icon_view->priv->margin);
+      break;
+    case PROP_DECORATION_WIDTH:
+      g_value_set_int (value, icon_view->priv->decr_width);
+      break;
+    case PROP_DECORATED:
+      g_value_set_boolean (value, icon_view->priv->decorated);
+      break;
+    case PROP_MAX_TEXT_LENGTH:
+      g_value_set_int (value, icon_view->priv->max_text_len);
       break;
 
     default:
@@ -4310,6 +4151,111 @@ moko_icon_view_get_margin (MokoIconView *icon_view)
   g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
 
   return icon_view->priv->margin;
+}
+void
+moko_icon_view_set_decoration_bg (MokoIconView *icon_view, const gchar *bg_decoration)
+{
+  g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+  
+  if (bg_decoration)
+    {
+      icon_view->priv->bg_decoration = gdk_pixbuf_new_from_file (bg_decoration, NULL);
+          if (!icon_view->priv->bg_decoration)
+          	DEBUG("Load bg_decoration file failed");
+      moko_icon_view_invalidate_sizes (icon_view);
+      moko_icon_view_queue_layout (icon_view);
+      
+      g_object_notify (G_OBJECT (icon_view), "icon column background");
+    }  
+}
+
+void
+moko_icon_view_set_text_bg (MokoIconView *icon_view, const gchar *bg_layout)
+{
+  g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+  
+  if (bg_layout)
+    {
+      icon_view->priv->bg_layout = gdk_pixbuf_new_from_file (bg_layout, NULL);
+          if (!icon_view->priv->bg_layout)
+          	DEBUG("Load bg_layout file failed");
+          
+      moko_icon_view_invalidate_sizes (icon_view);
+      moko_icon_view_queue_layout (icon_view);
+      g_object_notify (G_OBJECT (icon_view), "text column background");
+    }  
+}
+
+void 
+moko_icon_view_set_decoration_width (MokoIconView *icon_view,
+				   gint         decr_width)
+{
+  g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+  
+  if (icon_view->priv->decr_width!= decr_width)
+    {
+      icon_view->priv->decr_width = decr_width;
+
+      moko_icon_view_invalidate_sizes (icon_view);
+      moko_icon_view_queue_layout (icon_view);
+      g_object_notify (G_OBJECT (icon_view), "decoration-width");
+    }  
+}
+
+gint 
+moko_icon_view_get_decoration_width (MokoIconView *icon_view)
+{
+   g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
+
+   return icon_view->priv->decr_width;
+}
+
+
+void
+moko_icon_view_set_decorated (MokoIconView *icon_view, gboolean decorated)
+{
+  g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+  
+  if (icon_view->priv->decorated!= decorated)
+    {
+      icon_view->priv->decorated = decorated;
+
+      moko_icon_view_queue_layout (icon_view);
+      
+      g_object_notify (G_OBJECT (icon_view), "decorated");
+    }  
+}
+
+gboolean
+moko_icon_view_get_decorated (MokoIconView *icon_view)
+{
+  g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
+
+    return icon_view->priv->decorated;
+}
+
+void
+moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint *max_text_length)
+{
+  g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+  
+  if (icon_view->priv->max_text_len!= max_text_length)
+    {
+      icon_view->priv->max_text_len = max_text_length;
+
+      moko_icon_view_invalidate_sizes (icon_view);
+      moko_icon_view_queue_layout (icon_view);
+      g_object_notify (G_OBJECT (icon_view), "max text column width");
+    }  
+
+}
+
+gint
+moko_icon_view_get_max_text_length (MokoIconView *icon_view)
+{
+  g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
+
+    return icon_view->priv->max_text_len;
 }
 
 /* Accessibility Support */
