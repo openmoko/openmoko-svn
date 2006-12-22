@@ -39,7 +39,7 @@ G_BEGIN_DECLS
 /*widgets property(s)*/
 #define COLUMN_NUM 		3
 #define ITEM_WIDTH 			140
-#define ITEM_MARGIN 		0
+#define ITEM_MARGIN 		10
 #define ROW_SPACING 		20
 #define COLUMN_SPACING 	20
 #define ITME_TOTAL_WIDTH 	7
