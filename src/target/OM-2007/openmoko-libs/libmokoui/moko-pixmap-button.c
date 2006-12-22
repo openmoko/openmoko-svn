@@ -40,6 +40,7 @@ typedef struct _MokoPixmapButtonPrivate
     GtkWidget *buttonvbox;
     GtkWidget *actionbtnlowerlabel;
     GtkWidget *actionbtnstockimage;
+    GtkWidget *centerimage;
     GtkWidget *fingertoolboxbtnimage;
     GtkWidget *fingertoolboxbtnloweralignment;
 } MokoPixmapButtonPrivate;
@@ -253,18 +254,36 @@ moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gch
 }
 
 void
-moko_pixmap_button_set_action_btn_center_stock (MokoPixmapButton* self, const gchar *stock_name)
+moko_pixmap_button_set_center_stock (MokoPixmapButton* self, const gchar *stock_name)
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
 	  
-    if ( priv->actionbtnstockimage )
+    if ( priv->centerimage )
         return;
 
     GtkWidget *loweralignment = gtk_alignment_new (0.5, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
 
-    priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_DND);
-    gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnstockimage);
+    priv->centerimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_DND);
+    gtk_container_add (GTK_CONTAINER (loweralignment), priv->centerimage);
+	  
+    gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
+}
+
+
+void
+moko_pixmap_button_set_center_image (MokoPixmapButton* self, GtkWidget* image)
+{
+    MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
+	  
+    if ( priv->centerimage )
+        return;
+
+    GtkWidget *loweralignment = gtk_alignment_new (0.43, 0.43, 0, 0);
+    gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
+
+    priv->centerimage = image;
+    gtk_container_add (GTK_CONTAINER (loweralignment), priv->centerimage);
 	  
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
