@@ -3,11 +3,9 @@
 #
 
 style "gtkeventbox-black" {
+  bg_pixmap[NORMAL] = "<none>"
+
   bg[NORMAL]      = "#000000"
-  bg[INSENSITIVE] = "#000000"
-  bg[PRELIGHT]    = "#000000"
-  bg[SELECTED]    = "#000000"
-  bg[ACTIVE]      = "#000000"
 }
 
 widget "*.gtkeventbox-black" style "gtkeventbox-black"
