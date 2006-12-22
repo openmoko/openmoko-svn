@@ -16,5 +16,24 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
  #include "moko-dialer-includes.h"
+
+ #ifndef _OPENMOKO_DIALER_WINDOW_DIALER_H
+#define _OPENMOKO_DIALER_WINDOW_DIALER_H
+
+#ifdef __cplusplus
+
+
+
+extern "C"
+
+{
+#endif
+
  
 gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif 

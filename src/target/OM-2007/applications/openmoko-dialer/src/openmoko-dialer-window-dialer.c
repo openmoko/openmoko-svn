@@ -44,6 +44,7 @@ moko_dialer_autolist_set_select(appdata->moko_dialer_autolist,-1);
 
 //fill the textview with ""
 moko_dialer_textview_fill_it(appdata->moko_dialer_text_view,"");
+//moko_dialer_textview_set_color(moko_dialer_textview);
 }
 else
 {
@@ -51,8 +52,12 @@ moko_dialer_textview_delete(appdata->moko_dialer_text_view);
 //refresh the autolist,but do not automaticall fill the textview
 char codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
 moko_dialer_textview_get_input(appdata->moko_dialer_text_view,codesinput, 0);
+
 if(strlen(codesinput)>=MOKO_DIALER_MIN_SENSATIVE_LEN)
-		moko_dialer_autolist_refresh_by_string(appdata->moko_dialer_autolist,codesinput,FALSE);
+{
+moko_dialer_autolist_refresh_by_string(appdata->moko_dialer_autolist,codesinput,FALSE);
+moko_dialer_textview_set_color(appdata->moko_dialer_text_view);
+}
 else
 	moko_dialer_autolist_hide_all_tips(appdata->moko_dialer_autolist);
 
@@ -69,6 +74,10 @@ void cb_history_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdat
 void cb_dialer_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
 {
     g_debug( "dialer button clicked" );
+if(!appdata->window_outgoing)
+	window_outgoing_init(appdata);
+
+gtk_widget_show(appdata->window_outgoing);
 }
 
 
@@ -157,6 +166,9 @@ g_print("on_dialer_panel_user_hold:%c\n", parac);
 gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data)
 {
 
+	GdkColor  color;
+	gdk_color_parse("black",&color);
+
     GtkVBox* vbox = NULL;
 
 
@@ -178,16 +190,26 @@ gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data)
 
     /* contents */
     vbox = gtk_vbox_new( FALSE, 0 );
-
-
     GtkHBox* hbox = gtk_hbox_new( FALSE, 10 );
 
+
+
+  
+	
+	 GtkEventBox *eventbox1 = gtk_event_box_new ();
+	 gtk_widget_show (eventbox1);
+	//  gtk_widget_set_size_request (eventbox1, 480, 132);
+  gtk_widget_set_name(GTK_WIDGET(eventbox1),"gtkeventbox-black");
 
     MokoDialerAutolist* autolist=moko_dialer_autolist_new();
     moko_dialer_autolist_set_data	(autolist,&(p_dialer_data->g_contactlist));
     p_dialer_data->moko_dialer_autolist=autolist;
-    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), FALSE, FALSE, 5 );
 
+   gtk_container_add (GTK_CONTAINER (eventbox1), autolist);
+//    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), FALSE, FALSE, 5 );
+    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(eventbox1), FALSE, FALSE, 0 );
+ 
+    gtk_widget_modify_bg(eventbox1,GTK_STATE_NORMAL,&color);
 
     g_signal_connect (GTK_OBJECT (autolist), "user_selected",
 			    G_CALLBACK (on_dialer_autolist_user_selected),p_dialer_data);
@@ -200,10 +222,21 @@ gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data)
 			    G_CALLBACK ( on_dialer_autolist_nomatch),p_dialer_data);
 
 
+
+
+
+	eventbox1 = gtk_event_box_new ();
+	gtk_widget_show (eventbox1);
+	gtk_widget_set_name(GTK_WIDGET(eventbox1),"gtkeventbox-black");
+      gtk_widget_modify_bg(eventbox1,GTK_STATE_NORMAL,&color);
+//	  gtk_widget_set_size_request (eventbox1, 480, 132);
+
     MokoDialerTextview * mokotextview=moko_dialer_textview_new();
     p_dialer_data->moko_dialer_text_view=mokotextview;
 
-    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokotextview), FALSE,FALSE, 5 );
+   gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
+       gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(eventbox1), FALSE,FALSE, 0 );
+//    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokotextview), FALSE,FALSE, 5 );
 
 
     MokoDialerPanel* mokodialerpanel=moko_dialer_panel_new();

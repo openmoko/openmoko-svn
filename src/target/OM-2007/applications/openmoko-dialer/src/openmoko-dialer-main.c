@@ -31,6 +31,7 @@
 #include "contacts.h"
 #include "openmoko-dialer-main.h"
 #include "openmoko-dialer-window-dialer.h"
+#include "openmoko-dialer-window-outgoing.h"
 int main( int argc, char** argv )
 {
 
@@ -48,7 +49,9 @@ int main( int argc, char** argv )
     g_set_application_name( "OpenMoko Dialer" );
 
 //init the dialer window
-   window_dialer_init(p_dialer_data);
+
+   window_outgoing_init(p_dialer_data);
+   window_dialer_init(p_dialer_data); 
 
     gtk_main();
     

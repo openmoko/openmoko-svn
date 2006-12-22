@@ -370,8 +370,9 @@ if(selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternatecount)
 	{
 
 	//refresh the imagePerson widget
-	file_load_person_image_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
-	gtk_widget_show(moko_dialer_autolist->imagePerson);	
+//	file_load_person_image_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
+	file_load_person_image_scalable_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
+		gtk_widget_show(moko_dialer_autolist->imagePerson);	
 	//just change the selected attribute of the tips
 		for(gint i=0;i<moko_dialer_autolist->g_alternatecount;i++)
 		{

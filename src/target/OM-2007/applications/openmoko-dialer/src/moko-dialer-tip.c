@@ -94,10 +94,11 @@ GtkWidget*  label= gtk_label_new(stringname);
 
 	priv->label=label;
 
- 	gdk_color_parse("black",&color);
+// 	gdk_color_parse("black",&color);
 
- 	
-	gtk_widget_modify_fg(GTK_WIDGET(dialertip),GTK_STATE_NORMAL,&color); 	
+	gtk_widget_set_name(GTK_WIDGET(dialertip),"gtkeventbox-black");
+//	gtk_widget_modify_fg(GTK_WIDGET(dialertip),GTK_STATE_NORMAL,&color); 	
+//	gtk_widget_modify_bg(GTK_WIDGET(dialertip),GTK_STATE_NORMAL,&color); 	
 
 //	gtk_widget_hide(GTK_WIDGET(dialertip));
 	 return GTK_WIDGET(dialertip);

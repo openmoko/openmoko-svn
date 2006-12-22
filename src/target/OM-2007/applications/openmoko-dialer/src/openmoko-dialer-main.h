@@ -37,6 +37,7 @@ gint g_ptimeout; ///< the timer hanle
 TIMER_DATA g_timer_data;///< the data used by the timers
 
 GtkWidget * window_dialer;
+GtkWidget* window_outgoing;
 
 // GtkListStore  *g_list_store_filter;///<the list store used by the gtktreeview, for displaying the history list dynamically.
 

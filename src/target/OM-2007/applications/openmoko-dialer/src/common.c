@@ -133,3 +133,43 @@ if(image==NULL)
 }
 
 
+/**
+ * @brief load the person's image file by the filename from the PKGDATADIR, and strech it.
+ * @param rela_path The filename of the pixbuf file
+ * @param widget, the gtkImage to load the file.
+ * @return TURE, FALSE
+ */
+gboolean file_load_person_image_scalable_from_relative_path(GtkWidget *widget,char * rela_path)
+{
+
+  gchar     *pathname;
+  GtkImage *image=GTK_IMAGE(widget);	  
+
+  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              rela_path);
+
+
+  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+    {
+	//    gtk_image_set_from_file(image,pathname);   	
+	    GError* err = NULL;
+	    GdkPixbuf *src_pixbuf, *dest_pixbuf;
+	    src_pixbuf = gdk_pixbuf_new_from_file ( pathname, &err );
+	    DBG_MESSAGE("file_load_person_image_scalable_from_relative_path,width=%d,height=%d",widget->allocation.width, widget->allocation.height);
+	    
+	    dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, widget->allocation.width, widget->allocation.height, GDK_INTERP_NEAREST);
+	     gtk_image_set_from_pixbuf (image,dest_pixbuf);
+	    g_free (pathname);
+	    return TRUE;
+    }
+  else
+    {
+	      g_debug ("Can not find the file %s", pathname);
+	       gtk_image_set_from_stock(image,"gtk-yes",GTK_ICON_SIZE_LARGE_TOOLBAR);
+	      g_free (pathname);
+	      return FALSE;
+    }
+
+
+}
+

@@ -10,7 +10,9 @@ moko-dialer-tip.c\
 moko-dialer-autolist.c\
 contacts.c\
 common.c\
-openmoko-dialer-window-dialer.c
+openmoko-dialer-window-dialer.c\
+openmoko-dialer-window-outgoing.c\
+moko-dialer-status.c
 
 openmoko_dialer_LDADD = @OPENMOKO_LIBS@
 

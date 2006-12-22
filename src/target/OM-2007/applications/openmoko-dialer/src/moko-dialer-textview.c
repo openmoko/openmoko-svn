@@ -52,6 +52,7 @@ static void moko_dialer_textview_init (MokoDialerTextview *moko_dialer_textview)
 
 			GtkTextView *textview=0;
 			GtkTextBuffer *buffer;
+			GdkColor color;
 
 			textview=&moko_dialer_textview->textview;
 			buffer = gtk_text_view_get_buffer (textview);	
@@ -59,6 +60,11 @@ static void moko_dialer_textview_init (MokoDialerTextview *moko_dialer_textview)
 			moko_dialer_textview->tag_for_inputed=NULL;
 			moko_dialer_textview->tag_for_cursor=NULL;
 			moko_dialer_textview->tag_for_autofilled=NULL;
+
+			gdk_color_parse("black",&color);
+//			gtk_widget_modify_bg(textview,GTK_STATE_NORMAL,&color);
+			gtk_widget_modify_base(textview,GTK_STATE_NORMAL,&color);
+			
 
 
 
