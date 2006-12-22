@@ -33,7 +33,7 @@ moko_main_menu_init(MokoMainMenu *mm);
 static guint menu_signals[LAST_SIGNAL] = { 0 };
 
 /**
-*@brief retrun List type.
+*@brief retrun MokoMainMenu type.
 *@param none
 *@return GType
 */
@@ -189,4 +189,5 @@ void
 moko_main_menu_update(GtkListStore *store) {
     
 }
+
 

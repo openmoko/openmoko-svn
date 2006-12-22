@@ -19,7 +19,38 @@
 
  #include "callbacks.h"
 
+gboolean test = FALSE;
+void
+moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
+{
+  if (test) {
+    //moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->mm));
+    gtk_widget_hide (mma->close);
+    gtk_widget_show (mma->mm);
+  }
+  else {
+    //moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->close));
+    gtk_widget_hide (mma->mm);
+    gtk_widget_show (mma->close);
+  }
+  
+  g_debug ("test for wheel bottom pressed _________________________");
+test = !test;
 
+}
+
+void
+moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
+{
+  g_debug ("test for wheel left_up pressed _________________________");
+}
+
+void
+moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
+{
+  g_debug ("test for wheel rifht_down pressed _________________________");
+
+}
 
 /*test*/ 
 void

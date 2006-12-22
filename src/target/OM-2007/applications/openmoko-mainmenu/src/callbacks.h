@@ -20,6 +20,17 @@
  #ifndef _MAIN_MENU_CALLBACKS_H
  #define _MAIN_MENU_CALLBACKS_H
  #include <gtk/gtk.h>
+ #include "main.h"
+
+void
+moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
+
+void
+moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
+
+void
+moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
+
 
 void
 moko_item_select_cb(GtkIconView *icon_view, GtkTreePath *path, gpointer data);

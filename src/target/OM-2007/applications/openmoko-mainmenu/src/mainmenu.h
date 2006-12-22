@@ -20,11 +20,12 @@
 #ifndef _OPEN_MOKO_MAIN_MENU_H
 #define _OPEN_MOKO_MAIN_MENU_H
 
-#include <gtk/gtk.h>
-#include <glib.h>
+#include <gtk/gtkwidget.h>
 #include <glib-object.h>
-#include <gtk/gtkiconview.h>
 #include <gtk/gtkliststore.h>
+#include <gtk/gtklabel.h>
+#include <gtk/gtkvbox.h>
+#include <gtk/gtkhbox.h>
 
 #include "mokoiconview.h"
 
@@ -70,11 +71,8 @@ typedef struct _MokoMainMenuClass 	MokoMainMenuClass;
 
 struct _MokoMainMenu {
     GtkVBox vbox;
-    //GtkWidget widget;
 
-    //GtkIconView *icon_view;
-    GtkWidget *icon_view;
-    //MokoIconView *icon_view;
+    MokoIconView *icon_view;
     GtkListStore *list_store;
     GtkWidget *scrolled;
     GtkHBox *hbox;
@@ -91,6 +89,9 @@ struct _MokoMainMenuClass {
 
 GType 
 moko_main_menu_get_type (void);
+
+GtkWidget*
+moko_main_menu_new ();
 
 G_END_DECLS
 

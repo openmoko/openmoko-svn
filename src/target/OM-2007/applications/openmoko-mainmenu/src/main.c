@@ -17,6 +17,10 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include "callbacks.h"
+
+
+
 #include "main.h"
 
 int 
@@ -49,19 +53,31 @@ main( int argc, char** argv ) {
            gtk_widget_show (mma->history[i]);
     	}
    
-    mma->mm = MAINMENU(moko_main_menu_new());
+    mma->mm = moko_main_menu_new();
     gtk_widget_show (mma->mm);
-    
+
+    mma->close = moko_close_page_new ();
+    gtk_widget_show (mma->close);
     //gtk_icon_view_selected_foreach (mm->icon_view, moko_item_select_cb, NULL);
    // g_signal_connect (mm->icon_view, "toggle-cursor-item", 
 		//G_CALLBACK (moko_toggle_cursor_item_cb), NULL);
-    moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->mm) );
+    g_signal_connect (mma->wheel, "press_bottom",
+    			G_CALLBACK ( moko_wheel_bottom_press_cb), mma);
+    g_signal_connect (mma->wheel, "press_left_up",
+    			G_CALLBACK ( moko_wheel_left_up_press_cb), mma);
+    g_signal_connect (mma->wheel, "press_right_down",
+    			G_CALLBACK ( moko_wheel_right_down_press_cb), mma);
+
+    			
+    moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->mm));
+    moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->close));
     
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(mma->window) );
 
     gtk_widget_show (GTK_WIDGET (mma->wheel));
     gtk_widget_show (GTK_WIDGET (mma->toolbox));
+    gtk_widget_hide (GTK_WIDGET (mma->close));
 
     moko_sample_hisory_app_fill (mma->history[0]);
 

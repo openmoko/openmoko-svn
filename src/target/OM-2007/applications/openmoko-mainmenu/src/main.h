@@ -19,24 +19,16 @@
 
 #ifndef _MAIN_MENU_MAIN_H
 #define _MAIN_MENU_MAIN_H
+
 #include <libmokoui/moko-application.h>
-#include <libmokoui/moko-finger-tool-box.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
+#include <libmokoui/moko-finger-tool-box.h>
 #include <libmokoui/moko-pixmap-button.h>
 
-#include <gtk/gtkalignment.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmain.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtktogglebutton.h>
-#include <gtk/gtkvbox.h>
-
 #include "mainmenu.h"
-#include "callbacks.h"
 #include "menu-list.h"
+#include "close-page.h"
 
 typedef struct _MokoMainmenuApp MokoMainmenuApp;
 
@@ -48,10 +40,8 @@ struct _MokoMainmenuApp {
     MokoFingerToolBox *toolbox;
     MokoMainMenu *mm;
     MokoMenuList *list;
-
-    //GtkButton *history[3];
+    MokoClosePage *close;
     MokoPixmapButton *history[4]
-
 };
 
 #endif /*main.h*/
