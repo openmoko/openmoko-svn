@@ -59,8 +59,6 @@ moko_main_menu_get_type (void) /* Typechecking */
         };
 
         menu_type = g_type_register_static (GTK_TYPE_VBOX, "MokoMainMenu", &menu_info, 0);
-        //menu_type = g_type_register_static (GTK_TYPE_WIDGET, "MokoMainMenu", &menu_info, 0);
-
     }
 
     return menu_type;
@@ -103,7 +101,7 @@ moko_main_menu_init(MokoMainMenu *mm) {
     gtk_misc_set_padding (GTK_MISC (mm->section_name), SECTION_X_PADDING, SECTION_Y_PADDING);
     gtk_label_set_ellipsize (mm->section_name, PANGO_ELLIPSIZE_END);
     
-    /*if (PangoFont) {
+   /* if (PangoFont) {
     	  pango_font_description_set_size (PangoFont, FONT_SIZE_SECTION);
 	  gtk_widget_modify_font (GTK_WIDGET (mm->section_name), PangoFont);
 	  }
@@ -121,19 +119,13 @@ moko_main_menu_init(MokoMainMenu *mm) {
     gtk_widget_show (mm->item_total);
     gtk_label_set_width_chars (mm->item_total, ITME_TOTAL_WIDTH);
     gtk_misc_set_alignment (GTK_MISC (mm->item_total), ITEM_TOTAL_ALG_X, ITEM_TOTAL_ALG_Y);
-    /*if (PangoFont) {
+    if (PangoFont) {
     	  pango_font_description_set_size (PangoFont, FONT_SIZE_ITEM);
 	  gtk_widget_modify_font (GTK_WIDGET (mm->item_total), PangoFont);
 	  }
     else {
     	  g_debug("FAILED to load FONT ");
     	  }
-*/
-
-    //bg_item = gtk_event_box_new ();
-   // gtk_widget_show (bg_item);
-    //gtk_widget_set_name (bg_item, "gtkeventbox-black");
-    //gtk_container_add (bg_item, mm->item_total);
 
     mm->icon_view = moko_icon_view_new();
     moko_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
@@ -146,15 +138,6 @@ moko_main_menu_init(MokoMainMenu *mm) {
     moko_icon_view_set_text_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_text.png");
     moko_icon_view_set_decorated (mm->icon_view, TRUE);
     moko_icon_view_set_max_text_length(mm->icon_view, 20);
-
-    //mm->icon_view = gtk_icon_view_new ();
-    //gtk_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
-    //gtk_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
-    //gtk_icon_view_set_margin (mm->icon_view, ITEM_MARGIN);
-    //gtk_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
-    //gtk_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
-
-    //moko_icon_view_set_selection_mode (mm->icon_view, GTK_SELECTION_SINGLE);
     gtk_widget_show (mm->icon_view);
 
     mm->list_store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_POINTER);

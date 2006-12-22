@@ -48,18 +48,30 @@ moko_fill_model(GtkListStore *store, const char* icon_path, const char* icon_nam
 /*test code, delete later*/
 void 
 moko_sample_model_fill(GtkListStore *store) {
-    moko_fill_model(store,"/usr/share/pixmaps/abiword.png","1234567890123456789");
-    moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
-    moko_fill_model(store,"/usr/share/pixmaps/anjuta.xpm","anjuta");
-    moko_fill_model(store,"/usr/share/pixmaps/battstat.png","battstat");
-    moko_fill_model(store,"/usr/share/pixmaps/gdm.png","gdm");
-    moko_fill_model(store,"/usr/share/pixmaps/gdm-setup.png","gdm-setup");
-    moko_fill_model(store,"/usr/share/pixmaps/gnome-eyes.png","gnome-eyes");
-    moko_fill_model(store,"/usr/share/pixmaps/gnome-geg12.png","gnome-geg12");
-    moko_fill_model(store,"/usr/share/pixmaps/gdm.xpm","gdm");
-    moko_fill_model(store,"/usr/share/pixmaps/gnome-eyes.png","gnome-eyes");
-    moko_fill_model(store,"/usr/share/pixmaps/gnome-geg12.png","gnome-geg12");
-    moko_fill_model(store,"/usr/share/pixmaps/gdm.xpm","gdm");
+    moko_fill_model(store, "/usr/share/pixmaps/abiword.png", "1234567890123456789");
+    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
+    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
+    moko_fill_model(store, "/usr/share/pixmaps/battstat.png", "battstat");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm.png", "gdm");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm-setup.png", "gdm-setup");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
+    moko_fill_model(store, "/usr/share/pixmaps/abiword.png", "1234567890123456789");
+    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
+    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
+    moko_fill_model(store, "/usr/share/pixmaps/battstat.png", "battstat");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm.png", "gdm");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm-setup.png", "gdm-setup");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
+    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
+    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
 
 }
 
