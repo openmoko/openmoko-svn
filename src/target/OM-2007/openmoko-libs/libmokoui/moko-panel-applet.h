@@ -39,6 +39,7 @@ typedef struct {
     MBTrayApp* mb_applet;
     MBPixbuf* mb_pixbuf;
     MBPixbufImage* mb_pixbuf_image;
+    MBPixbufImage* mb_pixbuf_image_scaled;
     int* argc;
     char*** argv;
 } MokoPanelApplet;
@@ -52,6 +53,8 @@ typedef struct {
 
 GType moko_panel_applet_get_type();
 MokoPanelApplet* moko_panel_applet_new();
+
+void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename);
 
 G_END_DECLS
 

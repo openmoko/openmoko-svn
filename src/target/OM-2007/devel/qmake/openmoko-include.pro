@@ -27,7 +27,7 @@ mokocore {
 
 mokoui {
 	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
-	PKGCONFIG += gtk+-2.0
+	PKGCONFIG += gtk+-2.0 libmb
 	LIBS += -lmokoui -L$(OPENMOKODIR)/lib
 }
 

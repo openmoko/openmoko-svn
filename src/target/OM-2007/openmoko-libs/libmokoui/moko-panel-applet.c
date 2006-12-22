@@ -134,29 +134,38 @@ void moko_panel_applet_real_resize_callback(MokoPanelApplet* self, int w, int h)
 {
     moko_debug( "moko_panel_applet_resize_callback" );
     moko_debug( "-- size = %d, %d", w, h );
-    if ( self->mb_pixbuf_image && self->mb_pixbuf_image->width == w && self->mb_pixbuf_image->height == h ) return;
+    if ( !self->mb_pixbuf_image )
+    {
+        g_warning( "no valid icon for panel application during resize callback" );
+        return;
+    }
+    if ( self->mb_pixbuf_image_scaled && self->mb_pixbuf_image_scaled->width == w && self->mb_pixbuf_image_scaled->height == h )
+        return;
+    moko_debug( "-- new size, scaling pixbuf" );
     MBPixbufImage* scaled = mb_pixbuf_img_scale( self->mb_pixbuf, self->mb_pixbuf_image, w, h );
-    mb_pixbuf_img_free( self->mb_pixbuf, self->mb_pixbuf_image );
-    self->mb_pixbuf_image = scaled;
+    if ( self->mb_pixbuf_image_scaled )
+        mb_pixbuf_img_free( self->mb_pixbuf, self->mb_pixbuf_image_scaled );
+    self->mb_pixbuf_image_scaled = scaled;
 }
 
 void moko_panel_applet_real_paint_callback(MokoPanelApplet* self, Drawable drw)
 {
     moko_debug( "moko_panel_applet_paint_callback" );
-    if ( !self->mb_pixbuf_image )
+    if ( !self->mb_pixbuf_image_scaled )
     {
         g_warning( "no valid icon for panel application during paint callback" );
         return;
     }
 
     MBPixbufImage* background = mb_tray_app_get_background( self->mb_applet, self->mb_pixbuf );
-    mb_pixbuf_img_composite( self->mb_pixbuf, background, self->mb_pixbuf_image, 0, 0 );
+    mb_pixbuf_img_composite( self->mb_pixbuf, background, self->mb_pixbuf_image_scaled, 0, 0 );
     mb_pixbuf_img_render_to_drawable( self->mb_pixbuf, background, drw, 0, 0 );
     mb_pixbuf_img_free( self->mb_pixbuf, background );
 }
 
 void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
 {
+    moko_debug( "moko_panel_applet_set_icon" );
     g_assert( self->mb_pixbuf );
     if ( self->mb_pixbuf_image ) mb_pixbuf_img_free( self->mb_pixbuf, self->mb_pixbuf_image );
     self->mb_pixbuf_image = mb_pixbuf_img_new_from_file( self->mb_pixbuf, filename );

@@ -1,8 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = \
   openmoko-chordmaster \
-  openmoko-footer \
-  openmoko-mainmenu \
+  openmoko-footer
 
 #openmoko-appmanager openmoko-dialer
 

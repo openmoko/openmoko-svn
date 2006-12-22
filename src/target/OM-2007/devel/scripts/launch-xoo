@@ -19,23 +19,14 @@ sleep 2
 
 export DISPLAY=:1
 
-matchbox-panel -display $DISPLAY \
-               --id 1 \
-               --orientation north \
-               --default-apps '' \
-               --no-session \
-               --no-menu \
-               --no-flip \
-               --bgpixmap $SVN_TRUNK/OM-2007/artwork/images/pixmaps/openmoko-header-background.png &
+matchbox-window-manager -display $DISPLAY \
+                        -use_titlebar no \
+                        -use_super_modal yes \
+                        -use_lowlight yes \
+                        -use_dialog_mode static \
+                        -use_cursor yes &
 
-matchbox-panel -display $DISPLAY \
-               --id 2 \
-               --orientation south \
-               --default-apps '' \
-               --no-session \
-               --no-menu \
-               --no-flip \
-               --bgpixmap $SVN_TRUNK/OM-2007/artwork/images/pixmaps/openmoko-footer-background.png &
+sleep 2
 
 matchbox-desktop --icon-size 100 \
                  --icon-padding 60 \
@@ -43,9 +34,12 @@ matchbox-desktop --icon-size 100 \
                  --titlefont sans-20:bold --bg \
 img-tiled:/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0/mokopanedwindow-upper-enclosing.png &
 
-exec matchbox-window-manager -display $DISPLAY \
-                        -use_titlebar no \
-                        -use_super_modal yes \
-                        -use_lowlight yes \
-                        -use_dialog_mode static \
-                        -use_cursor yes
+sleep 2
+
+matchbox-panel -display $DISPLAY \
+               --orientation north \
+               --default-apps '' \
+               --no-session \
+               --no-menu \
+               --no-flip \
+               --bgpixmap $SVN_TRUNK/OM-2007/artwork/images/pixmaps/openmoko-header-background.png &
