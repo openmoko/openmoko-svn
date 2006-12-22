@@ -41,7 +41,7 @@ G_BEGIN_DECLS
 #define ITEM_WIDTH 			140
 #define ITEM_MARGIN 		0
 #define ROW_SPACING 		40
-#define COLUMN_SPACING 	0
+#define COLUMN_SPACING 	20
 #define ITME_TOTAL_WIDTH 	7
 
 #define PIXBUF_WIDTH		120 

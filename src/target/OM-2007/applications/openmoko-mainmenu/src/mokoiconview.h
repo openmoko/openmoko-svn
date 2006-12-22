@@ -22,7 +22,6 @@ G_BEGIN_DECLS
 typedef struct _MokoIconView			MokoIconView;
 typedef struct _MokoIconViewClass      	MokoIconViewClass;
 typedef struct _MokoIconViewPrivate    	MokoIconViewPrivate;
-//typedef struct _GtkIconViewPrivate    	GtkIconViewPrivate;
 
 typedef void 
 (* MokoIconViewForeachFunc) (MokoIconView *icon_view, 
@@ -30,20 +29,14 @@ typedef void
 
 struct _MokoIconView 
 {
-  //GtkVBox vbox;
-
-  //GtkWidget *btns[3][3];
-  //GtkIconView parent;
   GtkContainer parent;
 
-  //GtkIconViewPrivate *priv;
   MokoIconViewPrivate *priv;
   
 };
 
 struct _MokoIconViewClass
 {
-  //GtkIconViewClass parent_class;
   GtkContainerClass parent_class;
 
   void(*moko_icon_view_function)(MokoIconView *self);
@@ -146,7 +139,7 @@ gint
 moko_icon_view_get_margin (MokoIconView *icon_view);
 
 void
-moko_icon_view_set_decoration_bg (MokoIconView *icon_view, const gchar *bg_decoration);
+moko_icon_view_set_icon_bg (MokoIconView *icon_view, const gchar *bg_decoration);
 
 void
 moko_icon_view_set_text_bg (MokoIconView *icon_view, const gchar *bg_layout);
@@ -164,7 +157,7 @@ gboolean
 moko_icon_view_get_decorated (MokoIconView *icon_view);
 
 void
-moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint *max_text_length);
+moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint max_text_length);
 
 gint
 moko_icon_view_get_max_text_length (MokoIconView *icon_view);

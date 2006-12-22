@@ -137,17 +137,17 @@ moko_main_menu_init(MokoMainMenu *mm) {
     //gtk_widget_set_name (bg_item, "gtkeventbox-black");
     //gtk_container_add (bg_item, mm->item_total);
 
-    mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
-    //gtk_widget_set_direction (GTK_WIDGET (mm->icon_view), GTK_TEXT_DIR_RTL); 
+    mm->icon_view = moko_icon_view_new();
     moko_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
     moko_icon_view_set_columns (mm->icon_view, COLUMN_NUM);
     moko_icon_view_set_margin (mm->icon_view, ITEM_MARGIN);
     moko_icon_view_set_row_spacing (mm->icon_view, ROW_SPACING);
     moko_icon_view_set_column_spacing (mm->icon_view, COLUMN_SPACING);
     moko_icon_view_set_decoration_width (mm->icon_view, 30);
-    moko_icon_view_set_decoration_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_icon.png");
+    moko_icon_view_set_icon_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_icon.png");
     moko_icon_view_set_text_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_text.png");
     moko_icon_view_set_decorated (mm->icon_view, TRUE);
+    moko_icon_view_set_max_text_length(mm->icon_view, 50);
 
     //mm->icon_view = gtk_icon_view_new ();
     //gtk_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
