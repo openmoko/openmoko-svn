@@ -9,6 +9,7 @@ source_h = \
     moko-fixed.h \
     moko-menu-box.h \
     moko-navigation-list.h \
+    moko-panel-applet.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-search-bar.h \
@@ -27,6 +28,7 @@ source_c = \
     moko-fixed.c \
     moko-menu-box.c \
     moko-navigation-list.c \
+    moko-panel-applet.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-search-bar.c \

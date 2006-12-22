@@ -43,7 +43,7 @@ typedef struct _MokoDetailsWindowPrivate
 } MokoDetailsWindowPrivate;
 
 /* parent class pointer */
-GtkScrolledWindowClass* parent_class = NULL;
+static GtkScrolledWindowClass* parent_class = NULL;
 
 /* forward declarations */
 static void _cb_fullscreen_clicked(GtkButton* button, MokoDetailsWindow* self);

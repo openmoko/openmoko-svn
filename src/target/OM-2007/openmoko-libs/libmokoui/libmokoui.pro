@@ -1,5 +1,5 @@
 TEMPLATE = lib
-VERSION = 0.0.1
+VERSION = 0.0.2
 TARGET = mokoui
 
 HEADERS = \
@@ -13,6 +13,7 @@ HEADERS = \
     moko-fixed.h \
     moko-menu-box.h \
     moko-nativation-list.h \
+    moko-panel-applet.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-search-bar.h \
@@ -31,6 +32,7 @@ SOURCES = \
     moko-fixed.c \
     moko-menu-box.c \
     moko-navigation-list.c \
+    moko-panel-applet.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-search-bar.c \
@@ -38,6 +40,6 @@ SOURCES = \
     moko-tool-box.c \
     moko-window.c
 
-PKGCONFIG += gtk+-2.0
+PKGCONFIG += gtk+-2.0 libmb
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )

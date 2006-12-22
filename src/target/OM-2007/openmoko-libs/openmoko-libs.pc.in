@@ -8,4 +8,4 @@ Description: OpenMoko Application Framework Libraries
 Version: @VERSION@
 Cflags: -I${includedir}
 Libs: -L${libdir} -lmokoui
-Requires: gtk+-2.0 
+Requires: gtk+-2.0 libmb

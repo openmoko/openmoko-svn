@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(openmoko-libs, 0.0.1, http://www.openmoko.org/)
+AC_INIT(openmoko-libs, 0.0.2, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(libmokoui/moko-window.c)
 AM_CONFIG_HEADER(config.h)
@@ -15,6 +15,12 @@ PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6,,
                  AC_MSG_ERROR([*** Required Gtk+ Library >= 2.6 not installed ***]))
 LIBS="$LIBS $GTK_LIBS"
 CFLAGS="$CFLAGS $GTK_CFLAGS"
+
+PKG_CHECK_MODULES(LIBMB, libmb >= 1.6,,
+                 AC_MSG_ERROR([*** Required Matchbox Library >= 1.6 not installed ***]))
+LIBS="$LIBS $LIBMB_LIBS"
+CFLAGS="$CFLAGS $LIBMB_CFLAGS"
+
 
 # foo
 #AC_ARG_ENABLE(foo,
