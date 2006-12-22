@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(openmoko-appmanager-demo, 1.0.0, http://www.openmoko.org/)
+AC_INIT(openmoko-appmanager, 1.0.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/appmanager-window.c)
 AM_CONFIG_HEADER(config.h)

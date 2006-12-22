@@ -61,4 +61,11 @@ void search_and_translate_package_list_to_store (ApplicationManagerData *appdata
                                                  GtkListStore *store, 
                                                  gpointer pkglist,
                                                  const gchar *str);
+gboolean 
+package_list_check_marked_list_empty (ApplicationManagerData *appdata);
+
+void package_list_fill_store_with_selected_list (GtkTreeStore *treestore,
+                                                 gpointer *selectedlist,
+                                                 gint column);
+void package_list_mark_all_upgradeable (ApplicationManagerData *appdata);
 #endif

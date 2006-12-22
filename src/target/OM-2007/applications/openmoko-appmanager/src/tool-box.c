@@ -21,6 +21,9 @@
 
 #include "tool-box.h"
 #include "navigation-area.h"
+#include "package-list.h"
+#include "appmanager-window.h"
+#include "apply-dialog.h"
 
 /**
  * @brief The callback function of the button "upgrade"
@@ -28,7 +31,19 @@
 void 
 on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
 {
+  GtkWidget *dialog;
+
   g_debug ("Clicked the button upgrade");
+  package_list_mark_all_upgradeable (MOKO_APPLICATION_MANAGER_DATA (data));
+  navigation_area_rebuild_from_latest (MOKO_APPLICATION_MANAGER_DATA (data));
+
+  dialog = gtk_message_dialog_new (NULL,
+                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_INFO,
+                                   GTK_BUTTONS_OK,
+                                   _("Marked all upgradeable packages"));
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
 }
 
 /**
@@ -37,7 +52,29 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
 void 
 on_apply_clicked (GtkButton *bapply, gpointer data)
 {
+  GtkWidget *dialog;
+  gint      res;
   g_debug ("Clicked the button apply");
+
+  if (package_list_check_marked_list_empty (
+         MOKO_APPLICATION_MANAGER_DATA (data)))
+    {
+      dialog = gtk_message_dialog_new (NULL,
+                                       GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       GTK_MESSAGE_INFO,
+                                       GTK_BUTTONS_OK,
+                                       _("No package that has been selected"));
+      gtk_dialog_run (GTK_DIALOG (dialog));
+      gtk_widget_destroy (dialog);
+      return;
+    }
+
+  dialog = apply_dialog_new (MOKO_APPLICATION_MANAGER_DATA (data));
+  res = gtk_dialog_run (GTK_DIALOG (dialog));
+
+  //FIXME Add code to install/remove/upgrade package
+
+  gtk_widget_destroy (dialog);
 }
 
 /**

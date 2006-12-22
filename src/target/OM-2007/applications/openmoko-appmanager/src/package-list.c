@@ -1045,3 +1045,162 @@ search_and_translate_package_list_to_store (ApplicationManagerData *appdata,
       tmplist = tmplist->next;
     }
 }
+
+/**
+ * @brief Check the status of the marked list
+ *
+ * Takecare, the return value of this function is reversed. 
+ * If it returns TRUE, means that the marked list is empty
+ * If it returns FALSE, means that the marked list is not empty
+ * @return FALSE The marked list is not empty.\n
+ *  TRUE The marked list is empty.
+ */
+gboolean 
+package_list_check_marked_list_empty (ApplicationManagerData *appdata)
+{
+  PackageList *mark;
+
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), TRUE);
+
+  mark = application_manager_data_get_selectedlist (appdata);
+  if (mark == NULL)
+    {
+      return TRUE;
+    }
+
+  if (mark->next == mark)
+    {
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+/**
+ * @brief Fill the GtkTreeStore with the selected package
+ * @param treestore The tree store
+ * @param selectedlist The selected package list
+ * @param column The column that package name will insert
+ */
+void 
+package_list_fill_store_with_selected_list (GtkTreeStore *treestore,
+                                            gpointer *selectedlist,
+                                            gint column)
+{
+  PackageList  *tmplist;
+  PackageList  *slist = (PackageList *)selectedlist;
+  GtkTreeIter  iter;
+  gboolean     needupgrade, needinstall, needremove;
+  GtkTreeIter  iterupgrade, iterinstall, iterremove;
+
+  needupgrade = needinstall = needremove = FALSE;
+  tmplist = slist->next;
+  while (tmplist != slist)
+    {
+      switch (tmplist->pkg->mark)
+        {
+          case PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL:
+            needinstall = TRUE;
+            break;
+
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE:
+            needupgrade = TRUE;
+            break;
+
+          case PKG_STATUS_INSTALLED_MARK_FOR_REMOVE:
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:
+            needremove = TRUE;
+            break;
+
+          default:
+            g_debug ("The status of package in the marked list is error, the package name is:%s", 
+                     tmplist->pkg->name);
+            break;
+        }
+      tmplist = tmplist->next;
+    }
+
+  if (needinstall)
+    {
+      gtk_tree_store_append (treestore, &iterinstall, NULL);
+      gtk_tree_store_set (treestore, &iterinstall, column, "To be installed", -1);
+    }
+
+  if (needupgrade)
+    {
+      gtk_tree_store_append (treestore, &iterupgrade, NULL);
+      gtk_tree_store_set (treestore, &iterupgrade, column, "To be upgraded", -1);
+    }
+
+  if (needremove)
+    {
+      gtk_tree_store_append (treestore, &iterremove, NULL);
+      gtk_tree_store_set (treestore, &iterremove, column, "To be removed", -1);
+    }
+
+  tmplist = slist->next;
+  while (tmplist != slist)
+    {
+      switch (tmplist->pkg->mark)
+        {
+          case PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL:
+            gtk_tree_store_append (treestore, &iter, &iterinstall);
+            break;
+
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE:
+            gtk_tree_store_append (treestore, &iter, &iterupgrade);
+            break;
+
+          case PKG_STATUS_INSTALLED_MARK_FOR_REMOVE:
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:
+            gtk_tree_store_append (treestore, &iter, &iterremove);
+            break;
+
+          default:
+            tmplist = tmplist->next;
+            continue;
+        }
+      gtk_tree_store_set (treestore, &iter, column, tmplist->pkg->name, -1);
+      tmplist = tmplist->next;
+    }
+}
+
+/**
+ * @brief Mark all upgradeable package for upgrade
+ * @param appdata The application manager data
+ */
+void 
+package_list_mark_all_upgradeable (ApplicationManagerData *appdata)
+{
+  PackageList *selectedlist;
+  PackageList *upgradelist;
+  PackageList *tmplist;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  selectedlist = application_manager_data_get_selectedlist (appdata);
+  g_return_if_fail (selectedlist);
+
+  upgradelist = application_manager_data_get_upgradelist (appdata);
+  g_return_if_fail (upgradelist);
+
+  tmplist = upgradelist->next;
+  while (tmplist != upgradelist)
+    {
+      switch (tmplist->pkg->mark)
+        {
+          case PKG_STATUS_UPGRADEABLE:
+            tmplist->pkg->mark = PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE;
+            package_list_insert_node_without_check (selectedlist, tmplist->pkg);
+            break;
+
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:
+            tmplist->pkg->mark = PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE;
+            break;
+
+          default:
+            break;
+        } // end switch
+      tmplist = tmplist->next;
+    }// end while
+}

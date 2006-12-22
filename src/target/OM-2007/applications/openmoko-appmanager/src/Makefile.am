@@ -12,6 +12,7 @@ openmoko_appmanager_SOURCES = appmanager-window.c\
                               appmanager-data.c\
                               package-list.c\
                               pixbuf-list.c\
-                              select-menu.c
+                              select-menu.c\
+                              apply-dialog.c
 
 openmoko_appmanager_LDADD = @OPENMOKO_LIBS@
