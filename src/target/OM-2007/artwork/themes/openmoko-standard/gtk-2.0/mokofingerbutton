@@ -98,6 +98,34 @@ style "mokofingerbutton-dialer" {
 widget "*.mokofingerbutton-dialer" style "mokofingerbutton-dialer"
 
 
+style "mokofingerbutton-white" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_white.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_white.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_white_p.png"
+            stretch         = TRUE
+        }
+    }
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-white" style "mokofingerbutton-white"
+
 
 #
 # Main menu icon button
