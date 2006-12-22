@@ -122,6 +122,7 @@ style "mokofingerbutton-white" {
             stretch         = TRUE
         }
     }
+    MokoPixmapButton::size-request = { 0, 63, 0, 62 }
     xthickness = 0
     ythickness = 0
     GtkButton::focus-line-width = 0
