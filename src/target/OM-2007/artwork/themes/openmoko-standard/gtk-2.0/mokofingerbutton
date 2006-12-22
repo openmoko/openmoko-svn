@@ -122,6 +122,8 @@ style "mokofingerbutton-white" {
             stretch         = TRUE
         }
     }
+    xthickness = 0
+    ythickness = 0
     GtkButton::focus-line-width = 0
 }
 widget "*.mokofingerbutton-white" style "mokofingerbutton-white"
