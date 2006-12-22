@@ -40,12 +40,12 @@ G_BEGIN_DECLS
 #define COLUMN_NUM 		3
 #define ITEM_WIDTH 			140
 #define ITEM_MARGIN 		10
-#define ROW_SPACING 		20
+#define ROW_SPACING 		0
 #define COLUMN_SPACING 	20
-#define ITME_TOTAL_WIDTH 	7
+#define ITME_TOTAL_WIDTH 	5
 
-#define PIXBUF_WIDTH		120 
-#define PIXBUF_HEIGHT		120
+#define PIXBUF_WIDTH		140 
+#define PIXBUF_HEIGHT		140
 
 #define SECTION_ALG_X 		0.6
 #define SECTION_ALG_Y 		0.5

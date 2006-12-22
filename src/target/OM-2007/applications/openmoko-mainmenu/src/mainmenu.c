@@ -93,12 +93,11 @@ moko_main_menu_class_init(MokoMainMenuClass* Klass) /* Class Initialization */
 void
 moko_main_menu_init(MokoMainMenu *mm) {
     PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
-    GtkEventBox *bg_main;
-    GtkEventBox *bg_item;
+    GtkEventBox *eventbox;
 
     mm->section_name =  gtk_label_new ("Main Menu");
     gtk_widget_show (mm->section_name);
-    //gtk_widget_set_name (GTK_WIDGET (mm->section_name), "Section Name");
+    gtk_widget_set_name (GTK_WIDGET (mm->section_name), "Section Name");
     gtk_label_set_single_line_mode (mm->section_name, TRUE);
     gtk_misc_set_alignment (GTK_MISC (mm->section_name), SECTION_ALG_X, SECTION_ALG_Y);
     gtk_misc_set_padding (GTK_MISC (mm->section_name), SECTION_X_PADDING, SECTION_Y_PADDING);
@@ -113,11 +112,10 @@ moko_main_menu_init(MokoMainMenu *mm) {
     	  }
 */
 
-    bg_main = gtk_event_box_new ();
-    gtk_event_box_set_visible_window (bg_main, TRUE);
-    gtk_widget_show (bg_main);
-    gtk_widget_set_name (bg_main, "gtkeventbox-black");
-    //gtk_container_add (bg_main, mm->section_name);
+    eventbox = gtk_event_box_new ();
+    gtk_event_box_set_visible_window (eventbox, TRUE);
+    gtk_widget_show (eventbox);
+    gtk_widget_set_name (eventbox, "gtkeventbox-black");
     
     mm->item_total = gtk_label_new ("11/22");
     gtk_widget_show (mm->item_total);
@@ -147,7 +145,7 @@ moko_main_menu_init(MokoMainMenu *mm) {
     moko_icon_view_set_icon_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_icon.png");
     moko_icon_view_set_text_bg (mm->icon_view, PKGDATADIR"/main_menu_sel_text.png");
     moko_icon_view_set_decorated (mm->icon_view, TRUE);
-    moko_icon_view_set_max_text_length(mm->icon_view, 50);
+    moko_icon_view_set_max_text_length(mm->icon_view, 20);
 
     //mm->icon_view = gtk_icon_view_new ();
     //gtk_icon_view_set_item_width(mm->icon_view, ITEM_WIDTH);
@@ -163,27 +161,21 @@ moko_main_menu_init(MokoMainMenu *mm) {
 
     moko_icon_view_set_pixbuf_column (GTK_ICON_VIEW (mm->icon_view), PIXBUF_COLUMN);
     moko_icon_view_set_text_column (GTK_ICON_VIEW (mm->icon_view), TEXT_COLUMN);
-    //gtk_icon_view_set_model (GTK_ICON_VIEW (mm->icon_view), GTK_TREE_MODEL (mm->list_store));
     moko_icon_view_set_model (GTK_ICON_VIEW (mm->icon_view), GTK_TREE_MODEL (mm->list_store));
 
     mm->scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (mm->scrolled),
 				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
     gtk_widget_show (mm->scrolled);
-   // gtk_scrolled_window_add_with_viewport (GTK_CONTAINER (mm->scrolled),
-    //						mm->icon_view);
     gtk_container_add (GTK_CONTAINER (mm->scrolled), mm->icon_view);
 
-//    mm->icon_view = MOKO_ICON_VIEW(moko_icon_view_new());
-  //  gtk_widget_show (mm->icon_view);
- 
     mm->hbox = gtk_hbox_new (FALSE, FALSE);
     gtk_widget_show (mm->hbox);
     
-    gtk_box_pack_start (mm, bg_main, FALSE, FALSE, 0);
-    gtk_container_add (bg_main, mm->hbox); 
-    gtk_box_pack_start (mm->hbox, mm->section_name, TRUE, TRUE, 10);
-    gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 10);
+    gtk_box_pack_start (mm, eventbox, FALSE, FALSE, 0);
+    gtk_container_add (eventbox, mm->hbox); 
+    gtk_box_pack_start (mm->hbox, mm->section_name, TRUE, TRUE, 0);
+    gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 0);
     gtk_box_pack_end (mm, mm->scrolled, TRUE, TRUE, 0);
     
     moko_sample_model_fill(mm->list_store);

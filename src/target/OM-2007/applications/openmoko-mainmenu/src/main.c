@@ -45,7 +45,7 @@ main( int argc, char** argv ) {
 
     for (i=0; i<4; i++)
     	{
-    	    mma->history[i] =  moko_finger_tool_box_add_button (mma->toolbox);
+    	    mma->history[i] =  moko_finger_tool_box_add_button_without_label (mma->toolbox);
            gtk_widget_show (mma->history[i]);
     	}
    

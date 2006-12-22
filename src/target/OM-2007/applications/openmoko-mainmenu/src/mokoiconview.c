@@ -1156,29 +1156,15 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
       	}
 
       moko_icon_view_update_item_text (icon_view, item);
-      pango_layout_set_alignment (icon_view->priv->layout, rtl ? PANGO_ALIGN_RIGHT: PANGO_ALIGN_LEFT);
+      pango_layout_set_alignment (icon_view->priv->layout, PANGO_ALIGN_CENTER);
       pango_layout_set_width (icon_view->priv->layout, item->layout_width * PANGO_SCALE);
       gtk_paint_layout (GTK_WIDGET (icon_view)->style,
 			icon_view->priv->bin_window,
 			item->selected ? state : GTK_STATE_NORMAL,
-			TRUE, area, GTK_WIDGET (icon_view), "icon_view",
+			TRUE, area, GTK_WIDGET (icon_view), "moko_icon_view",
 			item->layout_x,
 			item->layout_y,
 			icon_view->priv->layout);
-
-      if (GTK_WIDGET_HAS_FOCUS (icon_view) &&
-	  item == icon_view->priv->cursor_item)
-	gtk_paint_focus (GTK_WIDGET (icon_view)->style,
-			 icon_view->priv->bin_window,
-			 GTK_STATE_NORMAL,
-			 area,
-			 GTK_WIDGET (icon_view),
-			 "icon_view",
-			 item->layout_x - ICON_TEXT_PADDING - focus_width - focus_pad,
-			 item->layout_y - ICON_TEXT_PADDING - focus_width - focus_pad,
-			 item->layout_width + 2 * (ICON_TEXT_PADDING + focus_width + focus_pad),
-			 item->layout_height + 2 * (ICON_TEXT_PADDING + focus_width + focus_pad));
-			 
     }
 
 }
@@ -2550,7 +2536,6 @@ moko_icon_view_update_item_text (MokoIconView     *icon_view,
       else
       	   pango_layout_set_text (icon_view->priv->layout, text, -1);
       g_free (text); 
-      
     }
   else
       pango_layout_set_text (icon_view->priv->layout, "", -1);
