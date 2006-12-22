@@ -60,6 +60,7 @@ moko_panel_applet_finalize(GObject* object)
     G_OBJECT_CLASS (moko_panel_applet_parent_class)->finalize (object);
 }
 
+static void
 moko_panel_applet_class_init(MokoPanelAppletClass* klass)
 {
     /* hook parent */
