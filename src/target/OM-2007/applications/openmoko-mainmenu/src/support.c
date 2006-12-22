@@ -57,6 +57,10 @@ moko_sample_model_fill(GtkListStore *store) {
     moko_fill_model(store,"/usr/share/pixmaps/gnome-eyes.png","gnome-eyes");
     moko_fill_model(store,"/usr/share/pixmaps/gnome-geg12.png","gnome-geg12");
     moko_fill_model(store,"/usr/share/pixmaps/gdm.xpm","gdm");
+    moko_fill_model(store,"/usr/share/pixmaps/gnome-eyes.png","gnome-eyes");
+    moko_fill_model(store,"/usr/share/pixmaps/gnome-geg12.png","gnome-geg12");
+    moko_fill_model(store,"/usr/share/pixmaps/gdm.xpm","gdm");
+
 }
 
 /*test code, delete later*/
@@ -65,9 +69,10 @@ moko_sample_hisory_app_fill(MokoPixmapButton *btn)
 {
    GtkWidget *image;
 
-   image = gtk_image_new_from_file ("/usr/share/pixmaps/gdm.png");
+   image = gtk_image_new_from_file ("/usr/share/pixmaps/gnome-eyes.png");
 
    moko_pixmap_button_set_finger_toolbox_btn_center_image(btn, image);
+   
 }
 
 void

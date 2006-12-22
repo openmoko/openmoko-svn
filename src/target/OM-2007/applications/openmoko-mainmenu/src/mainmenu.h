@@ -40,7 +40,7 @@ G_BEGIN_DECLS
 #define COLUMN_NUM 		3
 #define ITEM_WIDTH 			140
 #define ITEM_MARGIN 		0
-#define ROW_SPACING 		40
+#define ROW_SPACING 		20
 #define COLUMN_SPACING 	20
 #define ITME_TOTAL_WIDTH 	7
 

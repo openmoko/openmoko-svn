@@ -1056,25 +1056,27 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
   if (icon_view->priv->pixbuf_column != -1)
     {
       pixbuf = moko_icon_view_get_item_icon (icon_view, item);
+
+      gint decr_width = icon_view->priv->decr_width;
+      gint scaled_w, scaled_h;
+      gint scaled_x, scaled_y;
+      scaled_w =  item->pixbuf_width - 2*decr_width;
+      scaled_h = item->pixbuf_height - 2*decr_width;
+      scaled_x = item->pixbuf_x + decr_width;
+      scaled_y = item->pixbuf_y + decr_width;
+      
+      scaled = gdk_pixbuf_scale_simple (pixbuf, 
+      				scaled_w, scaled_h, GDK_INTERP_NEAREST);
       
       if (item->selected && icon_view->priv->decorated)
       	 {
-	    gint decr_width = icon_view->priv->decr_width;
-  	    gint scaled_w, scaled_h;
- 	    gint scaled_x, scaled_y;
-          scaled_w =  item->pixbuf_width - 2*decr_width;
-          scaled_h = item->pixbuf_height - 2*decr_width;
-          scaled_x = item->pixbuf_x + decr_width;
-          scaled_y = item->pixbuf_y + decr_width;
-      
-         scaled = gdk_pixbuf_scale_simple (pixbuf, 
-      				scaled_w, scaled_h, GDK_INTERP_NEAREST);
 
-	  tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_icon, 
+
+	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_icon, 
 	  					item->pixbuf_width, item->pixbuf_height,
 	  					GDK_INTERP_NEAREST);
 
-	  gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, 
+	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, 
 	  					tmp,
 		       			0, 0,
 		       			item->pixbuf_x, item->pixbuf_y,
@@ -1082,42 +1084,42 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
 		       			GDK_RGB_DITHER_NORMAL,
 		       			item->pixbuf_width,  item->pixbuf_height);
 
-	  gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, scaled,
+	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, scaled,
 		      			0, 0,
 		      			scaled_x, scaled_y,
 		       		scaled_w, scaled_h,
 		       		GDK_RGB_DITHER_NORMAL,
 		       		scaled_w, scaled_h);
 	  
-	  g_object_unref (tmp);
-	  g_object_unref (scaled);
-	  g_object_unref (pixbuf);
-	}
+	    g_object_unref (tmp);
+	    g_object_unref (scaled);
+	 }
       else if (item->selected && !icon_view->priv->decorated)
       	{ 
-      	  tmp = moko_icon_view_get_item_icon (icon_view, item);
-      	  pixbuf = create_colorized_pixbuf (tmp,
+      	    tmp = create_colorized_pixbuf (scaled,
 					    &GTK_WIDGET (icon_view)->style->base[state]);
-      	  gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, pixbuf,
+    	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, tmp,
 		      			0, 0,
-		      			item->pixbuf_x, item->pixbuf_y,
-		       		item->pixbuf_width, item->pixbuf_height,
+		      			scaled_x, scaled_y,
+		       		scaled_w, scaled_h,
 		       		GDK_RGB_DITHER_NORMAL,
-		       		item->pixbuf_width, item->pixbuf_height);
-         g_object_unref (pixbuf);
-	  g_object_unref (tmp);
+		       		scaled_w, scaled_h);
+   	    g_object_unref (tmp);
       	}
       else
       	{
-          gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, pixbuf,
+	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, scaled,
 		      			0, 0,
-		      			item->pixbuf_x, item->pixbuf_y,
-		       		item->pixbuf_width, item->pixbuf_height,
+		      			scaled_x, scaled_y,
+		       		scaled_w, scaled_h,
 		       		GDK_RGB_DITHER_NORMAL,
-		       		item->pixbuf_width, item->pixbuf_height);
-          g_object_unref (pixbuf);
+		       		scaled_w, scaled_h);
+	  
+	    g_object_unref (scaled);
       	}
-              
+
+       g_object_unref (pixbuf);
+       
     }
 
   if (icon_view->priv->text_column != -1 ||
