@@ -28,6 +28,7 @@
 #include <gtk/gtkhbox.h>
 
 #include "mokoiconview.h"
+#include "mokodesktop.h"
 
 enum { 
     PIXBUF_COLUMN,
@@ -72,11 +73,11 @@ typedef struct _MokoMainMenuClass 	MokoMainMenuClass;
 struct _MokoMainMenu {
     GtkVBox vbox;
 
+    MokoDesktopItem *top_item;
     MokoIconView *icon_view;
     GtkListStore *list_store;
     GtkWidget *scrolled;
     GtkHBox *hbox;
-    GtkLabel *blank;
     GtkLabel *section_name;
     GtkLabel *item_total;
     };

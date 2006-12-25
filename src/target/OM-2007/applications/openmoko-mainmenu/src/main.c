@@ -67,6 +67,12 @@ main( int argc, char** argv ) {
     			G_CALLBACK ( moko_wheel_left_up_press_cb), mma);
     g_signal_connect (mma->wheel, "press_right_down",
     			G_CALLBACK ( moko_wheel_right_down_press_cb), mma);
+    g_signal_connect (mma->close->close_btn, "released",
+    			G_CALLBACK (moko_close_page_close_btn_released_cb), mma);
+   // g_signal_connect (mma->mm->icon_view, "move-cursor", 
+    //			G_CALLBACK (moko_move_cursor_cb), mma);
+    g_signal_connect (mma->mm->icon_view, "selection-changed",
+    			G_CALLBACK (moko_icon_view_selection_changed_cb), mma);
 
     			
     moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->mm));

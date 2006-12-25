@@ -31,6 +31,15 @@ moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
 void
 moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
 
+void
+moko_close_page_close_btn_released_cb (GtkButton *button, MokoMainmenuApp *mma);
+
+void 
+moko_up_btn_cb (GtkButton *button, MokoMainMenu *mm);
+
+void 
+moko_down_btn_cb (GtkButton *button, MokoMainMenu *mm);
+
 
 void
 moko_item_select_cb(GtkIconView *icon_view, GtkTreePath *path, gpointer data);
@@ -43,7 +52,7 @@ moko_item_acitvated_cb(GtkIconView *iconview, GtkTreePath *arg1, gpointer user_d
                                             
 //"move-cursor"
 gboolean
-moko_move_cursor_cb(GtkIconView *iconview, GtkMovementStep arg1, gint arg2, gpointer user_data);
+moko_move_cursor_cb(GtkIconView *iconview, GtkMovementStep arg1, gint arg2, MokoMainmenuApp *mma);
 
 //"select-all"
 void
@@ -55,7 +64,7 @@ moko_select_cursor_item_cb(GtkIconView *iconview, gpointer user_data);
 
 //"selection-changed"
 void
-moko_selection_changed_cb(GtkIconView *iconview, gpointer user_data);
+moko_icon_view_selection_changed_cb(GtkIconView *iconview, MokoMainmenuApp *mma);
 
 //"set-scroll-adjustments"
 void

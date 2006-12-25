@@ -75,6 +75,7 @@ struct _MokoIconViewPrivate
   gint max_text_len;
   gint decr_width;
   gboolean decorated;
+  int total_items;
 
   guint ctrl_pressed : 1;
   guint shift_pressed : 1;
@@ -135,7 +136,9 @@ enum
   PROP_BG_TEXT,
   PROP_DECORATION_WIDTH,
   PROP_DECORATED,
-  PROP_MAX_TEXT_LENGTH
+  PROP_MAX_TEXT_LENGTH,
+  PPOP_CURSOR_POSITION,
+  PROP_TOTAL_ITEMS
 };
 
 /* GObject signals */
@@ -505,7 +508,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
                                                         GDK_TYPE_PIXBUF,
                                                         G_PARAM_READWRITE)); 
  /**
-   * MokoIconView::bg-layout:
+   * MokoIconView::bg-text:
    *
    * The selected text column background image, the decorated property should be set first.
    *  Default value NULL.
@@ -560,6 +563,34 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("The width used for scale icon and draw decoration"),
 						     -1, G_MAXINT, -1,
 						     G_PARAM_READWRITE)); 
+
+/**
+   * MokoIconView::max-text-len:
+   *
+   * Maximum text column width.
+   *
+   */
+    g_object_class_install_property (gobject_class,
+				    PPOP_CURSOR_POSITION,
+				   g_param_spec_int ("index",
+						     P_("index of cursor item"),
+						     P_(""),
+						     -1, G_MAXINT, -1,
+						     G_PARAM_READABLE)); 
+
+/**
+   * MokoIconView::max-text-len:
+   *
+   * Maximum text column width.
+   *
+   */
+    g_object_class_install_property (gobject_class,
+				     PROP_TOTAL_ITEMS,
+				   g_param_spec_int ("total_items",
+						     P_("total items number"),
+						     P_(""),
+						     -1, G_MAXINT, -1,
+						     G_PARAM_READABLE)); 
      
 /*Old properties of GtkIconView*/
   /**
@@ -798,6 +829,15 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 		  G_TYPE_BOOLEAN, 2,
 		  GTK_TYPE_MOVEMENT_STEP,
 		  G_TYPE_INT);
+
+    moko_icon_view_signals[SELECTION_CHANGED] =
+    g_signal_new ("selection_changed",
+		  G_TYPE_FROM_CLASS (gobject_class),
+		  G_SIGNAL_RUN_FIRST,
+		  G_STRUCT_OFFSET (MokoIconViewClass, selection_changed),
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__VOID,
+		  G_TYPE_NONE, 0);
     
 /*Only for test delete later*/
   moko_icon_view_add_move_binding (binding_set, GDK_Up, 0,
@@ -2046,6 +2086,7 @@ moko_icon_view_layout_single_row (MokoIconView *icon_view,
       item->col = col;
 
       col += colspan;
+      icon_view->priv->total_items +=1;
       items = items->next;
     }
 
@@ -2124,6 +2165,8 @@ moko_icon_view_layout (MokoIconView *icon_view)
   gint row;
   gint item_width;
 
+  icon_view->priv->total_items = 0;
+
   if (!VALID_MODEL_AND_COLUMNS (icon_view))
     return;
 
@@ -2141,7 +2184,7 @@ moko_icon_view_layout (MokoIconView *icon_view)
 	  moko_icon_view_item_invalidate_size (item);
 	}
     }
-
+  
   icons = icon_view->priv->items;
   y += icon_view->priv->margin;
   row = 0;
@@ -2154,7 +2197,7 @@ moko_icon_view_layout (MokoIconView *icon_view)
       row++;
     }
   while (icons != NULL);
-
+g_debug ("total_item = %d", icon_view->priv->total_items);
   if (maximum_width != icon_view->priv->width)
     {
       icon_view->priv->width = maximum_width;
@@ -2383,7 +2426,13 @@ moko_icon_view_get_property (GObject      *object,
     case PROP_MAX_TEXT_LENGTH:
       g_value_set_int (value, icon_view->priv->max_text_len);
       break;
-
+    case PPOP_CURSOR_POSITION:
+      g_value_set_int (value, icon_view->priv->cursor_item->index);
+      break;
+    case PROP_TOTAL_ITEMS:
+      g_value_set_int (value, icon_view->priv->total_items);
+      break;
+      	
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -4262,3 +4311,35 @@ moko_icon_view_get_max_text_length (MokoIconView *icon_view)
 
     return icon_view->priv->max_text_len;
 }
+
+/**
+ *moko_icon_view_get_cursor_positon:
+ *@icon_view		a #MokoIconView
+ *
+ *Return Value: ::cursor_item::index.
+ *
+ */
+gint
+moko_icon_view_get_cursor_positon (MokoIconView *icon_view)
+{
+  g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
+  if (!icon_view->priv->cursor_item)
+  	return -1;
+  return (icon_view->priv->cursor_item->index + 1);
+}
+
+/**
+ *moko_icon_view_get_total_items:
+ *@icon_view		a #MokoIconView
+ *
+ *Return Value: ::total_items.
+ *
+ */
+gint
+moko_icon_view_get_total_items (MokoIconView *icon_view)
+{
+  g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
+
+    return icon_view->priv->total_items;
+}
+

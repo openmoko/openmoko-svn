@@ -39,8 +39,6 @@ struct _MokoIconViewClass
 {
   GtkContainerClass parent_class;
 
-  void(*moko_icon_view_function)(MokoIconView *self);
-
   void    (* set_scroll_adjustments) (MokoIconView      *icon_view,
 				      GtkAdjustment    *hadjustment,
 				      GtkAdjustment    *vadjustment);
@@ -161,6 +159,13 @@ moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint max_text_lengt
 
 gint
 moko_icon_view_get_max_text_length (MokoIconView *icon_view);
+
+gint
+moko_icon_view_get_cursor_positon (MokoIconView *icon_view);
+
+gint
+moko_icon_view_get_total_items (MokoIconView *icon_view);
+
 
 GtkTreePath *
 moko_icon_view_get_path_at_pos (MokoIconView *icon_view, gint x, gint y);
