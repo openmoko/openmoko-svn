@@ -24,8 +24,8 @@
 //MAXDISPNAMENUM MUST >=1 & <=9!
 //only when user inputs at least MINSENSATIVELEN, should we start to search.
 #define MOKO_DIALER_MIN_SENSATIVE_LEN (1)
-#define MOKO_DIALER_MAX_STATUS_ICONS (1)
-#define MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH ("./default.png")
+#define MOKO_DIALER_MAX_STATUS_ICONS (3)
+#define MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH ("unkown.png")
 #define MOKO_DIALER_MAX_TIPS (3)
 
 #endif

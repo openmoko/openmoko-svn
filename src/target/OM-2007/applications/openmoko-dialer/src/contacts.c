@@ -362,6 +362,62 @@ DIALER_CONTACT_ENTRY* entry;
   return 0;
 }
 
+/**
+ * @brief get the name and picture path from the contact list, indexed by the number provided.
+ * in the case that contact API returns NULL, we will call this function for debug.
+ * 
+ * 
+ *
+ * @param contacts, the first contact pointer of the list.
+ * @param peer, the structure to hold the pointer to the strings in the contact list.
+ * @return 0-failed, 1-found the contact.
+ * @retval 
+ */
+
+int contact_get_peer_info_from_number(DIALER_CONTACT* contacts, DIALER_CONTACT_PEER_INFO * peer)
+{
+
+	peer->hasname=0;
+	peer->searched=1;
+	peer->name=0;
+	peer->picpath=0;
+
+	if(peer->number==0)return 0;
+	if(strlen(peer->number)==0)return 0;
+	
+//  DIALER_CONTACT* contacts=g_contactlist.contacts;
+
+	DIALER_CONTACT_ENTRY* entry;
+ 
+   while(contacts!= 0)
+   {
+     entry=contacts->entry;
+
+	 while(entry)
+	 {
+	
+	 //judge if the entry includes the string
+		 
+	 if(strcmp(entry->content,peer->number)==0)
+	 {	
+	 peer->picpath=contacts->picpath;
+	 peer->name=contacts->name;
+	// DBG_MESSAGE("Yeah, we know the owner is %s.",name);
+ 	peer->hasname=1;
+	 return 1;
+	 }
+     entry=entry->next;
+	 }
+    
+	 
+	 contacts= contacts->next;
+	
+  }
+  //DBG_MESSAGE("Can not find the number.");
+  return 0;
+}
+
+
 
 /**
  * @brief judge if the content includes the sensative string 

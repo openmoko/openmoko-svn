@@ -16,7 +16,20 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
  #include "moko-dialer-includes.h"
+/*
 
+typedef struct _window_outgoing
+{
+
+MokoDialerStatus * status_outgoing;
+
+GtkWidget* window_outgoing;
+
+GtkWidget* buttonSpeaker;
+GtkWidget* buttonCancel;
+GtkWidget* buttonRedial;
+}WindowOutgoing;
+*/
  typedef struct _dialer_data
 {
  //the global data area begins here
@@ -28,6 +41,8 @@ MokoDialerAutolist *moko_dialer_autolist;
 
 DIALER_CONTACTS_LIST_HEAD       g_contactlist; ///< the whole list of the contacts from the contact book.
 
+DIALER_CONTACT_PEER_INFO g_peer_info; ///<hold the peer's name, number, etc.
+
 HISTORY_LIST_HEAD g_historylist; ///< the whole list of the talk history
 
 GLOBAL_STATE g_state; ///< the global states holder. we count on it a lot.
@@ -36,9 +51,16 @@ gint g_ptimeout; ///< the timer hanle
 
 TIMER_DATA g_timer_data;///< the data used by the timers
 
+MokoDialerStatus * status_outgoing;
 GtkWidget * window_dialer;
 GtkWidget* window_outgoing;
 
+//buttons
+GtkWidget* buttonSpeaker;
+GtkWidget* buttonCancel;
+GtkWidget* buttonRedial;
+
+//WindowOutgoing window_outgoing_data;
 // GtkListStore  *g_list_store_filter;///<the list store used by the gtktreeview, for displaying the history list dynamically.
 
 // HISTORY_TYPE g_historyfiltertype;///<indicates the current history filter type, the gtktreeview will be filtered on the value.

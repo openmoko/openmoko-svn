@@ -55,8 +55,10 @@ struct _MokoDialerStatus
   GtkVBox vbox;
 //upper section
   GtkWidget * labelStatusTitle; ///<the topmost title bar of the status
-  GtkWidget * iconStatus[MOKO_DIALER_MAX_STATUS_ICONS];
-
+  GtkWidget * icon;
+  GdkPixbuf * iconStatus[MOKO_DIALER_MAX_STATUS_ICONS];
+  GdkPixbuf * iconError;
+  GdkPixbuf * iconSuccess;
 //lower section  
   GtkWidget * imagePerson;  ///<the image of the person we care
   GtkWidget * labelStatus;	///<the status label

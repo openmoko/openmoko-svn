@@ -73,10 +73,29 @@ void cb_history_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdat
 
 void cb_dialer_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
 {
-    g_debug( "dialer button clicked" );
+ g_debug( "dialer button clicked" );
+gchar codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
+ //get the input digits
+ moko_dialer_textview_get_input(appdata->moko_dialer_text_view, codesinput, 0);
+if(strlen(codesinput)<=1)
+	return;
+//empty the textview
+moko_dialer_textview_empty(appdata->moko_dialer_text_view);
+
+//got the number;
+strcpy(appdata->g_peer_info.number,codesinput);
+
+//retrieve the contact information if any.
+contact_get_peer_info_from_number(appdata->g_contactlist.contacts , &(appdata->g_peer_info));
+// contact_get_peer_info_from_number
+
 if(!appdata->window_outgoing)
 	window_outgoing_init(appdata);
 
+//transfer the contact info
+window_outgoing_prepare(appdata);
+
+//start dialling.
 gtk_widget_show(appdata->window_outgoing);
 }
 
@@ -116,6 +135,8 @@ DIALER_READY_CONTACT * ready_contact=(DIALER_READY_CONTACT * )para_pointer;
 DBG_MESSAGE("GOT THE MESSAGE OF confirmed:%s",ready_contact->p_entry->content);
 moko_dialer_textview_confirm_it(moko_dialer_text_view,ready_contact->p_entry->content);
 DBG_MESSAGE("And here we are supposed to call out directly");
+
+
 
 }
 void
@@ -257,17 +278,11 @@ gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data)
 
 //the buttons
 
-/*
-    GtkWidget *iconimage = gtk_image_new();
-   file_load_person_image_from_relative_path( iconimage,"unkown.png");
- //gtk_image_new_from_stock ("gtk-delete", GTK_ICON_SIZE_BUTTON);
- */
-//    moko_pixmap_button_set_finger_toolbox_btn_center_image (button1, iconimage);
     GtkVBox *  vbox2 = gtk_vbox_new( FALSE, 0 );
     GtkButton* button1 = moko_pixmap_button_new();
     g_signal_connect( G_OBJECT(button1), "clicked", G_CALLBACK(cb_delete_button_clicked), p_dialer_data );
     gtk_widget_set_name( GTK_WIDGET(button1), "mokofingerbutton-orange" );
-	moko_pixmap_button_set_action_btn_center_stock(button1,"gtk-delete");
+	moko_pixmap_button_set_center_stock(button1,"gtk-delete");
 	moko_pixmap_button_set_action_btn_lower_label(button1,"Delete");
   gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X, WINDOW_DIALER_BUTTON_SIZE_Y);
   
@@ -276,7 +291,7 @@ gint window_dialer_init( MOKO_DIALER_APP_DATA* p_dialer_data)
     GtkButton* button3 = moko_pixmap_button_new();
     g_signal_connect( G_OBJECT(button3), "clicked", G_CALLBACK(cb_history_button_clicked), p_dialer_data );
     gtk_widget_set_name( GTK_WIDGET(button3), "mokofingerbutton-orange" );
-moko_pixmap_button_set_action_btn_center_stock(button3,"gtk-refresh");
+moko_pixmap_button_set_center_stock(button3,"gtk-refresh");
 moko_pixmap_button_set_action_btn_lower_label(button3,"History");
   gtk_widget_set_size_request (button3, WINDOW_DIALER_BUTTON_SIZE_X, WINDOW_DIALER_BUTTON_SIZE_Y);	
     gtk_box_pack_start( GTK_BOX(vbox2), GTK_WIDGET(button3),FALSE, FALSE, 5 );
@@ -286,7 +301,7 @@ moko_pixmap_button_set_action_btn_lower_label(button3,"History");
 	
     g_signal_connect( G_OBJECT(button2), "clicked", G_CALLBACK(cb_dialer_button_clicked), p_dialer_data );
     gtk_widget_set_name( GTK_WIDGET(button2), "mokofingerbutton-black" );
-	moko_pixmap_button_set_action_btn_center_stock(button2,"gtk-yes");
+	moko_pixmap_button_set_center_stock(button2,"gtk-yes");
 	moko_pixmap_button_set_action_btn_lower_label(button2,"Dial");
   gtk_widget_set_size_request (button2, WINDOW_DIALER_BUTTON_SIZE_X+20, WINDOW_DIALER_BUTTON_SIZE_Y+80);
   

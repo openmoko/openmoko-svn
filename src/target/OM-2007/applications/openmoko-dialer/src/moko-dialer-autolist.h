@@ -56,7 +56,7 @@ struct _MokoDialerAutolist
   
   DIALER_CONTACTS_LIST_HEAD* head;
 
-  HISTORY_ENTRY * g_currentselected; ///<pointer to the history entry which in the GUI the user selects.
+//  HISTORY_ENTRY * g_currentselected; ///<pointer to the history entry which in the GUI the user selects.
 
 //static PangoFontDescription *font_desc=NULL; ///<the PangoFontDescription which a lot of widget will use it.
 

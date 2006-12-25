@@ -67,6 +67,7 @@ GtkWidget*      moko_dialer_textview_new();
  int moko_dialer_textview_insert(MokoDialerTextview *moko_dialer_textview, const gchar* number);
 
 int  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar* input,int ALL);
+int  moko_dialer_textview_empty(MokoDialerTextview *moko_dialer_textview);
 
 G_END_DECLS
 

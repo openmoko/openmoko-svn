@@ -61,6 +61,20 @@ typedef struct dialer_contact {
 
 
 /**
+ * @brief contact  structure for open dialer.
+ */
+typedef struct peer_info_
+{
+//we should at least have the number called.
+  char number[MOKO_DIALER_MAX_NUMBER_LEN];        ///<the number of the peer
+  char *name;       	///<person name
+  char *picpath;  ///<the picture file path for the person
+  int searched; ///<if true; no need to search for the name 
+  int hasname; ///<if true, we the picpath & name can be used.
+}DIALER_CONTACT_PEER_INFO;
+
+
+/**
  * @brief the structure for intelligent search results.
  */	
 typedef struct dialer_ready_contact
@@ -84,6 +98,7 @@ int contact_release_contact(DIALER_CONTACT *contact);
 int contact_release_contact_list(DIALER_CONTACTS_LIST_HEAD * head);
 int contact_init_from_cmd(DIALER_CONTACTS_LIST_HEAD * head);
 int contact_get_info_from_number(DIALER_CONTACT* contacts,char* name,char* picpath,const char* number);
+int contact_get_peer_info_from_number(DIALER_CONTACT* contacts, DIALER_CONTACT_PEER_INFO * peer);
 int contact_init_contact_data(DIALER_CONTACTS_LIST_HEAD   *p_contactlist);
 int contact_print_contact_list(DIALER_CONTACTS_LIST_HEAD * head);
 int contact_string_has_sensentive (char * content, char *string);

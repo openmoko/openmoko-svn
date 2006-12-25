@@ -178,6 +178,8 @@ if(cur>0)
   
 }
 
+
+
  /**
  * @brief moko_dialer_textview_insert  
  *
@@ -295,6 +297,17 @@ else
 strcpy(input,codestring);
 // DBG_TRACE();
 g_free(codestring);
+return 1;
+}
+
+//delete all the input 
+int  moko_dialer_textview_empty(MokoDialerTextview *moko_dialer_textview)
+{
+GtkTextBuffer *buffer;
+
+buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
+
+gtk_text_buffer_set_text(buffer,"",-1);
 return 1;
 }
 

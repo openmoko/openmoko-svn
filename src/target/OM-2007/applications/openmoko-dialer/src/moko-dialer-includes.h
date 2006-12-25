@@ -27,7 +27,9 @@
 #include "moko-dialer-panel.h"
 #include "moko-dialer-textview.h"
 #include "moko-digit-button.h"
-
+#include "moko-dialer-status.h"
+#include <libmokoui/moko-dialog-window.h>
+//
 
 
 typedef enum _state{
@@ -77,15 +79,14 @@ typedef struct _timerdata
 	gint ptimer;
 	gint stopsec; ///<indicates when the ticks reaches stopsec, then this timer has to be stopped.
 	gint timeout; ///<indicates wether this timer has timeout to stopsec.
-	GtkWidget* label;
+
 	gint ticks; //seconds together
 	gint sec;   
 	gint min;
 	gint hour;
-	char timestring[9] ;
-	gint updatewidget;
-	TimeExpireCallback expirecallback;
+	char timestring[MOKO_DIALER_MAX_NUMBER_LEN] ;
 }TIMER_DATA;
+
 enum {
 	COLUMN_TYPE,
 	COLUMN_TYPEICON,

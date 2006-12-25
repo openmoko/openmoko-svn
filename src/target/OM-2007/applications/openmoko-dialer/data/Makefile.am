@@ -4,7 +4,11 @@ EXTRA_DIST = tony.png\
                 sally.png\
                 10086.png\
                 chaowei.png\
-                unkown.png
+                unkown.png\
+                status0.png\
+                status1.png\
+                status2.png
+                
 resourcedir = $(pkgdatadir)
 
 resource_DATA = tony.png\
@@ -13,5 +17,7 @@ resource_DATA = tony.png\
                 sally.png\
                 10086.png\
                 chaowei.png\
-                unkown.png
-
+                unkown.png\
+                status0.png\
+                status1.png\
+                status2.png

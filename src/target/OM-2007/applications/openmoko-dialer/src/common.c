@@ -157,6 +157,7 @@ gboolean file_load_person_image_scalable_from_relative_path(GtkWidget *widget,ch
 	    src_pixbuf = gdk_pixbuf_new_from_file ( pathname, &err );
 	    DBG_MESSAGE("file_load_person_image_scalable_from_relative_path,width=%d,height=%d",widget->allocation.width, widget->allocation.height);
 	    
+//	    dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, widget->requisition.width, widget->requisition.height, GDK_INTERP_NEAREST);
 	    dest_pixbuf = gdk_pixbuf_scale_simple (src_pixbuf, widget->allocation.width, widget->allocation.height, GDK_INTERP_NEAREST);
 	     gtk_image_set_from_pixbuf (image,dest_pixbuf);
 	    g_free (pathname);
