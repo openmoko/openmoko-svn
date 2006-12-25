@@ -346,6 +346,7 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   GtkListStore  *store;
 
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+  g_return_if_fail (pkglist != NULL);
 
   treeview = application_manager_get_tvpkglist (appdata);
   g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
@@ -378,6 +379,7 @@ navigation_area_rebuild_from_latest (ApplicationManagerData *appdata)
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   pkglist = application_manager_data_get_currentlist (appdata);
+  g_return_if_fail (pkglist != NULL);
 
   navigation_area_refresh_with_package_list (appdata, pkglist);
 }

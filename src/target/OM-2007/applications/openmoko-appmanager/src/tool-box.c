@@ -37,6 +37,7 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
   package_list_mark_all_upgradeable (MOKO_APPLICATION_MANAGER_DATA (data));
   navigation_area_rebuild_from_latest (MOKO_APPLICATION_MANAGER_DATA (data));
 
+  g_debug ("Create a dialog");
   dialog = gtk_message_dialog_new (NULL,
                                    GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_INFO,
@@ -44,6 +45,7 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
                                    _("Marked all upgradeable packages"));
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
+  g_debug ("destroy a dialog");
 }
 
 /**
