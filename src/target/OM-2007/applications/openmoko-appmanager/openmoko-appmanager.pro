@@ -13,7 +13,8 @@ HEADERS += src/application-menu.h \
            src/pixbuf-list.h \
            src/select-menu.h \
            src/tool-box.h \
-           src/apply-dialog.h
+           src/apply-dialog.h \
+           src/install-dialog.h
 SOURCES += src/application-menu.c \
            src/appmanager-data.c \
            src/appmanager-window.c \
@@ -25,7 +26,8 @@ SOURCES += src/application-menu.c \
            src/pixbuf-list.c \
            src/select-menu.c \
            src/tool-box.c \
-           src/apply-dialog.c
+           src/apply-dialog.c \
+           src/install-dialog.c
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
 
