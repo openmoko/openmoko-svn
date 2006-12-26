@@ -71,9 +71,8 @@ void cb_history_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdat
     g_debug( "history button clicked" );
 }
 
-void cb_dialer_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
+void window_dialer_dial_out(MOKO_DIALER_APP_DATA * appdata)
 {
- g_debug( "dialer button clicked" );
 gchar codesinput[MOKO_DIALER_MAX_NUMBER_LEN];
  //get the input digits
  moko_dialer_textview_get_input(appdata->moko_dialer_text_view, codesinput, 0);
@@ -81,6 +80,10 @@ if(strlen(codesinput)<=1)
 	return;
 //empty the textview
 moko_dialer_textview_empty(appdata->moko_dialer_text_view);
+
+//and we set the selected autolist to be No
+moko_dialer_autolist_set_select(appdata->moko_dialer_autolist,-1);
+
 
 //got the number;
 strcpy(appdata->g_peer_info.number,codesinput);
@@ -97,6 +100,12 @@ window_outgoing_prepare(appdata);
 
 //start dialling.
 gtk_widget_show(appdata->window_outgoing);
+
+}
+
+void cb_dialer_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
+{
+window_dialer_dial_out(appdata);
 }
 
 
@@ -135,7 +144,7 @@ DIALER_READY_CONTACT * ready_contact=(DIALER_READY_CONTACT * )para_pointer;
 DBG_MESSAGE("GOT THE MESSAGE OF confirmed:%s",ready_contact->p_entry->content);
 moko_dialer_textview_confirm_it(moko_dialer_text_view,ready_contact->p_entry->content);
 DBG_MESSAGE("And here we are supposed to call out directly");
-
+window_dialer_dial_out(appdata);
 
 
 }
@@ -322,7 +331,28 @@ moko_pixmap_button_set_action_btn_lower_label(button3,"History");
 
     p_dialer_data-> window_dialer=window;
 
-    gtk_widget_show_all( GTK_WIDGET(window) );
+
+//now the wheel and tool box
+
+  MokoFingerToolBox* tools = NULL;
+  tools = moko_finger_window_get_toolbox(window);
+        for ( int i = 0; i < 4; ++i )
+        {
+            GtkButton* newbutton = moko_finger_tool_box_add_button( tools );
+//            g_signal_connect( G_OBJECT(newbutton), "clicked", G_CALLBACK(cb_tool_button_clicked), window );
+        }
+  //     gtk_widget_show( GTK_WIDGET(tools));
+    gtk_widget_show(moko_finger_window_get_toolbox(window));
+
+// MokoFingerWheel* wheel = NULL;
+ gtk_widget_show( GTK_WIDGET(moko_finger_window_get_wheel(window)) );
+
+
+ gtk_widget_show_all( GTK_WIDGET(window) );
+
+
+
+
     
 
     return 1;

@@ -51,6 +51,8 @@ int main( int argc, char** argv )
 //init the dialer window
 
    window_outgoing_init(p_dialer_data);
+
+
    window_dialer_init(p_dialer_data); 
 
     gtk_main();

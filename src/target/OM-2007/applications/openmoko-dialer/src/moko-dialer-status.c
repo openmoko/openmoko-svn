@@ -126,7 +126,7 @@ gtk_label_set_text(GTK_LABEL(moko_dialer_status->labelStatusTitle),text);
 void moko_dialer_status_set_status_label(MokoDialerStatus *moko_dialer_status,const gchar* text)
 {
 
-DBG_MESSAGE("moko_dialer_status_set_status_label:moko_dialer_status=0X%x",moko_dialer_status);
+//DBG_MESSAGE("moko_dialer_status_set_status_label:moko_dialer_status=0X%x",moko_dialer_status);
 gtk_label_set_text(GTK_LABEL(moko_dialer_status->labelStatus),text);
 }
 
@@ -191,6 +191,7 @@ void moko_dialer_status_set_error(MokoDialerStatus *moko_dialer_status)
 {
 if(moko_dialer_status->iconError)
 	gtk_image_set_from_pixbuf(moko_dialer_status->icon, moko_dialer_status->iconError);
+moko_dialer_status_set_status_label(moko_dialer_status,"");
 }
 
 void moko_dialer_status_set_success(MokoDialerStatus *moko_dialer_status)

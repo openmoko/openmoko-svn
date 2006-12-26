@@ -47,13 +47,17 @@ HISTORY_LIST_HEAD g_historylist; ///< the whole list of the talk history
 
 GLOBAL_STATE g_state; ///< the global states holder. we count on it a lot.
 
-gint g_ptimeout; ///< the timer hanle
+//gint g_ptimeout; ///< the timer hanle
 
 TIMER_DATA g_timer_data;///< the data used by the timers
 
 MokoDialerStatus * status_outgoing;
-GtkWidget * window_dialer;
 GtkWidget* window_outgoing;
+
+MokoDialerStatus * status_talking;
+GtkWidget* window_talking;
+
+GtkWidget * window_dialer;
 
 //buttons
 GtkWidget* buttonSpeaker;

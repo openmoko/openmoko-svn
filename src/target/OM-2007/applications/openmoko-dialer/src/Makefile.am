@@ -12,6 +12,7 @@ contacts.c\
 common.c\
 openmoko-dialer-window-dialer.c\
 openmoko-dialer-window-outgoing.c\
+openmoko-dialer-window-talking.c\
 moko-dialer-status.c
 
 openmoko_dialer_LDADD = @OPENMOKO_LIBS@
