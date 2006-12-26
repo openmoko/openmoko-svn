@@ -25,10 +25,8 @@ MokoDesktopItem *mokodesktop_item_new();
 void
 mokodesktop_item_free(MokoDesktopItem *item);
 
-
 Bool
 mokodesktop_item_folder_has_contents(MokoDesktopItem *folder);
-
 
 void
 mokodesktop_item_folder_contents_free( MokoDesktopItem *top_head_item,
@@ -41,8 +39,6 @@ mokodesktop_item_new_with_params (  const char    *name,
 			                              void          *data,
 			                              int            type);
 
-
-
 void
 mokodesktop_items_append ( MokoDesktopItem *item_head,
 			                     MokoDesktopItem *item );
@@ -50,7 +46,6 @@ mokodesktop_items_append ( MokoDesktopItem *item_head,
 void
 mokodesktop_items_insert_after ( MokoDesktopItem *suffix_item,
 		  	                         MokoDesktopItem *item );
-
 
 void
 mokodesktop_items_append_to_folder ( MokoDesktopItem  *item_folder,
@@ -72,7 +67,6 @@ mokodesktop_item_get_prev_sibling(MokoDesktopItem *item);
 
 MokoDesktopItem *
 mokodesktop_item_get_parent(MokoDesktopItem *item);
-
 
 MokoDesktopItem *
 mokodesktop_item_get_child(MokoDesktopItem *item);
@@ -111,15 +105,12 @@ mokodesktop_item_set_user_data ( MokoDesktopItem *item,
 void *
 mokodesktop_item_get_user_data (MokoDesktopItem *item);
 
-
 void
 mokodesktop_item_set_type (MokoDesktopItem *item,
 			                     int            type);
 
 int
 mokodesktop_item_get_type (MokoDesktopItem *item);
-
-
 
 void
 mokodesktop_item_set_activate_callback (MokoDesktopItem *item, 
@@ -130,6 +121,4 @@ mokodesktop_item_folder_activate_cb(void *data1, void *data2);
 
 void
 mbdesktop_item_folder_prev_activate_cb(void *data1, void *data2);
-
-
 #endif

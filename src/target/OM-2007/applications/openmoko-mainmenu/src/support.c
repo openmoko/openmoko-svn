@@ -30,8 +30,10 @@
 *@return Bool
 */
 gboolean
-moko_fill_model(GtkListStore *store, const char* icon_path, const char* icon_name) {
-    if (!icon_path || !icon_name)
+moko_fill_model(GtkListStore *store, const char* icon_path, 
+						const char* icon_name, MokoDesktopItem *item)
+{
+    if (!icon_path && !icon_name)
         return FALSE;
 
     GtkTreeIter iter;
@@ -39,43 +41,11 @@ moko_fill_model(GtkListStore *store, const char* icon_path, const char* icon_nam
 
     gtk_list_store_append (store, &iter);
     pixbuf = gdk_pixbuf_new_from_file_at_size (icon_path, PIXBUF_WIDTH, PIXBUF_HEIGHT, NULL);// ADD Gerro handle later
-    //pixbuf = gdk_pixbuf_new_from_file (icon_path, NULL);// ADD Gerro handle later
-    gtk_list_store_set (store, &iter, PIXBUF_COLUMN, pixbuf, TEXT_COLUMN, icon_name, -1);
+    gtk_list_store_set (store, &iter, PIXBUF_COLUMN, pixbuf, TEXT_COLUMN, icon_name, OBJECT_COLUMN, item, -1);
     g_object_unref (pixbuf);
-
     return TRUE;
 }
-/*test code, delete later*/
-void 
-moko_sample_model_fill(GtkListStore *store) {
-    moko_fill_model(store, "/usr/share/pixmaps/abiword.png", "1234567890123456789");
-    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
-    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
-    moko_fill_model(store, "/usr/share/pixmaps/battstat.png", "battstat");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm.png", "gdm");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm-setup.png", "gdm-setup");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
-    moko_fill_model(store, "/usr/share/pixmaps/abiword.png", "1234567890123456789");
-    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
-    moko_fill_model(store, "/usr/share/pixmaps/anjuta.xpm", "anjuta");
-    moko_fill_model(store, "/usr/share/pixmaps/battstat.png", "battstat");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm.png", "gdm");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm-setup.png", "gdm-setup");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-eyes.png", "gnome-eyes");
-    moko_fill_model(store, "/usr/share/pixmaps/gnome-geg12.png", "gnome-geg12");
-    moko_fill_model(store, "/usr/share/pixmaps/gdm.xpm", "gdm");
 
-}
-
-/*test code, delete later*/
 void
 moko_sample_hisory_app_fill(MokoPixmapButton *btn)
 {

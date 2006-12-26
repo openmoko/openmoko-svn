@@ -437,6 +437,43 @@ moko_marshal_BOOLEAN__ENUM_INT (GClosure     *closure,
   g_value_set_boolean (return_value, v_return);
 }
 
+void
+moko_marshal_BOOLEAN__VOID (GClosure     *closure,
+                            GValue       *return_value,
+                            guint         n_param_values,
+                            const GValue *param_values,
+                            gpointer      invocation_hint,
+                            gpointer      marshal_data)
+{
+  typedef gboolean (*GMarshalFunc_BOOLEAN__VOID) (gpointer     data1,
+                                                  gpointer     data2);
+  register GMarshalFunc_BOOLEAN__VOID callback;
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+  gboolean v_return;
+
+  g_return_if_fail (return_value != NULL);
+  g_return_if_fail (n_param_values == 1);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+  callback = (GMarshalFunc_BOOLEAN__VOID) (marshal_data ? marshal_data : cc->callback);
+
+  v_return = callback (data1,
+                       data2);
+
+  g_value_set_boolean (return_value, v_return);
+}
+
+
 static GtkContainerClass *parent_class = NULL;
 
 static guint moko_icon_view_signals[LAST_SIGNAL] = { 0 };
@@ -565,23 +602,23 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     G_PARAM_READWRITE)); 
 
 /**
-   * MokoIconView::max-text-len:
+   * MokoIconViewItem::index:
    *
-   * Maximum text column width.
+   * index of item.
    *
    */
     g_object_class_install_property (gobject_class,
 				    PPOP_CURSOR_POSITION,
-				   g_param_spec_int ("index",
+				    g_param_spec_int ("index",
 						     P_("index of cursor item"),
 						     P_(""),
 						     -1, G_MAXINT, -1,
 						     G_PARAM_READABLE)); 
 
 /**
-   * MokoIconView::max-text-len:
+   * MokoIconView::total-items:
    *
-   * Maximum text column width.
+   * total items of MokoIconView.
    *
    */
     g_object_class_install_property (gobject_class,
@@ -819,6 +856,16 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 		  G_TYPE_NONE, 2,
 		  GTK_TYPE_ADJUSTMENT, GTK_TYPE_ADJUSTMENT);
 
+  moko_icon_view_signals[ITEM_ACTIVATED] =
+    g_signal_new ("item_activated",
+		  G_TYPE_FROM_CLASS (gobject_class),
+		  G_SIGNAL_RUN_LAST,
+		  G_STRUCT_OFFSET (MokoIconViewClass, item_activated),
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__BOXED,
+		  G_TYPE_NONE, 1,
+		  GTK_TYPE_TREE_PATH);
+
     moko_icon_view_signals[MOVE_CURSOR] =
     g_signal_new ("move_cursor",
 		  G_TYPE_FROM_CLASS (gobject_class),
@@ -838,6 +885,44 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 		  NULL, NULL,
 		  g_cclosure_marshal_VOID__VOID,
 		  G_TYPE_NONE, 0);
+
+     moko_icon_view_signals[SELECT_CURSOR_ITEM] =
+    g_signal_new ("select_cursor_item",
+		  G_TYPE_FROM_CLASS (gobject_class),
+		  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		  G_STRUCT_OFFSET (MokoIconViewClass, select_cursor_item),
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__VOID,
+		  G_TYPE_NONE, 0);
+
+    moko_icon_view_signals[TOGGLE_CURSOR_ITEM] =
+    g_signal_new ("toggle_cursor_item",
+		  G_TYPE_FROM_CLASS (gobject_class),
+		  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		  G_STRUCT_OFFSET (MokoIconViewClass, toggle_cursor_item),
+		  NULL, NULL,
+		  g_cclosure_marshal_VOID__VOID,
+		  G_TYPE_NONE, 0);
+
+    moko_icon_view_signals[ACTIVATE_CURSOR_ITEM] =
+    g_signal_new ("activate_cursor_item",
+		  G_TYPE_FROM_CLASS (gobject_class),
+		  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		  G_STRUCT_OFFSET (MokoIconViewClass, activate_cursor_item),
+		  NULL, NULL,
+		  moko_marshal_BOOLEAN__VOID,
+		  G_TYPE_BOOLEAN, 0);
+    
+/*Only for test delete later*/
+  gtk_binding_entry_add_signal (binding_set, GDK_a, GDK_CONTROL_MASK, "select_all", 0);
+  gtk_binding_entry_add_signal (binding_set, GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "unselect_all", 0);
+  gtk_binding_entry_add_signal (binding_set, GDK_space, 0, "select_cursor_item", 0);
+  gtk_binding_entry_add_signal (binding_set, GDK_space, GDK_CONTROL_MASK, "toggle_cursor_item", 0);
+
+  gtk_binding_entry_add_signal (binding_set, GDK_Return, 0, "activate_cursor_item", 0);
+  gtk_binding_entry_add_signal (binding_set, GDK_ISO_Enter, 0, "activate_cursor_item", 0);
+  gtk_binding_entry_add_signal (binding_set, GDK_KP_Enter, 0, "activate_cursor_item", 0);
+
     
 /*Only for test delete later*/
   moko_icon_view_add_move_binding (binding_set, GDK_Up, 0,
@@ -911,17 +996,6 @@ moko_icon_view_clear(MokoIconView *self)
 { 
   if (!self) g_free (self);
 }
-
-/*
-*
-*
-*/
-void
-moko_icon_view_update(GtkListStore *store) 
-{
-    
-}
-
 
 /* GtkWidget signals */
 static void
@@ -1004,8 +1078,8 @@ moko_icon_view_unrealize (GtkWidget *widget)
   icon_view->priv->bin_window = NULL;
 
   /* GtkWidget::unrealize destroys children and widget->window */
-//  if (GTK_WIDGET_CLASS (parent_class)->unrealize)
-    //(* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
+  if (GTK_WIDGET_CLASS (parent_class)->unrealize)
+    (* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
 }
 
 static void
@@ -1088,7 +1162,7 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
   else
     state = GTK_STATE_ACTIVE;
 
-  if (icon_view->priv->pixbuf_column != -1)
+  if (icon_view->priv->pixbuf_column != -1) //FIXME: rewrite this function
     {
       pixbuf = moko_icon_view_get_item_icon (icon_view, item);
 
@@ -1103,10 +1177,8 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
       scaled = gdk_pixbuf_scale_simple (pixbuf, 
       				scaled_w, scaled_h, GDK_INTERP_NEAREST);
       
-      if (item->selected && icon_view->priv->decorated)
+      if (item->selected && icon_view->priv->decorated) 
       	 {
-
-
 	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_icon, 
 	  					item->pixbuf_width, item->pixbuf_height,
 	  					GDK_INTERP_NEAREST);
@@ -1497,8 +1569,9 @@ moko_icon_view_button_press (GtkWidget      *widget,
 
     }
 
-  if (event->button == 1 && event->type == GDK_2BUTTON_PRESS)
-    {
+  //if (event->button == 1 && event->type == GDK_2BUTTON_PRESS) //GTK: double ckicked launch "item-activated" event
+  if (event->button == 1 && event->type == GDK_BUTTON_PRESS)  //SUNZY : tabbing will launch "item-activated" event
+   {
       item = moko_icon_view_get_item_at_pos (icon_view,
 					    event->x, event->y);
 
@@ -1530,7 +1603,9 @@ moko_icon_view_button_release (GtkWidget      *widget,
   
 #ifdef DND_WORKS
   if (icon_view->priv->pressed_button == event->button)
-    icon_view->priv->pressed_button = -1;
+  {
+      icon_view->priv->pressed_button = -1;
+  }
 #endif
   moko_icon_view_stop_rubberbanding (icon_view);
 
@@ -2197,7 +2272,7 @@ moko_icon_view_layout (MokoIconView *icon_view)
       row++;
     }
   while (icons != NULL);
-g_debug ("total_item = %d", icon_view->priv->total_items);
+  
   if (maximum_width != icon_view->priv->width)
     {
       icon_view->priv->width = maximum_width;
@@ -2923,7 +2998,6 @@ moko_icon_view_real_move_cursor (MokoIconView     *icon_view,
 				gint             count)
 {
   GdkModifierType state;
-
   g_return_val_if_fail (MOKO_ICON_VIEW (icon_view), FALSE);
   g_return_val_if_fail (step == GTK_MOVEMENT_LOGICAL_POSITIONS ||
 			step == GTK_MOVEMENT_VISUAL_POSITIONS ||
@@ -2931,8 +3005,8 @@ moko_icon_view_real_move_cursor (MokoIconView     *icon_view,
 			step == GTK_MOVEMENT_PAGES ||
 			step == GTK_MOVEMENT_BUFFER_ENDS, FALSE);
 
-  if (!GTK_WIDGET_HAS_FOCUS (GTK_WIDGET (icon_view)))
-    return FALSE;
+ //if (!GTK_WIDGET_HAS_FOCUS (GTK_WIDGET (icon_view)))
+   //return FALSE;
 
   gtk_widget_grab_focus (GTK_WIDGET (icon_view));
 
@@ -2944,7 +3018,6 @@ moko_icon_view_real_move_cursor (MokoIconView     *icon_view,
         icon_view->priv->shift_pressed = TRUE;
     }
   /* else we assume not pressed */
-
   switch (step)
     {
     case GTK_MOVEMENT_LOGICAL_POSITIONS:
@@ -2963,7 +3036,6 @@ moko_icon_view_real_move_cursor (MokoIconView     *icon_view,
     default:
       g_assert_not_reached ();
     }
-
   icon_view->priv->ctrl_pressed = FALSE;
   icon_view->priv->shift_pressed = FALSE;
 
@@ -3103,8 +3175,8 @@ moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
   MokoIconViewItem *item;
   gboolean dirty = FALSE;
   
-  if (!GTK_WIDGET_HAS_FOCUS (icon_view))
-    return;
+ // if (!GTK_WIDGET_HAS_FOCUS (icon_view)) 
+    //return;
   
   if (!icon_view->priv->cursor_item)
     {

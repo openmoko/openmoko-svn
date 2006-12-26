@@ -92,7 +92,8 @@ moko_main_menu_class_init(MokoMainMenuClass* Klass) /* Class Initialization */
  *@return none
  */
 void
-moko_main_menu_init(MokoMainMenu *mm) {
+moko_main_menu_init(MokoMainMenu *mm) 
+{
     PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
     GtkEventBox *eventbox;
     GtkButton *btn[2];// Use to test, delete later.
@@ -109,6 +110,8 @@ moko_main_menu_init(MokoMainMenu *mm) {
 
     /* Build Lists (parse .directory and .desktop files) */	
     ret = mokodesktop_init(mm->top_item, ITEM_TYPE_CNT);
+
+    mm->current = mm->top_item;
     
     mm->section_name =  gtk_label_new ("Main Menu");
     gtk_widget_show (mm->section_name);
@@ -135,7 +138,7 @@ moko_main_menu_init(MokoMainMenu *mm) {
     mm->item_total = gtk_label_new ("0/0");
     //gtk_widget_show (mm->item_total);
     gtk_label_set_justify (mm->item_total, GTK_JUSTIFY_RIGHT);
-    //gtk_label_set_width_chars (mm->item_total, ITME_TOTAL_WIDTH);
+    gtk_label_set_width_chars (mm->item_total, ITME_TOTAL_WIDTH);
     gtk_misc_set_alignment (GTK_MISC (mm->item_total), ITEM_TOTAL_ALG_X, ITEM_TOTAL_ALG_Y);
     if (PangoFont) {
     	  pango_font_description_set_size (PangoFont, FONT_SIZE_ITEM);
@@ -160,9 +163,9 @@ moko_main_menu_init(MokoMainMenu *mm) {
 
     mm->list_store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_POINTER);
 
-    moko_icon_view_set_pixbuf_column (GTK_ICON_VIEW (mm->icon_view), PIXBUF_COLUMN);
-    moko_icon_view_set_text_column (GTK_ICON_VIEW (mm->icon_view), TEXT_COLUMN);
-    moko_icon_view_set_model (GTK_ICON_VIEW (mm->icon_view), GTK_TREE_MODEL (mm->list_store));
+    moko_icon_view_set_pixbuf_column (mm->icon_view, PIXBUF_COLUMN);
+    moko_icon_view_set_text_column (mm->icon_view, TEXT_COLUMN);
+    moko_icon_view_set_model (mm->icon_view, GTK_TREE_MODEL (mm->list_store));
 
     mm->scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (mm->scrolled),
@@ -175,19 +178,19 @@ moko_main_menu_init(MokoMainMenu *mm) {
     
     gtk_box_pack_start (mm, eventbox, FALSE, FALSE, 0);
     gtk_container_add (eventbox, mm->hbox); 
-    gtk_box_pack_start (mm->hbox, btn[0], FALSE, FALSE, 0);
-    gtk_box_pack_start (mm->hbox, btn[1], FALSE, FALSE, 0);
+    //gtk_box_pack_start (mm->hbox, btn[0], FALSE, FALSE, 0);
+    //gtk_box_pack_start (mm->hbox, btn[1], FALSE, FALSE, 0);
     gtk_box_pack_start (mm->hbox, mm->section_name, TRUE, TRUE, 0);
     gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 0);
     gtk_box_pack_end (mm, mm->scrolled, TRUE, TRUE, 0);
 
-    g_signal_connect (btn[0], "pressed", G_CALLBACK(moko_up_btn_cb), mm);
-    g_signal_connect (btn[1], "pressed", G_CALLBACK(moko_down_btn_cb), mm);
+   // g_signal_connect (btn[0], "pressed", G_CALLBACK(moko_up_btn_cb), mm);
+   // g_signal_connect (btn[1], "pressed", G_CALLBACK(moko_down_btn_cb), mm);
 
     //moko_sample_model_fill(mm->list_store);
     gtk_widget_show (mm);
     
-    moko_main_menu_update (mm, mm->top_item);
+    moko_main_menu_update (mm, mm->current);
 
     if (PangoFont)
     	  pango_font_description_free (PangoFont);
@@ -196,7 +199,8 @@ moko_main_menu_init(MokoMainMenu *mm) {
 
 /* Construction */
 GtkWidget* 
-moko_main_menu_new() {
+moko_main_menu_new() 
+{
     return GTK_WIDGET(g_object_new(moko_main_menu_get_type(), NULL));
 }
 
@@ -219,31 +223,49 @@ moko_main_menu_clear(MokoMainMenu *mm) {
 *
 */
 gboolean
-moko_main_menu_update(MokoMainMenu *mm, MokoDesktopItem *item) {
+moko_main_menu_update(MokoMainMenu *mm, MokoDesktopItem *item)
+{
   MokoDesktopItem *item_new;
-  
   g_debug("mokodesktop: item [%d][%s][%s]\n", item->type, item->name, item->icon_name);
     
   item_new = item->item_child;
-  
+  g_debug("mokodesktop: item [%d][%s][%s]\n", item_new->type, item_new->name, item_new->icon_name);
+  g_debug ("test");
+
   if (item->type == ITEM_TYPE_ROOT)
+  	{
+  	  g_debug ("23test");
+
   	moko_set_label_content (mm->section_name, "Main Menu");
+  	}
   else if (item->type == ITEM_TYPE_FOLDER)
+  	{
+  	g_debug ("123test");
+
   	moko_set_label_content (mm->section_name, item->name);
+  	}
   else 
   	return FALSE; // neither ROOT nor FOLDER
-  	
-  mokodesktop_items_enumerate_siblings(item->item_child, item_new){
-  	char path[512];
-	g_debug("mokodesktop: item [%d][%s][%s][%s]\n", 
-				item_new->type, item_new->name,
-				item_new->icon_name, item_new->item_parent->name);
-	snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
-	moko_fill_model(mm->list_store, path, item_new->name);
+g_debug ("test");
+  if (mm->list_store)
+  	gtk_list_store_clear (mm->list_store);
+  g_debug ("test");
+
+  mokodesktop_items_enumerate_siblings(item->item_child, item_new)
+  { 
+  g_debug ("11test");
+
+      char path[512];
+      //g_debug("mokodesktop: item [%d][%s][%s][%s]\n", 
+      //			item_new->type, item_new->name,
+      //			item_new->icon_name, item_new->item_parent->name);
+      snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
+      moko_fill_model(mm->list_store, path, item_new->name, item_new);
 	
-	g_debug("item [%s][%s]\n", item_new->name, path);
+	//g_debug("item [%s][%s]\n", item_new->name, path);
   }
-  
+  g_debug ("test");
+
   return TRUE;
 }
 

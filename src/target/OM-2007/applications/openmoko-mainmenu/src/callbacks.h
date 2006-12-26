@@ -42,25 +42,28 @@ moko_down_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
 
 void
-moko_item_select_cb(GtkIconView *icon_view, GtkTreePath *path, gpointer data);
+moko_item_select_cb(GtkIconView *icon_view, GtkTreePath *path, MokoMainmenuApp *mma);
 
+
+void
+moko_icon_view_item_acitvated_cb(GtkIconView *iconview, 
+						GtkTreePath *path, MokoMainmenuApp *mma);
+
+/*test*/
 gboolean /*will be call when Enter key pressed*/
-moko_activate_cursor_item_cb(GtkIconView *iconview, gpointer user_data);
+moko_activate_cursor_item_cb(GtkIconView *iconview, MokoMainmenuApp *mma);
 
-void /*double click callback*/
-moko_item_acitvated_cb(GtkIconView *iconview, GtkTreePath *arg1, gpointer user_data);
-                                            
 //"move-cursor"
 gboolean
 moko_move_cursor_cb(GtkIconView *iconview, GtkMovementStep arg1, gint arg2, MokoMainmenuApp *mma);
 
 //"select-all"
 void
-moko_select_all_cb(GtkIconView *iconview, gpointer user_data);
+moko_select_all_cb(GtkIconView *iconview, MokoMainmenuApp *mma);
 
 //"select-cursor-item"
 void
-moko_select_cursor_item_cb(GtkIconView *iconview, gpointer user_data);
+moko_select_cursor_item_cb(GtkIconView *iconview, MokoMainmenuApp *mma);
 
 //"selection-changed"
 void
@@ -68,15 +71,15 @@ moko_icon_view_selection_changed_cb(GtkIconView *iconview, MokoMainmenuApp *mma)
 
 //"set-scroll-adjustments"
 void
-moko_set_scroll_adjustments_cb(GtkIconView *iconview, GtkAdjustment *arg1, GtkAdjustment *arg2, gpointer user_data);
+moko_set_scroll_adjustments_cb(GtkIconView *iconview, GtkAdjustment *arg1, GtkAdjustment *arg2, MokoMainmenuApp *mma);
 
 //"toggle-cursor-item"
 void
-moko_toggle_cursor_item_cb(GtkIconView *iconview, gpointer user_data);
+moko_toggle_cursor_item_cb(GtkIconView *iconview, MokoMainmenuApp *mma);
 
 //"unselect-all"
 void
-moko_unselect_all_cb(GtkIconView *iconview, gpointer user_data);
+moko_unselect_all_cb(GtkIconView *iconview, MokoMainmenuApp *mma);
 
  
  #endif /*callbacks.h*/

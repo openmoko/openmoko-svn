@@ -33,7 +33,7 @@
 enum { 
     PIXBUF_COLUMN,
     TEXT_COLUMN,
-    PATH_COLUMN,
+    OBJECT_COLUMN,
     NUM_COLs
     };
 
@@ -74,6 +74,7 @@ struct _MokoMainMenu {
     GtkVBox vbox;
 
     MokoDesktopItem *top_item;
+    MokoDesktopItem *current;
     MokoIconView *icon_view;
     GtkListStore *list_store;
     GtkWidget *scrolled;
@@ -84,7 +85,7 @@ struct _MokoMainMenu {
 
 struct _MokoMainMenuClass {
     GtkVBoxClass parent_class;
-    //GtkWidgetClass parent_class;
+
     void(*moko_main_menu_function)(MokoMainMenu *mm);
     };
 
@@ -93,6 +94,9 @@ moko_main_menu_get_type (void);
 
 GtkWidget*
 moko_main_menu_new ();
+
+gboolean
+moko_main_menu_update(MokoMainMenu *mm, MokoDesktopItem *item);
 
 G_END_DECLS
 

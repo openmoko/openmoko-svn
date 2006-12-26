@@ -45,6 +45,7 @@ main( int argc, char** argv ) {
     mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
     gtk_widget_show (GTK_WIDGET (mma->window));
     mma->wheel = moko_finger_window_get_wheel (mma->window);
+    //GTK_WIDGET_UNSET_FLAGS (GTK_WIDGET (mma->wheel), GTK_CAN_FOCUS);
     mma->toolbox = moko_finger_window_get_toolbox(mma->window);
 
     for (i=0; i<4; i++)
@@ -73,7 +74,10 @@ main( int argc, char** argv ) {
     //			G_CALLBACK (moko_move_cursor_cb), mma);
     g_signal_connect (mma->mm->icon_view, "selection-changed",
     			G_CALLBACK (moko_icon_view_selection_changed_cb), mma);
-
+    //g_signal_connect (mma->mm->icon_view, "select-cursor-item",
+    //			G_CALLBACK (moko_select_cursor_item_cb), mma);
+    g_signal_connect (mma->mm->icon_view, "item_activated",
+    			G_CALLBACK (moko_icon_view_item_acitvated_cb), mma);
     			
     moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->mm));
     moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->close));
