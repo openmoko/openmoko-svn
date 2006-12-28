@@ -24,6 +24,7 @@
 #include "package-list.h"
 #include "appmanager-window.h"
 #include "apply-dialog.h"
+#include "install-dialog.h"
 
 /**
  * @brief The callback function of the button "upgrade"
@@ -55,7 +56,10 @@ void
 on_apply_clicked (GtkButton *bapply, gpointer data)
 {
   GtkWidget *dialog;
+  InstallDialog *installdialog;
   gint      res;
+  gint      number;
+
   g_debug ("Clicked the button apply");
 
   if (package_list_check_marked_list_empty (
@@ -75,6 +79,25 @@ on_apply_clicked (GtkButton *bapply, gpointer data)
   res = gtk_dialog_run (GTK_DIALOG (dialog));
 
   //FIXME Add code to install/remove/upgrade package
+  if (res == GTK_RESPONSE_OK)
+    {
+      g_debug ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      g_debug ("Check the number of the selected list");
+      number = package_list_get_number_of_selected (MOKO_APPLICATION_MANAGER_DATA (data));
+      installdialog = install_dialog_new (MOKO_APPLICATION_MANAGER_DATA (data), number);
+      application_manager_data_set_install_dialog (MOKO_APPLICATION_MANAGER_DATA (data),
+                                                   GTK_WIDGET (installdialog));
+      g_debug ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      g_debug ("Begin to install/upgrade/remove packages");
+      if (!g_thread_supported ())
+        {
+          g_thread_init (NULL);
+        }
+
+      g_thread_create (package_list_execute_change, data, TRUE, NULL);
+      gtk_dialog_run (GTK_DIALOG (installdialog));
+      gtk_widget_destroy (GTK_WIDGET (installdialog));
+    }
 
   gtk_widget_destroy (dialog);
 }

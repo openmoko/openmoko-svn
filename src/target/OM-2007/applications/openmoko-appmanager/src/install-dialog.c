@@ -19,6 +19,7 @@
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
 #include <libmokoui/moko-tree-view.h>
+#include <string.h>
 
 #include "install-dialog.h"
 #include "appmanager-window.h"
@@ -47,11 +48,13 @@ typedef struct _InstallDialogPriv {
   gint     displaystatus;                ///<! The status of the display process
   gboolean requestcancel;                ///<! Cancel the install status by user choice
   GtkWidget  *textview;                  ///<! The textview in the dialog
+  gint     pkgnum;                       ///<! The number of packages that need be installed/upgraded/removed
 } InstallDialogPriv;
 
 static void 
 install_dialog_class_init (InstallDialogClass *klass)
 {
+  g_type_class_add_private (klass, sizeof (InstallDialogPriv));
 }
 
 static void 
@@ -75,7 +78,7 @@ install_dialog_init (InstallDialog *self)
   priv->requestcancel = FALSE;
 
   // Init the dialog
-  gtk_widget_set_size_request (GTK_WIDGET (self), 300, 480);
+  gtk_widget_set_size_request (GTK_WIDGET (self), 480, 480);
   gtk_window_set_title (GTK_WINDOW (self), _("dialog1"));
   gtk_window_set_type_hint (GTK_WINDOW (self), GDK_WINDOW_TYPE_HINT_DIALOG);
 
@@ -129,6 +132,7 @@ install_dialog_new (ApplicationManagerData *appdata, gint pkgnum)
       g_debug ("Can not malloc memory for the install dialog");
       return NULL;
     }
+  priv->pkgnum = pkgnum;
   g_timeout_add (100, (GSourceFunc)install_dialog_time_out, dialog);
 
   return dialog;
@@ -228,6 +232,8 @@ install_dialog_time_out (gpointer dialog)
 
 /**
  * @brief Set the install status of the install dialog
+ * @param dialog The install dialog
+ * @param status The status
  */
 void 
 install_dialog_set_install_status (InstallDialog *dialog, 
@@ -240,4 +246,50 @@ install_dialog_set_install_status (InstallDialog *dialog,
 
   g_return_if_fail ((status >= STATUS_INSTALL) && (status <= STATUS_COMPLETE));
   priv->installstatus = status;
+}
+
+/**
+ * @brief Add a prepare infomation to the dialog infomation
+ * @param dialog The install dialog
+ * @param info The infomation string
+ */
+void 
+install_dialog_add_prepare_info (InstallDialog *dialog, 
+                                 const gchar *info)
+{
+  InstallDialogPriv *priv;
+
+  g_return_if_fail (MOKO_IS_INSTALL_DIALOG (dialog));
+  priv = MOKO_INSTALL_DIALOG_GET_PRIVATE (dialog);
+
+  g_return_if_fail (priv->preparenum < priv->pkgnum);
+
+  priv->prepareinfolist[priv->preparenum] = g_malloc (strlen (info) +1);
+  g_return_if_fail (priv->prepareinfolist[priv->preparenum] != NULL);
+
+  strcpy (priv->prepareinfolist[priv->preparenum], info);
+  priv->preparenum ++;
+}
+
+/**
+ * @brief Add a install infomation to the dialog infomation
+ * @param dialog The install dialog
+ * @param info The infomation string
+ */
+void 
+install_dialog_add_install_info (InstallDialog *dialog, 
+                                 const gchar *info)
+{
+  InstallDialogPriv *priv;
+
+  g_return_if_fail (MOKO_IS_INSTALL_DIALOG (dialog));
+  priv = MOKO_INSTALL_DIALOG_GET_PRIVATE (dialog);
+
+  g_return_if_fail (priv->installnum < priv->pkgnum);
+
+  priv->installinfolist[priv->installnum] = g_malloc (strlen (info) +1);
+  g_return_if_fail (priv->installinfolist[priv->installnum] != NULL);
+
+  strcpy (priv->installinfolist[priv->installnum], info);
+  priv->installnum ++;
 }

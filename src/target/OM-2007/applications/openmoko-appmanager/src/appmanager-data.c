@@ -48,6 +48,7 @@ application_manager_data_init (ApplicationManagerData *data)
   data->nosecpkglist = NULL;
   data->currentlist = NULL;
   data->selectedlist = NULL;
+  data->installdialog = NULL;
 
   for (i = 0; i < N_COUNT_PKG_STATUS; i++)
     {
@@ -282,6 +283,20 @@ application_manager_data_set_search_history (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->searchhistory = searchhistory;
+}
+
+/**
+ * @brief Set the install dialog to the application manager data
+ * @param appdata The application manager data struct
+ * @param installdialog The install dialog
+ */
+void 
+application_manager_data_set_install_dialog (ApplicationManagerData *appdata,
+                                             GtkWidget *installdialog)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->installdialog = installdialog;
 }
 
 /**
@@ -546,4 +561,17 @@ application_manager_data_get_search_history (ApplicationManagerData *appdata)
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->searchhistory;
+}
+
+/**
+ * @brief Get the install dialog from the application manager data
+ * @param appdata The application manager data
+ * @return The install dialog
+ */
+GtkWidget *
+application_manager_data_get_install_dialog (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->installdialog;
 }

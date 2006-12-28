@@ -68,4 +68,9 @@ void package_list_fill_store_with_selected_list (GtkTreeStore *treestore,
                                                  gpointer *selectedlist,
                                                  gint column);
 void package_list_mark_all_upgradeable (ApplicationManagerData *appdata);
+
+gpointer package_list_execute_change (gpointer data);
+
+gint package_list_get_number_of_selected (ApplicationManagerData *appdata);
+
 #endif

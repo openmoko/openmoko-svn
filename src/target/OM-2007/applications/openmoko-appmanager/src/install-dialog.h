@@ -71,6 +71,11 @@ GType install_dialog_get_type (void);
 InstallDialog *install_dialog_new (ApplicationManagerData *appdata, gint pkgnum);
 void install_dialog_set_install_status (InstallDialog *dialog, 
                                         gint status);
+void install_dialog_add_prepare_info (InstallDialog *dialog, 
+                                      const gchar *info);
+
+void install_dialog_add_install_info (InstallDialog *dialog, 
+                                      const gchar *info);
 
 G_END_DECLS
 

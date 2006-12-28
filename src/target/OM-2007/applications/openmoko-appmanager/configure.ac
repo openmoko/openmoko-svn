@@ -15,7 +15,9 @@ PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
                  AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
 PKG_CHECK_MODULES(LIBIPKG, libipkg,,
                 exit)
-LIBS="$LIBS $GTK_LIBS $LIBIPKG_LIBS"
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0,,
+                exit)
+LIBS="$LIBS $GTK_LIBS $LIBIPKG_LIBS $GTHREAD_LIBS"
 CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBIPKG_CFLAGS -DIPKG_LIB"
 
 # output stuff

@@ -17,6 +17,7 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
+#include <gtk/gtk.h>
 
 #include "appmanager-data.h"
 #include "package-list.h"
@@ -24,6 +25,7 @@
 #include "filter-menu.h"
 #include "errorcode.h"
 #include "navigation-area.h"
+#include "install-dialog.h"
 
 /**
  * @brief The structor of Package list node
@@ -45,6 +47,7 @@ typedef struct section_list {
 } SectionList;
 
 static gint package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg);
+static void package_list_free_all_dynamic (ApplicationManagerData *appdata);
 
 /**
  * @brief Version compare
@@ -1203,4 +1206,255 @@ package_list_mark_all_upgradeable (ApplicationManagerData *appdata)
         } // end switch
       tmplist = tmplist->next;
     }// end while
+}
+
+/**
+ * @brief Install/upgrade/remove pacakges that belong to the selected list
+ * @param data The application manager data
+ */
+gpointer 
+package_list_execute_change (gpointer data)
+{
+  ApplicationManagerData *appdata;
+  GtkWidget *installdialog;
+  PackageList *pkglist;
+  PackageList *tmplist;
+  char    *newname = NULL;
+  gchar   tmpstr[256];
+  gchar   *errstr;
+  int     ret;
+  int     res;
+  gboolean  change;
+
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data), NULL);
+  appdata = MOKO_APPLICATION_MANAGER_DATA (data);
+
+  installdialog = application_manager_data_get_install_dialog(appdata);
+  g_return_val_if_fail (MOKO_IS_INSTALL_DIALOG (installdialog), NULL);
+
+  pkglist = application_manager_data_get_selectedlist (appdata);
+  g_return_val_if_fail (pkglist != NULL, NULL);
+
+  tmplist = pkglist->next;
+  change = FALSE;
+
+  g_debug ("Begin to execute the marked packages");
+
+  while (tmplist != pkglist)
+    {
+      switch (tmplist->pkg->mark)
+        {
+          case PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL:
+            snprintf (tmpstr, 255, 
+                      "Begin install package \"%s\"\n",
+                      tmplist->pkg->name);
+            install_dialog_add_prepare_info (MOKO_INSTALL_DIALOG (installdialog),
+                                             tmpstr);
+            //FIXME The newname of the packages are not used now.
+            g_debug ("Begin to install:%s", tmplist->pkg->name);
+            ret = ipkg_install_cmd (tmplist->pkg->name, "root",  &newname);
+            g_debug ("************************************************");
+            g_debug ("Install:%s complete, ret=%d", tmplist->pkg->name, ret);
+            if (ret == 0)
+              {
+                snprintf (tmpstr, 255, 
+                          "Install package \"%s\" success.\n",
+                          tmplist->pkg->name);
+                install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                 tmpstr);
+              }
+            else
+              {
+                res = strlen (get_error_msg ());
+                errstr = g_malloc (res + 100);
+                if (errstr == NULL)
+                  {
+                    // FIXME Add error manager code here
+                    g_debug ("errstr malloc menory NULL");
+                    install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                     get_error_msg ());
+                    break;
+                  }
+                snprintf (errstr, res + 100, 
+                          "Install package \"%s\" error, the error message is:\n%s\n",
+                          tmplist->pkg->name,
+                          get_error_msg ());
+                install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                 errstr);
+                g_debug ("prepare free errstr");
+                g_debug ("err =%s", errstr);
+                g_free (errstr);
+                g_debug ("after free errstr");
+                errstr = NULL;
+              }
+            break;
+
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE:
+            snprintf (tmpstr, 255, 
+                      "Begin upgrade package \"%s\"\n",
+                      tmplist->pkg->name);
+            install_dialog_add_prepare_info (MOKO_INSTALL_DIALOG (installdialog),
+                                             tmpstr);
+            //FIXME The newname of the packages are not used now.
+            ret = ipkg_install_cmd (tmplist->pkg->name, "root",  &newname);
+            if (ret == 0)
+              {
+                snprintf (tmpstr, 255, 
+                          "Upgrade package \"%s\" success.\n",
+                          tmplist->pkg->name);
+                install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                 tmpstr);
+              }
+            else
+              {
+                res = strlen (get_error_msg ());
+                errstr = g_malloc (res + 100);
+                if (errstr == NULL)
+                  {
+                    // FIXME Add error manager code here
+                    install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                     get_error_msg ());
+                    break;
+                  }
+                snprintf (errstr, res + 100, 
+                          "Upgrade package \"%s\" error, the error message is:\n%s\n",
+                          tmplist->pkg->name,
+                          get_error_msg ());
+                install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                 errstr);
+                g_free (errstr);
+                errstr = NULL;
+              }
+            break;
+
+          case PKG_STATUS_INSTALLED_MARK_FOR_REMOVE:
+          case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:
+            snprintf (tmpstr, 255, 
+                      "Begin remove package \"%s\"\n",
+                      tmplist->pkg->name);
+            install_dialog_add_prepare_info (MOKO_INSTALL_DIALOG (installdialog),
+                                             tmpstr);
+            //FIXME The newname of the packages are not used now.
+            ret = ipkg_remove_cmd (tmplist->pkg->name);
+            if (ret == 0)
+              {
+                snprintf (tmpstr, 255, 
+                          "Remove package \"%s\" success.\n",
+                          tmplist->pkg->name);
+                install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                 tmpstr);
+              }
+            else
+              {
+                res = strlen (get_error_msg ());
+                errstr = g_malloc (res + 100);
+                if (errstr == NULL)
+                  {
+                    // FIXME Add error manager code here
+                    install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                     get_error_msg ());
+                    break;
+                  }
+                snprintf (errstr, res + 100, 
+                          "Remove package \"%s\" error, the error message is:\n%s\n",
+                          tmplist->pkg->name,
+                          get_error_msg ());
+                install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
+                                                 errstr);
+                g_free (errstr);
+                errstr = NULL;
+              }
+            break;
+
+          default :
+            break;
+          if (ret == 0)
+            {
+              change = TRUE;
+              if (newname != NULL)
+                {
+                  g_debug ("free new name");
+                  free (newname);
+                  g_debug ("free new name success");
+                  newname = NULL;
+                }
+            }
+        }
+      tmplist = tmplist->next;
+    }
+
+  if (change)
+    {
+      install_dialog_set_install_status (MOKO_INSTALL_DIALOG (installdialog),
+                                         STATUS_REINIT);
+      package_list_free_all_dynamic (appdata);
+
+      ret = init_package_list (appdata);
+      if (ret != OP_SUCCESS)
+        {
+          g_debug ("Can not initial the libipkg, the result is%d", ret);
+          return NULL;
+        }
+      ret = package_list_build_index (appdata);
+      if (ret != OP_SUCCESS)
+        {
+          g_debug ("Can not build index for packages");
+          return NULL;
+        }
+      // FIXME Add reinit filter menu code late
+    }
+
+  install_dialog_set_install_status (MOKO_INSTALL_DIALOG (installdialog),
+                                     STATUS_COMPLETE);
+
+  return NULL;
+}
+
+/**
+ * @brief Free all dynamic data
+ * @param appdata The application manager data
+ */
+static void 
+package_list_free_all_dynamic (ApplicationManagerData *appdata)
+{
+  PKG_LIST_HEAD *pkgheader;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  pkgheader = application_manager_data_get_pkglist (appdata);
+  if (pkgheader != NULL)
+    {
+      free_pkg_list (pkgheader);
+      g_free (pkgheader);
+      application_manager_data_set_pkglist (appdata, NULL);
+    } 
+
+  package_list_clear_old_index (appdata);
+}
+
+/**
+ * @brief Get the number of packages in the selected list
+ * @param appdata The application manager data
+ */
+gint 
+package_list_get_number_of_selected (ApplicationManagerData *appdata)
+{
+  PackageList *pkglist;
+  PackageList *tmplist;
+  gint        number;
+
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), -1);
+
+  pkglist = application_manager_data_get_selectedlist (appdata);
+  g_return_val_if_fail (pkglist != NULL, 0);
+
+  number = 0;
+  tmplist = pkglist->next;
+  while (tmplist != pkglist)
+    {
+      number ++;
+      tmplist = tmplist->next;
+    }
+
+  return number;
 }

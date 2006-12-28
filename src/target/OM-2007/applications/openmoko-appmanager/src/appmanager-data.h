@@ -69,6 +69,7 @@ typedef struct _ApplicationManagerData {
   gpointer         currentlist;        ///<! The current list that display on the navigation list
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
   gchar            *searchhistory;     ///<! The search history
+  GtkWidget        *installdialog;     ///<! The install dialog
 } ApplicationManagerData;
 
 /**
@@ -127,6 +128,9 @@ void init_pixbuf_list (ApplicationManagerData *appdata);
 void application_manager_data_set_search_history (ApplicationManagerData *appdata,
                                                  gchar *searchhistory);
 
+void application_manager_data_set_install_dialog (ApplicationManagerData *appdata,
+                                                  GtkWidget *installdialog);
+
 MokoPanedWindow *
      application_manager_get_main_window (ApplicationManagerData *appdata);
 
@@ -172,6 +176,9 @@ GdkPixbuf *
 
 gchar *
      application_manager_data_get_search_history (ApplicationManagerData *appdata);
+
+GtkWidget *
+     application_manager_data_get_install_dialog (ApplicationManagerData *appdata);
 
 G_END_DECLS
 
