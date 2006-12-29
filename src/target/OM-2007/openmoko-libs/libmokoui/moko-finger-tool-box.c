@@ -23,7 +23,7 @@
 
 #include <gtk/gtkhbox.h>
 
-#define DEBUG_THIS_FILE
+//#define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
@@ -54,6 +54,7 @@ typedef struct _MokoFingerToolBoxPrivate
     guint buttonWidth;
 
     GtkWindow* popup;
+    GtkWidget* parent;
 
 } MokoFingerToolBoxPrivate;
 
@@ -231,7 +232,8 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
     }
 
-    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    MokoWindow* window =(MokoWindow* )(priv->parent);
+    
     g_return_if_fail( MOKO_IS_FINGER_WINDOW(window) );
     //FIXME set also transient for all other windows belonging to this app?
     gtk_window_set_transient_for( priv->popup, window );
@@ -278,9 +280,13 @@ moko_finger_tool_box_init(MokoFingerToolBox *self)
 
 /* public API */
 GtkWidget*
-moko_finger_tool_box_new(void)
+moko_finger_tool_box_new(GtkWidget* parent)
 {
-    return GTK_WIDGET(g_object_new(moko_finger_tool_box_get_type(), NULL));
+    MokoFingerToolBox* self=g_object_new(moko_finger_tool_box_get_type(), NULL);
+    
+    MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
+    priv->parent=parent;
+    return GTK_WIDGET(self);
 }
 
 GtkButton*

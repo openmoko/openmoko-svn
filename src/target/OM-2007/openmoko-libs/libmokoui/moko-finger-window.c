@@ -25,7 +25,11 @@
 #include <gtk/gtklabel.h>
 #include <gtk/gtkbutton.h>
 
-#define DEBUG_THIS_FILE
+//#define DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
+#endif
+
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
@@ -105,7 +109,7 @@ MokoFingerWheel* moko_finger_window_get_wheel(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_wheel" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
-    if (!priv->wheel) priv->wheel = moko_finger_wheel_new();
+    if (!priv->wheel) priv->wheel = moko_finger_wheel_new(self);
     return priv->wheel;
 }
 
@@ -113,7 +117,7 @@ MokoFingerToolBox* moko_finger_window_get_toolbox(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_toolbox" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
-    if (!priv->tools) priv->tools = moko_finger_tool_box_new();
+    if (!priv->tools) priv->tools = moko_finger_tool_box_new(self);
     return priv->tools;
 }
 

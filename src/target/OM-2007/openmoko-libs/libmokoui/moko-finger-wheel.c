@@ -54,6 +54,7 @@ static guint wheel_signals[LAST_SIGNAL] = { 0 };
 typedef struct _MokoFingerWheelPrivate
 {
     GtkWindow* popup;
+    GtkWidget* parent;
 } MokoFingerWheelPrivate;
 
 /* forward declarations */
@@ -167,13 +168,21 @@ moko_finger_wheel_init(MokoFingerWheel *self)
     self->area_id = LAST_SIGNAL;
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingerwheel" );
 }
-
+/*
 GtkWidget*
 moko_finger_wheel_new(void)
 {
     return GTK_WIDGET(g_object_new(moko_finger_wheel_get_type(), NULL));
 }
-
+*/
+GtkWidget*
+moko_finger_wheel_new(GtkWidget* parent)
+{
+   GtkWidget* wheel=g_object_new(moko_finger_wheel_get_type(), NULL);
+    MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(wheel);
+    priv->parent=parent;
+    return wheel;
+}
 static void
 moko_finger_wheel_realize(GtkWidget *widget)
 {
@@ -217,7 +226,8 @@ static void moko_finger_wheel_show(GtkWidget* widget)
         MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
         //FIXME check if it's a finger window
         //FIXME set it not only transient for the main window, but also for other windows belonging to this application
-        gtk_window_set_transient_for(priv->popup, window );
+//        gtk_window_set_transient_for(priv->popup, window );
+        gtk_window_set_transient_for(priv->popup, priv->parent );
 
         GtkAllocation geometry;
         gboolean valid = moko_finger_window_get_geometry_hint( window, widget, &geometry );
@@ -236,10 +246,10 @@ static void moko_finger_wheel_show(GtkWidget* widget)
     gtk_widget_show( priv->popup );
 
     /* resize FingerToolBox, if visible */
-    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
-    if ( MOKO_IS_FINGER_WINDOW(window) )
+//    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    if ( MOKO_IS_FINGER_WINDOW(priv->parent ) )
     {
-        MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW(window) );
+        MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( priv->parent );
         if ( GTK_WIDGET_VISIBLE(toolbox) )
         {
             moko_debug( "moko_finger_wheel: toolbox is visible, sending resize" );
@@ -265,7 +275,8 @@ static void moko_finger_wheel_hide(GtkWidget* widget)
     gtk_widget_hide( priv->popup );
 
     /* resize FingerToolBox, if visible */
-    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+    MokoWindow* window =(MokoWindow* )(priv->parent);
+
     if ( MOKO_IS_FINGER_WINDOW(window) )
     {
         MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW(window) );
