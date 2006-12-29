@@ -9,6 +9,9 @@ void
 moko_update_history_app_list ();
 
 void
+moko_sample_hisory_app_fill(MokoPixmapButton *btn);
+
+void
 moko_add_history_app_image (MokoPixmapButton* btn, GdkPixbuf *pixbuf);
 
 #endif "app-history.h"

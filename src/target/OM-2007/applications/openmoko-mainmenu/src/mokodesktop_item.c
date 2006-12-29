@@ -19,10 +19,10 @@ mokodesktop_item_new()
 void
 mokodesktop_item_free(MokoDesktopItem *item)
 {
-  if (item->name)               free(item->name);
-  if (item->name_extended)      free(item->name_extended);
-  if (item->comment)            free(item->comment);
-  if (item->icon_name)          free(item->icon_name);
+  if (item->name)               	free(item->name);
+  if (item->name_extended)      	free(item->name_extended);
+  if (item->comment)            	free(item->comment);
+  if (item->icon_name)         	free(item->icon_name);
 
   free(item);
 }
@@ -179,8 +179,6 @@ mokodesktop_items_prepend ( MokoDesktopItem **item_head,
   item_tmp->item_prev_sibling = item;
 
   *item_head = item;
-
-
 }
 
 MokoDesktopItem *

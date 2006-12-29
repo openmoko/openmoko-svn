@@ -20,12 +20,7 @@
  #ifndef _MAIN_MENU_SUPPORT_H
  #define _MAIN_MENU_SUPPORT_H
  
-#include <glib.h>
-#include <glib-object.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
- 
- #include "mainmenu.h"
+#include "mainmenu.h"
 
- #endif
+#endif
 

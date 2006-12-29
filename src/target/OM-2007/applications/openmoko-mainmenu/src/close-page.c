@@ -21,14 +21,6 @@
 
 #include "close-page.h"
 
- enum {
-   close_page_signal,
-   last_signal
- };
-
-static void 
-moko_close_page_class_init(MokoClosePageClass *self);
-
 static void 
 moko_close_page_init(MokoClosePage *self);
 
@@ -49,7 +41,7 @@ moko_close_page_get_type (void) /* Typechecking */
             sizeof (MokoClosePageClass),
             NULL, /* base_init */
             NULL, /* base_finalize */
-            (GClassInitFunc) moko_close_page_class_init,
+            NULL, /* class_init */
             NULL, /* class_finalize */
             NULL, /* class_data */
             sizeof (MokoClosePage),
@@ -65,32 +57,35 @@ moko_close_page_get_type (void) /* Typechecking */
 }
 
 static void 
-moko_close_page_class_init(MokoClosePageClass *self) {
-
-}
-
-static void 
 moko_close_page_init(MokoClosePage *self){
+  GtkHBox *hbox0 = gtk_hbox_new (FALSE, 0);
   GtkHBox *hbox1 = gtk_hbox_new (FALSE, 0);
   GtkHBox *hbox2 = gtk_hbox_new (FALSE, 0);
+  GtkHBox *hbox3 = gtk_hbox_new (FALSE, 0);
+  GtkWidget *image = gtk_image_new_from_file (PKGDATADIR"/Back_128x128.png");
   
-  self->close_btn = gtk_button_new ();
-  gtk_widget_set_name( GTK_WIDGET(self->close_btn), "mokofingerbutton-black" );
+  self ->close_btn = moko_pixmap_button_new();
+  gtk_widget_set_name( GTK_WIDGET(self->close_btn), "mokofingerbutton-big" );
+  moko_pixmap_button_set_center_image (self->close_btn, image);
   gtk_widget_show (self->close_btn);
 
-  self->info = gtk_label_new ("Close main menu and turn to the last application");
+  self->info[0] = gtk_label_new ("Click to close the main menu,");
   gtk_widget_show (self->info);
   gtk_label_set_justify (self->info, GTK_JUSTIFY_CENTER);
   gtk_label_set_line_wrap (self->info, TRUE);
-  
-  gtk_misc_set_alignment (GTK_MISC (self->close_btn), 0.5, 1);
-  gtk_misc_set_alignment (GTK_MISC (self->info), 0.5, 0);
-  
-  gtk_box_pack_start (GTK_BOX (self), GTK_WIDGET (hbox1), TRUE, TRUE, 150);
-  gtk_box_pack_start (GTK_BOX (hbox1), GTK_WIDGET (self->close_btn), TRUE, TRUE, 150);
-  gtk_box_pack_start (GTK_BOX (self), GTK_WIDGET (hbox2), TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (self->info), TRUE, FALSE, 100);
 
+  self->info[1] = gtk_label_new ("and turn to the previous application");
+  gtk_widget_show (self->info);
+  gtk_label_set_justify (self->info, GTK_JUSTIFY_CENTER);
+  gtk_label_set_line_wrap (self->info, TRUE);
+
+  gtk_box_pack_start (GTK_BOX (self), GTK_WIDGET (hbox0), FALSE, FALSE, 54);
+  gtk_box_pack_start (GTK_BOX (self), GTK_WIDGET (hbox1), FALSE, FALSE, 34);
+  gtk_box_pack_start (GTK_BOX (hbox1), GTK_WIDGET (self->close_btn), TRUE, TRUE, 140);
+  gtk_box_pack_start (GTK_BOX (self), GTK_WIDGET (hbox2), FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (self->info[0]), TRUE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (self), GTK_WIDGET (hbox3), FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox3), GTK_WIDGET (self->info[1]), TRUE, FALSE, 0);
 
 }
 

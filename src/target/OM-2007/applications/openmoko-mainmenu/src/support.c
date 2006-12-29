@@ -22,46 +22,11 @@
 #include <libmokoui/moko-pixmap-button.h>
 
  
- /**
-*@brief fill model
-*@param store		GtkListSrore*
-*@param icon_path	const char*
-*@param icon_name	const char*
-*@return Bool
-*/
-gboolean
-moko_fill_model(GtkListStore *store, const char* icon_path, 
-						const char* icon_name, MokoDesktopItem *item)
-{
-    if (!icon_path && !icon_name)
-        return FALSE;
 
-    GtkTreeIter iter;
-    GdkPixbuf *pixbuf;
 
-    gtk_list_store_append (store, &iter);
-    pixbuf = gdk_pixbuf_new_from_file_at_size (icon_path, PIXBUF_WIDTH, PIXBUF_HEIGHT, NULL);// ADD Gerro handle later
-    gtk_list_store_set (store, &iter, PIXBUF_COLUMN, pixbuf, TEXT_COLUMN, icon_name, OBJECT_COLUMN, item, -1);
-    g_object_unref (pixbuf);
-    return TRUE;
-}
 
-void
-moko_sample_hisory_app_fill(MokoPixmapButton *btn)
-{
-   GtkWidget *image;
 
-   image = gtk_image_new_from_file ("/usr/share/pixmaps/gnome-eyes.png");
 
-   moko_pixmap_button_set_finger_toolbox_btn_center_image(btn, image);
-   
-}
-
-void
-moko_set_label_content(GtkLabel *label, const char *content) {
-    if (label)
-    	  gtk_label_set_text (label, content);
-    }
 
 /* Use this function to set the directory containing installed pixmaps. */
 /*void

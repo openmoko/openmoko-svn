@@ -4,10 +4,10 @@
 #include "mokodesktop.h"
 
 
-#define mokodesktop_items_enumerate_siblings(item_head, item)  \
-     for ( (item) = (item_head);                             \
-	   (item) != NULL;                                   \
-	   (item) = (item)->item_next_sibling )              \
+#define mokodesktop_items_enumerate_siblings(item_head, item)  	\
+  					for ( (item) = (item_head);					\
+	   				(item) != NULL;                                      			\
+	   				(item) = (item)->item_next_sibling )             		
 
 /**
  * Constructs a new blank mbpixbuf image without an alpha channel.
@@ -19,7 +19,7 @@ MokoDesktopItem *mokodesktop_item_new();
 /**
  * Constructs a new blank mbpixbuf image without an alpha channel.
  *
- * @param mbdesktop
+ * @param mokodesktop
  * @param item
  */
 void

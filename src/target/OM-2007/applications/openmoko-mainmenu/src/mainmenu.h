@@ -38,7 +38,7 @@ enum {
     };
 
 G_BEGIN_DECLS
-/*widgets property(s)*/
+/* property(s)*/
 #define COLUMN_NUM 		3
 #define ITEM_WIDTH 			140
 #define ITEM_MARGIN 		10
@@ -81,7 +81,7 @@ struct _MokoMainMenu {
     GtkHBox *hbox;
     GtkLabel *section_name;
     GtkLabel *item_total;
-    };
+};
 
 struct _MokoMainMenuClass {
     GtkVBoxClass parent_class;
@@ -95,8 +95,17 @@ moko_main_menu_get_type (void);
 GtkWidget*
 moko_main_menu_new ();
 
+void 
+moko_main_menu_clear (MokoMainMenu *mm);
+
 gboolean
-moko_main_menu_update(MokoMainMenu *mm, MokoDesktopItem *item);
+moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item);
+
+void
+moko_main_menu_update_item_total_label (MokoMainMenu *mm);
+
+void
+moko_main_menu_update_section_name_label (MokoIconView *mm);
 
 G_END_DECLS
 

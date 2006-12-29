@@ -27,7 +27,6 @@
 #include <libmokoui/moko-pixmap-button.h>
 
 #include "mainmenu.h"
-#include "menu-list.h"
 #include "close-page.h"
 
 typedef struct _MokoMainmenuApp MokoMainmenuApp;
@@ -39,9 +38,8 @@ struct _MokoMainmenuApp {
     MokoFingerWheel *wheel;
     MokoFingerToolBox *toolbox;
     MokoMainMenu *mm;
-    MokoMenuList *list;
     MokoClosePage *close;
-    MokoPixmapButton *history[4]
+    MokoPixmapButton *history[4];
 };
 
 #endif /*main.h*/

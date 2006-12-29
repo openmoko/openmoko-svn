@@ -39,6 +39,8 @@ struct _MokoIconViewClass
 {
   GtkContainerClass parent_class;
 
+   void    (* item_list_update)      (MokoIconView      *icon_view);
+
   void    (* set_scroll_adjustments) (MokoIconView      *icon_view,
 				      GtkAdjustment    *hadjustment,
 				      GtkAdjustment    *vadjustment);

@@ -104,7 +104,7 @@ add_a_dotdesktop_item (MokoDesktopItem  *top_head_item,
 
   mokodesktop_item_set_activate_callback (item_new, item_activate_cb); 
 
-  item_before = mokodesktop_item_get_child(found_folder_item);
+  item_before = mokodesktop_item_get_child (found_folder_item);
 
 
   if(!item_before)

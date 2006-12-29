@@ -22,6 +22,8 @@
 #include <gtk/gtkbutton.h>
 #include <gtk/gtklabel.h>
 #include <gtk/gtkvbox.h>
+#include <libmokoui/moko-pixmap-button.h>
+
 
 #define MOKO_CLOSE_PAGE_TYPE				(moko_close_page_get_type())
 #define MOKO_CLOSE_PAGE(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_CLOSE_PAGE_TYPE, MokoClosePage))
@@ -35,8 +37,9 @@ typedef struct _MokoClosePageClass MokoClosePageClass;
 struct _MokoClosePage {
 	GtkVBox vbox;
 
-	GtkButton *close_btn;
-	GtkLabel *info;
+	//GtkButton *close_btn;
+	MokoPixmapButton *close_btn;
+	GtkLabel *info[2];
 };
 
 struct _MokoClosePageClass {

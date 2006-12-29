@@ -19,8 +19,6 @@
 
 #include "callbacks.h"
 
-
-
 #include "main.h"
 
 int 
@@ -37,58 +35,63 @@ main( int argc, char** argv ) {
 
     gtk_init( &argc, &argv );
     
-   /* application object */
+    /* application object */
     mma->app = MOKO_APPLICATION(moko_application_get_instance());
     g_set_application_name( "OpenMoko Main Menu" );
     
-    /* main window */
+    /* finger based window */
     mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
     gtk_widget_show (GTK_WIDGET (mma->window));
-    mma->wheel = moko_finger_window_get_wheel (mma->window);
-    //GTK_WIDGET_UNSET_FLAGS (GTK_WIDGET (mma->wheel), GTK_CAN_FOCUS);
-    mma->toolbox = moko_finger_window_get_toolbox(mma->window);
 
+    /* finger wheel object*/
+    mma->wheel = moko_finger_window_get_wheel (mma->window);
+
+    /* finger toolbox object*/
+    mma->toolbox = moko_finger_window_get_toolbox(mma->window);
+    //initialize toolbox's buttons, which are MokoPixmapButton objects.
     for (i=0; i<4; i++)
     	{
     	    mma->history[i] =  moko_finger_tool_box_add_button_without_label (mma->toolbox);
            gtk_widget_show (mma->history[i]);
     	}
-   
-    mma->mm = moko_main_menu_new();
-    gtk_widget_show (mma->mm);
 
+    /* MokoMainMenu object */
+    mma->mm = moko_main_menu_new();
+
+    /* MokoClosePage object */
     mma->close = moko_close_page_new ();
-    gtk_widget_show (mma->close);
-    //gtk_icon_view_selected_foreach (mm->icon_view, moko_item_select_cb, NULL);
-   // g_signal_connect (mm->icon_view, "toggle-cursor-item", 
-		//G_CALLBACK (moko_toggle_cursor_item_cb), NULL);
+
+    /* signal connected*/
+    //finger wheel object signals
     g_signal_connect (mma->wheel, "press_bottom",
-    			G_CALLBACK ( moko_wheel_bottom_press_cb), mma);
+    		G_CALLBACK ( moko_wheel_bottom_press_cb), mma);
     g_signal_connect (mma->wheel, "press_left_up",
-    			G_CALLBACK ( moko_wheel_left_up_press_cb), mma);
+    		G_CALLBACK ( moko_wheel_left_up_press_cb), mma);
     g_signal_connect (mma->wheel, "press_right_down",
-    			G_CALLBACK ( moko_wheel_right_down_press_cb), mma);
+    		G_CALLBACK ( moko_wheel_right_down_press_cb), mma);
+    //MokoClosePage object signals
     g_signal_connect (mma->close->close_btn, "released",
-    			G_CALLBACK (moko_close_page_close_btn_released_cb), mma);
-   // g_signal_connect (mma->mm->icon_view, "move-cursor", 
-    //			G_CALLBACK (moko_move_cursor_cb), mma);
+    		G_CALLBACK (moko_close_page_close_btn_released_cb), mma);
+    //MokoMainMenu:MokoIconView object signals
     g_signal_connect (mma->mm->icon_view, "selection-changed",
-    			G_CALLBACK (moko_icon_view_selection_changed_cb), mma);
-    //g_signal_connect (mma->mm->icon_view, "select-cursor-item",
-    //			G_CALLBACK (moko_select_cursor_item_cb), mma);
+    		G_CALLBACK (moko_icon_view_selection_changed_cb), mma);
     g_signal_connect (mma->mm->icon_view, "item_activated",
-    			G_CALLBACK (moko_icon_view_item_acitvated_cb), mma);
-    			
-    moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->mm));
-    moko_finger_window_set_contents( mma->window, GTK_WIDGET(mma->close));
+    		G_CALLBACK (moko_icon_view_item_acitvated_cb), mma);
+
+    /* put MokoMainMenu object and MokoClosePange object into the finger based window */
+    moko_finger_window_set_contents (mma->window, GTK_WIDGET(mma->mm));
+    moko_finger_window_set_contents (mma->window, GTK_WIDGET(mma->close));
     
     /* show everything and run main loop */
-    gtk_widget_show_all( GTK_WIDGET(mma->window) );
+    gtk_widget_show_all (GTK_WIDGET(mma->window) );
 
-    gtk_widget_show (GTK_WIDGET (mma->wheel));
+    /*show wheel toolbox MokoMainMenu objects first, and hide the MokoClosePage object*/
+    gtk_widget_show (GTK_WIDGET (mma->wheel));	
     gtk_widget_show (GTK_WIDGET (mma->toolbox));
+    gtk_widget_show (GTK_WIDGET (mma->mm));
     gtk_widget_hide (GTK_WIDGET (mma->close));
 
+    /*test code, delete later*/
     moko_sample_hisory_app_fill (mma->history[0]);
 
     gtk_main();

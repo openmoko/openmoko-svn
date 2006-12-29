@@ -24,23 +24,22 @@
 #include <libmokoui/moko-pixmap-button.h>
 
 #include "mainmenu.h"
-#include "menu-list.h"
 #include "close-page.h"
 #include "callbacks.h"
-#include "mokoiconview.h" 
+#include "mokoiconview.h"
+#include "mokodesktop_item.h"
+
 
 gboolean close_page_hide = TRUE;
  
 void
 moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
-  if (mma->mm->current != mma->mm->top_item)
+  if (mma->mm->current->type != ITEM_TYPE_ROOT)
   {
-   g_debug ("----------current name %s", mma->mm->current->name);
-   g_debug ("----------Top item name %s", mma->mm->top_item->name);
-
     mma->mm->current = mokodesktop_item_get_parent(mma->mm->current);
-    moko_main_menu_update(mma->mm, mma->mm->current);
+    moko_main_menu_update_content (mma->mm, mma->mm->current);
+    gtk_window_present (mma->window);
   }
   else if (close_page_hide) {
     gtk_widget_hide (mma->close);
@@ -58,8 +57,8 @@ moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
  
   g_signal_emit_by_name (G_OBJECT(mma->mm->icon_view), "move-cursor", GTK_MOVEMENT_DISPLAY_LINES, -1);
-  gtk_window_present (mma->window);
-  gtk_widget_grab_focus (mma->mm->icon_view);
+  //gtk_window_present (mma->window);
+  //gtk_widget_grab_focus (mma->mm->icon_view);
 
 }
 
@@ -87,9 +86,8 @@ moko_close_page_close_btn_released_cb (GtkButton *button, MokoMainmenuApp *mma)
   if (mma->window)
     moko_window_clear (mma->window);
 
-  g_free (mma);
-
   gtk_main_quit();
+  g_free (mma);
 }
 
 void 
@@ -121,17 +119,29 @@ moko_icon_view_item_acitvated_cb(GtkIconView *icon_view,
     select_item = mokodesktop_item_get_next_sibling (select_item);
   }
 
-  g_debug ("select_item name %s", select_item->name);
+  g_debug ("select_item name %s TYPE is %d", select_item->name, select_item->type);
 
   if (select_item->type == ITEM_TYPE_FOLDER)
   {
-    g_debug ("current name %s------------------", mma->mm->current->name);
     mma->mm->current = select_item;
     g_debug ("current name %s------------------", mma->mm->current->name);
-    moko_main_menu_update(mma->mm, select_item);
+    moko_main_menu_update_content (mma->mm, select_item);
   }
-  //else if (select_item->type == )
-  
+  else if (select_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||select_item->type == ITEM_TYPE_APP)
+  {
+   switch (fork())
+    {
+    case 0:
+      mb_exec((char *)select_item->data);
+      fprintf(stderr, "exec failed, cleaning up child\n");
+      exit(1);
+    case -1:
+      fprintf(stderr, "can't fork\n");
+      break;
+    }
+  }
+
+moko_icon_view_selection_changed_cb(mma->mm->icon_view, mma);  
 
 }
 
@@ -139,63 +149,6 @@ void
 moko_icon_view_selection_changed_cb(GtkIconView *iconview, 
 								MokoMainmenuApp *mma) 
 {
-  gint total = 0, cursor = 0;
-  char item_total[6];
-
-  total = moko_icon_view_get_total_items (mma->mm->icon_view);
-  cursor = moko_icon_view_get_cursor_positon (mma->mm->icon_view);
-
-  if (cursor <0)
-  	cursor = 0;
-
-  snprintf (item_total, 6, "%d/%d", cursor, total);
-  moko_set_label_content (mma->mm->item_total, item_total);
+    moko_main_menu_update_item_total_label (mma->mm);
 }
 
-/*test*/ 
-
-void
-moko_item_select_cb(GtkIconView *icon_view, GtkTreePath *path, MokoMainmenuApp *mma) {
-    g_debug ("call moko_item_select_cb");
-    }
-
-gboolean 
-moko_icon_view_activate_cursor_item_cb(GtkIconView *iconview, MokoMainmenuApp *mma) {
-    g_debug ("call moko_active_cursor_item_cb--------------");
-    }
-
-                                            
-//"move-cursor"
-gboolean
-moko_move_cursor_cb(GtkIconView *iconview, 
-			GtkMovementStep arg1, gint arg2, MokoMainmenuApp *mma) {
-  g_debug ("call moko_move_cursor_cb");
-}
-//"select-all"
-void
-moko_select_all_cb(GtkIconView *iconview, MokoMainmenuApp *mma) {
-    g_debug ("call moko_select_all_cb");
-    }
-//"select-cursor-item"
-void
-moko_select_cursor_item_cb(GtkIconView *iconview, MokoMainmenuApp *mma) {
-    g_debug ("call moko_select_cursor_item_cb---------------------");
-    }
-
-//"set-scroll-adjustments"
-void
-moko_set_scroll_adjustments_cb(GtkIconView *iconview, 
-					GtkAdjustment *arg1, GtkAdjustment *arg2, MokoMainmenuApp *mma) {
-    g_debug ("call moko_set_scroll_adjustments_cb");
-    }
-
-//"toggle-cursor-item"
-void
-moko_toggle_cursor_item_cb(GtkIconView *iconview, MokoMainmenuApp *mma) {
-    g_debug ("call moko_toggle_cursor_cb");
-    }
-//"unselect-all"
-void
-moko_unselect_all_cb(GtkIconView *iconview, MokoMainmenuApp *mma) {
-    g_debug ("moko_unselect_all_cb");
-    }
