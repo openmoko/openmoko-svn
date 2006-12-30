@@ -67,3 +67,38 @@ style "gtktreeview-button-label"
     fg[NORMAL] = "#999999"
 }
 widget "*.GtkTreeView.*.GtkLabel" style "gtktreeview-button-label"
+
+
+#
+# set gtktreeview-black for the styling of dialer call history
+#
+style "gtktreeview-black"
+{
+    GtkTreeView::allow-rules = 1
+    GtkTreeView::expander_size = 47
+    
+    text[NORMAL]      = "#ffffff"
+    text[SELECTED]    = "#ffffff"
+    
+    base[NORMAL]  = "#666666"
+  
+    engine "pixmap" {
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = SELECTED
+            file            = "gtktreeview-black-row-sel-stretch.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+#            state           = NORMAL
+            file            = "gtktreeview-black-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+    }
+}
+widget "*.gtktreeview-black" style "gtktreeview-black"
