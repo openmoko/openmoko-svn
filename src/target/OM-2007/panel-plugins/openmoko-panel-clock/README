@@ -1,0 +1,11 @@
+OpenMoko panel plugin: openmoko-panel-clock.
+
+  The application will have a more better layout when running 
+on the Matchbox-panel than other panels.
+  Two action of the plugin:
+  1. tab (click): launch openmoko-clock, which will write 
+later, now what i do is launch "/usr/games/same-gnome".
+  2. tab with hold: show time in different format, 12-hours 
+and 24-hours.
+
+
