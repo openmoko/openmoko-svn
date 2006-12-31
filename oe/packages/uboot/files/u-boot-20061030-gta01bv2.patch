@@ -1,0 +1,196 @@
+This patch adds support for the GTA01Bv2 variant of the FIC GTA01 (Neo1973) phone
+
+Index: u-boot.git/Makefile
+===================================================================
+--- u-boot.git.orig/Makefile	2006-12-31 18:55:34.000000000 +0100
++++ u-boot.git/Makefile	2006-12-31 19:55:12.000000000 +0100
+@@ -1912,6 +1912,7 @@
+ 
+ gta01_config \
+ gta01v3_config \
++gta01bv2_config \
+ gta01v4_config :	unconfig
+ 	@board/gta01/split_by_variant.sh $@
+ 
+Index: u-boot.git/board/gta01/gta01.c
+===================================================================
+--- u-boot.git.orig/board/gta01/gta01.c	2006-12-31 18:55:34.000000000 +0100
++++ u-boot.git/board/gta01/gta01.c	2006-12-31 20:15:40.000000000 +0100
+@@ -35,28 +35,29 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+-#if 1
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+ //#define M_MDIV	0xA1		/* Fout = 202.8MHz */
+ //#define M_PDIV	0x3
+ //#define M_SDIV	0x1
+ #define M_MDIV	0x90		/* Fout = 202.8MHz */
+ #define M_PDIV	0x7
+ #define M_SDIV	0x0
+-#else
+-#define M_MDIV	0x5c		/* Fout = 150.0MHz */
+-#define M_PDIV	0x4
++#elif defined(CONFIG_ARCH_GTA01B_v2)
++#if 0
++#define M_MDIV	0x7d		/* Fout = 266MHz */
++#define M_PDIV	0x1
++#define M_SDIV	0x1
++#endif
++#define M_MDIV	0x90		/* Fout = 202.8MHz */
++#define M_PDIV	0x7
+ #define M_SDIV	0x0
++#else
++#error Please define GTA01 revision
+ #endif
+ 
+-#if 1
+ #define U_M_MDIV	0x78
+ #define U_M_PDIV	0x2
+ #define U_M_SDIV	0x3
+-#else
+-#define U_M_MDIV	0x48
+-#define U_M_PDIV	0x3
+-#define U_M_SDIV	0x2
+-#endif
+ 
+ static inline void delay (unsigned long loops)
+ {
+@@ -137,7 +138,30 @@
+ 
+ 	gpio->GPHCON = 0x0000FAAA;
+ 	gpio->GPHUP = 0x000007FF;
++#elif defined(CONFIG_ARCH_GTA01B_v2)
++	gpio->GPACON = 0x005E47FF;
++
++	gpio->GPBCON = 0x00045016;
++	gpio->GPBUP = 0x000007FF;
++	gpio->GPBDAT |= 0x4;		/* Set GBP2 to high (Flash power-up) */
++
++	gpio->GPCCON = 0xAAAA12A9;
++	gpio->GPCUP = 0x0000FFFF;
+ 
++	gpio->GPDCON = 0xAAAAAAAA;
++	gpio->GPDUP = 0x0000FFFF;
++
++	gpio->GPECON = 0xA02AAAAA;
++	gpio->GPEUP = 0x0000FFFF;
++
++	gpio->GPFCON = 0x0000aa09;
++	gpio->GPFUP = 0x000000FF;
++
++	gpio->GPGCON = 0xFF40F0C1;
++	gpio->GPGUP = 0x0000AFEF;
++
++	gpio->GPHCON = 0x0000FAAA;
++	gpio->GPHUP = 0x000007FF;
+ #else
+ #error Please define GTA01 version
+ #endif
+@@ -156,9 +180,11 @@
+ 
+ int board_late_init(void)
+ {
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+ 	const char mmc_power = 0x8f;
+-	/* enable D3REG 3.3V (SC/MMC power) */
++	/* enable D2REG 3.3V (SC/MMC power) */
+ 	i2c_write(0x08, 0x25, 1, &mmc_power, 1);
++#endif
+ 	return 0;
+ }
+ 
+Index: u-boot.git/board/gta01/split_by_variant.sh
+===================================================================
+--- u-boot.git.orig/board/gta01/split_by_variant.sh	2006-12-31 18:55:34.000000000 +0100
++++ u-boot.git/board/gta01/split_by_variant.sh	2006-12-31 19:55:12.000000000 +0100
+@@ -21,6 +21,9 @@
+ 	echo "#define CONFIG_ARCH_GTA01_v3" > ${obj}include/config.h
+ 	;;
+ 
++	gta01bv2_config)
++	echo "#define CONFIG_ARCH_GTA01B_v2" > ${obj}include/config.h
++	;;
+ 
+ 	*)
+ 	echo "$0:: Unrecognised config - using gta01v3_config"
+Index: u-boot.git/include/configs/gta01.h
+===================================================================
+--- u-boot.git.orig/include/configs/gta01.h	2006-12-31 18:55:34.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2006-12-31 19:55:12.000000000 +0100
+@@ -129,6 +129,8 @@
+ #define	CFG_PROMPT		"GTA01v3 # "	/* Monitor Command Prompt	*/
+ #elif defined(CONFIG_ARCH_GTA01_v4)
+ #define	CFG_PROMPT		"GTA01v4 # "	/* Monitor Command Prompt	*/
++#elif defined(CONFIG_ARCH_GTA01B_v2)
++#define	CFG_PROMPT		"GTA01Bv2 # "	/* Monitor Command Prompt	*/
+ #endif
+ #define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
+ #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
+@@ -167,7 +169,14 @@
+  */
+ #define CONFIG_NR_DRAM_BANKS	1	   /* we have 1 bank of DRAM */
+ #define PHYS_SDRAM_1		0x30000000 /* SDRAM Bank #1 */
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+ #define PHYS_SDRAM_1_SIZE	0x04000000 /* 64 MB */
++#elif defined(CONFIG_ARCH_GTA01B_v2)
++#define PHYS_SDRAM_1_SIZE	0x04000000 /* 64 MB */
++//#define PHYS_SDRAM_1_SIZE	0x08000000 /* 128 MB */
++#else
++#error Please define GTA01 variant
++#endif
+ #define PHYS_SDRAM_RES_SIZE	0x00200000 /* 2 MB for frame buffer */
+ 
+ /*-----------------------------------------------------------------------
+Index: u-boot.git/board/gta01/lowlevel_init.S
+===================================================================
+--- u-boot.git.orig/board/gta01/lowlevel_init.S	2006-12-31 18:55:34.000000000 +0100
++++ u-boot.git/board/gta01/lowlevel_init.S	2006-12-31 20:21:58.000000000 +0100
+@@ -108,21 +108,21 @@
+ #define B5_PMC		 	0x0	/* normal */
+ 
+ #define B6_MT		 	0x3	/* SDRAM */
+-#define B6_Trcd	 	 	0x1
+-#define B6_SCAN		 	0x1	/* 9bit */
++#define B6_Trcd	 	 	0x1	/* 3clk */
++#define B6_SCAN		 	0x2	/* 10bit */
+ 
+ #define B7_MT		 	0x3	/* SDRAM */
+ #define B7_Trcd		 	0x1	/* 3clk */
+-#define B7_SCAN		 	0x1	/* 9bit */
++#define B7_SCAN		 	0x2	/* 10bit */
+ 
+ /* REFRESH parameter */
+ #define REFEN		 	0x1	/* Refresh enable */
+ #define TREFMD		 	0x0	/* CBR(CAS before RAS)/Auto refresh */
+-#define Trp		 	0x1	/* 3clk */
++#define Trp		 	0x2	/* 4clk */
+ #define Trc		 	0x3	/* 7clk */
+ #define Tchr		 	0x2	/* 3clk */
+-//#define REFCNT		 	1113	/* period=15.6us, HCLK=60Mhz, (2048+1-15.6*60) */
+-#define REFCNT		 	997	/* period=17.5us, HCLK=60Mhz, (2048+1-15.6*60) */
++#define REFCNT		 	1113	/* period=15.6us, HCLK=60Mhz, (2048+1-15.6*60) */
++//#define REFCNT		 	997	/* period=17.5us, HCLK=60Mhz, (2048+1-15.6*60) */
+ /**************************************/
+ 
+ _TEXT_BASE:
+@@ -149,6 +149,19 @@
+ 	orr	r1, r1, #0xc0000000
+ 	mcr	p15, 0, r1, c1, c0, 0
+ 
++#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2)
++	/* switch on power for NAND */
++	ldr	r0, =0x56000010	/* GPBCON */
++	ldr	r1, [r0]
++	orr	r1, r1, #0x10
++	str	r1, [r0]
++
++	ldr	r0, =0x56000014	/* GPBDAT */
++	ldr	r1, [r0]
++	orr	r1, r1, #(1 <<2)
++	str	r1, [r0]
++#endif
++
+ 	/* everything is fine now */
+ 	mov	pc, lr
+ 

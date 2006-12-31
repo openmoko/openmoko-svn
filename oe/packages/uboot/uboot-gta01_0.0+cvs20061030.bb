@@ -3,7 +3,7 @@ SECTION = "bootloader"
 PRIORITY = "optional"
 LICENSE = "GPL"
 SRCDATE := "${PV}"
-PR = "r1"
+PR = "r2"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
@@ -15,7 +15,7 @@ SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
 
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""
-UBOOT_MACHINES = "gta01v3 gta01v4"
+UBOOT_MACHINES = "gta01v3 gta01v4 gta01bv2"
 
 inherit base
 
