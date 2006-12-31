@@ -51,3 +51,4 @@ navigation_area_increase_search (ApplicationManagerData *appdata,
                                  const gchar *str);
 
 #endif
+

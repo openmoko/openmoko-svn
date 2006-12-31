@@ -26,6 +26,8 @@
 
 gint init_package_list (ApplicationManagerData *appdata);
 
+gint reinit_package_list (ApplicationManagerData *appdata);
+
 gint package_list_build_index (ApplicationManagerData *appdata);
 
 void package_list_add_section_to_filter_menu (ApplicationManagerData *appdata);
@@ -71,6 +73,9 @@ void package_list_mark_all_upgradeable (ApplicationManagerData *appdata);
 
 gpointer package_list_execute_change (gpointer data);
 
+void package_list_free_all_dynamic (ApplicationManagerData *appdata);
+
 gint package_list_get_number_of_selected (ApplicationManagerData *appdata);
 
 #endif
+

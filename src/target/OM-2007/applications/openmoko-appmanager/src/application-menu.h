@@ -27,3 +27,4 @@
 GtkMenu *application_menu_new (ApplicationManagerData *appdata);
 
 #endif
+

@@ -20,6 +20,9 @@
 
 #include "application-menu.h"
 #include "appmanager-window.h"
+#include "package-list.h"
+#include "ipkgapi.h"
+#include "errorcode.h"
 
 /**
  * @brief The Callback function of the show status menu
@@ -28,6 +31,7 @@ void
 on_showstatus_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
   g_debug ("Call on_showstatus_activate");
+
 }
 
 /**
@@ -45,7 +49,102 @@ on_showsource_activate (GtkMenuItem *menuitem, gpointer user_data)
 void 
 on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
+  ApplicationManagerData  *appdata;
+  GtkWidget  *confirmdialog;
+  gint       ret;
+  GtkWidget      *filechooser;
+  gint           res;
+  GtkFileFilter  *filter;
+  gchar          *filename;
+  char           *newname = NULL;
+
   g_debug ("Call on_install_single_application_activate");
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (user_data));
+  appdata = MOKO_APPLICATION_MANAGER_DATA (user_data);
+
+  if (!package_list_check_marked_list_empty (appdata))
+    {
+      confirmdialog = gtk_message_dialog_new (NULL, 
+                                              GTK_DIALOG_DESTROY_WITH_PARENT,
+                                              GTK_MESSAGE_QUESTION,
+                                              GTK_BUTTONS_YES_NO,
+                                              _("It will unselect all you selected packages, continue?"));
+      ret = gtk_dialog_run (GTK_DIALOG (confirmdialog));
+      gtk_widget_destroy (confirmdialog);
+      if (ret != GTK_RESPONSE_YES)
+        {
+          g_debug ("User cancel");
+          return;
+        }
+    }
+
+  filechooser = gtk_file_chooser_dialog_new(_("Add application"),
+                                            NULL,
+                                            GTK_FILE_CHOOSER_ACTION_OPEN,
+                                            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+                                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                            NULL);
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(filechooser), FALSE);
+  gtk_window_set_default_size (GTK_WINDOW (filechooser), 400, 300);
+
+  filter = gtk_file_filter_new();
+  gtk_file_filter_set_name(filter, _("Ipk files(*.ipk)"));
+  gtk_file_filter_add_pattern(filter, "*.ipk");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  filter = gtk_file_filter_new();
+  gtk_file_filter_set_name(filter, _("All files(*.*)"));
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+
+  res = gtk_dialog_run(GTK_DIALOG(filechooser));
+
+  if( (res == GTK_RESPONSE_ACCEPT) || (res == GTK_RESPONSE_OK) ) {
+    filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    g_debug ("file name of user selected is :%s\n", filename);
+
+    res = ipkg_install_cmd (filename, "root", &newname);
+    if (res == 0)
+      {
+        package_list_free_all_dynamic (appdata);
+        ret = reinit_package_list (appdata);
+        if (ret != OP_SUCCESS)
+          {
+            g_debug ("Can not initial the libipkg, the result is%d", ret);
+            g_free (filename);
+            gtk_widget_destroy(filechooser);
+            return;
+          }
+        ret = package_list_build_index (appdata);
+        if (ret != OP_SUCCESS)
+          {
+            g_debug ("Can not build index for packages");
+            g_free (filename);
+            gtk_widget_destroy(filechooser);
+            return;
+          }
+        if (newname != NULL)
+          {
+            free (newname);
+            newname = NULL;
+          }
+      }
+    else
+      {
+        g_debug ("Install error, the error message is:%s", get_error_msg());
+        if (newname != NULL)
+          {
+            free (newname);
+            newname = NULL;
+          }
+      }
+
+    g_free (filename);
+  }
+
+  gtk_widget_destroy(filechooser);
+  return;
 }
 
 /**
@@ -120,3 +219,4 @@ application_menu_new (ApplicationManagerData *appdata)
 
   return appmenu;
 }
+

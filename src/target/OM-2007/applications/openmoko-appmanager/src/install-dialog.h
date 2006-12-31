@@ -80,3 +80,4 @@ void install_dialog_add_install_info (InstallDialog *dialog,
 G_END_DECLS
 
 #endif
+

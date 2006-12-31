@@ -205,3 +205,4 @@ detail_area_update_info (ApplicationManagerData *appdata,
 
   g_object_unref (pix);
 }
+

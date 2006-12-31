@@ -476,3 +476,4 @@ navigation_area_increase_search (ApplicationManagerData *appdata,
   gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
   g_object_unref (model);
 }
+

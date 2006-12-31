@@ -575,3 +575,4 @@ application_manager_data_get_install_dialog (ApplicationManagerData *appdata)
 
   return appdata->installdialog;
 }
+

@@ -94,3 +94,4 @@ void free_pkg_detail_info(PACKAGE_DETAIL_INFO *info);
 char *get_error_msg();
 
 #endif
+

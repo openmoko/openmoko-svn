@@ -47,7 +47,6 @@ typedef struct section_list {
 } SectionList;
 
 static gint package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg);
-static void package_list_free_all_dynamic (ApplicationManagerData *appdata);
 
 /**
  * @brief Version compare
@@ -129,6 +128,41 @@ init_package_list (ApplicationManagerData *appdata)
                ret, get_error_msg());
       return OP_ERROR;
     }
+
+  ret = ipkg_list_available_cmd (head);
+  if (ret != 0)
+    {
+      //Can't get the package list correctly
+      g_debug ("Can not get the package list, the result is %d\nthe error message is:%s",
+               ret, get_error_msg());
+      g_free (head);
+      return OP_ERROR;
+    }
+
+  application_manager_data_set_pkglist (appdata, head);
+  return OP_SUCCESS;
+}
+
+/**
+ * @brief Reinit the package list. Only get the packages from the lib ipkg.
+ * @param appdata The application manager data
+ * @return If success, return OP_SUCCESS, else return error code
+ */
+gint 
+reinit_package_list (ApplicationManagerData *appdata)
+{
+  PKG_LIST_HEAD *head;
+  int ret;
+
+  head = g_malloc (sizeof (PKG_LIST_HEAD));
+  if (head == NULL)
+    {
+      g_debug ("Can not malloc memory for the package list header");
+      return OP_MAMORY_MALLOC_ERROR;
+    }
+
+  head->length = 0;
+  head->pkg_list = NULL;
 
   ret = ipkg_list_available_cmd (head);
   if (ret != 0)
@@ -359,6 +393,8 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
       nosecpkg = NULL;
       application_manager_data_set_upgrade_list (appdata, nosecpkg);
     }
+
+  application_manager_data_set_current_list (appdata, NULL);
 }
 
 /**
@@ -1389,7 +1425,7 @@ package_list_execute_change (gpointer data)
                                          STATUS_REINIT);
       package_list_free_all_dynamic (appdata);
 
-      ret = init_package_list (appdata);
+      ret = reinit_package_list (appdata);
       if (ret != OP_SUCCESS)
         {
           g_debug ("Can not initial the libipkg, the result is%d", ret);
@@ -1414,7 +1450,7 @@ package_list_execute_change (gpointer data)
  * @brief Free all dynamic data
  * @param appdata The application manager data
  */
-static void 
+void 
 package_list_free_all_dynamic (ApplicationManagerData *appdata)
 {
   PKG_LIST_HEAD *pkgheader;
@@ -1458,3 +1494,4 @@ package_list_get_number_of_selected (ApplicationManagerData *appdata)
 
   return number;
 }
+

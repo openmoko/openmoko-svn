@@ -293,3 +293,4 @@ install_dialog_add_install_info (InstallDialog *dialog,
   strcpy (priv->installinfolist[priv->installnum], info);
   priv->installnum ++;
 }
+

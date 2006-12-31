@@ -403,3 +403,4 @@ moko_select_menu_popup (MokoSelectMenu *menu,
                   (event != NULL) ? event->button : 0,
                   gdk_event_get_time((GdkEvent *) event));
 }
+

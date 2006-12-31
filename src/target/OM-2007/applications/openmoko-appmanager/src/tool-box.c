@@ -191,3 +191,4 @@ tool_box_new (ApplicationManagerData *appdata)
 
   return toolbox;
 }
+

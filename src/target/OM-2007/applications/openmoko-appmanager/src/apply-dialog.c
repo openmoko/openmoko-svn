@@ -112,3 +112,4 @@ apply_dialog_new (ApplicationManagerData *appdata)
 
   return applydialog;
 }
+
