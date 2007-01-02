@@ -21,6 +21,8 @@
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkentry.h>
 
+G_DEFINE_TYPE (MokoSearchBar, moko_search_bar, GTK_TYPE_TOOLBAR)
+
 #define MOKO_SEARCH_BAR_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_SEARCH_BAR, MokoSearchBarPrivate))
 
 typedef struct _MokoSearchBarPrivate MokoSearchBarPrivate;
@@ -35,33 +37,6 @@ static void
 moko_search_bar_class_init (MokoSearchBarClass *klass);
 static void
 moko_search_bar_init (MokoSearchBar *self);
-
-
-GType moko_search_bar_get_type (void) /* Typechecking */
-{
-    static GType self_type = 0;
-
-    if (!self_type)
-    {
-        static const GTypeInfo f_info =
-        {
-            sizeof (MokoSearchBarClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moko_search_bar_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MokoSearchBar),
-            0,
-            (GInstanceInitFunc) moko_search_bar_init,
-        };
-
-        /* add the type of your parent class here */
-        self_type = g_type_register_static(GTK_TYPE_TOOLBAR, "MokoSearchBar", &f_info, 0);
-    }
-
-    return self_type;
-}
 
 static void
 moko_search_bar_class_init (MokoSearchBarClass *klass)

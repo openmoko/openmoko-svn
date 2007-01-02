@@ -13,10 +13,14 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/12/07 17:20:16 $) [$Author: mickey $]
+ *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
 
 #include "moko-panel-applet.h"
+
+#include <gtk/gtkmenu.h>
+#include <gtk/gtkwidget.h>
+#include <gtk/gtkwindow.h>
 
 #include <gdk/gdkx.h>
 
@@ -29,11 +33,22 @@
 
 G_DEFINE_TYPE (MokoPanelApplet, moko_panel_applet, G_TYPE_OBJECT)
 
-#define PANEL_APPLET_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_PANEL_APPLET, MokoPanelAppletPrivate))
+#define MOKO_PANEL_APPLET_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_PANEL_APPLET, MokoPanelAppletPrivate))
+#define MOKO_PANEL_APPLET_TAP_HOLD_TIMEOUT  750
 
 typedef struct _MokoPanelAppletPrivate
 {
+    gboolean hold_timeout_triggered;
 } MokoPanelAppletPrivate;
+
+enum {
+    DUMMY_SIGNAL,
+    CLICKED,
+    TAP_HOLD,
+    LAST_SIGNAL,
+};
+
+static guint moko_panel_applet_signals[LAST_SIGNAL] = { 0, };
 
 /* parent class pointer */
 static GObjectClass* parent_class = NULL;
@@ -43,8 +58,16 @@ static char*** app_argv;
 /* forward declarations */
 void moko_panel_applet_real_resize_callback(MokoPanelApplet* self, int w, int h);
 void moko_panel_applet_real_paint_callback(MokoPanelApplet* self, Drawable drw);
+void moko_panel_applet_real_button_press_callback(MokoPanelApplet* self, int x, int y);
+void moko_panel_applet_real_button_release_callback(MokoPanelApplet* self, int x, int y);
+
+void moko_panel_applet_signal_clicked(MokoPanelApplet* self);
+void moko_panel_applet_signal_tap_hold(MokoPanelApplet* self);
+
 static void _mb_applet_resize_callback(MBTrayApp* mb_applet, int w, int h);
 static void _mb_applet_paint_callback(MBTrayApp* mb_applet, Drawable drw);
+static void _mb_applet_button_callback(MBTrayApp* mb_applet, int x, int y, Bool released);
+
 static GdkFilterReturn _moko_panel_applet_gdk_event_filter(GdkXEvent* xev, GdkEvent* gev, MokoPanelApplet* self);
 
 static void
@@ -77,8 +100,32 @@ moko_panel_applet_class_init(MokoPanelAppletClass* klass)
     /* virtual methods */
     klass->resize_callback = moko_panel_applet_real_resize_callback;
     klass->paint_callback = moko_panel_applet_real_paint_callback;
+    klass->button_press_callback = moko_panel_applet_real_button_press_callback;
+    klass->button_release_callback = moko_panel_applet_real_button_release_callback;
+
+    klass->clicked = moko_panel_applet_signal_clicked;
+    klass->tap_hold = moko_panel_applet_signal_tap_hold;
 
     /* install properties */
+
+    /* install signals */
+    moko_panel_applet_signals[CLICKED] = g_signal_new ("clicked",
+            G_TYPE_FROM_CLASS (klass),
+            G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+            G_STRUCT_OFFSET (MokoPanelAppletClass, clicked),
+            NULL,
+            NULL,
+            g_cclosure_marshal_VOID__VOID,
+            G_TYPE_NONE, 0);
+
+    moko_panel_applet_signals[TAP_HOLD] = g_signal_new ("tap-hold",
+            G_TYPE_FROM_CLASS (klass),
+            G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+            G_STRUCT_OFFSET (MokoPanelAppletClass, tap_hold),
+            NULL,
+            NULL,
+            g_cclosure_marshal_VOID__VOID,
+            G_TYPE_NONE, 0);
 }
 
 MokoPanelApplet*
@@ -99,14 +146,12 @@ moko_panel_applet_init(MokoPanelApplet* self)
     //self->applet = mb_tray_app_new_with_display (unsigned char *app_name, MBTrayAppResizeCB resize_cb, MBTrayAppPaintCB paint_cb, int *argc, char ***argv, Display *display)
     self->mb_applet = mb_tray_app_new_with_display( "testing", _mb_applet_resize_callback, _mb_applet_paint_callback, app_argc, app_argv, GDK_DISPLAY() );
     mb_tray_app_set_user_data( self->mb_applet, self );
+    mb_tray_app_set_button_callback( self->mb_applet, _mb_applet_button_callback );
 
     self->mb_pixbuf = mb_pixbuf_new( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) );
-
     mb_tray_app_main_init( self->mb_applet );
 
     gdk_window_add_filter( NULL, _moko_panel_applet_gdk_event_filter, self );
-
-
 }
 
 static GdkFilterReturn
@@ -120,15 +165,43 @@ _moko_panel_applet_gdk_event_filter(GdkXEvent* xev, GdkEvent* gev, MokoPanelAppl
     return GDK_FILTER_CONTINUE;
 }
 
+static gboolean _moko_panel_applet_window_clicked(GtkWidget* widget, GdkEventButton* event, MokoPanelApplet* self)
+{
+    gdk_pointer_ungrab( event->time );
+    gtk_widget_hide( self->window );
+}
+
+static gboolean _moko_panel_applet_tap_hold_timeout(MokoPanelApplet* self)
+{
+    moko_debug( "_moko_panel_applet_tap_hold_timeout" );
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    g_signal_emit( G_OBJECT(self), moko_panel_applet_signals[TAP_HOLD], 0, NULL );
+    priv->hold_timeout_triggered = TRUE;
+    return FALSE;
+}
+
 static void _mb_applet_resize_callback(MBTrayApp* mb_applet, int w, int h)
 {
     MokoPanelApplet* self = mb_tray_app_get_user_data( mb_applet );
     MOKO_PANEL_APPLET_GET_CLASS( self )->resize_callback( self, w, h );
 }
+
 static void _mb_applet_paint_callback(MBTrayApp* mb_applet, Drawable drw)
 {
     MokoPanelApplet* self = mb_tray_app_get_user_data( mb_applet );
     MOKO_PANEL_APPLET_GET_CLASS( self )->paint_callback( self, drw );
+}
+
+static void _mb_applet_button_callback(MBTrayApp* mb_applet, int x, int y, Bool released)
+{
+    MokoPanelApplet* self = mb_tray_app_get_user_data( mb_applet );
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    if ( !released )
+        MOKO_PANEL_APPLET_GET_CLASS( self )->button_press_callback( self, x, y );
+    else if ( !priv->hold_timeout_triggered )
+        MOKO_PANEL_APPLET_GET_CLASS( self )->button_release_callback( self, x, y );
+    else
+        moko_debug( "_mb_applet_button_callback: surpressing release callback, because timeout was triggered" );
 }
 
 void moko_panel_applet_real_resize_callback(MokoPanelApplet* self, int w, int h)
@@ -164,10 +237,144 @@ void moko_panel_applet_real_paint_callback(MokoPanelApplet* self, Drawable drw)
     mb_pixbuf_img_free( self->mb_pixbuf, background );
 }
 
+void moko_panel_applet_real_button_press_callback(MokoPanelApplet* self, int x, int y)
+{
+    moko_debug( "moko_panel_applet_real_button_press_callback" );
+    moko_debug( "-- at %d, %d", x, y );
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    priv->hold_timeout_triggered = FALSE;
+    g_timeout_add( MOKO_PANEL_APPLET_TAP_HOLD_TIMEOUT, (GSourceFunc) _moko_panel_applet_tap_hold_timeout, (gpointer) self );
+}
+
+void moko_panel_applet_real_button_release_callback(MokoPanelApplet* self, int x, int y)
+{
+    moko_debug( "moko_panel_applet_real_button_release_callback" );
+    moko_debug( "-- at %d, %d", x, y );
+
+    if ( x > 0 && x < mb_tray_app_width( self->mb_applet ) && y > 0 && y < mb_tray_app_height( self->mb_applet ) )
+    {
+        g_signal_emit( G_OBJECT(self), moko_panel_applet_signals[CLICKED], 0, NULL );
+        g_source_remove_by_user_data( (gpointer) self );
+    }
+}
+
+void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* popup, int* x, int* y)
+{
+    int win_w;
+    int win_h;
+    gdk_window_get_geometry( GTK_WIDGET(self->window)->window, NULL, NULL, &win_w, &win_h, NULL );
+    moko_debug( "-- popup geom = %d, %d", win_w, win_h );
+    GtkAllocation* allocation = &GTK_WIDGET(self->window)->allocation;
+    moko_debug( "-- popup alloc = %d, %d", allocation->width, allocation->height );
+
+    int x_abs;
+    int y_abs;
+    mb_tray_app_get_absolute_coords( self->mb_applet, &x_abs, &y_abs );
+    moko_debug( "-- abs position = %d, %d", x_abs, y_abs );
+
+    x = x_abs;
+    y = y_abs + mb_tray_app_height( self->mb_applet ) + 4;
+
+    if ( x + win_w > DisplayWidth( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) )
+            x = DisplayWidth( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) - win_w - 2;
+
+    if ( y + win_h > DisplayHeight( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) )
+            y = DisplayHeight( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) - win_h - mb_tray_app_height( self->mb_applet ) - 2;
+
+    moko_debug( "-- final position = %d, %d", x, y );
+}
+
+void moko_panel_applet_signal_clicked(MokoPanelApplet* self)
+{
+    moko_debug( "moko_panel_applet_signal_clicked" );
+    if ( self->window && GTK_WIDGET_VISIBLE( self->window ) )
+        moko_panel_applet_close_popup( self );
+    else
+        moko_panel_applet_open_popup( self, MOKO_PANEL_APPLET_CLICK_POPUP );
+}
+
+void moko_panel_applet_signal_tap_hold(MokoPanelApplet* self)
+{
+    moko_debug( "moko_panel_applet_signal_tap_hold" );
+    moko_panel_applet_open_popup( self, MOKO_PANEL_APPLET_TAP_HOLD_POPUP );
+}
+
+////////////////
+// PUBLIC API //
+////////////////
 void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
 {
     moko_debug( "moko_panel_applet_set_icon" );
     g_assert( self->mb_pixbuf );
     if ( self->mb_pixbuf_image ) mb_pixbuf_img_free( self->mb_pixbuf, self->mb_pixbuf_image );
     self->mb_pixbuf_image = mb_pixbuf_img_new_from_file( self->mb_pixbuf, filename );
+}
+
+void moko_panel_applet_set_popup(MokoPanelApplet* self, GtkWidget* popup, MokoPanelAppletPopupType type)
+{
+    if ( popup == self->popup[type] )
+        return;
+    if ( self->popup[type] )
+    {
+        gtk_widget_destroy( self->popup[type] );
+        //FIXME necessary here or does gtk_widget_destroy removes all references?
+        g_object_unref( self->popup[type] );
+    }
+    self->popup[type] = popup;
+    g_object_ref( popup );
+}
+
+void moko_panel_applet_open_popup(MokoPanelApplet* self, MokoPanelAppletPopupType type)
+{
+    moko_debug( "moko_panel_applet_open_popup [type=%d]", type );
+    GtkWidget* popup = self->popup[type];
+    if ( !popup )
+    {
+        moko_debug( "-- no popup for type %d : return", type );
+        return;
+    }
+
+    if ( self->window && GTK_WIDGET_VISIBLE( self->window ) )
+        moko_panel_applet_close_popup( self );
+
+    if ( GTK_IS_MENU(self->popup[type]) )
+    {
+        self->window = self->popup[type];
+        gtk_menu_popup( GTK_MENU( self->window ), NULL, NULL, NULL, NULL, 0, CurrentTime );
+    }
+    else
+    {
+        self->window = gtk_window_new( GTK_WINDOW_POPUP );
+        gtk_container_add( GTK_CONTAINER(self->window), self->popup[type] );
+        g_signal_connect( G_OBJECT(self->window), "button-press-event", G_CALLBACK(_moko_panel_applet_window_clicked), self );
+        gtk_widget_add_events( self->window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK );
+        //gtk_widget_realize( self->window );
+
+        int x = 0;
+        int y = 0;
+        moko_panel_applet_get_positioning_hint( self, self->popup, &x, &y );
+        gtk_window_move( self->window, x, y );
+        gtk_widget_show_all( self->window );
+        gdk_pointer_grab( GTK_WIDGET(self->window)->window, TRUE, GDK_BUTTON_PRESS_MASK, NULL, NULL, CurrentTime );
+    }
+
+}
+
+void moko_panel_applet_close_popup(MokoPanelApplet* self)
+{
+    g_return_if_fail( self->window || !GTK_WIDGET_VISIBLE(self->window) );
+    moko_debug( "moko_panel_applet_close_popup" );
+
+    if ( GTK_IS_MENU( self->window ) )
+    {
+        gtk_menu_popdown( GTK_MENU( self->window) );
+    }
+    else
+    {
+        gdk_pointer_ungrab( CurrentTime );
+        gtk_widget_hide( self->window );
+        gtk_container_remove( GTK_CONTAINER(self->window), gtk_bin_get_child( GTK_BIN(self->window) ) );
+        gtk_widget_destroy( self->window );
+        self->window = 0L;
+    }
 }

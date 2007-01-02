@@ -26,15 +26,10 @@
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_SEARCH_BAR (moko_search_bar_get_type())
-
 #define MOKO_SEARCH_BAR(obj)   (G_TYPE_CHECK_INSTANCE_CAST ((obj),   MOKO_TYPE_SEARCH_BAR, MokoSearchBar))
-
 #define MOKO_SEARCH_BAR_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),   MOKO_TYPE_SEARCH_BAR, MokoSearchBarClass))
-
 #define MOKO_IS_SEARCH_BAR(obj)   (G_TYPE_CHECK_INSTANCE_TYPE ((obj),   MOKO_TYPE_SEARCH_BAR))
-
 #define MOKO_IS_SEARCH_BAR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass),   MOKO_TYPE_SEARCH_BAR))
-
 #define MOKO_SEARCH_BAR_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),   MOKO_TYPE_SEARCH_BAR, MokoSearchBarClass))
 
 typedef struct {

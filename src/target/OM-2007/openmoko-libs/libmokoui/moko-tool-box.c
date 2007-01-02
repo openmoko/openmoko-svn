@@ -46,7 +46,7 @@ typedef struct _MokoToolBoxPriv
 enum {
     SEARCHBOX_VISIBLE,
     SEARCHBOX_INVISIBLE,
-    LAST_SIGNAL
+    LAST_SIGNAL,
 };
 
 static void moko_tool_box_class_init          (MokoToolBoxClass *klass);
