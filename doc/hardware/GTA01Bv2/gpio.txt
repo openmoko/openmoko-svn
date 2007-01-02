@@ -111,7 +111,7 @@ GPF5	I	EINT5	nSD_CD			SD Card Detect
 GPF6	I	EINT6	911_KEY			The second button
 GPF7	I	EINT7	HOLD			?
 
-GPFCON = 1010 1010 0000 1001 - 0xaa09
+GPFCON = 1010 1010 0001 1001 - 0xaa19
 
 
 GPG0	O	GPG0	DLGSM			Switch headphone to GSM Mode?
