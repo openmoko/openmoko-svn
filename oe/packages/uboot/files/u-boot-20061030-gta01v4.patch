@@ -1,7 +1,7 @@
 Index: u-boot.git/Makefile
 ===================================================================
---- u-boot.git.orig/Makefile	2006-12-22 23:31:06.000000000 +0100
-+++ u-boot.git/Makefile	2006-12-22 23:40:11.000000000 +0100
+--- u-boot.git.orig/Makefile	2007-01-03 20:28:41.000000000 +0100
++++ u-boot.git/Makefile	2007-01-03 20:30:55.000000000 +0100
 @@ -1910,8 +1910,10 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
@@ -17,8 +17,8 @@ Index: u-boot.git/Makefile
  	@$(MKCONFIG) $(@:_config=) arm arm920t scb9328 NULL imx
 Index: u-boot.git/board/gta01/gta01.c
 ===================================================================
---- u-boot.git.orig/board/gta01/gta01.c	2006-12-22 23:25:48.000000000 +0100
-+++ u-boot.git/board/gta01/gta01.c	2006-12-22 23:59:08.000000000 +0100
+--- u-boot.git.orig/board/gta01/gta01.c	2007-01-03 20:28:41.000000000 +0100
++++ u-boot.git/board/gta01/gta01.c	2007-01-03 20:30:55.000000000 +0100
 @@ -90,6 +90,7 @@
  	delay (8000);
  
@@ -62,10 +62,20 @@ Index: u-boot.git/board/gta01/gta01.c
  
  	/* arch number of SMDK2410-Board */
  	gd->bd->bi_arch_number = MACH_TYPE_GTA01;
+@@ -143,5 +172,9 @@
+ 
+ u_int32_t get_board_rev(void)
+ {
++#if defined(CONFIG_ARCH_GTA01_v3)
+ 	return 0x00000130;
++#elif defined(CONFIG_ARCH_GTA01_v4)
++	return 0x00000140;
++#endif
+ }
 Index: u-boot.git/board/gta01/split_by_variant.sh
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/gta01/split_by_variant.sh	2006-12-22 23:34:53.000000000 +0100
++++ u-boot.git/board/gta01/split_by_variant.sh	2007-01-03 20:30:55.000000000 +0100
 @@ -0,0 +1,36 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
@@ -105,9 +115,9 @@ Index: u-boot.git/board/gta01/split_by_variant.sh
 +$MKCONFIG -a gta01 arm arm920t gta01 NULL s3c24x0
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2006-12-22 23:28:54.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2006-12-22 23:36:18.000000000 +0100
-@@ -125,7 +125,11 @@
+--- u-boot.git.orig/include/configs/gta01.h	2007-01-03 20:30:46.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-01-03 20:30:55.000000000 +0100
+@@ -124,7 +124,11 @@
   * Miscellaneous configurable options
   */
  #define	CFG_LONGHELP				/* undef to save memory		*/
