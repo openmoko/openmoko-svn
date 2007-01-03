@@ -2,8 +2,8 @@ This patch adds support for the GTA01Bv2 variant of the FIC GTA01 (Neo1973) phon
 
 Index: u-boot.git/Makefile
 ===================================================================
---- u-boot.git.orig/Makefile	2006-12-31 18:55:34.000000000 +0100
-+++ u-boot.git/Makefile	2006-12-31 19:55:12.000000000 +0100
+--- u-boot.git.orig/Makefile	2007-01-03 21:06:36.000000000 +0100
++++ u-boot.git/Makefile	2007-01-03 21:06:38.000000000 +0100
 @@ -1912,6 +1912,7 @@
  
  gta01_config \
@@ -14,8 +14,8 @@ Index: u-boot.git/Makefile
  
 Index: u-boot.git/board/gta01/gta01.c
 ===================================================================
---- u-boot.git.orig/board/gta01/gta01.c	2006-12-31 18:55:34.000000000 +0100
-+++ u-boot.git/board/gta01/gta01.c	2006-12-31 20:15:40.000000000 +0100
+--- u-boot.git.orig/board/gta01/gta01.c	2007-01-03 21:06:36.000000000 +0100
++++ u-boot.git/board/gta01/gta01.c	2007-01-03 21:06:38.000000000 +0100
 @@ -35,28 +35,29 @@
  
  DECLARE_GLOBAL_DATA_PTR;
@@ -56,14 +56,14 @@ Index: u-boot.git/board/gta01/gta01.c
  
  static inline void delay (unsigned long loops)
  {
-@@ -137,7 +138,30 @@
+@@ -137,7 +138,31 @@
  
  	gpio->GPHCON = 0x0000FAAA;
  	gpio->GPHUP = 0x000007FF;
 +#elif defined(CONFIG_ARCH_GTA01B_v2)
 +	gpio->GPACON = 0x005E47FF;
 +
-+	gpio->GPBCON = 0x00045016;
++	gpio->GPBCON = 0x00145416;
 +	gpio->GPBUP = 0x000007FF;
 +	gpio->GPBDAT |= 0x4;		/* Set GBP2 to high (Flash power-up) */
 +
@@ -76,8 +76,9 @@ Index: u-boot.git/board/gta01/gta01.c
 +	gpio->GPECON = 0xA02AAAAA;
 +	gpio->GPEUP = 0x0000FFFF;
 +
-+	gpio->GPFCON = 0x0000aa09;
++	gpio->GPFCON = 0x0000aa19;
 +	gpio->GPFUP = 0x000000FF;
++	gpio->GPFDAT |= 0x4;		/* Set GBF2 to high (nGSM_EN) */
 +
 +	gpio->GPGCON = 0xFF40F0C1;
 +	gpio->GPGUP = 0x0000AFEF;
@@ -87,7 +88,7 @@ Index: u-boot.git/board/gta01/gta01.c
  #else
  #error Please define GTA01 version
  #endif
-@@ -156,9 +180,11 @@
+@@ -156,9 +181,11 @@
  
  int board_late_init(void)
  {
@@ -100,25 +101,47 @@ Index: u-boot.git/board/gta01/gta01.c
  	return 0;
  }
  
+@@ -176,5 +203,7 @@
+ 	return 0x00000130;
+ #elif defined(CONFIG_ARCH_GTA01_v4)
+ 	return 0x00000140;
++#elif defined(CONFIG_ARCH_GTA01B_v2)
++	return 0x00000220;
+ #endif
+ }
 Index: u-boot.git/board/gta01/split_by_variant.sh
 ===================================================================
---- u-boot.git.orig/board/gta01/split_by_variant.sh	2006-12-31 18:55:34.000000000 +0100
-+++ u-boot.git/board/gta01/split_by_variant.sh	2006-12-31 19:55:12.000000000 +0100
-@@ -21,6 +21,9 @@
+--- u-boot.git.orig/board/gta01/split_by_variant.sh	2007-01-03 21:06:36.000000000 +0100
++++ u-boot.git/board/gta01/split_by_variant.sh	2007-01-03 21:11:28.000000000 +0100
+@@ -15,16 +15,23 @@
+ 	case "$1" in
+ 	gta01v4_config)
+ 	echo "#define CONFIG_ARCH_GTA01_v4" > ${obj}include/config.h
++	echo "GTA01_BIG_FLASH=n" > ${obj}board/gta01/config.tmp
+ 	;;
+ 
+ 	gta01v3_config)
  	echo "#define CONFIG_ARCH_GTA01_v3" > ${obj}include/config.h
++	echo "GTA01_BIG_FLASH=n" > ${obj}board/gta01/config.tmp
  	;;
  
 +	gta01bv2_config)
 +	echo "#define CONFIG_ARCH_GTA01B_v2" > ${obj}include/config.h
++	echo "GTA01_BIG_FLASH=y" > ${obj}board/gta01/config.tmp
 +	;;
  
  	*)
  	echo "$0:: Unrecognised config - using gta01v3_config"
+ 	echo "#define CONFIG_ARCH_GTA01_v3" > ${obj}include/config.h
++	echo "GTA01_BIG_FLASH=n" > ${obj}board/gta01/config.tmp
+ 	;;
+ 
+ 	esac
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2006-12-31 18:55:34.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2006-12-31 19:55:12.000000000 +0100
-@@ -129,6 +129,8 @@
+--- u-boot.git.orig/include/configs/gta01.h	2007-01-03 21:06:36.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-01-03 21:06:38.000000000 +0100
+@@ -128,6 +128,8 @@
  #define	CFG_PROMPT		"GTA01v3 # "	/* Monitor Command Prompt	*/
  #elif defined(CONFIG_ARCH_GTA01_v4)
  #define	CFG_PROMPT		"GTA01v4 # "	/* Monitor Command Prompt	*/
@@ -127,15 +150,14 @@ Index: u-boot.git/include/configs/gta01.h
  #endif
  #define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
  #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
-@@ -167,7 +169,14 @@
+@@ -166,7 +168,13 @@
   */
  #define CONFIG_NR_DRAM_BANKS	1	   /* we have 1 bank of DRAM */
  #define PHYS_SDRAM_1		0x30000000 /* SDRAM Bank #1 */
 +#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
  #define PHYS_SDRAM_1_SIZE	0x04000000 /* 64 MB */
 +#elif defined(CONFIG_ARCH_GTA01B_v2)
-+#define PHYS_SDRAM_1_SIZE	0x04000000 /* 64 MB */
-+//#define PHYS_SDRAM_1_SIZE	0x08000000 /* 128 MB */
++#define PHYS_SDRAM_1_SIZE	0x08000000 /* 128 MB */
 +#else
 +#error Please define GTA01 variant
 +#endif
@@ -144,16 +166,19 @@ Index: u-boot.git/include/configs/gta01.h
  /*-----------------------------------------------------------------------
 Index: u-boot.git/board/gta01/lowlevel_init.S
 ===================================================================
---- u-boot.git.orig/board/gta01/lowlevel_init.S	2006-12-31 18:55:34.000000000 +0100
-+++ u-boot.git/board/gta01/lowlevel_init.S	2006-12-31 20:21:58.000000000 +0100
-@@ -108,21 +108,21 @@
+--- u-boot.git.orig/board/gta01/lowlevel_init.S	2007-01-03 21:06:36.000000000 +0100
++++ u-boot.git/board/gta01/lowlevel_init.S	2007-01-03 21:06:38.000000000 +0100
+@@ -108,12 +108,16 @@
  #define B5_PMC		 	0x0	/* normal */
  
  #define B6_MT		 	0x3	/* SDRAM */
 -#define B6_Trcd	 	 	0x1
--#define B6_SCAN		 	0x1	/* 9bit */
 +#define B6_Trcd	 	 	0x1	/* 3clk */
++#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+ #define B6_SCAN		 	0x1	/* 9bit */
++#elif defined(CONFIG_ARCH_GTA01B_v2)
 +#define B6_SCAN		 	0x2	/* 10bit */
++#endif
  
  #define B7_MT		 	0x3	/* SDRAM */
  #define B7_Trcd		 	0x1	/* 3clk */
@@ -162,19 +187,7 @@ Index: u-boot.git/board/gta01/lowlevel_init.S
  
  /* REFRESH parameter */
  #define REFEN		 	0x1	/* Refresh enable */
- #define TREFMD		 	0x0	/* CBR(CAS before RAS)/Auto refresh */
--#define Trp		 	0x1	/* 3clk */
-+#define Trp		 	0x2	/* 4clk */
- #define Trc		 	0x3	/* 7clk */
- #define Tchr		 	0x2	/* 3clk */
--//#define REFCNT		 	1113	/* period=15.6us, HCLK=60Mhz, (2048+1-15.6*60) */
--#define REFCNT		 	997	/* period=17.5us, HCLK=60Mhz, (2048+1-15.6*60) */
-+#define REFCNT		 	1113	/* period=15.6us, HCLK=60Mhz, (2048+1-15.6*60) */
-+//#define REFCNT		 	997	/* period=17.5us, HCLK=60Mhz, (2048+1-15.6*60) */
- /**************************************/
- 
- _TEXT_BASE:
-@@ -149,6 +149,19 @@
+@@ -149,6 +153,19 @@
  	orr	r1, r1, #0xc0000000
  	mcr	p15, 0, r1, c1, c0, 0
  
@@ -194,3 +207,40 @@ Index: u-boot.git/board/gta01/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
+Index: u-boot.git/board/gta01/config.mk
+===================================================================
+--- u-boot.git.orig/board/gta01/config.mk	2007-01-03 21:06:50.000000000 +0100
++++ u-boot.git/board/gta01/config.mk	2007-01-03 21:13:37.000000000 +0100
+@@ -8,18 +8,26 @@
+ # see http://www.samsung.com/ for more information on SAMSUNG
+ #
+ 
++# GTA01v3 has 1 bank of 64 MB SDRAM
++# GTA01v4 has 1 bank of 64 MB SDRAM
+ #
+-# GTA01 has 1 bank of 64 MB DRAM
++# 	3000'0000 to 3400'0000
++# we load ourself to 33F8'0000
++#
++# GTA01Bv2 or later has 1 bank of 128 MB SDRAM
+ #
+-# 3000'0000 to 3400'0000
++# 	3000'0000 to 3800'0000
++# we load ourself to 37F8'0000
+ #
+ # Linux-Kernel is expected to be at 3000'8000, entry 3000'8000
+ # optionally with a ramdisk at 3080'0000
+ #
+-# we load ourself to 33F8'0000
+-#
+-# download area is 3300'0000
+-#
++# download area is 3200'0000 or 3300'0000
+ 
++sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
+ 
++ifeq ($(GTA01_BIG_RAM),y)
++TEXT_BASE = 0x37F80000
++else
+ TEXT_BASE = 0x33F80000
++endif
