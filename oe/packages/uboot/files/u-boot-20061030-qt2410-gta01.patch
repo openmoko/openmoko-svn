@@ -1,8 +1,8 @@
-diff --git a/Makefile b/Makefile
-index 62dafc5..b44b03e 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1870,6 +1870,12 @@ omap730p2_cs3boot_config :	unconfig
+Index: u-boot.git/Makefile
+===================================================================
+--- u-boot.git.orig/Makefile	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/Makefile	2007-01-03 20:31:35.000000000 +0100
+@@ -1907,6 +1907,12 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -15,11 +15,10 @@ index 62dafc5..b44b03e 100644
  scb9328_config	:	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t scb9328 NULL imx
  
-diff --git a/board/gta01/Makefile b/board/gta01/Makefile
-new file mode 100644
-index 0000000..77b544a
---- /dev/null
-+++ b/board/gta01/Makefile
+Index: u-boot.git/board/gta01/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/gta01/Makefile	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -68,11 +67,10 @@ index 0000000..77b544a
 +-include .depend
 +
 +#########################################################################
-diff --git a/board/gta01/config.mk b/board/gta01/config.mk
-new file mode 100644
-index 0000000..7c65634
---- /dev/null
-+++ b/board/gta01/config.mk
+Index: u-boot.git/board/gta01/config.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/gta01/config.mk	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -99,12 +97,11 @@ index 0000000..7c65634
 +
 +
 +TEXT_BASE = 0x33F80000
-diff --git a/board/gta01/gta01.c b/board/gta01/gta01.c
-new file mode 100644
-index 0000000..5930013
---- /dev/null
-+++ b/board/gta01/gta01.c
-@@ -0,0 +1,142 @@
+Index: u-boot.git/board/gta01/gta01.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/gta01/gta01.c	2007-01-03 20:31:35.000000000 +0100
+@@ -0,0 +1,147 @@
 +/*
 + * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
 + *
@@ -247,11 +244,15 @@ index 0000000..5930013
 +
 +	return 0;
 +}
-diff --git a/board/gta01/lowlevel_init.S b/board/gta01/lowlevel_init.S
-new file mode 100644
-index 0000000..e4a9e83
---- /dev/null
-+++ b/board/gta01/lowlevel_init.S
++
++u_int32_t get_board_rev(void)
++{
++	return 0x00000130;
++}
+Index: u-boot.git/board/gta01/lowlevel_init.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/gta01/lowlevel_init.S	2007-01-03 20:31:34.000000000 +0100
 @@ -0,0 +1,171 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -424,11 +425,10 @@ index 0000000..e4a9e83
 +    .word 0xb2
 +    .word 0x30
 +    .word 0x30
-diff --git a/board/gta01/u-boot.lds b/board/gta01/u-boot.lds
-new file mode 100644
-index 0000000..f4fbf96
---- /dev/null
-+++ b/board/gta01/u-boot.lds
+Index: u-boot.git/board/gta01/u-boot.lds
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/gta01/u-boot.lds	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,57 @@
 +/*
 + * (C) Copyright 2002
@@ -487,11 +487,10 @@ index 0000000..f4fbf96
 +	.bss : { *(.bss) }
 +	_end = .;
 +}
-diff --git a/board/qt2410/Makefile b/board/qt2410/Makefile
-new file mode 100644
-index 0000000..407b256
---- /dev/null
-+++ b/board/qt2410/Makefile
+Index: u-boot.git/board/qt2410/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/qt2410/Makefile	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -540,11 +539,10 @@ index 0000000..407b256
 +-include .depend
 +
 +#########################################################################
-diff --git a/board/qt2410/config.mk b/board/qt2410/config.mk
-new file mode 100644
-index 0000000..1af85da
---- /dev/null
-+++ b/board/qt2410/config.mk
+Index: u-boot.git/board/qt2410/config.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/qt2410/config.mk	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -571,11 +569,10 @@ index 0000000..1af85da
 +
 +
 +TEXT_BASE = 0x33F80000
-diff --git a/board/qt2410/flash.c b/board/qt2410/flash.c
-new file mode 100644
-index 0000000..57345f6
---- /dev/null
-+++ b/board/qt2410/flash.c
+Index: u-boot.git/board/qt2410/flash.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/qt2410/flash.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,435 @@
 +/*
 + * (C) Copyright 2002
@@ -1012,11 +1009,10 @@ index 0000000..57345f6
 +
 +	return write_hword (info, wp, data);
 +}
-diff --git a/board/qt2410/lowlevel_init.S b/board/qt2410/lowlevel_init.S
-new file mode 100644
-index 0000000..7f4d691
---- /dev/null
-+++ b/board/qt2410/lowlevel_init.S
+Index: u-boot.git/board/qt2410/lowlevel_init.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/qt2410/lowlevel_init.S	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,173 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -1191,11 +1187,10 @@ index 0000000..7f4d691
 +    .word 0xb2
 +    .word 0x30
 +    .word 0x30
-diff --git a/board/qt2410/qt2410.c b/board/qt2410/qt2410.c
-new file mode 100644
-index 0000000..fd9cff0
---- /dev/null
-+++ b/board/qt2410/qt2410.c
+Index: u-boot.git/board/qt2410/qt2410.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/qt2410/qt2410.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,127 @@
 +/*
 + * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
@@ -1324,11 +1319,10 @@ index 0000000..fd9cff0
 +
 +	return 0;
 +}
-diff --git a/board/qt2410/u-boot.lds b/board/qt2410/u-boot.lds
-new file mode 100644
-index 0000000..f4fbf96
---- /dev/null
-+++ b/board/qt2410/u-boot.lds
+Index: u-boot.git/board/qt2410/u-boot.lds
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/board/qt2410/u-boot.lds	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,57 @@
 +/*
 + * (C) Copyright 2002
@@ -1387,11 +1381,11 @@ index 0000000..f4fbf96
 +	.bss : { *(.bss) }
 +	_end = .;
 +}
-diff --git a/common/Makefile b/common/Makefile
-index 07ddc95..f9374e8 100644
---- a/common/Makefile
-+++ b/common/Makefile
-@@ -28,7 +28,7 @@ LIB	= $(obj)libcommon.a
+Index: u-boot.git/common/Makefile
+===================================================================
+--- u-boot.git.orig/common/Makefile	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/common/Makefile	2007-01-01 17:32:26.000000000 +0100
+@@ -28,7 +28,7 @@
  AOBJS	=
  
  COBJS	= main.o ACEX1K.o altera.o bedbug.o circbuf.o \
@@ -1400,11 +1394,10 @@ index 07ddc95..f9374e8 100644
  	  cmd_bdinfo.o cmd_bedbug.o cmd_bmp.o cmd_boot.o cmd_bootm.o \
  	  cmd_cache.o cmd_console.o \
  	  cmd_date.o cmd_dcr.o cmd_diag.o cmd_display.o cmd_doc.o cmd_dtt.o \
-diff --git a/common/cmd_arm920.c b/common/cmd_arm920.c
-new file mode 100644
-index 0000000..f61a0a5
---- /dev/null
-+++ b/common/cmd_arm920.c
+Index: u-boot.git/common/cmd_arm920.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/common/cmd_arm920.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,64 @@
 +/*
 + * (C) Copyright 2003
@@ -1470,11 +1463,11 @@ index 0000000..f61a0a5
 +	NULL
 +);
 +#endif	/* CFG_CMD_BDI */
-diff --git a/cpu/arm920t/cpu.c b/cpu/arm920t/cpu.c
-index f93bf57..010001f 100644
---- a/cpu/arm920t/cpu.c
-+++ b/cpu/arm920t/cpu.c
-@@ -38,7 +38,7 @@ DECLARE_GLOBAL_DATA_PTR;
+Index: u-boot.git/cpu/arm920t/cpu.c
+===================================================================
+--- u-boot.git.orig/cpu/arm920t/cpu.c	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/cpu/arm920t/cpu.c	2007-01-01 17:32:26.000000000 +0100
+@@ -38,7 +38,7 @@
  #endif
  
  /* read co-processor 15, register #1 (control register) */
@@ -1483,7 +1476,7 @@ index f93bf57..010001f 100644
  {
  	unsigned long value;
  
-@@ -55,7 +55,7 @@ #endif
+@@ -55,7 +55,7 @@
  }
  
  /* write to co-processor 15, register #1 (control register) */
@@ -1492,11 +1485,11 @@ index f93bf57..010001f 100644
  {
  #ifdef MMU_DEBUG
  	printf ("write %08lx to p15/c1\n", value);
-diff --git a/cpu/arm920t/s3c24x0/Makefile b/cpu/arm920t/s3c24x0/Makefile
-index 3a7c4b3..5ac1520 100644
---- a/cpu/arm920t/s3c24x0/Makefile
-+++ b/cpu/arm920t/s3c24x0/Makefile
-@@ -26,7 +26,7 @@ include $(TOPDIR)/config.mk
+Index: u-boot.git/cpu/arm920t/s3c24x0/Makefile
+===================================================================
+--- u-boot.git.orig/cpu/arm920t/s3c24x0/Makefile	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/cpu/arm920t/s3c24x0/Makefile	2007-01-01 17:32:26.000000000 +0100
+@@ -26,7 +26,7 @@
  LIB	= $(obj)lib$(SOC).a
  
  COBJS	= i2c.o interrupts.o serial.o speed.o \
@@ -1505,11 +1498,10 @@ index 3a7c4b3..5ac1520 100644
  
  SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
-diff --git a/cpu/arm920t/s3c24x0/mmc.c b/cpu/arm920t/s3c24x0/mmc.c
-new file mode 100644
-index 0000000..b7057e2
---- /dev/null
-+++ b/cpu/arm920t/s3c24x0/mmc.c
+Index: u-boot.git/cpu/arm920t/s3c24x0/mmc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/cpu/arm920t/s3c24x0/mmc.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,568 @@
 +/*
 + * u-boot S3C2410 MMC/SD card driver
@@ -2079,11 +2071,10 @@ index 0000000..b7057e2
 +}
 +
 +#endif	/* CONFIG_MMC */
-diff --git a/cpu/arm920t/s3c24x0/nand.c b/cpu/arm920t/s3c24x0/nand.c
-new file mode 100644
-index 0000000..f720229
---- /dev/null
-+++ b/cpu/arm920t/s3c24x0/nand.c
+Index: u-boot.git/cpu/arm920t/s3c24x0/nand.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/cpu/arm920t/s3c24x0/nand.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,212 @@
 +/*
 + * (C) Copyright 2006 Harald Welte <hwelte@hmw-consulting.de>
@@ -2297,11 +2288,10 @@ index 0000000..f720229
 + #error "U-Boot legacy NAND support not available for S3C2410"
 +#endif
 +#endif
-diff --git a/cpu/arm920t/s3c24x0/nand_read.c b/cpu/arm920t/s3c24x0/nand_read.c
-new file mode 100644
-index 0000000..9d97932
---- /dev/null
-+++ b/cpu/arm920t/s3c24x0/nand_read.c
+Index: u-boot.git/cpu/arm920t/s3c24x0/nand_read.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/cpu/arm920t/s3c24x0/nand_read.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,75 @@
 +/* 
 + * nand_read.c: Simple NAND read functions for booting from NAND
@@ -2378,10 +2368,10 @@ index 0000000..9d97932
 +}
 +
 +#endif /* CONFIG_S3C2410_NAND_BOOT */
-diff --git a/cpu/arm920t/start.S b/cpu/arm920t/start.S
-index 346f0d0..a48ae30 100644
---- a/cpu/arm920t/start.S
-+++ b/cpu/arm920t/start.S
+Index: u-boot.git/cpu/arm920t/start.S
+===================================================================
+--- u-boot.git.orig/cpu/arm920t/start.S	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/cpu/arm920t/start.S	2007-01-01 17:32:26.000000000 +0100
 @@ -5,6 +5,10 @@
   *  Copyright (c) 2002	Alex Züpke <azu@sysgo.de>
   *  Copyright (c) 2002	Gary Jennejohn <gj@denx.de>
@@ -2401,7 +2391,7 @@ index 346f0d0..a48ae30 100644
  
  
  /*
-@@ -158,9 +163,17 @@ #endif	/* CONFIG_S3C2400 || CONFIG_S3C24
+@@ -158,9 +163,17 @@
  	 */
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
  	bl	cpu_init_crit
@@ -2419,7 +2409,7 @@ index 346f0d0..a48ae30 100644
  relocate:				/* relocate U-Boot to RAM	    */
  	adr	r0, _start		/* r0 <- current position of code   */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
-@@ -177,6 +190,93 @@ copy_loop:
+@@ -177,6 +190,93 @@
  	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
  	cmp	r0, r2			/* until source end addreee [r2]    */
  	ble	copy_loop
@@ -2513,11 +2503,11 @@ index 346f0d0..a48ae30 100644
  #endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
  
  	/* Set up the stack						    */
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 5a369df..aa232b2 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -51,7 +51,7 @@ COBJS	= 3c589.o 5701rls.o ali512x.o atme
+Index: u-boot.git/drivers/Makefile
+===================================================================
+--- u-boot.git.orig/drivers/Makefile	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/drivers/Makefile	2007-01-01 17:32:26.000000000 +0100
+@@ -51,7 +51,7 @@
  	  ks8695eth.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
  	  rpx_pcmcia.o \
@@ -2526,11 +2516,11 @@ index 5a369df..aa232b2 100644
  
  SRCS	:= $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(COBJS))
-diff --git a/drivers/cs8900.c b/drivers/cs8900.c
-index 082434c..1cce622 100644
---- a/drivers/cs8900.c
-+++ b/drivers/cs8900.c
-@@ -120,6 +120,7 @@ void cs8900_get_enetaddr (uchar * addr)
+Index: u-boot.git/drivers/cs8900.c
+===================================================================
+--- u-boot.git.orig/drivers/cs8900.c	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/drivers/cs8900.c	2007-01-01 17:32:26.000000000 +0100
+@@ -120,6 +120,7 @@
  	unsigned char env_enetaddr[6];
  	char *tmp = getenv ("ethaddr");
  	char *end;
@@ -2538,7 +2528,7 @@ index 082434c..1cce622 100644
  
  	for (i=0; i<6; i++) {
  		env_enetaddr[i] = tmp ? simple_strtoul(tmp, &end, 16) : 0;
-@@ -128,7 +129,9 @@ void cs8900_get_enetaddr (uchar * addr)
+@@ -128,7 +129,9 @@
  	}
  
  	/* verify chip id */
@@ -2549,11 +2539,10 @@ index 082434c..1cce622 100644
  		return;
  	eth_reset ();
  	if ((get_reg (PP_SelfST) & (PP_SelfSTAT_EEPROM | PP_SelfSTAT_EEPROM_OK)) ==
-diff --git a/drivers/s3c2410_fb.c b/drivers/s3c2410_fb.c
-new file mode 100644
-index 0000000..fc389a9
---- /dev/null
-+++ b/drivers/s3c2410_fb.c
+Index: u-boot.git/drivers/s3c2410_fb.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/drivers/s3c2410_fb.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,182 @@
 +/*
 + * (C) Copyright 2006 Harald Welte <hwelte@hmw-consulting.de>
@@ -2737,11 +2726,10 @@ index 0000000..fc389a9
 +}
 +
 +#endif /* CONFIG_VIDEO_S3C2410 */
-diff --git a/drivers/usbdcore_s3c2410.c b/drivers/usbdcore_s3c2410.c
-new file mode 100644
-index 0000000..143fdf2
---- /dev/null
-+++ b/drivers/usbdcore_s3c2410.c
+Index: u-boot.git/drivers/usbdcore_s3c2410.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/drivers/usbdcore_s3c2410.c	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,1609 @@
 +/*
 + * (C) Copyright 2003
@@ -4352,10 +4340,10 @@ index 0000000..143fdf2
 +}
 +
 +#endif
-diff --git a/fs/cramfs/cramfs.c b/fs/cramfs/cramfs.c
-index 48e7f63..925724a 100644
---- a/fs/cramfs/cramfs.c
-+++ b/fs/cramfs/cramfs.c
+Index: u-boot.git/fs/cramfs/cramfs.c
+===================================================================
+--- u-boot.git.orig/fs/cramfs/cramfs.c	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/fs/cramfs/cramfs.c	2007-01-01 17:32:26.000000000 +0100
 @@ -27,7 +27,7 @@
  #include <common.h>
  #include <malloc.h>
@@ -4365,7 +4353,7 @@ index 48e7f63..925724a 100644
  
  #include <asm/byteorder.h>
  #include <linux/stat.h>
-@@ -343,5 +343,22 @@ int cramfs_check (struct part_info *info
+@@ -343,5 +343,22 @@
  	}
  	return 1;
  }
@@ -4389,11 +4377,10 @@ index 48e7f63..925724a 100644
 +}
  #endif /* CFG_FS_CRAMFS */
 +
-diff --git a/include/asm-arm/arch-s3c24x0/mmc.h b/include/asm-arm/arch-s3c24x0/mmc.h
-new file mode 100644
-index 0000000..d9178f3
---- /dev/null
-+++ b/include/asm-arm/arch-s3c24x0/mmc.h
+Index: u-boot.git/include/asm-arm/arch-s3c24x0/mmc.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/include/asm-arm/arch-s3c24x0/mmc.h	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,112 @@
 +/*
 + *  linux/drivers/mmc/mmc_pxa.h
@@ -4507,11 +4494,10 @@ index 0000000..d9178f3
 +
 +
 +#endif /* __MMC_PXA_P_H__ */
-diff --git a/include/asm-arm/arch-s3c24x0/regs-sdi.h b/include/asm-arm/arch-s3c24x0/regs-sdi.h
-new file mode 100644
-index 0000000..9b5b9d1
---- /dev/null
-+++ b/include/asm-arm/arch-s3c24x0/regs-sdi.h
+Index: u-boot.git/include/asm-arm/arch-s3c24x0/regs-sdi.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/include/asm-arm/arch-s3c24x0/regs-sdi.h	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,110 @@
 +/* linux/include/asm/arch-s3c2410/regs-sdi.h
 + *
@@ -4623,11 +4609,11 @@ index 0000000..9b5b9d1
 +#define S3C2410_SDIIMSK_RXFIFOHALF     (1<<0)
 +
 +#endif /* __ASM_ARM_REGS_SDI */
-diff --git a/include/asm-arm/mach-types.h b/include/asm-arm/mach-types.h
-index 7d7888e..b20b97d 100644
---- a/include/asm-arm/mach-types.h
-+++ b/include/asm-arm/mach-types.h
-@@ -424,7 +424,7 @@ #define MACH_TYPE_MT02                 4
+Index: u-boot.git/include/asm-arm/mach-types.h
+===================================================================
+--- u-boot.git.orig/include/asm-arm/mach-types.h	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/include/asm-arm/mach-types.h	2007-01-01 17:32:26.000000000 +0100
+@@ -424,7 +424,7 @@
  #define MACH_TYPE_MPORT3S              411
  #define MACH_TYPE_RA_ALPHA             412
  #define MACH_TYPE_XCEP                 413
@@ -4636,7 +4622,7 @@ index 7d7888e..b20b97d 100644
  #define MACH_TYPE_STARGATE             415
  #define MACH_TYPE_ARMADILLOJ           416
  #define MACH_TYPE_ELROY_JACK           417
-@@ -457,7 +457,7 @@ #define MACH_TYPE_ESL_SARVA            4
+@@ -457,7 +457,7 @@
  #define MACH_TYPE_XM250                444
  #define MACH_TYPE_T6TC1XB              445
  #define MACH_TYPE_ESS710               446
@@ -4645,7 +4631,7 @@ index 7d7888e..b20b97d 100644
  #define MACH_TYPE_HIMALAYA             448
  #define MACH_TYPE_BOLFENK              449
  #define MACH_TYPE_AT91RM9200KR         450
-@@ -736,7 +736,309 @@ #define MACH_TYPE_ADSPORTAL            7
+@@ -736,7 +736,309 @@
  #define MACH_TYPE_LN2410SBC            725
  #define MACH_TYPE_CB3RUFC              726
  #define MACH_TYPE_MP2USB               727
@@ -4956,7 +4942,7 @@ index 7d7888e..b20b97d 100644
  
  #ifdef CONFIG_ARCH_EBSA110
  # ifdef machine_arch_type
-@@ -3541,9 +3843,9 @@ #  define machine_arch_type	__machine_ar
+@@ -3541,9 +3843,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_RAMSES
  # endif
@@ -4968,7 +4954,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_ARCH_S28X
-@@ -4501,9 +4803,9 @@ #  define machine_arch_type	__machine_ar
+@@ -4501,9 +4803,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_M825XX
  # endif
@@ -4980,7 +4966,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_SA1100_M7100
-@@ -5658,16 +5960,16 @@ #else
+@@ -5658,16 +5960,16 @@
  # define machine_is_xcep()	(0)
  #endif
  
@@ -5001,7 +4987,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_MACH_STARGATE
-@@ -6054,16 +6356,16 @@ #else
+@@ -6054,16 +6356,16 @@
  # define machine_is_ess710()	(0)
  #endif
  
@@ -5022,7 +5008,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_MACH_HIMALAYA
-@@ -7333,9 +7635,9 @@ #  define machine_arch_type	__machine_ar
+@@ -7333,9 +7635,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_ARGONPLUSEVB
  # endif
@@ -5034,7 +5020,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_MACH_SCMA11EVB
-@@ -7345,9 +7647,9 @@ #  define machine_arch_type	__machine_ar
+@@ -7345,9 +7647,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_SCMA11EVB
  # endif
@@ -5046,7 +5032,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_MACH_SMDK2800
-@@ -8305,9 +8607,9 @@ #  define machine_arch_type	__machine_ar
+@@ -8305,9 +8607,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_SCMA11BB
  # endif
@@ -5058,7 +5044,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_MACH_TRIZEPS3
-@@ -9193,9 +9495,9 @@ #  define machine_arch_type	__machine_ar
+@@ -9193,9 +9495,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_ZEUSEVB
  # endif
@@ -5070,7 +5056,7 @@ index 7d7888e..b20b97d 100644
  #endif
  
  #ifdef CONFIG_MACH_P700
-@@ -9402,6 +9704,3643 @@ #else
+@@ -9402,6 +9704,3643 @@
  # define machine_is_mp2usb()	(0)
  #endif
  
@@ -8714,12 +8700,11 @@ index 7d7888e..b20b97d 100644
  /*
   * These have not yet been registered
   */
-diff --git a/include/configs/gta01.h b/include/configs/gta01.h
-new file mode 100644
-index 0000000..3115a5d
---- /dev/null
-+++ b/include/configs/gta01.h
-@@ -0,0 +1,235 @@
+Index: u-boot.git/include/configs/gta01.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/include/configs/gta01.h	2007-01-03 20:31:43.000000000 +0100
+@@ -0,0 +1,233 @@
 +/*
 + * (C) Copyright 2006 Harald Welte <hwelte@hmw-consulting.de>
 + *
@@ -8832,8 +8817,7 @@ index 0000000..3115a5d
 +
 +#define CONFIG_BOOTDELAY	3
 +#define CONFIG_BOOTARGS    	"rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC0,115200 console=tty0 loglevel=8"
-+/*#define CONFIG_BOOTFILE	"elinos-lart" */
-+#define CONFIG_BOOTCOMMAND	"nand load 0x32000000 0x34000 0x200000; bootm 0x32000000"
++#define CONFIG_BOOTCOMMAND	"nand read 0x32000000 0x34000 0x200000; bootm 0x32000000"
 +
 +#define CONFIG_DOS_PARTITION	1
 +
@@ -8892,12 +8876,8 @@ index 0000000..3115a5d
 + * FLASH and environment organization
 + */
 +
-+#if 1
++/* No NOR flash in this device */
 +#define CFG_NO_FLASH		1
-+#else
-+#define CFG_MAX_FLASH_SECT	1
-+#define CFG_MAX_FLASH_BANKS	1
-+#endif
 +
 +#define	CFG_ENV_IS_IN_NAND	1
 +#define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
@@ -8913,11 +8893,14 @@ index 0000000..3115a5d
 +/* EXT2 driver */
 +#define CONFIG_EXT2		1
 +
++#if 0
 +/* FAT driver in u-boot is broken currently */
 +#define CONFIG_FAT		1
 +#define CONFIG_SUPPORT_VFAT	1
++#endif
 +
 +/* JFFS2 driver */
++#define CONFIG_JFFS2_CMDLINE	1
 +#define CONFIG_JFFS2_NAND	1
 +#define CONFIG_JFFS2_NAND_DEV	0
 +#define CONFIG_JFFS2_NAND_OFF	0x634000
@@ -8927,14 +8910,14 @@ index 0000000..3115a5d
 +#define CONFIG_INITRD_TAG		1
 +#define CONFIG_SETUP_MEMORY_TAGS	1
 +#define CONFIG_CMDLINE_TAG		1
++#define CONFIG_REVISION_TAG		1
 +#if 0
 +#define CONFIG_SERIAL_TAG		1
-+#define CONFIG_REVISION_TAG		1
 +#endif
 +
 +#define CONFIG_DRIVER_S3C24X0_I2C	1
 +#define CONFIG_HARD_I2C			1
-+#define CFG_I2C_SPEED			400000	/* 400kHz according to PCF50707 data sheet */
++#define CFG_I2C_SPEED			400000	/* 400kHz according to PCF50606 data sheet */
 +#define CFG_I2C_SLAVE			0x7f
 +
 +/* we have a board_late_init() function */
@@ -8955,11 +8938,10 @@ index 0000000..3115a5d
 +#endif
 +
 +#endif	/* __CONFIG_H */
-diff --git a/include/configs/qt2410.h b/include/configs/qt2410.h
-new file mode 100644
-index 0000000..8bacdb2
---- /dev/null
-+++ b/include/configs/qt2410.h
+Index: u-boot.git/include/configs/qt2410.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/include/configs/qt2410.h	2007-01-01 17:32:26.000000000 +0100
 @@ -0,0 +1,245 @@
 +/*
 + * (C) Copyright 2002
@@ -9206,11 +9188,11 @@ index 0000000..8bacdb2
 +#endif
 +
 +#endif	/* __CONFIG_H */
-diff --git a/include/s3c2410.h b/include/s3c2410.h
-index 86495f6..913521d 100644
---- a/include/s3c2410.h
-+++ b/include/s3c2410.h
-@@ -38,12 +38,6 @@ #define S3C24X0_SPI_CHANNELS	2
+Index: u-boot.git/include/s3c2410.h
+===================================================================
+--- u-boot.git.orig/include/s3c2410.h	2007-01-01 17:32:23.000000000 +0100
++++ u-boot.git/include/s3c2410.h	2007-01-01 17:32:26.000000000 +0100
+@@ -38,12 +38,6 @@
  #define S3C2410_ECCSIZE		512
  #define S3C2410_ECCBYTES	3
  
@@ -9223,7 +9205,7 @@ index 86495f6..913521d 100644
  /* S3C2410 device base addresses */
  #define S3C24X0_MEMCTL_BASE		0x48000000
  #define S3C24X0_USB_HOST_BASE		0x49000000
-@@ -65,9 +59,23 @@ #define S3C24X0_SPI_BASE		0x59000000
+@@ -65,9 +59,23 @@
  #define S3C2410_SDI_BASE		0x5A000000
  
  
@@ -9247,7 +9229,7 @@ index 86495f6..913521d 100644
  
  static inline S3C24X0_MEMCTL * const S3C24X0_GetBase_MEMCTL(void)
  {
-@@ -142,6 +150,7 @@ static inline S3C2410_SDI * const S3C241
+@@ -142,6 +150,7 @@
  	return (S3C2410_SDI * const)S3C2410_SDI_BASE;
  }
  
@@ -9255,11 +9237,11 @@ index 86495f6..913521d 100644
  
  /* ISR */
  #define pISR_RESET		(*(unsigned *)(_ISR_STARTADDRESS+0x0))
-diff --git a/include/s3c24x0.h b/include/s3c24x0.h
-index 71f35a5..557b91f 100644
---- a/include/s3c24x0.h
-+++ b/include/s3c24x0.h
-@@ -637,13 +637,7 @@ typedef struct {
+Index: u-boot.git/include/s3c24x0.h
+===================================================================
+--- u-boot.git.orig/include/s3c24x0.h	2007-01-01 17:32:24.000000000 +0100
++++ u-boot.git/include/s3c24x0.h	2007-01-01 17:32:26.000000000 +0100
+@@ -637,13 +637,7 @@
  	S3C24X0_REG32	SDIDCNT;
  	S3C24X0_REG32	SDIDSTA;
  	S3C24X0_REG32	SDIFSTA;
@@ -9274,7 +9256,7 @@ index 71f35a5..557b91f 100644
  	S3C24X0_REG32	SDIIMSK;
  } /*__attribute__((__packed__))*/ S3C2410_SDI;
  
-@@ -1123,11 +1117,7 @@ #define rSDIDatCon		(*(volatile unsigned
+@@ -1123,11 +1117,7 @@
  #define rSDIDatCnt		(*(volatile unsigned *)0x5A000030)
  #define rSDIDatSta		(*(volatile unsigned *)0x5A000034)
  #define rSDIFSTA		(*(volatile unsigned *)0x5A000038)
