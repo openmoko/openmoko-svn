@@ -3,14 +3,16 @@ SECTION = "bootloader"
 PRIORITY = "optional"
 LICENSE = "GPL"
 SRCDATE := "${PV}"
-PR = "r2"
+PR = "r3"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
 
 SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
 	   file://u-boot-20061030-qt2410-gta01.patch;patch=1 \
-	   file://u-boot-20061030-gta01v4.patch;patch=1"
+	   file://u-boot-20061030-gta01v4.patch;patch=1 \
+	   file://u-boot-20061030-gta01bv2.patch;patch=1 \
+	   file://u-boot-20061030-ext2load_hex.patch;patch=1"
 # file://gta01_*.h"
 
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
