@@ -18,6 +18,8 @@
 
 #include "demo-panel-applet.h"
 
+#include <libmb/mbpixbuf.h>
+
 #undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
@@ -37,7 +39,9 @@ typedef struct _DemoPanelAppletPrivate
 MokoPanelAppletClass* parent_class = NULL;
 
 /* forward declarations */
-/* ... */
+void demo_panel_applet_clicked(DemoPanelApplet* self);
+void demo_panel_applet_tap_hold(DemoPanelApplet* self);
+void demo_panel_applet_paint(DemoPanelApplet* self, Drawable drw);
 
 static void
 demo_panel_applet_dispose(GObject* object)
@@ -67,6 +71,10 @@ demo_panel_applet_class_init(DemoPanelAppletClass* klass)
     object_class->finalize = demo_panel_applet_finalize;
 
     /* virtual methods */
+    MokoPanelAppletClass* applet_class = MOKO_PANEL_APPLET_CLASS(klass);
+    applet_class->clicked = demo_panel_applet_clicked;
+    applet_class->tap_hold = demo_panel_applet_tap_hold;
+    applet_class->paint_callback = demo_panel_applet_paint;
 
     /* install properties */
 }
@@ -81,4 +89,33 @@ static void
 demo_panel_applet_init(DemoPanelApplet* self)
 {
     /* Populate your instance here */
+}
+
+void demo_panel_applet_clicked(DemoPanelApplet* self)
+{
+    g_debug( "demo-panel-applet CLICKED" );
+}
+
+void demo_panel_applet_tap_hold(DemoPanelApplet* self)
+{
+    g_debug( "demo-panel-applet TAP-HOLD" );
+}
+
+void demo_panel_applet_paint(DemoPanelApplet* self, Drawable drw)
+{
+    MokoPanelApplet* panel = MOKO_PANEL_APPLET(self);
+    MBPixbufImage* background = mb_tray_app_get_background( panel->mb_applet, panel->mb_pixbuf );
+
+    for ( int y = 0; y < mb_tray_app_height( panel->mb_applet ); ++y )
+    {
+        for ( int x = 0; x < mb_tray_app_width( panel->mb_applet ); ++x )
+        {
+            mb_pixbuf_img_plot_pixel( panel->mb_pixbuf, background, x, y, y*x, x*3, y*2 );
+        }
+    }
+    //mb_pixbuf_img_composite( self->mb_pixbuf, background, self->mb_pixbuf_image_scaled, 0, 0 );
+    mb_pixbuf_img_render_to_drawable( panel->mb_pixbuf, background, drw, 0, 0 );
+    mb_pixbuf_img_free( panel->mb_pixbuf, background );
+
+    g_debug( "demo-panel-applet PAINT" );
 }

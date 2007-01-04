@@ -58,13 +58,16 @@ typedef struct {
 typedef struct {
     GObjectClass parent_class;
 
-    void (*resize_callback) (MokoPanelApplet* self, int w, int h);
-    void (*paint_callback) (MokoPanelApplet* self, Drawable drw);
+    /* these may be overridden in derived classes */
+    void (*resize_callback) (MokoPanelApplet* self, int w, int h); // override to add custom resize handling
+    void (*paint_callback) (MokoPanelApplet* self, Drawable drw); // override to add custom paint
+    void (*clicked) (MokoPanelApplet* self); // override to add custom behaviour on click
+    void (*tap_hold) (MokoPanelApplet* self); // override to add custom behaviour on tap-with-hold
+
+    /* usually, there's no need to override these */
     void (*button_press_callback) (MokoPanelApplet* self, int x, int y);
     void (*button_release_callback) (MokoPanelApplet* self, int x, int y);
 
-    void (*clicked) (MokoPanelApplet* self);
-    void (*tap_hold) (MokoPanelApplet* self);
 } MokoPanelAppletClass;
 
 /* type interface */

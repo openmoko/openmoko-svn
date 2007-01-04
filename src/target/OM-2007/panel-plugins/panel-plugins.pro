@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS =
+SUBDIRS = openmoko-panel-clock
 # SUBDIRS = openmoko-panel-search
 
 
