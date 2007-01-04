@@ -89,7 +89,7 @@ do_deploy() {
 	arm-linux-objcopy -O binary -R .note -R .comment -S vmlinux linux.bin
 	rm -f linux.bin.gz
 	gzip -9 linux.bin
-	uboot-mkimage -A arm -O linux -T kernel -C gzip -a 30008000 -e 30008000 -n "Kernel Image QT2410" -d linux.bin.gz ${DEPLOY_DIR_IMAGE}/uImage-${PV}-${MACHINE}-${DATETIME}.bin
+	uboot-mkimage -A arm -O linux -T kernel -C gzip -a 30008000 -e 30008000 -n "OpenMoko Kernel Image Neo1973(GTA01)" -d linux.bin.gz ${DEPLOY_DIR_IMAGE}/uImage-${PV}-${MACHINE}-${DATETIME}.bin
 	rm -f linux.bin.gz
 }
 
