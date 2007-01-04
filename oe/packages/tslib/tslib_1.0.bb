@@ -3,8 +3,7 @@ HOMEPAGE = "http://tslib.berlios.de/"
 AUTHOR = "Russell King w/ plugins by Chris Larson et. al."
 SECTION = "base"
 LICENSE = "LGPL"
-
-PR = "r7"
+PR = "r8"
 
 SRC_URI = "http://download.berlios.de/tslib/tslib-1.0.tar.bz2 \
            file://ts.conf \
@@ -31,7 +30,7 @@ do_install_append() {
 	case ${MACHINE} in
 	fic-gta01 | armzone-qt2410 | a780 | e680 | h3600 | h3900 | h5000 | h1940 | h6300 | h2200 | ipaq-pxa270 | hx4700 | hx2000 | blueangel | h4000)
 		install -d ${D}${datadir}/tslib
-		install -m 0644 ${WORKDIR}/ts.conf ${D}${datadir}/tslib/
+		install -m 0644 ${WORKDIR}/ts.conf ${D}${datadir}/tslib/ts-2.6.conf
 		;;
 	c7x0 | spitz | akita | tosa )
 		install -d ${D}${datadir}/tslib
