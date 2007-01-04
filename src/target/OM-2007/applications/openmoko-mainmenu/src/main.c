@@ -20,10 +20,94 @@
 #include "callbacks.h"
 
 #include "main.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <signal.h>
+
+#define LOCK_FILE "/tmp/moko-mainmenu.lock"
+
+GtkWidget *main_window = NULL;
+
+static void 
+handle_sigusr1 (int value)
+{
+g_debug ("Call handle signal use main window = %x", main_window);
+
+if (!main_window)
+       return;
+  gtk_window_present (main_window);
+}
+
+static pid_t 
+testlock (char *fname)
+{
+  int fd;
+  struct flock fl;
+
+  fd = open (fname, O_WRONLY, S_IWUSR);
+  if (fd < 0)
+    {
+      if (errno == ENOENT)
+        {
+          return 0;
+        }
+      else
+        {
+          perror ("Test lock open file");
+          return -1;
+        }
+    }
+
+  fl.l_type = F_WRLCK;
+  fl.l_whence = SEEK_SET;
+  fl.l_start = 0;
+  fl.l_len = 0;
+
+  if (fcntl (fd, F_GETLK, &fl) < 0)
+    {
+      close (fd);
+      return -1;
+    }
+  close (fd);
+
+  if (fl.l_type == F_UNLCK)
+    return 0;
+
+  return fl.l_pid;
+}
+
+static void 
+setlock (char *fname)
+{
+  int fd;
+  struct flock fl;
+
+  fd = open (fname, O_WRONLY|O_CREAT, S_IWUSR);
+  if (fd < 0)
+    {
+      perror ("Set lock open file");
+      return ;
+    }
+
+  fl.l_type = F_WRLCK;
+  fl.l_whence = SEEK_SET;
+  fl.l_start = 0;
+  fl.l_len = 0;
+
+  if (fcntl (fd, F_SETLK, &fl) < 0)
+    {
+      perror ("Lock file");
+      close (fd);
+    }
+}
 
 int 
-main( int argc, char** argv ) {
+main( int argc, char** argv ) 
+{
     MokoMainmenuApp *mma;
+    pid_t lockapp;
     int i;
 
     mma = g_malloc0 (sizeof (MokoMainmenuApp));
@@ -34,6 +118,15 @@ main( int argc, char** argv ) {
     memset (mma, 0, sizeof (MokoMainmenuApp));
 
     gtk_init( &argc, &argv );
+
+    lockapp = testlock (LOCK_FILE);
+    g_debug ("lock app = %x", lockapp);
+    if (lockapp > 0)
+    {
+      kill (lockapp, SIGUSR1);
+      return 0;
+    }
+    setlock (LOCK_FILE);
     
     /* application object */
     mma->app = MOKO_APPLICATION(moko_application_get_instance());
@@ -42,6 +135,7 @@ main( int argc, char** argv ) {
     /* finger based window */
     mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
     gtk_widget_show (GTK_WIDGET (mma->window));
+    main_window = mma->window;
 
     /* finger wheel object*/
     mma->wheel = moko_finger_window_get_wheel (mma->window);
@@ -94,6 +188,8 @@ main( int argc, char** argv ) {
     /*test code, delete later*/
     moko_sample_hisory_app_fill (mma->history[0]);
 
+    signal (SIGUSR1, handle_sigusr1);
+    
     gtk_main();
 
     if (mma)
