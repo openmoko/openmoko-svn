@@ -27,6 +27,7 @@ do_compile () {
 		for machine in ${UBOOT_MACHINES}
 		do
 			#install -m 0644 ${WORKDIR}/${machine}_${type}.h include/configs/gta01.h
+			chmod +x board/gta01/split_by_variant.sh
 			oe_runmake ${machine}_config
 			oe_runmake all
 			mv u-boot.bin u-boot_${machine}_${type}.bin

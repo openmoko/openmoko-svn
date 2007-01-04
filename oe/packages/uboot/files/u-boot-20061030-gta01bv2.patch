@@ -1,10 +1,10 @@
 This patch adds support for the GTA01Bv2 variant of the FIC GTA01 (Neo1973) phone
 
-Index: u-boot.git/Makefile
+Index: git/Makefile
 ===================================================================
---- u-boot.git.orig/Makefile	2007-01-03 21:06:36.000000000 +0100
-+++ u-boot.git/Makefile	2007-01-03 21:06:38.000000000 +0100
-@@ -1912,6 +1912,7 @@
+--- git.orig/Makefile	2007-01-04 12:22:12.000000000 +0100
++++ git/Makefile	2007-01-04 12:22:16.000000000 +0100
+@@ -1918,6 +1918,7 @@
  
  gta01_config \
  gta01v3_config \
@@ -12,10 +12,10 @@ Index: u-boot.git/Makefile
  gta01v4_config :	unconfig
  	@board/gta01/split_by_variant.sh $@
  
-Index: u-boot.git/board/gta01/gta01.c
+Index: git/board/gta01/gta01.c
 ===================================================================
---- u-boot.git.orig/board/gta01/gta01.c	2007-01-03 21:06:36.000000000 +0100
-+++ u-boot.git/board/gta01/gta01.c	2007-01-03 21:06:38.000000000 +0100
+--- git.orig/board/gta01/gta01.c	2007-01-04 12:22:12.000000000 +0100
++++ git/board/gta01/gta01.c	2007-01-04 12:22:16.000000000 +0100
 @@ -35,28 +35,29 @@
  
  DECLARE_GLOBAL_DATA_PTR;
@@ -62,14 +62,14 @@ Index: u-boot.git/board/gta01/gta01.c
  	gpio->GPHUP = 0x000007FF;
 +#elif defined(CONFIG_ARCH_GTA01B_v2)
 +	gpio->GPACON = 0x005E47FF;
-+
+ 
 +	gpio->GPBCON = 0x00145416;
 +	gpio->GPBUP = 0x000007FF;
 +	gpio->GPBDAT |= 0x4;		/* Set GBP2 to high (Flash power-up) */
 +
 +	gpio->GPCCON = 0xAAAA12A9;
 +	gpio->GPCUP = 0x0000FFFF;
- 
++
 +	gpio->GPDCON = 0xAAAAAAAA;
 +	gpio->GPDUP = 0x0000FFFF;
 +
@@ -109,10 +109,10 @@ Index: u-boot.git/board/gta01/gta01.c
 +	return 0x00000220;
  #endif
  }
-Index: u-boot.git/board/gta01/split_by_variant.sh
+Index: git/board/gta01/split_by_variant.sh
 ===================================================================
---- u-boot.git.orig/board/gta01/split_by_variant.sh	2007-01-03 21:06:36.000000000 +0100
-+++ u-boot.git/board/gta01/split_by_variant.sh	2007-01-03 21:11:28.000000000 +0100
+--- git.orig/board/gta01/split_by_variant.sh	2007-01-04 12:22:12.000000000 +0100
++++ git/board/gta01/split_by_variant.sh	2007-01-04 12:22:16.000000000 +0100
 @@ -15,16 +15,23 @@
  	case "$1" in
  	gta01v4_config)
@@ -137,10 +137,10 @@ Index: u-boot.git/board/gta01/split_by_variant.sh
  	;;
  
  	esac
-Index: u-boot.git/include/configs/gta01.h
+Index: git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-01-03 21:06:36.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-01-03 21:06:38.000000000 +0100
+--- git.orig/include/configs/gta01.h	2007-01-04 12:22:12.000000000 +0100
++++ git/include/configs/gta01.h	2007-01-04 12:22:16.000000000 +0100
 @@ -128,6 +128,8 @@
  #define	CFG_PROMPT		"GTA01v3 # "	/* Monitor Command Prompt	*/
  #elif defined(CONFIG_ARCH_GTA01_v4)
@@ -164,10 +164,10 @@ Index: u-boot.git/include/configs/gta01.h
  #define PHYS_SDRAM_RES_SIZE	0x00200000 /* 2 MB for frame buffer */
  
  /*-----------------------------------------------------------------------
-Index: u-boot.git/board/gta01/lowlevel_init.S
+Index: git/board/gta01/lowlevel_init.S
 ===================================================================
---- u-boot.git.orig/board/gta01/lowlevel_init.S	2007-01-03 21:06:36.000000000 +0100
-+++ u-boot.git/board/gta01/lowlevel_init.S	2007-01-03 21:06:38.000000000 +0100
+--- git.orig/board/gta01/lowlevel_init.S	2007-01-04 12:22:07.000000000 +0100
++++ git/board/gta01/lowlevel_init.S	2007-01-04 12:22:16.000000000 +0100
 @@ -108,12 +108,16 @@
  #define B5_PMC		 	0x0	/* normal */
  
@@ -207,10 +207,10 @@ Index: u-boot.git/board/gta01/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
-Index: u-boot.git/board/gta01/config.mk
+Index: git/board/gta01/config.mk
 ===================================================================
---- u-boot.git.orig/board/gta01/config.mk	2007-01-03 21:06:50.000000000 +0100
-+++ u-boot.git/board/gta01/config.mk	2007-01-03 21:13:37.000000000 +0100
+--- git.orig/board/gta01/config.mk	2007-01-04 12:22:07.000000000 +0100
++++ git/board/gta01/config.mk	2007-01-04 12:22:16.000000000 +0100
 @@ -8,18 +8,26 @@
  # see http://www.samsung.com/ for more information on SAMSUNG
  #
