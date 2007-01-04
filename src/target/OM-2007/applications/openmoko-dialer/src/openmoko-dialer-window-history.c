@@ -482,19 +482,23 @@ GtkWidget* create_window_history_content (MOKO_DIALER_APP_DATA* p_dialer_data)
                     G_CALLBACK (on_eventboxTop_button_release_event),
                     p_dialer_data);
 
-
+  GtkWidget *align=gtk_alignment_new(0,0,1,1);
+  gtk_alignment_set_padding(align, 0, 150, 0, 0); //FIXME too many numbers has to be retrieved from style
+  
   GtkWidget *scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
  
   treeviewHistory = gtk_tree_view_new ();
+  gtk_container_add (GTK_CONTAINER (align), scrolledwindow);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), treeviewHistory);
 
   gtk_widget_show (treeviewHistory);
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeviewHistory), FALSE);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeviewHistory), FALSE);
 //   gtk_misc_set_alignment (GTK_MISC (treeviewHistory), 0.5, 0.5);
-  gtk_box_pack_start(GTK_BOX(vbox),scrolledwindow,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX(vbox),align,TRUE,TRUE,0);
+
 
   gtk_widget_set_name(treeviewHistory,"gtktreeview-black");
   p_dialer_data->treeview_history=treeviewHistory;

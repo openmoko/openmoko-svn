@@ -185,6 +185,25 @@ moko_dialer_textview_fill_it(moko_dialer_text_view,"");
 
 }
 
+void
+on_dialer_menu_close(GtkWidget * widget,gpointer         user_data)
+{
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+g_main_loop_quit(appdata->mainloop);
+
+}
+
+void
+on_dialer_menu_hide(GtkWidget * widget,gpointer         user_data)
+{
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+gtk_widget_hide(appdata->window_dialer);
+
+
+}
+
+
+
 
 void
 on_dialer_panel_user_input(GtkWidget * widget,gchar parac,
@@ -242,17 +261,21 @@ if(!p_dialer_data-> window_dialer)
 
     MokoFingerWindow* window = MOKO_FINGER_WINDOW(moko_finger_window_new());
 
-/*
+
     GtkMenu* appmenu = GTK_MENU(gtk_menu_new());
-
     GtkMenuItem* closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Close" ));
-
-    g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
-    
+    g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(on_dialer_menu_close), p_dialer_data);
     gtk_menu_shell_append( appmenu, closeitem );
+
+     GtkMenuItem* hideitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Hide" ));
+    g_signal_connect( G_OBJECT(hideitem), "activate", G_CALLBACK(on_dialer_menu_hide), p_dialer_data);
+    gtk_menu_shell_append( appmenu, hideitem);
+
+
     moko_finger_window_set_application_menu( window, appmenu );
-    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
-*/
+
+//    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
+
 
     /* contents */
     vbox = gtk_vbox_new( FALSE, 0 );
