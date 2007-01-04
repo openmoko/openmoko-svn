@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko Mainmenu
+Comment=OpenMoko Finger Application
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-mainmenu
+Icon=openmoko-mainmenu.png
+Terminal=false
+SingleInstance=true
+StartupNotify=true
