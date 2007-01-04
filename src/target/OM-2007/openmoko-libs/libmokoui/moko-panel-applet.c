@@ -272,16 +272,16 @@ void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* po
     mb_tray_app_get_absolute_coords( self->mb_applet, &x_abs, &y_abs );
     moko_debug( "-- abs position = %d, %d", x_abs, y_abs );
 
-    x = x_abs;
-    y = y_abs + mb_tray_app_height( self->mb_applet ) + 4;
+    *x = x_abs;
+    *y = y_abs + mb_tray_app_height( self->mb_applet ) + 4;
 
-    if ( x + win_w > DisplayWidth( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) )
-            x = DisplayWidth( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) - win_w - 2;
+    if ( *x + win_w > DisplayWidth( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) )
+            *x = DisplayWidth( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) - win_w - 2;
 
-    if ( y + win_h > DisplayHeight( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) )
-            y = DisplayHeight( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) - win_h - mb_tray_app_height( self->mb_applet ) - 2;
+    if ( *y + win_h > DisplayHeight( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) )
+            *y = DisplayHeight( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) ) - win_h - mb_tray_app_height( self->mb_applet ) - 2;
 
-    moko_debug( "-- final position = %d, %d", x, y );
+    moko_debug( "-- final position = %d, %d", *x, *y );
 }
 
 void moko_panel_applet_signal_clicked(MokoPanelApplet* self)
@@ -348,13 +348,13 @@ void moko_panel_applet_open_popup(MokoPanelApplet* self, MokoPanelAppletPopupTyp
         gtk_container_add( GTK_CONTAINER(self->window), self->popup[type] );
         g_signal_connect( G_OBJECT(self->window), "button-press-event", G_CALLBACK(_moko_panel_applet_window_clicked), self );
         gtk_widget_add_events( self->window, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK );
-        //gtk_widget_realize( self->window );
-
+        gtk_widget_realize( self->window );
+        gtk_widget_show_all( self->window );
         int x = 0;
         int y = 0;
         moko_panel_applet_get_positioning_hint( self, self->popup, &x, &y );
         gtk_window_move( self->window, x, y );
-        gtk_widget_show_all( self->window );
+        //gtk_widget_set_uposition( self->window, x, y );
         gdk_pointer_grab( GTK_WIDGET(self->window)->window, TRUE, GDK_BUTTON_PRESS_MASK, NULL, NULL, CurrentTime );
     }
 
@@ -377,4 +377,14 @@ void moko_panel_applet_close_popup(MokoPanelApplet* self)
         gtk_widget_destroy( self->window );
         self->window = 0L;
     }
+}
+
+void moko_panel_applet_request_size(MokoPanelApplet* self, int x, int y)
+{
+    mb_tray_app_request_size( self->mb_applet, x, y );
+}
+
+void moko_panel_applet_request_offset(MokoPanelApplet* self, int offset)
+{
+    mb_tray_app_request_offset( self->mb_applet, offset );
 }
