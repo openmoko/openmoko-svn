@@ -29,14 +29,15 @@ static void button_callback( GtkButton* button, MokoPanelApplet* applet )
 
 int main( int argc, char** argv )
 {
-    g_debug( "openmoko-panel-demo starting" );
+    g_debug( "openmoko-panel-demo-simple starting" );
 
-    gtk_init( &argc, &argv );
+    moko_panel_system_init( &argc, &argv );
 
     // usually you should derive an object from the MokoPanelApplet
     // for this demo we go the simple way and just use it...
+    // see openmoko-panel-demo-simple for a more sophisticated example
 
-    MokoPanelApplet* applet = moko_panel_applet_new( &argc, &argv );
+    MokoPanelApplet* applet = moko_panel_applet_new();
     moko_panel_applet_set_icon( applet, PKGDATADIR "/icon.png" );
 
     // you can add a menu
@@ -59,6 +60,6 @@ int main( int argc, char** argv )
 
     gtk_main();
 
-    g_debug( "openmoko-panel-demo ending" );
+    g_debug( "openmoko-panel-demo-simple ending" );
     return 0;
 }

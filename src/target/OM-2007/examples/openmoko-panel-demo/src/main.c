@@ -17,7 +17,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#include <libmokoui/moko-panel-applet.h>
+#include "demo-panel-applet.h"
 
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -31,13 +31,8 @@ int main( int argc, char** argv )
 {
     g_debug( "openmoko-panel-demo starting" );
 
-    gtk_init( &argc, &argv );
-
-    // usually you should derive an object from the MokoPanelApplet
-    // for this demo we go the simple way and just use it...
-
-    MokoPanelApplet* applet = moko_panel_applet_new( &argc, &argv );
-    moko_panel_applet_set_icon( applet, PKGDATADIR "/icon.png" );
+    moko_panel_system_init( &argc, &argv );
+    DemoPanelApplet* applet = demo_panel_applet_new();
 
     // you can add a menu
     GtkMenu* panelmenu = GTK_MENU(gtk_menu_new());
@@ -55,7 +50,6 @@ int main( int argc, char** argv )
     GtkButton* button = gtk_button_new_with_label( "Hello Applet World!" );
     g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(button_callback), applet );
     moko_panel_applet_set_popup( applet, GTK_WIDGET(button), MOKO_PANEL_APPLET_CLICK_POPUP );
-
 
     gtk_main();
 

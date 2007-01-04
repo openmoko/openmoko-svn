@@ -67,8 +67,10 @@ typedef struct {
     void (*tap_hold) (MokoPanelApplet* self);
 } MokoPanelAppletClass;
 
+/* type interface */
 GType moko_panel_applet_get_type();
 MokoPanelApplet* moko_panel_applet_new();
+void moko_panel_system_init( int* argc, char*** argv );
 
 /* simple interface */
 void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename);

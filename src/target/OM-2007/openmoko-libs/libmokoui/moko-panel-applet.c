@@ -54,6 +54,15 @@ static guint moko_panel_applet_signals[LAST_SIGNAL] = { 0, };
 static GObjectClass* parent_class = NULL;
 static int* app_argc;
 static char*** app_argv;
+static gboolean init_ok = FALSE;
+
+void moko_panel_system_init( int* argc, char*** argv )
+{
+    gtk_init( argc, argv );
+    app_argc = argc;
+    app_argv = argv;
+    init_ok = TRUE;
+}
 
 /* forward declarations */
 void moko_panel_applet_real_resize_callback(MokoPanelApplet* self, int w, int h);
@@ -86,6 +95,7 @@ moko_panel_applet_finalize(GObject* object)
 static void
 moko_panel_applet_class_init(MokoPanelAppletClass* klass)
 {
+    g_assert( init_ok ); // if this fails, you probably forgot to call moko_panel_init()
     /* hook parent */
     GObjectClass* object_class = G_OBJECT_CLASS (klass);
     parent_class = g_type_class_peek_parent(klass);
@@ -129,10 +139,8 @@ moko_panel_applet_class_init(MokoPanelAppletClass* klass)
 }
 
 MokoPanelApplet*
-moko_panel_applet_new(int* argc, char*** argv)
+moko_panel_applet_new()
 {
-    app_argc = argc;
-    app_argv = argv;
     MokoPanelApplet* self = g_object_new(MOKO_TYPE_PANEL_APPLET, NULL);
     return self;
 }
