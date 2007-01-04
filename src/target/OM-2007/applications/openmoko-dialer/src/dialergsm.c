@@ -27,7 +27,7 @@
 #include <string.h>
 #include "moko-dialer-includes.h"
 
-pthread_t thread;///<the gsm_monitor_thread thread handler
+//pthread_t thread;///<the gsm_monitor_thread thread handler
 
 static struct lgsm_handle *lgsmh; ///< the handle of the libgsmd
 
@@ -43,6 +43,7 @@ static GPollFD GPfd;
  * @return 
  * @retval
  */
+ /*
 
 void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
 {
@@ -63,8 +64,7 @@ void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
 		rc = select(gsm_fd+1, &readset, NULL, NULL, NULL);
 		if (rc <= 0)	
 			break;
-		/* we've received something on the gsmd socket, pass it
-			 * on to the library */
+		/ we've received something on the gsmd socket, pass it on to the library 
 			rc = read(gsm_fd, buf, sizeof(buf));
 			if (rc <= 0) {
 				printf("ERROR reding from gsm_fd\n");
@@ -78,6 +78,7 @@ void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
         pthread_exit(NULL);
 }
 
+*/
 /**
  * @brief create the thread to monitor events from libgsmd
  *
@@ -88,6 +89,7 @@ void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
  * @retval -1 failed
  * @retval 0  success
  */
+ /*
 int gsm_start_loop()
 {
         
@@ -102,7 +104,7 @@ int gsm_start_loop()
         return 0;
 }
 
-
+*/
 
 /**
  * @brief this is the handler for receiving passthrough responses 
