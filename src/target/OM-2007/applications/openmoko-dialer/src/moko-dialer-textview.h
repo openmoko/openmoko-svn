@@ -31,7 +31,6 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_DIALER_TEXT_VIEW_MAXDIALNUMBERLEN 128
 
 #define MOKO_TYPE_DIALER_TEXTVIEW                (moko_dialer_textview_get_type())
 #define MOKO_DIALER_TEXTVIEW (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_TEXTVIEW, MokoDialerTextview))

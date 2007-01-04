@@ -217,8 +217,8 @@ gint  moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *moko_dialer_au
 
 if(!moko_dialer_autolist->tipscreated)
 {
-  gchar filepath[MOKO_DIALER_MAX_PATH_LEN];
-  if(file_create_data_path_for_the_file("unkown.png",filepath))
+  gchar filepath[MOKO_DIALER_MAX_PATH_LEN+1];
+  if(file_create_data_path_for_the_file(MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH,filepath))
   	{
 	  imagePerson = gtk_image_new_from_file(filepath);
   	}

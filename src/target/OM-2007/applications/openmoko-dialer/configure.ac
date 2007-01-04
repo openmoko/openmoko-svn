@@ -13,8 +13,11 @@ AC_PROG_LIBTOOL
 # base deps
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
                  AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
-LIBS="$LIBS $GTK_LIBS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
+PKG_CHECK_MODULES(LIBGSMD, libgsmd ,,
+                 AC_MSG_ERROR([*** Required libgsmd not installed ***]))
+
+LIBS="$LIBS $GTK_LIBS $LIBGSMD_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBGSMD_CFLAGS"
 
 # output stuff
 AC_OUTPUT([

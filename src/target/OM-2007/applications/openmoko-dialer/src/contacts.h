@@ -66,7 +66,7 @@ typedef struct dialer_contact {
 typedef struct peer_info_
 {
 //we should at least have the number called.
-  char number[MOKO_DIALER_MAX_NUMBER_LEN];        ///<the number of the peer
+  char number[MOKO_DIALER_MAX_NUMBER_LEN+1];        ///<the number of the peer
   char *name;       	///<person name
   char *picpath;  ///<the picture file path for the person
   int searched; ///<if true; no need to search for the name 

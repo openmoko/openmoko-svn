@@ -15,7 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-
+#include "moko-dialer-declares.h"
  #include "common.h"
  #include "error.h"
 /**
@@ -105,31 +105,49 @@ gboolean file_load_person_image_from_relative_path(GtkWidget *widget,char * rela
     }
   else
     {
+    //first we load the default picture 
+ 	  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH);
+	  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+	    {
+	    gtk_image_set_from_file(image,pathname);   	
+	    g_free (pathname);
+	    return TRUE;
+	    }
+	  else
+	  	{
 	      g_debug ("Can not find the file %s", pathname);
 	       gtk_image_set_from_stock(image,"gtk-yes",GTK_ICON_SIZE_LARGE_TOOLBAR);
 	      g_free (pathname);
 	      return FALSE;
+	  	}
     }
+}
 
-/*
-GtkImage *image=GTK_IMAGE(widget);	
 
-struct stat statdata;
+GtkWidget * file_new_image_from_relative_path(char * rela_path)
+{
 
-if(image==NULL)
-	{
-		DBG_ERROR("Can not find widget ");
-		return 0;
-		}
- if(lstat(path,&statdata)==-1)
- {
-	 gtk_image_set_from_stock(image,"icon_dialer_people",GTK_ICON_SIZE_LARGE_TOOLBAR);
- }
- else
-	gtk_image_set_from_file(image,path);
- return 1;
-*/
+ 
+  gchar     *pathname;
+  GtkImage *image=0;	  
 
+  pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S, 
+                              rela_path);
+
+
+  if (g_file_test (pathname, G_FILE_TEST_EXISTS))
+    {
+	   image= gtk_image_new_from_file(pathname);   	
+    }
+  else
+    {
+//	      g_debug ("Can not find the file %s", pathname);
+	   image=  gtk_image_new_from_stock("gtk-yes",GTK_ICON_SIZE_LARGE_TOOLBAR);
+
+    }
+	      g_free (pathname);
+	      return image;
 }
 
 

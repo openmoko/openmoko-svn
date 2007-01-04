@@ -18,6 +18,7 @@
  */
 
  #include "moko-dialer-textview.h"
+ #include "moko-dialer-declares.h"
  #include "error.h"
 G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
 
@@ -202,6 +203,8 @@ GtkTextIter end;
 GtkTextIter selectioniter,insertiter;
 GtkTextMark *selectmark,*insertmark;
 
+//DBG_MESSAGE("number=%s",number);
+
  /* Obtaining the buffer associated with the widget. */
 buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 	
@@ -222,15 +225,14 @@ if(gtk_text_iter_get_offset(&insertiter)!=gtk_text_iter_get_offset(&selectionite
  gtk_text_buffer_get_start_iter (buffer, &start);
  gtk_text_buffer_get_end_iter (buffer, &end);
 
-  /* Get the entire buffer text. */
-  //codestring = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+
    len=gtk_text_buffer_get_char_count(buffer);
   //len=strlen(codestring);
-	if(len>=0&&len<MOKO_DIALER_TEXT_VIEW_MAXDIALNUMBERLEN)
+	if(len>=0&&len<MOKO_DIALER_MAX_NUMBER_LEN)
 	{
 	
-	gtk_text_buffer_insert_at_cursor( buffer,number,1);
-	len=len+1;
+	gtk_text_buffer_insert_at_cursor( buffer,number,strlen(number));
+	len=len+strlen(number);
 	}
 	else
 	{

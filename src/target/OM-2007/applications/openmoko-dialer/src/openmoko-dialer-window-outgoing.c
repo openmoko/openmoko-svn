@@ -39,6 +39,9 @@ void cb_speaker_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdat
 DBG_ENTER();
 //moko_dialer_status_update_icon(appdata->status_outgoing);
 
+
+appdata->g_state.callstate=STATE_TALKING;
+
 gtk_widget_hide(appdata->window_outgoing);
 
 if(!appdata->window_talking)
@@ -61,20 +64,33 @@ void cb_redial_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata
 DBG_ENTER();
 gtk_widget_hide(appdata->buttonRedial);
 gtk_widget_show( appdata->buttonSpeaker);
+moko_dialer_status_set_title_label(appdata->status_outgoing, "Outgoing call");
+ moko_dialer_status_set_status_label(appdata->status_outgoing, "Calling ... (00:00:00)");
 window_outgoing_setup_timer(appdata);
+
+appdata->g_state.callstate=STATE_CALLING;
+appdata->g_state.historytype=OUTGOING;	
+gsm_dial(appdata->g_peer_info.number);
+
 DBG_LEAVE();
 }
 
 void cb_cancel_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
 {
 DBG_ENTER();
+gsm_hangup();
+appdata->g_state.callstate=STATE_FAILED;
 gtk_widget_hide(appdata->window_outgoing);
 DBG_LEAVE();
 }
 
 void window_outgoing_prepare(MOKO_DIALER_APP_DATA * appdata)
 {
-   moko_dialer_status_set_person_number(appdata->status_outgoing, appdata->g_peer_info.number);
+if(appdata->window_outgoing==0)
+	window_outgoing_init( appdata);
+
+	
+ moko_dialer_status_set_person_number(appdata->status_outgoing, appdata->g_peer_info.number);
 if(appdata->g_peer_info.hasname)
 {
    moko_dialer_status_set_person_image(appdata->status_outgoing, appdata->g_peer_info.picpath);  
@@ -82,11 +98,11 @@ if(appdata->g_peer_info.hasname)
 }
 else
 {
-   moko_dialer_status_set_person_image(appdata->status_outgoing, "");  
+   moko_dialer_status_set_person_image(appdata->status_outgoing, MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH);  
    moko_dialer_status_set_person_name(appdata->status_outgoing, "");
 
 }
-
+strcpy(appdata->g_state.lastnumber,appdata->g_peer_info.number);
 
 
 }
@@ -113,7 +129,7 @@ timer_data->min=(timer_data->ticks-timer_data->hour*3600)/60;
 timer_data->sec=timer_data->ticks%60;
 
 
-sprintf(timer_data->timestring,"Calling... (%02d:%02d:%02d)",timer_data->hour,timer_data->min,timer_data->sec);
+sprintf(timer_data->timestring,"Calling ... (%02d:%02d:%02d)",timer_data->hour,timer_data->min,timer_data->sec);
 
 //ok,we update the label now.
 
@@ -146,6 +162,19 @@ if(appdata->g_timer_data.ptimer!=0)
 gtk_timeout_remove(appdata->g_timer_data.ptimer);
 appdata->g_timer_data.ptimer=0;
 }
+if(appdata->g_state.callstate!=STATE_TALKING)
+{//	add_histroy_entry(g_state.historytype,g_state.contactinfo.name,g_state.contactinfo.number,g_state.contactinfo.picpath,g_state.starttime,0);
+
+add_histroy_entry(appdata,appdata->g_state.historytype,
+	appdata->g_peer_info.name,
+	appdata->g_peer_info.number,
+	appdata->g_peer_info.picpath,
+	appdata->g_state.starttime,
+	appdata->g_state.startdate,
+	0);
+
+}
+
 
 
 }
@@ -180,7 +209,14 @@ on_window_outgoing_show                  (GtkWidget       *widget,
                                         MOKO_DIALER_APP_DATA * appdata)
 {
 
+
 window_outgoing_setup_timer(appdata);
+
+
+appdata->g_state.callstate=STATE_CALLING;
+appdata->g_state.historytype=OUTGOING;	
+gsm_dial(appdata->g_peer_info.number);
+
 
 }
 
@@ -211,13 +247,13 @@ if(p_dialer_data->window_outgoing==0)
     g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_speaker_button_clicked), p_dialer_data );
 p_dialer_data->buttonSpeaker=button;
 //gtk_widget_set_size_request(button,100,32);
-    gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button),TRUE, TRUE, 10 );
+    gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button),TRUE, TRUE, 40 );
 
   button = gtk_button_new_with_label("Redial");
     p_dialer_data->buttonRedial=button;
   g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_redial_button_clicked), p_dialer_data );
 //gtk_widget_set_size_request(button,100,32);
-  gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button), TRUE, TRUE, 20 );
+  gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button), TRUE, TRUE, 40 );
 //gtk_widget_set_size_request(button,60,24);
 
 
@@ -225,7 +261,7 @@ button = gtk_button_new_with_label("Cancel");
   p_dialer_data->buttonCancel=button;
  g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_cancel_button_clicked), p_dialer_data );
 //gtk_widget_set_size_request(button,100,32);
- gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button),TRUE, TRUE, 10 );
+ gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button),TRUE, TRUE, 40);
 
 
 
@@ -250,7 +286,7 @@ button = gtk_button_new_with_label("Cancel");
 
 
    moko_dialer_status_set_title_label(status, "Outgoing call");
-   moko_dialer_status_set_status_label(status, "Calling ...(00:00:00)");
+   moko_dialer_status_set_status_label(status, "Calling ... (00:00:00)");
 
    p_dialer_data->window_outgoing=window;
    p_dialer_data->status_outgoing=status;

@@ -29,6 +29,8 @@
 #include "moko-digit-button.h"
 #include "moko-dialer-status.h"
 #include <libmokoui/moko-dialog-window.h>
+#include <time.h>
+#include <gtk/gtkliststore.h>
 //
 
 
@@ -39,6 +41,7 @@ typedef enum _state{
   STATE_TALKING,
   STATE_FINISHED,
   STATE_FAILED,
+  STATE_REJECTED,
   STATE_TIMEOUT,
   STATE_IGNORED,
   STATE_MISSED
@@ -62,14 +65,13 @@ typedef enum _clipstate{
 
 typedef struct _globalstate
 {
-	DIALER_READY_CONTACT contactinfo;
 	CONNECTION_STATE callstate;
 	WINDOW_STATE talkingstate;
 	SPEAKER_STATE speakerstate;
 	HISTORY_TYPE historytype;
-	char starttime[9];
-	char startdate[11];
-	char lastnumber[MOKO_DIALER_MAX_NUMBER_LEN];
+	char starttime[24];
+	char startdate[24];
+	char lastnumber[MOKO_DIALER_MAX_NUMBER_LEN+1];
 }GLOBAL_STATE;
 
 typedef int (*TimeExpireCallback)();
@@ -84,7 +86,7 @@ typedef struct _timerdata
 	gint sec;   
 	gint min;
 	gint hour;
-	char timestring[MOKO_DIALER_MAX_NUMBER_LEN] ;
+	char timestring[MOKO_DIALER_MAX_TIME_STATUS_LEN+1] ;
 }TIMER_DATA;
 
 enum {
@@ -98,6 +100,6 @@ enum {
 	COLUMN_HASNAME,
 	N_COLUMN
 };
-
+void gsm_incoming_call(gchar * number);
 
 #endif

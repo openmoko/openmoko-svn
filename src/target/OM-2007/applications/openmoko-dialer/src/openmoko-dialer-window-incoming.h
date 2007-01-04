@@ -1,4 +1,4 @@
-/*  common.h
+/*  openmoko-dialer-window-outgoing.h
  *
  *  Authored By Tony Guan<tonyguan@fic-sh.com.cn>
  *
@@ -15,15 +15,27 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
- #ifndef _DIALER_COMMON_H
-#define _DIALER_COMMON_H
+ #include "moko-dialer-includes.h"
 
-#include <gtk/gtk.h>
+ #ifndef _OPENMOKO_DIALER_WINDOW_INCOMING_H
+#define _OPENMOKO_DIALER_WINDOW_INCOMING_H
 
-GdkPixbuf *create_pixbuf (const gchar *filename);
-gboolean file_create_data_path_for_the_file(const gchar* filename, gchar* path);
-gboolean file_load_person_image_from_relative_path(GtkWidget *widget,char * rela_path);
-GtkWidget * file_new_image_from_relative_path(char * rela_path);
+#ifdef __cplusplus
+
+
+
+extern "C"
+
+{
 #endif
 
 
+
+gint window_incoming_init( MOKO_DIALER_APP_DATA* p_dialer_data);
+
+void window_incoming_prepare(MOKO_DIALER_APP_DATA * appdata);
+#ifdef __cplusplus
+}
+#endif
+
+#endif 

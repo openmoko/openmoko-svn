@@ -57,27 +57,27 @@ historyhead->length=0;
 historyhead->first=0;
 historyhead->last=0;
 	history_add_entry(historyhead,MISSED,"","1391721112",
-	"","17:58",100);
+	"","17:58","12/20",100);
 
 	history_add_entry(historyhead,INCOMING,"tony","13917309523",
-	"./tony.png","13:58",10);
+	"./tony.png","13:58","12/20",10);
 history_add_entry(historyhead,OUTGOING,"sally","13361900551",
-	"./sally.png","10:58",106);
+	"./sally.png","10:58","12/20",106);
 history_add_entry(historyhead,MISSED,"chaowei","1391110923",
-	"./chaowei.png","11:58",120);
+	"./chaowei.png","11:58","12/20",120);
 	history_add_entry(historyhead,OUTGOING,"","1395721111",
-	"","17:58",100);
+	"","17:58","12/20",100);
 
 	history_add_entry(historyhead,INCOMING,"steven","1391721111",
-	"./steven.png","17:58",100);
+	"./steven.png","17:58","12/20",100);
 history_add_entry(historyhead,INCOMING,"ken","1381720923",
-	"./ken.png","18:58",200);
+	"./ken.png","18:58","12/20",200);
 	history_add_entry(historyhead,MISSED,"","1391721113",
-	"","17:58",100);
+	"","17:58","12/20",100);
 	history_add_entry(historyhead,MISSED,"","1394721111",
-	"","17:58",100);
+	"","17:58","12/20",100);
 	history_add_entry(historyhead,MISSED,"","1396721111",
-	"","17:58",100);
+	"","17:58","12/20",100);
 return historyhead->length;
 
 }
@@ -132,14 +132,9 @@ int history_delete_entry(HISTORY_LIST_HEAD* historyhead,HISTORY_ENTRY* entry)
 	{
 		historyhead->last=entry->prev;
 	}
-	free(entry->name);
-	entry->name=0;
-	free(entry->number);
-	entry->number=0;
-	free(entry->time);
-	entry->time=0;
-	entry->prev=0;
-	entry->next=0;
+
+	history_release_entry(entry);
+
 	historyhead->length--;
 	return historyhead->length;
 }
@@ -154,15 +149,17 @@ int history_delete_entry(HISTORY_LIST_HEAD* historyhead,HISTORY_ENTRY* entry)
  * @param name  const char*, the name of the counterpart
  * @param number const char*, the number of the counterpart
  * @param picpath const char*, the picture path of the counterpart
- * @param time char*, the time of that connection,may include date&time, and may be seperated into 2 fields in the future.
+ * @param time char*, the time of that connection
+ * @param date char*, the date of that connection
  * @param durationsec int, the duaration of that connection in seconds
  * @return 
  * @retval the newly created entry pointer
  */
 HISTORY_ENTRY * history_add_entry(HISTORY_LIST_HEAD* historyhead, HISTORY_TYPE type,
-	const char *name,const char *number,
-	const char *picpath,  char *time,int durationsec)
+const char *name,const char *number,const char *picpath,  char *time,char *date,int durationsec)
 {
+
+	DBG_ENTER();
 	HISTORY_ENTRY * pentry=(HISTORY_ENTRY *)calloc(1,sizeof(HISTORY_ENTRY ));
 
 //	DBG_MESSAGE("pentry add:0X%x",pentry);
@@ -170,14 +167,27 @@ HISTORY_ENTRY * history_add_entry(HISTORY_LIST_HEAD* historyhead, HISTORY_TYPE t
 	if(name&&strlen(name)>0)
 	{	pentry->name=(char*)calloc(1,strlen(name)+1);
 		strcpy(pentry->name,name);
+		pentry->hasname=1;
 	}
-		if(number&&strlen(number)>0)
+	else
+		{
+		pentry->name=0;
+		pentry->hasname=0;
+		}
+
+	if(number&&strlen(number)>0)
 	{
 		pentry->number=(char*)calloc(1,strlen(number)+1);
 		strcpy(pentry->number,number);
 	}
+	else
+		{
+		//release memory, and return;
+		history_release_entry(pentry);
+		return 0;
+		}
 
-	//DBG_MESSAGE("History add:0X%x,%s,%s,%s,%s,%d",historyhead,name,number,picpath,time,durationsec);
+	//DBG_MESSAGE("History add:0X%x,%s,%s,%s,%s,%s,%d",historyhead,name,number,picpath,time,date,durationsec);
 	
 	if(picpath&&strlen(picpath)>0)
 	{
@@ -215,6 +225,43 @@ HISTORY_ENTRY * history_add_entry(HISTORY_LIST_HEAD* historyhead, HISTORY_TYPE t
 	return pentry;
 }
 
+int history_release_entry(HISTORY_ENTRY * pentry)
+{
+if(!pentry)return 1;
+if(pentry->name)
+{
+free(pentry->name);
+pentry->name=0;
+}
+if(pentry->number)
+{
+free(pentry->number);
+pentry->number=0;
+}
+if(pentry->picpath)
+{
+free(pentry->picpath);
+pentry->picpath=0;
+}
+if(pentry->time)
+{
+free(pentry->time);
+pentry->time=0;
+}
+if(pentry->date)
+{
+free(pentry->date);
+pentry->date=0;
+}
+
+pentry->prev=0;
+pentry->next=0;
+free(pentry);
+pentry=0;
+return 1;
+
+}
+
 /**
  * @brief release the momory by the list and it's entry
  * 
@@ -225,8 +272,35 @@ HISTORY_ENTRY * history_add_entry(HISTORY_LIST_HEAD* historyhead, HISTORY_TYPE t
  * @retval 0 failed 
  * @retval 1 success
  */
-
-int history_release_list(HISTORY_LIST_HEAD* historyhead)
+int history_release_history_list(HISTORY_LIST_HEAD* historyhead)
 {
+	HISTORY_ENTRY * pentry;
+	HISTORY_ENTRY * next;
+	pentry=historyhead->first;
+	while(pentry)
+		{
+		next=pentry->next;
+		history_release_entry(pentry);
+		pentry=next;
+		}
+	historyhead->first=0;
+	historyhead->last=0;
+	historyhead->length=0;
 	return 1;
 }
+
+int history_init_history_data(HISTORY_LIST_HEAD* historyhead)
+{
+
+ DBG_ENTER();
+  int res = history_read_list(historyhead);
+
+  if(res == 0)
+  {
+    res = history_read_list_cmd (historyhead);
+  }
+  DBG_MESSAGE("History:%d",historyhead->length);
+  DBG_LEAVE();
+  return res;
+}
+

@@ -8,10 +8,16 @@ moko-dialer-panel.c\
 moko-dialer-textview.c\
 moko-dialer-tip.c\
 moko-dialer-autolist.c\
+event.c\
+pin.c\
+history.c\
 contacts.c\
 common.c\
+dialergsm.c\
+openmoko-dialer-window-history.c\
 openmoko-dialer-window-dialer.c\
 openmoko-dialer-window-outgoing.c\
+openmoko-dialer-window-incoming.c\
 openmoko-dialer-window-talking.c\
 moko-dialer-status.c
 

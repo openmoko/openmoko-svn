@@ -34,30 +34,74 @@
 #include "moko-dialer-status.h"
 #include "openmoko-dialer-window-talking.h"
 
-/*
-void cb_speaker_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
-{
-DBG_ENTER();
-moko_dialer_status_update_icon(appdata->status_talking);
-
-DBG_LEAVE();
+void
+openmoko_wheel_press_left_up_cb(GtkWidget *widget, MOKO_DIALER_APP_DATA * appdata)
+{DBG_ENTER();
 }
 
-void cb_redial_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
+void
+openmoko_wheel_press_right_down_cb(GtkWidget *widget, MOKO_DIALER_APP_DATA * appdata)
 {
 DBG_ENTER();
-
-DBG_LEAVE();
 }
 
-void cb_cancel_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
+
+void cb_tool_button_speaker_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
 {
-DBG_ENTER();
-gtk_widget_hide(appdata->window_talking);
-DBG_LEAVE();
+  DBG_ENTER();
 }
 
-*/
+void cb_tool_button_dtmf_talk_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
+{
+	DBG_ENTER();
+	
+	appdata->dtmf_in_talking_window=!appdata->dtmf_in_talking_window;
+	if(appdata->dtmf_in_talking_window)
+		{
+		
+			
+			moko_pixmap_button_set_finger_toolbox_btn_center_image(button, appdata->imageTALK);
+		       gtk_widget_hide(appdata->content_talk);
+			gtk_widget_show(appdata->content_dtmf);
+		}
+	else
+		{
+			moko_pixmap_button_set_finger_toolbox_btn_center_image(button, appdata->imageDTMF);
+			gtk_widget_hide(appdata->content_dtmf);
+		       gtk_widget_show(appdata->content_talk);
+		       
+
+		}
+
+  
+}
+
+void cb_tool_button_hangup_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
+{
+     gtk_widget_hide(appdata->window_talking);
+     
+}
+
+
+void
+on_dtmf_panel_user_input(GtkWidget * widget,gchar parac,
+                                        gpointer         user_data)
+{
+char input[2];
+input[0]=parac;
+input[1]=0;
+char codesinput[MOKO_DIALER_MAX_NUMBER_LEN+1];
+
+
+MOKO_DIALER_APP_DATA * appdata=(MOKO_DIALER_APP_DATA*)user_data;
+MokoDialerTextview *moko_dtmf_text_view=appdata->moko_dtmf_text_view;
+
+moko_dialer_textview_insert(moko_dtmf_text_view, input);
+
+}
+
+
+
 void window_talking_prepare(MOKO_DIALER_APP_DATA * appdata)
 {
 DBG_ENTER();
@@ -69,7 +113,7 @@ if(appdata->g_peer_info.hasname)
 }
 else
 {
-   moko_dialer_status_set_person_image(appdata->status_talking, "");  
+   moko_dialer_status_set_person_image(appdata->status_talking, MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH);  
    moko_dialer_status_set_person_name(appdata->status_talking, "");
 
 }
@@ -80,15 +124,9 @@ DBG_LEAVE();
 
 gint timer_talking_time_out(MOKO_DIALER_APP_DATA * appdata)
 {
-DBG_ENTER();
+//DBG_ENTER();
 TIMER_DATA* timer_data=&(appdata->g_timer_data);
 
-DBG_MESSAGE("timer :p_dialer_data->status_talking=0X%x",appdata->status_talking);
-
-//gtk_label_set_text(appdata->status_talking->labelStatus,"laskdfas");
-
-
-//first of all, reset the timer to be called after 1 minute.
 	
 timer_data->ticks++;
 timer_data->hour=timer_data->ticks/3600;
@@ -126,6 +164,18 @@ gtk_timeout_remove(appdata->g_timer_data.ptimer);
 appdata->g_timer_data.ptimer=0;
 }
 
+gtk_widget_hide(appdata->wheel_talking);
+gtk_widget_hide(appdata->toolbox_talking);
+
+//DBG_MESSAGE("%s, %s",appdata->g_state.starttime,appdata->g_state.startdate);
+add_histroy_entry(appdata,appdata->g_state.historytype,
+	appdata->g_peer_info.name,
+	appdata->g_peer_info.number,
+	appdata->g_peer_info.picpath,
+	appdata->g_state.starttime,
+	appdata->g_state.startdate,
+	appdata->g_timer_data.ticks);
+
 
 }
 
@@ -135,13 +185,16 @@ on_window_talking_show                  (GtkWidget       *widget,
 {
 DBG_ENTER();
 
+appdata->dtmf_in_talking_window=TRUE;
+	//hide the talking button in talking mode.
+
 time_t timep;
 struct tm *p;
 time(&timep);
 p=localtime(&timep);
 
 sprintf(appdata->g_state.starttime,"%02d:%02d:%02d",p->tm_hour,p->tm_min,p->tm_sec);
-sprintf(appdata->g_state.startdate,"%04d/%02d/%02d",p->tm_year,p->tm_mon,p->tm_mday);
+sprintf(appdata->g_state.startdate,"%04d/%02d/%02d",p->tm_year+1900,p->tm_mon,p->tm_mday);
 
 memset(&(appdata->g_timer_data),0,sizeof(appdata->g_timer_data));
 
@@ -149,112 +202,152 @@ appdata->g_timer_data.stopsec=0;
 
 appdata->g_timer_data.ptimer=gtk_timeout_add(1000,timer_talking_time_out,appdata);
 
-DBG_MESSAGE("on_window_talking_show status_talking=0X%x",appdata->status_talking);
+if(appdata->wheel_talking)
+gtk_widget_show(appdata->wheel_talking);
+
+if(appdata->toolbox_talking)
+gtk_widget_show(appdata->toolbox_talking);
+
+
    
 DBG_LEAVE();
 }
+
+
 
 
 gint window_talking_init( MOKO_DIALER_APP_DATA* p_dialer_data)
 {
 
 DBG_ENTER();
-MokoFingerWindow* window;
-GtkWidget* vbox;
-MokoDialerStatus * status;
+
 
 if(p_dialer_data->window_talking==0)
 {
 
-  vbox = gtk_vbox_new( FALSE, 0 );
+	MokoFingerWindow* window=NULL;
+	GtkWidget* vbox=gtk_vbox_new( FALSE, 0 );;
+	MokoDialerStatus * status=NULL;
+	GtkWidget* content_talk= NULL;
+	GtkWidget* content_dtmf= NULL;
+      MokoFingerToolBox *tools = NULL;
+      MokoDialerPanel* mokodialerpanel=NULL;
+      GtkWidget *button;
+      GtkWidget* image;
+
+
+//first, the talking content.
+
+   content_talk = gtk_vbox_new( FALSE, 0 );
    status=moko_dialer_status_new();
    moko_dialer_status_add_status_icon(status,"status0.png");
    moko_dialer_status_add_status_icon(status,"status1.png");
    moko_dialer_status_add_status_icon(status,"status2.png");
    moko_dialer_status_set_icon_by_index(status,0);
    
-   gtk_box_pack_start( GTK_BOX(vbox),status, FALSE, FALSE, 0 );
-
-/*
- 	
-    GtkHBox *  hbox2 = gtk_hbox_new( FALSE, 0 );
-    GtkButton* button = gtk_button_new_with_label("Speaker");
-    g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_speaker_button_clicked), p_dialer_data );
-p_dialer_data->buttonSpeaker=button;
-//gtk_widget_set_size_request(button,100,32);
-    gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button),TRUE, TRUE, 10 );
-
-button = gtk_button_new_with_label("Cancel");
-  p_dialer_data->buttonCancel=button;
- g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_cancel_button_clicked), p_dialer_data );
-//gtk_widget_set_size_request(button,100,32);
- gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button),TRUE, TRUE, 10 );
-
-
-  button = gtk_button_new_with_label("Redial");
-    p_dialer_data->buttonRedial=button;
-  g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(cb_redial_button_clicked), p_dialer_data );
-//gtk_widget_set_size_request(button,100,32);
-  gtk_box_pack_start( GTK_BOX(hbox2), GTK_WIDGET(button), TRUE, TRUE, 20 );
-//gtk_widget_set_size_request(button,60,24);
-
-
-   gtk_box_pack_start( GTK_BOX(vbox),hbox2, FALSE, FALSE, 50 );
-*/
-
-//currently     MokoDialogWindow is not finished, wating...
-//   MokoDialogWindow* window = (MokoDialogWindow *)(moko_dialog_window_new());
-//  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
-
-    window = MOKO_FINGER_WINDOW(moko_finger_window_new());
-    moko_finger_window_set_contents(window, GTK_WIDGET(vbox) );
-
-
-     gtk_widget_show_all( GTK_WIDGET(window) );
-
-     gtk_widget_hide( p_dialer_data->buttonRedial);
-
-
-     gtk_widget_hide( GTK_WIDGET(window) );   
-
-
+   
    moko_dialer_status_set_title_label(status, "In Call");
    moko_dialer_status_set_status_label(status, "Talking ...(00:00:00)");
 
-   p_dialer_data->window_talking=window;
+   gtk_box_pack_start( GTK_BOX(content_talk),status, FALSE, FALSE, 0 );
+
+
    p_dialer_data->status_talking=status;
+   p_dialer_data->content_talk= content_talk;
+
+   gtk_box_pack_start( GTK_BOX(vbox),content_talk, FALSE, FALSE, 0 );
    
-//   DBG_MESSAGE("p_dialer_data->status_talking=0X%x",p_dialer_data->status_talking);
+  
+//now the dtmf content
+  	content_dtmf= gtk_vbox_new( FALSE, 0 );
+  	GtkEventBox* eventbox1 = gtk_event_box_new ();
+	gtk_widget_show (eventbox1);
+	gtk_widget_set_name(GTK_WIDGET(eventbox1),"gtkeventbox-black");
+
+   	MokoDialerTextview * mokotextview=moko_dialer_textview_new();
+
+  	gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
+
+   	p_dialer_data->moko_dtmf_text_view=mokotextview;
+    
+  	gtk_box_pack_start( GTK_BOX(content_dtmf), GTK_WIDGET(eventbox1), FALSE,FALSE, 2 );
 
 
-  g_signal_connect ((gpointer) window, "show",
-                    G_CALLBACK (on_window_talking_show),
-                    p_dialer_data);
-  g_signal_connect ((gpointer) window, "hide",
-                    G_CALLBACK (on_window_talking_hide),
-                    p_dialer_data);
 
- //now the wheel and tool box
+	 mokodialerpanel=moko_dialer_panel_new();
 
-  MokoFingerToolBox* tools = NULL;
-  tools = moko_finger_window_get_toolbox(window);
-        for ( int i = 0; i < 4; ++i )
-        {
-            GtkButton* newbutton = moko_finger_tool_box_add_button( tools );
-//            g_signal_connect( G_OBJECT(newbutton), "clicked", G_CALLBACK(cb_tool_button_clicked), window );
-        }
- //     gtk_widget_show( GTK_WIDGET(tools));
-    gtk_widget_show(moko_finger_window_get_toolbox(window));
-
-// MokoFingerWheel* wheel = NULL;
- gtk_widget_show( GTK_WIDGET(moko_finger_window_get_wheel(window)) );
+   	gtk_widget_set_size_request (mokodialerpanel, 380, 384);
+   	g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_input",  G_CALLBACK (on_dtmf_panel_user_input),p_dialer_data);
+    	gtk_box_pack_start( GTK_BOX(content_dtmf), GTK_WIDGET(mokodialerpanel), TRUE, TRUE, 5 );
+  
+   	gtk_box_pack_start( GTK_BOX(vbox),content_dtmf, FALSE, FALSE, 0 );
+   	p_dialer_data->content_dtmf=content_dtmf;
 
 
-// gtk_widget_show(p_dialer_data->window_talking);
+//now the container--window
+     window = MOKO_FINGER_WINDOW(moko_finger_window_new());
+     p_dialer_data->window_talking=window;
+     moko_finger_window_set_contents(window, GTK_WIDGET(vbox) );
+    g_signal_connect ((gpointer) window, "show",
+	                    G_CALLBACK (on_window_talking_show),
+	                    p_dialer_data);
+    g_signal_connect ((gpointer) window, "hide",
+	                    G_CALLBACK (on_window_talking_hide),
+	                    p_dialer_data);
 
-DBG_LEAVE();
-    return 1;
+     
+     gtk_widget_show_all( GTK_WIDGET(window) );
+
+//the gtk_widget_show_all is really bad, cause i have to call it and then hide some widgets.
+
+   gtk_widget_hide(content_dtmf);
+
+
+ //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
+   gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
+    
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+		    "press_left_up",
+		    G_CALLBACK(openmoko_wheel_press_left_up_cb),
+		    p_dialer_data);
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+		    "press_right_down",
+		    G_CALLBACK(openmoko_wheel_press_right_down_cb),
+		    p_dialer_data);
+
+
+
+        tools = moko_finger_window_get_toolbox(window);
+     
+	button = moko_finger_tool_box_add_button_without_label(tools);
+       image = file_new_image_from_relative_path("speaker.png");
+	moko_pixmap_button_set_finger_toolbox_btn_center_image(button, image);
+        g_signal_connect(G_OBJECT(button), "clicked",
+			G_CALLBACK(cb_tool_button_speaker_clicked), p_dialer_data);
+	
+	button = moko_finger_tool_box_add_button_without_label(tools);
+       image = file_new_image_from_relative_path("dtmf.png");
+	moko_pixmap_button_set_finger_toolbox_btn_center_image(button, image);
+	g_signal_connect(G_OBJECT(button), "clicked",
+			G_CALLBACK(cb_tool_button_dtmf_talk_clicked), p_dialer_data);
+	p_dialer_data->imageDTMF=image;
+	p_dialer_data->imageTALK=file_new_image_from_relative_path("talking.png");
+	
+
+	button = moko_finger_tool_box_add_button_without_label(tools);
+       image = file_new_image_from_relative_path("tony.png");
+	moko_pixmap_button_set_finger_toolbox_btn_center_image(button, image);
+	g_signal_connect(G_OBJECT(button), "clicked",
+			G_CALLBACK(cb_tool_button_hangup_clicked), p_dialer_data);
+	gtk_widget_show(GTK_WIDGET(tools));
+
+	p_dialer_data->dtmf_in_talking_window=0;
+	p_dialer_data->wheel_talking=moko_finger_window_get_wheel(window);
+	p_dialer_data->toolbox_talking=tools;
+
+
+	DBG_LEAVE();
 }
-
+    return 1;
 }
 
