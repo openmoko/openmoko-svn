@@ -169,7 +169,7 @@ DIALER_READY_CONTACT * ready_contact=(DIALER_READY_CONTACT * )para_pointer;
 DBG_MESSAGE("GOT THE MESSAGE OF confirmed:%s",ready_contact->p_entry->content);
 moko_dialer_textview_confirm_it(moko_dialer_text_view,ready_contact->p_entry->content);
 DBG_MESSAGE("And here we are supposed to call out directly");
-//window_dialer_dial_out(appdata);
+window_dialer_dial_out(appdata);
 
 
 }

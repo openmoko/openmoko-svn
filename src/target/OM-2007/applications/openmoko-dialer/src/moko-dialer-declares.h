@@ -26,6 +26,6 @@
 #define MOKO_DIALER_MIN_SENSATIVE_LEN (1) ///<only when user inputs at least MINSENSATIVELEN, should we start to search.
 #define MOKO_DIALER_MAX_STATUS_ICONS (3) ///<THE NUMBERS OF THE ICONS WHEN OUTGOING CALL IS ON
 #define MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH ("unkown.png") ///<THE DEFAULT PERSON IMAGE
-#define MOKO_DIALER_MAX_TIPS (4)
+#define MOKO_DIALER_MAX_TIPS (3)
 
 #endif

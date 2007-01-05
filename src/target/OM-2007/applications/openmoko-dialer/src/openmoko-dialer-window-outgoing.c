@@ -196,8 +196,8 @@ appdata->g_timer_data.ptimer=0;
 }
 
 memset(&(appdata->g_timer_data),0,sizeof(appdata->g_timer_data));
-
-appdata->g_timer_data.stopsec=30;
+// 1:30 timeout
+appdata->g_timer_data.stopsec=90;
 
 appdata->g_timer_data.ptimer=gtk_timeout_add(1000,timer_outgoing_time_out,appdata);
 

@@ -66,6 +66,7 @@ DBG_LEAVE();
 void cb_reject_button_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
 {
 DBG_ENTER();
+gsm_hangup();
 appdata->g_state.callstate=STATE_REJECTED;
 gtk_widget_hide(appdata->window_incoming);
 DBG_LEAVE();

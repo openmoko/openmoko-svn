@@ -78,8 +78,9 @@ void cb_tool_button_dtmf_talk_clicked( GtkButton* button, MOKO_DIALER_APP_DATA *
 
 void cb_tool_button_hangup_clicked( GtkButton* button, MOKO_DIALER_APP_DATA * appdata)
 {
+     gsm_hangup();
      gtk_widget_hide(appdata->window_talking);
-     
+
 }
 
 
