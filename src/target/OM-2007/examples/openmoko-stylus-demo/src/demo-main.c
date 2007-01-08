@@ -33,6 +33,7 @@
 #include <gtk/gtklabel.h>
 #include <gtk/gtkmain.h>
 #include <gtk/gtkmenu.h>
+#include <gtk/gtkmessagedialog.h>
 #include <gtk/gtkradiobutton.h>
 #include <gtk/gtkspinbutton.h>
 #include <gtk/gtktable.h>
@@ -136,6 +137,14 @@ void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
 void cb_button1_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-stylus-demo: button1 clicked" );
+
+    GtkMessageDialog* dialog = gtk_message_dialog_new( moko_application_get_main_window( moko_application_get_instance() ),
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_ERROR,
+                                  GTK_BUTTONS_YES_NO,
+                                  "Simple question dialog" );
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
 }
 
 void cb_button2_clicked(GtkButton *button, gpointer user_data)
@@ -221,6 +230,14 @@ void cb_button3_clicked(GtkButton *button, gpointer user_data)
 void cb_button4_clicked(GtkButton *button, gpointer user_data)
 {
     g_debug( "openmoko-stylus-demo: button4 clicked" );
+
+    GtkMessageDialog* dialog = gtk_message_dialog_new( moko_application_get_main_window( moko_application_get_instance() ),
+                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                  GTK_MESSAGE_QUESTION,
+                                  GTK_BUTTONS_CLOSE,
+                                  "Simple confirmation dialog" );
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
 }
 
 static gboolean searchmode = TRUE;
