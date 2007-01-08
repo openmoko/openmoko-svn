@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.17.14
-# Thu Jan  4 01:15:39 2007
+# Mon Jan  8 15:35:06 2007
 #
 CONFIG_ARM=y
 CONFIG_MMU=y
@@ -191,7 +191,7 @@ CONFIG_ALIGNMENT_TRAP=y
 #
 CONFIG_ZBOOT_ROM_TEXT=0x0
 CONFIG_ZBOOT_ROM_BSS=0x0
-CONFIG_CMDLINE="console=ttySAC0,115200 root=/dev/mmcblk0p1 rootdelay=10"
+CONFIG_CMDLINE="console=ttySAC0,115200n8  ip=192.168.1.2:192.168.1.10:192.168.1.10:255.255.255.0:ezx:usb0:off   debug"
 # CONFIG_XIP_KERNEL is not set
 
 #
@@ -400,7 +400,8 @@ CONFIG_BT_HIDP=m
 #
 # Bluetooth device drivers
 #
-# CONFIG_BT_HCIUSB is not set
+CONFIG_BT_HCIUSB=m
+CONFIG_BT_HCIUSB_SCO=y
 CONFIG_BT_HCIUART=m
 CONFIG_BT_HCIUART_H4=y
 CONFIG_BT_HCIUART_BCSP=y
