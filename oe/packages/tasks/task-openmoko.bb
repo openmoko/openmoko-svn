@@ -5,16 +5,16 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r17"
+PR = "r18"
 
 PACKAGES = "\
   task-openmoko-linux \
-  task-openmoko-net \
-  task-openmoko-phone \
   task-openmoko-ui \
   task-openmoko-base \
+  task-openmoko-phone \
   task-openmoko-finger \
   task-openmoko-pim \
+  task-openmoko-net \
   \
   task-openmoko-demo \
   task-openmoko-examples \
@@ -49,20 +49,20 @@ RDEPENDS_task-openmoko-linux = "\
 "
 
 #
+# task-openmoko-base
+#
+DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Phone Application, and Panel"
+RDEPENDS_task-openmoko-base = "\
+"
+
+#
 # task-openmoko-phone
 #
 DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
 RDEPENDS_task-openmoko-phone = "\
   libgsmd-daemon \
   libgsmd-tools \
-"
-
-#
-# task-openmoko-net
-#
-DESCRIPTION_task-openmoko-net = "OpenMoko: Linux Advanced Networking"
-RDEPENDS_task-openmoko-net = "\
-  bluez-utils \
+  openmoko-dialer \
 "
 
 #
@@ -99,6 +99,21 @@ RDEPENDS_task-openmoko-ui = "\
 #
 DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Phone Application, and Panel"
 RDEPENDS_task-openmoko-base = "\
+  openmoko-mainmenu \
+  openmoko-phone \
+  openmoko-dialer \
+  openmoko-footer \
+  openmoko-taskmanager \
+"
+
+#
+# task-openmoko-phone
+#
+DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
+RDEPENDS_task-openmoko-phone = "\
+  libgsmd-daemon \
+  libgsmd-tools \
+# ppp \
 "
 
 #
@@ -114,6 +129,14 @@ RDEPENDS_task-openmoko-finger = "\
 DESCRIPTION_task-openmoko-pim = "OpenMoko: PIM Applications"
 RDEPENDS_task-openmoko-pim = "\
   eds-dbus \
+"
+
+#
+# task-openmoko-net
+#
+DESCRIPTION_task-openmoko-net = "OpenMoko: Linux Advanced Networking"
+RDEPENDS_task-openmoko-net = "\
+  bluez-utils \
 "
 
 #

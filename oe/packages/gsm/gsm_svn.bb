@@ -10,6 +10,10 @@ S = "${WORKDIR}/gsm"
 
 inherit autotools pkgconfig
 
+do_stage() {
+    autotools_stage_all
+}
+
 PACKAGES =+ "${PN}-tools ${PN}-daemon"
 FILES_${PN}-tools = "${bindir}/*tool*"
 RPROVIDES_${PN}-tools = "gsm-tools"
