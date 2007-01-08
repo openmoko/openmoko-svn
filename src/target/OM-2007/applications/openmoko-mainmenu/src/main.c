@@ -110,6 +110,16 @@ main( int argc, char** argv )
     pid_t lockapp;
     int i;
 
+    lockapp = testlock (LOCK_FILE);
+    g_debug ("lock app = %x", lockapp);
+    if (lockapp > 0)
+     {
+        kill (lockapp, SIGUSR1);
+        return 0;
+     }
+    setlock (LOCK_FILE);
+    g_debug ("test");
+    
     mma = g_malloc0 (sizeof (MokoMainmenuApp));
     if (!mma) {
     	fprintf (stderr, "openmoko-mainmenu application initialize FAILED");
@@ -119,21 +129,13 @@ main( int argc, char** argv )
 
     gtk_init( &argc, &argv );
 
-    lockapp = testlock (LOCK_FILE);
-    g_debug ("lock app = %x", lockapp);
-    if (lockapp > 0)
-    {
-      kill (lockapp, SIGUSR1);
-      return 0;
-    }
-    setlock (LOCK_FILE);
-    
     /* application object */
     mma->app = MOKO_APPLICATION(moko_application_get_instance());
     g_set_application_name( "OpenMoko Main Menu" );
     
     /* finger based window */
     mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
+//    gtk_window_set_decorated (mma->window, FALSE);
     gtk_widget_show (GTK_WIDGET (mma->window));
     main_window = mma->window;
 
@@ -172,6 +174,8 @@ main( int argc, char** argv )
     g_signal_connect (mma->mm->icon_view, "item_activated",
     		G_CALLBACK (moko_icon_view_item_acitvated_cb), mma);
 
+    signal (SIGUSR1, handle_sigusr1);
+
     /* put MokoMainMenu object and MokoClosePange object into the finger based window */
     moko_finger_window_set_contents (mma->window, GTK_WIDGET(mma->mm));
     moko_finger_window_set_contents (mma->window, GTK_WIDGET(mma->close));
@@ -188,7 +192,6 @@ main( int argc, char** argv )
     /*test code, delete later*/
     moko_sample_hisory_app_fill (mma->history[0]);
 
-    signal (SIGUSR1, handle_sigusr1);
     
     gtk_main();
 

@@ -303,7 +303,7 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
       }
     }
 
-  snprintf (total_item, 6, "0/%d", count);
+  snprintf (total_item, 6, "00/%.2d", count);
   moko_set_label_content(mm->item_total, total_item);
 
   return TRUE;
@@ -328,7 +328,7 @@ moko_main_menu_update_item_total_label (MokoMainMenu *mm)
   if (cursor <0)
   	return;
 
-  snprintf (item_total, 6, "%d/%d", cursor, total);
+  snprintf (item_total, 6, "%.2d/%.2d", cursor, total);
   moko_set_label_content (mm->item_total, item_total);
 }
 

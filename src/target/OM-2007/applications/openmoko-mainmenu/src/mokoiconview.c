@@ -151,22 +151,6 @@ moko_icon_view_set_property (GObject      *object,
 					const GValue *value,
 					GParamSpec   *pspec);
 
-static void 
-moko_icon_view_get_property (GObject      *object,
-					guint         prop_id,
-					GValue       *value,
-					GParamSpec   *pspec);
-
-/* GObject signals */
-static void 
-moko_icon_view_finalize     (GObject      *object);
-
-static void 
-moko_icon_view_set_property (GObject      *object,
-					guint         prop_id,
-					const GValue *value,
-					GParamSpec   *pspec);
-
 static void
 moko_icon_view_get_property (GObject      *object,
 					guint         prop_id,
