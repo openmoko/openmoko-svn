@@ -6,16 +6,19 @@ HEADERS += src/app-history.h \
            src/callbacks.h \
            src/main.h \
            src/mainmenu.h \
-           src/menu-list.h \
            src/mokoiconview.h \
-           src/support.h
+	   src/close-page.h \
+	   src/mokodesktop_item.h \
+	   src/mokodesktop.h
+	   
 SOURCES += src/app-history.c \
            src/callbacks.c \
            src/main.c \
            src/mainmenu.c \
-           src/menu-list.c \
            src/mokoiconview.c \
-           src/support.c
+	   src/close-page.c \
+	   src/mokodesktop_item.c \
+	   src/mokodesktop.c
 
 MOKOCONFIG = mokoui
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )

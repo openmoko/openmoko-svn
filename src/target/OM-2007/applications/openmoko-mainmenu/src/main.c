@@ -35,9 +35,12 @@ handle_sigusr1 (int value)
 {
 g_debug ("Call handle signal use main window = %x", main_window);
 
-if (!main_window)
+  if (!main_window)
        return;
   gtk_window_present (main_window);
+
+  signal (SIGUSR1, handle_sigusr1);
+
 }
 
 static pid_t 
