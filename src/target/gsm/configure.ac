@@ -23,5 +23,6 @@ src/util/Makefile
 include/Makefile
 include/gsmd/Makefile
 include/libgsmd/Makefile
+include/common/Makefile
 ])
 

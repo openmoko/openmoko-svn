@@ -7,3 +7,4 @@ libgsmd_tool_SOURCES = libgsmd-tool.c shell.c event.c pin.c atcmd.c
 libgsmd_tool_LDADD = ../libgsmd/libgsmd.la
 libgsmd_tool_LDFLAGS = -dynamic
 
+noinst_HEADERS = atcmd.h event.h pin.h shell.h
