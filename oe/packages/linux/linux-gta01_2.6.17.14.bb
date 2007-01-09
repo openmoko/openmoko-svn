@@ -4,7 +4,7 @@ AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-gta01"
-PR = "r5"
+PR = "r6"
 
 inherit kernel
 
@@ -41,8 +41,10 @@ CMDLINE = "${CMDLINE_CON} ${CMDLINE_ROOT} ${CMDLINE_IP} ${CMDLINE_ROTATE} ${CMDL
 ###############################################################
 # module configs specific to this kernel
 #
-#module_autoload_pxaficp_ir = "pxaficp_ir"
+module_autoload_ohci-hcd = "ohci-hcd"
+module_autoload_g_ether = "g_ether"
 #module_autoload_snd-pcm-oss = "snd-pcm-oss"
+#module_autoload_snd-soc-corgi_c7x0 = "snd-soc-s3c24xx"
 
 do_prepatch() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
