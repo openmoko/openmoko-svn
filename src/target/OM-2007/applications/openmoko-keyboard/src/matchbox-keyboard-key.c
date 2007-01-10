@@ -72,6 +72,8 @@ struct MBKeyboardKey
   boolean                is_blank;   /* 'blank' keys are spacers */
   boolean                extended;   /* only show in landscape */
 
+  MBKeyboardImage        *back_image;   /* The background image */
+
   MBKeyboardStateType    sets_kbdstate; /* needed */
 };
 
@@ -95,6 +97,18 @@ mb_kbd_key_new(MBKeyboard *kbd)
     key->states[i] = NULL;
 
   return key;
+}
+
+void
+mb_kbd_key_set_back_image(MBKeyboardKey *key, MBKeyboardImage *image)
+{
+  key->back_image = image;
+}
+
+MBKeyboardImage *
+mb_kbd_key_get_back_image(MBKeyboardKey *key)
+{
+  return key->back_image;
 }
 
 void

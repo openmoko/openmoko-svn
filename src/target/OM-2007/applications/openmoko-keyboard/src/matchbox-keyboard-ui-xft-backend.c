@@ -120,6 +120,8 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
   Pixmap                 backbuffer;
   MBKeyboard            *kbd;
 
+  MBKeyboardImage       *image;
+
   if (mb_kbd_key_is_blank(key)) /* spacer */
     return;
 
@@ -149,64 +151,81 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
 
   XFillRectangles(xdpy, backbuffer, xft_backend->xgc, &rect, 1);
 
-  /* draw 'main border' */
+  image = mb_kbd_key_get_back_image(key);
+  if(image)
+    {
+      int w, h;
+      w = mb_kbd_image_width (image);
+      h = mb_kbd_image_height (image);
 
-  XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_c5c5c5.pixel);
+      XRenderComposite(xdpy,
+                       PictOpOver,
+                       mb_kbd_image_render_picture (image),
+                       None, 
+                       XftDrawPicture (xft_backend->xft_backbuffer),
+                       0, 0, 0, 0, rect.x, rect.y, w, h);
+    }
+  else                   
+    {
+      /* draw 'main border' */
+      
+      XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_c5c5c5.pixel);
+      
+      XDrawRectangles(xdpy, backbuffer, xft_backend->xgc, &rect, 1);
+      
+      /* shaded bottom line */
+      
+      XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_f4f4f4.pixel);
+      XDrawLine(xdpy, backbuffer, xft_backend->xgc,
+	        rect.x + 1,
+	        rect.y + rect.height - 1,
+	        rect.x + rect.width -2 ,
+	        rect.y + rect.height - 1);
+      
+      /* Corners - XXX should really use drawpoints */
+      
+      XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_f0f0f0.pixel);
+      
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y+rect.height);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y+rect.height);
+      
+      /* soften them more */
+      
+      XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_d3d3d3.pixel);
+      
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+1, rect.y);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y+1);
+      
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width-1, rect.y);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y+1);
+      
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width-1, rect.y+rect.height);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y+rect.height-1);
+      
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y+rect.height-1);
+      XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+1, rect.y+rect.height);
 
-  XDrawRectangles(xdpy, backbuffer, xft_backend->xgc, &rect, 1);
+      /* background */
 
-  /* shaded bottom line */
+      if (mb_kbd_key_is_held(kbd, key))
+        XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_a4a4a4.pixel);
+      else
+        XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_f8f8f5.pixel);
 
-  XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_f4f4f4.pixel);
-  XDrawLine(xdpy, backbuffer, xft_backend->xgc,
-	    rect.x + 1,
-	    rect.y + rect.height - 1,
-	    rect.x + rect.width -2 ,
-	    rect.y + rect.height - 1);
+      side_pad = 
+        mb_kbd_keys_border(kbd)
+        + mb_kbd_keys_margin(kbd)
+        + mb_kbd_keys_pad(kbd);
 
-  /* Corners - XXX should really use drawpoints */
-
-  XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_f0f0f0.pixel);
-
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y+rect.height);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y+rect.height);
-
-  /* soften them more */
-
-  XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_d3d3d3.pixel);
-
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+1, rect.y);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y+1);
-
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width-1, rect.y);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y+1);
-
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width-1, rect.y+rect.height);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+rect.width, rect.y+rect.height-1);
-
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x, rect.y+rect.height-1);
-  XDrawPoint(xdpy, backbuffer, xft_backend->xgc, rect.x+1, rect.y+rect.height);
-
-  /* background */
-
-  if (mb_kbd_key_is_held(kbd, key))
-    XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_a4a4a4.pixel);
-  else
-    XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_f8f8f5.pixel);
-
-  side_pad = 
-    mb_kbd_keys_border(kbd)
-    + mb_kbd_keys_margin(kbd)
-    + mb_kbd_keys_pad(kbd);
-
-  /* Why does below need +1's ? */
-  XFillRectangle(xdpy, backbuffer, xft_backend->xgc, 
-		 rect.x + side_pad,
-		 rect.y + side_pad,
-		 rect.width  - (side_pad * 2) + 1,
-		 rect.height - (side_pad * 2) + 1);
+      /* Why does below need +1's ? */
+      XFillRectangle(xdpy, backbuffer, xft_backend->xgc, 
+                     rect.x + side_pad,
+                     rect.y + side_pad,
+                     rect.width  - (side_pad * 2) + 1,
+                     rect.height - (side_pad * 2) + 1);
+    }
 
   /* real code is here */
 

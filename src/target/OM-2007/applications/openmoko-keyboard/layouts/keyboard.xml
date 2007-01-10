@@ -31,6 +31,7 @@
 
     <key fill="true">
 	  <default display="Esc" action="escape" />
+	  <background image="testkey.png"/>
     </key>
 <!--
     <key>
@@ -39,56 +40,69 @@
 -->
     <key>
 	  <default display="`" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="1" />                
 	  <shifted display="!" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="2" />                
 	  <shifted display='"' />
           <mod1    display="½" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="3" />
 	  <shifted display="£" />
           <mod1    display="¾" />               
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="4" />
 	  <shifted display="$" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="5" />
 	  <shifted display="%" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="6" />
 	  <shifted display="^" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="7" />
 	  <shifted display="&amp;" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="8" />
 	  <shifted display="*" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="9" />
 	  <shifted display="(" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="0" />
 	  <shifted display=")" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="-" />
 	  <shifted display="_" />                
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="=" />
 	  <shifted display="+" />                
+	  <background image="testkey.png"/>
     </key>
 
     <key fill="true">
@@ -119,55 +133,68 @@
     <key obey-caps='true'>
 	  <default display="q" />                
 	  <shifted display="Q" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="w" />                
 	  <shifted display="W" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <mod1 display="ë" />
 	  <default    display="e" />                
 	  <shifted display="E" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="r" />                
 	  <shifted display="R" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="t" />                
 	  <shifted display="T" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="y" />                
 	  <shifted display="Y" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="u" />                
 	  <shifted display="U" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="i" />                
 	  <shifted display="I" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="o" />                
 	  <shifted display="O" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="p" />                
 	  <shifted display="P" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="{" />                
 	  <shifted display="[" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="}" />                
 	  <shifted display="]" />
+	  <background image="testkey.png"/>
     </key>
     <key fill="true">
 	  <default display="\" />                
 	  <shifted display="|" />
+	  <background image="testkey.png"/>
     </key>
 
     <space width="500" extended="true"/>
@@ -192,46 +219,57 @@
     <key obey-caps='true'>
 	  <default display="a" />                
 	  <shifted display="A" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="s" />                
 	  <shifted display="S" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="d" />                
 	  <shifted display="D" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="f" />                
 	  <shifted display="F" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="g" />                
 	  <shifted display="G" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="h" />                
 	  <shifted display="H" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="j" />                
 	  <shifted display="J" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="k" />                
 	  <shifted display="K" />
+	  <background image="testkey.png"/>
     </key>
     <key obey-caps='true'>
 	  <default display="l" />                
 	  <shifted display="L" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display=";" />                
 	  <shifted display=":" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="#" />                
 	  <shifted display="~" />
+	  <background image="testkey.png"/>
     </key>
     <key fill="true">
 	  <default display="Ret" action="return"/>
@@ -258,49 +296,59 @@
     <key obey-caps='true'>
 	  <default display="z" />                
 	  <shifted display="Z" />
+	  <background image="testkey.png"/>
     </key>
 
     <key obey-caps='true'>
 	  <default display="x" />                
 	  <shifted display="X" />
+	  <background image="testkey.png"/>
     </key>
 
     <key obey-caps='true'>
 	  <default display="c" />                
 	  <shifted display="C" />
+	  <background image="testkey.png"/>
     </key>
 
     <key obey-caps='true'>
 	  <default display="v" />                
 	  <shifted display="V" />
+	  <background image="testkey.png"/>
     </key>
 
     <key obey-caps='true'>
 	  <default display="b" />                
 	  <shifted display="B" />
+	  <background image="testkey.png"/>
     </key>
 
     <key obey-caps='true'>
 	  <default display="n" />                
 	  <shifted display="N" />
+	  <background image="testkey.png"/>
     </key>
 
     <key obey-caps='true'>
 	  <default display="m" />                
 	  <shifted display="M" />
+	  <background image="testkey.png"/>
     </key>
 
     <key>
 	  <default display="," />                
 	  <shifted display="&lt;" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="." />                
 	  <shifted display="&gt;" />
+	  <background image="testkey.png"/>
     </key>
     <key>
 	  <default display="/" />                
 	  <shifted display="?" />
+	  <background image="testkey.png"/>
     </key>
 
 

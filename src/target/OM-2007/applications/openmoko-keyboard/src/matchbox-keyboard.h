@@ -392,6 +392,12 @@ MBKeyboardKey*
 mb_kbd_key_new(MBKeyboard *kbd);
 
 void
+mb_kbd_key_set_back_image(MBKeyboardKey *key, MBKeyboardImage *image);
+
+MBKeyboardImage *
+mb_kbd_key_get_back_image(MBKeyboardKey *key);
+
+void
 mb_kbd_key_set_obey_caps(MBKeyboardKey  *key, boolean obey);
 
 boolean
