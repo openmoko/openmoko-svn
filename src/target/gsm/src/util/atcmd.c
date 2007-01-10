@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <libgsmd/libgsmd.h>
 
@@ -23,6 +24,9 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 	fd_set readset;
 
 	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
+
+	fcntl(0, F_SETFD, O_NONBLOCK);
+	fcntl(lgsm_fd(lgsmh), F_SETFD, O_NONBLOCK);
 
 	FD_ZERO(&readset);
 
