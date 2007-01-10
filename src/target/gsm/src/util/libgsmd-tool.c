@@ -61,7 +61,7 @@ static void help(void)
 		"\t-h\t--help\tPrint this Help message\n"
 		"\t-V\t--version\tPrint version number\n"
 		"\t-v\t--verbose\tBe more verbose\n"
-		"\t-m\t--mode\tSet mode {passthrough,atcmd}\n"
+		"\t-m\t--mode\tSet mode {shell,eventlog,atcmd}\n"
 		);
 }
 
