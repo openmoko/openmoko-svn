@@ -4,7 +4,7 @@ AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-gta01"
-PR = "r6"
+PR = "r7"
 
 inherit kernel
 
@@ -15,7 +15,7 @@ HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
 # source and patches
 #
 SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.14.tar.bz2 \
-           file://patches-2.6.17.14-fic5.tar.bz2 \
+           file://patches-2.6.17.14-fic6.tar.bz2 \
            file://defconfig-${MACHINE}"
 S = "${WORKDIR}/linux-2.6.17.14"
 
