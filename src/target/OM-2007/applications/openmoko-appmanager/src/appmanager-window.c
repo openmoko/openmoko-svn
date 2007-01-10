@@ -51,6 +51,7 @@ handle_sigusr1 (int value)
       return;
     }
   gtk_window_present (GTK_WINDOW (mainwindow));
+  signal (SIGUSR1, handle_sigusr1);
 }
 
 static pid_t 
