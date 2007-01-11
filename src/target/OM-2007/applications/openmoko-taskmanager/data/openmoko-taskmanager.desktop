@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko Task Manager
+Comment=OpenMoko Finger Application
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-taskmanager
+Icon=openmoko-taskmanager.png
+Terminal=false
+SingleInstance=true
+StartupNotify=true
