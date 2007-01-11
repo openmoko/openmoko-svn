@@ -20,21 +20,21 @@
 #include "popupmenu.h"
 
 void
-om_kill_task_cb(GtkMenuItem *item, List *l) {
+moko_kill_task_cb(GtkMenuItem *item, MokoTaskList *l) {
     g_debug ("kill task cb");
-    //om_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_CLIENT);
-    om_wm_cmd(item, l->list_view, MB_CMD_REMOVE_CLIENT);
+    //moko_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_CLIENT);
+    moko_wm_cmd(item, l->list_view, MB_CMD_REMOVE_CLIENT);
     }
 
 void 
-om_kill_and_swith_cb(GtkMenuItem *item, List *l) {
+moko_kill_and_swith_cb(GtkMenuItem *item, MokoTaskList *l) {
     g_debug ("call kill and switch task function");
-    //om_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_AND_ACTIVE);
-    om_wm_cmd(item, l->list_view, MB_CMD_REMOVE_AND_ACTIVE);
+    //moko_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_AND_ACTIVE);
+    moko_wm_cmd(item, l->list_view, MB_CMD_REMOVE_AND_ACTIVE);
     }
 
 void
-om_init_popup_menu (GtkWidget *my_widget, GdkEventButton *event, List *l) {
+moko_init_popup_menu (GtkWidget *my_widget, GdkEventButton *event, MokoTaskList *l) {
     GtkWidget *menu;
     GtkMenuItem *item;
     int button, event_time;
@@ -47,11 +47,11 @@ om_init_popup_menu (GtkWidget *my_widget, GdkEventButton *event, List *l) {
     item = gtk_menu_item_new_with_label ("Close and switch");
     gtk_widget_show (item);
     gtk_menu_prepend (menu, item);
-    g_signal_connect (item, "activate", G_CALLBACK (om_kill_and_swith_cb), l);
+    g_signal_connect (item, "activate", G_CALLBACK (moko_kill_and_swith_cb), l);
     item = gtk_menu_item_new_with_label ("Kill the Application");
     gtk_widget_show (item);
     gtk_menu_prepend (menu, item);
-    g_signal_connect (item, "activate", G_CALLBACK (om_kill_task_cb), l);
+    g_signal_connect (item, "activate", G_CALLBACK (moko_kill_task_cb), l);
     if (event) {
         button = event->button;
         event_time = event->time;

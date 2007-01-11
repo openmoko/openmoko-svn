@@ -28,44 +28,54 @@
 
 #include "misc.h"
 
+enum{
+    TEXT_COL = 0,
+    OBJECT_COL,
+    PIXBUF_COL,
+    MAX_COL
+};
+
 G_BEGIN_DECLS
-/*LIST property*/
+/*MOKOTASKLIST property*/
+
 
 /*Pango Font spec*/
 
-#define LIST_TYPE			(list_get_type())
-#define LIST(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), LIST_TYPE, List))
-#define LIST_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), LIST_TYPE, ListClass))
-#define IS_LIST(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), LIST_TYPE))
-#define IS_LIST_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), LIST_TYPE))
+#define MOKOTASKLIST_TYPE			(list_get_type())
+#define MOKOTASKLIST(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKOTASKLIST_TYPE, MokoTaskList))
+#define MOKOTASKLIST_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), MOKOTASKLIST_TYPE, MokoTaskListClass))
+#define IS_MOKOTASKLIST(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKOTASKLIST_TYPE))
+#define IS_MOKOTASKLIST_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), MOKOTASKLIST_TYPE))
 
-typedef struct _List		List;
-typedef struct _ListClass	ListClass;
+typedef struct _MokoTaskList		MokoTaskList;
+typedef struct _MokoTaskListClass	MokoTaskListClass;
 
-struct _List
+struct _MokoTaskList
 {
 	GtkVBox vbox;
 
 	GtkHBox *hbox;
-	GtkButton *btn_close;
 	GtkListStore *list_store;
 	GtkWidget *list_view;
 	GtkWidget *scrolled;
-	GtkCellRenderer *renderer;
-	GtkTreeViewColumn *column;
-	//MokoTreeView *mokolist_view;
-
-	/*temporary */
-	GtkButton *tab, *tabhold;
 };
 
-struct _ListClass
+struct _MokoTaskListClass
 {
 	GtkVBoxClass parent_class;
-	void(*list) (List *l);
+	void(*list) (MokoTaskList *l);
 };
 
 GType list_get_type (void);
+
+GtkWidget* 
+list_new();
+
+void 
+moko_update_store_list (Display *dpy, GtkListStore *list_store);
+
+void 
+moko_set_list_highlight (Display *dpy, MokoTaskList *l) ;
 
 G_END_DECLS
  #endif /*list_view.h*/

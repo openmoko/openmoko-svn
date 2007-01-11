@@ -50,6 +50,6 @@ enum {
 Atom atoms[MAX_ATOM_NO];
 
 gboolean 
-om_initialize_X_atoms(const Display* dpy);
+moko_initialize_X_atoms(const Display* dpy);
 
 #endif /*xatoms.h*/

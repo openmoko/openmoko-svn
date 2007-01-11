@@ -24,13 +24,14 @@
 #include <libmokoui/moko-finger-tool-box.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
+#include <libmokoui/moko-pixmap-button.h>
+
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <X11/Xlib.h>
 
 #include "list_view.h"
-#include "callbacks.h"
 
 //#ifndef GTK_STOCK_CLOSE
 //#define GTK_STOCK_CLOSE "button_colse"
@@ -52,13 +53,13 @@ struct _MokoTaskManager {
     GtkWidget *gtk_window;//??
     MokoFingerWheel *wheel;
     MokoFingerToolBox *toolbox;
+    MokoTaskList *l;
+    
+    MokoPixmapButton *go_to;
+    MokoPixmapButton *kill;
+    MokoPixmapButton *kill_all;
+    MokoPixmapButton *quit;
 
-    GtkButton *close;
-    GtkButton *close_all;
-    GtkButton *quit;
-
-//template
-    List *l;
     };
  
 #endif /*taskmanager.h*/

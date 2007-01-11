@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(%(APPNAME), %(APPVERSION), %(APPCONTACT))
+AC_INIT(openmoko-taskmanager, %(0.0.1), http://www.openmoko.org)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/taskmanager.c)
 AM_CONFIG_HEADER(config.h)
@@ -13,6 +13,8 @@ AC_PROG_LIBTOOL
 # base deps
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
                  AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
+PKG_CHECK_MODULES(LIBMB, libmb, ,
+			exit)
 LIBS="$LIBS $GTK_LIBS"
 CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
 
@@ -20,4 +22,5 @@ CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
 AC_OUTPUT([
 Makefile
 src/Makefile
+data/Makefile
 ])

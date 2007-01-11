@@ -25,4 +25,8 @@
 #include "list_view.h"
 #include "misc.h"
 
+void
+moko_init_popup_menu (GtkWidget *my_widget, GdkEventButton *event, MokoTaskList *l);
+
+
 #endif

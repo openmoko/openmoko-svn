@@ -50,7 +50,7 @@
 *@return Bool
 */
 gboolean 
-om_initialize_X_atoms(const Display* dpy) {
+moko_initialize_X_atoms(const Display* dpy) {
     if (g_Atom_initialized == TRUE)
         return TRUE;
     if (dpy ==NULL)

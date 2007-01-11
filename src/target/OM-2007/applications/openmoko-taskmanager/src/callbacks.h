@@ -22,31 +22,54 @@
 #include <gtk/gtk.h>
 #include <X11/Xlib.h>
 
+#include "taskmanager.h"
 #include "misc.h"
 #include "list_view.h"
 #include "xatoms.h"
 #include "popupmenu.h"
 
 GdkFilterReturn
-om_window_filter (GdkXEvent *xev, GdkEvent *gev, List *l);
+moko_window_filter (GdkXEvent *xev, GdkEvent *gev, MokoTaskList*l);
 
 void
-om_activate_task (GtkWidget *w, GtkWidget *list_view);
+moko_activate_task (GtkWidget *w, GtkWidget *list_view);
 
 gboolean
-om_kill_task (GtkWidget *w, GtkWidget *list_view);
+moko_kill_task (GtkWidget *w, GtkWidget *list_view);
 
 void
-om_row_activated (GtkTreeView *treeview, GtkTreePath *path, 
+moko_row_activated (GtkTreeView *treeview, GtkTreePath *path, 
 			GtkTreeViewColumn *col, GtkTreeModel *model);
 
 gboolean 
-om_cursor_changed(GtkTreeView *treeview, GtkTreeModel *model);
+moko_cursor_changed(GtkTreeView *treeview, GtkTreeModel *model);
 
 void
-om_tab_event_cb (GtkButton *btn, List *l);
+moko_quit_btn_cb (GtkButton *btn, MokoTaskManager *tm);
+
+void
+moko_kill_btn_cb (GtkButton *btn, MokoTaskManager *tm);
+
+void
+moko_kill_all_btn_cb (GtkButton *btn, MokoTaskManager *tm);
+
+void
+moko_go_to_btn_cb (GtkButton *btn, MokoTaskManager *tm);
+
+void
+moko_tab_event_cb (GtkButton *btn, MokoTaskList *l);
 
 void        
-om_hold_event_cb (GtkButton *btn, List *l);
+moko_hold_event_cb (GtkButton *btn, MokoTaskList *l);
+
+void
+moko_wheel_left_up_press_cb (GtkWidget *self, MokoTaskManager *tm);
+
+void
+moko_wheel_right_down_press_cb (GtkWidget *self, MokoTaskManager *tm);
+
+void
+moko_wheel_bottom_press_cb (GtkWidget *self, MokoTaskManager *tm);
+
 
 #endif /*callbacks.h*/

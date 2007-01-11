@@ -53,39 +53,38 @@ Window my_win;
 
 
 gboolean 
-om_X_ev_init (Display *dpy,GtkWidget *gtkwidget);
+moko_X_ev_init (Display *dpy,GtkWidget *gtkwidget);
 
 gboolean 
-om_update_net_undocked_client_list (Display* dpy, Window** list, guint* nr);
+moko_update_net_undocked_client_list (Display* dpy, Window** list, guint* nr);
 
 GdkPixbuf *
-om_get_window_icon (Display *dpy, Window w);
+moko_get_window_icon (Display *dpy, Window w);
 
 gchar *
-om_get_window_name (Display *dpy, Window w);
+moko_get_window_name (Display *dpy, Window w);
 
 void 
-om_print_win_list (Display* dpy, Window* win_list, guint win_num);
+moko_print_win_list (Display* dpy, Window* win_list, guint win_num);
 
 Atom
-om_get_window_property (Display *dpy, Window w, Atom property);
+moko_get_window_property (Display *dpy, Window w, Atom property);
 
 gboolean 
-om_get_current_active_client (Display* dpy, Window* window_return);
+moko_get_current_active_client (Display* dpy, Window* window_return);
 
 void
 mbcommand(Display *dpy, int cmd_id, Window win, char *data);
 
 gboolean 
-om_active_next_client (Display* dpy);
+moko_active_next_client (Display* dpy);
 
 gboolean
-om_kill_window (Display *dpy, Window w);
+moko_kill_window (Display *dpy, Window w);
 
 /********/
-// the functions below have not implemented.
 gboolean 
-om_set_atoms_name(const char** src_name, int src_num);
+moko_set_atoms_name(const char** src_name, int src_num);
 
 
 #endif/*misc.h*/
