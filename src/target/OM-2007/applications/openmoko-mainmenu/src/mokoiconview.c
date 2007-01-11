@@ -1305,11 +1305,12 @@ moko_icon_view_paint_rubberband (MokoIconView     *icon_view,
   }
 
   fill_color = moko_gdk_color_to_rgb (fill_color_gdk) << 8 | fill_color_alpha;
-
+#if 0
   if (!gdk_draw_rectangle_alpha_libgtk_only (icon_view->priv->bin_window,
 					     rect.x, rect.y, rect.width, rect.height,
 					     fill_color_gdk,
 					     fill_color_alpha << 8 | fill_color_alpha))
+#endif
     {
       pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, rect.width, rect.height);
       gdk_pixbuf_fill (pixbuf, fill_color);
