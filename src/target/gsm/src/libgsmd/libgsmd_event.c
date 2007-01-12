@@ -43,7 +43,10 @@ static int evt_demux_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh
 	    gmh->msg_subtype >= __NUM_GSMD_EVT)
 		return -EINVAL;
 
-	return evt_handlers[gmh->msg_subtype](lh, gmh->msg_subtype, aux);
+	if (evt_handlers[gmh->msg_subtype])
+		return evt_handlers[gmh->msg_subtype](lh, gmh->msg_subtype, aux);
+	else
+		return 0;
 }
 
 int lgsm_evt_init(struct lgsm_handle *lh)
