@@ -2,9 +2,6 @@
 # Header
 #
 DISTRO_NAME = "OpenMoKo"
-DISTRO_VERSION = ".dev-snapshot-${SRCDATE}"
-#DISTRO_TYPE = "release"
-DISTRO_TYPE = "debug"
 
 #
 # Naming schemes
