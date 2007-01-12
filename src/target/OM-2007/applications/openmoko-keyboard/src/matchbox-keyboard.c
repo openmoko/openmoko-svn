@@ -36,6 +36,7 @@ mb_kbd_new (int argc, char **argv)
   MBKeyboard *kb = NULL;
   char       *variant = NULL; 
   Bool        want_embedding = False;
+  Bool        want_small = False;
   int         i;
 
   kb = util_malloc0(sizeof(MBKeyboard));
@@ -59,6 +60,12 @@ mb_kbd_new (int argc, char **argv)
 	  continue;
 	}
 
+      if (streq ("-small", argv[i]) || streq ("--small", argv[i])) 
+	{
+	  want_small = True;
+	  continue;
+	}
+
       if (i == (argc-1) && argv[i][0] != '-')
 	variant = argv[i];
       else
@@ -78,6 +85,15 @@ mb_kbd_new (int argc, char **argv)
       kb->col_spacing  = 0;
       kb->row_spacing  = 0;
       kb->font_pt_size = 8;
+    }
+
+  if (want_small)
+    {
+      kb->key_border   = 1;
+      kb->key_pad      = 0;
+      kb->col_spacing  = 0;
+      kb->row_spacing  = 0;
+      kb->font_pt_size = 10;
     }
 
   if (!mb_kbd_config_load(kb, variant))

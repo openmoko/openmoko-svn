@@ -134,6 +134,7 @@ get_desktop_area(MBKeyboardUI *ui, int *x, int *y, int *width, int *height)
   if (y) *y           = geometry[1];
   if (width)  *width  = geometry[2];
   if (height) *height = geometry[3];
+  fprintf(stderr, "x=%d,y=%d,w=%d,h=%d\n",geometry[0],geometry[1],geometry[2],geometry[3]);
   
   XFree(geometry);
 
@@ -340,6 +341,19 @@ mb_kbd_ui_min_key_size(MBKeyboardUI  *ui,
 	    max_h = mb_kbd_image_height (img);
 	}
     }
+  if (mb_kbd_key_get_back_image(key))
+    {
+      MBKeyboardImage *img = mb_kbd_key_get_back_image(key);
+
+      if (mb_kbd_image_width (img) > max_w)
+        max_w = mb_kbd_image_width (img);
+
+      if (mb_kbd_image_height (img) > max_h)
+        max_h = mb_kbd_image_height (img);
+    }
+
+  *width = max_w;
+  *height = max_h;
 }
 
 void
@@ -351,6 +365,8 @@ mb_kbd_ui_allocate_ui_layout(MBKeyboardUI *ui,
   List             *row_item, *key_item;
   int               key_y = 0, key_x = 0; 
   int               row_y, max_row_key_height, max_row_width;
+
+  max_row_key_height = 0;
 
   layout = mb_kbd_get_selected_layout(ui->kbd);
 
@@ -421,7 +437,9 @@ mb_kbd_ui_allocate_ui_layout(MBKeyboardUI *ui,
       row_y += max_row_key_height + mb_kbd_row_spacing(ui->kbd);
 
       row_item = util_list_next(row_item);
+      fprintf(stderr, "the key_x=%d,key_y=%d\n", key_x, key_y);
     }
+  fprintf(stderr, "max_row_key_height=%d,max_row_width=%d\n", max_row_key_height, max_row_width);
 
   *height = row_y; 
 
@@ -450,6 +468,7 @@ mb_kbd_ui_allocate_ui_layout(MBKeyboardUI *ui,
 	goto next_row;
 
       free_space = max_row_width - mb_kbd_row_width(row);
+      fprintf(stderr, "free_space=%d, max_row_width=%d, mb_kbd_row_width(row)=%d\n", free_space, max_row_width, mb_kbd_row_width(row));
 
       mb_kbd_row_for_each_key(row, key_item)
 	{
@@ -648,7 +667,8 @@ mb_kbd_ui_resources_create(MBKeyboardUI  *ui)
 	have_matchbox_wm = True;
     }
 
-  win_attr.override_redirect = False; /* Set to true for extreme case */
+  win_attr.override_redirect = True; /* Set to true for extreme case */
+  /*win_attr.override_redirect = False;*/ /* Set to true for extreme case */
   win_attr.event_mask 
     = ButtonPressMask|ButtonReleaseMask|Button1MotionMask|StructureNotifyMask;
 
@@ -660,6 +680,7 @@ mb_kbd_ui_resources_create(MBKeyboardUI  *ui)
 			   CopyFromParent, CopyFromParent, CopyFromParent,
 			   CWOverrideRedirect|CWEventMask,
 			   &win_attr);
+  fprintf(stderr, "ui->xwin_width=%d,ui->xwin_height=%d\n", ui->xwin_width, ui->xwin_height);
 
 
   wm_hints = XAllocWMHints();
@@ -733,12 +754,12 @@ mb_kbd_ui_resources_create(MBKeyboardUI  *ui)
 	       * to avoid the case of mapping and then the wm resizing
 	       * us, causing an ugly repaint. 
 	       */
-	      if (desk_width > ui->xwin_width)
+	      /*if (desk_width > ui->xwin_width)
 		{
 		  mb_kbd_ui_resize(ui, 
 				   desk_width, 
 				   ( desk_width * ui->xwin_height ) / ui->xwin_width);
-		}
+		}*/
 	      
 	      wm_struct_vals[2]  = desk_y + desk_height - ui->xwin_height;
 	      wm_struct_vals[11] = desk_width;
@@ -1017,6 +1038,7 @@ mb_kbd_ui_handle_configure(MBKeyboardUI *ui,
   old_state = mb_kbd_is_extended(ui->kbd);
   new_state = want_extended(ui);
    
+  fprintf(stderr, "########################################################\n");
   if (new_state == old_state) 	/* Not a rotation */
     {
       mb_kbd_ui_resize(ui, width, height); 
@@ -1227,6 +1249,7 @@ mb_kbd_ui_realize(MBKeyboardUI *ui)
   */
   mb_kbd_ui_allocate_ui_layout(ui, 
 			       &ui->base_alloc_width, &ui->base_alloc_height);
+  fprintf(stderr, "ui->base_alloc_width=%d, ui->base_alloc_height=%d\n",ui->base_alloc_width, ui->base_alloc_height);
 
   ui->xwin_width  = ui->base_alloc_width;
   ui->xwin_height = ui->base_alloc_height;

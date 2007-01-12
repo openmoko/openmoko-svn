@@ -109,18 +109,6 @@
 	  <default display="Bksp" action="backspace"/>
     </key>
 
-    <space width="500" extended="true"/>
-
-    <key width="4000"  extended="true">
-	  <default display="Home" action="home"/>
-    </key>
-    <key width="4000"  extended="true">
-	  <default display="PgUp" action="pageup"/>
-    </key>
-
-    <space width="500" extended="true"/>
-
-
   </row>
 
   <row>
@@ -197,17 +185,6 @@
 	  <background image="testkey.png"/>
     </key>
 
-    <space width="500" extended="true"/>
-
-    <key width="4000"  extended="true">
-	  <default display="End" action="end"/>
-    </key>
-    <key width="4000"  extended="true">
-	  <default display="PgDn" action="pagedown"/>
-    </key>
-
-    <space width="500" extended="true"/>
-
   </row>
   <row>
 
@@ -274,15 +251,6 @@
     <key fill="true">
 	  <default display="Ret" action="return"/>
     </key>
-
-    <space width="500" extended="true"/>
-
-    <space width="4000"  extended="true" />
-
-    <space width="4000"  extended="true" />
-
-    <space width="500" extended="true"/>
-
 
   </row>
   <row>
@@ -356,16 +324,6 @@
 	  <default display="Shift" action="modifier:shift"/>                
     </key>
 
-    <space width="500" extended="true"/>
-
-    <space width="4000"  extended="true" />
-
-    <space width="4000"  extended="true" />
-
-    <space width="500" extended="true"/>
-
-
-
  </row>
   <row>
 
@@ -384,8 +342,9 @@
     </key>
 
 
-    <key width="12000">
+    <key>
 	  <default display=" " action="space" />                
+	  <background image="spacekey.png"/>
     </key>
 
     <key>
@@ -405,14 +364,6 @@
     <key>
 	  <default display="&gt;" action="right" />                
     </key>
-
-    <space width="500" extended="true"/>
-
-    <space width="4000"  extended="true" />
-
-    <space width="4000"  extended="true" />
-
-    <space width="500" extended="true"/>
 
 </row>
 

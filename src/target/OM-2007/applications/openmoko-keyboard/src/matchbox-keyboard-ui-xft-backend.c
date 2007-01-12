@@ -136,6 +136,8 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
   rect.y      = mb_kbd_key_abs_y(key); 
   rect.width  = mb_kbd_key_width(key);       
   rect.height = mb_kbd_key_height(key);       
+  //fprintf(stderr, "key->alloc_x=%d\n", mb_kbd_key_x(key));
+  //fprintf(stderr, "rect.x=%d,rect.y=%d,rect.width=%d,rect.height=%d\n",rect.x,rect.y,rect.width,rect.height);
 
   /* Hacky clip to work around issues with off by ones in layout code :( */
 

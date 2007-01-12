@@ -1,6 +1,6 @@
 keyboardsdir = $(datadir)/matchbox-keyboard
 keyboards_DATA = keyboard.xml keyboard-extended.xml keyboard-dvorak.xml \
 		 keyboard-us.xml keyboard-ru.xml keyboard-fi.xml        \
-                 keyboard-numpad.xml testkey.png
+                 keyboard-numpad.xml testkey.png spacekey.png
 
 EXTRA_DIST = $(keyboards_DATA)
