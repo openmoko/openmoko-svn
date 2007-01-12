@@ -25,6 +25,7 @@ static int shell_help(void)
 		"\tO\tPower On\n"
 		"\to\tPower Off\n"
 		"\tR\tRegister Netowrk\n"
+		"\tT\tSend DTMF Tone\n"
 		"\tq\tQuit\n"
 		);
 }
