@@ -55,4 +55,25 @@ enum gsmd_netreg_state {
 	__NUM_GSMD_NETREG
 };
 
+enum gsmd_call_progress {
+	GSMD_CALLPROG_SETUP		= 0,
+	GSMD_CALLPROG_DISCONNECT	= 1,
+	GSMD_CALLPROG_ALERT		= 2,
+	GSMD_CALLPROG_CALL_PROCEED	= 3,
+	GSMD_CALLPROG_SYNC		= 4,
+	GSMD_CALLPROG_PROGRESS		= 5,
+	GSMD_CALLPROG_CONNECTED		= 6,
+	GSMD_CALLPROG_RELEASE		= 7,
+	GSMD_CALLPROG_REJECT		= 8,
+	GSMD_CALLPROG_UNKNOWN		= 9,
+	__NUM_GSMD_CALLPROG
+};
+
+enum gsmd_call_direction {
+	GSMD_CALL_DIR_MO		= 0,	/* Mobile Originated (Outgoing) */
+	GSMD_CALL_DIR_MT		= 1,	/* Mobile Terminated (Incoming) */
+	GSMD_CALL_DIR_CCBS		= 2,	/* network initiated MO */
+	GSMD_CALL_DIR_MO_REDIAL		= 3,	/* Mobile Originated Redial */
+};
+
 #endif

@@ -15,4 +15,7 @@ extern int lgsm_voice_in_accept(struct lgsm_handle *lh);
 /* Terminate outgoing (or incoming) voice call */
 extern int lgsm_voice_hangup(struct lgsm_handle *lh);
 
+/* Send DTMF character during voice call */
+extern int lgsm_voice_dtmf(struct lgsm_handle *lh, char dtmf_char);
+
 #endif

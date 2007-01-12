@@ -11,10 +11,11 @@
 #include <gsmd/event.h>
 #include <gsmd/ts0707.h>
 #include <gsmd/unsolicited.h>
+#include <gsmd/talloc.h>
 
 struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t len)
 {
-	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd)+len);
+	struct gsmd_ucmd *ucmd = ucmd_alloc(len);
 
 	if (!ucmd)
 		return NULL;
@@ -29,11 +30,10 @@ struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t le
 
 static struct gsmd_ucmd *ucmd_copy(const struct gsmd_ucmd *orig)
 {
-	int size = sizeof(*orig) + orig->hdr.len;
-	struct gsmd_ucmd *copy = malloc(size);
+	struct gsmd_ucmd *copy = ucmd_alloc(orig->hdr.len);
 
 	if (copy)
-		memcpy(copy, orig, size);
+		memcpy(copy, orig, orig->hdr.len);
 
 	return copy;
 }
@@ -47,16 +47,24 @@ int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt)
 
 	llist_for_each_entry(gu, &gsmd->users, list) {
 		if (gu->subscriptions & (1 << evt)) {
-			struct gsmd_ucmd *cpy = ucmd_copy(ucmd);
-			usock_cmd_enqueue(ucmd, gu);
-			num_sent++;
-			ucmd = cpy;
-			if (!ucmd) {
-				fprintf(stderr, "can't allocate memory for copy of ucmd\n");
-				return num_sent;
+			if (num_sent == 0)
+				usock_cmd_enqueue(ucmd, gu);
+			else {
+				struct gsmd_ucmd *cpy = ucmd_copy(ucmd);
+				if (!cpy) {
+					fprintf(stderr, 
+						"can't allocate memory for "
+						"copy of ucmd\n");
+					return num_sent;
+				}
+				usock_cmd_enqueue(cpy, gu);
 			}
+			num_sent++;
 		}
 	}
+
+	if (num_sent == 0)
+		talloc_free(ucmd);
 
 	return num_sent;
 }
@@ -101,7 +109,7 @@ static int cring_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 		aux->u.call.type = GSMD_CALL_FAX;
 	} else if (!strncmp(param, "GPRS ", 5)) {
 		/* FIXME: change event type to GPRS */
-		free(ucmd);
+		talloc_free(ucmd);
 		return 0;
 	}
 	/* FIXME: parse all the ALT* profiles, Chapter 6.11 */
@@ -322,7 +330,8 @@ int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 			rc = vpl->unsolicit[i].parse(buf, len, colon, g);
 			if (rc < 0) 
 				gsmd_log(GSMD_ERROR, "error %d during parse of "
-					 "unsolicied response `%s'\n", rc, buf);
+					 "vendor unsolicied response `%s'\n",
+					 rc, buf);
 			return rc;
 		}
 	}

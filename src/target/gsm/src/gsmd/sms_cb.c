@@ -62,8 +62,7 @@ struct gsmd_sms_storage {
 static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd) +
-					sizeof(struct gsmd_sms_storage));
+	struct gsmd_ucmd *ucmd = ucmd_alloc(sizeof(struct gsmd_sms_storage));
 
 	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
 

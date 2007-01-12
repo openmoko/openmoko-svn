@@ -43,7 +43,7 @@ ti_setopt(struct gsmd *gh, int optname, const void *optval, int optlen)
 #endif
 
 
-static int csq_parse(char *buf, int len, char *param,
+static int csq_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
 	char *tok;
@@ -57,7 +57,7 @@ static int csq_parse(char *buf, int len, char *param,
 	
 	
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
-	tok = strtok(param, ",");
+	tok = strtok(buf, ",");
 	if (!tok)
 		goto out_free_io;
 	
@@ -81,12 +81,85 @@ out_free_io:
 
 static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
-
+	/* FIXME: parse ciphering indication */
 }
 
+/* Call Progress Information */
 static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
+	char *tok;
+	struct gsmd_evt_auxdata *aux;
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
+						   GSMD_EVT_OUT_STATUS,
+						   sizeof(*aux));
+	
+	DEBUGP("entering cpi_parse param=`%s'\n", param);
+	if (!ucmd)
+		return -EINVAL;
+	
+	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 
+	/* Format: cId, msgType, ibt, tch, dir,[mode],[number],[type],[alpha],[cause],line */
+
+	/* call ID */
+	tok = strtok(buf, ",");
+	if (!tok)
+		goto out_free_io;
+
+	/* message type (layer 3) */
+	tok = strtok(NULL, ",");
+	if (!tok)
+		goto out_free_io;
+	aux->u.call_status.prog = atoi(tok);
+
+	/* in-band tones */
+	tok = strtok(NULL, ",");
+	if (!tok)
+		goto out_free_io;
+
+	if (*tok == '1')
+		aux->u.call_status.ibt = 1;
+	else
+		aux->u.call_status.ibt = 0;
+	
+	/* TCH allocated */
+	tok = strtok(NULL, ",");
+	if (!tok)
+		goto out_free_io;
+
+	if (*tok == '1')
+		aux->u.call_status.tch = 1;
+	else
+		aux->u.call_status.tch = 0;
+	
+	/* direction */
+	tok = strtok(NULL, ",");
+	if (!tok)
+		goto out_free_io;
+	
+	switch (*tok) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+		aux->u.call_status.dir = (*tok - '0');
+		break;
+	default:
+		break;
+	}
+
+	/* mode */
+	tok = strtok(NULL, ",");
+	if (!tok)
+		goto out_free_io;
+	
+	usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_STATUS);
+
+	return 0;
+
+out_free_io:
+	free(ucmd);
+	return -EIO;
 }
 
 static const struct gsmd_unsolicit ticalypso_unsolicit[] = {
@@ -114,13 +187,23 @@ static int ticalypso_detect(struct gsmd *g)
 
 static int ticalypso_initsettings(struct gsmd *g)
 {
-	return gsmd_simplecmd(g, "AT\%CPI=3;\%CPRI=1;\%CSQ=1");
+	int rc;
+	/* enable %CPI: call progress indication */
+	rc = gsmd_simplecmd(g, "AT\%CPI=3");
+	/* enable %CPRI: ciphering indications */
+	rc |= gsmd_simplecmd(g, "AT\%CPRI=1");
+	/* enable %CSQ: signal quality reports */
+	rc |= gsmd_simplecmd(g, "AT\%CSQ=1");
+	/* send unsolicited commands at any time */
+	rc |= gsmd_simplecmd(g, "AT\%CUNS=0");
+
+	return rc;
 }
 
 static struct gsmd_vendor_plugin plugin_ticalypso = {
 	.name = "TI Calypso",
 	.num_unsolicit = ARRAY_SIZE(ticalypso_unsolicit),
-	.unsolicit = &ticalypso_unsolicit,
+	.unsolicit = ticalypso_unsolicit,
 	.detect = &ticalypso_detect,
 	.initsettings = &ticalypso_initsettings,
 };

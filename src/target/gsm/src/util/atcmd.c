@@ -25,14 +25,19 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 
 	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
 
+#if 1
 	fcntl(0, F_SETFD, O_NONBLOCK);
+	fcntl(1, F_SETFD, O_NONBLOCK);
+	fcntl(2, F_SETFD, O_NONBLOCK);
 	fcntl(lgsm_fd(lgsmh), F_SETFD, O_NONBLOCK);
+#endif
 
 	FD_ZERO(&readset);
 
 	while (1) {
 		fd_set readset;
 		int gsm_fd = lgsm_fd(lgsmh);
+
 		FD_SET(0, &readset);
 		FD_SET(gsm_fd, &readset);
 

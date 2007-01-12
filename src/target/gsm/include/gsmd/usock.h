@@ -34,6 +34,7 @@ enum gsmd_msg_voicecall_type {
 	GSMD_VOICECALL_DIAL	= 1,
 	GSMD_VOICECALL_HANGUP	= 2,
 	GSMD_VOICECALL_ANSWER	= 3,
+	GSMD_VOICECALL_DTMF	= 4,
 };
 
 /* Handset / MT related commands */
@@ -64,6 +65,11 @@ enum gsmd_msg_network {
 struct gsmd_addr {
 	u_int8_t type;
 	char number[GSMD_ADDR_MAXLEN+1];
+} __attribute__ ((packed));
+
+struct gsmd_dtmf {
+	u_int8_t len;
+	char dtmf[0];
 } __attribute__ ((packed));
 
 struct gsmd_signal_quality {
@@ -105,6 +111,13 @@ struct gsmd_evt_auxdata {
 		struct {
 			struct gsmd_signal_quality sigq;
 		} signal;
+		struct {
+			enum gsmd_call_progress prog;
+			struct gsmd_addr addr;
+			u_int8_t ibt:1,
+				 tch:1,
+				 dir:2;
+		} call_status;
 	} u;
 } __attribute__((packed));
 
@@ -134,6 +147,7 @@ struct gsmd_ucmd {
 	char buf[];
 } __attribute__ ((packed));
 
+extern struct gsmd_ucmd *ucmd_alloc(int extra_size);
 extern int usock_init(struct gsmd *g);
 extern void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu);
 extern struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t len);

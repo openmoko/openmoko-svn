@@ -14,6 +14,7 @@
 #include <gsmd/ts0707.h>
 #include <gsmd/gsmd.h>
 #include <gsmd/atcmd.h>
+#include <gsmd/talloc.h>
 #include <gsmd/unsolicited.h>
 
 /* libgsmd / gsmd AT command interpreter / parser / constructor
@@ -21,6 +22,8 @@
  *
  * Written for First International Computer, Inc., Taiwan
  */ 
+
+static void *__atcmd_ctx;
 
 enum final_result_codes {
 	GSMD_RESULT_OK = 0,
@@ -153,7 +156,7 @@ static int parse_final_result(const char *res)
 static int ml_parse(const char *buf, int len, void *ctx)
 {
 	struct gsmd *g = ctx;
-	struct gsmd_atcmd *cmd;
+	struct gsmd_atcmd *cmd = NULL;
 	int rc = 0, final = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
@@ -165,7 +168,9 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 	/* responses come in order, so first response has to be for first
 	 * command we sent, i.e. first entry in list */
-	cmd = llist_entry(g->busy_atcmds.next, struct gsmd_atcmd, list);
+	if (!llist_empty(&g->busy_atcmds))
+		cmd = llist_entry(g->busy_atcmds.next,
+				  struct gsmd_atcmd, list);
 
 	/* we have to differentiate between the following cases:
 	 *
@@ -194,15 +199,16 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			unsigned long err_nr;
 			err_nr = strtoul(colon+1, NULL, 10);
 			DEBUGP("error number %lu\n", err_nr);
-			cmd->ret = err_nr;
+			if (cmd)
+				cmd->ret = err_nr;
 			final = 1;
 			goto final_cb;
 		}
 
-		if (strncmp(buf, &cmd->buf[2], colon-buf)) {
+		if (!cmd || strncmp(buf, &cmd->buf[2], colon-buf)) {
 			/* Assuming Case 'B' */
 			DEBUGP("extd reply `%s' to cmd `%s', must be "
-			       "unsolicited\n", buf, &cmd->buf[2]);
+			       "unsolicited\n", buf, cmd ? &cmd->buf[2] : "NONE");
 			colon++;
 			if (colon > buf+len)
 				colon = NULL;
@@ -216,19 +222,21 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			/* contine, not 'B' */
 		}
 
-		if (cmd->buf[2] != '+') {
-			gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
-			return -EINVAL;
-		}
+		if (cmd) {
+			if (cmd->buf[2] != '+') {
+				gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
+				return -EINVAL;
+			}
 
-		/* if we survive till here, it's a valid extd response
-		 * to an extended command and thus Case 'A' */
+			/* if we survive till here, it's a valid extd response
+			 * to an extended command and thus Case 'A' */
 	
-		/* FIXME: solve multi-line responses ! */
-		if (cmd->buflen < len)
-			len = cmd->buflen;
+			/* FIXME: solve multi-line responses ! */
+			if (cmd->buflen < len)
+				len = cmd->buflen;
 
-		memcpy(cmd->buf, buf, len);
+			memcpy(cmd->buf, buf, len);
+		}
 	} else {
 		if (!strcmp(buf, "RING")) {
 			/* this is the only non-extended unsolicited return
@@ -237,18 +245,20 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		}
 
 		if (!strcmp(buf, "ERROR") ||
-		    ((g->flags & GSMD_FLAG_V0) && cmd->buf[0] == '4')) {
+		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '4')) {
 			/* Part of Case 'C' */
 			DEBUGP("unspecified error\n");
-			cmd->ret = 4;
+			if (cmd)
+				cmd->ret = 4;
 			final = 1;
 			goto final_cb;
 		}
 
 		if (!strncmp(buf, "OK", 2)
-		    || ((g->flags & GSMD_FLAG_V0) && cmd->buf[0] == '0')) {
+		    || ((g->flags & GSMD_FLAG_V0) && buf[0] == '0')) {
 			/* Part of Case 'C' */
-			cmd->ret = 0;
+			if (cmd)
+				cmd->ret = 0;
 			final = 1;
 			goto final_cb;
 		}
@@ -274,8 +284,10 @@ static int ml_parse(const char *buf, int len, void *ctx)
 final_cb:
 	/* if we reach here, the final result code of a command has been reached */
 
+	if (!cmd)
+		return rc;
 
-	if (cmd->ret != 0)
+	if (cmd && cmd->ret != 0)
 		generate_event_from_cme(g, cmd->ret);
 
 	if (!cmd->cb) {
@@ -292,7 +304,7 @@ final_cb:
 	if (final) {
 		/* remove from list of currently executing cmds */
 		llist_del(&cmd->list);
-		free(cmd);
+		talloc_free(cmd);
 
 		/* if we're finished with current commands, but still have pending
 		 * commands: we want to WRITE again */
@@ -377,7 +389,7 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 	if (rlen > buflen)
 		buflen = rlen;
 	
-	atcmd = malloc(sizeof(*atcmd)+ buflen);
+	atcmd = talloc_size(__atcmd_ctx, sizeof(*atcmd)+ buflen);
 	if (!atcmd)
 		return NULL;
 
@@ -421,6 +433,8 @@ void atcmd_drain(int fd)
 /* init atcmd parser */
 int atcmd_init(struct gsmd *g, int sockfd)
 {
+	__atcmd_ctx = talloc_named_const(gsmd_tallocs, 1, "atcmds");
+
 	g->gfd_uart.fd = sockfd;
 	g->gfd_uart.when = GSMD_FD_READ;
 	g->gfd_uart.data = g;

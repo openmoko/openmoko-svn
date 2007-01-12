@@ -25,6 +25,7 @@ static int shell_help(void)
 		"\tO\tPower On\n"
 		"\to\tPower Off\n"
 		"\tR\tRegister Netowrk\n"
+		"\tq\tQuit\n"
 		);
 }
 
@@ -42,6 +43,8 @@ int shell_main(struct lgsm_handle *lgsmh)
 	fcntl(lgsm_fd(lgsmh), F_SETFD, O_NONBLOCK);
 
 	FD_ZERO(&readset);
+
+	printf("# ");
 
 	while (1) {
 		fd_set readset;
@@ -63,8 +66,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 			rc = lgsm_handle_packet(lgsmh, buf, rc);
 		}
 		if (FD_ISSET(0, &readset)) {
-			/* we've received something on stdin.  send it as passthrough
-			 * to gsmd */
+			/* we've received something on stdin.  */
 			printf("# ");
 			rc = fscanf(stdin, "%s", buf);
 			if (rc == EOF) {
@@ -84,6 +86,8 @@ int shell_main(struct lgsm_handle *lgsmh)
 				lgsm_voice_hangup(lgsmh);
 			} else if (buf[0] == 'D') {
 				struct lgsm_addr addr;
+				if (strlen(buf) < 2)
+					continue;
 				printf("Dial %s\n", buf+1);
 				addr.type = 129;
 				strncpy(addr.addr, buf+1, sizeof(addr.addr)-1);
@@ -93,11 +97,22 @@ int shell_main(struct lgsm_handle *lgsmh)
 				printf("Answer\n");
 				lgsm_voice_in_accept(lgsmh);
 			} else if (!strcmp(buf, "O")) {
+				printf("Power-On\n");
 				lgsm_phone_power(lgsmh, 1);
 			} else if (!strcmp(buf, "o")) {
+				printf("Power-Off\n");
 				lgsm_phone_power(lgsmh, 0);
 			} else if (!strcmp(buf, "R")) {
+				printf("Register\n");
+				lgsm_phone_power(lgsmh, 0);
 				lgsm_netreg_register(lgsmh, 0);
+			} else if (!strcmp(buf, "q")) {
+				exit(0);
+			} else if (buf[0] == 'T') {
+				if (strlen(buf) < 2)
+					continue;
+				printf("DTMF: %c\n", buf[1]);
+				lgsm_voice_dtmf(lgsmh, buf[1]);
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}

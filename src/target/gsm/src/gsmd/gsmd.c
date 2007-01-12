@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <signal.h>
 
 #define _GNU_SOURCE
 #include <getopt.h>
@@ -19,6 +20,7 @@
 #include <gsmd/select.h>
 #include <gsmd/usock.h>
 #include <gsmd/vendorplugin.h>
+#include <gsmd/talloc.h>
 
 static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
@@ -40,8 +42,22 @@ int gsmd_initsettings(struct gsmd *gsmd)
 {
 	int rc;
 	
+	/* echo on, verbose */
 	rc |= gsmd_simplecmd(gsmd, "ATE0V1");
-	rc |= gsmd_simplecmd(gsmd, "AT+CRC=1;+CREG=2;+CMEE=1;+CLIP=1;+COLP=1;+CTZR=1;+CFUN=1");
+	/* use +CRING instead of RING */
+	rc |= gsmd_simplecmd(gsmd, "AT+CRC=1");
+	/* enable +CREG: unsolicited response if registration status changes */
+	rc |= gsmd_simplecmd(gsmd, "AT+CREG=2");
+	/* use +CME ERROR: instead of ERROR */
+	rc |= gsmd_simplecmd(gsmd, "AT+CMEE=1");
+	/* use +CLIP: to indicate CLIP */
+	rc |= gsmd_simplecmd(gsmd, "AT+CLIP=1");
+	/* use +COLP: to indicate COLP */
+	rc |= gsmd_simplecmd(gsmd, "AT+COLP=1");
+	/* use +CTZR: to report time zone changes */
+	rc |= gsmd_simplecmd(gsmd, "AT+CTZR=1");
+	/* power on the phone */
+	rc |= gsmd_simplecmd(gsmd, "AT+CFUN=1");
 
 	if (gsmd->vendorpl && gsmd->vendorpl->initsettings)
 		return gsmd->vendorpl->initsettings(gsmd);
@@ -108,6 +124,7 @@ static struct option opts[] = {
 	{ "device", 1, NULL, 'p' },
 	{ "speed", 1, NULL, 's' },
 	{ "logfile", 1, NULL, 'l' },
+	{ "leak-report", 0, NULL, 'L' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -125,6 +142,20 @@ static void print_help(void)
 	       );
 }
 
+static void sig_handler(int signr)
+{
+	switch (signr) {
+	case SIGTERM:
+	case SIGINT:
+		talloc_report_full(gsmd_tallocs, stderr);
+		exit(0);
+		break;
+	case SIGUSR1:
+		talloc_report_full(gsmd_tallocs, stderr);
+		break;
+	}
+}
+
 int main(int argc, char **argv)
 {
 	int fd, argch; 
@@ -134,11 +165,21 @@ int main(int argc, char **argv)
 	char *device = "/dev/ttyUSB0";
 	char *logfile = "syslog";
 
+	signal(SIGTERM, sig_handler);
+	signal(SIGINT, sig_handler);
+	signal(SIGSEGV, sig_handler);
+	signal(SIGUSR1, sig_handler);
+	
+	gsmd_tallocs = talloc_named_const(NULL, 1, "GSMD");
+
 	/*FIXME: parse commandline, set daemonize, device, ... */
-	while ((argch = getopt_long(argc, argv, "Vdhp:s:l:", opts, NULL)) != -1) {
+	while ((argch = getopt_long(argc, argv, "VLdhp:s:l:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
 			/* FIXME */
+			break;
+		case 'L':
+			talloc_enable_leak_report_full();
 			break;
 		case 'd':
 			daemonize = 1;

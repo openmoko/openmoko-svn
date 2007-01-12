@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <common/linux_list.h>
 #include <libgsmd/libgsmd.h>
 #include <libgsmd/event.h>
 
@@ -14,6 +15,13 @@ static int incall_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxda
 static int clip_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
 	printf("EVENT: Incoming call clip = %s\n", aux->u.clip.addr.number);
+
+	return 0;
+}
+
+static int colp_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+	printf("EVENT: Outgoing call colp = %s\n", aux->u.colp.addr.number);
 
 	return 0;
 }
@@ -56,14 +64,55 @@ static int sigq_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata
 	return 0;
 }
 
+static const char *cprog_names[] = {
+	[GSMD_CALLPROG_SETUP]		= "SETUP",
+	[GSMD_CALLPROG_DISCONNECT]	= "DISCONNECT",
+	[GSMD_CALLPROG_ALERT]		= "ALERT",
+	[GSMD_CALLPROG_CALL_PROCEED]	= "PROCEED",
+	[GSMD_CALLPROG_SYNC]		= "SYNC",
+	[GSMD_CALLPROG_PROGRESS]	= "PROGRESS",
+	[GSMD_CALLPROG_CONNECTED]	= "CONNECTED",
+	[GSMD_CALLPROG_RELEASE]		= "RELEASE",
+	[GSMD_CALLPROG_REJECT]		= "REJECT",
+	[GSMD_CALLPROG_UNKNOWN]		= "UNKNOWN",
+};
+
+static const char *cdir_names[] = {
+	[GSMD_CALL_DIR_MO]		= "Outgoing",
+	[GSMD_CALL_DIR_MT]		= "Incoming",
+	[GSMD_CALL_DIR_CCBS]		= "CCBS",
+	[GSMD_CALL_DIR_MO_REDIAL]	= "Outgoing Redial",
+};
+
+static int cprog_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+	const char *name, *dir;
+
+	if (aux->u.call_status.prog >= ARRAY_SIZE(cprog_names))
+		name = "UNDEFINED";
+	else
+		name = cprog_names[aux->u.call_status.prog];
+
+	if (aux->u.call_status.dir >= ARRAY_SIZE(cdir_names))
+		dir = "";
+	else
+		dir = cdir_names[aux->u.call_status.dir];
+
+	printf("EVENT: %s Call Progress: %s\n", dir, name);
+
+	return 0;
+}
+
 int event_init(struct lgsm_handle *lh)
 {
 	int rc;
 
 	rc  = lgsm_evt_handler_register(lh, GSMD_EVT_IN_CALL, &incall_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_CLIP, &clip_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_COLP, &colp_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_NETREG, &netreg_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_STATUS, &cprog_handler);
 
 	return rc;
 }

@@ -51,6 +51,31 @@ int lgsm_voice_out_init(struct lgsm_handle *lh,
 	return 0;
 }
 
+int lgsm_voice_dtmf(struct lgsm_handle *lh, char dtmf_char)
+{
+	struct gsmd_msg_hdr *gmh;
+	struct gsmd_dtmf *gd;
+	int rc;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_VOICECALL,
+			    GSMD_VOICECALL_DTMF, sizeof(*gd)+1);
+	if (!gmh)
+		return -ENOMEM;
+	gd = (struct gsmd_dtmf *) gmh->data;
+	gd->len = 1;
+	gd->dtmf[0] = dtmf_char;
+
+	rc = lgsm_send(lh, gmh);
+	if (rc < gmh->len + sizeof(*gd)+1) {
+		lgsm_gmh_free(gmh);;
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+
+	return 0;
+}
+
 int lgsm_voice_in_accept(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_VOICECALL, GSMD_VOICECALL_ANSWER);

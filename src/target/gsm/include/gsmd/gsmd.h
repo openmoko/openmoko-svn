@@ -10,6 +10,8 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/select.h>
 
+void *gsmd_tallocs;
+
 /* Refer to 3GPP TS 07.07 v 7.8.0, Chapter 4.1 */
 #define LGSM_ATCMD_F_EXTENDED	0x01	/* as opposed to basic */
 #define LGSM_ATCMD_F_PARAM	0x02	/* as opposed to action */
@@ -86,6 +88,8 @@ void __gsmd_log(int level, const char *file, int line, const char *function, con
 	__gsmd_log(level, __FILE__, __LINE__, __FUNCTION__, format, ## args)
 
 #define DEBUGP(x, args ...)	gsmd_log(GSMD_DEBUG, x, ## args)
+
+extern int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt);
 
 #endif /* __GSMD__ */
 

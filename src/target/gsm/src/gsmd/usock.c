@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -14,6 +15,15 @@
 #include <gsmd/select.h>
 #include <gsmd/atcmd.h>
 #include <gsmd/usock.h>
+#include <gsmd/talloc.h>
+
+static void *__ucmd_ctx, *__gu_ctx;
+
+struct gsmd_ucmd *ucmd_alloc(int extra_size)
+{
+	return talloc_size(__ucmd_ctx, 
+			   sizeof(struct gsmd_ucmd) + extra_size);
+}
 
 void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu)
 {
@@ -31,7 +41,7 @@ static int usock_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 	int rlen = strlen(resp)+1;
-	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd)+rlen);
+	struct gsmd_ucmd *ucmd = ucmd_alloc(rlen);
 
 	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
 
@@ -83,6 +93,8 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 {
 	struct gsmd_atcmd *cmd = NULL;
 	struct gsmd_addr *ga;
+	struct gsmd_dtmf *gd;
+	int atcmd_len;
 
 	switch (gph->msg_subtype) {
 	case GSMD_VOICECALL_DIAL:
@@ -92,6 +104,8 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		ga->number[GSMD_ADDR_MAXLEN] = '\0';
 		cmd = atcmd_fill("ATD", 5 + strlen(ga->number),
 				 &usock_cmd_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
 		sprintf(cmd->buf, "ATD%s;", ga->number);
 		/* FIXME: number type! */
 		break;
@@ -100,6 +114,26 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_VOICECALL_ANSWER:
 		cmd = atcmd_fill("ATA", 4, &usock_cmd_cb, gu, gph->id);
+		break;
+	case GSMD_VOICECALL_DTMF:
+		if (len < sizeof(*gph) + sizeof(*gd))
+			return -EINVAL;
+
+		gd = (struct gsmd_dtmf *) ((void *)gph + sizeof(*gph));
+		if (len < sizeof(*gph) + sizeof(*gd) + gd->len)
+			return -EINVAL;
+
+		/* FIXME: we don't yet support DTMF of multiple digits */
+		if (gd->len != 1)
+			return -EINVAL;
+
+		atcmd_len = 1 + strlen("AT+VTS=") + (gd->len * 2);
+		cmd = atcmd_fill("AT+VTS=", atcmd_len, &usock_cmd_cb,
+				 gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+
+		sprintf(cmd->buf, "AT+VTS=%c;", gd->dtmf[0]);
 		break;
 	default:
 		return -EINVAL;
@@ -173,11 +207,12 @@ static int network_vmail_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 	struct gsmd_voicemail *vmail;
-	struct gsmd_ucmd *ucmd = malloc(sizeof(*ucmd)+sizeof(*vmail));
+	struct gsmd_ucmd *ucmd;
 	char *comma;
 
 	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
 
+	ucmd = ucmd_alloc(sizeof(*vmail));
 	if (!ucmd)
 		return -ENOMEM;
 	
@@ -218,7 +253,7 @@ static int network_vmail_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 
 out_free_einval:
 	gsmd_log(GSMD_ERROR, "can't understand voicemail response\n");
-	free(ucmd);
+	talloc_free(ucmd);
 	return -EINVAL;
 }
 
@@ -227,7 +262,7 @@ static struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type, u_int8_t msg
 {
 	struct gsmd_ucmd *ucmd;
 
-	ucmd = malloc(sizeof(*ucmd)+len);
+	ucmd = ucmd_alloc(len);
 	if (!ucmd)
 		return NULL;
 	
@@ -256,7 +291,7 @@ static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	gsq->rssi = atoi(resp);
 	comma = strchr(resp, ',');
 	if (!comma) {
-		free(ucmd);
+		talloc_free(ucmd);
 		return -EIO;
 	}
 	gsq->ber = atoi(comma+1);
@@ -336,12 +371,14 @@ static int gsmd_usock_user_cb(int fd, unsigned int what, void *data)
 		/* read data from socket, determine what he wants */
 		rcvlen = read(fd, buf, sizeof(buf));
 		if (rcvlen == 0) {
+			DEBUGP("EOF, this client has just vanished\n");
 			/* EOF, this client has just vanished */
 			gsmd_unregister_fd(&gu->gfd);
 			close(fd);
 			/* destroy whole user structure */
 			llist_del(&gu->list);
-			/* FIXME: delete budy ucmds from finished_ucmds */
+			/* FIXME: delete busy ucmds from finished_ucmds */
+			talloc_free(gu);
 			return 0;
 		} else if (rcvlen < 0)
 			return rcvlen;
@@ -370,8 +407,9 @@ static int gsmd_usock_user_cb(int fd, unsigned int what, void *data)
 				break;
 			}
 
+			DEBUGP("successfully sent cmd %p to user %p, freeing\n", ucmd, gu);
 			llist_del(&ucmd->list);
-			free(ucmd);
+			talloc_free(ucmd);
 		}
 		if (llist_empty(&gu->finished_ucmds))
 			gu->gfd.when &= ~GSMD_FD_WRITE;
@@ -389,7 +427,7 @@ static int gsmd_usock_cb(int fd, unsigned int what, void *data)
 	/* FIXME: implement this */
 	if (what & GSMD_FD_READ) {
 		/* new incoming connection */
-		newuser = malloc(sizeof(*newuser));
+		newuser = talloc(__gu_ctx, struct gsmd_user);
 		if (!newuser)
 			return -ENOMEM;
 		
@@ -397,7 +435,7 @@ static int gsmd_usock_cb(int fd, unsigned int what, void *data)
 		if (newuser->gfd.fd < 0) {
 			DEBUGP("error accepting incoming conn: `%s'\n",
 				strerror(errno));
-			free(newuser);
+			talloc_free(newuser);
 		}
 		newuser->gfd.when = GSMD_FD_READ;
 		newuser->gfd.data = newuser;
@@ -418,6 +456,9 @@ int usock_init(struct gsmd *g)
 {
 	struct sockaddr_un sun;
 	int fd, rc;
+
+	__ucmd_ctx = talloc_named_const(gsmd_tallocs, 1, "ucmd");
+	__gu_ctx = talloc_named_const(gsmd_tallocs, 1, "gsmd_user");
 
 	fd = socket(PF_UNIX, GSMD_UNIX_SOCKET_TYPE, 0);
 	if (fd < 0)
