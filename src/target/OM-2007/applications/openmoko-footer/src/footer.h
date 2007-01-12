@@ -74,11 +74,11 @@ struct _Footer
 {
     GtkHBox hbox;
     
-    GtkEventBox* LeftEventBox;
-    GtkImage* LeftImage;
-    GtkLabel* CenterLabel;
-    GtkEventBox* RightEventBox;
-    GtkImage* RightImage; 
+    GtkWidget* LeftEventBox;
+    GtkWidget* LeftImage;
+    GtkWidget* CenterLabel;
+    GtkWidget* RightEventBox;
+    GtkWidget* RightImage; 
 };
 
 struct _FooterClass
@@ -88,11 +88,17 @@ struct _FooterClass
     void (*footer) (Footer *f);
 };
 
-GType          footer_get_type        (void);
-//GtkWidget*     footer_new             (void);
-void           footer_clear           (Footer *f);
+GType
+footer_get_type (void);
 
-void           footer_set_status      (Footer *f, const char* s);
+GtkWidget*     
+footer_new (void);
+
+void
+footer_clear (Footer *f);
+
+void
+footer_set_status (Footer *f, const char* s);
 
 G_END_DECLS
 

@@ -19,12 +19,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef DBUS_API_SUBJECT_TO_CHANGE
+#define DBUS_API_SUBJECT_TO_CHANGE
+#endif
+#include <dbus/dbus-glib-lowlevel.h>
 
 #include "main.h"
-
-int main( int argc, char **argv )
+#include "callbacks.h"
+int 
+main( int argc, char **argv )
 {
-    OMTaskManager* app;
+    MokoFooter* app;
     DBusError error;
 
     GError* err = NULL;
@@ -35,7 +40,7 @@ int main( int argc, char **argv )
     
     dbus_error_init(&error);
 
-    if (!(app = g_malloc ( sizeof (OMTaskManager)))){
+    if (!(app = g_malloc ( sizeof (MokoFooter)))){
     		fprintf (stderr,"Openmoko-taskmanager: footer UI initialized failed, app space malloc failed!");
     		exit (-1);
     	}
@@ -53,10 +58,10 @@ int main( int argc, char **argv )
 ///initialize TOP LEVEL WINDOW 
     app->toplevel_win = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     gtk_widget_set_name (app->toplevel_win, "bg_footer");
-    gtk_window_set_title (app->toplevel_win, "OpenMoko Task Manager");
-    gtk_window_set_type_hint (GTK_WINDOW(app->toplevel_win), GDK_WINDOW_TYPE_HINT_DOCK);
-    gtk_window_set_default_size (app->toplevel_win, FOOTER_PROPERTY_WIDTH, FOOTER_PROPERTY_HEIGHT);
-    gtk_widget_set_uposition (app->toplevel_win, FOOTER_PROPERTY_X, FOOTER_PROPERTY_Y);
+    gtk_window_set_title (GTK_WINDOW (app->toplevel_win), "OpenMoko Task Manager");
+    gtk_window_set_type_hint (GTK_WINDOW (app->toplevel_win), GDK_WINDOW_TYPE_HINT_DOCK);
+    gtk_window_set_default_size (GTK_WINDOW (app->toplevel_win), FOOTER_PROPERTY_WIDTH, FOOTER_PROPERTY_HEIGHT);
+    gtk_widget_set_uposition (GTK_WIDGET (app->toplevel_win), FOOTER_PROPERTY_X, FOOTER_PROPERTY_Y);
     gtk_widget_show (app->toplevel_win);
 
 //modify toplevel_win background
@@ -68,7 +73,7 @@ int main( int argc, char **argv )
 
 ///initialize OpenMoko Footer Widget
     app->footer = FOOTER(footer_new()); 
-    gtk_widget_show_all (app->footer);
+    gtk_widget_show_all (GTK_WIDGET (app->footer));
     g_signal_connect ( G_OBJECT (app->footer->LeftEventBox), "button_press_event",
     					G_CALLBACK (footer_leftbutton_clicked), app);
     g_signal_connect ( G_OBJECT (app->footer->RightEventBox), "button_press_event",

@@ -16,13 +16,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  */
+
+
 #include <gtk/gtk.h>
-#include <X11/Xlib.h>
-#include <dbus/dbus.h>
-#include <gdk/gdk.h>
-#include <glib/gthread.h>
-#include <pthread.h>
-#include <sys/time.h>
 
 #include "main.h"
 #include "misc.h"

@@ -90,26 +90,26 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_widget_show (GTK_WIDGET (f->LeftEventBox));
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(f->LeftEventBox),FALSE);
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET(f->LeftEventBox), FALSE, FALSE, BUTTON_PADDING);
-    gtk_widget_set_events (GTK_EVENT_BOX (f->LeftEventBox), GDK_BUTTON_PRESS_MASK);
+    gtk_widget_set_events (GTK_WIDGET (f->LeftEventBox), GDK_BUTTON_PRESS_MASK);
        
 
     f->LeftImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_history.png");
     gtk_widget_show (GTK_WIDGET (f->LeftImage));
-    gtk_container_add (f->LeftEventBox, f->LeftImage);
+    gtk_container_add ( GTK_CONTAINER (f->LeftEventBox), f->LeftImage);
 
 /*Label to show dbus message */
     f->CenterLabel = gtk_label_new("OpenMoko Taskmanager");
     gtk_widget_show (GTK_WIDGET (f->CenterLabel));
     gtk_widget_set_name (GTK_WIDGET (f->CenterLabel), "label_footer");
     gtk_misc_set_alignment (GTK_MISC (f->CenterLabel), LABEL_ALIGNMENT_X, LABEL_ALIGNMENT_Y);
-    gtk_label_set_single_line_mode (f->CenterLabel, TRUE);
+    gtk_label_set_single_line_mode (GTK_LABEL (f->CenterLabel), TRUE);
     if (PangoFont){
 	pango_font_description_set_size (PangoFont, FONT_SIZE);
 	gtk_widget_modify_font (GTK_WIDGET (f->CenterLabel), PangoFont);
     }
-    gtk_label_set_ellipsize (f->CenterLabel, PANGO_ELLIPSIZE_END);
+    gtk_label_set_ellipsize (GTK_LABEL (f->CenterLabel), PANGO_ELLIPSIZE_END);
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET (f->CenterLabel), TRUE, TRUE, LABEL_PADDING);
-    gtk_label_set_text (f->CenterLabel, "OpenMoko Task Manager");
+    gtk_label_set_text (GTK_LABEL (f->CenterLabel), "OpenMoko Task Manager");
 
 /*right image*/
     f->RightEventBox = gtk_event_box_new (); 
@@ -164,7 +164,7 @@ void footer_clear(Footer *f) /* Destruction */
 void footer_set_status(Footer *f, const char* s)
 {
 //    gtk_statusbar_push( f->statusbar, 1, s );
-    gtk_label_set_text (f->CenterLabel, s);
+    gtk_label_set_text (GTK_LABEL (f->CenterLabel), s);
     /*char message[128];
     char str_fraction[3];
     char* p_fraction;

@@ -16,7 +16,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  */
- #include <glib.h>
+#include <glib.h>
+#include <X11/Xlib.h>
+#ifndef DBUS_API_SUBJECT_TO_CHANGE
+#define DBUS_API_SUBJECT_TO_CHANGE
+#endif
+#include <dbus/dbus.h>
+#include <gdk/gdk.h>
+#include <glib/gthread.h>
+#include <pthread.h>
+#include <sys/time.h>
 
 #include "callbacks.h"
 #include "footer.h"
@@ -53,7 +62,6 @@ void
 footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data) {
     XEvent ev;
     int done = 0;
-    Bool finish = FALSE;
     struct timeval then, now;
     Time click_time=800;
     Display *dpy;
@@ -121,7 +129,7 @@ DBusHandlerResult signal_filter(DBusConnection *connection, DBusMessage *message
     g_debug( "interface of message was %s", dbus_message_get_interface(message));
 
     /* Application object is the user data */
-    OMTaskManager* app = user_data;
+    MokoFooter* app = user_data;
 
     /* A signal from the bus saying we are about to be disconnected */
     if (dbus_message_is_signal

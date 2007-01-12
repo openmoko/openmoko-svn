@@ -5,7 +5,7 @@ mbcommand(Display *dpy, int cmd_id, char *data) {
 
    XEvent	ev;
    Window	root;
-   Atom theme_prop, cmd_prop, desktop_manager_atom;
+   Atom cmd_prop, desktop_manager_atom;
 
    desktop_manager_atom = XInternAtom(dpy, "_NET_DESKTOP_MANGER",False);
 
