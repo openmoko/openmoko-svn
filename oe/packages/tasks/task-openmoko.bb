@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r19"
+PR = "r20"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -18,7 +18,7 @@ PACKAGES = "\
   \
   task-openmoko-demo \
   task-openmoko-examples \
-  task-openmoko-devel \
+  task-openmoko-debug \
   task-openmoko-native-sdk \
 "
 
@@ -175,10 +175,10 @@ RDEPENDS_task-openmoko-examples = "\
   openmoko-chordmaster"
 
 #
-# task-openmoko-devel
+# task-openmoko-debug
 #
-DESCRIPTION_task-openmoko-devel = "OpenMoko: Debugging Tools"
-RDEPENDS_task-openmoko-devel = "\
+DESCRIPTION_task-openmoko-debug = "OpenMoko: Debugging Tools"
+RDEPENDS_task-openmoko-debug = "\
   alsa-utils-amixer \
   alsa-utils-aplay \
   strace \
@@ -196,6 +196,7 @@ RDEPENDS_task-openmoko-devel = "\
   uucp \
   cu \
   sensors-i2cdetect sensors-i2cdump sensors-i2cset \
+  xev \
 "
 
 #
