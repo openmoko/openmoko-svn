@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r18"
+PR = "r19"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -97,10 +97,9 @@ RDEPENDS_task-openmoko-ui = "\
 #
 # task-openmoko-base
 #
-DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Phone Application, and Panel"
+DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Dialer Application, and Panel"
 RDEPENDS_task-openmoko-base = "\
   openmoko-mainmenu \
-  openmoko-phone \
   openmoko-dialer \
   openmoko-footer \
   openmoko-taskmanager \
@@ -156,15 +155,11 @@ RDEPENDS_task-openmoko-demo = "\
   matchbox-applet-startup-monitor \
   xcursor-transparent-theme \
   settings-daemon \
-  gtk-clearlooks-engine \
-  gtk-theme-clearlooks \
   contacts \
   dates \
   web \
   rxvt-unicode \
-  gnome-vfs-plugin-dbus \
-  gnome-vfs-plugin-file \
-  gnome-vfs-plugin-http \
+  mtpaint \
 "
 
 #
@@ -175,6 +170,8 @@ RDEPENDS_task-openmoko-examples = "\
   openmoko-stylus-demo-simple \
   openmoko-stylus-demo \
   openmoko-finger-demo \
+  openmoko-panel-demo-simple \
+  openmoko-panel-demo \
   openmoko-chordmaster"
 
 #

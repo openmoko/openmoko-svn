@@ -68,6 +68,9 @@ require conf/distro/include/preferred-xorg-versions-X11R7.1.inc
 #
 PREFERRED_PROVIDER_dbus-glib = "dbus-glib"
 PREFERRED_PROVIDER_gconf = "gconf-dbus"
+#new
+#PREFERRED_PROVIDER_gnome-vfs = "gnome-vfs"
+#old
 PREFERRED_PROVIDER_gnome-vfs = "gnome-vfs-dbus"
 PREFERRED_PROVIDER_virtual/xserver = "xserver-kdrive"
 PREFERRED_PROVIDER_bluez-utils = "bluez-utils-dbus"
@@ -81,8 +84,14 @@ PREFERRED_VERSION_pango = "1.8.2"
 PREFERRED_VERSION_glib-2.0 = "2.6.4"
 PREFERRED_VERSION_gtk+ = "2.6.10"
 PREFERRED_VERSION_gtk-engines = "2.6.5"
+#PREFERRED_VERSION_gnome-vfs = "2.16.3"
 
 PREFERRED_VERSION_fontconfig = "2.4.1"
+
+#
+# GPE
+#
+PREFERRED_PROVIDER_libgpewidget = "libgpewidget"
 
 #
 # OHand
