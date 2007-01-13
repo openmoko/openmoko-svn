@@ -45,5 +45,5 @@ int lgsm_signal_quality(struct lgsm_handle *lh)
 
 int lgsmd_operator_name(struct lgsm_handle *lh)
 {
-	return lgms_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_GET);
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_GET);
 }
