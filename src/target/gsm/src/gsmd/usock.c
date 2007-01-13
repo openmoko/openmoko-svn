@@ -1,3 +1,25 @@
+/* gsmd unix domain socket handling
+ *
+ * (C) 2006-2007 by OpenMoko, Inc.
+ * Written by Harald Welte <laforge@openmoko.org>
+ * All Rights Reserved
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */ 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -301,6 +323,25 @@ static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_signal_quality *gsq;
+	struct gsmd_ucmd *ucmd;
+	char *comma;
+	
+	ucmd = gsmd_ucmd_fill(sizeof(*gsq), GSMD_MSG_NETWORK,
+			      GSMD_NETWORK_OPER_GET, 0);
+	if (!ucmd)
+		return -ENOMEM;
+
+	/* FIXME: implementation */
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
 static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			     int len)
 {
@@ -320,6 +361,9 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_NETWORK_SIGQ_GET:
 		cmd = atcmd_fill("AT+CSQ", 6+1, &network_sigq_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_OPER_GET:
+		cmd = atcmd_fill("AT+COPS?", 8+1, &network_oper_cb, gu, 0);
 		break;
 	default:
 		return -EINVAL;

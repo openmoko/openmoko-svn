@@ -57,6 +57,7 @@ enum gsmd_msg_network {
 	GSMD_NETWORK_SIGQ_GET	= 2,
 	GSMD_NETWORK_VMAIL_GET	= 3,
 	GSMD_NETWORK_VMAIL_SET	= 4,
+	GSMD_NETWORK_OPER_GET	= 5,
 };
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
