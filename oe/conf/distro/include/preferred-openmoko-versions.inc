@@ -18,6 +18,8 @@ SRCDATE_openmoko-libs = "now"
 SRCDATE_openmoko-stylus-demo = "now"
 SRCDATE_openmoko-stylus-demo-simple = "now"
 SRCDATE_openmoko-finger-demo = "now"
+SRCDATE_openmoko-panel-demo = "now"
+SRCDATE_openmoko-panel-demo-simple = "now"
 
 #
 # Applications
