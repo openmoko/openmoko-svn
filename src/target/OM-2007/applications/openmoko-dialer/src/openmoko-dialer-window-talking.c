@@ -99,6 +99,10 @@ MokoDialerTextview *moko_dtmf_text_view=appdata->moko_dtmf_text_view;
 
 moko_dialer_textview_insert(moko_dtmf_text_view, input);
 
+
+gsm_dtmf_send(input[0]);
+//lgsm_voice_dtmf(lgsmh, buf[1]);
+
 }
 
 

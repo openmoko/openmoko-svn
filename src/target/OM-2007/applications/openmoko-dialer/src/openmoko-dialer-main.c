@@ -84,6 +84,55 @@ DBG_ERROR("gui failed to initialize.try another time.");
 
 }
 
+void gsm_peer_accept()
+{
+MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
+DBG_ENTER();
+//moko_dialer_status_update_icon(appdata->status_outgoing);
+
+
+appdata->g_state.callstate=STATE_TALKING;
+
+gtk_widget_hide(appdata->window_outgoing);
+
+if(!appdata->window_talking)
+	window_talking_init(appdata);
+
+//transfer the contact info
+window_talking_prepare(appdata);
+
+//start talking.
+
+gtk_widget_show(appdata->window_talking);
+
+
+DBG_LEAVE();
+}
+
+void gsm_peer_refuse()
+{
+MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
+window_outgoing_fails(appdata);
+}
+
+void gsm_peer_abort()
+{
+
+MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
+if(appdata->window_incoming)
+	gtk_widget_hide(appdata->window_incoming);
+
+
+}
+
+void gsm_peer_disconnect()
+{
+
+     MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
+     gsm_hangup();
+     gtk_widget_hide(appdata->window_talking);
+
+}
 int main( int argc, char** argv )
 {
     p_dialer_data=calloc(1,sizeof(MOKO_DIALER_APP_DATA));

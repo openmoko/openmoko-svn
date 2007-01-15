@@ -271,3 +271,9 @@ void gsm_watcher_install (GMainLoop* mainloop)
 	return;
 
 }
+
+void gsm_dtmf_send(char dtmf)
+{
+	DBG_MESSAGE("lgsm_voice_dtmf");
+	lgsm_voice_dtmf(lgsmh, dtmf);
+}

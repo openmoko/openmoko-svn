@@ -101,5 +101,8 @@ enum {
 	N_COLUMN
 };
 void gsm_incoming_call(gchar * number);
-
+void gsm_peer_accept();
+void gsm_peer_abort();
+void gsm_peer_disconnect();
+void gsm_peer_refuse();
 #endif

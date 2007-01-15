@@ -8,6 +8,9 @@ static int IncomingSignaled; ///<to keep communication with GUI
 static int ClipSignaled;///<to keep communication with GUI
 static int KeepCalling;
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#endif
 
 int event_get_incoming_signaled()
 {
@@ -134,9 +137,70 @@ static int sigq_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata
 	printf("EVENT: Signal Quality: %u\n", aux->u.signal.sigq.rssi);
 	return 0;
 }
-static int out_status_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+static const char *cprog_names[] = {
+	[GSMD_CALLPROG_SETUP]		= "SETUP",
+	[GSMD_CALLPROG_DISCONNECT]	= "DISCONNECT",
+	[GSMD_CALLPROG_ALERT]		= "ALERT",
+	[GSMD_CALLPROG_CALL_PROCEED]	= "PROCEED",
+	[GSMD_CALLPROG_SYNC]		= "SYNC",
+	[GSMD_CALLPROG_PROGRESS]	= "PROGRESS",
+	[GSMD_CALLPROG_CONNECTED]	= "CONNECTED",
+	[GSMD_CALLPROG_RELEASE]		= "RELEASE",
+	[GSMD_CALLPROG_REJECT]		= "REJECT",
+	[GSMD_CALLPROG_UNKNOWN]		= "UNKNOWN",
+};
+
+static const char *cdir_names[] = {
+	[GSMD_CALL_DIR_MO]		= "Outgoing",
+	[GSMD_CALL_DIR_MT]		= "Incoming",
+	[GSMD_CALL_DIR_CCBS]		= "CCBS",
+	[GSMD_CALL_DIR_MO_REDIAL]	= "Outgoing Redial",
+};
+
+static int cprog_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
-	printf("EVENT: OUT GOING CALL status\n");
+	const char *name, *dir;
+
+	if (aux->u.call_status.prog >= ARRAY_SIZE(cprog_names))
+		name = "UNDEFINED";
+	else
+		name = cprog_names[aux->u.call_status.prog];
+
+	if (aux->u.call_status.dir >= ARRAY_SIZE(cdir_names))
+		dir = "";
+	else
+		dir = cdir_names[aux->u.call_status.dir];
+
+	printf("EVENT: %s Call Progress: %s\n", dir, name);
+
+	if(aux->u.call_status.prog==GSMD_CALLPROG_CONNECTED)
+		{
+		
+		if(aux->u.call_status.dir==GSMD_CALL_DIR_MO)
+			gsm_peer_accept();
+		}
+
+	if(aux->u.call_status.prog==GSMD_CALLPROG_REJECT)
+		{
+		if(aux->u.call_status.dir==GSMD_CALL_DIR_MO)
+			gsm_peer_refuse();
+		}
+
+	if(aux->u.call_status.prog==GSMD_CALLPROG_DISCONNECT)
+		{
+		if(aux->u.call_status.dir==GSMD_CALL_DIR_MO)
+					gsm_peer_disconnect();
+
+		}
+
+
+	return 0;
+}
+
+static int colp_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+	printf("EVENT: Outgoing call colp = %s\n", aux->u.colp.addr.number);
+
 	return 0;
 }
 
@@ -147,8 +211,11 @@ int event_init(struct lgsm_handle *lh)
 
 	rc  = lgsm_evt_handler_register(lh, GSMD_EVT_IN_CALL, &incall_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_CLIP, &clip_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_COLP, &colp_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_NETREG, &netreg_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);
-	//rc|=lgsm_evt_handler_register(lh, GSMD_EVT_OUT_STATUS, &out_status_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_STATUS, &cprog_handler);
+
 	return rc;
 }
+
