@@ -1,7 +1,7 @@
 AC_PREREQ(2.53)
 AC_INIT(openmoko-panel-demo-simple, 1.0, http://www.openmoko.org)
 AM_INIT_AUTOMAKE()
-AC_CONFIG_SRCDIR(src/panel.c)
+AC_CONFIG_SRCDIR(src/demo-panel-applet.c)
 #AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
