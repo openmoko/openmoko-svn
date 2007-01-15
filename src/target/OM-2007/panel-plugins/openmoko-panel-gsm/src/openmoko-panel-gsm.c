@@ -2,9 +2,13 @@
 #include <X11/Xlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <unistd.h>
-//#include <libgsmd/libgsmd.h>
-//#include <libgsmd/misc.h>
+#include <libgsmd/libgsmd.h>
+
+#include <libgsmd/misc.h>
+#include <libgsmd/libgsmd.h>
+#include "dialergsm.h"
 
 #define DIR_LONG	256
 #define FONT_POPUP_DESC       "Sans bold 28px"
@@ -30,11 +34,12 @@ static Display *dpy;
 static int screen;
 static int times = 0;
 
-//static struct lgsm_handle *lgsmh;
-/*
+
+	static struct lgsm_handle *lgsmh=0;
 Bool
 gsm_connect_init()
 {
+
 	lgsmh = lgsm_init(LGSMD_DEVICE_GSMD);
 	
 	if (!lgsmh) 
@@ -42,9 +47,14 @@ gsm_connect_init()
 		fprintf(stderr, "Can't connect to gsmd\n");
 		return False;
 	}
-	else return True;
+	else 
+	{
+	event_init(lgsmh);
+	return True;
+	}
+	
 }
-*/
+
 /*
 *
 */
@@ -52,8 +62,8 @@ int
 signal_update(void)
 {
    int sig_quality = 0;
-  // int result = 0;
-  // result = lgsm_get_signal_quality (lgsmh, &sig_quality);
+   int result = 0;
+   //result = lgsm_get_signal_quality (lgsmh, &sig_quality);
 
     if (CurImg<MAX_ID-1) 
     	CurImg++;
@@ -318,9 +328,39 @@ button_callback (MBTrayApp *app, int x, int y, Bool is_released )
     }
 }
 
+#define STDIN_BUF_SIZE	1024
 void
 timeout_callback ( MBTrayApp *app )
 {
+	printf("timeout_callback\n");
+		fd_set readset;
+		int rc;
+		char buf[STDIN_BUF_SIZE+1];
+		struct timeval t;
+		t.tv_sec=0;
+		t.tv_usec=0;
+		int gsm_fd = lgsm_fd(lgsmh);
+		//FD_SET(0, &readset);
+		FD_SET(gsm_fd, &readset);
+		printf("select>\n");
+		rc = select(gsm_fd+1, &readset, NULL, NULL, &t);
+		printf("select<\n");
+		if (FD_ISSET(gsm_fd, &readset)) 
+		{
+			printf("read>\n");
+			rc = read(gsm_fd, buf, sizeof(buf));
+			printf("read<\n");
+			if (rc <= 0) {
+				printf("ERROR reding from gsm_fd\n");
+				return;
+			}
+			else
+			{
+				printf("data from gsm_fd\n");
+				rc = lgsm_handle_packet(lgsmh, buf, rc);
+			}
+		
+		}
   mb_tray_app_repaint (app);
 }
 
@@ -366,7 +406,9 @@ main( int argc, char *argv[])
 
    mb_tray_app_request_offset (app, 1);
 
-//   gsm_connect_init();
+   gsm_connect_init();
+   
+   //gsm_lgsm_start(0);
 
    mb_tray_app_main (app);
    
