@@ -24,12 +24,12 @@
  * @brief All available error code
  */
 typedef enum {
-  OP_SUCCESS = 0,                ///<! Operation success
-  OP_MAMORY_MALLOC_ERROR,        ///<! Mamory malloc error
+  OP_SUCCESS = 0,                /* Operation success */
+  OP_MAMORY_MALLOC_ERROR,        /* Mamory malloc error */
 
-  OP_SECTION_NAME_NULL,          ///<! The section of a package is NULL
+  OP_SECTION_NAME_NULL,          /* The section of a package is NULL */
 
-  OP_ERROR                       ///<! Operation error
+  OP_ERROR                       /* Operation error */
 } ErrorCode;
 
 #endif

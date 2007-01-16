@@ -46,24 +46,24 @@ G_BEGIN_DECLS
  * @brief Process status of the install dialog
  */
 enum {
-  STATUS_INSTALL,       ///<! Install/remove/upgrade packages
-  STATUS_REINIT,        ///<! Reinit the package list and navigation view
-  STATUS_ERROR,         ///<! There is error when install/remove/upgrade packages
-  STATUS_COMPLETE       ///<! The process of install/remove/upgrade packages completed
+  STATUS_INSTALL,       /* Install/remove/upgrade packages */
+  STATUS_REINIT,        /* Reinit the package list and navigation view */
+  STATUS_ERROR,         /* There is error when install/remove/upgrade packages */
+  STATUS_COMPLETE       /* The process of install/remove/upgrade packages completed */
 };
 
 /**
  * @brief The install dialog struct
  */
 typedef struct _InstallDialog {
-  GtkDialog          parent;             ///<! The parent of the struct
+  GtkDialog          parent;             /* The parent of the struct */
 } InstallDialog;
 
 /**
  * @brief The install dialog class struct
  */
 typedef struct _InstallDialogClass {
-  GtkDialogClass     parent_class;       ///<! The parent of the struct
+  GtkDialogClass     parent_class;       /* The parent of the struct */
 } InstallDialogClass;
 
 GType install_dialog_get_type (void);

@@ -869,7 +869,7 @@ int ipkg_remove_cmd(char *pkg_name) {
             DBG("Package %s is not installed.\n", pkg->name);
             continue;
         }
-        if (pkg->state_status == SS_NOT_INSTALLED) {    // Added the control, so every already removed package could be skipped
+        if (pkg->state_status == SS_NOT_INSTALLED) {    /* Added the control, so every already removed package could be skipped */
             DBG("Package seems to be %s not installed (STATUS = NOT_INSTALLED).\n", pkg->name);
             continue;
         }
@@ -959,7 +959,7 @@ int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name)
     }
 
     /* recheck to verify that all dependences are satisfied */
-    //if (0) ipkg_satisfy_all_dependences(global_conf);
+    /* if (0) ipkg_satisfy_all_dependences(global_conf); */
 
     ipkg_configure_packages(&global_conf, NULL);
 

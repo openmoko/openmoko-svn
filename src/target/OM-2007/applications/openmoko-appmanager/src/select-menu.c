@@ -139,7 +139,7 @@ on_mark_install_activate (GtkMenuItem *markinstall, gpointer data)
     {
       case PKG_STATUS_AVAILABLE:
         pkgid = PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL;
-        // FIXME Add the package to the mark list
+        /* FIXME Add the package to the mark list */
         package_list_add_node_to_selected_list (appdata, pkg);
         break;
 
@@ -191,7 +191,7 @@ on_mark_upgrade_activate (GtkMenuItem *markupgrade, gpointer data)
   switch (pkgid)
     {
       case PKG_STATUS_UPGRADEABLE:
-        //FIXME Add insert pkg to the select list
+        /* FIXME Add insert pkg to the select list */
         package_list_add_node_to_selected_list (appdata, pkg);
 
       case PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE:

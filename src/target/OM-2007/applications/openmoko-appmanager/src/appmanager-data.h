@@ -52,31 +52,31 @@ G_BEGIN_DECLS
  * FIXME Maybe use a GObject as the base class is the better.
  */
 typedef struct _ApplicationManagerData {
-  GObject          parent;             ///<! The parent of the struct
+  GObject          parent;             /* The parent of the struct */
 
-  MokoPanedWindow  *mwindow;           ///<! The main window
-  GtkMenu          *filtermenu;        ///<! The filter menu
-  GtkMenu          *selectmenu;        ///<! The select menu
-  GtkEntry         *searchentry;       ///<! The search entry
-  GtkWidget        *tvpkglist;         ///<! The treeview of the package list
-  GtkWidget        *tvdetail;          ///<! The textview of the details info
-  gpointer         pkglist;            ///<! The package list get from lib ipkg
-  gpointer         sectionlist;        ///<! The section list parse from the package list
-  gpointer         installedlist;      ///<! The list of all installed packages
-  gpointer         upgradelist;        ///<! The list of all upgradeable packages
-  gpointer         selectedlist;       ///<! The list of packages that user selected
-  gpointer         nosecpkglist;       ///<! The list of packages whose section name is NULL
-  gpointer         currentlist;        ///<! The current list that display on the navigation list
-  GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    ///<! The all pixbufs that need by the package list store
-  gchar            *searchhistory;     ///<! The search history
-  GtkWidget        *installdialog;     ///<! The install dialog
+  MokoPanedWindow  *mwindow;           /* The main window */
+  GtkMenu          *filtermenu;        /* The filter menu */
+  GtkMenu          *selectmenu;        /* The select menu */
+  GtkEntry         *searchentry;       /* The search entry */
+  GtkWidget        *tvpkglist;         /* The treeview of the package list */
+  GtkWidget        *tvdetail;          /* The textview of the details info */
+  gpointer         pkglist;            /* The package list get from lib ipkg */
+  gpointer         sectionlist;        /* The section list parse from the package list */
+  gpointer         installedlist;      /* The list of all installed packages */
+  gpointer         upgradelist;        /* The list of all upgradeable packages */
+  gpointer         selectedlist;       /* The list of packages that user selected */
+  gpointer         nosecpkglist;       /* The list of packages whose section name is NULL */
+  gpointer         currentlist;        /* The current list that display on the navigation list */
+  GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    /* The all pixbufs that need by the package list store */
+  gchar            *searchhistory;     /* The search history */
+  GtkWidget        *installdialog;     /* The install dialog */
 } ApplicationManagerData;
 
 /**
  * @brief The class struct of application manager data
  */
 typedef struct _ApplicationManagerDataClass {
-  GObjectClass    parent_class;        ///<! The parent class
+  GObjectClass    parent_class;        /* The parent class */
 } ApplicationManagerDataClass;
 
 GType application_manager_data_get_type (void);

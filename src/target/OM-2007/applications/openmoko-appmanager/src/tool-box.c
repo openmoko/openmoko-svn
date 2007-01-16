@@ -78,7 +78,7 @@ on_apply_clicked (GtkButton *bapply, gpointer data)
   dialog = apply_dialog_new (MOKO_APPLICATION_MANAGER_DATA (data));
   res = gtk_dialog_run (GTK_DIALOG (dialog));
 
-  //FIXME Add code to install/remove/upgrade package
+  /* FIXME Add code to install/remove/upgrade package */
   if (res == GTK_RESPONSE_OK)
     {
       g_debug ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -125,7 +125,7 @@ on_search_entry_changed (GtkEditable *entryedit, gpointer data)
 
   if (searchstr[0] == '\0')
     {
-      //FIXME Add code later
+      /* FIXME Add code later */
       g_debug ("The length of search string is 0");
       navigation_area_rebuild_from_latest (appdata);
       return;

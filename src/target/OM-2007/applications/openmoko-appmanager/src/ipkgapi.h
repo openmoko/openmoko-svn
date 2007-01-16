@@ -27,40 +27,40 @@
  * @brief IPKG package structure.
  */
 typedef struct ipk_package {
-  int  mark;                        ///<package mark
-  char *name;                       ///<package name
-  char *version;                    ///<package version
-  char *section;                    ///<package section
-  char *size;                       ///<package size
-  char *depends;                    ///<dependency package
-  char *description;                ///<package description
-  char *maintainer;                 ///<package maintainer
-  pkg_state_status_t state_status;  ///<package status defined in libipkg/pkg.h
-  struct ipk_package *next;         ///<pointer to next package
+  int  mark;                        /* package mark */
+  char *name;                       /* package name */
+  char *version;                    /* package version */
+  char *section;                    /* package section */
+  char *size;                       /* package size */
+  char *depends;                    /* dependency package */
+  char *description;                /* package description */
+  char *maintainer;                 /* package maintainer */
+  pkg_state_status_t state_status;  /* package status defined in libipkg/pkg.h */
+  struct ipk_package *next;         /* pointer to next package */
 }IPK_PACKAGE;
 
 /**
  * @brief IPKG package list head structure.
  */
 typedef struct pkg_list_head {
-  int length;                   ///<the number of installed packages
-  IPK_PACKAGE *pkg_list;        ///<package list head pointer
+  int length;                   /* the number of installed packages */
+  IPK_PACKAGE *pkg_list;        /* package list head pointer */
 }PKG_LIST_HEAD;
 
 /**
  * @brief IPKG package detail information structure.
  */
 typedef struct package_detail_info {
-  char *name;                       ///<package name
-  char *version;                    ///<package version
-  char *depends;                    ///<dependency package
-  char *description;                ///<package description
-  char *section;                    ///<package section
-  char *size;                       ///<package size
-  char *filename;                   ///<package file name
-  char *installed_size;             ///<package installed size
-  char *maintainer;                 ///<package maintainer
-  pkg_state_status_t state_status;  ///<package status
+  char *name;                       /* package name */
+  char *version;                    /* package version */
+  char *depends;                    /* dependency package */
+  char *description;                /* package description */
+  char *section;                    /* package section */
+  char *size;                       /* package size */
+  char *filename;                   /* package file name */
+  char *installed_size;             /* package installed size */
+  char *maintainer;                 /* package maintainer */
+  pkg_state_status_t state_status;  /* package status */
 }PACKAGE_DETAIL_INFO;
 
 
@@ -72,7 +72,7 @@ enum pkg_query_status
     PKG_INSTALLED = 1,
     PKG_AVAILABLE
 };
-typedef enum pkg_query_status pkg_query_status_t; ///<IPKG package query status
+typedef enum pkg_query_status pkg_query_status_t; /* IPKG package query status */
 
 
 int ipkg_initialize(int noreadfeedsfile);

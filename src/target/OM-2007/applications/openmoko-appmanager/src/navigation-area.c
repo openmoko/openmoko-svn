@@ -156,7 +156,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   gtk_widget_show (treeview);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeview), FALSE);
 
-  ///<! Add the status as the first column.
+  /* Add the status as the first column. */
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("S"));
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
@@ -169,12 +169,12 @@ navigation_area_new (ApplicationManagerData *appdata)
 
   moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
 
-  ///<! For some reason, there must set the column length to fixed
+  /* For some reason, there must set the column length to fixed */
   gtk_tree_view_column_set_resizable (col, FALSE);
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
   gtk_tree_view_column_set_fixed_width (col, 20);
 
-  ///<! Add the name as the second column.
+  /* Add the name as the second column. */
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("Name"));
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
@@ -187,12 +187,12 @@ navigation_area_new (ApplicationManagerData *appdata)
 
   moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
 
-  ///<! For some reason, there must set the column length to fixed
+  /* For some reason, there must set the column length to fixed */
   gtk_tree_view_column_set_resizable (col, FALSE);
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
   gtk_tree_view_column_set_fixed_width (col, 240);
 
-  ///<! Add the size as the third column.
+  /* Add the size as the third column. */
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("Size"));
 
@@ -208,15 +208,15 @@ navigation_area_new (ApplicationManagerData *appdata)
   model = GTK_TREE_MODEL (create_package_list_store ());
   gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), model);
   g_object_unref (model);
-  // FIXME Set the treeview as the single selection mode now.
-  // Maybe it uses the multi selection mode in the feature. 
+  /* FIXME Set the treeview as the single selection mode now.
+     Maybe it uses the multi selection mode in the feature. */
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
                                GTK_SELECTION_SINGLE);
 
   scrollwindow = GTK_WIDGET (moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (treeview)));
   application_manager_data_set_tvpkglist (appdata, treeview);
 
-  // Connect signal to the treeview
+  /* Connect signal to the treeview */
   g_signal_connect ((gpointer) treeview, "cursor_changed",
                     G_CALLBACK (on_treeview_cursor_changed),
                     appdata);
@@ -360,7 +360,7 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   gtk_list_store_clear (store);
 
   translate_package_list_to_store (appdata, store, pkglist);
-  // Save current list to the application manager data
+  /* Save current list to the application manager data */
   application_manager_data_set_current_list (appdata, pkglist);
 
   gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
@@ -415,7 +415,7 @@ navigation_area_rebuild_search_result (ApplicationManagerData *appdata,
   gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
   gtk_list_store_clear (store);
 
-  //FIXME Add search and build the store
+  /* FIXME Add search and build the store */
   search_and_translate_package_list_to_store (appdata, store, pkglist, str);
 
   gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);

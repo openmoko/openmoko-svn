@@ -31,19 +31,19 @@
  * @brief The structor of Package list node
  */
 typedef struct package_list {
-  IPK_PACKAGE *pkg;                ///<Package info
-  struct package_list *pre;        ///<The previous node of package list
-  struct package_list *next;       ///<The next node of package list
+  IPK_PACKAGE *pkg;                /* Package info */
+  struct package_list *pre;        /* The previous node of package list */
+  struct package_list *next;       /* The next node of package list */
 } PackageList;
 
 /**
  * @brief Section list structure.
  */
 typedef struct section_list {
-  char *name;                      ///<Section name
-  int  sequence;                   ///<The sequence in section list
-  PackageList head;               ///<The first node of package list at this section
-  struct section_list *next;       ///<The next section list node
+  char *name;                      /* Section name */
+  int  sequence;                   /* The sequence in section list */
+  PackageList head;                /* The first node of package list at this section */
+  struct section_list *next;       /* The next section list node */
 } SectionList;
 
 static gint package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg);
@@ -123,7 +123,7 @@ init_package_list (ApplicationManagerData *appdata)
   ret = ipkg_initialize (0);
   if (ret != 0)
     {
-      //Can't initialize the lib ipkg
+      /* Can't initialize the lib ipkg */
       g_debug ("Can not initialize the libipkg, the result is %d\nthe error message is:%s",
                ret, get_error_msg());
       return OP_ERROR;
@@ -132,7 +132,7 @@ init_package_list (ApplicationManagerData *appdata)
   ret = ipkg_list_available_cmd (head);
   if (ret != 0)
     {
-      //Can't get the package list correctly
+      /* Can't get the package list correctly */
       g_debug ("Can not get the package list, the result is %d\nthe error message is:%s",
                ret, get_error_msg());
       g_free (head);
@@ -167,7 +167,7 @@ reinit_package_list (ApplicationManagerData *appdata)
   ret = ipkg_list_available_cmd (head);
   if (ret != 0)
     {
-      //Can't get the package list correctly
+      /* Can't get the package list correctly */
       g_debug ("Can not get the package list, the result is %d\nthe error message is:%s",
                ret, get_error_msg());
       g_free (head);
@@ -258,7 +258,7 @@ package_list_search_section_node (const char *name,
 
       if (ret == 0)
         {
-          //Find it.
+          /* Find it. */
           *section = tmp;
           return OP_SUCCESS;
         }
@@ -340,8 +340,8 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
   PackageList *selected = NULL;
   PackageList *nosecpkg = NULL;
 
-  // Get the section list from the application manager data
-  // If the section list is not NULL, clear it.
+  /* Get the section list from the application manager data
+     If the section list is not NULL, clear it. */
   sectionlist = (SectionList *) application_manager_data_get_sectionlist (appdata);
   if (sectionlist != NULL)
     {
@@ -350,8 +350,8 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
       application_manager_data_set_section_list (appdata, sectionlist);
     }
 
-  // Get the installed list from the application manager data
-  // If the installed list is not NULL, clear it.
+  /* Get the installed list from the application manager data
+     If the installed list is not NULL, clear it. */
   installed = (PackageList *)application_manager_data_get_installedlist (appdata);
   if (installed != NULL)
     {
@@ -361,8 +361,8 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
       application_manager_data_set_installed_list (appdata, installed);
     }
 
-  // Get the upgrade list from the application manager data
-  // If the upgrade list is not NULL, clear it.
+  /* Get the upgrade list from the application manager data
+     If the upgrade list is not NULL, clear it. */
   upgrade = (PackageList *)application_manager_data_get_upgradelist (appdata);
   if (upgrade != NULL)
     {
@@ -372,8 +372,8 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
       application_manager_data_set_upgrade_list (appdata, upgrade);
     }
 
-  // Get the selected list from the application manager data
-  // If the selected list is not NULL, clear it.
+  /* Get the selected list from the application manager data
+     If the selected list is not NULL, clear it. */
   selected = (PackageList *)application_manager_data_get_upgradelist (appdata);
   if (selected != NULL)
     {
@@ -383,8 +383,8 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
       application_manager_data_set_upgrade_list (appdata, selected);
     }
 
-  // Get the nosecpkg list from the application manager data
-  // If the selected list is not NULL, clear it.
+  /* Get the nosecpkg list from the application manager data
+     If the selected list is not NULL, clear it. */
   nosecpkg = (PackageList *)application_manager_data_get_upgradelist (appdata);
   if (nosecpkg != NULL)
     {
@@ -438,19 +438,19 @@ check_package_upgradeable (PackageList *pkglist, IPK_PACKAGE *pkg,
   tmp = pkglist->pkg;
   if (tmp->state_status != SS_INSTALLED)
     {
-      // If the package in the list is not installed, 
-      // check the other one.
+      /* If the package in the list is not installed, 
+         check the other one. */
       if (pkg->state_status == SS_INSTALLED)
         {
-          // If the other one is installed, exchange them
+          /* If the other one is installed, exchange them */
           pkglist->pkg = pkg;
           pkg = tmp;
           tmp = pkglist->pkg;
         }
       else
         {
-          // If the other one is not installed either, 
-          // set the package with high version to the list.
+          /* If the other one is not installed either, 
+             set the package with high version to the list.*/
           ret = verrevcmp (tmp->version, pkg->version);
           if (ret < 0)
             {
@@ -499,7 +499,7 @@ package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg)
 
       if (ret > 0) 
         {
-          //The name of package is larger then the name of node
+          /* The name of package is larger then the name of node */
           ins = (PackageList *) g_malloc (sizeof (PackageList));
           if (ins == NULL)
             {
@@ -515,11 +515,11 @@ package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg)
 
           return OP_SUCCESS;
         }
-      // FIXME  Ignore the names of two packages are equal
-      // At this condition, if there are two packages with the same name,
-      // add every of them to the package list
+      /* FIXME  Ignore the names of two packages are equal
+         At this condition, if there are two packages with the same name,
+         add every of them to the package list */
 
-      //The name of package is small then the name of node, search the pre node.
+      /* The name of package is small then the name of node, search the pre node. */
       tmp = tmp->pre;
     }
 
@@ -562,7 +562,7 @@ package_list_insert_node (PackageList *pkglist, IPK_PACKAGE *pkg, PackageList *u
 
       if (ret > 0) 
         {
-          //The name of package is larger then the name of node
+          /* The name of package is larger then the name of node */
           ins = (PackageList *) g_malloc (sizeof (PackageList));
           if (ins == NULL)
             {
@@ -580,14 +580,14 @@ package_list_insert_node (PackageList *pkglist, IPK_PACKAGE *pkg, PackageList *u
         }
       else if (ret == 0)
         {
-          //The name of package is equal to the name of node.
-          //The package maybe an upgradeable package.
+          /* The name of package is equal to the name of node.
+             The package maybe an upgradeable package. */
           g_debug ("The package maybe upgradeable. Package name is:%s", pkg->name);
           g_debug ("The pkg version 1 is:%s, The version 2 is:%s", tmp->pkg->version, pkg->version);
           return check_package_upgradeable (tmp, pkg, upgrade);
         }
 
-      //The name of package is small then the name of node, search the pre node.
+      /* The name of package is small then the name of node, search the pre node. */
       tmp = tmp->pre;
     }
 
@@ -628,7 +628,7 @@ package_list_build_index (ApplicationManagerData *appdata)
   SectionList   *tmpsec = NULL;
   gint          ret;
 
-  // Get the package list from application manager data
+  /* Get the package list from application manager data */
   pkglist = (PKG_LIST_HEAD *) application_manager_data_get_pkglist (appdata);
   if (pkglist == NULL)
     {
@@ -642,10 +642,10 @@ package_list_build_index (ApplicationManagerData *appdata)
       return OP_ERROR;
     }
 
-  // Clear the old data
+  /* Clear the old data */
   package_list_clear_old_index (appdata);
 
-  // Malloc memory for the head
+  /* Malloc memory for the head */
   sectionlist = g_malloc (sizeof (SectionList));
   if (sectionlist == NULL)
     {
@@ -691,7 +691,7 @@ package_list_build_index (ApplicationManagerData *appdata)
       return OP_MAMORY_MALLOC_ERROR;
     }
 
-  // Init each list
+  /* Init each list */
   g_debug ("Begin init each list");
 
   section_list_init_node (sectionlist);
@@ -701,19 +701,19 @@ package_list_build_index (ApplicationManagerData *appdata)
   package_list_init_node (selected);
   package_list_init_node (nosecpkg);
 
-  // Set the header of each list to the application manager data
+  /* Set the header of each list to the application manager data */
   application_manager_data_set_section_list (appdata, sectionlist);
   application_manager_data_set_installed_list (appdata, installed);
   application_manager_data_set_upgrade_list (appdata, upgrade);
   application_manager_data_set_selected_list (appdata, selected);
   application_manager_data_set_nosecpkg_list (appdata, nosecpkg);
 
-  // Start to build the index for all packages
+  /* Start to build the index for all packages */
   pkg = pkglist->pkg_list;
 
   while (pkg != NULL)
     {
-      // Check wheather the package was installed
+      /* Check wheather the package was installed */
       if (pkg->state_status == SS_INSTALLED)
         {
           pkg->mark = PKG_STATUS_INSTALLED;
@@ -728,7 +728,7 @@ package_list_build_index (ApplicationManagerData *appdata)
           pkg->mark = PKG_STATUS_AVAILABLE;
         }
 
-      //Search the section node of package.
+      /* Search the section node of package. */
       ret = package_list_search_section_node (pkg->section, &tmpsec, sectionlist);
       if (ret == OP_SUCCESS)
         {
@@ -1239,9 +1239,9 @@ package_list_mark_all_upgradeable (ApplicationManagerData *appdata)
 
           default:
             break;
-        } // end switch
+        } /* end switch */
       tmplist = tmplist->next;
-    }// end while
+    } /* end while */
 }
 
 /**
@@ -1286,7 +1286,7 @@ package_list_execute_change (gpointer data)
                       tmplist->pkg->name);
             install_dialog_add_prepare_info (MOKO_INSTALL_DIALOG (installdialog),
                                              tmpstr);
-            //FIXME The newname of the packages are not used now.
+            /* FIXME The newname of the packages are not used now. */
             g_debug ("Begin to install:%s", tmplist->pkg->name);
             ret = ipkg_install_cmd (tmplist->pkg->name, "root",  &newname);
             g_debug ("************************************************");
@@ -1305,7 +1305,7 @@ package_list_execute_change (gpointer data)
                 errstr = g_malloc (res + 100);
                 if (errstr == NULL)
                   {
-                    // FIXME Add error manager code here
+                    /* FIXME Add error manager code here */
                     g_debug ("errstr malloc menory NULL");
                     install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
                                                      get_error_msg ());
@@ -1331,7 +1331,7 @@ package_list_execute_change (gpointer data)
                       tmplist->pkg->name);
             install_dialog_add_prepare_info (MOKO_INSTALL_DIALOG (installdialog),
                                              tmpstr);
-            //FIXME The newname of the packages are not used now.
+            /* FIXME The newname of the packages are not used now. */
             ret = ipkg_install_cmd (tmplist->pkg->name, "root",  &newname);
             if (ret == 0)
               {
@@ -1347,7 +1347,7 @@ package_list_execute_change (gpointer data)
                 errstr = g_malloc (res + 100);
                 if (errstr == NULL)
                   {
-                    // FIXME Add error manager code here
+                    /* FIXME Add error manager code here */
                     install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
                                                      get_error_msg ());
                     break;
@@ -1370,7 +1370,7 @@ package_list_execute_change (gpointer data)
                       tmplist->pkg->name);
             install_dialog_add_prepare_info (MOKO_INSTALL_DIALOG (installdialog),
                                              tmpstr);
-            //FIXME The newname of the packages are not used now.
+            /* FIXME The newname of the packages are not used now. */
             ret = ipkg_remove_cmd (tmplist->pkg->name);
             if (ret == 0)
               {
@@ -1386,7 +1386,7 @@ package_list_execute_change (gpointer data)
                 errstr = g_malloc (res + 100);
                 if (errstr == NULL)
                   {
-                    // FIXME Add error manager code here
+                    /* FIXME Add error manager code here */
                     install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
                                                      get_error_msg ());
                     break;
@@ -1437,7 +1437,7 @@ package_list_execute_change (gpointer data)
           g_debug ("Can not build index for packages");
           return NULL;
         }
-      // FIXME Add reinit filter menu code late
+      /* FIXME Add reinit filter menu code late */
     }
 
   install_dialog_set_install_status (MOKO_INSTALL_DIALOG (installdialog),

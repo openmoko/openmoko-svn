@@ -28,8 +28,8 @@
  * @brief The id of package list that display in apply dialog.
  */
 enum {
-  MARK_COL_NAME = 0,      ///<Package name
-  MARK_NUM_COL            ///<Column number
+  MARK_COL_NAME = 0,      /* Package name */
+  MARK_NUM_COL            /* Column number */
 };
 
 /**
@@ -53,7 +53,7 @@ apply_dialog_new (ApplicationManagerData *appdata)
   GtkCellRenderer     *renderer;
   GtkTreeStore    *store;
 
-  // Create a new dialog and add a GtkTreeview and two button to the dialog
+  /* Create a new dialog and add a GtkTreeview and two button to the dialog */
   applydialog = gtk_dialog_new ();
   gtk_window_set_title (GTK_WINDOW (applydialog), _("summary"));
   gtk_window_set_position (GTK_WINDOW (applydialog), GTK_WIN_POS_CENTER_ALWAYS);
@@ -90,7 +90,7 @@ apply_dialog_new (ApplicationManagerData *appdata)
   gtk_dialog_add_action_widget (GTK_DIALOG (applydialog), okbutton, GTK_RESPONSE_OK);
   GTK_WIDGET_SET_FLAGS (okbutton, GTK_CAN_DEFAULT);
 
-  // Add column to the treeview
+  /* Add column to the treeview */
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("Package Name"));
 

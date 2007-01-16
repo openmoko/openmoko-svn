@@ -28,14 +28,14 @@
  * The id is used to find the related pixbuf from pixbuf list.
  */
 typedef enum _pkgstatusid {
-  PKG_STATUS_AVAILABLE = 0,                ///<Package is available and not installed.
-  PKG_STATUS_INSTALLED,                    ///<Package is installed and can not be upgrade.
-  PKG_STATUS_UPGRADEABLE,                  ///<Package is installed and can be upgrade.
-  PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL,   ///<Available package is marked for install.
-  PKG_STATUS_INSTALLED_MARK_FOR_REMOVE,    ///<Installed package is marked for remove.
-  PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE, ///<Upgradeable package is marked for upgrade.
-  PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE,  ///<Upgradeable package is mark for remove.
-  N_COUNT_PKG_STATUS                       ///<The number of valid status.
+  PKG_STATUS_AVAILABLE = 0,                /* Package is available and not installed. */
+  PKG_STATUS_INSTALLED,                    /* Package is installed and can not be upgrade. */
+  PKG_STATUS_UPGRADEABLE,                  /* Package is installed and can be upgrade. */
+  PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL,   /* Available package is marked for install. */
+  PKG_STATUS_INSTALLED_MARK_FOR_REMOVE,    /* Installed package is marked for remove. */
+  PKG_STATUS_UPGRADEABLE_MARK_FOR_UPGRADE, /* Upgradeable package is marked for upgrade. */
+  PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE,  /* Upgradeable package is mark for remove. */
+  N_COUNT_PKG_STATUS                       /* The number of valid status. */
 } PkgStatusId;
 
 GdkPixbuf *create_pixbuf (const gchar *filename);

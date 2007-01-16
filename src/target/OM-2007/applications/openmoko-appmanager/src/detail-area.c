@@ -108,7 +108,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_set_text (buffer, "", -1);
   g_return_if_fail (pkg != NULL);
 
-  // Init tag
+  /* Init tag */
   tagtable = gtk_text_buffer_get_tag_table (buffer);
   if (gtk_text_tag_table_lookup (tagtable, "bold") == NULL)
     {
@@ -118,37 +118,37 @@ detail_area_update_info (ApplicationManagerData *appdata,
                                   NULL);
     }
 
-  // Insert the pixmap of the package
-  // FIXME It needs a way to lookup the picture
+  /* Insert the pixmap of the package
+     FIXME It needs a way to lookup the picture */
   pix = create_pixbuf ("unkown.png");
 
   gtk_text_buffer_get_start_iter (buffer, &start);
   gtk_text_buffer_insert_pixbuf (buffer, &start, pix);
 
-  // Insert package name
+  /* Insert package name */
   gtk_text_buffer_get_end_iter (buffer, &end);
   pstart = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
                           package_list_get_package_name (pkg),
                           -1);
 
-  // Insert the "\n"
+  /* Insert the "\n" */
   gtk_text_buffer_get_end_iter (buffer, &end);
   gtk_text_buffer_insert (buffer, &end, "\n", -1);
 
-  // Insert the maintainer
+  /* Insert the maintainer */
   gtk_text_buffer_get_end_iter (buffer, &end);
   pend = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
                           package_list_get_package_maintainer (pkg),
                           -1);
 
-  // Set bold to the first line
+  /* Set bold to the first line */
   gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
   gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
   gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
-  // Set the Version
+  /* Set the Version */
   gtk_text_buffer_get_end_iter (buffer, &end);
   pstart = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, "\nVersion\n\t", -1);
@@ -162,7 +162,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
   gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
-  // Set the descript
+  /* Set the descript */
   gtk_text_buffer_get_end_iter (buffer, &end);
   pstart = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, "\nDescription\n\t", -1);
@@ -176,7 +176,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
   gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
-  // Set the depends
+  /* Set the depends */
   depends = package_list_get_package_depends (pkg);
   if (depends != NULL)
     {

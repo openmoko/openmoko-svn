@@ -141,7 +141,7 @@ main (int argc, char* argv[])
 
   if (argc != 1)
     {
-      //Add init code.
+      /* Add init code. */
     }
   lockapp = testlock ("/tmp/appmgr.lock");
   if (lockapp > 0)
@@ -160,15 +160,12 @@ main (int argc, char* argv[])
 
   init_pixbuf_list (appdata);
 
-  //app = MOKO_APPLICATION (moko_application_get_instance ());
-  //g_set_application_name (_("Application manager"));
-
   window = MOKO_PANED_WINDOW (moko_paned_window_new ());
   g_signal_connect (G_OBJECT (window), "delete_event", 
                     G_CALLBACK (gtk_main_quit), NULL);
   application_manager_data_set_main_window (appdata, window);
 
-  // Save the main window
+  /* Save the main window */
   mainwindow = GTK_WIDGET(window);
 
   appmenu = application_menu_new (appdata);
@@ -191,7 +188,7 @@ main (int argc, char* argv[])
   detail = detail_area_new (appdata);
   moko_paned_window_set_lower_pane (window, detail);
 
-  //Load the list of all package in the memory
+  /* Load the list of all package in the memory */
   ret = init_package_list (appdata);
   if (ret != OP_SUCCESS)
     {

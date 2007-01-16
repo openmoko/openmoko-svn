@@ -37,18 +37,18 @@ G_DEFINE_TYPE (InstallDialog, install_dialog, GTK_TYPE_DIALOG)
  * @brief The private data of the Install dialog
  */
 typedef struct _InstallDialogPriv {
-  ApplicationManagerData   *maindata;    ///<! The main data of the application manager
-  gchar    **installinfolist;            ///<! The list of install/remove/upgrade infomation
-  gchar    **prepareinfolist;            ///<! The list of prepareinfomation
-  gint     preparenum;                   ///<! Prepare to install/remove/upgrade the _number_ package
-  gint     installnum;                   ///<! Installing/removing/upgrading the _number_ package 
-  gint     displaypreparenum;            ///<! Prepare info of the _number_ package has been displayed
-  gint     displayinstallnum;            ///<! Installed info of the _number_ package has been displayed 
-  gint     installstatus;                ///<! The status of the install process
-  gint     displaystatus;                ///<! The status of the display process
-  gboolean requestcancel;                ///<! Cancel the install status by user choice
-  GtkWidget  *textview;                  ///<! The textview in the dialog
-  gint     pkgnum;                       ///<! The number of packages that need be installed/upgraded/removed
+  ApplicationManagerData   *maindata;    /* The main data of the application manager */
+  gchar    **installinfolist;            /* The list of install/remove/upgrade infomation */
+  gchar    **prepareinfolist;            /* The list of prepareinfomation */
+  gint     preparenum;                   /* Prepare to install/remove/upgrade the _number_ package */
+  gint     installnum;                   /* Installing/removing/upgrading the _number_ package */
+  gint     displaypreparenum;            /* Prepare info of the _number_ package has been displayed */
+  gint     displayinstallnum;            /* Installed info of the _number_ package has been displayed */
+  gint     installstatus;                /* The status of the install process */
+  gint     displaystatus;                /* The status of the display process */
+  gboolean requestcancel;                /* Cancel the install status by user choice */
+  GtkWidget  *textview;                  /* The textview in the dialog */
+  gint     pkgnum;                       /* The number of packages that need be installed/upgraded/removed */
 } InstallDialogPriv;
 
 static void 
@@ -60,12 +60,14 @@ install_dialog_class_init (InstallDialogClass *klass)
 static void 
 install_dialog_init (InstallDialog *self)
 {
-  InstallDialogPriv *priv = MOKO_INSTALL_DIALOG_GET_PRIVATE (self);
   GtkWidget  *vbox;
   GtkWidget  *scrollwindow;
   GtkWidget  *closebutton;
+  InstallDialogPriv *priv;
 
-  // Init the data
+  priv = MOKO_INSTALL_DIALOG_GET_PRIVATE(self);
+
+  /* Init the data */
   priv->maindata = NULL;
   priv->installinfolist = NULL;
   priv->prepareinfolist = NULL;
@@ -77,7 +79,7 @@ install_dialog_init (InstallDialog *self)
   priv->displaystatus = STATUS_INSTALL;
   priv->requestcancel = FALSE;
 
-  // Init the dialog
+  /* Init the dialog */
   gtk_widget_set_size_request (GTK_WIDGET (self), 480, 480);
   gtk_window_set_title (GTK_WINDOW (self), _("dialog1"));
   gtk_window_set_type_hint (GTK_WINDOW (self), GDK_WINDOW_TYPE_HINT_DIALOG);
@@ -202,7 +204,7 @@ install_dialog_time_out (gpointer dialog)
 
   if (priv->installstatus == STATUS_ERROR)
     {
-      // FIXME An error appeared in the install process. Add code later.
+      /* FIXME An error appeared in the install process. Add code later. */
       return FALSE;
     }
 
