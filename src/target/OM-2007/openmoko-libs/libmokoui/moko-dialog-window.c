@@ -200,7 +200,7 @@ void moko_dialog_window_set_contents(MokoDialogWindow* self, GtkWidget* contents
     moko_debug( "moko_dialog_window_set_contents" );
     MokoDialogWindowPrivate* priv = MOKO_DIALOG_WINDOW_GET_PRIVATE(self);
     g_return_if_fail( priv->vbox );
-    gtk_box_pack_start( GTK_BOX(priv->vbox), contents, FALSE, FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(priv->vbox), contents, TRUE, TRUE, 0 );
 }
 
 static void moko_dialog_window_close(MokoDialogWindow* self)
