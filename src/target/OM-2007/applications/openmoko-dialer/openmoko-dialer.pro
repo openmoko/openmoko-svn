@@ -1,7 +1,6 @@
 DEPENDPATH += . src
 INCLUDEPATH += . src
 
-# Input
 HEADERS += src/common.h \
            src/contacts.h \
            src/error.h \
@@ -24,4 +23,6 @@ SOURCES += src/common.c \
            src/openmoko-dialer-main.c
 
 MOKOCONFIG = mokoui
+PKGCONFIG += libgsmd
+
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
