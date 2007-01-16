@@ -45,7 +45,7 @@ MokoDialogWindow* moko_dialog_window_new();
 
 void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title);
 void moko_dialog_window_set_contents(MokoDialogWindow* self, GtkWidget* contents);
-guint moko_dialog_window_execute(MokoDialogWindow* self);
+guint moko_dialog_window_run(MokoDialogWindow* self);
 
 G_END_DECLS
 
