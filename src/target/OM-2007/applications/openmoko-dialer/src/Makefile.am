@@ -1,4 +1,4 @@
-INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
+INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall  -pedantic
 
 bin_PROGRAMS = openmoko-dialer
 
@@ -19,7 +19,8 @@ openmoko-dialer-window-dialer.c\
 openmoko-dialer-window-outgoing.c\
 openmoko-dialer-window-incoming.c\
 openmoko-dialer-window-talking.c\
-moko-dialer-status.c
+moko-dialer-status.c\
+alsa.c
 
 openmoko_dialer_LDADD = @OPENMOKO_LIBS@
 

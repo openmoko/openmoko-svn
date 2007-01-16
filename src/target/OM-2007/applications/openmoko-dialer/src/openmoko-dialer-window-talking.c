@@ -15,7 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-
+#include "alsa.h"
 #include <libmokoui/moko-finger-tool-box.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
@@ -36,12 +36,32 @@
 
 void
 openmoko_wheel_press_left_up_cb(GtkWidget *widget, MOKO_DIALER_APP_DATA * appdata)
-{DBG_ENTER();
+{
+DBG_ENTER();
+ gint l , r;
+ alsa_get_volume(&l, &r);
+alsa_set_volume(l+10, r+10);
+
+ alsa_get_volume(&l, &r);
+ g_print("l = %d, r = %d\n", l, r);
+
+/*
+    l = 90; 
+    r = 90;
+
+*/    
+
 }
 
 void
 openmoko_wheel_press_right_down_cb(GtkWidget *widget, MOKO_DIALER_APP_DATA * appdata)
 {
+ gint l , r;
+  alsa_get_volume(&l, &r);
+alsa_set_volume(l-10, r-10);
+ alsa_get_volume(&l, &r);
+ g_print("l = %d, r = %d\n", l, r);
+
 DBG_ENTER();
 }
 
