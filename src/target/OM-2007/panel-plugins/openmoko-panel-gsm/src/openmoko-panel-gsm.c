@@ -4,11 +4,8 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <libgsmd/libgsmd.h>
 
-#include <libgsmd/misc.h>
-#include <libgsmd/libgsmd.h>
-#include "dialergsm.h"
+#include "moko-gsm-conn.h"
 
 #define DIR_LONG	256
 #define FONT_POPUP_DESC       "Sans bold 28px"
@@ -25,60 +22,17 @@ enum {
 };
 
 static MBPixbuf *pb;
-static MBPixbufImage *Img_icon[MAX_ID]; 
-static MBPixbufImage *Img_Scaled[MAX_ID];
-static int CurImg = 0;
-static int LastImg = -1;
+static MBPixbufImage *img_icon[MAX_ID]; 
+static MBPixbufImage *img_scaled[MAX_ID];
+static int cur_img = 0;
+static int last_img = -1;
 MBMenu* popupmenu;
 static Display *dpy;
 static int screen;
 static int times = 0;
+static int gsm_quality = 0;
 
-
-	static struct lgsm_handle *lgsmh=0;
-Bool
-gsm_connect_init()
-{
-
-	lgsmh = lgsm_init(LGSMD_DEVICE_GSMD);
-	
-	if (!lgsmh) 
-	{
-		fprintf(stderr, "Can't connect to gsmd\n");
-		return False;
-	}
-	else 
-	{
-	event_init(lgsmh);
-	return True;
-	}
-	
-}
-
-/*
-*
-*/
-int 
-signal_update(void)
-{
-   int sig_quality = 0;
-   int result = 0;
-   //result = lgsm_get_signal_quality (lgsmh, &sig_quality);
-
-    if (CurImg<MAX_ID-1) 
-    	CurImg++;
-    else
-    	CurImg=0;
-
-    return CurImg;
-}
-
-/**
-*@brief execute an application
-*@param cmd 	command string
-*@return none
-*/
-void 
+static void 
 fork_exec(char *cmd)
 {
   switch (fork())
@@ -100,31 +54,18 @@ om_gsm_connect_dialog_cb(MBMenuItem *item)
       fprintf(stdout, "open connect status dialog");
 }
 
-void
+static void
 om_gsm_disconnect_dialog_cb(MBMenuItem *item)
 {
       fprintf(stdout, "open disconnect status dialog");
 }
 
-/**
-*@brief Xevent callback function, let the popupmenu handle Xevent.
-*@param app		MBTrayApp reference
-*@param e		XEvent
-*@return none
-*/
-void
+static void
 xevent_callback (MBTrayApp *app, XEvent *e)
 {
   	mb_menu_handle_xevent (popupmenu, e);
 }
 
-/**
- * @brief get the popupmenu position
- * @param app	MBTrayApp reference
- * @param x 		X co-ord
- * @param y		Y co-ord
- * @return none
- */
 static void
 menu_get_popup_pos (MBTrayApp *app, int *x, int *y)
 {
@@ -154,8 +95,7 @@ menu_get_popup_pos (MBTrayApp *app, int *x, int *y)
     }
 }
 
-
-void
+static void
 menu_init(MBTrayApp* app)
 {
  char* icon_path_ucon;
@@ -195,40 +135,40 @@ if (popupmenu == NULL)
   if (mb_theme) free (mb_theme);
 }
 
-void
+static void
 paint_callback (MBTrayApp *app, Drawable drw )
 {
   MBPixbufImage *img_backing = NULL;
 
-  CurImg = signal_update();
+  cur_img = gsm_quality;
 
-  if (LastImg == CurImg) 
+  if (last_img == cur_img) 
   	return;
   
   img_backing = mb_tray_app_get_background (app, pb);
 
   mb_pixbuf_img_copy_composite(pb, img_backing, 
-			       Img_Scaled[CurImg], 0, 0,
-			       mb_pixbuf_img_get_width(Img_Scaled[0]),
-			       mb_pixbuf_img_get_height(Img_Scaled[0]),
+			       img_scaled[cur_img], 0, 0,
+			       mb_pixbuf_img_get_width(img_scaled[0]),
+			       mb_pixbuf_img_get_height(img_scaled[0]),
 			       mb_tray_app_tray_is_vertical(app) ? 
-			       (mb_pixbuf_img_get_width(img_backing)-mb_pixbuf_img_get_width(Img_Scaled[0]))/2 : 0,
+			       (mb_pixbuf_img_get_width(img_backing)-mb_pixbuf_img_get_width(img_scaled[0]))/2 : 0,
 			       mb_tray_app_tray_is_vertical(app) ? 0 : 
-			       (mb_pixbuf_img_get_height(img_backing)-mb_pixbuf_img_get_height(Img_Scaled[0]))/2 );
+			       (mb_pixbuf_img_get_height(img_backing)-mb_pixbuf_img_get_height(img_scaled[0]))/2 );
 
   mb_pixbuf_img_render_to_drawable(pb, img_backing, drw, 0, 0);
 
   mb_pixbuf_img_free( pb, img_backing );
 
-  LastImg = CurImg;
+  last_img = cur_img;
 }
 
-void
+static void
 resize_callback (MBTrayApp *app, int w, int h )
 {
   int  i;
-  int  base_width  = mb_pixbuf_img_get_width(Img_icon[0]);
-  int  base_height = mb_pixbuf_img_get_height(Img_icon[0]);
+  int  base_width  = mb_pixbuf_img_get_width(img_icon[0]);
+  int  base_height = mb_pixbuf_img_get_height(img_icon[0]);
   int  scale_width = base_width, scale_height = base_height;
   Bool want_resize = True;
 
@@ -258,17 +198,17 @@ resize_callback (MBTrayApp *app, int w, int h )
 
   if (want_resize)  /* we only request a resize is absolutely needed */
     {
-      LastImg = -1;
+      last_img = -1;
       mb_tray_app_request_size (app, scale_width, scale_height);
     }
 
   for (i=0; i<MAX_ID; i++)
     {
-      if (Img_Scaled[i] != NULL) 
-	mb_pixbuf_img_free(pb, Img_Scaled[i]);
+      if (img_scaled[i] != NULL) 
+	mb_pixbuf_img_free(pb, img_scaled[i]);
 
-      Img_Scaled[i] = mb_pixbuf_img_scale(pb, 
-					  Img_icon[i], 
+      img_scaled[i] = mb_pixbuf_img_scale(pb, 
+					  img_icon[i], 
 					  scale_width, 
 					  scale_height);
     }
@@ -277,7 +217,7 @@ resize_callback (MBTrayApp *app, int w, int h )
 /**
 *@brief button callback function.
 */
-void
+static void
 button_callback (MBTrayApp *app, int x, int y, Bool is_released )
 {
    XEvent ev;
@@ -328,40 +268,20 @@ button_callback (MBTrayApp *app, int x, int y, Bool is_released )
     }
 }
 
-#define STDIN_BUF_SIZE	1024
-void
+static void
 timeout_callback ( MBTrayApp *app )
 {
-	printf("timeout_callback\n");
-		fd_set readset;
-		int rc;
-		char buf[STDIN_BUF_SIZE+1];
-		struct timeval t;
-		t.tv_sec=0;
-		t.tv_usec=0;
-		int gsm_fd = lgsm_fd(lgsmh);
-		//FD_SET(0, &readset);
-		FD_SET(gsm_fd, &readset);
-		printf("select>\n");
-		rc = select(gsm_fd+1, &readset, NULL, NULL, &t);
-		printf("select<\n");
-		if (FD_ISSET(gsm_fd, &readset)) 
-		{
-			printf("read>\n");
-			rc = read(gsm_fd, buf, sizeof(buf));
-			printf("read<\n");
-			if (rc <= 0) {
-				printf("ERROR reding from gsm_fd\n");
-				return;
-			}
-			else
-			{
-				printf("data from gsm_fd\n");
-				rc = lgsm_handle_packet(lgsmh, buf, rc);
-			}
-		
-		}
-  mb_tray_app_repaint (app);
+    if (moko_panel_gsm_quality(&gsm_quality))
+    	{
+    	printf ("quality = %d\n", gsm_quality);
+       mb_tray_app_repaint (app);
+       return;
+    	}
+    else
+    	{
+    	printf ("signal quality have not changed \n");
+    	return;
+       }
 }
 
 
@@ -385,16 +305,17 @@ main( int argc, char *argv[])
 		      mb_tray_app_xscreen(app));
   
    memset (&tv,0,sizeof(struct timeval));
-   tv.tv_sec = 2;
+   tv.tv_sec = 5;
+   tv.tv_usec = 0;
 
     menu_init (app);
 
-  Img_icon[conn_err]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_00.png");
-  Img_icon[level_1]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_01.png");
-  Img_icon[level_2]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_02.png");
-  Img_icon[level_3]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_03.png");
-  Img_icon[level_4]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_04.png");
-  Img_icon[level_5]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_05.png");
+  img_icon[conn_err]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_00.png");
+  img_icon[level_1]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_01.png");
+  img_icon[level_2]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_02.png");
+  img_icon[level_3]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_03.png");
+  img_icon[level_4]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_04.png");
+  img_icon[level_5]= mb_pixbuf_img_new_from_file(pb, PKGDATADIR"/SignalStrength25g_05.png");
   
    mb_tray_app_set_timeout_callback (app, timeout_callback, &tv); 
    
@@ -402,13 +323,9 @@ main( int argc, char *argv[])
 
    mb_tray_app_set_xevent_callback(app, xevent_callback);
    
-   mb_tray_app_set_icon(app, pb, Img_icon[level_3]);
+   mb_tray_app_set_icon(app, pb, img_icon[level_3]);
 
    mb_tray_app_request_offset (app, 1);
-
-   gsm_connect_init();
-   
-   //gsm_lgsm_start(0);
 
    mb_tray_app_main (app);
    
