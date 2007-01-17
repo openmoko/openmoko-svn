@@ -90,7 +90,8 @@ static void
 moko_dialer_autolist_init (MokoDialerAutolist *moko_dialer_autolist)
 {
 //DBG_ENTER();
-for(int i=0;i<MOKO_DIALER_MAX_TIPS;i++)
+int i;
+for(i=0;i<MOKO_DIALER_MAX_TIPS;i++)
 	moko_dialer_autolist->tips[i]=0;
 moko_dialer_autolist->  tipscreated=FALSE;  
 moko_dialer_autolist->head=0;
@@ -123,7 +124,8 @@ if(moko_dialer_autolist->tipscreated)
 {
 		moko_dialer_autolist->selected=FALSE;
 			//no alternative, hide all 3 labels.
-		for(gint i=0;i<MOKO_DIALER_MAX_TIPS;i++)
+			gint i;
+		for(i=0;i<MOKO_DIALER_MAX_TIPS;i++)
 		{
 		moko_dialer_tip_set_selected(moko_dialer_autolist->tips[i],FALSE);
 		gtk_widget_hide(moko_dialer_autolist->tips[i]);
@@ -233,8 +235,8 @@ if(!moko_dialer_autolist->tipscreated)
  gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, FALSE, FALSE, 0);
   
   moko_dialer_autolist->imagePerson=imagePerson;
-
-  for(int i=0;i<MOKO_DIALER_MAX_TIPS;i++)
+			gint i;
+  for(i=0;i<MOKO_DIALER_MAX_TIPS;i++)
   	{
   	tip=moko_dialer_tip_new();
   	
@@ -330,12 +332,12 @@ gboolean moko_dialer_autolist_has_selected(MokoDialerAutolist *moko_dialer_autol
 // selected ==-1 means there are no selected tips
 gboolean moko_dialer_autolist_set_select(MokoDialerAutolist *moko_dialer_autolist,gint selected)
 {
-
+gint i;
 		if(selected==-1)
 		{
 
 			//set the selected status to be false
-			for(gint i=0;i<moko_dialer_autolist->g_alternatecount;i++)
+			for( i=0;i<moko_dialer_autolist->g_alternatecount;i++)
 			{
 			moko_dialer_tip_set_selected( moko_dialer_autolist->tips[i], FALSE);
 			}
@@ -353,7 +355,7 @@ if(selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternatecount)
 	{
 
 		//hide the others;
-		for(gint i=0;i<moko_dialer_autolist->g_alternatecount;i++)
+		for( i=0;i<moko_dialer_autolist->g_alternatecount;i++)
 		{
 			if(i!=selected)
 			{//hide the others
@@ -374,7 +376,7 @@ if(selected<MOKO_DIALER_MAX_TIPS&&moko_dialer_autolist->g_alternatecount)
 	file_load_person_image_scalable_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
 		gtk_widget_show(moko_dialer_autolist->imagePerson);	
 	//just change the selected attribute of the tips
-		for(gint i=0;i<moko_dialer_autolist->g_alternatecount;i++)
+		for( i=0;i<moko_dialer_autolist->g_alternatecount;i++)
 		{
 			if(i!=selected)
 			{//set selected to false;
