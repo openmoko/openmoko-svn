@@ -5,7 +5,7 @@ AM_CFLAGS = -Wall -std=c99 -pedantic @OPENMOKO_CFLAGS@
 bin_PROGRAMS = openmoko-mainmenu
 
 openmoko_mainmenu_SOURCES = main.c \
-			   mainmenu.c close-page.c mokoiconview.c\
+			   mainmenu.c mokoiconview.c\
 			   mokodesktop.c mokodesktop_item.c\
 			   callbacks.c app-history.c
 

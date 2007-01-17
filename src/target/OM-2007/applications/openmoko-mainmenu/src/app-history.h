@@ -1,17 +1,9 @@
 #ifndef _MOKO_APP_HISTORY_H
 #define _MOKO_APP_HISTORY_H
 
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
 #include <libmokoui/moko-pixmap-button.h>
 
-void
-moko_update_history_app_list ();
+#define MAX_RECORD_APP 4
 
-void
-moko_sample_hisory_app_fill(MokoPixmapButton *btn);
-
-void
-moko_add_history_app_image (MokoPixmapButton* btn, GdkPixbuf *pixbuf);
-
-#endif "app-history.h"
+void moko_hisory_app_fill(MokoPixmapButton **btn, const char *path);
+#endif /*_MOKO_APP_HISTORY_H*/

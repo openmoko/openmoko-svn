@@ -1,18 +1,25 @@
 #include "app-history.h"
 
-void
-moko_sample_hisory_app_fill(MokoPixmapButton *btn)
+static int current = 0;
+
+static void 
+pointer_check()
 {
-   GtkWidget *image;
-
-   image = gtk_image_new_from_file ("/usr/share/pixmaps/gnome-eyes.png");
-
-   moko_pixmap_button_set_finger_toolbox_btn_center_image(btn, image);
-   
+    if (current < MAX_RECORD_APP )
+    	return;
+    else
+    	current = 0;
 }
 
 void
-moko_add_history_app_image (MokoPixmapButton* btn, GdkPixbuf *pixbuf)
+moko_hisory_app_fill(MokoPixmapButton **btn, const char *path)
 {
-  moko_pixmap_button_set_finger_toolbox_btn_center_image(btn, gtk_image_new_from_pixbuf (pixbuf)); 
+   GtkWidget *image;
+   image = gtk_image_new_from_file (path);
+
+   if (!path)
+   	return;
+   pointer_check();
+   moko_pixmap_button_set_finger_toolbox_btn_center_image(btn[current], image);
+   current++;
 }

@@ -28,10 +28,9 @@
 #include "callbacks.h"
 #include "mokoiconview.h"
 #include "mokodesktop_item.h"
+#include "app-history.h"
 
 
-gboolean close_page_hide = TRUE;
- 
 void
 moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
@@ -41,15 +40,12 @@ moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
     moko_main_menu_update_content (mma->mm, mma->mm->current);
     gtk_window_present (mma->window);
   }
-  else if (close_page_hide) {
-    gtk_widget_hide (mma->close);
-    gtk_widget_show (mma->mm);
+  else 
+  {
+    gtk_widget_hide (GTK_WIDGET (mma->wheel));
+    gtk_widget_hide (GTK_WIDGET (mma->toolbox));
+    gtk_widget_hide (GTK_WIDGET (mma->window));
   }
-  else {
-    gtk_widget_hide (mma->mm);
-    gtk_widget_show (mma->close);
-  }
-  close_page_hide = !close_page_hide;
 }
 
 void
@@ -77,8 +73,6 @@ moko_close_page_close_btn_released_cb (GtkButton *button, MokoMainmenuApp *mma)
   	moko_main_menu_clear (mma->mm);
        //gtk_widget_destroy (mma->mm);
     }
-  if (mma->close)
-    gtk_widget_destroy (mma->close);
   if (mma->wheel)
     gtk_widget_destroy (mma->wheel);
   if (mma->toolbox)
@@ -131,7 +125,7 @@ moko_icon_view_item_acitvated_cb(GtkIconView *icon_view,
   {
    switch (fork())
     {
-    case 0:
+        case 0:
       mb_exec((char *)select_item->data);
       fprintf(stderr, "exec failed, cleaning up child\n");
       exit(1);
@@ -139,6 +133,10 @@ moko_icon_view_item_acitvated_cb(GtkIconView *icon_view,
       fprintf(stderr, "can't fork\n");
       break;
     }
+     char path[512];
+     snprintf (path, 512, "%s/%s", PIXMAP_PATH, select_item->icon_name);
+     g_debug ("-------select_item path: %s", path);
+      moko_hisory_app_fill(mma->history, path);
   }
 
 moko_icon_view_selection_changed_cb(mma->mm->icon_view, mma);  

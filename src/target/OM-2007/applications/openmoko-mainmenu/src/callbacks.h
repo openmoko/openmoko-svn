@@ -51,4 +51,4 @@ void
 moko_icon_view_selection_changed_cb(GtkIconView *iconview, 
 												MokoMainmenuApp *mma);
 
-#endif /*callbacks.h*/
+#endif /*_MAIN_MENU_CALLBACKS_H*/
