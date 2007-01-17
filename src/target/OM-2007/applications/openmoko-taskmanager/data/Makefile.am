@@ -7,6 +7,7 @@ resourcedir = $(pkgdatadir)
 resource_DATA = close_all.png\
 		close.png\
 		exit.png\
+		active_task.png\
 		screen_thumb_frame.png\
 		screen_thumb_frame_p.png\
 		bg_history.png\

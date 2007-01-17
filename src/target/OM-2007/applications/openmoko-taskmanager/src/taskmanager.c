@@ -211,7 +211,7 @@ main (int argc, char** argv)
     tm->toolbox = moko_finger_window_get_toolbox (tm->window);
 
     tm->go_to =  moko_finger_tool_box_add_button_without_label (tm->toolbox);   
-    image = gtk_image_new_from_file (PKGDATADIR"/close_all.png");
+    image = gtk_image_new_from_file (PKGDATADIR"/active_task.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (tm->go_to, image);
     tm->kill =   moko_finger_tool_box_add_button_without_label (tm->toolbox);
     image = gtk_image_new_from_file (PKGDATADIR"/close.png");
