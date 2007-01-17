@@ -1,4 +1,6 @@
-INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall  -pedantic
+AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
+              -DPKGDATADIR=\"$(pkgdatadir)\"
+AM_CFLAGS = -Wall -pedantic -std=c99 @OPENMOKO_CFLAGS@
 
 bin_PROGRAMS = openmoko-dialer
 
