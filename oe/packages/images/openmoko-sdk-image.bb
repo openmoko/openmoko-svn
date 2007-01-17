@@ -1,5 +1,5 @@
 require openmoko-devel-image.bb
 
-export PACKAGE_INSTALL += "\
+export IPKG_INSTALL += "\
   task-openmoko-native-sdk \
 "
