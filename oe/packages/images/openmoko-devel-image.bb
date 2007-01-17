@@ -1,6 +1,6 @@
 require openmoko-image.bb
 
-export IPKG_INSTALL += "\
+export PACKAGE_INSTALL += "\
   task-openmoko-demo \
   task-openmoko-debug \
 "

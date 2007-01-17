@@ -5,7 +5,7 @@
 export IMAGE_BASENAME = "${PN}"
 export IMAGE_LINGUAS = ""
 
-export IPKG_INSTALL = "\
+export PACKAGE_INSTALL = "\
   ${MACHINE_TASK_PROVIDER} \
   task-openmoko-linux \
   task-openmoko-net \
@@ -19,8 +19,8 @@ DEPENDS = "\
   task-openmoko \
 "
 
-RDEPENDS = "${IPKG_INSTALL}"
+RDEPENDS = "${PACKAGE_INSTALL}"
 
-inherit image_ipk
+inherit image
 
 LICENSE = MIT
