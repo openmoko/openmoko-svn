@@ -1,5 +1,3 @@
-MOKOCONFIG = mokoui
-
 HEADERS += src/application-menu.h \
            src/appmanager-data.h \
            src/appmanager-window.h \
@@ -15,6 +13,7 @@ HEADERS += src/application-menu.h \
            src/tool-box.h \
            src/apply-dialog.h \
            src/install-dialog.h
+
 SOURCES += src/application-menu.c \
            src/appmanager-data.c \
            src/appmanager-window.c \
@@ -29,5 +28,7 @@ SOURCES += src/application-menu.c \
            src/apply-dialog.c \
            src/install-dialog.c
 
-include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
+MOKOCONFIG = mokoui
+PKGCONFIG += libgsmd
 
+include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
