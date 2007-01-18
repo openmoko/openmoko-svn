@@ -20,12 +20,13 @@
  * @date 2006-10-12
  */
 
-#include <dialergsm.h>
+#include "dialergsm.h"
+#include "moko-dialer-includes.h"
+
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
 #include <string.h>
-#include "moko-dialer-includes.h"
 
 //pthread_t thread;///<the gsm_monitor_thread thread handler
 

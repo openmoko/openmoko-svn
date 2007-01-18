@@ -29,6 +29,7 @@ SOURCES += src/application-menu.c \
            src/install-dialog.c
 
 MOKOCONFIG = mokoui
-PKGCONFIG += libgsmd
+PKGCONFIG += libipkg gthread-2.0
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
+

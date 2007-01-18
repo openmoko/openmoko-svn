@@ -44,7 +44,7 @@ SOURCES += \
            src/pin.c
 
 MOKOCONFIG = mokoui
-PKGCONFIG += libgsmd
+PKGCONFIG += libgsmd alsa
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
 
