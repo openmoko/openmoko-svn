@@ -1,4 +1,9 @@
-#FIXME I can't get a stock GtkComboBox created with gtk_combo_box_new_text to show white text
+
+style "gtkcombobox"
+{
+	text[NORMAL] = "#fff"
+}
+widget "*.GtkComboBox.*" style "gtkcombobox"
 
 style "gtkcombobox-cellrenderer"
 {
