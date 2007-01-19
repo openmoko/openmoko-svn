@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 10.0, SVG Export Plug-In . SVG Version: 3.0.0 Build 77)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="0 32" i:rulerOrigin="0 0" i:pageBounds="0 32 32 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="32" height="32"
+	 viewBox="0 0 32 32" overflow="visible" enable-background="new 0 0 32 32" xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  y="0" x="0" width="32" height="32" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+	</metadata>
+	<g id="_x00B9_柉x00BC_h_x005F_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+		<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M18.773,21.309H4.242V5.625h14.531V21.309z"/>
+		<g i:knockout="Off">
+			<g>
+				<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="11.9067" y1="6.4312" x2="11.9067" y2="28.4322">
+					<stop  offset="0.0056" style="stop-color:#FF7800"/>
+					<stop  offset="1" style="stop-color:#9A2400"/>
+					<a:midPointStop  offset="0.0056" style="stop-color:#FF7800"/>
+					<a:midPointStop  offset="0.5" style="stop-color:#FF7800"/>
+					<a:midPointStop  offset="1" style="stop-color:#9A2400"/>
+				</linearGradient>
+				<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="url(#XMLID_1_)" d="M19.34,6.431H4.474
+					c-1.357,0-2.458,1.1-2.458,2.457v17.084c0,1.357,1.101,2.459,2.458,2.459H19.34c1.357,0,2.458-1.102,2.458-2.459V8.888
+					C21.798,7.531,20.697,6.431,19.34,6.431z M19.31,23.482H4.648v-2.316H19.31V23.482z M19.31,18.566H4.648V16.25H19.31V18.566z
+					 M19.31,13.65H4.648v-2.314H19.31V13.65z"/>
+			</g>
+		</g>
+		<g>
+			<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M28.18,27.965H13.648V12.281H28.18V27.965z"/>
+			<g i:knockout="Off">
+				<g>
+					
+						<linearGradient id="XMLID_2_" gradientUnits="userSpaceOnUse" x1="21.501" y1="11.3867" x2="21.501" y2="30.0005" gradientTransform="matrix(1 0 0 1 0.4063 0.4063)">
+						<stop  offset="0.0056" style="stop-color:#FF7800"/>
+						<stop  offset="1" style="stop-color:#9A2400"/>
+						<a:midPointStop  offset="0.0056" style="stop-color:#FF7800"/>
+						<a:midPointStop  offset="0.5" style="stop-color:#FF7800"/>
+						<a:midPointStop  offset="1" style="stop-color:#9A2400"/>
+					</linearGradient>
+					<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="url(#XMLID_2_)" d="M28.195,11.793H15.618
+						c-1.149,0-2.08,0.93-2.08,2.079v14.454c0,1.148,0.931,2.08,2.08,2.08h12.577c1.148,0,2.08-0.932,2.08-2.08V13.872
+						C30.275,12.723,29.344,11.793,28.195,11.793z M28.17,26.219H15.766V24.26H28.17V26.219z M28.17,22.06H15.766v-1.959H28.17
+						V22.06z M28.17,17.9H15.766v-1.958H28.17V17.9z"/>
+				</g>
+			</g>
+		</g>
+		<path i:knockout="Off" fill="none" d="M32,32H0V0h32V32z"/>
+		<linearGradient id="XMLID_3_" gradientUnits="userSpaceOnUse" x1="11.7695" y1="1.4063" x2="11.7695" y2="7.9561">
+			<stop  offset="0.0056" style="stop-color:#FF7800"/>
+			<stop  offset="1" style="stop-color:#9A2400"/>
+			<a:midPointStop  offset="0.0056" style="stop-color:#FF7800"/>
+			<a:midPointStop  offset="0.5" style="stop-color:#FF7800"/>
+			<a:midPointStop  offset="1" style="stop-color:#9A2400"/>
+		</linearGradient>
+		<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="url(#XMLID_3_)" d="M4.695,7.956
+			c0-1.588,1.288-2.876,2.876-2.876h2.194C9.537,4.712,9.399,4.282,9.399,3.818c0-1.333,1.08-2.412,2.412-2.412
+			c1.333,0,2.412,1.08,2.412,2.412c0,0.464-0.137,0.894-0.365,1.262h2.109c1.588,0,2.877,1.288,2.877,2.876
+			C13.125,7.956,11.045,7.956,4.695,7.956z M11.813,2.946c-0.482,0-0.873,0.391-0.873,0.873c0,0.482,0.391,0.873,0.873,0.873
+			s0.873-0.391,0.873-0.873C12.686,3.336,12.294,2.946,11.813,2.946z"/>
+	</g>
+</svg>

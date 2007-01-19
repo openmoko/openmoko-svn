@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 10.0, SVG Export Plug-In . SVG Version: 3.0.0 Build 77)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="0 31.9995" i:rulerOrigin="0 0" i:pageBounds="0 32 32 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 width="32.001" height="32" viewBox="0 0 32.001 32" overflow="visible" enable-background="new 0 0 32.001 32"
+	 xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  y="0" x="0" width="32.001" height="32" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+	</metadata>
+	<g id="_x00B9_柉x00BC_h_x005F_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+		<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M25.468,26.218H6.533V5.781h18.935V26.218z"/>
+		<g i:knockout="Off">
+			<g>
+				
+					<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="16.2114" y1="0.3716" x2="16.2114" y2="29.0391" gradientTransform="matrix(1 0 0 1 -0.2109 1.2949)">
+					<stop  offset="0.0056" style="stop-color:#FF7800"/>
+					<stop  offset="1" style="stop-color:#9A2400"/>
+					<a:midPointStop  offset="0.0056" style="stop-color:#FF7800"/>
+					<a:midPointStop  offset="0.5" style="stop-color:#FF7800"/>
+					<a:midPointStop  offset="1" style="stop-color:#9A2400"/>
+				</linearGradient>
+				<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="url(#XMLID_1_)" d="M25.686,1.667H6.315
+					c-1.769,0-3.203,1.433-3.203,3.202V27.13c0,1.768,1.434,3.203,3.203,3.203h19.37c1.77,0,3.203-1.436,3.203-3.203V4.869
+					C28.889,3.099,27.455,1.667,25.686,1.667z"/>
+			</g>
+		</g>
+		<path i:knockout="Off" fill="none" d="M32.001,32H0V0h32.001V32z"/>
+		<g>
+			<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M4.538,10.063V7.046h13.413v3.016H4.538z"/>
+			<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M4.538,15.021v-3.018h13.413v3.018H4.538z"/>
+			<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M9.401,24.936v-3.018h8.55v3.018H9.401z"/>
+			<g i:knockout="Off">
+				<g>
+					<path i:knockout="Off" fill="#FFFFFF" d="M20.059,16.017l3.521-2.655v1.374h3.882v2.562h-3.882v1.375L20.059,16.017z"/>
+				</g>
+			</g>
+			<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M4.538,19.977v-3.016h13.413v3.016H4.538z"/>
+			<path i:knockout="Off" fill="#FFFFFF" d="M18.447,5.116h1.25v21.767h-1.25V5.116z"/>
+		</g>
+	</g>
+</svg>
