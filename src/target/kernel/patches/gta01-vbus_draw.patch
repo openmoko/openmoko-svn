@@ -1,0 +1,36 @@
+Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-21 21:35:02.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-21 21:36:21.000000000 +0100
+@@ -40,6 +40,8 @@
+ #include <linux/mtd/nand_ecc.h>
+ #include <linux/mtd/partitions.h>
+ 
++#include <linux/pcf50606.h>
++
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ #include <asm/mach/irq.h>
+@@ -298,8 +300,22 @@
+ 	}
+ }
+ 
++static void gta01_udc_vbus_draw(unsigned int ma)
++{
++	if (ma >= 500) {
++		/* enable fast charge */
++		printk(KERN_DEBUG "udc: enabling fast charge\n");
++		pcf50606_charge_fast(&pcf50606_global, 1);
++	} else {
++		/* disable fast charge */
++		printk(KERN_DEBUG "udc: disabling fast charge\n");
++		pcf50606_charge_fast(&pcf50606_global, 0);
++	}
++}
++
+ static struct s3c2410_udc_mach_info gta01_udc_cfg = {
+ 	.udc_command	= gta01_udc_pullup,
++	.vbus_draw	= gta01_udc_vbus_draw,
+ };
+ 
+ static struct s3c2410_ts_mach_info gta01_ts_cfg = {

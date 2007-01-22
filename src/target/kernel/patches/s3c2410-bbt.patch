@@ -1,0 +1,13 @@
+Index: linux-2.6.17.14-fic4.test/drivers/mtd/nand/s3c2410.c
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/drivers/mtd/nand/s3c2410.c	2007-01-14 01:27:27.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/mtd/nand/s3c2410.c	2007-01-14 01:29:01.000000000 +0100
+@@ -524,7 +524,7 @@
+ 	chip->select_chip  = s3c2410_nand_select_chip;
+ 	chip->chip_delay   = 50;
+ 	chip->priv	   = nmtd;
+-	chip->options	   = 0;
++	chip->options	   = NAND_USE_FLASH_BBT;
+ 	chip->controller   = &info->controller;
+ 
+ 	if (info->is_s3c2440) {

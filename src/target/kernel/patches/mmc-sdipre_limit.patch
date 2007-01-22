@@ -1,0 +1,12 @@
+diff -Nru --exclude-from=/sunbeam/home/laforge/scripts/dontdiff linux-2.6.17.7-new/drivers/mmc/s3c2410mci.c linux-2.6.17.7-qt/drivers/mmc/s3c2410mci.c
+--- linux-2.6.17.7-new/drivers/mmc/s3c2410mci.c	2006-08-07 09:25:32.000000000 +0200
++++ linux-2.6.17.7-qt/drivers/mmc/s3c2410mci.c	2006-08-07 00:55:23.000000000 +0200
+@@ -503,6 +505,7 @@
+ 	}
+ 
+ 	if(sdi_psc > 255) sdi_psc = 255;
++	if (sdi_psc < 8) sdi_psc = 8;
+ 	writel(sdi_psc, host->base + S3C2410_SDIPRE);
+ 
+ 	/* Set CLOCK_ENABLE */
+
