@@ -1,7 +1,10 @@
-
 style "gtkcombobox"
 {
-	text[NORMAL] = "#fff"
+    text[NORMAL]      = "#e5e5e5"
+    text[PRELIGHT]    = "#ffffff"
+    text[ACTIVE]      = "#ffffff"
+    text[SELECTED]    = "#ffffff"
+    text[INSENSITIVE] = "#666666"
 }
 widget "*.GtkComboBox.*" style "gtkcombobox"
 

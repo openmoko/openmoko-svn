@@ -91,6 +91,7 @@ widget_class "*.GtkLabel*" style "moko-window-default"
 #FIXME e.g. how to say widget "*" style "moko-window-default", but change menuitem color afterwards. that doesn't seem to work!?
 
 include "transparent"
+include "matchboxpanel"
 
 include "gtkbutton"
 include "gtkcheckbutton"
@@ -121,3 +122,4 @@ include "mokotreeview"
 include "mokonavigationlist"
 
 include "mokoicons"
+
