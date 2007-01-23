@@ -16,12 +16,6 @@ PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6,,
 LIBS="$LIBS $GTK_LIBS"
 CFLAGS="$CFLAGS $GTK_CFLAGS"
 
-PKG_CHECK_MODULES(LIBMB, libmb >= 1.6,,
-                 AC_MSG_ERROR([*** Required Matchbox Library >= 1.6 not installed ***]))
-LIBS="$LIBS $LIBMB_LIBS"
-CFLAGS="$CFLAGS $LIBMB_CFLAGS"
-
-
 # foo
 #AC_ARG_ENABLE(foo,
 #  [  --enable-foo   enable foo support],

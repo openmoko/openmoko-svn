@@ -19,8 +19,17 @@
 #ifndef _MOKO_PANEL_APPLET_H_
 #define _MOKO_PANEL_APPLET_H_
 
-#include <libmb/mbtray.h>
+#define DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
+#else
+#define moko_debug(fmt,...)
+#endif
 
+#include <gtk/gtkalignment.h>
+#include <gtk/gtkeventbox.h>
+#include <gtk/gtkimage.h>
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkwindow.h>
 
@@ -44,29 +53,18 @@ typedef enum {
 } MokoPanelAppletPopupType;
 
 typedef struct {
-    GObject parent;
-    MBTrayApp* mb_applet;
-    MBPixbuf* mb_pixbuf;
-    MBPixbufImage* mb_pixbuf_image;
-    MBPixbufImage* mb_pixbuf_image_scaled;
-    int* argc;
-    char*** argv;
+    GtkAlignment parent;
+    GtkImage* icon;
     GtkWidget* popup[LAST_POPUP_TYPE];
-    GtkWindow* window;
+    GtkWindow* toplevelwindow;
+    GtkEventBox* eventbox;
 } MokoPanelApplet;
 
 typedef struct {
-    GObjectClass parent_class;
+    GtkAlignmentClass parent_class;
 
-    /* these may be overridden in derived classes */
-    void (*resize_callback) (MokoPanelApplet* self, int w, int h); // override to add custom resize handling
-    void (*paint_callback) (MokoPanelApplet* self, Drawable drw); // override to add custom paint
     void (*clicked) (MokoPanelApplet* self); // override to add custom behaviour on click
     void (*tap_hold) (MokoPanelApplet* self); // override to add custom behaviour on tap-with-hold
-
-    /* usually, there's no need to override these */
-    void (*button_press_callback) (MokoPanelApplet* self, int x, int y);
-    void (*button_release_callback) (MokoPanelApplet* self, int x, int y);
 
 } MokoPanelAppletClass;
 
@@ -81,8 +79,6 @@ void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* po
 void moko_panel_applet_set_popup(MokoPanelApplet* self, GtkWidget* popup, MokoPanelAppletPopupType type);
 void moko_panel_applet_open_popup(MokoPanelApplet* self, MokoPanelAppletPopupType type);
 void moko_panel_applet_close_popup(MokoPanelApplet* self);
-void moko_panel_applet_show(MokoPanelApplet* self);
-void moko_panel_applet_show(MokoPanelApplet* self);
 
 /* advanced interface */
 void moko_panel_applet_request_size(MokoPanelApplet* self, int x, int y);
