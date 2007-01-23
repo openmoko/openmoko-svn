@@ -24,6 +24,9 @@ style "gtkmenuitem-label" {
     font_name = "Vera Sans 13"
     fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
+
+    text[NORMAL]      = "#e5e5e5" # mid grey
+    text[PRELIGHT]    = "#ffffff" # white
 }
 widget "*.GtkMenu.GtkMenuItem.*" style "gtkmenuitem-label"
 widget "*.GtkMenu.GtkImageMenuItem.*" style "gtkmenuitem-label"
