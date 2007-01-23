@@ -31,9 +31,6 @@ moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
 void
 moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
 
-void
-moko_close_page_close_btn_released_cb (GtkButton *button, MokoMainmenuApp *mma);
-
 void 
 moko_up_btn_cb (GtkButton *button, MokoMainMenu *mm);
 

@@ -24,7 +24,6 @@
 #include <libmokoui/moko-pixmap-button.h>
 
 #include "mainmenu.h"
-#include "close-page.h"
 #include "callbacks.h"
 #include "mokoiconview.h"
 #include "mokodesktop_item.h"
@@ -63,25 +62,6 @@ moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
   //gtk_widget_grab_focus (mma->mm->icon_view);
   g_signal_emit_by_name (G_OBJECT(mma->mm->icon_view), "move-cursor", GTK_MOVEMENT_DISPLAY_LINES, 1);
-}
-
-void
-moko_close_page_close_btn_released_cb (GtkButton *button, MokoMainmenuApp *mma)
-{
-  if (mma->mm)
-    {
-  	moko_main_menu_clear (mma->mm);
-       //gtk_widget_destroy (mma->mm);
-    }
-  if (mma->wheel)
-    gtk_widget_destroy (mma->wheel);
-  if (mma->toolbox)
-    gtk_widget_destroy (mma->toolbox);
-  if (mma->window)
-    moko_window_clear (mma->window);
-
-  gtk_main_quit();
-  g_free (mma);
 }
 
 void 
