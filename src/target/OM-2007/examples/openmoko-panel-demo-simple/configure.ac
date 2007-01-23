@@ -13,8 +13,10 @@ AC_PROG_LIBTOOL
 # base deps
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
                  AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
+PKG_CHECK_MODULES(MATCHBOX_PANEL, matchbox-panel >= 0.1,,
+                 AC_MSG_ERROR([*** Required Matchbox Panel 2 >= 0.1 not installed ***]))
 LIBS="$LIBS $GTK_LIBS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $MATCHBOX_PANEL_CFLAGS"
 
 # output stuff
 AC_OUTPUT([
