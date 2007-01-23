@@ -58,15 +58,23 @@ contains( TEMPLATE, lib ) {
 	DESTDIR = $(OPENMOKODIR)/lib
 }
 
+contains ( MOKOTYPE, panel-plugin ) {
+    DATADIR = $(OPENMOKODIR)/panel-plugins/$$TARGET/data
+}
+!contains ( MOKOTYPE, panel-plugin ) {
+    DATADIR = $(OPENMOKODIR)/applications/$$TARGET/data
+}
+contains ( TEMPLATE, lib ) {
+    DATADIR = $(OPENMOKODIR)/openmoko-libs/data
+}
+
 contains( CONFIG, debug ) {
 	!contains( TEMPLATE, lib ) {
-		APPDIR = $(OPENMOKODIR)/applications/$$TARGET/data
-		DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
-		DEFINES += DATADIR=\\\"$$APPDIR/\\\"
-		system( ln -sf . $OPENMOKODIR/applications/$$TARGET/data/icons )
+		DEFINES += PKGDATADIR=\\\"$$DATADIR/\\\"
+		DEFINES += DATADIR=\\\"$$DATADIR/\\\"
+		system( ln -sf . $$DATADIR/icons )
 	}
     contains( TEMPLATE, lib ) {
-		APPDIR = $(OPENMOKODIR)/openmoko-libs/data
 		DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
 		DEFINES += DATADIR=\\\"$$APPDIR/\\\"
 	}

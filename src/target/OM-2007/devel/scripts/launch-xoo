@@ -36,10 +36,8 @@ img-tiled:/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0/m
 
 sleep 2
 
-matchbox-panel -display $DISPLAY \
-               --orientation north \
-               --default-apps '' \
-               --no-session \
-               --no-menu \
-               --no-flip \
-               --bgpixmap $SVN_TRUNK/OM-2007/artwork/images/pixmaps/openmoko-header-background.png &
+matchbox-panel --geometry=480x44 --end-applets=clock &
+
+sleep 2
+
+openmoko-footer &

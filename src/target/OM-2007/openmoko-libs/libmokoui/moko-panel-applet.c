@@ -2,16 +2,16 @@
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006 Vanille-Media
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Public License as published by
- *  the Free Software Foundation; version 2.1 of the license.
+ *  it under the terms of the GNU Lesser Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Public License for more details.
+ *  GNU Lesser Public License for more details.
  *
  *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
@@ -27,6 +27,7 @@
 #define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
 #define moko_debug(fmt,...)
 #endif
@@ -38,7 +39,9 @@ G_DEFINE_TYPE (MokoPanelApplet, moko_panel_applet, G_TYPE_OBJECT)
 
 typedef struct _MokoPanelAppletPrivate
 {
+    gboolean is_initialized;
     gboolean hold_timeout_triggered;
+    gboolean scaling_requested;
 } MokoPanelAppletPrivate;
 
 enum {
@@ -157,9 +160,11 @@ moko_panel_applet_init(MokoPanelApplet* self)
     mb_tray_app_set_button_callback( self->mb_applet, _mb_applet_button_callback );
 
     self->mb_pixbuf = mb_pixbuf_new( mb_tray_app_xdisplay( self->mb_applet ), mb_tray_app_xscreen( self->mb_applet ) );
-    mb_tray_app_main_init( self->mb_applet );
 
-    gdk_window_add_filter( NULL, _moko_panel_applet_gdk_event_filter, self );
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    priv->is_initialized = FALSE;
+    priv->scaling_requested = FALSE;
+    priv->hold_timeout_triggered = FALSE;
 }
 
 static GdkFilterReturn
@@ -216,12 +221,15 @@ void moko_panel_applet_real_resize_callback(MokoPanelApplet* self, int w, int h)
 {
     moko_debug( "moko_panel_applet_resize_callback" );
     moko_debug( "-- size = %d, %d", w, h );
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
     if ( !self->mb_pixbuf_image )
     {
         g_warning( "no valid icon for panel application during resize callback" );
         return;
     }
     if ( self->mb_pixbuf_image_scaled && self->mb_pixbuf_image_scaled->width == w && self->mb_pixbuf_image_scaled->height == h )
+        return;
+    if ( !priv->scaling_requested )
         return;
     moko_debug( "-- new size, scaling pixbuf" );
     MBPixbufImage* scaled = mb_pixbuf_img_scale( self->mb_pixbuf, self->mb_pixbuf_image, w, h );
@@ -233,16 +241,21 @@ void moko_panel_applet_real_resize_callback(MokoPanelApplet* self, int w, int h)
 void moko_panel_applet_real_paint_callback(MokoPanelApplet* self, Drawable drw)
 {
     moko_debug( "moko_panel_applet_paint_callback" );
-    if ( !self->mb_pixbuf_image_scaled )
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    MBPixbufImage* icon = priv->scaling_requested ? self->mb_pixbuf_image_scaled : self->mb_pixbuf_image;
+
+    if ( !icon )
     {
         g_warning( "no valid icon for panel application during paint callback" );
         return;
     }
 
     MBPixbufImage* background = mb_tray_app_get_background( self->mb_applet, self->mb_pixbuf );
-    mb_pixbuf_img_composite( self->mb_pixbuf, background, self->mb_pixbuf_image_scaled, 0, 0 );
+    mb_pixbuf_img_composite( self->mb_pixbuf, background, icon, 0, 0 );
     mb_pixbuf_img_render_to_drawable( self->mb_pixbuf, background, drw, 0, 0 );
+#if 0
     mb_pixbuf_img_free( self->mb_pixbuf, background );
+#endif
 }
 
 void moko_panel_applet_real_button_press_callback(MokoPanelApplet* self, int x, int y)
@@ -303,19 +316,25 @@ void moko_panel_applet_signal_clicked(MokoPanelApplet* self)
 
 void moko_panel_applet_signal_tap_hold(MokoPanelApplet* self)
 {
-    moko_debug( "moko_panel_applet_signal_tap_hold" );
+    moko_debug( __FUNCTION__ );
     moko_panel_applet_open_popup( self, MOKO_PANEL_APPLET_TAP_HOLD_POPUP );
 }
 
 ////////////////
 // PUBLIC API //
 ////////////////
-void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
+void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gboolean request_scaling)
 {
-    moko_debug( "moko_panel_applet_set_icon" );
-    g_assert( self->mb_pixbuf );
+    moko_debug_minder( self->mb_pixbuf );
     if ( self->mb_pixbuf_image ) mb_pixbuf_img_free( self->mb_pixbuf, self->mb_pixbuf_image );
     self->mb_pixbuf_image = mb_pixbuf_img_new_from_file( self->mb_pixbuf, filename );
+    g_assert( self->mb_pixbuf_image );
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    priv->scaling_requested = request_scaling;
+    if ( !request_scaling )
+    {
+        moko_panel_applet_request_size( self, mb_pixbuf_img_get_width( self->mb_pixbuf_image ), mb_pixbuf_img_get_height( self->mb_pixbuf_image ) );
+    }
 }
 
 void moko_panel_applet_set_popup(MokoPanelApplet* self, GtkWidget* popup, MokoPanelAppletPopupType type)
@@ -389,10 +408,35 @@ void moko_panel_applet_close_popup(MokoPanelApplet* self)
 
 void moko_panel_applet_request_size(MokoPanelApplet* self, int x, int y)
 {
+    moko_debug( "moko_panel_applet_request_size: %d, %d", x, y );
     mb_tray_app_request_size( self->mb_applet, x, y );
 }
 
 void moko_panel_applet_request_offset(MokoPanelApplet* self, int offset)
 {
     mb_tray_app_request_offset( self->mb_applet, offset );
+}
+
+void moko_panel_applet_show(MokoPanelApplet* self)
+{
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    if ( !priv->is_initialized )
+    {
+        mb_tray_app_main_init( self->mb_applet );
+        gdk_window_add_filter( NULL, _moko_panel_applet_gdk_event_filter, self );
+        priv->is_initialized = TRUE;
+    }
+    else
+    {
+        mb_tray_app_unhide( self->mb_applet );
+    }
+}
+
+void moko_panel_applet_hide(MokoPanelApplet* self)
+{
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+    if ( priv->is_initialized )
+    {
+        mb_tray_app_hide( self->mb_applet );
+    }
 }

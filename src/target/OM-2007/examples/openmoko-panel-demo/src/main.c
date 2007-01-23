@@ -3,7 +3,7 @@
  *
  *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006 First International Computer Inc.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
@@ -33,6 +33,7 @@ int main( int argc, char** argv )
 
     moko_panel_system_init( &argc, &argv );
     DemoPanelApplet* applet = demo_panel_applet_new();
+    moko_panel_applet_show( applet );
 
     gtk_main();
 

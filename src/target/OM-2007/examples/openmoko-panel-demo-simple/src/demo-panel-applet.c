@@ -3,7 +3,7 @@
  *
  *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006 First International Computer Inc.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
@@ -38,7 +38,7 @@ int main( int argc, char** argv )
     // see openmoko-panel-demo-simple for a more sophisticated example
 
     MokoPanelApplet* applet = moko_panel_applet_new();
-    moko_panel_applet_set_icon( applet, PKGDATADIR "/icon.png" );
+    moko_panel_applet_set_icon( applet, PKGDATADIR "/icon.png", TRUE );
 
     // you can add a menu
     GtkMenu* panelmenu = GTK_MENU(gtk_menu_new());
@@ -57,7 +57,7 @@ int main( int argc, char** argv )
     g_signal_connect( G_OBJECT(button), "clicked", G_CALLBACK(button_callback), applet );
     moko_panel_applet_set_popup( applet, GTK_WIDGET(button), MOKO_PANEL_APPLET_CLICK_POPUP );
 
-
+    moko_panel_applet_show( applet );
     gtk_main();
 
     g_debug( "openmoko-panel-demo-simple ending" );

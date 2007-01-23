@@ -1,8 +1,7 @@
-/*  main.c
+/*
+ *  OpenMoko Main Menu + Panel Applet
  *
- *  Authored By Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *
- *  Copyright (C) 2007 Vanille-Media
+ *  Copyright (C) 2007 First International Computer Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
@@ -13,25 +12,33 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/12/21 18:03:04 $) [$Author: mickey $]
+ *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#include "moko-panel-mainmenu.h"
+#include <libmokoui/moko-panel-applet.h>
 
 #include <gtk/gtk.h>
-#include <libmb/mb.h>
+#include <glib.h>
 
-int
-main (int argc, char **argv)
-{  
-    MokoPanelMainmenu *app;
-  
-    moko_panel_system_init (&argc, &argv);
-    
-    app = moko_panel_mainmenu_new();
-    moko_panel_applet_set_icon (MOKO_PANEL_APPLET (app), PKGDATADIR"/btn_menu.png");
+static void button_callback( GtkButton* button, MokoPanelApplet* applet )
+{
+    moko_panel_applet_close_popup( applet );
+}
 
-    gtk_main ();
-    
-    return;
+int main( int argc, char** argv )
+{
+    g_debug( "openmoko-panel-demo-simple starting" );
+
+    moko_panel_system_init( &argc, &argv );
+
+    MokoPanelApplet* applet = moko_panel_applet_new();
+    moko_panel_applet_set_icon( applet, PKGDATADIR "/btn_menu.png", TRUE );
+    //moko_panel_applet_request_size( applet, 79, 32 );
+    moko_panel_applet_request_size( applet, 40, 32 );
+    moko_panel_applet_show( applet );
+
+    gtk_main();
+
+    g_debug( "openmoko-panel-demo-simple ending" );
+    return 0;
 }

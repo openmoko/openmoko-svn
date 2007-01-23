@@ -2,7 +2,7 @@
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2007 Vanille-Media
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by

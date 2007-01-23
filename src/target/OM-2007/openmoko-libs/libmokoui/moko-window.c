@@ -4,11 +4,11 @@
  *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *  Based on hildon-window.c (C) 2006 Nokia Corporation.
  *
- *  Copyright (C) 2006 First International Computer Inc.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser Public License as published by
- *  the Free Software Foundation; version 2.1 of the license.
+ *  the Free Software Foundation; version 2 of the license.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of

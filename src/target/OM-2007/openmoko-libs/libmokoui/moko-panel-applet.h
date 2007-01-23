@@ -2,16 +2,16 @@
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006 Vanille-Media
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Public License as published by
- *  the Free Software Foundation; version 2.1 of the license.
+ *  it under the terms of the GNU Lesser Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Public License for more details.
+ *  GNU Lesser Public License for more details.
  *
  *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
@@ -76,11 +76,13 @@ MokoPanelApplet* moko_panel_applet_new();
 void moko_panel_system_init( int* argc, char*** argv );
 
 /* simple interface */
-void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename);
+void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gboolean scaling);
 void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* popup, int* x, int* y);
 void moko_panel_applet_set_popup(MokoPanelApplet* self, GtkWidget* popup, MokoPanelAppletPopupType type);
 void moko_panel_applet_open_popup(MokoPanelApplet* self, MokoPanelAppletPopupType type);
 void moko_panel_applet_close_popup(MokoPanelApplet* self);
+void moko_panel_applet_show(MokoPanelApplet* self);
+void moko_panel_applet_show(MokoPanelApplet* self);
 
 /* advanced interface */
 void moko_panel_applet_request_size(MokoPanelApplet* self, int x, int y);

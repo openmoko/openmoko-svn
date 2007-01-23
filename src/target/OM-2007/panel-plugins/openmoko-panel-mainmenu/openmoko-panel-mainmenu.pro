@@ -1,5 +1,8 @@
+MOKOTYPE = panel-plugin
 MOKOCONFIG = mokoui
 
-SOURCES = src/openmoko-panel-mainmenu.c
+SOURCES = \
+  src/main.c
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
+
