@@ -33,6 +33,8 @@
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkwindow.h>
 
+#include <gdk/gdkpixbuf.h>
+
 #include <X11/X.h>
 
 #include <glib-object.h>
@@ -75,14 +77,12 @@ void moko_panel_system_init( int* argc, char*** argv );
 
 /* simple interface */
 void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gboolean scaling);
+void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf);
+void moko_panel_applet_set_widget(MokoPanelApplet* self, GtkWidget* widget);
 void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* popup, int* x, int* y);
 void moko_panel_applet_set_popup(MokoPanelApplet* self, GtkWidget* popup, MokoPanelAppletPopupType type);
 void moko_panel_applet_open_popup(MokoPanelApplet* self, MokoPanelAppletPopupType type);
 void moko_panel_applet_close_popup(MokoPanelApplet* self);
-
-/* advanced interface */
-void moko_panel_applet_request_size(MokoPanelApplet* self, int x, int y);
-void moko_panel_applet_request_offset(MokoPanelApplet* self, int offset);
 
 G_END_DECLS
 

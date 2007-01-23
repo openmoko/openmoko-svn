@@ -1,5 +1,4 @@
-HEADERS = src/demo-panel-applet.h
-SOURCES = src/demo-panel-applet.c src/main.c
+SOURCES = src/demo-panel-applet.c
 
 MOKOCONFIG = mokoui
 MOKOTYPE = panel-plugin

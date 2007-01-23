@@ -48,18 +48,9 @@ for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
 #        LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
 }
 
-contains( TEMPLATE, app ) {
-	message( configuring application $$TARGET )
-	DESTDIR = $(OPENMOKODIR)/bin
-}
-
-contains( TEMPLATE, lib ) {
-	message( configuring library $$TARGET )
-	DESTDIR = $(OPENMOKODIR)/lib
-}
-
 contains ( MOKOTYPE, panel-plugin ) {
     DATADIR = $(OPENMOKODIR)/panel-plugins/$$TARGET/data
+    TEMPLATE = lib
 }
 !contains ( MOKOTYPE, panel-plugin ) {
     DATADIR = $(OPENMOKODIR)/applications/$$TARGET/data
@@ -83,5 +74,16 @@ contains( CONFIG, debug ) {
     APPDIR = /usr/share/$$TARGET
     DEFINES += PKGDATADIR=\\\"$$APPDIR/\\\"
 }
+
+contains( TEMPLATE, app ) {
+    message( configuring application $$TARGET )
+    DESTDIR = $(OPENMOKODIR)/bin
+}
+
+contains( TEMPLATE, lib ) {
+    message( configuring library $$TARGET )
+    DESTDIR = $(OPENMOKODIR)/lib
+}
+
 
 DEFINES += G_LOG_DOMAIN=\\\"$$TARGET\\\"

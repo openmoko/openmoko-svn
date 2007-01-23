@@ -91,7 +91,7 @@ moko_panel_applet_class_init(MokoPanelAppletClass* klass)
     /* install properties */
 
     /* install signals */
-    moko_panel_applet_signals[CLICKED] = g_signal_new ("clicked",
+    moko_panel_applet_signals[CLICKED] = g_signal_new("clicked",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
             G_STRUCT_OFFSET (MokoPanelAppletClass, clicked),
@@ -100,7 +100,7 @@ moko_panel_applet_class_init(MokoPanelAppletClass* klass)
             g_cclosure_marshal_VOID__VOID,
             G_TYPE_NONE, 0);
 
-    moko_panel_applet_signals[TAP_HOLD] = g_signal_new ("tap-hold",
+    moko_panel_applet_signals[TAP_HOLD] = g_signal_new("tap-hold",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
             G_STRUCT_OFFSET (MokoPanelAppletClass, tap_hold),
@@ -209,6 +209,24 @@ void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gb
     }
     else
         gtk_image_set_from_file( self->icon, filename );
+}
+
+void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)
+{
+    if ( !self->icon )
+    {
+        self->icon = gtk_image_new_from_pixbuf( pixbuf );
+        g_return_if_fail( self->icon );
+        gtk_container_add( GTK_CONTAINER(self->eventbox), GTK_WIDGET(self->icon) );
+        gtk_widget_show( GTK_WIDGET(self->icon) );
+    }
+    else
+        gtk_image_set_from_pixbuf( self->icon, pixbuf );
+}
+
+void moko_panel_applet_set_widget(MokoPanelApplet* self, GtkWidget* widget)
+{
+    gtk_container_add( GTK_CONTAINER(self->eventbox), GTK_WIDGET(widget) );
 }
 
 void moko_panel_applet_set_popup(MokoPanelApplet* self, GtkWidget* popup, MokoPanelAppletPopupType type)

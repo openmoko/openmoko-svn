@@ -31,6 +31,8 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
 {
     g_debug( "openmoko-panel-demo-simple new" );
 
+    // simple demo just uses the stock MokoPanelApplet class
+    // more sophisticated way of using it is to derive from it
     MokoPanelApplet* applet = moko_panel_applet_new();
 
     moko_panel_applet_set_icon( applet, PKGDATADIR "/icon.png", TRUE );
@@ -55,5 +57,4 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     gtk_widget_show_all( GTK_WIDGET(applet) );
     return GTK_WIDGET(applet);
 }
-
 

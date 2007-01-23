@@ -1,5 +1,5 @@
 AM_CPPFLAGS=-DPKGDATADIR=\"$(pkgdatadir)\" -DGETTEXT_PACKAGE=\"matchbox-panel\"
-AM_CFLAGS = -Wall -Werror -g -std=c99 -pedantic @MATCHBOX_PANEL_CFLAGS@ @OPENMOKO_CFLAGS@
+AM_CFLAGS = -Wall -Werror -g -std=c99 -pedantic @OPENMOKO_CFLAGS@
 
 appletdir = $(libdir)/matchbox-panel/
 applet_LTLIBRARIES = libopenmoko-panel-demo-simple.la

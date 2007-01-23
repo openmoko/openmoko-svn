@@ -1,8 +1,10 @@
-INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
+AM_CPPFLAGS=-DPKGDATADIR=\"$(pkgdatadir)\" -DGETTEXT_PACKAGE=\"matchbox-panel\"
+AM_CFLAGS = -Wall -std=c99 -pedantic @MATCHBOX_PANEL_CFLAGS@
 
-bin_PROGRAMS = openmoko-panel-demo
+appletdir = $(pkglibdir)
+applet_LTLIBRARIES = libopenmoko-panel-demo.la
 
-openmoko_panel_demo_SOURCES = demo-panel-applet.c main.c
+libopenmoko_panel_demo_la_SOURCES = main.c panel-demo-applet.c
 
-openmoko_panel_demo_LDADD = @OPENMOKO_LIBS@
+MAINTAINERCLEANFILES = Makefile.in
 
