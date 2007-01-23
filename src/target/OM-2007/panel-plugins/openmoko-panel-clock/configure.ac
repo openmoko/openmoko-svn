@@ -14,11 +14,8 @@ AC_PROG_LIBTOOL
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
                  AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
 
-PKG_CHECK_MODULES(LIBMB, libmb,,
-                 exit)
-
-LIBS="$LIBS $GTK_LIBS $LIBMB"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBMB" 
+LIBS="$LIBS $OPENMOKO_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS" 
 
 # output stuff
 AC_OUTPUT([

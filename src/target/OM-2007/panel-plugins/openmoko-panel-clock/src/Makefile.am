@@ -1,8 +1,11 @@
-INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
+AM_CPPFLAGS=-DPKGDATADIR=\"$(pkgdatadir)\" -DGETTEXT_PACKAGE=\"matchbox-panel\"
+AM_CFLAGS = -Wall -std=c99 -pedantic @OPENMOKO_CFLAGS@
 
-bin_PROGRAMS = openmoko-panel-clock
+appletdir = $(libdir)/matchbox-panel/
+applet_LTLIBRARIES = libopenmoko-panel-clock.la
 
-openmoko_panel_clock_SOURCES = openmoko-panel-clock.c
+libopenmoko_panel_clock_la_SOURCES = openmoko-panel-clock.c
+libopenmoko_panel_clock_la_LIBADD = @OPENMOKO_LIBS@
 
-openmoko_panel_clock_LDADD = @OPENMOKO_LIBS@
+MAINTAINERCLEANFILES = Makefile.in
 
