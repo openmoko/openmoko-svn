@@ -1,7 +1,7 @@
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-08 22:47:48.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-08 22:51:22.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-24 12:18:13.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-24 12:18:19.000000000 +0100
 @@ -57,6 +57,7 @@
  #include <asm/arch/ts.h>
  #include <asm/arch/spi.h>
@@ -46,7 +46,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
  
  static void gta01_udc_pullup(enum s3c2410_udc_cmd_e cmd)
  {
-@@ -441,7 +441,7 @@
+@@ -445,7 +445,7 @@
  static void __init gta01_machine_init(void)
  {
  	s3c_device_nand.dev.platform_data = &gta01_nand_info;

@@ -1,7 +1,7 @@
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-21 21:35:02.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-21 21:36:21.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-23 12:26:23.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-23 12:26:25.000000000 +0100
 @@ -40,6 +40,8 @@
  #include <linux/mtd/nand_ecc.h>
  #include <linux/mtd/partitions.h>

@@ -1,10 +1,10 @@
 This patch is a workaround of some S3C2410 MMC chip bug
 
-Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c
+Index: linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c
 ===================================================================
---- linux-2.6.17.7-fic1.orig/drivers/mmc/s3cmci.c	2006-11-02 21:56:27.000000000 +0100
-+++ linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c	2006-11-02 22:44:28.000000000 +0100
-@@ -446,11 +446,17 @@
+--- linux-2.6.17.14-fic4.test.orig/drivers/mmc/s3cmci.c	2007-01-24 12:17:51.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c	2007-01-24 12:17:52.000000000 +0100
+@@ -445,11 +445,17 @@
  
  	if (mci_csta & S3C2410_SDICMDSTAT_CRCFAIL) {
  		if (cmd->flags & MMC_RSP_CRC) {

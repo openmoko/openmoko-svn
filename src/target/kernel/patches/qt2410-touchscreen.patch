@@ -1,7 +1,7 @@
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.c	2006-12-11 21:44:31.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c	2006-12-11 21:44:43.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.c	2007-01-24 12:17:45.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c	2007-01-24 12:18:11.000000000 +0100
 @@ -37,6 +37,7 @@
  
  #include <asm/arch/regs-serial.h>
@@ -36,8 +36,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c
  static struct resource s3c_usbgadget_resource[] = {
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.h	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h	2006-12-11 21:44:43.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.h	2007-01-24 12:17:39.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h	2007-01-24 12:18:11.000000000 +0100
 @@ -39,6 +39,7 @@
  extern struct platform_device s3c_device_timer3;
  
@@ -48,8 +48,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h
  
 Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/input/touchscreen/Kconfig	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig	2006-12-11 21:44:43.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/input/touchscreen/Kconfig	2007-01-24 12:17:39.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig	2007-01-24 12:18:11.000000000 +0100
 @@ -49,6 +49,24 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called corgi_ts.
@@ -77,8 +77,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig
  	select SERIO
 Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/input/touchscreen/Makefile	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Makefile	2006-12-11 21:44:43.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/input/touchscreen/Makefile	2007-01-24 12:17:39.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Makefile	2007-01-24 12:18:11.000000000 +0100
 @@ -12,3 +12,5 @@
  obj-$(CONFIG_TOUCHSCREEN_MTOUCH) += mtouch.o
  obj-$(CONFIG_TOUCHSCREEN_MK712)	+= mk712.o
@@ -88,7 +88,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Makefile
 Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c	2006-12-11 21:44:43.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c	2007-01-24 12:18:11.000000000 +0100
 @@ -0,0 +1,351 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -443,8 +443,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +*/
 Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/asm-arm/arch-s3c2410/regs-adc.h	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h	2006-12-11 21:44:43.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/include/asm-arm/arch-s3c2410/regs-adc.h	2007-01-24 12:17:39.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h	2007-01-24 12:18:11.000000000 +0100
 @@ -44,7 +44,7 @@
  #define S3C2410_ADCTSC_XP_SEN		(1<<4)
  #define S3C2410_ADCTSC_PULL_UP_DISABLE	(1<<3)
@@ -457,7 +457,7 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h
 Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h	2006-12-11 21:44:43.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h	2007-01-24 12:18:11.000000000 +0100
 @@ -0,0 +1,28 @@
 +/* linux/include/asm/arch-s3c2410/ts.h
 + *
@@ -489,17 +489,17 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h
 +
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2006-12-11 21:44:38.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2006-12-11 21:44:43.000000000 +0100
-@@ -51,6 +51,7 @@
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:09.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:11.000000000 +0100
+@@ -53,6 +53,7 @@
  #include <asm/arch/fb.h>
  #include <asm/arch/nand.h>
  #include <asm/arch/udc.h>
 +#include <asm/arch/ts.h>
  #include <asm/arch/spi.h>
  #include <asm/arch/spi-gpio.h>
- 
-@@ -312,6 +313,7 @@
+ #include <asm/arch/mci.h>
+@@ -315,6 +316,7 @@
  	&s3c_device_sdi,
  	&s3c_device_usbgadget,
  	&s3c_device_nand,
@@ -507,9 +507,9 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
  	&cs89x0_device,
  };
  
-@@ -467,6 +469,12 @@
- __setup("tft=", tft_setup);
- 
+@@ -477,6 +479,12 @@
+ 	.ocr_avail 	= MMC_VDD_32_33,
+ };
  
 +static struct s3c2410_ts_mach_info qt2410_ts_cfg = {
 +	.delay = 10000,
@@ -520,7 +520,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
  static void __init qt2410_map_io(void)
  {
  	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-@@ -505,6 +513,7 @@
+@@ -516,6 +524,7 @@
  	}
  
  	s3c24xx_udc_set_platdata(&qt2410_udc_cfg);

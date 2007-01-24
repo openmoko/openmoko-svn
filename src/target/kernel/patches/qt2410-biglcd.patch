@@ -1,8 +1,8 @@
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2006-12-11 21:44:34.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2006-12-11 21:44:38.000000000 +0100
-@@ -95,6 +95,133 @@
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:07.000000000 +0100
+@@ -96,6 +96,133 @@
  
  /* LCD driver info */
  
@@ -136,7 +136,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
  static struct s3c2410fb_mach_info qt2410_lcd_cfg __initdata = {
  	.regs	= {
  
-@@ -329,6 +456,17 @@
+@@ -330,6 +457,17 @@
  	.udc_command	= qt2410_udc_pullup,
  };
  
@@ -154,7 +154,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
  static void __init qt2410_map_io(void)
  {
  	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-@@ -352,7 +490,20 @@
+@@ -353,7 +491,20 @@
  	s3c2410_gpio_setpin(S3C2410_GPF7, 1);
  
  	s3c_device_nand.dev.platform_data = &qt2410_nand_info;

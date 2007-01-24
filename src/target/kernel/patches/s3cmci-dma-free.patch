@@ -1,8 +1,8 @@
 Index: linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/mmc/s3cmci.c	2007-01-21 19:32:36.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c	2007-01-21 19:35:20.000000000 +0100
-@@ -1279,6 +1279,7 @@
+--- linux-2.6.17.14-fic4.test.orig/drivers/mmc/s3cmci.c	2007-01-24 12:17:52.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c	2007-01-24 12:17:57.000000000 +0100
+@@ -1247,6 +1247,7 @@
  	mmc_remove_host(mmc);
  	clk_disable(host->clk);
  	clk_put(host->clk);
