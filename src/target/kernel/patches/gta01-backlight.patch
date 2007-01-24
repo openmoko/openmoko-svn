@@ -2,8 +2,8 @@ This is a backlight driver for FIC's Neo1973 Phone (codename GTA01)
 
 Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/video/backlight/Kconfig	2007-01-15 02:29:56.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig	2007-01-15 02:40:37.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/video/backlight/Kconfig	2007-01-24 14:06:21.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig	2007-01-24 14:07:01.000000000 +0100
 @@ -50,6 +50,14 @@
  	  If you have a Sharp Zaurus SL-C7xx, SL-Cxx00 or SL-6000x say y to enable the
  	  backlight driver.
@@ -21,8 +21,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig
  	depends on BACKLIGHT_DEVICE && SH_HP6XX
 Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/video/backlight/Makefile	2007-01-15 02:29:56.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/video/backlight/Makefile	2007-01-15 02:40:37.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/video/backlight/Makefile	2007-01-24 14:06:21.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/video/backlight/Makefile	2007-01-24 14:07:01.000000000 +0100
 @@ -3,5 +3,6 @@
  obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
  obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
@@ -33,7 +33,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Makefile
 Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c	2007-01-21 17:10:38.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c	2007-01-24 14:07:43.000000000 +0100
 @@ -0,0 +1,275 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
@@ -254,7 +254,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c
 +		return PTR_ERR(gta01_backlight_device);
 +
 +	gta01bl_prop.power = FB_BLANK_UNBLANK;
-+	gta01bl_prop.brightness = machinfo->default_intensity;
++	gta01bl_prop.brightness = gta01bl_prop.max_brightness;
 +	gta01bl_send_intensity(gta01_backlight_device);
 +
 +	printk("GTA01 Backlight Driver Initialized.\n");
