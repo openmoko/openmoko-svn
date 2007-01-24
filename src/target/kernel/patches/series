@@ -1,5 +1,5 @@
-asoc-v0.13rc1.patch
-asoc-v013rc1-neo_backport.patch
+asoc-v0.13rc2.patch
+asoc-v0.13rc2-neo_backport.patch
 2.6.17-s3c2410-spi-mode23.patch
 2.6.17-arm-usb_gadget-ether-link.patch
 s3c2410_serial-nodebug.patch

@@ -1,0 +1,167 @@
+Index: linux-2.6.17.14/include/sound/soc.h
+===================================================================
+--- linux-2.6.17.14.orig/include/sound/soc.h
++++ linux-2.6.17.14/include/sound/soc.h
+@@ -342,7 +342,7 @@ struct snd_soc_codec {
+ 	struct snd_ac97 *ac97;  /* for ad-hoc ac97 devices */
+ 	unsigned int active;
+ 	unsigned int pcm_devs;
+-	struct delayed_work delayed_work;
++	struct work_struct delayed_work;
+ 	void *private_data;
+ 
+ 	/* codec IO */
+@@ -437,7 +437,7 @@ struct snd_soc_device {
+ 	struct snd_soc_codec *codec;
+ 	struct snd_soc_codec_device *codec_dev;
+ 	void *codec_data;
+-	struct delayed_work close_work;
++	struct work_struct close_work;
+ };
+ 
+ /* runtime channel data */
+Index: linux-2.6.17.14/sound/soc/codecs/wm8753.c
+===================================================================
+--- linux-2.6.17.14.orig/sound/soc/codecs/wm8753.c
++++ linux-2.6.17.14/sound/soc/codecs/wm8753.c
+@@ -1418,10 +1418,9 @@ static void wm8753_set_dai_mode(struct s
+ 	wm8753_dai[1].codec = codec;
+ }
+ 
+-static void wm8753_work(struct work_struct *work)
++static void wm8753_work(void *data)
+ {
+-	struct snd_soc_codec *codec =
+-		container_of(work, struct snd_soc_codec, delayed_work.work);
++	struct snd_soc_codec *codec = data;
+ 	wm8753_dapm_event(codec, codec->dapm_state);
+ }
+ 
+@@ -1659,7 +1658,7 @@ static int wm8753_probe(struct platform_
+ 	INIT_LIST_HEAD(&codec->dapm_widgets);
+ 	INIT_LIST_HEAD(&codec->dapm_paths);
+ 	wm8753_socdev = socdev;
+-	INIT_DELAYED_WORK(&codec->delayed_work, wm8753_work);
++	INIT_WORK(&codec->delayed_work, wm8753_work, codec);
+ 	wm8753_workq = create_workqueue("wm8753");
+ 	if (wm8753_workq == NULL) {
+ 		kfree(codec);
+Index: linux-2.6.17.14/sound/soc/soc-core.c
+===================================================================
+--- linux-2.6.17.14.orig/sound/soc/soc-core.c
++++ linux-2.6.17.14/sound/soc/soc-core.c
+@@ -256,10 +256,9 @@ out:
+  * This is to ensure there are no pops or clicks in between any music tracks
+  * due to DAPM power cycling.
+  */
+-static void close_delayed_work(struct work_struct *work)
++static void close_delayed_work(void *data)
+ {
+-	struct snd_soc_device *socdev =
+-		container_of(work, struct snd_soc_device, close_work.work);
++	struct snd_soc_device *socdev = data;
+ 	struct snd_soc_codec *codec = socdev->codec;
+ 	struct snd_soc_codec_dai *codec_dai;
+ 	int i;
+@@ -767,7 +766,7 @@ static int soc_probe(struct platform_dev
+ 	soc_workq = create_workqueue("kdapm");
+ 	if (soc_workq == NULL)
+ 		goto work_err;
+-	INIT_DELAYED_WORK(&socdev->close_work, close_delayed_work);
++	INIT_WORK(&socdev->close_work, close_delayed_work, socdev);
+ 	return 0;
+ 
+ work_err:
+@@ -1068,15 +1067,7 @@ int snd_soc_new_pcms(struct snd_soc_devi
+ 		return -ENODEV;
+ 	}
+ 
+-	codec->card->dev = device_create(sound_class, codec->card->parent, 0,
+-					  "card%i", codec->card->number);
+-	if (IS_ERR(codec->card->dev)){
+-			snd_card_free(codec->card);
+-			printk(KERN_ERR "asoc: could not create sound dev %s\n",
+-				codec->name);
+-			return -ENODEV;
+-	}
+-
++	codec->card->dev = socdev->dev;
+ 	codec->card->private_data = codec;
+ 	strncpy(codec->card->driver, codec->name, sizeof(codec->card->driver));
+ 
+Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-i2s.c
+===================================================================
+--- linux-2.6.17.14.orig/sound/soc/s3c24xx/s3c24xx-i2s.c
++++ linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-i2s.c
+@@ -60,13 +60,13 @@ static struct s3c2410_dma_client s3c24xx
+ 
+ static s3c24xx_pcm_dma_params_t s3c24xx_i2s_pcm_stereo_out = {
+ 	.client		= &s3c24xx_dma_client_out,
+-	.channel	= DMACH_I2S_OUT,
++	.channel	= 2,
+ 	.dma_addr	= S3C2410_PA_IIS + S3C2410_IISFIFO
+ };
+ 
+ static s3c24xx_pcm_dma_params_t s3c24xx_i2s_pcm_stereo_in = {
+ 	.client		= &s3c24xx_dma_client_in,
+-	.channel	= DMACH_I2S_IN,
++	.channel	= 1,
+ 	.dma_addr	= S3C2410_PA_IIS + S3C2410_IISFIFO
+ };
+ 
+Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
+===================================================================
+--- linux-2.6.17.14.orig/sound/soc/s3c24xx/s3c24xx-pcm.c
++++ linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
+@@ -119,9 +119,9 @@ static void s3c24xx_pcm_enqueue(struct s
+ 	prtd->dma_pos = pos;
+ }
+ 
+-void s3c24xx_audio_buffdone(struct s3c2410_dma_chan *channel,
++void s3c24xx_audio_buffdone(s3c2410_dma_chan_t *channel,
+ 							void *dev_id, int size,
+-							enum s3c2410_dma_buffresult result)
++							s3c2410_dma_buffresult_t result)
+ {
+ 	struct snd_pcm_substream *substream = dev_id;
+ 	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
+@@ -260,7 +260,7 @@ static int s3c24xx_pcm_trigger(struct sn
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+ 		prtd->state |= ST_RUNNING;
+ 		s3c2410_dma_ctrl(prtd->params->channel, S3C2410_DMAOP_START);
+-		s3c2410_dma_ctrl(prtd->params->channel, S3C2410_DMAOP_STARTED);
++//		s3c2410_dma_ctrl(prtd->params->channel, S3C2410_DMAOP_STARTED);
+ 		break;
+ 
+ 	case SNDRV_PCM_TRIGGER_STOP:
+Index: linux-2.6.17.14/sound/soc/s3c24xx/Kconfig
+===================================================================
+--- linux-2.6.17.14.orig/sound/soc/s3c24xx/Kconfig
++++ linux-2.6.17.14/sound/soc/s3c24xx/Kconfig
+@@ -21,7 +21,7 @@ config SND_S3C24XX_SOC_SMDK2440
+ 
+ config SND_S3C24XX_SOC_SMDK2440_WM8753
+ 	tristate "SoC I2S Audio support for S3C24XX - WM8753"
+-	depends on SND_S3C24XX_SOC && MACH_SMDK
++	depends on SND_S3C24XX_SOC && MACH_GTA01
+ 	select SND_S3C24XX_SOC_I2S
+ 	help
+ 	  Say Y if you want to add support for SoC audio on smdk2440
+Index: linux-2.6.17.14/drivers/i2c/i2c-core.c
+===================================================================
+--- linux-2.6.17.14.orig/drivers/i2c/i2c-core.c
++++ linux-2.6.17.14/drivers/i2c/i2c-core.c
+@@ -650,11 +650,11 @@ static int i2c_probe_address(struct i2c_
+ 	int err;
+ 
+ 	/* Make sure the address is valid */
+-	if (addr < 0x03 || addr > 0x77) {
++	/*if (addr < 0x03 || addr > 0x77) {
+ 		dev_warn(&adapter->dev, "Invalid probe address 0x%02x\n",
+ 			 addr);
+ 		return -EINVAL;
+-	}
++	}*/
+ 
+ 	/* Skip if already in use */
+ 	if (i2c_check_addr(adapter, addr))
