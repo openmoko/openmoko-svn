@@ -12,7 +12,7 @@ def openmoko_base_get_subdir(d):
 
 SUBDIR = "${@openmoko_base_get_subdir(d)}"
 
-SRC_URI := "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/${SUBDIR};module=${PN};proto=http"
+SRC_URI := "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/${SUBDIR};module=${PN};proto=https"
 S = "${WORKDIR}/${PN}"
 
 FILES_${PN} += "${datadir}/icons"

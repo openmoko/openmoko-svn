@@ -2,10 +2,11 @@ DESCRIPTION = "Matchbox session files for OpenMoko"
 SECTION = "openmoko/base"
 RDEPENDS = "matchbox matchbox-applet-startup-monitor gtk-theme-clearlooks"
 PV = "0.0+svn${SRCDATE}"
+PR = "r1"
 
 inherit openmoko-base
 
-SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE};module=etc;proto=http \
+SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE};module=etc;proto=https \
            file://session"
 S = "${WORKDIR}"
 

@@ -3,6 +3,7 @@ SECTION = "openmoko/libs"
 LICENSE = "LGPL"
 DEPENDS += "gtk+"
 PV = "0.0.1+svn${SRCDATE}"
+PR = "r1"
 
 inherit openmoko
 
