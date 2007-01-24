@@ -3,7 +3,7 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-01-21 21:23:04.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-01-24 16:24:55.000000000 +0100
 @@ -0,0 +1,1423 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -80,7 +80,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +struct pcf50606_data {
 +	struct i2c_client client;
-+	spinlock_t lock;
++	struct mutex lock;
 +	unsigned int flags;
 +	unsigned int working;
 +	struct work_struct work;
@@ -172,9 +172,9 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +{
 +	int ret;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +	ret = __reg_write(pcf, reg, val);
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	return ret;
 +}
@@ -193,9 +193,9 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +{
 +	int32_t ret;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +	ret = __reg_read(pcf, reg);
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	return ret & 0xff;
 +}
@@ -211,14 +211,14 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +	val &= mask;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +
 +	tmp = __reg_read(pcf, reg);
 +	tmp &= ~mask;
 +	tmp |= val;
 +	ret = __reg_write(pcf, reg, tmp);
 +
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	return ret;
 +}
@@ -228,13 +228,13 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	int ret;
 +	u_int8_t tmp;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +
 +	tmp = __reg_read(pcf, reg);
 +	tmp &= ~val;
 +	ret = __reg_write(pcf, reg, tmp);
 +
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	return ret;
 +}
@@ -251,7 +251,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +	channel &= PCF50606_ADCC2_ADCMUX_MASK;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +
 +	/* start ADC conversion of selected channel */
 +	__reg_write(pcf, PCF50606_REG_ADCC2, channel |
@@ -269,7 +269,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +		*data2 = (adcs1 << 2) | (adcs2 & 0x0c);
 +	}
 +
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	DEBUGP("returnung %u\n", ret);
 +
@@ -1011,7 +1011,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
 +	struct pcf50606_time pcf_tm;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +	pcf_tm.sec = __reg_read(pcf, PCF50606_REG_RTCSC);
 +	pcf_tm.min = __reg_read(pcf, PCF50606_REG_RTCMN);
 +	pcf_tm.hour = __reg_read(pcf, PCF50606_REG_RTCHR);
@@ -1019,7 +1019,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	pcf_tm.day = __reg_read(pcf, PCF50606_REG_RTCDT);
 +	pcf_tm.month = __reg_read(pcf, PCF50606_REG_RTCMT);
 +	pcf_tm.year = __reg_read(pcf, PCF50606_REG_RTCYR);
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	DEBUGP("PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
 +		pcf_tm.day, pcf_tm.month, pcf_tm.year,
@@ -1048,7 +1048,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +		pcf_tm.day, pcf_tm.month, pcf_tm.year,
 +		pcf_tm.hour, pcf_tm.min, pcf_tm.sec);
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +	/* FIXME: disable second interrupt */
 +	__reg_write(pcf, PCF50606_REG_RTCSC, pcf_tm.sec);
 +	__reg_write(pcf, PCF50606_REG_RTCMN, pcf_tm.min);
@@ -1058,7 +1058,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	__reg_write(pcf, PCF50606_REG_RTCMT, pcf_tm.month);
 +	__reg_write(pcf, PCF50606_REG_RTCYR, pcf_tm.year);
 +	/* FIXME: re-enable second interrupt */
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	return 0;
 +}
@@ -1069,7 +1069,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
 +	struct pcf50606_time pcf_tm;
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +	pcf_tm.sec = __reg_read(pcf, PCF50606_REG_RTCSCA);
 +	pcf_tm.min = __reg_read(pcf, PCF50606_REG_RTCMNA);
 +	pcf_tm.hour = __reg_read(pcf, PCF50606_REG_RTCHRA);
@@ -1077,7 +1077,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	pcf_tm.day = __reg_read(pcf, PCF50606_REG_RTCDTA);
 +	pcf_tm.month = __reg_read(pcf, PCF50606_REG_RTCMTA);
 +	pcf_tm.year = __reg_read(pcf, PCF50606_REG_RTCYRA);
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	pcf2rtc_time(&alrm->time, &pcf_tm);
 +
@@ -1093,7 +1093,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +	rtc2pcf_time(&pcf_tm, &alrm->time);
 +
-+	spin_lock_irq(&pcf->lock);
++	mutex_lock(&pcf->lock);
 +
 +	/* disable alarm interrupt */
 +	irqmask = __reg_read(pcf, PCF50606_REG_INT1M);
@@ -1115,7 +1115,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +		__reg_write(pcf, PCF50606_REG_INT1M, irqmask);
 +	}
 +
-+	spin_unlock_irq(&pcf->lock);
++	mutex_unlock(&pcf->lock);
 +
 +	/* FIXME */
 +	return 0;
@@ -1267,7 +1267,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	if (!(data = kzalloc(sizeof(*data), GFP_KERNEL)))
 +		return -ENOMEM;
 +
-+
++	mutex_init(&data->lock);
 +	INIT_WORK(&data->work, pcf50606_work, data);
 +	data->working = 0;
 +	new_client = &data->client;
@@ -1431,7 +1431,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h	2007-01-21 13:18:11.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h	2007-01-24 15:07:24.000000000 +0100
 @@ -0,0 +1,259 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -1694,8 +1694,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h
 +
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Kconfig	2007-01-21 00:39:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig	2007-01-21 01:40:22.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Kconfig	2007-01-24 15:07:01.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig	2007-01-24 15:07:24.000000000 +0100
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -1716,8 +1716,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig
  	depends on I2C && EXPERIMENTAL
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Makefile	2007-01-21 00:39:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile	2007-01-21 01:40:22.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Makefile	2007-01-24 15:07:01.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile	2007-01-24 15:07:24.000000000 +0100
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -1728,9 +1728,9 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
 Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-01-21 00:39:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-01-21 01:40:22.000000000 +0100
-@@ -155,6 +155,7 @@
+--- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-01-24 15:07:01.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-01-24 15:07:24.000000000 +0100
+@@ -158,6 +158,7 @@
  #define I2C_DRIVERID_ASB100 1043
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -1741,7 +1741,7 @@ Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
 Index: linux-2.6.17.14-fic4.test/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/linux/pcf50606.h	2007-01-21 13:11:52.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/linux/pcf50606.h	2007-01-24 15:07:24.000000000 +0100
 @@ -0,0 +1,55 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
