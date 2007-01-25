@@ -30,3 +30,14 @@ SRCDATE_openmoko-footer = "now"
 SRCDATE_openmoko-phone = "now"
 SRCDATE_openmoko-mainmenu = "now"
 SRCDATE_openmoko-taskmanager = "now"
+
+#
+# Panel Plugins
+#
+SRCDATE_openmoko-panel-clock = "now"
+SRCDATE_openmoko-panel-battery = "now"
+SRCDATE_openmoko-panel-mainmenu = "now"
+SRCDATE_openmoko-panel-gsm = "now"
+SRCDATE_openmoko-panel-gps = "now"
+SRCDATE_openmoko-panel-bt = "now"
+SRCDATE_openmoko-panel-usb = "now"

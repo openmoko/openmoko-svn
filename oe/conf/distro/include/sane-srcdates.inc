@@ -18,7 +18,7 @@ SRCDATE_xcalibrateext ?= "20060814"
 SRCDATE_xxf86dgaext ?= "20060814"
 SRCDATE_xxf86vmext ?= "20060814" 
 
-# Matchbox / O-hand
+# Matchbox / O-Hand
 SRCDATE_contacts ?= "20060707"
 SRCDATE_dates ?= "20060707"
 SRCDATE_web ?= "20060613"
@@ -28,6 +28,7 @@ SRCDATE_matchbox-config-gtk ?= "20060612"
 SRCDATE_matchbox-desktop ?= "20060612"
 SRCDATE_matchbox-keyboard ?= "20060612"
 SRCDATE_matchbox-panel ?= "20060612"
+SRCDATE_matchbox-panel-2 ?= "20070120"
 SRCDATE_matchbox-panel-manager ?= "20060612"
 SRCDATE_matchbox-stroke ?= "20060612"
 SRCDATE_matchbox-themes-extra ?= "20060612"

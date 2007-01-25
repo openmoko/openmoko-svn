@@ -94,7 +94,7 @@ PREFERRED_VERSION_fontconfig = "2.4.1"
 PREFERRED_PROVIDER_libgpewidget = "libgpewidget"
 
 #
-# OHand
+# O-Hand
 #
 PREFERRED_VERSION_contacts = "0.1"
 PREFERRED_VERSION_dates = "0.1"
