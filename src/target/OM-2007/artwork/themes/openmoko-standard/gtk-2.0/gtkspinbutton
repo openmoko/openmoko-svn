@@ -3,7 +3,7 @@
 style "gtkspinbutton" {
     bg_pixmap[NORMAL] = "<none>"
     bg[NORMAL] = "#555555"
-    base[NORMAL] = "#555555"
+    base[NORMAL] = "#B2B2B2"
     text[NORMAL] = "#000000"
 
     bg[ACTIVE] = "#fdfdfd"

@@ -1,17 +1,20 @@
 style "gtkentry" {
+    xthickness = 10
+    ythickness = 10
     engine "pixmap" {
         image {
-            function        = FLAT_BOX
+            function        = SHADOW
+            shadow          = IN
             file            = "gtkentry.png"
             recolorable     = TRUE
             border          = { 17, 17, 15, 15 }
-        }
-    }
-    
-    GtkEntry::inner-border  = { 17, 17, 5, 5 }
-
+              }
+	 }
+    GtkEntry::inner-border  = { 0, 0, 0, 0 }
     text[NORMAL] = "#000000"
+    base[NORMAL] = "#B2B2B2"
     fg[NORMAL] = "#000000"
+    text[INSENSITIVE] = "#223344" # dark grey
 }
 class "GtkEntry" style "gtkentry"
 widget_class "*.GtkEntry*" style "gtkentry"
