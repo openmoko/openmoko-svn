@@ -1,8 +1,9 @@
-/*
- *  openmoko-mainmenu
- *
+/**
+ *  @file main.c
+ *  @brief The Main Menu in the Openmoko
+ *  
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *
+ *  
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -15,6 +16,7 @@
  *  GNU Public License for more details.
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
+ *
  */
 
 #include "callbacks.h"
@@ -128,7 +130,6 @@ main( int argc, char** argv )
     	exit (0);
     	}
     memset (mma, 0, sizeof (MokoMainmenuApp));
-
     gtk_init( &argc, &argv );
 
     /* application object */
@@ -143,7 +144,6 @@ main( int argc, char** argv )
     /* finger wheel object*/
     mma->wheel = moko_finger_window_get_wheel (mma->window);
         gtk_window_set_title (GTK_WIDGET (mma->wheel), "wheel");
-
 
     /* finger toolbox object*/
     mma->toolbox = moko_finger_window_get_toolbox(mma->window);

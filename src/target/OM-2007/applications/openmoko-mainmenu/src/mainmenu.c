@@ -1,8 +1,9 @@
-/*
- *  openmoko-mainmenu
- *
+/**
+ *  @file mainmenu.c
+ *  @brief The Main Menu in the Openmoko
+ *  
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *
+ *  
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -15,6 +16,7 @@
  *  GNU Public License for more details.
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
+ *
  */
 #include "mokodesktop.h"
 #include "mokodesktop_item.h"
@@ -87,7 +89,6 @@ moko_main_menu_init(MokoMainMenu *mm)
     PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
     GtkEventBox *eventbox;
     int ret = 0 ;
-
     /* Buid Root item, don't display */
     mm->top_item  = mokodesktop_item_new_with_params ("Home", 
 						       NULL,

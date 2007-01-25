@@ -1,6 +1,7 @@
-/*
- *  openmoko-mainmenu
- *
+/**
+ *  @file callbacks.c
+ *  @brief The Main Menu in the Openmoko
+ *  
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
@@ -15,6 +16,7 @@
  *  GNU Public License for more details.
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
+ *
  */
 
 #include <libmokoui/moko-application.h>

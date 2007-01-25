@@ -209,7 +209,7 @@ mokodesktop_init ( MokoDesktopItem *top_head_item,
 
  if (stat(vfolder_path_root, &stat_info))
     {
-      snprintf(vfolder_path_root, 512, VFOLDERDIR "/vfolders/Root.directory");
+      snprintf(vfolder_path_root, 512, VFOLDERDIR"/vfolders/Root.directory");
       snprintf(vfolder_path, 512, VFOLDERDIR "/vfolders" );
     }
  
