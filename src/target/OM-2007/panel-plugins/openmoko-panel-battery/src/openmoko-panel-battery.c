@@ -31,8 +31,12 @@ typedef struct {
 static void
 battery_applet_free (BatteryApplet *applet)
 {
-        g_source_remove (applet->timeout_id);
-        g_slice_free (BatteryApplet, applet);
+    g_source_remove (applet->timeout_id);
+#ifdef GLIB_HAS_SLICE_ALLOCATOR
+    g_slice_free (BatteryApplet, applet);
+#else
+    g_free (applet);
+#endif
 }
 
 /* Called every 5 minutes */
@@ -52,9 +56,11 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     BatteryApplet *applet;
     time_t t;
     struct tm *local_time;
-
+#ifdef GLIB_HAS_SLICE_ALLOCATOR
     applet = g_slice_new (BatteryApplet);
-
+#else
+    applet = g_new (BatteryApplet, 1);
+#endif
     applet->label = GTK_LABEL(gtk_label_new (NULL));
     gtk_widget_set_name( applet->label, "MatchboxPanelBattery" );
     g_object_weak_ref( G_OBJECT(applet->label), (GWeakNotify) battery_applet_free, applet );

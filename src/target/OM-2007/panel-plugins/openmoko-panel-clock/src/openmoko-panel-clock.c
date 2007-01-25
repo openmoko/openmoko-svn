@@ -33,8 +33,11 @@ static void
 clock_applet_free (ClockApplet *applet)
 {
         g_source_remove (applet->timeout_id);
-
+#ifdef GLIB_HAS_SLICE_ALLOCATOR
         g_slice_free (ClockApplet, applet);
+#else
+        g_free (applet);
+#endif
 }
 
 /* Called every minute */
@@ -77,9 +80,11 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     ClockApplet *applet;
     time_t t;
     struct tm *local_time;
-
+#ifdef GLIB_HAS_SLICE_ALLOCATOR
     applet = g_slice_new (ClockApplet);
-
+#else
+    applet = g_new (ClockApplet, 1);
+#endif
     applet->label = GTK_LABEL(gtk_label_new (NULL));
     gtk_widget_set_name( applet->label, "MatchboxPanelClock" );
     g_object_weak_ref( G_OBJECT(applet->label), (GWeakNotify) clock_applet_free, applet );
