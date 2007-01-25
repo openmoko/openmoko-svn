@@ -22,6 +22,12 @@ SRCDATE_openmoko-panel-demo = "now"
 SRCDATE_openmoko-panel-demo-simple = "now"
 
 #
+# PIM
+#
+SRCDATE_openmoko-contacts = "now"
+SRCDATE_openmoko-dates = "now"
+
+#
 # Applications
 #
 SRCDATE_openmoko-appmanager = "now"
