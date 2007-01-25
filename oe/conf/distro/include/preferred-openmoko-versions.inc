@@ -24,6 +24,7 @@ SRCDATE_openmoko-panel-demo-simple = "now"
 #
 # Applications
 #
+SRCDATE_openmoko-appmanager = "now"
 SRCDATE_openmoko-chordmaster = "now"
 SRCDATE_openmoko-dialer = "now"
 SRCDATE_openmoko-footer = "now"
