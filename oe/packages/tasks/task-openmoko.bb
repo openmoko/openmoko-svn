@@ -45,6 +45,7 @@ RDEPENDS_task-openmoko-linux = "\
   modutils-initscripts \
   module-init-tools-depmod \
   udev \
+  rsync \
 #  update-alternatives \
 "
 
@@ -181,6 +182,11 @@ DESCRIPTION_task-openmoko-debug = "OpenMoko: Debugging Tools"
 RDEPENDS_task-openmoko-debug = "\
   alsa-utils-amixer \
   alsa-utils-aplay \
+  alsa-utils-aconnect \
+  alsa-utils-alsamixer \
+  alsa-utils-speakertest \
+  madplay \
+  vorbis-tools \
   strace \
 #  ltrace \
   gdb \
