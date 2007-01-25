@@ -1,6 +1,6 @@
 style "gtkentry" {
-    xthickness = 10
-    ythickness = 10
+    xthickness = 11
+    ythickness = 4
     engine "pixmap" {
         image {
             function        = SHADOW
