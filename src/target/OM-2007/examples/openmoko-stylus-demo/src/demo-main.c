@@ -196,7 +196,7 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
     gtk_misc_set_alignment( GTK_MISC(l1), 0, 0.5 );
     gtk_misc_set_padding( GTK_MISC(l1), 8, 8 );
     GtkEntry* e1 = gtk_entry_new();
-    g_object_set( G_OBJECT(e1), "has-frame", FALSE, NULL );
+    //g_object_set( G_OBJECT(e1), "has-frame", FALSE, NULL );
     gtk_box_pack_start( GTK_BOX(hb1), GTK_WIDGET(l1), FALSE, FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hb1), GTK_WIDGET(e1), TRUE, TRUE, 10 );
     gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(hb1) );
@@ -206,7 +206,7 @@ void cb_button2_clicked(GtkButton *button, gpointer user_data)
     gtk_misc_set_alignment( GTK_MISC(l2), 0, 0.5 );
     gtk_misc_set_padding( GTK_MISC(l2), 8, 8 );
     GtkSpinButton* e2 = gtk_spin_button_new_with_range( -20, 20, 5 );
-    g_object_set( G_OBJECT(e2), "has-frame", FALSE, NULL );
+    //g_object_set( G_OBJECT(e2), "has-frame", FALSE, NULL );
     gtk_box_pack_start( GTK_BOX(hb2), GTK_WIDGET(l2), FALSE, FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hb2), GTK_WIDGET(e2), TRUE, TRUE, 10 );
     gtk_box_pack_start_defaults( GTK_BOX(controls), GTK_WIDGET(hb2) );
