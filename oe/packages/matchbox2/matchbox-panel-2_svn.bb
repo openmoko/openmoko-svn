@@ -3,10 +3,9 @@ LICENSE = "GPL"
 SECTION = "x11/panels"
 DEPENDS = "gtk+"
 PV = "0.1+svn${SRCDATE}"
-PR = "r0"
+PR = "r1"
 
-SRC_URI = "svn://svn.o-hand.com/repos/matchbox/trunk;module=${PN};proto=http \
-           file://glib-2.8-backport.patch;patch=1"
+SRC_URI = "svn://svn.o-hand.com/repos/matchbox/trunk;module=${PN};proto=http"
 S = "${WORKDIR}/${PN}"
 
 inherit autotools pkgconfig
