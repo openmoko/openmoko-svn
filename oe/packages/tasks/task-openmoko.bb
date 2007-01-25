@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r20"
+PR = "r21"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -98,10 +98,10 @@ RDEPENDS_task-openmoko-ui = "\
 #
 # task-openmoko-base
 #
-DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Dialer Application, and Panel"
+DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Top Panel, and Footer"
 RDEPENDS_task-openmoko-base = "\
   openmoko-mainmenu \
-  openmoko-dialer \
+# matchbox-panel-2 \
   openmoko-footer \
   openmoko-taskmanager \
 "
@@ -113,6 +113,7 @@ DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
 RDEPENDS_task-openmoko-phone = "\
   libgsmd-daemon \
   libgsmd-tools \
+  openmoko-dialer \
 # ppp \
 "
 
@@ -129,6 +130,8 @@ RDEPENDS_task-openmoko-finger = "\
 DESCRIPTION_task-openmoko-pim = "OpenMoko: PIM Applications"
 RDEPENDS_task-openmoko-pim = "\
   eds-dbus \
+  openmoko-contacts \
+#  openmoko-dates \
 "
 
 #
@@ -156,8 +159,6 @@ RDEPENDS_task-openmoko-demo = "\
   matchbox-applet-startup-monitor \
   xcursor-transparent-theme \
   settings-daemon \
-  contacts \
-  dates \
   web \
   rxvt-unicode \
   mtpaint \
