@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-01-08 22:46:57.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-01-08 22:47:27.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-01-24 13:40:18.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-01-24 13:40:18.000000000 +0100
 @@ -69,6 +69,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -21,8 +21,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-01-08 22:46:57.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-01-08 22:47:27.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-01-24 13:40:18.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-01-24 13:40:18.000000000 +0100
 @@ -44,6 +44,7 @@
  obj-$(CONFIG_MACH_N30)		+= mach-n30.o
  obj-$(CONFIG_ARCH_SMDK2410)	+= mach-smdk2410.o
@@ -34,8 +34,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-10 01:10:54.000000000 +0100
-@@ -0,0 +1,490 @@
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-25 18:31:03.000000000 +0100
+@@ -0,0 +1,495 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -452,6 +452,11 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +		.end   = GTA01_GPIO_911_KEY,
 +		.flags = IORESOURCE_MEM,
 +	},
++	[1] = {
++		.start = GTA01_GPIO_HOLD_KEY,
++		.end   = GTA01_GPIO_HOLD_KEY,
++		.flags = IORESOURCE_MEM,
++	},
 +};
 +
 +struct platform_device gta01_button_dev = {
@@ -528,8 +533,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +
 Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-01-08 22:46:57.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-01-08 22:47:27.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-01-24 13:40:18.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-01-24 13:40:18.000000000 +0100
 @@ -1041,3 +1041,4 @@
  ixp465			MACH_IXP465		IXP465			1028
  balloon3		MACH_BALLOON3		BALLOON3		1029
@@ -538,8 +543,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
 Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h	2007-01-09 02:07:15.000000000 +0100
-@@ -0,0 +1,55 @@
++++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h	2007-01-25 18:33:01.000000000 +0100
+@@ -0,0 +1,58 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
 +
@@ -550,6 +555,8 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01v3_SYSTEM_REV	0x00000130
 +#define GTA01v4_SYSTEM_REV	0x00000140
 +#define GTA01Bv2_SYSTEM_REV	0x00000220
++#define GTA01Bv3_SYSTEM_REV	0x00000230
++#define GTA01Bv4_SYSTEM_REV	0x00000240
 +
 +/* Backlight */
 +struct gta01bl_machinfo {
@@ -567,6 +574,7 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01_GPIO_JACK_INSERT	S3C2410_GPF4
 +#define GTA01_GPIO_nSD_DETECT	S3C2410_GPF5
 +#define GTA01_GPIO_911_KEY	S3C2410_GPF6
++#define GTA01_GPIO_HOLD_KEY	S3C2410_GPF7
 +#define GTA01_GPIO_VIBRATOR_ON	S3C2410_GPG11
 +
 +#define GTA01_IRQ_JACK_INSERT	IRQ_EINT4
