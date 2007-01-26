@@ -1,7 +1,7 @@
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/common/Makefile	2007-01-21 19:31:56.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/Makefile	2007-01-21 20:25:50.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/common/Makefile	2007-01-25 18:33:26.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/Makefile	2007-01-26 18:37:05.000000000 +0100
 @@ -16,3 +16,5 @@
  obj-$(CONFIG_SHARPSL_PM)	+= sharpsl_pm.o
  obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
@@ -11,7 +11,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/Makefile
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c	2007-01-21 19:35:30.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c	2007-01-26 18:37:41.000000000 +0100
 @@ -0,0 +1,446 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
@@ -241,7 +241,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +{
 +	int ret = 0;
 +
-+	if (!strcmp(attr->attr.name, "power_vtxco_2v8")) {
++	if (!strcmp(attr->attr.name, "power_tcxo_2v8")) {
 +		ret = gps_power_2v8_get();
 +	} else if (!strcmp(attr->attr.name, "power_avdd_3v")) {
 +		ret = gps_power_3v_get();
@@ -267,7 +267,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +{
 +	unsigned long on = simple_strtoul(buf, NULL, 10);
 +
-+	if (!strcmp(attr->attr.name, "power_vtxco_2v8")) {
++	if (!strcmp(attr->attr.name, "power_tcxo_2v8")) {
 +		gps_power_2v8_set(on);
 +	} else if (!strcmp(attr->attr.name, "power_avdd_3v")) {
 +		gps_power_3v_set(on);
@@ -356,7 +356,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +	return count;
 +}
 +
-+static DEVICE_ATTR(power_vtxco_2v8, 0644, power_gps_read, power_gps_write);
++static DEVICE_ATTR(power_tcxo_2v8, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_avdd_3v, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(pwron, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(reset, 0644, power_gps_read, power_gps_write);
@@ -409,7 +409,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +
 +	gps_power_sequence_down();
 +
-+	device_create_file(&pdev->dev, &dev_attr_power_vtxco_2v8);
++	device_create_file(&pdev->dev, &dev_attr_power_tcxo_2v8);
 +	device_create_file(&pdev->dev, &dev_attr_power_avdd_3v);
 +	device_create_file(&pdev->dev, &dev_attr_pwron);
 +	device_create_file(&pdev->dev, &dev_attr_reset);
@@ -428,7 +428,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +	device_remove_file(&pdev->dev, &dev_attr_reset);
 +	device_remove_file(&pdev->dev, &dev_attr_pwron);
 +	device_remove_file(&pdev->dev, &dev_attr_power_avdd_3v);
-+	device_remove_file(&pdev->dev, &dev_attr_power_vtxco_2v8);
++	device_remove_file(&pdev->dev, &dev_attr_power_tcxo_2v8);
 +
 +	return 0;
 +}
@@ -462,7 +462,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c	2007-01-21 19:35:30.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c	2007-01-26 18:37:05.000000000 +0100
 @@ -0,0 +1,163 @@
 +/*
 + * GSM Management code for the FIC Neo1973 GSM Phone
@@ -630,7 +630,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_bt.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_bt.c	2007-01-21 19:35:30.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_bt.c	2007-01-26 18:37:05.000000000 +0100
 @@ -0,0 +1,133 @@
 +/*
 + * Bluetooth PM code for the FIC Neo1973 GSM Phone
