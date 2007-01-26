@@ -1,0 +1,115 @@
+Index: u-boot.git/drivers/nand/nand_bbt.c
+===================================================================
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-01-26 15:57:29.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-01-26 23:27:27.000000000 +0100
+@@ -781,6 +781,8 @@
+ 	}
+ }
+ 
++int nand_create_mtd_dynpart(struct mtd_info *mtd);
++
+ /**
+  * nand_scan_bbt - [NAND Interface] scan, find, read and maybe create bad block table(s)
+  * @mtd:	MTD device structure
+@@ -847,6 +849,7 @@
+ 		mark_bbt_region (mtd, md);
+ 
+ 	kfree (buf);
++	nand_create_mtd_dynpart(mtd);
+ 	return res;
+ }
+ 
+@@ -1060,4 +1063,46 @@
+ 	return 1;
+ }
+ 
++#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
++static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x400000, 0x39cc000 };
++static char *part_names[] = { "u-boot", "u-boot env", "kernel", "initrd", "rootfs" };
++
++int nand_create_mtd_dynpart(struct mtd_info *mtd)
++{
++	struct nand_chip *this = mtd->priv;
++	int part;
++	char mtdparts[128];	/* FIXME: dynamic allocation */
++	unsigned int cur_offs = 0;
++
++	memset(mtdparts, 0, sizeof(mtdparts));
++	sprintf(mtdparts, "mtdparts=gta01-0:");
++
++	for (part = 0; part < ARRAY_SIZE(part_size); part++) {
++		unsigned int bb_delta = 0;
++		unsigned int offs = 0;
++		char mtdpart[32];
++		for (offs = cur_offs; offs < cur_offs + part_size[part]; offs += 0x4000) {
++			int block = (int) (offs >> (this->bbt_erase_shift - 1));
++			u_int8_t bbt = (this->bbt[block >> 3] >> (block & 0x06)) & 0x03;
++			if (bbt == 0x03)
++				bb_delta += 0x4000;
++		}
++
++		if (cur_offs + part_size[part] + bb_delta > this->chipsize)
++			part_size[part] = this->chipsize - cur_offs - bb_delta;
++		printf("partition %u: start = 0x%08x, end=%08x size=%08x, size_inc_bb=%08x\n",
++			part, cur_offs, cur_offs + part_size[part] + bb_delta,
++			part_size[part], part_size[part] + bb_delta);
++		cur_offs += part_size[part] + bb_delta;
++		sprintf(mtdpart, "0x%.8x(%.16s),", part_size[part] + bb_delta, part_names[part]);
++		mtdpart[sizeof(mtdpart)-1] = '\0';
++		strncat(mtdparts, mtdpart, sizeof(mtdparts)-strlen(mtdparts)-1);
++	}
++
++	mtdparts[strlen(mtdparts)-1] = '\0';
++	printf("mtdparts %s\n", mtdparts);
++	setenv("mtdparts", mtdparts);
++	return 0;
++}
++
+ #endif
+Index: u-boot.git/include/configs/gta01.h
+===================================================================
+--- u-boot.git.orig/include/configs/gta01.h	2007-01-26 15:58:17.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-01-26 15:59:16.000000000 +0100
+@@ -25,7 +25,7 @@
+ #ifndef __CONFIG_H
+ #define __CONFIG_H
+ 
+-#if 0
++#if 1
+ /* If we want to start u-boot from inside RAM */
+ #define CONFIG_SKIP_RELOCATE_UBOOT	1
+ #define CONFIG_SKIP_LOWLEVEL_INIT	1
+@@ -102,7 +102,7 @@
+ 			CFG_CMD_ELF	 | \
+ 			CFG_CMD_MISC	 | \
+ 			/* CFG_CMD_USB	 | */ \
+-			/* CFG_CMD_JFFS2	 | */ \
++			CFG_CMD_JFFS2	 | \
+ 			CFG_CMD_DIAG	 | \
+ 			/* CFG_CMD_HWFLOW	 | */ \
+ 			CFG_CMD_SAVES	 | \
+@@ -212,13 +212,13 @@
+ #define CONFIG_FAT		1
+ #define CONFIG_SUPPORT_VFAT	1
+ 
+-#if 0
++#if 1
+ /* JFFS2 driver */
+ #define CONFIG_JFFS2_CMDLINE	1
+ #define CONFIG_JFFS2_NAND	1
+ #define CONFIG_JFFS2_NAND_DEV	0
+-#define CONFIG_JFFS2_NAND_OFF	0x634000
+-#define CONFIG_JFFS2_NAND_SIZE	0x39cc000
++//#define CONFIG_JFFS2_NAND_OFF	0x634000
++//#define CONFIG_JFFS2_NAND_SIZE	0x39cc000
+ #endif
+ 
+ /* ATAG configuration */
+@@ -255,4 +255,7 @@
+ #define CONFIG_DRIVER_RTL8019		1
+ #define	RTL8019_BASE			0x18000000
+ 
++#define MTDIDS_DEFAULT	"nand0=gta01-0"
++#define MTPARTS_DEFAULT	"gta01-0:192k(u-boot),2MB(kernel),4MB(initrd),-(jffs2)"
++
+ #endif	/* __CONFIG_H */

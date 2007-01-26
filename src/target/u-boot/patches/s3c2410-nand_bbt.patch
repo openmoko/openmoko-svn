@@ -1,0 +1,63 @@
+Index: u-boot.git/cpu/arm920t/s3c24x0/nand.c
+===================================================================
+--- u-boot.git.orig/cpu/arm920t/s3c24x0/nand.c	2007-01-14 01:43:12.000000000 +0100
++++ u-boot.git/cpu/arm920t/s3c24x0/nand.c	2007-01-14 01:43:42.000000000 +0100
+@@ -188,7 +188,7 @@
+ 	nand->dev_ready = s3c2410_dev_ready;
+ 
+ 	nand->eccmode = NAND_ECC_SOFT;
+-	nand->options = 0;
++	nand->options = NAND_USE_FLASH_BBT;
+ 	//nand->waitfunc = dfc_wait;
+ 
+ 	//nand->cmdfunc = s3c2410_cmdfunc;
+Index: u-boot.git/drivers/nand/nand_bbt.c
+===================================================================
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-01-14 02:02:06.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-01-14 02:09:40.000000000 +0100
+@@ -84,24 +84,33 @@
+ 	end = paglen + td->offs;
+ 	if (td->options & NAND_BBT_SCANEMPTY) {
+ 		for (i = 0; i < end; i++) {
+-			if (p[i] != 0xff)
++			if (p[i] != 0xff) {
++				printf("SCANEMPTY1: byte at offset %u is 0x%02x, not 0xff\n",
++					i, p[i]);
+ 				return -1;
++			}
+ 		}
+ 	}
+ 	p += end;
+ 
+ 	/* Compare the pattern */
+ 	for (i = 0; i < td->len; i++) {
+-		if (p[i] != td->pattern[i])
++		if (p[i] != td->pattern[i]) {
++			printf("byte at pattern offset %u is 0x%02x, not 0x%02x\n", i,
++				p[i], td->pattern[i]);
+ 			return -1;
++		}
+ 	}
+ 
+ 	p += td->len;
+ 	end += td->len;
+ 	if (td->options & NAND_BBT_SCANEMPTY) {
+ 		for (i = end; i < len; i++) {
+-			if (*p++ != 0xff)
++			if (*p++ != 0xff) {
++				printf("SCANEMPTY1: byte at offset %u is 0x%02x, not 0xff\n",
++					i, p[i]);
+ 				return -1;
++			}
+ 		}
+ 	}
+ 	return 0;
+@@ -296,6 +305,8 @@
+ 		for (j = 0; j < len; j++) {
+ 			if (check_pattern (&buf[j * scanlen], scanlen, mtd->oobblock, bd)) {
+ 				this->bbt[i >> 3] |= 0x03 << (i & 0x6);
++				printk (KERN_WARNING "Bad eraseblock %d at 0x%08x\n",
++					i >> 1, (unsigned int) from);
+ 				break;
+ 			}
+ 		}
