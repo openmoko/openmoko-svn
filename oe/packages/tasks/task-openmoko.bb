@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r21"
+PR = "r22"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -131,7 +131,7 @@ DESCRIPTION_task-openmoko-pim = "OpenMoko: PIM Applications"
 RDEPENDS_task-openmoko-pim = "\
   eds-dbus \
   openmoko-contacts \
-#  openmoko-dates \
+  openmoko-dates \
 "
 
 #
