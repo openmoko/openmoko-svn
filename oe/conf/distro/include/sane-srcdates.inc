@@ -42,7 +42,8 @@ SRCDATE_dasher-gpe  ?= "20060814"
 SRCDATE_rosetta ?= "20060804"
 
 # GNOME
-SRCDATE_gconf-dbus ?= "20060719"
+# SRCDATE_gconf-dbus ?= "20060719"
+SRCDATE_gconf-dbus = "20070125"
 SRCDATE_gnome-vfs-dbus ?= "20060119"
 SRCDATE_gtkhtml2 ?= "20060323"
 
