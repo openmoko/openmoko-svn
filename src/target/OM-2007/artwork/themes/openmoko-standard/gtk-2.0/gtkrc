@@ -123,3 +123,4 @@ include "mokonavigationlist"
 
 include "mokoicons"
 
+include "contactspane"

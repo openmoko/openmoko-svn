@@ -1,0 +1,43 @@
+
+style "fieldcombo" {
+	engine "pixmap" {
+		image {
+			function = BOX
+			file = "field_widget_bg.png"
+			stretch = TRUE
+			border = { 22, 22, 12, 12 }
+		}
+		image {
+			function = VLINE
+		}
+		image {
+			function = ARROW
+		}
+	}
+}
+widget "*.ContactsContactPane.*.GtkComboBox.*" style "fieldcombo"
+
+
+style "addbutton" {
+	xthickness = 0
+	ythickness = 0
+	engine "pixmap" {
+		image {
+			function = BOX
+			file = "field_btn_add.png"
+		}
+	}
+}
+widget "*.addbutton" style "addbutton"
+
+style "removebutton" {
+	xthickness = 0
+	ythickness = 0
+	engine "pixmap" {
+		image {
+			function = BOX
+			file = "field_btn_remove.png"
+		}
+	}
+}
+widget "*.removebutton" style "removebutton"
