@@ -5,7 +5,7 @@ style "fieldcombo" {
 			function = BOX
 			file = "field_widget_bg.png"
 			stretch = TRUE
-			border = { 22, 22, 12, 12 }
+			border = { 22, 22, 21, 24 }
 		}
 		image {
 			function = VLINE
@@ -24,7 +24,13 @@ style "addbutton" {
 	engine "pixmap" {
 		image {
 			function = BOX
+			shadow = OUT
 			file = "field_btn_add.png"
+		}
+		image {
+			function = BOX
+			shadow = IN
+			file = "field_btn_add_p.png"
 		}
 	}
 }
@@ -36,7 +42,13 @@ style "removebutton" {
 	engine "pixmap" {
 		image {
 			function = BOX
+			shadow = OUT
 			file = "field_btn_remove.png"
+		}
+		image {
+			function = BOX
+			shadow = IN
+			file = "field_btn_remove_p.png"
 		}
 	}
 }
