@@ -138,9 +138,8 @@ moko_quit_btn_cb (GtkButton *btn, MokoTaskManager *tm)
 {
     if (!tm)
     	return;
-    gtk_widget_hide (GTK_WIDGET (tm->wheel));
-    gtk_widget_hide (GTK_WIDGET (tm->toolbox));
-    gtk_widget_hide (GTK_WIDGET (tm->window));
+
+    gtk_window_iconify (GTK_WINDOW (tm->window));
 }
 
 void
