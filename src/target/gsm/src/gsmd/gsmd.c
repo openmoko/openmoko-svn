@@ -101,7 +101,7 @@ static struct bdrt bdrts[] = {
 	{ 115200, B115200 },
 };
 
-static int set_baudrate(int fd, int baudrate)
+static int set_baudrate(int fd, int baudrate, int hwflow)
 {
 	int i;
 	u_int32_t bd = 0;
@@ -126,6 +126,11 @@ static int set_baudrate(int fd, int baudrate)
 	if (i < 0)
 		return i;
 	
+	if (hwflow)
+		ti.c_cflag |= CRTSCTS;
+	else
+		ti.c_cflag &= ~CRTSCTS;
+
 	return tcsetattr(fd, 0, &ti);
 }
 
@@ -146,6 +151,7 @@ static struct option opts[] = {
 	{ "device", 1, NULL, 'p' },
 	{ "speed", 1, NULL, 's' },
 	{ "logfile", 1, NULL, 'l' },
+	{ "hwflow", 0, NULL, 'F' },
 	{ "leak-report", 0, NULL, 'L' },
 	{ 0, 0, 0, 0 }
 };
@@ -160,6 +166,8 @@ static void print_help(void)
 	       "\t-h\t--help\t\tDisplay this help message\n"
 	       "\t-p dev\t--device dev\tSpecify serial device to be used\n"
 	       "\t-s spd\t--speed spd\tSpecify speed in bps (9600,38400,115200,...)\n"
+	       "\t-F\t--hwflow\tHardware Flow Control (RTS/CTS)\n"
+	       "\t-L\t--leak-report\tLeak Report of talloc memory allocator\n"
 	       "\t-l file\t--logfile file\tSpecify a logfile to log to\n"
 	       );
 }
@@ -184,6 +192,7 @@ int main(int argc, char **argv)
 
 	int daemonize = 0;
 	int bps = 115200;
+	int hwflow = 0;
 	char *device = "/dev/ttyUSB0";
 	char *logfile = "syslog";
 
@@ -195,13 +204,16 @@ int main(int argc, char **argv)
 	gsmd_tallocs = talloc_named_const(NULL, 1, "GSMD");
 
 	/*FIXME: parse commandline, set daemonize, device, ... */
-	while ((argch = getopt_long(argc, argv, "VLdhp:s:l:", opts, NULL)) != -1) {
+	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
 			/* FIXME */
 			break;
 		case 'L':
 			talloc_enable_leak_report_full();
+			break;
+		case 'F':
+			hwflow = 1;
 			break;
 		case 'd':
 			daemonize = 1;
@@ -234,7 +246,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (set_baudrate(fd, bps) < 0) {
+	if (set_baudrate(fd, bps, hwflow) < 0) {
 		fprintf(stderr, "can't set baudrate\n");
 		exit(1);
 	}
