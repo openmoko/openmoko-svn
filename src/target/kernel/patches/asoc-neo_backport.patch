@@ -1,3 +1,5 @@
+This backports ASoC to our 2.6.17.14 based kernel
+
 Index: linux-2.6.17.14/include/sound/soc.h
 ===================================================================
 --- linux-2.6.17.14.orig/include/sound/soc.h
@@ -15,8 +17,8 @@ Index: linux-2.6.17.14/include/sound/soc.h
  	struct snd_soc_codec *codec;
  	struct snd_soc_codec_device *codec_dev;
  	void *codec_data;
--	struct delayed_work close_work;
-+	struct work_struct close_work;
+-	struct delayed_work delayed_work;
++	struct work_struct delayed_work;
  };
  
  /* runtime channel data */
@@ -24,7 +26,7 @@ Index: linux-2.6.17.14/sound/soc/codecs/wm8753.c
 ===================================================================
 --- linux-2.6.17.14.orig/sound/soc/codecs/wm8753.c
 +++ linux-2.6.17.14/sound/soc/codecs/wm8753.c
-@@ -1418,10 +1418,9 @@ static void wm8753_set_dai_mode(struct s
+@@ -1423,10 +1423,9 @@ static void wm8753_set_dai_mode(struct s
  	wm8753_dai[1].codec = codec;
  }
  
@@ -37,7 +39,7 @@ Index: linux-2.6.17.14/sound/soc/codecs/wm8753.c
  	wm8753_dapm_event(codec, codec->dapm_state);
  }
  
-@@ -1659,7 +1658,7 @@ static int wm8753_probe(struct platform_
+@@ -1670,7 +1669,7 @@ static int wm8753_probe(struct platform_
  	INIT_LIST_HEAD(&codec->dapm_widgets);
  	INIT_LIST_HEAD(&codec->dapm_paths);
  	wm8753_socdev = socdev;
@@ -50,7 +52,7 @@ Index: linux-2.6.17.14/sound/soc/soc-core.c
 ===================================================================
 --- linux-2.6.17.14.orig/sound/soc/soc-core.c
 +++ linux-2.6.17.14/sound/soc/soc-core.c
-@@ -256,10 +256,9 @@ out:
+@@ -273,10 +273,9 @@ out:
   * This is to ensure there are no pops or clicks in between any music tracks
   * due to DAPM power cycling.
   */
@@ -58,27 +60,27 @@ Index: linux-2.6.17.14/sound/soc/soc-core.c
 +static void close_delayed_work(void *data)
  {
 -	struct snd_soc_device *socdev =
--		container_of(work, struct snd_soc_device, close_work.work);
+-		container_of(work, struct snd_soc_device, delayed_work.work);
 +	struct snd_soc_device *socdev = data;
  	struct snd_soc_codec *codec = socdev->codec;
  	struct snd_soc_codec_dai *codec_dai;
  	int i;
-@@ -767,7 +766,7 @@ static int soc_probe(struct platform_dev
- 	soc_workq = create_workqueue("kdapm");
- 	if (soc_workq == NULL)
- 		goto work_err;
--	INIT_DELAYED_WORK(&socdev->close_work, close_delayed_work);
-+	INIT_WORK(&socdev->close_work, close_delayed_work, socdev);
+@@ -781,7 +780,7 @@ static int soc_probe(struct platform_dev
+ 	}
+ 
+ 	/* DAPM stream work */
+-	INIT_DELAYED_WORK(&socdev->delayed_work, close_delayed_work);
++	INIT_WORK(&socdev->delayed_work, close_delayed_work, socdev);
  	return 0;
  
- work_err:
-@@ -1068,15 +1067,7 @@ int snd_soc_new_pcms(struct snd_soc_devi
+ platform_err:
+@@ -1075,15 +1074,7 @@ int snd_soc_new_pcms(struct snd_soc_devi
  		return -ENODEV;
  	}
  
 -	codec->card->dev = device_create(sound_class, codec->card->parent, 0,
 -					  "card%i", codec->card->number);
--	if (IS_ERR(codec->card->dev)){
+-	if (IS_ERR(codec->card->dev)) {
 -			snd_card_free(codec->card);
 -			printk(KERN_ERR "asoc: could not create sound dev %s\n",
 -				codec->name);
@@ -125,7 +127,17 @@ Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
  {
  	struct snd_pcm_substream *substream = dev_id;
  	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
-@@ -260,7 +260,7 @@ static int s3c24xx_pcm_trigger(struct sn
+@@ -182,7 +182,8 @@ static int s3c24xx_pcm_hw_params(struct 
+ 						2, S3C2410_DCON_SYNC_PCLK | S3C2410_DCON_HANDSHAKE);
+ 	} else {
+ 		s3c2410_dma_config(prtd->params->channel,
+-						2, S3C2410_DCON_HANDSHAKE | S3C2410_DCON_SYNC_PCLK);
++						2, S3C2410_DCON_HANDSHAKE | S3C2410_DCON_SYNC_PCLK |
++						S3C2410_DCON_CH1_I2SSDI);
+ 
+ 		s3c2410_dma_devconfig(prtd->params->channel,
+ 						S3C2410_DMASRC_HW, 0x3,
+@@ -260,7 +261,7 @@ static int s3c24xx_pcm_trigger(struct sn
  	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
  		prtd->state |= ST_RUNNING;
  		s3c2410_dma_ctrl(prtd->params->channel, S3C2410_DMAOP_START);
