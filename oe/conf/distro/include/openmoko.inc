@@ -42,7 +42,7 @@ PREFERRED_VERSION_linux-libc_headers = "2.6.18"
 #
 # Features
 #
-DISTRO_FEATURES = "alsa bluetooth ext2 ipsec nfs ppp smbfs usbgadget"
+DISTRO_FEATURES = "alsa bluetooth ext2 ipsec nfs ppp smbfs usbgadget usbhost"
 
 #
 # Bootstrap & Init
