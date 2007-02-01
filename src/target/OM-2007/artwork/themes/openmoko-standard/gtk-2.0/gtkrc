@@ -119,6 +119,7 @@ include "mokomenubox"
 include "mokopanedwindow"
 include "mokotoolbox"
 include "mokotreeview"
+include "mokostylusbutton"
 include "mokonavigationlist"
 
 include "mokoicons"

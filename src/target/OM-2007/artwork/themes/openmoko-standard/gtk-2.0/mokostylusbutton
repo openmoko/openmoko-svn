@@ -1,0 +1,36 @@
+style "mokostylusbutton-white" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "mokostylusbutton-white.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "mokostylusbutton-white.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "mokostylusbutton-white-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+
+    xthickness = 0
+    ythickness = 0
+    MokoPixmapButton::size-request = { 0, 52, 0, 31 }
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokostylusbutton-white" style "mokostylusbutton-white"
+
+
