@@ -15,9 +15,9 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
- #include "moko-dialer-includes.h"
+#include "moko-dialer-includes.h"
 
- #ifndef _OPENMOKO_DIALER_WINDOW_TALKING_H
+#ifndef _OPENMOKO_DIALER_WINDOW_TALKING_H
 #define _OPENMOKO_DIALER_WINDOW_TALKING_H
 
 #ifdef __cplusplus
@@ -25,17 +25,16 @@
 
 
 extern "C"
-
 {
 #endif
 
 
- 
-gint window_talking_init( MOKO_DIALER_APP_DATA* p_dialer_data);
 
-void window_talking_prepare(MOKO_DIALER_APP_DATA * appdata);
+  gint window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data);
+
+  void window_talking_prepare (MOKO_DIALER_APP_DATA * appdata);
 #ifdef __cplusplus
 }
 #endif
 
-#endif 
+#endif

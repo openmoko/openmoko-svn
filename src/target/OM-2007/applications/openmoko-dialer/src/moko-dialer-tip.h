@@ -15,7 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
- #ifndef _MOKO_DIALER_TIP_H_
+#ifndef _MOKO_DIALER_TIP_H_
 #define _MOKO_DIALER_TIP_H_
 
 
@@ -28,27 +28,22 @@
 #include <gtk/gtkobject.h>
 #include <gtk/gtksignal.h>
 #include <gtk/gtklabel.h>
- #include <gtk/gtkeventbox.h>
+#include <gtk/gtkeventbox.h>
 
 G_BEGIN_DECLS
-
-
 #define MOKO_TYPE_DIALER_TIP                (moko_dialer_tip_get_type())
 #define MOKO_DIALER_TIP (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_TIP, MokoDialerTip))
 #define MOKO_DIALER_TIP_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass),MOKO_TYPE_DIALER_TIP,MokoDialerTipClass))
 #define MOKO_IS_DIALER_TIP(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_DIALER_TIP))
 #define MOKO_IS_DIALER_TIP_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_DIALER_TIP))
 #define MOKO_DIALER_TIP_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_DIALER_TIP, MokoDialerTipClass))
+typedef struct _MokoDialerTipClass MokoDialerTipClass;
 
-
-
-typedef struct _MokoDialerTipClass   MokoDialerTipClass;
-
-typedef struct _MokoDialerTip        MokoDialerTip;
+typedef struct _MokoDialerTip MokoDialerTip;
 
 struct _MokoDialerTip
 {
- GtkEventBox eventbox;
+  GtkEventBox eventbox;
 };
 
 struct _MokoDialerTipClass
@@ -58,24 +53,20 @@ struct _MokoDialerTipClass
 };
 
 
-GType          moko_dialer_tip_get_type         (void) ;
+GType moko_dialer_tip_get_type (void);
 
-GtkWidget*      moko_dialer_tip_new();
+GtkWidget *moko_dialer_tip_new ();
 
-GtkWidget*      moko_dialer_tip_new_with_label_and_index(const gchar * stringname,const gint index);
+GtkWidget *moko_dialer_tip_new_with_label_and_index (const gchar * stringname,
+                                                     const gint index);
 
-gint moko_dialer_tip_get_index(MokoDialerTip* tip);
-gboolean moko_dialer_tip_set_label(GtkWidget* widget,const gchar * stringname);
-gboolean moko_dialer_tip_set_index(GtkWidget* widget,const gint index);
+gint moko_dialer_tip_get_index (MokoDialerTip * tip);
+gboolean moko_dialer_tip_set_label (GtkWidget * widget,
+                                    const gchar * stringname);
+gboolean moko_dialer_tip_set_index (GtkWidget * widget, const gint index);
 
-gboolean  moko_dialer_tip_is_selected(GtkWidget* tip);
+gboolean moko_dialer_tip_is_selected (GtkWidget * tip);
 
-gboolean moko_dialer_tip_set_selected(GtkWidget* tip,gboolean selected);
+gboolean moko_dialer_tip_set_selected (GtkWidget * tip, gboolean selected);
 G_END_DECLS
-
-#endif // 
-
-
-
-
-
+#endif //

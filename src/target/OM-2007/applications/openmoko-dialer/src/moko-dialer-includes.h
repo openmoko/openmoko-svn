@@ -15,7 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
- #ifndef _MOKO_DIALER_INCLUDES_H
+#ifndef _MOKO_DIALER_INCLUDES_H
 #define _MOKO_DIALER_INCLUDES_H
 
 
@@ -34,8 +34,9 @@
 //
 
 
-typedef enum _state{
-  STATE_NON= 0,
+typedef enum _state
+{
+  STATE_NON = 0,
   STATE_CALLING,
   STATE_INCOMING,
   STATE_TALKING,
@@ -45,64 +46,69 @@ typedef enum _state{
   STATE_TIMEOUT,
   STATE_IGNORED,
   STATE_MISSED
-}CONNECTION_STATE;
-typedef enum _windowstate{
-	WINDOWS_TALKING=0,
-	WINDOWS_DTMF
-}WINDOW_STATE;	
-typedef enum _speakerstate{
-	SPEAKER_ON=0,
-	SPEAKER_OFF
-}SPEAKER_STATE;
-typedef enum _incomingstate{
-	NO_INCOMING_EVENT=0,
-	HAS_INCOMING_EVENT
-}INCOMINGSTATE;
-typedef enum _clipstate{
-	NO_CLIP_EVENT=0,
-	HAS_CLIP_EVENT
-}CLIPSTATE;
+} CONNECTION_STATE;
+typedef enum _windowstate
+{
+  WINDOWS_TALKING = 0,
+  WINDOWS_DTMF
+} WINDOW_STATE;
+typedef enum _speakerstate
+{
+  SPEAKER_ON = 0,
+  SPEAKER_OFF
+} SPEAKER_STATE;
+typedef enum _incomingstate
+{
+  NO_INCOMING_EVENT = 0,
+  HAS_INCOMING_EVENT
+} INCOMINGSTATE;
+typedef enum _clipstate
+{
+  NO_CLIP_EVENT = 0,
+  HAS_CLIP_EVENT
+} CLIPSTATE;
 
 typedef struct _globalstate
 {
-	CONNECTION_STATE callstate;
-	WINDOW_STATE talkingstate;
-	SPEAKER_STATE speakerstate;
-	HISTORY_TYPE historytype;
-	char starttime[24];
-	char startdate[24];
-	char lastnumber[MOKO_DIALER_MAX_NUMBER_LEN+1];
-}GLOBAL_STATE;
+  CONNECTION_STATE callstate;
+  WINDOW_STATE talkingstate;
+  SPEAKER_STATE speakerstate;
+  HISTORY_TYPE historytype;
+  char starttime[24];
+  char startdate[24];
+  char lastnumber[MOKO_DIALER_MAX_NUMBER_LEN + 1];
+} GLOBAL_STATE;
 
-typedef int (*TimeExpireCallback)();
+typedef int (*TimeExpireCallback) ();
 
 typedef struct _timerdata
 {
-	gint ptimer;
-	gint stopsec; ///<indicates when the ticks reaches stopsec, then this timer has to be stopped.
-	gint timeout; ///<indicates wether this timer has timeout to stopsec.
+  gint ptimer;
+  gint stopsec;                 ///<indicates when the ticks reaches stopsec, then this timer has to be stopped.
+  gint timeout;                 ///<indicates wether this timer has timeout to stopsec.
 
-	gint ticks; //seconds together
-	gint sec;   
-	gint min;
-	gint hour;
-	char timestring[MOKO_DIALER_MAX_TIME_STATUS_LEN+1] ;
-}TIMER_DATA;
+  gint ticks;                   //seconds together
+  gint sec;
+  gint min;
+  gint hour;
+  char timestring[MOKO_DIALER_MAX_TIME_STATUS_LEN + 1];
+} TIMER_DATA;
 
-enum {
-	COLUMN_TYPE,
-	COLUMN_TYPEICON,
-	COLUMN_SEPRATE,
-	COLUMN_NAME_NUMBER,
-	COLUMN_TIME,
-	COLUMN_DURATION,
-	COLUMN_ENTRYPOINTER,
-	COLUMN_HASNAME,
-	N_COLUMN
+enum
+{
+  COLUMN_TYPE,
+  COLUMN_TYPEICON,
+  COLUMN_SEPRATE,
+  COLUMN_NAME_NUMBER,
+  COLUMN_TIME,
+  COLUMN_DURATION,
+  COLUMN_ENTRYPOINTER,
+  COLUMN_HASNAME,
+  N_COLUMN
 };
-void gsm_incoming_call(gchar * number);
-void gsm_peer_accept();
-void gsm_peer_abort();
-void gsm_peer_disconnect();
-void gsm_peer_refuse();
+void gsm_incoming_call (gchar * number);
+void gsm_peer_accept ();
+void gsm_peer_abort ();
+void gsm_peer_disconnect ();
+void gsm_peer_refuse ();
 #endif

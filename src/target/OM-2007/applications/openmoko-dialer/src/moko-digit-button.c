@@ -27,32 +27,27 @@
 
 
 G_DEFINE_TYPE (MokoDigitButton, moko_digit_button, GTK_TYPE_BUTTON)
-
-
 #define MOKO_DIGIT_BUTTON_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_DIGIT_BUTTON, MokoDigitButtonPrivate))
+     struct _MokoDigitButtonPrivate
+     {
+
+       GtkWidget *labelDigit;
+       GtkWidget *labelAcrobat;
+       gchar leftclickdigit;
+       gchar rightclickdigit;
+
+     };
 
 
 
-struct _MokoDigitButtonPrivate
-{
+     typedef struct _MokoDigitButtonPrivate MokoDigitButtonPrivate;
 
-  GtkWidget * labelDigit;
-  GtkWidget * labelAcrobat;
-  gchar leftclickdigit;
-  gchar rightclickdigit;
-  
-};
-
-
-
-typedef struct _MokoDigitButtonPrivate MokoDigitButtonPrivate;
-
-GtkWidget*      moko_digit_button_new()
+     GtkWidget *moko_digit_button_new ()
 {
 
 //g_print("moko_digit_button_new\n");
 // return (GTK_WIDGET(g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL)));
-return moko_digit_button_new_with_labels("1","ABC");
+  return moko_digit_button_new_with_labels ("1", "ABC");
 }
 
 
@@ -61,105 +56,114 @@ return moko_digit_button_new_with_labels("1","ABC");
  * @param string_digit  the left digit part of the button. such as '1','2'...'0'
  * @param string_acrobat  the right acrobat part of the button, such as 'ABC' etc.
  */
-GtkWidget*      moko_digit_button_new_with_labels(const gchar * string_digit, const gchar * string_acrobat)
+GtkWidget *
+moko_digit_button_new_with_labels (const gchar * string_digit,
+                                   const gchar * string_acrobat)
 {
 
 
- MokoDigitButton * digitbutton = ( MokoDigitButton * )g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL);
+  MokoDigitButton *digitbutton =
+    (MokoDigitButton *) g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL);
 
-  gtk_widget_show (GTK_WIDGET(digitbutton));
+  gtk_widget_show (GTK_WIDGET (digitbutton));
   gtk_widget_set_size_request (digitbutton, 64, 64);
 
 //  GtkWidget * hbox = gtk_hbox_new (TRUE, 0);
-  GtkWidget * hbox = gtk_hbox_new (FALSE, 0);
+  GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
   gtk_widget_show (hbox);
   gtk_container_add (GTK_CONTAINER (digitbutton), hbox);
 
 
-  GtkWidget * vbox = gtk_vbox_new (TRUE, 0);
+  GtkWidget *vbox = gtk_vbox_new (TRUE, 0);
   gtk_widget_show (vbox);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
 
-  GtkWidget* labelDigit = gtk_label_new (string_digit);
+  GtkWidget *labelDigit = gtk_label_new (string_digit);
   gtk_widget_show (labelDigit);
   gtk_box_pack_start (GTK_BOX (vbox), labelDigit, TRUE, TRUE, 0);
 
-  GtkWidget* alignment = gtk_alignment_new (0, 1, 1, 0.3);
+  GtkWidget *alignment = gtk_alignment_new (0, 1, 1, 0.3);
   gtk_widget_show (alignment);
   gtk_box_pack_start (GTK_BOX (hbox), alignment, TRUE, TRUE, 0);
 
-  GtkWidget * labelAcrobat = gtk_label_new (string_acrobat);
+  GtkWidget *labelAcrobat = gtk_label_new (string_acrobat);
   gtk_widget_show (labelAcrobat);
   gtk_container_add (GTK_CONTAINER (alignment), labelAcrobat);
   gtk_widget_set_size_request (labelAcrobat, 0, 0);
   gtk_label_set_justify (GTK_LABEL (labelAcrobat), GTK_JUSTIFY_RIGHT);
 
-  gtk_widget_set_name( GTK_WIDGET(digitbutton), "mokofingerbutton-dialer" );
+  gtk_widget_set_name (GTK_WIDGET (digitbutton), "mokofingerbutton-dialer");
 
- MokoDigitButtonPrivate* priv = ( MokoDigitButtonPrivate*)MOKO_DIGIT_BUTTON_GET_PRIVATE(digitbutton);
+  MokoDigitButtonPrivate *priv =
+    (MokoDigitButtonPrivate *) MOKO_DIGIT_BUTTON_GET_PRIVATE (digitbutton);
 
- priv->labelDigit=labelDigit;
- priv->labelAcrobat=labelAcrobat;
+  priv->labelDigit = labelDigit;
+  priv->labelAcrobat = labelAcrobat;
 
 //g_print("moko_digit_button_new_with_labels:%s,%s\n",string_digit,string_acrobat);
 
- return GTK_WIDGET(digitbutton);
+  return GTK_WIDGET (digitbutton);
 
 }
 
-gboolean moko_digit_button_set_numbers(GtkWidget* widget,gchar left, gchar right)
+gboolean
+moko_digit_button_set_numbers (GtkWidget * widget, gchar left, gchar right)
 {
 
-g_return_val_if_fail(MOKO_IS_DIGIT_BUTTON(widget),FALSE);
- MokoDigitButtonPrivate* priv = ( MokoDigitButtonPrivate*)MOKO_DIGIT_BUTTON_GET_PRIVATE(widget);
-g_return_val_if_fail(priv!=NULL,FALSE);
+  g_return_val_if_fail (MOKO_IS_DIGIT_BUTTON (widget), FALSE);
+  MokoDigitButtonPrivate *priv =
+    (MokoDigitButtonPrivate *) MOKO_DIGIT_BUTTON_GET_PRIVATE (widget);
+  g_return_val_if_fail (priv != NULL, FALSE);
 
- priv->leftclickdigit=left;
- priv->rightclickdigit=right;
+  priv->leftclickdigit = left;
+  priv->rightclickdigit = right;
 // g_print("moko_digit_button_set_numbers:%c,%d\n",left,right);
-return TRUE;
+  return TRUE;
 }
-	
+
 static void
-moko_digit_button_class_init(MokoDigitButtonClass *klass)
+moko_digit_button_class_init (MokoDigitButtonClass * klass)
 {
 //g_print("moko_digit_button_class_init\n");
 
 // GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
- g_type_class_add_private (klass, sizeof (MokoDigitButtonPrivate));
+  g_type_class_add_private (klass, sizeof (MokoDigitButtonPrivate));
 
-return;
+  return;
 }
 
 /**
  * @brief  set the digit button digit field to be -1.
  */
 static void
-moko_digit_button_init(MokoDigitButton *self)
+moko_digit_button_init (MokoDigitButton * self)
 {
 
- MokoDigitButtonPrivate* priv = MOKO_DIGIT_BUTTON_GET_PRIVATE(self);
- priv->labelDigit=0;
- priv->labelAcrobat=0;
- priv->leftclickdigit=-1;
- priv->rightclickdigit=-1;
+  MokoDigitButtonPrivate *priv = MOKO_DIGIT_BUTTON_GET_PRIVATE (self);
+  priv->labelDigit = 0;
+  priv->labelAcrobat = 0;
+  priv->leftclickdigit = -1;
+  priv->rightclickdigit = -1;
 //g_print("moko_digit_button_init\n");
-return;
+  return;
 }
 
-gchar moko_digit_button_get_left(MokoDigitButton* button)
+gchar
+moko_digit_button_get_left (MokoDigitButton * button)
 {
- MokoDigitButtonPrivate* priv = MOKO_DIGIT_BUTTON_GET_PRIVATE(button);
+  MokoDigitButtonPrivate *priv = MOKO_DIGIT_BUTTON_GET_PRIVATE (button);
 // g_print("moko_digit_button_get_left:%c\n",priv->leftclickdigit);
-return(priv->leftclickdigit);
+  return (priv->leftclickdigit);
 
 }
-gchar moko_digit_button_get_right(MokoDigitButton* button)
+
+gchar
+moko_digit_button_get_right (MokoDigitButton * button)
 {
- MokoDigitButtonPrivate* priv = MOKO_DIGIT_BUTTON_GET_PRIVATE(button);
+  MokoDigitButtonPrivate *priv = MOKO_DIGIT_BUTTON_GET_PRIVATE (button);
 // g_print("moko_digit_button_get_right:%c\n",priv->rightclickdigit);
-return(priv->rightclickdigit);
+  return (priv->rightclickdigit);
 
 }
 

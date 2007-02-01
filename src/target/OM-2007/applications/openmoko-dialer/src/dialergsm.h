@@ -46,9 +46,9 @@ int shell_main(struct lgsm_handle *lgsmh);
 	
 int pin_init(struct lgsm_handle *lh, const char *pin_preset);
 */
-	
+
 //#include "lgsm_internals.h"
-	
+
 //#include "dialer.h"
 
 #define STDIN_BUF_SIZE	1024
@@ -62,33 +62,33 @@ int pin_init(struct lgsm_handle *lh, const char *pin_preset);
  * @retval -1 failed
  * @retval 0  success
  */
-int gsm_start_loop();
+  int gsm_start_loop ();
 /**
  * @brief take care the early initialization of libgsmd,this must be called before any physical phone operations such as dialing out.
  * @retval 1 failed, and the whole app will exit too.
  * @retval 0  success
  */
-int gsm_lgsm_start(GMainLoop* mainloop);
+  int gsm_lgsm_start (GMainLoop * mainloop);
 /**
  * @brief hangup an outgoing call or incoming call or talking call
  * @retval 0  success 
  * @retval other failed
  */
-int gsm_hangup();
+  int gsm_hangup ();
 
 /**
  * @brief accept an incoming call
  * @retval 0  success 
  * @retval other failed
  */
-int gsm_answer();
+  int gsm_answer ();
 /**
  * @brief calls a number out
  * @param number the number to be called
  * @retval 0  success 
  * @retval other failed
  */
-int gsm_dial(const char * number);
+  int gsm_dial (const char *number);
 /**
  * @brief monitor the connection with libgsmd, dispatch the event handler when needed.
  *
@@ -99,13 +99,13 @@ int gsm_dial(const char * number);
  * @retval
  */
 
-void *gsm_monitor_thread(struct lgsm_handle *lgsmh);
+  void *gsm_monitor_thread (struct lgsm_handle *lgsmh);
 
 
-void gsm_watcher_install (GMainLoop* mainloop);
+  void gsm_watcher_install (GMainLoop * mainloop);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _DIALERGSM_H */
+#endif                          /* _DIALERGSM_H */

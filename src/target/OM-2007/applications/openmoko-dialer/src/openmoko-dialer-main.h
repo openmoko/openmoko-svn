@@ -15,7 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
- #include "moko-dialer-includes.h"
+#include "moko-dialer-includes.h"
 /*
 
 typedef struct _window_outgoing
@@ -30,71 +30,69 @@ GtkWidget* buttonCancel;
 GtkWidget* buttonRedial;
 }WindowOutgoing;
 */
- typedef struct _dialer_data
+typedef struct _dialer_data
 {
- //the global data area begins here
+  //the global data area begins here
 
- GMainLoop* mainloop;
+  GMainLoop *mainloop;
 
-MokoDialerTextview *moko_dialer_text_view; ///<the textview for the dialer window 
+  MokoDialerTextview *moko_dialer_text_view;    ///<the textview for the dialer window 
 
-MokoDialerTextview *moko_dtmf_text_view; ///<the textview for the dtmf window
-
-
-MokoDialerAutolist *moko_dialer_autolist;
-
-DIALER_CONTACTS_LIST_HEAD       g_contactlist; ///< the whole list of the contacts from the contact book.
-
-DIALER_CONTACT_PEER_INFO g_peer_info; ///<hold the peer's name, number, etc.
-
-HISTORY_LIST_HEAD g_historylist; ///< the whole list of the talk history
-HISTORY_ENTRY * g_currentselected; ///<pointer to the history entry which in the GUI the user selects.
-GLOBAL_STATE g_state; ///< the global states holder. we count on it a lot.
+  MokoDialerTextview *moko_dtmf_text_view;      ///<the textview for the dtmf window
 
 
-TIMER_DATA g_timer_data;///< the data used by the timers
+  MokoDialerAutolist *moko_dialer_autolist;
 
-MokoDialerStatus * status_outgoing;
-MokoDialerStatus * status_talking;
-MokoDialerStatus * status_incoming;
+  DIALER_CONTACTS_LIST_HEAD g_contactlist;      ///< the whole list of the contacts from the contact book.
 
-GtkWidget* window_incoming;
-GtkWidget* window_outgoing;
-GtkWidget* window_talking;
-GtkWidget * window_history;
-GtkWidget * window_dialer;
+  DIALER_CONTACT_PEER_INFO g_peer_info; ///<hold the peer's name, number, etc.
+
+  HISTORY_LIST_HEAD g_historylist;      ///< the whole list of the talk history
+  HISTORY_ENTRY *g_currentselected;     ///<pointer to the history entry which in the GUI the user selects.
+  GLOBAL_STATE g_state;         ///< the global states holder. we count on it a lot.
+
+
+  TIMER_DATA g_timer_data;      ///< the data used by the timers
+
+  MokoDialerStatus *status_outgoing;
+  MokoDialerStatus *status_talking;
+  MokoDialerStatus *status_incoming;
+
+  GtkWidget *window_incoming;
+  GtkWidget *window_outgoing;
+  GtkWidget *window_talking;
+  GtkWidget *window_history;
+  GtkWidget *window_dialer;
 
 //buttons
-GtkWidget* buttonSpeaker;
-GtkWidget* buttonCancel;
-GtkWidget* buttonRedial;
+  GtkWidget *buttonSpeaker;
+  GtkWidget *buttonCancel;
+  GtkWidget *buttonRedial;
 
-GtkWidget* imageTALK;
-GtkWidget* imageDTMF;
+  GtkWidget *imageTALK;
+  GtkWidget *imageDTMF;
 
-GtkWidget* content_talk;
-GtkWidget* content_dtmf;
-
-
-GtkWidget* wheel_talking;
-GtkWidget* toolbox_talking;
+  GtkWidget *content_talk;
+  GtkWidget *content_dtmf;
 
 
-GtkWidget* wheel_history;
-GtkWidget* toolbox_history;
-GtkWidget* label_filter_history;
-GtkWidget* label_counter_history;
-GtkWidget* treeview_history;
-GtkWidget* menu_history;
-
-gboolean dtmf_in_talking_window;
-gboolean history_need_to_update;
-
- GtkListStore  *g_list_store_filter;///<the list store used by the gtktreeview, for displaying the history list dynamically.
-
- HISTORY_TYPE g_history_filter_type;///<indicates the current history filter type, the gtktreeview will be filtered on the value.
-
- GdkPixbuf * g_iconReceived,*g_iconMissed,*g_iconDialed;///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
-}MOKO_DIALER_APP_DATA;
+  GtkWidget *wheel_talking;
+  GtkWidget *toolbox_talking;
 
 
+  GtkWidget *wheel_history;
+  GtkWidget *toolbox_history;
+  GtkWidget *label_filter_history;
+  GtkWidget *label_counter_history;
+  GtkWidget *treeview_history;
+  GtkWidget *menu_history;
+
+  gboolean dtmf_in_talking_window;
+  gboolean history_need_to_update;
+
+  GtkListStore *g_list_store_filter;    ///<the list store used by the gtktreeview, for displaying the history list dynamically.
+
+  HISTORY_TYPE g_history_filter_type;   ///<indicates the current history filter type, the gtktreeview will be filtered on the value.
+
+  GdkPixbuf *g_iconReceived, *g_iconMissed, *g_iconDialed;      ///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
+} MOKO_DIALER_APP_DATA;

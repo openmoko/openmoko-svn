@@ -15,7 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
- #ifndef _MOKO_DIALER_TEXTVIEW_H_
+#ifndef _MOKO_DIALER_TEXTVIEW_H_
 #define _MOKO_DIALER_TEXTVIEW_H_
 
 
@@ -30,27 +30,24 @@
 #include <gtk/gtktextview.h>
 
 G_BEGIN_DECLS
-
-
 #define MOKO_TYPE_DIALER_TEXTVIEW                (moko_dialer_textview_get_type())
 #define MOKO_DIALER_TEXTVIEW (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_TEXTVIEW, MokoDialerTextview))
 #define MOKO_DIALER_TEXTVIEW_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass),MOKO_TYPE_DIALER_TEXTVIEW,MokoDialerTextviewClass))
 #define MOKO_IS_DIALER_TEXTVIEW(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_DIALER_TEXTVIEW))
 #define MOKO_IS_DIALER_TEXTVIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_DIALER_TEXTVIEW))
 #define MOKO_DIALER_TEXTVIEW_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_DIALER_TEXTVIEW, MokoDialerTextviewClass))
+typedef struct _MokoDialerTextviewClass MokoDialerTextviewClass;
 
-typedef struct _MokoDialerTextviewClass   MokoDialerTextviewClass;
-
-typedef struct _MokoDialerTextview        MokoDialerTextview;
+typedef struct _MokoDialerTextview MokoDialerTextview;
 
 struct _MokoDialerTextview
 {
-GtkTextView textview; ///<the main widget
-PangoFontDescription * font_desc_textview; ///< the font description of this textview
-GtkTextTag*  tag_for_inputed; ///<the formating tag for the digits user already inputed
-GtkTextTag*  tag_for_cursor; ///<the formatting tag  for the right digit user just inputed.
-GtkTextTag*  tag_for_autofilled;///<the formatting tag for the autofilled digits if any.
-gboolean  sensed;
+  GtkTextView textview;         ///<the main widget
+  PangoFontDescription *font_desc_textview;     ///< the font description of this textview
+  GtkTextTag *tag_for_inputed;  ///<the formating tag for the digits user already inputed
+  GtkTextTag *tag_for_cursor;   ///<the formatting tag  for the right digit user just inputed.
+  GtkTextTag *tag_for_autofilled;       ///<the formatting tag for the autofilled digits if any.
+  gboolean sensed;
 };
 
 struct _MokoDialerTextviewClass
@@ -59,18 +56,16 @@ struct _MokoDialerTextviewClass
 };
 
 
-GType          moko_dialer_textview_get_type         (void) ;
+GType moko_dialer_textview_get_type (void);
 
-GtkWidget*      moko_dialer_textview_new();
+GtkWidget *moko_dialer_textview_new ();
 
- int moko_dialer_textview_insert(MokoDialerTextview *moko_dialer_textview, const gchar* number);
+int moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
+                                 const gchar * number);
 
-int  moko_dialer_textview_get_input(MokoDialerTextview *moko_dialer_textview,gchar* input,int ALL);
-int  moko_dialer_textview_empty(MokoDialerTextview *moko_dialer_textview);
+int moko_dialer_textview_get_input (MokoDialerTextview * moko_dialer_textview,
+                                    gchar * input, int ALL);
+int moko_dialer_textview_empty (MokoDialerTextview * moko_dialer_textview);
 
 G_END_DECLS
-
-#endif // 
-
-
-
+#endif //

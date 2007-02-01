@@ -21,7 +21,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef _ERROR_H
 #define _ERROR_H
 
@@ -31,18 +31,18 @@ extern "C"
 #endif
 
 #ifndef  _FIC_DEBUG
-	#define _FIC_DEBUG 1
+#define _FIC_DEBUG 1
 #endif
 
-	#define DBG_ERROR_ON 1
-	#define DBG_WARNING_ON 1
-	#define DBG_FUN_ENTER_ON 1
-	#define DBG_FUN_LEAVE_ON 1
-	#define DBG_MESSAGE_ON 1
-	#define DBG_TRACE_ON 1
-	
-	
-	
+#define DBG_ERROR_ON 1
+#define DBG_WARNING_ON 1
+#define DBG_FUN_ENTER_ON 1
+#define DBG_FUN_LEAVE_ON 1
+#define DBG_MESSAGE_ON 1
+#define DBG_TRACE_ON 1
+
+
+
 #ifdef  _FIC_DEBUG
 /** @brief Define a debug message output */
 #define DBG_MESSAGE(x...)   {if(DBG_MESSAGE_ON) {g_print(x);g_print("\n");}}
@@ -76,4 +76,4 @@ extern "C"
 }
 #endif
 
-#endif /* _ERROR_H */
+#endif                          /* _ERROR_H */

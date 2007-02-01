@@ -30,7 +30,7 @@
 # define IS_BIG_ENDIAN FALSE
 #endif
 
-void alsa_get_volume(int *l, int *r);
-void alsa_set_volume(int l, int r);
+void alsa_get_volume (int *l, int *r);
+void alsa_set_volume (int l, int r);
 
 #endif

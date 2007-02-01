@@ -30,7 +30,7 @@
 
 //pthread_t thread;///<the gsm_monitor_thread thread handler
 
-static struct lgsm_handle *lgsmh; ///< the handle of the libgsmd
+static struct lgsm_handle *lgsmh;       ///< the handle of the libgsmd
 
 static GPollFD GPfd;
 
@@ -46,40 +46,40 @@ static GPollFD GPfd;
  */
  /*
 
-void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
-{
-	int rc;
-	char buf[STDIN_BUF_SIZE+1];
-	//char rbuf[STDIN_BUF_SIZE+1];
-	//int rlen = sizeof(rbuf);
-	fd_set readset;
-//	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
+    void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
+    {
+    int rc;
+    char buf[STDIN_BUF_SIZE+1];
+    //char rbuf[STDIN_BUF_SIZE+1];
+    //int rlen = sizeof(rbuf);
+    fd_set readset;
+    //  lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
 
-	FD_ZERO(&readset);
+    FD_ZERO(&readset);
 
-	while (1) {
-		int gsm_fd = lgsm_fd(lgsmh);
-//		FD_SET(0, &readset);
-		FD_SET(gsm_fd, &readset);
+    while (1) {
+    int gsm_fd = lgsm_fd(lgsmh);
+    //          FD_SET(0, &readset);
+    FD_SET(gsm_fd, &readset);
 
-		rc = select(gsm_fd+1, &readset, NULL, NULL, NULL);
-		if (rc <= 0)	
-			break;
-		/ we've received something on the gsmd socket, pass it on to the library 
-			rc = read(gsm_fd, buf, sizeof(buf));
-			if (rc <= 0) {
-				printf("ERROR reding from gsm_fd\n");
-				break;
-			}
-			rc = lgsm_handle_packet(lgsmh, buf, rc);
-	}
-	
-	
-		printf("you know what? i quit!");
-        pthread_exit(NULL);
-}
+    rc = select(gsm_fd+1, &readset, NULL, NULL, NULL);
+    if (rc <= 0)        
+    break;
+    / we've received something on the gsmd socket, pass it on to the library 
+    rc = read(gsm_fd, buf, sizeof(buf));
+    if (rc <= 0) {
+    printf("ERROR reding from gsm_fd\n");
+    break;
+    }
+    rc = lgsm_handle_packet(lgsmh, buf, rc);
+    }
 
-*/
+
+    printf("you know what? i quit!");
+    pthread_exit(NULL);
+    }
+
+  */
 /**
  * @brief create the thread to monitor events from libgsmd
  *
@@ -91,21 +91,21 @@ void *gsm_monitor_thread(struct lgsm_handle *lgsmh)
  * @retval 0  success
  */
  /*
-int gsm_start_loop()
-{
-        
-        //pthread_mutex_init(&mut,NULL);
-	    memset(&thread, 0, sizeof(thread));          //comment1
-        
-        if(pthread_create(&thread, NULL, gsm_monitor_thread, lgsmh) != 0)       //comment2
-		{  printf("failed to create libgsmd monitor thread\n");
-			return -1;
-		}
-        
-        return 0;
-}
+    int gsm_start_loop()
+    {
 
-*/
+    //pthread_mutex_init(&mut,NULL);
+    memset(&thread, 0, sizeof(thread));          //comment1
+
+    if(pthread_create(&thread, NULL, gsm_monitor_thread, lgsmh) != 0)       //comment2
+    {  printf("failed to create libgsmd monitor thread\n");
+    return -1;
+    }
+
+    return 0;
+    }
+
+  */
 
 /**
  * @brief this is the handler for receiving passthrough responses 
@@ -119,11 +119,12 @@ int gsm_start_loop()
  * @retval 0  success
  */
 
-static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+static int
+pt_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
-	char *payload = (char *)gmh + sizeof(*gmh);
-	printf("RSTR=`%s'\n", payload);
-	return 0;
+  char *payload = (char *) gmh + sizeof (*gmh);
+  printf ("RSTR=`%s'\n", payload);
+  return 0;
 }
 
 
@@ -133,24 +134,26 @@ static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
  * @retval 1 failed, and the whole app will exit too.
  * @retval 0  success
  */
-	
-int gsm_lgsm_start(GMainLoop* mainloop)
+
+int
+gsm_lgsm_start (GMainLoop * mainloop)
 {
 
-	char *pin = NULL;
-	lgsmh = lgsm_init(LGSMD_DEVICE_GSMD);
-	if (!lgsmh) {
-		fprintf(stderr, "Can't connect to gsmd\n");
-		exit(1);
-		}
-	pin_init(lgsmh, pin);
-	event_init(lgsmh);
-	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
-	lgsm_netreg_register(lgsmh, 0);
-	
-	gsm_watcher_install(mainloop);
-	//gsm_start_loop();
-	return 0;
+  char *pin = NULL;
+  lgsmh = lgsm_init (LGSMD_DEVICE_GSMD);
+  if (!lgsmh)
+  {
+    fprintf (stderr, "Can't connect to gsmd\n");
+    exit (1);
+  }
+  pin_init (lgsmh, pin);
+  event_init (lgsmh);
+  lgsm_register_handler (lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
+  lgsm_netreg_register (lgsmh, 0);
+
+  gsm_watcher_install (mainloop);
+  //gsm_start_loop();
+  return 0;
 
 }
 
@@ -162,14 +165,15 @@ int gsm_lgsm_start(GMainLoop* mainloop)
  * @retval 0  success 
  * @retval other failed
  */
-int gsm_dial(const char * number)
+int
+gsm_dial (const char *number)
 {
-				struct lgsm_addr addr;
-				addr.type = 129;
-				strncpy(addr.addr, number, strlen(number));
-				addr.addr[strlen(number)] = '\0';
-				return lgsm_voice_out_init(lgsmh, &addr);
-				
+  struct lgsm_addr addr;
+  addr.type = 129;
+  strncpy (addr.addr, number, strlen (number));
+  addr.addr[strlen (number)] = '\0';
+  return lgsm_voice_out_init (lgsmh, &addr);
+
 }
 
 /**
@@ -177,10 +181,11 @@ int gsm_dial(const char * number)
  * @retval 0  success 
  * @retval other failed
  */
-int gsm_answer()
+int
+gsm_answer ()
 {
-	return lgsm_voice_in_accept(lgsmh);
-	
+  return lgsm_voice_in_accept (lgsmh);
+
 }
 
 /**
@@ -188,93 +193,96 @@ int gsm_answer()
  * @retval 0  success 
  * @retval other failed
  */
-int gsm_hangup()
+int
+gsm_hangup ()
 {
-	
-return lgsm_voice_hangup(lgsmh);
-	
+
+  return lgsm_voice_hangup (lgsmh);
+
 }
 
 
 static gboolean
-gsm_watcher_prepare (GSource * source,
-		       gint * timeout)
+gsm_watcher_prepare (GSource * source, gint * timeout)
 {
-	//DBG_ENTER();
-	*timeout = -1;
+  //DBG_ENTER();
+  *timeout = -1;
 
-	return FALSE;
-}
-static gboolean gsm_watcher_check (GSource * source)
-{
-
-	//DBG_ENTER();
-	//|G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_PRI;
-	if(GPfd.revents&(G_IO_IN|G_IO_PRI))
-	{	
-
-		//GPfd.revents=0;
-		return TRUE;
-	}
-	else
-	{
-		//DBG_MESSAGE("FALSE");
-		return FALSE;
-	}
-	
+  return FALSE;
 }
 static gboolean
-gsm_watcher_dispatch (GSource     * source,
-                        GSourceFunc   callback,
-                        gpointer      user_data)
+gsm_watcher_check (GSource * source)
 {
 
+  //DBG_ENTER();
+  //|G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_PRI;
+  if (GPfd.revents & (G_IO_IN | G_IO_PRI))
+  {
 
-	int rc;
-	char buf[STDIN_BUF_SIZE+1];
-	int gsm_fd = lgsm_fd(lgsmh);
-	/* we've received something on the gsmd socket, pass it
-			 * on to the library */
-
-	rc = read(gsm_fd, buf, sizeof(buf));
-			if (rc <= 0) {
-				DBG_MESSAGE("ERROR reding from gsm_fd");
-				return FALSE;
-			}
-			else
-			{
-				rc = lgsm_handle_packet(lgsmh, buf, rc);
-			}
-	return TRUE;
-}
-void gsm_watcher_install (GMainLoop* mainloop)
-{
-	DBG_ENTER();
-	static GSourceFuncs gsm_watcher_funcs = {
-		gsm_watcher_prepare,
-		gsm_watcher_check,
-		gsm_watcher_dispatch,
-		NULL
-	};
-	/* FIXME: we never unref the watcher. */
-	GSource * gsm_watcher =
-		g_source_new (&gsm_watcher_funcs, sizeof (GSource));
-	GPfd.fd=lgsm_fd(lgsmh);
-	GPfd.events=G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_PRI;
-	GPfd.revents=0;
-	
-	g_source_add_poll(gsm_watcher,&GPfd);
-
-	DBG_MESSAGE("ATACH");
-	g_source_attach(gsm_watcher,NULL);
-	DBG_MESSAGE("ATACH OUT");
-	DBG_LEAVE();
-	return;
+    //GPfd.revents=0;
+    return TRUE;
+  }
+  else
+  {
+    //DBG_MESSAGE("FALSE");
+    return FALSE;
+  }
 
 }
-
-void gsm_dtmf_send(char dtmf)
+static gboolean
+gsm_watcher_dispatch (GSource * source,
+                      GSourceFunc callback, gpointer user_data)
 {
-	DBG_MESSAGE("lgsm_voice_dtmf");
-	lgsm_voice_dtmf(lgsmh, dtmf);
+
+
+  int rc;
+  char buf[STDIN_BUF_SIZE + 1];
+  int gsm_fd = lgsm_fd (lgsmh);
+  /* we've received something on the gsmd socket, pass it
+   * on to the library */
+
+  rc = read (gsm_fd, buf, sizeof (buf));
+  if (rc <= 0)
+  {
+    DBG_MESSAGE ("ERROR reding from gsm_fd");
+    return FALSE;
+  }
+  else
+  {
+    rc = lgsm_handle_packet (lgsmh, buf, rc);
+  }
+  return TRUE;
+}
+
+void
+gsm_watcher_install (GMainLoop * mainloop)
+{
+  DBG_ENTER ();
+  static GSourceFuncs gsm_watcher_funcs = {
+    gsm_watcher_prepare,
+    gsm_watcher_check,
+    gsm_watcher_dispatch,
+    NULL
+  };
+  /* FIXME: we never unref the watcher. */
+  GSource *gsm_watcher = g_source_new (&gsm_watcher_funcs, sizeof (GSource));
+  GPfd.fd = lgsm_fd (lgsmh);
+  GPfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI;
+  GPfd.revents = 0;
+
+  g_source_add_poll (gsm_watcher, &GPfd);
+
+  DBG_MESSAGE ("ATACH");
+  g_source_attach (gsm_watcher, NULL);
+  DBG_MESSAGE ("ATACH OUT");
+  DBG_LEAVE ();
+  return;
+
+}
+
+void
+gsm_dtmf_send (char dtmf)
+{
+  DBG_MESSAGE ("lgsm_voice_dtmf");
+  lgsm_voice_dtmf (lgsmh, dtmf);
 }
