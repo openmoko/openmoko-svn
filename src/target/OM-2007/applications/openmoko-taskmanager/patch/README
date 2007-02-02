@@ -1,3 +1,2 @@
-copy matchbox-window-manager-1.*.patch and autopatch.sh to matchbox-widnow-manager-1.* folder, and then run autopatch.sh
-
-after install the patch reinstall matchbox-window-manager
+patch files for matchbox-window-manager1.1
+add two window-manager message managing functions for openmoko-taskmanager.
