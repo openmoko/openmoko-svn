@@ -4,7 +4,8 @@ AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-gta01"
-PR = "r7"
+MOKOR = "moko7"
+PR = "${MOKOR}-r1"
 
 inherit kernel
 
@@ -15,7 +16,7 @@ HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
 # source and patches
 #
 SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.14.tar.bz2 \
-           file://patches-2.6.17.14-fic6.tar.bz2 \
+           file://patches-2.6.17.14-${MOKOR}.tar.bz2 \
            file://defconfig-${MACHINE}"
 S = "${WORKDIR}/linux-2.6.17.14"
 
@@ -85,12 +86,12 @@ do_configure() {
 #
 do_deploy() {
 	install -d ${DEPLOY_DIR_IMAGE}
-	install -m 0644 arch/${ARCH}/boot/${KERNEL_IMAGETYPE} ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-${PV}-${MACHINE}-${DATETIME}.bin
-	tar -cvzf ${DEPLOY_DIR_IMAGE}/modules-${KERNEL_RELEASE}-${MACHINE}.tgz -C ${D} lib
+	install -m 0644 arch/${ARCH}/boot/${KERNEL_IMAGETYPE} ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-${PV}-${PR}-${MACHINE}-${DATETIME}.bin
+	tar -cvzf ${DEPLOY_DIR_IMAGE}/modules-${KERNEL_RELEASE}-${PR}-${MACHINE}.tgz -C ${D} lib
 	arm-linux-objcopy -O binary -R .note -R .comment -S vmlinux linux.bin
 	rm -f linux.bin.gz
 	gzip -9 linux.bin
-	uboot-mkimage -A arm -O linux -T kernel -C gzip -a 30008000 -e 30008000 -n "OpenMoko Kernel Image Neo1973(GTA01)" -d linux.bin.gz ${DEPLOY_DIR_IMAGE}/uImage-${PV}-${MACHINE}-${DATETIME}.bin
+	uboot-mkimage -A arm -O linux -T kernel -C gzip -a 30008000 -e 30008000 -n "OpenMoko Kernel Image Neo1973(GTA01)" -d linux.bin.gz ${DEPLOY_DIR_IMAGE}/uImage-${PV}-${PR}-${MACHINE}-${DATETIME}.bin
 	rm -f linux.bin.gz
 }
 
