@@ -21,7 +21,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-
+ 
 #ifndef _HISTORY_H
 #define _HISTORY_H
 
@@ -30,51 +30,50 @@
 
 
 extern "C"
+
 {
 #endif
 
-
+	
 
 /**
  * @brief enum of history type
  */
-
-  typedef enum _historytype
-  {
-    INCOMING = 0,               ///<incoming calls
-    OUTGOING,                   ///<outgoing calls
-    MISSED,                     ///<missed calls 
-    ALL                         ///<all the types including the above
-  } HISTORY_TYPE;
+	
+typedef enum _historytype{
+	INCOMING=0, ///<incoming calls
+	OUTGOING,///<outgoing calls
+	MISSED,///<missed calls 
+	ALL ///<all the types including the above
+}HISTORY_TYPE;
 
 /**
  * @brief history entry item structure
  */
-  typedef struct historyentry
-  {
-    int ID;                     ///<the unique ID for an contact entry 
-    HISTORY_TYPE type;
-    char *name;                 ///<person name
-    char *number;               ///<person number
-    char *picpath;              ///<the picture file path for the person
-    char *time;                 ///< start time of that talk 
-    char *date;                 ///<start date  of that talk
-    int durationsec;            ///<seconds of the duaration 
-    struct historyentry *next;  ///<pointer to next entry
-    struct historyentry *prev;  ///<pointer to next entry
-    int hasname;
-  } HISTORY_ENTRY;
+typedef struct historyentry
+{
+  int ID;///<the unique ID for an contact entry 
+  HISTORY_TYPE type;
+  char *name;       	///<person name
+  char *number;       	///<person number
+//  char *id;  ///<the id
+  char *time;	///< start time of that talk 
+  char *date;///<start date  of that talk
+  int durationsec;///<seconds of the duaration 
+  struct historyentry* next;         ///<pointer to next entry
+  struct historyentry* prev;         ///<pointer to next entry
+  int hasname;
+}HISTORY_ENTRY;
 
 
 /**
  * @brief contacts list head structure.
  */
-  typedef struct history_list_head
-  {
-    int length;                 ///<the number of history
-    HISTORY_ENTRY *first;       ///<list head pointer
-    HISTORY_ENTRY *last;        ///<list head pointer
-  } HISTORY_LIST_HEAD;
+typedef struct history_list_head {
+  int length;                   ///<the number of history
+  HISTORY_ENTRY *first;        ///<list head pointer
+  HISTORY_ENTRY *last;        ///<list head pointer
+}HISTORY_LIST_HEAD;
 /**
  * @brief read the history list using the external APIs,currently only return 0
  * 
@@ -84,7 +83,7 @@ extern "C"
  * @retval 0 failed 
  * @retval other success
  */
-  int history_read_list (HISTORY_LIST_HEAD * historyhead);
+int history_read_list(HISTORY_LIST_HEAD* historyhead);
 
 /**
  * @brief read the history list using internal data,just for debug use
@@ -96,7 +95,7 @@ extern "C"
  * @retval 0 failed 
  * @retval other success
  */
-  int history_read_list_cmd (HISTORY_LIST_HEAD * historyhead);
+int history_read_list_cmd(HISTORY_LIST_HEAD* historyhead);
 
 /**
  * @brief release the momory by the list and it's entry
@@ -108,7 +107,7 @@ extern "C"
  * @retval 0 failed 
  * @retval 1 success
  */
-  int history_release_history_list (HISTORY_LIST_HEAD * historyhead);
+int history_release_history_list(HISTORY_LIST_HEAD* historyhead);
 
 /**
  * @brief create a history entry, and add this entry to the list.
@@ -123,10 +122,7 @@ extern "C"
  * @return 
  * @retval the newly created entry pointer
  */
-  HISTORY_ENTRY *history_add_entry (HISTORY_LIST_HEAD * historyhead,
-                                    HISTORY_TYPE type, const char *name,
-                                    const char *number, const char *picpath,
-                                    char *time, char *date, int durationsec);
+HISTORY_ENTRY * history_add_entry(HISTORY_LIST_HEAD* historyhead, HISTORY_TYPE type,const char *name,const char *number,const char *picpath,  char *time,char *date,int durationsec);
 /**
  * @brief delete the supplied entry from the list 
  * 
@@ -138,12 +134,11 @@ extern "C"
  * @retval 0 failed
  * @retval 1 success
  */
-  int history_delete_entry (HISTORY_LIST_HEAD * historyhead,
-                            HISTORY_ENTRY * entry);
+int history_delete_entry(HISTORY_LIST_HEAD* historyhead,HISTORY_ENTRY* entry);
 
-  int history_init_history_data (HISTORY_LIST_HEAD * historyhead);
+int history_init_history_data(HISTORY_LIST_HEAD* historyhead);
 #ifdef __cplusplus
 }
 #endif
 
-#endif                          /* _HISTORY_H */
+#endif /* _HISTORY_H */
