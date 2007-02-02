@@ -84,6 +84,7 @@ DBG_LEAVE();
 
 void window_outgoing_prepare(MOKO_DIALER_APP_DATA * appdata)
 {
+DBG_ENTER();
 if(appdata->window_outgoing==0)
 	window_outgoing_init( appdata);
 
@@ -101,7 +102,7 @@ else
 
 }
 strcpy(appdata->g_state.lastnumber,appdata->g_peer_info.number);
-
+DBG_LEAVE();
 
 }
 
@@ -207,14 +208,15 @@ on_window_outgoing_show                  (GtkWidget       *widget,
                                         MOKO_DIALER_APP_DATA * appdata)
 {
 
-
+DBG_ENTER();
 window_outgoing_setup_timer(appdata);
-
-
+DBG_TRACE();
 appdata->g_state.callstate=STATE_CALLING;
+DBG_TRACE();
 appdata->g_state.historytype=OUTGOING;	
+DBG_TRACE();
 gsm_dial(appdata->g_peer_info.number);
-
+DBG_LEAVE();
 
 }
 

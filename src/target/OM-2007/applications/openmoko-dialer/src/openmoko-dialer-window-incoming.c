@@ -179,7 +179,7 @@ if(appdata->g_state.callstate!=STATE_TALKING)
 add_histroy_entry(appdata,appdata->g_state.historytype,
 	appdata->g_peer_info.name,
 	appdata->g_peer_info.number,
-	appdata->g_peer_info.id,
+	appdata->g_peer_info.ID,
 	appdata->g_state.starttime,
 	appdata->g_state.startdate,
 	0);

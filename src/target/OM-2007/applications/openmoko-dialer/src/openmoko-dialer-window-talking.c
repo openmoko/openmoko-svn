@@ -130,14 +130,19 @@ gsm_dtmf_send(input[0]);
 void window_talking_prepare(MOKO_DIALER_APP_DATA * appdata)
 {
 DBG_ENTER();
+
 //   moko_dialer_status_set_person_number(appdata->status_talking, appdata->g_peer_info.number);
 
 if(!appdata->window_talking)
 	window_talking_init(appdata);
 
 if(!appdata->window_talking)
+{
+	DBG_WARN("NO TALKING WINDOW INITIATED");
 	return;
-	
+}
+
+
 if(appdata->g_peer_info.hasname)
 {
 DBG_TRACE();
@@ -193,6 +198,8 @@ void
 on_window_talking_hide                 (GtkWidget       *widget,
                                         MOKO_DIALER_APP_DATA * appdata)
 {
+
+
 if(appdata->g_timer_data.ptimer!=0)
 {
 gtk_timeout_remove(appdata->g_timer_data.ptimer);
@@ -244,7 +251,7 @@ if(appdata->toolbox_talking)
 gtk_widget_show(appdata->toolbox_talking);
 
 
-   
+
 DBG_LEAVE();
 }
 
@@ -331,15 +338,17 @@ if(p_dialer_data->window_talking==0)
 	                    p_dialer_data);
 
      
-     gtk_widget_show_all( GTK_WIDGET(window) );
 
+
+
+     gtk_widget_show_all( GTK_WIDGET(window) );
 //the gtk_widget_show_all is really bad, cause i have to call it and then hide some widgets.
 
    gtk_widget_hide(content_dtmf);
 
 
  //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
-   gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
+//   gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
     
     g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
 		    "press_left_up",
@@ -383,6 +392,7 @@ if(p_dialer_data->window_talking==0)
 
 	DBG_LEAVE();
 }
+
     return 1;
 }
 

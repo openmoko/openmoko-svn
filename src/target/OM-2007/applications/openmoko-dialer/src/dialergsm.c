@@ -144,7 +144,7 @@ gsm_lgsm_start (GMainLoop * mainloop)
   if (!lgsmh)
   {
     fprintf (stderr, "Can't connect to gsmd\n");
-    exit (1);
+    return -1;
   }
   pin_init (lgsmh, pin);
   event_init (lgsmh);
