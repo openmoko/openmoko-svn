@@ -1,6 +1,8 @@
 OpenMoko Panel Plugin: openmoko-panel-mainmenu
-Only run figure based openmoko-mainmenu now.
-actions:
-1.tab (click): run openmoko-mainmenu stylus based application.
-2.tab with hold: run opemoko-mainmenu figure based application.
 
+Specification:
+	On Tap: Toggle OpenMoko mainmenu visibility
+	On Hold: Show Root Window
+
+Todo:
+	Integrate main menu instead of just exec'ing / kill'ing
