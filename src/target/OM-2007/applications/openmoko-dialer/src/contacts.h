@@ -28,7 +28,6 @@
 
 #include "moko-dialer-declares.h"
 #include "error.h"
-#include <bonobo/bonobo-main.h>
 #include <stdlib.h>
 #include <libebook/e-book.h>
 #include <gtk/gtk.h>
