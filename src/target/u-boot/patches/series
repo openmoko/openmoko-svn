@@ -9,3 +9,7 @@ gta01-rtl8019_debugboard.patch
 nand-read_write_oob.patch
 env_nand_oob.patch
 nand-dynamic_partitions.patch
+uboot-arm920_s3c2410_irq_demux.patch
+uboot-s3c2410-norelocate_irqvec_cpy.patch
+uboot-usbtty-acm.patch
+uboot-s3c2410_udc.patch
