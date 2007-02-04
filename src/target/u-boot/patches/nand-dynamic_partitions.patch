@@ -1,7 +1,7 @@
 Index: u-boot.git/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-01-26 15:57:29.000000000 +0100
-+++ u-boot.git/drivers/nand/nand_bbt.c	2007-01-26 23:27:27.000000000 +0100
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-04 13:21:59.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-04 13:22:04.000000000 +0100
 @@ -781,6 +781,8 @@
  	}
  }
@@ -68,17 +68,8 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
  #endif
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-01-26 15:58:17.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-01-26 15:59:16.000000000 +0100
-@@ -25,7 +25,7 @@
- #ifndef __CONFIG_H
- #define __CONFIG_H
- 
--#if 0
-+#if 1
- /* If we want to start u-boot from inside RAM */
- #define CONFIG_SKIP_RELOCATE_UBOOT	1
- #define CONFIG_SKIP_LOWLEVEL_INIT	1
+--- u-boot.git.orig/include/configs/gta01.h	2007-02-04 13:21:59.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-02-04 13:22:04.000000000 +0100
 @@ -102,7 +102,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
