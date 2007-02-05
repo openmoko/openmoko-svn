@@ -334,7 +334,7 @@ moko_dialer_textview_get_input (MokoDialerTextview * moko_dialer_textview,
 int
 moko_dialer_textview_empty (MokoDialerTextview * moko_dialer_textview)
 {
-  GtkTextBuffer * buffer;
+  GtkTextBuffer *buffer;
 
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 

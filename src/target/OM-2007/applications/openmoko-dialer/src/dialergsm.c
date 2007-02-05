@@ -210,6 +210,7 @@ gsm_watcher_prepare (GSource * source, gint * timeout)
 
   return FALSE;
 }
+
 static gboolean
 gsm_watcher_check (GSource * source)
 {
