@@ -1113,13 +1113,14 @@ Index: u-boot.git/drivers/usbdcore_ep0.c
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
 --- u-boot.git.orig/include/configs/gta01.h	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-02-05 15:16:31.000000000 +0100
-@@ -173,6 +173,16 @@
++++ u-boot.git/include/configs/gta01.h	2007-02-05 17:50:29.000000000 +0100
+@@ -173,6 +173,17 @@
  #define CONFIG_USB_OHCI		1
  #endif
  
-+#define CONFIG_USB_DEVICE     1
-+#define CONFIG_USB_TTY                1
++#define CONFIG_USB_DEVICE	1
++#define CONFIG_USB_TTY		1
++#define CFG_CONSOLE_IS_IN_ENV	1
 +#if 0
 +#define CONFIG_USBD_MANUFACTURER      "OpenMoko, Inc."
 +#define CONFIG_USBD_PRODUCT_NAME        "Neo1973 Bootloader"
