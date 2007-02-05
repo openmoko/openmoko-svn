@@ -4102,7 +4102,7 @@ static DBusHandlerResult
 signal_filter(DBusConnection *connection, DBusMessage *message, void *user_data)
 {
     GMainLoop *loop = user_data;
-    if(dbus_message_is_signal(message, DBUS_INTERFACE_ORG_FREEDESKTOP_LOCAL,
+    if(dbus_message_is_signal(message, DBUS_INTERFACE_LOCAL,
 			    "Disconnected"))
     {
         g_main_loop_quit(loop);
