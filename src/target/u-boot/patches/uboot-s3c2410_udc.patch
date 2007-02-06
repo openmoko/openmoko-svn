@@ -2,8 +2,8 @@ USB Device Controller Driver for Samsung S3C2410 SoC
 
 Index: u-boot.git/drivers/Makefile
 ===================================================================
---- u-boot.git.orig/drivers/Makefile	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/drivers/Makefile	2007-02-05 15:16:31.000000000 +0100
+--- u-boot.git.orig/drivers/Makefile	2007-02-05 23:38:29.000000000 +0100
++++ u-boot.git/drivers/Makefile	2007-02-05 23:38:29.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o ahci.o \
@@ -16,8 +16,8 @@ Index: u-boot.git/drivers/Makefile
 Index: u-boot.git/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/drivers/usbdcore_s3c2410.c	2007-02-05 16:06:09.000000000 +0100
-@@ -0,0 +1,703 @@
++++ u-boot.git/drivers/usbdcore_s3c2410.c	2007-02-05 23:38:29.000000000 +0100
+@@ -0,0 +1,708 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -619,7 +619,8 @@ Index: u-boot.git/drivers/usbdcore_s3c2410.c
 +	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +
 +	/* create a short disconnect, since we might come out of reset */
-+	udc_disconnect();
++	//s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
++	gpio->GPBDAT &= ~(1 << 9);
 +	udelay(1000);
 +
 +	// s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 1);
@@ -631,12 +632,16 @@ Index: u-boot.git/drivers/usbdcore_s3c2410.c
 +void udc_disconnect (void)
 +{
 +	UDCDBG ("disconnect, disable Pullup");
++	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
 +#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2)
 +	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +
 +	//s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
 +	gpio->GPBDAT &= ~(1 << 9);
 +#endif
++	/* Disable interrupt (we don't want to get interrupts while the kernel
++	 * is relocating itself */
++	irq->INTMSK |= BIT_USBD;
 +}
 +
 +/* Switch on the UDC */
@@ -724,7 +729,7 @@ Index: u-boot.git/drivers/usbdcore_s3c2410.c
 Index: u-boot.git/drivers/usbdcore_s3c2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/drivers/usbdcore_s3c2410.h	2007-02-05 15:16:31.000000000 +0100
++++ u-boot.git/drivers/usbdcore_s3c2410.h	2007-02-05 23:38:29.000000000 +0100
 @@ -0,0 +1,273 @@
 +/* linux/include/asm/arch-s3c2410/regs-udc.h
 + *
@@ -1001,8 +1006,8 @@ Index: u-boot.git/drivers/usbdcore_s3c2410.h
 +#endif
 Index: u-boot.git/include/s3c2410.h
 ===================================================================
---- u-boot.git.orig/include/s3c2410.h	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/include/s3c2410.h	2007-02-05 15:16:31.000000000 +0100
+--- u-boot.git.orig/include/s3c2410.h	2007-02-05 23:38:29.000000000 +0100
++++ u-boot.git/include/s3c2410.h	2007-02-05 23:38:29.000000000 +0100
 @@ -233,4 +233,40 @@
  		 rINTPND;\
  		 }
@@ -1046,8 +1051,8 @@ Index: u-boot.git/include/s3c2410.h
  #endif /*__S3C2410_H__*/
 Index: u-boot.git/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.git.orig/drivers/usbdcore_ep0.c	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/drivers/usbdcore_ep0.c	2007-02-05 16:05:14.000000000 +0100
+--- u-boot.git.orig/drivers/usbdcore_ep0.c	2007-02-05 23:38:20.000000000 +0100
++++ u-boot.git/drivers/usbdcore_ep0.c	2007-02-05 23:38:29.000000000 +0100
 @@ -43,7 +43,7 @@
  
  #include <common.h>
@@ -1112,9 +1117,9 @@ Index: u-boot.git/drivers/usbdcore_ep0.c
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-02-05 17:50:29.000000000 +0100
-@@ -173,6 +173,17 @@
+--- u-boot.git.orig/include/configs/gta01.h	2007-02-05 23:38:29.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-02-06 02:04:28.000000000 +0100
+@@ -172,6 +172,18 @@
  #define CONFIG_USB_OHCI		1
  #endif
  
@@ -1128,14 +1133,15 @@ Index: u-boot.git/include/configs/gta01.h
 +#define CONFIG_USBD_PRODUCTID   0x0815
 +#endif
 +
++#define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
 +
  /*-----------------------------------------------------------------------
   * Physical Memory Map
   */
 Index: u-boot.git/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.git.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 15:36:40.000000000 +0100
+--- u-boot.git.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 23:38:29.000000000 +0100
++++ u-boot.git/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 23:38:29.000000000 +0100
 @@ -222,6 +222,13 @@
  	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
  	u_int32_t intpnd = irq->INTPND;
@@ -1152,8 +1158,8 @@ Index: u-boot.git/cpu/arm920t/s3c24x0/interrupts.c
  
 Index: u-boot.git/drivers/usbtty.h
 ===================================================================
---- u-boot.git.orig/drivers/usbtty.h	2007-02-05 15:16:25.000000000 +0100
-+++ u-boot.git/drivers/usbtty.h	2007-02-05 15:16:31.000000000 +0100
+--- u-boot.git.orig/drivers/usbtty.h	2007-02-05 23:38:29.000000000 +0100
++++ u-boot.git/drivers/usbtty.h	2007-02-05 23:38:29.000000000 +0100
 @@ -29,6 +29,8 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
