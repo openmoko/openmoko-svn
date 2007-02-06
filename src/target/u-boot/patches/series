@@ -2,7 +2,7 @@ uboot-machtypes.patch
 uboot-arm920t_cp15_cmd.patch
 uboot-s3c2410-nand_mmc.patch
 uboot-s3c2410_fb.patch
-u-boot-20061030-qt2410-gta01.patch 
+uboot-20061030-qt2410.patch 
 uboot-20061030-neo1973.patch 
 uboot-gta01v4.patch
 mmc_parititon_fix.patch
