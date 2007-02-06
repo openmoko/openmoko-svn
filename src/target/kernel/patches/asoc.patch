@@ -21565,7 +21565,7 @@ Index: linux-2.6.17.14-fic4.test/sound/Makefile
  obj-$(CONFIG_SOUND_PRIME) += oss/
  obj-$(CONFIG_DMASOUND) += oss/
 -obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/
-+obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/ asoc/
++obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/ soc/
  
  ifeq ($(CONFIG_SND),y)
    obj-y += last.o
