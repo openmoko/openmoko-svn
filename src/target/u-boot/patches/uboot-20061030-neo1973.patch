@@ -497,7 +497,7 @@ Index: u-boot.git/include/configs/neo1973.h
 @@ -0,0 +1,241 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
-+ * Author: Harald Welte <hwelte@hmw-consulting.de>
++ * Author: Harald Welte <laforge@openmoko.org>
 + *
 + * Configuation settings for the FIC Neo1973 GTA01 Linux GSM phone
 + *
