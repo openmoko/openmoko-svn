@@ -1,0 +1,5 @@
+This is an OpenMoko Stylus Application
+using the OpenMoko Application Framework.
+
+You can send messages via openmoko-messenger.
+Current version will only support SMS.
