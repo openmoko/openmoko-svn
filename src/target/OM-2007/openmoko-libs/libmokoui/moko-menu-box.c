@@ -3,11 +3,11 @@
  *
  *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2006-2007 OpenMoko Inc.
+ *  Copyright (C) 2006 First International Computer Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser Public License as published by
- *  the Free Software Foundation; version 2 of the license.
+ *  the Free Software Foundation; version 2.1 of the license.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -172,6 +172,7 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
 void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
 {
     moko_debug( "moko_menu_box_set_filter_menu" );
+    GtkImageMenuItem* filtitem;
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
     if (!priv->menubar_r )
@@ -179,17 +180,19 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
         priv->menubar_r = gtk_menu_bar_new();
         gtk_widget_set_name( GTK_WIDGET(priv->menubar_r), "mokomenubox-filter-menubar" );
         gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->menubar_r), TRUE, TRUE, 0 );
+    
+        filtitem = gtk_image_menu_item_new_with_label( "Filter Menu" );
+        GtkImage* filticon = gtk_image_new_from_stock( "openmoko-filter-menu-icon", GTK_ICON_SIZE_MENU );
+        gtk_image_menu_item_set_image( filtitem, filticon );
+        gtk_widget_set_name( GTK_WIDGET(filtitem), "transparent" );
+				priv->filteritem = filtitem;
+				priv->filtermenu = menu;
+				gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_r), priv->filteritem );
+        gtk_menu_item_set_submenu( priv->filteritem, priv->filtermenu );
     }
-    GtkImageMenuItem* filtitem = gtk_image_menu_item_new_with_label( "Filter Menu" );
-    GtkImage* filticon = gtk_image_new_from_stock( "openmoko-filter-menu-icon", GTK_ICON_SIZE_MENU );
-    gtk_image_menu_item_set_image( filtitem, filticon );
-    gtk_widget_set_name( GTK_WIDGET(filtitem), "transparent" );
-    priv->filteritem = filtitem;
     priv->filtermenu = menu;
-    g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), self );
-    gtk_menu_item_set_submenu( filtitem, menu );
-    gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_r), filtitem );
-
+    gtk_menu_item_set_submenu( priv->filteritem, priv->filtermenu );
+		g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), self );
     //FIXME hack to popup the first menu if user clicks on menubar
     g_signal_connect( GTK_WIDGET(priv->menubar_r), "button-press-event", G_CALLBACK(cb_button_release), menu );
 }
@@ -233,3 +236,11 @@ void moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
     if (!child)
         g_warning( "moko_menu_box_set_active_filter: filter menu entry '%s' not found", text );
 }
+
+GtkMenuItem* moko_menu_box_get_filter_item (MokoMenuBox* self)
+{
+    MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
+
+    return priv->filteritem;
+}
+
