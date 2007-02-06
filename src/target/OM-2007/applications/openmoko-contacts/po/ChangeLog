@@ -1,0 +1,28 @@
+2006-11-24  Thomas Wood  <thomas@openedhand.com>
+
+	* POTFILES.in:
+	* ca.po:
+	* de.po:
+	* et.po:
+	* fi.po:
+	* fr.po:
+	* it.po:
+	* nl.po:
+	* sv.po:
+
+	- Updated translations (make update-po)
+	- Added Catalan translation
+
+2006-11-20  Emmanuele Bassi  <ebassi@openedhand.com>
+
+	* it.po: Added italian translation.
+
+2006-11-20  Thomas Wood  <thomas@openedhand.com>
+
+	* de.po:
+	* fi.po:
+	* nl.po:
+	* sv.po:
+
+	Added new translations
+

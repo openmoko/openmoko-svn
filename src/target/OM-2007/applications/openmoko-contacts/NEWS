@@ -1,0 +1,38 @@
+Overview of Changes in 0.2 (since 0.1)
+======================================
+
+* Ellipsize long names in the contacts list
+* Smart enable/disable of cut, copy and paste items
+* Implement multiple import and delete
+* Fix compiler warnings
+* Clean up padding in the interface
+* Switch to automake 1.8, fix dist, fix clean targets.
+* Don't try and install GConf schemas if GConf isn't being used.
+* Fix the order of hash creation and store population, fixing chronic breakage on GTK+ 2.10.
+* Check if name text is NULL before g_utf8_strlen on delete dialog
+* Escape name text before displaying in the preview pane
+* Hide the menubar when embedding
+* Make main window not initially visible
+* Add GOption support
+* Add XEmbed support (-p/--plug <socket id>)
+* Fix crash when the contacts treeview sends an activated signal with no contact selected.
+* New French translation (Olivier Lê Thanh Duong  <olivier@lethanh.be>
+* Add i18n support, thanks to patch from Priit Laes
+* Delete contacts async to avoid deadlocks with DBus EDS.
+* Remove dependency gtk+-2.0 >= 2.8.0 (don't use gtk_file_chooser_set_do_overwrite_confirmation)
+* Highlight currently selected field in edit pane. When the user clicks
+* Use libbacon to maintain only one instance
+* Add --enable-gnome-vfs switch for vCard import/export using gnome-vfs
+* Separate import/export UI and function
+
+Bug fixes:
+
+* remove, just remove the selected field. Fixed, as suggested by Jorn Baayen (bug #58)
+* Add confirmation option for contact import (bug #47)
+* Allow import of contacts from command-line (bug #47)
+* Remove labels from focus chain (bug #36)
+* Change 'OK' button in edit pane to 'Close' (bug #55)
+* Change delete dialogue to include descriptive buttons and contact name (bug #55)
+* Add a callback for double-clicking a contact to open/edit (bug #52)
+* Restore object property in cut/copy/paste signal handlers (bug #50)
+* Stop setting can-focus to false for selectable labels - breaks cut/copy/paste (bug #36)
