@@ -1,7 +1,7 @@
 HOMEPAGE = "http://www.openmoko.org"
 LICENSE ?= "GPL"
 OPENMOKO_RELEASE ?= "OM-2007"
-OPENMOKO_MIRROR ?= "svn://svn.gta01.hmw-consulting.de/trunk"
+OPENMOKO_MIRROR ?= "svn://svn.openmoko.org/trunk"
 
 def openmoko_base_get_subdir(d):
     import bb
