@@ -1,7 +1,10 @@
-Index: u-boot.git.u241/cpu/arm920t/interrupts.c
+This patch adds a IRQ demultiplexer callback to the arm920 cpu core code,
+plus a stub implementation of it for the S3C2410.
+
+Index: u-boot.git/cpu/arm920t/interrupts.c
 ===================================================================
---- u-boot.git.u241.orig/cpu/arm920t/interrupts.c	2007-02-04 12:03:14.000000000 +0100
-+++ u-boot.git.u241/cpu/arm920t/interrupts.c	2007-02-04 12:10:55.000000000 +0100
+--- u-boot.git.orig/cpu/arm920t/interrupts.c	2007-02-05 22:49:11.000000000 +0100
++++ u-boot.git/cpu/arm920t/interrupts.c	2007-02-05 23:19:01.000000000 +0100
 @@ -161,11 +161,16 @@
  
  void do_irq (struct pt_regs *pt_regs)
@@ -20,10 +23,10 @@ Index: u-boot.git.u241/cpu/arm920t/interrupts.c
  #else
  	printf ("interrupt request\n");
  	show_regs (pt_regs);
-Index: u-boot.git.u241/cpu/arm920t/s3c24x0/interrupts.c
+Index: u-boot.git/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.git.u241.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-04 12:03:14.000000000 +0100
-+++ u-boot.git.u241/cpu/arm920t/s3c24x0/interrupts.c	2007-02-04 12:11:32.000000000 +0100
+--- u-boot.git.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 22:49:11.000000000 +0100
++++ u-boot.git/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 23:21:35.000000000 +0100
 @@ -216,4 +216,13 @@
  	/*NOTREACHED*/
  }
@@ -38,10 +41,10 @@ Index: u-boot.git.u241/cpu/arm920t/s3c24x0/interrupts.c
 +#endif /* USE_IRQ */
 +
  #endif /* defined(CONFIG_S3C2400) || defined (CONFIG_S3C2410) || defined (CONFIG_TRAB) */
-Index: u-boot.git.u241/include/common.h
+Index: u-boot.git/include/common.h
 ===================================================================
---- u-boot.git.u241.orig/include/common.h	2007-02-04 12:03:14.000000000 +0100
-+++ u-boot.git.u241/include/common.h	2007-02-04 12:10:55.000000000 +0100
+--- u-boot.git.orig/include/common.h	2007-02-05 22:49:11.000000000 +0100
++++ u-boot.git/include/common.h	2007-02-05 23:19:01.000000000 +0100
 @@ -452,6 +452,8 @@
  ulong	get_PCI_freq (void);
  #endif

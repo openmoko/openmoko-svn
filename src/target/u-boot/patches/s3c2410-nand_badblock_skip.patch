@@ -1,3 +1,8 @@
+This patch introduces bad block skipping to the first stage bootloader
+(the one that relocates us from NAND into SDRAM) of the S3C2410.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: u-boot.git/cpu/arm920t/s3c24x0/nand_read.c
 ===================================================================
 --- u-boot.git.orig/cpu/arm920t/s3c24x0/nand_read.c	2007-01-18 23:49:55.000000000 +0100
