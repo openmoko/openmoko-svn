@@ -7,6 +7,7 @@ transform = s/beep/openmoko-media-player/
 
 beep_LDFLAGS = -export-dynamic
 beep_LDADD = -lid3 \
+             -lstdc++\
 	$(X_LIBS) $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS) \
 	$(GTK_LIBS)      \
 	$(DBUS_LIBS)      \

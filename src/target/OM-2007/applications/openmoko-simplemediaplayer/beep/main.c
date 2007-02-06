@@ -1089,8 +1089,8 @@ main(gint argc, gchar ** argv)
     
     /*added by lijiang*/
     playlist_clear();
-    gchar *audio_path = g_build_filename(g_get_home_dir(), "audio", NULL);
-    playlist_add_dir(audio_path);
+//    gchar *audio_path = g_build_filename(g_get_home_dir(), "audio", NULL);
+    playlist_add_dir("/music");
     g_free(audio_path);
    
     openmoko_mainwin_create();

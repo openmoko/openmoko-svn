@@ -3658,6 +3658,13 @@ openmoko_set_tag_info()
     pos = playlist_get_position();
     filename = playlist_get_filename(pos);
     
+    if(!filename)
+    {
+	openmoko_set_title(NULL);
+	openmoko_set_artist(NULL);
+	return;
+    }
+    
     char* surfix = strrchr(filename, '.');
     if(!strcmp(surfix+1, "mp3"))
     {
@@ -3877,6 +3884,9 @@ openmoko_update_elapse_time(gpointer data)
 void 
 openmoko_play_pause_action()
 {
+    if(playlist_get_length() == 0)
+	return;
+	
     if(!playorpause)
     {
         mainwin_play_pushed();
@@ -4159,20 +4169,11 @@ signal_filter(DBusConnection *connection, DBusMessage *message, void *user_data)
 
 void init_image_dir()
 {
-    gchar* skin_path;	
-    ConfigDb* db;
-    db = bmp_cfg_db_open();
-    bmp_cfg_db_get_string(db, "beep", "skin", &skin_path);
-    bmp_cfg_db_close(db); 
-
-    gchar* share_string = g_strrstr(skin_path, "share");
-
-    int len = strlen(skin_path);  
+    gchar* share_string = g_strrstr(DATA_DIR, "share");
+    int len = strlen(DATA_DIR);  
     int len1= strlen(share_string);
-    gchar* prefix = g_strndup(skin_path, len-len1 +5);
-    images_dir = g_strdup(g_strconcat(prefix, "/images", NULL));
-    
-    g_free(skin_path);
+    gchar* prefix = g_strndup(DATA_DIR, len-len1 +5);
+    images_dir = g_build_filename(prefix, "/images", NULL));
     g_free(prefix);
 }
 
