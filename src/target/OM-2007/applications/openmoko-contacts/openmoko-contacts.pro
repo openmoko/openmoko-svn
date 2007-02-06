@@ -4,7 +4,6 @@ HEADERS += src/bacon-message-connection.h \
            src/contacts-contact-pane.h \
            src/contacts-defs.h \
            src/contacts-groups-editor.h \
-           src/contacts-gtk.h \
            src/contacts-main.h \
            src/contacts-omoko.h \
            src/contacts-ui.h \
@@ -15,7 +14,6 @@ SOURCES += src/bacon-message-connection.c \
            src/contacts-callbacks-ui.c \
            src/contacts-contact-pane.c \
            src/contacts-groups-editor.c \
-           src/contacts-gtk.c \
            src/contacts-main.c \
            src/contacts-omoko.c \
            src/contacts-ui.c \
@@ -23,4 +21,6 @@ SOURCES += src/bacon-message-connection.c \
 
 MOKOCONFIG = mokoui
 PKGCONFIG += libebook-1.2
+DEFINES += 'GETTEXT_PACKAGE=\\"contacts\\"'
+DEFINES += 'CONTACTS_LOCALE_DIR=\\"foo\\"'
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
