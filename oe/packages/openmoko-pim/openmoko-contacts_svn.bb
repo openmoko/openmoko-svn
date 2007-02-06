@@ -7,11 +7,11 @@ RRECOMMENDS = "gnome-vfs-plugin-http"
 PV = "0.1+svn${SRCDATE}"
 PR = "r0"
 
+inherit openmoko
+
 SRC_URI += "\
   file://stock_contact.png \
   file://stock_person.png"
-
-inherit openmoko
 
 EXTRA_OECONF = "--enable-gnome-vfs"
 
