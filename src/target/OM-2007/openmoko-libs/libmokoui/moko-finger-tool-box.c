@@ -212,8 +212,8 @@ cb_right_button_pressed(GtkWidget* widget, MokoFingerToolBox* self)
 {
     moko_debug( "right button pressed" );
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
-    priv->leftButton += priv->maxButtonsPerPage; // % priv->numberOfButtons;
-    if ( priv->leftButton > priv->numberOfButtons ) priv->leftButton = 0;
+    priv->leftButton += priv->maxButtonsPerPage -1 ; // % priv->numberOfButtons;
+    if ( priv->leftButton >= priv->numberOfButtons ) priv->leftButton = 0;
     // force redraw
     //FIXME force redraw
 }
