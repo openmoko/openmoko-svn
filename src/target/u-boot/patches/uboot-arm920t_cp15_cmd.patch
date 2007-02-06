@@ -1,0 +1,110 @@
+This patch adds support for a new arm920 cp15 command to access
+coporocessor registers from the ocmmand line.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
+Index: u-boot.git/common/Makefile
+===================================================================
+--- u-boot.git.orig/common/Makefile	2007-02-05 20:37:13.000000000 +0100
++++ u-boot.git/common/Makefile	2007-02-05 20:37:17.000000000 +0100
+@@ -28,7 +28,7 @@
+ AOBJS	=
+ 
+ COBJS	= main.o ACEX1K.o altera.o bedbug.o circbuf.o \
+-	  cmd_ace.o cmd_autoscript.o \
++	  cmd_ace.o cmd_arm920.o cmd_autoscript.o \
+ 	  cmd_bdinfo.o cmd_bedbug.o cmd_bmp.o cmd_boot.o cmd_bootm.o \
+ 	  cmd_cache.o cmd_console.o \
+ 	  cmd_date.o cmd_dcr.o cmd_diag.o cmd_display.o cmd_doc.o cmd_dtt.o \
+Index: u-boot.git/common/cmd_arm920.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot.git/common/cmd_arm920.c	2007-02-05 20:37:41.000000000 +0100
+@@ -0,0 +1,64 @@
++/*
++ * (C) Copyright 2006 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++/*
++ * Boot support
++ */
++#include <common.h>
++#include <command.h>
++#include <net.h>		/* for print_IPaddr */
++
++DECLARE_GLOBAL_DATA_PTR;
++
++#if (CONFIG_COMMANDS & CFG_CMD_BDI)
++
++extern unsigned long read_p15_c1(void);
++extern void write_p15_c1(unsigned long);
++
++int do_arm920 ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
++{
++	int i;
++
++	if (strcmp(argv[1], "cp15c1")) {
++		printf("Usage:\n%s\n", cmdtp->usage);
++		return 1;
++	}
++	
++	if (!strcmp(argv[2], "write")) {
++		ulong val = simple_strtoul(argv[3], NULL, 16);
++		printf("setting cp15c1 to 0x%08x\n", val);
++		write_p15_c1(val);
++	} else if (!strcmp(argv[2], "read"))
++		printf("cp15c1 = 0x%08x\n", read_p15_c1());
++
++	return 0;
++}
++
++/* -------------------------------------------------------------------- */
++
++U_BOOT_CMD(
++	arm920,	4,	1,	do_arm920,
++	"arm920_cp15  - print cp15\n",
++	NULL
++);
++#endif	/* CFG_CMD_BDI */
+Index: u-boot.git/cpu/arm920t/cpu.c
+===================================================================
+--- u-boot.git.orig/cpu/arm920t/cpu.c	2007-02-05 20:37:13.000000000 +0100
++++ u-boot.git/cpu/arm920t/cpu.c	2007-02-05 20:37:17.000000000 +0100
+@@ -38,7 +38,7 @@
+ #endif
+ 
+ /* read co-processor 15, register #1 (control register) */
+-static unsigned long read_p15_c1 (void)
++unsigned long read_p15_c1 (void)
+ {
+ 	unsigned long value;
+ 
+@@ -55,7 +55,7 @@
+ }
+ 
+ /* write to co-processor 15, register #1 (control register) */
+-static void write_p15_c1 (unsigned long value)
++void write_p15_c1 (unsigned long value)
+ {
+ #ifdef MMU_DEBUG
+ 	printf ("write %08lx to p15/c1\n", value);
+

@@ -1115,10 +1115,10 @@ Index: u-boot.git/drivers/usbdcore_ep0.c
  			return 0;
  
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
-Index: u-boot.git/include/configs/gta01.h
+Index: u-boot.git/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-02-05 23:38:29.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-02-06 02:04:28.000000000 +0100
+--- u-boot.git.orig/include/configs/neo1973.h	2007-02-05 23:38:29.000000000 +0100
++++ u-boot.git/include/configs/neo1973.h	2007-02-06 02:04:28.000000000 +0100
 @@ -172,6 +172,18 @@
  #define CONFIG_USB_OHCI		1
  #endif

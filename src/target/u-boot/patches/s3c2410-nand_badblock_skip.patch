@@ -5,8 +5,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot.git/cpu/arm920t/s3c24x0/nand_read.c
 ===================================================================
---- u-boot.git.orig/cpu/arm920t/s3c24x0/nand_read.c	2007-01-18 23:49:55.000000000 +0100
-+++ u-boot.git/cpu/arm920t/s3c24x0/nand_read.c	2007-01-19 00:04:21.000000000 +0100
+--- u-boot.git.orig/cpu/arm920t/s3c24x0/nand_read.c	2007-02-06 11:59:05.000000000 +0100
++++ u-boot.git/cpu/arm920t/s3c24x0/nand_read.c	2007-02-06 12:10:21.000000000 +0100
 @@ -33,6 +33,7 @@
  
  #define NAND_SECTOR_SIZE	512
@@ -42,11 +42,11 @@ Index: u-boot.git/cpu/arm920t/s3c24x0/nand_read.c
        /* READ0 */
        NFCMD = 0;
  
-Index: u-boot.git/include/configs/gta01.h
+Index: u-boot.git/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-01-19 00:01:20.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-01-19 00:05:26.000000000 +0100
-@@ -32,6 +32,7 @@
+--- u-boot.git.orig/include/configs/neo1973.h	2007-02-06 12:09:36.000000000 +0100
++++ u-boot.git/include/configs/neo1973.h	2007-02-06 12:10:21.000000000 +0100
+@@ -33,6 +33,7 @@
  #else
  /* we want to start u-boot directly from within NAND flash */
  #define CONFIG_S3C2410_NAND_BOOT	1

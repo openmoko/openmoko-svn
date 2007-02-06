@@ -1,11 +1,12 @@
 This introduces NAND bad block table support on the S3C2410, which is required
 by the dynamic partition support
 
-Signes-off-by: Harald Welte <laforge@openmoko.org>
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: u-boot.git/cpu/arm920t/s3c24x0/nand.c
 ===================================================================
---- u-boot.git.orig/cpu/arm920t/s3c24x0/nand.c	2007-02-05 20:37:17.000000000 +0100
-+++ u-boot.git/cpu/arm920t/s3c24x0/nand.c	2007-02-05 23:32:49.000000000 +0100
+--- u-boot.git.orig/cpu/arm920t/s3c24x0/nand.c	2007-02-06 11:59:05.000000000 +0100
++++ u-boot.git/cpu/arm920t/s3c24x0/nand.c	2007-02-06 12:10:58.000000000 +0100
 @@ -188,7 +188,11 @@
  	nand->dev_ready = s3c2410_dev_ready;
  
@@ -20,8 +21,8 @@ Index: u-boot.git/cpu/arm920t/s3c24x0/nand.c
  	//nand->cmdfunc = s3c2410_cmdfunc;
 Index: u-boot.git/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-05 20:36:15.000000000 +0100
-+++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-05 23:30:30.000000000 +0100
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-06 11:38:01.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-06 12:10:58.000000000 +0100
 @@ -296,6 +296,8 @@
  		for (j = 0; j < len; j++) {
  			if (check_pattern (&buf[j * scanlen], scanlen, mtd->oobblock, bd)) {
@@ -31,11 +32,11 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
  				break;
  			}
  		}
-Index: u-boot.git/include/configs/gta01.h
+Index: u-boot.git/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-02-05 23:31:55.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-02-05 23:32:23.000000000 +0100
-@@ -250,4 +250,6 @@
+--- u-boot.git.orig/include/configs/neo1973.h	2007-02-06 12:10:21.000000000 +0100
++++ u-boot.git/include/configs/neo1973.h	2007-02-06 12:10:58.000000000 +0100
+@@ -251,4 +251,6 @@
  #define LCD_VIDEO_ADDR		0x33d00000
  #endif
  

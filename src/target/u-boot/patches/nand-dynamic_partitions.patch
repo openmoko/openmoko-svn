@@ -17,8 +17,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot.git/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-05 23:37:42.000000000 +0100
-+++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-05 23:37:47.000000000 +0100
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-06 12:10:58.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-06 12:11:58.000000000 +0100
 @@ -1051,4 +1051,54 @@
  	return 1;
  }
@@ -74,11 +74,11 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
 +}
 +
  #endif
-Index: u-boot.git/include/configs/gta01.h
+Index: u-boot.git/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-02-05 23:37:42.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-02-05 23:37:47.000000000 +0100
-@@ -102,7 +102,7 @@
+--- u-boot.git.orig/include/configs/neo1973.h	2007-02-06 12:11:34.000000000 +0100
++++ u-boot.git/include/configs/neo1973.h	2007-02-06 12:11:58.000000000 +0100
+@@ -103,7 +103,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
  			/* CFG_CMD_USB	 | */ \
@@ -87,7 +87,7 @@ Index: u-boot.git/include/configs/gta01.h
  			CFG_CMD_DIAG	 | \
  			/* CFG_CMD_HWFLOW	 | */ \
  			CFG_CMD_SAVES	 | \
-@@ -210,13 +210,13 @@
+@@ -211,13 +211,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT	1
  
@@ -104,7 +104,7 @@ Index: u-boot.git/include/configs/gta01.h
  #endif
  
  /* ATAG configuration */
-@@ -252,4 +252,7 @@
+@@ -253,4 +253,7 @@
  
  #define CONFIG_S3C2410_NAND_BBT		1
  
@@ -114,8 +114,8 @@ Index: u-boot.git/include/configs/gta01.h
  #endif	/* __CONFIG_H */
 Index: u-boot.git/common/cmd_jffs2.c
 ===================================================================
---- u-boot.git.orig/common/cmd_jffs2.c	2007-02-05 23:37:42.000000000 +0100
-+++ u-boot.git/common/cmd_jffs2.c	2007-02-05 23:37:47.000000000 +0100
+--- u-boot.git.orig/common/cmd_jffs2.c	2007-02-06 11:38:01.000000000 +0100
++++ u-boot.git/common/cmd_jffs2.c	2007-02-06 12:11:58.000000000 +0100
 @@ -2123,6 +2123,18 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
