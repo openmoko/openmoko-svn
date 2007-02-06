@@ -17,8 +17,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot.git/common/env_nand.c
 ===================================================================
---- u-boot.git.orig/common/env_nand.c	2007-01-26 23:28:04.000000000 +0100
-+++ u-boot.git/common/env_nand.c	2007-01-26 23:41:51.000000000 +0100
+--- u-boot.git.orig/common/env_nand.c	2007-02-05 19:51:44.000000000 +0100
++++ u-boot.git/common/env_nand.c	2007-02-05 20:03:11.000000000 +0100
 @@ -271,6 +271,33 @@
  	ulong total;
  	int ret;
@@ -46,7 +46,7 @@ Index: u-boot.git/common/env_nand.c
 +		puts("Found Environment offset in OOB..\n");
 +	} else {
 +		free(buf);
-+		return use_default;
++		return use_default();
 +	}
 +#endif
 +
@@ -55,8 +55,8 @@ Index: u-boot.git/common/env_nand.c
    	if (ret || total != CFG_ENV_SIZE)
 Index: u-boot.git/common/environment.c
 ===================================================================
---- u-boot.git.orig/common/environment.c	2007-01-26 23:28:04.000000000 +0100
-+++ u-boot.git/common/environment.c	2007-01-26 23:28:06.000000000 +0100
+--- u-boot.git.orig/common/environment.c	2007-02-05 19:51:44.000000000 +0100
++++ u-boot.git/common/environment.c	2007-02-05 19:51:46.000000000 +0100
 @@ -29,6 +29,12 @@
  #undef	__ASSEMBLY__
  #include <environment.h>
@@ -72,8 +72,8 @@ Index: u-boot.git/common/environment.c
   * crap on symbol names, not TARGETS.
 Index: u-boot.git/include/environment.h
 ===================================================================
---- u-boot.git.orig/include/environment.h	2007-01-26 23:28:04.000000000 +0100
-+++ u-boot.git/include/environment.h	2007-01-26 23:28:06.000000000 +0100
+--- u-boot.git.orig/include/environment.h	2007-02-05 19:51:44.000000000 +0100
++++ u-boot.git/include/environment.h	2007-02-05 19:51:46.000000000 +0100
 @@ -70,6 +70,10 @@
  #endif	/* CFG_ENV_IS_IN_FLASH */
  
@@ -95,22 +95,21 @@ Index: u-boot.git/include/environment.h
  
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-01-26 23:28:04.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-01-27 00:10:08.000000000 +0100
-@@ -196,7 +196,8 @@
+--- u-boot.git.orig/include/configs/gta01.h	2007-02-05 19:51:44.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-02-05 20:04:12.000000000 +0100
+@@ -196,7 +196,7 @@
  
  #define	CFG_ENV_IS_IN_NAND	1
  #define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
 -#define CFG_ENV_OFFSET		0x30000		/* environment after bootloader */
-+//#define CFG_ENV_OFFSET		0x30000		/* environment after bootloader */
-+#define CFG_ENV_OFFSET_OOB	0x30000
++#define CFG_ENV_OFFSET_OOB	1		/* Location of ENV stored in block 0 OOB */
  
  #define NAND_MAX_CHIPS		1
  #define CFG_NAND_BASE		0x4e000000
 Index: u-boot.git/common/Makefile
 ===================================================================
---- u-boot.git.orig/common/Makefile	2007-01-26 23:32:44.000000000 +0100
-+++ u-boot.git/common/Makefile	2007-01-26 23:33:02.000000000 +0100
+--- u-boot.git.orig/common/Makefile	2007-02-05 19:51:44.000000000 +0100
++++ u-boot.git/common/Makefile	2007-02-05 19:51:46.000000000 +0100
 @@ -32,7 +32,7 @@
  	  cmd_bdinfo.o cmd_bedbug.o cmd_bmp.o cmd_boot.o cmd_bootm.o \
  	  cmd_cache.o cmd_console.o \
@@ -123,8 +122,8 @@ Index: u-boot.git/common/Makefile
 Index: u-boot.git/common/cmd_dynenv.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/common/cmd_dynenv.c	2007-01-27 00:11:30.000000000 +0100
-@@ -0,0 +1,86 @@
++++ u-boot.git/common/cmd_dynenv.c	2007-02-05 19:53:09.000000000 +0100
+@@ -0,0 +1,85 @@
 +/*
 + * (C) Copyright 2006-2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -185,14 +184,13 @@ Index: u-boot.git/common/cmd_dynenv.c
 +		buf[2] = 'V';
 +		buf[3] = '0';
 +		addr = simple_strtoul(argv[2], NULL, 16);
-+		printf("addr=0x%08x\n", addr);
 +		memcpy(buf+4, &addr, 4);
 +
 +		printf("%02x %02x %02x %02x - %02x %02x %02x %02x\n",
 +			buf[0], buf[1], buf[2], buf[3],
 +			buf[4], buf[5], buf[6], buf[7]);
 +
-+		//ret = mtd->write_oob(mtd, 8, size, (size_t *) &size, (u_char *) buf);
++		ret = mtd->write_oob(mtd, 8, size, (size_t *) &size, (u_char *) buf);
 +	} else
 +		goto usage;
 +
