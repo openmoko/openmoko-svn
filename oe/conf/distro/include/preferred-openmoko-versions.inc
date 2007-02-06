@@ -39,6 +39,11 @@ SRCDATE_openmoko-mainmenu = "now"
 SRCDATE_openmoko-taskmanager = "now"
 
 #
+# Multimedia
+#
+SRCDATE_openmoko-simplemediaplayer = "now"
+
+#
 # Panel Plugins
 #
 SRCDATE_openmoko-panel-clock = "now"
