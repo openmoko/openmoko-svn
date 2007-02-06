@@ -1,18 +1,17 @@
-DESCRIPTION = "Contacts is an address-book application."
+DESCRIPTION = "The OpenMoko address book"
 LICENSE = "GPL"
 SECTION = "openmoko/pim"
-DEPENDS = "glib-2.0 gtk+ libglade eds-dbus gnome-vfs openmoko-libs"
+DEPENDS += "glib-2.0 gtk+ libglade eds-dbus gnome-vfs openmoko-libs"
 RDEPENDS = "gnome-vfs-plugin-file"
 RRECOMMENDS = "gnome-vfs-plugin-http"
 PV = "0.1+svn${SRCDATE}"
 PR = "r0"
 
-SRC_URI = "svn://svn.o-hand.com/repos/contacts/branches/private;module=omoko;proto=https \
-	   file://stock_contact.png \
-	   file://stock_person.png"
-S = "${WORKDIR}/omoko"
+SRC_URI += "\
+  file://stock_contact.png \
+  file://stock_person.png"
 
-inherit autotools pkgconfig
+inherit openmoko
 
 EXTRA_OECONF = "--enable-gnome-vfs"
 
