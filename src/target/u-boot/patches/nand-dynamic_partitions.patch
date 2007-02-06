@@ -1,25 +1,25 @@
+This patch adds support for 'dynamic partitions'.  This basically 
+works as follows:
+* The nand code generates a bad-block-table at the first scan of the chip
+* The dynamic partition code calculates the raw partition sizes based on 
+  the bad block table.  E.g. if you have a partition of size 0x30000, and there are 
+  two bad blocks (0x4000 each) in it, the raw size will increase to 0x38000, and the
+  following partitions get shifted towards the end of flash.
+
+Please note that currently the desired partition sizes are stored at compile-time
+in an array in drivers/nand/nand_bbt.c, so this definitely needs to change before
+submitting/merging upstream.
+
+In order to calculate the partiton map (and set mtdparts accordingly), you can use
+the 'dynpart' command at the prompt.  Use 'saveenv' to make the setting permanent.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: u-boot.git/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-04 13:21:59.000000000 +0100
-+++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-04 13:22:04.000000000 +0100
-@@ -781,6 +781,8 @@
- 	}
- }
- 
-+int nand_create_mtd_dynpart(struct mtd_info *mtd);
-+
- /**
-  * nand_scan_bbt - [NAND Interface] scan, find, read and maybe create bad block table(s)
-  * @mtd:	MTD device structure
-@@ -847,6 +849,7 @@
- 		mark_bbt_region (mtd, md);
- 
- 	kfree (buf);
-+	nand_create_mtd_dynpart(mtd);
- 	return res;
- }
- 
-@@ -1060,4 +1063,46 @@
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-05 23:37:42.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-05 23:37:47.000000000 +0100
+@@ -1051,4 +1051,54 @@
  	return 1;
  }
  
@@ -31,8 +31,12 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
 +{
 +	struct nand_chip *this = mtd->priv;
 +	int part;
-+	char mtdparts[128];	/* FIXME: dynamic allocation */
++	char *mtdparts;
 +	unsigned int cur_offs = 0;
++
++	mtdparts = malloc(512); /* FIXME: bounds checking */
++	if (!mtdparts)
++		return -ENOMEM;
 +
 +	memset(mtdparts, 0, sizeof(mtdparts));
 +	sprintf(mtdparts, "mtdparts=gta01-0:");
@@ -50,9 +54,11 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
 +
 +		if (cur_offs + part_size[part] + bb_delta > this->chipsize)
 +			part_size[part] = this->chipsize - cur_offs - bb_delta;
++#if 0
 +		printf("partition %u: start = 0x%08x, end=%08x size=%08x, size_inc_bb=%08x\n",
 +			part, cur_offs, cur_offs + part_size[part] + bb_delta,
 +			part_size[part], part_size[part] + bb_delta);
++#endif
 +		cur_offs += part_size[part] + bb_delta;
 +		sprintf(mtdpart, "0x%.8x(%.16s),", part_size[part] + bb_delta, part_names[part]);
 +		mtdpart[sizeof(mtdpart)-1] = '\0';
@@ -62,14 +68,16 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
 +	mtdparts[strlen(mtdparts)-1] = '\0';
 +	printf("mtdparts %s\n", mtdparts);
 +	setenv("mtdparts", mtdparts);
++
++	free(mtdparts);
 +	return 0;
 +}
 +
  #endif
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-02-04 13:21:59.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-02-04 13:22:04.000000000 +0100
+--- u-boot.git.orig/include/configs/gta01.h	2007-02-05 23:37:42.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-02-05 23:37:47.000000000 +0100
 @@ -102,7 +102,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
@@ -79,7 +87,7 @@ Index: u-boot.git/include/configs/gta01.h
  			CFG_CMD_DIAG	 | \
  			/* CFG_CMD_HWFLOW	 | */ \
  			CFG_CMD_SAVES	 | \
-@@ -212,13 +212,13 @@
+@@ -210,13 +210,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT	1
  
@@ -96,11 +104,48 @@ Index: u-boot.git/include/configs/gta01.h
  #endif
  
  /* ATAG configuration */
-@@ -255,4 +255,7 @@
- #define CONFIG_DRIVER_RTL8019		1
- #define	RTL8019_BASE			0x18000000
+@@ -252,4 +252,7 @@
+ 
+ #define CONFIG_S3C2410_NAND_BBT		1
  
 +#define MTDIDS_DEFAULT	"nand0=gta01-0"
-+#define MTPARTS_DEFAULT	"gta01-0:192k(u-boot),2MB(kernel),4MB(initrd),-(jffs2)"
++#define MTPARTS_DEFAULT	"gta01-0:192k(u-boot),4k(u-boot env),2M(kernel),4M(initrd),-(jffs2)"
 +
  #endif	/* __CONFIG_H */
+Index: u-boot.git/common/cmd_jffs2.c
+===================================================================
+--- u-boot.git.orig/common/cmd_jffs2.c	2007-02-05 23:37:42.000000000 +0100
++++ u-boot.git/common/cmd_jffs2.c	2007-02-05 23:37:47.000000000 +0100
+@@ -2123,6 +2123,18 @@
+ 	printf ("Usage:\n%s\n", cmdtp->usage);
+ 	return 1;
+ }
++
++extern int nand_create_mtd_dynpart(struct mtd_info *mtd);
++
++int do_dynpart(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
++{
++#if 0
++	int i = simple_strtoul(argv[1], NULL, 0);
++	if (i >= CFG_MAX_NAND_DEVICE)
++		return -EINVAL;
++#endif
++	nand_create_mtd_dynpart(&nand_info[0]);
++}
+ #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
+ 
+ /***************************************************/
+@@ -2188,6 +2200,13 @@
+ 	"<name>     := '(' NAME ')'\n"
+ 	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
+ );
++
++U_BOOT_CMD(
++	dynpart, 1,	1,	do_dynpart,
++	"dynpart\t- dynamically calculate partition table based on BBT\n",
++	"\n"
++	"    - sets 'mtdparts' according to BBT\n");
++
+ #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
+ 
+ /***************************************************/
