@@ -1,7 +1,11 @@
+This adds support for the GTA01v4 hardware revision of Neo1973
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: u-boot.git/Makefile
 ===================================================================
---- u-boot.git.orig/Makefile	2007-01-03 20:28:41.000000000 +0100
-+++ u-boot.git/Makefile	2007-01-03 20:30:55.000000000 +0100
+--- u-boot.git.orig/Makefile	2007-02-05 23:37:31.000000000 +0100
++++ u-boot.git/Makefile	2007-02-05 23:37:31.000000000 +0100
 @@ -1910,8 +1910,10 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
@@ -17,8 +21,8 @@ Index: u-boot.git/Makefile
  	@$(MKCONFIG) $(@:_config=) arm arm920t scb9328 NULL imx
 Index: u-boot.git/board/gta01/gta01.c
 ===================================================================
---- u-boot.git.orig/board/gta01/gta01.c	2007-01-03 20:28:41.000000000 +0100
-+++ u-boot.git/board/gta01/gta01.c	2007-01-03 20:30:55.000000000 +0100
+--- u-boot.git.orig/board/gta01/gta01.c	2007-02-05 23:37:31.000000000 +0100
++++ u-boot.git/board/gta01/gta01.c	2007-02-05 23:37:31.000000000 +0100
 @@ -90,6 +90,7 @@
  	delay (8000);
  
@@ -75,7 +79,7 @@ Index: u-boot.git/board/gta01/gta01.c
 Index: u-boot.git/board/gta01/split_by_variant.sh
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/gta01/split_by_variant.sh	2007-01-03 20:30:55.000000000 +0100
++++ u-boot.git/board/gta01/split_by_variant.sh	2007-02-05 23:37:31.000000000 +0100
 @@ -0,0 +1,36 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
@@ -115,9 +119,9 @@ Index: u-boot.git/board/gta01/split_by_variant.sh
 +$MKCONFIG -a gta01 arm arm920t gta01 NULL s3c24x0
 Index: u-boot.git/include/configs/gta01.h
 ===================================================================
---- u-boot.git.orig/include/configs/gta01.h	2007-01-03 20:30:46.000000000 +0100
-+++ u-boot.git/include/configs/gta01.h	2007-01-03 20:30:55.000000000 +0100
-@@ -124,7 +124,11 @@
+--- u-boot.git.orig/include/configs/gta01.h	2007-02-05 23:37:31.000000000 +0100
++++ u-boot.git/include/configs/gta01.h	2007-02-05 23:37:31.000000000 +0100
+@@ -130,7 +130,11 @@
   * Miscellaneous configurable options
   */
  #define	CFG_LONGHELP				/* undef to save memory		*/

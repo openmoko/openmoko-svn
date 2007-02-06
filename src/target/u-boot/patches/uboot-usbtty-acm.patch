@@ -1,7 +1,13 @@
+This patch adds cdc_acm interoperability to u-boot usbtty.
+
+It was taken (almost blindly) from the Linux for Siemens SX1 project on
+handhelds.org.  Please don't complain to me about coding style issues
+or whitespace changes in this one - HW.
+
 Index: u-boot.git/drivers/usbtty.c
 ===================================================================
---- u-boot.git.orig/drivers/usbtty.c	2007-02-04 15:59:12.000000000 +0100
-+++ u-boot.git/drivers/usbtty.c	2007-02-04 16:15:34.000000000 +0100
+--- u-boot.git.orig/drivers/usbtty.c	2007-02-05 19:58:20.000000000 +0100
++++ u-boot.git/drivers/usbtty.c	2007-02-05 20:04:44.000000000 +0100
 @@ -1,6 +1,9 @@
  /*
   * (C) Copyright 2003
@@ -43,12 +49,12 @@ Index: u-boot.git/drivers/usbtty.c
  #if 0
 -#define TTYERR(fmt,args...) serial_printf("ERROR![%s] %s %d: "fmt, __FILE__,__FUNCTION__,__LINE__,##args)
 +#define TTYDBG(fmt,args...)\
-+	serial_printf("[%s] %s %d: "fmt, __FILE__,__FUNCTION__,__LINE__,##args)
++	serial_printf("[%s] %s %d: "fmt"\n", __FILE__,__FUNCTION__,__LINE__,##args)
 +#endif
 +
 +#if 0
 +#define TTYERR(fmt,args...)\
-+	serial_printf("ERROR![%s] %s %d: "fmt, __FILE__,__FUNCTION__,\
++	serial_printf("ERROR![%s] %s %d: "fmt"\n", __FILE__,__FUNCTION__,\
 +	__LINE__,##args)
  #else
  #define TTYERR(fmt,args...) do{}while(0)
@@ -1142,8 +1148,8 @@ Index: u-boot.git/drivers/usbtty.c
  #endif
 Index: u-boot.git/drivers/usbtty.h
 ===================================================================
---- u-boot.git.orig/drivers/usbtty.h	2007-02-04 15:59:12.000000000 +0100
-+++ u-boot.git/drivers/usbtty.h	2007-02-04 20:00:53.000000000 +0100
+--- u-boot.git.orig/drivers/usbtty.h	2007-02-05 19:58:20.000000000 +0100
++++ u-boot.git/drivers/usbtty.h	2007-02-05 20:04:44.000000000 +0100
 @@ -2,6 +2,9 @@
   * (C) Copyright 2003
   * Gerry Hamel, geh@ti.com, Texas Instruments
@@ -1234,8 +1240,8 @@ Index: u-boot.git/drivers/usbtty.h
  #endif
 Index: u-boot.git/drivers/usbdcore_omap1510.c
 ===================================================================
---- u-boot.git.orig/drivers/usbdcore_omap1510.c	2007-02-04 16:01:20.000000000 +0100
-+++ u-boot.git/drivers/usbdcore_omap1510.c	2007-02-04 16:15:34.000000000 +0100
+--- u-boot.git.orig/drivers/usbdcore_omap1510.c	2007-02-05 19:58:20.000000000 +0100
++++ u-boot.git/drivers/usbdcore_omap1510.c	2007-02-05 20:04:44.000000000 +0100
 @@ -960,7 +960,7 @@
  /* Handle general USB interrupts and dispatch according to type.
   * This function implements TRM Figure 14-13.
@@ -1278,7 +1284,7 @@ Index: u-boot.git/drivers/usbdcore_omap1510.c
 Index: u-boot.git/include/usb_cdc_acm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/include/usb_cdc_acm.h	2007-02-04 16:15:59.000000000 +0100
++++ u-boot.git/include/usb_cdc_acm.h	2007-02-05 20:04:44.000000000 +0100
 @@ -0,0 +1,43 @@
 +/*
 + * (C) Copyright 2006
@@ -1325,8 +1331,8 @@ Index: u-boot.git/include/usb_cdc_acm.h
 +}__attribute__((packed));
 Index: u-boot.git/include/usbdcore_omap1510.h
 ===================================================================
---- u-boot.git.orig/include/usbdcore_omap1510.h	2007-02-04 16:17:10.000000000 +0100
-+++ u-boot.git/include/usbdcore_omap1510.h	2007-02-04 16:17:17.000000000 +0100
+--- u-boot.git.orig/include/usbdcore_omap1510.h	2007-02-05 19:58:20.000000000 +0100
++++ u-boot.git/include/usbdcore_omap1510.h	2007-02-05 20:04:44.000000000 +0100
 @@ -161,13 +161,23 @@
  #define UDC_VBUS_CTRL	    (1 << 19)
  #define UDC_VBUS_MODE	    (1 << 18)
@@ -1358,8 +1364,8 @@ Index: u-boot.git/include/usbdcore_omap1510.h
  
 Index: u-boot.git/include/usbdescriptors.h
 ===================================================================
---- u-boot.git.orig/include/usbdescriptors.h	2007-02-04 16:16:44.000000000 +0100
-+++ u-boot.git/include/usbdescriptors.h	2007-02-04 16:17:17.000000000 +0100
+--- u-boot.git.orig/include/usbdescriptors.h	2007-02-05 19:58:20.000000000 +0100
++++ u-boot.git/include/usbdescriptors.h	2007-02-05 20:04:44.000000000 +0100
 @@ -92,15 +92,17 @@
  #define COMMUNICATIONS_DEVICE_CLASS	0x02
  
@@ -1452,8 +1458,8 @@ Index: u-boot.git/include/usbdescriptors.h
  struct usb_class_country_selection_descriptor {
 Index: u-boot.git/include/usbdcore.h
 ===================================================================
---- u-boot.git.orig/include/usbdcore.h	2007-02-04 16:21:15.000000000 +0100
-+++ u-boot.git/include/usbdcore.h	2007-02-04 18:46:46.000000000 +0100
+--- u-boot.git.orig/include/usbdcore.h	2007-02-05 19:58:20.000000000 +0100
++++ u-boot.git/include/usbdcore.h	2007-02-05 20:04:44.000000000 +0100
 @@ -576,6 +576,9 @@
  
  	void (*event) (struct usb_device_instance *device, usb_device_event_t event, int data);
