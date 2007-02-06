@@ -1,3 +1,8 @@
+2007-02-06  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-main.c: (start_query), (opened_book), (main): Fixed variable
+	naming.
+
 2007-02-02  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-callbacks-ui.c: (contacts_selection_cb): Commit changed

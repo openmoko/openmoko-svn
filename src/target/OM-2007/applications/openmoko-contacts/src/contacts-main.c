@@ -63,23 +63,23 @@ static void
 start_query (EBook *book, EBookStatus status, EBookView *book_view,
 	gpointer closure)
 {
-	ContactsData *contacts_data = closure;
+	ContactsData *data = closure;
 	if (status == E_BOOK_ERROR_OK) {
 		g_object_ref (book_view);
-		contacts_data->book_view = book_view;
+		data->book_view = book_view;
 		/* Yuck. */
 		contacts_contact_pane_set_book_view
-		  (CONTACTS_CONTACT_PANE (contacts_data->ui->contact_pane), book_view);
+		  (CONTACTS_CONTACT_PANE (data->ui->contact_pane), book_view);
 
 		/* Connect signals on EBookView */
 		g_signal_connect (G_OBJECT (book_view), "contacts_added",
-			G_CALLBACK (contacts_added_cb), contacts_data);
+			G_CALLBACK (contacts_added_cb), data);
 		g_signal_connect (G_OBJECT (book_view), "contacts_changed",
-			G_CALLBACK (contacts_changed_cb), contacts_data);
+			G_CALLBACK (contacts_changed_cb), data);
 		g_signal_connect (G_OBJECT (book_view), "contacts_removed",
-			G_CALLBACK (contacts_removed_cb), contacts_data);
+			G_CALLBACK (contacts_removed_cb), data);
 		g_signal_connect (G_OBJECT (book_view), "sequence_complete",
-			G_CALLBACK (contacts_sequence_complete_cb), contacts_data);
+			G_CALLBACK (contacts_sequence_complete_cb), data);
 		
 		e_book_view_start (book_view);
 	} else {
@@ -90,13 +90,13 @@ start_query (EBook *book, EBookStatus status, EBookView *book_view,
 static void
 opened_book (EBook *book, EBookStatus status, gpointer closure)
 {
-	ContactsData *contacts_data = closure;
+	ContactsData *data = closure;
 	EBookQuery *query;
 	
 	if (status == E_BOOK_ERROR_OK) {
 		query = e_book_query_any_field_contains ("");
-		e_book_async_get_book_view (contacts_data->book, query, NULL,
-			-1, start_query, contacts_data);
+		e_book_async_get_book_view (data->book, query, NULL,
+			-1, start_query, data);
 		e_book_query_unref (query);
 	} else {
 		g_warning("Got error %d when opening book", status);
@@ -104,30 +104,25 @@ opened_book (EBook *book, EBookStatus status, gpointer closure)
 }
 
 static gboolean
-open_book (gpointer data)
+open_book (ContactsData *data)
 {
-	ContactsData *contacts_data = data;
 	e_book_async_open (
-		contacts_data->book, FALSE, opened_book, contacts_data);
+		data->book, FALSE, opened_book, data);
 	return FALSE;
 }
 
 static gboolean
-contacts_import_from_param (gpointer data)
+contacts_import_from_param (ContactsData *data)
 {
-	ContactsData *contacts_data = data;
-	
-	g_printf ("Opening '%s'\n", contacts_data->file);
-	contacts_import (contacts_data, contacts_data->file, TRUE);
+	g_printf ("Opening '%s'\n", data->file);
+	contacts_import (data, data->file, TRUE);
 	
 	return FALSE;
 }
 
 static void
-contacts_bacon_cb (const char *message, gpointer user_data)
+contacts_bacon_cb (const char *message, ContactsData *data)
 {
-	ContactsData *data = user_data;
-	
 	if (!message)
 		return;
 	
@@ -146,7 +141,7 @@ main (int argc, char **argv)
 	const char *search;
 	GConfClient *client;
 #endif
-	ContactsData *contacts_data;	/* Variable for passing around data -
+	ContactsData *data;	/* Variable for passing around data -
 					 * see contacts-defs.h.
 					 */
 	GOptionContext *context;
@@ -177,42 +172,42 @@ main (int argc, char **argv)
 		return 0;
 	}
 
-	contacts_data = g_new0 (ContactsData, 1);
-	contacts_data->ui = g_new0 (ContactsUI, 1);
-	contacts_data->initialising = TRUE; /* initialising until contacts have been loaded for the first time */
+	data = g_new0 (ContactsData, 1);
+	data->ui = g_new0 (ContactsUI, 1);
+	data->initialising = TRUE; /* initialising until contacts have been loaded for the first time */
 	bacon_message_connection_set_callback (
-		mc, contacts_bacon_cb, contacts_data);
+		mc, contacts_bacon_cb, data);
 
 	/* Set critical errors to close application */
 	//g_log_set_always_fatal (G_LOG_LEVEL_CRITICAL);
 
 	/* Load the system addressbook */
-	contacts_data->book = e_book_new_system_addressbook (NULL);
-	if (!contacts_data->book)
+	data->book = e_book_new_system_addressbook (NULL);
+	if (!data->book)
 		g_critical ("Could not load system addressbook");
 
-	contacts_data->contacts_table = g_hash_table_new_full (g_str_hash,
+	data->contacts_table = g_hash_table_new_full (g_str_hash,
 						g_str_equal, NULL, 
 						(GDestroyNotify)
 						 contacts_free_list_hash);
 
-	contacts_data->groups_widgets_hash = g_hash_table_new (NULL, NULL);
+	data->groups_widgets_hash = g_hash_table_new (NULL, NULL);
 
 	/* Setup the ui */
-	contacts_setup_ui (contacts_data);
+	contacts_setup_ui (data);
 
 #ifdef HAVE_GNOMEVFS
 	gnome_vfs_init ();
 #endif
 
 	/* Start */
-	g_idle_add (open_book, contacts_data);
+	g_idle_add (open_book, data);
 	if (argv[1] != NULL) {
-		contacts_data->file = argv[1];
-		g_idle_add (contacts_import_from_param, contacts_data);
+		data->file = argv[1];
+		g_idle_add (contacts_import_from_param, data);
 	}
 	
-	widget = contacts_data->ui->main_window;
+	widget = data->ui->main_window;
 	if (plug > 0) {
 		GtkWidget *plug_widget;
 		GtkWidget *contents;
@@ -225,7 +220,7 @@ main (int argc, char **argv)
 		g_object_unref (contents);
 		g_signal_connect (G_OBJECT (plug_widget), "destroy",
 				  G_CALLBACK (gtk_main_quit), NULL);
-		widget = contacts_data->ui->main_menubar;
+		widget = data->ui->main_menubar;
 		gtk_widget_hide (widget);
 		gtk_widget_show (plug_widget);
 	} else {
@@ -244,17 +239,17 @@ main (int argc, char **argv)
 		e_book_async_commit_contact (data->book, data->contact, NULL, NULL);
 
 	/* Unload the addressbook */
-	e_book_view_stop (contacts_data->book_view);
-	g_object_unref (contacts_data->book_view);
-	g_object_unref (contacts_data->book);
+	e_book_view_stop (data->book_view);
+	g_object_unref (data->book_view);
+	g_object_unref (data->book);
 
 	/* free various things */
-	g_free (contacts_data->ui);
-	g_free (contacts_data->selected_group);
-	g_free (contacts_data->search_string);
-	g_list_free (contacts_data->contacts_groups);
-	//g_hash_table_destroy (contacts_data->contacts_table);
-	g_hash_table_destroy (contacts_data->groups_widgets_hash);
+	g_free (data->ui);
+	g_free (data->selected_group);
+	g_free (data->search_string);
+	g_list_free (data->contacts_groups);
+	//g_hash_table_destroy (data->contacts_table);
+	g_hash_table_destroy (data->groups_widgets_hash);
 
 
 	return 0;
