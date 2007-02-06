@@ -5,7 +5,6 @@ ext2load_hex.patch
 uboot-gta01b_v2.patch
 s3c2410-nand_badblock_skip.patch
 s3c2410-nand_bbt.patch
-gta01-rtl8019_debugboard.patch
 nand-read_write_oob.patch
 env_nand_oob.patch
 nand-dynamic_partitions.patch
