@@ -1,9 +1,7 @@
-This is ASoC v0.13rc3 from http://opensource.wolfsonmicro.com/~lg/asoc/asoc-v0.13rc3.patch
-
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,117 @@
 +ASoC currently supports the three main Digital Audio Interfaces (DAI) found on
 +SoC controllers and portable audio CODECS today, namely AC97, I2S and PCM.
@@ -125,7 +123,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,47 @@
 +Audio Clocking
 +==============
@@ -177,7 +175,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,196 @@
 +ASoC Codec Driver
 +=================
@@ -378,7 +376,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,297 @@
 +Dynamic Audio Power Management for Portable Devices
 +===================================================
@@ -680,7 +678,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,113 @@
 +ASoC Machine Driver
 +===================
@@ -799,7 +797,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,83 @@
 +ALSA SoC Layer
 +==============
@@ -888,7 +886,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,58 @@
 +ASoC Platform Driver
 +====================
@@ -951,7 +949,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt
 Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,52 @@
 +Audio Pops and Clicks
 +=====================
@@ -1007,8 +1005,8 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt
 +crosses the zero amplitude line.
 Index: linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/sound/ac97_codec.h	2007-01-31 21:34:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h	2007-01-31 21:36:05.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/include/sound/ac97_codec.h	2007-02-06 15:38:06.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h	2007-02-06 15:55:20.000000000 +0100
 @@ -407,6 +407,7 @@
  
  struct snd_ac97_bus_ops {
@@ -1020,7 +1018,7 @@ Index: linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h
 Index: linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,286 @@
 +/*
 + * linux/sound/soc-dapm.h -- ALSA SoC Dynamic Audio Power Management
@@ -1311,7 +1309,7 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h
 Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/sound/soc.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/sound/soc.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,460 @@
 +/*
 + * linux/sound/soc.h -- ALSA SoC Layer
@@ -1336,7 +1334,7 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +#include <sound/control.h>
 +#include <sound/ac97_codec.h>
 +
-+#define SND_SOC_VERSION "0.13.0rc3"
++#define SND_SOC_VERSION "0.13.3"
 +
 +/*
 + * Convenience kcontrol builders
@@ -1482,7 +1480,6 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +/* set runtime hw params */
 +int snd_soc_set_runtime_hwparams(struct snd_pcm_substream *substream,
 +	const struct snd_pcm_hardware *hw);
-+int snd_soc_get_rate(int rate);
 +
 +/* codec IO */
 +#define snd_soc_read(codec, reg) codec->read(codec, reg)
@@ -1540,7 +1537,7 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +	unsigned int active:1;		/* stream is in use */
 +};
 +
-+/* ASoC alsa audio ops */
++/* SoC audio ops */
 +struct snd_soc_ops {
 +	int (*startup)(struct snd_pcm_substream *);
 +	void (*shutdown)(struct snd_pcm_substream *);
@@ -1619,6 +1616,7 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +	unsigned int id;
 +	unsigned char type;
 +
++	/* DAI callbacks */
 +	int (*probe)(struct platform_device *pdev);
 +	void (*remove)(struct platform_device *pdev);
 +	int (*suspend)(struct platform_device *pdev,
@@ -1657,7 +1655,6 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +	struct snd_ac97 *ac97;  /* for ad-hoc ac97 devices */
 +	unsigned int active;
 +	unsigned int pcm_devs;
-+	struct delayed_work delayed_work;
 +	void *private_data;
 +
 +	/* codec IO */
@@ -1675,6 +1672,7 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +	struct list_head dapm_paths;
 +	unsigned int dapm_state;
 +	unsigned int suspend_dapm_state;
++	struct delayed_work delayed_work;
 +
 +	/* codec DAI's */
 +	struct snd_soc_codec_dai *dai;
@@ -1751,8 +1749,8 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +	struct snd_soc_platform *platform;
 +	struct snd_soc_codec *codec;
 +	struct snd_soc_codec_device *codec_dev;
-+	void *codec_data;
 +	struct delayed_work delayed_work;
++	void *codec_data;
 +};
 +
 +/* runtime channel data */
@@ -1775,8 +1773,8 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +#endif
 Index: linux-2.6.17.14-fic4.test/sound/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/sound/Kconfig	2007-01-31 21:34:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/sound/Kconfig	2007-01-31 21:36:05.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/sound/Kconfig	2007-02-06 15:38:06.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/Kconfig	2007-02-06 15:55:20.000000000 +0100
 @@ -74,6 +74,8 @@
  
  source "sound/parisc/Kconfig"
@@ -1789,7 +1787,7 @@ Index: linux-2.6.17.14-fic4.test/sound/Kconfig
 Index: linux-2.6.17.14-fic4.test/sound/soc/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/Kconfig	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/Kconfig	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,37 @@
 +#
 +# SoC audio configuration
@@ -1831,7 +1829,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/Kconfig
 Index: linux-2.6.17.14-fic4.test/sound/soc/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/Makefile	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/Makefile	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,4 @@
 +snd-soc-core-objs := soc-core.o soc-dapm.o
 +
@@ -1840,7 +1838,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/Makefile
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,102 @@
 +config SND_SOC_AC97_CODEC
 +	tristate "SoC generic AC97 support"
@@ -1947,7 +1945,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,35 @@
 +snd-soc-ac97-objs := ac97.o
 +snd-soc-wm8711-objs := wm8711.o
@@ -1987,7 +1985,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,156 @@
 +/*
 + * ac97.c  --  ALSA Soc AC97 codec support
@@ -2148,7 +2146,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,18 @@
 +/*
 + * linux/sound/codecs/ac97.h -- ALSA SoC Layer
@@ -2171,7 +2169,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,697 @@
 +/*
 + * ak4535.c  --  AK4535 ALSA Soc Audio driver
@@ -2873,7 +2871,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,46 @@
 +/*
 + * ak4535.h  --  AK4535 Soc Audio driver
@@ -2924,8 +2922,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,747 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,745 @@
 +/*
 + * uda1380.c - Philips UDA1380 ALSA SoC audio driver
 + *
@@ -2978,15 +2976,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 + * uda1380 register cache
 + */
 +static const u16 uda1380_reg[UDA1380_CACHEREGNUM] = {
-+    0x0502, 0x0000, 0x0000, 0x3f3f,
-+    0x0202, 0x0000, 0x0000, 0x0000,
-+    0x0000, 0x0000, 0x0000, 0x0000,
-+    0x0000, 0x0000, 0x0000, 0x0000,
-+    0x0000, 0xff00, 0x0000, 0x4800,
-+    0x0000, 0x0000, 0x0000, 0x0000,
-+    0x0000, 0x0000, 0x0000, 0x0000,
-+    0x0000, 0x0000, 0x0000, 0x0000,
-+    0x0000, 0x8000, 0x0002, 0x0000,
++	0x0502, 0x0000, 0x0000, 0x3f3f,
++	0x0202, 0x0000, 0x0000, 0x0000,
++	0x0000, 0x0000, 0x0000, 0x0000,
++	0x0000, 0x0000, 0x0000, 0x0000,
++	0x0000, 0xff00, 0x0000, 0x4800,
++	0x0000, 0x0000, 0x0000, 0x0000,
++	0x0000, 0x0000, 0x0000, 0x0000,
++	0x0000, 0x0000, 0x0000, 0x0000,
++	0x0000, 0x8000, 0x0002, 0x0000,
 +};
 +
 +/*
@@ -3058,10 +3056,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +
 +/* declarations of ALSA reg_elem_REAL controls */
 +static const char *uda1380_deemp[] = {"None", "32kHz", "44.1kHz", "48kHz",
-+	"96kHz"};
++				      "96kHz"};
 +static const char *uda1380_input_sel[] = {"Line", "Mic"};
 +static const char *uda1380_output_sel[] = {"Direct", "Mixer"};
-+static const char *uda1380_spf_mode[] = {"Flat", "Minimum1", "Minimum2", "Maximum"};
++static const char *uda1380_spf_mode[] = {"Flat", "Minimum1", "Minimum2",
++					 "Maximum"};
 +
 +static const struct soc_enum uda1380_enum[] = {
 +	SOC_ENUM_DOUBLE(UDA1380_DEEMP, 0, 8, 5, uda1380_deemp),
@@ -3173,15 +3172,13 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +{
 +	int i;
 +
-+	for(i = 0; i < ARRAY_SIZE(uda1380_dapm_widgets); i++) {
++	for (i = 0; i < ARRAY_SIZE(uda1380_dapm_widgets); i++)
 +		snd_soc_dapm_new_control(codec, &uda1380_dapm_widgets[i]);
-+	}
 +
 +	/* set up audio path interconnects */
-+	for(i = 0; audio_map[i][0] != NULL; i++) {
++	for (i = 0; audio_map[i][0] != NULL; i++)
 +		snd_soc_dapm_connect_input(codec, audio_map[i][0],
 +			audio_map[i][1], audio_map[i][2]);
-+	}
 +
 +	snd_soc_dapm_new_widgets(codec);
 +	return 0;
@@ -3198,7 +3195,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +	iface &= ~(R01_SFORI_MASK | R01_SIM | R01_SFORO_MASK);
 +
 +	/* FIXME: how to select I2S for DATAO and MSB for DATAI correctly? */
-+	switch(fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
 +	case SND_SOC_DAIFMT_I2S:
 +		iface |= R01_SFORI_I2S | R01_SFORO_I2S;
 +		break;
@@ -3209,9 +3206,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +		iface |= R01_SFORI_MSB | R01_SFORO_I2S;
 +	}
 +
-+	if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) == SND_SOC_DAIFMT_CBM_CFM) {
++	if ((fmt & SND_SOC_DAIFMT_MASTER_MASK) == SND_SOC_DAIFMT_CBM_CFM)
 +		iface |= R01_SIM;
-+	}
 +
 +	uda1380_write(codec, UDA1380_IFACE, iface);
 +
@@ -3324,7 +3320,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +	 * registers works only when clocked by SYSCLK */
 +	u16 clk = uda1380_read_reg_cache(codec, UDA1380_CLK);
 +	uda1380_write(codec, UDA1380_CLK, ~R00_DAC_CLK & clk);
-+	if(mute)
++	if (mute)
 +		uda1380_write(codec, UDA1380_DEEMP, mute_reg | 0x4000);
 +	else
 +		uda1380_write(codec, UDA1380_DEEMP, mute_reg);
@@ -3337,28 +3333,28 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +	int pm = uda1380_read_reg_cache(codec, UDA1380_PM);
 +
 +	switch (event) {
-+		case SNDRV_CTL_POWER_D0: /* full On */
-+		case SNDRV_CTL_POWER_D1: /* partial On */
-+		case SNDRV_CTL_POWER_D2: /* partial On */
-+			/* enable internal bias */
-+			uda1380_write(codec, UDA1380_PM, R02_PON_BIAS | pm);
-+			break;
-+		case SNDRV_CTL_POWER_D3hot: /* Off, with power */
-+			/* everything off except internal bias */
-+			uda1380_write(codec, UDA1380_PM, R02_PON_BIAS);
-+			break;
-+		case SNDRV_CTL_POWER_D3cold: /* Off, without power */
-+			/* everything off, inactive */
-+			uda1380_write(codec, UDA1380_PM, 0x0);
-+			break;
++	case SNDRV_CTL_POWER_D0: /* full On */
++	case SNDRV_CTL_POWER_D1: /* partial On */
++	case SNDRV_CTL_POWER_D2: /* partial On */
++		/* enable internal bias */
++		uda1380_write(codec, UDA1380_PM, R02_PON_BIAS | pm);
++		break;
++	case SNDRV_CTL_POWER_D3hot: /* Off, with power */
++		/* everything off except internal bias */
++		uda1380_write(codec, UDA1380_PM, R02_PON_BIAS);
++		break;
++	case SNDRV_CTL_POWER_D3cold: /* Off, without power */
++		/* everything off, inactive */
++		uda1380_write(codec, UDA1380_PM, 0x0);
++		break;
 +	}
 +	codec->dapm_state = event;
 +	return 0;
 +}
 +
 +#define UDA1380_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_11025 |\
-+		SNDRV_PCM_RATE_16000 | SNDRV_PCM_RATE_22050 | SNDRV_PCM_RATE_44100 | \
-+		SNDRV_PCM_RATE_48000)
++		       SNDRV_PCM_RATE_16000 | SNDRV_PCM_RATE_22050 |\
++		       SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000)
 +
 +struct snd_soc_codec_dai uda1380_dai[] = {
 +{
@@ -3471,11 +3467,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +	codec->num_dai = ARRAY_SIZE(uda1380_dai);
 +	codec->reg_cache_size = ARRAY_SIZE(uda1380_reg);
 +	codec->reg_cache =
-+			kzalloc(sizeof(u16) * ARRAY_SIZE(uda1380_reg), GFP_KERNEL);
++		kcalloc(ARRAY_SIZE(uda1380_reg), sizeof(u16), GFP_KERNEL);
 +	if (codec->reg_cache == NULL)
 +		return -ENOMEM;
 +	memcpy(codec->reg_cache, uda1380_reg,
-+		sizeof(u16) * ARRAY_SIZE(uda1380_reg));
++	       sizeof(u16) * ARRAY_SIZE(uda1380_reg));
 +	codec->reg_cache_size = sizeof(u16) * ARRAY_SIZE(uda1380_reg);
 +	uda1380_reset(codec);
 +
@@ -3503,9 +3499,9 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +	uda1380_add_widgets(codec);
 +	ret = snd_soc_register_card(socdev);
 +	if (ret < 0) {
-+      	printk(KERN_ERR "uda1380: failed to register card\n");
++		printk(KERN_ERR "uda1380: failed to register card\n");
 +		goto card_err;
-+    }
++	}
 +
 +	return ret;
 +
@@ -3558,13 +3554,13 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +	codec->control_data = i2c;
 +
 +	ret = i2c_attach_client(i2c);
-+	if(ret < 0) {
++	if (ret < 0) {
 +		printk(KERN_ERR "failed to attach codec at addr %x\n", addr);
 +		goto err;
 +	}
 +
 +	ret = uda1380_init(socdev, setup->dac_clk);
-+	if(ret < 0) {
++	if (ret < 0) {
 +		printk(KERN_ERR "failed to initialise UDA1380\n");
 +		goto err;
 +	}
@@ -3676,8 +3672,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,84 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,89 @@
 +/*
 + * Audio support for Philips UDA1380
 + *
@@ -3688,21 +3684,24 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h
 + * Copyright (c) 2005 Giorgio Padrin <giorgio@mandarinlogiq.org>
 + */
 +
-+#define UDA1380_CLK		0x00
++#ifndef _UDA1380_H
++#define _UDA1380_H
++
++#define UDA1380_CLK	0x00
 +#define UDA1380_IFACE	0x01
-+#define UDA1380_PM		0x02
++#define UDA1380_PM	0x02
 +#define UDA1380_AMIX	0x03
-+#define UDA1380_HP		0x04
++#define UDA1380_HP	0x04
 +#define UDA1380_MVOL	0x10
 +#define UDA1380_MIXVOL	0x11
 +#define UDA1380_MODE	0x12
 +#define UDA1380_DEEMP	0x13
 +#define UDA1380_MIXER	0x14
 +#define UDA1380_INTSTAT	0x18
-+#define UDA1380_DEC		0x20
-+#define UDA1380_PGA		0x21
-+#define UDA1380_ADC		0x22
-+#define UDA1380_AGC		0x23
++#define UDA1380_DEC	0x20
++#define UDA1380_PGA	0x21
++#define UDA1380_ADC	0x22
++#define UDA1380_AGC	0x23
 +#define UDA1380_DECSTAT	0x28
 +#define UDA1380_RESET	0x7f
 +
@@ -3756,16 +3755,18 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h
 +#define UDA1380_DAC_CLK_WSPLL  1
 +};
 +
-+#define UDA1380_DAI_DUPLEX		0 /* playback and capture on single DAI */
++#define UDA1380_DAI_DUPLEX	0 /* playback and capture on single DAI */
 +#define UDA1380_DAI_PLAYBACK	1 /* playback DAI */
-+#define UDA1380_DAI_CAPTURE		2 /* capture DAI */
++#define UDA1380_DAI_CAPTURE	2 /* capture DAI */
 +
 +extern struct snd_soc_codec_dai uda1380_dai[3];
 +extern struct snd_soc_codec_device soc_codec_dev_uda1380;
++
++#endif /* _UDA1380_H */
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,763 @@
 +/*
 + * wm8731.c  --  WM8731 ALSA SoC Audio driver
@@ -4068,7 +4069,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c
 +	struct snd_soc_codec *codec = socdev->codec;
 +	struct wm8731_priv *wm8731 = codec->private_data;
 +	u16 iface = wm8731_read_reg_cache(codec, WM8731_IFACE) & 0xfff3;
-+	int i = get_coeff(wm8731->sysclk, snd_soc_get_rate(params_rate(params)));
++	int i = get_coeff(wm8731->sysclk, params_rate(params));
 +	u16 srate = (coeff_div[i].sr << 2) |
 +		(coeff_div[i].bosr << 1) | coeff_div[i].usb;
 +
@@ -4533,7 +4534,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,44 @@
 +/*
 + * wm8731.h  --  WM8731 Soc Audio driver
@@ -4582,8 +4583,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,1045 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,1055 @@
 +/*
 + * wm8750.c -- WM8750 ALSA SoC audio driver
 + *
@@ -4636,8 +4637,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +	printk(KERN_INFO AUDIO_NAME ": " format "\n" , ## arg)
 +#define warn(format, arg...) \
 +	printk(KERN_WARNING AUDIO_NAME ": " format "\n" , ## arg)
-+
-+static struct workqueue_struct *wm8750_workq = NULL;
 +
 +/* codec private data */
 +struct wm8750_priv {
@@ -5373,8 +5372,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +	if (codec->suspend_dapm_state == SNDRV_CTL_POWER_D0) {
 +		wm8750_dapm_event(codec, SNDRV_CTL_POWER_D2);
 +		codec->dapm_state = SNDRV_CTL_POWER_D0;
-+		queue_delayed_work(wm8750_workq, &codec->delayed_work,
-+			 msecs_to_jiffies(1000));
++		schedule_delayed_work(&codec->delayed_work, msecs_to_jiffies(1000));
 +	}
 +
 +	return 0;
@@ -5418,8 +5416,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +	/* charge output caps */
 +	wm8750_dapm_event(codec, SNDRV_CTL_POWER_D2);
 +	codec->dapm_state = SNDRV_CTL_POWER_D3hot;
-+	queue_delayed_work(wm8750_workq, &codec->delayed_work,
-+		msecs_to_jiffies(1000));
++	schedule_delayed_work(&codec->delayed_work, msecs_to_jiffies(1000));
 +
 +	/* set the update bits */
 +	reg = wm8750_read_reg_cache(codec, WM8750_LDAC);
@@ -5576,11 +5573,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +	INIT_LIST_HEAD(&codec->dapm_paths);
 +	wm8750_socdev = socdev;
 +	INIT_DELAYED_WORK(&codec->delayed_work, wm8750_work);
-+	wm8750_workq = create_workqueue("wm8750");
-+	if (wm8750_workq == NULL) {
-+		kfree(codec);
-+		return -ENOMEM;
-+	}
++
 +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
 +	if (setup->i2c_address) {
 +		normal_i2c[0] = setup->i2c_address;
@@ -5596,6 +5589,25 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +	return ret;
 +}
 +
++/*
++ * This function forces any delayed work to be queued and run.
++ */
++static int run_delayed_work(struct delayed_work *dwork)
++{
++	int ret;
++
++	/* cancel any work waiting to be queued. */
++	ret = cancel_delayed_work(dwork);
++
++	/* if there was any work waiting then we run it now and
++	 * wait for it's completion */
++	if (ret) {
++		schedule_delayed_work(dwork, 0);
++		flush_scheduled_work();
++	}
++	return ret;
++}
++
 +/* power down chip */
 +static int wm8750_remove(struct platform_device *pdev)
 +{
@@ -5604,8 +5616,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +
 +	if (codec->control_data)
 +		wm8750_dapm_event(codec, SNDRV_CTL_POWER_D3cold);
-+	if (wm8750_workq)
-+		destroy_workqueue(wm8750_workq);
++	run_delayed_work(&codec->delayed_work);
 +	snd_soc_free_pcms(socdev);
 +	snd_soc_dapm_free(socdev);
 +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
@@ -5632,7 +5643,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,67 @@
 +/*
 + * Copyright 2005 Openedhand Ltd.
@@ -5704,8 +5715,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,1725 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,1738 @@
 +/*
 + * wm8753.c  --  WM8753 ALSA Soc Audio driver
 + *
@@ -5786,7 +5797,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +module_param(caps_charge, int, 0);
 +MODULE_PARM_DESC(caps_charge, "WM8753 cap charge time (msecs)");
 +
-+static struct workqueue_struct *wm8753_workq = NULL;
 +static void wm8753_set_dai_mode(struct snd_soc_codec *codec,
 +	unsigned int mode);
 +
@@ -6386,12 +6396,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +{
 +	int i;
 +
-+	for(i = 0; i < ARRAY_SIZE(wm8753_dapm_widgets); i++) {
++	for (i = 0; i < ARRAY_SIZE(wm8753_dapm_widgets); i++)
 +		snd_soc_dapm_new_control(codec, &wm8753_dapm_widgets[i]);
-+	}
 +
 +	/* set up the WM8753 audio map */
-+	for(i = 0; audio_map[i][0] != NULL; i++) {
++	for (i = 0; audio_map[i][0] != NULL; i++) {
 +		snd_soc_dapm_connect_input(codec, audio_map[i][0],
 +			audio_map[i][1], audio_map[i][2]);
 +	}
@@ -6407,13 +6416,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	u32 k:24;
 +};
 +
-+static struct _pll_div pll_div;
-+
 +/* The size in bits of the pll divide multiplied by 10
 + * to allow rounding later */
 +#define FIXED_PLL_SIZE ((1 << 22) * 10)
 +
-+static void pll_factors(unsigned int target, unsigned int source)
++static void pll_factors(struct _pll_div *pll_div, unsigned int target,
++	unsigned int source)
 +{
 +	unsigned long long Kpart;
 +	unsigned int K, Ndiv, Nmod;
@@ -6421,16 +6429,16 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	Ndiv = target / source;
 +	if (Ndiv < 6) {
 +		source >>= 1;
-+		pll_div.div2 = 1;
++		pll_div->div2 = 1;
 +		Ndiv = target / source;
 +	} else
-+		pll_div.div2 = 0;
++		pll_div->div2 = 0;
 +
 +	if ((Ndiv < 6) || (Ndiv > 12))
 +		printk(KERN_WARNING
 +			"WM8753 N value outwith recommended range! N = %d\n",Ndiv);
 +
-+	pll_div.n = Ndiv;
++	pll_div->n = Ndiv;
 +	Nmod = target % source;
 +	Kpart = FIXED_PLL_SIZE * (long long)Nmod;
 +
@@ -6445,7 +6453,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	/* Move down to proper range now rounding is done */
 +	K /= 10;
 +
-+	pll_div.k = K;
++	pll_div->k = K;
 +}
 +
 +static int wm8753_set_dai_pll(struct snd_soc_codec_dai *codec_dai,
@@ -6476,8 +6484,9 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	} else {
 +
 +        u16 value = 0;
++        struct _pll_div pll_div;
 +
-+		pll_factors(freq_out * 8, freq_in);
++		pll_factors(&pll_div, freq_out * 8, freq_in);
 +
 +        /* set up N and K PLL divisor ratios */
 +        /* bits 8:5 = PLL_N, bits 3:0 = PLL_K[21:18] */
@@ -6496,7 +6505,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +        wm8753_write(codec, WM8753_PLL1CTL1 + offset, 0x0027 |
 +        	(pll_div.div2 << 3));
 +		wm8753_write(codec, WM8753_CLOCK, reg | enable);
-+    }
++	}
 +	return 0;
 +}
 +
@@ -6590,6 +6599,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +			wm8753->pcmclk = freq;
 +			return 0;
 +		}
++		break;
 +	}
 +	return -EINVAL;
 +}
@@ -7170,7 +7180,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	if (codec->suspend_dapm_state == SNDRV_CTL_POWER_D0) {
 +		wm8753_dapm_event(codec, SNDRV_CTL_POWER_D2);
 +		codec->dapm_state = SNDRV_CTL_POWER_D0;
-+		queue_delayed_work(wm8753_workq, &codec->delayed_work,
++		schedule_delayed_work(&codec->delayed_work,
 +			msecs_to_jiffies(caps_charge));
 +	}
 +
@@ -7216,8 +7226,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	/* charge output caps */
 +	wm8753_dapm_event(codec, SNDRV_CTL_POWER_D2);
 +	codec->dapm_state = SNDRV_CTL_POWER_D3hot;
-+	queue_delayed_work(wm8753_workq,
-+		&codec->delayed_work, msecs_to_jiffies(caps_charge));
++	schedule_delayed_work(&codec->delayed_work,
++		msecs_to_jiffies(caps_charge));
 +
 +	/* set the update bits */
 +	reg = wm8753_read_reg_cache(codec, WM8753_LDAC);
@@ -7379,11 +7389,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	INIT_LIST_HEAD(&codec->dapm_paths);
 +	wm8753_socdev = socdev;
 +	INIT_DELAYED_WORK(&codec->delayed_work, wm8753_work);
-+	wm8753_workq = create_workqueue("wm8753");
-+	if (wm8753_workq == NULL) {
-+		kfree(codec);
-+		return -ENOMEM;
-+	}
++
 +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
 +	if (setup->i2c_address) {
 +		normal_i2c[0] = setup->i2c_address;
@@ -7398,6 +7404,25 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	return ret;
 +}
 +
++/*
++ * This function forces any delayed work to be queued and run.
++ */
++static int run_delayed_work(struct delayed_work *dwork)
++{
++	int ret;
++
++	/* cancel any work waiting to be queued. */
++	ret = cancel_delayed_work(dwork);
++
++	/* if there was any work waiting then we run it now and
++	 * wait for it's completion */
++	if (ret) {
++		schedule_delayed_work(dwork, 0);
++		flush_scheduled_work();
++	}
++	return ret;
++}
++
 +/* power down chip */
 +static int wm8753_remove(struct platform_device *pdev)
 +{
@@ -7406,8 +7431,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +
 +	if (codec->control_data)
 +		wm8753_dapm_event(codec, SNDRV_CTL_POWER_D3cold);
-+	if (wm8753_workq)
-+		destroy_workqueue(wm8753_workq);
++	run_delayed_work(&codec->delayed_work);
 +	snd_soc_free_pcms(socdev);
 +	snd_soc_dapm_free(socdev);
 +#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
@@ -7434,7 +7458,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,126 @@
 +/*
 + * wm8753.h  --  audio driver for WM8753
@@ -7459,62 +7483,62 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
 +#define WM8753_ADC		0x02
 +#define WM8753_PCM		0x03
 +#define WM8753_HIFI		0x04
-+#define WM8753_IOCTL	0x05
-+#define WM8753_SRATE1	0x06
-+#define WM8753_SRATE2	0x07
++#define WM8753_IOCTL		0x05
++#define WM8753_SRATE1		0x06
++#define WM8753_SRATE2		0x07
 +#define WM8753_LDAC		0x08
 +#define WM8753_RDAC		0x09
 +#define WM8753_BASS		0x0a
-+#define WM8753_TREBLE	0x0b
++#define WM8753_TREBLE		0x0b
 +#define WM8753_ALC1		0x0c
 +#define WM8753_ALC2		0x0d
 +#define WM8753_ALC3		0x0e
-+#define WM8753_NGATE	0x0f
++#define WM8753_NGATE		0x0f
 +#define WM8753_LADC		0x10
 +#define WM8753_RADC		0x11
-+#define WM8753_ADCTL1	0x12
++#define WM8753_ADCTL1		0x12
 +#define WM8753_3D		0x13
 +#define WM8753_PWR1		0x14
 +#define WM8753_PWR2		0x15
 +#define WM8753_PWR3		0x16
 +#define WM8753_PWR4		0x17
 +#define WM8753_ID		0x18
-+#define WM8753_INTPOL	0x19
-+#define WM8753_INTEN	0x1a
-+#define WM8753_GPIO1	0x1b
-+#define WM8753_GPIO2	0x1c
-+#define WM8753_RESET	0x1f
-+#define WM8753_RECMIX1	0x20
-+#define WM8753_RECMIX2	0x21
-+#define WM8753_LOUTM1	0x22
-+#define WM8753_LOUTM2	0x23
-+#define WM8753_ROUTM1	0x24
-+#define WM8753_ROUTM2	0x25
-+#define WM8753_MOUTM1	0x26
-+#define WM8753_MOUTM2	0x27
-+#define WM8753_LOUT1V	0x28
-+#define WM8753_ROUT1V	0x29
-+#define WM8753_LOUT2V	0x2a
-+#define WM8753_ROUT2V	0x2b
-+#define WM8753_MOUTV	0x2c
-+#define WM8753_OUTCTL	0x2d
-+#define WM8753_ADCIN	0x2e
-+#define WM8753_INCTL1	0x2f
-+#define WM8753_INCTL2	0x30
-+#define WM8753_LINVOL	0x31
-+#define WM8753_RINVOL	0x32
-+#define WM8753_MICBIAS	0x33
-+#define WM8753_CLOCK	0x34
-+#define WM8753_PLL1CTL1	0x35
-+#define WM8753_PLL1CTL2	0x36
-+#define WM8753_PLL1CTL3	0x37
-+#define WM8753_PLL1CTL4	0x38
-+#define WM8753_PLL2CTL1	0x39
-+#define WM8753_PLL2CTL2	0x3a
-+#define WM8753_PLL2CTL3	0x3b
-+#define WM8753_PLL2CTL4	0x3c
-+#define WM8753_BIASCTL	0x3d
-+#define WM8753_ADCTL2	0x3f
++#define WM8753_INTPOL		0x19
++#define WM8753_INTEN		0x1a
++#define WM8753_GPIO1		0x1b
++#define WM8753_GPIO2		0x1c
++#define WM8753_RESET		0x1f
++#define WM8753_RECMIX1		0x20
++#define WM8753_RECMIX2		0x21
++#define WM8753_LOUTM1		0x22
++#define WM8753_LOUTM2		0x23
++#define WM8753_ROUTM1		0x24
++#define WM8753_ROUTM2		0x25
++#define WM8753_MOUTM1		0x26
++#define WM8753_MOUTM2		0x27
++#define WM8753_LOUT1V		0x28
++#define WM8753_ROUT1V		0x29
++#define WM8753_LOUT2V		0x2a
++#define WM8753_ROUT2V		0x2b
++#define WM8753_MOUTV		0x2c
++#define WM8753_OUTCTL		0x2d
++#define WM8753_ADCIN		0x2e
++#define WM8753_INCTL1		0x2f
++#define WM8753_INCTL2		0x30
++#define WM8753_LINVOL		0x31
++#define WM8753_RINVOL		0x32
++#define WM8753_MICBIAS		0x33
++#define WM8753_CLOCK		0x34
++#define WM8753_PLL1CTL1		0x35
++#define WM8753_PLL1CTL2		0x36
++#define WM8753_PLL1CTL3		0x37
++#define WM8753_PLL1CTL4		0x38
++#define WM8753_PLL2CTL1		0x39
++#define WM8753_PLL2CTL2		0x3a
++#define WM8753_PLL2CTL3		0x3b
++#define WM8753_PLL2CTL4		0x3c
++#define WM8753_BIASCTL		0x3d
++#define WM8753_ADCTL2		0x3f
 +
 +struct wm8753_setup_data {
 +	unsigned short i2c_address;
@@ -7524,7 +7548,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
 +#define WM8753_PLL2			1
 +
 +/* clock inputs */
-+#define WM8753_MCLK			0
++#define WM8753_MCLK		0
 +#define WM8753_PCMCLK		1
 +
 +/* clock divider id's */
@@ -7556,7 +7580,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
 +#define WM8753_VXCLK_DIV_16	(4 << 6)
 +
 +#define WM8753_DAI_HIFI		0
-+#define WM8753_DAI_VOICE	1
++#define WM8753_DAI_VOICE		1
 +
 +extern struct snd_soc_codec_dai wm8753_dai[2];
 +extern struct snd_soc_codec_device soc_codec_dev_wm8753;
@@ -7565,7 +7589,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,603 @@
 +/*
 + * wm8772.c  --  WM8772 ALSA Soc Audio driver
@@ -8173,7 +8197,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,46 @@
 +/*
 + * wm8772.h  --  audio driver for WM8772
@@ -8224,7 +8248,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,971 @@
 +/*
 + * wm8971.c  --  WM8971 ALSA SoC Audio driver
@@ -9200,7 +9224,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,63 @@
 +/*
 + * wm8971.h  --  audio driver for WM8971
@@ -9268,7 +9292,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,873 @@
 +/*
 + * wm8974.c  --  WM8974 ALSA Soc Audio driver
@@ -10146,7 +10170,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,104 @@
 +/*
 + * wm8974.h  --  WM8974 Soc Audio driver
@@ -10255,7 +10279,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,771 @@
 +/*
 + * wm9712.c  --  ALSA Soc WM9712 codec support
@@ -11031,7 +11055,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,14 @@
 +/*
 + * wm9712.h  --  WM9712 Soc Audio driver
@@ -11050,7 +11074,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,1220 @@
 +/*
 + * wm9713.c  --  ALSA Soc WM9713 codec support
@@ -12275,7 +12299,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,51 @@
 +/*
 + * wm9713.h  --  WM9713 Soc Audio driver
@@ -12331,8 +12355,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,134 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,143 @@
 +menu "SoC Audio for the Intel PXA2xx"
 +
 +config SND_PXA2xx_SOC
@@ -12466,12 +12490,21 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig
 +	  Say Y if you want to add support for SoC audio on the
 +	  HTC Magician.
 +
++config SND_PXA2xx_SOC_AMESOM_TLV320
++	tristate "SoC SSP Audio support for AMESOM - TLV320AIC24k"
++	depends on SND_PXA2xx_SOC && MACH_AMESOM
++	select SND_PXA2xx_SOC_I2S
++	select SND_PXA2xx_SOC_SSP
++	help
++	  Say Y if you want to add support for SoC audio on Amesom
++	  with the tlv320.
++
 +endmenu
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,37 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,39 @@
 +# PXA Platform Support
 +snd-soc-pxa2xx-objs := pxa2xx-pcm.o
 +snd-soc-pxa2xx-ac97-objs := pxa2xx-ac97.o
@@ -12496,6 +12529,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile
 +snd-soc-tosa-objs := tosa.o
 +snd-soc-spitz-objs := spitz.o
 +snd-soc-magician-objs := magician.o
++snd-soc-amesom-tlv320-objs := amesom_tlv320.o
 +
 +obj-$(CONFIG_SND_PXA2xx_SOC_CORGI) += snd-soc-corgi.o
 +obj-$(CONFIG_SND_PXA2xx_SOC_MAINSTONE_WM8731) += snd-soc-mainstone-wm8731.o
@@ -12509,10 +12543,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile
 +obj-$(CONFIG_SND_PXA2xx_SOC_TOSA) += snd-soc-tosa.o
 +obj-$(CONFIG_SND_PXA2xx_SOC_SPITZ) += snd-soc-spitz.o
 +obj-$(CONFIG_SND_PXA2xx_SOC_MAGICIAN) += snd-soc-magician.o
++obj-$(CONFIG_SND_PXA2xx_SOC_AMESOM_TLV320) += snd-soc-amesom-tlv320.o
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,383 @@
 +/*
 + * corgi.c  --  SoC audio for Corgi
@@ -12900,7 +12935,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,127 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -13032,7 +13067,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,212 @@
 +/*
 + * mainstone_baseband.c
@@ -13249,7 +13284,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,371 @@
 +/*
 + * mainstone_bluetooth.c
@@ -13625,7 +13660,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,203 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -13833,7 +13868,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,547 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14385,7 +14420,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,104 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14494,7 +14529,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,172 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14671,7 +14706,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,318 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14994,7 +15029,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,352 @@
 +/*
 + * poodle.c  --  SoC audio for Poodle
@@ -15351,7 +15386,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,431 @@
 +/*
 + * linux/sound/pxa2xx-ac97.c -- AC97 support for the Intel PXA2xx chip.
@@ -15787,7 +15822,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,318 @@
 +/*
 + * pxa2xx-i2s.c  --  ALSA Soc Audio Layer
@@ -16110,7 +16145,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,372 @@
 +/*
 + * linux/sound/arm/pxa2xx-pcm.c -- ALSA PCM interface for the Intel PXA2xx chip
@@ -16487,7 +16522,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,34 @@
 +/*
 + * linux/sound/arm/pxa2xx-pcm.h -- ALSA PCM interface for the Intel PXA2xx chip
@@ -16526,8 +16561,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,671 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,666 @@
 +/*
 + * pxa2xx-ssp.c  --  ALSA Soc Audio Layer
 + *
@@ -16544,8 +16579,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 + *    12th Aug 2005   Initial version.
 + *
 + * TODO:
-+ *  o The SSP driver _mostly_ works, however is in need of testing and
-+ *     someone with time to complete it.
 + *  o Test network mode for > 16bit sample size
 + */
 +
@@ -16568,15 +16601,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +#include "pxa2xx-pcm.h"
 +#include "pxa2xx-ssp.h"
 +
-+#define PXA_SSP_DEBUG 1
++#define PXA_SSP_DEBUG 0
 +
-+/*
-+ * The following should be defined in pxa-regs.h
-+ */
-+#define SSCR0_ACS		(1 << 30)	/* Audio Clock Select */
-+#define SSACD_SCDB		(1 << 3)	/* SSPSYSCLK Divider Bypass (SSCR0[ACS] must be set) */
-+#define SSACD_ACPS(x)	(x << 4)	/* Audio clock PLL select */
-+#define SSACD_ACDS(x)	(x << 0)	/* Audio clock divider select */
++#if PXA_SSP_DEBUG
++#define dbg(format, arg...) \
++	printk(KERN_DEBUG format "\n" , ## arg)
++#else
++#define dbg(format, arg...) do {} while (0)
++#endif
 +
 +/*
 + * SSP audio private data
@@ -16768,9 +16800,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +{
 +	int port = cpu_dai->id + 1;
 +	u32 sscr0 = SSCR0_P(port) &
-+		~(SSCR0_ECS |  SSCR0_NCS | SSCR0_MOD | SSCR0_ACS);
++		~(SSCR0_ECS |  SSCR0_NCS | SSCR0_MOD | SSCR0_ADC);
++
++	dbg("pxa2xx_ssp_set_dai_sysclk id: %d, clk_id %d, freq %d",
++		cpu_dai->id, clk_id, freq);
 +
 +	switch (clk_id) {
++	case PXA2XX_SSP_CLK_NET_PLL:
++		sscr0 |= SSCR0_MOD;
 +	case PXA2XX_SSP_CLK_PLL:
 +		/* Internal PLL is fixed on pxa25x and pxa27x */
 +#ifdef CONFIG_PXA27x
@@ -16790,7 +16827,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +	case PXA2XX_SSP_CLK_AUDIO:
 +		ssp_clk[cpu_dai->id].sysclk = 0;
 +		SSCR0_P(port) |= SSCR0_SerClkDiv(1);
-+		sscr0 |= SSCR0_ACS;
++		sscr0 |= SSCR0_ADC;
 +		break;
 +	default:
 +		return -ENODEV;
@@ -16918,23 +16955,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +	/* FIXME: this is what wince uses for msb */
 +	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_MSB) {
 +		SSCR0_P(port) = SSCR0_EDSS | SSCR0_TISSP | SSCR0_DataSize(16);
-+
-+//		SSCR1_P(port) = SSCR1_RxTresh(8) | SSCR1_TxTresh(8); /* doesn't seem to be needed */
-+		return 0;
++		goto master;
 +	}
 +
 +	/* check for I2S emulation mode - handle it separately  */
-+	if (((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_I2S) ||
-+		((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_MSB)) {
++	if ((fmt & SND_SOC_DAIFMT_FORMAT_MASK) == SND_SOC_DAIFMT_I2S) {
 +		/* 8.4.11 */
 +
 +		/* Only SSCR0[NCS] or SSCR0[ECS] bit fields settings are optional */
 +		SSCR0_P(port) = SSCR0_EDSS | SSCR0_PSP | SSCR0_DataSize(16);
-+
-+		/* SSCR1 = 0x203C3C03 */
-+		/* SSCR1[SCLKDIR] and SSCR1[SFRMDIR] must be cleared (master only ???),
-+		 * all other bit fields settings are optional. */
-+		//SSCR1_P(port) &= ~(SSCR1_SCLKDIR | SSCR1_SFRMDIR);
 +
 +		/* set FIFO thresholds */
 +		SSCR1_P(port) = SSCR1_RxTresh(14) | SSCR1_TxTresh(1);
@@ -16943,13 +16972,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +		/* all bit fields must be cleared except: FSRT = 1 and
 +		 * SFRMWDTH = 16, DMYSTART=0,1) */
 +		SSPSP_P(port) = SSPSP_FSRT | SSPSP_SFRMWDTH(16) | SSPSP_DMYSTRT(0);
-+		return 0;
++		goto master;
 +	}
 +
 +	SSCR0_P(port) |= SSCR0_PSP;
 +	SSCR1_P(port) = SSCR1_RxTresh(14) | SSCR1_TxTresh(1) |
 +		SSCR1_TRAIL | SSCR1_RWOT;
 +
++master:
 +	switch(fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 +	case SND_SOC_DAIFMT_CBM_CFM:
 +		SSCR1_P(port) |= (SSCR1_SCLKDIR | SSCR1_SFRMDIR);
@@ -17012,6 +17042,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +		dma += 2; /* stereo DMA offset is 2, mono is 0 */
 +	cpu_dai->dma_data = ssp_dma_params[cpu_dai->id][dma];
 +
++	dbg("pxa2xx_ssp_hw_params: dma %d", dma);
++
 +	/* we can only change the settings if the port is not in use */
 +	if (SSCR0_P(port) & SSCR0_SSE)
 +		return 0;
@@ -17034,12 +17066,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +		break;
 +	}
 +
-+#if PXA_SSP_DEBUG
-+	printk("SSCR0 %x SSCR1 %x SSTO %x SSPSP %x SSSR %x SSACD %x\n",
++	dbg("SSCR0 0x%08x SSCR1 0x%08x SSTO 0x%08x SSPSP 0x%08x SSSR 0x%08x SSACD 0x%08x",
 +		SSCR0_P(port), SSCR1_P(port),
 +		SSTO_P(port), SSPSP_P(port),
 +		SSSR_P(port), SSACD_P(port));
-+#endif
++
 +	return 0;
 +}
 +
@@ -17087,13 +17118,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +	default:
 +		ret = -EINVAL;
 +	}
-+#if PXA_SSP_DEBUG
-+	printk("trig cmd %d\n", cmd);
-+	printk("SSCR0 %x SSCR1 %x SSTO %x SSPSP %x SSSR %x\n",
++
++	dbg("SSCR0 0x%08x SSCR1 0x%08x SSTO 0x%08x SSPSP 0x%08x SSSR 0x%08x",
 +		SSCR0_P(port), SSCR1_P(port),
 +		SSTO_P(port), SSPSP_P(port),
 +		SSSR_P(port));
-+#endif
++
 +	return ret;
 +}
 +
@@ -17202,7 +17232,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,394 @@
 +/*
 + * spitz.c  --  SoC audio for Sharp SL-Cxx00 models Spitz, Borzoi and Akita
@@ -17601,7 +17631,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,289 @@
 +/*
 + * tosa.c  --  SoC audio for Tosa
@@ -17895,7 +17925,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,1329 @@
 +/*
 + * soc-dapm.c  --  ALSA SoC Dynamic Audio Power Management
@@ -19229,8 +19259,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/soc-core.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,1617 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/soc-core.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,1587 @@
 +/*
 + * soc-core.c  --  ALSA SoC Audio Layer
 + *
@@ -19274,7 +19304,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 +#include <sound/initval.h>
 +
 +/* debug */
-+#define SOC_DEBUG 1
++#define SOC_DEBUG 0
 +#if SOC_DEBUG
 +#define dbg(format, arg...) printk(format, ## arg)
 +#else
@@ -19284,13 +19314,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 +static DEFINE_MUTEX(pcm_mutex);
 +static DEFINE_MUTEX(io_mutex);
 +static DECLARE_WAIT_QUEUE_HEAD(soc_pm_waitq);
-+
-+/* supported sample rates */
-+/* ATTENTION: these values depend on the definition in pcm.h! */
-+static const unsigned int rates[] = {
-+	5512, 8000, 11025, 16000, 22050, 32000, 44100,
-+	48000, 64000, 88200, 96000, 176400, 192000
-+};
 +
 +/*
 + * This is a timeout to do a DAPM powerdown after a stream is closed().
@@ -20111,6 +20134,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 +		kfree(rtd);
 +		return ret;
 +	}
++
 +	pcm->private_data = rtd;
 +	soc_pcm_ops.mmap = socdev->platform->pcm_ops->mmap;
 +	soc_pcm_ops.pointer = socdev->platform->pcm_ops->pointer;
@@ -20269,22 +20293,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 +EXPORT_SYMBOL_GPL(snd_soc_test_bits);
 +
 +/**
-+ * snd_soc_get_rate - get int sample rate
-+ * @hwpcmrate: the hardware pcm rate
-+ *
-+ * Returns the audio rate integaer value, else 0.
-+ */
-+int snd_soc_get_rate(int hwpcmrate)
-+{
-+	int rate = ffs(hwpcmrate) - 1;
-+
-+	if (rate > ARRAY_SIZE(rates))
-+		return 0;
-+	return rates[rate];
-+}
-+EXPORT_SYMBOL_GPL(snd_soc_get_rate);
-+
-+/**
 + * snd_soc_new_pcms - create new sound card and pcms
 + * @socdev: the SoC audio device
 + *
@@ -20309,15 +20317,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 +		return -ENODEV;
 +	}
 +
-+	codec->card->dev = device_create(sound_class, codec->card->parent, 0,
-+					  "card%i", codec->card->number);
-+	if (IS_ERR(codec->card->dev)) {
-+			snd_card_free(codec->card);
-+			printk(KERN_ERR "asoc: could not create sound dev %s\n",
-+				codec->name);
-+			return -ENODEV;
-+	}
-+
++	codec->card->dev = socdev->dev;
 +	codec->card->private_data = codec;
 +	strncpy(codec->card->driver, codec->name, sizeof(codec->card->driver));
 +
@@ -20851,7 +20851,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,32 @@
 +menu "SoC Audio for the Atmel AT91"
 +
@@ -20888,7 +20888,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,11 @@
 +# AT91 Platform Support
 +snd-soc-at91-objs := at91-pcm.o
@@ -20904,7 +20904,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,591 @@
 +/*
 + * imx-ssi.c  --  SSI driver for Freescale IMX
@@ -21500,7 +21500,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,31 @@
 +menu "SoC Audio for the Freescale i.MX"
 +
@@ -21536,7 +21536,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,18 @@
 +# i.MX Platform Support
 +snd-soc-imx21-objs := imx21-pcm.o
@@ -21558,21 +21558,21 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile
 +
 Index: linux-2.6.17.14-fic4.test/sound/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/sound/Makefile	2007-01-31 21:34:16.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/sound/Makefile	2007-01-31 21:36:19.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/sound/Makefile	2007-02-06 15:38:07.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/Makefile	2007-02-06 15:55:34.000000000 +0100
 @@ -4,7 +4,7 @@
  obj-$(CONFIG_SOUND) += soundcore.o
  obj-$(CONFIG_SOUND_PRIME) += oss/
  obj-$(CONFIG_DMASOUND) += oss/
 -obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/
-+obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/ soc/
++obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/ asoc/
  
  ifeq ($(CONFIG_SND),y)
    obj-y += last.o
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,715 @@
 +/*
 + * wm8711.c  --  WM8711 ALSA SoC Audio driver
@@ -21832,7 +21832,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c
 +	struct snd_soc_codec *codec = socdev->codec;
 +	struct wm8711_priv *wm8711 = codec->private_data;
 +	u16 iface = wm8711_read_reg_cache(codec, WM8711_IFACE) & 0xfffc;
-+	int i = get_coeff(wm8711->sysclk, snd_soc_get_rate(params_rate(params)));
++	int i = get_coeff(wm8711->sysclk, params_rate(params));
 +	u16 srate = (coeff_div[i].sr << 2) |
 +		(coeff_div[i].bosr << 1) | coeff_div[i].usb;
 +
@@ -22292,7 +22292,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,42 @@
 +/*
 + * wm8711.h  --  WM8711 Soc Audio driver
@@ -22339,7 +22339,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,923 @@
 +/*
 + * wm8980.c  --  WM8980 ALSA Soc Audio driver
@@ -23267,7 +23267,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,116 @@
 +/*
 + * wm8980.h  --  WM8980 Soc Audio driver
@@ -23388,7 +23388,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,375 @@
 +/*
 + * eti_b1_wm8731  --  SoC audio for AT91RM9200-based Endrelia ETI_B1 board.
@@ -23768,7 +23768,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,860 @@
 +/*
 + * wm8510.c  --  WM8510 ALSA Soc Audio driver
@@ -24633,7 +24633,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,103 @@
 +/*
 + * wm8510.h  --  WM8510 Soc Audio driver
@@ -24741,7 +24741,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,222 @@
 +/*
 + * imx-ssi.c  --  SSI driver for Freescale IMX
@@ -24967,8 +24967,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c
 +MODULE_LICENSE("GPL");
 Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-01-31 21:34:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-01-31 21:36:44.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-02-06 15:38:06.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-02-06 15:56:03.000000000 +0100
 @@ -112,6 +112,8 @@
  #define I2C_DRIVERID_X1205	82	/* Xicor/Intersil X1205 RTC	*/
  #define I2C_DRIVERID_PCF8563	83	/* Philips PCF8563 RTC		*/
@@ -24981,7 +24981,7 @@ Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,885 @@
 +/*
 + * wm8976.c  --  WM8976 ALSA Soc Audio driver
@@ -25871,7 +25871,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,112 @@
 +/*
 + * wm8976.h  --  WM8976 Soc Audio driver
@@ -25988,7 +25988,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,454 @@
 +/*
 + * linux/sound/arm/mxc-pcm.c -- ALSA SoC interface for the Freescale i.MX CPU's
@@ -26447,7 +26447,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,237 @@
 +/*
 + * mxc-pcm.h :- ASoC platform header for Freescale i.MX
@@ -26689,7 +26689,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,417 @@
 +/*
 + * linux/sound/arm/mxc-pcm.c -- ALSA SoC interface for the Freescale i.MX CPU's
@@ -27111,7 +27111,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,241 @@
 +/*
 + * mxc-pcm.h :- ASoC platform header for Freescale i.MX
@@ -27357,8 +27357,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,577 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,563 @@
 +/*
 + * SoC audio for HTC Magician
 + *
@@ -27433,7 +27433,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +		snd_soc_dapm_set_endpoint(codec, "Speaker", 0);
 +
 +	/* set up jack connection */
-+	switch(magician_jack_func) {
++	switch (magician_jack_func) {
 +	case MAGICIAN_HP:
 +		/* enable and unmute hp jack, disable mic bias */
 +		snd_soc_dapm_set_endpoint(codec, "Mic Jack", 0);
@@ -27450,16 +27450,20 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +		snd_soc_dapm_set_endpoint(codec, "Mic Jack", 0);
 +		break;
 +	}
-+/*
++#if 0
++	/* fixme pH5, can we detect and config the correct Mic type ? */
 +	switch(magician_in_sel) {
 +	case MAGICIAN_IN_MIC:
 +		snd_soc_dapm_set_endpoint(codec, "Mic Jack", 1);
++		break;
 +	case MAGICIAN_IN_MIC_EXT:
 +		snd_soc_dapm_set_endpoint(codec, "Mic Jack", 1);
++		break;
 +	case MAGICIAN_IN_BT_HS:
 +		snd_soc_dapm_set_endpoint(codec, "Mic Jack", 0);
++		break;
 +	}
-+*/
++#endif
 +	snd_soc_dapm_sync_endpoints(codec);
 +}
 +
@@ -27478,7 +27482,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 + * Magician uses SSP port for playback.
 + */
 +static int magician_playback_hw_params(struct snd_pcm_substream *substream,
-+	struct snd_pcm_hw_params *params)
++				       struct snd_pcm_hw_params *params)
 +{
 +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 +	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
@@ -27490,15 +27494,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	 * Rate = SSPSCLK / (word size(16))
 +	 * SSPSCLK = (ACPS / ACDS) / SSPSCLKDIV(div4 or div1)
 +	 */
-+	switch(params_rate(params)) {
++	switch (params_rate(params)) {
 +	case 8000:
 +		acps = 32842000;
-+		acds = PXA2XX_SSP_CLK_AUDIO_DIV_32; /* wrong - 32 bits/sample */
++		acds = PXA2XX_SSP_CLK_AUDIO_DIV_32;	/* wrong - 32 bits/sample */
 +		div4 = PXA2XX_SSP_CLK_SCDB_4;
 +		break;
 +	case 11025:
 +		acps = 5622000;
-+		acds = PXA2XX_SSP_CLK_AUDIO_DIV_8; /* 16 bits/sample, 1 slot */
++		acds = PXA2XX_SSP_CLK_AUDIO_DIV_8;	/* 16 bits/sample, 1 slot */
 +		div4 = PXA2XX_SSP_CLK_SCDB_4;
 +		break;
 +	case 22050:
@@ -27520,29 +27524,31 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +
 +	/* set codec DAI configuration */
 +	ret = codec_dai->dai_ops.set_fmt(codec_dai, SND_SOC_DAIFMT_MSB |
-+		SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
++			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
 +	if (ret < 0)
 +		return ret;
 +
 +	/* set cpu DAI configuration */
 +	ret = cpu_dai->dai_ops.set_fmt(cpu_dai, SND_SOC_DAIFMT_MSB |
-+		SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
++			SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
 +	if (ret < 0)
 +		return ret;
 +
 +	/* set audio clock as clock source */
 +	ret = cpu_dai->dai_ops.set_sysclk(cpu_dai, PXA2XX_SSP_CLK_AUDIO, 0,
-+		SND_SOC_CLOCK_OUT);
++			SND_SOC_CLOCK_OUT);
 +	if (ret < 0)
 +		return ret;
 +
 +	/* set the SSP audio system clock ACDS divider */
-+	ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai, PXA2XX_SSP_AUDIO_DIV_ACDS, acds);
++	ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai,
++			PXA2XX_SSP_AUDIO_DIV_ACDS, acds);
 +	if (ret < 0)
 +		return ret;
 +
 +	/* set the SSP audio system clock SCDB divider4 */
-+	ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai, PXA2XX_SSP_AUDIO_DIV_SCDB, div4);
++	ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai,
++			PXA2XX_SSP_AUDIO_DIV_SCDB, div4);
 +	if (ret < 0)
 +		return ret;
 +
@@ -27550,8 +27556,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	ret = cpu_dai->dai_ops.set_pll(cpu_dai, 0, 0, acps);
 +	if (ret < 0)
 +		return ret;
-+
-+	/* pH5 -- may need to set other SSP port config */
 +
 +	return 0;
 +}
@@ -27570,13 +27574,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	SACR0 |= SACR0_BCKD;
 +	SACR0 |= SACR0_ENB;
 +	pxa_set_cken(CKEN8_I2S, 1);
-+#if 0
-+	printk ("enabled I2S clock\n");
-+	printk("SSP port enabled now\nSSCR0 %x SSCR1 %x SSTO %x SSPSP %x SSSR %x SSACD %x\n",
-+	SSCR0_P(1), SSCR1_P(1),
-+	SSTO_P(1), SSPSP_P(1),
-+	SSSR_P(1), SSACD_P(1));
-+#endif
++
 +	return 0;
 +}
 +
@@ -27586,7 +27584,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	SACR0 &= ~SACR0_ENB;
 +	SACR0 &= ~SACR0_BCKD;
 +	pxa_set_cken(CKEN8_I2S, 0);
-+	printk ("disabled I2S clock\n");
 +	return 0;
 +}
 +
@@ -27594,7 +27591,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 + * Magician uses I2S for capture.
 + */
 +static int magician_capture_hw_params(struct snd_pcm_substream *substream,
-+	struct snd_pcm_hw_params *params)
++				      struct snd_pcm_hw_params *params)
 +{
 +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 +	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
@@ -27603,23 +27600,21 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +
 +	/* set codec DAI configuration */
 +	ret = codec_dai->dai_ops.set_fmt(codec_dai,
-+		SND_SOC_DAIFMT_MSB | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
++			SND_SOC_DAIFMT_MSB | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
 +	if (ret < 0)
 +		return ret;
 +
 +	/* set cpu DAI configuration */
 +	ret = cpu_dai->dai_ops.set_fmt(cpu_dai,
-+		SND_SOC_DAIFMT_MSB | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
++			SND_SOC_DAIFMT_MSB | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
 +	if (ret < 0)
 +		return ret;
 +
 +	/* set the I2S system clock as output */
 +	ret = cpu_dai->dai_ops.set_sysclk(cpu_dai, PXA2XX_I2S_SYSCLK, 0,
-+		SND_SOC_CLOCK_OUT);
++			SND_SOC_CLOCK_OUT);
 +	if (ret < 0)
 +		return ret;
-+
-+	/* pH5 may need to set other I2S config */
 +
 +	return 0;
 +}
@@ -27648,13 +27643,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	.hw_free = magician_playback_hw_free,
 +};
 +
-+static int magician_get_jack(snd_kcontrol_t * kcontrol, snd_ctl_elem_value_t * ucontrol)
++static int magician_get_jack(snd_kcontrol_t * kcontrol,
++			     snd_ctl_elem_value_t * ucontrol)
 +{
 +	ucontrol->value.integer.value[0] = magician_jack_func;
 +	return 0;
 +}
 +
-+static int magician_set_jack(snd_kcontrol_t * kcontrol, snd_ctl_elem_value_t * ucontrol)
++static int magician_set_jack(snd_kcontrol_t * kcontrol,
++			     snd_ctl_elem_value_t * ucontrol)
 +{
 +	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 +
@@ -27666,15 +27663,17 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	return 1;
 +}
 +
-+static int magician_get_spk(snd_kcontrol_t * kcontrol, snd_ctl_elem_value_t * ucontrol)
++static int magician_get_spk(snd_kcontrol_t * kcontrol,
++			    snd_ctl_elem_value_t * ucontrol)
 +{
 +	ucontrol->value.integer.value[0] = magician_spk_func;
 +	return 0;
 +}
 +
-+static int magician_set_spk(snd_kcontrol_t * kcontrol, snd_ctl_elem_value_t * ucontrol)
++static int magician_set_spk(snd_kcontrol_t * kcontrol,
++			    snd_ctl_elem_value_t * ucontrol)
 +{
-+	struct snd_soc_codec *codec =  snd_kcontrol_chip(kcontrol);
++	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 +
 +	if (magician_spk_func == ucontrol->value.integer.value[0])
 +		return 0;
@@ -27684,29 +27683,35 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	return 1;
 +}
 +
-+static int magician_get_input(snd_kcontrol_t * kcontrol, snd_ctl_elem_value_t * ucontrol)
++static int magician_get_input(snd_kcontrol_t * kcontrol,
++			      snd_ctl_elem_value_t * ucontrol)
 +{
 +	ucontrol->value.integer.value[0] = magician_in_sel;
 +	return 0;
 +}
 +
-+static int magician_set_input(snd_kcontrol_t * kcontrol, snd_ctl_elem_value_t * ucontrol)
++static int magician_set_input(snd_kcontrol_t * kcontrol,
++			      snd_ctl_elem_value_t * ucontrol)
 +{
-+	struct snd_soc_codec *codec =  snd_kcontrol_chip(kcontrol);
++	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
 +
 +	if (magician_in_sel == ucontrol->value.integer.value[0])
 +		return 0;
 +
 +	magician_in_sel = ucontrol->value.integer.value[0];
-+//	magician_ext_control(codec);
-+	switch(magician_in_sel) {
++
++	switch (magician_in_sel) {
 +	case MAGICIAN_MIC:
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_IN_SEL0);
-+		magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_IN_SEL1);
++		magician_egpio_disable(&magician_cpld,
++				       EGPIO_NR_MAGICIAN_IN_SEL0);
++		magician_egpio_enable(&magician_cpld,
++				      EGPIO_NR_MAGICIAN_IN_SEL1);
 +		break;
 +	case MAGICIAN_MIC_EXT:
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_IN_SEL0);
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_IN_SEL1);
++		magician_egpio_disable(&magician_cpld,
++				       EGPIO_NR_MAGICIAN_IN_SEL0);
++		magician_egpio_disable(&magician_cpld,
++				       EGPIO_NR_MAGICIAN_IN_SEL1);
 +	}
 +
 +	return 1;
@@ -27715,27 +27720,33 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +static int magician_spk_power(struct snd_soc_dapm_widget *w, int event)
 +{
 +	if (SND_SOC_DAPM_EVENT_ON(event))
-+		magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_SPK_POWER);
++		magician_egpio_enable(&magician_cpld,
++				      EGPIO_NR_MAGICIAN_SPK_POWER);
 +	else
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_SPK_POWER);
++		magician_egpio_disable(&magician_cpld,
++				       EGPIO_NR_MAGICIAN_SPK_POWER);
 +	return 0;
 +}
 +
 +static int magician_hp_power(struct snd_soc_dapm_widget *w, int event)
 +{
 +	if (SND_SOC_DAPM_EVENT_ON(event))
-+		magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_EP_POWER);
++		magician_egpio_enable(&magician_cpld,
++				      EGPIO_NR_MAGICIAN_EP_POWER);
 +	else
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_EP_POWER);
++		magician_egpio_disable(&magician_cpld,
++				       EGPIO_NR_MAGICIAN_EP_POWER);
 +	return 0;
 +}
 +
-+static int magician_mic_bias(struct snd_soc_dapm_widget* w, int event)
++static int magician_mic_bias(struct snd_soc_dapm_widget *w, int event)
 +{
 +	if (SND_SOC_DAPM_EVENT_ON(event))
-+		magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_MIC_POWER);
++		magician_egpio_enable(&magician_cpld,
++			EGPIO_NR_MAGICIAN_MIC_POWER);
 +	else
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_MIC_POWER);
++		magician_egpio_disable(&magician_cpld,
++			EGPIO_NR_MAGICIAN_MIC_POWER);
 +	return 0;
 +}
 +
@@ -27747,15 +27758,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +};
 +
 +/* magician machine audio_map */
-+static const char* audio_map[][3] = {
++static const char *audio_map[][3] = {
 +
 +	/* headphone connected to VOUTLHP, VOUTRHP */
 +	{"Headphone Jack", NULL, "VOUTLHP"},
 +	{"Headphone Jack", NULL, "VOUTRHP"},
 +
 +	/* ext speaker connected to VOUTL, VOUTR  */
-+	{"Speaker", NULL , "VOUTL"},
-+	{"Speaker", NULL , "VOUTR"},
++	{"Speaker", NULL, "VOUTL"},
++	{"Speaker", NULL, "VOUTR"},
 +
 +	/* mic is connected to VINM */
 +	{"VINM", NULL, "Mic Jack"},
@@ -27767,9 +27778,9 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	{NULL, NULL, NULL},
 +};
 +
-+static const char *jack_function[] = {"Off", "Headset", "Headphone"};
-+static const char *spk_function[] = {"On", "Off"};
-+static const char *input_select[] = {"Internal Mic", "External Mic"};
++static const char *jack_function[] = { "Off", "Headset", "Headphone" };
++static const char *spk_function[] = { "On", "Off" };
++static const char *input_select[] = { "Internal Mic", "External Mic" };
 +static const struct soc_enum magician_enum[] = {
 +	SOC_ENUM_SINGLE_EXT(4, jack_function),
 +	SOC_ENUM_SINGLE_EXT(2, spk_function),
@@ -27777,9 +27788,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +};
 +
 +static const struct snd_kcontrol_new uda1380_magician_controls[] = {
-+	SOC_ENUM_EXT("Jack Function", magician_enum[0], magician_get_jack, magician_set_jack),
-+	SOC_ENUM_EXT("Speaker Function", magician_enum[1], magician_get_spk, magician_set_spk),
-+	SOC_ENUM_EXT("Input Select", magician_enum[2], magician_get_input, magician_set_input),
++	SOC_ENUM_EXT("Jack Function", magician_enum[0], magician_get_jack,
++			magician_set_jack),
++	SOC_ENUM_EXT("Speaker Function", magician_enum[1], magician_get_spk,
++			magician_set_spk),
++	SOC_ENUM_EXT("Input Select", magician_enum[2], magician_get_input,
++			magician_set_input),
 +};
 +
 +/*
@@ -27789,8 +27803,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +{
 +	int i, err;
 +
-+printk("magician_uda1380_init\n");
-+
 +	/* NC codec pins */
 +	snd_soc_dapm_set_endpoint(codec, "VOUTLHP", 0);
 +	snd_soc_dapm_set_endpoint(codec, "VOUTRHP", 0);
@@ -27798,18 +27810,20 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	/* Add magician specific controls */
 +	for (i = 0; i < ARRAY_SIZE(uda1380_magician_controls); i++) {
 +		if ((err = snd_ctl_add(codec->card,
-+				snd_soc_cnew(&uda1380_magician_controls[i], codec, NULL))) < 0)
++				snd_soc_cnew(&uda1380_magician_controls[i],
++				codec, NULL))) < 0)
 +			return err;
 +	}
 +
 +	/* Add magician specific widgets */
-+	for(i = 0; i < ARRAY_SIZE(uda1380_dapm_widgets); i++) {
++	for (i = 0; i < ARRAY_SIZE(uda1380_dapm_widgets); i++) {
 +		snd_soc_dapm_new_control(codec, &uda1380_dapm_widgets[i]);
 +	}
 +
 +	/* Set up magician specific audio path interconnects */
-+	for(i = 0; audio_map[i][0] != NULL; i++) {
-+		snd_soc_dapm_connect_input(codec, audio_map[i][0], audio_map[i][1], audio_map[i][2]);
++	for (i = 0; audio_map[i][0] != NULL; i++) {
++		snd_soc_dapm_connect_input(codec, audio_map[i][0],
++				audio_map[i][1], audio_map[i][2]);
 +	}
 +
 +	snd_soc_dapm_sync_endpoints(codec);
@@ -27858,24 +27872,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +
 +static struct platform_device *magician_snd_device;
 +
-+static irqreturn_t magician_ep_plug_isr (int isr, void *data)
-+{
-+	//struct snd_soc_codec *codec = data;
-+	int ep_state = magician_ep_state(&magician_cpld);
-+
-+	printk("earphone: %d\n", ep_state);
-+
-+	if (ep_state) {
-+		//snd_soc_dapm_set_endpoint(codec, "Headphone Jack", 1);
-+		magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_EP_POWER);
-+	} else {
-+		magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_EP_POWER);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
 +static int __init magician_init(void)
 +{
 +	int ret;
@@ -27883,18 +27879,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +	if (!machine_is_magician())
 +		return -ENODEV;
 +
-+printk("snd-soc-magician init\n");
-+
 +	magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_CODEC_POWER);
 +
-+// we probably need to have the clock running here:
-+
++	/* we may need to have the clock running here - pH5 */
 +	magician_egpio_enable(&magician_cpld, EGPIO_NR_MAGICIAN_CODEC_RESET);
 +	udelay(5);
 +	magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_CODEC_RESET);
-+
-+	/* correct place? we'll need it to talk to the uda1380 */
-+	request_module("i2c-pxa");
 +
 +	magician_snd_device = platform_device_alloc("soc-audio", -1);
 +	if (!magician_snd_device)
@@ -27906,9 +27896,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +
 +	if (ret)
 +		platform_device_put(magician_snd_device);
-+	request_irq(IRQ_MAGICIAN_EP, magician_ep_plug_isr, IRQF_SAMPLE_RANDOM,
-+		     "EP plug", NULL);
-+	/*&magician_snd_devdata->codec_dev->codec->parent(snd_soc_device)->codec*/
 +
 +	pxa_gpio_mode(GPIO53_SSP1SYSCLK_MD);
 +	pxa_gpio_mode(GPIO26_SSP1RX_MD);
@@ -27922,7 +27909,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +static void __exit magician_exit(void)
 +{
 +	platform_device_unregister(magician_snd_device);
-+	free_irq(IRQ_MAGICIAN_EP, NULL);
 +
 +	magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_SPK_POWER);
 +	magician_egpio_disable(&magician_cpld, EGPIO_NR_MAGICIAN_EP_POWER);
@@ -27939,7 +27925,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,270 @@
 +/*
 + * ltemplate-ac97.c -- AC97 support for the xxx chip.
@@ -28214,7 +28200,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,784 @@
 +/*
 + * template-codec.c  --  Template Codec  Audio driver
@@ -29003,7 +28989,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,223 @@
 +/*
 + *  This program is free software; you can redistribute  it and/or modify it
@@ -29231,7 +29217,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,166 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -29402,7 +29388,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,19 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -29426,7 +29412,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,21 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -29452,7 +29438,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,161 @@
 +/*
 + *  This program is free software; you can redistribute  it and/or modify it
@@ -29618,7 +29604,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,720 @@
 +/*
 + * at91-i2s.c  --  ALSA SoC I2S Audio Layer Platform driver
@@ -30343,7 +30329,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,432 @@
 +/*
 + * at91-pcm.c -- ALSA PCM interface for the Atmel AT91 SoC
@@ -30780,7 +30766,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,72 @@
 +/*
 + * at91-pcm.h - ALSA PCM interface for the Atmel AT91 SoC
@@ -30857,8 +30843,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,42 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,43 @@
 +/*
 + * linux/sound/arm/pxa2xx-ssp.h
 + *
@@ -30880,6 +30866,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h
 +#define PXA2XX_SSP_CLK_EXT	1
 +#define PXA2XX_SSP_CLK_NET	2
 +#define PXA2XX_SSP_CLK_AUDIO	3
++#define PXA2XX_SSP_CLK_NET_PLL	4
 +
 +/* SSP audio dividers */
 +#define PXA2XX_SSP_AUDIO_DIV_ACDS		0
@@ -30904,7 +30891,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,22 @@
 +/*
 + * linux/sound/arm/pxa2xx-ac97.h
@@ -30931,7 +30918,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,20 @@
 +/*
 + * linux/sound/arm/pxa2xx-i2s.h
@@ -30956,8 +30943,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,30 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,31 @@
 +menu "SoC Audio for the Samsung S3C24XX"
 +
 +config SND_S3C24XX_SOC
@@ -30979,10 +30966,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig
 +	help
 +	  Say Y if you want to add support for SoC audio on SMDK2440
 +
-+config SND_S3C24XX_SOC_SMDK2440_WM8753
-+	tristate "SoC I2S Audio support for S3C24XX - WM8753"
-+	depends on SND_S3C24XX_SOC && MACH_SMDK
++config SND_S3C24XX_SOC_NEO1973_WM8753
++	tristate "SoC I2S Audio support for NEO1973 - WM8753"
++	depends on SND_S3C24XX_SOC && MACH_GTA01
 +	select SND_S3C24XX_SOC_I2S
++	select SND_SOC_WM8753
 +	help
 +	  Say Y if you want to add support for SoC audio on smdk2440
 +	  with the WM8753.
@@ -30991,7 +30979,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,13 @@
 +# S3c24XX Platform Support
 +snd-soc-s3c24xx-objs := s3c24xx-pcm.o
@@ -31002,15 +30990,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile
 +
 +# S3C24XX Machine Support
 +snd-soc-smdk2440-objs := smdk2440.o
-+snd-soc-smdk2440-wm8753-objs := smdk2440_wm8753.o
++snd-soc-neo1973-wm8753-objs := neo1973_wm8753.o
 +
 +obj-$(CONFIG_SND_S3C24XX_SOC_SMDK2440) += snd-soc-smdk2440.o
-+obj-$(CONFIG_SND_S3C24XX_SOC_SMDK2440_WM8753) += snd-soc-smdk2440-wm8753.o
++obj-$(CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753) += snd-soc-neo1973-wm8753.o
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,484 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,439 @@
 +/*
 + * s3c24xx-i2s.c  --  ALSA Soc Audio Layer
 + *
@@ -31071,13 +31059,13 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +	.name = "I2S PCM Stereo in"
 +};
 +
-+static s3c24xx_pcm_dma_params_t s3c24xx_i2s_pcm_stereo_out = {
++static struct s3c24xx_pcm_dma_params s3c24xx_i2s_pcm_stereo_out = {
 +	.client		= &s3c24xx_dma_client_out,
 +	.channel	= DMACH_I2S_OUT,
 +	.dma_addr	= S3C2410_PA_IIS + S3C2410_IISFIFO
 +};
 +
-+static s3c24xx_pcm_dma_params_t s3c24xx_i2s_pcm_stereo_in = {
++static struct s3c24xx_pcm_dma_params s3c24xx_i2s_pcm_stereo_in = {
 +	.client		= &s3c24xx_dma_client_in,
 +	.channel	= DMACH_I2S_IN,
 +	.dma_addr	= S3C2410_PA_IIS + S3C2410_IISFIFO
@@ -31085,15 +31073,15 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +
 +struct s3c24xx_i2s_info {
 +	void __iomem	*regs;
-+	struct clk 		*iis_clk;
++	struct clk	*iis_clk;
 +};
 +static struct s3c24xx_i2s_info s3c24xx_i2s;
 +
 +static void s3c24xx_snd_txctrl(int on)
 +{
-+	unsigned long iisfcon;
-+	unsigned long iiscon;
-+	unsigned long iismod;
++	u32 iisfcon;
++	u32 iiscon;
++	u32 iismod;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31118,7 +31106,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +		 * Samsung supplied kernel, this should allow the DMA
 +		 * engine and FIFOs to reset. If this isn't allowed, the
 +		 * DMA engine will simply freeze randomly.
-+         */
++		 */
 +
 +		iisfcon &= ~S3C2410_IISFCON_TXENABLE;
 +		iisfcon &= ~S3C2410_IISFCON_TXDMA;
@@ -31132,14 +31120,13 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +	}
 +
 +	DBG("w: IISCON: %lx IISMOD: %lx IISFCON: %lx\n", iiscon, iismod, iisfcon);
-+
 +}
 +
 +static void s3c24xx_snd_rxctrl(int on)
 +{
-+	unsigned long iisfcon;
-+	unsigned long iiscon;
-+	unsigned long iismod;
++	u32 iisfcon;
++	u32 iiscon;
++	u32 iismod;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31159,12 +31146,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +		writel(iisfcon, s3c24xx_i2s.regs + S3C2410_IISFCON);
 +		writel(iiscon,  s3c24xx_i2s.regs + S3C2410_IISCON);
 +	} else {
-+        /* note, we have to disable the FIFOs otherwise bad things
-+         * seem to happen when the DMA stops. According to the
-+         * Samsung supplied kernel, this should allow the DMA
-+         * engine and FIFOs to reset. If this isn't allowed, the
-+         * DMA engine will simply freeze randomly.
-+         */
++		/* note, we have to disable the FIFOs otherwise bad things
++		 * seem to happen when the DMA stops. According to the
++		 * Samsung supplied kernel, this should allow the DMA
++		 * engine and FIFOs to reset. If this isn't allowed, the
++		 * DMA engine will simply freeze randomly.
++		 */
 +
 +        iisfcon &= ~S3C2410_IISFCON_RXENABLE;
 +        iisfcon &= ~S3C2410_IISFCON_RXDMA;
@@ -31178,19 +31165,16 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +	}
 +
 +	DBG("w: IISCON: %lx IISMOD: %lx IISFCON: %lx\n", iiscon, iismod, iisfcon);
-+
 +}
 +
-+/* s3c24xx_snd_lrsync
-+ *
++/*
 + * Wait for the LR signal to allow synchronisation to the L/R clock
-+ * from the DAC. May only be needed for slave mode.
-+*/
-+
-+static int s3c24xx_snd_lrsync()
++ * from the codec. May only be needed for slave mode.
++ */
++static int s3c24xx_snd_lrsync(void)
 +{
-+	unsigned long iiscon;
-+	int timeout = 10000;
++	u32 iiscon;
++	long timeout = jiffies + msecs_to_jiffies(5);
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31199,30 +31183,21 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +		if (iiscon & S3C2410_IISCON_LRINDEX)
 +			break;
 +
-+		if (--timeout < 0)
++		if (timeout < jiffies)
 +			return -ETIMEDOUT;
 +	}
 +
 +	return 0;
 +}
 +
-+/* s3c24xx_snd_is_clkmaster()
-+ *
++/*
 + * Check whether CPU is the master or slave
-+*/
-+
-+static inline int s3c24xx_snd_is_clkmaster()
++ */
++static inline int s3c24xx_snd_is_clkmaster(void)
 +{
 +	DBG("Entered %s\n", __FUNCTION__);
 +
 +	return (readl(s3c24xx_i2s.regs + S3C2410_IISMOD) & S3C2410_IISMOD_SLAVE) ? 0:1;
-+}
-+
-+static int s3c24xx_i2s_startup(struct snd_pcm_substream *substream)
-+{
-+	DBG("Entered %s\n", __FUNCTION__);
-+
-+	return 0;
 +}
 +
 +/*
@@ -31231,7 +31206,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +static int s3c24xx_i2s_set_fmt(struct snd_soc_cpu_dai *cpu_dai,
 +		unsigned int fmt)
 +{
-+	unsigned long iismod;
++	u32 iismod;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31267,7 +31242,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +				struct snd_pcm_hw_params *params)
 +{
 +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	unsigned long iismod;
++	u32 iismod;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31296,7 +31271,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +static int s3c24xx_i2s_trigger(struct snd_pcm_substream *substream, int cmd)
 +{
 +	int ret = 0;
-+	unsigned long flags;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31325,35 +31299,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +		break;
 +	default:
 +		ret = -EINVAL;
++		break;
 +	}
 +
 +exit_err:
 +	return ret;
 +}
-+
-+static void s3c24xx_i2s_shutdown(struct snd_pcm_substream *substream)
-+{
-+	unsigned long iismod, iiscon, iisfcon;
-+
-+	DBG("Entered %s\n", __FUNCTION__);
-+
-+}
-+
-+#ifdef CONFIG_PM
-+static int s3c24xx_i2s_suspend(struct platform_device *dev,
-+	struct snd_soc_cpu_dai *dai)
-+{
-+}
-+
-+static int s3c24xx_i2s_resume(struct platform_device *pdev,
-+	struct snd_soc_cpu_dai *dai)
-+{
-+}
-+
-+#else
-+#define s3c24xx_i2s_suspend	NULL
-+#define s3c24xx_i2s_resume	NULL
-+#endif
 +
 +/*
 + * Set S3C24xx Clock source
@@ -31361,7 +31312,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +static int s3c24xx_i2s_set_sysclk(struct snd_soc_cpu_dai *cpu_dai,
 +	int clk_id, unsigned int freq, int dir)
 +{
-+	unsigned long iismod = readl(s3c24xx_i2s.regs + S3C2410_IISMOD);
++	u32 iismod = readl(s3c24xx_i2s.regs + S3C2410_IISMOD);
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31387,7 +31338,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +static int s3c24xx_i2s_set_clkdiv(struct snd_soc_cpu_dai *cpu_dai,
 +	int div_id, int div)
 +{
-+	unsigned long reg;
++	u32 reg;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31412,20 +31363,17 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +	return 0;
 +}
 +
-+
-+/* To avoid duplicating clock code, allow machine driver to
++/*
++ * To avoid duplicating clock code, allow machine driver to
 + * get the clockrate from here.
 + */
-+
-+unsigned long s3c24xx_i2s_get_clockrate(void)
++u32 s3c24xx_i2s_get_clockrate(void)
 +{
 +	return clk_get_rate(s3c24xx_i2s.iis_clk);
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c24xx_i2s_get_clockrate);
 +
-+static unsigned int s3c24xx_i2s_probe(struct platform_device *pdev,
-+	struct snd_soc_cpu_dai *dai)
++static int s3c24xx_i2s_probe(struct platform_device *pdev)
 +{
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31433,7 +31381,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +	if (s3c24xx_i2s.regs == NULL)
 +		return -ENXIO;
 +
-+	s3c24xx_i2s.iis_clk=clk_get(pdev, "iis");
++	s3c24xx_i2s.iis_clk=clk_get(&pdev->dev, "iis");
 +	if (s3c24xx_i2s.iis_clk == NULL) {
 +		DBG("failed to get iis_clock\n");
 +		return -ENODEV;
@@ -31465,8 +31413,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +	.id = 0,
 +	.type = SND_SOC_DAI_I2S,
 +	.probe = s3c24xx_i2s_probe,
-+	.suspend = s3c24xx_i2s_suspend,
-+	.resume = s3c24xx_i2s_resume,
 +	.playback = {
 +		.channels_min = 2,
 +		.channels_max = 2,
@@ -31478,8 +31424,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +		.rates = S3C24XX_I2S_RATES,
 +		.formats = SNDRV_PCM_FMTBIT_S8 | SNDRV_PCM_FMTBIT_S16_LE,},
 +	.ops = {
-+		.startup = s3c24xx_i2s_startup,
-+		.shutdown = s3c24xx_i2s_shutdown,
 +		.trigger = s3c24xx_i2s_trigger,
 +		.hw_params = s3c24xx_i2s_hw_params,},
 +	.dai_ops = {
@@ -31488,7 +31432,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +		.set_sysclk = s3c24xx_i2s_set_sysclk,
 +	},
 +};
-+
 +EXPORT_SYMBOL_GPL(s3c24xx_i2s_dai);
 +
 +/* Module information */
@@ -31498,7 +31441,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,35 @@
 +/*
 + * s3c24xx-i2s.c  --  ALSA Soc Audio Layer
@@ -31532,14 +31475,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h
 +#define S3C24XX_PRESCALE(a,b) \
 +	(((a - 1) << S3C2410_IISPSR_INTSHIFT) | ((b - 1) << S3C2410_IISPSR_EXTSHFIT))
 +
-+unsigned long s3c24xx_i2s_get_clockrate(void);
++u32 s3c24xx_i2s_get_clockrate(void);
 +
 +#endif /*S3C24XXI2S_H_*/
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,484 @@
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,467 @@
 +/*
 + * s3c24xx-pcm.c  --  ALSA Soc Audio Layer
 + *
@@ -31588,18 +31531,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +#endif
 +
 +static const struct snd_pcm_hardware s3c24xx_pcm_hardware = {
-+	.info				= ( SNDRV_PCM_INFO_INTERLEAVED |
++	.info				= SNDRV_PCM_INFO_INTERLEAVED |
 +				    	SNDRV_PCM_INFO_BLOCK_TRANSFER |
 +				    	SNDRV_PCM_INFO_MMAP |
-+				    	SNDRV_PCM_INFO_MMAP_VALID |
-+				    	0),
-+	.formats			= ( SNDRV_PCM_FMTBIT_S16_LE |
++				    	SNDRV_PCM_INFO_MMAP_VALID,
++	.formats			= SNDRV_PCM_FMTBIT_S16_LE |
 +				    	SNDRV_PCM_FMTBIT_U16_LE |
 +				    	SNDRV_PCM_FMTBIT_U8 |
-+				    	SNDRV_PCM_FMTBIT_S8 ),
-+	.rates				= SNDRV_PCM_RATE_44100,
-+	.rate_min			= 8000,
-+	.rate_max			= 48000,
++				    	SNDRV_PCM_FMTBIT_S8,
 +	.channels_min		= 2,
 +	.channels_max		= 2,
 +	.buffer_bytes_max	= 128*1024,
@@ -31619,7 +31558,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	dma_addr_t		 			dma_start;
 +	dma_addr_t		 			dma_pos;
 +	dma_addr_t		 			dma_end;
-+	s3c24xx_pcm_dma_params_t 	*params;
++	struct s3c24xx_pcm_dma_params 	*params;
 +};
 +
 +/* s3c24xx_pcm_enqueue
@@ -31627,7 +31566,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 + * place a dma buffer onto the queue for the dma system
 + * to handle.
 +*/
-+
 +static void s3c24xx_pcm_enqueue(struct snd_pcm_substream *substream)
 +{
 +	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
@@ -31661,7 +31599,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	prtd->dma_pos = pos;
 +}
 +
-+void s3c24xx_audio_buffdone(struct s3c2410_dma_chan *channel,
++static void s3c24xx_audio_buffdone(struct s3c2410_dma_chan *channel,
 +							void *dev_id, int size,
 +							enum s3c2410_dma_buffresult result)
 +{
@@ -31691,12 +31629,16 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	struct snd_pcm_runtime *runtime = substream->runtime;
 +	struct s3c24xx_runtime_data *prtd = runtime->private_data;
 +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	s3c24xx_pcm_dma_params_t *dma = rtd->dai->cpu_dai->dma_data;
++	struct s3c24xx_pcm_dma_params *dma = rtd->dai->cpu_dai->dma_data;
 +	unsigned long totbytes = params_buffer_bytes(params);
-+	unsigned long flags;
 +	int ret=0;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
++
++	/* return if this is a bufferless transfer e.g.
++	 * codec <--> BT codec or GSM modem -- lg FIXME */
++	if (!dma)
++		return 0;
 +
 +	/* prepare DMA */
 +	prtd->params = dma;
@@ -31714,7 +31656,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	/* channel needs configuring for mem=>device, increment memory addr,
 +	 * sync to pclk, half-word transfers to the IIS-FIFO. */
-+
 +	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 +		s3c2410_dma_devconfig(prtd->params->channel,
 +						S3C2410_DMASRC_MEM, S3C2410_DISRCC_INC |
@@ -31738,14 +31679,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	runtime->dma_bytes = totbytes;
 +
-+	spin_lock_irqsave(&prtd->lock, flags);
++	spin_lock_irq(&prtd->lock);
 +	prtd->dma_loaded	= 0;
 +	prtd->dma_limit	= runtime->hw.periods_min;
 +	prtd->dma_period	= params_period_bytes(params);
 +	prtd->dma_start	= runtime->dma_addr;
 +	prtd->dma_pos	= prtd->dma_start;
 +	prtd->dma_end	= prtd->dma_start + totbytes;
-+	spin_unlock_irqrestore(&prtd->lock, flags);
++	spin_unlock_irq(&prtd->lock);
 +
 +	return 0;
 +}
@@ -31756,7 +31697,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
-+	// TODO - do we need to ensure DMA flushed
++	/* TODO - do we need to ensure DMA flushed */
 +	snd_pcm_set_runtime_buffer(substream, NULL);
 +
 +	if(prtd->params) {
@@ -31764,18 +31705,22 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +		prtd->params = NULL;
 +	}
 +
++	return 0;
 +}
 +
 +static int s3c24xx_pcm_prepare(struct snd_pcm_substream *substream)
 +{
 +	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
-+	struct snd_pcm_runtime *runtime = substream->runtime;
 +	int ret = 0;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
-+	/* flush the DMA channel */
++	/* return if this is a bufferless transfer e.g.
++	 * codec <--> BT codec or GSM modem -- lg FIXME */
++	if (!prtd->params)
++	 	return 0;
 +
++	/* flush the DMA channel */
 +	s3c2410_dma_ctrl(prtd->params->channel, S3C2410_DMAOP_FLUSH);
 +	prtd->dma_loaded = 0;
 +	prtd->dma_pos = prtd->dma_start;
@@ -31790,11 +31735,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +{
 +	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
 +	int ret = 0;
-+	unsigned long flags;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
-+	spin_lock_irqsave(&prtd->lock, flags);
++	spin_lock(&prtd->lock);
 +
 +	switch (cmd) {
 +	case SNDRV_PCM_TRIGGER_START:
@@ -31814,9 +31758,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	default:
 +		ret = -EINVAL;
++		break;
 +	}
 +
-+	spin_unlock_irqrestore(&prtd->lock, flags);
++	spin_unlock(&prtd->lock);
 +
 +	return ret;
 +}
@@ -31825,14 +31770,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +{
 +	struct snd_pcm_runtime *runtime = substream->runtime;
 +	struct s3c24xx_runtime_data *prtd = runtime->private_data;
-+	unsigned long flags;
 +	unsigned long res;
 +	dma_addr_t src, dst;
-+	snd_pcm_uframes_t ret;
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
-+	spin_lock_irqsave(&prtd->lock, flags);
++	spin_lock(&prtd->lock);
 +	s3c2410_dma_getposition(prtd->params->channel, &src, &dst);
 +
 +	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
@@ -31840,7 +31783,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	else
 +		res = src - prtd->dma_start;
 +
-+	spin_unlock_irqrestore(&prtd->lock, flags);
++	spin_unlock(&prtd->lock);
 +
 +	DBG("Pointer %x %x\n",src,dst);
 +
@@ -31850,28 +31793,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	 * callled... (todo - fix )
 +	 */
 +
-+	if (res > (prtd->dma_end - prtd->dma_start))
-+	//	DBG("%s: %lx,%lx (%lx) from %lx,%lx\n", __FUNCTION__,
-+	//	    (long)src, (long)dst, res,
-+	//	    (long)prtd->dma_start, (long)prtd->dma_end);
-+
 +	if (res >= snd_pcm_lib_buffer_bytes(substream)) {
-+	//	DBG("%s: %lx,%lx (%lx) from %lx,%lx\n", __FUNCTION__,
-+	//	    (long)src, (long)dst, res,
-+	//	    (long)prtd->dma_start, (long)prtd->dma_end);
-+
-+	//	if (res > snd_pcm_lib_buffer_bytes(substream))
-+	//		DBG("%s: res %lx >= %lx\n", __FUNCTION__,
-+	//		    res, (long)snd_pcm_lib_buffer_bytes(substream));
-+
 +		if (res == snd_pcm_lib_buffer_bytes(substream))
 +			res = 0;
 +	}
 +
-+	ret = bytes_to_frames(substream->runtime, res);
-+
-+	return ret;
-+
++	return bytes_to_frames(substream->runtime, res);;
 +}
 +
 +static int s3c24xx_pcm_open(struct snd_pcm_substream *substream)
@@ -31885,8 +31812,8 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	snd_soc_set_runtime_hwparams(substream, &s3c24xx_pcm_hardware);
 +
-+	if((prtd = kzalloc(sizeof(struct s3c24xx_runtime_data),
-+		GFP_KERNEL)) == NULL) {
++	prtd = kzalloc(sizeof(struct s3c24xx_runtime_data), GFP_KERNEL);
++	if(prtd == NULL) {
 +		ret = -ENOMEM;
 +		goto out;
 +	}
@@ -31907,15 +31834,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	if(prtd)
 +		kfree(prtd);
-+	else {
++	else
 +		DBG("s3c24xx_pcm_close called with prtd == NULL\n");
-+	}
 +
 +	return 0;
 +}
 +
-+static int
-+s3c24xx_pcm_mmap(struct snd_pcm_substream *substream, struct vm_area_struct *vma)
++static int s3c24xx_pcm_mmap(struct snd_pcm_substream *substream,
++	struct vm_area_struct *vma)
 +{
 +	struct snd_pcm_runtime *runtime = substream->runtime;
 +
@@ -31927,7 +31853,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +                                     runtime->dma_bytes);
 +}
 +
-+struct snd_pcm_ops s3c24xx_pcm_ops = {
++static struct snd_pcm_ops s3c24xx_pcm_ops = {
 +	.open		= s3c24xx_pcm_open,
 +	.close		= s3c24xx_pcm_close,
 +	.ioctl		= snd_pcm_lib_ioctl,
@@ -31981,9 +31907,9 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	}
 +}
 +
-+static u64 s3c24xx_pcm_dmamask = 0xffffffff;
++static u64 s3c24xx_pcm_dmamask = DMA_32BIT_MASK;
 +
-+int s3c24xx_pcm_new(struct snd_card *card, struct snd_soc_codec_dai *dai,
++static int s3c24xx_pcm_new(struct snd_card *card, struct snd_soc_codec_dai *dai,
 +	struct snd_pcm *pcm)
 +{
 +	int ret = 0;
@@ -32027,31 +31953,31 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,33 @@
 +/*
-+ * linux/sound/arm/pxa2xx-pcm.h -- ALSA PCM interface for the Intel PXA2xx chip
++ *  s3c24xx-pcm.h --
 + *
-+ * Author:	Nicolas Pitre
-+ * Created:	Nov 30, 2004
-+ * Copyright:	MontaVista Software, Inc.
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ *
++ *  ALSA PCM interface for the Samsung S3C24xx CPU
 + */
 +
-+#ifndef _PXA2XX_PCM_H
-+#define _PXA2XX_PCM_H
++#ifndef _S3C24XX_PCM_H
++#define _S3C24XX_PCM_H
 +
 +#define ST_RUNNING		(1<<0)
 +#define ST_OPENED		(1<<1)
 +
-+typedef struct {
++struct s3c24xx_pcm_dma_params {
 +	struct s3c2410_dma_client *client;			/* stream identifier */
 +	int channel;						/* Channel ID */
 +	dma_addr_t dma_addr;
-+} s3c24xx_pcm_dma_params_t;
++};
 +
 +#define S3C24XX_DAI_I2S			0
 +
@@ -32065,7 +31991,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,320 @@
 +/*
 + * smdk2440.c  --  ALSA Soc Audio Layer
@@ -32390,7 +32316,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,724 @@
 +/*
 + * wm8956.c  --  WM8956 ALSA SoC Audio driver
@@ -33119,7 +33045,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,116 @@
 +/*
 + * wm8956.h  --  WM8956 Soc Audio driver
@@ -33240,7 +33166,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,766 @@
 +/*
 + * wm8960.c  --  WM8960 ALSA SoC Audio driver
@@ -34011,7 +33937,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,121 @@
 +/*
 + * wm8960.h  --  WM8960 Soc Audio driver
@@ -34137,7 +34063,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,335 @@
 +/*
 + * smdk2440.c  --  ALSA Soc Audio Layer
@@ -34474,736 +34400,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("ALSA SoC SMDK2440");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8753.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8753.c	2007-01-31 21:36:05.000000000 +0100
-@@ -0,0 +1,721 @@
-+/*
-+ * smdk2440.c  --  SoC audio for smdk2440
-+ *
-+ * Copyright 2005 Wolfson Microelectronics PLC.
-+ * Author: Graeme Gregory
-+ *         graeme.gregory@wolfsonmicro.com or linux@wolfsonmicro.com
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ *  Revision history
-+ *    20th Jan 2007   Initial version.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/timer.h>
-+#include <linux/interrupt.h>
-+#include <linux/platform_device.h>
-+#include <linux/i2c.h>
-+#include <sound/driver.h>
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/soc.h>
-+#include <sound/soc-dapm.h>
-+
-+#include <asm/mach-types.h>
-+#include <asm/hardware/scoop.h>
-+#include <asm/arch/regs-iis.h>
-+#include <asm/arch/regs-clock.h>
-+#include <asm/arch/regs-gpio.h>
-+#include <asm/arch/hardware.h>
-+#include <asm/arch/audio.h>
-+#include <asm/io.h>
-+#include <asm/arch/spi-gpio.h>
-+#include "../codecs/wm8753.h"
-+#include "lm4857.h"
-+#include "s3c24xx-pcm.h"
-+#include "s3c24xx-i2s.h"
-+
-+#define SMDK2440_DEBUG 0
-+#if SMDK2440_DEBUG
-+#define DBG(x...) printk(KERN_DEBUG x)
-+#else
-+#define DBG(x...)
-+#endif
-+
-+/* define the scenarios */
-+#define NEO_AUDIO_OFF					0
-+#define NEO_GSM_CALL_AUDIO_HANDSET		1
-+#define NEO_GSM_CALL_AUDIO_HEADSET		2
-+#define NEO_GSM_CALL_AUDIO_BLUETOOTH	3
-+#define NEO_STEREO_TO_SPEAKERS			4
-+#define NEO_STEREO_TO_HEADPHONES		5
-+
-+static struct snd_soc_machine smdk2440;
-+static struct i2c_client *i2c;
-+
-+static int smdk2440_hifi_hw_params(struct snd_pcm_substream *substream,
-+	struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
-+	struct snd_soc_cpu_dai *cpu_dai = rtd->dai->cpu_dai;
-+	unsigned int pll_out = 0, bclk = 0;
-+	int ret = 0;
-+	unsigned long iis_clkrate;
-+
-+	iis_clkrate = s3c24xx_i2s_get_clockrate();
-+
-+	switch (params_rate(params)) {
-+	case 8000:
-+	case 16000:
-+		pll_out = 12288000;
-+		break;
-+	case 48000:
-+		bclk = WM8753_BCLK_DIV_4;
-+		pll_out = 12288000;
-+		break;
-+	case 96000:
-+		bclk = WM8753_BCLK_DIV_2;
-+		pll_out = 12288000;
-+		break;
-+	case 11025:
-+		bclk = WM8753_BCLK_DIV_16;
-+		pll_out = 11289600;
-+		break;
-+	case 22050:
-+		bclk = WM8753_BCLK_DIV_8;
-+		pll_out = 11289600;
-+		break;
-+	case 44100:
-+		bclk = WM8753_BCLK_DIV_4;
-+		pll_out = 11289600;
-+		break;
-+	case 88200:
-+		bclk = WM8753_BCLK_DIV_2;
-+		pll_out = 11289600;
-+		break;
-+	}
-+
-+	/* set codec DAI configuration */
-+	ret = codec_dai->dai_ops.set_fmt(codec_dai,
-+		SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set cpu DAI configuration */
-+	ret = cpu_dai->dai_ops.set_fmt(cpu_dai,
-+		SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set the codec system clock for DAC and ADC */
-+	ret = codec_dai->dai_ops.set_sysclk(codec_dai, WM8753_MCLK, pll_out,
-+		SND_SOC_CLOCK_IN);
-+	if (ret < 0)
-+		return ret;
-+
-+    /* set MCLK division for sample rate */
-+    ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai, S3C24XX_DIV_MCLK,
-+        S3C2410_IISMOD_32FS );
-+    if (ret < 0)
-+        return ret;
-+
-+	/* set codec BCLK division for sample rate */
-+	ret = codec_dai->dai_ops.set_clkdiv(codec_dai, WM8753_BCLKDIV, bclk);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set prescaler division for sample rate */
-+	ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai, S3C24XX_DIV_PRESCALER,
-+		S3C24XX_PRESCALE(4,4));
-+	if (ret < 0)
-+		return ret;
-+
-+	/* codec PLL input is PCLK/4 */
-+	ret = codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL1, iis_clkrate/4, pll_out);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int smdk2440_hifi_hw_free(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
-+
-+	/* disable the PLL */
-+	return codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL1, 0, 0);
-+}
-+
-+/*
-+ * smdk2440 WM8753 HiFi DAI opserations.
-+ */
-+static struct snd_soc_ops smdk2440_hifi_ops = {
-+	.hw_params = smdk2440_hifi_hw_params,
-+	.hw_free = smdk2440_hifi_hw_free,
-+};
-+
-+static int smdk2440_voice_startup(struct snd_pcm_substream *substream)
-+{
-+	return 0;
-+}
-+
-+static void smdk2440_voice_shutdown(struct snd_pcm_substream *substream)
-+{
-+}
-+
-+static int smdk2440_voice_hw_params(struct snd_pcm_substream *substream,
-+	struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
-+	struct snd_soc_cpu_dai *cpu_dai = rtd->dai->cpu_dai;
-+	unsigned int pcmdiv = 0;
-+	int ret = 0;
-+	unsigned long iis_clkrate;
-+// gg where is sysclk coming from for voice ??
-+	iis_clkrate = s3c24xx_i2s_get_clockrate();
-+
-+	if (params_rate(params) != 8000)
-+		return -EINVAL;
-+	if(params_channels(params) != 1)
-+		return -EINVAL;
-+
-+	pcmdiv = WM8753_PCM_DIV_6; /* 2.048 MHz */
-+
-+// gg check mode (DSP_B) against CSR datasheet
-+	/* set codec DAI configuration */
-+	ret = codec_dai->dai_ops.set_fmt(codec_dai, SND_SOC_DAIFMT_DSP_B |
-+		SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set the codec system clock for DAC and ADC */
-+	ret = codec_dai->dai_ops.set_sysclk(codec_dai, WM8753_PCMCLK, 12288000,
-+		SND_SOC_CLOCK_IN);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set codec PCM division for sample rate */
-+	ret = codec_dai->dai_ops.set_clkdiv(codec_dai, WM8753_PCMDIV, pcmdiv);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* configue and enable PLL for 12.288MHz output */
-+	ret = codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL2, iis_clkrate/4,
-+		12288000);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int smdk2440_voice_hw_free(struct snd_pcm_substream *substream)
-+{
-+	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-+	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
-+
-+	/* disable the PLL */
-+	return codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL2, 0, 0);
-+}
-+
-+static struct snd_soc_ops smdk2440_voice_ops = {
-+	.startup = smdk2440_voice_startup,
-+	.shutdown = smdk2440_voice_shutdown,
-+	.hw_params = smdk2440_voice_hw_params,
-+	.hw_free = smdk2440_voice_hw_free,
-+};
-+
-+static int smdk2440_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	return 0;
-+}
-+
-+static int smdk2440_resume(struct platform_device *pdev)
-+{
-+	return 0;
-+}
-+
-+static int smdk2440_probe(struct platform_device *pdev)
-+{
-+
-+	return 0;
-+}
-+
-+static int smdk2440_remove(struct platform_device *pdev)
-+{
-+	return 0;
-+}
-+
-+static int smdk2440_scenario = 0;
-+
-+static int smdk2440_get_scenario(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	ucontrol->value.integer.value[0] = smdk2440_scenario;
-+	return 0;
-+}
-+
-+static int set_scenario_endpoints(struct snd_soc_codec *codec, int scenario)
-+{
-+	switch(smdk2440_scenario) {
-+	case NEO_AUDIO_OFF:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
-+		break;
-+	case NEO_GSM_CALL_AUDIO_HANDSET:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 1);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  1);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     1);
-+		break;
-+	case NEO_GSM_CALL_AUDIO_HEADSET:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 1);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  1);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  1);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
-+		break;
-+	case NEO_GSM_CALL_AUDIO_BLUETOOTH:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
-+		break;
-+	case NEO_STEREO_TO_SPEAKERS:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
-+		break;
-+	case NEO_STEREO_TO_HEADPHONES:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
-+		break;
-+	default:
-+		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
-+		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
-+		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
-+	}
-+}
-+
-+static int smdk2440_set_scenario(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
-+
-+	if (smdk2440_scenario == ucontrol->value.integer.value[0])
-+		return 0;
-+
-+	smdk2440_scenario = ucontrol->value.integer.value[0];
-+
-+	set_scenario_endpoints(codec, smdk2440_scenario);
-+
-+	return 1;
-+}
-+
-+static u8 lm4857_regs[4] = {0x00, 0x40, 0x80, 0xC0};
-+
-+static void lm4857_write_regs( void )
-+{
-+	if( i2c_master_send(i2c, lm4857_regs, 4) != 4)
-+		printk(KERN_WARNING "lm4857: i2c write failed\n");
-+}
-+
-+static int lm4857_get_reg(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	int reg=kcontrol->private_value & 0xFF;
-+	int shift = (kcontrol->private_value >> 8) & 0x0F;
-+	int mask = (kcontrol->private_value >> 16) & 0xFF;
-+
-+	ucontrol->value.integer.value[0] = (lm4857_regs[reg] >> shift) & mask;
-+
-+	return 0;
-+}
-+
-+static int lm4857_set_reg(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	int reg = kcontrol->private_value & 0xFF;
-+	int shift = (kcontrol->private_value >> 8) & 0x0F;
-+	int mask = (kcontrol->private_value >> 16) & 0xFF;
-+
-+	if (((lm4857_regs[reg] >> shift ) & mask) ==
-+		ucontrol->value.integer.value[0])
-+		return 0;
-+
-+	lm4857_regs[reg] &= ~ (mask << shift);
-+	lm4857_regs[reg] |= ucontrol->value.integer.value[0] << shift;
-+
-+	lm4857_write_regs();
-+	return 1;
-+}
-+
-+static int lm4857_get_mode(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	u8 value = lm4857_regs[LM4857_CTRL] & 0x0F;
-+
-+	if (value)
-+		value -= 5;
-+
-+	ucontrol->value.integer.value[0] = value;
-+	return 0;
-+}
-+
-+static int lm4857_set_mode(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	u8 value = ucontrol->value.integer.value[0];
-+
-+	if (value)
-+		value += 5;
-+
-+	if ((lm4857_regs[LM4857_CTRL] & 0x0F) == value)
-+		return 0;
-+
-+	lm4857_regs[LM4857_CTRL] &= 0xF0;
-+	lm4857_regs[LM4857_CTRL] |= value;
-+
-+	lm4857_write_regs();
-+	return 1;
-+}
-+
-+static const struct snd_soc_dapm_widget wm8753_dapm_widgets[] = {
-+	SND_SOC_DAPM_LINE("Audio Out", NULL),
-+	SND_SOC_DAPM_LINE("GSM Line Out", NULL),
-+	SND_SOC_DAPM_LINE("GSM Line In", NULL),
-+	SND_SOC_DAPM_LINE("GSM Line Out", NULL),
-+	SND_SOC_DAPM_HP("Headset Jack", NULL),
-+};
-+
-+
-+/* example machine audio_mapnections */
-+static const char* audio_map[][3] = {
-+
-+	/* Connections to the lm4857 amp */
-+	{"Audio Out", NULL, "LOUT1"},
-+	{"Audio Out", NULL, "ROUT1"},
-+
-+	/* Connections to the GSM Module */
-+	{"GSM Line Out", NULL, "MONO1"},
-+	{"GSM Line Out", NULL, "MONO2"},
-+	{"RXP", NULL, "GSM Line In"},
-+	{"RXN", NULL, "GSM Line In"},
-+
-+	/* Connections to Headset */
-+	{"MIC1", NULL, "Mic Bias"},
-+	{"Mic Bias", NULL, "Headset Mic"},
-+
-+	/* Call Mic */
-+	{"MIC2", NULL, "Mic Bias"},
-+	{"MIC2N", NULL, "Mic Bias"},
-+	{"Mic Bias", NULL, "Call Mic"},
-+
-+	{NULL, NULL, NULL},
-+};
-+
-+static const char *lm4857_mode[] = {
-+	"Off",
-+	"Call Speaker",
-+	"Stereo Speakers",
-+	"Stereo Speakers + Headphones",
-+	"Headphones"
-+};
-+
-+static const struct soc_enum lm4857_mode_enum[] = {
-+	SOC_ENUM_SINGLE_EXT(5, lm4857_mode),
-+};
-+
-+static const char *neo_scenarios[] = {
-+	"Off",
-+	"GSM Handset",
-+	"GSM Headset",
-+	"GSM Bluetooth",
-+	"Speakers",
-+	"Headphones"
-+};
-+
-+static const struct soc_enum neo_scenario_enum[] = {
-+	SOC_ENUM_SINGLE_EXT(6,neo_scenarios),
-+};
-+
-+static const struct snd_kcontrol_new wm8753_smdk2440_controls[] = {
-+	SOC_SINGLE_EXT("Amp Left Playback Volume", LM4857_LVOL, 0, 31, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+	SOC_SINGLE_EXT("Amp Right Playback Volume", LM4857_RVOL, 0, 31, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+	SOC_SINGLE_EXT("Amp Mono Playback Volume", LM4857_MVOL, 0, 31, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+	SOC_ENUM_EXT("Amp Mode", lm4857_mode_enum[0],
-+		lm4857_get_mode, lm4857_set_mode),
-+	SOC_ENUM_EXT("Neo Mode", neo_scenario_enum[0],
-+		smdk2440_get_scenario, smdk2440_set_scenario),
-+	SOC_SINGLE_EXT("Amp Spk 3D Playback Switch", LM4857_LVOL, 5, 1, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+	SOC_SINGLE_EXT("Amp HP 3d Playback Switch", LM4857_RVOL, 5, 1, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+	SOC_SINGLE_EXT("Amp Fast Wakeup Playback Switch", LM4857_CTRL, 5, 1, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+	SOC_SINGLE_EXT("Amp Earpiece 6dB Playback Switch", LM4857_CTRL, 4, 1, 0,
-+		lm4857_get_reg, lm4857_set_reg),
-+};
-+
-+/*
-+ * This is an example machine initialisation for a wm8753 connected to a
-+ * smdk2440 II. It is missing logic to detect hp/mic insertions and logic
-+ * to re-route the audio in such an event.
-+ */
-+static int smdk2440_wm8753_init(struct snd_soc_codec *codec)
-+{
-+	int i, err;
-+
-+	/* set up NC codec pins */
-+	snd_soc_dapm_set_endpoint(codec, "LOUT2", 0);
-+	snd_soc_dapm_set_endpoint(codec, "ROUT2", 0);
-+	snd_soc_dapm_set_endpoint(codec, "OUT3",  0);
-+	snd_soc_dapm_set_endpoint(codec, "OUT4",  0);
-+	snd_soc_dapm_set_endpoint(codec, "LINE1", 0);
-+	snd_soc_dapm_set_endpoint(codec, "LINE2", 0);
-+
-+
-+	/* set endpoints to default mode */
-+	set_scenario_endpoints(codec, NEO_AUDIO_OFF);
-+
-+	/* Add smdk2440 specific widgets */
-+	for(i = 0; i < ARRAY_SIZE(wm8753_dapm_widgets); i++) {
-+		snd_soc_dapm_new_control(codec, &wm8753_dapm_widgets[i]);
-+	}
-+
-+	/* add smdk2440 specific controls */
-+	for (i = 0; i < ARRAY_SIZE(wm8753_smdk2440_controls); i++) {
-+		if ((err = snd_ctl_add(codec->card,
-+				snd_soc_cnew(&wm8753_smdk2440_controls[i],codec, NULL))) < 0)
-+			return err;
-+	}
-+
-+	/* set up smdk2440 specific audio path audio_mapnects */
-+	for(i = 0; audio_map[i][0] != NULL; i++) {
-+		snd_soc_dapm_connect_input(codec, audio_map[i][0], audio_map[i][1], audio_map[i][2]);
-+	}
-+
-+	snd_soc_dapm_sync_endpoints(codec);
-+	return 0;
-+}
-+
-+/* Do specific bluetooth PCM startup here */
-+static int bt_startup(struct snd_pcm_substream *substream)
-+{
-+	return 0;
-+}
-+
-+/* Do specific bluetooth PCM shutdown here */
-+static void bt_shutdown (struct snd_pcm_substream *substream)
-+{
-+}
-+
-+/* Do pecific bluetooth PCM hw params init here */
-+static int bt_hw_params(struct snd_pcm_substream *substream,
-+	struct snd_pcm_hw_params *params)
-+{
-+	return 0;
-+}
-+
-+/* Do specific bluetooth PCM hw params free here */
-+static int bt_hw_free(struct snd_pcm_substream *substream)
-+{
-+	return 0;
-+}
-+
-+#define BT_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_11025 |\
-+		SNDRV_PCM_RATE_22050 | SNDRV_PCM_RATE_44100)
-+
-+/*
-+ * BT Codec DAI
-+ */
-+static struct snd_soc_cpu_dai bt_dai =
-+{	.name = "Bluetooth",
-+	.id = 0,
-+	.type = SND_SOC_DAI_PCM,
-+	.playback = {
-+		.channels_min = 1,
-+		.channels_max = 1,
-+		.rates = BT_RATES,
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE,},
-+	.capture = {
-+		.channels_min = 1,
-+		.channels_max = 1,
-+		.rates = BT_RATES,
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE,},
-+	.ops = {
-+		.startup = bt_startup,
-+		.shutdown = bt_shutdown,
-+		.hw_params = bt_hw_params,
-+		.hw_free = bt_hw_free,
-+		},
-+};
-+
-+static struct snd_soc_dai_link smdk2440_dai[] = {
-+{ /* Hifi Playback - for similatious use with voice below */
-+	.name = "WM8753",
-+	.stream_name = "WM8753 HiFi",
-+	.cpu_dai = &s3c24xx_i2s_dai,
-+	.codec_dai = &wm8753_dai[WM8753_DAI_HIFI],
-+	.init = smdk2440_wm8753_init,
-+	.ops = &smdk2440_hifi_ops,
-+},
-+{ /* Voice via BT */
-+	.name = "Bluetooth",
-+	.stream_name = "Voice",
-+	.cpu_dai = &bt_dai,
-+	.codec_dai = &wm8753_dai[WM8753_DAI_VOICE],
-+	.ops = &smdk2440_voice_ops,
-+},
-+};
-+
-+static struct snd_soc_machine smdk2440 = {
-+	.name = "smdk2440",
-+	.probe = smdk2440_probe,
-+	.remove = smdk2440_remove,
-+	.suspend_pre = smdk2440_suspend,
-+	.resume_post = smdk2440_resume,
-+	.dai_link = smdk2440_dai,
-+	.num_links = ARRAY_SIZE(smdk2440_dai),
-+};
-+
-+static struct wm8753_setup_data smdk2440_wm8753_setup = {
-+	.i2c_address = 0x1a,
-+};
-+
-+static struct snd_soc_device smdk2440_snd_devdata = {
-+	.machine = &smdk2440,
-+	.platform = &s3c24xx_soc_platform,
-+	.codec_dev = &soc_codec_dev_wm8753,
-+	.codec_data = &smdk2440_wm8753_setup,
-+};
-+
-+static struct i2c_driver wm8753_i2c_driver;
-+static struct i2c_client client_template;
-+
-+static unsigned short normal_i2c[] = { 0x7C, I2C_CLIENT_END };
-+
-+/* Magic definition of all other variables and things */
-+I2C_CLIENT_INSMOD;
-+
-+static int lm4857_amp_probe(struct i2c_adapter *adap, int addr, int kind)
-+{
-+	int ret;
-+
-+	client_template.adapter = adap;
-+	client_template.addr = addr;
-+
-+	DBG("Entering %s\n", __FUNCTION__);
-+
-+	i2c = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
-+	if (i2c == NULL){
-+		return -ENOMEM;
-+	}
-+	memcpy(i2c, &client_template, sizeof(struct i2c_client));
-+	//i2c_set_clientdata(i2c, codec);
-+
-+	ret = i2c_attach_client(i2c);
-+	if (ret < 0) {
-+		DBG("failed to attach codec at addr %x\n", addr);
-+		goto exit_err;
-+	}
-+
-+	lm4857_write_regs();
-+
-+	return ret;
-+
-+exit_err:
-+	kfree(i2c);
-+	return ret;
-+}
-+
-+static int lm4857_i2c_detach(struct i2c_client *client)
-+{
-+	i2c_detach_client(client);
-+	kfree(client);
-+	return 0;
-+}
-+
-+static int lm4857_i2c_attach(struct i2c_adapter *adap)
-+{
-+	return i2c_probe(adap, &addr_data, lm4857_amp_probe);
-+}
-+
-+#define I2C_DRIVERID_LM4857 0xA5A5 /* liam -  need a proper id */
-+
-+/* corgi i2c codec control layer */
-+static struct i2c_driver lm4857_i2c_driver = {
-+	.driver = {
-+		.name = "LM4857 I2C Amp",
-+		.owner = THIS_MODULE,
-+	},
-+	.id =             I2C_DRIVERID_LM4857,
-+	.attach_adapter = lm4857_i2c_attach,
-+	.detach_client =  lm4857_i2c_detach,
-+	.command =        NULL,
-+};
-+
-+static struct i2c_client client_template = {
-+	.name =   "LM4857",
-+	.driver = &lm4857_i2c_driver,
-+};
-+
-+static struct platform_device *smdk2440_snd_device;
-+
-+static int __init smdk2440_init(void)
-+{
-+	int ret;
-+
-+	smdk2440_snd_device = platform_device_alloc("soc-audio", -1);
-+	if (!smdk2440_snd_device)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(smdk2440_snd_device, &smdk2440_snd_devdata);
-+	smdk2440_snd_devdata.dev = &smdk2440_snd_device->dev;
-+	ret = platform_device_add(smdk2440_snd_device);
-+
-+	if (ret)
-+		platform_device_put(smdk2440_snd_device);
-+
-+	ret = i2c_add_driver(&lm4857_i2c_driver);
-+	if (ret != 0)
-+		printk(KERN_ERR "can't add i2c driver");
-+
-+	return ret;
-+}
-+
-+static void __exit smdk2440_exit(void)
-+{
-+	platform_device_unregister(smdk2440_snd_device);
-+}
-+
-+module_init(smdk2440_init);
-+module_exit(smdk2440_exit);
-+
-+/* Module information */
-+MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");
-+MODULE_DESCRIPTION("ALSA SoC WM8753 smdk2440");
-+MODULE_LICENSE("GPL");
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,28 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -35236,7 +34436,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,27 @@
 +/*
 + * at91-i2s.h - ALSA I2S interface for the Atmel AT91 SoC
@@ -35268,7 +34468,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h
 Index: linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,400 @@
 +/*
 + * mx31ads_wm8753.c  --  SoC audio for mx31ads
@@ -35673,7 +34873,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c
 Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h	2007-01-31 21:36:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h	2007-02-06 15:55:20.000000000 +0100
 @@ -0,0 +1,15 @@
 +#ifndef LM4857_H_
 +#define LM4857_H_
@@ -35690,3 +34890,1640 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h
 +#define LM4857_EPGAIN 4
 +
 +#endif /*LM4857_H_*/
+Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,609 @@
++/*
++ * tlv320.c  --  TLV 320 ALSA Soc Audio driver
++ *
++ * Copyright 2005 Wolfson Microelectronics PLC.
++ * Copyright 2006 Atlab srl.
++ *
++ * Authors: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
++ *          Nicola Perrino <nicola.perrino@atlab.it>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/version.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/pm.h>
++#include <linux/i2c.h>
++#include <linux/platform_device.h>
++#include <sound/driver.h>
++#include <sound/core.h>
++#include <sound/pcm.h>
++#include <sound/pcm_params.h>
++#include <sound/soc.h>
++#include <sound/soc-dapm.h>
++#include <sound/initval.h>
++
++#include "tlv320.h"
++
++#define AUDIO_NAME "tlv320"
++#define TLV320_VERSION "0.1"
++
++/*
++ * Debug
++ */
++
++//#define TLV320_DEBUG 0
++
++#ifdef TLV320_DEBUG
++#define dbg(format, arg...) \
++	printk(KERN_DEBUG AUDIO_NAME ": " format "\n" , ## arg)
++#else
++#define dbg(format, arg...) do {} while (0)
++#endif
++#define err(format, arg...) \
++	printk(KERN_ERR AUDIO_NAME ": " format "\n" , ## arg)
++#define info(format, arg...) \
++	printk(KERN_INFO AUDIO_NAME ": " format "\n" , ## arg)
++#define warn(format, arg...) \
++	printk(KERN_WARNING AUDIO_NAME ": " format "\n" , ## arg)
++
++
++#define TLV320_VOICE_RATES \
++	(SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_11025 | SNDRV_PCM_RATE_16000 | \
++	SNDRV_PCM_RATE_22050 | SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 | \
++	SNDRV_PCM_RATE_48000)
++
++
++#define TLV320_VOICE_BITS \
++	(SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE | \
++	SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE)
++
++
++static int caps_charge = 2000;
++static int setting = 1;
++module_param(caps_charge, int, 0);
++module_param(setting, int, 0);
++MODULE_PARM_DESC(caps_charge, "TLV320 cap charge time (msecs)");
++
++static struct workqueue_struct *tlv320_workq = NULL;
++//static struct work_struct tlv320_dapm_work;
++
++/* codec private data */
++struct tlv320_priv {
++	unsigned int sysclk;
++	unsigned int pcmclk;
++};
++
++
++#ifdef TLV320AIC24K
++/* ADDR table */
++static const unsigned char tlv320_reg_addr[] = {
++	0x00,	/* CONTROL REG 0 No Operation */
++	0x01,	/* CONTROL REG 1  */
++        0x02,	/* CONTROL REG 2  */
++        0x03,	/* CONTROL REG 3A */
++        0x03,	/* CONTROL REG 3B */
++        0x03, 	/* CONTROL REG 3C */
++        0x03,	/* CONTROL REG 3D */
++        0x04,	/* CONTROL REG 4  */
++        0x04,	/* CONTROL REG 4 Bis */
++        0x05,	/* CONTROL REG 5A */
++        0x05,	/* CONTROL REG 5B */
++        0x05,	/* CONTROL REG 5C */
++        0x05,	/* CONTROL REG 5D */
++        0x06,	/* CONTROL REG 6A */
++        0x06,	/* CONTROL REG 6B */
++};
++
++/*
++ *  DATA case digital SET1:
++ *     SSP -> DAC -> OUT
++ *     IN  -> ADC -> SSP
++ *     IN = HNSI (MIC)
++ *     OUT = HDSO (SPKG)
++ *  Usage: playback, capture streams
++ */
++static const unsigned char tlv320_reg_data_init_set1[] = {
++	0x00,	/* CONTROL REG 0 No Operation */
++	0x49,	/* CONTROL REG 1  */
++        0x20,	/* CONTROL REG 2  */
++        0x01,	/* CONTROL REG 3A */
++        0x40,	/* CONTROL REG 3B */
++        0x81,	/* CONTROL REG 3C */
++        0xc0,	/* CONTROL REG 3D */
++        0x02,//0x42(16khz),//0x10,	/* CONTROL REG 4  */
++        0x88,//0x90,	/* CONTROL REG 4 Bis */
++        0x00,	/* CONTROL REG 5A */
++        0x40,//(0dB)	/* CONTROL REG 5B */
++        0xbf,	/* CONTROL REG 5C */
++        0xc0,	/* CONTROL REG 5D */
++        0x02,//(HNSI) 	/* CONTROL REG 6A */
++        0x81 //(HDSO) 	/* CONTROL REG 6B */
++};
++
++/*
++ *  DATA case digital SET2:
++ *     SSP -> DAC -> OUT
++ *     IN  -> ADC -> SSP
++ *     IN = HDSI (PHONE IN)
++ *     OUT = HNSO (PHONE OUT)
++ *  Usage: playback, capture streams
++ */
++static const unsigned char tlv320_reg_data_init_set2[] = {
++	0x00,	/* CONTROL REG 0 No Operation */
++	0x49,	/* CONTROL REG 1  */
++        0x20,	/* CONTROL REG 2  */
++        0x01,	/* CONTROL REG 3A */
++        0x40,	/* CONTROL REG 3B */
++        0x81,	/* CONTROL REG 3C */
++        0xc0,	/* CONTROL REG 3D */
++        0x02,//0x42(16khz),//0x10,	/* CONTROL REG 4  */
++        0x88,//0x90,	/* CONTROL REG 4 Bis */
++        0x00,	/* CONTROL REG 5A */
++        0x52,//(-27dB) 	/* CONTROL REG 5B */
++        0xbf,	/* CONTROL REG 5C */
++        0xc0,	/* CONTROL REG 5D */
++        0x01,//(PHONE IN) 	/* CONTROL REG 6A */
++        0x82 //(PHONE OUT) 	/* CONTROL REG 6B */
++};
++
++/*
++ *  DATA case analog:
++ *     ADC, DAC, SSP off
++ *     Headset input to output (HDSI2O -> 1)
++ *     Handset input to output (HNSI2O -> 1)
++ *  Usage: room monitor
++ */
++static const unsigned char tlv320_reg_data_init_set3[] = {
++	0x00,	/* CONTROL REG 0 No Operation */
++	0x08,   /* CONTROL REG 1  */
++        0x20,   /* CONTROL REG 2  */
++        0x11,   /* CONTROL REG 3A */
++        0x40,	/* CONTROL REG 3B */
++        0x80,   /* CONTROL REG 3C */
++        0xc0,   /* CONTROL REG 3D */
++        0x00,   /* CONTROL REG 4  */
++        0x00,   /* CONTROL REG 5A */
++        0x40,   /* CONTROL REG 5B */
++        0x80,   /* CONTROL REG 5C */
++        0xc0,   /* CONTROL REG 5D */
++        0x60,   /* CONTROL REG 6A */
++        0x80    /* CONTROL REG 6B */
++};
++
++#else // TLV320AIC14k
++
++/* ADDR table */
++static const unsigned char tlv320_reg_addr[] = {
++	0x00,	/* CONTROL REG 0 No Operation */
++	0x01,	/* CONTROL REG 1  */
++        0x02,	/* CONTROL REG 2  */
++        0x03,	/* CONTROL REG 3 */
++        0x04,	/* CONTROL REG 4  */
++        0x04,	/* CONTROL REG 4 Bis */
++        0x05,	/* CONTROL REG 5A */
++        0x05,	/* CONTROL REG 5B */
++        0x05,	/* CONTROL REG 5C */
++        0x05,	/* CONTROL REG 5D */
++        0x06	/* CONTROL REG 6 */
++};
++
++/*
++ *  DATA case digital:
++ *     SSP -> DAC -> OUT
++ *     IN  -> ADC -> SSP
++ *  Usage: playback, capture streams
++ */
++static const unsigned char tlv320_reg_data_init_set1[] = {
++	0x00,	/* CONTROL REG 0 No Operation */
++	0x41,	/* CONTROL REG 1  */
++        0x20,	/* CONTROL REG 2  */
++        0x09,	/* CONTROL REG 3 */
++        0x02,//0x42(16khz),//0x10,	/* CONTROL REG 4  */
++        0x88,//0x90,	/* CONTROL REG 4 Bis */
++        0x2A,	/* CONTROL REG 5A */
++        0x6A,	/* CONTROL REG 5B */
++        0xbc,	/* CONTROL REG 5C */
++        0xc0,	/* CONTROL REG 5D */
++        0x00	/* CONTROL REG 6 */
++};
++#endif
++/*
++ * read tlv320 register cache
++ */
++static inline unsigned int tlv320_read_reg_cache(struct snd_soc_codec *codec,
++	unsigned int reg)
++{
++	u8 *cache = codec->reg_cache;
++	if (reg > ARRAY_SIZE(tlv320_reg_addr))
++		return -1;
++	return cache[reg];
++}
++
++/*
++ * write tlv320 register cache
++ */
++static inline void tlv320_write_reg_cache(struct snd_soc_codec *codec,
++	unsigned int reg, unsigned int value)
++{
++	u8 *cache = codec->reg_cache;
++	if (reg > ARRAY_SIZE(tlv320_reg_addr))
++		return;
++	cache[reg] = value;
++}
++
++/*
++ * read tlv320
++ */
++static int tlv320_read (struct snd_soc_codec *codec, u8 reg)
++{
++	return i2c_smbus_read_byte_data(codec->control_data, reg);
++}
++
++/*
++ * write tlv320
++ */
++static int tlv320_write(struct snd_soc_codec *codec, unsigned int reg,
++	unsigned int value)
++{
++	if (tlv320_reg_addr[reg] > 0x06)
++		return -1;
++
++	tlv320_write_reg_cache (codec, reg, value);
++
++	return i2c_smbus_write_byte_data(codec->control_data, tlv320_reg_addr[reg], value);
++}
++
++
++/*
++ * write block tlv320
++ */
++static int tlv320_write_block (struct snd_soc_codec *codec,
++	const u8 *data, unsigned int len)
++{
++	int ret = -1;
++	int i;
++
++	for (i=0; i<len; i++) {
++		dbg("addr = 0x%02x, data = 0x%02x", tlv320_reg_addr[i], data[i]);
++		if ((ret = tlv320_write(codec, i, data[i])) < 0)
++			break;
++	}
++
++	return ret;
++}
++
++
++static int tlv320_set_dai_fmt(struct snd_soc_codec_dai *codec_dai,
++		unsigned int fmt)
++{
++	dbg("tlv320_set_dai_fmt enter");
++	return 0;
++}
++
++/*
++ * Set PCM DAI bit size and sample rate.
++ */
++static int tlv320_pcm_hw_params(struct snd_pcm_substream *substream,
++	struct snd_pcm_hw_params *params)
++{
++	dbg("tlv320_pcm_hw_params enter");
++	return 0;
++}
++
++
++static int tlv320_config_pcm_sysclk(struct snd_soc_codec_dai *codec_dai,
++		int clk_id, unsigned int freq, int dir)
++{
++	dbg("tlv320_config_pcm_sysclk enter");
++	return 0;
++}
++
++
++/*
++ *  Voice over PCM DAI
++ */
++struct snd_soc_codec_dai tlv320_dai[] = {
++{	.name = "TLV320 Voice",
++	.id = 1,
++	.playback = {
++		.stream_name = "Voice Playback",
++		.channels_min = 1,
++		.channels_max = 2,
++		.rates = TLV320_VOICE_RATES,
++		.formats = TLV320_VOICE_BITS,},
++	.capture = {
++		.stream_name = "Voice Capture",
++		.channels_min = 1,
++		.channels_max = 2,
++		.rates = TLV320_VOICE_RATES,
++		.formats = TLV320_VOICE_BITS,},
++	.ops = {
++		.hw_params = tlv320_pcm_hw_params,},
++	.dai_ops = {
++		.digital_mute = NULL,
++		.set_fmt = tlv320_set_dai_fmt,
++		.set_clkdiv = NULL,
++		.set_pll = NULL,
++		.set_sysclk = tlv320_config_pcm_sysclk,
++	},
++},
++
++
++};
++EXPORT_SYMBOL_GPL(tlv320_dai);
++
++
++static void tlv320_work(struct work_struct *work)
++{
++#if 0
++	struct snd_soc_codec *codec =
++		container_of(work, struct snd_soc_codec, delayed_work.work);
++	//wm8753_dapm_event(codec, codec->dapm_state);
++#endif
++}
++
++/*
++ * initialise the TLV320 driver
++ * register the mixer and dsp interfaces with the kernel
++ */
++static int tlv320_init(struct snd_soc_device *socdev)
++{
++	struct snd_soc_codec *codec = socdev->codec;
++	int ret = 0;
++
++	codec->name = "TLV320";
++	codec->owner = THIS_MODULE;
++	codec->read = tlv320_read_reg_cache;
++	codec->write = tlv320_write;
++	codec->dai = tlv320_dai;
++	codec->num_dai = ARRAY_SIZE(tlv320_dai);
++	codec->reg_cache_size = ARRAY_SIZE(tlv320_reg_addr);
++
++	codec->reg_cache =
++			kzalloc(sizeof(u8) * ARRAY_SIZE(tlv320_reg_addr), GFP_KERNEL);
++	if (codec->reg_cache == NULL)
++		return -ENOMEM;
++	memcpy(codec->reg_cache, tlv320_reg_addr,
++		sizeof(u8) * ARRAY_SIZE(tlv320_reg_addr));
++	codec->reg_cache_size = sizeof(u8) * ARRAY_SIZE(tlv320_reg_addr);
++
++	/* register pcms */
++	ret = snd_soc_new_pcms(socdev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1);
++	if (ret < 0) {
++		kfree(codec->reg_cache);
++		return ret;
++	}
++
++	queue_delayed_work(tlv320_workq,
++		&codec->delayed_work, msecs_to_jiffies(caps_charge));
++
++	ret = snd_soc_register_card(socdev);
++	if (ret < 0) {
++		snd_soc_free_pcms(socdev);
++		snd_soc_dapm_free(socdev);
++	}
++
++	return ret;
++}
++
++/* If the i2c layer weren't so broken, we could pass this kind of data
++   around */
++static struct snd_soc_device *tlv320_socdev;
++
++#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
++
++#define I2C_DRIVERID_TLV320 0xfefe /* liam -  need a proper id */
++
++static unsigned short normal_i2c[] = { 0, I2C_CLIENT_END };
++
++/* Magic definition of all other variables and things */
++I2C_CLIENT_INSMOD;
++
++static struct i2c_driver tlv320_i2c_driver;
++static struct i2c_client client_template;
++
++static int tlv320_codec_probe(struct i2c_adapter *adap, int addr, int kind)
++{
++	struct snd_soc_device *socdev = tlv320_socdev;
++	struct tlv320_setup_data *setup = socdev->codec_data;
++	struct snd_soc_codec *codec = socdev->codec;
++	struct i2c_client *i2c;
++	int ret, len;
++        const unsigned char *data;
++
++	if (addr != setup->i2c_address)
++		return -ENODEV;
++
++	client_template.adapter = adap;
++	client_template.addr = addr;
++
++	i2c = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
++	if (i2c == NULL){
++		kfree(codec);
++		return -ENOMEM;
++	}
++	memcpy(i2c, &client_template, sizeof(struct i2c_client));
++	i2c_set_clientdata(i2c, codec);
++	codec->control_data = i2c;
++
++	ret = i2c_attach_client(i2c);
++	if (ret < 0) {
++		err("failed to attach codec at addr %x\n", addr);
++		goto err;
++	}
++
++	ret = tlv320_init(socdev);
++	if (ret < 0) {
++		err("failed to initialise TLV320\n");
++		goto err;
++	}
++
++	switch(setting) {
++	case 1:
++		data = tlv320_reg_data_init_set1;
++		len = sizeof(tlv320_reg_data_init_set1);
++		break;
++	case 2:
++		data = tlv320_reg_data_init_set2;
++		len = sizeof(tlv320_reg_data_init_set2);
++		break;
++	case 3:
++		data = tlv320_reg_data_init_set3;
++		len = sizeof(tlv320_reg_data_init_set3);
++		break;
++	default:
++		data = tlv320_reg_data_init_set1;
++		len = sizeof(tlv320_reg_data_init_set1);
++		break;
++	}
++
++	ret = tlv320_write_block(codec, data, len);
++
++	if (ret < 0) {
++		err("attach error: init status %d\n", ret);
++	} else {
++		info("attach: chip tlv320 at address 0x%02x",
++			tlv320_read(codec, 0x02) << 1);
++	}
++
++        //tlv320_write(codec, CODEC_REG6B, 0x80);
++#if 0
++	int value;
++	int i;
++
++	for (i=0; i<len; i++) {
++		value = tlv320_read(codec, tlv320_reg_addr[i]);
++		dbg("read addr = 0x%02x, data = 0x%02x", tlv320_reg_addr[i], value);
++		mdelay(10);
++	}
++
++#endif
++
++
++	return ret;
++
++err:
++	kfree(codec);
++	kfree(i2c);
++	return ret;
++}
++
++static int tlv320_i2c_detach(struct i2c_client *client)
++{
++	struct snd_soc_codec *codec = i2c_get_clientdata(client);
++	i2c_detach_client(client);
++	kfree(codec->reg_cache);
++	kfree(client);
++	return 0;
++}
++
++static int tlv320_i2c_attach(struct i2c_adapter *adap)
++{
++	return i2c_probe(adap, &addr_data, tlv320_codec_probe);
++}
++
++/* tlv320 i2c codec control layer */
++static struct i2c_driver tlv320_i2c_driver = {
++	.driver = {
++		.name = "tlv320 I2C Codec",
++		.owner = THIS_MODULE,
++	},
++	.id =             I2C_DRIVERID_TLV320,
++	.attach_adapter = tlv320_i2c_attach,
++	.detach_client =  tlv320_i2c_detach,
++	.command =        NULL,
++};
++
++static struct i2c_client client_template = {
++	.name =   "tlv320",
++	.driver = &tlv320_i2c_driver,
++};
++#endif
++
++static int tlv320_probe(struct platform_device *pdev)
++{
++	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
++	struct tlv320_setup_data *setup;
++	struct snd_soc_codec *codec;
++	int ret = 0;
++	struct tlv320_priv *tlv320;
++
++	info("TLV320 Audio Codec %s", TLV320_VERSION);
++
++	setup = socdev->codec_data;
++	codec = kzalloc(sizeof(struct snd_soc_codec), GFP_KERNEL);
++	if (codec == NULL)
++		return -ENOMEM;
++
++	tlv320 = kzalloc(sizeof(struct tlv320_priv), GFP_KERNEL);
++	if (tlv320 == NULL) {
++		kfree(codec);
++		return -ENOMEM;
++	}
++
++	codec->private_data = tlv320;
++
++	socdev->codec = codec;
++	mutex_init(&codec->mutex);
++	INIT_LIST_HEAD(&codec->dapm_widgets);
++	INIT_LIST_HEAD(&codec->dapm_paths);
++	tlv320_socdev = socdev;
++
++	INIT_DELAYED_WORK(&codec->delayed_work, tlv320_work);
++	tlv320_workq = create_workqueue("tlv320");
++	if (tlv320_workq == NULL) {
++		kfree(codec);
++		return -ENOMEM;
++	}
++#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
++	if (setup->i2c_address) {
++		normal_i2c[0] = setup->i2c_address;
++		codec->hw_write = (hw_write_t)i2c_master_send;
++		ret = i2c_add_driver(&tlv320_i2c_driver);
++		if (ret != 0)
++			printk(KERN_ERR "can't add i2c driver");
++	}
++#else
++		/* Add other interfaces here */
++#endif
++	return ret;
++}
++
++/* power down chip */
++static int tlv320_remove(struct platform_device *pdev)
++{
++	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
++	struct snd_soc_codec *codec = socdev->codec;
++
++	if (tlv320_workq)
++		destroy_workqueue(tlv320_workq);
++	snd_soc_free_pcms(socdev);
++	snd_soc_dapm_free(socdev);
++#if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
++	i2c_del_driver(&tlv320_i2c_driver);
++#endif
++	kfree(codec->private_data);
++	kfree(codec);
++
++	return 0;
++}
++
++struct snd_soc_codec_device soc_codec_dev_tlv320 = {
++	.probe = 	tlv320_probe,
++	.remove = 	tlv320_remove,
++};
++
++EXPORT_SYMBOL_GPL(soc_codec_dev_tlv320);
++
++MODULE_DESCRIPTION("ASoC TLV320 driver");
++MODULE_AUTHOR("Nicola Perrino");
++MODULE_LICENSE("GPL");
+Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.h	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,111 @@
++/*
++ * tlv320.h  --  TLV 320 ALSA Soc Audio driver
++ *
++ * Copyright 2005 Wolfson Microelectronics PLC.
++ * Copyright 2006 Atlab srl.
++ *
++ * Authors: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
++ *          Nicola Perrino <nicola.perrino@atlab.it>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#ifndef _TLV320_H
++#define _TLV320_H
++
++#define TLV320AIC24K
++
++
++/* TLV320 register space */
++#define CODEC_NOOP	0x00
++#define CODEC_REG1	0x01
++#define CODEC_REG2	0x02
++#define CODEC_REG3A	0x03
++#define CODEC_REG3B	0x04
++#define CODEC_REG3C	0x05
++#define CODEC_REG3D	0x06
++#define CODEC_REG4A	0x07
++#define CODEC_REG4B	0x08
++#define CODEC_REG5A	0x09
++#define CODEC_REG5B	0x0a
++#define CODEC_REG5C	0x0b
++#define CODEC_REG5D	0x0c
++#define CODEC_REG6A	0x0d
++#define CODEC_REG6B	0x0e
++
++
++//	Control Register 1
++#define REG1_CONTINUOUS			0x40
++#define REG1_IIR_EN			0x20
++#define REG1_MIC_BIAS_235		0x08
++#define REG1_ANALOG_LOOP_BACK		0x04
++#define REG1_DIGITAL_LOOP_BACK		0x02
++#define REG1_DAC16			0x01
++
++//	Control Register 2
++#define REG2_TURBO_EN			0x80
++#define REG2_FIR_BYPASS			0x40
++#define REG2_GPIO			0x02
++#define REG2_GPIO_1			0x06
++
++//	Control Register 3A
++#define REG3_PWDN_ALL			0x30
++#define REG3_PWDN_ADC			0x10
++#define REG3_PWDN_DAC			0x20
++#define REG3_SW_RESET			0x08
++#define REG3_SAMPLING_FACTOR1		0x01
++#define REG3_SAMPLING_FACTOR2		0x02
++
++//	Control Register 3B
++#define REG3_8KBP_EN			0x60
++#define REG3_MUTE_OUTP1			0x42
++#define REG3_MUTE_OUTP2			0x48
++#define REG3_MUTE_OUTP3			0x44
++
++//	Control Register 4
++#define REG4_FSDIV_M			0x85	//M=5
++#define REG4_FSDIV_NP			0x08	//N=1, P=8
++//#define REG4_FSDIV_NP			0x01	//N=1, P=8
++#define REG4_FSDIV_NP1			0x02	//N=16, P=2
++
++//	Control Register 5
++#define REG5A_ADC_GAIN			0x02	//3dB
++#define REG5A_ADC_MUTE			0x0f	//Mute
++#define REG5B_DAC_GAIN			0x42	//-3dB
++#define REG5B_DAC_MUTE			0x4f	//Mute
++#define REG5C_SIDETONE_MUTE		0xBF
++
++//	Control Register 6
++#define REG6A_AIC24A_CH1_IN		0x08	//INP1 to ADC
++#define REG6B_AIC24A_CH1_OUT		0x82	//OUTP2 to DAC
++#define REG6A_AIC24A_CH2_IN		0x02	//INP2 to ADC
++#define REG6B_AIC24A_CH2_OUT		0x81	//OUTP3 to DAC
++
++/* clock inputs */
++#define TLV320_MCLK		0
++#define TLV320_PCMCLK		1
++
++
++struct tlv320_setup_data {
++	unsigned short i2c_address;
++};
++
++/* DAI ifmodes */
++/* mode 1 IFMODE = 00 */
++#define TLV320_DAI_MODE1_VOICE	0
++#define TLV320_DAI_MODE1_HIFI	1
++/* mode 2 IFMODE = 01 */
++#define TLV320_DAI_MODE2_VOICE	2
++/* mode 3 IFMODE = 10 */
++#define TLV320_DAI_MODE3_HIFI	3
++/* mode 4 IFMODE = 11 */
++#define TLV320_DAI_MODE4_HIFI	4
++
++extern struct snd_soc_codec_dai tlv320_dai[5];
++extern struct snd_soc_codec_device soc_codec_dev_tlv320;
++
++#endif
+Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/amesom_tlv320.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17.14-fic4.test/sound/soc/pxa/amesom_tlv320.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,211 @@
++/*
++ * amesom_tlv320.c  --  SoC audio for Amesom
++ *
++ * Copyright 2005 Wolfson Microelectronics PLC.
++ * Copyright 2006 Atlab srl.
++ *
++ * Authors: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
++ *          Nicola Perrino <nicola.perrino@atlab.it>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ *  Revision history
++ *    5th Dec 2006   Initial version.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/device.h>
++#include <linux/i2c.h>
++#include <sound/driver.h>
++#include <sound/core.h>
++#include <sound/pcm.h>
++#include <sound/soc.h>
++#include <sound/soc-dapm.h>
++
++#include <asm/hardware.h>
++#include <asm/arch/pxa-regs.h>
++#include <asm/arch/audio.h>
++
++#include "../codecs/tlv320.h"
++#include "pxa2xx-pcm.h"
++#include "pxa2xx-i2s.h"
++#include "pxa2xx-ssp.h"
++
++
++/*
++ * SSP2 GPIO's
++ */
++
++#define GPIO11_SSP2RX_MD	(11 | GPIO_ALT_FN_2_IN)
++#define GPIO13_SSP2TX_MD	(13 | GPIO_ALT_FN_1_OUT)
++#define GPIO50_SSP2CLKS_MD	(50 | GPIO_ALT_FN_3_IN)
++#define GPIO14_SSP2FRMS_MD	(14 | GPIO_ALT_FN_2_IN)
++#define GPIO50_SSP2CLKM_MD	(50 | GPIO_ALT_FN_3_OUT)
++#define GPIO14_SSP2FRMM_MD	(14 | GPIO_ALT_FN_2_OUT)
++
++
++static struct snd_soc_machine amesom;
++
++
++static int amesom_probe(struct platform_device *pdev)
++{
++	return 0;
++}
++
++static int amesom_remove(struct platform_device *pdev)
++{
++	return 0;
++}
++
++static int tlv320_voice_startup(struct snd_pcm_substream *substream)
++{
++	return 0;
++}
++
++static void tlv320_voice_shutdown(struct snd_pcm_substream *substream)
++{
++	return;
++}
++
++/*
++ * Tlv320 uses SSP port for playback.
++ */
++static int tlv320_voice_hw_params(struct snd_pcm_substream *substream,
++	struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
++	struct snd_soc_cpu_dai *cpu_dai = rtd->dai->cpu_dai;
++	int ret = 0;
++
++	//printk("tlv320_voice_hw_params enter\n");
++	switch(params_rate(params)) {
++	case 8000:
++		//printk("tlv320_voice_hw_params 8000\n");
++		break;
++	case 16000:
++		//printk("tlv320_voice_hw_params 16000\n");
++		break;
++	default:
++		break;
++	}
++
++	// CODEC MASTER, SSP SLAVE
++
++	/* set codec DAI configuration */
++	ret = codec_dai->dai_ops.set_fmt(codec_dai, SND_SOC_DAIFMT_MSB |
++		SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
++	if (ret < 0)
++		return ret;
++
++	/* set cpu DAI configuration */
++	ret = cpu_dai->dai_ops.set_fmt(cpu_dai, SND_SOC_DAIFMT_MSB |
++		SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
++	if (ret < 0)
++		return ret;
++
++	/* set the SSP system clock as input (unused) */
++	ret = cpu_dai->dai_ops.set_sysclk(cpu_dai, PXA2XX_SSP_CLK_NET_PLL, 0,
++		SND_SOC_CLOCK_IN);
++	if (ret < 0)
++		return ret;
++
++	/* set SSP slots */
++	//ret = cpu_dai->dai_ops.set_tdm_slot(cpu_dai, 0x1, slots);
++	ret = cpu_dai->dai_ops.set_tdm_slot(cpu_dai, 0x3, 1);
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
++static int tlv320_voice_hw_free(struct snd_pcm_substream *substream)
++{
++	return 0;
++}
++
++static struct snd_soc_ops tlv320_voice_ops = {
++	.startup = tlv320_voice_startup,
++	.shutdown = tlv320_voice_shutdown,
++	.hw_params = tlv320_voice_hw_params,
++	.hw_free = tlv320_voice_hw_free,
++};
++
++
++static struct snd_soc_dai_link amesom_dai[] = {
++{
++	.name = "TLV320",
++	.stream_name = "TLV320 Voice",
++	.cpu_dai = &pxa_ssp_dai[PXA2XX_DAI_SSP2],
++	.codec_dai = &tlv320_dai[TLV320_DAI_MODE1_VOICE],
++	.ops = &tlv320_voice_ops,
++},
++};
++
++static struct snd_soc_machine amesom = {
++	.name = "Amesom",
++	.probe = amesom_probe,
++	.remove = amesom_remove,
++	.dai_link = amesom_dai,
++	.num_links = ARRAY_SIZE(amesom_dai),
++};
++
++static struct tlv320_setup_data amesom_tlv320_setup = {
++#ifdef TLV320AIC24K //codec2
++	.i2c_address = 0x41,
++#else // TLV320AIC14k
++	.i2c_address = 0x40,
++#endif
++};
++
++static struct snd_soc_device amesom_snd_devdata = {
++	.machine = &amesom,
++	.platform = &pxa2xx_soc_platform,
++	.codec_dev = &soc_codec_dev_tlv320,
++	.codec_data = &amesom_tlv320_setup,
++};
++
++static struct platform_device *amesom_snd_device;
++
++static int __init amesom_init(void)
++{
++	int ret;
++
++	amesom_snd_device = platform_device_alloc("soc-audio", -1);
++	if (!amesom_snd_device)
++		return -ENOMEM;
++
++	platform_set_drvdata(amesom_snd_device, &amesom_snd_devdata);
++	amesom_snd_devdata.dev = &amesom_snd_device->dev;
++	ret = platform_device_add(amesom_snd_device);
++
++	if (ret)
++		platform_device_put(amesom_snd_device);
++
++
++	/* SSP port 2 slave */
++	pxa_gpio_mode(GPIO11_SSP2RX_MD);
++	pxa_gpio_mode(GPIO13_SSP2TX_MD);
++	pxa_gpio_mode(GPIO50_SSP2CLKS_MD);
++	pxa_gpio_mode(GPIO14_SSP2FRMS_MD);
++
++	return ret;
++}
++
++static void __exit amesom_exit(void)
++{
++	platform_device_unregister(amesom_snd_device);
++}
++
++module_init(amesom_init);
++module_exit(amesom_exit);
++
++/* Module information */
++MODULE_AUTHOR("Nicola Perrino");
++MODULE_DESCRIPTION("ALSA SoC TLV320 Amesom");
++MODULE_LICENSE("GPL");
+Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/neo1973_wm8753.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/neo1973_wm8753.c	2007-02-06 15:55:20.000000000 +0100
+@@ -0,0 +1,686 @@
++/*
++ * neo1973_wm8753.c  --  SoC audio for Neo1973
++ *
++ * Copyright 2007 Wolfson Microelectronics PLC.
++ * Author: Graeme Gregory
++ *         graeme.gregory@wolfsonmicro.com or linux@wolfsonmicro.com
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ *  Revision history
++ *    20th Jan 2007   Initial version.
++ *    05th Feb 2007   Rename all to Neo1973
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/timer.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++#include <linux/i2c.h>
++#include <sound/driver.h>
++#include <sound/core.h>
++#include <sound/pcm.h>
++#include <sound/soc.h>
++#include <sound/soc-dapm.h>
++
++#include <asm/mach-types.h>
++#include <asm/hardware/scoop.h>
++#include <asm/arch/regs-iis.h>
++#include <asm/arch/regs-clock.h>
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/hardware.h>
++#include <asm/arch/audio.h>
++#include <asm/io.h>
++#include <asm/arch/spi-gpio.h>
++#include "../codecs/wm8753.h"
++#include "lm4857.h"
++#include "s3c24xx-pcm.h"
++#include "s3c24xx-i2s.h"
++
++#define NEO1973_DEBUG 0
++#if NEO1973_DEBUG
++#define DBG(x...) printk(KERN_DEBUG x)
++#else
++#define DBG(x...)
++#endif
++
++/* define the scenarios */
++#define NEO_AUDIO_OFF					0
++#define NEO_GSM_CALL_AUDIO_HANDSET		1
++#define NEO_GSM_CALL_AUDIO_HEADSET		2
++#define NEO_GSM_CALL_AUDIO_BLUETOOTH	3
++#define NEO_STEREO_TO_SPEAKERS			4
++#define NEO_STEREO_TO_HEADPHONES		5
++#define NEO_CAPTURE_HANDSET				6
++#define NEO_CAPTURE_HEADSET				7
++#define NEO_CAPTURE_BLUETOOTH			8
++
++static struct snd_soc_machine neo1973;
++static struct i2c_client *i2c;
++
++static int neo1973_hifi_hw_params(struct snd_pcm_substream *substream,
++	struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
++	struct snd_soc_cpu_dai *cpu_dai = rtd->dai->cpu_dai;
++	unsigned int pll_out = 0, bclk = 0;
++	int ret = 0;
++	unsigned long iis_clkrate;
++
++	iis_clkrate = s3c24xx_i2s_get_clockrate();
++
++	switch (params_rate(params)) {
++	case 8000:
++	case 16000:
++		pll_out = 12288000;
++		break;
++	case 48000:
++		bclk = WM8753_BCLK_DIV_4;
++		pll_out = 12288000;
++		break;
++	case 96000:
++		bclk = WM8753_BCLK_DIV_2;
++		pll_out = 12288000;
++		break;
++	case 11025:
++		bclk = WM8753_BCLK_DIV_16;
++		pll_out = 11289600;
++		break;
++	case 22050:
++		bclk = WM8753_BCLK_DIV_8;
++		pll_out = 11289600;
++		break;
++	case 44100:
++		bclk = WM8753_BCLK_DIV_4;
++		pll_out = 11289600;
++		break;
++	case 88200:
++		bclk = WM8753_BCLK_DIV_2;
++		pll_out = 11289600;
++		break;
++	}
++
++	/* set codec DAI configuration */
++	ret = codec_dai->dai_ops.set_fmt(codec_dai,
++		SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
++	if (ret < 0)
++		return ret;
++
++	/* set cpu DAI configuration */
++	ret = cpu_dai->dai_ops.set_fmt(cpu_dai,
++		SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM);
++	if (ret < 0)
++		return ret;
++
++	/* set the codec system clock for DAC and ADC */
++	ret = codec_dai->dai_ops.set_sysclk(codec_dai, WM8753_MCLK, pll_out,
++		SND_SOC_CLOCK_IN);
++	if (ret < 0)
++		return ret;
++
++    /* set MCLK division for sample rate */
++    ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai, S3C24XX_DIV_MCLK,
++        S3C2410_IISMOD_32FS );
++    if (ret < 0)
++        return ret;
++
++	/* set codec BCLK division for sample rate */
++	ret = codec_dai->dai_ops.set_clkdiv(codec_dai, WM8753_BCLKDIV, bclk);
++	if (ret < 0)
++		return ret;
++
++	/* set prescaler division for sample rate */
++	ret = cpu_dai->dai_ops.set_clkdiv(cpu_dai, S3C24XX_DIV_PRESCALER,
++		S3C24XX_PRESCALE(4,4));
++	if (ret < 0)
++		return ret;
++
++	/* codec PLL input is PCLK/4 */
++	ret = codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL1, iis_clkrate/4,
++		pll_out);
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
++static int neo1973_hifi_hw_free(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
++
++	/* disable the PLL */
++	return codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL1, 0, 0);
++}
++
++/*
++ * Neo1973 WM8753 HiFi DAI opserations.
++ */
++static struct snd_soc_ops neo1973_hifi_ops = {
++	.hw_params = neo1973_hifi_hw_params,
++	.hw_free = neo1973_hifi_hw_free,
++};
++
++static int neo1973_voice_hw_params(struct snd_pcm_substream *substream,
++	struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
++	unsigned int pcmdiv = 0;
++	int ret = 0;
++	unsigned long iis_clkrate;
++
++	/* todo: gg where is sysclk coming from for voice ?? */
++	iis_clkrate = s3c24xx_i2s_get_clockrate();
++
++	if (params_rate(params) != 8000)
++		return -EINVAL;
++	if(params_channels(params) != 1)
++		return -EINVAL;
++
++	pcmdiv = WM8753_PCM_DIV_6; /* 2.048 MHz */
++
++	/* todo: gg check mode (DSP_B) against CSR datasheet */
++	/* set codec DAI configuration */
++	ret = codec_dai->dai_ops.set_fmt(codec_dai, SND_SOC_DAIFMT_DSP_B |
++		SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
++	if (ret < 0)
++		return ret;
++
++	/* set the codec system clock for DAC and ADC */
++	ret = codec_dai->dai_ops.set_sysclk(codec_dai, WM8753_PCMCLK, 12288000,
++		SND_SOC_CLOCK_IN);
++	if (ret < 0)
++		return ret;
++
++	/* set codec PCM division for sample rate */
++	ret = codec_dai->dai_ops.set_clkdiv(codec_dai, WM8753_PCMDIV, pcmdiv);
++	if (ret < 0)
++		return ret;
++
++	/* configue and enable PLL for 12.288MHz output */
++	ret = codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL2, iis_clkrate/4,
++		12288000);
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
++
++static int neo1973_voice_hw_free(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_codec_dai *codec_dai = rtd->dai->codec_dai;
++
++	/* disable the PLL */
++	return codec_dai->dai_ops.set_pll(codec_dai, WM8753_PLL2, 0, 0);
++}
++
++static struct snd_soc_ops neo1973_voice_ops = {
++	.hw_params = neo1973_voice_hw_params,
++	.hw_free = neo1973_voice_hw_free,
++};
++
++static int neo1973_scenario = 0;
++
++static int neo1973_get_scenario(struct snd_kcontrol *kcontrol,
++	struct snd_ctl_elem_value *ucontrol)
++{
++	ucontrol->value.integer.value[0] = neo1973_scenario;
++	return 0;
++}
++
++static int set_scenario_endpoints(struct snd_soc_codec *codec, int scenario)
++{
++	switch(neo1973_scenario) {
++	case NEO_AUDIO_OFF:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	case NEO_GSM_CALL_AUDIO_HANDSET:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  1);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     1);
++		break;
++	case NEO_GSM_CALL_AUDIO_HEADSET:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  1);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  1);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	case NEO_GSM_CALL_AUDIO_BLUETOOTH:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  1);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	case NEO_STEREO_TO_SPEAKERS:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	case NEO_STEREO_TO_HEADPHONES:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    1);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	case NEO_CAPTURE_HANDSET:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     1);
++		break;
++	case NEO_CAPTURE_HEADSET:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  1);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	case NEO_CAPTURE_BLUETOOTH:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++		break;
++	default:
++		snd_soc_dapm_set_endpoint(codec, "Audio Out",    0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line Out", 0);
++		snd_soc_dapm_set_endpoint(codec, "GSM Line In",  0);
++		snd_soc_dapm_set_endpoint(codec, "Headset Mic",  0);
++		snd_soc_dapm_set_endpoint(codec, "Call Mic",     0);
++	}
++
++	snd_soc_dapm_sync_endpoints(codec);
++
++	return 0;
++}
++
++static int neo1973_set_scenario(struct snd_kcontrol *kcontrol,
++	struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_codec *codec = snd_kcontrol_chip(kcontrol);
++
++	if (neo1973_scenario == ucontrol->value.integer.value[0])
++		return 0;
++
++	neo1973_scenario = ucontrol->value.integer.value[0];
++
++	set_scenario_endpoints(codec, neo1973_scenario);
++
++	return 1;
++}
++
++static u8 lm4857_regs[4] = {0x00, 0x40, 0x80, 0xC0};
++
++static void lm4857_write_regs( void )
++{
++	if( i2c_master_send(i2c, lm4857_regs, 4) != 4)
++		printk(KERN_WARNING "lm4857: i2c write failed\n");
++}
++
++static int lm4857_get_reg(struct snd_kcontrol *kcontrol,
++	struct snd_ctl_elem_value *ucontrol)
++{
++	int reg=kcontrol->private_value & 0xFF;
++	int shift = (kcontrol->private_value >> 8) & 0x0F;
++	int mask = (kcontrol->private_value >> 16) & 0xFF;
++
++	ucontrol->value.integer.value[0] = (lm4857_regs[reg] >> shift) & mask;
++
++	return 0;
++}
++
++static int lm4857_set_reg(struct snd_kcontrol *kcontrol,
++	struct snd_ctl_elem_value *ucontrol)
++{
++	int reg = kcontrol->private_value & 0xFF;
++	int shift = (kcontrol->private_value >> 8) & 0x0F;
++	int mask = (kcontrol->private_value >> 16) & 0xFF;
++
++	if (((lm4857_regs[reg] >> shift ) & mask) ==
++		ucontrol->value.integer.value[0])
++		return 0;
++
++	lm4857_regs[reg] &= ~ (mask << shift);
++	lm4857_regs[reg] |= ucontrol->value.integer.value[0] << shift;
++
++	lm4857_write_regs();
++	return 1;
++}
++
++static int lm4857_get_mode(struct snd_kcontrol *kcontrol,
++	struct snd_ctl_elem_value *ucontrol)
++{
++	u8 value = lm4857_regs[LM4857_CTRL] & 0x0F;
++
++	if (value)
++		value -= 5;
++
++	ucontrol->value.integer.value[0] = value;
++	return 0;
++}
++
++static int lm4857_set_mode(struct snd_kcontrol *kcontrol,
++	struct snd_ctl_elem_value *ucontrol)
++{
++	u8 value = ucontrol->value.integer.value[0];
++
++	if (value)
++		value += 5;
++
++	if ((lm4857_regs[LM4857_CTRL] & 0x0F) == value)
++		return 0;
++
++	lm4857_regs[LM4857_CTRL] &= 0xF0;
++	lm4857_regs[LM4857_CTRL] |= value;
++
++	lm4857_write_regs();
++	return 1;
++}
++
++static const struct snd_soc_dapm_widget wm8753_dapm_widgets[] = {
++	SND_SOC_DAPM_LINE("Audio Out", NULL),
++	SND_SOC_DAPM_LINE("GSM Line Out", NULL),
++	SND_SOC_DAPM_LINE("GSM Line In", NULL),
++	SND_SOC_DAPM_MIC("Headset Mic", NULL),
++	SND_SOC_DAPM_MIC("Call Mic", NULL),
++};
++
++
++/* example machine audio_mapnections */
++static const char* audio_map[][3] = {
++
++	/* Connections to the lm4857 amp */
++	{"Audio Out", NULL, "LOUT1"},
++	{"Audio Out", NULL, "ROUT1"},
++
++	/* Connections to the GSM Module */
++	{"GSM Line Out", NULL, "MONO1"},
++	{"GSM Line Out", NULL, "MONO2"},
++	{"RXP", NULL, "GSM Line In"},
++	{"RXN", NULL, "GSM Line In"},
++
++	/* Connections to Headset */
++	{"MIC1", NULL, "Mic Bias"},
++	{"Mic Bias", NULL, "Headset Mic"},
++
++	/* Call Mic */
++	{"MIC2", NULL, "Mic Bias"},
++	{"MIC2N", NULL, "Mic Bias"},
++	{"Mic Bias", NULL, "Call Mic"},
++
++	/* Connect the ALC pins */
++	{"ACIN", NULL, "ACOP"},
++
++	{NULL, NULL, NULL},
++};
++
++static const char *lm4857_mode[] = {
++	"Off",
++	"Call Speaker",
++	"Stereo Speakers",
++	"Stereo Speakers + Headphones",
++	"Headphones"
++};
++
++static const struct soc_enum lm4857_mode_enum[] = {
++	SOC_ENUM_SINGLE_EXT(5, lm4857_mode),
++};
++
++static const char *neo_scenarios[] = {
++	"Off",
++	"GSM Handset",
++	"GSM Headset",
++	"GSM Bluetooth",
++	"Speakers",
++	"Headphones",
++	"Capture Handset",
++	"Capture Headset",
++	"Capture Bluetooth"
++};
++
++static const struct soc_enum neo_scenario_enum[] = {
++	SOC_ENUM_SINGLE_EXT(9,neo_scenarios),
++};
++
++static const struct snd_kcontrol_new wm8753_neo1973_controls[] = {
++	SOC_SINGLE_EXT("Amp Left Playback Volume", LM4857_LVOL, 0, 31, 0,
++		lm4857_get_reg, lm4857_set_reg),
++	SOC_SINGLE_EXT("Amp Right Playback Volume", LM4857_RVOL, 0, 31, 0,
++		lm4857_get_reg, lm4857_set_reg),
++	SOC_SINGLE_EXT("Amp Mono Playback Volume", LM4857_MVOL, 0, 31, 0,
++		lm4857_get_reg, lm4857_set_reg),
++	SOC_ENUM_EXT("Amp Mode", lm4857_mode_enum[0],
++		lm4857_get_mode, lm4857_set_mode),
++	SOC_ENUM_EXT("Neo Mode", neo_scenario_enum[0],
++		neo1973_get_scenario, neo1973_set_scenario),
++	SOC_SINGLE_EXT("Amp Spk 3D Playback Switch", LM4857_LVOL, 5, 1, 0,
++		lm4857_get_reg, lm4857_set_reg),
++	SOC_SINGLE_EXT("Amp HP 3d Playback Switch", LM4857_RVOL, 5, 1, 0,
++		lm4857_get_reg, lm4857_set_reg),
++	SOC_SINGLE_EXT("Amp Fast Wakeup Playback Switch", LM4857_CTRL, 5, 1, 0,
++		lm4857_get_reg, lm4857_set_reg),
++	SOC_SINGLE_EXT("Amp Earpiece 6dB Playback Switch", LM4857_CTRL, 4, 1, 0,
++		lm4857_get_reg, lm4857_set_reg),
++};
++
++/*
++ * This is an example machine initialisation for a wm8753 connected to a
++ * neo1973 II. It is missing logic to detect hp/mic insertions and logic
++ * to re-route the audio in such an event.
++ */
++static int neo1973_wm8753_init(struct snd_soc_codec *codec)
++{
++	int i, err;
++
++	/* set up NC codec pins */
++	snd_soc_dapm_set_endpoint(codec, "LOUT2", 0);
++	snd_soc_dapm_set_endpoint(codec, "ROUT2", 0);
++	snd_soc_dapm_set_endpoint(codec, "OUT3",  0);
++	snd_soc_dapm_set_endpoint(codec, "OUT4",  0);
++	snd_soc_dapm_set_endpoint(codec, "LINE1", 0);
++	snd_soc_dapm_set_endpoint(codec, "LINE2", 0);
++
++
++	/* set endpoints to default mode */
++	set_scenario_endpoints(codec, NEO_AUDIO_OFF);
++
++	/* Add neo1973 specific widgets */
++	for(i = 0; i < ARRAY_SIZE(wm8753_dapm_widgets); i++)
++		snd_soc_dapm_new_control(codec, &wm8753_dapm_widgets[i]);
++
++	/* add neo1973 specific controls */
++	for (i = 0; i < ARRAY_SIZE(wm8753_neo1973_controls); i++) {
++		if ((err = snd_ctl_add(codec->card,
++				snd_soc_cnew(&wm8753_neo1973_controls[i],codec, NULL))) < 0)
++			return err;
++	}
++
++	/* set up neo1973 specific audio path audio_mapnects */
++	for(i = 0; audio_map[i][0] != NULL; i++) {
++		snd_soc_dapm_connect_input(codec, audio_map[i][0], audio_map[i][1],
++			audio_map[i][2]);
++	}
++
++	snd_soc_dapm_sync_endpoints(codec);
++	return 0;
++}
++
++/*
++ * BT Codec DAI
++ */
++static struct snd_soc_cpu_dai bt_dai =
++{	.name = "Bluetooth",
++	.id = 0,
++	.type = SND_SOC_DAI_PCM,
++	.playback = {
++		.channels_min = 1,
++		.channels_max = 1,
++		.rates = SNDRV_PCM_RATE_8000,
++		.formats = SNDRV_PCM_FMTBIT_S16_LE,},
++	.capture = {
++		.channels_min = 1,
++		.channels_max = 1,
++		.rates = SNDRV_PCM_RATE_8000,
++		.formats = SNDRV_PCM_FMTBIT_S16_LE,},
++};
++
++static struct snd_soc_dai_link neo1973_dai[] = {
++{ /* Hifi Playback - for similatious use with voice below */
++	.name = "WM8753",
++	.stream_name = "WM8753 HiFi",
++	.cpu_dai = &s3c24xx_i2s_dai,
++	.codec_dai = &wm8753_dai[WM8753_DAI_HIFI],
++	.init = neo1973_wm8753_init,
++	.ops = &neo1973_hifi_ops,
++},
++{ /* Voice via BT */
++	.name = "Bluetooth",
++	.stream_name = "Voice",
++	.cpu_dai = &bt_dai,
++	.codec_dai = &wm8753_dai[WM8753_DAI_VOICE],
++	.ops = &neo1973_voice_ops,
++},
++};
++
++static struct snd_soc_machine neo1973 = {
++	.name = "neo1973",
++	.dai_link = neo1973_dai,
++	.num_links = ARRAY_SIZE(neo1973_dai),
++};
++
++static struct wm8753_setup_data neo1973_wm8753_setup = {
++	.i2c_address = 0x1a,
++};
++
++static struct snd_soc_device neo1973_snd_devdata = {
++	.machine = &neo1973,
++	.platform = &s3c24xx_soc_platform,
++	.codec_dev = &soc_codec_dev_wm8753,
++	.codec_data = &neo1973_wm8753_setup,
++};
++
++static struct i2c_client client_template;
++
++static unsigned short normal_i2c[] = { 0x7C, I2C_CLIENT_END };
++
++/* Magic definition of all other variables and things */
++I2C_CLIENT_INSMOD;
++
++static int lm4857_amp_probe(struct i2c_adapter *adap, int addr, int kind)
++{
++	int ret;
++
++	client_template.adapter = adap;
++	client_template.addr = addr;
++
++	DBG("Entering %s\n", __FUNCTION__);
++
++	i2c = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
++	if (i2c == NULL){
++		return -ENOMEM;
++	}
++	memcpy(i2c, &client_template, sizeof(struct i2c_client));
++
++	ret = i2c_attach_client(i2c);
++	if (ret < 0) {
++		DBG("failed to attach codec at addr %x\n", addr);
++		goto exit_err;
++	}
++
++	lm4857_write_regs();
++
++	return ret;
++
++exit_err:
++	kfree(i2c);
++	return ret;
++}
++
++static int lm4857_i2c_detach(struct i2c_client *client)
++{
++	i2c_detach_client(client);
++	kfree(client);
++	return 0;
++}
++
++static int lm4857_i2c_attach(struct i2c_adapter *adap)
++{
++	return i2c_probe(adap, &addr_data, lm4857_amp_probe);
++}
++
++#define I2C_DRIVERID_LM4857 0xA5A5 /* liam -  need a proper id */
++
++/* corgi i2c codec control layer */
++static struct i2c_driver lm4857_i2c_driver = {
++	.driver = {
++		.name = "LM4857 I2C Amp",
++		.owner = THIS_MODULE,
++	},
++	.id =             I2C_DRIVERID_LM4857,
++	.attach_adapter = lm4857_i2c_attach,
++	.detach_client =  lm4857_i2c_detach,
++	.command =        NULL,
++};
++
++static struct i2c_client client_template = {
++	.name =   "LM4857",
++	.driver = &lm4857_i2c_driver,
++};
++
++static struct platform_device *neo1973_snd_device;
++
++static int __init neo1973_init(void)
++{
++	int ret;
++
++	neo1973_snd_device = platform_device_alloc("soc-audio", -1);
++	if (!neo1973_snd_device)
++		return -ENOMEM;
++
++	platform_set_drvdata(neo1973_snd_device, &neo1973_snd_devdata);
++	neo1973_snd_devdata.dev = &neo1973_snd_device->dev;
++	ret = platform_device_add(neo1973_snd_device);
++
++	if (ret)
++		platform_device_put(neo1973_snd_device);
++
++	ret = i2c_add_driver(&lm4857_i2c_driver);
++	if (ret != 0)
++		printk(KERN_ERR "can't add i2c driver");
++
++	return ret;
++}
++
++static void __exit neo1973_exit(void)
++{
++	platform_device_unregister(neo1973_snd_device);
++}
++
++module_init(neo1973_init);
++module_exit(neo1973_exit);
++
++/* Module information */
++MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");
++MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973");
++MODULE_LICENSE("GPL");

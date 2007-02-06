@@ -1,32 +1,30 @@
-This backports ASoC to our 2.6.17.14 based kernel
-
 Index: linux-2.6.17.14/include/sound/soc.h
 ===================================================================
 --- linux-2.6.17.14.orig/include/sound/soc.h
 +++ linux-2.6.17.14/include/sound/soc.h
-@@ -342,7 +342,7 @@ struct snd_soc_codec {
- 	struct snd_ac97 *ac97;  /* for ad-hoc ac97 devices */
- 	unsigned int active;
- 	unsigned int pcm_devs;
+@@ -359,7 +359,7 @@ struct snd_soc_codec {
+ 	struct list_head dapm_paths;
+ 	unsigned int dapm_state;
+ 	unsigned int suspend_dapm_state;
 -	struct delayed_work delayed_work;
 +	struct work_struct delayed_work;
- 	void *private_data;
  
- 	/* codec IO */
-@@ -437,7 +437,7 @@ struct snd_soc_device {
+ 	/* codec DAI's */
+ 	struct snd_soc_codec_dai *dai;
+@@ -436,7 +436,7 @@ struct snd_soc_device {
+ 	struct snd_soc_platform *platform;
  	struct snd_soc_codec *codec;
  	struct snd_soc_codec_device *codec_dev;
- 	void *codec_data;
 -	struct delayed_work delayed_work;
 +	struct work_struct delayed_work;
+ 	void *codec_data;
  };
  
- /* runtime channel data */
 Index: linux-2.6.17.14/sound/soc/codecs/wm8753.c
 ===================================================================
 --- linux-2.6.17.14.orig/sound/soc/codecs/wm8753.c
 +++ linux-2.6.17.14/sound/soc/codecs/wm8753.c
-@@ -1423,10 +1423,9 @@ static void wm8753_set_dai_mode(struct s
+@@ -1422,10 +1422,9 @@ static void wm8753_set_dai_mode(struct s
  	wm8753_dai[1].codec = codec;
  }
  
@@ -39,20 +37,29 @@ Index: linux-2.6.17.14/sound/soc/codecs/wm8753.c
  	wm8753_dapm_event(codec, codec->dapm_state);
  }
  
-@@ -1670,7 +1669,7 @@ static int wm8753_probe(struct platform_
+@@ -1669,7 +1668,7 @@ static int wm8753_probe(struct platform_
  	INIT_LIST_HEAD(&codec->dapm_widgets);
  	INIT_LIST_HEAD(&codec->dapm_paths);
  	wm8753_socdev = socdev;
 -	INIT_DELAYED_WORK(&codec->delayed_work, wm8753_work);
 +	INIT_WORK(&codec->delayed_work, wm8753_work, codec);
- 	wm8753_workq = create_workqueue("wm8753");
- 	if (wm8753_workq == NULL) {
- 		kfree(codec);
+ 
+ #if defined (CONFIG_I2C) || defined (CONFIG_I2C_MODULE)
+ 	if (setup->i2c_address) {
 Index: linux-2.6.17.14/sound/soc/soc-core.c
 ===================================================================
 --- linux-2.6.17.14.orig/sound/soc/soc-core.c
 +++ linux-2.6.17.14/sound/soc/soc-core.c
-@@ -273,10 +273,9 @@ out:
+@@ -64,7 +64,7 @@ MODULE_PARM_DESC(pmdown_time, "DAPM stre
+ /*
+  * This function forces any delayed work to be queued and run.
+  */
+-static int run_delayed_work(struct delayed_work *dwork)
++static int run_delayed_work(struct work_struct *dwork)
+ {
+ 	int ret;
+ 
+@@ -267,10 +267,9 @@ out:
   * This is to ensure there are no pops or clicks in between any music tracks
   * due to DAPM power cycling.
   */
@@ -65,7 +72,7 @@ Index: linux-2.6.17.14/sound/soc/soc-core.c
  	struct snd_soc_codec *codec = socdev->codec;
  	struct snd_soc_codec_dai *codec_dai;
  	int i;
-@@ -781,7 +780,7 @@ static int soc_probe(struct platform_dev
+@@ -775,7 +774,7 @@ static int soc_probe(struct platform_dev
  	}
  
  	/* DAPM stream work */
@@ -74,37 +81,20 @@ Index: linux-2.6.17.14/sound/soc/soc-core.c
  	return 0;
  
  platform_err:
-@@ -1075,15 +1074,7 @@ int snd_soc_new_pcms(struct snd_soc_devi
- 		return -ENODEV;
- 	}
- 
--	codec->card->dev = device_create(sound_class, codec->card->parent, 0,
--					  "card%i", codec->card->number);
--	if (IS_ERR(codec->card->dev)) {
--			snd_card_free(codec->card);
--			printk(KERN_ERR "asoc: could not create sound dev %s\n",
--				codec->name);
--			return -ENODEV;
--	}
--
-+	codec->card->dev = socdev->dev;
- 	codec->card->private_data = codec;
- 	strncpy(codec->card->driver, codec->name, sizeof(codec->card->driver));
- 
 Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-i2s.c
 ===================================================================
 --- linux-2.6.17.14.orig/sound/soc/s3c24xx/s3c24xx-i2s.c
 +++ linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-i2s.c
 @@ -60,13 +60,13 @@ static struct s3c2410_dma_client s3c24xx
  
- static s3c24xx_pcm_dma_params_t s3c24xx_i2s_pcm_stereo_out = {
+ static struct s3c24xx_pcm_dma_params s3c24xx_i2s_pcm_stereo_out = {
  	.client		= &s3c24xx_dma_client_out,
 -	.channel	= DMACH_I2S_OUT,
 +	.channel	= 2,
  	.dma_addr	= S3C2410_PA_IIS + S3C2410_IISFIFO
  };
  
- static s3c24xx_pcm_dma_params_t s3c24xx_i2s_pcm_stereo_in = {
+ static struct s3c24xx_pcm_dma_params s3c24xx_i2s_pcm_stereo_in = {
  	.client		= &s3c24xx_dma_client_in,
 -	.channel	= DMACH_I2S_IN,
 +	.channel	= 1,
@@ -115,19 +105,19 @@ Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
 ===================================================================
 --- linux-2.6.17.14.orig/sound/soc/s3c24xx/s3c24xx-pcm.c
 +++ linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
-@@ -119,9 +119,9 @@ static void s3c24xx_pcm_enqueue(struct s
+@@ -114,9 +114,9 @@ static void s3c24xx_pcm_enqueue(struct s
  	prtd->dma_pos = pos;
  }
  
--void s3c24xx_audio_buffdone(struct s3c2410_dma_chan *channel,
-+void s3c24xx_audio_buffdone(s3c2410_dma_chan_t *channel,
+-static void s3c24xx_audio_buffdone(struct s3c2410_dma_chan *channel,
++static void s3c24xx_audio_buffdone(s3c2410_dma_chan_t *channel,
  							void *dev_id, int size,
 -							enum s3c2410_dma_buffresult result)
 +							s3c2410_dma_buffresult_t result)
  {
  	struct snd_pcm_substream *substream = dev_id;
  	struct s3c24xx_runtime_data *prtd = substream->runtime->private_data;
-@@ -182,7 +182,8 @@ static int s3c24xx_pcm_hw_params(struct 
+@@ -180,7 +180,8 @@ static int s3c24xx_pcm_hw_params(struct 
  						2, S3C2410_DCON_SYNC_PCLK | S3C2410_DCON_HANDSHAKE);
  	} else {
  		s3c2410_dma_config(prtd->params->channel,
@@ -137,7 +127,7 @@ Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
  
  		s3c2410_dma_devconfig(prtd->params->channel,
  						S3C2410_DMASRC_HW, 0x3,
-@@ -260,7 +261,7 @@ static int s3c24xx_pcm_trigger(struct sn
+@@ -261,7 +262,7 @@ static int s3c24xx_pcm_trigger(struct sn
  	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
  		prtd->state |= ST_RUNNING;
  		s3c2410_dma_ctrl(prtd->params->channel, S3C2410_DMAOP_START);
@@ -146,19 +136,6 @@ Index: linux-2.6.17.14/sound/soc/s3c24xx/s3c24xx-pcm.c
  		break;
  
  	case SNDRV_PCM_TRIGGER_STOP:
-Index: linux-2.6.17.14/sound/soc/s3c24xx/Kconfig
-===================================================================
---- linux-2.6.17.14.orig/sound/soc/s3c24xx/Kconfig
-+++ linux-2.6.17.14/sound/soc/s3c24xx/Kconfig
-@@ -21,7 +21,7 @@ config SND_S3C24XX_SOC_SMDK2440
- 
- config SND_S3C24XX_SOC_SMDK2440_WM8753
- 	tristate "SoC I2S Audio support for S3C24XX - WM8753"
--	depends on SND_S3C24XX_SOC && MACH_SMDK
-+	depends on SND_S3C24XX_SOC && MACH_GTA01
- 	select SND_S3C24XX_SOC_I2S
- 	help
- 	  Say Y if you want to add support for SoC audio on smdk2440
 Index: linux-2.6.17.14/drivers/i2c/i2c-core.c
 ===================================================================
 --- linux-2.6.17.14.orig/drivers/i2c/i2c-core.c
