@@ -1,7 +1,7 @@
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/common/Makefile	2007-01-25 18:33:26.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/Makefile	2007-01-26 18:37:05.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/common/Makefile	2007-02-07 19:09:52.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/Makefile	2007-02-07 19:12:12.000000000 +0100
 @@ -16,3 +16,5 @@
  obj-$(CONFIG_SHARPSL_PM)	+= sharpsl_pm.o
  obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
@@ -11,8 +11,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/Makefile
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c	2007-01-26 18:37:41.000000000 +0100
-@@ -0,0 +1,446 @@
++++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c	2007-02-07 19:58:31.000000000 +0100
+@@ -0,0 +1,542 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
 + *
@@ -53,6 +53,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +	case GTA01Bv2_SYSTEM_REV:
 +		s3c2410_gpio_setpin(GTA01_GPIO_GPS_EN_2V8, on);
 +			break;
++	case GTA01Bv3_SYSTEM_REV:
++		break;
 +	}
 +}
 +
@@ -73,6 +75,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +		if (s3c2410_gpio_getpin(GTA01_GPIO_GPS_EN_2V8))
 +			ret = 1;
 +		break;
++	case GTA01Bv3_SYSTEM_REV:
++		break;
 +	}
 +
 +	return ret;
@@ -91,6 +95,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +				   PCF50606_REGULATOR_D1REG, on);
 +		break;
 +	case GTA01Bv2_SYSTEM_REV:
++	case GTA01Bv3_SYSTEM_REV:
 +		s3c2410_gpio_setpin(GTA01_GPIO_GPS_EN_3V, on);
 +		break;
 +	}
@@ -110,6 +115,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +			ret = 1;
 +		break;
 +	case GTA01Bv2_SYSTEM_REV:
++	case GTA01Bv3_SYSTEM_REV:
 +		if (s3c2410_gpio_getpin(GTA01_GPIO_GPS_EN_3V))
 +			ret = 1;
 +		break;
@@ -130,6 +136,10 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +					     PCF50606_REGULATOR_DCD, 3300);
 +		pcf50606_onoff_set(pcf50606_global,
 +				   PCF50606_REGULATOR_DCD, on);
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++		s3c2410_gpio_setpin(GTA01_GPIO_GPS_EN_3V3, on);
++		break;
 +	}
 +}
 +
@@ -146,6 +156,11 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +		    pcf50606_voltage_get(pcf50606_global,
 +					 PCF50606_REGULATOR_DCD) == 3300)
 +			ret = 1;
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++		if (s3c2410_gpio_getpin(GTA01_GPIO_GPS_EN_3V3))
++			ret = 1;
++		break;
 +	}
 +
 +	return ret;
@@ -160,6 +175,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +		break;
 +	case GTA01v4_SYSTEM_REV:
 +	case GTA01Bv2_SYSTEM_REV:
++	case GTA01Bv3_SYSTEM_REV:
 +		if (on)
 +			pcf50606_voltage_set(pcf50606_global,
 +					     PCF50606_REGULATOR_D2REG, 2500);
@@ -180,10 +196,53 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +		break;
 +	case GTA01v4_SYSTEM_REV:
 +	case GTA01Bv2_SYSTEM_REV:
++	case GTA01Bv3_SYSTEM_REV:
 +		if (pcf50606_onoff_get(pcf50606_global,
 +				       PCF50606_REGULATOR_D2REG) &&
 +		    pcf50606_voltage_get(pcf50606_global,
 +					 PCF50606_REGULATOR_D2REG) == 2500)
++			ret = 1;
++		break;
++	}
++
++	return ret;
++}
++
++/* This is the 1.5V supply for VDD_CORE */
++static void gps_power_1v5_set(int on)
++{
++	switch (system_rev) {
++	case GTA01v3_SYSTEM_REV:
++	case GTA01v4_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++		/* This is switched via 2v5 */
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++		if (on)
++			pcf50606_voltage_set(pcf50606_global,
++					     PCF50606_REGULATOR_D2REG, 1500);
++		pcf50606_onoff_set(pcf50606_global,
++				   PCF50606_REGULATOR_D2REG, on);
++		break;
++	}
++}
++
++static int gps_power_1v5_get(void)
++{
++	int ret = 0;
++
++	switch (system_rev) {
++	case GTA01v3_SYSTEM_REV:
++	case GTA01v4_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++		/* This is switched via 2v5 */
++		ret = 1;
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++		if (pcf50606_onoff_get(pcf50606_global,
++				       PCF50606_REGULATOR_D2REG) &&
++		    pcf50606_voltage_get(pcf50606_global,
++					 PCF50606_REGULATOR_D2REG) == 1500)
 +			ret = 1;
 +		break;
 +	}
@@ -253,6 +312,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +		ret = gps_power_3v3_get();
 +	} else if (!strcmp(attr->attr.name, "power_pll_core_2v5")) {
 +		ret = gps_power_2v5_get();
++	} else if (!strcmp(attr->attr.name, "power_core_1v5")) {
++		ret = gps_power_1v5_get();
 +	}
 +
 +	if (ret)
@@ -279,6 +340,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +		gps_power_3v3_set(on);
 +	} else if (!strcmp(attr->attr.name, "power_pll_core_2v5")) {
 +		gps_power_2v5_set(on);
++	} else if (!strcmp(attr->attr.name, "power_core_1v5")) {
++		gps_power_1v5_set(on);
 +	}
 +
 +	return count;
@@ -299,10 +362,15 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +	gps_power_3v3_set(1);
 +
 +	/* VDD_COREREG_IN, VDD_PLLREG_IN */
++	gps_power_1v5_set(1);
 +	gps_power_2v5_set(1);
 +
 +	/* and VDD_RF may be applied */
 +	gps_power_2v8_set(1);
++
++	/* We need to enable AVDD, since in GTA01Bv3 it is
++	 * shared with RFREG_IN */
++	gps_power_3v_set(1);
 +
 +	msleep(3); 	/* Is 3ms enough? */
 +
@@ -312,19 +380,20 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +	/* Switch power on */
 +	gps_pwron_set(1);
 +
-+	/* power up external LNA */
-+	gps_power_3v_set(1);
 +}
 +
 +static void gps_power_sequence_down(void)
 +{
-+	gps_power_3v_set(0);
-+
 +	/* According to PMB2520 Data Sheet, Rev. 2006-06-05,
 +	 * Chapter 4.2.3.1 */
 +	gps_pwron_set(0);
 +
++	/* Don't disable AVDD before PWRON is cleared, since
++	 * in GTA01Bv3, AVDD and RFREG_IN are shared */
++	gps_power_3v_set(0);
++
 +	/* Remove VDD_COREREG_IN, VDD_PLLREG_IN and VDD_REFREG_IN */
++	gps_power_1v5_set(0);
 +	gps_power_2v5_set(0);
 +	gps_power_2v8_set(0);
 +
@@ -362,12 +431,14 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +static DEVICE_ATTR(reset, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_lp_io_3v3, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_pll_core_2v5, 0644, power_gps_read, power_gps_write);
++static DEVICE_ATTR(power_core_1v5, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_sequence, 0644, power_sequence_read, power_sequence_write);
 +
 +#ifdef CONFIG_PM
 +static int gta01_pm_gps_suspend(struct platform_device *pdev, pm_message_t state)
 +{
 +	/* FIXME */
++	gps_power_sequence_down();
 +
 +	return 0;
 +}
@@ -375,6 +446,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +static int gta01_pm_gps_resume(struct platform_device *pdev)
 +{
 +	/* FIXME */
++	gps_power_sequence_up();
 +
 +	return 0;
 +}
@@ -394,6 +466,9 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +	case GTA01v4_SYSTEM_REV:
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_GPS_RESET, S3C2410_GPIO_OUTPUT);
 +		break;
++	case GTA01Bv3_SYSTEM_REV:
++		s3c2410_gpio_cfgpin(GTA01_GPIO_GPS_EN_3V3, S3C2410_GPIO_OUTPUT);
++		/* fallthrough */
 +	case GTA01Bv2_SYSTEM_REV:
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_GPS_EN_2V8, S3C2410_GPIO_OUTPUT);
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_GPS_EN_3V, S3C2410_GPIO_OUTPUT);
@@ -409,7 +484,17 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +
 +	gps_power_sequence_down();
 +
-+	device_create_file(&pdev->dev, &dev_attr_power_tcxo_2v8);
++	switch (system_rev) {
++	case GTA01v3_SYSTEM_REV:
++	case GTA01v4_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++		device_create_file(&pdev->dev, &dev_attr_power_tcxo_2v8);
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++		device_create_file(&pdev->dev, &dev_attr_power_core_1v5);
++		break;
++	}
++
 +	device_create_file(&pdev->dev, &dev_attr_power_avdd_3v);
 +	device_create_file(&pdev->dev, &dev_attr_pwron);
 +	device_create_file(&pdev->dev, &dev_attr_reset);
@@ -422,6 +507,17 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 +
 +static int gta01_pm_gps_remove(struct platform_device *pdev)
 +{
++	switch (system_rev) {
++	case GTA01v3_SYSTEM_REV:
++	case GTA01v4_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++		device_remove_file(&pdev->dev, &dev_attr_power_tcxo_2v8);
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++		device_remove_file(&pdev->dev, &dev_attr_power_core_1v5);
++		break;
++	}
++
 +	device_remove_file(&pdev->dev, &dev_attr_power_sequence);
 +	device_remove_file(&pdev->dev, &dev_attr_power_pll_core_2v5);
 +	device_remove_file(&pdev->dev, &dev_attr_power_lp_io_3v3);
@@ -462,7 +558,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gps.c
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c	2007-01-26 18:37:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c	2007-02-07 19:12:12.000000000 +0100
 @@ -0,0 +1,163 @@
 +/*
 + * GSM Management code for the FIC Neo1973 GSM Phone
@@ -630,7 +726,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_gsm.c
 Index: linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_bt.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_bt.c	2007-01-26 18:37:05.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/common/gta01_pm_bt.c	2007-02-07 19:12:12.000000000 +0100
 @@ -0,0 +1,133 @@
 +/*
 + * Bluetooth PM code for the FIC Neo1973 GSM Phone

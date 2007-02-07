@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-01-24 13:40:18.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-01-24 13:40:18.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-07 19:10:10.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-02-07 19:10:14.000000000 +0100
 @@ -69,6 +69,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -21,8 +21,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-01-24 13:40:18.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-01-24 13:40:18.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-02-07 19:10:10.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-02-07 19:10:14.000000000 +0100
 @@ -44,6 +44,7 @@
  obj-$(CONFIG_MACH_N30)		+= mach-n30.o
  obj-$(CONFIG_ARCH_SMDK2410)	+= mach-smdk2410.o
@@ -34,8 +34,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-01-25 18:31:03.000000000 +0100
-@@ -0,0 +1,495 @@
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-07 20:00:44.000000000 +0100
+@@ -0,0 +1,497 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -319,7 +319,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +	printk(KERN_DEBUG "udc: pullup(%d)\n", cmd);
 +
 +	if (system_rev == GTA01v4_SYSTEM_REV ||
-+	    system_rev == GTA01Bv2_SYSTEM_REV) {
++	    system_rev == GTA01Bv2_SYSTEM_REV ||
++	    system_rev == GTA01Bv3_SYSTEM_REV) {
 +		switch (cmd) {
 +		case S3C2410_UDC_P_ENABLE:
 +			s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 1);
@@ -513,7 +514,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +	platform_device_register(&gta01_pm_gsm_dev);
 +	platform_device_register(&gta01_pm_gps_dev);
 +
-+	if (system_rev == GTA01Bv2_SYSTEM_REV)
++	if (system_rev == GTA01Bv2_SYSTEM_REV ||
++	    system_rev == GTA01Bv3_SYSTEM_REV)
 +		platform_device_register(&gta01_pm_bt_dev);
 +
 +	s3c2410_pm_init();
@@ -533,8 +535,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +
 Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-01-24 13:40:18.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-01-24 13:40:18.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-02-07 19:10:10.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-02-07 19:10:14.000000000 +0100
 @@ -1041,3 +1041,4 @@
  ixp465			MACH_IXP465		IXP465			1028
  balloon3		MACH_BALLOON3		BALLOON3		1029
@@ -543,8 +545,8 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
 Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h	2007-01-25 18:33:01.000000000 +0100
-@@ -0,0 +1,58 @@
++++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h	2007-02-07 20:03:21.000000000 +0100
+@@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
 +
@@ -590,7 +592,9 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
 +
 +/* GTA01Bv2 */
 +#define GTA01Bv2_GPIO_nGSM_EN	S3C2410_GPF2
-+/* #define GTA01_GPIO_MODEM_DNLOAD	S3C2410_GPG0 */
++
++/* GTA01Bv3 */
++#define GTA01_GPIO_GPS_EN_3V3	S3C2410_GPG9
 +
 +#define GTA01_GPIO_SDMMC_ON	S3C2410_GPB2
 +#define GTA01_GPIO_BT_EN	S3C2410_GPB5
