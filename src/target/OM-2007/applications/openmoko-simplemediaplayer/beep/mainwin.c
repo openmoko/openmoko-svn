@@ -3793,7 +3793,14 @@ void
 openmoko_set_track_number()
 {
     gchar* track_number;
-    track_number = g_strdup_printf("%d", playlist_get_position() + 1);
+    if(playlist_get_length() == 0)
+    {
+        track_number = g_strdup_printf("%d", 0);	
+    }
+    else
+    {
+        track_number = g_strdup_printf("%d", playlist_get_position() + 1);
+    }
     gtk_label_set_text(GTK_LABEL(track_number_label), track_number);
     g_free(track_number);
 }
