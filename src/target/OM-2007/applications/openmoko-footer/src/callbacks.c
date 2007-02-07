@@ -47,7 +47,7 @@ footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data)
           execvp("openmoko-taskmanager", NULL);
           exit(1);
         case -1:
-          debug ("Failed to fork()");
+          g_debug ("Failed to fork()");
           break;
      }
 }
