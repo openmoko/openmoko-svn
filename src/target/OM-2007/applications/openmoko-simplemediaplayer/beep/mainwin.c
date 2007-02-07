@@ -4173,7 +4173,7 @@ void init_image_dir()
     int len = strlen(DATA_DIR);  
     int len1= strlen(share_string);
     gchar* prefix = g_strndup(DATA_DIR, len-len1 +5);
-    images_dir = g_build_filename(prefix, "/images", NULL));
+    images_dir = g_build_filename(prefix, "/images", NULL);
     g_free(prefix);
 }
 
