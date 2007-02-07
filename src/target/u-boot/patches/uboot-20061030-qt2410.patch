@@ -5,8 +5,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot.git/Makefile
 ===================================================================
---- u-boot.git.orig/Makefile	2007-02-05 20:37:13.000000000 +0100
-+++ u-boot.git/Makefile	2007-02-05 20:37:17.000000000 +0100
+--- u-boot.git.orig/Makefile	2007-02-07 16:47:39.000000000 +0100
++++ u-boot.git/Makefile	2007-02-07 16:48:01.000000000 +0100
 @@ -1907,6 +1907,9 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
@@ -20,7 +20,7 @@ Index: u-boot.git/Makefile
 Index: u-boot.git/board/qt2410/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/Makefile	2007-02-05 20:37:17.000000000 +0100
++++ u-boot.git/board/qt2410/Makefile	2007-02-07 16:48:01.000000000 +0100
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -72,7 +72,7 @@ Index: u-boot.git/board/qt2410/Makefile
 Index: u-boot.git/board/qt2410/config.mk
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/config.mk	2007-02-05 20:37:17.000000000 +0100
++++ u-boot.git/board/qt2410/config.mk	2007-02-07 16:48:01.000000000 +0100
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -102,7 +102,7 @@ Index: u-boot.git/board/qt2410/config.mk
 Index: u-boot.git/board/qt2410/flash.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/flash.c	2007-02-05 20:37:17.000000000 +0100
++++ u-boot.git/board/qt2410/flash.c	2007-02-07 16:48:01.000000000 +0100
 @@ -0,0 +1,435 @@
 +/*
 + * (C) Copyright 2002
@@ -542,7 +542,7 @@ Index: u-boot.git/board/qt2410/flash.c
 Index: u-boot.git/board/qt2410/lowlevel_init.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/lowlevel_init.S	2007-02-05 20:37:17.000000000 +0100
++++ u-boot.git/board/qt2410/lowlevel_init.S	2007-02-07 16:48:01.000000000 +0100
 @@ -0,0 +1,173 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -720,7 +720,7 @@ Index: u-boot.git/board/qt2410/lowlevel_init.S
 Index: u-boot.git/board/qt2410/qt2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/qt2410.c	2007-02-05 20:37:17.000000000 +0100
++++ u-boot.git/board/qt2410/qt2410.c	2007-02-07 16:48:01.000000000 +0100
 @@ -0,0 +1,127 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -849,12 +849,11 @@ Index: u-boot.git/board/qt2410/qt2410.c
 +	gd->bd->bi_dram[0].size = PHYS_SDRAM_1_SIZE;
 +
 +	return 0;
-+}
 Index: u-boot.git/board/qt2410/u-boot.lds
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/u-boot.lds	2007-02-05 20:37:17.000000000 +0100
-@@ -0,0 +1,57 @@
++++ u-boot.git/board/qt2410/u-boot.lds	2007-02-07 16:48:21.000000000 +0100
+@@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
 + * Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
@@ -890,6 +889,7 @@ Index: u-boot.git/board/qt2410/u-boot.lds
 +	.text      :
 +	{
 +	  cpu/arm920t/start.o	(.text)
++	  cpu/arm920t/s3c24x0/nand_read.o (.text)
 +	  *(.text)
 +	}
 +
@@ -914,8 +914,8 @@ Index: u-boot.git/board/qt2410/u-boot.lds
 +}
 Index: u-boot.git/drivers/cs8900.c
 ===================================================================
---- u-boot.git.orig/drivers/cs8900.c	2007-02-05 20:37:14.000000000 +0100
-+++ u-boot.git/drivers/cs8900.c	2007-02-05 20:37:17.000000000 +0100
+--- u-boot.git.orig/drivers/cs8900.c	2007-02-07 16:47:39.000000000 +0100
++++ u-boot.git/drivers/cs8900.c	2007-02-07 16:48:01.000000000 +0100
 @@ -120,6 +120,7 @@
  	unsigned char env_enetaddr[6];
  	char *tmp = getenv ("ethaddr");
@@ -937,8 +937,8 @@ Index: u-boot.git/drivers/cs8900.c
  	if ((get_reg (PP_SelfST) & (PP_SelfSTAT_EEPROM | PP_SelfSTAT_EEPROM_OK)) ==
 Index: u-boot.git/fs/cramfs/cramfs.c
 ===================================================================
---- u-boot.git.orig/fs/cramfs/cramfs.c	2007-02-05 20:37:14.000000000 +0100
-+++ u-boot.git/fs/cramfs/cramfs.c	2007-02-05 20:37:17.000000000 +0100
+--- u-boot.git.orig/fs/cramfs/cramfs.c	2007-02-07 16:47:39.000000000 +0100
++++ u-boot.git/fs/cramfs/cramfs.c	2007-02-07 16:48:01.000000000 +0100
 @@ -27,7 +27,7 @@
  #include <common.h>
  #include <malloc.h>
@@ -975,7 +975,7 @@ Index: u-boot.git/fs/cramfs/cramfs.c
 Index: u-boot.git/include/configs/qt2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/include/configs/qt2410.h	2007-02-05 20:37:17.000000000 +0100
++++ u-boot.git/include/configs/qt2410.h	2007-02-07 16:48:01.000000000 +0100
 @@ -0,0 +1,245 @@
 +/*
 + * (C) Copyright 2002
@@ -1222,4 +1222,3 @@ Index: u-boot.git/include/configs/qt2410.h
 +#endif
 +
 +#endif	/* __CONFIG_H */
-
