@@ -39,7 +39,7 @@ GBP8	I	GPB8	AB_DETECT		USB host/master cable detection
 GPB9	O	GPB9	USB_PULLUP		USB pullup to signal the host that we're ready
 GPB10	O	GPB10	VIBRATOR_ON		Vibrator switch
 
-GPBCON = 01 0100 0101 0000 0001 0110 = 0x145016
+GPBCON = 01 0100 0101 0100 0001 0110 = 0x145416
  
 
 GPC0	O	GPC0	GPS_RST
