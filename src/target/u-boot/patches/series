@@ -18,3 +18,4 @@ uboot-s3c2410-norelocate_irqvec_cpy.patch
 uboot-usbtty-acm.patch
 uboot-s3c2410_udc.patch
 uboot-gta01bv3.patch
+uboot-neo1973-poweroff.patch
