@@ -49,14 +49,14 @@ G_BEGIN_DECLS
 #define IS_FOOTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), FOOTER_TYPE))
 #define IS_FOOTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), FOOTER_TYPE))
 
-typedef struct _Footer       Footer;
-typedef struct _FooterClass  FooterClass;
+typedef struct _Footer    Footer;
+typedef struct _FooterClass    FooterClass;
 
 /**
  * @typedef OMFooterApp
  *
  * Opaque structure used for representing an Openmoko footer app UI.
- */ 
+ */
 /*struct _Footer
 {
     GtkHBox hbox;
@@ -73,7 +73,7 @@ typedef struct _FooterClass  FooterClass;
 struct _Footer
 {
     GtkHBox hbox;
-    
+
     GtkWidget* LeftEventBox;
     GtkWidget* LeftImage;
     GtkWidget* CenterLabel;
@@ -84,21 +84,17 @@ struct _Footer
 struct _FooterClass
 {
     GtkHBoxClass parent_class;
-    
+
     void (*footer) (Footer *f);
 };
 
-GType
-footer_get_type (void);
+GType footer_get_type (void);
 
-GtkWidget*     
-footer_new (void);
+GtkWidget* footer_new (void);
 
-void
-footer_clear (Footer *f);
+void footer_clear (Footer *f);
 
-void
-footer_set_status (Footer *f, const char* s);
+void footer_set_status (Footer *f, const char* s);
 
 G_END_DECLS
 

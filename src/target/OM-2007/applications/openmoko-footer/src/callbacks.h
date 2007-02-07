@@ -25,18 +25,15 @@
 
 //#define G_THREADS_ENABLED
 
-#define TASK_MANAGER_PROPERTY_WIDTH		200
-#define TASK_MANAGER_PROPERTY_HEIGHT	564 
-#define TASK_MANAGER_PROPERTY_X		0
-#define TASK_MANAGER_PROPERTY_Y 		45 
+#define TASK_MANAGER_PROPERTY_WIDTH    200
+#define TASK_MANAGER_PROPERTY_HEIGHT   564
+#define TASK_MANAGER_PROPERTY_X    0
+#define TASK_MANAGER_PROPERTY_Y    45
 
 /* footer */
-void 
-footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data);
+void footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data);
 
-void 
-footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data);
+void footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data);
 
 /* dbus */
-DBusHandlerResult 
-signal_filter (DBusConnection *connection, DBusMessage *message, void *user_data);
+DBusHandlerResult signal_filter (DBusConnection *connection, DBusMessage *message, void *user_data);

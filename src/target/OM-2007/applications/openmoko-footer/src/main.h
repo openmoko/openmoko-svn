@@ -35,14 +35,14 @@
  * @typedef MokoFooter
  *
  * Opaque structure used for representing an Openmoko Task Manager App. 
- */ 
+ */
 /* Types */
 typedef struct _MokoFooter 
 {
-	DBusConnection* bus;
-    	GMainLoop* loop;
-    	GtkWidget* toplevel_win;
-    	Footer* footer;
+    DBusConnection* bus;
+    GMainLoop* loop;
+    GtkWidget* toplevel_win;
+    Footer* footer;
 } MokoFooter;
 
 #endif /* main.h */

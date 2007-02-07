@@ -34,25 +34,29 @@ main( int argc, char **argv )
 
     GError* err = NULL;
     GdkPixbuf *pixbuf;
-    GtkStyle *style;    
+    GtkStyle *style;
     GdkPixmap *pixmap;
     GdkBitmap *bitmap;
-    
+
     dbus_error_init(&error);
 
-    if (!(app = g_malloc ( sizeof (MokoFooter)))){
-    		fprintf (stderr,"Openmoko-taskmanager: footer UI initialized failed, app space malloc failed!");
-    		exit (-1);
-    	}
+    if (!(app = g_malloc ( sizeof (MokoFooter))))
+    {
+        fprintf (stderr,"Openmoko-taskmanager: footer UI initialized failed, app space malloc failed!");
+        exit (-1);
+    }
 
     app->bus = dbus_bus_get (DBUS_BUS_SESSION, &error);
-    if (!app->bus) {
-        g_warning ("Failed to connect to the D-BUS daemon: %s", error.message);
+
+    if (!app->bus) 
+    {
+        g_warning ("Openmoko footer: %s", error.message);
         dbus_error_free(&error);
         return 1;
     }
-	app->loop = g_main_loop_new( NULL, FALSE );
-    
+
+    app->loop = g_main_loop_new( NULL, FALSE );
+
     gtk_init (&argc, &argv);
 
 ///initialize TOP LEVEL WINDOW 
@@ -74,30 +78,28 @@ main( int argc, char **argv )
 ///initialize OpenMoko Footer Widget
     app->footer = FOOTER(footer_new()); 
     gtk_widget_show_all (GTK_WIDGET (app->footer));
-    g_signal_connect ( G_OBJECT (app->footer->LeftEventBox), "button_press_event",
-    					G_CALLBACK (footer_leftbutton_clicked), app);
-    g_signal_connect ( G_OBJECT (app->footer->RightEventBox), "button_press_event",
-    					G_CALLBACK (footer_rightbutton_clicked), app);
+    g_signal_connect ( G_OBJECT (app->footer->LeftEventBox), "button_press_event", G_CALLBACK (footer_leftbutton_clicked), app);
+    g_signal_connect ( G_OBJECT (app->footer->RightEventBox), "button_press_event", G_CALLBACK (footer_rightbutton_clicked), app);
    
 ///Add OpenMoko Footer to Top Level windonw
-    gtk_container_add( GTK_CONTAINER(app->toplevel_win), GTK_WIDGET(app->footer) );
+    gtk_container_add( GTK_CONTAINER(app->toplevel_win), GTK_WIDGET(app->footer));
     // this violates the privacy concept, but it's a demo for now...
   
     dbus_connection_setup_with_g_main (app->bus, NULL);
     dbus_bus_add_match (app->bus, "type='signal',interface='org.openmoko.dbus.TaskManager'", &error );
-    dbus_connection_add_filter (app->bus, signal_filter, app, NULL );
+    dbus_connection_add_filter (app->bus, signal_filter, app, NULL);
 
     gtk_widget_show_all (app->toplevel_win);
 
-    g_main_loop_run ( app->loop );
-            
+    g_main_loop_run (app->loop);
+
     if (pixbuf)
-    	  g_free (pixbuf);
+        g_free (pixbuf);
     if (pixmap)
-    	  g_free (pixmap);
+        g_free (pixmap);
     if (bitmap)
-    	  g_free (bitmap);
+        g_free (bitmap);
     g_free (app );
-    
+
     return 0;
 }

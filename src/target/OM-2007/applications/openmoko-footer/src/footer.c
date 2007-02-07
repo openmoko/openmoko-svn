@@ -84,14 +84,13 @@ static void footer_class_init (FooterClass *Klass) /* Class Initialization */
 static void footer_init (Footer *f) /* Instance Construction */
 {
     PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
-  
+
 /*left image*/
     f->LeftEventBox = gtk_event_box_new (); 
     gtk_widget_show (GTK_WIDGET (f->LeftEventBox));
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(f->LeftEventBox),FALSE);
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET(f->LeftEventBox), FALSE, FALSE, BUTTON_PADDING);
     gtk_widget_set_events (GTK_WIDGET (f->LeftEventBox), GDK_BUTTON_PRESS_MASK);
-       
 
     f->LeftImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_history.png");
     gtk_widget_show (GTK_WIDGET (f->LeftImage));
@@ -104,8 +103,8 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_misc_set_alignment (GTK_MISC (f->CenterLabel), LABEL_ALIGNMENT_X, LABEL_ALIGNMENT_Y);
     gtk_label_set_single_line_mode (GTK_LABEL (f->CenterLabel), TRUE);
     if (PangoFont){
-	pango_font_description_set_size (PangoFont, FONT_SIZE);
-	gtk_widget_modify_font (GTK_WIDGET (f->CenterLabel), PangoFont);
+        pango_font_description_set_size (PangoFont, FONT_SIZE);
+        gtk_widget_modify_font (GTK_WIDGET (f->CenterLabel), PangoFont);
     }
     gtk_label_set_ellipsize (GTK_LABEL (f->CenterLabel), PANGO_ELLIPSIZE_END);
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET (f->CenterLabel), TRUE, TRUE, LABEL_PADDING);
@@ -117,14 +116,12 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(f->RightEventBox),FALSE);
     gtk_box_pack_end (GTK_BOX (f), GTK_WIDGET(f->RightEventBox), FALSE, FALSE, BUTTON_PADDING);
     gtk_widget_set_events (f->RightEventBox,GDK_BUTTON_PRESS_MASK);
-       
 
     f->RightImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_toggle.png");
     gtk_widget_show (GTK_WIDGET (f->RightImage));
     gtk_container_add (GTK_CONTAINER (f->RightEventBox), f->RightImage);
 
- 
-/*progressbar*/ 
+/*progressbar*/
 /*
     f->progressbar = gtk_progress_bar_new();
     gtk_widget_show (f->progressbar);
@@ -156,9 +153,9 @@ void footer_clear(Footer *f) /* Destruction */
 
 /**
 *@brief set footer progressbar status.
-*@param f	Footer reference
-*@param s	string which is consist of status message and progressbar percent,
-*			the string of message and percent is connected by symbol "@".
+*@param f    Footer reference
+*@param s    string which is consist of status message and progressbar percent,
+*            the string of message and percent is connected by symbol "@".
 *@return none
 */
 void footer_set_status(Footer *f, const char* s)
@@ -171,10 +168,10 @@ void footer_set_status(Footer *f, const char* s)
     int StrLength;
     gdouble fraction;
     int i;
-    
+
     strcpy(message,s);
     if(p_fraction = strrchr(s, '@'))
-	StrLength = strlen(s)-strlen(p_fraction);
+         StrLength = strlen(s)-strlen(p_fraction);
     else StrLength = strlen(s);
 
     memcpy(message,s,StrLength);
@@ -182,9 +179,9 @@ void footer_set_status(Footer *f, const char* s)
     for (i=0; i<4; i++)
          str_fraction[i] = s[StrLength+1+i];
     str_fraction[3] = '\0';
-    
+
     fraction = atoi(str_fraction)/(double)100;
-                                       
+
     g_print ("messsage is : %s\nthe char pointer is : %s\nlength of s and p_fraction: %d\nfraction is %lf:",message,p_fraction,StrLength,fraction );
 
     gtk_progress_bar_set_text (f->progressbar, message);
@@ -192,5 +189,5 @@ void footer_set_status(Footer *f, const char* s)
     if(fraction<=1 && fraction>=0)
          gtk_progress_bar_set_fraction (f->progressbar, fraction);
          */
-         
-}                   
+
+}
