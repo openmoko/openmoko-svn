@@ -524,7 +524,7 @@ Index: u-boot.git/include/configs/neo1973.h
 +#ifndef __CONFIG_H
 +#define __CONFIG_H
 +
-+#if 0
++#if defined(BUILD_FOR_RAM)
 +/* If we want to start u-boot from inside RAM */
 +#define CONFIG_SKIP_RELOCATE_UBOOT	1
 +#define CONFIG_SKIP_LOWLEVEL_INIT	1
