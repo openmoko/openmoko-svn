@@ -4,10 +4,10 @@ It was taken (almost blindly) from the Linux for Siemens SX1 project on
 handhelds.org.  Please don't complain to me about coding style issues
 or whitespace changes in this one - HW.
 
-Index: u-boot.git/drivers/usbtty.c
+Index: u-boot/drivers/usbtty.c
 ===================================================================
---- u-boot.git.orig/drivers/usbtty.c	2007-02-05 19:58:20.000000000 +0100
-+++ u-boot.git/drivers/usbtty.c	2007-02-05 20:04:44.000000000 +0100
+--- u-boot.orig/drivers/usbtty.c	2007-02-08 21:11:27.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-08 21:11:55.000000000 +0100
 @@ -1,6 +1,9 @@
  /*
   * (C) Copyright 2003
@@ -1146,10 +1146,10 @@ Index: u-boot.git/drivers/usbtty.c
 +
 +
  #endif
-Index: u-boot.git/drivers/usbtty.h
+Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.git.orig/drivers/usbtty.h	2007-02-05 19:58:20.000000000 +0100
-+++ u-boot.git/drivers/usbtty.h	2007-02-05 20:04:44.000000000 +0100
+--- u-boot.orig/drivers/usbtty.h	2007-02-08 21:11:27.000000000 +0100
++++ u-boot/drivers/usbtty.h	2007-02-08 21:11:55.000000000 +0100
 @@ -2,6 +2,9 @@
   * (C) Copyright 2003
   * Gerry Hamel, geh@ti.com, Texas Instruments
@@ -1238,10 +1238,10 @@ Index: u-boot.git/drivers/usbtty.h
 +#define STR_COUNT		0x07
  
  #endif
-Index: u-boot.git/drivers/usbdcore_omap1510.c
+Index: u-boot/drivers/usbdcore_omap1510.c
 ===================================================================
---- u-boot.git.orig/drivers/usbdcore_omap1510.c	2007-02-05 19:58:20.000000000 +0100
-+++ u-boot.git/drivers/usbdcore_omap1510.c	2007-02-05 20:04:44.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_omap1510.c	2007-02-08 21:11:27.000000000 +0100
++++ u-boot/drivers/usbdcore_omap1510.c	2007-02-08 21:11:55.000000000 +0100
 @@ -960,7 +960,7 @@
  /* Handle general USB interrupts and dispatch according to type.
   * This function implements TRM Figure 14-13.
@@ -1281,10 +1281,10 @@ Index: u-boot.git/drivers/usbdcore_omap1510.c
  /*
  -------------------------------------------------------------------------------
  */
-Index: u-boot.git/include/usb_cdc_acm.h
+Index: u-boot/include/usb_cdc_acm.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/include/usb_cdc_acm.h	2007-02-05 20:04:44.000000000 +0100
++++ u-boot/include/usb_cdc_acm.h	2007-02-08 21:11:55.000000000 +0100
 @@ -0,0 +1,43 @@
 +/*
 + * (C) Copyright 2006
@@ -1329,10 +1329,10 @@ Index: u-boot.git/include/usb_cdc_acm.h
 +		unsigned char parity;
 +		unsigned char data_bits;
 +}__attribute__((packed));
-Index: u-boot.git/include/usbdcore_omap1510.h
+Index: u-boot/include/usbdcore_omap1510.h
 ===================================================================
---- u-boot.git.orig/include/usbdcore_omap1510.h	2007-02-05 19:58:20.000000000 +0100
-+++ u-boot.git/include/usbdcore_omap1510.h	2007-02-05 20:04:44.000000000 +0100
+--- u-boot.orig/include/usbdcore_omap1510.h	2007-02-08 21:11:27.000000000 +0100
++++ u-boot/include/usbdcore_omap1510.h	2007-02-08 21:11:55.000000000 +0100
 @@ -161,13 +161,23 @@
  #define UDC_VBUS_CTRL	    (1 << 19)
  #define UDC_VBUS_MODE	    (1 << 18)
@@ -1362,10 +1362,10 @@ Index: u-boot.git/include/usbdcore_omap1510.h
  
  int  udc_init (void);
  
-Index: u-boot.git/include/usbdescriptors.h
+Index: u-boot/include/usbdescriptors.h
 ===================================================================
---- u-boot.git.orig/include/usbdescriptors.h	2007-02-05 19:58:20.000000000 +0100
-+++ u-boot.git/include/usbdescriptors.h	2007-02-05 20:04:44.000000000 +0100
+--- u-boot.orig/include/usbdescriptors.h	2007-02-08 21:11:27.000000000 +0100
++++ u-boot/include/usbdescriptors.h	2007-02-08 21:11:55.000000000 +0100
 @@ -92,15 +92,17 @@
  #define COMMUNICATIONS_DEVICE_CLASS	0x02
  
@@ -1456,10 +1456,10 @@ Index: u-boot.git/include/usbdescriptors.h
  } __attribute__ ((packed));
  
  struct usb_class_country_selection_descriptor {
-Index: u-boot.git/include/usbdcore.h
+Index: u-boot/include/usbdcore.h
 ===================================================================
---- u-boot.git.orig/include/usbdcore.h	2007-02-05 19:58:20.000000000 +0100
-+++ u-boot.git/include/usbdcore.h	2007-02-05 20:04:44.000000000 +0100
+--- u-boot.orig/include/usbdcore.h	2007-02-08 21:11:27.000000000 +0100
++++ u-boot/include/usbdcore.h	2007-02-08 21:11:55.000000000 +0100
 @@ -576,6 +576,9 @@
  
  	void (*event) (struct usb_device_instance *device, usb_device_event_t event, int data);
@@ -1470,3 +1470,138 @@ Index: u-boot.git/include/usbdcore.h
  	/* bus interface */
  	struct usb_bus_instance *bus;	/* which bus interface driver */
  
+Index: u-boot/drivers/usbdcore_ep0.c
+===================================================================
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-08 21:12:05.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-08 21:12:08.000000000 +0100
+@@ -223,7 +223,6 @@
+ 
+ 	case USB_DESCRIPTOR_TYPE_CONFIGURATION:
+ 		{
+-			int bNumInterface;
+ 			struct usb_configuration_descriptor
+ 				*configuration_descriptor;
+ 			struct usb_device_descriptor *device_descriptor;
+@@ -256,105 +255,6 @@
+ 					     usb_configuration_descriptor),
+ 				     max);
+ 
+-
+-			/* iterate across interfaces for specified configuration */
+-			dbg_ep0 (0, "bNumInterfaces: %d",
+-				 configuration_descriptor->bNumInterfaces);
+-			for (bNumInterface = 0;
+-			     bNumInterface <
+-			     configuration_descriptor->bNumInterfaces;
+-			     bNumInterface++) {
+-
+-				int bAlternateSetting;
+-				struct usb_interface_instance
+-					*interface_instance;
+-
+-				dbg_ep0 (3, "[%d] bNumInterfaces: %d",
+-					 bNumInterface,
+-					 configuration_descriptor->bNumInterfaces);
+-
+-				if (! (interface_instance = usbd_device_interface_instance (device,
+-								     port, index, bNumInterface)))
+-				{
+-					dbg_ep0 (3, "[%d] interface_instance NULL",
+-						 bNumInterface);
+-					return -1;
+-				}
+-				/* iterate across interface alternates */
+-				for (bAlternateSetting = 0;
+-				     bAlternateSetting < interface_instance->alternates;
+-				     bAlternateSetting++) {
+-					/*int class; */
+-					int bNumEndpoint;
+-					struct usb_interface_descriptor *interface_descriptor;
+-
+-					struct usb_alternate_instance *alternate_instance;
+-
+-					dbg_ep0 (3, "[%d:%d] alternates: %d",
+-						 bNumInterface,
+-						 bAlternateSetting,
+-						 interface_instance->alternates);
+-
+-					if (! (alternate_instance = usbd_device_alternate_instance (device, port, index, bNumInterface, bAlternateSetting))) {
+-						dbg_ep0 (3, "[%d] alternate_instance NULL",
+-							 bNumInterface);
+-						return -1;
+-					}
+-					/* copy descriptor for this interface */
+-					copy_config (urb, alternate_instance->interface_descriptor,
+-						     sizeof (struct usb_interface_descriptor),
+-						     max);
+-
+-					/*dbg_ep0(3, "[%d:%d] classes: %d endpoints: %d", bNumInterface, bAlternateSetting, */
+-					/*        alternate_instance->classes, alternate_instance->endpoints); */
+-
+-					/* iterate across classes for this alternate interface */
+-#if 0
+-					for (class = 0;
+-					     class < alternate_instance->classes;
+-					     class++) {
+-						struct usb_class_descriptor *class_descriptor;
+-						/*dbg_ep0(3, "[%d:%d:%d] classes: %d", bNumInterface, bAlternateSetting, */
+-						/*        class, alternate_instance->classes); */
+-						if (!(class_descriptor = usbd_device_class_descriptor_index (device, port, index, bNumInterface, bAlternateSetting, class))) {
+-							dbg_ep0 (3, "[%d] class NULL",
+-								 class);
+-							return -1;
+-						}
+-						/* copy descriptor for this class */
+-						copy_config (urb, class_descriptor,
+-							sizeof (struct usb_class_descriptor),
+-							max);
+-					}
+-#endif
+-
+-					/* iterate across endpoints for this alternate interface */
+-					interface_descriptor = alternate_instance->interface_descriptor;
+-					for (bNumEndpoint = 0;
+-					     bNumEndpoint < alternate_instance->endpoints;
+-					     bNumEndpoint++) {
+-						struct usb_endpoint_descriptor *endpoint_descriptor;
+-						dbg_ep0 (3, "[%d:%d:%d] endpoint: %d",
+-							 bNumInterface,
+-							 bAlternateSetting,
+-							 bNumEndpoint,
+-							 interface_descriptor->
+-							 bNumEndpoints);
+-						if (!(endpoint_descriptor = usbd_device_endpoint_descriptor_index (device, port, index, bNumInterface, bAlternateSetting, bNumEndpoint))) {
+-							dbg_ep0 (3, "[%d] endpoint NULL",
+-								 bNumEndpoint);
+-							return -1;
+-						}
+-						/* copy descriptor for this endpoint */
+-						copy_config (urb, endpoint_descriptor,
+-							     sizeof (struct usb_endpoint_descriptor),
+-							     max);
+-					}
+-				}
+-			}
+-			dbg_ep0 (3, "lengths: %d %d",
+-				 le16_to_cpu (configuration_descriptor->wTotalLength),
+-				 urb->actual_length);
+ 		}
+ 		break;
+ 
+@@ -363,6 +263,7 @@
+ 			struct usb_string_descriptor *string_descriptor;
+ 
+ 			if (!(string_descriptor = usbd_get_string (index))) {
++				dbg_ep0(0, "Invalid string index %u\n", index);
+ 				return -1;
+ 			}
+ 			/*dbg_ep0(3, "string_descriptor: %p", string_descriptor); */
+@@ -495,6 +396,8 @@
+ 
+ 	/* handle USB Standard Request (c.f. USB Spec table 9-2) */
+ 	if ((request->bmRequestType & USB_REQ_TYPE_MASK) != 0) {
++		if (device->device_state <= STATE_CONFIGURED)
++			return device->cdc_recv_setup(request, urb);
+ 		dbg_ep0 (1, "non standard request: %x",
+ 			 request->bmRequestType & USB_REQ_TYPE_MASK);
+ 		return -1;	/* Stall here */
