@@ -106,7 +106,7 @@ Index: u-boot.git/common/cmd_nand.c
  	"nand lock [tight] [status] - bring nand to lock state or display locked pages\n"
 -	"nand unlock [offset] [size] - unlock section\n");
 +	"nand unlock [offset] [size] - unlock section\n"
-+        "nand createbbt - create bad block table\n");
++	"nand createbbt - create bad block table\n");
  
  static int nand_load_image(cmd_tbl_t *cmdtp, nand_info_t *nand,
  			   ulong offset, ulong addr, char *cmd)
