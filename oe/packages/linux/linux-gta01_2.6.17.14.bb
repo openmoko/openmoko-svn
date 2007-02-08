@@ -1,6 +1,6 @@
-DESCRIPTION = "2.6 Linux Development Kernel for FIC GTA01"
+DESCRIPTION = "2.6 Linux Development Kernel for FIC Neo1973 (GTA01)"
 SECTION = "kernel"
-AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
+AUTHOR = "Harald Welte <laforge@openmoko.org>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-gta01"
@@ -10,13 +10,13 @@ PR = "${MOKOR}-r1"
 inherit kernel
 
 FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
-HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
+#HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
 
 ##############################################################
 # source and patches
 #
 SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.14.tar.bz2 \
-           file://patches-2.6.17.14-${MOKOR}.tar.bz2 \
+           svn://svn.openmoko.org/trunk/src/target/kernel;module=patches;proto=https \
            file://defconfig-${MACHINE}"
 S = "${WORKDIR}/linux-2.6.17.14"
 
