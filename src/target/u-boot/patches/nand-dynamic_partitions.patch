@@ -17,8 +17,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot.git/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-06 12:10:58.000000000 +0100
-+++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-06 12:11:58.000000000 +0100
+--- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-07 16:48:48.000000000 +0100
++++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-08 01:00:19.000000000 +0100
 @@ -1051,4 +1051,54 @@
  	return 1;
  }
@@ -45,7 +45,7 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
 +		unsigned int bb_delta = 0;
 +		unsigned int offs = 0;
 +		char mtdpart[32];
-+		for (offs = cur_offs; offs < cur_offs + part_size[part]; offs += 0x4000) {
++		for (offs = cur_offs; offs < cur_offs + part_size[part] + bb_delta; offs += 0x4000) {
 +			int block = (int) (offs >> (this->bbt_erase_shift - 1));
 +			u_int8_t bbt = (this->bbt[block >> 3] >> (block & 0x06)) & 0x03;
 +			if (bbt == 0x03)
@@ -76,8 +76,8 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
  #endif
 Index: u-boot.git/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/neo1973.h	2007-02-06 12:11:34.000000000 +0100
-+++ u-boot.git/include/configs/neo1973.h	2007-02-06 12:11:58.000000000 +0100
+--- u-boot.git.orig/include/configs/neo1973.h	2007-02-07 16:48:48.000000000 +0100
++++ u-boot.git/include/configs/neo1973.h	2007-02-08 01:00:12.000000000 +0100
 @@ -103,7 +103,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
@@ -114,8 +114,8 @@ Index: u-boot.git/include/configs/neo1973.h
  #endif	/* __CONFIG_H */
 Index: u-boot.git/common/cmd_jffs2.c
 ===================================================================
---- u-boot.git.orig/common/cmd_jffs2.c	2007-02-06 11:38:01.000000000 +0100
-+++ u-boot.git/common/cmd_jffs2.c	2007-02-06 12:11:58.000000000 +0100
+--- u-boot.git.orig/common/cmd_jffs2.c	2007-02-07 16:47:38.000000000 +0100
++++ u-boot.git/common/cmd_jffs2.c	2007-02-07 16:48:48.000000000 +0100
 @@ -2123,6 +2123,18 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
