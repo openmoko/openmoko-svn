@@ -36,7 +36,7 @@
 
 G_BEGIN_DECLS
 #define MOKO_TYPE_DIALER_STATUS                (moko_dialer_status_get_type())
-#define MOKO_DIALER_STATUS (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_STATUS, MokoDialerStatus))
+#define MOKO_DIALER_STATUS(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_STATUS, MokoDialerStatus))
 #define MOKO_DIALER_STATUS_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass),MOKO_TYPE_DIALER_STATUS,MokoDialerStatusClass))
 #define MOKO_IS_DIALER_STATUS(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_DIALER_STATUS))
 #define MOKO_IS_DIALER_STATUS_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_DIALER_STATUS))
@@ -92,6 +92,14 @@ void moko_dialer_status_set_icons (MokoDialerStatus * moko_dialer_status,
 void moko_dialer_status_set_status_label (MokoDialerStatus *
                                           moko_dialer_status,
                                           const gchar * text);
+
+void moko_dialer_status_set_error (MokoDialerStatus * moko_dialer_status);
+void moko_dialer_status_update_icon (MokoDialerStatus * moko_dialer_status);
+int moko_dialer_status_add_status_icon (MokoDialerStatus * moko_dialer_status,
+                                        const gchar * text);
+void moko_dialer_status_set_icon_by_index (MokoDialerStatus * moko_dialer_status,
+                                           gint index);
+
 
 G_END_DECLS
 #endif //

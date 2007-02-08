@@ -200,8 +200,8 @@ alsa_get_volume (int *l, int *r)
   *r = lr;
 
   if (mixer_timeout)
-    gtk_timeout_remove (mixer_timeout);
-  mixer_timeout = gtk_timeout_add (5000, alsa_mixer_timeout, NULL);
+    g_source_remove (mixer_timeout);
+  mixer_timeout = g_timeout_add (5000, alsa_mixer_timeout, NULL);
 }
 
 

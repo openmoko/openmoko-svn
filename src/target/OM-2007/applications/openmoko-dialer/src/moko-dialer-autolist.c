@@ -217,13 +217,6 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
 
   gint inserted = 0;
 
-
-  gint len;
-
-  if (string)
-    len = strlen (string);
-  else
-    len = 0;
 //  DBG_TRACE();
 
 //insert the tips here to avoid the _show_all show it from the start.
@@ -232,9 +225,9 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
 
   if (!moko_dialer_autolist->tipscreated)
   {
-    gchar filepath[MOKO_DIALER_MAX_PATH_LEN + 1];
-    if (file_create_data_path_for_the_file
-        (MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH, filepath))
+    gchar *filepath;
+    if ((filepath =
+          file_create_data_path_for_the_file (MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH)))
     {
       imagePerson = gtk_image_new_from_file (filepath);
     }
@@ -246,7 +239,7 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
     gtk_widget_set_size_request (imagePerson, 40, 40);
 //  gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, TRUE, 0);
 //gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, FALSE, 0);
-    gtk_box_pack_start (GTK_CONTAINER (moko_dialer_autolist), imagePerson,
+    gtk_box_pack_start (GTK_BOX (moko_dialer_autolist), imagePerson,
                         FALSE, FALSE, 0);
 
     moko_dialer_autolist->imagePerson = imagePerson;
@@ -261,7 +254,7 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
 
       moko_dialer_tip_set_selected (tip, FALSE);
 
-      gtk_box_pack_start (GTK_CONTAINER (moko_dialer_autolist), tip, TRUE,
+      gtk_box_pack_start (GTK_BOX (moko_dialer_autolist), tip, TRUE,
                           TRUE, 0);
 //       gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, FALSE,FALSE, 0);                  
 //       gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, FALSE,TRUE, 0);
@@ -402,7 +395,7 @@ moko_dialer_autolist_set_select (MokoDialerAutolist * moko_dialer_autolist,
       //refresh the imagePerson widget
 //      file_load_person_image_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
 //      file_load_person_image_scalable_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
-      contact_load_contact_photo (moko_dialer_autolist->imagePerson,
+      contact_load_contact_photo (GTK_IMAGE (moko_dialer_autolist->imagePerson),
                                   moko_dialer_autolist->
                                   readycontacts[selected].p_contact->ID);
       gtk_widget_show (moko_dialer_autolist->imagePerson);

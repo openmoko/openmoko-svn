@@ -80,7 +80,7 @@ for(gint i=0;i<MOKO_DIALER_MAX_STATUS_ICONS;i++)
 //ok now, we arrange them in the vbox.
 
 // we create another vbox to hold the status labels.
-  GtkVBox *vbox2 = gtk_vbox_new (FALSE, 0);
+  GtkWidget *vbox2 = gtk_vbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox2), moko_dialer_status->labelStatus, TRUE,
                       TRUE, 0);
 
@@ -92,7 +92,7 @@ for(gint i=0;i<MOKO_DIALER_MAX_STATUS_ICONS;i++)
   gtk_box_pack_start (GTK_BOX (vbox2), moko_dialer_status->labelNumber, TRUE,
                       TRUE, 0);
 // a hbox to hold the image and the vbox2
-  GtkVBox *hbox2 = gtk_hbox_new (FALSE, 0);
+  GtkWidget *hbox2 = gtk_hbox_new (FALSE, 0);
 
 
 
@@ -161,7 +161,7 @@ moko_dialer_status_set_person_image (MokoDialerStatus * moko_dialer_status,
 //file_load_person_image_scalable_from_relative_path(moko_dialer_status->imagePerson,path);
 //file_load_person_image_from_relative_path(moko_dialer_status->imagePerson,path);
 
-  contact_load_contact_photo (moko_dialer_status->imagePerson, id);
+  contact_load_contact_photo (GTK_IMAGE (moko_dialer_status->imagePerson), id);
 //file_load_person_image_scalable_from_relative_path(moko_dialer_status->imagePerson,path);
 }
 
@@ -207,7 +207,7 @@ moko_dialer_status_set_icon_by_index (MokoDialerStatus * moko_dialer_status,
 {
   if (moko_dialer_status->iconStatus[index] != 0
       && index < moko_dialer_status->number_of_the_icons)
-    gtk_image_set_from_pixbuf (moko_dialer_status->icon,
+    gtk_image_set_from_pixbuf (GTK_IMAGE (moko_dialer_status->icon),
                                moko_dialer_status->iconStatus[index]);
 }
 
@@ -225,7 +225,7 @@ void
 moko_dialer_status_set_error (MokoDialerStatus * moko_dialer_status)
 {
   if (moko_dialer_status->iconError)
-    gtk_image_set_from_pixbuf (moko_dialer_status->icon,
+    gtk_image_set_from_pixbuf (GTK_IMAGE (moko_dialer_status->icon),
                                moko_dialer_status->iconError);
   moko_dialer_status_set_status_label (moko_dialer_status, "");
 }
@@ -234,7 +234,7 @@ void
 moko_dialer_status_set_success (MokoDialerStatus * moko_dialer_status)
 {
   if (moko_dialer_status->iconSuccess)
-    gtk_image_set_from_pixbuf (moko_dialer_status->icon,
+    gtk_image_set_from_pixbuf (GTK_IMAGE (moko_dialer_status->icon),
                                moko_dialer_status->iconSuccess);
 
 }

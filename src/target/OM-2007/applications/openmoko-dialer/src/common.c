@@ -53,11 +53,11 @@ create_pixbuf (const gchar * filename)
 /**
  * @brief Create a filepath by the filename from the PKGDATADIR
  * @param filename The filename of the pixbuf file
- * @return TURE, FALSE
+ * @return Newly allocated string if the file exists, otherwise returns NULL
  */
 
-gboolean
-file_create_data_path_for_the_file (const gchar * filename, gchar * path)
+gchar *
+file_create_data_path_for_the_file (const gchar * filename)
 {
   gchar *pathname;
 
@@ -66,16 +66,13 @@ file_create_data_path_for_the_file (const gchar * filename, gchar * path)
 
   if (g_file_test (pathname, G_FILE_TEST_EXISTS))
   {
-    strcpy (path, pathname);
-    g_free (pathname);
-    return TRUE;
-
+    return pathname;
   }
   else
   {
     g_debug ("Can not find the file %s", pathname);
     g_free (pathname);
-    return FALSE;
+    return NULL;
   }
 
 
@@ -135,7 +132,7 @@ file_new_image_from_relative_path (char *rela_path)
 
 
   gchar *pathname;
-  GtkImage *image = 0;
+  GtkWidget *image = 0;
 
   pathname = g_strdup_printf ("%s%s%s", PKGDATADIR, G_DIR_SEPARATOR_S,
                               rela_path);

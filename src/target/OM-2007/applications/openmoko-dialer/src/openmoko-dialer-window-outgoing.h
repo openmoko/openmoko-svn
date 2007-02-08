@@ -28,11 +28,10 @@ extern "C"
 {
 #endif
 
-
-
   gint window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data);
-
   void window_outgoing_prepare (MOKO_DIALER_APP_DATA * appdata);
+  void window_outgoing_fails (MOKO_DIALER_APP_DATA *appdata);
+
 #ifdef __cplusplus
 }
 #endif

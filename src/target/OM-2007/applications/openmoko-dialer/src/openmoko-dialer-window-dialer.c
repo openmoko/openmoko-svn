@@ -29,10 +29,13 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkmenuitem.h>
 #include <gtk/gtkvbox.h>
+
+#include "common.h"
 #include "contacts.h"
 #include "openmoko-dialer-main.h"
 #include "openmoko-dialer-window-dialer.h"
 #include "openmoko-dialer-window-history.h"
+#include "openmoko-dialer-window-outgoing.h"
 
 void
 cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
@@ -52,11 +55,10 @@ cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   {
     moko_dialer_textview_delete (appdata->moko_dialer_text_view);
 //refresh the autolist,but do not automaticall fill the textview
-    char codesinput[MOKO_DIALER_MAX_NUMBER_LEN + 1];
-    moko_dialer_textview_get_input (appdata->moko_dialer_text_view,
-                                    codesinput, 0);
+    gchar *codesinput;
+    codesinput = moko_dialer_textview_get_input (appdata->moko_dialer_text_view, FALSE);
 
-    if (strlen (codesinput) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
+    if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
     {
       moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
                                               codesinput, FALSE);
@@ -64,7 +66,7 @@ cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
     }
     else
       moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
-
+   g_free (codesinput);
 
   }
 
@@ -84,13 +86,13 @@ cb_history_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 void
 window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
 {
-  gchar codesinput[MOKO_DIALER_MAX_NUMBER_LEN + 1];
+  gchar *codesinput;
   //get the input digits
-  moko_dialer_textview_get_input (appdata->moko_dialer_text_view, codesinput,
-                                  0);
-  if (strlen (codesinput) < 1)
+  codesinput = moko_dialer_textview_get_input (appdata->moko_dialer_text_view,
+                                               FALSE);
+  if (g_utf8_strlen (codesinput, -1) < 1)
   {
-    if (strlen (appdata->g_state.lastnumber) > 0)
+    if (g_utf8_strlen (appdata->g_state.lastnumber, -1) > 0)
     {
       moko_dialer_textview_insert (appdata->moko_dialer_text_view,
                                    appdata->g_state.lastnumber);
@@ -110,7 +112,7 @@ window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
   moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
 
 //got the number;
-  strcpy (appdata->g_peer_info.number, codesinput);
+  codesinput = g_strdup (appdata->g_peer_info.number);
 
 //retrieve the contact information if any.
   contact_get_peer_info_from_number (appdata->g_contactlist.contacts,
@@ -134,7 +136,7 @@ gtk_widget_show(appdata->window_incoming);
 //start dialling.
   gtk_widget_show (appdata->window_outgoing);
 
-
+  g_free (codesinput);
 
 }
 
@@ -150,7 +152,7 @@ void
 on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
                                   gpointer user_data)
 {
-  gchar codesinput[MOKO_DIALER_MAX_NUMBER_LEN + 1];
+  gchar *codesinput;
   gint lenstring = 0;
   gint leninput = 0;
   MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
@@ -158,9 +160,9 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
   DBG_MESSAGE ("GOT THE MESSAGE OF SELECTED:%s",
                ready_contact->p_entry->content);
-  moko_dialer_textview_get_input (moko_dialer_text_view, codesinput, 0);
-  lenstring = strlen (ready_contact->p_entry->content);
-  leninput = strlen (codesinput);
+  codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
+  lenstring = g_utf8_strlen (ready_contact->p_entry->content, -1);
+  leninput = g_utf8_strlen (codesinput, -1);
   if (lenstring > leninput)
   {
 
@@ -169,6 +171,8 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
                                     content[leninput]));
 
   }
+
+  g_free (codesinput);
 
 }
 
@@ -229,7 +233,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   char input[2];
   input[0] = parac;
   input[1] = 0;
-  char codesinput[MOKO_DIALER_MAX_NUMBER_LEN + 1];
+  gchar *codesinput;
 
 //DBG_TRACE();
   MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
@@ -240,12 +244,12 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
 //DBG_TRACE();
 
 
-  moko_dialer_textview_get_input (moko_dialer_text_view, codesinput, 0);
+  codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
 //DBG_TRACE();
 
 //DBG_MESSAGE("LEN=%d,MAX=%d",strlen(codesinput),MOKO_DIALER_MAX_NUMBER_LEN);
 
-  if (strlen (codesinput) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
+  if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
   {
     moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
                                             codesinput, TRUE);
@@ -254,6 +258,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   {
     moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
   }
+  g_free (codesinput);
 
 }
 void
@@ -298,33 +303,32 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     GdkColor color;
     gdk_color_parse ("black", &color);
 
-    GtkVBox *vbox = NULL;
+    GtkWidget *vbox = NULL;
 
 
-    MokoFingerWindow *window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
+    GtkWidget *window = moko_finger_window_new ();
 
 
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
-    GtkMenuItem *closeitem =
-      GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Close"));
+    GtkWidget *closeitem = gtk_menu_item_new_with_label ("Close");
     g_signal_connect (G_OBJECT (closeitem), "activate",
                       G_CALLBACK (on_dialer_menu_close), p_dialer_data);
-    gtk_menu_shell_append (appmenu, closeitem);
+    gtk_menu_shell_append (GTK_MENU_SHELL (appmenu), closeitem);
 
     GtkMenuItem *hideitem =
       GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Hide"));
     g_signal_connect (G_OBJECT (hideitem), "activate",
                       G_CALLBACK (on_dialer_menu_hide), p_dialer_data);
-    gtk_menu_shell_append (appmenu, hideitem);
+    gtk_menu_shell_append (GTK_MENU_SHELL (appmenu), GTK_WIDGET (hideitem));
 
 
-    moko_finger_window_set_application_menu (window, appmenu);
+    moko_finger_window_set_application_menu (MOKO_FINGER_WINDOW (window), appmenu);
 
 //    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
-     g_signal_connect ((gpointer) window, "show",
+     g_signal_connect (G_OBJECT (window), "show",
 	                    G_CALLBACK (on_window_dialer_show),
 	                    p_dialer_data);
-    g_signal_connect ((gpointer) window, "hide",
+    g_signal_connect (G_OBJECT (window), "hide",
 	                    G_CALLBACK (on_window_dialer_hide),
 	                    p_dialer_data);
 
@@ -332,21 +336,21 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     /* contents */
     vbox = gtk_vbox_new (FALSE, 0);
-    GtkHBox *hbox = gtk_hbox_new (FALSE, 10);
+    GtkWidget *hbox = gtk_hbox_new (FALSE, 10);
 
 
-    GtkEventBox *eventbox1 = gtk_event_box_new ();
+    GtkWidget *eventbox1 = gtk_event_box_new ();
     gtk_widget_show (eventbox1);
     //  gtk_widget_set_size_request (eventbox1, 480, 132);
-    gtk_widget_set_name (GTK_WIDGET (eventbox1), "gtkeventbox-black");
+    gtk_widget_set_name (eventbox1, "gtkeventbox-black");
 
-    MokoDialerAutolist *autolist = moko_dialer_autolist_new ();
-    moko_dialer_autolist_set_data (autolist, &(p_dialer_data->g_contactlist));
-    p_dialer_data->moko_dialer_autolist = autolist;
+    GtkWidget *autolist = moko_dialer_autolist_new ();
+    moko_dialer_autolist_set_data (MOKO_DIALER_AUTOLIST (autolist), &(p_dialer_data->g_contactlist));
+    p_dialer_data->moko_dialer_autolist = MOKO_DIALER_AUTOLIST (autolist);
 
     gtk_container_add (GTK_CONTAINER (eventbox1), autolist);
 //    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), FALSE, FALSE, 5 );
-    gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (eventbox1), FALSE, FALSE,
+    gtk_box_pack_start (GTK_BOX (vbox), eventbox1, FALSE, FALSE,
                         0);
 
     gtk_widget_modify_bg (eventbox1, GTK_STATE_NORMAL, &color);
@@ -369,20 +373,20 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     eventbox1 = gtk_event_box_new ();
     gtk_widget_show (eventbox1);
-    gtk_widget_set_name (GTK_WIDGET (eventbox1), "gtkeventbox-black");
+    gtk_widget_set_name (eventbox1, "gtkeventbox-black");
     gtk_widget_modify_bg (eventbox1, GTK_STATE_NORMAL, &color);
 //        gtk_widget_set_size_request (eventbox1, 480, 132);
 
-    MokoDialerTextview *mokotextview = moko_dialer_textview_new ();
-    p_dialer_data->moko_dialer_text_view = mokotextview;
+    GtkWidget *mokotextview = moko_dialer_textview_new ();
+    p_dialer_data->moko_dialer_text_view = MOKO_DIALER_TEXTVIEW (mokotextview);
 
     gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
-    gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (eventbox1), FALSE, FALSE,
+    gtk_box_pack_start (GTK_BOX (vbox), eventbox1, FALSE, FALSE,
                         0);
 //    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokotextview), FALSE,FALSE, 5 );
 
 
-    MokoDialerPanel *mokodialerpanel = moko_dialer_panel_new ();
+    GtkWidget *mokodialerpanel = moko_dialer_panel_new ();
 
     gtk_widget_set_size_request (mokodialerpanel, 380, 384);
 
@@ -394,73 +398,73 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_hold",
                       G_CALLBACK (on_dialer_panel_user_hold), p_dialer_data);
 
-    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (mokodialerpanel), TRUE,
+    gtk_box_pack_start (GTK_BOX (hbox), mokodialerpanel, TRUE,
                         TRUE, 5);
 
 
 
 //the buttons
 
-    GtkVBox *vbox2 = gtk_vbox_new (FALSE, 0);
-    GtkButton *button1 = moko_pixmap_button_new ();
+    GtkWidget *vbox2 = gtk_vbox_new (FALSE, 0);
+    GtkWidget *button1 = moko_pixmap_button_new ();
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (cb_delete_button_clicked), p_dialer_data);
-    gtk_widget_set_name (GTK_WIDGET (button1), "mokofingerbutton-orange");
-    moko_pixmap_button_set_center_stock (button1, "gtk-delete");
-    moko_pixmap_button_set_action_btn_lower_label (button1, "Delete");
+    gtk_widget_set_name (button1, "mokofingerbutton-orange");
+    moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (button1), "gtk-delete");
+    moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button1), "Delete");
     gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X,
                                  WINDOW_DIALER_BUTTON_SIZE_Y);
 
-    gtk_box_pack_start (GTK_BOX (vbox2), GTK_WIDGET (button1), FALSE, FALSE,
+    gtk_box_pack_start (GTK_BOX (vbox2), button1, FALSE, FALSE,
                         5);
 
-    GtkButton *button3 = moko_pixmap_button_new ();
+    GtkWidget *button3 = moko_pixmap_button_new ();
     g_signal_connect (G_OBJECT (button3), "clicked",
                       G_CALLBACK (cb_history_button_clicked), p_dialer_data);
-    gtk_widget_set_name (GTK_WIDGET (button3), "mokofingerbutton-orange");
+    gtk_widget_set_name (button3, "mokofingerbutton-orange");
 //moko_pixmap_button_set_center_stock(button3,"gtk-refresh");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (button3,
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON (button3),
                                                             file_new_image_from_relative_path
                                                             ("all.png"));
-    moko_pixmap_button_set_action_btn_lower_label (button3, "History");
+    moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button3), "History");
     gtk_widget_set_size_request (button3, WINDOW_DIALER_BUTTON_SIZE_X,
                                  WINDOW_DIALER_BUTTON_SIZE_Y);
-    gtk_box_pack_start (GTK_BOX (vbox2), GTK_WIDGET (button3), FALSE, FALSE,
+    gtk_box_pack_start (GTK_BOX (vbox2), button3, FALSE, FALSE,
                         5);
 
 
-    GtkButton *button2 = moko_pixmap_button_new ();
+    GtkWidget *button2 = moko_pixmap_button_new ();
 
     g_signal_connect (G_OBJECT (button2), "clicked",
                       G_CALLBACK (cb_dialer_button_clicked), p_dialer_data);
-    gtk_widget_set_name (GTK_WIDGET (button2), "mokofingerbutton-black");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (button2,
+    gtk_widget_set_name (button2, "mokofingerbutton-black");
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON (button2),
                                                             file_new_image_from_relative_path
                                                             ("phone.png"));
-    moko_pixmap_button_set_action_btn_lower_label (button2, "Dial");
+    moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button2), "Dial");
     gtk_widget_set_size_request (button2, WINDOW_DIALER_BUTTON_SIZE_X + 20,
                                  WINDOW_DIALER_BUTTON_SIZE_Y + 80);
 
-    gtk_box_pack_start (GTK_BOX (vbox2), GTK_WIDGET (button2), FALSE, FALSE,
+    gtk_box_pack_start (GTK_BOX (vbox2), button2, FALSE, FALSE,
                         20);
 
 
-    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (vbox2), TRUE, TRUE, 5);
+    gtk_box_pack_start (GTK_BOX (hbox), vbox2, TRUE, TRUE, 5);
 
 
 
-    gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (hbox), TRUE, TRUE, 5);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 5);
 
 
 
 
-    moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
+    moko_finger_window_set_contents (MOKO_FINGER_WINDOW (window), vbox);
 
 
     p_dialer_data->window_dialer = window;
 
-    gtk_widget_show_all (GTK_WIDGET (window));
-    gtk_widget_hide(GTK_WIDGET (window));
+    gtk_widget_show_all (window);
+    gtk_widget_hide(window);
 
    
 

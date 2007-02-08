@@ -31,7 +31,7 @@
 
 G_BEGIN_DECLS
 #define MOKO_TYPE_DIALER_TEXTVIEW                (moko_dialer_textview_get_type())
-#define MOKO_DIALER_TEXTVIEW (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_TEXTVIEW, MokoDialerTextview))
+#define MOKO_DIALER_TEXTVIEW(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_TEXTVIEW, MokoDialerTextview))
 #define MOKO_DIALER_TEXTVIEW_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass),MOKO_TYPE_DIALER_TEXTVIEW,MokoDialerTextviewClass))
 #define MOKO_IS_DIALER_TEXTVIEW(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_DIALER_TEXTVIEW))
 #define MOKO_IS_DIALER_TEXTVIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_DIALER_TEXTVIEW))
@@ -63,9 +63,15 @@ GtkWidget *moko_dialer_textview_new ();
 int moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
                                  const gchar * number);
 
-int moko_dialer_textview_get_input (MokoDialerTextview * moko_dialer_textview,
-                                    gchar * input, int ALL);
+gchar *moko_dialer_textview_get_input (MokoDialerTextview * moko_dialer_textview,
+                                       gboolean all_text);
 int moko_dialer_textview_empty (MokoDialerTextview * moko_dialer_textview);
+int moko_dialer_textview_fill_it (MokoDialerTextview * moko_dialer_textview,
+                                  gchar * string);
+int moko_dialer_textview_delete (MokoDialerTextview * moko_dialer_textview);
+void moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview);
+gint moko_dialer_textview_confirm_it (MokoDialerTextview * moko_dialer_textview,
+                                      const gchar * string);
 
 G_END_DECLS
 #endif //

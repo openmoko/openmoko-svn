@@ -24,7 +24,7 @@ static char pinbuf[PIN_SIZE + 1];
   }
   else
   {
-   gsm_pin_require(pinbuf);
+    gsm_pin_require (pinbuf);
     return lgsm_pin (lh, pinbuf);
   }
 
@@ -32,7 +32,7 @@ static char pinbuf[PIN_SIZE + 1];
 }
 
 int
-pin_init (struct lgsm_handle *lh, const char *pin_preset)
+pin_init (struct lgsm_handle *lh, char *pin_preset)
 {
   pin = pin_preset;
   return lgsm_evt_handler_register (lh, GSMD_EVT_PIN, &pin_handler);

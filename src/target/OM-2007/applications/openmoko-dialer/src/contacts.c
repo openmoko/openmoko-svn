@@ -642,9 +642,9 @@ contact_load_contact_photo (GtkImage * image, const char *id)
 
 if(photo)
   if (photo)
-    //gdk_pixbuf_loader_write (loader, photo->data.inlined.data,
-    //                         photo->data.inlined.length, NULL);
-    gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
+    gdk_pixbuf_loader_write (loader, photo->data.inlined.data,
+                             photo->data.inlined.length, NULL);
+    //gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
 
 
   gdk_pixbuf_loader_close (loader, NULL);

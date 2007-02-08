@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <gdk/gdk.h>
+
 #include <libgsmd/libgsmd.h>
 #include <libgsmd/event.h>
-//#include "../include/dialer.h"
+
+#include "moko-dialer-includes.h"
+
 static int IncomingSignaled;    ///<to keep communication with GUI
 static int ClipSignaled;        ///<to keep communication with GUI
 static int KeepCalling;
@@ -124,12 +128,15 @@ netreg_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 
   switch (aux->u.netreg.state)
   {
-    case 0:
+    case GSMD_NETREG_NONE:
       printf ("not searching for network ");
       break;
     case 1:
       printf ("registered (home network) ");
       break;
+    /* 
+     * FIXME: these are not defined in gsmd/event.h
+     *
     case 2:
       printf ("searching for network ");
       break;
@@ -139,6 +146,9 @@ netreg_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
     case 5:
       printf ("registered (roaming) ");
       break;
+     *
+     *
+     */
   }
 
   if (aux->u.netreg.lac)

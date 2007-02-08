@@ -32,7 +32,7 @@ G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
 //static void  moko_dialer_textview_pressed  (MokoDigitButton * button, GdkEventButton  *event,gpointer data);
 //static void moko_dialer_textview_pressed (MokoDigitButton * button, gpointer data);
 
-     static gint moko_dialer_textview_signals[LAST_SIGNAL] = { 0 };
+//static gint moko_dialer_textview_signals[LAST_SIGNAL] = { 0 };
 
 static void
 moko_dialer_textview_class_init (MokoDialerTextviewClass * class)
@@ -61,9 +61,9 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
   moko_dialer_textview->tag_for_cursor = NULL;
   moko_dialer_textview->tag_for_autofilled = NULL;
 
+  /* TODO: use theme colours */
   gdk_color_parse ("black", &color);
-//                      gtk_widget_modify_bg(textview,GTK_STATE_NORMAL,&color);
-  gtk_widget_modify_base (textview, GTK_STATE_NORMAL, &color);
+  gtk_widget_modify_base (GTK_WIDGET (textview), GTK_STATE_NORMAL, &color);
 
 
 
@@ -251,16 +251,17 @@ moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
 
 
   len = gtk_text_buffer_get_char_count (buffer);
-  // len=strlen(codestring);
   if (len >= 0 && len < MOKO_DIALER_MAX_NUMBER_LEN)
   {
 
-    gtk_text_buffer_insert_at_cursor (buffer, number, strlen (number));
-    len = len + strlen (number);
+    gtk_text_buffer_insert_at_cursor (buffer, number, g_utf8_strlen (number, -1));
+    len = len + g_utf8_strlen (number, -1);
   }
   else
   {
-//      DBG_WARN("INPUT EXCEEDS %d,reset to null!",MAXDIALNUMBERLEN);
+    // DBG_WARN("INPUT EXCEEDS %d,reset to null!",MAXDIALNUMBERLEN);
+
+    /* FIXME: shouldn't this just leave the existing number? */
     gtk_text_buffer_set_text (buffer, number, -1);
     len = 1;
   }
@@ -287,47 +288,40 @@ moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
 //get the input section of the textview 
 //if ALL=true, get whole text
 //else only get the inputed digits.
-gint
+gchar *
 moko_dialer_textview_get_input (MokoDialerTextview * moko_dialer_textview,
-                                gchar * input, int ALL)
+                                gboolean all_text)
 {
-  gchar *codestring;
   GtkTextBuffer *buffer;
   GtkTextIter start;
   GtkTextIter end;
   GtkTextIter insertiter;
   GtkTextMark *insertmark;
 
-//DBG_ENTER();
-
-/* Obtaining the buffer associated with the widget. */
+  /* Obtaining the buffer associated with the widget. */
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 
-//get current cursor iterator
+  // get current cursor iterator
   insertmark = gtk_text_buffer_get_insert (buffer);
   gtk_text_buffer_get_iter_at_mark (buffer, &insertiter, insertmark);
-//get start & end iterator
+
+  //get start & end iterator
   gtk_text_buffer_get_start_iter (buffer, &start);
   gtk_text_buffer_get_end_iter (buffer, &end);
 
+  /* FIXME: Should this check all_text too? */
   if (gtk_text_iter_get_offset (&insertiter) ==
       gtk_text_iter_get_offset (&start))
   {
-    strcpy (input, "");
-    return 0;
+    return NULL;
   }
-// DBG_TRACE();
-  if (ALL)
+
+  if (all_text)
     /* Get the entire buffer text. */
-    codestring = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+    return gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
   else
-    codestring =
-      gtk_text_buffer_get_text (buffer, &start, &insertiter, FALSE);
-//DBG_MESSAGE("%s",codestring);
-  strcpy (input, codestring);
-// DBG_TRACE();
-  g_free (codestring);
-  return 1;
+    return gtk_text_buffer_get_text (buffer, &start, &insertiter, FALSE);
+
 }
 
 //delete all the input 
@@ -387,8 +381,6 @@ int
 moko_dialer_textview_fill_it (MokoDialerTextview * moko_dialer_textview,
                               gchar * string)
 {
-
-
   GtkTextBuffer *buffer;
   GtkTextIter start;
   GtkTextIter end;
@@ -445,11 +437,13 @@ moko_dialer_textview_fill_it (MokoDialerTextview * moko_dialer_textview,
 //gtk_text_buffer_insert_with_tags_by_name(buffer,&insertiter,"139",3,tag_name);
   if (string != 0)
   {
-    if (strlen (string) > 0)
+    gint len;
+    len = g_utf8_strlen (string, -1);
+    if (len > 0)
     {
-      gtk_text_buffer_insert (buffer, &insertiter, string, strlen (string));
+      gtk_text_buffer_insert (buffer, &insertiter, string, len);
 
-//reget current cursor iterator
+      //reget current cursor iterator
       insertmark = gtk_text_buffer_get_insert (buffer);
       gtk_text_buffer_get_iter_at_mark (buffer, &insertiter, insertmark);
       gtk_text_iter_set_offset (&insertiter, offset);

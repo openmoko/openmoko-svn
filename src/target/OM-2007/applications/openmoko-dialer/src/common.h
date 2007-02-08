@@ -21,8 +21,7 @@
 #include <gtk/gtk.h>
 
 GdkPixbuf *create_pixbuf (const gchar * filename);
-gboolean file_create_data_path_for_the_file (const gchar * filename,
-                                             gchar * path);
+gchar* file_create_data_path_for_the_file (const gchar * filename);
 gboolean file_load_person_image_from_relative_path (GtkWidget * widget,
                                                     char *rela_path);
 GtkWidget *file_new_image_from_relative_path (char *rela_path);

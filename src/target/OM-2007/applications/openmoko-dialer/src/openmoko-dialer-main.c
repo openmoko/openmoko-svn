@@ -39,10 +39,13 @@
 #include "dialergsm.h"
 #include "openmoko-dialer-main.h"
 #include "openmoko-dialer-window-dialer.h"
+#include "openmoko-dialer-window-talking.h"
 #include "openmoko-dialer-window-outgoing.h"
 #include "openmoko-dialer-window-incoming.h"
-MOKO_DIALER_APP_DATA* p_dialer_data=0;
-MOKO_DIALER_APP_DATA*  moko_get_app_data()
+
+MOKO_DIALER_APP_DATA *p_dialer_data = 0;
+MOKO_DIALER_APP_DATA *
+moko_get_app_data ()
 {
 return p_dialer_data;
 }

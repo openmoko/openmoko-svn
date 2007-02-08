@@ -25,10 +25,13 @@
 #ifndef _ERROR_H
 #define _ERROR_H
 
+#include <glib.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
 
 #ifndef  _FIC_DEBUG
 #define _FIC_DEBUG 1

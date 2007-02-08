@@ -105,6 +105,8 @@ int pin_init(struct lgsm_handle *lh, const char *pin_preset);
 
 
   void gsm_watcher_install (GMainLoop * mainloop);
+  void gsm_dtmf_send (char dtmf);
+
 
 #ifdef __cplusplus
 }

@@ -36,7 +36,7 @@
 
 G_BEGIN_DECLS
 #define MOKO_TYPE_DIALER_AUTOLIST                (moko_dialer_autolist_get_type())
-#define MOKO_DIALER_AUTOLIST (obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_AUTOLIST, MokoDialerAutolist))
+#define MOKO_DIALER_AUTOLIST(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_DIALER_AUTOLIST, MokoDialerAutolist))
 #define MOKO_DIALER_AUTOLIST_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass),MOKO_TYPE_DIALER_AUTOLIST,MokoDialerAutolistClass))
 #define MOKO_IS_DIALER_AUTOLIST(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_DIALER_AUTOLIST))
 #define MOKO_IS_DIALER_AUTOLIST_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_DIALER_AUTOLIST))
@@ -99,5 +99,7 @@ gint moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
 
 gint moko_dialer_autolist_hide_all_tips (MokoDialerAutolist *
                                          moko_dialer_autolist);
+gboolean moko_dialer_autolist_set_data (MokoDialerAutolist * moko_dialer_autolist,
+                                        DIALER_CONTACTS_LIST_HEAD * head);
 G_END_DECLS
 #endif //
