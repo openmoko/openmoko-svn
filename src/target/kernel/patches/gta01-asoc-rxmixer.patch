@@ -1,0 +1,16 @@
+Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/sound/soc/codecs/wm8753.c	2007-02-08 00:42:47.000000000 +0100
++++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c	2007-02-08 00:57:59.000000000 +0100
+@@ -496,9 +496,9 @@
+ 	&wm8753_line_right_controls),
+ SND_SOC_DAPM_MUX("Line Mono Mux", SND_SOC_NOPM, 0, 0,
+ 	&wm8753_line_mono_controls),
+-SND_SOC_DAPM_MUX("Line Mixer", SND_SOC_NOPM, 0, 0,
++SND_SOC_DAPM_MUX("Line Mixer", WM8753_PWR2, 0, 0,
+ 	&wm8753_line_mux_mix_controls),
+-SND_SOC_DAPM_MUX("Rx Mixer", SND_SOC_NOPM, 0, 0,
++SND_SOC_DAPM_MUX("Rx Mixer", WM8753_PWR2, 1, 0,
+ 	&wm8753_rx_mux_mix_controls),
+ SND_SOC_DAPM_PGA("Mic 1 Volume", WM8753_PWR2, 8, 0, NULL, 0),
+ SND_SOC_DAPM_PGA("Mic 2 Volume", WM8753_PWR2, 7, 0, NULL, 0),

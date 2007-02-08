@@ -26,4 +26,4 @@ s3c2410-bbt.patch
 g_ether-highpower.patch
 gta01-vbus_draw.patch
 ts0710.patch
-alsa-rxmixer.patch
+gta01-asoc-rxmixer.patch
