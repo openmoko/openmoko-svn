@@ -1,0 +1,10 @@
+Index: u-boot/tools/setlocalversion
+===================================================================
+--- u-boot.orig/tools/setlocalversion	2007-02-08 14:57:18.000000000 +0100
++++ u-boot/tools/setlocalversion	2007-02-08 14:57:43.000000000 +0100
+@@ -20,3 +20,5 @@
+ 		printf '%s' -dirty
+ 	fi
+ fi
++
++printf '%s' -moko1
