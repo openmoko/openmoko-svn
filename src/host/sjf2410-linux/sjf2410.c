@@ -40,11 +40,11 @@
 FILE *stream;
 U32 imageSize;
 
-char srcFileName[256];
+char FileName[256];
+int bad_check = 0;
 void OpenImageFile(char *filename);
 void OpenPpt(void);
 
-void ErrorBanner(void);
 
 static void *function[]=
 {
@@ -56,29 +56,45 @@ static void *function[]=
     0
 };
 
+static char *next_arg(char **argv,int *i)
+{
+    if (argv[*i][2])
+	return argv[*i]+3;
+    (*i)++;
+    if (!argv[*i]) {
+	fprintf(stderr,"argument expected\n");
+	exit(1);
+    }
+    return argv[*i];
+}
+
 void main(int argc,char *argv[])
 {
     char num=0;
     int i;
     	
     printf("\n");
-    printf("+------------------------------------+\n");
-    printf("|     SEC JTAG FLASH(SJF) v 0.4hmw1  |\n");
-    printf("|     (S3C2410X & SMDK2410 B/D)      |\n");
-    printf("+------------------------------------+\n");
-    printf("Usage: SJF /f:<filename> /d=<delay>\n");
+    printf("+--------------------------------------+\n");
+    printf("|     SEC JTAG FLASH(SJF) v 0.4moko2   |\n");
+    printf("|     (S3C2410X & SMDK2410 B/D)        |\n");
+    printf("+--------------------------------------+\n");
+    //printf("Usage: SJF /f:<filename> /d=<delay> /b\n");
+    printf("Usage: SJF -f <filename>  -d <delay>  -b\n");
 
     delayLoopCount=100;
-    srcFileName[0]='\0';
+    FileName[0]='\0';
     for(i=1;i<argc;i++)
     {
 	switch(argv[i][1])
 	{
 	case 'f':
-	    strcpy(srcFileName,&(argv[i][3]));
+	    strcpy(FileName,next_arg(argv,&i));
 	    break;
 	case 'd':
-	    delayLoopCount=atoi(&argv[i][3]);
+	    delayLoopCount=atoi(next_arg(argv,&i));
+	    break;
+	case 'b':
+	    bad_check = 1;
 	    break;
 	default:
 	    printf("ERROR: unknown option /%c is detected.\n",argv[i][1]);
@@ -88,9 +104,6 @@ void main(int argc,char *argv[])
 
     OpenPpt();
     	
-    if(srcFileName[0]!='\0')
-	OpenImageFile(srcFileName);
-	
     JTAG_ReadId();
 
     S2410_InitCell();
@@ -115,29 +128,26 @@ void main(int argc,char *argv[])
     switch(i)
     {
     case 0:
-	if(srcFileName[0]==0)
-	{
-	    printf("ERROR:Source file name is not valid.\n");
-	    return;
-	}
        	K9S1208_Menu();
 	break;
 
     case 1:
-	if(srcFileName[0]==0)
+	if(FileName[0]==0)
 	{
 	    printf("ERROR:Source file name is not valid.\n");
 	    return;
 	}
+	OpenImageFile(FileName);
        	Program28F128J3A();
 	break;
 
     case 2:
-	if(srcFileName[0]==0)
+	if(FileName[0]==0)
 	{
 	    printf("ERROR:Source file name is not valid.\n");
 	    return;
 	}
+	OpenImageFile(FileName);
        	ProgramAM29F800();
 	break;
 

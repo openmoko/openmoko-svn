@@ -9,7 +9,6 @@
 #include "sjf2410.h"
 
 
-#define BAD_CHECK	(0)
 #define ECC_CHECK	(0)
 
 //*************** JTAG dependent functions ***************
@@ -33,10 +32,14 @@ static void NF_Reset(void);
 static void NF_Init(void);
 //*******************************************************
 
+void OpenImageFile(char *filename);
+
 void K9S1208_PrintBlock(void);
 void K9S1208_Program(void);
 void K9S1208_Read(void);
 
+extern int bad_check;
+extern char FileName[];
 
 static U32 targetBlock;	    // Block number (0 ~ 4095)
 static U32 targetSize;	    // Total byte size 
@@ -111,6 +114,12 @@ void K9S1208_Program(void)
     U8 *srcPt;
     U32 progSize=0;
 
+    if (!*FileName) {
+	    printf("need a file name (-f file_name)\n");
+	    return;
+    }
+    OpenImageFile(FileName);
+
     printf("\n[SMC(K9S1208V0M) NAND Flash Writing Program]\n");
     
     printf("\nSource size:0h~%xh\n",imageSize-1);
@@ -130,14 +139,13 @@ void K9S1208_Program(void)
 	}
 	noLoad=0;
 	
-#if BAD_CHECK       
-	if(NF_IsBadBlock(blockIndex) && blockIndex!=0 )	// 1:bad 0:good
+	if(bad_check && NF_IsBadBlock(blockIndex) && blockIndex!=0 )
+		// 1:bad 0:good
         {
 	    blockIndex++;   // for next block
 	    noLoad=1;
 	    continue;
 	}
-#endif
 	if(!NF_EraseBlock(blockIndex))
 	{
 	    blockIndex++;   // for next block
@@ -146,6 +154,7 @@ void K9S1208_Program(void)
 	}
 
 	printf("E");
+	fflush(stdout);
 	srcPt=blockBuf;
 
 	for(i=0;i<32;i++)
@@ -158,6 +167,7 @@ void K9S1208_Program(void)
 
 	    srcPt+=512;	// Increase buffer addr one pase size
 	    printf("p");
+	    fflush(stdout);
 	}
 	printf("\n");
 
@@ -177,23 +187,41 @@ void K9S1208_Program(void)
 
 void K9S1208_Read(void)
 {
+	int sourceBlock,numBlocks;
 	int of, block, page;
 	unsigned char buffer[512];
 
+	if (!*FileName) {
+		printf("need a file name (-f file_name)\n");
+		return;
+	}
+
 	printf("\n[SMC(K9S1208V0M) NAND Flash Reading Program]\n");
 
-	of = creat("flash-read.bin", 0660);
+	of = creat(FileName, 0660);
 	if (of < 0) {
 		printf("error opening out file");
 		return;
 	}
+	printf("\nSource size:0h~%xh\n",imageSize-1);
+	printf("\nAvailable target block number: 0~4095\n");
+	printf("Input source block number:");
+	scanf("%d",&sourceBlock);
+	printf("\nAvailable source blocks (length): 0~%d\n",4096-sourceBlock);
+	printf("Input source blocks (length):");
+	scanf("%d",&numBlocks);
+	printf("STATUS:");
 
-	for (block = 0; block < 4096; block++) {
+	for (block = sourceBlock; block < sourceBlock+numBlocks; block++) {
 		for (page = 0; page < 32; page++) {
 			NF_ReadPage(block, page, buffer,NULL);
 			write(of, buffer, 512);
+			printf("r");
+			fflush(stdout);
 		}
+		printf("\n");
 	}
+	printf("\n");
 
 	close(of);
 }
@@ -228,7 +256,7 @@ void K9S1208_PrintBlock(void)// Printf one page
 	    printf("\n%3xh:",i);
         printf("%02x ",buffer[i]);
     }
-    printf("\nS.A.:",i);
+    printf("\nS.A.:");
 
     for(i=512;i<512+16;i++)
     {
@@ -290,10 +318,9 @@ static int NF_EraseBlock(U32 block)
 {
     U32 blockPage=(block<<5);
 
-#if BAD_CHECK
-    if(NF_IsBadBlock(block) && block!=0) //block #0 can't be bad block for NAND boot
+    if(bad_check && NF_IsBadBlock(block) && block!=0)
+	//block #0 can't be bad block for NAND boot
 	return 0;
-#endif
 
     NF_nFCE_L();
     
