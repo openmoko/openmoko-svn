@@ -3,7 +3,7 @@
  *
  *  Authored By Alex Tang <alex@fic-sh.com.cn>
  *
- *  Copyright (C) 2006 First International Company
+ *  Copyright (C) 2006-2007 OpenMoko Inc. 
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by

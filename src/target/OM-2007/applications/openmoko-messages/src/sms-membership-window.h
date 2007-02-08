@@ -1,7 +1,10 @@
-/*  sms-membership-window.h
+/*  
+ *  sms-membership-window.h
+ *  
  *  Authored By Alex Tang <alex@fic-sh.com.cn>
  *
- *  Copyright (C) 2006 First International Company
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
  *  the Free Software Foundation; version 2.1 of the license.
@@ -47,9 +50,9 @@ typedef struct {
 } SmsMembershipWindowClass;
 
 GType sms_membership_window_get_type();
-SmsMembershipWindow* sms_membership_window_new();
+GtkWidget* sms_membership_window_new();
 
-void sms_membership_window_set_menubox(SmsMembershipWindow* self, GtkList* folderlist);
+void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folderlist);
 void sms_membership_window_set_messages (SmsMembershipWindow* self, GtkListStore* liststore);
 void sms_membership_window_show (SmsMembershipWindow* self);
 guint sms_membership_window_run(SmsMembershipWindow* self);
@@ -57,4 +60,5 @@ guint sms_membership_window_run(SmsMembershipWindow* self);
 G_END_DECLS
 
 #endif // _SMS_MEMBERSHIP_WINDOW_H_
- 
+
+

@@ -2,7 +2,8 @@
  *
  * Authored By Alex Tang <alex@fic-sh.com.cn>
  *
- * Copyright (C) 2006 First International Company
+ * Copyright (C) 2006-2007 OpenMoko Inc.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Public License as published by
  * the Free Software Foundation; version 2.1 of the license.
@@ -91,10 +92,9 @@ detail_area_init (DetailArea *self)
     
 }
 
-DetailArea*
-detail_area_new (void)
+GtkWidget* detail_area_new (void)
 {
-    return g_object_new(TYPE_DETAIL_AREA, NULL );
+    return GTK_WIDGET(g_object_new(TYPE_DETAIL_AREA, NULL ));
 }
 
 GtkWidget* detail_area_mode_edit (DetailArea* self)
@@ -131,10 +131,10 @@ GtkWidget* detail_area_mode_edit (DetailArea* self)
     moko_fixed_set_cargo(MOKO_FIXED(self->entryarea),GTK_WIDGET(alignment));
 
     /* fill textview */
-    editAttributes->txtView = GTK_TEXT_VIEW(gtk_text_view_new());
+    editAttributes->txtView = gtk_text_view_new();
     GtkWidget* viewAlign = gtk_alignment_new (0.5, 0.5, 1, 1);
     gtk_alignment_set_padding (GTK_ALIGNMENT(viewAlign),0,0,0,50);
-    gtk_text_view_set_wrap_mode (editAttributes->txtView,GTK_WRAP_CHAR);
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW(editAttributes->txtView),GTK_WRAP_CHAR);
     gtk_container_add (GTK_CONTAINER(viewAlign),GTK_WIDGET(editAttributes->txtView));
 
     gtk_box_pack_start (GTK_BOX(self->detailbox),GTK_WIDGET(mokobox),FALSE,TRUE,0);

@@ -1,9 +1,9 @@
 /*
- *  Messenger -- An messenger application for OpenMoko Framework
+ *  Messages -- An messages application for OpenMoko Framework
  *
  *  Authored By Alex Tang <alex@fic-sh.com.cn>
  *
- *  Copyright (C) 2006 First International Company
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
@@ -33,14 +33,14 @@
 typedef struct _MessengerData{
     MokoApplication* app;
     MokoPanedWindow* window;
-    GtkMenu* menu;
-    GtkMenu* filtmenu;
+    GtkWidget* menu;
+    GtkWidget* filtmenu;
     FoldersDB* foldersdb;
-    MokoToolBox* toolbox;
+    GtkWidget* toolbox;
     GtkListStore* liststore;
-    GtkTreeModelFilter* filter;
-    MokoTreeView* view;
-    DetailArea* details;
+    GtkTreeModel* filter;
+    GtkWidget* view;
+    GtkWidget* details;
     GSList* folderlist;
     gchar* currentfolder;
     gchar* s_key;
@@ -53,7 +53,7 @@ typedef struct _MessengerData{
 }MessengerData;
 
 enum {
-		COLUMN_ICON,
+    COLUMN_ICON,
     COLUMN_FROM,
     COLUMN_SUBJECT,
     COLUMN_CONTENT,
@@ -72,19 +72,12 @@ enum {
     NUM_PAGES,
 };
 
-enum {
-		UNREAD,
-		READ,
-		REPLIED,
-		FORWARD,
-		NUM_STATES,
-};
-
 GtkWidget* reload_filter_menu (MessengerData* d, GSList* folderlist);
 void setup_ui( MessengerData* d );
 void populate_navigation_area( MessengerData* d );
 void populate_detail_area( MessengerData* d );
 void main_quit(GtkWidget* widget, GdkEvent* event, MessengerData* d);
 void update_folder_sensitive (MessengerData* d, GSList* folderlist);
+
 #endif
 

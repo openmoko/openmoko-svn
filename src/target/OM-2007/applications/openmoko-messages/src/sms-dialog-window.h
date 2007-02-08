@@ -1,7 +1,10 @@
-/*  sms-dialog-window.h
+/*  
+ *  sms-dialog-window.h
+ *  
  *  Authored By Alex Tang <alex@fic-sh.com.cn>
  *
- *  Copyright (C) 2006 First International Company
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
  *  the Free Software Foundation; version 2.1 of the license.
@@ -19,6 +22,7 @@
 
 #include <libmokoui/moko-window.h>
 #include <libmokoui/moko-tool-box.h>
+#include "message.h"
 
 #include <glib-object.h>
 
@@ -45,8 +49,11 @@ SmsDialogWindow* sms_dialog_window_new();
 void sms_dialog_window_set_title(SmsDialogWindow* self, const gchar* title);
 void mail_dialog_window_set_title(SmsDialogWindow* self, const gchar* title);
 void sms_dialog_window_set_contents(SmsDialogWindow* self, GtkWidget* contents);
+void sms_dialog_reply_message(SmsDialogWindow* self, message* msg);
+void sms_dialog_forward_message(SmsDialogWindow* self, message* msg);
 guint sms_dialog_window_run(SmsDialogWindow* self);
 
 G_END_DECLS
 
 #endif // _SMS_DIALOG_WINDOW_H_
+
