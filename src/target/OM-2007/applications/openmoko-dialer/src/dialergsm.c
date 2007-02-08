@@ -273,9 +273,9 @@ gsm_watcher_install (GMainLoop * mainloop)
 
   g_source_add_poll (gsm_watcher, &GPfd);
 
-  DBG_MESSAGE ("ATACH");
+//  DBG_MESSAGE ("ATACH");
   g_source_attach (gsm_watcher, NULL);
-  DBG_MESSAGE ("ATACH OUT");
+//  DBG_MESSAGE ("ATACH OUT");
   DBG_LEAVE ();
   return;
 

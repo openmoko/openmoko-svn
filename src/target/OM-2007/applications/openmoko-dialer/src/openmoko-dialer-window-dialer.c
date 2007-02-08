@@ -264,6 +264,28 @@ on_dialer_panel_user_hold (GtkWidget * widget, gchar parac,
   g_print ("on_dialer_panel_user_hold:%c\n", parac);
 }
 
+void
+on_window_dialer_hide                 (GtkWidget       *widget,
+                                        MOKO_DIALER_APP_DATA * appdata)
+{
+appdata->window_present=0;
+
+}
+
+void
+on_window_dialer_show                  (GtkWidget       *widget,
+                                        MOKO_DIALER_APP_DATA * appdata)
+{
+DBG_ENTER();
+appdata->window_present=widget;
+DBG_LEAVE();
+}
+
+
+
+
+
+
 #define WINDOW_DIALER_BUTTON_SIZE_X 100
 #define WINDOW_DIALER_BUTTON_SIZE_Y 100
 gint
@@ -299,6 +321,13 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     moko_finger_window_set_application_menu (window, appmenu);
 
 //    g_signal_connect( G_OBJECT(window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
+     g_signal_connect ((gpointer) window, "show",
+	                    G_CALLBACK (on_window_dialer_show),
+	                    p_dialer_data);
+    g_signal_connect ((gpointer) window, "hide",
+	                    G_CALLBACK (on_window_dialer_hide),
+	                    p_dialer_data);
+
 
 
     /* contents */
@@ -431,6 +460,9 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     p_dialer_data->window_dialer = window;
 
     gtk_widget_show_all (GTK_WIDGET (window));
+    gtk_widget_hide(GTK_WIDGET (window));
+
+   
 
   }
 

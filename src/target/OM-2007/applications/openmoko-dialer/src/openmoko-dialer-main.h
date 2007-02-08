@@ -63,6 +63,7 @@ typedef struct _dialer_data
   GtkWidget *window_talking;
   GtkWidget *window_history;
   GtkWidget *window_dialer;
+  GtkWidget *window_present;
 
 //buttons
   GtkWidget *buttonSpeaker;
