@@ -20,10 +20,10 @@ gta01-jbt6k74.patch
 gta01-backlight.patch
 gta01-pcf50606.patch
 gta01-vibrator.patch
-gta01-s3c_mci-pdata.patch
 gta01-inputdevice.patch
 gta01-power_control.patch
 s3c2410-bbt.patch
 g_ether-highpower.patch
 gta01-vbus_draw.patch
 ts0710.patch
+alsa-rxmixer.patch
