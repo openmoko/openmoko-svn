@@ -21,3 +21,4 @@ uboot-gta01bv3.patch
 uboot-neo1973-poweroff.patch
 bbt-create-optional.patch
 nand-createbbt.patch
+uboot-mokoversion.patch

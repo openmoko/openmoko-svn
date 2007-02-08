@@ -1,9 +1,9 @@
 USB Device Controller Driver for Samsung S3C2410 SoC
 
-Index: u-boot.git/drivers/Makefile
+Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.git.orig/drivers/Makefile	2007-02-05 23:38:29.000000000 +0100
-+++ u-boot.git/drivers/Makefile	2007-02-05 23:38:29.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-08 14:45:10.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-08 14:45:37.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o ahci.o \
@@ -13,10 +13,10 @@ Index: u-boot.git/drivers/Makefile
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
-Index: u-boot.git/drivers/usbdcore_s3c2410.c
+Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/drivers/usbdcore_s3c2410.c	2007-02-05 23:38:29.000000000 +0100
++++ u-boot/drivers/usbdcore_s3c2410.c	2007-02-08 14:45:37.000000000 +0100
 @@ -0,0 +1,708 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
@@ -726,10 +726,10 @@ Index: u-boot.git/drivers/usbdcore_s3c2410.c
 +	/* FIXME: implement this */
 +}
 +#endif
-Index: u-boot.git/drivers/usbdcore_s3c2410.h
+Index: u-boot/drivers/usbdcore_s3c2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/drivers/usbdcore_s3c2410.h	2007-02-05 23:38:29.000000000 +0100
++++ u-boot/drivers/usbdcore_s3c2410.h	2007-02-08 14:45:37.000000000 +0100
 @@ -0,0 +1,273 @@
 +/* linux/include/asm/arch-s3c2410/regs-udc.h
 + *
@@ -1004,10 +1004,10 @@ Index: u-boot.git/drivers/usbdcore_s3c2410.h
 +#define UDC_BULK_PACKET_SIZE	16
 +
 +#endif
-Index: u-boot.git/include/s3c2410.h
+Index: u-boot/include/s3c2410.h
 ===================================================================
---- u-boot.git.orig/include/s3c2410.h	2007-02-05 23:38:29.000000000 +0100
-+++ u-boot.git/include/s3c2410.h	2007-02-05 23:38:29.000000000 +0100
+--- u-boot.orig/include/s3c2410.h	2007-02-08 14:45:09.000000000 +0100
++++ u-boot/include/s3c2410.h	2007-02-08 14:45:37.000000000 +0100
 @@ -233,4 +233,40 @@
  		 rINTPND;\
  		 }
@@ -1049,10 +1049,10 @@ Index: u-boot.git/include/s3c2410.h
 +#define S3C2410_CLKSLOW_GET_SLOWVAL(x)	((x) & 7)
 +
  #endif /*__S3C2410_H__*/
-Index: u-boot.git/drivers/usbdcore_ep0.c
+Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.git.orig/drivers/usbdcore_ep0.c	2007-02-05 23:38:20.000000000 +0100
-+++ u-boot.git/drivers/usbdcore_ep0.c	2007-02-05 23:38:29.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-08 14:33:38.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-08 14:47:19.000000000 +0100
 @@ -43,7 +43,7 @@
  
  #include <common.h>
@@ -1092,20 +1092,22 @@ Index: u-boot.git/drivers/usbdcore_ep0.c
  		}
  		/*dbg_ep0(3, "copied device configuration, actual_length: %x", urb->actual_length); */
  		break;
-@@ -250,9 +244,9 @@
+@@ -251,11 +245,9 @@
  					 index);
  				return -1;
  			}
 -			copy_config (urb, configuration_descriptor,
--				     le16_to_cpu(configuration_descriptor->wTotalLength),
+-				     sizeof (struct
+-					     usb_configuration_descriptor),
 -				     max);
+-
 +			urb->buffer = configuration_descriptor;
-+			urb->actual_length =
++			urb->actual_length = 
 +				MIN(le16_to_cpu(configuration_descriptor->wTotalLength), max);
- 		}
- 		break;
  
-@@ -543,7 +537,8 @@
+ 			/* iterate across interfaces for specified configuration */
+ 			dbg_ep0 (0, "bNumInterfaces: %d",
+@@ -642,7 +634,8 @@
  			/*dbg_ep0(2, "address: %d %d %d", */
  			/*        request->wValue, le16_to_cpu(request->wValue), device->address); */
  
@@ -1115,11 +1117,11 @@ Index: u-boot.git/drivers/usbdcore_ep0.c
  			return 0;
  
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
-Index: u-boot.git/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/neo1973.h	2007-02-05 23:38:29.000000000 +0100
-+++ u-boot.git/include/configs/neo1973.h	2007-02-06 02:04:28.000000000 +0100
-@@ -172,6 +172,18 @@
+--- u-boot.orig/include/configs/neo1973.h	2007-02-08 14:45:24.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-08 14:45:37.000000000 +0100
+@@ -173,6 +173,18 @@
  #define CONFIG_USB_OHCI		1
  #endif
  
@@ -1138,10 +1140,10 @@ Index: u-boot.git/include/configs/neo1973.h
  /*-----------------------------------------------------------------------
   * Physical Memory Map
   */
-Index: u-boot.git/cpu/arm920t/s3c24x0/interrupts.c
+Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.git.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 23:38:29.000000000 +0100
-+++ u-boot.git/cpu/arm920t/s3c24x0/interrupts.c	2007-02-05 23:38:29.000000000 +0100
+--- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-08 14:45:24.000000000 +0100
++++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-02-08 14:45:37.000000000 +0100
 @@ -222,6 +222,13 @@
  	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
  	u_int32_t intpnd = irq->INTPND;
@@ -1156,10 +1158,10 @@ Index: u-boot.git/cpu/arm920t/s3c24x0/interrupts.c
  }
  #endif /* USE_IRQ */
  
-Index: u-boot.git/drivers/usbtty.h
+Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.git.orig/drivers/usbtty.h	2007-02-05 23:38:29.000000000 +0100
-+++ u-boot.git/drivers/usbtty.h	2007-02-05 23:38:29.000000000 +0100
+--- u-boot.orig/drivers/usbtty.h	2007-02-08 14:45:26.000000000 +0100
++++ u-boot/drivers/usbtty.h	2007-02-08 14:45:37.000000000 +0100
 @@ -29,6 +29,8 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
