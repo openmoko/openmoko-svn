@@ -11,7 +11,6 @@ moko-dialer-textview.c\
 moko-dialer-tip.c\
 moko-dialer-autolist.c\
 event.c\
-pin.c\
 history.c\
 contacts.c\
 common.c\
@@ -21,6 +20,7 @@ openmoko-dialer-window-dialer.c\
 openmoko-dialer-window-outgoing.c\
 openmoko-dialer-window-incoming.c\
 openmoko-dialer-window-talking.c\
+openmoko-dialer-window-pin.c\
 moko-dialer-status.c\
 alsa.c
 

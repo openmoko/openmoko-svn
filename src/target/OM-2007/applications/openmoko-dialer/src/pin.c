@@ -4,14 +4,14 @@
 #include <libgsmd/libgsmd.h>
 #include <libgsmd/event.h>
 
+static int
+pin_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
 #define PIN_SIZE 32
 
 static char *pin;
 static char pinbuf[PIN_SIZE + 1];
 
-static int
-pin_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
-{
   int rc;
 
   printf ("EVENT: PIN request (type=%u) ", aux->u.pin.type);
@@ -24,13 +24,7 @@ pin_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
   }
   else
   {
-    do
-    {
-      printf ("Please enter PIN: ");
-      rc = fscanf (stdin, "%32s", &pinbuf);
-    }
-    while (rc < 1);
-
+   gsm_pin_require(pinbuf);
     return lgsm_pin (lh, pinbuf);
   }
 

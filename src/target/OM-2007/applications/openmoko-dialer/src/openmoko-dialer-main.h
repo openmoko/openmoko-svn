@@ -39,7 +39,7 @@ typedef struct _dialer_data
   MokoDialerTextview *moko_dialer_text_view;    ///<the textview for the dialer window 
 
   MokoDialerTextview *moko_dtmf_text_view;      ///<the textview for the dtmf window
-
+  MokoDialerTextview *moko_pin_text_view;
 
   MokoDialerAutolist *moko_dialer_autolist;
 
@@ -63,6 +63,7 @@ typedef struct _dialer_data
   GtkWidget *window_talking;
   GtkWidget *window_history;
   GtkWidget *window_dialer;
+  GtkWidget *window_pin;
   GtkWidget *window_present;
 
 //buttons

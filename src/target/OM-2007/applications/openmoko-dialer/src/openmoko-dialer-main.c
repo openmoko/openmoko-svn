@@ -46,7 +46,21 @@ MOKO_DIALER_APP_DATA*  moko_get_app_data()
 {
 return p_dialer_data;
 }
+void gsm_pin_require()
+{
+MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
 
+if(appdata)
+{
+gtk_widget_show(appdata->window_pin);
+}
+else
+{
+DBG_ERROR("gui failed to initialize.try another time.");
+}
+	
+
+}
 void gsm_incoming_call(gchar * number)
 {
 
@@ -266,6 +280,7 @@ signal (SIGUSR1, handle_sigusr1);
 //init the dialer window
   window_dialer_init(p_dialer_data); 
   window_incoming_init(p_dialer_data); 
+  window_pin_init(p_dialer_data); 
 DBG_WARN("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 //  window_outgoing_init(p_dialer_data); 
 //  window_history_init(p_dialer_data); 

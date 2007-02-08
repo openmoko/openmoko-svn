@@ -35,7 +35,7 @@ extern "C"
 #include <libgsmd/libgsmd.h>
 #include <libgsmd/voicecall.h>
 #include <libgsmd/misc.h>
-#include "pin.h"
+//#include "pin.h"
 #include "event.h"
 #include <glib/gmain.h>
 #include <glib/giochannel.h>
@@ -98,6 +98,8 @@ int pin_init(struct lgsm_handle *lh, const char *pin_preset);
  * @return 
  * @retval
  */
+
+ void gsm_pin_require();
 
   void *gsm_monitor_thread (struct lgsm_handle *lgsmh);
 

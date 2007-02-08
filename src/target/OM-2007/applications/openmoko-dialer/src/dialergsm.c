@@ -146,7 +146,7 @@ gsm_lgsm_start (GMainLoop * mainloop)
     fprintf (stderr, "Can't connect to gsmd\n");
     return -1;
   }
-  pin_init (lgsmh, pin);
+  gsm_pin_init (lgsmh);
   event_init (lgsmh);
   lgsm_register_handler (lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
   lgsm_netreg_register (lgsmh, 0);
@@ -258,7 +258,7 @@ gsm_watcher_dispatch (GSource * source,
 void
 gsm_watcher_install (GMainLoop * mainloop)
 {
-  DBG_ENTER ();
+
   static GSourceFuncs gsm_watcher_funcs = {
     gsm_watcher_prepare,
     gsm_watcher_check,
@@ -276,7 +276,7 @@ gsm_watcher_install (GMainLoop * mainloop)
 //  DBG_MESSAGE ("ATACH");
   g_source_attach (gsm_watcher, NULL);
 //  DBG_MESSAGE ("ATACH OUT");
-  DBG_LEAVE ();
+
   return;
 
 }
@@ -286,4 +286,27 @@ gsm_dtmf_send (char dtmf)
 {
   DBG_MESSAGE ("lgsm_voice_dtmf");
   lgsm_voice_dtmf (lgsmh, dtmf);
+}
+#define PIN_SIZE 32
+
+static int
+gsm_pin_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+ 
+  int rc;
+
+  printf ("EVENT: PIN request (type=%u) ", aux->u.pin.type);
+
+  /* FIXME: read pin from STDIN and send it back via lgsm_pin */
+
+    gsm_pin_require();
+
+
+  return 0;
+}
+
+int
+gsm_pin_init (struct lgsm_handle *lh)
+{
+  return lgsm_evt_handler_register (lh, GSMD_EVT_PIN, &gsm_pin_handler);
 }
