@@ -203,11 +203,10 @@ void K9S1208_Read(void)
 		printf("error opening out file");
 		return;
 	}
-	printf("\nSource size:0h~%xh\n",imageSize-1);
-	printf("\nAvailable target block number: 0~4095\n");
+	printf("\nAvailable source block number: 0~4095\n");
 	printf("Input source block number:");
 	scanf("%d",&sourceBlock);
-	printf("\nAvailable source blocks (length): 0~%d\n",4096-sourceBlock);
+	printf("Available source blocks (length): 0~%d\n",4096-sourceBlock);
 	printf("Input source blocks (length):");
 	scanf("%d",&numBlocks);
 	printf("STATUS:");
