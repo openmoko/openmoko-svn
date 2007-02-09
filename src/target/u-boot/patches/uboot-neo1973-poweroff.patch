@@ -3,24 +3,24 @@ charger and power-off.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/board/neo1973/Makefile
+Index: u-boot/board/neo1973/Makefile
 ===================================================================
---- u-boot.git.orig/board/neo1973/Makefile	2007-02-07 13:16:28.000000000 +0100
-+++ u-boot.git/board/neo1973/Makefile	2007-02-07 13:16:36.000000000 +0100
+--- u-boot.orig/board/neo1973/Makefile	2007-02-09 01:04:03.000000000 +0100
++++ u-boot/board/neo1973/Makefile	2007-02-09 01:09:37.000000000 +0100
 @@ -25,7 +25,7 @@
  
  LIB	= lib$(BOARD).a
  
 -OBJS	:= neo1973.o
-+OBJS	:= neo1973.o cmd_neo1973.o
++OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o
  SOBJS	:= lowlevel_init.o
  
  $(LIB):	$(OBJS) $(SOBJS)
-Index: u-boot.git/board/neo1973/cmd_neo1973.c
+Index: u-boot/board/neo1973/cmd_neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/neo1973/cmd_neo1973.c	2007-02-07 14:22:19.000000000 +0100
-@@ -0,0 +1,113 @@
++++ u-boot/board/neo1973/cmd_neo1973.c	2007-02-09 01:09:37.000000000 +0100
+@@ -0,0 +1,148 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -52,6 +52,7 @@ Index: u-boot.git/board/neo1973/cmd_neo1973.c
 +#include <net.h>		/* for print_IPaddr */
 +#include <s3c2410.h>
 +
++#include "neo1973.h"
 +#include "pcf50606.h"
 +
 +DECLARE_GLOBAL_DATA_PTR;
@@ -69,6 +70,14 @@ Index: u-boot.git/board/neo1973/cmd_neo1973.c
 +	[PCF50606_MBCC1_CHGMOD_IDLE]		= "idle",
 +};
 +
++static inline void delay (unsigned long loops)
++{
++	__asm__ volatile ("1:\n"
++	  "subs %0, %1, #1\n"
++	  "bne 1b":"=r" (loops):"0" (loops));
++}
++
++
 +int do_neo1973 ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 +{
 +	int i;
@@ -76,7 +85,7 @@ Index: u-boot.git/board/neo1973/cmd_neo1973.c
 +	if (!strcmp(argv[1], "info")) {
 +		printf("FIC GTA01 Hardware Revision 0x%04x\n", get_board_rev());
 +	} else if (!strcmp(argv[1], "power-off")) {
-+		pcf50606_reg_write(PCF50606_REG_OOCC1, PCF50606_OOCC1_GOSTDBY);
++		neo1973_poweroff();
 +	} else if (!strcmp(argv[1], "charger") || !strcmp(argv[1], "charge")) {
 +		if (argc < 3)
 +			goto out_help;
@@ -102,14 +111,38 @@ Index: u-boot.git/board/neo1973/cmd_neo1973.c
 +		} else
 +			goto out_help;
 +	} else if (!strcmp(argv[1], "backlight")) {
-+		S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +		if (argc < 3)
 +			goto out_help;
-+		if (!strcmp(argv[2], "on")) {
-+			gpio->GPBDAT |= 0x01;
-+		} else {
-+			gpio->GPBDAT &= ~0x01;
-+		}
++		if (!strcmp(argv[2], "on"))
++			neo1973_backlight(1);
++		else
++			neo1973_backlight(0);
++	} else if (!strcmp(argv[1], "vibrator")) {
++		if (argc < 3)
++			goto out_help;
++		if (!strcmp(argv[2], "on"))
++			neo1973_vibrator(1);
++		else
++			neo1973_vibrator(0);
++	} else if (!strcmp(argv[1], "266MHz")) {
++		S3C24X0_CLOCK_POWER * const clk_power = S3C24X0_GetBase_CLOCK_POWER();
++		u_int32_t mpllcon;
++
++		if (argc < 3)
++			goto out_help;
++		if (!strcmp(argv[2], "on"))
++			mpllcon = ((0x7d << 12) + (0x1 << 4) + 0x1);
++		else
++			mpllcon = ((0x90 << 12) + (0x7 << 4) + 0x0);
++
++		/* to reduce PLL lock time, adjust the LOCKTIME register */
++		clk_power->LOCKTIME = 0xFFFFFF;
++
++		/* configure MPLL */
++		clk_power->MPLLCON = mpllcon;
++
++		/* some delay */
++		delay (4000);
 +	} else {
 +out_help:
 +		printf("Usage:\n%s\n", cmdtp->usage);
@@ -132,24 +165,49 @@ Index: u-boot.git/board/neo1973/cmd_neo1973.c
 +	"neo1973 charger fast - enable fast (500mA) charging\n"
 +	"neo1973 charger off - disable charging\n"
 +	"neo1973 backlight (on|off) - switch backlight on or off\n"
++	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
++	"neo1973 266MHz (on|off) - switch 266MHz on or off\n"
 +);
 +#endif	/* CFG_CMD_BDI */
-Index: u-boot.git/board/neo1973/neo1973.c
+Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
---- u-boot.git.orig/board/neo1973/neo1973.c	2007-02-07 14:19:43.000000000 +0100
-+++ u-boot.git/board/neo1973/neo1973.c	2007-02-07 14:24:11.000000000 +0100
-@@ -96,8 +96,9 @@
+--- u-boot.orig/board/neo1973/neo1973.c	2007-02-09 01:09:35.000000000 +0100
++++ u-boot/board/neo1973/neo1973.c	2007-02-09 01:09:48.000000000 +0100
+@@ -34,8 +34,14 @@
+ #include <s3c2410.h>
+ #include <i2c.h>
+ 
++#include "neo1973.h"
++#include "pcf50606.h"
++
+ DECLARE_GLOBAL_DATA_PTR;
+ 
++/* That many seconds the power key needs to be pressed to power up */
++#define POWER_KEY_SECONDS	2
++
+ #if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+ //#define M_MDIV	0xA1		/* Fout = 202.8MHz */
+ //#define M_PDIV	0x3
+@@ -61,6 +67,9 @@
+ #define U_M_PDIV	0x2
+ #define U_M_SDIV	0x3
+ 
++unsigned int neo1973_wakeup_cause;
++extern int nobootdelay;
++
+ static inline void delay (unsigned long loops)
+ {
+ 	__asm__ volatile ("1:\n"
+@@ -96,7 +105,7 @@
  #if defined(CONFIG_ARCH_GTA01_v3)
  	gpio->GPACON = 0x007FFFFF;
  
 -	gpio->GPBCON = 0x00005056;
 +	gpio->GPBCON = 0x00005055;
  	gpio->GPBUP = 0x000007FF;
-+	gpio->GPBDAT |= 0x1;		/* Set GBP0 to high (Backlight on) */
  
  	gpio->GPCCON = 0xAAAA12A8;
- 	gpio->GPCUP = 0x0000FFFF;
-@@ -119,9 +120,10 @@
+@@ -119,7 +128,7 @@
  #elif defined(CONFIG_ARCH_GTA01_v4)
  	gpio->GPACON = 0x005E47FF;
  
@@ -157,11 +215,8 @@ Index: u-boot.git/board/neo1973/neo1973.c
 +	gpio->GPBCON = 0x00045015;
  	gpio->GPBUP = 0x000007FF;
  	gpio->GPBDAT |= 0x4;		/* Set GBP2 to high (Flash power-up) */
-+	gpio->GPBDAT |= 0x1;		/* Set GBP0 to high (Backlight on) */
  
- 	gpio->GPCCON = 0xAAAA12A9;
- 	gpio->GPCUP = 0x0000FFFF;
-@@ -143,9 +145,10 @@
+@@ -143,7 +152,7 @@
  #elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
  	gpio->GPACON = 0x005E47FF;
  
@@ -169,15 +224,121 @@ Index: u-boot.git/board/neo1973/neo1973.c
 +	gpio->GPBCON = 0x00145415;
  	gpio->GPBUP = 0x000007FF;
  	gpio->GPBDAT |= 0x4;		/* Set GBP2 to high (Flash power-up) */
-+	gpio->GPBDAT |= 0x1;		/* Set GBP0 to high (Backlight on) */
  
- 	gpio->GPCCON = 0xAAAA12A9;
- 	gpio->GPCUP = 0x0000FFFF;
-Index: u-boot.git/board/neo1973/pcf50606.h
+@@ -184,6 +193,7 @@
+ int board_late_init(void)
+ {
+ 	unsigned char tmp;
++	char buf[32];
+ 
+ 	tmp = 0x17; /* charge backup battery with 100uA during ACTIVE+STANDBY*/
+ 	i2c_write(0x08, 0x2d, 1, &tmp, 1);
+@@ -204,6 +214,61 @@
+ 	/* enable D2REG 3.3V (SC/MMC power) */
+ 	i2c_write(0x08, 0x25, 1, &mmc_power, 1);
+ #endif
++
++	/* obtain wake-up reason, save INT1 in environment */
++	tmp = pcf50606_reg_read(PCF50606_REG_INT1);
++	sprintf(buf, "0x%02x", tmp);
++	setenv("pcf50606_int1", buf);
++
++	if (tmp & PCF50606_INT1_ALARM) {
++		/* we've been woken up by RTC alarm or charger insert, boot */
++		neo1973_wakeup_cause = NEO1973_WAKEUP_ALARM;
++		goto continue_boot;
++	}
++	if (tmp & PCF50606_INT1_EXTONR) {
++		neo1973_wakeup_cause = NEO1973_WAKEUP_CHARGER;
++	}
++
++	if (tmp & PCF50606_INT1_ONKEYF) {
++		int seconds = 0;
++		neo1973_wakeup_cause = NEO1973_WAKEUP_POWER_KEY;
++		/* we've been woken up by a falling edge of the onkey */
++
++		/* we can't just setenv(bootdelay,-1) because that would 
++		 * accidentially become permanent if the user does saveenv */
++		if (neo1973_911_key_pressed())
++			nobootdelay = 1;
++
++		while (1) {
++			u_int8_t int1, oocs;
++
++			oocs = pcf50606_reg_read(PCF50606_REG_OOCS);
++			if (oocs & PFC50606_OOCS_ONKEY)
++				break;
++
++			int1 = pcf50606_reg_read(PCF50606_REG_INT1);
++			if (int1 & PCF50606_INT1_SECOND)
++				seconds++;
++
++			if (seconds >= POWER_KEY_SECONDS)
++				goto continue_boot;
++		}
++		/* Power off if minimum number of seconds not reached */
++		neo1973_poweroff();
++	}
++
++	/* if there's no other reason, must be regular reset */
++	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
++
++continue_boot:
++	/* issue a short pulse with the vibrator */
++	neo1973_vibrator(1);
++	udelay(50000);
++	neo1973_vibrator(0);
++
++	/* switch on the backlight */
++	neo1973_backlight(1);
++
+ 	return 0;
+ }
+ 
+@@ -227,3 +292,38 @@
+ 	return 0x00000230;
+ #endif
+ }
++
++void neo1973_poweroff(void)
++{
++	serial_printf("poweroff\n");
++	udc_disconnect();
++	pcf50606_reg_write(PCF50606_REG_OOCC1, PCF50606_OOCC1_GOSTDBY);
++	/* don't return to caller */
++	while (1) ;
++}
++
++void neo1973_backlight(int on)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++	if (on)
++		gpio->GPBDAT |= 0x01;
++	else
++		gpio->GPBDAT &= ~0x01;
++}
++
++void neo1973_vibrator(int on)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++	if (on)
++		gpio->GPBDAT |= (1 << 10);
++	else
++		gpio->GPBDAT &= ~(1 << 10);
++}
++
++int neo1973_911_key_pressed(void)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++	if (gpio->GPFDAT & (1 << 6))
++		return 0;
++	return 1;
++}
+Index: u-boot/board/neo1973/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/neo1973/pcf50606.h	2007-02-07 13:37:05.000000000 +0100
-@@ -0,0 +1,281 @@
++++ u-boot/board/neo1973/pcf50606.h	2007-02-09 01:09:37.000000000 +0100
+@@ -0,0 +1,265 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
 +
@@ -186,8 +347,6 @@ Index: u-boot.git/board/neo1973/pcf50606.h
 + * Author: Harald Welte <laforge@openmoko.org>
 + *
 + */
-+
-+#include <i2c.h>
 +
 +enum pfc50606_regs {
 +	PCF50606_REG_ID		= 0x00,
@@ -437,26 +596,84 @@ Index: u-boot.git/board/neo1973/pcf50606.h
 +	PCF50606_BVMC_DISDB		= 0x10,
 +};
 +
++void pcf50606_reg_write(u_int8_t reg, u_int8_t val);
++
++u_int8_t pcf50606_reg_read(u_int8_t reg);
++
++u_int8_t pcf50606_reg_set_bit_mask(u_int8_t reg, u_int8_t mask, u_int8_t val);
++
++#endif /* _PCF50606_H */
++
+Index: u-boot/board/neo1973/neo1973.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/neo1973/neo1973.h	2007-02-09 01:09:37.000000000 +0100
+@@ -0,0 +1,18 @@
++#ifndef _NEO1973_H
++#define _NEO1973_H
++
++enum wakeup_reason {
++	NEO1973_WAKEUP_NONE,
++	NEO1973_WAKEUP_RESET,
++	NEO1973_WAKEUP_POWER_KEY,
++	NEO1973_WAKEUP_CHARGER,
++	NEO1973_WAKEUP_ALARM,
++};
++
++extern unsigned int neo1973_wakeup_cause;
++
++void neo1973_poweroff(void);
++void neo1973_backlight(int on);
++void neo1973_vibrator(int on);
++
++#endif
+Index: u-boot/board/neo1973/pcf50606.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/neo1973/pcf50606.c	2007-02-09 01:09:37.000000000 +0100
+@@ -0,0 +1,24 @@
++
++#include <common.h>
++#include <i2c.h>
++
 +#define PCF50606_I2C_ADDR		0x08
 +
-+static inline void pcf50606_reg_write(u_int8_t reg, u_int8_t val)
++void pcf50606_reg_write(u_int8_t reg, u_int8_t val)
 +{
 +	i2c_write(PCF50606_I2C_ADDR, reg, 1, &val, 1);
 +}
 +
-+static inline u_int8_t pcf50606_reg_read(u_int8_t reg)
++u_int8_t pcf50606_reg_read(u_int8_t reg)
 +{
 +	u_int8_t tmp;
 +	i2c_read(PCF50606_I2C_ADDR, reg, 1, &tmp, 1);
 +	return tmp;
 +}
 +
-+static inline u_int8_t pcf50606_reg_set_bit_mask(u_int8_t reg, u_int8_t mask, u_int8_t val)
++u_int8_t pcf50606_reg_set_bit_mask(u_int8_t reg, u_int8_t mask, u_int8_t val)
 +{
 +	u_int8_t tmp = pcf50606_reg_read(reg);
 +	pcf50606_reg_write(reg, (val & mask) | (tmp & ~mask));
 +}
 +
-+#endif /* _PCF50606_H */
-+
-
+Index: u-boot/common/main.c
+===================================================================
+--- u-boot.orig/common/main.c	2007-02-09 01:04:04.000000000 +0100
++++ u-boot/common/main.c	2007-02-09 01:09:37.000000000 +0100
+@@ -61,6 +61,7 @@
+ #undef DEBUG_PARSER
+ 
+ char        console_buffer[CFG_CBSIZE];		/* console I/O buffer	*/
++int nobootdelay;
+ 
+ #ifndef CONFIG_CMDLINE_EDITING
+ static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
+@@ -404,7 +405,7 @@
+ 
+ 	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
+ 
+-	if (bootdelay >= 0 && s && !abortboot (bootdelay)) {
++	if (!nobootdelay && bootdelay >= 0 && s && !abortboot (bootdelay)) {
+ # ifdef CONFIG_AUTOBOOT_KEYED
+ 		int prev = disable_ctrlc(1);	/* disable Control C checking */
+ # endif
