@@ -10,7 +10,7 @@ PR = "${MOKOR}-r1"
 inherit kernel
 
 FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
-#HWSRC = "http://people.gta01.hmw-consulting.de/laforge/src/kernel/20060806"
+#HWSRC = "http://people.gta01.openmoko.org/laforge/src/kernel/20060806"
 
 ##############################################################
 # source and patches

@@ -1,6 +1,6 @@
 DESCRIPTION = "2.6 Linux Development Kernel for Armzone QT2410"
 SECTION = "kernel"
-AUTHOR = "Harald Welte <hwelte@hmw-consulting.de>"
+AUTHOR = "Harald Welte <laforge@openmoko.org>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-qt2410"

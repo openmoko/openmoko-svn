@@ -6,7 +6,7 @@ PROVIDES = "libgsmd"
 PV = "0.0+svn${SRCDATE}"
 PR = "r1"
 
-SRC_URI = "svn://svn.gta01.hmw-consulting.de/trunk/src/target;module=gsm;proto=https"
+SRC_URI = "svn://svn.openmoko.org/trunk/src/target;module=gsm;proto=https"
 S = "${WORKDIR}/gsm"
 
 inherit autotools pkgconfig
