@@ -198,17 +198,19 @@ void K9S1208_Read(void)
 
 	printf("\n[SMC(K9S1208V0M) NAND Flash Reading Program]\n");
 
-	of = creat(FileName, 0660);
-	if (of < 0) {
-		printf("error opening out file");
-		return;
-	}
 	printf("\nAvailable source block number: 0~4095\n");
 	printf("Input source block number:");
 	scanf("%d",&sourceBlock);
 	printf("Available source blocks (length): 0~%d\n",4096-sourceBlock);
 	printf("Input source blocks (length):");
 	scanf("%d",&numBlocks);
+
+	of = creat(FileName, 0660);
+	if (of < 0) {
+		printf("error opening out file");
+		return;
+	}
+
 	printf("STATUS:");
 
 	for (block = sourceBlock; block < sourceBlock+numBlocks; block++) {
