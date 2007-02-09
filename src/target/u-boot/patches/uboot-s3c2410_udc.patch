@@ -2,8 +2,8 @@ USB Device Controller Driver for Samsung S3C2410 SoC
 
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-08 20:59:56.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-08 21:01:21.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-09 00:34:24.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-09 00:34:34.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o ahci.o \
@@ -16,7 +16,7 @@ Index: u-boot/drivers/Makefile
 Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdcore_s3c2410.c	2007-02-08 21:01:21.000000000 +0100
++++ u-boot/drivers/usbdcore_s3c2410.c	2007-02-09 01:17:48.000000000 +0100
 @@ -0,0 +1,708 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
@@ -729,7 +729,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 Index: u-boot/drivers/usbdcore_s3c2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdcore_s3c2410.h	2007-02-08 21:01:21.000000000 +0100
++++ u-boot/drivers/usbdcore_s3c2410.h	2007-02-09 00:34:34.000000000 +0100
 @@ -0,0 +1,273 @@
 +/* linux/include/asm/arch-s3c2410/regs-udc.h
 + *
@@ -1006,8 +1006,8 @@ Index: u-boot/drivers/usbdcore_s3c2410.h
 +#endif
 Index: u-boot/include/s3c2410.h
 ===================================================================
---- u-boot.orig/include/s3c2410.h	2007-02-08 20:59:56.000000000 +0100
-+++ u-boot/include/s3c2410.h	2007-02-08 21:01:21.000000000 +0100
+--- u-boot.orig/include/s3c2410.h	2007-02-09 00:34:24.000000000 +0100
++++ u-boot/include/s3c2410.h	2007-02-09 00:34:34.000000000 +0100
 @@ -233,4 +233,40 @@
  		 rINTPND;\
  		 }
@@ -1051,8 +1051,8 @@ Index: u-boot/include/s3c2410.h
  #endif /*__S3C2410_H__*/
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-08 21:01:12.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-08 21:02:28.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-09 00:34:33.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-09 01:18:01.000000000 +0100
 @@ -43,7 +43,7 @@
  
  #include <common.h>
@@ -1062,7 +1062,11 @@ Index: u-boot/drivers/usbdcore_ep0.c
  #include "usbdcore.h"
  
  #if 0
-@@ -190,6 +190,9 @@
+@@ -187,9 +187,13 @@
+ 	if (!urb || !urb->buffer || !urb->buffer_length
+ 	    || (urb->buffer_length < 255)) {
+ 		dbg_ep0 (2, "invalid urb %p", urb);
++		serial_printf("invalid urb %p", urb);
  		return -1L;
  	}
  
@@ -1072,7 +1076,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  	/* setup tx urb */
  	urb->actual_length = 0;
  	cp = urb->buffer;
-@@ -206,17 +209,8 @@
+@@ -206,17 +210,8 @@
  			     usbd_device_device_descriptor (device, port))) {
  				return -1;
  			}
@@ -1092,7 +1096,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		}
  		/*dbg_ep0(3, "copied device configuration, actual_length: %x", urb->actual_length); */
  		break;
-@@ -250,11 +244,9 @@
+@@ -250,11 +245,9 @@
  					 index);
  				return -1;
  			}
@@ -1107,7 +1111,32 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		}
  		break;
  
-@@ -545,7 +537,8 @@
+@@ -376,6 +369,7 @@
+ 	dbg_ep0 (0, "entering ep0_recv_setup()");
+ 	if (!urb || !urb->device) {
+ 		dbg_ep0 (3, "invalid URB %p", urb);
++		serial_printf("invalid URB %p", urb);
+ 		return -1;
+ 	}
+ 
+@@ -400,6 +394,7 @@
+ 			return device->cdc_recv_setup(request, urb);
+ 		dbg_ep0 (1, "non standard request: %x",
+ 			 request->bmRequestType & USB_REQ_TYPE_MASK);
++		serial_printf("non standard request: %x", request->bmRequestType & USB_REQ_TYPE_MASK);
+ 		return -1;	/* Stall here */
+ 	}
+ 
+@@ -448,6 +443,8 @@
+ 		dbg_ep0 (1, "request %s not allowed in UNKNOWN state: %s",
+ 			 USBD_DEVICE_REQUESTS (request->bRequest),
+ 			 usbd_device_states[device->device_state]);
++		serial_printf("request %s not allowed in UNKNOWN state: %s", USBD_DEVICE_REQUESTS (request->bRequest), usbd_device_states[device->device_state]);
++		break;
+ 		return -1;
+ 	}
+ 
+@@ -545,7 +542,8 @@
  			/*dbg_ep0(2, "address: %d %d %d", */
  			/*        request->wValue, le16_to_cpu(request->wValue), device->address); */
  
@@ -1119,8 +1148,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-08 20:59:56.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-08 21:01:21.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h	2007-02-09 00:34:24.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-09 01:17:48.000000000 +0100
 @@ -173,6 +173,18 @@
  #define CONFIG_USB_OHCI		1
  #endif
@@ -1142,8 +1171,8 @@ Index: u-boot/include/configs/neo1973.h
   */
 Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-08 20:59:56.000000000 +0100
-+++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-02-08 21:01:21.000000000 +0100
+--- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-09 00:34:24.000000000 +0100
++++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-02-09 00:34:34.000000000 +0100
 @@ -222,6 +222,13 @@
  	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
  	u_int32_t intpnd = irq->INTPND;
@@ -1160,8 +1189,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h	2007-02-08 20:59:56.000000000 +0100
-+++ u-boot/drivers/usbtty.h	2007-02-08 21:01:21.000000000 +0100
+--- u-boot.orig/drivers/usbtty.h	2007-02-09 00:34:33.000000000 +0100
++++ u-boot/drivers/usbtty.h	2007-02-09 00:34:34.000000000 +0100
 @@ -29,6 +29,8 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
