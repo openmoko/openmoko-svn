@@ -19,7 +19,17 @@ Index: a/plugins/input-raw.c
  
  #include <stdlib.h>
  #ifdef HAVE_UNISTD_H
-@@ -42,6 +43,7 @@
+@@ -33,6 +34,9 @@
+ 
+ #include "tslib-private.h"
+ 
++#define GRAB_EVENTS_WANTED	1
++#define GRAB_EVENTS_ACTIVE	2
++
+ struct tslib_input {
+ 	struct tslib_module_info module;
+ 
+@@ -42,6 +46,7 @@
  
  	int	sane_fd;
  	int	using_syn;
@@ -27,21 +37,38 @@ Index: a/plugins/input-raw.c
  };
  
  static int check_fd(struct tslib_input *i)
-@@ -64,6 +66,13 @@
+@@ -64,6 +69,14 @@
  
  	if (bit & (1 << EV_SYN))
  		i->using_syn = 1;
 +	
-+	if (i->grab_events) {
++	if (i->grab_events == GRAB_EVENTS_WANTED) {
 +		if (ioctl(ts->fd, EVIOCGRAB, (void *)1)) {
 +			fprintf(stderr, "Unable to grab selected input device\n");
 +			return -1;
 +		}
++		i->grab_events = GRAB_EVENTS_ACTIVE;
 +	}
  
  	return 0;
  }
-@@ -231,6 +240,35 @@
+@@ -222,6 +235,15 @@
+ 
+ static int ts_input_fini(struct tslib_module_info *inf)
+ {
++	struct tslib_input *i = (struct tslib_input *)inf;
++	struct tsdev *ts = inf->dev;
++
++	if (i->grab_events == GRAB_EVENTS_ACTIVE) {
++		if (ioctl(ts->fd, EVIOCGRAB, (void *)0)) {
++			fprintf(stderr, "Unable to un-grab selected input device\n");
++		}
++	}
++
+ 	free(inf);
+ 	return 0;
+ }
+@@ -231,6 +253,36 @@
  	.fini	= ts_input_fini,
  };
  
@@ -59,7 +86,8 @@ Index: a/plugins/input-raw.c
 +	errno = err;
 +	switch ((int)data) {
 +	case 1:
-+		i->grab_events = v;
++		if (v)
++			i->grab_events = GRAB_EVENTS_WANTED;
 +		break;
 +	default:
 +		return -1;
@@ -77,7 +105,7 @@ Index: a/plugins/input-raw.c
  TSAPI struct tslib_module_info *mod_init(struct tsdev *dev, const char *params)
  {
  	struct tslib_input *i;
-@@ -245,5 +283,12 @@
+@@ -245,5 +297,12 @@
  	i->current_p = 0;
  	i->sane_fd = 0;
  	i->using_syn = 0;
