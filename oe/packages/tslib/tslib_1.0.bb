@@ -29,7 +29,7 @@ do_install_append() {
 	install -d ${D}${sysconfdir}/profile.d/
 	install -m 0755 ${WORKDIR}/tslib.sh ${D}${sysconfdir}/profile.d/
 	case ${MACHINE} in
-	fic-gta01 | armzone-qt2410 | a780 | e680 | h3600 | h3900 | h5000 | h1940 | h6300 | h2200 | ipaq-pxa270 | hx4700 | hx2000 | blueangel | h4000)
+	qemuarm | fic-gta01 | armzone-qt2410 | a780 | e680 | h3600 | h3900 | h5000 | h1940 | h6300 | h2200 | ipaq-pxa270 | hx4700 | hx2000 | blueangel | h4000)
 		install -d ${D}${datadir}/tslib
 		install -m 0644 ${WORKDIR}/ts.conf ${D}${datadir}/tslib/ts-2.6.conf
 		;;
