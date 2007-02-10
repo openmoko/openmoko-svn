@@ -83,7 +83,7 @@ Index: a/plugins/input-raw.c
  	i->using_syn = 0;
 +	i->grab_events = 0;
 +
-+	if (tslib_parse_varse(&i->module, raw_vars, NR_VARS, params)) {
++	if (tslib_parse_vars(&i->module, raw_vars, NR_VARS, params)) {
 +		free(i);
 +		return NULL;
 +	}
