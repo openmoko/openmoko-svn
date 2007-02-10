@@ -3,9 +3,10 @@ HOMEPAGE = "http://tslib.berlios.de/"
 AUTHOR = "Russell King w/ plugins by Chris Larson et. al."
 SECTION = "base"
 LICENSE = "LGPL"
-PR = "r8"
+PR = "r9"
 
 SRC_URI = "http://download.berlios.de/tslib/tslib-1.0.tar.bz2 \
+	   file://tslib-input_raw-grab_events.patch;patch=1 \
            file://ts.conf \
            file://ts.conf-h3600-2.4 \
            file://ts.conf-simpad-2.4 \
