@@ -3,7 +3,7 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-01-24 16:24:55.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-02-10 11:51:54.000000000 +0100
 @@ -0,0 +1,1423 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -982,7 +982,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	pcf->hour = BIN2BCD(rtc->tm_hour);
 +	pcf->wkday = BIN2BCD(rtc->tm_wday);
 +	pcf->day = BIN2BCD(rtc->tm_mday);
-+	pcf->month = BIN2BCD(rtc->tm_mon) + 1;
++	pcf->month = BIN2BCD(rtc->tm_mon);
 +	pcf->year = BIN2BCD(rtc->tm_year - 100);
 +}
 +
@@ -1431,7 +1431,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h	2007-01-24 15:07:24.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h	2007-02-10 11:51:17.000000000 +0100
 @@ -0,0 +1,259 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -1694,8 +1694,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h
 +
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Kconfig	2007-01-24 15:07:01.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig	2007-01-24 15:07:24.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Kconfig	2007-02-10 11:51:15.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig	2007-02-10 11:51:17.000000000 +0100
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -1716,8 +1716,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig
  	depends on I2C && EXPERIMENTAL
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Makefile	2007-01-24 15:07:01.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile	2007-01-24 15:07:24.000000000 +0100
+--- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Makefile	2007-02-10 11:51:15.000000000 +0100
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile	2007-02-10 11:51:17.000000000 +0100
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -1728,9 +1728,9 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
 Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-01-24 15:07:01.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-01-24 15:07:24.000000000 +0100
-@@ -158,6 +158,7 @@
+--- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-02-10 11:51:15.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-02-10 11:51:17.000000000 +0100
+@@ -157,6 +157,7 @@
  #define I2C_DRIVERID_ASB100 1043
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -1741,7 +1741,7 @@ Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
 Index: linux-2.6.17.14-fic4.test/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/linux/pcf50606.h	2007-01-24 15:07:24.000000000 +0100
++++ linux-2.6.17.14-fic4.test/include/linux/pcf50606.h	2007-02-10 11:51:17.000000000 +0100
 @@ -0,0 +1,55 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
