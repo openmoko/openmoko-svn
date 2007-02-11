@@ -16,7 +16,7 @@ do_stage() {
 }
 
 PACKAGES =+ "${PN}-tools gsmd"
-RDEPENDS_${PN} = "gmsd"
+RDEPENDS_${PN} = "gsmd"
 FILES_${PN}-tools = "${bindir}"
 FILES_gsmd = "${sbindir}/gsmd"
 
