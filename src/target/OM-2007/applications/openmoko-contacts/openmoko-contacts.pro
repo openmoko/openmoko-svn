@@ -23,4 +23,5 @@ MOKOCONFIG = mokoui
 PKGCONFIG += libebook-1.2
 DEFINES += 'GETTEXT_PACKAGE=\\"contacts\\"'
 DEFINES += 'CONTACTS_LOCALE_DIR=\\"foo\\"'
+DEFINES += HAVE_PHOTO_TYPE
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
