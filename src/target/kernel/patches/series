@@ -29,3 +29,4 @@ g_ether-highpower.patch
 gta01-vbus_draw.patch
 ts0710.patch
 input-nots-mousedev.patch
+gta01-no_nand_partitions.patch
