@@ -6,6 +6,10 @@
 # Base
 #
 
+SRCDATE_uboot = "now"
+SRCDATE_uboot-gta01 = "now"
+SRCDATE_kernel = "now"
+SRCDATE_linux-gta01 = "now"
 SRCDATE_gsm = "now"
 SRCDATE_openmoko-session = "now"
 SRCDATE_openmoko-common = "now"
