@@ -20,7 +20,6 @@ openmoko-dialer-window-dialer.c\
 openmoko-dialer-window-outgoing.c\
 openmoko-dialer-window-incoming.c\
 openmoko-dialer-window-talking.c\
-openmoko-dialer-window-pin.c\
 moko-dialer-status.c\
 alsa.c
 

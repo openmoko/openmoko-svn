@@ -283,7 +283,10 @@ signal (SIGUSR1, handle_sigusr1);
 //init the dialer window
   window_dialer_init(p_dialer_data); 
   window_incoming_init(p_dialer_data); 
+#warning FIXME for tony: window_pin_init unknown reference
+#if 0
   window_pin_init(p_dialer_data); 
+#endif
 DBG_WARN("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 //  window_outgoing_init(p_dialer_data); 
 //  window_history_init(p_dialer_data); 
