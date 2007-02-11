@@ -5,7 +5,7 @@ PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
 DEPENDS = "dropbear"
-PR = "r23"
+PR = "r25"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -61,7 +61,7 @@ RDEPENDS_task-openmoko-base = "\
 #
 DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
 RDEPENDS_task-openmoko-phone = "\
-  libgsmd-daemon \
+  gsmd \
   libgsmd-tools \
   openmoko-dialer \
 "
@@ -111,7 +111,7 @@ RDEPENDS_task-openmoko-base = "\
 #
 DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM and GPRS Phone Services"
 RDEPENDS_task-openmoko-phone = "\
-  libgsmd-daemon \
+  gsmd \
   libgsmd-tools \
   openmoko-dialer \
 # ppp \
