@@ -3,8 +3,8 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-02-10 11:51:54.000000000 +0100
-@@ -0,0 +1,1423 @@
++++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-02-11 04:00:50.000000000 +0100
+@@ -0,0 +1,1495 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -46,6 +46,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +#include <linux/watchdog.h>
 +#include <linux/miscdevice.h>
 +#include <linux/input.h>
++#include <linux/sched.h>
 +#include <linux/pcf50606.h>
 +
 +#include <asm/apm.h>
@@ -61,6 +62,10 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +#define DEBUGPC(x, args ...)
 +#endif
 +
++/* Five seconds of power key press required to shut down */
++
++#define PCF50606_ONKEY_SECONDS_REQUIRED 5
++
 +/***********************************************************************
 + * Static data / structures
 + ***********************************************************************/
@@ -69,9 +74,16 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +I2C_CLIENT_INSMOD_1(pcf50606);
 +
-+#define PCF50606_F_CHG_PRESENT	0x00000001
-+#define PCF50606_F_CHG_FOK	0x00000002
-+#define PCF50606_F_CHG_FAST	0x00000004
++#define PCF50606_F_CHG_FAST	0x00000001	/* Charger Fast allowed */
++#define PCF50606_F_CHG_PRESENT	0x00000002	/* Charger present */
++#define PCF50606_F_CHG_FOK	0x00000004	/* Fast OK for battery */
++#define PCF50606_F_CHG_ERR	0x00000008	/* Charger Error */
++#define PCF50606_F_CHG_PROT	0x00000010	/* Charger Protection */
++#define PCF50606_F_CHG_READY	0x00000020	/* Charging completed */
++#define PCF50606_F_CHG_MASK	0x000000fc
++
++#define PCF50606_F_PWR_PRESSED	0x00000100
++#define PCF50606_F_RTC_SECOND	0x00000200
 +
 +enum close_state {
 +	CLOSE_STATE_NOT,
@@ -87,60 +99,11 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	struct rtc_device *rtc;
 +	struct input_dev *input_dev;
 +	int allow_close;
++	int onkey_seconds;
 +};
 +
 +struct pcf50606_data *pcf50606_global;
 +EXPORT_SYMBOL(pcf50606_global);
-+
-+static const u_int8_t initial_register_set[__NUM_PCF50606_REGS] = {
-+	[PCF50606_REG_OOCS] 	= 0x00,
-+	/* gap */
-+	[PCF50606_REG_INT1M]	= PCF50606_INT1_SECOND,
-+	[PCF50606_REG_INT2M]	= 0x00,
-+	[PCF50606_REG_INT3M]	= PCF50606_INT3_TSCPRES,
-+	[PCF50606_REG_OOCC1] 	= PCF50606_OOCC1_CLK32ON |
-+				  PCF50606_OOCC1_RTCWAK |
-+				  PCF50606_OOCC1_CHGWAK |
-+				  PCF50606_OOCC1_EXTONWAK_HIGH,
-+	[PCF50606_REG_OOCC2]	= PCF50606_OOCC2_ONKEYDB_14ms |
-+				  PCF50606_OOCC2_EXTONDB_14ms,
-+	/* gap */
-+	[PCF50606_REG_PSSC]	= 0x00,
-+	[PCF50606_REG_PWROKM]	= 0x00,
-+	/* gap */
-+	[PCF50606_REG_DCDC1]	= 0x00,	/* GL_3V3: off */
-+	[PCF50606_REG_DCDC2]	= 0x00,
-+	[PCF50606_REG_DCDC3]	= 0x00,
-+	[PCF50606_REG_DCDC4]	= 0x30, /* 1.25A */
-+	[PCF50606_REG_DCDEC1]	= 0xe8, /* IO_3V3: 3.3V */
-+	[PCF50606_REG_DCDEC2]	= 0x00,
-+	[PCF50606_REG_DCUDC1]	= 0xe3, /* CORE_1V8: 1.8V */
-+	[PCF50606_REG_DCUDC2]	= 0x30, /* 1.25A current limit */
-+	[PCF50606_REG_IOREGC]	= 0x00, /* CODEC_3V3: off */
-+	[PCF50606_REG_D1REGC1]	= 0x00, /* BT_3V15: off */
-+	[PCF50606_REG_D2REGC1]	= 0x00, /* GL_2V5: off */
-+	[PCF50606_REG_D3REGC1]	= 0x00, /* USER1: off */
-+	[PCF50606_REG_LPREGC1]	= 0xf8, /* LCM_3V3: on */
-+	[PCF50606_REG_LPREGC2]	= 0x00,
-+	[PCF50606_REG_MBCC1]	= 0x01,
-+	[PCF50606_REG_MBCC2]	= 0x00,	/* unlimited charging */
-+	[PCF50606_REG_MBCC3]	= 0x1a, /* 0.2*Ifast, 4.20V */
-+	[PCF50606_REG_BBCC]	= 0x13, /* 50uA */
-+	[PCF50606_REG_ADCC1]	= 0x00,
-+	[PCF50606_REG_ADCC2]	= 0x00,
-+	/* gap */
-+	[PCF50606_REG_ACDC1]	= 0x00,
-+	[PCF50606_REG_BVMC]	= PCF50606_BVMC_THRSHLD_2V8 |
-+				  PCF50606_BVMC_DISDB,
-+	[PCF50606_REG_PWMC1]	= 0x00,
-+	[PCF50606_REG_LEDC1]	= 0x00,
-+	[PCF50606_REG_LEDC2]	= 0x00,
-+	[PCF50606_REG_GPOC1]	= 0x00,
-+	[PCF50606_REG_GPOC2]	= 0x00,
-+	[PCF50606_REG_GPOC3]	= 0x00,
-+	[PCF50606_REG_GPOC4]	= 0x00,
-+	[PCF50606_REG_GPOC5]	= 0x00,
-+};
 +
 +/* This is a mitsubishi TN11-3H103J T,B NTC Thermistor -10..79 centigrade */
 +static const u_int16_t ntc_table_tn11_3h103j[] = {
@@ -271,7 +234,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +	mutex_unlock(&pcf->lock);
 +
-+	DEBUGP("returnung %u\n", ret);
++	DEBUGP("returnung %u %u\n", ret, data2 ? *data2 : 0);
 +
 +	return ret;
 +}
@@ -576,19 +539,35 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +	DEBUGP("INT1=0x%02x INT2=0x%02x INT3=0x%02x:", int1, int2, int3);
 +
-+	if (int1 & PCF50606_INT1_ONKEYR) {
-+		/* ONKEY rising edge */
-+		DEBUGPC("ONKEYR ");
-+		input_report_key(pcf->input_dev, KEY_POWER, 1);
-+	}
 +	if (int1 & PCF50606_INT1_ONKEYF) {
-+		/* ONKEY falling edge */
++		/* ONKEY falling edge (start of button press) */
 +		DEBUGPC("ONKEYF ");
++		pcf->flags |= PCF50606_F_PWR_PRESSED;
 +		input_report_key(pcf->input_dev, KEY_POWER, 0);
 +	}
 +	if (int1 & PCF50606_INT1_ONKEY1S) {
-+		DEBUGPC("ONKEY1S ");
 +		/* ONKEY pressed for more than 1 second */
++		pcf->onkey_seconds = 0;
++		DEBUGPC("ONKEY1S ");
++		/* Tell PMU we are taking care of this */
++		reg_set_bit_mask(pcf, PCF50606_REG_OOCC1,
++				 PCF50606_OOCC1_TOTRST,
++				 PCF50606_OOCC1_TOTRST);
++		/* enable SECOND interrupt (hz tick) */
++		reg_clear_bits(pcf, PCF50606_REG_INT1M, PCF50606_INT1_SECOND);
++	}
++	if (int1 & PCF50606_INT1_ONKEYR) {
++		/* ONKEY rising edge (end of button press) */
++		DEBUGPC("ONKEYR ");
++		pcf->flags &= ~PCF50606_F_PWR_PRESSED;
++		pcf->onkey_seconds = -1;
++		input_report_key(pcf->input_dev, KEY_POWER, 1);
++		/* disable SECOND interrupt in case RTC didn't
++		 * request it */
++		if (!(pcf->flags & PCF50606_F_RTC_SECOND))
++			reg_set_bit_mask(pcf, PCF50606_REG_INT1M,
++					 PCF50606_INT1_SECOND,
++					 PCF50606_INT1_SECOND);
 +	}
 +	if (int1 & PCF50606_INT1_EXTONR) {
 +		DEBUGPC("EXTONR ");
@@ -600,7 +579,23 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	}
 +	if (int1 & PCF50606_INT1_SECOND) {
 +		DEBUGPC("SECOND ");
-+		rtc_update_irq(&pcf->rtc->class_dev, 1, RTC_PF | RTC_IRQF);
++		if (pcf->flags & PCF50606_F_RTC_SECOND)
++			rtc_update_irq(&pcf->rtc->class_dev, 1,
++				       RTC_PF | RTC_IRQF);
++
++		if (pcf->onkey_seconds >= 0 &&
++		    pcf->flags & PCF50606_F_PWR_PRESSED) {
++			DEBUGP("ONKEY_SECONDS(%u, OOCC1=0x%02x) ",
++				pcf->onkey_seconds, reg_read(pcf, PCF50606_REG_OOCC1));
++			pcf->onkey_seconds++;
++			if (pcf->onkey_seconds >=
++			    PCF50606_ONKEY_SECONDS_REQUIRED) {
++				/* Ask init to do 'ctrlaltdel' */
++				DEBUGPC("SIGINT(init) ");
++				kill_proc(1, SIGINT, 1);
++				/* FIXME: what if userspace doesn't shut down? */
++			}
++		}
 +	}
 +	if (int1 & PCF50606_INT1_ALARM) {
 +		DEBUGPC("ALARM ");
@@ -613,6 +608,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 1);
 +		apm_queue_event(APM_POWER_STATUS_CHANGE);
 +		pcf->flags |= PCF50606_F_CHG_PRESENT;
++		/* FIXME: signal this to userspace */
 +		//kobject_uevent( ,KOBJ_ADD);
 +	}
 +	if (int2 & PCF50606_INT2_CHGRM) {
@@ -620,33 +616,47 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +		DEBUGPC("CHGRM ");
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 0);
 +		apm_queue_event(APM_POWER_STATUS_CHANGE);
-+		pcf->flags &= ~PCF50606_F_CHG_PRESENT;
++		pcf->flags &= ~(PCF50606_F_CHG_MASK|PCF50606_F_CHG_PRESENT);
++		/* FIXME: signal this to userspace */
 +		//kobject_uevent( ,KOBJ_REMOVE);
 +	}
 +	if (int2 & PCF50606_INT2_CHGFOK) {
 +		/* Battery ready for fast charging */
 +		DEBUGPC("CHGFOK ");
 +		pcf->flags |= PCF50606_F_CHG_FOK;
++		/* FIXME: signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGERR) {
 +		/* Error in charge mode */
 +		DEBUGPC("CHGERR ");
++		pcf->flags |= PCF50606_F_CHG_ERR;
++		pcf->flags &= ~(PCF50606_F_CHG_FOK|PCF50606_F_CHG_READY);
++		/* FIXME: signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGFRDY) {
 +		/* Fast charge completed */
 +		DEBUGPC("CHGFRDY ");
++		pcf->flags |= PCF50606_F_CHG_READY;
++		pcf->flags &= ~PCF50606_F_CHG_FOK;
++		/* FIXME: signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGPROT) {
 +		/* Charging protection interrupt */
 +		DEBUGPC("CHGPROT ");
++		pcf->flags &= ~(PCF50606_F_CHG_FOK|PCF50606_F_CHG_READY);
++		/* FIXME: signal this to userspace */
 +	}
 +	if (int2 & PCF50606_INT2_CHGWD10S) {
 +		/* Charger watchdog will expire in 10 seconds */
 +		DEBUGPC("CHGWD10S ");
++		reg_set_bit_mask(pcf, PCF50606_REG_OOCC1,
++				 PCF50606_OOCC1_WDTRST,
++				 PCF50606_OOCC1_WDTRST);
 +	}
 +	if (int2 & PCF50606_INT2_CHGWDEXP) {
 +		/* Charger watchdog expires */
 +		DEBUGPC("CHGWDEXP ");
++		/* FIXME: signal this to userspace */
 +	}
 +
 +	if (int3 & PCF50606_INT3_ADCRDY) {
@@ -655,9 +665,15 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	}
 +	/* FIXME: ACDINS, ACDREM, TSCPRES */
 +	if (int3 & PCF50606_INT3_LOWBAT) {
-+		/* Low battery voltage */
++		/* Really low battery voltage, we have 8 seconds left */
 +		DEBUGPC("LOWBAT ");
 +		apm_queue_event(APM_LOW_BATTERY);
++		DEBUGPC("SIGPWR(init) ");
++		kill_proc(1, SIGPWR, 1);
++		/* Tell PMU we are taking care of this */
++		reg_set_bit_mask(pcf, PCF50606_REG_OOCC1,
++				 PCF50606_OOCC1_TOTRST,
++				 PCF50606_OOCC1_TOTRST);
 +	}
 +	if (int3 & PCF50606_INT3_HIGHTMP) {
 +		/* High temperature */
@@ -705,7 +721,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +#define BATTVOLT_SCALE_START 2800
 +#define BATTVOLT_SCALE_END 4200
-+#define BATTVOLT_SCALE_DIVIDER ((BATTVOLT_SCALE_END - BATTVOLT_SCALE_START)/10)
++#define BATTVOLT_SCALE_DIVIDER ((BATTVOLT_SCALE_END - BATTVOLT_SCALE_START)/100)
 +
 +static u_int8_t battvolt_scale(u_int16_t battvolt)
 +{
@@ -896,7 +912,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +}
 +static DEVICE_ATTR(chgcur, S_IRUGO | S_IWUSR, show_chgcur, NULL);
 +
-+static const char *chgstate_names[] = {
++static const char *chgmode_names[] = {
 +	[PCF50606_MBCC1_CHGMOD_QUAL]		= "qualification",
 +	[PCF50606_MBCC1_CHGMOD_PRE]		= "pre",
 +	[PCF50606_MBCC1_CHGMOD_TRICKLE]		= "trickle",
@@ -907,15 +923,66 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	[PCF50606_MBCC1_CHGMOD_IDLE]		= "idle",
 +};
 +
-+static ssize_t show_chgstate(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
++static ssize_t show_chgmode(struct device *dev, struct device_attribute *attr,
++			    char *buf)
 +{
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
 +	u_int8_t mbcc1 = reg_read(pcf, PCF50606_REG_MBCC1);
 +	u_int8_t chgmod = (mbcc1 & PCF50606_MBCC1_CHGMOD_MASK);
 +
-+	return sprintf(buf, "%s\n", chgstate_names[chgmod]);
++	return sprintf(buf, "%s\n", chgmode_names[chgmod]);
++}
++
++static ssize_t set_chgmode(struct device *dev, struct device_attribute *attr,
++			   const char *buf, size_t count)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++	u_int8_t mbcc1 = reg_read(pcf, PCF50606_REG_MBCC1);
++
++	mbcc1 &= ~PCF50606_MBCC1_CHGMOD_MASK;
++
++	if (!strcmp(buf, "qualification"))
++		mbcc1 |= PCF50606_MBCC1_CHGMOD_QUAL;
++	else if (!strcmp(buf, "pre"))
++		mbcc1 |= PCF50606_MBCC1_CHGMOD_PRE;
++	else if (!strcmp(buf, "trickle"))
++		mbcc1 |= PCF50606_MBCC1_CHGMOD_TRICKLE;
++	else if (!strcmp(buf, "fast_cccv"))
++		mbcc1 |= PCF50606_MBCC1_CHGMOD_FAST_CCCV;
++	/* We don't allow the other fast modes for security reasons */
++	else if (!strcmp(buf, "idle"))
++		mbcc1 |= PCF50606_MBCC1_CHGMOD_IDLE;
++	else
++		return -EINVAL;
++
++	reg_write(pcf, PCF50606_REG_MBCC1, mbcc1);
++
++	return count;
++}
++
++static DEVICE_ATTR(chgmode, S_IRUGO | S_IWUSR, show_chgmode, set_chgmode);
++
++static const char *chgstate_names[] = {
++	[PCF50606_F_CHG_FAST]			= "fast_enabled",
++	[PCF50606_F_CHG_PRESENT] 		= "present",
++	[PCF50606_F_CHG_FOK]			= "fast_ok",
++	[PCF50606_F_CHG_ERR]			= "error",
++	[PCF50606_F_CHG_PROT]			= "protection",
++	[PCF50606_F_CHG_READY]			= "ready",
++};
++
++static ssize_t show_chgstate(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++	u_int8_t mbcc1 = reg_read(pcf, PCF50606_REG_MBCC1);
++	u_int8_t chgmod = (mbcc1 & PCF50606_MBCC1_CHGMOD_MASK);
++
++	//return sprintf(buf, "%s\n", chgstate_names[chgmod]);
++	return 0;
 +}
 +static DEVICE_ATTR(chgstate, S_IRUGO | S_IWUSR, show_chgstate, NULL);
 +
@@ -994,11 +1061,13 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	switch (cmd) {
 +	case RTC_PIE_OFF:
 +		/* disable periodic interrupt (hz tick) */
++		pcf->flags &= ~PCF50606_F_RTC_SECOND;
 +		reg_set_bit_mask(pcf, PCF50606_REG_INT1M,
 +				 PCF50606_INT1_SECOND, PCF50606_INT1_SECOND);
 +		return 0;
 +	case RTC_PIE_ON:
 +		/* ensable periodic interrupt (hz tick) */
++		pcf->flags |= PCF50606_F_RTC_SECOND;
 +		reg_clear_bits(pcf, PCF50606_REG_INT1M, PCF50606_INT1_SECOND);
 +		return 0;
 +	}
@@ -1270,6 +1339,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	mutex_init(&data->lock);
 +	INIT_WORK(&data->work, pcf50606_work, data);
 +	data->working = 0;
++	data->onkey_seconds = -1;
 +	new_client = &data->client;
 +	i2c_set_clientdata(new_client, data);
 +	new_client->addr = address;
@@ -1292,6 +1362,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	device_create_file(&new_client->dev, &dev_attr_battemp);
 +	device_create_file(&new_client->dev, &dev_attr_chgcur);
 +	device_create_file(&new_client->dev, &dev_attr_chgstate);
++	device_create_file(&new_client->dev, &dev_attr_chgmode);
 +	device_create_file(&new_client->dev, &dev_attr_voltage_dcd);
 +	device_create_file(&new_client->dev, &dev_attr_voltage_dcde);
 +	device_create_file(&new_client->dev, &dev_attr_voltage_dcud);
@@ -1388,6 +1459,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +	device_remove_file(&client->dev, &dev_attr_battemp);
 +	device_remove_file(&client->dev, &dev_attr_chgcur);
 +	device_remove_file(&client->dev, &dev_attr_chgstate);
++	device_remove_file(&client->dev, &dev_attr_chgmode);
 +	device_remove_file(&client->dev, &dev_attr_voltage_dcd);
 +	device_remove_file(&client->dev, &dev_attr_voltage_dcde);
 +	device_remove_file(&client->dev, &dev_attr_voltage_dcud);
