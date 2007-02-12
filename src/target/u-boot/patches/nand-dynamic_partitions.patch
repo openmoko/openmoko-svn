@@ -24,8 +24,8 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
  }
  
 +#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
-+static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x400000, 0x39cc000 };
-+static char *part_names[] = { "u-boot", "u-boot env", "kernel", "initrd", "rootfs" };
++static unsigned int part_size[] = { 0x30000, 0x8000, 0x200000, 0x200000, 0x39cc000 };
++static char *part_names[] = { "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
 +
 +int nand_create_mtd_dynpart(struct mtd_info *mtd)
 +{
@@ -108,8 +108,8 @@ Index: u-boot.git/include/configs/neo1973.h
  
  #define CONFIG_S3C2410_NAND_BBT		1
  
-+#define MTDIDS_DEFAULT	"nand0=gta01-0"
-+#define MTPARTS_DEFAULT	"gta01-0:192k(u-boot),4k(u-boot env),2M(kernel),4M(initrd),-(jffs2)"
++#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
++#define MTPARTS_DEFAULT	"neo1973-nand:192k(u-boot),8k(u-boot_env),2M(kernel),2M(splash),-(jffs2)"
 +
  #endif	/* __CONFIG_H */
 Index: u-boot.git/common/cmd_jffs2.c
