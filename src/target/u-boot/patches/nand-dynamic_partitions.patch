@@ -15,16 +15,23 @@ the 'dynpart' command at the prompt.  Use 'saveenv' to make the setting permanen
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/drivers/nand/nand_bbt.c
+Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.git.orig/drivers/nand/nand_bbt.c	2007-02-07 16:48:48.000000000 +0100
-+++ u-boot.git/drivers/nand/nand_bbt.c	2007-02-08 01:00:19.000000000 +0100
-@@ -1051,4 +1051,54 @@
+--- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-12 20:58:14.000000000 +0100
++++ u-boot/drivers/nand/nand_bbt.c	2007-02-12 20:59:20.000000000 +0100
+@@ -1051,4 +1051,61 @@
  	return 1;
  }
  
 +#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
-+static unsigned int part_size[] = { 0x30000, 0x8000, 0x200000, 0x200000, 0x39cc000 };
++
++
++/* NOTE: this is extremely device-dependent, so it shouldn't really be here.
++   The sum of all part_size[]s must equal to the NAND size, i.e., 0x4000000.
++   "initrd" is sized such that it can hold two uncompressed 16 bit 640*480
++   images: 640*480*2*2 = 1228800 < 1245184. */
++
++static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x130000, 0x3c9c000 };
 +static char *part_names[] = { "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
 +
 +int nand_create_mtd_dynpart(struct mtd_info *mtd)
@@ -74,10 +81,10 @@ Index: u-boot.git/drivers/nand/nand_bbt.c
 +}
 +
  #endif
-Index: u-boot.git/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/neo1973.h	2007-02-07 16:48:48.000000000 +0100
-+++ u-boot.git/include/configs/neo1973.h	2007-02-08 01:00:12.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h	2007-02-12 20:58:15.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-12 20:58:15.000000000 +0100
 @@ -103,7 +103,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
@@ -112,10 +119,10 @@ Index: u-boot.git/include/configs/neo1973.h
 +#define MTPARTS_DEFAULT	"neo1973-nand:192k(u-boot),8k(u-boot_env),2M(kernel),2M(splash),-(jffs2)"
 +
  #endif	/* __CONFIG_H */
-Index: u-boot.git/common/cmd_jffs2.c
+Index: u-boot/common/cmd_jffs2.c
 ===================================================================
---- u-boot.git.orig/common/cmd_jffs2.c	2007-02-07 16:47:38.000000000 +0100
-+++ u-boot.git/common/cmd_jffs2.c	2007-02-07 16:48:48.000000000 +0100
+--- u-boot.orig/common/cmd_jffs2.c	2007-02-12 20:55:59.000000000 +0100
++++ u-boot/common/cmd_jffs2.c	2007-02-12 20:58:15.000000000 +0100
 @@ -2123,6 +2123,18 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
