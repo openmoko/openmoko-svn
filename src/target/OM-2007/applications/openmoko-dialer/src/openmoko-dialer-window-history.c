@@ -657,7 +657,7 @@ history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data)
                                    G_TYPE_INT, -1);
   //we will use a filter to facilitate the filtering in treeview without rebuilding the database.                         
   p_dialer_data->g_list_store_filter =
-    GTK_LIST_STORE (gtk_tree_model_filter_new (GTK_TREE_MODEL (list_store), NULL));
+    gtk_tree_model_filter_new (GTK_TREE_MODEL (list_store), NULL);
   gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER
                                           (p_dialer_data->
                                            g_list_store_filter),

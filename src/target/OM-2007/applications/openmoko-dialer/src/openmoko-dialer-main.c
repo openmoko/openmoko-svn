@@ -292,7 +292,7 @@ signal (SIGUSR1, handle_sigusr1);
   window_history_init(p_dialer_data); 
 
 
-DBG_WARN("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
+  DBG_MSG ("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 
 
 

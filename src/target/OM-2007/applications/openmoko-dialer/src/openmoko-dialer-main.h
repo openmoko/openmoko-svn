@@ -95,7 +95,7 @@ typedef struct _dialer_data
   gboolean dtmf_in_talking_window;
   gboolean history_need_to_update;
 
-  GtkListStore *g_list_store_filter;    ///<the list store used by the gtktreeview, for displaying the history list dynamically.
+  GtkTreeModel *g_list_store_filter;    ///<the list store used by the gtktreeview, for displaying the history list dynamically.
 
   HISTORY_TYPE g_history_filter_type;   ///<indicates the current history filter type, the gtktreeview will be filtered on the value.
 
