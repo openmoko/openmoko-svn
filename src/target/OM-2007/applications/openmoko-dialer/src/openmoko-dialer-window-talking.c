@@ -387,14 +387,14 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     button = MOKO_PIXMAP_BUTTON (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("speaker.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (button, image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON(button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_speaker_clicked),
                       p_dialer_data);
 
     button = MOKO_PIXMAP_BUTTON (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("dtmf.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (button, image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON(button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_dtmf_talk_clicked),
                       p_dialer_data);
@@ -405,7 +405,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     button = MOKO_PIXMAP_BUTTON (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("tony.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (button, image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON(button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_hangup_clicked),
                       p_dialer_data);

@@ -950,7 +950,7 @@ history_list_view_add (MOKO_DIALER_APP_DATA * appdata, HISTORY_ENTRY * entry)
 
   if (appdata->treeview_history == 0)
   {
-    DBG_WARN ("not ready");
+    DBG_WARN ("treeview_history not ready");
     return 0;
 
   }

@@ -56,8 +56,8 @@ cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
     moko_dialer_textview_delete (appdata->moko_dialer_text_view);
 //refresh the autolist,but do not automaticall fill the textview
     gchar *codesinput;
-    codesinput = moko_dialer_textview_get_input (appdata->moko_dialer_text_view, FALSE);
-
+    codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_dialer_text_view, FALSE));
+    DBG_MESSAGE("input %s",codesinput);
     if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
     {
       moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
@@ -88,8 +88,8 @@ window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
 {
   gchar *codesinput;
   //get the input digits
-  codesinput = moko_dialer_textview_get_input (appdata->moko_dialer_text_view,
-                                               FALSE);
+  codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_dialer_text_view,
+                                               FALSE));
   if (g_utf8_strlen (codesinput, -1) < 1)
   {
     if (g_utf8_strlen (appdata->g_state.lastnumber, -1) > 0)
@@ -111,8 +111,8 @@ window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
   moko_dialer_autolist_set_select (appdata->moko_dialer_autolist, -1);
   moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
 
-//got the number;
-  codesinput = g_strdup (appdata->g_peer_info.number);
+//got the number;//FIXME:which function should I use if not g_strdup. & strcpy.
+ strcpy(appdata->g_peer_info.number, codesinput );
 
 //retrieve the contact information if any.
   contact_get_peer_info_from_number (appdata->g_contactlist.contacts,
@@ -233,7 +233,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   char input[2];
   input[0] = parac;
   input[1] = 0;
-  gchar *codesinput;
+  gchar *codesinput=NULL;
 
 //DBG_TRACE();
   MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
@@ -244,7 +244,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
 //DBG_TRACE();
 
 
-  codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
+  codesinput = g_strdup(moko_dialer_textview_get_input (moko_dialer_text_view, FALSE));
 //DBG_TRACE();
 
 //DBG_MESSAGE("LEN=%d,MAX=%d",strlen(codesinput),MOKO_DIALER_MAX_NUMBER_LEN);

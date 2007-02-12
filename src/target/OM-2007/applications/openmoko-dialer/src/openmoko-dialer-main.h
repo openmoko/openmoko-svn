@@ -33,6 +33,7 @@ GtkWidget* buttonRedial;
 typedef struct _dialer_data
 {
   //the global data area begins here
+  struct lgsm_handle *lh;
 
   GMainLoop *mainloop;
 
