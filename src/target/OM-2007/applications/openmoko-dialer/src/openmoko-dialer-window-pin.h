@@ -17,8 +17,8 @@
  */
 #include "moko-dialer-includes.h"
 
-#ifndef _OPENMOKO_DIALER_WINDOW_DIALER_H
-#define _OPENMOKO_DIALER_WINDOW_DIALER_H
+#ifndef _OPENMOKO_DIALER_WINDOW_PIN_H
+#define _OPENMOKO_DIALER_WINDOW_PIN_H
 
 #ifdef __cplusplus
 
@@ -28,8 +28,7 @@ extern "C"
 {
 #endif
 
-
-  gint window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data);
+  gint window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data);
 
 #ifdef __cplusplus
 }

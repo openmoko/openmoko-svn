@@ -42,6 +42,8 @@
 #include "openmoko-dialer-window-talking.h"
 #include "openmoko-dialer-window-outgoing.h"
 #include "openmoko-dialer-window-incoming.h"
+#include "openmoko-dialer-window-pin.h"
+#include "openmoko-dialer-window-history.h"
 
 MOKO_DIALER_APP_DATA *p_dialer_data = 0;
 MOKO_DIALER_APP_DATA *
@@ -171,6 +173,7 @@ GtkWidget* mainwindow=p_data->window_present;
     {
       return;
     }
+  gtk_widget_show_all (mainwindow);
   gtk_window_present (GTK_WINDOW (mainwindow));
   DBG_TRACE();
   signal (SIGUSR1, handle_sigusr1);
