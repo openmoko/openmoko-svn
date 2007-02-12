@@ -26,10 +26,9 @@ G_DEFINE_TYPE (MokoDialerPanel, moko_dialer_panel, GTK_TYPE_VBOX)
      };
 
 //forward definition
-     static void moko_dialer_panel_pressed (MokoDigitButton * button,
+     static gboolean moko_dialer_panel_pressed (MokoDigitButton * button,
                                             GdkEventButton * event,
                                             gpointer data);
-//static void moko_dialer_panel_pressed (MokoDigitButton * button, gpointer data);
 
      static gint moko_dialer_panel_signals[LAST_SIGNAL] = { 0 };
 
@@ -59,8 +58,6 @@ moko_dialer_panel_class_init (MokoDialerPanelClass * class)
                   g_cclosure_marshal_VOID__CHAR, G_TYPE_NONE, 1,
                   g_type_from_name ("gchar"));
 
-  //                G_TYPE_NONE, 0);
-
   g_print ("moko_dialer_panel:signal register end,got the id :%d\n",
            moko_dialer_panel_signals[CLICKED_SIGNAL]);
 
@@ -72,8 +69,6 @@ moko_dialer_panel_class_init (MokoDialerPanelClass * class)
                                    moko_dialer_panel_hold), NULL, NULL,
                   g_cclosure_marshal_VOID__CHAR, G_TYPE_NONE, 1,
                   g_type_from_name ("gchar"));
-
-  //                G_TYPE_NONE, 0);
 
   g_print ("moko_dialer_panel:signal register end,got the id :%d\n",
            moko_dialer_panel_signals[HOLD_SIGNAL]);
@@ -138,11 +133,6 @@ moko_dialer_panel_init (MokoDialerPanel * moko_dialer_panel)
                                  moko_dialer_panel->buttons[i][j], j, j + 1,
                                  i, i + 1);
 
-
-/*	g_signal_connect (GTK_OBJECT (moko_dialer_panel->buttons[i][j]), "clicked",
-			    G_CALLBACK (moko_dialer_panel_clicked),moko_dialer_panel);
-			    */
-
       g_signal_connect ((gpointer) moko_dialer_panel->buttons[i][j],
                         "button_release_event",
                         G_CALLBACK (moko_dialer_panel_pressed),
@@ -156,7 +146,7 @@ moko_dialer_panel_init (MokoDialerPanel * moko_dialer_panel)
 
 
 
-static void
+static gboolean
 moko_dialer_panel_pressed (MokoDigitButton * button, GdkEventButton * event,
                            gpointer data)
 {
@@ -198,8 +188,8 @@ moko_dialer_panel_pressed (MokoDigitButton * button, GdkEventButton * event,
 
   }
 
-
-  return;
+  /* allow the signal to propagate the event further */
+  return FALSE;
 }
 
 
