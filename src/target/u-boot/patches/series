@@ -24,3 +24,4 @@ nand-createbbt.patch
 uboot-mokoversion.patch
 uboot-strtoul.patch
 nand-badisbad.patch
+uboot-neo1973-jbt6k74.patch
