@@ -56,6 +56,10 @@ typedef struct _MokoFingerToolBoxPrivate
     GtkWindow* popup;
     GtkWidget* parent;
 
+    GdkPixbuf* background_pixbuf;
+    GdkPixbuf* button_pixbuf;
+    GdkPixbuf* rightarrow_pixbuf;
+
 } MokoFingerToolBoxPrivate;
 
 static void
@@ -168,28 +172,50 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     if ( priv->rightArrowVisible ) maxButtonsPerPage--;
     moko_debug( "max buttons per page is %d", maxButtonsPerPage );
 
-    //FIXME generate all possible combinations of mask images, not just one w/ 4 buttons
-
     //gtk_widget_ensure_style( GTK_WIDGET(self) );
     GtkStyle* style = gtk_rc_get_style( GTK_WIDGET(self) );
     g_assert( style->rc_style );
 
-    GdkPixbuf* background = gdk_pixbuf_new_from_file( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
-    GdkPixbuf* pixbuf = gdk_pixbuf_scale_simple( background, a->width, a->height, GDK_INTERP_BILINEAR );
-    GdkPixbuf* button = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_type03.png", NULL ), NULL );
-    guint w = gdk_pixbuf_get_width( button );
-    guint h = gdk_pixbuf_get_height( button );
+    if ( !priv->background_pixbuf )
+        priv->background_pixbuf = gdk_pixbuf_new_from_file( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
+    GdkPixbuf* pixbuf = gdk_pixbuf_scale_simple( priv->background_pixbuf, a->width, a->height, GDK_INTERP_BILINEAR );
+    
+    if ( !priv->button_pixbuf )
+        priv->button_pixbuf = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_type03.png", NULL ), NULL );
+    guint w = gdk_pixbuf_get_width( priv->button_pixbuf );
+    guint h = gdk_pixbuf_get_height( priv->button_pixbuf );
     guint x = padding_left - 1;
     guint y = 0;
 
-    gdk_pixbuf_copy_area( background, 0, 0, gdk_pixbuf_get_width( background ), gdk_pixbuf_get_height( background ), pixbuf, 0, 0 );
+    gdk_pixbuf_copy_area( priv->background_pixbuf, 0, 0, gdk_pixbuf_get_width( priv->background_pixbuf ), gdk_pixbuf_get_height( priv->background_pixbuf ), pixbuf, 0, 0 );
 
-    for ( int i = 0; i < 4; ++i )
+    guint composite_num;
+    if ( maxButtonsPerPage == 0 )
+        composite_num = priv->numberOfButtons - priv->leftButton;
+    else if ( priv->numberOfButtons - priv->leftButton >= maxButtonsPerPage )
+        composite_num = maxButtonsPerPage;
+    else
+        composite_num = priv->numberOfButtons % maxButtonsPerPage;
+    
+    for ( int i = 0; i < composite_num; ++i )
     {
-        //gdk_pixbuf_copy_area( button, 0, 0, w, h, pixbuf, x, y );
+        //gdk_pixbuf_copy_area( priv->button_pixbuf, 0, 0, w, h, pixbuf, x, y );
 
-        gdk_pixbuf_composite( button, pixbuf, x, y, w, h, x, y+2, 1, 1, GDK_INTERP_NEAREST, 255 );
+        gdk_pixbuf_composite( priv->button_pixbuf, pixbuf, x, y, w, h, x, y, 1, 1, GDK_INTERP_NEAREST, 255 );
         x += w + INNER_PADDING - 2;
+    }
+
+    if ( priv->rightArrowVisible )
+    {
+        
+        if ( !priv->rightarrow_pixbuf )
+            priv->rightarrow_pixbuf = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_dialog_next.png", NULL ), NULL );
+
+        guint rightarrow_w = gdk_pixbuf_get_width( priv->rightarrow_pixbuf );
+        guint rightarrow_h = gdk_pixbuf_get_height( priv->rightarrow_pixbuf );
+        guint rightarrow_x = a->width - rightarrow_w;
+        
+        gdk_pixbuf_composite( priv->rightarrow_pixbuf, pixbuf, rightarrow_x, y, rightarrow_w, rightarrow_h, rightarrow_x, y, 1, 1, GDK_INTERP_NEAREST, 255 );
     }
 
 #ifdef CRAZY_DEBUG_CODE
@@ -276,6 +302,7 @@ moko_finger_tool_box_init(MokoFingerToolBox *self)
 
     g_signal_connect( G_OBJECT(priv->rightarrow), "clicked", G_CALLBACK(cb_right_button_pressed), self );
     g_signal_connect_after( G_OBJECT(self), "size-allocate", G_CALLBACK(cb_configure), self );
+
 }
 
 /* public API */
