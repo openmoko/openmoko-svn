@@ -1,4 +1,5 @@
 CONFIG = debug warn_on link_pkgconfig console $$MOKOCONFIG
+PREFIX = /usr/local
 
 QMAKE_LINK              = gcc
 QMAKE_LINK_SHLIB        = gcc
@@ -50,6 +51,7 @@ for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
 
 contains ( MOKOTYPE, panel-plugin ) {
     DATADIR = $(OPENMOKODIR)/panel-plugins/$$TARGET/data
+    DESTDIR = $$PREFIX/matchbox-panel
     TEMPLATE = lib
 }
 !contains ( MOKOTYPE, panel-plugin ) {
