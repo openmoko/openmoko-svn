@@ -1,0 +1,47 @@
+Index: u-boot/drivers/nand/nand_bbt.c
+===================================================================
+--- u-boot.orig/drivers/nand/nand_bbt.c
++++ u-boot/drivers/nand/nand_bbt.c
+@@ -1064,6 +1064,15 @@ int nand_isbad_bbt (struct mtd_info *mtd
+ static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x130000, 0x3c9c000 };
+ static char *part_names[] = { "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
+ 
++
++static int skip_offs(const struct nand_chip *this, unsigned int offs)
++{
++	int block = (int) (offs >> (this->bbt_erase_shift - 1));
++	u_int8_t bbt = (this->bbt[block >> 3] >> (block & 0x06)) & 0x03;
++
++	return bbt == 3;
++}
++
+ int nand_create_mtd_dynpart(struct mtd_info *mtd)
+ {
+ 	struct nand_chip *this = mtd->priv;
+@@ -1082,11 +1091,22 @@ int nand_create_mtd_dynpart(struct mtd_i
+ 		unsigned int bb_delta = 0;
+ 		unsigned int offs = 0;
+ 		char mtdpart[32];
+-		for (offs = cur_offs; offs < cur_offs + part_size[part] + bb_delta; offs += 0x4000) {
+-			int block = (int) (offs >> (this->bbt_erase_shift - 1));
+-			u_int8_t bbt = (this->bbt[block >> 3] >> (block & 0x06)) & 0x03;
+-			if (bbt == 0x03)
++
++		for (offs = cur_offs;
++		    offs < cur_offs + part_size[part] + bb_delta;
++		    offs += 0x4000)
++			if (skip_offs(this, offs))
+ 				bb_delta += 0x4000;
++
++		/*
++		 * Absorb bad blocks immediately following this partition also
++		 * into the partition, in order to make next partition start
++		 * with a good block. This simplifies handling of the
++		 * environment partition.
++		 */
++		while (offs < this->chipsize && skip_offs(this, offs)) {
++			bb_delta += 0x4000;
++			offs += 0x4000;
+ 		}
+ 
+ 		if (cur_offs + part_size[part] + bb_delta > this->chipsize)
