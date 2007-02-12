@@ -359,13 +359,14 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
 
-    gtk_widget_show_all (GTK_WIDGET (window));
+   // gtk_widget_show_all (GTK_WIDGET (window));
 
 //the gtk_widget_show_all is really bad, cause i have to call it and then hide some widgets.
 
 
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
-    gtk_widget_show (GTK_WIDGET (moko_finger_window_get_wheel (window)));
+    // This causes a segfault for me... maybe a problem in libmokoui? - thomas
+    //gtk_widget_show (GTK_WIDGET (moko_finger_window_get_wheel (window)));
 
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
                       "press_left_up",
@@ -408,7 +409,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_delete_clicked),
                       p_dialer_data);
-    gtk_widget_show (GTK_WIDGET (tools));
+    //gtk_widget_show (GTK_WIDGET (tools));
 
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
@@ -418,12 +419,12 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_back_clicked),
                       p_dialer_data);
-    gtk_widget_show (GTK_WIDGET (tools));
+    //gtk_widget_show (GTK_WIDGET (tools));
 
     p_dialer_data->wheel_history = GTK_WIDGET (moko_finger_window_get_wheel (window));
     p_dialer_data->toolbox_history = GTK_WIDGET (tools);
 
-    gtk_widget_hide (GTK_WIDGET (window));
+    //gtk_widget_hide (GTK_WIDGET (window));
 
     DBG_LEAVE ();
   }

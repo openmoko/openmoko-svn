@@ -48,15 +48,14 @@ extern "C"
 
 #ifdef  _FIC_DEBUG
 /** @brief Define a debug message output */
-#define DBG_MESSAGE(x...)   {if(DBG_MESSAGE_ON) {g_print(x);g_print("\n");}}
+#define DBG_MESSAGE(x...)   {if(DBG_MESSAGE_ON) {g_debug(x);}}
 
 /** @brief Define a error message output */
-#define DBG_ERROR(x...)  {if(DBG_ERROR_ON) {g_print("%s : %s : %d\nERROR:\n",__FILE__,__FUNCTION__,__LINE__);g_print(x);g_print("\n");}}
-
-#define DBG_WARN(x...)  {if(DBG_WARNING_ON) {g_print("WARN:\n");g_print(x);g_print("\n");}}
-#define DBG_ENTER()  {if(DBG_FUN_ENTER_ON) {g_print(">>>>>>>>%s : %d\n",__FUNCTION__,__LINE__);}}
-#define DBG_LEAVE()  {if(DBG_FUN_LEAVE_ON) {g_print("%s : %d>>>>>>>\n",__FUNCTION__,__LINE__);}}
-#define DBG_TRACE()  {if(DBG_TRACE_ON) {g_print("TRACE: %s : %d\n\n",__FUNCTION__,__LINE__);}}
+#define DBG_ERROR(x...)  {if(DBG_ERROR_ON) {g_error ("%s : %s : %d\nERROR:\n",__FILE__,__FUNCTION__,__LINE__);g_error(x);}}
+#define DBG_WARN(x...) {if(DBG_WARNING_ON) {g_warning(x);}}
+#define DBG_ENTER()  {if(DBG_FUN_ENTER_ON) {g_debug("ENTER: %s() : %s:%d",__FUNCTION__,__FILE__,__LINE__);}}
+#define DBG_LEAVE()  {if(DBG_FUN_LEAVE_ON) {g_debug("LEAVE: %s() : %s:%d",__FUNCTION__,__FILE__,__LINE__);}}
+#define DBG_TRACE()  {if(DBG_TRACE_ON)     {g_debug("TRACE: %s() : %s:%d",__FUNCTION__,__FILE__,__LINE__);}}
 
 
 #else
