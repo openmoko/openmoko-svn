@@ -31,26 +31,35 @@
 void
 pin_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 {
-moko_dialer_textview_delete (appdata->moko_pin_text_view);
+if(appdata->int_sim_pin_end_point)
+{
+    moko_dialer_textview_delete (appdata->moko_pin_text_view);
+    appdata->int_sim_pin_end_point--;
+    appdata->str_sim_pin[appdata->int_sim_pin_end_point]=0;
+}  
+
 }
 
 
 void
 pin_ok_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 {
-    gchar *codesinput;
-    codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_pin_text_view, TRUE));
+ //   gchar *codesinput;
+//    codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_pin_text_view, TRUE));
 
-    if (g_utf8_strlen (codesinput, -1) <1)
+    if (g_utf8_strlen (appdata->str_sim_pin, -1) <1)
     {
-       //user didn't input anything, maybe it's a redial
+       //user didn't input anything
     DBG_MESSAGE("no input for pin"); 
      }
      else
     {//here send the pin codes and hide our window.
     
-    DBG_MESSAGE("here we send the pin:%s",codesinput);
-    lgsm_pin (appdata->lh, codesinput);
+    DBG_MESSAGE("here we send the pin:%s",appdata->str_sim_pin);
+    //FIXME:why this call will cause segment fault?
+    lgsm_pin (appdata->lh, appdata->str_sim_pin);
+    //lgsm_pin (appdata->lh, "1234");
+    DBG_MESSAGE("pin:%s sent",appdata->str_sim_pin);
     gtk_widget_hide(appdata->window_pin);
     }
   
@@ -66,13 +75,21 @@ on_pin_panel_user_input (GtkWidget * widget, gchar parac,
   char input[2];
   input[0] = parac;
   input[1] = 0;
-
+  
 //DBG_TRACE();
   MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
   MokoDialerTextview *moko_pin_text_view = appdata->moko_pin_text_view;
-
-
-  moko_dialer_textview_insert (moko_pin_text_view, input);
+if(appdata->int_sim_pin_end_point<MOKO_DIALER_MAX_NUMBER_LEN)
+{
+  appdata->str_sim_pin[appdata->int_sim_pin_end_point]=parac;
+  appdata->int_sim_pin_end_point++;
+  moko_dialer_textview_insert (moko_pin_text_view, "*");
+}
+else
+{
+  appdata->str_sim_pin[0]=parac;
+  appdata->int_sim_pin_end_point=1;
+}
 //DBG_TRACE();
 
 }
@@ -91,6 +108,7 @@ on_window_pin_show                  (GtkWidget       *widget,
 {
 DBG_ENTER();
 appdata->window_present=widget;
+
 DBG_LEAVE();
 }
 
@@ -104,6 +122,8 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
   if (!p_dialer_data->window_pin)
   {
 
+    g_stpcpy(p_dialer_data->str_sim_pin,"");
+    p_dialer_data->int_sim_pin_end_point=0;
     GdkColor color;
     gdk_color_parse ("black", &color);
 
@@ -132,6 +152,7 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     MokoDialerTextview *mokotextview = moko_dialer_textview_new ();
     p_dialer_data->moko_pin_text_view = mokotextview;
+//    moko_dialer_textview_fill_it(mokotextview , "Please input the pin:");
 
     gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
     gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (eventbox1), FALSE, FALSE,
@@ -185,8 +206,6 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (hbox), TRUE, TRUE, 5);
-
-
 
 
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));

@@ -297,8 +297,6 @@ gsm_pin_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 
   printf ("EVENT: PIN request (type=%u) ", aux->u.pin.type);
 
-  /* FIXME: read pin from STDIN and send it back via lgsm_pin */
-
   gsm_pin_require(lh);
 
 

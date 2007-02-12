@@ -212,11 +212,11 @@ contact_new_contact (char *name, char *id)
   nextcontact = (DIALER_CONTACT *) calloc (1, sizeof (DIALER_CONTACT));
   nextcontact->ID = 0;
   nextcontact->name = (char *) calloc (1, 30);
-  strcpy (nextcontact->name, name);
+  g_stpcpy (nextcontact->name, name);
   nextcontact->name[29] = '\0';
 
   nextcontact->ID = (char *) calloc (1, 255);
-  strcpy (nextcontact->ID, id);
+  g_stpcpy (nextcontact->ID, id);
   nextcontact->ID[254] = '\0';
   return nextcontact;
 }
@@ -249,10 +249,10 @@ contact_add_entry (DIALER_CONTACT * contact, char *desc, char *content)
   nextentry =
     (DIALER_CONTACT_ENTRY *) calloc (1, sizeof (DIALER_CONTACT_ENTRY));
   nextentry->desc = (char *) calloc (1, 30);
-  strcpy (nextentry->desc, desc);
+  g_stpcpy (nextentry->desc, desc);
   nextentry->desc[29] = '\0';
   nextentry->content = (char *) calloc (1, 30);
-  strcpy (nextentry->content, content);
+  g_stpcpy (nextentry->content, content);
   nextentry->content[29] = '\0';
 
   nextentry->next = contact->entry;
@@ -425,8 +425,8 @@ contact_get_info_from_number (DIALER_CONTACT * contacts, char *name,
 {
 
 
-  strcpy (name, "");
-  strcpy (picpath, MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH);
+  g_stpcpy (name, "");
+  g_stpcpy (picpath, MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH);
   if (number == 0)
     return 0;
   if (strlen (number) == 0)
@@ -447,8 +447,8 @@ contact_get_info_from_number (DIALER_CONTACT * contacts, char *name,
 
       if (strcmp (entry->content, number) == 0)
       {
-        strcpy (picpath, contacts->picpath);
-        strcpy (name, contacts->name);
+        g_stpcpy (picpath, contacts->picpath);
+        g_stpcpy (name, contacts->name);
         // DBG_MESSAGE("Yeah, we know the owner is %s.",name);
 
         return 1;
@@ -642,9 +642,9 @@ contact_load_contact_photo (GtkImage * image, const char *id)
 
 if(photo)
   if (photo)
-   // gdk_pixbuf_loader_write (loader, photo->data.inlined.data,
-     //                        photo->data.inlined.length, NULL);
-    gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
+   gdk_pixbuf_loader_write (loader, photo->data.inlined.data,
+                            photo->data.inlined.length, NULL);
+    //gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
 
 
   gdk_pixbuf_loader_close (loader, NULL);

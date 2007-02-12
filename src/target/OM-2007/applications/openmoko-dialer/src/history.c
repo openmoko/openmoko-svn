@@ -177,7 +177,7 @@ history_add_entry (HISTORY_LIST_HEAD * historyhead, HISTORY_TYPE type,
   if (name && strlen (name) > 0)
   {
     pentry->name = (char *) calloc (1, strlen (name) + 1);
-    strcpy (pentry->name, name);
+    g_stpcpy (pentry->name, name);
     pentry->hasname = 1;
   }
   else
@@ -189,7 +189,7 @@ history_add_entry (HISTORY_LIST_HEAD * historyhead, HISTORY_TYPE type,
   if (number && strlen (number) > 0)
   {
     pentry->number = (char *) calloc (1, strlen (number) + 1);
-    strcpy (pentry->number, number);
+    g_stpcpy (pentry->number, number);
   }
   else
   {
@@ -203,12 +203,12 @@ history_add_entry (HISTORY_LIST_HEAD * historyhead, HISTORY_TYPE type,
   if (id && strlen (id) > 0)
   {
     pentry->ID = (char *) calloc (1, strlen (id) + 1);
-    strcpy (pentry->ID, id);
+    g_stpcpy (pentry->ID, id);
   }
   if (time && strlen (time) > 0)
   {
     pentry->time = (char *) calloc (1, strlen (time) + 1);
-    strcpy (pentry->time, time);
+    g_stpcpy (pentry->time, time);
   }
   pentry->durationsec = durationsec;
 

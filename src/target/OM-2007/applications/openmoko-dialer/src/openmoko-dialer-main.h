@@ -37,6 +37,8 @@ typedef struct _dialer_data
 
   GMainLoop *mainloop;
 
+  char str_sim_pin[MOKO_DIALER_MAX_PIN_LEN+1];
+  gint int_sim_pin_end_point;
   MokoDialerTextview *moko_dialer_text_view;    ///<the textview for the dialer window 
 
   MokoDialerTextview *moko_dtmf_text_view;      ///<the textview for the dtmf window

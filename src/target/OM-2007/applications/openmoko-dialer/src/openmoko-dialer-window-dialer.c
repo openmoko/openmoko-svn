@@ -112,7 +112,8 @@ window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
   moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
 
 //got the number;//FIXME:which function should I use if not g_strdup. & strcpy.
- strcpy(appdata->g_peer_info.number, codesinput );
+ //strcpy(appdata->g_peer_info.number, codesinput );
+ g_stpcpy(appdata->g_peer_info.number, codesinput );
 
 //retrieve the contact information if any.
   contact_get_peer_info_from_number (appdata->g_contactlist.contacts,

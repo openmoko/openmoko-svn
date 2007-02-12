@@ -117,7 +117,8 @@ window_outgoing_prepare (MOKO_DIALER_APP_DATA * appdata)
     moko_dialer_status_set_person_name (appdata->status_outgoing, "");
 
   }
-  strcpy (appdata->g_state.lastnumber, appdata->g_peer_info.number);
+//  strcpy (appdata->g_state.lastnumber, appdata->g_peer_info.number);
+  g_stpcpy (appdata->g_state.lastnumber, appdata->g_peer_info.number);
   DBG_LEAVE ();
 
 }

@@ -80,14 +80,14 @@ while(number[start]=='\"'&&start<end)start++;
 if(end>1)while(number[end-1]=='\"'&&start<end)end--;
 
 DBG_MESSAGE("START=%d,END=%d",start,end);
-strcpy(temp,number+start);
+g_stpcpy(temp,number+start);
 temp[end-1]=0;
 DBG_MESSAGE("%s",temp);	
 
 
 
 //got the number;
-strcpy(appdata->g_peer_info.number,temp);
+g_stpcpy(appdata->g_peer_info.number,temp);
 
 //retrieve the contact information if any.
 contact_get_peer_info_from_number(appdata->g_contactlist.contacts , &(appdata->g_peer_info));
@@ -288,12 +288,14 @@ signal (SIGUSR1, handle_sigusr1);
   window_outgoing_init(p_dialer_data); 
   window_history_init(p_dialer_data); 
 
+
 DBG_WARN("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 
 
 
 //from now on we will not use multithreads.
   gsm_lgsm_start(mainloop);
+  //gtk_widget_show(p_dialer_data->window_pin);
   //start a timer to monitor incoming calls
   //gtk_timeout_add(100,incoming_calls,0);
  
