@@ -234,8 +234,8 @@ guint moko_dialog_window_run(MokoDialogWindow* dialog)
 
     g_object_ref (dialog);
 
-#ifndef DEBUG_THIS_FILE
     was_modal = GTK_WINDOW (dialog)->modal;
+#ifndef DEBUG_THIS_FILE
     if (!was_modal)
         gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
 #endif
