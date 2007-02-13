@@ -42,7 +42,7 @@ typedef struct {
 } MokoDetailsWindowClass;
 
 GType moko_details_window_get_type();
-MokoDetailsWindow* moko_details_window_new();
+GtkWidget* moko_details_window_new();
 
 GtkBox* moko_details_window_put_in_box(MokoDetailsWindow* self);
 

@@ -105,20 +105,20 @@ void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child)
     gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(child), TRUE, TRUE, 0 );
 }
 
-MokoFingerWheel* moko_finger_window_get_wheel(MokoFingerWindow* self)
+GtkWidget* moko_finger_window_get_wheel(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_wheel" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     if (!priv->wheel) priv->wheel = moko_finger_wheel_new(self);
-    return priv->wheel;
+    return GTK_WIDGET (priv->wheel);
 }
 
-MokoFingerToolBox* moko_finger_window_get_toolbox(MokoFingerWindow* self)
+GtkWidget* moko_finger_window_get_toolbox(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_toolbox" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     if (!priv->tools) priv->tools = moko_finger_tool_box_new(self);
-    return priv->tools;
+    return GTK_WIDGET (priv->tools);
 }
 
 gboolean moko_finger_window_get_geometry_hint(MokoFingerWindow* self, GtkWidget* hintee, GtkAllocation* allocation)

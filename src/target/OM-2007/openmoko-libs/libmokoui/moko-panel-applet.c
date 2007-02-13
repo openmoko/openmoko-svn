@@ -110,10 +110,10 @@ moko_panel_applet_class_init(MokoPanelAppletClass* klass)
             G_TYPE_NONE, 0);
 }
 
-MokoPanelApplet*
+GtkWidget*
 moko_panel_applet_new()
 {
-    return g_object_new(MOKO_TYPE_PANEL_APPLET, NULL);
+    return GTK_WIDGET (g_object_new(MOKO_TYPE_PANEL_APPLET, NULL));
 }
 
 static void

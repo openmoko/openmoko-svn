@@ -60,7 +60,7 @@ moko_search_bar_init (MokoSearchBar *self)
     gtk_toolbar_insert( self, GTK_TOOL_ITEM(item), 0 );
 }
 
-MokoSearchBar*
+GtkWidget*
 moko_search_bar_new (void)
 {
     return GTK_WIDGET(g_object_new(moko_search_bar_get_type(), NULL));

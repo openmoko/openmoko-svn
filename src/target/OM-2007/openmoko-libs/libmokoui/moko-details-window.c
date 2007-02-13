@@ -88,10 +88,10 @@ moko_details_window_init (MokoDetailsWindow *self)
     gtk_scrolled_window_set_policy( self, GTK_POLICY_NEVER, GTK_POLICY_NEVER );
 }
 
-MokoDetailsWindow*
+GtkWidget*
 moko_details_window_new (void)
 {
-    return g_object_new(MOKO_TYPE_DETAILS_WINDOW, NULL );
+    return GTK_WIDGET (g_object_new(MOKO_TYPE_DETAILS_WINDOW, NULL ));
 }
 
 GtkBox* moko_details_window_put_in_box(MokoDetailsWindow* self)

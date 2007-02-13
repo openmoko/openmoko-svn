@@ -99,10 +99,10 @@ void moko_paned_window_clear(MokoPanedWindow *self) /* Destruction */
 
 /* PUBLIC API */
 
-MokoMenuBox* moko_paned_window_get_menubox(MokoPanedWindow* self)
+GtkWidget* moko_paned_window_get_menubox(MokoPanedWindow* self)
 {
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    return priv->menubox;
+    return GTK_WIDGET (priv->menubox);
 }
 
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu)

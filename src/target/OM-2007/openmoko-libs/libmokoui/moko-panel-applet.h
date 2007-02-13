@@ -72,7 +72,7 @@ typedef struct {
 
 /* type interface */
 GType moko_panel_applet_get_type();
-MokoPanelApplet* moko_panel_applet_new();
+GtkWidget* moko_panel_applet_new();
 void moko_panel_system_init( int* argc, char*** argv );
 
 /* simple interface */

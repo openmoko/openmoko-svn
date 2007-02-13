@@ -331,15 +331,15 @@ moko_navigation_list_init (MokoNavigationList *self)
     gtk_fixed_put ( GTK_FIXED (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
 }
 
-MokoNavigationList*
+GtkWidget*
 moko_navigation_list_new (void)
 {
     MokoNavigationList* self = MOKO_NAVIGATION_LIST ( g_object_new (MOKO_TYPE_NAVIGATION_LIST, NULL));
 
-    return self;
+    return GTK_WIDGET (self);
 }
 
-MokoNavigationList*
+GtkWidget*
 moko_navigation_list_new_with_model (GtkTreeModel *model)
 {
 
@@ -359,7 +359,7 @@ moko_navigation_list_new_with_model (GtkTreeModel *model)
     gtk_fixed_put ( GTK_FIXED (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
 
 
-    return self;
+    return GTK_WIDGET (self);
 }
 
 
@@ -369,10 +369,10 @@ void moko_navigation_list_append_column (MokoNavigationList* self, GtkTreeViewCo
     moko_tree_view_append_column( MOKO_TREE_VIEW (priv->treeview), column );
 }
 
-MokoTreeView* moko_navigation_list_get_tree_view (MokoNavigationList* self)
+GtkWidget* moko_navigation_list_get_tree_view (MokoNavigationList* self)
 {
     MokoNavigationListPrivate* priv = NAVIGATION_LIST_PRIVATE (self);
-    return priv->treeview;
+    return GTK_WIDGET (priv->treeview);
 }
 
 

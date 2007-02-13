@@ -387,10 +387,10 @@ moko_application_remove_window(MokoApplication* self, MokoWindow* window)
  *
  * @return the main #MokoWindow for the current #MokoApplication.
  **/
-MokoWindow* moko_application_get_main_window(MokoApplication* self)
+GtkWidget* moko_application_get_main_window(MokoApplication* self)
 {
     MokoApplicationPrivate* priv = MOKO_APPLICATION_GET_PRIVATE(self);
-    return priv->main_window;
+    return GTK_WIDGET (priv->main_window);
 }
 /**
  * moko_application_set_main_window:
@@ -466,11 +466,11 @@ void moko_application_add_stock_icons(MokoApplication* self, ...)
  *
  * create a modal dialog window with @a title and @a contents
  **/
-MokoDialogWindow* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents)
+GtkWidget* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents)
 {
     MokoDialogWindow* dialog = moko_dialog_window_new();
     moko_dialog_window_set_title( dialog, title );
     moko_dialog_window_set_contents( dialog, contents );
     moko_dialog_window_run( dialog );
-    return dialog;
+    return GTK_WIDGET (dialog);
 }

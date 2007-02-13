@@ -135,10 +135,10 @@ moko_dialog_window_class_init(MokoDialogWindowClass* klass)
     object_class->finalize = moko_dialog_window_finalize;
 }
 
-MokoDialogWindow*
+GtkWidget*
 moko_dialog_window_new(void)
 {
-    return g_object_new(MOKO_TYPE_DIALOG_WINDOW, NULL);
+    return GTK_WIDGET (g_object_new(MOKO_TYPE_DIALOG_WINDOW, NULL));
 }
 
 static void

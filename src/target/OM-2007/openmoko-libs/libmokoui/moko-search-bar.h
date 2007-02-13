@@ -42,7 +42,7 @@ typedef struct {
 
 GType moko_search_bar_get_type (void);
 
-MokoSearchBar* moko_search_bar_new (void);
+GtkWidget* moko_search_bar_new (void);
 
 G_END_DECLS
 

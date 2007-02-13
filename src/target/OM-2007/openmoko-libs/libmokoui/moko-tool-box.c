@@ -194,13 +194,13 @@ void moko_tool_box_add_search_button(MokoToolBox* self)
 #endif
 }
 
-GtkHBox* moko_tool_box_get_button_box(MokoToolBox* self)
+GtkWidget* moko_tool_box_get_button_box(MokoToolBox* self)
 {
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
-    return priv->buttonbox;
+    return GTK_WIDGET (priv->buttonbox);
 }
 
-MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self)
+GtkWidget* moko_tool_box_add_action_button(MokoToolBox* self)
 {
     moko_debug( "moko_tool_box_add_action_button" );
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
@@ -211,11 +211,11 @@ MokoPixmapButton* moko_tool_box_add_action_button(MokoToolBox* self)
     //gtk_box_pack_start( GTK_BOX(priv->buttonbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
     gtk_box_pack_end( GTK_BOX(priv->buttonbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
 
-    return button;
+    return GTK_WIDGET (button);
 }
 
-GtkEntry* moko_tool_box_get_entry(MokoToolBox* self)
+GtkWidget* moko_tool_box_get_entry(MokoToolBox* self)
 {
     MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
-    return priv->entry;
+    return GTK_WIDGET (priv->entry);
 }

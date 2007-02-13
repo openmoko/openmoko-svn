@@ -48,11 +48,11 @@ typedef struct {
 } MokoNavigationListClass;
 
 GType moko_navigation_list_get_type (void);
-MokoNavigationList* moko_navigation_list_new (void);
-MokoNavigationList* moko_navigation_list_new_with_model (GtkTreeModel *model);
+GtkWidget* moko_navigation_list_new (void);
+GtkWidget* moko_navigation_list_new_with_model (GtkTreeModel *model);
 
 void moko_navigation_list_append_column (MokoNavigationList* self, GtkTreeViewColumn* column);
-MokoTreeView* moko_navigation_list_get_tree_view(MokoNavigationList* self);
+GtkWidget* moko_navigation_list_get_tree_view(MokoNavigationList* self);
 
 G_END_DECLS
 

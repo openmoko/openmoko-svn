@@ -47,7 +47,7 @@ GtkWidget* moko_tree_view_new (void);
 GtkWidget* moko_tree_view_new_with_model(GtkTreeModel* model);
 
 void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column);
-GtkScrolledWindow* moko_tree_view_put_into_scrolled_window(MokoTreeView* self);
+GtkWidget* moko_tree_view_put_into_scrolled_window(MokoTreeView* self);
 
 G_END_DECLS
 

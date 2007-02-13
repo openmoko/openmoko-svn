@@ -57,7 +57,7 @@ GtkWidget*     moko_paned_window_new             (void);
 void           moko_paned_window_clear           (MokoPanedWindow *self);
 
 /* menu */
-MokoMenuBox* moko_paned_window_get_menubox(MokoPanedWindow* self);
+GtkWidget* moko_paned_window_get_menubox(MokoPanedWindow* self);
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu);
 void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu);
 

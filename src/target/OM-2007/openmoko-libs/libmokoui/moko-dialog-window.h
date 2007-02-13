@@ -41,7 +41,7 @@ typedef struct {
 } MokoDialogWindowClass;
 
 GType moko_dialog_window_get_type();
-MokoDialogWindow* moko_dialog_window_new();
+GtkWidget* moko_dialog_window_new();
 
 void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title);
 void moko_dialog_window_set_contents(MokoDialogWindow* self, GtkWidget* contents);
