@@ -17,9 +17,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-12 20:58:14.000000000 +0100
-+++ u-boot/drivers/nand/nand_bbt.c	2007-02-12 20:59:20.000000000 +0100
-@@ -1051,4 +1051,61 @@
+--- u-boot.orig/drivers/nand/nand_bbt.c
++++ u-boot/drivers/nand/nand_bbt.c
+@@ -1051,4 +1051,61 @@ int nand_isbad_bbt (struct mtd_info *mtd
  	return 1;
  }
  
@@ -46,7 +46,7 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +		return -ENOMEM;
 +
 +	memset(mtdparts, 0, sizeof(mtdparts));
-+	sprintf(mtdparts, "mtdparts=gta01-0:");
++	sprintf(mtdparts, "mtdparts=neo1973-nand:");
 +
 +	for (part = 0; part < ARRAY_SIZE(part_size); part++) {
 +		unsigned int bb_delta = 0;
@@ -83,8 +83,8 @@ Index: u-boot/drivers/nand/nand_bbt.c
  #endif
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-12 20:58:15.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-12 20:58:15.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h
++++ u-boot/include/configs/neo1973.h
 @@ -103,7 +103,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
@@ -121,9 +121,9 @@ Index: u-boot/include/configs/neo1973.h
  #endif	/* __CONFIG_H */
 Index: u-boot/common/cmd_jffs2.c
 ===================================================================
---- u-boot.orig/common/cmd_jffs2.c	2007-02-12 20:55:59.000000000 +0100
-+++ u-boot/common/cmd_jffs2.c	2007-02-12 20:58:15.000000000 +0100
-@@ -2123,6 +2123,18 @@
+--- u-boot.orig/common/cmd_jffs2.c
++++ u-boot/common/cmd_jffs2.c
+@@ -2123,6 +2123,18 @@ int do_jffs2_mtdparts(cmd_tbl_t *cmdtp, 
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -142,7 +142,7 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2188,6 +2200,13 @@
+@@ -2188,6 +2200,13 @@ U_BOOT_CMD(
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );
