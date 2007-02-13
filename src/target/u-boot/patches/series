@@ -25,4 +25,5 @@ uboot-mokoversion.patch
 uboot-strtoul.patch
 nand-badisbad.patch
 uboot-neo1973-jbt6k74.patch
+uboot-s3c2410-warnings-fix.patch
 dynpart-absorb-bad.patch
