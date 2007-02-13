@@ -1,7 +1,7 @@
-Index: u-boot.git/drivers/Makefile
+Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.git.orig/drivers/Makefile	2007-02-06 11:56:37.000000000 +0100
-+++ u-boot.git/drivers/Makefile	2007-02-06 11:59:08.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-12 20:56:01.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-13 02:20:11.000000000 +0100
 @@ -51,7 +51,7 @@
  	  ks8695eth.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
@@ -11,11 +11,11 @@ Index: u-boot.git/drivers/Makefile
  
  SRCS	:= $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(COBJS))
-Index: u-boot.git/drivers/s3c2410_fb.c
+Index: u-boot/drivers/s3c2410_fb.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/drivers/s3c2410_fb.c	2007-02-06 11:59:08.000000000 +0100
-@@ -0,0 +1,183 @@
++++ u-boot/drivers/s3c2410_fb.c	2007-02-13 01:54:27.000000000 +0100
+@@ -0,0 +1,189 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -48,7 +48,7 @@ Index: u-boot.git/drivers/s3c2410_fb.c
 + */
 +GraphicDevice smi;
 +
-+#define VIDEO_MEM_SIZE	0x200000
++#define VIDEO_MEM_SIZE	0x200000	/* 480x640x16bit = 614400 bytes */
 +
 +/*******************************************************************************
 + *
@@ -145,6 +145,12 @@ Index: u-boot.git/drivers/s3c2410_fb.c
 +		break;
 +	}
 +
++	/* statically configure settings */
++	pGD->winSizeX = pGD->plnSizeX = 480;
++	pGD->winSizeY = pGD->plnSizeY = 640;
++	pGD->gdfBytesPP = 2;
++	pGD->gdfIndex = GDF_16BIT_565RGB;
++
 +#if 0
 +	pGD->isaBase = CFG_ISA_IO;
 +	pGD->pciBase = pci_mem_base;
@@ -155,23 +161,20 @@ Index: u-boot.git/drivers/s3c2410_fb.c
 +	pGD->frameAdrs = LCD_VIDEO_ADDR;
 +	pGD->memSize = VIDEO_MEM_SIZE;
 +
++	lcd->LCDCON1 = 0x00000178; /* CLKVAL=1, BPPMODE=16bpp, TFT, ENVID=0 */
++
++	lcd->LCDCON2 = 0x019fc3c1;
++	lcd->LCDCON3 = 0x0039df67;
++	lcd->LCDCON4 = 0x00000007;
++	lcd->LCDCON5 = 0x0001cb08;
++	lcd->LPCSEL  = 0x00000000;
++
 +	lcd->LCDSADDR1 = LCD_VIDEO_ADDR >> 1;
-+	lcd->LCDSADDR2 = (LCD_VIDEO_ADDR + 0x4b000) >> 1;
-+	lcd->LCDSADDR3 = 0x000000f0;
 +
-+	lcd->LCDCON1 = 0x00000479;
-+	lcd->LCDCON2 = 0x014fc183;
-+	lcd->LCDCON3 = 0x0060ef07;
-+	lcd->LCDCON4 = 0x00000003;
-+	lcd->LCDCON5 = 0x00000b09;
-+	lcd->LPCSEL  = 0x00000cf0;
++	/* This marks the end of the frame buffer. */
++	lcd->LCDSADDR2 = (lcd->LCDSADDR1&0x1fffff) + (pGD->winSizeX+0) * pGD->winSizeY;
++	lcd->LCDSADDR3 = pGD->winSizeX;
 +
-+	pGD->winSizeX = pGD->plnSizeX = 240;
-+	pGD->winSizeY = pGD->plnSizeY = 320;
-+	pGD->gdfBytesPP = 2;
-+	pGD->gdfIndex = GDF_16BIT_565RGB;
-+
-+	/* Enable  Display  */
 +	videoout = 2;	    /* Default output is CRT */
 +	if ((penv = getenv ("videoout")) != NULL) {
 +		/* deceide if it is a string */
@@ -184,6 +187,9 @@ Index: u-boot.git/drivers/s3c2410_fb.c
 +	vm = (unsigned int *)pGD->frameAdrs;
 +	while(i--)
 +		*vm++ = 0;
++
++	/* Enable  Display  */
++	lcd->LCDCON1 |= 0x01;	/* ENVID = 1 */
 +
 +	printf("returning from video_hw_init\n");
 +	return ((void*)&smi);
@@ -199,3 +205,22 @@ Index: u-boot.git/drivers/s3c2410_fb.c
 +}
 +
 +#endif /* CONFIG_VIDEO_S3C2410 */
+Index: u-boot/drivers/cfb_console.c
+===================================================================
+--- u-boot.orig/drivers/cfb_console.c	2007-02-12 22:31:30.000000000 +0100
++++ u-boot/drivers/cfb_console.c	2007-02-12 22:37:27.000000000 +0100
+@@ -141,6 +141,14 @@
+ #endif
+ 
+ /*****************************************************************************/
++/* Defines for the S3C2410 driver					     */
++/*****************************************************************************/
++#ifdef CONFIG_VIDEO_S3C2410
++/* it actually is little-endian, but the host CPU, too ! */
++//#define VIDEO_FB_LITTLE_ENDIAN
++#endif
++
++/*****************************************************************************/
+ /* Include video_fb.h after definitions of VIDEO_HW_RECTFILL etc	     */
+ /*****************************************************************************/
+ #include <video_fb.h>
