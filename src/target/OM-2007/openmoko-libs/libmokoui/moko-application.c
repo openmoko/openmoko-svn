@@ -446,7 +446,7 @@ void moko_application_add_stock_icons(MokoApplication* self, ...)
     gchar* name;
     va_start(valist, self);
 
-    while ( name = va_arg(valist, gchar*) )
+    while ( (name = va_arg(valist, gchar*)) )
     {
         gchar* filename = g_strconcat( name, ".png", NULL );
         moko_debug( "-- adding stock icon '%s' from pixmap %s", name, g_build_filename( DATADIR "icons", filename, NULL ) );
@@ -468,9 +468,9 @@ void moko_application_add_stock_icons(MokoApplication* self, ...)
  **/
 GtkWidget* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents)
 {
-    MokoDialogWindow* dialog = moko_dialog_window_new();
-    moko_dialog_window_set_title( dialog, title );
-    moko_dialog_window_set_contents( dialog, contents );
-    moko_dialog_window_run( dialog );
+    GtkWidget* dialog = moko_dialog_window_new();
+    moko_dialog_window_set_title( MOKO_DIALOG_WINDOW (dialog), title );
+    moko_dialog_window_set_contents( MOKO_DIALOG_WINDOW (dialog), contents );
+    moko_dialog_window_run( MOKO_DIALOG_WINDOW (dialog) );
     return GTK_WIDGET (dialog);
 }

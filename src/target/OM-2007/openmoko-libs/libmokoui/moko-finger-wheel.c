@@ -53,7 +53,7 @@ static guint wheel_signals[LAST_SIGNAL] = { 0 };
 
 typedef struct _MokoFingerWheelPrivate
 {
-    GtkWindow* popup;
+    GtkWidget* popup; /* GtkWindow */
     GtkWidget* parent;
 } MokoFingerWheelPrivate;
 
@@ -220,18 +220,18 @@ static void moko_finger_wheel_show(GtkWidget* widget)
     if ( !priv->popup )
     {
         priv->popup = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        gtk_window_set_type_hint( priv->popup, GDK_WINDOW_TYPE_HINT_DIALOG );
-        gtk_window_set_decorated( priv->popup, FALSE );
+        gtk_window_set_type_hint( GTK_WINDOW (priv->popup), GDK_WINDOW_TYPE_HINT_DIALOG );
+        gtk_window_set_decorated( GTK_WINDOW (priv->popup), FALSE );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
-        MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
+        GtkWidget* window = moko_application_get_main_window( moko_application_get_instance() );
         //FIXME check if it's a finger window
         //FIXME set it not only transient for the main window, but also for other windows belonging to this application
 //        gtk_window_set_transient_for(priv->popup, window );
-        gtk_window_set_transient_for(priv->popup, priv->parent );
+        gtk_window_set_transient_for( GTK_WINDOW (priv->popup), GTK_WINDOW (priv->parent) );
 
         GtkAllocation geometry;
-        gboolean valid = moko_finger_window_get_geometry_hint( window, widget, &geometry );
-        gtk_window_move( GTK_WIDGET(priv->popup), geometry.x, geometry.y );
+        moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW (window), widget, &geometry );
+        gtk_window_move( GTK_WINDOW(priv->popup), geometry.x, geometry.y );
 
         //FIXME Isn't there a way to get this as a mask directly from the style without having to reload it?
         GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(GTK_WIDGET(widget)->style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
@@ -249,12 +249,12 @@ static void moko_finger_wheel_show(GtkWidget* widget)
 //    MokoWindow* window = moko_application_get_main_window( moko_application_get_instance() );
     if ( MOKO_IS_FINGER_WINDOW(priv->parent ) )
     {
-        MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( priv->parent );
+        GtkWidget* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW (priv->parent) );
         if ( GTK_WIDGET_VISIBLE(toolbox) )
         {
             moko_debug( "moko_finger_wheel: toolbox is visible, sending resize" );
-            gtk_widget_hide( GTK_WIDGET(toolbox) );
-            gtk_widget_show( GTK_WIDGET(toolbox) );
+            gtk_widget_hide( toolbox );
+            gtk_widget_show( toolbox );
         }
         else
         {
@@ -279,12 +279,12 @@ static void moko_finger_wheel_hide(GtkWidget* widget)
 
     if ( MOKO_IS_FINGER_WINDOW(window) )
     {
-        MokoFingerToolBox* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW(window) );
+        GtkWidget* toolbox = moko_finger_window_get_toolbox( MOKO_FINGER_WINDOW(window) );
         if ( GTK_WIDGET_VISIBLE(toolbox) )
         {
             moko_debug( "moko_finger_wheel: toolbox is visible, sending resize" );
-            gtk_widget_hide( GTK_WIDGET(toolbox) );
-            gtk_widget_show( GTK_WIDGET(toolbox) );
+            gtk_widget_hide( toolbox );
+            gtk_widget_show( toolbox );
         }
         else
         {
@@ -302,7 +302,7 @@ void moko_finger_wheel_raise(MokoFingerWheel* self)
     moko_debug( "moko_finger_wheel_raise" );
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(self);
     g_return_if_fail(priv->popup);
-    gdk_window_raise( GTK_WIDGET(priv->popup)->window );
+    gdk_window_raise( priv->popup->window );
 }
 
 void moko_finger_wheel_set_transient_for(MokoFingerWheel* self, GtkWindow* window)
@@ -310,8 +310,8 @@ void moko_finger_wheel_set_transient_for(MokoFingerWheel* self, GtkWindow* windo
     moko_debug( "moko_finger_wheel_set_transient_for" );
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(self);
     g_return_if_fail(priv->popup);
-    gtk_window_set_transient_for( priv->popup, window );
-    gdk_window_raise( GTK_WIDGET(priv->popup)->window );
+    gtk_window_set_transient_for( GTK_WINDOW (priv->popup), window );
+    gdk_window_raise( priv->popup->window );
 }
 
 /**
@@ -370,8 +370,6 @@ static void moko_finger_wheel_button_emit_signal (GtkWidget* widget, GdkEventBut
 static gint moko_finger_wheel_button_press(GtkWidget* widget, GdkEventButton* event)
 {
     moko_debug( "moko_finger_wheel_button_press" );
-
-    MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
 
     gtk_grab_add( widget );
     gtk_widget_set_state( widget, GTK_STATE_ACTIVE );

@@ -37,13 +37,13 @@ G_DEFINE_TYPE (MokoPanedWindow, moko_paned_window, MOKO_TYPE_WINDOW)
 
 typedef struct _MokoPanedWindowPriv
 {
-    GtkVPaned* outerframe;
-    GtkVBox* upper;
-    MokoAlignment* upperenclosing;
-    MokoAlignment* lowerenclosing;
-    GtkVBox* lower;
-    MokoMenuBox* menubox;
-    MokoToolBox* toolbox;
+    GtkWidget* outerframe;     /* GtkVPaned     */
+    GtkWidget* upper;          /* GtkVBox       */
+    GtkWidget* upperenclosing; /* MokoAlignment */
+    GtkWidget* lowerenclosing; /* MokoAlignment */
+    GtkWidget* lower;          /* GtkVBox       */
+    GtkWidget* menubox;        /* MokoMenuBox   */
+    GtkWidget* toolbox;        /* MokoToolBox   */
 
 } MokoPanedWindowPriv;
 
@@ -77,11 +77,11 @@ static void moko_paned_window_init (MokoPanedWindow *self) /* Instance Construct
     moko_debug( "moko_paned_window_init" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     priv->outerframe = gtk_vpaned_new();
-    gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->outerframe) );
+    gtk_container_add( GTK_CONTAINER(self), priv->outerframe );
     priv->upper = gtk_vbox_new( FALSE, 0 );
-    gtk_paned_add1( GTK_PANED(priv->outerframe), GTK_WIDGET(priv->upper) );
+    gtk_paned_add1( GTK_PANED(priv->outerframe), priv->upper );
     priv->lower = gtk_vbox_new( FALSE, 0 );
-    gtk_paned_add2( GTK_PANED(priv->outerframe), GTK_WIDGET(priv->lower) );
+    gtk_paned_add2( GTK_PANED(priv->outerframe), priv->lower );
     priv->menubox = NULL;
     priv->toolbox = NULL;
 }
@@ -102,7 +102,7 @@ void moko_paned_window_clear(MokoPanedWindow *self) /* Destruction */
 GtkWidget* moko_paned_window_get_menubox(MokoPanedWindow* self)
 {
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    return GTK_WIDGET (priv->menubox);
+    return priv->menubox;
 }
 
 void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu)
@@ -113,9 +113,9 @@ void moko_paned_window_set_application_menu(MokoPanedWindow* self, GtkMenu* menu
     if (!priv->menubox )
     {
         priv->menubox = moko_menu_box_new();
-        gtk_box_pack_start( GTK_BOX(priv->upper), GTK_WIDGET(priv->menubox), FALSE, FALSE, 0 );
+        gtk_box_pack_start( GTK_BOX(priv->upper), priv->menubox, FALSE, FALSE, 0 );
     }
-    moko_menu_box_set_application_menu( priv->menubox, menu );
+    moko_menu_box_set_application_menu( MOKO_MENU_BOX (priv->menubox), menu );
 }
 
 void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
@@ -125,9 +125,9 @@ void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
     if (!priv->menubox )
     {
         priv->menubox = moko_menu_box_new();
-        gtk_box_pack_start( GTK_BOX(priv->upper), GTK_WIDGET(priv->menubox), FALSE, FALSE, 0 );
+        gtk_box_pack_start( GTK_BOX(priv->upper), priv->menubox, FALSE, FALSE, 0 );
     }
-    moko_menu_box_set_filter_menu( priv->menubox, menu );
+    moko_menu_box_set_filter_menu( MOKO_MENU_BOX (priv->menubox), menu );
 }
 
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
@@ -136,10 +136,10 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
 
     priv->upperenclosing = moko_alignment_new();
-    gtk_widget_set_name( GTK_WIDGET(priv->upperenclosing), "mokopanedwindow-upper-enclosing" );
+    gtk_widget_set_name( priv->upperenclosing, "mokopanedwindow-upper-enclosing" );
     //FIXME put into MokoAlignment class
     gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
-    gtk_box_pack_end( GTK_BOX(priv->upper), GTK_WIDGET(priv->upperenclosing), TRUE, TRUE, 0 );
+    gtk_box_pack_end( GTK_BOX(priv->upper), priv->upperenclosing, TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->upperenclosing), child );
 }
 
@@ -152,10 +152,10 @@ void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
     gtk_box_pack_start( GTK_BOX(priv->lower), child, TRUE, TRUE, 0 );
 #else
     priv->lowerenclosing = moko_alignment_new();
-    gtk_widget_set_name( GTK_WIDGET(priv->lowerenclosing), "mokopanedwindow-lower-enclosing" );
+    gtk_widget_set_name( priv->lowerenclosing, "mokopanedwindow-lower-enclosing" );
     //FIXME put into MokoAlignment class
     gtk_alignment_set_padding( GTK_ALIGNMENT(priv->lowerenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
-    gtk_box_pack_end( GTK_BOX(priv->lower), GTK_WIDGET(priv->lowerenclosing), TRUE, TRUE, 0 );
+    gtk_box_pack_end( GTK_BOX(priv->lower), priv->lowerenclosing, TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->lowerenclosing), child );
 #endif
 }
@@ -164,8 +164,8 @@ void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)
 {
     moko_debug( "moko_paned_window_add_toolbox" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    gtk_box_pack_end( GTK_BOX(priv->upper), toolbox, FALSE, FALSE, 0 );
-    gtk_box_reorder_child( GTK_BOX(priv->upper), toolbox, 0 );
+    gtk_box_pack_end( GTK_BOX(priv->upper), GTK_WIDGET (toolbox), FALSE, FALSE, 0 );
+    gtk_box_reorder_child( GTK_BOX(priv->upper), GTK_WIDGET (toolbox), 0 );
 }
 
 void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b)
@@ -174,10 +174,10 @@ void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b)
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     if ( b )
     {
-        gtk_widget_hide( GTK_WIDGET(priv->upper) );
+        gtk_widget_hide( priv->upper );
     }
     else
     {
-        gtk_widget_show( GTK_WIDGET(priv->upper) );
+        gtk_widget_show( priv->upper );
     }
 }

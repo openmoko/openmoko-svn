@@ -24,9 +24,9 @@ G_DEFINE_TYPE (MokoNavigationList, moko_navigation_list, GTK_TYPE_VIEWPORT)
 
 typedef struct _MokoNavigationListPrivate
 {
-    GtkFixed* navigationcontainer;
-    GtkScrolledWindow* navigationsw;
-    MokoTreeView* treeview;
+    GtkWidget* navigationcontainer; /* GtkFixed */
+    GtkWidget* navigationsw;        /* GtkScrolledWindow */
+    GtkWidget* treeview;            /* MokoTreeView */
 } MokoNavigationListPrivate;
 
 /* forward declarations */
@@ -196,7 +196,7 @@ moko_navigation_list_size_request(GtkWidget *widget, GtkRequisition *requisition
 
     MokoNavigationListPrivate* priv = NAVIGATION_LIST_PRIVATE (widget);
 
-    gtk_widget_set_size_request (GTK_WIDGET(priv->navigationsw), navigationsw_width, navigationsw_height);
+    gtk_widget_set_size_request (priv->navigationsw, navigationsw_width, navigationsw_height);
 
     requisition->width = (GTK_CONTAINER (widget)->border_width +
                           GTK_WIDGET (widget)->style->xthickness) * 2;
@@ -319,13 +319,13 @@ moko_navigation_list_init (MokoNavigationList *self)
 
     gtk_viewport_set_shadow_type ( GTK_VIEWPORT (self), GTK_SHADOW_NONE );
 
-    priv->navigationcontainer = (GtkFixed *) gtk_fixed_new();
+    priv->navigationcontainer = gtk_fixed_new();
     gtk_container_add ( GTK_CONTAINER (self), GTK_WIDGET (priv->navigationcontainer) );
 
-    priv->treeview = (MokoTreeView *) moko_tree_view_new ();
+    priv->treeview = moko_tree_view_new ();
     gtk_tree_view_set_rules_hint ( GTK_TREE_VIEW (priv->treeview), TRUE );
     gtk_tree_view_set_headers_visible ( GTK_TREE_VIEW (priv->treeview), TRUE );
-    priv->navigationsw = moko_tree_view_put_into_scrolled_window (priv->treeview);
+    priv->navigationsw = moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (priv->treeview));
 
     gtk_widget_set_size_request ( GTK_WIDGET (self), 458, 160 );
     gtk_fixed_put ( GTK_FIXED (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );
@@ -348,12 +348,12 @@ moko_navigation_list_new_with_model (GtkTreeModel *model)
 
     gtk_viewport_set_shadow_type ( GTK_VIEWPORT (self), GTK_SHADOW_NONE );
 
-    priv->navigationcontainer = (GtkFixed *) gtk_fixed_new();
+    priv->navigationcontainer = gtk_fixed_new();
 
     gtk_container_add ( GTK_CONTAINER (self), GTK_WIDGET (priv->navigationcontainer) );
 
-    priv->treeview = (MokoTreeView *) moko_tree_view_new_with_model (model);
-    priv->navigationsw = moko_tree_view_put_into_scrolled_window (priv->treeview);
+    priv->treeview = moko_tree_view_new_with_model (model);
+    priv->navigationsw = moko_tree_view_put_into_scrolled_window ( MOKO_TREE_VIEW (priv->treeview));
 
     gtk_widget_set_size_request ( GTK_WIDGET (self), 458, 160 );
     gtk_fixed_put ( GTK_FIXED (priv->navigationcontainer), GTK_WIDGET (priv->navigationsw), 4, 2 );

@@ -18,6 +18,7 @@
 
 #include "moko-dialog-window.h"
 #include "moko-pixmap-button.h"
+#include "moko-application.h"
 
 #include <gtk/gtkeventbox.h>
 #include <gtk/gtkdialog.h>
@@ -43,16 +44,16 @@ typedef struct _MokoDialogWindowPrivate MokoDialogWindowPrivate;
 
 struct _MokoDialogWindowPrivate
 {
-    GtkVBox* vbox;
-    GtkHBox* hbox;
-    GtkEventBox* eventbox;
-    GtkLabel* label;
-    MokoPixmapButton* closebutton;
+    GtkWidget* vbox;        /* GtkVBox */
+    GtkWidget* hbox;        /* GtkHBox */
+    GtkWidget* eventbox;    /* GtkEventBox */
+    GtkWidget* label;       /* GtkLabel */
+    GtkWidget* closebutton; /* MokoPixmapButton */
 };
 
 typedef struct _MokoDialogRunInfo
 {
-    MokoDialogWindow *dialog;
+    GtkWidget *dialog; /* MokoDialogWindow */
     gint response_id;
     GMainLoop *loop;
     gboolean destroyed;
@@ -125,6 +126,7 @@ moko_dialog_window_finalize(GObject* object)
     G_OBJECT_CLASS (moko_dialog_window_parent_class)->finalize (object);
 }
 
+static void
 moko_dialog_window_class_init(MokoDialogWindowClass* klass)
 {
     GObjectClass* object_class = G_OBJECT_CLASS(klass);
@@ -145,10 +147,10 @@ static void
 moko_dialog_window_init(MokoDialogWindow* self)
 {
     moko_debug( "moko_dialog_window_init" );
-    MokoWindow* parent = moko_application_get_main_window( moko_application_get_instance() );
+    GtkWidget* parent = moko_application_get_main_window( moko_application_get_instance() );
     if ( parent )
     {
-        gtk_window_set_transient_for( GTK_WINDOW(self), parent );
+        gtk_window_set_transient_for( GTK_WINDOW(self), GTK_WINDOW (parent) );
 #ifndef DEBUG_THIS_FILE
         gtk_window_set_modal( GTK_WINDOW(self), TRUE );
 #endif
@@ -164,34 +166,34 @@ void moko_dialog_window_set_title(MokoDialogWindow* self, const gchar* title)
     {
         priv->label = gtk_label_new( title );
         gtk_window_set_title( GTK_WINDOW(self), title );
-        gtk_widget_set_name( GTK_WIDGET(priv->label), "mokodialogwindow-title-label" );
+        gtk_widget_set_name( priv->label, "mokodialogwindow-title-label" );
         priv->hbox = gtk_hbox_new( FALSE, 0 );
         priv->eventbox = gtk_event_box_new();
-        gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->eventbox), TRUE, TRUE, 0 );
+        gtk_box_pack_start( GTK_BOX(priv->hbox), priv->eventbox, TRUE, TRUE, 0 );
         priv->closebutton = moko_pixmap_button_new();
-        gtk_widget_set_name( GTK_WIDGET(priv->closebutton), "mokodialogwindow-closebutton" );
+        gtk_widget_set_name( priv->closebutton, "mokodialogwindow-closebutton" );
         g_signal_connect_swapped( G_OBJECT(priv->closebutton), "clicked", G_CALLBACK(moko_dialog_window_close), self );
-        gtk_box_pack_start( GTK_BOX(priv->hbox), GTK_WIDGET(priv->closebutton), FALSE, FALSE, 0 );
-        gtk_container_add( GTK_CONTAINER(priv->eventbox), GTK_WIDGET(priv->label) );
-        gtk_widget_set_name( GTK_WIDGET(priv->eventbox), "mokodialogwindow-title-labelbox" );
+        gtk_box_pack_start( GTK_BOX(priv->hbox), priv->closebutton, FALSE, FALSE, 0 );
+        gtk_container_add( GTK_CONTAINER(priv->eventbox), priv->label );
+        gtk_widget_set_name( priv->eventbox, "mokodialogwindow-title-labelbox" );
         //FIXME get from theme
         gtk_misc_set_padding( GTK_MISC(priv->label), 0, 6 );
-        gtk_widget_show( GTK_WIDGET(priv->hbox) );
-        gtk_widget_show( GTK_WIDGET(priv->label) );
-        gtk_widget_show( GTK_WIDGET(priv->closebutton) );
-        gtk_widget_show( GTK_WIDGET(priv->eventbox) );
+        gtk_widget_show( priv->hbox );
+        gtk_widget_show( priv->label );
+        gtk_widget_show( priv->closebutton );
+        gtk_widget_show( priv->eventbox );
     }
     else
     {
-        gtk_label_set_text( priv->label, title );
+        gtk_label_set_text( GTK_LABEL (priv->label), title );
         gtk_window_set_title( GTK_WINDOW(self), title );
     }
     if ( !priv->vbox )
     {
         priv->vbox = gtk_vbox_new( FALSE, 0 );
-        gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->hbox), FALSE, FALSE, 0 );
-        gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
-        gtk_widget_show( GTK_WIDGET(priv->vbox) );
+        gtk_box_pack_start( GTK_BOX(priv->vbox), priv->hbox, FALSE, FALSE, 0 );
+        gtk_container_add( GTK_CONTAINER(self), priv->vbox );
+        gtk_widget_show( priv->vbox );
     }
 }
 

@@ -22,6 +22,7 @@
 #include "moko-fixed.h"
 
 #include <glib-object.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -50,6 +51,7 @@ typedef struct {
 GType moko_finger_wheel_get_type();
 GtkWidget* moko_finger_wheel_new(GtkWidget * parent);
 void moko_finger_wheel_raise(MokoFingerWheel* self);
+void moko_finger_wheel_set_transient_for(MokoFingerWheel* self, GtkWindow* window);
 
 G_END_DECLS
 

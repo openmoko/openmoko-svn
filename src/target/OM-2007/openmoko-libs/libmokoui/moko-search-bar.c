@@ -29,8 +29,8 @@ typedef struct _MokoSearchBarPrivate MokoSearchBarPrivate;
 
 struct _MokoSearchBarPrivate
 {
-    GtkAlignment* alignment;
-    GtkEntry* entry;
+    GtkWidget* alignment; /* GtkAlignment */
+    GtkWindow* entry;     /* GtkEntry     */
 };
 
 static void
@@ -41,7 +41,7 @@ moko_search_bar_init (MokoSearchBar *self);
 static void
 moko_search_bar_class_init (MokoSearchBarClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  /* GObjectClass *object_class = G_OBJECT_CLASS (klass); */
 
   g_type_class_add_private (klass, sizeof (MokoSearchBarPrivate));
 }
@@ -49,7 +49,6 @@ moko_search_bar_class_init (MokoSearchBarClass *klass)
 static void
 moko_search_bar_init (MokoSearchBar *self)
 {
-    MokoSearchBarPrivate* priv = MOKO_SEARCH_BAR_GET_PRIVATE(self);
     GtkToolItem* item = gtk_tool_item_new();
     gtk_widget_set_size_request( GTK_WIDGET(item), 320, 10 ); //FIXME get from style
     GtkEntry* entry = gtk_entry_new();
@@ -57,7 +56,7 @@ moko_search_bar_init (MokoSearchBar *self)
     gtk_entry_set_has_frame( entry, FALSE );
     gtk_entry_set_text( GTK_ENTRY(entry), "foo" );
     gtk_container_add( GTK_CONTAINER(item), GTK_WIDGET(entry) );
-    gtk_toolbar_insert( self, GTK_TOOL_ITEM(item), 0 );
+    gtk_toolbar_insert( GTK_TOOLBAR (self), GTK_TOOL_ITEM(item), 0 );
 }
 
 GtkWidget*

@@ -121,31 +121,33 @@ moko_panel_applet_init(MokoPanelApplet* self)
 {
     moko_debug( "moko_panel_applet_init" );
 
-    MokoPanelAppletClass* klass = MOKO_PANEL_APPLET_GET_CLASS(self);
+    /* MokoPanelAppletClass* klass = MOKO_PANEL_APPLET_GET_CLASS(self); */
     MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
     priv->hold_timeout_triggered = FALSE;
 
     self->eventbox = gtk_event_box_new();
-    gtk_event_box_set_visible_window( self->eventbox, FALSE );
-    gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(self->eventbox) );
+    gtk_event_box_set_visible_window( GTK_EVENT_BOX (self->eventbox), FALSE );
+    gtk_container_add( GTK_CONTAINER(self), self->eventbox );
     gtk_widget_show( self->eventbox );
 
-    g_signal_connect( G_OBJECT(self->eventbox), "button-release-event", cb_moko_panel_applet_button_release_event, self );
+    g_signal_connect( G_OBJECT(self->eventbox), "button-release-event", (GCallback) cb_moko_panel_applet_button_release_event, self );
 }
 
 static gboolean _moko_panel_applet_window_clicked(GtkWidget* widget, GdkEventButton* event, MokoPanelApplet* self)
 {
     gdk_pointer_ungrab( event->time );
     gtk_widget_hide( self->toplevelwindow );
+
+    return FALSE;
 }
 
 void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* popup, int* x, int* y)
 {
     int win_w;
     int win_h;
-    gdk_window_get_geometry( GTK_WIDGET(self->toplevelwindow)->window, NULL, NULL, &win_w, &win_h, NULL );
+    gdk_window_get_geometry( self->toplevelwindow->window, NULL, NULL, &win_w, &win_h, NULL );
     moko_debug( "-- popup geom = %d, %d", win_w, win_h );
-    GtkAllocation* allocation = &GTK_WIDGET(self->toplevelwindow)->allocation;
+    GtkAllocation* allocation = &self->toplevelwindow->allocation;
     moko_debug( "-- popup alloc = %d, %d", allocation->width, allocation->height );
 
     GtkAllocation* applet_alloc = &GTK_WIDGET(self)->allocation;
@@ -155,7 +157,7 @@ void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* po
     int y_abs;
 
     //FIXME this doesn't work w/ matchbox-panel 2 yet
-    gdk_window_get_root_origin( GTK_WIDGET(self->eventbox)->window, &x_abs, &y_abs );
+    gdk_window_get_root_origin( self->eventbox->window, &x_abs, &y_abs );
 
     moko_debug( "-- abs position = %d, %d", x_abs, y_abs );
 
@@ -165,7 +167,7 @@ void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* po
     if ( *x + win_w > gdk_screen_width() )
             *x = gdk_screen_width() - win_w - 2;
     if ( *y + win_h > gdk_screen_height() )
-            *y = gdk_screen_height - win_h - applet_alloc->height - 2;
+            *y = gdk_screen_height() - win_h - applet_alloc->height - 2;
 
     moko_debug( "-- final position = %d, %d", *x, *y );
 }
@@ -204,11 +206,11 @@ void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gb
     {
         self->icon = gtk_image_new_from_file( filename );
         g_return_if_fail( self->icon );
-        gtk_container_add( GTK_CONTAINER(self->eventbox), GTK_WIDGET(self->icon) );
-        gtk_widget_show( GTK_WIDGET(self->icon) );
+        gtk_container_add( GTK_CONTAINER(self->eventbox), self->icon );
+        gtk_widget_show( self->icon );
     }
     else
-        gtk_image_set_from_file( self->icon, filename );
+        gtk_image_set_from_file( GTK_IMAGE (self->icon), filename );
 }
 
 void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)
@@ -217,11 +219,11 @@ void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)
     {
         self->icon = gtk_image_new_from_pixbuf( pixbuf );
         g_return_if_fail( self->icon );
-        gtk_container_add( GTK_CONTAINER(self->eventbox), GTK_WIDGET(self->icon) );
-        gtk_widget_show( GTK_WIDGET(self->icon) );
+        gtk_container_add( GTK_CONTAINER(self->eventbox), self->icon );
+        gtk_widget_show( self->icon );
     }
     else
-        gtk_image_set_from_pixbuf( self->icon, pixbuf );
+        gtk_image_set_from_pixbuf( GTK_IMAGE (self->icon), pixbuf );
 }
 
 void moko_panel_applet_set_widget(MokoPanelApplet* self, GtkWidget* widget)
@@ -271,9 +273,9 @@ void moko_panel_applet_open_popup(MokoPanelApplet* self, MokoPanelAppletPopupTyp
         gtk_widget_show_all( self->toplevelwindow );
         int x = 0;
         int y = 0;
-        moko_panel_applet_get_positioning_hint( self, self->popup, &x, &y );
-        gtk_window_move( self->toplevelwindow, x, y );
-        gdk_pointer_grab( GTK_WIDGET(self->toplevelwindow)->window, TRUE, GDK_BUTTON_PRESS_MASK, NULL, NULL, CurrentTime );
+        moko_panel_applet_get_positioning_hint( self, self->popup[type], &x, &y );
+        gtk_window_move( GTK_WINDOW (self->toplevelwindow), x, y );
+        gdk_pointer_grab( self->toplevelwindow->window, TRUE, GDK_BUTTON_PRESS_MASK, NULL, NULL, CurrentTime );
     }
 }
 

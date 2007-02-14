@@ -74,6 +74,9 @@ moko_fixed_class_init (MokoFixedClass *klass)
     widget_class->size_request = moko_fixed_size_request;
     widget_class->size_allocate = moko_fixed_size_allocate;
 
+    object_class->dispose = moko_fixed_dispose;
+    object_class->finalize = moko_fixed_finalize;
+
     /* install properties */
     gtk_widget_class_install_style_property( widget_class, g_param_spec_boxed(
         "size-request",

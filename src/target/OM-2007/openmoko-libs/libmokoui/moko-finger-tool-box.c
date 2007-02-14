@@ -16,12 +16,14 @@
  *  Current Version: $Rev$ ($Date) [$Author: mickey $]
  */
 
+#include "moko-application.h"
 #include "moko-finger-tool-box.h"
 #include "moko-finger-window.h"
 #include "moko-pixmap-button.h"
 #include "moko-window.h"
 
 #include <gtk/gtkhbox.h>
+#include <string.h>
 
 //#define DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
@@ -44,8 +46,8 @@ static MokoAlignmentClass* parent_class = NULL;
 typedef struct _MokoFingerToolBoxPrivate
 {
     GdkBitmap* mask;
-    GtkHBox* hbox;
-    MokoPixmapButton* rightarrow;
+    GtkWidget* hbox;       /* GtkHBox          */
+    GtkWidget* rightarrow; /* MokoPixmapButton */
     gboolean rightArrowVisible;
 
     guint maxButtonsPerPage;
@@ -53,7 +55,7 @@ typedef struct _MokoFingerToolBoxPrivate
     guint leftButton;
     guint buttonWidth;
 
-    GtkWindow* popup;
+    GtkWidget* popup; /* GtkWindow */
     GtkWidget* parent;
 
     GdkPixbuf* background_pixbuf;
@@ -103,13 +105,11 @@ cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox
 
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
 
-    GtkAllocation* a = &GTK_WIDGET(priv->hbox)->allocation;
+    GtkAllocation* a = &(priv->hbox->allocation);
 
     //FIXME get from style
     priv->maxButtonsPerPage = a->width / ( priv->buttonWidth + (INNER_PADDING/2) );
     moko_debug( "-- width % buttonWidth = %d", a->width % priv->buttonWidth );
-
-    GtkRequisition* r = &GTK_WIDGET(priv->hbox)->requisition;
 
     guint numChild = 0;
 
@@ -138,16 +138,14 @@ cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox
         numChild++;
     }
 
-    gboolean oldRightArrowVisible = priv->rightArrowVisible;
-
     priv->rightArrowVisible = priv->numberOfButtons > priv->maxButtonsPerPage;
 
-    gtk_container_foreach( GTK_CONTAINER(priv->hbox), &checkstatus, self );
+    gtk_container_foreach( GTK_CONTAINER(priv->hbox), (GtkCallback) checkstatus, self );
 
     if ( priv->rightArrowVisible )
-        gtk_widget_show( GTK_WIDGET(priv->rightarrow) );
+        gtk_widget_show( priv->rightarrow );
     else
-        gtk_widget_hide( GTK_WIDGET(priv->rightarrow) );
+        gtk_widget_hide( priv->rightarrow );
 
     moko_debug( "right button = %d", priv->rightArrowVisible );
 }
@@ -253,8 +251,8 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
     if ( !priv->popup )
     {
         priv->popup = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        gtk_window_set_type_hint( priv->popup, GDK_WINDOW_TYPE_HINT_DIALOG );
-        gtk_window_set_decorated( priv->popup, FALSE );
+        gtk_window_set_type_hint( GTK_WINDOW (priv->popup), GDK_WINDOW_TYPE_HINT_DIALOG );
+        gtk_window_set_decorated( GTK_WINDOW (priv->popup), FALSE );
         gtk_container_add( GTK_CONTAINER(priv->popup), widget );
     }
 
@@ -262,18 +260,18 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
     
     g_return_if_fail( MOKO_IS_FINGER_WINDOW(window) );
     //FIXME set also transient for all other windows belonging to this app?
-    gtk_window_set_transient_for( priv->popup, window );
+    gtk_window_set_transient_for( GTK_WINDOW (priv->popup), GTK_WINDOW (window) );
     GtkAllocation geometry;
-    gboolean valid = moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW(window), widget, &geometry );
+    moko_finger_window_get_geometry_hint( MOKO_FINGER_WINDOW(window), widget, &geometry );
     g_signal_connect_after( G_OBJECT(widget), "size_allocate", G_CALLBACK(cb_size_allocate), widget );
-    gtk_window_move( priv->popup, geometry.x, geometry.y );
+    gtk_window_move( GTK_WINDOW (priv->popup), geometry.x, geometry.y );
     gtk_widget_set_size_request( GTK_WIDGET(widget), geometry.width, geometry.height );
-    gtk_window_resize( priv->popup, geometry.width, geometry.height );
+    gtk_window_resize( GTK_WINDOW (priv->popup), geometry.width, geometry.height );
 
     gtk_widget_show( priv->popup );
-    MokoFingerWheel* wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
+    GtkWidget* wheel = moko_finger_window_get_wheel( MOKO_FINGER_WINDOW(window) );
     if ( wheel && GTK_WIDGET_VISIBLE(wheel) )
-        moko_finger_wheel_set_transient_for( wheel, priv->popup ); //moko_finger_wheel_raise( wheel );
+        moko_finger_wheel_set_transient_for( MOKO_FINGER_WHEEL (wheel), GTK_WINDOW (priv->popup) ); //moko_finger_wheel_raise( wheel );
 }
 
 static void moko_finger_tool_box_hide(GtkWidget* widget)
@@ -290,15 +288,15 @@ moko_finger_tool_box_init(MokoFingerToolBox *self)
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
     gtk_widget_set_name( GTK_WIDGET(self), "mokofingertoolbox" );
 
-    priv->rightarrow = MOKO_PIXMAP_BUTTON( moko_pixmap_button_new() );
-    gtk_widget_set_name( GTK_WIDGET(priv->rightarrow), "mokofingertoolbox-rightarrow" );
+    priv->rightarrow = moko_pixmap_button_new();
+    gtk_widget_set_name( priv->rightarrow, "mokofingertoolbox-rightarrow" );
 
     priv->hbox = gtk_hbox_new( FALSE, INNER_PADDING );
-    gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->hbox) );
+    gtk_container_add( GTK_CONTAINER(self), priv->hbox );
 
     gtk_box_pack_end( GTK_BOX(priv->hbox), priv->rightarrow, FALSE, FALSE, 0 );
 
-    gtk_widget_show( GTK_WIDGET(priv->hbox) );
+    gtk_widget_show( priv->hbox );
 
     g_signal_connect( G_OBJECT(priv->rightarrow), "clicked", G_CALLBACK(cb_right_button_pressed), self );
     g_signal_connect_after( G_OBJECT(self), "size-allocate", G_CALLBACK(cb_configure), self );
@@ -319,12 +317,9 @@ moko_finger_tool_box_new(GtkWidget* parent)
 GtkWidget*
 moko_finger_tool_box_add_button(MokoFingerToolBox* self)
 {
-    static gchar text[] = "0\0";
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
 
     GtkWidget* b = moko_pixmap_button_new();
-    gtk_button_set_label( GTK_BUTTON(b), &text );
-    text[0]++;
     gtk_widget_set_name( b, "mokofingertoolbox-toolbutton" );
 
     priv->numberOfButtons++;

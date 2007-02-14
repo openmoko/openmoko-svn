@@ -49,6 +49,7 @@ typedef struct _MokoWindowClass
 GType moko_window_get_type();
 GtkWidget* moko_window_new();
 void moko_window_clear(MokoWindow *self);
+void moko_window_update_topmost (MokoWindow* self, Window window_id);
 
 Window moko_window_get_active_window();
 

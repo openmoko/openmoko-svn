@@ -89,10 +89,6 @@ static void
 cb_menu_position_func (GtkMenu *menu, int *x, int *y, gboolean *push_in, MokoPixmapButton  *button)
 {
     GtkAllocation* allocation = &GTK_WIDGET(button)->allocation;
-    GtkRequisition req;
-    GtkRequisition menu_req;
-    GtkOrientation orientation;
-    GtkTextDirection direction;
 
     gdk_window_get_origin(GTK_BUTTON(button)->event_window, x, y);
     moko_debug( "menu popup @ %d, %d", *x, *y );
@@ -143,7 +139,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
 {
     moko_debug( "moko_pixmap_button_size_request" );
     GtkButton *button = GTK_BUTTON (widget);
-    GtkBorder default_border;
+    /* GtkBorder default_border; */
     GtkBorder* size_request; // modified
     gint focus_width;
     gint focus_pad;
@@ -174,12 +170,13 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
                 GTK_WIDGET (widget)->style->xthickness) * 2;
         requisition->height = (GTK_CONTAINER (widget)->border_width + CHILD_SPACING +
                 GTK_WIDGET (widget)->style->ythickness) * 2;
-
+        /* FIXME: ( as above wrt. default borders )
         if (GTK_WIDGET_CAN_DEFAULT (widget))
         {
             requisition->width += default_border.left + default_border.right;
             requisition->height += default_border.top + default_border.bottom;
         }
+        */
 
         if (GTK_BIN (button)->child && GTK_WIDGET_VISIBLE (GTK_BIN (button)->child))
         {

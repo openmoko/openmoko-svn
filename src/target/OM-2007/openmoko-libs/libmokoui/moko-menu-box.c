@@ -19,11 +19,8 @@
 
 #include "moko-menu-box.h"
 
-#include <gtk/gtkimage.h>
-#include <gtk/gtkimagemenuitem.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmenubar.h>
-#include <gtk/gtkmenuitem.h>
+#include <gtk/gtk.h>
+#include <string.h>
 
 #undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
@@ -37,12 +34,12 @@
 
 typedef struct _MokoMenuBoxPriv
 {
-    GtkMenuBar* menubar_l;
-    GtkImageMenuItem* appitem;
-    GtkMenu* appmenu;
-    GtkMenuBar* menubar_r;
-    GtkImageMenuItem* filteritem;
-    GtkMenu* filtermenu;
+    GtkWidget* menubar_l;  /* GtkMenuBar       */
+    GtkWidget* appitem;    /* GtkImageMenuItem */
+    GtkWidget* appmenu;    /* GtkMenu          */
+    GtkWidget* menubar_r;  /* GtkMenuBar       */
+    GtkWidget* filteritem; /* GtkImageMenuItem */
+    GtkWidget* filtermenu; /* GtkMenu          */
 } MokoMenuBoxPriv;
 
 /* add your signals here */
@@ -95,8 +92,6 @@ void moko_menu_box_clear(MokoMenuBox *f) /* Destruction */
 
 static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkMenu* menu)
 {
-    MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE( MOKO_MENU_BOX(widget->parent) );
-
     moko_debug( "menu open forwarder: clicked on %f, %f", event->x, event->y );
     moko_debug( "menu open forwarder: clicked on window %p, whereas our window is %p", event->window, widget->window );
 
@@ -107,7 +102,8 @@ static gboolean cb_button_release(GtkWidget *widget, GdkEventButton *event, GtkM
         moko_debug( "menu open forwarder: not yet open -- popping up" );
         /* this is kind of funny, if you don't add the grab manually,
            then Gtk+ won't recognize the next click (selection) */
-        gtk_grab_add(GTK_WIDGET(widget) );
+        /* FIXME: check this is still needed ... */
+        gtk_grab_add( widget );
         gtk_menu_shell_select_first( GTK_MENU_SHELL(widget), TRUE );
         return TRUE;
     }
@@ -126,7 +122,7 @@ static void cb_filter_menu_update( GtkMenu* menu, MokoMenuBox* self )
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 
     gchar* text;
-    GtkMenuItem* item = gtk_menu_get_active( menu );
+    GtkWidget* item = gtk_menu_get_active( menu );
     if (GTK_BIN(item)->child)
     {
         GtkWidget *child = GTK_BIN(item)->child;
@@ -153,49 +149,49 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     if (!priv->menubar_l )
     {
         priv->menubar_l = gtk_menu_bar_new();
-        gtk_widget_set_name( GTK_WIDGET(priv->menubar_l), "mokomenubox-application-menubar" );
-        gtk_box_pack_start( GTK_BOX(self), GTK_WIDGET(priv->menubar_l), TRUE, TRUE, 0 );
+        gtk_widget_set_name( priv->menubar_l, "mokomenubox-application-menubar" );
+        gtk_box_pack_start( GTK_BOX(self), priv->menubar_l, TRUE, TRUE, 0 );
 
     }
-    GtkImageMenuItem* appitem = gtk_image_menu_item_new_with_label( g_get_application_name() );
-    GtkImage* appicon = gtk_image_new_from_stock( "openmoko-application-menu-icon", GTK_ICON_SIZE_MENU );
-    gtk_image_menu_item_set_image( appitem, appicon );
+    GtkWidget* appitem = gtk_image_menu_item_new_with_label( g_get_application_name() );
+    GtkWidget* appicon = gtk_image_new_from_stock( "openmoko-application-menu-icon", GTK_ICON_SIZE_MENU );
+    gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM (appitem), appicon );
     gtk_widget_set_name( GTK_WIDGET(appitem), "transparent" );
     priv->appitem = appitem;
-    priv->appmenu = menu;
-    gtk_menu_item_set_submenu( appitem, menu );
-    gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_l), appitem );
+    priv->appmenu = GTK_WIDGET (menu);
+    gtk_menu_item_set_submenu( GTK_MENU_ITEM (appitem), GTK_WIDGET (menu) );
+    gtk_menu_shell_append( GTK_MENU_SHELL (priv->menubar_l), appitem );
 
     //FIXME hack to popup the first menu if user clicks on menubar
-    g_signal_connect( GTK_WIDGET(priv->menubar_l), "button-press-event", G_CALLBACK(cb_button_release), menu );
+    g_signal_connect( priv->menubar_l, "button-press-event", G_CALLBACK(cb_button_release), menu );
 }
 
 void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
 {
     moko_debug( "moko_menu_box_set_filter_menu" );
-    GtkImageMenuItem* filtitem;
+    GtkWidget* filtitem;
 
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
     if (!priv->menubar_r )
     {
         priv->menubar_r = gtk_menu_bar_new();
-        gtk_widget_set_name( GTK_WIDGET(priv->menubar_r), "mokomenubox-filter-menubar" );
-        gtk_box_pack_end( GTK_BOX(self), GTK_WIDGET(priv->menubar_r), TRUE, TRUE, 0 );
+        gtk_widget_set_name( priv->menubar_r, "mokomenubox-filter-menubar" );
+        gtk_box_pack_end( GTK_BOX(self), priv->menubar_r, TRUE, TRUE, 0 );
     
         filtitem = gtk_image_menu_item_new_with_label( "Filter Menu" );
-        GtkImage* filticon = gtk_image_new_from_stock( "openmoko-filter-menu-icon", GTK_ICON_SIZE_MENU );
-        gtk_image_menu_item_set_image( filtitem, filticon );
-        gtk_widget_set_name( GTK_WIDGET(filtitem), "transparent" );
-				priv->filteritem = filtitem;
-				priv->filtermenu = menu;
-				gtk_menu_shell_append( GTK_MENU_BAR(priv->menubar_r), priv->filteritem );
-        gtk_menu_item_set_submenu( priv->filteritem, priv->filtermenu );
+        GtkWidget* filticon = gtk_image_new_from_stock( "openmoko-filter-menu-icon", GTK_ICON_SIZE_MENU );
+        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM (filtitem), filticon );
+        gtk_widget_set_name( filtitem, "transparent" );
+        priv->filteritem = filtitem;
+        priv->filtermenu = GTK_WIDGET (menu);
+        gtk_menu_shell_append( GTK_MENU_SHELL (priv->menubar_r), priv->filteritem );
+        gtk_menu_item_set_submenu( GTK_MENU_ITEM (priv->filteritem), priv->filtermenu );
     }
-    priv->filtermenu = menu;
-    gtk_menu_item_set_submenu( priv->filteritem, priv->filtermenu );
-		g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), self );
+    priv->filtermenu = GTK_WIDGET (menu);
+    gtk_menu_item_set_submenu( GTK_MENU_ITEM (priv->filteritem), priv->filtermenu );
+    g_signal_connect (G_OBJECT(menu), "selection_done", G_CALLBACK(cb_filter_menu_update), self );
     //FIXME hack to popup the first menu if user clicks on menubar
-    g_signal_connect( GTK_WIDGET(priv->menubar_r), "button-press-event", G_CALLBACK(cb_button_release), menu );
+    g_signal_connect( priv->menubar_r, "button-press-event", G_CALLBACK(cb_button_release), menu );
 }
 
 void moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
@@ -228,7 +224,7 @@ void moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
             moko_debug( "moko_menu_box_set_active_filter: match found" );
             //FIXME this is a bit hackish or is it?
             gtk_menu_set_active( GTK_MENU(priv->filtermenu), index );
-            cb_filter_menu_update( priv->filtermenu, self ); //need to sync. manually, since we it didn't go through popupmenu
+            cb_filter_menu_update( GTK_MENU (priv->filtermenu), self ); //need to sync. manually, since we it didn't go through popupmenu
             break;
         }
         ++index;
@@ -238,7 +234,7 @@ void moko_menu_box_set_active_filter(MokoMenuBox* self, gchar* text)
         g_warning( "moko_menu_box_set_active_filter: filter menu entry '%s' not found", text );
 }
 
-GtkMenuItem* moko_menu_box_get_filter_item (MokoMenuBox* self)
+GtkWidget* moko_menu_box_get_filter_item (MokoMenuBox* self)
 {
     MokoMenuBoxPriv* priv = MOKO_MENU_BOX_GET_PRIVATE(self);
 

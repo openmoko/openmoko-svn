@@ -85,7 +85,7 @@ static void
 moko_details_window_init (MokoDetailsWindow *self)
 {
     moko_debug( "moko_details_window_init" );
-    gtk_scrolled_window_set_policy( self, GTK_POLICY_NEVER, GTK_POLICY_NEVER );
+    gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW (self), GTK_POLICY_NEVER, GTK_POLICY_NEVER );
 }
 
 GtkWidget*
@@ -94,21 +94,21 @@ moko_details_window_new (void)
     return GTK_WIDGET (g_object_new(MOKO_TYPE_DETAILS_WINDOW, NULL ));
 }
 
-GtkBox* moko_details_window_put_in_box(MokoDetailsWindow* self)
+GtkWidget* moko_details_window_put_in_box(MokoDetailsWindow* self)
 {
     moko_debug( "moko_details_window_put_in_box" );
     //FIXME perfect place to add portrait/landscape switch
-    GtkHBox* hbox = gtk_hbox_new( FALSE, 0 );
-    GtkVBox* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(self), TRUE, TRUE, 0 );
-    MokoPixmapButton* fullscreen = moko_pixmap_button_new();
+    GtkWidget* fullscreen = moko_pixmap_button_new();
     gtk_widget_set_name( GTK_WIDGET(fullscreen), "mokodetailswindow-fullscreen-button-on" );
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(fullscreen), FALSE, FALSE, 0 );
-    GtkVScrollbar* bar = gtk_vscrollbar_new( gtk_scrolled_window_get_vadjustment( GTK_SCROLLED_WINDOW(self) ) );
+    GtkWidget* bar = gtk_vscrollbar_new( gtk_scrolled_window_get_vadjustment( GTK_SCROLLED_WINDOW(self) ) );
     gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(bar), TRUE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), GTK_WIDGET(vbox), FALSE, FALSE, 0 );
     g_signal_connect( G_OBJECT(fullscreen), "clicked", G_CALLBACK(_cb_fullscreen_clicked), self );
-    return hbox;
+    return GTK_WIDGET (hbox);
 }
 
 static void _cb_fullscreen_clicked(GtkButton* button, MokoDetailsWindow* self)
@@ -125,8 +125,8 @@ static void _cb_fullscreen_clicked(GtkButton* button, MokoDetailsWindow* self)
         gtk_widget_set_name( GTK_WIDGET(button), "mokodetailswindow-fullscreen-button-on" );
         gtk_widget_queue_draw( GTK_WIDGET(button) ); //FIXME necessary?
     }
-    MokoPanedWindow* mainwindow = moko_application_get_main_window( moko_application_get_instance() );
+    GtkWidget* mainwindow = moko_application_get_main_window( moko_application_get_instance() );
     g_return_if_fail( MOKO_IS_PANED_WINDOW(mainwindow) );
-    moko_paned_window_set_fullscreen( mainwindow, on );
+    moko_paned_window_set_fullscreen( MOKO_PANED_WINDOW (mainwindow), on );
     on = !on;
 }

@@ -43,12 +43,12 @@ G_DEFINE_TYPE (MokoFingerWindow, moko_finger_window, MOKO_TYPE_WINDOW)
 
 typedef struct _MokoFingerWindowPriv
 {
-    GtkVBox* vbox;
-    GtkHBox* hbox;
-    GtkLabel* label;
-    MokoMenuBox* menubox;
-    MokoFingerWheel* wheel;
-    MokoFingerToolBox* tools;
+    GtkWidget* vbox;    /* GtkVBox           */
+    GtkWidget* hbox;    /* GtkHBox           */
+    GtkWidget* label;   /* GtkLabel          */
+    GtkWidget* menubox; /* MokoMenuBox       */
+    GtkWidget* wheel;   /* MokoFingerWheel   */
+    GtkWidget* tools;   /* MokoFingerToolBox */
 } MokoFingerWindowPriv;
 
 static void moko_finger_window_dispose(GObject *object)
@@ -78,7 +78,7 @@ static void moko_finger_window_init(MokoFingerWindow *self)
     moko_debug( "moko_finger_window_init" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
     priv->vbox = gtk_vbox_new( FALSE, 0 );
-    gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
+    gtk_container_add( GTK_CONTAINER(self),priv->vbox );
 }
 
 GtkWidget* moko_finger_window_new() /* Construction */
@@ -93,9 +93,9 @@ void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* me
     if (!priv->menubox )
     {
         priv->menubox = moko_menu_box_new();
-        gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->menubox), FALSE, FALSE, 0 );
+        gtk_box_pack_start( GTK_BOX(priv->vbox), priv->menubox, FALSE, FALSE, 0 );
     }
-    moko_menu_box_set_application_menu( priv->menubox, menu );
+    moko_menu_box_set_application_menu( MOKO_MENU_BOX (priv->menubox), menu );
 }
 
 void moko_finger_window_set_contents(MokoFingerWindow* self, GtkWidget* child)
@@ -109,7 +109,7 @@ GtkWidget* moko_finger_window_get_wheel(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_wheel" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
-    if (!priv->wheel) priv->wheel = moko_finger_wheel_new(self);
+    if (!priv->wheel) priv->wheel = moko_finger_wheel_new (GTK_WIDGET (self));
     return GTK_WIDGET (priv->wheel);
 }
 
@@ -117,7 +117,7 @@ GtkWidget* moko_finger_window_get_toolbox(MokoFingerWindow* self)
 {
     moko_debug( "moko_finger_window_get_toolbox" );
     MokoFingerWindowPriv* priv = MOKO_FINGER_WINDOW_PRIVATE(self);
-    if (!priv->tools) priv->tools = moko_finger_tool_box_new(self);
+    if (!priv->tools) priv->tools = moko_finger_tool_box_new(GTK_WIDGET (self));
     return GTK_WIDGET (priv->tools);
 }
 
@@ -151,7 +151,7 @@ gboolean moko_finger_window_get_geometry_hint(MokoFingerWindow* self, GtkWidget*
         if ( priv->wheel && GTK_WIDGET_VISIBLE(priv->wheel) )
         {
             moko_debug( "-- wheel is visible" );
-            GtkAllocation* wheelalloc = &(GTK_WIDGET(priv->wheel)->allocation);
+            GtkAllocation* wheelalloc = &(priv->wheel->allocation);
             moko_debug( "-- wheel alloc is %d, %d, %d, %d", wheelalloc->x, wheelalloc->y, wheelalloc->width, wheelalloc->height );
             //FIXME get from theme: 22 is the overlap factor for wheel + toolbox
 #define WHEEL_TOOL_BOX_OVERLAP 22

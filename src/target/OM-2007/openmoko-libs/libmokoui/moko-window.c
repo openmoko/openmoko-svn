@@ -30,6 +30,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#include <string.h>
+
 //#define DEBUG_THIS_FILE
 #undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
@@ -73,7 +75,7 @@ typedef struct _MokoWindowPrivate
 static void moko_window_class_init(MokoWindowClass *klass) /* Class Initialization */
 {
     moko_debug( "moko_window_class_init" );
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    /* GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass); */
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
     /* Set the global parent_class here */
