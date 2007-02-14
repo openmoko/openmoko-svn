@@ -10,7 +10,7 @@ PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
 
 SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
-           svn://svn.openmoko.org/trunk/src/target/u-boot;module=patches;proto=https"
+           svn://svn.openmoko.org/trunk/src/target/u-boot;module=patches;proto=http"
 
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""

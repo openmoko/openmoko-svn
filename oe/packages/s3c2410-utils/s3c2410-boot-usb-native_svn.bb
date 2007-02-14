@@ -6,7 +6,7 @@ LICENSE = "GPL"
 PV = "0.1.0+svn${SRCDATE}"
 PR = "r0"
 
-SRC_URI = "svn://svn.openmoko.org/trunk/src/host/;module=s3c2410_boot_usb;proto=https"
+SRC_URI = "svn://svn.openmoko.org/trunk/src/host/;module=s3c2410_boot_usb;proto=http"
 S = "${WORKDIR}/s3c2410_boot_usb"
 
 inherit native

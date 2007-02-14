@@ -6,7 +6,7 @@ PR = "r1"
 
 inherit openmoko-base
 
-SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE};module=etc;proto=https \
+SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE};module=etc;proto=http \
            file://session"
 S = "${WORKDIR}"
 
