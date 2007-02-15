@@ -1,7 +1,7 @@
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-12 20:56:01.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-13 02:20:11.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-13 02:23:40.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-15 02:26:32.000000000 +0100
 @@ -51,7 +51,7 @@
  	  ks8695eth.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
@@ -14,8 +14,8 @@ Index: u-boot/drivers/Makefile
 Index: u-boot/drivers/s3c2410_fb.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/s3c2410_fb.c	2007-02-13 01:54:27.000000000 +0100
-@@ -0,0 +1,189 @@
++++ u-boot/drivers/s3c2410_fb.c	2007-02-15 02:27:02.000000000 +0100
+@@ -0,0 +1,187 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -181,7 +181,6 @@ Index: u-boot/drivers/s3c2410_fb.c
 +		videoout = (int) simple_strtoul (penv, NULL, 16);
 +	}
 +
-+	printf("clearing video memory\n");
 +	/* Clear video memory */
 +	i = pGD->memSize/4;
 +	vm = (unsigned int *)pGD->frameAdrs;
@@ -191,7 +190,6 @@ Index: u-boot/drivers/s3c2410_fb.c
 +	/* Enable  Display  */
 +	lcd->LCDCON1 |= 0x01;	/* ENVID = 1 */
 +
-+	printf("returning from video_hw_init\n");
 +	return ((void*)&smi);
 +}
 +
@@ -207,8 +205,8 @@ Index: u-boot/drivers/s3c2410_fb.c
 +#endif /* CONFIG_VIDEO_S3C2410 */
 Index: u-boot/drivers/cfb_console.c
 ===================================================================
---- u-boot.orig/drivers/cfb_console.c	2007-02-12 22:31:30.000000000 +0100
-+++ u-boot/drivers/cfb_console.c	2007-02-12 22:37:27.000000000 +0100
+--- u-boot.orig/drivers/cfb_console.c	2007-02-13 02:23:40.000000000 +0100
++++ u-boot/drivers/cfb_console.c	2007-02-15 00:43:40.000000000 +0100
 @@ -141,6 +141,14 @@
  #endif
  
