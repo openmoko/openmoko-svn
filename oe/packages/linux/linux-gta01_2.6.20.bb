@@ -3,22 +3,24 @@ SECTION = "kernel"
 AUTHOR = "Harald Welte <laforge@openmoko.org>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
-DEPENDS += "quilt-native uboot-gta01"
+#DEPENDS += "quilt-native uboot-gta01"
+DEPENDS += "quilt-native"
 MOKOR = "moko7"
 PR = "${MOKOR}-r1"
+
+VANILLA_VERSION = "2.6.20"
 
 inherit kernel
 
 FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
-#HWSRC = "http://people.gta01.openmoko.org/laforge/src/kernel/20060806"
 
 ##############################################################
 # source and patches
 #
-SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-2.6.17.14.tar.bz2 \
-           svn://svn.openmoko.org/trunk/src/target/kernel;module=patches;proto=http \
-           file://defconfig-${MACHINE}"
-S = "${WORKDIR}/linux-2.6.17.14"
+SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-${VANILLA_VERSION}.tar.bz2 \
+           svn://svn.openmoko.org/trunk/src/target/kernel;module=patches;proto=https \
+           file://defconfig-${VANILLA_VERSION}-${MACHINE}"
+S = "${WORKDIR}/linux-${VANILLA_VERSION}"
 
 ##############################################################
 # kernel image resides on a seperate flash partition (for now)
@@ -55,7 +57,7 @@ do_prepatch() {
 do_configure() {
 	#install -m 0644 ${WORKDIR}/logo_linux_clut224.ppm drivers/video/logo/logo_linux_clut224.ppm
 
-	if [ ! -e ${WORKDIR}/defconfig-${MACHINE} ]; then
+	if [ ! -e ${WORKDIR}/defconfig-${VANILLA_VERSION}-${MACHINE} ]; then
 		die "No default configuration for ${MACHINE} available."
 	fi
 
@@ -76,7 +78,7 @@ do_configure() {
 	    -e '/CONFIG_MTDRAM_TOTAL_SIZE=/d' \
 	    -e '/CONFIG_MTDRAM_ERASE_SIZE=/d' \
 	    -e '/CONFIG_MTDRAM_ABS_POS=/d' \
-	    '${WORKDIR}/defconfig-${MACHINE}' >>'${S}/.config'
+	    '${WORKDIR}/defconfig-${VANILLA_VERSION}-${MACHINE}' >>'${S}/.config'
 
 	yes '' | oe_runmake oldconfig
 }
