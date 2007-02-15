@@ -6,7 +6,8 @@ External Dependencies:
 * dbus >= 0.92
 * dbus-glib >= 0.72
 * libipkg >= 0.99.163
-* eds-dbus >= svn-20070702
+  + patch from http://www.openembedded.org/repo/org.openembedded.dev/packages/ipkg/files/is-processing.patch
+* eds-dbus >= svn-20070215
 
 Note: The Qmake build infrastructure is just a private hack and not
 necessarily supposed to work. Accepting patches though :)
