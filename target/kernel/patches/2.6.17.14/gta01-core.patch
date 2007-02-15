@@ -1,0 +1,620 @@
+This patch adds support for the FIC GTA01 machine type to the ARM port of
+the linux kernel.
+
+Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-07 20:39:12.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-02-07 20:39:12.000000000 +0100
+@@ -69,6 +69,13 @@
+ 	help
+ 	   Say Y here if you are using the Armzone QT2410
+ 
++config MACH_GTA01
++	bool "GTA01"
++	select CPU_S3C2410
++	help
++	   Say Y here if you are using the FIC GTA01
++
++
+ config ARCH_S3C2440
+ 	bool "SMDK2440"
+ 	select CPU_S3C2440
+Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-02-07 20:39:12.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-02-07 20:39:12.000000000 +0100
+@@ -44,6 +44,7 @@
+ obj-$(CONFIG_MACH_N30)		+= mach-n30.o
+ obj-$(CONFIG_ARCH_SMDK2410)	+= mach-smdk2410.o
+ obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
++obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
+ obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
+ obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
+ obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715.o
+Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-07 20:42:17.000000000 +0100
+@@ -0,0 +1,508 @@
++/*
++ * linux/arch/arm/mach-s3c2410/mach-gta01.c
++ *
++ * S3C2410 Machine Support for the FIC GTA01 (Neo1973)
++ *
++ * Copyright (C) 2006-2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/interrupt.h>
++#include <linux/list.h>
++#include <linux/timer.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/spi_bitbang.h>
++#include <linux/mmc/protocol.h>
++
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/nand_ecc.h>
++#include <linux/mtd/partitions.h>
++
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++#include <asm/mach/irq.h>
++
++#include <asm/hardware.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/mach-types.h>
++
++#include <asm/arch/regs-serial.h>
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/fb.h>
++#include <asm/arch/udc.h>
++#include <asm/arch/nand.h>
++#include <asm/arch/mci.h>
++#include <asm/arch/ts.h>
++#include <asm/arch/spi.h>
++#include <asm/arch/spi-gpio.h>
++#include <asm/arch/usb-control.h>
++
++#include <asm/arch/gta01.h>
++
++#include "devs.h"
++#include "cpu.h"
++
++#include "pm.h"
++
++static struct map_desc gta01_iodesc[] __initdata = {
++	IODESC_ENT(SDI),
++	IODESC_ENT(IIS),
++	{ 0xe0000000, __phys_to_pfn(S3C2410_CS3+0x01000000), SZ_1M, MT_DEVICE }
++};
++
++#define UCON S3C2410_UCON_DEFAULT
++#define ULCON S3C2410_LCON_CS8 | S3C2410_LCON_PNONE | S3C2410_LCON_STOPB
++#define UFCON S3C2410_UFCON_RXTRIG8 | S3C2410_UFCON_FIFOMODE
++
++static struct s3c2410_uartcfg gta01_uartcfgs[] = {
++	[0] = {
++		.hwport	     = 0,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++	[1] = {
++		.hwport	     = 1,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++#if 0
++	[2] = {
++		.hwport	     = 2,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	}
++#endif
++};
++
++/* LCD driver info */
++
++
++/* Configuration for 480x640 toppoly TD028TTEC1 */
++static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
++	.regs	= {
++
++		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
++				  S3C2410_LCDCON1_TFT |
++				  S3C2410_LCDCON1_CLKVAL(0x01),	/* HCLK/4 */
++
++		.lcdcon2	= S3C2410_LCDCON2_VBPD(1) |	/* 2 */
++				  S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
++				  S3C2410_LCDCON2_VFPD(15) |	/* 16 */
++				  S3C2410_LCDCON2_VSPW(1),	/* 2 */
++
++		.lcdcon3	= S3C2410_LCDCON3_HBPD(7) |	/* 8 */
++				  S3C2410_LCDCON3_HOZVAL(479) |	/* 480 */
++				  S3C2410_LCDCON3_HFPD(103),	/* 104 */
++
++		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
++				  S3C2410_LCDCON4_HSPW(7),	/* 8 */
++
++		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVLINE |
++				  S3C2410_LCDCON5_INVVFRAME |
++				  S3C2410_LCDCON5_PWREN |
++				  S3C2410_LCDCON5_HWSWP,
++	},
++
++#if 0
++	/* currently setup by downloader */
++	.gpccon		= 0xaa940659,
++	.gpccon_mask	= 0xffffffff,
++	.gpcup		= 0x0000ffff,
++	.gpcup_mask	= 0xffffffff,
++	.gpdcon		= 0xaa84aaa0,
++	.gpdcon_mask	= 0xffffffff,
++	.gpdup		= 0x0000faff,
++	.gpdup_mask	= 0xffffffff,
++#endif
++
++	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
++
++	.width		= 480,
++	.height		= 640,
++
++	.xres		= {
++		.min	= 480,
++		.max	= 480,
++		.defval	= 480,
++	},
++
++	.yres		= {
++		.min	= 640,
++		.max	= 640,
++		.defval = 640,
++	},
++
++	.bpp		= {
++		.min	= 16,
++		.max	= 16,
++		.defval = 16,
++	},
++};
++static struct platform_device *gta01_devices[] __initdata = {
++	&s3c_device_usb,
++	&s3c_device_lcd,
++	&s3c_device_wdt,
++	&s3c_device_i2c,
++	&s3c_device_iis,
++	&s3c_device_sdi,
++	&s3c_device_usbgadget,
++	&s3c_device_nand,
++	&s3c_device_ts,
++};
++
++static struct s3c24xx_board gta01_board __initdata = {
++	.devices       = gta01_devices,
++	.devices_count = ARRAY_SIZE(gta01_devices)
++};
++
++static struct mtd_partition gta01_nand_part[] = {
++	[0] = {
++		.name	= "U-Boot",
++		.size	= 0x30000,
++		.offset	= 0,
++	},
++	[1] = {
++		.name	= "U-Boot environment",
++		.offset = 0x30000,
++		.size	= 0x4000,
++	},
++	[2] = {
++		.name	= "kernel",
++		.offset = 0x34000,
++		.size	= SZ_2M,
++	},
++	[3] = {
++		.name	= "initrd",
++		.offset	= 0x234000,
++		.size	= SZ_4M,
++	},
++	[4] = {
++		.name	= "jffs2",
++		.offset = 0x634000,
++		.size	= 0x39cc000,
++	},
++};
++
++static struct s3c2410_nand_set gta01_nand_sets[] = {
++	[0] = {
++		.name		= "NAND",
++		.nr_chips	= 1,
++		.nr_partitions	= ARRAY_SIZE(gta01_nand_part),
++		.partitions	= gta01_nand_part,
++	},
++};
++
++/* choose a set of timings which should suit most 512Mbit
++ * chips and beyond.
++ */
++
++static struct s3c2410_platform_nand gta01_nand_info = {
++	.tacls		= 20,
++	.twrph0		= 60,
++	.twrph1		= 20,
++	.nr_sets	= ARRAY_SIZE(gta01_nand_sets),
++	.sets		= gta01_nand_sets,
++};
++
++static unsigned int mmc_millivolts[] = {
++	[MMC_VDD_145_150]	= 1500,
++	[MMC_VDD_150_155]	= 1500,
++	[MMC_VDD_155_160]	= 1600,
++	[MMC_VDD_160_165]	= 1600,
++	[MMC_VDD_165_170]	= 1700,
++	[MMC_VDD_17_18]		= 1800,
++	[MMC_VDD_18_19]		= 1900,
++	[MMC_VDD_19_20]		= 2000,
++	[MMC_VDD_20_21]		= 2100,
++	[MMC_VDD_21_22]		= 2200,
++	[MMC_VDD_22_23]		= 2300,
++	[MMC_VDD_23_24]		= 2400,
++	[MMC_VDD_24_25]		= 2500,
++	[MMC_VDD_25_26]		= 2600,
++	[MMC_VDD_26_27]		= 2700,
++	[MMC_VDD_27_28]		= 2800,
++	[MMC_VDD_28_29]		= 2900,
++	[MMC_VDD_29_30]		= 3000,
++	[MMC_VDD_30_31]		= 3100,
++	[MMC_VDD_31_32]		= 3200,
++	[MMC_VDD_32_33]		= 3300,
++};
++
++static void gta01_mmc_set_power(unsigned short vdd)
++{
++	/* FIXME: set GTA01_GPIO_SDMMC_ON on GTA01v4 */
++	//pcf50606_voltage_set(mmc_millivolts[vdd]);
++}
++
++static struct s3c24xx_mci_pdata gta01_mmc_cfg = {
++	.gpio_detect	= GTA01_GPIO_nSD_DETECT,
++	.set_power	= &gta01_mmc_set_power,
++	.ocr_avail	= MMC_VDD_145_150|MMC_VDD_150_155|MMC_VDD_155_160|
++			  MMC_VDD_160_165| MMC_VDD_165_170|MMC_VDD_17_18|
++			  MMC_VDD_18_19|MMC_VDD_19_20|MMC_VDD_20_21|
++			  MMC_VDD_21_22|MMC_VDD_22_23|MMC_VDD_23_24|
++			  MMC_VDD_24_25|MMC_VDD_25_26|MMC_VDD_26_27|
++			  MMC_VDD_27_28|MMC_VDD_28_29|MMC_VDD_29_30|
++			  MMC_VDD_30_31|MMC_VDD_31_32|MMC_VDD_32_33,
++};
++
++static void gta01_udc_pullup(enum s3c2410_udc_cmd_e cmd)
++{
++	printk(KERN_DEBUG "udc: pullup(%d)\n", cmd);
++
++	if (system_rev == GTA01v4_SYSTEM_REV ||
++	    system_rev == GTA01Bv2_SYSTEM_REV ||
++	    system_rev == GTA01Bv3_SYSTEM_REV) {
++		switch (cmd) {
++		case S3C2410_UDC_P_ENABLE:
++			s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 1);
++			break;
++		case S3C2410_UDC_P_DISABLE:
++			s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
++			break;
++		case S3C2410_UDC_P_RESET:
++			/* FIXME! */
++			break;
++		default:
++			break;
++		}
++	}
++}
++
++static struct s3c2410_udc_mach_info gta01_udc_cfg = {
++	.udc_command	= gta01_udc_pullup,
++};
++
++static struct s3c2410_ts_mach_info gta01_ts_cfg = {
++	.delay = 10000,
++	.presc = 49,
++	.oversampling_shift = 2,
++};
++
++/* SPI */
++
++static struct spi_board_info gta01_spi_board_info[] __initdata = {
++	{
++		.modalias	= "jbt6k74",
++		/* platform_data */
++		/* controller_data */
++		/* irq */
++		.max_speed_hz	= 10 * 1000 * 1000,
++		.bus_num	= 1,
++		/* chip_select */
++	},
++};
++
++
++#ifdef SPI_HARD
++static struct s3c2410_spi_info spi_cfg = {
++	.pin_cs		= S3C2410_GPG3,
++	.board_size	= sizeof(&gta01_spi_board_info),
++	.board_info	= &gta01_spi_board_info,
++};
++#else
++static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
++{
++	switch (cs) {
++	case BITBANG_CS_ACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPG3, 0);
++		break;
++	case BITBANG_CS_INACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPG3, 1);
++		break;
++	}
++}
++
++static struct s3c2410_spigpio_info spi_gpio_cfg = {
++	.pin_clk	= S3C2410_GPG7,
++	.pin_mosi	= S3C2410_GPG6,
++	.pin_miso	= S3C2410_GPG5,
++	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
++	.board_info	= &gta01_spi_board_info,
++	.chip_select	= &spi_gpio_cs,
++};
++
++static struct resource s3c_spi_lcm_resource[] = {
++	[0] = {
++		.start = S3C2410_GPG3,
++		.end   = S3C2410_GPG3,
++		.flags = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start = S3C2410_GPG5,
++		.end   = S3C2410_GPG5,
++		.flags = IORESOURCE_MEM,
++	},
++	[2] = {
++		.start = S3C2410_GPG6,
++		.end   = S3C2410_GPG6,
++		.flags = IORESOURCE_MEM,
++	},
++	[3] = {
++		.start = S3C2410_GPG7,
++		.end   = S3C2410_GPG7,
++		.flags = IORESOURCE_MEM,
++	},
++};
++
++struct platform_device s3c_device_spi_lcm = {
++	.name		  = "s3c24xx-spi-gpio",
++	.id		  = 1,
++	.num_resources	  = ARRAY_SIZE(s3c_spi_lcm_resource),
++	.resource	  = s3c_spi_lcm_resource,
++	.dev = {
++		.platform_data = &spi_gpio_cfg,
++	},
++};
++#endif
++
++static struct gta01bl_machinfo backlight_machinfo = {
++	.default_intensity	= 1,
++	.max_intensity		= 1,
++	.limit_mask		= 1,
++};
++
++static struct resource gta01_bl_resources[] = {
++	[0] = {
++		.start	= GTA01_GPIO_BACKLIGHT,
++		.end	= GTA01_GPIO_BACKLIGHT,
++		.flags	= IORESOURCE_MEM,
++	},
++};
++
++struct platform_device gta01_bl_dev = {
++	.name 		= "gta01-bl",
++	.num_resources	= ARRAY_SIZE(gta01_bl_resources),
++	.resource	= gta01_bl_resources,
++	.dev		= {
++		.platform_data = &backlight_machinfo,
++	},
++};
++
++static struct resource gta01_button_resources[] = {
++	[0] = {
++		.start = GTA01_GPIO_911_KEY,
++		.end   = GTA01_GPIO_911_KEY,
++		.flags = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start = GTA01_GPIO_HOLD_KEY,
++		.end   = GTA01_GPIO_HOLD_KEY,
++		.flags = IORESOURCE_MEM,
++	},
++};
++
++struct platform_device gta01_button_dev = {
++	.name		="gta01-button",
++	.num_resources	= ARRAY_SIZE(gta01_button_resources),
++	.resource	= gta01_button_resources,
++};
++
++struct platform_device gta01_pm_gsm_dev = {
++	.name		="gta01-pm-gsm",
++};
++
++struct platform_device gta01_pm_gps_dev = {
++	.name		="gta01-pm-gps",
++};
++
++struct platform_device gta01_pm_bt_dev = {
++	.name		="gta01-pm-bt",
++};
++
++/* USB */
++static struct s3c2410_hcd_info gta01_usb_info = {
++	.port[0]	= {
++		.flags	= S3C_HCDFLG_USED,
++	},
++	.port[1]	= {
++		.flags	= 0,
++	},
++};
++
++static void __init gta01_map_io(void)
++{
++	s3c24xx_init_io(gta01_iodesc, ARRAY_SIZE(gta01_iodesc));
++	s3c24xx_init_clocks(12*1000*1000);
++	s3c24xx_init_uarts(gta01_uartcfgs, ARRAY_SIZE(gta01_uartcfgs));
++	s3c24xx_set_board(&gta01_board);
++}
++
++static void __init gta01_machine_init(void)
++{
++	s3c_device_usb.dev.platform_data = &gta01_usb_info;
++	s3c_device_nand.dev.platform_data = &gta01_nand_info;
++	s3c_device_sdi.dev.platform_data = &gta01_mmc_cfg;
++
++	s3c24xx_fb_set_platdata(&gta01_lcd_cfg);
++
++	s3c24xx_udc_set_platdata(&gta01_udc_cfg);
++	set_s3c2410ts_info(&gta01_ts_cfg);
++
++	/* Set LCD_RESET / XRES to high */
++	s3c2410_gpio_cfgpin(S3C2410_GPC6, S3C2410_GPIO_OUTPUT);
++	s3c2410_gpio_setpin(S3C2410_GPC6, 1);
++
++#ifdef SPI_HARD
++#else
++	/* SPI chip select is gpio output */
++	s3c2410_gpio_cfgpin(S3C2410_GPG3, S3C2410_GPIO_OUTPUT);
++
++	spi_register_board_info(gta01_spi_board_info,
++				ARRAY_SIZE(gta01_spi_board_info));
++	platform_device_register(&s3c_device_spi_lcm);
++#endif
++	platform_device_register(&gta01_bl_dev);
++	platform_device_register(&gta01_button_dev);
++	platform_device_register(&gta01_pm_gsm_dev);
++	platform_device_register(&gta01_pm_gps_dev);
++
++	if (system_rev == GTA01Bv2_SYSTEM_REV ||
++	    system_rev == GTA01Bv3_SYSTEM_REV)
++		platform_device_register(&gta01_pm_bt_dev);
++
++	s3c2410_pm_init();
++
++}
++
++MACHINE_START(GTA01, "GTA01")
++	.phys_io	= S3C2410_PA_UART,
++	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
++	.boot_params	= S3C2410_SDRAM_PA + 0x100,
++	.map_io		= gta01_map_io,
++	.init_irq	= s3c24xx_init_irq,
++	.init_machine	= gta01_machine_init,
++	.timer		= &s3c24xx_timer,
++MACHINE_END
++
++
+Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-02-07 20:39:12.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-02-07 20:39:12.000000000 +0100
+@@ -1041,3 +1041,4 @@
+ ixp465			MACH_IXP465		IXP465			1028
+ balloon3		MACH_BALLOON3		BALLOON3		1029
+ qt2410			MACH_QT2410		QT2410			1108
++gta01			MACH_GTA01		GTA01			1182
+Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h	2007-02-07 20:39:12.000000000 +0100
+@@ -0,0 +1,60 @@
++#ifndef _GTA01_H
++#define _GTA01_H
++
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/irqs.h>
++
++/* Different hardware revisions, passed in ATAG_REVISION by u-boot */
++#define GTA01v3_SYSTEM_REV	0x00000130
++#define GTA01v4_SYSTEM_REV	0x00000140
++#define GTA01Bv2_SYSTEM_REV	0x00000220
++#define GTA01Bv3_SYSTEM_REV	0x00000230
++#define GTA01Bv4_SYSTEM_REV	0x00000240
++
++/* Backlight */
++struct gta01bl_machinfo {
++	unsigned int default_intensity;
++	unsigned int max_intensity;
++	unsigned int limit_mask;
++};
++
++/* Definitions common to all revisions */
++#define GTA01_GPIO_BACKLIGHT	S3C2410_GPB0
++#define GTA01_GPIO_GPS_PWRON	S3C2410_GPB1
++#define GTA01_GPIO_MODEM_RST	S3C2410_GPB6
++#define GTA01_GPIO_MODEM_ON	S3C2410_GPB7
++#define GTA01_GPIO_LCD_RESET	S3C2410_GPC6
++#define GTA01_GPIO_JACK_INSERT	S3C2410_GPF4
++#define GTA01_GPIO_nSD_DETECT	S3C2410_GPF5
++#define GTA01_GPIO_911_KEY	S3C2410_GPF6
++#define GTA01_GPIO_HOLD_KEY	S3C2410_GPF7
++#define GTA01_GPIO_VIBRATOR_ON	S3C2410_GPG11
++
++#define GTA01_IRQ_JACK_INSERT	IRQ_EINT4
++#define GTA01_IRQ_nSD_DETECT	IRQ_EINT5
++#define GTA01_IRQ_911_KEY	IRQ_EINT6
++#define GTA01_IRQ_PCF50606      IRQ_EINT16
++
++/* GTA01v3 */
++#define GTA01v3_GPIO_nGSM_EN	S3C2410_GPG9
++
++/* GTA01v4 */
++#define GTA01_GPIO_MODEM_DNLOAD	S3C2410_GPG0
++
++/* GTA01Bv2 */
++#define GTA01Bv2_GPIO_nGSM_EN	S3C2410_GPF2
++
++/* GTA01Bv3 */
++#define GTA01_GPIO_GPS_EN_3V3	S3C2410_GPG9
++
++#define GTA01_GPIO_SDMMC_ON	S3C2410_GPB2
++#define GTA01_GPIO_BT_EN	S3C2410_GPB5
++#define GTA01_GPIO_AB_DETECT	S3C2410_GPB8
++#define GTA01_GPIO_USB_PULLUP	S3C2410_GPB9
++#define GTA01_GPIO_USB_ATTACH	S3C2410_GPB10
++
++#define GTA01_GPIO_GPS_EN_2V8	S3C2410_GPG9
++#define GTA01_GPIO_GPS_EN_3V	S3C2410_GPG10
++#define GTA01_GPIO_GPS_RESET	S3C2410_GPC0
++
++#endif /* _GTA01_H */

@@ -1,0 +1,45 @@
+This patch adds platform data to support the SD/MMC slot of the Armzone
+S3C2410 development board.
+
+Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
+===================================================================
+--- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:07.000000000 +0100
++++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:09.000000000 +0100
+@@ -30,6 +30,7 @@
+ #include <linux/timer.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
++#include <linux/mmc/protocol.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/spi_bitbang.h>
+ 
+@@ -54,6 +55,7 @@
+ #include <asm/arch/udc.h>
+ #include <asm/arch/spi.h>
+ #include <asm/arch/spi-gpio.h>
++#include <asm/arch/mci.h>
+ 
+ #include "devs.h"
+ #include "cpu.h"
+@@ -468,6 +470,13 @@
+ __setup("tft=", tft_setup);
+ 
+ 
++static struct s3c24xx_mci_pdata qt2410_mmc_cfg = {
++	.gpio_wprotect	= S3C2410_GPH8,
++	.gpio_detect	= S3C2410_GPG10,
++	.set_power	= NULL,
++	.ocr_avail 	= MMC_VDD_32_33,
++};
++
+ static void __init qt2410_map_io(void)
+ {
+ 	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
+@@ -491,6 +500,7 @@
+ 	s3c2410_gpio_setpin(S3C2410_GPF7, 1);
+ 
+ 	s3c_device_nand.dev.platform_data = &qt2410_nand_info;
++	s3c_device_sdi.dev.platform_data = &qt2410_mmc_cfg;
+ 
+ 	switch (tft_type) {
+ 	case 'p': /* production */

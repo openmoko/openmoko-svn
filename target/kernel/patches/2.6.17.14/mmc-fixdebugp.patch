@@ -1,0 +1,15 @@
+Index: linux-2.6.17.7-new/drivers/mmc/s3c2410mci.c
+===================================================================
+--- linux-2.6.17.7-new.orig/drivers/mmc/s3c2410mci.c	2006-08-07 09:37:38.000000000 +0200
++++ linux-2.6.17.7-new/drivers/mmc/s3c2410mci.c	2006-08-07 09:38:15.000000000 +0200
+@@ -300,8 +300,8 @@
+ 	u32 sdi_bsize, sdi_dcon, sdi_imsk;
+ 	int dma_len = 0;
+ 
+-	DBG(KERN_DEBUG PFX "request: [CMD] opcode:0x%02x arg:0x%08x flags:%x retries:%u\n",
+-		mrq->cmd->opcode, mrq->cmd->arg, mrq->cmd->flags, mrq->cmd->retries);
++	DBG(PFX "request: [CMD] opcode:0x%02x arg:0x%08x flags:%x retries:%u\n",
++	    mrq->cmd->opcode, mrq->cmd->arg, mrq->cmd->flags, mrq->cmd->retries);
+ 	DBG(PFX "request : %s mode\n",mmc->mode == MMC_MODE_MMC ? "mmc" : "sd");
+ 
+ 

@@ -1,0 +1,28 @@
+Index: linux-2.6.17.7-new/drivers/serial/s3c2410.c
+===================================================================
+--- linux-2.6.17.7-new.orig/drivers/serial/s3c2410.c	2006-08-12 01:43:50.000000000 +0530
++++ linux-2.6.17.7-new/drivers/serial/s3c2410.c	2006-08-12 01:44:30.000000000 +0530
+@@ -710,10 +710,6 @@
+ 		int calc_deviation;
+ 
+ 		for (sptr = res; sptr < resptr; sptr++) {
+-			printk(KERN_DEBUG
+-			       "found clk %p (%s) quot %d, calc %d\n",
+-			       sptr->clksrc, sptr->clksrc->name,
+-			       sptr->quot, sptr->calc);
+ 
+ 			calc_deviation = baud - sptr->calc;
+ 			if (calc_deviation < 0)
+@@ -725,12 +721,8 @@
+ 			}
+ 		}
+ 
+-		printk(KERN_DEBUG "best %p (deviation %d)\n", best, deviation);
+ 	}
+ 
+-	printk(KERN_DEBUG "selected clock %p (%s) quot %d, calc %d\n",
+-	       best->clksrc, best->clksrc->name, best->quot, best->calc);
+-
+ 	/* store results to pass back */
+ 
+ 	*clksrc = best->clksrc;
