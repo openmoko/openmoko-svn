@@ -1,10 +1,10 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c	2007-02-11 04:00:50.000000000 +0100
-@@ -0,0 +1,1495 @@
++++ linux-2.6.20/drivers/i2c/chips/pcf50606.c	2007-02-15 16:25:44.000000000 +0100
+@@ -0,0 +1,1497 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -40,6 +40,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +#include <linux/i2c.h>
 +#include <linux/types.h>
 +#include <linux/interrupt.h>
++#include <linux/irq.h>
 +#include <linux/workqueue.h>
 +#include <linux/rtc.h>
 +#include <linux/bcd.h>
@@ -526,9 +527,10 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +}
 +EXPORT_SYMBOL(pcf50606_gpo0_get);
 +
-+static void pcf50606_work(void *data)
++static void pcf50606_work(struct work_struct *work)
 +{
-+	struct pcf50606_data *pcf = data;
++	struct pcf50606_data *pcf = 
++			container_of(work, struct pcf50606_data, work);
 +	u_int8_t int1, int2, int3;
 +
 +	pcf->working = 1;
@@ -699,12 +701,12 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +}
 +
 +
-+static irqreturn_t pcf50606_irq(int irq, void *_pcf, struct pt_regs *regs)
++static irqreturn_t pcf50606_irq(int irq, void *_pcf)
 +{
 +	struct pcf50606_data *pcf = _pcf;
 +
-+	DEBUGP("entering(irq=%u, pcf=%p, regs=%p): scheduling work\n",
-+		irq, _pcf, regs);
++	DEBUGP("entering(irq=%u, pcf=%p): scheduling work\n",
++		irq, _pcf);
 +	pcf50606_schedule_work(pcf);
 +
 +	return IRQ_HANDLED;
@@ -1337,7 +1339,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +		return -ENOMEM;
 +
 +	mutex_init(&data->lock);
-+	INIT_WORK(&data->work, pcf50606_work, data);
++	INIT_WORK(&data->work, pcf50606_work);
 +	data->working = 0;
 +	data->onkey_seconds = -1;
 +	new_client = &data->client;
@@ -1500,10 +1502,10 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.20/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h	2007-02-10 11:51:17.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/pcf50606.h	2007-02-15 16:23:09.000000000 +0100
 @@ -0,0 +1,259 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -1764,10 +1766,10 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig
+Index: linux-2.6.20/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Kconfig	2007-02-10 11:51:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig	2007-02-10 11:51:17.000000000 +0100
+--- linux-2.6.20.orig/drivers/i2c/chips/Kconfig	2007-02-15 16:20:52.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/Kconfig	2007-02-15 16:23:09.000000000 +0100
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -1786,10 +1788,10 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on I2C && EXPERIMENTAL
-Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile
+Index: linux-2.6.20/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/i2c/chips/Makefile	2007-02-10 11:51:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile	2007-02-10 11:51:17.000000000 +0100
+--- linux-2.6.20.orig/drivers/i2c/chips/Makefile	2007-02-15 16:20:52.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/Makefile	2007-02-15 16:23:09.000000000 +0100
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -1798,22 +1800,22 @@ Index: linux-2.6.17.14-fic4.test/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
+Index: linux-2.6.20/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-02-10 11:51:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-02-10 11:51:17.000000000 +0100
-@@ -157,6 +157,7 @@
- #define I2C_DRIVERID_ASB100 1043
+--- linux-2.6.20.orig/include/linux/i2c-id.h	2007-02-15 16:20:52.000000000 +0100
++++ linux-2.6.20/include/linux/i2c-id.h	2007-02-15 16:23:09.000000000 +0100
+@@ -159,6 +159,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
-+#define I2C_DRIVERID_PCF50606 1048
+ #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
++#define I2C_DRIVERID_PCF50606 1049
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.17.14-fic4.test/include/linux/pcf50606.h
+Index: linux-2.6.20/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/linux/pcf50606.h	2007-02-10 11:51:17.000000000 +0100
++++ linux-2.6.20/include/linux/pcf50606.h	2007-02-15 16:23:09.000000000 +0100
 @@ -0,0 +1,55 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H

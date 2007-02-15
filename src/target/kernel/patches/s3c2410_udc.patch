@@ -1,18 +1,16 @@
-This is a driver for the S3C2410 usb device controller
-
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c
+Index: linux-2.6.20/arch/arm/mach-s3c2410/devs.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.c	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c	2006-12-11 21:44:31.000000000 +0100
-@@ -36,6 +36,7 @@
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/devs.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/devs.c	2007-02-15 14:54:49.000000000 +0100
+@@ -29,6 +29,7 @@
  #include <asm/irq.h>
  
  #include <asm/arch/regs-serial.h>
 +#include <asm/arch/udc.h>
  
  #include "devs.h"
- 
-@@ -161,6 +162,20 @@
+ #include "cpu.h"
+@@ -230,6 +231,20 @@
  
  EXPORT_SYMBOL(s3c_device_usbgadget);
  
@@ -33,30 +31,120 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c
  /* Watchdog */
  
  static struct resource s3c_wdt_resource[] = {
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/s3c2410.c
+Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-h1940.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/s3c2410.c	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/s3c2410.c	2006-12-11 21:44:31.000000000 +0100
-@@ -48,6 +48,7 @@
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/mach-h1940.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-h1940.c	2007-02-15 14:54:49.000000000 +0100
+@@ -33,10 +33,13 @@
+ 
+ #include <asm/arch/regs-serial.h>
+ #include <asm/arch/regs-lcd.h>
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/regs-clock.h>
+ 
+ #include <asm/arch/h1940.h>
+ #include <asm/arch/h1940-latch.h>
+ #include <asm/arch/fb.h>
++#include <asm/arch/udc.h>
+ 
+ #include "clock.h"
+ #include "devs.h"
+@@ -102,6 +105,32 @@
+ 
+ EXPORT_SYMBOL_GPL(h1940_latch_control);
+ 
++static void h1940_udc_pullup(enum s3c2410_udc_cmd_e cmd)
++{
++	printk(KERN_DEBUG "udc: pullup(%d)\n",cmd);
++
++	switch (cmd)
++	{
++		case S3C2410_UDC_P_ENABLE :
++			h1940_latch_control(0, H1940_LATCH_USB_DP);
++			break;
++		case S3C2410_UDC_P_DISABLE :
++			h1940_latch_control(H1940_LATCH_USB_DP, 0);
++			break;
++		case S3C2410_UDC_P_RESET :
++			break;
++		default:
++			break;
++	}
++}
++
++static struct s3c2410_udc_mach_info h1940_udc_cfg __initdata = {
++	.udc_command		= h1940_udc_pullup,
++	.vbus_pin		= S3C2410_GPG5,
++	.vbus_pin_inverted	= 1,
++};
++
++
+ 
+ /**
+  * Set lcd on or off
+@@ -152,6 +181,7 @@
+ 	&s3c_device_wdt,
+ 	&s3c_device_i2c,
+ 	&s3c_device_iis,
++	&s3c_device_usbgadget,
+ };
+ 
+ static struct s3c24xx_board h1940_board __initdata = {
+@@ -179,7 +209,23 @@
+ 
+ static void __init h1940_init(void)
+ {
++	u32 tmp;
++
+ 	s3c24xx_fb_set_platdata(&h1940_lcdcfg);
++ 	s3c24xx_udc_set_platdata(&h1940_udc_cfg);
++
++	/* Turn off suspend on both USB ports, and switch the
++	 * selectable USB port to USB device mode. */
++
++	s3c2410_modify_misccr(S3C2410_MISCCR_USBHOST |
++			      S3C2410_MISCCR_USBSUSPND0 |
++			      S3C2410_MISCCR_USBSUSPND1, 0x0);
++
++	tmp = (
++		 0x78 << S3C2410_PLLCON_MDIVSHIFT)
++	      | (0x02 << S3C2410_PLLCON_PDIVSHIFT)
++	      | (0x03 << S3C2410_PLLCON_SDIVSHIFT);
++	writel(tmp, S3C2410_UPLLCON);
+ }
+ 
+ MACHINE_START(H1940, "IPAQ-H1940")
+@@ -189,6 +235,6 @@
+ 	.boot_params	= S3C2410_SDRAM_PA + 0x100,
+ 	.map_io		= h1940_map_io,
+ 	.init_irq	= h1940_init_irq,
+-	.init_machine   = h1940_init,
++	.init_machine	= h1940_init,
+ 	.timer		= &s3c24xx_timer,
+ MACHINE_END
+Index: linux-2.6.20/arch/arm/mach-s3c2410/s3c2410.c
+===================================================================
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/s3c2410.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/s3c2410.c	2007-02-15 14:55:33.000000000 +0100
+@@ -39,6 +39,7 @@
+ /* Initial IO mappings */
  
  static struct map_desc s3c2410_iodesc[] __initdata = {
- 	IODESC_ENT(USBHOST),
 +	IODESC_ENT(USBDEV),
  	IODESC_ENT(CLKPWR),
  	IODESC_ENT(LCD),
  	IODESC_ENT(TIMER),
-Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/Kconfig
+Index: linux-2.6.20/drivers/usb/gadget/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/usb/gadget/Kconfig	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/usb/gadget/Kconfig	2006-12-11 21:44:31.000000000 +0100
-@@ -187,6 +187,27 @@
+--- linux-2.6.20.orig/drivers/usb/gadget/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/usb/gadget/Kconfig	2007-02-15 14:54:49.000000000 +0100
+@@ -187,6 +187,25 @@
  
  	   Select this only if your OMAP board has a Mini-AB connector.
  
 +config USB_GADGET_S3C2410
-+	boolean "S3C2410 USB Device Controller"
++	boolean "S3C2410"
 +	depends on ARCH_S3C2410
-+	select USB_GADGET_SELECTED
 +	help
 +	  Samsung's S3C2410 is an ARM-4 processor with an integrated
 +	  full speed USB 1.1 device controller.
@@ -67,20 +155,19 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/Kconfig
 +	tristate
 +	depends on USB_GADGET_S3C2410
 +	default USB_GADGET
++	select USB_GADGET_SELECTED
 +
 +config USB_S3C2410_DEBUG
 +	boolean "S3C2410 udc debug messages"
 +	depends on USB_GADGET_S3C2410
-+	help
-+	  foo
 +
  config USB_GADGET_AT91
  	boolean "AT91 USB Device Port"
- 	depends on ARCH_AT91RM9200
-Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/Makefile
+ 	depends on ARCH_AT91
+Index: linux-2.6.20/drivers/usb/gadget/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/usb/gadget/Makefile	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/usb/gadget/Makefile	2006-12-11 21:44:31.000000000 +0100
+--- linux-2.6.20.orig/drivers/usb/gadget/Makefile	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/usb/gadget/Makefile	2007-02-15 14:54:49.000000000 +0100
 @@ -7,6 +7,7 @@
  obj-$(CONFIG_USB_GOKU)		+= goku_udc.o
  obj-$(CONFIG_USB_OMAP)		+= omap_udc.o
@@ -89,11 +176,11 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/Makefile
  obj-$(CONFIG_USB_AT91)		+= at91_udc.o
  
  #
-Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
+Index: linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c	2006-12-11 21:44:31.000000000 +0100
-@@ -0,0 +1,1800 @@
++++ linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c	2007-02-15 14:54:49.000000000 +0100
+@@ -0,0 +1,1897 @@
 +/*
 + * linux/drivers/usb/gadget/s3c2410_udc.c
 + * Samsung on-chip full speed USB device controllers
@@ -115,7 +202,6 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + *
 + */
-+#include <linux/config.h>
 +#include <linux/module.h>
 +#include <linux/kernel.h>
 +#include <linux/delay.h>
@@ -888,7 +974,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 + *      s3c2410_udc_irq - interrupt handler
 + */
 +static irqreturn_t
-+s3c2410_udc_irq(int irq, void *_dev, struct pt_regs *r)
++s3c2410_udc_irq(int irq, void *_dev)
 +{
 +	struct s3c2410_udc      *dev = _dev;
 +	int usb_status;
@@ -1440,14 +1526,10 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +static void udc_disable(struct s3c2410_udc *dev);
 +static void udc_enable(struct s3c2410_udc *dev);
 +
-+static int s3c2410_pullup (struct usb_gadget *_gadget, int is_on)
++static int pull_up (struct s3c2410_udc  *udc, int is_on)
 +{
-+	struct s3c2410_udc  *udc;
-+
-+	dprintk(DEBUG_NORMAL, "s3c2410_pullup()\n");
++	dprintk(DEBUG_NORMAL, "pull_up()\n");
 +	
-+	udc = container_of (_gadget, struct s3c2410_udc, gadget);
-+
 +	if (udc_info && udc_info->udc_command) {
 +		if (is_on)
 +			udc_enable(udc);
@@ -1466,13 +1548,52 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +	return 0;
 +}
 +
++static int s3c2410_udc_vbus_session(struct usb_gadget *_gadget, int is_active)
++{
++	struct s3c2410_udc  *udc;
++
++	dprintk(DEBUG_NORMAL, "s3c2410_udc_vbus_session()\n");
++	udc = container_of (_gadget, struct s3c2410_udc, gadget);
++
++	udc->vbus = (is_active != 0);
++	pull_up(udc, is_active);
++	return 0;
++}
++
++static int s3c2410_pullup (struct usb_gadget *_gadget, int is_on)
++{
++	struct s3c2410_udc  *udc;
++
++	dprintk(DEBUG_NORMAL, "s3c2410_pullup()\n");
++	udc = container_of (_gadget, struct s3c2410_udc, gadget);
++	is_on = !!is_on;
++	pull_up(udc, is_on);
++	return 0;
++}
++
++static irqreturn_t s3c2410_udc_vbus_irq(int irq, void *_dev)
++{
++	struct s3c2410_udc      *dev = _dev;
++	unsigned int 		value;
++
++	dprintk(DEBUG_NORMAL, "s3c2410_udc_vbus_irq()\n");
++	value = s3c2410_gpio_getpin(udc_info->vbus_pin);
++	if (udc_info->vbus_pin_inverted)
++		value = !value;
++
++	if (value != dev->vbus)
++		s3c2410_udc_vbus_session(&dev->gadget, value);
++
++	return IRQ_HANDLED;
++}
++
 +static const struct usb_gadget_ops s3c2410_ops = {
 +	.get_frame          = s3c2410_g_get_frame,
 +	.wakeup             = s3c2410_wakeup,
 +	.set_selfpowered    = s3c2410_set_selfpowered,
 +        .pullup             = s3c2410_pullup,
++	.vbus_session	    = s3c2410_udc_vbus_session,
 +};
-+
 +
 +/*------------------------- gadget driver handling---------------------------*/
 +/*
@@ -1588,9 +1709,18 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +		return -ENODEV;
 +	if (udc->driver)
 +		return -EBUSY;
-+	if (!driver->bind || !driver->unbind || !driver->setup
-+			|| driver->speed == USB_SPEED_UNKNOWN)
++	if (!driver->bind || !driver->setup
++			|| driver->speed != USB_SPEED_FULL) {
++		printk(KERN_ERR "Invalid driver : bind %p setup %p speed %d\n",
++			driver->bind, driver->setup, driver->speed);
 +		return -EINVAL;
++	}
++#if defined(MODULE)
++	if (!driver->unbind) {
++		printk(KERN_ERR "Invalid driver : no unbind method\n");
++		return -EINVAL;
++	}
++#endif
 +
 +	/* Hook the driver */
 +	udc->driver = driver;
@@ -1634,11 +1764,11 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +	if (driver->disconnect)
 +		driver->disconnect(&udc->gadget);
 +
-+	driver->unbind (&udc->gadget);
++	if (driver->unbind)
++		driver->unbind (&udc->gadget);
++
 +	device_del(&udc->gadget.dev);
 +	udc->driver = NULL;
-+
-+	device_release_driver (&udc->gadget.dev);
 +
 +	/* Disable udc */
 +	udc_disable(udc);
@@ -1728,6 +1858,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +{
 +	struct s3c2410_udc *udc = &memory;
 +	int retval;
++	unsigned int irq;
 +
 +	dprintk(DEBUG_NORMAL,"s3c2410_udc_probe\n");
 +
@@ -1786,7 +1917,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +
 +	/* irq setup after old hardware state is cleaned up */
 +	retval = request_irq(IRQ_USBD, s3c2410_udc_irq,
-+		SA_INTERRUPT, gadget_name, udc);
++		IRQF_DISABLED, gadget_name, udc);
 +
 +	if (retval != 0) {
 +		printk(KERN_ERR "%s: can't get irq %i, err %d\n",
@@ -1794,14 +1925,35 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +		retval = -EBUSY;
 +		goto err_map;
 +	}
++
 +	dprintk(DEBUG_VERBOSE, "%s: got irq %i\n", gadget_name, IRQ_USBD);
++
++	if (udc_info && udc_info->vbus_pin > 0) {
++		irq = s3c2410_gpio_getirq(udc_info->vbus_pin);
++		retval = request_irq(irq, s3c2410_udc_vbus_irq,
++			IRQF_DISABLED | IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++			gadget_name, udc);
++
++		if (retval != 0) {
++			printk(KERN_ERR "%s: can't get vbus irq %i, err %d\n",
++				gadget_name, irq, retval);
++			retval = -EBUSY;
++			goto err_int;
++		}
++
++		dprintk(DEBUG_VERBOSE, "%s: got irq %i\n", gadget_name, irq);
++	}
++	else {
++		udc->vbus = 1;
++	}
 +
 +#ifdef ENABLE_SYSFS
 +	/* create device files */
 +	device_create_file(&pdev->dev, &dev_attr_regs);
 +#endif
 +	return 0;
-+
++err_int:
++	free_irq(IRQ_USBD, udc);
 +err_map:
 +	iounmap(base_addr);
 +err_mem:
@@ -1816,20 +1968,22 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +static int s3c2410_udc_remove(struct platform_device *pdev)
 +{
 +	struct s3c2410_udc *udc = platform_get_drvdata(pdev);
++	unsigned int irq;
 +
 +	dprintk(DEBUG_NORMAL, "s3c2410_udc_remove\n");
 +	usb_gadget_unregister_driver(udc->driver);
 +
-+	if (udc->got_irq) {
-+		free_irq(IRQ_USBD, udc);
-+		udc->got_irq = 0;
++	if (udc_info && udc_info->vbus_pin > 0) {
++		irq = s3c2410_gpio_getirq(udc_info->vbus_pin);
++		free_irq(irq, udc);
 +	}
++
++	free_irq(IRQ_USBD, udc);
 +
 +	iounmap(base_addr);
 +	release_mem_region(rsrc_start, rsrc_len);
 +	
 +	platform_set_drvdata(pdev, NULL);
-+	kfree(udc);
 +
 +	if (!IS_ERR(udc_clock) && udc_clock != NULL) {
 +		clk_disable(udc_clock);
@@ -1846,6 +2000,32 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +	return 0;
 +}
 +
++#ifdef CONFIG_PM
++static int s3c2410_udc_suspend(struct platform_device *pdev, pm_message_t message)
++{
++	struct s3c2410_udc *udc = platform_get_drvdata(pdev);
++
++	if (udc_info && udc_info->udc_command)
++		udc_info->udc_command(S3C2410_UDC_P_DISABLE);
++
++	return 0;
++}
++
++static int s3c2410_udc_resume(struct platform_device *pdev)
++{
++	struct s3c2410_udc *udc = platform_get_drvdata(pdev);
++
++	if (udc_info && udc_info->udc_command)
++		udc_info->udc_command(S3C2410_UDC_P_ENABLE);
++
++	return 0;
++}
++#else
++#define s3c2410_udc_suspend      NULL
++#define s3c2410_udc_resume       NULL
++#endif
++
++
 +static struct platform_driver udc_driver_2410 = {
 +	.driver		= {
 +		.name 	= "s3c2410-usbgadget",
@@ -1853,6 +2033,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +	},
 +	.probe          = s3c2410_udc_probe,
 +	.remove         = s3c2410_udc_remove,
++	.suspend	= s3c2410_udc_suspend,
++	.resume		= s3c2410_udc_resume,
 +};
 +
 +static struct platform_driver udc_driver_2440 = {
@@ -1862,6 +2044,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +	},
 +	.probe          = s3c2410_udc_probe,
 +	.remove         = s3c2410_udc_remove,
++	.suspend	= s3c2410_udc_suspend,
++	.resume		= s3c2410_udc_resume,
 +};
 +
 +static int __init udc_init(void)
@@ -1894,11 +2078,11 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
 +MODULE_DESCRIPTION(DRIVER_DESC);
 +MODULE_VERSION(DRIVER_VERSION);
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.h
+Index: linux-2.6.20/drivers/usb/gadget/s3c2410_udc.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.h	2006-12-11 21:44:31.000000000 +0100
-@@ -0,0 +1,187 @@
++++ linux-2.6.20/drivers/usb/gadget/s3c2410_udc.h	2007-02-15 14:54:49.000000000 +0100
+@@ -0,0 +1,188 @@
 +#ifndef _S3C2410_UDC_H
 +#define _S3C2410_UDC_H
 +
@@ -1979,6 +2163,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.h
 +	unsigned			req_std : 1;
 +	unsigned			req_config : 1;
 +	unsigned			req_pending : 1;
++	u8				vbus;
 +};
 +
 +/****************** MACROS ******************/
@@ -2086,36 +2271,11 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.h
 +#endif
 +
 +
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-udc.h
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/asm-arm/arch-s3c2410/regs-udc.h	2006-12-11 21:44:29.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-udc.h	2006-12-11 21:44:31.000000000 +0100
-@@ -17,8 +17,7 @@
- #ifndef __ASM_ARCH_REGS_UDC_H
- #define __ASM_ARCH_REGS_UDC_H
- 
--
--#define S3C2410_USBDREG(x) ((x) + S3C24XX_VA_USBDEV)
-+#define S3C2410_USBDREG(x) (x)
- 
- #define S3C2410_UDC_FUNC_ADDR_REG	S3C2410_USBDREG(0x0140)
- #define S3C2410_UDC_PWR_REG		S3C2410_USBDREG(0x0144)
-@@ -142,8 +141,8 @@
- #define S3C2410_UDC_OCSR2_ISO		(1<<6) // R/W
- #define S3C2410_UDC_OCSR2_DMAIEN	(1<<5) // R/W
- 
--#define S3C2410_UDC_SETIX(x)	    \
--	__raw_writel(S3C2410_UDC_INDEX_ ## x, S3C2410_UDC_INDEX_REG);
-+#define S3C2410_UDC_SETIX(base,x)	    \
-+	writel(S3C2410_UDC_INDEX_ ## x, base+S3C2410_UDC_INDEX_REG);
- 
- 
- #define S3C2410_UDC_EP0_CSR_OPKRDY	(1<<0)
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/udc.h
+Index: linux-2.6.20/include/asm-arm/arch-s3c2410/udc.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/udc.h	2006-12-11 21:44:31.000000000 +0100
-@@ -0,0 +1,32 @@
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/udc.h	2007-02-15 14:54:49.000000000 +0100
+@@ -0,0 +1,34 @@
 +/* linux/include/asm/arch-s3c2410/udc.h
 + *
 + * Copyright (c) 2005 Arnaud Patard <arnaud.patard@rtp-net.org>
@@ -2143,6 +2303,8 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/udc.h
 +
 +struct s3c2410_udc_mach_info {
 +	void	(*udc_command)(enum s3c2410_udc_cmd_e);
++	unsigned int vbus_pin;
++	unsigned char vbus_pin_inverted;
 +};
 +
 +extern void __init s3c24xx_udc_set_platdata(struct s3c2410_udc_mach_info *);

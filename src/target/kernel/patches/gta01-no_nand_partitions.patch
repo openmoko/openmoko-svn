@@ -1,8 +1,8 @@
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-10 23:31:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-11 01:39:24.000000000 +0100
-@@ -188,40 +188,10 @@
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-15 16:28:11.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-15 16:28:11.000000000 +0100
+@@ -186,40 +186,10 @@
  	.devices_count = ARRAY_SIZE(gta01_devices)
  };
  
@@ -44,11 +44,11 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
  	},
  };
  
-Index: linux-2.6.17.14-fic4.test/drivers/mtd/nand/s3c2410.c
+Index: linux-2.6.20/drivers/mtd/nand/s3c2410.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/mtd/nand/s3c2410.c	2007-02-11 00:22:02.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/mtd/nand/s3c2410.c	2007-02-11 03:45:28.000000000 +0100
-@@ -480,19 +480,31 @@
+--- linux-2.6.20.orig/drivers/mtd/nand/s3c2410.c	2007-02-15 16:28:11.000000000 +0100
++++ linux-2.6.20/drivers/mtd/nand/s3c2410.c	2007-02-15 16:28:11.000000000 +0100
+@@ -471,17 +471,31 @@
  }
  
  #ifdef CONFIG_MTD_PARTITIONS
@@ -64,9 +64,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/mtd/nand/s3c2410.c
  		return add_mtd_device(&mtd->mtd);
  
 -	if (set->nr_partitions > 0 && set->partitions != NULL) {
--		return add_mtd_partitions(&mtd->mtd,
--					  set->partitions,
--					  set->nr_partitions);
+-		return add_mtd_partitions(&mtd->mtd, set->partitions, set->nr_partitions);
 +	if (set->nr_partitions == 0) {
 +		mtd->mtd.name = set->name;
 +		nr_part = parse_mtd_partitions(&mtd->mtd, part_probes,

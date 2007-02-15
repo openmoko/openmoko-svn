@@ -2,12 +2,12 @@ Introduce a platform_device (machine) specific callback function
 which gets called when the amount of power we can draw from Vbus
 has changed.
 
-Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
+Index: linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/usb/gadget/s3c2410_udc.c	2007-01-21 13:12:03.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c	2007-01-21 13:29:44.000000000 +0100
-@@ -1370,11 +1370,22 @@
- 	return 0;
+--- linux-2.6.20.orig/drivers/usb/gadget/s3c2410_udc.c	2007-02-15 14:55:45.000000000 +0100
++++ linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c	2007-02-15 15:00:11.000000000 +0100
+@@ -1404,12 +1404,23 @@
+ 	return IRQ_HANDLED;
  }
  
 +static void s3c2410_vbus_draw(struct usb_gadget *_gadget, int ma)
@@ -25,14 +25,15 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/s3c2410_udc.c
  	.wakeup             = s3c2410_wakeup,
  	.set_selfpowered    = s3c2410_set_selfpowered,
          .pullup             = s3c2410_pullup,
+ 	.vbus_session	    = s3c2410_udc_vbus_session,
 +	.vbus_draw	    = s3c2410_vbus_draw,
  };
  
- 
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/udc.h
+ /*------------------------- gadget driver handling---------------------------*/
+Index: linux-2.6.20/include/asm-arm/arch-s3c2410/udc.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/asm-arm/arch-s3c2410/udc.h	2007-01-21 13:06:57.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/udc.h	2007-01-21 13:12:03.000000000 +0100
+--- linux-2.6.20.orig/include/asm-arm/arch-s3c2410/udc.h	2007-02-15 14:54:49.000000000 +0100
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/udc.h	2007-02-15 15:00:50.000000000 +0100
 @@ -12,6 +12,7 @@
   *	14-Mar-2005	RTP	Created file
   *	02-Aug-2005	RTP	File rename
@@ -45,7 +46,7 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/udc.h
  
  struct s3c2410_udc_mach_info {
  	void	(*udc_command)(enum s3c2410_udc_cmd_e);
-+	void	(*vbus_draw)(unsigned int ma);
++ 	void	(*vbus_draw)(unsigned int ma);
+ 	unsigned int vbus_pin;
+ 	unsigned char vbus_pin_inverted;
  };
- 
- extern void __init s3c24xx_udc_set_platdata(struct s3c2410_udc_mach_info *);

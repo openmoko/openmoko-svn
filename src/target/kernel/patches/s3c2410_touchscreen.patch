@@ -1,16 +1,16 @@
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.c	2007-01-24 12:17:45.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c	2007-01-24 12:18:11.000000000 +0100
-@@ -37,6 +37,7 @@
+diff --git a/arch/arm/mach-s3c2410/devs.c b/arch/arm/mach-s3c2410/devs.c
+index e55a6a9..9a2a67b 100644
+--- a/arch/arm/mach-s3c2410/devs.c
++++ b/arch/arm/mach-s3c2410/devs.c
+@@ -29,6 +29,7 @@ #include <asm/irq.h>
  
  #include <asm/arch/regs-serial.h>
  #include <asm/arch/udc.h>
 +#include <asm/arch/ts.h>
  
  #include "devs.h"
- 
-@@ -137,6 +138,23 @@
+ #include "cpu.h"
+@@ -205,6 +206,23 @@ struct platform_device s3c_device_nand =
  
  EXPORT_SYMBOL(s3c_device_nand);
  
@@ -34,11 +34,11 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.c
  /* USB Device (Gadget)*/
  
  static struct resource s3c_usbgadget_resource[] = {
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/devs.h	2007-01-24 12:17:39.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h	2007-01-24 12:18:11.000000000 +0100
-@@ -39,6 +39,7 @@
+diff --git a/arch/arm/mach-s3c2410/devs.h b/arch/arm/mach-s3c2410/devs.h
+index 14fb0ba..0fc63cf 100644
+--- a/arch/arm/mach-s3c2410/devs.h
++++ b/arch/arm/mach-s3c2410/devs.h
+@@ -41,6 +41,7 @@ extern struct platform_device s3c_device
  extern struct platform_device s3c_device_timer3;
  
  extern struct platform_device s3c_device_usbgadget;
@@ -46,11 +46,51 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/devs.h
  
  /* s3c2440 specific devices */
  
-Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/input/touchscreen/Kconfig	2007-01-24 12:17:39.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig	2007-01-24 12:18:11.000000000 +0100
-@@ -49,6 +49,24 @@
+diff --git a/arch/arm/mach-s3c2410/mach-h1940.c b/arch/arm/mach-s3c2410/mach-h1940.c
+index f539535..f65b7ce 100644
+--- a/arch/arm/mach-s3c2410/mach-h1940.c
++++ b/arch/arm/mach-s3c2410/mach-h1940.c
+@@ -39,6 +39,7 @@ #include <asm/arch/h1940.h>
+ #include <asm/arch/h1940-latch.h>
+ #include <asm/arch/fb.h>
+ #include <asm/arch/udc.h>
++#include <asm/arch/ts.h>
+ 
+ #include <linux/serial_core.h>
+ 
+@@ -132,6 +133,11 @@ static struct s3c2410_udc_mach_info h194
+ };
+ 
+ 
++static struct s3c2410_ts_mach_info h1940_ts_cfg __initdata = {
++		.delay = 10000,
++		.presc = 49,
++		.oversampling_shift = 2,
++};
+ 
+ /**
+  * Set lcd on or off
+@@ -183,6 +189,7 @@ static struct platform_device *h1940_dev
+ 	&s3c_device_i2c,
+ 	&s3c_device_iis,
+ 	&s3c_device_usbgadget,
++	&s3c_device_ts,
+ };
+ 
+ static struct s3c24xx_board h1940_board __initdata = {
+@@ -213,6 +220,7 @@ static void __init h1940_init(void)
+ 	u32 tmp;
+ 
+ 	s3c24xx_fb_set_platdata(&h1940_lcdcfg);
++	set_s3c2410ts_info(&h1940_ts_cfg);
+  	s3c24xx_udc_set_platdata(&h1940_udc_cfg);
+ 
+ 	/* Turn off suspend on both USB ports, and switch the
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 6b46c9b..91f5f4f 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -49,6 +49,24 @@ config TOUCHSCREEN_CORGI
  	  To compile this driver as a module, choose M here: the
  	  module will be called corgi_ts.
  
@@ -75,21 +115,21 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Kconfig
  config TOUCHSCREEN_GUNZE
  	tristate "Gunze AHL-51S touchscreen"
  	select SERIO
-Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Makefile
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/input/touchscreen/Makefile	2007-01-24 12:17:39.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/Makefile	2007-01-24 12:18:11.000000000 +0100
-@@ -12,3 +12,5 @@
- obj-$(CONFIG_TOUCHSCREEN_MTOUCH) += mtouch.o
- obj-$(CONFIG_TOUCHSCREEN_MK712)	+= mk712.o
- obj-$(CONFIG_TOUCHSCREEN_HP600)	+= hp680_ts_input.o
-+obj-$(CONFIG_TOUCHSCREEN_S3C2410) += s3c2410_ts.o
-+
-Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c	2007-01-24 12:18:11.000000000 +0100
-@@ -0,0 +1,351 @@
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 30e6e22..8cbaac5 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -16,3 +16,4 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= pe
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
+ obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
++obj-$(CONFIG_TOUCHSCREEN_S3C2410)	+= s3c2410_ts.o
+diff --git a/drivers/input/touchscreen/s3c2410_ts.c b/drivers/input/touchscreen/s3c2410_ts.c
+new file mode 100644
+index 0000000..0dea2ef
+--- /dev/null
++++ b/drivers/input/touchscreen/s3c2410_ts.c
+@@ -0,0 +1,401 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -128,7 +168,6 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 + *
 + */
 +
-+#include <linux/config.h>
 +#include <linux/errno.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
@@ -148,6 +187,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +
 +/* For ts.dev.id.version */
 +#define S3C2410TSVERSION	0x0101
++
++#define TSC_SLEEP  (S3C2410_ADCTSC_PULL_UP_DISABLE | S3C2410_ADCTSC_XY_PST(0))
 +
 +#define WAIT4INT(x)  (((x)<<8) | \
 +		     S3C2410_ADCTSC_YM_SEN | S3C2410_ADCTSC_YP_SEN | S3C2410_ADCTSC_XP_SEN | \
@@ -244,7 +285,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +static struct timer_list touch_timer =
 +		TIMER_INITIALIZER(touch_timer_fire, 0, 0);
 +
-+static irqreturn_t stylus_updown(int irq, void *dev_id, struct pt_regs *regs)
++static irqreturn_t stylus_updown(int irq, void *dev_id)
 +{
 +	unsigned long data0;
 +	unsigned long data1;
@@ -266,7 +307,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +}
 +
 +
-+static irqreturn_t stylus_action(int irq, void *dev_id, struct pt_regs *regs)
++static irqreturn_t stylus_action(int irq, void *dev_id)
 +{
 +	unsigned long data0;
 +	unsigned long data1;
@@ -372,13 +413,13 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +	ts.shift = info->oversampling_shift;
 +
 +	/* Get irqs */
-+	if (request_irq(IRQ_ADC, stylus_action, SA_SAMPLE_RANDOM,
++	if (request_irq(IRQ_ADC, stylus_action, IRQF_SAMPLE_RANDOM,
 +		"s3c2410_action", ts.dev)) {
 +		printk(KERN_ERR "s3c2410_ts.c: Could not allocate ts IRQ_ADC !\n");
 +		iounmap(base_addr);
 +		return -EIO;
 +	}
-+	if (request_irq(IRQ_TC, stylus_updown, SA_SAMPLE_RANDOM,
++	if (request_irq(IRQ_TC, stylus_updown, IRQF_SAMPLE_RANDOM,
 +			"s3c2410_action", ts.dev)) {
 +		printk(KERN_ERR "s3c2410_ts.c: Could not allocate ts IRQ_TC !\n");
 +		iounmap(base_addr);
@@ -412,6 +453,52 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +	return 0;
 +}
 +
++#ifdef CONFIG_PM
++static int s3c2410ts_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	writel(TSC_SLEEP, base_addr+S3C2410_ADCTSC);
++	writel(readl(base_addr+S3C2410_ADCCON) | S3C2410_ADCCON_STDBM,
++	       base_addr+S3C2410_ADCCON);
++
++	disable_irq(IRQ_ADC);
++	disable_irq(IRQ_TC);
++
++	clk_disable(adc_clock);
++
++	return 0;
++}
++
++static int s3c2410ts_resume(struct platform_device *pdev)
++{
++	struct s3c2410_ts_mach_info *info =
++		( struct s3c2410_ts_mach_info *)pdev->dev.platform_data;
++
++	clk_enable(adc_clock);
++	msleep(1);
++
++	enable_irq(IRQ_ADC);
++	enable_irq(IRQ_TC);
++
++	if ((info->presc&0xff) > 0)
++		writel(S3C2410_ADCCON_PRSCEN | S3C2410_ADCCON_PRSCVL(info->presc&0xFF),\
++			     base_addr+S3C2410_ADCCON);
++	else
++		writel(0,base_addr+S3C2410_ADCCON);
++
++	/* Initialise registers */
++	if ((info->delay&0xffff) > 0)
++		writel(info->delay & 0xffff,  base_addr+S3C2410_ADCDLY);
++
++	writel(WAIT4INT(0), base_addr+S3C2410_ADCTSC);
++
++	return 0;
++}
++
++#else
++#define s3c2410ts_suspend NULL
++#define s3c2410ts_resume  NULL
++#endif
++
 +static struct platform_driver s3c2410ts_driver = {
 +       .driver         = {
 +	       .name   = "s3c2410-ts",
@@ -419,6 +506,9 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +       },
 +       .probe          = s3c2410ts_probe,
 +       .remove         = s3c2410ts_remove,
++       .suspend        = s3c2410ts_suspend,
++       .resume         = s3c2410ts_resume,
++
 +};
 +
 +
@@ -441,11 +531,11 @@ Index: linux-2.6.17.14-fic4.test/drivers/input/touchscreen/s3c2410_ts.c
 +        c-basic-offset: 8
 +    End:
 +*/
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/asm-arm/arch-s3c2410/regs-adc.h	2007-01-24 12:17:39.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h	2007-01-24 12:18:11.000000000 +0100
-@@ -44,7 +44,7 @@
+diff --git a/include/asm-arm/arch-s3c2410/regs-adc.h b/include/asm-arm/arch-s3c2410/regs-adc.h
+index 3196a28..c7f2319 100644
+--- a/include/asm-arm/arch-s3c2410/regs-adc.h
++++ b/include/asm-arm/arch-s3c2410/regs-adc.h
+@@ -41,7 +41,7 @@ #define S3C2410_ADCTSC_XM_SEN		(1<<5)
  #define S3C2410_ADCTSC_XP_SEN		(1<<4)
  #define S3C2410_ADCTSC_PULL_UP_DISABLE	(1<<3)
  #define S3C2410_ADCTSC_AUTO_PST		(1<<2)
@@ -454,10 +544,11 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/regs-adc.h
  
  /* ADCDAT0 Bits */
  #define S3C2410_ADCDAT0_UPDOWN		(1<<15)
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h	2007-01-24 12:18:11.000000000 +0100
+diff --git a/include/asm-arm/arch-s3c2410/ts.h b/include/asm-arm/arch-s3c2410/ts.h
+new file mode 100644
+index 0000000..8566f25
+--- /dev/null
++++ b/include/asm-arm/arch-s3c2410/ts.h
 @@ -0,0 +1,28 @@
 +/* linux/include/asm/arch-s3c2410/ts.h
 + *
@@ -487,44 +578,3 @@ Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/ts.h
 +
 +#endif /* __ASM_ARM_TS_H */
 +
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:09.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:18:11.000000000 +0100
-@@ -53,6 +53,7 @@
- #include <asm/arch/fb.h>
- #include <asm/arch/nand.h>
- #include <asm/arch/udc.h>
-+#include <asm/arch/ts.h>
- #include <asm/arch/spi.h>
- #include <asm/arch/spi-gpio.h>
- #include <asm/arch/mci.h>
-@@ -315,6 +316,7 @@
- 	&s3c_device_sdi,
- 	&s3c_device_usbgadget,
- 	&s3c_device_nand,
-+	&s3c_device_ts,
- 	&cs89x0_device,
- };
- 
-@@ -477,6 +479,12 @@
- 	.ocr_avail 	= MMC_VDD_32_33,
- };
- 
-+static struct s3c2410_ts_mach_info qt2410_ts_cfg = {
-+	.delay = 10000,
-+	.presc = 49,
-+	.oversampling_shift = 2,
-+};
-+
- static void __init qt2410_map_io(void)
- {
- 	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-@@ -516,6 +524,7 @@
- 	}
- 
- 	s3c24xx_udc_set_platdata(&qt2410_udc_cfg);
-+	set_s3c2410ts_info(&qt2410_ts_cfg);
- 
- 	s3c2410_gpio_cfgpin(S3C2410_GPB5, S3C2410_GPIO_OUTPUT);
- 	spi_register_board_info(qt2410_spi_board_info,

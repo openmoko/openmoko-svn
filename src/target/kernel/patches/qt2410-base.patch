@@ -1,8 +1,8 @@
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-01-24 12:14:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-01-24 12:17:13.000000000 +0100
-@@ -63,6 +63,12 @@
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-15 16:26:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-15 17:05:08.000000000 +0100
+@@ -80,6 +80,12 @@
  	   Say Y here if you are using the SMDK2410 or the derived module A9M2410
             <http://www.fsforth.de>
  
@@ -15,50 +15,24 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
  config ARCH_S3C2440
  	bool "SMDK2440"
  	select CPU_S3C2440
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-01-24 12:14:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-01-24 12:17:13.000000000 +0100
-@@ -43,10 +43,11 @@
- obj-$(CONFIG_ARCH_H1940)	+= mach-h1940.o
- obj-$(CONFIG_MACH_N30)		+= mach-n30.o
- obj-$(CONFIG_ARCH_SMDK2410)	+= mach-smdk2410.o
-+obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
- obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
- obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
- obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715.o
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-15 16:26:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-15 17:05:08.000000000 +0100
+@@ -88,5 +88,6 @@
  obj-$(CONFIG_MACH_OTOM)		+= mach-otom.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
+ obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
++obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
  
 -obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
 \ No newline at end of file
 +obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-01-24 12:14:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-01-24 12:17:13.000000000 +0100
-@@ -1040,3 +1040,4 @@
- ai2410			MACH_AI2410		AI2410			1027
- ixp465			MACH_IXP465		IXP465			1028
- balloon3		MACH_BALLOON3		BALLOON3		1029
-+qt2410			MACH_QT2410		QT2410			1108
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/map.h
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/asm-arm/arch-s3c2410/map.h	2007-01-24 12:14:53.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/map.h	2007-01-24 12:17:13.000000000 +0100
-@@ -225,6 +225,7 @@
- #define S3C24XX_PA_RTC      S3C2410_PA_RTC
- #define S3C24XX_PA_ADC      S3C2410_PA_ADC
- #define S3C24XX_PA_SPI      S3C2410_PA_SPI
-+#define S3C24XX_PA_SDI      S3C2410_PA_SDI
- #endif
- 
- #endif /* __ASM_ARCH_MAP_H */
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
+Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c	2007-01-24 12:17:22.000000000 +0100
-@@ -0,0 +1,377 @@
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-qt2410.c	2007-02-15 17:07:34.000000000 +0100
+@@ -0,0 +1,385 @@
 +/*
 + *
 + * linux/arch/arm/mach-s3c2410/mach-qt2410.c
@@ -91,6 +65,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +#include <linux/timer.h>
 +#include <linux/init.h>
 +#include <linux/platform_device.h>
++#include <linux/serial_core.h>
 +#include <linux/spi/spi.h>
 +#include <linux/spi/spi_bitbang.h>
 +
@@ -113,6 +88,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +#include <asm/arch/fb.h>
 +#include <asm/arch/nand.h>
 +#include <asm/arch/udc.h>
++#include <asm/arch/ts.h>
 +#include <asm/arch/spi.h>
 +#include <asm/arch/spi-gpio.h>
 +
@@ -122,8 +98,6 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +#include "pm.h"
 +
 +static struct map_desc qt2410_iodesc[] __initdata = {
-+	IODESC_ENT(SDI),
-+	IODESC_ENT(IIS),
 +	{ 0xe0000000, __phys_to_pfn(S3C2410_CS3+0x01000000), SZ_1M, MT_DEVICE }
 +};
 +
@@ -247,6 +221,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +	&s3c_device_sdi,
 +	&s3c_device_usbgadget,
 +	&s3c_device_nand,
++	&s3c_device_ts,
 +	&cs89x0_device,
 +};
 +
@@ -391,6 +366,12 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +	.udc_command	= qt2410_udc_pullup,
 +};
 +
++static struct s3c2410_ts_mach_info qt2410_ts_cfg = {
++	.delay = 10000,
++	.presc = 49,
++	.oversampling_shift = 2,
++};
++
 +static void __init qt2410_map_io(void)
 +{
 +	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
@@ -416,6 +397,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +	s3c_device_nand.dev.platform_data = &qt2410_nand_info;
 +	s3c24xx_fb_set_platdata(&qt2410_lcd_cfg);
 +	s3c24xx_udc_set_platdata(&qt2410_udc_cfg);
++	set_s3c2410ts_info(&qt2410_ts_cfg);
 +
 +	s3c2410_gpio_cfgpin(S3C2410_GPB5, S3C2410_GPIO_OUTPUT);
 +	spi_register_board_info(qt2410_spi_board_info,
@@ -425,7 +407,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-qt2410.c
 +	s3c2410_pm_init();
 +}
 +
-+MACHINE_START(QT2410, "QT2410") 
++MACHINE_START(QT2410, "QT2410")
 +	.phys_io	= S3C2410_PA_UART,
 +	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
 +	.boot_params	= S3C2410_SDRAM_PA + 0x100,

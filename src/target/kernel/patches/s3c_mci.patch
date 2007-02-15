@@ -1,12 +1,12 @@
 This is the latest S3C MMC/SD driver by Thomas Kleffel
 
-Index: linux-2.6.17.7-fic1/drivers/mmc/Kconfig
+Index: linux-2.6.20/drivers/mmc/Kconfig
 ===================================================================
---- linux-2.6.17.7-fic1.orig/drivers/mmc/Kconfig	2006-11-02 12:48:23.000000000 +0100
-+++ linux-2.6.17.7-fic1/drivers/mmc/Kconfig	2006-11-02 12:48:50.000000000 +0100
-@@ -109,4 +109,16 @@
- 
- 	  If unsure, say N.
+--- linux-2.6.20.orig/drivers/mmc/Kconfig	2007-02-15 16:15:19.000000000 +0100
++++ linux-2.6.20/drivers/mmc/Kconfig	2007-02-15 16:17:32.000000000 +0100
+@@ -125,4 +125,16 @@
+           To compile this driver as a module, choose M here: the
+ 	  module will be called tifm_sd.
  
 +config MMC_S3C
 +	tristate "Samsung S3C SD/MMC Card Interface support"
@@ -21,26 +21,10 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/Kconfig
 +
 +
  endmenu
-Index: linux-2.6.17.7-fic1/drivers/mmc/Makefile
-===================================================================
---- linux-2.6.17.7-fic1.orig/drivers/mmc/Makefile	2006-11-02 12:48:23.000000000 +0100
-+++ linux-2.6.17.7-fic1/drivers/mmc/Makefile	2006-11-02 12:48:50.000000000 +0100
-@@ -23,9 +23,11 @@
- obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
- obj-$(CONFIG_MMC_OMAP)		+= omap.o
- obj-$(CONFIG_MMC_AT91RM9200)	+= at91_mci.o
-+obj-$(CONFIG_MMC_S3C)		+= s3cmci.o
- 
- mmc_core-y := mmc.o mmc_queue.o mmc_sysfs.o
- 
- ifeq ($(CONFIG_MMC_DEBUG),y)
-+obj-$(CONFIG_MMC)		+= mmc_debug.o
- EXTRA_CFLAGS += -DDEBUG
- endif
-Index: linux-2.6.17.7-fic1/drivers/mmc/mmc_debug.c
+Index: linux-2.6.20/drivers/mmc/mmc_debug.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.7-fic1/drivers/mmc/mmc_debug.c	2006-11-02 12:48:50.000000000 +0100
++++ linux-2.6.20/drivers/mmc/mmc_debug.c	2007-02-15 16:17:32.000000000 +0100
 @@ -0,0 +1,59 @@
 +/*
 + *  linux/drivers/mmc/mmc_debug.c
@@ -101,10 +85,10 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/mmc_debug.c
 +	}
 +}
 +EXPORT_SYMBOL(mmc_err2str);
-Index: linux-2.6.17.7-fic1/drivers/mmc/mmc_debug.h
+Index: linux-2.6.20/drivers/mmc/mmc_debug.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.7-fic1/drivers/mmc/mmc_debug.h	2006-11-02 12:48:50.000000000 +0100
++++ linux-2.6.20/drivers/mmc/mmc_debug.h	2007-02-15 16:17:32.000000000 +0100
 @@ -0,0 +1,7 @@
 +#ifndef MMC_DEBUG_H
 +#define MMC_DEBUG_H
@@ -113,10 +97,10 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/mmc_debug.h
 +char *mmc_err2str(int err);
 +
 +#endif /* MMC_DEBUG_H */
-Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c
+Index: linux-2.6.20/drivers/mmc/s3cmci.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c	2006-11-02 21:06:00.000000000 +0100
++++ linux-2.6.20/drivers/mmc/s3cmci.c	2007-02-15 16:22:54.000000000 +0100
 @@ -0,0 +1,1339 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -487,7 +471,7 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c
 + *       contition comes up
 + */
 +
-+static irqreturn_t s3cmci_irq(int irq, void *dev_id, struct pt_regs *regs)
++static irqreturn_t s3cmci_irq(int irq, void *dev_id)
 +{
 +	struct s3cmci_host *host;
 +	struct mmc_command *cmd;
@@ -669,7 +653,7 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c
 + * ISR for the CardDetect Pin
 +*/
 +
-+static irqreturn_t s3cmci_irq_cd(int irq, void *dev_id, struct pt_regs *regs)
++static irqreturn_t s3cmci_irq_cd(int irq, void *dev_id)
 +{
 +	struct s3cmci_host *host = (struct s3cmci_host *)dev_id;
 +
@@ -1457,10 +1441,10 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
 +
-Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.h
+Index: linux-2.6.20/drivers/mmc/s3cmci.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.7-fic1/drivers/mmc/s3cmci.h	2006-11-02 21:05:15.000000000 +0100
++++ linux-2.6.20/drivers/mmc/s3cmci.h	2007-02-15 16:22:43.000000000 +0100
 @@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1533,23 +1517,11 @@ Index: linux-2.6.17.7-fic1/drivers/mmc/s3cmci.h
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
 +};
-Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
+Index: linux-2.6.20/include/asm-arm/arch-s3c2410/regs-sdi.h
 ===================================================================
---- linux-2.6.17.7-fic1.orig/include/asm-arm/arch-s3c2410/regs-sdi.h	2006-11-02 12:48:24.000000000 +0100
-+++ linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h	2006-11-02 12:48:50.000000000 +0100
-@@ -7,9 +7,10 @@
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
-  *
-- * S3C2410 MMC/SDIO register definitions
-+ * Samsung S3C MCI register definitions
-  *
-  *  Changelog:
-+ *    09-May-2006 Thomas Kleffel Added defines for 2440
-  *    18-Aug-2004 Ben Dooks      Created initial file
-  *    29-Nov-2004 Koen Martens   Added some missing defines, fixed duplicates
-  *    29-Nov-2004 Ben Dooks	 Updated Koen's patch
-@@ -33,9 +34,15 @@
+--- linux-2.6.20.orig/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-02-15 16:15:19.000000000 +0100
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-02-15 16:17:32.000000000 +0100
+@@ -28,9 +28,15 @@
  #define S3C2410_SDIDCNT               (0x30)
  #define S3C2410_SDIDSTA               (0x34)
  #define S3C2410_SDIFSTA               (0x38)
@@ -1565,7 +1537,7 @@ Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDICON_BYTEORDER      (1<<4)
  #define S3C2410_SDICON_SDIOIRQ        (1<<3)
  #define S3C2410_SDICON_RWAITEN        (1<<2)
-@@ -47,7 +54,8 @@
+@@ -42,7 +48,8 @@
  #define S3C2410_SDICMDCON_LONGRSP     (1<<10)
  #define S3C2410_SDICMDCON_WAITRSP     (1<<9)
  #define S3C2410_SDICMDCON_CMDSTART    (1<<8)
@@ -1575,7 +1547,7 @@ Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
  
  #define S3C2410_SDICMDSTAT_CRCFAIL    (1<<12)
  #define S3C2410_SDICMDSTAT_CMDSENT    (1<<11)
-@@ -56,6 +64,9 @@
+@@ -51,6 +58,9 @@
  #define S3C2410_SDICMDSTAT_XFERING    (1<<8)
  #define S3C2410_SDICMDSTAT_INDEX      (0xff)
  
@@ -1585,7 +1557,7 @@ Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIDCON_IRQPERIOD     (1<<21)
  #define S3C2410_SDIDCON_TXAFTERRESP   (1<<20)
  #define S3C2410_SDIDCON_RXAFTERCMD    (1<<19)
-@@ -64,6 +75,7 @@
+@@ -59,6 +69,7 @@
  #define S3C2410_SDIDCON_WIDEBUS       (1<<16)
  #define S3C2410_SDIDCON_DMAEN         (1<<15)
  #define S3C2410_SDIDCON_STOP          (1<<14)
@@ -1593,7 +1565,7 @@ Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIDCON_DATMODE	      (3<<12)
  #define S3C2410_SDIDCON_BLKNUM        (0x7ff)
  
-@@ -73,6 +85,7 @@
+@@ -68,6 +79,7 @@
  #define S3C2410_SDIDCON_XFER_RXSTART  (2<<12)
  #define S3C2410_SDIDCON_XFER_TXSTART  (3<<12)
  
@@ -1601,7 +1573,7 @@ Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIDCNT_BLKNUM_SHIFT  (12)
  
  #define S3C2410_SDIDSTA_RDYWAITREQ    (1<<10)
-@@ -87,10 +100,12 @@
+@@ -82,10 +94,12 @@
  #define S3C2410_SDIDSTA_TXDATAON      (1<<1)
  #define S3C2410_SDIDSTA_RXDATAON      (1<<0)
  
@@ -1616,10 +1588,10 @@ Index: linux-2.6.17.7-fic1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIFSTA_RFLAST         (1<<9)
  #define S3C2410_SDIFSTA_RFFULL         (1<<8)
  #define S3C2410_SDIFSTA_RFHALF         (1<<7)
-Index: linux-2.6.17.7-fic1/include/linux/mmc/mmc.h
+Index: linux-2.6.20/include/linux/mmc/mmc.h
 ===================================================================
---- linux-2.6.17.7-fic1.orig/include/linux/mmc/mmc.h	2006-11-02 12:48:24.000000000 +0100
-+++ linux-2.6.17.7-fic1/include/linux/mmc/mmc.h	2006-11-02 12:48:50.000000000 +0100
+--- linux-2.6.20.orig/include/linux/mmc/mmc.h	2007-02-15 16:15:19.000000000 +0100
++++ linux-2.6.20/include/linux/mmc/mmc.h	2007-02-15 16:17:32.000000000 +0100
 @@ -54,12 +54,15 @@
  	unsigned int		retries;	/* max number of retries */
  	unsigned int		error;		/* command error */

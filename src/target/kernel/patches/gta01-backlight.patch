@@ -1,12 +1,12 @@
 This is a backlight driver for FIC's Neo1973 Phone (codename GTA01)
 
-Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig
+Index: linux-2.6.20/drivers/video/backlight/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/video/backlight/Kconfig	2007-01-24 14:06:21.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig	2007-01-24 14:07:01.000000000 +0100
-@@ -50,6 +50,14 @@
- 	  If you have a Sharp Zaurus SL-C7xx, SL-Cxx00 or SL-6000x say y to enable the
- 	  backlight driver.
+--- linux-2.6.20.orig/drivers/video/backlight/Kconfig	2007-02-15 16:26:53.000000000 +0100
++++ linux-2.6.20/drivers/video/backlight/Kconfig	2007-02-15 16:28:11.000000000 +0100
+@@ -58,6 +58,14 @@
+ 	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
+ 	  enable the LCD/backlight driver.
  
 +config BACKLIGHT_GTA01
 +	tristate "FIC GTA01 Backlight Driver"
@@ -19,22 +19,22 @@ Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Kconfig
  config BACKLIGHT_HP680
  	tristate "HP Jornada 680 Backlight Driver"
  	depends on BACKLIGHT_DEVICE && SH_HP6XX
-Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/Makefile
+Index: linux-2.6.20/drivers/video/backlight/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/video/backlight/Makefile	2007-01-24 14:06:21.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/video/backlight/Makefile	2007-01-24 14:07:01.000000000 +0100
+--- linux-2.6.20.orig/drivers/video/backlight/Makefile	2007-02-15 16:26:53.000000000 +0100
++++ linux-2.6.20/drivers/video/backlight/Makefile	2007-02-15 16:28:11.000000000 +0100
 @@ -3,5 +3,6 @@
  obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
  obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
  obj-$(CONFIG_BACKLIGHT_CORGI)	+= corgi_bl.o
 +obj-$(CONFIG_BACKLIGHT_GTA01)	+= gta01_bl.o
  obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
- obj-$(CONFIG_SHARP_LOCOMO)	+= locomolcd.o
-Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c
+ obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
+Index: linux-2.6.20/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c	2007-01-24 14:07:43.000000000 +0100
-@@ -0,0 +1,275 @@
++++ linux-2.6.20/drivers/video/backlight/gta01_bl.c	2007-02-15 17:02:00.000000000 +0100
+@@ -0,0 +1,276 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -248,7 +248,8 @@ Index: linux-2.6.17.14-fic4.test/drivers/video/backlight/gta01_bl.c
 +	if (!machinfo->limit_mask)
 +		machinfo->limit_mask = -1;
 +
-+	gta01_backlight_device = backlight_device_register("gta01-bl", NULL,
++	gta01_backlight_device = backlight_device_register("gta01-bl",
++							   &pdev->dev, NULL,
 +							   &gta01bl_prop);
 +	if (IS_ERR(gta01_backlight_device))
 +		return PTR_ERR(gta01_backlight_device);

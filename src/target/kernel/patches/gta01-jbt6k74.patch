@@ -1,10 +1,10 @@
 This driver adds support for LCM initialization of the JBT6K74 LCM
 as found on the FIC GTA01 hardware
 
-Index: linux-2.6.17.14-fic4.test/drivers/spi/Kconfig
+Index: linux-2.6.20/drivers/spi/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/spi/Kconfig	2007-01-10 01:10:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/spi/Kconfig	2007-01-10 01:10:59.000000000 +0100
+--- linux-2.6.20.orig/drivers/spi/Kconfig	2007-02-15 16:26:53.000000000 +0100
++++ linux-2.6.20/drivers/spi/Kconfig	2007-02-15 16:28:11.000000000 +0100
 @@ -129,5 +129,9 @@
  
  # (slave support would go here)
@@ -15,21 +15,21 @@ Index: linux-2.6.17.14-fic4.test/drivers/spi/Kconfig
 +
  endmenu # "SPI support"
  
-Index: linux-2.6.17.14-fic4.test/drivers/spi/Makefile
+Index: linux-2.6.20/drivers/spi/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/spi/Makefile	2007-01-10 01:10:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/spi/Makefile	2007-01-10 01:10:59.000000000 +0100
+--- linux-2.6.20.orig/drivers/spi/Makefile	2007-02-15 16:26:53.000000000 +0100
++++ linux-2.6.20/drivers/spi/Makefile	2007-02-15 16:28:11.000000000 +0100
 @@ -26,4 +26,5 @@
  # 	... add above this line ...
  
  # SPI slave drivers (protocol for that link)
 +obj-$(CONFIG_SPI_SLAVE_JBT6K74)		+= jbt6k74.o
  # 	... add above this line ...
-Index: linux-2.6.17.14-fic4.test/drivers/spi/jbt6k74.c
+Index: linux-2.6.20/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/drivers/spi/jbt6k74.c	2007-01-15 02:41:26.000000000 +0100
-@@ -0,0 +1,534 @@
++++ linux-2.6.20/drivers/spi/jbt6k74.c	2007-02-15 16:49:58.000000000 +0100
+@@ -0,0 +1,533 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -54,7 +54,6 @@ Index: linux-2.6.17.14-fic4.test/drivers/spi/jbt6k74.c
 + */
 +#include <linux/kernel.h>
 +#include <linux/types.h>
-+#include <linux/config.h>
 +#include <linux/module.h>
 +#include <linux/device.h>
 +#include <linux/platform_device.h>

@@ -1,11 +1,11 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-07 20:39:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig	2007-02-07 20:39:12.000000000 +0100
-@@ -69,6 +69,13 @@
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-15 17:08:30.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-15 17:08:32.000000000 +0100
+@@ -86,6 +86,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
  
@@ -19,23 +19,22 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Kconfig
  config ARCH_S3C2440
  	bool "SMDK2440"
  	select CPU_S3C2440
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/mach-s3c2410/Makefile	2007-02-07 20:39:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/Makefile	2007-02-07 20:39:12.000000000 +0100
-@@ -44,6 +44,7 @@
- obj-$(CONFIG_MACH_N30)		+= mach-n30.o
- obj-$(CONFIG_ARCH_SMDK2410)	+= mach-smdk2410.o
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-15 17:08:30.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-15 17:08:32.000000000 +0100
+@@ -89,5 +89,6 @@
+ obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
+ obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
 +obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
- obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
- obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
- obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715.o
-Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
+ 
+ obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
+Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-07 20:42:17.000000000 +0100
-@@ -0,0 +1,508 @@
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-15 17:08:46.000000000 +0100
+@@ -0,0 +1,507 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -69,6 +68,7 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +#include <linux/timer.h>
 +#include <linux/init.h>
 +#include <linux/platform_device.h>
++#include <linux/serial_core.h>
 +#include <linux/spi/spi.h>
 +#include <linux/spi/spi_bitbang.h>
 +#include <linux/mmc/protocol.h>
@@ -106,8 +106,6 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +#include "pm.h"
 +
 +static struct map_desc gta01_iodesc[] __initdata = {
-+	IODESC_ENT(SDI),
-+	IODESC_ENT(IIS),
 +	{ 0xe0000000, __phys_to_pfn(S3C2410_CS3+0x01000000), SZ_1M, MT_DEVICE }
 +};
 +
@@ -544,19 +542,10 @@ Index: linux-2.6.17.14-fic4.test/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/arch/arm/tools/mach-types	2007-02-07 20:39:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/arch/arm/tools/mach-types	2007-02-07 20:39:12.000000000 +0100
-@@ -1041,3 +1041,4 @@
- ixp465			MACH_IXP465		IXP465			1028
- balloon3		MACH_BALLOON3		BALLOON3		1029
- qt2410			MACH_QT2410		QT2410			1108
-+gta01			MACH_GTA01		GTA01			1182
-Index: linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/asm-arm/arch-s3c2410/gta01.h	2007-02-07 20:39:12.000000000 +0100
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-15 17:08:32.000000000 +0100
 @@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H

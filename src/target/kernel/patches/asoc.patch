@@ -1,8 +1,8 @@
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/DAI.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt	2007-02-06 15:55:20.000000000 +0100
-@@ -0,0 +1,117 @@
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/DAI.txt
+@@ -0,0 +1,56 @@
 +ASoC currently supports the three main Digital Audio Interfaces (DAI) found on
 +SoC controllers and portable audio CODECS today, namely AC97, I2S and PCM.
 +
@@ -59,72 +59,11 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/DAI.txt
 + o Mode A - MSB is transmitted on falling edge of first BCLK after FRAME/SYNC.
 +
 + o Mode B - MSB is transmitted on rising edge of FRAME/SYNC.
-+
-+
-+ASoC DAI Configuration
-+======================
-+
-+DAI configuration parameters, all listed in include/sound/soc.h
-+
-+ 1) hardware DAI formats
-+
-+#define SND_SOC_DAIFMT_I2S        (1 << 0)	/* I2S mode */
-+#define SND_SOC_DAIFMT_RIGHT_J    (1 << 1)	/* Right justified or LSB mode */
-+#define SND_SOC_DAIFMT_LEFT_J     (1 << 2)	/* Left Justified or MSB mode */
-+#define SND_SOC_DAIFMT_DSP_A      (1 << 3)	/* L data msb after FRM */
-+#define SND_SOC_DAIFMT_DSP_B      (1 << 4)	/* L data msb during FRM */
-+#define SND_SOC_DAIFMT_AC97       (1 << 5)	/* AC97 */
-+
-+#define SND_SOC_DAIFMT_MSB 	SND_SOC_DAIFMT_LEFT_J
-+#define SND_SOC_DAIFMT_LSB	SND_SOC_DAIFMT_RIGHT_J
-+
-+ 2) Clock gating
-+
-+#define SND_SOC_DAIFMT_CONT			(0 << 4)	/* continuous clock */
-+#define SND_SOC_DAIFMT_GATED		(1 << 4)	/* clock is gated when not Tx/Rx */
-+
-+ 3) hw DAI signal inversions
-+
-+#define SND_SOC_DAIFMT_NB_NF		(1 << 8)	/* normal bit clock + frame */
-+#define SND_SOC_DAIFMT_NB_IF		(1 << 9)	/* normal bclk + inv frm */
-+#define SND_SOC_DAIFMT_IB_NF		(1 << 10)	/* invert bclk + nor frm */
-+#define SND_SOC_DAIFMT_IB_IF		(1 << 11)	/* invert bclk + frm */
-+
-+ 4) hw clock masters
-+    This is wrt the codec, the inverse is true for the interface
-+    i.e. if the codec is clk and frm master then the interface is
-+    clk and frame slave.
-+
-+#define SND_SOC_DAIFMT_CBM_CFM		(1 << 12)	/* codec clk & frm master */
-+#define SND_SOC_DAIFMT_CBS_CFM		(1 << 13)	/* codec clk slave & frm master */
-+#define SND_SOC_DAIFMT_CBM_CFS		(1 << 14)	/* codec clk master & frame slave */
-+#define SND_SOC_DAIFMT_CBS_CFS		(1 << 15)	/* codec clk & frm slave */
-+
-+
-+ASoC DAI Operations
-+===================
-+
-+	/* codec DAI clocking configuration */
-+	int (*set_sysclk)(struct snd_soc_codec_dai *codec_dai,
-+		int clk_id, unsigned int freq, int dir);
-+	int (*set_pll)(struct snd_soc_codec_dai *codec_dai,
-+		int pll_id, unsigned int freq_in, unsigned int freq_out);
-+	int (*set_clkdiv)(struct snd_soc_codec_dai *codec_dai,
-+		int div_id, int div);
-+
-+	/* CPU DAI format configuration */
-+	int (*set_fmt)(struct snd_soc_codec_dai *codec_dai,
-+		unsigned int fmt);
-+	int (*set_tdm_slot)(struct snd_soc_codec_dai *codec_dai,
-+		unsigned int mask, int slots);
-+	int (*set_tristate)(struct snd_soc_codec_dai *, int tristate);
-+
-+
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/clocking.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt	2007-02-06 15:55:20.000000000 +0100
-@@ -0,0 +1,47 @@
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/clocking.txt
+@@ -0,0 +1,51 @@
 +Audio Clocking
 +==============
 +
@@ -171,12 +110,16 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/clocking.txt
 +it's best to configure BCLK to the lowest possible speed (depending on your
 +rate, number of channels and wordsize) to save on power.
 +
++It's also desireable to use the codec (if possible) to drive (or master) the
++audio clocks as it's usually gives more accurate sample rates than the CPU.
 +
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
++
++
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/codec.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt	2007-02-06 15:55:20.000000000 +0100
-@@ -0,0 +1,196 @@
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/codec.txt
+@@ -0,0 +1,197 @@
 +ASoC Codec Driver
 +=================
 +
@@ -185,21 +128,18 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +specific to the target platform or machine. All platform and machine specific
 +code should be added to the platform and machine drivers respectively.
 +
-+Each codec driver must provide the following features:-
++Each codec driver *must* provide the following features:-
 +
-+ 1) Digital audio interface (DAI) description
-+ 2) Digital audio interface configuration
-+ 3) PCM's description
-+ 4) Codec control IO - using I2C, 3 Wire(SPI) or both API's
-+ 5) Mixers and audio controls
-+ 6) Sysclk configuration
-+ 7) Codec audio operations
++ 1) Codec DAI and PCM configuration
++ 2) Codec control IO - using I2C, 3 Wire(SPI) or both API's
++ 3) Mixers and audio controls
++ 4) Codec audio operations
 +
 +Optionally, codec drivers can also provide:-
 +
-+ 8) DAPM description.
-+ 9) DAPM event handler.
-+10) DAC Digital mute control.
++ 5) DAPM description.
++ 6) DAPM event handler.
++ 7) DAC Digital mute control.
 +
 +It's probably best to use this guide in conjuction with the existing codec
 +driver code in sound/soc/codecs/
@@ -207,44 +147,47 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +ASoC Codec driver breakdown
 +===========================
 +
-+1 - Digital Audio Interface (DAI) configuration
-+-----------------------------------------------
-+DAI configuration is handled by the codec_pcm_prepare function and is
-+responsible for configuring and starting the DAI on the codec. This can be
-+called multiple times and is atomic. It can access the runtime parameters.
-+
-+This usually consists of a large function with numerous switch statements to
-+set up each configuration option. These options are set by the core at runtime.
-+
-+
-+2 - Codec PCM's
-+---------------
-+Each codec must have it's PCM's defined. This defines the number of channels,
-+stream names, callbacks and codec name. It is also used to register the DAI
-+with the ASoC core. The PCM structure also associates the DAI capabilities with
-+the ALSA PCM.
++1 - Codec DAI and PCM configuration
++-----------------------------------
++Each codec driver must have a struct snd_soc_codec_dai to define it's DAI and
++PCM's capablities and operations. This struct is exported so that it can be
++registered with the core by your machine driver.
 +
 +e.g.
 +
-+static struct snd_soc_pcm_codec wm8731_pcm_client = {
++struct snd_soc_codec_dai wm8731_dai = {
 +	.name = "WM8731",
++	/* playback capabilities */
 +	.playback = {
 +		.stream_name = "Playback",
 +		.channels_min = 1,
 +		.channels_max = 2,
-+	},
++		.rates = WM8731_RATES,
++		.formats = WM8731_FORMATS,},
++	/* capture capabilities */
 +	.capture = {
 +		.stream_name = "Capture",
 +		.channels_min = 1,
 +		.channels_max = 2,
-+	},
++		.rates = WM8731_RATES,
++		.formats = WM8731_FORMATS,},
++	/* pcm operations - see section 4 below */
 +	.ops = {
 +		.prepare = wm8731_pcm_prepare,
++		.hw_params = wm8731_hw_params,
++		.shutdown = wm8731_shutdown,
 +	},
++	/* DAI operations - see DAI.txt */
++	.dai_ops = {
++		.digital_mute = wm8731_mute,
++		.set_sysclk = wm8731_set_dai_sysclk,
++		.set_fmt = wm8731_set_dai_fmt,
++	}
 +};
++EXPORT_SYMBOL_GPL(wm8731_dai);
 +
 +
-+3 - Codec control IO
++2 - Codec control IO
 +--------------------
 +The codec can ususally be controlled via an I2C or SPI style interface (AC97
 +combines control with data in the DAI). The codec drivers will have to provide
@@ -269,7 +212,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +	hw_read_t hw_read;
 +
 +
-+4 - Mixers and audio controls
++3 - Mixers and audio controls
 +-----------------------------
 +All the codec mixers and audio controls can be defined using the convenience
 +macros defined in soc.h.
@@ -307,24 +250,25 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +
 +Defines a stereo enumerated control
 +
-+5 - Codec Audio Operations
++
++4 - Codec Audio Operations
 +--------------------------
 +The codec driver also supports the following alsa operations:-
 +
 +/* SoC audio ops */
 +struct snd_soc_ops {
-+	int (*startup)(snd_pcm_substream_t *);
-+	void (*shutdown)(snd_pcm_substream_t *);
-+	int (*hw_params)(snd_pcm_substream_t *, snd_pcm_hw_params_t *);
-+	int (*hw_free)(snd_pcm_substream_t *);
-+	int (*prepare)(snd_pcm_substream_t *);
++	int (*startup)(struct snd_pcm_substream *);
++	void (*shutdown)(struct snd_pcm_substream *);
++	int (*hw_params)(struct snd_pcm_substream *, struct snd_pcm_hw_params *);
++	int (*hw_free)(struct snd_pcm_substream *);
++	int (*prepare)(struct snd_pcm_substream *);
 +};
 +
 +Please refer to the alsa driver PCM documentation for details.
 +http://www.alsa-project.org/~iwai/writing-an-alsa-driver/c436.htm
 +
 +
-+6 - DAPM description.
++5 - DAPM description.
 +---------------------
 +The Dynamic Audio Power Management description describes the codec's power
 +components, their relationships and registers to the ASoC core. Please read
@@ -333,7 +277,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +Please also see the examples in other codec drivers.
 +
 +
-+7 - DAPM event handler
++6 - DAPM event handler
 +----------------------
 +This function is a callback that handles codec domain PM calls and system
 +domain PM calls (e.g. suspend and resume). It's used to put the codec to sleep
@@ -353,7 +297,7 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +	SNDRV_CTL_POWER_D3cold: /* Everything Off, without power */
 +
 +
-+8 - Codec DAC digital mute control.
++7 - Codec DAC digital mute control.
 +------------------------------------
 +Most codecs have a digital mute before the DAC's that can be used to minimise
 +any system noise.  The mute stops any digital data from entering the DAC.
@@ -373,10 +317,10 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/codec.txt
 +		wm8974_write(codec, WM8974_DAC, mute_reg);
 +	return 0;
 +}
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/dapm.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/dapm.txt
 @@ -0,0 +1,297 @@
 +Dynamic Audio Power Management for Portable Devices
 +===================================================
@@ -675,10 +619,10 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/dapm.txt
 +#define SND_SOC_DAPM_POST_PMD	0x8		/* after widget power down */
 +#define SND_SOC_DAPM_PRE_REG	0x10	/* before audio path setup */
 +#define SND_SOC_DAPM_POST_REG	0x20	/* after audio path setup */
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/machine.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/machine.txt
 @@ -0,0 +1,113 @@
 +ASoC Machine Driver
 +===================
@@ -794,10 +738,10 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/machine.txt
 +
 +Machine specific audio mixer controls can be added in the dai init function.
 \ No newline at end of file
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/overview.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/overview.txt
 @@ -0,0 +1,83 @@
 +ALSA SoC Layer
 +==============
@@ -883,10 +827,10 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/overview.txt
 +
 +clocking.txt: ASoC clocking for best power performance.
 \ No newline at end of file
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/platform.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/platform.txt
 @@ -0,0 +1,58 @@
 +ASoC Platform Driver
 +====================
@@ -902,12 +846,12 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt
 +
 +/* SoC audio ops */
 +struct snd_soc_ops {
-+	int (*startup)(snd_pcm_substream_t *);
-+	void (*shutdown)(snd_pcm_substream_t *);
-+	int (*hw_params)(snd_pcm_substream_t *, snd_pcm_hw_params_t *);
-+	int (*hw_free)(snd_pcm_substream_t *);
-+	int (*prepare)(snd_pcm_substream_t *);
-+	int (*trigger)(snd_pcm_substream_t *, int);
++	int (*startup)(struct snd_pcm_substream *);
++	void (*shutdown)(struct snd_pcm_substream *);
++	int (*hw_params)(struct snd_pcm_substream *, struct snd_pcm_hw_params *);
++	int (*hw_free)(struct snd_pcm_substream *);
++	int (*prepare)(struct snd_pcm_substream *);
++	int (*trigger)(struct snd_pcm_substream *, int);
 +};
 +
 +The platform driver exports it's DMA functionailty via struct snd_soc_platform:-
@@ -921,11 +865,11 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt
 +	int (*resume)(struct platform_device *pdev, struct snd_soc_cpu_dai *cpu_dai);
 +
 +	/* pcm creation and destruction */
-+	int (*pcm_new)(snd_card_t *, struct snd_soc_codec_dai *, snd_pcm_t *);
-+	void (*pcm_free)(snd_pcm_t *);
++	int (*pcm_new)(struct snd_card *, struct snd_soc_codec_dai *, struct snd_pcm *);
++	void (*pcm_free)(struct snd_pcm *);
 +
 +	/* platform stream ops */
-+	snd_pcm_ops_t *pcm_ops;
++	struct snd_pcm_ops *pcm_ops;
 +};
 +
 +Please refer to the alsa driver documentation for details of audio DMA.
@@ -946,23 +890,23 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/platform.txt
 + 5) Suspend and resume (optional)
 +
 +Please see codec.txt for a description of items 1 - 4.
-Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt
+Index: linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/pops_clicks.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/Documentation/sound/alsa/soc/pops_clicks.txt
 @@ -0,0 +1,52 @@
 +Audio Pops and Clicks
 +=====================
 +
 +Pops and clicks are unwanted audio artifacts caused by the powering up and down
-+of components within the audio subsystem. This is noticable on PC's when an audio
-+module is either loaded or unloaded (at module load time the sound card is
++of components within the audio subsystem. This is noticable on PC's when an
++audio module is either loaded or unloaded (at module load time the sound card is
 +powered up and causes a popping noise on the speakers).
 +
-+Pops and clicks can be more frequent on portable systems with DAPM. This is because
-+the components within the subsystem are being dynamically powered depending on
-+the audio usage and this can subsequently cause a small pop or click every time a
-+component power state is changed.
++Pops and clicks can be more frequent on portable systems with DAPM. This is
++because the components within the subsystem are being dynamically powered
++depending on the audio usage and this can subsequently cause a small pop or
++click every time a component power state is changed.
 +
 +
 +Minimising Playback Pops and Clicks
@@ -1003,11 +947,11 @@ Index: linux-2.6.17.14-fic4.test/Documentation/sound/alsa/soc/pops_clicks.txt
 +amplitude too quickly. It can be minimised by enabling the zero cross setting
 +for each volume control. The ZC forces the gain change to occur when the signal
 +crosses the zero amplitude line.
-Index: linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h
+Index: linux-2.6-asoc-pxa/include/sound/ac97_codec.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/sound/ac97_codec.h	2007-02-06 15:38:06.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h	2007-02-06 15:55:20.000000000 +0100
-@@ -407,6 +407,7 @@
+--- linux-2.6-asoc-pxa.orig/include/sound/ac97_codec.h
++++ linux-2.6-asoc-pxa/include/sound/ac97_codec.h
+@@ -425,6 +425,7 @@ struct snd_ac97_build_ops {
  
  struct snd_ac97_bus_ops {
  	void (*reset) (struct snd_ac97 *ac97);
@@ -1015,10 +959,10 @@ Index: linux-2.6.17.14-fic4.test/include/sound/ac97_codec.h
  	void (*write) (struct snd_ac97 *ac97, unsigned short reg, unsigned short val);
  	unsigned short (*read) (struct snd_ac97 *ac97, unsigned short reg);
  	void (*wait) (struct snd_ac97 *ac97);
-Index: linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h
+Index: linux-2.6-asoc-pxa/include/sound/soc-dapm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/include/sound/soc-dapm.h
 @@ -0,0 +1,286 @@
 +/*
 + * linux/sound/soc-dapm.h -- ALSA SoC Dynamic Audio Power Management
@@ -1306,10 +1250,10 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc-dapm.h
 +};
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
+Index: linux-2.6-asoc-pxa/include/sound/soc.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/include/sound/soc.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/include/sound/soc.h
 @@ -0,0 +1,460 @@
 +/*
 + * linux/sound/soc.h -- ALSA SoC Layer
@@ -1771,11 +1715,11 @@ Index: linux-2.6.17.14-fic4.test/include/sound/soc.h
 +};
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/Kconfig
+Index: linux-2.6-asoc-pxa/sound/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/sound/Kconfig	2007-02-06 15:38:06.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/sound/Kconfig	2007-02-06 15:55:20.000000000 +0100
-@@ -74,6 +74,8 @@
+--- linux-2.6-asoc-pxa.orig/sound/Kconfig
++++ linux-2.6-asoc-pxa/sound/Kconfig
+@@ -76,6 +76,8 @@ source "sound/sparc/Kconfig"
  
  source "sound/parisc/Kconfig"
  
@@ -1784,10 +1728,10 @@ Index: linux-2.6.17.14-fic4.test/sound/Kconfig
  endmenu
  
  menu "Open Sound System"
-Index: linux-2.6.17.14-fic4.test/sound/soc/Kconfig
+Index: linux-2.6-asoc-pxa/sound/soc/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/Kconfig	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/Kconfig
 @@ -0,0 +1,37 @@
 +#
 +# SoC audio configuration
@@ -1826,19 +1770,19 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/Kconfig
 +endmenu
 +
 +endmenu
-Index: linux-2.6.17.14-fic4.test/sound/soc/Makefile
+Index: linux-2.6-asoc-pxa/sound/soc/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/Makefile	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/Makefile
 @@ -0,0 +1,4 @@
 +snd-soc-core-objs := soc-core.o soc-dapm.o
 +
 +obj-$(CONFIG_SND_SOC)	+= snd-soc-core.o
 +obj-$(CONFIG_SND_SOC)	+= pxa/ at91/ imx/ s3c24xx/ codecs/
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/Kconfig
 @@ -0,0 +1,102 @@
 +config SND_SOC_AC97_CODEC
 +	tristate "SoC generic AC97 support"
@@ -1942,10 +1886,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Kconfig
 +	depends SND_SOC
 +	help
 +	  Say Y or M if you want to support the AK4535 codec.
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/Makefile
 @@ -0,0 +1,35 @@
 +snd-soc-ac97-objs := ac97.o
 +snd-soc-wm8711-objs := wm8711.o
@@ -1982,10 +1926,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/Makefile
 +obj-$(CONFIG_SND_SOC_AK4535)	+= snd-soc-ak4535.o
 +obj-$(CONFIG_SND_SOC_WM9713)	+= snd-soc-wm9713.o
 +obj-$(CONFIG_SND_SOC_WM9712)	+= snd-soc-wm9712.o
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/ac97.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/ac97.c
 @@ -0,0 +1,156 @@
 +/*
 + * ac97.c  --  ALSA Soc AC97 codec support
@@ -2143,10 +2087,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.c
 +MODULE_DESCRIPTION("Soc Generic AC97 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/ac97.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/ac97.h
 @@ -0,0 +1,18 @@
 +/*
 + * linux/sound/codecs/ac97.h -- ALSA SoC Layer
@@ -2166,10 +2110,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ac97.h
 +extern struct snd_soc_codec_device soc_codec_dev_ac97;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.c
 @@ -0,0 +1,697 @@
 +/*
 + * ak4535.c  --  AK4535 ALSA Soc Audio driver
@@ -2868,10 +2812,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.c
 +MODULE_DESCRIPTION("Soc AK4535 driver");
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.h
 @@ -0,0 +1,46 @@
 +/*
 + * ak4535.h  --  AK4535 Soc Audio driver
@@ -2919,10 +2863,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/ak4535.h
 +extern struct snd_soc_codec_device soc_codec_dev_ak4535;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.c
 @@ -0,0 +1,745 @@
 +/*
 + * uda1380.c - Philips UDA1380 ALSA SoC audio driver
@@ -3669,10 +3613,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.c
 +MODULE_AUTHOR("Giorgio Padrin");
 +MODULE_DESCRIPTION("Audio support for codec Philips UDA1380");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.h
 @@ -0,0 +1,89 @@
 +/*
 + * Audio support for Philips UDA1380
@@ -3763,10 +3707,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/uda1380.h
 +extern struct snd_soc_codec_device soc_codec_dev_uda1380;
 +
 +#endif /* _UDA1380_H */
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8731.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8731.c
 @@ -0,0 +1,763 @@
 +/*
 + * wm8731.c  --  WM8731 ALSA SoC Audio driver
@@ -4531,10 +4475,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.c
 +MODULE_DESCRIPTION("ASoC WM8731 driver");
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8731.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8731.h
 @@ -0,0 +1,44 @@
 +/*
 + * wm8731.h  --  WM8731 Soc Audio driver
@@ -4580,10 +4524,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8731.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8731;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8750.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8750.c
 @@ -0,0 +1,1055 @@
 +/*
 + * wm8750.c -- WM8750 ALSA SoC audio driver
@@ -5640,10 +5584,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.c
 +MODULE_DESCRIPTION("ASoC WM8750 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8750.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8750.h
 @@ -0,0 +1,67 @@
 +/*
 + * Copyright 2005 Openedhand Ltd.
@@ -5712,11 +5656,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8750.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8750;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c	2007-02-06 15:55:20.000000000 +0100
-@@ -0,0 +1,1738 @@
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.c
+@@ -0,0 +1,1782 @@
 +/*
 + * wm8753.c  --  WM8753 ALSA Soc Audio driver
 + *
@@ -6001,9 +5945,9 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +
 +SOC_ENUM("Bass Boost", wm8753_enum[0]),
 +SOC_ENUM("Bass Filter", wm8753_enum[1]),
-+SOC_SINGLE("Bass Volume", WM8753_BASS, 0, 7, 1),
++SOC_SINGLE("Bass Volume", WM8753_BASS, 0, 15, 1),
 +
-+SOC_SINGLE("Treble Volume", WM8753_TREBLE, 0, 7, 0),
++SOC_SINGLE("Treble Volume", WM8753_TREBLE, 0, 15, 1),
 +SOC_ENUM("Treble Cut-off", wm8753_enum[2]),
 +
 +SOC_DOUBLE("Sidetone Capture Volume", WM8753_RECMIX1, 0, 4, 7, 1),
@@ -6215,9 +6159,9 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	&wm8753_line_right_controls),
 +SND_SOC_DAPM_MUX("Line Mono Mux", SND_SOC_NOPM, 0, 0,
 +	&wm8753_line_mono_controls),
-+SND_SOC_DAPM_MUX("Line Mixer", SND_SOC_NOPM, 0, 0,
++SND_SOC_DAPM_MUX("Line Mixer", WM8753_PWR2, 0, 0,
 +	&wm8753_line_mux_mix_controls),
-+SND_SOC_DAPM_MUX("Rx Mixer", SND_SOC_NOPM, 0, 0,
++SND_SOC_DAPM_MUX("Rx Mixer", WM8753_PWR2, 1, 0,
 +	&wm8753_rx_mux_mix_controls),
 +SND_SOC_DAPM_PGA("Mic 1 Volume", WM8753_PWR2, 8, 0, NULL, 0),
 +SND_SOC_DAPM_PGA("Mic 2 Volume", WM8753_PWR2, 7, 0, NULL, 0),
@@ -6683,7 +6627,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	struct snd_soc_codec *codec = codec_dai->codec;
 +	u16 voice, ioctl;
 +
-+	voice = wm8753_read_reg_cache(codec, WM8753_PCM) & 0x010f;
++	voice = wm8753_read_reg_cache(codec, WM8753_PCM) & 0x011f;
 +	ioctl = wm8753_read_reg_cache(codec, WM8753_IOCTL) & 0x015d;
 +
 +	/* set master/slave audio interface */
@@ -6700,17 +6644,39 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	}
 +
 +	/* clock inversion */
-+	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
-+	case SND_SOC_DAIFMT_NB_NF:
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	case SND_SOC_DAIFMT_DSP_A:
++	case SND_SOC_DAIFMT_DSP_B:
++		/* frame inversion not valid for DSP modes */
++		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++		case SND_SOC_DAIFMT_NB_NF:
++			break;
++		case SND_SOC_DAIFMT_IB_NF:
++			voice |= 0x0080;
++			break;
++		default:
++			return -EINVAL;
++		}
 +		break;
-+	case SND_SOC_DAIFMT_IB_IF:
-+		voice |= 0x0090;
-+		break;
-+	case SND_SOC_DAIFMT_IB_NF:
-+		voice |= 0x0080;
-+		break;
-+	case SND_SOC_DAIFMT_NB_IF:
-+		voice |= 0x0010;
++	case SND_SOC_DAIFMT_I2S:
++	case SND_SOC_DAIFMT_RIGHT_J:
++	case SND_SOC_DAIFMT_LEFT_J:
++		voice &= ~0x0010;
++		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++		case SND_SOC_DAIFMT_NB_NF:
++			break;
++		case SND_SOC_DAIFMT_IB_IF:
++			voice |= 0x0090;
++			break;
++		case SND_SOC_DAIFMT_IB_NF:
++			voice |= 0x0080;
++			break;
++		case SND_SOC_DAIFMT_NB_IF:
++			voice |= 0x0010;
++			break;
++		default:
++			return -EINVAL;
++		}
 +		break;
 +	default:
 +		return -EINVAL;
@@ -6788,7 +6754,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	struct snd_soc_codec *codec = codec_dai->codec;
 +	u16 ioctl, hifi;
 +
-+	hifi = wm8753_read_reg_cache(codec, WM8753_HIFI) & 0x010f;
++	hifi = wm8753_read_reg_cache(codec, WM8753_HIFI) & 0x011f;
 +	ioctl = wm8753_read_reg_cache(codec, WM8753_IOCTL) & 0x00ae;
 +
 +	/* set master/slave audio interface */
@@ -6805,17 +6771,39 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +	}
 +
 +	/* clock inversion */
-+	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
-+	case SND_SOC_DAIFMT_NB_NF:
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	case SND_SOC_DAIFMT_DSP_A:
++	case SND_SOC_DAIFMT_DSP_B:
++		/* frame inversion not valid for DSP modes */
++		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++		case SND_SOC_DAIFMT_NB_NF:
++			break;
++		case SND_SOC_DAIFMT_IB_NF:
++			hifi |= 0x0080;
++			break;
++		default:
++			return -EINVAL;
++		}
 +		break;
-+	case SND_SOC_DAIFMT_IB_IF:
-+		hifi |= 0x0090;
-+		break;
-+	case SND_SOC_DAIFMT_IB_NF:
-+		hifi |= 0x0080;
-+		break;
-+	case SND_SOC_DAIFMT_NB_IF:
-+		hifi |= 0x0010;
++	case SND_SOC_DAIFMT_I2S:
++	case SND_SOC_DAIFMT_RIGHT_J:
++	case SND_SOC_DAIFMT_LEFT_J:
++		hifi &= ~0x0010;
++		switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++		case SND_SOC_DAIFMT_NB_NF:
++			break;
++		case SND_SOC_DAIFMT_IB_IF:
++			hifi |= 0x0090;
++			break;
++		case SND_SOC_DAIFMT_IB_NF:
++			hifi |= 0x0080;
++			break;
++		case SND_SOC_DAIFMT_NB_IF:
++			hifi |= 0x0010;
++			break;
++		default:
++			return -EINVAL;
++		}
 +		break;
 +	default:
 +		return -EINVAL;
@@ -7455,10 +7443,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.c
 +MODULE_DESCRIPTION("ASoC WM8753 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.h
 @@ -0,0 +1,126 @@
 +/*
 + * wm8753.h  --  audio driver for WM8753
@@ -7586,10 +7574,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8753.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8753;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.c
 @@ -0,0 +1,603 @@
 +/*
 + * wm8772.c  --  WM8772 ALSA Soc Audio driver
@@ -8194,10 +8182,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.c
 +MODULE_DESCRIPTION("ASoC WM8772 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.h
 @@ -0,0 +1,46 @@
 +/*
 + * wm8772.h  --  audio driver for WM8772
@@ -8245,10 +8233,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8772.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8772;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.c
 @@ -0,0 +1,971 @@
 +/*
 + * wm8971.c  --  WM8971 ALSA SoC Audio driver
@@ -9221,10 +9209,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.c
 +MODULE_DESCRIPTION("ASoC WM8971 driver");
 +MODULE_AUTHOR("Lab126");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.h
 @@ -0,0 +1,63 @@
 +/*
 + * wm8971.h  --  audio driver for WM8971
@@ -9289,10 +9277,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8971.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8971;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.c
 @@ -0,0 +1,873 @@
 +/*
 + * wm8974.c  --  WM8974 ALSA Soc Audio driver
@@ -10167,10 +10155,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.c
 +MODULE_DESCRIPTION("ASoC WM8974 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.h
 @@ -0,0 +1,104 @@
 +/*
 + * wm8974.h  --  WM8974 Soc Audio driver
@@ -10276,10 +10264,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8974.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8974;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9712.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm9712.c
 @@ -0,0 +1,771 @@
 +/*
 + * wm9712.c  --  ALSA Soc WM9712 codec support
@@ -11052,10 +11040,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.c
 +MODULE_DESCRIPTION("ASoC WM9711/WM9712 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9712.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm9712.h
 @@ -0,0 +1,14 @@
 +/*
 + * wm9712.h  --  WM9712 Soc Audio driver
@@ -11071,10 +11059,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9712.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm9712;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.c
 @@ -0,0 +1,1220 @@
 +/*
 + * wm9713.c  --  ALSA Soc WM9713 codec support
@@ -12296,10 +12284,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.c
 +MODULE_DESCRIPTION("ASoC WM9713/WM9714 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.h
 @@ -0,0 +1,51 @@
 +/*
 + * wm9713.h  --  WM9713 Soc Audio driver
@@ -12352,10 +12340,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm9713.h
 +int wm9713_reset(struct snd_soc_codec *codec,  int try_warm);
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/Kconfig
 @@ -0,0 +1,143 @@
 +menu "SoC Audio for the Intel PXA2xx"
 +
@@ -12500,10 +12488,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Kconfig
 +	  with the tlv320.
 +
 +endmenu
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/Makefile
 @@ -0,0 +1,39 @@
 +# PXA Platform Support
 +snd-soc-pxa2xx-objs := pxa2xx-pcm.o
@@ -12544,10 +12532,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/Makefile
 +obj-$(CONFIG_SND_PXA2xx_SOC_SPITZ) += snd-soc-spitz.o
 +obj-$(CONFIG_SND_PXA2xx_SOC_MAGICIAN) += snd-soc-magician.o
 +obj-$(CONFIG_SND_PXA2xx_SOC_AMESOM_TLV320) += snd-soc-amesom-tlv320.o
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/corgi.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/corgi.c
 @@ -0,0 +1,383 @@
 +/*
 + * corgi.c  --  SoC audio for Corgi
@@ -12932,10 +12920,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/corgi.c
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_DESCRIPTION("ALSA SoC Corgi");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone.c
 @@ -0,0 +1,127 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -13064,10 +13052,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_baseband.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_baseband.c
 @@ -0,0 +1,212 @@
 +/*
 + * mainstone_baseband.c
@@ -13281,10 +13269,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_baseband.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("Mainstone Example Baseband PCM Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_bluetooth.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_bluetooth.c
 @@ -0,0 +1,371 @@
 +/*
 + * mainstone_bluetooth.c
@@ -13657,10 +13645,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_bluetooth.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("Mainstone Example Bluetooth PCM Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8731.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8731.c
 @@ -0,0 +1,203 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -13865,10 +13853,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8731.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8731 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8753.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8753.c
 @@ -0,0 +1,547 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14417,10 +14405,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8753.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8974.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8974.c
 @@ -0,0 +1,104 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14526,10 +14514,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm8974.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9712.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9712.c
 @@ -0,0 +1,172 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -14703,10 +14691,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9712.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM9712 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9713.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9713.c
 @@ -0,0 +1,318 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -15026,10 +15014,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/mainstone_wm9713.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM9713 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/poodle.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/poodle.c
 @@ -0,0 +1,352 @@
 +/*
 + * poodle.c  --  SoC audio for Poodle
@@ -15383,10 +15371,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/poodle.c
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_DESCRIPTION("ALSA SoC Poodle");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ac97.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ac97.c
 @@ -0,0 +1,431 @@
 +/*
 + * linux/sound/pxa2xx-ac97.c -- AC97 support for the Intel PXA2xx chip.
@@ -15819,10 +15807,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.c
 +MODULE_AUTHOR("Nicolas Pitre");
 +MODULE_DESCRIPTION("AC97 driver for the Intel PXA2xx chip");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-i2s.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-i2s.c
 @@ -0,0 +1,318 @@
 +/*
 + * pxa2xx-i2s.c  --  ALSA Soc Audio Layer
@@ -16142,10 +16130,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("pxa2xx I2S SoC Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-pcm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-pcm.c
 @@ -0,0 +1,372 @@
 +/*
 + * linux/sound/arm/pxa2xx-pcm.c -- ALSA PCM interface for the Intel PXA2xx chip
@@ -16519,10 +16507,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.c
 +MODULE_AUTHOR("Nicolas Pitre");
 +MODULE_DESCRIPTION("Intel PXA2xx PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-pcm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-pcm.h
 @@ -0,0 +1,34 @@
 +/*
 + * linux/sound/arm/pxa2xx-pcm.h -- ALSA PCM interface for the Intel PXA2xx chip
@@ -16558,10 +16546,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-pcm.h
 +extern struct snd_soc_platform pxa2xx_soc_platform;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.c
 @@ -0,0 +1,666 @@
 +/*
 + * pxa2xx-ssp.c  --  ALSA Soc Audio Layer
@@ -17229,10 +17217,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("pxa2xx SSP/PCM SoC Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/spitz.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/spitz.c
 @@ -0,0 +1,394 @@
 +/*
 + * spitz.c  --  SoC audio for Sharp SL-Cxx00 models Spitz, Borzoi and Akita
@@ -17628,10 +17616,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/spitz.c
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_DESCRIPTION("ALSA SoC Spitz");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/tosa.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/tosa.c
 @@ -0,0 +1,289 @@
 +/*
 + * tosa.c  --  SoC audio for Tosa
@@ -17922,10 +17910,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/tosa.c
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_DESCRIPTION("ALSA SoC Tosa");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c
+Index: linux-2.6-asoc-pxa/sound/soc/soc-dapm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/soc-dapm.c
 @@ -0,0 +1,1329 @@
 +/*
 + * soc-dapm.c  --  ALSA SoC Dynamic Audio Power Management
@@ -19256,10 +19244,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-dapm.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("Dynamic Audio Power Management core for ALSA SoC");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
+Index: linux-2.6-asoc-pxa/sound/soc/soc-core.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/soc-core.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/soc-core.c
 @@ -0,0 +1,1587 @@
 +/*
 + * soc-core.c  --  ALSA SoC Audio Layer
@@ -20848,10 +20836,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/soc-core.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC Core");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig
+Index: linux-2.6-asoc-pxa/sound/soc/at91/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/Kconfig
 @@ -0,0 +1,32 @@
 +menu "SoC Audio for the Atmel AT91"
 +
@@ -20885,10 +20873,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Kconfig
 +	  and LRC signals on Endrelia boards.
 +
 +endmenu
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile
+Index: linux-2.6-asoc-pxa/sound/soc/at91/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/Makefile
 @@ -0,0 +1,11 @@
 +# AT91 Platform Support
 +snd-soc-at91-objs := at91-pcm.o
@@ -20901,10 +20889,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/Makefile
 +snd-soc-eti-b1-wm8731-objs := eti_b1_wm8731.o
 +
 +obj-$(CONFIG_SND_AT91_SOC_ETI_B1_WM8731) += snd-soc-eti-b1-wm8731.o
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.c
 @@ -0,0 +1,591 @@
 +/*
 + * imx-ssi.c  --  SSI driver for Freescale IMX
@@ -21497,10 +21485,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("i.MX ASoC I2S driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig
+Index: linux-2.6-asoc-pxa/sound/soc/imx/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/Kconfig
 @@ -0,0 +1,31 @@
 +menu "SoC Audio for the Freescale i.MX"
 +
@@ -21533,10 +21521,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Kconfig
 +	  with the WM8753.
 +
 +endmenu
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile
+Index: linux-2.6-asoc-pxa/sound/soc/imx/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/Makefile
 @@ -0,0 +1,18 @@
 +# i.MX Platform Support
 +snd-soc-imx21-objs := imx21-pcm.o
@@ -21556,23 +21544,23 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/Makefile
 +snd-soc-mx21ads-wm8731-objs := mx21ads_wm8731.o
 +obj-$(CONFIG_SND_SOC_MX21ADS_WM8731) += snd-soc-mx21ads-wm8731.o
 +
-Index: linux-2.6.17.14-fic4.test/sound/Makefile
+Index: linux-2.6-asoc-pxa/sound/Makefile
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/sound/Makefile	2007-02-06 15:38:07.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/sound/Makefile	2007-02-06 15:55:34.000000000 +0100
-@@ -4,7 +4,7 @@
- obj-$(CONFIG_SOUND) += soundcore.o
+--- linux-2.6-asoc-pxa.orig/sound/Makefile
++++ linux-2.6-asoc-pxa/sound/Makefile
+@@ -5,7 +5,7 @@ obj-$(CONFIG_SOUND) += soundcore.o
+ obj-$(CONFIG_SOUND_PRIME) += sound_firmware.o
  obj-$(CONFIG_SOUND_PRIME) += oss/
  obj-$(CONFIG_DMASOUND) += oss/
 -obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/
 +obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/ soc/
+ obj-$(CONFIG_SND_AOA) += aoa/
  
- ifeq ($(CONFIG_SND),y)
-   obj-y += last.o
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c
+ # This one must be compilable even if sound is configured out
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.c
 @@ -0,0 +1,715 @@
 +/*
 + * wm8711.c  --  WM8711 ALSA SoC Audio driver
@@ -22289,10 +22277,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.c
 +MODULE_DESCRIPTION("ASoC WM8711 driver");
 +MODULE_AUTHOR("Mike Arthur");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.h
 @@ -0,0 +1,42 @@
 +/*
 + * wm8711.h  --  WM8711 Soc Audio driver
@@ -22336,10 +22324,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8711.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8711;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.c
 @@ -0,0 +1,923 @@
 +/*
 + * wm8980.c  --  WM8980 ALSA Soc Audio driver
@@ -23264,10 +23252,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.c
 +MODULE_DESCRIPTION("ASoC WM8980 driver");
 +MODULE_AUTHOR("Mike Arthur");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.h
 @@ -0,0 +1,116 @@
 +/*
 + * wm8980.h  --  WM8980 Soc Audio driver
@@ -23385,10 +23373,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8980.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8980;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c
+Index: linux-2.6-asoc-pxa/sound/soc/at91/eti_b1_wm8731.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/eti_b1_wm8731.c
 @@ -0,0 +1,375 @@
 +/*
 + * eti_b1_wm8731  --  SoC audio for AT91RM9200-based Endrelia ETI_B1 board.
@@ -23765,10 +23753,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/eti_b1_wm8731.c
 +MODULE_AUTHOR("Frank Mandarino <fmandarino@endrelia.com>");
 +MODULE_DESCRIPTION("ALSA SoC ETI-B1-WM8731");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.c
 @@ -0,0 +1,860 @@
 +/*
 + * wm8510.c  --  WM8510 ALSA Soc Audio driver
@@ -24630,10 +24618,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.c
 +MODULE_DESCRIPTION("ASoC WM8510 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.h
 @@ -0,0 +1,103 @@
 +/*
 + * wm8510.h  --  WM8510 Soc Audio driver
@@ -24738,10 +24726,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8510.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8510;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ac97.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx-ac97.c
 @@ -0,0 +1,222 @@
 +/*
 + * imx-ssi.c  --  SSI driver for Freescale IMX
@@ -24965,23 +24953,23 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ac97.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("i.MX ASoC AC97 driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/include/linux/i2c-id.h
+Index: linux-2.6-asoc-pxa/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/include/linux/i2c-id.h	2007-02-06 15:38:06.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/include/linux/i2c-id.h	2007-02-06 15:56:03.000000000 +0100
-@@ -112,6 +112,8 @@
- #define I2C_DRIVERID_X1205	82	/* Xicor/Intersil X1205 RTC	*/
- #define I2C_DRIVERID_PCF8563	83	/* Philips PCF8563 RTC		*/
- #define I2C_DRIVERID_RS5C372	84	/* Ricoh RS5C372 RTC		*/
-+#define I2C_DRIVERID_WM8731	89	/* Wolfson WM8731 audio codec */
-+#define I2C_DRIVERID_WM8750	90	/* Wolfson WM8750 audio codec */
+--- linux-2.6-asoc-pxa.orig/include/linux/i2c-id.h
++++ linux-2.6-asoc-pxa/include/linux/i2c-id.h
+@@ -115,6 +115,8 @@
+ #define I2C_DRIVERID_KS0127	86	/* Samsung ks0127 video decoder */
+ #define I2C_DRIVERID_TLV320AIC23B 87	/* TI TLV320AIC23B audio codec  */
+ #define I2C_DRIVERID_ISL1208	88	/* Intersil ISL1208 RTC		*/
++#define I2C_DRIVERID_WM8731		89	/* Wolfson WM8731 audio codec */
++#define I2C_DRIVERID_WM8750		90	/* Wolfson WM8750 audio codec */
  
  #define I2C_DRIVERID_I2CDEV	900
  #define I2C_DRIVERID_ARP        902    /* SMBus ARP Client              */
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.c
 @@ -0,0 +1,885 @@
 +/*
 + * wm8976.c  --  WM8976 ALSA Soc Audio driver
@@ -25868,10 +25856,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.c
 +MODULE_DESCRIPTION("ASoC WM8976 driver");
 +MODULE_AUTHOR("Graeme Gregory");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.h
 @@ -0,0 +1,112 @@
 +/*
 + * wm8976.h  --  WM8976 Soc Audio driver
@@ -25985,10 +25973,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8976.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8976;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.c
 @@ -0,0 +1,454 @@
 +/*
 + * linux/sound/arm/mxc-pcm.c -- ALSA SoC interface for the Freescale i.MX CPU's
@@ -26444,10 +26432,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.c
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_DESCRIPTION("Freescale i.MX PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.h
 @@ -0,0 +1,237 @@
 +/*
 + * mxc-pcm.h :- ASoC platform header for Freescale i.MX
@@ -26686,10 +26674,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx21-pcm.h
 +
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.c
 @@ -0,0 +1,417 @@
 +/*
 + * linux/sound/arm/mxc-pcm.c -- ALSA SoC interface for the Freescale i.MX CPU's
@@ -27108,10 +27096,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.c
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_DESCRIPTION("Freescale i.MX31 PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.h
 @@ -0,0 +1,241 @@
 +/*
 + * mxc-pcm.h :- ASoC platform header for Freescale i.MX
@@ -27354,10 +27342,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx31-pcm.h
 +extern struct snd_ac97_bus_ops mxc_ac97_ops;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/magician.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/magician.c
 @@ -0,0 +1,563 @@
 +/*
 + * SoC audio for HTC Magician
@@ -27922,10 +27910,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/magician.c
 +MODULE_AUTHOR("Philipp Zabel");
 +MODULE_DESCRIPTION("ALSA SoC Magician");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-ac97.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-ac97.c
 @@ -0,0 +1,270 @@
 +/*
 + * ltemplate-ac97.c -- AC97 support for the xxx chip.
@@ -28197,10 +28185,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-ac97.c
 +};
 +EXPORT_SYMBOL_GPL(template_ac97_dai);
 +
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-codec.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-codec.c
 @@ -0,0 +1,784 @@
 +/*
 + * template-codec.c  --  Template Codec  Audio driver
@@ -28986,10 +28974,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.c
 +
 +EXPORT_SYMBOL_GPL(soc_codec_dev_template_codec);
 +
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-i2s.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-i2s.c
 @@ -0,0 +1,223 @@
 +/*
 + *  This program is free software; you can redistribute  it and/or modify it
@@ -29214,10 +29202,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-i2s.c
 +};
 +
 +EXPORT_SYMBOL_GPL(template_i2s_dai);
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.c
 @@ -0,0 +1,166 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -29385,10 +29373,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.c
 +	.pcm_free	= template_pcm_free_dma_buffers,
 +};
 +EXPORT_SYMBOL_GPL(template_soc_platform);
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.h
 @@ -0,0 +1,19 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -29409,10 +29397,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-pcm.h
 +extern struct snd_ac97_bus_ops tempalte_ac97_ops;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-codec.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-codec.h
 @@ -0,0 +1,21 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -29435,10 +29423,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-codec.h
 +extern struct snd_soc_codec_device soc_codec_dev_template_codec;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c
+Index: linux-2.6-asoc-pxa/sound/soc/templates/template-machine.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/templates/template-machine.c
 @@ -0,0 +1,161 @@
 +/*
 + *  This program is free software; you can redistribute  it and/or modify it
@@ -29601,10 +29589,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/templates/template-machine.c
 +module_init(template_init);
 +module_exit(template_exit);
 +
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c
+Index: linux-2.6-asoc-pxa/sound/soc/at91/at91-i2s.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/at91-i2s.c
 @@ -0,0 +1,720 @@
 +/*
 + * at91-i2s.c  --  ALSA SoC I2S Audio Layer Platform driver
@@ -30326,10 +30314,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.c
 +MODULE_AUTHOR("Frank Mandarino, fmandarino@endrelia.com, www.endrelia.com");
 +MODULE_DESCRIPTION("AT91 I2S ASoC Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c
+Index: linux-2.6-asoc-pxa/sound/soc/at91/at91-pcm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/at91-pcm.c
 @@ -0,0 +1,432 @@
 +/*
 + * at91-pcm.c -- ALSA PCM interface for the Atmel AT91 SoC
@@ -30763,10 +30751,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.c
 +MODULE_AUTHOR("Frank Mandarino <fmandarino@endrelia.com>");
 +MODULE_DESCRIPTION("Atmel AT91 PCM module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h
+Index: linux-2.6-asoc-pxa/sound/soc/at91/at91-pcm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/at91-pcm.h
 @@ -0,0 +1,72 @@
 +/*
 + * at91-pcm.h - ALSA PCM interface for the Atmel AT91 SoC
@@ -30840,10 +30828,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-pcm.h
 +#define at91_ssc_write(a,v)	__raw_writel((v),(a))
 +
 +#endif /* _AT91_PCM_H */
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.h
 @@ -0,0 +1,43 @@
 +/*
 + * linux/sound/arm/pxa2xx-ssp.h
@@ -30888,10 +30876,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ssp.h
 +extern struct snd_soc_cpu_dai pxa_ssp_dai[3];
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ac97.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ac97.h
 @@ -0,0 +1,22 @@
 +/*
 + * linux/sound/arm/pxa2xx-ac97.h
@@ -30915,10 +30903,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-ac97.h
 +extern struct snd_ac97_bus_ops pxa2xx_ac97_ops;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-i2s.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-i2s.h
 @@ -0,0 +1,20 @@
 +/*
 + * linux/sound/arm/pxa2xx-i2s.h
@@ -30940,10 +30928,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/pxa2xx-i2s.h
 +extern struct snd_soc_cpu_dai pxa_i2s_dai;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/Kconfig
 @@ -0,0 +1,31 @@
 +menu "SoC Audio for the Samsung S3C24XX"
 +
@@ -30976,10 +30964,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Kconfig
 +	  with the WM8753.
 +endmenu
 +
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/Makefile
 @@ -0,0 +1,13 @@
 +# S3c24XX Platform Support
 +snd-soc-s3c24xx-objs := s3c24xx-pcm.o
@@ -30994,10 +30982,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/Makefile
 +
 +obj-$(CONFIG_SND_S3C24XX_SOC_SMDK2440) += snd-soc-smdk2440.o
 +obj-$(CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753) += snd-soc-neo1973-wm8753.o
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.c
 @@ -0,0 +1,439 @@
 +/*
 + * s3c24xx-i2s.c  --  ALSA Soc Audio Layer
@@ -31174,7 +31162,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +static int s3c24xx_snd_lrsync(void)
 +{
 +	u32 iiscon;
-+	long timeout = jiffies + msecs_to_jiffies(5);
++	unsigned long timeout = jiffies + msecs_to_jiffies(5);
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
@@ -31438,10 +31426,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("s3c24xx I2S SoC Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.h
 @@ -0,0 +1,35 @@
 +/*
 + * s3c24xx-i2s.c  --  ALSA Soc Audio Layer
@@ -31478,11 +31466,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-i2s.h
 +u32 s3c24xx_i2s_get_clockrate(void);
 +
 +#endif /*S3C24XXI2S_H_*/
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c	2007-02-06 15:55:20.000000000 +0100
-@@ -0,0 +1,467 @@
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.c
+@@ -0,0 +1,462 @@
 +/*
 + * s3c24xx-pcm.c  --  ALSA Soc Audio Layer
 + *
@@ -31531,14 +31519,14 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +#endif
 +
 +static const struct snd_pcm_hardware s3c24xx_pcm_hardware = {
-+	.info				= SNDRV_PCM_INFO_INTERLEAVED |
-+				    	SNDRV_PCM_INFO_BLOCK_TRANSFER |
-+				    	SNDRV_PCM_INFO_MMAP |
-+				    	SNDRV_PCM_INFO_MMAP_VALID,
-+	.formats			= SNDRV_PCM_FMTBIT_S16_LE |
-+				    	SNDRV_PCM_FMTBIT_U16_LE |
-+				    	SNDRV_PCM_FMTBIT_U8 |
-+				    	SNDRV_PCM_FMTBIT_S8,
++	.info			= SNDRV_PCM_INFO_INTERLEAVED |
++				    SNDRV_PCM_INFO_BLOCK_TRANSFER |
++				    SNDRV_PCM_INFO_MMAP |
++				    SNDRV_PCM_INFO_MMAP_VALID,
++	.formats		= SNDRV_PCM_FMTBIT_S16_LE |
++				    SNDRV_PCM_FMTBIT_U16_LE |
++				    SNDRV_PCM_FMTBIT_U8 |
++				    SNDRV_PCM_FMTBIT_S8,
 +	.channels_min		= 2,
 +	.channels_max		= 2,
 +	.buffer_bytes_max	= 128*1024,
@@ -31546,19 +31534,19 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	.period_bytes_max	= PAGE_SIZE*2,
 +	.periods_min		= 2,
 +	.periods_max		= 128,
-+	.fifo_size			= 32,
++	.fifo_size		= 32,
 +};
 +
 +struct s3c24xx_runtime_data {
-+	spinlock_t					lock;
-+	int							state;
-+	unsigned int		 		dma_loaded;
-+	unsigned int		 		dma_limit;
-+	unsigned int		 		dma_period;
-+	dma_addr_t		 			dma_start;
-+	dma_addr_t		 			dma_pos;
-+	dma_addr_t		 			dma_end;
-+	struct s3c24xx_pcm_dma_params 	*params;
++	spinlock_t lock;
++	int state;
++	unsigned int dma_loaded;
++	unsigned int dma_limit;
++	unsigned int dma_period;
++	dma_addr_t dma_start;
++	dma_addr_t dma_pos;
++	dma_addr_t dma_end;
++	struct s3c24xx_pcm_dma_params *params;
 +};
 +
 +/* s3c24xx_pcm_enqueue
@@ -31574,7 +31562,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
-+	while ( prtd->dma_loaded < prtd->dma_limit) {
++	while (prtd->dma_loaded < prtd->dma_limit) {
 +		unsigned long len = prtd->dma_period;
 +
 +		DBG("dma_loaded: %d\n",prtd->dma_loaded);
@@ -31680,12 +31668,12 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	runtime->dma_bytes = totbytes;
 +
 +	spin_lock_irq(&prtd->lock);
-+	prtd->dma_loaded	= 0;
-+	prtd->dma_limit	= runtime->hw.periods_min;
-+	prtd->dma_period	= params_period_bytes(params);
-+	prtd->dma_start	= runtime->dma_addr;
-+	prtd->dma_pos	= prtd->dma_start;
-+	prtd->dma_end	= prtd->dma_start + totbytes;
++	prtd->dma_loaded = 0;
++	prtd->dma_limit = runtime->hw.periods_min;
++	prtd->dma_period = params_period_bytes(params);
++	prtd->dma_start = runtime->dma_addr;
++	prtd->dma_pos = prtd->dma_start;
++	prtd->dma_end = prtd->dma_start + totbytes;
 +	spin_unlock_irq(&prtd->lock);
 +
 +	return 0;
@@ -31700,7 +31688,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	/* TODO - do we need to ensure DMA flushed */
 +	snd_pcm_set_runtime_buffer(substream, NULL);
 +
-+	if(prtd->params) {
++	if (prtd->params) {
 +		s3c2410_dma_free(prtd->params->channel, prtd->params->client);
 +		prtd->params = NULL;
 +	}
@@ -31798,7 +31786,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +			res = 0;
 +	}
 +
-+	return bytes_to_frames(substream->runtime, res);;
++	return bytes_to_frames(substream->runtime, res);
 +}
 +
 +static int s3c24xx_pcm_open(struct snd_pcm_substream *substream)
@@ -31813,16 +31801,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	snd_soc_set_runtime_hwparams(substream, &s3c24xx_pcm_hardware);
 +
 +	prtd = kzalloc(sizeof(struct s3c24xx_runtime_data), GFP_KERNEL);
-+	if(prtd == NULL) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
++	if (prtd == NULL)
++		return -ENOMEM;
 +
 +	runtime->private_data = prtd;
 +	return 0;
-+
-+out:
-+	return ret;
 +}
 +
 +static int s3c24xx_pcm_close(struct snd_pcm_substream *substream)
@@ -31832,7 +31815,7 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +
 +	DBG("Entered %s\n", __FUNCTION__);
 +
-+	if(prtd)
++	if (prtd)
 +		kfree(prtd);
 +	else
 +		DBG("s3c24xx_pcm_close called with prtd == NULL\n");
@@ -31950,11 +31933,11 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("Samsung S3C24XX PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h	2007-02-06 15:55:20.000000000 +0100
-@@ -0,0 +1,33 @@
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.h
+@@ -0,0 +1,32 @@
 +/*
 + *  s3c24xx-pcm.h --
 + *
@@ -31962,7 +31945,6 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h
 + *  under  the terms of  the GNU General  Public License as published by the
 + *  Free Software Foundation;  either version 2 of the  License, or (at your
 + *  option) any later version.
-+ *
 + *
 + *  ALSA PCM interface for the Samsung S3C24xx CPU
 + */
@@ -31988,10 +31970,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/s3c24xx-pcm.h
 +extern struct snd_ac97_bus_ops s3c24xx_ac97_ops;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
 @@ -0,0 +1,320 @@
 +/*
 + * smdk2440.c  --  ALSA Soc Audio Layer
@@ -32313,10 +32295,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("ALSA SoC SMDK2440");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.c
 @@ -0,0 +1,724 @@
 +/*
 + * wm8956.c  --  WM8956 ALSA SoC Audio driver
@@ -33042,10 +33024,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.c
 +MODULE_DESCRIPTION("ASoC WM8956 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.h
 @@ -0,0 +1,116 @@
 +/*
 + * wm8956.h  --  WM8956 Soc Audio driver
@@ -33163,10 +33145,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8956.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8956;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.c
 @@ -0,0 +1,766 @@
 +/*
 + * wm8960.c  --  WM8960 ALSA SoC Audio driver
@@ -33934,10 +33916,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.c
 +MODULE_DESCRIPTION("ASoC WM8960 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.h
 @@ -0,0 +1,121 @@
 +/*
 + * wm8960.h  --  WM8960 Soc Audio driver
@@ -34060,10 +34042,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/wm8960.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8960;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440_wm8956.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440_wm8956.c
 @@ -0,0 +1,335 @@
 +/*
 + * smdk2440.c  --  ALSA Soc Audio Layer
@@ -34400,10 +34382,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/smdk2440_wm8956.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("ALSA SoC SMDK2440");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h
+Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.h
 @@ -0,0 +1,28 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -34433,10 +34415,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/imx-ssi.h
 +extern struct snd_soc_cpu_dai imx_ssi_pcm_dai[2];
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h
+Index: linux-2.6-asoc-pxa/sound/soc/at91/at91-i2s.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/at91/at91-i2s.h
 @@ -0,0 +1,27 @@
 +/*
 + * at91-i2s.h - ALSA I2S interface for the Atmel AT91 SoC
@@ -34465,10 +34447,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/at91/at91-i2s.h
 +
 +#endif /* _AT91_I2S_H */
 +
-Index: linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c
+Index: linux-2.6-asoc-pxa/sound/soc/imx/mx31ads_wm8753.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/imx/mx31ads_wm8753.c
 @@ -0,0 +1,400 @@
 +/*
 + * mx31ads_wm8753.c  --  SoC audio for mx31ads
@@ -34870,10 +34852,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/imx/mx31ads_wm8753.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 mx31ads");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/lm4857.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/lm4857.h
 @@ -0,0 +1,15 @@
 +#ifndef LM4857_H_
 +#define LM4857_H_
@@ -34890,10 +34872,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/lm4857.h
 +#define LM4857_EPGAIN 4
 +
 +#endif /*LM4857_H_*/
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.c
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.c
 @@ -0,0 +1,609 @@
 +/*
 + * tlv320.c  --  TLV 320 ALSA Soc Audio driver
@@ -35504,10 +35486,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.c
 +MODULE_DESCRIPTION("ASoC TLV320 driver");
 +MODULE_AUTHOR("Nicola Perrino");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.h
+Index: linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.h	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.h
 @@ -0,0 +1,111 @@
 +/*
 + * tlv320.h  --  TLV 320 ALSA Soc Audio driver
@@ -35620,10 +35602,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/codecs/tlv320.h
 +extern struct snd_soc_codec_device soc_codec_dev_tlv320;
 +
 +#endif
-Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/amesom_tlv320.c
+Index: linux-2.6-asoc-pxa/sound/soc/pxa/amesom_tlv320.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/pxa/amesom_tlv320.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/pxa/amesom_tlv320.c
 @@ -0,0 +1,211 @@
 +/*
 + * amesom_tlv320.c  --  SoC audio for Amesom
@@ -35836,10 +35818,10 @@ Index: linux-2.6.17.14-fic4.test/sound/soc/pxa/amesom_tlv320.c
 +MODULE_AUTHOR("Nicola Perrino");
 +MODULE_DESCRIPTION("ALSA SoC TLV320 Amesom");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/neo1973_wm8753.c
+Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.17.14-fic4.test/sound/soc/s3c24xx/neo1973_wm8753.c	2007-02-06 15:55:20.000000000 +0100
+--- /dev/null
++++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/neo1973_wm8753.c
 @@ -0,0 +1,686 @@
 +/*
 + * neo1973_wm8753.c  --  SoC audio for Neo1973
