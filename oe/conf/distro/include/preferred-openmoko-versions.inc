@@ -9,6 +9,7 @@
 SRCDATE_uboot = "now"
 SRCDATE_uboot-gta01 = "now"
 SRCDATE_kernel = "now"
+SRCDATE_gta01-kernel = "now"
 SRCDATE_linux-gta01 = "now"
 SRCDATE_linux-gta01-nobbt = "now"
 SRCDATE_libgsmd = "now"
