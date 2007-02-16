@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-15 17:08:30.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-15 17:08:32.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 00:43:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 00:44:17.000000000 +0100
 @@ -86,6 +86,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -21,8 +21,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-15 17:08:30.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-15 17:08:32.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-17 00:43:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-17 00:44:17.000000000 +0100
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -33,8 +33,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-15 17:08:46.000000000 +0100
-@@ -0,0 +1,507 @@
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-17 00:45:51.000000000 +0100
+@@ -0,0 +1,495 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -145,7 +145,6 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +/* Configuration for 480x640 toppoly TD028TTEC1 */
 +static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
 +	.regs	= {
-+
 +		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
 +				  S3C2410_LCDCON1_TFT |
 +				  S3C2410_LCDCON1_CLKVAL(0x01),	/* HCLK/4 */
@@ -169,19 +168,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +				  S3C2410_LCDCON5_HWSWP,
 +	},
 +
-+#if 0
-+	/* currently setup by downloader */
-+	.gpccon		= 0xaa940659,
-+	.gpccon_mask	= 0xffffffff,
-+	.gpcup		= 0x0000ffff,
-+	.gpcup_mask	= 0xffffffff,
-+	.gpdcon		= 0xaa84aaa0,
-+	.gpdcon_mask	= 0xffffffff,
-+	.gpdup		= 0x0000faff,
-+	.gpdup_mask	= 0xffffffff,
-+#endif
-+
 +	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
++	.type		= S3C2410_LCDCON1_TFT,
 +
 +	.width		= 480,
 +	.height		= 640,
@@ -545,7 +533,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 Index: linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-15 17:08:32.000000000 +0100
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-17 00:44:17.000000000 +0100
 @@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H

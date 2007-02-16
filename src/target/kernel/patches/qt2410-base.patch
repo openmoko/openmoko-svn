@@ -1,7 +1,7 @@
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-15 16:26:54.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-15 17:05:08.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 00:43:51.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 00:43:54.000000000 +0100
 @@ -80,6 +80,12 @@
  	   Say Y here if you are using the SMDK2410 or the derived module A9M2410
             <http://www.fsforth.de>
@@ -17,8 +17,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-15 16:26:54.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-15 17:05:08.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-17 00:43:51.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-17 00:43:54.000000000 +0100
 @@ -88,5 +88,6 @@
  obj-$(CONFIG_MACH_OTOM)		+= mach-otom.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
@@ -31,8 +31,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/mach-s3c2410/mach-qt2410.c	2007-02-15 17:07:34.000000000 +0100
-@@ -0,0 +1,385 @@
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-qt2410.c	2007-02-17 00:44:07.000000000 +0100
+@@ -0,0 +1,386 @@
 +/*
 + *
 + * linux/arch/arm/mach-s3c2410/mach-qt2410.c
@@ -132,6 +132,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-qt2410.c
 +/* LCD driver info */
 +
 +static struct s3c2410fb_mach_info qt2410_lcd_cfg __initdata = {
++	.type = S3C2410_LCDCON1_TFT,
 +	.regs	= {
 +
 +		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
