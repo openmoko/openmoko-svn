@@ -93,19 +93,6 @@ Index: u-boot/include/environment.h
  #endif /* CFG_ENV_IS_IN_NAND */
  
  
-Index: u-boot/include/configs/neo1973.h
-===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-16 23:53:33.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-16 23:53:34.000000000 +0100
-@@ -197,7 +197,7 @@
- 
- #define	CFG_ENV_IS_IN_NAND	1
- #define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
--#define CFG_ENV_OFFSET		0x30000		/* environment after bootloader */
-+#define CFG_ENV_OFFSET_OOB	1		/* Location of ENV stored in block 0 OOB */
- 
- #define NAND_MAX_CHIPS		1
- #define CFG_NAND_BASE		0x4e000000
 Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile	2007-02-16 23:53:15.000000000 +0100
