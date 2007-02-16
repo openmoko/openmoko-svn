@@ -1,0 +1,373 @@
+Index: u-boot/drivers/usbdcore_ep0.c
+===================================================================
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-15 18:07:52.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-15 20:50:05.000000000 +0100
+@@ -388,6 +388,11 @@
+ 		 le16_to_cpu (request->wLength),
+ 		 USBD_DEVICE_REQUESTS (request->bRequest));
+ 
++#ifdef CONFIG_USB_DFU
++	if ((request->bmRequestType & 0x3f) == USB_TYPE_DFU)
++		return dfu_ep0_handler(urb);
++#endif /* CONFIG_USB_DFU */
++
+ 	/* handle USB Standard Request (c.f. USB Spec table 9-2) */
+ 	if ((request->bmRequestType & USB_REQ_TYPE_MASK) != 0) {
+ 		if (device->device_state <= STATE_CONFIGURED)
+Index: u-boot/drivers/usbdfu.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/drivers/usbdfu.c	2007-02-16 18:59:54.000000000 +0100
+@@ -0,0 +1,352 @@
++/*
++ * (C) 2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * based on existing SAM7DFU code from OpenPCD:
++ *
++ * (C) Copyright 2006 by Harald Welte <hwelte@hmw-consulting.de>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++static u_int32_t dfu_state = DFU_STATE_appIDLE;
++
++static int handle_dnload(u_int16_t val, u_int16_t len)
++{
++	volatile u_int32_t *p = (volatile u_int32_t *)ptr;
++	u_int8_t *pagebuf = (u_int8_t *) pagebuf32;
++	int i;
++
++	DEBUGE("download ");
++
++	if (len > AT91C_IFLASH_PAGE_SIZE) {
++		/* Too big. Not that we'd really care, but it's a
++		 * DFU protocol violation */
++		DEBUGP("length exceeds flash page size ");
++	    	dfu_state = DFU_STATE_dfuERROR;
++		dfu_status = DFU_STATUS_errADDRESS;
++		return RET_STALL;
++	}
++	if (len & 0x3) {
++		/* reject non-four-byte-aligned writes */
++		DEBUGP("not four-byte-aligned length ");
++		dfu_state = DFU_STATE_dfuERROR;
++		dfu_status = DFU_STATUS_errADDRESS;
++		return RET_STALL;
++	}
++	if (len == 0) {
++		DEBUGP("zero-size write -> MANIFEST_SYNC ");
++		flash_page(p);
++		dfu_state = DFU_STATE_dfuMANIFEST_SYNC;
++		return RET_ZLP;
++	}
++	if (ptr + len > (u_int8_t *) AT91C_IFLASH + AT91C_IFLASH_SIZE) {
++		DEBUGP("end of write exceeds flash end ");
++		dfu_state = DFU_STATE_dfuERROR;
++		dfu_status = DFU_STATUS_errADDRESS;
++		return RET_STALL;
++	}
++
++	DEBUGP("try_to_recv=%u ", len);
++	udp_ep0_recv_data(pagebuf, len);
++
++	DEBUGR(hexdump(pagebuf, len));
++
++	/* FXIME: actually write the data somewhere */
++
++	return RET_ZLP;
++}
++
++#define AT91C_IFLASH_END ((u_int8_t *)AT91C_IFLASH + AT91C_IFLASH_SIZE)
++static dfufunc int handle_upload(u_int16_t val, u_int16_t len)
++{
++	DEBUGE("upload ");
++	if (len > AT91C_IFLASH_PAGE_SIZE) {
++		/* Too big */
++		dfu_state = DFU_STATE_dfuERROR;
++		dfu_status = DFU_STATUS_errADDRESS;
++		udp_ep0_send_stall();
++		return -EINVAL;
++	}
++
++	if (ptr + len > AT91C_IFLASH_END)
++		len = AT91C_IFLASH_END - (u_int8_t *)ptr;
++
++	udp_ep0_send_data((char *)ptr, len);
++	ptr+= len;
++
++	return len;
++}
++
++static void handle_getstatus(void)
++{
++	struct dfu_status dstat;
++	u_int32_t fsr = AT91F_MC_EFC_GetStatus(AT91C_BASE_MC);
++
++	DEBUGE("getstatus(fsr=0x%08x) ", fsr);
++
++	switch (dfu_state) {
++	case DFU_STATE_dfuDNLOAD_SYNC:
++	case DFU_STATE_dfuDNBUSY:
++		if (fsr & AT91C_MC_PROGE) {
++			DEBUGE("errPROG ");
++			dfu_status = DFU_STATUS_errPROG;
++			dfu_state = DFU_STATE_dfuERROR;
++		} else if (fsr & AT91C_MC_LOCKE) {
++			DEBUGE("errWRITE ");
++			dfu_status = DFU_STATUS_errWRITE;
++			dfu_state = DFU_STATE_dfuERROR;
++		} else if (fsr & AT91C_MC_FRDY) {
++			DEBUGE("DNLOAD_IDLE ");
++			dfu_state = DFU_STATE_dfuDNLOAD_IDLE;
++		} else {
++			DEBUGE("DNBUSY ");
++			dfu_state = DFU_STATE_dfuDNBUSY;
++		}
++		break;
++	case DFU_STATE_dfuMANIFEST_SYNC:
++		dfu_state = DFU_STATE_dfuMANIFEST;
++		break;
++	}
++
++	/* send status response */
++	dstat.bStatus = dfu_status;
++	dstat.bState = dfu_state;
++	dstat.iString = 0;
++	/* FIXME: set dstat.bwPollTimeout */
++
++	udp_ep0_send_data((char *)&dstat, sizeof(dstat));
++}
++
++static void handle_getstate(void)
++{
++	u_int8_t u8 = dfu_state;
++	DEBUGE("getstate ");
++
++	udp_ep0_send_data((char *)&u8, sizeof(u8));
++}
++
++
++int dfu_ep0_handler(struct urb *urb)
++{
++	int rc, ret = RET_NOTHING;
++
++	DEBUGE("old_state = %u ", dfu_state);
++
++	switch (dfu_state) {
++	case DFU_STATE_appIDLE:
++		switch (req) {
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		case USB_REQ_DFU_DETACH:
++			dfu_state = DFU_STATE_appDETACH;
++			ret = RET_ZLP;
++			goto out;
++			break;
++		default:
++			ret = RET_STALL;
++		}
++		break;
++	case DFU_STATE_appDETACH:
++		switch (req) {
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		default:
++			dfu_state = DFU_STATE_appIDLE;
++			ret = RET_STALL;
++			goto out;
++			break;
++		}
++		/* FIXME: implement timer to return to appIDLE */
++		break;
++	case DFU_STATE_dfuIDLE:
++		switch (req) {
++		case USB_REQ_DFU_DNLOAD:
++			if (len == 0) {
++				dfu_state = DFU_STATE_dfuERROR;
++				ret = RET_STALL;
++				goto out;
++			}
++			dfu_state = DFU_STATE_dfuDNLOAD_SYNC;
++			ptr = (u_int8_t *) AT91C_IFLASH + SAM7DFU_SIZE;
++			ret = handle_dnload(val, len);
++			break;
++		case USB_REQ_DFU_UPLOAD:
++			ptr = (u_int8_t *) AT91C_IFLASH + SAM7DFU_SIZE;
++			dfu_state = DFU_STATE_dfuUPLOAD_IDLE;
++			handle_upload(val, len);
++			break;
++		case USB_REQ_DFU_ABORT:
++			/* no zlp? */
++			ret = RET_ZLP;
++			break;
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			goto out;
++			break;
++		}
++		break;
++	case DFU_STATE_dfuDNLOAD_SYNC:
++		switch (req) {
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			/* FIXME: state transition depending on block completeness */
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			goto out;
++		}
++		break;
++	case DFU_STATE_dfuDNBUSY:
++		switch (req) {
++		case USB_REQ_DFU_GETSTATUS:
++			/* FIXME: only accept getstatus if bwPollTimeout
++			 * has elapsed */
++			handle_getstatus();
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			goto out;
++		}
++		break;
++	case DFU_STATE_dfuDNLOAD_IDLE:
++		switch (req) {
++		case USB_REQ_DFU_DNLOAD:
++			dfu_state = DFU_STATE_dfuDNLOAD_SYNC;
++			ret = handle_dnload(val, len);
++			break;
++		case USB_REQ_DFU_ABORT:
++			dfu_state = DFU_STATE_dfuIDLE;
++			ret = RET_ZLP;
++			break;
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			break;
++		}
++		break;
++	case DFU_STATE_dfuMANIFEST_SYNC:
++		switch (req) {
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			break;
++		}
++		break;
++	case DFU_STATE_dfuMANIFEST:
++		dfu_state = DFU_STATE_dfuERROR;
++		ret = RET_STALL;
++		break;
++	case DFU_STATE_dfuMANIFEST_WAIT_RST:
++		/* we should never go here */
++		break;
++	case DFU_STATE_dfuUPLOAD_IDLE:
++		switch (req) {
++		case USB_REQ_DFU_UPLOAD:
++			/* state transition if less data then requested */
++			rc = handle_upload(val, len);
++			if (rc >= 0 && rc < len)
++				dfu_state = DFU_STATE_dfuIDLE;
++			break;
++		case USB_REQ_DFU_ABORT:
++			dfu_state = DFU_STATE_dfuIDLE;
++			/* no zlp? */
++			ret = RET_ZLP;
++			break;
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			break;
++		}
++		break;
++	case DFU_STATE_dfuERROR:
++		switch (req) {
++		case USB_REQ_DFU_GETSTATUS:
++			handle_getstatus();
++			break;
++		case USB_REQ_DFU_GETSTATE:
++			handle_getstate();
++			break;
++		case USB_REQ_DFU_CLRSTATUS:
++			dfu_state = DFU_STATE_dfuIDLE;
++			dfu_status = DFU_STATUS_OK;
++			/* no zlp? */
++			ret = RET_ZLP;
++			break;
++		default:
++			dfu_state = DFU_STATE_dfuERROR;
++			ret = RET_STALL;
++			break;
++		}
++		break;
++	}
++
++out:
++	DEBUGE("new_state = %u\r\n", dfu_state);
++
++	switch (ret) {
++	case RET_NOTHING:
++		break;
++	case RET_ZLP:
++		udp_ep0_send_zlp();
++		break;
++	case RET_STALL:
++		udp_ep0_send_stall();
++		break;
++	}
++	return 0;
++
++}

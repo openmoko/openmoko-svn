@@ -17,9 +17,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c
-+++ u-boot/drivers/nand/nand_bbt.c
-@@ -1051,4 +1051,61 @@ int nand_isbad_bbt (struct mtd_info *mtd
+--- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-16 23:53:09.000000000 +0100
++++ u-boot/drivers/nand/nand_bbt.c	2007-02-16 23:53:36.000000000 +0100
+@@ -1049,4 +1049,61 @@
  	return 1;
  }
  
@@ -83,9 +83,9 @@ Index: u-boot/drivers/nand/nand_bbt.c
  #endif
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
-@@ -103,7 +103,7 @@
+--- u-boot.orig/include/configs/neo1973.h	2007-02-16 23:53:34.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-16 23:53:36.000000000 +0100
+@@ -102,7 +102,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
  			/* CFG_CMD_USB	 | */ \
@@ -94,7 +94,7 @@ Index: u-boot/include/configs/neo1973.h
  			CFG_CMD_DIAG	 | \
  			/* CFG_CMD_HWFLOW	 | */ \
  			CFG_CMD_SAVES	 | \
-@@ -211,13 +211,13 @@
+@@ -212,13 +212,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT	1
  
@@ -111,9 +111,9 @@ Index: u-boot/include/configs/neo1973.h
  #endif
  
  /* ATAG configuration */
-@@ -253,4 +253,7 @@
+@@ -254,4 +254,7 @@
  
- #define CONFIG_S3C2410_NAND_BBT		1
+ #define CONFIG_S3C2410_NAND_BBT                1
  
 +#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
 +#define MTPARTS_DEFAULT	"neo1973-nand:192k(u-boot),8k(u-boot_env),2M(kernel),2M(splash),-(jffs2)"
@@ -121,9 +121,9 @@ Index: u-boot/include/configs/neo1973.h
  #endif	/* __CONFIG_H */
 Index: u-boot/common/cmd_jffs2.c
 ===================================================================
---- u-boot.orig/common/cmd_jffs2.c
-+++ u-boot/common/cmd_jffs2.c
-@@ -2123,6 +2123,18 @@ int do_jffs2_mtdparts(cmd_tbl_t *cmdtp, 
+--- u-boot.orig/common/cmd_jffs2.c	2007-02-16 23:53:09.000000000 +0100
++++ u-boot/common/cmd_jffs2.c	2007-02-16 23:53:36.000000000 +0100
+@@ -2123,6 +2123,18 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -142,7 +142,7 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2188,6 +2200,13 @@ U_BOOT_CMD(
+@@ -2188,6 +2200,13 @@
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );

@@ -15,10 +15,10 @@ block 0 never is a factory-default bad block.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/common/env_nand.c
+Index: u-boot/common/env_nand.c
 ===================================================================
---- u-boot.git.orig/common/env_nand.c	2007-02-05 19:51:44.000000000 +0100
-+++ u-boot.git/common/env_nand.c	2007-02-05 20:03:11.000000000 +0100
+--- u-boot.orig/common/env_nand.c	2007-02-16 23:53:09.000000000 +0100
++++ u-boot/common/env_nand.c	2007-02-16 23:53:34.000000000 +0100
 @@ -271,6 +271,33 @@
  	ulong total;
  	int ret;
@@ -53,10 +53,10 @@ Index: u-boot.git/common/env_nand.c
  	total = CFG_ENV_SIZE;
  	ret = nand_read(&nand_info[0], CFG_ENV_OFFSET, &total, (u_char*)env_ptr);
    	if (ret || total != CFG_ENV_SIZE)
-Index: u-boot.git/common/environment.c
+Index: u-boot/common/environment.c
 ===================================================================
---- u-boot.git.orig/common/environment.c	2007-02-05 19:51:44.000000000 +0100
-+++ u-boot.git/common/environment.c	2007-02-05 19:51:46.000000000 +0100
+--- u-boot.orig/common/environment.c	2007-02-16 23:53:09.000000000 +0100
++++ u-boot/common/environment.c	2007-02-16 23:53:34.000000000 +0100
 @@ -29,6 +29,12 @@
  #undef	__ASSEMBLY__
  #include <environment.h>
@@ -70,10 +70,10 @@ Index: u-boot.git/common/environment.c
  /*
   * Handle HOSTS that have prepended
   * crap on symbol names, not TARGETS.
-Index: u-boot.git/include/environment.h
+Index: u-boot/include/environment.h
 ===================================================================
---- u-boot.git.orig/include/environment.h	2007-02-05 19:51:44.000000000 +0100
-+++ u-boot.git/include/environment.h	2007-02-05 19:51:46.000000000 +0100
+--- u-boot.orig/include/environment.h	2007-02-16 23:53:09.000000000 +0100
++++ u-boot/include/environment.h	2007-02-16 23:53:34.000000000 +0100
 @@ -70,6 +70,10 @@
  #endif	/* CFG_ENV_IS_IN_FLASH */
  
@@ -93,11 +93,11 @@ Index: u-boot.git/include/environment.h
  #endif /* CFG_ENV_IS_IN_NAND */
  
  
-Index: u-boot.git/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.git.orig/include/configs/neo1973.h	2007-02-05 19:51:44.000000000 +0100
-+++ u-boot.git/include/configs/neo1973.h	2007-02-05 20:04:12.000000000 +0100
-@@ -196,7 +196,7 @@
+--- u-boot.orig/include/configs/neo1973.h	2007-02-16 23:53:33.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-16 23:53:34.000000000 +0100
+@@ -197,7 +197,7 @@
  
  #define	CFG_ENV_IS_IN_NAND	1
  #define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
@@ -106,10 +106,10 @@ Index: u-boot.git/include/configs/neo1973.h
  
  #define NAND_MAX_CHIPS		1
  #define CFG_NAND_BASE		0x4e000000
-Index: u-boot.git/common/Makefile
+Index: u-boot/common/Makefile
 ===================================================================
---- u-boot.git.orig/common/Makefile	2007-02-05 19:51:44.000000000 +0100
-+++ u-boot.git/common/Makefile	2007-02-05 19:51:46.000000000 +0100
+--- u-boot.orig/common/Makefile	2007-02-16 23:53:15.000000000 +0100
++++ u-boot/common/Makefile	2007-02-16 23:53:34.000000000 +0100
 @@ -32,7 +32,7 @@
  	  cmd_bdinfo.o cmd_bedbug.o cmd_bmp.o cmd_boot.o cmd_bootm.o \
  	  cmd_cache.o cmd_console.o \
@@ -119,10 +119,10 @@ Index: u-boot.git/common/Makefile
  	  cmd_fat.o cmd_fdc.o cmd_fdos.o cmd_flash.o cmd_fpga.o \
  	  cmd_i2c.o cmd_ide.o cmd_immap.o cmd_itest.o cmd_jffs2.o \
  	  cmd_load.o cmd_log.o \
-Index: u-boot.git/common/cmd_dynenv.c
+Index: u-boot/common/cmd_dynenv.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/common/cmd_dynenv.c	2007-02-05 19:53:09.000000000 +0100
++++ u-boot/common/cmd_dynenv.c	2007-02-16 23:53:34.000000000 +0100
 @@ -0,0 +1,85 @@
 +/*
 + * (C) Copyright 2006-2007 OpenMoko, Inc.

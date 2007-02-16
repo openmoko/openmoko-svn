@@ -1,31 +1,36 @@
+# just some local hacks
 uboot-machtypes.patch
 uboot-arm920t_cp15_cmd.patch
-uboot-s3c2410-nand_mmc.patch
+ext2load_hex.patch
+uboot-mokoversion.patch
+
+# those we want to get mainline
+uboot-s3c2410-warnings-fix.patch
+uboot-strtoul.patch
+uboot-cramfs_but_no_jffs2.patch
+mmc_parititon_fix.patch
+nand-read_write_oob.patch
+uboot-s3c2410-nand.patch
+uboot-cmd_s3c2410.patch
+uboot-s3c2410-mmc.patch
 uboot-s3c2410_fb.patch
 uboot-20061030-qt2410.patch 
 uboot-20061030-neo1973.patch 
-uboot-gta01v4.patch
-mmc_parititon_fix.patch
-ext2load_hex.patch
-uboot-gta01b_v2.patch
-s3c2410-nand_badblock_skip.patch
-s3c2410-nand_bbt.patch
-nand-read_write_oob.patch
 env_nand_oob.patch
+
+# this will be somewhat more difficult
 nand-dynamic_partitions.patch
-uboot-arm920_s3c2410_irq_demux.patch
 uboot-s3c2410-norelocate_irqvec_cpy.patch
 uboot-usbtty-acm.patch
+uboot-arm920_s3c2410_irq_demux.patch
 uboot-s3c2410_udc.patch
-uboot-gta01bv3.patch
-uboot-neo1973-poweroff.patch
-uboot-cmd_s3c2410.patch
+
+# those need to be cleaned up
 bbt-create-optional.patch
 nand-createbbt.patch
-uboot-mokoversion.patch
-uboot-strtoul.patch
 nand-badisbad.patch
-uboot-neo1973-jbt6k74.patch
-uboot-s3c2410-warnings-fix.patch
 dynpart-absorb-bad.patch
 uboot-bbt-quiet.patch
+
+# those have to be implemented fully
+uboot-dfu.patch

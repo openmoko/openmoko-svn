@@ -1,10 +1,10 @@
 Index: u-boot/include/s3c2410.h
 ===================================================================
---- u-boot.orig/include/s3c2410.h	2007-02-12 22:37:35.000000000 +0100
-+++ u-boot/include/s3c2410.h	2007-02-12 22:37:35.000000000 +0100
-@@ -77,75 +77,75 @@
- 	S3C24X0_UART2
- } S3C24X0_UARTS_NR;
+--- u-boot.orig/include/s3c2410.h	2007-02-16 23:53:20.000000000 +0100
++++ u-boot/include/s3c2410.h	2007-02-16 23:53:21.000000000 +0100
+@@ -69,75 +69,75 @@
+ #include <s3c24x0.h>
+ 
  
 -static inline S3C24X0_MEMCTL * const S3C24X0_GetBase_MEMCTL(void)
 +static inline S3C24X0_MEMCTL * S3C24X0_GetBase_MEMCTL(void)

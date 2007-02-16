@@ -1,5 +1,7 @@
 Make simple_strtoul work with upper-case hex numbers.
 
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
 Index: u-boot/lib_generic/vsprintf.c
 ===================================================================
 --- u-boot.orig/lib_generic/vsprintf.c

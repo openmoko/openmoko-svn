@@ -1,8 +1,8 @@
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c
-+++ u-boot/drivers/nand/nand_bbt.c
-@@ -1064,6 +1064,15 @@ int nand_isbad_bbt (struct mtd_info *mtd
+--- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-16 23:53:57.000000000 +0100
++++ u-boot/drivers/nand/nand_bbt.c	2007-02-16 23:54:02.000000000 +0100
+@@ -1062,6 +1062,15 @@
  static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x130000, 0x3c9c000 };
  static char *part_names[] = { "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
  
@@ -18,7 +18,7 @@ Index: u-boot/drivers/nand/nand_bbt.c
  int nand_create_mtd_dynpart(struct mtd_info *mtd)
  {
  	struct nand_chip *this = mtd->priv;
-@@ -1082,11 +1091,22 @@ int nand_create_mtd_dynpart(struct mtd_i
+@@ -1080,11 +1089,22 @@
  		unsigned int bb_delta = 0;
  		unsigned int offs = 0;
  		char mtdpart[32];

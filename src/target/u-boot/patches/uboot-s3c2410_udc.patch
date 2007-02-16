@@ -2,8 +2,8 @@ USB Device Controller Driver for Samsung S3C2410 SoC
 
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-09 00:34:24.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-09 00:34:34.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-16 23:57:07.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-16 23:57:08.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o ahci.o \
@@ -16,7 +16,7 @@ Index: u-boot/drivers/Makefile
 Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdcore_s3c2410.c	2007-02-09 01:17:48.000000000 +0100
++++ u-boot/drivers/usbdcore_s3c2410.c	2007-02-16 23:57:23.000000000 +0100
 @@ -0,0 +1,708 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
@@ -615,7 +615,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +void udc_connect (void)
 +{
 +	UDCDBG ("connect, enable Pullup");
-+#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2)
++#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
 +	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +
 +	/* create a short disconnect, since we might come out of reset */
@@ -633,7 +633,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +{
 +	UDCDBG ("disconnect, disable Pullup");
 +	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
-+#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2)
++#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
 +	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +
 +	//s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
@@ -729,7 +729,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 Index: u-boot/drivers/usbdcore_s3c2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdcore_s3c2410.h	2007-02-09 00:34:34.000000000 +0100
++++ u-boot/drivers/usbdcore_s3c2410.h	2007-02-16 23:57:08.000000000 +0100
 @@ -0,0 +1,273 @@
 +/* linux/include/asm/arch-s3c2410/regs-udc.h
 + *
@@ -1006,8 +1006,8 @@ Index: u-boot/drivers/usbdcore_s3c2410.h
 +#endif
 Index: u-boot/include/s3c2410.h
 ===================================================================
---- u-boot.orig/include/s3c2410.h	2007-02-09 00:34:24.000000000 +0100
-+++ u-boot/include/s3c2410.h	2007-02-09 00:34:34.000000000 +0100
+--- u-boot.orig/include/s3c2410.h	2007-02-16 23:57:06.000000000 +0100
++++ u-boot/include/s3c2410.h	2007-02-16 23:57:08.000000000 +0100
 @@ -233,4 +233,40 @@
  		 rINTPND;\
  		 }
@@ -1051,8 +1051,8 @@ Index: u-boot/include/s3c2410.h
  #endif /*__S3C2410_H__*/
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-09 00:34:33.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-09 01:18:01.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-16 23:57:08.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-16 23:57:08.000000000 +0100
 @@ -43,7 +43,7 @@
  
  #include <common.h>
@@ -1148,22 +1148,20 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-09 00:34:24.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-09 01:17:48.000000000 +0100
-@@ -173,6 +173,18 @@
+--- u-boot.orig/include/configs/neo1973.h	2007-02-16 23:57:08.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-16 23:57:08.000000000 +0100
+@@ -174,6 +174,16 @@
  #define CONFIG_USB_OHCI		1
  #endif
  
 +#define CONFIG_USB_DEVICE	1
 +#define CONFIG_USB_TTY		1
 +#define CFG_CONSOLE_IS_IN_ENV	1
-+#if 0
-+#define CONFIG_USBD_MANUFACTURER      "OpenMoko, Inc."
-+#define CONFIG_USBD_PRODUCT_NAME        "Neo1973 Bootloader"
-+#define CONFIG_USBD_VENDORID    0x2342
-+#define CONFIG_USBD_PRODUCTID   0x0815
-+#endif
-+
++#define CONFIG_USBD_VENDORID 		0x1457     /* Linux/NetChip */
++#define CONFIG_USBD_PRODUCTID_GSERIAL	0x5120    /* gserial */
++#define CONFIG_USBD_PRODUCTID_CDCACM 	0x5119    /* CDC ACM */
++#define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
++#define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
 +#define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
 +
  /*-----------------------------------------------------------------------
@@ -1171,8 +1169,8 @@ Index: u-boot/include/configs/neo1973.h
   */
 Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-09 00:34:24.000000000 +0100
-+++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-02-09 00:34:34.000000000 +0100
+--- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-02-16 23:57:08.000000000 +0100
++++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-02-16 23:57:08.000000000 +0100
 @@ -222,6 +222,13 @@
  	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
  	u_int32_t intpnd = irq->INTPND;
@@ -1189,8 +1187,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h	2007-02-09 00:34:33.000000000 +0100
-+++ u-boot/drivers/usbtty.h	2007-02-09 00:34:34.000000000 +0100
+--- u-boot.orig/drivers/usbtty.h	2007-02-16 23:57:08.000000000 +0100
++++ u-boot/drivers/usbtty.h	2007-02-16 23:57:08.000000000 +0100
 @@ -29,6 +29,8 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)

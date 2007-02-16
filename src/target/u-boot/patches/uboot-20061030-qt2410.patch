@@ -3,11 +3,11 @@ development board to u-boot.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/Makefile
+Index: u-boot/Makefile
 ===================================================================
---- u-boot.git.orig/Makefile	2007-02-07 16:47:39.000000000 +0100
-+++ u-boot.git/Makefile	2007-02-07 16:48:01.000000000 +0100
-@@ -1907,6 +1907,9 @@
+--- u-boot.orig/Makefile	2007-02-16 23:01:22.000000000 +0100
++++ u-boot/Makefile	2007-02-16 23:02:54.000000000 +0100
+@@ -1928,6 +1928,9 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -17,10 +17,10 @@ Index: u-boot.git/Makefile
  scb9328_config	:	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t scb9328 NULL imx
  
-Index: u-boot.git/board/qt2410/Makefile
+Index: u-boot/board/qt2410/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/Makefile	2007-02-07 16:48:01.000000000 +0100
++++ u-boot/board/qt2410/Makefile	2007-02-16 23:02:55.000000000 +0100
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -69,10 +69,10 @@ Index: u-boot.git/board/qt2410/Makefile
 +-include .depend
 +
 +#########################################################################
-Index: u-boot.git/board/qt2410/config.mk
+Index: u-boot/board/qt2410/config.mk
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/config.mk	2007-02-07 16:48:01.000000000 +0100
++++ u-boot/board/qt2410/config.mk	2007-02-16 23:02:55.000000000 +0100
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -99,10 +99,10 @@ Index: u-boot.git/board/qt2410/config.mk
 +
 +
 +TEXT_BASE = 0x33F80000
-Index: u-boot.git/board/qt2410/flash.c
+Index: u-boot/board/qt2410/flash.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/flash.c	2007-02-07 16:48:01.000000000 +0100
++++ u-boot/board/qt2410/flash.c	2007-02-16 23:02:55.000000000 +0100
 @@ -0,0 +1,435 @@
 +/*
 + * (C) Copyright 2002
@@ -539,10 +539,10 @@ Index: u-boot.git/board/qt2410/flash.c
 +
 +	return write_hword (info, wp, data);
 +}
-Index: u-boot.git/board/qt2410/lowlevel_init.S
+Index: u-boot/board/qt2410/lowlevel_init.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/lowlevel_init.S	2007-02-07 16:48:01.000000000 +0100
++++ u-boot/board/qt2410/lowlevel_init.S	2007-02-16 23:02:55.000000000 +0100
 @@ -0,0 +1,173 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -717,10 +717,10 @@ Index: u-boot.git/board/qt2410/lowlevel_init.S
 +    .word 0xb2
 +    .word 0x30
 +    .word 0x30
-Index: u-boot.git/board/qt2410/qt2410.c
+Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/qt2410.c	2007-02-07 16:48:01.000000000 +0100
++++ u-boot/board/qt2410/qt2410.c	2007-02-16 23:02:55.000000000 +0100
 @@ -0,0 +1,127 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -849,10 +849,10 @@ Index: u-boot.git/board/qt2410/qt2410.c
 +	gd->bd->bi_dram[0].size = PHYS_SDRAM_1_SIZE;
 +
 +	return 0;
-Index: u-boot.git/board/qt2410/u-boot.lds
+Index: u-boot/board/qt2410/u-boot.lds
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/board/qt2410/u-boot.lds	2007-02-07 16:48:21.000000000 +0100
++++ u-boot/board/qt2410/u-boot.lds	2007-02-16 23:02:55.000000000 +0100
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
@@ -912,71 +912,11 @@ Index: u-boot.git/board/qt2410/u-boot.lds
 +	.bss : { *(.bss) }
 +	_end = .;
 +}
-Index: u-boot.git/drivers/cs8900.c
-===================================================================
---- u-boot.git.orig/drivers/cs8900.c	2007-02-07 16:47:39.000000000 +0100
-+++ u-boot.git/drivers/cs8900.c	2007-02-07 16:48:01.000000000 +0100
-@@ -120,6 +120,7 @@
- 	unsigned char env_enetaddr[6];
- 	char *tmp = getenv ("ethaddr");
- 	char *end;
-+	unsigned short chip_id;
- 
- 	for (i=0; i<6; i++) {
- 		env_enetaddr[i] = tmp ? simple_strtoul(tmp, &end, 16) : 0;
-@@ -128,7 +129,9 @@
- 	}
- 
- 	/* verify chip id */
--	if (get_reg_init_bus (PP_ChipID) != 0x630e)
-+	chip_id = get_reg_init_bus (PP_ChipID);
-+	printf("\ncs8900a chipid 0x%04x\n", chip_id);
-+	if (chip_id != 0x630e)
- 		return;
- 	eth_reset ();
- 	if ((get_reg (PP_SelfST) & (PP_SelfSTAT_EEPROM | PP_SelfSTAT_EEPROM_OK)) ==
-Index: u-boot.git/fs/cramfs/cramfs.c
-===================================================================
---- u-boot.git.orig/fs/cramfs/cramfs.c	2007-02-07 16:47:39.000000000 +0100
-+++ u-boot.git/fs/cramfs/cramfs.c	2007-02-07 16:48:01.000000000 +0100
-@@ -27,7 +27,7 @@
- #include <common.h>
- #include <malloc.h>
- 
--#if (CONFIG_COMMANDS & CFG_CMD_JFFS2)
-+#if (CONFIG_COMMANDS & CFG_CMD_CRAMFS)
- 
- #include <asm/byteorder.h>
- #include <linux/stat.h>
-@@ -343,5 +343,22 @@
- 	}
- 	return 1;
- }
--
-+#else
-+int cramfs_load (char *loadoffset, struct part_info *info, char *filename)
-+{
-+	return -1;
-+}
-+int cramfs_ls (struct part_info *info, char *filename)
-+{
-+	return 0;
-+}
-+int cramfs_info (struct part_info *info)
-+{
-+	return 0;
-+}
-+int cramfs_check (struct part_info *info)
-+{
-+	return 0;
-+}
- #endif /* CFG_FS_CRAMFS */
-+
-Index: u-boot.git/include/configs/qt2410.h
+Index: u-boot/include/configs/qt2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/include/configs/qt2410.h	2007-02-07 16:48:01.000000000 +0100
-@@ -0,0 +1,245 @@
++++ u-boot/include/configs/qt2410.h	2007-02-16 23:04:11.000000000 +0100
+@@ -0,0 +1,216 @@
 +/*
 + * (C) Copyright 2002
 + * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
@@ -984,7 +924,7 @@ Index: u-boot.git/include/configs/qt2410.h
 + * Gary Jennejohn <gj@denx.de>
 + * David Mueller <d.mueller@elsoft.ch>
 + *
-+ * Configuation settings for the SAMSUNG SMDK2410 board.
++ * Configuation settings for the Armzone QT2410 board.
 + *
 + * See file CREDITS for list of people who contributed to this
 + * project.
@@ -1142,16 +1082,6 @@ Index: u-boot.git/include/configs/qt2410.h
 +#define CONFIG_STACKSIZE_FIQ	(4*1024)	/* FIQ stack */
 +#endif
 +
-+/* IDE/ATA config */
-+
-+#if 0
-+#define CFG_IDE_MAXBUS		1
-+#define CFG_IDE_MAXDEVICE	2
-+#define CFG_IDE_PREINIT		0
-+
-+#define CFG_ATA_BASE_ADDR	
-+#endif
-+
 +#define CONFIG_USB_OHCI		1
 +
 +/*-----------------------------------------------------------------------
@@ -1201,24 +1131,5 @@ Index: u-boot.git/include/configs/qt2410.h
 +#define CONFIG_INITRD_TAG		1
 +#define CONFIG_SETUP_MEMORY_TAGS	1
 +#define CONFIG_CMDLINE_TAG		1
-+#if 0
-+#define CONFIG_SERIAL_TAG		1
-+#define CONFIG_REVISION_TAG		1
-+#endif
-+
-+
-+#if 0
-+#define CONFIG_VIDEO
-+#define CONFIG_VIDEO_S3C2410
-+#define CONFIG_CFB_CONSOLE
-+#define CONFIG_VIDEO_LOGO
-+#define CONFIG_VGA_AS_SINGLE_DEVICE
-+
-+#define VIDEO_KBD_INIT_FCT	0
-+#define VIDEO_TSTC_FCT		serial_tstc
-+#define VIDEO_GETC_FCT		serial_getc
-+
-+#define LCD_VIDEO_ADDR		0x33d00000
-+#endif
 +
 +#endif	/* __CONFIG_H */
