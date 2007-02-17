@@ -3,8 +3,8 @@ as found on the FIC GTA01 hardware
 
 Index: linux-2.6.20/drivers/spi/Kconfig
 ===================================================================
---- linux-2.6.20.orig/drivers/spi/Kconfig	2007-02-15 16:26:53.000000000 +0100
-+++ linux-2.6.20/drivers/spi/Kconfig	2007-02-15 16:28:11.000000000 +0100
+--- linux-2.6.20.orig/drivers/spi/Kconfig	2007-02-17 13:36:18.000000000 +0100
++++ linux-2.6.20/drivers/spi/Kconfig	2007-02-17 13:59:19.000000000 +0100
 @@ -129,5 +129,9 @@
  
  # (slave support would go here)
@@ -17,8 +17,8 @@ Index: linux-2.6.20/drivers/spi/Kconfig
  
 Index: linux-2.6.20/drivers/spi/Makefile
 ===================================================================
---- linux-2.6.20.orig/drivers/spi/Makefile	2007-02-15 16:26:53.000000000 +0100
-+++ linux-2.6.20/drivers/spi/Makefile	2007-02-15 16:28:11.000000000 +0100
+--- linux-2.6.20.orig/drivers/spi/Makefile	2007-02-17 13:36:18.000000000 +0100
++++ linux-2.6.20/drivers/spi/Makefile	2007-02-17 13:59:19.000000000 +0100
 @@ -26,4 +26,5 @@
  # 	... add above this line ...
  
@@ -28,8 +28,8 @@ Index: linux-2.6.20/drivers/spi/Makefile
 Index: linux-2.6.20/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/spi/jbt6k74.c	2007-02-15 16:49:58.000000000 +0100
-@@ -0,0 +1,533 @@
++++ linux-2.6.20/drivers/spi/jbt6k74.c	2007-02-17 14:00:05.000000000 +0100
+@@ -0,0 +1,532 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -432,7 +432,7 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +	unsigned long val = simple_strtoul(buf, NULL, 10);
 +
 +	jbt_reg_write(jbt, reg, val & 0xff);
-+	
++
 +	return count;
 +}
 +
@@ -536,7 +536,6 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +static struct spi_driver jbt6k74_driver = {
 +	.driver = {
 +		.name	= "jbt6k74",
-+		.bus	= &spi_bus_type,
 +		.owner	= THIS_MODULE,
 +	},
 +
