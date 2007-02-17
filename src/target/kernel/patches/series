@@ -28,7 +28,6 @@ gta01-pcf50606.patch
 gta01-vibrator.patch
 gta01-inputdevice.patch
 gta01-power_control.patch
-gta01-vbus_draw.patch
 gta01-no_nand_partitions.patch
 input-nots-mousedev.patch
 ts0710.patch

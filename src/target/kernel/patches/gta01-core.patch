@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 00:43:54.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:20:14.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:59:09.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 15:02:25.000000000 +0100
 @@ -86,6 +86,13 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -21,8 +21,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-17 00:43:54.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-17 00:44:17.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-17 14:59:09.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-17 14:59:20.000000000 +0100
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -33,8 +33,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-17 13:58:24.000000000 +0100
-@@ -0,0 +1,483 @@
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-17 15:02:42.000000000 +0100
+@@ -0,0 +1,516 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -67,6 +67,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +#include <linux/list.h>
 +#include <linux/timer.h>
 +#include <linux/init.h>
++#include <linux/workqueue.h>
 +#include <linux/platform_device.h>
 +#include <linux/serial_core.h>
 +#include <linux/spi/spi.h>
@@ -77,6 +78,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +#include <linux/mtd/nand.h>
 +#include <linux/mtd/nand_ecc.h>
 +#include <linux/mtd/partitions.h>
++
++#include <linux/pcf50606.h>
 +
 +#include <asm/mach/arch.h>
 +#include <asm/mach/map.h>
@@ -319,8 +322,37 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +	}
 +}
 +
++/* use a work queue, since I2C API inherently schedules
++ * and we get called in hardirq context from UDC driver */
++
++struct vbus_draw {
++	struct work_struct work;
++	int ma;
++};
++static struct vbus_draw gta01_udc_vbus_drawer;
++
++static void __gta01_udc_vbus_draw(struct work_struct *work)
++{
++	if (gta01_udc_vbus_drawer.ma >= 500) {
++		/* enable fast charge */
++		printk(KERN_DEBUG "udc: enabling fast charge\n");
++		pcf50606_charge_fast(pcf50606_global, 1);
++	} else {
++		/* disable fast charge */
++		printk(KERN_DEBUG "udc: disabling fast charge\n");
++		pcf50606_charge_fast(pcf50606_global, 0);
++	}
++}
++
++static void gta01_udc_vbus_draw(unsigned int ma)
++{
++	gta01_udc_vbus_drawer.ma = ma;
++	schedule_work(&gta01_udc_vbus_drawer.work);
++}
++
 +static struct s3c2410_udc_mach_info gta01_udc_cfg = {
 +	.udc_command	= gta01_udc_pullup,
++	.vbus_draw	= gta01_udc_vbus_draw,
 +};
 +
 +static struct s3c2410_ts_mach_info gta01_ts_cfg = {
@@ -479,6 +511,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +	s3c24xx_fb_set_platdata(&gta01_lcd_cfg);
 +
++	INIT_WORK(&gta01_udc_vbus_drawer.work, __gta01_udc_vbus_draw);
 +	s3c24xx_udc_set_platdata(&gta01_udc_cfg);
 +	set_s3c2410ts_info(&gta01_ts_cfg);
 +
@@ -521,7 +554,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 Index: linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-17 00:44:17.000000000 +0100
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-17 14:59:20.000000000 +0100
 @@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
