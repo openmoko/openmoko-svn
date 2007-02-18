@@ -21,10 +21,10 @@ qt2410-base.patch
 qt2410-cs8900.patch
 qt2410-biglcd.patch
 qt2410-s3c_mci-pdata.patch
+gta01-pcf50606.patch
 gta01-core.patch
 gta01-jbt6k74.patch
 gta01-backlight.patch
-gta01-pcf50606.patch
 gta01-vibrator.patch
 gta01-inputdevice.patch
 gta01-power_control.patch

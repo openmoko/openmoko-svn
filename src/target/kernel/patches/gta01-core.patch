@@ -3,15 +3,16 @@ the linux kernel.
 
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:59:09.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 15:02:25.000000000 +0100
-@@ -86,6 +86,13 @@
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-18 17:18:58.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-18 17:19:37.000000000 +0100
+@@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
  
 +config MACH_GTA01
 +	bool "FIC Neo1973 GSM Phone"
 +	select CPU_S3C2410
++	select SENSORS_PCF50606
 +	help
 +	   Say Y here if you are using the FIC Neo1973 GSM Phone
 +
@@ -21,8 +22,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-17 14:59:09.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-17 14:59:20.000000000 +0100
+--- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-18 17:18:36.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-18 17:19:16.000000000 +0100
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -33,7 +34,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-17 15:05:54.000000000 +0100
++++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-18 17:19:16.000000000 +0100
 @@ -0,0 +1,516 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
@@ -554,7 +555,7 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 Index: linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-17 14:59:20.000000000 +0100
++++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-18 17:19:16.000000000 +0100
 @@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H

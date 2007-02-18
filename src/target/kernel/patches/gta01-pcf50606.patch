@@ -3,7 +3,7 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/i2c/chips/pcf50606.c	2007-02-17 14:21:49.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/pcf50606.c	2007-02-18 17:18:58.000000000 +0100
 @@ -0,0 +1,1497 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -1505,7 +1505,7 @@ Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 Index: linux-2.6.20/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/i2c/chips/pcf50606.h	2007-02-17 14:21:49.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/pcf50606.h	2007-02-18 17:18:58.000000000 +0100
 @@ -0,0 +1,259 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -1768,8 +1768,8 @@ Index: linux-2.6.20/drivers/i2c/chips/pcf50606.h
 +
 Index: linux-2.6.20/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.20.orig/drivers/i2c/chips/Kconfig	2007-02-17 13:36:17.000000000 +0100
-+++ linux-2.6.20/drivers/i2c/chips/Kconfig	2007-02-17 14:21:49.000000000 +0100
+--- linux-2.6.20.orig/drivers/i2c/chips/Kconfig	2007-02-18 17:18:34.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/Kconfig	2007-02-18 17:18:58.000000000 +0100
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -1790,8 +1790,8 @@ Index: linux-2.6.20/drivers/i2c/chips/Kconfig
  	depends on I2C && EXPERIMENTAL
 Index: linux-2.6.20/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.20.orig/drivers/i2c/chips/Makefile	2007-02-17 13:36:17.000000000 +0100
-+++ linux-2.6.20/drivers/i2c/chips/Makefile	2007-02-17 14:21:49.000000000 +0100
+--- linux-2.6.20.orig/drivers/i2c/chips/Makefile	2007-02-18 17:18:34.000000000 +0100
++++ linux-2.6.20/drivers/i2c/chips/Makefile	2007-02-18 17:18:58.000000000 +0100
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -1802,8 +1802,8 @@ Index: linux-2.6.20/drivers/i2c/chips/Makefile
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
 Index: linux-2.6.20/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.20.orig/include/linux/i2c-id.h	2007-02-17 13:36:17.000000000 +0100
-+++ linux-2.6.20/include/linux/i2c-id.h	2007-02-17 14:21:49.000000000 +0100
+--- linux-2.6.20.orig/include/linux/i2c-id.h	2007-02-18 17:18:34.000000000 +0100
++++ linux-2.6.20/include/linux/i2c-id.h	2007-02-18 17:18:58.000000000 +0100
 @@ -159,6 +159,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -1815,7 +1815,7 @@ Index: linux-2.6.20/include/linux/i2c-id.h
 Index: linux-2.6.20/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/include/linux/pcf50606.h	2007-02-17 14:21:49.000000000 +0100
++++ linux-2.6.20/include/linux/pcf50606.h	2007-02-18 17:18:58.000000000 +0100
 @@ -0,0 +1,55 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
@@ -1872,15 +1872,3 @@ Index: linux-2.6.20/include/linux/pcf50606.h
 +};
 +
 +#endif
-Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
-===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:29:26.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:29:43.000000000 +0100
-@@ -90,6 +90,7 @@
- 	bool "FIC Neo1973 GSM Phone"
- 	select CPU_S3C2410
- 	select SPI_SLAVE_JBT6K74
-+	select SENSORS_PCF50606
- 	help
- 	   Say Y here if you are using the FIC Neo1973 GSM Phone
- 
