@@ -55,7 +55,7 @@ typedef enum {
 } MokoPanelAppletPopupType;
 
 typedef struct {
-    GtkWidget parent;          /* GtkAlignment */
+    GtkAlignment parent;
     GtkWidget* icon;           /* GtkImage */
     GtkWidget* popup[LAST_POPUP_TYPE];
     GtkWidget* toplevelwindow; /* GtkWindow */
