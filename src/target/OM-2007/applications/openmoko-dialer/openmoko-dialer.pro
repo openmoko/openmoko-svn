@@ -19,8 +19,8 @@ HEADERS += \
            src/openmoko-dialer-window-history.h \
            src/openmoko-dialer-window-incoming.h \
            src/openmoko-dialer-window-outgoing.h \
-           src/openmoko-dialer-window-talking.h \
-           src/pin.h
+           src/openmoko-dialer-window-pin.h \
+           src/openmoko-dialer-window-talking.h
 
 SOURCES += \
            src/alsa.c \
@@ -40,8 +40,8 @@ SOURCES += \
            src/openmoko-dialer-window-history.c \
            src/openmoko-dialer-window-incoming.c \
            src/openmoko-dialer-window-outgoing.c \
-           src/openmoko-dialer-window-talking.c \
-           src/pin.c
+           src/openmoko-dialer-window-pin.c \
+           src/openmoko-dialer-window-talking.c
 
 MOKOCONFIG = mokoui
 PKGCONFIG += libebook-1.2 libgsmd alsa
