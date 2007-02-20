@@ -13,8 +13,12 @@ AC_PROG_LIBTOOL
 # base deps
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
                  AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
-LIBS="$LIBS $GTK_LIBS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
+
+PKG_CHECK_MODULES(LIBMB, libmb >= 1.8,,
+                 AC_MSG_ERROR([*** You need to install libmatchbox >= 1.8***]))
+
+LIBS="$LIBS $OPENMOKO_LIBS $LIBMB_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBMB_CFLAGS"
 
 # output stuff
 AC_OUTPUT([
