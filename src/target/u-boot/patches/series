@@ -17,6 +17,7 @@ env_nand_oob.patch
 uboot-s3c2410_fb.patch
 uboot-20061030-qt2410.patch 
 uboot-20061030-neo1973.patch 
+uboot-neo1973-resume.patch
 
 # this will be somewhat more difficult
 nand-dynamic_partitions.patch
