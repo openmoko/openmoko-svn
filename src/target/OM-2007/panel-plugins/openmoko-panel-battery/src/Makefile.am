@@ -5,7 +5,7 @@ appletdir = $(libdir)/matchbox-panel/
 applet_LTLIBRARIES = libopenmoko-panel-battery.la
 
 libopenmoko_panel_battery_la_SOURCES = openmoko-panel-battery.c
-libopenmoko_panel_battery_la_LIBADD = @OPENMOKO_LIBS@
+libopenmoko_panel_battery_la_LIBADD = @OPENMOKO_LIBS@ -lapm
 
 MAINTAINERCLEANFILES = Makefile.in
 
