@@ -3,8 +3,8 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/i2c/chips/pcf50606.c	2007-02-18 17:18:58.000000000 +0100
-@@ -0,0 +1,1497 @@
++++ linux-2.6.20/drivers/i2c/chips/pcf50606.c	2007-02-20 16:46:19.000000000 +0100
+@@ -0,0 +1,1596 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -101,6 +101,21 @@ Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 +	struct input_dev *input_dev;
 +	int allow_close;
 +	int onkey_seconds;
++#ifdef CONFIG_PM
++	struct {
++		u_int8_t dcdc1, dcdc2;
++		u_int8_t dcdec1;
++		u_int8_t dcudc1;
++		u_int8_t ioregc;
++		u_int8_t d1regc1;
++		u_int8_t d2regc1;
++		u_int8_t d3regc1;
++		u_int8_t lpregc1;
++		u_int8_t adcc1, adcc2;
++		u_int8_t pwmc1;
++		u_int8_t int1m, int2m, int3m;
++	} standby_regs;
++#endif
 +};
 +
 +struct pcf50606_data *pcf50606_global;
@@ -529,7 +544,7 @@ Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 +
 +static void pcf50606_work(struct work_struct *work)
 +{
-+	struct pcf50606_data *pcf = 
++	struct pcf50606_data *pcf =
 +			container_of(work, struct pcf50606_data, work);
 +	u_int8_t int1, int2, int3;
 +
@@ -1391,6 +1406,10 @@ Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 +	if (err < 0)
 +		goto exit_detach;
 +
++	if (enable_irq_wake(GTA01_IRQ_PCF50606) < 0)
++		printk(KERN_ERR "PCF50606: IRQ %u cannot be enabled as wake-up"
++		       "source in this hardware revision!");
++
 +	data->rtc = rtc_device_register("pcf50606", &new_client->dev,
 +					&pcf50606_rtc_ops, THIS_MODULE);
 +	if (IS_ERR(data->rtc)) {
@@ -1476,9 +1495,89 @@ Index: linux-2.6.20/drivers/i2c/chips/pcf50606.c
 +	return 0;
 +}
 +
++#ifdef CONFIG_PM
++#define INT1M_RESUMERS	(PCF50606_INT1_ALARM|PCF50606_INT1_ONKEYF|PCF50606_INT1_EXTONR)
++#define INT2M_RESUMERS	(PCF50606_INT2_CHGWD10S|PCF50606_INT2_CHGPROT|PCF50606_INT2_CHGERR)
++#define INT3M_RESUMERS	(PCF50606_INT3_LOWBAT|PCF50606_INT3_HIGHTMP)
++static int pcf50606_suspend(struct device *dev, pm_message_t state)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++
++	/* The general idea is to power down all unused power supplies,
++	 * and then mask all PCF50606 interrup sources but EXTONR, ONKEYF
++	 * and ALARM */
++
++	mutex_lock(&pcf->lock);
++
++	/* Save all registers that don't "survive" standby state */
++	pcf->standby_regs.dcdc1 = __reg_read(pcf, PCF50606_REG_DCDC1);
++	pcf->standby_regs.dcdc2 = __reg_read(pcf, PCF50606_REG_DCDC2);
++	pcf->standby_regs.dcdec1 = __reg_read(pcf, PCF50606_REG_DCDEC1);
++	pcf->standby_regs.dcudc1 = __reg_read(pcf, PCF50606_REG_DCUDC1);
++	pcf->standby_regs.ioregc = __reg_read(pcf, PCF50606_REG_IOREGC);
++	pcf->standby_regs.d1regc1 = __reg_read(pcf, PCF50606_REG_D1REGC1);
++	pcf->standby_regs.d2regc1 = __reg_read(pcf, PCF50606_REG_D2REGC1);
++	pcf->standby_regs.d3regc1 = __reg_read(pcf, PCF50606_REG_D3REGC1);
++	pcf->standby_regs.lpregc1 = __reg_read(pcf, PCF50606_REG_LPREGC1);
++	pcf->standby_regs.adcc1 = __reg_read(pcf, PCF50606_REG_ADCC1);
++	pcf->standby_regs.adcc2 = __reg_read(pcf, PCF50606_REG_ADCC2);
++	pcf->standby_regs.pwmc1 = __reg_read(pcf, PCF50606_REG_PWMC1);
++
++
++	/* FIXME: switch off unneeded power supplies */
++
++	pcf->standby_regs.int1m = __reg_read(pcf, PCF50606_REG_INT1M);
++	pcf->standby_regs.int2m = __reg_read(pcf, PCF50606_REG_INT2M);
++	pcf->standby_regs.int3m = __reg_read(pcf, PCF50606_REG_INT3M);
++	__reg_write(pcf, PCF50606_REG_INT1M, ~INT1M_RESUMERS & 0xff);
++	__reg_write(pcf, PCF50606_REG_INT2M, ~INT2M_RESUMERS & 0xff);
++	__reg_write(pcf, PCF50606_REG_INT3M, ~INT3M_RESUMERS & 0xff);
++
++	mutex_unlock(&pcf->lock);
++
++	return 0;
++}
++
++static int pcf50606_resume(struct device *dev)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++
++	mutex_lock(&pcf->lock);
++
++	/* Resume all saved registers that don't "survive" standby state */
++	__reg_write(pcf, PCF50606_REG_INT1M, pcf->standby_regs.int1m);
++	__reg_write(pcf, PCF50606_REG_INT2M, pcf->standby_regs.int2m);
++	__reg_write(pcf, PCF50606_REG_INT3M, pcf->standby_regs.int3m);
++
++	__reg_write(pcf, PCF50606_REG_DCDC1, pcf->standby_regs.dcdc1);
++	__reg_write(pcf, PCF50606_REG_DCDC2, pcf->standby_regs.dcdc2);
++	__reg_write(pcf, PCF50606_REG_DCDEC1, pcf->standby_regs.dcdec1);
++	__reg_write(pcf, PCF50606_REG_DCUDC1, pcf->standby_regs.dcudc1);
++	__reg_write(pcf, PCF50606_REG_IOREGC, pcf->standby_regs.ioregc);
++	__reg_write(pcf, PCF50606_REG_D1REGC1, pcf->standby_regs.d1regc1);
++	__reg_write(pcf, PCF50606_REG_D2REGC1, pcf->standby_regs.d2regc1);
++	__reg_write(pcf, PCF50606_REG_D3REGC1, pcf->standby_regs.d3regc1);
++	__reg_write(pcf, PCF50606_REG_LPREGC1, pcf->standby_regs.lpregc1);
++	__reg_write(pcf, PCF50606_REG_ADCC1, pcf->standby_regs.adcc1);
++	__reg_write(pcf, PCF50606_REG_ADCC2, pcf->standby_regs.adcc2);
++	__reg_write(pcf, PCF50606_REG_PWMC1, pcf->standby_regs.pwmc1);
++
++	mutex_unlock(&pcf->lock);
++
++	return 0;
++}
++#else
++#define pcf50606_suspend NULL
++#define pcf50606_resume NULL
++#endif
++
 +static struct i2c_driver pcf50606_driver = {
 +	.driver = {
 +		.name	= "pcf50606",
++		.suspend= &pcf50606_suspend,
++		.resume	= &pcf50606_resume,
 +	},
 +	.id		= I2C_DRIVERID_PCF50606,
 +	.attach_adapter	= &pcf50606_attach_adapter,
