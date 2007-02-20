@@ -34,3 +34,4 @@ uboot-bbt-quiet.patch
 
 # those have to be implemented fully
 uboot-dfu.patch
+uboot-s3c2410-splash.patch
