@@ -5,8 +5,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/cpu/arm920t/s3c24x0/Makefile
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/Makefile	2007-02-16 23:23:38.000000000 +0100
-+++ u-boot/cpu/arm920t/s3c24x0/Makefile	2007-02-16 23:24:10.000000000 +0100
+--- u-boot.orig/cpu/arm920t/s3c24x0/Makefile	2007-02-20 01:18:11.000000000 +0100
++++ u-boot/cpu/arm920t/s3c24x0/Makefile	2007-02-20 01:18:51.000000000 +0100
 @@ -26,7 +26,7 @@
  LIB	= $(obj)lib$(SOC).a
  
@@ -19,7 +19,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/Makefile
 Index: u-boot/cpu/arm920t/s3c24x0/nand.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/cpu/arm920t/s3c24x0/nand.c	2007-02-16 23:25:05.000000000 +0100
++++ u-boot/cpu/arm920t/s3c24x0/nand.c	2007-02-20 01:18:23.000000000 +0100
 @@ -0,0 +1,185 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
@@ -209,8 +209,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
 Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/cpu/arm920t/s3c24x0/nand_read.c	2007-02-16 23:24:10.000000000 +0100
-@@ -0,0 +1,97 @@
++++ u-boot/cpu/arm920t/s3c24x0/nand_read.c	2007-02-20 01:19:20.000000000 +0100
+@@ -0,0 +1,98 @@
 +/*
 + * nand_read.c: Simple NAND read functions for booting from NAND
 + *
@@ -252,6 +252,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 +
 +#define NAND_SECTOR_SIZE	512
 +#define NAND_BLOCK_MASK		(NAND_SECTOR_SIZE - 1)
++#define NAND_PAGE_SIZE		0x4000
 +
 +/* low level nand read function */
 +int nand_read_ll(unsigned char *buf, unsigned long start_addr, int size)
@@ -310,8 +311,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 +#endif /* CONFIG_S3C2410_NAND_BOOT */
 Index: u-boot/cpu/arm920t/start.S
 ===================================================================
---- u-boot.orig/cpu/arm920t/start.S	2007-02-16 23:23:38.000000000 +0100
-+++ u-boot/cpu/arm920t/start.S	2007-02-16 23:24:10.000000000 +0100
+--- u-boot.orig/cpu/arm920t/start.S	2007-02-20 01:18:11.000000000 +0100
++++ u-boot/cpu/arm920t/start.S	2007-02-20 01:18:23.000000000 +0100
 @@ -5,6 +5,10 @@
   *  Copyright (c) 2002	Alex Züpke <azu@sysgo.de>
   *  Copyright (c) 2002	Gary Jennejohn <gj@denx.de>
@@ -435,8 +436,8 @@ Index: u-boot/cpu/arm920t/start.S
  	/* Set up the stack						    */
 Index: u-boot/include/s3c2410.h
 ===================================================================
---- u-boot.orig/include/s3c2410.h	2007-02-16 23:24:07.000000000 +0100
-+++ u-boot/include/s3c2410.h	2007-02-16 23:24:10.000000000 +0100
+--- u-boot.orig/include/s3c2410.h	2007-02-20 01:18:20.000000000 +0100
++++ u-boot/include/s3c2410.h	2007-02-20 01:18:23.000000000 +0100
 @@ -38,12 +38,6 @@
  #define S3C2410_ECCSIZE		512
  #define S3C2410_ECCBYTES	3
