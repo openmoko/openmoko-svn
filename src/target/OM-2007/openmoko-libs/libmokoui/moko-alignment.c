@@ -100,14 +100,6 @@ static void moko_alignment_size_request(GtkWidget* widget, GtkRequisition* requi
                          "padding", &padding,
                          NULL);
 
-    GtkAlignmentPrivate *priv = GTK_ALIGNMENT_GET_PRIVATE(widget);
-    if ( padding )
-    {
-        priv->padding_top = padding->top;
-        priv->padding_bottom = padding->bottom;
-        priv->padding_left = padding->left;
-        priv->padding_right = padding->right;
-    }
 
     GtkBin* bin = GTK_BIN(widget);
 
@@ -124,8 +116,11 @@ static void moko_alignment_size_request(GtkWidget* widget, GtkRequisition* requi
         requisition->height += child_requisition.height;
 
         /* Request extra space for the padding: */
-        requisition->width += (priv->padding_left + priv->padding_right);
-        requisition->height += (priv->padding_top + priv->padding_bottom);
+        if ( padding )
+        {
+            requisition->width += (padding->left + padding->right);
+            requisition->height += (padding->top + padding->bottom);
+        }
     }
 }
 
