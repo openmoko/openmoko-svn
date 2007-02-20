@@ -19,6 +19,9 @@ include/configs/neo1973.h: increase heap from 128 kB to 400 kB, for BMP image
 include/configs/neo1973.h (CONFIG_COMMANDS): add CFG_CMD_BMP
 include/configs/neo1973.h: raise number of command line arguments from 16 to 64
 include/configs/neo1973.h: enable splash screen and BMP support
+include/configs/neo1973.h: remove #if 1 ... #endif around video definitions
+common/cmd_mem.c: new command "unzip srcaddr dstaddr [dstsize]" to unzip from
+  memory to memory, and option CONFIG_UNZIP to enable it
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -56,7 +59,7 @@ Index: u-boot/drivers/cfb_console.c
 +		addr = simple_strtoul (s, &end, 16);
 +		if (*end) {
 +			run_command(s, 0);
-+			return (void *) video_fb_address;
++			return video_fb_address;
 +		}
  
  		if (video_display_bitmap (addr, 0, 0) == 0) {
@@ -125,7 +128,12 @@ Index: u-boot/include/configs/neo1973.h
  #define CFG_BARGSIZE		CFG_CBSIZE	/* Boot Argument Buffer Size	*/
  
  #define CFG_MEMTEST_START	0x30000000	/* memtest works on	*/
-@@ -253,6 +255,9 @@
+@@ -248,19 +250,21 @@
+ /* we have a board_late_init() function */
+ #define BOARD_LATE_INIT			1
+ 
+-#if 1
+ #define CONFIG_VIDEO
  #define CONFIG_VIDEO_S3C2410
  #define CONFIG_CFB_CONSOLE
  #define CONFIG_VIDEO_LOGO
@@ -133,5 +141,67 @@ Index: u-boot/include/configs/neo1973.h
 +#define CFG_VIDEO_LOGO_MAX_SIZE	(640*480+1024+100) /* 100 = slack */
 +#define CONFIG_VIDEO_BMP_GZIP
  #define CONFIG_VGA_AS_SINGLE_DEVICE
++#define CONFIG_UNZIP
  
  #define VIDEO_KBD_INIT_FCT	0
+ #define VIDEO_TSTC_FCT		serial_tstc
+ #define VIDEO_GETC_FCT		serial_getc
+ 
+ #define LCD_VIDEO_ADDR		0x33d00000
+-#endif
+ 
+ #define CONFIG_S3C2410_NAND_BBT                1
+ 
+Index: u-boot/common/cmd_mem.c
+===================================================================
+--- u-boot.orig/common/cmd_mem.c
++++ u-boot/common/cmd_mem.c
+@@ -1185,6 +1185,34 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int fl
+ }
+ #endif	/* CONFIG_CRC32_VERIFY */
+ 
++
++#ifdef CONFIG_UNZIP
++int  gunzip (void *, int, unsigned char *, unsigned long *);
++
++int do_unzip ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
++{
++	unsigned long src, dst;
++	unsigned long src_len = ~0UL, dst_len = ~0UL;
++	int err;
++
++	switch (argc) {
++		case 4:
++			dst_len = simple_strtoul(argv[3], NULL, 16);
++			/* fall through */
++		case 3:
++			src = simple_strtoul(argv[1], NULL, 16);
++			dst = simple_strtoul(argv[2], NULL, 16);
++			break;
++		default:
++			printf ("Usage:\n%s\n", cmdtp->usage);
++			return 1;
++	}
++
++	return !!gunzip((void *) dst, dst_len, (void *) src, &src_len);
++}
++#endif /* CONFIG_UNZIP */
++
++
+ /**************************************************/
+ #if (CONFIG_COMMANDS & CFG_CMD_MEMORY)
+ U_BOOT_CMD(
+@@ -1288,5 +1316,13 @@ U_BOOT_CMD(
+ );
+ #endif /* CONFIG_MX_CYCLIC */
+ 
++#ifdef CONFIG_UNZIP
++U_BOOT_CMD(
++	unzip,	CFG_MAXARGS,	1,	do_unzip,
++	"unzip - unzip a memory region\n",
++	"srcaddr dstaddr [dstsize]\n"
++);
++#endif /* CONFIG_UNZIP */
++
+ #endif
+ #endif	/* CFG_CMD_MEMORY */
