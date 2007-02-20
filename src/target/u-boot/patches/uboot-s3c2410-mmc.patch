@@ -5,8 +5,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/cpu/arm920t/s3c24x0/Makefile
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/Makefile	2007-02-16 23:42:19.000000000 +0100
-+++ u-boot/cpu/arm920t/s3c24x0/Makefile	2007-02-16 23:42:19.000000000 +0100
+--- u-boot.orig/cpu/arm920t/s3c24x0/Makefile	2007-02-17 11:55:28.000000000 +0100
++++ u-boot/cpu/arm920t/s3c24x0/Makefile	2007-02-17 11:55:31.000000000 +0100
 @@ -26,7 +26,7 @@
  LIB	= $(obj)lib$(SOC).a
  
@@ -19,8 +19,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/Makefile
 Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/cpu/arm920t/s3c24x0/mmc.c	2007-02-16 23:43:28.000000000 +0100
-@@ -0,0 +1,504 @@
++++ u-boot/cpu/arm920t/s3c24x0/mmc.c	2007-02-17 12:13:10.000000000 +0100
+@@ -0,0 +1,469 @@
 +/*
 + * u-boot S3C2410 MMC/SD card driver
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -52,23 +52,13 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +#include <asm/io.h>
 +#include <s3c2410.h>
 +#include <part.h>
++#include <fat.h>
 +
 +#ifdef CONFIG_MMC
 +
 +#define CONFIG_MMC_WIDE
 +
-+//#define MMC_DEBUG
-+
-+#ifdef MMC_DEBUG
-+#define DEBUGP printf
-+#else
-+#define DEBUGP(x, args ...) do { } while(0)
-+#endif
-+
 +static S3C2410_SDI *sdi;
-+
-+extern int
-+fat_register_device(block_dev_desc_t *dev_desc, int part_no);
 +
 +static block_dev_desc_t mmc_dev;
 +
@@ -90,10 +80,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +#define CMD_F_RESP	0x01
 +#define CMD_F_RESP_LONG	0x02
 +
-+static u_int32_t *
-+/****************************************************/
-+mmc_cmd(ushort cmd, ulong arg, ushort flags)
-+/****************************************************/
++static u_int32_t *mmc_cmd(ushort cmd, ulong arg, ushort flags)
 +{
 +	static u_int32_t resp[5];
 +	ulong status;
@@ -104,7 +91,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +
 +	memset(resp, 0, sizeof(resp));
 +
-+	DEBUGP("mmc_cmd CMD%d arg=0x%08x flags=%x\n", cmd, arg, flags);
++	debug("mmc_cmd CMD%d arg=0x%08x flags=%x\n", cmd, arg, flags);
 +
 +	sdi->SDICSTA = 0xffffffff;
 +	sdi->SDIDSTA = 0xffffffff;
@@ -136,7 +123,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +		}
 +	}
 +
-+	DEBUGP("final MMC CMD status 0x%x\n", csta);
++	debug("final MMC CMD status 0x%x\n", csta);
 +
 +	sdi->SDICSTA |= csta_rdy_bit;
 +
@@ -152,20 +139,16 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +
 +#define FIFO_FILL(host) ((host->SDIFSTA & S3C2410_SDIFSTA_COUNTMASK) >> 2)
 +
-+static int
-+/****************************************************/
-+mmc_block_read(uchar *dst, ulong src, ulong len)
-+/****************************************************/
++static int mmc_block_read(uchar *dst, ulong src, ulong len)
 +{
 +	u_int32_t dcon, fifo;
 +	u_int32_t *dst_u32 = (u_int32_t *)dst;
 +	u_int32_t *resp;
 +
-+	if (len == 0) {
++	if (len == 0)
 +		return 0;
-+	}
 +
-+	DEBUGP("mmc_block_rd dst %lx src %lx len %d\n", (ulong)dst, src, len);
++	debug("mmc_block_rd dst %lx src %lx len %d\n", (ulong)dst, src, len);
 +
 +	/* set block len */
 +	resp = mmc_cmd(MMC_CMD_SET_BLOCKLEN, len, CMD_F_RESP);
@@ -196,7 +179,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +		}
 +
 +		while (fifo--) {
-+			//DEBUGP("dst_u32 = 0x%08x\n", dst_u32);
++			//debug("dst_u32 = 0x%08x\n", dst_u32);
 +			*(dst_u32++) = sdi->SDIDAT;
 +			if (len >= 4)
 +				len -= 4;
@@ -207,39 +190,32 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +		}
 +	}
 +
-+	DEBUGP("waiting for SDIDSTA  (currently 0x%08x\n", sdi->SDIDSTA);
++	debug("waiting for SDIDSTA  (currently 0x%08x\n", sdi->SDIDSTA);
 +	while (!(sdi->SDIDSTA & (1 << 4))) {}
-+	DEBUGP("done waiting for SDIDSTA (currently 0x%08x\n", sdi->SDIDSTA);
++	debug("done waiting for SDIDSTA (currently 0x%08x\n", sdi->SDIDSTA);
 +
 +	sdi->SDIDCON = 0;
 +
 +	if (!(sdi->SDIDSTA & S3C2410_SDIDSTA_XFERFINISH))
-+		DEBUGP("mmc_block_read; transfer not finished!\n");
++		debug("mmc_block_read; transfer not finished!\n");
 +
 +	return 0;
 +}
 +
-+static int
-+/****************************************************/
-+mmc_block_write(ulong dst, uchar *src, int len)
-+/****************************************************/
++static int mmc_block_write(ulong dst, uchar *src, int len)
 +{
 +	printf("MMC block write not yet supported on S3C2410!\n");
 +	return -1;
 +}
 +
 +
-+int
-+/****************************************************/
-+mmc_read(ulong src, uchar *dst, int size)
-+/****************************************************/
++int mmc_read(ulong src, uchar *dst, int size)
 +{
 +	ulong end, part_start, part_end, part_len, aligned_start, aligned_end;
 +	ulong mmc_block_size, mmc_block_address;
 +
-+	if (size == 0) {
++	if (size == 0)
 +		return 0;
-+	}
 +
 +	if (!mmc_ready) {
 +		printf("Please initialize the MMC first\n");
@@ -257,52 +233,47 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +	aligned_end = mmc_block_address & end;
 +
 +	/* all block aligned accesses */
-+	DEBUGP("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++	debug("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +	src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
 +	if (part_start) {
 +		part_len = mmc_block_size - part_start;
-+		DEBUGP("ps src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++		debug("ps src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +		src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
-+		if ((mmc_block_read(mmc_buf, aligned_start, mmc_block_size)) < 0) {
++		if ((mmc_block_read(mmc_buf, aligned_start, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +		memcpy(dst, mmc_buf+part_start, part_len);
 +		dst += part_len;
 +		src += part_len;
 +	}
-+	DEBUGP("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++	debug("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +	src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
 +	for (; src < aligned_end; src += mmc_block_size, dst += mmc_block_size) {
-+		DEBUGP("al src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++		debug("al src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +		src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
-+		if ((mmc_block_read((uchar *)(dst), src, mmc_block_size)) < 0) {
++		if ((mmc_block_read((uchar *)(dst), src, mmc_block_size)) < 0)
 +			return -1;
-+		}
 +	}
-+	DEBUGP("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++	debug("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +	src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
 +	if (part_end && src < end) {
-+		DEBUGP("pe src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++		debug("pe src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +		src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
-+		if ((mmc_block_read(mmc_buf, aligned_end, mmc_block_size)) < 0) {
++		if ((mmc_block_read(mmc_buf, aligned_end, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +		memcpy(dst, mmc_buf, part_end);
 +	}
 +	return 0;
 +}
 +
-+int
-+/****************************************************/
-+mmc_write(uchar *src, ulong dst, int size)
-+/****************************************************/
++int mmc_write(uchar *src, ulong dst, int size)
 +{
 +	ulong end, part_start, part_end, part_len, aligned_start, aligned_end;
 +	ulong mmc_block_size, mmc_block_address;
 +
-+	if (size == 0) {
++	if (size == 0)
 +		return 0;
-+	}
 +
 +	if (!mmc_ready) {
 +		printf("Please initialize the MMC first\n");
@@ -320,51 +291,48 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +	aligned_end = mmc_block_address & end;
 +
 +	/* all block aligned accesses */
-+	DEBUGP("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++	debug("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +	src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
 +	if (part_start) {
 +		part_len = mmc_block_size - part_start;
-+		DEBUGP("ps src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++		debug("ps src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +		(ulong)src, dst, end, part_start, part_end, aligned_start, aligned_end);
-+		if ((mmc_block_read(mmc_buf, aligned_start, mmc_block_size)) < 0) {
++		if ((mmc_block_read(mmc_buf, aligned_start, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +		memcpy(mmc_buf+part_start, src, part_len);
-+		if ((mmc_block_write(aligned_start, mmc_buf, mmc_block_size)) < 0) {
++		if ((mmc_block_write(aligned_start, mmc_buf, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +		dst += part_len;
 +		src += part_len;
 +	}
-+	DEBUGP("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++	debug("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +	src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
 +	for (; dst < aligned_end; src += mmc_block_size, dst += mmc_block_size) {
-+		DEBUGP("al src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++		debug("al src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +		src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
-+		if ((mmc_block_write(dst, (uchar *)src, mmc_block_size)) < 0) {
++		if ((mmc_block_write(dst, (uchar *)src, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +	}
-+	DEBUGP("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++	debug("src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +	src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
 +	if (part_end && dst < end) {
-+		DEBUGP("pe src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
++		debug("pe src %lx dst %lx end %lx pstart %lx pend %lx astart %lx aend %lx\n",
 +		src, (ulong)dst, end, part_start, part_end, aligned_start, aligned_end);
-+		if ((mmc_block_read(mmc_buf, aligned_end, mmc_block_size)) < 0) {
++		if ((mmc_block_read(mmc_buf, aligned_end, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +		memcpy(mmc_buf, src, part_end);
-+		if ((mmc_block_write(aligned_end, mmc_buf, mmc_block_size)) < 0) {
++		if ((mmc_block_write(aligned_end, mmc_buf, mmc_block_size)) < 0)
 +			return -1;
-+		}
++
 +	}
 +	return 0;
 +}
 +
-+ulong
-+/****************************************************/
-+mmc_bread(int dev_num, ulong blknr, ulong blkcnt, ulong *dst)
-+/****************************************************/
++ulong mmc_bread(int dev_num, ulong blknr, ulong blkcnt, ulong *dst)
 +{
 +	int mmc_block_size = MMC_BLOCK_SIZE;
 +	ulong src = blknr * mmc_block_size + CFG_MMC_BASE;
@@ -386,10 +354,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +	return blocknr * block_len;
 +}
 +
-+int
-+/****************************************************/
-+mmc_init(int verbose)
-+/****************************************************/
++int mmc_init(int verbose)
 +{
 + 	int retries, rc = -ENODEV;
 +	int is_sd = 0;
@@ -398,7 +363,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +
 +	sdi = S3C2410_GetBase_SDI();
 +
-+	DEBUGP("mmc_init(PCLK=%u)\n", get_PCLK());
++	debug("mmc_init(PCLK=%u)\n", get_PCLK());
 +
 +	clk_power->CLKCON |= (1 << 9);
 +
@@ -435,7 +400,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +		printf("failed to detect SD Card, trying MMC\n");
 +		resp = mmc_cmd(MMC_CMD_SEND_OP_COND, 0x00ffc000, CMD_F_RESP);
 +		while (retries-- && resp && !(resp[4] & 0x80)) {
-+			DEBUGP("resp %x %x\n", resp[0], resp[1]);
++			debug("resp %x %x\n", resp[0], resp[1]);
 +			udelay(50);
 +			resp = mmc_cmd(1, 0x00ffff00, CMD_F_RESP);
 +		}
@@ -518,9 +483,9 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +mmc2info(ulong addr)
 +{
 +	/* FIXME hard codes to 32 MB device */
-+	if (addr >= CFG_MMC_BASE && addr < CFG_MMC_BASE + 0x02000000) {
++	if (addr >= CFG_MMC_BASE && addr < CFG_MMC_BASE + 0x02000000)
 +		return 1;
-+	}
++
 +	return 0;
 +}
 +
@@ -528,7 +493,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 Index: u-boot/include/asm-arm/arch-s3c24x0/mmc.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/asm-arm/arch-s3c24x0/mmc.h	2007-02-16 23:42:19.000000000 +0100
++++ u-boot/include/asm-arm/arch-s3c24x0/mmc.h	2007-02-17 12:16:41.000000000 +0100
 @@ -0,0 +1,112 @@
 +/*
 + *  linux/drivers/mmc/mmc_pxa.h
@@ -590,14 +555,14 @@ Index: u-boot/include/asm-arm/arch-s3c24x0/mmc.h
 +
 +typedef struct mmc_cid
 +{
-+/* FIXME: BYTE_ORDER */
-+   uchar year:4,
-+   month:4;
-+   uchar sn[3];
-+   uchar fwrev:4,
-+   hwrev:4;
-+   uchar name[6];
-+   uchar id[3];
++	/* FIXME: BYTE_ORDER */
++	uchar	year:4,
++		month:4;
++	uchar	sn[3];
++	uchar	fwrev:4,
++		hwrev:4;
++	uchar	name[6];
++	uchar	id[3];
 +} mmc_cid_t;
 +
 +typedef struct mmc_csd
@@ -645,7 +610,7 @@ Index: u-boot/include/asm-arm/arch-s3c24x0/mmc.h
 Index: u-boot/include/asm-arm/arch-s3c24x0/regs-sdi.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/asm-arm/arch-s3c24x0/regs-sdi.h	2007-02-16 23:42:19.000000000 +0100
++++ u-boot/include/asm-arm/arch-s3c24x0/regs-sdi.h	2007-02-17 11:55:31.000000000 +0100
 @@ -0,0 +1,110 @@
 +/* linux/include/asm/arch-s3c2410/regs-sdi.h
 + *
@@ -759,8 +724,8 @@ Index: u-boot/include/asm-arm/arch-s3c24x0/regs-sdi.h
 +#endif /* __ASM_ARM_REGS_SDI */
 Index: u-boot/include/s3c24x0.h
 ===================================================================
---- u-boot.orig/include/s3c24x0.h	2007-02-16 23:42:02.000000000 +0100
-+++ u-boot/include/s3c24x0.h	2007-02-16 23:42:19.000000000 +0100
+--- u-boot.orig/include/s3c24x0.h	2007-02-17 11:46:25.000000000 +0100
++++ u-boot/include/s3c24x0.h	2007-02-17 11:55:31.000000000 +0100
 @@ -637,13 +637,7 @@
  	S3C24X0_REG32	SDIDCNT;
  	S3C24X0_REG32	SDIDSTA;
