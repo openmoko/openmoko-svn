@@ -2,8 +2,8 @@ This provides support for the GTA01 keyboard
 
 Index: linux-2.6.20/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.20.orig/drivers/input/keyboard/Kconfig	2007-02-15 16:15:18.000000000 +0100
-+++ linux-2.6.20/drivers/input/keyboard/Kconfig	2007-02-15 16:18:52.000000000 +0100
+--- linux-2.6.20.orig/drivers/input/keyboard/Kconfig	2007-02-20 18:56:10.000000000 +0100
++++ linux-2.6.20/drivers/input/keyboard/Kconfig	2007-02-20 18:58:03.000000000 +0100
 @@ -214,4 +214,16 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called aaed2000_kbd.
@@ -23,8 +23,8 @@ Index: linux-2.6.20/drivers/input/keyboard/Kconfig
  endif
 Index: linux-2.6.20/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.20.orig/drivers/input/keyboard/Makefile	2007-02-15 16:15:18.000000000 +0100
-+++ linux-2.6.20/drivers/input/keyboard/Makefile	2007-02-15 16:18:52.000000000 +0100
+--- linux-2.6.20.orig/drivers/input/keyboard/Makefile	2007-02-20 18:56:10.000000000 +0100
++++ linux-2.6.20/drivers/input/keyboard/Makefile	2007-02-20 18:58:03.000000000 +0100
 @@ -13,6 +13,7 @@
  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
@@ -36,8 +36,8 @@ Index: linux-2.6.20/drivers/input/keyboard/Makefile
 Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/input/keyboard/gta01kbd.c	2007-02-15 16:20:10.000000000 +0100
-@@ -0,0 +1,214 @@
++++ linux-2.6.20/drivers/input/keyboard/gta01kbd.c	2007-02-20 19:48:56.000000000 +0100
+@@ -0,0 +1,234 @@
 +/*
 + * Keyboard driver for FIC GTA01 (Neo1973) GSM phone
 + *
@@ -79,6 +79,11 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	else
 +		input_report_key(gta01kbd_data->input, KEY_PHONE, 0);
 +
++	if (s3c2410_gpio_getpin(GTA01_GPIO_HOLD_KEY))
++		input_report_key(gta01kbd_data->input, KEY_PAUSE, 1);
++	else
++		input_report_key(gta01kbd_data->input, KEY_PAUSE, 0);
++
 +	input_sync(gta01kbd_data->input);
 +
 +	return IRQ_HANDLED;
@@ -114,7 +119,7 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +{
 +	struct gta01kbd *gta01kbd;
 +	struct input_dev *input_dev;
-+	int irq;
++	int irq_911, irq_hold;
 +
 +	gta01kbd = kzalloc(sizeof(struct gta01kbd), GFP_KERNEL);
 +	input_dev = input_allocate_device();
@@ -124,11 +129,15 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +		return -ENOMEM;
 +	}
 +
-+	if (pdev->resource[0].flags != IORESOURCE_MEM)
++	if (pdev->resource[0].flags != 0)
 +		return -EINVAL;
 +
-+	irq = s3c2410_gpio_getirq(pdev->resource[0].start);
-+	if (irq < 0)
++	irq_911 = s3c2410_gpio_getirq(pdev->resource[0].start);
++	if (irq_911 < 0)
++		return -EINVAL;
++
++	irq_hold = s3c2410_gpio_getirq(pdev->resource[1].start);
++	if (irq_hold < 0)
 +		return -EINVAL;
 +
 +	platform_set_drvdata(pdev, gta01kbd);
@@ -162,6 +171,7 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	input_dev->private = gta01kbd;
 +
 +	input_dev->evbit[0] = BIT(EV_KEY);
++	set_bit(SW_HEADPHONE_INSERT, input_dev->swbit);
 +#if 0
 +	input_dev->keycode = gta01kbd->keycode;
 +	input_dev->keycodesize = sizeof(unsigned char);
@@ -177,10 +187,19 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +
 +	input_register_device(gta01kbd->input);
 +
-+	if (request_irq(irq, gta01kbd_interrupt,
++	if (request_irq(irq_911, gta01kbd_interrupt,
 +			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
-+			"gta01kbd", gta01kbd))
++			"gta01kbd_911", gta01kbd))
 +		printk(KERN_WARNING "gta01kbd: Can't get IRQ\n");
++	enable_irq_wake(irq_911);
++
++	if (request_irq(irq_hold, gta01kbd_interrupt,
++			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
++			"gta01kbd_hold", gta01kbd))
++		printk(KERN_WARNING "gta01kbd: Can't get IRQ\n");
++	enable_irq_wake(irq_hold);
++
++	/* FIXME: headphone insert */
 +
 +#if 0
 +	mod_timer(&corgikbd->htimer, jiffies + msecs_to_jiffies(HINGE_SCAN_INTERVAL));
@@ -210,6 +229,7 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	struct gta01kbd *gta01kbd = platform_get_drvdata(pdev);
 +
 +	free_irq(s3c2410_gpio_getirq(pdev->resource[0].start), gta01kbd);
++	free_irq(s3c2410_gpio_getirq(pdev->resource[1].start), gta01kbd);
 +#if 0
 +	int i;
 +
