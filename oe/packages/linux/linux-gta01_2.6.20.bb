@@ -8,7 +8,7 @@ DEPENDS += "quilt-native"
 MOKOR = "moko7"
 PR = "${MOKOR}-r1"
 
-VANILLA_VERSION = "2.6.20"
+VANILLA_VERSION = "2.6.20.1"
 
 inherit kernel
 
