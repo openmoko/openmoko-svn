@@ -1,0 +1,53 @@
+Splash screen support
+=====================
+
+This is a description of the original splash screen setup process. We
+use the somewhat arcane JTAG upload method. Please check the OpenMoko
+Wiki for the updated and presumably more friendly instructions.
+
+
+Prerequities
+------------
+
+The u-boot running on the Neo must be from SVN revision 1061 or later.
+A reasonably recent version of Netpbm must be installed on the host. We
+assume that you have JTAG and openocd set up.
+
+
+Generating the splash image
+---------------------------
+
+The splash image is a raw dump of the 480x640x16 frame buffer, with RGB
+5:6:5 organization and HWSWP = 1. To save a lot of space and to greatly
+improve speed, we gzip the raw dump.
+
+- Download the official startup screen:
+  wget http://wiki.openmoko.org/images/c/c2/System_boot.png
+
+- Generate the compressed frame buffer dump:
+  ./splashimg.pl | gzip -9 >splash.gz
+
+
+Put the image into NAND Flash
+-----------------------------
+
+We use JTAG to upload the image into memory, then write it to Flash with
+u-boot. (Note: we assume that the image is not larger then 0x5000 bytes.
+If there is a size change, update these instructions accordingly.)
+
+- Start u-boot and enter the prompt.
+
+- With openocd, load the image into memory:
+  halt
+  load_binary wherever/splash.gz 0x32000000
+  resume
+
+- In u-boot, write it to NAND Flash:
+  nand erase splash
+  nand write.e 0x32000000 splash 0x5000
+
+- Set up the environment to load the splash screen:
+  setenv splashimage nand read.e 0x32000000 splash 0x5000\; unzip 0x32000000 0x33d00000 0x96000
+  saveenv
+
+After a reboot, the splash screen image will be displayed.
