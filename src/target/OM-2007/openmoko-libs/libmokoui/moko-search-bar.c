@@ -51,11 +51,11 @@ moko_search_bar_init (MokoSearchBar *self)
 {
     GtkToolItem* item = gtk_tool_item_new();
     gtk_widget_set_size_request( GTK_WIDGET(item), 320, 10 ); //FIXME get from style
-    GtkEntry* entry = gtk_entry_new();
-    gtk_widget_set_name( GTK_WIDGET(entry), "moko_search_entry" );
-    gtk_entry_set_has_frame( entry, FALSE );
+    GtkWidget* entry = gtk_entry_new();
+    gtk_widget_set_name( entry, "moko_search_entry" );
+    gtk_entry_set_has_frame( GTK_ENTRY (entry), FALSE );
     gtk_entry_set_text( GTK_ENTRY(entry), "foo" );
-    gtk_container_add( GTK_CONTAINER(item), GTK_WIDGET(entry) );
+    gtk_container_add( GTK_CONTAINER(item), entry );
     gtk_toolbar_insert( GTK_TOOLBAR (self), GTK_TOOL_ITEM(item), 0 );
 }
 

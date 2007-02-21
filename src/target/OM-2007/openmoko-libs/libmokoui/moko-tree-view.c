@@ -94,10 +94,10 @@ void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column)
 
 GtkWidget* moko_tree_view_put_into_scrolled_window(MokoTreeView* self)
 {
-    GtkScrolledWindow* scrolledwindow = gtk_scrolled_window_new( NULL, NULL );
+    GtkWidget* scrolledwindow = gtk_scrolled_window_new( NULL, NULL );
     //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
-    gtk_widget_set_size_request( GTK_WIDGET(scrolledwindow), 0, 170 );
-    gtk_scrolled_window_set_policy( scrolledwindow, GTK_POLICY_NEVER, GTK_POLICY_ALWAYS );
-    gtk_container_add( scrolledwindow, GTK_WIDGET(self) );
-    return GTK_WIDGET (scrolledwindow);
+    gtk_widget_set_size_request( scrolledwindow, 0, 170 );
+    gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW (scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS );
+    gtk_container_add( GTK_CONTAINER (scrolledwindow), GTK_WIDGET (self) );
+    return scrolledwindow;
 }
