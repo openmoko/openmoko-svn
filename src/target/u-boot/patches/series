@@ -39,6 +39,6 @@ uboot-dfu.patch
 # splash screen
 raise-limits.patch
 set-hwswp.patch
-enable-splash-bmp.patch
 splashimage-command.patch
 cmd-unzip.patch
+enable-splash-bmp.patch

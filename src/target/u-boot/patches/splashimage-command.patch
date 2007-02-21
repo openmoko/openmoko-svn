@@ -7,7 +7,7 @@ Index: u-boot/drivers/cfb_console.c
 ===================================================================
 --- u-boot.orig/drivers/cfb_console.c
 +++ u-boot/drivers/cfb_console.c
-@@ -1122,7 +1122,13 @@ static void *video_logo (void)
+@@ -1121,7 +1121,13 @@ static void *video_logo (void)
  	ulong addr;
  
  	if ((s = getenv ("splashimage")) != NULL) {
