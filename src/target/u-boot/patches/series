@@ -35,4 +35,10 @@ uboot-bbt-quiet.patch
 
 # those have to be implemented fully
 uboot-dfu.patch
-uboot-s3c2410-splash.patch
+
+# splash screen
+raise-limits.patch
+set-hwswp.patch
+enable-splash-bmp.patch
+splashimage-command.patch
+cmd-unzip.patch
