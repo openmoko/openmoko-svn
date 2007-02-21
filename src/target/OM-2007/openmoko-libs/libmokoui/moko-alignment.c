@@ -33,16 +33,6 @@ G_DEFINE_TYPE (MokoAlignment, moko_alignment, GTK_TYPE_ALIGNMENT)
 
 static GtkAlignmentClass* parent_class = NULL;
 
-//FIXME this is a bit hackish
-#define GTK_ALIGNMENT_GET_PRIVATE(o)  (G_TYPE_INSTANCE_GET_PRIVATE ((o), GTK_TYPE_ALIGNMENT, GtkAlignmentPrivate))
-typedef struct _GtkAlignmentPrivate
-{
-  guint padding_top;
-  guint padding_bottom;
-  guint padding_left;
-  guint padding_right;
-};
-
 typedef struct _MokoAlignmentPrivate
 {
 } MokoAlignmentPrivate;
@@ -57,7 +47,6 @@ static void
 moko_alignment_class_init (MokoAlignmentClass *klass)
 {
     /* hook parent */
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
     parent_class = g_type_class_peek_parent(klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
@@ -135,7 +124,6 @@ moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     gint width, height;
     gint border_width;
     gint padding_horizontal, padding_vertical;
-    GtkAlignmentPrivate *priv;
 
     padding_horizontal = 0;
     padding_vertical = 0;
@@ -160,9 +148,11 @@ moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
         border_width = GTK_CONTAINER (alignment)->border_width;
 
-        priv = GTK_ALIGNMENT_GET_PRIVATE (widget);
-        padding_horizontal = priv->padding_left + priv->padding_right;
-        padding_vertical = priv->padding_top + priv->padding_bottom;
+        guint p_top, p_bottom, p_left, p_right;
+        gtk_alignment_get_padding (GTK_ALIGNMENT (widget), &p_top, &p_bottom, &p_left, &p_right);
+
+        padding_horizontal = p_left + p_right;
+        padding_vertical = p_top + p_bottom;
 
         width = allocation->width - padding_horizontal - 2 * border_width;
         height = allocation->height - padding_vertical - 2 * border_width;
@@ -184,20 +174,20 @@ moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
         if (GTK_WIDGET_NO_WINDOW (widget))
         {
             if (gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL)
-                child_allocation.x = (1.0 - alignment->xalign) * (width - child_allocation.width) + allocation->x + border_width + priv->padding_right;
+                child_allocation.x = (1.0 - alignment->xalign) * (width - child_allocation.width) + allocation->x + border_width + p_right;
             else
-                child_allocation.x = alignment->xalign * (width - child_allocation.width) + allocation->x + border_width + priv->padding_left;
+                child_allocation.x = alignment->xalign * (width - child_allocation.width) + allocation->x + border_width + p_left;
 
-            child_allocation.y = alignment->yalign * (height - child_allocation.height) + allocation->y + border_width + priv->padding_top;
+            child_allocation.y = alignment->yalign * (height - child_allocation.height) + allocation->y + border_width + p_top;
         }
         else
         {
             if (gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL)
-                child_allocation.x = (1.0 - alignment->xalign) * (width - child_allocation.width) + border_width + priv->padding_right;
+                child_allocation.x = (1.0 - alignment->xalign) * (width - child_allocation.width) + border_width + p_right;
             else
-                child_allocation.x = alignment->xalign * (width - child_allocation.width) + border_width + priv->padding_left;
+                child_allocation.x = alignment->xalign * (width - child_allocation.width) + border_width + p_left;
 
-            child_allocation.y = alignment->yalign * (height - child_allocation.height) + border_width + priv->padding_top;
+            child_allocation.y = alignment->yalign * (height - child_allocation.height) + border_width + p_top;
         }
         gtk_widget_size_allocate (bin->child, &child_allocation);
     }
