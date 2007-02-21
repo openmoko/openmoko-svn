@@ -1,22 +1,33 @@
-Resume support for low-level uboot code
+Resume support for low-level uboot code, Version 5
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
---- u-boot-1.2.0/board/neo1973/lowlevel_init.S	2007-02-20 00:49:00.000000000 +0000
-+++ u-boot-1.2.0-bjd1/board/neo1973/lowlevel_init.S	2007-02-21 01:06:02.000000000 +0000
-@@ -40,6 +40,8 @@
-  *
-  */
+Index: u-boot/cpu/arm920t/start.S
+===================================================================
+--- u-boot.orig/cpu/arm920t/start.S	2007-02-21 22:52:55.000000000 +0100
++++ u-boot/cpu/arm920t/start.S	2007-02-21 23:21:08.000000000 +0100
+@@ -150,11 +150,33 @@
+ 	str	r1, [r0]
+ # endif
  
-+#include "s3c2410.h"
-+	
- #define BWSCON	0x48000000
- 
- /* BWSCON */
-@@ -134,6 +136,17 @@ _TEXT_BASE:
- 
- .globl lowlevel_init
- lowlevel_init:
++	/* default FCLK is 202 MHz ! */
++#define LOCKTIME	0x4c000000
++#define MPLLCON		0x4c000004
++#define MPLLCFG		((0x90 << 12) + (0x2 << 4) + 0x2)
++	ldr	r0, =LOCKTIME
++	mov	r1, #0xffffff
++	str	r1, [r0]
++
++	ldr	r0, =MPLLCON
++	ldr	r1, =MPLLCFG
++	str	r1, [r0]
++
+ 	/* FCLK:HCLK:PCLK = 1:2:4 */
+-	/* default FCLK is 120 MHz ! */
+ 	ldr	r0, =CLKDIVN
+ 	mov	r1, #3
+ 	str	r1, [r0]
++
 +	/* take sdram out of power down */
 +	ldr	r0, =0x56000080		/* misccr */
 +	ldr	r1, [ r0 ]
@@ -27,25 +38,16 @@ Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 +	mov	r1, #128
 +1:	subs	r1, r1, #1
 +	bpl	1b
-+	
- 	/* memory control configuration */
- 	/* make r0 relative the current location so that it */
- 	/* reads SMRDATA out of FLASH rather than memory ! */
-@@ -152,7 +165,7 @@ lowlevel_init:
- 	mrc	p15, 0, r1 ,c1 ,c0, 0
- 	orr	r1, r1, #0xc0000000
- 	mcr	p15, 0, r1, c1, c0, 0
--
-+		
- #if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
- 	/* switch on power for NAND */
- 	ldr	r0, =0x56000010	/* GPBCON */
-@@ -165,7 +178,21 @@ lowlevel_init:
- 	orr	r1, r1, #(1 <<2)
- 	str	r1, [r0]
- #endif
--
-+	
+ #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
+ 
+ 	/*
+@@ -163,7 +185,23 @@
+ 	 */
+ #ifndef CONFIG_SKIP_LOWLEVEL_INIT
+ 	bl	cpu_init_crit
+-#endif
++
++#if defined(CONFIG_S3C2410)
 +	/* ensure some refresh has happened */
 +	mov	r1, #4096
 +1:	subs	r1, r1, #1
@@ -58,8 +60,55 @@ Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 +	beq	not_resuming
 +
 +	ldr	pc, [r1, #4]		/* gstatus3 */
-+	
 +not_resuming:
- 	/* everything is fine now */
- 	mov	pc, lr
++#endif /* CONFIG_S3C2410 */
++#endif /* CONFIG_SKIP_LOWLEVEL_INIT */
  
+ #ifndef CONFIG_SKIP_RELOCATE_UBOOT
+ #ifndef CONFIG_S3C2410_NAND_BOOT
+Index: u-boot/include/s3c2410.h
+===================================================================
+--- u-boot.orig/include/s3c2410.h	2007-02-21 15:52:58.000000000 +0100
++++ u-boot/include/s3c2410.h	2007-02-21 15:54:34.000000000 +0100
+@@ -233,4 +233,40 @@
+ 		 rINTPND;\
+ 		 }
+ /* Wait until rINTPND is changed for the case that the ISR is very short. */
++
++#define S3C2410_MISCCR_USBDEV	    (0<<3)
++#define S3C2410_MISCCR_USBHOST	    (1<<3)
++
++#define S3C2410_MISCCR_CLK0_MPLL    (0<<4)
++#define S3C2410_MISCCR_CLK0_UPLL    (1<<4)
++#define S3C2410_MISCCR_CLK0_FCLK    (2<<4)
++#define S3C2410_MISCCR_CLK0_HCLK    (3<<4)
++#define S3C2410_MISCCR_CLK0_PCLK    (4<<4)
++#define S3C2410_MISCCR_CLK0_DCLK0   (5<<4)
++#define S3C2410_MISCCR_CLK0_MASK    (7<<4)
++
++#define S3C2410_MISCCR_CLK1_MPLL    (0<<8)
++#define S3C2410_MISCCR_CLK1_UPLL    (1<<8)
++#define S3C2410_MISCCR_CLK1_FCLK    (2<<8)
++#define S3C2410_MISCCR_CLK1_HCLK    (3<<8)
++#define S3C2410_MISCCR_CLK1_PCLK    (4<<8)
++#define S3C2410_MISCCR_CLK1_DCLK1   (5<<8)
++#define S3C2410_MISCCR_CLK1_MASK    (7<<8)
++
++#define S3C2410_MISCCR_USBSUSPND0   (1<<12)
++#define S3C2410_MISCCR_USBSUSPND1   (1<<13)
++
++#define S3C2410_MISCCR_nRSTCON	    (1<<16)
++
++#define S3C2410_MISCCR_nEN_SCLK0    (1<<17)
++#define S3C2410_MISCCR_nEN_SCLK1    (1<<18)
++#define S3C2410_MISCCR_nEN_SCLKE    (1<<19)
++#define S3C2410_MISCCR_SDSLEEP	    (7<<17)
++
++#define S3C2410_CLKSLOW_UCLK_OFF	(1<<7)
++#define S3C2410_CLKSLOW_MPLL_OFF	(1<<5)
++#define S3C2410_CLKSLOW_SLOW		(1<<4)
++#define S3C2410_CLKSLOW_SLOWVAL(x)	(x)
++#define S3C2410_CLKSLOW_GET_SLOWVAL(x)	((x) & 7)
++
+ #endif /*__S3C2410_H__*/
+

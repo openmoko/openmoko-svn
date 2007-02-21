@@ -1004,55 +1004,10 @@ Index: u-boot/drivers/usbdcore_s3c2410.h
 +#define UDC_BULK_PACKET_SIZE	16
 +
 +#endif
-Index: u-boot/include/s3c2410.h
-===================================================================
---- u-boot.orig/include/s3c2410.h	2007-02-16 23:57:06.000000000 +0100
-+++ u-boot/include/s3c2410.h	2007-02-16 23:57:08.000000000 +0100
-@@ -233,4 +233,40 @@
- 		 rINTPND;\
- 		 }
- /* Wait until rINTPND is changed for the case that the ISR is very short. */
-+
-+#define S3C2410_MISCCR_USBDEV	    (0<<3)
-+#define S3C2410_MISCCR_USBHOST	    (1<<3)
-+
-+#define S3C2410_MISCCR_CLK0_MPLL    (0<<4)
-+#define S3C2410_MISCCR_CLK0_UPLL    (1<<4)
-+#define S3C2410_MISCCR_CLK0_FCLK    (2<<4)
-+#define S3C2410_MISCCR_CLK0_HCLK    (3<<4)
-+#define S3C2410_MISCCR_CLK0_PCLK    (4<<4)
-+#define S3C2410_MISCCR_CLK0_DCLK0   (5<<4)
-+#define S3C2410_MISCCR_CLK0_MASK    (7<<4)
-+
-+#define S3C2410_MISCCR_CLK1_MPLL    (0<<8)
-+#define S3C2410_MISCCR_CLK1_UPLL    (1<<8)
-+#define S3C2410_MISCCR_CLK1_FCLK    (2<<8)
-+#define S3C2410_MISCCR_CLK1_HCLK    (3<<8)
-+#define S3C2410_MISCCR_CLK1_PCLK    (4<<8)
-+#define S3C2410_MISCCR_CLK1_DCLK1   (5<<8)
-+#define S3C2410_MISCCR_CLK1_MASK    (7<<8)
-+
-+#define S3C2410_MISCCR_USBSUSPND0   (1<<12)
-+#define S3C2410_MISCCR_USBSUSPND1   (1<<13)
-+
-+#define S3C2410_MISCCR_nRSTCON	    (1<<16)
-+
-+#define S3C2410_MISCCR_nEN_SCLK0    (1<<17)
-+#define S3C2410_MISCCR_nEN_SCLK1    (1<<18)
-+#define S3C2410_MISCCR_nEN_SCLKE    (1<<19)
-+#define S3C2410_MISCCR_SDSLEEP	    (7<<17)
-+
-+#define S3C2410_CLKSLOW_UCLK_OFF	(1<<7)
-+#define S3C2410_CLKSLOW_MPLL_OFF	(1<<5)
-+#define S3C2410_CLKSLOW_SLOW		(1<<4)
-+#define S3C2410_CLKSLOW_SLOWVAL(x)	(x)
-+#define S3C2410_CLKSLOW_GET_SLOWVAL(x)	((x) & 7)
-+
- #endif /*__S3C2410_H__*/
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-16 23:57:08.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-16 23:57:08.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-21 15:54:34.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-21 20:54:28.000000000 +0100
 @@ -43,7 +43,7 @@
  
  #include <common.h>
