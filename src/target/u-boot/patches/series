@@ -42,3 +42,5 @@ set-hwswp.patch
 splashimage-command.patch
 cmd-unzip.patch
 enable-splash-bmp.patch
+
+dynenv-harden.patch
