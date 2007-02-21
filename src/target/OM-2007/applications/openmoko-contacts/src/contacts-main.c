@@ -176,7 +176,7 @@ main (int argc, char **argv)
 	data->ui = g_new0 (ContactsUI, 1);
 	data->initialising = TRUE; /* initialising until contacts have been loaded for the first time */
 	bacon_message_connection_set_callback (
-		mc, contacts_bacon_cb, data);
+		mc, (BaconMessageReceivedFunc)contacts_bacon_cb, data);
 
 	/* Set critical errors to close application */
 	//g_log_set_always_fatal (G_LOG_LEVEL_CRITICAL);
@@ -201,10 +201,10 @@ main (int argc, char **argv)
 #endif
 
 	/* Start */
-	g_idle_add (open_book, data);
+	g_idle_add ((GSourceFunc)open_book, data);
 	if (argv[1] != NULL) {
 		data->file = argv[1];
-		g_idle_add (contacts_import_from_param, data);
+		g_idle_add ((GSourceFunc)contacts_import_from_param, data);
 	}
 	
 	widget = data->ui->main_window;
