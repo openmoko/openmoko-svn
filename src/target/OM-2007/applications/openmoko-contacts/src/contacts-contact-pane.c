@@ -66,6 +66,7 @@ typedef struct {
 
 static GQuark attr_quark = 0;
 static GQuark field_quark = 0;
+static GQuark entry_quark = 0;
 
 static FieldInfo fields[] = {
   { EVC_FN, "Name", NULL, TRUE, "<big><b>%s</b></big>", NULL },
@@ -185,7 +186,15 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
   
   /* TODO: this only handles single-valued attributes at the moment */
   e_vcard_attribute_remove_values (attr);
-  e_vcard_attribute_add_value (attr, value);
+
+  int i = 0;
+  gchar* s;
+  gchar** values = g_strsplit (value, ";", 0);
+  while ((s = values[i])) {
+    e_vcard_attribute_add_value (attr, g_strstrip (s));
+    i++;
+  }
+  g_strfreev (values);
 
   pane->priv->dirty = TRUE;
 }
@@ -309,17 +318,45 @@ field_button_add_cb (GtkWidget *button, ContactsContactPane *pane)
 static void
 field_button_remove_cb (GtkWidget *button,  ContactsContactPane *pane)
 {
-  GtkWidget*box;
+  GtkWidget *box, *entry;
   EVCardAttribute *attr;
+  FieldInfo *info;
+  GList *attrs;
+  gboolean remove = FALSE;
+  gchar *type, *old_type;
 
   box = button->parent->parent;
   if (!GTK_IS_HBOX (box))
     return;
 
   attr = g_object_get_qdata (G_OBJECT (box), attr_quark);
-  e_vcard_remove_attribute (E_VCARD (pane->priv->contact), attr);
+  entry = g_object_get_qdata (G_OBJECT (box), entry_quark);
+  info = g_object_get_qdata (G_OBJECT (box), field_quark);
 
-  gtk_container_remove (GTK_CONTAINER (pane), box);
+  /* check this wasn't the last attribute of it's type before removing it */
+  old_type = get_type (attr);
+  if (old_type) {
+    for (attrs = e_vcard_get_attributes (E_VCARD (pane->priv->contact));
+         (attrs = g_list_next (attrs)); ) {
+      type = get_type (attrs->data);
+      if (type && !strcmp (type, old_type)) {
+        remove = TRUE;
+        break;
+      }
+
+    }
+  }
+
+  if (remove) {
+    gtk_container_remove (GTK_CONTAINER (pane), box);
+    e_vcard_remove_attribute (E_VCARD (pane->priv->contact), attr);
+  }
+  else {
+    /* clear the attribute and entry widget */
+    e_vcard_attribute_remove_values (attr);
+    field_set_blank (GTK_ENTRY (entry), info);
+  }
+
 }
 
 static GtkWidget *
@@ -424,8 +461,22 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info, 
   
   /* The value field itself */
 
-  /* FIXME: fix this for multivalued attributes */
-  attr_value = e_vcard_attribute_get_value (attr);
+  /* load the attribute value, returning a semicolon seperated string for
+   * multivalue attributes
+   */
+  GList *l = e_vcard_attribute_get_values (attr);
+  if (l)
+  {
+    attr_value = g_strdup (l->data);
+
+    while ((l = g_list_next (l)))
+    {
+      gchar *old = attr_value;
+      attr_value = g_strdup_printf ("%s; %s", old, (gchar*) l->data);
+      g_free (old);
+    }
+  }
+
 
   if (pane->priv->editable) {
     value = gtk_entry_new ();
@@ -459,6 +510,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info, 
   /****/
   g_object_set_qdata (G_OBJECT (box), attr_quark, attr);
   g_object_set_qdata (G_OBJECT (box), field_quark, (gpointer)info);
+  g_object_set_qdata (G_OBJECT (box), entry_quark, value);
 
 
   gtk_widget_show_all (box);
@@ -588,6 +640,8 @@ contacts_contact_pane_class_init (ContactsContactPaneClass *klass)
   /* Initialise the quarks */
   attr_quark = g_quark_from_static_string("contact-pane-attribute");
   field_quark = g_quark_from_static_string("contact-pane-fieldinfo");
+  entry_quark = g_quark_from_static_string("contact-pane-entry");
+
 }
 
 static void

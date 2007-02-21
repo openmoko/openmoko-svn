@@ -1,3 +1,10 @@
+2007-02-21  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-contact-pane.c:
+
+	- Add support for handling multi-valued attributes.
+	- Prevent removal of a field if it is the last of its type in the editor.
+
 2007-02-06  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-main.c: (start_query), (opened_book), (main): Fixed variable
