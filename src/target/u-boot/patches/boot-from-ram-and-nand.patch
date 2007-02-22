@@ -1,0 +1,77 @@
+Index: u-boot/cpu/arm920t/start.S
+===================================================================
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -157,17 +157,18 @@ reset:
+ 	str	r1, [r0]
+ #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
+ 
+-	/*
+-	 * we do sys-critical inits only at reboot,
+-	 * not when booting from ram!
+-	 */
+-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
++#if !defined(CONFIG_SKIP_LOWLEVEL_INIT ) && !defined(CONFIG_LL_INIT_NAND_ONLY)
+ 	bl	cpu_init_crit
+ #endif
+ 
+-#ifndef CONFIG_S3C2410_NAND_BOOT
+-relocate:				/* relocate U-Boot to RAM	    */
+ 	adr	r0, _start		/* r0 <- current position of code   */
++#ifdef CONFIG_S3C2410_NAND_BOOT
++	teq	r0, #0			/* are we running from NAND ?	    */
++	beq	nand_load
++#endif /* CONFIG_S3C2410_NAND_BOOT */
++
++relocate:				/* relocate U-Boot to RAM	    */
++	adr	r0, _start
+ 	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
+ 	cmp     r0, r1                  /* don't reloc during debug         */
+ 	beq     done_relocate
+@@ -187,10 +188,12 @@ copy_loop:
+ 	ldr	pc, _done_relocate	/* jump to relocated code */
+ _done_relocate:
+ 	.word	done_relocate
+-done_relocate:
+-#else /* NAND_BOOT */
+-relocate:
+-copy_myself:
++
++nand_load:
++#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
++	bl	cpu_init_crit
++#endif
++
+ 	/* mov	r10, lr */
+ 
+ 	@ reset NAND
+@@ -274,7 +277,7 @@ notmatch:
+ #endif
+ 1:	b	1b
+ done_nand_read:
+-#endif /* NAND_BOOT */
++done_relocate:
+ 
+ #if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
+ 	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
+Index: u-boot/include/configs/neo1973.h
+===================================================================
+--- u-boot.orig/include/configs/neo1973.h
++++ u-boot/include/configs/neo1973.h
+@@ -26,14 +26,10 @@
+ #ifndef __CONFIG_H
+ #define __CONFIG_H
+ 
+-#if defined(BUILD_FOR_RAM)
+-/* If we want to start u-boot from inside RAM */
+-#define CONFIG_SKIP_LOWLEVEL_INIT	1
+-#else
+-/* we want to start u-boot directly from within NAND flash */
++/* we want to be able to start u-boot directly from within NAND flash */
++#define CONFIG_LL_INIT_NAND_ONLY
+ #define CONFIG_S3C2410_NAND_BOOT	1
+ #define CONFIG_S3C2410_NAND_SKIP_BAD	1
+-#endif
+ 
+ /*
+  * High Level Configuration Options

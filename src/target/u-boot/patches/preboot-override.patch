@@ -1,0 +1,86 @@
+Index: u-boot/cpu/arm920t/start.S
+===================================================================
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -77,6 +77,12 @@ _fiq:			.word fiq
+  *************************************************************************
+  */
+ 
++#ifdef CFG_PREBOOT_OVERRIDE
++.globl	preboot_override
++preboot_override:
++	.word	0
++#endif
++
+ _TEXT_BASE:
+ 	.word	TEXT_BASE
+ 
+Index: u-boot/include/configs/neo1973.h
+===================================================================
+--- u-boot.orig/include/configs/neo1973.h
++++ u-boot/include/configs/neo1973.h
+@@ -205,6 +205,7 @@
+ #define	CFG_ENV_IS_IN_NAND	1
+ #define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
+ #define CFG_ENV_OFFSET_OOB    1               /* Location of ENV stored in block 0 OOB */
++#define	CFG_PREBOOT_OVERRIDE	1	/* allow preboot from memory */
+ 
+ #define NAND_MAX_CHIPS		1
+ #define CFG_NAND_BASE		0x4e000000
+Index: u-boot/common/main.c
+===================================================================
+--- u-boot.orig/common/main.c
++++ u-boot/common/main.c
+@@ -85,6 +85,11 @@ int do_mdm_init = 0;
+ extern void mdm_init(void); /* defined in board.c */
+ #endif
+ 
++#ifdef CFG_PREBOOT_OVERRIDE
++extern char *preboot_override;
++#endif
++
++
+ /***************************************************************************
+  * Watch for 'delay' seconds for autoboot stop or autoboot delay string.
+  * returns: 0 -  no key string, allow autoboot
+@@ -306,8 +311,8 @@ void main_loop (void)
+ 	char *s;
+ 	int bootdelay;
+ #endif
+-#ifdef CONFIG_PREBOOT
+-	char *p;
++#if defined(CONFIG_PREBOOT) || defined(CFG_PREBOOT_OVERRIDE)
++	char *p = NULL;
+ #endif
+ #ifdef CONFIG_BOOTCOUNT_LIMIT
+ 	unsigned long bootcount = 0;
+@@ -364,8 +369,19 @@ void main_loop (void)
+ 	install_auto_complete();
+ #endif
+ 
++#if defined(CONFIG_PREBOOT) || defined(CFG_PREBOOT_OVERRIDE)
+ #ifdef CONFIG_PREBOOT
+-	if ((p = getenv ("preboot")) != NULL) {
++	p = getenv ("preboot");
++#endif
++#ifdef CFG_PREBOOT_OVERRIDE
++	if (preboot_override) {
++		/* make sure we can overwrite the load area if we want to */
++		p = strdup(preboot_override);
++		/* clean the image in case we want to flash it */
++		preboot_override = NULL;
++	}
++#endif /* CFG_PREBOOT_OVERRIDE */
++	if (p) {
+ # ifdef CONFIG_AUTOBOOT_KEYED
+ 		int prev = disable_ctrlc(1);	/* disable Control C checking */
+ # endif
+@@ -381,7 +397,7 @@ void main_loop (void)
+ 		disable_ctrlc(prev);	/* restore Control C checking */
+ # endif
+ 	}
+-#endif /* CONFIG_PREBOOT */
++#endif /* CONFIG_PREBOOT || CFG_PREBOOT_OVERRIDE */
+ 
+ #if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
+ 	s = getenv ("bootdelay");
