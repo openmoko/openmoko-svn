@@ -75,3 +75,5 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     return GTK_WIDGET(applet);
 }
 
+
+
