@@ -8,6 +8,8 @@ cpu/arm920t/start.S: added variable "preboot_override" at known location
   (_start+0x40)
 common/main.c (main_loop): if preboot_override is set, execute the command
   string found there
+common/env_common.c (env_relocate):  if preboot_override is set, always use the
+  default environment
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -102,3 +104,33 @@ Index: u-boot/common/main.c
  
  #if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
  	s = getenv ("bootdelay");
+Index: u-boot/common/env_common.c
+===================================================================
+--- u-boot.orig/common/env_common.c
++++ u-boot/common/env_common.c
+@@ -37,6 +37,10 @@
+ # define SHOW_BOOT_PROGRESS(arg)
+ #endif
+ 
++#ifdef CFG_PREBOOT_OVERRIDE
++extern char *preboot_override;
++#endif
++
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #ifdef CONFIG_AMIGAONEG3SE
+@@ -234,7 +238,14 @@ void env_relocate (void)
+ 		puts ("*** Warning - bad CRC, using default environment\n\n");
+ 		SHOW_BOOT_PROGRESS (-1);
+ #endif
++	}
++
++#ifdef CFG_PREBOOT_OVERRIDE
++	if (preboot_override)
++		gd->env_valid = 0;
++#endif
+ 
++	if (gd->env_valid == 0) {
+ 		if (sizeof(default_environment) > ENV_SIZE)
+ 		{
+ 			puts ("*** Error - default environment is too large\n\n");
