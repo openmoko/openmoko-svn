@@ -17,9 +17,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-16 23:53:09.000000000 +0100
-+++ u-boot/drivers/nand/nand_bbt.c	2007-02-16 23:53:36.000000000 +0100
-@@ -1049,4 +1049,61 @@
+--- u-boot.orig/drivers/nand/nand_bbt.c
++++ u-boot/drivers/nand/nand_bbt.c
+@@ -1049,4 +1049,63 @@ int nand_isbad_bbt (struct mtd_info *mtd
  	return 1;
  }
  
@@ -31,8 +31,10 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +   "initrd" is sized such that it can hold two uncompressed 16 bit 640*480
 +   images: 640*480*2*2 = 1228800 < 1245184. */
 +
-+static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x130000, 0x3c9c000 };
-+static char *part_names[] = { "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
++static unsigned int part_size[] = {
++    CFG_UBOOT_SIZE, 0x4000, 0x200000, 0xa0000, 0x3d5c000-CFG_UBOOT_SIZE };
++static char *part_names[] = {
++    "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
 +
 +int nand_create_mtd_dynpart(struct mtd_info *mtd)
 +{
@@ -83,9 +85,9 @@ Index: u-boot/drivers/nand/nand_bbt.c
  #endif
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-16 23:53:34.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-16 23:53:36.000000000 +0100
-@@ -102,7 +102,7 @@
+--- u-boot.orig/include/configs/neo1973.h
++++ u-boot/include/configs/neo1973.h
+@@ -99,7 +99,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
  			/* CFG_CMD_USB	 | */ \
@@ -94,7 +96,7 @@ Index: u-boot/include/configs/neo1973.h
  			CFG_CMD_DIAG	 | \
  			/* CFG_CMD_HWFLOW	 | */ \
  			CFG_CMD_SAVES	 | \
-@@ -212,13 +212,13 @@
+@@ -209,13 +209,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT	1
  
@@ -111,7 +113,7 @@ Index: u-boot/include/configs/neo1973.h
  #endif
  
  /* ATAG configuration */
-@@ -254,4 +254,7 @@
+@@ -251,4 +251,7 @@
  
  #define CONFIG_S3C2410_NAND_BBT                1
  
@@ -121,9 +123,9 @@ Index: u-boot/include/configs/neo1973.h
  #endif	/* __CONFIG_H */
 Index: u-boot/common/cmd_jffs2.c
 ===================================================================
---- u-boot.orig/common/cmd_jffs2.c	2007-02-16 23:53:09.000000000 +0100
-+++ u-boot/common/cmd_jffs2.c	2007-02-16 23:53:36.000000000 +0100
-@@ -2123,6 +2123,18 @@
+--- u-boot.orig/common/cmd_jffs2.c
++++ u-boot/common/cmd_jffs2.c
+@@ -2132,6 +2132,18 @@ int do_jffs2_mtdparts(cmd_tbl_t *cmdtp, 
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -142,7 +144,7 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2188,6 +2200,13 @@
+@@ -2197,6 +2209,13 @@ U_BOOT_CMD(
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );

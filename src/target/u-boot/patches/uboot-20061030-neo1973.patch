@@ -695,7 +695,7 @@ Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973.h
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,259 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -733,6 +733,8 @@ Index: u-boot/include/configs/neo1973.h
 +#define CONFIG_S3C2410_NAND_BOOT	1
 +#define CONFIG_S3C2410_NAND_SKIP_BAD	1
 +#endif
++
++#define CFG_UBOOT_SIZE		0x40000 /* size of u-boot, for NAND loading */
 +
 +/*
 + * High Level Configuration Options
