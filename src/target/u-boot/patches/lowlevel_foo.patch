@@ -155,18 +155,14 @@ Index: u-boot/board/neo1973/Makefile
 ===================================================================
 --- u-boot.orig/board/neo1973/Makefile
 +++ u-boot/board/neo1973/Makefile
-@@ -23,6 +23,10 @@
- 
- include $(TOPDIR)/config.mk
+@@ -28,14 +28,31 @@ LIB	= lib$(BOARD).a
+ OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o
+ SOBJS	:= lowlevel_init.o
  
 +.PHONY:	all
 +
 +all:	$(LIB) lowevel_foo.bin
 +
- LIB	= lib$(BOARD).a
- 
- OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o
-@@ -31,11 +35,24 @@ SOBJS	:= lowlevel_init.o
  $(LIB):	$(OBJS) $(SOBJS)
  	$(AR) crv $@ $(OBJS) $(SOBJS)
  
