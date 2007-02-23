@@ -52,3 +52,4 @@ enable-splash-bmp.patch
 
 # for automated installation
 preboot-override.patch
+lowlevel_foo.patch
