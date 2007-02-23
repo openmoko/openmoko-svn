@@ -6,7 +6,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -158,18 +158,55 @@ reset:
+@@ -158,18 +158,52 @@ reset:
  	str	r1, [r0]
  # endif
  
@@ -55,10 +55,7 @@ Index: u-boot/cpu/arm920t/start.S
 +	ldr	r1, =0x560000B4		/* gstatus2 */
 +	ldr	r0, [ r1 ]
 +	tst	r0, #0x02		/* is this resume from power down */
-+	beq	not_resuming
-+
-+	ldr	pc, [r1, #4]		/* gstatus3 */
-+not_resuming:
++	ldrne	pc, [r1, #4]		/* gstatus3 */
 +#endif /* CONFIG_S3C2410 */
 +#endif /* CONFIG_SKIP_LOWLEVEL_INIT */
  

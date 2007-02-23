@@ -5,9 +5,9 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -332,6 +332,24 @@ done_nand_read:
+@@ -328,6 +328,22 @@ done_nand_read:
+ 	strb	r1, [r0]
  #endif /* CONFIG_S3C2410_NAND_BOOT */
- 
  done_relocate:
 +
 +#if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
@@ -22,9 +22,7 @@ Index: u-boot/cpu/arm920t/start.S
 +	ldr	r3, [r1], #4
 +	str	r3, [r0], #4
 +	subs	r2, r2, #4
-+	beq	irqvec_cpy_done
 +	bne	irqvec_cpy_next
-+irqvec_cpy_done:
 +#endif /* CONFIG_USE_IRQ */
 +
  #endif /* CONFIG_SKIP_RELOCATE_UBOOT */
