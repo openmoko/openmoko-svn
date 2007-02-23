@@ -1,8 +1,20 @@
+Auto-detect whether we're booting from RAM or NAND, and act accordingly. This
+allows us to use the same u-boot binary for all boot modes.
+
+include/configs/neo1973.h: introduced new config option
+  CONFIG_LL_INIT_NAND_ONLY to perform low-level initialization only when
+  booting from NAND
+include/configs/neo1973.h: got rid of BUILD_FOR_RAM
+cpu/arm920t/start.S: detect if we need to boot from NAND at run time (i.e., if
+  we're running at address 0)
+
+- Werner Almesberger <werner@openmoko.org>
+
 Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -157,17 +157,18 @@ reset:
+@@ -157,18 +157,21 @@ reset:
  	str	r1, [r0]
  #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
  
@@ -10,25 +22,27 @@ Index: u-boot/cpu/arm920t/start.S
 -	 * we do sys-critical inits only at reboot,
 -	 * not when booting from ram!
 -	 */
--#ifndef CONFIG_SKIP_LOWLEVEL_INIT
-+#if !defined(CONFIG_SKIP_LOWLEVEL_INIT ) && !defined(CONFIG_LL_INIT_NAND_ONLY)
+ #ifndef CONFIG_SKIP_LOWLEVEL_INIT
++#ifndef CONFIG_LL_INIT_NAND_ONLY
  	bl	cpu_init_crit
  #endif
++#endif
  
+ #ifndef CONFIG_SKIP_RELOCATE_UBOOT
 -#ifndef CONFIG_S3C2410_NAND_BOOT
 -relocate:				/* relocate U-Boot to RAM	    */
  	adr	r0, _start		/* r0 <- current position of code   */
++
 +#ifdef CONFIG_S3C2410_NAND_BOOT
-+	teq	r0, #0			/* are we running from NAND ?	    */
++	teq	r0, #0			/* are we running from NAND ?       */
 +	beq	nand_load
 +#endif /* CONFIG_S3C2410_NAND_BOOT */
 +
 +relocate:				/* relocate U-Boot to RAM	    */
-+	adr	r0, _start
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
  	beq     done_relocate
-@@ -187,10 +188,12 @@ copy_loop:
+@@ -188,10 +191,13 @@ copy_loop:
  	ldr	pc, _done_relocate	/* jump to relocated code */
  _done_relocate:
  	.word	done_relocate
@@ -37,6 +51,7 @@ Index: u-boot/cpu/arm920t/start.S
 -relocate:
 -copy_myself:
 +
++#ifdef CONFIG_S3C2410_NAND_BOOT
 +nand_load:
 +#if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
 +	bl	cpu_init_crit
@@ -45,15 +60,16 @@ Index: u-boot/cpu/arm920t/start.S
  	/* mov	r10, lr */
  
  	@ reset NAND
-@@ -274,7 +277,7 @@ notmatch:
+@@ -275,7 +281,8 @@ notmatch:
  #endif
  1:	b	1b
  done_nand_read:
 -#endif /* NAND_BOOT */
++#endif /* CONFIG_S3C2410_NAND_BOOT */
 +done_relocate:
+ #endif /* CONFIG_SKIP_RELOCATE_UBOOT */
  
- #if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
- 	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
+ 	/* Set up the stack						    */
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973.h

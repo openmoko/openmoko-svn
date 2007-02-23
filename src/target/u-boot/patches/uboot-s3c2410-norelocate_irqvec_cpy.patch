@@ -1,15 +1,15 @@
 If we've somehow magically make u-boot end up in RAM (JTAG, ...), then that RAM
 is mapped to 0x30000000 and not 0, so we need to copy the interrupt vectors, etc. 
 
-Index: u-boot.git/cpu/arm920t/start.S
+Index: u-boot/cpu/arm920t/start.S
 ===================================================================
---- u-boot.git.orig/cpu/arm920t/start.S	2007-02-04 14:25:20.000000000 +0100
-+++ u-boot.git/cpu/arm920t/start.S	2007-02-04 14:39:42.000000000 +0100
-@@ -277,6 +277,23 @@
- 1:	b	1b
- done_nand_read:
- #endif /* NAND_BOOT */
-+#else  /* CONFIG_SKIP_RELOCATE_UBOOT */
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -332,6 +332,24 @@ done_nand_read:
+ #endif /* CONFIG_S3C2410_NAND_BOOT */
+ 
+ done_relocate:
++
 +#if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
 +	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
 +	   ended up in RAM, then that ram is mapped to 0x30000000 and not 0.
@@ -26,6 +26,7 @@ Index: u-boot.git/cpu/arm920t/start.S
 +	bne	irqvec_cpy_next
 +irqvec_cpy_done:
 +#endif /* CONFIG_USE_IRQ */
- #endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
++
+ #endif /* CONFIG_SKIP_RELOCATE_UBOOT */
  
  	/* Set up the stack						    */

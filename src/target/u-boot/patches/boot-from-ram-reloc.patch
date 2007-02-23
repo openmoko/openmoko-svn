@@ -1,14 +1,20 @@
+This patch allows us to boot from anywhere in RAM. It mainly sets the stage
+for later patches. The only real changes here is the better handling of already
+cached code (e.g., if we were started by a previous instance of u-boot), and
+that we drop CONFIG_SKIP_RELOCATE_UBOOT from neo1973.h
+
+cpu/arm920t/start.S: if not relocating, instead of going straight to
+  stack_setup, jump to done_relocate, which may perform other setup tasks
+cpu/arm920t/start.S: after relocating, flush the cache and jump to the new code
+include/configs/neo1973.h: remove CONFIG_SKIP_RELOCATE_UBOOT
+
+- Werner Almesberger <werner@openmoko.org>
+
 Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -165,13 +165,12 @@ reset:
- 	bl	cpu_init_crit
- #endif
- 
--#ifndef CONFIG_SKIP_RELOCATE_UBOOT
- #ifndef CONFIG_S3C2410_NAND_BOOT
- relocate:				/* relocate U-Boot to RAM	    */
+@@ -171,7 +171,7 @@ relocate:				/* relocate U-Boot to RAM	 
  	adr	r0, _start		/* r0 <- current position of code   */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
@@ -17,15 +23,15 @@ Index: u-boot/cpu/arm920t/start.S
  
  	ldr	r2, _armboot_start
  	ldr	r3, _bss_start
-@@ -181,8 +180,14 @@ relocate:				/* relocate U-Boot to RAM	 
+@@ -181,8 +181,14 @@ relocate:				/* relocate U-Boot to RAM	 
  copy_loop:
  	ldmia	r0!, {r3-r10}		/* copy from source address [r0]    */
  	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
 -	cmp	r0, r2			/* until source end addreee [r2]    */
 +	cmp	r0, r2			/* until source end address [r2]    */
  	ble	copy_loop
-+	mov	r0, #0
-+	mcr	p15, 0, r0, c7, c7, 0	/* flush v3/v4 cache */
++	mov	r0, #0			/* flush v3/v4 cache */
++	mcr	p15, 0, r0, c7, c7, 0
 +	ldr	pc, _done_relocate	/* jump to relocated code */
 +_done_relocate:
 +	.word	done_relocate
@@ -33,26 +39,12 @@ Index: u-boot/cpu/arm920t/start.S
  #else /* NAND_BOOT */
  relocate:
  copy_myself:
-@@ -270,11 +275,13 @@ notmatch:
+@@ -270,7 +276,7 @@ notmatch:
  1:	b	1b
  done_nand_read:
  #endif /* NAND_BOOT */
--#else  /* CONFIG_SKIP_RELOCATE_UBOOT */
-+
- #if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
- 	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
- 	   ended up in RAM, then that ram is mapped to 0x30000000 and not 0.
- 	   So we need to copy the interrupt vectors, etc.  */
-+	/* NB: do this always. In the worst case, we'll overwrite with
-+	   identical data. */
- 
- 	mov	r0, #0
- 	ldr	r1, _TEXT_BASE
-@@ -287,7 +294,6 @@ irqvec_cpy_next:
- 	bne	irqvec_cpy_next
- irqvec_cpy_done:
- #endif /* CONFIG_USE_IRQ */
 -#endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
++#endif /* CONFIG_SKIP_RELOCATE_UBOOT */
  
  	/* Set up the stack						    */
  stack_setup:

@@ -4,6 +4,8 @@ common/cmd_dynenv.c (do_dynenv): use arg_off_size to sanity-check offset and to
   allow use of partition name
 common/cmd_dynenv.c (do_dynenv): indicate in no uncertain terms when an update
   would not work due to Flash bits already cleared
+common/cmd_dynenv.c (do_dynenv): update CFG_ENV_OFFSET after successful "dynenv
+  set", so that we can write the new environment without having to reboot
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -115,7 +117,16 @@ Index: u-boot/common/cmd_dynenv.c
  		memcpy(buf+4, &addr, 4);
  
  		printf("%02x %02x %02x %02x - %02x %02x %02x %02x\n",
-@@ -72,8 +90,9 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -65,6 +83,8 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+ 			buf[4], buf[5], buf[6], buf[7]);
+ 
+ 		ret = mtd->write_oob(mtd, 8, size, (size_t *) &size, (u_char *) buf);
++		if (!ret)
++			CFG_ENV_OFFSET = addr;
+ 	} else
+ 		goto usage;
+ 
+@@ -72,8 +92,9 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
  	return ret;
  
  usage:

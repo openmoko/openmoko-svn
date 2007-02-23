@@ -22,7 +22,7 @@ Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973.h
 +++ u-boot/include/configs/neo1973.h
-@@ -91,6 +91,7 @@
+@@ -86,6 +86,7 @@
  			/* CFG_CMD_IRQ	 | */  \
  			CFG_CMD_BOOTD	 | \
  			CFG_CMD_CONSOLE	 | \
@@ -30,7 +30,7 @@ Index: u-boot/include/configs/neo1973.h
  			CFG_CMD_ASKENV	 | \
  			CFG_CMD_RUN	 | \
  			CFG_CMD_ECHO	 | \
-@@ -249,19 +250,21 @@
+@@ -244,19 +245,21 @@
  /* we have a board_late_init() function */
  #define BOARD_LATE_INIT			1
  

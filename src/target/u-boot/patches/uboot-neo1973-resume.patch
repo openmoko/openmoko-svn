@@ -4,9 +4,9 @@ Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: u-boot/cpu/arm920t/start.S
 ===================================================================
---- u-boot.orig/cpu/arm920t/start.S	2007-02-21 22:52:55.000000000 +0100
-+++ u-boot/cpu/arm920t/start.S	2007-02-21 23:21:08.000000000 +0100
-@@ -150,11 +150,33 @@
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -158,18 +158,55 @@ reset:
  	str	r1, [r0]
  # endif
  
@@ -40,13 +40,11 @@ Index: u-boot/cpu/arm920t/start.S
 +	bpl	1b
  #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
  
- 	/*
-@@ -163,7 +185,23 @@
- 	 */
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
+ #ifndef CONFIG_LL_INIT_NAND_ONLY
  	bl	cpu_init_crit
+ #endif
 -#endif
-+
 +#if defined(CONFIG_S3C2410)
 +	/* ensure some refresh has happened */
 +	mov	r1, #4096
@@ -65,12 +63,12 @@ Index: u-boot/cpu/arm920t/start.S
 +#endif /* CONFIG_SKIP_LOWLEVEL_INIT */
  
  #ifndef CONFIG_SKIP_RELOCATE_UBOOT
- #ifndef CONFIG_S3C2410_NAND_BOOT
+ 	adr	r0, _start		/* r0 <- current position of code   */
 Index: u-boot/include/s3c2410.h
 ===================================================================
---- u-boot.orig/include/s3c2410.h	2007-02-21 15:52:58.000000000 +0100
-+++ u-boot/include/s3c2410.h	2007-02-21 15:54:34.000000000 +0100
-@@ -233,4 +233,40 @@
+--- u-boot.orig/include/s3c2410.h
++++ u-boot/include/s3c2410.h
+@@ -233,4 +233,40 @@ static inline S3C2410_SDI * S3C2410_GetB
  		 rINTPND;\
  		 }
  /* Wait until rINTPND is changed for the case that the ISR is very short. */
@@ -111,4 +109,3 @@ Index: u-boot/include/s3c2410.h
 +#define S3C2410_CLKSLOW_GET_SLOWVAL(x)	((x) & 7)
 +
  #endif /*__S3C2410_H__*/
-
