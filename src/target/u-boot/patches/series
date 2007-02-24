@@ -61,4 +61,4 @@ uboot-dfu.patch
 # move these later, once the dust has settled
 #default-env.patch
 console-ansi.patch
-boot-menu.patch
+#boot-menu.patch
