@@ -20,6 +20,7 @@ uboot-20061030-qt2410.patch
 uboot-20061030-neo1973.patch 
 
 # under construction, but intended for mainline
+uboot-s3c2410-misccr-definitions.patch
 boot-from-ram-reloc.patch
 boot-from-ram-and-nand.patch
 wakeup-reason-nand-only.patch
