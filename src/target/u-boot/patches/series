@@ -25,7 +25,7 @@ uboot-s3c2410-misccr-definitions.patch
 #boot-from-ram-reloc.patch
 #boot-from-ram-and-nand.patch
 wakeup-reason-nand-only.patch
-#uboot-neo1973-resume.patch
+uboot-neo1973-resume.patch
 
 uboot-arm920t-gd_in_irq.patch
 
