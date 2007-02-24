@@ -1,0 +1,276 @@
+board/neo1973/bootmenu.c: simple configurable boot menu
+board/neo1973/neo1973.c (neo1973_new_second): return 1 if a new second has
+  started since the last call
+board/neo1973/neo1973.c (neo1973_on_key_pressed): return 1 if the $POWER key is
+  pressed
+board/neo1973/neo1973.c (board_late_init): make use of neo1973_new_second and
+  neo1973_on_key_pressed, call "bootmenu" if AUX is pressed with POWER
+board/neo1973/Makefile: added bootmenu.c
+board/neo1973/neo1973.h: added function prototypes
+
+- Werner Almesberger <werner@openmoko.org>
+
+Index: u-boot/board/neo1973/bootmenu.c
+===================================================================
+--- /dev/null
++++ u-boot/board/neo1973/bootmenu.c
+@@ -0,0 +1,181 @@
++/*
++ * bootmenu.c - Convert a 480x640 PNG to a splash screen raw dump
++ *
++ * Copyright (C) 2006-2007 by OpenMoko, Inc.
++ * Written by Werner Almesberger <werner@openmoko.org>
++ * All Rights Reserved
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++
++#include <common.h>
++#include <environment.h>
++
++#include "neo1973.h"
++
++
++#define ANSI_CLEAR	"\e[2J"
++#define ANSI_REVERSE	"\e[7m"
++#define	ANSI_NORMAL	"\e[m"
++#define ANSI_GOTOYX	"\e[%d;%dH"
++
++#define DEBOUNCE_LOOPS		1000	/* wild guess */
++#define BOOT_MENU_TIMEOUT	60	/* 60 second */
++#define AFTER_COMMAND_WAIT	3	/* wait (2,3] after running commands */
++#define	MAX_MENU_ITEMS		10	/* cut off after that many */
++
++#define BOOT_TXT	"Boot"
++#define	FACTORY_TXT	"Factory reset"
++
++
++static int options = 0;
++static int width = sizeof(FACTORY_TXT)-1;
++
++
++static int debounce(int (*fn)(void))
++{
++	int on, i;
++
++again:
++	on = fn();
++	for (i = DEBOUNCE_LOOPS; i; i--)
++		if (on != fn())
++			goto again;
++	return on;
++}
++
++
++static char *get_option(int n)
++{
++	char name[] = "menu_XX";
++
++	sprintf(name+5,"%d",n);
++	return getenv(name);
++}
++
++
++static void print_option_n(int n)
++{
++	char *s, *colon;
++	int len;
++
++	if (!n) {
++		printf("  %-*s  ", width, BOOT_TXT);
++		return;
++	}
++	if (n == options+1) {
++		printf("  %-*s  ", width, FACTORY_TXT);
++		return;
++	}
++	s = get_option(n);
++    	if (!s)
++		return;
++	colon = strchr(s, ':');
++	if (colon)
++		*colon = 0;
++	len = strlen(s);
++	if (len > width)
++		width = len;
++	printf("  %-*s  ", width, s);
++	if (colon)
++		*colon = ':';
++}
++
++
++static void print_option(int n, int reverse)
++{
++	printf(ANSI_GOTOYX, n+4, 1);
++	if (reverse)
++		printf(ANSI_REVERSE);
++	print_option_n(n);
++	if (reverse)
++		printf(ANSI_NORMAL);
++}
++
++
++static const char *option_command(int n)
++{
++	const char *s, *colon;
++
++	s = get_option(n);
++	if (!s)
++		return NULL;
++	colon = strchr(s, ':');
++	return colon ? colon+1 : s;
++}
++
++
++static int do_bootmenu(void)
++{
++	int aux = 1, on = 1;
++	int n, seconds = 0;
++
++	printf(ANSI_CLEAR ANSI_GOTOYX "*** BOOT MENU ***\n\n", 2, 1);
++	print_option(0, 1);
++	while (options < MAX_MENU_ITEMS && option_command(options+1))
++		print_option(++options, 0);
++	print_option(options+1, 0);
++	printf("\n\nPress [AUX] to select, [POWER] to execute.\n");
++
++	n = 0;
++	while (1) {
++		int tmp;
++
++		tmp = debounce(neo1973_911_key_pressed);
++		if (tmp && !aux) {
++			print_option(n, 0);
++			n++;
++			if (n == options+2)
++				n = 0;
++			print_option(n, 1);
++			seconds = 0;
++		}
++		aux = tmp;
++		tmp = debounce(neo1973_on_key_pressed);
++		if (tmp && !on)
++			return n;
++		on = tmp;
++		if (neo1973_new_second())
++			if (++seconds > BOOT_MENU_TIMEOUT)
++				return -1;
++	}
++}
++
++
++void bootmenu(void)
++{
++	while (1) {
++		int n, seconds;
++
++		options = 0;
++		n = do_bootmenu();
++		if (n < 0)
++			return;
++
++		printf(ANSI_CLEAR ANSI_GOTOYX, 1, 1);
++		if (!n || n == options+1) {
++			if (n)
++				default_env();
++			run_command("bootd", 0);
++		}
++		else
++			run_command(option_command(n), 0);
++		seconds = AFTER_COMMAND_WAIT;
++		while (seconds)
++			if (neo1973_new_second())
++				seconds--;
++	}
++}
+Index: u-boot/board/neo1973/neo1973.c
+===================================================================
+--- u-boot.orig/board/neo1973/neo1973.c
++++ u-boot/board/neo1973/neo1973.c
+@@ -228,14 +228,10 @@ int board_late_init(void)
+ 			nobootdelay = 1;
+ 
+ 		while (1) {
+-			u_int8_t int1, oocs;
+-
+-			oocs = pcf50606_reg_read(PCF50606_REG_OOCS);
+-			if (oocs & PFC50606_OOCS_ONKEY)
++			if (!neo1973_on_key_pressed())
+ 				break;
+ 
+-			int1 = pcf50606_reg_read(PCF50606_REG_INT1);
+-			if (int1 & PCF50606_INT1_SECOND)
++			if (neo1973_new_second())
+ 				seconds++;
+ 
+ 			if (seconds >= POWER_KEY_SECONDS)
+@@ -262,6 +258,11 @@ continue_boot:
+ 	/* switch on the backlight */
+ 	neo1973_backlight(1);
+ 
++	if (nobootdelay) {
++		bootmenu();
++		neo1973_poweroff();
++	}
++
+ 	return 0;
+ }
+ 
+@@ -313,6 +314,16 @@ void neo1973_vibrator(int on)
+ 		gpio->GPBDAT &= ~(1 << 10);
+ }
+ 
++int neo1973_new_second(void)
++{
++	return pcf50606_reg_read(PCF50606_REG_INT1) & PCF50606_INT1_SECOND;
++}
++
++int neo1973_on_key_pressed(void)
++{
++	return !(pcf50606_reg_read(PCF50606_REG_OOCS) & PFC50606_OOCS_ONKEY);
++}
++
+ int neo1973_911_key_pressed(void)
+ {
+ 	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
+Index: u-boot/board/neo1973/Makefile
+===================================================================
+--- u-boot.orig/board/neo1973/Makefile
++++ u-boot/board/neo1973/Makefile
+@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
+ 
+ LIB	= lib$(BOARD).a
+ 
+-OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o
++OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o bootmenu.o
+ SOBJS	:= lowlevel_init.o
+ 
+ .PHONY:	all
+Index: u-boot/board/neo1973/neo1973.h
+===================================================================
+--- u-boot.orig/board/neo1973/neo1973.h
++++ u-boot/board/neo1973/neo1973.h
+@@ -15,4 +15,10 @@ void neo1973_poweroff(void);
+ void neo1973_backlight(int on);
+ void neo1973_vibrator(int on);
+ 
++int neo1973_new_second(void);
++int neo1973_on_key_pressed(void);
++int neo1973_911_key_pressed(void);
++
++void bootmenu(void);
++
+ #endif

@@ -54,3 +54,8 @@ enable-splash-bmp.patch
 # for automated installation
 preboot-override.patch
 lowlevel_foo.patch
+
+# move these later, once the dust has settled
+default-env.patch
+console-ansi.patch
+boot-menu.patch
