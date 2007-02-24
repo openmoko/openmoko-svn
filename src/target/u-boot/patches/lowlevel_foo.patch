@@ -170,7 +170,7 @@ Index: u-boot/board/neo1973/Makefile
 +	$(CC) -c -DTEXT_BASE=0x33F80000 -march=armv4 \
 +	  -o lowlevel_foo.o lowlevel_foo.S
 +
-+lowlevel_foo:	lowlevel_foo.o lowlevel_init.o
++lowlevel_foo:	lowlevel_foo.o lowlevel_init.o lowlevel_foo.lds
 +	$(LD) -T ./lowlevel_foo.lds -Ttext 0x33f80000 -Bstatic \
 +	  lowlevel_init.o lowlevel_foo.o -o lowlevel_foo
 +

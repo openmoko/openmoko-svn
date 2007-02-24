@@ -17,10 +17,11 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -77,6 +77,13 @@ _fiq:			.word fiq
+@@ -77,6 +77,14 @@ _fiq:			.word fiq
   *************************************************************************
   */
  
++
 +/* Must follow the .balign above, so we get a well-known address ! */
 +#ifdef CFG_PREBOOT_OVERRIDE
 +.globl	preboot_override
@@ -35,7 +36,7 @@ Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973.h
 +++ u-boot/include/configs/neo1973.h
-@@ -205,6 +205,7 @@
+@@ -207,6 +207,7 @@
  #define	CFG_ENV_IS_IN_NAND	1
  #define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
  #define CFG_ENV_OFFSET_OOB    1               /* Location of ENV stored in block 0 OOB */

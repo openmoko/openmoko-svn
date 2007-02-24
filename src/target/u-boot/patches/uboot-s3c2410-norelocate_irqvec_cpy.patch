@@ -3,13 +3,14 @@ is mapped to 0x30000000 and not 0, so we need to copy the interrupt vectors, etc
 
 Index: u-boot/cpu/arm920t/start.S
 ===================================================================
---- u-boot.orig/cpu/arm920t/start.S	2007-02-24 12:36:20.000000000 +0100
-+++ u-boot/cpu/arm920t/start.S	2007-02-24 12:39:54.000000000 +0100
-@@ -270,6 +270,23 @@
- 1:	b	1b
- done_nand_read:
- #endif /* NAND_BOOT */
-+#else  /* CONFIG_SKIP_RELOCATE_UBOOT */
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -332,7 +332,23 @@ done_nand_read:
+ 	strb	r1, [r0]
+ #endif /* CONFIG_S3C2410_NAND_BOOT */
+ done_relocate:
+-#endif /* CONFIG_SKIP_RELOCATE_UBOOT */
++
 +#if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
 +	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
 +	   ended up in RAM, then that ram is mapped to 0x30000000 and not 0.
@@ -22,10 +23,10 @@ Index: u-boot/cpu/arm920t/start.S
 +	ldr	r3, [r1], #4
 +	str	r3, [r0], #4
 +	subs	r2, r2, #4
-+	beq	irqvec_cpy_done
 +	bne	irqvec_cpy_next
-+irqvec_cpy_done:
 +#endif /* CONFIG_USE_IRQ */
- #endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
++
++#endif /* !CONFIG_SKIP_RELOCATE_UBOOT */
  
  	/* Set up the stack						    */
+ stack_setup:
