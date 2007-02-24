@@ -1,0 +1,45 @@
+#
+# Initial setup of a "virgin" device.
+#
+# Note that this yields a fairly unusual setup. The main goal is to prepare for
+# uploading the rest through DFU (JTAG would be far too slow for this), or any
+# interactive testing one may wish to do.
+#
+
+# we're non-interactive
+
+setenv dontask y
+
+# remove any pre-existing bad block table and create a new one
+
+nand scrub 0x3ff0000 0x10000
+nand createbbt
+
+# create the partition table
+
+dynpart
+
+# unset preboot command
+
+mw.l 0x32000040 0 1
+
+# write u-boot
+
+nand write.e 0x32000000 u-boot 0x40000
+
+# set up the pre-DFU environment (604800 seconds is one week)
+
+dynenv set u-boot_env
+setenv bootcmd
+setenv bootdelay 604800
+setenv splashimage nand read.e 0x32000000 splash 0x1000\; unzip 0x32000000 0x33d00000 0x96000
+setenv usbtty cdc_acm
+saveenv
+
+# write the smiley last
+
+nand write.e 0x32300000 splash 0x1000
+
+# reset to get the smiley
+
+reset

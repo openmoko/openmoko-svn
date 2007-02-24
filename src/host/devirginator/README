@@ -1,0 +1,41 @@
+Devirginator
+============
+
+This collection of scripts initializes a "virgin" device. At the moment, this
+goes as far as allowing it to boot into u-boot, from where the rest will be
+done with DFU.
+
+First,
+% cp config.example config
+and may changes as needed. Then
+% make
+This requires Netpbm and transfig. Finally, make sure that openocd runs,
+power device up and run
+% ./devirginate
+
+The first few messages should look like this:
+Open On-Chip Debugger
+> script /home/moko/om/trunk/src/host/devirginator/tmp/script.ocd
+reset halt
+wait_halt
+waiting for target halted...
+Target 0 halted
+target halted in ARM state due to debug request, current mode: Supervisor
+cpsr: 0x400000d3 pc: 0x00000000
+[...]
+
+The "pc: 0x00000000" is important. If the number is different, e.g.,
+something like "pc: 0xffffffed", the device is probably not turned
+on. In this case, you can try to restart, or, if openocd is stuck,
+
+- kill openocd
+- pull and then replace the USB plug of the JTAGkey or debug v2 board
+- start openocd
+
+The whole procedure takes a bit longer than two minutes. Rough timeline
+(numbers are guessed and may be off by some 30 seconds):
+
+00:00  screen goes dark
+00:35  small tux logo with superimposed u-boot version string appears
+02:00  screen briefly goes dark
+02:02  smiley on green background appears

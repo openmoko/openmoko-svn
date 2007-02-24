@@ -1,0 +1,9 @@
+#
+# config - devirginator configuration
+#
+# This is a shell script sourced by "setup.sh".
+#
+
+OPENOCD_HOST=fs
+LOWLEVEL=$OMDIR/u-boot/board/neo1973/lowlevel_foo.bin
+UBOOT=$OMDIR/u-boot/u-boot.bin
