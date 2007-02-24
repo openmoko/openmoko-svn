@@ -5,8 +5,8 @@ DEPENDS = "glib-2.0 gtk+ libglade eds-dbus openmoko-libs"
 PV = "0.1+svn${SRCDATE}"
 PR = "r0"
 
-SRC_URI = "svn://svn.o-hand.com/repos/dates/branches/private;module=omoko;proto=https"
-S = "${WORKDIR}/omoko"
+SRC_URI = "svn://svn.o-hand.com/repos/dates/branches;module=openmoko;proto=https"
+S = "${WORKDIR}/openmoko"
 
 inherit autotools pkgconfig gtk-icon-cache
 
