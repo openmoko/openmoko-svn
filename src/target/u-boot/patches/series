@@ -21,10 +21,12 @@ uboot-20061030-neo1973.patch
 
 # under construction, but intended for mainline
 uboot-s3c2410-misccr-definitions.patch
-boot-from-ram-reloc.patch
-boot-from-ram-and-nand.patch
-wakeup-reason-nand-only.patch
-uboot-neo1973-resume.patch
+
+#boot-from-ram-reloc.patch
+#boot-from-ram-and-nand.patch
+#wakeup-reason-nand-only.patch
+#uboot-neo1973-resume.patch
+
 uboot-arm920t-gd_in_irq.patch
 
 # this will be somewhat more difficult
@@ -42,9 +44,6 @@ nand-badisbad.patch
 dynpart-absorb-bad.patch
 uboot-bbt-quiet.patch
 
-# those have to be implemented fully
-uboot-dfu.patch
-
 # splash screen
 raise-limits.patch
 set-hwswp.patch
@@ -53,10 +52,13 @@ cmd-unzip.patch
 enable-splash-bmp.patch
 
 # for automated installation
-preboot-override.patch
+#preboot-override.patch
 lowlevel_foo.patch
 
+# those have to be implemented fully
+uboot-dfu.patch
+
 # move these later, once the dust has settled
-default-env.patch
-console-ansi.patch
-boot-menu.patch
+#default-env.patch
+#console-ansi.patch
+#boot-menu.patch
