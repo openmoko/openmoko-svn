@@ -1,14 +1,87 @@
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-15 18:07:52.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-15 20:50:05.000000000 +0100
-@@ -388,6 +388,11 @@
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-24 03:59:30.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-24 04:03:05.000000000 +0100
+@@ -42,11 +42,16 @@
+  */
+ 
+ #include <common.h>
++DECLARE_GLOBAL_DATA_PTR;
+ 
+ #if defined(CONFIG_USB_DEVICE)
+ #include "usbdcore.h"
+ 
+-#if 0
++#ifdef CONFIG_USBD_DFU
++#include <usb_dfu.h>
++#endif
++
++#if 1
+ #define dbg_ep0(lvl,fmt,args...) serial_printf("[%s] %s:%d: "fmt"\n",__FILE__,__FUNCTION__,__LINE__,##args)
+ #else
+ #define dbg_ep0(lvl,fmt,args...)
+@@ -213,7 +218,7 @@
+ 			urb->buffer = device_descriptor;
+ 			urb->actual_length = MIN(sizeof(*device_descriptor), max);
+ 		}
+-		/*dbg_ep0(3, "copied device configuration, actual_length: %x", urb->actual_length); */
++		dbg_ep0(3, "using device configuration, actual_length: %x", urb->actual_length);
+ 		break;
+ 
+ 	case USB_DESCRIPTOR_TYPE_CONFIGURATION:
+@@ -267,7 +272,24 @@
+ 		return -1;
+ 	case USB_DESCRIPTOR_TYPE_ENDPOINT:
+ 		return -1;
++	/* This really means "Class Specific Descriptor #1 == USB_DT_DFU */
+ 	case USB_DESCRIPTOR_TYPE_HID:
++#ifdef CONFIG_USBD_DFU
++		{
++			int bNumInterface =
++				le16_to_cpu(urb->device_request.wIndex);
++
++			/* In runtime mode, we only respond to the DFU INTERFACE,
++			 * whereas in DFU mode, we respond for all intrfaces */
++			if (device->dfu_state != DFU_STATE_appIDLE &&
++			    device->dfu_state != DFU_STATE_appDETACH ||
++			    bNumInterface == CONFIG_USBD_DFU_INTERFACE) {
++				urb->buffer = &device->dfu_cfg_desc->func_dfu;
++				urb->actual_length = sizeof(struct usb_dfu_func_descriptor);
++			} else
++				return -1;
++		}
++#else /* CONFIG_USBD_DFU */
+ 		{
+ 			return -1;	/* unsupported at this time */
+ #if 0
+@@ -294,6 +316,7 @@
+ 				     max);
+ #endif
+ 		}
++#endif /* CONFIG_USBD_DFU */
+ 		break;
+ 	case USB_DESCRIPTOR_TYPE_REPORT:
+ 		{
+@@ -388,6 +411,24 @@
  		 le16_to_cpu (request->wLength),
  		 USBD_DEVICE_REQUESTS (request->bRequest));
  
-+#ifdef CONFIG_USB_DFU
-+	if ((request->bmRequestType & 0x3f) == USB_TYPE_DFU)
-+		return dfu_ep0_handler(urb);
++#ifdef CONFIG_USBD_DFU
++	if ((request->bmRequestType & 0x3f) == USB_TYPE_DFU &&
++	     (device->dfu_state != DFU_STATE_appIDLE ||
++	      le16_to_cpu(request->wIndex) == CONFIG_USBD_DFU_INTERFACE)) {
++		int rc = dfu_ep0_handler(urb);
++		switch (rc) {
++		case DFU_EP0_NONE:
++		case DFU_EP0_UNHANDLED:
++			break;
++		case DFU_EP0_ZLP:
++		case DFU_EP0_DATA:
++			return 0;
++		case DFU_EP0_STALL:
++			return -1;
++		}
++	}
 +#endif /* CONFIG_USB_DFU */
 +
  	/* handle USB Standard Request (c.f. USB Spec table 9-2) */
@@ -17,14 +90,13 @@ Index: u-boot/drivers/usbdcore_ep0.c
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-16 18:59:54.000000000 +0100
-@@ -0,0 +1,352 @@
++++ u-boot/drivers/usbdfu.c	2007-02-24 04:03:05.000000000 +0100
+@@ -0,0 +1,553 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
 + *
 + * based on existing SAM7DFU code from OpenPCD:
-+ *
 + * (C) Copyright 2006 by Harald Welte <hwelte@hmw-consulting.de>
 + *
 + * See file CREDITS for list of people who contributed to this
@@ -45,141 +117,326 @@ Index: u-boot/drivers/usbdfu.c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 + * MA 02111-1307 USA
 + */
-+static u_int32_t dfu_state = DFU_STATE_appIDLE;
 +
-+static int handle_dnload(u_int16_t val, u_int16_t len)
++#include <config.h>
++#if defined(CONFIG_USBD_DFU)
++
++//#define DEBUG
++
++#include <common.h>
++DECLARE_GLOBAL_DATA_PTR;
++
++#include <linux/types.h>
++#include <asm/errno.h>
++#include <usbdcore.h>
++#include <usb_dfu.h>
++#include <usb_dfu_descriptors.h>
++
++#include "usbdcore_s3c2410.h"
++
++#define RET_NOTHING	0
++#define RET_ZLP		1
++#define RET_STALL	2
++
++#define LOAD_ADDR 0x32000000
++
++static char *ptr;
++
++static int handle_dnload(struct urb *urb, u_int16_t val, u_int16_t len, int first)
 +{
-+	volatile u_int32_t *p = (volatile u_int32_t *)ptr;
-+	u_int8_t *pagebuf = (u_int8_t *) pagebuf32;
++	struct usb_device_instance *dev = urb->device;
++	debug("download ");
++
 +	int i;
 +
-+	DEBUGE("download ");
-+
-+	if (len > AT91C_IFLASH_PAGE_SIZE) {
++	if (len > CONFIG_USBD_DFU_XFER_SIZE) {
 +		/* Too big. Not that we'd really care, but it's a
 +		 * DFU protocol violation */
-+		DEBUGP("length exceeds flash page size ");
-+	    	dfu_state = DFU_STATE_dfuERROR;
-+		dfu_status = DFU_STATUS_errADDRESS;
++		debug("length exceeds flash page size ");
++	    	dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errADDRESS;
 +		return RET_STALL;
 +	}
++#if 0
 +	if (len & 0x3) {
 +		/* reject non-four-byte-aligned writes */
-+		DEBUGP("not four-byte-aligned length ");
-+		dfu_state = DFU_STATE_dfuERROR;
-+		dfu_status = DFU_STATUS_errADDRESS;
++		debug("not four-byte-aligned length ");
++		dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errADDRESS;
 +		return RET_STALL;
 +	}
++#endif
 +	if (len == 0) {
-+		DEBUGP("zero-size write -> MANIFEST_SYNC ");
-+		flash_page(p);
-+		dfu_state = DFU_STATE_dfuMANIFEST_SYNC;
++		debug("zero-size write -> MANIFEST_SYNC ");
++		//flash_page(p);
++		dev->dfu_state = DFU_STATE_dfuMANIFEST_SYNC;
 +		return RET_ZLP;
 +	}
-+	if (ptr + len > (u_int8_t *) AT91C_IFLASH + AT91C_IFLASH_SIZE) {
-+		DEBUGP("end of write exceeds flash end ");
-+		dfu_state = DFU_STATE_dfuERROR;
-+		dfu_status = DFU_STATUS_errADDRESS;
++	if (ptr + len > LOAD_ADDR + 0x200000) {
++		debug("end of write exceeds flash end ");
++		dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errADDRESS;
 +		return RET_STALL;
 +	}
 +
-+	DEBUGP("try_to_recv=%u ", len);
-+	udp_ep0_recv_data(pagebuf, len);
++	if (urb->actual_length != len) {
++		debug("urb->actual_length(%u) != len(%u) ?!?\n",
++			urb->actual_length, len);
++		return RET_STALL;
++	}
 +
-+	DEBUGR(hexdump(pagebuf, len));
-+
-+	/* FXIME: actually write the data somewhere */
++	/* actually write the data somewhere */
++	switch (dev->alternate) {
++	case 0:
++		if (first)
++			ptr = LOAD_ADDR;
++		memcpy(ptr, urb->buffer, len);
++		ptr += len;
++		break;
++	default:
++		debug("[yet] unsupported altsetting %u\n", dev->alternate);
++		break;
++	}
 +
 +	return RET_ZLP;
 +}
 +
-+#define AT91C_IFLASH_END ((u_int8_t *)AT91C_IFLASH + AT91C_IFLASH_SIZE)
-+static dfufunc int handle_upload(u_int16_t val, u_int16_t len)
++static int handle_upload(struct urb *urb, u_int16_t val, u_int16_t len, int first)
 +{
-+	DEBUGE("upload ");
-+	if (len > AT91C_IFLASH_PAGE_SIZE) {
++	struct usb_device_instance *dev = urb->device;
++	debug("upload(val=0x%02x, len=%u, first=%u) ", val, len, first);
++
++	if (len > CONFIG_USBD_DFU_XFER_SIZE) {
 +		/* Too big */
-+		dfu_state = DFU_STATE_dfuERROR;
-+		dfu_status = DFU_STATUS_errADDRESS;
-+		udp_ep0_send_stall();
++		dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errADDRESS;
++		//udc_ep0_send_stall();
++		debug("Error: Transfer size > CONFIG_USBD_DFU_XFER_SIZE\n");
 +		return -EINVAL;
 +	}
 +
-+	if (ptr + len > AT91C_IFLASH_END)
-+		len = AT91C_IFLASH_END - (u_int8_t *)ptr;
++	if (first) {
++		ptr = LOAD_ADDR;
++		/* the first of many upload requests  */
++		switch (dev->alternate) {
++		case 0:
++			/* upload RAM contents ?!? */
++			break;
++		case 1:
++			/* u-boot */
++			run_command("nand read.e 0x32000000 u-boot", 0);
++			break;
++		case 2:
++			run_command("nand read.e 0x32000000 u-boot_env", 0);
++			break;
++		case 3:
++			run_command("nand read.e 0x32000000 splash", 0);
++			break;
++		case 4:
++			run_command("nand read.e 0x32000000 kernel", 0);
++			break;
++		default:
++			return -EINVAL;
++		}
++	}
 +
-+	udp_ep0_send_data((char *)ptr, len);
++
++	if (ptr + len > LOAD_ADDR + 0x200000)
++		len = (char *)(LOAD_ADDR + 0x200000) - ptr;
++
++	urb->buffer = ptr;
++	urb->actual_length = len;
 +	ptr+= len;
 +
++	printf("returning len=%u\n", len);
 +	return len;
 +}
 +
-+static void handle_getstatus(void)
++static void handle_getstatus(struct urb *urb, int max)
 +{
-+	struct dfu_status dstat;
-+	u_int32_t fsr = AT91F_MC_EFC_GetStatus(AT91C_BASE_MC);
++	struct usb_device_instance *dev = urb->device;
++	struct dfu_status *dstat = urb->buffer;
++	u_int32_t fsr = 0;//AT91F_MC_EFC_GetStatus(AT91C_BASE_MC);
 +
-+	DEBUGE("getstatus(fsr=0x%08x) ", fsr);
++	debug("getstatus(fsr=0x%08x) ", fsr);
 +
-+	switch (dfu_state) {
++	if (!urb->buffer || urb->buffer_length < sizeof(*dstat)) {
++		debug("invalid urb! ");
++		return;
++	}
++
++	switch (dev->dfu_state) {
 +	case DFU_STATE_dfuDNLOAD_SYNC:
 +	case DFU_STATE_dfuDNBUSY:
++#if 0
 +		if (fsr & AT91C_MC_PROGE) {
-+			DEBUGE("errPROG ");
-+			dfu_status = DFU_STATUS_errPROG;
-+			dfu_state = DFU_STATE_dfuERROR;
++			debug("errPROG ");
++			dev->dfu_status = DFU_STATUS_errPROG;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +		} else if (fsr & AT91C_MC_LOCKE) {
-+			DEBUGE("errWRITE ");
-+			dfu_status = DFU_STATUS_errWRITE;
-+			dfu_state = DFU_STATE_dfuERROR;
++			debug("errWRITE ");
++			dev->dfu_status = DFU_STATUS_errWRITE;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +		} else if (fsr & AT91C_MC_FRDY) {
-+			DEBUGE("DNLOAD_IDLE ");
-+			dfu_state = DFU_STATE_dfuDNLOAD_IDLE;
++#endif
++			debug("DNLOAD_IDLE ");
++			dev->dfu_state = DFU_STATE_dfuDNLOAD_IDLE;
++#if 0
 +		} else {
-+			DEBUGE("DNBUSY ");
-+			dfu_state = DFU_STATE_dfuDNBUSY;
++			debug("DNBUSY ");
++			dev->dfu_state = DFU_STATE_dfuDNBUSY;
 +		}
++#endif
 +		break;
 +	case DFU_STATE_dfuMANIFEST_SYNC:
-+		dfu_state = DFU_STATE_dfuMANIFEST;
++		dev->dfu_state = DFU_STATE_dfuMANIFEST;
++		break;
++	default:
++		//return;
 +		break;
 +	}
 +
 +	/* send status response */
-+	dstat.bStatus = dfu_status;
-+	dstat.bState = dfu_state;
-+	dstat.iString = 0;
-+	/* FIXME: set dstat.bwPollTimeout */
++	dstat->bStatus = dev->dfu_status;
++	dstat->bState = dev->dfu_state;
++	dstat->iString = 0;
++	/* FIXME: set dstat->bwPollTimeout */
++	urb->actual_length = MIN(sizeof(*dstat), max);
 +
-+	udp_ep0_send_data((char *)&dstat, sizeof(dstat));
++	/* we don't need to explicitly send data here, will
++	 * be done by the original caller! */
 +}
 +
-+static void handle_getstate(void)
++static void handle_getstate(struct urb *urb, int max)
 +{
-+	u_int8_t u8 = dfu_state;
-+	DEBUGE("getstate ");
++	debug("getstate ");
 +
-+	udp_ep0_send_data((char *)&u8, sizeof(u8));
++	if (!urb->buffer || urb->buffer_length < sizeof(u_int8_t)) {
++		debug("invalid urb! ");
++		return;
++	}
++
++	urb->buffer[0] = urb->device->dfu_state & 0xff;
++	urb->actual_length = sizeof(u_int8_t);
 +}
 +
++#ifndef CONFIG_USBD_PRODUCTID_DFU
++#define CONFIG_USBD_PRODUCTID_DFU CONFIG_USBD_PRODUCTID_CDCACM
++#endif
++
++static const struct usb_device_descriptor dfu_dev_descriptor = {
++	.bLength		= USB_DT_DEVICE_SIZE,
++	.bDescriptorType	= USB_DT_DEVICE,
++	.bcdUSB			= 0x0100,
++	.bDeviceClass		= 0x00,
++	.bDeviceSubClass	= 0x00,
++	.bDeviceProtocol	= 0x00,
++	.bMaxPacketSize0	= EP0_MAX_PACKET_SIZE,
++	.idVendor		= CONFIG_USBD_VENDORID,
++	.idProduct		= CONFIG_USBD_PRODUCTID_DFU,
++	.bcdDevice		= 0x0000,
++	.iManufacturer		= 1,
++	.iProduct		= 2,
++	.iSerialNumber		= 0x00,
++	.bNumConfigurations	= 0x01,
++};
++
++static const struct _dfu_desc dfu_cfg_descriptor = {
++	.ucfg = {
++		.bLength		= USB_DT_CONFIG_SIZE,
++		.bDescriptorType	= USB_DT_CONFIG,
++		.wTotalLength		= USB_DT_CONFIG_SIZE +
++					5*USB_DT_INTERFACE_SIZE +
++					  USB_DT_DFU_SIZE,
++		.bNumInterfaces		= 5,
++		.bConfigurationValue	= 1,
++#ifdef CONFIG_USBD_STRING
++		.iConfiguration		= 3,
++#else
++		.iConfiguration		= 0,
++#endif
++		.bmAttributes		= BMATTRIBUTE_RESERVED,
++		.bMaxPower		= 50,
++	},
++	.uif[0] = {
++		.bLength		= USB_DT_INTERFACE_SIZE,
++		.bDescriptorType	= USB_DT_INTERFACE,
++		.bInterfaceNumber	= 0x00,
++		.bAlternateSetting	= 0x00,
++		.bNumEndpoints		= 0x00,
++		.bInterfaceClass	= 0xfe,
++		.bInterfaceSubClass	= 0x01,
++		.bInterfaceProtocol	= 0x02,
++		.iInterface		= 0,
++	},
++	.uif[1] = {
++		.bLength		= USB_DT_INTERFACE_SIZE,
++		.bDescriptorType	= USB_DT_INTERFACE,
++		.bInterfaceNumber	= 0x00,
++		.bAlternateSetting	= 0x01,
++		.bNumEndpoints		= 0x00,
++		.bInterfaceClass	= 0xfe,
++		.bInterfaceSubClass	= 0x01,
++		.bInterfaceProtocol	= 0x02,
++		.iInterface		= 0,
++	},
++	.uif[2] = {
++		.bLength		= USB_DT_INTERFACE_SIZE,
++		.bDescriptorType	= USB_DT_INTERFACE,
++		.bInterfaceNumber	= 0x00,
++		.bAlternateSetting	= 0x02,
++		.bNumEndpoints		= 0x00,
++		.bInterfaceClass	= 0xfe,
++		.bInterfaceSubClass	= 0x01,
++		.bInterfaceProtocol	= 0x02,
++		.iInterface		= 0,
++	},
++	.uif[3] = {
++		.bLength		= USB_DT_INTERFACE_SIZE,
++		.bDescriptorType	= USB_DT_INTERFACE,
++		.bInterfaceNumber	= 0x00,
++		.bAlternateSetting	= 0x03,
++		.bNumEndpoints		= 0x00,
++		.bInterfaceClass	= 0xfe,
++		.bInterfaceSubClass	= 0x01,
++		.bInterfaceProtocol	= 0x02,
++		.iInterface		= 0,
++	},
++	.uif[4] = {
++		.bLength		= USB_DT_INTERFACE_SIZE,
++		.bDescriptorType	= USB_DT_INTERFACE,
++		.bInterfaceNumber	= 0x00,
++		.bAlternateSetting	= 0x04,
++		.bNumEndpoints		= 0x00,
++		.bInterfaceClass	= 0xfe,
++		.bInterfaceSubClass	= 0x01,
++		.bInterfaceProtocol	= 0x02,
++		.iInterface		= 0,
++	},
++	.func_dfu = DFU_FUNC_DESC,
++};
 +
 +int dfu_ep0_handler(struct urb *urb)
 +{
 +	int rc, ret = RET_NOTHING;
++	u_int8_t req = urb->device_request.bRequest;
++	u_int16_t val = urb->device_request.wValue;
++	u_int16_t len = urb->device_request.wLength;
++	struct usb_device_instance *dev = urb->device;
 +
-+	DEBUGE("old_state = %u ", dfu_state);
++	debug("old_state = %u ", dev->dfu_state);
 +
-+	switch (dfu_state) {
++	switch (dev->dfu_state) {
 +	case DFU_STATE_appIDLE:
 +		switch (req) {
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		case USB_REQ_DFU_DETACH:
-+			dfu_state = DFU_STATE_appDETACH;
++			dev->dfu_state = DFU_STATE_appDETACH;
 +			ret = RET_ZLP;
 +			goto out;
 +			break;
@@ -190,13 +447,13 @@ Index: u-boot/drivers/usbdfu.c
 +	case DFU_STATE_appDETACH:
 +		switch (req) {
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_appIDLE;
++			dev->dfu_state = DFU_STATE_appIDLE;
 +			ret = RET_STALL;
 +			goto out;
 +			break;
@@ -207,31 +464,31 @@ Index: u-boot/drivers/usbdfu.c
 +		switch (req) {
 +		case USB_REQ_DFU_DNLOAD:
 +			if (len == 0) {
-+				dfu_state = DFU_STATE_dfuERROR;
++				dev->dfu_state = DFU_STATE_dfuERROR;
 +				ret = RET_STALL;
 +				goto out;
 +			}
-+			dfu_state = DFU_STATE_dfuDNLOAD_SYNC;
-+			ptr = (u_int8_t *) AT91C_IFLASH + SAM7DFU_SIZE;
-+			ret = handle_dnload(val, len);
++			dev->dfu_state = DFU_STATE_dfuDNLOAD_SYNC;
++			//ptr = (u_int8_t *) AT91C_IFLASH + SAM7DFU_SIZE;
++			ret = handle_dnload(urb, val, len, 1);
 +			break;
 +		case USB_REQ_DFU_UPLOAD:
-+			ptr = (u_int8_t *) AT91C_IFLASH + SAM7DFU_SIZE;
-+			dfu_state = DFU_STATE_dfuUPLOAD_IDLE;
-+			handle_upload(val, len);
++			//ptr = (u_int8_t *) AT91C_IFLASH + SAM7DFU_SIZE;
++			dev->dfu_state = DFU_STATE_dfuUPLOAD_IDLE;
++			handle_upload(urb, val, len, 1);
 +			break;
 +		case USB_REQ_DFU_ABORT:
 +			/* no zlp? */
 +			ret = RET_ZLP;
 +			break;
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			goto out;
 +			break;
@@ -240,14 +497,14 @@ Index: u-boot/drivers/usbdfu.c
 +	case DFU_STATE_dfuDNLOAD_SYNC:
 +		switch (req) {
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			/* FIXME: state transition depending on block completeness */
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			goto out;
 +		}
@@ -257,10 +514,10 @@ Index: u-boot/drivers/usbdfu.c
 +		case USB_REQ_DFU_GETSTATUS:
 +			/* FIXME: only accept getstatus if bwPollTimeout
 +			 * has elapsed */
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			goto out;
 +		}
@@ -268,21 +525,21 @@ Index: u-boot/drivers/usbdfu.c
 +	case DFU_STATE_dfuDNLOAD_IDLE:
 +		switch (req) {
 +		case USB_REQ_DFU_DNLOAD:
-+			dfu_state = DFU_STATE_dfuDNLOAD_SYNC;
-+			ret = handle_dnload(val, len);
++			dev->dfu_state = DFU_STATE_dfuDNLOAD_SYNC;
++			ret = handle_dnload(urb, val, len, 0);
 +			break;
 +		case USB_REQ_DFU_ABORT:
-+			dfu_state = DFU_STATE_dfuIDLE;
++			dev->dfu_state = DFU_STATE_dfuIDLE;
 +			ret = RET_ZLP;
 +			break;
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			break;
 +		}
@@ -290,19 +547,19 @@ Index: u-boot/drivers/usbdfu.c
 +	case DFU_STATE_dfuMANIFEST_SYNC:
 +		switch (req) {
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			break;
 +		}
 +		break;
 +	case DFU_STATE_dfuMANIFEST:
-+		dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_state = DFU_STATE_dfuERROR;
 +		ret = RET_STALL;
 +		break;
 +	case DFU_STATE_dfuMANIFEST_WAIT_RST:
@@ -312,23 +569,23 @@ Index: u-boot/drivers/usbdfu.c
 +		switch (req) {
 +		case USB_REQ_DFU_UPLOAD:
 +			/* state transition if less data then requested */
-+			rc = handle_upload(val, len);
++			rc = handle_upload(urb, val, len, 0);
 +			if (rc >= 0 && rc < len)
-+				dfu_state = DFU_STATE_dfuIDLE;
++				dev->dfu_state = DFU_STATE_dfuIDLE;
 +			break;
 +		case USB_REQ_DFU_ABORT:
-+			dfu_state = DFU_STATE_dfuIDLE;
++			dev->dfu_state = DFU_STATE_dfuIDLE;
 +			/* no zlp? */
 +			ret = RET_ZLP;
 +			break;
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(urb, len);
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			break;
 +		}
@@ -336,38 +593,434 @@ Index: u-boot/drivers/usbdfu.c
 +	case DFU_STATE_dfuERROR:
 +		switch (req) {
 +		case USB_REQ_DFU_GETSTATUS:
-+			handle_getstatus();
++			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate();
++			handle_getstate(dev, len);
 +			break;
 +		case USB_REQ_DFU_CLRSTATUS:
-+			dfu_state = DFU_STATE_dfuIDLE;
-+			dfu_status = DFU_STATUS_OK;
++			dev->dfu_state = DFU_STATE_dfuIDLE;
++			dev->dfu_status = DFU_STATUS_OK;
 +			/* no zlp? */
 +			ret = RET_ZLP;
 +			break;
 +		default:
-+			dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
 +			break;
 +		}
 +		break;
++	default:
++		return DFU_EP0_UNHANDLED;
++		break;
 +	}
 +
 +out:
-+	DEBUGE("new_state = %u\r\n", dfu_state);
++	debug("new_state = %u, ret = %u\n", dev->dfu_state, ret);
 +
 +	switch (ret) {
-+	case RET_NOTHING:
-+		break;
 +	case RET_ZLP:
-+		udp_ep0_send_zlp();
++		//udc_ep0_send_zlp();
++		urb->actual_length = 0;
++		return DFU_EP0_ZLP;
 +		break;
 +	case RET_STALL:
-+		udp_ep0_send_stall();
++		//udc_ep0_send_stall();
++		return DFU_EP0_STALL;
++		break;
++	case RET_NOTHING:
 +		break;
 +	}
-+	return 0;
 +
++	return DFU_EP0_DATA;
 +}
++
++int dfu_init_instance(struct usb_device_instance *dev)
++{
++	dev->dfu_dev_desc = &dfu_dev_descriptor;
++	dev->dfu_cfg_desc = &dfu_cfg_descriptor;
++	dev->dfu_state = DFU_STATE_appIDLE;
++	dev->dfu_status = DFU_STATUS_OK;
++
++	return 0;
++}
++#endif /* CONFIG_USBD_DFU */
+Index: u-boot/drivers/Makefile
+===================================================================
+--- u-boot.orig/drivers/Makefile	2007-02-24 03:59:30.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-24 04:03:05.000000000 +0100
+@@ -46,7 +46,7 @@
+ 	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
+ 	  status_led.o sym53c8xx.o ahci.o \
+ 	  ti_pci1410a.o tigon3.o tsec.o \
+-	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
++	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
+ 	  videomodes.o w83c553f.o \
+ 	  ks8695eth.o \
+ 	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
+Index: u-boot/drivers/usbdcore.c
+===================================================================
+--- u-boot.orig/drivers/usbdcore.c	2007-02-24 03:58:21.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-24 04:03:05.000000000 +0100
+@@ -31,6 +31,7 @@
+ 
+ #include <malloc.h>
+ #include "usbdcore.h"
++#include <usb_dfu.h>
+ 
+ #define MAX_INTERFACES 2
+ 
+@@ -212,6 +213,10 @@
+  */
+ struct usb_device_descriptor *usbd_device_device_descriptor (struct usb_device_instance *device, int port)
+ {
++#ifdef CONFIG_USBD_DFU
++	if (device->dfu_state != DFU_STATE_appIDLE)
++		return device->dfu_dev_desc;
++#endif
+ 	return (device->device_descriptor);
+ }
+ 
+@@ -232,6 +237,10 @@
+ 	if (!(configuration_instance = usbd_device_configuration_instance (device, port, configuration))) {
+ 		return NULL;
+ 	}
++#ifdef CONFIG_USBD_DFU
++	if (device->dfu_state != DFU_STATE_appIDLE)
++		return (&device->dfu_cfg_desc->ucfg);
++#endif
+ 	return (configuration_instance->configuration_descriptor);
+ }
+ 
+@@ -253,6 +262,13 @@
+ 	if (!(interface_instance = usbd_device_interface_instance (device, port, configuration, interface))) {
+ 		return NULL;
+ 	}
++#ifdef CONFIG_USBD_DFU
++	if (device->dfu_state != DFU_STATE_appIDLE) {
++		if (alternate < 0 || alternate >= DFU_NUM_ALTERNATES)
++			return NULL;
++		return &device->dfu_cfg_desc->uif[alternate];
++	}
++#endif
+ 	if ((alternate < 0) || (alternate >= interface_instance->alternates)) {
+ 		return NULL;
+ 	}
+@@ -623,6 +639,12 @@
+ 	case DEVICE_RESET:
+ 		device->device_state = STATE_DEFAULT;
+ 		device->address = 0;
++#ifdef CONFIG_USBD_DFU
++		if (device->dfu_state == DFU_STATE_appDETACH) {
++			debug("DFU SWITCH\n");
++			device->dfu_state = DFU_STATE_dfuIDLE;
++		}
++#endif
+ 		break;
+ 
+ 	case DEVICE_ADDRESS_ASSIGNED:
+Index: u-boot/drivers/usbtty.c
+===================================================================
+--- u-boot.orig/drivers/usbtty.c	2007-02-24 03:59:29.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-24 04:03:05.000000000 +0100
+@@ -31,6 +31,8 @@
+ #include "usbtty.h"
+ #include "usb_cdc_acm.h"
+ #include "usbdescriptors.h"
++#include <usb_dfu_descriptors.h>
++#include <usb_dfu.h>
+ #include <config.h>		/* If defined, override Linux identifiers with
+ 			   	 * vendor specific ones */
+ 
+@@ -169,6 +171,10 @@
+ 	struct usb_interface_descriptor data_class_interface;
+ 	struct usb_endpoint_descriptor 
+ 		data_endpoints[NUM_ENDPOINTS-1] __attribute__((packed));
++#ifdef CONFIG_USBD_DFU
++	struct usb_interface_descriptor uif_dfu;
++	struct usb_dfu_func_descriptor func_dfu;
++#endif
+ } __attribute__((packed));
+ 
+ static struct acm_config_desc acm_configuration_descriptors[NUM_CONFIGS] = {
+@@ -179,7 +185,11 @@
+     			.bDescriptorType = USB_DT_CONFIG,
+ 			.wTotalLength =	 
+ 				cpu_to_le16(sizeof(struct acm_config_desc)),
++#ifdef CONFIG_USBD_DFU
++	    		.bNumInterfaces = NUM_ACM_INTERFACES +1,
++#else
+ 	    		.bNumInterfaces = NUM_ACM_INTERFACES,
++#endif
+     			.bConfigurationValue = 1,
+ 			.iConfiguration = STR_CONFIG,
+ 			.bmAttributes = 
+@@ -278,6 +288,11 @@
+ 				.bInterval		= 0xFF,
+ 			},
+ 		},
++#ifdef CONFIG_USBD_DFU
++		/* Interface 3 */
++		.uif_dfu = DFU_RT_IF_DESC,
++		.func_dfu = DFU_FUNC_DESC,
++#endif
+ 	},
+ };	
+ 
+@@ -652,6 +667,9 @@
+ 	device_instance->bus = bus_instance;
+ 	device_instance->configurations = NUM_CONFIGS;
+ 	device_instance->configuration_instance_array = config_instance;
++#ifdef CONFIG_USBD_DFU
++	dfu_init_instance(device_instance);
++#endif
+ 
+ 	/* initialize bus instance */
+ 	memset (bus_instance, 0, sizeof (struct usb_bus_instance));
+Index: u-boot/include/configs/neo1973.h
+===================================================================
+--- u-boot.orig/include/configs/neo1973.h	2007-02-24 04:03:04.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-24 04:03:05.000000000 +0100
+@@ -182,6 +182,10 @@
+ #define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
+ #define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
+ #define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
++#define CONFIG_USBD_DFU			1
++#define CONFIG_USBD_DFU_XFER_SIZE 	0x4000
++#define CONFIG_USBD_DFU_INTERFACE	2
++
+ 
+ /*-----------------------------------------------------------------------
+  * Physical Memory Map
+Index: u-boot/include/usb_dfu.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/include/usb_dfu.h	2007-02-24 04:03:05.000000000 +0100
+@@ -0,0 +1,91 @@
++#ifndef _DFU_H
++#define _DFU_H
++
++/* USB Device Firmware Update Implementation for u-boot
++ * (C) 2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * based on: USB Device Firmware Update Implementation for OpenPCD
++ * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
++ *
++ * This ought to be compliant to the USB DFU Spec 1.0 as available from
++ * http://www.usb.org/developers/devclass_docs/usbdfu10.pdf
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <asm/types.h>
++#include <usbdescriptors.h>
++#include <usb_dfu_descriptors.h>
++#include <config.h>
++
++/* USB DFU functional descriptor */
++#define DFU_FUNC_DESC  {						\
++	.bLength		= USB_DT_DFU_SIZE,			\
++	.bDescriptorType	= USB_DT_DFU,				\
++	.bmAttributes		= USB_DFU_CAN_UPLOAD | USB_DFU_CAN_DOWNLOAD, \
++	.wDetachTimeOut		= 0xff00,				\
++	.wTransferSize		= CONFIG_USBD_DFU_XFER_SIZE,		\
++	.bcdDFUVersion		= 0x0100,				\
++}
++
++/* USB Interface descriptor in Runtime mode */
++#ifdef CONFIG_USB_STRING
++#define DFU_RT_IF_DESC	{						\
++	.bLength		= USB_DT_INTERFACE_SIZE,		\
++	.bDescriptorType	= USB_DT_INTERFACE,			\
++	.bInterfaceNumber	= CONFIG_USBD_DFU_INTERFACE,		\
++	.bAlternateSetting	= 0x00,					\
++	.bNumEndpoints		= 0x00,					\
++	.bInterfaceClass	= 0xfe,					\
++	.bInterfaceSubClass	= 0x01,					\
++	.bInterfaceProtocol	= 0x01,					\
++	.iInterface		= 1,					\
++}
++#else
++#define DFU_RT_IF_DESC	{						\
++	.bLength		= USB_DT_INTERFACE_SIZE,		\
++	.bDescriptorType	= USB_DT_INTERFACE,			\
++	.bInterfaceNumber	= CONFIG_USBD_DFU_INTERFACE,		\
++	.bAlternateSetting	= 0x00,					\
++	.bNumEndpoints		= 0x00,					\
++	.bInterfaceClass	= 0xfe,					\
++	.bInterfaceSubClass	= 0x01,					\
++	.bInterfaceProtocol	= 0x01,					\
++	.iInterface		= 0,					\
++}
++#endif
++
++#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
++
++#define DFU_NUM_ALTERNATES	5
++
++struct _dfu_desc {
++	struct usb_configuration_descriptor ucfg;
++	struct usb_interface_descriptor uif[DFU_NUM_ALTERNATES];
++	struct usb_dfu_func_descriptor func_dfu;
++};
++
++int dfu_init_instance(struct usb_device_instance *dev);
++
++#define DFU_EP0_NONE		0
++#define DFU_EP0_UNHANDLED	1
++#define DFU_EP0_STALL		2
++#define DFU_EP0_ZLP		3
++#define DFU_EP0_DATA		4
++
++int dfu_ep0_handler(struct urb *urb);
++
++#endif /* _DFU_H */
+Index: u-boot/include/usb_dfu_descriptors.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/include/usb_dfu_descriptors.h	2007-02-24 04:03:05.000000000 +0100
+@@ -0,0 +1,94 @@
++#ifndef _USB_DFU_H
++#define _USB_DFU_H
++/* USB Device Firmware Update Implementation for OpenPCD
++ * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
++ *
++ * Protocol definitions for USB DFU
++ *
++ * This ought to be compliant to the USB DFU Spec 1.0 as available from
++ * http://www.usb.org/developers/devclass_docs/usbdfu10.pdf
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/types.h>
++
++#define USB_DT_DFU			0x21
++
++struct usb_dfu_func_descriptor {
++	u_int8_t		bLength;
++	u_int8_t		bDescriptorType;
++	u_int8_t		bmAttributes;
++#define USB_DFU_CAN_DOWNLOAD	(1 << 0)
++#define USB_DFU_CAN_UPLOAD	(1 << 1)
++#define USB_DFU_MANIFEST_TOL	(1 << 2)
++#define USB_DFU_WILL_DETACH	(1 << 3)
++	u_int16_t		wDetachTimeOut;
++	u_int16_t		wTransferSize;
++	u_int16_t		bcdDFUVersion;
++} __attribute__ ((packed));
++
++#define USB_DT_DFU_SIZE			9
++
++#define USB_TYPE_DFU		(USB_TYPE_CLASS|USB_RECIP_INTERFACE)
++
++/* DFU class-specific requests (Section 3, DFU Rev 1.1) */
++#define USB_REQ_DFU_DETACH	0x00
++#define USB_REQ_DFU_DNLOAD	0x01
++#define USB_REQ_DFU_UPLOAD	0x02
++#define USB_REQ_DFU_GETSTATUS	0x03
++#define USB_REQ_DFU_CLRSTATUS	0x04
++#define USB_REQ_DFU_GETSTATE	0x05
++#define USB_REQ_DFU_ABORT	0x06
++
++struct dfu_status {
++	u_int8_t bStatus;
++	u_int8_t bwPollTimeout[3];
++	u_int8_t bState;
++	u_int8_t iString;
++} __attribute__((packed));
++
++#define DFU_STATUS_OK			0x00
++#define DFU_STATUS_errTARGET		0x01
++#define DFU_STATUS_errFILE		0x02
++#define DFU_STATUS_errWRITE		0x03
++#define DFU_STATUS_errERASE		0x04
++#define DFU_STATUS_errCHECK_ERASED	0x05
++#define DFU_STATUS_errPROG		0x06
++#define DFU_STATUS_errVERIFY		0x07
++#define DFU_STATUS_errADDRESS		0x08
++#define DFU_STATUS_errNOTDONE		0x09
++#define DFU_STATUS_errFIRMWARE		0x0a
++#define DFU_STATUS_errVENDOR		0x0b
++#define DFU_STATUS_errUSBR		0x0c
++#define DFU_STATUS_errPOR		0x0d
++#define DFU_STATUS_errUNKNOWN		0x0e
++#define DFU_STATUS_errSTALLEDPKT	0x0f
++
++enum dfu_state {
++	DFU_STATE_appIDLE		= 0,
++	DFU_STATE_appDETACH		= 1,
++	DFU_STATE_dfuIDLE		= 2,
++	DFU_STATE_dfuDNLOAD_SYNC	= 3,
++	DFU_STATE_dfuDNBUSY		= 4,
++	DFU_STATE_dfuDNLOAD_IDLE	= 5,
++	DFU_STATE_dfuMANIFEST_SYNC	= 6,
++	DFU_STATE_dfuMANIFEST		= 7,
++	DFU_STATE_dfuMANIFEST_WAIT_RST	= 8,
++	DFU_STATE_dfuUPLOAD_IDLE	= 9,
++	DFU_STATE_dfuERROR		= 10,
++};
++
++#endif /* _USB_DFU_H */
+Index: u-boot/include/usbdcore.h
+===================================================================
+--- u-boot.orig/include/usbdcore.h	2007-02-24 03:59:29.000000000 +0100
++++ u-boot/include/usbdcore.h	2007-02-24 04:03:05.000000000 +0100
+@@ -33,6 +33,7 @@
+ 
+ #include <common.h>
+ #include "usbdescriptors.h"
++#include <usb_dfu_descriptors.h>
+ 
+ 
+ #define MAX_URBS_QUEUED 5
+@@ -475,7 +476,11 @@
+  * function driver to inform it that data has arrived.
+  */
+ 
++#ifdef CONFIG_USBD_DFU
++#define URB_BUF_SIZE (128+CONFIG_USBD_DFU_XFER_SIZE)
++#else
+ #define URB_BUF_SIZE 128 /* in linux we'd malloc this, but in u-boot we prefer static data */
++#endif
+ struct urb {
+ 
+ 	struct usb_endpoint_instance *endpoint;
+@@ -603,6 +608,12 @@
+ 	unsigned long usbd_rxtx_timestamp;
+ 	unsigned long usbd_last_rxtx_timestamp;
+ 
++#ifdef CONFIG_USBD_DFU
++	struct usb_device_descriptor *dfu_dev_desc;
++	struct _dfu_desc *dfu_cfg_desc;
++	enum dfu_state dfu_state;
++	u_int8_t dfu_status;
++#endif
+ };
+ 
+ /* Bus Interface configuration structure
