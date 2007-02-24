@@ -1,8 +1,8 @@
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-24 03:59:30.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-24 04:03:05.000000000 +0100
-@@ -42,11 +42,16 @@
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-24 17:12:47.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-24 17:12:49.000000000 +0100
+@@ -42,10 +42,15 @@
   */
  
  #include <common.h>
@@ -11,15 +11,13 @@ Index: u-boot/drivers/usbdcore_ep0.c
  #if defined(CONFIG_USB_DEVICE)
  #include "usbdcore.h"
  
--#if 0
 +#ifdef CONFIG_USBD_DFU
 +#include <usb_dfu.h>
 +#endif
 +
-+#if 1
+ #if 0
  #define dbg_ep0(lvl,fmt,args...) serial_printf("[%s] %s:%d: "fmt"\n",__FILE__,__FUNCTION__,__LINE__,##args)
  #else
- #define dbg_ep0(lvl,fmt,args...)
 @@ -213,7 +218,7 @@
  			urb->buffer = device_descriptor;
  			urb->actual_length = MIN(sizeof(*device_descriptor), max);
@@ -90,8 +88,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-24 04:03:05.000000000 +0100
-@@ -0,0 +1,553 @@
++++ u-boot/drivers/usbdfu.c	2007-02-24 20:28:50.000000000 +0100
+@@ -0,0 +1,694 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -121,16 +119,23 @@ Index: u-boot/drivers/usbdfu.c
 +#include <config.h>
 +#if defined(CONFIG_USBD_DFU)
 +
-+//#define DEBUG
++#define DEBUG
 +
 +#include <common.h>
 +DECLARE_GLOBAL_DATA_PTR;
 +
++#include <malloc.h>
 +#include <linux/types.h>
++#include <linux/list.h>
 +#include <asm/errno.h>
 +#include <usbdcore.h>
 +#include <usb_dfu.h>
 +#include <usb_dfu_descriptors.h>
++
++#include <nand.h>
++#include <jffs2/load_kernel.h>
++int mtdparts_init(void);
++extern struct list_head devices;
 +
 +#include "usbdcore_s3c2410.h"
 +
@@ -138,16 +143,87 @@ Index: u-boot/drivers/usbdfu.c
 +#define RET_ZLP		1
 +#define RET_STALL	2
 +
-+#define LOAD_ADDR 0x32000000
++struct dnload_state {
++	unsigned char *buf;	/* pointer to allocated erase page buffer */
++	unsigned char *ptr;	/* pointer to next empty byte in buffer */
++	struct part_info  *part;	/* partition */
++	unsigned int off;	/* offset of current erase page in flash chip */
++	nand_info_t *nand;
++	nand_erase_options_t erase_opts;
++};
 +
-+static char *ptr;
++static struct dnload_state _dnstate;
++
++static struct part_info *get_partition(int idx)
++{
++	struct mtd_device *dev;
++	struct part_info *part;
++	struct list_head *pentry;
++	int i;
++
++	if (mtdparts_init() < 0)
++		return NULL;
++
++	dev = list_entry(devices.next, struct mtd_device, link);
++	i = 0;
++	list_for_each(pentry, &dev->parts) {
++		if (i == idx)  {
++			part = list_entry(pentry, struct part_info, link);
++			return part;
++		}
++		i++;
++	}
++
++	return NULL;
++}
++
++#define LOAD_ADDR ((unsigned char *)0x32000000)
++
++static int erase_flash_verify(struct urb *urb, struct dnload_state *ds)
++{
++	struct usb_device_instance *dev = urb->device;
++	unsigned long size = ds->nand->erasesize;
++	int rc;
++
++	/* we have finished one eraseblock, flash it */
++	memset(&ds->erase_opts, 0, sizeof(ds->erase_opts));
++	ds->erase_opts.offset = ds->off;
++	ds->erase_opts.length = size;
++	//ds->erase_opts.jffs2
++	//ds->erase_opts.quiet
++	debug("Erasing 0x%x bytes @ offset 0x%x\n",
++		ds->erase_opts.length, ds->erase_opts.offset);
++	rc = nand_erase_opts(ds->nand, &ds->erase_opts);
++	if (rc) {
++		debug("Error erasing\n");
++	    	dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errERASE;
++		return RET_STALL;
++	}
++	debug("Writing 0x%x bytes @ offset 0x%x\n", size, ds->off);
++	rc = nand_write(ds->nand, ds->off, &size, ds->buf);
++	if (rc) {
++		debug("Error writing\n");
++  		dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errWRITE;
++		return RET_STALL;
++	}
++	ds->off += ds->nand->erasesize;
++	ds->ptr = ds->buf;
++
++	/* FIXME: verify! */
++	return RET_NOTHING;
++}
 +
 +static int handle_dnload(struct urb *urb, u_int16_t val, u_int16_t len, int first)
 +{
 +	struct usb_device_instance *dev = urb->device;
-+	debug("download ");
++	struct dnload_state *ds = &_dnstate;
++	int actual_len = len;
++	unsigned long size;
++	int rc;
 +
-+	int i;
++	debug("download ");
 +
 +	if (len > CONFIG_USBD_DFU_XFER_SIZE) {
 +		/* Too big. Not that we'd really care, but it's a
@@ -170,31 +246,93 @@ Index: u-boot/drivers/usbdfu.c
 +		debug("zero-size write -> MANIFEST_SYNC ");
 +		//flash_page(p);
 +		dev->dfu_state = DFU_STATE_dfuMANIFEST_SYNC;
++		dev->dfu_status = DFU_STATUS_errADDRESS;
++
++		/* cleanup */
++		switch (dev->alternate) {
++		case 0:
++			break;
++		default:
++			if (ds->ptr > ds->buf)
++				rc = erase_flash_verify(urb, ds);
++			free(ds->buf);
++			ds->nand = NULL;
++			break;
++		}
++		ds->buf = ds->ptr = NULL;
++
 +		return RET_ZLP;
 +	}
-+	if (ptr + len > LOAD_ADDR + 0x200000) {
-+		debug("end of write exceeds flash end ");
-+		dev->dfu_state = DFU_STATE_dfuERROR;
++
++
++	if (urb->actual_length != len) {
++		debug("urb->actual_length(%u) != len(%u) ?!? ",
++			urb->actual_length, len);
++	    	dev->dfu_state = DFU_STATE_dfuERROR;
 +		dev->dfu_status = DFU_STATUS_errADDRESS;
 +		return RET_STALL;
 +	}
 +
-+	if (urb->actual_length != len) {
-+		debug("urb->actual_length(%u) != len(%u) ?!?\n",
-+			urb->actual_length, len);
-+		return RET_STALL;
++	if (first) {
++		/* initialize pointer to memory buffer */
++		switch (dev->alternate) {
++		case 0:
++			ds->buf = ds->ptr = LOAD_ADDR;
++			break;
++		default:
++			ds->part = get_partition(dev->alternate - 1);
++			if (!ds->part) {
++				printf("DFU: unable to find partition %u\b");
++	    			dev->dfu_state = DFU_STATE_dfuERROR;
++				dev->dfu_status = DFU_STATUS_errADDRESS;
++				return RET_STALL;
++			}
++			ds->nand = &nand_info[ds->part->dev->id->num];
++			ds->ptr = ds->buf = malloc(ds->nand->erasesize);
++			ds->off = ds->part->offset;
++			if (!ds->buf) {
++				printf("DFU: can't allocate %u bytes\n", ds->nand->erasesize);
++	    			dev->dfu_state = DFU_STATE_dfuERROR;
++				dev->dfu_status = DFU_STATUS_errADDRESS;
++				return RET_STALL;
++			}
++			printf("Starting DFU DOWNLOAD to partition '%s'\n",
++				ds->part->name);
++			break;
++		}
 +	}
 +
 +	/* actually write the data somewhere */
 +	switch (dev->alternate) {
 +	case 0:
-+		if (first)
-+			ptr = LOAD_ADDR;
-+		memcpy(ptr, urb->buffer, len);
-+		ptr += len;
++		memcpy(ds->ptr, urb->buffer, len);
++		ds->ptr += len;
 +		break;
 +	default:
-+		debug("[yet] unsupported altsetting %u\n", dev->alternate);
++		size = ds->nand->erasesize;
++		if (ds->buf + size - ds->ptr < len)
++			actual_len = len;
++
++		memcpy(ds->ptr, urb->buffer, actual_len);
++		ds->ptr += actual_len;
++
++		/* check partition end */
++		if (ds->off + (ds->ptr - ds->buf) > ds->part->offset + ds->part->size) {
++			debug("end of write exceeds flash end ");
++			dev->dfu_state = DFU_STATE_dfuERROR;
++			dev->dfu_status = DFU_STATUS_errADDRESS;
++			return RET_STALL;
++		}
++
++		if (ds->ptr >= ds->buf + size) {
++			rc = erase_flash_verify(urb, ds);
++			if (rc)
++				return rc;
++			/* copy remainder of data into buffer */
++			memcpy(ds->ptr, urb->buffer + actual_len,
++			       len - actual_len);
++			ds->ptr += (len - actual_len);
++		}
 +		break;
 +	}
 +
@@ -204,6 +342,7 @@ Index: u-boot/drivers/usbdfu.c
 +static int handle_upload(struct urb *urb, u_int16_t val, u_int16_t len, int first)
 +{
 +	struct usb_device_instance *dev = urb->device;
++	struct dnload_state *ds = &_dnstate;
 +	debug("upload(val=0x%02x, len=%u, first=%u) ", val, len, first);
 +
 +	if (len > CONFIG_USBD_DFU_XFER_SIZE) {
@@ -211,12 +350,12 @@ Index: u-boot/drivers/usbdfu.c
 +		dev->dfu_state = DFU_STATE_dfuERROR;
 +		dev->dfu_status = DFU_STATUS_errADDRESS;
 +		//udc_ep0_send_stall();
-+		debug("Error: Transfer size > CONFIG_USBD_DFU_XFER_SIZE\n");
++		debug("Error: Transfer size > CONFIG_USBD_DFU_XFER_SIZE ");
 +		return -EINVAL;
 +	}
 +
 +	if (first) {
-+		ptr = LOAD_ADDR;
++		ds->ptr = LOAD_ADDR;
 +		/* the first of many upload requests  */
 +		switch (dev->alternate) {
 +		case 0:
@@ -241,12 +380,12 @@ Index: u-boot/drivers/usbdfu.c
 +	}
 +
 +
-+	if (ptr + len > LOAD_ADDR + 0x200000)
-+		len = (char *)(LOAD_ADDR + 0x200000) - ptr;
++	if (ds->ptr + len > LOAD_ADDR + 0x200000)
++		len = (LOAD_ADDR + 0x200000) - ds->ptr;
 +
-+	urb->buffer = ptr;
++	urb->buffer = ds->ptr;
 +	urb->actual_length = len;
-+	ptr+= len;
++	ds->ptr+= len;
 +
 +	printf("returning len=%u\n", len);
 +	return len;
@@ -255,10 +394,10 @@ Index: u-boot/drivers/usbdfu.c
 +static void handle_getstatus(struct urb *urb, int max)
 +{
 +	struct usb_device_instance *dev = urb->device;
-+	struct dfu_status *dstat = urb->buffer;
++	struct dfu_status *dstat = (struct dfu_status *) urb->buffer;
 +	u_int32_t fsr = 0;//AT91F_MC_EFC_GetStatus(AT91C_BASE_MC);
 +
-+	debug("getstatus(fsr=0x%08x) ", fsr);
++	debug("getstatus ");
 +
 +	if (!urb->buffer || urb->buffer_length < sizeof(*dstat)) {
 +		debug("invalid urb! ");
@@ -596,7 +735,7 @@ Index: u-boot/drivers/usbdfu.c
 +			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
-+			handle_getstate(dev, len);
++			handle_getstate(urb, len);
 +			break;
 +		case USB_REQ_DFU_CLRSTATUS:
 +			dev->dfu_state = DFU_STATE_dfuIDLE;
@@ -647,8 +786,8 @@ Index: u-boot/drivers/usbdfu.c
 +#endif /* CONFIG_USBD_DFU */
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-24 03:59:30.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-24 04:03:05.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-24 17:12:47.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-24 17:12:49.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o ahci.o \
@@ -660,8 +799,8 @@ Index: u-boot/drivers/Makefile
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c	2007-02-24 03:58:21.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-02-24 04:03:05.000000000 +0100
+--- u-boot.orig/drivers/usbdcore.c	2007-02-24 17:12:47.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-24 17:12:49.000000000 +0100
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -721,8 +860,8 @@ Index: u-boot/drivers/usbdcore.c
  	case DEVICE_ADDRESS_ASSIGNED:
 Index: u-boot/drivers/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c	2007-02-24 03:59:29.000000000 +0100
-+++ u-boot/drivers/usbtty.c	2007-02-24 04:03:05.000000000 +0100
+--- u-boot.orig/drivers/usbtty.c	2007-02-24 17:12:47.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-24 17:12:49.000000000 +0100
 @@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
@@ -779,8 +918,8 @@ Index: u-boot/drivers/usbtty.c
  	memset (bus_instance, 0, sizeof (struct usb_bus_instance));
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-24 04:03:04.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-24 04:03:05.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h	2007-02-24 17:12:47.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-24 17:12:49.000000000 +0100
 @@ -182,6 +182,10 @@
  #define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
  #define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
@@ -795,7 +934,7 @@ Index: u-boot/include/configs/neo1973.h
 Index: u-boot/include/usb_dfu.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu.h	2007-02-24 04:03:05.000000000 +0100
++++ u-boot/include/usb_dfu.h	2007-02-24 17:12:49.000000000 +0100
 @@ -0,0 +1,91 @@
 +#ifndef _DFU_H
 +#define _DFU_H
@@ -891,7 +1030,7 @@ Index: u-boot/include/usb_dfu.h
 Index: u-boot/include/usb_dfu_descriptors.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu_descriptors.h	2007-02-24 04:03:05.000000000 +0100
++++ u-boot/include/usb_dfu_descriptors.h	2007-02-24 17:12:49.000000000 +0100
 @@ -0,0 +1,94 @@
 +#ifndef _USB_DFU_H
 +#define _USB_DFU_H
@@ -989,8 +1128,8 @@ Index: u-boot/include/usb_dfu_descriptors.h
 +#endif /* _USB_DFU_H */
 Index: u-boot/include/usbdcore.h
 ===================================================================
---- u-boot.orig/include/usbdcore.h	2007-02-24 03:59:29.000000000 +0100
-+++ u-boot/include/usbdcore.h	2007-02-24 04:03:05.000000000 +0100
+--- u-boot.orig/include/usbdcore.h	2007-02-24 17:12:47.000000000 +0100
++++ u-boot/include/usbdcore.h	2007-02-24 17:12:49.000000000 +0100
 @@ -33,6 +33,7 @@
  
  #include <common.h>
