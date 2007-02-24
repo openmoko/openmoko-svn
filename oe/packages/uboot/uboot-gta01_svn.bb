@@ -23,29 +23,24 @@ do_quilt() {
 
 do_compile () {
 	chmod +x board/neo1973/split_by_variant.sh
-	for type in ram nand
+	for mach in ${UBOOT_MACHINES}
 	do
-		for mach in ${UBOOT_MACHINES}
-		do
-			oe_runmake ${mach}_config
-			oe_runmake clean
-			if [ ${type} == "ram" ]; then
-				echo 'PLATFORM_RELFLAGS += -DBUILD_FOR_RAM' >> board/neo1973/config.tmp
-			fi
-			oe_runmake all
-			mv u-boot.bin u-boot_${mach}_${type}.bin
-		done
+		oe_runmake ${mach}_config
+		oe_runmake clean
+		oe_runmake all
+		mv u-boot.bin u-boot_${mach}.bin
+		mv board/neo1973/lowlevel_foo.bin lowlevel_foo_${mach}.bin
 	done
 }
 
 do_deploy () {
 	install -d ${DEPLOY_DIR_IMAGE}
-	for type in nand ram
+	for mach in ${UBOOT_MACHINES}
 	do
-		for mach in ${UBOOT_MACHINES}
-		do
-			install ${S}/u-boot_${mach}_${type}.bin ${DEPLOY_DIR_IMAGE}/u-boot_${type}-${mach}-${DATETIME}.bin
-		done
+		install ${S}/u-boot_${mach}.bin \
+		    ${DEPLOY_DIR_IMAGE}/u-boot-${mach}-${DATETIME}.bin
+		install ${S}/lowlevel_foo_${mach}.bin \
+		    ${DEPLOY_DIR_IMAGE}/lowlevel_foo-${mach}-${DATETIME}.bin
 	done
 	install -m 0755 tools/mkimage ${STAGING_BINDIR}/uboot-mkimage
 }
