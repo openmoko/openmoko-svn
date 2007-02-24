@@ -24,6 +24,7 @@ boot-from-ram-reloc.patch
 boot-from-ram-and-nand.patch
 wakeup-reason-nand-only.patch
 uboot-neo1973-resume.patch
+uboot-arm920t-gd_in_irq.patch
 
 # this will be somewhat more difficult
 nand-dynamic_partitions.patch
