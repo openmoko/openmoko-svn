@@ -118,7 +118,7 @@ Index: u-boot/include/configs/neo1973.h
  #define CONFIG_S3C2410_NAND_BBT                1
  
 +#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
-+#define MTPARTS_DEFAULT	"neo1973-nand:192k(u-boot),8k(u-boot_env),2M(kernel),2M(splash),-(jffs2)"
++#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),16k(u-boot_env),2M(kernel),640k(splash),-(jffs2)"
 +
  #endif	/* __CONFIG_H */
 Index: u-boot/common/cmd_jffs2.c
