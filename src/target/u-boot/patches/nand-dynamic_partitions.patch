@@ -17,9 +17,15 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c
-+++ u-boot/drivers/nand/nand_bbt.c
-@@ -1049,4 +1049,63 @@ int nand_isbad_bbt (struct mtd_info *mtd
+--- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-25 15:36:10.000000000 +0100
++++ u-boot/drivers/nand/nand_bbt.c	2007-02-25 15:36:51.000000000 +0100
+@@ -1044,9 +1044,70 @@
+ 	switch ((int)res) {
+ 	case 0x00:	return 0;
+ 	case 0x01:	return 1;
++	case 0x03:	return 1;
+ 	case 0x02:	return allowbbt ? 0 : 1;
+ 	}
  	return 1;
  }
  
@@ -54,11 +60,12 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +		unsigned int bb_delta = 0;
 +		unsigned int offs = 0;
 +		char mtdpart[32];
-+		for (offs = cur_offs; offs < cur_offs + part_size[part] + bb_delta; offs += 0x4000) {
++		for (offs = cur_offs; offs < cur_offs + part_size[part] + bb_delta;
++		     offs += this->erasesize) {
 +			int block = (int) (offs >> (this->bbt_erase_shift - 1));
 +			u_int8_t bbt = (this->bbt[block >> 3] >> (block & 0x06)) & 0x03;
 +			if (bbt == 0x03)
-+				bb_delta += 0x4000;
++				bb_delta += this->erasesize;
 +		}
 +
 +		if (cur_offs + part_size[part] + bb_delta > this->chipsize)
@@ -85,8 +92,8 @@ Index: u-boot/drivers/nand/nand_bbt.c
  #endif
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
+--- u-boot.orig/include/configs/neo1973.h	2007-02-25 15:36:18.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-25 15:36:51.000000000 +0100
 @@ -99,7 +99,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
@@ -123,9 +130,39 @@ Index: u-boot/include/configs/neo1973.h
  #endif	/* __CONFIG_H */
 Index: u-boot/common/cmd_jffs2.c
 ===================================================================
---- u-boot.orig/common/cmd_jffs2.c
-+++ u-boot/common/cmd_jffs2.c
-@@ -2132,6 +2132,18 @@ int do_jffs2_mtdparts(cmd_tbl_t *cmdtp, 
+--- u-boot.orig/common/cmd_jffs2.c	2007-02-25 15:36:10.000000000 +0100
++++ u-boot/common/cmd_jffs2.c	2007-02-25 15:36:18.000000000 +0100
+@@ -1841,6 +1841,29 @@
+ 	return NULL;
+ }
+ 
++/* Return the 'net size' of the partition (i.e. excluding any bad blocks) */
++unsigned int nand_net_part_size(struct part_info *part)
++{
++	struct mtd_info *mtd;
++	unsigned int offs;
++	unsigned int bb_delta = 0;
++
++	if (!part || !part->dev || !part->dev->id ||
++	    part->dev->id->num >= CFG_MAX_NAND_DEVICE)
++		return 0;
++
++ 	mtd = &nand_info[part->dev->id->num];
++
++	for (offs = part->offset; offs < part->offset + part->size;
++	     offs += mtd->erasesize) {
++		if (nand_isbad_bbt(mtd, offs, 0))
++			bb_delta += mtd->erasesize;
++	}
++
++	return part->size - bb_delta;
++}
++
++
+ /***************************************************/
+ /* U-boot commands				   */
+ /***************************************************/
+@@ -2132,6 +2155,20 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -140,11 +177,13 @@ Index: u-boot/common/cmd_jffs2.c
 +		return -EINVAL;
 +#endif
 +	nand_create_mtd_dynpart(&nand_info[0]);
++
++	return 0;
 +}
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2197,6 +2209,13 @@ U_BOOT_CMD(
+@@ -2197,6 +2234,13 @@
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );
@@ -158,3 +197,89 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
+Index: u-boot/common/cmd_nand.c
+===================================================================
+--- u-boot.orig/common/cmd_nand.c	2007-02-25 15:36:10.000000000 +0100
++++ u-boot/common/cmd_nand.c	2007-02-25 15:36:50.000000000 +0100
+@@ -101,7 +101,7 @@
+ }
+ 
+ int
+-arg_off_size(int argc, char *argv[], nand_info_t *nand, ulong *off, ulong *size)
++arg_off_size(int argc, char *argv[], nand_info_t *nand, ulong *off, ulong *size, int net)
+ {
+ 	int idx = nand_curr_device;
+ #if (CONFIG_COMMANDS & CFG_CMD_JFFS2) && defined(CONFIG_JFFS2_CMDLINE)
+@@ -122,10 +122,17 @@
+ 					printf("'%s' is not a number\n", argv[1]);
+ 					return -1;
+ 				}
+-				if (*size > part->size)
+-					*size = part->size;
++				if (*size > part->size) {
++					if (net)
++						*size = nand_net_part_size(part);
++					else
++						*size = part->size;
++				}
+ 			} else {
+-				*size = part->size;
++				if (net)
++					*size = nand_net_part_size(part);
++				else
++					*size = part->size;
+ 			}
+ 			idx = dev->id->num;
+ 			*nand = nand_info[idx];
+@@ -261,7 +268,7 @@
+ 
+ 		printf("\nNAND %s: ", scrub ? "scrub" : "erase");
+ 		/* skip first two or three arguments, look for offset and size */
+-		if (arg_off_size(argc - o, argv + o, nand, &off, &size) != 0)
++		if (arg_off_size(argc - o, argv + o, nand, &off, &size, 0) != 0)
+ 			return 1;
+ 
+ 		memset(&opts, 0, sizeof(opts));
+@@ -323,7 +330,7 @@
+ 
+ 		read = strncmp(cmd, "read", 4) == 0; /* 1 = read, 0 = write */
+ 		printf("\nNAND %s: ", read ? "read" : "write");
+-		if (arg_off_size(argc - 3, argv + 3, nand, &off, &size) != 0)
++		if (arg_off_size(argc - 3, argv + 3, nand, &off, &size, 1) != 0)
+ 			return 1;
+ 
+ 		s = strchr(cmd, '.');
+@@ -445,7 +452,7 @@
+ 	}
+ 
+ 	if (strcmp(cmd, "unlock") == 0) {
+-		if (arg_off_size(argc - 2, argv + 2, nand, &off, &size) < 0)
++		if (arg_off_size(argc - 2, argv + 2, nand, &off, &size, 0) < 0)
+ 			return 1;
+ 
+ 		if (!nand_unlock(nand, off, size)) {
+Index: u-boot/common/cmd_dynenv.c
+===================================================================
+--- u-boot.orig/common/cmd_dynenv.c	2007-02-25 15:37:32.000000000 +0100
++++ u-boot/common/cmd_dynenv.c	2007-02-25 15:37:39.000000000 +0100
+@@ -60,7 +60,7 @@
+ 		buf[2] = 'V';
+ 		buf[3] = '0';
+ 
+-		if (arg_off_size(argc-2, argv+2, mtd, &addr, &dummy) < 0) {
++		if (arg_off_size(argc-2, argv+2, mtd, &addr, &dummy, 1) < 0) {
+ 			printf("Offset or partition name expected\n");
+ 			goto fail;
+ 		}
+Index: u-boot/include/util.h
+===================================================================
+--- u-boot.orig/include/util.h	2007-02-25 15:37:43.000000000 +0100
++++ u-boot/include/util.h	2007-02-25 15:37:49.000000000 +0100
+@@ -28,6 +28,6 @@
+ 
+ /* common/cmd_nand.c */
+ int arg_off_size(int argc, char *argv[], nand_info_t *nand, ulong *off,
+-  ulong *size);
++  ulong *size, int net);
+ 
+ #endif /* UTIL_H */

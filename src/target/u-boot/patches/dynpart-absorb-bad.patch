@@ -1,10 +1,10 @@
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-16 23:53:57.000000000 +0100
-+++ u-boot/drivers/nand/nand_bbt.c	2007-02-16 23:54:02.000000000 +0100
-@@ -1062,6 +1062,15 @@
- static unsigned int part_size[] = { 0x30000, 0x4000, 0x200000, 0x130000, 0x3c9c000 };
- static char *part_names[] = { "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
+--- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-25 14:57:29.000000000 +0100
++++ u-boot/drivers/nand/nand_bbt.c	2007-02-25 15:03:52.000000000 +0100
+@@ -1065,6 +1065,15 @@
+ static char *part_names[] = {
+     "u-boot", "u-boot_env", "kernel", "splash", "rootfs" };
  
 +
 +static int skip_offs(const struct nand_chip *this, unsigned int offs)
@@ -18,20 +18,23 @@ Index: u-boot/drivers/nand/nand_bbt.c
  int nand_create_mtd_dynpart(struct mtd_info *mtd)
  {
  	struct nand_chip *this = mtd->priv;
-@@ -1080,11 +1089,22 @@
+@@ -1083,12 +1092,23 @@
  		unsigned int bb_delta = 0;
  		unsigned int offs = 0;
  		char mtdpart[32];
--		for (offs = cur_offs; offs < cur_offs + part_size[part] + bb_delta; offs += 0x4000) {
+-		for (offs = cur_offs; offs < cur_offs + part_size[part] + bb_delta;
+-		     offs += this->erasesize) {
 -			int block = (int) (offs >> (this->bbt_erase_shift - 1));
 -			u_int8_t bbt = (this->bbt[block >> 3] >> (block & 0x06)) & 0x03;
 -			if (bbt == 0x03)
+-				bb_delta += this->erasesize;
 +
 +		for (offs = cur_offs;
-+		    offs < cur_offs + part_size[part] + bb_delta;
-+		    offs += 0x4000)
++		     offs < cur_offs + part_size[part] + bb_delta;
++		     offs += mtd->erasesize) {
 +			if (skip_offs(this, offs))
- 				bb_delta += 0x4000;
++				bb_delta += mtd->erasesize;
++		}
 +
 +		/*
 +		 * Absorb bad blocks immediately following this partition also
@@ -40,8 +43,8 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +		 * environment partition.
 +		 */
 +		while (offs < this->chipsize && skip_offs(this, offs)) {
-+			bb_delta += 0x4000;
-+			offs += 0x4000;
++			bb_delta += mtd->erasesize;
++			offs += mtd->erasesize;
  		}
  
  		if (cur_offs + part_size[part] + bb_delta > this->chipsize)
