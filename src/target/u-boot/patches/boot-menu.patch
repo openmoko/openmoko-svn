@@ -14,9 +14,9 @@ Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/bootmenu.c
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,185 @@
 +/*
-+ * bootmenu.c - Convert a 480x640 PNG to a splash screen raw dump
++ * bootmenu.c - Boot menu
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
 + * Written by Werner Almesberger <werner@openmoko.org>
@@ -174,6 +174,8 @@ Index: u-boot/board/neo1973/bootmenu.c
 +
 +void bootmenu(void)
 +{
++	console_assign(stdout, "vga");
++	console_assign(stderr, "vga");
 +	while (1) {
 +		int n, seconds;
 +
@@ -184,8 +186,10 @@ Index: u-boot/board/neo1973/bootmenu.c
 +
 +		printf(ANSI_CLEAR ANSI_GOTOYX, 1, 1);
 +		if (!n || n == options+1) {
-+			if (n)
++			if (n) {
 +				default_env();
++				run_command("dynpart", 0);
++			}
 +			run_command("bootd", 0);
 +		}
 +		else
