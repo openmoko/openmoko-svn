@@ -1,7 +1,7 @@
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-25 15:37:52.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-25 15:37:53.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-25 19:41:13.000000000 +0100
 @@ -42,10 +42,15 @@
   */
  
@@ -85,11 +85,21 @@ Index: u-boot/drivers/usbdcore_ep0.c
  	/* handle USB Standard Request (c.f. USB Spec table 9-2) */
  	if ((request->bmRequestType & USB_REQ_TYPE_MASK) != 0) {
  		if (device->device_state <= STATE_CONFIGURED)
+@@ -570,7 +611,8 @@
+ 			device->interface = le16_to_cpu (request->wIndex);
+ 			device->alternate = le16_to_cpu (request->wValue);
+ 			/*dbg_ep0(2, "set interface: %d alternate: %d", device->interface, device->alternate); */
+-			serial_printf ("DEVICE_SET_INTERFACE.. event?\n");
++			usbd_device_event_irq(device, DEVICE_SET_INTERFACE,
++						(request->wIndex << 16 | request->wValue));
+ 			return 0;
+ 
+ 		case USB_REQ_GET_STATUS:
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-25 16:40:12.000000000 +0100
-@@ -0,0 +1,863 @@
++++ u-boot/drivers/usbdfu.c	2007-02-25 21:30:18.000000000 +0100
+@@ -0,0 +1,911 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -377,7 +387,7 @@ Index: u-boot/drivers/usbdfu.c
 +				/* re-write dynenv marker in OOB */
 +				run_command("dynenv set u-boot_env", 0);
 +			}
-+			ds->nand = NULL;-EINVAL;
++			ds->nand = NULL;
 +			free(ds->buf);
 +			ds->ptr = ds->buf = ds->_buf;
 +			break;
@@ -598,7 +608,6 @@ Index: u-boot/drivers/usbdfu.c
 +#endif
 +		break;
 +	case DFU_STATE_dfuMANIFEST_SYNC:
-+		dev->dfu_state = DFU_STATE_dfuMANIFEST;
 +		break;
 +	default:
 +		//return;
@@ -795,6 +804,15 @@ Index: u-boot/drivers/usbdfu.c
 +		case USB_REQ_DFU_GETSTATE:
 +			handle_getstate(urb, len);
 +			break;
++		case USB_REQ_DFU_DETACH:
++			/* Proprietary extension: 'detach' from idle mode and
++			 * get back to runtime mode in case of USB Reset.  As
++			 * much as I dislike this, we just can't use every USB
++			 * bus reset to switch back to runtime mode, since at
++			 * least the Linux USB stack likes to send a number of resets
++			 * in a row :( */
++			dev->dfu_state = DFU_STATE_dfuMANIFEST_WAIT_RST;
++			break;
 +		default:
 +			dev->dfu_state = DFU_STATE_dfuERROR;
 +			ret = RET_STALL;
@@ -855,6 +873,8 @@ Index: u-boot/drivers/usbdfu.c
 +	case DFU_STATE_dfuMANIFEST_SYNC:
 +		switch (req) {
 +		case USB_REQ_DFU_GETSTATUS:
++			/* We're MainfestationTolerant */
++			dev->dfu_state = DFU_STATE_dfuIDLE;
 +			handle_getstatus(urb, len);
 +			break;
 +		case USB_REQ_DFU_GETSTATE:
@@ -867,6 +887,7 @@ Index: u-boot/drivers/usbdfu.c
 +		}
 +		break;
 +	case DFU_STATE_dfuMANIFEST:
++		/* we should never go here */
 +		dev->dfu_state = DFU_STATE_dfuERROR;
 +		ret = RET_STALL;
 +		break;
@@ -952,6 +973,43 @@ Index: u-boot/drivers/usbdfu.c
 +
 +	return 0;
 +}
++
++/* event handler for usb device state events */
++void dfu_event(struct usb_device_instance *device,
++	       usb_device_event_t event, int data)
++{
++	switch (event) {
++	case DEVICE_SET_INTERFACE:
++		debug("SET_INTERFACE(%u,%u) old_state = %u ",
++			device->interface, device->alternate,
++			device->dfu_state);
++		switch (device->dfu_state) {
++		case DFU_STATE_appIDLE:
++		case DFU_STATE_appDETACH:
++		case DFU_STATE_dfuIDLE:
++		case DFU_STATE_dfuMANIFEST_WAIT_RST:
++			/* do nothing, we're fine */
++			break;
++		case DFU_STATE_dfuDNLOAD_SYNC:
++		case DFU_STATE_dfuDNBUSY:
++		case DFU_STATE_dfuDNLOAD_IDLE:
++		case DFU_STATE_dfuMANIFEST:
++			device->dfu_state = DFU_STATE_dfuERROR;
++			device->dfu_status = DFU_STATUS_errNOTDONE;
++			break;
++		case DFU_STATE_dfuMANIFEST_SYNC:
++		case DFU_STATE_dfuUPLOAD_IDLE:
++		case DFU_STATE_dfuERROR:
++			device->dfu_state = DFU_STATE_dfuERROR;
++			device->dfu_status = DFU_STATUS_errUNKNOWN;
++			break;
++		}
++		debug("new_state = %u\n", device->dfu_state);
++		break;
++	default:
++		break;
++	}
++}
 +#endif /* CONFIG_USBD_DFU */
 Index: u-boot/drivers/Makefile
 ===================================================================
@@ -969,7 +1027,7 @@ Index: u-boot/drivers/Makefile
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore.c	2007-02-25 15:36:49.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-02-25 15:37:53.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-25 21:29:47.000000000 +0100
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -1014,17 +1072,19 @@ Index: u-boot/drivers/usbdcore.c
  	if ((alternate < 0) || (alternate >= interface_instance->alternates)) {
  		return NULL;
  	}
-@@ -623,6 +639,18 @@
+@@ -623,6 +639,20 @@
  	case DEVICE_RESET:
  		device->device_state = STATE_DEFAULT;
  		device->address = 0;
 +#ifdef CONFIG_USBD_DFU
 +		switch (device->dfu_state) {
++		case DFU_STATE_appIDLE:
++			break;
 +		case DFU_STATE_appDETACH:
 +			printf("DFU: Switching to DFU Mode\n");
 +			device->dfu_state = DFU_STATE_dfuIDLE;
 +			break;
-+		case DFU_STATE_dfuMANIFEST:
++		case DFU_STATE_dfuMANIFEST_WAIT_RST:
 +			printf("DFU: Switching back to Runtime mode\n");
 +			device->dfu_state = DFU_STATE_appIDLE;
 +			break;
@@ -1033,10 +1093,18 @@ Index: u-boot/drivers/usbdcore.c
  		break;
  
  	case DEVICE_ADDRESS_ASSIGNED:
+@@ -681,4 +711,7 @@
+ 		/* usbdbg("calling device->event"); */
+ 		device->event(device, event, data);
+ 	}
++#ifdef CONFIG_USBD_DFU
++	dfu_event(device, event, data);
++#endif
+ }
 Index: u-boot/drivers/usbtty.c
 ===================================================================
 --- u-boot.orig/drivers/usbtty.c	2007-02-25 15:37:52.000000000 +0100
-+++ u-boot/drivers/usbtty.c	2007-02-25 15:37:53.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-25 19:36:45.000000000 +0100
 @@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
@@ -1118,8 +1186,8 @@ Index: u-boot/include/configs/neo1973.h
 Index: u-boot/include/usb_dfu.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu.h	2007-02-25 15:37:53.000000000 +0100
-@@ -0,0 +1,91 @@
++++ u-boot/include/usb_dfu.h	2007-02-25 20:24:52.000000000 +0100
+@@ -0,0 +1,94 @@
 +#ifndef _DFU_H
 +#define _DFU_H
 +
@@ -1209,6 +1277,9 @@ Index: u-boot/include/usb_dfu.h
 +#define DFU_EP0_DATA		4
 +
 +int dfu_ep0_handler(struct urb *urb);
++
++void dfu_event(struct usb_device_instance *device,
++	       usb_device_event_t event, int data);
 +
 +#endif /* _DFU_H */
 Index: u-boot/include/usb_dfu_descriptors.h
