@@ -105,10 +105,13 @@ contacts_groups_new_cb (GtkWidget *button, ContactsData *data)
 	gtk_widget_show (widget);
 
 	if (gtk_dialog_run (GTK_DIALOG (input_dialog)) != GTK_RESPONSE_ACCEPT)
+	{
+		gtk_widget_destroy (input_dialog);
 		return;
+	}
 
 	text = g_strdup (gtk_entry_get_text (GTK_ENTRY (widget)));
-	gtk_widget_hide (input_dialog);
+	gtk_widget_destroy (input_dialog);
 
 	if (!text || !strcmp (text, ""))
 		return;

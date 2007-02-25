@@ -369,6 +369,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info, 
   box = gtk_hbox_new (FALSE, 0);
 
   type = get_type (attr);
+
   if (type == NULL && info->types != NULL)
     type = info->types[0];
 
@@ -404,17 +405,27 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info, 
     gtk_box_pack_start (GTK_BOX (box), type_label, FALSE, FALSE, 4);
     g_free (s);
   }
+
   if (info->types && pane->priv->editable)
   {
     GtkWidget *combo;
+    gboolean *is_custom_type = TRUE;
     combo = gtk_combo_box_new_text ();
     gtk_widget_set_size_request (combo, -1, 46);
     i = 0;
     for (s = info->types[i]; (s = info->types[i]); i++) {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combo), s);
-      if (!strcmp (s, type))
+      if (!strcmp (s, type)) {
         gtk_combo_box_set_active (GTK_COMBO_BOX (combo), i);
+        is_custom_type = FALSE;
+      }
     }
+    if (is_custom_type) {
+       /* type isn't in our list of types, so add it now */
+       gtk_combo_box_append_text (GTK_COMBO_BOX (combo), type);
+       gtk_combo_box_set_active (GTK_COMBO_BOX (combo), i);
+    }
+
     g_object_set_data (G_OBJECT (combo), "contact-pane", pane);
     g_signal_connect (G_OBJECT (combo), "changed", G_CALLBACK (set_type_cb), attr);
     if (size)
