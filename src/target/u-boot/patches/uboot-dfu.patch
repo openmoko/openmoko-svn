@@ -98,8 +98,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-25 21:30:18.000000000 +0100
-@@ -0,0 +1,911 @@
++++ u-boot/drivers/usbdfu.c	2007-02-25 21:44:46.000000000 +0100
+@@ -0,0 +1,940 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -974,11 +974,40 @@ Index: u-boot/drivers/usbdfu.c
 +	return 0;
 +}
 +
++static int stdout_switched;
++
 +/* event handler for usb device state events */
 +void dfu_event(struct usb_device_instance *device,
 +	       usb_device_event_t event, int data)
 +{
++	char *out;
++
 +	switch (event) {
++	case DEVICE_RESET:
++		switch (device->dfu_state) {
++		case DFU_STATE_appDETACH:
++			device->dfu_state = DFU_STATE_dfuIDLE;
++			out = getenv("stdout");
++			if (out && !strcmp(out, "usbtty")) {
++				setenv("stdout", "vga");
++				setenv("stderr", "vga");
++				stdout_switched = 1;
++			}
++			printf("DFU: Switching to DFU Mode\n");
++			break;
++		case DFU_STATE_dfuMANIFEST_WAIT_RST:
++			device->dfu_state = DFU_STATE_appIDLE;
++			printf("DFU: Switching back to Runtime mode\n");
++			if (stdout_switched) {
++				setenv("stdout", "usbtty");
++				setenv("stderr", "usbtty");
++				stdout_switched = 0;
++			}
++			break;
++		default:
++			break;
++		}
++		break;
 +	case DEVICE_SET_INTERFACE:
 +		debug("SET_INTERFACE(%u,%u) old_state = %u ",
 +			device->interface, device->alternate,
@@ -1027,7 +1056,7 @@ Index: u-boot/drivers/Makefile
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore.c	2007-02-25 15:36:49.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-02-25 21:29:47.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-25 21:38:24.000000000 +0100
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -1072,28 +1101,7 @@ Index: u-boot/drivers/usbdcore.c
  	if ((alternate < 0) || (alternate >= interface_instance->alternates)) {
  		return NULL;
  	}
-@@ -623,6 +639,20 @@
- 	case DEVICE_RESET:
- 		device->device_state = STATE_DEFAULT;
- 		device->address = 0;
-+#ifdef CONFIG_USBD_DFU
-+		switch (device->dfu_state) {
-+		case DFU_STATE_appIDLE:
-+			break;
-+		case DFU_STATE_appDETACH:
-+			printf("DFU: Switching to DFU Mode\n");
-+			device->dfu_state = DFU_STATE_dfuIDLE;
-+			break;
-+		case DFU_STATE_dfuMANIFEST_WAIT_RST:
-+			printf("DFU: Switching back to Runtime mode\n");
-+			device->dfu_state = DFU_STATE_appIDLE;
-+			break;
-+		}
-+#endif
- 		break;
- 
- 	case DEVICE_ADDRESS_ASSIGNED:
-@@ -681,4 +711,7 @@
+@@ -681,4 +697,7 @@
  		/* usbdbg("calling device->event"); */
  		device->event(device, event, data);
  	}
