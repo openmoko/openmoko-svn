@@ -1,7 +1,7 @@
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-26 04:20:02.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-26 04:31:03.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-26 17:25:03.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-26 17:25:15.000000000 +0100
 @@ -42,10 +42,15 @@
   */
  
@@ -98,8 +98,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-26 04:23:14.000000000 +0100
-@@ -0,0 +1,943 @@
++++ u-boot/drivers/usbdfu.c	2007-02-26 17:25:15.000000000 +0100
+@@ -0,0 +1,954 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -662,7 +662,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bLength		= USB_DT_CONFIG_SIZE,
 +		.bDescriptorType	= USB_DT_CONFIG,
 +		.wTotalLength		= USB_DT_CONFIG_SIZE +
-+					5*USB_DT_INTERFACE_SIZE +
++					  DFU_NUM_ALTERNATES * USB_DT_INTERFACE_SIZE +
 +					  USB_DT_DFU_SIZE,
 +		.bNumInterfaces		= 5,
 +		.bConfigurationValue	= 1,
@@ -723,6 +723,17 @@ Index: u-boot/drivers/usbdfu.c
 +		.bDescriptorType	= USB_DT_INTERFACE,
 +		.bInterfaceNumber	= 0x00,
 +		.bAlternateSetting	= 0x04,
++		.bNumEndpoints		= 0x00,
++		.bInterfaceClass	= 0xfe,
++		.bInterfaceSubClass	= 0x01,
++		.bInterfaceProtocol	= 0x02,
++		.iInterface		= 0,
++	},
++	.uif[5] = {
++		.bLength		= USB_DT_INTERFACE_SIZE,
++		.bDescriptorType	= USB_DT_INTERFACE,
++		.bInterfaceNumber	= 0x00,
++		.bAlternateSetting	= 0x05,
 +		.bNumEndpoints		= 0x00,
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
@@ -1045,11 +1056,11 @@ Index: u-boot/drivers/usbdfu.c
 +#endif /* CONFIG_USBD_DFU */
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-26 04:20:02.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-26 04:23:14.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-26 17:25:03.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-26 17:25:15.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
- 	  status_led.o sym53c8xx.o ahci.o \
+ 	  status_led.o sym53c8xx.o systemace.o ahci.o \
  	  ti_pci1410a.o tigon3.o tsec.o \
 -	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
 +	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
@@ -1058,8 +1069,8 @@ Index: u-boot/drivers/Makefile
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c	2007-02-26 04:20:02.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-02-26 04:23:14.000000000 +0100
+--- u-boot.orig/drivers/usbdcore.c	2007-02-26 17:25:03.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-26 17:25:15.000000000 +0100
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -1114,8 +1125,8 @@ Index: u-boot/drivers/usbdcore.c
  }
 Index: u-boot/drivers/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c	2007-02-26 04:20:02.000000000 +0100
-+++ u-boot/drivers/usbtty.c	2007-02-26 04:23:14.000000000 +0100
+--- u-boot.orig/drivers/usbtty.c	2007-02-26 17:25:03.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-26 17:25:15.000000000 +0100
 @@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
@@ -1172,8 +1183,8 @@ Index: u-boot/drivers/usbtty.c
  	memset (bus_instance, 0, sizeof (struct usb_bus_instance));
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-26 04:23:14.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-26 04:23:14.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h	2007-02-26 17:25:03.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-26 17:25:15.000000000 +0100
 @@ -165,7 +165,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
@@ -1197,7 +1208,7 @@ Index: u-boot/include/configs/neo1973.h
 Index: u-boot/include/usb_dfu.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu.h	2007-02-26 04:23:14.000000000 +0100
++++ u-boot/include/usb_dfu.h	2007-02-26 17:25:15.000000000 +0100
 @@ -0,0 +1,94 @@
 +#ifndef _DFU_H
 +#define _DFU_H
@@ -1236,7 +1247,7 @@ Index: u-boot/include/usb_dfu.h
 +#define DFU_FUNC_DESC  {						\
 +	.bLength		= USB_DT_DFU_SIZE,			\
 +	.bDescriptorType	= USB_DT_DFU,				\
-+	.bmAttributes		= USB_DFU_CAN_UPLOAD | USB_DFU_CAN_DOWNLOAD, \
++	.bmAttributes		= USB_DFU_CAN_UPLOAD | USB_DFU_CAN_DOWNLOAD | USB_DFU_MANIFEST_TOL, \
 +	.wDetachTimeOut		= 0xff00,				\
 +	.wTransferSize		= CONFIG_USBD_DFU_XFER_SIZE,		\
 +	.bcdDFUVersion		= 0x0100,				\
@@ -1271,7 +1282,7 @@ Index: u-boot/include/usb_dfu.h
 +
 +#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
 +
-+#define DFU_NUM_ALTERNATES	5
++#define DFU_NUM_ALTERNATES	6
 +
 +struct _dfu_desc {
 +	struct usb_configuration_descriptor ucfg;
@@ -1296,7 +1307,7 @@ Index: u-boot/include/usb_dfu.h
 Index: u-boot/include/usb_dfu_descriptors.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu_descriptors.h	2007-02-26 04:23:14.000000000 +0100
++++ u-boot/include/usb_dfu_descriptors.h	2007-02-26 17:25:15.000000000 +0100
 @@ -0,0 +1,94 @@
 +#ifndef _USB_DFU_H
 +#define _USB_DFU_H
@@ -1394,8 +1405,8 @@ Index: u-boot/include/usb_dfu_descriptors.h
 +#endif /* _USB_DFU_H */
 Index: u-boot/include/usbdcore.h
 ===================================================================
---- u-boot.orig/include/usbdcore.h	2007-02-26 04:20:02.000000000 +0100
-+++ u-boot/include/usbdcore.h	2007-02-26 04:23:14.000000000 +0100
+--- u-boot.orig/include/usbdcore.h	2007-02-26 17:25:03.000000000 +0100
++++ u-boot/include/usbdcore.h	2007-02-26 17:25:15.000000000 +0100
 @@ -33,6 +33,7 @@
  
  #include <common.h>
