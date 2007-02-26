@@ -4,9 +4,12 @@ board/neo1973/neo1973.c (neo1973_new_second): return 1 if a new second has
 board/neo1973/neo1973.c (neo1973_on_key_pressed): return 1 if the $POWER key is
   pressed
 board/neo1973/neo1973.c (board_late_init): make use of neo1973_new_second and
-  neo1973_on_key_pressed, call "bootmenu" if AUX is pressed with POWER
-board/neo1973/Makefile: added bootmenu.c
+  neo1973_on_key_pressed
 board/neo1973/neo1973.h: added function prototypes
+u-boot/board/neo1973/neo1973.c: removed setting of "nobootdelay"
+u-boot/board/neo1973/neo1973.c (board_late_init): enter the boot menu when 
+  "AUX" was pressed at least half the time
+u-boot/board/neo1973/neo1973.c (board_late_init): minor code cleanup
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -14,7 +17,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/bootmenu.c
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,187 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -191,6 +194,8 @@ Index: u-boot/board/neo1973/bootmenu.c
 +				run_command("dynpart", 0);
 +			}
 +			run_command("bootd", 0);
++			if (!n)
++				return;
 +		}
 +		else
 +			run_command(option_command(n), 0);
@@ -204,28 +209,60 @@ Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/neo1973.c
 +++ u-boot/board/neo1973/neo1973.c
-@@ -228,14 +228,10 @@ int board_late_init(void)
- 			nobootdelay = 1;
+@@ -69,7 +69,6 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define U_M_SDIV	0x3
  
- 		while (1) {
+ unsigned int neo1973_wakeup_cause;
+-extern int nobootdelay;
+ 
+ static inline void delay (unsigned long loops)
+ {
+@@ -196,6 +195,7 @@ int board_late_init(void)
+ 	extern unsigned char booted_from_nand;
+ 	unsigned char tmp;
+ 	char buf[32];
++	int menu_vote = 0; /* <= 0: no, > 0: yes */
+ 
+ 	/* Initialize the Power Management Unit with a safe register set */
+ 	pcf50606_init();
+@@ -219,25 +219,18 @@ int board_late_init(void)
+ 
+ 	if (tmp & PCF50606_INT1_ONKEYF) {
+ 		int seconds = 0;
++
+ 		neo1973_wakeup_cause = NEO1973_WAKEUP_POWER_KEY;
+ 		/* we've been woken up by a falling edge of the onkey */
+ 
+-		/* we can't just setenv(bootdelay,-1) because that would
+-		 * accidentially become permanent if the user does saveenv */
+-		if (neo1973_911_key_pressed())
+-			nobootdelay = 1;
+-
+-		while (1) {
 -			u_int8_t int1, oocs;
 -
 -			oocs = pcf50606_reg_read(PCF50606_REG_OOCS);
 -			if (oocs & PFC50606_OOCS_ONKEY)
-+			if (!neo1973_on_key_pressed())
- 				break;
+-				break;
++		while (neo1973_on_key_pressed()) {
++			if (neo1973_911_key_pressed())
++				menu_vote++;
++			else
++				menu_vote--;
  
 -			int1 = pcf50606_reg_read(PCF50606_REG_INT1);
 -			if (int1 & PCF50606_INT1_SECOND)
 +			if (neo1973_new_second())
  				seconds++;
- 
+-
  			if (seconds >= POWER_KEY_SECONDS)
-@@ -262,6 +258,11 @@ continue_boot:
+ 				goto continue_boot;
+ 		}
+@@ -262,6 +255,11 @@ continue_boot:
  	/* switch on the backlight */
  	neo1973_backlight(1);
  
-+	if (nobootdelay) {
++	if (menu_vote > 0) {
 +		bootmenu();
 +		neo1973_poweroff();
 +	}
@@ -233,7 +270,7 @@ Index: u-boot/board/neo1973/neo1973.c
  	return 0;
  }
  
-@@ -313,6 +314,16 @@ void neo1973_vibrator(int on)
+@@ -313,6 +311,16 @@ void neo1973_vibrator(int on)
  		gpio->GPBDAT &= ~(1 << 10);
  }
  
