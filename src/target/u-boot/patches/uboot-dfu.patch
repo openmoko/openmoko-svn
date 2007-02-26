@@ -1,7 +1,7 @@
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-26 17:25:03.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-26 17:25:15.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-27 00:38:10.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-27 00:38:11.000000000 +0100
 @@ -42,10 +42,15 @@
   */
  
@@ -98,8 +98,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-26 17:25:15.000000000 +0100
-@@ -0,0 +1,954 @@
++++ u-boot/drivers/usbdfu.c	2007-02-27 00:38:11.000000000 +0100
+@@ -0,0 +1,995 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -162,6 +162,7 @@ Index: u-boot/drivers/usbdfu.c
 +extern struct list_head devices;
 +
 +#include "usbdcore_s3c2410.h"
++#include "usbtty.h"			/* for STR_* defs */
 +
 +#define RET_NOTHING	0
 +#define RET_ZLP		1
@@ -651,9 +652,9 @@ Index: u-boot/drivers/usbdfu.c
 +	.idVendor		= CONFIG_USBD_VENDORID,
 +	.idProduct		= CONFIG_USBD_PRODUCTID_DFU,
 +	.bcdDevice		= 0x0000,
-+	.iManufacturer		= 1,
-+	.iProduct		= 2,
-+	.iSerialNumber		= 0x00,
++	.iManufacturer		= DFU_STR_MANUFACTURER,
++	.iProduct		= DFU_STR_PRODUCT,
++	.iSerialNumber		= DFU_STR_SERIAL,
 +	.bNumConfigurations	= 0x01,
 +};
 +
@@ -666,11 +667,7 @@ Index: u-boot/drivers/usbdfu.c
 +					  USB_DT_DFU_SIZE,
 +		.bNumInterfaces		= 5,
 +		.bConfigurationValue	= 1,
-+#ifdef CONFIG_USBD_STRING
-+		.iConfiguration		= 3,
-+#else
-+		.iConfiguration		= 0,
-+#endif
++		.iConfiguration		= DFU_STR_CONFIG,
 +		.bmAttributes		= BMATTRIBUTE_RESERVED,
 +		.bMaxPower		= 50,
 +	},
@@ -683,7 +680,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
 +		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= 0,
++		.iInterface		= DFU_STR_ALT0,
 +	},
 +	.uif[1] = {
 +		.bLength		= USB_DT_INTERFACE_SIZE,
@@ -694,7 +691,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
 +		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= 0,
++		.iInterface		= DFU_STR_ALT1,
 +	},
 +	.uif[2] = {
 +		.bLength		= USB_DT_INTERFACE_SIZE,
@@ -705,7 +702,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
 +		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= 0,
++		.iInterface		= DFU_STR_ALT2,
 +	},
 +	.uif[3] = {
 +		.bLength		= USB_DT_INTERFACE_SIZE,
@@ -716,7 +713,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
 +		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= 0,
++		.iInterface		= DFU_STR_ALT3,
 +	},
 +	.uif[4] = {
 +		.bLength		= USB_DT_INTERFACE_SIZE,
@@ -727,7 +724,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
 +		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= 0,
++		.iInterface		= DFU_STR_ALT4,
 +	},
 +	.uif[5] = {
 +		.bLength		= USB_DT_INTERFACE_SIZE,
@@ -738,7 +735,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.bInterfaceClass	= 0xfe,
 +		.bInterfaceSubClass	= 0x01,
 +		.bInterfaceProtocol	= 0x02,
-+		.iInterface		= 0,
++		.iInterface		= DFU_STR_ALT5,
 +	},
 +	.func_dfu = DFU_FUNC_DESC,
 +};
@@ -973,12 +970,56 @@ Index: u-boot/drivers/usbdfu.c
 +	return DFU_EP0_DATA;
 +}
 +
++void str2wide (char *str, u16 * wide);
++static struct usb_string_descriptor *create_usbstring(char *string)
++{
++	struct usb_string_descriptor *strdesc;
++	int size = sizeof(*strdesc) + strlen(string)*2;
++
++	if (size > 255)
++		return NULL;
++
++	strdesc = malloc(size);
++	if (!strdesc)
++		return NULL;
++
++	strdesc->bLength = size;
++	strdesc->bDescriptorType = USB_DT_STRING;
++	str2wide(string, strdesc->wData);
++
++	return strdesc;
++}
++
++
++static void dfu_init_strings(struct usb_device_instance *dev)
++{
++	int i;
++	struct usb_string_descriptor *strdesc;
++
++	strdesc = create_usbstring(CONFIG_DFU_CFG_STR);
++	usb_strings[DFU_STR_CONFIG] = strdesc;
++
++	for (i = 0; i < DFU_NUM_ALTERNATES; i++) {
++		if (i == 0) {
++			strdesc = create_usbstring(CONFIG_DFU_ALT0_STR);
++		} else {
++			struct part_info *part = get_partition_nand(i-1);
++			if (!part)
++				continue;
++			strdesc = create_usbstring(part->name);
++		}
++		usb_strings[STR_COUNT+i+1] = strdesc;
++	}
++}
++
 +int dfu_init_instance(struct usb_device_instance *dev)
 +{
 +	dev->dfu_dev_desc = &dfu_dev_descriptor;
 +	dev->dfu_cfg_desc = &dfu_cfg_descriptor;
 +	dev->dfu_state = DFU_STATE_appIDLE;
 +	dev->dfu_status = DFU_STATUS_OK;
++
++	dfu_init_strings(dev);
 +
 +	return 0;
 +}
@@ -1056,8 +1097,8 @@ Index: u-boot/drivers/usbdfu.c
 +#endif /* CONFIG_USBD_DFU */
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-26 17:25:03.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-26 17:25:15.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-27 00:38:10.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-27 00:38:11.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o systemace.o ahci.o \
@@ -1069,8 +1110,8 @@ Index: u-boot/drivers/Makefile
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c	2007-02-26 17:25:03.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-02-26 17:25:15.000000000 +0100
+--- u-boot.orig/drivers/usbdcore.c	2007-02-27 00:37:59.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-27 00:38:11.000000000 +0100
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -1125,8 +1166,8 @@ Index: u-boot/drivers/usbdcore.c
  }
 Index: u-boot/drivers/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c	2007-02-26 17:25:03.000000000 +0100
-+++ u-boot/drivers/usbtty.c	2007-02-26 17:25:15.000000000 +0100
+--- u-boot.orig/drivers/usbtty.c	2007-02-27 00:38:10.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-27 00:38:11.000000000 +0100
 @@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
@@ -1136,6 +1177,15 @@ Index: u-boot/drivers/usbtty.c
  #include <config.h>		/* If defined, override Linux identifiers with
  			   	 * vendor specific ones */
  
+@@ -118,7 +120,7 @@
+ static unsigned short rx_endpoint = 0;
+ static unsigned short tx_endpoint = 0;
+ static unsigned short interface_count = 0;
+-static struct usb_string_descriptor *usbtty_string_table[STR_COUNT];
++static struct usb_string_descriptor *usbtty_string_table[NUM_STRINGS];
+ 
+ /* USB Descriptor Strings */
+ static u8 wstrLang[4] = {4,USB_DT_STRING,0x9,0x4};
 @@ -169,6 +171,10 @@
  	struct usb_interface_descriptor data_class_interface;
  	struct usb_endpoint_descriptor 
@@ -1171,6 +1221,15 @@ Index: u-boot/drivers/usbtty.c
  	},
  };	
  
+@@ -390,7 +405,7 @@
+ void usbtty_poll (void);
+ 
+ /* utility function for converting char* to wide string used by USB */
+-static void str2wide (char *str, u16 * wide)
++void str2wide (char *str, u16 * wide)
+ {
+ 	int i;
+ 	for (i = 0; i < strlen (str) && str[i]; i++){
 @@ -652,6 +667,9 @@
  	device_instance->bus = bus_instance;
  	device_instance->configurations = NUM_CONFIGS;
@@ -1183,8 +1242,8 @@ Index: u-boot/drivers/usbtty.c
  	memset (bus_instance, 0, sizeof (struct usb_bus_instance));
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-26 17:25:03.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-26 17:25:15.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h	2007-02-27 00:38:11.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-27 00:38:11.000000000 +0100
 @@ -165,7 +165,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
@@ -1208,8 +1267,8 @@ Index: u-boot/include/configs/neo1973.h
 Index: u-boot/include/usb_dfu.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu.h	2007-02-26 17:25:15.000000000 +0100
-@@ -0,0 +1,94 @@
++++ u-boot/include/usb_dfu.h	2007-02-27 00:39:48.000000000 +0100
+@@ -0,0 +1,97 @@
 +#ifndef _DFU_H
 +#define _DFU_H
 +
@@ -1254,7 +1313,6 @@ Index: u-boot/include/usb_dfu.h
 +}
 +
 +/* USB Interface descriptor in Runtime mode */
-+#ifdef CONFIG_USB_STRING
 +#define DFU_RT_IF_DESC	{						\
 +	.bLength		= USB_DT_INTERFACE_SIZE,		\
 +	.bDescriptorType	= USB_DT_INTERFACE,			\
@@ -1264,25 +1322,29 @@ Index: u-boot/include/usb_dfu.h
 +	.bInterfaceClass	= 0xfe,					\
 +	.bInterfaceSubClass	= 0x01,					\
 +	.bInterfaceProtocol	= 0x01,					\
-+	.iInterface		= 1,					\
++	.iInterface		= DFU_STR_CONFIG,			\
 +}
-+#else
-+#define DFU_RT_IF_DESC	{						\
-+	.bLength		= USB_DT_INTERFACE_SIZE,		\
-+	.bDescriptorType	= USB_DT_INTERFACE,			\
-+	.bInterfaceNumber	= CONFIG_USBD_DFU_INTERFACE,		\
-+	.bAlternateSetting	= 0x00,					\
-+	.bNumEndpoints		= 0x00,					\
-+	.bInterfaceClass	= 0xfe,					\
-+	.bInterfaceSubClass	= 0x01,					\
-+	.bInterfaceProtocol	= 0x01,					\
-+	.iInterface		= 0,					\
-+}
-+#endif
 +
 +#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
 +
 +#define DFU_NUM_ALTERNATES	6
++
++#define DFU_STR_MANUFACTURER	STR_MANUFACTURER
++#define DFU_STR_PRODUCT		STR_PRODUCT
++#define DFU_STR_SERIAL		STR_SERIAL
++#define DFU_STR_CONFIG		(STR_COUNT)
++#define DFU_STR_ALT0		(STR_COUNT+1)
++#define DFU_STR_ALT1		(STR_COUNT+2)
++#define DFU_STR_ALT2		(STR_COUNT+3)
++#define DFU_STR_ALT3		(STR_COUNT+4)
++#define DFU_STR_ALT4		(STR_COUNT+5)
++#define DFU_STR_ALT5		(STR_COUNT+6)
++#define DFU_STR_COUNT		(STR_COUNT+7)
++
++#define DFU_NUM_STRINGS		(STR_COUNT+8)
++
++#define CONFIG_DFU_CFG_STR	"USB Device Firmware Upgrade"
++#define CONFIG_DFU_ALT0_STR	"RAM 0x32000000"
 +
 +struct _dfu_desc {
 +	struct usb_configuration_descriptor ucfg;
@@ -1307,7 +1369,7 @@ Index: u-boot/include/usb_dfu.h
 Index: u-boot/include/usb_dfu_descriptors.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu_descriptors.h	2007-02-26 17:25:15.000000000 +0100
++++ u-boot/include/usb_dfu_descriptors.h	2007-02-27 00:38:11.000000000 +0100
 @@ -0,0 +1,94 @@
 +#ifndef _USB_DFU_H
 +#define _USB_DFU_H
@@ -1405,8 +1467,8 @@ Index: u-boot/include/usb_dfu_descriptors.h
 +#endif /* _USB_DFU_H */
 Index: u-boot/include/usbdcore.h
 ===================================================================
---- u-boot.orig/include/usbdcore.h	2007-02-26 17:25:03.000000000 +0100
-+++ u-boot/include/usbdcore.h	2007-02-26 17:25:15.000000000 +0100
+--- u-boot.orig/include/usbdcore.h	2007-02-27 00:38:10.000000000 +0100
++++ u-boot/include/usbdcore.h	2007-02-27 00:38:11.000000000 +0100
 @@ -33,6 +33,7 @@
  
  #include <common.h>
@@ -1440,3 +1502,27 @@ Index: u-boot/include/usbdcore.h
  };
  
  /* Bus Interface configuration structure
+@@ -632,6 +643,8 @@
+ extern char *usbd_device_requests[];
+ extern char *usbd_device_descriptors[];
+ 
++extern struct usb_string_descriptor **usb_strings;
++
+ void urb_link_init (urb_link * ul);
+ void urb_detach (struct urb *urb);
+ urb_link *first_urb_link (urb_link * hd);
+Index: u-boot/drivers/usbtty.h
+===================================================================
+--- u-boot.orig/drivers/usbtty.h	2007-02-27 00:38:10.000000000 +0100
++++ u-boot/drivers/usbtty.h	2007-02-27 00:38:11.000000000 +0100
+@@ -71,4 +71,10 @@
+ #define STR_CTRL_INTERFACE	0x06
+ #define STR_COUNT		0x07
+ 
++#ifdef CONFIG_USBD_DFU
++#define NUM_STRINGS		DFU_STR_COUNT
++#else
++#define NUM_STRINGS		STR_COUNT
++#endif
++
+ #endif
