@@ -40,8 +40,12 @@ sourcepkg_do_archive_patched_sourcetree() {
 	cd ${WORKDIR}
 	src_tree=${@get_src_tree(d)}
 	echo $src_tree
-	oenote "Creating ${DEPLOY_DIR_SRC}/${P}-${PR}-${DISTRO}-${DISTRO_VERSION}.tar.gz"
-	tar cvzf ${DEPLOY_DIR_SRC}/${P}-${PR}-${DISTRO}-${DISTRO_VERSION}.tar.gz --ignore-failed-read $src_tree
+	if [ "${src_tree}" != "/" ]; then
+		oenote "Creating ${DEPLOY_DIR_SRC}/${P}-${PR}-${DISTRO}-${DISTRO_VERSION}.tar.gz"
+		tar cvzf ${DEPLOY_DIR_SRC}/${P}-${PR}-${DISTRO}-${DISTRO_VERSION}.tar.gz --ignore-failed-read $src_tree
+	else
+		echo "Not creating ${DEPLOY_DIR_SRC}/${P}-${PR}-${DISTRO}-${DISTRO_VERSION}.tar.gz because src_tree=/" >> ${HOME}/openembedded-source-missing.log
+	fi
 }
 
 EXPORT_FUNCTIONS do_archive_patched_sourcetree
