@@ -734,7 +734,7 @@ equalizerwin_create_widgets(void)
 static void
 equalizerwin_create_window(void)
 {
-    GdkPixbuf *icon;
+    //GdkPixbuf *icon;
     gint width, height;
 
     equalizerwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);

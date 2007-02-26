@@ -389,7 +389,7 @@ create_default_mask(GdkWindow * parent, gint w, gint h)
 
     return ret;
 }
-
+/*
 static void
 skin_query_color(GdkColormap * cm, GdkColor * c)
 {
@@ -408,13 +408,13 @@ skin_calc_luminance(GdkColor * c)
     return (0.212671 * c->red + 0.715160 * c->green + 0.072169 * c->blue);
 }
 
+
 static void
 skin_get_textcolors(GdkPixmap * text, GdkColor * bgc, GdkColor * fgc)
 {
-    /*
-     * Try to extract reasonable background and foreground colors
-     * from the font pixmap
-     */
+    //  * Try to extract reasonable background and foreground colors
+    //  * from the font pixmap
+    //  *
 
     GdkImage *gi;
     GdkColormap *cm;
@@ -422,7 +422,7 @@ skin_get_textcolors(GdkPixmap * text, GdkColor * bgc, GdkColor * fgc)
 
     g_return_if_fail(text != NULL);
 
-    /* Get the first line of text */
+    //  * Get the first line of text *
     gi = gdk_drawable_get_image(text, 0, 0, 152, 6);
     cm = gdk_window_get_colormap(playlistwin->window);
     g_return_if_fail(GDK_IS_WINDOW(playlistwin->window));
@@ -432,7 +432,7 @@ skin_get_textcolors(GdkPixmap * text, GdkColor * bgc, GdkColor * fgc)
         gint x;
         glong d, max_d;
 
-        /* Get a pixel from the middle of the space character */
+        // * Get a pixel from the middle of the space character *
         bgc[i].pixel = gdk_image_get_pixel(gi, 151, i);
         skin_query_color(cm, &bgc[i]);
 
@@ -451,6 +451,7 @@ skin_get_textcolors(GdkPixmap * text, GdkColor * bgc, GdkColor * fgc)
     gdk_image_destroy(gi);
 
 }
+*/
 
 gboolean
 init_skins(const gchar * path)

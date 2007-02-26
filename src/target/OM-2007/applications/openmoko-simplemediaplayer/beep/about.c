@@ -245,10 +245,10 @@ show_about_window(void)
 {
     static GtkWidget *about_window = NULL;
 
-    GdkPixmap *beep_logo_pmap = NULL, *beep_logo_mask = NULL;
+    //GdkPixmap *beep_logo_pmap = NULL, *beep_logo_mask = NULL;
     GtkWidget *about_vbox;
     GtkWidget *about_credits_logo_box, *about_credits_logo_frame;
-    GtkWidget *about_credits_logo;
+    //GtkWidget *about_credits_logo;
     GtkWidget *about_notebook;
     GtkWidget *list;
     GtkWidget *bbox, *close_btn;

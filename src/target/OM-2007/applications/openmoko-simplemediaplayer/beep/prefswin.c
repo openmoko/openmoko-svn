@@ -110,7 +110,7 @@ prefswin_get_xml(void)
 {
     return GLADE_XML(g_object_get_data(G_OBJECT(prefswin), "glade-xml"));
 }
-*/
+
 static void
 change_category(GtkNotebook * notebook,
                 GtkTreeSelection * selection)
@@ -125,7 +125,7 @@ change_category(GtkNotebook * notebook,
     gtk_tree_model_get(model, &iter, CATEGORY_VIEW_COL_ID, &index, -1);
     gtk_notebook_set_current_page(notebook, index);
 }
-
+*/
 void
 prefswin_set_category(gint index)
 {
@@ -139,7 +139,7 @@ prefswin_set_category(gint index)
 //    gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), index);
 }
 
-
+/*
 static void
 input_plugin_open_prefs(GtkTreeView * treeview,
                         gpointer data)
@@ -233,9 +233,9 @@ input_plugin_toggle(GtkCellRendererToggle * cell,
     gboolean fixed;
     gint pluginnr;
     gchar *filename, *basename;
-    /*GList *diplist, *tmplist; */
+    // *GList *diplist, *tmplist; *
 
-    /* get toggled iter */
+    // * get toggled iter *
     gtk_tree_model_get_iter(model, &iter, path);
     gtk_tree_model_get(model, &iter,
                        PLUGIN_VIEW_COL_ACTIVE, &fixed,
@@ -246,17 +246,17 @@ input_plugin_toggle(GtkCellRendererToggle * cell,
     basename = g_path_get_basename(filename);
     g_free(filename);
 
-    /* do something with the value */
+    // * do something with the value *
     fixed ^= 1;
 
     g_hash_table_replace(plugin_matrix, basename, GINT_TO_POINTER(fixed));
-    /*  g_hash_table_foreach(pluginmatrix, (GHFunc) disp_matrix, NULL); */
+    // *  g_hash_table_foreach(pluginmatrix, (GHFunc) disp_matrix, NULL); *
 
-    /* set new value */
+    // * set new value *
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        PLUGIN_VIEW_COL_ACTIVE, fixed, -1);
 
-    /* clean up */
+     // * clean up *
     gtk_tree_path_free(path);
 }
 
@@ -272,22 +272,22 @@ vis_plugin_toggle(GtkCellRendererToggle * cell,
     gboolean fixed;
     gint pluginnr;
 
-    /* get toggled iter */
+    // * get toggled iter *
     gtk_tree_model_get_iter(model, &iter, path);
     gtk_tree_model_get(model, &iter,
                        PLUGIN_VIEW_COL_ACTIVE, &fixed,
                        PLUGIN_VIEW_COL_ID, &pluginnr, -1);
 
-    /* do something with the value */
+    // * do something with the value *
     fixed ^= 1;
 
     enable_vis_plugin(pluginnr, fixed);
 
-    /* set new value */
+    // * set new value *
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        PLUGIN_VIEW_COL_ACTIVE, fixed, -1);
 
-    /* clean up */
+    // * clean up *
     gtk_tree_path_free(path);
 }
 
@@ -302,22 +302,22 @@ effect_plugin_toggle(GtkCellRendererToggle * cell,
     gboolean fixed;
     gint pluginnr;
 
-    /* get toggled iter */
+    // * get toggled iter *
     gtk_tree_model_get_iter(model, &iter, path);
     gtk_tree_model_get(model, &iter,
                        PLUGIN_VIEW_COL_ACTIVE, &fixed,
                        PLUGIN_VIEW_COL_ID, &pluginnr, -1);
 
-    /* do something with the value */
+    // * do something with the value *
     fixed ^= 1;
 
     enable_effect_plugin(pluginnr, fixed);
 
-    /* set new value */
+    // * set new value *
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        PLUGIN_VIEW_COL_ACTIVE, fixed, -1);
 
-    /* clean up */
+    // * clean up *
     gtk_tree_path_free(path);
 }
 static void
@@ -331,22 +331,22 @@ general_plugin_toggle(GtkCellRendererToggle * cell,
     gboolean fixed;
     gint pluginnr;
 
-    /* get toggled iter */
+    // * get toggled iter *
     gtk_tree_model_get_iter(model, &iter, path);
     gtk_tree_model_get(model, &iter,
                        PLUGIN_VIEW_COL_ACTIVE, &fixed,
                        PLUGIN_VIEW_COL_ID, &pluginnr, -1);
 
-    /* do something with the value */
+    // * do something with the value *
     fixed ^= 1;
 
     enable_general_plugin(pluginnr, fixed);
 
-    /* set new value */
+    // * set new value *
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        PLUGIN_VIEW_COL_ACTIVE, fixed, -1);
 
-    /* clean up */
+    // * clean up *
     gtk_tree_path_free(path);
 }
 
@@ -357,9 +357,9 @@ on_output_plugin_cbox_changed(GtkComboBox * combobox,
     gint selected;
     selected = gtk_combo_box_get_active(combobox);
 
-    /* Force playback to stop. There is NO way to change the output
-       plugin in the middle of a playback, and NO way to know when the
-       user closes the output plugin settings dialog. */
+    // * Force playback to stop. There is NO way to change the output
+    //   plugin in the middle of a playback, and NO way to know when the
+    //   user closes the output plugin settings dialog. *
     mainwin_stop_pushed();
     set_current_output_plugin(selected);
 }
@@ -477,8 +477,8 @@ on_input_plugin_view_realize(GtkTreeView * treeview,
 
     gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(store));
 }
-
-
+*/
+/*
 static void
 on_general_plugin_view_realize(GtkTreeView * treeview,
                                gpointer data)
@@ -489,7 +489,7 @@ on_general_plugin_view_realize(GtkTreeView * treeview,
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
 
-    GList *ilist /*, *diplist */ ;
+    GList *ilist;
     gchar *description[2];
     GeneralPlugin *gp;
     gint id = 0;
@@ -565,8 +565,8 @@ on_general_plugin_view_realize(GtkTreeView * treeview,
 
     gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(store));
 }
-
-
+*/
+/*
 static void
 on_vis_plugin_view_realize(GtkTreeView * treeview,
                            gpointer data)
@@ -654,7 +654,8 @@ on_vis_plugin_view_realize(GtkTreeView * treeview,
 
     gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(store));
 }
-
+*/
+/*
 static void
 editable_insert_text(GtkEditable * editable,
                      const gchar * text,
@@ -750,7 +751,8 @@ on_effect_plugin_view_realize(GtkTreeView * treeview,
 
     gtk_tree_view_set_model(treeview, GTK_TREE_MODEL(store));
 }
-
+*/
+/*
 static void
 titlestring_tag_menu_callback(GtkMenuItem * menuitem,
                               gpointer data)
@@ -766,7 +768,7 @@ titlestring_tag_menu_callback(GtkMenuItem * menuitem,
 
     pos = gtk_editable_get_position(GTK_EDITABLE(entry));
 
-    /* insert separator as needed */
+    // * insert separator as needed *
     if (g_utf8_strlen(gtk_entry_get_text(GTK_ENTRY(entry)), -1) > 0)
         editable_insert_text(GTK_EDITABLE(entry), separator, &pos);
 
@@ -1185,11 +1187,11 @@ effect_plugin_open_info(GtkTreeView * treeview,
     gtk_tree_model_get(model, &iter, PLUGIN_VIEW_COL_ID, &id, -1);
     effect_about(id);
 }
+*/
 
 
 
-
-
+/*
 static void
 on_mouse_wheel_volume_realize(GtkSpinButton * button,
                               gpointer data)
@@ -1269,7 +1271,7 @@ on_playlist_convert_twenty_toggled(GtkToggleButton * button, gpointer data)
 {
     cfg.convert_twenty = gtk_toggle_button_get_active(button);
 }
-
+*/
 #if 0
 static void
 on_playlist_update_clicked(GtkButton * button,
@@ -1279,7 +1281,7 @@ on_playlist_update_clicked(GtkButton * button,
     draw_playlist_window(TRUE);
 }
 #endif
-
+/*
 static void
 on_use_pl_metadata_realize(GtkToggleButton * button,
                            gpointer data)
@@ -1398,7 +1400,7 @@ on_eq_file_preset_entry_changed(GtkEntry * entry, gpointer data)
 }
 
 
-/* FIXME: implement these */
+// * FIXME: implement these *
 
 static void
 on_eq_preset_view_realize(GtkTreeView * treeview,
@@ -1414,7 +1416,7 @@ static void
 on_eq_preset_remove_clicked(GtkButton * button,
                             gpointer data)
 {}
-
+*/
 
 static void
 prefswin_set_skin_update(gboolean state)
@@ -1422,7 +1424,7 @@ prefswin_set_skin_update(gboolean state)
     g_object_set_data(G_OBJECT(prefswin), "update-skins",
                       GINT_TO_POINTER(state));
 }
-
+/*
 static gboolean
 prefswin_get_skin_update(void)
 {
@@ -1509,19 +1511,19 @@ mainwin_drag_data_received1(GtkWidget * widget,
 
     path = (gchar *) selection_data->data;
 
-    /* FIXME: use a real URL validator/parser */
+    // * FIXME: use a real URL validator/parser *
 
     if (!str_has_prefix_nocase(path, "fonts:///"))
         return;
 
-    path[strlen(path) - 2] = 0; /* Why the hell a CR&LF? */
+    path[strlen(path) - 2] = 0; // * Why the hell a CR&LF? *
     path += 8;
 
-    /* plain, since we already stripped the first URI part */
+    // * plain, since we already stripped the first URI part *
     decoded = xmms_urldecode_plain(path);
 
-    /* Get the old font's size, and add it to the dropped
-     * font's name */
+    // * Get the old font's size, and add it to the dropped
+    //   * font's name *
     cfg.playlist_font = g_strconcat(decoded+1,
                                     strrchr(cfg.playlist_font, ' '),
                                     NULL);
@@ -1550,10 +1552,10 @@ on_skin_view_drag_data_received(GtkWidget * widget,
 
     path = (gchar *) selection_data->data;
 
-    /* FIXME: use a real URL validator/parser */
+    // * FIXME: use a real URL validator/parser *
 
     if (str_has_prefix_nocase(path, "file:///")) {
-        path[strlen(path) - 2] = 0; /* Why the hell a CR&LF? */
+        path[strlen(path) - 2] = 0; // * Why the hell a CR&LF? *
         path += 7;
     }
     else if (str_has_prefix_nocase(path, "file:")) {
@@ -1564,7 +1566,7 @@ on_skin_view_drag_data_received(GtkWidget * widget,
         bmp_active_skin_load(path);
         skin_install_skin(path);
 	skin_view_update(GTK_TREE_VIEW(widget));
-        /* Change skin name in the config file */
+        // * Change skin name in the config file *
         db = bmp_cfg_db_open();
         bmp_cfg_db_set_string(db, NULL, "skin", path);
         bmp_cfg_db_close(db);
@@ -1572,7 +1574,7 @@ on_skin_view_drag_data_received(GtkWidget * widget,
 			   			   
 }
 
-/* FIXME: complete the map */
+// * FIXME: complete the map *
 FUNC_MAP_BEGIN(prefswin_func_map)
     FUNC_MAP_ENTRY(on_input_plugin_view_realize)
     FUNC_MAP_ENTRY(on_output_plugin_cbox_realize)
@@ -1614,17 +1616,17 @@ FUNC_MAP_BEGIN(prefswin_func_map)
     FUNC_MAP_ENTRY(on_eq_preset_add_clicked)
     FUNC_MAP_ENTRY(on_eq_preset_remove_clicked)
 FUNC_MAP_END
-
+*/
 void
 create_prefs_window(void)
 {
     //const gchar *glade_file = DATA_DIR "/glade/prefswin.glade";
 
     //GladeXML *xml;
-    GtkWidget *widget, *widget2;
+    //GtkWidget *widget, *widget2;
 
-    GtkWidget *titlestring_tag_menu, *menu_item;
-    gint i;
+    //GtkWidget *titlestring_tag_menu, *menu_item;
+    //gint i;
         
     /* load the interface */
     //xml = glade_xml_new_or_die(_("Preferences Window"), glade_file, NULL,

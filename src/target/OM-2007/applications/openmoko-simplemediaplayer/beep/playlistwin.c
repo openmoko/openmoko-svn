@@ -1669,7 +1669,7 @@ selection_received(GtkWidget * widget,
 static void
 playlistwin_create_window(void)
 {
-    GdkPixbuf *icon;
+    //GdkPixbuf *icon;
 
     playlistwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(playlistwin), _("BMP Playlist Editor"));

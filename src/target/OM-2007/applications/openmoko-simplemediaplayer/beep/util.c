@@ -688,7 +688,7 @@ util_add_url_dialog_new(const gchar * caption, GCallback enqueue_func)
 
     return win;
 }
-
+/*
 static void
 filebrowser_add_files(GtkFileChooser * browser,
                       GSList * files)
@@ -787,7 +787,7 @@ _filebrowser_play(GtkWidget *widget, gpointer data)
     filebrowser_play(data);
     gtk_file_chooser_unselect_all(data);
 }
-
+*/
 #if 0
 static void
 filebrowser_on_response(GtkFileChooser * browser,
@@ -808,7 +808,7 @@ filebrowser_on_response(GtkFileChooser * browser,
 }
 
 #endif
-
+/*
 static void
 _filebrowser_check_hide_add(GtkWidget * widget,
                             gpointer data)
@@ -822,17 +822,17 @@ _filebrowser_check_hide_open(GtkWidget * widget,
 {
     cfg.close_dialog_open = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
+*/
 
-
-
+/*
 static gboolean
 filebrowser_on_keypress(GtkWidget * browser,
                         GdkEventKey * event,
                         gpointer data)
 {
     if (event->keyval == GDK_Escape) {
-        /* FIXME: this crashes BMP for some reason */
-        /* g_signal_emit_by_name(browser, "delete-event"); */
+        // * FIXME: this crashes BMP for some reason *
+        // * g_signal_emit_by_name(browser, "delete-event"); *
         gtk_widget_hide(browser);
         return TRUE;
     }
@@ -855,7 +855,7 @@ _filebrowser_do_hide_open(GtkWidget *widget,
     if (cfg.close_dialog_open)
         gtk_widget_hide(data);
 }
-
+*/
 void
 util_run_filebrowser(gboolean play_button)
 {

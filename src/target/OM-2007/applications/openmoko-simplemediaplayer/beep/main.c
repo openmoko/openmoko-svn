@@ -307,7 +307,7 @@ GList *dock_window_list = NULL;
 
 gboolean pposition_broken = FALSE;
 
-
+/*
 static GSList *
 get_feature_list(void)
 {
@@ -348,7 +348,7 @@ dump_version(void)
 
     g_printf("\n");
 }
-
+*/
 const gchar *
 xmms_get_gentitle_format(void)
 {
@@ -609,7 +609,7 @@ bmp_config_save(void)
 
     playlist_save(bmp_paths[BMP_PATH_PLAYLIST_FILE], FALSE);
 }
-
+/*
 static void
 bmp_set_default_icon(void)
 {
@@ -627,43 +627,43 @@ display_usage(void)
               "Options:\n"
               "--------\n"));
     g_print("\n-h, --help             ");
-    /* -h, --help switch */
+    // * -h, --help switch *
     g_print(_("Display this text and exit"));
     g_print("\n-n, --session          ");
-    /* -n, --session switch */
+    // * -n, --session switch *
     g_print(_("Select BMP/XMMS session (Default: 0)"));
     g_print("\n-r, --rew              ");
-    /* -r, --rew switch */
+    // * -r, --rew switch *
     g_print(_("Skip backwards in playlist"));
     g_print("\n-p, --play             ");
-    /* -p, --play switch */
+    // * -p, --play switch *
     g_print(_("Start playing current playlist"));
     g_print("\n-u, --pause            ");
-    /* -u, --pause switch */
+    // * -u, --pause switch *
     g_print(_("Pause current song"));
     g_print("\n-s, --stop             ");
-    /* -s, --stop switch */
+    // * -s, --stop switch *
     g_print(_("Stop current song"));
     g_print("\n-t, --play-pause       ");
-    /* -t, --play-pause switch */
+    // * -t, --play-pause switch *
     g_print(_("Pause if playing, play otherwise"));
     g_print("\n-f, --fwd              ");
-    /* -f, --fwd switch */
+    // * -f, --fwd switch *
     g_print(_("Skip forward in playlist"));
     g_print("\n-e, --enqueue          ");
-    /* -e, --enqueue switch */
+    // * -e, --enqueue switch *
     g_print(_("Don't clear the playlist"));
     g_print("\n-m, --show-main-window ");
-    /* -m, --show-main-window switch */
+    // * -m, --show-main-window switch *
     g_print(_("Show the main window"));
     g_print("\n-a, --activate         ");
-    /* -a, --activate switch */
+    // * -a, --activate switch *
     g_print(_("Activate BMP"));
     g_print("\n-i, --sm-client-id     ");
-    /* -i, --sm-client-id switch */
+    // * -i, --sm-client-id switch *
     g_print(_("Previous session ID"));
     g_print("\n-v, --version          ");
-    /* -v, --version switch */
+    // * -v, --version switch *
     g_print(_("Print version number and exit\n"));
 
     exit(EXIT_SUCCESS);
@@ -835,7 +835,7 @@ handle_cmd_line_options(BmpCmdLineOpt * options,
     if (options->playcd)
         play_medium();
 }
-
+*/
 static void
 segfault_handler(gint sig)
 {
@@ -857,7 +857,7 @@ bmp_setup_logger(void)
 
     g_atexit(bmp_logger_stop);
 }
-
+/*
 static void
 run_load_skin_error_dialog(const gchar * skin_path)
 {
@@ -879,7 +879,7 @@ run_load_skin_error_dialog(const gchar * skin_path)
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 }
-
+*/
 static pid_t
 testlock(char* fname)
 {

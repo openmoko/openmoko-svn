@@ -78,6 +78,7 @@
 
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 //openmoko header
 #include <libmokoui/moko-application.h>
@@ -3281,7 +3282,7 @@ static void
 idle_func_update_song_info(gint time)
 {
     gint length, t;
-    gchar stime_prefix;
+//    gchar stime_prefix;
 
     length = playlist_get_current_length();
 //    playlistwin_set_time(time, length, cfg.timer_mode);
@@ -3362,7 +3363,7 @@ mainwin_idle_func(gpointer data)
 
         time = bmp_playback_get_time();
 
-	g_print("\n time = %s\n", time);
+//	g_print("\n time = %s\n", time);
 
         switch (time) {
         case -1:
@@ -3428,7 +3429,7 @@ static gchar* images_dir = NULL;
 static gchar* image_path = NULL;
 
 static gboolean playorpause = FALSE;
-GtkButton *play_pause_button = NULL;
+GtkWidget *play_pause_button = NULL;
 GtkWidget* shuffle_button = NULL;
 GtkWidget* repeat_button = NULL;
 GtkWidget *image = NULL;
@@ -3444,19 +3445,6 @@ GtkWidget* vol_img_alignment = NULL;
 GtkWidget* time_hscale = NULL;
 gint timeout_id;
 static gint timeout_time = 0;
-
-GtkWidget* alignment_eq_pos1 = NULL;
-GtkWidget* alignment_eq_pos2 = NULL;
-GtkWidget* alignment_eq_pos3 = NULL;
-GtkWidget* alignment_eq_pos4 = NULL;
-GtkWidget* alignment_eq_pos5 = NULL;
-GtkWidget* alignment_eq_pos6 = NULL;
-GtkWidget* alignment_eq_pos7 = NULL;
-GtkWidget* alignment_eq_pos8 = NULL;
-GtkWidget* alignment_eq_pos9 = NULL;
-GtkWidget* alignment_eq_pos10 = NULL;
-GtkWidget* alignment_eq_pos11 = NULL;
-GtkWidget* alignment_eq_pos12 = NULL;
 
 GtkWidget* image_eq_pos1 = NULL;
 GtkWidget* image_eq_pos2 = NULL;
@@ -3560,87 +3548,51 @@ openmoko_update_vis_data(gint pos, gint h)
     switch(pos)
     {
     case 1:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos1), image_eq_pos1);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos1), img_path);
-	//image_eq_pos1 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos1), image_eq_pos1);
 	gtk_widget_show(image_eq_pos1);
 	break;
     case 2:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos2), image_eq_pos2);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos2), img_path);
-	//image_eq_pos2 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos2), image_eq_pos2);
 	gtk_widget_show(image_eq_pos2);
 	break;
     case 3:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos3), image_eq_pos3);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos3), img_path);
-	//image_eq_pos3 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos3), image_eq_pos3);
 	gtk_widget_show(image_eq_pos3);
 	break;
     case 4:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos4), image_eq_pos4);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos4), img_path);
-	//image_eq_pos4 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos4), image_eq_pos4);
 	gtk_widget_show(image_eq_pos4);
 	break;
     case 5:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos5), image_eq_pos5);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos5), img_path);
-	//image_eq_pos5 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos5), image_eq_pos5);
 	gtk_widget_show(image_eq_pos5);
 	break;
     case 6:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos6), image_eq_pos6);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos6), img_path);
-	//image_eq_pos6 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos6), image_eq_pos6);
 	gtk_widget_show(image_eq_pos6);
 	break;
     case 7:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos7), image_eq_pos7);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos7), img_path);
-	//image_eq_pos7 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos7), image_eq_pos7);
 	gtk_widget_show(image_eq_pos7);
 	break;
     case 8:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos8), image_eq_pos8);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos8), img_path);
-	//image_eq_pos8 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos8), image_eq_pos8);
 	gtk_widget_show(image_eq_pos8);
 	break;
     case 9:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos9), image_eq_pos9);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos9), img_path);
-	//image_eq_pos9 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos9), image_eq_pos9);
 	gtk_widget_show(image_eq_pos9);
 	break;
     case 10:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos10), image_eq_pos10);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos10), img_path);
-	//image_eq_pos10 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos10), image_eq_pos10);
 	gtk_widget_show(image_eq_pos10);
 	break;
     case 11:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos11), image_eq_pos11);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos11), img_path);
-	//image_eq_pos11 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos11), image_eq_pos11);
 	gtk_widget_show(image_eq_pos11);
 	break;
     case 12:
-	//gtk_container_remove(GTK_CONTAINER(alignment_eq_pos12), image_eq_pos12);
 	gtk_image_set_from_file(GTK_IMAGE(image_eq_pos12), img_path);
-	//image_eq_pos12 = gtk_image_new_from_file(img_path);
-	//gtk_container_add(GTK_CONTAINER(alignment_eq_pos12), image_eq_pos12);
 	gtk_widget_show(image_eq_pos12);
 	break;
     default:
@@ -3768,7 +3720,7 @@ openmoko_update_ogg_artist(const gchar* artist)
 }
 
 void
-openmoko_set_title(gchar *title)
+openmoko_set_title( const gchar *title)
 {
     if(!title)
     {
@@ -3779,7 +3731,7 @@ openmoko_set_title(gchar *title)
 }
 
 void
-openmoko_set_artist(gchar* artist)
+openmoko_set_artist(const gchar* artist)
 {
     if(!artist)
     {
@@ -3793,6 +3745,14 @@ void
 openmoko_set_track_number()
 {
     gchar* track_number;
+    if(playlist_get_length() == 0)
+    {
+        track_number = g_strdup_printf("%d", 0);
+    }
+    else
+    {
+        track_number = g_strdup_printf("%d", playlist_get_position() + 1);
+    }
     if(playlist_get_length() == 0)
     {
         track_number = g_strdup_printf("%d", 0);	
@@ -3900,7 +3860,7 @@ openmoko_play_pause_action()
         image_path = g_build_path("/", images_dir, "ico-pause.png", NULL);
         image = gtk_image_new_from_file(image_path);
 	g_free(image_path);
-        moko_pixmap_button_set_finger_toolbox_btn_center_image(play_pause_button, image);
+        moko_pixmap_button_set_finger_toolbox_btn_center_image(MOKO_PIXMAP_BUTTON(play_pause_button), image);
 	playorpause = TRUE;
         timeout_id = g_timeout_add(100, openmoko_update_elapse_time, NULL);
 	openmoko_set_info();
@@ -3911,7 +3871,7 @@ openmoko_play_pause_action()
         image_path = g_build_path("/", images_dir, "ico-play.png", NULL);
         image = gtk_image_new_from_file(image_path);
 	g_free(image_path);
-        moko_pixmap_button_set_finger_toolbox_btn_center_image(play_pause_button, image);
+        moko_pixmap_button_set_finger_toolbox_btn_center_image(MOKO_PIXMAP_BUTTON(play_pause_button), image);
 	playorpause = FALSE;
 	g_source_remove(timeout_id);
     }
@@ -4204,7 +4164,7 @@ openmoko_mainwin_create()
    
     init_image_dir();
     
-    MokoApplication *app = MOKO_APPLICATION(moko_application_get_instance());
+//    MokoApplication *app = MOKO_APPLICATION(moko_application_get_instance());
 
     MokoFingerWindow *window = MOKO_FINGER_WINDOW(moko_finger_window_new());
     g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(openmoko_main_quit), NULL);
@@ -4402,79 +4362,79 @@ openmoko_mainwin_create()
     gtk_container_add(GTK_CONTAINER(alignment), middle_hbox);
   
     //set vis
-    alignment_eq_pos1 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos1), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos1, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_path = g_build_path("/", images_dir, "ind-music-eq-01.png", NULL);
     image_eq_pos1 = gtk_image_new_from_file(image_path); 
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos1), image_eq_pos1);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos1);
    
-    alignment_eq_pos2 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos2), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos2, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos2 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos2), image_eq_pos2);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos2);
     
-    alignment_eq_pos3 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos3), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos3, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos3 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos3), image_eq_pos3);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos3);
     
-    alignment_eq_pos4 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos4), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos4, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos4 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos4), image_eq_pos4);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos4);
     
-    alignment_eq_pos5 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos5), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos5, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos5 = gtk_image_new_from_file(image_path); 
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos5), image_eq_pos5);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos5);
     
-    alignment_eq_pos6 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos6), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos6, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos6 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos6), image_eq_pos6);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos6);
     
-    alignment_eq_pos7 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos7), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos7, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos7 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos7), image_eq_pos7);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos7);
     
-    alignment_eq_pos8 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos8), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos8, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos8 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos8), image_eq_pos8);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos8);
     
-    alignment_eq_pos9 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos9), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos9, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos9 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos9), image_eq_pos9);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos9);
     
-    alignment_eq_pos10 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos10), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos10, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos10 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos10), image_eq_pos10);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos10);
     
-    alignment_eq_pos11 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos11), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos11, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos11 = gtk_image_new_from_file(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos11), image_eq_pos11);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos11);
     
-    alignment_eq_pos12 = gtk_alignment_new(0, 0, 0, 0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_eq_pos12), 0, 0, 0, 0);
-    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment_eq_pos12, TRUE, TRUE, 0);
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 0, 0);
+    gtk_box_pack_start(GTK_BOX(middle_hbox), alignment, TRUE, TRUE, 0);
     image_eq_pos12 = gtk_image_new_from_file(image_path);
+    gtk_container_add(GTK_CONTAINER(alignment), image_eq_pos12);
     g_free(image_path);
-    gtk_container_add(GTK_CONTAINER(alignment_eq_pos12), image_eq_pos12);
     
     //set middle right vbox
     GtkWidget* middle_right_vbox = gtk_vbox_new(FALSE, 0);
@@ -4602,13 +4562,13 @@ openmoko_mainwin_create()
 
     if(!tools)
     {
-        tools = moko_finger_window_get_toolbox(window);
+        tools = MOKO_FINGER_TOOL_BOX(moko_finger_window_get_toolbox(MOKO_FINGER_WINDOW(window)));
        
-	prev_button = moko_finger_tool_box_add_button_without_label(tools);
+	prev_button = GTK_BUTTON(moko_finger_tool_box_add_button_without_label(MOKO_FINGER_TOOL_BOX(tools)));
         image_path = g_build_path("/", images_dir, "ico-previoustrack.png", NULL);
         image = gtk_image_new_from_file(image_path);
 	g_free(image_path);
-	moko_pixmap_button_set_finger_toolbox_btn_center_image(prev_button, image);
+	moko_pixmap_button_set_finger_toolbox_btn_center_image(MOKO_PIXMAP_BUTTON(prev_button), image);
         g_signal_connect(G_OBJECT(prev_button), "clicked",
 			G_CALLBACK(openmoko_playlist_prev), NULL);
 	
@@ -4616,15 +4576,15 @@ openmoko_mainwin_create()
         image_path = g_build_path("/", images_dir, "ico-play.png", NULL);
         image = gtk_image_new_from_file(image_path);
 	g_free(image_path);
-	moko_pixmap_button_set_finger_toolbox_btn_center_image(play_pause_button, image);
+	moko_pixmap_button_set_finger_toolbox_btn_center_image(MOKO_PIXMAP_BUTTON(play_pause_button), image);
 	g_signal_connect(G_OBJECT(play_pause_button), "clicked",
 			G_CALLBACK(openmoko_play_pause_button_pushed), NULL);
 	
-	next_button = moko_finger_tool_box_add_button_without_label(tools);
+	next_button = GTK_BUTTON(moko_finger_tool_box_add_button_without_label(MOKO_FINGER_TOOL_BOX(tools)));
         image_path = g_build_path("/", images_dir, "ico-nexttrack.png", NULL);
         image = gtk_image_new_from_file(image_path);
 	g_free(image_path);
-	moko_pixmap_button_set_finger_toolbox_btn_center_image(next_button, image);
+	moko_pixmap_button_set_finger_toolbox_btn_center_image(MOKO_PIXMAP_BUTTON(next_button), image);
 	g_signal_connect(G_OBJECT(next_button), "clicked",
 			G_CALLBACK(openmoko_playlist_next), NULL);
 

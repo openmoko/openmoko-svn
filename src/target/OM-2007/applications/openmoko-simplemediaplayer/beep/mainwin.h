@@ -187,8 +187,9 @@ void playback_get_sample_params(gint * bitrate,
                                 gint * numchannels);
 
 //added by lijiang
-void openmoko_set_title();
-void openmoko_set_artist(gchar* artist);
+void openmoko_mainwin_create();
+void openmoko_set_title(const gchar* title);
+void openmoko_set_artist(const gchar* artist);
 void openmoko_set_track_number();
 void openmoko_set_total_number();
 void openmoko_set_elapse_time(gint elapse_time);
