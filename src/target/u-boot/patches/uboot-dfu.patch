@@ -1,7 +1,7 @@
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-25 15:37:52.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-02-25 19:41:13.000000000 +0100
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-02-26 04:20:02.000000000 +0100
++++ u-boot/drivers/usbdcore_ep0.c	2007-02-26 04:31:03.000000000 +0100
 @@ -42,10 +42,15 @@
   */
  
@@ -98,8 +98,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
 Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdfu.c	2007-02-25 21:44:46.000000000 +0100
-@@ -0,0 +1,940 @@
++++ u-boot/drivers/usbdfu.c	2007-02-26 04:23:14.000000000 +0100
+@@ -0,0 +1,943 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -144,8 +144,6 @@ Index: u-boot/drivers/usbdfu.c
 +
 +#include <config.h>
 +#if defined(CONFIG_USBD_DFU)
-+
-+//#define DEBUG
 +
 +#include <common.h>
 +DECLARE_GLOBAL_DATA_PTR;
@@ -375,7 +373,7 @@ Index: u-boot/drivers/usbdfu.c
 +		switch (dev->alternate) {
 +			char buf[12];
 +		case 0:
-+			sprintf(buf, "%lX", ds->ptr - ds->buf);
++			sprintf(buf, "%lx", ds->ptr - ds->buf);
 +			setenv("filesize", buf);
 +			ds->ptr = ds->buf;
 +			break;
@@ -1008,6 +1006,10 @@ Index: u-boot/drivers/usbdfu.c
 +			break;
 +		}
 +		break;
++	case DEVICE_CONFIGURED:
++	case DEVICE_DE_CONFIGURED:
++		debug("SET_CONFIGURATION(%u) ", device->configuration);
++		/* fallthrough */
 +	case DEVICE_SET_INTERFACE:
 +		debug("SET_INTERFACE(%u,%u) old_state = %u ",
 +			device->interface, device->alternate,
@@ -1025,6 +1027,7 @@ Index: u-boot/drivers/usbdfu.c
 +		case DFU_STATE_dfuMANIFEST:
 +			device->dfu_state = DFU_STATE_dfuERROR;
 +			device->dfu_status = DFU_STATUS_errNOTDONE;
++			/* FIXME: free malloc()ed buffer! */
 +			break;
 +		case DFU_STATE_dfuMANIFEST_SYNC:
 +		case DFU_STATE_dfuUPLOAD_IDLE:
@@ -1042,8 +1045,8 @@ Index: u-boot/drivers/usbdfu.c
 +#endif /* CONFIG_USBD_DFU */
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-25 15:37:52.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-25 15:37:53.000000000 +0100
+--- u-boot.orig/drivers/Makefile	2007-02-26 04:20:02.000000000 +0100
++++ u-boot/drivers/Makefile	2007-02-26 04:23:14.000000000 +0100
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o ahci.o \
@@ -1055,8 +1058,8 @@ Index: u-boot/drivers/Makefile
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c	2007-02-25 15:36:49.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-02-25 21:38:24.000000000 +0100
+--- u-boot.orig/drivers/usbdcore.c	2007-02-26 04:20:02.000000000 +0100
++++ u-boot/drivers/usbdcore.c	2007-02-26 04:23:14.000000000 +0100
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -1111,8 +1114,8 @@ Index: u-boot/drivers/usbdcore.c
  }
 Index: u-boot/drivers/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c	2007-02-25 15:37:52.000000000 +0100
-+++ u-boot/drivers/usbtty.c	2007-02-25 19:36:45.000000000 +0100
+--- u-boot.orig/drivers/usbtty.c	2007-02-26 04:20:02.000000000 +0100
++++ u-boot/drivers/usbtty.c	2007-02-26 04:23:14.000000000 +0100
 @@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
@@ -1169,8 +1172,8 @@ Index: u-boot/drivers/usbtty.c
  	memset (bus_instance, 0, sizeof (struct usb_bus_instance));
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-02-25 15:37:53.000000000 +0100
-+++ u-boot/include/configs/neo1973.h	2007-02-25 15:37:53.000000000 +0100
+--- u-boot.orig/include/configs/neo1973.h	2007-02-26 04:23:14.000000000 +0100
++++ u-boot/include/configs/neo1973.h	2007-02-26 04:23:14.000000000 +0100
 @@ -165,7 +165,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
@@ -1194,7 +1197,7 @@ Index: u-boot/include/configs/neo1973.h
 Index: u-boot/include/usb_dfu.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu.h	2007-02-25 20:24:52.000000000 +0100
++++ u-boot/include/usb_dfu.h	2007-02-26 04:23:14.000000000 +0100
 @@ -0,0 +1,94 @@
 +#ifndef _DFU_H
 +#define _DFU_H
@@ -1293,7 +1296,7 @@ Index: u-boot/include/usb_dfu.h
 Index: u-boot/include/usb_dfu_descriptors.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/usb_dfu_descriptors.h	2007-02-25 15:37:53.000000000 +0100
++++ u-boot/include/usb_dfu_descriptors.h	2007-02-26 04:23:14.000000000 +0100
 @@ -0,0 +1,94 @@
 +#ifndef _USB_DFU_H
 +#define _USB_DFU_H
@@ -1391,8 +1394,8 @@ Index: u-boot/include/usb_dfu_descriptors.h
 +#endif /* _USB_DFU_H */
 Index: u-boot/include/usbdcore.h
 ===================================================================
---- u-boot.orig/include/usbdcore.h	2007-02-25 15:37:52.000000000 +0100
-+++ u-boot/include/usbdcore.h	2007-02-25 15:37:53.000000000 +0100
+--- u-boot.orig/include/usbdcore.h	2007-02-26 04:20:02.000000000 +0100
++++ u-boot/include/usbdcore.h	2007-02-26 04:23:14.000000000 +0100
 @@ -33,6 +33,7 @@
  
  #include <common.h>
