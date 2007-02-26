@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Beep Media Player
+Name=Openmoko Simple Media Player
 Comment=Play music
-Exec=beep-media-player
+Exec=openmoko-simple-media-player
 Icon=bmp.png
 MimeType=audio/x-scpls;audio/x-mpegurl;audio/mpegurl;audio/mp3;audio/x-mp3;audio/mpeg;audio/x-mpeg;audio/x-wav;application/x-ogg;
 Categories=Application;GTK;AudioVideo;Player;
