@@ -3,23 +3,23 @@ coporocessor registers from the ocmmand line.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/common/Makefile
+Index: u-boot/common/Makefile
 ===================================================================
---- u-boot.git.orig/common/Makefile	2007-02-05 20:37:13.000000000 +0100
-+++ u-boot.git/common/Makefile	2007-02-05 20:37:17.000000000 +0100
-@@ -28,7 +28,7 @@
+--- u-boot.orig/common/Makefile	2007-02-26 14:11:57.000000000 +0100
++++ u-boot/common/Makefile	2007-02-26 14:14:16.000000000 +0100
+@@ -27,7 +27,7 @@
+ 
  AOBJS	=
  
- COBJS	= main.o ACEX1K.o altera.o bedbug.o circbuf.o \
--	  cmd_ace.o cmd_autoscript.o \
-+	  cmd_ace.o cmd_arm920.o cmd_autoscript.o \
+-COBJS	= main.o ACEX1K.o altera.o bedbug.o circbuf.o cmd_autoscript.o \
++COBJS	= main.o ACEX1K.o altera.o bedbug.o circbuf.o cmd_arm920.o cmd_autoscript.o \
  	  cmd_bdinfo.o cmd_bedbug.o cmd_bmp.o cmd_boot.o cmd_bootm.o \
  	  cmd_cache.o cmd_console.o \
  	  cmd_date.o cmd_dcr.o cmd_diag.o cmd_display.o cmd_doc.o cmd_dtt.o \
-Index: u-boot.git/common/cmd_arm920.c
+Index: u-boot/common/cmd_arm920.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot.git/common/cmd_arm920.c	2007-02-05 20:37:41.000000000 +0100
++++ u-boot/common/cmd_arm920.c	2007-02-26 14:14:36.000000000 +0100
 @@ -0,0 +1,64 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -66,7 +66,7 @@ Index: u-boot.git/common/cmd_arm920.c
 +		printf("Usage:\n%s\n", cmdtp->usage);
 +		return 1;
 +	}
-+	
++
 +	if (!strcmp(argv[2], "write")) {
 +		ulong val = simple_strtoul(argv[3], NULL, 16);
 +		printf("setting cp15c1 to 0x%08x\n", val);
@@ -85,10 +85,10 @@ Index: u-boot.git/common/cmd_arm920.c
 +	NULL
 +);
 +#endif	/* CFG_CMD_BDI */
-Index: u-boot.git/cpu/arm920t/cpu.c
+Index: u-boot/cpu/arm920t/cpu.c
 ===================================================================
---- u-boot.git.orig/cpu/arm920t/cpu.c	2007-02-05 20:37:13.000000000 +0100
-+++ u-boot.git/cpu/arm920t/cpu.c	2007-02-05 20:37:17.000000000 +0100
+--- u-boot.orig/cpu/arm920t/cpu.c	2007-02-26 04:37:19.000000000 +0100
++++ u-boot/cpu/arm920t/cpu.c	2007-02-26 14:13:31.000000000 +0100
 @@ -38,7 +38,7 @@
  #endif
  
@@ -107,4 +107,3 @@ Index: u-boot.git/cpu/arm920t/cpu.c
  {
  #ifdef MMU_DEBUG
  	printf ("write %08lx to p15/c1\n", value);
-
