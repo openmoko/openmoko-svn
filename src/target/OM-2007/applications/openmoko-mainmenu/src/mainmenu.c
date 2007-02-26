@@ -28,11 +28,9 @@ enum {
     LAST_SIGNAL
 };
 
-static void 
-moko_main_menu_class_init(MokoMainMenuClass *klass);
+static void moko_main_menu_class_init(MokoMainMenuClass *klass);
 
-static void 
-moko_main_menu_init(MokoMainMenu *mm);
+static void moko_main_menu_init(MokoMainMenu *mm);
 
 static guint menu_signals[LAST_SIGNAL] = { 0 };
 

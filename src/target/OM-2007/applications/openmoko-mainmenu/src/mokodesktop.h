@@ -15,7 +15,7 @@
 
 #include <libmb/mb.h>
 
-#define VFOLDERDIR 		"/usr/local/share/matchbox"
+#define VFOLDERDIR 		"/usr/share/matchbox"
 #define DD_DIR 		 	"/usr/share/applications/" 
 
 /* #define DD_DIR "/tmp/" */

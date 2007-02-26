@@ -143,7 +143,7 @@ main( int argc, char** argv )
 
     /* finger wheel object*/
     mma->wheel = moko_finger_window_get_wheel (mma->window);
-        gtk_window_set_title (GTK_WIDGET (mma->wheel), "wheel");
+    gtk_window_set_title (GTK_WIDGET (mma->wheel), "wheel");
 
     /* finger toolbox object*/
     mma->toolbox = moko_finger_window_get_toolbox(mma->window);
