@@ -159,7 +159,19 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     guint padding_right;
 
     gtk_alignment_get_padding( GTK_ALIGNMENT(widget), &padding_top, &padding_bottom, &padding_left, &padding_right );
+    
+    //If padding defined in gtkrc, reset top/bottom/left/right.
+    GtkBorder* padding = NULL;
+    gtk_widget_style_get (widget, "padding", &padding, NULL);
+    if ( padding )
+    {
+        padding_top    = padding->top;
+        padding_bottom = padding->bottom;
+        padding_left   = padding->left;
+        padding_right  = padding->right;
+    }    
     moko_debug( "my padding is %d, %d, %d, %d", padding_left, padding_top, padding_right, padding_bottom );
+
 
     //FIXME unref all existing pixmaps, check whether we really need to draw new ones
 

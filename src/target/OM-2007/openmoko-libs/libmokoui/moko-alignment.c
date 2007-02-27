@@ -150,6 +150,18 @@ moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
         guint p_top, p_bottom, p_left, p_right;
         gtk_alignment_get_padding (GTK_ALIGNMENT (widget), &p_top, &p_bottom, &p_left, &p_right);
+        
+        //If padding defined in gtkrc, reset top/bottom/left/right.
+        GtkBorder* padding = NULL;
+        gtk_widget_style_get (widget, "padding", &padding, NULL);
+        if ( padding )
+        {
+            p_top    = padding->top;
+            p_bottom = padding->bottom;
+            p_left   = padding->left;
+            p_right  = padding->right;
+        }
+        
 
         padding_horizontal = p_left + p_right;
         padding_vertical = p_top + p_bottom;
