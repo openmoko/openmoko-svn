@@ -201,6 +201,8 @@ moko_alignment_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
             child_allocation.y = alignment->yalign * (height - child_allocation.height) + border_width + p_top;
         }
+	child_allocation.width = MAX (child_allocation.width, 0);
+	child_allocation.height = MAX (child_allocation.height, 0);
         gtk_widget_size_allocate (bin->child, &child_allocation);
     }
 }
