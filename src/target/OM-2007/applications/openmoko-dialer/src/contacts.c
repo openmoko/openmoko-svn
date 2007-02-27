@@ -15,6 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
+#define LIBEBOOK1_2_5 1
 #include "contacts.h"
 
 /**
@@ -642,10 +643,14 @@ contact_load_contact_photo (GtkImage * image, const char *id)
 
 if(photo)
   if (photo)
+  	{
+#ifndef LIBEBOOK1_2_5  	
    gdk_pixbuf_loader_write (loader, photo->data.inlined.data,
                             photo->data.inlined.length, NULL);
-    //gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
-
+#else
+    gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
+#endif
+  	}
 
   gdk_pixbuf_loader_close (loader, NULL);
 
