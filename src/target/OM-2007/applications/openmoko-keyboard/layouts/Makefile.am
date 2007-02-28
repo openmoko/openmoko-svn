@@ -200,7 +200,6 @@ keyboards_DATA = keyboard.xml keyboard-extended.xml keyboard-dvorak.xml \
                  key_sym_smaller_p.png                                  \
                  key_sym_star.png                                       \
                  key_sym_star_p.png                                     \
-                 spacekey.png                                           \
                  switch_input_ch.png                                    \
                  switch_input_ch_p.png                                  \
                  switch_input_eng_cap.png                               \
@@ -212,7 +211,6 @@ keyboards_DATA = keyboard.xml keyboard-extended.xml keyboard-dvorak.xml \
                  switch_input.png                                       \
                  switch_input_p.png                                     \
                  switch_input_sym.png                                   \
-                 switch_input_sym_p.png                                 \
-                 testkey.png
+                 switch_input_sym_p.png
 
 EXTRA_DIST = $(keyboards_DATA)
