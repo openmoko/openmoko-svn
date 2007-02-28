@@ -63,3 +63,10 @@ style "mokodetailswindow-fullscreen-button-on" {
 }
 widget "*.mokodetailswindow-fullscreen-button-on" style "mokodetailswindow-fullscreen-button-on"
 
+style "mokodetailswindow" {
+    bg[NORMAL] = "#e5e5e5"
+    fg[NORMAL] = "#000"
+    bg_pixmap[NORMAL] = ""
+}
+widget "*.MokoDetailsWindow.*" style "mokodetailswindow"
+
