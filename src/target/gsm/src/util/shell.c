@@ -48,6 +48,7 @@ static int shell_help(void)
 		"\to\tPower Off\n"
 		"\tR\tRegister Netowrk\n"
 		"\tT\tSend DTMF Tone\n"
+		"\tI\tDevice Infor\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -58,6 +59,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 	char buf[STDIN_BUF_SIZE+1];
 	char rbuf[STDIN_BUF_SIZE+1];
 	int rlen = sizeof(rbuf);
+
 	fd_set readset;
 
 	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
@@ -136,9 +138,68 @@ int shell_main(struct lgsm_handle *lgsmh)
 					continue;
 				printf("DTMF: %c\n", buf[1]);
 				lgsm_voice_dtmf(lgsmh, buf[1]);
-			} else {
+			} else if (buf[0] == 'I') {
+			//FIXME: sometimes, lgsm_get_info returns directly, and sometimes the result just gets lost.
+				static int infoindex=LGSM_INFO_TYPE_NONE;//information
+				infoindex=infoindex%LGSM_INFO_TYPE_IMSI+1;
+				rlen = sizeof(rbuf);
+				switch(infoindex){
+				case LGSM_INFO_TYPE_MANUF:
+				
+				if(lgsm_get_info(lgsmh,LGSM_INFO_TYPE_MANUF,rbuf,&rlen))
+					{
+					printf("manufacturer:%s\n",rbuf);
+					}
+				else
+					printf("manufacturer information error!\n");
+				break;
+
+				case LGSM_INFO_TYPE_MODEL:
+				if(lgsm_get_info(lgsmh,LGSM_INFO_TYPE_MODEL,rbuf,&rlen))
+					{
+					printf("model:%s\n",rbuf);
+					}
+				else
+					printf("model error!\n");
+				break;
+
+                            case LGSM_INFO_TYPE_REVISION:
+                    		if(lgsm_get_info(lgsmh,LGSM_INFO_TYPE_REVISION,rbuf,&rlen))
+					{
+					printf("revision:%s\n",rbuf);
+					}
+				else
+					printf("revision information error!\n");
+                            break;
+
+                            case LGSM_INFO_TYPE_IMSI:
+				if(lgsm_get_info(lgsmh,LGSM_INFO_TYPE_IMSI,rbuf,&rlen))
+					{
+					printf("imei:%s\n",rbuf);
+					}
+				else
+					printf("imei information error!\n");
+				break;
+                            case LGSM_INFO_TYPE_SERIAL:
+				if(lgsm_get_info(lgsmh,LGSM_INFO_TYPE_SERIAL,rbuf,&rlen))
+					{
+					printf("sn:%s\n",rbuf);
+					}
+				else
+					printf("sn information error!\n");
+				break;
+				default:
+					printf("something is wrong!\n");
+				}
+
+
+			
+			} 
+			else {
 				printf("Unknown command `%s'\n", buf);
 			}
 		}
 	}
 }
+
+
