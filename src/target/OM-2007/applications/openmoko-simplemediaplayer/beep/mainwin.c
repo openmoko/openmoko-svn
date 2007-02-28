@@ -4536,6 +4536,7 @@ openmoko_mainwin_create()
 /*******************************************/
     
     gtk_widget_show_all(GTK_WIDGET(window));
+    gtk_window_present(GTK_WINDOW(window));
     
     gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
     
