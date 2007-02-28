@@ -5,9 +5,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-02-21 10:57:09.000000000 +0100
-+++ u-boot/Makefile	2007-02-21 15:52:58.000000000 +0100
-@@ -1928,6 +1928,9 @@
+--- u-boot.orig/Makefile	2007-02-27 00:38:04.000000000 +0100
++++ u-boot/Makefile	2007-02-28 02:48:47.000000000 +0100
+@@ -1934,6 +1934,9 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -20,7 +20,7 @@ Index: u-boot/Makefile
 Index: u-boot/board/qt2410/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/Makefile	2007-02-21 10:58:40.000000000 +0100
++++ u-boot/board/qt2410/Makefile	2007-02-27 00:38:10.000000000 +0100
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -72,7 +72,7 @@ Index: u-boot/board/qt2410/Makefile
 Index: u-boot/board/qt2410/config.mk
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/config.mk	2007-02-21 10:58:40.000000000 +0100
++++ u-boot/board/qt2410/config.mk	2007-02-27 00:38:10.000000000 +0100
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -102,7 +102,7 @@ Index: u-boot/board/qt2410/config.mk
 Index: u-boot/board/qt2410/flash.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/flash.c	2007-02-21 10:58:40.000000000 +0100
++++ u-boot/board/qt2410/flash.c	2007-02-27 00:38:10.000000000 +0100
 @@ -0,0 +1,435 @@
 +/*
 + * (C) Copyright 2002
@@ -542,7 +542,7 @@ Index: u-boot/board/qt2410/flash.c
 Index: u-boot/board/qt2410/lowlevel_init.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/lowlevel_init.S	2007-02-21 10:58:40.000000000 +0100
++++ u-boot/board/qt2410/lowlevel_init.S	2007-02-27 00:38:10.000000000 +0100
 @@ -0,0 +1,173 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -720,7 +720,7 @@ Index: u-boot/board/qt2410/lowlevel_init.S
 Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/qt2410.c	2007-02-21 15:27:13.000000000 +0100
++++ u-boot/board/qt2410/qt2410.c	2007-02-27 00:38:10.000000000 +0100
 @@ -0,0 +1,128 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -853,7 +853,7 @@ Index: u-boot/board/qt2410/qt2410.c
 Index: u-boot/board/qt2410/u-boot.lds
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/u-boot.lds	2007-02-21 10:58:40.000000000 +0100
++++ u-boot/board/qt2410/u-boot.lds	2007-02-27 00:38:10.000000000 +0100
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
@@ -916,8 +916,8 @@ Index: u-boot/board/qt2410/u-boot.lds
 Index: u-boot/include/configs/qt2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/qt2410.h	2007-02-21 15:48:39.000000000 +0100
-@@ -0,0 +1,285 @@
++++ u-boot/include/configs/qt2410.h	2007-02-28 02:49:17.000000000 +0100
+@@ -0,0 +1,287 @@
 +/*
 + * (C) Copyright 2002
 + * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
@@ -958,6 +958,8 @@ Index: u-boot/include/configs/qt2410.h
 +#define CONFIG_S3C2410_NAND_BOOT	1
 +#define CONFIG_S3C2410_NAND_SKIP_BAD	1
 +#endif
++
++#define CFG_UBOOT_SIZE            0x40000
 +
 +/*
 + * High Level Configuration Options
