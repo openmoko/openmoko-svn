@@ -125,12 +125,20 @@ main( int argc, char** argv )
     g_debug ("test");
     
     mma = g_malloc0 (sizeof (MokoMainmenuApp));
-    if (!mma) {
+    if (!mma)
+    {
     	fprintf (stderr, "openmoko-mainmenu application initialize FAILED");
     	exit (0);
-    	}
+    }
     memset (mma, 0, sizeof (MokoMainmenuApp));
+
+    if (!moko_dbus_connect_init ())
+    {
+        g_error ("Failed to initial dbus connection.");
+	exit (0);
+    }
     gtk_init( &argc, &argv );
+
 
     /* application object */
     mma->app = MOKO_APPLICATION(moko_application_get_instance());

@@ -7,7 +7,7 @@ bin_PROGRAMS = openmoko-mainmenu
 openmoko_mainmenu_SOURCES = main.c \
 			   mainmenu.c mokoiconview.c\
 			   mokodesktop.c mokodesktop_item.c\
-			   callbacks.c app-history.c
+			   callbacks.c app-history.c dbus-conn.c
 
 
 openmoko_mainmenu_LDADD = @OPENMOKO_LIBS@ @LIBMB_LIBS@

@@ -30,6 +30,7 @@
 
 #include "mainmenu.h"
 #include "app-history.h"
+#include "dbus-conn.h"
 
 typedef struct _MokoMainmenuApp MokoMainmenuApp;
 

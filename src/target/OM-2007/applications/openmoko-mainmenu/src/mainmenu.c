@@ -192,7 +192,7 @@ moko_set_label_content(GtkLabel *label, const char *content)
 */
 static gboolean
 moko_fill_model(GtkListStore *store, const char* icon_path, 
-						const char* icon_name, MokoDesktopItem *item)
+		const char* icon_name, MokoDesktopItem *item)
 {
     if (!icon_path && !icon_name)
         return FALSE;
@@ -234,12 +234,13 @@ void
 moko_main_menu_clear(MokoMainMenu *mm) 
 { 
     if (mm->top_item)
-    	{
-    	  /* Free Lists (free .directory and .desktop files) */
-	  mokodesktop_item_folder_contents_free(mm->top_item, mm->top_item);
-	  /* Free Root item */
-	  mokodesktop_item_free(mm->top_item);
-    	}
+    {
+        /* Free Lists (free .directory and .desktop files) */
+	mokodesktop_item_folder_contents_free(mm->top_item, mm->top_item);
+	/* Free Root item */
+	mokodesktop_item_free(mm->top_item);
+    }
+    
     if (mm) g_free (mm);
 }
 
@@ -256,50 +257,50 @@ moko_main_menu_clear(MokoMainMenu *mm)
 gboolean
 moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
 {
-  MokoDesktopItem *item_new;
-  gint count = 0;
-  char total_item[6];
-  //g_debug("mokodesktop: item [%d][%s][%s]\n", item->type, item->name, item->icon_name);
+    MokoDesktopItem *item_new;
+    gint count = 0;
+    char total_item[6];
+    //g_debug("mokodesktop: item [%d][%s][%s]\n", item->type, item->name, item->icon_name);
     
-  item_new = item->item_child;
-  //g_debug("mokodesktop: item [%d][%s][%s]\n", item_new->type, item_new->name, item_new->icon_name);
- // g_debug ("test");
+    item_new = item->item_child;
+    //g_debug("mokodesktop: item [%d][%s][%s]\n", item_new->type, item_new->name, item_new->icon_name);
+    // g_debug ("test");
 
-  if (item->type == ITEM_TYPE_ROOT)
-  	{
+    if (item->type == ITEM_TYPE_ROOT)
+    {
   	moko_set_label_content (mm->section_name, "Main Menu");
-  	}
-  else if (item->type == ITEM_TYPE_FOLDER)
-  	{
-  	moko_set_label_content (mm->section_name, item->name);
-  	}
-  else 
+    }
+    else if (item->type == ITEM_TYPE_FOLDER)
+    {
+        moko_set_label_content (mm->section_name, item->name);
+    }
+    else 
   	return FALSE; // neither ROOT nor FOLDER
 
-  if (mm->list_store)
+    if (mm->list_store)
   	gtk_list_store_clear (mm->list_store);
 
-  mokodesktop_items_enumerate_siblings(item->item_child, item_new)
-  { 
-     count +=1;
+    mokodesktop_items_enumerate_siblings(item->item_child, item_new)
+    { 
+        count +=1;
      
-     if (access (item_new->icon_name, 0) == 0)
-     {
-      	moko_fill_model(mm->list_store, item_new->icon_name, item_new->name, item_new);
-     }
-     else 
-     {
-       char path[512];
-       snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
+        if (access (item_new->icon_name, 0) == 0)
+        {
+      	    moko_fill_model(mm->list_store, item_new->icon_name, item_new->name, item_new);
+        }
+        else 
+        {
+            char path[512];
+            snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
 
-       if (access (path, 0) == 0)
-          moko_fill_model(mm->list_store, path, item_new->name, item_new);
-       else
-         {
-	     snprintf (path, 512, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
-      	     moko_fill_model(mm->list_store, path, item_new->name, item_new);
-         }
-      }
+            if (access (path, 0) == 0)
+                moko_fill_model(mm->list_store, path, item_new->name, item_new);
+            else
+            {
+	        snprintf (path, 512, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
+      	        moko_fill_model(mm->list_store, path, item_new->name, item_new);
+            }
+        }
     }
 
   snprintf (total_item, 6, "00/%.2d", count);
@@ -318,17 +319,17 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
 void
 moko_main_menu_update_item_total_label (MokoMainMenu *mm)
 {  
-  gint total = 0, cursor = 0;
-  char item_total[6];
+    gint total = 0, cursor = 0;
+    char item_total[6];
 
-  total = moko_icon_view_get_total_items (mm->icon_view);
-  cursor = moko_icon_view_get_cursor_positon (mm->icon_view);
+    total = moko_icon_view_get_total_items (mm->icon_view);
+    cursor = moko_icon_view_get_cursor_positon (mm->icon_view);
 
-  if (cursor <0)
+    if (cursor <0)
   	return;
 
-  snprintf (item_total, 6, "%.2d/%.2d", cursor, total);
-  moko_set_label_content (mm->item_total, item_total);
+    snprintf (item_total, 6, "%.2d/%.2d", cursor, total);
+    moko_set_label_content (mm->item_total, item_total);
 }
 
 /**

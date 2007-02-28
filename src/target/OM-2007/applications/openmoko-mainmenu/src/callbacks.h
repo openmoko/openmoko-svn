@@ -34,13 +34,13 @@ void moko_up_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
 void moko_down_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
-void moko_item_select_cb(GtkIconView *icon_view, 
+void moko_item_select_cb(MokoIconView *icon_view, 
 				GtkTreePath *path, MokoMainmenuApp *mma);
 
-void moko_icon_view_item_acitvated_cb(GtkIconView *iconview, 
+void moko_icon_view_item_acitvated_cb(MokoIconView *iconview, 
 				GtkTreePath *path, MokoMainmenuApp *mma);
 
-void moko_icon_view_selection_changed_cb(GtkIconView *iconview, 
+void moko_icon_view_selection_changed_cb(MokoIconView *iconview, 
 				MokoMainmenuApp *mma);
 
 #endif /*_MAIN_MENU_CALLBACKS_H*/
