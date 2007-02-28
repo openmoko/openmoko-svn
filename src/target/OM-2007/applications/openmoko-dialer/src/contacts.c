@@ -15,8 +15,8 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-#define LIBEBOOK1_2_5 1
 #include "contacts.h"
+#include "config.h"
 
 /**
  * @brief initialze the contact list, this will be called from outside, contactlist
@@ -644,11 +644,11 @@ contact_load_contact_photo (GtkImage * image, const char *id)
 if(photo)
   if (photo)
   	{
-#ifndef LIBEBOOK1_2_5  	
+#ifdef HAVE_ECONTACT_PHOTO_TYPE
    gdk_pixbuf_loader_write (loader, photo->data.inlined.data,
                             photo->data.inlined.length, NULL);
 #else
-    gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL); //just temporaly modified.                           
+    gdk_pixbuf_loader_write (loader, photo->data, photo->length, NULL);
 #endif
   	}
 

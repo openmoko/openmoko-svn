@@ -11,22 +11,21 @@ AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 # base deps
-PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1,,
-                 AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.1 not installed ***]))
-                 
-PKG_CHECK_MODULES(LIBGSMD, libgsmd ,,
-                 AC_MSG_ERROR([*** Required libgsmd not installed ***]))
+PKG_CHECK_MODULES(DIALER, openmoko-libs >= 0.0.1 libgsmd alsa libebook-1.2)
 
-PKG_CHECK_MODULES(LIBASOUND, alsa,,
-                 AC_MSG_ERROR([*** Required libasound not installed ***]))
+old_cflags=$CFLAGS
+CFLAGS=$DIALER_CFLAGS
+AC_CHECK_TYPE(EContactPhotoType, [], [], [#include <libebook/e-book.h>])
+CFLAGS=$old_cflags
+
+if test $ac_cv_type_EContactPhotoType = yes; then
+	AC_DEFINE(HAVE_ECONTACT_PHOTO_TYPE, 1, [Defined if EContactPhotoType exists])
+fi
 
 
-PKG_CHECK_MODULES(LIBEBOOK, libebook-1.2,,
-                 AC_MSG_ERROR([*** Required libasound not installed ***]))
+LIBS="$DIALER_LIBS  -lm -ldl"
 
-LIBS="$LIBS $GTK_LIBS $LIBGSMD_LIBS $LIBASOUND_LIBS $LIBEBOOK_LIBS -lm -ldl"
-
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBGSMD_CFLAGS $LIBASOUND_CFLAGS $LIBEBOOK_CFLAGS"
+CFLAGS="$DIALER_CFLAGS"
 
 # output stuff
 AC_OUTPUT([

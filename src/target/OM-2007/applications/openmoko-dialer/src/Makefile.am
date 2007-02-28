@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
               -DPKGDATADIR=\"$(pkgdatadir)\"
-AM_CFLAGS = -Wall -pedantic -std=c99 @OPENMOKO_CFLAGS@
+AM_CFLAGS = -Wall -pedantic -std=c99 @CFLAGS@
 
 bin_PROGRAMS = openmoko-dialer
 
@@ -24,5 +24,5 @@ openmoko-dialer-window-pin.c\
 moko-dialer-status.c\
 alsa.c
 
-openmoko_dialer_LDADD = @OPENMOKO_LIBS@
+openmoko_dialer_LDADD = @LIBS@
 
