@@ -147,13 +147,10 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
   if (rect.y + rect.height >= mb_kbd_ui_x_win_height(ui)) 
     rect.height  = mb_kbd_ui_x_win_height(ui) - rect.y - 1;
 
-  /* clear it */
-
-  XSetForeground(xdpy, xft_backend->xgc, WhitePixel(xdpy, xscreen));
-
-  XFillRectangles(xdpy, backbuffer, xft_backend->xgc, &rect, 1);
-
-  image = mb_kbd_key_get_back_image(key);
+  if (mb_kbd_key_is_held(kbd, key))
+    image = mb_kbd_key_get_push_image(key);
+  else
+    image = mb_kbd_key_get_normal_image(key);
   if(image)
     {
       int w, h;
@@ -169,6 +166,12 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
     }
   else                   
     {
+      /* clear it */
+
+      XSetForeground(xdpy, xft_backend->xgc, WhitePixel(xdpy, xscreen));
+
+      XFillRectangles(xdpy, backbuffer, xft_backend->xgc, &rect, 1);
+
       /* draw 'main border' */
       
       XSetForeground(xdpy, xft_backend->xgc, xft_backend->xcol_c5c5c5.pixel);
@@ -245,6 +248,7 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
         state = MBKeyboardKeyStateNormal;
     }
 
+/*
   if (mb_kbd_key_get_face_type(key, state) == MBKeyboardKeyFaceGlyph)
     {
       const char *face_str = mb_kbd_key_get_glyph_face(key, state);
@@ -293,31 +297,51 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
 		       XftDrawPicture (xft_backend->xft_backbuffer), 
 		       0, 0, 0, 0, x, y, w, h);
     }
+*/
 }
 
 void
 mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
 {
   MBKeyboardUIBackendXft *xft_backend = NULL;
+  MBKeyboardImage        *image;
 
   xft_backend = (MBKeyboardUIBackendXft*)mb_kbd_ui_backend(ui);
 
+  image = mb_kbd_layout_get_background(mb_kbd_get_selected_layout(mb_kbd_ui_kbd(ui)));
+
   /* Background */
-  XSetForeground(mb_kbd_ui_x_display(ui), 
-		 xft_backend->xgc, xft_backend->xcol_f4f4f4.pixel);
+  if (image == NULL)
+    {
+      XSetForeground(mb_kbd_ui_x_display(ui), 
+                     xft_backend->xgc, xft_backend->xcol_f4f4f4.pixel);
 
-  XFillRectangle(mb_kbd_ui_x_display(ui), 
-		 mb_kbd_ui_backbuffer(ui), 
-		 xft_backend->xgc,
-		 0, 0, 
-		 mb_kbd_ui_x_win_width(ui),
-		 mb_kbd_ui_x_win_height(ui));
+      XFillRectangle(mb_kbd_ui_x_display(ui), 
+                     mb_kbd_ui_backbuffer(ui), 
+                     xft_backend->xgc,
+                     0, 0, 
+                     mb_kbd_ui_x_win_width(ui),
+                     mb_kbd_ui_x_win_height(ui));
 
-  XSetForeground(mb_kbd_ui_x_display(ui), 
-		 xft_backend->xgc, 
-		 BlackPixel(mb_kbd_ui_x_display(ui), 
-			    mb_kbd_ui_x_screen(ui)));
+      XSetForeground(mb_kbd_ui_x_display(ui), 
+                     xft_backend->xgc, 
+                     BlackPixel(mb_kbd_ui_x_display(ui), 
+                                mb_kbd_ui_x_screen(ui)));
+    }
+  else
+    {
+      int w, h;
 
+      w = mb_kbd_image_width (image);
+      h = mb_kbd_image_height (image);
+
+      XRenderComposite(mb_kbd_ui_x_display(ui),
+                       PictOpOver,
+                       mb_kbd_image_render_picture(image),
+                       None,
+                       XftDrawPicture(xft_backend->xft_backbuffer),
+                       0, 0, 0, 0, 0, 0, w, h);
+    }
 
 }
 

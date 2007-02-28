@@ -23,6 +23,7 @@ struct MBKeyboardLayout
 {
   MBKeyboard       *kbd;  
   char             *id;
+  MBKeyboardImage  *background;
   List             *rows;
 };
 
@@ -38,6 +39,19 @@ mb_kbd_layout_new(MBKeyboard *kbd, const char *id)
   layout->id  = strdup(id);
 
   return layout;
+}
+
+void
+mb_kbd_layout_set_background(MBKeyboardLayout *layout,
+                             MBKeyboardImage  *background)
+{
+  layout->background = background;
+}
+
+MBKeyboardImage *
+mb_kbd_layout_get_background(MBKeyboardLayout *layout)
+{
+  return layout->background;
 }
 
 void

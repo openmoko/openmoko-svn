@@ -315,10 +315,24 @@ config_handle_key_background_tag(MBKeyboardConfigState *state,
   MBKeyboardImage *img;
   const char *val;
   char  buf[512];
+  Bool  pushimage;
+
+  if (streq(tag, "normalimage"))
+    {
+      pushimage = False;
+    }
+  else if (streq(tag, "pushimage"))
+    {
+      pushimage = True;
+    }
+  else
+    {
+      set_error(state, "Unknown background image");
+      return;
+    }
 
   if ((val = attr_get_val("image", attr)) == NULL)
     {
-      fprintf(stderr, "image=%s\n", val);
       set_error(state, "Attribute 'image' is required");
       return;
     }
@@ -339,7 +353,10 @@ config_handle_key_background_tag(MBKeyboardConfigState *state,
   if (img == NULL)
     fprintf(stderr, "load img fail\n");
 
-  mb_kbd_key_set_back_image(state->current_key, img);
+  if (pushimage)
+    mb_kbd_key_set_normal_image(state->current_key, img);
+  else
+    mb_kbd_key_set_push_image(state->current_key, img);
 }
 
 static void
@@ -556,13 +573,42 @@ config_handle_key_tag(MBKeyboardConfigState *state, const char **attr)
 	mb_kbd_key_set_fill(state->current_key, True);
     }
 
-  /*FIXME: It is only temporary code */
-  //img = mb_kbd_image_new(state->keyboard, "/root/.matchbox/match.png");
-  //if(!img)
-    //fprintf(stderr, "can not find /root/.matchbox/match.png\n");
-  //mb_kbd_key_set_back_image(state->current_key, img);
-
   mb_kbd_row_append_key(state->current_row, state->current_key);
+}
+
+static void
+config_handle_layout_background(MBKeyboardConfigState *state,
+                                const char **attr)
+{
+  MBKeyboardImage *img;
+  const char *val;
+  char  buf[512];
+
+  if ((val = attr_get_val("image", attr)) == NULL)
+    {
+      set_error(state, "Backgroud Attribute 'image' is required");
+      return;
+    }
+
+  if (val[0] != '/')
+    {
+      snprintf(buf, 512, "%s/%s", PKGDATADIR, val);
+
+      if (!util_file_readable(buf))
+        snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), val);
+
+      img = mb_kbd_image_new (state->keyboard, buf);
+    }
+  else
+    {
+      img = mb_kbd_image_new (state->keyboard, val);
+    }
+
+  if (img == NULL)
+    fprintf(stderr, "load img fail\n");
+
+  mb_kbd_layout_set_background(state->current_layout, img);
+
 }
 
 static void 
@@ -587,7 +633,8 @@ config_xml_start_cb(void *data, const char *tag, const char **attr)
       config_handle_key_tag(state, attr);
       mb_kbd_key_set_blank(state->current_key, True);
     }
-  else  if (streq(tag, "background"))
+  else  if (streq(tag, "normalimage")
+	   || streq(tag, "pushimage"))
     {
       config_handle_key_background_tag(state, tag, attr);
     }
@@ -599,6 +646,10 @@ config_xml_start_cb(void *data, const char *tag, const char **attr)
 	   || streq(tag, "mod3"))
     {
       config_handle_key_subtag(state, tag, attr);
+    }
+  else if (streq(tag, "background"))
+    {
+      config_handle_layout_background(state, attr);
     }
 
   if (state->error)

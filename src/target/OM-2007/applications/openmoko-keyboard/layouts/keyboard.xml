@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <keyboard>
 
 <options>
@@ -6,366 +6,171 @@
 </options>
 
 <layout id="defualt keyboard">
-
-<!--
-  <row>
-     <key>
-	  <default display="ヂ" />                
-    </key>
-    <key>
-	  <default display="Ӫ" />                
-    </key>
-    <key width="1500">
-	  <default display="Ω" />                
-    </key>
-    <space width="1500" />
-    <key fill="true">
-	  <default display="⠿" />                
-    </key>
-  </row>
--->
+  <background image="bg_keypad.png" />
 
   <row>
 
-    <space width="500" extended="true"/>
-
-    <key fill="true">
-	  <default display="Esc" action="escape" />
-	  <background image="testkey.png"/>
-    </key>
-<!--
     <key>
-      <default display="image:/usr/share/pixmaps/sync_icon.png" action="a"/>
-    </key>  
--->
-    <key>
-	  <default display="`" />
-	  <background image="testkey.png"/>
+      <default display="Q" />
+      <normalimage image="key_cap_Q.png"/>
+      <pushimage image="key_cap_Q_p.png"/>
     </key>
     <key>
-	  <default display="1" />                
-	  <shifted display="!" />
-	  <background image="testkey.png"/>
+      <default display="W" />
+      <normalimage image="key_cap_W.png"/>
+      <pushimage image="key_cap_W_p.png"/>
     </key>
     <key>
-	  <default display="2" />                
-	  <shifted display='"' />
-          <mod1    display="½" />
-	  <background image="testkey.png"/>
+      <default display="E" />
+      <normalimage image="key_cap_E.png"/>
+      <pushimage image="key_cap_E_p.png"/>
     </key>
     <key>
-	  <default display="3" />
-	  <shifted display="£" />
-          <mod1    display="¾" />               
-	  <background image="testkey.png"/>
+      <default display="R" />
+      <normalimage image="key_cap_R.png"/>
+      <pushimage image="key_cap_R_p.png"/>
     </key>
     <key>
-	  <default display="4" />
-	  <shifted display="$" />                
-	  <background image="testkey.png"/>
+      <default display="T" />
+      <normalimage image="key_cap_T.png"/>
+      <pushimage image="key_cap_T_p.png"/>
     </key>
     <key>
-	  <default display="5" />
-	  <shifted display="%" />                
-	  <background image="testkey.png"/>
+      <default display="Y" />
+      <normalimage image="key_cap_Y.png"/>
+      <pushimage image="key_cap_Y_p.png"/>
     </key>
     <key>
-	  <default display="6" />
-	  <shifted display="^" />                
-	  <background image="testkey.png"/>
+      <default display="U" />
+      <normalimage image="key_cap_U.png"/>
+      <pushimage image="key_cap_U_p.png"/>
     </key>
     <key>
-	  <default display="7" />
-	  <shifted display="&amp;" />                
-	  <background image="testkey.png"/>
+      <default display="I" />
+      <normalimage image="key_cap_I.png"/>
+      <pushimage image="key_cap_I_p.png"/>
     </key>
     <key>
-	  <default display="8" />
-	  <shifted display="*" />                
-	  <background image="testkey.png"/>
+      <default display="O" />
+      <normalimage image="key_cap_O.png"/>
+      <pushimage image="key_cap_O_p.png"/>
     </key>
     <key>
-	  <default display="9" />
-	  <shifted display="(" />                
-	  <background image="testkey.png"/>
-    </key>
-    <key>
-	  <default display="0" />
-	  <shifted display=")" />                
-	  <background image="testkey.png"/>
-    </key>
-    <key>
-	  <default display="-" />
-	  <shifted display="_" />                
-	  <background image="testkey.png"/>
-    </key>
-    <key>
-	  <default display="=" />
-	  <shifted display="+" />                
-	  <background image="testkey.png"/>
-    </key>
-
-    <key fill="true">
-	  <default display="Bksp" action="backspace"/>
+      <default display="P" />
+      <normalimage image="key_cap_P.png"/>
+      <pushimage image="key_cap_P_p.png"/>
     </key>
 
   </row>
 
   <row>
 
-    <space width="500" extended="true"/>
-
-    <key fill="true">
-	  <default display="Tab" action="tab"/>                
-    </key>
-    <key obey-caps='true'>
-	  <default display="q" />                
-	  <shifted display="Q" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="w" />                
-	  <shifted display="W" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <mod1 display="ë" />
-	  <default    display="e" />                
-	  <shifted display="E" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="r" />                
-	  <shifted display="R" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="t" />                
-	  <shifted display="T" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="y" />                
-	  <shifted display="Y" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="u" />                
-	  <shifted display="U" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="i" />                
-	  <shifted display="I" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="o" />                
-	  <shifted display="O" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="p" />                
-	  <shifted display="P" />
-	  <background image="testkey.png"/>
+    <key>
+      <default display="A" />
+      <normalimage image="key_cap_A.png"/>
+      <pushimage image="key_cap_A_p.png"/>
     </key>
     <key>
-	  <default display="{" />                
-	  <shifted display="[" />
-	  <background image="testkey.png"/>
+      <default display="S" />
+      <normalimage image="key_cap_S.png"/>
+      <pushimage image="key_cap_S_p.png"/>
     </key>
     <key>
-	  <default display="}" />                
-	  <shifted display="]" />
-	  <background image="testkey.png"/>
+      <default display="D" />
+      <normalimage image="key_cap_D.png"/>
+      <pushimage image="key_cap_D_p.png"/>
     </key>
-    <key fill="true">
-	  <default display="\" />                
-	  <shifted display="|" />
-	  <background image="testkey.png"/>
+    <key>
+      <default display="F" />
+      <normalimage image="key_cap_F.png"/>
+      <pushimage image="key_cap_F_p.png"/>
+    </key>
+    <key>
+      <default display="G" />
+      <normalimage image="key_cap_G.png"/>
+      <pushimage image="key_cap_G_p.png"/>
+    </key>
+    <key>
+      <default display="H" />
+      <normalimage image="key_cap_H.png"/>
+      <pushimage image="key_cap_H_p.png"/>
+    </key>
+    <key>
+      <default display="J" />
+      <normalimage image="key_cap_J.png"/>
+      <pushimage image="key_cap_J_p.png"/>
+    </key>
+    <key>
+      <default display="K" />
+      <normalimage image="key_cap_K.png"/>
+      <pushimage image="key_cap_K_p.png"/>
+    </key>
+    <key>
+      <default display="L" />
+      <normalimage image="key_cap_L.png"/>
+      <pushimage image="key_cap_L_p.png"/>
     </key>
 
   </row>
   <row>
 
-    <space width="500" extended="true"/>
-
-    <key fill="true">
-	  <default display="Caps" action="modifier:caps"/>                
-    </key>
-    <key obey-caps='true'>
-	  <default display="a" />                
-	  <shifted display="A" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="s" />                
-	  <shifted display="S" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="d" />                
-	  <shifted display="D" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="f" />                
-	  <shifted display="F" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="g" />                
-	  <shifted display="G" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="h" />                
-	  <shifted display="H" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="j" />                
-	  <shifted display="J" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="k" />                
-	  <shifted display="K" />
-	  <background image="testkey.png"/>
-    </key>
-    <key obey-caps='true'>
-	  <default display="l" />                
-	  <shifted display="L" />
-	  <background image="testkey.png"/>
+    <key>
+      <default display="Z" />
+      <normalimage image="key_cap_Z.png"/>
+      <pushimage image="key_cap_Z_p.png"/>
     </key>
     <key>
-	  <default display=";" />                
-	  <shifted display=":" />
-	  <background image="testkey.png"/>
+      <default display="X" />
+      <normalimage image="key_cap_X.png"/>
+      <pushimage image="key_cap_X_p.png"/>
     </key>
     <key>
-	  <default display="#" />                
-	  <shifted display="~" />
-	  <background image="testkey.png"/>
+      <default display="C" />
+      <normalimage image="key_cap_C.png"/>
+      <pushimage image="key_cap_C_p.png"/>
     </key>
-    <key fill="true">
-	  <default display="Ret" action="return"/>
+    <key>
+      <default display="V" />
+      <normalimage image="key_cap_V.png"/>
+      <pushimage image="key_cap_V_p.png"/>
+    </key>
+    <key>
+      <default display="B" />
+      <normalimage image="key_cap_B.png"/>
+      <pushimage image="key_cap_B_p.png"/>
+    </key>
+    <key>
+      <default display="N" />
+      <normalimage image="key_cap_N.png"/>
+      <pushimage image="key_cap_N_p.png"/>
+    </key>
+    <key>
+      <default display="M" />
+      <normalimage image="key_cap_M.png"/>
+      <pushimage image="key_cap_M_p.png"/>
     </key>
 
   </row>
+
   <row>
 
-    <space width="500" extended="true"/>
-
-    <key fill="true">
-	  <default display="Shift" action="modifier:shift"/>                
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="z" />                
-	  <shifted display="Z" />
-	  <background image="testkey.png"/>
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="x" />                
-	  <shifted display="X" />
-	  <background image="testkey.png"/>
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="c" />                
-	  <shifted display="C" />
-	  <background image="testkey.png"/>
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="v" />                
-	  <shifted display="V" />
-	  <background image="testkey.png"/>
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="b" />                
-	  <shifted display="B" />
-	  <background image="testkey.png"/>
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="n" />                
-	  <shifted display="N" />
-	  <background image="testkey.png"/>
-    </key>
-
-    <key obey-caps='true'>
-	  <default display="m" />                
-	  <shifted display="M" />
-	  <background image="testkey.png"/>
-    </key>
 
     <key>
-	  <default display="," />                
-	  <shifted display="&lt;" />
-	  <background image="testkey.png"/>
+      <default display=" " action="space" />
+      <normalimage image="key_comm_space.png"/>
+      <pushimage image="key_comm_space_p.png"/>
     </key>
     <key>
-	  <default display="." />                
-	  <shifted display="&gt;" />
-	  <background image="testkey.png"/>
+      <default display=" " action="backspace" />
+      <normalimage image="key_comm_backspace.png"/>
+      <pushimage image="key_comm_backspace_p.png"/>
     </key>
     <key>
-	  <default display="/" />                
-	  <shifted display="?" />
-	  <background image="testkey.png"/>
+      <default display=" " action="return" />
+      <normalimage image="key_comm_enter.png"/>
+      <pushimage image="key_comm_enter_p.png"/>
     </key>
-
-
-    <key fill="true">
-	  <default display="Shift" action="modifier:shift"/>                
-    </key>
-
- </row>
-  <row>
-
-    <space width="500" extended="true"/>
-
-    <key>
-	  <default display="äëö" action="modifier:mod1"/>                
-    </key>
-
-    <key fill="true">
-	  <default display="Ctrl" action="modifier:ctrl"/>                
-    </key>
-
-    <key>
-	  <default display="Alt" action="modifier:alt"/>                
-    </key>
-
-
-    <key>
-	  <default display=" " action="space" />                
-	  <background image="spacekey.png"/>
-    </key>
-
-    <key>
-	  <default display="@" />                
-	  <shifted display="'" />
-    </key>
-
-    <key>
-	  <default display="^" action="up" />                
-    </key>
-    <key>
-	  <default display="V" action="down" />                
-    </key>
-    <key>
-	  <default display="&lt;" action="left" />                
-    </key>
-    <key>
-	  <default display="&gt;" action="right" />                
-    </key>
-
-</row>
+  </row>
 
 </layout>
 

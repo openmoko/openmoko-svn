@@ -341,6 +341,13 @@ MBKeyboardLayout*
 mb_kbd_layout_new(MBKeyboard *kbd, const char *id);
 
 void
+mb_kbd_layout_set_background(MBKeyboardLayout *layout,
+                             MBKeyboardImage  *background);
+
+MBKeyboardImage *
+mb_kbd_layout_get_background(MBKeyboardLayout *layout);
+
+void
 mb_kbd_layout_append_row(MBKeyboardLayout *layout,
 			 MBKeyboardRow    *row);
 
@@ -392,10 +399,16 @@ MBKeyboardKey*
 mb_kbd_key_new(MBKeyboard *kbd);
 
 void
-mb_kbd_key_set_back_image(MBKeyboardKey *key, MBKeyboardImage *image);
+mb_kbd_key_set_normal_image(MBKeyboardKey *key, MBKeyboardImage *image);
 
 MBKeyboardImage *
-mb_kbd_key_get_back_image(MBKeyboardKey *key);
+mb_kbd_key_get_normal_image(MBKeyboardKey *key);
+
+void
+mb_kbd_key_set_push_image(MBKeyboardKey *key, MBKeyboardImage *image);
+
+MBKeyboardImage *
+mb_kbd_key_get_push_image(MBKeyboardKey *key);
 
 void
 mb_kbd_key_set_obey_caps(MBKeyboardKey  *key, boolean obey);
