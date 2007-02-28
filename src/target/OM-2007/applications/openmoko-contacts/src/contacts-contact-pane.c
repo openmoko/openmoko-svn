@@ -70,7 +70,7 @@ static GQuark entry_quark = 0;
 
 static FieldInfo fields[] = {
   { EVC_FN, "Name", NULL, TRUE, "<big><b>%s</b></big>", NULL },
-  { EVC_ORG, "Organization", NULL, TRUE, "<span size=\"x-small\">%s</span>", NULL },
+  { EVC_ORG, "Organization", NULL, TRUE, "<span size=\"small\">%s</span>", NULL },
   { EVC_EMAIL, "E-Mail", "stock_mail", FALSE, NULL, email_types },
   { EVC_TEL, "Telephone", NULL, FALSE, NULL, phone_types },
   { EVC_X_JABBER, "Jabber", GTK_STOCK_MISSING_IMAGE, FALSE, NULL, email_types },
@@ -78,6 +78,7 @@ static FieldInfo fields[] = {
 
 /* Function prototypes */
 static GtkWidget * make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info, GtkSizeGroup *size);
+static void on_commit_cb (EBook *book, EBookStatus status, gpointer closure);
 /*
  * TODO: 
  * - add EBookView and listen for changes
@@ -400,6 +401,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info, 
   if (!info->unique && !pane->priv->editable) {
     s = g_strdup_printf ("%s:", type);
     type_label = gtk_label_new (s);
+    gtk_widget_set_name (type_label, "fieldlabel");
     if (size)
       gtk_size_group_add_widget (size, type_label);
     gtk_box_pack_start (GTK_BOX (box), type_label, FALSE, FALSE, 4);
@@ -679,9 +681,17 @@ contacts_contact_pane_set_editable (ContactsContactPane *pane, gboolean editable
   if (pane->priv->editable != editable) {
     pane->priv->editable = editable;
 
-    /* strip empty attributes */
-    if (editable == FALSE && pane->priv->contact)
+    /* strip empty attributes and save the contact if we're switching to view
+     * mode
+     */
+    if (editable == FALSE && pane->priv->contact) {
       strip_empty_attributes (E_VCARD (pane->priv->contact));
+      if (pane->priv->dirty && pane->priv->bookview) {
+        e_book_async_commit_contact (e_book_view_get_book (pane->priv->bookview),
+                                     pane->priv->contact,
+                                     on_commit_cb, pane);
+      }
+    }
 
     update_ui (pane);
   }
