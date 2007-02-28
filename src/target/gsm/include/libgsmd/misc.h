@@ -1,5 +1,5 @@
-#ifndef _MISC_LIBGSMD_H
-#define _MISC_LIBGSMD_H
+#ifndef _LIBGSMD_H
+#define _LIBGSMD_H
 
 /* libgsmd.h - Library API for gsmd, the GSM Daemon
  * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>
@@ -25,19 +25,19 @@ extern int lgsm_get_netreg_state(struct lgsm_handle *lh,
 
 extern int lgsm_netreg_register(struct lgsm_handle *lh, int oper);
 
-typedef enum _lgsm_info_type {
+enum lgsm_info_type {
 	LGSM_INFO_TYPE_NONE		= 0,
 	LGSM_INFO_TYPE_MANUF		= 1,
 	LGSM_INFO_TYPE_MODEL		= 2,
 	LGSM_INFO_TYPE_REVISION		= 3,
 	LGSM_INFO_TYPE_SERIAL		= 4,
 	LGSM_INFO_TYPE_IMSI		= 5,
-}lgsm_info_type;
+};
 
 /* Get some information about the handset */
 extern int lgsm_get_info(struct lgsm_handle *lh,
-			 lgsm_info_type type,
-			 char *ret_string, unsigned int* len);
+			 enum lgsm_info_type type,
+			 char *ret_string, u_int16_t len);
 
 /* Authenticate to SIM Card using specified null-terminated pin */
 extern int lgsm_pin_auth(struct lgsm_handle *lh, const char *pin);

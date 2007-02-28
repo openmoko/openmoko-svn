@@ -95,14 +95,11 @@ int main(int argc, char **argv)
 	printf("libgsm-tool - (C) 2006 by Harald Welte\n"
 		"This program is Free Software and has ABSOLUTELY NO WARRANTY\n\n");
 
-
 	while (1) {
 		int c, option_index = 0;
 		c = getopt_long(argc, argv, "vVhm:p:", opts, &option_index);
 		if (c == -1)
-			{
 			break;
-			}
 
 		switch (c) {
 		case 'v':
