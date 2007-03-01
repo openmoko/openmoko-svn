@@ -25,6 +25,10 @@ case "$1" in
     else
        . /etc/profile
 
+       # an ugly hack to make sure Xserver will always start, even
+       # after unclean shutdown
+       [ -e /tmp/.X0-lock ] && rm /tmp/.X0-lock
+
        echo "Starting Xserver"
        /etc/X11/Xserver &
     fi 
