@@ -43,7 +43,7 @@ $| = 1;
 select $old;
 
 while (defined $ARGV[0]) {
-    print PIPE "$ARGV[0]\n";
+    print PIPE "$ARGV[0]\n" || die "telnet: $!";
     shift @ARGV;
 }
 
@@ -56,4 +56,4 @@ if ($n < 0) {
     exit(1);
 }
 
-close PIPE;
+close PIPE || die "telnet: $!";
