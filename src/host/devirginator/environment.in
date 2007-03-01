@@ -21,6 +21,10 @@ splashimage=
   nand read.e 0x32000000 splash 0x5000;
   unzip 0x32000000 0x33d00000 0x96000
 
+stdout=usbtty
+stderr=usbtty
+stdin=usbtty
+
 #menu_1=
 #  Boot from microSD:
 #  setenv bootargs rootfstype=
