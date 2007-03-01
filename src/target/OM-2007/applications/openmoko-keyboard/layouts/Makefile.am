@@ -1,7 +1,8 @@
 keyboardsdir = $(datadir)/matchbox-keyboard
-keyboards_DATA = keyboard.xml keyboard-extended.xml keyboard-dvorak.xml \
-                 keyboard-us.xml keyboard-ru.xml keyboard-fi.xml        \
-                 keyboard-numpad.xml                                    \
+keyboards_DATA = keyboard.xml                                           \
+                 keyboard-low.xml                                       \
+                 keyboard-number.xml                                    \
+                 keyboard-symbol.xml                                    \
                  bg_input_switch.png                                    \
                  bg_keypad.png                                          \
                  key_blank.png                                          \

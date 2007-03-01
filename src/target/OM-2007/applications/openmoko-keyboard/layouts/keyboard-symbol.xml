@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<keyboard>
+
+<options>
+<!-- not yet implemented -->
+</options>
+
+<layout id="defualt keyboard">
+  <background image="bg_keypad.png" />
+
+  <row>
+
+    <key>
+      <default display="`" />
+      <normalimage image="key_sym_grave_accent.png"/>
+      <pushimage image="key_sym_grave_accent_p.png"/>
+    </key>
+    <key>
+      <default display="~" />
+      <normalimage image="key_sym_tilde.png"/>
+      <pushimage image="key_sym_tilde_p.png"/>
+    </key>
+    <key>
+      <default display="!" />
+      <normalimage image="key_sym_exclamation.png"/>
+      <pushimage image="key_sym_exclamation_p.png"/>
+    </key>
+    <key>
+      <default display="@" />
+      <normalimage image="key_sym_at.png"/>
+      <pushimage image="key_sym_at_p.png"/>
+    </key>
+    <key>
+      <default display="#" />
+      <normalimage image="key_sym_sharp.png"/>
+      <pushimage image="key_sym_sharp_p.png"/>
+    </key>
+    <key>
+      <default display="$" />
+      <normalimage image="key_sym_dollar.png"/>
+      <pushimage image="key_sym_dollar_p.png"/>
+    </key>
+    <key>
+      <default display="%" />
+      <normalimage image="key_sym_percent.png"/>
+      <pushimage image="key_sym_percent_p.png"/>
+    </key>
+    <key>
+      <default display="^" />
+      <normalimage image="key_sym_caret.png"/>
+      <pushimage image="key_sym_caret_p.png"/>
+    </key>
+    <key>
+      <default display="&amp;" />
+      <normalimage image="key_sym_ampersand.png"/>
+      <pushimage image="key_sym_ampersand_p.png"/>
+    </key>
+    <key>
+      <default display="*" />
+      <normalimage image="key_sym_star.png"/>
+      <pushimage image="key_sym_star_p.png"/>
+    </key>
+
+  </row>
+
+  <row>
+
+    <key>
+      <default display="(" />
+      <normalimage image="key_sym_open_paren.png"/>
+      <pushimage image="key_sym_open_paren_p.png"/>
+    </key>
+    <key>
+      <default display=")" />
+      <normalimage image="key_sym_close_paren.png"/>
+      <pushimage image="key_sym_close_paren_p.png"/>
+    </key>
+    <key>
+      <default display="{" />
+      <normalimage image="key_sym_open_curly.png"/>
+      <pushimage image="key_sym_open_curly_p.png"/>
+    </key>
+    <key>
+      <default display="}" />
+      <normalimage image="key_sym_close_curly.png"/>
+      <pushimage image="key_sym_close_curly_p.png"/>
+    </key>
+    <key>
+      <default display="[" />
+      <normalimage image="key_sym_open_bracket.png"/>
+      <pushimage image="key_sym_open_bracket_p.png"/>
+    </key>
+    <key>
+      <default display="]" />
+      <normalimage image="key_sym_close_bracket.png"/>
+      <pushimage image="key_sym_close_bracket_p.png"/>
+    </key>
+    <key>
+      <default display="_" />
+      <normalimage image="key_sym_underscore.png"/>
+      <pushimage image="key_sym_underscore_p.png"/>
+    </key>
+    <key>
+      <default display="-" />
+      <normalimage image="key_sym_minus.png"/>
+      <pushimage image="key_sym_minus_p.png"/>
+    </key>
+    <key>
+      <default display="+" />
+      <normalimage image="key_sym_plus.png"/>
+      <pushimage image="key_sym_plus_p.png"/>
+    </key>
+    <key>
+      <default display="=" />
+      <normalimage image="key_sym_equal.png"/>
+      <pushimage image="key_sym_equal_p.png"/>
+    </key>
+
+  </row>
+  <row>
+
+    <key>
+      <default display="&lt;" />
+      <normalimage image="key_sym_smaller.png"/>
+      <pushimage image="key_sym_smaller_p.png"/>
+    </key>
+    <key>
+      <default display="&gt;" />
+      <normalimage image="key_sym_greater.png"/>
+      <pushimage image="key_sym_greater_p.png"/>
+    </key>
+    <key>
+      <default display="|" />
+      <normalimage image="key_sym_line.png"/>
+      <pushimage image="key_sym_line_p.png"/>
+    </key>
+    <key>
+      <default display="?" />
+      <normalimage image="key_sym_question.png"/>
+      <pushimage image="key_sym_question_p.png"/>
+    </key>
+    <key>
+      <default display=";" />
+      <normalimage image="key_sym_semicolon.png"/>
+      <pushimage image="key_sym_semicolon_p.png"/>
+    </key>
+    <key>
+      <default display=":" />
+      <normalimage image="key_sym_colon.png"/>
+      <pushimage image="key_sym_colon_p.png"/>
+    </key>
+    <key>
+      <default display="," />
+      <normalimage image="key_sym_comma.png"/>
+      <pushimage image="key_sym_comma_p.png"/>
+    </key>
+    <key>
+      <default display="." />
+      <normalimage image="key_sym_period.png"/>
+      <pushimage image="key_sym_period_p.png"/>
+    </key>
+    <key>
+      <default display="'" />
+      <normalimage image="key_sym_quote.png"/>
+      <pushimage image="key_sym_quote_p.png"/>
+    </key>
+    <key>
+      <default display='"' />
+      <normalimage image="key_sym_quotes.png"/>
+      <pushimage image="key_sym_quotes_p.png"/>
+    </key>
+
+  </row>
+
+  <row>
+
+
+    <key>
+      <default display="/" />
+      <normalimage image="key_sym_slash.png"/>
+      <pushimage image="key_sym_slash_p.png"/>
+    </key>
+    <key>
+      <default display=" " action="space" />
+      <normalimage image="key_comm_space.png"/>
+      <pushimage image="key_comm_space_p.png"/>
+    </key>
+    <key>
+      <default display=" " action="backspace" />
+      <normalimage image="key_comm_backspace.png"/>
+      <pushimage image="key_comm_backspace_p.png"/>
+    </key>
+    <key>
+      <default display=" " action="return" />
+      <normalimage image="key_comm_enter.png"/>
+      <pushimage image="key_comm_enter_p.png"/>
+    </key>
+    <key>
+      <default display="\" />
+      <normalimage image="key_sym_slash2.png"/>
+      <pushimage image="key_sym_slash2_p.png"/>
+    </key>
+
+  </row>
+
+</layout>
+
+
+</keyboard>
