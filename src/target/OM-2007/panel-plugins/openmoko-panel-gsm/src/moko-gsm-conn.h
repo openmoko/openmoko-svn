@@ -3,6 +3,16 @@
 
 #define STDIN_BUF_SIZE	1024
 
+enum{
+	GSM_SIGNAL_ERROR = 0,
+	GSM_SIGNAL_LEVEL_1,
+	GSM_SIGNAL_LEVEL_2,
+	GSM_SIGNAL_LEVEL_3,
+	GSM_SIGNAL_LEVEL_4,
+	GSM_SIGNAL_LEVEL_5,
+	TOTAL_SIGNALS
+};
+
 int
 moko_panel_gsm_quality(int *quality);
 

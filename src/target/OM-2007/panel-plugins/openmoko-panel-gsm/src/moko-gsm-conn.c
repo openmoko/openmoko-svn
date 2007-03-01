@@ -147,12 +147,30 @@ int
 moko_panel_gsm_quality(int *quality)
 {
     update_gsm_signal_qualite();
-    
-    if (updated){
-    	*quality = signal_value;
-    	 updated = FALSE;
+
+
+
+    if (updated)
+	{
+		/*switch (signal_value) //needs debug board to test signal value range.
+		{
+		}
+		*/
+	
+
+    	updated = FALSE;
     	return TRUE;
-    	}
+    }
     else
+	{
+		printf ("This is a test resualt without libgsmd support\n");
+    	static int test = 0;
+
+    	*quality = test;
+
+		if ( ++test >= TOTAL_SIGNALS )
+			test = 0;
+
     	return FALSE;
+	}
 }
