@@ -3,6 +3,8 @@ HOMEPAGE = "http://openocd.berlios.de/"
 LICENSE = "GPL"
 PV = "130"
 
+FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/openmoko"
+
 inherit autotools
 
 SRC_URI = "svn://svn.berlios.de/;module=openocd;rev=130 \
