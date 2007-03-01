@@ -20,7 +20,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-devirginate:	config setup.sh smiley.gz
+devirginate:	config environment.in openocd.in u-boot.in \
+		  setup.sh smiley.gz \
+		  crc32.pl envedit.pl openocdcmd.pl scriptify.pl
 		mkdir -p tmp
 		./setup.sh
 

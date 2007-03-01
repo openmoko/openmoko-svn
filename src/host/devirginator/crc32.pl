@@ -29,11 +29,12 @@
 sub crc32
 {
     local ($s) = @_;
-    local ($poly, $crc) = (0xedb88320, ~0);
+    local ($poly, $crc) = (0xedb88320, 0xffffffff);
     local ($i, $j);
 
     for ($i = 0; $i != length $s; $i++) {
 	for ($j = 0; $j != 8; $j++) {
+	    $crc &= 0xffffffff;
 	    if (($crc ^ (unpack("C", substr($s, $i, 1)) >> $j)) & 1) {
 		$crc = ($crc >> 1) ^ $poly;
 	    }
@@ -42,5 +43,5 @@ sub crc32
 	    }
 	}
     }
-    return ~$crc;
+    return $crc ^ 0xffffffff;
 }

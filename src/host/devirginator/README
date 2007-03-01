@@ -47,6 +47,33 @@ The following programs are needed:
 
   For build instructions, see developers/werner/notes/openocd
 
+  If you're using the version of OpenOCD built by the OpenMoko
+  distribution (SVN revision 1180 or later), the patch is already
+  applied.
+
+Furthermore, "devirginate" requires telnet.
+
+"setup.sh" can be run from a different machine sharing the same file
+system hierarchy. It requires Netpbm, transfig, wget, and Perl.
+
+
+Setup
+=====
+
+The devirginator first needs to be set up. This includes
+
+- downloading binaries for u-boot, kernel, etc.
+- generating/converting various files used during the setup process
+
+At the moment, the setup must be done in the directory containing all
+files belonging to the devirginator. The files generated during setup
+are stored in the directory tmp/. The files in tmp/ are also used
+during devirgination.
+
+First, copy config.example to "config" and make the necessary changes.
+Almost all settings have reasonable defaults, but you will have to
+set SNAPSHOT to the date code of the snapshot you desire.
+
 
 Files
 =====

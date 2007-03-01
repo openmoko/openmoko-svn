@@ -78,10 +78,6 @@
 # Example:
 # UIMAGE=$OMDIR/build/tmp/deploy/images/uImage-2.6-200702241944-fic-gta01-20070224194345.bin
 
-# MODULES: the kernel modules, as gzip'ed tar file.
-# Example:
-# MODULES=$OMDIR/build/tmp/deploy/images/modules-2.6-200702241944-fic-gta01.tgz
-
 # ROOTFS: the root file system, in jffs2 format.
 # Example:
 # ROOTFS=$OMDIR/build/tmp/deploy/images/openmoko-devel-image-fic-gta01-20070212015815.rootfs.jffs2
