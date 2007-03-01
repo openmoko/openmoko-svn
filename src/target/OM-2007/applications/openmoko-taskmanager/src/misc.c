@@ -20,16 +20,18 @@
 #include "misc.h"
 
 gboolean 
-moko_X_ev_init (Display *dpy, GtkWidget *gtkwidget) {
+moko_X_ev_init (Display *dpy, GtkWidget *gtkwidget) 
+{
     if (my_win == None)
     	  my_win = GDK_WINDOW_XWINDOW (gtkwidget);
     if (!moko_initialize_X_atoms(dpy))
     	  return FALSE;
     return TRUE;
-    }
+}
 
 gboolean 
-moko_update_net_undocked_client_list(Display *dpy, Window** list, guint * nr) {
+moko_update_net_undocked_client_list(Display *dpy, Window** list, guint * nr) 
+{
     Atom actual_type, type;
     Window *temp_list;
     int actual_format;
@@ -46,37 +48,37 @@ moko_update_net_undocked_client_list(Display *dpy, Window** list, guint * nr) {
     	  return FALSE;
     //moko_print_win_list(dpy, prop, nitems);
     temp_list = g_malloc0 (sizeof (Window) * nitems);
-    if (temp_list == NULL) {
+    if (temp_list == NULL) 
+    {
     	XFree (prop);
     	return FALSE;
-    	}
+    }
     memcpy (temp_list, prop, sizeof (Window) * nitems);
     XFree (prop);
-    //moko_print_win_list(dpy, temp_list, nitems);
+    
     /*need to make clear thar whether the "Client List" is ordered by the 
     atom "_NET_WM_WINDOW_TYPE", if it does, what we need to do will become 
     more simple that only find the boundary of "dock" and "Undock" window in the list.
     */
-    for (i=0; i<nitems; i++) {
+    for (i=0; i<nitems; i++) 
+    {
     	type = moko_get_window_property (dpy, temp_list[i], atoms[_NET_WM_WINDOW_TYPE]);
-    	/*XGetWindowProperty (dpy, temp_list[i], atoms[_NET_WM_WINDOW_TYPE],		//need learn more about the func.
-			  		0, G_MAXLONG, False, XA_ATOM, &actual_type, &actual_format,
-			  		&nitems, &bytes_after, &type);
-		*/
-	if (type != atoms[_NET_WM_WINDOW_TYPE_DOCK] && type != atoms[_NET_WM_WINDOW_TYPE_DESKTOP]) {
-		temp_list[counter] = temp_list[i];
-		counter ++;
-		}
+	if (type == atoms[_NET_WM_WINDOW_TYPE_NORMAL])
+	{
+	    temp_list[counter] = temp_list[i];
+	    counter ++;
 	}
+    }
     *nr = counter;
     *list = g_malloc0 (sizeof (Window) * counter);
     memcpy (*list, temp_list, sizeof (Window) * counter);
     XFree (temp_list);
     return TRUE;
-    }
+}
 
 gboolean 
-moko_iconify_client(Display* dpy, Window* w) {
+moko_iconify_client(Display* dpy, Window* w) 
+{
     if (dpy == NULL || w == NULL)
     	return FALSE;
     else {
@@ -91,10 +93,11 @@ moko_iconify_client(Display* dpy, Window* w) {
     		return FALSE;
     	return TRUE;
     	}
-    }
+}
 
 GdkPixbuf *
-moko_get_window_icon (Display *dpy, Window w) {
+moko_get_window_icon (Display *dpy, Window w) 
+{
     Atom actual_type;
     int actual_format;
     unsigned long nitems, bytes_after;
@@ -135,10 +138,11 @@ moko_get_window_icon (Display *dpy, Window w) {
     if (data)
     	XFree (data);
     return pixbuf;
-    }
+}
 
 gchar *
-moko_get_window_name (Display *dpy, Window w) {
+moko_get_window_name (Display *dpy, Window w) 
+{
     Atom actual_type;
     int actual_format;
     unsigned long nitems, bytes_after;
@@ -169,25 +173,28 @@ moko_get_window_name (Display *dpy, Window w) {
     		}
     	}
     return name;
-    }
+}
 
 
 void 
-moko_print_win_list (Display* dpy, Window* win_list, guint win_num) {
+moko_print_win_list (Display* dpy, Window* win_list, guint win_num) 
+{
     int i;
     char* winname = NULL;
 
     if (win_num > 1) 
     	g_debug ("****there are %d windows in total****", win_num);
     
-    for (i=0; i<win_num; i++) {
+    for (i=0; i<win_num; i++) 
+    {
     	winname = moko_get_window_name(dpy, win_list[i]);
     	g_debug ("%d. %s ", i, winname);
-    	}
     }
+}
 
 Atom
-moko_get_window_property (Display *dpy, Window w, Atom property) {
+moko_get_window_property (Display *dpy, Window w, Atom property) 
+{
     Atom result = None;
     Atom actual_type;
     int actual_format;
@@ -208,10 +215,11 @@ moko_get_window_property (Display *dpy, Window w, Atom property) {
     	XFree (prop);
     	}
     return result;
-    }
+}
 
 guint
-moko_tab_event_check (Display *dpy) {
+moko_tab_event_check (Display *dpy) 
+{
     XEvent ev;
     guint done = 0;
     Bool	clicked = FALSE;
@@ -231,11 +239,12 @@ moko_tab_event_check (Display *dpy) {
     			done=2;
     		}
     return done;
-    }
+}
 
 
 gboolean 
-moko_get_current_active_client(Display *dpy, Window *window_return) {
+moko_get_current_active_client(Display *dpy, Window *window_return) 
+{
     Atom actual_type, type;
     unsigned char* prop = NULL;
     int actual_format;
@@ -250,10 +259,11 @@ moko_get_current_active_client(Display *dpy, Window *window_return) {
     	return TRUE;
     	}
     else return FALSE;
-    }
+}
 
 void
-mbcommand(Display *dpy, int cmd_id, Window win, char *data) {
+mbcommand(Display *dpy, int cmd_id, Window win, char *data) 
+{
     XEvent ev;
     Window root;
     Atom theme_prop, cmd_prop, desktop_manager_atom;
@@ -292,11 +302,12 @@ mbcommand(Display *dpy, int cmd_id, Window win, char *data) {
     
     XSendEvent(dpy, root, False, SubstructureRedirectMask|SubstructureNotifyMask, &ev);
     XFlush (dpy);
-    }
+}
 
 
 gboolean
-moko_send_delete_message (Display *dpy, Window w) {
+moko_send_delete_message (Display *dpy, Window w) 
+{
     XEvent e;
     
     e.type = ClientMessage;
@@ -312,10 +323,11 @@ moko_send_delete_message (Display *dpy, Window w) {
     if (gdk_error_trap_pop ())
     	return FALSE;
     return TRUE;
-    }
+}
 
 gboolean
-moko_really_kill_client (Display *dpy, Window w) {
+moko_really_kill_client (Display *dpy, Window w) 
+{
     gdk_error_trap_push ();
 
     XKillClient (dpy, w);
@@ -323,10 +335,11 @@ moko_really_kill_client (Display *dpy, Window w) {
     if (gdk_error_trap_pop ())
     	return FALSE;
     return TRUE;
-    }
+}
 
 gboolean
-moko_kill_window (Display *dpy, Window w){
+moko_kill_window (Display *dpy, Window w)
+{
     Atom *protocols;
     int count, rc;
 
@@ -346,25 +359,5 @@ moko_kill_window (Display *dpy, Window w){
     		return moko_send_delete_message (dpy, w);
     	}
     return moko_really_kill_client (dpy, w);
-    }
-/*void
-moko_update_wlist(Display *dpy, Window **list, guint *amount)
-{
-	Window *new_list;
-	guint new_amount;
-	int i,j;
-
-	moko_update_net_undocked_client_list(dpy, &new_list, &new_amount);
-
-	moko_print_win_list(dpy, new_list, new_amount);
-
-	for (i=0; i<new_amount; i++)
-	{
-		for(j=0; j<amount && list[j] != new_list[i], j++)
-		{
-			list[i]
-		}
-	}
-
-}*/
+}
 
