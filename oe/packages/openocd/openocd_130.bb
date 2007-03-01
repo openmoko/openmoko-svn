@@ -3,7 +3,7 @@ HOMEPAGE = "http://openocd.berlios.de/"
 LICENSE = "GPL"
 PV = "130"
 
-FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/openmoko"
+FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/openocd"
 
 inherit autotools
 
