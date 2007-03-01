@@ -1,0 +1,27 @@
+#
+# config.werner - Werner's devirginator configuration
+#
+# This is a shell script sourced by "setup.sh".
+#
+
+OPENOCD_HOST=fs
+SNAPSHOT=20070226
+BOARD=bv2
+DFU_UTIL=$OMDIR/openmoko/trunk/src/host/dfu-util/src/dfu-util
+UBOOT=$OMDIR/u-boot/u-boot.bin
+
+#
+# This is a developer's setup, thus only items I don't want to change are taken
+# from the snapshot, while the rest is local. Explanations:
+#
+# OPENOCD_HOST: I sometimes run "devirginate" from a different host, thus I
+# need to specify where OpenOCD is running.
+#
+# SNAPSHOT: mandatory choice of the snapshot version.
+#
+# BOARD: still doing most of my testing on bv2.
+#
+# DFU_UTIL: local copy from SVN.
+#
+# UBOOT: from my local tree.
+#

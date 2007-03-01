@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# scriptify.pl - Convert a text file to a script image for u-boot's "autoscr"
+# openocdcmd.pl - Send commands to OpenOCD through the telnet interface
 #
 # Copyright (C) 2006-2007 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
@@ -22,36 +22,38 @@
 #
 
 
-do 'crc32.pl';
-
-
-while (<>) {
-    s/#.*//;
-    next if /^\s*$/;
-    $cmd .= $_;
+sub usage
+{
+    print STDERR "usage: $0 host port command ...\n";
+    exit(1);
 }
 
-$cmd .= pack("c",0);
-$cmd = pack("NN",length $cmd,0).$cmd;
 
-$crc = &crc32($cmd);
+&usage unless $#ARGV >= 2;
 
-$hdr = pack("NNNNNNNcccca32",
-  0x27051956,	# ih_magic (IH_MAGIC)
-  0,		# ih_crc
-  time, 	# ih_time
-  length $cmd,	# ih_size
-  0,		# ih_load
-  0,		# ih_ep 
-  $crc,		# ih_dcrc
-  17,		# ih_os (IH_OS_U_BOOT)
-  2,		# ih_arch (IH_CPU_ARM)
-  6,		# ih_type (IH_TYPE_SCRIPT)
-  0,		# ih_comp (IH_COMP_NONE)
-  "script");	# ih_name
+$host = shift @ARGV;
+$port = shift @ARGV;
 
-$crc = &crc32($hdr);
+open(PIPE,"| telnet $host $port") || die "telnet: $!";
 
-substr($hdr,4,4) = pack("N",$crc);
+# make the pipe unbuffered
 
-print $hdr.$cmd;
+$old = select PIPE;
+$| = 1;
+select $old;
+
+while (defined $ARGV[0]) {
+    print PIPE "$ARGV[0]\n";
+    shift @ARGV;
+}
+
+# wait until telnet closes the pipe
+
+vec($ein, fileno(PIPE), 1) = 1;
+$n = select($ein, undef, $ein, undef);
+if ($n < 0) {
+    print "select: $!";
+    exit(1);
+}
+
+close PIPE;

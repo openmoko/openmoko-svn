@@ -1,17 +1,94 @@
 Devirginator
 ============
 
-This collection of scripts initializes a "virgin" device. At the moment, this
-goes as far as allowing it to boot into u-boot, from where the rest will be
-done with DFU.
+This collection of scripts initializes a "virgin" device. It erases the
+NAND and installs u-boot, the Linux kernel, and the root file system.
+
+
+Quick start
+===========
 
 First,
 % cp config.example config
-and may changes as needed. Then
+and may changes as needed. In particular, you must set SNAPSHOT.
+Then
 % make
 This requires Netpbm and transfig. Finally, make sure that openocd runs,
-power device up and run
+power the device up and run
 % ./devirginate
+
+
+Files
+=====
+
+
+Scripts
+-------
+
+- openocdcmd.pl
+- scriptify.pl
+- crc32.pl
+- envedit.pl
+- setup.sh
+
+User configuration
+------------------
+
+Static configuration files
+--------------------------
+
+The following files contain scripts and other "static" configuration
+information that is used in the devirgination process. In general,
+it is only necessary to edit these files when changing functionality
+of the setup process.
+
+Each of these files is converted in some way by setup.sh. Below, we
+indicate the name of the respective resulting file after the arrow.
+
+- openocd.in -> tmp/script.ocd
+  Commands to execute by OpenOCD in phase 0. To perform variable
+  expansion, each line of this file is processed by the shell with
+  eval "echo $line". Due to this, shell meta-characters should be
+  avoided.
+
+  If changing any addresses in openocd.in, you also need to update
+  u-boot.in.
+
+- u-boot.in -> tmp/u-boot.out
+  Commands to execute in u-boot during stage 0. This file is converted
+  to an image understood by u-boot, and then executed from memory with
+  u-boot's "autoscr" command.
+
+- environment.in -> tmp/environment
+  Environment settings for the regular u-boot environment. Note that
+  the changes in this file are made on top of the interim environment
+  produced in stage 0. In particular, the "mtdparts" variable is
+  retained from that stage.
+
+- smiley.fig -> tmp/smiley.gz
+  The stage 0 splash screen, a smiling face on a green background.
+
+
+Download cache
+--------------
+
+- tmp/System_boot.png -> tmp/splash.gz
+- tmp/openmoko-devel-image-*.rootfs.jffs2
+- tmp/lowlevel_foo-*.bin
+- tmp/u-boot-*.bin
+- tmp/uImage-*.bin
+
+- tmp/env.old
+- tmp/env.new
+- tmp/preboot_override
+- tmp/preboot_override.noscrub
+- tmp/preboot_override.scrub
+
+
+Scripts
+-------
+
+
 
 The first few messages should look like this:
 Open On-Chip Debugger
@@ -32,10 +109,64 @@ on. In this case, you can try to restart, or, if openocd is stuck,
 - pull and then replace the USB plug of the JTAGkey or debug v2 board
 - start openocd
 
-The whole procedure takes a bit longer than two minutes. Rough timeline
-(numbers are guessed and may be off by some 30 seconds):
 
-00:00  screen goes dark
-00:35  small tux logo with superimposed u-boot version string appears
-02:00  screen briefly goes dark
-02:02  smiley on green background appears
+Stages
+======
+
+
+Stage 0
+-------
+
+If the NAND bad block table is invalid, it can be erased at the beginning
+of stage 1. We call this "stage 0".
+
+In general, this is not a desirable option, because if the last NAND blocks
+are defective, this information will be lost, and unreliable operation may
+result. By default, stage 0 is not performed.
+
+
+Stage 1
+-------
+
+Immediately after starting, the screen lights up, showing random junk.
+This is an indication that the setup process has started. Note that the
+screen content may change ("decay") during all this. This is normal.
+
+After 10-30 seconds, the screen will go dark. This indicates that we
+now a have u-boot running on the device.
+
+About 60-90 seconds later, the screen will light up again and show a
+smiling face on a green background. This indicates that the first stage
+has completed. The smiling face will appear each time you activate the
+device.
+
+The device now contains:
+- a bad block table (BBT)
+- u-boot, with DFU capability
+- a basic set of u-boot environment variables
+- the interim splash screen
+
+What is still missing:
+- the Linux kernel
+- the root file system
+- the final environment
+- the final splash screen
+
+
+Stage 2
+-------
+
+To begin phase 2, activate the device. The stage 1 smiley will show.
+
+Phase 2 can take several minutes. Progress of the download procedure
+is indicated by hash signs (#) printed on the terminal where
+"devirginate" runs.
+
+At the end of phase 2, the device turns off. When you switch it on
+again, it will show the OpenMoko splash screen and boot into Linux.
+
+
+Stage 3
+-------
+
+TBD.

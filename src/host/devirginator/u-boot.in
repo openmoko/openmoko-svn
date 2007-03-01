@@ -6,13 +6,20 @@
 # interactive testing one may wish to do.
 #
 
+# switch on the backlight, so one can see that we're alive
+
+neo1973 backlight off
+
 # we're non-interactive
 
 setenv dontask y
 
 # remove any pre-existing bad block table and create a new one
 
-nand scrub 0x3ff0000 0x10000
+setenv scrub_true nand scrub 0x3ff0000 0x10000
+setenv scrub_ echo Not scrubbing
+run scrub_${scrub}
+
 nand createbbt
 
 # create the partition table
@@ -30,6 +37,12 @@ nand write.e 0x32000000 u-boot 0x40000
 # set up the pre-DFU environment (604800 seconds is one week)
 
 dynenv set u-boot_env
+
+setenv dontask
+setenv scrub_true
+setenv scrub_
+setenv scrub
+
 setenv bootcmd
 setenv bootdelay 604800
 setenv splashimage nand read.e 0x32000000 splash 0x1000\; unzip 0x32000000 0x33d00000 0x96000

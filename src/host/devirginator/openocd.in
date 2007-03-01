@@ -1,0 +1,49 @@
+#
+# openocd.in - Commands to load and run u-boot and companion files for setup
+#
+
+#
+# Memory map:
+#
+# 0x33FFFFFF    end of RAM
+# 0x33F80000    u-boot
+# 0x33D00000    frame buffer
+# 0x32300000    interim logo
+# 0x32200000    u-boot command script
+# 0x32100000    preboot_override command string
+# 0x32000000    u-boot load area
+# 0x30000000    start of RAM
+# 0x00000000    lowlevel_foo.bin load area
+#
+
+# reset and wait until the target responds
+reset halt
+wait_halt
+sleep 2000
+
+# turn on the backlight
+mww 0x56000010 0x1
+mww 0x56000014 1
+
+# load and run the low-level hardware setup
+load_binary $LOWLEVEL 0
+bp 0x33f80000 4 hw
+resume
+wait_halt
+rbp 0x33f80000
+
+# load u-boot, the initial command, the command script, and the smiley
+load_binary $UBOOT 0x32000000
+load_binary $PWD/tmp/preboot_override 0x32100000
+load_binary $PWD/tmp/u-boot.out 0x32200000
+load_binary $PWD/tmp/smiley.gz 0x32300000
+
+# enable the initial command
+mww 0x32000040 0x32100000
+
+# run
+bp 0 4 hw
+resume 0x32000000
+wait_halt
+rbp 0
+resume

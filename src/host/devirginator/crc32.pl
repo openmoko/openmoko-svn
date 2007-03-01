@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# scriptify.pl - Convert a text file to a script image for u-boot's "autoscr"
+# crc32.pl - Straightforward and very slow CRC32 implementation
 #
 # Copyright (C) 2006-2007 by OpenMoko, Inc.
 # Written by Werner Almesberger <werner@openmoko.org>
@@ -21,37 +21,26 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+#
+# For details, see
+# http://en.wikipedia.org/w/index.php?title=Cyclic_redundancy_check&oldid=110823112
+#
 
-do 'crc32.pl';
+sub crc32
+{
+    local ($s) = @_;
+    local ($poly, $crc) = (0xedb88320, ~0);
+    local ($i, $j);
 
-
-while (<>) {
-    s/#.*//;
-    next if /^\s*$/;
-    $cmd .= $_;
+    for ($i = 0; $i != length $s; $i++) {
+	for ($j = 0; $j != 8; $j++) {
+	    if (($crc ^ (unpack("C", substr($s, $i, 1)) >> $j)) & 1) {
+		$crc = ($crc >> 1) ^ $poly;
+	    }
+	    else {
+		$crc = $crc >> 1;
+	    }
+	}
+    }
+    return ~$crc;
 }
-
-$cmd .= pack("c",0);
-$cmd = pack("NN",length $cmd,0).$cmd;
-
-$crc = &crc32($cmd);
-
-$hdr = pack("NNNNNNNcccca32",
-  0x27051956,	# ih_magic (IH_MAGIC)
-  0,		# ih_crc
-  time, 	# ih_time
-  length $cmd,	# ih_size
-  0,		# ih_load
-  0,		# ih_ep 
-  $crc,		# ih_dcrc
-  17,		# ih_os (IH_OS_U_BOOT)
-  2,		# ih_arch (IH_CPU_ARM)
-  6,		# ih_type (IH_TYPE_SCRIPT)
-  0,		# ih_comp (IH_COMP_NONE)
-  "script");	# ih_name
-
-$crc = &crc32($hdr);
-
-substr($hdr,4,4) = pack("N",$crc);
-
-print $hdr.$cmd;

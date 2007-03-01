@@ -1,9 +1,94 @@
 #
-# config - devirginator configuration
+# config.example - Devirginator configuration example
 #
 # This is a shell script sourced by "setup.sh".
 #
+# WARNING: you must run setup.sh each time this configuration changes !
+#
 
-OPENOCD_HOST=fs
-LOWLEVEL=$OMDIR/u-boot/board/neo1973/lowlevel_foo.bin
-UBOOT=$OMDIR/u-boot/u-boot.bin
+#
+# Note: you some configuration is required. At the very minimum, you MUST set
+# the SNAPSHOT variable.
+#
+
+###  SYSTEM ENVIRONMENT  ######################################################
+
+# OPENOCD_HOST: the host on which the OpenOCD daemon runs.
+# Default:
+# OPENOCD_HOST=localhost
+
+# OPENOCD_PORT: the port on which we connect to to the OpenOCD daemon.
+# Default:
+# OPENOCD_PORT=4444
+
+# DFU_UTIL: command that invokes the DFU utility.
+# Default:
+# DFU_UTIL=dfu-util
+
+
+###  TARGET PLATFORM  #########################################################
+
+# PLATFORM: name of the platform we're flashing.
+# Valid names:
+#   gta01	The Neo1973
+# Default:
+# PLATFORM=gta01
+
+# BOARD: the hardware version of the device we're flashing.
+# Valid names:
+#   bv2		Unreleased development version
+#   bv3		Phase 0 ?
+#   v3		Phase 0 ?
+#   v4		Phase 1 ?
+# Default:
+# BOARD=bv3
+
+
+###  DOWNLOAD LOCATION  #######################################################
+
+# SNAPSHOT: date code of the snapshot. This is usually a string of eight
+# decimal digits of the form yyyymmdd. There is no default value for this.
+# Example:
+# SNAPSHOT=20070226
+
+# RELEASE_DIR: directory containing all the files pertaining to the snapshot.
+# The definition of RELEASE_DIR can include variables, but note that they must
+# be set _before_ defining RELEASE_DIR.
+# Default:
+# RELEASE_DIR=http://buildhost.openmoko.org/releases/${PLATFORM}-${SNAPSHOT}/tmp/deploy/images
+
+
+###  FINE-TUNING  #############################################################
+
+# The location of each item can be explicitly set. If they point to a file, we
+# will use just that file (without making a copy). If they are URLs, setup.sh
+# will download the file to tmp/ and we will use that copy. If no location is
+# set for an item, setup.sh will get it from the RELEASE_DIR above.
+
+# LOWLEVEL: the lowlevel_foo.bin file (initializes the hardware for loading
+# the u-boot boot loader via JTAG)
+# Example:
+# LOWLEVEL=$OMDIR/u-boot/board/neo1973/lowlevel_foo.bin
+
+# UBOOT: the boot loader
+# Example:
+# UBOOT=$OMDIR/u-boot/u-boot.bin
+
+# UIMAGE: the kernel image, with an image header recognized by u-boot.
+# Example:
+# UIMAGE=$OMDIR/build/tmp/deploy/images/uImage-2.6-200702241944-fic-gta01-20070224194345.bin
+
+# MODULES: the kernel modules, as gzip'ed tar file.
+# Example:
+# MODULES=$OMDIR/build/tmp/deploy/images/modules-2.6-200702241944-fic-gta01.tgz
+
+# ROOTFS: the root file system, in jffs2 format.
+# Example:
+# ROOTFS=$OMDIR/build/tmp/deploy/images/openmoko-devel-image-fic-gta01-20070212015815.rootfs.jffs2
+
+# SPLASH: the splash screen, in 480x640 PNG format.
+# Default:
+# SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
+
+
+###  END  #####################################################################
