@@ -14,8 +14,8 @@ and may changes as needed. In particular, you must set SNAPSHOT.
 Then
 % make
 This requires Netpbm and transfig. Finally, make sure that openocd runs,
-power the device up and run
-% ./devirginate
+power the device up, become root, and run
+# ./devirginate
 
 
 Prerequisites
@@ -209,13 +209,16 @@ Stage 1: erases all previous NAND content, installs u-boot, and makes
 Stage 2: installs Linux and the root file system.
 Stage 3: To be defined.
 
+Note that you most likely require privileges for some of the USB
+operations "devirginate" performs. Therefore, do all this as "root".
+
 To perform all stages, run
-./devirginate
+# ./devirginate
 from the trunk/src/host/devirginator/ directory.
 
 To run only individual stages, specify the stage numbers, each prefixed
 by "-", e.g.,
-./devirginate -1
+# ./devirginate -1
 
 
 Stage 0
