@@ -181,6 +181,7 @@ RDEPENDS_task-openmoko-examples = "\
 #
 DESCRIPTION_task-openmoko-debug = "OpenMoko: Debugging Tools"
 RDEPENDS_task-openmoko-debug = "\
+  alsa-state \
   alsa-utils-amixer \
   alsa-utils-aplay \
   alsa-utils-aconnect \
