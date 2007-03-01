@@ -5,7 +5,7 @@ inherit native
 DEPENDS = "libusb-native"
 
 do_stage() {
-	install -m 0755 src/openocd ${STAGING_BINDIR}
+	install -m 0755 src/dfu-util ${STAGING_BINDIR}
 }
 
 do_deploy() {
