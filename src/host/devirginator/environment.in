@@ -16,6 +16,8 @@ bootcmd=
 
 bootdelay=1
 
+quiet=1
+
 splashimage=
   nand read.e 0x32000000 splash 0x5000;
   unzip 0x32000000 0x33d00000 0x96000
