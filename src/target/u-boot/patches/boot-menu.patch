@@ -6,10 +6,11 @@ board/neo1973/neo1973.c (neo1973_on_key_pressed): return 1 if the $POWER key is
 board/neo1973/neo1973.c (board_late_init): make use of neo1973_new_second and
   neo1973_on_key_pressed
 board/neo1973/neo1973.h: added function prototypes
-u-boot/board/neo1973/neo1973.c: removed setting of "nobootdelay"
 u-boot/board/neo1973/neo1973.c (board_late_init): enter the boot menu when 
   "AUX" was pressed at least half the time
 u-boot/board/neo1973/neo1973.c (board_late_init): minor code cleanup
+u-boot/common/console.c, include/console.h: added "console_poll_hook" to be
+  called when waiting for console in put in "getc" and "tstc"
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -17,7 +18,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/bootmenu.c
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,335 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -42,6 +43,8 @@ Index: u-boot/board/neo1973/bootmenu.c
 +
 +
 +#include <common.h>
++#include <devices.h>
++#include <console.h>
 +#include <environment.h>
 +
 +#include "neo1973.h"
@@ -53,7 +56,13 @@ Index: u-boot/board/neo1973/bootmenu.c
 +#define ANSI_GOTOYX	"\e[%d;%dH"
 +
 +#define DEBOUNCE_LOOPS		1000	/* wild guess */
-+#define BOOT_MENU_TIMEOUT	60	/* 60 second */
++
++/*
++ * MIN_BOOT_MENU_TIMEOUT ensures that users can't by accident set the timeout
++ * unusably short.
++ */
++#define MIN_BOOT_MENU_TIMEOUT	10	/* 10 seconds */
++#define BOOT_MENU_TIMEOUT	60	/* 60 seconds */
 +#define AFTER_COMMAND_WAIT	3	/* wait (2,3] after running commands */
 +#define	MAX_MENU_ITEMS		10	/* cut off after that many */
 +
@@ -61,19 +70,53 @@ Index: u-boot/board/neo1973/bootmenu.c
 +#define	FACTORY_TXT	"Factory reset"
 +
 +
++/*
++ * The menu options are indexed as follows:
++ *
++ * 0		Hard-coded "Boot"
++ * n		User-provided options
++ * options+1	Hard-coded "Factory reset"
++ *
++ * "options" is the number of user-provided options. They are stored in
++ * environment variables names "menu_N", starting with 1.
++ *
++ * Because there can be * holes in the sequence of "menu_N" variables, we use
++ * map[] to map the option number to the number in the variable name. The
++ * first variable goes into map[1], etc., so that, if we start with menu_1 and
++ * have no holes, map[i] == i for 1 <= i <= options.
++ */
++
++static int map[MAX_MENU_ITEMS];
 +static int options = 0;
 +static int width = sizeof(FACTORY_TXT)-1;
++static int boot_menu_timeout;
++
++static device_t *bm_con;
 +
 +
-+static int debounce(int (*fn)(void))
++static void bm_printf(const char *fmt, ...)
++{
++	va_list args;
++	char printbuffer[CFG_PBSIZE];
++
++	va_start(args, fmt);
++	vsprintf(printbuffer, fmt, args);
++	va_end(args);
++
++	bm_con->puts(printbuffer);
++}
++
++
++static int debounce(int (*fn)(void), int last)
 +{
 +	int on, i;
 +
 +again:
 +	on = fn();
-+	for (i = DEBOUNCE_LOOPS; i; i--)
-+		if (on != fn())
-+			goto again;
++	if (on != last)
++		for (i = DEBOUNCE_LOOPS; i; i--)
++			if (on != fn())
++				goto again;
 +	return on;
 +}
 +
@@ -82,7 +125,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 +{
 +	char name[] = "menu_XX";
 +
-+	sprintf(name+5,"%d",n);
++	sprintf(name+5,"%d",map[n]);
 +	return getenv(name);
 +}
 +
@@ -93,11 +136,11 @@ Index: u-boot/board/neo1973/bootmenu.c
 +	int len;
 +
 +	if (!n) {
-+		printf("  %-*s  ", width, BOOT_TXT);
++		bm_printf("  %-*s  ", width, BOOT_TXT);
 +		return;
 +	}
 +	if (n == options+1) {
-+		printf("  %-*s  ", width, FACTORY_TXT);
++		bm_printf("  %-*s  ", width, FACTORY_TXT);
 +		return;
 +	}
 +	s = get_option(n);
@@ -109,7 +152,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 +	len = strlen(s);
 +	if (len > width)
 +		width = len;
-+	printf("  %-*s  ", width, s);
++	bm_printf("  %-*s  ", width, s);
 +	if (colon)
 +		*colon = ':';
 +}
@@ -117,12 +160,12 @@ Index: u-boot/board/neo1973/bootmenu.c
 +
 +static void print_option(int n, int reverse)
 +{
-+	printf(ANSI_GOTOYX, n+4, 1);
++	bm_printf(ANSI_GOTOYX, n+4, 1);
 +	if (reverse)
-+		printf(ANSI_REVERSE);
++		bm_printf(ANSI_REVERSE);
 +	print_option_n(n);
 +	if (reverse)
-+		printf(ANSI_NORMAL);
++		bm_printf(ANSI_NORMAL);
 +}
 +
 +
@@ -138,86 +181,184 @@ Index: u-boot/board/neo1973/bootmenu.c
 +}
 +
 +
-+static int do_bootmenu(void)
++static int get_var_positive_int(char *var, int default_value)
 +{
-+	int aux = 1, on = 1;
-+	int n, seconds = 0;
++	const char *s;
++	char *end;
++	int n;
 +
-+	printf(ANSI_CLEAR ANSI_GOTOYX "*** BOOT MENU ***\n\n", 2, 1);
++	s = getenv(var);
++	if (!s)
++		return default_value;
++        n = simple_strtoul(s, &end, 0);
++	if (!*s || *end || n < 1)
++		return default_value;
++	return n;
++}
++
++
++static void init_bootmenu(void)
++{
++	int n;
++
++	bm_printf(ANSI_CLEAR ANSI_GOTOYX "*** BOOT MENU ***\n\n", 2, 1);
++	options = 0;
++
++	/* hard-coded first option */
 +	print_option(0, 1);
-+	while (options < MAX_MENU_ITEMS && option_command(options+1))
-+		print_option(++options, 0);
-+	print_option(options+1, 0);
-+	printf("\n\nPress [AUX] to select, [POWER] to execute.\n");
++	map[0] = 0;
 +
-+	n = 0;
-+	while (1) {
++	/* user-provided options */
++	for (n = 1; n != MAX_MENU_ITEMS+1; n++) {
++		map[options+1] = n;
++		if (option_command(options+1)) {
++			options++;
++			print_option(options, 0);
++		}
++	}
++
++	/* hard-coded last option */
++	print_option(options+1, 0);
++	map[options+1] = options+1;
++
++	bm_printf("\n\nPress [AUX] to select, [POWER] to execute.\n");
++
++	boot_menu_timeout = get_var_positive_int("boot_menu_timeout",
++	    BOOT_MENU_TIMEOUT);
++	if (boot_menu_timeout < MIN_BOOT_MENU_TIMEOUT)
++		boot_menu_timeout = MIN_BOOT_MENU_TIMEOUT;
++}
++
++
++static void redirect_console(int grab)
++{
++	static device_t *orig_stdout, *orig_stderr;
++
++	if (grab) {
++		orig_stdout = stdio_devices[stdout];
++		orig_stderr = stdio_devices[stderr];
++		stdio_devices[stdout] = bm_con;
++		stdio_devices[stderr] = bm_con;
++	}
++	else {
++		/*
++		 * Make this conditional, because the command may also change
++		 * the console.
++		 */
++		if (stdio_devices[stdout] == bm_con)
++			stdio_devices[stdout] = orig_stdout;
++		if (stdio_devices[stderr] == bm_con)
++			stdio_devices[stderr] = orig_stderr;
++	}
++}
++
++
++static void do_option(int option)
++{
++	int seconds, aux;
++
++	bm_printf(ANSI_CLEAR ANSI_GOTOYX, 1, 1);
++	redirect_console(1);
++	if (!option || option == options+1) {
++		if (option) {
++			default_env();
++			run_command("dynpart", 0);
++		}
++		run_command("bootd", 0);
++	}
++	else
++		run_command(option_command(option), 0);
++	redirect_console(0);
++	seconds = get_var_positive_int("after_command_wait",
++	    AFTER_COMMAND_WAIT);
++	if (seconds)
++		bm_printf("\nPress [AUX] to %s.",
++		    option ? "return to boot menu" : "power off");
++	aux = 1; /* require up-down transition */
++	while (seconds) {
 +		int tmp;
 +
-+		tmp = debounce(neo1973_911_key_pressed);
-+		if (tmp && !aux) {
-+			print_option(n, 0);
-+			n++;
-+			if (n == options+2)
-+				n = 0;
-+			print_option(n, 1);
-+			seconds = 0;
-+		}
++		tmp = debounce(neo1973_911_key_pressed, aux);
++		if (tmp && !aux)
++			break;
 +		aux = tmp;
-+		tmp = debounce(neo1973_on_key_pressed);
-+		if (tmp && !on)
-+			return n;
-+		on = tmp;
 +		if (neo1973_new_second())
-+			if (++seconds > BOOT_MENU_TIMEOUT)
-+				return -1;
++			seconds--;
 +	}
++	if (!option)
++		neo1973_poweroff();
++	init_bootmenu();
++}
++
++
++static void bootmenu_hook(int activity)
++{
++	static int aux = 1, on = 1;
++	static int option = 0;
++	static int seconds = 0;
++	int tmp;
++
++	if (activity)
++		seconds = 0;
++	tmp = debounce(neo1973_911_key_pressed, aux);
++	if (tmp && !aux) {
++		print_option(option, 0);
++		option++;
++		if (option == options+2)
++			option = 0;
++		print_option(option, 1);
++		seconds = 0;
++	}
++	aux = tmp;
++	tmp = debounce(neo1973_on_key_pressed, on);
++	if (tmp && !on) {
++		do_option(option);
++		option = 0;
++		seconds = 0;
++	}
++	on = tmp;
++	if (neo1973_new_second())
++		if (++seconds > boot_menu_timeout)
++			neo1973_poweroff();
++}
++
++
++static device_t *find_console(const char *name)
++{
++	int i;
++
++	for (i = 1; i != ListNumItems(devlist); i++) {
++		device_t *dev = ListGetPtrToItem(devlist, i);
++
++		if (!strcmp(name, dev->name))
++			if (dev->flags & DEV_FLAGS_OUTPUT)
++				return dev;
++	}
++	return NULL;
 +}
 +
 +
 +void bootmenu(void)
 +{
++	bm_con = find_console("vga");
++	if (bm_con && bm_con->start && bm_con->start() < 0)
++		bm_con = NULL;
++	if (!bm_con)
++		bm_con = stdio_devices[stdout];
++	if (!bm_con)
++		return;
++#if 0
 +	console_assign(stdout, "vga");
 +	console_assign(stderr, "vga");
-+	while (1) {
-+		int n, seconds;
-+
-+		options = 0;
-+		n = do_bootmenu();
-+		if (n < 0)
-+			return;
-+
-+		printf(ANSI_CLEAR ANSI_GOTOYX, 1, 1);
-+		if (!n || n == options+1) {
-+			if (n) {
-+				default_env();
-+				run_command("dynpart", 0);
-+			}
-+			run_command("bootd", 0);
-+			if (!n)
-+				return;
-+		}
-+		else
-+			run_command(option_command(n), 0);
-+		seconds = AFTER_COMMAND_WAIT;
-+		while (seconds)
-+			if (neo1973_new_second())
-+				seconds--;
-+	}
++#endif
++	init_bootmenu();
++	console_poll_hook = bootmenu_hook;
 +}
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/neo1973.c
 +++ u-boot/board/neo1973/neo1973.c
-@@ -69,7 +69,6 @@ DECLARE_GLOBAL_DATA_PTR;
- #define U_M_SDIV	0x3
- 
- unsigned int neo1973_wakeup_cause;
--extern int nobootdelay;
- 
- static inline void delay (unsigned long loops)
- {
-@@ -196,6 +195,7 @@ int board_late_init(void)
+@@ -196,6 +196,7 @@ int board_late_init(void)
  	extern unsigned char booted_from_nand;
  	unsigned char tmp;
  	char buf[32];
@@ -225,7 +366,7 @@ Index: u-boot/board/neo1973/neo1973.c
  
  	/* Initialize the Power Management Unit with a safe register set */
  	pcf50606_init();
-@@ -219,25 +219,18 @@ int board_late_init(void)
+@@ -219,25 +220,18 @@ int board_late_init(void)
  
  	if (tmp & PCF50606_INT1_ONKEYF) {
  		int seconds = 0;
@@ -258,19 +399,19 @@ Index: u-boot/board/neo1973/neo1973.c
  			if (seconds >= POWER_KEY_SECONDS)
  				goto continue_boot;
  		}
-@@ -262,6 +255,11 @@ continue_boot:
+@@ -262,6 +256,11 @@ continue_boot:
  	/* switch on the backlight */
  	neo1973_backlight(1);
  
 +	if (menu_vote > 0) {
 +		bootmenu();
-+		neo1973_poweroff();
++		nobootdelay = 1;
 +	}
 +
  	return 0;
  }
  
-@@ -313,6 +311,16 @@ void neo1973_vibrator(int on)
+@@ -313,6 +312,16 @@ void neo1973_vibrator(int on)
  		gpio->GPBDAT &= ~(1 << 10);
  }
  
@@ -314,4 +455,60 @@ Index: u-boot/board/neo1973/neo1973.h
 +
 +void bootmenu(void);
 +
+ #endif
+Index: u-boot/common/console.c
+===================================================================
+--- u-boot.orig/common/console.c
++++ u-boot/common/console.c
+@@ -160,8 +160,12 @@ void fprintf (int file, const char *fmt,
+ 
+ /** U-Boot INITIAL CONSOLE-COMPATIBLE FUNCTION *****************************/
+ 
++void (*console_poll_hook)(int activity);
++
+ int getc (void)
+ {
++	while (console_poll_hook && !tstc());
++
+ 	if (gd->flags & GD_FLG_DEVINIT) {
+ 		/* Get from the standard input */
+ 		return fgetc (stdin);
+@@ -171,7 +175,7 @@ int getc (void)
+ 	return serial_getc ();
+ }
+ 
+-int tstc (void)
++static int do_tstc (void)
+ {
+ 	if (gd->flags & GD_FLG_DEVINIT) {
+ 		/* Test the standard input */
+@@ -182,6 +186,16 @@ int tstc (void)
+ 	return serial_tstc ();
+ }
+ 
++int tstc (void)
++{
++	int ret;
++
++	ret = do_tstc();
++	if (console_poll_hook)
++		console_poll_hook(ret);
++	return ret;
++}
++
+ void putc (const char c)
+ {
+ #ifdef CONFIG_SILENT_CONSOLE
+Index: u-boot/include/console.h
+===================================================================
+--- u-boot.orig/include/console.h
++++ u-boot/include/console.h
+@@ -33,6 +33,8 @@
+ extern device_t	*stdio_devices[] ;
+ extern char *stdio_names[MAX_FILES] ;
+ 
++extern void (*console_poll_hook)(int activity);
++
+ int console_realloc(int top);
+ 
  #endif
