@@ -35,6 +35,7 @@ The following programs are needed:
 - dfu-util must be accessible from the machine running "devirginate".
   If dfu-util is not in PATH, you can set an explicit path in "config".
 
+  
   To build dfu-util, do this:
   cd $OMDIR/openmoko/trunk/src/host/dfu-util
   ./autogen.sh
@@ -71,8 +72,23 @@ are stored in the directory tmp/. The files in tmp/ are also used
 during devirgination.
 
 First, copy config.example to "config" and make the necessary changes.
-Almost all settings have reasonable defaults, but you will have to
-set SNAPSHOT to the date code of the snapshot you desire.
+Almost all settings have reasonable defaults, but the least thing you
+will have to do is set SNAPSHOT to the date code of the snapshot you
+desire.
+
+Next, run either  ./setup.sh  or just  make .
+
+setup.sh will now download any missing files, and perform the various
+conversions. If any error occur during this, e.g., because of missing
+tools or a configuration error, setup.sh will stop with an error. You
+then have to correct the problem and retry. Files already downloaded
+to tmp/ will be skipped in the retry (setup.sh will still probe if
+they have changed).
+
+setup.sh also checks if executables used during devirgination are
+available and prints a warning if it finds anything missing. In general,
+one can run setup.sh on a different machine than "devirginate", in
+which case these warnings can be ignored.
 
 
 Files

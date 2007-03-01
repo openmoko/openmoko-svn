@@ -54,6 +54,14 @@ download()
 }
 
 
+probe()
+{
+    if ! "$@" >/dev/null 2>&1; then
+	echo "WARNING: cannot execute $1" 1>&2
+    fi
+}
+
+
 # --- Configuration defaults --------------------------------------------------
 
 
@@ -78,6 +86,13 @@ done
 
 
 . config
+
+
+# --- Check executables -------------------------------------------------------
+
+
+probe "$DFU_UTIL" -l
+probe telnet </dev/null
 
 
 # --- Post configuration ------------------------------------------------------
