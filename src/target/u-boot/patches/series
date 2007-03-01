@@ -63,3 +63,4 @@ boot-menu.patch
 # those have to be implemented fully
 uboot-dfu.patch
 uboot-neo1973-defaultenv.patch
+uboot-nand-markbad-reallybad.patch
