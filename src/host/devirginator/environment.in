@@ -32,15 +32,13 @@ menu_1=
   Set console to USB:
   setenv stdin usbtty;
   setenv stdout usbtty;
-  setenv stderr usbtty;
-  saveenv
+  setenv stderr usbtty
 
 menu_2=
   Set console to serial:
   setenv stdin serial;
   setenv stdout serial;
-  setenv stderr serial;
-  saveenv
+  setenv stderr serial
 
 menu_3=
   Power off:

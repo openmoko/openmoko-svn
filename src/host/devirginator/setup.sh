@@ -126,7 +126,7 @@ fi
 if [ -z "$UIMAGE" ]; then
     UIMAGE=${RELEASE_DIR}/uImage-2.6-'*'-fic-${PLATFORM}-'*'.bin
 fi
-if [ ! -f "$UIMAGE" ]; then
+if [ ! -r "$UIMAGE" ]; then
     download UIMAGE "$UIMAGE"
 fi
 
@@ -153,7 +153,7 @@ fi
 if [ -z "$ROOTFS" ]; then
     ROOTFS=${RELEASE_DIR}/openmoko-devel-image-fic-${PLATFORM}-'*'.rootfs.jffs2
 fi
-if [ ! -f "$ROOTFS" ]; then
+if [ ! -r "$ROOTFS" ]; then
     download ROOTFS "$ROOTFS"
 fi
 
