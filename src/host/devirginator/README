@@ -113,6 +113,9 @@ Download cache
 --------------
 
 - tmp/System_boot.png -> tmp/splash.gz
+  This is a copy of the OpenMoko logo, which then gets converted to a
+  gzip-ed raw framebuffer image.
+
 - tmp/openmoko-devel-image-*.rootfs.jffs2
 - tmp/lowlevel_foo-*.bin
 - tmp/u-boot-*.bin
@@ -152,6 +155,24 @@ on. In this case, you can try to restart, or, if openocd is stuck,
 
 Stages
 ======
+
+The setup process is divided into three stages (plus a special zero
+stage, see below). Each stage leaves the device in a stable state.
+An installation run can include all or only some stages. Each stage
+requires successful completion of all previous ones.
+
+Stage 1: erases all previous NAND content, installs u-boot, and makes
+  the device ready to receive further updates by DFU.
+Stage 2: installs Linux and the root file system.
+Stage 3: To be defined.
+
+To perform all stages, run
+./devirginate
+from the trunk/src/host/devirginator/ directory.
+
+To run only individual stages, specify the stage numbers, each prefixed
+by "-", e.g.,
+./devirginate -1
 
 
 Stage 0
@@ -202,8 +223,9 @@ Phase 2 can take several minutes. Progress of the download procedure
 is indicated by hash signs (#) printed on the terminal where
 "devirginate" runs.
 
-At the end of phase 2, the device turns off. When you switch it on
-again, it will show the OpenMoko splash screen and boot into Linux.
+At the end of phase 2, the device resets, displays a partial OpenMoko
+splash screen, then resets again, displays the correct splash screen
+and finally boots Linux.
 
 
 Stage 3
