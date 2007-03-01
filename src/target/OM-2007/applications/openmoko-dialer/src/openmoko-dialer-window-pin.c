@@ -128,6 +128,7 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     MokoFingerWindow *window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
+    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
     g_signal_connect ((gpointer) window, "show",
                       G_CALLBACK (on_window_pin_show), p_dialer_data);
     g_signal_connect ((gpointer) window, "hide",
@@ -173,8 +174,12 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (pin_delete_button_clicked), p_dialer_data);
     gtk_widget_set_name (GTK_WIDGET (button1), "mokofingerbutton-orange");
-    moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (button1),
-                                         "gtk-delete");
+    
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
+                                                            (button1),
+                                                            file_new_image_from_relative_path
+                                                            ("delete.png"));
+
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button1), "Delete");
 //    gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X,

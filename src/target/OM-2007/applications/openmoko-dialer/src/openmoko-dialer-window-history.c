@@ -132,7 +132,7 @@ on_eventboxTop_button_release_event (GtkWidget * widget,
 }
 
 void
-openmoko_history_wheel_press_left_up_cb (GtkWidget * widget,
+cb_openmoko_history_wheel_press_left_up(GtkWidget * widget,
                                          MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
@@ -168,7 +168,7 @@ openmoko_history_wheel_press_left_up_cb (GtkWidget * widget,
 }
 
 void
-openmoko_history_wheel_press_right_down_cb (GtkWidget * widget,
+cb_openmoko_history_wheel_press_right_down (GtkWidget * widget,
                                             MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
@@ -309,12 +309,15 @@ on_window_history_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
 
-  if (appdata->wheel_history)
-    gtk_widget_show (appdata->wheel_history);
+
 
   if (appdata->toolbox_history)
     gtk_widget_show (appdata->toolbox_history);
 
+  if (appdata->wheel_history)
+    gtk_widget_show (appdata->wheel_history);
+
+//FIXME: some day later, the contact changed infor will be sent to the dialer.
   if (appdata->history_need_to_update)
   {
     DBG_MESSAGE ("NEED TO UPDATE HISTORY");
@@ -345,6 +348,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 //now the container--window
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
+    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
     p_dialer_data->window_history = GTK_WIDGET (window);
 
 
@@ -357,12 +361,8 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect ((gpointer) window, "hide",
                       G_CALLBACK (on_window_history_hide), p_dialer_data);
 
-
-
-   // gtk_widget_show_all (GTK_WIDGET (window));
-
-//the gtk_widget_show_all is really bad, cause i have to call it and then hide some widgets.
-
+   //FIXME: without gtk_widget_show_all first and then hide, the history view will not show properly. -tony
+   gtk_widget_show_all(GTK_WIDGET(window));
 
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
     // This causes a segfault for me... maybe a problem in libmokoui? - thomas
@@ -370,13 +370,17 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
                       "press_left_up",
-                      G_CALLBACK (openmoko_history_wheel_press_left_up_cb),
+                      G_CALLBACK (cb_openmoko_history_wheel_press_left_up),
                       p_dialer_data);
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
                       "press_right_down",
-                      G_CALLBACK (openmoko_history_wheel_press_right_down_cb),
+                      G_CALLBACK (cb_openmoko_history_wheel_press_right_down),
                       p_dialer_data);
 
+    g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
+                      "press_bottom",
+                      G_CALLBACK (cb_tool_button_history_back_clicked),
+                      p_dialer_data);
 
 
     tools = moko_finger_window_get_toolbox (window);
@@ -403,7 +407,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
-    image = file_new_image_from_relative_path ("delete.png");
+    image = file_new_image_from_relative_path ("delete_01.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
                                                             (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
@@ -419,13 +423,12 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_back_clicked),
                       p_dialer_data);
+
     //gtk_widget_show (GTK_WIDGET (tools));
 
     p_dialer_data->wheel_history = GTK_WIDGET (moko_finger_window_get_wheel (window));
     p_dialer_data->toolbox_history = GTK_WIDGET (tools);
-
-    //gtk_widget_hide (GTK_WIDGET (window));
-
+    gtk_widget_hide(GTK_WIDGET(window));
     DBG_LEAVE ();
   }
   else
@@ -471,6 +474,7 @@ create_window_history_content (MOKO_DIALER_APP_DATA * p_dialer_data)
 
   GtkWidget *treeviewHistory;
   GtkWidget *vbox = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox);
   //FIRST of all, the top title area;
   GtkWidget *eventboxTop = gtk_event_box_new ();
   gtk_widget_show (eventboxTop);
@@ -526,10 +530,11 @@ create_window_history_content (MOKO_DIALER_APP_DATA * p_dialer_data)
                                   GTK_POLICY_NEVER, GTK_POLICY_NEVER);
 
   treeviewHistory = gtk_tree_view_new ();
+  gtk_widget_show (treeviewHistory);
   gtk_container_add (GTK_CONTAINER (align), scrolledwindow);
   gtk_container_add (GTK_CONTAINER (scrolledwindow), treeviewHistory);
 
-  gtk_widget_show (treeviewHistory);
+
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeviewHistory), FALSE);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeviewHistory), FALSE);
 //   gtk_misc_set_alignment (GTK_MISC (treeviewHistory), 0.5, 0.5);
@@ -547,7 +552,7 @@ create_window_history_content (MOKO_DIALER_APP_DATA * p_dialer_data)
                     G_CALLBACK (on_treeviewHistory_cursor_changed),
                     p_dialer_data);
 
-
+  gtk_widget_show (vbox);
   return vbox;
 }
 
@@ -609,7 +614,6 @@ history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data)
   GtkWidget *contactview = NULL;
 
   //DBG_ENTER();
-  //DBG_MESSAGE("History:%d",g_historylist.length);
 
   //DBG_TRACE();
   p_dialer_data->g_history_filter_type = ALL;

@@ -264,11 +264,12 @@ on_window_talking_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   appdata->g_timer_data.ptimer =
     g_timeout_add (1000, (GSourceFunc) timer_talking_time_out, appdata);
 
+  if (appdata->toolbox_talking)
+    gtk_widget_show (appdata->toolbox_talking);
+
   if (appdata->wheel_talking)
     gtk_widget_show (appdata->wheel_talking);
 
-  if (appdata->toolbox_talking)
-    gtk_widget_show (appdata->toolbox_talking);
 
 
 
@@ -294,6 +295,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     GtkWidget *content_talk = NULL;
     GtkWidget *content_dtmf = NULL;
     MokoFingerToolBox *tools = NULL;
+    MokoFingerWheel* wheel=NULL;
     GtkWidget *mokodialerpanel = NULL;
     MokoPixmapButton *button;
     GtkWidget *image;
@@ -303,9 +305,8 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     content_talk = gtk_vbox_new (FALSE, 0);
     status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status0.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status1.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status2.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "talking.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "connecting.png");
     moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
 
 
@@ -352,6 +353,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 //now the container--window
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
+    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
     p_dialer_data->window_talking = GTK_WIDGET (window);
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
     g_signal_connect ((gpointer) window, "show",
@@ -362,8 +364,8 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
 
-
     gtk_widget_show_all (GTK_WIDGET (window));
+
 //the gtk_widget_show_all is really bad, cause i have to call it and then hide some widgets.
 
     gtk_widget_hide (content_dtmf);
@@ -371,20 +373,20 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
 //   gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
-
-    g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
+    wheel=moko_finger_window_get_wheel (window);
+    g_signal_connect (G_OBJECT (wheel),
                       "press_left_up",
                       G_CALLBACK (openmoko_wheel_press_left_up_cb),
                       p_dialer_data);
-    g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
+    g_signal_connect (G_OBJECT (wheel),
                       "press_right_down",
                       G_CALLBACK (openmoko_wheel_press_right_down_cb),
                       p_dialer_data);
+    
 
 
 
     tools = moko_finger_window_get_toolbox (window);
-
     button = MOKO_PIXMAP_BUTTON (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("speaker.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON(button), image);
@@ -404,16 +406,19 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     button = MOKO_PIXMAP_BUTTON (moko_finger_tool_box_add_button_without_label (tools));
-    image = file_new_image_from_relative_path ("tony.png");
+    image = file_new_image_from_relative_path ("hangup.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON(button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_hangup_clicked),
                       p_dialer_data);
     gtk_widget_show (GTK_WIDGET (tools));
+    gtk_widget_show (GTK_WIDGET (wheel));
 
     p_dialer_data->dtmf_in_talking_window = 0;
-    p_dialer_data->wheel_talking = GTK_WIDGET (moko_finger_window_get_wheel (window));
+    p_dialer_data->wheel_talking = GTK_WIDGET (wheel);
     p_dialer_data->toolbox_talking = GTK_WIDGET (tools);
+
+    //gtk_widget_hide(window);
 
 
     DBG_LEAVE ();

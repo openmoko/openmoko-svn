@@ -83,7 +83,7 @@ if(end>1)while(number[end-1]=='\"'&&start<end)end--;
 
 DBG_MESSAGE("START=%d,END=%d",start,end);
 g_stpcpy(temp,number+start);
-temp[end-1]=0;
+temp[end-start]=0;
 DBG_MESSAGE("%s",temp);	
 
 
@@ -290,30 +290,17 @@ signal (SIGUSR1, handle_sigusr1);
   window_pin_init(p_dialer_data); 
   window_outgoing_init(p_dialer_data); 
   window_history_init(p_dialer_data); 
-
-
   DBG_MSG ("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 
 
 
 //from now on we will not use multithreads.
   gsm_lgsm_start(mainloop);
-  //gtk_widget_show(p_dialer_data->window_pin);
-  //start a timer to monitor incoming calls
-  //gtk_timeout_add(100,incoming_calls,0);
- 
-//instead, we add a g_source
 
+//for debug only>>
+//gsm_incoming_call("13917209523");
+//<<for debug only
 
-  //gdk_threads_enter();
-  //gtk_main ();
-  //gdk_threads_leave();
-  
-//  GMainLoop* mainloop = g_main_loop_new(NULL, FALSE );
-  
-//  [ set up a GSource ]
-//  [ add a GPollFD ]
-//  g_source_attach( gsource, NULL );
   g_main_loop_run(mainloop);
 
 

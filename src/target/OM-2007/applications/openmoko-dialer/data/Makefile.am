@@ -18,7 +18,17 @@ EXTRA_DIST = tony.png\
                 dtmf.png\
                 talking.png\
                 sms.png\
-                all.png
+                all.png\
+                history.png\
+                delete_01.png\
+                incall.png\
+                connecting.png\
+                answer.png\
+                cancel.png\
+                hangup.png\
+                redial.png\
+                failure.png
+
 resourcedir = $(pkgdatadir)
 
 resource_DATA = tony.png\
@@ -42,4 +52,13 @@ resource_DATA = tony.png\
                 dtmf.png\
                 talking.png\
                 sms.png\
-                all.png
+                all.png\
+                history.png\
+                delete_01.png\
+                incall.png\
+                connecting.png\
+                answer.png\
+                cancel.png\
+                hangup.png\
+                redial.png\
+                failure.png

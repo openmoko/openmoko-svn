@@ -136,8 +136,9 @@ timer_data->sec=timer_data->ticks%60;
 sprintf(timer_data->timestring,"%02d:%02d:%02d",timer_data->hour,timer_data->min,timer_data->sec);
 //ok,we update the label now.
 moko_dialer_status_set_status_label(appdata->status_incoming,timer_data->timestring);
-moko_dialer_status_update_icon(appdata->status_incoming);
 */
+moko_dialer_status_update_icon(appdata->status_incoming);
+
   if (event_get_keep_calling ())
   {
     event_reset_keep_calling ();
@@ -256,9 +257,9 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     vbox = gtk_vbox_new (FALSE, 0);
     status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status0.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status1.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status2.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "incall.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "connecting.png");
+// moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "status2.png");
     moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
 
     gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
@@ -266,6 +267,7 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     GtkWidget *hbox2 = gtk_hbox_new (FALSE, 0);
     GtkWidget *button = gtk_button_new_with_label ("Answer");
+    gtk_button_set_image(GTK_BUTTON(button),file_new_image_from_relative_path("answer.png"));
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_answer_button_clicked), p_dialer_data);
 
@@ -279,6 +281,7 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     button = gtk_button_new_with_label ("Reject");
+    gtk_button_set_image(GTK_BUTTON(button),file_new_image_from_relative_path("cancel.png"));
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_reject_button_clicked), p_dialer_data);
     gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 10);
@@ -294,6 +297,7 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 //  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
 
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
+    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
 
 

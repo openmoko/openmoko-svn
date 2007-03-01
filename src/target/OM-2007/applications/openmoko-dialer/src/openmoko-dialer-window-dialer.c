@@ -316,7 +316,7 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     GtkWidget *window = moko_finger_window_new ();
-
+    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
 
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
     GtkWidget *closeitem = gtk_menu_item_new_with_label ("Close");
@@ -415,8 +415,10 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (cb_delete_button_clicked), p_dialer_data);
     gtk_widget_set_name (button1, "mokofingerbutton-orange");
-    moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (button1),
-                                         "gtk-delete");
+    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
+                                                            (button1),
+                                                            file_new_image_from_relative_path
+                                                            ("delete.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button1), "Delete");
     gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X,
@@ -432,7 +434,7 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
                                                             (button3),
                                                             file_new_image_from_relative_path
-                                                            ("all.png"));
+                                                            ("history.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button3), "History");
     gtk_widget_set_size_request (button3, WINDOW_DIALER_BUTTON_SIZE_X,
