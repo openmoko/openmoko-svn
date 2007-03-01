@@ -18,6 +18,36 @@ power the device up and run
 % ./devirginate
 
 
+Prerequisites
+=============
+
+The device must be connected to:
+
+- JTAG, with an interface supported by OpenOCD (required for all stages)
+- USB, connected to the machine running "devirginate" (only required for
+  stage 2 and beyond)
+
+Furthermore, if a serial console is connected to the device, installation
+progress can be monitored.
+
+The following programs are needed:
+
+- dfu-util must be accessible from the machine running "devirginate".
+  If dfu-util is not in PATH, you can set an explicit path in "config".
+
+  To build dfu-util, do this:
+  cd $OMDIR/openmoko/trunk/src/host/dfu-util
+  ./autogen.sh
+  ./configure
+  make
+
+- OpenOCD. SVN revision 130 with libftdi 0.8 is known to work. Other
+  combinations may also work. The following patch is required:
+  SVN: developers/werner/openocd-wait-patiently.patch
+
+  For build instructions, see developers/werner/notes/openocd
+
+
 Files
 =====
 
@@ -25,10 +55,13 @@ Files
 Scripts
 -------
 
+- crc32.pl
+  Provides the function crc32, which computes the IEEE CRC-32.
+  This script is used by other Perl scripts, with "do".
+
+- envedit.pl
 - openocdcmd.pl
 - scriptify.pl
-- crc32.pl
-- envedit.pl
 - setup.sh
 
 User configuration
@@ -64,6 +97,13 @@ indicate the name of the respective resulting file after the arrow.
   the changes in this file are made on top of the interim environment
   produced in stage 0. In particular, the "mtdparts" variable is
   retained from that stage.
+
+  Long lines can be split in environment.in by simply indenting the
+  continuation. Note that the newline and the indentation are replaced
+  with one space. E.g.,
+  foo=some
+    thing
+  would yield  foo=some thing
 
 - smiley.fig -> tmp/smiley.gz
   The stage 0 splash screen, a smiling face on a green background.

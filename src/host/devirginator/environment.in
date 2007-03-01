@@ -1,5 +1,5 @@
 #
-# environment - The default environment
+# environment.in - The default environment
 #
 
 bootargs_base=
