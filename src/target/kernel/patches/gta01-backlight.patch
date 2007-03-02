@@ -1,10 +1,10 @@
 This is a backlight driver for FIC's Neo1973 Phone (codename GTA01)
 
-Index: linux-2.6.20/drivers/video/backlight/Kconfig
+Index: linux-2.6.20.1/drivers/video/backlight/Kconfig
 ===================================================================
---- linux-2.6.20.orig/drivers/video/backlight/Kconfig	2007-02-15 16:26:53.000000000 +0100
-+++ linux-2.6.20/drivers/video/backlight/Kconfig	2007-02-15 16:28:11.000000000 +0100
-@@ -58,6 +58,14 @@
+--- linux-2.6.20.1.orig/drivers/video/backlight/Kconfig
++++ linux-2.6.20.1/drivers/video/backlight/Kconfig
+@@ -58,6 +58,14 @@ config BACKLIGHT_LOCOMO
  	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
  	  enable the LCD/backlight driver.
  
@@ -19,10 +19,10 @@ Index: linux-2.6.20/drivers/video/backlight/Kconfig
  config BACKLIGHT_HP680
  	tristate "HP Jornada 680 Backlight Driver"
  	depends on BACKLIGHT_DEVICE && SH_HP6XX
-Index: linux-2.6.20/drivers/video/backlight/Makefile
+Index: linux-2.6.20.1/drivers/video/backlight/Makefile
 ===================================================================
---- linux-2.6.20.orig/drivers/video/backlight/Makefile	2007-02-15 16:26:53.000000000 +0100
-+++ linux-2.6.20/drivers/video/backlight/Makefile	2007-02-15 16:28:11.000000000 +0100
+--- linux-2.6.20.1.orig/drivers/video/backlight/Makefile
++++ linux-2.6.20.1/drivers/video/backlight/Makefile
 @@ -3,5 +3,6 @@
  obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
  obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
@@ -30,11 +30,11 @@ Index: linux-2.6.20/drivers/video/backlight/Makefile
 +obj-$(CONFIG_BACKLIGHT_GTA01)	+= gta01_bl.o
  obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
  obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
-Index: linux-2.6.20/drivers/video/backlight/gta01_bl.c
+Index: linux-2.6.20.1/drivers/video/backlight/gta01_bl.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/video/backlight/gta01_bl.c	2007-02-15 17:02:00.000000000 +0100
-@@ -0,0 +1,276 @@
+--- /dev/null
++++ linux-2.6.20.1/drivers/video/backlight/gta01_bl.c
+@@ -0,0 +1,287 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -136,6 +136,52 @@ Index: linux-2.6.20/drivers/video/backlight/gta01_bl.c
 +	return 0;
 +}
 +
++static void gta01bl_init_hw(void)
++{
++	unsigned long tcon, tcfg0, tcfg1, tcnt, pclk;
++
++	pclk = clk_get_rate(gta01bl.clk);
++
++	tcon = __raw_readl(S3C2410_TCON);
++	tcfg1 = __raw_readl(S3C2410_TCFG1);
++	tcfg0 = __raw_readl(S3C2410_TCFG0);
++
++	tcfg1 &= ~S3C2410_TCFG1_MUX0_MASK;
++	tcfg1 |= S3C2410_TCFG1_MUX0_DIV8;
++
++	tcfg0 &= ~S3C2410_TCFG_PRESCALER0_MASK;
++	tcfg0 |= (4 - 1);
++
++	tcnt = (pclk / 32) / GTA01BL_FREQ;
++	tcnt--;
++
++	__raw_writel(tcfg1, S3C2410_TCFG1);
++	__raw_writel(tcfg0, S3C2410_TCFG0);
++
++#if 1
++	__raw_writel(tcnt, S3C2410_TCNTB(0));
++	__raw_writel(tcon, S3C2410_TCON);
++	__raw_writel(tcnt, S3C2410_TCNTB(0));
++#endif
++
++	/* ensure timer is stopped */
++
++	tcon &= 0xffffff00;
++	tcon |= S3C2410_TCON_T0RELOAD;
++	tcon |= S3C2410_TCON_T0MANUALUPD;
++
++	__raw_writel(tcon, S3C2410_TCON);
++	__raw_writel(tcnt, S3C2410_TCNTB(0));
++	__raw_writel(tcnt, S3C2410_TCMPB(0));
++
++	/* start the timer */
++	tcon |= S3C2410_TCON_T0START;
++	tcon &= ~S3C2410_TCON_T0MANUALUPD;
++	__raw_writel(tcon, S3C2410_TCON);
++
++	gta01bl_prop.max_brightness = tcnt;
++}
++
 +#ifdef CONFIG_PM
 +static int gta01bl_suspend(struct platform_device *dev, pm_message_t state)
 +{
@@ -146,6 +192,10 @@ Index: linux-2.6.20/drivers/video/backlight/gta01_bl.c
 +
 +static int gta01bl_resume(struct platform_device *dev)
 +{
++	mutex_lock(&gta01bl.mutex);
++	gta01bl_init_hw();
++	mutex_unlock(&gta01bl.mutex);
++
 +	gta01bl_flags &= ~GTA01BL_SUSPENDED;
 +	gta01bl_send_intensity(gta01_backlight_device);
 +	return 0;
@@ -195,8 +245,6 @@ Index: linux-2.6.20/drivers/video/backlight/gta01_bl.c
 +	s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
 +	gta01bl_prop.max_brightness = 1;
 +#else
-+	unsigned long tcon, tcfg0, tcfg1, tcnt, pclk;
-+
 +	/* use s3c_device_timer0 for PWM */
 +	gta01bl.clk = clk_get(NULL, "timers");
 +	if (IS_ERR(gta01bl.clk))
@@ -204,44 +252,7 @@ Index: linux-2.6.20/drivers/video/backlight/gta01_bl.c
 +
 +	clk_enable(gta01bl.clk);
 +
-+	pclk = clk_get_rate(gta01bl.clk);
-+
-+	tcon = __raw_readl(S3C2410_TCON);
-+	tcfg1 = __raw_readl(S3C2410_TCFG1);
-+	tcfg0 = __raw_readl(S3C2410_TCFG0);
-+
-+	tcfg1 &= ~S3C2410_TCFG1_MUX0_MASK;
-+	tcfg1 |= S3C2410_TCFG1_MUX0_DIV8;
-+
-+	tcfg0 &= ~S3C2410_TCFG_PRESCALER0_MASK;
-+	tcfg0 |= (4 - 1);
-+
-+	tcnt = (pclk / 32) / GTA01BL_FREQ;
-+	tcnt--;
-+
-+	__raw_writel(tcfg1, S3C2410_TCFG1);
-+	__raw_writel(tcfg0, S3C2410_TCFG0);
-+
-+	__raw_writel(tcnt, S3C2410_TCNTB(0));
-+	__raw_writel(tcon, S3C2410_TCON);
-+	__raw_writel(tcnt, S3C2410_TCNTB(0));
-+
-+	/* ensure timer is stopped */
-+
-+	tcon &= 0xffffff00;
-+	tcon |= S3C2410_TCON_T0RELOAD;
-+	tcon |= S3C2410_TCON_T0MANUALUPD;
-+
-+	__raw_writel(tcon, S3C2410_TCON);
-+	__raw_writel(tcnt, S3C2410_TCNTB(0));
-+	__raw_writel(tcnt, S3C2410_TCMPB(0));
-+
-+	/* start the timer */
-+	tcon |= S3C2410_TCON_T0START;
-+	tcon &= ~S3C2410_TCON_T0MANUALUPD;
-+	__raw_writel(tcon, S3C2410_TCON);
-+
-+	gta01bl_prop.max_brightness = tcnt;
++	gta01bl_init_hw();
 +#endif
 +	mutex_init(&gta01bl.mutex);
 +
