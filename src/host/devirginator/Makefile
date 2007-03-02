@@ -20,6 +20,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+
+DIR=devirginator
+SCRIPTS=crc32.pl envedit.pl openocdcmd.pl scriptify.pl devirginate
+TARBALL=devirg-$(TARBALL_VERSION).tar.gz
+
+.PHONY:		tarball
+
 devirginate:	config environment.in openocd.in u-boot.in \
 		  setup.sh smiley.gz \
 		  crc32.pl envedit.pl openocdcmd.pl scriptify.pl
@@ -41,3 +48,15 @@ config:
 		@echo 'Please provide a "config" file.' 1>&2
 		@echo 'See "config.example" for details.' 1>&2
 		@exit 1
+
+tarball:	$(TARBALL)
+
+$(TARBALL):
+		@[ ! -z "$(TARBALL_VERSION)" ] || \
+		  { echo "Please set TARBALL_VERSION"; exit 1; }
+		cd .. && ln -sf $(DIR) $(DIR)-$(TARBALL_VERSION) && \
+		  tar cfz $(DIR)/$(TARBALL) \
+		    $(SCRIPTS:%=$(DIR)-$(TARBALL_VERSION)/%) \
+		    $(DIR)-$(TARBALL_VERSION)/tmp/ || \
+		  { rm -f $(DIR)-$(TARBALL_VERSION); exit 1; }
+		rm -f $(DIR)-$(TARBALL_VERSION)

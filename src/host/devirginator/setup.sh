@@ -30,6 +30,14 @@ mkdir -p tmp
 
 download()
 {
+    if [ -r "$2" ]; then
+	if $tarball; then
+	    base="`basename \"$2\"`"
+	    cp "$2" "tmp/$base"
+	    eval $1=\"tmp/$base\"
+	fi
+	return
+    fi
     index=tmp/index-${SNAPSHOT}.html
     if [ ! -f $index ]; then
 	wget -O tmp/index "`dirname \"$2\"`/"
@@ -49,7 +57,11 @@ download()
     base="`basename \"$n\"`"
     cd tmp
     wget -N "$n" || { rm -f $base; exit 1; }
-    eval $1=\"$PWD/$base\"
+    if $tarball; then
+	eval $1=\"tmp/$base\"
+    else
+	eval $1=\"$PWD/$base\"
+    fi
     cd ..
 }
 
@@ -77,8 +89,25 @@ BOARD=bv3
 # Locations
 SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
 
+
+# --- Command line parsing ----------------------------------------------------
+
+
+usage()
+{
+    echo "usage: $0 [-t] [variable=value ...]" 1>&2
+    exit 1
+}
+
+
+tarball=false
+
 for n in "$@"; do
-    eval "$n"
+    case "$n" in
+	-t)	tarball=true;;
+	*=*)	eval "$n";;
+	*)	usage;;
+    esac
 done
 
 
@@ -86,13 +115,6 @@ done
 
 
 . config
-
-
-# --- Check executables -------------------------------------------------------
-
-
-probe "$DFU_UTIL" -l
-probe telnet </dev/null
 
 
 # --- Post configuration ------------------------------------------------------
@@ -108,27 +130,21 @@ fi
 if [ -z "$LOWLEVEL" ]; then
     LOWLEVEL=${RELEASE_DIR}/lowlevel_foo-${PLATFORM}${BOARD}-'*'.bin
 fi
-if [ ! -f "$LOWLEVEL" ]; then
-    download LOWLEVEL "$LOWLEVEL"
-fi
+download LOWLEVEL "$LOWLEVEL"
 
 # u-boot.bin
 
 if [ -z "$UBOOT" ]; then
     UBOOT=${RELEASE_DIR}/u-boot-${PLATFORM}${BOARD}-'*'.bin
 fi
-if [ ! -f "$UBOOT" ]; then
-    download UBOOT "$UBOOT"
-fi
+download UBOOT "$UBOOT"
 
 # uImage.bin
 
 if [ -z "$UIMAGE" ]; then
     UIMAGE=${RELEASE_DIR}/uImage-2.6-'*'-fic-${PLATFORM}-'*'.bin
 fi
-if [ ! -r "$UIMAGE" ]; then
-    download UIMAGE "$UIMAGE"
-fi
+download UIMAGE "$UIMAGE"
 
 ## # modules.tar.gz
 ## 
@@ -153,16 +169,57 @@ fi
 if [ -z "$ROOTFS" ]; then
     ROOTFS=${RELEASE_DIR}/openmoko-devel-image-fic-${PLATFORM}-'*'.rootfs.jffs2
 fi
-if [ ! -r "$ROOTFS" ]; then
-    download ROOTFS "$ROOTFS"
-fi
-
+download ROOTFS "$ROOTFS"
 
 # Splash screen
 
 if [ ! -f "$SPLASH" ]; then
     download SPLASH "$SPLASH"
 fi
+
+# dfu-util
+#
+# Search priority:
+# - direct file
+# - command in local PATH
+# - URL
+#
+if [ ! -r "$DFU_UTIL" ]; then
+    if found="`which \"$DFU_UTIL\" 2>/dev/null`"; then
+	DFU_UTIL="$found"
+    fi
+fi
+download DFU_UTIL "$DFU_UTIL"
+chmod +x "$DFU_UTIL"
+
+# openocd
+
+if [ ! -z "$OPENOCD" ]; then
+    if [ ! -r "$OPENOCD" ]; then
+	if found="`which \"$OPENOCD\" 2>/dev/null`"; then
+	    OPENOCD="$found"
+	fi
+    fi
+    download OPENOCD "$OPENOCD"
+    chmod +x "$OPENOCD"
+fi
+
+if [ ! -z "$OPENOCD_CONFIG" ]; then
+    download OPENOCD_CONFIG "$OPENOCD_CONFIG"
+fi
+
+# Set default for TARBALL_VERSION
+
+if [ -z "$TARBALL_VERSION" ]; then
+    TARBALL_VERSION="$SNAPSHOT"
+fi
+
+
+# --- Check executables -------------------------------------------------------
+
+
+probe "$DFU_UTIL" -l
+probe telnet </dev/null
 
 
 # --- Stage 1: OpenOCD script -------------------------------------------------
@@ -197,6 +254,7 @@ perl ./scriptify.pl u-boot.in >tmp/u-boot.out
 
 
 # --- Stage 1: smiley splash screen -------------------------------------------
+
 
 export OMDIR
 make smiley.gz
@@ -295,6 +353,29 @@ chmod +x devirginate
 # --- Done --------------------------------------------------------------------
 
 
+if $tarball; then
+    make tarball TARBALL_VERSION="$TARBALL_VERSION"
+cat <<EOF
+-------------------------------------------------------------------------------
+
+Your devirginator is now ready.
+
+To install it on a new machine,
+
+- copy the file devirg-${TARBALL_VERSION}.tar.gz to the new machine
+- tar xfz devirg-${TARBALL_VERSION}.tar.gz
+- cd devirginator-${TARBALL_VERSION}
+
+To set up a device,
+
+- connect it to power and JTAG
+- switch it on
+- run ./devirginate
+- follow the progress, as described in README
+
+-------------------------------------------------------------------------------
+EOF
+else
 cat <<EOF
 -------------------------------------------------------------------------------
 
@@ -305,7 +386,8 @@ To set up a device,
 - connect it to power and JTAG
 - switch it on
 - run ./devirginate
-- wait until the smiley appears (takes about 1-2 minutes)
+- follow the progress, as described in README
 
 -------------------------------------------------------------------------------
 EOF
+fi
