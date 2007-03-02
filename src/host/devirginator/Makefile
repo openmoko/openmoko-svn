@@ -28,11 +28,11 @@ TARBALL=$(TARDIR).tar.gz
 
 .PHONY:		tarball
 
-devirginate:	config environment.in openocd.in u-boot.in \
-		  setup.sh smiley.gz \
-		  crc32.pl envedit.pl openocdcmd.pl scriptify.pl
-		mkdir -p tmp
-		./setup.sh
+#devirginate:	config environment.in openocd.in u-boot.in \
+#		  setup.sh smiley.gz \
+#		  crc32.pl envedit.pl openocdcmd.pl scriptify.pl
+#		mkdir -p tmp
+#		./setup.sh
 
 smiley.ppm:	smiley.fig
 		fig2dev -L ppm -m 2 $< >$@ || { rm -f $@; exit 1; }

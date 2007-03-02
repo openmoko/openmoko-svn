@@ -1,0 +1,22 @@
+#
+# config - devirginator configuration
+#
+# This is a shell script sourced by "setup.sh".
+#
+
+OPENOCD_HOST=localhost
+SNAPSHOT=20070301
+BOARD=bv3
+
+
+stuff=http://buildhost-old.openmoko.org/snapshots/gta01-20070301/tmp/deploy/images
+
+LOWLEVEL=$stuff/lowlevel_foo-gta01bv3-20070302200829.bin
+UBOOT=$stuff/u-boot-gta01bv3-20070302200829.bin
+UIMAGE=$stuff/uImage-2.6-200703022008-fic-gta01.bin
+ROOTFS=$stuff/openmoko-devel-image-fic-gta01-20070302115654.rootfs.jffs2
+
+DFU_UTIL=$stuff/dfu-util
+
+OPENOCD=$stuff/openocd
+OPENOCD_CFG=http://people.openmoko.org/werner/openocd-debugv2.cfg
