@@ -87,4 +87,19 @@
 # SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
 
 
+#### SUPPLEMENTARY DOWNLOADS  #################################################
+
+# Some files may be useful when building a portable tarball. They are only
+# added to tmp/ when mentioned in the configuration. The "devirginate" script
+# does not access these files directly.
+
+# OPENOCD: OpenOCD executable. 
+# Example:
+# OPENOCD=$OMDIR/openocd/src/openocd
+
+# OPENOCD_CFG: OpenOCD configuration. Note that this is probably site-specific.
+# Example:
+# OPENOCD_CFG=$OMDIR/openocd/openocd.cfg
+
+
 ###  END  #####################################################################

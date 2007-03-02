@@ -204,8 +204,8 @@ if [ ! -z "$OPENOCD" ]; then
     chmod +x "$OPENOCD"
 fi
 
-if [ ! -z "$OPENOCD_CONFIG" ]; then
-    download OPENOCD_CONFIG "$OPENOCD_CONFIG"
+if [ ! -z "$OPENOCD_CFG" ]; then
+    download OPENOCD_CFG "$OPENOCD_CFG"
 fi
 
 # Set default for TARBALL_VERSION
@@ -362,8 +362,8 @@ Your devirginator is now ready.
 
 To install it on a new machine,
 
-- copy the file devirg-${TARBALL_VERSION}.tar.gz to the new machine
-- tar xfz devirg-${TARBALL_VERSION}.tar.gz
+- copy the file devirginate-${TARBALL_VERSION}.tar.gz to the new machine
+- tar xfz devirginate-${TARBALL_VERSION}.tar.gz
 - cd devirginator-${TARBALL_VERSION}
 
 To set up a device,

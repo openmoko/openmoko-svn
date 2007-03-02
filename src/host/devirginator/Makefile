@@ -23,7 +23,7 @@
 
 DIR=devirginator
 SCRIPTS=crc32.pl envedit.pl openocdcmd.pl scriptify.pl devirginate
-TARBALL=devirg-$(TARBALL_VERSION).tar.gz
+TARBALL=devirginate-$(TARBALL_VERSION).tar.gz
 
 .PHONY:		tarball
 
