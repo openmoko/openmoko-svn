@@ -1,10 +1,10 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-20 18:43:31.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-20 18:56:10.000000000 +0100
+--- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-02 18:23:34.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig	2007-03-02 18:39:51.000000000 +0100
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -20,10 +20,10 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
  config ARCH_S3C2440
  	bool "SMDK2440"
  	select CPU_S3C2440
-Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Makefile	2007-02-20 18:43:31.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Makefile	2007-02-20 18:43:31.000000000 +0100
+--- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Makefile	2007-03-02 18:23:34.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile	2007-03-02 18:39:51.000000000 +0100
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -31,11 +31,11 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/Makefile
 +obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
  
  obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-20 18:57:42.000000000 +0100
-@@ -0,0 +1,520 @@
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-02 18:40:31.000000000 +0100
+@@ -0,0 +1,506 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -473,16 +473,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +	.resource	= gta01_button_resources,
 +};
 +
-+struct platform_device gta01_pm_gsm_dev = {
++static struct platform_device gta01_pm_gsm_dev = {
 +	.name		="gta01-pm-gsm",
-+};
-+
-+struct platform_device gta01_pm_gps_dev = {
-+	.name		="gta01-pm-gps",
-+};
-+
-+struct platform_device gta01_pm_bt_dev = {
-+	.name		="gta01-pm-bt",
 +};
 +
 +/* USB */
@@ -535,14 +527,8 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +	platform_device_register(&gta01_bl_dev);
 +	platform_device_register(&gta01_button_dev);
 +	platform_device_register(&gta01_pm_gsm_dev);
-+	platform_device_register(&gta01_pm_gps_dev);
-+
-+	if (system_rev == GTA01Bv2_SYSTEM_REV ||
-+	    system_rev == GTA01Bv3_SYSTEM_REV)
-+		platform_device_register(&gta01_pm_bt_dev);
 +
 +	s3c2410_pm_init();
-+
 +}
 +
 +MACHINE_START(GTA01, "GTA01")
@@ -556,10 +542,10 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/include/asm-arm/arch-s3c2410/gta01.h	2007-02-20 18:43:31.000000000 +0100
++++ linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h	2007-03-02 18:39:51.000000000 +0100
 @@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
