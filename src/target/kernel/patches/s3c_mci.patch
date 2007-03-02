@@ -100,7 +100,7 @@ Index: linux-2.6.20.1/drivers/mmc/mmc_debug.h
 Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/mmc/s3cmci.c	2007-03-02 10:17:00.000000000 +0100
++++ linux-2.6.20.1/drivers/mmc/s3cmci.c	2007-03-02 12:55:44.000000000 +0100
 @@ -0,0 +1,1339 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -112,13 +112,13 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 + * published by the Free Software Foundation.
 + */
 +
-+#include <linux/config.h>
 +#include <linux/module.h>
 +#include <linux/dma-mapping.h>
 +#include <linux/clk.h>
 +#include <linux/mmc/host.h>
 +#include <linux/mmc/protocol.h>
 +#include <linux/platform_device.h>
++#include <linux/irq.h>
 +
 +#include <asm/dma.h>
 +#include <asm/dma-mapping.h>
@@ -216,9 +216,9 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +	if (cmd->data) {
 +		snprintf(host->dbgmsg_dat, 300,
 +			"#%u bsize:%u blocks:%u bytes:%u",
-+			host->dcnt, (1 << cmd->data->blksz_bits),
++			host->dcnt, cmd->data->blksz,
 +			cmd->data->blocks,
-+			cmd->data->blocks * (1 << cmd->data->blksz_bits));
++			cmd->data->blocks * cmd->data->blksz);
 +	} else {
 +		host->dbgmsg_dat[0] = '\0';
 +	}
@@ -664,8 +664,8 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +	return IRQ_HANDLED;
 +}
 +
-+void s3cmci_dma_done_callback(s3c2410_dma_chan_t *dma_ch, void *buf_id,
-+	int size, s3c2410_dma_buffresult_t result)
++void s3cmci_dma_done_callback(struct s3c2410_dma_chan *dma_ch, void *buf_id,
++	int size, enum s3c2410_dma_buffresult result)
 +{
 +	unsigned long iflags;
 +	u32 mci_csta, mci_dsta, mci_fsta, mci_dcnt;
@@ -785,7 +785,7 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +	// no error
 +	if (mrq->data->error == MMC_ERR_NONE) {
 +		mrq->data->bytes_xfered =
-+			(mrq->data->blocks << mrq->data->blksz_bits);
++			(mrq->data->blocks * mrq->data->blksz);
 +	} else {
 +		mrq->data->bytes_xfered = 0;
 +	}
@@ -819,10 +819,10 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +}
 +
 +
-+void s3cmci_dma_setup(struct s3cmci_host *host, s3c2410_dmasrc_t source)
++void s3cmci_dma_setup(struct s3cmci_host *host, enum s3c2410_dmasrc source)
 +{
 +	static int setup_ok = 0;
-+	static s3c2410_dmasrc_t last_source = -1;
++	static enum s3c2410_dmasrc last_source = -1;
 +
 +	if (last_source == source)
 +		return;
@@ -936,7 +936,7 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +
 +	/* write BSIZE register */
 +
-+	writel((1 << data->blksz_bits), host->base + S3C2410_SDIBSIZE);
++	writel(data->blksz, host->base + S3C2410_SDIBSIZE);
 +
 +	/* add to IMASK register */
 +	imsk =	S3C2410_SDIIMSK_FIFOFAIL | S3C2410_SDIIMSK_DATACRC |
@@ -1444,7 +1444,7 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 Index: linux-2.6.20.1/drivers/mmc/s3cmci.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/mmc/s3cmci.h	2007-03-02 10:17:00.000000000 +0100
++++ linux-2.6.20.1/drivers/mmc/s3cmci.h	2007-03-02 12:55:41.000000000 +0100
 @@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
