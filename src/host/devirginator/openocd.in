@@ -34,9 +34,9 @@ rbp 0x33f80000
 
 # load u-boot, the initial command, the command script, and the smiley
 load_binary $UBOOT 0x32000000
-load_binary $PWD/tmp/preboot_override 0x32100000
-load_binary $PWD/tmp/u-boot.out 0x32200000
-load_binary $PWD/tmp/smiley.gz 0x32300000
+load_binary tmp/preboot_override 0x32100000
+load_binary tmp/u-boot.out 0x32200000
+load_binary tmp/smiley.gz 0x32300000
 
 # enable the initial command
 mww 0x32000040 0x32100000

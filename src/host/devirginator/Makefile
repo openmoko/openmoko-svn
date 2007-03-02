@@ -23,7 +23,8 @@
 
 DIR=devirginator
 SCRIPTS=crc32.pl envedit.pl openocdcmd.pl scriptify.pl devirginate
-TARBALL=devirginate-$(TARBALL_VERSION).tar.gz
+TARDIR=devirginate-$(TARBALL_VERSION)
+TARBALL=$(TARDIR).tar.gz
 
 .PHONY:		tarball
 
@@ -51,12 +52,14 @@ config:
 
 tarball:	$(TARBALL)
 
-$(TARBALL):
+$(TARBALL):	$(SCRIPTS) $(TMP_FILES)
 		@[ ! -z "$(TARBALL_VERSION)" ] || \
 		  { echo "Please set TARBALL_VERSION"; exit 1; }
-		cd .. && ln -sf $(DIR) $(DIR)-$(TARBALL_VERSION) && \
+		@[ ! -z "$(TMP_FILES)" ] || \
+		  { echo "Please set TMP_FILES"; exit 1; }
+		cd .. && ln -sf $(DIR) $(TARDIR) && \
 		  tar cfz $(DIR)/$(TARBALL) \
-		    $(SCRIPTS:%=$(DIR)-$(TARBALL_VERSION)/%) \
-		    $(DIR)-$(TARBALL_VERSION)/tmp/ || \
-		  { rm -f $(DIR)-$(TARBALL_VERSION); exit 1; }
-		rm -f $(DIR)-$(TARBALL_VERSION)
+		    $(SCRIPTS:%=$(TARDIR)/%) \
+		    $(TMP_FILES:%=$(TARDIR)/%) || \
+		  { rm -f $(TARDIR); exit 1; }
+		rm -f $(TARDIR)

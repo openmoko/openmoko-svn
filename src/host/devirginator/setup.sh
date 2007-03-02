@@ -35,6 +35,7 @@ download()
 	    base="`basename \"$2\"`"
 	    cp "$2" "tmp/$base"
 	    eval $1=\"tmp/$base\"
+	    add_file "tmp/$base"
 	fi
 	return
     fi
@@ -57,12 +58,9 @@ download()
     base="`basename \"$n\"`"
     cd tmp
     wget -N "$n" || { rm -f $base; exit 1; }
-    if $tarball; then
-	eval $1=\"tmp/$base\"
-    else
-	eval $1=\"$PWD/$base\"
-    fi
+    eval $1=\"tmp/$base\"
     cd ..
+    add_file "tmp/$base"
 }
 
 
@@ -71,6 +69,13 @@ probe()
     if ! "$@" >/dev/null 2>&1; then
 	echo "WARNING: cannot execute $1" 1>&2
     fi
+}
+
+
+add_file()
+{
+    [ -f "$1" ] || { echo "$1: not found" 2>&1; exit 1; }
+    tmp_files="$1 $tmp_files"
 }
 
 
@@ -230,6 +235,7 @@ probe telnet </dev/null
        eval "echo $l"
     done
 } <openocd.in >tmp/script.ocd
+add_file tmp/script.ocd
 
 
 # --- Stage 1: First u-boot command(s) ----------------------------------------
@@ -239,18 +245,20 @@ sed 's/#.*//;/^ *$/d' <<EOF | tr '\n' ';' | tr '!' '\000' \
   >tmp/preboot_override.scrub
 setenv scrub true; autoscr 0x32200000!
 EOF
-
+add_file tmp/preboot_override.scrub
 
 sed 's/#.*//;/^ *$/d' <<EOF | tr '\n' ';' | tr '!' '\000' \
   >tmp/preboot_override.noscrub
 autoscr 0x32200000!
 EOF
+add_file tmp/preboot_override.noscrub
 
 
 # --- Stage 1: u-boot script --------------------------------------------------
 
 
 perl ./scriptify.pl u-boot.in >tmp/u-boot.out
+add_file tmp/u-boot.out
 
 
 # --- Stage 1: smiley splash screen -------------------------------------------
@@ -260,18 +268,21 @@ export OMDIR
 make smiley.gz
 mv smiley.gz tmp/
 rm -f smiley.png smiley.ppm
+add_file tmp/smiley.gz
 
 
 # --- Stage 2: the default environment ----------------------------------------
 
 
 cp environment.in tmp/environment
+add_file tmp/environment
 
 
 # --- Stage 2: official splash screen -----------------------------------------
 
 
 ../splash/splashimg.pl "$SPLASH" | gzip -9 >tmp/splash.gz
+add_file tmp/splash.gz
 
 
 # --- "devirginate" shell script ----------------------------------------------
@@ -327,7 +338,7 @@ if \$stage1; then
 	ln -sf preboot_override.noscrub tmp/preboot_override
     fi
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT \
-      "script $PWD/tmp/script.ocd" exit
+      "script tmp/script.ocd" exit
 fi
 
 if \$stage2; then
@@ -354,7 +365,7 @@ chmod +x devirginate
 
 
 if $tarball; then
-    make tarball TARBALL_VERSION="$TARBALL_VERSION"
+    make tarball TARBALL_VERSION="$TARBALL_VERSION" TMP_FILES="$tmp_files"
 cat <<EOF
 -------------------------------------------------------------------------------
 
@@ -364,7 +375,7 @@ To install it on a new machine,
 
 - copy the file devirginate-${TARBALL_VERSION}.tar.gz to the new machine
 - tar xfz devirginate-${TARBALL_VERSION}.tar.gz
-- cd devirginator-${TARBALL_VERSION}
+- cd devirginate-${TARBALL_VERSION}
 
 To set up a device,
 
