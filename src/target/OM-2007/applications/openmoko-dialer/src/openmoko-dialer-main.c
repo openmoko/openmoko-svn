@@ -75,22 +75,25 @@ MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
 if(appdata)
 {
 //first, we should remove the "" from the number.
-char temp[20];
+char* temp=NULL;
 int start=0;
-int end=strlen(number);
+int end=strlen(number)-1;
 while(number[start]=='\"'&&start<end)start++;
-if(end>1)while(number[end-1]=='\"'&&start<end)end--;
+if(end>0)while(number[end]=='\"'&&start<end)end--;
+
+g_return_if_fail(start<=end);
 
 DBG_MESSAGE("START=%d,END=%d",start,end);
-g_stpcpy(temp,number+start);
-temp[end-start]=0;
+temp=g_strndup(number+start,end-start+1);
+
+g_return_if_fail(temp!=NULL);
+
 DBG_MESSAGE("%s",temp);	
-
-
 
 //got the number;
 g_stpcpy(appdata->g_peer_info.number,temp);
 
+g_free(temp);
 //retrieve the contact information if any.
 contact_get_peer_info_from_number(appdata->g_contactlist.contacts , &(appdata->g_peer_info));
 // contact_get_peer_info_from_number
@@ -153,7 +156,8 @@ void gsm_peer_disconnect()
 
      MOKO_DIALER_APP_DATA* appdata=moko_get_app_data();
      gsm_hangup();
-     gtk_widget_hide(appdata->window_talking);
+    if(appdata->window_talking)gtk_widget_hide(appdata->window_talking);
+    if(appdata->window_outgoing)gtk_widget_hide(appdata->window_outgoing);
 
 }
 

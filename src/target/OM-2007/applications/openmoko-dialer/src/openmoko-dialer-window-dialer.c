@@ -102,10 +102,8 @@ window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
   codesinput =
     g_strdup (moko_dialer_textview_get_input
               (appdata->moko_dialer_text_view, FALSE));
-  if (!codesinput)
-    return;
-
-  if (g_utf8_strlen (codesinput, -1) < 1)
+  DBG_TRACE();
+  if ((!codesinput)||((codesinput!=NULL)&&g_utf8_strlen (codesinput, -1) )< 1)
   {
     //user didn't input anything, maybe it's a redial, so we just insert the last dialed number and return this time.
     if (g_utf8_strlen (appdata->g_state.lastnumber, -1) > 0)

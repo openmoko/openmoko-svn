@@ -90,6 +90,7 @@ cb_cancel_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   DBG_ENTER ();
   gsm_hangup ();
   appdata->g_state.callstate = STATE_FAILED;
+  DBG_TRACE();
   gtk_widget_hide (appdata->window_outgoing);
   DBG_LEAVE ();
 }
