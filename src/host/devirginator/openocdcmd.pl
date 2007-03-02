@@ -56,4 +56,4 @@ if ($n < 0) {
     exit(1);
 }
 
-close PIPE || die "telnet: $!";
+close PIPE;
