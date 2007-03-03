@@ -1,17 +1,17 @@
-Index: linux-2.6.20/arch/arm/common/Makefile
+Index: linux-2.6.20.1/arch/arm/common/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/arm/common/Makefile	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20/arch/arm/common/Makefile	2007-02-15 15:05:53.000000000 +0100
+--- linux-2.6.20.1.orig/arch/arm/common/Makefile	2007-03-02 20:53:59.000000000 +0100
++++ linux-2.6.20.1/arch/arm/common/Makefile	2007-03-02 20:54:56.000000000 +0100
 @@ -17,3 +17,5 @@
  obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
  obj-$(CONFIG_ARCH_IXP2000)	+= uengine.o
  obj-$(CONFIG_ARCH_IXP23XX)	+= uengine.o
 +#obj-$(CONFIG_MACH_GTA01)	+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
 +obj-m 				+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
-Index: linux-2.6.20/arch/arm/common/gta01_pm_gps.c
+Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gps.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/common/gta01_pm_gps.c	2007-02-15 15:17:52.000000000 +0100
++++ linux-2.6.20.1/arch/arm/common/gta01_pm_gps.c	2007-03-02 20:54:56.000000000 +0100
 @@ -0,0 +1,542 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
@@ -555,11 +555,11 @@ Index: linux-2.6.20/arch/arm/common/gta01_pm_gps.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GPS Power Management");
-Index: linux-2.6.20/arch/arm/common/gta01_pm_gsm.c
+Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/common/gta01_pm_gsm.c	2007-02-15 15:16:48.000000000 +0100
-@@ -0,0 +1,164 @@
++++ linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c	2007-03-03 15:39:15.000000000 +0100
+@@ -0,0 +1,174 @@
 +/*
 + * GSM Management code for the FIC Neo1973 GSM Phone
 + *
@@ -645,20 +645,22 @@ Index: linux-2.6.20/arch/arm/common/gta01_pm_gsm.c
 +#ifdef CONFIG_PM
 +static int gta01_gsm_suspend(struct platform_device *pdev, pm_message_t state)
 +{
-+	/* FIXME */
++	/* GPIO state is saved/restored by S3C2410 core GPIO driver, so we
++	 * don't need to do anything here */
 +
 +	return 0;
 +}
 +
 +static int gta01_gsm_resume(struct platform_device *pdev)
 +{
-+	/* FIXME */
++	/* GPIO state is saved/restored by S3C2410 core GPIO driver, so we
++	 * don't need to do anything here */
 +
 +	return 0;
 +}
 +#else
 +#define gta01_gsm_suspend	NULL
-+#define gta01_gsm_resume		NULL
++#define gta01_gsm_resume	NULL
 +#endif
 +
 +static int __init gta01_gsm_probe(struct platform_device *pdev)
@@ -684,7 +686,15 @@ Index: linux-2.6.20/arch/arm/common/gta01_pm_gsm.c
 +
 +	device_create_file(&pdev->dev, &dev_attr_power_on);
 +	device_create_file(&pdev->dev, &dev_attr_reset);
-+	device_create_file(&pdev->dev, &dev_attr_download);
++
++	switch (system_rev) {
++	case GTA01v4_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++		device_create_file(&pdev->dev, &dev_attr_download);
++		break;
++	default:
++		break;
++	}
 +
 +	return 0;
 +}
@@ -724,10 +734,10 @@ Index: linux-2.6.20/arch/arm/common/gta01_pm_gsm.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GSM Management");
-Index: linux-2.6.20/arch/arm/common/gta01_pm_bt.c
+Index: linux-2.6.20.1/arch/arm/common/gta01_pm_bt.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/arch/arm/common/gta01_pm_bt.c	2007-02-15 15:17:38.000000000 +0100
++++ linux-2.6.20.1/arch/arm/common/gta01_pm_bt.c	2007-03-02 20:54:56.000000000 +0100
 @@ -0,0 +1,133 @@
 +/*
 + * Bluetooth PM code for the FIC Neo1973 GSM Phone
