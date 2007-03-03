@@ -31,6 +31,7 @@ DESCRIPTION_task-openmoko-linux = "OpenMoko: Linux Core Services"
 RDEPENDS_task-openmoko-linux = "\
   task-base \
   base-files \
+  base-files-doc \
   base-passwd \
   busybox \
   dropbear \
