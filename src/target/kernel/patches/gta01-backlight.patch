@@ -158,7 +158,7 @@ Index: linux-2.6.20.1/drivers/video/backlight/gta01_bl.c
 +	__raw_writel(tcfg1, S3C2410_TCFG1);
 +	__raw_writel(tcfg0, S3C2410_TCFG0);
 +
-+#if 1
++#if 0
 +	__raw_writel(tcnt, S3C2410_TCNTB(0));
 +	__raw_writel(tcon, S3C2410_TCON);
 +	__raw_writel(tcnt, S3C2410_TCNTB(0));
@@ -170,9 +170,9 @@ Index: linux-2.6.20.1/drivers/video/backlight/gta01_bl.c
 +	tcon |= S3C2410_TCON_T0RELOAD;
 +	tcon |= S3C2410_TCON_T0MANUALUPD;
 +
-+	__raw_writel(tcon, S3C2410_TCON);
 +	__raw_writel(tcnt, S3C2410_TCNTB(0));
 +	__raw_writel(tcnt, S3C2410_TCMPB(0));
++	__raw_writel(tcon, S3C2410_TCON);
 +
 +	/* start the timer */
 +	tcon |= S3C2410_TCON_T0START;
