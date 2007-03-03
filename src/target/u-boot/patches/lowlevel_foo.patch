@@ -175,7 +175,7 @@ Index: u-boot/board/neo1973/Makefile
 +	  lowlevel_init.o lowlevel_foo.o -o lowlevel_foo
 +
 +lowevel_foo.bin:	lowlevel_foo
-+	arm-linux-objcopy --gap-fill=0xff -O binary \
++	$(CROSS_COMPILE)objcopy --gap-fill=0xff -O binary \
 +	  lowlevel_foo lowlevel_foo.bin
 +
 +
