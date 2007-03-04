@@ -33,3 +33,4 @@ input-nots-mousedev.patch
 ts0710.patch
 s3c2410-qt2410-buttons.patch
 config-nr-tty-devices.patch
+sdhc-backport.patch
