@@ -28,7 +28,7 @@ moko_dbus_connect_init (void)
 {
     /* Get a connection to the session bus */
     dbus_error_init (&error);
-    bus = dbus_bus_get (DBUS_BUS_SESSION, &error);
+    bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
 
     if (!bus)
     {

@@ -218,6 +218,9 @@ GList *
 moko_icon_view_get_selected_items (MokoIconView *icon_view);
 
 void
+moko_icon_view_set_selected_item (MokoIconView *icon_view, GtkTreePath *path);
+
+void
 moko_icon_view_select_all (MokoIconView *icon_view);
 
 void

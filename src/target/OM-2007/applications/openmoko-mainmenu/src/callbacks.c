@@ -46,16 +46,17 @@ moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
         gtk_widget_hide (GTK_WIDGET (mma->wheel));
         gtk_widget_hide (GTK_WIDGET (mma->toolbox));
         gtk_widget_hide (GTK_WIDGET (mma->window));
+	moko_dbus_send_message ("");
     }
 }
 
 void
 moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
- 
     g_signal_emit_by_name (G_OBJECT(mma->mm->icon_view), "move-cursor", GTK_MOVEMENT_DISPLAY_LINES, -1);
   //gtk_window_present (mma->window);
   //gtk_widget_grab_focus (mma->mm->icon_view);
+  
 }
 
 void
@@ -121,8 +122,9 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
     gchar *text;
   
     selected_item = moko_icon_view_get_selected_items (iconview);
+
     if (!selected_item)
-        g_debug ("Can't get selected item");
+        g_debug ("Can't get mokoiconview selected item");
     else 
     {
         icon_view_model = moko_icon_view_get_model (iconview);
@@ -132,12 +134,14 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
                        TEXT_COLUMN , &text,
                       -1);
 
-        moko_dbus_send_message (text);
-        
-	g_list_foreach (selected_item, gtk_tree_path_free, NULL);
+        if (text)
+		{
+			moko_dbus_send_message (text);
+			free (text);
+		}
+
+		g_list_foreach (selected_item, gtk_tree_path_free, NULL);
         g_list_free (selected_item);
-        if (text) 
-	    free (text);
     }
 
     moko_main_menu_update_item_total_label (mma->mm);

@@ -41,22 +41,23 @@ enum {
 
 G_BEGIN_DECLS
 /* property(s)*/
-#define COLUMN_NUM 		3
-#define ITEM_WIDTH 			140
-#define ITEM_MARGIN 		10
-#define ROW_SPACING 		0
-#define COLUMN_SPACING 	20
-#define ITME_TOTAL_WIDTH 	5
+#define COLUMN_NUM    3
+#define ITEM_WIDTH    140
+#define ITEM_MARGIN    10
+#define ROW_SPACING    0
+#define COLUMN_SPACING    20
+#define ITME_TOTAL_WIDTH    5
+#define DECORATION_WIDTH    10
 
-#define PIXBUF_WIDTH		140 
-#define PIXBUF_HEIGHT		140
+#define PIXBUF_WIDTH    120 
+#define PIXBUF_HEIGHT   120
 
-#define SECTION_ALG_X 		0.6
-#define SECTION_ALG_Y 		0.5
-#define SECTION_X_PADDING 	0
-#define SECTION_Y_PADDING 	5
-#define ITEM_TOTAL_ALG_X 	0.5
-#define ITEM_TOTAL_ALG_Y 	0.9
+#define SECTION_ALG_X    0.6
+#define SECTION_ALG_Y    0.5
+#define SECTION_X_PADDING    0
+#define SECTION_Y_PADDING    5
+#define ITEM_TOTAL_ALG_X    0.5
+#define ITEM_TOTAL_ALG_Y    0.9
 
 /*Font styles*/
 #define FONT_SIZE_SECTION 	12*PANGO_SCALE
