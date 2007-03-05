@@ -1,0 +1,4 @@
+This directory contains BitBake recipes, configurations, and build classes
+for usage with the OpenEmbedded build system.
+
+See http://www.openembedded.org
