@@ -98,7 +98,8 @@ struct _MokoIconViewPrivate
   gint max_text_len;
   gint decr_width;
   gboolean decorated;
-  int total_items;
+  gint total_items;
+  gboolean activate;
 
   guint ctrl_pressed : 1;
   guint shift_pressed : 1;
@@ -984,6 +985,7 @@ moko_icon_view_init(MokoIconView *icon_view)
   icon_view->priv->max_text_len = 30;
   icon_view->priv->decr_width = 10;
   icon_view->priv->decorated = FALSE;
+  icon_view->priv->activate = FALSE;
   
   pango_layout_set_wrap (icon_view->priv->layout, PANGO_WRAP_WORD_CHAR);
 
@@ -1552,6 +1554,7 @@ moko_icon_view_button_press (GtkWidget      *widget,
 		      moko_icon_view_queue_draw_item (icon_view, item);
 		      dirty = TRUE;
 		    }
+		  else icon_view->priv->activate = TRUE;
 		}
 	      moko_icon_view_set_cursor_item (icon_view, item);
 	      icon_view->priv->anchor_item = item;
@@ -1582,23 +1585,6 @@ moko_icon_view_button_press (GtkWidget      *widget,
 
     }
 
- /* if (event->button == 1 && event->type == GDK_2BUTTON_PRESS) //GTK: double ckicked launch "item-activated" event
-   {
-      item = moko_icon_view_get_item_at_pos (icon_view,
-					    event->x, event->y);
-
-      if (item && item == icon_view->priv->last_single_clicked)
-	{
-	  GtkTreePath *path;
-
-	  path = gtk_tree_path_new_from_indices (item->index, -1);
-	  moko_icon_view_item_activated (icon_view, path);
-	  gtk_tree_path_free (path);
-	}
-
-      icon_view->priv->last_single_clicked = NULL;
-    }
-  */
   if (dirty)
     g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 
@@ -1613,9 +1599,9 @@ moko_icon_view_button_release (GtkWidget      *widget,
 
   icon_view = MOKO_ICON_VIEW (widget);
   
-  if (event->button == 1 && event->type == GDK_BUTTON_RELEASE)  //SUNZY : tabbing will launch "item-activated" event
+  if (event->button == 1 && event->type == GDK_BUTTON_RELEASE && icon_view->priv->activate )  //SUNZY : tabbing will launch "item-activated" event
    {
-   
+   	  icon_view->priv->activate = FALSE;
       MokoIconViewItem *item = moko_icon_view_get_item_at_pos (icon_view,
 					    event->x, event->y);
 
