@@ -53,23 +53,10 @@ typedef struct _Footer    Footer;
 typedef struct _FooterClass    FooterClass;
 
 /**
- * @typedef OMFooterApp
+ * @typedef OMFooter
  *
  * Opaque structure used for representing an Openmoko footer app UI.
  */
-/*struct _Footer
-{
-    GtkHBox hbox;
-    GtkButton* leftbutton;
-    GtkWidget* leftbtnalign;
-    GtkHBox* leftbtnhbox;
-    GtkImage* leftbtnimage;
-    GtkProgressBar* progressbar;
-    GtkButton* rightbutton;
-    GtkWidget* rightbtnalign;
-    GtkHBox* rightbtnhbox;
-    GtkImage* rightbtnimage;
-};*/
 struct _Footer
 {
     GtkHBox hbox;

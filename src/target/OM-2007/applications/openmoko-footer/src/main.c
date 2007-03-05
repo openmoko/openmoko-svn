@@ -19,9 +19,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifndef DBUS_API_SUBJECT_TO_CHANGE
-#define DBUS_API_SUBJECT_TO_CHANGE
-#endif
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "main.h"
@@ -46,7 +43,7 @@ main( int argc, char **argv )
         exit (-1);
     }
 
-    app->bus = dbus_bus_get (DBUS_BUS_SESSION, &error);
+    app->bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
 
     if (!app->bus) 
     {

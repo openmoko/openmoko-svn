@@ -18,9 +18,6 @@
  */
 #include <glib.h>
 #include <X11/Xlib.h>
-#ifndef DBUS_API_SUBJECT_TO_CHANGE
-#define DBUS_API_SUBJECT_TO_CHANGE
-#endif
 #include <dbus/dbus.h>
 #include <gdk/gdk.h>
 #include <glib/gthread.h>
