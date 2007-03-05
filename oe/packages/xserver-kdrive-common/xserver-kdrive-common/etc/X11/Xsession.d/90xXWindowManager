@@ -1,8 +1,0 @@
-#!/bin/sh
-if [ -x $HOME/.Xsession ]; then
-    exec $HOME/.Xsession
-else
-    exec /usr/bin/x-window-manager
-fi
-
-

@@ -38,11 +38,11 @@ do_deploy () {
 	for mach in ${UBOOT_MACHINES}
 	do
 		install ${S}/u-boot_${mach}.bin \
-		    ${DEPLOY_DIR_IMAGE}/u-boot-${mach}-${DATETIME}.bin
+		    ${DEPLOY_DIR_IMAGE}/u-boot-${mach}-${PR}.bin
 		install ${S}/lowlevel_foo_${mach}.bin \
-		    ${DEPLOY_DIR_IMAGE}/lowlevel_foo-${mach}-${DATETIME}.bin
+		    ${DEPLOY_DIR_IMAGE}/lowlevel_foo-${mach}-${PR}.bin
 	done
-	install -m 0755 tools/mkimage ${STAGING_BINDIR}/uboot-mkimage
+	install -m 0755 tools/mkimage ${STAGING_BINDIR_NATIVE}/uboot-mkimage
 }
 
 do_deploy[dirs] = "${S}"
