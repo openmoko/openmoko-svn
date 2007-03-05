@@ -219,28 +219,44 @@ mb_kbd_locate_key(MBKeyboard *kb, int x, int y)
     {
       MBKeyboardRow *row = row_item->data;
 
-      if (x >= mb_kbd_row_x(row) 
-	  && x <= mb_kbd_row_x(row) + mb_kbd_row_width(row) 
-	  && y >= mb_kbd_row_y(row)
-	  && y <= mb_kbd_row_y(row) + mb_kbd_row_height(row) )
-	{
-	  mb_kbd_row_for_each_key(row, key_item) 
-	    {
-	      MBKeyboardKey *key = key_item->data;
+      if (mb_kbd_layout_realsize(layout))
+        {
+          mb_kbd_row_for_each_key(row, key_item) 
+            {
+              MBKeyboardKey *key = key_item->data;
 
-	      if (!mb_kbd_is_extended(kb) 
-		      && mb_kbd_key_get_extended(key))
-		continue;
-
-	      if (!mb_kbd_key_is_blank(key)
-		  && x >= mb_kbd_key_abs_x(key)
-		  && x <= mb_kbd_key_abs_x(key) + mb_kbd_key_width(key))
-		return key;
-
-	    }
-	 
-	  return NULL;
-	}
+              if (x >= mb_kbd_key_x(key)
+                  && x <= mb_kbd_key_x(key) + mb_kbd_key_width(key)
+                  && y >= mb_kbd_key_y(key)
+                  && y <= mb_kbd_key_y(key) + mb_kbd_key_height(key))
+               return key;
+            }
+        }
+      else
+        {
+          if (x >= mb_kbd_row_x(row) 
+              && x <= mb_kbd_row_x(row) + mb_kbd_row_width(row) 
+              && y >= mb_kbd_row_y(row)
+              && y <= mb_kbd_row_y(row) + mb_kbd_row_height(row) )
+            {
+              mb_kbd_row_for_each_key(row, key_item) 
+                {
+                  MBKeyboardKey *key = key_item->data;
+          
+                  if (!mb_kbd_is_extended(kb) 
+                          && mb_kbd_key_get_extended(key))
+                    continue;
+          
+                  if (!mb_kbd_key_is_blank(key)
+                      && x >= mb_kbd_key_abs_x(key)
+                      && x <= mb_kbd_key_abs_x(key) + mb_kbd_key_width(key))
+                    return key;
+          
+                }
+             
+              return NULL;
+            }
+        }
 
       row_item = util_list_next(row_item);
     }

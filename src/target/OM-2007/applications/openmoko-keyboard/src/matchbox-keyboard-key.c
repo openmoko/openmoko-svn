@@ -41,6 +41,7 @@ typedef struct MBKeyboardKeyAction
     char                  *glyph;
     KeySym                 keysym;
     MBKeyboardKeyModType   type;
+    MBKeyboardLayoutType   layout_type;
   } u;
 } 
 MBKeyboardKeyAction;
@@ -405,6 +406,29 @@ mb_kbd_key_get_modifer_action(MBKeyboardKey          *key,
   return 0;
 }
 
+/* Changer action */
+void
+mb_kbd_key_set_changer_action(MBKeyboardKey          *key,
+                              MBKeyboardKeyStateType  state,
+                              MBKeyboardLayoutType    type)
+{
+  if (key->states[state] == NULL)
+    _mb_kbd_key_init_state(key, state);
+
+  key->states[state]->action.type = MBKeyboardKeyActionLayoutChanger;
+  key->states[state]->action.u.layout_type   = type;
+}
+
+MBKeyboardLayoutType
+mb_kbd_get_changer_action(MBKeyboardKey          *key,
+                          MBKeyboardKeyStateType  state)
+{
+  if (key->states[state]
+      && key->states[state]->action.type == MBKeyboardKeyActionLayoutChanger)
+    return key->states[state]->action.u.layout_type;
+
+  return 0;
+}
 
 MBKeyboardKeyFaceType
 mb_kbd_key_get_face_type(MBKeyboardKey           *key,

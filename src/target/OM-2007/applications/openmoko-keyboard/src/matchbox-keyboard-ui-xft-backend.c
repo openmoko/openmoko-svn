@@ -132,37 +132,42 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
   kbd         = mb_kbd_ui_kbd(ui);
 
 
-  rect.x      = mb_kbd_key_abs_x(key); 
-  rect.y      = mb_kbd_key_abs_y(key); 
-  rect.width  = mb_kbd_key_width(key);       
-  rect.height = mb_kbd_key_height(key);       
-  //fprintf(stderr, "key->alloc_x=%d\n", mb_kbd_key_x(key));
-  //fprintf(stderr, "rect.x=%d,rect.y=%d,rect.width=%d,rect.height=%d\n",rect.x,rect.y,rect.width,rect.height);
+  if (mb_kbd_layout_realsize(kbd->selected_layout))
+    {
+      rect.x      = mb_kbd_key_x(key);
+      rect.y      = mb_kbd_key_y(key);
+      rect.width  = mb_kbd_key_width(key);       
+      rect.height = mb_kbd_key_height(key);       
+    }
+  else
+    {
+      rect.x      = mb_kbd_key_abs_x(key); 
+      rect.y      = mb_kbd_key_abs_y(key); 
+      rect.width  = mb_kbd_key_width(key);       
+      rect.height = mb_kbd_key_height(key);       
 
-  /* Hacky clip to work around issues with off by ones in layout code :( */
+      /* Hacky clip to work around issues with off by ones in layout code :( */
 
-  if (rect.x + rect.width >= mb_kbd_ui_x_win_width(ui)) 
-    rect.width  = mb_kbd_ui_x_win_width(ui) - rect.x - 1;
+      if (rect.x + rect.width >= mb_kbd_ui_x_win_width(ui)) 
+        rect.width  = mb_kbd_ui_x_win_width(ui) - rect.x - 1;
 
-  if (rect.y + rect.height >= mb_kbd_ui_x_win_height(ui)) 
-    rect.height  = mb_kbd_ui_x_win_height(ui) - rect.y - 1;
+      if (rect.y + rect.height >= mb_kbd_ui_x_win_height(ui)) 
+        rect.height  = mb_kbd_ui_x_win_height(ui) - rect.y - 1;
+    }
 
   if (mb_kbd_key_is_held(kbd, key))
     image = mb_kbd_key_get_push_image(key);
   else
     image = mb_kbd_key_get_normal_image(key);
+
   if(image)
     {
-      int w, h;
-      w = mb_kbd_image_width (image);
-      h = mb_kbd_image_height (image);
-
       XRenderComposite(xdpy,
                        PictOpOver,
                        mb_kbd_image_render_picture (image),
                        None, 
                        XftDrawPicture (xft_backend->xft_backbuffer),
-                       0, 0, 0, 0, rect.x, rect.y, w, h);
+                       0, 0, 0, 0, rect.x, rect.y, rect.width, rect.height);
     }
   else                   
     {
@@ -230,74 +235,72 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
                      rect.y + side_pad,
                      rect.width  - (side_pad * 2) + 1,
                      rect.height - (side_pad * 2) + 1);
-    }
 
-  /* real code is here */
+      /* real code is here */
 
-  state = mb_kbd_keys_current_state(kbd); 
+      state = mb_kbd_keys_current_state(kbd); 
+    
+      if (mb_kbd_has_state(kbd, MBKeyboardStateCaps)
+          && mb_kbd_key_get_obey_caps(key))
+        state = MBKeyboardKeyStateShifted;
 
-  if (mb_kbd_has_state(kbd, MBKeyboardStateCaps)
-      && mb_kbd_key_get_obey_caps(key))
-    state = MBKeyboardKeyStateShifted;
+      if (!mb_kdb_key_has_state(key, state))
+        {
+          if (state == MBKeyboardKeyStateNormal)
+    	return;  /* keys should at least have a normal state */
+          else
+            state = MBKeyboardKeyStateNormal;
+        }
 
-  if (!mb_kdb_key_has_state(key, state))
-    {
-      if (state == MBKeyboardKeyStateNormal)
-	return;  /* keys should at least have a normal state */
-      else
-        state = MBKeyboardKeyStateNormal;
-    }
+      if (mb_kbd_key_get_face_type(key, state) == MBKeyboardKeyFaceGlyph)
+        {
+          const char *face_str = mb_kbd_key_get_glyph_face(key, state);
+          int         face_str_w, face_str_h;
+    
+          if (face_str)
+            {
+              int x, y;
+    
+              mb_kbd_ui_xft_text_extents(ui, face_str, &face_str_w, &face_str_h);
+    
+              x = mb_kbd_key_abs_x(key) + ((mb_kbd_key_width(key) - face_str_w)/2);
+    
+              y = mb_kbd_key_abs_y(key) + 
+                ( (mb_kbd_key_height(key) 
+                           - (xft_backend->font->ascent + xft_backend->font->descent))
+                                         / 2 );
 
-/*
-  if (mb_kbd_key_get_face_type(key, state) == MBKeyboardKeyFaceGlyph)
-    {
-      const char *face_str = mb_kbd_key_get_glyph_face(key, state);
-      int         face_str_w, face_str_h;
-      
-      if (face_str)
-	{
-	  int x, y;
-	  
-	  mb_kbd_ui_xft_text_extents(ui, face_str, &face_str_w, &face_str_h);
-	  
-	  x = mb_kbd_key_abs_x(key) + ((mb_kbd_key_width(key) - face_str_w)/2);
-	  
-	  y = mb_kbd_key_abs_y(key) + 
-	    ( (mb_kbd_key_height(key) 
-                 - (xft_backend->font->ascent + xft_backend->font->descent))
-	                             / 2 );
-	  
-	  XftDrawStringUtf8(xft_backend->xft_backbuffer,
-			    &xft_backend->font_col,
-			    xft_backend->font,
-			    x,
-			    y + xft_backend->font->ascent,
-			    (unsigned char*)face_str, 
-			    strlen(face_str));
-	}
-    }
-  else if (mb_kbd_key_get_face_type(key, state) == MBKeyboardKeyFaceImage)
-    {
-      int x, y, w, h;
-      MBKeyboardImage *img;
-
-      img = mb_kbd_key_get_image_face(key, state);
-
-      w = mb_kbd_image_width (img);
-      h = mb_kbd_image_height (img);
-
-      x = mb_kbd_key_abs_x(key) + ((mb_kbd_key_width(key) - w) / 2);
-      y = mb_kbd_key_abs_y(key) + ((mb_kbd_key_height(key) - h ) / 2);
-
-
-      XRenderComposite(xdpy,
-		       PictOpOver, 
-		       mb_kbd_image_render_picture (img), 
-		       None, 
-		       XftDrawPicture (xft_backend->xft_backbuffer), 
-		       0, 0, 0, 0, x, y, w, h);
-    }
-*/
+              XftDrawStringUtf8(xft_backend->xft_backbuffer,
+                                &xft_backend->font_col,
+                                xft_backend->font,
+                                x,
+                                y + xft_backend->font->ascent,
+                                (unsigned char*)face_str, 
+                                strlen(face_str));
+            }
+        }
+      else if (mb_kbd_key_get_face_type(key, state) == MBKeyboardKeyFaceImage)
+        {
+          int x, y, w, h;
+          MBKeyboardImage *img;
+    
+          img = mb_kbd_key_get_image_face(key, state);
+    
+          w = mb_kbd_image_width (img);
+          h = mb_kbd_image_height (img);
+    
+          x = mb_kbd_key_abs_x(key) + ((mb_kbd_key_width(key) - w) / 2);
+          y = mb_kbd_key_abs_y(key) + ((mb_kbd_key_height(key) - h ) / 2);
+    
+    
+          XRenderComposite(xdpy,
+                           PictOpOver, 
+                           mb_kbd_image_render_picture (img), 
+                           None, 
+                           XftDrawPicture (xft_backend->xft_backbuffer), 
+                           0, 0, 0, 0, x, y, w, h);
+        }
+    } /* End if(image) else */
 }
 
 void

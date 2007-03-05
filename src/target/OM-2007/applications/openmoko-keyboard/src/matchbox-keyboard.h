@@ -86,6 +86,7 @@ typedef enum
   MBKeyboardKeyActionGlyph,
   MBKeyboardKeyActionXKeySym, 	/* 'specials' be converted into this */
   MBKeyboardKeyActionModifier,
+  MBKeyboardKeyActionLayoutChanger,   /* Change the keyboard to special layout */
 
 } MBKeyboardKeyActionType;
 
@@ -102,6 +103,16 @@ typedef enum
   MBKeyboardKeyModLayout
 
 } MBKeyboardKeyModType;
+
+typedef enum
+{
+  MBKeyboardUnknown = 0,
+  MBKeyboardLows,
+  MBKeyboardCaps,
+  MBKeyboardNumbers,
+  MBKeyboardSymbols,
+  MBKeyboardChinese
+} MBKeyboardLayoutType;
 
 typedef enum 
 {
@@ -354,6 +365,23 @@ mb_kbd_layout_append_row(MBKeyboardLayout *layout,
 List*
 mb_kbd_layout_rows(MBKeyboardLayout *layout);
 
+void
+mb_kbd_layout_set_realsize(MBKeyboardLayout *layout, int realsize);
+
+int
+mb_kbd_layout_realsize(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_width(MBKeyboardLayout *layout, int width);
+
+int
+mb_kbd_layout_get_width(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_height(MBKeyboardLayout *layout, int height);
+
+int
+mb_kbd_layout_get_height(MBKeyboardLayout *layout);
 
 /**** Rows ******/
 
@@ -528,6 +556,15 @@ mb_kbd_key_set_modifer_action(MBKeyboardKey          *key,
 MBKeyboardKeyModType 
 mb_kbd_key_get_modifer_action(MBKeyboardKey          *key,
 			      MBKeyboardKeyStateType  state);
+
+void
+mb_kbd_key_set_changer_action(MBKeyboardKey          *key,
+                              MBKeyboardKeyStateType  state,
+                              MBKeyboardLayoutType    type);
+
+MBKeyboardLayoutType
+mb_kbd_get_changer_action(MBKeyboardKey          *key,
+                          MBKeyboardKeyStateType  state);
 
 boolean 
 mb_kbd_key_is_held(MBKeyboard *kbd, MBKeyboardKey *key);

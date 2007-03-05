@@ -116,6 +116,20 @@ ModLookup[] =
   { "caps",    MBKeyboardKeyModCaps }
 };
 
+struct _layoutlookup
+{
+  MBKeyboardLayoutType type;
+  char *name;
+}
+LayoutLookup[] =
+{
+  {MBKeyboardLows,      "lows" },
+  {MBKeyboardCaps,      "caps" },
+  {MBKeyboardNumbers,   "numbers" },
+  {MBKeyboardSymbols,   "symbols" },
+  {MBKeyboardChinese,   "Chinese" }
+};
+
 typedef struct MBKeyboardConfigState
 {
   MBKeyboard       *keyboard;
@@ -163,6 +177,21 @@ config_str_to_modtype(const char* str)
       DBG("checking '%s' vs '%s'", str, ModLookup[i].name);
       if (streq(str, ModLookup[i].name))
 	return ModLookup[i].type;
+    }
+
+  return 0;
+}
+
+MBKeyboardLayoutType
+config_str_to_layouttype(const char* str)
+{
+  int i;
+
+  for (i=0; i<sizeof(LayoutLookup)/sizeof(struct _modlookup); i++)
+    {
+      DBG("checking '%s' vs '%s'", str, LayoutLookup[i].name);
+      if (streq(str, LayoutLookup[i].name))
+	return LayoutLookup[i].type;
     }
 
   return 0;
@@ -361,8 +390,8 @@ config_handle_key_background_tag(MBKeyboardConfigState *state,
 
 static void
 config_handle_key_subtag(MBKeyboardConfigState *state,
-			 const char            *tag,
-			 const char           **attr)
+                         const char            *tag,
+                         const char           **attr)
 {
   MBKeyboardKeyStateType keystate;
   const char            *val;
@@ -408,100 +437,119 @@ config_handle_key_subtag(MBKeyboardConfigState *state,
 
 
       if (val[6] != '/')
-	{
-	  /* Relative, rather than absolute path, try pkddatadir and home */
-	  char buf[512];
-	  snprintf(buf, 512, "%s/%s", PKGDATADIR, &val[6]);
+        {
+          /* Relative, rather than absolute path, try pkddatadir and home */
+          char buf[512];
+          snprintf(buf, 512, "%s/%s", PKGDATADIR, &val[6]);
 
-	  if (!util_file_readable(buf))
-	    snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), &val[6]);
+          if (!util_file_readable(buf))
+            snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), &val[6]);
 
-	  img = mb_kbd_image_new (state->keyboard, buf);
-	}
+          img = mb_kbd_image_new (state->keyboard, buf);
+        }
       else
-	img = mb_kbd_image_new (state->keyboard, &val[6]);
+        img = mb_kbd_image_new (state->keyboard, &val[6]);
 
       if (!img)
-	{
-	  fprintf(stderr, "matchbox-keyboard: Failed to load '%s'\n", &val[6]);
-	  state->error = True;
-	  return;
-	}
+        {
+          fprintf(stderr, "matchbox-keyboard: Failed to load '%s'\n", &val[6]);
+          state->error = True;
+          return;
+        }
       mb_kbd_key_set_image_face(state->current_key, keystate, img);
     }
   else
     {
       mb_kbd_key_set_glyph_face(state->current_key, keystate, 
-				attr_get_val("display", attr));
+                                attr_get_val("display", attr));
     }
 
   if ((val = attr_get_val("action", attr)) != NULL)
     {
       /*
-	     action="utf8char"     // optional, action defulats to this    
-	     action="modifier:Shift|Alt|ctrl|mod1|mod2|mod3|caps"
-	     action="xkeysym:XK_BLAH"
-	     action="control:">    // return etc - not needed use lookup 
+             action="utf8char"     // optional, action defulats to this    
+             action="modifier:Shift|Alt|ctrl|mod1|mod2|mod3|caps"
+             action="changer:lows|caps|numbers|symbols|Chinese"
+             action="xkeysym:XK_BLAH"
+             action="control:">    // return etc - not needed use lookup 
       */
 
-      if (!strncmp(val, "modifier:", 9))
-	{
-	  MBKeyboardKeyModType found_type;
+      if (!strncmp(val, "changer:", 8))
+        {
+          MBKeyboardLayoutType found_type;
 
-	  DBG("checking '%s'", &val[9]);
+          found_type = config_str_to_layouttype(&val[8]);
 
-	  found_type = config_str_to_modtype(&val[9]);
+          if (found_type)
+            {
+              mb_kbd_key_set_changer_action(state->current_key,
+                                            keystate,
+                                            found_type);
+            }
+          else
+            {
+              set_error(state, "Unknown changer");
+              return;
+            }
+        }
+      else if (!strncmp(val, "modifier:", 9))
+        {
+          MBKeyboardKeyModType found_type;
 
-	  if (found_type)
-	    {
-	      mb_kbd_key_set_modifer_action(state->current_key,
-					    keystate,
-					    found_type);
-	    }
-	  else
-	    {
+          DBG("checking '%s'", &val[9]);
+
+          found_type = config_str_to_modtype(&val[9]);
+
+          if (found_type)
+            {
+              mb_kbd_key_set_modifer_action(state->current_key,
+                                            keystate,
+                                            found_type);
+            }
+          else
+            {
               set_error(state, "Unknown modifier");
-	      return;
-	    }
-	  
-	}
+              return;
+            }
+          
+        }
       else if (!strncmp(val, "xkeysym:", 8))
-	{
-	  DBG("Checking %s\n", &val[8]);
+        {
+          DBG("Checking %s\n", &val[8]);
 
-	  found_keysym = XStringToKeysym(&val[8]);
+          found_keysym = XStringToKeysym(&val[8]);
 
-	  if (found_keysym)
-	    {
-	      mb_kbd_key_set_keysym_action(state->current_key, 
-					   keystate,
-					   found_keysym);
-	    }
-	  else 
-	    {
-	      /* Should this error really be terminal */
+          if (found_keysym)
+            {
+              mb_kbd_key_set_keysym_action(state->current_key, 
+                                           keystate,
+                                           found_keysym);
+            }
+          else 
+            {
+              /* Should this error really be terminal */
               set_error(state, "Unknown keysym");
-	      return;
-	    }
-	}
+              return;
+            }
+        }
       else
-	{
-	  /* Its just 'regular' key  */
+        {
+          /* Its just 'regular' key  */
 
-	  if (strlen(val) > 1  	/* match backspace, return etc */
-	      && ((found_keysym  = config_str_to_keysym(val)) != 0))
-	    {
-	      mb_kbd_key_set_keysym_action(state->current_key, 
-					   keystate,
-					   found_keysym);
-	    }
-	  else
-	    {
-	      /* XXX We should actually check its a single UTF8 Char here */
-	      mb_kbd_key_set_char_action(state->current_key, 
-					 keystate, val);
-	    }
-	}
+          if (strlen(val) > 1          /* match backspace, return etc */
+              && ((found_keysym  = config_str_to_keysym(val)) != 0))
+            {
+              mb_kbd_key_set_keysym_action(state->current_key, 
+                                           keystate,
+                                           found_keysym);
+            }
+          else
+            {
+              /* XXX We should actually check its a single UTF8 Char here */
+              mb_kbd_key_set_char_action(state->current_key, 
+                                         keystate, val);
+            }
+        }
     }
   else /* fallback to reusing whats displayed  */
     {
@@ -511,8 +559,8 @@ config_handle_key_subtag(MBKeyboardConfigState *state,
       */
 
       mb_kbd_key_set_char_action(state->current_key, 
-				 keystate, 
-				 attr_get_val("display", attr));
+                                 keystate, 
+                                 attr_get_val("display", attr));
     }
 
 }
@@ -521,6 +569,13 @@ static void
 config_handle_layout_tag(MBKeyboardConfigState *state, const char **attr)
 {
   const char            *val;
+  Bool                  realsize = False;
+
+  if ((val = attr_get_val("realsize", attr)) != NULL)
+    {
+      if (strcaseeq("true", val))
+        realsize = True;
+    }
 
   if ((val = attr_get_val("id", attr)) == NULL)
     {
@@ -529,6 +584,7 @@ config_handle_layout_tag(MBKeyboardConfigState *state, const char **attr)
     }
 
   state->current_layout = mb_kbd_layout_new(state->keyboard, val);
+  mb_kbd_layout_set_realsize(state->current_layout, realsize);
 
   mb_kbd_add_layout(state->keyboard, state->current_layout);
 }
@@ -544,7 +600,7 @@ static void
 config_handle_key_tag(MBKeyboardConfigState *state, const char **attr)
 {
   const char *val;
-  //MBKeyboardImage *img;
+
   DBG("got key");
 
   state->current_key = mb_kbd_key_new(state->keyboard);
@@ -567,10 +623,44 @@ config_handle_key_tag(MBKeyboardConfigState *state, const char **attr)
 	mb_kbd_key_set_req_uwidth(state->current_key, atoi(val));
     }
 
-  if ((val = attr_get_val("fill", attr)) != NULL)
+  if (mb_kbd_layout_realsize(state->current_layout))
     {
-      if (strcaseeq(val, "true"))
-	mb_kbd_key_set_fill(state->current_key, True);
+      int        x = 0;
+      int        y = 0;
+      int        w = 0;
+      int        h = 0;
+
+      if ((val = attr_get_val("fill", attr)) != NULL)
+        {
+          if (strcaseeq(val, "true"))
+    	mb_kbd_key_set_fill(state->current_key, True);
+        }
+    
+      if ((val = attr_get_val("real_x", attr)) != NULL)
+        {
+          if (atoi(val) > 0)
+            x = atoi(val);
+        }
+    
+      if ((val = attr_get_val("real_y", attr)) != NULL)
+        {
+          if (atoi(val) > 0)
+            y = atoi(val);
+        }
+    
+      if ((val = attr_get_val("real_w", attr)) != NULL)
+        {
+          if (atoi(val) > 0)
+            w = atoi(val);
+        }
+    
+      if ((val = attr_get_val("real_h", attr)) != NULL)
+        {
+          if (atoi(val) > 0)
+            h = atoi(val);
+        }
+    
+      mb_kbd_key_set_geometry (state->current_key, x, y, w, h);
     }
 
   mb_kbd_row_append_key(state->current_row, state->current_key);
@@ -609,6 +699,19 @@ config_handle_layout_background(MBKeyboardConfigState *state,
 
   mb_kbd_layout_set_background(state->current_layout, img);
 
+  if (mb_kbd_layout_realsize(state->current_layout))
+    {
+      if ((val = attr_get_val("width", attr)) != NULL)
+        {
+          if (atoi(val) > 0)
+            mb_kbd_layout_set_width(state->current_layout, atoi(val));
+        }
+      if ((val = attr_get_val("height", attr)) != NULL)
+        {
+          if (atoi(val) > 0)
+            mb_kbd_layout_set_height(state->current_layout, atoi(val));
+        }
+    }
 }
 
 static void 

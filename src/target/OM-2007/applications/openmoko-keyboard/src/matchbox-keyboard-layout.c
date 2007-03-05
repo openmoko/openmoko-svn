@@ -25,6 +25,11 @@ struct MBKeyboardLayout
   char             *id;
   MBKeyboardImage  *background;
   List             *rows;
+
+  /* real size */
+  Bool             realsize;
+  int              width;
+  int              height;
 };
 
 
@@ -67,3 +72,39 @@ mb_kbd_layout_rows(MBKeyboardLayout *layout)
   return util_list_get_first(layout->rows);
 }
 
+/* real size */
+void
+mb_kbd_layout_set_realsize(MBKeyboardLayout *layout, int realsize)
+{
+  layout->realsize = realsize;
+}
+
+int
+mb_kbd_layout_realsize(MBKeyboardLayout *layout)
+{
+  return layout->realsize;
+}
+
+void
+mb_kbd_layout_set_width(MBKeyboardLayout *layout, int width)
+{
+  layout->width = width;
+}
+
+int
+mb_kbd_layout_get_width(MBKeyboardLayout *layout)
+{
+  return layout->width;
+}
+
+void
+mb_kbd_layout_set_height(MBKeyboardLayout *layout, int height)
+{
+  layout->height = height;
+}
+
+int
+mb_kbd_layout_get_height(MBKeyboardLayout *layout)
+{
+  return layout->height;
+}

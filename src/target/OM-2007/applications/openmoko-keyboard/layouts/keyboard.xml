@@ -1,178 +1,347 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<keyboard>
+<!-- edited with XMLSpy v2006 sp2 U (http://www.altova.com) by scw (FIC) -->
+<keyboard maltilayout="true">
+	<options>
+		<!-- not yet implemented -->
+	</options>
+	<layout id="cap" realsize="true" type="caps">
+		<background image="bg_keypad.png" width="480" height="167"/>
+		<row>
+			<key real_x="14" real_y="8" real_w="35" real_h="35">
+				<default display="Q"/>
+				<normalimage image="key_cap_Q.png"/>
+				<pushimage image="key_cap_Q_p.png"/>
+			</key>
+			<key real_x="53" real_y="8" real_w="35" real_h="35">
+				<default display="W"/>
+				<normalimage image="key_cap_W.png"/>
+				<pushimage image="key_cap_W_p.png"/>
+			</key>
+			<key real_x="92" real_y="8" real_w="35" real_h="35">
+				<default display="E"/>
+				<normalimage image="key_cap_E.png"/>
+				<pushimage image="key_cap_E_p.png"/>
+			</key>
+			<key real_x="131" real_y="8" real_w="35" real_h="35">
+				<default display="R"/>
+				<normalimage image="key_cap_R.png"/>
+				<pushimage image="key_cap_R_p.png"/>
+			</key>
+			<key real_x="170" real_y="8" real_w="35" real_h="35">
+				<default display="T"/>
+				<normalimage image="key_cap_T.png"/>
+				<pushimage image="key_cap_T_p.png"/>
+			</key>
+			<key real_x="209" real_y="8" real_w="35" real_h="35">
+				<default display="Y"/>
+				<normalimage image="key_cap_Y.png"/>
+				<pushimage image="key_cap_Y_p.png"/>
+			</key>
+			<key real_x="248" real_y="8" real_w="35" real_h="35">
+				<default display="U"/>
+				<normalimage image="key_cap_U.png"/>
+				<pushimage image="key_cap_U_p.png"/>
+			</key>
+			<key real_x="287" real_y="8" real_w="35" real_h="35">
+				<default display="I"/>
+				<normalimage image="key_cap_I.png"/>
+				<pushimage image="key_cap_I_p.png"/>
+			</key>
+			<key real_x="326" real_y="8" real_w="35" real_h="35">
+				<default display="O"/>
+				<normalimage image="key_cap_O.png"/>
+				<pushimage image="key_cap_O_p.png"/>
+			</key>
+			<key real_x="365" real_y="8" real_w="35" real_h="35">
+				<default display="P"/>
+				<normalimage image="key_cap_P.png"/>
+				<pushimage image="key_cap_P_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="33" real_y="48" real_w="35" real_h="35">
+				<default display="A"/>
+				<normalimage image="key_cap_A.png"/>
+				<pushimage image="key_cap_A_p.png"/>
+			</key>
+			<key real_x="72" real_y="48" real_w="35" real_h="35">
+				<default display="S"/>
+				<normalimage image="key_cap_S.png"/>
+				<pushimage image="key_cap_S_p.png"/>
+			</key>
+			<key real_x="111" real_y="48" real_w="35" real_h="35">
+				<default display="D"/>
+				<normalimage image="key_cap_D.png"/>
+				<pushimage image="key_cap_D_p.png"/>
+			</key>
+			<key real_x="150" real_y="48" real_w="35" real_h="35">
+				<default display="F"/>
+				<normalimage image="key_cap_F.png"/>
+				<pushimage image="key_cap_F_p.png"/>
+			</key>
+			<key real_x="189" real_y="48" real_w="35" real_h="35">
+				<default display="G"/>
+				<normalimage image="key_cap_G.png"/>
+				<pushimage image="key_cap_G_p.png"/>
+			</key>
+			<key real_x="228" real_y="48" real_w="35" real_h="35">
+				<default display="H"/>
+				<normalimage image="key_cap_H.png"/>
+				<pushimage image="key_cap_H_p.png"/>
+			</key>
+			<key real_x="267" real_y="48" real_w="35" real_h="35">
+				<default display="J"/>
+				<normalimage image="key_cap_J.png"/>
+				<pushimage image="key_cap_J_p.png"/>
+			</key>
+			<key real_x="306" real_y="48" real_w="35" real_h="35">
+				<default display="K"/>
+				<normalimage image="key_cap_K.png"/>
+				<pushimage image="key_cap_K_p.png"/>
+			</key>
+			<key real_x="345" real_y="48" real_w="35" real_h="35">
+				<default display="L"/>
+				<normalimage image="key_cap_L.png"/>
+				<pushimage image="key_cap_L_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="72" real_y="88" real_w="35" real_h="35">
+				<default display="Z"/>
+				<normalimage image="key_cap_Z.png"/>
+				<pushimage image="key_cap_Z_p.png"/>
+			</key>
+			<key real_x="111" real_y="88" real_w="35" real_h="35">
+				<default display="X"/>
+				<normalimage image="key_cap_X.png"/>
+				<pushimage image="key_cap_X_p.png"/>
+			</key>
+			<key real_x="150" real_y="88" real_w="35" real_h="35">
+				<default display="C"/>
+				<normalimage image="key_cap_C.png"/>
+				<pushimage image="key_cap_C_p.png"/>
+			</key>
+			<key real_x="189" real_y="88" real_w="35" real_h="35">
+				<default display="V"/>
+				<normalimage image="key_cap_V.png"/>
+				<pushimage image="key_cap_V_p.png"/>
+			</key>
+			<key real_x="228" real_y="88" real_w="35" real_h="35">
+				<default display="B"/>
+				<normalimage image="key_cap_B.png"/>
+				<pushimage image="key_cap_B_p.png"/>
+			</key>
+			<key real_x="267" real_y="88" real_w="35" real_h="35">
+				<default display="N"/>
+				<normalimage image="key_cap_N.png"/>
+				<pushimage image="key_cap_N_p.png"/>
+			</key>
+			<key real_x="306" real_y="88" real_w="35" real_h="35">
+				<default display="M"/>
+				<normalimage image="key_cap_M.png"/>
+				<pushimage image="key_cap_M_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="72" real_y="128" real_w="140" real_h="36">
+				<default display=" " action="space"/>
+				<normalimage image="key_comm_space.png"/>
+				<pushimage image="key_comm_space_p.png"/>
+			</key>
+			<key real_x="216" real_y="128" real_w="65" real_h="36">
+				<default display=" " action="backspace"/>
+				<normalimage image="key_comm_backspace.png"/>
+				<pushimage image="key_comm_backspace_p.png"/>
+			</key>
+			<key real_x="285" real_y="128" real_w="65" real_h="36">
+				<default display=" " action="return"/>
+				<normalimage image="key_comm_enter.png"/>
+				<pushimage image="key_comm_enter_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="426" real_y="22" real_w="47" real_h="22">
+				<default display=" " action="changer:caps" />
+				<normalimage image="switch_input_eng_cap.png"/>
+				<pushimage image="switch_input_eng_cap_p.png"/>
+			</key>
+			<key real_x="426" real_y="48" real_w="47" real_h="22">
+				<default display=" " action="changer:lows" />
+				<normalimage image="switch_input_eng_low.png"/>
+				<pushimage image="switch_input_eng_low_p.png"/>
+			</key>
+			<key real_x="426" real_y="74" real_w="47" real_h="22">
+				<default display=" " action="changer:numbers" />
+				<normalimage image="switch_input_num.png"/>
+				<pushimage image="switch_input_num_p.png"/>
+			</key>
+			<key real_x="426" real_y="100" real_w="47" real_h="22">
+				<default display=" " action="changer:symbols" />
+				<normalimage image="switch_input_sym.png"/>
+				<pushimage image="switch_input_sym_p.png"/>
+			</key>
+			<key real_x="426" real_y="126" real_w="47" real_h="22">
+				<default display=" " action="changer:Chinese" />
+				<normalimage image="switch_input_ch.png"/>
+				<pushimage image="switch_input_ch_p.png"/>
+			</key>
+		</row>
 
-<options>
-<!-- not yet implemented -->
-</options>
-
-<layout id="defualt keyboard">
-  <background image="bg_keypad.png" />
-
-  <row>
-
-    <key>
-      <default display="Q" />
-      <normalimage image="key_cap_Q.png"/>
-      <pushimage image="key_cap_Q_p.png"/>
-    </key>
-    <key>
-      <default display="W" />
-      <normalimage image="key_cap_W.png"/>
-      <pushimage image="key_cap_W_p.png"/>
-    </key>
-    <key>
-      <default display="E" />
-      <normalimage image="key_cap_E.png"/>
-      <pushimage image="key_cap_E_p.png"/>
-    </key>
-    <key>
-      <default display="R" />
-      <normalimage image="key_cap_R.png"/>
-      <pushimage image="key_cap_R_p.png"/>
-    </key>
-    <key>
-      <default display="T" />
-      <normalimage image="key_cap_T.png"/>
-      <pushimage image="key_cap_T_p.png"/>
-    </key>
-    <key>
-      <default display="Y" />
-      <normalimage image="key_cap_Y.png"/>
-      <pushimage image="key_cap_Y_p.png"/>
-    </key>
-    <key>
-      <default display="U" />
-      <normalimage image="key_cap_U.png"/>
-      <pushimage image="key_cap_U_p.png"/>
-    </key>
-    <key>
-      <default display="I" />
-      <normalimage image="key_cap_I.png"/>
-      <pushimage image="key_cap_I_p.png"/>
-    </key>
-    <key>
-      <default display="O" />
-      <normalimage image="key_cap_O.png"/>
-      <pushimage image="key_cap_O_p.png"/>
-    </key>
-    <key>
-      <default display="P" />
-      <normalimage image="key_cap_P.png"/>
-      <pushimage image="key_cap_P_p.png"/>
-    </key>
-
-  </row>
-
-  <row>
-
-    <key>
-      <default display="A" />
-      <normalimage image="key_cap_A.png"/>
-      <pushimage image="key_cap_A_p.png"/>
-    </key>
-    <key>
-      <default display="S" />
-      <normalimage image="key_cap_S.png"/>
-      <pushimage image="key_cap_S_p.png"/>
-    </key>
-    <key>
-      <default display="D" />
-      <normalimage image="key_cap_D.png"/>
-      <pushimage image="key_cap_D_p.png"/>
-    </key>
-    <key>
-      <default display="F" />
-      <normalimage image="key_cap_F.png"/>
-      <pushimage image="key_cap_F_p.png"/>
-    </key>
-    <key>
-      <default display="G" />
-      <normalimage image="key_cap_G.png"/>
-      <pushimage image="key_cap_G_p.png"/>
-    </key>
-    <key>
-      <default display="H" />
-      <normalimage image="key_cap_H.png"/>
-      <pushimage image="key_cap_H_p.png"/>
-    </key>
-    <key>
-      <default display="J" />
-      <normalimage image="key_cap_J.png"/>
-      <pushimage image="key_cap_J_p.png"/>
-    </key>
-    <key>
-      <default display="K" />
-      <normalimage image="key_cap_K.png"/>
-      <pushimage image="key_cap_K_p.png"/>
-    </key>
-    <key>
-      <default display="L" />
-      <normalimage image="key_cap_L.png"/>
-      <pushimage image="key_cap_L_p.png"/>
-    </key>
-
-  </row>
-  <row>
-
-    <key>
-      <default display="Z" />
-      <normalimage image="key_cap_Z.png"/>
-      <pushimage image="key_cap_Z_p.png"/>
-    </key>
-    <key>
-      <default display="X" />
-      <normalimage image="key_cap_X.png"/>
-      <pushimage image="key_cap_X_p.png"/>
-    </key>
-    <key>
-      <default display="C" />
-      <normalimage image="key_cap_C.png"/>
-      <pushimage image="key_cap_C_p.png"/>
-    </key>
-    <key>
-      <default display="V" />
-      <normalimage image="key_cap_V.png"/>
-      <pushimage image="key_cap_V_p.png"/>
-    </key>
-    <key>
-      <default display="B" />
-      <normalimage image="key_cap_B.png"/>
-      <pushimage image="key_cap_B_p.png"/>
-    </key>
-    <key>
-      <default display="N" />
-      <normalimage image="key_cap_N.png"/>
-      <pushimage image="key_cap_N_p.png"/>
-    </key>
-    <key>
-      <default display="M" />
-      <normalimage image="key_cap_M.png"/>
-      <pushimage image="key_cap_M_p.png"/>
-    </key>
-
-  </row>
-
-  <row>
-
-
-    <key>
-      <default display=" " action="space" />
-      <normalimage image="key_comm_space.png"/>
-      <pushimage image="key_comm_space_p.png"/>
-    </key>
-    <key>
-      <default display=" " action="backspace" />
-      <normalimage image="key_comm_backspace.png"/>
-      <pushimage image="key_comm_backspace_p.png"/>
-    </key>
-    <key>
-      <default display=" " action="return" />
-      <normalimage image="key_comm_enter.png"/>
-      <pushimage image="key_comm_enter_p.png"/>
-    </key>
-  </row>
-
-</layout>
-
-
+	</layout>
+	<layout id="low" realsize="true" type="lows">
+		<background image="bg_keypad.png" width="480" height="167"/>
+		<row>
+			<key real_x="14" real_y="8" real_w="35" real_h="35">
+				<default display="q"/>
+				<normalimage image="key_low_q.png"/>
+				<pushimage image="key_low_q_p.png"/>
+			</key>
+			<key real_x="53" real_y="8" real_w="35" real_h="35">
+				<default display="w"/>
+				<normalimage image="key_low_w.png"/>
+				<pushimage image="key_low_w_p.png"/>
+			</key>
+			<key real_x="92" real_y="8" real_w="35" real_h="35">
+				<default display="e"/>
+				<normalimage image="key_low_e.png"/>
+				<pushimage image="key_low_e_p.png"/>
+			</key>
+			<key real_x="131" real_y="8" real_w="35" real_h="35">
+				<default display="r"/>
+				<normalimage image="key_low_r.png"/>
+				<pushimage image="key_low_r_p.png"/>
+			</key>
+			<key real_x="170" real_y="8" real_w="35" real_h="35">
+				<default display="t"/>
+				<normalimage image="key_low_t.png"/>
+				<pushimage image="key_low_t_p.png"/>
+			</key>
+			<key real_x="209" real_y="8" real_w="35" real_h="35">
+				<default display="y"/>
+				<normalimage image="key_low_y.png"/>
+				<pushimage image="key_low_y_p.png"/>
+			</key>
+			<key real_x="248" real_y="8" real_w="35" real_h="35">
+				<default display="u"/>
+				<normalimage image="key_low_u.png"/>
+				<pushimage image="key_low_u_p.png"/>
+			</key>
+			<key real_x="287" real_y="8" real_w="35" real_h="35">
+				<default display="i"/>
+				<normalimage image="key_low_i.png"/>
+				<pushimage image="key_low_i_p.png"/>
+			</key>
+			<key real_x="326" real_y="8" real_w="35" real_h="35">
+				<default display="o"/>
+				<normalimage image="key_low_o.png"/>
+				<pushimage image="key_low_o_p.png"/>
+			</key>
+			<key real_x="365" real_y="8" real_w="35" real_h="35">
+				<default display="p"/>
+				<normalimage image="key_low_p.png"/>
+				<pushimage image="key_low_p_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="33" real_y="48" real_w="35" real_h="35">
+				<default display="a"/>
+				<normalimage image="key_low_a.png"/>
+				<pushimage image="key_low_a_p.png"/>
+			</key>
+			<key real_x="72" real_y="48" real_w="35" real_h="35">
+				<default display="s"/>
+				<normalimage image="key_low_s.png"/>
+				<pushimage image="key_low_s_p.png"/>
+			</key>
+			<key real_x="111" real_y="48" real_w="35" real_h="35">
+				<default display="d"/>
+				<normalimage image="key_low_d.png"/>
+				<pushimage image="key_low_d_p.png"/>
+			</key>
+			<key real_x="150" real_y="48" real_w="35" real_h="35">
+				<default display="f"/>
+				<normalimage image="key_low_f.png"/>
+				<pushimage image="key_low_f_p.png"/>
+			</key>
+			<key real_x="189" real_y="48" real_w="35" real_h="35">
+				<default display="g"/>
+				<normalimage image="key_low_g.png"/>
+				<pushimage image="key_low_g_p.png"/>
+			</key>
+			<key real_x="228" real_y="48" real_w="35" real_h="35">
+				<default display="h"/>
+				<normalimage image="key_low_h.png"/>
+				<pushimage image="key_low_h_p.png"/>
+			</key>
+			<key real_x="267" real_y="48" real_w="35" real_h="35">
+				<default display="j"/>
+				<normalimage image="key_low_j.png"/>
+				<pushimage image="key_low_j_p.png"/>
+			</key>
+			<key real_x="306" real_y="48" real_w="35" real_h="35">
+				<default display="k"/>
+				<normalimage image="key_low_k.png"/>
+				<pushimage image="key_low_k_p.png"/>
+			</key>
+			<key real_x="345" real_y="48" real_w="35" real_h="35">
+				<default display="l"/>
+				<normalimage image="key_low_l.png"/>
+				<pushimage image="key_low_l_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="72" real_y="88" real_w="35" real_h="35">
+				<default display="z"/>
+				<normalimage image="key_low_z.png"/>
+				<pushimage image="key_low_z_p.png"/>
+			</key>
+			<key real_x="111" real_y="88" real_w="35" real_h="35">
+				<default display="x"/>
+				<normalimage image="key_low_x.png"/>
+				<pushimage image="key_low_x_p.png"/>
+			</key>
+			<key real_x="150" real_y="88" real_w="35" real_h="35">
+				<default display="c"/>
+				<normalimage image="key_low_c.png"/>
+				<pushimage image="key_low_c_p.png"/>
+			</key>
+			<key real_x="189" real_y="88" real_w="35" real_h="35">
+				<default display="v"/>
+				<normalimage image="key_low_v.png"/>
+				<pushimage image="key_low_v_p.png"/>
+			</key>
+			<key real_x="228" real_y="88" real_w="35" real_h="35">
+				<default display="b"/>
+				<normalimage image="key_low_b.png"/>
+				<pushimage image="key_low_b_p.png"/>
+			</key>
+			<key real_x="267" real_y="88" real_w="35" real_h="35">
+				<default display="n"/>
+				<normalimage image="key_low_n.png"/>
+				<pushimage image="key_low_n_p.png"/>
+			</key>
+			<key real_x="306" real_y="88" real_w="35" real_h="35">
+				<default display="m"/>
+				<normalimage image="key_low_m.png"/>
+				<pushimage image="key_low_m_p.png"/>
+			</key>
+		</row>
+		<row>
+			<key real_x="72" real_y="128" real_w="140" real_h="36">
+				<default display=" " action="space"/>
+				<normalimage image="key_comm_space.png"/>
+				<pushimage image="key_comm_space_p.png"/>
+			</key>
+			<key real_x="216" real_y="128" real_w="65" real_h="36">
+				<default display=" " action="backspace"/>
+				<normalimage image="key_comm_backspace.png"/>
+				<pushimage image="key_comm_backspace_p.png"/>
+			</key>
+			<key real_x="285" real_y="128" real_w="65" real_h="36">
+				<default display=" " action="return"/>
+				<normalimage image="key_comm_enter.png"/>
+				<pushimage image="key_comm_enter_p.png"/>
+			</key>
+		</row>
+	</layout>
 </keyboard>
