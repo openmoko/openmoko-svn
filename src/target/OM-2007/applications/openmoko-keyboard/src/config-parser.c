@@ -570,11 +570,21 @@ config_handle_layout_tag(MBKeyboardConfigState *state, const char **attr)
 {
   const char            *val;
   Bool                  realsize = False;
+  MBKeyboardLayoutType  type = 0;
 
   if ((val = attr_get_val("realsize", attr)) != NULL)
     {
       if (strcaseeq("true", val))
         realsize = True;
+    }
+
+  if ((val = attr_get_val("type", attr)) != NULL)
+    {
+      if ((type = config_str_to_layouttype(val)) == 0)
+        {
+          set_error (state, "Unkown layout type");
+          return;
+        }
     }
 
   if ((val = attr_get_val("id", attr)) == NULL)
@@ -584,7 +594,11 @@ config_handle_layout_tag(MBKeyboardConfigState *state, const char **attr)
     }
 
   state->current_layout = mb_kbd_layout_new(state->keyboard, val);
+
   mb_kbd_layout_set_realsize(state->current_layout, realsize);
+
+  if (type != 0)
+    mb_kbd_layout_set_type(state->current_layout, type);
 
   mb_kbd_add_layout(state->keyboard, state->current_layout);
 }
@@ -714,6 +728,68 @@ config_handle_layout_background(MBKeyboardConfigState *state,
     }
 }
 
+static void
+config_handle_layout_changerground(MBKeyboardConfigState *state,
+                                   const char **attr)
+{
+  MBKeyboardImage *img;
+  const char *val;
+  char  buf[512];
+
+  /* only realsize mode support the changer background image */
+  if (!mb_kbd_layout_realsize(state->current_layout))
+    return;
+
+  if ((val = attr_get_val("image", attr)) == NULL)
+    {
+      set_error(state, "Changerground Attribute 'image' is required");
+      return;
+    }
+
+  if (val[0] != '/')
+    {
+      snprintf(buf, 512, "%s/%s", PKGDATADIR, val);
+
+      if (!util_file_readable(buf))
+        snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), val);
+
+      img = mb_kbd_image_new (state->keyboard, buf);
+    }
+  else
+    {
+      img = mb_kbd_image_new (state->keyboard, val);
+    }
+
+  if (img == NULL)
+    fprintf(stderr, "load img fail\n");
+
+  mb_kbd_layout_set_changerground(state->current_layout, img);
+
+  if ((val = attr_get_val("width", attr)) != NULL)
+    {
+      if (atoi(val) > 0)
+        mb_kbd_layout_set_changerground_w(state->current_layout, atoi(val));
+    }
+
+  if ((val = attr_get_val("height", attr)) != NULL)
+    {
+      if (atoi(val) > 0)
+        mb_kbd_layout_set_changerground_h(state->current_layout, atoi(val));
+    }
+
+  if ((val = attr_get_val("real_x", attr)) != NULL)
+    {
+      if (atoi(val) > 0)
+        mb_kbd_layout_set_changerground_x(state->current_layout, atoi(val));
+    }
+
+  if ((val = attr_get_val("real_y", attr)) != NULL)
+    {
+      if (atoi(val) > 0)
+        mb_kbd_layout_set_changerground_y(state->current_layout, atoi(val));
+    }
+}
+
 static void 
 config_xml_start_cb(void *data, const char *tag, const char **attr)
 {
@@ -753,6 +829,10 @@ config_xml_start_cb(void *data, const char *tag, const char **attr)
   else if (streq(tag, "background"))
     {
       config_handle_layout_background(state, attr);
+    }
+  else if (streq(tag, "changerground"))
+    {
+      config_handle_layout_changerground(state, attr);
     }
 
   if (state->error)

@@ -556,6 +556,19 @@ mb_kbd_key_press(MBKeyboardKey *key)
 	*/
 	break;
       }
+    /* If the key is a layout changer key */
+    case MBKeyboardKeyActionLayoutChanger:
+      {
+        MBKeyboardLayoutType  type;
+
+        type = mb_kbd_get_changer_action(key, state);
+        if (type == mb_kbd_layout_get_type(key->kbd->selected_layout))
+          break;
+
+        if (mb_kbd_change_layout(key->kbd, type))
+          queue_full_kbd_redraw = True;
+        break;
+      }
 
     default:
       break;
@@ -623,6 +636,13 @@ mb_kbd_key_is_held(MBKeyboard *kbd, MBKeyboardKey *key)
 	    DBG("unknown modifier action");
 	    break;
 	  }
+    }
+  else if (mb_kbd_key_get_action_type(key, state) == MBKeyboardKeyActionLayoutChanger)
+    {
+      if(mb_kbd_get_changer_action(key, state) == mb_kbd_layout_get_type(kbd->selected_layout))
+        return True;
+
+      return False;
     }
 
   return False;

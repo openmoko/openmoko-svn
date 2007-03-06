@@ -308,10 +308,13 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
 {
   MBKeyboardUIBackendXft *xft_backend = NULL;
   MBKeyboardImage        *image;
+  MBKeyboardLayout       *layout;
 
   xft_backend = (MBKeyboardUIBackendXft*)mb_kbd_ui_backend(ui);
 
-  image = mb_kbd_layout_get_background(mb_kbd_get_selected_layout(mb_kbd_ui_kbd(ui)));
+  layout = mb_kbd_get_selected_layout(mb_kbd_ui_kbd(ui));
+
+  image = mb_kbd_layout_get_background(layout);
 
   /* Background */
   if (image == NULL)
@@ -335,8 +338,8 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
     {
       int w, h;
 
-      w = mb_kbd_image_width (image);
-      h = mb_kbd_image_height (image);
+      w = mb_kbd_layout_get_width (layout);
+      h = mb_kbd_layout_get_height (layout);
 
       XRenderComposite(mb_kbd_ui_x_display(ui),
                        PictOpOver,
@@ -344,6 +347,26 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
                        None,
                        XftDrawPicture(xft_backend->xft_backbuffer),
                        0, 0, 0, 0, 0, 0, w, h);
+    }
+
+  if (mb_kbd_layout_realsize(layout))
+    {
+       if ((image = mb_kbd_layout_get_changerground(layout)) != NULL)
+         {
+           int x, y, w, h;
+
+           x = mb_kbd_layout_get_changerground_x(layout);
+           y = mb_kbd_layout_get_changerground_y(layout);
+           w = mb_kbd_layout_get_changerground_w(layout);
+           h = mb_kbd_layout_get_changerground_h(layout);
+
+           XRenderComposite(mb_kbd_ui_x_display(ui),
+                            PictOpOver,
+                            mb_kbd_image_render_picture(image),
+                            None,
+                            XftDrawPicture(xft_backend->xft_backbuffer),
+                            0, 0, 0, 0, x, y, w, h);
+         }
     }
 
 }

@@ -192,6 +192,28 @@ mb_kbd_keys_current_state(MBKeyboard *kbd)
   return MBKeyboardKeyStateNormal;
 }
 
+/* change the layout */
+Bool
+mb_kbd_change_layout(MBKeyboard          *kbd,
+                     MBKeyboardLayoutType type)
+{
+  int                i = 0;
+  MBKeyboardLayout  *layout;
+
+  while ((layout = (MBKeyboardLayout *)util_list_get_nth_data(kbd->layouts, i)) 
+         != NULL)
+    {
+      if (type == mb_kbd_layout_get_type(layout))
+        {
+          kbd->selected_layout = layout;
+          return True;
+        }
+      i++;
+    }
+
+  return False;
+}
+
 void
 mb_kbd_redraw(MBKeyboard *kb)
 {

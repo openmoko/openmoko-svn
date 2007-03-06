@@ -318,6 +318,10 @@ mb_kbd_remove_state(MBKeyboard *kbd, MBKeyboardStateType state);
 MBKeyboardKeyStateType
 mb_kbd_keys_current_state(MBKeyboard *kbd);
 
+Bool
+mb_kbd_change_layout(MBKeyboard          *kbd,
+                     MBKeyboardLayoutType type);
+
 void
 mb_kbd_set_extended(MBKeyboard *kb, boolean extend);
 
@@ -366,22 +370,67 @@ List*
 mb_kbd_layout_rows(MBKeyboardLayout *layout);
 
 void
-mb_kbd_layout_set_realsize(MBKeyboardLayout *layout, int realsize);
+mb_kbd_layout_set_realsize(MBKeyboardLayout *layout,
+                           int realsize);
 
 int
 mb_kbd_layout_realsize(MBKeyboardLayout *layout);
 
 void
-mb_kbd_layout_set_width(MBKeyboardLayout *layout, int width);
+mb_kbd_layout_set_width(MBKeyboardLayout *layout,
+                        int width);
 
 int
 mb_kbd_layout_get_width(MBKeyboardLayout *layout);
 
 void
-mb_kbd_layout_set_height(MBKeyboardLayout *layout, int height);
+mb_kbd_layout_set_height(MBKeyboardLayout *layout,
+                         int height);
 
 int
 mb_kbd_layout_get_height(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_type(MBKeyboardLayout     *layout,
+                       MBKeyboardLayoutType  type);
+
+MBKeyboardLayoutType
+mb_kbd_layout_get_type(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_changerground(MBKeyboardLayout *layout,
+                                MBKeyboardImage  *changerground);
+
+MBKeyboardImage *
+mb_kbd_layout_get_changerground(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_changerground_x(MBKeyboardLayout *layout,
+                                  int               x);
+
+int
+mb_kbd_layout_get_changerground_x(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_changerground_y(MBKeyboardLayout *layout,
+                                  int               y);
+
+int
+mb_kbd_layout_get_changerground_y(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_changerground_w(MBKeyboardLayout *layout,
+                                  int               w);
+
+int
+mb_kbd_layout_get_changerground_w(MBKeyboardLayout *layout);
+
+void
+mb_kbd_layout_set_changerground_h(MBKeyboardLayout *layout,
+                                  int               h);
+
+int
+mb_kbd_layout_get_changerground_h(MBKeyboardLayout *layout);
 
 /**** Rows ******/
 
