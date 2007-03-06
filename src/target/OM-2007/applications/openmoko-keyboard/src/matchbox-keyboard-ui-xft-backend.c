@@ -121,6 +121,7 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
   MBKeyboard            *kbd;
 
   MBKeyboardImage       *image;
+  const char            *image_name;
 
   if (mb_kbd_key_is_blank(key)) /* spacer */
     return;
@@ -156,11 +157,13 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
     }
 
   if (mb_kbd_key_is_held(kbd, key))
-    image = mb_kbd_key_get_push_image(key);
+    image_name = mb_kbd_key_get_push_image(key);
   else
-    image = mb_kbd_key_get_normal_image(key);
+    image_name = mb_kbd_key_get_normal_image(key);
 
-  if(image)
+  image = mb_kbd_image_new(kbd, image_name);
+
+  if(image != NULL)
     {
       XRenderComposite(xdpy,
                        PictOpOver,
@@ -168,6 +171,9 @@ mb_kbd_ui_xft_redraw_key(MBKeyboardUI  *ui, MBKeyboardKey *key)
                        None, 
                        XftDrawPicture (xft_backend->xft_backbuffer),
                        0, 0, 0, 0, rect.x, rect.y, rect.width, rect.height);
+
+      mb_kbd_image_destroy(image);
+      image = NULL;
     }
   else                   
     {
@@ -310,11 +316,15 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
   MBKeyboardImage        *image;
   MBKeyboardLayout       *layout;
 
+  const char             *image_name;
+
   xft_backend = (MBKeyboardUIBackendXft*)mb_kbd_ui_backend(ui);
 
   layout = mb_kbd_get_selected_layout(mb_kbd_ui_kbd(ui));
 
-  image = mb_kbd_layout_get_background(layout);
+  image_name = mb_kbd_layout_get_background(layout);
+
+  image = mb_kbd_image_new(mb_kbd_ui_kbd(ui), image_name);
 
   /* Background */
   if (image == NULL)
@@ -347,26 +357,33 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
                        None,
                        XftDrawPicture(xft_backend->xft_backbuffer),
                        0, 0, 0, 0, 0, 0, w, h);
+
+      mb_kbd_image_destroy(image);
     }
 
   if (mb_kbd_layout_realsize(layout))
     {
-       if ((image = mb_kbd_layout_get_changerground(layout)) != NULL)
-         {
-           int x, y, w, h;
+      image_name = mb_kbd_layout_get_changerground(layout);
+      printf("changer background=%s\n", image_name);
+      if ((image = mb_kbd_image_new(mb_kbd_ui_kbd(ui), image_name)) != NULL)
+        {
+          int x, y, w, h;
 
-           x = mb_kbd_layout_get_changerground_x(layout);
-           y = mb_kbd_layout_get_changerground_y(layout);
-           w = mb_kbd_layout_get_changerground_w(layout);
-           h = mb_kbd_layout_get_changerground_h(layout);
+          x = mb_kbd_layout_get_changerground_x(layout);
+          y = mb_kbd_layout_get_changerground_y(layout);
+          w = mb_kbd_layout_get_changerground_w(layout);
+          h = mb_kbd_layout_get_changerground_h(layout);
 
-           XRenderComposite(mb_kbd_ui_x_display(ui),
-                            PictOpOver,
-                            mb_kbd_image_render_picture(image),
-                            None,
-                            XftDrawPicture(xft_backend->xft_backbuffer),
-                            0, 0, 0, 0, x, y, w, h);
-         }
+          XRenderComposite(mb_kbd_ui_x_display(ui),
+                           PictOpOver,
+                           mb_kbd_image_render_picture(image),
+                           None,
+                           XftDrawPicture(xft_backend->xft_backbuffer),
+                           0, 0, 0, 0, x, y, w, h);
+
+          mb_kbd_image_destroy(image);
+          fprintf(stderr, "print changer background\n");
+        }
     }
 
 }

@@ -341,7 +341,6 @@ config_handle_key_background_tag(MBKeyboardConfigState *state,
                                  const char            *tag,
                                  const char           **attr)
 {
-  MBKeyboardImage *img;
   const char *val;
   char  buf[512];
   Bool  pushimage;
@@ -373,19 +372,16 @@ config_handle_key_background_tag(MBKeyboardConfigState *state,
       if (!util_file_readable(buf))
         snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), val);
 
-      img = mb_kbd_image_new (state->keyboard, buf);
     }
   else
     {
-      img = mb_kbd_image_new (state->keyboard, val);
+      snprintf(buf, 512, "%s", val);
     }
-  if (img == NULL)
-    fprintf(stderr, "load img fail\n");
 
   if (pushimage)
-    mb_kbd_key_set_normal_image(state->current_key, img);
+    mb_kbd_key_set_normal_image(state->current_key, buf);
   else
-    mb_kbd_key_set_push_image(state->current_key, img);
+    mb_kbd_key_set_push_image(state->current_key, buf);
 }
 
 static void
@@ -684,7 +680,6 @@ static void
 config_handle_layout_background(MBKeyboardConfigState *state,
                                 const char **attr)
 {
-  MBKeyboardImage *img;
   const char *val;
   char  buf[512];
 
@@ -701,17 +696,13 @@ config_handle_layout_background(MBKeyboardConfigState *state,
       if (!util_file_readable(buf))
         snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), val);
 
-      img = mb_kbd_image_new (state->keyboard, buf);
+      mb_kbd_layout_set_background(state->current_layout, buf);
     }
   else
     {
-      img = mb_kbd_image_new (state->keyboard, val);
+      mb_kbd_layout_set_background(state->current_layout, val);
     }
 
-  if (img == NULL)
-    fprintf(stderr, "load img fail\n");
-
-  mb_kbd_layout_set_background(state->current_layout, img);
 
   if (mb_kbd_layout_realsize(state->current_layout))
     {
@@ -732,7 +723,6 @@ static void
 config_handle_layout_changerground(MBKeyboardConfigState *state,
                                    const char **attr)
 {
-  MBKeyboardImage *img;
   const char *val;
   char  buf[512];
 
@@ -753,17 +743,13 @@ config_handle_layout_changerground(MBKeyboardConfigState *state,
       if (!util_file_readable(buf))
         snprintf(buf, 512, "%s/.matchbox/%s", getenv("HOME"), val);
 
-      img = mb_kbd_image_new (state->keyboard, buf);
+      mb_kbd_layout_set_changerground(state->current_layout, buf);
     }
   else
     {
-      img = mb_kbd_image_new (state->keyboard, val);
+      mb_kbd_layout_set_changerground(state->current_layout, val);
     }
 
-  if (img == NULL)
-    fprintf(stderr, "load img fail\n");
-
-  mb_kbd_layout_set_changerground(state->current_layout, img);
 
   if ((val = attr_get_val("width", attr)) != NULL)
     {

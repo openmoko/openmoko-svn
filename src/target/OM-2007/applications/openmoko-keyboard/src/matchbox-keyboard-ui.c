@@ -340,16 +340,6 @@ mb_kbd_ui_min_key_size(MBKeyboardUI  *ui,
 	    max_h = mb_kbd_image_height (img);
 	}
     }
-  if (mb_kbd_key_get_normal_image(key))
-    {
-      MBKeyboardImage *img = mb_kbd_key_get_normal_image(key);
-
-      if (mb_kbd_image_width (img) > max_w)
-        max_w = mb_kbd_image_width (img);
-
-      if (mb_kbd_image_height (img) > max_h)
-        max_h = mb_kbd_image_height (img);
-    }
 
   *width = max_w;
   *height = max_h;
@@ -530,23 +520,6 @@ mb_kbd_ui_allocate_ui_layout(MBKeyboardUI *ui,
     }
   
   *width = max_row_width;
-
-  if (mb_kbd_layout_get_background(layout) != NULL)
-    {
-      MBKeyboardImage *img;
-      int             img_wid;
-      int             img_hei;
-
-      img = mb_kbd_layout_get_background(layout);
-      img_wid = mb_kbd_image_width(img);
-      img_hei = mb_kbd_image_height(img);
-
-      if (img_wid > *width)
-        *width = img_wid;
-
-      if (img_hei > *height)
-        *height = img_hei;
-    }
 }
 
 void

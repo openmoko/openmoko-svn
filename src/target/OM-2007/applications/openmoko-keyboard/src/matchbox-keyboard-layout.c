@@ -26,15 +26,15 @@ struct MBKeyboardLayout
   List             *rows;
 
   /* background image and changer background */
-  MBKeyboardImage  *background;
+  char             *background;
 
-  MBKeyboardImage  *changerground;
-  int              changer_x, changer_y, changer_w, changer_h;
+  char             *changerground;
+  int               changer_x, changer_y, changer_w, changer_h;
 
   /* real size */
-  Bool             realsize;
-  int              width;
-  int              height;
+  Bool              realsize;
+  int               width;
+  int               height;
 
   /* layout type */
   MBKeyboardLayoutType type;
@@ -70,12 +70,12 @@ mb_kbd_layout_rows(MBKeyboardLayout *layout)
 /* background image */
 void
 mb_kbd_layout_set_background(MBKeyboardLayout *layout,
-                             MBKeyboardImage  *background)
+                             const char  *background)
 {
-  layout->background = background;
+  layout->background = strdup(background);
 }
 
-MBKeyboardImage *
+const char *
 mb_kbd_layout_get_background(MBKeyboardLayout *layout)
 {
   return layout->background;
@@ -84,12 +84,12 @@ mb_kbd_layout_get_background(MBKeyboardLayout *layout)
 /* changer image */
 void
 mb_kbd_layout_set_changerground(MBKeyboardLayout *layout,
-                                MBKeyboardImage  *changerground)
+                                const char       *changerground)
 {
-  layout->changerground = changerground;
+  layout->changerground = strdup(changerground);
 }
 
-MBKeyboardImage *
+const char *
 mb_kbd_layout_get_changerground(MBKeyboardLayout *layout)
 {
   return layout->changerground;

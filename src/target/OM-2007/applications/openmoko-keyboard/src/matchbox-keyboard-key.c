@@ -73,8 +73,8 @@ struct MBKeyboardKey
   boolean                is_blank;   /* 'blank' keys are spacers */
   boolean                extended;   /* only show in landscape */
 
-  MBKeyboardImage        *normal_image;   /* The normal image */
-  MBKeyboardImage        *push_image;   /* The push down image */
+  char                  *normal_image;   /* The normal image */
+  char                  *push_image;   /* The push down image */
 
   MBKeyboardStateType    sets_kbdstate; /* needed */
 };
@@ -102,24 +102,26 @@ mb_kbd_key_new(MBKeyboard *kbd)
 }
 
 void
-mb_kbd_key_set_normal_image(MBKeyboardKey *key, MBKeyboardImage *image)
+mb_kbd_key_set_normal_image(MBKeyboardKey *key,
+                            const char    *image)
 {
-  key->normal_image = image;
+  key->normal_image = strdup(image);
 }
 
-MBKeyboardImage *
+const char *
 mb_kbd_key_get_normal_image(MBKeyboardKey *key)
 {
   return key->normal_image;
 }
 
 void
-mb_kbd_key_set_push_image(MBKeyboardKey *key, MBKeyboardImage *image)
+mb_kbd_key_set_push_image(MBKeyboardKey *key,
+                          const char    *image)
 {
-  key->push_image = image;
+  key->push_image = strdup(image);
 }
 
-MBKeyboardImage *
+const char *
 mb_kbd_key_get_push_image(MBKeyboardKey *key)
 {
   return key->push_image;

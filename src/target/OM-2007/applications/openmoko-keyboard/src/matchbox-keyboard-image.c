@@ -212,6 +212,8 @@ mb_kbd_image_new (MBKeyboard *kbd, const char *filename)
 
   free(data);
 
+  img->kbd = kbd;
+
   return img;
 }
 
@@ -236,7 +238,18 @@ mb_kbd_image_render_picture (MBKeyboardImage *img)
 void
 mb_kbd_image_destroy (MBKeyboardImage *img)
 {
+  MBKeyboardUI            *ui;
   /* ... */
+  if (img == NULL)
+    return;
+
+  ui = img->kbd->ui;
+
+  XRenderFreePicture(mb_kbd_ui_x_display(ui), img->xpic);
+
+  XFreePixmap(mb_kbd_ui_x_display(ui), img->xdraw);
+
+  free(img);
 }
 
 

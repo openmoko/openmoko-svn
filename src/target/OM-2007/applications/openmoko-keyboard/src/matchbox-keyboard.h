@@ -357,9 +357,9 @@ mb_kbd_layout_new(MBKeyboard *kbd, const char *id);
 
 void
 mb_kbd_layout_set_background(MBKeyboardLayout *layout,
-                             MBKeyboardImage  *background);
+                             const char       *background);
 
-MBKeyboardImage *
+const char *
 mb_kbd_layout_get_background(MBKeyboardLayout *layout);
 
 void
@@ -399,9 +399,9 @@ mb_kbd_layout_get_type(MBKeyboardLayout *layout);
 
 void
 mb_kbd_layout_set_changerground(MBKeyboardLayout *layout,
-                                MBKeyboardImage  *changerground);
+                                const char       *changerground);
 
-MBKeyboardImage *
+const char *
 mb_kbd_layout_get_changerground(MBKeyboardLayout *layout);
 
 void
@@ -476,15 +476,17 @@ MBKeyboardKey*
 mb_kbd_key_new(MBKeyboard *kbd);
 
 void
-mb_kbd_key_set_normal_image(MBKeyboardKey *key, MBKeyboardImage *image);
+mb_kbd_key_set_normal_image(MBKeyboardKey *key,
+                            const char    *image);
 
-MBKeyboardImage *
+const char *
 mb_kbd_key_get_normal_image(MBKeyboardKey *key);
 
 void
-mb_kbd_key_set_push_image(MBKeyboardKey *key, MBKeyboardImage *image);
+mb_kbd_key_set_push_image(MBKeyboardKey *key,
+                          const char    *image);
 
-MBKeyboardImage *
+const char *
 mb_kbd_key_get_push_image(MBKeyboardKey *key);
 
 void
