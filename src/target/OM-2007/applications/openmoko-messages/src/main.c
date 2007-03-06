@@ -17,6 +17,12 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <signal.h>
+
 #include "main.h"
 #include "foldersdb.h"
 #include "detail-area.h"
@@ -31,17 +37,91 @@
 
 #include <gtk/gtk.h>
 
+static pid_t 
+testlock (char *fname)
+{
+  int fd;
+  struct flock fl;
+
+  fd = open (fname, O_WRONLY, S_IWUSR);
+  if (fd < 0)
+    {
+      if (errno == ENOENT)
+        {
+          return 0;
+        }
+      else
+        {
+          perror ("Test lock open file");
+          return -1;
+        }
+    }
+
+  fl.l_type = F_WRLCK;
+  fl.l_whence = SEEK_SET;
+  fl.l_start = 0;
+  fl.l_len = 0;
+
+  if (fcntl (fd, F_GETLK, &fl) < 0)
+    {
+      close (fd);
+      return -1;
+    }
+  close (fd);
+
+  if (fl.l_type == F_UNLCK)
+    return 0;
+
+  return fl.l_pid;
+}
+
+static void 
+setlock (char *fname)
+{
+  int fd;
+  struct flock fl;
+
+  fd = open (fname, O_WRONLY|O_CREAT, S_IWUSR);
+  if (fd < 0)
+    {
+      perror ("Set lock open file");
+      return ;
+    }
+
+  fl.l_type = F_WRLCK;
+  fl.l_whence = SEEK_SET;
+  fl.l_start = 0;
+  fl.l_len = 0;
+
+  if (fcntl (fd, F_SETLK, &fl) < 0)
+    {
+      perror ("Lock file");
+      close (fd);
+    }
+}
+
 int main( int argc, char** argv )
 {
     g_debug( "openmoko-messenger starting up" );
+    pid_t           lockapp;
+
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
+
+    lockapp = testlock ("/tmp/messages.lock");
+    if (lockapp > 0)
+     {
+       //kill (lockapp, SIGUSR1);
+       g_debug("Openmoko messages is already running");
+       return 0;
+     }
+    setlock ("/tmp/messages.lock");
 
     MessengerData* d = g_new ( MessengerData, 1);
     d->foldersdb = foldersdb_new();
     d->app = MOKO_APPLICATION (moko_application_get_instance());
     d->currentfolder = g_strdup("Inbox");
-    g_set_application_name( "Messenger" ); 
+    g_set_application_name( "Messages" ); 
     
     /* ui */
     setup_ui(d);
