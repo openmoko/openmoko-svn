@@ -8,7 +8,7 @@ diff -ibc matchbox-window-manager-1.1/src/structs.h matchbox-window-manager-1.1.
   #define MB_CMB_KEYS_RELOAD 9
   
 + /* Defines for MB_COMMAND values, for openmoko project */
-+ #define MB_CMD_ACTIVAE_CLIENT 100
++ #define MB_CMD_ACTIVATE_CLIENT 100
 + #define MB_CMD_REMOVE_CLIENT 101
 + 
   /* Atoms, if you change these check ewmh_init() first */
@@ -24,7 +24,7 @@ diff -ibc matchbox-window-manager-1.1/src/wm.c matchbox-window-manager-1.1.patch
   	   wm_toggle_desktop(w);
   	   break;
 + /*For OpenMoko project, add by Sun Zhiyong*/	   
-+ 	 case MB_CMD_ACTIVAE_CLIENT	:
++ 	 case MB_CMD_ACTIVATE_CLIENT	:
 + 	   if (c == w->focused_client)
 + 	     break;
 + 	   else

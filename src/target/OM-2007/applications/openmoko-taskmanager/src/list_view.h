@@ -1,30 +1,30 @@
 /**
- * @file list_view.h
- * @brief list_view.h based on gtk+-2.0.
- * @author Sun Zhiyong
- * @date 2006-10
+ *  list_view.h
  *
- * Copyright (C) 2006 FIC-SH
+ *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2, or (at
- * your option) any later version.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
  */
- #ifndef OPENMOKO_LIST_VIEW_H
- #define OPENMOKO_LIST_VIEW_H
+ 
+#ifndef _MOKO_TASK_MANAGER_LIST_VIEW_H 
+#define _MOKO_TASK_MANAGER_LIST_VIEW_H
 
 #include <glib.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <libmokoui/moko-tree-view.h>
-
 
 #include "misc.h"
 
@@ -78,4 +78,5 @@ void
 moko_set_list_highlight (Display *dpy, MokoTaskList *l) ;
 
 G_END_DECLS
- #endif /*list_view.h*/
+
+#endif /*_MOKO_TASK_MANAGER_LIST_VIEW_H*/

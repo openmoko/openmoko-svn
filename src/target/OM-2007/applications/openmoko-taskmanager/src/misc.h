@@ -1,23 +1,24 @@
 /**
- * @file misc.h
- * @brief misc.h based on Xlib glib and gtk+-2.0.
- * @author Sun Zhiyong
- * @date 2006-10
+ *  misc.h
  *
- * Copyright (C) 2006 FIC-SH
+ *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2, or (at
- * your option) any later version.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#ifndef _MISC_H
-#define _MISC_H
+
+#ifndef _MOKO_TASK_MANAGER_MISC_H
+#define _MOKO_TASK_MANAGER_MISC_H
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -45,7 +46,7 @@
 #define MB_CMD_COMPOSITE     8
 #define MB_CMB_KEYS_RELOAD   9
 
-#define MB_CMD_ACTIVAE_CLIENT 100
+#define MB_CMD_ACTIVATE_CLIENT 100
 #define MB_CMD_REMOVE_CLIENT 101
 #define MB_CMD_REMOVE_AND_ACTIVE 102
 
@@ -79,12 +80,11 @@ mbcommand(Display *dpy, int cmd_id, Window win, char *data);
 gboolean 
 moko_active_next_client (Display* dpy);
 
-gboolean
-moko_kill_window (Display *dpy, Window w);
+
 
 /********/
 gboolean 
 moko_set_atoms_name(const char** src_name, int src_num);
 
 
-#endif/*misc.h*/
+#endif /*_MOKO_TASK_MANAGER_MISC_H*/

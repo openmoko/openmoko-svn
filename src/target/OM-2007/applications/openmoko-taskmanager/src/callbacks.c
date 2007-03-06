@@ -1,20 +1,20 @@
 /**
- * @file callbacks.c
- * @brief openmoko-taskmanager callbacks functions based on misc.c.
- * @author Sun Zhiyong
- * @date 2006-10
+ *  callbacks.c
  *
- * Copyright (C) 2006 FIC-SH
+ *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2, or (at
- * your option) any later version.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
 #include "callbacks.h"
@@ -82,7 +82,7 @@ moko_go_to_btn_cb (GtkButton *btn, MokoTaskManager *tm)
     if (!tm)
     	return;
     moko_wm_cmd (GTK_WIDGET (tm), 
-    			GTK_WIDGET (tm->l->list_view), MB_CMD_ACTIVAE_CLIENT);
+    			GTK_WIDGET (tm->l->list_view), MB_CMD_ACTIVATE_CLIENT);
 }
 
 void
@@ -161,7 +161,7 @@ moko_tab_event_cb (GtkButton *btn, MokoTaskList *l)
         gtk_tree_model_get (model, &iter, OBJECT_COL, &w, -1);
         //moko_print_win_list(GDK_DISPLAY(), &w, 1);
         //moko_send_Xclimsgwm(GDK_DISPLAY (), w);
-        mbcommand(GDK_DISPLAY(), MB_CMD_ACTIVAE_CLIENT, w, NULL);
+        mbcommand(GDK_DISPLAY(), MB_CMD_ACTIVATE_CLIENT, w, NULL);
         }
     if (path)
     	free (path);

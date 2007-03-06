@@ -1,21 +1,22 @@
 /**
- * @file callbacks.h
- * @brief openmoko-taskmanager callbacks based on misc.c.
- * @author Sun Zhiyong
- * @date 2006-10
+ *  callbacks.h
  *
- * Copyright (C) 2006 FIC-SH
+ *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2, or (at
- * your option) any later version.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
  */
+
 #ifndef _TASK_MANAGER_CALLBACKS_H
 #define _TASK_MANAGER_CALLBACKS_H
 #include <gdk/gdk.h>

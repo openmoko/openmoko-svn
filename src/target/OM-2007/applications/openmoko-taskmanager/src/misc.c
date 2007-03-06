@@ -1,20 +1,20 @@
 /**
- * @file misc.c
- * @brief misc.c based on Xlib glib and gtk+-2.0.
- * @author Sun Zhiyong
- * @date 2006-10
+ *  misc.c
  *
- * Copyright (C) 2006 FIC-SH
+ *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2, or (at
- * your option) any later version.
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
 #include "misc.h"
@@ -63,11 +63,11 @@ moko_update_net_undocked_client_list(Display *dpy, Window** list, guint * nr)
     for (i=0; i<nitems; i++) 
     {
     	type = moko_get_window_property (dpy, temp_list[i], atoms[_NET_WM_WINDOW_TYPE]);
-	if (type == atoms[_NET_WM_WINDOW_TYPE_NORMAL])
-	{
-	    temp_list[counter] = temp_list[i];
-	    counter ++;
-	}
+		if (type == atoms[_NET_WM_WINDOW_TYPE_NORMAL])
+		{
+	    	temp_list[counter] = temp_list[i];
+	    	counter ++;
+		}
     }
     *nr = counter;
     *list = g_malloc0 (sizeof (Window) * counter);
@@ -81,7 +81,8 @@ moko_iconify_client(Display* dpy, Window* w)
 {
     if (dpy == NULL || w == NULL)
     	return FALSE;
-    else {
+    else
+	{
     	GdkScreen * screen = gdk_screen_get_default ();
     	int i ;
     	i = gdk_screen_get_number (screen);
@@ -92,7 +93,7 @@ moko_iconify_client(Display* dpy, Window* w)
     	if (gdk_error_trap_pop ())
     		return FALSE;
     	return TRUE;
-    	}
+    }
 }
 
 GdkPixbuf *
@@ -112,19 +113,21 @@ moko_get_window_icon (Display *dpy, Window w)
 
     if (gdk_error_trap_pop () || rc != Success)
     	  return NULL;
-    if (nitems) {
+    if (nitems) 
+	{
     	  guint *prop = (guint *)data;
     	  guint w = prop[0], h = prop[1];
     	  guint i;
     	  guchar *pixels = g_malloc (w * h * 4);
     	  guchar *p = pixels;
-    	  for (i = 0; i < w * h; i++) {
+    	  for (i = 0; i < w * h; i++) 
+		  {
     		 gulong l = prop[2 + i];
     		 *(p++) = (l & 0x00ff0000) >> 16;
     		 *(p++) = (l & 0x0000ff00) >> 8;
     		 *(p++) = (l & 0x000000ff);
     		 *(p++) = (l & 0xff000000) >> 24;
-    		 }
+    	 }
     	
     	 pixbuf = gdk_pixbuf_new_from_data (pixels,
 					 GDK_COLORSPACE_RGB,
@@ -134,7 +137,7 @@ moko_get_window_icon (Display *dpy, Window w)
 					 w * 4,
 					 (GdkPixbufDestroyNotify)g_free,
 					 NULL);
-    	 }
+    }
     if (data)
     	XFree (data);
     return pixbuf;
@@ -156,22 +159,25 @@ moko_get_window_name (Display *dpy, Window w)
     	&nitems, &bytes_after, &prop);
     if (gdk_error_trap_pop () || rc != Success)
     	return NULL;
-    if (nitems){
+    if (nitems)
+	{
     	name = g_strdup (prop);
     	XFree (prop);
-    	}
-    else {
+    }
+    else
+	{
     	gdk_error_trap_push ();
     	rc = XGetWindowProperty (dpy, w, XA_WM_NAME,
     		0, G_MAXLONG, False, XA_STRING, &actual_type, &actual_format,
     		&nitems, &bytes_after, &prop);
     	if (gdk_error_trap_pop () || rc != Success)
     		return FALSE;
-    	if (nitems) {
+    	if (nitems) 
+		{
     		name = g_locale_to_utf8 (prop, -1, NULL, NULL, NULL);
     		XFree (prop);
-    		}
     	}
+    }
     return name;
 }
 
@@ -206,14 +212,17 @@ moko_get_window_property (Display *dpy, Window w, Atom property)
     rc = XGetWindowProperty (dpy, w, property,
     			0, 1, False, XA_ATOM, &actual_type, &actual_format,
 			  &nitems, &bytes_after, &prop);
-    if (gdk_error_trap_pop () || rc != Success){
+    if (gdk_error_trap_pop () || rc != Success)
+	{
     	//g_debug ("Have not obtain the property");
     	return None;
-    	}
-    if (prop) {
+    }
+    
+	if (prop) 
+	{
     	memcpy (&result, prop, sizeof (result));
     	XFree (prop);
-    	}
+    }
     return result;
 }
 
@@ -230,14 +239,15 @@ moko_tab_event_check (Display *dpy)
     gettimeofday(&then, NULL);
 
     //check the click type: tap "done = 1 "; tap with hold "done = 2";
-    while (!done) {
+    while (!done) 
+	{
     	if (XCheckMaskEvent(dpy, ButtonReleaseMask, &ev))
     		if (ev.type == ButtonRelease) 
     			done=1;
     		gettimeofday(&now, NULL);
-    		if ((now.tv_usec-then.tv_usec)>(click_time*1000) || now.tv_sec > then.tv_sec)
-    			done=2;
-    		}
+    	if ((now.tv_usec-then.tv_usec)>(click_time*1000) || now.tv_sec > then.tv_sec)
+    		done=2;
+    }
     return done;
 }
 
@@ -252,12 +262,13 @@ moko_get_current_active_client(Display *dpy, Window *window_return)
 
     if (XGetWindowProperty (dpy, DefaultRootWindow (dpy), atoms[_NET_ACTIVE_WINDOW],
     			0, 4, False, XA_WINDOW, &type, &actual_format, &nitems, &bytes_after, (unsigned char **)&prop)
-    		== Success) {
+    		== Success)
+	{
     	*window_return = g_malloc0(sizeof (Window) * nitems);
     	memcpy (*window_return, prop, sizeof (Window) * nitems);
     	XFree (prop);
     	return TRUE;
-    	}
+    }
     else return FALSE;
 }
 
@@ -288,7 +299,13 @@ mbcommand(Display *dpy, int cmd_id, Window win, char *data)
 	   exit(0);
 	   }
        } 
-    
+
+    if (cmd_id == MB_CMD_REMOVE_CLIENT)
+	{
+		if (moko_kill_window (dpy, win))
+			return;
+	}
+
     cmd_prop = XInternAtom(dpy, "_MB_COMMAND", False);
     memset(&ev, '\0', sizeof ev);
     ev.xclient.type = ClientMessage;
@@ -304,8 +321,7 @@ mbcommand(Display *dpy, int cmd_id, Window win, char *data)
     XFlush (dpy);
 }
 
-
-gboolean
+static gboolean
 moko_send_delete_message (Display *dpy, Window w) 
 {
     XEvent e;
@@ -325,7 +341,7 @@ moko_send_delete_message (Display *dpy, Window w)
     return TRUE;
 }
 
-gboolean
+static gboolean
 moko_really_kill_client (Display *dpy, Window w) 
 {
     gdk_error_trap_push ();
@@ -347,17 +363,19 @@ moko_kill_window (Display *dpy, Window w)
     rc = XGetWMProtocols (dpy, w, &protocols, &count);
     if (gdk_error_trap_pop ())
     	return FALSE;
-    if (rc) {
+    if (rc)
+	{
     	int i;
     	gboolean delete_supported = FALSE;
-    	for (i = 0; i < count; i++) {
+    	for (i = 0; i < count; i++) 
+		{
     		if (protocols[i] == WM_DELETE_WINDOW)
     			delete_supported = TRUE;
-    		}
+    	}
     	XFree (protocols);
     	if (delete_supported)
     		return moko_send_delete_message (dpy, w);
-    	}
+   	}
     return moko_really_kill_client (dpy, w);
 }
 
