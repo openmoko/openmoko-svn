@@ -47,6 +47,7 @@ RDEPENDS_task-openmoko-linux = "\
   module-init-tools-depmod \
   udev \
   rsync \
+  screen \
 #  update-alternatives \
 "
 
@@ -165,6 +166,7 @@ RDEPENDS_task-openmoko-demo = "\
   web \
   rxvt-unicode \
   mtpaint \
+  mplayer \
 "
 
 #
@@ -193,7 +195,7 @@ RDEPENDS_task-openmoko-debug = "\
   madplay \
   vorbis-tools \
   strace \
-#  ltrace \
+  ltrace \
   gdb \
   gdbserver \
   tcpdump \
