@@ -4144,6 +4144,20 @@ void init_image_dir()
     g_free(prefix);
 }
 
+static GtkWidget* created_mainwin = NULL;
+
+void
+openmoko_show_created_window()
+{
+    if(created_mainwin == NULL)
+    {
+        g_print("can not get the saved main window pointer\n");
+	return;
+    }
+    gtk_window_present(GTK_WINDOW(created_mainwin));
+    return;
+}
+
 void 
 openmoko_mainwin_create()
 {
@@ -4166,12 +4180,15 @@ openmoko_mainwin_create()
     
 //    MokoApplication *app = MOKO_APPLICATION(moko_application_get_instance());
 
-    MokoFingerWindow *window = MOKO_FINGER_WINDOW(moko_finger_window_new());
-    g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(openmoko_main_quit), NULL);
-    gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+    MokoFingerWindow *mainwin = MOKO_FINGER_WINDOW(moko_finger_window_new());
+    g_signal_connect(G_OBJECT(mainwin), "destroy", G_CALLBACK(openmoko_main_quit), NULL);
+    gtk_window_set_decorated(GTK_WINDOW(mainwin), FALSE);
+
+    //save the main window pointer
+    created_mainwin = GTK_WIDGET(mainwin);
 
     fixed = MOKO_FIXED(moko_fixed_new());
-    moko_finger_window_set_contents(window, GTK_WIDGET(fixed));
+    moko_finger_window_set_contents(mainwin, GTK_WIDGET(fixed));
    
 /*******************************************/
     background_vbox = gtk_vbox_new(FALSE, 0);
@@ -4535,35 +4552,35 @@ openmoko_mainwin_create()
     btn_set_center_image(GTK_BUTTON(playlist_button), GTK_IMAGE(image));
 /*******************************************/
     
-    gtk_widget_show_all(GTK_WIDGET(window));
-    gtk_window_present(GTK_WINDOW(window));
+    gtk_widget_show_all(GTK_WIDGET(mainwin));
+    gtk_window_present(GTK_WINDOW(mainwin));
     
-    gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
+    gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(mainwin)));
     
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
 		    "press_left_up",
 		    G_CALLBACK(openmoko_wheel_press_left_up_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
 		    "long_press_left_up",
 		    G_CALLBACK(openmoko_wheel_press_left_up_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
 		    "press_right_down",
 		    G_CALLBACK(openmoko_wheel_press_right_down_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
 		    "long_press_right_down",
 		    G_CALLBACK(openmoko_wheel_press_right_down_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(window)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
 		    "press_bottom",
 		    G_CALLBACK(openmoko_main_quit),
 		    NULL);
 
     if(!tools)
     {
-        tools = MOKO_FINGER_TOOL_BOX(moko_finger_window_get_toolbox(MOKO_FINGER_WINDOW(window)));
+        tools = MOKO_FINGER_TOOL_BOX(moko_finger_window_get_toolbox(MOKO_FINGER_WINDOW(mainwin)));
        
 	prev_button = GTK_BUTTON(moko_finger_tool_box_add_button_without_label(MOKO_FINGER_TOOL_BOX(tools)));
         image_path = g_build_path("/", images_dir, "ico-previoustrack.png", NULL);
@@ -4608,4 +4625,6 @@ openmoko_mainwin_create()
     dbus_bus_add_match(bus, "type='signal',interface='com.burtonini.dbus.Signal'", &error);
     dbus_connection_add_filter(bus, signal_filter, mainwin, NULL);
     //added end
+    
+    return;
 }

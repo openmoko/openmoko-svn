@@ -880,6 +880,14 @@ run_load_skin_error_dialog(const gchar * skin_path)
     gtk_widget_destroy(dialog);
 }
 */
+
+static void
+handler_sigusr1(int value)
+{
+    openmoko_show_created_window();
+    signal(SIGUSR1, handler_sigusr1);
+}
+
 static pid_t
 testlock(char* fname)
 {
@@ -948,14 +956,15 @@ gint
 main(gint argc, gchar ** argv)
 {
     //added by lijiang
-    pid_t lockmusicplayer;
-    lockmusicplayer = testlock("/tmp/musicplayer.lock");
-    if(lockmusicplayer > 0)
+    pid_t locksimplemusicplayer;
+    locksimplemusicplayer = testlock("/tmp/simplemusicplayer.lock");
+    if(locksimplemusicplayer > 0)
     {
 	 printf("Already running a instance\n");
+	 kill(locksimplemusicplayer, SIGUSR1);
 	 return 0;
     }
-    setlock("/tmp/musicplayer.lock");
+    setlock("/tmp/simplemusicplayer.lock");
     //added end
 	
     //BmpCmdLineOpt options;
@@ -1094,6 +1103,8 @@ main(gint argc, gchar ** argv)
 //    g_free(audio_path);
    
     openmoko_mainwin_create();
+
+    signal(SIGUSR1, handler_sigusr1);
     
     gtk_main();
 
