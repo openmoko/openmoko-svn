@@ -679,6 +679,48 @@ python read_subpackage_metadata () {
 			bb.data.setVar(key, sdata[key], d)
 }
 
+def base_get_revisions(d):
+    import bb, sys
+    localdata = bb.data.createCopy(d)
+    
+    src_uri = bb.data.getVar('SRC_URI', localdata, 1)
+    if not src_uri:
+        ## FIXME Emit a warning here? Should an empty SRC_URI be allowed?
+        return []
+    
+    import time
+    FALLBACKREVS = [ "0", time.strftime('%Y%m%d%H%M', time.gmtime()) ]
+    # The idea here is that a zero for the first revision component should be smaller
+    # than any real revision so that real revisions always override the date-fallback
+    
+    if not hasattr(bb.fetch, "compute_revisions"):
+        bb.note( "This BitBake doesn't support revision fetching, falling back to current date" )
+        return FALLBACKREVS
+
+    try:
+        bb.fetch.init(src_uri.split(),d)
+    except bb.fetch.NoMethodError:
+        (type, value, traceback) = sys.exc_info()
+        raise bb.build.FuncFailed("No method: %s" % value)
+    
+    revs = []
+    try:
+        revs = bb.fetch.compute_revisions(localdata)
+    except bb.fetch.MissingParameterError:
+        (type, value, traceback) = sys.exc_info()
+        raise bb.build.FuncFailed("Missing parameters: %s" % value)
+    except bb.fetch.FetchError:
+        (type, value, traceback) = sys.exc_info()
+        raise bb.build.FuncFailed("Fetch failed: %s" % value)
+    except bb.fetch.QueryError:
+        (type, value, traceback) = sys.exc_info()
+        bb.error( "Revision fetching failed: '%s', falling back to current date." % value)
+        return FALLBACKREVS
+
+    bb.note("Retrieved remote revisions: %r" % revs)
+    
+    return revs
+
 def base_after_parse_two(d):
     import bb
     import exceptions
@@ -704,9 +746,17 @@ def base_after_parse_two(d):
     srcdate = bb.data.getVar('SRCDATE_%s' % pn, d, 1)
     if srcdate != None:
         bb.data.setVar('SRCDATE', srcdate, d)
+    
     if srcdate == 'now':
-        import time
-        bb.data.setVar('PR', time.strftime('%Y%m%d%H%M', time.gmtime()), d)
+        revisions = base_get_revisions(d)
+        
+        pr = bb.data.getVar('PR', d, 1)
+        if pr: 
+            revisions.insert( 0, pr )
+        elif revisions:
+            revisions[0] = "r" + revisions[0]
+        
+        bb.data.setVar('PR', '_'.join(revisions), d)
 
     use_nls = bb.data.getVar('USE_NLS_%s' % pn, d, 1)
     if use_nls != None:
