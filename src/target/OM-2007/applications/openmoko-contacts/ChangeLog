@@ -1,3 +1,63 @@
+2007-03-07  Thomas Wood  <thomas@openedhand.com>
+
+	Merge in various changes from mainline contacts:
+
+	........
+	r180 | thomas | 2007-03-06 15:22:37 +0000 (Tue, 06 Mar 2007) | 6 lines
+
+	2007-03-06  Thomas Wood  <thomas@openedhand.com>
+
+		* src/contacts-callbacks-ui.c: (contacts_search_changed_cb): Prevent
+		the search entry selecting text on backspace (partially fixes bug 53).
+		(contacts_treeview_search_cb): Replace deprecated function
+
+	........
+	r179 | thomas | 2007-03-06 14:44:37 +0000 (Tue, 06 Mar 2007) | 8 lines
+
+	2007-03-06  Thomas Wood  <thomas@openedhand.com>
+
+		* src/contacts-edit-pane.c: (contacts_change_groups_cb): Fix group editing/management (
+		fixes bug 217)
+
+		* src/contacts-gtk.c: (create_main_window):
+		* src/contacts-main.c: (main):
+		Tweaks to make UI more stable and consistent
+
+	........
+	r177 | ross | 2007-03-04 11:34:40 +0000 (Sun, 04 Mar 2007) | 5 lines
+
+	2007-03-04  Ross Burton  <ross@openedhand.com>
+
+		* pl.po:
+		Polish translation, thanks Tomasz Dominikowski.
+
+	........
+	r176 | thomas | 2007-03-01 13:58:10 +0000 (Thu, 01 Mar 2007) | 4 lines
+
+		* po/LINGUAS: Added new translations
+		* po/bg.po: New Bulgarian translation from Yavor Doganov <yavor@doganov.org> (Bug 208)
+		* po/da.po: New Danish translation from Kristian Poul Herkild <kristian@herkild.dk> (Bug 212)
+
+	........
+	r158 | ross | 2007-01-26 16:51:33 +0000 (Fri, 26 Jan 2007) | 7 lines
+
+	2007-01-26  Ross Burton  <ross@openedhand.com>
+
+		* configure.ac
+		* po/LINGUAS:
+		Modified the intltool part to make use of a LINGUAS file (thanks
+		Olivier Le Thanh Duong <olivier@lethanh.be>)
+
+	........
+	r153 | ross | 2007-01-25 10:45:44 +0000 (Thu, 25 Jan 2007) | 5 lines
+
+	2007-01-25  Ross Burton  <ross@openedhand.com>
+
+		* src/contacts-main.c:
+		Pass a GError when creating the address book.
+	........
+
+
 2007-03-05  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-contact-pane.c: (field_button_add_cb),

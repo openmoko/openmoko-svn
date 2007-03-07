@@ -136,6 +136,7 @@ contacts_bacon_cb (const char *message, ContactsData *data)
 int
 main (int argc, char **argv)
 {
+	GError *error = NULL;
 	BaconMessageConnection *mc;
 #ifdef HAVE_GCONF
 	const char *search;
@@ -155,9 +156,9 @@ main (int argc, char **argv)
 	};
 
         /* Initialise the i18n support code */
-        bindtextdomain (GETTEXT_PACKAGE, CONTACTS_LOCALE_DIR);
-        bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-        textdomain (GETTEXT_PACKAGE);
+	bindtextdomain (GETTEXT_PACKAGE, CONTACTS_LOCALE_DIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	textdomain (GETTEXT_PACKAGE);
 
 	context = g_option_context_new (" - A light-weight address-book");
 	g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
@@ -221,12 +222,11 @@ main (int argc, char **argv)
 		g_signal_connect (G_OBJECT (plug_widget), "destroy",
 				  G_CALLBACK (gtk_main_quit), NULL);
 		widget = data->ui->main_menubar;
-		gtk_widget_hide (widget);
 		gtk_widget_show (plug_widget);
 	} else {
 		g_signal_connect (G_OBJECT (widget), "destroy",
 				  G_CALLBACK (gtk_main_quit), NULL);
-		gtk_widget_show (widget);
+		gtk_widget_show_all (widget);
 	}
 
 	/* fix icon sizes to 16x16 for the moment... */

@@ -166,8 +166,8 @@ create_main_window (ContactsData *data)
 
 	main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (main_window), _("Contacts"));
-	gtk_window_set_default_size (GTK_WINDOW (main_window), -1, 300);
 	gtk_window_set_icon_name (GTK_WINDOW (main_window), "stock_contact");
+	gtk_window_set_default_size (GTK_WINDOW (main_window), 320, 240);
 
 	vbox7 = gtk_vbox_new (FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (main_window), vbox7);
@@ -204,6 +204,7 @@ create_main_window (ContactsData *data)
 
 	contact_menu = gtk_menu_item_new_with_mnemonic (_("_Contact"));
 	gtk_container_add (GTK_CONTAINER (main_menubar), contact_menu);
+	g_object_set (G_OBJECT (contact_menu), "no-show-all", TRUE, NULL);
 
 	contact_menu_menu = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (contact_menu), contact_menu_menu);
@@ -256,7 +257,6 @@ create_main_window (ContactsData *data)
 
 	main_hpane = gtk_hpaned_new ();
 	gtk_container_add (GTK_CONTAINER (main_notebook), main_hpane);
-	gtk_paned_set_position (GTK_PANED (main_hpane), 1);
 
 	contacts_vbox = gtk_vbox_new (FALSE, 6);
 	gtk_paned_pack1 (GTK_PANED (main_hpane), contacts_vbox, FALSE, FALSE);
@@ -299,6 +299,7 @@ create_main_window (ContactsData *data)
 
 	search_tab_hbox = gtk_hbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (search_hbox), search_tab_hbox, TRUE, TRUE, 0);
+	g_object_set (G_OBJECT (search_tab_hbox), "no-show-all", TRUE, NULL);
 
 	symbols_radiobutton = gtk_radio_button_new_with_mnemonic (NULL, _("0-9#"));
 	gtk_box_pack_start (GTK_BOX (search_tab_hbox), symbols_radiobutton, TRUE, FALSE, 0);
@@ -336,7 +337,7 @@ create_main_window (ContactsData *data)
 	preview_header_hbox = gtk_hbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (summary_vbox), preview_header_hbox, FALSE, TRUE, 0);
 
-	summary_name_label = gtk_label_new (_("<span><big><b>Welcome to Contacts</b></big></span>"));
+	summary_name_label = gtk_label_new (NULL);
 	gtk_box_pack_start (GTK_BOX (preview_header_hbox), summary_name_label, TRUE, TRUE, 0);
 	GTK_WIDGET_SET_FLAGS (summary_name_label, GTK_CAN_FOCUS);
 	gtk_label_set_use_markup (GTK_LABEL (summary_name_label), TRUE);
@@ -345,7 +346,7 @@ create_main_window (ContactsData *data)
 	gtk_misc_set_padding (GTK_MISC (summary_name_label), 6, 0);
 	gtk_label_set_ellipsize (GTK_LABEL (summary_name_label), PANGO_ELLIPSIZE_END);
 
-	photo_image = gtk_image_new_from_icon_name ("stock_contact", GTK_ICON_SIZE_DIALOG);
+	photo_image = gtk_image_new ();
 	gtk_box_pack_end (GTK_BOX (preview_header_hbox), photo_image, FALSE, TRUE, 6);
 	gtk_misc_set_padding (GTK_MISC (photo_image), 1, 0);
 
@@ -363,7 +364,8 @@ create_main_window (ContactsData *data)
 
 	summary_hbuttonbox = gtk_hbutton_box_new ();
 	gtk_box_pack_end (GTK_BOX (vbox3), summary_hbuttonbox, FALSE, FALSE, 0);
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (summary_hbuttonbox), GTK_BUTTONBOX_SPREAD);
+	gtk_button_box_set_layout (GTK_BUTTON_BOX (summary_hbuttonbox), GTK_BUTTONBOX_END);
+	gtk_box_set_spacing (GTK_BOX (summary_hbuttonbox), 6);
 
 	new_button = gtk_button_new_from_stock ("gtk-new");
 	gtk_container_add (GTK_CONTAINER (summary_hbuttonbox), new_button);
@@ -399,6 +401,7 @@ create_main_window (ContactsData *data)
 	hbuttonbox2 = gtk_hbutton_box_new ();
 	gtk_box_pack_start (GTK_BOX (vbox4), hbuttonbox2, FALSE, TRUE, 0);
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox2), GTK_BUTTONBOX_END);
+	gtk_box_set_spacing (GTK_BOX (hbuttonbox2), 6);
 
 	add_field_button = gtk_button_new_with_mnemonic (_("_Add Field"));
 	gtk_container_add (GTK_CONTAINER (hbuttonbox2), add_field_button);
@@ -540,11 +543,6 @@ create_main_window (ContactsData *data)
 	ui->summary_name_label = summary_name_label;
 	ui->summary_table = summary_table;
 	ui->summary_vbox = summary_vbox;
-
-	gtk_widget_show_all (main_window);
-	gtk_widget_hide (search_tab_hbox);
-	gtk_widget_hide (contact_menu);
-
 
 #ifdef HAVE_GCONF
 	client = gconf_client_get_default ();

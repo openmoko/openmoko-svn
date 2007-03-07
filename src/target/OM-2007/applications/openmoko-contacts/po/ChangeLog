@@ -1,3 +1,20 @@
+2007-03-07  Thomas Wood  <thos@gnome.org>
+
+	reviewed by: <delete if not using a buddy>
+
+	* ChangeLog:
+
+2007-03-04  Ross Burton  <ross@openedhand.com>
+
+	* pl.po:
+	Polish translation, thanks Tomasz Dominikowski.
+
+2007-02-06  Ross Burton  <ross@openedhand.com>
+
+	* LINGUAS:
+	* ru.po:
+	Add Russian translation, by Alexander Bokovoy.
+
 2006-11-24  Thomas Wood  <thomas@openedhand.com>
 
 	* POTFILES.in:
