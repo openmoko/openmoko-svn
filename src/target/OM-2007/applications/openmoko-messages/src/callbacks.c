@@ -22,12 +22,30 @@
 #include "detail-area.h"
 #include <gtk/gtk.h>
 
+static gboolean 
+model_number_helper (GtkTreeModel* model,
+		     GtkTreePath*  path,
+		     GtkTreeIter*  iter,
+		     gpointer      data)
+{
+    MessengerData* d = (MessengerData*)data;
+    d->msg_num ++;
+    return FALSE;
+}
+
+gint get_model_number (MessengerData* d)
+{
+    d->msg_num = 0;
+    gtk_tree_model_foreach (d->filter,model_number_helper,d);
+    return d->msg_num;
+}
 
 gboolean cb_filter_changed(GtkWidget* widget, gchar* text, MessengerData* d)
 {
-    g_debug("changed to %s folder",text);
+    //g_debug("changed to %s folder",text);
     d->currentfolder = g_strdup(text);
     gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
+    g_debug("folder %s has %d messages",text,get_model_number(d));
     
     return FALSE;
 }
@@ -448,7 +466,7 @@ void cb_search_entry_changed (GtkEditable* editable, MessengerData* d)
     GtkWidget* search_entry = GTK_WIDGET(editable);
     d->s_key = g_strdup (gtk_entry_get_text(GTK_ENTRY(search_entry)));
     gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
-    g_debug ("search %s",d->s_key);
+    g_debug ("search %s, result has %d messages",d->s_key,get_model_number(d));
 }
 
 void cb_search_on (MessengerData* d)

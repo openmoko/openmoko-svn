@@ -111,7 +111,6 @@ int main( int argc, char** argv )
     lockapp = testlock ("/tmp/messages.lock");
     if (lockapp > 0)
      {
-       //kill (lockapp, SIGUSR1);
        g_debug("Openmoko messages is already running");
        return 0;
      }
@@ -119,6 +118,8 @@ int main( int argc, char** argv )
 
     MessengerData* d = g_new ( MessengerData, 1);
     d->foldersdb = foldersdb_new();
+    d->s_key = "";
+    d->msg_num = 0;
     d->app = MOKO_APPLICATION (moko_application_get_instance());
     d->currentfolder = g_strdup("Inbox");
     g_set_application_name( "Messages" ); 

@@ -44,6 +44,7 @@ typedef struct _MessengerData{
     GSList* folderlist;
     gchar* currentfolder;
     gchar* s_key;
+    gint   msg_num;
     gboolean searchOn;
     GtkWidget* nfEntry;
     GtkWidget* frEntry;
