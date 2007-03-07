@@ -364,7 +364,6 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
   if (mb_kbd_layout_realsize(layout))
     {
       image_name = mb_kbd_layout_get_changerground(layout);
-      printf("changer background=%s\n", image_name);
       if ((image = mb_kbd_image_new(mb_kbd_ui_kbd(ui), image_name)) != NULL)
         {
           int x, y, w, h;
@@ -382,7 +381,6 @@ mb_kbd_ui_xft_pre_redraw(MBKeyboardUI  *ui)
                            0, 0, 0, 0, x, y, w, h);
 
           mb_kbd_image_destroy(image);
-          fprintf(stderr, "print changer background\n");
         }
     }
 
