@@ -1,0 +1,10 @@
+Index: openmoko-dates/po/LINGUAS
+===================================================================
+--- openmoko-dates/po/LINGUAS	(revision 335)
++++ openmoko-dates/po/LINGUAS	(working copy)
+@@ -1,5 +1,4 @@
+ et
+ fr
+ nl
+-pl
+ ru
