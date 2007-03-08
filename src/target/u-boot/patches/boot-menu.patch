@@ -22,7 +22,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/bootmenu.c
-@@ -0,0 +1,335 @@
+@@ -0,0 +1,365 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -50,6 +50,13 @@ Index: u-boot/board/neo1973/bootmenu.c
 +#include <devices.h>
 +#include <console.h>
 +#include <environment.h>
++#include <environment.h>
++#include <asm/atomic.h>
++
++#ifdef CONFIG_USBD_DFU
++#include "usbdcore.h"
++#include "usb_dfu.h"
++#endif
 +
 +#include "neo1973.h"
 +
@@ -257,6 +264,27 @@ Index: u-boot/board/neo1973/bootmenu.c
 +}
 +
 +
++static int system_idle(void)
++{
++#ifdef  CONFIG_USBD_DFU
++	if (system_dfu_state)
++		return *system_dfu_state == DFU_STATE_appIDLE;
++#endif
++	return 1;
++}
++
++
++static void poweroff_if_idle(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	if (system_idle())
++		neo1973_poweroff();
++	local_irq_restore(flags);
++}
++
++
 +static void do_option(int option)
 +{
 +	int seconds, aux;
@@ -290,7 +318,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 +			seconds--;
 +	}
 +	if (!option)
-+		neo1973_poweroff();
++		poweroff_if_idle();
 +	init_bootmenu();
 +}
 +
@@ -322,8 +350,10 @@ Index: u-boot/board/neo1973/bootmenu.c
 +	}
 +	on = tmp;
 +	if (neo1973_new_second())
-+		if (++seconds > boot_menu_timeout)
-+			neo1973_poweroff();
++		if (++seconds > boot_menu_timeout) {
++			poweroff_if_idle();
++			seconds = 0;
++		}
 +}
 +
 +
