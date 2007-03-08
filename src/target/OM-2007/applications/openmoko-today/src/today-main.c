@@ -180,6 +180,18 @@ out:
   return result;
 }
 
+/* information lines */
+
+/**
+ * today_infoline_new:
+ * @stock_id: name of the stock icon to use
+ * @message: string containing the message
+ *
+ * Utility function to create new info lines
+ *
+ * Return value: The parent widget of the new widgets
+ */
+
 static GtkWidget *
 today_infoline_new (gchar * stock_id, gchar * message)
 {
@@ -202,6 +214,37 @@ today_infoline_new (gchar * stock_id, gchar * message)
   return eventbox;
 }
 
+
+/* launcher buttons */
+
+/**
+ * callback for luncher buttons
+ */
+static void
+today_launcher_clicked_cb (GtkWidget *button, gchar *command)
+{
+  GError *error;
+
+  g_spawn_command_line_async (command, &error);
+
+  if (error)
+  {
+    LOG_ERROR;
+    g_error_free (error);
+  }
+
+  /* TODO: should we hide or quit after launching an application? */
+}
+
+/**
+ * today_launcher_button_new:
+ * @icon: stock name to use as the icon in the button
+ * @exec: command to execute when the button is clicked
+ *
+ * Utility function to create new launcher buttons
+ *
+ * Return value: The parent widget of the new widgets
+ */
 static GtkWidget *
 today_launcher_button_new (gchar * icon, gchar * exec)
 {
@@ -211,6 +254,11 @@ today_launcher_button_new (gchar * icon, gchar * exec)
                      gtk_image_new_from_stock (icon, GTK_ICON_SIZE_BUTTON));
 
   gtk_widget_set_name (button, "today-launcher-button");
+
+  g_signal_connect (G_OBJECT (button),
+                    "clicked",
+                    G_CALLBACK (today_launcher_clicked_cb),
+                    exec);
 
   return button;
 }
@@ -324,7 +372,7 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), button_box, FALSE, FALSE, 0);
 
   gtk_container_add (GTK_CONTAINER (button_box),
-                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new (GTK_STOCK_EXECUTE, "contacts"));
   gtk_container_add (GTK_CONTAINER (button_box),
                      today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
   gtk_container_add (GTK_CONTAINER (button_box),
