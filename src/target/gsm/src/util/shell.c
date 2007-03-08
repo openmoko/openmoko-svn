@@ -127,7 +127,6 @@ int shell_main(struct lgsm_handle *lgsmh)
 				lgsm_phone_power(lgsmh, 0);
 			} else if (!strcmp(buf, "R")) {
 				printf("Register\n");
-				lgsm_phone_power(lgsmh, 0);
 				lgsm_netreg_register(lgsmh, 0);
 			} else if (!strcmp(buf, "q")) {
 				exit(0);
