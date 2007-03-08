@@ -155,7 +155,7 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	/* direction */
 	tok = strtok(NULL, ",");
 	if (!tok)
-		goto out_free_io;
+		goto out_send;
 	
 	switch (*tok) {
 	case '0':
@@ -171,8 +171,9 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	/* mode */
 	tok = strtok(NULL, ",");
 	if (!tok)
-		goto out_free_io;
+		goto out_send;
 	
+out_send:
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_STATUS);
 
 	return 0;
