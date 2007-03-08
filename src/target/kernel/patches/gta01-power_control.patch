@@ -1,17 +1,16 @@
 Index: linux-2.6.20.1/arch/arm/common/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/arch/arm/common/Makefile	2007-03-02 20:53:59.000000000 +0100
-+++ linux-2.6.20.1/arch/arm/common/Makefile	2007-03-02 20:54:56.000000000 +0100
-@@ -17,3 +17,5 @@
+--- linux-2.6.20.1.orig/arch/arm/common/Makefile	2007-03-08 14:03:22.000000000 +0100
++++ linux-2.6.20.1/arch/arm/common/Makefile	2007-03-08 23:12:20.000000000 +0100
+@@ -17,3 +17,4 @@
  obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
  obj-$(CONFIG_ARCH_IXP2000)	+= uengine.o
  obj-$(CONFIG_ARCH_IXP23XX)	+= uengine.o
-+#obj-$(CONFIG_MACH_GTA01)	+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
-+obj-m 				+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
++obj-$(CONFIG_MACH_GTA01)	+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
 Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gps.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/arch/arm/common/gta01_pm_gps.c	2007-03-02 20:54:56.000000000 +0100
++++ linux-2.6.20.1/arch/arm/common/gta01_pm_gps.c	2007-03-08 14:03:27.000000000 +0100
 @@ -0,0 +1,542 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
@@ -558,8 +557,8 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gps.c
 Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c	2007-03-03 15:39:15.000000000 +0100
-@@ -0,0 +1,174 @@
++++ linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c	2007-03-08 23:48:57.000000000 +0100
+@@ -0,0 +1,208 @@
 +/*
 + * GSM Management code for the FIC Neo1973 GSM Phone
 + *
@@ -577,15 +576,34 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 +#include <linux/init.h>
 +#include <linux/kernel.h>
 +#include <linux/platform_device.h>
++#include <linux/console.h>
++#include <linux/errno.h>
 +
 +#include <asm/hardware.h>
 +#include <asm/arch/gta01.h>
 +
 +struct gta01pm_priv {
 +	int gpio_ngsm_en;
++	struct console *con;
 +};
 +
 +static struct gta01pm_priv gta01_gsm;
++
++static struct console *find_s3c24xx_console(void)
++{
++	struct console *con;
++
++	acquire_console_sem();
++
++	for (con = console_drivers; con; con = con->next) {
++		if (!strcmp(con->name, "ttySAC"))
++			break;
++	}
++
++	release_console_sem();
++
++	return con;
++}
 +
 +static ssize_t gsm_read(struct device *dev, struct device_attribute *attr,
 +			char *buf)
@@ -616,6 +634,9 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 +			dev_info(dev, "powering up GSM, thus disconnecting "
 +				 "serial console\n");
 +
++			if (gta01_gsm.con)
++				console_stop(gta01_gsm.con);
++
 +			if (gta01_gsm.gpio_ngsm_en)
 +				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 0);
 +
@@ -625,6 +646,9 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 +
 +			if (gta01_gsm.gpio_ngsm_en)
 +				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 1);
++
++			if (gta01_gsm.con)
++				console_start(gta01_gsm.con);
 +
 +			dev_info(dev, "powered down GSM, thus enabling "
 +				 "serial console\n");
@@ -655,6 +679,11 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 +{
 +	/* GPIO state is saved/restored by S3C2410 core GPIO driver, so we
 +	 * don't need to do anything here */
++
++	/* Make sure that the kernel console on the serial port is still
++	 * disabled. FIXME: resume ordering race with serial driver! */
++	if (s3c2410_gpio_getpin(GTA01_GPIO_MODEM_ON) && gta01_gsm.con)
++		console_stop(gta01_gsm.con);
 +
 +	return 0;
 +}
@@ -695,6 +724,10 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 +	default:
 +		break;
 +	}
++
++	gta01_gsm.con = find_s3c24xx_console();
++	if (!gta01_gsm.con)
++		dev_warn(&pdev->dev, "cannot find S3C24xx console driver\n");
 +
 +	return 0;
 +}
@@ -737,7 +770,7 @@ Index: linux-2.6.20.1/arch/arm/common/gta01_pm_gsm.c
 Index: linux-2.6.20.1/arch/arm/common/gta01_pm_bt.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/arch/arm/common/gta01_pm_bt.c	2007-03-02 20:54:56.000000000 +0100
++++ linux-2.6.20.1/arch/arm/common/gta01_pm_bt.c	2007-03-08 14:03:27.000000000 +0100
 @@ -0,0 +1,133 @@
 +/*
 + * Bluetooth PM code for the FIC Neo1973 GSM Phone
