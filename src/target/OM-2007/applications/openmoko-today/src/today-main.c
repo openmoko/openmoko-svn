@@ -73,7 +73,7 @@ today_update_time (GtkLabel * label)
   }
 
   /* TODO: make 12/24 hr optional */
-  strftime (time_str, sizeof (time_str), "<big>%l:%M</big> %p", tmp);
+  strftime (time_str, sizeof (time_str), "<big>%I:%M</big> %p", tmp);
   gtk_label_set_markup (label, time_str);
 }
 
