@@ -4,7 +4,7 @@ INCLUDES = 						\
 AM_CPPFLAGS=-DPKGDATADIR=\"$(pkgdatadir)\" \
             -DDATADIR=\""$(datadir)"\"
 
-AM_CFLAGS = -Wall -export-dynamic $(CFLAGS)
+AM_CFLAGS =  -Wall -pedantic -std=c99 $(CFLAGS)
 
 bin_PROGRAMS = today
 
