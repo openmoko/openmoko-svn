@@ -22,7 +22,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/bootmenu.c
-@@ -0,0 +1,365 @@
+@@ -0,0 +1,366 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -100,7 +100,6 @@ Index: u-boot/board/neo1973/bootmenu.c
 +static int map[MAX_MENU_ITEMS];
 +static int options = 0;
 +static int width = sizeof(FACTORY_TXT)-1;
-+static int boot_menu_timeout;
 +
 +static device_t *bm_con;
 +
@@ -233,11 +232,6 @@ Index: u-boot/board/neo1973/bootmenu.c
 +	map[options+1] = options+1;
 +
 +	bm_printf("\n\nPress [AUX] to select, [POWER] to execute.\n");
-+
-+	boot_menu_timeout = get_var_positive_int("boot_menu_timeout",
-+	    BOOT_MENU_TIMEOUT);
-+	if (boot_menu_timeout < MIN_BOOT_MENU_TIMEOUT)
-+		boot_menu_timeout = MIN_BOOT_MENU_TIMEOUT;
 +}
 +
 +
@@ -349,11 +343,18 @@ Index: u-boot/board/neo1973/bootmenu.c
 +		seconds = 0;
 +	}
 +	on = tmp;
-+	if (neo1973_new_second())
-+		if (++seconds > boot_menu_timeout) {
++	if (neo1973_new_second()) {
++		int timeout;
++
++		timeout = get_var_positive_int("boot_menu_timeout",
++		    BOOT_MENU_TIMEOUT);
++		if (timeout < MIN_BOOT_MENU_TIMEOUT)
++			timeout = MIN_BOOT_MENU_TIMEOUT;
++		if (++seconds > timeout) {
 +			poweroff_if_idle();
 +			seconds = 0;
 +		}
++	}
 +}
 +
 +
