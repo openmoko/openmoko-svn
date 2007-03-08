@@ -101,7 +101,42 @@ out_free_io:
 
 static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
-	/* FIXME: parse ciphering indication */
+	char *tok1, *tok2;
+
+	tok1 = strtok(buf, ",");
+	if (!tok1)
+		return -EIO;
+	
+	tok2 = strtok(NULL, ",");
+	if (!tok2) {
+		switch (atoi(tok1)) {
+		case 0:
+			gsmd->dev_state.ciph_ind.flags &= ~GSMD_CIPHIND_ACTIVE;
+			break;
+		case 1:
+			gsmd->dev_state.ciph_ind.flags |= GSMD_CIPHIND_ACTIVE;
+			break;
+		case 2:
+			gsmd->dev_state.ciph_ind.flags |= GSMD_CIPHIND_DISABLED_SIM;
+			break;
+		}
+	} else {
+		struct gsmd_evt_auxdata *aux;
+		struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
+							   GSMD_EVT_CIPHER,
+							   sizeof(*aux));
+		if (!ucmd)
+			return -ENOMEM;
+
+		aux = (struct gsmd_evt_auxdata *) ucmd->buf;
+
+		aux->u.cipher.net_state_gsm = atoi(tok1);
+		aux->u.cipher.net_state_gsm = atoi(tok2);
+
+		usock_evt_send(gsmd, ucmd, GSMD_EVT_CIPHER);
+	}
+
+	return 0;
 }
 
 /* Call Progress Information */

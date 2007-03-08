@@ -210,11 +210,13 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	case GSMD_PHONE_POWERUP:
 		cmd = atcmd_fill("AT+CFUN=1", 9+1,
 				 &null_cmd_cb, gu, 0);
+		gu->gsmd->dev_state.on = 1;
 		break;
 
 	case GSMD_PHONE_POWERDOWN:
 		cmd = atcmd_fill("AT+CFUN=0", 9+1,
 				 &null_cmd_cb, gu, 0);
+		gu->gsmd->dev_state.on = 0;
 		break;
 	default:
 		return -EINVAL;
