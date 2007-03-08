@@ -11,6 +11,10 @@ u-boot/board/neo1973/neo1973.c (board_late_init): enter the boot menu when
 u-boot/board/neo1973/neo1973.c (board_late_init): minor code cleanup
 u-boot/common/console.c, include/console.h: added "console_poll_hook" to be
   called when waiting for console in put in "getc" and "tstc"
+board/neo1973/neo1973.c (board_late_init): poll for the boot menu also on RAM
+  boot, reset, or unknown cause
+board/neo1973/neo1973.c (board_late_init): don't look for the power key if
+  woken up by the charger
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -358,21 +362,42 @@ Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/neo1973.c
 +++ u-boot/board/neo1973/neo1973.c
-@@ -196,6 +196,7 @@ int board_late_init(void)
+@@ -196,10 +196,15 @@ int board_late_init(void)
  	extern unsigned char booted_from_nand;
  	unsigned char tmp;
  	char buf[32];
 +	int menu_vote = 0; /* <= 0: no, > 0: yes */
++	int seconds = 0;
  
  	/* Initialize the Power Management Unit with a safe register set */
  	pcf50606_init();
-@@ -219,25 +220,18 @@ int board_late_init(void)
+ 
++	/* if there's no other reason, must be regular reset */
++	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
++
+ 	if (!booted_from_nand)
+ 		goto woken_by_reset;
+ 
+@@ -209,45 +214,41 @@ int board_late_init(void)
+ 	setenv("pcf50606_int1", buf);
+ 
+ 	if (tmp & PCF50606_INT1_ALARM) {
+-		/* we've been woken up by RTC alarm or charger insert, boot */
++		/* we've been woken up by RTC alarm, boot */
+ 		neo1973_wakeup_cause = NEO1973_WAKEUP_ALARM;
+ 		goto continue_boot;
+ 	}
+ 	if (tmp & PCF50606_INT1_EXTONR) {
++		/* we've been woken up by charger insert */
+ 		neo1973_wakeup_cause = NEO1973_WAKEUP_CHARGER;
+ 	}
  
  	if (tmp & PCF50606_INT1_ONKEYF) {
- 		int seconds = 0;
-+
- 		neo1973_wakeup_cause = NEO1973_WAKEUP_POWER_KEY;
+-		int seconds = 0;
+-		neo1973_wakeup_cause = NEO1973_WAKEUP_POWER_KEY;
  		/* we've been woken up by a falling edge of the onkey */
++		neo1973_wakeup_cause = NEO1973_WAKEUP_POWER_KEY;
++	}
  
 -		/* we can't just setenv(bootdelay,-1) because that would
 -		 * accidentially become permanent if the user does saveenv */
@@ -385,21 +410,43 @@ Index: u-boot/board/neo1973/neo1973.c
 -			oocs = pcf50606_reg_read(PCF50606_REG_OOCS);
 -			if (oocs & PFC50606_OOCS_ONKEY)
 -				break;
-+		while (neo1973_on_key_pressed()) {
-+			if (neo1973_911_key_pressed())
-+				menu_vote++;
-+			else
-+				menu_vote--;
- 
+-
 -			int1 = pcf50606_reg_read(PCF50606_REG_INT1);
 -			if (int1 & PCF50606_INT1_SECOND)
-+			if (neo1973_new_second())
- 				seconds++;
+-				seconds++;
 -
- 			if (seconds >= POWER_KEY_SECONDS)
- 				goto continue_boot;
- 		}
-@@ -262,6 +256,11 @@ continue_boot:
+-			if (seconds >= POWER_KEY_SECONDS)
+-				goto continue_boot;
+-		}
+-		/* Power off if minimum number of seconds not reached */
+-		neo1973_poweroff();
++	if (neo1973_wakeup_cause == NEO1973_WAKEUP_CHARGER) {
++		/* if we still think it was only a charger insert, boot */
++		goto continue_boot;
+ 	}
+ 
+ woken_by_reset:
+-	/* if there's no other reason, must be regular reset */
+-	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
++
++	while (neo1973_wakeup_cause == NEO1973_WAKEUP_RESET ||
++	    neo1973_on_key_pressed()) {
++		if (neo1973_911_key_pressed())
++			menu_vote++;
++		else
++			menu_vote--;
++
++		if (neo1973_new_second())
++			seconds++;
++		if (seconds >= POWER_KEY_SECONDS)
++			goto continue_boot;
++	}
++	/* Power off if minimum number of seconds not reached */
++	neo1973_poweroff();
+ 
+ continue_boot:
+ 	jbt6k74_init();
+@@ -262,6 +263,11 @@ continue_boot:
  	/* switch on the backlight */
  	neo1973_backlight(1);
  
@@ -411,7 +458,7 @@ Index: u-boot/board/neo1973/neo1973.c
  	return 0;
  }
  
-@@ -313,6 +312,16 @@ void neo1973_vibrator(int on)
+@@ -313,6 +319,16 @@ void neo1973_vibrator(int on)
  		gpio->GPBDAT &= ~(1 << 10);
  }
  
