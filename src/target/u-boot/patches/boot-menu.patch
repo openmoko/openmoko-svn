@@ -15,6 +15,8 @@ board/neo1973/neo1973.c (board_late_init): poll for the boot menu also on RAM
   boot, reset, or unknown cause
 board/neo1973/neo1973.c (board_late_init): don't look for the power key if
   woken up by the charger
+board/neo1973/neo1973.h, board/neo1973/neo1973.c, board/neo1973/bootmenu.c:
+  renamed neo1973_911_key_pressed to neo1973_aux_key_pressed
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -313,7 +315,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 +	while (seconds) {
 +		int tmp;
 +
-+		tmp = debounce(neo1973_911_key_pressed, aux);
++		tmp = debounce(neo1973_aux_key_pressed, aux);
 +		if (tmp && !aux)
 +			break;
 +		aux = tmp;
@@ -335,7 +337,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 +
 +	if (activity)
 +		seconds = 0;
-+	tmp = debounce(neo1973_911_key_pressed, aux);
++	tmp = debounce(neo1973_aux_key_pressed, aux);
 +	if (tmp && !aux) {
 +		print_option(option, 0);
 +		option++;
@@ -471,7 +473,7 @@ Index: u-boot/board/neo1973/neo1973.c
 +
 +	while (neo1973_wakeup_cause == NEO1973_WAKEUP_RESET ||
 +	    neo1973_on_key_pressed()) {
-+		if (neo1973_911_key_pressed())
++		if (neo1973_aux_key_pressed())
 +			menu_vote++;
 +		else
 +			menu_vote--;
@@ -498,10 +500,11 @@ Index: u-boot/board/neo1973/neo1973.c
  	return 0;
  }
  
-@@ -313,6 +319,16 @@ void neo1973_vibrator(int on)
+@@ -313,7 +319,17 @@ void neo1973_vibrator(int on)
  		gpio->GPBDAT &= ~(1 << 10);
  }
  
+-int neo1973_911_key_pressed(void)
 +int neo1973_new_second(void)
 +{
 +	return pcf50606_reg_read(PCF50606_REG_INT1) & PCF50606_INT1_SECOND;
@@ -512,9 +515,10 @@ Index: u-boot/board/neo1973/neo1973.c
 +	return !(pcf50606_reg_read(PCF50606_REG_OOCS) & PFC50606_OOCS_ONKEY);
 +}
 +
- int neo1973_911_key_pressed(void)
++int neo1973_aux_key_pressed(void)
  {
  	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
+ 	if (gpio->GPFDAT & (1 << 6))
 Index: u-boot/board/neo1973/Makefile
 ===================================================================
 --- u-boot.orig/board/neo1973/Makefile
@@ -538,7 +542,7 @@ Index: u-boot/board/neo1973/neo1973.h
  
 +int neo1973_new_second(void);
 +int neo1973_on_key_pressed(void);
-+int neo1973_911_key_pressed(void);
++int neo1973_aux_key_pressed(void);
 +
 +void bootmenu(void);
 +
