@@ -9,6 +9,7 @@
 
 #include <gsmd/vendorplugin.h>
 #include <gsmd/select.h>
+#include <gsmd/state.h>
 
 void *gsmd_tallocs;
 
@@ -64,6 +65,7 @@ struct gsmd {
 	struct llist_head pending_atcmds;	/* our busy gsmd_atcmds */
 	struct llist_head busy_atcmds;	/* our busy gsmd_atcmds */
 	struct gsmd_vendor_plugin *vendorpl;
+	struct gsmd_device_state dev_state;
 };
 
 struct gsmd_user {

@@ -35,6 +35,8 @@ enum gsmd_msg_voicecall_type {
 	GSMD_VOICECALL_HANGUP	= 2,
 	GSMD_VOICECALL_ANSWER	= 3,
 	GSMD_VOICECALL_DTMF	= 4,
+	GSMD_VOICECALL_VOL_SET	= 5,
+	GSMD_VOICECALL_VOL_GET	= 6,
 };
 
 /* Handset / MT related commands */
@@ -58,6 +60,7 @@ enum gsmd_msg_network {
 	GSMD_NETWORK_VMAIL_GET	= 3,
 	GSMD_NETWORK_VMAIL_SET	= 4,
 	GSMD_NETWORK_OPER_GET	= 5,
+	GSMD_NETWORK_CIND_GET	= 6,
 };
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
@@ -119,6 +122,11 @@ struct gsmd_evt_auxdata {
 				 tch:1,
 				 dir:2;
 		} call_status;
+		struct {
+			u_int16_t flags;
+			u_int16_t net_state_gsm;
+			u_int16_t net_state_gprs;
+		} cipher;
 	} u;
 } __attribute__((packed));
 
