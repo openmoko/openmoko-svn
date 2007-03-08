@@ -165,12 +165,14 @@ sms_membership_window_init(SmsMembershipWindow* self)
     priv->eventbox = gtk_event_box_new();
     gtk_container_add( GTK_CONTAINER(priv->eventbox), GTK_WIDGET(priv->titleLabel) );
     gtk_widget_set_name( GTK_WIDGET(priv->eventbox), "mokodialogwindow-title-labelbox" );
+
     //FIXME get from theme
     gtk_misc_set_padding( GTK_MISC(priv->titleLabel), 0, 6 );
     gtk_widget_show( GTK_WIDGET(priv->titleLabel) );
     gtk_widget_show( GTK_WIDGET(priv->eventbox) );
     gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
     priv->folderbox = gtk_vbox_new( FALSE, 0 );
+
     //Set folder list
     GtkWidget* closebox = gtk_hbox_new( FALSE, 0 );
     PangoFontDescription* font_desc;
@@ -182,6 +184,7 @@ sms_membership_window_init(SmsMembershipWindow* self)
     priv->subjectLabel = gtk_label_new( "Subject" );
     gtk_widget_set_size_request (priv->subjectLabel, 250, -1);
     gtk_misc_set_alignment (GTK_MISC(priv->subjectLabel), 0, 0.5);
+    
     //set header box: two labels and a closebutton
     GtkWidget* headerbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_set_spacing (GTK_BOX(headerbox),5);
@@ -192,6 +195,7 @@ sms_membership_window_init(SmsMembershipWindow* self)
     gtk_container_add (GTK_CONTAINER(alignment), priv->closebutton);
     GtkWidget* hsep = gtk_hseparator_new();
     gtk_widget_set_size_request (hsep, -1, 3);
+
     //set folder box alignment fbAlign
     GtkAlignment* fbAlign = GTK_ALIGNMENT(gtk_alignment_new (0.5, 0.5, 1, 1));
     gtk_alignment_set_padding (fbAlign, 5, 5, 30, 30);

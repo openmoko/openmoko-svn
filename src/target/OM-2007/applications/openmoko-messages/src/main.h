@@ -26,6 +26,8 @@
 #include <libmokoui/moko-tree-view.h>
 #include <gtk/gtkliststore.h>
 #include <gtk/gtktreemodelfilter.h>
+//#include <dbus/dbus-glib.h>
+#include <dbus/dbus.h>
 
 #include "foldersdb.h"
 #include "detail-area.h"
@@ -51,6 +53,7 @@ typedef struct _MessengerData{
     GtkWidget* mmWin;
     GtkWidget* mmitem;
     GtkWidget* fnitem;
+    DBusConnection *bus;
 }MessengerData;
 
 enum {
@@ -79,6 +82,7 @@ void populate_navigation_area( MessengerData* d );
 void populate_detail_area( MessengerData* d );
 void main_quit(GtkWidget* widget, GdkEvent* event, MessengerData* d);
 void update_folder_sensitive (MessengerData* d, GSList* folderlist);
+gboolean init_dbus (MessengerData* d);
 
 #endif
 

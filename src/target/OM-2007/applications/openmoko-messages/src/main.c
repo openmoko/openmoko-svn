@@ -100,6 +100,35 @@ setlock (char *fname)
     }
 }
 
+gboolean init_dbus (MessengerData* d)
+{
+    DBusError error;
+
+    /* Get a connection to the session bus */
+    dbus_error_init (&error);
+    d->bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+
+    if (!d->bus)
+    {
+        g_warning ("Failed to connect to the D-BUS daemon: %s", error.message);
+	return FALSE;
+    }
+
+    if (dbus_error_is_set (&error))
+    {
+        fprintf(stdout, "Connection Error (%s)\n", error.message);
+	dbus_error_free (&error);
+    }
+
+    if (NULL == d->bus)
+    {
+        fprintf(stdout, "Connection Error: bus == NULL \n");
+	exit (1);
+    }
+
+    return TRUE;
+}
+
 int main( int argc, char** argv )
 {
     g_debug( "openmoko-messenger starting up" );
@@ -108,6 +137,7 @@ int main( int argc, char** argv )
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
 
+    /* initalize the lock */
     lockapp = testlock ("/tmp/messages.lock");
     if (lockapp > 0)
      {
@@ -124,12 +154,18 @@ int main( int argc, char** argv )
     d->currentfolder = g_strdup("Inbox");
     g_set_application_name( "Messages" ); 
     
+    if (init_dbus(d))
+        g_debug("D-Bus initialize successfully");
+
     /* ui */
     setup_ui(d);
 
     /* disable mmitem if necessary*/
     update_folder_sensitive (d, d->folderlist);
 		
+    /* Set up this connection to work in a GLib event loop */
+    dbus_connection_setup_with_g_main (d->bus, NULL);
+
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(d->window) );
     gtk_main();

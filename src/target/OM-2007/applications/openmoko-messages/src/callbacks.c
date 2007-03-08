@@ -21,6 +21,29 @@
 #include "callbacks.h"
 #include "detail-area.h"
 #include <gtk/gtk.h>
+#include <dbus/dbus.h>
+
+static void
+send_signal_to_footer (DBusConnection* bus, gchar* message_str)
+{
+    DBusMessage *message;
+
+    if(message_str == NULL)
+        g_debug("Input string is null");
+    else
+        g_debug(message_str);
+
+    message = dbus_message_new_signal ("/org/openmoko/footer",
+                                       "org.openmoko.dbus.TaskManager", 
+				       "push_statusbar_message");
+    dbus_message_append_args (message,
+                              DBUS_TYPE_STRING, &message_str,
+                              DBUS_TYPE_INVALID);
+    g_debug("begin send message");
+    dbus_connection_send (bus, message, NULL);
+    g_debug("end send message");
+    dbus_message_unref (message);
+}
 
 static gboolean 
 model_number_helper (GtkTreeModel* model,
@@ -46,6 +69,8 @@ gboolean cb_filter_changed(GtkWidget* widget, gchar* text, MessengerData* d)
     d->currentfolder = g_strdup(text);
     gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
     g_debug("folder %s has %d messages",text,get_model_number(d));
+    gchar* str = g_strdup_printf("folder %s has %d messages",text,get_model_number(d));
+    send_signal_to_footer(d->bus,str);
     
     return FALSE;
 }
@@ -243,6 +268,7 @@ void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
     	sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
     	sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
     }
+    sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
     sms_membership_window_show ( SMS_MEMBERSHIP_WINDOW(d->mmWin) );
 }
 
@@ -267,6 +293,7 @@ void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
 	}
     }
     d->filtmenu = reload_filter_menu (d,d->folderlist);
+
     MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox, GTK_MENU(d->filtmenu));
@@ -467,6 +494,8 @@ void cb_search_entry_changed (GtkEditable* editable, MessengerData* d)
     d->s_key = g_strdup (gtk_entry_get_text(GTK_ENTRY(search_entry)));
     gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
     g_debug ("search %s, result has %d messages",d->s_key,get_model_number(d));
+    gchar* str = g_strdup_printf("search %s, result has %d messages",d->s_key,get_model_number(d));
+    send_signal_to_footer(d->bus,str);
 }
 
 void cb_search_on (MessengerData* d)
