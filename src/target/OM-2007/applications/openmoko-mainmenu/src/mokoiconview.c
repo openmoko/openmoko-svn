@@ -985,7 +985,6 @@ moko_icon_view_init(MokoIconView *icon_view)
   icon_view->priv->max_text_len = 30;
   icon_view->priv->decr_width = 10;
   icon_view->priv->decorated = FALSE;
-  icon_view->priv->activate = FALSE;
   
   pango_layout_set_wrap (icon_view->priv->layout, PANGO_WRAP_WORD_CHAR);
 
@@ -1585,24 +1584,9 @@ moko_icon_view_button_press (GtkWidget      *widget,
 
     }
 
-  if (dirty)
-    g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
-
-  return event->button == 1;
-}
-
-static gboolean
-moko_icon_view_button_release (GtkWidget      *widget,
-			      GdkEventButton *event)
-{
-  MokoIconView *icon_view;
-
-  icon_view = MOKO_ICON_VIEW (widget);
-  
-  if (event->button == 1 && event->type == GDK_BUTTON_RELEASE && icon_view->priv->activate )  //SUNZY : tabbing will launch "item-activated" event
-   {
-   	  icon_view->priv->activate = FALSE;
-      MokoIconViewItem *item = moko_icon_view_get_item_at_pos (icon_view,
+  if (event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+    {
+      item = moko_icon_view_get_item_at_pos (icon_view,
 					    event->x, event->y);
 
       if (item && item == icon_view->priv->last_single_clicked)
@@ -1617,6 +1601,20 @@ moko_icon_view_button_release (GtkWidget      *widget,
       icon_view->priv->last_single_clicked = NULL;
     }
   
+  if (dirty)
+    g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
+
+  return event->button == 1;
+}
+
+static gboolean
+moko_icon_view_button_release (GtkWidget      *widget,
+			      GdkEventButton *event)
+{
+  MokoIconView *icon_view;
+
+  icon_view = MOKO_ICON_VIEW (widget);
+
 #ifdef DND_WORKS
   if (icon_view->priv->pressed_button == event->button)
   {

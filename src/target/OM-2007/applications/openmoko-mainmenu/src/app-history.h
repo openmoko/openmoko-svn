@@ -21,15 +21,38 @@
 #ifndef _MOKO_APP_HISTORY_H
 #define _MOKO_APP_HISTORY_H
 
+#include "mokodesktop.h"
 #include <libmokoui/moko-pixmap-button.h>
+#include <libmokoui/moko-finger-tool-box.h>
 
-#define MAX_RECORD_APP 4
+#define MAX_RECORD_APP    4
+
+typedef struct {
+	MokoDesktopItem *item[MAX_RECORD_APP];
+	MokoPixmapButton *btn[MAX_RECORD_APP];
+} MokoAppHistory;
 
 /**
- * @brief moko_history_app_fill
- * @param btn    MokoPixmapButton **
- * @param path    const char *
- * @return NONE
+ * @brief moko_history_app_init
+ * @param toolboox    MokoFingerToolBox *
+ * @return MokoAppHistory instance
  */
-void moko_hisory_app_fill(MokoPixmapButton **btn, const char *path);
+MokoAppHistory * moko_app_history_init (MokoFingerToolBox *toolbox);
+
+/**
+ * @brief moko_history_app_set
+ * @param self    MokoAppHistory *,
+ * @param path    const char *,
+ * @param item    MokoDesktopItem *,
+ * @return gboolean
+ */
+gboolean moko_app_history_set (MokoAppHistory *self, GdkPixbuf *pixbuf, MokoDesktopItem *item);
+
+/**
+ * @brief moko_app_history_free
+ * @brief self    MokoAppHistory *,
+ * @return none
+ */
+void moko_app_history_free (MokoAppHistory *self);
+
 #endif /*_MOKO_APP_HISTORY_H*/

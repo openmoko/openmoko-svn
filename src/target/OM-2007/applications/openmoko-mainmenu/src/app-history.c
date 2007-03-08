@@ -20,8 +20,9 @@
  */
 
 #include "app-history.h"
+#include "callbacks.h"
 
-static int current = 0;
+static gint current = 0;
 
 static void 
 pointer_check()
@@ -32,15 +33,55 @@ pointer_check()
     	current = 0;
 }
 
-void
-moko_hisory_app_fill(MokoPixmapButton **btn, const char *path)
+MokoAppHistory *
+moko_app_history_init (MokoFingerToolBox *toolbox)
 {
-   GtkWidget *image;
-   image = gtk_image_new_from_file (path);
+	gint i = 0;
+	MokoAppHistory *self;
 
-   if (!path)
-   	return;
-   pointer_check();
-   moko_pixmap_button_set_finger_toolbox_btn_center_image(btn[current], image);
-   current++;
+    if (!toolbox)
+		return NULL;
+
+	self = g_malloc0 (sizeof (MokoAppHistory));
+
+	if (!self)
+		return NULL;
+
+	for (i; i<MAX_RECORD_APP; i++)
+	{
+    	self->btn[i] = moko_finger_tool_box_add_button_without_label (toolbox);
+        g_signal_connect( G_OBJECT(self->btn[i]), "clicked", G_CALLBACK(moko_tool_box_btn_clicked_cb), self);
+        gtk_widget_show (self->btn[i]);
+		self->item[i] = NULL;
+    }
+
+	return self;
+}
+
+gboolean
+moko_app_history_set (MokoAppHistory *self, GdkPixbuf *pixbuf, MokoDesktopItem *item)
+{
+    if (!self || !pixbuf)
+		return FALSE;
+
+	pointer_check ();
+
+   moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (self->btn[current], pixbuf);
+
+	if (item)
+		self->item[current] = item;
+	else
+		self->item[current] = NULL;
+
+	current ++;
+
+	return TRUE;
+}
+
+void
+moko_app_history_free (MokoAppHistory *self)
+{
+    if (self)
+		g_free (self);
+	return;
 }

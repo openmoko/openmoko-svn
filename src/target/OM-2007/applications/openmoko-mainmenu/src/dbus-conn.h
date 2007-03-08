@@ -30,6 +30,6 @@
 
 gboolean moko_dbus_connect_init (void);
 
-gboolean moko_send_message (const char *str);
+gboolean moko_dbus_send_message (const char *str);
 
 #endif /*MOKO_DBUS_MESSAGE_SEND_H*/

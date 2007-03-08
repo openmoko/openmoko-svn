@@ -21,6 +21,10 @@
 
 #ifndef _MAIN_MENU_CALLBACKS_H
 #define _MAIN_MENU_CALLBACKS_H
+
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE
+
 #include <gtk/gtk.h>
 #include "main.h"
 
@@ -34,13 +38,13 @@ void moko_up_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
 void moko_down_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
-void moko_item_select_cb(MokoIconView *icon_view, 
-				GtkTreePath *path, MokoMainmenuApp *mma);
+void moko_item_select_cb(MokoIconView *icon_view, GtkTreePath *path, MokoMainmenuApp *mma);
 
-void moko_icon_view_item_acitvated_cb(MokoIconView *iconview, 
-				GtkTreePath *path, MokoMainmenuApp *mma);
+void moko_icon_view_item_acitvated_cb(MokoIconView *iconview, GtkTreePath *path, MokoMainmenuApp *mma);
 
-void moko_icon_view_selection_changed_cb(MokoIconView *iconview, 
-				MokoMainmenuApp *mma);
+void moko_icon_view_selection_changed_cb(MokoIconView *iconview, MokoMainmenuApp *mma);
 
+void moko_tool_box_btn_clicked_cb (GtkButton *btn, MokoAppHistory *history);
+
+#endif /*_XOPEN_SOURCE*/
 #endif /*_MAIN_MENU_CALLBACKS_H*/

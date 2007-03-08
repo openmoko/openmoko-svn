@@ -253,7 +253,6 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
   snprintf(app_paths[2], 256, "/usr/local/share/applications");
   snprintf(app_paths[3], 256, "%s/.applications", mb_util_get_homedir());
 
-
   if (getcwd(orig_wd, 255) == (char *)NULL)
     {
       fprintf(stderr, "Cant get current directory\n");

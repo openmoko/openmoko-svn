@@ -26,7 +26,7 @@ static DBusError error;
 gboolean
 moko_dbus_connect_init (void)
 {
-    /* Get a connection to the session bus */
+    /* Get a connection to the system bus */
     dbus_error_init (&error);
     bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
 
@@ -38,7 +38,7 @@ moko_dbus_connect_init (void)
   
     if (dbus_error_is_set (&error))
     {
-        fprintf(stdout, "Connection Error (%s)\n", error.message);
+        g_warning ("Connection Error (%s)\n", error.message);
         dbus_error_free (&error);
     }
 
@@ -49,25 +49,19 @@ gboolean
 moko_dbus_send_message (const char *str)
 {
   DBusMessage *message;
-  //char *str = "openmoko taskmanager";
 
   /* Create a new signal on the "org.openmoko.dbus.TaskManager" interface,
    * from the object "/org/openmoko/footer". */
   message = dbus_message_new_signal ("/org/openmoko/footer",
                                      "org.openmoko.dbus.TaskManager", "push_statusbar_message");
-  /* Append the string "openmoko taskmanager" to the signal */
+  /* Append the string to the signal */
   dbus_message_append_args (message,
   			    DBUS_TYPE_STRING, &str,
                             DBUS_TYPE_INVALID);
-  /* Send the signal */
+  
   dbus_connection_send (bus, message, NULL);
 
-  /* Free the signal now we have finished with it */
   dbus_message_unref (message);
   
-  /* Tell the user we send a signal */
-  g_print("send signal\n");
-  
-  /* Return TRUE to tell the event loop we want to be called again */
   return TRUE;
 }

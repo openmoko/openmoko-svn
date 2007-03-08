@@ -18,11 +18,7 @@
 #define VFOLDERDIR 		"/usr/share/matchbox"
 #define DD_DIR 		 	"/usr/share/applications/" 
 
-/* #define DD_DIR "/tmp/" */
-//#define PIXMAP_PATH PIXMAPSDIR
 #define PIXMAP_PATH 	"/usr/share/pixmaps"
-
-
 
 #ifdef DEBUG
 #define DBG(txt, args... ) fprintf(stderr, "DT-DEBUG: " txt , ##args )
@@ -58,16 +54,16 @@ typedef void (*MokoDesktopCB)( void *data1, void *data2 ) ;
 
 typedef struct _mokodesktop_item {
 
-  int                     type;
-  int                     subtype; /* user defined type */
+  int type;
+  int subtype; /* user defined type */
 
-  char                   *name;
-  char                   *name_extended;
-  char                   *comment;
-  char                   *icon_name;
-  void                   *data;
+  char *name;
+  char *name_extended;
+  char *comment;
+  char *icon_name;
+  void *data;
 
-  MokoDesktopCB           activate_cb;
+  MokoDesktopCB activate_cb;
 
   struct _mokodesktop_item *item_next_sibling; 
   struct _mokodesktop_item *item_prev_sibling; 

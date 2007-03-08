@@ -202,6 +202,8 @@ moko_fill_model(GtkListStore *store, const char* icon_path,
 
     gtk_list_store_append (store, &iter);
     pixbuf = gdk_pixbuf_new_from_file_at_size (icon_path, PIXBUF_WIDTH, PIXBUF_HEIGHT, NULL);// ADD Gerro handle later
+	if (!pixbuf)
+		return FALSE;
     gtk_list_store_set (store, &iter, PIXBUF_COLUMN, pixbuf, TEXT_COLUMN, icon_name, OBJECT_COLUMN, item, -1);
     g_object_unref (pixbuf);
     return TRUE;

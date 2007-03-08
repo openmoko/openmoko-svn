@@ -22,6 +22,7 @@
 #ifndef _MAIN_MENU_MAIN_H
 #define _MAIN_MENU_MAIN_H
 
+
 #include <libmokoui/moko-application.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
@@ -41,7 +42,7 @@ struct _MokoMainmenuApp {
     MokoFingerWheel *wheel;
     MokoFingerToolBox *toolbox;
     MokoMainMenu *mm;
-    MokoPixmapButton *history[MAX_RECORD_APP];
+    MokoAppHistory *history;
 };
 
-#endif /*main.h*/
+#endif /*_MAIN_MENU_MAIN_H*/

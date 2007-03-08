@@ -37,10 +37,8 @@ handle_sigusr1 (int value)
 {
   if (!mma)
        return;
-  gtk_widget_show_all (GTK_WIDGET(mma->window));
   gtk_window_present (GTK_WINDOW(mma->window));
-  gtk_widget_show (GTK_WIDGET(mma->wheel));
-  gtk_widget_show (GTK_WIDGET(mma->toolbox));
+  moko_dbus_send_message ("Openmoko main menu");
 
   signal (SIGUSR1, handle_sigusr1);
 }
@@ -112,22 +110,21 @@ int
 main( int argc, char** argv ) 
 {
     pid_t lockapp;
-    int i;
 
     lockapp = testlock (LOCK_FILE);
-    g_debug ("lock app = %x", lockapp);
+
     if (lockapp > 0)
      {
         kill (lockapp, SIGUSR1);
         return 0;
      }
+
     setlock (LOCK_FILE);
-    g_debug ("test");
     
     mma = g_malloc0 (sizeof (MokoMainmenuApp));
     if (!mma)
     {
-    	fprintf (stderr, "openmoko-mainmenu application initialize FAILED");
+        g_error ("openmoko-mainmenu application initialize FAILED.");
     	exit (0);
     }
     memset (mma, 0, sizeof (MokoMainmenuApp));
@@ -135,10 +132,9 @@ main( int argc, char** argv )
     if (!moko_dbus_connect_init ())
     {
         g_error ("Failed to initial dbus connection.");
-	exit (0);
+		exit (0);
     }
     gtk_init( &argc, &argv );
-
 
     /* application object */
     mma->app = MOKO_APPLICATION(moko_application_get_instance());
@@ -146,7 +142,6 @@ main( int argc, char** argv )
     
     /* finger based window */
     mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
-//    gtk_window_set_decorated (mma->window, FALSE);
     gtk_widget_show (GTK_WIDGET (mma->window));
 
     /* finger wheel object*/
@@ -156,11 +151,12 @@ main( int argc, char** argv )
     /* finger toolbox object*/
     mma->toolbox = moko_finger_window_get_toolbox(mma->window);
     //initialize toolbox's buttons, which are MokoPixmapButton objects.
-    for (i=0; i<4; i++)
-    	{
-    	    mma->history[i] =  moko_finger_tool_box_add_button_without_label (mma->toolbox);
-           gtk_widget_show (mma->history[i]);
-    	}
+    mma->history = moko_app_history_init (mma->toolbox);
+	if (!mma->history)
+	{
+        g_error ("Failed to get application history instance");
+		exit (0);
+    }
 
     /* MokoMainMenu object */
     mma->mm = moko_main_menu_new();
@@ -181,13 +177,9 @@ main( int argc, char** argv )
 
     signal (SIGUSR1, handle_sigusr1);
 
-    /* put MokoMainMenu object and MokoClosePange object into the finger based window */
     moko_finger_window_set_contents (mma->window, GTK_WIDGET(mma->mm));
-   
-    /* show everything and run main loop */
     gtk_widget_show_all (GTK_WIDGET(mma->window) );
 
-    /*show wheel toolbox MokoMainMenu objects first, and hide the MokoClosePage object*/
     gtk_widget_show (GTK_WIDGET (mma->wheel));	
     gtk_widget_show (GTK_WIDGET (mma->toolbox));
     gtk_widget_show (GTK_WIDGET (mma->mm));
@@ -195,6 +187,10 @@ main( int argc, char** argv )
     gtk_main();
 
     if (mma)
-    	  g_free (mma);
+	{
+		if (mma->history)
+			moko_app_history_free (mma->history);
+    	g_free (mma);
+	}
     return 0;
 }
