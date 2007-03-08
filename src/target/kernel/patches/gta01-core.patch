@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-02 18:23:34.000000000 +0100
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig	2007-03-02 18:39:51.000000000 +0100
+--- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-08 13:36:44.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig	2007-03-08 13:37:56.000000000 +0100
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -22,8 +22,8 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Makefile	2007-03-02 18:23:34.000000000 +0100
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile	2007-03-02 18:39:51.000000000 +0100
+--- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Makefile	2007-03-08 13:36:44.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile	2007-03-08 13:36:44.000000000 +0100
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,7 +34,7 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-02 18:40:31.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-08 13:38:24.000000000 +0100
 @@ -0,0 +1,506 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
@@ -454,8 +454,8 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +static struct resource gta01_button_resources[] = {
 +	[0] = {
-+		.start = GTA01_GPIO_911_KEY,
-+		.end   = GTA01_GPIO_911_KEY,
++		.start = GTA01_GPIO_AUX_KEY,
++		.end   = GTA01_GPIO_AUX_KEY,
 +	},
 +	[1] = {
 +		.start = GTA01_GPIO_HOLD_KEY,
@@ -545,7 +545,7 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
 Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h	2007-03-02 18:39:51.000000000 +0100
++++ linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h	2007-03-08 13:38:38.000000000 +0100
 @@ -0,0 +1,60 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
@@ -575,13 +575,13 @@ Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01_GPIO_LCD_RESET	S3C2410_GPC6
 +#define GTA01_GPIO_JACK_INSERT	S3C2410_GPF4
 +#define GTA01_GPIO_nSD_DETECT	S3C2410_GPF5
-+#define GTA01_GPIO_911_KEY	S3C2410_GPF6
++#define GTA01_GPIO_AUX_KEY	S3C2410_GPF6
 +#define GTA01_GPIO_HOLD_KEY	S3C2410_GPF7
 +#define GTA01_GPIO_VIBRATOR_ON	S3C2410_GPG11
 +
 +#define GTA01_IRQ_JACK_INSERT	IRQ_EINT4
 +#define GTA01_IRQ_nSD_DETECT	IRQ_EINT5
-+#define GTA01_IRQ_911_KEY	IRQ_EINT6
++#define GTA01_IRQ_AUX_KEY	IRQ_EINT6
 +#define GTA01_IRQ_PCF50606      IRQ_EINT16
 +
 +/* GTA01v3 */

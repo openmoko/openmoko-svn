@@ -1,9 +1,9 @@
 This provides support for the GTA01 keyboard
 
-Index: linux-2.6.20/drivers/input/keyboard/Kconfig
+Index: linux-2.6.20.1/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.20.orig/drivers/input/keyboard/Kconfig	2007-02-20 18:56:10.000000000 +0100
-+++ linux-2.6.20/drivers/input/keyboard/Kconfig	2007-02-20 18:58:03.000000000 +0100
+--- linux-2.6.20.1.orig/drivers/input/keyboard/Kconfig	2007-03-08 13:37:56.000000000 +0100
++++ linux-2.6.20.1/drivers/input/keyboard/Kconfig	2007-03-08 14:03:22.000000000 +0100
 @@ -214,4 +214,16 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called aaed2000_kbd.
@@ -21,10 +21,10 @@ Index: linux-2.6.20/drivers/input/keyboard/Kconfig
 +
 +
  endif
-Index: linux-2.6.20/drivers/input/keyboard/Makefile
+Index: linux-2.6.20.1/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.20.orig/drivers/input/keyboard/Makefile	2007-02-20 18:56:10.000000000 +0100
-+++ linux-2.6.20/drivers/input/keyboard/Makefile	2007-02-20 18:58:03.000000000 +0100
+--- linux-2.6.20.1.orig/drivers/input/keyboard/Makefile	2007-03-08 13:37:56.000000000 +0100
++++ linux-2.6.20.1/drivers/input/keyboard/Makefile	2007-03-08 14:03:22.000000000 +0100
 @@ -13,6 +13,7 @@
  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
@@ -33,11 +33,11 @@ Index: linux-2.6.20/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
+Index: linux-2.6.20.1/drivers/input/keyboard/gta01kbd.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/input/keyboard/gta01kbd.c	2007-02-20 19:48:56.000000000 +0100
-@@ -0,0 +1,234 @@
++++ linux-2.6.20.1/drivers/input/keyboard/gta01kbd.c	2007-03-08 14:01:38.000000000 +0100
+@@ -0,0 +1,249 @@
 +/*
 + * Keyboard driver for FIC GTA01 (Neo1973) GSM phone
 + *
@@ -69,16 +69,26 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	unsigned long suspend_jiffies;
 +};
 +
-+static irqreturn_t gta01kbd_interrupt(int irq, void *dev_id)
++static irqreturn_t gta01kbd_aux_irq(int irq, void *dev_id)
 +{
 +	struct gta01kbd *gta01kbd_data = dev_id;
 +
 +	/* FIXME: use GPIO from platform_dev resources */
-+	if (s3c2410_gpio_getpin(GTA01_GPIO_911_KEY))
++	if (s3c2410_gpio_getpin(GTA01_GPIO_AUX_KEY))
 +		input_report_key(gta01kbd_data->input, KEY_PHONE, 1);
 +	else
 +		input_report_key(gta01kbd_data->input, KEY_PHONE, 0);
 +
++	input_sync(gta01kbd_data->input);
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t gta01kbd_hold_irq(int irq, void *dev_id)
++{
++	struct gta01kbd *gta01kbd_data = dev_id;
++
++	/* FIXME: use GPIO from platform_dev resources */
 +	if (s3c2410_gpio_getpin(GTA01_GPIO_HOLD_KEY))
 +		input_report_key(gta01kbd_data->input, KEY_PAUSE, 1);
 +	else
@@ -89,11 +99,24 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	return IRQ_HANDLED;
 +}
 +
++static irqreturn_t gta01kbd_headphone_irq(int irq, void *dev_id)
++{
++	struct gta01kbd *gta01kbd_data = dev_id;
++
++	/* FIXME: use GPIO from platform_dev resources */
++	if (s3c2410_gpio_getpin(GTA01_GPIO_JACK_INSERT))
++		input_report_switch(gta01kbd_data->input, SW_HEADPHONE_INSERT, 1);
++	else
++		input_report_switch(gta01kbd_data->input, SW_HEADPHONE_INSERT, 0);
++
++	input_sync(gta01kbd_data->input);
++
++	return IRQ_HANDLED;
++}
 +
 +#ifdef CONFIG_PM
 +static int gta01kbd_suspend(struct platform_device *dev, pm_message_t state)
 +{
-+	int i;
 +	struct gta01kbd *gta01kbd = platform_get_drvdata(dev);
 +
 +	gta01kbd->suspended = 1;
@@ -103,7 +126,6 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +
 +static int gta01kbd_resume(struct platform_device *dev)
 +{
-+	int i;
 +	struct gta01kbd *gta01kbd = platform_get_drvdata(dev);
 +
 +	gta01kbd->suspended = 0;
@@ -119,7 +141,7 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +{
 +	struct gta01kbd *gta01kbd;
 +	struct input_dev *input_dev;
-+	int irq_911, irq_hold;
++	int irq_aux, irq_hold, irq_jack;
 +
 +	gta01kbd = kzalloc(sizeof(struct gta01kbd), GFP_KERNEL);
 +	input_dev = input_allocate_device();
@@ -132,12 +154,16 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	if (pdev->resource[0].flags != 0)
 +		return -EINVAL;
 +
-+	irq_911 = s3c2410_gpio_getirq(pdev->resource[0].start);
-+	if (irq_911 < 0)
++	irq_aux = s3c2410_gpio_getirq(pdev->resource[0].start);
++	if (irq_aux < 0)
 +		return -EINVAL;
 +
 +	irq_hold = s3c2410_gpio_getirq(pdev->resource[1].start);
 +	if (irq_hold < 0)
++		return -EINVAL;
++
++	irq_jack = s3c2410_gpio_getirq(pdev->resource[2].start);
++	if (irq_jack < 0)
 +		return -EINVAL;
 +
 +	platform_set_drvdata(pdev, gta01kbd);
@@ -157,11 +183,9 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	corgikbd->htimer.data = (unsigned long) corgikbd;
 +
 +	corgikbd->suspend_jiffies=jiffies;
-+
-+	memcpy(corgikbd->keycode, corgikbd_keycode, sizeof(corgikbd->keycode));
 +#endif
 +
-+	input_dev->name = "GTA01 Buttons";
++	input_dev->name = "Neo1973 Buttons";
 +	input_dev->phys = "gta01kbd/input0";
 +	input_dev->id.bustype = BUS_HOST;
 +	input_dev->id.vendor = 0x0001;
@@ -170,77 +194,68 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +	input_dev->cdev.dev = &pdev->dev;
 +	input_dev->private = gta01kbd;
 +
-+	input_dev->evbit[0] = BIT(EV_KEY);
++	input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_SW);
 +	set_bit(SW_HEADPHONE_INSERT, input_dev->swbit);
-+#if 0
-+	input_dev->keycode = gta01kbd->keycode;
-+	input_dev->keycodesize = sizeof(unsigned char);
-+	input_dev->keycodemax = ARRAY_SIZE(corgikbd_keycode);
-+
-+	for (i = 0; i < ARRAY_SIZE(corgikbd_keycode); i++)
-+		set_bit(corgikbd->keycode[i], input_dev->keybit);
-+	clear_bit(0, input_dev->keybit);
-+	set_bit(SW_LID, input_dev->swbit);
-+	set_bit(SW_TABLET_MODE, input_dev->swbit);
-+	set_bit(SW_HEADPHONE_INSERT, input_dev->swbit);
-+#endif
++	set_bit(KEY_PHONE, input_dev->keybit);
++	set_bit(KEY_PAUSE, input_dev->keybit);
 +
 +	input_register_device(gta01kbd->input);
 +
-+	if (request_irq(irq_911, gta01kbd_interrupt,
++	if (request_irq(irq_aux, gta01kbd_aux_irq,
 +			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
-+			"gta01kbd_911", gta01kbd))
-+		printk(KERN_WARNING "gta01kbd: Can't get IRQ\n");
-+	enable_irq_wake(irq_911);
++			"Neo1973 AUX button", gta01kbd)) {
++		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_aux);
++		goto out_aux;
++	}
++	enable_irq_wake(irq_aux);
 +
-+	if (request_irq(irq_hold, gta01kbd_interrupt,
++	if (request_irq(irq_hold, gta01kbd_hold_irq,
 +			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
-+			"gta01kbd_hold", gta01kbd))
-+		printk(KERN_WARNING "gta01kbd: Can't get IRQ\n");
++			"Neo1973 HOLD button", gta01kbd)) {
++		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_hold);
++		goto out_hold;
++	}
 +	enable_irq_wake(irq_hold);
 +
-+	/* FIXME: headphone insert */
-+
++	if (request_irq(irq_jack, gta01kbd_headphone_irq,
++			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
++			"Neo1973 Headphone Jack", gta01kbd)) {
++		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_jack);
++		goto out_jack;
++	}
++	enable_irq_wake(irq_jack);
 +#if 0
 +	mod_timer(&corgikbd->htimer, jiffies + msecs_to_jiffies(HINGE_SCAN_INTERVAL));
-+
-+	/* Setup sense interrupts - RisingEdge Detect, sense lines as inputs */
-+	for (i = 0; i < CORGI_KEY_SENSE_NUM; i++) {
-+		pxa_gpio_mode(CORGI_GPIO_KEY_SENSE(i) | GPIO_IN);
-+		if (request_irq(CORGI_IRQ_GPIO_KEY_SENSE(i), corgikbd_interrupt,
-+				SA_INTERRUPT | SA_TRIGGER_RISING,
-+				"corgikbd", corgikbd))
-+			printk(KERN_WARNING "corgikbd: Can't get IRQ: %d!\n", i);
-+	}
-+
-+	/* Set Strobe lines as outputs - set high */
-+	for (i = 0; i < CORGI_KEY_STROBE_NUM; i++)
-+		pxa_gpio_mode(CORGI_GPIO_KEY_STROBE(i) | GPIO_OUT | GPIO_DFLT_HIGH);
-+
-+	/* Setup the headphone jack as an input */
-+	pxa_gpio_mode(CORGI_GPIO_AK_INT | GPIO_IN);
 +#endif
-+
 +	return 0;
++
++out_jack:
++	free_irq(irq_hold, gta01kbd);
++out_hold:
++	free_irq(irq_aux, gta01kbd);
++out_aux:
++	input_unregister_device(gta01kbd->input);
++	input_free_device(gta01kbd->input);
++	platform_set_drvdata(pdev, NULL);
++	kfree(gta01kbd);
++
++	return -ENODEV;
 +}
 +
 +static int gta01kbd_remove(struct platform_device *pdev)
 +{
 +	struct gta01kbd *gta01kbd = platform_get_drvdata(pdev);
 +
-+	free_irq(s3c2410_gpio_getirq(pdev->resource[0].start), gta01kbd);
++	free_irq(s3c2410_gpio_getirq(pdev->resource[2].start), gta01kbd);
 +	free_irq(s3c2410_gpio_getirq(pdev->resource[1].start), gta01kbd);
++	free_irq(s3c2410_gpio_getirq(pdev->resource[0].start), gta01kbd);
 +#if 0
-+	int i;
-+
-+	for (i = 0; i < CORGI_KEY_SENSE_NUM; i++)
-+		free_irq(CORGI_IRQ_GPIO_KEY_SENSE(i), corgikbd);
-+
 +	del_timer_sync(&corgikbd->htimer);
 +	del_timer_sync(&corgikbd->timer);
 +#endif
 +	input_unregister_device(gta01kbd->input);
-+
++	input_free_device(gta01kbd->input);
++	platform_set_drvdata(pdev, NULL);
 +	kfree(gta01kbd);
 +
 +	return 0;
@@ -270,5 +285,5 @@ Index: linux-2.6.20/drivers/input/keyboard/gta01kbd.c
 +module_exit(gta01kbd_exit);
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
-+MODULE_DESCRIPTION("FIC GTA01 (Neo1973) Buttons Driver");
++MODULE_DESCRIPTION("FIC Neo1973 (GTA01) Buttons Driver");
 +MODULE_LICENSE("GPL");
