@@ -24,12 +24,18 @@
 #include <string.h>
 #include <glib.h>
 #include <glib/gprintf.h>
+#include <libecal/e-cal.h>
 #include <gtk/gtk.h>
-
 #include <libmokoui/moko-window.h>
 
+#define LOG_ERROR \
+g_warning ("Got error '%s', code '%d'", \
+           error->message, error->code);
+
+#define FREE_ERROR g_error_free (error) ; error = NULL ;
+
 static void
-today_update_date (GtkLabel *label)
+today_update_date (GtkLabel * label)
 {
   time_t t;
   struct tm *tmp;
@@ -38,7 +44,8 @@ today_update_date (GtkLabel *label)
   t = time (NULL);
   tmp = localtime (&t);
 
-  if (tmp == NULL) {
+  if (tmp == NULL)
+  {
     // error = could not get localtime
     return;
   }
@@ -50,7 +57,7 @@ today_update_date (GtkLabel *label)
 }
 
 static void
-today_update_time (GtkLabel *label)
+today_update_time (GtkLabel * label)
 {
   time_t t;
   struct tm *tmp;
@@ -59,7 +66,8 @@ today_update_time (GtkLabel *label)
   t = time (NULL);
   tmp = localtime (&t);
 
-  if (tmp == NULL) {
+  if (tmp == NULL)
+  {
     // error = could not get localtime
     return;
   }
@@ -67,6 +75,109 @@ today_update_time (GtkLabel *label)
   /* TODO: make 12/24 hr optional */
   strftime (time_str, sizeof (time_str), "<big>%l:%M</big> %p", tmp);
   gtk_label_set_markup (label, time_str);
+}
+
+void
+e_cal_component_list_free (GList * list)
+{
+  GList *cur = NULL;
+
+  for (cur = list; cur; cur = cur->next)
+  {
+    /*if an element of the list is not of type ECalComponent, leak it */
+    if (cur->data && E_IS_CAL_COMPONENT (cur->data))
+    {
+      g_object_unref (G_OBJECT (cur->data));
+      cur->data = NULL;
+    }
+    else
+    {
+      g_warning ("cur->data is not of type ECalComponent !");
+    }
+  }
+  g_list_free (list);
+}
+
+/**
+ * returns a list of ECalComponents, of type VEVENT
+ * it must freed it with e_cal_free_object_list()
+ */
+static GList *
+get_today_events ()
+{
+  GList *result = NULL;
+  GList *ical_comps = NULL;
+  GList *ecal_comps = NULL;
+  GList *cur = NULL;
+  ECal *ecal = NULL;
+  GError *error = NULL;
+  gchar *query = NULL;
+
+  ecal = e_cal_new_system_calendar ();
+  g_return_val_if_fail (ecal, NULL);
+
+  if (!e_cal_open (ecal, FALSE, &error))
+  {
+    g_warning ("failed to open the calendar");
+  }
+
+  if (error)
+  {
+    LOG_ERROR;
+    goto out;
+  }
+
+  query = g_strdup_printf ("(occur-in-time-range? "
+                           "(time-day-begin (time-now)) "
+                           "(time-day-end   (time-now))" ")");
+  e_cal_get_object_list (ecal, query, &ical_comps, &error);
+  if (error)
+  {
+    LOG_ERROR;
+    goto out;
+  }
+
+  /*
+   * build a list of ECalComponent, out of the list of icalcomponents
+   * when an icalcomponent is set to an ECalComponent, the later
+   * becomes responsible of freeing the former's memory
+   */
+  for (cur = ical_comps; cur; cur = cur->next)
+  {
+    ECalComponent *c = NULL;
+    if (!cur->data)
+      continue;
+
+    c = e_cal_component_new ();
+    if (!e_cal_component_set_icalcomponent (c, cur->data))
+    {
+      icalcomponent_free (cur->data);
+      cur->data = NULL;
+      continue;
+    }
+
+    ecal_comps = g_list_prepend (ecal_comps, c);
+    cur->data = NULL;
+  }
+  result = ecal_comps;
+  ecal_comps = NULL;
+
+out:
+  if (ical_comps)
+    e_cal_free_object_list (ical_comps);
+
+  if (ecal_comps)
+    e_cal_component_list_free (ecal_comps);
+  ecal_comps = NULL;
+
+  g_object_unref (G_OBJECT (ecal));
+
+  if (error)
+    g_error_free (error);
+
+  g_free (query);
+
+  return result;
 }
 
 static GtkWidget *
@@ -92,21 +203,67 @@ today_infoline_new (gchar * stock_id, gchar * message)
 }
 
 static GtkWidget *
-today_launcher_button_new (gchar *icon, gchar *exec)
+today_launcher_button_new (gchar * icon, gchar * exec)
 {
   GtkWidget *button = gtk_button_new ();
+
   gtk_container_add (GTK_CONTAINER (button),
-      gtk_image_new_from_stock (GTK_STOCK_EXECUTE, GTK_ICON_SIZE_BUTTON));
+                     gtk_image_new_from_stock (icon, GTK_ICON_SIZE_BUTTON));
+
   gtk_widget_set_name (button, "today-launcher-button");
 
   return button;
+}
+
+GtkWidget *
+get_today_events_infoline ()
+{
+  GtkWidget *infoline = NULL;
+  GList *events = NULL;
+  GList *cur = NULL;
+  GString *lines = NULL;
+
+  events = get_today_events ();
+  lines = g_string_new (NULL);
+  for (cur = events; cur; cur = cur->next)
+  {
+    ECalComponentText text;
+    if (!E_IS_CAL_COMPONENT (cur->data))
+    {
+      g_warning ("cur->data is not of type ECalComponent!");
+      continue;
+    }
+    if (e_cal_component_get_vtype (cur->data) != E_CAL_COMPONENT_EVENT)
+    {
+      g_warning ("Event type is not 'EVENT', but rather %d",
+                 e_cal_component_get_vtype (cur->data));
+      continue;
+    }
+    e_cal_component_get_summary (cur->data, &text);
+    g_string_append_printf (lines, "%s\n", text.value);
+  }
+
+  if (lines->len)
+    infoline = today_infoline_new (GTK_STOCK_NO, lines->str);
+  else
+    infoline = today_infoline_new (GTK_STOCK_NO, "No events for today");
+
+  if (events)
+    e_cal_component_list_free (events);
+
+  if (lines)
+  {
+    g_string_free (lines, TRUE);
+    lines = NULL;
+  }
+  return infoline;
 }
 
 static void
 create_ui ()
 {
   GtkWidget *window, *vbox;
-  GtkWidget *date, *time;
+  GtkWidget *date, *time_label;
   GtkWidget *message;
 
   GtkWidget *alignment;
@@ -127,17 +284,17 @@ create_ui ()
   gtk_container_add (GTK_CONTAINER (alignment), date);
   gtk_box_pack_start (GTK_BOX (vbox), alignment, FALSE, FALSE, 0);
   today_update_date (GTK_LABEL (date));
-  g_timeout_add (60*60*1000, (GSourceFunc)today_update_date, date);
+  g_timeout_add (60 * 60 * 1000, (GSourceFunc) today_update_date, date);
 
   /* time */
   alignment = gtk_alignment_new (1, 0, 0, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 0, 0, 0, 12);
-  time = gtk_label_new (NULL);
-  gtk_label_set_markup (GTK_LABEL (time), "<big>10:30am</big>");
-  gtk_container_add (GTK_CONTAINER (alignment), time);
+  time_label = gtk_label_new (NULL);
+  gtk_label_set_markup (GTK_LABEL (time_label), "<big>10:30am</big>");
+  gtk_container_add (GTK_CONTAINER (alignment), time_label);
   gtk_box_pack_start (GTK_BOX (vbox), alignment, FALSE, FALSE, 0);
-  today_update_time (GTK_LABEL (time));
-  g_timeout_add (60*1000, (GSourceFunc)today_update_time, time);
+  today_update_time (GTK_LABEL (time_label));
+  g_timeout_add (60 * 1000, (GSourceFunc) today_update_time, time_label);
 
   /* main message */
   alignment = gtk_alignment_new (0.5, 0.5, 0, 0);
@@ -157,12 +314,7 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* upcoming events */
-  infoline = today_infoline_new (GTK_STOCK_NO,
-                                 "Carrie's Birthday 16/Jan\n"
-                                 "Taxi to Airport 13:00\n"
-                                 "Meeting with client 17:00\n"
-                                 "Call Sean 19:30\n"
-                                 "Dinner with John 20:00\n");
+  infoline = get_today_events_infoline ();
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* shurtcut buttons */
@@ -172,15 +324,15 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), button_box, FALSE, FALSE, 0);
 
   gtk_container_add (GTK_CONTAINER (button_box),
-      today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
   gtk_container_add (GTK_CONTAINER (button_box),
-      today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
   gtk_container_add (GTK_CONTAINER (button_box),
-      today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
   gtk_container_add (GTK_CONTAINER (button_box),
-      today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
   gtk_container_add (GTK_CONTAINER (button_box),
-      today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
 
   /* signals */
   g_signal_connect (G_OBJECT (window), "delete-event",
