@@ -22,7 +22,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/bootmenu.c
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,375 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -61,6 +61,9 @@ Index: u-boot/board/neo1973/bootmenu.c
 +#include "neo1973.h"
 +
 +
++extern const char version_string[];
++
++
 +#define ANSI_CLEAR	"\e[2J"
 +#define ANSI_REVERSE	"\e[7m"
 +#define	ANSI_NORMAL	"\e[m"
@@ -76,6 +79,9 @@ Index: u-boot/board/neo1973/bootmenu.c
 +#define BOOT_MENU_TIMEOUT	60	/* 60 seconds */
 +#define AFTER_COMMAND_WAIT	3	/* wait (2,3] after running commands */
 +#define	MAX_MENU_ITEMS		10	/* cut off after that many */
++
++#define	TOP_ROW		2
++#define	MENU_0_ROW	(TOP_ROW+5)
 +
 +#define BOOT_TXT	"Boot"
 +#define	FACTORY_TXT	"Factory reset"
@@ -170,7 +176,7 @@ Index: u-boot/board/neo1973/bootmenu.c
 +
 +static void print_option(int n, int reverse)
 +{
-+	bm_printf(ANSI_GOTOYX, n+4, 1);
++	bm_printf(ANSI_GOTOYX, MENU_0_ROW+n, 1);
 +	if (reverse)
 +		bm_printf(ANSI_REVERSE);
 +	print_option_n(n);
@@ -211,7 +217,10 @@ Index: u-boot/board/neo1973/bootmenu.c
 +{
 +	int n;
 +
-+	bm_printf(ANSI_CLEAR ANSI_GOTOYX "*** BOOT MENU ***\n\n", 2, 1);
++	bm_printf(ANSI_CLEAR ANSI_GOTOYX "%s", TOP_ROW, 1, version_string);
++	bm_printf(ANSI_GOTOYX "*** BOOT MENU ***", TOP_ROW+3, 1);
++	bm_printf(ANSI_GOTOYX, MENU_0_ROW, 1);
++
 +	options = 0;
 +
 +	/* hard-coded first option */
