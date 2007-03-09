@@ -1,0 +1,62 @@
+Index: upstart-0.3.5/init/event.h
+===================================================================
+--- upstart-0.3.5.orig/init/event.h	2007-02-09 18:28:56.000000000 +0000
++++ upstart-0.3.5/init/event.h	2007-03-09 01:43:14.000000000 +0000
+@@ -123,6 +123,13 @@
+  **/
+ #define KBDREQUEST_EVENT "kbdrequest"
+ 
++/**
++ * POWEROKFAIL_EVENT:
++ *
++ * Name of the event that we generate when the system power failes
++ **/
++#define POWEROKFAIL_EVENT "pwrokfail"
++
+ 
+ /**
+  * JOB_STARTING_EVENT:
+Index: upstart-0.3.5/init/main.c
+===================================================================
+--- upstart-0.3.5.orig/init/main.c	2007-02-09 21:14:55.000000000 +0000
++++ upstart-0.3.5/init/main.c	2007-03-09 01:44:34.000000000 +0000
+@@ -64,6 +64,7 @@
+ static void reset_console   (void);
+ static void crash_handler   (int signum);
+ static void cad_handler     (void *data, NihSignal *signal);
++static void pof_handler     (void *data, NihSignal *signal);
+ static void kbd_handler     (void *data, NihSignal *signal);
+ static void stop_handler    (void *data, NihSignal *signal);
+ static void term_handler    (const char *prog, NihSignal *signal);
+@@ -227,6 +228,8 @@
+ 	reboot (RB_DISABLE_CAD);
+ 	NIH_MUST (nih_signal_add_handler (NULL, SIGINT, cad_handler, NULL));
+ 
++	NIH_MUST (nih_signal_add_handler (NULL, SIGPWR, pof_handler, NULL));
++
+ 	/* Ask the kernel to send us SIGWINCH when alt-uparrow is pressed;
+ 	 * generate a kbdrequest event.
+ 	 */
+@@ -396,6 +399,22 @@
+ }
+ 
+ /**
++ * pof_handler:
++ * @data: unused,
++ * @signal: signal that called this handler.
++ *
++ * Handle having recieved the SIGPWR signal, sent to us when the kernel
++ * detects a power failure. We just generate a
++ * pwrokfail event.
++ **/
++static void
++pof_handler (void      *data,
++	     NihSignal *signal)
++{
++	event_emit (POWEROKFAIL_EVENT, NULL, NULL);
++}
++
++/**
+  * kbd_handler:
+  * @data: unused,
+  * @signal: signal that called this handler.
