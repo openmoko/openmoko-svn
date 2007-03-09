@@ -7,7 +7,7 @@ Index: u-boot/common/cmd_mem.c
 ===================================================================
 --- u-boot.orig/common/cmd_mem.c
 +++ u-boot/common/cmd_mem.c
-@@ -1185,6 +1185,34 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int fl
+@@ -1148,6 +1148,34 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int fl
  }
  #endif	/* CONFIG_CRC32_VERIFY */
  
@@ -42,13 +42,13 @@ Index: u-boot/common/cmd_mem.c
  /**************************************************/
  #if (CONFIG_COMMANDS & CFG_CMD_MEMORY)
  U_BOOT_CMD(
-@@ -1288,5 +1316,13 @@ U_BOOT_CMD(
+@@ -1251,5 +1279,13 @@ U_BOOT_CMD(
  );
  #endif /* CONFIG_MX_CYCLIC */
  
 +#ifdef CONFIG_UNZIP
 +U_BOOT_CMD(
-+	unzip,	CFG_MAXARGS,	1,	do_unzip,
++	unzip,	4,	1,	do_unzip,
 +	"unzip - unzip a memory region\n",
 +	"srcaddr dstaddr [dstsize]\n"
 +);
