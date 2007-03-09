@@ -99,7 +99,7 @@ Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdfu.c
-@@ -0,0 +1,1007 @@
+@@ -0,0 +1,1014 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -413,6 +413,11 @@ Index: u-boot/drivers/usbdfu.c
 +	    	dev->dfu_state = DFU_STATE_dfuERROR;
 +		dev->dfu_status = DFU_STATUS_errADDRESS;
 +		return RET_STALL;
++	}
++
++	if (first && ds->buf && ds->buf != ds->_buf && ds->buf != LOAD_ADDR) {
++		free(ds->buf);
++		ds->buf = ds->_buf;
 +	}
 +
 +	switch (dev->alternate) {
@@ -1009,13 +1014,15 @@ Index: u-boot/drivers/usbdfu.c
 +			strdesc = create_usbstring(CONFIG_DFU_ALT0_STR);
 +		} else {
 +			struct part_info *part = get_partition_nand(i-1);
-+			if (!part) {
-+				part = create_usbstring("undefined partition");
-+				if (!part)
-+					continue;
-+			}
-+			strdesc = create_usbstring(part->name);
++
++			if (part)
++				strdesc = create_usbstring(part->name);
++			else
++				strdesc =
++				    create_usbstring("undefined partition");
 +		}
++		if (!strdesc)
++			continue;
 +		usb_strings[STR_COUNT+i+1] = strdesc;
 +	}
 +}
