@@ -362,7 +362,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       G_CALLBACK (on_window_history_hide), p_dialer_data);
 
    //FIXME: without gtk_widget_show_all first and then hide, the history view will not show properly. -tony
-   gtk_widget_show_all(GTK_WIDGET(window));
+   //gtk_widget_show_all(GTK_WIDGET(window));
 
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
     // This causes a segfault for me... maybe a problem in libmokoui? - thomas
@@ -378,7 +378,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       p_dialer_data);
 
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
-                      "press_bottom",
+                      "prehttp://planet.gnome.org/ss_bottom",
                       G_CALLBACK (cb_tool_button_history_back_clicked),
                       p_dialer_data);
 
@@ -386,8 +386,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     tools = moko_finger_window_get_toolbox (window);
 
     /* TODO: remove the GTK_WIDGET() casts when libmokoui is fixed */
-    button =
-      GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
+    button = moko_finger_tool_box_add_button_without_label (tools);
     image = file_new_image_from_relative_path ("phone.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
                                                             (button), image);
@@ -413,8 +412,6 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_delete_clicked),
                       p_dialer_data);
-    //gtk_widget_show (GTK_WIDGET (tools));
-
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("tony.png");
@@ -424,11 +421,8 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       G_CALLBACK (cb_tool_button_history_back_clicked),
                       p_dialer_data);
 
-    //gtk_widget_show (GTK_WIDGET (tools));
-
     p_dialer_data->wheel_history = GTK_WIDGET (moko_finger_window_get_wheel (window));
     p_dialer_data->toolbox_history = GTK_WIDGET (tools);
-    gtk_widget_hide(GTK_WIDGET(window));
     DBG_LEAVE ();
   }
   else

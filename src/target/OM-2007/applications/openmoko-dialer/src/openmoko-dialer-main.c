@@ -248,6 +248,15 @@ setlock (char *fname)
     }
 }
 
+static gboolean show_gui;
+
+static GOptionEntry entries[] = 
+{
+  { "show-gui", 's', 0, G_OPTION_ARG_NONE, &show_gui, "Show the GUI at startup (default off)", "N" },
+  { NULL }
+};
+
+
 int main( int argc, char** argv )
 {
   pid_t           lockapp;
@@ -258,6 +267,14 @@ int main( int argc, char** argv )
 if (argc != 1)
     {
       /* Add init code. */
+      GError *error = NULL;
+      GOptionContext *context = g_option_context_new ("");
+
+      g_option_context_add_main_entries (context, entries, NULL);
+      g_option_context_add_group (context, gtk_get_option_group (TRUE));
+      g_option_context_parse (context, &argc, &argv, &error);
+
+      g_option_context_free (context);
     }
   lockapp = testlock ("/tmp/dialer.lock");
   if (lockapp > 0)
@@ -297,7 +314,10 @@ signal (SIGUSR1, handle_sigusr1);
   window_history_init(p_dialer_data); 
   DBG_MSG ("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 
-
+if (show_gui)
+{
+  handle_sigusr1 (SIGUSR1);
+}
 
 //from now on we will not use multithreads.
   gsm_lgsm_start(mainloop);

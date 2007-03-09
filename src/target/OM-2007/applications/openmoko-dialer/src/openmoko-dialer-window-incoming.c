@@ -291,12 +291,6 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
 
 
-    gtk_widget_show_all (GTK_WIDGET (window));
-
-
-    gtk_widget_hide (GTK_WIDGET (window));
-
-
     moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status), "Incoming call");
     moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status), "");
 

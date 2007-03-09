@@ -217,10 +217,6 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     p_dialer_data->window_pin = window;
 
-    gtk_widget_show_all (GTK_WIDGET (window));
-    gtk_widget_hide (GTK_WIDGET (window));
-
-
   }
 
   return 1;

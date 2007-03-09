@@ -53,13 +53,13 @@ cb_speaker_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   gtk_widget_hide (appdata->window_outgoing);
 
 
-//transfer the contact info
+  //transfer the contact info
   window_talking_prepare (appdata);
 
-//start dialling.
+  //start dialling.
 
   DBG_TRACE ();
-  gtk_widget_show (appdata->window_talking);
+  gtk_widget_show_all (appdata->window_talking);
 
 
   DBG_LEAVE ();
@@ -281,9 +281,8 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     p_dialer_data->buttonRedial = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_redial_button_clicked), p_dialer_data);
-//gtk_widget_set_size_request(button,100,32);
     gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 40);
-//gtk_widget_set_size_request(button,60,24);
+    g_object_set (G_OBJECT (button), "no-show-all", TRUE, NULL);
 
 
     button = gtk_button_new_with_label ("Cancel");
@@ -293,9 +292,6 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       G_CALLBACK (cb_cancel_button_clicked), p_dialer_data);
 //gtk_widget_set_size_request(button,100,32);
     gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 40);
-
-
-
 
     gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 50);
 
@@ -307,15 +303,6 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
     gtk_window_set_decorated(GTK_WINDOW(window ),FALSE); //FIXME: this line seems only necessary on my PC. tony
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
-
-
-    gtk_widget_show_all (GTK_WIDGET (window));
-
-    gtk_widget_hide (p_dialer_data->buttonRedial);
-
-
-    gtk_widget_hide (GTK_WIDGET (window));
-
 
     moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status), "Outgoing call");
     moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status), "Calling ... (00:00:00)");

@@ -349,9 +349,10 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     gtk_box_pack_start (GTK_BOX (vbox), content_dtmf, FALSE, FALSE, 0);
     p_dialer_data->content_dtmf = content_dtmf;
+    g_object_set (G_OBJECT (content_dtmf), "no-show-all", TRUE);
 
 
-//now the container--window
+    //now the container--window
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
     gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
     p_dialer_data->window_talking = GTK_WIDGET (window);
@@ -362,17 +363,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       G_CALLBACK (on_window_talking_hide), p_dialer_data);
 
 
-
-
-    gtk_widget_show_all (GTK_WIDGET (window));
-
-//the gtk_widget_show_all is really bad, cause i have to call it and then hide some widgets.
-
-    gtk_widget_hide (content_dtmf);
-
-
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
-//   gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(window)));
     wheel=moko_finger_window_get_wheel (window);
     g_signal_connect (G_OBJECT (wheel),
                       "press_left_up",
@@ -417,9 +408,6 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     p_dialer_data->dtmf_in_talking_window = 0;
     p_dialer_data->wheel_talking = GTK_WIDGET (wheel);
     p_dialer_data->toolbox_talking = GTK_WIDGET (tools);
-
-    //gtk_widget_hide(window);
-
 
     DBG_LEAVE ();
   }

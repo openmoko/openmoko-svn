@@ -90,7 +90,7 @@ cb_history_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
     window_history_init (appdata);
 
 //start dialling.
-  gtk_widget_show (appdata->window_history);
+  gtk_widget_show_all (appdata->window_history);
 
 }
 
@@ -147,7 +147,7 @@ gtk_widget_show(appdata->window_incoming);
   window_outgoing_prepare (appdata);
 
 //start dialling.
-  gtk_widget_show (appdata->window_outgoing);
+  gtk_widget_show_all (appdata->window_outgoing);
 
   g_free (codesinput);
 
