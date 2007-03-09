@@ -166,7 +166,6 @@ RDEPENDS_task-openmoko-demo = "\
   web \
   rxvt-unicode \
   mtpaint \
-  mplayer \
 "
 
 #
