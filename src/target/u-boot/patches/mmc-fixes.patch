@@ -20,7 +20,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
  	dcon |= S3C2410_SDIDCON_BLOCKMODE;
  	dcon |= S3C2410_SDIDCON_RXAFTERCMD|S3C2410_SDIDCON_XFER_RXSTART;
  	if (wide)
-@@ -309,7 +307,7 @@ int mmc_write(uchar *src, ulong dst, int
+@@ -309,16 +307,18 @@ int mmc_write(uchar *src, ulong dst, int
  	return 0;
  }
  
@@ -29,7 +29,9 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
  {
  	int mmc_block_size = MMC_BLOCK_SIZE;
  	ulong src = blknr * mmc_block_size + CFG_MMC_BASE;
-@@ -318,7 +316,9 @@ ulong mmc_bread(int dev_num, ulong blknr
+ 
+-	mmc_read(src, (uchar *)dst, blkcnt*mmc_block_size);
++	mmc_read(src, dst, blkcnt*mmc_block_size);
  	return blkcnt;
  }
  
@@ -129,12 +131,12 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
 +
 +			if (verbose)
 +				print_mmc_cid(cid);
-+			sprintf(mmc_dev.vendor,
++			sprintf((char *) mmc_dev.vendor,
 +				"Man %02x%02x%02x Snr %02x%02x%02x",
 +				cid->id[0], cid->id[1], cid->id[2],
 +				cid->sn[0], cid->sn[1], cid->sn[2]);
-+			sprintf(mmc_dev.product,"%s",cid->name);
-+			sprintf(mmc_dev.revision,"%x %x",
++			sprintf((char *) mmc_dev.product,"%s",cid->name);
++			sprintf((char *) mmc_dev.revision,"%x %x",
 +				cid->hwrev, cid->fwrev);
 +		}
 +		else {
