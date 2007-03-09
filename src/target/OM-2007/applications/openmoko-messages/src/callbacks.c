@@ -92,6 +92,10 @@ void cb_new_mail (GtkMenuItem* item, MessengerData* d)
 void cb_new_folder (GtkMenuItem* item, MessengerData* d)
 {
     g_debug ("new folder called");
+    GtkWidget* hbox;
+    GtkWidget* nfResetBtn;
+    GtkWidget* nfConfirmBtn;
+
     MokoDialogWindow* nfWin = moko_dialog_window_new();
     GtkWidget* nfBox = gtk_vbox_new (FALSE,10);
     gtk_widget_set_size_request (nfBox, 480, -1);
@@ -103,16 +107,16 @@ void cb_new_folder (GtkMenuItem* item, MessengerData* d)
     gtk_misc_set_alignment (GTK_MISC(nfLabel),0,0.5);
     gtk_box_pack_start (GTK_BOX(nfBox), nfLabel, FALSE, TRUE, 0);
 
-    GtkWidget* hbox = gtk_hbox_new (FALSE,20);
+    hbox = gtk_hbox_new (FALSE,20);
     d->nfEntry = gtk_entry_new ();
-    gtk_box_pack_start (GTK_BOX(hbox), d->nfEntry, FALSE, TRUE, 0);
-    GtkWidget* nfResetBtn = gtk_button_new_with_label ("Reset");
-    gtk_box_pack_start (GTK_BOX(hbox), nfResetBtn, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(hbox), d->nfEntry, TRUE, TRUE, 0);
     gtk_box_pack_start (GTK_BOX(nfBox), hbox, FALSE, TRUE, 0);
 
-    hbox = gtk_hbox_new (FALSE,0);
-    GtkWidget* nfConfirmBtn = gtk_button_new_with_label ("OK");
+    hbox = gtk_hbox_new (FALSE,20);
+    nfConfirmBtn = gtk_button_new_with_label ("OK");
+    nfResetBtn = gtk_button_new_with_label ("Reset");
     gtk_box_pack_start (GTK_BOX(hbox), nfConfirmBtn, FALSE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX(hbox), nfResetBtn, FALSE, TRUE, 0);
     gtk_box_pack_start (GTK_BOX(nfBox), hbox, FALSE, TRUE, 0);
     gtk_container_add (GTK_CONTAINER(nfAlign),nfBox);
 
@@ -298,6 +302,9 @@ void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox, GTK_MENU(d->filtmenu));
     gtk_widget_show_all (GTK_WIDGET(menubox));
+
+    GdkWindow* parent = gtk_widget_get_parent_window (GTK_WIDGET(button));
+    gdk_window_destroy (parent);
 }
 
 void cb_frResetBtn_clicked (GtkButton* button, GtkWidget* entry)
@@ -310,6 +317,7 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
     g_debug ("folder rename called");
     GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
     GtkWidget* menulabel = GTK_BIN(menuitem)->child;
+
     gchar* oldName = g_strdup (gtk_label_get_text (GTK_LABEL(menulabel)));
     if (!g_strcasecmp(oldName,"Inbox") ||
         !g_strcasecmp(oldName,"Outbox") ||
@@ -324,6 +332,10 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
 	gtk_dialog_run (GTK_DIALOG (msgDialog));
 	gtk_widget_destroy (msgDialog);
     }else {
+        GtkWidget* hbox;
+	GtkWidget* frResetBtn;
+	GtkWidget* frConfirmBtn;
+
         MokoDialogWindow* frWin = moko_dialog_window_new();
 	GtkWidget* frBox = gtk_vbox_new (FALSE,10);
 	gtk_widget_set_size_request (frBox, 480, -1);
@@ -337,16 +349,14 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
 	gtk_misc_set_alignment (GTK_MISC(frLabel),0,0.5);
 	gtk_box_pack_start (GTK_BOX(frBox), frLabel, FALSE, TRUE, 0);
 		
-        GtkWidget* hbox = gtk_hbox_new (FALSE,20);
 	d->frEntry = gtk_entry_new ();
-	gtk_box_pack_start (GTK_BOX(hbox), d->frEntry, FALSE, TRUE, 0);
-	GtkWidget* frResetBtn = gtk_button_new_with_label ("Reset");
-	gtk_box_pack_start (GTK_BOX(hbox), frResetBtn, FALSE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX(frBox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX(frBox), d->frEntry, FALSE, TRUE, 0);
 		
-	hbox = gtk_hbox_new (FALSE,0);
-	GtkWidget* frConfirmBtn = gtk_button_new_with_label ("OK");
+	hbox = gtk_hbox_new (FALSE,20);
+	frConfirmBtn = gtk_button_new_with_label ("OK");
+	frResetBtn = gtk_button_new_with_label ("Reset");
 	gtk_box_pack_start (GTK_BOX(hbox), frConfirmBtn, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX(hbox), frResetBtn, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX(frBox), hbox, FALSE, TRUE, 0);
 	gtk_container_add (GTK_CONTAINER(frAlign),frBox);
 		
