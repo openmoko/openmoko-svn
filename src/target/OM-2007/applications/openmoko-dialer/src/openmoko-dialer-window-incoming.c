@@ -126,19 +126,9 @@ timer_incoming_time_out (MOKO_DIALER_APP_DATA * appdata)
 //DBG_ENTER();
   TIMER_DATA *timer_data = &(appdata->g_timer_data);
 
-/*	
-timer_data->ticks++;
-timer_data->hour=timer_data->ticks/3600;
-timer_data->min=(timer_data->ticks-timer_data->hour*3600)/60;
-timer_data->sec=timer_data->ticks%60;
-
-
-sprintf(timer_data->timestring,"%02d:%02d:%02d",timer_data->hour,timer_data->min,timer_data->sec);
-//ok,we update the label now.
-moko_dialer_status_set_status_label(appdata->status_incoming,timer_data->timestring);
-*/
 moko_dialer_status_update_icon(appdata->status_incoming);
-
+//now that we have the incoming call status report correctly, the timeout mechanism is not needed.
+/*
   if (event_get_keep_calling ())
   {
     event_reset_keep_calling ();
@@ -163,7 +153,7 @@ moko_dialer_status_update_icon(appdata->status_incoming);
       timer_data->ticks++;
     }
   }
-
+*/
   return 1;
 
 

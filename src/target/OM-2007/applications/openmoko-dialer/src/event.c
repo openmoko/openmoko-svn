@@ -219,7 +219,7 @@ cprog_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 
   if (aux->u.call_status.prog == GSMD_CALLPROG_DISCONNECT)
   {
-    if (aux->u.call_status.dir == GSMD_CALL_DIR_MO)
+//    if (aux->u.call_status.dir == GSMD_CALL_DIR_MO)
       gsm_peer_disconnect ();
 
   }

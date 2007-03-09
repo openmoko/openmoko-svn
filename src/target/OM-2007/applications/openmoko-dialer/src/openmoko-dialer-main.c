@@ -158,6 +158,7 @@ void gsm_peer_disconnect()
      gsm_hangup();
     if(appdata->window_talking)gtk_widget_hide(appdata->window_talking);
     if(appdata->window_outgoing)gtk_widget_hide(appdata->window_outgoing);
+    if(appdata->window_incoming)gtk_widget_hide(appdata->window_incoming);
 
 }
 
