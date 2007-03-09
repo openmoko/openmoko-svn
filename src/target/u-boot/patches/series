@@ -64,3 +64,4 @@ boot-menu.patch
 uboot-dfu.patch
 uboot-neo1973-defaultenv.patch
 uboot-nand-markbad-reallybad.patch
+mmc-fixes.patch
