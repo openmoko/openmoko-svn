@@ -16,6 +16,7 @@ INHERIT += "package_ipk"
 IMAGE_FSTYPES = "tar.gz ext2.gz jffs2"
 IMAGE_FSTYPES_x86 = "tar.gz"
 IMAGE_ROOTFS_SIZE_ext2 = "131072"
+IMAGE_ROOTFS_SIZE_ext2.gz = "131072"
 
 #
 # Binutils & Compiler
