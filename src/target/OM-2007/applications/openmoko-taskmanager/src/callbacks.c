@@ -224,12 +224,3 @@ moko_wheel_right_down_press_cb (GtkWidget *self, MokoTaskManager *tm)
    gtk_tree_path_free (path);
    return;
  }
-
-void
-moko_wheel_bottom_press_cb (GtkWidget *self, MokoTaskManager *tm)
-{
-    if (!tm)
-    	return;
-    gtk_main_quit ();
-    g_free (tm);
-}

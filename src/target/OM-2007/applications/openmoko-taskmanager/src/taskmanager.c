@@ -241,8 +241,6 @@ main (int argc, char** argv)
     			G_CALLBACK 	(moko_wheel_left_up_press_cb), tm);
     g_signal_connect (tm->wheel, "press_right_down",
     			G_CALLBACK (moko_wheel_right_down_press_cb), tm);
-    g_signal_connect (tm->wheel, "press_bottom",
-    			G_CALLBACK 	(moko_wheel_bottom_press_cb), tm);
 
     gdk_window_add_filter (NULL, moko_window_filter, tm->l);
     XSelectInput (dpy, DefaultRootWindow (dpy), PropertyChangeMask);
