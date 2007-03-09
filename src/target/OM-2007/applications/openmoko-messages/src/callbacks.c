@@ -79,14 +79,16 @@ void cb_new_sms (GtkMenuItem* item, MessengerData* d)
 {
     SmsDialogWindow* sms_window = sms_dialog_window_new();
     sms_dialog_window_set_title (sms_window,"New SMS");
-    gtk_widget_show_all ( GTK_WIDGET(sms_window) );
+    gtk_window_set_decorated (GTK_WINDOW(sms_window), FALSE);
+    gtk_widget_show_all (GTK_WIDGET(sms_window));
 }
 
 void cb_new_mail (GtkMenuItem* item, MessengerData* d)
 {
-    SmsDialogWindow* sms_window = sms_dialog_window_new();
-    mail_dialog_window_set_title (sms_window,"New Email");
-    gtk_widget_show_all ( GTK_WIDGET(sms_window) );
+    SmsDialogWindow* mail_window = sms_dialog_window_new();
+    mail_dialog_window_set_title (mail_window,"New Email");
+    gtk_window_set_decorated (GTK_WINDOW(mail_window), FALSE);
+    gtk_widget_show_all ( GTK_WIDGET(mail_window) );
 }
 
 void cb_new_folder (GtkMenuItem* item, MessengerData* d)
@@ -133,6 +135,7 @@ void cb_new_folder (GtkMenuItem* item, MessengerData* d)
 			  G_CALLBACK(cb_nfResetBtn_clicked),
 			  d);
     }
+    gtk_window_set_decorated (GTK_WINDOW(d->nfWin), FALSE);
     gtk_widget_show_all (d->nfWin);
 }
 
@@ -276,6 +279,7 @@ void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
 	sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
 	sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
     }
+    gtk_window_set_decorated (GTK_WINDOW(d->mmWin), FALSE);
     sms_membership_window_show ( SMS_MEMBERSHIP_WINDOW(d->mmWin) );
 }
 

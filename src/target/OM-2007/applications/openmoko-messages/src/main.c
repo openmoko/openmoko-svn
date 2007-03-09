@@ -167,7 +167,8 @@ int main( int argc, char** argv )
     dbus_connection_setup_with_g_main (d->bus, NULL);
 
     /* show everything and run main loop */
-    gtk_widget_show_all( GTK_WIDGET(d->window) );
+    gtk_window_set_decorated (GTK_WINDOW(d->window), FALSE);
+    gtk_widget_show_all (GTK_WIDGET(d->window));
     gtk_main();
 
     return 0;
