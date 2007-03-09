@@ -245,7 +245,7 @@ static int ticalypso_initsettings(struct gsmd *g)
 {
 	int rc;
 	/* use +CTZR: to report time zone changes */
-	rc |= gsmd_simplecmd(gsmd, "AT+CTZR=1");
+	rc |= gsmd_simplecmd(g, "AT+CTZR=1");
 	/* enable %CPI: call progress indication */
 	rc = gsmd_simplecmd(g, "AT\%CPI=3");
 	/* enable %CPRI: ciphering indications */
