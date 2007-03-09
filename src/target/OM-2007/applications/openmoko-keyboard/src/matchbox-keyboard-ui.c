@@ -366,6 +366,9 @@ mb_kbd_ui_allocate_ui_layout(MBKeyboardUI *ui,
       *width = mb_kbd_layout_get_width(layout);
       *height = mb_kbd_layout_get_height(layout);
 
+      ui->key_uwidth = *width;
+      ui->key_uheight = *height;
+
       return;
     }
 
