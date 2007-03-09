@@ -76,8 +76,6 @@ int gsmd_initsettings(struct gsmd *gsmd)
 	rc |= gsmd_simplecmd(gsmd, "AT+CLIP=1");
 	/* use +COLP: to indicate COLP */
 	rc |= gsmd_simplecmd(gsmd, "AT+COLP=1");
-	/* use +CTZR: to report time zone changes */
-	rc |= gsmd_simplecmd(gsmd, "AT+CTZR=1");
 	/* power on the phone */
 	rc |= gsmd_simplecmd(gsmd, "AT+CFUN=1");
 
