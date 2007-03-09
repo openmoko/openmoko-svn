@@ -96,41 +96,44 @@ void cb_new_folder (GtkMenuItem* item, MessengerData* d)
     GtkWidget* nfResetBtn;
     GtkWidget* nfConfirmBtn;
 
-    MokoDialogWindow* nfWin = moko_dialog_window_new();
-    GtkWidget* nfBox = gtk_vbox_new (FALSE,10);
-    gtk_widget_set_size_request (nfBox, 480, -1);
-    GtkWidget* nfAlign = gtk_alignment_new (0,0,1,1);
-    gtk_alignment_set_padding (GTK_ALIGNMENT(nfAlign), 100, 0, 30, 10);
-    moko_dialog_window_set_title (nfWin, "New Folder");
-    
-    GtkWidget* nfLabel = gtk_label_new ("Please input new folder name:");
-    gtk_misc_set_alignment (GTK_MISC(nfLabel),0,0.5);
-    gtk_box_pack_start (GTK_BOX(nfBox), nfLabel, FALSE, TRUE, 0);
+    if ((d->nfWin != NULL) && (d->nfWin->window != NULL))
+        gtk_entry_set_text (GTK_ENTRY(d->nfEntry),"");
+    else
+    {
+        d->nfWin = moko_dialog_window_new();
+	GtkWidget* nfBox = gtk_vbox_new (FALSE,10);
+	gtk_widget_set_size_request (nfBox, 480, -1);
+	GtkWidget* nfAlign = gtk_alignment_new (0,0,1,1);
+	gtk_alignment_set_padding (GTK_ALIGNMENT(nfAlign), 100, 0, 30, 10);
+	moko_dialog_window_set_title (d->nfWin, "New Folder");
+	
+	GtkWidget* nfLabel = gtk_label_new ("Please input new folder name:");
+	gtk_misc_set_alignment (GTK_MISC(nfLabel),0,0.5);
+	gtk_box_pack_start (GTK_BOX(nfBox), nfLabel, FALSE, TRUE, 0);
+	
+	d->nfEntry = gtk_entry_new ();
+	gtk_box_pack_start (GTK_BOX(nfBox), d->nfEntry, FALSE, TRUE, 0);
+	
+	hbox = gtk_hbox_new (FALSE,20);
+	nfConfirmBtn = gtk_button_new_with_label ("OK");
+	nfResetBtn = gtk_button_new_with_label ("Reset");
+	gtk_box_pack_start (GTK_BOX(hbox), nfConfirmBtn, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX(hbox), nfResetBtn, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX(nfBox), hbox, FALSE, TRUE, 0);
 
-    hbox = gtk_hbox_new (FALSE,20);
-    d->nfEntry = gtk_entry_new ();
-    gtk_box_pack_start (GTK_BOX(hbox), d->nfEntry, TRUE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX(nfBox), hbox, FALSE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER(nfAlign),nfBox);
 
-    hbox = gtk_hbox_new (FALSE,20);
-    nfConfirmBtn = gtk_button_new_with_label ("OK");
-    nfResetBtn = gtk_button_new_with_label ("Reset");
-    gtk_box_pack_start (GTK_BOX(hbox), nfConfirmBtn, FALSE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX(hbox), nfResetBtn, FALSE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX(nfBox), hbox, FALSE, TRUE, 0);
-    gtk_container_add (GTK_CONTAINER(nfAlign),nfBox);
-
-    moko_dialog_window_set_contents (nfWin, nfAlign);
-    g_signal_connect (G_OBJECT(nfConfirmBtn), 
-                      "clicked",
-		      G_CALLBACK(cb_nfBtn_clicked),
-		      d);
-    g_signal_connect (G_OBJECT(nfResetBtn),
-                      "clicked",
-		      G_CALLBACK(cb_nfResetBtn_clicked),
-		      d);
-    gtk_widget_show_all ( GTK_WIDGET(nfWin) );
-    
+	moko_dialog_window_set_contents (d->nfWin, nfAlign);
+	g_signal_connect (G_OBJECT(nfConfirmBtn), 
+	                  "clicked",
+			  G_CALLBACK(cb_nfBtn_clicked),
+			  d);
+	g_signal_connect (G_OBJECT(nfResetBtn),
+	                  "clicked",
+			  G_CALLBACK(cb_nfResetBtn_clicked),
+			  d);
+    }
+    gtk_widget_show_all (d->nfWin);
 }
 
 void cb_mode_read (GtkMenuItem* item, MessengerData* d)
@@ -267,12 +270,12 @@ void cb_delete_message (GtkMenuItem* item, MessengerData* d)
 void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
 {
     g_debug ("message membership");
-    if (d->mmWin == NULL){
-    	d->mmWin = sms_membership_window_new();
-    	sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
-    	sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
+    if (d->mmWin == NULL)
+    {
+        d->mmWin = sms_membership_window_new();
+	sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
+	sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
     }
-    sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
     sms_membership_window_show ( SMS_MEMBERSHIP_WINDOW(d->mmWin) );
 }
 
@@ -297,14 +300,11 @@ void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
 	}
     }
     d->filtmenu = reload_filter_menu (d,d->folderlist);
-
     MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox, GTK_MENU(d->filtmenu));
     gtk_widget_show_all (GTK_WIDGET(menubox));
-
-    GdkWindow* parent = gtk_widget_get_parent_window (GTK_WIDGET(button));
-    gdk_window_destroy (parent);
+    gtk_widget_hide (d->frWin);
 }
 
 void cb_frResetBtn_clicked (GtkButton* button, GtkWidget* entry)
@@ -336,40 +336,44 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
 	GtkWidget* frResetBtn;
 	GtkWidget* frConfirmBtn;
 
-        MokoDialogWindow* frWin = moko_dialog_window_new();
-	GtkWidget* frBox = gtk_vbox_new (FALSE,10);
-	gtk_widget_set_size_request (frBox, 480, -1);
-	GtkWidget* frAlign = gtk_alignment_new (0,0,1,1);
-	gtk_alignment_set_padding (GTK_ALIGNMENT(frAlign), 100, 0, 30, 10);
-	moko_dialog_window_set_title (frWin, "Folder Rename");
-		    
-        GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
-	GtkWidget* menulabel = GTK_BIN(menuitem)->child;
-	GtkWidget* frLabel = gtk_label_new (g_strdup_printf("Please input new folder name for %s:", 	    					gtk_label_get_text (GTK_LABEL(menulabel))));
-	gtk_misc_set_alignment (GTK_MISC(frLabel),0,0.5);
-	gtk_box_pack_start (GTK_BOX(frBox), frLabel, FALSE, TRUE, 0);
-		
-	d->frEntry = gtk_entry_new ();
-	gtk_box_pack_start (GTK_BOX(frBox), d->frEntry, FALSE, TRUE, 0);
-		
-	hbox = gtk_hbox_new (FALSE,20);
-	frConfirmBtn = gtk_button_new_with_label ("OK");
-	frResetBtn = gtk_button_new_with_label ("Reset");
-	gtk_box_pack_start (GTK_BOX(hbox), frConfirmBtn, FALSE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX(hbox), frResetBtn, FALSE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX(frBox), hbox, FALSE, TRUE, 0);
-	gtk_container_add (GTK_CONTAINER(frAlign),frBox);
-		
-	moko_dialog_window_set_contents (frWin, frAlign);
-	g_signal_connect (G_OBJECT(frConfirmBtn), 
-	                  "clicked",
-			  G_CALLBACK(cb_frBtn_clicked),
-			  d);
-	g_signal_connect (G_OBJECT(frResetBtn),
-	                  "clicked",
-			  G_CALLBACK(cb_frResetBtn_clicked),
-			  d->frEntry);
-        gtk_widget_show_all ( GTK_WIDGET(frWin) );
+        if ((d->frWin != NULL) && (d->frWin->window != NULL))
+	    gtk_entry_set_text (GTK_ENTRY(d->frEntry),"");
+	else{
+	    d->frWin = moko_dialog_window_new();
+	    GtkWidget* frBox = gtk_vbox_new (FALSE,10);
+	    gtk_widget_set_size_request (frBox, 480, -1);
+	    GtkWidget* frAlign = gtk_alignment_new (0,0,1,1);
+	    gtk_alignment_set_padding (GTK_ALIGNMENT(frAlign), 100, 0, 30, 10);
+	    moko_dialog_window_set_title (d->frWin, "Folder Rename");
+
+	    GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
+	    GtkWidget* menulabel = GTK_BIN(menuitem)->child;
+	    GtkWidget* frLabel = gtk_label_new (g_strdup_printf("Please input new folder name for %s:",	gtk_label_get_text (GTK_LABEL(menulabel))));
+	    gtk_misc_set_alignment (GTK_MISC(frLabel),0,0.5);
+	    gtk_box_pack_start (GTK_BOX(frBox), frLabel, FALSE, TRUE, 0);
+
+	    d->frEntry = gtk_entry_new ();
+	    gtk_box_pack_start (GTK_BOX(frBox), d->frEntry, FALSE, TRUE, 0);
+
+	    hbox = gtk_hbox_new (FALSE,20);
+	    frConfirmBtn = gtk_button_new_with_label ("OK");
+	    frResetBtn = gtk_button_new_with_label ("Reset");
+	    gtk_box_pack_start (GTK_BOX(hbox), frConfirmBtn, FALSE, TRUE, 0);
+	    gtk_box_pack_start (GTK_BOX(hbox), frResetBtn, FALSE, TRUE, 0);
+	    gtk_box_pack_start (GTK_BOX(frBox), hbox, FALSE, TRUE, 0);
+	    gtk_container_add (GTK_CONTAINER(frAlign),frBox);
+	    
+	    moko_dialog_window_set_contents (d->frWin, frAlign);
+	    g_signal_connect (G_OBJECT(frConfirmBtn), 
+	                      "clicked",
+			      G_CALLBACK(cb_frBtn_clicked),
+			      d);
+            g_signal_connect (G_OBJECT(frResetBtn),
+	                      "clicked",
+		              G_CALLBACK(cb_frResetBtn_clicked),
+			      d->frEntry);
+	}
+	gtk_widget_show_all ( GTK_WIDGET(d->frWin) );
    }
 }
 
@@ -385,6 +389,7 @@ void cb_nfBtn_clicked (GtkButton* button, MessengerData* d)
     gtk_widget_show_all (GTK_WIDGET(menubox));
     foldersdb_update (d->folderlist);
     update_folder_sensitive(d, d->folderlist);
+    gtk_widget_hide (d->nfWin);
 }
 
 void cb_nfResetBtn_clicked (GtkButton* button, MessengerData* d)

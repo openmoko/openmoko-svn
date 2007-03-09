@@ -102,7 +102,7 @@ sms_membership_window_new(void)
     return GTK_WIDGET(g_object_new(SMS_TYPE_MEMBERSHIP_WINDOW, NULL));
 }
 
-/*static void sms_membership_window_close(SmsMembershipWindow* self)
+static void sms_membership_window_close(SmsMembershipWindow* self)
 {
     GtkWidget *widget = GTK_WIDGET(self);
     GdkEvent *event;
@@ -114,7 +114,7 @@ sms_membership_window_new(void)
 
     gtk_main_do_event( event );
     gdk_event_free( event );
-}*/
+}
 
 gboolean membership_filter_changed(GtkWidget* widget, gchar* text, SmsMembershipWindow* self)
 {
@@ -278,11 +278,13 @@ void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folder
 	    rdo_btn_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (rdo_btn));
 	    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rdo_btn), TRUE);
         }
-	else rdo_btn = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rdo_btn), folder);
+	else
+	    rdo_btn = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rdo_btn), folder);
 	priv->rdoBtnList = g_slist_append (priv->rdoBtnList,rdo_btn);
 	g_signal_connect (G_OBJECT(rdo_btn), "released", G_CALLBACK (membeship_rdo_btn_clicked), self);
 	gtk_box_pack_start (GTK_BOX (rdobtnbox), rdo_btn, FALSE, TRUE, 0);
     }
+
     //set radio button box alignment
     GtkAlignment* alignment = GTK_ALIGNMENT(gtk_alignment_new (0.5, 0.5, 1, 1));
     gtk_alignment_set_padding (alignment, 5, 5, 30, 5);
@@ -296,22 +298,22 @@ void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folder
 
 void
 membership_cell_data_func (GtkTreeViewColumn *col,
-				GtkCellRenderer   *renderer,
-				GtkTreeModel      *model,
-				GtkTreeIter  	    *iter,
-				gpointer          user_data)
+		           GtkCellRenderer   *renderer,
+			   GtkTreeModel      *model,
+			   GtkTreeIter       *iter,
+			   gpointer          user_data)
 {
-	gint status;
+    gint status;
 	
-  gtk_tree_model_get(model, iter, COLUMN_STATUS, &status, -1);
-
-  if (status == UNREAD)
-      g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", TRUE, NULL);
-  else
-      g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", FALSE, NULL);
+    gtk_tree_model_get(model, iter, COLUMN_STATUS, &status, -1);
+    if (status == UNREAD)
+        g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", TRUE, NULL);
+    else
+        g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", FALSE, NULL);
 }
 
-void membership_cursor_changed(GtkTreeSelection* selection, SmsMembershipWindow* self)
+void membership_cursor_changed(GtkTreeSelection    *selection, 
+                               SmsMembershipWindow *self)
 {
     SmsMembershipWindowPrivate* priv = SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(self);
     GtkTreeModel* model;
@@ -343,15 +345,18 @@ void membership_cursor_changed(GtkTreeSelection* selection, SmsMembershipWindow*
 
 gboolean membership_filter_visible_function (GtkTreeModel* model, GtkTreeIter* iter, SmsMembershipWindow* self)
 {
-	  gchar* folder;
-	  SmsMembershipWindowPrivate* priv = SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(self);
-	  gtk_tree_model_get (model, iter, COLUMN_FOLDER, &folder, -1);
-	  if(!g_strcasecmp(folder,priv->currentfolder))
-	  	return TRUE;
-    else return FALSE;
+    gchar* folder;
+    SmsMembershipWindowPrivate* priv = SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(self);
+    gtk_tree_model_get (model, iter, COLUMN_FOLDER, &folder, -1);
+    g_debug ("message folder %s, current folder %s", folder, priv->currentfolder);
+    if(!g_strcasecmp(folder,priv->currentfolder))
+  	return TRUE;
+    else
+        return FALSE;
 }
 
-void sms_membership_window_set_messages (SmsMembershipWindow* self, GtkListStore* liststore)
+void sms_membership_window_set_messages (SmsMembershipWindow* self, 
+                                         GtkListStore* liststore)
 {
     GtkCellRenderer* ren;
     GtkTreeViewColumn* column = gtk_tree_view_column_new();

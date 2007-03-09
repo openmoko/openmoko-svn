@@ -48,11 +48,13 @@ typedef struct _MessengerData{
     gchar* s_key;
     gint   msg_num;
     gboolean searchOn;
-    GtkWidget* nfEntry;
-    GtkWidget* frEntry;
     GtkWidget* mmWin;
     GtkWidget* mmitem;
     GtkWidget* fnitem;
+    GtkWidget* frWin;
+    GtkWidget* nfWin;
+    GtkWidget* nfEntry;
+    GtkWidget* frEntry;
     DBusConnection *bus;
 }MessengerData;
 

@@ -453,7 +453,6 @@ void populate_navigation_area( MessengerData* d )
     GtkTreeSelection* selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
     g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d ); 
     moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(d->view))) );
-    gtk_widget_hide(d->mmWin);
 }
 
 void populate_detail_area( MessengerData* d )
