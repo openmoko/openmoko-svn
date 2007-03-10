@@ -209,6 +209,9 @@ RDEPENDS_task-openmoko-debug = "\
   cu \
   sensors-i2cdetect sensors-i2cdump sensors-i2cset \
   xev \
+  bonnie++ \
+  memtester \
+  dbench \
 "
 
 #
