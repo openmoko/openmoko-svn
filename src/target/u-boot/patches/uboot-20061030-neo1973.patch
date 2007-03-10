@@ -271,7 +271,7 @@ Index: u-boot/board/neo1973/neo1973.c
 +	gpio->GPHCON = 0x0000FAAA;
 +	gpio->GPHUP = 0x000007FF;
 +#elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
-+	gpio->GPACON = 0x005E47FF;
++	gpio->GPACON = 0x005E4FFF;
 +
 +	gpio->GPBCON = 0x00145415;
 +	gpio->GPBUP = 0x000007FF;
