@@ -176,8 +176,11 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	int rc = 0, final = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
-	
-	if (!strcmp(buf, "AT-Command Interpreter ready")) {
+
+	/* FIXME: This needs to be part of the vendor plugin. If we receive
+	 * an empty string or that 'ready' string, we need to init the modem */
+	if (strlen(buf) == 0 ||
+	    !strcmp(buf, "AT-Command Interpreter ready")) {
 		gsmd_initsettings(g);
 		return 0;
 	}
@@ -239,7 +242,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		}
 
 		if (cmd) {
-			if (cmd->buf[2] != '+') {
+			if (cmd->buf[2] != '+' && cmd->buf[2] != '%') {
 				gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
 				return -EINVAL;
 			}
