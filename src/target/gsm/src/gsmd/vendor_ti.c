@@ -143,6 +143,13 @@ static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return 0;
 }
 
+static int ctzv_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
+{
+	/* FIXME: decide what to do with it.  send as event to clients? or keep
+	 * locally? Offer option to sync system RTC? */
+	return 0;
+}
+
 /* Call Progress Information */
 static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
@@ -223,16 +230,16 @@ out_free_io:
 }
 
 static const struct gsmd_unsolicit ticalypso_unsolicit[] = {
-	{ "\%CSQ",	&csq_parse },	/* Signal Quality */
-	{ "\%CPRI",	&cpri_parse },	/* Ciphering Indication */
-	{ "\%CPI",	&cpi_parse },	/* Call Progress Information */
+	{ "%CSQ",	&csq_parse },	/* Signal Quality */
+	{ "%CPRI",	&cpri_parse },	/* Ciphering Indication */
+	{ "%CPI",	&cpi_parse },	/* Call Progress Information */
+	{ "%CTZV",	&ctzv_parse },	/* network time and data */
 
 	/* FIXME: parse all the below and generate the respective events */
 
 	/* %CPROAM: CPHS Home Country Roaming Indicator */
 	/* %CPVWI: CPHS Voice Message Waiting */
 	/* %CGREG: reports extended information about GPRS registration state */
-	/* %CTZV: reports network time and date information */
 	/* %CNIV: reports network name information */
 	/* %CPKY: Press Key */
 	/* %CMGRS: Message Retransmission Service */
