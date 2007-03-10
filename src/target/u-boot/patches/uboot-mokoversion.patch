@@ -7,4 +7,4 @@ Index: u-boot/tools/setlocalversion
  	fi
  fi
 +
-+printf '%s' -moko5
++printf '%s' -moko6
