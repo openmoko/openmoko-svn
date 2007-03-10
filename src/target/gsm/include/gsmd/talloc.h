@@ -26,6 +26,7 @@
 
 /* nfsim additions */
 #include <stdarg.h>
+#include <stdio.h>
 
 /* this is only needed for compatibility with the old talloc */
 typedef void TALLOC_CTX;

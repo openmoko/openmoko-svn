@@ -31,6 +31,7 @@
 
 #include <gsmd/usock.h>
 #include <gsmd/event.h>
+#include <gsmd/extrsp.h>
 #include <gsmd/ts0707.h>
 #include <gsmd/unsolicited.h>
 #include <gsmd/talloc.h>
@@ -308,6 +309,28 @@ static int ctzv_parse(char *buf, int len, const char *param,
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_TIMEZONE);
 }
 
+static int copn_parse(char *buf, int len, const char *param,
+		      struct gsmd *gsmd)
+{
+	struct gsm_extrsp *er = extrsp_parse(gsmd_tallocs, param);
+	int rc = 0;
+
+	if (!er)
+		return -ENOMEM;
+
+	extrsp_dump(er);
+
+	if (er->num_tokens == 2 &&
+	    er->tokens[0].type == GSMD_ECMD_RTT_STRING &&
+	    er->tokens[1].type == GSMD_ECMD_RTT_STRING)
+		rc = gsmd_opname_add(gsmd, er->tokens[0].u.string,
+				     er->tokens[1].u.string);
+
+	talloc_free(er);
+
+	return rc;
+}
+
 static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 	{ "RING",	&ring_parse },
 	{ "+CRING", 	&cring_parse },
@@ -320,6 +343,7 @@ static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 	{ "+CLIP",	&clip_parse },
 	{ "+COLP",	&colp_parse },
 	{ "+CTZV",	&ctzv_parse },	/* Timezone */
+	{ "+COPN",	&copn_parse },  /* operator names, treat as unsolicited */
 	/*
 	{ "+CKEV",	&ckev_parse },
 	{ "+CDEV",	&cdev_parse },

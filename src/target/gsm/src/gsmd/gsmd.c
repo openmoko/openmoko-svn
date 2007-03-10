@@ -282,6 +282,8 @@ int main(int argc, char **argv)
 
 	gsmd_initsettings(&g);
 
+	gsmd_opname_init(&g);
+
 	while (1) {
 		int ret = gsmd_select_main();
 		if (ret == 0)

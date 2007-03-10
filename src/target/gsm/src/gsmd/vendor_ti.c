@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 #include <errno.h>
 
 #include "gsmd.h"
@@ -30,6 +31,9 @@
 #include <gsmd/gsmd.h>
 #include <gsmd/usock.h>
 #include <gsmd/event.h>
+#include <gsmd/talloc.h>
+#include <gsmd/extrsp.h>
+#include <gsmd/atcmd.h>
 #include <gsmd/vendorplugin.h>
 #include <gsmd/unsolicited.h>
 
@@ -214,7 +218,7 @@ out_send:
 	return 0;
 
 out_free_io:
-	free(ucmd);
+	talloc_free(ucmd);
 	return -EIO;
 }
 
@@ -237,7 +241,26 @@ static const struct gsmd_unsolicit ticalypso_unsolicit[] = {
 
 static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
+	struct gsmd *g = ctx;
+	struct gsm_extrsp *er;
+
+	if (strncmp(resp, "%CPI: ", 6))
+		return -EINVAL;
+	resp += 6;
 	
+	er = extrsp_parse(cmd, resp);
+	if (!er)
+		return -EINVAL;
+
+	if (extrsp_supports(er, 0, 3))
+		return gsmd_simplecmd(g, "AT%CPI=3");
+	else if (extrsp_supports(er, 0, 2))
+		return gsmd_simplecmd(g, "AT%CPI=2");
+	else
+		DEBUGP("Call Progress Indication mode 2 or 3 not supported!!\n");
+
+	talloc_free(er);
+	return 0;
 }
 
 static int ticalypso_detect(struct gsmd *g)
@@ -249,16 +272,25 @@ static int ticalypso_detect(struct gsmd *g)
 static int ticalypso_initsettings(struct gsmd *g)
 {
 	int rc;
+	struct gsmd_atcmd *cmd;
+
 	/* use +CTZR: to report time zone changes */
 	rc |= gsmd_simplecmd(g, "AT+CTZR=1");
-	/* enable %CPI: call progress indication */
-	rc = gsmd_simplecmd(g, "AT\%CPI=3");
+	/* use %CTZV: Report time and date */
+	rc |= gsmd_simplecmd(g, "AT%CTZV=1");
+	/* use %CGREG */
+	//rc |= gsmd_simplecmd(g, "AT%CGREG=3");
 	/* enable %CPRI: ciphering indications */
-	rc |= gsmd_simplecmd(g, "AT\%CPRI=1");
+	rc |= gsmd_simplecmd(g, "AT%CPRI=1");
 	/* enable %CSQ: signal quality reports */
-	rc |= gsmd_simplecmd(g, "AT\%CSQ=1");
+	rc |= gsmd_simplecmd(g, "AT%CSQ=1");
 	/* send unsolicited commands at any time */
-	rc |= gsmd_simplecmd(g, "AT\%CUNS=0");
+	rc |= gsmd_simplecmd(g, "AT%CUNS=0");
+
+	/* enable %CPI: call progress indication */
+	cmd = atcmd_fill("AT%CPI=?", 9, &cpi_detect_cb, g, 0);
+	if (cmd)
+		atcmd_submit(g, cmd);
 
 	return rc;
 }
