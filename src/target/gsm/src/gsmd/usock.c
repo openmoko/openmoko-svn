@@ -38,6 +38,7 @@
 #include <gsmd/atcmd.h>
 #include <gsmd/usock.h>
 #include <gsmd/talloc.h>
+#include <gsmd/ts0707.h>
 
 static void *__ucmd_ctx, *__gu_ctx;
 
@@ -173,12 +174,36 @@ static int null_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+/* PIN command callback. Gets called for response to AT+CPIN cmcd */
+static int pin_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	gsmd_log(GSMD_DEBUG, "pin cmd cb\n");
+
+	/* We need to verify if there is some error */
+	switch (cmd->ret) {
+	case 0:
+		break;
+	case GSM0707_CME_INCORRECT_PASSWORD:
+		/* prompt for pin again */
+		break;
+	default:	
+		/* something went wrong */
+		break;
+	}
+	return 0;
+}
+
 static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			 int len)
 {
-	u_int8_t *pin = (u_int8_t *)gph + sizeof(*gph);
-	int pin_len = len - sizeof(*gph);
+	struct gsmd_pin *gp = (struct gsmd_pin *) ((void *)gph + sizeof(*gph));
 	struct gsmd_atcmd *cmd;
+
+	if (gph->len < sizeof(*gp) || len < sizeof(*gp)+sizeof(*gph))
+		return -EINVAL;
+
+	gsmd_log(GSMD_DEBUG, "pin type=%u, pin='%s', newpin='%s'\n",
+		 gp->type, gp->pin, gp->newpin);
 
 	switch (gph->msg_subtype) {
 	case GSMD_PIN_INPUT:
@@ -190,12 +215,23 @@ static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		return -EINVAL;
 	}
 
-	cmd = atcmd_fill("AT+CPIN=\"", 9+1+1+strlen(pin),
-			 &null_cmd_cb, gu, 0);
+	cmd = atcmd_fill("AT+CPIN=\"", 9+GSMD_PIN_MAXLEN+3+GSMD_PIN_MAXLEN+2,
+			 &pin_cmd_cb, gu, 0);
 	if (!cmd)
 		return -ENOMEM;
 
-	strcat(cmd->buf, pin);
+	strcat(cmd->buf, gp->pin);
+
+	switch (gp->type) {
+	case GSMD_PIN_SIM_PUK:
+	case GSMD_PIN_SIM_PUK2:
+		strcat(cmd->buf, "\",\"");
+		strcat(cmd->buf, gp->newpin);
+		break;
+	default:
+		break;
+	}
+
 	strcat(cmd->buf, "\"");
 
 	return atcmd_submit(gu->gsmd, cmd);

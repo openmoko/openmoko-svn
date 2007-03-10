@@ -63,5 +63,7 @@ extern int lgsm_passthrough_send(struct lgsm_handle *lh, const char *tx);
 extern int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned int *rx_len);
 extern int lgsm_subscriptions(struct lgsm_handle *lh, u_int32_t subscriptions);
 
-extern int lgsm_pin(struct lgsm_handle *lh, char *pin);
+extern struct gsmd_msg_hdr *lgsm_gmh_fill(int type, int subtype, int payload_len);
+extern int lgsm_send(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh);
+
 #endif

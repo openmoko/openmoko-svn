@@ -197,7 +197,7 @@ struct gsmd_msg_hdr *lgsm_gmh_fill(int type, int subtype, int payload_len)
 	if (!gmh)
 		return NULL;
 
-	memset(gmh, 0, sizeof(*gmh));
+	memset(gmh, 0, sizeof(*gmh)+payload_len);
 
 	gmh->version = GSMD_PROTO_VERSION;
 	gmh->msg_type = type;
@@ -207,21 +207,3 @@ struct gsmd_msg_hdr *lgsm_gmh_fill(int type, int subtype, int payload_len)
 	return gmh;
 }
 
-
-int lgsm_pin(struct lgsm_handle *lh, char *pin)
-{
-	int rc;
-	struct gsmd_msg_hdr *gmh;
-
-	gmh = lgsm_gmh_fill(GSMD_MSG_PIN, GSMD_PIN_INPUT, strlen(pin)+1);
-	if (!gmh)
-		return -ENOMEM;
-
-	gmh->data[0] = '\0';
-	strcat(gmh->data, pin);
-
-	rc = lgsm_send(lh, gmh);
-	free(gmh);
-
-	return rc;
-}

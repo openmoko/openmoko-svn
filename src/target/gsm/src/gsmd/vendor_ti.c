@@ -235,6 +235,11 @@ static const struct gsmd_unsolicit ticalypso_unsolicit[] = {
 	/* %CGEV: reports GPRS network events */
 };
 
+static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	
+}
+
 static int ticalypso_detect(struct gsmd *g)
 {
 	/* FIXME: do actual detection of vendor if we have multiple vendors */

@@ -86,6 +86,13 @@ struct gsmd_voicemail {
 	struct gsmd_addr addr;
 } __attribute__ ((packed));
 
+#define GSMD_PIN_MAXLEN		8
+struct gsmd_pin {
+	enum gsmd_pin_type type;
+	char pin[GSMD_PIN_MAXLEN+1];
+	char newpin[GSMD_PIN_MAXLEN+1];
+} __attribute__ ((packed));
+
 struct gsmd_evt_auxdata {
 	union {
 		struct {
