@@ -99,7 +99,7 @@ Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdfu.c
-@@ -0,0 +1,1014 @@
+@@ -0,0 +1,1042 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -317,6 +317,29 @@ Index: u-boot/drivers/usbdfu.c
 +	return RET_NOTHING;
 +}
 +
++static int erase_tail_clean_nand(struct urb *urb, struct dnload_state *ds)
++{
++	struct usb_device_instance *dev = urb->device;
++	int rc;
++
++	ds->erase_opts.offset = ds->off;
++	ds->erase_opts.length = ds->part->size-ds->off;
++	debug("Erasing 0x%x bytes @ offset 0x%x (jffs=%u)\n",
++		ds->erase_opts.length, ds->erase_opts.offset,
++		ds->erase_opts.jffs2);
++	rc = nand_erase_opts(ds->nand, &ds->erase_opts);
++	if (rc) {
++		debug("Error erasing\n");
++	    	dev->dfu_state = DFU_STATE_dfuERROR;
++		dev->dfu_status = DFU_STATUS_errERASE;
++		return RET_STALL;
++	}
++
++	ds->off += ds->part->size; /* for consistency */
++
++	return RET_NOTHING;
++}
++
 +/* Read the next erase blcok from NAND into buffer */
 +static int read_next_nand(struct urb *urb, struct dnload_state *ds)
 +{
@@ -396,10 +419,15 @@ Index: u-boot/drivers/usbdfu.c
 +			ds->ptr = ds->buf = ds->_buf;
 +			break;
 +		default:
++			rc = 0;
 +			if (ds->ptr > ds->buf)
 +				rc = erase_flash_verify_nand(urb, ds,
 +							ds->nand->erasesize,
 +							ds->nand->erasesize);
++			/* rootfs partition */
++			if (!rc && dev->alternate == 5)
++				rc = erase_tail_clean_nand(urb, ds);
++
 +			ds->nand = NULL;
 +			break;
 +		}
