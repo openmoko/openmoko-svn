@@ -7,6 +7,7 @@ yaffs2-20070304.patch
 i2c-permit_invalid_addrs.patch
 pm-debug_less_verbose.patch
 g_ether-highpower.patch
+g_ether-vendor_product.patch
 2.6.20-s3c2410fb_uninitialized.patch
 2.6.17-s3c2410-spi-mode23.patch
 s3c2410_serial-nodebug.patch
