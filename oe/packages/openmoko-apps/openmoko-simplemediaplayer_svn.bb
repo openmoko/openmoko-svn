@@ -5,3 +5,8 @@ PV = "0.0.1+svn${SRCDATE}"
 
 inherit openmoko
 
+FILES_${PN} = "${bindir}/* \
+	       ${libdir}/* \
+	       ${datadir}/applications \
+	       ${datadir}/images \
+	      "
