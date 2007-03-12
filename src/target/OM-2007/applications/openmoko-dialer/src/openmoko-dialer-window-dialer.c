@@ -355,7 +355,6 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     p_dialer_data->moko_dialer_autolist = MOKO_DIALER_AUTOLIST (autolist);
 
     gtk_container_add (GTK_CONTAINER (eventbox1), autolist);
-//    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(autolist), FALSE, FALSE, 5 );
     gtk_box_pack_start (GTK_BOX (vbox), eventbox1, FALSE, FALSE, 0);
 
     gtk_widget_modify_bg (eventbox1, GTK_STATE_NORMAL, &color);
@@ -379,7 +378,6 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     eventbox1 = gtk_event_box_new ();
     gtk_widget_set_name (eventbox1, "gtkeventbox-black");
     gtk_widget_modify_bg (eventbox1, GTK_STATE_NORMAL, &color);
-//        gtk_widget_set_size_request (eventbox1, 480, 132);
 
     GtkWidget *mokotextview = moko_dialer_textview_new ();
     p_dialer_data->moko_dialer_text_view =
@@ -387,8 +385,6 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
     gtk_box_pack_start (GTK_BOX (vbox), eventbox1, FALSE, FALSE, 0);
-//    gtk_box_pack_start( GTK_BOX(vbox), GTK_WIDGET(mokotextview), FALSE,FALSE, 5 );
-
 
     GtkWidget *mokodialerpanel = moko_dialer_panel_new ();
 
@@ -428,7 +424,6 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button3), "clicked",
                       G_CALLBACK (cb_history_button_clicked), p_dialer_data);
     gtk_widget_set_name (button3, "mokofingerbutton-orange");
-//moko_pixmap_button_set_center_stock(button3,"gtk-refresh");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
                                                             (button3),
                                                             file_new_image_from_relative_path

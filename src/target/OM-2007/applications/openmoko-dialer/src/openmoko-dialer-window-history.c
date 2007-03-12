@@ -378,7 +378,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       p_dialer_data);
 
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
-                      "prehttp://planet.gnome.org/ss_bottom",
+                      "press_bottom",
                       G_CALLBACK (cb_tool_button_history_back_clicked),
                       p_dialer_data);
 
