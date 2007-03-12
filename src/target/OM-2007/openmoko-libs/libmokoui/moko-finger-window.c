@@ -130,11 +130,15 @@ gboolean moko_finger_window_get_geometry_hint(MokoFingerWindow* self, GtkWidget*
     moko_debug( "moko_finger_window_geometry_hint" );
 
     GtkRequisition req;
-    gtk_widget_size_request( hintee, &req );
     int x, y, w, h;
-    gdk_window_get_geometry( GTK_WIDGET(self)->window, &x, &y, &w, &h, NULL );
     int absx;
     int absy;
+
+    if (!GTK_WIDGET(self)->window)
+        return;
+
+    gtk_widget_size_request( hintee, &req );
+    gdk_window_get_geometry( GTK_WIDGET(self)->window, &x, &y, &w, &h, NULL );
     gdk_window_get_origin( GTK_WIDGET(self)->window, &absx, &absy );
 
     moko_debug( "hintee requisition is %d, %d", req.width, req.height );

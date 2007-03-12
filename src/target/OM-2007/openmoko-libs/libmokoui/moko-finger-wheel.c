@@ -234,6 +234,12 @@ static void moko_finger_wheel_show(GtkWidget* widget)
         gtk_window_move( GTK_WINDOW(priv->popup), geometry.x, geometry.y );
 
         //FIXME Isn't there a way to get this as a mask directly from the style without having to reload it?
+        gchar *background_filename = GTK_WIDGET(widget)->style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL];
+        if (!background_filename)
+        {
+            g_warning ("moko_finger_wheel: theme does not specify a background image for the finger wheel");
+            return;
+        }
         GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(GTK_WIDGET(widget)->style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
         GdkPixmap* pixmap;
         GdkBitmap* mask;
