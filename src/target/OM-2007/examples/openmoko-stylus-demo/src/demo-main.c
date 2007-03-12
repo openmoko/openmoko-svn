@@ -101,8 +101,8 @@ void clist_insert(MokoTreeView *clist)
 
 
     gtk_tree_view_column_set_sort_column_id(column, 0);
-    gtk_tree_view_append_column(clist, column);
-    gtk_tree_view_column_set_min_width(column, 142);
+    moko_tree_view_append_column(clist, column);
+    //gtk_tree_view_column_set_min_width(column, 142);
 
     renderer = gtk_cell_renderer_text_new();
 
@@ -113,8 +113,8 @@ void clist_insert(MokoTreeView *clist)
             NULL);
 
     gtk_tree_view_column_set_sort_column_id(column, 1);
-    gtk_tree_view_append_column(clist, column);
-    gtk_tree_view_column_set_min_width(column, 156);
+    moko_tree_view_append_column(clist, column);
+    //gtk_tree_view_column_set_min_width(column, 156);
 }
 
 void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
