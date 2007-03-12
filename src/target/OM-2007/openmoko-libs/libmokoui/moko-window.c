@@ -202,6 +202,10 @@ moko_window_update_topmost(MokoWindow* self, Window window_id)
     MokoWindowPrivate* priv = MOKO_WINDOW_GET_PRIVATE(self);
     Window my_window;
 
+    /* don't test the window unless it is realised */
+    if (!GTK_WIDGET (self)->window)
+       return;
+
     my_window = GDK_WINDOW_XID (GTK_WIDGET (self)->window);
 
     if (window_id == my_window)

@@ -83,7 +83,10 @@ static void moko_finger_window_init(MokoFingerWindow *self)
 
 GtkWidget* moko_finger_window_new() /* Construction */
 {
-    return GTK_WIDGET(g_object_new(moko_finger_window_get_type(), NULL));
+     GtkWidget *retval = g_object_new (MOKO_TYPE_FINGER_WINDOW, NULL);
+     GTK_WINDOW (retval)->type = GTK_WINDOW_TOPLEVEL;
+
+     return retval;
 }
 
 void moko_finger_window_set_application_menu(MokoFingerWindow* self, GtkMenu* menu)
