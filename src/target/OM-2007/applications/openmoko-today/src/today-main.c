@@ -128,8 +128,9 @@ get_today_events ()
   }
 
   query = g_strdup_printf ("(occur-in-time-range? "
-                           "(time-day-begin (time-now)) "
-                           "(time-day-end   (time-now))" ")");
+                               "(time-day-begin (time-now)) "
+                               "(time-day-end   (time-now)) "
+                           ")");
   e_cal_get_object_list (ecal, query, &ical_comps, &error);
   if (error)
   {
@@ -164,16 +165,22 @@ get_today_events ()
 
 out:
   if (ical_comps)
+  {
     e_cal_free_object_list (ical_comps);
+  }
 
   if (ecal_comps)
+  {
     e_cal_component_list_free (ecal_comps);
+  }
   ecal_comps = NULL;
 
   g_object_unref (G_OBJECT (ecal));
 
   if (error)
+  {
     g_error_free (error);
+  }
 
   g_free (query);
 
@@ -249,6 +256,7 @@ static GtkWidget *
 today_launcher_button_new (gchar * icon, gchar * exec)
 {
   GtkWidget *button = gtk_button_new ();
+  if (exec) {/*unused parameter, to be used in the future*/}
 
   gtk_container_add (GTK_CONTAINER (button),
                      gtk_image_new_from_stock (icon, GTK_ICON_SIZE_BUTTON));
@@ -297,7 +305,9 @@ get_today_events_infoline ()
     infoline = today_infoline_new (GTK_STOCK_NO, "No events for today");
 
   if (events)
+  {
     e_cal_component_list_free (events);
+  }
 
   if (lines)
   {

@@ -1,4 +1,4 @@
-SUBDIRS = src po
+SUBDIRS = src tests po
 
 # Extra clean files so that maintainer-clean removes *everything*
 MAINTAINERCLEANFILES = aclocal.m4 compile config.guess config.sub \
