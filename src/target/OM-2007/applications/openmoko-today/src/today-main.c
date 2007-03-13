@@ -97,14 +97,20 @@ icaltime_to_pretty_string (const icaltimetype *timetype)
     g_return_val_if_fail (timetype, NULL) ;
 
     today = icaltime_today () ;
-    if (!icaltime_compare_date_only (*timetype, today)) {
+    if (!icaltime_compare_date_only (*timetype, today))
+    {
         hour_only = TRUE ;
-    } else {
+    }
+    else
+    {
         date_only = TRUE ;
     }
-    if (hour_only) {
+    if (hour_only)
+    {
         result = g_strdup_printf ("%d:%d", timetype->hour, timetype->minute) ;
-    } else if (date_only) {
+    }
+    else if (date_only)
+    {
         native_tm = icaltimetype_to_tm ((icaltimetype*)timetype) ;
         memset (tmp_str, 0, TMP_STR_LEN+1) ;
         strftime (tmp_str, TMP_STR_LEN, "%d/%b", &native_tm) ;
@@ -308,7 +314,6 @@ today_launcher_button_new (gchar * icon, gchar * exec)
 }
 
 GtkWidget *
-get_today_events_infoline ()
 {
   GtkWidget        *infoline  = NULL ;
   GList            *events    = NULL ;
