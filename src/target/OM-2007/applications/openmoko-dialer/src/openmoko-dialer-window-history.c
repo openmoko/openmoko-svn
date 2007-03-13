@@ -414,7 +414,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       p_dialer_data);
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
-    image = file_new_image_from_relative_path ("tony.png");
+    image = file_new_image_from_relative_path ("exit.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
                                                             (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",

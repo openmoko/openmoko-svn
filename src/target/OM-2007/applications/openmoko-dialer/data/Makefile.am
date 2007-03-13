@@ -1,13 +1,4 @@
-EXTRA_DIST = tony.png\
-                steven.png\
-                ken.png\
-                sally.png\
-                10086.png\
-                chaowei.png\
-                unkown.png\
-                status0.png\
-                status1.png\
-                status2.png\
+EXTRA_DIST =unkown.png\
                 dialed.png\
                 missed.png\
                 received.png\
@@ -16,34 +7,34 @@ EXTRA_DIST = tony.png\
                 phone.png\
                 delete.png\
                 dtmf.png\
-                talking.png\
                 sms.png\
                 all.png\
                 history.png\
                 delete_01.png\
-                incall.png\
-                connecting.png\
                 answer.png\
                 cancel.png\
                 hangup.png\
                 redial.png\
-                failure.png
-
+                failure.png\
+                incoming_0.png\
+                incoming_1.png\
+                incoming_2.png\
+                incoming_3.png\
+                outgoing_0.png\
+                outgoing_1.png\
+                outgoing_2.png\
+                outgoing_3.png\
+                talking_0.png\
+                talking_1.png\
+                talking_2.png\
+                talking_3.png\
+                exit.png
+                
 resourcedir = $(pkgdatadir)
 
-resource_DATA = tony.png\
-                steven.png\
-                ken.png\
-                sally.png\
-                10086.png\
-                chaowei.png\
-                unkown.png\
-                status0.png\
-                status1.png\
-                status2.png\
+resource_DATA =unkown.png\
                 dialed.png\
                 missed.png\
-                received.png\
                 received.png\
                 speaker.png\
                 email.png\
@@ -55,10 +46,21 @@ resource_DATA = tony.png\
                 all.png\
                 history.png\
                 delete_01.png\
-                incall.png\
-                connecting.png\
                 answer.png\
                 cancel.png\
                 hangup.png\
                 redial.png\
-                failure.png
+                failure.png\
+                incoming_0.png\
+                incoming_1.png\
+                incoming_2.png\
+                incoming_3.png\
+                outgoing_0.png\
+                outgoing_1.png\
+                outgoing_2.png\
+                outgoing_3.png\
+                talking_0.png\
+                talking_1.png\
+                talking_2.png\
+                talking_3.png\
+                exit.png

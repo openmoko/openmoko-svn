@@ -305,8 +305,10 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     content_talk = gtk_vbox_new (FALSE, 0);
     status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "talking.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "connecting.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "talking_0.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "talking_1.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "talking_2.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "talking_3.png");
     moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
 
 
