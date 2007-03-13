@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Openmoko-dialer
+Comment=dialer
+Exec=openmoko-dialer
+Icon=connecting.png
+Terminal=false
+Type=Application
+Categories=GTK;Application;PIM;Office
+MimeType=text/x-vcard;
+SingleInstance=false
+StartupNotify=true

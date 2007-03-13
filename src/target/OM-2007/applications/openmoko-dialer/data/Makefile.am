@@ -1,3 +1,6 @@
+
+resourcedir = $(pkgdatadir)
+
 EXTRA_DIST =unkown.png\
                 dialed.png\
                 missed.png\
@@ -30,8 +33,6 @@ EXTRA_DIST =unkown.png\
                 talking_3.png\
                 exit.png
                 
-resourcedir = $(pkgdatadir)
-
 resource_DATA =unkown.png\
                 dialed.png\
                 missed.png\
@@ -64,3 +65,15 @@ resource_DATA =unkown.png\
                 talking_2.png\
                 talking_3.png\
                 exit.png
+#
+# desktop integration: .desktop file
+#
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = openmoko-dialer.desktop
+
+#
+# desktop integration: application icon
+#
+appicondir = $(datadir)/icons
+dist_appicon_DATA = connecting.png
+
