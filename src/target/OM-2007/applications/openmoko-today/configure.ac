@@ -29,7 +29,7 @@ AC_SUBST(TODAY_LIBS)
 AC_SUBST(TODAY_CFLAGS)
 
 if test x$TODAY_DEVEL != x ; then
-    CFLAGS="-Wall -Werror -Wextra -Wshadow -Wpointer-arith -g"
+    CFLAGS="-Wall -Wextra -Wshadow -Wpointer-arith -g"
 fi
 
 AC_OUTPUT([
