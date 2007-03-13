@@ -25,9 +25,6 @@ PKG_CHECK_MODULES(TODAY,
                   libebook-1.2 >= $LIBEBOOK_VERSION
                   libecal-1.2 >= $LIBEBOOK_VERSION)
 
-AC_SUBST(TODAY_LIBS)
-AC_SUBST(TODAY_CFLAGS)
-
 if test x$TODAY_DEVEL != x ; then
     CFLAGS="-Wall -Wextra -Wshadow -Wpointer-arith -g"
 fi
