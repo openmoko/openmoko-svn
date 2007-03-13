@@ -28,6 +28,7 @@
 #include <libecal/e-cal-time-util.h>
 #include <gtk/gtk.h>
 #include <libmokoui/moko-window.h>
+#include "today-events-area.h"
 
 #define LOG_ERROR \
 g_warning ("Got error '%s', code '%d'", \
@@ -78,48 +79,13 @@ today_update_time (GtkLabel * label)
   gtk_label_set_markup (label, time_str);
 }
 
-/*
- * if the timetype is today, then only display it's hour part,
- * without the seconds
- * If it's not today, then only display it's date part, without the year
+/**
+ * e_cal_component_list_free:
+ * @list: the list ECalComooment to free
+ *
+ * Free a list of ECalComponent
  */
-gchar*
-icaltime_to_pretty_string (const icaltimetype *timetype)
-{
-#define TMP_STR_LEN 10
-    icaltimetype today ;
-    gboolean     hour_only              = FALSE ;
-    gboolean     date_only              = FALSE ;
-    gchar        *result                = NULL  ;
-    gchar        tmp_str[TMP_STR_LEN+1]         ;
-    struct tm    native_tm                      ;
-
-    g_return_val_if_fail (timetype, NULL) ;
-
-    today = icaltime_today () ;
-    if (!icaltime_compare_date_only (*timetype, today))
-    {
-        hour_only = TRUE ;
-    }
-    else
-    {
-        date_only = TRUE ;
-    }
-    if (hour_only)
-    {
-        result = g_strdup_printf ("%d:%d", timetype->hour, timetype->minute) ;
-    }
-    else if (date_only)
-    {
-        native_tm = icaltimetype_to_tm ((icaltimetype*)timetype) ;
-        memset (tmp_str, 0, TMP_STR_LEN+1) ;
-        strftime (tmp_str, TMP_STR_LEN, "%d/%b", &native_tm) ;
-        result = g_strdup (tmp_str) ;
-    }
-    return result ;
-}
-
-void
+static void
 e_cal_component_list_free (GList * list)
 {
   GList *cur = NULL;
@@ -141,11 +107,13 @@ e_cal_component_list_free (GList * list)
 }
 
 /**
- * returns a list of ECalComponents, of type VEVENT
- * it must freed it with e_cal_component_list_free()
+ * today_get_today_events:
+ *
+ * Return value:  a list of ECalComponents, of type VEVENT
+ * must be freed with e_cal_component_list_free()
  */
 static GList *
-get_today_events ()
+today_get_today_events ()
 {
   GList *result = NULL;
   GList *ical_comps = NULL;
@@ -169,10 +137,13 @@ get_today_events ()
     goto out;
   }
 
+  /*
   query = g_strdup_printf ("(occur-in-time-range? "
                                "(time-day-begin (time-now)) "
                                "(time-day-end   (time-now)) "
                            ")");
+   */
+  query = g_strdup_printf ("#t");
   e_cal_get_object_list (ecal, query, &ical_comps, &error);
   if (error)
   {
@@ -217,7 +188,13 @@ out:
   }
   ecal_comps = NULL;
 
-  g_object_unref (G_OBJECT (ecal));
+  /*
+   the calender must stay alive during the app's lifetime
+  if (ecal)
+  {
+    g_object_unref (G_OBJECT (ecal));
+  }
+  */
 
   if (error)
   {
@@ -228,6 +205,7 @@ out:
 
   return result;
 }
+
 
 /* information lines */
 
@@ -313,76 +291,33 @@ today_launcher_button_new (gchar * icon, gchar * exec)
   return button;
 }
 
+/**
+ * today_events_infolines_new:
+ *
+ * Return value: a GtkWidget showing the
+ * events of the day
+ */
 GtkWidget *
-get_today_events_infoline ()
+today_events_infolines_new (const gchar *stock_id)
 {
-  GtkWidget        *infoline  = NULL ;
-  GList            *events    = NULL ;
-  GList            *cur       = NULL ;
-  GString          *lines     = NULL ;
+  GtkWidget        *events_area, *icon, *hbox ;
+  GList            *events;
 
-  events = get_today_events () ;
-  lines = g_string_new (NULL) ;
 
-  for (cur = events ; cur ; cur = cur->next)
-  {
-    ECalComponentText      text ;
-    ECalComponentDateTime  start_date ;
-    gchar                  *tmp_str = NULL ;
+  hbox = gtk_hbox_new (FALSE, 12);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 6) ;
 
-    if (!E_IS_CAL_COMPONENT (cur->data)) {
-      g_warning ("cur->data is not of type ECalComponent!") ;
-      continue ;
-    }
-    if (e_cal_component_get_vtype (cur->data) != E_CAL_COMPONENT_EVENT)
-    {
-      g_warning ("Event type is not 'EVENT', but rather %d",
-                 e_cal_component_get_vtype (cur->data));
-      continue;
-    }
-    /*get the event summary*/
-    e_cal_component_get_summary (cur->data, &text) ;
-    /*get the event starting date*/
-    e_cal_component_get_dtstart (cur->data, &start_date) ;
-    /*pretty print the starting date*/
-    tmp_str = icaltime_to_pretty_string (start_date.value) ;
-    if (tmp_str)
-    {
-        g_string_append_printf (lines, "%s  %s\n", text.value, tmp_str) ;
-        g_free (tmp_str) ;
-    }
-    else
-    {
-        g_string_append_printf (lines, "%s  %s\n", text.value, "No Date") ;
-    }
-    e_cal_component_free_datetime (&start_date) ;
-  }
-  if (lines->len)
-  {
-    infoline = today_infoline_new (GTK_STOCK_NO,
-                                   lines->str) ;
-  }
-  else
-  {
-    infoline = today_infoline_new (GTK_STOCK_NO, "No events for today") ;
-  }
+  icon = gtk_image_new ();
+  gtk_image_set_from_stock (GTK_IMAGE (icon), stock_id, GTK_ICON_SIZE_MENU);
+  gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
 
-  if (lines->len)
-    infoline = today_infoline_new (GTK_STOCK_NO, lines->str);
-  else
-    infoline = today_infoline_new (GTK_STOCK_NO, "No events for today");
+  events = today_get_today_events () ;
+  events_area = today_events_area_new () ;
+  today_events_area_set_events (TODAY_EVENTS_AREA (events_area), events) ;
+  gtk_box_pack_start (GTK_BOX (hbox), events_area, FALSE, FALSE, 0);
 
-  if (events)
-  {
-    e_cal_component_list_free (events);
-  }
-
-  if (lines)
-  {
-    g_string_free (lines, TRUE);
-    lines = NULL;
-  }
-  return infoline;
+  return hbox;
 }
 
 static void
@@ -440,7 +375,7 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* upcoming events */
-  infoline = get_today_events_infoline ();
+  infoline = today_events_infolines_new (GTK_STOCK_NO);
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* shurtcut buttons */

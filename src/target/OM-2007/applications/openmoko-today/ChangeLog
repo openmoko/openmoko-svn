@@ -1,1 +1,10 @@
+Tue, 13 Mar 2007 17:31:00 +0100 Dodji Seketeli <dodji@o-hand.com>
 
+	* src/today-events-area.c,h: initial attempt at coding an
+	EventArea widget that takes a list of ECalComponent representing
+	a list of event and showing these events "page by page".
+	You can select events, and cycle through the event pages.
+	* src/today-main.c: use the new EventArea widget for testing
+	For now,the code loads all the events from the calendar, not only
+	those of today. This is just to test the paging code.
+	* tests/events-area-test.c: a small test program for the widget
