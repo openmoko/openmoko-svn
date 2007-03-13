@@ -25,6 +25,7 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <libecal/e-cal.h>
+#include <libecal/e-cal-time-util.h>
 #include <gtk/gtk.h>
 #include <libmokoui/moko-window.h>
 
@@ -77,6 +78,41 @@ today_update_time (GtkLabel * label)
   gtk_label_set_markup (label, time_str);
 }
 
+/*
+ * if the timetype is today, then only display it's hour part,
+ * without the seconds
+ * If it's not today, then only display it's date part, without the year
+ */
+gchar*
+icaltime_to_pretty_string (const icaltimetype *timetype)
+{
+#define TMP_STR_LEN 10
+    icaltimetype today ;
+    gboolean     hour_only              = FALSE ;
+    gboolean     date_only              = FALSE ;
+    gchar        *result                = NULL  ;
+    gchar        tmp_str[TMP_STR_LEN+1]         ;
+    struct tm    native_tm                      ;
+
+    g_return_val_if_fail (timetype, NULL) ;
+
+    today = icaltime_today () ;
+    if (!icaltime_compare_date_only (*timetype, today)) {
+        hour_only = TRUE ;
+    } else {
+        date_only = TRUE ;
+    }
+    if (hour_only) {
+        result = g_strdup_printf ("%d:%d", timetype->hour, timetype->minute) ;
+    } else if (date_only) {
+        native_tm = icaltimetype_to_tm ((icaltimetype*)timetype) ;
+        memset (tmp_str, 0, TMP_STR_LEN+1) ;
+        strftime (tmp_str, TMP_STR_LEN, "%d/%b", &native_tm) ;
+        result = g_strdup (tmp_str) ;
+    }
+    return result ;
+}
+
 void
 e_cal_component_list_free (GList * list)
 {
@@ -100,7 +136,7 @@ e_cal_component_list_free (GList * list)
 
 /**
  * returns a list of ECalComponents, of type VEVENT
- * it must freed it with e_cal_free_object_list()
+ * it must freed it with e_cal_component_list_free()
  */
 static GList *
 get_today_events ()
@@ -274,20 +310,23 @@ today_launcher_button_new (gchar * icon, gchar * exec)
 GtkWidget *
 get_today_events_infoline ()
 {
-  GtkWidget *infoline = NULL;
-  GList *events = NULL;
-  GList *cur = NULL;
-  GString *lines = NULL;
+  GtkWidget        *infoline  = NULL ;
+  GList            *events    = NULL ;
+  GList            *cur       = NULL ;
+  GString          *lines     = NULL ;
 
-  events = get_today_events ();
-  lines = g_string_new (NULL);
-  for (cur = events; cur; cur = cur->next)
+  events = get_today_events () ;
+  lines = g_string_new (NULL) ;
+
+  for (cur = events ; cur ; cur = cur->next)
   {
-    ECalComponentText text;
-    if (!E_IS_CAL_COMPONENT (cur->data))
-    {
-      g_warning ("cur->data is not of type ECalComponent!");
-      continue;
+    ECalComponentText      text ;
+    ECalComponentDateTime  start_date ;
+    gchar                  *tmp_str = NULL ;
+
+    if (!E_IS_CAL_COMPONENT (cur->data)) {
+      g_warning ("cur->data is not of type ECalComponent!") ;
+      continue ;
     }
     if (e_cal_component_get_vtype (cur->data) != E_CAL_COMPONENT_EVENT)
     {
@@ -295,8 +334,31 @@ get_today_events_infoline ()
                  e_cal_component_get_vtype (cur->data));
       continue;
     }
-    e_cal_component_get_summary (cur->data, &text);
-    g_string_append_printf (lines, "%s\n", text.value);
+    /*get the event summary*/
+    e_cal_component_get_summary (cur->data, &text) ;
+    /*get the event starting date*/
+    e_cal_component_get_dtstart (cur->data, &start_date) ;
+    /*pretty print the starting date*/
+    tmp_str = icaltime_to_pretty_string (start_date.value) ;
+    if (tmp_str)
+    {
+        g_string_append_printf (lines, "%s  %s\n", text.value, tmp_str) ;
+        g_free (tmp_str) ;
+    }
+    else
+    {
+        g_string_append_printf (lines, "%s  %s\n", text.value, "No Date") ;
+    }
+    e_cal_component_free_datetime (&start_date) ;
+  }
+  if (lines->len)
+  {
+    infoline = today_infoline_new (GTK_STOCK_NO,
+                                   lines->str) ;
+  }
+  else
+  {
+    infoline = today_infoline_new (GTK_STOCK_NO, "No events for today") ;
   }
 
   if (lines->len)
