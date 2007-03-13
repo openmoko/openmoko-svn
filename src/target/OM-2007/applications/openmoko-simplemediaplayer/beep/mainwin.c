@@ -3459,6 +3459,12 @@ GtkWidget* image_eq_pos10 = NULL;
 GtkWidget* image_eq_pos11 = NULL;
 GtkWidget* image_eq_pos12 = NULL;
 
+MokoFingerWindow *mainwindow = NULL;
+MokoFingerWindow *listwin = NULL;
+MokoFingerWindow *browsewin = NULL;
+
+static GtkWidget* created_mainwin = NULL;
+
 void
 openmoko_player_quit(GtkWidget *widget, gpointer data)
 {
@@ -4046,7 +4052,8 @@ openmoko_repeat_button_callback(GtkWidget* widget, gpointer data)
 void
 openmoko_playlist_button_callback(GtkWidget* widget, gpointer data)
 {
-    g_print("show play list\n");
+    openmoko_show_playlist_window();
+    openmoko_hide_main_window();
 }
 
 gboolean
@@ -4144,7 +4151,6 @@ void init_image_dir()
     g_free(prefix);
 }
 
-static GtkWidget* created_mainwin = NULL;
 
 void
 openmoko_show_created_window()
@@ -4157,6 +4163,643 @@ openmoko_show_created_window()
     gtk_window_present(GTK_WINDOW(created_mainwin));
     return;
 }
+
+void
+openmoko_hide_main_window()
+{
+    gtk_widget_hide(moko_finger_window_get_wheel(mainwindow));
+    gtk_widget_hide(moko_finger_window_get_toolbox(mainwindow));
+    gtk_widget_hide(GTK_WIDGET(mainwin));
+}
+
+void
+openmoko_show_main_window()
+{
+    if(mainwindow == NULL)
+    {
+        openmoko_mainwin_create();
+    }
+	
+    gtk_widget_show(GTK_WIDGET(mainwindow));
+    gtk_widget_show(moko_finger_window_get_wheel(mainwindow));
+    gtk_widget_show(moko_finger_window_get_toolbox(mainwindow));
+}
+
+/* the code below is about playlist window  */
+GdkPixbuf* select_icon = NULL;
+GdkPixbuf* disselect_icon = NULL;
+
+GtkTreePath* sel_path = NULL;
+gchar* sel_list = NULL;
+gchar* sel_list_path = NULL;
+
+GtkListStore* store_playlist = NULL;
+GtkWidget* treeview_playlist = NULL;
+
+enum{
+    playlist_col_pixbuf = 0,
+    playlist_col_name,
+    playlist_col_path,
+    playlist_n_cols
+};
+
+GdkPixbuf* 
+create_pixbuf(const gchar* filename)
+{
+    gchar* pathname;
+    GdkPixbuf* pixbuf = NULL;
+    GError* error = NULL;
+
+    pathname = g_strdup_printf("%s/%s", images_dir, filename);
+
+    if(g_file_test(pathname, G_FILE_TEST_EXISTS))
+    {
+        pixbuf = gdk_pixbuf_new_from_file(pathname, &error);
+	if(!pixbuf)
+	{
+	    g_print("failed to load file %s\n", pathname);
+	    g_error_free(error);
+	}
+    }
+    else
+    {
+	g_debug("Can not find the file %s", pathname);
+    }
+    g_free(pathname);
+    return pixbuf;
+}
+
+void
+openmoko_browsewin_close_button_clicked_cb(GtkWidget* widget, gpointer data)
+{
+    GtkTreeView* view;
+    GtkTreeModel* model;
+    view = (GtkTreeView *)data;
+    
+    if(view == NULL)
+    {
+	g_print("view is null\n");
+    }
+    
+    model = gtk_tree_view_get_model(view);
+
+    GtkTreeSelection* selection;
+    selection = gtk_tree_view_get_selection(view);
+    
+    GtkTreeIter iter;
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    {
+	sel_list = NULL;
+	g_print("no current selection\n");
+    }
+    else
+    {
+        gtk_tree_model_get(model, &iter, 0, &sel_list, 1, &sel_list_path, -1);
+        g_print("you have select %s \n", sel_list);
+        g_print("you have select %s \n", sel_list_path);
+    }
+
+    openmoko_playlistwin_add_playlist();
+    
+    openmoko_show_playlist_window();
+    gtk_widget_hide(GTK_WIDGET(browsewin));
+}
+
+void
+openmoko_playlistwin_browsebutton_pushed_cb(GtkWidget* widget, gpointer data)
+{
+    if(browsewin != NULL)
+    {
+	gtk_widget_show_all(GTK_WIDGET(browsewin));
+	openmoko_hide_playlist_window();
+	return;
+    }
+    
+    PangoFontDescription *font_desc;
+    GtkWidget* treeview;
+    
+    browsewin = MOKO_FINGER_WINDOW(moko_finger_window_new());
+    gtk_window_set_decorated(GTK_WINDOW(browsewin), FALSE);
+    
+    MokoFixed *browsewin_fixed = MOKO_FIXED(moko_fixed_new());
+    moko_finger_window_set_contents(browsewin, GTK_WIDGET(browsewin_fixed));
+
+    GtkWidget *mainvbox = gtk_vbox_new(FALSE, 0);
+    moko_fixed_set_cargo(MOKO_FIXED(browsewin_fixed), mainvbox);
+
+    GtkWidget *browsewin_eventbox_top = gtk_event_box_new();
+    gtk_box_pack_start(GTK_BOX(mainvbox), browsewin_eventbox_top, TRUE, TRUE, 0);
+    gtk_widget_set_name(GTK_WIDGET(browsewin_eventbox_top), "gtkeventbox-black");
+    
+    GtkWidget *toplabel= gtk_label_new("Playlists - Browse Default Folder");
+    gtk_widget_set_size_request(GTK_WIDGET(toplabel), 480, -1);
+    gtk_misc_set_alignment(GTK_MISC(toplabel), 0.5, 0.5);
+    gtk_container_add(GTK_CONTAINER(browsewin_eventbox_top), toplabel);
+   
+    GtkWidget* alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 10, 0, 360, 10);
+    gtk_box_pack_start(GTK_BOX(mainvbox), alignment, FALSE, FALSE, 0);
+    
+    GtkWidget* closebutton = gtk_button_new();
+    GTK_WIDGET_UNSET_FLAGS(closebutton, GTK_CAN_FOCUS);
+    gtk_widget_set_size_request(GTK_WIDGET(closebutton), 100, 50);
+    gtk_container_add(GTK_CONTAINER(alignment), closebutton);
+    
+    GtkWidget* closelabel = gtk_label_new("Close");
+    gtk_container_add(GTK_CONTAINER(closebutton), closelabel);
+    font_desc = pango_font_description_from_string("Times 18");
+    gtk_widget_modify_font(closelabel, font_desc);
+    pango_font_description_free(font_desc);   
+   
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 20, 20);
+    gtk_box_pack_start(GTK_BOX(mainvbox), alignment, TRUE, TRUE, 0);
+    
+    GtkWidget* frame = gtk_frame_new("Default folder");
+    gtk_container_add(GTK_CONTAINER(alignment), frame);
+
+    GtkWidget* framevbox = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(frame), framevbox);
+
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
+    gtk_box_pack_start(GTK_BOX(framevbox), alignment, FALSE, FALSE, 0); 
+    
+    GtkWidget* entry = gtk_entry_new();
+    GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(entry), GTK_CAN_FOCUS);
+    gtk_widget_set_size_request(GTK_WIDGET(entry), 420, -1);
+    gtk_entry_set_text(GTK_ENTRY(entry), "/Musics/");
+    gtk_entry_set_editable(GTK_ENTRY(entry), FALSE);
+    gtk_container_add(GTK_CONTAINER(alignment), entry);
+    
+    alignment = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
+    gtk_box_pack_start(GTK_BOX(framevbox), alignment, TRUE, TRUE, 0); 
+    
+    GtkWidget* scrolledwin = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(alignment), scrolledwin);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
+		    GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    gtk_widget_set_size_request(GTK_WIDGET(scrolledwin), 420, 450);
+   
+    treeview = gtk_tree_view_new();
+    gtk_container_add(GTK_CONTAINER(scrolledwin), treeview);
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(treeview), FALSE);
+    openmoko_browsewin_arrange_tree_view(GTK_TREE_VIEW(treeview));
+    
+    g_signal_connect(G_OBJECT(closebutton), "clicked",
+		    G_CALLBACK(openmoko_browsewin_close_button_clicked_cb), treeview);
+    
+    gtk_widget_show_all(GTK_WIDGET(browsewin));
+
+    openmoko_hide_playlist_window();
+}
+
+void 
+openmoko_browsewin_arrange_tree_view(GtkTreeView* view)
+{
+    if(view == NULL)
+        return;
+
+    GtkListStore* store;
+    GtkTreeViewColumn* col;
+    GtkCellRenderer* renderer;
+    
+    col = gtk_tree_view_column_new();
+    gtk_tree_view_column_set_resizable(col, TRUE);
+
+    renderer = gtk_cell_renderer_text_new();
+    renderer->xpad = 20;
+    g_object_set(G_OBJECT(renderer), "font", "Times, 22", NULL);
+    g_object_set(G_OBJECT(renderer), "width-chars", 36, NULL);
+    g_object_set(G_OBJECT(renderer), "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+
+    renderer = gtk_cell_renderer_text_new(); 
+    
+    gtk_tree_view_column_pack_start(col, renderer, FALSE);
+    gtk_tree_view_column_set_attributes(col, renderer, "text",
+		    0, NULL);
+
+    gtk_tree_view_append_column(view, col);
+
+    store = openmoko_browsewin_add_playlist();
+
+    gtk_tree_view_set_model(view, GTK_TREE_MODEL(store));
+
+    g_object_unref(store);
+}
+
+GtkListStore*
+openmoko_browsewin_add_playlist()
+{
+    GtkListStore* store;
+    GtkTreeIter iter;
+
+    store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+       
+    GDir* dir = NULL;
+    GError* error = NULL;
+    dir = g_dir_open("/Musics/", 0, &error);
+    if(dir == NULL)
+    {
+        fprintf(stderr, "Unable to open dir: %s\n", error->message);
+	g_error_free(error);
+    }
+    
+    const gchar* filename = NULL;
+    while((filename = g_dir_read_name(dir)) != NULL)
+    {
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, filename, 1, g_build_filename("/Musics", filename, NULL),-1);
+    }
+    g_dir_close(dir);
+    
+    return store;
+}
+
+void
+openmoko_playlistwin_wheel_bottom_pressed(GtkWidget* widget, gpointer data)
+{ 
+    GtkTreeIter iter;
+    GtkTreeModel* model;
+
+    gchar* playlist;
+    gchar* playlistpath;
+    
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview_playlist));
+    
+    if(gtk_tree_model_get_iter(model,
+			    &iter,
+			    sel_path) == TRUE)
+    {
+        gtk_tree_model_get(model, &iter, playlist_col_name, &playlist, playlist_col_path, &playlistpath, -1);
+	g_print("name =%s, path = %s\n", playlist, playlistpath);
+    }
+    else
+    {
+	g_print("can not get iter\n");
+    }
+		    
+    playlist_clear();
+    playlist_load(playlistpath);
+    openmoko_set_info();
+    openmoko_set_total_number();
+    openmoko_show_main_window();
+    openmoko_hide_playlist_window();
+}
+
+void
+openmoko_playlistwin_wheel_left_up_pressed(GtkWidget* widget, gpointer data)
+{
+    GtkTreeSelection* selection;
+    GtkTreeModel* model;
+    GtkTreeIter iter;
+    GtkTreePath* path;
+    GtkTreeView* treeview;
+
+    treeview = (GtkTreeView *)data;
+    if(treeview == 0)
+        return;
+
+    selection = gtk_tree_view_get_selection(treeview);
+
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    {
+	g_print("no current selection\n");
+	return;
+    }
+
+    path = gtk_tree_model_get_path(model, &iter);
+    if(!gtk_tree_path_prev(path))
+    {
+	g_warning("no prev for the top level\n");
+	gtk_tree_path_free(path);
+	return;
+    }
+
+    gtk_tree_view_set_cursor(treeview, path, 0, 0);
+    gtk_tree_path_free(path);
+    return;
+}
+
+void
+openmoko_playlistwin_wheel_right_down_pressed(GtkWidget* widget, gpointer data)
+{ 
+    GtkTreeSelection* selection;
+    GtkTreeModel* model;
+    GtkTreeIter iter;
+    GtkTreePath* path;
+    GtkTreeView* treeview;
+
+    treeview = (GtkTreeView *)data;
+    if(treeview == 0)
+	return;
+
+    selection = gtk_tree_view_get_selection(treeview);
+
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    {
+	g_warning("no current selection\n");
+	return;
+    }
+    
+    if(gtk_tree_model_iter_next(model, &iter))
+    {
+	path = gtk_tree_model_get_path(model, &iter);
+	gtk_tree_view_set_cursor(treeview, path, 0, 0);
+	gtk_tree_path_free(path);
+	return;
+    }
+    return;
+}
+
+void
+openmoko_playlistwin_treeview_cursor_changed_cb(GtkTreeView* view, gpointer data)
+{
+    GtkTreeSelection* selection;
+    GtkTreeModel* model;
+    GtkTreeIter iter;
+    GtkTreePath* path;
+    GtkTreeView* treeview;
+
+    int cur_num = 0; 
+    int sum_num = 0;
+
+    gchar* str;
+    
+    treeview = GTK_TREE_VIEW(view);
+    if(treeview == 0)
+	return;
+
+    model = gtk_tree_view_get_model(treeview);
+
+    sum_num = gtk_tree_model_iter_n_children(model, NULL);
+    
+    selection = gtk_tree_view_get_selection(treeview);
+
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    {
+	g_warning("no current selection\n");
+	cur_num = 0;
+    }
+    else
+    {
+        path = gtk_tree_model_get_path(model, &iter);
+	str = gtk_tree_path_to_string(path);
+	cur_num = atoi(str) + 1;
+        gtk_tree_path_free(path);
+    }
+
+    str = g_strdup_printf("%02d/%02d", cur_num, sum_num);
+    gtk_label_set_text((GtkLabel *)data, str);
+    g_free(str);
+    return;
+}
+
+GtkListStore*
+openmoko_playlistwin_add_playlist()
+{
+    if(store_playlist == NULL)
+    {
+	g_print("store = null\n");
+	return NULL;
+    }
+   
+    if(sel_list == NULL)
+    {
+	g_print("sel_list = null\n");
+	return NULL;
+    }
+    
+    GtkTreeIter iter;
+    
+    gtk_list_store_append(store_playlist, &iter);
+    gtk_list_store_set(store_playlist, &iter, playlist_col_pixbuf, disselect_icon, -1);
+    gtk_list_store_set(store_playlist, &iter, playlist_col_name, sel_list, -1);
+    gtk_list_store_set(store_playlist, &iter, playlist_col_path, sel_list_path, -1);
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview_playlist), GTK_TREE_MODEL(store_playlist));
+    
+    return store_playlist;
+}
+
+void
+openmoko_playlistwin_arrange_tree_view(GtkWidget* view)
+{
+    if(view == NULL)
+        return;
+
+    GtkTreeViewColumn* col;	
+    GtkCellRenderer* renderer;
+
+    col = gtk_tree_view_column_new();
+    gtk_tree_view_column_set_resizable(col, TRUE);
+
+    renderer = gtk_cell_renderer_pixbuf_new();
+    gtk_tree_view_column_pack_start(col, renderer, FALSE);
+    gtk_tree_view_column_set_attributes(col, renderer, 
+		    "pixbuf", playlist_col_pixbuf, NULL);
+    
+    renderer = gtk_cell_renderer_text_new();
+    renderer->xpad = 20;
+    g_object_set(G_OBJECT(renderer), "font", "Times 22", NULL);
+    g_object_set(G_OBJECT(renderer), "width-chars", 36, NULL);
+    g_object_set(G_OBJECT(renderer), "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+    gtk_tree_view_column_pack_start(col, renderer, FALSE);
+    gtk_tree_view_column_set_attributes(col, renderer, 
+		    "text", playlist_col_name, NULL);
+    
+    renderer = gtk_cell_renderer_text_new();
+
+    gtk_tree_view_append_column(GTK_TREE_VIEW(view), col);
+    gtk_tree_view_column_set_attributes(col, renderer, "pixbuf",
+		    playlist_col_pixbuf, "text", playlist_col_name, NULL);
+    
+    store_playlist = gtk_list_store_new(playlist_n_cols, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING);
+    
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), GTK_TREE_MODEL(store_playlist));
+    
+    openmoko_playlistwin_add_playlist(GTK_TREE_VIEW(view));
+}
+
+void 
+openmoko_playlistwin_treeview_clicked_cb(GtkWidget* view, GdkEventButton* event, gpointer data)
+{
+    GtkTreeSelection* selection;
+    GtkTreeModel* model;
+    GtkTreeIter iter;
+    GtkTreePath* path;
+    GdkRectangle rect;
+    GtkTreeViewColumn* col;
+
+    if(view == NULL)
+	return;
+
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+
+    if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+    {
+	g_warning("no current selection\n");
+	return;
+    }
+   
+    path = gtk_tree_model_get_path(model, &iter);
+    col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
+    gtk_tree_view_get_cell_area(GTK_TREE_VIEW(view), path, col, &rect);
+    
+    if(event->type == GDK_BUTTON_PRESS)
+    {
+	if((int)event->x >= (int)rect.x && 
+	   (int)event->x <= (int)rect.width && 
+	   (int)event->y >= (int)rect.y && 
+	   (int)event->y <= ( (int)rect.height + (int)rect.y ) )
+	{
+            GtkListStore* store;
+            store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(view)));
+
+	    if(sel_path == NULL)
+	    {
+	        gtk_list_store_set(store, &iter, playlist_col_pixbuf, select_icon, -1);
+		sel_path = gtk_tree_path_copy(path);
+	    } 
+	    else if(gtk_tree_path_compare(sel_path, path) != 0)
+	    {
+	        gtk_list_store_set(store, &iter, playlist_col_pixbuf, select_icon, -1);
+		GtkTreeIter sel_iter;
+		gtk_tree_model_get_iter(model, &sel_iter, sel_path);
+	        gtk_list_store_set(store, &sel_iter, playlist_col_pixbuf, disselect_icon, -1);
+		sel_path = gtk_tree_path_copy(path);
+	    }
+	    else
+	    {
+	        gtk_list_store_set(store, &iter, playlist_col_pixbuf, disselect_icon, -1);
+		sel_path = NULL;
+	    }
+	}
+    }
+    gtk_tree_path_free(path);
+}
+
+void
+openmoko_show_playlist_window()
+{
+    if(listwin == NULL)
+    {
+	openmoko_create_playlist_window();
+    }
+
+    gtk_widget_show(GTK_WIDGET(listwin));
+    gtk_widget_show(moko_finger_window_get_wheel(listwin));
+    gtk_widget_show(moko_finger_window_get_toolbox(listwin));
+}
+
+void
+openmoko_hide_playlist_window()
+{
+    gtk_widget_hide(moko_finger_window_get_wheel(listwin));
+    gtk_widget_hide(moko_finger_window_get_toolbox(listwin));
+    gtk_widget_hide(GTK_WIDGET(listwin));
+}
+
+void
+openmoko_create_playlist_window()
+{
+    //PangoFontDescription *font_desc;
+    
+    select_icon = create_pixbuf("icon-musicplayer-time.png");
+    disselect_icon = create_pixbuf("icon-musicplayer-song.png");
+      
+    listwin = MOKO_FINGER_WINDOW(moko_finger_window_new());
+    gtk_window_set_decorated(GTK_WINDOW(listwin), FALSE);
+    
+    MokoFixed *listwin_fixed = MOKO_FIXED(moko_fixed_new());
+    moko_finger_window_set_contents(listwin, GTK_WIDGET(listwin_fixed));
+    gtk_widget_show(GTK_WIDGET(listwin_fixed));
+
+    GtkWidget *listwin_main_vbox = gtk_vbox_new(FALSE, 0);
+    moko_fixed_set_cargo(MOKO_FIXED(listwin_fixed), listwin_main_vbox);
+    gtk_widget_show(listwin_main_vbox);
+
+    GtkWidget *listwin_eventbox_top = gtk_event_box_new();
+    gtk_box_pack_start(GTK_BOX(listwin_main_vbox), listwin_eventbox_top, TRUE, TRUE, 0);
+    gtk_widget_set_name(GTK_WIDGET(listwin_eventbox_top), "gtkeventbox-black");
+    gtk_widget_show(listwin_eventbox_top);
+
+    GtkWidget *hbox_eventbox_top = gtk_hbox_new(FALSE, 0);
+    gtk_widget_set_size_request(GTK_WIDGET(hbox_eventbox_top), 480, 30);
+    gtk_container_add(GTK_CONTAINER(listwin_eventbox_top), hbox_eventbox_top);
+    gtk_widget_show(hbox_eventbox_top);
+    
+    GtkWidget *label_top_middle = gtk_label_new("Playlists");
+    gtk_misc_set_alignment(GTK_MISC(label_top_middle), 0.5, 0.5);
+    gtk_box_pack_start(GTK_BOX(hbox_eventbox_top), label_top_middle, TRUE, TRUE, 0);
+    gtk_widget_show(label_top_middle);
+    
+    GtkWidget *label_top_right = gtk_label_new("");
+    gtk_misc_set_alignment(GTK_MISC(label_top_right), 0.5, 1.0);
+    gtk_box_pack_start(GTK_BOX(hbox_eventbox_top), label_top_right, FALSE, FALSE, 0);
+    gtk_widget_show(label_top_right);
+    
+    GtkWidget *align_list = gtk_alignment_new(0, 0, 1, 1);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(align_list), 10, 50, 30, 30);
+    gtk_box_pack_start(GTK_BOX(listwin_main_vbox), align_list, TRUE, TRUE, 0);
+    gtk_widget_show(align_list);
+
+    GtkWidget *scrolledwin_list = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin_list),
+		    GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+    gtk_container_add(GTK_CONTAINER(align_list), scrolledwin_list);
+    gtk_widget_set_size_request(GTK_WIDGET(scrolledwin_list), -1, 450);
+    gtk_widget_show(scrolledwin_list);
+
+    treeview_playlist = gtk_tree_view_new();
+    GTK_WIDGET_UNSET_FLAGS(treeview_playlist, GTK_CAN_FOCUS);
+    gtk_widget_set_name(treeview_playlist, "gtktreeview-black");
+    gtk_container_add(GTK_CONTAINER(scrolledwin_list), treeview_playlist);
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview_playlist), FALSE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(treeview_playlist), FALSE);
+    g_signal_connect(G_OBJECT(treeview_playlist), "cursor-changed", 
+		    G_CALLBACK(openmoko_playlistwin_treeview_cursor_changed_cb), label_top_right);
+    g_signal_connect(G_OBJECT(treeview_playlist), "button_press_event", 
+		    G_CALLBACK(openmoko_playlistwin_treeview_clicked_cb), NULL);
+    gtk_widget_show(treeview_playlist);
+  
+    openmoko_playlistwin_arrange_tree_view(treeview_playlist);
+    
+    gtk_widget_show_all(GTK_WIDGET(listwin));
+    
+    GtkWidget *listwheel = moko_finger_window_get_wheel(listwin);
+    g_signal_connect(G_OBJECT(listwheel), "press_bottom",
+		    G_CALLBACK(openmoko_playlistwin_wheel_bottom_pressed), NULL);
+    g_signal_connect(G_OBJECT(listwheel), "press_left_up",
+		    G_CALLBACK(openmoko_playlistwin_wheel_left_up_pressed), treeview_playlist);
+    g_signal_connect(G_OBJECT(listwheel), "press_right_down",
+		    G_CALLBACK(openmoko_playlistwin_wheel_right_down_pressed), treeview_playlist);
+    
+    gtk_widget_show(listwheel);
+    
+    GtkWidget *listtoolbox = moko_finger_window_get_toolbox(listwin);
+	
+    GtkButton *button;
+    button = GTK_BUTTON(moko_finger_tool_box_add_button(MOKO_FINGER_TOOL_BOX(listtoolbox)));
+    gtk_widget_hide(GTK_WIDGET(button));
+    button = GTK_BUTTON(moko_finger_tool_box_add_button(MOKO_FINGER_TOOL_BOX(listtoolbox)));
+    gtk_widget_hide(GTK_WIDGET(button));
+    button = GTK_BUTTON(moko_finger_tool_box_add_button(MOKO_FINGER_TOOL_BOX(listtoolbox)));
+    gtk_widget_hide(GTK_WIDGET(button));
+    
+    GtkButton *browse_button = GTK_BUTTON(moko_finger_tool_box_add_button(MOKO_FINGER_TOOL_BOX(listtoolbox)));
+    //font_desc = pango_font_description_from_string("Times 10");
+    //gtk_widget_modify_font(GTK_WIDGET(browse_button->actionbtnlowerlabel), font_desc);
+    //pango_font_description_free(font_desc);
+    //moko_pixmap_button_set_action_btn_lower_label(MOKO_PIXMAP_BUTTON(browse_button), "Browse");
+    gtk_button_set_label(GTK_BUTTON(browse_button), "Browse");
+    g_signal_connect(G_OBJECT(browse_button), "clicked",
+		    G_CALLBACK(openmoko_playlistwin_browsebutton_pushed_cb), NULL);
+    gtk_widget_show(listtoolbox);
+}
+/**********/
 
 void 
 openmoko_mainwin_create()
@@ -4180,15 +4823,15 @@ openmoko_mainwin_create()
     
 //    MokoApplication *app = MOKO_APPLICATION(moko_application_get_instance());
 
-    MokoFingerWindow *mainwin = MOKO_FINGER_WINDOW(moko_finger_window_new());
-    g_signal_connect(G_OBJECT(mainwin), "destroy", G_CALLBACK(openmoko_main_quit), NULL);
-    gtk_window_set_decorated(GTK_WINDOW(mainwin), FALSE);
+    mainwindow = MOKO_FINGER_WINDOW(moko_finger_window_new());
+    g_signal_connect(G_OBJECT(mainwindow), "destroy", G_CALLBACK(openmoko_main_quit), NULL);
+    gtk_window_set_decorated(GTK_WINDOW(mainwindow), FALSE);
 
     //save the main window pointer
-    created_mainwin = GTK_WIDGET(mainwin);
+    created_mainwin = GTK_WIDGET(mainwindow);
 
     fixed = MOKO_FIXED(moko_fixed_new());
-    moko_finger_window_set_contents(mainwin, GTK_WIDGET(fixed));
+    moko_finger_window_set_contents(mainwindow, GTK_WIDGET(fixed));
    
 /*******************************************/
     background_vbox = gtk_vbox_new(FALSE, 0);
@@ -4552,35 +5195,35 @@ openmoko_mainwin_create()
     btn_set_center_image(GTK_BUTTON(playlist_button), GTK_IMAGE(image));
 /*******************************************/
     
-    gtk_widget_show_all(GTK_WIDGET(mainwin));
-    gtk_window_present(GTK_WINDOW(mainwin));
+    gtk_widget_show_all(GTK_WIDGET(mainwindow));
+    gtk_window_present(GTK_WINDOW(mainwindow));
     
-    gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(mainwin)));
+    gtk_widget_show(GTK_WIDGET(moko_finger_window_get_wheel(mainwindow)));
     
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwindow)),
 		    "press_left_up",
 		    G_CALLBACK(openmoko_wheel_press_left_up_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwindow)),
 		    "long_press_left_up",
 		    G_CALLBACK(openmoko_wheel_press_left_up_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwindow)),
 		    "press_right_down",
 		    G_CALLBACK(openmoko_wheel_press_right_down_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwindow)),
 		    "long_press_right_down",
 		    G_CALLBACK(openmoko_wheel_press_right_down_cb),
 		    NULL);
-    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwin)),
+    g_signal_connect(G_OBJECT(moko_finger_window_get_wheel(mainwindow)),
 		    "press_bottom",
 		    G_CALLBACK(openmoko_main_quit),
 		    NULL);
 
     if(!tools)
     {
-        tools = MOKO_FINGER_TOOL_BOX(moko_finger_window_get_toolbox(MOKO_FINGER_WINDOW(mainwin)));
+        tools = MOKO_FINGER_TOOL_BOX(moko_finger_window_get_toolbox(MOKO_FINGER_WINDOW(mainwindow)));
        
 	prev_button = GTK_BUTTON(moko_finger_tool_box_add_button_without_label(MOKO_FINGER_TOOL_BOX(tools)));
         image_path = g_build_path("/", images_dir, "ico-previoustrack.png", NULL);
@@ -4623,7 +5266,7 @@ openmoko_mainwin_create()
     }
     dbus_connection_setup_with_g_main(bus, NULL);
     dbus_bus_add_match(bus, "type='signal',interface='com.burtonini.dbus.Signal'", &error);
-    dbus_connection_add_filter(bus, signal_filter, mainwin, NULL);
+    dbus_connection_add_filter(bus, signal_filter, mainwindow, NULL);
     //added end
     
     return;

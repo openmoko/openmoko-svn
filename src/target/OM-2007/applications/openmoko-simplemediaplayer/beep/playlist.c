@@ -233,7 +233,7 @@ playlist_clear(void)
     PLAYLIST_UNLOCK();
 
     playlist_generate_shuffle_list();
-    playlistwin_update_list();
+    //playlistwin_update_list();
     playlist_recalc_total_time();
 }
 
@@ -1365,7 +1365,7 @@ playlist_load_pls(const gchar * filename, gint pos)
     }
 
     playlist_generate_shuffle_list();
-    playlistwin_update_list();
+//    playlistwin_update_list();
 
     return added_count;
 }
@@ -1435,7 +1435,7 @@ playlist_load_m3u(const gchar * filename, gint pos)
     g_free(line);
 
     playlist_generate_shuffle_list();
-    playlistwin_update_list();
+  //  playlistwin_update_list();
 
     if (g_ascii_strcasecmp(filename, BMP_PLAYLIST_BASENAME))
         playlist_set_current_name(NULL);

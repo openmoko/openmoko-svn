@@ -187,6 +187,13 @@ void playback_get_sample_params(gint * bitrate,
                                 gint * numchannels);
 
 //added by lijiang
+GtkListStore* openmoko_browsewin_add_playlist();
+void openmoko_browsewin_arrange_tree_view(GtkTreeView* view);
+void openmoko_create_playlist_window();
+void openmoko_show_playlist_window();
+void openmoko_hide_playlist_window();
+void openmoko_show_main_window();
+void openmoko_hide_main_window();
 void openmoko_mainwin_create();
 void openmoko_set_title(const gchar* title);
 void openmoko_set_artist(const gchar* artist);
@@ -197,6 +204,46 @@ void openmoko_set_total_time();
 void openmoko_update_vis_data(gint pos, gint h);
 void openmoko_update_ogg_title(const gchar* title);
 void openmoko_update_ogg_artist(const gchar* artist);
+void openmoko_player_quit(GtkWidget *widget, gpointer data);
+void openmoko_read_volume_from_start();
+void openmoko_change_vol_img(gint vol);
+void openmoko_update_vis_data(gint pos, gint h);
+void openmoko_set_tag_info();
+gboolean openmoko_update_elapse_time(gpointer data);
+void openmoko_play_pause_action();
+void openmoko_play_pause_button_pushed(GtkWidget *widget, gpointer data);
+void openmoko_playlist_prev_action();
+void openmoko_playlist_prev(GtkWidget *widget, gpointer data);
+void openmoko_playlist_next_action();
+void openmoko_playlist_next(GtkWidget *widget, gpointer data);
+void openmoko_increase_volume();
+void openmoko_wheel_press_left_up_cb(GtkWidget *widget, gpointer data);
+void openmoko_decrease_volume();
+void openmoko_wheel_press_right_down_cb(GtkWidget *widget, gpointer data);
+void openmoko_quit_musicplayer();
+void openmoko_main_quit(GtkWidget* widget, gpointer data);
+void openmoko_set_shuffle_state();
+void openmoko_shuffle_button_callback(GtkWidget* widget, gpointer data);
+void openmoko_set_repeat_state();
+void openmoko_repeat_button_callback(GtkWidget* widget, gpointer data);
+void openmoko_playlist_button_callback(GtkWidget* widget, gpointer data);
+gboolean openmoko_press_on_slider_cb(GtkRange* range,
+		            GtkScrollType scroll,
+			          gdouble value,
+			          gpointer data);
+void btn_set_center_image(GtkButton* button, GtkImage* image);
+void init_image_dir();
+void openmoko_show_created_window();
+GdkPixbuf* create_pixbuf(const gchar* filename);
+void openmoko_browsewin_close_button_clicked_cb(GtkWidget* widget, gpointer data);
+void openmoko_playlistwin_browsebutton_pushed_cb(GtkWidget* widget, gpointer data);
+void openmoko_playlistwin_wheel_bottom_pressed(GtkWidget* widget, gpointer data);
+void openmoko_playlistwin_wheel_left_up_pressed(GtkWidget* widget, gpointer data);
+void openmoko_playlistwin_wheel_right_down_pressed(GtkWidget* widget, gpointer data);
+void openmoko_playlistwin_treeview_cursor_changed_cb(GtkTreeView* view, gpointer data);
+GtkListStore* openmoko_playlistwin_add_playlist();
+void openmoko_playlistwin_arrange_tree_view(GtkWidget* view);
+void openmoko_playlistwin_treeview_clicked_cb(GtkWidget* view, GdkEventButton* event, gpointer data);
 //added end
 
 #endif
