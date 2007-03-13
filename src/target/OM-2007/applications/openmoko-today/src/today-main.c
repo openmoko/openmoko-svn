@@ -314,6 +314,7 @@ today_launcher_button_new (gchar * icon, gchar * exec)
 }
 
 GtkWidget *
+get_today_events_infoline ()
 {
   GtkWidget        *infoline  = NULL ;
   GList            *events    = NULL ;
