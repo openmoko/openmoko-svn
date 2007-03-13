@@ -50,6 +50,11 @@ sub readenv
     open(FILE, $file) || die "$file: $!";
     $env = join("", <FILE>);
     close FILE;
+    if (length $env < 6) {	# CRC plus \0\0
+	print STDERR sprintf("Environment is too small (%d bytes < 6)\n",
+	  length $env);
+	exit(1);
+    }
     if (length $env != $ENV_SIZE) {
 	print STDERR sprintf("warning: environment is %d bytes, expected %d\n",
 	  length $env, $ENV_SIZE);

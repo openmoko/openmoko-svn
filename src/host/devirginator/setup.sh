@@ -342,15 +342,15 @@ fi
 if \$stage2; then
     echo === STAGE 2: DFU upload
     sleep 5
-    $DFU_UTIL -a 3 -D $UIMAGE
-    $DFU_UTIL -a 5 -D $ROOTFS
-    $DFU_UTIL -a 4 -D tmp/splash.gz
-    $DFU_UTIL -a 2 -U tmp/env.old
+    $DFU_UTIL -a kernel -D $UIMAGE
+    $DFU_UTIL -a rootfs -D $ROOTFS
+    $DFU_UTIL -a splash -D tmp/splash.gz
+    $DFU_UTIL -a u-boot_env -U tmp/env.old
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT \
-      "bp 0x33f80000 4 hw" reset wait_halt "rbp 0x33f80000" resume exit
+      "reset halt" wait_halt resume exit
     sleep 5
     ./envedit.pl -i tmp/env.old -o tmp/env.new -f tmp/environment
-    $DFU_UTIL -a 2 -D tmp/env.new
+    $DFU_UTIL -a u-boot_env -D tmp/env.new
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT "reset run" exit
 fi
 

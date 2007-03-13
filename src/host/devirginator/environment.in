@@ -8,6 +8,7 @@ bootargs_base=
   console=ttySAC0,115200
   console=tty0
   loglevel=8
+  regular_boot
 
 bootcmd=
   setenv bootargs ${bootargs_base} ${mtdparts};
@@ -26,25 +27,26 @@ stdout=usbtty
 stderr=usbtty
 stdin=usbtty
 
-#menu_1=
-#  Boot from microSD:
-#  setenv bootargs rootfstype=
-#  mmcinit;
-#  ext2load mmc 0 0x32000000 uImage;
-#  bootm 0x32000000
-
 menu_1=
+  Boot from microSD:
+  setenv bootargs
+    ${bootargs_base} rootfstype=ext2 rootfs=/dev/mmcblk0p1 rootdelay=5;
+  mmcinit;
+  ext2load mmc 0 0x32000000 uImage;
+  bootm 0x32000000
+
+menu_2=
   Set console to USB:
   setenv stdin usbtty;
   setenv stdout usbtty;
   setenv stderr usbtty
 
-menu_2=
+menu_3=
   Set console to serial:
   setenv stdin serial;
   setenv stdout serial;
   setenv stderr serial
 
-menu_3=
+menu_4=
   Power off:
   neo1973 power-off
