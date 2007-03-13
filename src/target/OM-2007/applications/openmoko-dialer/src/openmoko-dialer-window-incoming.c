@@ -247,10 +247,10 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     vbox = gtk_vbox_new (FALSE, 0);
     status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), " incoming_0.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), " incoming_1.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), " incoming_2.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), " incoming_3.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "incoming_0.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "incoming_1.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "incoming_2.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "incoming_3.png");
     moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
 
     gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
