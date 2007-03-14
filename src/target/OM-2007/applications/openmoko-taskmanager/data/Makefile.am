@@ -21,5 +21,5 @@ dist_desktop_DATA = openmoko-taskmanager.desktop
 #
 # desktop integration: application icon
 #
-appicondir = $(datadir)/icons
+appicondir = $(datadir)/pixmaps
 dist_appicon_DATA = openmoko-taskmanager.png
