@@ -99,7 +99,7 @@ Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdfu.c
-@@ -0,0 +1,1042 @@
+@@ -0,0 +1,1043 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -586,7 +586,8 @@ Index: u-boot/drivers/usbdfu.c
 +			remain = len;
 +
 +		debug("copying %u bytes ", remain);
-+		memcpy(urb->buffer, ds->ptr, remain);
++//		memcpy(urb->buffer, ds->ptr, remain);
++		urb->buffer = ds->ptr;
 +		ds->ptr += remain;
 +		urb->actual_length = remain;
 +
