@@ -24,5 +24,5 @@ dist_desktop_DATA = openmoko-appmanager.desktop
 #
 # desktop integration: application icon
 #
-appicondir = $(datadir)/icons
+appicondir = $(datadir)/pixmaps
 dist_appicon_DATA = application-manager.png
