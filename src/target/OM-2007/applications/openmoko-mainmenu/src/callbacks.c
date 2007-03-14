@@ -112,7 +112,7 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
 		moko_dbus_send_message (text);
 	}
 
-	g_list_foreach (selected_item, gtk_tree_path_free, NULL);
+	g_list_foreach (selected_item, (GFunc) gtk_tree_path_free, NULL);
 	g_list_free (selected_item);
 
     moko_main_menu_update_item_total_label (mma->mm);
@@ -121,17 +121,21 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
 void 
 moko_tool_box_btn_clicked_cb (GtkButton *btn, MokoAppHistory *history)
 {
-	MokoDesktopItem *selected_item;
+	MokoDesktopItem *selected_item = NULL;
 	gint i = 0;
 
     if (!btn || !history)
 		return;
 
-	for (i; i<MAX_RECORD_APP; i++)
+	for ( ; i<MAX_RECORD_APP; i++)
 	{
-		if (history->btn[i] == btn)
+		if (history->btn[i] == (MokoPixmapButton *)btn)
+		{
 			selected_item = history->item[i];
-		else continue;
+			break;
+		}
+		else
+			continue;
 	}
 	
 	if (selected_item)
