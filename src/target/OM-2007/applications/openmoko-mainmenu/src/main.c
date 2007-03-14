@@ -146,11 +146,11 @@ main( int argc, char** argv )
     gtk_widget_show (GTK_WIDGET (mma->window));
 
     /* finger wheel object*/
-    mma->wheel = moko_finger_window_get_wheel (mma->window);
-    gtk_window_set_title (GTK_WIDGET (mma->wheel), "wheel");
+    mma->wheel = MOKO_FINGER_WHEEL (moko_finger_window_get_wheel (mma->window));
+    gtk_window_set_title (GTK_WINDOW (mma->wheel), "wheel");
 
     /* finger toolbox object*/
-    mma->toolbox = moko_finger_window_get_toolbox(mma->window);
+    mma->toolbox = MOKO_FINGER_TOOL_BOX (moko_finger_window_get_toolbox (mma->window));
     //initialize toolbox's buttons, which are MokoPixmapButton objects.
     mma->history = moko_app_history_init (mma->toolbox);
 	if (!mma->history)
@@ -160,7 +160,7 @@ main( int argc, char** argv )
     }
 
     /* MokoMainMenu object */
-    mma->mm = moko_main_menu_new();
+    mma->mm = MAINMENU (moko_main_menu_new ());
 
     /* signal connected*/
     //finger wheel object signals
