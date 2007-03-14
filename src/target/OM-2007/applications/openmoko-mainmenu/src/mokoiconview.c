@@ -99,7 +99,6 @@ struct _MokoIconViewPrivate
   gint decr_width;
   gboolean decorated;
   gint total_items;
-  gboolean activate;
 
   guint ctrl_pressed : 1;
   guint shift_pressed : 1;
@@ -1507,10 +1506,9 @@ moko_icon_view_button_press (GtkWidget      *widget,
 
   if (event->button == 1 && event->type == GDK_BUTTON_PRESS)
     {
-
       item = moko_icon_view_get_item_at_pos (icon_view,
 					    event->x, event->y);
-      
+
       if (item != NULL)
 	{
 	  moko_icon_view_scroll_to_item (icon_view, item);
@@ -1526,9 +1524,9 @@ moko_icon_view_button_press (GtkWidget      *widget,
 
 	      moko_icon_view_set_cursor_item (icon_view, item);
 	      if (!icon_view->priv->anchor_item)
-		icon_view->priv->anchor_item = item;
+		    icon_view->priv->anchor_item = item;
 	      else 
-		moko_icon_view_select_all_between (icon_view,
+		    moko_icon_view_select_all_between (icon_view,
 						  icon_view->priv->anchor_item,
 						  item);
 	      dirty = TRUE;
@@ -1547,13 +1545,20 @@ moko_icon_view_button_press (GtkWidget      *widget,
 		{
 		  if (!item->selected)
 		    {
-		      moko_icon_view_unselect_all_internal (icon_view);
-		      
+			  moko_icon_view_unselect_all_internal (icon_view);
 		      item->selected = TRUE;
 		      moko_icon_view_queue_draw_item (icon_view, item);
 		      dirty = TRUE;
 		    }
-		  else icon_view->priv->activate = TRUE;
+		  else 
+	        {
+	           GtkTreePath *path;
+	           path = gtk_tree_path_new_from_indices (item->index, -1);
+	           moko_icon_view_item_activated (icon_view, path);
+	           gtk_tree_path_free (path);
+
+               icon_view->priv->last_single_clicked = NULL;
+		  }
 		}
 	      moko_icon_view_set_cursor_item (icon_view, item);
 	      icon_view->priv->anchor_item = item;
@@ -1582,23 +1587,6 @@ moko_icon_view_button_press (GtkWidget      *widget,
 	    moko_icon_view_start_rubberbanding (icon_view, event->x, event->y);
 	}
 
-    }
-
-  if (event->button == 1 && event->type == GDK_2BUTTON_PRESS)
-    {
-      item = moko_icon_view_get_item_at_pos (icon_view,
-					    event->x, event->y);
-
-      if (item && item == icon_view->priv->last_single_clicked)
-	{
-	  GtkTreePath *path;
-
-	  path = gtk_tree_path_new_from_indices (item->index, -1);
-	  moko_icon_view_item_activated (icon_view, path);
-	  gtk_tree_path_free (path);
-	}
-
-      icon_view->priv->last_single_clicked = NULL;
     }
   
   if (dirty)

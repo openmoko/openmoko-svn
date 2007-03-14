@@ -20,6 +20,10 @@
  */
 #ifndef MOKO_DBUS_MESSAGE_SEND_H
 #define MOKO_DBUS_MESSAGE_SEND_H
+
+#ifndef DBUS_API_SUBJECT_TO_CHANGE
+#define DBUS_API_SUBJECT_TO_CHANGE
+#endif /*DBUS_API_SUBJECT_TO_CHANGE*/
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus.h>
