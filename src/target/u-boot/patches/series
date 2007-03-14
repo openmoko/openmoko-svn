@@ -65,3 +65,5 @@ uboot-dfu.patch
 uboot-neo1973-defaultenv.patch
 uboot-nand-markbad-reallybad.patch
 mmc-fixes.patch
+usbdcore-multiple_configs.patch
+neo1973-chargefast.patch
