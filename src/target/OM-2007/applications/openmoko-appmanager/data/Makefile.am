@@ -15,3 +15,14 @@ resource_DATA = package-available.png\
                 package-upgrade.png\
                 unkown.png
 
+#
+# desktop integration: .desktop file
+#
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = openmoko-appmanager.desktop
+
+#
+# desktop integration: application icon
+#
+appicondir = $(datadir)/icons
+dist_appicon_DATA = application-manager.png

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=OpenMoko Appmanager
+Comment=OpenMoko Application Manager
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-appmanager
+Icon=application-manager.png
+Categories=GTK;Application;
+Terminal=false
+SingleInstance=true
+StartupNotify=true
