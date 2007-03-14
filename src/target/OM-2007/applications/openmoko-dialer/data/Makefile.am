@@ -68,7 +68,7 @@ resource_DATA =unkown.png\
 #
 # desktop integration: .desktop file
 #
-desktopdir = $(datadir)/applications
+desktopdir = $(datadir)/pixmaps
 dist_desktop_DATA = openmoko-dialer.desktop
 
 #
