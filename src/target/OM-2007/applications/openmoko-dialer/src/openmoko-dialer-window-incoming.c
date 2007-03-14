@@ -290,7 +290,11 @@ window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
     gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
-
+    //FIXME: dear thomas, I know that show & hide is not good, but when you removed the following 2 lines, the incoming window
+    //is simply not displaying well. please have a try and then commit. If you cannot test the incoming window, you can simply modify the code to show it out debuggingly.
+    //Pardon me to re-add the 2 lines. Tony Guan 14,3,2007
+    gtk_widget_show_all(GTK_WIDGET(window));
+    gtk_widget_hide(GTK_WIDGET(window));
 
     moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status), "Incoming call");
     moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status), "");

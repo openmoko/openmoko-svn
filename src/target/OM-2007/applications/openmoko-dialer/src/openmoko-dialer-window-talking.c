@@ -324,7 +324,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     gtk_box_pack_start (GTK_BOX (vbox), content_talk, FALSE, FALSE, 0);
 
 
-//now the dtmf content
+    //now the dtmf content
     content_dtmf = gtk_vbox_new (FALSE, 0);
     GtkWidget *eventbox1 = gtk_event_box_new ();
     gtk_widget_show (eventbox1);
@@ -351,7 +351,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     gtk_box_pack_start (GTK_BOX (vbox), content_dtmf, FALSE, FALSE, 0);
     p_dialer_data->content_dtmf = content_dtmf;
-    g_object_set (G_OBJECT (content_dtmf), "no-show-all", TRUE);
+    //g_object_set (G_OBJECT (content_dtmf), "no-show-all", TRUE);
 
 
     //now the container--window
@@ -366,7 +366,15 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
+    //please refer to bug 175.
+    //FIXME:Dear Thomas, please modify the libmokoui before deleting the show_all & hide codes. I don't want to splash
+    //any window either, but for now, it's the most convenient way to debug the application. We will remove it, but later, OK?
+    //Tony Guan 14/3/2007
+    gtk_widget_show_all(GTK_WIDGET(window));
+    gtk_widget_hide(content_dtmf);    //And this line is necessary because dtmf interface & talking interface share the same window.
+                                                        //we have to hide it first.
     wheel=moko_finger_window_get_wheel (window);
+    
     g_signal_connect (G_OBJECT (wheel),
                       "press_left_up",
                       G_CALLBACK (openmoko_wheel_press_left_up_cb),

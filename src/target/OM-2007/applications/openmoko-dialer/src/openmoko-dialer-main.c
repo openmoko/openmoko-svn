@@ -276,6 +276,7 @@ if (argc != 1)
 
       g_option_context_free (context);
     }
+  //FIXME: the following lines to enable unique instance will be changed.
   lockapp = testlock ("/tmp/dialer.lock");
   if (lockapp > 0)
     {
