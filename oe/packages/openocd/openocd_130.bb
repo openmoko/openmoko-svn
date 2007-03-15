@@ -13,10 +13,3 @@ SRC_URI = "svn://svn.berlios.de/;module=openocd;rev=130 \
 S = "${WORKDIR}/openocd/trunk"
 
 EXTRA_OECONF = "  --disable-ftdi2232 --disable-ftd2xx"  
-
-do_deploy() {
-	install -d ${DEPLOY_DIR_IMAGE}
-	install -m 0755 src/openocd ${DEPLOY_DIR_IMAGE}/openocd
-}
-
-addtask deploy before do_package after do_install
