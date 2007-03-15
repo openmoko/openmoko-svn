@@ -300,6 +300,16 @@ init_left_hand_side (TodayEventsArea *a_this)
     clear_left_hand_side (a_this) ;
 
   a_this->priv->left_event_box = gtk_event_box_new ();
+
+  if (a_this->priv->max_visible_events > 0
+      && (a_this->priv->nb_events / a_this->priv->max_visible_events) > 1)
+     gtk_widget_set_name (a_this->priv->left_event_box, "today-events-area-postit-multi");
+  else
+     gtk_widget_set_name (a_this->priv->left_event_box, "today-events-area-postit-single");
+
+  // FIXME: get this size from the style... somehow
+  gtk_widget_set_size_request (a_this->priv->left_event_box, 51, 131);
+
   gtk_widget_add_events (a_this->priv->left_event_box,
                          GDK_BUTTON_PRESS_MASK) ;
   g_signal_connect (G_OBJECT (a_this->priv->left_event_box),
@@ -315,9 +325,10 @@ init_left_hand_side (TodayEventsArea *a_this)
                       a_this->priv->left_event_box,
                       FALSE, FALSE, 0) ;
 
-  gtk_table_attach_defaults (GTK_TABLE (a_this),
+  gtk_table_attach (GTK_TABLE (a_this),
                              a_this->priv->left,
-                             0, 1, 0, 1) ;
+                             0, 1, 0, 1,
+                             GTK_FILL, GTK_FILL, 0, 0) ;
   gtk_widget_show_all (a_this->priv->left) ;
 }
 

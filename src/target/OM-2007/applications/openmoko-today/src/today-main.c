@@ -227,13 +227,17 @@ today_infoline_new (gchar * stock_id, gchar * message)
   eventbox = gtk_event_box_new ();
   gtk_container_set_border_width (GTK_CONTAINER (eventbox), 6);
 
-  hbox = gtk_hbox_new (FALSE, 12);
+  hbox = gtk_hbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (eventbox), hbox);
 
   icon = gtk_image_new ();
   gtk_image_set_from_stock (GTK_IMAGE (icon), stock_id, GTK_ICON_SIZE_MENU);
   gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
   gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
+
+  // FIXME: get this from the style... somehow
+  gtk_widget_set_size_request (icon, 51, -1);
+
 
   label = gtk_label_new (message);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
@@ -276,12 +280,12 @@ static GtkWidget *
 today_launcher_button_new (gchar * icon, gchar * exec)
 {
   GtkWidget *button = gtk_button_new ();
-  if (exec) {/*unused parameter, to be used in the future*/}
 
   gtk_container_add (GTK_CONTAINER (button),
                      gtk_image_new_from_stock (icon, GTK_ICON_SIZE_BUTTON));
-
-  gtk_widget_set_name (button, "today-launcher-button");
+  // FIXME: need to set the correct size to prevent the button looking squashed.
+  // Possibly use MokoPixmapButton instead of GtkButton
+  gtk_widget_set_name (button, "mokofingertoolbox-toolbutton");
 
   g_signal_connect (G_OBJECT (button),
                     "clicked",
@@ -292,32 +296,22 @@ today_launcher_button_new (gchar * icon, gchar * exec)
 }
 
 /**
- * today_events_infolines_new:
+ * today_setup_events_area:
  *
- * Return value: a GtkWidget showing the
- * events of the day
+ * Return value: The widget to use as the events area
+ *
  */
 GtkWidget *
-today_events_infolines_new (const gchar *stock_id)
+today_setup_events_area (const gchar *stock_id)
 {
-  GtkWidget        *events_area, *icon, *hbox ;
+  GtkWidget        *events_area;
   GList            *events;
-
-
-  hbox = gtk_hbox_new (FALSE, 12);
-  gtk_container_set_border_width (GTK_CONTAINER (hbox), 6) ;
-
-  icon = gtk_image_new ();
-  gtk_image_set_from_stock (GTK_IMAGE (icon), stock_id, GTK_ICON_SIZE_MENU);
-  gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
-  gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
 
   events = today_get_today_events () ;
   events_area = today_events_area_new () ;
   today_events_area_set_events (TODAY_EVENTS_AREA (events_area), events) ;
-  gtk_box_pack_start (GTK_BOX (hbox), events_area, FALSE, FALSE, 0);
 
-  return hbox;
+  return events_area;
 }
 
 static void
@@ -375,7 +369,7 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* upcoming events */
-  infoline = today_events_infolines_new (GTK_STOCK_NO);
+  infoline = today_setup_events_area (GTK_STOCK_NO);
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* shurtcut buttons */
