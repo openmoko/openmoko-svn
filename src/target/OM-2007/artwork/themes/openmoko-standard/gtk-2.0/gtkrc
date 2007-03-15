@@ -125,3 +125,4 @@ include "mokonavigationlist"
 include "mokoicons"
 
 include "contactspane"
+include "openmoko-today"
