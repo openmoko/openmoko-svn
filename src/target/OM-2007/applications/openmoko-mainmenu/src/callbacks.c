@@ -51,13 +51,13 @@ moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 void
 moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
-    g_signal_emit_by_name (G_OBJECT(mma->mm->icon_view), "move-cursor", GTK_MOVEMENT_DISPLAY_LINES, -1);
+    moko_icon_view_move_cursor_line_up (mma->mm->icon_view);
 }
 
 void
 moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
 {
-    g_signal_emit_by_name (G_OBJECT(mma->mm->icon_view), "move-cursor", GTK_MOVEMENT_DISPLAY_LINES, 1);
+    moko_icon_view_move_cursor_line_down (mma->mm->icon_view);
 }
 
 void

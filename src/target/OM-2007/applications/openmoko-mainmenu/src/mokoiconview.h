@@ -229,6 +229,11 @@ moko_icon_view_unselect_all (MokoIconView *icon_view);
 void 
 moko_icon_view_item_activated (MokoIconView *icon_view, GtkTreePath *path);
 
+void
+moko_icon_view_move_cursor_line_up (MokoIconView *icon_view);
+
+void
+moko_icon_view_move_cursor_line_down (MokoIconView *icon_view);
 G_END_DECLS
 
 #endif /* mokoiconview.h */

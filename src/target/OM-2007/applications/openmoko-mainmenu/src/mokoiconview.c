@@ -4433,3 +4433,20 @@ moko_icon_view_get_total_items (MokoIconView *icon_view)
     return icon_view->priv->total_items;
 }
 
+void
+moko_icon_view_move_cursor_line_up (MokoIconView *icon_view)
+{
+    g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+    
+    moko_icon_view_move_cursor_up_down (icon_view, -1);
+
+}
+
+void
+moko_icon_view_move_cursor_line_down (MokoIconView *icon_view)
+{
+    g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+    
+    moko_icon_view_move_cursor_up_down (icon_view, 1);
+
+}
