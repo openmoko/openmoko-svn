@@ -1,3 +1,17 @@
+Thu, 15 Mar 2007 13:43:47 +0100 Dodji Seketeli
+
+	* src/today-events-area.c: don't forget to emit the signal
+	  events-added, when edited.
+
+Thu, 15 Mar 2007 12:44:51 +0100 Dodji Seketeli
+
+	* src/today-events-area.c,h: expose signals
+	  event-added, event-selected, page-switched.
+	  Make the internals use these.
+          added today_events_area_switch_to_prev_page() and
+	  today_events_area_switch_to_next_page().
+
+
 Tue, 13 Mar 2007 17:53:33 +0100 Dodji Seketeli <dodji@o-hand.com>
 
 	* autogen.sh: remove my specific --prefix

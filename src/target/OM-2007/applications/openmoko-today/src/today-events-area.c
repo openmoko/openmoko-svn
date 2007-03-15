@@ -665,6 +665,8 @@ today_events_area_set_events (TodayEventsArea *a_this,
    */
   render_events_page (a_this, a_events) ;
   update_paging_info (a_this) ;
+  g_signal_emit (G_OBJECT (a_this), signals[EVENTS_ADDED_SIGNAL], 0,
+                 a_events) ;
 }
 
 GList*
