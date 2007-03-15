@@ -55,6 +55,16 @@ enum TodayEventsAreaSignals
   LAST_SIGNAL
 };
 
+enum TodayEventsAreaProps
+{
+  EVENTS_PROP=1,
+  NB_EVENTS_PROP,
+  NB_PAGES_PROP,
+  CUR_EVENT_PROP,
+  CUR_EVENT_INDEX_PROP,
+  MAX_VISIBLE_EVENTS_PROP
+};
+
 static guint signals[LAST_SIGNAL] ;
 
 static void     today_events_area_finalize  (GObject *a_obj);
@@ -80,6 +90,11 @@ static void     event_selected_signal       (TodayEventsArea *a_this,
 static void     events_added_signal       (TodayEventsArea *a_this,
                                            GList *a_index) ;
 
+static void     get_property (GObject *a_this, guint a_prop_id,
+                              GValue *a_val, GParamSpec *a_pspec) ;
+static void     set_property (GObject *a_this, guint a_prop_id,
+                              const GValue *a_value, GParamSpec *a_pspec) ;
+
 G_DEFINE_TYPE (TodayEventsArea, today_events_area, GTK_TYPE_TABLE)
 
 static void
@@ -89,10 +104,63 @@ today_events_area_class_init (TodayEventsAreaClass *a_class)
 
   object_class = G_OBJECT_CLASS (a_class);
   object_class->finalize = today_events_area_finalize;
+  object_class->get_property = get_property ;
+  object_class->set_property = set_property ;
+
   g_type_class_add_private (object_class, sizeof (TodayEventsAreaPrivate));
 
   a_class->event_selected = event_selected_signal ;
   a_class->events_added = events_added_signal ;
+
+  g_object_class_install_property
+                    (object_class,
+                     EVENTS_PROP,
+                     g_param_spec_pointer ("events",
+                                           "events",
+                                           "a GList of calendar events"
+                                            ", instances of ECalComponent",
+                                           G_PARAM_READWRITE));
+  g_object_class_install_property
+                          (object_class,
+                           NB_EVENTS_PROP,
+                           g_param_spec_uint ("nb-events",
+                                              "nb-events",
+                                              "Number of events set",
+                                              0, G_MAXUINT, 0,
+                                              G_PARAM_READABLE)) ;
+  g_object_class_install_property
+                          (object_class,
+                           NB_PAGES_PROP,
+                           g_param_spec_uint ("nb-event-pages",
+                                              "nb-event-pages",
+                                              "Number of event pages",
+                                              0, G_MAXUINT, 0,
+                                              G_PARAM_READABLE)) ;
+  g_object_class_install_property
+                          (object_class,
+                           CUR_EVENT_PROP,
+                           g_param_spec_pointer ("cur-event",
+                                                 "cur-event",
+                                                 "Currently selected event",
+                                                 G_PARAM_READABLE)) ;
+  g_object_class_install_property
+                    (object_class,
+                     CUR_EVENT_INDEX_PROP,
+                     g_param_spec_uint ("cur-event-index",
+                                        "cur-event-index",
+                                        "The index of the currently "
+                                         "selected event",
+                                         0, G_MAXUINT, 0,
+                                        G_PARAM_READABLE)) ;
+  g_object_class_install_property
+                          (object_class,
+                           MAX_VISIBLE_EVENTS_PROP,
+                           g_param_spec_uint ("max-visible-events",
+                                              "max-visible-events",
+                                              "The max number of events in "
+                                              "a page",
+                                              0, G_MAXUINT, 0,
+                                              G_PARAM_READWRITE)) ;
 
   signals[EVENTS_ADDED_SIGNAL] =
     g_signal_new ("event-added",
@@ -240,6 +308,66 @@ events_added_signal (TodayEventsArea *a_this,
    * so that it matches the new widget name
    */
   gtk_widget_reset_rc_styles (GTK_WIDGET (a_this)) ;
+}
+
+static void
+get_property (GObject *a_this, guint a_prop_id,
+              GValue *a_val, GParamSpec *a_pspec)
+{
+  TodayEventsArea *area ;
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
+  g_return_if_fail (a_val && a_pspec) ;
+
+  area = TODAY_EVENTS_AREA (area) ;
+
+  switch (a_prop_id)
+  {
+    case EVENTS_PROP:
+      g_value_set_pointer (a_val, today_events_area_get_events (area)) ;
+      break ;
+    case NB_EVENTS_PROP:
+      g_value_set_uint (a_val, today_events_area_get_nb_events (area)) ;
+      break ;
+    case NB_PAGES_PROP:
+      g_value_set_uint (a_val, today_events_area_get_nb_pages (area)) ;
+      break ;
+    case CUR_EVENT_PROP:
+      g_value_set_pointer (a_val, today_events_area_get_cur_event (area)) ;
+      break ;
+    case CUR_EVENT_INDEX_PROP:
+      g_value_set_uint (a_val, today_events_area_get_cur_event_index (area)) ;
+      break ;
+    case MAX_VISIBLE_EVENTS_PROP:
+      g_value_set_uint (a_val, today_events_area_get_max_visible_events (area));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (a_this, a_prop_id, a_pspec) ;
+      break ;
+  }
+}
+
+static void
+set_property (GObject *a_this, guint a_prop_id,
+              const GValue *a_val, GParamSpec *a_pspec)
+{
+  TodayEventsArea * area ;
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
+  g_return_if_fail (a_val && a_pspec) ;
+
+  area = TODAY_EVENTS_AREA (a_this) ;
+
+  switch (a_prop_id)
+  {
+    case EVENTS_PROP:
+      today_events_area_set_events (area, g_value_get_pointer (a_val)) ;
+      break ;
+    case MAX_VISIBLE_EVENTS_PROP:
+      today_events_area_set_max_visible_events (area, g_value_get_uint (a_val));
+      break ;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (a_this, a_prop_id, a_pspec) ;
+      break ;
+  }
 }
 
 /**
@@ -647,10 +775,22 @@ GtkWidget*
 today_events_area_new ()
 {
   GObject *result;
-  result = g_object_new (TODAY_TYPE_EVENTS_AREA, NULL) ;
-  /*provide gobject param getter/setter for this*/
-  today_events_area_set_max_visible_events (TODAY_EVENTS_AREA (result), 4) ;
+  result = g_object_new (TODAY_TYPE_EVENTS_AREA,
+                         "max-visible-events", 4,
+                         NULL) ;
   return GTK_WIDGET (result);
+}
+
+GtkWidget*
+today_events_area_new_with_events (GList *a_events)
+{
+  GObject *result ;
+
+  result = g_object_new (TODAY_TYPE_EVENTS_AREA,
+                         "max-visible-events", 4,
+                         "events", a_events,
+                         NULL) ;
+  return GTK_WIDGET (result) ;
 }
 
 /**
@@ -721,10 +861,6 @@ today_events_area_get_nb_pages (TodayEventsArea *a_this)
                         TODAY_IS_EVENTS_AREA (a_this) &&
                         a_this->priv,
                         -1);
-
-  g_message ("page size: %d, nb events %d",
-             a_this->priv->max_visible_events,
-             a_this->priv->nb_events) ;
 
   if (!a_this->priv->max_visible_events)
     return 0 ;

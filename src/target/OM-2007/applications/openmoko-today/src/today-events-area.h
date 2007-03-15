@@ -63,6 +63,7 @@ struct _TodayEventsAreaClass {
 
 GType          today_events_area_get_type (void);
 GtkWidget*     today_events_area_new ();
+GtkWidget*     today_events_area_new_with_events (GList *events);
 void           today_events_area_set_events (TodayEventsArea *self,
                                              GList *a_events);
 GList*         today_events_area_get_events (TodayEventsArea *self);

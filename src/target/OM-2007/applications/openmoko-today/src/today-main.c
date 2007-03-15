@@ -308,8 +308,7 @@ today_setup_events_area (const gchar *stock_id)
   GList            *events;
 
   events = today_get_today_events () ;
-  events_area = today_events_area_new () ;
-  today_events_area_set_events (TODAY_EVENTS_AREA (events_area), events) ;
+  events_area = today_events_area_new_with_events (events) ;
 
   return events_area;
 }
