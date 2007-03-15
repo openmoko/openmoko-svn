@@ -1,4 +1,4 @@
-keyboardsdir = $(datadir)/matchbox-keyboard
+keyboardsdir = $(datadir)/openmoko-keyboard
 keyboards_DATA = keyboard.xml                \
                  keyboard-low.xml            \
                  keyboard-number.xml         \

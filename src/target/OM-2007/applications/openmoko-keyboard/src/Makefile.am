@@ -1,5 +1,5 @@
 PREFIXDIR  = $(prefix)
-PKGDATADIR = $(datadir)/matchbox-keyboard
+PKGDATADIR = $(datadir)/openmoko-keyboard
 DATADIR    = $(datadir)
 
 if WANT_CAIRO
@@ -14,11 +14,11 @@ endif
 
 INCLUDES = -DDATADIR=\"$(DATADIR)\" -DPKGDATADIR=\"$(PKGDATADIR)\" -DPREFIX=\"$(PREFIXDIR)\" $(FAKEKEY_CFLAGS) $(XFT_CFLAGS) $(EXPAT_CFLAGS) $(CAIRO_CFLAGS) $(PNG_CFLAGS)
 
-bin_PROGRAMS = matchbox-keyboard
+bin_PROGRAMS = openmoko-keyboard
 
-matchbox_keyboard_LDADD = $(FAKEKEY_LIBS) $(XFT_LIBS) $(EXPAT_LIBS) $(CAIRO_LIBS) $(PNG_LIBS)
+openmoko_keyboard_LDADD = $(FAKEKEY_LIBS) $(XFT_LIBS) $(EXPAT_LIBS) $(CAIRO_LIBS) $(PNG_LIBS)
 
-matchbox_keyboard_SOURCES =                                          \
+openmoko_keyboard_SOURCES =                                          \
 	matchbox-keyboard.c matchbox-keyboard.h                      \
 	matchbox-keyboard-image.c                                    \
 	matchbox-keyboard-layout.c                                   \
