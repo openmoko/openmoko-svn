@@ -8,7 +8,7 @@ PR = "r6"
 
 inherit gnome autotools pkgconfig gtk-icon-cache
 
-SRC_URI = "svn://svn.o-hand.com/repos/dates/branches/;module=openmoko;proto=http
+SRC_URI = "svn://svn.o-hand.com/repos/dates/branches/;module=openmoko;proto=http"
 
 S = "${WORKDIR}/openmoko"
 
