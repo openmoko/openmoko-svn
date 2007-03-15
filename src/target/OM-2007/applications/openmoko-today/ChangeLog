@@ -1,3 +1,12 @@
+Thu, 15 Mar 2007 15:47:58 +0100 Dodji Seketeli
+
+	* applications/openmoko-today/src/today-events-area.c:
+	  today_events_area_get_nb_pages(): new function
+	  When events get added, compute the widget name accordingly.
+	  The widget name depends on wheter there are multiple event
+	  pages in the widget or not. Based on that name, the widget
+	  will use an appropriate post-it widget.
+
 Thu, 15 Mar 2007 13:43:47 +0100 Dodji Seketeli
 
 	* src/today-events-area.c: don't forget to emit the signal

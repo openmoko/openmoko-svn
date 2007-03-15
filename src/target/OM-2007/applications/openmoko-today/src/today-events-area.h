@@ -67,6 +67,7 @@ void           today_events_area_set_events (TodayEventsArea *self,
                                              GList *a_events);
 GList*         today_events_area_get_events (TodayEventsArea *self);
 int            today_events_area_get_nb_events (TodayEventsArea *self);
+int            today_events_area_get_nb_pages (TodayEventsArea *self);
 ECalComponent* today_events_area_get_cur_event (TodayEventsArea *self);
 int            today_events_area_get_cur_event_index (TodayEventsArea *self);
 ECalComponent* today_events_area_get_event_from_index (TodayEventsArea *self,

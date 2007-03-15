@@ -77,6 +77,8 @@ static void     e_cal_component_list_free   (GList * list) ;
 static gchar*   icaltime_to_pretty_string   (const icaltimetype *timetype) ;
 static void     event_selected_signal       (TodayEventsArea *a_this,
                                              guint a_index) ;
+static void     events_added_signal       (TodayEventsArea *a_this,
+                                           GList *a_index) ;
 
 G_DEFINE_TYPE (TodayEventsArea, today_events_area, GTK_TYPE_TABLE)
 
@@ -90,6 +92,7 @@ today_events_area_class_init (TodayEventsAreaClass *a_class)
   g_type_class_add_private (object_class, sizeof (TodayEventsAreaPrivate));
 
   a_class->event_selected = event_selected_signal ;
+  a_class->events_added = events_added_signal ;
 
   signals[EVENTS_ADDED_SIGNAL] =
     g_signal_new ("event-added",
@@ -215,6 +218,30 @@ event_selected_signal (TodayEventsArea *a_this,
   select_event (a_this, elem) ;
 }
 
+static void
+events_added_signal (TodayEventsArea *a_this,
+                     GList *a_events)
+{
+  if (a_events) {/*keep compiler happy*/}
+
+
+  if (today_events_area_get_nb_pages (a_this) > 1)
+  {
+     gtk_widget_set_name (a_this->priv->left_event_box,
+                          "today-events-area-postit-multi");
+  }
+  else
+  {
+     gtk_widget_set_name (a_this->priv->left_event_box,
+                          "today-events-area-postit-single");
+  }
+  /*
+   * reload the styles to render the left hand side correctly
+   * so that it matches the new widget name
+   */
+  gtk_widget_reset_rc_styles (GTK_WIDGET (a_this)) ;
+}
+
 /**
  * e_cal_component_list_free:
  * @list: the list ECalComooment to free
@@ -301,11 +328,8 @@ init_left_hand_side (TodayEventsArea *a_this)
 
   a_this->priv->left_event_box = gtk_event_box_new ();
 
-  if (a_this->priv->max_visible_events > 0
-      && (a_this->priv->nb_events / a_this->priv->max_visible_events) > 1)
-     gtk_widget_set_name (a_this->priv->left_event_box, "today-events-area-postit-multi");
-  else
-     gtk_widget_set_name (a_this->priv->left_event_box, "today-events-area-postit-single");
+   gtk_widget_set_name (a_this->priv->left_event_box,
+                        "today-events-area-postit-single");
 
   // FIXME: get this size from the style... somehow
   gtk_widget_set_size_request (a_this->priv->left_event_box, 51, 131);
@@ -326,9 +350,9 @@ init_left_hand_side (TodayEventsArea *a_this)
                       FALSE, FALSE, 0) ;
 
   gtk_table_attach (GTK_TABLE (a_this),
-                             a_this->priv->left,
-                             0, 1, 0, 1,
-                             GTK_FILL, GTK_FILL, 0, 0) ;
+                    a_this->priv->left,
+                    0, 1, 0, 1,
+                    GTK_FILL, GTK_FILL, 0, 0) ;
   gtk_widget_show_all (a_this->priv->left) ;
 }
 
@@ -687,6 +711,28 @@ today_events_area_get_nb_events (TodayEventsArea *a_this)
                         a_this->priv,
                         -1);
   return a_this->priv->nb_events ;
+}
+
+int
+today_events_area_get_nb_pages (TodayEventsArea *a_this)
+{
+  int res = 0 ;
+  g_return_val_if_fail (a_this &&
+                        TODAY_IS_EVENTS_AREA (a_this) &&
+                        a_this->priv,
+                        -1);
+
+  g_message ("page size: %d, nb events %d",
+             a_this->priv->max_visible_events,
+             a_this->priv->nb_events) ;
+
+  if (!a_this->priv->max_visible_events)
+    return 0 ;
+
+  res = a_this->priv->nb_events / a_this->priv->max_visible_events ;
+  if (a_this->priv->nb_events % a_this->priv->max_visible_events)
+    ++res ;
+  return res ;
 }
 
 ECalComponent*
