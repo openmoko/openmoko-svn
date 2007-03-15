@@ -1,8 +1,5 @@
 keyboardsdir = $(datadir)/openmoko-keyboard
 keyboards_DATA = keyboard.xml                \
-                 keyboard-low.xml            \
-                 keyboard-number.xml         \
-                 keyboard-symbol.xml         \
                  bg_input_switch.png         \
                  bg_keypad.png               \
                  key_blank.png               \
