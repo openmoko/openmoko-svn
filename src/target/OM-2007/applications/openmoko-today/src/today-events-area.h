@@ -1,3 +1,5 @@
+/* vi:set sw=2: */
+
 /*
  *  Today - At a glance view of date, time, calender events, todo items and
  *  other images.
@@ -47,23 +49,34 @@ struct _TodayEventsArea {
 
 struct _TodayEventsAreaClass {
   GtkTableClass parent_class;
+
+  /*
+   * <noticeable events>
+   */
+  void (*events_added) (TodayEventsArea *self, GList *events) ;
+  void (*event_selected) (TodayEventsArea *self, guint event_index) ;
+  void (*page_switched) (TodayEventsArea *self, guint page_index) ;
+  /*
+   * </noticeable events>
+   */
 };
 
 GType          today_events_area_get_type (void);
 GtkWidget*     today_events_area_new ();
-void           today_events_area_set_events (TodayEventsArea *a_this,
+void           today_events_area_set_events (TodayEventsArea *self,
                                              GList *a_events);
-GList*         today_events_area_get_events (TodayEventsArea *a_this);
-int            today_events_area_get_nb_events (TodayEventsArea *a_this);
-ECalComponent* today_events_area_get_cur_event (TodayEventsArea *a_this);
-int            today_events_area_get_cur_event_index (TodayEventsArea *a_this);
-ECalComponent* today_events_area_select_next_event (TodayEventsArea *a_this) ;
-ECalComponent* today_events_area_goto_next_page (TodayEventsArea *a_this) ;
-void           today_events_area_set_max_visible_events
-                                                    (TodayEventsArea *a_this,
-                                                     int a_max) ;
-int            today_events_area_get_max_visible_events
-                                                    (TodayEventsArea *a_this) ;
+GList*         today_events_area_get_events (TodayEventsArea *self);
+int            today_events_area_get_nb_events (TodayEventsArea *self);
+ECalComponent* today_events_area_get_cur_event (TodayEventsArea *self);
+int            today_events_area_get_cur_event_index (TodayEventsArea *self);
+ECalComponent* today_events_area_get_event_from_index (TodayEventsArea *self,
+                                                       int index) ;
+ECalComponent* today_events_area_select_next_event (TodayEventsArea *self) ;
+void           today_events_area_set_max_visible_events (TodayEventsArea *self,
+                                                         int max) ;
+int            today_events_area_get_max_visible_events (TodayEventsArea *self);
+void           today_events_area_switch_to_next_page (TodayEventsArea *self) ;
+void           today_events_area_switch_to_prev_page (TodayEventsArea *self) ;
 
 G_END_DECLS
 

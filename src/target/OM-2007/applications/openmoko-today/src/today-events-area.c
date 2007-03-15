@@ -1,3 +1,5 @@
+/* vi:set sw=2: */
+
 /*
  *  Today - At a glance view of date, time, calender events, todo items and
  *  other images.
@@ -45,6 +47,16 @@ struct _TodayEventsAreaPrivate {
   int nb_events ;
 };
 
+enum TodayEventsAreaSignals
+{
+  EVENTS_ADDED_SIGNAL,
+  EVENT_SELECTED_SIGNAL,
+  PAGE_SWITCHED_SIGNAL,
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] ;
+
 static void     today_events_area_finalize  (GObject *a_obj);
 static void     today_events_area_init      (TodayEventsArea *a_this);
 static void     clear_right_hand_side       (TodayEventsArea *a_this);
@@ -63,7 +75,8 @@ static void     render_events_page          (TodayEventsArea *a_this,
 static void     render_events_page_auto     (TodayEventsArea *a_this) ;
 static void     e_cal_component_list_free   (GList * list) ;
 static gchar*   icaltime_to_pretty_string   (const icaltimetype *timetype) ;
-static int      get_list_elem_index         (GList *a_elem) ;
+static void     event_selected_signal       (TodayEventsArea *a_this,
+                                             guint a_index) ;
 
 G_DEFINE_TYPE (TodayEventsArea, today_events_area, GTK_TYPE_TABLE)
 
@@ -75,6 +88,38 @@ today_events_area_class_init (TodayEventsAreaClass *a_class)
   object_class = G_OBJECT_CLASS (a_class);
   object_class->finalize = today_events_area_finalize;
   g_type_class_add_private (object_class, sizeof (TodayEventsAreaPrivate));
+
+  a_class->event_selected = event_selected_signal ;
+
+  signals[EVENTS_ADDED_SIGNAL] =
+    g_signal_new ("event-added",
+                  TODAY_TYPE_EVENTS_AREA,
+                  G_SIGNAL_RUN_FIRST,
+                  G_STRUCT_OFFSET (TodayEventsAreaClass, events_added),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__POINTER,
+                  G_TYPE_NONE,
+                  1, G_TYPE_POINTER) ;
+
+  signals[EVENT_SELECTED_SIGNAL] =
+    g_signal_new ("event-selected",
+                   TODAY_TYPE_EVENTS_AREA,
+                   G_SIGNAL_RUN_FIRST,
+                   G_STRUCT_OFFSET (TodayEventsAreaClass, event_selected),
+                   NULL, NULL,
+                   g_cclosure_marshal_VOID__UINT,
+                   G_TYPE_NONE,
+                   1, G_TYPE_UINT) ;
+
+  signals[PAGE_SWITCHED_SIGNAL] =
+    g_signal_new ("page-switched",
+                  TODAY_TYPE_EVENTS_AREA,
+                  G_SIGNAL_RUN_FIRST,
+                  G_STRUCT_OFFSET (TodayEventsAreaClass, page_switched),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__UINT,
+                  G_TYPE_NONE,
+                  1, G_TYPE_UINT) ;
 }
 
 static void
@@ -123,7 +168,7 @@ on_button_pressed_in_left_cb (GtkWidget *a_event_box,
     if (a_event_box) {/*keep compiler happy*/}
 
     if (a_button->type == GDK_BUTTON_PRESS)
-      today_events_area_select_next_event (a_area) ;
+      today_events_area_switch_to_next_page (a_area) ;
 
     return FALSE ;
 }
@@ -134,7 +179,6 @@ on_button_pressed_in_infoline_cb (GtkWidget *a_event_box,
                                   TodayEventsArea *a_area)
 {
   int event_index = 0 ;
-  GList *event_elem = NULL ;
 
   g_return_val_if_fail (a_area && TODAY_IS_EVENTS_AREA (a_area), FALSE) ;
 
@@ -143,8 +187,9 @@ on_button_pressed_in_infoline_cb (GtkWidget *a_event_box,
 
   event_index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (a_event_box),
                                                     "event-index")) ;
-  event_elem = g_list_nth (a_area->priv->events, event_index) ;
-  select_event (a_area, event_elem) ;
+  g_return_val_if_fail (event_index >= 0, FALSE) ;
+  g_signal_emit (G_OBJECT (a_area),
+                 signals[EVENT_SELECTED_SIGNAL], 0, event_index) ;
 
   return FALSE;
 }
@@ -156,6 +201,19 @@ on_button_pressed_in_infoline_cb (GtkWidget *a_event_box,
 /**********************
  * <private api>
  **********************/
+
+static void
+event_selected_signal (TodayEventsArea *a_this,
+                       guint a_index)
+{
+  GList *elem ;
+
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)
+                    && a_this->priv) ;
+
+  elem = g_list_nth (a_this->priv->events, a_index) ;
+  select_event (a_this, elem) ;
+}
 
 /**
  * e_cal_component_list_free:
@@ -327,12 +385,18 @@ select_event (TodayEventsArea *a_this,
   {
     return NULL ;
   }
-  event_index = get_list_elem_index (a_event) ;
+  event_index = g_list_position (a_this->priv->events,
+                                 a_event) ;
   g_return_val_if_fail (event_index >= 0, NULL) ;
 
   a_this->priv->cur_event = a_event ;
   a_this->priv->cur_event_index = event_index ;
 
+  /*
+   * if the index of the current event is out of the range of the
+   * currently visible page, move the range of the page and re-render the
+   * page so that the current event becomes visible
+   */
   if ((a_this->priv->page_start_index + a_this->priv->max_visible_events
       <= a_this->priv->cur_event_index)
       ||
@@ -341,6 +405,7 @@ select_event (TodayEventsArea *a_this,
     render_events_page_auto (a_this) ;
   }
 
+  /*update the left hand side page info label*/
   update_paging_info (a_this) ;
 
   return a_event;
@@ -388,18 +453,6 @@ icaltime_to_pretty_string (const icaltimetype *timetype)
     return result ;
 }
 
-static int
-get_list_elem_index (GList *a_elem)
-{
-  int nb = -1 ;
-  GList *cur = NULL ;
-
-  for (cur = a_elem ; cur ; cur = cur->prev)
-    ++nb ;
-
-  return nb ;
-}
-
 static void
 render_event (TodayEventsArea *a_this,
               GList *a_event)
@@ -423,7 +476,7 @@ render_event (TodayEventsArea *a_this,
 
   event = a_event->data ;
   g_return_if_fail (E_IS_CAL_COMPONENT (event)) ;
-  event_index = get_list_elem_index (a_event) ;
+  event_index = g_list_position (a_this->priv->events, a_event) ;
   g_return_if_fail (event_index >= 0) ;
 
   /*get the event summary*/
@@ -461,6 +514,7 @@ render_events_page (TodayEventsArea *a_this, GList *a_from)
 {
   GList *cur = NULL ;
   int nb_rendered = 0 ;
+  int prev_page_start_index = 0 ;
 
   g_return_if_fail (a_this
                     && TODAY_IS_EVENTS_AREA (a_this)
@@ -470,6 +524,8 @@ render_events_page (TodayEventsArea *a_this, GList *a_from)
 
   if (!a_this->priv->events)
     return ;
+
+  prev_page_start_index = a_this->priv->page_start_index ;
 
   if (a_from)
   {
@@ -482,7 +538,7 @@ render_events_page (TodayEventsArea *a_this, GList *a_from)
   g_return_if_fail (a_this->priv->page_start) ;
 
   a_this->priv->page_start_index =
-    get_list_elem_index (a_this->priv->page_start) ;
+    g_list_position (a_this->priv->events, a_this->priv->page_start) ;
 
   init_right_hand_side (a_this) ;
   for (cur = a_this->priv->page_start ;
@@ -491,14 +547,24 @@ render_events_page (TodayEventsArea *a_this, GList *a_from)
   {
     render_event (a_this, cur) ;
   }
+
+  /*if we rendered a new page, tell the world about it*/
+  if (a_this->priv->page_start_index != prev_page_start_index)
+  {
+    int page_num = (a_this->priv->page_start_index+1) %
+                      a_this->priv->max_visible_events ;
+    g_signal_emit (G_OBJECT (a_this), signals[PAGE_SWITCHED_SIGNAL], 0,
+                   page_num) ;
+  }
 }
 
 static void
 render_events_page_auto (TodayEventsArea *a_this)
 {
-  int page_end=0 ;
-  int page_start=0 ;
+  int page_end = 0 ;
+  int page_start = 0 ;
   GList *from = NULL ;
+
   g_return_if_fail (a_this
                     && TODAY_IS_EVENTS_AREA (a_this)
                     && a_this->priv) ;
@@ -527,6 +593,7 @@ render_events_page_auto (TodayEventsArea *a_this)
     }
   }
 
+  /*now we have a decent page range. We can just render the page*/
   from = g_list_nth (a_this->priv->events, page_start) ;
   g_return_if_fail (from) ;
   render_events_page (a_this, from) ;
@@ -631,6 +698,25 @@ today_events_area_get_cur_event_index (TodayEventsArea *a_this)
 }
 
 ECalComponent*
+today_events_area_get_event_from_index (TodayEventsArea *a_this,
+                                        int a_index)
+{
+  GList *elem ;
+  g_return_val_if_fail (a_this &&
+                        TODAY_IS_EVENTS_AREA (a_this) &&
+                        a_this->priv,
+                        NULL);
+  g_return_val_if_fail (a_this->priv->events, NULL) ;
+
+  elem = g_list_nth (a_this->priv->events, a_index) ;
+  if (elem)
+  {
+    return elem->data ;
+  }
+  return NULL ;
+}
+
+ECalComponent*
 today_events_area_select_next_event (TodayEventsArea *a_this)
 {
   GList *result = NULL ;
@@ -669,28 +755,6 @@ out:
   return result->data ;
 }
 
-ECalComponent*
-today_events_area_goto_next_page (TodayEventsArea *a_this)
-{
-  int start_index = 0 ;
-  GList *page_start = NULL, *event = NULL;
-
-  g_return_val_if_fail (a_this &&
-                        TODAY_IS_EVENTS_AREA (a_this) &&
-                        a_this->priv,
-                        NULL);
-
-  start_index = get_list_elem_index (a_this->priv->page_start) ;
-  start_index += a_this->priv->max_visible_events ;
-  page_start = g_list_nth (a_this->priv->events, start_index) ;
-  if (!page_start)
-    page_start = a_this->priv->events ;
-  event = select_event (a_this, page_start) ;
-  if (!event)
-    return NULL ;
-  return event->data ;
-}
-
 void
 today_events_area_set_max_visible_events (TodayEventsArea *a_this,
                                           int a_max)
@@ -711,6 +775,57 @@ today_events_area_get_max_visible_events (TodayEventsArea *a_this)
                         -1);
 
   return a_this->priv->max_visible_events ;
+}
+
+void
+today_events_area_switch_to_next_page (TodayEventsArea *a_this)
+{
+  GList *event_elem ;
+  int event_index ;
+
+  g_return_if_fail (a_this &&
+                    TODAY_IS_EVENTS_AREA (a_this) &&
+                    a_this->priv);
+  g_return_if_fail (a_this->priv->events) ;
+
+  if (a_this->priv->nb_events <= a_this->priv->max_visible_events)
+    return ;
+
+  event_index = a_this->priv->cur_event_index ;
+  event_index += a_this->priv->max_visible_events ;
+
+  event_elem = g_list_nth (a_this->priv->events, event_index) ;
+  if (!event_elem)
+    event_elem = a_this->priv->events ;
+
+  select_event (a_this, event_elem) ;
+}
+
+void
+today_events_area_switch_to_prev_page (TodayEventsArea *a_this)
+{
+  GList *event_elem ;
+  int event_index ;
+
+  g_return_if_fail (a_this &&
+                    TODAY_IS_EVENTS_AREA (a_this) &&
+                    a_this->priv);
+  g_return_if_fail (a_this->priv->events) ;
+
+  if (a_this->priv->nb_events <= a_this->priv->max_visible_events)
+    return ;
+
+  event_index = a_this->priv->cur_event_index ;
+  if (event_index > a_this->priv->max_visible_events)
+    event_index -= a_this->priv->max_visible_events ;
+  else
+    event_index = a_this->priv->nb_events - a_this->priv->max_visible_events-1;
+  event_index = MAX (event_index, 0) ;
+
+  event_elem = g_list_nth (a_this->priv->events, event_index) ;
+  g_return_if_fail (event_elem) ;
+
+  select_event (a_this, event_elem) ;
 }
 
 /**********************
