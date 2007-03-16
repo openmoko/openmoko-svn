@@ -160,7 +160,8 @@ moko_task_list_new()
 
 /* Destruction */
 void 
-moko_task_list_clear(MokoTaskList *l) { 
+moko_task_list_clear(MokoTaskList *l) 
+{ 
     if (!l) g_free (l);
 }
 
@@ -173,28 +174,30 @@ moko_add_window (Display *dpy, Window w, GtkListStore *list_store)
 
     name = moko_get_window_name(dpy, w);
     if (!strcmp (name, "Openmoko-taskmanager"))
-    	{
+    {
     	g_free (name);
     	return;
-    	}
+    }
 
     icon = moko_get_window_icon (dpy, w);
     gtk_list_store_append (list_store, &iter);
     gtk_list_store_set (list_store, &iter, TEXT_COL, name, OBJECT_COL, w, -1);
 
-    if (icon) {
+    if (icon) 
+	{
         GdkPixbuf *icons = gdk_pixbuf_scale_simple (icon, 160, 160, GDK_INTERP_BILINEAR);
         gtk_list_store_set (list_store, &iter, PIXBUF_COL, icons, -1);
-	gdk_pixbuf_unref (icons);
-        }
+	    gdk_pixbuf_unref (icons);
+    }
     else if (default_icon) 
         gtk_list_store_set (list_store, &iter, PIXBUF_COL, default_icon, -1);
     else
 	    g_error ("Failed to load %s's icon", name);
 
-    gdk_pixbuf_unref (icon);
+    if (icon)
+	    gdk_pixbuf_unref (icon);
     g_free (name);
-   }
+}
 
 void 
 moko_update_store_list (Display *dpy, GtkListStore *list_store)
@@ -214,13 +217,15 @@ moko_update_store_list (Display *dpy, GtkListStore *list_store)
     	gboolean found = FALSE;
     	Window w;
     	gtk_tree_model_get (GTK_TREE_MODEL (list_store), &iter, OBJECT_COL, &w, -1);
-    	for (i=0; i<nr; i++) {
-    	    if (list[i] == w) {
+    	for (i=0; i<nr; i++) 
+		{
+    	    if (list[i] == w) 
+			{
     	    	p[i] = 1;
     	    	found = TRUE;
     	    	break;
-    	    	}
     	    }
+    	}
     	if (found)
     	    more = gtk_tree_model_iter_next (GTK_TREE_MODEL (list_store), &iter);
     	else
@@ -229,10 +234,11 @@ moko_update_store_list (Display *dpy, GtkListStore *list_store)
     while (more);
     }
     
-    for (i=0; i<nr; i++) {
+    for (i=0; i<nr; i++) 
+	{
     	if (p[i] == 0 && list[i] != my_win)
     	    moko_add_window (dpy, list[i], list_store);
-    	}
+   	}
 
   	g_free (p);
 }
