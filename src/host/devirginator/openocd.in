@@ -44,6 +44,6 @@ mww 0x32000040 0x32100000
 # run
 bp 0 4 hw
 resume 0x32000000
-wait_halt 300
+wait_halt 500
 rbp 0
 resume

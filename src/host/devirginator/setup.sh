@@ -22,6 +22,9 @@
 #
 
 
+# USB ID of DFU target (Neo)
+USB_ID=-d1457:5119
+
 mkdir -p tmp
 
 
@@ -342,15 +345,15 @@ fi
 if \$stage2; then
     echo === STAGE 2: DFU upload
     sleep 5
-    $DFU_UTIL -d1457:5119 -a kernel -D $UIMAGE
-    $DFU_UTIL -d1457:5119 -a rootfs -D $ROOTFS
-    $DFU_UTIL -d1457:5119 -a splash -D tmp/splash.gz
-    $DFU_UTIL -d1457:5119 -a u-boot_env -U tmp/env.old
+    $DFU_UTIL $USB_ID -a kernel -D $UIMAGE
+    $DFU_UTIL $USB_ID -a rootfs -D $ROOTFS
+    $DFU_UTIL $USB_ID -a splash -D tmp/splash.gz
+    $DFU_UTIL $USB_ID -a u-boot_env -U tmp/env.old
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT \
       "reset halt" wait_halt resume exit
     sleep 5
     ./envedit.pl -i tmp/env.old -o tmp/env.new -f tmp/environment
-    $DFU_UTIL -d1457:5119 -a u-boot_env -D tmp/env.new
+    $DFU_UTIL $USB_ID -a u-boot_env -D tmp/env.new
     ./openocdcmd.pl $OPENOCD_HOST $OPENOCD_PORT "reset run" exit
 fi
 
