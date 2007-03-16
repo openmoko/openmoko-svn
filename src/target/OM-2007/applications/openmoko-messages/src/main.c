@@ -37,69 +37,6 @@
 
 #include <gtk/gtk.h>
 
-static pid_t 
-testlock (char *fname)
-{
-  int fd;
-  struct flock fl;
-
-  fd = open (fname, O_WRONLY, S_IWUSR);
-  if (fd < 0)
-    {
-      if (errno == ENOENT)
-        {
-          return 0;
-        }
-      else
-        {
-          perror ("Test lock open file");
-          return -1;
-        }
-    }
-
-  fl.l_type = F_WRLCK;
-  fl.l_whence = SEEK_SET;
-  fl.l_start = 0;
-  fl.l_len = 0;
-
-  if (fcntl (fd, F_GETLK, &fl) < 0)
-    {
-      close (fd);
-      return -1;
-    }
-  close (fd);
-
-  if (fl.l_type == F_UNLCK)
-    return 0;
-
-  return fl.l_pid;
-}
-
-static void 
-setlock (char *fname)
-{
-  int fd;
-  struct flock fl;
-
-  fd = open (fname, O_WRONLY|O_CREAT, S_IWUSR);
-  if (fd < 0)
-    {
-      perror ("Set lock open file");
-      return ;
-    }
-
-  fl.l_type = F_WRLCK;
-  fl.l_whence = SEEK_SET;
-  fl.l_start = 0;
-  fl.l_len = 0;
-
-  if (fcntl (fd, F_SETLK, &fl) < 0)
-    {
-      perror ("Lock file");
-      close (fd);
-    }
-}
-
 gboolean init_dbus (MessengerData* d)
 {
     DBusError error;
@@ -136,15 +73,6 @@ int main( int argc, char** argv )
 
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
-
-    /* initalize the lock */
-    lockapp = testlock ("/tmp/messages.lock");
-    if (lockapp > 0)
-     {
-       g_debug("Openmoko messages is already running");
-       return 0;
-     }
-    setlock ("/tmp/messages.lock");
 
     MessengerData* d = g_new ( MessengerData, 1);
     d->foldersdb = foldersdb_new();
@@ -329,32 +257,6 @@ void setup_ui( MessengerData* d )
     gtk_widget_grab_focus (d->view);
 }
 
-int in_string(char *str, char *key)
-{
-    int length, key_length;
-    int m,n,i;
-
-    length = strlen(str);
-    key_length = strlen(key);
-
-    n=0;
-
-    for(m=0;m<length;m++){
-        if(str[m] == key[n]){
-	    for(i=0;i<key_length;i++)
-	        if(str[m+i]!= key[i+n])
-		    break;
-	    if(i == key_length)
-	        return 1;
-	    else{
-	        m = m+i+1;
-		n=0;
-	    }
-	}
-    }
-    return 0;
-}
-
 gboolean filter_visible_function (GtkTreeModel* model, GtkTreeIter* iter, MessengerData* d)
 {
     gchar* folder;
@@ -366,7 +268,7 @@ gboolean filter_visible_function (GtkTreeModel* model, GtkTreeIter* iter, Messen
     gtk_tree_model_get (model, iter, COLUMN_SUBJECT, &subject, -1);
 	  
     if (d->searchOn){
-        if ((strlen(d->s_key) > 0) && !in_string(from, d->s_key) && !in_string(subject, d->s_key))
+        if ((strlen(d->s_key) > 0) && !strcasestr(from, d->s_key) && !strcasestr(subject, d->s_key))
 	    return FALSE;
     }else {
         gtk_menu_set_active (GTK_MENU(d->filtmenu),0);
