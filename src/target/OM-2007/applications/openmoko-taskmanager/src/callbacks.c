@@ -38,7 +38,7 @@ moko_window_filter (GdkXEvent *xev, GdkEvent *gev, MokoTaskList*l)
 }
 
 gboolean
-moko_wm_cmd (GtkWidget *w, GtkWidget *list_view, int task)
+moko_wm_cmd (MokoTaskManager *tm, GtkWidget *list_view, int task)
 {
     GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (list_view));
     GtkTreeIter iter;
@@ -81,7 +81,7 @@ moko_go_to_btn_cb (GtkButton *btn, MokoTaskManager *tm)
 {
     if (!tm)
     	return;
-    moko_wm_cmd (GTK_WIDGET (tm), 
+    moko_wm_cmd (tm, 
     			GTK_WIDGET (tm->l->list_view), MB_CMD_ACTIVATE_CLIENT);
 }
 
@@ -90,7 +90,7 @@ moko_kill_btn_cb (GtkButton *btn, MokoTaskManager *tm)
 {
     if (!tm)
     	return;
-    moko_wm_cmd (GTK_WIDGET (tm), 
+    moko_wm_cmd (tm, 
     			GTK_WIDGET (tm->l->list_view), MB_CMD_REMOVE_CLIENT);
 }
 
