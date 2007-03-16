@@ -33,11 +33,11 @@ GtkWidget *
 detail_area_new (ApplicationManagerData *appdata)
 {
   GtkWidget    *text;
-  MokoDetailsWindow  *detail;
-  GtkBox             *box;
+  GtkWidget    *detail;
+  GtkWidget    *box;
 
   detail = moko_details_window_new ();
-  box = moko_details_window_put_in_box (detail);
+  box = moko_details_window_put_in_box (MOKO_DETAILS_WINDOW (detail));
 
   text = gtk_text_view_new ();
   gtk_widget_show (text);

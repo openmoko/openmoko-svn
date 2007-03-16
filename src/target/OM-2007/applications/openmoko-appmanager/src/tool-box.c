@@ -164,9 +164,9 @@ MokoToolBox *
 tool_box_new (ApplicationManagerData *appdata)
 {
   MokoToolBox *toolbox;
-  MokoPixmapButton *bapply;
-  MokoPixmapButton *bupgrade;
-  GtkEntry    *searchentry;
+  GtkWidget   *bapply;
+  GtkWidget   *bupgrade;
+  GtkWidget   *searchentry;
 
   toolbox = MOKO_TOOL_BOX (moko_tool_box_new_with_search ());
 
@@ -183,8 +183,8 @@ tool_box_new (ApplicationManagerData *appdata)
                     appdata);
 
   searchentry = moko_tool_box_get_entry (toolbox);
-  application_manager_data_set_search_entry (appdata, searchentry);
-  gtk_entry_set_max_length (searchentry, MAX_SEARCH_ENTRY_TEXT_LENGTH);
+  application_manager_data_set_search_entry (appdata, GTK_ENTRY (searchentry));
+  gtk_entry_set_max_length (GTK_ENTRY (searchentry), MAX_SEARCH_ENTRY_TEXT_LENGTH);
   g_signal_connect ((gpointer) searchentry, "changed",
                     G_CALLBACK (on_search_entry_changed),
                     appdata);
