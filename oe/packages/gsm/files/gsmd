@@ -7,7 +7,7 @@
 # processname: gsmd
 
 # If you must specify special options, uncomment and modify the next line
-#GSMD_OPTS=
+GSMD_OPTS="-s 115200 -F"
 # If your GSM device needs to be powered up, uncommend and modify the next line
 GSM_POW="/sys/bus/platform/devices/gta01-pm-gsm.0/power_on"
 GSM_DEV="/dev/ttySAC0"
@@ -51,7 +51,7 @@ start() {
 		mkdir -fp /usr/spool/uucp
 		chown uucp.uucp /usr/spool/uucp
 		stty -F /dev/ttySAC0 crtscts
-	    gsmd ${GPSD_OPTS} -p ${GPS_DEV}
+		gsmd -p ${GPS_DEV} ${GPSD_OPTS}
 		echo "success"
 	else
 	    # User needs to symlink ${GPS_DEV} to the right thing
