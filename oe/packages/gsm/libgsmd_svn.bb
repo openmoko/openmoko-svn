@@ -6,7 +6,8 @@ PROVIDES += "gsmd"
 PV = "0.0+svn${SRCDATE}"
 PR = "r3"
 
-SRC_URI = "svn://svn.openmoko.org/trunk/src/target;module=gsm;proto=http"
+SRC_URI = "svn://svn.openmoko.org/trunk/src/target;module=gsm;proto=http \
+           file://gsmd"
 S = "${WORKDIR}/gsm"
 
 inherit autotools pkgconfig update-rc.d
