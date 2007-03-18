@@ -21,7 +21,7 @@ prog="gsmd"
 start() {
 	# FIXME add check whether GSM_POW is set at all, otherwise don't try to power on
 	# Power on GSM device
-	if [ -e "${GSM_POW} ]
+	if [ -e "${GSM_POW}" ]
 	then
 		echo -n "Powering up GSM device..."
 		echo "1" > ${GSM_POW}
@@ -45,17 +45,17 @@ start() {
 	# 2. We don't need all the logging crud that daemon/initlog sets
 	# up -- gsmd does its own syslog calls.
 	#
-	if [ -e "${GPS_DEV}" ]
+	if [ -e "${GSM_DEV}" ]
 	then
 		chown uucp.uucp ${GSM_DEV}
 		mkdir -fp /usr/spool/uucp
 		chown uucp.uucp /usr/spool/uucp
 		stty -F /dev/ttySAC0 crtscts
-		gsmd -p ${GPS_DEV} ${GPSD_OPTS}
+		gsmd -p ${GSM_DEV} ${GSMD_OPTS}
 		echo "success"
 	else
-	    # User needs to symlink ${GPS_DEV} to the right thing
-	    echo "No ${GPS_DEV} device, aborting gsmd startup."
+	    # User needs to symlink ${GSM_DEV} to the right thing
+	    echo "No ${GSM_DEV} device, aborting gsmd startup."
 	fi
 	RETVAL=$?
 	echo
