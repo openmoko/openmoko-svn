@@ -171,8 +171,6 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
-  DBG_MESSAGE ("GOT THE MESSAGE OF SELECTED:%s",
-               ready_contact->p_entry->content);
   codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
   lenstring = g_utf8_strlen (ready_contact->p_entry->content, -1);
   leninput = g_utf8_strlen (codesinput, -1);
@@ -184,7 +182,8 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
                                     content[leninput]));
 
   }
-
+  else
+  moko_dialer_textview_fill_it (moko_dialer_text_view,"");
   g_free (codesinput);
 
 }

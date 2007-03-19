@@ -77,6 +77,7 @@ typedef struct _dialer_data
   GtkWidget *imageTALK;
   GtkWidget *imageDTMF;
 
+  GtkWidget *buttonTalk_DTMF;
   GtkWidget *content_talk;
   GtkWidget *content_dtmf;
 

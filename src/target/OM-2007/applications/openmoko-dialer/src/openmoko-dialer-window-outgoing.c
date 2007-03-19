@@ -59,7 +59,8 @@ cb_speaker_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   //start dialling.
 
   DBG_TRACE ();
-  gtk_widget_show_all (appdata->window_talking);
+//  gtk_widget_show_all (appdata->window_talking);
+  gtk_widget_show(appdata->window_talking);
 
 
   DBG_LEAVE ();

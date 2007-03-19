@@ -228,8 +228,8 @@ on_window_talking_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   gtk_widget_hide (appdata->wheel_talking);
   gtk_widget_hide (appdata->toolbox_talking);
 
-//DBG_MESSAGE("%s, %s",appdata->g_state.starttime,appdata->g_state.startdate);
-  add_histroy_entry (appdata, appdata->g_state.historytype,
+   moko_dialer_textview_empty(appdata->moko_dtmf_text_view);
+   add_histroy_entry (appdata, appdata->g_state.historytype,
                      appdata->g_peer_info.name,
                      appdata->g_peer_info.number,
                      appdata->g_peer_info.picpath,
@@ -244,7 +244,7 @@ on_window_talking_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
 
-  appdata->dtmf_in_talking_window = TRUE;
+    appdata->dtmf_in_talking_window = TRUE;
   //hide the talking button in talking mode.
 
   time_t timep;
@@ -264,8 +264,16 @@ on_window_talking_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   appdata->g_timer_data.ptimer =
     g_timeout_add (1000, (GSourceFunc) timer_talking_time_out, appdata);
 
-  if (appdata->toolbox_talking)
-    gtk_widget_show (appdata->toolbox_talking);
+  if (appdata->toolbox_talking){
+      gtk_widget_show (appdata->toolbox_talking);
+      moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON (appdata->buttonTalk_DTMF),
+                                                            appdata->
+                                                            imageDTMF);
+     gtk_widget_hide (appdata->content_dtmf);
+     gtk_widget_show(appdata->content_talk);
+  	}
+
+
 
   if (appdata->wheel_talking)
     gtk_widget_show (appdata->wheel_talking);
@@ -401,6 +409,7 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_dtmf_talk_clicked),
                       p_dialer_data);
+    p_dialer_data->buttonTalk_DTMF=button;
     p_dialer_data->imageDTMF = image;
     p_dialer_data->imageTALK =
       file_new_image_from_relative_path ("talking.png");
