@@ -28,13 +28,18 @@
  *
  * Free a list of ECalComponent
  */
+#include <string.h>
 #include "today-utils.h"
+#include <libical/icalcomponent.h>
 
 #define LOG_ERROR \
 g_warning ("Got error '%s', code '%d'", \
            error->message, error->code);
 
 #define FREE_ERROR g_error_free (error) ; error = NULL ;
+
+static ECal *calendar_db = NULL;
+static ECal *tasks_db = NULL;
 
 void
 e_cal_component_list_free (GList * list)
@@ -142,23 +147,24 @@ icalcomps_to_ecalcomps (GList *a_icalcomps)
 GList *
 today_get_today_events ()
 {
-  GList *result=NULL, *ical_comps=NULL,
-        *ecal_comps=NULL, *ecal_comps2=NULL;
-  ECal *ecal = NULL;
+  GList *result=NULL, *ical_comps=NULL, *ical_comps2=NULL;
   GError *error = NULL;
   gchar *query = NULL;
 
-  ecal = e_cal_new_system_calendar ();
-  g_return_val_if_fail (ecal, NULL);
+  if (!calendar_db)
+  {
+    calendar_db = e_cal_new_system_calendar ();
+    g_return_val_if_fail (calendar_db, NULL);
 
-  if (!e_cal_open (ecal, FALSE, &error))
-  {
-    g_warning ("failed to open the calendar");
-  }
-  if (error)
-  {
-    LOG_ERROR;
-    goto out;
+    if (!e_cal_open (calendar_db, TRUE, &error))
+    {
+      g_warning ("failed to open the calendar");
+    }
+    if (error)
+    {
+      LOG_ERROR;
+      goto out;
+    }
   }
 
   /*
@@ -168,7 +174,7 @@ today_get_today_events ()
                            ")");
    */
   query = g_strdup_printf ("#t");
-  e_cal_get_object_list (ecal, query, &ical_comps, &error);
+  e_cal_get_object_list (calendar_db, query, &ical_comps, &error);
   g_free (query) ;
   query = NULL ;
   if (error)
@@ -177,32 +183,23 @@ today_get_today_events ()
     FREE_ERROR;
   }
 
-  /*
-   * build a list of ECalComponent, out of the list of icalcomponents
-   * when an icalcomponent is set to an ECalComponent, the later
-   * becomes responsible of freeing the former's memory
-   */
-  if (ical_comps)
+  if (!tasks_db)
   {
-    ecal_comps = icalcomps_to_ecalcomps (ical_comps) ;
-    g_list_free (ical_comps) ;
-    ical_comps = NULL ;
-  }
-
-  ecal = e_cal_new_system_tasks ();
-  g_return_val_if_fail (ecal, NULL);
-  if (!e_cal_open (ecal, FALSE, &error))
-  {
-    g_warning ("failed to open the calendar");
-  }
-  if (error)
-  {
-    LOG_ERROR;
-    goto out;
+    tasks_db = e_cal_new_system_tasks ();
+    g_return_val_if_fail (tasks_db, NULL);
+    if (!e_cal_open (tasks_db, TRUE, &error))
+    {
+      g_warning ("failed to open the tasks");
+    }
+    if (error)
+    {
+      LOG_ERROR;
+      goto out;
+    }
   }
 
   query = g_strdup_printf ("#t");
-  e_cal_get_object_list (ecal, query, &ical_comps, &error);
+  e_cal_get_object_list (tasks_db, query, &ical_comps2, &error);
   g_free (query) ;
   query = NULL ;
   if (error)
@@ -210,16 +207,10 @@ today_get_today_events ()
     LOG_ERROR;
     FREE_ERROR ;
   }
-  if (ical_comps)
-  {
-    ecal_comps2 = icalcomps_to_ecalcomps (ical_comps) ;
-    g_list_free (ical_comps) ;
-    ical_comps = NULL ;
-  }
-  ecal_comps = g_list_concat (ecal_comps, ecal_comps2) ;
+  ical_comps = g_list_concat (ical_comps, ical_comps2) ;
 
-  result = ecal_comps;
-  ecal_comps = ecal_comps2 = NULL;
+  result = ical_comps;
+  ical_comps = ical_comps2 = NULL;
 
 out:
   if (ical_comps)
@@ -227,13 +218,9 @@ out:
     e_cal_free_object_list (ical_comps);
   }
 
-  if (ecal_comps)
+  if (ical_comps2)
   {
-    e_cal_component_list_free (ecal_comps);
-  }
-  if (ecal_comps2)
-  {
-    e_cal_component_list_free (ecal_comps2);
+    e_cal_free_object_list (ical_comps);
   }
 
   /*
@@ -248,12 +235,27 @@ out:
   {
     g_error_free (error);
   }
-
   if (query)
   {
     g_free (query);
   }
-
   return result;
 }
 
+gboolean
+icalcomponent_has_alarm (icalcomponent *a_icalcomp)
+{
+  icalcompiter iter ;
+
+  g_return_val_if_fail (a_icalcomp, FALSE) ;
+  g_return_val_if_fail (icalcomponent_isa_component (a_icalcomp), FALSE) ;
+
+  for (iter = icalcomponent_begin_component (a_icalcomp,
+                                             ICAL_VALARM_COMPONENT);
+      icalcompiter_deref (&iter) != NULL ;
+      icalcompiter_next (&iter))
+  {
+    return TRUE ;
+  }
+  return FALSE ;
+}

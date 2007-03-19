@@ -23,15 +23,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include <string.h>
-#include <libecal/e-cal-time-util.h>
-#include <libecal/e-cal-component.h>
+/*#include <libecal/e-cal-time-util.h>*/
+/*#include <libical/e-cal-component.h>*/
+#include <libical/icalcomponent.h>
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkhbox.h>
 #include <gtk/gtktable.h>
 #include <gtk/gtkimage.h>
 #include <gtk/gtkeventbox.h>
 #include <gtk/gtklabel.h>
+#include "today-utils.h"
 #include "today-events-area.h"
+
 
 struct _TodayEventsAreaPrivate {
   GList *events ;
@@ -84,8 +87,6 @@ static void     render_event                (TodayEventsArea *a_this,
 static void     render_events_page          (TodayEventsArea *a_this,
                                              GList *a_from) ;
 static void     render_events_page_auto     (TodayEventsArea *a_this) ;
-static void     e_cal_component_list_free   (GList * list) ;
-static gchar*   icaltime_to_pretty_string   (const icaltimetype *timetype) ;
 static void     event_selected_signal       (TodayEventsArea *a_this,
                                              guint a_index) ;
 static void     events_added_signal       (TodayEventsArea *a_this,
@@ -215,7 +216,7 @@ today_events_area_finalize (GObject *a_obj)
 
   if (self->priv->events)
   {
-    e_cal_component_list_free (self->priv->events) ;
+    e_cal_free_object_list (self->priv->events) ;
     self->priv->events = NULL ;
   }
   self->priv->cur_event = NULL ;
@@ -369,33 +370,6 @@ set_property (GObject *a_this, guint a_prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (a_this, a_prop_id, a_pspec) ;
       break ;
   }
-}
-
-/**
- * e_cal_component_list_free:
- * @list: the list ECalComooment to free
- *
- * Free a list of ECalComponent
- */
-static void
-e_cal_component_list_free (GList * a_list)
-{
-  GList *cur = NULL;
-
-  for (cur = a_list; cur; cur = cur->next)
-  {
-    /*if an element of the list is not of type ECalComponent, leak it */
-    if (cur->data && E_IS_CAL_COMPONENT (cur->data))
-    {
-      g_object_unref (G_OBJECT (cur->data));
-      cur->data = NULL;
-    }
-    else
-    {
-      g_warning ("cur->data is not of type ECalComponent !");
-    }
-  }
-  g_list_free (a_list);
 }
 
 static void
@@ -581,11 +555,10 @@ render_event (TodayEventsArea *a_this,
               GList *a_event)
 {
   GtkWidget *infoline, *label, *event_box, *icon ;
-  ECalComponentText text ;
-  ECalComponentDateTime date ;
-  ECalComponent *event=NULL ;
+  icaltimetype date ;
+  icalcomponent *event=NULL ;
   int event_index=0 ;
-  gchar *tmp_str=NULL, *tmp_str2=NULL ;
+  gchar *tmp_str=NULL, *tmp_str2=NULL, *summary=NULL ;
   gboolean has_alarm=FALSE, is_todo=FALSE, is_event=FALSE ;
 
   g_return_if_fail (a_this
@@ -597,58 +570,66 @@ render_event (TodayEventsArea *a_this,
   g_return_if_fail (a_event && a_event->data) ;
 
   event = a_event->data ;
-  g_return_if_fail (E_IS_CAL_COMPONENT (event)) ;
+  g_return_if_fail (icalcomponent_isa_component (event)) ;
+
   event_index = g_list_position (a_this->priv->events, a_event) ;
   g_return_if_fail (event_index >= 0) ;
 
   /*does the comp has an alarm ?*/
-  has_alarm = e_cal_component_has_alarms (event) ;
+  has_alarm = icalcomponent_has_alarm (event);
 
   /*is the comp a todo item ? */
-  is_todo = (e_cal_component_get_vtype (event) == E_CAL_COMPONENT_TODO);
+  is_todo = (icalcomponent_isa (event) == ICAL_VTODO_COMPONENT);
 
   /*is the comp a calendar event ?*/
-  is_event = (e_cal_component_get_vtype (event) == E_CAL_COMPONENT_EVENT);
+  is_event = (icalcomponent_isa (event) == ICAL_VEVENT_COMPONENT);
 
   /*a comp must be either a calendar event or a todo item*/
   g_return_if_fail (is_event != is_todo) ;
 
   /*get the event summary*/
-  e_cal_component_get_summary (event, &text) ;
+  summary = (gchar*) icalcomponent_get_summary (event) ;
 
   /*get the event starting date*/
   if (is_event)
-    e_cal_component_get_dtstart (event, &date) ;
+  {
+    date = icalcomponent_get_dtstart (event) ;
+    tmp_str = icaltime_to_pretty_string (&date) ;
+  }
   else if (is_todo)
   {
-    e_cal_component_get_due (event, &date) ;
+    date = icalcomponent_get_due (event) ;
+    tmp_str = icaltime_to_pretty_string (&date) ;
   }
 
-  if (date.value)
-  {
-    tmp_str = icaltime_to_pretty_string (date.value) ;
-    e_cal_component_free_datetime (&date) ;
-  }
 
   /*build event infoline*/
   if (tmp_str)
   {
-    tmp_str2 = g_strdup_printf ("%s %s", text.value, tmp_str) ;
+    tmp_str2 = g_strdup_printf ("%s %s", summary, tmp_str) ;
     g_free (tmp_str) ;
   }
   else
   {
-    tmp_str2 = g_strdup_printf ("%s", text.value) ;
+    tmp_str2 = g_strdup_printf ("%s", summary) ;
   }
   label = gtk_label_new (tmp_str2) ;
   gtk_misc_set_alignment (GTK_MISC (label), 0, 0) ;
   gtk_widget_show (label) ;
   g_free (tmp_str2) ;
   infoline = gtk_hbox_new (TRUE, 0) ;
+  gtk_box_set_homogeneous (GTK_BOX (infoline), FALSE) ;
   gtk_widget_show (infoline) ;
-  gtk_box_pack_start_defaults (GTK_BOX (infoline), label) ;
+  gtk_box_pack_start (GTK_BOX (infoline), label, FALSE, FALSE, 0) ;
   icon = gtk_image_new () ;
-  if (is_event)
+
+  if (has_alarm)
+  {
+    gtk_image_set_from_stock (GTK_IMAGE (icon),
+                              "openmoko-today-bell",
+                              GTK_ICON_SIZE_MENU);
+  }
+  else if (is_event)
   {
     gtk_image_set_from_stock (GTK_IMAGE (icon),
                               "openmoko-today-event",
@@ -660,15 +641,10 @@ render_event (TodayEventsArea *a_this,
                               "openmoko-today-todo",
                               GTK_ICON_SIZE_MENU);
   }
-  else if (has_alarm)
-  {
-    gtk_image_set_from_stock (GTK_IMAGE (icon),
-                              "openmoko-today-bell",
-                              GTK_ICON_SIZE_MENU);
-  }
+
   gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
   gtk_widget_show_all (icon) ;
-  gtk_box_pack_start_defaults (GTK_BOX (infoline), icon) ;
+  gtk_box_pack_start (GTK_BOX (infoline), icon, FALSE, FALSE, 6) ;
   event_box = gtk_event_box_new () ;
   gtk_widget_show (event_box) ;
   g_object_set_data (G_OBJECT (event_box),
@@ -816,7 +792,7 @@ today_events_area_set_events (TodayEventsArea *a_this,
   g_return_if_fail (a_this->priv) ;
 
   if (a_this->priv->events)
-    e_cal_component_list_free (a_this->priv->events) ;
+    e_cal_free_object_list (a_this->priv->events) ;
 
   a_this->priv->events = a_events ;
   a_this->priv->nb_events = get_nb_events_real (a_this) ;

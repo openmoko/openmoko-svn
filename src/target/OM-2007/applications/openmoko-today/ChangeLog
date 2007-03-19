@@ -1,3 +1,15 @@
+Mon, 19 Mar 2007 23:15:46 +0100 Dodji Seketeli
+
+	* applications/openmoko-today/src/today-events-area.c:
+	  Do not use ECalComponent anymore, but rather
+	  the underlying icalcomponent.
+	  ECalComponent was actually useless and was
+	  just eating more memory.
+	* applications/openmoko-today/src/today-utils.c,h:
+	  ditto.
+	  Added icalcomponent_has_alarm() to detect if an
+	  icalcomponent has alarms.
+
 Mon, 19 Mar 2007 19:59:27 +0100 Dodji Seketeli
 
 	* applications/openmoko-today/src/today-events-area.c:

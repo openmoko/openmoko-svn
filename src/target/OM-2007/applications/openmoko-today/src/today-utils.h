@@ -25,12 +25,14 @@
 #define  __TODAY_UTILS_H__
 
 #include <glib.h>
+#include <libical/icalcomponent.h>
 #include <libecal/e-cal.h>
 #include <libecal/e-cal-time-util.h>
 
 GList* today_get_today_events () ;
 void e_cal_component_list_free (GList * list) ;
 gchar* icaltime_to_pretty_string (const icaltimetype *timetype) ;
+gboolean icalcomponent_has_alarm (icalcomponent *a_icalcomp) ;
 
 #endif /*__TODAY_UTILS_H__*/
 
