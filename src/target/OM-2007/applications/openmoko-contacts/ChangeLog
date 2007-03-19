@@ -1,3 +1,11 @@
+2007-03-19  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-callbacks-ebook.c: (contacts_added_cb),
+	(contacts_changed_cb): Move update listview and update groups to
+	sequence-complete callback. Fixes a bug were groups list menu was never
+	initialised when there were no groups defined.
+	* src/contacts-omoko.c: (contacts_ui_create): Stop using nested functions
+
 2007-03-07  Thomas Wood  <thomas@openedhand.com>
 
 	Merge in various changes from mainline contacts:

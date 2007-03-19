@@ -266,18 +266,21 @@ contacts_ui_create (ContactsData *data)
 	create_main_window (data);
 }
 
+static void
+remove_menu_item (GtkWidget *menu_item, GtkWidget *menu)
+{
+	gtk_container_remove (GTK_CONTAINER (menu), menu_item);
+}
+
+static void
+add_menu_item (gchar *group, GtkMenu *menu)
+{
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), gtk_menu_item_new_with_label (group));
+}
+
 void
 contacts_ui_update_groups_list (ContactsData *data)
 {
-	void remove_menu_item (GtkWidget *menu_item, GtkWidget *menu)
-	{
-		gtk_container_remove (GTK_CONTAINER (menu), menu_item);
-	}
-
-	void add_menu_item (gchar *group, GtkMenu *menu)
-	{
-		gtk_menu_shell_append (GTK_MENU_SHELL (menu), gtk_menu_item_new_with_label (group));
-	}
 
 	/* update filter menu */
 	gtk_container_foreach (GTK_CONTAINER (filter_menu), (GtkCallback)remove_menu_item, filter_menu);
