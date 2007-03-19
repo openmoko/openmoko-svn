@@ -1,3 +1,4 @@
+/* vi: set sw=2: */
 /*
  *  Today - At a glance view of date, time, calender events, todo items and
  *  other images.
