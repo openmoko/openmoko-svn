@@ -35,20 +35,12 @@
 
 #include "xatoms.h"
 
-/*Matchbox windows manager structs*/
-#define MB_CMD_SET_THEME     1
-#define MB_CMD_EXIT          2
-#define MB_CMD_DESKTOP       3
-#define MB_CMD_NEXT          4
-#define MB_CMD_PREV          5
-#define MB_CMD_SHOW_EXT_MENU 6
-#define MB_CMD_MISC          7
-#define MB_CMD_COMPOSITE     8
-#define MB_CMB_KEYS_RELOAD   9
-
-#define MB_CMD_ACTIVATE_CLIENT 100
-#define MB_CMD_REMOVE_CLIENT 101
-#define MB_CMD_REMOVE_AND_ACTIVE 102
+enum {
+    CMD_ACTIVATE_WINDOW,
+	CMD_CLOSE_WINDOW,
+	CMD_SHOW_DESKTOP,
+	CMD_END
+};
 
 Window my_win;
 

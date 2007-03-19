@@ -82,7 +82,7 @@ moko_go_to_btn_cb (GtkButton *btn, MokoTaskManager *tm)
     if (!tm)
     	return;
     moko_wm_cmd (tm, 
-    			GTK_WIDGET (tm->l->list_view), MB_CMD_ACTIVATE_CLIENT);
+    			GTK_WIDGET (tm->l->list_view), CMD_ACTIVATE_WINDOW);
 }
 
 void
@@ -91,7 +91,7 @@ moko_kill_btn_cb (GtkButton *btn, MokoTaskManager *tm)
     if (!tm)
     	return;
     moko_wm_cmd (tm, 
-    			GTK_WIDGET (tm->l->list_view), MB_CMD_REMOVE_CLIENT);
+    			GTK_WIDGET (tm->l->list_view), CMD_CLOSE_WINDOW);
 }
 
 void
@@ -118,7 +118,7 @@ moko_kill_all_btn_cb (GtkButton *btn, MokoTaskManager *tm)
     while (1);
 
    do{
-   	mbcommand (GDK_DISPLAY(), MB_CMD_REMOVE_CLIENT, list->data, NULL); 
+   	mbcommand (GDK_DISPLAY(), CMD_CLOSE_WINDOW, list->data, NULL); 
    	g_debug ("%d", list->data);
   
 	}
@@ -161,7 +161,7 @@ moko_tab_event_cb (GtkButton *btn, MokoTaskList *l)
         gtk_tree_model_get (model, &iter, OBJECT_COL, &w, -1);
         //moko_print_win_list(GDK_DISPLAY(), &w, 1);
         //moko_send_Xclimsgwm(GDK_DISPLAY (), w);
-        mbcommand(GDK_DISPLAY(), MB_CMD_ACTIVATE_CLIENT, w, NULL);
+        mbcommand(GDK_DISPLAY(), CMD_ACTIVATE_WINDOW, w, NULL);
         }
     if (path)
     	free (path);
@@ -170,8 +170,8 @@ moko_tab_event_cb (GtkButton *btn, MokoTaskList *l)
 void        
 moko_hold_event_cb (GtkButton *btn, MokoTaskList *l) 
 {
-    moko_init_popup_menu(NULL, NULL, l);
- }
+  
+}
 
 void
 moko_wheel_left_up_press_cb (GtkWidget *self, MokoTaskManager *tm)

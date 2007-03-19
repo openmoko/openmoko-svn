@@ -23,14 +23,14 @@ void
 moko_kill_task_cb(GtkMenuItem *item, MokoTaskList *l) {
     g_debug ("kill task cb");
     //moko_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_CLIENT);
-    moko_wm_cmd(item, l->list_view, MB_CMD_REMOVE_CLIENT);
+    moko_wm_cmd(item, l->list_view, CMD_CLOSE_WINDOW);
     }
 
 void 
 moko_kill_and_swith_cb(GtkMenuItem *item, MokoTaskList *l) {
     g_debug ("call kill and switch task function");
     //moko_wm_cmd(item, l->mokolist_view, MB_CMD_REMOVE_AND_ACTIVE);
-    moko_wm_cmd(item, l->list_view, MB_CMD_REMOVE_AND_ACTIVE);
+   //moko_wm_cmd(item, l->list_view, MB_CMD_REMOVE_AND_ACTIVE);
     }
 
 void

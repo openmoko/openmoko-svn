@@ -277,37 +277,29 @@ mbcommand(Display *dpy, int cmd_id, Window win, char *data)
 {
     XEvent ev;
     Window root;
-    Atom theme_prop, cmd_prop, desktop_manager_atom;
-
-    desktop_manager_atom = XInternAtom(dpy, "_NET_DESKTOP_MANGER",False);
+    Atom cmd_prop;
 
     root = DefaultRootWindow(dpy);
 
-    /*use to grab desktop later*/
-    if (cmd_id == MB_CMD_DESKTOP) {
-       /* Check if desktop is running */
-       if (!XGetSelectionOwner(dpy, desktop_manager_atom)) {
-	   fprintf(stderr, "Desktop not running, exiting...\n");
-	   switch (fork()) {
-	   	case 0:
-	           execvp ("mbdesktop", NULL);
-	           break;
-	       case -1:
-	           fprintf(stderr, "failed to exec mbdesktop");
-	           break;
-	       }
-	   exit(0);
-	   }
-       } 
-
-    if (cmd_id == MB_CMD_REMOVE_CLIENT)
+	switch (cmd_id)
 	{
-		if (moko_kill_window (dpy, win))
-			return;
+    /*use to grab desktop later*/
+	    case CMD_SHOW_DESKTOP :
+	        cmd_prop = atoms[_NET_SHOW_DESKTOP];
+			break;
+		case CMD_CLOSE_WINDOW :
+	        //cmd_prop = atoms[_NET_CLOSE_WINDOW]; FIXME:children windows, (wheel and toolbox) could not be close in this way
+			cmd_prop == NULL;
+			moko_kill_window (dpy, win);
+			break;
+		case CMD_ACTIVATE_WINDOW :
+		    cmd_prop = atoms[_NET_ACTIVE_WINDOW];
+			break;
+		default :
+			cmd_prop = XInternAtom(dpy, "_MB_COMMAND", False);
 	}
-
-    cmd_prop = XInternAtom(dpy, "_MB_COMMAND", False);
-    memset(&ev, '\0', sizeof ev);
+	
+    memset(&ev, '\0', sizeof(ev));
     ev.xclient.type = ClientMessage;
     if (win == NULL)
     	ev.xclient.window = root; 	/* we send it _from_ root as we have no win  */
