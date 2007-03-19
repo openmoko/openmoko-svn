@@ -1289,7 +1289,6 @@ package_list_execute_change (gpointer data)
             /* FIXME The newname of the packages are not used now. */
             g_debug ("Begin to install:%s", tmplist->pkg->name);
             ret = ipkg_install_cmd (tmplist->pkg->name, "root",  &newname);
-            g_debug ("************************************************");
             g_debug ("Install:%s complete, ret=%d", tmplist->pkg->name, ret);
             if (ret == 0)
               {
@@ -1317,10 +1316,7 @@ package_list_execute_change (gpointer data)
                           get_error_msg ());
                 install_dialog_add_install_info (MOKO_INSTALL_DIALOG (installdialog),
                                                  errstr);
-                g_debug ("prepare free errstr");
-                g_debug ("err =%s", errstr);
                 g_free (errstr);
-                g_debug ("after free errstr");
                 errstr = NULL;
               }
             break;
@@ -1412,9 +1408,7 @@ package_list_execute_change (gpointer data)
           change = TRUE;
           if (newname != NULL)
             {
-              g_debug ("free new name");
               free (newname);
-              g_debug ("free new name success");
               newname = NULL;
             }
         }
