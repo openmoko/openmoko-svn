@@ -34,7 +34,14 @@ stock["openmoko-action-button-redial-icon"]              = {{"openmoko-action-bu
 stock["openmoko-action-button-search-icon"]              = {{"openmoko-action-button-search-icon.png"}}
 stock["openmoko-action-button-speaker-icon"]             = {{"openmoko-action-button-speaker-icon.png"}}
 stock["openmoko-action-button-view-icon"]                = {{"openmoko-action-button-view-icon.png"}}
-	
+
+#
+# icons used in the openmoko today application
+#
+stock["openmoko-today-bell"] = {{"openmoko-today-bell.png"}}
+stock["openmoko-today-event"] = {{"openmoko-today-event.png"}}
+stock["openmoko-today-todo"] = {{"openmoko-today-todo.png"}}
+
 }
 widget_class "GtkWidget" style "icons"
 class "GtkWidget" style "icons"
