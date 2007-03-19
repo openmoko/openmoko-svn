@@ -69,7 +69,6 @@ gboolean init_dbus (MessengerData* d)
 int main( int argc, char** argv )
 {
     g_debug( "openmoko-messenger starting up" );
-    pid_t           lockapp;
 
     /* Initialize GTK+ */
     gtk_init( &argc, &argv );
@@ -248,6 +247,13 @@ void setup_ui( MessengerData* d )
     /* detail area */
     populate_detail_area (d);
     
+    /* Fix default "Filter Menu" bug*/
+    d->currentfolder = g_strdup("Inbox");
+    GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
+    GtkWidget* menulabel = GTK_BIN(menuitem)->child;
+    gtk_label_set_text (GTK_LABEL(menulabel),"Inbox");
+    gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
+    
     /* select the first column */
     gint index = 0;
     GtkTreeSelection* tree_selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
@@ -365,8 +371,11 @@ void populate_detail_area( MessengerData* d )
    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(moko_details_window_put_in_box(d->details)));
 }
 
-void main_quit(GtkWidget* widget, GdkEvent* event, MessengerData* d)
+void main_quit(GtkMenuItem* item, MessengerData* d)
 {
+    if(d == NULL)
+      g_debug ("Message data is null");
+    g_debug ("Folder List length:%d",g_slist_length(d->folderlist));
     foldersdb_update (d->folderlist);
     gtk_main_quit();
 }

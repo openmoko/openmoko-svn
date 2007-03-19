@@ -471,7 +471,6 @@ void cb_cursor_changed(GtkTreeSelection* selection, MessengerData* d)
     GdkPixbuf* icon;
     GError*   error = NULL;
     
-    g_debug( "openmoko-messenger: selection changed" );
     view = gtk_tree_selection_get_tree_view( selection );
     if ( gtk_tree_selection_get_selected( selection, &model, &iter ) ) {
         msg = g_malloc(sizeof(message));

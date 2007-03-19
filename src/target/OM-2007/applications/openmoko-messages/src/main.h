@@ -82,7 +82,7 @@ GtkWidget* reload_filter_menu (MessengerData* d, GSList* folderlist);
 void setup_ui( MessengerData* d );
 void populate_navigation_area( MessengerData* d );
 void populate_detail_area( MessengerData* d );
-void main_quit(GtkWidget* widget, GdkEvent* event, MessengerData* d);
+void main_quit(GtkMenuItem* item, MessengerData* d);
 void update_folder_sensitive (MessengerData* d, GSList* folderlist);
 gboolean init_dbus (MessengerData* d);
 
