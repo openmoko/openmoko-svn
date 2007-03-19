@@ -28,6 +28,7 @@
 #include <libecal/e-cal-time-util.h>
 #include <gtk/gtk.h>
 #include <libmokoui/moko-window.h>
+#include <libmokoui/moko-pixmap-button.h>
 #include "today-events-area.h"
 
 #define LOG_ERROR \
@@ -279,19 +280,19 @@ today_launcher_clicked_cb (GtkWidget *button, gchar *command)
 static GtkWidget *
 today_launcher_button_new (gchar * icon, gchar * exec)
 {
-  GtkWidget *button = gtk_button_new ();
+  GtkWidget *button = moko_pixmap_button_new ();
+  GdkPixbuf *pb = gtk_widget_render_icon (button, icon, GTK_ICON_SIZE_BUTTON, "");
 
-  gtk_container_add (GTK_CONTAINER (button),
-                     gtk_image_new_from_stock (icon, GTK_ICON_SIZE_BUTTON));
-  // FIXME: need to set the correct size to prevent the button looking squashed.
-  // Possibly use MokoPixmapButton instead of GtkButton
+  /* libmokoui api really needs fixing... */
+  moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (
+      MOKO_PIXMAP_BUTTON (button), pb);
+  g_object_unref (pb);
   gtk_widget_set_name (button, "mokofingertoolbox-toolbutton");
 
   g_signal_connect (G_OBJECT (button),
                     "clicked",
                     G_CALLBACK (today_launcher_clicked_cb),
                     exec);
-
   return button;
 }
 

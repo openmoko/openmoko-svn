@@ -1,3 +1,7 @@
+Mon, 19 Mar 2007 15:29:03 +0000 Thomas Wood
+
+	* src/today-main.c: Use MokoPixmapButton for launchers
+
 Thu, 15 Mar 2007 23:20:45 +0100 Dodji Seketeli
 
 	* applications/openmoko-today/src/today-events-area.c,h:
