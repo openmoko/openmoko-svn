@@ -25,12 +25,11 @@
 #include <string.h>
 #include <glib.h>
 #include <glib/gprintf.h>
-#include <libecal/e-cal.h>
-#include <libecal/e-cal-time-util.h>
 #include <gtk/gtk.h>
 #include <libmokoui/moko-window.h>
 #include <libmokoui/moko-pixmap-button.h>
 #include "today-events-area.h"
+#include "today-utils.h"
 
 #define LOG_ERROR \
 g_warning ("Got error '%s', code '%d'", \
@@ -81,134 +80,6 @@ today_update_time (GtkLabel * label)
   gtk_label_set_markup (label, time_str);
 }
 
-/**
- * e_cal_component_list_free:
- * @list: the list ECalComooment to free
- *
- * Free a list of ECalComponent
- */
-static void
-e_cal_component_list_free (GList * list)
-{
-  GList *cur = NULL;
-
-  for (cur = list; cur; cur = cur->next)
-  {
-    /*if an element of the list is not of type ECalComponent, leak it */
-    if (cur->data && E_IS_CAL_COMPONENT (cur->data))
-    {
-      g_object_unref (G_OBJECT (cur->data));
-      cur->data = NULL;
-    }
-    else
-    {
-      g_warning ("cur->data is not of type ECalComponent !");
-    }
-  }
-  g_list_free (list);
-}
-
-/**
- * today_get_today_events:
- *
- * Return value:  a list of ECalComponents, of type VEVENT
- * must be freed with e_cal_component_list_free()
- */
-static GList *
-today_get_today_events ()
-{
-  GList *result = NULL;
-  GList *ical_comps = NULL;
-  GList *ecal_comps = NULL;
-  GList *cur = NULL;
-  ECal *ecal = NULL;
-  GError *error = NULL;
-  gchar *query = NULL;
-
-  ecal = e_cal_new_system_calendar ();
-  g_return_val_if_fail (ecal, NULL);
-
-  if (!e_cal_open (ecal, FALSE, &error))
-  {
-    g_warning ("failed to open the calendar");
-  }
-
-  if (error)
-  {
-    LOG_ERROR;
-    goto out;
-  }
-
-  /*
-  query = g_strdup_printf ("(occur-in-time-range? "
-                               "(time-day-begin (time-now)) "
-                               "(time-day-end   (time-now)) "
-                           ")");
-   */
-  query = g_strdup_printf ("#t");
-  e_cal_get_object_list (ecal, query, &ical_comps, &error);
-  if (error)
-  {
-    LOG_ERROR;
-    goto out;
-  }
-
-  /*
-   * build a list of ECalComponent, out of the list of icalcomponents
-   * when an icalcomponent is set to an ECalComponent, the later
-   * becomes responsible of freeing the former's memory
-   */
-  for (cur = ical_comps; cur; cur = cur->next)
-  {
-    ECalComponent *c = NULL;
-    if (!cur->data)
-      continue;
-
-    c = e_cal_component_new ();
-    if (!e_cal_component_set_icalcomponent (c, cur->data))
-    {
-      icalcomponent_free (cur->data);
-      cur->data = NULL;
-      continue;
-    }
-
-    ecal_comps = g_list_prepend (ecal_comps, c);
-    cur->data = NULL;
-  }
-  result = ecal_comps;
-  ecal_comps = NULL;
-
-out:
-  if (ical_comps)
-  {
-    e_cal_free_object_list (ical_comps);
-  }
-
-  if (ecal_comps)
-  {
-    e_cal_component_list_free (ecal_comps);
-  }
-  ecal_comps = NULL;
-
-  /*
-   the calender must stay alive during the app's lifetime
-  if (ecal)
-  {
-    g_object_unref (G_OBJECT (ecal));
-  }
-  */
-
-  if (error)
-  {
-    g_error_free (error);
-  }
-
-  g_free (query);
-
-  return result;
-}
-
-
 /* information lines */
 
 /**
@@ -235,6 +106,7 @@ today_infoline_new (gchar * stock_id, gchar * message)
   icon = gtk_image_new ();
   gtk_image_set_from_stock (GTK_IMAGE (icon), stock_id, GTK_ICON_SIZE_MENU);
   gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
+  gtk_widget_show (icon) ;
   gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
 
   // FIXME: get this from the style... somehow
@@ -247,13 +119,12 @@ today_infoline_new (gchar * stock_id, gchar * message)
   return eventbox;
 }
 
-
 /* launcher buttons */
 
 /**
  * callback for luncher buttons
  */
-static void
+void
 today_launcher_clicked_cb (GtkWidget *button, gchar *command)
 {
   GError *error;

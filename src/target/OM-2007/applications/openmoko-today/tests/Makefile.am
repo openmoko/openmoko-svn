@@ -4,7 +4,8 @@ ecaltest_SOURCES	   = ecal-test.c
 ecaltest_LDADD		   = @TODAY_LIBS@
 
 eventsareatest_SOURCES     = events-area-test.c \
-$(top_srcdir)/src/today-events-area.c
+$(top_srcdir)/src/today-events-area.c \
+$(top_srcdir)/src/today-utils.c
 
 eventsareatest_LDADD       = @TODAY_LIBS@
 

@@ -1,3 +1,4 @@
+/* vi:set sw=2: */
 /*
  *  Today - At a glance view of date, time, calender events, todo items and
  *  other images.
@@ -45,31 +46,47 @@ display_usage (const char *prog_name)
 void
 display_events (GList *a_events/*list of icalcomponents*/)
 {
-    GList          *cur         = NULL ;
-    ECalComponent  *cal_comp    = NULL ;
-    char           *event_str   = NULL ;
+  GList          *cur         = NULL ;
+  ECalComponent  *cal_comp    = NULL ;
+  char           *event_str   = NULL ;
+  char           *categories  = NULL ;
 
-    if (!a_events) {
-        g_message ("No events") ;
-        return ;
-    }
-    cal_comp = e_cal_component_new () ;
-    g_return_if_fail (cal_comp) ;
+  if (!a_events)
+  {
+    g_message ("No events") ;
+    return ;
+  }
+  cal_comp = e_cal_component_new () ;
+  g_return_if_fail (cal_comp) ;
 
-    for (cur = a_events ; cur ; cur = cur->next) {
-        if (!cur->data) {continue;}
-        e_cal_component_set_icalcomponent (cal_comp, cur->data) ;
-        if (e_cal_component_get_vtype (cal_comp) != E_CAL_COMPONENT_EVENT) {
-            g_warning ("component is not an event, rather of type %d",
-                       e_cal_component_get_vtype (cal_comp));
-            continue ;
-        }
-        event_str = e_cal_component_get_as_string (cal_comp) ;
-        if (event_str) {
-            g_message ("Got event '%s'", event_str) ;
-            g_free (event_str) ;
-        }
+  for (cur = a_events ; cur ; cur = cur->next)
+  {
+    if (!cur->data) {continue;}
+    e_cal_component_set_icalcomponent (cal_comp, cur->data) ;
+    if (e_cal_component_get_vtype (cal_comp) != E_CAL_COMPONENT_EVENT)
+    {
+      g_warning ("component is not an event, rather of type %d",
+          e_cal_component_get_vtype (cal_comp));
+      continue ;
     }
+    event_str = e_cal_component_get_as_string (cal_comp) ;
+    if (event_str)
+    {
+      g_message ("Got event '%s'", event_str) ;
+      g_free (event_str) ;
+    }
+    e_cal_component_get_categories (cal_comp, &categories) ;
+    if (categories)
+    {
+      g_message ("event's categs: '%s'\n", categories) ;
+      //g_free (categories) ;
+      categories = NULL ;
+    }
+    else
+    {
+      g_message ("no associated category") ;
+    }
+  }
 }
 
 int
@@ -101,10 +118,14 @@ main (int argc, char **argv)
     }
     if (ret) {goto out ;}
 
+    /*
     query = g_strdup_printf ("(occur-in-time-range? "
                                  "(time-day-begin (time-now)) "
                                  "(time-day-end   (time-now))"
                              ")");
+
+    */
+    query = g_strdup_printf ("#t") ;
 
     printf ("Issuing query: '%s'\n", query) ;
     if (!e_cal_get_object_list (cal, query, &objects, &error)) {
@@ -123,11 +144,13 @@ main (int argc, char **argv)
     }
 
 out:
+    /*
     if (cal) {
         g_object_unref (G_OBJECT (cal)) ;
     }
+    */
     if (objects) {
-        e_cal_free_object_list (objects) ;
+        g_list_free (objects) ;
     }
     if (query) {
         g_free (query) ;

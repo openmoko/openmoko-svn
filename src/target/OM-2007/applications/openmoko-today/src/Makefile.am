@@ -8,7 +8,9 @@ AM_CFLAGS             = -Wall -pedantic -std=c99 @TODAY_CFLAGS@
 
 bin_PROGRAMS          = today
 
-today_SOURCES         = today-main.c today-events-area.h today-events-area.c
+today_SOURCES         = today-main.c \
+today-events-area.h today-events-area.c \
+today-utils.h today-utils.c
 
 today_LDADD          = @TODAY_LIBS@
 

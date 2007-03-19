@@ -28,6 +28,7 @@
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkhbox.h>
 #include <gtk/gtktable.h>
+#include <gtk/gtkimage.h>
 #include <gtk/gtkeventbox.h>
 #include <gtk/gtklabel.h>
 #include "today-events-area.h"
@@ -575,59 +576,17 @@ select_event (TodayEventsArea *a_this,
 
 }
 
-/*
- * if the timetype is today, then only display it's hour part,
- * without the seconds
- * If it's not today, then only display it's date part, without the year
- */
-static gchar*
-icaltime_to_pretty_string (const icaltimetype *timetype)
-{
-#define TMP_STR_LEN 10
-    icaltimetype today ;
-    gboolean     hour_only              = FALSE ;
-    gboolean     date_only              = FALSE ;
-    gchar        *result                = NULL  ;
-    gchar        tmp_str[TMP_STR_LEN+1]         ;
-    struct tm    native_tm                      ;
-
-    g_return_val_if_fail (timetype, NULL) ;
-
-    today = icaltime_today () ;
-    if (!icaltime_compare_date_only (*timetype, today))
-    {
-        hour_only = TRUE ;
-    }
-    else
-    {
-        date_only = TRUE ;
-    }
-    if (hour_only)
-    {
-        result = g_strdup_printf ("%d:%d", timetype->hour, timetype->minute) ;
-    }
-    else if (date_only)
-    {
-        native_tm = icaltimetype_to_tm ((icaltimetype*)timetype) ;
-        memset (tmp_str, 0, TMP_STR_LEN+1) ;
-        strftime (tmp_str, TMP_STR_LEN, "%d/%b", &native_tm) ;
-        result = g_strdup (tmp_str) ;
-    }
-    return result ;
-}
-
 static void
 render_event (TodayEventsArea *a_this,
               GList *a_event)
 {
-  GtkWidget *infoline ;
-  GtkWidget *label ;
-  GtkWidget *event_box ;
+  GtkWidget *infoline, *label, *event_box, *icon ;
   ECalComponentText text ;
-  ECalComponentDateTime start_date ;
-  ECalComponent *event ;
-  int event_index ;
-  gchar *tmp_str, *tmp_str2 ;
+  ECalComponentDateTime date ;
+  ECalComponent *event=NULL ;
+  int event_index=0 ;
+  gchar *tmp_str=NULL, *tmp_str2=NULL ;
+  gboolean has_alarm=FALSE, is_todo=FALSE, is_event=FALSE ;
 
   g_return_if_fail (a_this
                     && TODAY_IS_EVENTS_AREA (a_this)
@@ -642,17 +601,45 @@ render_event (TodayEventsArea *a_this,
   event_index = g_list_position (a_this->priv->events, a_event) ;
   g_return_if_fail (event_index >= 0) ;
 
+  /*does the comp has an alarm ?*/
+  has_alarm = e_cal_component_has_alarms (event) ;
+
+  /*is the comp a todo item ? */
+  is_todo = (e_cal_component_get_vtype (event) == E_CAL_COMPONENT_TODO);
+
+  /*is the comp a calendar event ?*/
+  is_event = (e_cal_component_get_vtype (event) == E_CAL_COMPONENT_EVENT);
+
+  /*a comp must be either a calendar event or a todo item*/
+  g_return_if_fail (is_event != is_todo) ;
+
   /*get the event summary*/
   e_cal_component_get_summary (event, &text) ;
 
   /*get the event starting date*/
-  e_cal_component_get_dtstart (event, &start_date) ;
-  tmp_str = icaltime_to_pretty_string (start_date.value) ;
-  e_cal_component_free_datetime (&start_date) ;
+  if (is_event)
+    e_cal_component_get_dtstart (event, &date) ;
+  else if (is_todo)
+  {
+    e_cal_component_get_due (event, &date) ;
+  }
+
+  if (date.value)
+  {
+    tmp_str = icaltime_to_pretty_string (date.value) ;
+    e_cal_component_free_datetime (&date) ;
+  }
 
   /*build event infoline*/
-  tmp_str2 = g_strdup_printf ("%s %s", text.value, tmp_str) ;
-  g_free (tmp_str) ;
+  if (tmp_str)
+  {
+    tmp_str2 = g_strdup_printf ("%s %s", text.value, tmp_str) ;
+    g_free (tmp_str) ;
+  }
+  else
+  {
+    tmp_str2 = g_strdup_printf ("%s", text.value) ;
+  }
   label = gtk_label_new (tmp_str2) ;
   gtk_misc_set_alignment (GTK_MISC (label), 0, 0) ;
   gtk_widget_show (label) ;
@@ -660,6 +647,28 @@ render_event (TodayEventsArea *a_this,
   infoline = gtk_hbox_new (TRUE, 0) ;
   gtk_widget_show (infoline) ;
   gtk_box_pack_start_defaults (GTK_BOX (infoline), label) ;
+  icon = gtk_image_new () ;
+  if (is_event)
+  {
+    gtk_image_set_from_stock (GTK_IMAGE (icon),
+                              "openmoko-today-event",
+                              GTK_ICON_SIZE_MENU);
+  }
+  else if (is_todo)
+  {
+    gtk_image_set_from_stock (GTK_IMAGE (icon),
+                              "openmoko-today-todo",
+                              GTK_ICON_SIZE_MENU);
+  }
+  else if (has_alarm)
+  {
+    gtk_image_set_from_stock (GTK_IMAGE (icon),
+                              "openmoko-today-bell",
+                              GTK_ICON_SIZE_MENU);
+  }
+  gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
+  gtk_widget_show_all (icon) ;
+  gtk_box_pack_start_defaults (GTK_BOX (infoline), icon) ;
   event_box = gtk_event_box_new () ;
   gtk_widget_show (event_box) ;
   g_object_set_data (G_OBJECT (event_box),
