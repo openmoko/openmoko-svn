@@ -33,6 +33,7 @@
 #include <signal.h>
 
 #include "callbacks.h"
+#include "dbus-conn.h"
 
 #define OPAQUE  0x55555555
 /* set the widget's transparency to opacity 
@@ -248,6 +249,8 @@ main (int argc, char** argv)
     signal (SIGUSR1, handle_sigusr1);
 
     //gtk_widget_set_transparency(tm->window, 50);
+	
+	moko_dbus_connect_init ();
 
     gtk_widget_show_all (GTK_WIDGET (tm->window));
     gtk_widget_show (GTK_WIDGET (tm->wheel));

@@ -18,6 +18,7 @@
  */
 
 #include "callbacks.h"
+#include "dbus-conn.h"
 
 GdkFilterReturn
 moko_window_filter (GdkXEvent *xev, GdkEvent *gev, MokoTaskList*l) 
@@ -53,19 +54,11 @@ moko_wm_cmd (MokoTaskManager *tm, GtkWidget *list_view, int task)
     	  return TRUE;
     	  }
     else 
-    	{
-    	  /*GtkMessageDialog* dialog = gtk_message_dialog_new (GTK_WINDOW(gtk_widget_get_toplevel(w)),
- 							GTK_DIALOG_DESTROY_WITH_PARENT,
-		                                   GTK_MESSAGE_ERROR,      
-		                                   GTK_BUTTONS_CLOSE,
-		                                   "No Application selected..." );
-	  gtk_dialog_run (GTK_DIALOG (dialog));
-	  gtk_widget_destroy(GTK_WIDGET(dialog));
-	  return TRUE;
-	  */
-	  g_debug ("send message to footer");
+    {
+	     g_debug ("send message to footer");
+         moko_dbus_send_message ("No application selected");
     	  return FALSE;
-    	  }
+     }
 }
 
 gboolean 
