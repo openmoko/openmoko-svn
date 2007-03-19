@@ -30,5 +30,8 @@ GtkMenu *filter_menu_new (ApplicationManagerData *appdata);
 void filter_menu_add_item (GtkMenu *filtermenu, const gchar *name,
                            ApplicationManagerData *appdata);
 
+void
+filter_menu_show_install_list (ApplicationManagerData *appdata);
+
 #endif
 

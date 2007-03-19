@@ -1,0 +1,10 @@
+2007-03-19 Chaowei Song <songcw@fic-sh.com.cn>
+	* src/package-list.c: (package_list_execute_change):
+	Set a changed flag when install, remove or upgrade a package success.
+	* src/appmanager-data: 
+	Add menubox(and set/get function) to the appmanager-data struct.
+	* src/appmanager-window.c: (main)
+	Save the menubox to appmanager-data after initialization.
+	Show installed package list after initialization.
+	* src/filter-menu.c filter-menu.h:
+	Add filter_menu_show_install_list.

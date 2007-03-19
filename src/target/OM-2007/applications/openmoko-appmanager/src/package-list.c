@@ -1403,17 +1403,19 @@ package_list_execute_change (gpointer data)
             break;
 
           default :
+            ret = -1;
             break;
-          if (ret == 0)
+
+        }
+      if (ret == 0)
+        {
+          change = TRUE;
+          if (newname != NULL)
             {
-              change = TRUE;
-              if (newname != NULL)
-                {
-                  g_debug ("free new name");
-                  free (newname);
-                  g_debug ("free new name success");
-                  newname = NULL;
-                }
+              g_debug ("free new name");
+              free (newname);
+              g_debug ("free new name success");
+              newname = NULL;
             }
         }
       tmplist = tmplist->next;

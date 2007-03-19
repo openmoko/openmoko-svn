@@ -27,7 +27,7 @@
 /**
  * @brief The callback function of the search result menuitem.
  */
-void 
+static void 
 on_search_result_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
   g_debug ("Clicked the search result menuitem");
@@ -36,7 +36,7 @@ on_search_result_activate (GtkMenuItem *menuitem, gpointer userdata)
 /**
  * @brief The callback function of the installed menuitem.
  */
-void 
+static void 
 on_installed_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
   gpointer     pkglist;
@@ -45,16 +45,17 @@ on_installed_activate (GtkMenuItem *menuitem, gpointer userdata)
   g_debug ("Clicked the installed menuitem");
 
   pkglist = application_manager_data_get_installedlist (
-                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+                    MOKO_APPLICATION_MANAGER_DATA (userdata));
 
-  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
-                                             pkglist);
+  navigation_area_refresh_with_package_list (
+          MOKO_APPLICATION_MANAGER_DATA (userdata),
+          pkglist);
 }
 
 /**
  * @brief The callback function of the upgradeable menuitem.
  */
-void 
+static void 
 on_upgradeable_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
   gpointer     pkglist;
@@ -63,16 +64,17 @@ on_upgradeable_activate (GtkMenuItem *menuitem, gpointer userdata)
   g_debug ("Clicked the upgradeable menuitem");
 
   pkglist = application_manager_data_get_upgradelist (
-                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+                    MOKO_APPLICATION_MANAGER_DATA (userdata));
 
-  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
-                                             pkglist);
+  navigation_area_refresh_with_package_list (
+          MOKO_APPLICATION_MANAGER_DATA (userdata),
+          pkglist);
 }
 
 /**
  * @brief The callback function of the selected menuitem.
  */
-void 
+static void 
 on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
 {
   gpointer     pkglist;
@@ -81,10 +83,11 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
   g_debug ("Click the selected menuitem");
 
   pkglist = application_manager_data_get_selectedlist (
-                      MOKO_APPLICATION_MANAGER_DATA (userdata));
+                    MOKO_APPLICATION_MANAGER_DATA (userdata));
 
-  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
-                                             pkglist);
+  navigation_area_refresh_with_package_list (
+          MOKO_APPLICATION_MANAGER_DATA (userdata),
+          pkglist);
 }
 
 /**
@@ -116,15 +119,17 @@ on_dynamic_menu_item_activate (GtkMenuItem *menuitem, gpointer userdata)
       return;
     }
 
-  pkglist = package_list_get_with_name (MOKO_APPLICATION_MANAGER_DATA (userdata),
-                                        secname);
+  pkglist = package_list_get_with_name (
+          MOKO_APPLICATION_MANAGER_DATA (userdata),
+          secname);
   if (pkglist == NULL)
     {
       g_debug ("Can not find the section that named:%s", secname);
       return;
     }
-  navigation_area_refresh_with_package_list (MOKO_APPLICATION_MANAGER_DATA (userdata),
-                                             pkglist);
+  navigation_area_refresh_with_package_list (
+          MOKO_APPLICATION_MANAGER_DATA (userdata),
+          pkglist);
 }
 
 /**
@@ -183,7 +188,8 @@ filter_menu_new (ApplicationManagerData *appdata)
  * @param name The label name of the menu item
  */
 void 
-filter_menu_add_item (GtkMenu *filtermenu, const gchar *name, 
+filter_menu_add_item (GtkMenu                *filtermenu, 
+                      const gchar            *name, 
                       ApplicationManagerData *appdata)
 {
   GtkWidget *dymenuitem;
@@ -199,3 +205,27 @@ filter_menu_add_item (GtkMenu *filtermenu, const gchar *name,
 
 }
 
+/*
+ * @brief Show the installed packages list after initialization or reinitialization
+ * @param appdata The application manager data
+ */
+void
+filter_menu_show_install_list (ApplicationManagerData *appdata)
+{
+  gpointer     pkglist;
+  MokoMenuBox *menubox;
+
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  pkglist = application_manager_data_get_installedlist (
+                    MOKO_APPLICATION_MANAGER_DATA (appdata));
+
+  navigation_area_refresh_with_package_list (
+          MOKO_APPLICATION_MANAGER_DATA (appdata),
+          pkglist);
+
+  menubox = MOKO_MENU_BOX (application_manager_get_menubox (appdata));
+
+  g_return_if_fail (IS_MOKO_MENU_BOX (menubox));
+  moko_menu_box_set_active_filter (menubox, _("Installed"));
+}

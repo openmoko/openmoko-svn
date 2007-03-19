@@ -56,17 +56,18 @@ typedef struct _ApplicationManagerData {
 
   MokoPanedWindow  *mwindow;           /* The main window */
   GtkMenu          *filtermenu;        /* The filter menu */
+  GtkWidget        *menubox;           /* The menubox */
   GtkMenu          *selectmenu;        /* The select menu */
   GtkEntry         *searchentry;       /* The search entry */
   GtkWidget        *tvpkglist;         /* The treeview of the package list */
   GtkWidget        *tvdetail;          /* The textview of the details info */
-  gpointer         pkglist;            /* The package list get from lib ipkg */
-  gpointer         sectionlist;        /* The section list parse from the package list */
-  gpointer         installedlist;      /* The list of all installed packages */
-  gpointer         upgradelist;        /* The list of all upgradeable packages */
-  gpointer         selectedlist;       /* The list of packages that user selected */
-  gpointer         nosecpkglist;       /* The list of packages whose section name is NULL */
-  gpointer         currentlist;        /* The current list that display on the navigation list */
+  gpointer          pkglist;           /* The package list get from lib ipkg */
+  gpointer          sectionlist;       /* The section list parse from the package list */
+  gpointer          installedlist;     /* The list of all installed packages */
+  gpointer          upgradelist;       /* The list of all upgradeable packages */
+  gpointer          selectedlist;      /* The list of packages that user selected */
+  gpointer          nosecpkglist;      /* The list of packages whose section name is NULL */
+  gpointer          currentlist;       /* The current list that display on the navigation list */
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    /* The all pixbufs that need by the package list store */
   gchar            *searchhistory;     /* The search history */
   GtkWidget        *installdialog;     /* The install dialog */
@@ -89,6 +90,9 @@ void application_manager_data_set_main_window (ApplicationManagerData *appdata,
 
 void application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
                                                GtkMenu *filtermenu);
+
+void application_manager_data_set_menubox (ApplicationManagerData *appdata,
+                                           GtkWidget *menubox);
 
 void application_manager_data_set_select_menu (ApplicationManagerData *appdata,
                                                GtkMenu *selectmenu);
@@ -136,6 +140,9 @@ MokoPanedWindow *
 
 GtkMenu *
      application_manager_get_filter_menu (ApplicationManagerData *appdata);
+
+GtkWidget *
+     application_manager_get_menubox (ApplicationManagerData *appdata);
 
 GtkMenu *
      application_manager_get_select_menu (ApplicationManagerData *appdata);

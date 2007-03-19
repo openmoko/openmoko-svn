@@ -49,7 +49,9 @@ main (int argc, char* argv[])
   MokoToolBox     *toolbox;
   GtkWidget       *detail;
 
-  gint            ret;
+  GtkWidget       *menubox;
+
+  gint             ret;
 
   g_debug ("appplication manager start up");
 
@@ -85,6 +87,10 @@ main (int argc, char* argv[])
   gtk_widget_show (GTK_WIDGET (selectmenu));
   application_manager_data_set_select_menu (appdata, selectmenu);
 
+  /* Save the menubox to the application manager data */
+  menubox = moko_paned_window_get_menubox (window);
+  application_manager_data_set_menubox (appdata, menubox);
+
   navigation = navigation_area_new (appdata);
   moko_paned_window_set_upper_pane (window, navigation);
 
@@ -108,7 +114,11 @@ main (int argc, char* argv[])
       return -1;
     }
 
+  /* Add section list to the filter menu */
   package_list_add_section_to_filter_menu (appdata);
+
+  /* Show the installed package list at initialization */
+  filter_menu_show_install_list (appdata);
 
   gtk_widget_show_all (GTK_WIDGET (window));
   g_debug ("application manager enter main loop");

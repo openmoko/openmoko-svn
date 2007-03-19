@@ -37,6 +37,7 @@ application_manager_data_init (ApplicationManagerData *data)
 
   data->mwindow = NULL;
   data->filtermenu = NULL;
+  data->menubox = NULL;
   data->selectmenu = NULL;
   data->searchentry = NULL;
   data->tvpkglist = NULL;
@@ -96,6 +97,20 @@ application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->filtermenu = filtermenu;
+}
+
+/**
+ * @brief Set the menubox to the application manager data
+ * @param appdata The application manager data struct
+ * @param menubox The menubox
+ */
+void
+application_manager_data_set_menubox (ApplicationManagerData *appdata,
+                                      GtkWidget              * menubox)
+{
+  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
+
+  appdata->menubox = menubox;
 }
 
 /**
@@ -383,6 +398,19 @@ application_manager_get_filter_menu (ApplicationManagerData *appdata)
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->filtermenu;
+}
+
+/*
+ * @brief Get the menubox from the application manager data
+ * @param appdata The application manager data
+ * @return The menubox
+ */
+GtkWidget *
+application_manager_get_menubox (ApplicationManagerData *appdata)
+{
+  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
+
+  return appdata->menubox;
 }
 
 /**
