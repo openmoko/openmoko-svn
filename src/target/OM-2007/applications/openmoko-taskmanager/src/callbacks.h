@@ -27,7 +27,6 @@
 #include "misc.h"
 #include "list_view.h"
 #include "xatoms.h"
-#include "popupmenu.h"
 
 GdkFilterReturn
 moko_window_filter (GdkXEvent *xev, GdkEvent *gev, MokoTaskList*l);
