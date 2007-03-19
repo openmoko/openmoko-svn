@@ -41,7 +41,7 @@ detail_area_new (ApplicationManagerData *appdata)
 
   text = gtk_text_view_new ();
   gtk_widget_show (text);
-  gtk_text_view_set_editable (GTK_TEXT_VIEW (text), TRUE);
+  gtk_text_view_set_editable (GTK_TEXT_VIEW (text), FALSE);
   gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (text), FALSE);
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text), GTK_WRAP_WORD);
 
