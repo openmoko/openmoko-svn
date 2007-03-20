@@ -47,7 +47,7 @@ int main( int argc, char** argv )
     }
     if ( maxfd == -1 )
     {
-        g_debug( "can't open ANY input events -- aborting." );
+        g_debug( "can't open ANY input event nodes -- aborting." );
         return -1;
     }
 
