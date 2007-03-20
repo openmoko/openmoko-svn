@@ -1,3 +1,10 @@
+2007-03-20 Chaowei Song <songcw@fic-sh.com.cn>
+	* src/ipkgapi.c:
+	Add #define __USE_XOPEN_EXTENDED before include string.h, removing the
+	warning of "strdup" undecleration.
+	* src/tool-box.c:
+	Including the filter-menu.h now.
+
 2007-03-19 Chaowei Song <songcw@fic-sh.com.cn>
 	* src/package-list.c: (package_list_execute_change):
 	Set a changed flag when install, remove or upgrade a package success.

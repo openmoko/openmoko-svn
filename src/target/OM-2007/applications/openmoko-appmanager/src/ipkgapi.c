@@ -17,6 +17,7 @@
  * General Public License for more details.
  */
 #include <stdio.h>
+#define __USE_XOPEN_EXTENDED
 #include <string.h>
 #include <stdlib.h>
 #include <fnmatch.h>

@@ -25,6 +25,7 @@
 #include "appmanager-window.h"
 #include "apply-dialog.h"
 #include "install-dialog.h"
+#include "filter-menu.h"
 
 /**
  * @brief The callback function of the button "upgrade"
