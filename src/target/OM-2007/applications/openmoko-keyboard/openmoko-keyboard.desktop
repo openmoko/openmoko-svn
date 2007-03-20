@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Keyboard
 Comment=Virtual Keyboard
-Exec=matchbox-keyboard
+Exec=openmoko-keyboard
 Type=Application
-Icon=matchbox-keyboard.png
+Icon=openmoko-keyboard.png
 Categories=Panel;Utility;MB
 X-MB-INPUT-MECHANSIM=True
