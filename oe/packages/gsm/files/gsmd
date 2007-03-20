@@ -20,6 +20,8 @@ prog="gsmd"
 
 start() {
 	# FIXME add check whether GSM_POW is set at all, otherwise don't try to power on
+	# FIXME remove Neo1973 specifics here and catch up with OE upstream, once we're stable
+	dmesg -n1
 	# Power on GSM device
 	if [ -e "${GSM_POW}" ]
 	then
@@ -72,7 +74,14 @@ stop() {
 	echo
 	if [ $RETVAL -eq 0 ]
 	then
-	    rm -f /var/lock/subsys/gsmd;
+	    rm -f /var/lock/subsys/gsmd
+		if [ -e "${GSM_POW}" ]
+		then
+			echo -n "Powering down GSM device..."
+			echo "0" > ${GSM_POW}
+			sleep 1
+			echo "done"
+		fi
 	fi
 	return $RETVAL
 }
