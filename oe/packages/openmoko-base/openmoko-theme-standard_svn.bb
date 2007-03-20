@@ -1,7 +1,7 @@
 DESCRIPTION = "Standard Gtk+ theme for the OpenMoko distribution"
 SECTION = "openmoko/base"
 PV = "0.0+svn${SRCDATE}"
-PR = "r3"
+PR = "r4"
 
 inherit openmoko-base
 
@@ -18,7 +18,16 @@ do_install() {
 	done
 	
 	install -d ${D}${sysconfdir}/gtk-2.0
-	echo 'include "${datadir}/themes/openmoko-standard/gtk-2.0/gtkrc"' >> ${D}${sysconfdir}/gtk-2.0/gtkrc
+	echo 'include "${datadir}/themes/openmoko-standard/gtk-2.0/gtkrc"' > ${D}${sysconfdir}/gtk-2.0/gtkrc
+}
+
+# yes, i know... we're going to have a more sane method to do that
+# to respect all kinds of gtk-theme packages
+pkg_postinst() {
+	echo overriding current theme to openmoko-standard...
+	mkdir -p ${sysconfdir}/gtk-2.0
+	echo 'include "${datadir}/themes/openmoko-standard/gtk-2.0/gtkrc"' > ${sysconfdir}/gtk-2.0/gtkrc
+	echo done
 }
 
 FILES_${PN} = "${datadir} ${sysconfdir}"
