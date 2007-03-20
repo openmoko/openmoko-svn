@@ -25,16 +25,11 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_FIXED moko_fixed_get_type()
-
+#define MOKO_TYPE_FIXED (moko_fixed_get_type())
 #define MOKO_FIXED(obj)   (G_TYPE_CHECK_INSTANCE_CAST ((obj),   MOKO_TYPE_FIXED, MokoFixed))
-
 #define MOKO_FIXED_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST ((klass),   MOKO_TYPE_FIXED, MokoFixedClass))
-
 #define MOKO_IS_FIXED(obj)   (G_TYPE_CHECK_INSTANCE_TYPE ((obj),   MOKO_TYPE_FIXED))
-
 #define MOKO_IS_FIXED_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass),   MOKO_TYPE_FIXED))
-
 #define MOKO_FIXED_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),   MOKO_TYPE_FIXED, MokoFixedClass))
 
 typedef struct {

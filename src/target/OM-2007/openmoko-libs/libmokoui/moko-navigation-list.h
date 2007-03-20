@@ -32,7 +32,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_NAVIGATION_LIST moko_navigation_list_get_type()
+#define MOKO_TYPE_NAVIGATION_LIST (moko_navigation_list_get_type())
 #define MOKO_NAVIGATION_LIST(obj)     (G_TYPE_CHECK_INSTANCE_CAST ((obj),     MOKO_TYPE_NAVIGATION_LIST, MokoNavigationList))
 #define MOKO_NAVIGATION_LIST_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass),     MOKO_TYPE_NAVIGATION_LIST, MokoNavigationListClass))
 #define MOKO_IS_NAVIGATION_LIST(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj),     MOKO_TYPE_NAVIGATION_LIST))

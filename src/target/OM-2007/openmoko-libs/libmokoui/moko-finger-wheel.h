@@ -26,7 +26,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_FINGER_WHEEL moko_finger_wheel_get_type()
+#define MOKO_TYPE_FINGER_WHEEL (moko_finger_wheel_get_type())
 #define MOKO_FINGER_WHEEL(obj)     (G_TYPE_CHECK_INSTANCE_CAST ((obj),     MOKO_TYPE_FINGER_WHEEL, MokoFingerWheel))
 #define MOKO_FINGER_WHEEL_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass),     MOKO_TYPE_FINGER_WHEEL, MokoFingerWheelClass))
 #define MOKO_IS_FINGER_WHEEL(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj),     MOKO_TYPE_FINGER_WHEEL))

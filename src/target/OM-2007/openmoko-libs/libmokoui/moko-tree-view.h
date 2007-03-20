@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_TREE_VIEW moko_tree_view_get_type()
+#define MOKO_TYPE_TREE_VIEW (moko_tree_view_get_type())
 #define MOKO_TREE_VIEW(obj)     (G_TYPE_CHECK_INSTANCE_CAST ((obj),     MOKO_TYPE_TREE_VIEW, MokoTreeView))
 #define MOKO_TREE_VIEW_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass),     MOKO_TYPE_TREE_VIEW, MokoTreeViewClass))
 #define MOKO_IS_TREE_VIEW(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj),     MOKO_TYPE_TREE_VIEW))

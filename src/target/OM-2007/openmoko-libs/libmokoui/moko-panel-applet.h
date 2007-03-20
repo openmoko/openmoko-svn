@@ -41,7 +41,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_PANEL_APPLET moko_panel_applet_get_type()
+#define MOKO_TYPE_PANEL_APPLET (moko_panel_applet_get_type())
 #define MOKO_PANEL_APPLET(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_PANEL_APPLET, MokoPanelApplet))
 #define MOKO_PANEL_APPLET_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_PANEL_APPLET, MokoPanelAppletClass))
 #define MOKO_IS_PANEL_APPLET(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_PANEL_APPLET))

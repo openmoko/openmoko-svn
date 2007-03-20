@@ -30,7 +30,7 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_PIXMAP_BUTTON moko_pixmap_button_get_type()
+#define MOKO_TYPE_PIXMAP_BUTTON (moko_pixmap_button_get_type())
 #define MOKO_PIXMAP_BUTTON(obj)     (G_TYPE_CHECK_INSTANCE_CAST ((obj),     MOKO_TYPE_PIXMAP_BUTTON, MokoPixmapButton))
 #define MOKO_PIXMAP_BUTTON_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass),     MOKO_TYPE_PIXMAP_BUTTON, MokoPixmapButtonClass))
 #define MOKO_IS_PIXMAP_BUTTON(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj),     MOKO_TYPE_PIXMAP_BUTTON))
