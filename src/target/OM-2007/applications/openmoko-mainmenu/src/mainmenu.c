@@ -86,17 +86,9 @@ moko_main_menu_init(MokoMainMenu *mm)
 {
     PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
     GtkEventBox *eventbox;
-    int ret = 0 ;
-    /* Buid Root item, don't display */
-    mm->top_item  = mokodesktop_item_new_with_params ("Home", 
-						       NULL,
-						       NULL,
-						       ITEM_TYPE_ROOT );
-
-    /* Build Lists (parse .directory and .desktop files) */	
-    ret = mokodesktop_init(mm->top_item, ITEM_TYPE_CNT);
-    //make current item point to the top_item.
-    mm->current = mm->top_item;
+	
+    mm->top_item = NULL;
+    mm->current = NULL;
 
     /*center label of MokoMainMenu head*/
     mm->section_name =  gtk_label_new ("Main Menu");
@@ -170,7 +162,6 @@ moko_main_menu_init(MokoMainMenu *mm)
     gtk_box_pack_end (mm->hbox, mm->item_total, FALSE, FALSE, 0);
     gtk_box_pack_end (mm, mm->scrolled, TRUE, TRUE, 0);
 
-    moko_main_menu_update_content (mm, mm->current);
 
     if (PangoFont)
     	  pango_font_description_free (PangoFont);
@@ -264,23 +255,27 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
     char total_item[6];
     //g_debug("mokodesktop: item [%d][%s][%s]\n", item->type, item->name, item->icon_name);
     
+	if (!mm)
+        return;
+	mm->current = item;
+
     item_new = item->item_child;
     //g_debug("mokodesktop: item [%d][%s][%s]\n", item_new->type, item_new->name, item_new->icon_name);
     // g_debug ("test");
 
     if (item->type == ITEM_TYPE_ROOT)
     {
-  	moko_set_label_content (mm->section_name, "Main Menu");
+  	  moko_set_label_content (mm->section_name, "Main Menu");
     }
     else if (item->type == ITEM_TYPE_FOLDER)
     {
-        moko_set_label_content (mm->section_name, item->name);
+      moko_set_label_content (mm->section_name, item->name);
     }
     else 
   	return FALSE; // neither ROOT nor FOLDER
 
     if (mm->list_store)
-  	gtk_list_store_clear (mm->list_store);
+  	  gtk_list_store_clear (mm->list_store);
 
     mokodesktop_items_enumerate_siblings(item->item_child, item_new)
     { 
@@ -294,8 +289,8 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
         {
             char path[512];
             snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
-
-            if (access (path, 0) == 0)
+            
+			if (access (path, 0) == 0)
                 moko_fill_model(mm->list_store, path, item_new->name, item_new);
             else
             {

@@ -29,40 +29,48 @@
 #include "callbacks.h"
 #include "mokoiconview.h"
 #include "mokodesktop_item.h"
-#include "app-history.h"
+#include "fingermenu.h"
 
 static void moko_cb_run_app (const char * data);
 
 void
-moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
+moko_wheel_bottom_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 {
-    if (mma->mm->current->type != ITEM_TYPE_ROOT)
+  MokoDesktopItem *current = NULL;
+  
+  current = moko_finger_menu_get_current_item (fm);
+
+    if (current->type != ITEM_TYPE_ROOT)
     {
-        mma->mm->current = mokodesktop_item_get_parent(mma->mm->current);
-        moko_main_menu_update_content (mma->mm, mma->mm->current);
+        current = mokodesktop_item_get_parent(current);
+        moko_finger_menu_update_content (fm, current);
     }
     else 
     {
-		gtk_window_iconify (GTK_WINDOW (mma->window));
+		//gtk_window_iconify (GTK_WINDOW (mma->window));
+		g_debug ("Call moko finger menu hide");
 	    moko_dbus_send_message ("");
-    }
+	}
+   
 }
 
 void
-moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
+moko_wheel_left_up_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 {
-    moko_icon_view_move_cursor_line_up (mma->mm->icon_view);
+    //moko_icon_view_move_cursor_line_up (mma->fm->mm->icon_view);
+	moko_finger_menu_move_cursor_up(fm);
 }
 
 void
-moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma)
+moko_wheel_right_down_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 {
-    moko_icon_view_move_cursor_line_down (mma->mm->icon_view);
+ //   moko_icon_view_move_cursor_line_down (mma->mm->icon_view);
+  moko_finger_menu_move_cursor_down(fm);
 }
 
 void
 moko_icon_view_item_acitvated_cb(MokoIconView *icon_view, 
-				GtkTreePath *path, MokoMainmenuApp *mma) 
+				GtkTreePath *path, MokoFingerMenu *fm) 
 {
     MokoDesktopItem *selected_item = NULL;
 	GtkTreeModel *tree_model;
@@ -74,8 +82,9 @@ moko_icon_view_item_acitvated_cb(MokoIconView *icon_view,
   
     if (selected_item->type == ITEM_TYPE_FOLDER)
     {
-        mma->mm->current = selected_item;
-        moko_main_menu_update_content (mma->mm, selected_item);
+       // moko_finger_menu_set_current_item(mma->fm, selected_item);
+        moko_finger_menu_update_content (fm, selected_item);
+       // moko_main_menu_update_content (mma->mm, selected_item);
     }
     else if (selected_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||selected_item->type == ITEM_TYPE_APP)
     {
@@ -85,13 +94,13 @@ moko_icon_view_item_acitvated_cb(MokoIconView *icon_view,
 		gtk_tree_model_get (tree_model, &iter, PIXBUF_COLUMN, &pixbuf, -1);
 
 		if (pixbuf)
-	    	moko_app_history_set (mma->history, pixbuf, selected_item);
+	      moko_finger_menu_set_app_history(fm, pixbuf, selected_item);	
     }
 }
 
 void
 moko_icon_view_selection_changed_cb(MokoIconView *iconview, 
-				MokoMainmenuApp *mma) 
+		MokoFingerMenu *fm) 
 {
     GList *selected_item;
     GtkTreeIter iter;
@@ -115,7 +124,7 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
 	g_list_foreach (selected_item, (GFunc) gtk_tree_path_free, NULL);
 	g_list_free (selected_item);
 
-    moko_main_menu_update_item_total_label (mma->mm);
+    moko_main_menu_update_item_total_label (fm->mm);
 }
 
 void 
@@ -144,7 +153,13 @@ moko_tool_box_btn_clicked_cb (GtkButton *btn, MokoAppHistory *history)
 	}
 }
 
-static void 
+void
+moko_stylus_menu_activate_item (GtkMenuItem *menuitem, gpointer data)
+{
+  moko_cb_run_app (data);
+}
+
+void 
 moko_cb_run_app (const char * data)
 {
 	switch (fork())

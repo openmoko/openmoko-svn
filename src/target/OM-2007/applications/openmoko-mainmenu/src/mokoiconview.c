@@ -1057,11 +1057,10 @@ moko_icon_view_realize (GtkWidget *widget)
   gdk_window_set_user_data (icon_view->priv->bin_window, widget);
 
   widget->style = gtk_style_attach (widget->style, widget->window);
-  gtk_style_set_background (widget->style, widget->window, widget->state);//SUNZY:draw window backgound with window BG_PIXBUF
   
-   //gdk_window_set_background (icon_view->priv->bin_window, &widget->style->base[widget->state]);
-   //gdk_window_set_background (widget->window, &widget->style->base[widget->state]);
-
+  //SUNZY:draw window backgound with window BG_PIXBUF
+  gtk_style_set_background (widget->style, icon_view->priv->bin_window, widget->state);
+  gtk_style_set_background (widget->style, widget->window, widget->state);  
 }
 
 static void
@@ -2320,9 +2319,6 @@ moko_icon_view_size_allocate (GtkWidget      *widget,
 			 MOKO_MAX (icon_view->priv->width, allocation->width),
 			 MOKO_MAX (icon_view->priv->height, allocation->height));
     }
-
-  //SUNZY: ReDraw window back ground wirh widget->bg_pixmap
-  gdk_window_set_back_pixmap (icon_view->priv->bin_window, widget->style->bg_pixmap[widget->state], FALSE);
 
   icon_view->priv->hadjustment->page_size = allocation->width;
   icon_view->priv->hadjustment->page_increment = allocation->width * 0.9;

@@ -22,27 +22,17 @@
 #ifndef _MAIN_MENU_MAIN_H
 #define _MAIN_MENU_MAIN_H
 
-
-#include <libmokoui/moko-application.h>
-#include <libmokoui/moko-finger-window.h>
-#include <libmokoui/moko-finger-wheel.h>
-#include <libmokoui/moko-finger-tool-box.h>
-#include <libmokoui/moko-pixmap-button.h>
-
-#include "mainmenu.h"
-#include "app-history.h"
+#include "fingermenu.h"
+#include "stylusmenu.h"
 #include "dbus-conn.h"
+#include "mokodesktop.h"
 
 typedef struct _MokoMainmenuApp MokoMainmenuApp;
 
 struct _MokoMainmenuApp {
-    MokoApplication *app;
-    
-    MokoFingerWindow *window;
-    MokoFingerWheel *wheel;
-    MokoFingerToolBox *toolbox;
-    MokoMainMenu *mm;
-    MokoAppHistory *history;
+	MokoFingerMenu *fm;
+	MokoStylusMenu *sm;
+    MokoDesktopItem *top_item;
 };
 
 #endif /*_MAIN_MENU_MAIN_H*/

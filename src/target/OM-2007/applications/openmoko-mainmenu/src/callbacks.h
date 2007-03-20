@@ -27,24 +27,28 @@
 
 #include <gtk/gtk.h>
 #include "main.h"
+#include "fingermenu.h"
 
-void moko_wheel_bottom_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
+void moko_wheel_bottom_press_cb (GtkWidget *self, MokoFingerMenu *fm);
 
-void moko_wheel_left_up_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
+void moko_wheel_left_up_press_cb (GtkWidget *self, MokoFingerMenu *fm);
 
-void moko_wheel_right_down_press_cb (GtkWidget *self, MokoMainmenuApp *mma);
+void moko_wheel_right_down_press_cb (GtkWidget *self, MokoFingerMenu *fm);
 
 void moko_up_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
 void moko_down_btn_cb (GtkButton *button, MokoMainMenu *mm);
 
-void moko_item_select_cb(MokoIconView *icon_view, GtkTreePath *path, MokoMainmenuApp *mma);
+void moko_item_select_cb(MokoIconView *icon_view, GtkTreePath *path, MokoFingerMenu *fm);
 
-void moko_icon_view_item_acitvated_cb(MokoIconView *iconview, GtkTreePath *path, MokoMainmenuApp *mma);
+void moko_icon_view_item_acitvated_cb(MokoIconView *iconview, GtkTreePath *path, MokoFingerMenu *fm);
 
-void moko_icon_view_selection_changed_cb(MokoIconView *iconview, MokoMainmenuApp *mma);
+void moko_icon_view_selection_changed_cb(MokoIconView *iconview,MokoFingerMenu *fm);
 
 void moko_tool_box_btn_clicked_cb (GtkButton *btn, MokoAppHistory *history);
+
+void
+moko_stylus_menu_activate_item (GtkMenuItem *menuitem, gpointer data);
 
 #endif /*_XOPEN_SOURCE*/
 #endif /*_MAIN_MENU_CALLBACKS_H*/

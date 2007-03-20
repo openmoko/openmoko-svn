@@ -38,7 +38,8 @@ handle_sigusr1 (int value)
 {
   if (!mma)
        return;
-  gtk_window_present (GTK_WINDOW(mma->window));
+  //gtk_window_present (GTK_WINDOW(mma->window));
+  g_debug ("Show finger menu");
   moko_dbus_send_message ("Openmoko main menu");
 
   signal (SIGUSR1, handle_sigusr1);
@@ -107,12 +108,62 @@ setlock (char *fname)
     }
 }
 
+static void
+moko_mainmenu_usage (const char *bin_name)
+{
+  fprintf (stderr, "%s usage: %s [Options...]\n"
+    "Where options are:\n"
+	"--help, -h             print help\n"
+	"--finger-menum, -fm    Show finger menu when application started\n", 
+	bin_name, bin_name);
+  exit (1);
+}
+
+static void
+moko_mainmenu_init(MokoMainmenuApp *mma, int argc, char** argv)
+{
+  gint i;
+  gint ret = 0 ;
+  gboolean show_fm = FALSE;
+
+  for (i=1; i< argc; i++)
+  {
+    if (!strcmp("--finger-menu", argv[i]) || !strcmp("-fm", argv[i]))
+    {
+	  show_fm = TRUE;
+	  continue;
+	}
+	if (++i>=argc)
+	  moko_mainmenu_usage (argv[0]);
+  }
+
+  /* Buid Root item, don't display */
+  mma->top_item = mokodesktop_item_new_with_params ("Home", 
+						       NULL,
+						       NULL,
+						       ITEM_TYPE_ROOT );
+
+  /* Build Lists (parse .directory and .desktop files) */	
+  ret = mokodesktop_init(mma->top_item, ITEM_TYPE_CNT);
+    
+  gtk_init( &argc, &argv );
+
+  /*MokoFingerMenu object*/
+  mma->fm = moko_finger_menu_new ();
+  moko_finger_menu_build (mma->fm, mma->top_item);
+  if(show_fm)
+	moko_finger_menu_show (mma->fm);
+
+  /*MokoStylusMenu object*/
+  mma->sm = moko_stylus_menu_new ();
+  moko_stylus_menu_build (mma->sm, mma->top_item);
+}
 int 
 main( int argc, char** argv ) 
 {
     pid_t lockapp;
-
     lockapp = testlock (LOCK_FILE);
+	int ret;
 
     if (lockapp > 0)
      {
@@ -135,63 +186,36 @@ main( int argc, char** argv )
         g_error ("Failed to initial dbus connection.");
 		exit (0);
     }
-    gtk_init( &argc, &argv );
+  
+ // moko_mainmenu_init (mma, argc, argv);
 
-    /* application object */
-    mma->app = MOKO_APPLICATION(moko_application_get_instance());
-    g_set_application_name( "OpenMoko Main Menu" );
+  /* Buid Root item, don't display */
+  mma->top_item = mokodesktop_item_new_with_params ("Home", 
+						       NULL,
+						       NULL,
+						       ITEM_TYPE_ROOT );
+
+  /* Build Lists (parse .directory and .desktop files) */	
+  ret = mokodesktop_init(mma->top_item, ITEM_TYPE_CNT);
     
-    /* finger based window */
-    mma->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
-    gtk_widget_show (GTK_WIDGET (mma->window));
+  gtk_init( &argc, &argv );
 
-    /* finger wheel object*/
-    mma->wheel = MOKO_FINGER_WHEEL (moko_finger_window_get_wheel (mma->window));
-    gtk_window_set_title (GTK_WINDOW (mma->wheel), "wheel");
+  /*MokoFingerMenu object*/
+  mma->fm = moko_finger_menu_new ();
+  moko_finger_menu_build (mma->fm, mma->top_item);
+  moko_finger_menu_show (mma->fm);
 
-    /* finger toolbox object*/
-    mma->toolbox = MOKO_FINGER_TOOL_BOX (moko_finger_window_get_toolbox (mma->window));
-    //initialize toolbox's buttons, which are MokoPixmapButton objects.
-    mma->history = moko_app_history_init (mma->toolbox);
-	if (!mma->history)
-	{
-        g_error ("Failed to get application history instance");
-		exit (0);
-    }
+  /*MokoStylusMenu object*/
+ // mma->sm = moko_stylus_menu_new ();
+ // moko_stylus_menu_build (mma->sm, mma->top_item);
+  signal (SIGUSR1, handle_sigusr1);
 
-    /* MokoMainMenu object */
-    mma->mm = MAINMENU (moko_main_menu_new ());
+  gtk_main();
 
-    /* signal connected*/
-    //finger wheel object signals
-    g_signal_connect (mma->wheel, "press_bottom",
-    		G_CALLBACK ( moko_wheel_bottom_press_cb), mma);
-    g_signal_connect (mma->wheel, "press_left_up",
-    		G_CALLBACK ( moko_wheel_left_up_press_cb), mma);
-    g_signal_connect (mma->wheel, "press_right_down",
-    		G_CALLBACK ( moko_wheel_right_down_press_cb), mma);
-    //MokoMainMenu:MokoIconView object signals
-    g_signal_connect (mma->mm->icon_view, "selection-changed",
-    		G_CALLBACK (moko_icon_view_selection_changed_cb), mma);
-    g_signal_connect (mma->mm->icon_view, "item_activated",
-    		G_CALLBACK (moko_icon_view_item_acitvated_cb), mma);
-
-    signal (SIGUSR1, handle_sigusr1);
-
-    moko_finger_window_set_contents (mma->window, GTK_WIDGET(mma->mm));
-    gtk_widget_show_all (GTK_WIDGET(mma->window) );
-
-    gtk_widget_show (GTK_WIDGET (mma->wheel));	
-    gtk_widget_show (GTK_WIDGET (mma->toolbox));
-    gtk_widget_show (GTK_WIDGET (mma->mm));
-
-    gtk_main();
-
-    if (mma)
-	{
-		if (mma->history)
-			moko_app_history_free (mma->history);
-    	g_free (mma);
-	}
-    return 0;
+  if (mma)
+  {
+   	g_free (mma);
+  }
+  
+  return 0;
 }
