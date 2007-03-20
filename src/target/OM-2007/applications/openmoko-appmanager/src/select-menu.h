@@ -1,4 +1,4 @@
-/**
+/*
  *  @file select-menu.h
  *  @brief The select menu that popuo in the treeview
  *

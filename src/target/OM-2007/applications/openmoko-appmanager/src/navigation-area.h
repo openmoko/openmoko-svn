@@ -1,4 +1,4 @@
-/**
+/*
  *  @file navigation-area.h
  *  @brief The navigation area in the main window
  *

@@ -1,4 +1,4 @@
-/**
+/*
  *  @file appmanager-data.c
  *  @brief The all data that the application manager will used
  *
@@ -59,7 +59,7 @@ application_manager_data_init (ApplicationManagerData *data)
 
 }
 
-/**
+/*
  * @brief Create a new ApplicationManagerData
  * @return The ApplicationManagerData. If fail to create, it will return NULL.
  */
@@ -71,7 +71,7 @@ application_manager_data_new (void)
                                         NULL));
 }
 
-/**
+/*
  * @brief Set the moko panad window to the application manager data
  * @param appdata The application manager data struct
  * @param window The main window
@@ -85,7 +85,7 @@ application_manager_data_set_main_window (ApplicationManagerData *appdata,
   appdata->mwindow = window;
 }
 
-/**
+/*
  * @brief Set the filter menu to the application manager data
  * @param appdata The application manager data struct
  * @param filtermenu The filter menu
@@ -99,7 +99,7 @@ application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
   appdata->filtermenu = filtermenu;
 }
 
-/**
+/*
  * @brief Set the menubox to the application manager data
  * @param appdata The application manager data struct
  * @param menubox The menubox
@@ -113,7 +113,7 @@ application_manager_data_set_menubox (ApplicationManagerData *appdata,
   appdata->menubox = menubox;
 }
 
-/**
+/*
  * @brief Set the select menu to the application manager data
  * @param appdata The application manager data struct
  * @param selectmenu The select menu
@@ -127,7 +127,7 @@ application_manager_data_set_select_menu (ApplicationManagerData *appdata,
   appdata->selectmenu = selectmenu;
 }
 
-/**
+/*
  * @brief Set the search entry to the application manager data
  * @param appdata The application manager data struct
  * @param entry The search entry
@@ -141,7 +141,7 @@ application_manager_data_set_search_entry (ApplicationManagerData *appdata,
   appdata->searchentry = entry;
 }
 
-/**
+/*
  * @brief Set the treeview widget of package list to the 
  * application manager data
  * @param appdata The application manager data struct
@@ -156,7 +156,7 @@ application_manager_data_set_tvpkglist (ApplicationManagerData *appdata,
   appdata->tvpkglist = tvpkglist;
 }
 
-/**
+/*
  * @brief Set the textview widget of detail to the application manager data
  * @param appdata The application manager data struct
  * @param tvdetail The textview widget of detail
@@ -170,7 +170,7 @@ application_manager_data_set_tvdetail (ApplicationManagerData *appdata,
   appdata->tvdetail = tvdetail;
 }
 
-/**
+/*
  * @brief Set the header of package list to the application manager data
  * @param appdata The application manager data struct
  * @param pkglist The header of the package list
@@ -184,7 +184,7 @@ application_manager_data_set_pkglist (ApplicationManagerData *appdata,
   appdata->pkglist = pkglist;
 }
 
-/**
+/*
  * @brief Set the header of section list to the application manager data
  * @param appdata The application manager data struct
  * @param sectionlist The header of the section list
@@ -198,7 +198,7 @@ application_manager_data_set_section_list (ApplicationManagerData *appdata,
   appdata->sectionlist = sectionlist;
 }
 
-/**
+/*
  * @brief Set the header of the installed list to the application manager data
  * @param appdata The application manager data struct
  * @param installedlist The header of the installed list
@@ -212,7 +212,7 @@ application_manager_data_set_installed_list (ApplicationManagerData *appdata,
   appdata->installedlist = installedlist;
 }
 
-/**
+/*
  * @brief Set the header of the upgrade list to the application manager data
  * @param appdata The application manager data struct
  * @param upgradelist The header of the upgrade list
@@ -226,7 +226,7 @@ application_manager_data_set_upgrade_list (ApplicationManagerData *appdata,
   appdata->upgradelist = upgradelist;
 }
 
-/**
+/*
  * @brief Set the header of the selected list to the application manager data
  * @param appdata The application manager data struct
  * @param selectedlist The header of the selected list
@@ -240,7 +240,7 @@ application_manager_data_set_selected_list (ApplicationManagerData *appdata,
   appdata->selectedlist = selectedlist;
 }
 
-/**
+/*
  * @brief Set the header of the package list whose section name is null 
  * to the application manager data
  * @param appdata The application manager data struct
@@ -255,7 +255,7 @@ application_manager_data_set_nosecpkg_list (ApplicationManagerData *appdata,
   appdata->nosecpkglist = nosecpkglist;
 }
 
-/**
+/*
  * @brief Set the current list to the application manager data
  * @param appdata The application manager data struct
  * @param currentlist The current list that display on the navigation list
@@ -269,7 +269,7 @@ application_manager_data_set_current_list (ApplicationManagerData *appdata,
   appdata->currentlist = currentlist;
 }
 
-/**
+/*
  * @brief Set the pixbuf to the pixbuf list in the application manager data
  * @param appdata The application manager data struct
  * @param pixbuf A GdkPixbuf
@@ -286,7 +286,7 @@ application_manager_data_set_status_pixbuf (ApplicationManagerData *appdata,
   appdata->statuspix[id] = pixbuf;
 }
 
-/**
+/*
  * @brief Set the search history to the application manager data
  * @param appdata The application manager data struct
  * @param pixbuf A GdkPixbuf
@@ -300,7 +300,7 @@ application_manager_data_set_search_history (ApplicationManagerData *appdata,
   appdata->searchhistory = searchhistory;
 }
 
-/**
+/*
  * @brief Set the install dialog to the application manager data
  * @param appdata The application manager data struct
  * @param installdialog The install dialog
@@ -314,7 +314,7 @@ application_manager_data_set_install_dialog (ApplicationManagerData *appdata,
   appdata->installdialog = installdialog;
 }
 
-/**
+/*
  * @brief Init the pixbuf list.
  *
  * Load all pixbuf from the appointed file, and set the pixbuf to the
@@ -374,7 +374,7 @@ init_pixbuf_list (ApplicationManagerData *appdata)
 
 }
 
-/**
+/*
  * @brief Get the main window from the application manager data
  * @param appdata The application manager data
  * @return The main window
@@ -387,7 +387,7 @@ application_manager_get_main_window (ApplicationManagerData *appdata)
   return appdata->mwindow;
 }
 
-/**
+/*
  * @brief Get the filter menu from the application manager data
  * @param appdata The application manager data
  * @return The filter menu
@@ -413,7 +413,7 @@ application_manager_get_menubox (ApplicationManagerData *appdata)
   return appdata->menubox;
 }
 
-/**
+/*
  * @brief Get the select menu from the application manager data
  * @param appdata The application manager data
  * @return The select menu
@@ -426,7 +426,7 @@ application_manager_get_select_menu (ApplicationManagerData *appdata)
   return appdata->selectmenu;
 }
 
-/**
+/*
  * @brief Get the search entry from the application manager data
  * @param appdata The application manager data
  * @return The search entry
@@ -439,7 +439,7 @@ application_manager_get_search_entry (ApplicationManagerData *appdata)
   return appdata->searchentry;
 }
 
-/**
+/*
  * @brief Get the treeview widget of the package list from 
  * the application manager data
  *
@@ -454,7 +454,7 @@ application_manager_get_tvpkglist (ApplicationManagerData *appdata)
   return appdata->tvpkglist;
 }
 
-/**
+/*
  * @brief Get the textview widget of the details info from 
  * the application manager data
  * 
@@ -469,7 +469,7 @@ application_manager_get_tvdetail (ApplicationManagerData *appdata)
   return appdata->tvdetail;
 }
 
-/**
+/*
  * @brief Get the package list that get from libipkg from the 
  * application manager data
  *
@@ -484,7 +484,7 @@ application_manager_data_get_pkglist (ApplicationManagerData *appdata)
   return appdata->pkglist;
 }
 
-/**
+/*
  * @brief Get the section list from the application manager data
  * @param appdata The application manager data
  * @return The section list
@@ -497,7 +497,7 @@ application_manager_data_get_sectionlist (ApplicationManagerData *appdata)
   return appdata->sectionlist;
 }
 
-/**
+/*
  * @brief Get the installed list from the application manager data
  * @param appdata The application manager data
  * @return The installed list
@@ -510,7 +510,7 @@ application_manager_data_get_installedlist (ApplicationManagerData *appdata)
   return appdata->installedlist;
 }
 
-/**
+/*
  * @brief Get the upgrade list from the application manager data
  * @param appdata The application manager data
  * @return The upgrade list
@@ -523,7 +523,7 @@ application_manager_data_get_upgradelist (ApplicationManagerData *appdata)
   return appdata->upgradelist;
 }
 
-/**
+/*
  * @brief Get the selected list from the application manager data
  * @param appdata The application manager data
  * @return The selected list
@@ -536,7 +536,7 @@ application_manager_data_get_selectedlist (ApplicationManagerData *appdata)
   return appdata->selectedlist;
 }
 
-/**
+/*
  * @brief Get the nosecpkg list from the application manager data
  * @param appdata The application manager data
  * @return The selected list
@@ -549,7 +549,7 @@ application_manager_data_get_nosecpkglist (ApplicationManagerData *appdata)
   return appdata->nosecpkglist;
 }
 
-/**
+/*
  * @brief Get the current list from the application manager data
  * @param appdata The application manager data
  * @return The current list that display in the navigation list
@@ -562,7 +562,7 @@ application_manager_data_get_currentlist (ApplicationManagerData *appdata)
   return appdata->currentlist;
 }
 
-/**
+/*
  * @brief Get the appointed pixbuf from the application manager data
  * @param appdata The application manager data
  * @param id The status id
@@ -578,7 +578,7 @@ application_manager_data_get_status_pixbuf (ApplicationManagerData *appdata,
   return appdata->statuspix[id];
 }
 
-/**
+/*
  * @brief Get the search history from the application manager data
  * @param appdata The application manager data
  * @return The search history
@@ -591,7 +591,7 @@ application_manager_data_get_search_history (ApplicationManagerData *appdata)
   return appdata->searchhistory;
 }
 
-/**
+/*
  * @brief Get the install dialog from the application manager data
  * @param appdata The application manager data
  * @return The install dialog

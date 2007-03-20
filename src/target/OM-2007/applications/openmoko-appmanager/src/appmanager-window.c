@@ -1,4 +1,4 @@
-/**
+/*
  *  @file appmanager-window.c
  *  @brief The application manager in the Openmoko
  *
@@ -34,7 +34,7 @@
 #include "package-list.h"
 #include "select-menu.h"
 
-/**
+/*
  * @brief The start function.
  */
 int 

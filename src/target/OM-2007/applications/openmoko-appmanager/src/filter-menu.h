@@ -1,4 +1,4 @@
-/**
+/*
  *  @file filter-menu.h
  *  @brief The filter menu item
  *

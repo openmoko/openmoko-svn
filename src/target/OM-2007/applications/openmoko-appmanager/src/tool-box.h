@@ -1,4 +1,4 @@
-/**
+/*
  *  @file tool-box.h
  *  @brief The tool box in the main window
  *

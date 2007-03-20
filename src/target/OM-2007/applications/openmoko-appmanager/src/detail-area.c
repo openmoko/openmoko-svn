@@ -1,4 +1,4 @@
-/**
+/*
  *  @file detail-area.c
  *  @brief The detail area in the main window
  *
@@ -24,7 +24,7 @@
 #include "navigation-area.h"
 #include "package-list.h"
 
-/**
+/*
  * @brief Create a detail area to the application manager data
  * @param appdata The application manager data
  * @return The toplevel widget of detail area
@@ -51,7 +51,7 @@ detail_area_new (ApplicationManagerData *appdata)
   return GTK_WIDGET (box);
 }
 
-/**
+/*
  * @brief Format the depends list of package.
  * @param depends The depends list
  * @param The dest string
@@ -80,7 +80,7 @@ format_depends_list (char *dest, char *depends, int size)
   dest[i] = 0;
 }
 
-/**
+/*
  * @brief Update the detail area infomation base on the package that selected
  * @param appdata The application manager data
  * @param pkg The package infomation

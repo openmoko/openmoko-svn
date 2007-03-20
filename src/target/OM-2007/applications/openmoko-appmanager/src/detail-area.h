@@ -1,4 +1,4 @@
-/**
+/*
  *  @file detail-area.h
  *  @brief The detail area in the main window
  *

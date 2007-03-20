@@ -1,4 +1,4 @@
-/**
+/*
  *  @file pixbuf-list.h
  *  @brief The package list that get from the lib ipkg
  *
@@ -22,7 +22,7 @@
 
 #include <gtk/gtk.h>
 
-/**
+/*
  * @brief The package status id
  *
  * The id is used to find the related pixbuf from pixbuf list.

@@ -1,4 +1,4 @@
-/**
+/*
  * @file ipkgapi.c
  * @brief Package management api based on libipkg.a.
  * @author Ken Zhao
@@ -31,7 +31,7 @@
 #include "ipkg_cmd.h"
 
 
-/**
+/*
  * @brief Debug information.
  */
 #ifdef DEBUG 
@@ -41,40 +41,40 @@
 #endif 
 
 
-/**
+/*
  * @brief check whether ipkg state is changed.
  */
 extern int ipkg_state_changed;
 
-/**
+/*
  * @brief Golbal config structure.
  */
 ipkg_conf_t global_conf;
 
-/**
+/*
  * @brief Golbal config structure.
  */
 int is_init_successful = 0;
 
 
 
-/**
+/*
  * @brief IPKG function's return code.
  */
 int nReturnCode = 0;
-/**
+/*
  * @brief Error message.
  */
 char errMsg[1024*5];
 
-/**
+/*
  * @brief IPKG message callback function.
  */
 extern ipkg_message_callback ipkg_cb_message;
 
 
 
-/**
+/*
  * @brief IPKG message callback function.
  *
  * @param conf IPKG config structure pointer.
@@ -107,7 +107,7 @@ int def_ipkg_message_callback(ipkg_conf_t *conf, message_level_t level, char *ms
 }
 
 
-/**
+/*
  * @brief Get error message.
  *
  * @return Error message.
@@ -118,7 +118,7 @@ char *get_error_msg()
 }
 
 
-/**
+/*
  * @brief Check whether IPKG status file can be accessed for writing.
  *
  * @param conf IPKG config structure pointer.
@@ -145,7 +145,7 @@ int check_status_files(ipkg_conf_t *conf)
 }
 
 
-/**
+/*
  * @brief Save IPKG status file and update file lists.
  *
  * @param conf IPKG config structure pointer.
@@ -171,7 +171,7 @@ static void write_status_files_if_changed(ipkg_conf_t *conf)
 }
 
 
-/**
+/*
  * @brief Check whether the package file is valid.
  *
  * @param conf IPKG config structure pointer.
@@ -208,7 +208,7 @@ int check_ipk_file(ipkg_conf_t *conf, char *package_filename)
 }
 
 
-/**
+/*
  * @brief Signal handler.
  *
  * @param sig SIGNAL.
@@ -225,7 +225,7 @@ static void sigint_handler(int sig)
 
 
 
-/**
+/*
  * @brief Free package list in head of list.
  *
  * @param head Package list head.
@@ -264,7 +264,7 @@ void free_pkg_list(PKG_LIST_HEAD *head)
 }
 
 
-/**
+/*
  * @brief Free package detail info.
  *
  * @param info Package detail info pointer.
@@ -297,7 +297,7 @@ void free_pkg_detail_info(PACKAGE_DETAIL_INFO *info)
 }
 
 
-/**
+/*
  * @brief Set ipkg installation directory.
  *
  * @param info Package detail info pointer.
@@ -324,7 +324,7 @@ static int ipkg_conf_set_default_dest(ipkg_conf_t *conf, const char *default_des
     
 }
 
-/**
+/*
  * @brief IPKG initialize.
  *
  * @param noreadfeedsfile 
@@ -355,7 +355,7 @@ int ipkg_initialize(int noreadfeedsfile)
     return 0;
 }
 
-/**
+/*
  * @brief IPKG uninitialize.
  *
  */
@@ -366,7 +366,7 @@ void ipkg_uninitialize()
 }
 
 
-/**
+/*
  * @brief Get installed package list.
  *
  * @param pkg_list_head pkg_list_head->length indicates the number of installed packages, 
@@ -483,7 +483,7 @@ int ipkg_list_installed_cmd(PKG_LIST_HEAD *pkg_list_head)
 
 
 
-/**
+/*
  * @brief Get package list which can be updated.
  *
  * @param pkg_list_head pkg_list_head->length indicates the number of installed packages, 
@@ -503,7 +503,7 @@ int ipkg_list_updated_cmd(PKG_LIST_HEAD *pkg_list_head)
 
 
 
-/**
+/*
  * @brief Get available package list.
  *
  * @param pkg_list_head pkg_list_head->length indicates the number of installed packages, 
@@ -638,7 +638,7 @@ int ipkg_list_available_cmd(PKG_LIST_HEAD *pkg_list_head)
 
 
 
-/**
+/*
  * @brief Get package detail information.
  *
  * @param pkg_name Package name.
@@ -765,7 +765,7 @@ PACKAGE_DETAIL_INFO *ipkg_get_pkg_detail_info(char *pkg_name, pkg_query_status_t
 
 
 
-/**
+/*
  * @brief Get package by name and dest.
  *
  * @param hash Package hash table.
@@ -791,7 +791,7 @@ pkg_t *pkg_hash_fetch_available_by_name_dest(hash_table_t *hash, const char *pkg
     return NULL;
 }
 
-/**
+/*
  * @brief Get package by name.
  *
  * @param hash Package hash table.
@@ -816,7 +816,7 @@ pkg_t *pkg_hash_fetch_available_by_name(hash_table_t *hash,	const char *pkg_name
 }
 
 
-/**
+/*
  * @brief Remove specified package.
  *
  * @param pkg_name Package name.  
@@ -894,7 +894,7 @@ int ipkg_remove_cmd(char *pkg_name) {
 }
 
 
-/**
+/*
  * @brief Install package.
  *
  * @param pkg_name Package file name with path.
@@ -905,7 +905,7 @@ int ipkg_remove_cmd(char *pkg_name) {
  * @retval !=0 failure.
  *         Call get_error_msg to get error message.
  */
-int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name)
+int ipkg_install_cmd(char *pkg_name, char *dest_name, char *pkg_real_name)
 {
     char *arg;
     int  err = 0;
@@ -976,7 +976,7 @@ int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name)
 
 
 
-/**
+/*
  * @brief Search specified package.
  *
  * @param pkg_name Package name.
@@ -1077,7 +1077,7 @@ int ipkg_search_cmd(char *pkg_name, PKG_LIST_HEAD *pkg_list_head)
 
 
 
-/**
+/*
  * @brief Upgrade specified package.
  *
  * @param pkg_name Package name.

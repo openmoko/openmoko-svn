@@ -1,4 +1,4 @@
-/**
+/*
  *  @file application-menu.h
  *  @brief The application menu item
  *

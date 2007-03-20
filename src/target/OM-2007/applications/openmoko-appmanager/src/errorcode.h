@@ -1,4 +1,4 @@
-/**
+/*
  *  @file errorcode.h
  *  @brief The error code of the all function return
  *
@@ -20,7 +20,7 @@
 #ifndef _FIC_ERROR_CODE_H
 #define _FIC_ERROR_CODE_H
 
-/**
+/*
  * @brief All available error code
  */
 typedef enum {

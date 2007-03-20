@@ -1,4 +1,4 @@
-/**
+/*
  *  @file tool-box.c
  *  @brief The tool box in the main window
  *
@@ -27,7 +27,7 @@
 #include "install-dialog.h"
 #include "filter-menu.h"
 
-/**
+/*
  * @brief The callback function of the button "upgrade"
  */
 void 
@@ -50,7 +50,7 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
   g_debug ("destroy a dialog");
 }
 
-/**
+/*
  * @brief The callback function of the button "Apply"
  */
 void 
@@ -105,7 +105,7 @@ on_apply_clicked (GtkButton *bapply, gpointer data)
   gtk_widget_destroy (dialog);
 }
 
-/**
+/*
  * @brief The callback function of the search entry
  */
 void 
@@ -158,7 +158,7 @@ on_search_entry_changed (GtkEditable *entryedit, gpointer data)
   strncpy (searchhistory, searchstr, MAX_SEARCH_ENTRY_TEXT_LENGTH);
 }
 
-/**
+/*
  * @brief Create a new tool box for the application manager data
  * @param appdata The application manager data
  * @return The toplevel widget of the tool box

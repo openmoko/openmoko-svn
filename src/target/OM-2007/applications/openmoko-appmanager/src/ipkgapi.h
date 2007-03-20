@@ -1,4 +1,4 @@
-/**
+/*
  * @file ipkgapi.h
  * @brief Package management api header file.
  * @author Ken Zhao
@@ -23,7 +23,7 @@
 #include <ipkg_conf.h>
 #include <pkg_hash.h>
 
-/**
+/*
  * @brief IPKG package structure.
  */
 typedef struct ipk_package {
@@ -39,7 +39,7 @@ typedef struct ipk_package {
   struct ipk_package *next;         /* pointer to next package */
 }IPK_PACKAGE;
 
-/**
+/*
  * @brief IPKG package list head structure.
  */
 typedef struct pkg_list_head {
@@ -47,7 +47,7 @@ typedef struct pkg_list_head {
   IPK_PACKAGE *pkg_list;        /* package list head pointer */
 }PKG_LIST_HEAD;
 
-/**
+/*
  * @brief IPKG package detail information structure.
  */
 typedef struct package_detail_info {
@@ -64,7 +64,7 @@ typedef struct package_detail_info {
 }PACKAGE_DETAIL_INFO;
 
 
-/**
+/*
  * @brief IPKG package query status.
  */
 enum pkg_query_status
@@ -84,7 +84,7 @@ int ipkg_list_updated_cmd(PKG_LIST_HEAD *pkg_list_head);
 
 PACKAGE_DETAIL_INFO *ipkg_get_pkg_detail_info(char *pkg_name, pkg_query_status_t query_status);
 
-int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name);
+int ipkg_install_cmd(char *pkg_name, char *dest_name, char *pkg_real_name);
 int ipkg_remove_cmd(char *pkg_name);
 int ipkg_search_cmd(char *pkg_name, PKG_LIST_HEAD *pkg_list_head);
 

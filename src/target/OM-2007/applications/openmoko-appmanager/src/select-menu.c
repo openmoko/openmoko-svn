@@ -1,4 +1,4 @@
-/**
+/*
  *  @file select-menu.c
  *  @brief The select menu that popuo in the treeview
  *
@@ -39,7 +39,7 @@ typedef struct _MokoSelectMenuPriv {
   GtkWidget   *markremove;
 } MokoSelectMenuPriv;
 
-/**
+/*
  * @brief The callback function of the ummark menuitem
  */
 void 
@@ -101,7 +101,7 @@ on_unmark_activate (GtkMenuItem *unmark, gpointer data)
   package_list_remove_package_from_selected_list (appdata, pkg);
 }
 
-/**
+/*
  * @brief The callback function of the mark install menuitem
  */
 void 
@@ -154,7 +154,7 @@ on_mark_install_activate (GtkMenuItem *markinstall, gpointer data)
                       -1);
 }
 
-/**
+/*
  * @brief The callback function of the mark upgrade menuitem
  */
 void 
@@ -209,7 +209,7 @@ on_mark_upgrade_activate (GtkMenuItem *markupgrade, gpointer data)
                       -1);
 }
 
-/**
+/*
  * @brief The callback function of the mark remove menuitem
  */
 void 
@@ -279,7 +279,7 @@ moko_select_menu_init (MokoSelectMenu *data)
   g_debug ("New a moko select menu");
 }
 
-/**
+/*
  * @brief Create a new select menu
  * @param appdata The application manager data
  * @return The MokoSelectMenu
@@ -317,7 +317,7 @@ moko_select_menu_new (ApplicationManagerData *appdata)
   return self;
 }
 
-/**
+/*
  * @brief Popup the select menu
  * @param menu The select menu
  * @param appdata The application manager data

@@ -1,4 +1,4 @@
-/**
+/*
  *  @file package-list.h
  *  @brief The package list that get from the lib ipkg
  *

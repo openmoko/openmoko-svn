@@ -1,4 +1,4 @@
-/**
+/*
  *  @file application-menu.c
  *  @brief The application menu item
  *
@@ -24,7 +24,7 @@
 #include "ipkgapi.h"
 #include "errorcode.h"
 
-/**
+/*
  * @brief The Callback function of the show status menu
  */
 void 
@@ -34,7 +34,7 @@ on_showstatus_activate (GtkMenuItem *menuitem, gpointer user_data)
 
 }
 
-/**
+/*
  * @brief The Callback function of the show source menu
  */
 void 
@@ -43,7 +43,7 @@ on_showsource_activate (GtkMenuItem *menuitem, gpointer user_data)
   g_debug ("Call on_showsource_activate");
 }
 
-/**
+/*
  * @brief The Callback function of the install single application menu
  */
 void 
@@ -147,7 +147,7 @@ on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_dat
   return;
 }
 
-/**
+/*
  * @brief The Callback function of the show help menu
  */
 void 
@@ -156,7 +156,7 @@ on_showhelp_activate (GtkMenuItem *menuitem, gpointer user_data)
   g_debug ("Call on_showhelp_activate");
 }
 
-/**
+/*
  * @brief The Callback function of the quit menu
  */
 void 
@@ -166,7 +166,7 @@ on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
   gtk_main_quit ();
 }
 
-/**
+/*
  * @brief Create a new application menu for the application manager
  * @param appdata The application manager data
  * @return The GtkMenu widget. If there is error, 

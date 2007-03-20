@@ -1,4 +1,4 @@
-/**
+/*
  *  @file apply-dialog.c
  *  @brief It is an infomation dialog that will display the all package 
  *  that will be changed.
@@ -24,7 +24,7 @@
 #include "appmanager-window.h"
 #include "package-list.h"
 
-/**
+/*
  * @brief The id of package list that display in apply dialog.
  */
 enum {
@@ -32,7 +32,7 @@ enum {
   MARK_NUM_COL            /* Column number */
 };
 
-/**
+/*
  * @brief Create a new apply dialog
  * @param The application manager data
  * @return The apply dialog

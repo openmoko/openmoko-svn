@@ -1,4 +1,4 @@
-/**
+/*
  *  @file appmanager-data.h
  *  @brief The all data that the application manager will used
  *
@@ -43,7 +43,7 @@ G_BEGIN_DECLS
                                                       ApplicationManagerDataClass))
 
 
-/**
+/*
  * @brief The all data that will be used in the application manager
  *
  * Acturally, it need not load the pixbuf to memory and keep them.
@@ -73,7 +73,7 @@ typedef struct _ApplicationManagerData {
   GtkWidget        *installdialog;     /* The install dialog */
 } ApplicationManagerData;
 
-/**
+/*
  * @brief The class struct of application manager data
  */
 typedef struct _ApplicationManagerDataClass {

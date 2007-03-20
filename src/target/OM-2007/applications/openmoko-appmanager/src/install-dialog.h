@@ -1,4 +1,4 @@
-/**
+/*
  *  @file install-dialog.h
  *  @brief It is the dialog that displays the process of install/remove/upgrade
  *  packages.
@@ -42,7 +42,7 @@ G_BEGIN_DECLS
                                             MOKO_TYPE_INSTALL_DIALOG, \
                                             InstallDialogClass))
 
-/**
+/*
  * @brief Process status of the install dialog
  */
 enum {
@@ -52,14 +52,14 @@ enum {
   STATUS_COMPLETE       /* The process of install/remove/upgrade packages completed */
 };
 
-/**
+/*
  * @brief The install dialog struct
  */
 typedef struct _InstallDialog {
   GtkDialog          parent;             /* The parent of the struct */
 } InstallDialog;
 
-/**
+/*
  * @brief The install dialog class struct
  */
 typedef struct _InstallDialogClass {

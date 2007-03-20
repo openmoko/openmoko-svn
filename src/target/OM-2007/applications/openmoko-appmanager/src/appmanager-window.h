@@ -1,4 +1,4 @@
-/**
+/*
  *  @file appmanager-window.h
  *  @brief The application manager in the Openmoko
  *
@@ -21,7 +21,7 @@
 #ifndef _FIC_APPMANAGER_WINDOW_H
 #define _FIC_APPMANAGER_WINDOW_H
 
-/**
+/*
  * @brief The multilanguage macro
  *
  * It will be fixed at the feature

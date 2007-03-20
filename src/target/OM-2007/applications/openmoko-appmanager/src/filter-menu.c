@@ -1,4 +1,4 @@
-/**
+/*
  *  @file filter-menu.c
  *  @brief The filter menu item
  *
@@ -24,7 +24,7 @@
 #include "navigation-area.h"
 #include "package-list.h"
 
-/**
+/*
  * @brief The callback function of the search result menuitem.
  */
 static void 
@@ -33,7 +33,7 @@ on_search_result_activate (GtkMenuItem *menuitem, gpointer userdata)
   g_debug ("Clicked the search result menuitem");
 }
 
-/**
+/*
  * @brief The callback function of the installed menuitem.
  */
 static void 
@@ -52,7 +52,7 @@ on_installed_activate (GtkMenuItem *menuitem, gpointer userdata)
           pkglist);
 }
 
-/**
+/*
  * @brief The callback function of the upgradeable menuitem.
  */
 static void 
@@ -71,7 +71,7 @@ on_upgradeable_activate (GtkMenuItem *menuitem, gpointer userdata)
           pkglist);
 }
 
-/**
+/*
  * @brief The callback function of the selected menuitem.
  */
 static void 
@@ -90,7 +90,7 @@ on_selected_activate (GtkMenuItem *menuitem, gpointer userdata)
           pkglist);
 }
 
-/**
+/*
  * @brief The callback function of the dynamic menuitem.
  */
 void 
@@ -132,7 +132,7 @@ on_dynamic_menu_item_activate (GtkMenuItem *menuitem, gpointer userdata)
           pkglist);
 }
 
-/**
+/*
  * @brief Create a new filter menu for the application manager
  * 
  * At this function, it only can create the static menu items.
@@ -181,7 +181,7 @@ filter_menu_new (ApplicationManagerData *appdata)
   return filtermenu;
 }
 
-/**
+/*
  * @brief Add a menu item to the filter menu
  * 
  * @param filtermenu The filter menu

@@ -1,4 +1,4 @@
-/**
+/*
  *  @file package-list.c
  *  @brief The package list that get from the lib ipkg
  *
@@ -27,7 +27,7 @@
 #include "navigation-area.h"
 #include "install-dialog.h"
 
-/**
+/*
  * @brief The structor of Package list node
  */
 typedef struct package_list {
@@ -36,7 +36,7 @@ typedef struct package_list {
   struct package_list *next;       /* The next node of package list */
 } PackageList;
 
-/**
+/*
  * @brief Section list structure.
  */
 typedef struct section_list {
@@ -48,7 +48,7 @@ typedef struct section_list {
 
 static gint package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg);
 
-/**
+/*
  * @brief Version compare
  *
  * This function is copy from ipkg.(pkg.c)
@@ -82,8 +82,8 @@ verrevcmp(const char *val, const char *ref)
         }
       val= vp;
       ref= rp;
-      vl=0;  if (isdigit(*vp)) vl= strtol(val,(char**)&val,10);
-      rl=0;  if (isdigit(*rp)) rl= strtol(ref,(char**)&ref,10);
+      vl=0;  if (isdigit(*vp)) vl= strtol(val,(char*)&val,10);
+      rl=0;  if (isdigit(*rp)) rl= strtol(ref,(char*)&ref,10);
       if (vl != rl) return vl - rl;
 
       vc = *val;
@@ -99,7 +99,7 @@ verrevcmp(const char *val, const char *ref)
     }
 }
 
-/**
+/*
  * @brief Get the list of all packages from lib ipkg
  * @param appdata The application manager data
  * @return If success, return OP_SUCCESS, else return error code
@@ -143,7 +143,7 @@ init_package_list (ApplicationManagerData *appdata)
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Reinit the package list. Only get the packages from the lib ipkg.
  * @param appdata The application manager data
  * @return If success, return OP_SUCCESS, else return error code
@@ -178,7 +178,7 @@ reinit_package_list (ApplicationManagerData *appdata)
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Create a new node of section list.
  *
  * If the param name is NULL, return NULL;
@@ -217,7 +217,7 @@ package_list_create_new_section_node (const char *name)
   return sect;
 }
 
-/**
+/*
  * @brief Search section node.
  *
  * Search the section node for a package. If the section of package isn't
@@ -232,7 +232,7 @@ package_list_create_new_section_node (const char *name)
  */
 static gint 
 package_list_search_section_node (const char *name, 
-                                  SectionList **section, 
+                                  SectionList *section, 
                                   SectionList *sechead)
 {
   SectionList  *tmp;
@@ -285,7 +285,7 @@ package_list_search_section_node (const char *name,
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Free the package list
  * @param pkglist The package list
  */
@@ -306,7 +306,7 @@ package_list_free_package_list (PackageList *pkglist)
   pkglist->pre = pkglist;
 }
 
-/**
+/*
  * @brief Free the section list
  * @param seclist The section list
  */
@@ -328,7 +328,7 @@ packaeg_list_free_section_list (SectionList *seclist)
   g_free (seclist);
 }
 
-/**
+/*
  * @brief Clear the old index
  */
 static void 
@@ -397,7 +397,7 @@ package_list_clear_old_index (ApplicationManagerData *appdata)
   application_manager_data_set_current_list (appdata, NULL);
 }
 
-/**
+/*
  * @brief Inist the SectionList struct
  */
 static void 
@@ -410,7 +410,7 @@ section_list_init_node (SectionList *sec)
   sec->head.next = &(sec->head);
 }
 
-/**
+/*
  * @brief Init the PackageList struct
  */
 static void 
@@ -421,7 +421,7 @@ package_list_init_node (PackageList *pkg)
   pkg->next = pkg;
 }
 
-/**
+/*
  * @brief Check the packages, if the installed package is upgradeable,
  * put them to the "upgrade" package list.
  *
@@ -476,7 +476,7 @@ check_package_upgradeable (PackageList *pkglist, IPK_PACKAGE *pkg,
   return ret;
 }
 
-/**
+/*
  * @brief Insert a package node to the package list without check whether 
  * the package is upgradeable
  *
@@ -539,7 +539,7 @@ package_list_insert_node_without_check (PackageList *pkglist, IPK_PACKAGE *pkg)
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Insert a package node to the package list.
  *
  * @param pkglist The package list
@@ -607,7 +607,7 @@ package_list_insert_node (PackageList *pkglist, IPK_PACKAGE *pkg, PackageList *u
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Build a detailed index for the packages list in the application
  * manager data
  * @param appdata The application manager data
@@ -757,7 +757,7 @@ package_list_build_index (ApplicationManagerData *appdata)
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Add the sections to the filter menu
  *
  * @param appdata The application manager data
@@ -804,7 +804,7 @@ package_list_add_section_to_filter_menu (ApplicationManagerData *appdata)
     }
 }
 
-/**
+/*
  * @brief Insert node to store
  */
 static void 
@@ -828,7 +828,7 @@ insert_node_to_store (ApplicationManagerData *appdata,
 
 }
 
-/**
+/*
  * @brief Put the nodes in the package list to the GtkListStore
  *
  * @param appdata The application manager data
@@ -851,7 +851,7 @@ translate_package_list_to_store (ApplicationManagerData *appdata,
     }
 }
 
-/**
+/*
  * @brief Get the package list which section name equals the "name"
  * from the dynamic section list
  * @param appdata The application manager data
@@ -885,7 +885,7 @@ package_list_get_with_name (ApplicationManagerData *appdata,
   return NULL;
 }
 
-/**
+/*
  * @brief Get the select status from package infomation.
  * @param data The package infomation
  * @return The select status
@@ -901,7 +901,7 @@ package_list_get_package_status (gpointer data)
   return tmp->mark;
 }
 
-/**
+/*
  * @brief Set the select status to package infomation
  * @param data The package infomation
  * @param status The new select status
@@ -918,7 +918,7 @@ package_list_set_package_status (gpointer data, gint status)
   tmp->mark = status;
 }
 
-/**
+/*
  * @brief Remove a package node from the selected package list
  * @brief appdata The application manager data
  * @param pkg The package infomation
@@ -947,7 +947,7 @@ package_list_remove_package_from_selected_list (ApplicationManagerData *appdata,
     }
 }
 
-/**
+/*
  * @brief Add a new package node to the selected package list
  * @param appdata The application manager data
  * @param pkg The package infomation
@@ -964,7 +964,7 @@ package_list_add_node_to_selected_list (ApplicationManagerData *appdata,
   package_list_insert_node_without_check (selectedlist, (IPK_PACKAGE *)pkg);
 }
 
-/**
+/*
  * @brief Get the package version from package node
  *
  * @param pkg The package infomation
@@ -983,7 +983,7 @@ package_list_get_package_version (gpointer pkg)
   return package->version;
 }
 
-/**
+/*
  * @brief Get the package name from package node
  *
  * @param pkg The package infomation
@@ -1002,7 +1002,7 @@ package_list_get_package_name (gpointer pkg)
   return package->name;
 }
 
-/**
+/*
  * @brief Get the package depends from package node
  *
  * @param pkg The package infomation
@@ -1021,7 +1021,7 @@ package_list_get_package_depends (gpointer pkg)
   return package->depends;
 }
 
-/**
+/*
  * @brief Get the package description from package node
  *
  * @param pkg The package infomation
@@ -1040,7 +1040,7 @@ package_list_get_package_description (gpointer pkg)
   return package->description;
 }
 
-/**
+/*
  * @brief Get the package maintainer from package node
  *
  * @param pkg The package infomation
@@ -1059,7 +1059,7 @@ package_list_get_package_maintainer (gpointer pkg)
   return package->maintainer;
 }
 
-/**
+/*
  * @brief Put the nodes in the package list to the GtkListStore
  *
  * @param appdata The application manager data
@@ -1085,7 +1085,7 @@ search_and_translate_package_list_to_store (ApplicationManagerData *appdata,
     }
 }
 
-/**
+/*
  * @brief Check the status of the marked list
  *
  * Takecare, the return value of this function is reversed. 
@@ -1115,7 +1115,7 @@ package_list_check_marked_list_empty (ApplicationManagerData *appdata)
   return FALSE;
 }
 
-/**
+/*
  * @brief Fill the GtkTreeStore with the selected package
  * @param treestore The tree store
  * @param selectedlist The selected package list
@@ -1204,7 +1204,7 @@ package_list_fill_store_with_selected_list (GtkTreeStore *treestore,
     }
 }
 
-/**
+/*
  * @brief Mark all upgradeable package for upgrade
  * @param appdata The application manager data
  */
@@ -1244,7 +1244,7 @@ package_list_mark_all_upgradeable (ApplicationManagerData *appdata)
     } /* end while */
 }
 
-/**
+/*
  * @brief Install/upgrade/remove pacakges that belong to the selected list
  * @param data The application manager data
  */
@@ -1442,7 +1442,7 @@ package_list_execute_change (gpointer data)
   return NULL;
 }
 
-/**
+/*
  * @brief Free all dynamic data
  * @param appdata The application manager data
  */
@@ -1464,7 +1464,7 @@ package_list_free_all_dynamic (ApplicationManagerData *appdata)
   package_list_clear_old_index (appdata);
 }
 
-/**
+/*
  * @brief Get the number of packages in the selected list
  * @param appdata The application manager data
  */

@@ -1,4 +1,4 @@
-/**
+/*
  *  @file pixbuf-list.c
  *  @brief The package list that get from the lib ipkg
  *
@@ -20,7 +20,7 @@
 
 #include "pixbuf-list.h"
 
-/**
+/*
  * @brief Create a pixbuf by the filename from the PKGDATADIR
  * @param filename The filename of the pixbuf file
  * @return The GdkPixbuf. If can not find the file, it will return NULL.

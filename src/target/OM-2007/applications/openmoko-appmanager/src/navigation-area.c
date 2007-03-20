@@ -1,4 +1,4 @@
-/**
+/*
  *  @file navigation-area.c
  *  @brief The navigation area in the main window
  *
@@ -27,7 +27,7 @@
 #include "package-list.h"
 #include "select-menu.h"
 
-/**
+/*
  * @brief The callback function of the signal "cursor-changed"
  */
 void 
@@ -49,7 +49,7 @@ on_treeview_cursor_changed (GtkTreeView *treeview,
     }
 }
 
-/**
+/*
  * @brief The callback function of the signal "unselect-all"
  */
 gboolean 
@@ -61,7 +61,7 @@ on_treeview_unselect_all (GtkTreeView *treeview,
   return FALSE;
 }
 
-/**
+/*
  * @brief The callback function of the signal "button_press_event"
  */
 gboolean 
@@ -136,7 +136,7 @@ create_package_list_store (void)
 }
 
 
-/**
+/*
  * @brief Create all widgets in the navigation area for the application manager data.
  *
  * @param appdata The application manager data
@@ -232,7 +232,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   return scrollwindow;
 }
 
-/**
+/*
  * @brief Insert test data
  */
 gint 
@@ -305,7 +305,7 @@ navigation_area_insert_test_data (ApplicationManagerData *appdata)
   return OP_SUCCESS;
 }
 
-/**
+/*
  * @brief Get the name that the roll was selected from the treeview
  * @param treeview The treeview
  * @return The package name. 
@@ -332,7 +332,7 @@ treeview_get_selected_name (GtkWidget *treeview)
   return NULL;
 }
 
-/**
+/*
  * @brief Refresh the navigation area with the package list
  * @param appdata The application manager data
  * @param pkglist The pachage list
@@ -367,7 +367,7 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   g_object_unref (model);
 }
 
-/**
+/*
  * @brief Rebuild the navigation list from the latest package list
  * @param appdata The application manager data
  */
@@ -384,7 +384,7 @@ navigation_area_rebuild_from_latest (ApplicationManagerData *appdata)
   navigation_area_refresh_with_package_list (appdata, pkglist);
 }
 
-/**
+/*
  * @brief Rebuild the navigagion list from the search result of the latest
  * package list
  * @param appdata The application manager data
@@ -422,7 +422,7 @@ navigation_area_rebuild_search_result (ApplicationManagerData *appdata,
   g_object_unref (model);
 }
 
-/**
+/*
  * @brief Increase search for the package list
  * @param appdata The application manager data
  * @param str The search string

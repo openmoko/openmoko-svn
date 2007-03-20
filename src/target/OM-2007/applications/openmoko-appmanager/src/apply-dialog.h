@@ -1,4 +1,4 @@
-/**
+/*
  *  @file apply-dialog.h
  *  @brief It is an infomation dialog that will display the all package 
  *  that will be changed.
