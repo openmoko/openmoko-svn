@@ -21,7 +21,10 @@ prog="gsmd"
 start() {
 	# FIXME add check whether GSM_POW is set at all, otherwise don't try to power on
 	# FIXME remove Neo1973 specifics here and catch up with OE upstream, once we're stable
+	echo -n "Setting Neo1973 temporary demo specifics..."
 	dmesg -n1
+	alsactl -f /etc/alsa/gsmhandset.state restore 0
+	echo "done"
 	# Power on GSM device
 	if [ -e "${GSM_POW}" ]
 	then
