@@ -274,13 +274,10 @@ void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
 {
     g_debug ("message membership");
     if (d->mmWin == NULL)
-    {
         d->mmWin = sms_membership_window_new();
-	sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
-	sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
-    }
     gtk_window_set_decorated (GTK_WINDOW(d->mmWin), FALSE);
     sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
+    sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
     sms_membership_window_show ( SMS_MEMBERSHIP_WINDOW(d->mmWin) );
 }
 

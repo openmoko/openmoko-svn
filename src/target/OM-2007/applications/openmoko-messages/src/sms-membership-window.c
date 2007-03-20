@@ -50,6 +50,8 @@ struct _SmsMembershipWindowPrivate
     GtkWidget* closebutton;
     GtkWidget* radioBtnBox;
     GtkWidget* radioAlign;
+    GtkWidget* msgViewAlign;
+    GtkWidget* msgViewWin;
     GtkTreeModel* filter;
     GtkWidget* view;
     GtkListStore* liststore;
@@ -406,10 +408,19 @@ void sms_membership_window_set_messages (SmsMembershipWindow* self,
     gtk_tree_view_column_set_cell_data_func (column, ren, membership_cell_data_func, priv->liststore, NULL);
     moko_tree_view_append_column( MOKO_TREE_VIEW(priv->view), column );
     
-    GtkWidget* treeViewAlign = gtk_alignment_new (0.5, 0.5, 1, 1);
-    gtk_alignment_set_padding (GTK_ALIGNMENT(treeViewAlign),10,10,10,10);
-    gtk_container_add (GTK_CONTAINER(treeViewAlign),GTK_WIDGET(moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(priv->view))));
-    gtk_box_pack_start (GTK_BOX (priv->vbox), GTK_WIDGET(treeViewAlign), TRUE, TRUE, 0);
+    if (!GTK_IS_ALIGNMENT(priv->msgViewAlign)){
+        GtkWidget* treeViewAlign = gtk_alignment_new (0.5, 0.5, 1, 1);
+        gtk_alignment_set_padding (GTK_ALIGNMENT(treeViewAlign),10,10,10,10);
+	priv->msgViewAlign = treeViewAlign;
+	priv->msgViewWin = moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(priv->view));
+        gtk_container_add (GTK_CONTAINER(priv->msgViewAlign),priv->msgViewWin);
+        gtk_box_pack_start (GTK_BOX (priv->vbox), GTK_WIDGET(priv->msgViewAlign), TRUE, TRUE, 0);
+    }
+    else{
+        gtk_container_remove (GTK_CONTAINER(priv->msgViewAlign),priv->msgViewWin);
+        priv->msgViewWin = moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(priv->view));
+        gtk_container_add (GTK_CONTAINER(priv->msgViewAlign),priv->msgViewWin);
+    }
     gtk_widget_show_all (priv->vbox);
 	  
     GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(priv->view));
