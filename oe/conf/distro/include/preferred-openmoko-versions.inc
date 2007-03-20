@@ -14,12 +14,14 @@ SRCDATE_linux-gta01 = "now"
 SRCDATE_linux-gta01-nobbt = "now"
 SRCDATE_s3c2410-boot-usb-native = "now"
 SRCDATE_sjf2410-linux-native = "now"
+SRCDATE_dfu-util = "now"
 SRCDATE_dfu-util-native = "now"
 
 SRCDATE_libgsmd = "now"
 SRCDATE_openmoko-session = "now"
 SRCDATE_openmoko-common = "now"
 SRCDATE_openmoko-theme-standard = "now"
+SRCDATE_openmoko-icon-theme-standard = "now"
 SRCDATE_openmoko-libs = "now"
 
 #
