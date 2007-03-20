@@ -127,7 +127,7 @@ today_infoline_new (gchar * stock_id, gchar * message)
 void
 today_launcher_clicked_cb (GtkWidget *button, gchar *command)
 {
-  GError *error;
+  GError *error = NULL;
 
   g_spawn_command_line_async (command, &error);
 

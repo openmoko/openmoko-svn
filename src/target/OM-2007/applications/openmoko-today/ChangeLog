@@ -1,3 +1,10 @@
+Tue, 20 Mar 2007 10:40:23 +0000 Thomas Wood
+
+	Patch by: Daniel Willmann <daniel@totalueberwachung.de>
+
+	* src/today-main.c: (today_launcher_clicked_cb): Initialise the GError
+	pointer to prevent segfault. Fixes bug 268.
+
 Mon, 19 Mar 2007 23:15:46 +0100 Dodji Seketeli
 
 	* applications/openmoko-today/src/today-events-area.c:
