@@ -373,10 +373,8 @@ void populate_detail_area( MessengerData* d )
 
 void main_quit(GtkMenuItem* item, MessengerData* d)
 {
-    if(d == NULL)
-      g_debug ("Message data is null");
-    g_debug ("Folder List length:%d",g_slist_length(d->folderlist));
     foldersdb_update (d->folderlist);
+    send_signal_to_footer(d->bus,"");
     gtk_main_quit();
 }
 

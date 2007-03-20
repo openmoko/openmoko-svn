@@ -48,6 +48,8 @@ struct _SmsMembershipWindowPrivate
     GtkWidget* fromLabel;
     GtkWidget* subjectLabel;
     GtkWidget* closebutton;
+    GtkWidget* radioBtnBox;
+    GtkWidget* radioAlign;
     GtkTreeModel* filter;
     GtkWidget* view;
     GtkListStore* liststore;
@@ -286,11 +288,22 @@ void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folder
     }
 
     //set radio button box alignment
-    GtkAlignment* alignment = GTK_ALIGNMENT(gtk_alignment_new (0.5, 0.5, 1, 1));
-    gtk_alignment_set_padding (alignment, 5, 5, 30, 5);
-    gtk_container_add( GTK_CONTAINER(alignment), GTK_WIDGET(rdobtnbox) );
-    gtk_box_pack_start (GTK_BOX (priv->folderbox), GTK_WIDGET(alignment), FALSE, TRUE, 0);
-    moko_menu_box_set_application_menu( MOKO_MENU_BOX(priv->menubox), GTK_MENU(appmenu) );
+    if (!GTK_IS_ALIGNMENT(priv->radioAlign)){
+        g_debug("Should be the first fime");
+        priv->radioAlign = GTK_ALIGNMENT(gtk_alignment_new (0.5, 0.5, 1, 1));
+        gtk_alignment_set_padding (priv->radioAlign, 5, 5, 30, 5);
+    //if (priv->radioBtnBox != NULL)
+    //    gtk_container_remove( GTK_CONTAINER(alignment), GTK_WIDGET(priv->radioBtnBox) );
+        priv->radioBtnBox = rdobtnbox;
+        gtk_container_add( GTK_CONTAINER(priv->radioAlign), GTK_WIDGET(priv->radioBtnBox) );
+        gtk_box_pack_start (GTK_BOX (priv->folderbox), GTK_WIDGET(priv->radioAlign), FALSE, FALSE, 0);
+    	moko_menu_box_set_application_menu( MOKO_MENU_BOX(priv->menubox), GTK_MENU(appmenu) );
+    }
+    else{
+        gtk_container_remove( GTK_CONTAINER(priv->radioAlign), GTK_WIDGET(priv->radioBtnBox) );
+	priv->radioBtnBox = rdobtnbox;
+        gtk_container_add( GTK_CONTAINER(priv->radioAlign), GTK_WIDGET(priv->radioBtnBox) );
+    }
     moko_menu_box_set_filter_menu( MOKO_MENU_BOX(priv->menubox), GTK_MENU(filtmenu) );
     gtk_widget_show (priv->menubox);
     gtk_widget_show_all (priv->vbox);

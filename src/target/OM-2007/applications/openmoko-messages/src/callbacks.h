@@ -26,6 +26,7 @@
 #include "main.h"
 
 gboolean cb_filter_changed(GtkWidget* widget, gchar* text, MessengerData* d);
+void send_signal_to_footer (DBusConnection* bus, gchar* message_str);
 
 void cb_new_sms (GtkMenuItem* item, MessengerData* d);
 void cb_new_mail (GtkMenuItem* item, MessengerData* d);

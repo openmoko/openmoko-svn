@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <dbus/dbus.h>
 
-static void
+void
 send_signal_to_footer (DBusConnection* bus, gchar* message_str)
 {
     DBusMessage *message;
@@ -280,6 +280,7 @@ void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
 	sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
     }
     gtk_window_set_decorated (GTK_WINDOW(d->mmWin), FALSE);
+    sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
     sms_membership_window_show ( SMS_MEMBERSHIP_WINDOW(d->mmWin) );
 }
 
