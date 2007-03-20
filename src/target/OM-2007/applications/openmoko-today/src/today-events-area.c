@@ -431,8 +431,8 @@ init_left_hand_side (TodayEventsArea *a_this)
 
   a_this->priv->left_event_box = gtk_event_box_new ();
 
-   gtk_widget_set_name (a_this->priv->left_event_box,
-                        "today-events-area-postit-single");
+  gtk_widget_set_name (a_this->priv->left_event_box,
+                       "today-events-area-postit-single");
 
   // FIXME: get this size from the style... somehow
   gtk_widget_set_size_request (a_this->priv->left_event_box, 51, 131);
@@ -646,6 +646,7 @@ render_event (TodayEventsArea *a_this,
   gtk_widget_show_all (icon) ;
   gtk_box_pack_start (GTK_BOX (infoline), icon, FALSE, FALSE, 6) ;
   event_box = gtk_event_box_new () ;
+  gtk_event_box_set_visible_window (GTK_EVENT_BOX (event_box), FALSE) ;
   gtk_widget_show (event_box) ;
   g_object_set_data (G_OBJECT (event_box),
                      "event-index",

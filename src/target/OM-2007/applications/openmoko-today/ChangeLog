@@ -1,3 +1,10 @@
+Tue, 20 Mar 2007 11:01:20 +0000 Thomas Wood
+
+	* src/today-events-area.c: (render_event):
+	* src/today-main.c: (today_infoline_new):
+
+	Use invisible windows for GtkEventBox where appropriate.
+
 Tue, 20 Mar 2007 10:40:23 +0000 Thomas Wood
 
 	Patch by: Daniel Willmann <daniel@totalueberwachung.de>

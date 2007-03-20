@@ -98,6 +98,7 @@ today_infoline_new (gchar * stock_id, gchar * message)
   GtkWidget *eventbox, *hbox, *icon, *label;
 
   eventbox = gtk_event_box_new ();
+  gtk_event_box_set_visible_window (GTK_EVENT_BOX (eventbox), FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (eventbox), 6);
 
   hbox = gtk_hbox_new (FALSE, 0);
