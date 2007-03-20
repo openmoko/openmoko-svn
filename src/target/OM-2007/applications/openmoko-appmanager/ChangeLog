@@ -4,6 +4,9 @@
 	warning of "strdup" undecleration.
 	* src/tool-box.c:
 	Including the filter-menu.h now.
+	* src/application-menu.c: (on_install_single_application_activate)
+	Using an errcode to idetify the install result.
+	Show infomation after installing single ipk file.
 
 2007-03-19 Chaowei Song <songcw@fic-sh.com.cn>
 	* src/package-list.c: (package_list_execute_change):

@@ -24,6 +24,15 @@
 #include "ipkgapi.h"
 #include "errorcode.h"
 
+enum {
+  INSTALL_SUCCESS = 0,
+  INSTALL_FAIL,
+  REINIT_FAIL,
+  LOAD_PKGLIST_FAIL,
+  USER_CANCEL,
+  FAIL_NUM
+};
+
 /*
  * @brief The Callback function of the show status menu
  */
@@ -51,12 +60,16 @@ on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_dat
 {
   ApplicationManagerData  *appdata;
   GtkWidget  *confirmdialog;
-  gint       ret;
   GtkWidget      *filechooser;
-  gint           res;
   GtkFileFilter  *filter;
-  gchar          *filename;
+
+  GtkWidget      *infodialog;
+
+  gchar          *filename = NULL;
   char           *newname = NULL;
+  gint           ret;
+  gint           res;
+  gint           errcode;
 
   g_debug ("Call on_install_single_application_activate");
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (user_data));
@@ -99,52 +112,89 @@ on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_dat
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   res = gtk_dialog_run(GTK_DIALOG(filechooser));
+  errcode = USER_CANCEL;
 
-  if( (res == GTK_RESPONSE_ACCEPT) || (res == GTK_RESPONSE_OK) ) {
-    filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    g_debug ("file name of user selected is :%s\n", filename);
+  if( (res == GTK_RESPONSE_ACCEPT) || (res == GTK_RESPONSE_OK) ) 
+    {
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
-    res = ipkg_install_cmd (filename, "root", &newname);
-    if (res == 0)
-      {
-        package_list_free_all_dynamic (appdata);
-        ret = reinit_package_list (appdata);
-        if (ret != OP_SUCCESS)
-          {
-            g_debug ("Can not initial the libipkg, the result is%d", ret);
-            g_free (filename);
-            gtk_widget_destroy(filechooser);
-            return;
-          }
-        ret = package_list_build_index (appdata);
-        if (ret != OP_SUCCESS)
-          {
-            g_debug ("Can not build index for packages");
-            g_free (filename);
-            gtk_widget_destroy(filechooser);
-            return;
-          }
-        if (newname != NULL)
-          {
-            free (newname);
-            newname = NULL;
-          }
-      }
-    else
-      {
-        g_debug ("Install error, the error message is:%s", get_error_msg());
-        if (newname != NULL)
-          {
-            free (newname);
-            newname = NULL;
-          }
-      }
+      res = ipkg_install_cmd (filename, "root", &newname);
+      if (res == 0)
+        {
+          package_list_free_all_dynamic (appdata);
+          ret = reinit_package_list (appdata);
+          if (ret != OP_SUCCESS)
+            {
+              g_debug ("Can not initial the libipkg, the result is%d", ret);
+              errcode = REINIT_FAIL;
+              goto install_quit;
+            }
+          ret = package_list_build_index (appdata);
+          if (ret != OP_SUCCESS)
+            {
+              g_debug ("Can not build index for packages");
+              errcode = LOAD_PKGLIST_FAIL;
+              goto install_quit;
+            }
+          errcode = INSTALL_SUCCESS;
+        }
+      else
+        {
+          g_debug ("Install error, the error message is:%s", get_error_msg ());
+          errcode = INSTALL_FAIL;
+        }
+    }
 
-    g_free (filename);
-  }
+install_quit:
 
-  gtk_widget_destroy(filechooser);
-  return;
+  if (newname != NULL)
+    free (newname);
+  gtk_widget_destroy (filechooser);
+
+  switch (errcode)
+    {
+      case INSTALL_FAIL:
+        infodialog = gtk_message_dialog_new (NULL,
+                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_INFO,
+                                             GTK_BUTTONS_OK,
+                                             _("Fail to install %s, the reason is:\n%s"),
+                                             filename,
+                                             get_error_msg ());
+        break;
+      case INSTALL_SUCCESS:
+        infodialog = gtk_message_dialog_new (NULL,
+                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_INFO,
+                                             GTK_BUTTONS_OK,
+                                             _("Install package \"%s\" success"),
+                                             filename);
+        break;
+      case REINIT_FAIL:
+        infodialog = gtk_message_dialog_new (NULL,
+                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_INFO,
+                                             GTK_BUTTONS_OK,
+                                             _("Fail to reinit ipkg, please restart the openmoko-appmanager"));
+        break;
+      case LOAD_PKGLIST_FAIL:
+        infodialog = gtk_message_dialog_new (NULL,
+                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                             GTK_MESSAGE_INFO,
+                                             GTK_BUTTONS_OK,
+                                             _("Fail to get packages list, please restart the openmoko-appmanager"));
+        break;
+      case USER_CANCEL:
+
+      default :
+        return;
+    }
+
+  gtk_dialog_run (GTK_DIALOG (infodialog));
+  gtk_widget_destroy (infodialog);
+
+  if (filename != NULL)
+    free (filename);
 }
 
 /*
