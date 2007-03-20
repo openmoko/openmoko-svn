@@ -905,7 +905,7 @@ int ipkg_remove_cmd(char *pkg_name) {
  * @retval !=0 failure.
  *         Call get_error_msg to get error message.
  */
-int ipkg_install_cmd(char *pkg_name, char *dest_name, char *pkg_real_name)
+int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name)
 {
     char *arg;
     int  err = 0;

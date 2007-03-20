@@ -29,7 +29,7 @@ extern int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message);
 /*
  * @brief See libipkg.a document.
  */
-extern int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char *namep);
+extern int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **namep);
 
 /*
  * @brief See libipkg.a document.

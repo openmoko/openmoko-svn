@@ -38,8 +38,8 @@ G_DEFINE_TYPE (InstallDialog, install_dialog, GTK_TYPE_DIALOG)
  */
 typedef struct _InstallDialogPriv {
   ApplicationManagerData   *maindata;    /* The main data of the application manager */
-  gchar    *installinfolist;            /* The list of install/remove/upgrade infomation */
-  gchar    *prepareinfolist;            /* The list of prepareinfomation */
+  gchar    **installinfolist;            /* The list of install/remove/upgrade infomation */
+  gchar    **prepareinfolist;            /* The list of prepareinfomation */
   gint     preparenum;                   /* Prepare to install/remove/upgrade the _number_ package */
   gint     installnum;                   /* Installing/removing/upgrading the _number_ package */
   gint     displaypreparenum;            /* Prepare info of the _number_ package has been displayed */
@@ -119,14 +119,14 @@ install_dialog_new (ApplicationManagerData *appdata, gint pkgnum)
   InstallDialog  *dialog = MOKO_INSTALL_DIALOG (g_object_new (MOKO_TYPE_INSTALL_DIALOG, NULL));
   InstallDialogPriv *priv = MOKO_INSTALL_DIALOG_GET_PRIVATE (dialog);
 
-  priv->installinfolist = (gchar *)g_malloc (sizeof(gchar *) * pkgnum);
+  priv->installinfolist = (gchar **)g_malloc (sizeof(gchar *) * pkgnum);
   if (priv->installinfolist == NULL)
     {
       gtk_widget_destroy (GTK_WIDGET (dialog));
       g_debug ("Can not malloc memory for the install dialog");
       return NULL;
     }
-  priv->prepareinfolist = (gchar *)g_malloc (sizeof(gchar *) * pkgnum);
+  priv->prepareinfolist = (gchar **)g_malloc (sizeof(gchar *) * pkgnum);
   if (priv->prepareinfolist == NULL)
     {
       gtk_widget_destroy (GTK_WIDGET (dialog));

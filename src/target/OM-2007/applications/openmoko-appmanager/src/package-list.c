@@ -82,8 +82,8 @@ verrevcmp(const char *val, const char *ref)
         }
       val= vp;
       ref= rp;
-      vl=0;  if (isdigit(*vp)) vl= strtol(val,(char*)&val,10);
-      rl=0;  if (isdigit(*rp)) rl= strtol(ref,(char*)&ref,10);
+      vl=0;  if (isdigit(*vp)) vl= strtol(val,(char**)&val,10);
+      rl=0;  if (isdigit(*rp)) rl= strtol(ref,(char**)&ref,10);
       if (vl != rl) return vl - rl;
 
       vc = *val;
@@ -232,7 +232,7 @@ package_list_create_new_section_node (const char *name)
  */
 static gint 
 package_list_search_section_node (const char *name, 
-                                  SectionList *section, 
+                                  SectionList **section, 
                                   SectionList *sechead)
 {
   SectionList  *tmp;

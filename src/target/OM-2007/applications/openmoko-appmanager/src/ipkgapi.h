@@ -84,7 +84,7 @@ int ipkg_list_updated_cmd(PKG_LIST_HEAD *pkg_list_head);
 
 PACKAGE_DETAIL_INFO *ipkg_get_pkg_detail_info(char *pkg_name, pkg_query_status_t query_status);
 
-int ipkg_install_cmd(char *pkg_name, char *dest_name, char *pkg_real_name);
+int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name);
 int ipkg_remove_cmd(char *pkg_name);
 int ipkg_search_cmd(char *pkg_name, PKG_LIST_HEAD *pkg_list_head);
 
