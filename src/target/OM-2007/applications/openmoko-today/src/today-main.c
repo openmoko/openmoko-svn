@@ -143,7 +143,6 @@ today_launcher_clicked_cb (GtkWidget *button, gchar *command)
 
 /**
  * today_launcher_button_new:
- * @icon: stock name to use as the icon in the button
  * @exec: command to execute when the button is clicked
  *
  * Utility function to create new launcher buttons
@@ -151,12 +150,23 @@ today_launcher_clicked_cb (GtkWidget *button, gchar *command)
  * Return value: The parent widget of the new widgets
  */
 static GtkWidget *
-today_launcher_button_new (gchar * icon, gchar * exec)
+today_launcher_button_new (gchar * exec)
 {
   GtkWidget *button = moko_pixmap_button_new ();
-  GdkPixbuf *pb = gtk_widget_render_icon (button, icon, GTK_ICON_SIZE_BUTTON, "");
+  GdkPixbuf *pb;
+  GtkIconTheme *icon_theme = gtk_icon_theme_get_default ();
 
   /* libmokoui api really needs fixing... */
+
+  if (gtk_icon_theme_has_icon (icon_theme, exec))
+  {
+    pb = gtk_icon_theme_load_icon (icon_theme, exec, 48, GTK_ICON_LOOKUP_NO_SVG, NULL);
+  }
+  else
+  {
+    pb = gtk_icon_theme_load_icon (icon_theme, GTK_STOCK_MISSING_IMAGE, 48, GTK_ICON_LOOKUP_NO_SVG, NULL);
+  }
+
   moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (
       MOKO_PIXMAP_BUTTON (button), pb);
   g_object_unref (pb);
@@ -252,15 +262,15 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), button_box, FALSE, FALSE, 0);
 
   gtk_container_add (GTK_CONTAINER (button_box),
-                     today_launcher_button_new (GTK_STOCK_EXECUTE, "contacts"));
+                     today_launcher_button_new ("openmoko-dialer"));
   gtk_container_add (GTK_CONTAINER (button_box),
-                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new ("contacts"));
   gtk_container_add (GTK_CONTAINER (button_box),
-                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new ("openmoko-messages"));
   gtk_container_add (GTK_CONTAINER (button_box),
-                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new ("openmoko-gps"));
   gtk_container_add (GTK_CONTAINER (button_box),
-                     today_launcher_button_new (GTK_STOCK_EXECUTE, ""));
+                     today_launcher_button_new ("dates"));
 
   /* signals */
   g_signal_connect (G_OBJECT (window), "delete-event",
