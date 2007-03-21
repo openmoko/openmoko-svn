@@ -76,7 +76,7 @@ detail_area_class_init (DetailAreaClass *klass)
 static void
 detail_area_init (DetailArea *self)
 {
-   	gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(self), GTK_POLICY_NEVER, GTK_POLICY_NEVER );
+    gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(self), GTK_POLICY_NEVER, GTK_POLICY_NEVER );
     
     self->readAttributes = g_malloc (sizeof(ReadAttributes));
     self->editAttributes = g_malloc (sizeof(EditAttributes));
@@ -88,8 +88,8 @@ detail_area_init (DetailArea *self)
     //gtk_notebook_append_page (self->notebook,detail_area_mode_membership(self),NULL);
     gtk_notebook_set_show_tabs (self->notebook,FALSE);
     gtk_notebook_set_show_border (self->notebook,FALSE);
-    gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(self), GTK_WIDGET(self->notebook) );
-    
+    //gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(self), GTK_WIDGET(self->notebook) );
+ 
 }
 
 GtkWidget* detail_area_new (void)
@@ -97,6 +97,10 @@ GtkWidget* detail_area_new (void)
     return GTK_WIDGET(g_object_new(TYPE_DETAIL_AREA, NULL ));
 }
 
+GtkWidget* detail_area_get_notebook(DetailArea* self)
+{
+    return self->notebook;
+}
 GtkWidget* detail_area_mode_edit (DetailArea* self)
 {
     /* create detail box */

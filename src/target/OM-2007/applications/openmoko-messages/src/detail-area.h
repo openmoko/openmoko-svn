@@ -32,7 +32,7 @@ G_BEGIN_DECLS
 
 #define TYPE_DETAIL_AREA detail_area_get_type()
 #define DETAIL_AREA(obj)     (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_DETAIL_AREA, DetailArea))
-#define DETAIL_AREA_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), DETAIL_AREA, DetailAreaClass))
+#define DETAIL_AREA_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_DETAIL_AREA, DetailAreaClass))
 #define IS_DETAIL_AREA(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_DETAIL_AREA))
 #define IS_DETAIL_AREA_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_DETAIL_AREA))
 #define DETAIL_AREA_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_DETAIL_AREA, DetailAreaClass))
@@ -68,6 +68,7 @@ typedef struct _DetailAreaClass{
 
 GType detail_area_get_type();
 GtkWidget* detail_area_new(void);
+GtkWidget* detail_area_get_notebook(DetailArea* self);
 
 void detail_new_sms (DetailArea* self);
 void detail_read_message (DetailArea* self, message* msg);

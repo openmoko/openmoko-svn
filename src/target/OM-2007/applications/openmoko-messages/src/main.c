@@ -368,6 +368,7 @@ void populate_detail_area( MessengerData* d )
 {
    d->details = detail_area_new();
    gtk_widget_show (d->details);
+   gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(d->details));
    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(moko_details_window_put_in_box(d->details)));
 }
 
