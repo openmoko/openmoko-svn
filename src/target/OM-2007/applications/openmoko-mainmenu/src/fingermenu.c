@@ -99,8 +99,8 @@ moko_finger_menu_show (MokoFingerMenu *self)
   gtk_widget_show_all (self->mm);
 
     //gtk_widget_show (GTK_WIDGET(self->window));
- // gtk_widget_show (GTK_WIDGET(self->toolbox));
- // gtk_widget_show (GTK_WIDGET(self->wheel));
+  gtk_widget_show (GTK_WIDGET(self->toolbox));
+  gtk_widget_show (GTK_WIDGET(self->wheel));
 
   gtk_window_present (GTK_WINDOW (self->window));
 }
@@ -108,13 +108,11 @@ moko_finger_menu_show (MokoFingerMenu *self)
 void
 moko_finger_menu_hide (MokoFingerMenu *self)
 {
-    if (!self)
-    	return;
-    if (GTK_WIDGET_VISIBLE (GTK_WIDGET(self->window)))
-        //gtk_widget_hide (GTK_WIDGET(self->window));
-        //gtk_widget_hide (GTK_WIDGET(self->toolbox));
-        //gtk_widget_hide (GTK_WIDGET(self->wheel));
-        gtk_window_iconify (GTK_WINDOW (self->window));
+  if (!self)
+    return;
+
+  if (GTK_WIDGET_VISIBLE (GTK_WIDGET(self->window)))
+    gtk_window_iconify (GTK_WINDOW (self->window));
 }
 
 void

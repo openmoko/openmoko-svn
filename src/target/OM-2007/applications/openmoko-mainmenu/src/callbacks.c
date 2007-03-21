@@ -40,17 +40,18 @@ moko_wheel_bottom_press_cb (GtkWidget *self, MokoFingerMenu *fm)
   
   current = moko_finger_menu_get_current_item (fm);
 
-    if (current->type != ITEM_TYPE_ROOT)
-    {
-        current = mokodesktop_item_get_parent(current);
-        moko_finger_menu_update_content (fm, current);
-    }
-    else 
-    {
-		//gtk_window_iconify (GTK_WINDOW (mma->window));
-		g_debug ("Call moko finger menu hide");
-	    moko_dbus_send_message ("");
-	}
+  if (current->type != ITEM_TYPE_ROOT)
+  {
+    current = mokodesktop_item_get_parent(current);
+    moko_finger_menu_update_content (fm, current);
+  }
+  else 
+  {
+    //gtk_window_iconify (GTK_WINDOW (mma->window));
+	moko_finger_menu_hide(fm);
+	g_debug ("Call moko finger menu hide");
+	moko_dbus_send_message ("");
+  }
    
 }
 
