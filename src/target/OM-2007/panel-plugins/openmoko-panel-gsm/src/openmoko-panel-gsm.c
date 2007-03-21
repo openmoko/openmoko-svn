@@ -48,31 +48,31 @@ timeout_cb (GsmApplet *applet)
 	switch (applet->gsm_quality)
 	{
 		case GSM_SIGNAL_ERROR :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_00.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_00.png");
 		    break;
 
 		case GSM_SIGNAL_LEVEL_1 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_01.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_01.png");
 			break;
 
 		case GSM_SIGNAL_LEVEL_2 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_02.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_02.png");
 			break;
 
 		case GSM_SIGNAL_LEVEL_3 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_03.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_03.png");
 			break;
 
 		case GSM_SIGNAL_LEVEL_4 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_04.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_04.png");
 			break;
 
 		case GSM_SIGNAL_LEVEL_5 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_05.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_05.png");
 			break;
 
 		default :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength25g_00.png");
+			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_00.png");
 			break;
 	}
 
@@ -91,7 +91,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 
     applet = g_slice_new (GsmApplet);
 
-    applet->image = GTK_IMAGE(gtk_image_new_from_file (PKGDATADIR"/SignalStrength25g_00.png"));
+    applet->image = GTK_IMAGE(gtk_image_new_from_file (PKGDATADIR"/SignalStrength_00.png"));
     gtk_widget_set_name( applet->image, "OpenMoko gsm applet" );
     g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) gsm_applet_free, applet );
 
