@@ -9,21 +9,23 @@ AM_MAINTAINER_MODE
 AC_CONFIG_FILES([
 Makefile
 openmoko-standard/Makefile
+openmoko-standard/32x32/Makefile
 openmoko-standard/32x32/apps/Makefile
 openmoko-standard/32x32/categories/Makefile
-openmoko-standard/32x32/Makefile
 openmoko-standard/32x32/places/Makefile
 openmoko-standard/32x32/actions/Makefile
+openmoko-standard/128x128/Makefile
 openmoko-standard/128x128/apps/Makefile
 openmoko-standard/128x128/categories/Makefile
-openmoko-standard/128x128/Makefile
 openmoko-standard/128x128/places/Makefile
 openmoko-standard/128x128/actions/Makefile
+openmoko-standard/48x48/Makefile
 openmoko-standard/48x48/apps/Makefile
 openmoko-standard/48x48/categories/Makefile
-openmoko-standard/48x48/Makefile
 openmoko-standard/48x48/places/Makefile
 openmoko-standard/48x48/actions/Makefile
+openmoko-standard/scalable/Makefile
+openmoko-standard/scalable/stock/Makefile
 ])
 
 AC_OUTPUT
