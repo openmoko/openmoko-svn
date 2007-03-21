@@ -1,7 +1,7 @@
 DESCRIPTION = "Common files for the OpenMoko distribution"
 SECTION = "openmoko/base"
 PV = "0.0+svn${SRCDATE}"
-PR = "r1"
+PR = "r8"
 
 inherit openmoko-base
 
