@@ -1,0 +1,11 @@
+First try to get a Gtk+ GUI for libmrss
+
+
+Known design flaws:
+    -No real model for the feed
+    -No proxy model that makes use of the filter
+    -No caching of images
+    -Storage size is not limited
+    
+Main objective:
+    -Get familiar with the joy/pain of Gtk+

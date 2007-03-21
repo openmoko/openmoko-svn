@@ -1,0 +1,13 @@
+2007-03-20: Fix the size of the column headers
+	Combat the GtkTreeViewColumn sizing
+
+2007-03-20: Parse content of atom feeds manually
+	Parse content of ATOM feeds manually. Avoid setting NULL text inside the
+	GtkTextBuffer. Store content type and source inside the ListStore as well.
+
+2007-03-20: Fetch feeds inside a GThread
+	Fetching the feeds was implemented inside a GThread. gdk_threads_init et
+	alk is called and this works as long as AT-SPI is not enabled. If it is
+	enabled the application will eventuall crash.
+	Ekiga has the same trouble and it is documented as bug #329454 inside the
+	GNOME bug tracker.
