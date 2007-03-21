@@ -55,7 +55,6 @@ struct _SmsMembershipWindowPrivate
     GtkTreeModel* filter;
     GtkWidget* view;
     GtkListStore* liststore;
-    gchar* currentfolder;
     GSList* rdoBtnList;
 };
 
@@ -67,7 +66,7 @@ typedef struct _SmsMembershipRunInfo
     gboolean destroyed;
 } SmsMembershipRunInfo;
 
-/*static void sms_membership_window_close(SmsMembershipWindow* self);*/
+static void sms_membership_window_close(SmsMembershipWindow* self);
 
 /*static void
 shutdown_loop (SmsMembershipRunInfo *ri)
@@ -124,16 +123,10 @@ gboolean membership_filter_changed(GtkWidget* widget, gchar* text, SmsMembership
 {
     g_debug("changed to %s folder",text);
     SmsMembershipWindowPrivate* priv = SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(self);
-    priv->currentfolder = g_strdup(text);
+    self->currentfolder = g_strdup(text);
     gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(priv->filter));
     
     return FALSE;
-}
-
-void sms_membership_hide (GtkButton* closebutton,  SmsMembershipWindow* self)
-{
-	GtkWidget *widget = GTK_WIDGET(self);
-	gtk_widget_hide (widget);
 }
 
 void sms_membership_window_show (SmsMembershipWindow* self){
@@ -144,7 +137,7 @@ void sms_membership_window_show (SmsMembershipWindow* self){
 static void
 sms_membership_window_init(SmsMembershipWindow* self)
 {
-    MokoWindow* parent = moko_application_get_main_window( moko_application_get_instance() );
+    MokoWindow* parent = (MokoWindow*)moko_application_get_main_window( moko_application_get_instance() );
     if ( parent )
     {
         gtk_window_set_transient_for( GTK_WINDOW(self), GTK_WINDOW(parent) );
@@ -155,7 +148,7 @@ sms_membership_window_init(SmsMembershipWindow* self)
     }
     
     SmsMembershipWindowPrivate* priv = SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(self);
-    priv->currentfolder = g_strdup("Inbox");
+    self->currentfolder = g_strdup("Inbox");
     //Set title
     priv->liststore = NULL;
     priv->vbox = gtk_vbox_new( FALSE, 0 );
@@ -215,14 +208,13 @@ sms_membership_window_init(SmsMembershipWindow* self)
     
     gtk_widget_show_all( GTK_WIDGET(priv->vbox) );
     gtk_container_add( GTK_CONTAINER(self), GTK_WIDGET(priv->vbox) );
-    g_signal_connect( G_OBJECT(priv->closebutton), "clicked", G_CALLBACK(sms_membership_hide), self );
+    g_signal_connect_swapped ( G_OBJECT(priv->closebutton), "clicked", G_CALLBACK(sms_membership_window_close), self );
     g_signal_connect( G_OBJECT(priv->menubox), "filter_changed", G_CALLBACK(membership_filter_changed), self );
     
 }
 
 void membeship_rdo_btn_clicked ( GtkButton* button, SmsMembershipWindow* self)
 {
-    g_debug (gtk_button_get_label(button));
     GtkTreeModel* model;
     GtkTreeIter iter;
     GtkTreeIter childiter;
@@ -235,9 +227,9 @@ void membeship_rdo_btn_clicked ( GtkButton* button, SmsMembershipWindow* self)
         gchar* folder;
 	gtk_tree_model_get (model, &iter, COLUMN_FOLDER, &folder, -1);
 	g_debug ("folder is %s",folder);
+	self->currentfolder = g_strdup(folder);
 	gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(priv->filter),&childiter,&iter);
 	gtk_list_store_set(priv->liststore, &childiter, COLUMN_FOLDER, gtk_button_get_label(button), -1);
-	g_debug (gtk_button_get_label(button));
         gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(priv->filter));
     }
 }
@@ -293,9 +285,7 @@ void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folder
     if (!GTK_IS_ALIGNMENT(priv->radioAlign)){
         g_debug("Should be the first fime");
         priv->radioAlign = GTK_ALIGNMENT(gtk_alignment_new (0.5, 0.5, 1, 1));
-        gtk_alignment_set_padding (priv->radioAlign, 5, 5, 30, 5);
-    //if (priv->radioBtnBox != NULL)
-    //    gtk_container_remove( GTK_CONTAINER(alignment), GTK_WIDGET(priv->radioBtnBox) );
+        gtk_alignment_set_padding (GTK_ALIGNMENT(priv->radioAlign), 5, 5, 30, 5);
         priv->radioBtnBox = rdobtnbox;
         gtk_container_add( GTK_CONTAINER(priv->radioAlign), GTK_WIDGET(priv->radioBtnBox) );
         gtk_box_pack_start (GTK_BOX (priv->folderbox), GTK_WIDGET(priv->radioAlign), FALSE, FALSE, 0);
@@ -361,10 +351,9 @@ void membership_cursor_changed(GtkTreeSelection    *selection,
 gboolean membership_filter_visible_function (GtkTreeModel* model, GtkTreeIter* iter, SmsMembershipWindow* self)
 {
     gchar* folder;
-    SmsMembershipWindowPrivate* priv = SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(self);
     gtk_tree_model_get (model, iter, COLUMN_FOLDER, &folder, -1);
-    g_debug ("message folder %s, current folder %s", folder, priv->currentfolder);
-    if(!g_strcasecmp(folder,priv->currentfolder))
+
+    if(!g_strcasecmp(folder,self->currentfolder))
   	return TRUE;
     else
         return FALSE;
@@ -397,7 +386,7 @@ void sms_membership_window_set_messages (SmsMembershipWindow* self,
     gtk_tree_view_column_set_attributes(column, ren, "text", COLUMN_FROM, NULL);
     
     /* Bold if UNREAD */
-    gtk_tree_view_column_set_cell_data_func (column, ren, membership_cell_data_func, liststore, NULL);
+    gtk_tree_view_column_set_cell_data_func (column, ren, membership_cell_data_func, priv->liststore, NULL);
     moko_tree_view_append_column( MOKO_TREE_VIEW(priv->view), column );
 
     ren = gtk_cell_renderer_text_new();

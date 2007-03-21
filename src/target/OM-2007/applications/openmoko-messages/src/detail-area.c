@@ -31,7 +31,6 @@ G_DEFINE_TYPE (DetailArea, detail_area, GTK_TYPE_SCROLLED_WINDOW)
 #define DETAIL_AREA_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_DETAIL_AREA, DetailAreaPrivate))
 
 typedef struct _DetailAreaPrivate{
-	
 } DetailAreaPrivate;
 
 /* parent class pointer */
@@ -99,8 +98,9 @@ GtkWidget* detail_area_new (void)
 
 GtkWidget* detail_area_get_notebook(DetailArea* self)
 {
-    return self->notebook;
+    return GTK_WIDGET(self->notebook);
 }
+
 GtkWidget* detail_area_mode_edit (DetailArea* self)
 {
     /* create detail box */
@@ -109,8 +109,8 @@ GtkWidget* detail_area_mode_edit (DetailArea* self)
 
     /* create tool box */
     self->toolbox = GTK_HBOX(gtk_hbox_new(FALSE,0)); 
-    MokoToolBox* mokobox = MOKO_TOOL_BOX(moko_tool_box_new());
-    GtkHBox* toolbox = moko_tool_box_get_button_box(mokobox);
+    MokoToolBox* mokobox = (MokoToolBox*)MOKO_TOOL_BOX(moko_tool_box_new());
+    GtkHBox* toolbox = moko_tool_box_get_button_box(MOKO_TOOL_BOX(mokobox));
     editAttributes->sendBtn = gtk_button_new_with_label("Send");
     gtk_box_pack_start( GTK_BOX(toolbox), GTK_WIDGET(editAttributes->sendBtn), FALSE, FALSE, 0 );
     editAttributes->addrBtn = gtk_button_new_with_label("Address");
@@ -157,7 +157,7 @@ GtkWidget* detail_area_new_mail (DetailArea* self) {
     /* create tool box */
     self->toolbox = GTK_HBOX(gtk_hbox_new(FALSE,0));
     MokoToolBox* mokobox = MOKO_TOOL_BOX(moko_tool_box_new());
-    GtkHBox* toolbox = moko_tool_box_get_button_box(mokobox);
+    GtkHBox* toolbox = moko_tool_box_get_button_box(MOKO_TOOL_BOX(mokobox));
     GtkWidget* button = gtk_button_new_with_label("Send");
     gtk_box_pack_start( GTK_BOX(toolbox), GTK_WIDGET(button), FALSE, FALSE, 0 );
     button = gtk_button_new_with_label("Attach");

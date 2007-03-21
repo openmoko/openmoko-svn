@@ -43,6 +43,7 @@ G_BEGIN_DECLS
 
 typedef struct {
     MokoWindow parent;
+    gchar* currentfolder;
 } SmsMembershipWindow;
 
 typedef struct {

@@ -26,7 +26,7 @@
 #include <libmokoui/moko-tree-view.h>
 #include <gtk/gtkliststore.h>
 #include <gtk/gtktreemodelfilter.h>
-//#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib.h>
 #include <dbus/dbus.h>
 
 #include "foldersdb.h"

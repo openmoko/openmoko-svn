@@ -153,7 +153,7 @@ sms_dialog_window_new(void)
 static void
 sms_dialog_window_init(SmsDialogWindow* self)
 {
-    MokoWindow* parent = moko_application_get_main_window( moko_application_get_instance() );
+    MokoWindow* parent = (MokoWindow*)moko_application_get_main_window( moko_application_get_instance() );
     if ( parent )
     {
         gtk_window_set_transient_for( GTK_WINDOW(self), GTK_WINDOW(parent) );
@@ -195,8 +195,8 @@ void sms_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
     if ( !priv->vbox )
     {
 	GtkWidget* image;
-	MokoPixmapButton* smsSendBtn;
-	MokoPixmapButton* emailBtn;
+	GtkWidget* smsSendBtn;
+	GtkWidget* emailBtn;
     		
         priv->vbox = gtk_vbox_new( FALSE, 0 );
         gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
@@ -204,7 +204,7 @@ void sms_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
         //Add toolbox
         priv->hbox = gtk_hbox_new( FALSE, 0 );
         priv->toolbox = moko_tool_box_new();
-        GtkHBox* btnBox = moko_tool_box_get_button_box (MOKO_TOOL_BOX(priv->toolbox));
+        GtkWidget* btnBox = moko_tool_box_get_button_box (MOKO_TOOL_BOX(priv->toolbox));
         priv->closebutton = moko_pixmap_button_new();
         image = gtk_image_new_from_file (PKGDATADIR "/Cancel.png");
         moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(priv->closebutton),image);
@@ -281,9 +281,9 @@ void mail_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
     }
     if ( !priv->vbox ){
         GtkWidget* image;
-	MokoPixmapButton* smsSendBtn;
-	MokoPixmapButton* emailBtn;
-	MokoPixmapButton* attachBtn;
+	GtkWidget* smsSendBtn;
+	GtkWidget* emailBtn;
+	GtkWidget* attachBtn;
     		
         priv->vbox = gtk_vbox_new( FALSE, 0 );
         gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
@@ -291,7 +291,7 @@ void mail_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
         //Add toolbox
         priv->hbox = gtk_hbox_new( FALSE, 0 );
         priv->toolbox = moko_tool_box_new();
-        GtkHBox* btnBox = moko_tool_box_get_button_box (MOKO_TOOL_BOX(priv->toolbox));
+        GtkWidget* btnBox = moko_tool_box_get_button_box (MOKO_TOOL_BOX(priv->toolbox));
         priv->closebutton = moko_pixmap_button_new();
         image = gtk_image_new_from_file (PKGDATADIR "/Cancel.png");
         moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(priv->closebutton),image);

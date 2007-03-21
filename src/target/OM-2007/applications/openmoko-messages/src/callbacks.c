@@ -22,6 +22,7 @@
 #include "detail-area.h"
 #include <gtk/gtk.h>
 #include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
 
 void
 send_signal_to_footer (DBusConnection* bus, gchar* message_str)
@@ -39,9 +40,7 @@ send_signal_to_footer (DBusConnection* bus, gchar* message_str)
     dbus_message_append_args (message,
                               DBUS_TYPE_STRING, &message_str,
                               DBUS_TYPE_INVALID);
-    g_debug("begin send message");
     dbus_connection_send (bus, message, NULL);
-    g_debug("end send message");
     dbus_message_unref (message);
 }
 
@@ -65,10 +64,8 @@ gint get_model_number (MessengerData* d)
 
 gboolean cb_filter_changed(GtkWidget* widget, gchar* text, MessengerData* d)
 {
-    //g_debug("changed to %s folder",text);
     d->currentfolder = g_strdup(text);
     gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
-    g_debug("folder %s has %d messages",text,get_model_number(d));
     gchar* str = g_strdup_printf("folder %s has %d messages",text,get_model_number(d));
     send_signal_to_footer(d->bus,str);
     
@@ -107,7 +104,7 @@ void cb_new_folder (GtkMenuItem* item, MessengerData* d)
 	gtk_widget_set_size_request (nfBox, 480, -1);
 	GtkWidget* nfAlign = gtk_alignment_new (0,0,1,1);
 	gtk_alignment_set_padding (GTK_ALIGNMENT(nfAlign), 100, 0, 30, 10);
-	moko_dialog_window_set_title (d->nfWin, "New Folder");
+	moko_dialog_window_set_title ( MOKO_DIALOG_WINDOW(d->nfWin), "New Folder");
 	
 	GtkWidget* nfLabel = gtk_label_new ("Please input new folder name:");
 	gtk_misc_set_alignment (GTK_MISC(nfLabel),0,0.5);
@@ -125,7 +122,7 @@ void cb_new_folder (GtkMenuItem* item, MessengerData* d)
 
 	gtk_container_add (GTK_CONTAINER(nfAlign),nfBox);
 
-	moko_dialog_window_set_contents (d->nfWin, nfAlign);
+	moko_dialog_window_set_contents (MOKO_DIALOG_WINDOW(d->nfWin), nfAlign);
 	g_signal_connect (G_OBJECT(nfConfirmBtn), 
 	                  "clicked",
 			  G_CALLBACK(cb_nfBtn_clicked),
@@ -273,11 +270,10 @@ void cb_delete_message (GtkMenuItem* item, MessengerData* d)
 void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
 {
     g_debug ("message membership");
-    if (d->mmWin == NULL)
-        d->mmWin = sms_membership_window_new();
+    d->mmWin = sms_membership_window_new();
     gtk_window_set_decorated (GTK_WINDOW(d->mmWin), FALSE);
-    sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
     sms_membership_window_set_messages (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->liststore);
+    sms_membership_window_set_menubox (SMS_MEMBERSHIP_WINDOW(d->mmWin), d->folderlist);
     sms_membership_window_show ( SMS_MEMBERSHIP_WINDOW(d->mmWin) );
 }
 
@@ -302,7 +298,7 @@ void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
 	}
     }
     d->filtmenu = reload_filter_menu (d,d->folderlist);
-    MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
+    MokoMenuBox* menubox = (MokoMenuBox*)moko_paned_window_get_menubox( MOKO_PANED_WINDOW(d->window) );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox, GTK_MENU(d->filtmenu));
     gtk_widget_show_all (GTK_WIDGET(menubox));
@@ -346,7 +342,7 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
 	    gtk_widget_set_size_request (frBox, 480, -1);
 	    GtkWidget* frAlign = gtk_alignment_new (0,0,1,1);
 	    gtk_alignment_set_padding (GTK_ALIGNMENT(frAlign), 100, 0, 30, 10);
-	    moko_dialog_window_set_title (d->frWin, "Folder Rename");
+	    moko_dialog_window_set_title (MOKO_DIALOG_WINDOW(d->frWin), "Folder Rename");
 
 	    GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
 	    GtkWidget* menulabel = GTK_BIN(menuitem)->child;
@@ -365,7 +361,7 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
 	    gtk_box_pack_start (GTK_BOX(frBox), hbox, FALSE, TRUE, 0);
 	    gtk_container_add (GTK_CONTAINER(frAlign),frBox);
 	    
-	    moko_dialog_window_set_contents (d->frWin, frAlign);
+	    moko_dialog_window_set_contents (MOKO_DIALOG_WINDOW(d->frWin), frAlign);
 	    g_signal_connect (G_OBJECT(frConfirmBtn), 
 	                      "clicked",
 			      G_CALLBACK(cb_frBtn_clicked),
@@ -385,7 +381,7 @@ void cb_nfBtn_clicked (GtkButton* button, MessengerData* d)
     g_debug ("new folder %s",folder);
     d->folderlist = g_slist_append (d->folderlist,folder);
     d->filtmenu = reload_filter_menu (d,d->folderlist);
-    MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
+    MokoMenuBox* menubox = (MokoMenuBox*)moko_paned_window_get_menubox( d->window );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox,GTK_MENU(d->filtmenu));
     gtk_widget_show_all (GTK_WIDGET(menubox));
@@ -412,7 +408,7 @@ void cb_dfBtn_clicked (GtkButton* button, MessengerData* d)
     }
 
     d->filtmenu = reload_filter_menu (d,d->folderlist);
-    MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
+    MokoMenuBox* menubox = (MokoMenuBox*)moko_paned_window_get_menubox( MOKO_PANED_WINDOW(d->window) );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox,GTK_MENU(d->filtmenu));
 
@@ -438,12 +434,13 @@ void delete_folder (MessengerData* d, gchar* oldName)
 
     for( c =d->folderlist; c; c=g_slist_next(c)) {
         if(!g_strcasecmp((gchar*)c->data, oldName)) {
-	    d->folderlist = g_slist_remove (d->folderlist, c->data);						break;
+	    d->folderlist = g_slist_remove (d->folderlist, c->data);	
+	    break;
         }
     }
 
     d->filtmenu = reload_filter_menu (d,d->folderlist);
-    MokoMenuBox* menubox = moko_paned_window_get_menubox( d->window );
+    MokoMenuBox* menubox = (MokoMenuBox*)moko_paned_window_get_menubox( MOKO_PANED_WINDOW(d->window) );
     g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
     moko_menu_box_set_filter_menu(menubox,GTK_MENU(d->filtmenu));
 

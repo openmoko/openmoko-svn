@@ -22,6 +22,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "main.h"
 #include "foldersdb.h"
@@ -138,6 +140,7 @@ void setup_ui( MessengerData* d )
 		 
     /* application menu */
     d->menu = gtk_menu_new(); 
+    gtk_widget_show (d->menu);
     d->mmitem = gtk_menu_item_new_with_label( "Message Membership" );
     d->fnitem = gtk_menu_item_new_with_label( "Folder Rename" );
     GtkWidget* accountitem = gtk_menu_item_new_with_label( "Account" );
@@ -157,6 +160,7 @@ void setup_ui( MessengerData* d )
 
     /* filter menu */
     d->filtmenu = gtk_menu_new();
+    gtk_widget_show (d->filtmenu);
     d->folderlist = foldersdb_get_folders( d->foldersdb );
     d->filtmenu = reload_filter_menu( d, d->folderlist );
 
@@ -184,7 +188,9 @@ void setup_ui( MessengerData* d )
 
     /* set tool bar */
     d->toolbox = moko_tool_box_new_with_search();
+    gtk_widget_show (d->toolbox);
     GtkWidget* searchEntry = GTK_WIDGET (moko_tool_box_get_entry (MOKO_TOOL_BOX(d->toolbox)));
+    gtk_widget_show (searchEntry);
     g_signal_connect( G_OBJECT(searchEntry), "changed", G_CALLBACK(cb_search_entry_changed), d ); 
     g_signal_connect_swapped ( G_OBJECT(d->toolbox), "searchbox_visible", G_CALLBACK(cb_search_on), d ); 
     g_signal_connect_swapped( G_OBJECT(d->toolbox), "searchbox_invisible", G_CALLBACK(cb_search_off), d ); 
@@ -368,8 +374,8 @@ void populate_detail_area( MessengerData* d )
 {
    d->details = detail_area_new();
    gtk_widget_show (d->details);
-   gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(d->details));
-   moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(moko_details_window_put_in_box(d->details)));
+   gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(DETAIL_AREA(d->details)));
+   moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(moko_details_window_put_in_box(DETAIL_AREA(d->details))));
 }
 
 void main_quit(GtkMenuItem* item, MessengerData* d)
