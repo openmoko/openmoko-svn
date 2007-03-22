@@ -38,6 +38,7 @@ SRCDATE_openmoko-panel-demo-simple = "now"
 #
 SRCDATE_openmoko-contacts = "now"
 SRCDATE_openmoko-dates = "now"
+SRCDATE_openmoko-today = "now"
 
 #
 # Applications

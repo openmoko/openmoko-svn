@@ -46,6 +46,7 @@ SRCDATE_rosetta ?= "20060804"
 SRCDATE_gconf-dbus = "20070125"
 SRCDATE_gnome-vfs-dbus ?= "20060119"
 SRCDATE_gtkhtml2 ?= "20060323"
+SRCDATE_gtkunique = "20070210"
 
 #Misc apps, sorted by alphabet
 SRCDATE_avetanabt ?= "20060814"
