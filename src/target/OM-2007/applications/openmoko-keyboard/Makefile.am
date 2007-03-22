@@ -4,13 +4,13 @@ if WANT_EXAMPLES
 SUBDIRS += examples
 endif
 
-EXTRA_DIST = matchbox-keyboard.desktop matchbox-keyboard.png
+EXTRA_DIST = openmoko-keyboard.desktop openmoko-keyboard.png
 
 desktopdir = $(datadir)/applications/inputmethods
-desktop_DATA = matchbox-keyboard.desktop
+desktop_DATA = openmoko-keyboard.desktop
 
 pixmapsdir = $(datadir)/pixmaps/
-pixmaps_DATA = matchbox-keyboard.png
+pixmaps_DATA = openmoko-keyboard.png
 
 
 snapshot:
