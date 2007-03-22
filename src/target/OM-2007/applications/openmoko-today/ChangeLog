@@ -1,3 +1,13 @@
+Thu, 22 Mar 2007 15:36:29 +0000 Thomas Wood
+
+	* src/Makefile.am:
+	* src/today-main.c: (today_update_date), (today_setup_events_area),
+	(create_ui):
+	* src/xutil.c:
+	* src/xutil.h:
+
+	Add --enable-desktop option
+
 Thu, 22 Mar 2007 12:59:43 +0000 Thomas Wood
 
 	* src/today-main.c: (create_ui): Set window title to keep hrw happy

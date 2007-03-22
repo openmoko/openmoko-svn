@@ -30,6 +30,7 @@
 #include <libmokoui/moko-pixmap-button.h>
 #include "today-events-area.h"
 #include "today-utils.h"
+#include "xutil.h"
 
 #define LOG_ERROR \
 g_warning ("Got error '%s', code '%d'", \
@@ -37,6 +38,22 @@ g_warning ("Got error '%s', code '%d'", \
 
 #define FREE_ERROR g_error_free (error) ; error = NULL ;
 
+/*** configuration options ***/
+/* default to false, although this might want to be reversed in the future */
+static gboolean enable_desktop = FALSE;
+
+static GOptionEntry option_entries[] =
+{
+  { "enable-desktop", 'd', 0, G_OPTION_ARG_NONE,  &enable_desktop, "Set as desktop window", NULL},
+  { NULL }
+};
+
+
+/**
+ * today_update_date ()
+ *
+ * Update the specified GtkLabel with the current date
+ */
 static void
 today_update_date (GtkLabel * label)
 {
@@ -59,6 +76,11 @@ today_update_date (GtkLabel * label)
 
 }
 
+/**
+ * today_update_time ()
+ *
+ * Update the specified GtkLabel with the current time
+ */
 static void
 today_update_time (GtkLabel * label)
 {
@@ -216,6 +238,18 @@ create_ui ()
   gtk_widget_set_name (window, "today-application-window");
   gtk_window_set_title (GTK_WINDOW (window), "Today");
 
+  if (enable_desktop)
+  {
+    gint x, y, w, h;
+    gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DESKTOP);
+    gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), TRUE);
+    if (x_get_workarea (&x, &y, &w, &h))
+    {
+      gtk_window_set_default_size (GTK_WINDOW (window), w, h);
+      gtk_window_move (GTK_WINDOW (window), x, y);
+    }
+  }
+
   vbox = gtk_vbox_new (FALSE, 12);
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
@@ -293,8 +327,20 @@ create_ui ()
 int
 main (int argc, char **argv)
 {
+  GError *error = NULL;
+  GOptionContext *context;
+
   gtk_init (&argc, &argv);
+
+  /* parse command line options */
+  context = g_option_context_new ("- OpenMoko Today Application");
+  g_option_context_add_main_entries (context, option_entries, NULL);
+  g_option_context_add_group (context, gtk_get_option_group (TRUE));
+  g_option_context_parse (context, &argc, &argv, &error);
+
+  /* create the UI and run */
   create_ui ();
   gtk_main ();
+
   return 0;
 }
