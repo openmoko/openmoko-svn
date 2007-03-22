@@ -1,3 +1,9 @@
+Thu, 22 Mar 2007 18:04:50 +0100 Dodji Sekteli
+
+	* applications/openmoko-today/src/today-events-area.c:
+	  Update the widget to show (in real time) modified
+	  events/todo items.
+
 Thu, 22 Mar 2007 15:51:59 +0000 Thomas Wood
 
 	* src/xutil.c:

@@ -84,17 +84,23 @@ static void     init_left_hand_side         (TodayEventsArea *a_this);
 static void     reinit_area                 (TodayEventsArea *a_this) ;
 static int      get_nb_events_real          (TodayEventsArea *a_this) ;
 static gboolean update_paging_info          (TodayEventsArea *a_this) ;
+static GList*   find_event                  (TodayEventsArea *a_this,
+                                             const gchar *a_uid) ;
+static GList*   find_event_from_icalcomp    (TodayEventsArea *a_this,
+                                             const icalcomponent *a_comp) ;
 static GList*   select_event                (TodayEventsArea *a_this,
                                              GList *a_event) ;
 static void     render_event                (TodayEventsArea *a_this,
                                              GList *a_event) ;
 static void     render_events_page          (TodayEventsArea *a_this,
                                              GList *a_from) ;
+static gboolean is_event_visible            (TodayEventsArea *a_this,
+                                             GList *a_event) ;
 static void     render_events_page_auto     (TodayEventsArea *a_this) ;
 static gboolean remove_event                (TodayEventsArea *a_this,
                                              GList *a_event) ;
 static void     set_events_view             (TodayEventsArea *a_this,
-                                           ECalView *a_view) ;
+                                             ECalView *a_view) ;
 static void     event_selected_signal       (TodayEventsArea *a_this,
                                              guint a_index) ;
 static void     events_added_signal       (TodayEventsArea *a_this,
@@ -105,7 +111,9 @@ static void     on_objects_added_cb       (ECalView *a_view,
 static void     on_objects_removed_cb     (ECalView *a_view,
                                            GList *a_uids,
                                            TodayEventsArea *a_this) ;
-
+static void     on_objects_modified_cb    (ECalView *a_view,
+                                           GList *a_objects,
+                                           TodayEventsArea *a_events) ;
 static void     get_property (GObject *a_this, guint a_prop_id,
                               GValue *a_val, GParamSpec *a_pspec) ;
 static void     set_property (GObject *a_this, guint a_prop_id,
@@ -370,6 +378,39 @@ on_objects_removed_cb (ECalView *a_view,
 }
 
 static void
+on_objects_modified_cb (ECalView *a_view,
+                        GList *a_objects,
+                        TodayEventsArea *a_this)
+{
+  GList *cur=NULL ;
+
+  if (a_view) {/*happy compiler*/}
+
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
+
+  g_debug ("in %s:%d", __func__, __LINE__) ;
+  for (cur = a_objects ; cur ; cur = cur->next)
+  {
+    GList *event=NULL ;
+    if (!cur->data)
+      continue ;
+    event = find_event_from_icalcomp (a_this, cur->data) ;
+    if (event && event->data && icalcomponent_isa_component (event->data))
+    {
+      icalcomponent_free (event->data) ;
+      event->data = icalcomponent_new_clone (cur->data) ;
+    }
+    g_debug ("in %s:%d", __func__, __LINE__) ;
+    if (event && is_event_visible (a_this, event))
+    {
+      g_debug ("in %s:%d", __func__, __LINE__) ;
+      render_events_page (a_this, a_this->priv->page_start) ;
+    }
+  }
+  gtk_widget_queue_draw (GTK_WIDGET (a_this)) ;
+}
+
+static void
 get_property (GObject *a_this, guint a_prop_id,
               GValue *a_val, GParamSpec *a_pspec)
 {
@@ -563,6 +604,41 @@ update_paging_info (TodayEventsArea *a_this)
   g_free (str) ;
 
   return TRUE ;
+}
+
+static GList*
+find_event (TodayEventsArea *a_this,
+            const gchar *a_uid)
+{
+  GList *cur=NULL ;
+  int uid_len=0 ;
+
+  g_return_val_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this), NULL) ;
+  g_return_val_if_fail (a_this->priv, NULL) ;
+  g_return_val_if_fail (a_uid, NULL) ;
+
+  uid_len = strlen (a_uid) ;
+  for (cur = a_this->priv->events ; cur ; cur = cur->next)
+  {
+    if (!cur->data || !icalcomponent_isa_component (cur->data))
+      continue ;
+    if (!strncmp (a_uid, icalcomponent_get_uid (cur->data), uid_len))
+    {
+      return cur ;
+    }
+  }
+  return NULL ;
+}
+
+static GList*
+find_event_from_icalcomp (TodayEventsArea *a_this,
+                          const icalcomponent *a_comp)
+{
+  g_return_val_if_fail (a_comp, NULL) ;
+  g_return_val_if_fail (icalcomponent_isa_component ((icalcomponent*)a_comp),
+                        NULL) ;
+
+  return find_event (a_this, icalcomponent_get_uid ((icalcomponent*)a_comp)) ;
 }
 
 static GList*
@@ -764,6 +840,29 @@ render_events_page (TodayEventsArea *a_this, GList *a_from)
   }
 }
 
+static gboolean
+is_event_visible (TodayEventsArea *a_this,
+                  GList *a_event)
+{
+  gint event_index=-1 ;
+  g_return_val_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this),
+                        FALSE) ;
+
+  event_index = g_list_position (a_this->priv->events, a_event) ;
+  g_return_val_if_fail (event_index >= 0, FALSE) ;
+
+  g_debug ("in %s:%d", __func__, __LINE__) ;
+  if (event_index >= a_this->priv->page_start_index
+      && (event_index <= a_this->priv->page_start_index
+          + a_this->priv->max_visible_events))
+  {
+    g_debug ("in %s:%d", __func__, __LINE__) ;
+    return TRUE ;
+  }
+  g_debug ("in %s:%d", __func__, __LINE__) ;
+  return FALSE ;
+}
+
 static void
 render_events_page_auto (TodayEventsArea *a_this)
 {
@@ -893,6 +992,9 @@ set_tasks_view (TodayEventsArea *a_this,
                     a_this) ;
   g_signal_connect (G_OBJECT (a_view), "objects-removed",
                     G_CALLBACK (on_objects_removed_cb),
+                    a_this) ;
+  g_signal_connect (G_OBJECT (a_view), "objects-modified",
+                    G_CALLBACK (on_objects_modified_cb),
                     a_this) ;
 
   g_object_ref (G_OBJECT (a_view)) ;
