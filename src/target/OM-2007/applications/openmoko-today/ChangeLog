@@ -1,3 +1,7 @@
+Thu, 22 Mar 2007 12:59:43 +0000 Thomas Wood
+
+	* src/today-main.c: (create_ui): Set window title to keep hrw happy
+
 Thu, 22 Mar 2007 09:51:27 +0100 Dodji Seketeli
 
 	* applications/openmoko-today/src/today-events-area.[c|h]:

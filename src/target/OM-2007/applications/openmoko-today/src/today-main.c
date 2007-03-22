@@ -214,6 +214,7 @@ create_ui ()
   /* main window */
   window = moko_window_new ();
   gtk_widget_set_name (window, "today-application-window");
+  gtk_window_set_title (GTK_WINDOW (window), "Today");
 
   vbox = gtk_vbox_new (FALSE, 12);
   gtk_container_add (GTK_CONTAINER (window), vbox);
