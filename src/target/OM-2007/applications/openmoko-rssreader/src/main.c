@@ -23,17 +23,16 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
+#include "config.h"
+#include <glib/gi18n.h>
 
 #include "application-data.h"
 #include "callbacks.h"
-#include <assert.h>
 
 #include <libmokoui/moko-details-window.h>
 
-/*
- * use gettext...
- */
-#define _(x) (x)
+#include <assert.h>
+
 #define ASSERT_X(x, error) assert(x)
 
 /*
@@ -70,12 +69,26 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     data->feed_data = gtk_list_store_new( RSS_READER_NUM_COLS,
                                           G_TYPE_STRING /* Author    */,
                                           G_TYPE_STRING /* Subject   */,
-                                          G_TYPE_STRING /* Date      */,
+                                          G_TYPE_STRING /* The actual string */,
+                                          G_TYPE_DATE   /* Date GDate*/,
                                           G_TYPE_STRING /* Link      */,
                                           G_TYPE_STRING /* Text      */,
                                           G_TYPE_INT    /* Text_Type */,
                                           G_TYPE_STRING /* Category  */,
                                           G_TYPE_STRING /* Source    */ );
+
+    /*
+     * allow to filter for a search string
+     */
+    data->filter_model = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(data->feed_data),NULL));
+
+    /*
+     * Allow sorting of the base model
+     */
+    data->sort_model = GTK_TREE_MODEL_SORT(gtk_tree_model_sort_new_with_model( GTK_TREE_MODEL(data->filter_model) ));
+    gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_SUBJECT, GTK_SORT_ASCENDING );
+    gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE,    GTK_SORT_ASCENDING );
+
     data->treeView = MOKO_TREE_VIEW(moko_tree_view_new_with_model(GTK_TREE_MODEL(data->feed_data)));
     moko_paned_window_set_upper_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_tree_view_put_into_scrolled_window(data->treeView)) );
 
@@ -88,12 +101,14 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Subject"), ren, "text", RSS_READER_COLUMN_SUBJECT, NULL));
     gtk_tree_view_column_set_expand( column, TRUE );
     gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
+    gtk_tree_view_column_set_sort_column_id( column, RSS_READER_COLUMN_SUBJECT );
     moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
 
     ren = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
     column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Date"), ren, "text", RSS_READER_COLUMN_DATE, NULL));
     gtk_tree_view_column_set_expand( column, TRUE );
     gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
+    gtk_tree_view_column_set_sort_column_id( column, RSS_READER_COLUMN_DATE );
     moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
 
     /*
@@ -164,6 +179,12 @@ int main( int argc, char** argv )
      * boiler plate code
      */
     g_debug( "openmoko-rssreader starting up" );
+
+    /* i18n boiler plate */
+    bindtextdomain ( GETTEXT_PACKAGE, RSSREADER_LOCALE_DIR );
+    bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
+    textdomain ( GETTEXT_PACKAGE );
+
 
     /*
      * initialize threads for fetching the RSS in the background

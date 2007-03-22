@@ -1,7 +1,9 @@
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
-              -DPKGDATADIR=\"$(pkgdatadir)\"
+              -DPKGDATADIR=\"$(pkgdatadir)\" \
+              -DRSSREADER_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
-AM_CFLAGS = -Wall -Werror -pedantic -std=c99 @OPENMOKO_CFLAGS@ @MRSS_CFLAGS@
+
+AM_CFLAGS  = -Wall -Werror -pedantic -std=c99 @OPENMOKO_CFLAGS@ @MRSS_CFLAGS@
 
 bin_PROGRAMS = openmoko-rssreader
 

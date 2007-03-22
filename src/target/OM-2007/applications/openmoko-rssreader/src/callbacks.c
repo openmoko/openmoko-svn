@@ -24,23 +24,27 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include "config.h"
+#include <glib/gi18n.h>
+
 #include "callbacks.h"
 
 #include <mrss.h>
 #include <string.h>
-
-#define _(x) (x)
 
 struct FeedEntry {
     gchar *category;
     gchar *url;
 };
 
-static const int NUMBER_OF_FEEDS = 2;
 static struct FeedEntry s_feeds[] = {
-    { "OpenMoko", "http://planet.openmoko.org/rss20.xml" },
-    { "GNOME"   , "http://planet.gnome.org/atom.xml"     },
+    { "OpenMoko",   "http://planet.openmoko.org/atom.xml"  },
+    { "GNOME"   ,   "http://planet.gnome.org/atom.xml"     },
+    { "KDE",        "http://planet.kde.org/rss20.xml"      },
+    { "Linux Togo", "http://planet.linuxtogo.org/atom.xml" },
+    { "zecke"   , "http://zecke.blogspot.com/atom.xml"     },
 };
+static const int NUMBER_OF_FEEDS = sizeof(s_feeds)/sizeof(s_feeds[0]);
 
 static void remove_container_item( GtkWidget *item, GtkWidget *container ) {
     gtk_container_remove(GTK_CONTAINER(container), item);

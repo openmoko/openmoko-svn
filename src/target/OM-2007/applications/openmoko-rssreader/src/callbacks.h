@@ -52,6 +52,7 @@ void cb_searchbox_invisible(MokoToolBox* toolbox, struct RSSReaderData* d);
 void cb_treeview_selection_changed( GtkTreeSelection *selection, struct RSSReaderData *d );
 gboolean cb_treeview_keypress_event( GtkWidget *entry, GdkEventKey *key, struct RSSReaderData *d );
 void cb_search_entry_changed      ( GtkWidget *entry, struct RSSReaderData *d );
+void cb_treeview_filter_function  ( GtkTreeModel *model, GtkTreeIter *iter, struct RSSReaderData* );
 
 
 #endif

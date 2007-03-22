@@ -8,6 +8,13 @@ AC_PROG_CC
 AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
+#i18n
+GETTEXT_PACKAGE=openmoko-rssreader
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
+AC_SUBST(GETTEXT_PACKAGE)
+AM_GLIB_GNU_GETTEXT
+
+
 # base deps
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1)
 PKG_CHECK_MODULES(MRSS,     mrss          >= 0.17 )
@@ -18,4 +25,5 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 data/Makefile
+po/Makefile.in
 ])
