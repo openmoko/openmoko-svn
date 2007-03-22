@@ -4,7 +4,6 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-DEPENDS = "dropbear"
 PR = "r30"
 
 PACKAGES = "\
@@ -52,17 +51,6 @@ RDEPENDS_task-openmoko-linux = "\
 "
 
 #
-# task-openmoko-phone
-#
-DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
-RDEPENDS_task-openmoko-phone = "\
-  gsmd \
-  libgsmd-tools \
-  openmoko-dialer \
-  openmoko-panel-gsm \
-"
-
-#
 # task-openmoko-ui
 #
 DESCRIPTION_task-openmoko-ui = "OpenMoko: The X11/Gtk+2 based native User Interface"
@@ -84,6 +72,7 @@ RDEPENDS_task-openmoko-ui = "\
   xhost \
   xset \
   xrandr \
+  settings-daemon \
   openmoko-common \
   openmoko-session \
   openmoko-theme-standard \
@@ -98,10 +87,15 @@ DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Top Panel, and F
 RDEPENDS_task-openmoko-base = "\
   openmoko-mainmenu \
   matchbox-panel-2 \
+  matchbox-panel-2-applets \
   openmoko-footer \
   openmoko-taskmanager \
   openmoko-panel-mainmenu \
   openmoko-panel-battery \
+  openmoko-panel-bt \
+  openmoko-panel-clock \
+  openmoko-panel-usb \
+  openmoko-panel-gps \
 "
 
 #
@@ -112,7 +106,8 @@ RDEPENDS_task-openmoko-phone = "\
   gsmd \
   libgsmd-tools \
   openmoko-dialer \
-# ppp \
+  openmoko-panel-gsm \
+#  ppp \
 "
 
 #
@@ -120,6 +115,7 @@ RDEPENDS_task-openmoko-phone = "\
 #
 DESCRIPTION_task-openmoko-finger = "OpenMoko: Finger UI Applications"
 RDEPENDS_task-openmoko-finger = "\
+#  openmoko-calculator \
 "
 
 #
@@ -130,6 +126,7 @@ RDEPENDS_task-openmoko-pim = "\
   eds-dbus \
   openmoko-contacts \
   openmoko-dates \
+  openmoko-today \
 "
 
 #
