@@ -1,5 +1,5 @@
-MOKOTYPE = panel-plugin
 MOKOCONFIG = mokoui
+MOKOTYPE = panel-plugin
 
 SOURCES = \
   src/openmoko-panel-mainmenu.c

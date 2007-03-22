@@ -1,4 +1,5 @@
 MOKOCONFIG = mokoui
+MOKOTYPE = panel-plugin
 
 SOURCES = src/openmoko-panel-bt.c
 
