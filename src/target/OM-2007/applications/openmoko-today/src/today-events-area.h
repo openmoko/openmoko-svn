@@ -65,7 +65,12 @@ GType          today_events_area_get_type (void);
 GtkWidget*     today_events_area_new ();
 GtkWidget*     today_events_area_new_with_events (GList *events);
 void           today_events_area_set_events (TodayEventsArea *self,
-                                             GList *a_events);
+                                             GList *events);
+void           today_events_area_set_events_auto (TodayEventsArea *self) ;
+void           today_events_area_append_events (TodayEventsArea *self,
+                                                const GList *events) ;
+gboolean       today_events_area_remove_event (TodayEventsArea *self,
+                                               const gchar* event_uid) ;
 GList*         today_events_area_get_events (TodayEventsArea *self);
 int            today_events_area_get_nb_events (TodayEventsArea *self);
 int            today_events_area_get_nb_pages (TodayEventsArea *self);

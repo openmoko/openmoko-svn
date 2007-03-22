@@ -24,7 +24,7 @@
  */
 #include <string.h>
 /*#include <libecal/e-cal-time-util.h>*/
-/*#include <libical/e-cal-component.h>*/
+#include <libecal/e-cal-view.h>
 #include <libical/icalcomponent.h>
 #include <gtk/gtkvbox.h>
 #include <gtk/gtkhbox.h>
@@ -49,6 +49,10 @@ struct _TodayEventsAreaPrivate {
   int cur_event_index ;
   int max_visible_events ;
   int nb_events ;
+  ECalView *events_view ;
+  ECalView *tasks_view ;
+  ECal *events_ecal ;
+  ECal *tasks_ecal ;
 };
 
 enum TodayEventsAreaSignals
@@ -87,10 +91,20 @@ static void     render_event                (TodayEventsArea *a_this,
 static void     render_events_page          (TodayEventsArea *a_this,
                                              GList *a_from) ;
 static void     render_events_page_auto     (TodayEventsArea *a_this) ;
+static gboolean remove_event                (TodayEventsArea *a_this,
+                                             GList *a_event) ;
+static void     set_events_view             (TodayEventsArea *a_this,
+                                           ECalView *a_view) ;
 static void     event_selected_signal       (TodayEventsArea *a_this,
                                              guint a_index) ;
 static void     events_added_signal       (TodayEventsArea *a_this,
                                            GList *a_index) ;
+static void     on_objects_added_cb       (ECalView *a_view,
+                                           GList *a_objects,
+                                           TodayEventsArea *a_this) ;
+static void     on_objects_removed_cb     (ECalView *a_view,
+                                           GList *a_uids,
+                                           TodayEventsArea *a_this) ;
 
 static void     get_property (GObject *a_this, guint a_prop_id,
                               GValue *a_val, GParamSpec *a_pspec) ;
@@ -219,6 +233,26 @@ today_events_area_finalize (GObject *a_obj)
     e_cal_free_object_list (self->priv->events) ;
     self->priv->events = NULL ;
   }
+  if (self->priv->events_view)
+  {
+    g_object_unref (G_OBJECT (self->priv->events_view)) ;
+    self->priv->events_view = NULL;
+  }
+  if (self->priv->tasks_view)
+  {
+    g_object_unref (G_OBJECT (self->priv->tasks_view)) ;
+    self->priv->tasks_view = NULL;
+  }
+  if (self->priv->events_ecal)
+  {
+    g_object_unref (G_OBJECT (self->priv->events_ecal)) ;
+    self->priv->events_ecal = NULL;
+  }
+  if (self->priv->tasks_ecal)
+  {
+    g_object_unref (G_OBJECT (self->priv->tasks_ecal)) ;
+    self->priv->tasks_ecal = NULL ;
+  }
   self->priv->cur_event = NULL ;
   self->priv->cur_event_index = 0 ;
   self->priv->page_start = NULL ;
@@ -310,6 +344,29 @@ events_added_signal (TodayEventsArea *a_this,
    * so that it matches the new widget name
    */
   gtk_widget_reset_rc_styles (GTK_WIDGET (a_this)) ;
+}
+
+static void
+on_objects_added_cb (ECalView *a_view,
+                     GList *a_objects,
+                     TodayEventsArea *a_this)
+{
+  if (a_view) {/*compiler is happy*/}
+  today_events_area_append_events (a_this, a_objects) ;
+  gtk_widget_queue_draw (GTK_WIDGET (a_this)) ;
+}
+
+static void
+on_objects_removed_cb (ECalView *a_view,
+                       GList *a_uids,
+                       TodayEventsArea *a_this)
+{
+  GList *cur ;
+
+  if (a_view) {/*compiler is happy*/}
+  for (cur = a_uids ; cur ; cur = cur->next)
+    today_events_area_remove_event (a_this, cur->data) ;
+  gtk_widget_queue_draw (GTK_WIDGET (a_this)) ;
 }
 
 static void
@@ -748,6 +805,99 @@ render_events_page_auto (TodayEventsArea *a_this)
   render_events_page (a_this, from) ;
 }
 
+static gboolean
+remove_event (TodayEventsArea *a_this,
+              GList *a_event)
+{
+  g_return_val_if_fail (a_this
+                        && TODAY_IS_EVENTS_AREA (a_this)
+                        && a_this->priv,
+                        FALSE) ;
+
+  if (!a_event || !a_this->priv->events)
+    return TRUE ;
+
+  if (a_event == a_this->priv->cur_event)
+  {
+    if (a_this->priv->cur_event->prev)
+      a_this->priv->cur_event = a_this->priv->cur_event->prev ;
+    else
+      a_this->priv->cur_event = a_this->priv->cur_event->next ;
+  }
+
+  a_this->priv->events = g_list_remove_link (a_this->priv->events, a_event) ;
+  g_return_val_if_fail (a_event, FALSE) ;
+
+  if (a_event->data)
+  {
+    icalcomponent_free (a_event->data) ;
+    a_event->data = NULL ;
+  }
+  g_list_free (a_event) ;
+  a_this->priv->nb_events-- ;
+
+  if (select_event (a_this, a_this->priv->cur_event))
+  {
+    render_events_page_auto (a_this) ;
+    return TRUE ;
+  }
+  return FALSE ;
+}
+
+static void
+set_events_view (TodayEventsArea *a_this,
+                 ECalView *a_view)
+{
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
+  g_return_if_fail (a_this->priv) ;
+
+  if (!a_view)
+  {
+    return ;
+  }
+  if (a_view == a_this->priv->events_view)
+    return ;
+  a_this->priv->events_view = a_view ;
+
+  g_return_if_fail (E_IS_CAL_VIEW (a_view)) ;
+  g_signal_connect (G_OBJECT (a_view), "objects-added",
+                    G_CALLBACK (on_objects_added_cb),
+                    a_this) ;
+  g_signal_connect (G_OBJECT (a_view), "objects-removed",
+                    G_CALLBACK (on_objects_removed_cb),
+                    a_this) ;
+
+  g_object_ref (G_OBJECT (a_view)) ;
+  e_cal_view_start (a_view) ;
+}
+
+static void
+set_tasks_view (TodayEventsArea *a_this,
+                ECalView *a_view)
+{
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
+  g_return_if_fail (a_this->priv) ;
+
+  if (!a_view)
+  {
+    return ;
+  }
+  if (a_view == a_this->priv->tasks_view)
+    return ;
+
+  a_this->priv->tasks_view = a_view ;
+
+  g_return_if_fail (E_IS_CAL_VIEW (a_view)) ;
+  g_signal_connect (G_OBJECT (a_view), "objects-added",
+                    G_CALLBACK (on_objects_added_cb),
+                    a_this) ;
+  g_signal_connect (G_OBJECT (a_view), "objects-removed",
+                    G_CALLBACK (on_objects_removed_cb),
+                    a_this) ;
+
+  g_object_ref (G_OBJECT (a_view)) ;
+  e_cal_view_start (a_view) ;
+}
 
 /**********************
  * </private api>
@@ -817,6 +967,121 @@ today_events_area_set_events (TodayEventsArea *a_this,
   update_paging_info (a_this) ;
   g_signal_emit (G_OBJECT (a_this), signals[EVENTS_ADDED_SIGNAL], 0,
                  a_events) ;
+}
+
+void
+today_events_area_set_events_auto (TodayEventsArea *a_this)
+{
+  ECalView *events_view=NULL, *tasks_view=NULL;
+
+  g_return_if_fail (a_this && TODAY_EVENTS_AREA (a_this)) ;
+  g_return_if_fail (a_this->priv) ;
+
+  if (!a_this->priv->events_ecal)
+  {
+    a_this->priv->events_ecal = e_cal_new_system_calendar () ;
+    if(!e_cal_open (a_this->priv->events_ecal, FALSE, NULL))
+    {
+      g_warning ("failed to open calendar") ;
+      g_object_unref (G_OBJECT (a_this->priv->events_ecal)) ;
+      a_this->priv->events_ecal = NULL ;
+    }
+  }
+  g_return_if_fail (a_this->priv->events_ecal) ;
+
+  if (!a_this->priv->tasks_ecal)
+  {
+    a_this->priv->tasks_ecal = e_cal_new_system_tasks () ;
+    if (!e_cal_open (a_this->priv->tasks_ecal, FALSE, NULL))
+    {
+      g_warning ("failed to open tasks") ;
+      g_object_unref (G_OBJECT (a_this->priv->tasks_ecal)) ;
+      a_this->priv->tasks_ecal = NULL ;
+    }
+  }
+  g_return_if_fail (a_this->priv->tasks_ecal) ;
+
+  if (!a_this->priv->events_view)
+  {
+    if (e_cal_get_query (a_this->priv->events_ecal,
+                          "#t",
+                          &events_view,
+                          NULL))
+    {
+      set_events_view (a_this, events_view) ;
+    }
+    else
+    {
+      g_warning ("failed to query the calendar") ;
+    }
+  }
+
+  if (!a_this->priv->tasks_view)
+  {
+    if (e_cal_get_query (a_this->priv->tasks_ecal,
+                         "#t",
+                         &tasks_view,
+                         NULL))
+    {
+      set_tasks_view (a_this, tasks_view) ;
+    }
+    else
+    {
+      g_warning ("failed to query task store") ;
+    }
+  }
+}
+
+void
+today_events_area_append_events (TodayEventsArea *a_this,
+                                 const GList *a_events)
+{
+  g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
+  g_return_if_fail (a_this->priv) ;
+
+  GList *events = today_clone_icalcomponent_list (a_events) ;
+  if (!a_this->priv->events)
+  {
+    today_events_area_set_events (a_this, events) ;
+    return ;
+  }
+  a_this->priv->events = g_list_concat (a_this->priv->events,
+                                        events) ;
+  a_this->priv->nb_events = get_nb_events_real (a_this) ;
+  reinit_area (a_this) ;
+  render_events_page (a_this, NULL) ;
+  update_paging_info (a_this) ;
+  g_signal_emit (G_OBJECT (a_this), signals[EVENTS_ADDED_SIGNAL], 0,
+                 a_events) ;
+}
+
+gboolean
+today_events_area_remove_event (TodayEventsArea *a_this,
+                                const gchar* a_uid)
+{
+  GList *cur=NULL ;
+  gchar *uid=NULL ;
+
+  g_return_val_if_fail (a_this
+                        && TODAY_IS_EVENTS_AREA (a_this)
+                        && a_this->priv,
+                        FALSE) ;
+  g_return_val_if_fail (a_uid, FALSE) ;
+
+  if (!a_this->priv->events)
+    return FALSE ;
+
+  for (cur = a_this->priv->events ; cur ; cur = cur->next)
+  {
+    /*sanity check*/
+    if (!cur->data || !icalcomponent_isa_component (cur->data))
+      continue ;
+
+    uid = (gchar*)icalcomponent_get_uid (cur->data);
+    if (uid && ! strncmp (a_uid, uid, strlen (a_uid)))
+      return remove_event (a_this, cur) ;
+  }
+  return FALSE ;
 }
 
 GList*

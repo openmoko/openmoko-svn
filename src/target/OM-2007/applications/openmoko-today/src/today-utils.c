@@ -103,39 +103,19 @@ icaltime_to_pretty_string (const icaltimetype *timetype)
     return result ;
 }
 
-
-static GList*
-icalcomps_to_ecalcomps (GList *a_icalcomps)
+GList*
+today_clone_icalcomponent_list (const GList *a_list)
 {
-  GList *cur=NULL, *ecalcomps=NULL  ;
+  GList *result=NULL, *cur=NULL ;
 
-  g_return_val_if_fail (a_icalcomps, NULL) ;
-  /*
-   * build a list of ECalComponent, out of the list of icalcomponents
-   * when an icalcomponent is set to an ECalComponent, the later
-   * becomes responsible of freeing the former's memory
-   */
-  for (cur = a_icalcomps; cur; cur = cur->next)
+  for (cur =(GList*)a_list ; cur ; cur = cur->next)
   {
-    ECalComponent *c = NULL;
-    if (!cur->data)
-      continue;
-
-    c = e_cal_component_new ();
-    if (!e_cal_component_set_icalcomponent (c, cur->data))
-    {
-      g_warning ("setting icalcomp into ecalcomp failed") ;
-      icalcomponent_free (cur->data);
-      cur->data = NULL;
-      continue;
-    }
-    ecalcomps = g_list_prepend (ecalcomps, c);
-    cur->data = NULL;
+    if (!icalcomponent_isa_component (cur->data))
+      continue ;
+    result = g_list_prepend (result, icalcomponent_new_clone (cur->data)) ;
   }
-  return ecalcomps ;
-
+  return result ;
 }
-
 
 /**
  * today_get_today_events:

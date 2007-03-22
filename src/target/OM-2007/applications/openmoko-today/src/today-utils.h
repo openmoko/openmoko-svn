@@ -33,6 +33,6 @@ GList* today_get_today_events () ;
 void e_cal_component_list_free (GList * list) ;
 gchar* icaltime_to_pretty_string (const icaltimetype *timetype) ;
 gboolean icalcomponent_has_alarm (icalcomponent *a_icalcomp) ;
-
+GList* today_clone_icalcomponent_list (const GList *a_list) ;
 #endif /*__TODAY_UTILS_H__*/
 

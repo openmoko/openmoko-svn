@@ -1,3 +1,23 @@
+Thu, 22 Mar 2007 09:51:27 +0100 Dodji Seketeli
+
+	* applications/openmoko-today/src/today-events-area.[c|h]:
+	  Port this over the ECalView API. This allows updating the
+	  interface whenever an event or todo item is added to
+	  or deleted from e-d-s.
+	  Basically, after calling today_events_area_new(),
+	  one just have to call today_events_area_set_events_auto().
+	  The widget pulls events and tasks from e-d-s, show them,
+	  paginate them, and update itself whenever an event is modified
+	  in e-d-s. It is no more compulsory to feed the widget
+	  with today_events_area_set_events().
+	* applications/openmoko-today/src/today-main.c: change this to
+	  today_setup_events_area(): change this to use the
+	  new today_events_area_set_event_auto() entry point.
+	* applications/openmoko-today/src/today-utils.[c|]:
+	  Added today_clone_icalcomponent_list() to be able
+	  to clone list of icalcomponents, as we have to do that
+	  when using the signal driven ECalView API.
+
 Wed, 21 Mar 2007 17:34:34 +0000 Thomas Wood
 
 	* src/today-main.c: Add support for icon themes, and assign applications to
