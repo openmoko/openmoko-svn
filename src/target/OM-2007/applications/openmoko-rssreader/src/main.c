@@ -86,10 +86,14 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     GtkTreeViewColumn *column;
     ren = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
     column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Subject"), ren, "text", RSS_READER_COLUMN_SUBJECT, NULL));
+    gtk_tree_view_column_set_expand( column, TRUE );
+    gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
     moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
 
     ren = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
     column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Date"), ren, "text", RSS_READER_COLUMN_DATE, NULL));
+    gtk_tree_view_column_set_expand( column, TRUE );
+    gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
     moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
 
     /*
