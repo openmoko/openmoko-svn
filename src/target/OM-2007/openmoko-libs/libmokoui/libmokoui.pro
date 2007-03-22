@@ -40,6 +40,6 @@ SOURCES = \
     moko-tool-box.c \
     moko-window.c
 
-PKGCONFIG += gtk+-2.0 libmb
+PKGCONFIG += gtk+-2.0
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
