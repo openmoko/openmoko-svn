@@ -52,14 +52,13 @@ moko_wheel_bottom_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 	g_debug ("Call moko finger menu hide");
 	moko_dbus_send_message ("");
   }
-   
 }
 
 void
 moko_wheel_left_up_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 {
     //moko_icon_view_move_cursor_line_up (mma->fm->mm->icon_view);
-	moko_finger_menu_move_cursor_up(fm);
+  moko_finger_menu_move_cursor_up(fm);
 }
 
 void
@@ -83,9 +82,7 @@ moko_icon_view_item_acitvated_cb(MokoIconView *icon_view,
   
     if (selected_item->type == ITEM_TYPE_FOLDER)
     {
-       // moko_finger_menu_set_current_item(mma->fm, selected_item);
-        moko_finger_menu_update_content (fm, selected_item);
-       // moko_main_menu_update_content (mma->mm, selected_item);
+      moko_finger_menu_update_content (fm, selected_item);
     }
     else if (selected_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||selected_item->type == ITEM_TYPE_APP)
     {

@@ -67,12 +67,12 @@ moko_finger_menu_init(MokoFingerMenu *self)
   self->window = MOKO_FINGER_WINDOW(moko_finger_window_new());
   gtk_widget_show (GTK_WIDGET (self->window));
 
-  self->wheel = moko_finger_window_get_wheel (self->window);
+  self->wheel = MOKO_FINGER_WHEEL(moko_finger_window_get_wheel (self->window));
 
-  self->toolbox = moko_finger_window_get_toolbox (self->window);
+  self->toolbox = MOKO_FINGER_TOOL_BOX(moko_finger_window_get_toolbox (self->window));
   self->history = moko_app_history_init (self->toolbox);
   self->mm = MAINMENU (moko_main_menu_new());
-  gtk_widget_show (self->mm);
+  gtk_widget_show (GTK_WIDGET(self->mm));
 
   g_signal_connect (self->wheel, "press_bottom", G_CALLBACK ( moko_wheel_bottom_press_cb), self);
   g_signal_connect (self->wheel, "press_left_up", G_CALLBACK ( moko_wheel_left_up_press_cb), self);
@@ -96,7 +96,7 @@ moko_finger_menu_show (MokoFingerMenu *self)
    	return;
     
   gtk_widget_show_all (GTK_WIDGET(self->window));
-  gtk_widget_show_all (self->mm);
+  gtk_widget_show_all (GTK_WIDGET(self->mm));
 
     //gtk_widget_show (GTK_WIDGET(self->window));
   gtk_widget_show (GTK_WIDGET(self->toolbox));

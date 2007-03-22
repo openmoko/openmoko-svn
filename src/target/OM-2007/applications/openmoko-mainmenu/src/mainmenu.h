@@ -81,9 +81,9 @@ struct _MokoMainMenu {
     MokoIconView *icon_view;
     GtkListStore *list_store;
     GtkWidget *scrolled;
-    GtkHBox *hbox;
-    GtkLabel *section_name;
-    GtkLabel *item_total;
+    GtkWidget *hbox;
+    GtkWidget *section_name;
+    GtkWidget *item_total;
 };
 
 struct _MokoMainMenuClass {
