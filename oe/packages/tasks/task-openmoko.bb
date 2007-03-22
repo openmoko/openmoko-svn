@@ -52,13 +52,6 @@ RDEPENDS_task-openmoko-linux = "\
 "
 
 #
-# task-openmoko-base
-#
-DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, and Panel"
-RDEPENDS_task-openmoko-base = "\
-"
-
-#
 # task-openmoko-phone
 #
 DESCRIPTION_task-openmoko-phone = "OpenMoko: GSM Phone Services"
@@ -83,7 +76,6 @@ RDEPENDS_task-openmoko-ui = "\
   gtk+ \
   matchbox-common \
   matchbox-wm \
-  matchbox-panel-2 \
   xserver-kdrive-fbdev \
   xserver-kdrive-common \
   xserver-nodm-init \
@@ -105,10 +97,11 @@ RDEPENDS_task-openmoko-ui = "\
 DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Top Panel, and Footer"
 RDEPENDS_task-openmoko-base = "\
   openmoko-mainmenu \
-# matchbox-panel-2 \
+  matchbox-panel-2 \
   openmoko-footer \
   openmoko-taskmanager \
   openmoko-panel-mainmenu \
+  openmoko-panel-battery \
 "
 
 #
@@ -156,10 +149,6 @@ RDEPENDS_task-openmoko-demo = "\
   matchbox-keyboard \
   matchbox-stroke \
   matchbox-config-gtk \
-  matchbox-panel-manager \
-  matchbox-panel-hacks \
-  matchbox-themes-extra \
-  matchbox-themes-gtk \
   matchbox-applet-inputmanager \
   matchbox-applet-startup-monitor \
   xcursor-transparent-theme \
