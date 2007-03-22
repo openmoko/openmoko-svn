@@ -18,14 +18,3 @@ resource_DATA = \
         SignalStrength_03.png \
         SignalStrength_04.png \
         SignalStrength_05.png
-#
-# desktop integration: .desktop file
-#
-#desktopdir = $(datadir)/applications
-#dist_desktop_DATA = openmoko-panel-gsm.desktop
-
-#
-# desktop integration: application icon
-#
-#appicondir = $(datadir)/icons
-#dist_appicon_DATA = 
