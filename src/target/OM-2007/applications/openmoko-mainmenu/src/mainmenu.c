@@ -268,7 +268,7 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
     if (mm->list_store)
   	  gtk_list_store_clear (mm->list_store);
 
-  //  moko_icon_view_refresh (mm->icon_view);
+    moko_icon_view_refresh (mm->icon_view);
 
     mokodesktop_items_enumerate_siblings(item->item_child, item_new)
     { 

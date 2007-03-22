@@ -99,6 +99,7 @@ struct _MokoIconViewPrivate
   gint decr_width;
   gboolean decorated;
   gint total_items;
+  gboolean refresh;
 
   guint ctrl_pressed : 1;
   guint shift_pressed : 1;
@@ -999,6 +1000,8 @@ moko_icon_view_init(MokoIconView *icon_view)
   icon_view->priv->row_spacing = 6;
   icon_view->priv->column_spacing = 6;
   icon_view->priv->margin = 6;
+  icon_view->priv->cursor_item = NULL;
+  icon_view->priv->anchor_item = NULL;
 }
 
 
@@ -1494,7 +1497,8 @@ moko_icon_view_button_press (GtkWidget      *widget,
   MokoIconView *icon_view;
   MokoIconViewItem *item;
   gboolean dirty = FALSE;
-
+  gboolean activate = FALSE;
+  
   icon_view = MOKO_ICON_VIEW (widget);
 
   if (event->window != icon_view->priv->bin_window)
@@ -1550,14 +1554,8 @@ moko_icon_view_button_press (GtkWidget      *widget,
 		      dirty = TRUE;
 		    }
 		  else 
-	        {
-	           GtkTreePath *path;
-	           path = gtk_tree_path_new_from_indices (item->index, -1);
-	           moko_icon_view_item_activated (icon_view, path);
-	           gtk_tree_path_free (path);
-
-               icon_view->priv->last_single_clicked = NULL;
-		  }
+		      activate = TRUE;
+		  
 		}
 	      moko_icon_view_set_cursor_item (icon_view, item);
 	      icon_view->priv->anchor_item = item;
@@ -1587,7 +1585,16 @@ moko_icon_view_button_press (GtkWidget      *widget,
 	}
 
     }
-  
+  if (activate)
+	{
+	   GtkTreePath *path;
+	   path = gtk_tree_path_new_from_indices (item->index, -1);
+	   moko_icon_view_item_activated (icon_view, path);
+	   gtk_tree_path_free (path);
+
+       icon_view->priv->last_single_clicked = NULL;
+	}
+
   if (dirty)
     g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 
@@ -3172,19 +3179,9 @@ moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
  // if (!GTK_WIDGET_HAS_FOCUS (icon_view)) 
     //return;
 
-  if (!icon_view->priv->cursor_item)
+  if (icon_view->priv->cursor_item)
     {
-      GList *list;
-
-      if (count > 0)
-	list = icon_view->priv->items;
-      else
-	list = g_list_last (icon_view->priv->items);
-
-      item = list ? list->data : NULL;
-    }
-  else 
-    {
+	g_debug ("cursor item row = %d, col = %d", icon_view->priv->cursor_item->row, icon_view->priv->cursor_item->col);
      item = find_item (icon_view, 
 		      icon_view->priv->cursor_item,
 		      count, 0);
@@ -3200,9 +3197,19 @@ moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
 	     col = icon_view->priv->columns;
     	    g_debug ("count = %d column = %d", count, col);
         }
-
     }
+  else
+    {
+      GList *list;
 
+      if (count > 0)
+	list = icon_view->priv->items;
+      else
+	list = g_list_last (icon_view->priv->items);
+
+      item = list ? list->data : NULL;
+    }
+ 
   if (!item)
 	return;
 
@@ -4445,4 +4452,16 @@ moko_icon_view_move_cursor_line_down (MokoIconView *icon_view)
     
     moko_icon_view_move_cursor_up_down (icon_view, 1);
 
+}
+void
+moko_icon_view_refresh (MokoIconView *icon_view)
+{
+  g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
+
+  icon_view->priv->cursor_item = NULL;
+  if (icon_view->priv->items)
+  {
+     MokoIconViewItem *item = icon_view->priv->items->data;
+     moko_icon_view_scroll_to_item (icon_view, item);     
+  }
 }

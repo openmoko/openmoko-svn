@@ -234,6 +234,9 @@ moko_icon_view_move_cursor_line_up (MokoIconView *icon_view);
 
 void
 moko_icon_view_move_cursor_line_down (MokoIconView *icon_view);
+
+void
+moko_icon_view_refresh (MokoIconView *icon_view);
 G_END_DECLS
 
 #endif /* mokoiconview.h */
