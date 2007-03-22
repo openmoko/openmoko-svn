@@ -6,6 +6,10 @@ Known design flaws:
     -No proxy model that makes use of the filter
     -No caching of images
     -Storage size is not limited
-    
+    -There is no way to merge feed entries from two planets... instead two entries will be presented
+     (this is another reason for a better model)
+    -Separate MRSS, Model and CellRender allocation into a model manager class which
+     knows the secret of the used types, the to be used cell renderer and the sort
+
 Main objective:
     -Get familiar with the joy/pain of Gtk+
