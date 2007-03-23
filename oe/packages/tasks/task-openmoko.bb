@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r30"
+PR = "r31"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -149,7 +149,6 @@ RDEPENDS_task-openmoko-demo = "\
   matchbox-applet-inputmanager \
   matchbox-applet-startup-monitor \
   xcursor-transparent-theme \
-  settings-daemon \
   web \
   rxvt-unicode \
   mtpaint \
