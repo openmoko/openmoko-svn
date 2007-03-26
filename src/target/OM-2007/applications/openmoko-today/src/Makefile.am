@@ -6,13 +6,13 @@ AM_CPPFLAGS           =-DPKGDATADIR=\"$(pkgdatadir)\" \
 
 AM_CFLAGS             = -Wall -pedantic -std=c99 @TODAY_CFLAGS@
 
-bin_PROGRAMS          = today
+bin_PROGRAMS          = openmoko-today
 
-today_SOURCES         = today-main.c \
+openmoko_today_SOURCES         = today-main.c \
 today-events-area.h today-events-area.c \
 today-utils.h today-utils.c xutil.c
 
-today_LDADD          = @TODAY_LIBS@
+openmoko_today_LDADD          = @TODAY_LIBS@
 
 MAINTAINERCLEANFILES  = config.h.in Makefile.in
 

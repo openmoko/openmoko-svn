@@ -1,3 +1,8 @@
+2007-03-26  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am: Change binary name to openmoko-today to be more
+	consistent with other openmoko applications
+
 Thu, 22 Mar 2007 18:04:50 +0100 Dodji Sekteli
 
 	* applications/openmoko-today/src/today-events-area.c:
