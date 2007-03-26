@@ -26,7 +26,7 @@ Index: u-boot/Makefile
 Index: u-boot/board/neo1973/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/Makefile	2007-03-26 16:07:34.000000000 +0200
++++ u-boot/board/neo1973/Makefile	2007-03-26 16:30:17.000000000 +0200
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -117,7 +117,7 @@ Index: u-boot/board/neo1973/config.mk
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.c	2007-03-26 16:07:53.000000000 +0200
++++ u-boot/board/neo1973/neo1973.c	2007-03-26 16:30:20.000000000 +0200
 @@ -0,0 +1,361 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -740,7 +740,7 @@ Index: u-boot/board/neo1973/u-boot.lds
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/neo1973.h	2007-03-26 16:07:37.000000000 +0200
++++ u-boot/include/configs/neo1973.h	2007-03-26 16:30:20.000000000 +0200
 @@ -0,0 +1,263 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
@@ -1067,7 +1067,7 @@ Index: u-boot/board/neo1973/split_by_variant.sh
 Index: u-boot/board/neo1973/cmd_neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/cmd_neo1973.c	2007-03-26 16:07:36.000000000 +0200
++++ u-boot/board/neo1973/cmd_neo1973.c	2007-03-26 16:30:19.000000000 +0200
 @@ -0,0 +1,120 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -1192,7 +1192,7 @@ Index: u-boot/board/neo1973/cmd_neo1973.c
 Index: u-boot/board/neo1973/neo1973.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.h	2007-03-26 16:07:34.000000000 +0200
++++ u-boot/board/neo1973/neo1973.h	2007-03-26 16:30:17.000000000 +0200
 @@ -0,0 +1,18 @@
 +#ifndef _NEO1973_H
 +#define _NEO1973_H
@@ -1215,7 +1215,7 @@ Index: u-boot/board/neo1973/neo1973.h
 Index: u-boot/board/neo1973/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/pcf50606.c	2007-03-26 15:10:03.000000000 +0200
++++ u-boot/board/neo1973/pcf50606.c	2007-03-26 16:31:32.000000000 +0200
 @@ -0,0 +1,192 @@
 +
 +#include <common.h>
@@ -1343,7 +1343,7 @@ Index: u-boot/board/neo1973/pcf50606.c
 +	[PCF50606_REG_ADCC2]	= 0x00,
 +	/* gap */
 +	[PCF50606_REG_ACDC1]	= 0x00,
-+	[PCF50606_REG_BVMC]	= PCF50606_BVMC_THRSHLD_2V8,
++	[PCF50606_REG_BVMC]	= PCF50606_BVMC_THRSHLD_3V3,
 +	[PCF50606_REG_PWMC1]	= 0x00,
 +	[PCF50606_REG_LEDC1]	= 0x00,
 +	[PCF50606_REG_LEDC2]	= 0x00,
@@ -1686,7 +1686,7 @@ Index: u-boot/board/neo1973/pcf50606.h
 Index: u-boot/common/main.c
 ===================================================================
 --- u-boot.orig/common/main.c	2007-03-26 14:42:55.000000000 +0200
-+++ u-boot/common/main.c	2007-03-26 16:07:35.000000000 +0200
++++ u-boot/common/main.c	2007-03-26 16:30:17.000000000 +0200
 @@ -61,6 +61,7 @@
  #undef DEBUG_PARSER
  
