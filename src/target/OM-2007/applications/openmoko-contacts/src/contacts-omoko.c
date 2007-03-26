@@ -165,35 +165,26 @@ create_main_window (ContactsData *contacts_data)
 
 	/* groups button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_action_btn_upper_stock (MOKO_PIXMAP_BUTTON (widget),
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget),
 						       "openmoko-action-button-group-icon");
-	moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (widget),
-						       "Group");
 	g_signal_connect (G_OBJECT (widget), "clicked",
 			  G_CALLBACK (contacts_groups_pane_show), contacts_data);
 
 	/* history button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_action_btn_upper_stock (MOKO_PIXMAP_BUTTON (widget),
-						       "openmoko-filter-menu-icon");
-	moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (widget),
-						       "History");
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget),
+						       "openmoko-action-button-history-icon");
 
 	/* edit button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_action_btn_upper_stock (MOKO_PIXMAP_BUTTON (widget),
-						       "openmoko-filter-menu-icon");
-	moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (widget),
-						       "Edit");
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget), GTK_STOCK_EDIT);
 	g_signal_connect (G_OBJECT (widget), "clicked",
 			  G_CALLBACK (contacts_edit_cb), contacts_data);
 
 	/* view button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_action_btn_upper_stock (MOKO_PIXMAP_BUTTON (widget),
-						       "openmoko-filter-menu-icon");
-	moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (widget),
-						       "View");
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget),
+						       "openmoko-action-button-view-icon");
 	g_signal_connect (G_OBJECT (widget), "clicked",
 			  G_CALLBACK (contacts_view_cb), contacts_data);
 

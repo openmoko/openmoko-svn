@@ -1,5 +1,10 @@
 2007-03-26  Thomas Wood  <thomas@openedhand.com>
 
+	* src/contacts-omoko.c: (create_main_window): Use correct icons on
+	action buttons
+
+2007-03-26  Thomas Wood  <thomas@openedhand.com>
+
 	* src/contacts-ui.c: (contacts_setup_ui): Make sure we always create an
 	initial Groups menu. Fixes OpenMoko bug 314.
 
