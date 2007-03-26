@@ -26,16 +26,20 @@
 #include <X11/Xatom.h>
 
 #include <unistd.h>
+#include "stylusmenu.h"
+#include "mokodesktop.h"
+#include "mokodesktop_item.h"
+
+static GtkWidget *sm = NULL;
 
 static void click( MokoPanelApplet* applet )
 {
-    //TODO integrate main menu widget into this code and just gtk_widget_show() / gtk_widget_hide() here
-    static gboolean visible = FALSE;
-    if ( !visible )
-        g_debug( "NOT YET IMPLEMENTED: show openmoko-mainmenu" );
-    else
-        g_debug( "NOT YET IMPLEMENTED: hide openmoko-mainmenu" );
-    visible = !visible;
+  g_debug ("mainmenu click callback");
+  if (sm)
+   gtk_menu_popup (sm, NULL, NULL,
+                   (GtkMenuPositionFunc)moko_menu_position_cb,
+                   NULL, 0, gtk_get_current_event_time());
+  else g_debug ("no stylus menu objcet");
 }
 
 static void tap_hold( MokoPanelApplet* applet )
@@ -64,7 +68,7 @@ static void tap_hold( MokoPanelApplet* applet )
 
 G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    g_debug( "openmoko-panel-demo-simple new" );
+    g_debug( "openmoko-panel-mainmenu new" );
 
     MokoPanelApplet* applet = moko_panel_applet_new();
     g_debug( "applet is %p", applet );
@@ -72,6 +76,21 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     g_signal_connect( applet, "clicked", G_CALLBACK( click ), applet );
     g_signal_connect( applet, "tap-hold", G_CALLBACK( tap_hold ), applet );
     gtk_widget_show_all( GTK_WIDGET(applet) );
+    sm = gtk_menu_new ();
+    gtk_widget_show (sm);
+
+    MokoDesktopItem *top_item = NULL;
+    int ret;
+
+    top_item = mokodesktop_item_new_with_params ("Home", 
+						       NULL,
+						       NULL,
+						       ITEM_TYPE_ROOT );
+
+    ret = mokodesktop_init(top_item, ITEM_TYPE_CNT);
+
+    moko_stylus_menu_build(GTK_MENU(sm), top_item);
+
     return GTK_WIDGET(applet);
 }
 
