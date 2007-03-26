@@ -1,3 +1,25 @@
+2007-03-26 Chaowei Song <songcw@fic-sh.com.cn>
+	* data/:
+	Remove old status picture:
+		package-available.png
+		package-installed-outdated.png
+		package-installed.png
+		package-mark-install.png
+		package-remove.png
+		package-upgrade.png
+	Add new status picture:
+		Available.png
+		Installed.png
+		Upgradeable.png
+		Mark_for_install.png
+		Mark_for_remove.png
+		Mark_for_upgrade.png
+	* src/appmanager-data.c: (init_pixbuf_list)
+	Change the file name of the status pictures.
+	* src/navigation-area.c: (navigation_area_new)
+	Set resizable attribute to the first column of the navigation list.
+	Set the size of the second column from 240 to 280.
+
 2007-03-20 Chaowei Song <songcw@fic-sh.com.cn>
 	* src/ipkgapi.c:
 	Add #define __USE_XOPEN_EXTENDED before include string.h, removing the

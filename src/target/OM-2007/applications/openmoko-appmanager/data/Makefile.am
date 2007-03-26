@@ -1,18 +1,18 @@
-EXTRA_DIST = package-available.png\
-             package-installed-outdated.png\
-             package-installed.png\
-             package-mark-install.png\
-             package-remove.png\
-             package-upgrade.png\
+EXTRA_DIST = Available.png\
+             Installed.png\
+             Upgradeable.png\
+             Mark_for_install.png\
+             Mark_for_remove.png\
+             Mark_for_upgrade.png\
              unkown.png
 
 resourcedir = $(pkgdatadir)
-resource_DATA = package-available.png\
-                package-installed-outdated.png\
-                package-installed.png\
-                package-mark-install.png\
-                package-remove.png\
-                package-upgrade.png\
+resource_DATA = Available.png\
+                Installed.png\
+                Upgradeable.png\
+                Mark_for_install.png\
+                Mark_for_remove.png\
+                Mark_for_upgrade.png\
                 unkown.png
 
 #

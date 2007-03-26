@@ -169,11 +169,6 @@ navigation_area_new (ApplicationManagerData *appdata)
 
   moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
 
-  /* For some reason, there must set the column length to fixed */
-  gtk_tree_view_column_set_resizable (col, FALSE);
-  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
-  gtk_tree_view_column_set_fixed_width (col, 20);
-
   /* Add the name as the second column. */
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("Name"));
@@ -190,7 +185,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   /* For some reason, there must set the column length to fixed */
   gtk_tree_view_column_set_resizable (col, FALSE);
   gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
-  gtk_tree_view_column_set_fixed_width (col, 240);
+  gtk_tree_view_column_set_fixed_width (col, 280);
 
   /* Add the size as the third column. */
   col = gtk_tree_view_column_new ();

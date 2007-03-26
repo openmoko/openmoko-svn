@@ -328,35 +328,35 @@ init_pixbuf_list (ApplicationManagerData *appdata)
 
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
-  pixbuf = create_pixbuf ("package-available.png");
+  pixbuf = create_pixbuf ("Available.png");
   if (pixbuf != NULL)
     {
       application_manager_data_set_status_pixbuf (appdata, pixbuf,
                                                   PKG_STATUS_AVAILABLE);
     }
 
-  pixbuf = create_pixbuf ("package-installed.png");
+  pixbuf = create_pixbuf ("Installed.png");
   if (pixbuf != NULL)
     {
       application_manager_data_set_status_pixbuf (appdata, pixbuf,
                                                   PKG_STATUS_INSTALLED);
     }
 
-  pixbuf = create_pixbuf ("package-installed-outdated.png");
+  pixbuf = create_pixbuf ("Upgradeable.png");
   if (pixbuf != NULL)
     {
       application_manager_data_set_status_pixbuf (appdata, pixbuf,
                                                   PKG_STATUS_UPGRADEABLE);
     }
 
-  pixbuf = create_pixbuf ("package-mark-install.png");
+  pixbuf = create_pixbuf ("Mark_for_install.png");
   if (pixbuf != NULL)
     {
       application_manager_data_set_status_pixbuf (appdata, pixbuf,
                                                   PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL);
     }
 
-  pixbuf = create_pixbuf ("package-remove.png");
+  pixbuf = create_pixbuf ("Mark_for_remove.png");
   if (pixbuf != NULL)
     {
       application_manager_data_set_status_pixbuf (appdata, pixbuf,
@@ -365,7 +365,7 @@ init_pixbuf_list (ApplicationManagerData *appdata)
                                                   PKG_STATUS_UPGRADEABLE_MARK_FOR_REMOVE);
     }
 
-  pixbuf = create_pixbuf ("package-upgrade.png");
+  pixbuf = create_pixbuf ("Mark_for_upgrade.png");
   if (pixbuf != NULL)
     {
       application_manager_data_set_status_pixbuf (appdata, pixbuf,
