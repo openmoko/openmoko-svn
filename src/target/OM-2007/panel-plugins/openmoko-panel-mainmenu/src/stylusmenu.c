@@ -181,7 +181,7 @@ moko_menu_position_cb (GtkMenu *menu, int *x, int *y, gboolean *push_in, gpointe
     
     //FIXME: 
     *x = 0;
-    *y = 45;
+    *y = 44;
 
     *push_in = TRUE;
 }
