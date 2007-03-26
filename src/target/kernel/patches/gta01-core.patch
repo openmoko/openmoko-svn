@@ -1,10 +1,10 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20.2/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-08 13:36:44.000000000 +0100
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig	2007-03-08 13:37:56.000000000 +0100
+--- linux-2.6.20.2.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-26 11:31:44.000000000 +0200
++++ linux-2.6.20.2/arch/arm/mach-s3c2410/Kconfig	2007-03-26 14:24:48.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -20,10 +20,10 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig
  config ARCH_S3C2440
  	bool "SMDK2440"
  	select CPU_S3C2440
-Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.20.2/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Makefile	2007-03-08 13:36:44.000000000 +0100
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile	2007-03-08 13:36:44.000000000 +0100
+--- linux-2.6.20.2.orig/arch/arm/mach-s3c2410/Makefile	2007-03-26 11:31:44.000000000 +0200
++++ linux-2.6.20.2/arch/arm/mach-s3c2410/Makefile	2007-03-26 11:31:44.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -31,11 +31,11 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile
 +obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
  
  obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.20.2/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-08 13:38:24.000000000 +0100
-@@ -0,0 +1,506 @@
++++ linux-2.6.20.2/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-26 11:35:14.000000000 +0200
+@@ -0,0 +1,507 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -499,7 +499,8 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
 +{
 +	if (system_rev == GTA01v4_SYSTEM_REV ||
 +	    system_rev == GTA01Bv2_SYSTEM_REV ||
-+	    system_rev == GTA01Bv3_SYSTEM_REV)
++	    system_rev == GTA01Bv3_SYSTEM_REV ||
++	    system_rev == GTA01Bv4_SYSTEM_REV)
 +		gta01_udc_cfg.udc_command = gta01_udc_command;
 +
 +	s3c_device_usb.dev.platform_data = &gta01_usb_info;
@@ -542,11 +543,11 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.20.2/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h	2007-03-08 13:38:38.000000000 +0100
-@@ -0,0 +1,60 @@
++++ linux-2.6.20.2/include/asm-arm/arch-s3c2410/gta01.h	2007-03-26 14:28:16.000000000 +0200
+@@ -0,0 +1,69 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
 +
@@ -573,6 +574,7 @@ Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01_GPIO_MODEM_RST	S3C2410_GPB6
 +#define GTA01_GPIO_MODEM_ON	S3C2410_GPB7
 +#define GTA01_GPIO_LCD_RESET	S3C2410_GPC6
++#define GTA01_GPIO_PMU_IRQ	S3C2410_GPG8
 +#define GTA01_GPIO_JACK_INSERT	S3C2410_GPF4
 +#define GTA01_GPIO_nSD_DETECT	S3C2410_GPF5
 +#define GTA01_GPIO_AUX_KEY	S3C2410_GPF6
@@ -592,6 +594,7 @@ Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
 +
 +/* GTA01Bv2 */
 +#define GTA01Bv2_GPIO_nGSM_EN	S3C2410_GPF2
++#define GTA01Bv2_GPIO_VIBRATOR_ON S3C2410_GPB10
 +
 +/* GTA01Bv3 */
 +#define GTA01_GPIO_GPS_EN_3V3	S3C2410_GPG9
@@ -605,5 +608,12 @@ Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01_GPIO_GPS_EN_2V8	S3C2410_GPG9
 +#define GTA01_GPIO_GPS_EN_3V	S3C2410_GPG10
 +#define GTA01_GPIO_GPS_RESET	S3C2410_GPC0
++
++/* GTA01Bv4 */
++#define GTA01Bv4_GPIO_nNAND_WP	S3C2410_GPA16
++#define GTA01Bv4_GPIO_VIBRATOR_ON S3C2410_GPB3
++#define GTA01Bv4_GPIO_PMU_IRQ	S3C2410_GPG1
++
++#define GTA01Bv4_IRQ_PCF50606	IRQ_EINT9
 +
 +#endif /* _GTA01_H */
