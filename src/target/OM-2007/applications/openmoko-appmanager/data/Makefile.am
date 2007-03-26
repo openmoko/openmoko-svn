@@ -4,6 +4,9 @@ EXTRA_DIST = Available.png\
              Mark_for_install.png\
              Mark_for_remove.png\
              Mark_for_upgrade.png\
+             Apply.png\
+             Summary.png\
+             Upgrades.png\
              unkown.png
 
 resourcedir = $(pkgdatadir)
@@ -13,6 +16,9 @@ resource_DATA = Available.png\
                 Mark_for_install.png\
                 Mark_for_remove.png\
                 Mark_for_upgrade.png\
+                Apply.png\
+                Summary.png\
+                Upgrades.png\
                 unkown.png
 
 #

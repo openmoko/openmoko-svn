@@ -1,5 +1,14 @@
 2007-03-26 Chaowei Song <songcw@fic-sh.com.cn>
 	* data/:
+	Add action buttons:
+		Apply.png
+		Summary.png
+		Upgrades.png
+	* src/tool-box.c: (tool_box_new)
+	Using pixtures instead of the texts for the buttons on the tool box.
+
+2007-03-26 Chaowei Song <songcw@fic-sh.com.cn> (r1494)
+	* data/:
 	Remove old status picture:
 		package-available.png
 		package-installed-outdated.png

@@ -19,6 +19,8 @@
  */
 #include <string.h>
 
+#include "config.h"
+
 #include "tool-box.h"
 #include "navigation-area.h"
 #include "package-list.h"
@@ -170,17 +172,20 @@ tool_box_new (ApplicationManagerData *appdata)
   GtkWidget   *bapply;
   GtkWidget   *bupgrade;
   GtkWidget   *searchentry;
+  GtkWidget   *anImage;
 
   toolbox = MOKO_TOOL_BOX (moko_tool_box_new_with_search ());
 
   bupgrade = moko_tool_box_add_action_button (toolbox);
-  gtk_button_set_label (GTK_BUTTON (bupgrade), "Upgrade");
+  anImage = gtk_image_new_from_file (PKGDATADIR "/Upgrades.png");
+  moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON (bupgrade), anImage);
   g_signal_connect ((gpointer)bupgrade, "clicked",
                     G_CALLBACK (on_upgrade_clicked), 
                     appdata);
 
   bapply = moko_tool_box_add_action_button (toolbox);
-  gtk_button_set_label (GTK_BUTTON (bapply), "Apply");
+  anImage = gtk_image_new_from_file (PKGDATADIR "/Apply.png");
+  moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON (bapply), anImage);
   g_signal_connect ((gpointer)bapply, "clicked",
                     G_CALLBACK (on_apply_clicked), 
                     appdata);
