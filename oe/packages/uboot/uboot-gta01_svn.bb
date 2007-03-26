@@ -4,7 +4,7 @@ LICENSE = "GPL"
 SECTION = "bootloader"
 PRIORITY = "optional"
 PV = "1.2.0+svn${SRCDATE}"
-PR = "r2"
+PR = "r3"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
@@ -14,7 +14,7 @@ SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
 
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""
-UBOOT_MACHINES = "gta01v3 gta01v4 gta01bv2 gta01bv3"
+UBOOT_MACHINES = "gta01v3 gta01v4 gta01bv2 gta01bv3 gta01bv4"
 
 do_quilt() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
