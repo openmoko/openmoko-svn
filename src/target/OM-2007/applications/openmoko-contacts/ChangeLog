@@ -1,3 +1,8 @@
+2007-03-26  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-ui.c: (contacts_setup_ui): Make sure we always create an
+	initial Groups menu. Fixes OpenMoko bug 314.
+
 2007-03-19  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-callbacks-ebook.c: (contacts_added_cb),

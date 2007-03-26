@@ -95,6 +95,9 @@ contacts_setup_ui (ContactsData *data)
 	/* create the ui */
 	contacts_ui_create (data);
 
+	/* Make sure we have an initial groups menu */
+	contacts_ui_update_groups_list (data);
+
 	/* Set transient parent for chooser */
 	if (data->ui->chooser_dialog)
 	{
