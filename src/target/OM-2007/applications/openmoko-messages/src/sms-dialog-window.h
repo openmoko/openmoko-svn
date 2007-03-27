@@ -1,4 +1,4 @@
-/*  
+/*
  *  sms-dialog-window.h
  *  
  *  Authored By Alex Tang <alex@fic-sh.com.cn>
@@ -16,7 +16,7 @@
  *  
  *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: alex $]
  */
- 
+
 #ifndef _SMS_DIALOG_WINDOW_H_
 #define _SMS_DIALOG_WINDOW_H_
 
@@ -35,13 +35,19 @@ G_BEGIN_DECLS
 #define SMS_IS_DIALOG_WINDOW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass),   SMS_TYPE_DIALOG_WINDOW))
 #define SMS_DIALOG_WINDOW_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),   SMS_TYPE_DIALOG_WINDOW, SmsDialogWindowClass))
 
-typedef struct {
-    MokoWindow parent;
-} SmsDialogWindow;
+typedef struct
+{ 
+  MokoWindow parent;
+  GtkWidget* addressBtn;
+  GtkWidget* toEntry;
+}
+SmsDialogWindow;
 
-typedef struct {
-    MokoWindowClass parent_class;
-} SmsDialogWindowClass;
+typedef struct
+{
+  MokoWindowClass parent_class;
+}
+SmsDialogWindowClass;
 
 GType sms_dialog_window_get_type();
 SmsDialogWindow* sms_dialog_window_new();
@@ -51,7 +57,6 @@ void mail_dialog_window_set_title(SmsDialogWindow* self, const gchar* title);
 void sms_dialog_window_set_contents(SmsDialogWindow* self, GtkWidget* contents);
 void sms_dialog_reply_message(SmsDialogWindow* self, message* msg);
 void sms_dialog_forward_message(SmsDialogWindow* self, message* msg);
-guint sms_dialog_window_run(SmsDialogWindow* self);
 
 G_END_DECLS
 

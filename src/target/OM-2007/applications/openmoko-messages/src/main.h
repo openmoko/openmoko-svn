@@ -26,13 +26,13 @@
 #include <libmokoui/moko-tree-view.h>
 #include <gtk/gtkliststore.h>
 #include <gtk/gtktreemodelfilter.h>
-#include <dbus/dbus-glib.h>
 #include <dbus/dbus.h>
 
 #include "foldersdb.h"
 #include "detail-area.h"
 
-typedef struct _MessengerData{
+typedef struct _MessengerData
+  {
     MokoApplication* app;
     MokoPanedWindow* window;
     GtkWidget* menu;
@@ -56,26 +56,27 @@ typedef struct _MessengerData{
     GtkWidget* nfEntry;
     GtkWidget* frEntry;
     DBusConnection *bus;
-}MessengerData;
+  }
+MessengerData;
 
 enum {
-    COLUMN_ICON,
-    COLUMN_FROM,
-    COLUMN_SUBJECT,
-    COLUMN_CONTENT,
-    COLUMN_STATUS,
-    COLUMN_FOLDER,
-    NUM_COLS,
+  COLUMN_ICON,
+  COLUMN_FROM,
+  COLUMN_SUBJECT,
+  COLUMN_CONTENT,
+  COLUMN_STATUS,
+  COLUMN_FOLDER,
+  NUM_COLS,
 };
 
 enum {
-    PAGE_EDIT_MODE,
-    PAGE_NEW_MAIL,
-    PAGE_MODE_READ,
-    PAGE_MODE_REPLY,
-    PAGE_MODE_FORWARD,
-    PAGE_MODE_MMSHIP,
-    NUM_PAGES,
+  PAGE_EDIT_MODE,
+  PAGE_NEW_MAIL,
+  PAGE_MODE_READ,
+  PAGE_MODE_REPLY,
+  PAGE_MODE_FORWARD,
+  PAGE_MODE_MMSHIP,
+  NUM_PAGES,
 };
 
 GtkWidget* reload_filter_menu (MessengerData* d, GSList* folderlist);

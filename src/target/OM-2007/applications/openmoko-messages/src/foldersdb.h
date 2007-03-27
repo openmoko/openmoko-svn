@@ -18,7 +18,7 @@
  */
 
 #ifndef __FOLDERsDB_H_
-#define __FOLDERsDB_H_ 
+#define __FOLDERsDB_H_
 
 #include <glib-object.h>
 #include <stdio.h>
@@ -33,14 +33,18 @@ G_BEGIN_DECLS
 #define IS_FOLDERSDB_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass),     TYPE_FOLDERSDB))
 #define FOLDERSDB_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj),     TYPE_FOLDERSDB, FoldersDBClass))
 
-typedef struct {
+typedef struct
+  {
     GObject parent;
-} FoldersDB;
+  }
+FoldersDB;
 
-typedef struct {
+typedef struct
+  {
     GObjectClass parent_class;
     GSList* folders;
-} FoldersDBClass;
+  }
+FoldersDBClass;
 
 GType foldersdb_get_type (void);
 FoldersDB* foldersdb_new (void);

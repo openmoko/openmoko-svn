@@ -1,4 +1,4 @@
-/*  
+/*
  *  sms-membership-window.h
  *  
  *  Authored By Alex Tang <alex@fic-sh.com.cn>
@@ -16,7 +16,7 @@
  *  
  *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: alex $]
  */
- 
+
 #ifndef _SMS_MEMBERSHIP_WINDOW_H_
 #define _SMS_MEMBERSHIP_WINDOW_H_
 
@@ -41,14 +41,18 @@ G_BEGIN_DECLS
 #define SMS_IS_MEMBERSHIP_WINDOW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass),   SMS_TYPE_MEMBERSHIP_WINDOW))
 #define SMS_MEMBERSHIP_WINDOW_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj),   SMS_TYPE_MEMBERSHIP_WINDOW, SmsMembershipWindowClass))
 
-typedef struct {
+typedef struct
+  {
     MokoWindow parent;
     gchar* currentfolder;
-} SmsMembershipWindow;
+  }
+SmsMembershipWindow;
 
-typedef struct {
+typedef struct
+  {
     MokoWindowClass parent_class;
-} SmsMembershipWindowClass;
+  }
+SmsMembershipWindowClass;
 
 GType sms_membership_window_get_type();
 GtkWidget* sms_membership_window_new();

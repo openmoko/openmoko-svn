@@ -25,7 +25,6 @@
 #include <libmokoui/moko-pixmap-button.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-fixed.h>
-//#include "main.h"
 #include "message.h"
 
 G_BEGIN_DECLS
@@ -37,20 +36,25 @@ G_BEGIN_DECLS
 #define IS_DETAIL_AREA_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_DETAIL_AREA))
 #define DETAIL_AREA_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_DETAIL_AREA, DetailAreaClass))
 
-typedef struct _Read_Attributes{
+typedef struct _Read_Attributes
+  {
     GtkWidget* from_label;
     GtkWidget* date_label;
     GtkWidget* details;
-}ReadAttributes;
+  }
+ReadAttributes;
 
-typedef struct _Edit_Attributes{
+typedef struct _Edit_Attributes
+  {
     GtkWidget* sendBtn;
     GtkWidget* addrBtn;
     GtkWidget* toEntry;
     GtkWidget* txtView;
-}EditAttributes;
+  }
+EditAttributes;
 
-typedef struct _DetailArea{
+typedef struct _DetailArea
+  {
     MokoDetailsWindow parent;
     GtkNotebook* notebook;
     GtkVBox* detailbox;
@@ -60,20 +64,20 @@ typedef struct _DetailArea{
     guint* page;
     ReadAttributes* readAttributes;
     EditAttributes* editAttributes;
-}DetailArea;
+  }
+DetailArea;
 
-typedef struct _DetailAreaClass{
+typedef struct _DetailAreaClass
+  {
     MokoDetailsWindowClass parent_class;
-}DetailAreaClass;
+  }
+DetailAreaClass;
 
 GType detail_area_get_type();
 GtkWidget* detail_area_new(void);
 GtkWidget* detail_area_get_notebook(DetailArea* self);
 
-void detail_new_sms (DetailArea* self);
 void detail_read_message (DetailArea* self, message* msg);
-void detail_reply_message (DetailArea* self, message* msg);
-void detail_forward_message (DetailArea* self, message* msg);
 
 G_END_DECLS
 

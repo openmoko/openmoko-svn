@@ -50,7 +50,7 @@ void on_btnsend_clicked                (GtkButton       *button,
                                         gpointer         user_data);
 void on_btn_address_clicked            (GtkButton       *button,
                                         gpointer         user_data);
-                                        
+
 void cb_search_entry_changed (GtkEditable* editable, MessengerData* d);
 void cb_search_on (MessengerData* d);
 void cb_search_off (MessengerData* d);

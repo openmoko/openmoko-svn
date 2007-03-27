@@ -22,8 +22,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
 
 #include "main.h"
 #include "foldersdb.h"
@@ -39,349 +41,375 @@
 
 #include <gtk/gtk.h>
 
+typedef gboolean (*GtkTreeModelFilterVisibleFunc) (GtkTreeModel *model,
+    GtkTreeIter *iter,
+    gpointer data);
+
 gboolean init_dbus (MessengerData* d)
 {
-    DBusError error;
+  DBusError error;
 
-    /* Get a connection to the session bus */
-    dbus_error_init (&error);
-    d->bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+  /* Get a connection to the session bus */
+  dbus_error_init (&error);
+  d->bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
 
-    if (!d->bus)
+  if (!d->bus)
     {
-        g_warning ("Failed to connect to the D-BUS daemon: %s", error.message);
-	return FALSE;
+      g_warning ("Failed to connect to the D-BUS daemon: %s", error.message);
+      return FALSE;
     }
 
-    if (dbus_error_is_set (&error))
+  if (dbus_error_is_set (&error))
     {
-        fprintf(stdout, "Connection Error (%s)\n", error.message);
-	dbus_error_free (&error);
+      fprintf(stdout, "Connection Error (%s)\n", error.message);
+      dbus_error_free (&error);
     }
 
-    if (NULL == d->bus)
+  if (NULL == d->bus)
     {
-        fprintf(stdout, "Connection Error: bus == NULL \n");
-	exit (1);
+      fprintf(stdout, "Connection Error: bus == NULL \n");
+      exit (1);
     }
 
-    return TRUE;
+  return TRUE;
 }
 
 int main( int argc, char** argv )
 {
-    g_debug( "openmoko-messenger starting up" );
+  g_debug( "openmoko-messenger starting up" );
 
-    /* Initialize GTK+ */
-    gtk_init( &argc, &argv );
+  /* Initialize GTK+ */
+  gtk_init( &argc, &argv );
 
-    MessengerData* d = g_new ( MessengerData, 1);
-    d->foldersdb = foldersdb_new();
-    d->s_key = "";
-    d->msg_num = 0;
-    d->app = MOKO_APPLICATION (moko_application_get_instance());
-    d->currentfolder = g_strdup("Inbox");
-    g_set_application_name( "Messages" ); 
-    
-    if (init_dbus(d))
-        g_debug("D-Bus initialize successfully");
+  MessengerData* d = g_new ( MessengerData, 1);
+  d->foldersdb = foldersdb_new();
+  d->s_key = "";
+  d->msg_num = 0;
+  d->app = MOKO_APPLICATION (moko_application_get_instance());
+  d->currentfolder = g_strdup("Inbox");
+  g_set_application_name( "Messages" );
 
-    /* ui */
-    setup_ui(d);
+  if (init_dbus(d))
+    g_debug("D-Bus initialize successfully");
 
-    /* disable mmitem if necessary*/
-    update_folder_sensitive (d, d->folderlist);
-		
-    /* Set up this connection to work in a GLib event loop */
-    dbus_connection_setup_with_g_main (d->bus, NULL);
+  /* ui */
+  setup_ui(d);
 
-    /* show everything and run main loop */
-    gtk_window_set_decorated (GTK_WINDOW(d->window), FALSE);
-    gtk_widget_show_all (GTK_WIDGET(d->window));
-    gtk_main();
+  /* disable mmitem if necessary*/
+  update_folder_sensitive (d, d->folderlist);
 
-    return 0;
+  /* Set up this connection to work in a GLib event loop */
+  dbus_connection_setup_with_g_main (d->bus, NULL);
+
+  /* show everything and run main loop */
+  gtk_window_set_decorated (GTK_WINDOW(d->window), FALSE);
+  gtk_widget_show_all (GTK_WIDGET(d->window));
+  gtk_main();
+
+  return 0;
 
 }
 
 void update_folder_sensitive (MessengerData* d, GSList* folderlist)
 {
-    if (g_slist_length (folderlist) > 5){
-        gtk_widget_set_sensitive (d->mmitem, TRUE);
-	gtk_widget_set_sensitive (d->fnitem, TRUE);
+  if (g_slist_length (folderlist) > 5)
+    {
+      gtk_widget_set_sensitive (d->mmitem, TRUE);
+      gtk_widget_set_sensitive (d->fnitem, TRUE);
     }
-    else{
-	gtk_widget_set_sensitive (d->mmitem, FALSE);
-	gtk_widget_set_sensitive (d->fnitem, FALSE);
+  else
+    {
+      gtk_widget_set_sensitive (d->mmitem, FALSE);
+      gtk_widget_set_sensitive (d->fnitem, FALSE);
     }
 }
 
 GtkWidget* reload_filter_menu (MessengerData* d, GSList* folderlist)
 {
-    GSList *c;
-    GtkWidget* filtmenu;
+  GSList *c;
+  GtkWidget* filtmenu;
 
-    filtmenu = gtk_menu_new();
-    c = folderlist;
-    for (; c; c = g_slist_next(c) ){
-        gchar* folder = (gchar*) c->data;
-	g_debug( "adding folder '%s'", folder );
-        gtk_menu_shell_append( GTK_MENU_SHELL( filtmenu ), gtk_menu_item_new_with_label( folder ) );
+  filtmenu = gtk_menu_new();
+  c = folderlist;
+  for (; c; c = g_slist_next(c) )
+    {
+      gchar* folder = (gchar*) c->data;
+      g_debug( "adding folder '%s'", folder );
+      gtk_menu_shell_append( GTK_MENU_SHELL( filtmenu ), gtk_menu_item_new_with_label( folder ) );
     }
 
-    return filtmenu;
+  return filtmenu;
 }
 
 void setup_ui( MessengerData* d )
 {
-    /* main window */
-    d->window = MOKO_PANED_WINDOW(moko_paned_window_new());
-    d->mmWin = NULL;
-		 
-    /* application menu */
-    d->menu = gtk_menu_new(); 
-    gtk_widget_show (d->menu);
-    d->mmitem = gtk_menu_item_new_with_label( "Message Membership" );
-    d->fnitem = gtk_menu_item_new_with_label( "Folder Rename" );
-    GtkWidget* accountitem = gtk_menu_item_new_with_label( "Account" );
-    GtkWidget* helpitem = gtk_menu_item_new_with_label( "Help" );
-    GtkWidget* sepitem = gtk_separator_menu_item_new(); 
-    GtkWidget* closeitem = gtk_menu_item_new_with_label( "Close" );
-    g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(main_quit), d );
-    g_signal_connect( G_OBJECT(d->mmitem), "activate", G_CALLBACK(cb_mmitem_activate), d );
-    g_signal_connect( G_OBJECT(d->fnitem), "activate", G_CALLBACK(cb_fnitem_activate), d );
-    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), d->mmitem );
-    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), d->fnitem );
-    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), accountitem );
-    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), helpitem );
-    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), sepitem );
-    gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), closeitem );
-    moko_paned_window_set_application_menu( d->window, GTK_MENU(d->menu) );
+  /* main window */
+  d->window = MOKO_PANED_WINDOW(moko_paned_window_new());
+  d->mmWin = NULL;
 
-    /* filter menu */
-    d->filtmenu = gtk_menu_new();
-    gtk_widget_show (d->filtmenu);
-    d->folderlist = foldersdb_get_folders( d->foldersdb );
-    d->filtmenu = reload_filter_menu( d, d->folderlist );
+  /* application menu */
+  d->menu = gtk_menu_new();
+  gtk_widget_show (d->menu);
+  d->mmitem = gtk_menu_item_new_with_label( "Message Membership" );
+  d->fnitem = gtk_menu_item_new_with_label( "Folder Rename" );
+  GtkWidget* accountitem = gtk_menu_item_new_with_label( "Account" );
+  GtkWidget* helpitem = gtk_menu_item_new_with_label( "Help" );
+  GtkWidget* sepitem = gtk_separator_menu_item_new();
+  GtkWidget* closeitem = gtk_menu_item_new_with_label( "Close" );
+  g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(main_quit), d );
+  g_signal_connect( G_OBJECT(d->mmitem), "activate", G_CALLBACK(cb_mmitem_activate), d );
+  g_signal_connect( G_OBJECT(d->fnitem), "activate", G_CALLBACK(cb_fnitem_activate), d );
+  gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), d->mmitem );
+  gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), d->fnitem );
+  gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), accountitem );
+  gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), helpitem );
+  gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), sepitem );
+  gtk_menu_shell_append( GTK_MENU_SHELL(d->menu), closeitem );
+  moko_paned_window_set_application_menu( d->window, GTK_MENU(d->menu) );
 
-    moko_paned_window_set_filter_menu( d->window, GTK_MENU(d->filtmenu) );
-    GtkWidget* menubox = GTK_WIDGET(moko_paned_window_get_menubox(d->window));
-    g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
+  /* filter menu */
+  d->filtmenu = gtk_menu_new();
+  gtk_widget_show (d->filtmenu);
+  d->folderlist = foldersdb_get_folders( d->foldersdb );
+  d->filtmenu = reload_filter_menu( d, d->folderlist );
 
-    /* connect close event */
-    g_signal_connect( G_OBJECT(d->window), "delete_event", G_CALLBACK( main_quit ), d );
+  moko_paned_window_set_filter_menu( d->window, GTK_MENU(d->filtmenu) );
+  GtkWidget* menubox = GTK_WIDGET(moko_paned_window_get_menubox(d->window));
+  g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
 
-    /* set navagation area */
-    populate_navigation_area( d );
+  /* connect close event */
+  g_signal_connect( G_OBJECT(d->window), "delete_event", G_CALLBACK( main_quit ), d );
 
-    /* set toolbox */
-    GtkWidget* newButton;
-    GtkWidget* modeButton;
-    GtkWidget* getmailButton;
-    GtkWidget* deleteButton;
+  /* set navagation area */
+  populate_navigation_area( d );
 
-    GtkWidget* newMenu;
-    GtkWidget* modeMenu;
-    GtkWidget* deleteMenu;
-    
-    GtkWidget* image;
+  /* set toolbox */
+  GtkWidget* newButton;
+  GtkWidget* modeButton;
+  GtkWidget* getmailButton;
+  GtkWidget* deleteButton;
 
-    /* set tool bar */
-    d->toolbox = moko_tool_box_new_with_search();
-    gtk_widget_show (d->toolbox);
-    GtkWidget* searchEntry = GTK_WIDGET (moko_tool_box_get_entry (MOKO_TOOL_BOX(d->toolbox)));
-    gtk_widget_show (searchEntry);
-    g_signal_connect( G_OBJECT(searchEntry), "changed", G_CALLBACK(cb_search_entry_changed), d ); 
-    g_signal_connect_swapped ( G_OBJECT(d->toolbox), "searchbox_visible", G_CALLBACK(cb_search_on), d ); 
-    g_signal_connect_swapped( G_OBJECT(d->toolbox), "searchbox_invisible", G_CALLBACK(cb_search_off), d ); 
+  GtkWidget* newMenu;
+  GtkWidget* modeMenu;
+  GtkWidget* deleteMenu;
 
-    /* set action buttons*/
-    deleteMenu = gtk_menu_new();
-    GtkWidget* delMsgItem = gtk_image_menu_item_new_with_label( "Delete Message" );
-    GtkWidget* delFolderItem = gtk_image_menu_item_new_with_label( "Delete Folder" );
-    g_signal_connect( G_OBJECT(delFolderItem), "activate", G_CALLBACK(cb_delete_folder), d ); 
-    g_signal_connect( G_OBJECT(delMsgItem), "activate", G_CALLBACK(cb_delete_message), d ); 
+  GtkWidget* image;
 
-    gtk_menu_shell_append( GTK_MENU_SHELL(deleteMenu), GTK_WIDGET(delMsgItem) );
-    gtk_menu_shell_append( GTK_MENU_SHELL(deleteMenu), GTK_WIDGET(delFolderItem) );
-    gtk_widget_show_all (deleteMenu);
-    deleteButton = GTK_WIDGET (moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
-    image = gtk_image_new_from_file (PKGDATADIR "/Delete_Message.png");
-    moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON(deleteButton),image);
-    moko_pixmap_button_set_menu (MOKO_PIXMAP_BUTTON(deleteButton), GTK_MENU(deleteMenu));
+  /* set tool bar */
+  d->toolbox = moko_tool_box_new_with_search();
+  gtk_widget_show (d->toolbox);
+  GtkWidget* searchEntry = GTK_WIDGET (moko_tool_box_get_entry (MOKO_TOOL_BOX(d->toolbox)));
+  gtk_widget_show (searchEntry);
+  g_signal_connect( G_OBJECT(searchEntry), "changed", G_CALLBACK(cb_search_entry_changed), d );
+  g_signal_connect_swapped ( G_OBJECT(d->toolbox), "searchbox_visible", G_CALLBACK(cb_search_on), d );
+  g_signal_connect_swapped( G_OBJECT(d->toolbox), "searchbox_invisible", G_CALLBACK(cb_search_off), d );
 
-    getmailButton = GTK_WIDGET(moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
-    image = gtk_image_new_from_file (PKGDATADIR "/GetMail.png");
-    moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(getmailButton),image);
+  /* set action buttons*/
+  deleteMenu = gtk_menu_new();
+  GtkWidget* delMsgItem = gtk_image_menu_item_new_with_label( "Delete Message" );
+  GtkWidget* delFolderItem = gtk_image_menu_item_new_with_label( "Delete Folder" );
+  g_signal_connect( G_OBJECT(delFolderItem), "activate", G_CALLBACK(cb_delete_folder), d );
+  g_signal_connect( G_OBJECT(delMsgItem), "activate", G_CALLBACK(cb_delete_message), d );
 
-    modeMenu = gtk_menu_new();
-    GtkWidget* modeReadItem = gtk_image_menu_item_new_with_label( "Mode Read" );
-    GtkWidget* modeReplyItem = gtk_image_menu_item_new_with_label( "Mode Reply" );
-    GtkWidget* modeFwdItem = gtk_image_menu_item_new_with_label( "Mode Forward" );
+  gtk_menu_shell_append( GTK_MENU_SHELL(deleteMenu), GTK_WIDGET(delMsgItem) );
+  gtk_menu_shell_append( GTK_MENU_SHELL(deleteMenu), GTK_WIDGET(delFolderItem) );
+  gtk_widget_show_all (deleteMenu);
+  deleteButton = GTK_WIDGET (moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
+  image = gtk_image_new_from_file (PKGDATADIR "/Delete_Message.png");
+  moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON(deleteButton),image);
+  moko_pixmap_button_set_menu (MOKO_PIXMAP_BUTTON(deleteButton), GTK_MENU(deleteMenu));
 
-    gtk_menu_shell_append( GTK_MENU_SHELL(modeMenu),modeReadItem);
-    gtk_menu_shell_append( GTK_MENU_SHELL(modeMenu), modeReplyItem);
-    gtk_menu_shell_append( GTK_MENU_SHELL(modeMenu), modeFwdItem);
-    g_signal_connect( G_OBJECT(modeReadItem), "activate", G_CALLBACK(cb_mode_read), d );
-    g_signal_connect( G_OBJECT(modeReplyItem), "activate", G_CALLBACK(cb_mode_reply), d );
-    g_signal_connect( G_OBJECT(modeFwdItem), "activate", G_CALLBACK(cb_mode_forward), d );
-    gtk_widget_show_all (modeMenu);
-    modeButton = GTK_WIDGET(moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
-    image = gtk_image_new_from_file (PKGDATADIR "/Mode_Read.png");
-    moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(modeButton),image);
-    moko_pixmap_button_set_menu ( MOKO_PIXMAP_BUTTON(modeButton), GTK_MENU(modeMenu) );
+  getmailButton = GTK_WIDGET(moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
+  image = gtk_image_new_from_file (PKGDATADIR "/GetMail.png");
+  moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(getmailButton),image);
 
-    newMenu = gtk_menu_new();
-    GtkWidget* newMsgItem = gtk_image_menu_item_new_with_label("New SMS") ;
-    GtkWidget* newFolderItem = gtk_image_menu_item_new_with_label("New Folder") ;
-    GtkWidget* newMailItem = gtk_image_menu_item_new_with_label("New Mail") ;
+  modeMenu = gtk_menu_new();
+  GtkWidget* modeReadItem = gtk_image_menu_item_new_with_label( "Mode Read" );
+  GtkWidget* modeReplyItem = gtk_image_menu_item_new_with_label( "Mode Reply" );
+  GtkWidget* modeFwdItem = gtk_image_menu_item_new_with_label( "Mode Forward" );
 
-    gtk_menu_shell_append( GTK_MENU_SHELL(newMenu), newMsgItem);
-    gtk_menu_shell_append( GTK_MENU_SHELL(newMenu), newMailItem);
-    gtk_menu_shell_append( GTK_MENU_SHELL(newMenu), newFolderItem);
-    gtk_widget_show_all (newMenu);
-    g_signal_connect( G_OBJECT(newMsgItem), "activate", G_CALLBACK(cb_new_sms), d );
-    g_signal_connect( G_OBJECT(newMailItem), "activate", G_CALLBACK(cb_new_mail), d );
-    g_signal_connect( G_OBJECT(newFolderItem), "activate", G_CALLBACK(cb_new_folder), d );
-    newButton = GTK_WIDGET(moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
-    image = gtk_image_new_from_file (PKGDATADIR "/New_Mail.png");
-    moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON(newButton),image);
-    moko_pixmap_button_set_menu ( MOKO_PIXMAP_BUTTON(newButton),GTK_MENU(newMenu) );
+  gtk_menu_shell_append( GTK_MENU_SHELL(modeMenu),modeReadItem);
+  gtk_menu_shell_append( GTK_MENU_SHELL(modeMenu), modeReplyItem);
+  gtk_menu_shell_append( GTK_MENU_SHELL(modeMenu), modeFwdItem);
+  g_signal_connect( G_OBJECT(modeReadItem), "activate", G_CALLBACK(cb_mode_read), d );
+  g_signal_connect( G_OBJECT(modeReplyItem), "activate", G_CALLBACK(cb_mode_reply), d );
+  g_signal_connect( G_OBJECT(modeFwdItem), "activate", G_CALLBACK(cb_mode_forward), d );
+  gtk_widget_show_all (modeMenu);
+  modeButton = GTK_WIDGET(moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
+  image = gtk_image_new_from_file (PKGDATADIR "/Mode_Read.png");
+  moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(modeButton),image);
+  moko_pixmap_button_set_menu ( MOKO_PIXMAP_BUTTON(modeButton), GTK_MENU(modeMenu) );
 
-    moko_paned_window_add_toolbox( d->window, MOKO_TOOL_BOX(d->toolbox) );
+  newMenu = gtk_menu_new();
+  GtkWidget* newMsgItem = gtk_image_menu_item_new_with_label("New SMS") ;
+  GtkWidget* newFolderItem = gtk_image_menu_item_new_with_label("New Folder") ;
+  GtkWidget* newMailItem = gtk_image_menu_item_new_with_label("New Mail") ;
 
-    /* detail area */
-    populate_detail_area (d);
-    
-    /* Fix default "Filter Menu" bug*/
-    d->currentfolder = g_strdup("Inbox");
-    GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
-    GtkWidget* menulabel = GTK_BIN(menuitem)->child;
-    gtk_label_set_text (GTK_LABEL(menulabel),"Inbox");
-    gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
-    
-    /* select the first column */
-    gint index = 0;
-    GtkTreeSelection* tree_selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
-    GtkTreePath *path = gtk_tree_path_new_from_indices( index, -1 );
-    gtk_tree_selection_select_path( tree_selection, path );
-    gtk_tree_view_set_cursor( GTK_TREE_VIEW(d->view), path, NULL, FALSE ); 
-    gtk_widget_grab_focus (d->view);
+  gtk_menu_shell_append( GTK_MENU_SHELL(newMenu), newMsgItem);
+  gtk_menu_shell_append( GTK_MENU_SHELL(newMenu), newMailItem);
+  gtk_menu_shell_append( GTK_MENU_SHELL(newMenu), newFolderItem);
+  gtk_widget_show_all (newMenu);
+  g_signal_connect( G_OBJECT(newMsgItem), "activate", G_CALLBACK(cb_new_sms), d );
+  g_signal_connect( G_OBJECT(newMailItem), "activate", G_CALLBACK(cb_new_mail), d );
+  g_signal_connect( G_OBJECT(newFolderItem), "activate", G_CALLBACK(cb_new_folder), d );
+  newButton = GTK_WIDGET(moko_tool_box_add_action_button(MOKO_TOOL_BOX(d->toolbox)));
+  image = gtk_image_new_from_file (PKGDATADIR "/New_Mail.png");
+  moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON(newButton),image);
+  moko_pixmap_button_set_menu ( MOKO_PIXMAP_BUTTON(newButton),GTK_MENU(newMenu) );
+
+  moko_paned_window_add_toolbox( d->window, MOKO_TOOL_BOX(d->toolbox) );
+
+  /* detail area */
+  populate_detail_area (d);
+
+  /* Fix default "Filter Menu" bug*/
+  d->currentfolder = g_strdup("Inbox");
+  GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
+  GtkWidget* menulabel = GTK_BIN(menuitem)->child;
+  gtk_label_set_text (GTK_LABEL(menulabel),"Inbox");
+  gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
+
+  /* select the first column */
+  gint index = 0;
+  GtkTreeSelection* tree_selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
+  GtkTreePath *path = gtk_tree_path_new_from_indices( index, -1 );
+  gtk_tree_selection_select_path( tree_selection, path );
+  gtk_tree_view_set_cursor( GTK_TREE_VIEW(d->view), path, NULL, FALSE );
+  gtk_widget_grab_focus (d->view);
+
+  /* temporary setting */
+  GtkSettings* settings = gtk_settings_get_default();
+  g_object_set(settings,
+               "gtk-theme-name","openmoko-standard",
+	       NULL);
 }
 
 gboolean filter_visible_function (GtkTreeModel* model, GtkTreeIter* iter, MessengerData* d)
 {
-    gchar* folder;
-    gchar* from;
-    gchar* subject;
+  gchar* folder;
+  gchar* from;
+  gchar* subject;
 
-    gtk_tree_model_get (model, iter, COLUMN_FOLDER, &folder, -1);
-    gtk_tree_model_get (model, iter, COLUMN_FROM, &from, -1);
-    gtk_tree_model_get (model, iter, COLUMN_SUBJECT, &subject, -1);
-	  
-    if (d->searchOn){
-        if ((strlen(d->s_key) > 0) && !strcasestr(from, d->s_key) && !strcasestr(subject, d->s_key))
-	    return FALSE;
-    }else {
-        gtk_menu_set_active (GTK_MENU(d->filtmenu),0);
-	if(g_strcasecmp(folder,d->currentfolder))
-	    return FALSE;
+  gtk_tree_model_get (model, iter, COLUMN_FOLDER, &folder, -1);
+  gtk_tree_model_get (model, iter, COLUMN_FROM, &from, -1);
+  gtk_tree_model_get (model, iter, COLUMN_SUBJECT, &subject, -1);
+
+  if (d->searchOn)
+    {
+      if ((strlen(d->s_key) > 0) && !strcasestr(from, d->s_key) && !strcasestr(subject, d->s_key))
+        return FALSE;
+    }
+  else
+    {
+      gtk_menu_set_active (GTK_MENU(d->filtmenu),0);
+      if(g_strcasecmp(folder,d->currentfolder))
+        return FALSE;
     }
 
-    return TRUE;
+  return TRUE;
 }
 
 void cell_data_func (GtkTreeViewColumn *col,
-		     GtkCellRenderer   *renderer,
-		     GtkTreeModel      *model,
-		     GtkTreeIter  	    *iter,
-		     gpointer          user_data)
+                     GtkCellRenderer   *renderer,
+                     GtkTreeModel      *model,
+                     GtkTreeIter  	    *iter,
+                     gpointer          user_data)
 {
-    gint status;
-    gtk_tree_model_get(model, iter, COLUMN_STATUS, &status, -1);
+  gint status;
+  gtk_tree_model_get(model, iter, COLUMN_STATUS, &status, -1);
 
-    if (status == UNREAD)
-        g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", TRUE, NULL);
-    else g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", FALSE, NULL);
+  if (status == UNREAD)
+    g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", TRUE, NULL);
+  else g_object_set(renderer, "weight", PANGO_WEIGHT_BOLD, "weight-set", FALSE, NULL);
 }
 
 void populate_navigation_area( MessengerData* d )
 {
-    guint         i;
-    GdkPixbuf*    icon = NULL;
-    GError*       error = NULL;
-    GtkTreeIter   iter;
-    
-    d->liststore = gtk_list_store_new( NUM_COLS, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING );
-    d->filter = gtk_tree_model_filter_new (GTK_TREE_MODEL (d->liststore),NULL);
-    d->view = moko_tree_view_new_with_model (GTK_TREE_MODEL (d->filter)); 
-    
-    for (i = 0;  i < G_N_ELEMENTS(names);  ++i) {
-        gtk_list_store_append(d->liststore, &iter);
-	switch(states[i]) {
-	    case UNREAD	  : icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Unread.png", &error);break;
-	    case READ	  : icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Mode_Read.png", &error);break;
-	    case REPLIED  : icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Mode_Reply.png", &error);break;
-	    case FORWARD  :  icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Mode_Forward.png", &error);break;
-	}
-	gtk_list_store_set(d->liststore, &iter,
-	                   COLUMN_ICON, icon,
-		           COLUMN_FROM, names[i],
-		           COLUMN_SUBJECT, subjects[i],
-		           COLUMN_CONTENT, contents[i],
-		           COLUMN_STATUS, states[i],
-		           COLUMN_FOLDER, folders[i],
-		           -1);
+  guint         i;
+  GdkPixbuf*    icon = NULL;
+  GError*       error = NULL;
+  GtkTreeIter   iter;
+
+  d->liststore = gtk_list_store_new( NUM_COLS, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING );
+  d->filter = gtk_tree_model_filter_new (GTK_TREE_MODEL (d->liststore),NULL);
+  d->view = moko_tree_view_new_with_model (GTK_TREE_MODEL (d->filter));
+
+  for (i = 0;  i < G_N_ELEMENTS(names);  ++i)
+    {
+      gtk_list_store_append(d->liststore, &iter);
+      switch(states[i])
+        {
+        case UNREAD	  :
+          icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Unread.png", &error);
+          break;
+        case READ	  :
+          icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Mode_Read.png", &error);
+          break;
+        case REPLIED  :
+          icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Mode_Reply.png", &error);
+          break;
+        case FORWARD  :
+          icon = gdk_pixbuf_new_from_file (PKGDATADIR "/Mode_Forward.png", &error);
+          break;
+        }
+      gtk_list_store_set(d->liststore, &iter,
+                         COLUMN_ICON, icon,
+                         COLUMN_FROM, names[i],
+                         COLUMN_SUBJECT, subjects[i],
+                         COLUMN_CONTENT, contents[i],
+                         COLUMN_STATUS, states[i],
+                         COLUMN_FOLDER, folders[i],
+                         -1);
     }
-    gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (d->filter),
-                                            filter_visible_function,
-					    d,
-					    NULL);															
-    GtkCellRenderer* ren;
-    GtkTreeViewColumn* column = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title(column, "From");
-	  
-    /* Add status picture */
-    ren = gtk_cell_renderer_pixbuf_new();
-    gtk_tree_view_column_pack_start(column, ren, FALSE);
-    gtk_tree_view_column_set_attributes(column, ren, "pixbuf", COLUMN_ICON, NULL);
-		
-    /* add message from name */
-    ren = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start(column, ren, TRUE);
-    gtk_tree_view_column_set_attributes(column, ren,
-                                        "text", COLUMN_FROM,
-				        NULL);
+  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (d->filter),
+                                          (GtkTreeModelFilterVisibleFunc)filter_visible_function,
+                                          d,
+                                          NULL);
+  GtkCellRenderer* ren;
+  GtkTreeViewColumn* column = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(column, "From");
 
-    /* Bold if UNREAD */
-    gtk_tree_view_column_set_cell_data_func (column, ren, cell_data_func, d->liststore, NULL);
-    moko_tree_view_append_column( MOKO_TREE_VIEW(d->view), column );
+  /* Add status picture */
+  ren = gtk_cell_renderer_pixbuf_new();
+  gtk_tree_view_column_pack_start(column, ren, FALSE);
+  gtk_tree_view_column_set_attributes(column, ren, "pixbuf", COLUMN_ICON, NULL);
 
-    ren = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title(column, "Subject");
-    gtk_tree_view_column_pack_start(column, ren, TRUE);
-    gtk_tree_view_column_set_attributes(column, ren, "text", COLUMN_SUBJECT, NULL);
-    gtk_tree_view_column_set_cell_data_func (column, ren, cell_data_func, d->liststore, NULL);
-    moko_tree_view_append_column( MOKO_TREE_VIEW(d->view), column );
+  /* add message from name */
+  ren = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(column, ren, TRUE);
+  gtk_tree_view_column_set_attributes(column, ren,
+                                      "text", COLUMN_FROM,
+                                      NULL);
 
-    GtkTreeSelection* selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
-    g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d ); 
-    moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(d->view))) );
+  /* Bold if UNREAD */
+  gtk_tree_view_column_set_cell_data_func (column, ren, cell_data_func, d->liststore, NULL);
+  moko_tree_view_append_column( MOKO_TREE_VIEW(d->view), column );
+
+  ren = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(column, "Subject");
+  gtk_tree_view_column_pack_start(column, ren, TRUE);
+  gtk_tree_view_column_set_attributes(column, ren, "text", COLUMN_SUBJECT, NULL);
+  gtk_tree_view_column_set_cell_data_func (column, ren, cell_data_func, d->liststore, NULL);
+  moko_tree_view_append_column( MOKO_TREE_VIEW(d->view), column );
+
+  GtkTreeSelection* selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
+  g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d );
+  moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(d->view))) );
 }
 
 void populate_detail_area( MessengerData* d )
 {
-   d->details = detail_area_new();
-   gtk_widget_show (d->details);
-   gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(DETAIL_AREA(d->details)));
-   moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(moko_details_window_put_in_box(DETAIL_AREA(d->details))));
+  d->details = detail_area_new();
+  gtk_widget_show (d->details);
+  gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(DETAIL_AREA(d->details)));
+  moko_paned_window_set_lower_pane( MOKO_PANED_WINDOW(d->window), GTK_WIDGET(moko_details_window_put_in_box(d->details)));
 }
 
 void main_quit(GtkMenuItem* item, MessengerData* d)
 {
-    foldersdb_update (d->folderlist);
-    send_signal_to_footer(d->bus,"");
-    gtk_main_quit();
+  foldersdb_update (d->folderlist);
+  send_signal_to_footer(d->bus,"");
+  gtk_main_quit();
 }
 

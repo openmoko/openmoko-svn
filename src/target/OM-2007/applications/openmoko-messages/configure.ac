@@ -17,8 +17,10 @@ PKG_CHECK_MODULES(DBUSGLIB, dbus-glib-1,,
                  AC_MSG_ERROR([*** Required dbus-glib-1 not installed ***]))
 PKG_CHECK_MODULES(DBUS, dbus-1,,
 	         AC_MSG_ERROR([*** Required dbus-1 not installed ***]))
-LIBS="$LIBS $GTK_LIBS $DBUSGLIB_LIBS $DBUS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $DBUSGLIB_CFLAGS $DBUS_DFALGS"
+PKG_CHECK_MODULES(LIBEBOOK, libebook-1.2,,
+	         AC_MSG_ERROR([*** Required dbus-1 not installed ***]))
+LIBS="$LIBS $GTK_LIBS $DBUSGLIB_LIBS $DBUS $LIBEBOOK_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $DBUSGLIB_CFLAGS $DBUS_DFALGS $LIBEBOOK_CFLAGS"
 
 # output stuff
 AC_OUTPUT([
