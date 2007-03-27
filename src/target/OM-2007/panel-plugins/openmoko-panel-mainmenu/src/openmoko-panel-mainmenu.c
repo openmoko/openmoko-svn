@@ -38,12 +38,13 @@ static void click( MokoPanelApplet* applet )
   if (sm)
    gtk_menu_popup (sm, NULL, NULL,
                    (GtkMenuPositionFunc)moko_menu_position_cb,
-                   NULL, 0, gtk_get_current_event_time());
+                   GTK_WIDGET(applet), 0, gtk_get_current_event_time());
   else g_debug ("no stylus menu objcet");
 }
 
 static void tap_hold( MokoPanelApplet* applet )
 {
+	g_debug ("tap hold event callback");
     GtkWidget* widget = GTK_WIDGET(applet);
     Screen* screen = GDK_SCREEN_XSCREEN(gtk_widget_get_screen (widget));
     XEvent xev;

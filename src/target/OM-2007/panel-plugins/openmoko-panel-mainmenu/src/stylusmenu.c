@@ -20,64 +20,6 @@
 #include "stylusmenu.h"
 //#include "callbacks.h"
 
-struct _MokoStylusMenuPrivate{
-
-};
-enum {
-    MENU_SIGNAL = 0,
-    LAST_SIGNAL
-};
-
-static void moko_stylus_menu_class_init(MokoStylusMenuClass *klass);
-
-static void moko_stylus_menu_init(MokoStylusMenu *self);
-
-static guint stylus_menu_signals[LAST_SIGNAL] = { 0 };
-
-GType 
-moko_stylus_menu_get_type (void) /* Typechecking */
-{
-    static GType menu_type = 0;
-g_debug("get >");
-    if (!menu_type)
-    {
-        static const GTypeInfo menu_info =
-        {
-            sizeof (MokoStylusMenuClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) moko_stylus_menu_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (MokoStylusMenu),
-            0,
-            (GInstanceInitFunc) moko_stylus_menu_init,
-            NULL
-        };
-        menu_type = g_type_register_static (GTK_TYPE_MENU_SHELL, "MokoStylusMenu", &menu_info, 0);
-    }
-
-g_debug("get <");
-    return menu_type;
-}
-
-void
-moko_stylus_menu_class_init (MokoStylusMenuClass * klass)
-{
-
-}
-
-void 
-moko_stylus_menu_init (MokoStylusMenu * self)
-{
-}
-
-MokoStylusMenu *
-moko_stylus_menu_new ()
-{
-    return STYLUSMENU(g_object_new(moko_stylus_menu_get_type, NULL));
-}
-
 static GtkImageMenuItem *moko_build_new_menu_item (const char *icon_name, const char *icon_path);
 
 void
@@ -169,19 +111,12 @@ moko_build_new_menu_item(const char *name, const char *path)
 }
 
 void
-moko_menu_position_cb (GtkMenu *menu, int *x, int *y, gboolean *push_in, gpointer *p)
+moko_menu_position_cb (GtkMenu *menu, int *x, int *y, gboolean *push_in, GtkWidget *data)
 {
- //   GtkAllocation* allocation = &GTK_WIDGET(button)->allocation;
-    //GtkRequisition req;
-    //GtkRequisition menu_req;
-    //GtkOrientation orientation;
-    //GtkTextDirection direction;
-
-   // gdk_window_get_origin(GTK_BUTTON(button)->event_window, x, y);
+    GtkAllocation* allocation = &GTK_WIDGET(data)->allocation;
     
-    //FIXME: 
-    *x = 0;
-    *y = 44;
+    *x = allocation->x;
+    *y = allocation->y + allocation->height;
 
     *push_in = TRUE;
 }
