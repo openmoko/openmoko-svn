@@ -34,6 +34,7 @@
 #include <gtk/gtklabel.h>
 #include "today-utils.h"
 #include "today-events-area.h"
+#include <math.h>
 
 
 struct _TodayEventsAreaPrivate {
@@ -596,9 +597,15 @@ update_paging_info (TodayEventsArea *a_this)
   g_return_val_if_fail (a_this->priv->cur_event, FALSE) ;
   g_return_val_if_fail (a_this->priv->events, FALSE) ;
 
+  /* Set the page label to display the current and number of pages */
+
+  gdouble num = a_this->priv->max_visible_events;
+  int num_pages = ceil (a_this->priv->nb_events / num);
+  int curr_page = a_this->priv->cur_event_index / num + 1;
+
   str = g_strdup_printf ("%d/%d",
-                         a_this->priv->cur_event_index + 1,
-                         a_this->priv->nb_events) ;
+                         curr_page,
+                          num_pages) ;
 
   gtk_label_set_text (GTK_LABEL (a_this->priv->paging_info), str) ;
   g_free (str) ;

@@ -1,4 +1,9 @@
-2007-03-26  Thomas Wood  <thomas@openedhand.com>
+Tue, 27 Mar 2007 16:41:20 +0100 Thomas Wood
+
+	* src/today-events-area.c: (update_paging_info): Set page numbers
+	rather than number of events on pager widget
+
+Mon, 26 Mar 2007 11:12:04 +0100 Thomas Wood
 
 	* src/Makefile.am: Change binary name to openmoko-today to be more
 	consistent with other openmoko applications
