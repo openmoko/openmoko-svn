@@ -1,10 +1,10 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/i2c/chips/pcf50606.c	2007-03-02 18:41:31.000000000 +0100
-@@ -0,0 +1,1613 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-03-27 16:24:25.000000000 +0200
+@@ -0,0 +1,1633 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -245,7 +245,7 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +
 +	mutex_unlock(&pcf->lock);
 +
-+	DEBUGP("returnung %u %u\n", ret, data2 ? *data2 : 0);
++	DEBUGP("returning %u %u\n", ret, data2 ? *data2 : 0);
 +
 +	return ret;
 +}
@@ -872,9 +872,17 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +EXPORT_SYMBOL(pcf50606_charge_fast);
 +
 +#define PCF50606_R_FIXBATT	10000	/* 10 kOhms */
++#define PCF50606_R_FIXBATT_PAR	10000	/* 10 kOhms */
++#define ONE			1000000
 +static inline u_int16_t adc_to_rntc(u_int16_t adc)
 +{
-+	return (adc * PCF50606_R_FIXBATT) / (1023 - adc);
++	u_int32_t r_batt = (adc * PCF50606_R_FIXBATT) / (1023 - adc);
++	u_int16_t r_ntc;
++
++	/* The battery NTC has a parallell 10kOhms resistor */
++	r_ntc = ONE / ((ONE/r_batt) - (ONE/PCF50606_R_FIXBATT_PAR));
++
++	return r_ntc;
 +}
 +
 +static inline int16_t rntc_to_temp(u_int16_t rntc)
@@ -901,11 +909,12 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +}
 +static DEVICE_ATTR(battemp, S_IRUGO | S_IWUSR, show_battemp, NULL);
 +
-+#define MULT_R_SENSE_1024 225	/* 0.22 * 1024 */
++#define MULT_R_SENSE_1024 225	/* 0.22 Ohms * 1024 */
 +static inline u_int16_t adc_to_chg_milliamps(u_int16_t adc_adcin1,
 +					     u_int16_t adc_batvolt)
 +{
-+	return (((adc_adcin1 - adc_batvolt) * 24) / 10) / MULT_R_SENSE_1024;
++	u_int32_t res = ((adc_adcin1 - adc_batvolt) * 6000);
++	return res / MULT_R_SENSE_1024;
 +}
 +
 +static ssize_t show_chgcur(struct device *dev, struct device_attribute *attr,
@@ -990,11 +999,17 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +{
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50606_data *pcf = i2c_get_clientdata(client);
-+	u_int8_t mbcc1 = reg_read(pcf, PCF50606_REG_MBCC1);
-+	u_int8_t chgmod = (mbcc1 & PCF50606_MBCC1_CHGMOD_MASK);
++	char *b = buf;
++	int i;
 +
-+	//return sprintf(buf, "%s\n", chgstate_names[chgmod]);
-+	return 0;
++	for (i = 0; i < 32; i++)
++		if (pcf->flags & (1 << i) && i < ARRAY_SIZE(chgstate_names))
++			b += sprintf(b, "%s ", chgstate_names[i]);
++
++	if (b > buf)
++		b += sprintf(b, "\n");
++
++	return b - buf;
 +}
 +static DEVICE_ATTR(chgstate, S_IRUGO | S_IWUSR, show_chgstate, NULL);
 +
@@ -1342,9 +1357,32 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +};
 +#endif
 +
++static struct attribute *pcf_sysfs_entries[] = {
++	&dev_attr_battvolt.attr,
++	&dev_attr_battemp.attr,
++	&dev_attr_chgcur.attr,
++	&dev_attr_chgstate.attr,
++	&dev_attr_chgmode.attr,
++	&dev_attr_voltage_dcd.attr,
++	&dev_attr_voltage_dcde.attr,
++	&dev_attr_voltage_dcud.attr,
++	&dev_attr_voltage_d1reg.attr,
++	&dev_attr_voltage_d2reg.attr,
++	&dev_attr_voltage_d3reg.attr,
++	&dev_attr_voltage_lpreg.attr,
++	&dev_attr_voltage_ioreg.attr,
++	NULL
++};
++
++static struct attribute_group pcf_attr_group = {
++	.name	= NULL,			/* put in device directory */
++	.attrs	= pcf_sysfs_entries,
++};
++
 +static int pcf50606_detect(struct i2c_adapter *adapter, int address, int kind)
 +{
 +	struct i2c_client *new_client;
++	struct pcf50606_platform_data *pdata;
 +	struct pcf50606_data *data;
 +	int err = 0;
 +
@@ -1382,19 +1420,11 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +
 +	pcf50606_global = data;
 +
-+	device_create_file(&new_client->dev, &dev_attr_battvolt);
-+	device_create_file(&new_client->dev, &dev_attr_battemp);
-+	device_create_file(&new_client->dev, &dev_attr_chgcur);
-+	device_create_file(&new_client->dev, &dev_attr_chgstate);
-+	device_create_file(&new_client->dev, &dev_attr_chgmode);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_dcd);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_dcde);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_dcud);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_d1reg);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_d2reg);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_d3reg);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_lpreg);
-+	device_create_file(&new_client->dev, &dev_attr_voltage_ioreg);
++	err = sysfs_create_group(&new_client->dev.kobj, &pcf_attr_group);
++	if (err) {
++		dev_err(&new_client->dev, "error creating sysfs group\n");
++		goto exit_detach;
++	}
 +
 +	/* create virtual charger 'device' */
 +
@@ -1411,7 +1441,7 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +	err = request_irq(GTA01_IRQ_PCF50606, pcf50606_irq, SA_INTERRUPT,
 +			  "pcf50606", data);
 +	if (err < 0)
-+		goto exit_detach;
++		goto exit_sysfs;
 +
 +	if (enable_irq_wake(GTA01_IRQ_PCF50606) < 0)
 +		printk(KERN_ERR "PCF50606: IRQ %u cannot be enabled as wake-up"
@@ -1466,6 +1496,8 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +	rtc_device_unregister(pcf50606_global->rtc);
 +exit_irq:
 +	free_irq(GTA01_IRQ_PCF50606, pcf50606_global);
++exit_sysfs:
++	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
 +exit_detach:
 +	i2c_detach_client(new_client);
 +exit_free:
@@ -1493,19 +1525,7 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +	rtc_device_unregister(pcf->rtc);
 +	pm_power_off = NULL;
 +
-+	device_remove_file(&client->dev, &dev_attr_battvolt);
-+	device_remove_file(&client->dev, &dev_attr_battemp);
-+	device_remove_file(&client->dev, &dev_attr_chgcur);
-+	device_remove_file(&client->dev, &dev_attr_chgstate);
-+	device_remove_file(&client->dev, &dev_attr_chgmode);
-+	device_remove_file(&client->dev, &dev_attr_voltage_dcd);
-+	device_remove_file(&client->dev, &dev_attr_voltage_dcde);
-+	device_remove_file(&client->dev, &dev_attr_voltage_dcud);
-+	device_remove_file(&client->dev, &dev_attr_voltage_d1reg);
-+	device_remove_file(&client->dev, &dev_attr_voltage_d2reg);
-+	device_remove_file(&client->dev, &dev_attr_voltage_d3reg);
-+	device_remove_file(&client->dev, &dev_attr_voltage_lpreg);
-+	device_remove_file(&client->dev, &dev_attr_voltage_ioreg);
++	sysfs_remove_group(&client->dev.kobj, &pcf_attr_group);
 +
 +	kfree(pcf);
 +
@@ -1618,10 +1638,10 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/i2c/chips/pcf50606.h	2007-03-02 17:33:25.000000000 +0100
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.h	2007-03-26 19:01:17.000000000 +0200
 @@ -0,0 +1,259 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -1882,10 +1902,10 @@ Index: linux-2.6.20.1/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.20.1/drivers/i2c/chips/Kconfig
+Index: linux-2.6.20.4/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/drivers/i2c/chips/Kconfig	2007-03-02 17:32:22.000000000 +0100
-+++ linux-2.6.20.1/drivers/i2c/chips/Kconfig	2007-03-02 17:33:25.000000000 +0100
+--- linux-2.6.20.4.orig/drivers/i2c/chips/Kconfig	2007-03-23 20:52:51.000000000 +0100
++++ linux-2.6.20.4/drivers/i2c/chips/Kconfig	2007-03-26 19:01:17.000000000 +0200
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -1904,10 +1924,10 @@ Index: linux-2.6.20.1/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on I2C && EXPERIMENTAL
-Index: linux-2.6.20.1/drivers/i2c/chips/Makefile
+Index: linux-2.6.20.4/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/drivers/i2c/chips/Makefile	2007-03-02 17:32:22.000000000 +0100
-+++ linux-2.6.20.1/drivers/i2c/chips/Makefile	2007-03-02 17:33:25.000000000 +0100
+--- linux-2.6.20.4.orig/drivers/i2c/chips/Makefile	2007-03-23 20:52:51.000000000 +0100
++++ linux-2.6.20.4/drivers/i2c/chips/Makefile	2007-03-26 19:01:17.000000000 +0200
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -1916,10 +1936,10 @@ Index: linux-2.6.20.1/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.20.1/include/linux/i2c-id.h
+Index: linux-2.6.20.4/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.20.1.orig/include/linux/i2c-id.h	2007-03-02 17:33:24.000000000 +0100
-+++ linux-2.6.20.1/include/linux/i2c-id.h	2007-03-02 17:33:25.000000000 +0100
+--- linux-2.6.20.4.orig/include/linux/i2c-id.h	2007-03-26 19:01:17.000000000 +0200
++++ linux-2.6.20.4/include/linux/i2c-id.h	2007-03-26 19:01:17.000000000 +0200
 @@ -159,6 +159,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -1928,11 +1948,11 @@ Index: linux-2.6.20.1/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.20.1/include/linux/pcf50606.h
+Index: linux-2.6.20.4/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/include/linux/pcf50606.h	2007-03-02 17:33:25.000000000 +0100
-@@ -0,0 +1,55 @@
++++ linux-2.6.20.4/include/linux/pcf50606.h	2007-03-26 19:01:17.000000000 +0200
+@@ -0,0 +1,56 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
 +
@@ -1980,6 +2000,7 @@ Index: linux-2.6.20.1/include/linux/pcf50606.h
 +pcf50606_charge_fast(struct pcf50606_data *pcf, int on);
 +
 +struct pcf50606_platform_data {
++	unsigned int irq;
 +	unsigned int initial_voltage[__NUM_PCF50606_REGULATORS];
 +
 +	struct {
