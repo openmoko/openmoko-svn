@@ -13,7 +13,8 @@ enum{
 	TOTAL_SIGNALS
 };
 
-int
-moko_panel_gsm_quality(int *quality);
+void gsm_watcher_install (void);
+
+int moko_panel_gsm_signal_quality(void);
 
 #endif /*_MOKO_PANEL_GSM_CONN_*/

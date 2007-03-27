@@ -5,6 +5,9 @@
 #include <libgsmd/libgsmd.h>
 #include <libgsmd/event.h>
 
+#include <glib/gmain.h>
+#include <glib/giochannel.h>
+
 #include "moko-gsm-conn.h"
 
 #undef FALSE
@@ -13,29 +16,66 @@
 #define TRUE 	1
 
 static struct lgsm_handle *lgsmh = NULL;
-static int signal_value = 0;
-static int updated = FALSE;
-static int gsm_conn_init = FALSE;
+static GPollFD GPfd;
+static int signal_value = -99;
 
-static int 
-incall_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+static gboolean
+gsm_watcher_prepare (GSource * source, gint * timeout)
 {
-	printf("EVENT: Incoming call type = %u\n", aux->u.call.type);
-	return 0;
+  *timeout = -1;
+
+  return FALSE;
+}
+
+static gboolean
+gsm_watcher_check (GSource * source)
+{
+ if (GPfd.revents & (G_IO_IN | G_IO_PRI))
+  {
+    return TRUE;
+  }
+  else
+  {
+    return FALSE;
+  }
+
+}
+static gboolean
+gsm_watcher_dispatch (GSource * source,
+                      GSourceFunc callback, gpointer user_data)
+{
+  int rc;
+  char buf[STDIN_BUF_SIZE + 1];
+  int gsm_fd = lgsm_fd (lgsmh);
+  /* we've received something on the gsmd socket, pass it
+   * on to the library */
+
+  rc = read (gsm_fd, buf, sizeof (buf));
+  if (rc <= 0)
+  {
+    return FALSE;
+  }
+  else
+  {
+    rc = lgsm_handle_packet (lgsmh, buf, rc);
+  }
+  
+  return TRUE;
 }
 
 static int 
 sigq_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
 	printf("EVENT: Signal Quality: %u\n", aux->u.signal.sigq.rssi);
-	//signal_value = aux->u.signal.sigq.rssi;
+	signal_value = aux->u.signal.sigq.rssi;
+	//FIXME: Call panel applet image change function here, instead of use g timeout function to check singal value
 	return 0;
 }
 
 static int 
 netreg_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
-	printf("EVENT: Netreg ");
+  printf("EVENT: Netreg ");
 
 	switch (aux->u.netreg.state)
 	{
@@ -66,111 +106,53 @@ netreg_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 	return 0;
 }
 
-static int 
-event_init(struct lgsm_handle *lh)
-{
-	int rc;
-
-	rc  = lgsm_evt_handler_register(lh, GSMD_EVT_IN_CALL, &incall_handler);
-	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_NETREG, &netreg_handler);
-	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);
-
-	return rc;
-}
-
-static void
+static int
 gsm_connect_init()
 {
-    lgsmh = lgsm_init(LGSMD_DEVICE_GSMD);	
+  lgsmh = lgsm_init(LGSMD_DEVICE_GSMD);	
     
-    if (!lgsmh) 
-    { 
-       gsm_conn_init = FALSE;
-	//fprintf(stderr, "openmoko-panel-gsm:Can't connect to gsmd\n");
-	printf("Can't connect to gsmd\n");
-	return FALSE;
-    }
-    else 
-    {
-	event_init(lgsmh);
-	return TRUE;
-    }
+  if (!lgsmh) 
+  { 
+    printf("Can't connect to gsmd\n");
+    return FALSE;
+  }
+  else 
+  {
+    lgsm_evt_handler_register(lgsmh, GSMD_EVT_NETREG, &netreg_handler);
+    lgsm_evt_handler_register(lgsmh, GSMD_EVT_SIGNAL, &sigq_handler);
+    return TRUE;
+  }
 }
 
 int
-update_gsm_signal_qualite()
+moko_panel_gsm_signal_quality()
 {
-    printf("update_gsm_signal_qualite\n");
-    fd_set readset;
-    int rc;
-    char buf[STDIN_BUF_SIZE+1];
-    struct timeval t;
-    t.tv_sec=0;
-    t.tv_usec=0;
-
-    if (!gsm_conn_init)
-    	gsm_connect_init();
-    
-    if (!lgsmh){
-    	gsm_conn_init = FALSE;
-    	return FALSE;
-    	}
-    
-    int gsm_fd = lgsm_fd (lgsmh);
-
-    FD_SET(gsm_fd, &readset);
-    printf("select>\n");
-    rc = select(gsm_fd+1, &readset, NULL, NULL, &t);
-    printf("select<\n");
-    
-    if (FD_ISSET(gsm_fd, &readset)) 
-    {
-	printf("read>\n");
-	rc = read(gsm_fd, buf, sizeof(buf));
-	printf("read<\n");
-	if (rc <= 0) 
-	{
-	    printf("ERROR reding from gsm_fd\n");
-	    return FALSE;
-	}
-	else
-	{
-	    printf("data from gsm_fd\n");
-	    rc = lgsm_handle_packet (lgsmh, buf, rc);
-	    updated = TRUE;
-	    return TRUE;
-	}
-    }
+  return signal_value;
 }
 
-int
-moko_panel_gsm_quality(int *quality)
+void
+gsm_watcher_install (void)
 {
-    update_gsm_signal_qualite();
+  static GSourceFuncs gsm_watcher_funcs = {
+    gsm_watcher_prepare,
+    gsm_watcher_check,
+    gsm_watcher_dispatch,
+    NULL
+  };
+  /* FIXME: we never unref the watcher. */
+  GSource *gsm_watcher = g_source_new (&gsm_watcher_funcs, sizeof (GSource));
 
+  gsm_connect_init();
+    
+  if (!lgsmh)
+    return ;
 
+  GPfd.fd = lgsm_fd (lgsmh);
+  GPfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI;
+  GPfd.revents = 0;
 
-    if (updated)
-	{
-		/*switch (signal_value) //needs debug board to test signal value range.
-		{
-		}
-		*/
-	
+  g_source_add_poll (gsm_watcher, &GPfd);
+  g_source_attach (gsm_watcher, NULL);
 
-    	updated = FALSE;
-    	return TRUE;
-    }
-    else
-	{
-		printf ("This is a test resualt without libgsmd support\n");
-    	static int test = 0;
-
-    	*quality = test;
-
-		if ( ++test >= TOTAL_SIGNALS )
-			test = 0;
-
-    	return FALSE;
-	}
+  return;
 }

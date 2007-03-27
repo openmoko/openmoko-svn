@@ -38,13 +38,9 @@ gsm_applet_free (GsmApplet *applet)
 static gboolean
 timeout_cb (GsmApplet *applet)
 {
-
- /*   if (!moko_panel_gsm_quality (&gsm_quality)) //signal value not changed.
-		return TRUE;
-		*/
-	moko_panel_gsm_quality (&(applet->gsm_quality));
-	g_debug ("moko gsm quality = %d", applet->gsm_quality);
-
+  int sig_q = moko_panel_gsm_signal_quality ();
+  g_debug ("moko gsm quality = %d", sig_q);
+if (0){
 	switch (applet->gsm_quality)
 	{
 		case GSM_SIGNAL_ERROR :
@@ -75,7 +71,7 @@ timeout_cb (GsmApplet *applet)
 			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_00.png");
 			break;
 	}
-
+}
     /* Keep going */
     return TRUE;
 }
@@ -97,9 +93,13 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 
     t = time( NULL );
     local_time = localtime(&t);
+    //FIXME: Do not use g_timeout function, convert to use gsm signal handle callback.
     applet->timeout_id = g_timeout_add( 2000, (GSourceFunc) timeout_cb, applet);
 
     moko_panel_applet_set_widget( GTK_CONTAINER(mokoapplet), applet->image );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
+
+    gsm_watcher_install ();
+
     return GTK_WIDGET(mokoapplet);
 };
