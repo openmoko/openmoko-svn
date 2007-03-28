@@ -26,6 +26,11 @@ SRCDATE_openmoko-icon-theme-standard = "now"
 SRCDATE_openmoko-libs = "now"
 
 #
+# Input Methods
+#
+SRCDATE_openmoko-keyboard = "now"
+
+#
 # Examples
 #
 SRCDATE_openmoko-stylus-demo = "now"
@@ -40,6 +45,9 @@ SRCDATE_openmoko-panel-demo-simple = "now"
 SRCDATE_openmoko-contacts = "now"
 SRCDATE_openmoko-dates = "now"
 SRCDATE_openmoko-today = "now"
+SRCDATE_openmoko-messages = "now"
+SRCDATE_openmoko-rssreader = "now"
+SRCDATE_openmoko-calculator = "now"
 
 #
 # Applications
@@ -50,9 +58,7 @@ SRCDATE_openmoko-dialer = "now"
 SRCDATE_openmoko-footer = "now"
 SRCDATE_openmoko-phone = "now"
 SRCDATE_openmoko-mainmenu = "now"
-SRCDATE_openmoko-messages = "now"
 SRCDATE_openmoko-taskmanager = "now"
-SRCDATE_openmoko-keyboard = "now"
 
 #
 # Multimedia
