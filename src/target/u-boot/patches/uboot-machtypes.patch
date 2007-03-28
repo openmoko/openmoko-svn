@@ -2,10 +2,10 @@ This adds a more recent version of mach-types.h to u-boot
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/include/asm-arm/mach-types.h
+Index: u-boot/include/asm-arm/mach-types.h
 ===================================================================
---- u-boot.git.orig/include/asm-arm/mach-types.h	2007-02-06 12:12:35.000000000 +0100
-+++ u-boot.git/include/asm-arm/mach-types.h	2007-02-06 12:16:46.000000000 +0100
+--- u-boot.orig/include/asm-arm/mach-types.h	2007-03-28 18:35:31.000000000 +0200
++++ u-boot/include/asm-arm/mach-types.h	2007-03-28 18:41:44.000000000 +0200
 @@ -424,7 +424,7 @@
  #define MACH_TYPE_MPORT3S              411
  #define MACH_TYPE_RA_ALPHA             412
@@ -24,7 +24,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #define MACH_TYPE_HIMALAYA             448
  #define MACH_TYPE_BOLFENK              449
  #define MACH_TYPE_AT91RM9200KR         450
-@@ -736,7 +736,309 @@
+@@ -736,7 +736,310 @@
  #define MACH_TYPE_LN2410SBC            725
  #define MACH_TYPE_CB3RUFC              726
  #define MACH_TYPE_MP2USB               727
@@ -332,10 +332,11 @@ Index: u-boot.git/include/asm-arm/mach-types.h
 +#define MACH_TYPE_BALLOON3             1029
 +#define MACH_TYPE_QT2410               1108
 +#define MACH_TYPE_NEO1973              1182
++#define MACH_TYPE_HXD8                 1303
  
  #ifdef CONFIG_ARCH_EBSA110
  # ifdef machine_arch_type
-@@ -3541,9 +3843,9 @@
+@@ -3541,9 +3844,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_RAMSES
  # endif
@@ -347,7 +348,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_ARCH_S28X
-@@ -4501,9 +4803,9 @@
+@@ -4501,9 +4804,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_M825XX
  # endif
@@ -359,7 +360,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_SA1100_M7100
-@@ -5658,16 +5960,16 @@
+@@ -5658,16 +5961,16 @@
  # define machine_is_xcep()	(0)
  #endif
  
@@ -380,7 +381,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_MACH_STARGATE
-@@ -6054,16 +6356,16 @@
+@@ -6054,16 +6357,16 @@
  # define machine_is_ess710()	(0)
  #endif
  
@@ -401,7 +402,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_MACH_HIMALAYA
-@@ -7333,9 +7635,9 @@
+@@ -7333,9 +7636,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_ARGONPLUSEVB
  # endif
@@ -413,7 +414,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_MACH_SCMA11EVB
-@@ -7345,9 +7647,9 @@
+@@ -7345,9 +7648,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_SCMA11EVB
  # endif
@@ -425,7 +426,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_MACH_SMDK2800
-@@ -8305,9 +8607,9 @@
+@@ -8305,9 +8608,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_SCMA11BB
  # endif
@@ -437,7 +438,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_MACH_TRIZEPS3
-@@ -9193,9 +9495,9 @@
+@@ -9193,9 +9496,9 @@
  # else
  #  define machine_arch_type	MACH_TYPE_ZEUSEVB
  # endif
@@ -449,7 +450,7 @@ Index: u-boot.git/include/asm-arm/mach-types.h
  #endif
  
  #ifdef CONFIG_MACH_P700
-@@ -9402,6 +9704,3643 @@
+@@ -9402,6 +9705,3654 @@
  # define machine_is_mp2usb()	(0)
  #endif
  
@@ -4089,6 +4090,17 @@ Index: u-boot.git/include/asm-arm/mach-types.h
 +# define machine_is_neo1973()	(0)
 +#endif
 +
++#ifdef CONFIG_MACH_HXD8
++# ifdef machine_arch_type
++#  undef machine_arch_type
++#  define machine_arch_type	__machine_arch_type
++# else
++#  define machine_arch_type	MACH_TYPE_HXD8
++# endif
++# define machine_is_hxd8()	(machine_arch_type == MACH_TYPE_HXD8)
++#else
++# define machine_is_neo8()	(0)
++#endif
 +
  /*
   * These have not yet been registered
