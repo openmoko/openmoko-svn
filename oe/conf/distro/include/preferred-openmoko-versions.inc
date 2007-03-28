@@ -21,6 +21,7 @@ SRCDATE_libgsmd = "now"
 SRCDATE_openmoko-session = "now"
 SRCDATE_openmoko-common = "now"
 SRCDATE_openmoko-theme-standard = "now"
+SRCDATE_openmoko-theme-standard-qvga = "now"
 SRCDATE_openmoko-icon-theme-standard = "now"
 SRCDATE_openmoko-libs = "now"
 
