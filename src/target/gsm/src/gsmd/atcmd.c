@@ -33,6 +33,7 @@
 
 #include "gsmd.h"
 
+#include <gsmd/ts0705.h>
 #include <gsmd/ts0707.h>
 #include <gsmd/gsmd.h>
 #include <gsmd/atcmd.h>
@@ -50,7 +51,8 @@ enum final_result_codes {
 static const char *final_results[] = {
 	"OK",
 	"ERROR",
-	"+CME ERROR:"
+	"+CME ERROR:",
+	"+CMS ERROR:",
 };
 
 /* we basically implement a parse that can deal with
@@ -214,6 +216,16 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			return -EINVAL;
 		}
 		if (!strncmp(buf+1, "CME ERROR", 9)) {
+			/* Part of Case 'C' */
+			unsigned long err_nr;
+			err_nr = strtoul(colon+1, NULL, 10);
+			DEBUGP("error number %lu\n", err_nr);
+			if (cmd)
+				cmd->ret = err_nr;
+			final = 1;
+			goto final_cb;
+		}
+		if (!strncmp(buf+1, "CMS ERROR", 9)) {
 			/* Part of Case 'C' */
 			unsigned long err_nr;
 			err_nr = strtoul(colon+1, NULL, 10);
