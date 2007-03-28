@@ -49,6 +49,7 @@ SRCDATE_openmoko-dialer = "now"
 SRCDATE_openmoko-footer = "now"
 SRCDATE_openmoko-phone = "now"
 SRCDATE_openmoko-mainmenu = "now"
+SRCDATE_openmoko-messages = "now"
 SRCDATE_openmoko-taskmanager = "now"
 
 #
