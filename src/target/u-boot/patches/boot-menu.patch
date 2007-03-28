@@ -22,8 +22,8 @@ board/neo1973/neo1973.h, board/neo1973/neo1973.c, board/neo1973/bootmenu.c:
 
 Index: u-boot/board/neo1973/bootmenu.c
 ===================================================================
---- /dev/null
-+++ u-boot/board/neo1973/bootmenu.c
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/neo1973/bootmenu.c	2007-03-28 16:03:55.000000000 +0200
 @@ -0,0 +1,375 @@
 +/*
 + * bootmenu.c - Boot menu
@@ -402,9 +402,9 @@ Index: u-boot/board/neo1973/bootmenu.c
 +}
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.c
-+++ u-boot/board/neo1973/neo1973.c
-@@ -196,10 +196,15 @@ int board_late_init(void)
+--- u-boot.orig/board/neo1973/neo1973.c	2007-03-28 15:51:09.000000000 +0200
++++ u-boot/board/neo1973/neo1973.c	2007-03-28 16:03:55.000000000 +0200
+@@ -227,10 +227,15 @@
  	extern unsigned char booted_from_nand;
  	unsigned char tmp;
  	char buf[32];
@@ -420,7 +420,7 @@ Index: u-boot/board/neo1973/neo1973.c
  	if (!booted_from_nand)
  		goto woken_by_reset;
  
-@@ -209,45 +214,41 @@ int board_late_init(void)
+@@ -240,45 +245,41 @@
  	setenv("pcf50606_int1", buf);
  
  	if (tmp & PCF50606_INT1_ALARM) {
@@ -488,7 +488,7 @@ Index: u-boot/board/neo1973/neo1973.c
  
  continue_boot:
  	jbt6k74_init();
-@@ -262,6 +263,11 @@ continue_boot:
+@@ -293,6 +294,11 @@
  	/* switch on the backlight */
  	neo1973_backlight(1);
  
@@ -500,8 +500,8 @@ Index: u-boot/board/neo1973/neo1973.c
  	return 0;
  }
  
-@@ -313,7 +319,17 @@ void neo1973_vibrator(int on)
- 		gpio->GPBDAT &= ~(1 << 10);
+@@ -358,7 +364,17 @@
+ #endif
  }
  
 -int neo1973_911_key_pressed(void)
@@ -521,22 +521,22 @@ Index: u-boot/board/neo1973/neo1973.c
  	if (gpio->GPFDAT & (1 << 6))
 Index: u-boot/board/neo1973/Makefile
 ===================================================================
---- u-boot.orig/board/neo1973/Makefile
-+++ u-boot/board/neo1973/Makefile
-@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
+--- u-boot.orig/board/neo1973/Makefile	2007-03-28 16:03:47.000000000 +0200
++++ u-boot/board/neo1973/Makefile	2007-03-28 16:04:15.000000000 +0200
+@@ -25,7 +25,7 @@
  
  LIB	= lib$(BOARD).a
  
--OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o
-+OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o bootmenu.o
+-OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o udc.o
++OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o udc.o bootmenu.o
  SOBJS	:= lowlevel_init.o
  
  .PHONY:	all
 Index: u-boot/board/neo1973/neo1973.h
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.h
-+++ u-boot/board/neo1973/neo1973.h
-@@ -15,4 +15,10 @@ void neo1973_poweroff(void);
+--- u-boot.orig/board/neo1973/neo1973.h	2007-03-28 15:51:09.000000000 +0200
++++ u-boot/board/neo1973/neo1973.h	2007-03-28 16:03:55.000000000 +0200
+@@ -15,4 +15,10 @@
  void neo1973_backlight(int on);
  void neo1973_vibrator(int on);
  
@@ -549,9 +549,9 @@ Index: u-boot/board/neo1973/neo1973.h
  #endif
 Index: u-boot/common/console.c
 ===================================================================
---- u-boot.orig/common/console.c
-+++ u-boot/common/console.c
-@@ -160,8 +160,12 @@ void fprintf (int file, const char *fmt,
+--- u-boot.orig/common/console.c	2007-03-28 15:51:09.000000000 +0200
++++ u-boot/common/console.c	2007-03-28 16:03:55.000000000 +0200
+@@ -160,8 +160,12 @@
  
  /** U-Boot INITIAL CONSOLE-COMPATIBLE FUNCTION *****************************/
  
@@ -564,7 +564,7 @@ Index: u-boot/common/console.c
  	if (gd->flags & GD_FLG_DEVINIT) {
  		/* Get from the standard input */
  		return fgetc (stdin);
-@@ -171,7 +175,7 @@ int getc (void)
+@@ -171,7 +175,7 @@
  	return serial_getc ();
  }
  
@@ -573,7 +573,7 @@ Index: u-boot/common/console.c
  {
  	if (gd->flags & GD_FLG_DEVINIT) {
  		/* Test the standard input */
-@@ -182,6 +186,16 @@ int tstc (void)
+@@ -182,6 +186,16 @@
  	return serial_tstc ();
  }
  
@@ -592,8 +592,8 @@ Index: u-boot/common/console.c
  #ifdef CONFIG_SILENT_CONSOLE
 Index: u-boot/include/console.h
 ===================================================================
---- u-boot.orig/include/console.h
-+++ u-boot/include/console.h
+--- u-boot.orig/include/console.h	2007-03-28 15:51:09.000000000 +0200
++++ u-boot/include/console.h	2007-03-28 16:03:55.000000000 +0200
 @@ -33,6 +33,8 @@
  extern device_t	*stdio_devices[] ;
  extern char *stdio_names[MAX_FILES] ;
