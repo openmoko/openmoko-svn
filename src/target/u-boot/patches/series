@@ -67,3 +67,5 @@ uboot-nand-markbad-reallybad.patch
 mmc-fixes.patch
 usbdcore-multiple_configs.patch
 neo1973-chargefast.patch
+uboot-smdk2440.patch
+uboot-hxd8.patch

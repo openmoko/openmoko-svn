@@ -1,0 +1,871 @@
+Patch to add HXD8 support
+
+Index: u-boot/Makefile
+===================================================================
+--- u-boot.orig/Makefile	2007-03-28 18:41:51.000000000 +0200
++++ u-boot/Makefile	2007-03-28 18:41:52.000000000 +0200
+@@ -1988,6 +1988,9 @@
+ qt2410_config	:	unconfig
+ 	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
+ 
++hxd8_config	:	unconfig
++	@$(MKCONFIG) $(@:_config=) arm arm920t hxd8 NULL s3c24x0
++
+ scb9328_config	:	unconfig
+ 	@$(MKCONFIG) $(@:_config=) arm arm920t scb9328 NULL imx
+ 
+Index: u-boot/board/hxd8/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/Makefile	2007-03-28 18:41:52.000000000 +0200
+@@ -0,0 +1,51 @@
++#
++# (C) Copyright 2000-2006
++# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
++#
++# See file CREDITS for list of people who contributed to this
++# project.
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License as
++# published by the Free Software Foundation; either version 2 of
++# the License, or (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++# MA 02111-1307 USA
++#
++
++include $(TOPDIR)/config.mk
++
++LIB	= $(obj)lib$(BOARD).a
++
++COBJS	:= hxd8.o udc.o
++SOBJS	:= lowlevel_init.o
++
++SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
++OBJS	:= $(addprefix $(obj),$(COBJS))
++SOBJS	:= $(addprefix $(obj),$(SOBJS))
++
++$(LIB):	$(obj).depend $(OBJS) $(SOBJS)
++	$(AR) $(ARFLAGS) $@ $(OBJS) $(SOBJS)
++
++clean:
++	rm -f $(SOBJS) $(OBJS)
++
++distclean:	clean
++	rm -f $(LIB) core *.bak .depend
++
++#########################################################################
++
++# defines $(obj).depend target
++include $(SRCTREE)/rules.mk
++
++sinclude $(obj).depend
++
++#########################################################################
+Index: u-boot/board/hxd8/hxd8.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/hxd8.c	2007-03-28 18:41:52.000000000 +0200
+@@ -0,0 +1,152 @@
++/*
++ * (C) Copyright 2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * (C) Copyright 2002
++ * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
++ * Marius Groeger <mgroeger@sysgo.de>
++ *
++ * (C) Copyright 2002
++ * David Mueller, ELSOFT AG, <d.mueller@elsoft.ch>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <common.h>
++#include <s3c2440.h>
++
++DECLARE_GLOBAL_DATA_PTR;
++
++#define FCLK_SPEED 1
++
++#if FCLK_SPEED==0		/* Fout = 203MHz, Fin = 12MHz for Audio */
++#define M_MDIV	0xC3
++#define M_PDIV	0x4
++#define M_SDIV	0x1
++#elif FCLK_SPEED==1		/* Fout = 399.65MHz */
++#define M_MDIV	0x6e
++#define M_PDIV	0x3
++#define M_SDIV	0x1
++#endif
++
++#define USB_CLOCK 1
++
++#if USB_CLOCK==0
++#define U_M_MDIV	0xA1
++#define U_M_PDIV	0x3
++#define U_M_SDIV	0x1
++#elif USB_CLOCK==1
++#define U_M_MDIV	0x3c
++#define U_M_PDIV	0x4
++#define U_M_SDIV	0x2
++#endif
++
++static inline void delay (unsigned long loops)
++{
++	__asm__ volatile ("1:\n"
++	  "subs %0, %1, #1\n"
++	  "bne 1b":"=r" (loops):"0" (loops));
++}
++
++/*
++ * Miscellaneous platform dependent initialisations
++ */
++
++int board_init (void)
++{
++	S3C24X0_CLOCK_POWER * const clk_power = S3C24X0_GetBase_CLOCK_POWER();
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++
++	/* to reduce PLL lock time, adjust the LOCKTIME register */
++	clk_power->LOCKTIME = 0xFFFFFF;
++
++	/* configure MPLL */
++	clk_power->MPLLCON = ((M_MDIV << 12) + (M_PDIV << 4) + M_SDIV);
++
++	/* some delay between MPLL and UPLL */
++	delay (4000);
++
++	/* configure UPLL */
++	clk_power->UPLLCON = ((U_M_MDIV << 12) + (U_M_PDIV << 4) + U_M_SDIV);
++
++	/* some delay between MPLL and UPLL */
++	delay (8000);
++
++	/* set up the I/O ports */
++	gpio->GPACON = 0x005E0FFE;
++	gpio->GPBCON = 0x00045542;
++	gpio->GPBUP = 0x000007FF;
++	gpio->GPCCON = 0xAAAA55A9;
++	gpio->GPCUP = 0x0000FFFF;
++	gpio->GPDCON = 0xAAAAAAAA;
++	gpio->GPDUP = 0x0000FFFF;
++	gpio->GPECON = 0xAAAAAAAA;
++	gpio->GPEUP = 0x0000FFFF;
++	gpio->GPFCON = 0x0000AAA9;
++	gpio->GPFUP = 0x000000FF;
++	gpio->GPGCON = 0x027D0016;
++	gpio->GPGUP = 0x0000FFFF;
++	gpio->GPHCON = 0x0014AAAA;
++	gpio->GPHUP = 0x000007FF;
++	gpio->GPJCON = 0x00000000;
++
++#if 0
++	/* USB Device Part */
++	/*GPGCON is reset for USB Device */
++	gpio->GPGCON = (gpio->GPGCON & ~(3 << 24)) | (1 << 24); /* Output Mode */
++	gpio->GPGUP = gpio->GPGUP | ( 1 << 12);			/* Pull up disable */
++
++	gpio->GPGDAT |= ( 1 << 12);
++	gpio->GPGDAT &= ~( 1 << 12);
++	udelay(20000);
++	gpio->GPGDAT |= ( 1 << 12);
++#endif
++
++	/* arch number of SMDK2440-Board */
++	gd->bd->bi_arch_number = MACH_TYPE_HXD8;
++
++	/* adress of boot parameters */
++	gd->bd->bi_boot_params = 0x30000100;
++
++	icache_enable();
++	dcache_enable();
++
++	return 0;
++}
++
++int board_late_init(void)
++{
++	/* Initialize the Power Management Unit with a safe register set */
++	pcf50606_init();
++
++	return 0;
++}
++
++int dram_init(void)
++{
++	gd->bd->bi_dram[0].start = PHYS_SDRAM_1;
++	gd->bd->bi_dram[0].size = PHYS_SDRAM_1_SIZE;
++
++	return 0;
++}
++
++u_int32_t get_board_rev(void)
++{
++	return 0x00000110;
++}
+Index: u-boot/board/hxd8/lowlevel_init.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/lowlevel_init.S	2007-03-28 18:41:52.000000000 +0200
+@@ -0,0 +1,166 @@
++/*
++ * Memory Setup stuff - taken from blob memsetup.S
++ *
++ * Copyright (C) 1999 2000 2001 Erik Mouw (J.A.K.Mouw@its.tudelft.nl) and
++ *                     Jan-Derk Bakker (J.D.Bakker@its.tudelft.nl)
++ *
++ * Modified for the FIC HXD8 by Harald Welte <laforge@openmoko.org>
++ * (C) Copyright 2007 by OpenMoko, Inc.
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++
++#include <config.h>
++#include <version.h>
++
++
++/* some parameters for the board */
++
++/*
++ *
++ * Taken from linux/arch/arm/boot/compressed/head-s3c2410.S
++ *
++ * Copyright (C) 2002 Samsung Electronics SW.LEE  <hitchcar@sec.samsung.com>
++ *
++ */
++
++#define BWSCON	0x48000000
++
++/* BWSCON */
++#define DW8		 	(0x0)
++#define DW16		 	(0x1)
++#define DW32		 	(0x2)
++#define WAIT		 	(0x1<<2)
++#define UBLB		 	(0x1<<3)
++
++#define B1_BWSCON	  	(DW32)
++#define B2_BWSCON	  	(DW16)
++#define B3_BWSCON	  	(DW16 + WAIT + UBLB)
++#define B4_BWSCON	  	(DW16)
++#define B5_BWSCON	  	(DW16)
++#define B6_BWSCON	  	(DW32)
++#define B7_BWSCON	  	(DW32)
++
++/* BANK0CON */
++#define B0_Tacs		 	0x0	/*  0clk */
++#define B0_Tcos		 	0x0	/*  0clk */
++#define B0_Tacc		 	0x7	/* 14clk */
++#define B0_Tcoh		 	0x0	/*  0clk */
++#define B0_Tah		 	0x0	/*  0clk */
++#define B0_Tacp		 	0x0
++#define B0_PMC		 	0x0	/* normal */
++
++/* BANK1CON */
++#define B1_Tacs		 	0x0	/*  0clk */
++#define B1_Tcos		 	0x0	/*  0clk */
++#define B1_Tacc		 	0x7	/* 14clk */
++#define B1_Tcoh		 	0x0	/*  0clk */
++#define B1_Tah		 	0x0	/*  0clk */
++#define B1_Tacp		 	0x0
++#define B1_PMC		 	0x0
++
++#define B2_Tacs		 	0x0
++#define B2_Tcos		 	0x0
++#define B2_Tacc		 	0x7
++#define B2_Tcoh		 	0x0
++#define B2_Tah		 	0x0
++#define B2_Tacp		 	0x0
++#define B2_PMC		 	0x0
++
++#define B3_Tacs		 	0x0	/*  0clk */
++#define B3_Tcos		 	0x3	/*  4clk */
++#define B3_Tacc		 	0x7	/* 14clk */
++#define B3_Tcoh		 	0x1	/*  1clk */
++#define B3_Tah		 	0x0	/*  0clk */
++#define B3_Tacp		 	0x3     /*  6clk */
++#define B3_PMC		 	0x0	/* normal */
++
++#define B4_Tacs		 	0x0	/*  0clk */
++#define B4_Tcos		 	0x0	/*  0clk */
++#define B4_Tacc		 	0x7	/* 14clk */
++#define B4_Tcoh		 	0x0	/*  0clk */
++#define B4_Tah		 	0x0	/*  0clk */
++#define B4_Tacp		 	0x0
++#define B4_PMC		 	0x0	/* normal */
++
++#define B5_Tacs		 	0x0	/*  0clk */
++#define B5_Tcos		 	0x0	/*  0clk */
++#define B5_Tacc		 	0x7	/* 14clk */
++#define B5_Tcoh		 	0x0	/*  0clk */
++#define B5_Tah		 	0x0	/*  0clk */
++#define B5_Tacp		 	0x0
++#define B5_PMC		 	0x0	/* normal */
++
++#define B6_MT		 	0x3	/* SDRAM */
++#define B6_Trcd	 	 	0x1
++#define B6_SCAN		 	0x1	/* 9bit */
++
++#define B7_MT		 	0x3	/* SDRAM */
++#define B7_Trcd		 	0x1	/* 3clk */
++#define B7_SCAN		 	0x1	/* 9bit */
++
++/* REFRESH parameter */
++#define REFEN		 	0x1	/* Refresh enable */
++#define TREFMD		 	0x0	/* CBR(CAS before RAS)/Auto refresh */
++#define Trp		 	0x0	/* 2clk */
++#define Trc		 	0x3	/* 7clk */
++#define Tchr		 	0x2	/* 3clk */
++#define REFCNT		 	1113	/* period=15.6us, HCLK=60Mhz, (2048+1-15.6*60) */
++/**************************************/
++
++_TEXT_BASE:
++	.word	TEXT_BASE
++
++.globl lowlevel_init
++lowlevel_init:
++	/* memory control configuration */
++	/* make r0 relative the current location so that it */
++	/* reads SMRDATA out of FLASH rather than memory ! */
++	ldr     r0, =SMRDATA
++	ldr	r1, _TEXT_BASE
++	sub	r0, r0, r1
++	ldr	r1, =BWSCON	/* Bus Width Status Controller */
++	add     r2, r0, #13*4
++0:
++	ldr     r3, [r0], #4
++	str     r3, [r1], #4
++	cmp     r2, r0
++	bne     0b
++
++	/* everything is fine now */
++	mov	pc, lr
++
++	.ltorg
++/* the literal pools origin */
++
++SMRDATA:
++    .word (0+(B1_BWSCON<<4)+(B2_BWSCON<<8)+(B3_BWSCON<<12)+(B4_BWSCON<<16)+(B5_BWSCON<<20)+(B6_BWSCON<<24)+(B7_BWSCON<<28))
++    .word ((B0_Tacs<<13)+(B0_Tcos<<11)+(B0_Tacc<<8)+(B0_Tcoh<<6)+(B0_Tah<<4)+(B0_Tacp<<2)+(B0_PMC))
++    .word ((B1_Tacs<<13)+(B1_Tcos<<11)+(B1_Tacc<<8)+(B1_Tcoh<<6)+(B1_Tah<<4)+(B1_Tacp<<2)+(B1_PMC))
++    .word ((B2_Tacs<<13)+(B2_Tcos<<11)+(B2_Tacc<<8)+(B2_Tcoh<<6)+(B2_Tah<<4)+(B2_Tacp<<2)+(B2_PMC))
++    .word ((B3_Tacs<<13)+(B3_Tcos<<11)+(B3_Tacc<<8)+(B3_Tcoh<<6)+(B3_Tah<<4)+(B3_Tacp<<2)+(B3_PMC))
++    .word ((B4_Tacs<<13)+(B4_Tcos<<11)+(B4_Tacc<<8)+(B4_Tcoh<<6)+(B4_Tah<<4)+(B4_Tacp<<2)+(B4_PMC))
++    .word ((B5_Tacs<<13)+(B5_Tcos<<11)+(B5_Tacc<<8)+(B5_Tcoh<<6)+(B5_Tah<<4)+(B5_Tacp<<2)+(B5_PMC))
++    .word ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))
++    .word ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))
++    .word ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)
++    .word 0x32
++    .word 0x30
++    .word 0x30
+Index: u-boot/include/configs/hxd8.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/include/configs/hxd8.h	2007-03-28 18:45:57.000000000 +0200
+@@ -0,0 +1,268 @@
++/*
++ * (C) Copyright 2007 OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * Configuation settings for the FIC HXD8
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#ifndef __CONFIG_H
++#define __CONFIG_H
++
++/* we want to be able to start u-boot directly from within NAND flash */
++#define CONFIG_LL_INIT_NAND_ONLY
++#define CONFIG_S3C2410_NAND_BOOT	1
++#define CONFIG_S3C2410_NAND_SKIP_BAD	1
++
++#define CFG_UBOOT_SIZE		0x40000 /* size of u-boot, for NAND loading */
++
++/*
++ * High Level Configuration Options
++ * (easy to change)
++ */
++#define CONFIG_ARM920T		1	/* This is an ARM920T Core	*/
++#define	CONFIG_S3C2440		1	/* in a SAMSUNG S3C2410 SoC     */
++#define CONFIG_SMDK2440		1	/* on a SAMSUNG SMDK2410 Board  */
++
++/* input clock of PLL */
++#define CONFIG_SYS_CLK_FREQ	16934400/* the HXD8 has this input clock */
++
++
++#define USE_920T_MMU		1
++#define CONFIG_USE_IRQ		1
++
++/*
++ * Size of malloc() pool
++ */
++#define CFG_MALLOC_LEN		(CFG_ENV_SIZE + 400*1024)
++					/* >> CFG_VIDEO_LOGO_MAX_SIZE */
++#define CFG_GBL_DATA_SIZE	128	/* size in bytes reserved for initial data */
++
++/*
++ * Hardware drivers
++ */
++
++/*
++ * select serial console configuration
++ */
++#define CONFIG_SERIAL1          1	/* we use SERIAL 1 on GTA01 */
++
++/************************************************************
++ * RTC
++ ************************************************************/
++#define	CONFIG_RTC_S3C24X0	1
++
++/* allow to overwrite serial and ethaddr */
++#define CONFIG_ENV_OVERWRITE
++
++#define CONFIG_BAUDRATE		115200
++
++/***********************************************************
++ * Command definition
++ ***********************************************************/
++#define CONFIG_COMMANDS (\
++			CFG_CMD_BDI	 | \
++			CFG_CMD_LOADS	 | \
++			CFG_CMD_LAODB	 | \
++			CFG_CMD_IMI	 | \
++			CFG_CMD_CACHE	 | \
++			CFG_CMD_MEMORY	 | \
++			CFG_CMD_ENV	 | \
++			/* CFG_CMD_IRQ	 | */  \
++			CFG_CMD_BOOTD	 | \
++			CFG_CMD_CONSOLE	 | \
++			CFG_CMD_BMP	 | \
++			CFG_CMD_ASKENV	 | \
++			CFG_CMD_RUN	 | \
++			CFG_CMD_ECHO	 | \
++			CFG_CMD_I2C	 | \
++			CFG_CMD_REGINFO	 | \
++			CFG_CMD_IMMAP	 | \
++			CFG_CMD_DATE	 | \
++			CFG_CMD_AUTOSCRIPT | \
++			CFG_CMD_BSP	 | \
++			CFG_CMD_ELF	 | \
++			CFG_CMD_MISC	 | \
++			/* CFG_CMD_USB	 | */ \
++			CFG_CMD_JFFS2	 | \
++			CFG_CMD_DIAG	 | \
++			/* CFG_CMD_HWFLOW	 | */ \
++			CFG_CMD_SAVES	 | \
++			CFG_CMD_NAND	 | \
++			CFG_CMD_PORTIO	 | \
++			CFG_CMD_MMC	 | \
++			CFG_CMD_FAT	 | \
++			CFG_CMD_EXT2	 | \
++			0)
++/* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
++#include <cmd_confdefs.h>
++
++#define CONFIG_BOOTDELAY	3
++#define CONFIG_BOOTARGS    	""
++#define CONFIG_BOOTCOMMAND	"setenv bootargs ${bootargs_base} ${mtdparts}; nand read.e 0x32000000 kernel; bootm 0x32000000"
++
++#define CONFIG_DOS_PARTITION	1
++
++#if (CONFIG_COMMANDS & CFG_CMD_KGDB)
++#define CONFIG_KGDB_BAUDRATE	115200		/* speed to run kgdb serial port */
++/* what's this ? it's not used anywhere */
++#define CONFIG_KGDB_SER_INDEX	1		/* which serial port to use */
++#endif
++
++/*
++ * Miscellaneous configurable options
++ */
++#define	CFG_LONGHELP				/* undef to save memory		*/
++#define	CFG_PROMPT		"HXD8 # "	/* Monitor Command Prompt	*/
++#define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
++#define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
++#define	CFG_MAXARGS		64		/* max number of command args	*/
++#define CFG_BARGSIZE		CFG_CBSIZE	/* Boot Argument Buffer Size	*/
++
++#define CFG_MEMTEST_START	0x30000000	/* memtest works on	*/
++#define CFG_MEMTEST_END		0x33F00000	/* 63 MB in DRAM	*/
++
++#undef  CFG_CLKS_IN_HZ		/* everything, incl board info, in Hz */
++
++#define	CFG_LOAD_ADDR		0x33000000	/* default load address	*/
++
++/* the PWM TImer 4 uses a counter of 15625 for 10 ms, so we need */
++/* it to wrap 100 times (total 1562500) to get 1 sec. */
++#define	CFG_HZ			1562500
++
++/* valid baudrates */
++#define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
++
++/*-----------------------------------------------------------------------
++ * Stack sizes
++ *
++ * The stack sizes are set up in start.S using the settings below
++ */
++#define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
++#ifdef CONFIG_USE_IRQ
++#define CONFIG_STACKSIZE_IRQ	(8*1024)	/* IRQ stack */
++#define CONFIG_STACKSIZE_FIQ	(4*1024)	/* FIQ stack */
++#endif
++
++#if 0
++#define CONFIG_USB_OHCI		1
++#endif
++
++#define CONFIG_USB_DEVICE	1
++#define CONFIG_USB_TTY		1
++#define CFG_CONSOLE_IS_IN_ENV	1
++#define CONFIG_USBD_VENDORID 		0x1457     /* Linux/NetChip */
++#define CONFIG_USBD_PRODUCTID_GSERIAL	0x5120    /* gserial */
++#define CONFIG_USBD_PRODUCTID_CDCACM 	0x5119    /* CDC ACM */
++#define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
++#define CONFIG_USBD_PRODUCT_NAME	"HXD8 Bootloader " U_BOOT_VERSION
++#define CONFIG_USBD_DFU			1
++#define CONFIG_USBD_DFU_XFER_SIZE 	4096	/* 0x4000 */
++#define CONFIG_USBD_DFU_INTERFACE	2
++
++#define CONFIG_EXTRA_ENV_SETTINGS 					\
++	"usbtty=cdc_acm\0"						\
++	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC0,115200 console=tty0 loglevel=8\0" \
++	""
++
++/*-----------------------------------------------------------------------
++ * Physical Memory Map
++ */
++#define CONFIG_NR_DRAM_BANKS	1	   /* we have 1 bank of DRAM */
++#define PHYS_SDRAM_1		0x30000000 /* SDRAM Bank #1 */
++#define PHYS_SDRAM_1_SIZE	0x08000000 /* 128 MB */
++#define PHYS_SDRAM_RES_SIZE	0x00200000 /* 2 MB for frame buffer */
++
++/*-----------------------------------------------------------------------
++ * FLASH and environment organization
++ */
++
++/* No NOR flash in this device */
++#define CFG_NO_FLASH		1
++
++#define	CFG_ENV_IS_IN_NAND	1
++#define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
++#define CFG_ENV_OFFSET_OOB    1               /* Location of ENV stored in block 0 OOB */
++#define	CFG_PREBOOT_OVERRIDE	1	/* allow preboot from memory */
++
++#define NAND_MAX_CHIPS		1
++#define CFG_NAND_BASE		0x4e000000
++#define CFG_MAX_NAND_DEVICE	1
++
++#define CONFIG_MMC		1
++#define CFG_MMC_BASE		0xff000000
++
++/* EXT2 driver */
++#define CONFIG_EXT2		1
++
++#define CONFIG_FAT		1
++#define CONFIG_SUPPORT_VFAT
++
++#if 1
++/* JFFS2 driver */
++#define CONFIG_JFFS2_CMDLINE	1
++#define CONFIG_JFFS2_NAND	1
++#define CONFIG_JFFS2_NAND_DEV	0
++//#define CONFIG_JFFS2_NAND_OFF	0x634000
++//#define CONFIG_JFFS2_NAND_SIZE	0x39cc000
++#endif
++
++/* ATAG configuration */
++#define CONFIG_INITRD_TAG		1
++#define CONFIG_SETUP_MEMORY_TAGS	1
++#define CONFIG_CMDLINE_TAG		1
++#define CONFIG_REVISION_TAG		1
++#if 0
++#define CONFIG_SERIAL_TAG		1
++#endif
++
++#define CONFIG_DRIVER_S3C24X0_I2C	1
++#define CONFIG_HARD_I2C			1
++#define CFG_I2C_SPEED			400000	/* 400kHz according to PCF50606 data sheet */
++#define CFG_I2C_SLAVE			0x7f
++
++/* we have a board_late_init() function */
++#define BOARD_LATE_INIT			1
++
++#define CONFIG_VIDEO
++#define CONFIG_VIDEO_S3C2410
++#define CONFIG_CFB_CONSOLE
++#define CONFIG_VIDEO_LOGO
++#define CONFIG_SPLASH_SCREEN
++#define CFG_VIDEO_LOGO_MAX_SIZE	(640*480+1024+100) /* 100 = slack */
++#define CONFIG_VIDEO_BMP_GZIP
++#define CONFIG_VGA_AS_SINGLE_DEVICE
++#define CONFIG_UNZIP
++
++#define VIDEO_KBD_INIT_FCT	0
++#define VIDEO_TSTC_FCT		serial_tstc
++#define VIDEO_GETC_FCT		serial_getc
++
++#define LCD_VIDEO_ADDR		0x33d00000
++
++#define CONFIG_S3C2410_NAND_BBT                1
++#define CONFIG_S3C2410_NAND_HWECC              1
++
++#define CONFIG_DRIVER_PCF50606		1
++
++#define MTDIDS_DEFAULT	"nand0=hxd8-nand"
++#define MTPARTS_DEFAULT	"hxd8-nand:256k(u-boot),16k(u-boot_env),2M(kernel),640k(splash),-(jffs2)"
++
++#endif	/* __CONFIG_H */
+Index: u-boot/board/hxd8/udc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/udc.c	2007-03-28 18:41:52.000000000 +0200
+@@ -0,0 +1,30 @@
++
++#include <common.h>
++#include <usbdcore.h>
++#include <s3c2440.h>
++
++#if defined(CONFIG_USB_DEVICE)
++
++void udc_ctrl(enum usbd_event event, int param)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++
++	switch (event) {
++	case UDC_CTRL_PULLUP_ENABLE:
++		if (param)
++			gpio->GPBDAT |= (1 << 9);	/* GPB9 */
++		else
++			gpio->GPBDAT &= ~(1 << 9);	/* GPB9 */
++		break;
++	case UDC_CTRL_500mA_ENABLE:
++		if (param)
++			gpio->GPADAT |= (1 << 0);	/* GPA0 */
++		else
++			gpio->GPADAT &= ~(1 << 0);	/* GPA0 */
++		break;
++	default:
++		break;
++	}
++}
++
++#endif /* CONFIG_USB_DEVICE */
+Index: u-boot/board/hxd8/pcf50606.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/pcf50606.c	2007-03-28 18:41:52.000000000 +0200
+@@ -0,0 +1,68 @@
++
++#include <common.h>
++#include <pcf50606.h>
++
++/* initial register set for PCF50606 in HXD8 devices */
++const u_int8_t pcf50606_initial_regs[__NUM_PCF50606_REGS] = {
++	[PCF50606_REG_OOCS] 	= 0x00,
++	/* gap */
++	[PCF50606_REG_INT1M]	= PCF50606_INT1_SECOND |
++				  PCF50606_INT1_CHGFOK |
++				  PCF50606_INT1_CHGERR |
++				  PCF50606_INT1_CHGFRDY |
++				  PCF50606_INT1_CHGPROT |
++				  PCF50606_INT1_CHGWD10S |
++				  PCF50606_INT1_CHGWDEXP,
++	[PCF50606_REG_INT2M]	= 0x00,
++	[PCF50606_REG_INT3M]	= PCF50606_INT3_TSCPRES,
++	[PCF50606_REG_OOCC1] 	= PCF50606_OOCC1_RTCWAK |
++				  PCF50606_OOCC1_CHGWAK |
++				  PCF50606_OOCC1_EXTONWAK_HIGH,
++	[PCF50606_REG_OOCC2]	= PCF50606_OOCC2_ONKEYDB_14ms |
++				  PCF50606_OOCC2_EXTONDB_14ms,
++	/* gap */
++	[PCF50606_REG_PSSC]	= 0x00,
++	[PCF50606_REG_PWROKM]	= 0x00,
++	/* gap */
++	[PCF50606_REG_DCDC1]	= 0xf0,	/* CORE_1V3: on */
++	[PCF50606_REG_DCDC2]	= 0x00,
++	[PCF50606_REG_DCDC3]	= 0x00,
++	[PCF50606_REG_DCDC4]	= 0x30, /* 1.25A */
++
++	[PCF50606_REG_DCDEC1]	= 0xe8, /* IO1_3V3: off */
++	[PCF50606_REG_DCDEC2]	= 0x00,
++
++	[PCF50606_REG_DCUDC1]	= 0xe8, /* RF_3V3: on */
++	[PCF50606_REG_DCUDC2]	= 0x30, /* 1.25A current limit */
++
++	[PCF50606_REG_IOREGC]	= 0xf8, /* AUDIO_3V3: on */
++
++	[PCF50606_REG_D1REGC1]	= 0xf8, /* RC_3V3: on */
++
++	[PCF50606_REG_D2REGC1]	= 0x18, /* GPS_3V3: off */
++
++	[PCF50606_REG_D3REGC1]	= 0xf8, /* IO2_3V3: off */
++
++	[PCF50606_REG_LPREGC1]	= 0xf8, /* LCM_3V3: on */
++	[PCF50606_REG_LPREGC2]	= 0x00,
++
++	[PCF50606_REG_MBCC1]	= 0x00, /* charger unused */
++	[PCF50606_REG_MBCC2]	= 0x00,	/* unlimited charging */
++	[PCF50606_REG_MBCC3]	= 0x1a, /* 0.2*Ifast, 4.20V */
++	[PCF50606_REG_BBCC]	= 0x1f, /* 400uA */
++	[PCF50606_REG_ADCC1]	= 0x00,
++	[PCF50606_REG_ADCC2]	= 0x00,
++	/* gap */
++	[PCF50606_REG_ACDC1]	= 0x00,
++	[PCF50606_REG_BVMC]	= PCF50606_BVMC_THRSHLD_3V3,
++	[PCF50606_REG_PWMC1]	= 0x00,
++	[PCF50606_REG_LEDC1]	= 0x00,
++	[PCF50606_REG_LEDC2]	= 0x00,
++	[PCF50606_REG_GPOC1]	= 0x00,
++	[PCF50606_REG_GPOC2]	= 0x00,
++	[PCF50606_REG_GPOC3]	= 0x00,
++	[PCF50606_REG_GPOC4]	= 0x00,
++	[PCF50606_REG_GPOC5]	= 0x00,
++};
++
++
+Index: u-boot/board/hxd8/config.mk
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/config.mk	2007-03-28 18:41:52.000000000 +0200
+@@ -0,0 +1,22 @@
++#
++# (C) Copyright 2002
++# Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
++# David Mueller, ELSOFT AG, <d.mueller@elsoft.ch>
++#
++# FIC HXD8 board with S3C2440X (ARM920T) cpu
++#
++# see http://www.samsung.com/ for more information on SAMSUNG
++#
++
++# HXD81v011 or later has 1 bank of 128 MB SDRAM
++#
++# 	3000'0000 to 3800'0000
++# we load ourself to 37F8'0000
++#
++# Linux-Kernel is expected to be at 3000'8000, entry 3000'8000
++# optionally with a ramdisk at 3080'0000
++#
++# download area is 3200'0000 or 3300'0000
++
++# FIXME: TEXT_BASE = 0x37F80000
++TEXT_BASE = 0x33F80000
+Index: u-boot/board/hxd8/u-boot.lds
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/hxd8/u-boot.lds	2007-03-28 18:44:45.000000000 +0200
+@@ -0,0 +1,58 @@
++/*
++ * (C) Copyright 2002
++ * Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
++/*OUTPUT_FORMAT("elf32-arm", "elf32-arm", "elf32-arm")*/
++OUTPUT_ARCH(arm)
++ENTRY(_start)
++SECTIONS
++{
++	. = 0x00000000;
++
++	. = ALIGN(4);
++	.text      :
++	{
++	  cpu/arm920t/start.o	(.text)
++	  cpu/arm920t/s3c24x0/nand_read.o (.text)
++	  *(.text)
++	}
++
++	. = ALIGN(4);
++	.rodata : { *(.rodata) }
++
++	. = ALIGN(4);
++	.data : { *(.data) }
++
++	. = ALIGN(4);
++	.got : { *(.got) }
++
++	. = .;
++	__u_boot_cmd_start = .;
++	.u_boot_cmd : { *(.u_boot_cmd) }
++	__u_boot_cmd_end = .;
++
++	. = ALIGN(4);
++	__bss_start = .;
++	.bss : { *(.bss) }
++	_end = .;
++}
