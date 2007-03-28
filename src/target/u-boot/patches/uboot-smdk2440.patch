@@ -2,8 +2,8 @@ Add support for the Samsung SMDK2440 development board
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/Makefile	2007-03-28 19:07:39.000000000 +0200
+--- u-boot.orig/Makefile	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/Makefile	2007-03-28 21:10:49.000000000 +0200
 @@ -1997,6 +1997,9 @@
  smdk2410_config	:	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t smdk2410 NULL s3c24x0
@@ -16,8 +16,8 @@ Index: u-boot/Makefile
  
 Index: u-boot/include/s3c24x0.h
 ===================================================================
---- u-boot.orig/include/s3c24x0.h	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/include/s3c24x0.h	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/include/s3c24x0.h	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/include/s3c24x0.h	2007-03-28 21:10:49.000000000 +0200
 @@ -82,7 +82,7 @@
  	S3C24X0_REG32	PRIORITY;
  	S3C24X0_REG32	INTPND;
@@ -163,8 +163,8 @@ Index: u-boot/include/s3c24x0.h
  
 Index: u-boot/rtc/s3c24x0_rtc.c
 ===================================================================
---- u-boot.orig/rtc/s3c24x0_rtc.c	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/rtc/s3c24x0_rtc.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/rtc/s3c24x0_rtc.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/rtc/s3c24x0_rtc.c	2007-03-28 21:10:49.000000000 +0200
 @@ -34,6 +34,8 @@
  #include <s3c2400.h>
  #elif defined(CONFIG_S3C2410)
@@ -177,8 +177,8 @@ Index: u-boot/rtc/s3c24x0_rtc.c
 Index: u-boot/include/s3c2440.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/s3c2440.h	2007-03-28 18:53:24.000000000 +0200
-@@ -0,0 +1,295 @@
++++ u-boot/include/s3c2440.h	2007-03-28 21:33:57.000000000 +0200
+@@ -0,0 +1,297 @@
 +/*
 + * (C) Copyright 2003
 + * David Müller ELSOFT AG Switzerland. d.mueller@elsoft.ch
@@ -219,12 +219,6 @@ Index: u-boot/include/s3c2440.h
 +#define S3C2440_ECCSIZE		512
 +#define S3C2440_ECCBYTES	3
 +
-+typedef enum {
-+	S3C24X0_UART0,
-+	S3C24X0_UART1,
-+	S3C24X0_UART2
-+} S3C24X0_UARTS_NR;
-+
 +/* S3C2440 device base addresses */
 +#define S3C24X0_MEMCTL_BASE		0x48000000
 +#define S3C24X0_USB_HOST_BASE		0x49000000
@@ -246,10 +240,16 @@ Index: u-boot/include/s3c2440.h
 +#define S3C24X0_SPI_BASE		0x59000000
 +#define S3C2440_SDI_BASE		0x5A000000
 +
++#ifndef __ASSEMBLER__
 +
 +/* include common stuff */
 +#include <s3c24x0.h>
 +
++typedef enum {
++	S3C24X0_UART0,
++	S3C24X0_UART1,
++	S3C24X0_UART2
++} S3C24X0_UARTS_NR;
 +
 +static inline S3C24X0_MEMCTL * S3C24X0_GetBase_MEMCTL(void)
 +{
@@ -325,6 +325,8 @@ Index: u-boot/include/s3c2440.h
 +{
 +	return (S3C2410_SDI * const)S3C2440_SDI_BASE;
 +}
++
++#endif /* __ASSEMBLER__ */
 +
 +/* ISR */
 +#define pISR_RESET		(*(unsigned *)(_ISR_STARTADDRESS+0x0))
@@ -477,7 +479,7 @@ Index: u-boot/include/s3c2440.h
 Index: u-boot/include/configs/smdk2440.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/smdk2440.h	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/include/configs/smdk2440.h	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,294 @@
 +/*
 + * (C) Copyright 2002
@@ -776,7 +778,7 @@ Index: u-boot/include/configs/smdk2440.h
 Index: u-boot/include/configs/smdk2440nand.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/smdk2440nand.h	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/include/configs/smdk2440nand.h	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,47 @@
 +/*
 + * (C) Copyright 2004 
@@ -827,8 +829,8 @@ Index: u-boot/include/configs/smdk2440nand.h
 +
 Index: u-boot/include/common.h
 ===================================================================
---- u-boot.orig/include/common.h	2007-03-28 18:53:23.000000000 +0200
-+++ u-boot/include/common.h	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/include/common.h	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/include/common.h	2007-03-28 21:10:49.000000000 +0200
 @@ -452,7 +452,7 @@
  ulong	get_OPB_freq (void);
  ulong	get_PCI_freq (void);
@@ -840,8 +842,8 @@ Index: u-boot/include/common.h
  ulong	get_FCLK (void);
 Index: u-boot/cpu/arm920t/s3c24x0/usb_ohci.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/usb_ohci.c	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/cpu/arm920t/s3c24x0/usb_ohci.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/cpu/arm920t/s3c24x0/usb_ohci.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/cpu/arm920t/s3c24x0/usb_ohci.c	2007-03-28 21:10:49.000000000 +0200
 @@ -44,6 +44,8 @@
  #include <s3c2400.h>
  #elif defined(CONFIG_S3C2410)
@@ -853,8 +855,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/usb_ohci.c
  #include <malloc.h>
 Index: u-boot/cpu/arm920t/s3c24x0/speed.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/speed.c	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/cpu/arm920t/s3c24x0/speed.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/cpu/arm920t/s3c24x0/speed.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/cpu/arm920t/s3c24x0/speed.c	2007-03-28 21:10:49.000000000 +0200
 @@ -30,12 +30,15 @@
   */
  
@@ -917,8 +919,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/speed.c
 +          defined(CONFIG_S3C2440) || defined (CONFIG_TRAB) */
 Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-03-28 18:53:23.000000000 +0200
-+++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-03-28 21:10:49.000000000 +0200
 @@ -30,13 +30,16 @@
   */
  
@@ -972,8 +974,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
 +	  defined(CONFIG_S3C2440) || defined (CONFIG_TRAB) */
 Index: u-boot/cpu/arm920t/s3c24x0/serial.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/serial.c	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/cpu/arm920t/s3c24x0/serial.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/cpu/arm920t/s3c24x0/serial.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/cpu/arm920t/s3c24x0/serial.c	2007-03-28 21:10:49.000000000 +0200
 @@ -19,12 +19,15 @@
   */
  
@@ -1000,8 +1002,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/serial.c
 +	  defined(CONFIG_S3C2440) || defined (CONFIG_TRAB) */
 Index: u-boot/cpu/arm920t/s3c24x0/i2c.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/i2c.c	2007-03-28 18:52:57.000000000 +0200
-+++ u-boot/cpu/arm920t/s3c24x0/i2c.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/cpu/arm920t/s3c24x0/i2c.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/cpu/arm920t/s3c24x0/i2c.c	2007-03-28 21:10:49.000000000 +0200
 @@ -34,6 +34,8 @@
  #include <s3c2400.h>
  #elif defined(CONFIG_S3C2410)
@@ -1059,7 +1061,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/i2c.c
 Index: u-boot/board/smdk2440/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/Makefile	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/board/smdk2440/Makefile	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,51 @@
 +#
 +# (C) Copyright 2000-2006
@@ -1115,7 +1117,7 @@ Index: u-boot/board/smdk2440/Makefile
 Index: u-boot/board/smdk2440/config.mk
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/config.mk	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/board/smdk2440/config.mk	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -1145,7 +1147,7 @@ Index: u-boot/board/smdk2440/config.mk
 Index: u-boot/board/smdk2440/flash.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/flash.c	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/board/smdk2440/flash.c	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,433 @@
 +/*
 + * (C) Copyright 2002
@@ -1583,7 +1585,7 @@ Index: u-boot/board/smdk2440/flash.c
 Index: u-boot/board/smdk2440/lowlevel_init.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/lowlevel_init.S	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/board/smdk2440/lowlevel_init.S	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,167 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -1755,7 +1757,7 @@ Index: u-boot/board/smdk2440/lowlevel_init.S
 Index: u-boot/board/smdk2440/smdk2440.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/smdk2440.c	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/board/smdk2440/smdk2440.c	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,139 @@
 +/*
 + * (C) Copyright 2002
@@ -1899,7 +1901,7 @@ Index: u-boot/board/smdk2440/smdk2440.c
 Index: u-boot/board/smdk2440/u-boot.lds
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/u-boot.lds	2007-03-28 19:08:05.000000000 +0200
++++ u-boot/board/smdk2440/u-boot.lds	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
@@ -1961,8 +1963,8 @@ Index: u-boot/board/smdk2440/u-boot.lds
 +}
 Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_s3c2410.c	2007-03-28 18:53:23.000000000 +0200
-+++ u-boot/drivers/usbdcore_s3c2410.c	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/drivers/usbdcore_s3c2410.c	2007-03-28 21:10:45.000000000 +0200
++++ u-boot/drivers/usbdcore_s3c2410.c	2007-03-28 21:10:49.000000000 +0200
 @@ -24,7 +24,7 @@
  
  #include <config.h>
@@ -1974,8 +1976,8 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h	2007-03-28 18:53:24.000000000 +0200
-+++ u-boot/drivers/usbtty.h	2007-03-28 18:53:24.000000000 +0200
+--- u-boot.orig/drivers/usbtty.h	2007-03-28 21:10:49.000000000 +0200
++++ u-boot/drivers/usbtty.h	2007-03-28 21:10:49.000000000 +0200
 @@ -29,7 +29,7 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
@@ -1988,7 +1990,7 @@ Index: u-boot/drivers/usbtty.h
 Index: u-boot/board/smdk2440/udc.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/udc.c	2007-03-28 18:53:24.000000000 +0200
++++ u-boot/board/smdk2440/udc.c	2007-03-28 21:10:49.000000000 +0200
 @@ -0,0 +1,20 @@
 +
 +#include <common.h>
@@ -2010,3 +2012,132 @@ Index: u-boot/board/smdk2440/udc.c
 +		break;
 +	}
 +}
+Index: u-boot/cpu/arm920t/start.S
+===================================================================
+--- u-boot.orig/cpu/arm920t/start.S	2007-03-28 21:11:04.000000000 +0200
++++ u-boot/cpu/arm920t/start.S	2007-03-28 22:39:19.000000000 +0200
+@@ -31,7 +31,11 @@
+ 
+ #include <config.h>
+ #include <version.h>
++#if defined(CONFIG_S3C2410)
+ #include <s3c2410.h>
++#elif defined(CONFIG_S3C2440)
++#include <s3c2440.h>
++#endif
+ 
+ 
+ /*
+@@ -149,7 +153,19 @@
+ # define CLKDIVN	0x4C000014	/* clock divisor register */
+ #endif
+ 
+-#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410)
++#if defined(CONFIG_S3C2410)
++# define INTSUBMSK_val	0x7ff
++# define MPLLCON_val	((0x90 << 12) + (0x7 << 4) + 0x0)	/* 202 MHz */
++# define UPLLCON_val	((0x78 << 12) + (0x2 << 4) + 0x3)
++# define CLKDIVN_val	3 /* FCLK:HCLK:PCLK = 1:2:4 */
++#elif defined(CONFIG_S3C2440)
++# define INTSUBMSK_val	0xffff
++# define MPLLCON_val	((0x61 << 12) + (0x1 << 4) + 0x2)	/* 296.35 MHz */
++# define UPLLCON_val	((0x3c << 12) + (0x4 << 4) + 0x2)
++# define CLKDIVN_val	7 /* FCLK:HCLK:PCLK = 1:3:6 */
++#endif
++
++#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ 	ldr     r0, =pWTCON
+ 	mov     r1, #0x0
+ 	str     r1, [r0]
+@@ -160,24 +176,34 @@
+ 	mov	r1, #0xffffffff
+ 	ldr	r0, =INTMSK
+ 	str	r1, [r0]
+-# if defined(CONFIG_S3C2410)
+-	ldr	r1, =0x3ff
++# if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
++	ldr	r1, =INTSUBMSK_val
+ 	ldr	r0, =INTSUBMSK
+ 	str	r1, [r0]
+ # endif
+ 
+-	/* default FCLK is 202 MHz ! */
++#if defined(CONFIG_S3C2440)
++	/* Make sure we get FCLK:HCLK:PCLK = 1:3:6 */
++	ldr	r0, =CAMDIVN
++	mov	r1, #0
++	str	r1, [r0]
++#endif
++
++	/* Clock asynchronous mode */
++	mrc	p15, 0, r1, c1, c0, 0
++	orr	r1, r1, #0xc0000000
++	mcr	p15, 0, r1, c1, c0, 0
++
++
+ #define LOCKTIME	0x4c000000
+ #define UPLLCON		0x4c000008
+-//#define MPLLCFG		((0x90 << 12) + (0x2 << 4) + 0x2)
+-#define MPLLCFG		((0x90 << 12) + (0x7 << 4) + 0x0)
+-#define UPLLCFG		((0x78 << 12) + (0x2 << 4) + 0x3)
++
+ 	ldr	r0, =LOCKTIME
+ 	mov	r1, #0xffffff
+ 	str	r1, [r0]
+ 
+ 	ldr	r0, =UPLLCON
+-	ldr	r1, =UPLLCFG
++	ldr	r1, =UPLLCON_val
+ 	str	r1, [r0]
+ 
+ 	/* Page 7-19, seven nops between UPLL and MPLL */
+@@ -189,12 +215,12 @@
+ 	nop
+ 	nop
+ 
+-	ldr	r1, =MPLLCFG
++	ldr	r1, =MPLLCON_val
+ 	str	r1, [r0, #-4]		/* MPLLCON */
+ 
+ 	/* FCLK:HCLK:PCLK = 1:2:4 */
+ 	ldr	r0, =CLKDIVN
+-	mov	r1, #3
++	mov	r1, #CLKDIVN_val
+ 	str	r1, [r0]
+ 
+ #if 1
+@@ -222,7 +248,7 @@
+ 	str	r1, [r0, #0x28]
+ #endif
+ 
+-#endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
++#endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 || CONFIG_S3C2440 */
+ 
+ #ifndef CONFIG_SKIP_LOWLEVEL_INIT
+ #ifndef CONFIG_LL_INIT_NAND_ONLY
+@@ -290,6 +316,7 @@
+ 
+ 	/* mov	r10, lr */
+ 
++#if defined(CONFIG_S3C2410)
+ 	@ reset NAND
+ 	mov	r1, #S3C2410_NAND_BASE
+ 	ldr	r2, =0xf842		@ initial value enable tacls=3,rph0=6,rph1=0
+@@ -309,6 +336,17 @@
+ 	ldr	r2, [r1, #oNFCONF]
+ 	orr	r2, r2, #0x800		@ disable chip
+ 	str	r2, [r1, #oNFCONF]
++#elif defined(CONFIG_S3C2440)
++	mov	r1, #S3C2440_NAND_BASE
++	mov	r2, =0xfff0		@ initial value tacls=3,rph0=7,rph1=7
++	ldr	r3, [r1, #oNFCONF]
++	orr	r3, r3, r2
++	str	r3, [r1, #oNFCONF]
++
++	ldr	r3, [r1, #oNFCONT]
++	orr	r3, r3, #1		@ enable nand controller
++	str	r3, [r1, #oNFCONT]
++#endif
+ 
+ #if 0
+ 	@ get ready to call C functions (for nand_read())
