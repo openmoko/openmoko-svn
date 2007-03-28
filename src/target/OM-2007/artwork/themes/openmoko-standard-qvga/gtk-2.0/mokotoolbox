@@ -1,0 +1,156 @@
+style "mokotoolbox-normal-mode" {
+    bg_pixmap[NORMAL] = "openmoko-mokotoolbox-normal-mode-background.png"
+    MokoFixed::size-request = { 0, 240, 0, 26 }
+    MokoFixed::cargo-border = { 40, 240, 0, 26 }
+}
+widget "*.mokotoolbox-normal-mode" style "mokotoolbox-normal-mode"
+
+style "mokotoolbox-search-mode" {
+    bg_pixmap[NORMAL] = "openmoko-mokotoolbox-search-mode-background.png"
+    MokoFixed::size-request = { 0, 240, 0, 26 }
+    MokoFixed::cargo-border = { 18, 170, 17, 20 }
+}
+widget "*.mokotoolbox-search-mode" style "mokotoolbox-search-mode"
+
+style "mokotoolbox-search-mode-focusout" {
+    bg_pixmap[NORMAL] = "openmoko-mokotoolbox-search-mode-focusout-background.png"
+    MokoFixed::size-request = { 0, 240, 0, 26 }
+    MokoFixed::cargo-border = { 18, 170, 7, 20 }
+}
+widget "*.mokotoolbox-search-mode-focusout" style "mokotoolbox-search-mode-focusout"
+
+style "mokotoolbox-normal-mode-search-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "openmoko-mokotoolbox-search-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "openmoko-mokotoolbox-search-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "openmoko-mokotoolbox-search-button-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        
+    }
+    MokoPixmapButton::size-request = { 0, 34, 0, 26 }
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokotoolbox-search-button" style "mokotoolbox-normal-mode-search-button"
+
+style "mokotoolbox-search-mode-back-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "openmoko-mokotoolbox-back-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "openmoko-mokotoolbox-back-button.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "openmoko-mokotoolbox-back-button-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = FALSE
+        }
+    }
+    MokoPixmapButton::size-request = { 0, 40, 0, 26 }
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokotoolbox-back-button" style "mokotoolbox-search-mode-back-button"
+
+style "mokotoolbox-search-entry" {
+    engine "pixmap" {
+        image {
+            function        = FLAT_BOX
+            file            = "transparency100.png"
+            recolorable     = TRUE
+        }
+    }
+    base[NORMAL] = "#ffeddb"
+}
+widget "*.mokotoolbox-search-entry" style "mokotoolbox-search-entry"
+
+style "mokotoolbox-search-entry-focusout" {
+    engine "pixmap" {
+        image {
+            function        = FLAT_BOX
+            file            = "transparency100.png"
+            recolorable     = TRUE
+        }
+    }
+
+    base[NORMAL] = "#fdfdfd"
+}
+widget "*.mokotoolbox-search-entry-focusout"  style "mokotoolbox-search-entry-focusout"
+
+style "mokotoolbox-action-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "openmoko-mokotoolbox-action-button-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "openmoko-mokotoolbox-action-button-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "openmoko-mokotoolbox-action-button-pressed-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+
+    xthickness = 0
+    ythickness = 0
+    MokoPixmapButton::size-request = { 0, 41, 0, 19 }
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokotoolbox-action-button" style "mokotoolbox-action-button"
+
+style "mokotoolbox-action-button-label" {
+    font_name = "Vera Sans 5"
+    fg[NORMAL] = "#000000"
+    fg[PRELIGHT] = "#ffffff"
+}
+widget "*.mokotoolbox-action-button.*" style "mokotoolbox-action-button-label"
+
+
+
+

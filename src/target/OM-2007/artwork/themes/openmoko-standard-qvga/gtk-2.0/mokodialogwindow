@@ -1,0 +1,49 @@
+style "mokodialogwindow-title-labelbox"
+{
+    bg_pixmap[NORMAL] = "<none>"
+    bg[NORMAL] = "#000000"
+}
+widget "*.mokodialogwindow-title-labelbox" style "mokodialogwindow-title-labelbox"
+
+style "mokodialogwindow-title-label"
+{
+    font_name = "Vera Sans 7"
+    fg[NORMAL] = "#cccccc"
+}
+widget "*.mokodialogwindow-title-label" style "mokodialogwindow-title-label"
+
+style "mokodialogwindow-closebutton" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "mokodialogwindow-closebutton.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "mokodialogwindow-closebutton.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "mokodialogwindow-closebutton-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+    }
+
+    xthickness = 0
+    ythickness = 0
+    MokoPixmapButton::size-request = { 0, 16, 0, 17 }
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokodialogwindow-closebutton" style "mokodialogwindow-closebutton"
+

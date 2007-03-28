@@ -1,0 +1,201 @@
+style "mokofingerbutton-orange" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_type01.png"
+            border          = { 8, 8, 8, 8 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_type01.png"
+            border          = { 8, 8, 8, 8 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_type01_p.png"
+            border          = { 8, 8, 8, 8 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 5
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-orange" style "mokofingerbutton-orange"
+
+style "mokofingerbutton-black" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_type04.png"
+            border          = { 13, 13, 14, 14 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_type04.png"
+            border          = { 13, 13, 14, 14 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_type04_p.png"
+            border          = { 13, 13, 14, 14 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 5
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-black" style "mokofingerbutton-black"
+
+style "mokofingerbutton-dialer" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_type05.png"
+            border          = { 20, 10, 4, 3 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_type05.png"
+            border          = { 20, 10, 4, 3 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_type05_p.png"
+            border          = { 20, 10, 4, 3 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 5
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-dialer" style "mokofingerbutton-dialer"
+
+
+style "mokofingerbutton-white" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_white.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_white.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_white_p.png"
+            stretch         = TRUE
+        }
+    }
+    MokoPixmapButton::size-request = { 0, 32, 0, 31 }
+    xthickness = 0
+    ythickness = 0
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-white" style "mokofingerbutton-white"
+
+
+
+style "mokofingerbutton-big" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "btn_big.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = PRELIGHT
+            file            = "btn_big.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            state           = ACTIVE
+            file            = "btn_big_p.png"
+            stretch         = TRUE
+        }
+    }
+    MokoPixmapButton::size-request = { 0, 101, 0, 94 }
+    xthickness = 0
+    ythickness = 0
+    GtkButton::focus-line-width = 0
+}
+widget "*.mokofingerbutton-big" style "mokofingerbutton-big"
+
+#
+# Main menu icon button
+#
+style "mokofingerbutton-main-menu-icon"
+{
+
+  engine "pixmap"
+    {
+
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = NORMAL
+        file            = "transparency100.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = PRELIGHT
+        file            = "main_menu_sel_icon.png"
+        stretch         = TRUE
+      }
+    image
+      {
+        function        = BOX
+        recolorable     = TRUE
+        state           = ACTIVE
+        file            = "main_menu_sel_icon.png"
+        stretch         = TRUE
+      }
+
+   }
+}
+widget "*.mokofingerbutton-main-menu-icon" style "mokofingerbutton-main-menu-icon"

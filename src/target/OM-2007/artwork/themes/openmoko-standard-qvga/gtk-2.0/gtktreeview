@@ -1,0 +1,104 @@
+style "gtktreeview" {
+    engine "pixmap" {    
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "entry-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = SELECTED
+            file            = "list_bg_row_sel_stretch.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+#      image {
+#          function        = FOCUS
+#          recolorable     = FALSE
+#          file            = "list_bg_row_sel_stretch.png"
+#          border          = { 0, 0, 0, 0 }
+#          stretch         = TRUE
+#      }
+    }
+    GtkTreeView::allow_rules = 1
+    GtkTreeView::vertical_separator = 3
+    GtkTreeView::even_row_color = "#f7f7f7"
+    GtkTreeView::odd_row_color = "#e7e7e7"
+
+    GtkButton::focus-line-width = 0
+
+    text[NORMAL]      = "#666666" # mid grey
+    text[PRELIGHT]    = "#ffffff" # white
+    text[ACTIVE]      = "#e5e5e5" # light grey
+    text[SELECTED]    = "#ffffff" # white
+    text[INSENSITIVE] = "#223344" # dark grey
+}
+widget "*.GtkTreeView" style "gtktreeview"
+
+style "gtktreeview-button" {
+    engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            #state           = NORMAL
+            file            = "gtktreeview-gtkbutton.png"
+            border          = { 2, 2, 2, 2 }
+            stretch         = TRUE
+        }
+    }
+    GtkButton::focus-line-width = 0
+}
+widget_class "*.GtkTreeView.GtkButton" style "gtktreeview-button"
+
+#FIXME why does this not work with GtkTreeView, but does with MokoTreeView?
+# In mokobutton, "*.GtkButton.*" has been defined. So this style does not work.
+# GtkLabel on MokoTreeView can work because it derives from the style of MokoTreeView.
+# The possible solution is to disable GtkLable define in mokobutton 
+# and set the style like the following:
+# widget_class "*.GtkTreeView.GtkButton.*" style "gtktreeview-button-label"
+# But this will affect normal GtkButton, is there a better solution?
+style "gtktreeview-button-label"
+{
+    font_name = "Vera Sans Bold 7"
+    fg[NORMAL] = "#999999"
+}
+widget "*.GtkTreeView.*.GtkLabel" style "gtktreeview-button-label"
+
+
+#
+# set gtktreeview-black for the styling of dialer call history
+#
+style "gtktreeview-black"
+{
+    GtkTreeView::allow-rules = 1
+    GtkTreeView::expander_size = 24
+    
+    text[NORMAL]      = "#ffffff"
+    text[SELECTED]    = "#ffffff"
+    
+    base[NORMAL]  = "#666666"
+  
+    engine "pixmap" {
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+            state           = SELECTED
+            file            = "gtktreeview-black-row-sel-stretch.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+      image {
+            function        = FLAT_BOX
+            recolorable     = TRUE
+#            state           = NORMAL
+            file            = "gtktreeview-black-background.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+      }
+    }
+}
+widget "*.gtktreeview-black" style "gtktreeview-black"

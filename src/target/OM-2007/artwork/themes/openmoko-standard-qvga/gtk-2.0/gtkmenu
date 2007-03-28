@@ -1,0 +1,14 @@
+style "gtkmenu" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            recolorable     = TRUE
+            file            = "gtkmenu.png"
+            border          = { 1, 1, 1, 5 }
+            stretch         = TRUE
+        }
+    }
+    ythickness = 4
+}
+class "GtkMenu" style "gtkmenu"
+

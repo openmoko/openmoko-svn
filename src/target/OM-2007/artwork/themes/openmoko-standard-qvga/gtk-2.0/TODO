@@ -1,0 +1,20 @@
+1.) sync. filenames with layout images given by designer:
+
+DONE:
+	bar_separate*.png
+
+MISSING:
+	all others
+
+
+2.) grep for FIXME through the individual gtkrc files
+
+3.) for the final version, concatenate style files? (for optimization)
+
+4.) check font sizes with the designer
+
+5.) tell designer where we need top/left/bottom/corner seperated and where not!
+
+6.) can we remove the GAP within a scrolled window between content and scrollbar?
+
+7.) Labels on GtkButtons don't appear visually centered (although they are)

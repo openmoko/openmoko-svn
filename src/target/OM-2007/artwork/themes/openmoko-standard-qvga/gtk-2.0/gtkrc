@@ -1,0 +1,127 @@
+style "moko-window-default" {
+    # FIXME do we want a general background brush? Or just a color?
+	# NOTE bg_pixmap[NORMAL] _must_ match with the SHADOW pixmaps
+    bg_pixmap[NORMAL] = "gtkwidget.png"
+
+    bg[NORMAL]        = "#666666" #
+    bg[PRELIGHT]      = "#ff0000" # light beige
+    bg[ACTIVE]        = "#ff0000" # dark beige
+    bg[SELECTED]      = "#ff0000" # olive
+    bg[INSENSITIVE]   = "#ff0000" # beige
+
+    base[NORMAL]      = "#ffeddb" # light cherry
+    base[PRELIGHT]    = "#00ff00" #
+    base[ACTIVE]      = "#00ff00" #
+    base[SELECTED]    = "#00ff00" #
+    base[INSENSITIVE] = "#00ff00" #
+
+    fg[NORMAL]      = "#d3d3d3" # light grey
+    fg[PRELIGHT]    = "#ffffff" # white
+    fg[ACTIVE]      = "#e5e5e5" # light grey
+    fg[SELECTED]    = "#ffffff" # white
+    fg[INSENSITIVE] = "#223344" # dark grey
+
+    text[NORMAL]      = "#666666" # mid grey
+    text[PRELIGHT]    = "#ffffff" # white
+    text[ACTIVE]      = "#e5e5e5" # light grey
+    text[SELECTED]    = "#ffffff" # white
+    text[INSENSITIVE] = "#223344" # dark grey
+
+    GtkFrame::shadow_type = GTK_SHADOW_NONE
+#
+# How to draw shadows in general
+#
+    engine "pixmap" {
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = IN
+            file            = "openmoko-shadow-in.png"
+            border          = { 3, 3, 3, 3 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = OUT
+            file            = "openmoko-shadow-in.png" # FIXME add proper shadow
+            border          = { 3, 3, 3, 3 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = ETCHED_IN
+            file            = "openmoko-shadow-in.png" # FIXME add proper shadow
+            border          = { 3, 3, 3, 3 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            recolorable     = TRUE
+            shadow          = ETCHED_OUT
+            file            = "openmoko-shadow-in.png" # FIXME add proper shadow
+            border          = { 3, 3, 3, 3 }
+            stretch         = TRUE
+        }
+#
+# How to draw lines in general
+#
+        image {
+            function        = HLINE
+            file            = "hline.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = VLINE
+            file            = "hline.png" # FIXME add proper vline
+            stretch         = TRUE
+        }
+    }
+    font_name = "Vera Sans 8"
+}
+
+class "GtkWidget" style "moko-window-default"
+class "GtkLabel" style "moko-window-default"
+
+#FIXME that doesn't look correct, but is there a better way to get
+#a) Frames and Labels inherit the default color
+#b) items on menubar _not_ the default color
+widget_class "*.GtkLabel*" style "moko-window-default"
+#FIXME e.g. how to say widget "*" style "moko-window-default", but change menuitem color afterwards. that doesn't seem to work!?
+
+include "transparent"
+include "matchboxpanel"
+
+include "gtkbutton"
+include "gtkcheckbutton"
+include "gtkcombobox"
+include "gtkentry"
+include "gtkeventbox"
+include "gtkframe"
+include "gtkmenu"
+include "gtkmenuitem"
+include "gtkpaned"
+include "gtkprogressbar"
+include "gtkradiobutton"
+include "gtkscale"
+include "gtkscrolledwindow"
+include "gtkscrollbar"
+include "gtkspinbutton"
+include "gtktreeview"
+
+include "mokodetailswindow"
+include "mokodialogwindow"
+include "mokofingerbutton"
+include "mokofingertoolbox"
+include "mokofingerwheel"
+include "mokomenubox"
+include "mokopanedwindow"
+include "mokotoolbox"
+include "mokotreeview"
+include "mokostylusbutton"
+include "mokonavigationlist"
+
+include "mokoicons"
+
+include "contactspane"

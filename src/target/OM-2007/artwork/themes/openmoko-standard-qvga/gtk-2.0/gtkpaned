@@ -1,0 +1,61 @@
+style "gtkpaned" {
+    engine "pixmap" {
+#
+# The handle on Handleboxes
+#
+        image {
+            function        = HANDLE
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "gtkhpaned.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+            overlay_file    = "gtkhpaned-handle.png"
+            overlay_border  = { 0, 0, 0, 0 }
+            overlay_stretch = FALSE
+            orientation     = HORIZONTAL
+        }
+
+        image {
+            function        = HANDLE
+            state           = PRELIGHT
+            recolorable     = TRUE
+            file            = "gtkhpaned-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+            overlay_file    = "gtkhpaned-handle-pressed.png"
+            overlay_border  = { 0, 0, 0, 0 }
+            overlay_stretch = FALSE
+            orientation     = HORIZONTAL
+        }
+
+        image {
+            function        = HANDLE
+            recolorable     = TRUE
+            state           = NORMAL
+            file            = "gtkvpaned.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+            overlay_file    = "gtkvpaned-handle.png"
+            overlay_border  = { 0, 0, 0, 0 }
+            overlay_stretch = FALSE
+            orientation     = VERTICAL
+        }
+
+        image {
+            function        = HANDLE
+            state           = PRELIGHT
+            recolorable     = TRUE
+            file            = "gtkvpaned-pressed.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+            overlay_file    = "gtkvpaned-handle-pressed.png"
+            overlay_border  = { 0, 0, 0, 0 }
+            overlay_stretch = FALSE
+            orientation     = VERTICAL
+        }
+    }
+    GtkPaned::handle-size   = 8
+}
+
+class "GtkWidget" style "gtkpaned"

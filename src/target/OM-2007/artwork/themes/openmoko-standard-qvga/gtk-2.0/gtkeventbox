@@ -1,0 +1,11 @@
+#
+# moko application title eventbox style
+#
+
+style "gtkeventbox-black" {
+  bg_pixmap[NORMAL] = "<none>"
+
+  bg[NORMAL]      = "#000000"
+}
+
+widget "*.gtkeventbox-black" style "gtkeventbox-black"
