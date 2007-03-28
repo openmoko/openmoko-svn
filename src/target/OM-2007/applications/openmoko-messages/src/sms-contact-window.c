@@ -28,6 +28,7 @@ typedef struct
   GtkWidget* vbox;
   GtkWidget* buttonbox;
   GtkWidget* contacts_view;
+  SmsContactData* data;
 }SmsContactWindowPrivate;
 
 static gint sms_contact_signals[LAST_SIGNAL] = {0};
@@ -40,6 +41,8 @@ static void updateContactsView (EBook* book, EBookStatus status,
                                 GList* contacts, gpointer closure);
 static void contacts_view_cursor_changed(GtkTreeSelection* selection, SmsContactData* data);
 static void contact_select_done(void);
+gboolean get_selected_contact (GtkTreeModel* model, GtkTreePath* path, 
+                               GtkTreeIter* iter, gpointer data);
 
 static void
 sms_contact_window_dispose(GObject* object)
@@ -83,11 +86,11 @@ GtkWidget* sms_contact_new()
 static void updateContactsView (EBook* book, EBookStatus status, 
                                 GList* contacts, gpointer closure)
 {
-  g_debug("contacts has ");
   GtkTreeIter iter;
   SmsContactData* data = (SmsContactData*)closure;
   GtkListStore *contacts_liststore = data->contacts_liststore;
   GList* c = contacts;
+  data->contacts = contacts;
   g_debug ("list length %d", g_list_length(c));
 
   for (;c;c=c->next){
@@ -141,10 +144,10 @@ sms_contact_window_init (SmsContactWindow* self)
   SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
   priv->vbox = gtk_vbox_new(FALSE,0);
   SmsContactData* data = g_new0(SmsContactData,1);
+  priv->data = data;
   data->book = e_book_new_system_addressbook(NULL);
   if (!data->book)
     g_critical ("Could not load system addressbook");
-  self->nameList = g_strdup("tyh");
 
   /* Set the "select" window title */
   GtkWidget* titleLabel = gtk_label_new ("Select Contacts");
@@ -225,8 +228,48 @@ create_contacts_list (SmsContactData *data)
   return GTK_WIDGET (moko_navigation_list);
 }
 
+gboolean get_selected_contact (GtkTreeModel* model, GtkTreePath* path, 
+                               GtkTreeIter* iter, gpointer data)
+{
+  SmsContactWindow* self = (SmsContactWindow*)data;
+  SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
+  SmsContactData* contactData = priv->data;
+  g_debug ("select item contacts %d", g_list_length(contactData->contacts));
+
+  gchar* name;
+  gboolean selected;
+  gtk_tree_model_get (model, iter,
+                      CONTACT_SEL_COL, &selected,
+		      CONTACT_NAME_COL,&name,
+		      -1);
+  if (selected)
+    g_debug ("contact %s selected", name);
+  else {
+    g_debug ("contact %s not selected, remove from contacts list", name);
+    GList* contactListItem = contactData->contacts;
+    for ( ; contactListItem; contactListItem=contactListItem->next){
+      EContact* contact = E_CONTACT (contactListItem->data);
+      const gchar *contactName;
+      contactName = e_contact_get_const (contact, E_CONTACT_FULL_NAME);
+      if (!g_strcasecmp(name, contactName)) 
+        contactData->contacts = g_list_remove (contactData->contacts,
+	                                       contactListItem->data);
+    }
+  }
+
+  return FALSE;
+}
+
 static void sms_contact_window_close (SmsContactWindow* self)
 {
+  /* get selected items */
+  SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
+  GtkWidget* contactView = moko_navigation_list_get_tree_view(MOKO_NAVIGATION_LIST(priv->contacts_view));
+  GtkTreeModel* contactModel = gtk_tree_view_get_model (GTK_TREE_VIEW(contactView));
+  gtk_tree_model_foreach (contactModel, get_selected_contact, self);
+  self->selectedContacts = priv->data->contacts;
+
+  /* emit selection done signal */
   g_signal_emit (G_OBJECT(self),sms_contact_signals[CONTACT_SELECT_DONE_SIGNAL],0);
 
   /* Synthesize delete_event to close dialog. */

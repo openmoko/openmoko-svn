@@ -55,7 +55,7 @@ typedef struct
 {
   MokoWindow parent;
   /* instance members */
-  gchar* nameList;
+  GList* selectedContacts;
 }SmsContactWindow;
 
 typedef struct
@@ -69,6 +69,7 @@ typedef struct
 {
   EBook* book;
   GtkListStore *contacts_liststore;
+  GList* contacts;
 }SmsContactData;
 
 G_END_DECLS

@@ -590,6 +590,26 @@ void sms_contact_select_done (GtkWidget* widget, gpointer data)
 {
   g_debug("sms select contact done");
   GtkWidget* toEntry = (GtkWidget*)data;
-  gtk_entry_set_text (GTK_ENTRY(toEntry),SMS_CONTACT_WINDOW(widget)->nameList);
+  GList* contacts = SMS_CONTACT_WINDOW(widget)->selectedContacts;
+  g_debug ("start to add %d contacts to entry", g_list_length(contacts));
+  gchar* nameList = NULL;
+  gchar* name;
+  GList* nextContext = contacts;
+  EContact *contact;
+  for ( ; nextContext != NULL; nextContext = nextContext->next){
+    contact =  E_CONTACT (nextContext->data);
+    name = e_contact_get_const (contact, E_CONTACT_FULL_NAME);
+    if (nameList == NULL)
+      nameList = g_strdup (name);
+    else
+      nameList = g_strconcat (nameList,",",name,NULL);
+    g_debug(nameList);
+  }
+  if (strlen(gtk_entry_get_text (GTK_ENTRY(toEntry))) > 0)
+    gtk_entry_append_text (GTK_ENTRY(toEntry),g_strdup_printf(",%s",nameList));
+  else
+    gtk_entry_set_text (GTK_ENTRY(toEntry),nameList);
+  g_free(nameList);
+  g_free(name);
 }
 
