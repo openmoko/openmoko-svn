@@ -17,7 +17,7 @@
 
 static struct lgsm_handle *lgsmh = NULL;
 static GPollFD GPfd;
-static int signal_value = -99;
+static int signal_value = GSM_SIGNAL_ERROR;
 
 static gboolean
 gsm_watcher_prepare (GSource * source, gint * timeout)
