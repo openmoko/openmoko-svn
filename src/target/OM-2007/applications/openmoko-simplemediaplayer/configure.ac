@@ -179,7 +179,7 @@ PKG_CHECK_MODULES(DBUS, [dbus-glib-1 >= 0.23.4],,
 
 dnl Check for openmoko-libs
 
-PKG_CHECK_MODULES(OPENMOKO, [openmoko-libs >= 0.0.2],,
+PKG_CHECK_MODULES(OPENMOKO, [openmoko-libs],,
     AC_MSG_ERROR([Cannot find openmoko-libs])
 )
 

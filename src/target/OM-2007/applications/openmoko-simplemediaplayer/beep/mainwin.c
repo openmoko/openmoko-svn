@@ -3827,7 +3827,7 @@ openmoko_update_elapse_time(gpointer data)
 	return TRUE;
     }
    
-    input_update_vis(timeout_time);
+    //input_update_vis(timeout_time);
     
     openmoko_set_elapse_time(timeout_time);
 
@@ -4141,7 +4141,8 @@ signal_filter(DBusConnection *connection, DBusMessage *message, void *user_data)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-void init_image_dir()
+void 
+init_image_dir()
 {
     gchar* share_string = g_strrstr(DATA_DIR, "share");
     int len = strlen(DATA_DIR);  
@@ -4151,6 +4152,40 @@ void init_image_dir()
     g_free(prefix);
 }
 
+void
+create_config_file()
+{
+    gchar* config_path = g_build_filename(g_get_home_dir(), ".bmp", "config", NULL);
+    if(g_file_test(config_path, G_FILE_TEST_EXISTS))
+    {
+	g_free(config_path);
+        return;
+    }
+    g_free(config_path);
+
+    ConfigDb* db;
+    db = bmp_cfg_db_open();
+    
+    bmp_cfg_db_set_int(db, "ALSA", "volume_left", 100);
+    bmp_cfg_db_set_int(db, "ALSA", "volume_right", 100);
+    bmp_cfg_db_set_int(db, "ALSA", "buffer_time", 500);
+    bmp_cfg_db_set_int(db, "ALSA", "thread_buffer_time", 3000);
+    bmp_cfg_db_set_int(db, "ALSA", "period_time", 50);
+    bmp_cfg_db_set_bool(db, "ALSA", "multi_thread", TRUE);
+    bmp_cfg_db_set_bool(db, "ALSA", "mmap", TRUE);
+    bmp_cfg_db_set_string(db, "ALSA", "pcm_device", "default");
+    bmp_cfg_db_set_int(db, "ALSA", "mixer_card_", 0);
+    bmp_cfg_db_set_string(db, "ALSA", "mixer_device", "PCM");
+    bmp_cfg_db_set_bool(db, "ALSA", "soft_volume", FALSE);
+
+    bmp_cfg_db_set_int(db, "MPG123", "resolution", 8);
+    bmp_cfg_db_set_int(db, "MPG123", "channels", 1);
+    bmp_cfg_db_set_int(db, "MPG123", "downsample", 2);
+    
+    bmp_cfg_db_set_bool(db, "beep", "shuffle", TRUE);
+    bmp_cfg_db_set_bool(db, "beep", "repeat", FALSE);
+    bmp_cfg_db_close(db);
+}
 
 void
 openmoko_show_created_window()
@@ -4819,6 +4854,7 @@ openmoko_mainwin_create()
     GdkColor color;
     PangoFontDescription *font_desc;
    
+    create_config_file();
     init_image_dir();
     
 //    MokoApplication *app = MOKO_APPLICATION(moko_application_get_instance());
@@ -4870,7 +4906,7 @@ openmoko_mainwin_create()
     font_desc = pango_font_description_from_string("Times 22");
     gtk_widget_modify_font(title_label, font_desc);
     pango_font_description_free(font_desc);
-    gtk_label_set_width_chars(GTK_LABEL(title_label), 23);
+    gtk_label_set_width_chars(GTK_LABEL(title_label), 18);
     gtk_misc_set_alignment(GTK_MISC(title_label), 0, 0.5);
     gtk_label_set_ellipsize(GTK_LABEL(title_label), PANGO_ELLIPSIZE_END);
     gdk_color_parse("black", &color);
@@ -4888,7 +4924,7 @@ openmoko_mainwin_create()
     gtk_widget_modify_font(artist_label, font_desc);
     pango_font_description_free(font_desc);
     gtk_misc_set_alignment(GTK_MISC(artist_label), 0, 0.5);
-    gtk_label_set_width_chars(GTK_LABEL(artist_label), 40);
+    gtk_label_set_width_chars(GTK_LABEL(artist_label), 30);
     gtk_label_set_ellipsize(GTK_LABEL(artist_label), PANGO_ELLIPSIZE_END);
     gdk_color_parse("black", &color);
     gtk_widget_modify_fg(GTK_WIDGET(artist_label), GTK_STATE_NORMAL, &color);
