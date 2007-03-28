@@ -1,7 +1,7 @@
 DESCRIPTION = "Standard Gtk+ theme for the OpenMoko distribution, QVGA version"
 SECTION = "openmoko/base"
 PV = "0.0+svn${SRCDATE}"
-PR = "r1"
+PR = "r2"
 
 inherit openmoko-base
 
@@ -30,4 +30,5 @@ pkg_postinst() {
 	echo done
 }
 
+PACKAGE_ARCH = "all"
 FILES_${PN} = "${datadir} ${sysconfdir}"
