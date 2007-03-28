@@ -1,7 +1,7 @@
 Index: u-boot/drivers/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c	2007-03-14 20:37:15.000000000 +0100
-+++ u-boot/drivers/usbtty.c	2007-03-14 20:49:03.000000000 +0100
+--- u-boot.orig/drivers/usbtty.c	2007-03-28 16:04:29.000000000 +0200
++++ u-boot/drivers/usbtty.c	2007-03-28 16:07:19.000000000 +0200
 @@ -66,7 +66,7 @@
  /*
   * Defines
@@ -242,35 +242,29 @@ Index: u-boot/drivers/usbtty.c
  
  	/* interface instance */
  	memset (interface_instance, 0,
-@@ -1043,9 +1219,23 @@
+@@ -1043,9 +1219,17 @@
  		usbtty_configured_flag = 0;
  		break;
  	case DEVICE_CONFIGURED:
 +		printf("DEVICE_CONFIGURED: %u\n", device->configuration);
-+#if 1
-+		/* FIXME: This needs to be device specific */
 +		if (device->configuration == 1)
-+			pcf50606_charge_autofast(1);
++			udc_ctrl(UDC_CTRL_500mA_ENABLE, 1);
 +		else
-+			pcf50606_charge_autofast(0);
-+#endif
++			udc_ctrl(UDC_CTRL_500mA_ENABLE, 0);
  		usbtty_configured_flag = 1;
  		break;
 -
 +	case DEVICE_DE_CONFIGURED:
 +		printf("DEVICE_DE_CONFIGURED\n");
-+#if 1
-+		/* FIXME: This needs to be device specific */
-+		pcf50606_charge_autofast(0);
-+#endif
++		udc_ctrl(UDC_CTRL_500mA_ENABLE, 0);
 +		break;
  	case DEVICE_ADDRESS_ASSIGNED:
  		usbtty_init_endpoints ();
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h	2007-03-14 20:37:15.000000000 +0100
-+++ u-boot/drivers/usbtty.h	2007-03-14 20:37:41.000000000 +0100
+--- u-boot.orig/drivers/usbtty.h	2007-03-28 16:04:29.000000000 +0200
++++ u-boot/drivers/usbtty.h	2007-03-28 18:25:44.000000000 +0200
 @@ -60,7 +60,7 @@
  #define USBTTY_DEVICE_CLASS	COMMUNICATIONS_DEVICE_CLASS
  
@@ -280,3 +274,31 @@ Index: u-boot/drivers/usbtty.h
  
  #define STR_LANG		0x00
  #define STR_MANUFACTURER	0x01
+Index: u-boot/board/neo1973/udc.c
+===================================================================
+--- u-boot.orig/board/neo1973/udc.c	2007-03-28 16:05:09.000000000 +0200
++++ u-boot/board/neo1973/udc.c	2007-03-28 16:07:22.000000000 +0200
+@@ -16,6 +16,9 @@
+ 			gpio->GPBDAT &= ~(1 << 9);
+ #endif
+ 		break;
++	case UDC_CTRL_500mA_ENABLE:
++		pcf50606_charge_autofast(param);
++		break;
+ 	default:
+ 		break;
+ 	}
+Index: u-boot/include/usbdcore.h
+===================================================================
+--- u-boot.orig/include/usbdcore.h	2007-03-28 16:05:05.000000000 +0200
++++ u-boot/include/usbdcore.h	2007-03-28 18:25:46.000000000 +0200
+@@ -686,8 +686,8 @@
+ 
+ enum usbd_event {
+ 	UDC_CTRL_PULLUP_ENABLE,
++	UDC_CTRL_500mA_ENABLE,
+ };
+ 
+ void udc_ctrl(enum usbd_event event, int param);
+ #endif
+-#endif
