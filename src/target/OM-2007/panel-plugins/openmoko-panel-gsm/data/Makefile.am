@@ -5,7 +5,6 @@ EXTRA_DIST =
 #
 resourcedir = $(pkgdatadir)
 resource_DATA = \
-		SignalStrength25g_00.png \
 		SignalStrength25g_01.png \
 		SignalStrength25g_02.png \
 		SignalStrength25g_03.png \
