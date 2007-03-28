@@ -81,7 +81,7 @@ static int csq_parse(char *buf, int len, const char *param,
 	
 	
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
-	tok = strtok(buf, ",");
+	tok = strtok(param, ",");
 	if (!tok)
 		goto out_free_io;
 	
@@ -93,7 +93,6 @@ static int csq_parse(char *buf, int len, const char *param,
 
 	aux->u.signal.sigq.ber = atoi(tok);
 
-	DEBUGP("sending EVT_SIGNAL\n");
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_SIGNAL);
 
 	return 0;
