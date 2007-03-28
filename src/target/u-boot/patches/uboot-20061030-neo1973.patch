@@ -7,7 +7,7 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile	2007-03-26 14:47:13.000000000 +0200
-+++ u-boot/Makefile	2007-03-26 16:05:48.000000000 +0200
++++ u-boot/Makefile	2007-03-28 10:37:35.000000000 +0200
 @@ -1977,6 +1977,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
@@ -26,7 +26,7 @@ Index: u-boot/Makefile
 Index: u-boot/board/neo1973/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/Makefile	2007-03-26 16:37:54.000000000 +0200
++++ u-boot/board/neo1973/Makefile	2007-03-28 10:37:38.000000000 +0200
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -117,7 +117,7 @@ Index: u-boot/board/neo1973/config.mk
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.c	2007-03-26 16:38:49.000000000 +0200
++++ u-boot/board/neo1973/neo1973.c	2007-03-28 10:37:41.000000000 +0200
 @@ -0,0 +1,362 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -741,7 +741,7 @@ Index: u-boot/board/neo1973/u-boot.lds
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/neo1973.h	2007-03-26 16:37:57.000000000 +0200
++++ u-boot/include/configs/neo1973.h	2007-03-28 10:37:41.000000000 +0200
 @@ -0,0 +1,263 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
@@ -1068,7 +1068,7 @@ Index: u-boot/board/neo1973/split_by_variant.sh
 Index: u-boot/board/neo1973/cmd_neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/cmd_neo1973.c	2007-03-26 16:37:56.000000000 +0200
++++ u-boot/board/neo1973/cmd_neo1973.c	2007-03-28 10:37:40.000000000 +0200
 @@ -0,0 +1,120 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -1193,7 +1193,7 @@ Index: u-boot/board/neo1973/cmd_neo1973.c
 Index: u-boot/board/neo1973/neo1973.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.h	2007-03-26 16:37:54.000000000 +0200
++++ u-boot/board/neo1973/neo1973.h	2007-03-28 10:37:37.000000000 +0200
 @@ -0,0 +1,18 @@
 +#ifndef _NEO1973_H
 +#define _NEO1973_H
@@ -1216,7 +1216,7 @@ Index: u-boot/board/neo1973/neo1973.h
 Index: u-boot/board/neo1973/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/pcf50606.c	2007-03-26 16:31:32.000000000 +0200
++++ u-boot/board/neo1973/pcf50606.c	2007-03-28 10:41:36.000000000 +0200
 @@ -0,0 +1,192 @@
 +
 +#include <common.h>
@@ -1339,7 +1339,7 @@ Index: u-boot/board/neo1973/pcf50606.c
 +	[PCF50606_REG_MBCC1]	= 0x01, /* CHGAPE */
 +	[PCF50606_REG_MBCC2]	= 0x00,	/* unlimited charging */
 +	[PCF50606_REG_MBCC3]	= 0x1a, /* 0.2*Ifast, 4.20V */
-+	[PCF50606_REG_BBCC]	= 0x13, /* 50uA */
++	[PCF50606_REG_BBCC]	= 0x1f, /* 400uA */
 +	[PCF50606_REG_ADCC1]	= 0x00,
 +	[PCF50606_REG_ADCC2]	= 0x00,
 +	/* gap */
@@ -1687,7 +1687,7 @@ Index: u-boot/board/neo1973/pcf50606.h
 Index: u-boot/common/main.c
 ===================================================================
 --- u-boot.orig/common/main.c	2007-03-26 14:42:55.000000000 +0200
-+++ u-boot/common/main.c	2007-03-26 16:37:55.000000000 +0200
++++ u-boot/common/main.c	2007-03-28 10:37:38.000000000 +0200
 @@ -61,6 +61,7 @@
  #undef DEBUG_PARSER
  
