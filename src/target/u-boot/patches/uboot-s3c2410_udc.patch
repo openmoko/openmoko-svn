@@ -2,8 +2,8 @@ USB Device Controller Driver for Samsung S3C2410 SoC
 
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-03-26 16:07:36.000000000 +0200
-+++ u-boot/drivers/Makefile	2007-03-26 16:09:00.000000000 +0200
+--- u-boot.orig/drivers/Makefile	2007-03-28 18:50:13.000000000 +0200
++++ u-boot/drivers/Makefile	2007-03-28 18:50:57.000000000 +0200
 @@ -46,7 +46,7 @@
  	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
  	  status_led.o sym53c8xx.o systemace.o ahci.o \
@@ -12,12 +12,12 @@ Index: u-boot/drivers/Makefile
 +	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
- 	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
+ 	  pcf50606.o \
 Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdcore_s3c2410.c	2007-03-26 16:08:57.000000000 +0200
-@@ -0,0 +1,732 @@
++++ u-boot/drivers/usbdcore_s3c2410.c	2007-03-28 18:50:57.000000000 +0200
+@@ -0,0 +1,721 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -637,18 +637,11 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +{
 +	debug("connect, enable Pullup\n");
 +	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
-+#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
-+    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
-+	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +
-+	/* create a short disconnect, since we might come out of reset */
-+	//s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
-+	gpio->GPBDAT &= ~(1 << 9);
++	udc_ctrl(UDC_CTRL_PULLUP_ENABLE, 0);
 +	udelay(10000);
++	udc_ctrl(UDC_CTRL_PULLUP_ENABLE, 1);
 +
-+	// s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 1);
-+	gpio->GPBDAT |= (1 << 9);
-+#endif
 +	irq->INTMSK &= ~BIT_USBD;
 +}
 +
@@ -657,13 +650,9 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +{
 +	debug("disconnect, disable Pullup\n");
 +	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
-+#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
-+    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
-+	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +
-+	//s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
-+	gpio->GPBDAT &= ~(1 << 9);
-+#endif
++	udc_ctrl(UDC_CTRL_PULLUP_ENABLE, 0);
++
 +	/* Disable interrupt (we don't want to get interrupts while the kernel
 +	 * is relocating itself */
 +	irq->INTMSK |= BIT_USBD;
@@ -753,7 +742,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 Index: u-boot/drivers/usbdcore_s3c2410.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/usbdcore_s3c2410.h	2007-03-26 16:07:59.000000000 +0200
++++ u-boot/drivers/usbdcore_s3c2410.h	2007-03-28 18:50:57.000000000 +0200
 @@ -0,0 +1,273 @@
 +/* linux/include/asm/arch-s3c2410/regs-udc.h
 + *
@@ -1030,8 +1019,8 @@ Index: u-boot/drivers/usbdcore_s3c2410.h
 +#endif
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-03-26 16:07:59.000000000 +0200
-+++ u-boot/drivers/usbdcore_ep0.c	2007-03-26 16:09:00.000000000 +0200
+--- u-boot.orig/drivers/usbdcore_ep0.c	2007-03-28 18:50:57.000000000 +0200
++++ u-boot/drivers/usbdcore_ep0.c	2007-03-28 18:50:57.000000000 +0200
 @@ -43,7 +43,7 @@
  
  #include <common.h>
@@ -1127,8 +1116,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-03-26 16:07:59.000000000 +0200
-+++ u-boot/include/configs/neo1973.h	2007-03-26 16:09:01.000000000 +0200
+--- u-boot.orig/include/configs/neo1973.h	2007-03-28 18:50:56.000000000 +0200
++++ u-boot/include/configs/neo1973.h	2007-03-28 18:50:57.000000000 +0200
 @@ -173,6 +173,16 @@
  #define CONFIG_USB_OHCI		1
  #endif
@@ -1148,8 +1137,8 @@ Index: u-boot/include/configs/neo1973.h
   */
 Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
 ===================================================================
---- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-03-26 16:07:59.000000000 +0200
-+++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-03-26 16:07:59.000000000 +0200
+--- u-boot.orig/cpu/arm920t/s3c24x0/interrupts.c	2007-03-28 18:50:57.000000000 +0200
++++ u-boot/cpu/arm920t/s3c24x0/interrupts.c	2007-03-28 18:50:57.000000000 +0200
 @@ -222,6 +222,13 @@
  	S3C24X0_INTERRUPT * irq = S3C24X0_GetBase_INTERRUPT();
  	u_int32_t intpnd = irq->INTPND;
@@ -1166,8 +1155,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h	2007-03-26 16:07:59.000000000 +0200
-+++ u-boot/drivers/usbtty.h	2007-03-26 16:09:00.000000000 +0200
+--- u-boot.orig/drivers/usbtty.h	2007-03-28 18:50:56.000000000 +0200
++++ u-boot/drivers/usbtty.h	2007-03-28 18:50:57.000000000 +0200
 @@ -29,6 +29,8 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
@@ -1179,8 +1168,8 @@ Index: u-boot/drivers/usbtty.h
  #include <config.h>
 Index: u-boot/board/neo1973/cmd_neo1973.c
 ===================================================================
---- u-boot.orig/board/neo1973/cmd_neo1973.c	2007-03-26 16:07:36.000000000 +0200
-+++ u-boot/board/neo1973/cmd_neo1973.c	2007-03-26 16:07:59.000000000 +0200
+--- u-boot.orig/board/neo1973/cmd_neo1973.c	2007-03-28 18:50:14.000000000 +0200
++++ u-boot/board/neo1973/cmd_neo1973.c	2007-03-28 18:50:57.000000000 +0200
 @@ -93,6 +93,18 @@
  			neo1973_vibrator(1);
  		else
@@ -1207,3 +1196,59 @@ Index: u-boot/board/neo1973/cmd_neo1973.c
 +	"neo1973 udc pullup (on|off) - switch pull-up on or off\n"
  );
  #endif	/* CFG_CMD_BDI */
+Index: u-boot/board/neo1973/Makefile
+===================================================================
+--- u-boot.orig/board/neo1973/Makefile	2007-03-28 18:50:14.000000000 +0200
++++ u-boot/board/neo1973/Makefile	2007-03-28 18:50:57.000000000 +0200
+@@ -25,7 +25,7 @@
+ 
+ LIB	= lib$(BOARD).a
+ 
+-OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o
++OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o udc.o
+ SOBJS	:= lowlevel_init.o
+ 
+ $(LIB):	$(OBJS) $(SOBJS)
+Index: u-boot/board/neo1973/udc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/neo1973/udc.c	2007-03-28 18:51:09.000000000 +0200
+@@ -0,0 +1,23 @@
++
++#include <common.h>
++#include <usbdcore.h>
++#include <s3c2410.h>
++
++void udc_ctrl(enum usbd_event event, int param)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++
++	switch (event) {
++	case UDC_CTRL_PULLUP_ENABLE:
++#if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
++    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
++		if (param)
++			gpio->GPBDAT |= (1 << 9);
++		else
++			gpio->GPBDAT &= ~(1 << 9);
++#endif
++		break;
++	default:
++		break;
++	}
++}
+Index: u-boot/include/usbdcore.h
+===================================================================
+--- u-boot.orig/include/usbdcore.h	2007-03-28 18:50:57.000000000 +0200
++++ u-boot/include/usbdcore.h	2007-03-28 18:50:57.000000000 +0200
+@@ -671,4 +671,10 @@
+ void usbd_rcv_complete(struct usb_endpoint_instance *endpoint, int len, int urb_bad);
+ void usbd_tx_complete (struct usb_endpoint_instance *endpoint);
+ 
++enum usbd_event {
++	UDC_CTRL_PULLUP_ENABLE,
++};
++
++void udc_ctrl(enum usbd_event event, int param);
++#endif
+ #endif
