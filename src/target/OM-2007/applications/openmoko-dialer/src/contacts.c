@@ -289,7 +289,8 @@ contact_init_contact_list (DIALER_CONTACTS_LIST_HEAD * head)
     return 0;
 
 
-  query = e_book_query_field_exists (E_CONTACT_FULL_NAME);
+  //query = e_book_query_field_exists (E_CONTACT_FULL_NAME); //we change this query to catch the pace of contact application.
+  query = e_book_query_any_field_contains ("");
   printf ("query=%s\n", e_book_query_to_string (query));
 
 
@@ -321,6 +322,8 @@ contact_init_contact_list (DIALER_CONTACTS_LIST_HEAD * head)
 //        printf("id=%s\n",e_contact_get_const(contact,E_CONTACT_UID));
     gchar *name_or_org = e_contact_get_const (contact, E_CONTACT_NAME_OR_ORG);
     gchar *phone;
+    if ((!name_or_org ) || (g_utf8_strlen (name_or_org , -1) <= 0))
+			name_or_org = "Unnamed";
     if (name_or_org)
     {
 
@@ -430,7 +433,7 @@ contact_get_info_from_number (DIALER_CONTACT * contacts, char *name,
   g_stpcpy (picpath, MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH);
   if (number == 0)
     return 0;
-  if (strlen (number) == 0)
+  if (g_utf8_strlen (number,-1) == 0)
     return 0;
 
 //  DIALER_CONTACT* contacts=g_contactlist.contacts;
@@ -489,7 +492,7 @@ contact_get_peer_info_from_number (DIALER_CONTACT * contacts,
 
   if (peer->number == 0)
     return 0;
-  if (strlen (peer->number) == 0)
+  if (g_utf8_strlen (peer->number,-1) == 0)
     return 0;
 
 //  DIALER_CONTACT* contacts=g_contactlist.contacts;
@@ -546,9 +549,9 @@ contact_string_has_sensentive (char *content, char *string)
   if (string == 0)
     return 1;
 
-  if (strlen (string) == 0)
+  if (g_utf8_strlen (string,-1) == 0)
     return 1;
-  if (strlen (string) > strlen (content))
+  if (g_utf8_strlen(string,-1) > g_utf8_strlen(content,-1))
     return 0;
   for (i = 0; string[i]; i++)
   {

@@ -97,6 +97,9 @@ moko_dialer_autolist_init (MokoDialerAutolist * moko_dialer_autolist)
   moko_dialer_autolist->head = 0;
   moko_dialer_autolist->g_alternatecount = 0;
   moko_dialer_autolist->imagePerson = 0;
+  moko_dialer_autolist->g_alternatecount_last_time=0;
+  moko_dialer_autolist->g_last_string[0]=0; ///<memorize last sensentive string.
+
   gtk_widget_set_size_request (GTK_WIDGET (moko_dialer_autolist), 480, 40);
 
 }
@@ -272,23 +275,60 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
     }
     moko_dialer_autolist->tipscreated = TRUE;
   }
+   //if last time, we searched ,so we want to know if the last results can be used for this time.
+    int included=contact_string_has_sensentive(string,moko_dialer_autolist->g_last_string)&&(g_utf8_strlen (moko_dialer_autolist->g_last_string, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN);
+    
+    if(included&&(moko_dialer_autolist->g_alternatecount_last_time==0)){
+            inserted=0;
+            DBG_MESSAGE("NO NEED TO SEARCH ANYMORE");
+            //last result is null, so we save time by not searching it at all.
+    }
+    else if(included&&(moko_dialer_autolist->g_alternatecount_last_time<MOKO_DIALER_MAX_TIPS)){
+        //we search last result here.
+        //now we start from the end of the list.
+        int i=moko_dialer_autolist->g_alternatecount_last_time-1;
+              DBG_MESSAGE("we search the last resutls.");        
+        while(i>=0&&i>=inserted){
+            //here inserted stands as the next inserted position.
 
-  contacts = moko_dialer_autolist->head->contacts;
+              if (contact_string_has_sensentive (moko_dialer_autolist->readycontacts[i].p_entry->content, string))
+              {
+                DBG_MESSAGE("find one match.");
+                //we use the idle readycontacts[MOKO_DIALER_MAX_TIPS] for exchange space,to swap the 2 items.
+                if(i>inserted)
+                {
+                moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].p_entry=moko_dialer_autolist->readycontacts[inserted].p_entry;
+                moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].p_contact=moko_dialer_autolist->readycontacts[inserted].p_contact;
+                moko_dialer_autolist->readycontacts[inserted].p_entry=moko_dialer_autolist->readycontacts[i].p_entry;
+                moko_dialer_autolist->readycontacts[inserted].p_contact=moko_dialer_autolist->readycontacts[i].p_contact;
+                moko_dialer_autolist->readycontacts[i].p_entry=moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].p_entry;
+                moko_dialer_autolist->readycontacts[i].p_contact=moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].p_contact;
+                }
+                inserted++;
+              }
+              else
+              {
+                //we just move the point back.
+                i--;
+              }
 
-//  DBG_MESSAGE("CONTACTS:%d,list@0x%x,first@0x%x",moko_dialer_autolist->head->length,moko_dialer_autolist->head,moko_dialer_autolist->head->contacts);
+        }
+            
+    }
+    else{
+    //we had to search all the contact list. may be we can improve the performance by draw every suitalbe items to be the first of the list.
+    contacts = moko_dialer_autolist->head->contacts;
 
-//        DBG_TRACE();  
+   DBG_MESSAGE("we search the whole contact list.");
   while (contacts != NULL && inserted < MOKO_DIALER_MAX_TIPS)
   {
-    //  DBG_TRACE();
     entry = contacts->entry;
-    //  DBG_TRACE();
     while (entry != NULL && inserted < MOKO_DIALER_MAX_TIPS)
     {
-//       DBG_TRACE();
       //judge if the entry includes the string
       if (contact_string_has_sensentive (entry->content, string))
       {
+        DBG_MESSAGE("find one match from the whole list.");
         //if the person not inserted, then insert first
         moko_dialer_autolist->readycontacts[inserted].p_contact = contacts;
         moko_dialer_autolist->readycontacts[inserted].p_entry = entry;
@@ -301,6 +341,10 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
     contacts = contacts->next;
 
   }
+  
+    }//
+    strcpy(moko_dialer_autolist->g_last_string,string);
+    moko_dialer_autolist->g_alternatecount_last_time=inserted;
 
 //DBG_MESSAGE("inserted=%d",inserted);
   moko_dialer_autolist_fill_alternative (moko_dialer_autolist, inserted,

@@ -170,8 +170,8 @@ gsm_dial (const char *number)
 {
   struct lgsm_addr addr;
   addr.type = 129;
-  strncpy (addr.addr, number, strlen (number));
-  addr.addr[strlen (number)] = '\0';
+  strncpy (addr.addr, number, g_utf8_strlen (number,-1));
+  addr.addr[g_utf8_strlen (number,-1)] = '\0';
   return lgsm_voice_out_init (lgsmh, &addr);
 
 }

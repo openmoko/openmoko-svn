@@ -174,9 +174,9 @@ history_add_entry (HISTORY_LIST_HEAD * historyhead, HISTORY_TYPE type,
 
 //      DBG_MESSAGE("pentry add:0X%x",pentry);
 
-  if (name && strlen (name) > 0)
+  if (name && g_utf8_strlen(name,-1) > 0)
   {
-    pentry->name = (char *) calloc (1, strlen (name) + 1);
+    pentry->name = (char *) calloc (1, g_utf8_strlen (name,-1) + 1);
     g_stpcpy (pentry->name, name);
     pentry->hasname = 1;
   }
@@ -186,9 +186,9 @@ history_add_entry (HISTORY_LIST_HEAD * historyhead, HISTORY_TYPE type,
     pentry->hasname = 0;
   }
 
-  if (number && strlen (number) > 0)
+  if (number && g_utf8_strlen (number,-1) > 0)
   {
-    pentry->number = (char *) calloc (1, strlen (number) + 1);
+    pentry->number = (char *) calloc (1, g_utf8_strlen (number,-1) + 1);
     g_stpcpy (pentry->number, number);
   }
   else
@@ -200,14 +200,14 @@ history_add_entry (HISTORY_LIST_HEAD * historyhead, HISTORY_TYPE type,
 
   //DBG_MESSAGE("History add:0X%x,%s,%s,%s,%s,%s,%d",historyhead,name,number,picpath,time,date,durationsec);
 
-  if (id && strlen (id) > 0)
+  if (id && g_utf8_strlen (id,-1) > 0)
   {
-    pentry->ID = (char *) calloc (1, strlen (id) + 1);
+    pentry->ID = (char *) calloc (1, g_utf8_strlen (id,-1) + 1);
     g_stpcpy (pentry->ID, id);
   }
-  if (time && strlen (time) > 0)
+  if (time && g_utf8_strlen (time,-1) > 0)
   {
-    pentry->time = (char *) calloc (1, strlen (time) + 1);
+    pentry->time = (char *) calloc (1, g_utf8_strlen(time,-1) + 1);
     g_stpcpy (pentry->time, time);
   }
   pentry->durationsec = durationsec;

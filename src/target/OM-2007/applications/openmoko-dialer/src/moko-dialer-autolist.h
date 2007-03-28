@@ -56,6 +56,10 @@ struct _MokoDialerAutolist
 
   DIALER_READY_CONTACT readycontacts[MOKO_DIALER_MAX_TIPS];     ///<the prepared contact list which will display to the user when he/she inputs part of the digits he/she wants to dial out
 
+  gint g_alternatecount_last_time; ///<indicate how many alternatives that we had from last search.
+
+  gchar g_last_string[MOKO_DIALER_MAX_NUMBER_LEN]; ///<memorize last sensentive string.
+
   gboolean selected;            ///<indicates wether some tip is currently selected.
 
   gint g_alternatecount;        ///<indicates how many alternative is ready in the ready list array.

@@ -47,7 +47,7 @@ pin_ok_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   //   gchar *codesinput;
 //    codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_pin_text_view, TRUE));
 
-  if (g_utf8_strlen (appdata->str_sim_pin, -1) < 1)
+  if (!appdata->str_sim_pin||g_utf8_strlen (appdata->str_sim_pin, -1) < 1)
   {
     //user didn't input anything
     DBG_MESSAGE ("no input for pin");

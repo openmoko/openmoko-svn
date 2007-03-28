@@ -172,8 +172,15 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
   codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
+  if(ready_contact->p_entry->content)
   lenstring = g_utf8_strlen (ready_contact->p_entry->content, -1);
+  else
+  lenstring=0;
+  
+  if(codesinput)
   leninput = g_utf8_strlen (codesinput, -1);
+  else
+  leninput =0; 
   if (lenstring > leninput)
   {
 
@@ -256,7 +263,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   codesinput =
     g_strdup (moko_dialer_textview_get_input (moko_dialer_text_view, FALSE));
 
-  if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
+  if (codesinput&&(g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN))
   {
     moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
                                             codesinput, TRUE);
