@@ -40,7 +40,7 @@ static void loadContacts (EBook* book, EBookStatus status, gpointer closure);
 static void updateContactsView (EBook* book, EBookStatus status, 
                                 GList* contacts, gpointer closure);
 static void contacts_view_cursor_changed(GtkTreeSelection* selection, SmsContactData* data);
-static void contact_select_done(void);
+static void contact_select_done(SmsContactWindow* self);
 gboolean get_selected_contact (GtkTreeModel* model, GtkTreePath* path, 
                                GtkTreeIter* iter, gpointer data);
 
@@ -64,6 +64,7 @@ sms_contact_window_class_init (SmsContactWindowClass* klass)
   GObjectClass* object_class = G_OBJECT_CLASS(klass);
   g_type_class_add_private (klass, sizeof(SmsContactWindowPrivate));
 
+  klass->contact_select_done = contact_select_done;
   /* create a new signal */
   sms_contact_signals[CONTACT_SELECT_DONE_SIGNAL] = g_signal_new("contact_select_done",
                                                    SMS_TYPE_CONTACT_WINDOW,
@@ -262,13 +263,6 @@ gboolean get_selected_contact (GtkTreeModel* model, GtkTreePath* path,
 
 static void sms_contact_window_close (SmsContactWindow* self)
 {
-  /* get selected items */
-  SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
-  GtkWidget* contactView = moko_navigation_list_get_tree_view(MOKO_NAVIGATION_LIST(priv->contacts_view));
-  GtkTreeModel* contactModel = gtk_tree_view_get_model (GTK_TREE_VIEW(contactView));
-  gtk_tree_model_foreach (contactModel, get_selected_contact, self);
-  self->selectedContacts = priv->data->contacts;
-
   /* emit selection done signal */
   g_signal_emit (G_OBJECT(self),sms_contact_signals[CONTACT_SELECT_DONE_SIGNAL],0);
 
@@ -314,8 +308,18 @@ static void contacts_view_cursor_changed(GtkTreeSelection* selection, SmsContact
 
 }
 
-static void contact_select_done(void)
+static void contact_select_done(SmsContactWindow* self)
 {
   g_debug("select ok");
+  /* get selected items */
+  SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
+  GtkWidget* contactView = moko_navigation_list_get_tree_view(MOKO_NAVIGATION_LIST(priv->contacts_view));
+  GtkTreeModel* contactModel = gtk_tree_view_get_model (GTK_TREE_VIEW(contactView));
+  gtk_tree_model_foreach (contactModel, get_selected_contact, self);
 }
 
+GList* sms_get_selected_contacts(SmsContactWindow* self)
+{
+  SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
+  return priv->data->contacts;
+}

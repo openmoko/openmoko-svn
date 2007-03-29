@@ -590,7 +590,7 @@ void sms_contact_select_done (GtkWidget* widget, gpointer data)
 {
   g_debug("sms select contact done");
   GtkWidget* toEntry = (GtkWidget*)data;
-  GList* contacts = SMS_CONTACT_WINDOW(widget)->selectedContacts;
+  GList* contacts = sms_get_selected_contacts(SMS_CONTACT_WINDOW(widget));
   g_debug ("start to add %d contacts to entry", g_list_length(contacts));
   gchar* nameList = NULL;
   gchar* name;

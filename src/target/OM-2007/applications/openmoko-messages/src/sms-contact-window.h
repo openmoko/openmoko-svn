@@ -36,9 +36,6 @@ G_BEGIN_DECLS
 #define SMS_IS_CONTACT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((obj), SMS_TYPE_CONTACT_WINDOW_CLASS)
 #define SMS_GET_CONTACT_WINDOW_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), SMS_TYPE_CONTACT_WINDOW, SmsContactWindowClass)
 
-GType sms_contact_window_get_type();
-GtkWidget* sms_contact_new();
-
 enum {
   CONTACT_SEL_COL,
   CONTACT_NAME_COL,
@@ -55,7 +52,6 @@ typedef struct
 {
   MokoWindow parent;
   /* instance members */
-  GList* selectedContacts;
 }SmsContactWindow;
 
 typedef struct
@@ -71,6 +67,10 @@ typedef struct
   GtkListStore *contacts_liststore;
   GList* contacts;
 }SmsContactData;
+
+GType sms_contact_window_get_type();
+GtkWidget* sms_contact_new();
+GList* sms_get_selected_contacts(SmsContactWindow* self);
 
 G_END_DECLS
 
