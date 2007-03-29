@@ -2,8 +2,8 @@ Patch to add HXD8 support
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-03-29 21:15:52.000000000 +0200
-+++ u-boot/Makefile	2007-03-29 21:16:53.000000000 +0200
+--- u-boot.orig/Makefile	2007-03-29 21:46:29.000000000 +0200
++++ u-boot/Makefile	2007-03-29 21:46:30.000000000 +0200
 @@ -1988,6 +1988,9 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
@@ -17,7 +17,7 @@ Index: u-boot/Makefile
 Index: u-boot/board/hxd8/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/Makefile	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/Makefile	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,51 @@
 +#
 +# (C) Copyright 2000-2006
@@ -73,7 +73,7 @@ Index: u-boot/board/hxd8/Makefile
 Index: u-boot/board/hxd8/hxd8.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/hxd8.c	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/hxd8.c	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,152 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -230,7 +230,7 @@ Index: u-boot/board/hxd8/hxd8.c
 Index: u-boot/board/hxd8/lowlevel_init.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/lowlevel_init.S	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/lowlevel_init.S	2007-03-29 21:57:23.000000000 +0200
 @@ -0,0 +1,166 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -343,8 +343,8 @@ Index: u-boot/board/hxd8/lowlevel_init.S
 +#define B5_PMC		 	0x0	/* normal */
 +
 +#define B6_MT		 	0x3	/* SDRAM */
-+#define B6_Trcd	 	 	0x1
-+#define B6_SCAN		 	0x1	/* 9bit */
++#define B6_Trcd	 	 	0x1	/* 3clk */
++#define B6_SCAN		 	0x2	/* 10bit */
 +
 +#define B7_MT		 	0x3	/* SDRAM */
 +#define B7_Trcd		 	0x1	/* 3clk */
@@ -353,7 +353,7 @@ Index: u-boot/board/hxd8/lowlevel_init.S
 +/* REFRESH parameter */
 +#define REFEN		 	0x1	/* Refresh enable */
 +#define TREFMD		 	0x0	/* CBR(CAS before RAS)/Auto refresh */
-+#define Trp		 	0x0	/* 2clk */
++#define Trp		 	0x1	/* 3clk */
 +#define Trc		 	0x3	/* 7clk */
 +#define Tchr		 	0x2	/* 3clk */
 +#define REFCNT		 	1113	/* period=15.6us, HCLK=60Mhz, (2048+1-15.6*60) */
@@ -401,7 +401,7 @@ Index: u-boot/board/hxd8/lowlevel_init.S
 Index: u-boot/include/configs/hxd8.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/hxd8.h	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/include/configs/hxd8.h	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,268 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
@@ -674,7 +674,7 @@ Index: u-boot/include/configs/hxd8.h
 Index: u-boot/board/hxd8/udc.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/udc.c	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/udc.c	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,30 @@
 +
 +#include <common.h>
@@ -709,7 +709,7 @@ Index: u-boot/board/hxd8/udc.c
 Index: u-boot/board/hxd8/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/pcf50606.c	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/pcf50606.c	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,67 @@
 +
 +#include <common.h>
@@ -781,7 +781,7 @@ Index: u-boot/board/hxd8/pcf50606.c
 Index: u-boot/board/hxd8/config.mk
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/config.mk	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/config.mk	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,22 @@
 +#
 +# (C) Copyright 2002
@@ -808,7 +808,7 @@ Index: u-boot/board/hxd8/config.mk
 Index: u-boot/board/hxd8/u-boot.lds
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/u-boot.lds	2007-03-29 21:16:53.000000000 +0200
++++ u-boot/board/hxd8/u-boot.lds	2007-03-29 21:46:30.000000000 +0200
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
