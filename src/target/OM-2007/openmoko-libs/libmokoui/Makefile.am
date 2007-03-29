@@ -50,5 +50,5 @@ libmokoui_la_SOURCES     = $(source_c) $(source_h)
 libmokoui_la_LIBADD      =
 libmokoui_la_LDFLAGS = -version-info 0:1:0
 
-libopenmokouiheadersdir = $(includedir)/libmokoui
+libopenmokouiheadersdir = $(includedir)/openmoko-libs/libmokoui
 libopenmokouiheaders_DATA = $(source_h)
