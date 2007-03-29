@@ -2,8 +2,8 @@ Patch to add HXD8 support
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-03-28 18:41:51.000000000 +0200
-+++ u-boot/Makefile	2007-03-28 18:41:52.000000000 +0200
+--- u-boot.orig/Makefile	2007-03-29 21:15:52.000000000 +0200
++++ u-boot/Makefile	2007-03-29 21:16:53.000000000 +0200
 @@ -1988,6 +1988,9 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
@@ -17,7 +17,7 @@ Index: u-boot/Makefile
 Index: u-boot/board/hxd8/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/Makefile	2007-03-28 18:41:52.000000000 +0200
++++ u-boot/board/hxd8/Makefile	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,51 @@
 +#
 +# (C) Copyright 2000-2006
@@ -46,7 +46,7 @@ Index: u-boot/board/hxd8/Makefile
 +
 +LIB	= $(obj)lib$(BOARD).a
 +
-+COBJS	:= hxd8.o udc.o
++COBJS	:= hxd8.o udc.o pcf50606.o
 +SOBJS	:= lowlevel_init.o
 +
 +SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
@@ -73,7 +73,7 @@ Index: u-boot/board/hxd8/Makefile
 Index: u-boot/board/hxd8/hxd8.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/hxd8.c	2007-03-28 18:41:52.000000000 +0200
++++ u-boot/board/hxd8/hxd8.c	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,152 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -230,7 +230,7 @@ Index: u-boot/board/hxd8/hxd8.c
 Index: u-boot/board/hxd8/lowlevel_init.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/lowlevel_init.S	2007-03-28 18:41:52.000000000 +0200
++++ u-boot/board/hxd8/lowlevel_init.S	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,166 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -401,7 +401,7 @@ Index: u-boot/board/hxd8/lowlevel_init.S
 Index: u-boot/include/configs/hxd8.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/hxd8.h	2007-03-28 18:45:57.000000000 +0200
++++ u-boot/include/configs/hxd8.h	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,268 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
@@ -674,7 +674,7 @@ Index: u-boot/include/configs/hxd8.h
 Index: u-boot/board/hxd8/udc.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/udc.c	2007-03-28 18:41:52.000000000 +0200
++++ u-boot/board/hxd8/udc.c	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,30 @@
 +
 +#include <common.h>
@@ -709,8 +709,8 @@ Index: u-boot/board/hxd8/udc.c
 Index: u-boot/board/hxd8/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/pcf50606.c	2007-03-28 18:41:52.000000000 +0200
-@@ -0,0 +1,68 @@
++++ u-boot/board/hxd8/pcf50606.c	2007-03-29 21:16:53.000000000 +0200
+@@ -0,0 +1,67 @@
 +
 +#include <common.h>
 +#include <pcf50606.h>
@@ -719,14 +719,13 @@ Index: u-boot/board/hxd8/pcf50606.c
 +const u_int8_t pcf50606_initial_regs[__NUM_PCF50606_REGS] = {
 +	[PCF50606_REG_OOCS] 	= 0x00,
 +	/* gap */
-+	[PCF50606_REG_INT1M]	= PCF50606_INT1_SECOND |
-+				  PCF50606_INT1_CHGFOK |
-+				  PCF50606_INT1_CHGERR |
-+				  PCF50606_INT1_CHGFRDY |
-+				  PCF50606_INT1_CHGPROT |
-+				  PCF50606_INT1_CHGWD10S |
-+				  PCF50606_INT1_CHGWDEXP,
-+	[PCF50606_REG_INT2M]	= 0x00,
++	[PCF50606_REG_INT1M]	= PCF50606_INT1_SECOND,
++	[PCF50606_REG_INT2M]	= PCF50606_INT2_CHGFOK |
++				  PCF50606_INT2_CHGERR |
++				  PCF50606_INT2_CHGFRDY |
++				  PCF50606_INT2_CHGPROT |
++				  PCF50606_INT2_CHGWD10S |
++				  PCF50606_INT2_CHGWDEXP,
 +	[PCF50606_REG_INT3M]	= PCF50606_INT3_TSCPRES,
 +	[PCF50606_REG_OOCC1] 	= PCF50606_OOCC1_RTCWAK |
 +				  PCF50606_OOCC1_CHGWAK |
@@ -782,7 +781,7 @@ Index: u-boot/board/hxd8/pcf50606.c
 Index: u-boot/board/hxd8/config.mk
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/config.mk	2007-03-28 18:41:52.000000000 +0200
++++ u-boot/board/hxd8/config.mk	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,22 @@
 +#
 +# (C) Copyright 2002
@@ -809,7 +808,7 @@ Index: u-boot/board/hxd8/config.mk
 Index: u-boot/board/hxd8/u-boot.lds
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/hxd8/u-boot.lds	2007-03-28 18:44:45.000000000 +0200
++++ u-boot/board/hxd8/u-boot.lds	2007-03-29 21:16:53.000000000 +0200
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
