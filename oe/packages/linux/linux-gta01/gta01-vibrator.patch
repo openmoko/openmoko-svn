@@ -1,0 +1,118 @@
+Index: linux-2.6.20.3/drivers/leds/Makefile
+===================================================================
+--- linux-2.6.20.3.orig/drivers/leds/Makefile	2007-03-13 18:27:08.000000000 +0000
++++ linux-2.6.20.3/drivers/leds/Makefile	2007-03-21 03:37:04.000000000 +0000
+@@ -14,6 +14,7 @@
+ obj-$(CONFIG_LEDS_AMS_DELTA)		+= leds-ams-delta.o
+ obj-$(CONFIG_LEDS_NET48XX)		+= leds-net48xx.o
+ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
++obj-$(CONFIG_LEDS_GTA01)		+= leds-gta01.o
+ 
+ # LED Triggers
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+Index: linux-2.6.20.3/drivers/leds/Kconfig
+===================================================================
+--- linux-2.6.20.3.orig/drivers/leds/Kconfig	2007-03-13 18:27:08.000000000 +0000
++++ linux-2.6.20.3/drivers/leds/Kconfig	2007-03-21 03:37:04.000000000 +0000
+@@ -82,6 +82,12 @@
+ 	help
+ 	  This option enables support for the PCEngines WRAP programmable LEDs.
+ 
++config LEDS_GTA01
++	tristate "LED Support for the FIC Neo1973 Vibrator"
++	depends on LEDS_CLASS && MACH_GTA01
++	help
++	  This option enables support for the Vibrator on the FIC Neo1973.
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+Index: linux-2.6.20.3/drivers/leds/leds-gta01.c
+===================================================================
+--- linux-2.6.20.3.orig/drivers/leds/leds-gta01.c	2007-03-21 03:37:04.000000000 +0000
++++ linux-2.6.20.3/drivers/leds/leds-gta01.c	2007-03-21 03:37:04.000000000 +0000
+@@ -11,14 +11,13 @@
+  *
+  */
+ 
+-#include <linux/config.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/leds.h>
+ #include <asm/hardware/scoop.h>
+ #include <asm/mach-types.h>
+-#include <asm/arch/hardware.h>
++#include <asm/hardware.h>
+ #include <asm/arch/gta01.h>
+ 
+ static void gta01led_vib_set(struct led_classdev *led_cdev, enum led_brightness value)
+@@ -77,18 +76,18 @@
+ 	},
+ };
+ 
+-static int __init spitzled_init(void)
++static int __init gta01led_init(void)
+ {
+ 	return platform_driver_register(&gta01led_driver);
+ }
+ 
+-static void __exit spitzled_exit(void)
++static void __exit gta01led_exit(void)
+ {
+  	platform_driver_unregister(&gta01led_driver);
+ }
+ 
+-module_init(spitzled_init);
+-module_exit(spitzled_exit);
++module_init(gta01led_init);
++module_exit(gta01led_exit);
+ 
+ MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
+ MODULE_DESCRIPTION("FIC GTA01 LED driver");
+Index: linux-2.6.20.3/arch/arm/mach-s3c2410/mach-gta01.c
+===================================================================
+--- linux-2.6.20.3.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-21 03:37:04.000000000 +0000
++++ linux-2.6.20.3/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-21 03:37:04.000000000 +0000
+@@ -384,6 +384,19 @@
+ 	},
+ };
+ 
++static struct resource gta01_led_resources[] = {
++	[0] = {
++		.start	= GTA01_GPIO_VIBRATOR_ON,
++		.end	= GTA01_GPIO_VIBRATOR_ON,
++	},
++};
++
++struct platform_device gta01_led_dev = {
++	.name		= "gta01-led",
++	.num_resources	= ARRAY_SIZE(gta01_led_resources),
++	.resource	= gta01_led_resources,
++};
++
+ static struct resource gta01_button_resources[] = {
+ 	[0] = {
+ 		.start = GTA01_GPIO_AUX_KEY,
+@@ -457,6 +470,7 @@
+ 	platform_device_register(&s3c_device_spi_lcm);
+ #endif
+ 	platform_device_register(&gta01_bl_dev);
++	platform_device_register(&gta01_led_dev);
+ 	platform_device_register(&gta01_button_dev);
+ 	platform_device_register(&gta01_pm_gsm_dev);
+ 
+Index: linux-2.6.20.3/include/asm-arm/arch-s3c2410/gta01.h
+===================================================================
+--- linux-2.6.20.3.orig/include/asm-arm/arch-s3c2410/gta01.h	2007-03-21 03:37:04.000000000 +0000
++++ linux-2.6.20.3/include/asm-arm/arch-s3c2410/gta01.h	2007-03-24 00:33:17.000000000 +0000
+@@ -28,7 +28,8 @@
+ #define GTA01_GPIO_nSD_DETECT	S3C2410_GPF5
+ #define GTA01_GPIO_AUX_KEY	S3C2410_GPF6
+ #define GTA01_GPIO_HOLD_KEY	S3C2410_GPF7
+-#define GTA01_GPIO_VIBRATOR_ON	S3C2410_GPG11
++// FIXME this is only correct for GTAB01v2 and GTA01Bv3, GTA01v3 and GTA01v3 use S3C2410_GPG11
++#define GTA01_GPIO_VIBRATOR_ON	S3C2410_GPB10
+ 
+ #define GTA01_IRQ_JACK_INSERT	IRQ_EINT4
+ #define GTA01_IRQ_nSD_DETECT	IRQ_EINT5
