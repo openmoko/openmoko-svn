@@ -4,10 +4,6 @@ AUTHOR = "Harald Welte <laforge@openmoko.org>"
 HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-gta01"
-MOKOR = "moko7"
-PR = "${MOKOR}-r1"
-
-VANILLA_VERSION = "2.6.20.1"
 
 inherit kernel
 
