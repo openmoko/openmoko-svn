@@ -22,10 +22,28 @@
 #include "moko-gsm-conn.h"
 
 typedef struct {
-	int gsm_quality;
-	GtkImage *image;
-	guint timeout_id;
+  GsmSignalQuality gsm_quality;
+  GprsSignalQuality gprs_quality;
+  GtkImage *image;
+  guint timeout_id;
 } GsmApplet;
+
+static gchar *gsm_q_name[TOTAL_GSM_SIGNALS]={
+  "SignalStrength_01.png",
+  "SignalStrength_02.png",
+  "SignalStrength_03.png",
+  "SignalStrength_04.png",
+  "SignalStrength_05.png",
+  "SignalStrength_00.png",
+};
+
+static gchar *gprs_q_name[TOTAL_GPRS_SIGNALS]={
+  "SignalStrength25g_01.png",
+  "SignalStrength25g_02.png",
+  "SignalStrength25g_03.png",
+  "SignalStrength25g_04.png",
+  "SignalStrength25g_05.png",
+};
 
 static void
 gsm_applet_free (GsmApplet *applet)
@@ -38,7 +56,8 @@ gsm_applet_free (GsmApplet *applet)
 static gboolean
 timeout_cb (GsmApplet *applet)
 {
-  int new_gsm_q = moko_panel_gsm_signal_quality ();
+  GsmSignalQuality new_gsm_q = moko_panel_gsm_signal_quality ();
+  //GprsSignalQuality new_gprs_q = moko_panel_gprs_signal_quality (); 
   
   if (applet->gsm_quality == new_gsm_q)
 	/*Keep going, image need not change*/
@@ -46,53 +65,29 @@ timeout_cb (GsmApplet *applet)
   else
     applet->gsm_quality = new_gsm_q;
 
-  g_debug ("gsm signal = %d", applet->gsm_quality);
+  /*load new signal status image, FIXME:load these images in memery when initial the applet*/
+  char path[512];
+  snprintf (path, 512, "%s/%s", PKGDATADIR, gsm_q_name[applet->gsm_quality]);
+  gtk_image_set_from_file (applet->image, path);
 
-	switch (applet->gsm_quality)
-	{
-		case GSM_SIGNAL_ERROR :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_00.png");
-		    break;
-
-		case GSM_SIGNAL_LEVEL_1 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_01.png");
-			break;
-
-		case GSM_SIGNAL_LEVEL_2 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_02.png");
-			break;
-
-		case GSM_SIGNAL_LEVEL_3 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_03.png");
-			break;
-
-		case GSM_SIGNAL_LEVEL_4 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_04.png");
-			break;
-
-		case GSM_SIGNAL_LEVEL_5 :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_05.png");
-			break;
-
-		default :
-			gtk_image_set_from_file (applet->image, PKGDATADIR"/SignalStrength_00.png");
-			break;
-	}
-    /* Keep going */
-    return TRUE;
+  /* Keep going */
+  return TRUE;
 }
 
 G_MODULE_EXPORT GtkWidget* 
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     MokoPanelApplet* mokoapplet = moko_panel_applet_new();
+    char path[512];
 
     GsmApplet *applet;
     applet = g_slice_new (GsmApplet);
 
     applet->gsm_quality = GSM_SIGNAL_ERROR;
+    applet->gsm_quality = GPRS_CLOSE;
 
-    applet->image = GTK_IMAGE(gtk_image_new_from_file (PKGDATADIR"/SignalStrength_00.png"));
+    snprintf (path, 512, "%s/%s", PKGDATADIR, gsm_q_name[applet->gsm_quality]);
+	applet->image = GTK_IMAGE(gtk_image_new_from_file (path));
     gtk_widget_set_name( applet->image, "OpenMoko gsm applet" );
     g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) gsm_applet_free, applet );
 

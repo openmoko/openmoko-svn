@@ -17,7 +17,8 @@
 
 static struct lgsm_handle *lgsmh = NULL;
 static GPollFD GPfd;
-static int signal_value = GSM_SIGNAL_ERROR;
+static gint gsm_q = -99;
+static gint gprs_q = -99;
 
 static gboolean
 gsm_watcher_prepare (GSource * source, gint * timeout)
@@ -67,7 +68,7 @@ static int
 sigq_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
 	printf("EVENT: Signal Quality: %u\n", aux->u.signal.sigq.rssi);
-	signal_value = aux->u.signal.sigq.rssi;
+	gsm_q = aux->u.signal.sigq.rssi;
 	//FIXME: Call panel applet image change function here, instead of use g timeout function to check singal value
 	return 0;
 }
@@ -124,10 +125,37 @@ gsm_connect_init()
   }
 }
 
-int
+GsmSignalQuality
 moko_panel_gsm_signal_quality()
 {
-  return signal_value;
+  switch (gsm_q)
+  {
+    case 4 :
+      return GSM_SIGNAL_LEVEL_1 ;
+    case 3 :
+      return GSM_SIGNAL_LEVEL_2 ;
+    case 2 :
+      return GSM_SIGNAL_LEVEL_3 ;
+    case 1 :
+      return GSM_SIGNAL_LEVEL_4 ;
+    case 0 :
+      return GSM_SIGNAL_LEVEL_5 ;
+    default :
+      return GSM_SIGNAL_ERROR;
+  }
+}
+/*for a rainning day*/
+GprsSignalQuality
+moko_panel_gprs_signal_quality()
+{
+
+if(0)
+{  switch (gprs_q)
+  {
+		  
+  }
+}
+  return GPRS_CLOSE;
 }
 
 void
