@@ -19,6 +19,7 @@
  */
 
 #include "application-menu.h"
+#include "filter-menu.h"
 #include "appmanager-window.h"
 #include "package-list.h"
 #include "ipkgapi.h"
@@ -99,7 +100,6 @@ on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_dat
                                             NULL);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(filechooser), FALSE);
-  gtk_window_set_default_size (GTK_WINDOW (filechooser), 400, 300);
 
   filter = gtk_file_filter_new();
   gtk_file_filter_set_name(filter, _("Ipk files(*.ipk)"));
@@ -163,6 +163,7 @@ install_quit:
                                              get_error_msg ());
         break;
       case INSTALL_SUCCESS:
+        filter_menu_show_install_list (appdata);
         infodialog = gtk_message_dialog_new (NULL,
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                              GTK_MESSAGE_INFO,
@@ -261,7 +262,7 @@ application_menu_new (ApplicationManagerData *appdata)
   g_signal_connect ((gpointer) showhelp, "activate",
                     G_CALLBACK (on_showhelp_activate), appdata);
 
-  quit = gtk_menu_item_new_with_mnemonic (_("Quit"));
+  quit = gtk_menu_item_new_with_mnemonic (_("Exit"));
   gtk_widget_show (quit);
   gtk_container_add (GTK_CONTAINER (appmenu), quit);
   g_signal_connect ((gpointer) quit, "activate",

@@ -1,3 +1,12 @@
+2007-03-29 Chaowei Song <songcw@fic-sh.com.cn>
+	* src/application-menu.c: (on_install_single_application_activate)
+	Remove unnecessory set a default size to the file chooser dialog.
+	It makes the file chooser dialog too ugly.
+	After installing single package successfully, refresh the navigation
+	area, and show the installed packages list.
+	* src/application-menu.c: (application_menu_new)
+	Use the "Exit" menuitem instead of the "Quit" menuitem.
+
 2007-03-26 Chaowei Song <songcw@fic-sh.com.cn>
 	* data/:
 	Add action buttons:
