@@ -40,5 +40,6 @@ libmokocore/Makefile
 libmokoui/Makefile
 libmokopim/Makefile
 libmokonet/Makefile
+libmokojournal/Makefile
 data/Makefile
 ])

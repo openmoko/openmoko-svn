@@ -1,3 +1,12 @@
+2007-03-29 Dodji Seketeli <dodji@openedhand.com>
+
+	* openmoko-libs/Makefile.am, openmoko-libs/configure.ac: declare
+	  the new openmoko-libs/openmokojournal directory
+	* openmoko-libs/libmokojournal/Makefile.am: added the new boilerplate
+	  moko-journal.[c|h] files.
+	* openmoko-libs/libmokojournal/moko-journal.c,h: added these new
+	  empty files.
+
 2007-03-29  Rob Bradford  <rob@openedhand.com>
 
 	* libmokoui/Makefile.am:
