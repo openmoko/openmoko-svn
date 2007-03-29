@@ -5,7 +5,7 @@ HOMEPAGE = "N/A"
 LICENSE = "GPL"
 DEPENDS += "quilt-native uboot-gta01"
 MOKOR = "moko8"
-PR = "${MOKOR}-r1"
+PR = "${MOKOR}-r2"
 
 VANILLA_VERSION = "2.6.20.2"
 
@@ -18,6 +18,7 @@ FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/linux-gta01"
 #
 SRC_URI = "http://ftp.de.kernel.org/pub/linux/kernel/v2.6/linux-${VANILLA_VERSION}.tar.bz2 \
            svn://svn.openmoko.org/trunk/src/target/kernel;module=patches;proto=https \
+           file://gta01-vibrator.patch;patch=1 \
            file://defconfig-${VANILLA_VERSION}-${MACHINE}"
 S = "${WORKDIR}/linux-${VANILLA_VERSION}"
 
