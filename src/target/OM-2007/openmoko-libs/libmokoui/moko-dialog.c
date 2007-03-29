@@ -146,33 +146,14 @@ moko_dialog_init (MokoDialog *self)
 
   /* Most of this was borrowed from GTK */
 
+  /**
+   * Set up a "Title Bar" - this should really be done in the window manager
+   * theme...
+   */
+
   /* The primary vbox holds the contents of the dialog and the action_area */
   self->vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (self), self->vbox);
-
-  /* Create the action_area and put it into the main vbox */
-  self->action_area = gtk_hbutton_box_new ();
-  gtk_button_box_set_layout (GTK_BUTTON_BOX (self->action_area),
-      GTK_BUTTONBOX_END);
-  gtk_box_pack_end (GTK_BOX (self->vbox), self->action_area,
-      FALSE, TRUE, 0);
-
-  /* Mark it as a dialog window */
-  gtk_window_set_type_hint (GTK_WINDOW (self), GDK_WINDOW_TYPE_HINT_DIALOG);
-
-  /* Center on parent?, yessir */
-  gtk_window_set_position (GTK_WINDOW (self), GTK_WIN_POS_CENTER_ON_PARENT);
-
-
-  /* Setup the relationship between this window and its parent */
-  parent = moko_application_get_main_window(moko_application_get_instance());
-
-  if (parent)
-  {
-      gtk_window_set_transient_for(GTK_WINDOW(self), GTK_WINDOW (parent) );
-      gtk_window_set_modal(GTK_WINDOW(self), TRUE );
-      gtk_window_set_destroy_with_parent(GTK_WINDOW(self), TRUE );
-  }
 
   /* Create the hbox at the top */
   priv->hbox = gtk_hbox_new(FALSE, 0);
@@ -198,6 +179,35 @@ moko_dialog_init (MokoDialog *self)
 
   /* Add this hbox to the start of vbox */
   gtk_box_pack_start (GTK_BOX (self->vbox), priv->hbox, FALSE, FALSE, 0 );
+
+  /**
+   * Now get back to the proper parts of the dialog
+   */
+
+  /* Create the action_area and put it into the main vbox */
+  self->action_area = gtk_hbutton_box_new ();
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (self->action_area),
+      GTK_BUTTONBOX_END);
+  gtk_box_pack_start (GTK_BOX (self->vbox), self->action_area,
+      FALSE, TRUE, 0);
+
+  /* Mark it as a dialog window */
+  gtk_window_set_type_hint (GTK_WINDOW (self), GDK_WINDOW_TYPE_HINT_DIALOG);
+
+  /* Center on parent?, yessir */
+  gtk_window_set_position (GTK_WINDOW (self), GTK_WIN_POS_CENTER_ON_PARENT);
+
+
+  /* Setup the relationship between this window and its parent */
+  parent = moko_application_get_main_window(moko_application_get_instance());
+
+  if (parent)
+  {
+      gtk_window_set_transient_for(GTK_WINDOW(self), GTK_WINDOW (parent) );
+      gtk_window_set_modal(GTK_WINDOW(self), TRUE );
+      gtk_window_set_destroy_with_parent(GTK_WINDOW(self), TRUE );
+  }
+
 
   gtk_widget_show_all (GTK_WIDGET (self->vbox));
 }
@@ -275,11 +285,12 @@ moko_dialog_add_button (MokoDialog *self, gchar *text, gint response_id)
   GtkWidget *button;
 
   button = gtk_button_new_from_stock (text);
-  moko_dialog_add_button_widget (self, button, response_id);
+  moko_dialog_add_button_widget (self, GTK_BUTTON (button), response_id);
   gtk_widget_show (button);
 
   return button;
 }
+
 
 void
 moko_dialog_add_buttons (MokoDialog *self, gchar *first_button_text, ...)
@@ -322,6 +333,49 @@ GtkWidget*
 moko_dialog_new (void)
 {
   return g_object_new (MOKO_TYPE_DIALOG, NULL);
+}
+
+/* Check all buttons have the correct style */
+static void
+check_button_style_cb (GtkWidget *widget, GtkButtonBox *box)
+{
+     if (GTK_IS_BUTTON (widget)
+        && gtk_button_box_get_child_secondary (GTK_BUTTON_BOX (box), widget))
+      gtk_widget_set_name (GTK_WIDGET (widget), "mokostylusbutton-white");
+    else
+      gtk_widget_set_name (GTK_WIDGET (widget), "mokostylusbutton-black");
+}
+
+static void
+check_button_styles (MokoDialog *self)
+{
+  gtk_container_forall (GTK_CONTAINER (self->action_area), (GtkCallback)
+      (check_button_style_cb), self->action_area);
+#if 0
+
+  GList *children, *l;
+  /*
+   * the button box doesn't seem to return secondary children from
+   * gtk_container_get_children
+   *
+   * maybe a gtk+ bug?
+   */
+
+  children = gtk_container_get_children (GTK_CONTAINER (self->action_area));
+
+  for (l = children; (l = g_list_next (l)); )
+  {
+
+    if (GTK_IS_BUTTON (l->data)
+        && gtk_button_box_get_child_secondary (GTK_BUTTON_BOX (self->action_area), l->data))
+      gtk_widget_set_name (GTK_WIDGET (l->data), "mokostylusbutton-white");
+    else
+      gtk_widget_set_name (GTK_WIDGET (l->data), "mokostylusbutton-black");
+
+    if (GTK_IS_CONTAINER (l->data))
+      l = g_list_concat (l, gtk_container_get_children (GTK_CONTAINER (l->data)));
+  }
+#endif
 }
 
 /* Code beyond this point directly derived from gtk+ (gtkdialog.c) */
@@ -381,6 +435,9 @@ moko_dialog_run (MokoDialog *self)
   gulong delete_handler;
 
   g_object_ref (self);
+
+  /* check we have the correct styles for OpenMoko */
+  check_button_styles (self);
 
   was_modal = GTK_WINDOW (self)->modal;
   if (!was_modal)
