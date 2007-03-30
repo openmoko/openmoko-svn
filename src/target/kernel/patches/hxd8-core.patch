@@ -1,8 +1,8 @@
 This patch adds another machine, the FIC HXD8
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:05:37.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:06:10.000000000 +0200
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:33:04.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:33:04.000000000 +0200
 @@ -94,6 +94,12 @@
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
@@ -18,8 +18,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
  	bool "SMDK2440"
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:05:37.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:06:10.000000000 +0200
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:32:42.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:33:04.000000000 +0200
 @@ -90,5 +90,6 @@
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
@@ -30,8 +30,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c	2007-03-30 21:32:34.000000000 +0200
-@@ -0,0 +1,450 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c	2007-03-30 22:39:28.000000000 +0200
+@@ -0,0 +1,428 @@
 +/* linux/arch/arm/mach-s3c2410/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -227,6 +227,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 +			  PCF50606_FEAT_WDT |
 +			  PCF50606_FEAT_RTC |
 +			  PCF50606_FEAT_PWM |
++			  PCF50606_FEAT_PWM_BL |
 +			  PCF50606_FEAT_BATVOLT,
 +	.onkey_seconds_required	= 5,
 +	.rails	= {
@@ -356,28 +357,6 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 +	},
 +};
 +
-+static struct gta01bl_machinfo backlight_machinfo = {
-+	.default_intensity	= 1,
-+	.max_intensity		= 1,
-+	.limit_mask		= 1,
-+};
-+
-+static struct resource hxd8_bl_resources[] = {
-+	[0] = {
-+		.start	= HXD8_GPIO_BACKLIGHT,
-+		.end	= HXD8_GPIO_BACKLIGHT,
-+	},
-+};
-+
-+struct platform_device hxd8_bl_dev = {
-+	.name 		= "gta01-bl",
-+	.num_resources	= ARRAY_SIZE(hxd8_bl_resources),
-+	.resource	= hxd8_bl_resources,
-+	.dev		= {
-+		.platform_data = &backlight_machinfo,
-+	},
-+};
-+
 +static struct platform_device hxd8_pm_gsm_dev = {
 +	.name		= "gta01-pm-gsm",
 +};
@@ -462,7 +441,6 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 +	s3c24xx_udc_set_platdata(&hxd8_udc_cfg);
 +	set_s3c2410ts_info(&hxd8_ts_cfg);
 +
-+	platform_device_register(&hxd8_bl_dev);
 +	//platform_device_register(&gta01_button_dev);
 +	platform_device_register(&hxd8_pm_gsm_dev);
 +
@@ -485,7 +463,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 Index: linux-2.6.20.4/include/asm-arm/arch-s3c2410/hxd8.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/hxd8.h	2007-03-30 21:06:10.000000000 +0200
++++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/hxd8.h	2007-03-30 21:33:04.000000000 +0200
 @@ -0,0 +1,16 @@
 +#ifndef _HXD8_H
 +#define _HXD8_H
