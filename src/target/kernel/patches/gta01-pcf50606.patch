@@ -3,12 +3,13 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-03-30 20:52:22.000000000 +0200
-@@ -0,0 +1,1710 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-03-30 22:38:29.000000000 +0200
+@@ -0,0 +1,1856 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
-+ * Author: Harald Welte <laforge@openmoko.org>
++ * Author: Harald Welte <laforge@openmoko.org> +
++ * 	   Matt Hsu <matt@openmoko.org>
 + * All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -32,6 +33,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 + * - rtc / alarm
 + * - watchdog
 + * - adc driver (hw_sensors like)
++ * - pwm driver
++ * - backlight
 + *
 + */
 +
@@ -47,6 +50,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +#include <linux/watchdog.h>
 +#include <linux/miscdevice.h>
 +#include <linux/input.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
 +#include <linux/sched.h>
 +#include <linux/platform_device.h>
 +#include <linux/pcf50606.h>
@@ -91,6 +96,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +struct pcf50606_data {
 +	struct i2c_client client;
 +	struct pcf50606_platform_data *pdata;
++	struct backlight_device *backlight;
 +	struct mutex lock;
 +	unsigned int flags;
 +	unsigned int working;
@@ -1344,6 +1350,117 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +};
 +
 +/***********************************************************************
++ * PWM
++ ***********************************************************************/
++
++static const char *pwm_dc_table[] = {
++	"0/16", "1/16", "2/16", "3/16",
++	"4/16", "5/16", "6/16", "7/16",
++	"8/16", "9/16", "10/16","11/16",
++	"12/16", "13/16", "14/16", "15/16",
++};
++
++static ssize_t show_pwm_dc(struct device *dev, struct device_attribute *attr,
++			   char *buf)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++	u_int8_t val;
++
++	val = reg_read(pcf, PCF50606_REG_PWMC1) >> PCF50606_PWMC1_DC_SHIFT;
++	val &= 0xf;
++
++	return sprintf(buf, "%s\n", pwm_dc_table[val]);
++}
++
++static ssize_t set_pwm_dc(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t count)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++	u_int8_t i;
++
++	for (i = 0; i < ARRAY_SIZE(pwm_dc_table); i++) {
++		if (!strncmp(buf, pwm_dc_table[i], strlen(pwm_dc_table[i]))) {
++			DEBUGP("setting pwm dc %s\n\r", pwm_dc_table[i]);
++			reg_set_bit_mask(pcf, PCF50606_REG_PWMC1, 0x1e,
++					 (i << PCF50606_PWMC1_DC_SHIFT));
++		}
++	}
++	return count;
++}
++
++static DEVICE_ATTR(pwm_dc, S_IRUGO | S_IWUSR, show_pwm_dc, set_pwm_dc);
++
++static const char *pwm_clk_table[] = {
++	"512", "256", "128", "64",
++	"56300", "28100", "14100", "7000",
++};
++
++static ssize_t show_pwm_clk(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++	u_int8_t val;
++
++	val = reg_read(pcf, PCF50606_REG_PWMC1) >> PCF50606_PWMC1_CLK_SHIFT;
++	val &= 0x7;
++
++	return sprintf(buf, "%s\n", pwm_clk_table[val]);
++}
++
++static ssize_t set_pwm_clk(struct device *dev, struct device_attribute *attr,
++			   const char *buf, size_t count)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50606_data *pcf = i2c_get_clientdata(client);
++	u_int8_t i;
++
++	for (i = 0; i < ARRAY_SIZE(pwm_clk_table); i++) {
++		if (!strncmp(buf, pwm_clk_table[i], strlen(pwm_clk_table[i]))) {
++			DEBUGP("setting pwm clk %s\n\r", pwm_clk_table[i]);
++			reg_set_bit_mask(pcf, PCF50606_REG_PWMC1, 0xe0,
++					 (i << PCF50606_PWMC1_CLK_SHIFT));
++		}
++	}
++	return count;
++}
++
++static DEVICE_ATTR(pwm_clk, S_IRUGO | S_IWUSR, show_pwm_clk, set_pwm_clk);
++
++static int pcf50606bl_get_intensity(struct backlight_device *bd)
++{
++	struct pcf50606_data *pcf = class_get_devdata(&bd->class_dev);
++	int intensity = reg_read(pcf, PCF50606_REG_PWMC1);
++	intensity = (intensity >> PCF50606_PWMC1_DC_SHIFT);
++
++	return intensity & 0xf;
++}
++
++static int pcf50606bl_set_intensity(struct backlight_device *bd)
++{
++	struct pcf50606_data *pcf = class_get_devdata(&bd->class_dev);
++	int intensity = bd->props->brightness;
++
++	if (bd->props->power != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props->fb_blank != FB_BLANK_UNBLANK)
++		intensity = 0;
++
++	return reg_set_bit_mask(pcf, PCF50606_REG_PWMC1, 0x1e,
++				(intensity << PCF50606_PWMC1_DC_SHIFT));
++}
++
++static struct backlight_properties pcf50606bl_prop = {
++	.owner		= THIS_MODULE,
++	.get_brightness	= pcf50606bl_get_intensity,
++	.update_status	= pcf50606bl_set_intensity,
++	.max_brightness	= 16,
++	.brightness	= 0,
++};
++
++/***********************************************************************
 + * Input device
 + ***********************************************************************/
 +
@@ -1359,7 +1476,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +};
 +#endif
 +
-+static struct attribute *pcf_sysfs_entries[15] = {
++static struct attribute *pcf_sysfs_entries[16] = {
 +	&dev_attr_voltage_dcd.attr,
 +	&dev_attr_voltage_dcde.attr,
 +	&dev_attr_voltage_dcud.attr,
@@ -1379,9 +1496,9 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +static void populate_sysfs_group(struct pcf50606_data *pcf)
 +{
 +	int i = 0;
-+	struct attribute *attr;
++	struct attribute **attr;
 +
-+	for (attr = pcf_sysfs_entries[0]; attr; attr++)
++	for (attr = pcf_sysfs_entries; *attr; attr++)
 +		i++;
 +
 +	if (pcf->pdata->used_features & PCF50606_FEAT_MBC) {
@@ -1397,6 +1514,11 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	if (pcf->pdata->used_features & PCF50606_FEAT_BATTEMP)
 +		pcf_sysfs_entries[i++] = &dev_attr_battemp.attr;
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_PWM) {
++		pcf_sysfs_entries[i++] = &dev_attr_pwm_dc.attr;
++		pcf_sysfs_entries[i++] = &dev_attr_pwm_clk.attr;
++	}
 +}
 +
 +static int pcf50606_detect(struct i2c_adapter *adapter, int address, int kind)
@@ -1500,9 +1622,25 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +		}
 +	}
 +
++	if (data->pdata->used_features & PCF50606_FEAT_PWM) {
++		/* enable PWM controller */
++		reg_set_bit_mask(data, PCF50606_REG_PWMC1,
++				 PCF50606_PWMC1_ACTSET,
++				 PCF50606_PWMC1_ACTSET);
++	}
++
++	if (data->pdata->used_features & PCF50606_FEAT_PWM_BL) {
++		data->backlight = backlight_device_register("pcf50606-bl",
++							    &new_client->dev,
++							    data,
++							    &pcf50606bl_prop);
++		if (!data->backlight)
++			goto exit_misc;
++	}
++
 +	data->input_dev = input_allocate_device();
 +	if (!data->input_dev)
-+		goto exit_misc;
++		goto exit_pwm;
 +
 +	data->input_dev->name = "FIC Neo1973 PMU events";
 +	data->input_dev->phys = "FIXME";
@@ -1529,6 +1667,9 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +#endif
 +
 +	return 0;
++exit_pwm:
++	if (data->pdata->used_features & PCF50606_FEAT_PWM_BL)
++		backlight_device_unregister(data->backlight);
 +exit_misc:
 +	if (data->pdata->used_features & PCF50606_FEAT_WDT)
 +		misc_deregister(&pcf50606_wdt_miscdev);
@@ -1538,6 +1679,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +exit_irq:
 +	free_irq(GTA01_IRQ_PCF50606, pcf50606_global);
 +exit_sysfs:
++	pm_power_off = NULL;
 +	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
 +exit_detach:
 +	i2c_detach_client(new_client);
@@ -1562,16 +1704,20 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	apm_get_power_status = NULL;
 +	input_unregister_device(pcf->input_dev);
 +
++	if (pcf->pdata->used_features & PCF50606_FEAT_PWM_BL)
++		backlight_device_unregister(pcf->backlight);
++
 +	if (pcf->pdata->used_features & PCF50606_FEAT_WDT)
 +		misc_deregister(&pcf50606_wdt_miscdev);
 +
-+	free_irq(GTA01_IRQ_PCF50606, pcf);
-+
 +	if (pcf->pdata->used_features & PCF50606_FEAT_RTC)
 +		rtc_device_unregister(pcf->rtc);
-+	pm_power_off = NULL;
++
++	free_irq(GTA01_IRQ_PCF50606, pcf);
 +
 +	sysfs_remove_group(&client->dev.kobj, &pcf_attr_group);
++
++	pm_power_off = NULL;
 +
 +	kfree(pcf);
 +
@@ -1718,8 +1864,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.h	2007-03-26 19:01:17.000000000 +0200
-@@ -0,0 +1,259 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.h	2007-03-30 22:07:41.000000000 +0200
+@@ -0,0 +1,288 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
 +
@@ -1977,6 +2123,35 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
 +	PCF50606_BVMC_DISDB		= 0x10,
 +};
 +
++enum pcf50606_reg_pwmc1 {
++	PCF50606_PWMC1_ACTSET		= 0x01,
++	PCF50606_PWMC1_PWMDC_0_16	= 0x00,
++	PCF50606_PWMC1_PWMDC_1_16	= 0x02,
++	PCF50606_PWMC1_PWMDC_2_16	= 0x04,
++	PCF50606_PWMC1_PWMDC_3_16	= 0x06,
++	PCF50606_PWMC1_PWMDC_4_16	= 0x08,
++	PCF50606_PWMC1_PWMDC_5_16	= 0x0a,
++	PCF50606_PWMC1_PWMDC_6_16	= 0x0c,
++	PCF50606_PWMC1_PWMDC_7_16	= 0x0e,
++	PCF50606_PWMC1_PWMDC_8_16	= 0x10,
++	PCF50606_PWMC1_PWMDC_9_16	= 0x12,
++	PCF50606_PWMC1_PWMDC_10_16	= 0x14,
++	PCF50606_PWMC1_PWMDC_11_16	= 0x16,
++	PCF50606_PWMC1_PWMDC_12_16	= 0x18,
++	PCF50606_PWMC1_PWMDC_13_16	= 0x1a,
++	PCF50606_PWMC1_PWMDC_14_16	= 0x1c,
++	PCF50606_PWMC1_PWMDC_15_16	= 0x1e,
++	PCF50606_PWMC1_PRESC_512Hz	= 0x20,
++	PCF50606_PWMC1_PRESC_256Hz	= 0x40,
++	PCF50606_PWMC1_PRESC_64Hz	= 0x60,
++	PCF50606_PWMC1_PRESC_56kHz	= 0x80,
++	PCF50606_PWMC1_PRESC_28kHz	= 0xa0,
++	PCF50606_PWMC1_PRESC_14kHz	= 0xc0,
++	PCF50606_PWMC1_PRESC_7kHz	= 0xe0,
++};
++#define PCF50606_PWMC1_CLK_SHIFT	5
++#define PCF50606_PWMC1_DC_SHIFT		1
++
 +#endif /* _PCF50606_H */
 +
 Index: linux-2.6.20.4/drivers/i2c/chips/Kconfig
@@ -2028,8 +2203,8 @@ Index: linux-2.6.20.4/include/linux/i2c-id.h
 Index: linux-2.6.20.4/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/linux/pcf50606.h	2007-03-30 20:51:20.000000000 +0200
-@@ -0,0 +1,86 @@
++++ linux-2.6.20.4/include/linux/pcf50606.h	2007-03-30 22:26:05.000000000 +0200
+@@ -0,0 +1,87 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
 +
@@ -2095,6 +2270,7 @@ Index: linux-2.6.20.4/include/linux/pcf50606.h
 +#define PCF50606_FEAT_CHGCUR	0x00000100
 +#define PCF50606_FEAT_BATVOLT	0x00000200
 +#define PCF50606_FEAT_BATTEMP	0x00000400
++#define PCF50606_FEAT_PWM_BL	0x00000800
 +
 +struct pcf50606_platform_data {
 +	/* general */
