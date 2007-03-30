@@ -28,8 +28,8 @@ Index: linux-2.6.20.4/drivers/spi/Makefile
 Index: linux-2.6.20.4/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/spi/jbt6k74.c	2007-03-30 20:58:36.000000000 +0200
-@@ -0,0 +1,539 @@
++++ linux-2.6.20.4/drivers/spi/jbt6k74.c	2007-03-30 21:05:58.000000000 +0200
+@@ -0,0 +1,540 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -445,6 +445,7 @@ Index: linux-2.6.20.4/drivers/spi/jbt6k74.c
 +	&dev_attr_gamma_fine2.attr,
 +	&dev_attr_gamma_inclination.attr,
 +	&dev_attr_gamma_blue_offset.attr,
++	NULL,
 +};
 +
 +static struct attribute_group jbt_attr_group = {
@@ -572,7 +573,7 @@ Index: linux-2.6.20.4/drivers/spi/jbt6k74.c
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:45:38.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:58:53.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:05:37.000000000 +0200
 @@ -83,6 +83,7 @@
  config MACH_QT2410
  	bool "QT2410"
