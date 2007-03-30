@@ -4,7 +4,7 @@ the linux kernel.
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:42:20.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:32:43.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 22:46:27.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -23,7 +23,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-30 20:42:20.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:32:42.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 22:46:27.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,8 +34,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-30 21:32:59.000000000 +0200
-@@ -0,0 +1,563 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-30 22:47:43.000000000 +0200
+@@ -0,0 +1,579 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -494,6 +494,19 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +	},
 +};
 +
++static struct resource gta01_led_resources[] = {
++	[0] = {
++		.start	= GTA01_GPIO_VIBRATOR_ON,
++		.end	= GTA01_GPIO_VIBRATOR_ON,
++	},
++};
++
++struct platform_device gta01_led_dev = {
++	.name		= "gta01-led",
++	.num_resources	= ARRAY_SIZE(gta01_led_resources),
++	.resource	= gta01_led_resources,
++};
++
 +static struct resource gta01_button_resources[] = {
 +	[0] = {
 +		.start = GTA01_GPIO_AUX_KEY,
@@ -581,9 +594,12 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +	case GTA01Bv4_SYSTEM_REV:
 +		gta01_pmu_resources[0].start =
 +			gta01_pmu_resources[0].end = GTA01Bv4_IRQ_PCF50606;
++		gta01_led_resources[0].start =
++			gta01_led_resources[0].end = GTA01Bv4_GPIO_VIBRATOR_ON;
 +		break;
 +	}
 +	platform_device_register(&gta01_pmu_dev);
++	platform_device_register(&gta01_led_dev);
 +
 +	s3c2410_pm_init();
 +}
