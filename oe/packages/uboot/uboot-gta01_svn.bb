@@ -10,7 +10,9 @@ PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
 
 SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
-           svn://svn.openmoko.org/trunk/src/target/u-boot;module=patches;proto=http"
+           svn://svn.openmoko.org/trunk/src/target/u-boot;module=patches;proto=http \
+	   file://uboot-20070311-tools_makefile_ln_sf.patch;patch=1 \
+	  "
 
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""
@@ -29,7 +31,9 @@ do_compile () {
 		oe_runmake clean
 		oe_runmake all
 		mv u-boot.bin u-boot_${mach}.bin
-		mv board/neo1973/lowlevel_foo.bin lowlevel_foo_${mach}.bin
+		if [ -f board/neo1973/lowlevel_foo.bin ]; then
+			mv board/neo1973/lowlevel_foo.bin lowlevel_foo_${mach}.bin
+		fi
 	done
 }
 
@@ -39,8 +43,10 @@ do_deploy () {
 	do
 		install ${S}/u-boot_${mach}.bin \
 		    ${DEPLOY_DIR_IMAGE}/u-boot-${mach}-${PR}.bin
-		install ${S}/lowlevel_foo_${mach}.bin \
-		    ${DEPLOY_DIR_IMAGE}/lowlevel_foo-${mach}-${PR}.bin
+		if [ -f ${S}/lowlevel_foo_${mach}.bin ]; then
+			install ${S}/lowlevel_foo_${mach}.bin \
+			    ${DEPLOY_DIR_IMAGE}/lowlevel_foo-${mach}-${PR}.bin
+		fi
 	done
 	install -m 0755 tools/mkimage ${STAGING_BINDIR_NATIVE}/uboot-mkimage
 }
