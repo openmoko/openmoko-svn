@@ -1,10 +1,10 @@
 This driver adds support for LCM initialization of the JBT6K74 LCM
 as found on the FIC GTA01 hardware
 
-Index: linux-2.6.20/drivers/spi/Kconfig
+Index: linux-2.6.20.4/drivers/spi/Kconfig
 ===================================================================
---- linux-2.6.20.orig/drivers/spi/Kconfig	2007-02-17 14:19:37.000000000 +0100
-+++ linux-2.6.20/drivers/spi/Kconfig	2007-02-17 14:20:46.000000000 +0100
+--- linux-2.6.20.4.orig/drivers/spi/Kconfig	2007-03-30 20:45:38.000000000 +0200
++++ linux-2.6.20.4/drivers/spi/Kconfig	2007-03-30 20:45:59.000000000 +0200
 @@ -129,5 +129,9 @@
  
  # (slave support would go here)
@@ -15,21 +15,21 @@ Index: linux-2.6.20/drivers/spi/Kconfig
 +
  endmenu # "SPI support"
  
-Index: linux-2.6.20/drivers/spi/Makefile
+Index: linux-2.6.20.4/drivers/spi/Makefile
 ===================================================================
---- linux-2.6.20.orig/drivers/spi/Makefile	2007-02-17 14:19:37.000000000 +0100
-+++ linux-2.6.20/drivers/spi/Makefile	2007-02-17 14:20:46.000000000 +0100
+--- linux-2.6.20.4.orig/drivers/spi/Makefile	2007-03-30 20:45:38.000000000 +0200
++++ linux-2.6.20.4/drivers/spi/Makefile	2007-03-30 20:45:59.000000000 +0200
 @@ -26,4 +26,5 @@
  # 	... add above this line ...
  
  # SPI slave drivers (protocol for that link)
 +obj-$(CONFIG_SPI_SLAVE_JBT6K74)		+= jbt6k74.o
  # 	... add above this line ...
-Index: linux-2.6.20/drivers/spi/jbt6k74.c
+Index: linux-2.6.20.4/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/spi/jbt6k74.c	2007-02-17 14:20:46.000000000 +0100
-@@ -0,0 +1,532 @@
++++ linux-2.6.20.4/drivers/spi/jbt6k74.c	2007-03-30 20:58:36.000000000 +0200
+@@ -0,0 +1,539 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -419,8 +419,6 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +static ssize_t gamma_read(struct device *dev, struct device_attribute *attr,
 +			  char *buf)
 +{
-+	int reg = reg_by_string(attr->attr.name);
-+
 +	return strlcpy(buf, "N/A\n", PAGE_SIZE);
 +}
 +
@@ -440,6 +438,19 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +static DEVICE_ATTR(gamma_fine2, 0644, gamma_read, gamma_write);
 +static DEVICE_ATTR(gamma_inclination, 0644, gamma_read, gamma_write);
 +static DEVICE_ATTR(gamma_blue_offset, 0644, gamma_read, gamma_write);
++
++static struct attribute *jbt_sysfs_entries[] = {
++	&dev_attr_state.attr,
++	&dev_attr_gamma_fine1.attr,
++	&dev_attr_gamma_fine2.attr,
++	&dev_attr_gamma_inclination.attr,
++	&dev_attr_gamma_blue_offset.attr,
++};
++
++static struct attribute_group jbt_attr_group = {
++	.name	= NULL,
++	.attrs	= jbt_sysfs_entries,
++};
 +
 +/* linux device model infrastructure */
 +
@@ -472,16 +483,17 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +	}
 +
 +	rc = jbt6k74_enter_state(jbt, JBT_STATE_NORMAL);
-+	if (rc < 0) {
++	if (rc < 0)
 +		printk(KERN_WARNING "jbt6k74: cannot enter NORMAL state\n");
-+	}
++
 +	jbt6k74_display_onoff(jbt, 1);
 +
-+	device_create_file(&spi->dev, &dev_attr_state);
-+	device_create_file(&spi->dev, &dev_attr_gamma_fine1);
-+	device_create_file(&spi->dev, &dev_attr_gamma_fine2);
-+	device_create_file(&spi->dev, &dev_attr_gamma_inclination);
-+	device_create_file(&spi->dev, &dev_attr_gamma_blue_offset);
++	rc = sysfs_create_group(&spi->dev.kobj, &jbt_attr_group);
++	if (rc) {
++		dev_set_drvdata(&spi->dev, NULL);
++		kfree(jbt);
++		return rc;
++	}
 +
 +	return 0;
 +}
@@ -492,12 +504,7 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +
 +	DEBUGP("entering\n");
 +
-+	device_remove_file(&spi->dev, &dev_attr_state);
-+	device_remove_file(&spi->dev, &dev_attr_gamma_fine1);
-+	device_remove_file(&spi->dev, &dev_attr_gamma_fine2);
-+	device_remove_file(&spi->dev, &dev_attr_gamma_inclination);
-+	device_remove_file(&spi->dev, &dev_attr_gamma_blue_offset);
-+
++	sysfs_remove_group(&spi->dev.kobj, &jbt_attr_group);
 +	kfree(jbt);
 +
 +	return 0;
@@ -562,15 +569,15 @@ Index: linux-2.6.20/drivers/spi/jbt6k74.c
 +
 +module_init(jbt_init);
 +module_exit(jbt_exit);
-Index: linux-2.6.20/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:20:52.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/Kconfig	2007-02-17 14:21:13.000000000 +0100
-@@ -89,6 +89,7 @@
- config MACH_GTA01
- 	bool "FIC Neo1973 GSM Phone"
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:45:38.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:58:53.000000000 +0200
+@@ -83,6 +83,7 @@
+ config MACH_QT2410
+ 	bool "QT2410"
  	select CPU_S3C2410
 +	select SPI_SLAVE_JBT6K74
  	help
- 	   Say Y here if you are using the FIC Neo1973 GSM Phone
+ 	   Say Y here if you are using the Armzone QT2410
  
