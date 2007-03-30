@@ -1092,8 +1092,11 @@ today_events_area_set_events_auto (TodayEventsArea *a_this)
     if(!e_cal_open (a_this->priv->events_ecal, FALSE, NULL))
     {
       g_warning ("failed to open calendar") ;
-      g_object_unref (G_OBJECT (a_this->priv->events_ecal)) ;
-      a_this->priv->events_ecal = NULL ;
+      if (a_this->priv->events_ecal)
+      {
+        g_object_unref (G_OBJECT (a_this->priv->events_ecal)) ;
+        a_this->priv->events_ecal = NULL ;
+      }
     }
   }
   g_return_if_fail (a_this->priv->events_ecal) ;
@@ -1104,8 +1107,11 @@ today_events_area_set_events_auto (TodayEventsArea *a_this)
     if (!e_cal_open (a_this->priv->tasks_ecal, FALSE, NULL))
     {
       g_warning ("failed to open tasks") ;
-      g_object_unref (G_OBJECT (a_this->priv->tasks_ecal)) ;
-      a_this->priv->tasks_ecal = NULL ;
+      if (a_this->priv->tasks_ecal)
+      {
+        g_object_unref (G_OBJECT (a_this->priv->tasks_ecal)) ;
+        a_this->priv->tasks_ecal = NULL ;
+      }
     }
   }
   g_return_if_fail (a_this->priv->tasks_ecal) ;
