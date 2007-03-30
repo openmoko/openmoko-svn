@@ -10,11 +10,16 @@ AC_PROG_CC
 AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
+GTK_VERSION=2.6
+LIBECAL_VERSION=1.4.2
+
 # base deps
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6,,
-                 AC_MSG_ERROR([*** Required Gtk+ Library >= 2.6 not installed ***]))
-LIBS="$LIBS $GTK_LIBS"
-CFLAGS="$CFLAGS $GTK_CFLAGS"
+PKG_CHECK_MODULES(DEPS,
+                  gtk+-2.0 >= $GTK_VERSION
+                  libecal-1.2 >= $LIBECAL_VERSION)
+
+LIBS="$LIBS $DEPS_LIBS"
+CFLAGS="$CFLAGS $DEPS_CFLAGS"
 
 # foo
 #AC_ARG_ENABLE(foo,

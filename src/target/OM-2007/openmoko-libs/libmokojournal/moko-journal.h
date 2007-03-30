@@ -21,4 +21,154 @@
 #ifndef __MOKO_JOURNAL_H__
 #define  __MOKO_JOURNAL_H__
 
+#include <glib.h>
+#include <libical/icaltime.h>
+
+/************************************************************
+ * this API abstracts the process of adding
+ * journal entries into the default system
+ * journal. Journal entries contain information
+ * about communation history like calls, sms, or,
+ * emails issued or received.
+ ***********************************************************/
+
+typedef struct _MokoJournal MokoJournal ;
+typedef struct _MokoJEntry MokoJEntry ;
+
+/**
+ * this represents the primary type of
+ * a journal entry.
+ */
+typedef enum _MokoJEntryType {
+  UNDEF_ENTRY=0,
+  EMAIL_JOURNAL_ENTRY,
+  SMS_JOURNAL_ENTRY,
+  MMS_JOURNAL_ENTRY,
+  CALL_JOURNAL_ENTRY,
+} MokoJEntryType ;
+
+/*<journal management>*/
+/**
+ * moko_journal_open_default:
+ *
+ * Opens the default journal.
+ *
+ * Return value: a pointer to the journal object
+ */
+MokoJournal* moko_journal_open_default () ;
+
+/**
+ * moko_journal_close:
+ * @journal: the journal to close
+ *
+ * Close the journal previously opened with moko_journal_open_default().
+ * This function deallocates the memory of the Journal object.
+ */
+void moko_journal_close (MokoJournal *journal) ;
+
+/*</journal management>*/
+
+
+/*<journal entries management>*/
+
+/**
+ * moko_j_entry_new:
+ *
+ * Create a Journal entry with no properties set.
+ * Use the JEntry accessors to get/set properties.
+ *
+ * Return value: the newly created journal entry object
+ */
+MokoJEntry* moko_j_entry_new () ;
+
+/**
+ * moko_j_entry_free:
+ * @entry: the entry to free
+ *
+ * Deallocate the memory of the journal entry object
+ */
+void moko_j_entry_free (MokoJEntry *entry) ;
+
+/**
+ * moko_j_entry_get_type:
+ * @entry: the current journal entry
+ *
+ * get the primary type of the journal entry
+ *
+ * Return value: the type of the journal entry
+ */
+MokoJEntryType moko_j_entry_get_type (MokoJEntry *entry) ;
+
+/**
+ * moko_j_entry_set_type:
+ * @entry: the current instance of journal entry
+ * @type: the new type
+ *
+ * Set the type of the journal entry
+ */
+void moko_j_entry_set_type (MokoJEntry *entry, MokoJEntryType type) ;
+
+/**
+ * moko_j_entry_get_contact_uid:
+ * @entry: the current instance of journal entry
+ *
+ * get the contact uid
+ *
+ * Return value: the UID of the contact. It can be NULL. Client code
+ * must not deallocate or attempt to alter it.
+ */
+const gchar* moko_j_entry_get_contact_uid (MokoJEntry *entry) ;
+
+/**
+ * moko_j_entry_set_contact_uid:
+ * @entry: the current instance of journal entry
+ * @uid: the uid to set. This string must allocated in the heap, and will
+ * be freed by the journal entry itselft.
+ *
+ * Associate a new contact UID to the journal entry uid.
+ * The UID is copied by this function so the caller is reponsible of
+ * taking care of the uid string lifecycle.
+ */
+void  moko_j_entry_set_contact_uid (MokoJEntry *entry, gchar *uid) ;
+
+/**
+ * moko_j_entry_get_summary:
+ * @entry: the current instance of journal entry
+ *
+ * get the summary of the journal entry
+ *
+ * Return value: the summary of the journal entry. It can be NULL.
+ * Client code must not deallocate or alter it.
+ */
+const gchar* moko_j_entry_get_summary (MokoJEntry *entry) ;
+
+/**
+ * moko_j_entry_set_summary:
+ * @entry: the current instance of journal entry
+ * @summary: the new summary of the journal entry. It must be allocated
+ * in the heap and will be deallocated by the journal entry itself.
+ *
+ * Set the summary of the journal entry
+ */
+void moko_j_entry_set_summary (MokoJEntry *entry, gchar* summary) ;
+
+/**
+ * moko_j_entry_get_dtdstart:
+ * @entry: the current instance of journal entry
+ *
+ * get the starting date associated to the journal entry
+ *
+ * Return value: an icaltimetype representing the starting date expected.
+ * It can be NULL. Client code must not deallocate it.
+ */
+const icaltimetype* moko_j_entry_get_dtstart (MokoJEntry *entry) ;
+
+/**
+ * moko_j_entry_set_dtstart:
+ * @entry: the current instance of journal entry
+ * @dtstart: the new starting date associated to the journal entry.
+ */
+void moko_j_entry_set_dtstart (MokoJEntry *entry, icaltimetype dtstart);
+/*</journal entries management>*/
+
 #endif /*__MOKO_JOURNAL_H__*/

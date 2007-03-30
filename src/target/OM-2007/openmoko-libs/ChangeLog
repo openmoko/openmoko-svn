@@ -1,3 +1,10 @@
+2007-03-30 Dodji Seketeli
+
+	* openmoko-libs/configure.ac: add libecal as a dependency.
+	  This is used by libmokojournal.
+	* openmoko-libs/libmokojournal/moko-journal.h: started to draft the
+	  obvious part of the API.
+
 2007-03-29 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/Makefile.am, openmoko-libs/configure.ac: declare
