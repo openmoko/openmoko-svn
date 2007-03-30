@@ -3,8 +3,8 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-03-27 16:24:25.000000000 +0200
-@@ -0,0 +1,1633 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-03-30 20:52:22.000000000 +0200
+@@ -0,0 +1,1710 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -64,10 +64,6 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +#define DEBUGPC(x, args ...)
 +#endif
 +
-+/* Five seconds of power key press required to shut down */
-+
-+#define PCF50606_ONKEY_SECONDS_REQUIRED 5
-+
 +/***********************************************************************
 + * Static data / structures
 + ***********************************************************************/
@@ -94,6 +90,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +struct pcf50606_data {
 +	struct i2c_client client;
++	struct pcf50606_platform_data *pdata;
 +	struct mutex lock;
 +	unsigned int flags;
 +	unsigned int working;
@@ -121,6 +118,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +struct pcf50606_data *pcf50606_global;
 +EXPORT_SYMBOL(pcf50606_global);
++
++static struct platform_device *pcf50606_pdev;
 +
 +/* This is a mitsubishi TN11-3H103J T,B NTC Thermistor -10..79 centigrade */
 +static const u_int16_t ntc_table_tn11_3h103j[] = {
@@ -601,7 +600,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +				pcf->onkey_seconds, reg_read(pcf, PCF50606_REG_OOCC1));
 +			pcf->onkey_seconds++;
 +			if (pcf->onkey_seconds >=
-+			    PCF50606_ONKEY_SECONDS_REQUIRED) {
++			    pcf->pdata->onkey_seconds_required) {
 +				/* Ask init to do 'ctrlaltdel' */
 +				DEBUGPC("SIGINT(init) ");
 +				kill_proc(1, SIGINT, 1);
@@ -611,7 +610,9 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	}
 +	if (int1 & PCF50606_INT1_ALARM) {
 +		DEBUGPC("ALARM ");
-+		rtc_update_irq(&pcf->rtc->class_dev, 1, RTC_AF | RTC_IRQF);
++		if (pcf->pdata->used_features & PCF50606_FEAT_RTC)
++			rtc_update_irq(&pcf->rtc->class_dev, 1,
++				       RTC_AF | RTC_IRQF);
 +	}
 +
 +	if (int2 & PCF50606_INT2_CHGINS) {
@@ -850,6 +851,9 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +/* Enable/disable fast charging (500mA in the GTA01) */
 +void pcf50606_charge_fast(struct pcf50606_data *pcf, int on)
 +{
++	if (!(pcf->pdata->used_features & PCF50606_FEAT_MBC))
++		return;
++
 +	if (on) {
 +		/* We can allow PCF to automatically charge
 +		 * using Ifast */
@@ -871,16 +875,14 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +}
 +EXPORT_SYMBOL(pcf50606_charge_fast);
 +
-+#define PCF50606_R_FIXBATT	10000	/* 10 kOhms */
-+#define PCF50606_R_FIXBATT_PAR	10000	/* 10 kOhms */
 +#define ONE			1000000
-+static inline u_int16_t adc_to_rntc(u_int16_t adc)
++static inline u_int16_t adc_to_rntc(struct pcf50606_data *pcf, u_int16_t adc)
 +{
-+	u_int32_t r_batt = (adc * PCF50606_R_FIXBATT) / (1023 - adc);
++	u_int32_t r_batt = (adc * pcf->pdata->r_fix_batt) / (1023 - adc);
 +	u_int16_t r_ntc;
 +
 +	/* The battery NTC has a parallell 10kOhms resistor */
-+	r_ntc = ONE / ((ONE/r_batt) - (ONE/PCF50606_R_FIXBATT_PAR));
++	r_ntc = ONE / ((ONE/r_batt) - (ONE/pcf->pdata->r_fix_batt_par));
 +
 +	return r_ntc;
 +}
@@ -905,16 +907,16 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	adc = adc_read(pcf, PCF50606_ADCMUX_BATTEMP, NULL);
 +
-+	return sprintf(buf, "%d\n", rntc_to_temp(adc_to_rntc(adc)));
++	return sprintf(buf, "%d\n", rntc_to_temp(adc_to_rntc(pcf, adc)));
 +}
 +static DEVICE_ATTR(battemp, S_IRUGO | S_IWUSR, show_battemp, NULL);
 +
-+#define MULT_R_SENSE_1024 225	/* 0.22 Ohms * 1024 */
-+static inline u_int16_t adc_to_chg_milliamps(u_int16_t adc_adcin1,
++static inline u_int16_t adc_to_chg_milliamps(struct pcf50606_data *pcf,
++					     u_int16_t adc_adcin1,
 +					     u_int16_t adc_batvolt)
 +{
 +	u_int32_t res = ((adc_adcin1 - adc_batvolt) * 6000);
-+	return res / MULT_R_SENSE_1024;
++	return res / (pcf->pdata->r_sense_milli * 1024 / 1000);
 +}
 +
 +static ssize_t show_chgcur(struct device *dev, struct device_attribute *attr,
@@ -927,7 +929,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	adc_batvolt = adc_read(pcf, PCF50606_ADCMUX_BATVOLT_ADCIN1,
 +			       &adc_adcin1);
-+	ma = adc_to_chg_milliamps(adc_adcin1, adc_batvolt);
++	ma = adc_to_chg_milliamps(pcf, adc_adcin1, adc_batvolt);
 +
 +	return sprintf(buf, "%u\n", ma);
 +}
@@ -1357,12 +1359,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +};
 +#endif
 +
-+static struct attribute *pcf_sysfs_entries[] = {
-+	&dev_attr_battvolt.attr,
-+	&dev_attr_battemp.attr,
-+	&dev_attr_chgcur.attr,
-+	&dev_attr_chgstate.attr,
-+	&dev_attr_chgmode.attr,
++static struct attribute *pcf_sysfs_entries[15] = {
 +	&dev_attr_voltage_dcd.attr,
 +	&dev_attr_voltage_dcde.attr,
 +	&dev_attr_voltage_dcud.attr,
@@ -1379,14 +1376,48 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	.attrs	= pcf_sysfs_entries,
 +};
 +
++static void populate_sysfs_group(struct pcf50606_data *pcf)
++{
++	int i = 0;
++	struct attribute *attr;
++
++	for (attr = pcf_sysfs_entries[0]; attr; attr++)
++		i++;
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_MBC) {
++		pcf_sysfs_entries[i++] = &dev_attr_chgstate.attr;
++		pcf_sysfs_entries[i++] = &dev_attr_chgmode.attr;
++	}
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_CHGCUR)
++		pcf_sysfs_entries[i++] = &dev_attr_chgcur.attr;
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_BATVOLT)
++		pcf_sysfs_entries[i++] = &dev_attr_battvolt.attr;
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_BATTEMP)
++		pcf_sysfs_entries[i++] = &dev_attr_battemp.attr;
++}
++
 +static int pcf50606_detect(struct i2c_adapter *adapter, int address, int kind)
 +{
 +	struct i2c_client *new_client;
-+	struct pcf50606_platform_data *pdata;
 +	struct pcf50606_data *data;
 +	int err = 0;
++	int irq;
 +
 +	DEBUGP("entering\n");
++	if (!pcf50606_pdev) {
++		printk(KERN_ERR
++		       "pcf50606: this driver needs a platform_device!\n");
++		return -EIO;
++	}
++
++	irq = platform_get_irq(pcf50606_pdev, 0);
++	if (irq < 0) {
++		dev_err(&pcf50606_pdev->dev, "no irq in platform resources!\n");
++		return -EIO;
++	}
 +
 +	/* At the moment, we only support one PCF50606 in a system */
 +	if (pcf50606_global) {
@@ -1402,6 +1433,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	INIT_WORK(&data->work, pcf50606_work);
 +	data->working = 0;
 +	data->onkey_seconds = -1;
++	data->pdata = pcf50606_pdev->dev.platform_data;
++
 +	new_client = &data->client;
 +	i2c_set_clientdata(new_client, data);
 +	new_client->addr = address;
@@ -1420,6 +1453,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	pcf50606_global = data;
 +
++	populate_sysfs_group(data);
++
 +	err = sysfs_create_group(&new_client->dev.kobj, &pcf_attr_group);
 +	if (err) {
 +		dev_err(&new_client->dev, "error creating sysfs group\n");
@@ -1436,29 +1471,33 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	reg_write(data, PCF50606_REG_INT2M, 0x00);
 +	reg_write(data, PCF50606_REG_INT3M, PCF50606_INT3_TSCPRES);
 +
-+	/* FIXME: make this IRQ a resource */
-+	set_irq_type(GTA01_IRQ_PCF50606, IRQT_FALLING);
-+	err = request_irq(GTA01_IRQ_PCF50606, pcf50606_irq, SA_INTERRUPT,
++	err = request_irq(irq, pcf50606_irq, SA_INTERRUPT,
 +			  "pcf50606", data);
 +	if (err < 0)
 +		goto exit_sysfs;
 +
-+	if (enable_irq_wake(GTA01_IRQ_PCF50606) < 0)
-+		printk(KERN_ERR "PCF50606: IRQ %u cannot be enabled as wake-up"
-+		       "source in this hardware revision!");
++	set_irq_type(irq, IRQT_FALLING);
 +
-+	data->rtc = rtc_device_register("pcf50606", &new_client->dev,
-+					&pcf50606_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(data->rtc)) {
-+		err = PTR_ERR(data->rtc);
-+		goto exit_irq;
++	if (enable_irq_wake(irq) < 0)
++		printk(KERN_ERR "PCF50606: IRQ %u cannot be enabled as wake-up"
++		       "source in this hardware revision!", irq);
++
++	if (data->pdata->used_features & PCF50606_FEAT_RTC) {
++		data->rtc = rtc_device_register("pcf50606", &new_client->dev,
++						&pcf50606_rtc_ops, THIS_MODULE);
++		if (IS_ERR(data->rtc)) {
++			err = PTR_ERR(data->rtc);
++			goto exit_irq;
++		}
 +	}
 +
-+	err = misc_register(&pcf50606_wdt_miscdev);
-+	if (err) {
-+		printk(KERN_ERR "cannot register miscdev on minor=%d (%d)\n",
-+			WATCHDOG_MINOR, err);
-+		goto exit_rtc;
++	if (data->pdata->used_features & PCF50606_FEAT_WDT) {
++		err = misc_register(&pcf50606_wdt_miscdev);
++		if (err) {
++			printk(KERN_ERR "cannot register miscdev on \n"
++			       "minor=%d (%d)\n", WATCHDOG_MINOR, err);
++			goto exit_rtc;
++		}
 +	}
 +
 +	data->input_dev = input_allocate_device();
@@ -1491,9 +1530,11 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	return 0;
 +exit_misc:
-+	misc_deregister(&pcf50606_wdt_miscdev);
++	if (data->pdata->used_features & PCF50606_FEAT_WDT)
++		misc_deregister(&pcf50606_wdt_miscdev);
 +exit_rtc:
-+	rtc_device_unregister(pcf50606_global->rtc);
++	if (data->pdata->used_features & PCF50606_FEAT_RTC)
++		rtc_device_unregister(pcf50606_global->rtc);
 +exit_irq:
 +	free_irq(GTA01_IRQ_PCF50606, pcf50606_global);
 +exit_sysfs:
@@ -1520,9 +1561,14 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	apm_get_power_status = NULL;
 +	input_unregister_device(pcf->input_dev);
-+	misc_deregister(&pcf50606_wdt_miscdev);
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_WDT)
++		misc_deregister(&pcf50606_wdt_miscdev);
++
 +	free_irq(GTA01_IRQ_PCF50606, pcf);
-+	rtc_device_unregister(pcf->rtc);
++
++	if (pcf->pdata->used_features & PCF50606_FEAT_RTC)
++		rtc_device_unregister(pcf->rtc);
 +	pm_power_off = NULL;
 +
 +	sysfs_remove_group(&client->dev.kobj, &pcf_attr_group);
@@ -1621,17 +1667,48 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	.detach_client	= &pcf50606_detach_client,
 +};
 +
++/* platform driver, since i2c devices don't have platform_data */
++static int __init pcf50606_plat_probe(struct platform_device *pdev)
++{
++	struct pcf50606_platform_data *pdata = pdev->dev.platform_data;
++
++	if (!pdata)
++		return -ENODEV;
++
++	pcf50606_pdev = pdev;
++
++	return 0;
++}
++
++static int pcf50606_plat_remove(struct platform_device *pdev)
++{
++	return 0;
++}
++
++static struct platform_driver pcf50606_plat_driver = {
++	.probe	= pcf50606_plat_probe,
++	.remove	= pcf50606_plat_remove,
++	.driver = {
++		.owner	= THIS_MODULE,
++		.name 	= "pcf50606",
++	},
++};
++
 +static int __init pcf50606_init(void)
 +{
-+	DEBUGP("entering, calling i2c_add_driver\n");
-+	return i2c_add_driver(&pcf50606_driver);
++	int rc;
++
++	if (!(rc = platform_driver_register(&pcf50606_plat_driver)))
++		rc = i2c_add_driver(&pcf50606_driver);
++
++	return rc;
 +}
 +
-+static void __exit pcf50606_exit(void)
++static void pcf50606_exit(void)
 +{
 +	i2c_del_driver(&pcf50606_driver);
++	platform_driver_unregister(&pcf50606_plat_driver);
 +}
-+
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_LICENSE("GPL");
@@ -1951,8 +2028,8 @@ Index: linux-2.6.20.4/include/linux/i2c-id.h
 Index: linux-2.6.20.4/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/linux/pcf50606.h	2007-03-26 19:01:17.000000000 +0200
-@@ -0,0 +1,56 @@
++++ linux-2.6.20.4/include/linux/pcf50606.h	2007-03-30 20:51:20.000000000 +0200
+@@ -0,0 +1,86 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
 +
@@ -1999,9 +2076,39 @@ Index: linux-2.6.20.4/include/linux/pcf50606.h
 +extern void
 +pcf50606_charge_fast(struct pcf50606_data *pcf, int on);
 +
++struct pmu_voltage_rail {
++	char *name;
++	struct {
++		unsigned int init;
++		unsigned int max;
++	} voltage;
++};
++
++#define PCF50606_FEAT_EXTON	0x00000001	/* not yet supported */
++#define PCF50606_FEAT_MBC	0x00000002
++#define PCF50606_FEAT_BBC	0x00000004	/* not yet supported */
++#define PCF50606_FEAT_TSC	0x00000008	/* not yet supported */
++#define PCF50606_FEAT_WDT	0x00000010
++#define PCF50606_FEAT_ACD	0x00000020
++#define PCF50606_FEAT_RTC	0x00000040
++#define PCF50606_FEAT_PWM	0x00000080
++#define PCF50606_FEAT_CHGCUR	0x00000100
++#define PCF50606_FEAT_BATVOLT	0x00000200
++#define PCF50606_FEAT_BATTEMP	0x00000400
++
 +struct pcf50606_platform_data {
-+	unsigned int irq;
-+	unsigned int initial_voltage[__NUM_PCF50606_REGULATORS];
++	/* general */
++	unsigned int used_features;
++	unsigned int onkey_seconds_required;
++
++	/* voltage regulator related */
++	struct pmu_voltage_rail rails[__NUM_PCF50606_REGULATORS];
++	unsigned int used_regulators;
++
++	/* charger related */
++	unsigned int r_fix_batt;
++	unsigned int r_fix_batt_par;
++	unsigned int r_sense_milli;
 +
 +	struct {
 +		u_int8_t mbcc3; /* charger voltage / current */
