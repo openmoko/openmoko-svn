@@ -4,7 +4,7 @@ the linux kernel.
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:42:20.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:45:38.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:32:43.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -23,7 +23,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-30 20:42:20.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 20:45:37.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:32:42.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,8 +34,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-30 20:45:51.000000000 +0200
-@@ -0,0 +1,562 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-30 21:32:59.000000000 +0200
+@@ -0,0 +1,563 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -146,6 +146,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +			  PCF50606_FEAT_MBC |
 +			  PCF50606_FEAT_BBC |
 +			  PCF50606_FEAT_RTC |
++			  PCF50606_FEAT_WDT |
 +			  PCF50606_FEAT_CHGCUR |
 +			  PCF50606_FEAT_BATVOLT |
 +			  PCF50606_FEAT_BATTEMP,
