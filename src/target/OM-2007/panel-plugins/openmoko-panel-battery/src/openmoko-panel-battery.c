@@ -73,7 +73,7 @@ timeout (BatteryApplet *applet)
     g_debug( "-- info.battery_percentage = %0xd", info.battery_percentage );
 
     if ( info.battery_status == BATTERY_STATUS_ABSENT ||
-         info.battery_status == AC_LINE_STATUS_ON )
+         info.battery_status == BATTERY_STATUS_CHARGING )
     {
          icon = applet->plug;
     }
