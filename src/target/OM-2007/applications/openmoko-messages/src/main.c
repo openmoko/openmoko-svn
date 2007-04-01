@@ -41,10 +41,6 @@
 
 #include <gtk/gtk.h>
 
-typedef gboolean (*GtkTreeModelFilterVisibleFunc) (GtkTreeModel *model,
-    GtkTreeIter *iter,
-    gpointer data);
-
 gboolean init_dbus (MessengerData* d)
 {
   DBusError error;
