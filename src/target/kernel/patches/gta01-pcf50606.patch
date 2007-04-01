@@ -3,7 +3,7 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-01 13:05:25.000000000 +0200
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-01 13:09:02.000000000 +0200
 @@ -0,0 +1,1896 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -1235,7 +1235,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	__reg_write(pcf, PCF50606_REG_RTCHRA, pcf_tm.hour);
 +	__reg_write(pcf, PCF50606_REG_RTCWDA, pcf_tm.wkday);
 +	__reg_write(pcf, PCF50606_REG_RTCDTA, pcf_tm.day);
-+	__reg_write(pcf, PCF50606_REG_RTCMNA, pcf_tm.month);
++	__reg_write(pcf, PCF50606_REG_RTCMTA, pcf_tm.month);
 +	__reg_write(pcf, PCF50606_REG_RTCYRA, pcf_tm.year);
 +
 +	if (alrm->enabled) {
