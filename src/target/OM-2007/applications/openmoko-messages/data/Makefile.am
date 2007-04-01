@@ -22,3 +22,16 @@ resource_DATA = Email.png \
 		Cancel.png
 								
 EXTRA_DIST = $(resource_DATA)
+
+#
+# desktop integration: .desktop file
+#
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = openmoko-dialer.desktop
+
+#
+# desktop integration: application icon
+#
+appicondir = $(datadir)/pixmaps
+dist_appicon_DATA = Message.png
+
