@@ -17,6 +17,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#define  _GNU_SOURCE /* for strcasestr */
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -26,6 +27,7 @@
 #include <string.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 #include "main.h"
 #include "foldersdb.h"
