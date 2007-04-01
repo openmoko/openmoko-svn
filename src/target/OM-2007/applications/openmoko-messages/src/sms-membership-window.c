@@ -36,9 +36,6 @@ G_DEFINE_TYPE (SmsMembershipWindow, sms_membership_window, MOKO_TYPE_WINDOW)
 #define SMS_MEMBERSHIP_WINDOW_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), SMS_TYPE_MEMBERSHIP_WINDOW, SmsMembershipWindowPrivate))
 
 typedef struct _SmsMembershipWindowPrivate SmsMembershipWindowPrivate;
-typedef gboolean (*GtkTreeModelFilterVisibleFunc) (GtkTreeModel *model,
-    GtkTreeIter *iter,
-    gpointer data);
 
 struct _SmsMembershipWindowPrivate
   {
