@@ -84,7 +84,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     applet = g_slice_new (GsmApplet);
 
     applet->gsm_quality = GSM_SIGNAL_ERROR;
-    applet->gsm_quality = GPRS_CLOSE;
+    applet->gprs_quality = GPRS_CLOSE;
 
     snprintf (path, 512, "%s/%s", PKGDATADIR, gsm_q_name[applet->gsm_quality]);
 	applet->image = GTK_IMAGE(gtk_image_new_from_file (path));
