@@ -3,8 +3,8 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-01 10:53:01.000000000 +0200
-@@ -0,0 +1,1863 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-01 13:05:25.000000000 +0200
+@@ -0,0 +1,1896 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -57,6 +57,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +#include <linux/pcf50606.h>
 +
 +#include <asm/apm.h>
++#include <asm/mach-types.h>
 +#include <asm/arch/gta01.h>
 +
 +#include "pcf50606.h"
@@ -121,6 +122,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	} standby_regs;
 +#endif
 +};
++
++static struct i2c_driver pcf50606_driver;
 +
 +struct pcf50606_data *pcf50606_global;
 +EXPORT_SYMBOL(pcf50606_global);
@@ -630,6 +633,9 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 1);
 +		apm_queue_event(APM_POWER_STATUS_CHANGE);
 +		pcf->flags |= PCF50606_F_CHG_PRESENT;
++		if (pcf->pdata->cb)
++			pcf->pdata->cb(&pcf->client.dev,
++				       PCF50606_FEAT_MBC, PMU_EVT_INSERT);
 +		/* FIXME: signal this to userspace */
 +		//kobject_uevent( ,KOBJ_ADD);
 +	}
@@ -639,6 +645,9 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +		input_report_key(pcf->input_dev, KEY_BATTERY, 0);
 +		apm_queue_event(APM_POWER_STATUS_CHANGE);
 +		pcf->flags &= ~(PCF50606_F_CHG_MASK|PCF50606_F_CHG_PRESENT);
++		if (pcf->pdata->cb)
++			pcf->pdata->cb(&pcf->client.dev,
++				       PCF50606_FEAT_MBC, PMU_EVT_INSERT);
 +		/* FIXME: signal this to userspace */
 +		//kobject_uevent( ,KOBJ_REMOVE);
 +	}
@@ -685,7 +694,21 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +		/* ADC result ready */
 +		DEBUGPC("ADCRDY ");
 +	}
-+	/* FIXME: ACDINS, ACDREM, TSCPRES */
++	if (int3 & PCF50606_INT3_ACDINS) {
++		/* Accessory insertion detected */
++		DEBUGP("ACDINS ");
++		if (pcf->pdata->cb)
++			pcf->pdata->cb(&pcf->client.dev,
++				       PCF50606_FEAT_ACD, PMU_EVT_INSERT);
++	}
++	if (int3 & PCF50606_INT3_ACDREM) {
++		/* Accessory removal detected */
++		DEBUGP("ACDREM ");
++		if (pcf->pdata->cb)
++			pcf->pdata->cb(&pcf->client.dev,
++				       PCF50606_FEAT_ACD, PMU_EVT_REMOVE);
++	}
++	/* FIXME: TSCPRES */
 +	if (int3 & PCF50606_INT3_LOWBAT) {
 +		/* Really low battery voltage, we have 8 seconds left */
 +		DEBUGPC("LOWBAT ");
@@ -1228,6 +1251,14 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	return 0;
 +}
 +
++static struct rtc_class_ops pcf50606_rtc_ops = {
++	.ioctl		= pcf50606_rtc_ioctl,
++	.read_time	= pcf50606_rtc_read_time,
++	.set_time	= pcf50606_rtc_set_time,
++	.read_alarm	= pcf50606_rtc_read_alarm,
++	.set_alarm	= pcf50606_rtc_set_alarm,
++};
++
 +/***********************************************************************
 + * Watchdog
 + ***********************************************************************/
@@ -1342,16 +1373,6 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	.fops		= &pcf50606_wdt_fops,
 +};
 +
-+static struct i2c_driver pcf50606_driver;
-+
-+static struct rtc_class_ops pcf50606_rtc_ops = {
-+	.ioctl		= pcf50606_rtc_ioctl,
-+	.read_time	= pcf50606_rtc_read_time,
-+	.set_time	= pcf50606_rtc_set_time,
-+	.read_alarm	= pcf50606_rtc_read_alarm,
-+	.set_alarm	= pcf50606_rtc_set_alarm,
-+};
-+
 +/***********************************************************************
 + * PWM
 + ***********************************************************************/
@@ -1464,7 +1485,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +};
 +
 +/***********************************************************************
-+ * Input device
++ * Driver initialization
 + ***********************************************************************/
 +
 +#ifdef CONFIG_MACH_GTA01
@@ -1533,8 +1554,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	DEBUGP("entering\n");
 +	if (!pcf50606_pdev) {
-+		printk(KERN_ERR
-+		       "pcf50606: this driver needs a platform_device!\n");
++		printk(KERN_ERR "pcf50606: driver needs a platform_device!\n");
 +		return -EIO;
 +	}
 +
@@ -1546,8 +1566,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	/* At the moment, we only support one PCF50606 in a system */
 +	if (pcf50606_global) {
-+		printk(KERN_ERR
-+			"pcf50606: currently only one chip supported\n");
++		dev_err(&pcf50606_pdev->dev,
++			"currently only one chip supported\n");
 +		return -EBUSY;
 +	}
 +
@@ -1572,7 +1592,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	/* register with i2c core */
 +	if ((err = i2c_attach_client(new_client))) {
-+		DEBUGP("error during i2c_attach_client()\n");
++		dev_err(&new_client->dev,
++			"error during i2c_attach_client()\n");
 +		goto exit_free;
 +	}
 +
@@ -1604,8 +1625,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	set_irq_type(irq, IRQT_FALLING);
 +
 +	if (enable_irq_wake(irq) < 0)
-+		printk(KERN_ERR "PCF50606: IRQ %u cannot be enabled as wake-up"
-+		       "source in this hardware revision!", irq);
++		dev_err(&new_client->dev, "IRQ %u cannot be enabled as wake-up"
++		        "source in this hardware revision!", irq);
 +
 +	if (data->pdata->used_features & PCF50606_FEAT_RTC) {
 +		data->rtc = rtc_device_register("pcf50606", &new_client->dev,
@@ -1619,7 +1640,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	if (data->pdata->used_features & PCF50606_FEAT_WDT) {
 +		err = misc_register(&pcf50606_wdt_miscdev);
 +		if (err) {
-+			printk(KERN_ERR "cannot register miscdev on \n"
++			dev_err(&new_client->dev, "cannot register miscdev on "
 +			       "minor=%d (%d)\n", WATCHDOG_MINOR, err);
 +			goto exit_rtc;
 +		}
@@ -1660,14 +1681,26 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	apm_get_power_status = pcf50606_get_power_status;
 +
 +#ifdef CONFIG_MACH_GTA01
-+	gta01_pm_bt_dev.dev.parent = &new_client->dev;
-+	gta01_pm_gps_dev.dev.parent = &new_client->dev;
-+	if (system_rev == GTA01Bv2_SYSTEM_REV ||
-+	    system_rev == GTA01Bv3_SYSTEM_REV)
-+		platform_device_register(&gta01_pm_bt_dev);
-+
-+	platform_device_register(&gta01_pm_gps_dev);
++	if (machine_is_gta01()) {
++		gta01_pm_gps_dev.dev.parent = &new_client->dev;
++		switch (system_rev) {
++		case GTA01Bv2_SYSTEM_REV:
++		case GTA01Bv3_SYSTEM_REV:
++		case GTA01Bv4_SYSTEM_REV:
++			gta01_pm_bt_dev.dev.parent = &new_client->dev;
++			platform_device_register(&gta01_pm_bt_dev);
++			break;
++		}
++		platform_device_register(&gta01_pm_gps_dev);
++	}
 +#endif
++
++	if (data->pdata->used_features & PCF50606_FEAT_ACD)
++		reg_set_bit_mask(data, PCF50606_REG_ACDC1,
++				 PCF50606_ACDC1_ACDAPE, PCF50606_ACDC1_ACDAPE);
++	else
++		reg_clear_bits(data, PCF50606_REG_ACDC1,
++			       PCF50606_ACDC1_ACDAPE);
 +
 +	return 0;
 +exit_pwm:
@@ -1730,7 +1763,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +#ifdef CONFIG_PM
 +#define INT1M_RESUMERS	(PCF50606_INT1_ALARM|PCF50606_INT1_ONKEYF|PCF50606_INT1_EXTONR)
 +#define INT2M_RESUMERS	(PCF50606_INT2_CHGWD10S|PCF50606_INT2_CHGPROT|PCF50606_INT2_CHGERR)
-+#define INT3M_RESUMERS	(PCF50606_INT3_LOWBAT|PCF50606_INT3_HIGHTMP)
++#define INT3M_RESUMERS	(PCF50606_INT3_LOWBAT|PCF50606_INT3_HIGHTMP|PCF50606_INT3_ACDINS)
 +static int pcf50606_suspend(struct device *dev, pm_message_t state)
 +{
 +	struct i2c_client *client = to_i2c_client(dev);
@@ -1871,8 +1904,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.h	2007-03-30 22:07:41.000000000 +0200
-@@ -0,0 +1,288 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.h	2007-04-01 12:46:15.000000000 +0200
+@@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
 +
@@ -2117,6 +2150,20 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
 +	PCF50606_MBCC1_DETMOD_WDRST	= 0x40,
 +};
 +
++enum pcf50606_reg_acdc1 {
++	PCF50606_ACDC1_ACDDET		= 0x01,
++	PCF50606_ACDC1_THRSHLD_1V0	= 0x00,
++	PCF50606_ACDC1_THRSHLD_1V2	= 0x02,
++	PCF50606_ACDC1_THRSHLD_1V4	= 0x04,
++	PCF50606_ACDC1_THRSHLD_1V6	= 0x06,
++	PCF50606_ACDC1_THRSHLD_1V8	= 0x08,
++	PCF50606_ACDC1_THRSHLD_2V0	= 0x0a,
++	PCF50606_ACDC1_THRSHLD_2V2	= 0x0c,
++	PCF50606_ACDC1_THRSHLD_2V4	= 0x0e,
++	PCF50606_ACDC1_DISDB		= 0x10,
++	PCF50606_ACDC1_ACDAPE		= 0x80,
++};
++
 +enum pcf50606_reg_bvmc {
 +	PCF50606_BVMC_LOWBAT		= 0x01,
 +	PCF50606_BVMC_THRSHLD_NULL	= 0x00,
@@ -2210,8 +2257,8 @@ Index: linux-2.6.20.4/include/linux/i2c-id.h
 Index: linux-2.6.20.4/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/linux/pcf50606.h	2007-03-31 22:22:35.000000000 +0200
-@@ -0,0 +1,90 @@
++++ linux-2.6.20.4/include/linux/pcf50606.h	2007-04-01 13:01:16.000000000 +0200
+@@ -0,0 +1,101 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
 +
@@ -2269,6 +2316,16 @@ Index: linux-2.6.20.4/include/linux/pcf50606.h
 +	} voltage;
 +};
 +
++enum pmu_event {
++	PMU_EVT_NONE,
++	PMU_EVT_INSERT,
++	PMU_EVT_REMOVE,
++	__NUM_PMU_EVTS
++};
++
++typedef int pmu_cb(struct device *dev, unsigned int feature,
++		   enum pmu_event event);
++
 +#define PCF50606_FEAT_EXTON	0x00000001	/* not yet supported */
 +#define PCF50606_FEAT_MBC	0x00000002
 +#define PCF50606_FEAT_BBC	0x00000004	/* not yet supported */
@@ -2299,6 +2356,7 @@ Index: linux-2.6.20.4/include/linux/pcf50606.h
 +	struct {
 +		u_int8_t mbcc3; /* charger voltage / current */
 +	} charger;
++	pmu_cb *cb;
 +};
 +
 +#endif

@@ -4,7 +4,7 @@ the linux kernel.
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-04-01 10:27:56.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-01 10:48:06.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-01 12:33:02.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -23,7 +23,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-04-01 10:27:56.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-01 10:48:05.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-01 12:33:01.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,8 +34,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-01 10:48:17.000000000 +0200
-@@ -0,0 +1,681 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-01 12:36:42.000000000 +0200
+@@ -0,0 +1,706 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -141,6 +141,29 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +/* PMU driver info */
 +
++static int pmu_callback(struct device *dev, unsigned int feature,
++			enum pmu_event event)
++{
++	switch (feature) {
++	case PCF50606_FEAT_ACD:
++		switch (event) {
++		case PMU_EVT_INSERT:
++			pcf50606_charge_fast(pcf50606_global, 1);
++			break;
++		case PMU_EVT_REMOVE:
++			pcf50606_charge_fast(pcf50606_global, 0);
++			break;
++		default:
++			break;
++		}
++		break;
++	default:
++		break;
++	}
++
++	return 0;
++}
++
 +static struct pcf50606_platform_data gta01_pcf_pdata = {
 +	.used_features	= PCF50606_FEAT_EXTON |
 +			  PCF50606_FEAT_MBC |
@@ -151,6 +174,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +			  PCF50606_FEAT_BATVOLT |
 +			  PCF50606_FEAT_BATTEMP,
 +	.onkey_seconds_required = 5,
++	.cb		= &pmu_callback,
 +	.r_fix_batt	= 10000,
 +	.r_fix_batt_par	= 10000,
 +	.r_sense_milli	= 220,
@@ -230,6 +254,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +{
 +	switch (system_rev) {
 +	case GTA01Bv4_SYSTEM_REV:
++		gta01_pcf_pdata.used_features |= PCF50606_FEAT_ACD;
 +		break;
 +	case GTA01Bv3_SYSTEM_REV:
 +	case GTA01Bv2_SYSTEM_REV:
