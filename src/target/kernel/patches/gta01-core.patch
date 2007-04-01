@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:42:20.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 22:46:27.000000000 +0200
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-31 18:25:56.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-01 10:27:52.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -22,8 +22,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-30 20:42:20.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 22:46:27.000000000 +0200
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-31 18:25:56.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-01 10:27:22.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,8 +34,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-03-30 22:47:43.000000000 +0200
-@@ -0,0 +1,579 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-01 10:27:37.000000000 +0200
+@@ -0,0 +1,723 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -155,15 +155,158 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +	.r_fix_batt_par	= 10000,
 +	.r_sense_milli	= 220,
 +	.rails	= {
++		[PCF50606_REGULATOR_D1REG] = {
++			.name		= "bt_3v15",
++			.voltage	= {
++				.init	= 3150,
++				.max	= 3150,
++			},
++		},
++		[PCF50606_REGULATOR_D2REG] = {
++			.name		= "gl_2v5",
++			.voltage	= {
++				.init	= 2500,
++				.max	= 2500,
++			},
++		},
++		[PCF50606_REGULATOR_D3REG] = {
++			.name		= "stby_1v8",
++			.flags		= PMU_VRAIL_F_SUSPEND_ON,
++			.voltage	= {
++				.init	= 1800,
++				.max	= 2100,
++			},
++		},
 +		[PCF50606_REGULATOR_DCD] = {
-+			.name		= "dcd",
++			.name		= "gl_1v5",
++			.voltage	= {
++				.init	= 1500,
++				.max	= 1500,
++			},
++		},
++		[PCF50606_REGULATOR_DCDE] = {
++			.name		= "io_3v3",
++			.flags		= PMU_VRAIL_F_SUSPEND_ON,
++			.voltage	= {
++				.init	= 3300,
++				.max	= 3330,
++			},
++		},
++		[PCF50606_REGULATOR_DCUD] = {
++			.name		= "core_1v8",
++			.voltage	= {
++				.init	= 2100,
++				.max	= 2100,
++			},
++		},
++		[PCF50606_REGULATOR_IOREG] = {
++			.name		= "codec_3v3",
 +			.voltage	= {
 +				.init	= 3300,
 +				.max	= 3300,
 +			},
 +		},
++		[PCF50606_REGULATOR_LPREG] = {
++			.name		= "lcm_3v3",
++			.voltage	= {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		}
 +	},
 +};
++
++static void mangle_pmu_pdata_by_system_rev(void)
++{
++	switch (system_rev) {
++	case GTA01Bv4_SYSTEM_REV:
++		break;
++	case GTA01Bv3_SYSTEM_REV:
++	case GTA01Bv2_SYSTEM_REV:
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG].name = "user1";
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG].flags =
++							PMU_VRAIL_F_UNUSED;
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCUD].flags =
++							PMU_VRAIL_F_SUSPEND_ON;
++		break;
++	case GTA01v04_SYSTEM_REV:
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCUD] = {
++			.name 	 = "core_1v8"
++			.flags	 = PMU_VRAIL_F_SUSPEND_ON,
++			.voltage = {
++				.init	= 1800,
++				.max	= 1800,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D1REG] = {
++			.name	 = "vrf_3v",
++			.voltage = {
++				.init	= 3000,
++				.max	= 3000,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG] = {
++			.name	 = "vtcxo_2v8",
++			.voltage = {
++				.init	= 2800,
++				.max	= 2800,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCD] = {
++			.name	 = "gl_3v5",
++			.voltage = {
++				.init	= 3500,
++				.max	= 3500,
++			},
++		};
++		break;
++	case GTA01v3_SYSTEM_REV:
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D1REG] = {
++			.name	 = "vrf_3v",
++			.voltage = {
++				.init	= 3000,
++				.max	= 3000,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D2REG] = {
++			.name	 = "sd_3v3",
++			.voltage = {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG] = {
++			.name	 = "codec_3v3",
++			.voltage = {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCD] = {
++			.name	 = "gpsio_3v3",
++			.voltage = {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCUD] = {
++			.name 	 = "core_1v8"
++			.flags	 = PMU_VRAIL_F_SUSPEND_ON,
++			.voltage = {
++				.init	= 1800,
++				.max	= 1800,
++			},
++		};
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_IOREG] = {
++			.name 	 = "vtcxo_2v8"
++			.voltage = {
++				.init	= 2800,
++				.max	= 2800,
++			},
++		};
++		break;
++	}
++}
 +
 +static struct resource gta01_pmu_resources[] = {
 +	[0] = {
@@ -598,6 +741,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +			gta01_led_resources[0].end = GTA01Bv4_GPIO_VIBRATOR_ON;
 +		break;
 +	}
++	mangle_pmu_pdata_by_system_rev();
 +	platform_device_register(&gta01_pmu_dev);
 +	platform_device_register(&gta01_led_dev);
 +
@@ -618,7 +762,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 Index: linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h	2007-03-30 20:45:23.000000000 +0200
++++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h	2007-03-31 18:33:02.000000000 +0200
 @@ -0,0 +1,69 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
