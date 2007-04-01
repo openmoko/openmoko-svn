@@ -16,6 +16,7 @@ SRCDATE_s3c2410-boot-usb-native = "now"
 SRCDATE_sjf2410-linux-native = "now"
 SRCDATE_dfu-util = "now"
 SRCDATE_dfu-util-native = "now"
+SRCDATE_fbgrab-viewer-native = "now"
 
 SRCDATE_libgsmd = "now"
 SRCDATE_openmoko-session = "now"
