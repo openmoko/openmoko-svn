@@ -143,9 +143,7 @@ sms_membership_window_init(SmsMembershipWindow* self)
   if ( parent )
     {
       gtk_window_set_transient_for( GTK_WINDOW(self), GTK_WINDOW(parent) );
-#ifndef DEBUG_THIS_FILE
       gtk_window_set_modal( GTK_WINDOW(self), TRUE );
-#endif
       gtk_window_set_destroy_with_parent( GTK_WINDOW(self), TRUE );
     }
 
@@ -215,7 +213,7 @@ sms_membership_window_init(SmsMembershipWindow* self)
 
 }
 
-void membeship_rdo_btn_clicked ( GtkButton* button, SmsMembershipWindow* self)
+void membership_rdo_btn_clicked ( GtkButton* button, SmsMembershipWindow* self)
 {
   GtkTreeModel* model;
   GtkTreeIter iter;
@@ -234,6 +232,7 @@ void membeship_rdo_btn_clicked ( GtkButton* button, SmsMembershipWindow* self)
       gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(priv->filter),&childiter,&iter);
       gtk_list_store_set(priv->liststore, &childiter, COLUMN_FOLDER, gtk_button_get_label(button), -1);
       gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(priv->filter));
+      g_free(folder);
     }
 }
 
@@ -246,19 +245,7 @@ void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folder
 
   /* application menu */
   appmenu = NULL;
-  /*GtkMenuItem* mmitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Message Membership" ));
-  GtkMenuItem* fnitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Folder Rename" ));
-  GtkMenuItem* accountitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Account" ));
-  GtkMenuItem* helpitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Help" ));
-  GtkWidget* sepitem = gtk_separator_menu_item_new(); 
-  GtkMenuItem* closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( "Close" ));
-  gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), GTK_WIDGET(mmitem) );
-  gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), GTK_WIDGET(fnitem) );
-  gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), GTK_WIDGET(accountitem) );
-  gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), GTK_WIDGET(helpitem) );
-  gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), GTK_WIDGET(sepitem) );
-  gtk_menu_shell_append( GTK_MENU_SHELL(appmenu), GTK_WIDGET(closeitem) );*/
-
+  
   GtkWidget* rdobtnbox = gtk_vbox_new(FALSE, 0) ;
   GtkWidget *rdo_btn = NULL;
   GSList *rdo_btn_group;
@@ -282,7 +269,7 @@ void sms_membership_window_set_menubox(SmsMembershipWindow* self, GSList* folder
       else
         rdo_btn = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (rdo_btn), folder);
       priv->rdoBtnList = g_slist_append (priv->rdoBtnList,rdo_btn);
-      g_signal_connect (G_OBJECT(rdo_btn), "released", G_CALLBACK (membeship_rdo_btn_clicked), self);
+      g_signal_connect (G_OBJECT(rdo_btn), "released", G_CALLBACK (membership_rdo_btn_clicked), self);
       gtk_box_pack_start (GTK_BOX (rdobtnbox), rdo_btn, FALSE, TRUE, 0);
     }
 
@@ -363,10 +350,14 @@ gboolean membership_filter_visible_function (GtkTreeModel* model, GtkTreeIter* i
   gchar* folder;
   gtk_tree_model_get (model, iter, COLUMN_FOLDER, &folder, -1);
 
-  if(!g_strcasecmp(folder,self->currentfolder))
+  if(!g_strcasecmp(folder,self->currentfolder)){
+    g_free (folder);
     return TRUE;
-  else
+  }
+  else{
+    g_free (folder);
     return FALSE;
+  }
 }
 
 void sms_membership_window_set_messages (SmsMembershipWindow* self,

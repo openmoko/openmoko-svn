@@ -16,6 +16,7 @@
  *  
  *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: alex $]
  */
+
 #ifndef _SMS_CONTACT_WINDOW_H_
 #define _SMS_CONTACT_WINDOW_H_
 
@@ -58,7 +59,7 @@ typedef struct
 {
   MokoWindowClass parent_class;
   /* class members */
-  void (*contact_select_done)(void);
+  void (*contact_select_done) (SmsContactWindow* self);
 }SmsContactWindowClass;
 
 typedef struct
@@ -75,3 +76,4 @@ GList* sms_get_selected_contacts(SmsContactWindow* self);
 G_END_DECLS
 
 #endif
+

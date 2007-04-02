@@ -69,58 +69,6 @@ gboolean on_sms_txtView_key_release_event       (GtkWidget       *widget,
 
 
 static void
-shutdown_loop (SmsDialogRunInfo *ri)
-{
-  if (g_main_loop_is_running (ri->loop))
-    g_main_loop_quit (ri->loop);
-}
-
-static void
-run_unmap_handler (SmsDialogWindow* dialog, gpointer data)
-{
-  SmsDialogRunInfo *ri = data;
-
-  shutdown_loop (ri);
-}
-
-static void
-run_response_handler (SmsDialogWindow* dialog,
-                      gint response_id,
-                      gpointer data)
-{
-  SmsDialogRunInfo *ri;
-
-  ri = data;
-
-  ri->response_id = response_id;
-
-  shutdown_loop (ri);
-}
-
-static gint
-run_delete_handler (SmsDialogWindow* dialog,
-                    GdkEventAny *event,
-                    gpointer data)
-{
-  SmsDialogRunInfo *ri = data;
-
-  shutdown_loop (ri);
-
-  return TRUE; /* Do not destroy */
-}
-
-static void
-run_destroy_handler (SmsDialogWindow* dialog, gpointer data)
-{
-  SmsDialogRunInfo *ri = data;
-
-  /* shutdown_loop will be called by run_unmap_handler */
-
-  ri->destroyed = TRUE;
-}
-
-
-static void
 sms_dialog_window_dispose(GObject* object)
 {
   if (G_OBJECT_CLASS (sms_dialog_window_parent_class)->dispose)
@@ -157,9 +105,7 @@ sms_dialog_window_init(SmsDialogWindow* self)
   if ( parent )
     {
       gtk_window_set_transient_for( GTK_WINDOW(self), GTK_WINDOW(parent) );
-#ifndef DEBUG_THIS_FILE
       gtk_window_set_modal( GTK_WINDOW(self), TRUE );
-#endif
       gtk_window_set_destroy_with_parent( GTK_WINDOW(self), TRUE );
     }
 }
@@ -195,8 +141,6 @@ void sms_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
   if ( !priv->vbox )
     {
       GtkWidget* image;
-      GtkWidget* smsSendBtn;
-      GtkWidget* emailBtn;
 
       priv->vbox = gtk_vbox_new( FALSE, 0 );
       gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
@@ -217,7 +161,7 @@ void sms_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
       image = gtk_image_new_from_file (PKGDATADIR "/Address.png");
       moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(self->addressBtn ),image);
 
-      smsSendBtn = moko_tool_box_add_action_button (MOKO_TOOL_BOX(priv->toolbox));
+      GtkWidget* smsSendBtn = moko_tool_box_add_action_button (MOKO_TOOL_BOX(priv->toolbox));
       gtk_widget_set_name( GTK_WIDGET(smsSendBtn), "mokostylusbutton-white" );
       image = gtk_image_new_from_file (PKGDATADIR "/Send.png");
       moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(smsSendBtn),image);
@@ -283,8 +227,6 @@ void mail_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
   if ( !priv->vbox )
     {
       GtkWidget* image;
-      GtkWidget* smsSendBtn;
-      GtkWidget* emailBtn;
 
       priv->vbox = gtk_vbox_new( FALSE, 0 );
       gtk_box_pack_start( GTK_BOX(priv->vbox), GTK_WIDGET(priv->eventbox), FALSE, FALSE, 0 );
@@ -305,12 +247,12 @@ void mail_dialog_window_set_title(SmsDialogWindow* self, const gchar* title)
       image = gtk_image_new_from_file (PKGDATADIR "/Address.png");
       moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(self->addressBtn),image);
 
-      emailBtn = moko_tool_box_add_action_button (MOKO_TOOL_BOX(priv->toolbox));
+      GtkWidget* emailBtn = moko_tool_box_add_action_button (MOKO_TOOL_BOX(priv->toolbox));
       gtk_widget_set_name( GTK_WIDGET(emailBtn), "mokostylusbutton-white" );
       image = gtk_image_new_from_file (PKGDATADIR "/Attached.png");
       moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(emailBtn),image);
 
-      smsSendBtn = moko_tool_box_add_action_button (MOKO_TOOL_BOX(priv->toolbox));
+      GtkWidget* smsSendBtn = moko_tool_box_add_action_button (MOKO_TOOL_BOX(priv->toolbox));
       gtk_widget_set_name( GTK_WIDGET(smsSendBtn), "mokostylusbutton-white" );
       image = gtk_image_new_from_file (PKGDATADIR "/Send.png");
       moko_pixmap_button_set_center_image ( MOKO_PIXMAP_BUTTON(smsSendBtn),image);
@@ -437,6 +379,7 @@ void sms_dialog_forward_message(SmsDialogWindow* self, message* msg)
   gchar* text = g_strdup_printf("\n\n\n>%s",msg->content);
   gtk_text_buffer_set_text (buffer, text, strlen(text));
   gtk_widget_grab_focus (priv->txtView);
+  g_free(text);
 }
 
 gboolean on_sms_txtView_key_release_event       (GtkWidget       *widget,

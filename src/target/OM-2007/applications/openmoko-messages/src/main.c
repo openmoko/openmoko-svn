@@ -304,6 +304,10 @@ gboolean filter_visible_function (GtkTreeModel* model, GtkTreeIter* iter, Messen
         return FALSE;
     }
 
+  g_free(subject);
+  g_free(from);
+  g_free(folder);
+
   return TRUE;
 }
 
@@ -401,7 +405,8 @@ void populate_detail_area( MessengerData* d )
   d->details = detail_area_new();
   gtk_widget_show (d->details);
   gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(DETAIL_AREA(d->details)));
-  moko_paned_window_set_lower_pane( MOKO_PANED_WINDOW(d->window), GTK_WIDGET(moko_details_window_put_in_box(d->details)));
+  moko_paned_window_set_lower_pane( MOKO_PANED_WINDOW(d->window), 
+          GTK_WIDGET(moko_details_window_put_in_box(MOKO_DETAILS_WINDOW(d->details))));
 }
 
 void main_quit(GtkMenuItem* item, MessengerData* d)

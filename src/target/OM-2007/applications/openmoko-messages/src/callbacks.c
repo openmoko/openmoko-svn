@@ -72,6 +72,7 @@ gboolean cb_filter_changed(GtkWidget* widget, gchar* text, MessengerData* d)
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
   gchar* str = g_strdup_printf("folder %s has %d messages",text,get_model_number(d));
   send_signal_to_footer(d->bus,str);
+  g_free(str);
 
   return FALSE;
 }
@@ -153,12 +154,12 @@ void cb_new_folder (GtkMenuItem* item, MessengerData* d)
 void cb_mode_read (GtkMenuItem* item, MessengerData* d)
 {
   g_debug ("mode read");
-  message* msg;
   GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW( d->view ));
   GtkTreeModel* model;
   GtkTreeIter iter;
   gboolean has_selection = gtk_tree_selection_get_selected( selection, &model, &iter );
 
+  message* msg = NULL;
   if ( has_selection )
     {
       msg = g_malloc(sizeof(message));
@@ -166,19 +167,18 @@ void cb_mode_read (GtkMenuItem* item, MessengerData* d)
       gtk_tree_model_get( model, &iter, COLUMN_SUBJECT, &msg->subject, -1 );
       gtk_tree_model_get( model, &iter, COLUMN_FOLDER, &msg->folder, -1 );
     }
-  else msg = NULL;
   detail_read_message (DETAIL_AREA(d->details),msg);
 }
 
 void cb_mode_reply (GtkMenuItem* item, MessengerData* d)
 {
   g_debug ("mode reply");
-  message* msg;
   GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW( d->view ));
   GtkTreeModel* model;
   GtkTreeIter iter;
   gboolean has_selection = gtk_tree_selection_get_selected( selection, &model, &iter );
 
+  message* msg = NULL;
   if ( has_selection )
     {
       msg = g_malloc(sizeof(message));
@@ -186,7 +186,6 @@ void cb_mode_reply (GtkMenuItem* item, MessengerData* d)
       gtk_tree_model_get( model, &iter, COLUMN_SUBJECT, &msg->subject, -1 );
       gtk_tree_model_get( model, &iter, COLUMN_FOLDER, &msg->folder, -1 );
     }
-  else msg = NULL;
 
   SmsDialogWindow* sms_window = sms_dialog_window_new();
   if (msg != NULL)
@@ -194,19 +193,20 @@ void cb_mode_reply (GtkMenuItem* item, MessengerData* d)
       sms_dialog_window_set_title (sms_window,"Reply SMS");
       sms_dialog_reply_message (sms_window,msg);
     }
-  else sms_dialog_window_set_title (sms_window,"New SMS");
+  else 
+    sms_dialog_window_set_title (sms_window,"New SMS");
   gtk_widget_show_all ( GTK_WIDGET(sms_window) );
 }
 
 void cb_mode_forward (GtkMenuItem* item, MessengerData* d)
 {
   g_debug ("mode forward");
-  message* msg;
   GtkTreeSelection* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW( d->view ));
   GtkTreeModel* model;
   GtkTreeIter iter;
   gboolean has_selection = gtk_tree_selection_get_selected( selection, &model, &iter );
 
+  message* msg = NULL;
   if ( has_selection )
     {
       msg = g_malloc(sizeof(message));
@@ -217,7 +217,6 @@ void cb_mode_forward (GtkMenuItem* item, MessengerData* d)
                           COLUMN_CONTENT, &msg->content,
                           -1 );
     }
-  else msg = NULL;
 
   SmsDialogWindow* sms_window = sms_dialog_window_new();
   sms_dialog_window_set_title (sms_window,"Forward SMS");
@@ -270,6 +269,7 @@ void cb_delete_folder (GtkMenuItem* item, MessengerData* d)
         }
       gtk_widget_destroy (dialog);
     }
+  g_free(oldName);
 }
 
 void cb_delete_message (GtkMenuItem* item, MessengerData* d)
@@ -311,7 +311,6 @@ void cb_mmitem_activate (GtkMenuItem* item, MessengerData* d)
 void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
 {
   GSList *c;
-  gchar* folder;
 
   GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
   GtkWidget* menulabel = GTK_BIN(menuitem)->child;
@@ -321,6 +320,7 @@ void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER(d->filter));
 
   c = d->folderlist;
+  gchar* folder = NULL;
   for (; c; c = g_slist_next(c) )
     {
       folder = (gchar*) c->data;
@@ -336,6 +336,10 @@ void cb_frBtn_clicked (GtkButton* button, MessengerData* d)
   moko_menu_box_set_filter_menu(menubox, GTK_MENU(d->filtmenu));
   gtk_widget_show_all (GTK_WIDGET(menubox));
   gtk_widget_hide (d->frWin);
+
+  g_free(newName);
+  g_free(oldName);
+  g_free(folder);
 }
 
 void cb_frResetBtn_clicked (GtkButton* button, GtkWidget* entry)
@@ -383,7 +387,7 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
 
           GtkWidget* menuitem = gtk_menu_get_attach_widget (GTK_MENU(d->filtmenu));
           GtkWidget* menulabel = GTK_BIN(menuitem)->child;
-          GtkWidget* frLabel = gtk_label_new (g_strdup_printf("Please input new folder name for %s:",	gtk_label_get_text (GTK_LABEL(menulabel))));
+          GtkWidget* frLabel = gtk_label_new (g_strdup_printf("Please input new folder name for %s:",   gtk_label_get_text (GTK_LABEL(menulabel))));
           gtk_misc_set_alignment (GTK_MISC(frLabel),0,0.5);
           gtk_box_pack_start (GTK_BOX(frBox), frLabel, FALSE, TRUE, 0);
 
@@ -410,13 +414,15 @@ void cb_fnitem_activate (GtkMenuItem* item, MessengerData* d)
         }
       gtk_widget_show_all ( GTK_WIDGET(d->frWin) );
     }
+
+  g_free(oldName);
 }
 
 void cb_nfBtn_clicked (GtkButton* button, MessengerData* d)
 {
   gchar* folder = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->nfEntry)));
   g_debug ("new folder %s",folder);
-  d->folderlist = g_slist_append (d->folderlist,folder);
+  d->folderlist = g_slist_append (d->folderlist,g_strdup(folder));
   d->filtmenu = reload_filter_menu (d,d->folderlist);
   MokoMenuBox* menubox = (MokoMenuBox*)moko_paned_window_get_menubox( d->window );
   g_signal_connect( G_OBJECT(menubox), "filter_changed", G_CALLBACK(cb_filter_changed), d );
@@ -425,6 +431,7 @@ void cb_nfBtn_clicked (GtkButton* button, MessengerData* d)
   foldersdb_update (d->folderlist);
   update_folder_sensitive(d, d->folderlist);
   gtk_widget_hide (d->nfWin);
+  g_free(folder);
 }
 
 void cb_nfResetBtn_clicked (GtkButton* button, MessengerData* d)
@@ -456,6 +463,7 @@ void cb_dfBtn_clicked (GtkButton* button, MessengerData* d)
   moko_menu_box_set_active_filter (menubox,str);
   gtk_widget_show_all (GTK_WIDGET(menubox));
   update_folder_sensitive (d, d->folderlist);
+  g_free(str);
 
   /*result inform */
   GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(gtk_widget_get_parent_window(GTK_WIDGET(button))),
@@ -488,6 +496,7 @@ void delete_folder (MessengerData* d, gchar* oldName)
   /*set the default filter item to "Inbox" */
   gchar* str = g_strdup("Inbox");
   moko_menu_box_set_active_filter (menubox,str);
+  g_free(str);
   gtk_widget_show_all (GTK_WIDGET(menubox));
   update_folder_sensitive (d, d->folderlist);
 }
@@ -503,14 +512,13 @@ void cb_cursor_changed(GtkTreeSelection* selection, MessengerData* d)
   GtkTreeIter iter;
   GtkTreeIter childiter;
   GtkTreeView* view;
-  message* msg;
   GdkPixbuf* icon;
   GError*   error = NULL;
 
   view = gtk_tree_selection_get_tree_view( selection );
   if ( gtk_tree_selection_get_selected( selection, &model, &iter ) )
     {
-      msg = g_malloc(sizeof(message));
+      message* msg = g_malloc(sizeof(message));
       gtk_tree_model_get( model, &iter, COLUMN_FROM, &msg->name, -1 );
       gtk_tree_model_get( model, &iter, COLUMN_SUBJECT, &msg->subject, -1 );
       gtk_tree_model_get( model, &iter, COLUMN_FOLDER, &msg->folder, -1 );
@@ -526,6 +534,7 @@ void cb_cursor_changed(GtkTreeSelection* selection, MessengerData* d)
                               COLUMN_STATUS, msg->status,
                               -1);
         }
+
       detail_read_message (DETAIL_AREA(d->details),msg);
     }
 }
@@ -552,6 +561,7 @@ void cb_search_entry_changed (GtkEditable* editable, MessengerData* d)
   g_debug ("search %s, result has %d messages",d->s_key,get_model_number(d));
   gchar* str = g_strdup_printf("search %s, result has %d messages",d->s_key,get_model_number(d));
   send_signal_to_footer(d->bus,str);
+  g_free(str);
 }
 
 void cb_search_on (MessengerData* d)
@@ -595,7 +605,7 @@ void sms_contact_select_done (GtkWidget* widget, gpointer data)
     return;
   g_debug ("start to add %d contacts to entry", g_list_length(contacts));
   gchar* nameList = NULL;
-  gchar* name;
+  const gchar* name = NULL;
   GList* nextContext = contacts;
   EContact *contact;
   for ( ; nextContext != NULL; nextContext = nextContext->next){
@@ -612,6 +622,5 @@ void sms_contact_select_done (GtkWidget* widget, gpointer data)
   else
     gtk_entry_set_text (GTK_ENTRY(toEntry),nameList);
   g_free(nameList);
-  g_free(name);
 }
 

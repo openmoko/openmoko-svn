@@ -16,6 +16,7 @@
  *  
  *  Current Version: $Rev$ ($Date: 2006/10/05 17:38:14 $) [$Author: alex $]
  */
+
 #include "sms-contact-window.h"
 
 G_DEFINE_TYPE (SmsContactWindow, sms_contact_window, MOKO_TYPE_WINDOW)
@@ -94,9 +95,9 @@ static void updateContactsView (EBook* book, EBookStatus status,
   data->contacts = contacts;
   g_debug ("list length %d", g_list_length(c));
 
+  const gchar *name , *phoneNum;
   for (;c;c=c->next){
     EContact *contact = E_CONTACT (c->data);
-    const gchar *name, *phoneNum;
     name = e_contact_get_const (contact, E_CONTACT_FULL_NAME);
     phoneNum =  e_contact_get_const (contact, E_CONTACT_PHONE_BUSINESS);
     gtk_list_store_append(contacts_liststore, &iter);
@@ -179,7 +180,6 @@ sms_contact_window_init (SmsContactWindow* self)
   
   /* loading contacts */
   g_idle_add((GSourceFunc)open_book,data);
-  //loadBook(data);
 
   gtk_widget_show_all(priv->vbox);
   gtk_container_add(GTK_CONTAINER(self), priv->vbox);
@@ -257,6 +257,7 @@ gboolean get_selected_contact (GtkTreeModel* model, GtkTreePath* path,
 	                                       contactListItem->data);
     }
   }
+  g_free(name);
 
   return FALSE;
 }
@@ -285,19 +286,14 @@ static void contacts_view_cursor_changed(GtkTreeSelection* selection, SmsContact
 {
   GtkTreeModel* model;
   GtkTreeIter iter;
-  //GtkTreeView* view = gtk_tree_selection_get_tree_view( selection );
 
   if ( gtk_tree_selection_get_selected( selection, &model, &iter ) )
   {
-     gchar* name;
-     gchar* phoneNum;
-     gboolean selected;
      GtkListStore* liststore = data->contacts_liststore;
 
+     gboolean selected;
      gtk_tree_model_get( model, &iter, 
                          CONTACT_SEL_COL, &selected,
-			 CONTACT_NAME_COL, &name,
-                         CONTACT_CELLPHONE_COL, &phoneNum,
                          -1);
 
     if (selected)
@@ -305,7 +301,6 @@ static void contacts_view_cursor_changed(GtkTreeSelection* selection, SmsContact
     else
       gtk_list_store_set (liststore, &iter, CONTACT_SEL_COL, TRUE, -1);
   }
-
 }
 
 static void contact_select_done(SmsContactWindow* self)
@@ -323,3 +318,4 @@ GList* sms_get_selected_contacts(SmsContactWindow* self)
   SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
   return priv->data->contacts;
 }
+

@@ -36,13 +36,15 @@ G_BEGIN_DECLS
 #define IS_DETAIL_AREA_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_DETAIL_AREA))
 #define DETAIL_AREA_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_DETAIL_AREA, DetailAreaClass))
 
-typedef struct _Read_Attributes
-  {
-    GtkWidget* from_label;
-    GtkWidget* date_label;
-    GtkWidget* details;
-  }
-ReadAttributes;
+enum {
+  PAGE_EDIT_MODE,
+  PAGE_NEW_MAIL,
+  PAGE_MODE_READ,
+  PAGE_MODE_REPLY,
+  PAGE_MODE_FORWARD,
+  PAGE_MODE_MMSHIP,
+  NUM_PAGES,
+};
 
 typedef struct _Edit_Attributes
   {
@@ -62,8 +64,6 @@ typedef struct _DetailArea
     MokoFixed* entryarea;
     GSList* folderlist;
     guint* page;
-    ReadAttributes* readAttributes;
-    EditAttributes* editAttributes;
   }
 DetailArea;
 

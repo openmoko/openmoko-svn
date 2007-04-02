@@ -69,16 +69,6 @@ enum {
   NUM_COLS,
 };
 
-enum {
-  PAGE_EDIT_MODE,
-  PAGE_NEW_MAIL,
-  PAGE_MODE_READ,
-  PAGE_MODE_REPLY,
-  PAGE_MODE_FORWARD,
-  PAGE_MODE_MMSHIP,
-  NUM_PAGES,
-};
-
 GtkWidget* reload_filter_menu (MessengerData* d, GSList* folderlist);
 void setup_ui( MessengerData* d );
 void populate_navigation_area( MessengerData* d );
