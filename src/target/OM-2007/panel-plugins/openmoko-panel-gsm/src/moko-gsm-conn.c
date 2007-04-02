@@ -32,7 +32,7 @@ gsm_watcher_prepare (GSource * source, gint * timeout)
 static gboolean
 gsm_watcher_check (GSource * source)
 {
- if (GPfd.revents & (G_IO_IN | G_IO_PRI))
+  if (GPfd.revents & (G_IO_IN | G_IO_PRI))
   {
     return TRUE;
   }
@@ -68,51 +68,50 @@ gsm_watcher_dispatch (GSource * source,
 static int 
 sigq_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
-	printf("EVENT: Signal Quality: %u\n", aux->u.signal.sigq.rssi);
-	gsm_q = aux->u.signal.sigq.rssi;
-	//FIXME: Call panel applet image change function here, instead of use g timeout function to check singal value
-	return 0;
+  printf("EVENT: Signal Quality: %u\n", aux->u.signal.sigq.rssi);
+  gsm_q = aux->u.signal.sigq.rssi;
+  //FIXME: Call panel applet image change function here, instead of use g timeout function to check singal value
+  return 0;
 }
 
 static int 
 netreg_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
   printf("EVENT: Netreg ");
-
-	switch (aux->u.netreg.state)
-	{
-	case 0:
-		printf("not searching for network ");
-		break;
-	case 1:
-		printf("registered (home network) ");
-		break;
-	case 2:
-		printf("searching for network ");
-		break;
-	case 3:
-		printf("registration denied ");
-		break;
-	case 5:
-		printf("registered (roaming) ");
-		break;
-	}
-
-	if (aux->u.netreg.lac)
-		printf("LocationAreaCode = 0x%04X ", aux->u.netreg.lac);
-	if (aux->u.netreg.ci)
-		printf("CellID = 0x%04X ", aux->u.netreg.ci);
-	
-	printf("\n");
-
-	return 0;
+  
+  switch (aux->u.netreg.state)
+  {
+    case 0:
+      printf("not searching for network ");
+      break;
+    case 1:
+      printf("registered (home network) ");
+      break;
+    case 2:
+      printf("searching for network ");
+      break;
+    case 3:
+      printf("registration denied ");
+      break;
+    case 5:
+      printf("registered (roaming) ");
+      break;
+  }
+  
+  if (aux->u.netreg.lac)
+    printf("LocationAreaCode = 0x%04X ", aux->u.netreg.lac);
+  if (aux->u.netreg.ci)
+    printf("CellID = 0x%04X ", aux->u.netreg.ci);
+  
+  printf("\n");
+  return 0;
 }
 
 static int
 gsm_connect_init()
 {
   lgsmh = lgsm_init(LGSMD_DEVICE_GSMD);	
-    
+  
   if (!lgsmh) 
   { 
     printf("Can't connect to gsmd\n");
@@ -150,7 +149,6 @@ SignalStatus
 moko_panel_gprs_signal_quality()
 {
 //some code for only for test, since there have not any methord to check out gprs signal.
-  
   test ++;
   if (test > 11 || test < 0)
     test = 0;

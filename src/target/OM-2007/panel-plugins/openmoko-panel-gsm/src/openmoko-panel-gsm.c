@@ -25,7 +25,7 @@
 typedef struct{
   GtkWidget *image;
   SignalStatus status;
-}MokoSignal;
+} MokoSignal;
 
 typedef struct {
   MokoSignal gsm;
@@ -55,9 +55,9 @@ static gchar *gprs_q_name[TOTAL_STATUS]={
 static void
 gsm_applet_free (GsmApplet *applet)
 {
-    g_source_remove (applet->timeout_id);
+  g_source_remove (applet->timeout_id);
 
-    g_slice_free (GsmApplet, applet);
+  g_slice_free (GsmApplet, applet);
 }
 
 static gboolean
@@ -99,29 +99,29 @@ timeout_cb (GsmApplet *applet)
 G_MODULE_EXPORT GtkWidget* 
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    MokoPanelApplet* mokoapplet = moko_panel_applet_new();
+  MokoPanelApplet* mokoapplet = moko_panel_applet_new();
 
-    GsmApplet *applet;
-    applet = g_slice_new (GsmApplet);
+  GsmApplet *applet;
+  applet = g_slice_new (GsmApplet);
    
-    g_object_weak_ref( G_OBJECT(mokoapplet), (GWeakNotify) gsm_applet_free, applet );
-    applet->timeout_id = g_timeout_add(2000, (GSourceFunc) timeout_cb, applet);
+  g_object_weak_ref( G_OBJECT(mokoapplet), (GWeakNotify) gsm_applet_free, applet );
+  applet->timeout_id = g_timeout_add(4000, (GSourceFunc) timeout_cb, applet);
 
-    applet->gsm.image = GTK_IMAGE(gtk_image_new ());//make an empty GtkImage object
-    applet->gsm.status = UN_CONN;
-    applet->gprs.image = GTK_IMAGE(gtk_image_new ());//make an empty GtkImage object
-    applet->gprs.status = UN_CONN;
+  applet->gsm.image = GTK_IMAGE(gtk_image_new ());//make an empty GtkImage object
+  applet->gsm.status = UN_CONN;
+  applet->gprs.image = GTK_IMAGE(gtk_image_new ());//make an empty GtkImage object
+  applet->gprs.status = UN_CONN;
 
-    applet->hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_show (applet->hbox);
+  applet->hbox = gtk_hbox_new(FALSE, 0);
+  gtk_widget_show (applet->hbox);
 
-    gtk_box_pack_start (GTK_BOX(applet->hbox), GTK_WIDGET(applet->gprs.image), FALSE, FALSE, 2);
-    gtk_box_pack_end (GTK_BOX(applet->hbox), GTK_WIDGET(applet->gsm.image), FALSE, FALSE, 2);
+  gtk_box_pack_start (GTK_BOX(applet->hbox), GTK_WIDGET(applet->gprs.image), FALSE, FALSE, 2);
+  gtk_box_pack_end (GTK_BOX(applet->hbox), GTK_WIDGET(applet->gsm.image), FALSE, FALSE, 2);
 
-    moko_panel_applet_set_widget( GTK_CONTAINER(mokoapplet), applet->hbox );
-    gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
+  moko_panel_applet_set_widget( GTK_CONTAINER(mokoapplet), applet->hbox );
+  gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
 
-    gsm_watcher_install ();
+  gsm_watcher_install ();
 
-    return GTK_WIDGET(mokoapplet);
+  return GTK_WIDGET(mokoapplet);
 };
