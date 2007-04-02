@@ -2,7 +2,7 @@ DESCRIPTION = "The OpenMoko On-Screen-Keyboard"
 SECTION = "openmoko/inputmethods"
 DEPENDS = "libfakekey expat libxft"
 PV = "0.0.1+svn${SRCDATE}"
-PR = "r1"
+PR = "r2"
 
 inherit openmoko pkgconfig gettext
 
