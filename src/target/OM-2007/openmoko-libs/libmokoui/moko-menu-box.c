@@ -1,19 +1,19 @@
 /*
  * libmokoui -- OpenMoko Application Framework UI Library
- * 
+ *
  * Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
- * 
+ *
  * Copyright (C) 2006-2007 OpenMoko Inc.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
  * the Free Software Foundation; version 2 of the license.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser Public License for more details.
- * 
+ *
  * Current Version: $Rev$ ($Date$) [$Author$]
  */
 
@@ -85,7 +85,7 @@ GtkWidget* moko_menu_box_new() /* Construction */
     return GTK_WIDGET(g_object_new(moko_menu_box_get_type(), NULL));
 }
 
-void moko_menu_box_clear(MokoMenuBox *f) /* Destruction */
+void moko_menu_box_clear(MokoMenuBox* f) /* Destruction */
 {
     /* destruct your widgets here */
 }
@@ -141,6 +141,15 @@ static void cb_filter_menu_update( GtkMenu* menu, MokoMenuBox* self )
     g_signal_emit( G_OBJECT(self), moko_menu_box_signals[FILTER_CHANGED], 0, text );
 }
 
+static void cb_menu_size_request( GtkWidget* widget, GtkRequisition* requisition, MokoMenuBox* self )
+{
+    // force popup menus to open with a certain width as per designer's request. See bug #130
+    GtkAllocation* a = &( GTK_WIDGET(self) )->allocation;
+    moko_debug( "size request of menu = %d / %d -- forcing width to %d", requisition->width, requisition->height, a->width / 2.5 );
+    if ( requisition->width != a->width / 2.5 )
+        requisition->width = a->width / 2.5;
+}
+
 void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
 {
     moko_debug( "moko_menu_box_set_application_menu" );
@@ -155,12 +164,13 @@ void moko_menu_box_set_application_menu(MokoMenuBox* self, GtkMenu* menu)
     }
     GtkWidget* appitem = gtk_image_menu_item_new_with_label( g_get_application_name() );
     GtkWidget* appicon = gtk_image_new_from_stock( "openmoko-application-menu-icon", GTK_ICON_SIZE_MENU );
-    gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM (appitem), appicon );
+    gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(appitem), appicon );
     gtk_widget_set_name( GTK_WIDGET(appitem), "transparent" );
     priv->appitem = appitem;
-    priv->appmenu = GTK_WIDGET (menu);
-    gtk_menu_item_set_submenu( GTK_MENU_ITEM (appitem), GTK_WIDGET (menu) );
-    gtk_menu_shell_append( GTK_MENU_SHELL (priv->menubar_l), appitem );
+    priv->appmenu = GTK_WIDGET(menu);
+    g_signal_connect( G_OBJECT(menu), "size-request", G_CALLBACK(cb_menu_size_request), self );
+    gtk_menu_item_set_submenu( GTK_MENU_ITEM(appitem), GTK_WIDGET(menu) );
+    gtk_menu_shell_append( GTK_MENU_SHELL(priv->menubar_l), appitem );
 
     //FIXME hack to popup the first menu if user clicks on menubar
     g_signal_connect( priv->menubar_l, "button-press-event", G_CALLBACK(cb_button_release), menu );
@@ -177,15 +187,16 @@ void moko_menu_box_set_filter_menu(MokoMenuBox* self, GtkMenu* menu)
         priv->menubar_r = gtk_menu_bar_new();
         gtk_widget_set_name( priv->menubar_r, "mokomenubox-filter-menubar" );
         gtk_box_pack_end( GTK_BOX(self), priv->menubar_r, TRUE, TRUE, 0 );
-    
+
         filtitem = gtk_image_menu_item_new_with_label( "Filter Menu" );
         GtkWidget* filticon = gtk_image_new_from_stock( "openmoko-filter-menu-icon", GTK_ICON_SIZE_MENU );
-        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM (filtitem), filticon );
+        gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM(filtitem), filticon );
         gtk_widget_set_name( filtitem, "transparent" );
         priv->filteritem = filtitem;
-        priv->filtermenu = GTK_WIDGET (menu);
-        gtk_menu_shell_append( GTK_MENU_SHELL (priv->menubar_r), priv->filteritem );
-        gtk_menu_item_set_submenu( GTK_MENU_ITEM (priv->filteritem), priv->filtermenu );
+        priv->filtermenu = GTK_WIDGET(menu);
+        g_signal_connect( G_OBJECT(menu), "size-request", G_CALLBACK(cb_menu_size_request), self );
+        gtk_menu_shell_append( GTK_MENU_SHELL(priv->menubar_r), priv->filteritem );
+        gtk_menu_item_set_submenu( GTK_MENU_ITEM(priv->filteritem), priv->filtermenu );
     }
     priv->filtermenu = GTK_WIDGET (menu);
     gtk_menu_item_set_submenu( GTK_MENU_ITEM (priv->filteritem), priv->filtermenu );
