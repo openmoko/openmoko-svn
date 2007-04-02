@@ -3,8 +3,8 @@ the linux kernel.
 
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-04-01 10:27:56.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-02 17:07:44.000000000 +0200
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-04-02 20:55:06.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-02 20:56:34.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -22,8 +22,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
  	select CPU_S3C2440
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-04-01 10:27:56.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-02 17:07:42.000000000 +0200
+--- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-04-02 20:55:06.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-02 20:56:33.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,8 +34,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-02 17:08:27.000000000 +0200
-@@ -0,0 +1,707 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-02 20:57:23.000000000 +0200
+@@ -0,0 +1,735 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -74,6 +74,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +#include <linux/spi/spi.h>
 +#include <linux/spi/spi_bitbang.h>
 +#include <linux/mmc/protocol.h>
++#include <linux/mmc/host.h>
 +
 +#include <linux/mtd/mtd.h>
 +#include <linux/mtd/nand.h>
@@ -451,15 +452,41 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +	[MMC_VDD_32_33]		= 3300,
 +};
 +
-+static void gta01_mmc_set_power(unsigned short vdd)
++static void gta01_mmc_set_power(unsigned char power_mode, unsigned short vdd)
 +{
-+	/* FIXME: set GTA01_GPIO_SDMMC_ON on GTA01v4 */
-+	//pcf50606_voltage_set(mmc_millivolts[vdd]);
++	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
++	       power_mode, vdd);
++
++	switch (system_rev) {
++	case GTA01v3_SYSTEM_REV:
++		/* FIXME */
++		break;
++	case GTA01v4_SYSTEM_REV:
++		/* FIXME: set GTA01_GPIO_SDMMC_ON on GTA01v4 */
++		//pcf50606_voltage_set(mmc_millivolts[vdd]);
++		break;
++	case GTA01Bv2_SYSTEM_REV:
++	case GTA01Bv3_SYSTEM_REV:
++		/* FIXME */
++		break;
++	case GTA01Bv4_SYSTEM_REV:
++		switch (power_mode) {
++		case MMC_POWER_OFF:
++			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 1);
++			break;
++		case MMC_POWER_ON:
++			s3c2410_gpio_setpin(GTA01_GPIO_SDMMC_ON, 0);
++			break;
++		}
++		break;
++	}
 +}
 +
 +static struct s3c24xx_mci_pdata gta01_mmc_cfg = {
 +	.gpio_detect	= GTA01_GPIO_nSD_DETECT,
 +	.set_power	= &gta01_mmc_set_power,
++	.ocr_avail	= MMC_VDD_32_33,		/* GTA01Bv2/3/4 */
++#if 0
 +	.ocr_avail	= MMC_VDD_145_150|MMC_VDD_150_155|MMC_VDD_155_160|
 +			  MMC_VDD_160_165| MMC_VDD_165_170|MMC_VDD_17_18|
 +			  MMC_VDD_18_19|MMC_VDD_19_20|MMC_VDD_20_21|
@@ -467,6 +494,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +			  MMC_VDD_24_25|MMC_VDD_25_26|MMC_VDD_26_27|
 +			  MMC_VDD_27_28|MMC_VDD_28_29|MMC_VDD_29_30|
 +			  MMC_VDD_30_31|MMC_VDD_31_32|MMC_VDD_32_33,
++#endif
 +};
 +
 +static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
@@ -746,7 +774,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 Index: linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h	2007-04-01 10:29:43.000000000 +0200
++++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h	2007-04-02 20:55:32.000000000 +0200
 @@ -0,0 +1,69 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
