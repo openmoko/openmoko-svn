@@ -19,6 +19,7 @@ static struct lgsm_handle *lgsmh = NULL;
 static GPollFD GPfd;
 static gint gsm_q = -99;
 static gint gprs_q = -99;
+static int test = 0;
 
 static gboolean
 gsm_watcher_prepare (GSource * source, gint * timeout)
@@ -125,37 +126,49 @@ gsm_connect_init()
   }
 }
 
-GsmSignalQuality
+SignalStatus
 moko_panel_gsm_signal_quality()
 {
   switch (gsm_q)
   {
     case 4 :
-      return GSM_SIGNAL_LEVEL_1 ;
+      return LEVEL_1 ;
     case 3 :
-      return GSM_SIGNAL_LEVEL_2 ;
+      return LEVEL_2 ;
     case 2 :
-      return GSM_SIGNAL_LEVEL_3 ;
+      return LEVEL_3 ;
     case 1 :
-      return GSM_SIGNAL_LEVEL_4 ;
+      return LEVEL_4 ;
     case 0 :
-      return GSM_SIGNAL_LEVEL_5 ;
+      return LEVEL_5 ;
     default :
-      return GSM_SIGNAL_ERROR;
+      return UN_CONN;
   }
 }
 /*for a rainning day*/
-GprsSignalQuality
+SignalStatus
 moko_panel_gprs_signal_quality()
 {
-
-if(0)
-{  switch (gprs_q)
+//some code for only for test, since there have not any methord to check out gprs signal.
+  
+  test ++;
+  if (test > 11 || test < 0)
+    test = 0;
+  switch (test)
   {
-		  
+    case 10 :
+      return LEVEL_1 ;
+    case 9 :
+      return LEVEL_2 ;
+    case 8 :
+      return LEVEL_3 ;
+    case 7 :
+      return LEVEL_4 ;
+    case 6 :
+      return LEVEL_5 ;
+    default :
+      return UN_CONN;
   }
-}
-  return GPRS_CLOSE;
 }
 
 void
