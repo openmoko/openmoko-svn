@@ -11,10 +11,9 @@ AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 # base deps
-PKG_CHECK_MODULES(MATCHBOX_PANEL, matchbox-panel >= 0.1,,
-                 AC_MSG_ERROR([*** Required Matchbox Panel 2 >= 0.1 not installed ***]))
-LIBS="$LIBS $GTK_LIBS"
-CFLAGS="$CFLAGS $MATCHBOX_PANEL"
+PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.2)
+LIBS="$LIBS $OPENMOKO_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_LIBS"
 
 # output stuff
 AC_OUTPUT([
