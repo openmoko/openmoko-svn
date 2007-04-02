@@ -4,7 +4,7 @@ the linux kernel.
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-04-01 10:27:56.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-01 12:33:02.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-02 17:07:44.000000000 +0200
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -23,7 +23,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 ===================================================================
 --- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-04-01 10:27:56.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-01 12:33:01.000000000 +0200
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-02 17:07:42.000000000 +0200
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -34,8 +34,8 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-01 12:36:42.000000000 +0200
-@@ -0,0 +1,706 @@
++++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-02 17:08:27.000000000 +0200
+@@ -0,0 +1,707 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -218,6 +218,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +		},
 +		[PCF50606_REGULATOR_DCUD] = {
 +			.name		= "core_1v8",
++			.flags		= PMU_VRAIL_F_SUSPEND_ON,
 +			.voltage	= {
 +				.init	= 2100,
 +				.max	= 2100,
