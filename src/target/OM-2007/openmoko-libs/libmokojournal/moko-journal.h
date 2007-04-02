@@ -34,6 +34,10 @@
 
 typedef struct _MokoJournal MokoJournal ;
 typedef struct _MokoJEntry MokoJEntry ;
+typedef struct _MokoJEmailInfo MokoJEmailInfo ;
+typedef struct _MokoJSMSInfo MokoJSMSInfo ;
+typedef struct _MokoJMMSInfo MokoJMMSInfo ;
+typedef struct _MokoJCallInfo MokoJCallInfo ;
 
 /**
  * this represents the primary type of
@@ -169,6 +173,31 @@ const icaltimetype* moko_j_entry_get_dtstart (MokoJEntry *entry) ;
  * @dtstart: the new starting date associated to the journal entry.
  */
 void moko_j_entry_set_dtstart (MokoJEntry *entry, icaltimetype dtstart);
+
+/*<email info>*/
+
+/**
+ * moko_j_entry_get_email_info:
+ * @entry: the current instance of journal entry
+ * @info: extra information attached to the email info, or NULL.
+ * Client code must *NOT* of deallocate the returned info.
+ * It is the duty of the MokoJEntry code to deallocate it when
+ * necessary
+ *
+ * Return value: TRUE if the call succeeded, FALSE otherwise.
+ */
+gboolean moko_j_entry_get_email_info (MokoJEntry *entry,
+                                      MokoJEmailInfo **info) ;
+
+/**
+ * moko_j_email_info_get_was_sent:
+ * @info: the current instance of email extra info
+ *
+ * Return value: TRUE if the email was sent, FALSE if it was received.
+ */
+gboolean moko_j_email_info_get_was_sent (MokoJEmailInfo *info) ;
+
+/*</email info>*/
 /*</journal entries management>*/
 
 #endif /*__MOKO_JOURNAL_H__*/

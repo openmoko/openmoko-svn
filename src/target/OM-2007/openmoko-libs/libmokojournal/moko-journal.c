@@ -19,3 +19,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include "moko-journal.h"
+
+/**
+ * moko_j_email_info_new:
+ *
+ * allocate a MokoJEmailInfo object.
+ *
+ * Return value: the newly allocated email info
+ * Must be deallocated using moko_j_email_info_free()
+ */
+MokoJEmailInfo *moko_j_email_info_new () ;
+
+/**
+ * moko_j_email_info_free:
+ * @info: the journal email info to deallocate
+ *
+ * Deallocates an instance of journal email info.
+ */
+void moko_j_email_info_free (MokoJEmailInfo *info) ;
