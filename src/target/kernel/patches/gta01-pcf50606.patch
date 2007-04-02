@@ -3,8 +3,8 @@ This is the PCF50606 power management unit driver for FIC GTA01
 Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-01 13:09:02.000000000 +0200
-@@ -0,0 +1,1896 @@
++++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-02 19:12:27.000000000 +0200
+@@ -0,0 +1,1921 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -106,6 +106,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	struct input_dev *input_dev;
 +	int allow_close;
 +	int onkey_seconds;
++	int irq;
 +#ifdef CONFIG_PM
 +	struct {
 +		u_int8_t dcdc1, dcdc2;
@@ -370,6 +371,10 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	if (reg >= __NUM_PCF50606_REGULATORS)
 +		return -EINVAL;
++
++	/* IOREG cannot be powered off since it powers the PMU I2C */
++	if (reg == PCF50606_REGULATOR_IOREG)
++		return -EIO;
 +
 +	addr = regulator_registers[reg];
 +
@@ -731,6 +736,8 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	pcf->working = 0;
 +	input_sync(pcf->input_dev);
 +	put_device(&pcf->client.dev);
++
++	enable_irq(pcf->irq);
 +}
 +
 +static void pcf50606_schedule_work(struct pcf50606_data *pcf)
@@ -751,6 +758,10 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	DEBUGP("entering(irq=%u, pcf=%p): scheduling work\n",
 +		irq, _pcf);
 +	pcf50606_schedule_work(pcf);
++
++	/* Disable any further interrupts until we have processed
++	 * the current one */
++	disable_irq(irq);
 +
 +	return IRQ_HANDLED;
 +}
@@ -1576,6 +1587,7 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	mutex_init(&data->lock);
 +	INIT_WORK(&data->work, pcf50606_work);
++	data->irq = irq;
 +	data->working = 0;
 +	data->onkey_seconds = -1;
 +	data->pdata = pcf50606_pdev->dev.platform_data;
@@ -1792,8 +1804,21 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +	/* switch off power supplies that are not needed during suspend */
 +	for (i = 0; i < __NUM_PCF50606_REGULATORS; i++) {
-+		if (!(pcf->pdata->rails[i].flags & PMU_VRAIL_F_SUSPEND_ON))
-+			pcf50606_onoff_set(pcf, i, 0);
++		if (!(pcf->pdata->rails[i].flags & PMU_VRAIL_F_SUSPEND_ON)) {
++			u_int8_t tmp;
++
++			/* IOREG powers the I@C interface so we cannot switch
++			 * it off */
++			if (i == PCF50606_REGULATOR_IOREG)
++				continue;
++
++			DEBUGP("disabling pcf50606 regulator %u\n", i);
++			/* we cannot use pcf50606_onoff_set() because we're
++			 * already under the mutex */
++			tmp = __reg_read(pcf, regulator_registers[i]);
++			tmp &= 0x1f;
++			__reg_write(pcf, regulator_registers[i], tmp);
++		}
 +	}
 +
 +	pcf->standby_regs.int1m = __reg_read(pcf, PCF50606_REG_INT1M);
