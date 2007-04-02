@@ -1,14 +1,14 @@
 DESCRIPTION = "Standard Gtk+ theme for the OpenMoko distribution, QVGA version"
 SECTION = "openmoko/base"
 PV = "0.0+svn${SRCDATE}"
-PR = "r2"
+PR = "r3"
 
 inherit openmoko-base
 
 SRC_URI = "${OPENMOKO_MIRROR}/src/target/${OPENMOKO_RELEASE}/artwork;module=themes;proto=http"
 S = "${WORKDIR}"
 
-dirs = "themes/openmoko-standard"
+dirs = "themes/openmoko-standard-qvga"
 
 do_install() {
 	find ${WORKDIR} -name ".svn" | xargs rm -rf

@@ -1,8 +1,8 @@
 DESCRIPTION = "Matchbox session files for OpenMoko"
 SECTION = "openmoko/base"
-RDEPENDS = "matchbox gconf matchbox-applet-startup-monitor gtk-theme-clearlooks"
+RDEPENDS = "matchbox-panel-2 matchbox-wm gconf gtk-theme-clearlooks"
 PV = "0.0+svn${SRCDATE}"
-PR = "r8"
+PR = "r9"
 
 inherit openmoko-base
 
@@ -15,7 +15,6 @@ do_install() {
 	rm -fR ${D}/${sysconfdir}/.svn
 	rm -fR ${D}/${sysconfdir}/matchbox/.svn
 	chmod -R 755 ${D}/${sysconfdir}
-        # DEMO only!
 	install -m 0755 ${WORKDIR}/session ${D}/${sysconfdir}/matchbox/session
 }
 
