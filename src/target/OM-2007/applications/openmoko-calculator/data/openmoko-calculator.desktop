@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko Calculator
+Comment=Simple finger calculator
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-calculator
+Icon=openmoko-calculator.png
+Terminal=false
+SingleInstance=true
+StartupNotify=true

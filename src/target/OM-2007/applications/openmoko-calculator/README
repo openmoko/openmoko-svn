@@ -1,0 +1,11 @@
+Simple calculator, started based on the OpenMoko Finger Application
+example and the OpenMoko regular dialer UI, in the hope that it would
+be useful.
+
+Notes:
+ * Pango markup is used currently to manage font size for the display
+of for button labels, maybe styles would be more appropriate.
+
+Thanks for your attention,
+
+Rodolphe <rodolphe.ortalo@free.fr>
