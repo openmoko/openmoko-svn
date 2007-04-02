@@ -1,3 +1,6 @@
+DEFINES += IPKG_LIB
+LIBS += -lipkg
+
 HEADERS += src/application-menu.h \
            src/appmanager-data.h \
            src/appmanager-window.h \
@@ -32,4 +35,3 @@ MOKOCONFIG = mokoui
 PKGCONFIG += libipkg gthread-2.0
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
-
