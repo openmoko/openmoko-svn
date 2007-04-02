@@ -1,5 +1,13 @@
+#
+# Don't use this if your nickname is not mickeyl
+#
+
+
 CONFIG = debug warn_on link_pkgconfig console $$MOKOCONFIG
 PREFIX = /usr/local
+
+INCLUDEPATH += $(ADD_INCLUDE)
+LIBS += $(ADD_LIB)
 
 QMAKE_LINK              = gcc
 QMAKE_LINK_SHLIB        = gcc
@@ -89,3 +97,4 @@ contains( TEMPLATE, lib ) {
 
 
 DEFINES += G_LOG_DOMAIN=\\\"$$TARGET\\\"
+DEFINES += GETTEXT_PACKAGE=\\\"$$TARGET\\\"

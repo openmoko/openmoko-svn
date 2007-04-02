@@ -5,5 +5,6 @@ SUBDIRS = \
   openmoko-contacts \
   openmoko-dialer \
   openmoko-footer \
-  openmoko-messages
-
+  openmoko-messages \
+  openmoko-rssreader \
+  openmoko-today "
