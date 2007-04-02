@@ -7,7 +7,7 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile	2007-03-29 21:46:26.000000000 +0200
-+++ u-boot/Makefile	2007-04-01 13:44:16.000000000 +0200
++++ u-boot/Makefile	2007-04-02 14:42:27.000000000 +0200
 @@ -1977,6 +1977,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
@@ -26,7 +26,7 @@ Index: u-boot/Makefile
 Index: u-boot/board/neo1973/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/Makefile	2007-04-01 13:44:18.000000000 +0200
++++ u-boot/board/neo1973/Makefile	2007-04-02 14:42:31.000000000 +0200
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -117,7 +117,7 @@ Index: u-boot/board/neo1973/config.mk
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.c	2007-04-01 13:44:20.000000000 +0200
++++ u-boot/board/neo1973/neo1973.c	2007-04-02 14:51:14.000000000 +0200
 @@ -0,0 +1,362 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -306,7 +306,7 @@ Index: u-boot/board/neo1973/neo1973.c
 +	gpio->GPACON = 0x0005E0FFF;
 +	gpio->GPADAT |= (1 << 16);	/* Set GPA16 to high (nNAND_WP) */
 +
-+	gpio->GPBCON = 0x00045496;
++	gpio->GPBCON = 0x00045456;
 +	gpio->GPBUP = 0x000007FF;
 +
 +	gpio->GPCCON = 0xAAAA12A9;
@@ -741,7 +741,7 @@ Index: u-boot/board/neo1973/u-boot.lds
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/neo1973.h	2007-04-01 13:44:20.000000000 +0200
++++ u-boot/include/configs/neo1973.h	2007-04-02 14:42:34.000000000 +0200
 @@ -0,0 +1,265 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
@@ -1070,7 +1070,7 @@ Index: u-boot/board/neo1973/split_by_variant.sh
 Index: u-boot/board/neo1973/cmd_neo1973.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/cmd_neo1973.c	2007-04-01 13:44:18.000000000 +0200
++++ u-boot/board/neo1973/cmd_neo1973.c	2007-04-02 14:42:31.000000000 +0200
 @@ -0,0 +1,120 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -1195,7 +1195,7 @@ Index: u-boot/board/neo1973/cmd_neo1973.c
 Index: u-boot/board/neo1973/neo1973.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.h	2007-04-01 13:44:17.000000000 +0200
++++ u-boot/board/neo1973/neo1973.h	2007-04-02 14:42:29.000000000 +0200
 @@ -0,0 +1,18 @@
 +#ifndef _NEO1973_H
 +#define _NEO1973_H
@@ -1323,7 +1323,7 @@ Index: u-boot/board/neo1973/pcf50606.c
 Index: u-boot/common/main.c
 ===================================================================
 --- u-boot.orig/common/main.c	2007-03-29 21:46:19.000000000 +0200
-+++ u-boot/common/main.c	2007-04-01 13:44:17.000000000 +0200
++++ u-boot/common/main.c	2007-04-02 14:42:29.000000000 +0200
 @@ -61,6 +61,7 @@
  #undef DEBUG_PARSER
  
@@ -1773,7 +1773,7 @@ Index: u-boot/board/neo1973/jbt6k74.h
 Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile	2007-03-29 21:46:26.000000000 +0200
-+++ u-boot/drivers/Makefile	2007-04-01 13:44:18.000000000 +0200
++++ u-boot/drivers/Makefile	2007-04-02 14:42:31.000000000 +0200
 @@ -49,6 +49,7 @@
  	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbtty.o \
  	  videomodes.o w83c553f.o \
