@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r32"
+PR = "r33"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -115,7 +115,7 @@ RDEPENDS_task-openmoko-phone = "\
 #
 DESCRIPTION_task-openmoko-finger = "OpenMoko: Finger UI Applications"
 RDEPENDS_task-openmoko-finger = "\
-#  openmoko-calculator \
+  openmoko-calculator \
 "
 
 #
