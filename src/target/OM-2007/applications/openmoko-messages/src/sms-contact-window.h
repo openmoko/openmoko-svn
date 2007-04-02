@@ -51,13 +51,13 @@ enum {
 
 typedef struct
 {
-  MokoWindow parent;
+  GtkWindow parent;
   /* instance members */
 }SmsContactWindow;
 
 typedef struct
 {
-  MokoWindowClass parent_class;
+  GtkWindowClass parent_class;
   /* class members */
   void (*contact_select_done) (SmsContactWindow* self);
 }SmsContactWindowClass;

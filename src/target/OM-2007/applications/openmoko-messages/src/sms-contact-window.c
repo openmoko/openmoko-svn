@@ -19,7 +19,7 @@
 
 #include "sms-contact-window.h"
 
-G_DEFINE_TYPE (SmsContactWindow, sms_contact_window, MOKO_TYPE_WINDOW)
+G_DEFINE_TYPE (SmsContactWindow, sms_contact_window, GTK_TYPE_WINDOW)
 
 #define SMS_CONTACT_WINDOW_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), SMS_TYPE_CONTACT_WINDOW, SmsContactWindowPrivate))
 
@@ -134,14 +134,8 @@ open_book (SmsContactData* data)
 static void
 sms_contact_window_init (SmsContactWindow* self)
 {
-  MokoWindow* parent = (MokoWindow*)moko_application_get_main_window( moko_application_get_instance() );
-  if ( parent )
-    {
-      gtk_window_set_transient_for( GTK_WINDOW(self), GTK_WINDOW(parent) );
-      gtk_window_set_modal( GTK_WINDOW(self), TRUE );
-      gtk_window_set_destroy_with_parent( GTK_WINDOW(self), TRUE );
-    }
-
+  gtk_widget_set_size_request( GTK_WIDGET(self), 480, 640 ); 
+  gtk_window_set_modal( GTK_WINDOW(self), TRUE );
   /* initialzation */
   SmsContactWindowPrivate* priv = SMS_CONTACT_WINDOW_GET_PRIVATE(self);
   priv->vbox = gtk_vbox_new(FALSE,0);
