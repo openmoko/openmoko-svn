@@ -109,8 +109,8 @@ void s3c_timers_cmp_handler_set(void *opaque, int line,
 
 struct s3c_uart_state_s;
 struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
-                void *pic, void *dma, int irq[], int drq[],
-                CharDriverState *chr);
+                void *pic, void *dma, int irq[], int drq[]);
+void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr);
 
 struct s3c_adc_state_s;
 struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, void *pic);

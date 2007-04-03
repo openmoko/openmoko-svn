@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Chooses and downloads some OpenMoko image snapshots for flash.sh to use.
 #
 # Copyright (C) 2007 OpenMoko, Inc.

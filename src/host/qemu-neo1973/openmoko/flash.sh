@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Generates a ready to use OpenMoko NAND flash image.  Vaguely based
 # on devirginator and http://wiki.openmoko.org/wiki/NAND_bad_blocks.
 #
@@ -31,7 +31,7 @@ if ! which pngtopnm || ! which ppmtorgb3; then
 	exit -1
 fi
 
-make splash.gz || exit -1
+${make} splash.gz || exit -1
 
 # Find the most recent OpenMoko images in the current directory.
 # We assume they have numeric date or some build number in their names.
@@ -56,7 +56,7 @@ rm -rf $uboot_symlink
 ln -s $script_dir_relative/$uboot_image $uboot_symlink
 
 rm -rf $flash_image
-make $flash_image || exit -1
+${make} $flash_image || exit -1
 
 # Launch the emulator assuming that u-boot is now functional enough
 # for us to be able to issue u-boot commands.

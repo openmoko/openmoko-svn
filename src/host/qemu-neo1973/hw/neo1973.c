@@ -100,7 +100,7 @@ static void neo_vib_switch(int line, int level, void *opaque)
 
 static void neo_gsm_switch(int line, int level, void *opaque)
 {
-    neo_printf("GSM %sabled.\n", level ? "en" : "dis");
+    neo_printf("GSM %sabled.\n", level ? "dis" : "en");
 }
 
 static void neo_bt_switch(int line, int level, void *opaque)

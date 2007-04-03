@@ -7,6 +7,7 @@ uboot_symlink="$src_dir/u-boot.bin"
 qemu_relative="arm-softmmu/qemu-system-arm -M neo -m 130"
 qemu="$src_dir/$qemu_relative"
 flash_image=openmoko-flash.image
+make=gmake
 
 kernel_addr=0x32000000
 splash_addr=0x36000000

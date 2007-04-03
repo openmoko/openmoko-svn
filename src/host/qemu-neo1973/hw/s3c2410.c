@@ -1049,7 +1049,9 @@ struct s3c_uart_state_s {
     uint8_t rxfifo[16];
     int rxstart;
     int rxlen;
-    CharDriverState *chr;
+#define UART_MAX_CHR	4
+    int chr_num;
+    CharDriverState *chr[UART_MAX_CHR];
 
     uint8_t lcontrol;
     uint8_t fcontrol;
@@ -1074,6 +1076,7 @@ static void s3c_uart_reset(struct s3c_uart_state_s *s)
 static void s3c_uart_params_update(struct s3c_uart_state_s *s)
 {
     QEMUSerialSetParams ssp;
+    int i;
     if (!s->chr)
         return;
 
@@ -1097,7 +1100,8 @@ static void s3c_uart_params_update(struct s3c_uart_state_s *s)
 
     ssp.stop_bits = (s->lcontrol & (1 << 2)) ? 2 : 1;
 
-    qemu_chr_ioctl(s->chr, CHR_IOCTL_SERIAL_SET_PARAMS, &ssp);
+    for (i = 0; i < s->chr_num; i ++)
+        qemu_chr_ioctl(s->chr[i], CHR_IOCTL_SERIAL_SET_PARAMS, &ssp);
 }
 
 static void s3c_uart_err(struct s3c_uart_state_s *s, int err)
@@ -1234,6 +1238,7 @@ static void s3c_uart_write(void *opaque, target_phys_addr_t addr,
 {
     struct s3c_uart_state_s *s = (struct s3c_uart_state_s *) opaque;
     uint8_t ch;
+    int i, afc;
     addr -= s->base;
 
     switch (addr) {
@@ -1256,12 +1261,17 @@ static void s3c_uart_write(void *opaque, target_phys_addr_t addr,
         s->fcontrol = value & 0xf1;
         break;
     case S3C_UMCON:
-        s->mcontrol = value & 0xe1;
+        if ((s->mcontrol ^ value) & (1 << 4)) {
+            afc = (value >> 4) & 1;
+            for (i = 0; i < s->chr_num; i ++)
+                qemu_chr_ioctl(s->chr[i], CHR_IOCTL_MODEM_SET_AFC, &afc);
+        }
+        s->mcontrol = value & 0x11;
         break;
     case S3C_UTXH:
         ch = value & 0xff;
-        if (s->chr)
-            qemu_chr_write(s->chr, &ch, 1);
+        for (i = 0; i < s->chr_num; i ++)
+            qemu_chr_write(s->chr[i], &ch, 1);
         s3c_uart_empty(s);
         break;
     case S3C_UBRDIV:
@@ -1286,8 +1296,7 @@ static CPUWriteMemoryFunc *s3c_uart_writefn[] = {
 };
 
 struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
-                void *pic, void *dma, int irq[], int drq[],
-                CharDriverState *chr)
+                void *pic, void *dma, int irq[], int drq[])
 {
     int iomemtype;
     struct s3c_uart_state_s *s = (struct s3c_uart_state_s *)
@@ -1298,7 +1307,6 @@ struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
     s->dma = dma;
     s->irq = irq;
     s->drq = drq;
-    s->chr = chr;
 
     s3c_uart_reset(s);
 
@@ -1306,11 +1314,17 @@ struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
                     s3c_uart_writefn, s);
     cpu_register_physical_memory(s->base, 0xfff, iomemtype);
 
-    if (chr)
-        qemu_chr_add_read_handler(chr, s3c_uart_is_empty, s3c_uart_rx, s);
-    /* S3C2410 UART doesn't seem to understand break conditions.  */
-
     return s;
+}
+
+void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr)
+{
+    if (s->chr_num >= UART_MAX_CHR)
+        cpu_abort(cpu_single_env, "%s: Too many devices\n", __FUNCTION__);
+    s->chr[s->chr_num ++] = chr;
+
+    qemu_chr_add_read_handler(chr, s3c_uart_is_empty, s3c_uart_rx, s);
+    /* S3C2410 UART doesn't seem to understand break conditions.  */
 }
 
 /* ADC & Touchscreen interface */
@@ -2189,10 +2203,12 @@ struct s3c_state_s *s3c2410_init(DisplayState *ds)
                     s3c_nand_writefn, s);
     cpu_register_physical_memory(s->nand_base, 0xffffff, iomemtype);
 
-    for (i = 0; s3c2410_uart[i].base; i ++)
+    for (i = 0; s3c2410_uart[i].base; i ++) {
         s->uart[i] = s3c_uart_init(s3c2410_uart[i].base, s->pic, s->dma,
-                        s3c2410_uart[i].irq, s3c2410_uart[i].dma,
-                        serial_hds[i]);
+                        s3c2410_uart[i].irq, s3c2410_uart[i].dma);
+        if (serial_hds[i])
+            s3c_uart_attach(s->uart[i], serial_hds[i]);
+    }
 
     s->timers = s3c_timers_init(0x51000000, s->pic, s->dma);
 
