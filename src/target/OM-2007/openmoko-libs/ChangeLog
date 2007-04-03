@@ -1,3 +1,15 @@
+2007-04-03  Rob Bradford  <rob@openedhand.com>
+
+	* libmokoui/moko-dialog.c: (moko_dialog_add_button),
+	(moko_dialog_add_button_secondary),
+	(moko_dialog_set_button_secondary),
+	(moko_dialog_get_button_secondary):
+	Provide framework for easily dealing with secondary buttons.
+
+	* libmokoui/moko-dialog.h:
+	Add moko_dialog_set_title prototype to the header file.
+	Add prototypes for new functions.
+
 2007-04-02 Dodji Seketeli
 
 	* openmoko-libs/libmokojournal/moko-journal.[c|h]: went forward with the

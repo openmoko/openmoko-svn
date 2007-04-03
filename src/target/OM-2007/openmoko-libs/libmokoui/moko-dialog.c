@@ -280,7 +280,7 @@ moko_dialog_add_button_widget (MokoDialog *self, GtkButton *button, gint respons
 }
 
 GtkWidget*
-moko_dialog_add_button (MokoDialog *self, gchar *text, gint response_id)
+moko_dialog_add_button (MokoDialog *self, const gchar *text, gint response_id)
 {
   GtkWidget *button;
 
@@ -289,6 +289,31 @@ moko_dialog_add_button (MokoDialog *self, gchar *text, gint response_id)
   gtk_widget_show (button);
 
   return button;
+}
+
+GtkWidget*
+moko_dialog_add_button_secondary (MokoDialog *self, gchar *text, gint response_id)
+{
+  GtkWidget *button;
+
+  button = gtk_button_new_from_stock (text);
+  moko_dialog_add_button_widget (self, GTK_BUTTON (button), response_id);
+  gtk_widget_show (button);
+  moko_dialog_set_button_secondary (self, GTK_BUTTON (button), TRUE);
+
+  return button;
+}
+
+void
+moko_dialog_set_button_secondary (MokoDialog *self, GtkButton *button, gboolean is_secondary)
+{
+  gtk_button_box_set_child_secondary (GTK_BUTTON_BOX (self->action_area), GTK_WIDGET (button), is_secondary);
+}
+
+gboolean
+moko_dialog_get_button_secondary (MokoDialog *self, GtkButton *button)
+{
+  return gtk_button_box_get_child_secondary (GTK_BUTTON_BOX (self->action_area), GTK_WIDGET (button));
 }
 
 

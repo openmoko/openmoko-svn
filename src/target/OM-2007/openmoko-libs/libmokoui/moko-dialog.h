@@ -61,13 +61,16 @@ typedef struct {
 GType moko_dialog_get_type (void);
 
 gint moko_dialog_get_button_response_id (MokoDialog *self, GtkButton *button);
-
-
+void moko_dialog_set_title (MokoDialog* self, const gchar* title);
 void moko_dialog_add_buttons (MokoDialog *self, gchar *first_button_text, ...);
-GtkWidget* moko_dialog_add_button (MokoDialog *self, gchar *text, gint response_id);
+GtkWidget* moko_dialog_add_button (MokoDialog *self, const gchar *text, gint response_id);
+GtkWidget* moko_dialog_add_button_secondary (MokoDialog *self, gchar *text, gint response_id);
 void moko_dialog_add_button_widget (MokoDialog *self, GtkButton *button, gint response_id);
+void moko_dialog_set_button_secondary (MokoDialog *self, GtkButton *button, gboolean is_secondary);
+gboolean moko_dialog_get_button_secondary (MokoDialog *self, GtkButton *button);
 void moko_dialog_response (MokoDialog *self, gint response_id);
 gint moko_dialog_run (MokoDialog *self);
+
 
 GtkWidget* moko_dialog_new (void);
 
