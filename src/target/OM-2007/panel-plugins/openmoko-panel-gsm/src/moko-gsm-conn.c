@@ -149,6 +149,8 @@ SignalStatus
 moko_panel_gprs_signal_quality()
 {
 //some code for only for test, since there have not any methord to check out gprs signal.
+if (0)
+{ 
   test ++;
   if (test > 11 || test < 0)
     test = 0;
@@ -167,6 +169,8 @@ moko_panel_gprs_signal_quality()
     default :
       return UN_CONN;
   }
+}
+  return UN_CONN;
 }
 
 void
