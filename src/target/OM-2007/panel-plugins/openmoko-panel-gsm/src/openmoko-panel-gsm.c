@@ -109,9 +109,9 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
   applet->timeout_id = g_timeout_add(4000, (GSourceFunc) timeout_cb, applet);
 
   applet->gsm.image = gtk_image_new ();//make an empty GtkImage object
-  applet->gsm.status = UN_CONN;
+  applet->gsm.status = UN_INIT;
   applet->gprs.image = gtk_image_new ();//make an empty GtkImage object
-  applet->gprs.status = UN_CONN;
+  applet->gprs.status = UN_INIT;
 
   applet->hbox = gtk_hbox_new(FALSE, 0);
   gtk_widget_show (applet->hbox);

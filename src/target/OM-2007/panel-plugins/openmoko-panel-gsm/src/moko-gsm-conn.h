@@ -14,6 +14,7 @@ enum{
 };
 
 typedef enum{
+  UN_INIT = -1,
   LEVEL_1 = 0,
   LEVEL_2,
   LEVEL_3,
