@@ -34,40 +34,36 @@
 #define MARGIN  10
 
 enum{
-    TEXT_COL = 0,
-    OBJECT_COL,
-    PIXBUF_COL,
-    MAX_COL
+  TEXT_COL = 0,
+  OBJECT_COL,
+  PIXBUF_COL,
+  MAX_COL
 };
+
 G_BEGIN_DECLS
-/*MOKOTASKLIST property*/
 
+#define MOKOTASKLIST_TYPE  (list_get_type())
+#define MOKOTASKLIST(obj)  (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKOTASKLIST_TYPE, MokoTaskList))
+#define MOKOTASKLIST_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass), MOKOTASKLIST_TYPE, MokoTaskListClass))
+#define IS_MOKOTASKLIST(obj)  (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKOTASKLIST_TYPE))
+#define IS_MOKOTASKLIST_CLASS(klass)  (G_TYPE_CHECK_CLASS_CAST ((klass), MOKOTASKLIST_TYPE))
 
-/*Pango Font spec*/
-
-#define MOKOTASKLIST_TYPE			(list_get_type())
-#define MOKOTASKLIST(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKOTASKLIST_TYPE, MokoTaskList))
-#define MOKOTASKLIST_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), MOKOTASKLIST_TYPE, MokoTaskListClass))
-#define IS_MOKOTASKLIST(obj)			(G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKOTASKLIST_TYPE))
-#define IS_MOKOTASKLIST_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), MOKOTASKLIST_TYPE))
-
-typedef struct _MokoTaskList		MokoTaskList;
-typedef struct _MokoTaskListClass	MokoTaskListClass;
+typedef struct _MokoTaskList  MokoTaskList;
+typedef struct _MokoTaskListClass  MokoTaskListClass;
 
 struct _MokoTaskList
 {
-	GtkVBox vbox;
-
-	GtkHBox *hbox;
-	GtkListStore *list_store;
-	GtkWidget *list_view;
-	GtkWidget *scrolled;
+  GtkVBox vbox;
+  GtkHBox *hbox;
+  GtkListStore *list_store;
+  GtkWidget *list_view;
+  GtkWidget *scrolled;
 };
 
 struct _MokoTaskListClass
 {
-	GtkVBoxClass parent_class;
-	void(*list) (MokoTaskList *l);
+  GtkVBoxClass parent_class;
+  void(*list) (MokoTaskList *l);
 };
 
 GType list_get_type (void);

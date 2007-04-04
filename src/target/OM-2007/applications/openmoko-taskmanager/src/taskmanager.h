@@ -47,19 +47,17 @@
 typedef struct _MokoTaskManager MokoTaskManager;
 
 struct _MokoTaskManager {
-    MokoApplication *app;
+  MokoApplication *app;
     
-    MokoFingerWindow *window;//??
-    GtkWidget *gtk_window;//??
-    MokoFingerWheel *wheel;
-    MokoFingerToolBox *toolbox;
-    MokoTaskList *l;
+  MokoFingerWindow *window;
+  MokoFingerWheel *wheel;
+  MokoFingerToolBox *toolbox;
+  MokoTaskList *l;
     
-    MokoPixmapButton *go_to;
-    MokoPixmapButton *kill;
-    MokoPixmapButton *kill_all;
-    MokoPixmapButton *quit;
-
-    };
+  MokoPixmapButton *go_to;
+  MokoPixmapButton *kill;
+  MokoPixmapButton *kill_all;
+  MokoPixmapButton *quit;
+};
  
 #endif /*taskmanager.h*/

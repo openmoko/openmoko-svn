@@ -122,60 +122,6 @@ setlock (char *fname)
 }
 
 int 
-gtk_widget_set_transparency(GtkWidget *widget, guint opacity) 
-{ 
-   Display *display; 
-   Window window; 
-   Window parent_win; 
-   Window root_win; 
-   Window* child_windows; 
-   int num_child_windows; 
-
-   if(!GTK_IS_WIDGET(widget)){ 
-                printf("gtk_widget_set_transparency: not a widget!\n"); 
-                return -1; 
-   } 
-
-   if(widget->window == NULL){ 
-                printf("gtk_widget_set_transparency: please init widget before set transparency!\n"); 
-                return -1; 
-   } 
-
-   /* Set the Display and Screen */ 
-   display = (Display*)gdk_x11_get_default_xdisplay(); 
-   /* sync, so the window manager can know the new widget */ 
-   XSync(display, False); 
-   window = GDK_WINDOW_XWINDOW(widget->window); 
-
-   /* Get the cureent window's top-level window */ 
-   while(1){ 
-        XQueryTree(display, window, 
-                            &root_win, 
-                            &parent_win, 
-                            &child_windows, &num_child_windows); 
-         XFree(child_windows); 
-       /* found the top-level window */ 
-          if(root_win == parent_win) break; 
-          window = parent_win; 
-   } 
-
-   if(opacity == OPAQUE){ 
-           XDeleteProperty(display, window, 
-                                   XInternAtom(display, "_NET_WM_WINDOW_OPACITY", False)); 
-   }
-   else{ 
-           XChangeProperty(display, window, 
-                                XInternAtom(display, "_NET_WM_WINDOW_OPACITY", False), 
-                                XA_CARDINAL, 32, PropModeReplace, 
-                                (unsigned char *) &opacity, 1L); 
-   } 
-
-   XSync(display, False); 
-
-   return 0; 
-} 
-
-int 
 main (int argc, char** argv)
 {
     Display *dpy;

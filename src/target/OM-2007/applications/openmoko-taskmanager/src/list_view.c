@@ -170,88 +170,88 @@ moko_add_window (Display *dpy, Window w, GtkListStore *list_store)
 void 
 moko_update_store_list (Display *dpy, GtkListStore *list_store)
 {
-    Window *list;
-    guint nr, i;
-    GtkTreeIter iter;
-    char *p;
+  Window *list;
+  guint nr, i;
+  GtkTreeIter iter;
+  char *p;
 
-    if (moko_update_net_undocked_client_list (dpy, &list, &nr) == FALSE)
-    	return;
-    p = g_malloc0 (nr);
+  if (moko_update_net_undocked_client_list (dpy, &list, &nr) == FALSE)
+    return;
+  p = g_malloc0 (nr);
 
-    if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list_store), &iter))
+  if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list_store), &iter))
+  {
+    gboolean more;
+    do
     {
-    	gboolean more;
-    do{
-    	gboolean found = FALSE;
-    	Window w;
-    	gtk_tree_model_get (GTK_TREE_MODEL (list_store), &iter, OBJECT_COL, &w, -1);
-    	for (i=0; i<nr; i++) 
-	{
-    	    if (list[i] == w) 
-			{
-    	    	p[i] = 1;
-    	    	found = TRUE;
-    	    	break;
-    	    }
-    	}
-    	if (found)
-    	    more = gtk_tree_model_iter_next (GTK_TREE_MODEL (list_store), &iter);
-    	else
-    	    more = gtk_list_store_remove (list_store, &iter);
-    	}
-    while (more);
-    }
-    
-    for (i=0; i<nr; i++) 
-	{
-    	if (p[i] == 0 && list[i] != my_win)
-    	    moko_add_window (dpy, list[i], list_store);
-   	}
+      gboolean found = FALSE;
+      Window w;
+      gtk_tree_model_get (GTK_TREE_MODEL (list_store), &iter, OBJECT_COL, &w, -1);
+      for (i=0; i<nr; i++) 
+      {
+        if (list[i] == w) 
+        {
+          p[i] = 1;
+          found = TRUE;
+          break;
+        }
+      }
+      if (found)
+        more = gtk_tree_model_iter_next (GTK_TREE_MODEL (list_store), &iter);
+      else
+        more = gtk_list_store_remove (list_store, &iter);
+    }while (more);
+  }
+  
+  for (i=0; i<nr; i++) 
+  {
+    if (p[i] == 0 && list[i] != my_win)
+      moko_add_window (dpy, list[i], list_store);
+  }
 
-  	g_free (p);
+  g_free (p);
 }
 
 void 
 moko_set_list_highlight (Display *dpy, MokoTaskList *l) 
 {
-    Window *wp;
-    Atom type;
-    int format;
-    unsigned long nitems;
-    unsigned long bytes_after;
+  Window *wp;
+  Atom type;
+  int format;
+  unsigned long nitems;
+  unsigned long bytes_after;
   
-    if (XGetWindowProperty (dpy, DefaultRootWindow (dpy), atoms[_NET_ACTIVE_WINDOW],
+  if (XGetWindowProperty (dpy, DefaultRootWindow (dpy), atoms[_NET_ACTIVE_WINDOW],
 			  0, 4, False, XA_WINDOW, &type, &format, &nitems, &bytes_after, 
 			  (unsigned char **)&wp) == Success)	
+  {
+    if (wp)
     {
-        if (wp)
+      Window w;
+      w = *wp;
+      if (w != 0 && w != my_win) 
+      {
+        GtkTreeIter iter;
+        if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL (l->list_store), &iter))	
         {
-            Window w;
-            w = *wp;
-            if (w != 0 && w != my_win) 
+          Window iw;
+          do 
+          {
+            gtk_tree_model_get (GTK_TREE_MODEL (l->list_store), &iter, OBJECT_COL, &iw, -1);
+            if (iw == w)
             {
-                GtkTreeIter iter;
-                if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL (l->list_store), &iter))	
-                {
-                    Window iw;
-                    do 
-                    	{
-                        gtk_tree_model_get (GTK_TREE_MODEL (l->list_store), &iter, OBJECT_COL, &iw, -1);
-                        if (iw == w)
-                        {
-                            GtkTreePath *path;
-                            path = gtk_tree_model_get_path (GTK_TREE_MODEL (l->list_store), &iter);
-				gtk_icon_view_select_path (GTK_ICON_VIEW (l->list_view), path);
-                            gtk_tree_path_free (path);
-                            break;
-                        }
-                      }while (gtk_tree_model_iter_next (GTK_TREE_MODEL (l->list_store), &iter));
-                   }
-              }
-          XFree (wp);
-         }
+              GtkTreePath *path;
+              path = gtk_tree_model_get_path (GTK_TREE_MODEL (l->list_store), &iter);
+              gtk_icon_view_select_path (GTK_ICON_VIEW (l->list_view), path);
+              gtk_tree_path_free (path);
+              break;
+            }
+          }while (gtk_tree_model_iter_next (GTK_TREE_MODEL (l->list_store), &iter));
+        }
+      }
+      XFree (wp);
     }
+  }
 }
 
 static void 

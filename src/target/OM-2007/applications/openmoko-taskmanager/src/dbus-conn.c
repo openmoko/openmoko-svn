@@ -26,23 +26,23 @@ static DBusError error;
 gboolean
 moko_dbus_connect_init (void)
 {
-    /* Get a connection to the system bus */
-    dbus_error_init (&error);
-    bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+  /* Get a connection to the system bus */
+  dbus_error_init (&error);
+  bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
 
-    if (!bus)
-    {
-        g_warning ("Failed to connect to the D-BUS daemon: %s", error.message);
-        return FALSE;
-    }
-  
-    if (dbus_error_is_set (&error))
-    {
-        g_warning ("Connection Error (%s)\n", error.message);
-        dbus_error_free (&error);
-    }
+  if (!bus)
+  {
+    g_warning ("Failed to connect to the D-BUS daemon: %s", error.message);
+    return FALSE;
+  }
+ 
+  if (dbus_error_is_set (&error))
+  {
+    g_warning ("Connection Error (%s)\n", error.message);
+    dbus_error_free (&error);
+  }
 
-    return TRUE;
+  return TRUE;
 }
 
 gboolean
