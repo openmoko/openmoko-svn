@@ -95,14 +95,16 @@ static void updateContactsView (EBook* book, EBookStatus status,
   data->contacts = contacts;
   g_debug ("list length %d", g_list_length(c));
 
-  const gchar *name , *phoneNum;
+  const gchar *uid, *name , *phoneNum;
   for (;c;c=c->next){
     EContact *contact = E_CONTACT (c->data);
+    uid = e_contact_get_const (contact, E_CONTACT_UID);
     name = e_contact_get_const (contact, E_CONTACT_FULL_NAME);
-    phoneNum =  e_contact_get_const (contact, E_CONTACT_PHONE_BUSINESS);
+    phoneNum =  e_contact_get_const (contact, E_CONTACT_PHONE_MOBILE);
     gtk_list_store_append(contacts_liststore, &iter);
     gtk_list_store_set (contacts_liststore, &iter, 
                         CONTACT_SEL_COL, FALSE,
+                        CONTACT_UID_COL, uid, 
                         CONTACT_NAME_COL, name,
 			CONTACT_CELLPHONE_COL, phoneNum,
 			-1);
@@ -131,6 +133,32 @@ open_book (SmsContactData* data)
   return FALSE;
 }
 
+static void 
+open_book_syn (SmsContactData* data)
+{
+  /* open ebook */
+  GError* error = NULL;
+  e_book_open (data->book,FALSE,&error);
+  if (error){
+    g_debug ("open book error %s",error->message);
+    return;
+  }
+  
+  /* open contacts */
+  EBookQuery* query;
+  query = e_book_query_any_field_contains ("");
+  GList* contacts = NULL;
+  e_book_get_contacts(data->book,query,&contacts,&error);
+  if (error){
+    g_debug ("open book error %s",error->message); 
+    return; 
+  } 
+  else{ 
+      g_debug ("contacts number %d",g_list_length(contacts)); 
+      updateContactsView (data->book,E_BOOK_ERROR_OK,contacts,data); 
+  } 
+}
+
 static void
 sms_contact_window_init (SmsContactWindow* self)
 {
@@ -154,8 +182,8 @@ sms_contact_window_init (SmsContactWindow* self)
   gtk_box_pack_start(GTK_BOX(priv->vbox), eventbox, FALSE, TRUE, 0);
 
   /* create contact list */
-  data->contacts_liststore = gtk_list_store_new (3, G_TYPE_BOOLEAN,
-                                                 G_TYPE_STRING, G_TYPE_STRING);
+  data->contacts_liststore = gtk_list_store_new (4, G_TYPE_BOOLEAN,
+                                                 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   priv->contacts_view = create_contacts_list(data);
   gtk_box_pack_start(GTK_BOX(priv->vbox), priv->contacts_view, TRUE, TRUE, 0);
   g_object_unref (data->contacts_liststore);
@@ -173,7 +201,8 @@ sms_contact_window_init (SmsContactWindow* self)
   gtk_box_pack_start(GTK_BOX(priv->vbox), priv->buttonbox, FALSE, TRUE, 0);
   
   /* loading contacts */
-  g_idle_add((GSourceFunc)open_book,data);
+  //g_idle_add((GSourceFunc)open_book,data);
+  open_book_syn (data);
 
   gtk_widget_show_all(priv->vbox);
   gtk_container_add(GTK_CONTAINER(self), priv->vbox);
@@ -231,27 +260,26 @@ gboolean get_selected_contact (GtkTreeModel* model, GtkTreePath* path,
   SmsContactData* contactData = priv->data;
   g_debug ("select item contacts %d", g_list_length(contactData->contacts));
 
-  gchar* name;
+  gchar* selUid;
   gboolean selected;
   gtk_tree_model_get (model, iter,
                       CONTACT_SEL_COL, &selected,
-		      CONTACT_NAME_COL,&name,
+		      CONTACT_UID_COL, &selUid,
 		      -1);
   if (selected)
-    g_debug ("contact %s selected", name);
+    g_debug ("contact %s selected", selUid);
   else {
-    g_debug ("contact %s not selected, remove from contacts list", name);
+    g_debug ("contact %s not selected, remove from contacts list", selUid);
     GList* contactListItem = contactData->contacts;
     for ( ; contactListItem; contactListItem=contactListItem->next){
       EContact* contact = E_CONTACT (contactListItem->data);
-      const gchar *contactName;
-      contactName = e_contact_get_const (contact, E_CONTACT_FULL_NAME);
-      if (!g_strcasecmp(name, contactName)) 
+      const gchar *uid = e_contact_get_const (contact, E_CONTACT_UID);
+      if (!g_strcasecmp(uid, selUid)) 
         contactData->contacts = g_list_remove (contactData->contacts,
 	                                       contactListItem->data);
     }
   }
-  g_free(name);
+  g_free(selUid);
 
   return FALSE;
 }
