@@ -6,9 +6,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-03-29 21:46:26.000000000 +0200
-+++ u-boot/Makefile	2007-04-02 14:42:27.000000000 +0200
-@@ -1977,6 +1977,14 @@
+--- u-boot.orig/Makefile
++++ u-boot/Makefile
+@@ -1988,6 +1988,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -18,15 +18,15 @@ Index: u-boot/Makefile
 +gta01bv3_config \
 +gta01bv4_config \
 +gta01v4_config :	unconfig
-+	@board/neo1973/split_by_variant.sh $@
++	@sh board/neo1973/split_by_variant.sh $@
 +
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
  
 Index: u-boot/board/neo1973/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/Makefile	2007-04-02 14:42:31.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/Makefile
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -77,8 +77,8 @@ Index: u-boot/board/neo1973/Makefile
 +#########################################################################
 Index: u-boot/board/neo1973/config.mk
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/config.mk	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/config.mk
 @@ -0,0 +1,34 @@
 +#
 +# (C) Copyright 2002
@@ -116,8 +116,8 @@ Index: u-boot/board/neo1973/config.mk
 +endif
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.c	2007-04-02 14:51:14.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/neo1973.c
 @@ -0,0 +1,362 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -483,8 +483,8 @@ Index: u-boot/board/neo1973/neo1973.c
 +}
 Index: u-boot/board/neo1973/lowlevel_init.S
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/lowlevel_init.S	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/lowlevel_init.S
 @@ -0,0 +1,189 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -677,8 +677,8 @@ Index: u-boot/board/neo1973/lowlevel_init.S
 +    .word 0x30
 Index: u-boot/board/neo1973/u-boot.lds
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/u-boot.lds	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/u-boot.lds
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
@@ -740,8 +740,8 @@ Index: u-boot/board/neo1973/u-boot.lds
 +}
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/neo1973.h	2007-04-02 14:42:34.000000000 +0200
+--- /dev/null
++++ u-boot/include/configs/neo1973.h
 @@ -0,0 +1,265 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
@@ -1010,8 +1010,8 @@ Index: u-boot/include/configs/neo1973.h
 +#endif	/* __CONFIG_H */
 Index: u-boot/board/neo1973/split_by_variant.sh
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/split_by_variant.sh	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/split_by_variant.sh
 @@ -0,0 +1,54 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
@@ -1069,8 +1069,8 @@ Index: u-boot/board/neo1973/split_by_variant.sh
 +$MKCONFIG -a neo1973 arm arm920t neo1973 NULL s3c24x0
 Index: u-boot/board/neo1973/cmd_neo1973.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/cmd_neo1973.c	2007-04-02 14:42:31.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/cmd_neo1973.c
 @@ -0,0 +1,120 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -1194,8 +1194,8 @@ Index: u-boot/board/neo1973/cmd_neo1973.c
 +#endif	/* CFG_CMD_BDI */
 Index: u-boot/board/neo1973/neo1973.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/neo1973.h	2007-04-02 14:42:29.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/neo1973.h
 @@ -0,0 +1,18 @@
 +#ifndef _NEO1973_H
 +#define _NEO1973_H
@@ -1217,8 +1217,8 @@ Index: u-boot/board/neo1973/neo1973.h
 +#endif
 Index: u-boot/board/neo1973/pcf50606.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/pcf50606.c	2007-04-01 13:45:34.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/pcf50606.c
 @@ -0,0 +1,100 @@
 +
 +#include <common.h>
@@ -1322,8 +1322,8 @@ Index: u-boot/board/neo1973/pcf50606.c
 +
 Index: u-boot/common/main.c
 ===================================================================
---- u-boot.orig/common/main.c	2007-03-29 21:46:19.000000000 +0200
-+++ u-boot/common/main.c	2007-04-02 14:42:29.000000000 +0200
+--- u-boot.orig/common/main.c
++++ u-boot/common/main.c
 @@ -61,6 +61,7 @@
  #undef DEBUG_PARSER
  
@@ -1343,8 +1343,8 @@ Index: u-boot/common/main.c
  # endif
 Index: u-boot/board/neo1973/jbt6k74.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/jbt6k74.c	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/jbt6k74.c
 @@ -0,0 +1,405 @@
 +/* u-boot driver for the tpo JBT6K74-AS LCM ASIC
 + *
@@ -1753,8 +1753,8 @@ Index: u-boot/board/neo1973/jbt6k74.c
 +}
 Index: u-boot/board/neo1973/jbt6k74.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/jbt6k74.h	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/board/neo1973/jbt6k74.h
 @@ -0,0 +1,14 @@
 +#ifndef _JBT6K74_H
 +#define _JBT6K74_H
@@ -1772,8 +1772,8 @@ Index: u-boot/board/neo1973/jbt6k74.h
 +#endif
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-03-29 21:46:26.000000000 +0200
-+++ u-boot/drivers/Makefile	2007-04-02 14:42:31.000000000 +0200
+--- u-boot.orig/drivers/Makefile
++++ u-boot/drivers/Makefile
 @@ -49,6 +49,7 @@
  	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbtty.o \
  	  videomodes.o w83c553f.o \
@@ -1784,8 +1784,8 @@ Index: u-boot/drivers/Makefile
  	  fsl_i2c.o s3c2410_fb.o
 Index: u-boot/drivers/pcf50606.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/pcf50606.c	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/drivers/pcf50606.c
 @@ -0,0 +1,75 @@
 +
 +#include <common.h>
@@ -1864,8 +1864,8 @@ Index: u-boot/drivers/pcf50606.c
 +#endif /* CONFIG DRIVER_PCF50606 */
 Index: u-boot/include/pcf50606.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/pcf50606.h	2007-03-29 21:46:26.000000000 +0200
+--- /dev/null
++++ u-boot/include/pcf50606.h
 @@ -0,0 +1,272 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
