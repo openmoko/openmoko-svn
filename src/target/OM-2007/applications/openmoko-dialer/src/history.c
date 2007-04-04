@@ -309,11 +309,12 @@ history_init_history_data (HISTORY_LIST_HEAD * historyhead)
 
   DBG_ENTER ();
   int res = history_read_list (historyhead);
-
+/*
   if (res == 0)
   {
     res = history_read_list_cmd (historyhead);
   }
+  */
   DBG_MESSAGE ("History:%d", historyhead->length);
   DBG_LEAVE ();
   return res;

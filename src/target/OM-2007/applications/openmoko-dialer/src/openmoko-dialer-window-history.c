@@ -322,6 +322,7 @@ on_window_history_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   {
     DBG_MESSAGE ("NEED TO UPDATE HISTORY");
   }
+  history_update_counter (appdata);
 
   DBG_LEAVE ();
 }
@@ -504,7 +505,7 @@ create_window_history_content (MOKO_DIALER_APP_DATA * p_dialer_data)
   gtk_misc_set_alignment (GTK_MISC (labelFilter), 0, 0.5);
   p_dialer_data->label_filter_history = labelFilter;
 
-  GtkWidget *labelCounter = gtk_label_new (("1/21"));
+  GtkWidget *labelCounter = gtk_label_new (("0/0"));
   gtk_widget_show (labelCounter);
   gtk_box_pack_start (GTK_BOX (hbox67), labelCounter, TRUE, TRUE, 0);
   gtk_label_set_justify (GTK_LABEL (labelCounter), GTK_JUSTIFY_RIGHT);
