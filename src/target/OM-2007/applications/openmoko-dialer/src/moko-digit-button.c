@@ -61,7 +61,8 @@ moko_digit_button_new_with_labels (const gchar * string_digit,
                                    const gchar * string_acrobat)
 {
 
-
+  PangoFontDescription *font_desc_label = 0;
+  font_desc_label = pango_font_description_new ();  
   MokoDigitButton *digitbutton =
     (MokoDigitButton *) g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL);
 
@@ -76,31 +77,40 @@ moko_digit_button_new_with_labels (const gchar * string_digit,
 
   GtkWidget *vbox = gtk_vbox_new (TRUE, 0);
   gtk_widget_show (vbox);
-  gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), vbox, FALSE, FALSE, 15);
 
   GtkWidget *labelDigit = gtk_label_new (string_digit);
   gtk_widget_show (labelDigit);
   gtk_box_pack_start (GTK_BOX (vbox), labelDigit, TRUE, TRUE, 0);
 
-  GtkWidget *alignment = gtk_alignment_new (0, 1, 1, 0.3);
+  GtkWidget *alignment = gtk_alignment_new (0, 1, 0, 0.3);
   gtk_widget_show (alignment);
   gtk_box_pack_start (GTK_BOX (hbox), alignment, TRUE, TRUE, 0);
 
   GtkWidget *labelAcrobat = gtk_label_new (string_acrobat);
   gtk_widget_show (labelAcrobat);
   gtk_container_add (GTK_CONTAINER (alignment), labelAcrobat);
-  gtk_widget_set_size_request (labelAcrobat, 0, 0);
-  gtk_label_set_justify (GTK_LABEL (labelAcrobat), GTK_JUSTIFY_RIGHT);
 
   gtk_widget_set_name (GTK_WIDGET (digitbutton), "mokofingerbutton-dialer");
 
   MokoDigitButtonPrivate *priv =
     (MokoDigitButtonPrivate *) MOKO_DIGIT_BUTTON_GET_PRIVATE (digitbutton);
+ //set the fonts of each side.
+   pango_font_description_set_size (font_desc_label, 32 * PANGO_SCALE);
+  if (font_desc_label)
+    gtk_widget_modify_font (labelDigit ,
+                            font_desc_label);
+   pango_font_description_set_size (font_desc_label,  10*PANGO_SCALE);
+  if (font_desc_label)
+    gtk_widget_modify_font (labelAcrobat,
+                            font_desc_label);
 
+  if(font_desc_label)
+    pango_font_description_free(font_desc_label);
+  
   priv->labelDigit = labelDigit;
   priv->labelAcrobat = labelAcrobat;
 
-//g_print("moko_digit_button_new_with_labels:%s,%s\n",string_digit,string_acrobat);
 
   return GTK_WIDGET (digitbutton);
 
