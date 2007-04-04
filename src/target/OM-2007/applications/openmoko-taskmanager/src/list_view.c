@@ -30,6 +30,8 @@ enum {
 static void moko_task_list_class_init          (MokoTaskListClass *klass);
 static void moko_task_list_init                (MokoTaskList *l);
 
+static void moko_task_list_selection_changed (GtkIconView *self, MokoTaskList *l);
+
 static guint list_signals[LAST_SIGNAL] = { 0 };
 
 /**
@@ -89,68 +91,33 @@ static void moko_task_list_class_init(MokoTaskListClass * Klass) /* Class Initia
 static void /* Instance Construction */
 moko_task_list_init (MokoTaskList *l) 
 { 
-    GtkCellRenderer *renderer;
-    GtkTreeViewColumn *column;
-   // GtkWidget *ico;
-    GtkWidget *align;
+  l->list_view = gtk_icon_view_new();
+  gtk_widget_set_name (l->list_view, "gtktreeview-black");
+  gtk_icon_view_set_columns (GTK_ICON_VIEW(l->list_view), COLUMN_NO);
+  gtk_icon_view_set_margin (GTK_ICON_VIEW(l->list_view), MARGIN);
+  gtk_icon_view_set_column_spacing (GTK_ICON_VIEW(l->list_view), COLUMN_SPACE);
+  gtk_icon_view_set_row_spacing (GTK_ICON_VIEW(l->list_view), ROW_SPACE);
+  gtk_icon_view_set_selection_mode (GTK_ICON_VIEW(l->list_view), GTK_SELECTION_SINGLE);
+  gtk_widget_show (l->list_view);
+  l->list_store = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_INT, GDK_TYPE_PIXBUF);
+  gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW(l->list_view), PIXBUF_COL);
+  gtk_icon_view_set_text_column (l->list_view, TEXT_COL );
+  gtk_icon_view_set_model (GTK_ICON_VIEW(l->list_view), GTK_TREE_MODEL(l->list_store));
 
-    align=gtk_alignment_new(0, 0, 1, 1);    
-    gtk_alignment_set_padding(GTK_ALIGNMENT (align), 0, 150, 0, 0);
-    l->list_store = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_INT, GDK_TYPE_PIXBUF);
-    l->list_view = gtk_tree_view_new_with_model (GTK_TREE_MODEL (l->list_store));
-    gtk_widget_set_name (l->list_view, "gtktreeview-black");
-    gtk_widget_show (l->list_view);
-    //l->mokolist_view = moko_tree_view_new_with_model (GTK_TREE_MODEL (l->list_store));
-    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (l->list_view), FALSE);
-    //gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (l->mokolist_view), FALSE);
-    
-   /* l->renderer = gtk_cell_renderer_pixbuf_new ();
-    l->column = gtk_tree_view_column_new_with_attributes ("Icon", l->renderer, "pixbuf", 2, NULL);
-    gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), l->column);
-    //moko_tree_view_append_column (GTK_TREE_VIEW (l->mokolist_view), l->column);
-
-    l->renderer = gtk_cell_renderer_text_new ();
-    l->column = gtk_tree_view_column_new_with_attributes ("Running programs", l->renderer, 
-    													"text", 0, NULL);
-   gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), l->column);
-  		*/
-
-   column = gtk_tree_view_column_new();
-   gtk_tree_view_column_set_title (column, ("Task list"));
-   gtk_tree_view_column_set_resizable (column, TRUE);
-  
-    renderer = gtk_cell_renderer_pixbuf_new ();
-   gtk_tree_view_column_pack_start (column,  renderer , FALSE);
-   gtk_tree_view_column_set_attributes (column,  renderer , 
-  				"pixbuf", PIXBUF_COL, NULL);
-
-   renderer = gtk_cell_renderer_text_new ();
-   gtk_tree_view_column_pack_start (column,  renderer , FALSE);
-   gtk_tree_view_column_set_attributes(column,  renderer , 
-   				"text", TEXT_COL, NULL);
-  
-   gtk_tree_view_append_column (GTK_TREE_VIEW (l->list_view), column);
-		
-    l->scrolled = gtk_scrolled_window_new (NULL, NULL);
-    gtk_widget_show (l->scrolled);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (l->scrolled),
-				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
-    gtk_container_add (GTK_CONTAINER (align), l->list_view);
-    gtk_container_add (GTK_CONTAINER (l->scrolled), align);
-    gtk_widget_set_size_request (l->scrolled, -1, 400);
+  l->scrolled = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (l->scrolled);
+  gtk_widget_set_size_request (GTK_WINDOW(l->scrolled), -1, 400);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (l->scrolled), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+  gtk_container_add (GTK_CONTAINER (l->scrolled), l->list_view);
    
-    //l->scrolled = moko_tree_view_put_into_scrolled_window (l->mokolist_view);
-
-    //gtk_box_pack_start (GTK_BOX (l), l->hbox, FALSE, FALSE, 0);
-    //gtk_box_pack_end (l->hbox, l->btn_close, FALSE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (l), l->scrolled, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (l), l->scrolled, TRUE, TRUE, 0);
     
-    default_icon = gdk_pixbuf_new_from_file_at_size (PKGDATADIR"/default-app-icon.xpm",
-		    					160, 160, NULL);
-    if (!default_icon )
-	    g_error ("Failed to load default icon");
-}
+  default_icon = gdk_pixbuf_new_from_file_at_size (PKGDATADIR"/default-app-icon.xpm", 140, 140, NULL);
+  if (!default_icon )
+    g_error ("Failed to load default icon");
 
+  g_signal_connect (l->list_view, "selection_changed", G_CALLBACK ( moko_task_list_selection_changed), l);
+}
 /* Construction */
 GtkWidget* 
 moko_task_list_new() 
@@ -168,35 +135,36 @@ moko_task_list_clear(MokoTaskList *l)
 static void
 moko_add_window (Display *dpy, Window w, GtkListStore *list_store)
 {
-    GtkTreeIter iter;
-    gchar *name = NULL;
-    GdkPixbuf *icon = NULL;
+  GtkTreeIter iter;
+  gchar *name = NULL;
+  GdkPixbuf *icon = NULL;
 
-    name = moko_get_window_name(dpy, w);
-    if (!strcmp (name, "Openmoko-taskmanager"))
-    {
-    	g_free (name);
-    	return;
-    }
-
-    icon = moko_get_window_icon (dpy, w);
-    gtk_list_store_append (list_store, &iter);
-    gtk_list_store_set (list_store, &iter, TEXT_COL, name, OBJECT_COL, w, -1);
-
-    if (icon) 
-	{
-        GdkPixbuf *icons = gdk_pixbuf_scale_simple (icon, 160, 160, GDK_INTERP_BILINEAR);
-        gtk_list_store_set (list_store, &iter, PIXBUF_COL, icons, -1);
-	    gdk_pixbuf_unref (icons);
-    }
-    else if (default_icon) 
-        gtk_list_store_set (list_store, &iter, PIXBUF_COL, default_icon, -1);
-    else
-	    g_error ("Failed to load %s's icon", name);
-
-    if (icon)
-	    gdk_pixbuf_unref (icon);
+  name = moko_get_window_name(dpy, w);
+  if (!strcmp (name, "Openmoko-taskmanager"))
+  {
     g_free (name);
+    return;
+  }
+
+  icon = moko_get_window_icon (dpy, w);
+  gtk_list_store_append (list_store, &iter);
+  g_debug ("add widnow %s", name);
+  gtk_list_store_set (list_store, &iter, TEXT_COL, name, OBJECT_COL, w, -1);
+
+  if (icon) 
+  {
+    GdkPixbuf *icons = gdk_pixbuf_scale_simple (icon, 140, 140, GDK_INTERP_BILINEAR);
+    gtk_list_store_set (list_store, &iter, PIXBUF_COL, icons, -1);
+    gdk_pixbuf_unref (icons);
+  }
+  else if (default_icon) 
+    gtk_list_store_set (list_store, &iter, PIXBUF_COL, default_icon, -1);
+  else
+    g_warning ("Failed to load %s's icon", name);
+  
+  if (icon)
+    gdk_pixbuf_unref (icon);
+  g_free (name);
 }
 
 void 
@@ -211,14 +179,15 @@ moko_update_store_list (Display *dpy, GtkListStore *list_store)
     	return;
     p = g_malloc0 (nr);
 
-    if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list_store), &iter))	{
+    if (gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list_store), &iter))
+    {
     	gboolean more;
     do{
     	gboolean found = FALSE;
     	Window w;
     	gtk_tree_model_get (GTK_TREE_MODEL (list_store), &iter, OBJECT_COL, &w, -1);
     	for (i=0; i<nr; i++) 
-		{
+	{
     	    if (list[i] == w) 
 			{
     	    	p[i] = 1;
@@ -273,7 +242,7 @@ moko_set_list_highlight (Display *dpy, MokoTaskList *l)
                         {
                             GtkTreePath *path;
                             path = gtk_tree_model_get_path (GTK_TREE_MODEL (l->list_store), &iter);
-                            gtk_tree_view_set_cursor (GTK_TREE_VIEW (l->list_view), path, NULL, FALSE);
+				gtk_icon_view_select_path (GTK_ICON_VIEW (l->list_view), path);
                             gtk_tree_path_free (path);
                             break;
                         }
@@ -285,3 +254,27 @@ moko_set_list_highlight (Display *dpy, MokoTaskList *l)
     }
 }
 
+static void 
+moko_task_list_selection_changed (GtkIconView *self, MokoTaskList *l)
+{
+  char *name = NULL;
+  Window w;
+  GtkTreeIter iter;
+  GList *path = gtk_icon_view_get_selected_items (GTK_ICON_VIEW (self));
+  GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW(self));
+  
+  if ( !path)
+    return;
+		    
+  gtk_tree_model_get_iter (model, &iter, path->data);
+  gtk_tree_model_get (GTK_TREE_MODEL (l->list_store), &iter, OBJECT_COL, &w, -1);
+  name = moko_get_window_name(GDK_DISPLAY(), w);
+
+  if (name)
+    moko_dbus_send_message (name);
+
+  g_list_foreach (path, gtk_tree_path_free, NULL);
+  g_list_free (path);
+  g_free (name);
+  return;
+}

@@ -28,13 +28,17 @@
 
 #include "misc.h"
 
+#define COLUMN_NO  3
+#define COLUMN_SPACE 20
+#define ROW_SPACE  20
+#define MARGIN  10
+
 enum{
     TEXT_COL = 0,
     OBJECT_COL,
     PIXBUF_COL,
     MAX_COL
 };
-
 G_BEGIN_DECLS
 /*MOKOTASKLIST property*/
 

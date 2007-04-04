@@ -41,23 +41,25 @@ moko_window_filter (GdkXEvent *xev, GdkEvent *gev, MokoTaskList*l)
 gboolean
 moko_wm_cmd (MokoTaskManager *tm, GtkWidget *list_view, int task)
 {
-    GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (list_view));
-    GtkTreeIter iter;
-    GtkTreeModel *model;
+  GList *path = gtk_icon_view_get_selected_items (GTK_ICON_VIEW(list_view));
+  GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW(list_view));
+  GtkTreeIter iter; 
 
-    if (gtk_tree_selection_get_selected (sel, &model, &iter)) 
-    	{
-    	  Window w;
-
-    	  gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, OBJECT_COL, &w, -1);
-    	  mbcommand(GDK_DISPLAY(), task, w, NULL);
-    	  return TRUE;
-    	  }
-    else 
-    {
-         moko_dbus_send_message ("No application selected");
-    	  return FALSE;
-     }
+  if (gtk_tree_model_get_iter (model, &iter, path->data)) 
+  {
+    Window w;
+    gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, OBJECT_COL, &w, -1);
+    mbcommand(GDK_DISPLAY(), task, w, NULL);
+    return TRUE;
+  }
+  else 
+  {
+    moko_dbus_send_message ("No application selected");
+    return FALSE;
+  }
+  
+  if (path)
+    g_list_free (path);
 }
 
 gboolean 
@@ -87,13 +89,10 @@ moko_kill_btn_cb (GtkButton *btn, MokoTaskManager *tm)
 void
 moko_kill_all_btn_cb (GtkButton *btn, MokoTaskManager *tm)
 {    
-    GtkTreeSelection *sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (tm->l->list_view));
     GtkTreeIter iter;
-    GtkTreeModel *model;
+    GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW (tm->l->list_view));
     Window *win;
     GSList *list = NULL;
-
-    gtk_tree_selection_get_selected (sel, &model, &iter);
 
     if (!gtk_tree_model_get_iter_first (model, &iter))
     	return;
@@ -125,95 +124,103 @@ moko_quit_btn_cb (GtkButton *btn, MokoTaskManager *tm)
     gtk_window_iconify (GTK_WINDOW (tm->window));
 	moko_dbus_send_message ("");
 }
-/*
-void
-moko_tab_event_cb (GtkButton *btn, MokoTaskList *l) 
-{
-    g_debug ("tab event");
-    GtkTreeIter iter;
-    GtkTreePath *path;
-    GtkTreeViewColumn *col;
-    GtkTreeModel *model;
 
-    gtk_tree_view_get_cursor(GTK_TREE_VIEW (l->list_view), &path, &col);
-    //gtk_tree_view_get_cursor(l->mokolist_view, &path, &col);
-
-    model = GTK_TREE_MODEL (l->list_store);
-
-    if (gtk_tree_model_get_iter (model, &iter, path)) {
-        Window w;
-        gtk_tree_model_get (model, &iter, OBJECT_COL, &w, -1);
-        //moko_print_win_list(GDK_DISPLAY(), &w, 1);
-        //moko_send_Xclimsgwm(GDK_DISPLAY (), w);
-        mbcommand(GDK_DISPLAY(), CMD_ACTIVATE_WINDOW, w, NULL);
-        }
-    if (path)
-    	free (path);
-}
-
-void        
-moko_hold_event_cb (GtkButton *btn, MokoTaskList *l) 
-{
-  
-}
-*/
 void
 moko_wheel_left_up_press_cb (GtkWidget *self, MokoTaskManager *tm)
 {
-   GtkTreeSelection *selection;
-   GtkTreeModel *model;
-   GtkTreeIter iter;
-   GtkTreePath* path;
+  if (!tm->l->list_view)
+    return;
+  
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW (tm->l->list_view));
+  GList *path = gtk_icon_view_get_selected_items (GTK_ICON_VIEW(tm->l->list_view));
 
-   if (!tm->l->list_view)
- 	return;
-
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (tm->l->list_view));
-
-   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
-   {
-     moko_dbus_send_message ("");
-	 return;
-   }
-
-   path = gtk_tree_model_get_path (model, &iter);
-   if (!gtk_tree_path_prev (path))
-   {
-	gtk_tree_path_free (path);
-	return;
-   }
-   
-   gtk_tree_view_set_cursor (GTK_TREE_VIEW (tm->l->list_view), path, 0, 0);
-   gtk_tree_path_free (path);
-   return;
+  if (!path && gtk_tree_model_get_iter_first (model, &iter))
+  { 
+    GtkTreePath *new_path = NULL;
+    for (;gtk_tree_model_iter_next (model, &iter);)
+    {
+      if (new_path)
+	 gtk_tree_path_free (new_path);
+      new_path = gtk_tree_model_get_path (model, &iter);
+    }
+    gtk_icon_view_select_path (GTK_ICON_VIEW (tm->l->list_view), new_path);
+    gtk_tree_path_free (new_path);
+  }
+  else if (path && gtk_tree_path_prev (path->data))
+  {
+    gtk_icon_view_select_path (GTK_ICON_VIEW (tm->l->list_view), path->data);
+  }
+  else
+    g_warning ("Can not find right path of icon view item");
+  
+  if (path)
+  {
+    gtk_tree_path_free (path->data);
+    g_list_free (path);
+  }
+  return;
 }
 
 void
 moko_wheel_right_down_press_cb (GtkWidget *self, MokoTaskManager *tm)
 {
-   GtkTreeSelection *selection;
-   GtkTreeModel *model;
-   GtkTreeIter iter;
-   GtkTreePath* path;
+  if (!tm->l->list_view)
+    return;
+  GList* path = NULL;
+  GtkTreePath *new_path = NULL; 
+  GtkTreeModel *model = gtk_icon_view_get_model (GTK_ICON_VIEW (tm->l->list_view));
+  GtkTreeIter iter;
+  
+  path = gtk_icon_view_get_selected_items (GTK_ICON_VIEW(tm->l->list_view));
 
-   if (!tm->l->list_view)
- 	return;
-	 
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (tm->l->list_view));
+  if (path && gtk_tree_model_get_iter (model, &iter, path->data))
+  {
+    if (gtk_tree_model_iter_next (model, &iter))
+      new_path = gtk_tree_model_get_path (model, &iter);
+    gtk_tree_path_free (path->data);//FIXME: If not use _GTK_SELECTION_SINGLE_ as icon view selection model, 
+                                    //here should use g_list_foreach (path, gtk_tree_path_free, NULL) 
+                                    //to free the tree path(es).
+  }
+  else if (gtk_tree_model_get_iter_first (model, &iter))
+  { 
+    new_path = gtk_tree_model_get_path (model, &iter);
+  }
+  else
+    g_error ("Can not find right path of icon view item");
+  
+  if (new_path)
+  {
+    gtk_icon_view_select_path (GTK_ICON_VIEW (tm->l->list_view), new_path);
+    gtk_tree_path_free (new_path);
+  }
+  g_list_free (path);
+  
+  return;
+}
 
-   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
-   {
-     moko_dbus_send_message ("");
-	 return;
-   }
-   
-   path = gtk_tree_model_get_path (model, &iter);
-   gtk_tree_path_next (path);
-   
-   if (!path)
-	return;
-     
-   gtk_tree_view_set_cursor (GTK_TREE_VIEW (tm->l->list_view), path, 0, 0);
-   gtk_tree_path_free (path);
-   return;
+void
+moko_wheel_bottom_press_cb (GtkWidget *self, MokoTaskManager *tm)
+{
+  GtkWidget* widget = GTK_WIDGET(self);
+  Screen* screen = GDK_SCREEN_XSCREEN(gtk_widget_get_screen (widget));
+  XEvent xev;
+
+  xev.xclient.type = ClientMessage;
+  xev.xclient.serial = 0;
+  xev.xclient.send_event = True;
+  xev.xclient.display = DisplayOfScreen (screen);
+  xev.xclient.window = RootWindowOfScreen (screen);
+  xev.xclient.message_type = gdk_x11_get_xatom_by_name( "_NET_SHOWING_DESKTOP" );
+  xev.xclient.format = 32;
+  xev.xclient.data.l[0] = TRUE;
+  xev.xclient.data.l[1] = 0;
+  xev.xclient.data.l[2] = 0;
+  xev.xclient.data.l[3] = 0;
+  xev.xclient.data.l[4] = 0;
+
+  XSendEvent (DisplayOfScreen (screen), RootWindowOfScreen (screen), False,
+              SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
+  return;
 }
