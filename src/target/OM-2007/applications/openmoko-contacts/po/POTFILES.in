@@ -1,6 +1,5 @@
 data/contacts.desktop.in
 src/contacts-callbacks-ui.c
-src/contacts-edit-pane.c
 src/contacts-main.c
 src/contacts-utils.c
-src/contacts-gtk.c
+src/contacts-omoko.c

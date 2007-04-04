@@ -1,3 +1,10 @@
+2007-04-04  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-contact-pane.c: (set_type), (get_type),
+	(compare_types), (set_type_cb), (field_button_add_cb),
+	(field_button_remove_cb), (make_widget): Save VCARD specification type
+	parameters. Partly fixes Bug 400.
+
 2007-03-26  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-omoko.c: (create_main_window): Use correct icons on

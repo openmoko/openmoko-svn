@@ -39,21 +39,25 @@ struct _ContactsContactPanePrivate
   GtkSizeGroup *size_group; /* used to sizing the labels */
 };
 
-static gchar *email_types[] = {
-  "Work",
-  "Home",
-  "Other",
-  NULL
+typedef struct {
+  char *display;
+  char *vcard;
+} VCardTypes;
+
+static VCardTypes email_types[] = {
+  { "Work", "WORK"},
+  { "Home", "HOME" },
+  { "Other", "OTHER" },
+  {}
 };
 
-static gchar *phone_types[] = {
-  "Work",
-  "Home",
-  "Mobile",
-  "Fax",
-  "Pager",
-  "Other",
-  NULL
+static VCardTypes phone_types[] = {
+  { "Work", "VOICE;WORK"},
+  { "Home", "VOICE;HOME" },
+  { "Mobile", "CELL" },
+  { "Fax", "FAX" },
+  { "Other", "OTHER" },
+  {}
 };
 
 typedef struct {
@@ -62,7 +66,7 @@ typedef struct {
   char *icon; /* Icon name for the menu */
   gboolean unique; /* If there can be only one of this field */
   char *format; /* format string */
-  gchar **types;
+  VCardTypes *types;
   /* TODO: add an extra changed callback so that N handler can update FN, etc */
 } FieldInfo;
 
@@ -241,16 +245,18 @@ set_type (EVCardAttribute *attr, gchar *type)
   GList *params;
   EVCardAttributeParam *p = NULL;
 
-  
+  /* look for the TYPE parameter */
   for (params = e_vcard_attribute_get_params (attr); params;
       params = g_list_next (params))
+  {
     if (!strcmp (e_vcard_attribute_param_get_name (params->data), "TYPE"))
     {
       p = params->data;
       break;
     }
+  }
 
-  /* if we didn't find the type param */
+  /* if we didn't find the TYPE parameter, so create it now */
   if (p == NULL)
   {
     p = e_vcard_attribute_param_new ("TYPE");
@@ -259,19 +265,91 @@ set_type (EVCardAttribute *attr, gchar *type)
 
   /* FIXME: we can only deal with one attribute type value at the moment */
   e_vcard_attribute_param_remove_values (p);
-  e_vcard_attribute_param_add_value (p, type);
+
+  gint i;
+  gchar **values = g_strsplit (type, ";", -1);
+
+  for (i = 0; (values[i]); i++)
+  {
+    e_vcard_attribute_param_add_value (p, values[i]);
+  }
+
+  g_strfreev (values);
 }
 
 /*
  * Convenience function to get the type property of a vcard attribute
+ * Returns the 
  */
 static gchar*
 get_type (EVCardAttribute *attr)
 {
-  GList *list;
+  GList *list, *l;
+  gchar *result = NULL;
   list = e_vcard_attribute_get_param (attr, "TYPE");
-  /* FIXME: we can only deal with one attribute type value at the moment */
-  return (list) ? list->data : NULL;
+
+  for (l = list; l; l = g_list_next (l))
+  {
+    if (result)
+    {
+      gchar *old_result = result;
+      result = g_strconcat (l->data, ";", old_result, NULL);
+      g_free (old_result);
+    }
+    else
+    {
+      result = g_strdup (l->data);
+    }
+  }
+
+  return result;
+}
+
+/* returns whether b is a subset of a, where a and b are semi-colon seperated
+ * lists
+ */
+static gboolean
+compare_types (gchar *a, gchar *b)
+{
+  gchar **alist, **blist;
+  gboolean result = FALSE;
+  int i, j;
+
+  /* make sure a and b are not NULL */
+  if (!(a && b))
+    return FALSE;
+
+  alist = g_strsplit (a, ";", -1);
+  blist = g_strsplit (b, ";", -1);
+
+  /* check each element of blist exists in alist */
+  for (i = 0; blist[i]; i++)
+  {
+    gboolean exists = FALSE;
+    for (j = 0; alist[j]; j++)
+    {
+      if (!strcmp (alist[j], blist[i]))
+      {
+        exists = TRUE;
+        break;
+      }
+    }
+    /* if any of the items from b don't exist in a, we return false */
+    if (!exists)
+    {
+      result = FALSE;
+      break;
+    }
+    else
+    {
+      result = TRUE;
+    }
+  }
+
+  g_strfreev (alist);
+  g_strfreev (blist);
+
+  return result;
 }
 
 /*
@@ -280,11 +358,33 @@ get_type (EVCardAttribute *attr)
 static void
 set_type_cb (GtkWidget *widget, EVCardAttribute *attr)
 {
+  int i;
+  gchar *vcard_type = NULL;
+  GtkWidget *box;
+  FieldInfo *info;
+
   /* TODO: use quarks here */
-  gchar *new_type = gtk_combo_box_get_active_text (GTK_COMBO_BOX (widget));
+  gchar *display_type = gtk_combo_box_get_active_text (GTK_COMBO_BOX (widget));
   ContactsContactPane *pane = g_object_get_data (G_OBJECT (widget), "contact-pane");
 
-  set_type (attr, new_type);
+  box = widget->parent;
+  if (!GTK_IS_HBOX (box))
+    return;
+
+  info = g_object_get_qdata (G_OBJECT (box), field_quark);
+
+
+  for (i = 0; &(info->types[i]); i++)
+  {
+     /* search the types array */
+     if (!strcmp (info->types[i].display, display_type))
+     {
+        vcard_type = info->types[i].vcard;
+        break;
+     }
+  }
+
+  set_type (attr, vcard_type);
   pane->priv->dirty = TRUE;
 }
 
@@ -297,6 +397,7 @@ field_button_add_cb (GtkWidget *button, ContactsContactPane *pane)
   GValue *v;
   gint p;
 
+  /* widget path is: hbox.alignment.button*/
   box = button->parent->parent;
   if (!GTK_IS_HBOX (box))
     return;
@@ -373,8 +474,11 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
   type = get_type (attr);
 
+
   if (type == NULL && info->types != NULL)
-    type = info->types[0];
+  {
+    type = info->types[0].vcard;
+  }
 
   /* insert add/remove buttons */
   if (pane->priv->editable && !info->unique)
@@ -400,8 +504,26 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
 
   /* The label (if required) */
-  if (!info->unique && !pane->priv->editable) {
-    s = g_strdup_printf ("%s:", type);
+  if (!info->unique && !pane->priv->editable && type)
+  {
+    s = NULL;
+
+    /* find the display name for the type */
+    for (i = 0; info->types[i].display; i++)
+    {
+       if (compare_types (type, info->types[i].vcard))
+       {
+          s = g_strdup_printf ("%s:", info->types[i].display);
+          break;
+       }
+    }
+
+    if (!s)
+    {
+      s = g_strdup_printf ("%s:", type);
+    }
+
+
     type_label = gtk_label_new (s);
     gtk_widget_set_name (type_label, "fieldlabel");
     if (pane->priv->size_group)
@@ -417,15 +539,20 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
     combo = gtk_combo_box_new_text ();
     gtk_widget_set_size_request (combo, -1, 46);
     i = 0;
-    for (s = info->types[i]; (s = info->types[i]); i++) {
+
+    /* add items to the types drop down (Home, Work, etc) */
+    for (s = info->types[i].display; (s = info->types[i].display); i++) {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combo), s);
-      if (!strcmp (s, type)) {
+
+      /* if the vcard type matches the current type, then select it */
+      if (compare_types (type, info->types[i].vcard)) {
         gtk_combo_box_set_active (GTK_COMBO_BOX (combo), i);
         is_custom_type = FALSE;
       }
     }
+
+    /* this type isn't in our list of types, so add it now as a custom entry */
     if (is_custom_type) {
-       /* type isn't in our list of types, so add it now */
        gtk_combo_box_append_text (GTK_COMBO_BOX (combo), type);
        gtk_combo_box_set_active (GTK_COMBO_BOX (combo), i);
     }
