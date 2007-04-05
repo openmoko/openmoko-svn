@@ -1,11 +1,12 @@
 [Desktop Entry]
-Name=OpenMoko Mainmenu
-Comment=OpenMoko Finger Application
+Name=MainMenu
+Comment=Run Applications
 Encoding=UTF-8
 Version=1.0
 Type=Application
 Exec=openmoko-mainmenu
 Icon=openmoko-mainmenu
 Terminal=false
+Categories=GTK;Application;PIM;Office
 SingleInstance=true
 StartupNotify=true

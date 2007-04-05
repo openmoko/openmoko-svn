@@ -1,11 +1,12 @@
 [Desktop Entry]
-Name=OpenMoko Task Manager
-Comment=OpenMoko Finger Application
+Name=Tasks
+Comment=Switch between running applications
 Encoding=UTF-8
 Version=1.0
 Type=Application
 Exec=openmoko-taskmanager
 Icon=openmoko-taskmanager
 Terminal=false
+Categories=GTK;Application;PIM;Office
 SingleInstance=true
 StartupNotify=true

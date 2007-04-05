@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Openmoko-rssreader
-Comment=rssreader
+Name=Feed Reader
+Comment=Read your favourite RSS feeds
 Exec=openmoko-rssreader
 Icon=RSS
 Terminal=false

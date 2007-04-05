@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Openmoko-messages
-Comment=messages
+Name=Messages
+Comment=Send and Receive SMS and E-Mail messages
 Exec=openmoko-messages
 Icon=Message
 Terminal=false
