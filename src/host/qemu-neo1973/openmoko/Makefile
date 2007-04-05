@@ -21,6 +21,7 @@
 SPLASH=splashimg.pl
 SPLASHIMG=System_boot.png
 FLASHIMG=openmoko-flash.image
+SHELL=bash
 
 splash.gz: splash
 	gzip -c < $^ > $@
@@ -40,7 +41,7 @@ $(SPLASH):
 
 $(FLASHIMG):
 	# Making an empty/erased flash image.  Need a correct echo behavior.
-	echo -en \\0377\\0377\\0377\\0377\\0377\\0377\\0377\\0377 > .8b
+	$(echo) -en \\0377\\0377\\0377\\0377\\0377\\0377\\0377\\0377 > .8b
 	cat .8b .8b > .16b # OOB is 16 bytes
 	cat .16b .16b .16b .16b .16b .16b .16b .16b > .512b
 	cat .16b .16b .16b .16b .16b .16b .16b .16b >> .512b

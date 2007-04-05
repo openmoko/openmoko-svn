@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # Chooses and downloads some OpenMoko image snapshots for flash.sh to use.
 #
 # Copyright (C) 2007 OpenMoko, Inc.
@@ -25,26 +25,26 @@
 cd $script_dir
 
 echo "    "Retrieving available builds list...
-files=`lynx -dump -listonly $download_dir | grep http | sed "s,[0-9 \t\.]*$download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
+files=`lynx -dump $download_dir | grep http | sed "s,[0-9 \t\.]*$download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
 
 most_recent () {
-	echo > .list
+	${echo} > .list
 	for name in $files; do
 		if [[ "$name" == $1 ]]; then
-			echo "$name" > .list
+			${echo} "$name" > .list
 		fi
 	done
 	export $2=`sort .list | tail -n 1`
 	rm -rf .list
-	[ -z "${!2}" ] && ( echo not found; exit -1 )
-	echo ${!2}
+	[ -z "${!2}" ] && ( ${echo} not found; exit -1 )
+	${echo} ${!2}
 }
 
-echo -n "    "Kernel is...\ 
+${echo} -n "    "Kernel is...\ 
 most_recent "$kernel_wildcard" kernel_image || exit -1
-echo -n "    "Root filesystem is...\ 
+${echo} -n "    "Root filesystem is...\ 
 most_recent "$rootfs_wildcard" rootfs_image || exit -1
-echo -n "    "U-boot is...\ 
+${echo} -n "    "U-boot is...\ 
 most_recent "$uboot_wildcard" uboot_image || exit -1
 
 sleep 2

@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # Generates a ready to use OpenMoko NAND flash image.  Vaguely based
 # on devirginator and http://wiki.openmoko.org/wiki/NAND_bad_blocks.
 #
@@ -23,6 +23,12 @@
 
 . openmoko/env
 
+if [[ "$1" != "" ]]; then
+	img_dir="$1"
+else
+	img_dir="$script_dir"
+fi
+
 cd $script_dir
 
 if ! which pngtopnm || ! which ppmtorgb3; then
@@ -36,7 +42,9 @@ ${make} splash.gz || exit -1
 # Find the most recent OpenMoko images in the current directory.
 # We assume they have numeric date or some build number in their names.
 most_recent () {
-	export $2="`ls -1 $1 | sort | tail -n 1`"
+	cd $src_dir
+	export $2="`basename \`ls -d -1 $img_dir/$1 | sort | tail -n 1\``"
+	cd $script_dir
 	export $3="`python -c \"print hex(\`stat -c %s ${!2}\`)\"`"
 	[ -n "${!3}" ]
 }
@@ -78,8 +86,7 @@ uboot () {
 }
 
 # Set up BBT, u-boot environment, boot menu and program u-boot binary.
-uboot $uboot_image 20 "
-
+uboot $uboot_image 40 "               
 setenv dontask y
 nand createbbt
 setenv bootcmd 'setenv bootargs \${bootargs_base} \${mtdparts}; bootm $kernel_addr'
@@ -93,18 +100,15 @@ dynenv set u-boot_env
 saveenv"
 
 # Program bootsplash.
-uboot splash.gz 10 "
-
+uboot splash.gz 10 "               
 nand write.e $kernel_addr splash $splash_size"
 
 # Program the kernel binary.
-uboot $kernel_image 10 "
-
+uboot $kernel_image 10 "               
 nand write.e $kernel_addr kernel $kernel_size"
 
 # Program the root filesystem.
-uboot $rootfs_image 15 "
-
+uboot $rootfs_image 20 "               
 nand write.jffs2 $kernel_addr rootfs $rootfs_size"
 
 echo
@@ -115,5 +119,5 @@ echo \ \$ $qemu_relative -mtdblock $script_dir_relative/$flash_image -kernel $sc
 echo
 echo "    "Append \'-snapshot\' to make the flash image read-only so that every
 echo "    "time emulation starts in the original unmodified state.
-echo "    "[Space] for AUX button, [Enter] for POWER.
+echo "    "[Enter] for AUX button, [Space] for POWER.
 echo
