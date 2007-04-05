@@ -131,14 +131,6 @@ moko_dialog_class_init (MokoDialogClass *klass)
 }
 
 static void
-moko_dialog_closebutton_cb (GtkButton *button, gpointer user_data)
-{
-  MokoDialog *self = MOKO_DIALOG (user_data);
-
-  moko_dialog_response (self, GTK_RESPONSE_DELETE_EVENT);
-}
-
-static void
 moko_dialog_init (MokoDialog *self)
 {
   MokoDialogPrivate* priv = DIALOG_PRIVATE(self);
@@ -152,7 +144,7 @@ moko_dialog_init (MokoDialog *self)
    */
 
   /* The primary vbox holds the contents of the dialog and the action_area */
-  self->vbox = gtk_vbox_new (FALSE, 0);
+  self->vbox = gtk_vbox_new (FALSE, 6);
   gtk_container_add (GTK_CONTAINER (self), self->vbox);
 
   /* Create the hbox at the top */
@@ -160,25 +152,18 @@ moko_dialog_init (MokoDialog *self)
 
   /* Add an eventbox to said hbox */
   priv->eventbox = gtk_event_box_new ();
-  gtk_box_pack_start (GTK_BOX(priv->hbox), priv->eventbox, TRUE, TRUE, 0);
-  gtk_widget_set_name( priv->eventbox, "mokodialogwindow-title-labelbox" );
+  gtk_box_pack_start (GTK_BOX (priv->hbox), priv->eventbox, TRUE, TRUE, 0);
+  gtk_widget_set_name (priv->eventbox, "mokodialogwindow-title-labelbox");
 
   /* Create the label for the top */
-  priv->label = gtk_label_new(NULL);
+  priv->label = gtk_label_new (NULL);
   gtk_widget_set_name (priv->label, "mokodialogwindow-title-label");
 
   /* Add to the eventbox */
-  gtk_container_add (GTK_CONTAINER(priv->eventbox), priv->label);
-
-  /* Add close button */
-  priv->closebutton = moko_pixmap_button_new ();
-  g_signal_connect (G_OBJECT(priv->closebutton), "clicked", G_CALLBACK(moko_dialog_closebutton_cb), self);
-  gtk_widget_set_name(priv->closebutton, "mokodialogwindow-closebutton");
-
-  gtk_box_pack_start (GTK_BOX(priv->hbox), priv->closebutton, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (priv->eventbox), priv->label);
 
   /* Add this hbox to the start of vbox */
-  gtk_box_pack_start (GTK_BOX (self->vbox), priv->hbox, FALSE, FALSE, 0 );
+  gtk_box_pack_start (GTK_BOX (self->vbox), priv->hbox, FALSE, FALSE, 0);
 
   /**
    * Now get back to the proper parts of the dialog
