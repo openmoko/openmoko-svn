@@ -62,6 +62,8 @@ RDEPENDS_task-openmoko-ui = "\
   pango-module-basic-x \
   pango-module-basic-fc \
   gtk+ \
+  libgtkstylus \
+#  libgtkinput \
   matchbox-common \
   matchbox-wm \
   xserver-kdrive-fbdev \
