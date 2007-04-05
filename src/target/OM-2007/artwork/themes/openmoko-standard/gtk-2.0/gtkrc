@@ -126,3 +126,5 @@ include "mokoicons"
 
 include "contactspane"
 include "openmoko-today"
+
+include "mokomessagedialog"
