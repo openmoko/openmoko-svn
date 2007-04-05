@@ -54,6 +54,15 @@
 #define GTA01_GPIO_GPS_EN_3V	S3C_GPG(10)
 #define GTA01_GPIO_GPS_RESET	S3C_GPC(0)
 
+struct neo_board_s {
+    struct s3c_state_s *cpu;
+    struct i2c_slave_s *pmu;
+    struct i2c_slave_s *wm;
+    struct i2c_slave_s *lcm;
+    CharDriverState *modem;
+    void *kbd_pic;
+};
+
 /* Handlers for output ports */
 static void neo_bl_switch(int line, int level, void *opaque)
 {
@@ -84,6 +93,8 @@ static void neo_modem_rst_switch(int line, int level, void *opaque)
 
 static void neo_modem_switch(int line, int level, void *opaque)
 {
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+    modem_enable(s->modem, level);
     neo_printf("Modem powered %s.\n", level ? "up" : "down");
 }
 
@@ -135,70 +146,62 @@ static void neo_mmc_writeprotect_switch(void *pic, int wp)
 {
 }
 
-struct neo_kbd_s {
-    void *pic;
-    struct i2c_slave_s *pmu;
-};
-
 /* Hardware keys */
 static void neo_kbd_handler(void *opaque, int keycode)
 {
-    struct neo_kbd_s *kbd = (struct neo_kbd_s *) opaque;
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
     switch (keycode & 0x7f) {
     case 0x1c:	/* Return */
-        pic_set_irq_new(kbd->pic, GTA01_IRQ_911_KEY, !(keycode & 0x80));
+        pic_set_irq_new(s->kbd_pic, GTA01_IRQ_911_KEY, !(keycode & 0x80));
         break;
     case 0x39:	/* Space */
-        pic_set_irq_new(kbd->pic, GTA01_IRQ_HOLD_KEY, !(keycode & 0x80));
-        pcf_onkey_set(kbd->pmu, !(keycode & 80));	/* Active LOW */
+        pic_set_irq_new(s->kbd_pic, GTA01_IRQ_HOLD_KEY, !(keycode & 0x80));
+        pcf_onkey_set(s->pmu, !(keycode & 80));	/* Active LOW */
         break;
     }
 }
 
-static void neo_kbd_init(struct s3c_state_s *cpu, struct i2c_slave_s *pmu)
+static void neo_kbd_init(struct neo_board_s *s)
 {
-    struct neo_kbd_s *kbd = (struct neo_kbd_s *)
-            qemu_mallocz(sizeof(struct neo_kbd_s));
-    kbd->pic = cpu->io;
-    kbd->pmu = pmu;
-    qemu_add_kbd_event_handler(neo_kbd_handler, kbd);
+    s->kbd_pic = s->cpu->io;
+    qemu_add_kbd_event_handler(neo_kbd_handler, s);
 }
 
-static void neo_gpio_setup(struct s3c_state_s *cpu)
+static void neo_gpio_setup(struct neo_board_s *s)
 {
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_BACKLIGHT,
-                    neo_bl_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_GPS_PWRON,
-                    neo_gpspwr_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_MODEM_RST,
-                    neo_modem_rst_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_MODEM_ON,
-                    neo_modem_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_LCD_RESET,
-                    neo_lcd_rst_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_VIBRATOR_ON,
-                    neo_vib_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_VIBRATOR_ON2,
-                    neo_vib_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01v3_GPIO_nGSM_EN,
-                    neo_gsm_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01Bv2_GPIO_nGSM_EN,
-                    neo_gsm_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_BT_EN,
-                    neo_bt_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_GPS_EN_2V8,
-                    neo_gps_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_GPS_EN_3V,
-                    neo_gps_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_GPS_EN_3V3,
-                    neo_gps_switch, cpu);
-    s3c_gpio_handler_set(cpu->io, GTA01_GPIO_GPS_RESET,
-                    neo_gps_rst_switch, cpu);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_BACKLIGHT,
+                    neo_bl_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_PWRON,
+                    neo_gpspwr_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_MODEM_RST,
+                    neo_modem_rst_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_MODEM_ON,
+                    neo_modem_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_LCD_RESET,
+                    neo_lcd_rst_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON,
+                    neo_vib_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON2,
+                    neo_vib_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01v3_GPIO_nGSM_EN,
+                    neo_gsm_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01Bv2_GPIO_nGSM_EN,
+                    neo_gsm_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_BT_EN,
+                    neo_bt_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_EN_2V8,
+                    neo_gps_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_EN_3V,
+                    neo_gps_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_EN_3V3,
+                    neo_gps_switch, s);
+    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_RESET,
+                    neo_gps_rst_switch, s);
 
-    s3c_timers_cmp_handler_set(cpu->timers, 0, neo_bl_intensity, cpu);
+    s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
     /* MMC/SD host */
-    s3c_mmci_handlers(cpu->mmci, cpu->io, neo_mmc_writeprotect_switch,
+    s3c_mmci_handlers(s->cpu->mmci, s->cpu->io, neo_mmc_writeprotect_switch,
                     neo_mmc_cover_switch);
 }
 
@@ -264,58 +267,62 @@ struct i2c_slave_s *lm4857_init()
 #define NEO_WM_ADDR	0x1a
 #define NEO_AMP_ADDR	0x7c	/* ADR wired to low */
 
-static struct i2c_slave_s *neo_i2c_setup(struct s3c_state_s *cpu)
+static void neo_i2c_setup(struct neo_board_s *s)
 {
     struct i2c_bus_s *bus = (struct i2c_bus_s *)
             qemu_mallocz(sizeof(struct i2c_bus_s));
-    struct i2c_slave_s *pmu;
 #ifdef HAS_AUDIO
-    struct i2c_slave_s *wm;
     AudioState *audio;
 #endif
 
-    pmu = pcf5060x_init(cpu->pic, GTA01_IRQ_PCF50606, 0);
+    s->pmu = pcf5060x_init(s->cpu->pic, GTA01_IRQ_PCF50606, 0);
+    s->lcm = lm4857_init();
 
     /* Attach the CPU on one end of our I2C bus.  */
-    i2c_master_attach(bus, s3c_i2c_master(cpu->i2c));
+    i2c_master_attach(bus, s3c_i2c_master(s->cpu->i2c));
 
     /* Attach a PCF50606 to the bus */
-    i2c_slave_attach(bus, NEO_PMU_ADDR, pmu);
+    i2c_slave_attach(bus, NEO_PMU_ADDR, s->pmu);
 
     /* Attach a LM4857 to the bus */
-    i2c_slave_attach(bus, NEO_AMP_ADDR, lm4857_init());
+    i2c_slave_attach(bus, NEO_AMP_ADDR, s->lcm);
 
 #ifdef HAS_AUDIO
     audio = AUD_init();
     if (!audio)
-        goto done;
-    wm = wm8753_init(audio);
+        return;
+    s->wm = wm8753_init(audio);
 
     /* Attach a WM8750 to the bus */
-    i2c_slave_attach(bus, NEO_WM_ADDR, wm);
+    i2c_slave_attach(bus, NEO_WM_ADDR, s->wm);
     /* .. and to the sound interface.  */
-    cpu->i2s->opaque = wm->opaque;
-    cpu->i2s->codec_out = wm8753_dac_dat;
-    cpu->i2s->codec_in = wm8753_adc_dat;
-    wm8753_data_req_set(wm, cpu->i2s->data_req, cpu->i2s);
-done:
+    s->cpu->i2s->opaque = s->wm->opaque;
+    s->cpu->i2s->codec_out = wm8753_dac_dat;
+    s->cpu->i2s->codec_in = wm8753_adc_dat;
+    wm8753_data_req_set(s->wm, s->cpu->i2s->data_req, s->cpu->i2s);
 #endif
-    return pmu;
 }
 
-static void neo_spi_setup(struct s3c_state_s *cpu)
+static void neo_spi_setup(struct neo_board_s *s)
 {
     void *jbt6k74 = jbt6k74_init();
 
-    s3c_spi_attach(cpu->spi, 0, 0, 0, 0);
-    s3c_spi_attach(cpu->spi, 1, jbt6k74_txrx, jbt6k74_btxrx, jbt6k74);
+    s3c_spi_attach(s->cpu->spi, 0, 0, 0, 0);
+    s3c_spi_attach(s->cpu->spi, 1, jbt6k74_txrx, jbt6k74_btxrx, jbt6k74);
+}
+
+static void neo_gsm_setup(struct neo_board_s *s)
+{
+    s->modem = modem_init();
+
+    s3c_uart_attach(s->cpu->uart[0], s->modem);
 }
 
 static void neo_reset(void *opaque)
 {
-    struct s3c_state_s *cpu = (struct s3c_state_s *) opaque;
-    s3c2410_reset(cpu);
-    cpu->env->regs[15] = S3C_RAM_BASE;
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+    s3c2410_reset(s->cpu);
+    s->cpu->env->regs[15] = S3C_RAM_BASE;
 }
 
 /* Board init.  */
@@ -325,33 +332,35 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                 const char *initrd_filename)
 {
     uint32_t neo_ram = 0x08000000;
-    struct s3c_state_s *cpu;
-    struct i2c_slave_s *pmu;
+    struct neo_board_s *s = (struct neo_board_s *)
+            qemu_mallocz(sizeof(struct neo_board_s));
 
-    cpu = s3c2410_init(ds);
+    s->cpu = s3c2410_init(ds);
 
     /* Setup memory */
-    if (ram_size < neo_ram + cpu->free_ram_start) {
+    if (ram_size < neo_ram + s->cpu->free_ram_start) {
         fprintf(stderr, "This platform requires %i bytes of memory\n",
-                        neo_ram + cpu->free_ram_start);
+                        neo_ram + s->cpu->free_ram_start);
         exit(1);
     }
     cpu_register_physical_memory(S3C_RAM_BASE, neo_ram,
-                    cpu->free_ram_start | IO_MEM_RAM);
-    cpu->free_ram_start += neo_ram;
+                    s->cpu->free_ram_start | IO_MEM_RAM);
+    s->cpu->free_ram_start += neo_ram;
 
-    s3c_nand_register(cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
+    s3c_nand_register(s->cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
 
     /* Setup peripherals */
-    neo_gpio_setup(cpu);
+    neo_gpio_setup(s);
 
-    pmu = neo_i2c_setup(cpu);
+    neo_i2c_setup(s);
 
-    neo_kbd_init(cpu, pmu);
+    neo_kbd_init(s);
 
-    neo_spi_setup(cpu);
+    neo_spi_setup(s);
 
-    qemu_register_reset(neo_reset, cpu);
+    neo_gsm_setup(s);
+
+    qemu_register_reset(neo_reset, s);
 
     /* Setup initial (reset) machine state */
 #if 0
@@ -364,14 +373,14 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                     phys_ram_base + S3C_SRAM_SIZE + 0x03f80000);
     load_image(kernel_filename,
                     phys_ram_base + S3C_SRAM_SIZE + 0x02000000);
-    cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
+    s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
 #endif
 
     /* Imitate ONKEY wakeup */
-    pcf_onkey_set(pmu, 0);
-    pcf_onkey_set(pmu, 1);
+    pcf_onkey_set(s->pmu, 0);
+    pcf_onkey_set(s->pmu, 1);
     /* Connect the charger */
-    pcf_exton_set(pmu, 1);
+    pcf_exton_set(s->pmu, 1);
 }
 
 QEMUMachine neo1973_machine = {

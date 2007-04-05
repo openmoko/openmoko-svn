@@ -292,7 +292,7 @@ typedef struct {
 #define CHR_IOCTL_PP_WRITE_CONTROL    6
 #define CHR_IOCTL_PP_READ_STATUS      7
 
-#define CHR_IOCTL_MODEM_SET_AFC       8
+#define CHR_IOCTL_MODEM_HANDSHAKE     8
 
 typedef void IOEventHandler(void *opaque, int event);
 
@@ -1461,6 +1461,10 @@ typedef void (*gpio_handler_t)(int line, int level, void *opaque);
 #include "hw/pxa.h"
 #include "hw/s3c.h"
 #endif
+
+/* modem.c */
+CharDriverState *modem_init();
+void modem_enable(CharDriverState *chr, int enable);
 
 #endif /* defined(QEMU_TOOL) */
 
