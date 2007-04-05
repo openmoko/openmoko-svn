@@ -16,7 +16,8 @@ source_h = \
     moko-tool-box.h \
     moko-tree-view.h \
     moko-window.h \
-    moko-dialog.h
+    moko-dialog.h \
+    moko-message-dialog.h
 
 source_c = \
     moko-alignment.c \
@@ -36,7 +37,8 @@ source_c = \
     moko-tree-view.c \
     moko-tool-box.c \
     moko-window.c \
-    moko-dialog.c
+    moko-dialog.c \
+    moko-message-dialog.c
 
 DATADIR=$(datadir)
 

@@ -1,5 +1,23 @@
 2007-04-05  Rob Bradford  <rob@openedhand.com>
 
+	* configure.ac:
+	Need to use gdk-pixbuf pkg-config file.
+
+	* libmokoui/Makefile.am:
+	* libmokoui/moko-message-dialog.c:
+	(moko_message_dialog_get_property),
+	(moko_message_dialog_set_property), (moko_message_dialog_dispose),
+	(moko_message_dialog_finalize), (moko_message_dialog_class_init),
+	(moko_message_dialog_shape_window),
+	(moko_message_dialog_realize_cb), (moko_message_dialog_init),
+	(moko_message_dialog_set_message),
+	(moko_message_dialog_set_image_from_stock),
+	(moko_message_dialog_new):
+	* libmokoui/moko-message-dialog.h:
+	First pass at a MokoMessageDialog.
+
+2007-04-05  Rob Bradford  <rob@openedhand.com>
+
 	* libmokoui/moko-dialog.c: (moko_dialog_init):
 	Remove close button. It isn't on the mockups.
 

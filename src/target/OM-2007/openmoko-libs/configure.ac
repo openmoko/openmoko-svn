@@ -16,7 +16,8 @@ LIBECAL_VERSION=1.4.2
 # base deps
 PKG_CHECK_MODULES(DEPS,
                   gtk+-2.0 >= $GTK_VERSION
-                  libecal-1.2 >= $LIBECAL_VERSION)
+                  libecal-1.2 >= $LIBECAL_VERSION
+                  gdk-pixbuf-2.0)
 
 LIBS="$LIBS $DEPS_LIBS"
 CFLAGS="$CFLAGS $DEPS_CFLAGS"
