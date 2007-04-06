@@ -1264,7 +1264,7 @@ static void s3c_uart_write(void *opaque, target_phys_addr_t addr,
         if ((s->mcontrol ^ value) & (1 << 4)) {
             afc = (value >> 4) & 1;
             for (i = 0; i < s->chr_num; i ++)
-                qemu_chr_ioctl(s->chr[i], CHR_IOCTL_MODEM_SET_AFC, &afc);
+                qemu_chr_ioctl(s->chr[i], CHR_IOCTL_MODEM_HANDSHAKE, &afc);
         }
         s->mcontrol = value & 0x11;
         break;
