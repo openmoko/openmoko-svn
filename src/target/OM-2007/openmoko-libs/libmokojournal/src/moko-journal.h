@@ -49,6 +49,7 @@ typedef enum _MokoJEntryType {
   SMS_JOURNAL_ENTRY,
   MMS_JOURNAL_ENTRY,
   CALL_JOURNAL_ENTRY,
+  NB_OF_ENTRY_TYPES /*must always be the last*/
 } MokoJEntryType ;
 
 /*<journal management>*/
@@ -70,6 +71,31 @@ MokoJournal* moko_journal_open_default () ;
  */
 void moko_journal_close (MokoJournal *journal) ;
 
+/**
+ * moko_journal_add_entry:
+ * @journal: the current instance of journal
+ * @entry: the new entry to add to the journal. Must be non NULL.
+ * The journal is responsible
+ * of deallocating the memory of the entry object.
+ *
+ * Add a journal entry to the journal
+ *
+ * Return value: TRUE if the entry got successfully added to the journal,
+ * FALSE otherwise
+ */
+gboolean moko_journal_add_entry (MokoJournal *journal, MokoJEntry *entry) ;
+
+/**
+ * moko_journal_weite_to_storage:
+ * @journal: the journal to save to storage
+ *
+ * Saves the journal to persistent storage (e.g disk) using the
+ * appropriate backend. The backend currently used is evolution data server
+ *
+ * Return TRUE in case of success, FALSE otherwise
+ */
+gboolean moko_journal_write_to_storage (MokoJournal *journal) ;
+
 /*<journal entries querying>*/
 /*</journal entries querying>*/
 
@@ -80,13 +106,14 @@ void moko_journal_close (MokoJournal *journal) ;
 
 /**
  * moko_j_entry_new:
+ * @type: the type of journal entry
  *
  * Create a Journal entry with no properties set.
  * Use the JEntry accessors to get/set properties.
  *
  * Return value: the newly created journal entry object
  */
-MokoJEntry* moko_j_entry_new () ;
+MokoJEntry* moko_j_entry_new (MokoJEntryType type) ;
 
 /**
  * moko_j_entry_free:
@@ -194,11 +221,22 @@ gboolean moko_j_entry_get_email_info (MokoJEntry *entry,
 
 /**
  * moko_j_email_info_get_was_sent:
- * @info: the current instance of email extra info
+ * @info: the current instance of email info
  *
- * Return value: TRUE if the email was sent, FALSE if it was received.
+ * Get a boolean property stating if the email was sent or received.
+ *
+ * Return value: TRUE if the email was sent, false if it was received
  */
 gboolean moko_j_email_info_get_was_sent (MokoJEmailInfo *info) ;
+
+/**
+ * moko_j_email_info_set_was_sent:
+ * @info: the current instance of email info
+ * @was_sent: TRUE if the email was sent, FALSE if it was received
+ *
+ * Set a boolean property stating if the email was sent or received
+ */
+void moko_j_email_info_set_was_sent (MokoJEmailInfo *info, gboolean was_sent) ;
 
 /*</email info>*/
 

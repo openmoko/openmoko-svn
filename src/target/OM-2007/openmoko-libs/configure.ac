@@ -19,8 +19,15 @@ PKG_CHECK_MODULES(DEPS,
                   libecal-1.2 >= $LIBECAL_VERSION
                   gdk-pixbuf-2.0)
 
+if test x$MOKO_DEVEL = xon ; then
+    AC_MSG_NOTICE([removing -O2 from CFLAGS])
+    CFLAGS="-g -Wall"
+fi
+
 LIBS="$LIBS $DEPS_LIBS"
 CFLAGS="$CFLAGS $DEPS_CFLAGS"
+
+AC_SUBST(LIBS)
 
 # foo
 #AC_ARG_ENABLE(foo,
@@ -47,5 +54,11 @@ libmokoui/Makefile
 libmokopim/Makefile
 libmokonet/Makefile
 libmokojournal/Makefile
+libmokojournal/src/Makefile
+libmokojournal/tests/Makefile
 data/Makefile
 ])
+
+echo "CFLAGS = $CFLAGS"
+echo "PREFIX = $prefix"
+echo "LIBS   = $LIBS"

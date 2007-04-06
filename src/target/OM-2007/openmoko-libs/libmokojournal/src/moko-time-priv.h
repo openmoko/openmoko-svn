@@ -18,19 +18,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#ifndef __MOKO_TIME_H__
-#define  __MOKO_TIME_H__
+#ifndef __MOKO_TIME_PRIV_H__
+#define  __MOKO_TIME_PRIV_H__
 
-#include <time.h>
+struct _MokoTime
+{
+    icaltimetype t ;
+};
 
-typedef struct _MokoTime MokoTime ;
-
-MokoTime* moko_time_null_date () ;
-MokoTime* moko_time_null_time () ;
-MokoTime* moko_time_today () ;
-MokoTime* moko_time_from_timet (const time_t t) ;
-MokoTime* moko_time_from_string (const gchar *iso_format_date) ;
-void moko_time_free (MokoTime *a_time) ;
-
-const gchar* moko_time_as_string (MokoTime *t) ;
-#endif /*__MOKO_TIME_H__*/
+#endif  /*__MOKO_TIME_PRIV_H__*/

@@ -1,3 +1,18 @@
+2007-04-06 Dodji Seketeli
+
+	* openmoko-libs/libmokojournal/src/*: moved what
+	  was in openmoko-libs/libmokojournal/ into here.
+	  openmoko-libs/libmokojournal/test will then contain test
+	  functions.
+	* openmoko-libs/libmokojournal/src/moko-journal.c: implemented
+	  and debugged the needed functions to create an entry (of type email)
+	  and save it in the journal, on persistent storage.
+	  The journal is in ~/.moko/journal/journal.ics
+	  Next step from now is to be able to load that journal.
+	* openmoko-libs/libmokojournal/tests/test-create.c:
+	  Tested the basic journal entry creation and saving
+	  into the journal.
+
 2007-04-05  Rob Bradford  <rob@openedhand.com>
 
 	* configure.ac:
@@ -44,8 +59,8 @@
 
 2007-04-02 Dodji Seketeli
 
-	* openmoko-libs/libmokojournal/moko-journal.[c|h]: went forward with the
-	  API proposal
+	* openmoko-libs/libmokojournal/moko-journal.[c|h]:
+	  went forward with the API proposal
 
 2007-03-30 Dodji Seketeli
 
