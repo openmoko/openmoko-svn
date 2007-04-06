@@ -24,7 +24,7 @@
 . openmoko/env
 
 if [[ "$1" != "" ]]; then
-	img_dir="$1"
+	img_dir="`(cd \"$1\"; pwd)`"
 else
 	img_dir="$script_dir"
 fi
@@ -44,8 +44,9 @@ ${make} splash.gz || exit -1
 most_recent () {
 	cd $src_dir
 	export $2="`basename \`ls -d -1 $img_dir/$1 | sort | tail -n 1\``"
+	export $3="`python -c \"print hex(\`stat -c %s $img_dir/${!2}\`)\"`"
 	cd $script_dir
-	export $3="`python -c \"print hex(\`stat -c %s ${!2}\`)\"`"
+	[ -e "${!2}" ] || ln -sf $img_dir/${!2} ${!2}
 	[ -n "${!3}" ]
 }
 
@@ -111,11 +112,15 @@ nand write.e $kernel_addr kernel $kernel_size"
 uboot $rootfs_image 20 "               
 nand write.jffs2 $kernel_addr rootfs $rootfs_size"
 
+# Make the kernel image accessible under a fixed name
+rm -rf openmoko-kernel.bin
+ln -s $kernel_image openmoko-kernel.bin
+
 echo
 echo "    "All done.
 echo
 echo "    "Read the qemu manual and use a commandline like the following to boot:
-echo \ \$ $qemu_relative -mtdblock $script_dir_relative/$flash_image -kernel $script_dir_relative/$kernel_image -usb -show-cursor
+echo \ \$ $qemu_relative -mtdblock $script_dir_relative/$flash_image -kernel $script_dir_relative/openmoko-kernel.bin -usb -show-cursor
 echo
 echo "    "Append \'-snapshot\' to make the flash image read-only so that every
 echo "    "time emulation starts in the original unmodified state.
