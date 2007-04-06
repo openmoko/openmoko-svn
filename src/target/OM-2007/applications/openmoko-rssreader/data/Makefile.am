@@ -13,5 +13,5 @@ dist_desktop_DATA = openmoko-rssreader.desktop
 # desktop integration: application icon
 #
 appicondir = $(datadir)/pixmaps
-dist_appicon_DATA = RSS.png
+dist_appicon_DATA = openmoko-rssreader.png
 
