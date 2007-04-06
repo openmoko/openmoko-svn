@@ -21,6 +21,15 @@
 	* libmokoui/moko-dialog.c: (moko_dialog_init):
 	Remove close button. It isn't on the mockups.
 
+2007-04-03 Dodji Seketeli
+
+	* openmoko-libs/libmokojournal/moko-journal.c: started to
+	  implement the obvious, to see if there are hidden stones
+	* openmoko-libs/libmokojournal/moko-journal.h: abstract
+	  icaltime completely in MokoTime
+	* openmoko-libs/libmokojournal/moko-time.h: provide headers
+	  for the icaltime abstraction.
+
 2007-04-03  Rob Bradford  <rob@openedhand.com>
 
 	* libmokoui/moko-dialog.c: (moko_dialog_add_button),

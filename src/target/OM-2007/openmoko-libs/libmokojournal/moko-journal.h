@@ -22,7 +22,7 @@
 #define  __MOKO_JOURNAL_H__
 
 #include <glib.h>
-#include <libical/icaltime.h>
+#include "moko-time.h" 
 
 /************************************************************
  * this API abstracts the process of adding
@@ -69,6 +69,9 @@ MokoJournal* moko_journal_open_default () ;
  * This function deallocates the memory of the Journal object.
  */
 void moko_journal_close (MokoJournal *journal) ;
+
+/*<journal entries querying>*/
+/*</journal entries querying>*/
 
 /*</journal management>*/
 
@@ -126,14 +129,14 @@ const gchar* moko_j_entry_get_contact_uid (MokoJEntry *entry) ;
 /**
  * moko_j_entry_set_contact_uid:
  * @entry: the current instance of journal entry
- * @uid: the uid to set. This string must allocated in the heap, and will
- * be freed by the journal entry itselft.
+ * @uid: the uid to set. This string is copied so the client code
+ * must free it.
  *
  * Associate a new contact UID to the journal entry uid.
  * The UID is copied by this function so the caller is reponsible of
  * taking care of the uid string lifecycle.
  */
-void  moko_j_entry_set_contact_uid (MokoJEntry *entry, gchar *uid) ;
+void  moko_j_entry_set_contact_uid (MokoJEntry *entry, const gchar *uid) ;
 
 /**
  * moko_j_entry_get_summary:
@@ -149,12 +152,12 @@ const gchar* moko_j_entry_get_summary (MokoJEntry *entry) ;
 /**
  * moko_j_entry_set_summary:
  * @entry: the current instance of journal entry
- * @summary: the new summary of the journal entry. It must be allocated
- * in the heap and will be deallocated by the journal entry itself.
+ * @summary: the new summary of the journal entry. It is copied
+ * so client code is reponsible of its lifecyle.
  *
  * Set the summary of the journal entry
  */
-void moko_j_entry_set_summary (MokoJEntry *entry, gchar* summary) ;
+void moko_j_entry_set_summary (MokoJEntry *entry, const gchar* summary) ;
 
 /**
  * moko_j_entry_get_dtdstart:
@@ -165,14 +168,14 @@ void moko_j_entry_set_summary (MokoJEntry *entry, gchar* summary) ;
  * Return value: an icaltimetype representing the starting date expected.
  * It can be NULL. Client code must not deallocate it.
  */
-const icaltimetype* moko_j_entry_get_dtstart (MokoJEntry *entry) ;
+const MokoTime* moko_j_entry_get_dtstart (MokoJEntry *entry) ;
 
 /**
  * moko_j_entry_set_dtstart:
  * @entry: the current instance of journal entry
  * @dtstart: the new starting date associated to the journal entry.
  */
-void moko_j_entry_set_dtstart (MokoJEntry *entry, icaltimetype dtstart);
+void moko_j_entry_set_dtstart (MokoJEntry *entry, MokoTime* dtstart);
 
 /*<email info>*/
 
@@ -198,6 +201,8 @@ gboolean moko_j_entry_get_email_info (MokoJEntry *entry,
 gboolean moko_j_email_info_get_was_sent (MokoJEmailInfo *info) ;
 
 /*</email info>*/
+
+
 /*</journal entries management>*/
 
 #endif /*__MOKO_JOURNAL_H__*/
