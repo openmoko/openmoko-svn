@@ -1,11 +1,11 @@
 [Desktop Entry]
-Name=OpenMoko Simple Stylus Demo
+Name=Simple Stylus Demo
 Comment=Demonstrates a simple OpenMoko Stylus Application
 Encoding=UTF-8
 Version=1.0
 Type=Application
 Exec=openmoko-stylus-demo-simple
-Icon=openmoko-stylus-demo-simple.png
+Icon=openmoko-stylus-demo-simple
 Terminal=false
 SingleInstance=true
 StartupNotify=true
