@@ -6,7 +6,7 @@ desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
 icondir = $(datadir)/pixmaps/
-icon_DATA = oh-contacts.png
+icon_DATA = openmoko-contacts.png
 
 schemadir = $(GCONF_SCHEMA_FILE_DIR)
 schema_DATA = contacts.schemas
