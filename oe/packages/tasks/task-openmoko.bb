@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r33"
+PR = "r34"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -63,7 +63,7 @@ RDEPENDS_task-openmoko-ui = "\
   pango-module-basic-fc \
   gtk+ \
   libgtkstylus \
-#  libgtkinput \
+  libgtkinput \
   matchbox-common \
   matchbox-wm \
   xserver-kdrive-fbdev \
@@ -90,6 +90,9 @@ RDEPENDS_task-openmoko-base = "\
   openmoko-mainmenu \
   matchbox-panel-2 \
   matchbox-panel-2-applets \
+  matchbox-applet-inputmanager \
+  matchbox-applet-startup-monitor \
+  openmoko-keyboard \
   openmoko-footer \
   openmoko-taskmanager \
   openmoko-panel-mainmenu \
@@ -150,8 +153,6 @@ RDEPENDS_task-openmoko-demo = "\
   matchbox-keyboard \
   matchbox-stroke \
   matchbox-config-gtk \
-  matchbox-applet-inputmanager \
-  matchbox-applet-startup-monitor \
   xcursor-transparent-theme \
   web \
   rxvt-unicode \
