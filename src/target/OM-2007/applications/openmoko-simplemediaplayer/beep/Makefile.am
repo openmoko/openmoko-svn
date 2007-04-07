@@ -83,9 +83,17 @@ beep_SOURCES = \
 
 beepinclude_HEADERS = plugin.h fullscreen.h
 
-desktop_DATA = bmp.desktop
+#
+# desktop integration: .desktop file
+#
 desktopdir = $(datadir)/applications
+dist_desktop_DATA = bmp.desktop
 
+#
+# desktop integration: application icon
+#
+appicondir = $(datadir)/pixmaps
+dist_appicon_DATA = openmoko-simplemediaplayer.png
 
 BUILT_SOURCES = pixmaps.h
 
