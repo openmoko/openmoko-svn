@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r34"
+PR = "r35"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -191,6 +191,7 @@ RDEPENDS_task-openmoko-debug = "\
   tcpdump \
   tslib-calibrate \
   tslib-tests \
+  fbgrab \
   fstests \
   lsof \
   lrzsz \
