@@ -2,6 +2,7 @@
 #ifndef OPENMOKO_RSS_RFC_DATE_H
 #define OPENMOKO_RSS_RFC_DATE_H
 
+#include <glib.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS
@@ -18,7 +19,9 @@ typedef struct _RSSRFCDateClass RSSRFCDateClass;
 
 struct _RSSRFCDate {
     GObject parent;
-    gint64  date;
+
+    GDate  *date;
+    GTimeVal timeval;
 };
 
 struct _RSSRFCDateClass {
@@ -30,6 +33,7 @@ GObject*  rss_rfc_date_new      ();
 void      rss_rfc_date_set      (RSSRFCDate* self, const gchar* rfc822_date);
 gint      rss_rfc_date_compare  (RSSRFCDate* self, RSSRFCDate *other);
 gchar*    rss_rfc_date_as_string(RSSRFCDate* self);
+void      rss_rfc_date_clear_cache (RSSRFCDate* self);
 
 
 G_END_DECLS
