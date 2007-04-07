@@ -99,7 +99,7 @@ BUILT_SOURCES = pixmaps.h
 
 embedded_icons = 
 
-EXTRA_DIST = \
+EXTRA_DIST = $(dist_appicon_DATA) \
 	$(embedded_icons) build.list
 
 pixmaps.h: $(embedded_icons)
