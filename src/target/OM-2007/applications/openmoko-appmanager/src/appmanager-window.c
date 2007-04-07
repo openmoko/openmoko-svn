@@ -37,7 +37,7 @@
 /*
  * @brief The start function.
  */
-int 
+int
 main (int argc, char* argv[])
 {
   ApplicationManagerData *appdata;
@@ -53,9 +53,10 @@ main (int argc, char* argv[])
 
   gint             ret;
 
-  g_debug ("appplication manager start up");
+  g_debug ("application manager start up");
 
   gtk_init (&argc, &argv);
+  g_set_application_name( _("Application Manager") );
 
   if (argc != 1)
     {
@@ -72,7 +73,7 @@ main (int argc, char* argv[])
   init_pixbuf_list (appdata);
 
   window = MOKO_PANED_WINDOW (moko_paned_window_new ());
-  g_signal_connect (G_OBJECT (window), "delete_event", 
+  g_signal_connect (G_OBJECT (window), "delete_event",
                     G_CALLBACK (gtk_main_quit), NULL);
   application_manager_data_set_main_window (appdata, window);
 
@@ -104,13 +105,13 @@ main (int argc, char* argv[])
   ret = init_package_list (appdata);
   if (ret != OP_SUCCESS)
     {
-      g_debug ("Can not initial the libipkg, the result is%d", ret);
+      g_debug ("Can not initialize libipkg, result was %d, aborting.", ret);
       return -1;
     }
   ret = package_list_build_index (appdata);
   if (ret != OP_SUCCESS)
     {
-      g_debug ("Can not build index for packages");
+      g_debug ("Can not build index for packages, aborting.");
       return -1;
     }
 

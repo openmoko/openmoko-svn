@@ -37,7 +37,7 @@ enum {
 /*
  * @brief The Callback function of the show status menu
  */
-void 
+void
 on_showstatus_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
   g_debug ("Call on_showstatus_activate");
@@ -47,7 +47,7 @@ on_showstatus_activate (GtkMenuItem *menuitem, gpointer user_data)
 /*
  * @brief The Callback function of the show source menu
  */
-void 
+void
 on_showsource_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
   g_debug ("Call on_showsource_activate");
@@ -56,7 +56,7 @@ on_showsource_activate (GtkMenuItem *menuitem, gpointer user_data)
 /*
  * @brief The Callback function of the install single application menu
  */
-void 
+void
 on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
   ApplicationManagerData  *appdata;
@@ -78,7 +78,7 @@ on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_dat
 
   if (!package_list_check_marked_list_empty (appdata))
     {
-      confirmdialog = gtk_message_dialog_new (NULL, 
+      confirmdialog = gtk_message_dialog_new (NULL,
                                               GTK_DIALOG_DESTROY_WITH_PARENT,
                                               GTK_MESSAGE_QUESTION,
                                               GTK_BUTTONS_YES_NO,
@@ -114,7 +114,7 @@ on_install_single_application_activate (GtkMenuItem *menuitem, gpointer user_dat
   res = gtk_dialog_run(GTK_DIALOG(filechooser));
   errcode = USER_CANCEL;
 
-  if( (res == GTK_RESPONSE_ACCEPT) || (res == GTK_RESPONSE_OK) ) 
+  if( (res == GTK_RESPONSE_ACCEPT) || (res == GTK_RESPONSE_OK) )
     {
       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
@@ -201,7 +201,7 @@ install_quit:
 /*
  * @brief The Callback function of the show help menu
  */
-void 
+void
 on_showhelp_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
   g_debug ("Call on_showhelp_activate");
@@ -210,7 +210,7 @@ on_showhelp_activate (GtkMenuItem *menuitem, gpointer user_data)
 /*
  * @brief The Callback function of the quit menu
  */
-void 
+void
 on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
 {
   g_debug ("Call on_quit_activate");
@@ -220,7 +220,7 @@ on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
 /*
  * @brief Create a new application menu for the application manager
  * @param appdata The application manager data
- * @return The GtkMenu widget. If there is error, 
+ * @return The GtkMenu widget. If there is error,
  * it will return NULL.
  */
 GtkMenu *
@@ -238,13 +238,13 @@ application_menu_new (ApplicationManagerData *appdata)
 
   appmenu = GTK_MENU (gtk_menu_new ());
 
-  showstatus = gtk_menu_item_new_with_mnemonic (_("Shows tatus"));
+  showstatus = gtk_menu_item_new_with_mnemonic (_("Show Status"));
   gtk_widget_show (showstatus);
   gtk_container_add (GTK_CONTAINER (appmenu), showstatus);
   g_signal_connect ((gpointer) showstatus, "activate",
                     G_CALLBACK (on_showstatus_activate), appdata);
 
-  showsource = gtk_menu_item_new_with_mnemonic (_("Show source"));
+  showsource = gtk_menu_item_new_with_mnemonic (_("Show Source"));
   gtk_widget_show (showsource);
   gtk_container_add (GTK_CONTAINER (appmenu), showsource);
   g_signal_connect ((gpointer) showsource, "activate",
@@ -256,7 +256,7 @@ application_menu_new (ApplicationManagerData *appdata)
   g_signal_connect ((gpointer) installsingleapp, "activate",
                     G_CALLBACK (on_install_single_application_activate), appdata);
 
-  showhelp = gtk_menu_item_new_with_mnemonic (_("Show help"));
+  showhelp = gtk_menu_item_new_with_mnemonic (_("Show Help"));
   gtk_widget_show (showhelp);
   gtk_container_add (GTK_CONTAINER (appmenu), showhelp);
   g_signal_connect ((gpointer) showhelp, "activate",
