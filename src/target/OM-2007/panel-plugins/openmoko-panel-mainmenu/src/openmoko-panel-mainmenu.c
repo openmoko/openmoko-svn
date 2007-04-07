@@ -17,6 +17,11 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include "buttonactions.h"
+#include "stylusmenu.h"
+#include "mokodesktop.h"
+#include "mokodesktop_item.h"
+
 #include <libmokoui/moko-panel-applet.h>
 
 #include <gtk/gtk.h>
@@ -26,9 +31,6 @@
 #include <X11/Xatom.h>
 
 #include <unistd.h>
-#include "stylusmenu.h"
-#include "mokodesktop.h"
-#include "mokodesktop_item.h"
 
 static GtkWidget *sm = NULL;
 
@@ -80,17 +82,10 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     sm = gtk_menu_new ();
     gtk_widget_show (sm);
 
-    MokoDesktopItem *top_item = NULL;
-    int ret;
-
-    top_item = mokodesktop_item_new_with_params ("Home", 
-						       NULL,
-						       NULL,
-						       ITEM_TYPE_ROOT );
-
-    ret = mokodesktop_init(top_item, ITEM_TYPE_CNT);
-
+    MokoDesktopItem *top_item = mokodesktop_item_new_with_params ("Home", NULL, NULL, ITEM_TYPE_ROOT );
+    int ret = mokodesktop_init(top_item, ITEM_TYPE_CNT);
     moko_stylus_menu_build(GTK_MENU(sm), top_item);
+    panel_mainmenu_install_watcher();
 
     return GTK_WIDGET(applet);
 }
