@@ -1,8 +1,8 @@
 DESCRIPTION = "The OpenMoko Media Player"
 SECTION = "openmoko/applications"
-DEPENDS += "alsa-lib dbus-glib libid3 libvorbis"
+DEPENDS += "alsa-lib dbus-glib id3lib libvorbis"
 PV = "0.0.1+svn${SRCDATE}"
-PR = "r1"
+PR = "r2"
 
 inherit openmoko
 
