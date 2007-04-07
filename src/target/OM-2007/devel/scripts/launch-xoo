@@ -8,12 +8,11 @@
 #
 SERVER=Xephyr
 #SERVER=Xnest
-SVN_TRUNK=/local/pkg/openmoko/
-export PATH=$SVN_TRUNK/OM-2007/bin:$PATH
-export LD_LIBRARY_PATH=$SVN_TRUNK/OM-2007/lib:/usr/local/lib
+export PATH=$OPENMOKODIR/bin:$PATH
+export LD_LIBRARY_PATH=$OPENMOKODIR/lib:/usr/local/lib
 
 xoo -xo '-dpi 104 -ac' -xd :1 -xn `which $SERVER` -t 'OpenMoko running on FIC GTA01' -d \
-$SVN_TRUNK/oe/packages/xoo/files/gta01.xml &
+$OEDIR/packages/xoo/files/gta01.xml &
 
 sleep 2
 
@@ -32,11 +31,13 @@ matchbox-desktop --icon-size 100 \
                  --icon-padding 60 \
                  --font sans-16 \
                  --titlefont sans-20:bold --bg \
-img-tiled:/local/pkg/openmoko/OM-2007/artwork/themes/openmoko-standard/gtk-2.0/mokopanedwindow-upper-enclosing.png &
+img-tiled:$OPENMOKODIR/artwork/themes/openmoko-standard/gtk-2.0/mokopanedwindow-upper-enclosing.png &
 
 sleep 2
 
-matchbox-panel --geometry=480x44 --end-applets=clock &
+matchbox-panel --geometry=480x44 \
+  --start-applets=openmoko-panel-mainmenu,systray \
+  --end-applets=openmoko-panel-battery,openmoko-panel-gsm,openmoko-panel-gps,openmoko-panel-clock &
 
 sleep 2
 
