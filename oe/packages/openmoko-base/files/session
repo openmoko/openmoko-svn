@@ -8,9 +8,10 @@ matchbox-desktop --icon-size 96 \
                  --titlefont sans-20:bold \
                  --bg img-tiled:/usr/share/themes/openmoko-standard/gtk-2.0/mokopanedwindow-upper-enclosing.png &
 
+
 matchbox-panel \
   --start-applets=openmoko-panel-mainmenu,systray \
-  --end-applets=openmoko-panel-battery,openmoko-panel-clock,openmoko-panel-gsm &
+  --end-applets=openmoko-panel-battery,openmoko-panel-gsm,openmoko-panel-gps,openmoko-panel-usb,openmoko-panel-bt,openmoko-panel-clock &
 
 # start some old-style panel plugins to get a keyboard and startup notification
 mbinputmgr &
