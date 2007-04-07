@@ -1,2 +1,2 @@
-SUBDIRS = src data po
+SUBDIRS = src tests data po
 

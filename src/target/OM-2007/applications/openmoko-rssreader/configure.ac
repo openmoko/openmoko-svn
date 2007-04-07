@@ -14,6 +14,27 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
 
+# unit testing (inspired by opensync)
+# enable gcov profiling
+GCOV_CPPFLAGS=""
+GCOV_LDFLAGS=""
+AC_ARG_ENABLE([profiling],
+  [AS_HELP_STRING([--enable-profiling], [enable gcov profiling])],
+  [case "${enableval}" in
+    yes) GCOV_PROFILING="yes"
+         GCOV_CPPFLAGS="-ftest-coverage -fprofile-arcs"
+         GCOV_LDFLAGS="-lgcov"
+        ;;
+    no)  ;;
+     *)  AC_MSG_ERROR([bad value ${enableval} for --enable-profiling]) ;;
+    esac],[GCOV_PROFILING="no"])
+AC_SUBST(GCOV_CPPFLAGS)
+AC_SUBST(GCOV_LDFLAGS)
+AM_CONDITIONAL(ENABLE_PROFILING, test "x${GCOV_PROFILING}" = "xyes")
+
+#check for check
+AM_PATH_CHECK([0.9.2], [ENABLE_TESTING="yes"], [ENABLE_TESTING="no"])
+AM_CONDITIONAL(ENABLE_TESTING, test "x${ENABLE_TESTING}" = "xyes")
 
 # base deps
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1)
@@ -25,5 +46,6 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 data/Makefile
+tests/Makefile
 po/Makefile.in
 ])
