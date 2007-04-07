@@ -1,8 +1,5 @@
 (Ordered by Priority)
 
-- Finish Finger Application Framework
-- Implement Popup and FullScreen-Dialogs for Stylus Application Framework
-- Add Theming for Dialogs
 - Add MokoBanner (see HildonBanner)
 - Start Footer Application and implement Status Bar Interface
 - Add Status Bar Interface to MokoApplication
