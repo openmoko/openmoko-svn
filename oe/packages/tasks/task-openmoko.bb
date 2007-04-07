@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r35"
+PR = "r36"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -92,6 +92,7 @@ RDEPENDS_task-openmoko-base = "\
   matchbox-panel-2-applets \
   matchbox-applet-inputmanager \
   matchbox-applet-startup-monitor \
+  openmoko-appmanager \
   openmoko-keyboard \
   openmoko-footer \
   openmoko-taskmanager \
