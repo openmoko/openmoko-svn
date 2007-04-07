@@ -28,8 +28,8 @@ struct _RSSRFCDateClass {
     GObjectClass parent;
 };
 
-GType     rss_rfc_date_get_type ();
-GObject*  rss_rfc_date_new      ();
+GType     rss_rfc_date_get_type (void);
+GObject*  rss_rfc_date_new      (void);
 void      rss_rfc_date_set      (RSSRFCDate* self, const gchar* rfc822_date);
 gint      rss_rfc_date_compare  (RSSRFCDate* self, RSSRFCDate *other);
 gchar*    rss_rfc_date_as_string(RSSRFCDate* self);

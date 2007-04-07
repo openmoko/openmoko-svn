@@ -144,7 +144,7 @@ rss_rfc_date_init(RSSRFCDate *self)
 }
 
 GObject*
-rss_rfc_date_new ()
+rss_rfc_date_new (void)
 {
     return G_OBJECT(g_object_new(RSS_TYPE_RFC_DATE, NULL));
 }
