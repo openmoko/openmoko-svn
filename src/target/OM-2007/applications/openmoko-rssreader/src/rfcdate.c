@@ -177,8 +177,12 @@ rss_rfc_date_set (RSSRFCDate *self, const gchar* rfc822date)
      * %a but for the %b we need to look it up properly
      */
     int day, year, hour, minute, second;
+    day = year = hour = minute = second = 0;
     gchar month_name[4];
     sscanf (rfc822date, "%*3s, %d %3s %d %d:%d:%d", &day, month_name, &year, &hour, &minute, &second );
+
+    if ( year < 100 )
+        year += 1900;
 
     self->timeval.tv_sec  = hour*60*60 + minute*60 + second;
     self->timeval.tv_usec = 0;
@@ -216,13 +220,13 @@ rss_rfc_date_as_string (RSSRFCDate *self)
     g_date_set_time_val (date, &now);
 
     if ( g_date_compare( date, self->date ) == 0 ) {
-        date_string = g_string_new (_("Today"));
+        date_string = g_string_new (_("Today,"));
         goto exit;
     }
 
     g_date_subtract_days( date, 1 );
     if ( g_date_compare( date, self->date ) == 0 ) {
-        date_string = g_string_new (_("Yesterday"));
+        date_string = g_string_new (_("Yesterday,"));
         goto exit;
     }
 
@@ -230,16 +234,19 @@ rss_rfc_date_as_string (RSSRFCDate *self)
      * copy the date using the current locale. And retry
      * until the buffer is big enough
      */
-    date_string = g_string_sized_new( 10 );
-    while ( g_date_strftime( date_string->str, date_string->allocated_len-1, "%a, %d %b %Y", self->date ) == 0 ) {
+    date_string = g_string_sized_new( 40 );
+    gsize result;
+    while ( (result = g_date_strftime( date_string->str, date_string->allocated_len-1, "%a, %e %b %Y", self->date )) == 0 ) {
         g_string_set_size( date_string, date_string->allocated_len + 10 );
     }
+
+    g_string_set_size (date_string, result);
 
 exit:
     /*
      * append the time
      */
-    g_string_append_printf ( date_string, ", %ld:%ld:%ld",
+    g_string_append_printf ( date_string, " %ld:%ld:%ld",
                              self->timeval.tv_sec/60/60,
                              self->timeval.tv_sec/60%60,
                              self->timeval.tv_sec%60);
