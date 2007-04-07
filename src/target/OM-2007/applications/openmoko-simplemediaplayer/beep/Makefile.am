@@ -3,7 +3,7 @@ SUBDIRS =
 beepincludedir = $(includedir)/bmp
 
 bin_PROGRAMS = beep
-transform = s/beep/openmoko-simple-media-player/
+transform = s/beep/openmoko-simplemediaplayer/
 
 beep_LDFLAGS = -export-dynamic
 beep_LDADD = -lid3 \

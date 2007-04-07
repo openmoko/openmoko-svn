@@ -1,10 +1,11 @@
 [Desktop Entry]
-Name=Openmoko Simple Media Player
+Name=Music
 Comment=Play music
-Exec=openmoko-simple-media-player
-Icon=bmp.png
+Exec=openmoko-simplemediaplayer
+Icon=openmoko-simplemediaplayer
 MimeType=audio/x-scpls;audio/x-mpegurl;audio/mpegurl;audio/mp3;audio/x-mp3;audio/mpeg;audio/x-mpeg;audio/x-wav;application/x-ogg;
 Categories=Application;GTK;AudioVideo;Player;
 Terminal=false
 Type=Application
 Encoding=UTF-8
+SingleInstance=true
