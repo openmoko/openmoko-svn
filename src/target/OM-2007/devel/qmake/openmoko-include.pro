@@ -2,7 +2,6 @@
 # Don't use this if your nickname is not mickeyl
 #
 
-
 CONFIG = debug warn_on link_pkgconfig console $$MOKOCONFIG
 PREFIX = /usr/local
 
@@ -98,6 +97,6 @@ contains( TEMPLATE, lib ) {
 
 DEFINES += G_LOG_DOMAIN=\\\"$$TARGET\\\"
 DEFINES += GETTEXT_PACKAGE=\\\"$$TARGET\\\"
-DEFINES += LC_ALL
-DEFINES += LOCALEDIR
+DEFINES += LC_ALL=\\\"C\\\"
+DEFINES += LOCALEDIR=\\\"/tmp/$$TARGET\\\"
 
