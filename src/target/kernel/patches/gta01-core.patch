@@ -174,7 +174,7 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +			  PCF50606_FEAT_CHGCUR |
 +			  PCF50606_FEAT_BATVOLT |
 +			  PCF50606_FEAT_BATTEMP,
-+	.onkey_seconds_required = 5,
++	.onkey_seconds_required = 3,
 +	.cb		= &pmu_callback,
 +	.r_fix_batt	= 10000,
 +	.r_fix_batt_par	= 10000,
