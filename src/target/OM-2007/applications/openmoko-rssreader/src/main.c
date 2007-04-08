@@ -32,9 +32,36 @@
 
 #include <libmokoui/moko-details-window.h>
 
+#include <string.h>
 #include <assert.h>
 
 #define ASSERT_X(x, error) assert(x)
+
+/*
+ * filter categories and such terms
+ */
+static gboolean
+rss_filter_entries (GtkTreeModel *model, GtkTreeIter *iter, struct RSSReaderData *data)
+{
+    /*
+     * filter the category
+     */
+    if ( !data->is_all_filter ) {
+        gchar *category;
+        gtk_tree_model_get (model, iter,  RSS_READER_COLUMN_CATEGORY, &category,  -1);
+
+
+        if ( strcmp(category, data->current_filter) != 0 )
+            return FALSE;
+    }
+
+
+    /*
+     * filter the text according to the search now
+     */
+
+    return TRUE;
+}
 
 /*
  * sort the dates according to zsort. Ideally they should sort ascending
@@ -109,6 +136,7 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
      * allow to filter for a search string
      */
     data->filter_model = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(data->feed_data),NULL));
+    gtk_tree_model_filter_set_visible_func (data->filter_model, (GtkTreeModelFilterVisibleFunc)rss_filter_entries, data, NULL);
 
     /*
      * Allow sorting of the base model
@@ -235,6 +263,7 @@ int main( int argc, char** argv )
      * load data
      */
     refresh_categories( data );
+    data->is_all_filter = TRUE;
     moko_menu_box_set_active_filter( data->menubox, _("All") );
 
     gtk_widget_show_all( GTK_WIDGET(data->window) );

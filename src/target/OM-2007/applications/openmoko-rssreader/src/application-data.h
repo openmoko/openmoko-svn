@@ -55,6 +55,8 @@ struct RSSReaderData {
     GtkTextView       *textView;
 
     gchar             *current_filter;
+    int                is_all_filter;
+    gchar             *current_search_text;
 };
 
 /*

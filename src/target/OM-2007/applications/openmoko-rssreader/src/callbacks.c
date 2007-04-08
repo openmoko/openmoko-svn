@@ -56,6 +56,7 @@ static void remove_container_item( GtkWidget *item, GtkWidget *container ) {
  * TODO: Use the ModelFilter to filter for All or Category
  */
 void filter_feeds( struct RSSReaderData *data ) {
+    gtk_tree_model_filter_refilter (data->filter_model);
 }
 
 /*
@@ -82,6 +83,10 @@ gboolean cb_filter_changed( GtkWidget* widget, gchar *text, struct RSSReaderData
         g_free( data->current_filter );
     data->current_filter = g_strdup( text );
 
+    /*
+     * shortcut for the later filter function
+     */
+    data->is_all_filter = strcmp(  _( "All" ), text ) == 0;
     filter_feeds( data );
     return TRUE;
 }
