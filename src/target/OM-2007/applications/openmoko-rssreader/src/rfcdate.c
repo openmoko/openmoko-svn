@@ -187,6 +187,21 @@ rss_rfc_date_set (RSSRFCDate *self, const gchar* rfc822date)
     self->timeval.tv_sec  = hour*60*60 + minute*60 + second;
     self->timeval.tv_usec = 0;
     g_date_set_dmy ( self->date, day, rss_month_number (month_name), year);
+
+
+    /*
+     * broken software? The 29th February and 31st April simply doesn't exist
+     * What should we do with these dates? round to the nearest legal date?
+     */
+    if ( !g_date_valid (self->date) ) {
+        g_print ("Setting RFC Date failed: '%s' %d %d %s %d  %ld\n",
+                        rfc822date,
+                        day,
+                        rss_month_number(month_name),
+                        month_name,
+                        year,
+                        self->timeval.tv_sec);
+    }
 }
 
 /*
