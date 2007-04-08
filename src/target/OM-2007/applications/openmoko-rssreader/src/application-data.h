@@ -68,7 +68,6 @@ enum {
     RSS_READER_COLUMN_AUTHOR,
     RSS_READER_COLUMN_SUBJECT,
     RSS_READER_COLUMN_DATE,
-    RSS_READER_COLUMN_DATE_GDATE,/* The date as GDate representation used for sorting     */
     RSS_READER_COLUMN_LINK,     /* Is this something like spiegel.de and only has a link */
     RSS_READER_COLUMN_TEXT,     /* Either link is NULL, or this contains the article     */
     RSS_READER_COLUMN_TEXT_TYPE,/* The Text Type of Atom feeds HTML, plain...            */

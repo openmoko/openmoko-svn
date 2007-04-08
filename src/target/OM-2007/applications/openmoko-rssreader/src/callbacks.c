@@ -28,6 +28,7 @@
 #include <glib/gi18n.h>
 
 #include "callbacks.h"
+#include "rfcdate.h"
 
 #include <mrss.h>
 #include <string.h>
@@ -139,12 +140,14 @@ static void feed_update_thread( struct RSSReaderData *data ) {
             /*
              * update the model here
              */
+            RSSRFCDate *date = RSS_RFC_DATE(rss_rfc_date_new ());
+            rss_rfc_date_set (date, item->pubDate);
             gdk_threads_enter();
             gtk_list_store_append( data->feed_data, &iter );
             gtk_list_store_set   ( data->feed_data, &iter,
                                    RSS_READER_COLUMN_AUTHOR, g_strdup( item->author  ),
                                    RSS_READER_COLUMN_SUBJECT,g_strdup( item->title   ),
-                                   RSS_READER_COLUMN_DATE,   g_strdup( item->pubDate ),
+                                   RSS_READER_COLUMN_DATE,   date,
                                    RSS_READER_COLUMN_LINK,   g_strdup( item->link    ),
                                    RSS_READER_COLUMN_TEXT,   g_strdup( description   ),
                                    RSS_READER_COLUMN_TEXT_TYPE, content_type          ,

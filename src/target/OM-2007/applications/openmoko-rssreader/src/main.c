@@ -28,12 +28,41 @@
 
 #include "application-data.h"
 #include "callbacks.h"
+#include "rfcdate.h"
 
 #include <libmokoui/moko-details-window.h>
 
 #include <assert.h>
 
 #define ASSERT_X(x, error) assert(x)
+
+/*
+ * sort the dates according to zsort. Ideally they should sort ascending
+ */
+static gint
+rss_sort_dates (GtkTreeModel *model, GtkTreeIter *_left, GtkTreeIter *_right, gpointer that)
+{
+    RSSRFCDate *left, *right;
+    gtk_tree_model_get (model, _left,  RSS_READER_COLUMN_DATE, &left,  -1);
+    gtk_tree_model_get (model, _right, RSS_READER_COLUMN_DATE, &right, -1);
+
+    if ( left == NULL )
+        return -1;
+    else if ( right == NULL )
+        return 1;
+    else
+        return rss_rfc_date_compare (left, right);
+}
+
+static void
+rss_cell_data_func (GtkTreeViewColumn *tree_column, GtkCellRenderer *renderer, GtkTreeModel *tree_model, GtkTreeIter *iter, gpointer data)
+{
+    RSSRFCDate *date;
+    gtk_tree_model_get (tree_model, iter, RSS_READER_COLUMN_DATE, &date, -1);
+
+    g_assert (date);
+    g_object_set ( G_OBJECT(renderer), "text", rss_rfc_date_as_string(date), NULL);
+}
 
 /*
  * setup the toolbar
@@ -69,8 +98,7 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     data->feed_data = gtk_list_store_new( RSS_READER_NUM_COLS,
                                           G_TYPE_STRING /* Author    */,
                                           G_TYPE_STRING /* Subject   */,
-                                          G_TYPE_STRING /* The actual string */,
-                                          G_TYPE_DATE   /* Date GDate*/,
+                                          RSS_TYPE_RFC_DATE /* Date  */,
                                           G_TYPE_STRING /* Link      */,
                                           G_TYPE_STRING /* Text      */,
                                           G_TYPE_INT    /* Text_Type */,
@@ -86,10 +114,10 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
      * Allow sorting of the base model
      */
     data->sort_model = GTK_TREE_MODEL_SORT(gtk_tree_model_sort_new_with_model( GTK_TREE_MODEL(data->filter_model) ));
-    gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_SUBJECT, GTK_SORT_ASCENDING );
     gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE,    GTK_SORT_ASCENDING );
+    gtk_tree_sortable_set_sort_func ( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE, rss_sort_dates, NULL, NULL);
 
-    data->treeView = MOKO_TREE_VIEW(moko_tree_view_new_with_model(GTK_TREE_MODEL(data->feed_data)));
+    data->treeView = MOKO_TREE_VIEW(moko_tree_view_new_with_model(GTK_TREE_MODEL(data->sort_model)));
     moko_paned_window_set_upper_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_tree_view_put_into_scrolled_window(data->treeView)) );
 
     /*
@@ -105,7 +133,9 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
 
     ren = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
-    column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Date"), ren, "text", RSS_READER_COLUMN_DATE, NULL));
+    column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Date"), ren, NULL));
+
+    gtk_tree_view_column_set_cell_data_func (column, ren, rss_cell_data_func, NULL, NULL);
     gtk_tree_view_column_set_expand( column, TRUE );
     gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
     gtk_tree_view_column_set_sort_column_id( column, RSS_READER_COLUMN_DATE );
@@ -120,7 +150,6 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     GtkWidget *search_entry = GTK_WIDGET(moko_tool_box_get_entry(MOKO_TOOL_BOX(data->box)));
     g_signal_connect( G_OBJECT(data->treeView), "key_press_event", G_CALLBACK(cb_treeview_keypress_event), data );
     g_signal_connect( G_OBJECT(search_entry),   "changed", G_CALLBACK(cb_search_entry_changed), data );
-
 }
 
 static void create_details_area( struct RSSReaderData* data ) {
