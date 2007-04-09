@@ -31,8 +31,10 @@
 #include <sys/stat.h>
 #include <linux/input.h>
 
+#undef DEBUG_THIS_FILE
+
 //FIXME find out through sysfs
-#if 0
+#ifndef DEBUG_THIS_FILE
     #define AUX_BUTTON_EVENT_PATH "/dev/input/event0"
     #define AUX_BUTTON_KEYCODE 169
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
