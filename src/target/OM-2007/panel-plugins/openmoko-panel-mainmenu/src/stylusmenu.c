@@ -21,24 +21,25 @@
 //#include "callbacks.h"
 
 static GtkImageMenuItem *moko_build_new_menu_item (const char *icon_name, const char *icon_path);
+static void moko_stylus_menu_activate_item(GtkWidget* widget, const char* name);
 
 void
 moko_stylus_menu_build (GtkMenu *menu, MokoDesktopItem *item)
 {
   //GtkMenu *sub_menu;
   GtkImageMenuItem *menu_item;
-    
+
   MokoDesktopItem *item_new;
 g_debug ("menu build-------------------------V");
   mokodesktop_items_enumerate_siblings(item->item_child, item_new)
-  { 
-     
+  {
+
      if (access (item_new->icon_name, 0) == 0)
      {
          g_debug ("item patch %s", item_new->icon_name);
          menu_item = moko_build_new_menu_item (item_new->name, item_new->icon_name);
      }
-     else 
+     else
      {
        char path[512];
        snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
@@ -66,7 +67,7 @@ g_debug ("menu build-------------------------V");
         {
           menu_item = moko_build_new_menu_item (tmp_item->name, tmp_item->icon_name);
         }
-        else 
+        else
         {
           char path[512];
           snprintf (path, 512, "%s/%s", PIXMAP_PATH, tmp_item->icon_name);
@@ -79,9 +80,9 @@ g_debug ("menu build-------------------------V");
 	     //moko_fill_model(self->list_store, path, item_new->name, item_new);
            }
          }
-         
+
 		 if (tmp_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||tmp_item->type == ITEM_TYPE_APP )
-          // g_signal_connect (menu_item, "activate" ,G_CALLBACK(moko_stylus_menu_activate_item), tmp_item->data);
+            g_signal_connect (menu_item, "activate" ,G_CALLBACK(moko_stylus_menu_activate_item), tmp_item->data);
          gtk_menu_shell_append( GTK_MENU_SHELL(sub_menu), GTK_WIDGET(menu_item) );
          gtk_widget_show (GTK_WIDGET(menu_item));
       }
@@ -106,15 +107,20 @@ moko_build_new_menu_item(const char *name, const char *path)
     item = gtk_image_menu_item_new_with_label (name);
     gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM(item), image);
     gtk_widget_show (GTK_WIDGET(item));
-    
+
     return GTK_IMAGE_MENU_ITEM(item);
+}
+
+static void moko_stylus_menu_activate_item(GtkWidget* widget, const char* name)
+{
+    g_debug( "item activated: %s", name );
 }
 
 void
 moko_menu_position_cb (GtkMenu *menu, int *x, int *y, gboolean *push_in, GtkWidget *data)
 {
     GtkAllocation* allocation = &GTK_WIDGET(data)->allocation;
-    
+
     *x = allocation->x;
     *y = allocation->y + allocation->height;
 

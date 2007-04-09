@@ -18,10 +18,15 @@
  */
 #include "buttonactions.h"
 
+#include <gtk/gtklabel.h>
+#include <gtk/gtkmenu.h>
+#include <gtk/gtkmenuitem.h>
+
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <linux/input.h>
@@ -35,15 +40,18 @@
 #else
     #define AUX_BUTTON_EVENT_PATH "/dev/input/event0"
     #define AUX_BUTTON_KEYCODE 0x25
-    #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
+    #define POWER_BUTTON_EVENT_PATH "/dev/input/event1"
     #define POWER_BUTTON_KEYCODE 0x25
 #endif
 
 GPollFD aux_fd;
 GPollFD power_fd;
 
-GTimer* aux_timer;
-GTimer* power_timer;
+GTimer* aux_timer = 0;
+GTimer* power_timer = 0;
+
+GtkWidget* aux_menu = 0;
+GtkWidget* power_menu = 0;
 
 gboolean panel_mainmenu_install_watcher()
 {
@@ -150,9 +158,66 @@ gboolean panel_mainmenu_aux_timeout( guint timeout )
 }
 
 
+
+void panel_mainmenu_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gboolean* push_in, gpointer user_data )
+{
+    gint menu_width;
+    gint menu_height;
+    gtk_widget_get_size_request( GTK_WIDGET(menu), &menu_width, &menu_height );
+    gint screen_width = gdk_screen_width();
+    gint screen_height = gdk_screen_height();
+
+    if ( GTK_WIDGET(menu) == aux_menu )
+    {
+        *x = 0;
+        *y = 0;
+    }
+    else if ( GTK_WIDGET(menu) == power_menu )
+    {
+        *x = screen_width - menu_width;
+        *y = screen_height - menu_height;
+    }
+    else
+        g_assert( FALSE ); // fail here if called for unknown menu
+}
+
+void panel_mainmenu_popup_selected_lock( GtkMenuItem* menu, gpointer user_data )
+{
+    system( "apm -s");
+}
+
+void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_data )
+{
+    system( "/bin/sh poweroff");
+}
+
 gboolean panel_mainmenu_power_timeout( guint timeout )
 {
     g_debug( "power pressed for %d", timeout );
+    if ( timeout < 1 )
+    {
+        // close current application
+    }
+    else
+    {
+        // show popup menu requesting for actions
+        if ( !aux_menu )
+        {
+            aux_menu = gtk_menu_new();
+            GtkWidget* lock = gtk_menu_item_new_with_label( "Lock" );
+            g_signal_connect( G_OBJECT(lock), "activate", G_CALLBACK(panel_mainmenu_popup_selected_lock), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), lock );
+            GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
+            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), flightmode );
+            GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
+            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), profilelist );
+            GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
+            g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(panel_mainmenu_popup_selected_poweroff), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), poweroff );
+            gtk_widget_show_all( GTK_WIDGET(aux_menu) );
+        }
+        gtk_menu_popup( GTK_MENU(aux_menu), NULL, NULL, panel_mainmenu_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+    }
     return FALSE;
 }
 
