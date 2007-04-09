@@ -161,13 +161,13 @@ gboolean panel_mainmenu_aux_timeout( guint timeout )
     {
         // make dialer interface show up
         // NOTE: temporary hack, will use dbus interface once dialer has it :)
-        system( "openmoko-dialer" );
+        system( "openmoko-dialer &" );
     }
     else
     {
         // make main menu show up
         // NOTE: temporary hack, will use dbus interface once main menu has it :)
-        system( "openmoko-mainmenu" );
+        system( "openmoko-mainmenu &" );
     }
     return FALSE;
 }
