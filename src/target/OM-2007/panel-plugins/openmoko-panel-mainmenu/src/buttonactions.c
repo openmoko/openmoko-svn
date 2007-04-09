@@ -32,6 +32,7 @@
 #include <linux/input.h>
 
 #undef DEBUG_THIS_FILE
+//#define DEBUG_THIS_FILE 1
 
 //FIXME find out through sysfs
 #ifndef DEBUG_THIS_FILE
@@ -40,9 +41,9 @@
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
     #define POWER_BUTTON_KEYCODE 116
 #else
-    #define AUX_BUTTON_EVENT_PATH "/dev/input/event0"
+    #define AUX_BUTTON_EVENT_PATH "/dev/input/event4"
     #define AUX_BUTTON_KEYCODE 0x25
-    #define POWER_BUTTON_EVENT_PATH "/dev/input/event1"
+    #define POWER_BUTTON_EVENT_PATH "/dev/input/event3"
     #define POWER_BUTTON_KEYCODE 0x25
 #endif
 
@@ -156,16 +157,28 @@ gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, g
 gboolean panel_mainmenu_aux_timeout( guint timeout )
 {
     g_debug( "aux pressed for %d", timeout );
+    if ( timeout < 1 )
+    {
+        // make dialer interface show up
+        // NOTE: temporary hack, will use dbus interface once dialer has it :)
+        system( "openmoko-dialer" );
+    }
+    else
+    {
+        // make main menu show up
+        // NOTE: temporary hack, will use dbus interface once main menu has it :)
+        system( "openmoko-mainmenu" );
+    }
     return FALSE;
 }
 
-
-
+// this is hardcoded to the Neo1973
 void panel_mainmenu_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gboolean* push_in, gpointer user_data )
 {
-    gint menu_width;
-    gint menu_height;
-    gtk_widget_get_size_request( GTK_WIDGET(menu), &menu_width, &menu_height );
+    g_debug( "aux_menu = %p, power_menu = %p", aux_menu, power_menu );
+    g_debug( "menu = %p", menu );
+    GtkRequisition req;
+    gtk_widget_size_request( GTK_WIDGET(menu), &req );
     gint screen_width = gdk_screen_width();
     gint screen_height = gdk_screen_height();
 
@@ -176,8 +189,8 @@ void panel_mainmenu_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gbool
     }
     else if ( GTK_WIDGET(menu) == power_menu )
     {
-        *x = screen_width - menu_width;
-        *y = screen_height - menu_height;
+        *x = screen_width - req.width;
+        *y = screen_height - req.height;
     }
     else
         g_assert( FALSE ); // fail here if called for unknown menu
@@ -203,22 +216,22 @@ gboolean panel_mainmenu_power_timeout( guint timeout )
     else
     {
         // show popup menu requesting for actions
-        if ( !aux_menu )
+        if ( !power_menu )
         {
-            aux_menu = gtk_menu_new();
+            power_menu = gtk_menu_new();
             GtkWidget* lock = gtk_menu_item_new_with_label( "Lock" );
             g_signal_connect( G_OBJECT(lock), "activate", G_CALLBACK(panel_mainmenu_popup_selected_lock), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), lock );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), lock );
             GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
-            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), flightmode );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
             GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
-            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), profilelist );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
             GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
             g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(panel_mainmenu_popup_selected_poweroff), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), poweroff );
-            gtk_widget_show_all( GTK_WIDGET(aux_menu) );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), poweroff );
+            gtk_widget_show_all( GTK_WIDGET(power_menu) );
         }
-        gtk_menu_popup( GTK_MENU(aux_menu), NULL, NULL, panel_mainmenu_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+        gtk_menu_popup( GTK_MENU(power_menu), NULL, NULL, panel_mainmenu_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
     }
     return FALSE;
 }

@@ -15,8 +15,10 @@
 
 #include <libmb/mb.h>
 
-#define VFOLDERDIR 		"/usr/local/share/matchbox"
-#define DD_DIR 		 	"/usr/local/share/applications/"
+#warning FIXME use autotools to gather this on-the-fly
+
+#define VFOLDERDIR 		"/usr/share/matchbox"
+#define DD_DIR 		 	"/usr/share/applications/"
 
 #define PIXMAP_PATH 	"/usr/local/share/pixmaps"
 
