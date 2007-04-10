@@ -22,7 +22,7 @@
 #include <libmokoui/moko-dialog-window.h>
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
-#include <libmokoui/moko-navigation-list.h>
+#include <libmokoui/moko-tree-view.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
@@ -102,7 +102,6 @@ void clist_insert(MokoTreeView *clist)
 
     gtk_tree_view_column_set_sort_column_id(column, 0);
     moko_tree_view_append_column(clist, column);
-    //gtk_tree_view_column_set_min_width(column, 142);
 
     renderer = gtk_cell_renderer_text_new();
 
@@ -114,7 +113,6 @@ void clist_insert(MokoTreeView *clist)
 
     gtk_tree_view_column_set_sort_column_id(column, 1);
     moko_tree_view_append_column(clist, column);
-    //gtk_tree_view_column_set_min_width(column, 156);
 }
 
 void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
@@ -298,17 +296,12 @@ int main( int argc, char** argv )
     /* navigation area */
     //GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\nthrough appplication specific\ndata here" );
 
-    MokoTreeView *moko_treeview;
+    MokoTreeView *moko_treeview = moko_tree_view_new();
     GtkTreeModel *model = create_model ();
-    MokoNavigationList *moko_navigation_list;
-
-    moko_navigation_list = moko_navigation_list_new();
-    moko_treeview = moko_navigation_list_get_tree_view (moko_navigation_list);
     gtk_tree_view_set_model (moko_treeview, GTK_TREE_MODEL (model) );
     clist_insert(moko_treeview);
 
-    //moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
-    moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_navigation_list) );
+    moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(moko_treeview)) );
 
     GtkButton* button1;
     GtkButton* button2;
