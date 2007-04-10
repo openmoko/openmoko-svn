@@ -42,5 +42,4 @@ z6:6:respawn:/sbin/sulogin
 #  <id>:<runlevels>:<action>:<process>
 
 S:2:respawn:/sbin/getty 115200 ttySAC0
-1:2345:respawn:/sbin/getty 38400 tty1
 
