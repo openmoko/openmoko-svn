@@ -58,7 +58,9 @@ typedef struct {
 GType moko_message_dialog_get_type (void);
 
 GtkWidget* moko_message_dialog_new (void);
-void moko_message_dialog_set_message (MokoMessageDialog *dialog, const gchar *message);
+void moko_message_dialog_set_message (MokoMessageDialog *dialog,
+    const gchar *message_format,
+    ...)G_GNUC_PRINTF (2, 3);
 void moko_message_dialog_set_image_from_stock (MokoMessageDialog *dialog,
     const gchar *stock_id);
 

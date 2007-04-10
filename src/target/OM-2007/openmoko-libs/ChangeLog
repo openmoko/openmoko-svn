@@ -1,3 +1,13 @@
+2007-04-10  Rob Bradford  <rob@openedhand.com>
+
+	* libmokoui/moko-message-dialog.c:
+	(moko_message_dialog_set_message):
+	* libmokoui/moko-message-dialog.h:
+	Give the moko_dialog_set_message function a vsprintf varargs parameter
+	and use this when generating the message.
+
+	Patch from Chaowei Song <songcw@fic-sh.com.cn>.
+
 2007-04-06 Dodji Seketeli
 
 	* openmoko-libs/libmokojournal/src/*: moved what

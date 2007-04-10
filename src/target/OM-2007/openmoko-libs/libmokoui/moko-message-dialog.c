@@ -201,13 +201,16 @@ moko_message_dialog_init (MokoMessageDialog *self)
 }
 
 void
-moko_message_dialog_set_message (MokoMessageDialog *dialog, const gchar *new_message)
+moko_message_dialog_set_message (MokoMessageDialog *dialog, const gchar *message_format, ...)
 {
   MokoMessageDialogPrivate* priv = MESSAGE_DIALOG_PRIVATE(dialog);
+  va_list args;
 
   g_free (priv->message);
 
-  priv->message = g_strdup (new_message);
+  va_start (args, message_format);
+  priv->message = g_strdup_vprintf (message_format, args);
+  va_end (args);
 
   gtk_label_set (GTK_LABEL (priv->label), priv->message);
 }
