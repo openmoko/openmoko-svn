@@ -12,7 +12,6 @@ source_h = \
     moko-panel-applet.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
-    moko-search-bar.h \
     moko-tool-box.h \
     moko-tree-view.h \
     moko-window.h \
@@ -33,7 +32,6 @@ source_c = \
     moko-panel-applet.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
-    moko-search-bar.c \
     moko-tree-view.c \
     moko-tool-box.c \
     moko-window.c \
