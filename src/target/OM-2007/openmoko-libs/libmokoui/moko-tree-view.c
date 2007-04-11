@@ -96,7 +96,7 @@ void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column)
 
 }
 
-GtkWidget* moko_tree_view_put_into_scrolled_window(MokoTreeView* self)
+_moko_tree_view_adjustment_changed(GtkAdjustment* adj, MokoTreeView* self)
 {
     // compute value for vadjustment
     gtk_tree_view_set_fixed_height_mode( GTK_TREE_VIEW(self), TRUE );
@@ -108,18 +108,27 @@ GtkWidget* moko_tree_view_put_into_scrolled_window(MokoTreeView* self)
     gint cr_height;
     gtk_tree_view_column_cell_get_size( first_column, NULL, &cr_x_offset, &cr_y_offset, &cr_width, &cr_height );
 
+    //FIXME why does it need the +2 ?
+    if ( adj->step_increment != cr_height+2 )
+        adj->step_increment = cr_height+2;
+    gint pageinc = cr_height * ( ( adj->page_size / cr_height ) -1 );
+    if ( adj->page_increment != pageinc )
+        adj->page_increment = pageinc;
+
+    g_debug( "new vadjustment step increment = %f", adj->step_increment );
+    g_debug( "new vadjustment page increment = %f", adj->page_increment );
+    g_debug( "new vadjustment page size = %f", adj->page_size );
+
+}
+
+GtkWidget* moko_tree_view_put_into_scrolled_window(MokoTreeView* self)
+{
     GtkWidget* scrolledwindow = gtk_scrolled_window_new( NULL, NULL );
     //FIXME get from style or (even better) set as initial size hint in MokoPanedWindow (also via style sheet of course)
     gtk_widget_set_size_request( scrolledwindow, 0, 170 );
     gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS );
     gtk_container_add( GTK_CONTAINER(scrolledwindow), GTK_WIDGET(self) );
-
-    //FIXME this doesn't work :/ the idea is to set the step and page increment, so that we never scroll
-    //to anything else but a fully visible entry (as opposed to half way visible)
-    GtkAdjustment* vadjustment = gtk_tree_view_get_vadjustment( GTK_TREE_VIEW(self) );
-    g_debug( "vadjustment page increment = %d", vadjustment->page_increment );
-    vadjustment->step_increment = 1;
-    vadjustment->page_increment = 1;
-    vadjustment->page_size = 1;
+    GtkAdjustment* adj = gtk_scrolled_window_get_vadjustment( GTK_SCROLLED_WINDOW(scrolledwindow) );
+    g_signal_connect( G_OBJECT(adj), "changed", G_CALLBACK(_moko_tree_view_adjustment_changed), self );
     return scrolledwindow;
 }
