@@ -55,6 +55,16 @@ moko_time_from_string (const gchar *a_iso_format_date)
     return result ;
 }
 
+MokoTime*
+moko_time_new_from_icaltimetype (icaltimetype a_dt)
+{
+  MokoTime *result ;
+
+  result = g_new0 (MokoTime, 1) ;
+  result->t = a_dt ;
+  return result ;
+}
+
 void
 moko_time_free (MokoTime *a_time)
 {

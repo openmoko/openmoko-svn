@@ -26,4 +26,6 @@ struct _MokoTime
     icaltimetype t ;
 };
 
+MokoTime* moko_time_new_from_icaltimetype (icaltimetype dt) ;
+
 #endif  /*__MOKO_TIME_PRIV_H__*/

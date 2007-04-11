@@ -19,18 +19,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include <string.h>
+#include <strings.h>
+#include <glib-object.h>
 #include <libecal/e-cal.h>
 #include <libecal/e-cal-component.h>
 #include "moko-journal.h"
 #include "moko-time-priv.h"
 
-static const int JOURNAL_MAX_SIZE = 100 ;
-
 struct _MokoJournal
 {
   ECal *ecal ;
-  MokoJEntry **entries ;
-  int next_entry ;
+  ECalView *ecal_view ;
+  GList *entries_to_delete ;
+  GArray *entries ;
 };
 
 struct _MokoJEmailInfo
@@ -41,6 +42,7 @@ struct _MokoJEmailInfo
 struct _MokoJEntry
 {
   MokoJEntryType type;
+  gchar *uid ;
   gchar *contact_uid ;
   gchar *summary ;
   MokoTime *dtstart ;
@@ -67,6 +69,29 @@ static const MokoJEntryInfo entries_info[] =
   {0}
 } ;
 
+static MokoJournal* moko_journal_alloc () ;
+static gboolean moko_journal_find_entry_from_uid (MokoJournal *a_journal,
+                                                  const gchar *a_uid,
+                                                  MokoJEntry **a_entry,
+                                                  int *a_offset) ;
+static const gchar* entry_type_to_string (MokoJEntryType a_type) ;
+static MokoJEntryType entry_type_from_string (const gchar* a_str) ;
+static gboolean moko_j_entry_type_is_valid (MokoJEntryType a_type) ;
+static gboolean moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
+                                               icalcomponent **a_comp) ;
+static gboolean icalcomponent_to_j_entry (icalcomponent *a_comp,
+                                          MokoJEntry **a_entry) ;
+static gboolean icalcomponent_find_property (const icalcomponent *a_comp,
+                                             const gchar *a_name,
+                                             icalproperty **a_property) ;
+
+static gboolean icalcomponent_find_property_as_string
+                                              (const icalcomponent *a_comp,
+                                               const gchar *a_name,
+                                               gchar **a_property) ;
+static void on_entries_added_cb (ECalView *a_view,
+                                 GList *a_entries,
+                                 MokoJournal *a_journal) ;
 static const gchar*
 entry_type_to_string (MokoJEntryType a_type)
 {
@@ -80,7 +105,6 @@ entry_type_to_string (MokoJEntryType a_type)
   return NULL ;
 }
 
-/*
 static MokoJEntryType
 entry_type_from_string (const gchar* a_str)
 {
@@ -95,7 +119,6 @@ entry_type_from_string (const gchar* a_str)
   }
   return UNDEF_ENTRY ;
 }
-*/
 
 /*<private funcs>*/
 static MokoJournal*
@@ -103,8 +126,40 @@ moko_journal_alloc ()
 {
   MokoJournal *result ;
   result = g_new0 (MokoJournal, 1) ;
-  result->entries = g_new0 (MokoJEntry*, JOURNAL_MAX_SIZE) ;
+  result->entries = g_array_new (TRUE, TRUE, sizeof (MokoJEntry*)) ;
   return result ;
+}
+
+static gboolean
+moko_journal_find_entry_from_uid (MokoJournal *a_journal,
+                                  const gchar *a_uid,
+                                  MokoJEntry **a_entry,
+                                  int *a_offset)
+{
+  int i=0 ;
+
+  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (a_journal->entries, FALSE) ;
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_offset, FALSE) ;
+  g_return_val_if_fail (a_uid, FALSE) ;
+
+  if (!a_journal->entries)
+    return FALSE ;
+
+  for (i = 0 ; i < a_journal->entries->len ; ++i)
+  {
+    if (g_array_index (a_journal->entries, MokoJEntry*, i)
+        && g_array_index (a_journal->entries, MokoJEntry*, i)->uid
+        && !strcmp (g_array_index (a_journal->entries, MokoJEntry*, i)->uid,
+                    a_uid))
+    {
+      *a_entry = g_array_index (a_journal->entries, MokoJEntry*, i) ;
+      *a_offset = i ;
+      return TRUE ;
+    }
+  }
+  return FALSE ;
 }
 
 static void
@@ -116,18 +171,23 @@ moko_journal_free (MokoJournal *a_journal)
     g_object_unref (G_OBJECT (a_journal->ecal)) ;
     a_journal->ecal = NULL ;
   }
+  if (a_journal->entries_to_delete)
+  {
+    g_list_free (a_journal->entries_to_delete) ;
+    a_journal->entries_to_delete = NULL ;
+  }
   if (a_journal->entries)
   {
     int i ;
-    for (i=0 ; i < JOURNAL_MAX_SIZE ; ++i)
+    for (i=0 ; i < a_journal->entries->len ; ++i)
     {
-      if (a_journal->entries[i])
+      if (g_array_index (a_journal->entries, MokoJEntry*, i))
       {
-        moko_j_entry_free (a_journal->entries[i]) ;
-        a_journal->entries[i] = NULL ;
+        moko_j_entry_free (g_array_index (a_journal->entries, MokoJEntry*, i));
+        g_array_index (a_journal->entries, MokoJEntry*, i) = NULL;
       }
     }
-    g_free (a_journal->entries) ;
+    g_array_free (a_journal->entries, TRUE) ;
     a_journal->entries = NULL ;
   }
   g_free (a_journal) ;
@@ -160,6 +220,11 @@ moko_j_entry_free_real (MokoJEntry *a_entry)
 {
   g_return_if_fail (a_entry) ;
 
+  if (a_entry->uid)
+  {
+    g_free (a_entry->uid) ;
+    a_entry->uid = NULL ;
+  }
   if (a_entry->contact_uid)
   {
     g_free (a_entry->contact_uid) ;
@@ -225,6 +290,13 @@ moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
 
   comp = icalcomponent_new (ICAL_VJOURNAL_COMPONENT) ;
 
+  /*add uid, if it exists*/
+  if (a_entry->uid)
+  {
+    prop = icalproperty_new_uid (a_entry->uid) ;
+    icalcomponent_add_property (comp, prop) ;
+  }
+
   /*add contact prop*/
   prop = icalproperty_new_contact (moko_j_entry_get_contact_uid (a_entry)) ;
   icalcomponent_add_property (comp, prop) ;
@@ -245,7 +317,7 @@ moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
   /*add entry type*/
   prop = icalproperty_new_x
                   (entry_type_to_string (moko_j_entry_get_type (a_entry))) ;
-  icalproperty_set_x_name (prop, "X_OPENMOKO_ENTRY_TYPE") ;
+  icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-TYPE") ;
   icalcomponent_add_property (comp, prop) ;
 
   switch (moko_j_entry_get_type (a_entry))
@@ -262,7 +334,7 @@ moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
           prop = icalproperty_new_x ("YES") ;
         else
           prop = icalproperty_new_x ("NO") ;
-        icalproperty_set_x_name (prop, "X_OPENMOKO_EMAIL_WAS_SENT") ;
+        icalproperty_set_x_name (prop, "X-OPENMOKO-EMAIL-WAS-SENT") ;
         icalcomponent_add_property (comp, prop) ;
       }
       break ;
@@ -290,6 +362,158 @@ out:
   return result ;
 }
 
+static gboolean
+icalcomponent_to_j_entry (icalcomponent *a_comp,
+                          MokoJEntry **a_entry)
+{
+  icalproperty *prop = NULL ;
+  gchar *prop_name = NULL ;
+  MokoJEntry *entry = NULL;
+
+  g_return_val_if_fail (a_comp, FALSE) ;
+  g_return_val_if_fail (icalcomponent_isa (a_comp) == ICAL_VJOURNAL_COMPONENT,
+                        FALSE) ;
+
+  entry = moko_j_entry_alloc () ;
+
+  /*iterate through properties to scan core properties*/
+  for (prop = icalcomponent_get_first_property (a_comp, ICAL_ANY_PROPERTY);
+       prop ;
+       prop = icalcomponent_get_next_property (a_comp, ICAL_ANY_PROPERTY))
+  {
+    prop_name = (gchar*)icalproperty_get_property_name (prop) ;
+    if (!prop_name)
+      continue ;
+    if (icalproperty_isa (prop) == ICAL_UID_PROPERTY)
+    {
+      if (entry->uid)
+        g_free (entry->uid) ;
+      entry->uid = g_strdup (icalproperty_get_uid (prop)) ;
+    }
+    else if (icalproperty_isa (prop) == ICAL_CONTACT_PROPERTY)
+    {
+      moko_j_entry_set_contact_uid (entry, icalproperty_get_contact (prop)) ;
+    }
+    else if (icalproperty_isa (prop) == ICAL_SUMMARY_PROPERTY)
+    {
+      moko_j_entry_set_summary (entry, icalproperty_get_summary (prop)) ;
+    }
+    else if (icalproperty_isa (prop) == ICAL_DTSTART_PROPERTY)
+    {
+      moko_j_entry_set_dtstart
+      (entry,
+       moko_time_new_from_icaltimetype (icalproperty_get_dtstart (prop)));
+    }
+    else if (icalproperty_get_x_name (prop)
+             && !strcmp (icalproperty_get_x_name (prop),
+                         "X-OPENMOKO-ENTRY-TYPE"))
+    {
+      MokoJEntryType entry_type = UNDEF_ENTRY ;
+      const char *x_val = icalproperty_get_value_as_string (prop) ;
+      if (!x_val)
+        continue ;
+      entry_type = entry_type_from_string (x_val) ;
+      if (entry_type == UNDEF_ENTRY)
+      {
+        g_warning ("Could not recognize type of entry from: %s\n", x_val);
+        continue ;
+      }
+      entry->type = entry_type ;
+    }
+  }
+
+  if (entry->type == UNDEF_ENTRY || entry->type >= NB_OF_ENTRY_TYPES)
+  {
+    g_warning ("bad entry type") ;
+    goto out ;
+  }
+
+  /*scan extra info related properties*/
+  switch (entry->type)
+  {
+    case EMAIL_JOURNAL_ENTRY:
+      {
+        MokoJEmailInfo *info=NULL ;
+        gchar *prop_value = NULL ;
+        if (!moko_j_entry_get_email_info (entry, &info))
+        {
+          g_warning ("failed to get email info") ;
+          goto out ;
+        }
+        if (icalcomponent_find_property_as_string
+                                            (a_comp,
+                                             "X-OPENMOKO-EMAIL-WAS-SENT",
+                                             &prop_value))
+        {
+          if (prop_value && !strcmp (prop_value, "YES"))
+            moko_j_email_info_set_was_sent (info, TRUE) ;
+          else
+            moko_j_email_info_set_was_sent (info, FALSE) ;
+        }
+      }
+      break ;
+    case SMS_JOURNAL_ENTRY:
+      break ;
+    case MMS_JOURNAL_ENTRY:
+      break ;
+    case CALL_JOURNAL_ENTRY:
+      break ;
+    default:
+      break ;
+  }
+
+  *a_entry = entry ;
+  entry = NULL ;
+
+out:
+  if (entry)
+    moko_j_entry_free (entry) ;
+  return TRUE ;
+}
+
+
+static gboolean
+icalcomponent_find_property (const icalcomponent *a_comp,
+                             const gchar *a_name,
+                             icalproperty **a_property)
+{
+  icalproperty *prop = NULL ;
+
+  g_return_val_if_fail (a_comp, FALSE) ;
+
+  for (prop = icalcomponent_get_first_property ((icalcomponent*)a_comp,
+                                                ICAL_ANY_PROPERTY);
+       prop;
+       prop = icalcomponent_get_next_property ((icalcomponent*)a_comp,
+                                               ICAL_ANY_PROPERTY))
+  {
+    if (icalproperty_get_property_name (prop)
+        && ! strcasecmp (icalproperty_get_property_name (prop), a_name))
+    {
+      *a_property = prop ;
+      return TRUE ;
+    }
+  }
+  return FALSE ;
+}
+
+static gboolean
+icalcomponent_find_property_as_string (const icalcomponent *a_comp,
+                                       const gchar *a_name,
+                                       gchar **a_property)
+{
+  icalproperty *prop = NULL ;
+
+  g_return_val_if_fail (a_comp, FALSE) ;
+  g_return_val_if_fail (a_name, FALSE) ;
+
+  if (icalcomponent_find_property (a_comp, a_name, &prop))
+  {
+    *a_property = (gchar*) icalproperty_get_value_as_string (prop) ;
+    return TRUE ;
+  }
+  return FALSE ;
+}
 
 /*</private funcs>*/
 
@@ -384,23 +608,85 @@ moko_journal_add_entry (MokoJournal *a_journal, MokoJEntry *a_entry)
 {
   g_return_val_if_fail (a_journal, FALSE) ;
   g_return_val_if_fail (a_entry, FALSE) ;
-  g_return_val_if_fail (a_journal->next_entry < JOURNAL_MAX_SIZE, FALSE) ;
 
-  if (a_journal->entries[a_journal->next_entry])
-  {
-    moko_j_entry_free (a_journal->entries[a_journal->next_entry]) ;
-  }
-
-  a_journal->entries[a_journal->next_entry] = a_entry ;
-  a_journal->next_entry++ ;
-  if (a_journal->next_entry >= JOURNAL_MAX_SIZE)
-  {
-    a_journal->next_entry = 0 ;
-  }
-
+  g_array_append_val (a_journal->entries, a_entry) ;
   return TRUE ;
 }
 
+/**
+ * moko_journal_get_nb_entries:
+ * @journal: the current instance of journal
+ *
+ * Return value: the number of entries in the journal or a negative value
+ * in case of error.
+ */
+int
+moko_journal_get_nb_entries (MokoJournal *a_journal)
+{
+  g_return_val_if_fail (a_journal, -1) ;
+  if (!a_journal->entries)
+    return 0 ;
+  return a_journal->entries->len ;
+}
+
+/**
+ * moko_journal_get_entry_at:
+ * @journal: the current instance of journal
+ * @index: the index to get the journal entry from
+ * @entry: out parameter. the resulting journal entry
+ *
+ * Get the journal entry at a given index.
+ *
+ * Return value: TRUE in case of success, FALSE otherwise.
+ */
+gboolean
+moko_journal_get_entry_at (MokoJournal *a_journal,
+                           guint a_index,
+                           MokoJEntry **a_entry)
+{
+  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_journal->entries, FALSE) ;
+  g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
+
+  *a_entry = g_array_index (a_journal->entries, MokoJEntry*, a_index) ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_remove_entry_at:
+ * @journal: the current instance of journal
+ * @index: the index to remove the entry from
+ *
+ * Remove a journal entry from index #index
+ */
+gboolean
+moko_journal_remove_entry_at (MokoJournal *a_journal,
+                              guint a_index)
+{
+  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (a_journal->entries, FALSE) ;
+  g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
+
+  if (g_array_index (a_journal->entries, MokoJEntry*, a_index))
+  {
+    a_journal->entries_to_delete =
+      g_list_prepend (a_journal->entries_to_delete,
+                      g_array_index (a_journal->entries, MokoJEntry*, a_index));
+    return TRUE ;
+  }
+  return FALSE ;
+}
+
+/**
+ * moko_journal_weite_to_storage:
+ * @journal: the journal to save to storage
+ *
+ * Saves the journal to persistent storage (e.g disk) using the
+ * appropriate backend. The backend currently used is evolution data server
+ *
+ * Return value: TRUE in case of success, FALSE otherwise
+ */
 gboolean
 moko_journal_write_to_storage (MokoJournal *a_journal)
 {
@@ -410,15 +696,16 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
   ECalComponent *ecal_comp=NULL ;
   icalcomponent *ical_comp=NULL ;
   GError *error=NULL ;
-  gchar *uid=NULL ;
+  gboolean wrote = FALSE;
   gboolean result = TRUE;
 
   g_return_val_if_fail (a_journal, FALSE) ;
   g_return_val_if_fail (a_journal->ecal, FALSE) ;
 
-  for (i=0; i<JOURNAL_MAX_SIZE; ++i)
+  /*create ECalComponent objects out of the list of MokoJEntry* we have*/
+  for (i=0; a_journal->entries && i<a_journal->entries->len; ++i)
   {
-    cur_entry = a_journal->entries[i] ;
+    cur_entry = g_array_index (a_journal->entries, MokoJEntry*, i) ;
     if (!cur_entry)
       break ;
     if (!moko_j_entry_to_icalcomponent (cur_entry, &ical_comp))
@@ -432,11 +719,16 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
     }
     ecal_comp = e_cal_component_new () ;
     e_cal_component_set_icalcomponent (ecal_comp, ical_comp) ;
+    g_object_set_data (G_OBJECT (ecal_comp), "journal-entry", cur_entry) ;
     ecal_comps = g_list_prepend (ecal_comps, ecal_comp) ;
     ecal_comp = NULL ;
     ical_comp = NULL ;
   }
 
+  /*
+   * walk the list of ECalComponent objects to either add them
+   * to eds or modify them (in eds) if there were already present in eds.
+   */
   for (cur_elem = ecal_comps ; cur_elem ; cur_elem = cur_elem->next)
   {
     if (!cur_elem->data)
@@ -452,14 +744,37 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
       result = FALSE ;
       continue ;
     }
-    if (!e_cal_create_object (a_journal->ecal, ical_comp, &uid, &error))
+    cur_entry = g_object_get_data (G_OBJECT (cur_elem->data),
+        "journal-entry") ;
+    if (!cur_entry)
     {
-      g_warning ("Could not write the entry to the journal") ;
-      result = FALSE ;
+      g_warning ("could not get journal entry from cur_elem->data") ;
+      continue ;
+    }
+    if (cur_entry->uid)
+    {
+      /*entry exists already in eds, modify it*/
+      if (!e_cal_modify_object (a_journal->ecal, ical_comp,
+                                CALOBJ_MOD_THIS, &error))
+      {
+        g_warning ("Could not modify entry in the journal") ;
+        result = FALSE ;
+      }
     }
     else
     {
-      e_cal_component_commit_sequence (cur_elem->data) ;
+      /*entry did not exist in eds previously, add it*/
+      if (!e_cal_create_object (a_journal->ecal, ical_comp,
+                                &cur_entry->uid, &error))
+      {
+        g_warning ("Could not write the entry to the journal") ;
+        result = FALSE ;
+      }
+      else
+      {
+        e_cal_component_commit_sequence (cur_elem->data) ;
+        wrote = TRUE ;
+      }
     }
     if (error)
     {
@@ -467,13 +782,195 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
       g_error_free (error) ;
       error = NULL ;
     }
-    if (uid)
-    {
-      g_free (uid) ;
-      uid = NULL ;
-    }
   }
+
+  /*remove entries that are to be removed*/
+  for (cur_elem = a_journal->entries_to_delete ;
+       cur_elem ;
+       cur_elem = cur_elem->next)
+  {
+    if (!cur_elem->data)
+      continue ;
+
+    if (((MokoJEntry*)cur_elem->data)->uid)
+    {
+      if (!e_cal_remove_object (a_journal->ecal,
+                                ((MokoJEntry*)cur_elem->data)->uid,
+                                &error))
+      {
+        g_warning ("failed to remove object of UID %s\n",
+                   ((MokoJEntry*)cur_elem->data)->uid) ;
+      }
+      if (error)
+      {
+        g_warning ("got error %s\n", error->message) ;
+        g_error_free (error) ;
+        error = NULL ;
+      }
+    }
+    moko_j_entry_free ((MokoJEntry*)cur_elem->data) ;
+    cur_elem->data = NULL ;
+  }
+
+  if (a_journal->entries_to_delete)
+  {
+    g_list_free (a_journal->entries_to_delete) ;
+    a_journal->entries_to_delete = NULL ;
+  }
+
   return result ;
+}
+
+static void
+on_entries_added_cb (ECalView *a_view,
+                     GList *a_entries,
+                     MokoJournal *a_journal)
+{
+  icalcomponent *ical_comp = NULL ;
+  GList *cur_entry = NULL ;
+  MokoJEntry *entry = NULL ;
+  int offset=0 ;
+
+  for (cur_entry = a_entries ; cur_entry ; cur_entry = cur_entry->next)
+  {
+    /*****************
+     * <sanity checks>
+     *****************/
+    if (!icalcomponent_isa_component (cur_entry->data))
+    {
+      /*hugh ? this does not look like an ical component. ignore it.*/
+      continue ;
+    }
+    if (!icalcomponent_get_uid (cur_entry->data))
+    {
+      /*hugh ? an ical component without uid ? ignore it*/
+      continue ;
+    }
+    if (moko_journal_find_entry_from_uid
+                                    (a_journal,
+                                     icalcomponent_get_uid (cur_entry->data),
+                                     &entry,
+                                     &offset))
+    {
+      /*we already have the component in memory, ignore it*/
+      continue ;
+    }
+    /*****************
+     * </sanity checks>
+     *****************/
+
+    /*
+     * okay, build a journal entry from the ical component and cache it
+     * in memory
+     */
+    ical_comp = cur_entry->data ;
+    if (!icalcomponent_to_j_entry (ical_comp, &entry) || !entry)
+    {
+      if (entry)
+      {
+        moko_j_entry_free (entry) ;
+        entry = NULL ;
+      }
+      continue ;
+    }
+    moko_journal_add_entry (a_journal, entry) ;
+    entry = NULL ;
+  }
+}
+
+/**
+ * moko_journal_load_from_storage:
+ * @a_journal: the journal to load entries into
+ *
+ * Read the journal entries stored in the persistent storage (filesystem)
+ * and load then into the current instance of MokoJournal.
+ *
+ * Return value: TRUE in case of success, FALSE otherwise
+ */
+gboolean
+moko_journal_load_from_storage (MokoJournal *a_journal)
+{
+  GError *error = NULL ;
+  GList *objs = NULL ;
+
+  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (a_journal->ecal, FALSE) ;
+
+  if (!a_journal->ecal_view)
+  {
+    /*
+     * first, issue a query to get a view that we can
+     * listen to, to get notified by new objects that get added to eds
+     * during the life time of a_journal
+     */
+    if (!e_cal_get_query (a_journal->ecal, "#t",
+                          &a_journal->ecal_view,
+                          &error)
+        || error)
+    {
+      if (error)
+      {
+        if (error->message)
+        {
+          g_warning ("got error: %s\n", error->message) ;
+        }
+        g_error_free (error) ;
+        error = NULL ;
+      }
+      return FALSE ;
+    }
+    g_signal_connect (G_OBJECT (a_journal->ecal_view),
+                      "objects-added",
+                      G_CALLBACK (on_entries_added_cb),
+                      a_journal) ;
+    e_cal_view_start (a_journal->ecal_view) ;
+  }
+
+  /*
+   * really get the objects from eds to let the caller start working
+   * right after the call completes
+   */
+  if (!e_cal_get_object_list (a_journal->ecal, "#t", &objs, &error))
+  {
+    g_warning ("failed to get ical journal objects from eds") ;
+  }
+  if (error)
+  {
+    g_warning ("got error %s\n", error->message) ;
+    g_error_free (error) ;
+    error = NULL ;
+  }
+  if (objs)
+  {
+    GList *cur=NULL ;
+    MokoJEntry *entry = NULL ;
+    for (cur = objs ; cur ; cur = cur->next)
+    {
+      if (!icalcomponent_isa (cur->data))
+        continue ;
+      if (icalcomponent_to_j_entry (cur->data, &entry) && entry)
+      {
+        moko_journal_add_entry (a_journal, entry) ;
+        entry = NULL ;
+      }
+      if (entry)
+      {
+        g_warning ("entry should be NULL here") ;
+        moko_j_entry_free (entry) ;
+        entry = NULL ;
+      }
+    }
+    e_cal_free_object_list (objs) ;
+    objs = NULL ;
+  }
+
+  /*give us a chance to get notified by entries arriving ...*/
+  while (g_main_context_pending (g_main_context_default ()))
+  {
+    g_main_context_iteration (g_main_context_default (), FALSE) ;
+  }
+
+  return TRUE ;
 }
 
 /**

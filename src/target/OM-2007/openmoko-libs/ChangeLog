@@ -1,3 +1,18 @@
+2007-04-11 Dodji Seketeli <dodji@openedhand.com>
+
+	* openmoko-libs/libmokojournal/src/moko-journal.c,h:
+	  added new entry points to load, remove and iterate over journal
+	  entries. Make sure load entries, add entry, and iterate works.
+	  Still have to debug the remove entries part.
+	  Also this has been done for EMAIL_JOURNAL_ENTRY type of entries.
+	  We still need to add support of other types of the journal entry
+	  types like MMS, SMS, VOICE_CALL, etc ...
+	* openmoko-libs/libmokojournal/src/moko-time-priv.h:
+	  added a private function to instanciate MokoTime from icaltimetype.
+	* openmoko-libs/libmokojournal/tests/test-create.c: debugged
+	  "load entries" and "add entry" work properly.
+	  Still need to commit a test-delete.c soonish.
+
 2007-04-10  Rob Bradford  <rob@openedhand.com>
 
 	* libmokoui/moko-message-dialog.c:
@@ -8,7 +23,7 @@
 
 	Patch from Chaowei Song <songcw@fic-sh.com.cn>.
 
-2007-04-06 Dodji Seketeli
+2007-04-06 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/libmokojournal/src/*: moved what
 	  was in openmoko-libs/libmokojournal/ into here.
@@ -46,7 +61,7 @@
 	* libmokoui/moko-dialog.c: (moko_dialog_init):
 	Remove close button. It isn't on the mockups.
 
-2007-04-03 Dodji Seketeli
+2007-04-03 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/libmokojournal/moko-journal.c: started to
 	  implement the obvious, to see if there are hidden stones
@@ -67,12 +82,12 @@
 	Add moko_dialog_set_title prototype to the header file.
 	Add prototypes for new functions.
 
-2007-04-02 Dodji Seketeli
+2007-04-02 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/libmokojournal/moko-journal.[c|h]:
 	  went forward with the API proposal
 
-2007-03-30 Dodji Seketeli
+2007-03-30 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/configure.ac: add libecal as a dependency.
 	  This is used by libmokojournal.

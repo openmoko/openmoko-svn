@@ -86,15 +86,59 @@ void moko_journal_close (MokoJournal *journal) ;
 gboolean moko_journal_add_entry (MokoJournal *journal, MokoJEntry *entry) ;
 
 /**
+ * moko_journal_get_nb_entries:
+ * @journal: the current instance of journal
+ *
+ * Return value: the number of entries in the journal or a negative value
+ * in case of error.
+ */
+int moko_journal_get_nb_entries (MokoJournal *journal) ;
+
+/**
+ * moko_journal_get_entry_at:
+ * @journal: the current instance of journal
+ * @index: the index to get the journal entry from
+ * @entry: out parameter. the resulting journal entry
+ *
+ * Get the journal entry at a given index.
+ *
+ * Return value: TRUE in case of success, FALSE otherwise.
+ */
+gboolean moko_journal_get_entry_at (MokoJournal *journal,
+                                    guint index,
+                                    MokoJEntry **entry) ;
+
+/**
+ * moko_journal_remove_entry_at:
+ * @journal: the current instance of journal
+ * @index: the index to remove the entry from
+ *
+ * Remove a journal entry from index #index
+ */
+gboolean moko_journal_remove_entry_at (MokoJournal *journal,
+                                       guint index) ;
+
+/**
  * moko_journal_weite_to_storage:
  * @journal: the journal to save to storage
  *
  * Saves the journal to persistent storage (e.g disk) using the
  * appropriate backend. The backend currently used is evolution data server
  *
- * Return TRUE in case of success, FALSE otherwise
+ * Return value: TRUE in case of success, FALSE otherwise
  */
 gboolean moko_journal_write_to_storage (MokoJournal *journal) ;
+
+/**
+ * moko_journal_load_from_storage:
+ * @journal: the journal to load entries into
+ *
+ * Read the journal entries stored in the persistent storage (filesystem)
+ * and load then into the current instance of MokoJournal.
+ *
+ * Return value: TRUE in case of success, FALSE otherwise
+ */
+gboolean moko_journal_load_from_storage (MokoJournal *journal) ;
 
 /*<journal entries querying>*/
 /*</journal entries querying>*/
