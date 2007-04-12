@@ -265,6 +265,7 @@ moko_j_entry_free_real (MokoJEntry *a_entry)
          g_warning ("unknown journal entry type. This is a leak!\n") ;
          break ;
   }
+  g_free (a_entry) ;
 }
 
 static gboolean
@@ -673,13 +674,14 @@ moko_journal_remove_entry_at (MokoJournal *a_journal,
     a_journal->entries_to_delete =
       g_list_prepend (a_journal->entries_to_delete,
                       g_array_index (a_journal->entries, MokoJEntry*, a_index));
+    g_array_remove_index (a_journal->entries, a_index) ;
     return TRUE ;
   }
   return FALSE ;
 }
 
 /**
- * moko_journal_weite_to_storage:
+ * moko_journal_write_to_storage:
  * @journal: the journal to save to storage
  *
  * Saves the journal to persistent storage (e.g disk) using the
@@ -816,6 +818,15 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
   {
     g_list_free (a_journal->entries_to_delete) ;
     a_journal->entries_to_delete = NULL ;
+  }
+
+  if (ecal_comps)
+  {
+    GList *cur;
+
+    for (cur = ecal_comps ; cur ; cur = cur->next)
+      g_object_unref (cur->data) ;
+    g_list_free (ecal_comps) ;
   }
 
   return result ;

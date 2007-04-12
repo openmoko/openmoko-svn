@@ -1,3 +1,15 @@
+2007-04-12 Dodji Seketeli <dodji@openedhand.com>
+
+	* openmoko-libs/libmokojournal/src/moko-journal.c: 
+	  (moko_j_entry_free_real): fix a leak in here.
+	  (moko_journal_remove_entry_at): make this really remove
+	  the entries from MokoJournal::entries.
+	  (moko_journal_write_to_storage): fix a leak.
+	* openmoko-libs/libmokojournal/tests/test-create.c: added comments
+	  and licensing blurb.
+	* openmoko-libs/libmokojournal/tests/test-delete.c: added
+	  this new file to test/debug entries deletion.
+
 2007-04-11 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/libmokojournal/src/moko-journal.c,h:
