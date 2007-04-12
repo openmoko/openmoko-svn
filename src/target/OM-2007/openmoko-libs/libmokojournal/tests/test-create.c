@@ -26,8 +26,8 @@ int
 main ()
 {
     MokoJournal *journal=NULL ;
-    MokoJEntry *entry=NULL ;
-    MokoJEmailInfo *email_info=NULL ;
+    MokoJournalEntry *entry=NULL ;
+    MokoJournalEmailInfo *email_info=NULL ;
     int result = 1 ;
 
     g_type_init () ;
@@ -47,7 +47,7 @@ main ()
                 moko_journal_get_nb_entries (journal)) ;
 
     /*create a journal entry of type 'email journal entry'*/
-    entry = moko_j_entry_new (EMAIL_JOURNAL_ENTRY) ;
+    entry = moko_journal_entry_new (EMAIL_JOURNAL_ENTRY) ;
     if (!entry)
     {
         g_warning ("failed to create journal entry\n") ;
@@ -57,10 +57,10 @@ main ()
     /*****************************
      * <fill the entry with data>
      *****************************/
-    moko_j_entry_set_contact_uid (entry, "foobarbazuid") ;
-    moko_j_entry_set_summary (entry, "back from fostel") ;
-    moko_j_entry_set_dtstart (entry, moko_time_new_today ()) ;
-    if (!moko_j_entry_get_email_info (entry, &email_info) || !email_info)
+    moko_journal_entry_set_contact_uid (entry, "foobarbazuid") ;
+    moko_journal_entry_set_summary (entry, "back from fostel") ;
+    moko_journal_entry_set_dtstart (entry, moko_time_new_today ()) ;
+    if (!moko_journal_entry_get_email_info (entry, &email_info) || !email_info)
     {
         g_warning ("failed to get email extra info from journal entry\n") ;
         goto out ;
@@ -119,7 +119,7 @@ out:
     if (journal)
         moko_journal_close (journal) ;
     if (entry)
-        moko_j_entry_free (entry) ;
+        moko_journal_entry_free (entry) ;
 
     return result ;
 }

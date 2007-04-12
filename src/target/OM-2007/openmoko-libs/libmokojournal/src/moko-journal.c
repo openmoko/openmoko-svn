@@ -34,14 +34,14 @@ struct _MokoJournal
   GArray *entries ;
 };
 
-struct _MokoJEmailInfo
+struct _MokoJournalEmailInfo
 {
   gboolean was_sent ;
 };
 
-struct _MokoJEntry
+struct _MokoJournalEntry
 {
-  MokoJEntryType type;
+  MokoJournalEntryType type;
   gchar *uid ;
   gchar *contact_uid ;
   gchar *summary ;
@@ -49,18 +49,18 @@ struct _MokoJEntry
   MokoTime *dtend ;
   union
   {
-    MokoJEmailInfo *email_info ;
+    MokoJournalEmailInfo *email_info ;
   } extra_info ;
 };
 
-struct _MokoJEntryInfo
+struct _MokoJournalEntryInfo
 {
-  MokoJEntryType type;
+  MokoJournalEntryType type;
   const gchar *type_as_string ;
 };
-typedef struct _MokoJEntryInfo MokoJEntryInfo ;
+typedef struct _MokoJournalEntryInfo MokoJournalEntryInfo ;
 
-static const MokoJEntryInfo entries_info[] =
+static const MokoJournalEntryInfo entries_info[] =
 {
   {EMAIL_JOURNAL_ENTRY, "EMAILENTRY"},
   {SMS_JOURNAL_ENTRY, "SMSENTRY"},
@@ -72,15 +72,15 @@ static const MokoJEntryInfo entries_info[] =
 static MokoJournal* moko_journal_alloc () ;
 static gboolean moko_journal_find_entry_from_uid (MokoJournal *a_journal,
                                                   const gchar *a_uid,
-                                                  MokoJEntry **a_entry,
+                                                  MokoJournalEntry **a_entry,
                                                   int *a_offset) ;
-static const gchar* entry_type_to_string (MokoJEntryType a_type) ;
-static MokoJEntryType entry_type_from_string (const gchar* a_str) ;
-static gboolean moko_j_entry_type_is_valid (MokoJEntryType a_type) ;
-static gboolean moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
-                                               icalcomponent **a_comp) ;
+static const gchar* entry_type_to_string (MokoJournalEntryType a_type) ;
+static MokoJournalEntryType entry_type_from_string (const gchar* a_str) ;
+static gboolean moko_journal_entry_type_is_valid (MokoJournalEntryType a_type) ;
+static gboolean moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
+                                                     icalcomponent **a_comp) ;
 static gboolean icalcomponent_to_j_entry (icalcomponent *a_comp,
-                                          MokoJEntry **a_entry) ;
+                                          MokoJournalEntry **a_entry) ;
 static gboolean icalcomponent_find_property (const icalcomponent *a_comp,
                                              const gchar *a_name,
                                              icalproperty **a_property) ;
@@ -93,11 +93,11 @@ static void on_entries_added_cb (ECalView *a_view,
                                  GList *a_entries,
                                  MokoJournal *a_journal) ;
 static const gchar*
-entry_type_to_string (MokoJEntryType a_type)
+entry_type_to_string (MokoJournalEntryType a_type)
 {
-  MokoJEntryInfo *cur ;
+  MokoJournalEntryInfo *cur ;
 
-  for (cur = (MokoJEntryInfo*)entries_info ; cur ; ++cur)
+  for (cur = (MokoJournalEntryInfo*)entries_info ; cur ; ++cur)
   {
     if (cur->type == a_type)
       return cur->type_as_string ;
@@ -105,12 +105,12 @@ entry_type_to_string (MokoJEntryType a_type)
   return NULL ;
 }
 
-static MokoJEntryType
+static MokoJournalEntryType
 entry_type_from_string (const gchar* a_str)
 {
-  MokoJEntryInfo *cur ;
+  MokoJournalEntryInfo *cur ;
 
-  for (cur = (MokoJEntryInfo*)entries_info ; cur ; ++cur)
+  for (cur = (MokoJournalEntryInfo*)entries_info ; cur ; ++cur)
   {
     if (!strcmp (cur->type_as_string, a_str))
     {
@@ -126,14 +126,14 @@ moko_journal_alloc ()
 {
   MokoJournal *result ;
   result = g_new0 (MokoJournal, 1) ;
-  result->entries = g_array_new (TRUE, TRUE, sizeof (MokoJEntry*)) ;
+  result->entries = g_array_new (TRUE, TRUE, sizeof (MokoJournalEntry*)) ;
   return result ;
 }
 
 static gboolean
 moko_journal_find_entry_from_uid (MokoJournal *a_journal,
                                   const gchar *a_uid,
-                                  MokoJEntry **a_entry,
+                                  MokoJournalEntry **a_entry,
                                   int *a_offset)
 {
   int i=0 ;
@@ -149,12 +149,13 @@ moko_journal_find_entry_from_uid (MokoJournal *a_journal,
 
   for (i = 0 ; i < a_journal->entries->len ; ++i)
   {
-    if (g_array_index (a_journal->entries, MokoJEntry*, i)
-        && g_array_index (a_journal->entries, MokoJEntry*, i)->uid
-        && !strcmp (g_array_index (a_journal->entries, MokoJEntry*, i)->uid,
+    if (g_array_index (a_journal->entries, MokoJournalEntry*, i)
+        && g_array_index (a_journal->entries, MokoJournalEntry*, i)->uid
+        && !strcmp (g_array_index (a_journal->entries,
+                                   MokoJournalEntry*, i)->uid,
                     a_uid))
     {
-      *a_entry = g_array_index (a_journal->entries, MokoJEntry*, i) ;
+      *a_entry = g_array_index (a_journal->entries, MokoJournalEntry*, i) ;
       *a_offset = i ;
       return TRUE ;
     }
@@ -181,10 +182,11 @@ moko_journal_free (MokoJournal *a_journal)
     int i ;
     for (i=0 ; i < a_journal->entries->len ; ++i)
     {
-      if (g_array_index (a_journal->entries, MokoJEntry*, i))
+      if (g_array_index (a_journal->entries, MokoJournalEntry*, i))
       {
-        moko_j_entry_free (g_array_index (a_journal->entries, MokoJEntry*, i));
-        g_array_index (a_journal->entries, MokoJEntry*, i) = NULL;
+        moko_journal_entry_free (g_array_index (a_journal->entries,
+                                                MokoJournalEntry*, i));
+        g_array_index (a_journal->entries, MokoJournalEntry*, i) = NULL;
       }
     }
     g_array_free (a_journal->entries, TRUE) ;
@@ -193,30 +195,30 @@ moko_journal_free (MokoJournal *a_journal)
   g_free (a_journal) ;
 }
 
-MokoJEmailInfo*
+MokoJournalEmailInfo*
 moko_j_email_info_new ()
 {
-  return g_new0 (MokoJEmailInfo, 1) ;
+  return g_new0 (MokoJournalEmailInfo, 1) ;
 }
 
 void
-moko_j_email_info_free (MokoJEmailInfo *a_info)
+moko_j_email_info_free (MokoJournalEmailInfo *a_info)
 {
   g_return_if_fail (a_info) ;
   g_free (a_info) ;
 }
 
-static MokoJEntry*
-moko_j_entry_alloc ()
+static MokoJournalEntry*
+moko_journal_entry_alloc ()
 {
-  MokoJEntry *result ;
+  MokoJournalEntry *result ;
 
-  result = g_new0 (MokoJEntry, 1) ;
+  result = g_new0 (MokoJournalEntry, 1) ;
   return result ;
 }
 
 static void
-moko_j_entry_free_real (MokoJEntry *a_entry)
+moko_journal_entry_free_real (MokoJournalEntry *a_entry)
 {
   g_return_if_fail (a_entry) ;
 
@@ -269,7 +271,7 @@ moko_j_entry_free_real (MokoJEntry *a_entry)
 }
 
 static gboolean
-moko_j_entry_type_is_valid (MokoJEntryType a_type)
+moko_journal_entry_type_is_valid (MokoJournalEntryType a_type)
 {
   if (a_type > 0 && a_type < NB_OF_ENTRY_TYPES)
     return TRUE ;
@@ -277,8 +279,8 @@ moko_j_entry_type_is_valid (MokoJEntryType a_type)
 }
 
 static gboolean
-moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
-                               icalcomponent **a_comp)
+moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
+                                     icalcomponent **a_comp)
 {
   icalcomponent *comp = NULL ;
   icalproperty *prop = NULL ;
@@ -286,7 +288,7 @@ moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
 
   g_return_val_if_fail (a_entry, FALSE) ;
   g_return_val_if_fail (a_comp, FALSE) ;
-  g_return_val_if_fail (moko_j_entry_type_is_valid (a_entry->type),
+  g_return_val_if_fail (moko_journal_entry_type_is_valid (a_entry->type),
                         FALSE) ;
 
   comp = icalcomponent_new (ICAL_VJOURNAL_COMPONENT) ;
@@ -299,15 +301,16 @@ moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
   }
 
   /*add contact prop*/
-  prop = icalproperty_new_contact (moko_j_entry_get_contact_uid (a_entry)) ;
+  prop = icalproperty_new_contact
+                          (moko_journal_entry_get_contact_uid (a_entry)) ;
   icalcomponent_add_property (comp, prop) ;
 
   /*add summary prop*/
-  prop = icalproperty_new_summary (moko_j_entry_get_summary (a_entry)) ;
+  prop = icalproperty_new_summary (moko_journal_entry_get_summary (a_entry)) ;
   icalcomponent_add_property (comp, prop) ;
 
   /*add dtstart*/
-  const MokoTime *date = moko_j_entry_get_dtstart (a_entry) ;
+  const MokoTime *date = moko_journal_entry_get_dtstart (a_entry) ;
   prop = NULL ;
   if (!date)
     goto out ;
@@ -317,19 +320,19 @@ moko_j_entry_to_icalcomponent (MokoJEntry *a_entry,
 
   /*add entry type*/
   prop = icalproperty_new_x
-                  (entry_type_to_string (moko_j_entry_get_type (a_entry))) ;
+                (entry_type_to_string (moko_journal_entry_get_type (a_entry))) ;
   icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-TYPE") ;
   icalcomponent_add_property (comp, prop) ;
 
-  switch (moko_j_entry_get_type (a_entry))
+  switch (moko_journal_entry_get_type (a_entry))
   {
     case UNDEF_ENTRY:
       g_warning ("entry is of undefined type\n") ;
       return FALSE ;
     case EMAIL_JOURNAL_ENTRY:
       {
-        MokoJEmailInfo *info=NULL ;
-        if (!moko_j_entry_get_email_info (a_entry, &info) || !info)
+        MokoJournalEmailInfo *info=NULL ;
+        if (!moko_journal_entry_get_email_info (a_entry, &info) || !info)
           goto out ;
         if (moko_j_email_info_get_was_sent (info))
           prop = icalproperty_new_x ("YES") ;
@@ -365,17 +368,17 @@ out:
 
 static gboolean
 icalcomponent_to_j_entry (icalcomponent *a_comp,
-                          MokoJEntry **a_entry)
+                          MokoJournalEntry **a_entry)
 {
   icalproperty *prop = NULL ;
   gchar *prop_name = NULL ;
-  MokoJEntry *entry = NULL;
+  MokoJournalEntry *entry = NULL;
 
   g_return_val_if_fail (a_comp, FALSE) ;
   g_return_val_if_fail (icalcomponent_isa (a_comp) == ICAL_VJOURNAL_COMPONENT,
                         FALSE) ;
 
-  entry = moko_j_entry_alloc () ;
+  entry = moko_journal_entry_alloc () ;
 
   /*iterate through properties to scan core properties*/
   for (prop = icalcomponent_get_first_property (a_comp, ICAL_ANY_PROPERTY);
@@ -393,15 +396,16 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
     }
     else if (icalproperty_isa (prop) == ICAL_CONTACT_PROPERTY)
     {
-      moko_j_entry_set_contact_uid (entry, icalproperty_get_contact (prop)) ;
+      moko_journal_entry_set_contact_uid
+                                  (entry, icalproperty_get_contact (prop)) ;
     }
     else if (icalproperty_isa (prop) == ICAL_SUMMARY_PROPERTY)
     {
-      moko_j_entry_set_summary (entry, icalproperty_get_summary (prop)) ;
+      moko_journal_entry_set_summary (entry, icalproperty_get_summary (prop)) ;
     }
     else if (icalproperty_isa (prop) == ICAL_DTSTART_PROPERTY)
     {
-      moko_j_entry_set_dtstart
+      moko_journal_entry_set_dtstart
       (entry,
        moko_time_new_from_icaltimetype (icalproperty_get_dtstart (prop)));
     }
@@ -409,7 +413,7 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
              && !strcmp (icalproperty_get_x_name (prop),
                          "X-OPENMOKO-ENTRY-TYPE"))
     {
-      MokoJEntryType entry_type = UNDEF_ENTRY ;
+      MokoJournalEntryType entry_type = UNDEF_ENTRY ;
       const char *x_val = icalproperty_get_value_as_string (prop) ;
       if (!x_val)
         continue ;
@@ -434,9 +438,9 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
   {
     case EMAIL_JOURNAL_ENTRY:
       {
-        MokoJEmailInfo *info=NULL ;
+        MokoJournalEmailInfo *info=NULL ;
         gchar *prop_value = NULL ;
-        if (!moko_j_entry_get_email_info (entry, &info))
+        if (!moko_journal_entry_get_email_info (entry, &info))
         {
           g_warning ("failed to get email info") ;
           goto out ;
@@ -468,7 +472,7 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
 
 out:
   if (entry)
-    moko_j_entry_free (entry) ;
+    moko_journal_entry_free (entry) ;
   return TRUE ;
 }
 
@@ -605,7 +609,7 @@ moko_journal_close (MokoJournal *a_journal)
  * FALSE otherwise
  */
 gboolean
-moko_journal_add_entry (MokoJournal *a_journal, MokoJEntry *a_entry)
+moko_journal_add_entry (MokoJournal *a_journal, MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_journal, FALSE) ;
   g_return_val_if_fail (a_entry, FALSE) ;
@@ -643,14 +647,14 @@ moko_journal_get_nb_entries (MokoJournal *a_journal)
 gboolean
 moko_journal_get_entry_at (MokoJournal *a_journal,
                            guint a_index,
-                           MokoJEntry **a_entry)
+                           MokoJournalEntry **a_entry)
 {
   g_return_val_if_fail (a_journal, FALSE) ;
   g_return_val_if_fail (a_entry, FALSE) ;
   g_return_val_if_fail (a_journal->entries, FALSE) ;
   g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
 
-  *a_entry = g_array_index (a_journal->entries, MokoJEntry*, a_index) ;
+  *a_entry = g_array_index (a_journal->entries, MokoJournalEntry*, a_index) ;
   return TRUE ;
 }
 
@@ -669,11 +673,12 @@ moko_journal_remove_entry_at (MokoJournal *a_journal,
   g_return_val_if_fail (a_journal->entries, FALSE) ;
   g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
 
-  if (g_array_index (a_journal->entries, MokoJEntry*, a_index))
+  if (g_array_index (a_journal->entries, MokoJournalEntry*, a_index))
   {
     a_journal->entries_to_delete =
       g_list_prepend (a_journal->entries_to_delete,
-                      g_array_index (a_journal->entries, MokoJEntry*, a_index));
+                      g_array_index (a_journal->entries,
+                                     MokoJournalEntry*, a_index));
     g_array_remove_index (a_journal->entries, a_index) ;
     return TRUE ;
   }
@@ -692,7 +697,7 @@ moko_journal_remove_entry_at (MokoJournal *a_journal,
 gboolean
 moko_journal_write_to_storage (MokoJournal *a_journal)
 {
-  MokoJEntry *cur_entry=NULL ;
+  MokoJournalEntry *cur_entry=NULL ;
   int i=0 ;
   GList *ecal_comps=NULL, *cur_elem=NULL ;
   ECalComponent *ecal_comp=NULL ;
@@ -704,13 +709,13 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
   g_return_val_if_fail (a_journal, FALSE) ;
   g_return_val_if_fail (a_journal->ecal, FALSE) ;
 
-  /*create ECalComponent objects out of the list of MokoJEntry* we have*/
+  /*create ECalComponent objects out of the list of MokoJournalEntry* we have*/
   for (i=0; a_journal->entries && i<a_journal->entries->len; ++i)
   {
-    cur_entry = g_array_index (a_journal->entries, MokoJEntry*, i) ;
+    cur_entry = g_array_index (a_journal->entries, MokoJournalEntry*, i) ;
     if (!cur_entry)
       break ;
-    if (!moko_j_entry_to_icalcomponent (cur_entry, &ical_comp))
+    if (!moko_journal_entry_to_icalcomponent (cur_entry, &ical_comp))
     {
       if (ical_comp)
       {
@@ -794,14 +799,14 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
     if (!cur_elem->data)
       continue ;
 
-    if (((MokoJEntry*)cur_elem->data)->uid)
+    if (((MokoJournalEntry*)cur_elem->data)->uid)
     {
       if (!e_cal_remove_object (a_journal->ecal,
-                                ((MokoJEntry*)cur_elem->data)->uid,
+                                ((MokoJournalEntry*)cur_elem->data)->uid,
                                 &error))
       {
         g_warning ("failed to remove object of UID %s\n",
-                   ((MokoJEntry*)cur_elem->data)->uid) ;
+                   ((MokoJournalEntry*)cur_elem->data)->uid) ;
       }
       if (error)
       {
@@ -810,7 +815,7 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
         error = NULL ;
       }
     }
-    moko_j_entry_free ((MokoJEntry*)cur_elem->data) ;
+    moko_journal_entry_free ((MokoJournalEntry*)cur_elem->data) ;
     cur_elem->data = NULL ;
   }
 
@@ -839,7 +844,7 @@ on_entries_added_cb (ECalView *a_view,
 {
   icalcomponent *ical_comp = NULL ;
   GList *cur_entry = NULL ;
-  MokoJEntry *entry = NULL ;
+  MokoJournalEntry *entry = NULL ;
   int offset=0 ;
 
   for (cur_entry = a_entries ; cur_entry ; cur_entry = cur_entry->next)
@@ -879,7 +884,7 @@ on_entries_added_cb (ECalView *a_view,
     {
       if (entry)
       {
-        moko_j_entry_free (entry) ;
+        moko_journal_entry_free (entry) ;
         entry = NULL ;
       }
       continue ;
@@ -954,7 +959,7 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
   if (objs)
   {
     GList *cur=NULL ;
-    MokoJEntry *entry = NULL ;
+    MokoJournalEntry *entry = NULL ;
     for (cur = objs ; cur ; cur = cur->next)
     {
       if (!icalcomponent_isa (cur->data))
@@ -967,7 +972,7 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
       if (entry)
       {
         g_warning ("entry should be NULL here") ;
-        moko_j_entry_free (entry) ;
+        moko_journal_entry_free (entry) ;
         entry = NULL ;
       }
     }
@@ -985,46 +990,46 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
 }
 
 /**
- * moko_j_entry_new:
+ * moko_journal_entry_new:
  *
  * Create a Journal entry with no properties set.
  * Use the JEntry accessors to get/set properties.
  *
  * Return value: the newly created journal entry object
  */
-MokoJEntry*
-moko_j_entry_new (MokoJEntryType a_type)
+MokoJournalEntry*
+moko_journal_entry_new (MokoJournalEntryType a_type)
 {
-  MokoJEntry *result ;
-  result = moko_j_entry_alloc () ;
+  MokoJournalEntry *result ;
+  result = moko_journal_entry_alloc () ;
   result->type = a_type ;
   return result ;
 }
 
 /**
- * moko_j_entry_free:
+ * moko_journal_entry_free:
  * @entry: the entry to free
  *
  * Deallocate the memory of the journal entry object
  */
 void
-moko_j_entry_free (MokoJEntry *a_entry)
+moko_journal_entry_free (MokoJournalEntry *a_entry)
 {
   g_return_if_fail (a_entry) ;
 
-  moko_j_entry_free_real (a_entry) ;
+  moko_journal_entry_free_real (a_entry) ;
 }
 
 /**
- * moko_j_entry_get_type:
+ * moko_journal_entry_get_type:
  * @entry: the current journal entry
  *
  * get the primary type of the journal entry
  *
  * Return value: the type of the journal entry
  */
-MokoJEntryType
-moko_j_entry_get_type (MokoJEntry *a_entry)
+MokoJournalEntryType
+moko_journal_entry_get_type (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, UNDEF_ENTRY) ;
 
@@ -1033,14 +1038,15 @@ moko_j_entry_get_type (MokoJEntry *a_entry)
 
 
 /**
- * moko_j_entry_set_type:
+ * moko_journal_entry_set_type:
  * @entry: the current instance of journal entry
  * @type: the new type
  *
  * Set the type of the journal entry
  */
 void
-moko_j_entry_set_type (MokoJEntry *a_entry, MokoJEntryType a_type)
+moko_journal_entry_set_type (MokoJournalEntry *a_entry,
+                             MokoJournalEntryType a_type)
 {
   g_return_if_fail (a_entry) ;
   g_return_if_fail (a_type != UNDEF_ENTRY) ;
@@ -1049,7 +1055,7 @@ moko_j_entry_set_type (MokoJEntry *a_entry, MokoJEntryType a_type)
 }
 
 /**
- * moko_j_entry_get_contact_uid:
+ * moko_journal_entry_get_contact_uid:
  * @entry: the current instance of journal entry
  *
  * get the contact uid
@@ -1058,7 +1064,7 @@ moko_j_entry_set_type (MokoJEntry *a_entry, MokoJEntryType a_type)
  * must not deallocate or attempt to alter it.
  */
 const gchar*
-moko_j_entry_get_contact_uid (MokoJEntry *a_entry)
+moko_journal_entry_get_contact_uid (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, NULL) ;
 
@@ -1066,7 +1072,8 @@ moko_j_entry_get_contact_uid (MokoJEntry *a_entry)
 }
 
 void
-moko_j_entry_set_contact_uid (MokoJEntry *a_entry, const gchar *a_uid)
+moko_journal_entry_set_contact_uid (MokoJournalEntry *a_entry,
+                                    const gchar *a_uid)
 {
   g_return_if_fail (a_entry) ;
 
@@ -1083,7 +1090,7 @@ moko_j_entry_set_contact_uid (MokoJEntry *a_entry, const gchar *a_uid)
 }
 
 /**
- * moko_j_entry_get_summary:
+ * moko_journal_entry_get_summary:
  * @entry: the current instance of journal entry
  *
  * get the summary of the journal entry
@@ -1092,7 +1099,7 @@ moko_j_entry_set_contact_uid (MokoJEntry *a_entry, const gchar *a_uid)
  * Client code must not deallocate or alter it.
  */
 const gchar*
-moko_j_entry_get_summary (MokoJEntry *a_entry)
+moko_journal_entry_get_summary (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, NULL) ;
 
@@ -1100,7 +1107,7 @@ moko_j_entry_get_summary (MokoJEntry *a_entry)
 }
 
 /**
- * moko_j_entry_set_summary:
+ * moko_journal_entry_set_summary:
  * @entry: the current instance of journal entry
  * @summary: the new summary of the journal entry. It is copied
  * so client code is reponsible of its lifecyle.
@@ -1108,7 +1115,8 @@ moko_j_entry_get_summary (MokoJEntry *a_entry)
  * Set the summary of the journal entry
  */
 void
-moko_j_entry_set_summary (MokoJEntry *a_entry, const gchar* a_summary)
+moko_journal_entry_set_summary (MokoJournalEntry *a_entry,
+                                const gchar* a_summary)
 {
   g_return_if_fail (a_entry) ;
 
@@ -1124,7 +1132,7 @@ moko_j_entry_set_summary (MokoJEntry *a_entry, const gchar* a_summary)
 }
 
 /**
- * moko_j_entry_get_dtdstart:
+ * moko_journal_entry_get_dtdstart:
  * @entry: the current instance of journal entry
  *
  * get the starting date associated to the journal entry
@@ -1133,7 +1141,7 @@ moko_j_entry_set_summary (MokoJEntry *a_entry, const gchar* a_summary)
  * It can be NULL. Client code must not deallocate it.
  */
 const MokoTime*
-moko_j_entry_get_dtstart (MokoJEntry *a_entry)
+moko_journal_entry_get_dtstart (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, NULL) ;
 
@@ -1144,12 +1152,12 @@ moko_j_entry_get_dtstart (MokoJEntry *a_entry)
 }
 
 /**
- * moko_j_entry_set_dtstart:
+ * moko_journal_entry_set_dtstart:
  * @entry: the current instance of journal entry
  * @dtstart: the new starting date associated to the journal entry.
  */
 void
-moko_j_entry_set_dtstart (MokoJEntry *a_entry, MokoTime* a_dtstart)
+moko_journal_entry_set_dtstart (MokoJournalEntry *a_entry, MokoTime* a_dtstart)
 {
   g_return_if_fail (a_entry) ;
 
@@ -1164,18 +1172,18 @@ moko_j_entry_set_dtstart (MokoJEntry *a_entry, MokoTime* a_dtstart)
 }
 
 /**
- * moko_j_entry_get_email_info:
+ * moko_journal_entry_get_email_info:
  * @entry: the current instance of journal entry
  * @info: extra information attached to the email info, or NULL.
  * Client code must *NOT* of deallocate the returned info.
- * It is the duty of the MokoJEntry code to deallocate it when
+ * It is the duty of the MokoJournalEntry code to deallocate it when
  * necessary
  *
  * Return value: TRUE if the call succeeded, FALSE otherwise.
  */
 gboolean
-moko_j_entry_get_email_info (MokoJEntry *a_entry,
-                             MokoJEmailInfo **a_info)
+moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
+                                   MokoJournalEmailInfo **a_info)
 {
   g_return_val_if_fail (a_entry->type == EMAIL_JOURNAL_ENTRY, FALSE) ;
 
@@ -1198,7 +1206,7 @@ moko_j_entry_get_email_info (MokoJEntry *a_entry,
  * Return value: TRUE if the email was sent, false if it was received
  */
 gboolean
-moko_j_email_info_get_was_sent (MokoJEmailInfo *a_info)
+moko_j_email_info_get_was_sent (MokoJournalEmailInfo *a_info)
 {
   g_return_val_if_fail (a_info, FALSE) ;
   return a_info->was_sent ;
@@ -1212,7 +1220,8 @@ moko_j_email_info_get_was_sent (MokoJEmailInfo *a_info)
  * Set a boolean property stating if the email was sent or received
  */
 void
-moko_j_email_info_set_was_sent (MokoJEmailInfo *a_info, gboolean a_was_sent)
+moko_j_email_info_set_was_sent (MokoJournalEmailInfo *a_info,
+                                gboolean a_was_sent)
 {
   g_return_if_fail (a_info) ;
   a_info->was_sent = a_was_sent ;

@@ -1,5 +1,12 @@
 2007-04-12 Dodji Seketeli <dodji@openedhand.com>
 
+	*  openmoko-libs/libmokojournal/src/moko-journal.[c|h]:
+	   change moko_j_entry* into moko_journal_entry*,
+	   MokoJEntry, into MokoJournalEntry, etc.
+	   That is for better legibility.
+
+2007-04-12 Dodji Seketeli <dodji@openedhand.com>
+
 	* openmoko-libs/libmokojournal/src/moko-journal.c: 
 	  (moko_j_entry_free_real): fix a leak in here.
 	  (moko_journal_remove_entry_at): make this really remove

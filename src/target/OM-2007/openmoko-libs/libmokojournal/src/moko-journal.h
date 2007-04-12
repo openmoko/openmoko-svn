@@ -33,24 +33,24 @@
  ***********************************************************/
 
 typedef struct _MokoJournal MokoJournal ;
-typedef struct _MokoJEntry MokoJEntry ;
-typedef struct _MokoJEmailInfo MokoJEmailInfo ;
-typedef struct _MokoJSMSInfo MokoJSMSInfo ;
-typedef struct _MokoJMMSInfo MokoJMMSInfo ;
-typedef struct _MokoJCallInfo MokoJCallInfo ;
+typedef struct _MokoJournalEntry MokoJournalEntry ;
+typedef struct _MokoJournalEmailInfo MokoJournalEmailInfo ;
+typedef struct _MokoJournalSMSInfo MokoJournalSMSInfo ;
+typedef struct _MokoJournalMMSInfo MokoJournalMMSInfo ;
+typedef struct _MokoJournalCallInfo MokoJournalCallInfo ;
 
 /**
  * this represents the primary type of
  * a journal entry.
  */
-typedef enum _MokoJEntryType {
+typedef enum _MokoJournalEntryType {
   UNDEF_ENTRY=0,
   EMAIL_JOURNAL_ENTRY,
   SMS_JOURNAL_ENTRY,
   MMS_JOURNAL_ENTRY,
   CALL_JOURNAL_ENTRY,
   NB_OF_ENTRY_TYPES /*must always be the last*/
-} MokoJEntryType ;
+} MokoJournalEntryType ;
 
 /*<journal management>*/
 /**
@@ -83,7 +83,7 @@ void moko_journal_close (MokoJournal *journal) ;
  * Return value: TRUE if the entry got successfully added to the journal,
  * FALSE otherwise
  */
-gboolean moko_journal_add_entry (MokoJournal *journal, MokoJEntry *entry) ;
+gboolean moko_journal_add_entry (MokoJournal *journal, MokoJournalEntry *entry) ;
 
 /**
  * moko_journal_get_nb_entries:
@@ -106,7 +106,7 @@ int moko_journal_get_nb_entries (MokoJournal *journal) ;
  */
 gboolean moko_journal_get_entry_at (MokoJournal *journal,
                                     guint index,
-                                    MokoJEntry **entry) ;
+                                    MokoJournalEntry **entry) ;
 
 /**
  * moko_journal_remove_entry_at:
@@ -149,7 +149,7 @@ gboolean moko_journal_load_from_storage (MokoJournal *journal) ;
 /*<journal entries management>*/
 
 /**
- * moko_j_entry_new:
+ * moko_journal_entry_new:
  * @type: the type of journal entry
  *
  * Create a Journal entry with no properties set.
@@ -157,37 +157,38 @@ gboolean moko_journal_load_from_storage (MokoJournal *journal) ;
  *
  * Return value: the newly created journal entry object
  */
-MokoJEntry* moko_j_entry_new (MokoJEntryType type) ;
+MokoJournalEntry* moko_journal_entry_new (MokoJournalEntryType type) ;
 
 /**
- * moko_j_entry_free:
+ * moko_journal_entry_free:
  * @entry: the entry to free
  *
  * Deallocate the memory of the journal entry object
  */
-void moko_j_entry_free (MokoJEntry *entry) ;
+void moko_journal_entry_free (MokoJournalEntry *entry) ;
 
 /**
- * moko_j_entry_get_type:
+ * moko_journal_entry_get_type:
  * @entry: the current journal entry
  *
  * get the primary type of the journal entry
  *
  * Return value: the type of the journal entry
  */
-MokoJEntryType moko_j_entry_get_type (MokoJEntry *entry) ;
+MokoJournalEntryType moko_journal_entry_get_type (MokoJournalEntry *entry) ;
 
 /**
- * moko_j_entry_set_type:
+ * moko_journal_entry_set_type:
  * @entry: the current instance of journal entry
  * @type: the new type
  *
  * Set the type of the journal entry
  */
-void moko_j_entry_set_type (MokoJEntry *entry, MokoJEntryType type) ;
+void moko_journal_entry_set_type (MokoJournalEntry *entry,
+                                  MokoJournalEntryType type) ;
 
 /**
- * moko_j_entry_get_contact_uid:
+ * moko_journal_entry_get_contact_uid:
  * @entry: the current instance of journal entry
  *
  * get the contact uid
@@ -195,10 +196,10 @@ void moko_j_entry_set_type (MokoJEntry *entry, MokoJEntryType type) ;
  * Return value: the UID of the contact. It can be NULL. Client code
  * must not deallocate or attempt to alter it.
  */
-const gchar* moko_j_entry_get_contact_uid (MokoJEntry *entry) ;
+const gchar* moko_journal_entry_get_contact_uid (MokoJournalEntry *entry) ;
 
 /**
- * moko_j_entry_set_contact_uid:
+ * moko_journal_entry_set_contact_uid:
  * @entry: the current instance of journal entry
  * @uid: the uid to set. This string is copied so the client code
  * must free it.
@@ -207,10 +208,11 @@ const gchar* moko_j_entry_get_contact_uid (MokoJEntry *entry) ;
  * The UID is copied by this function so the caller is reponsible of
  * taking care of the uid string lifecycle.
  */
-void  moko_j_entry_set_contact_uid (MokoJEntry *entry, const gchar *uid) ;
+void  moko_journal_entry_set_contact_uid (MokoJournalEntry *entry,
+                                          const gchar *uid) ;
 
 /**
- * moko_j_entry_get_summary:
+ * moko_journal_entry_get_summary:
  * @entry: the current instance of journal entry
  *
  * get the summary of the journal entry
@@ -218,20 +220,21 @@ void  moko_j_entry_set_contact_uid (MokoJEntry *entry, const gchar *uid) ;
  * Return value: the summary of the journal entry. It can be NULL.
  * Client code must not deallocate or alter it.
  */
-const gchar* moko_j_entry_get_summary (MokoJEntry *entry) ;
+const gchar* moko_journal_entry_get_summary (MokoJournalEntry *entry) ;
 
 /**
- * moko_j_entry_set_summary:
+ * moko_journal_entry_set_summary:
  * @entry: the current instance of journal entry
  * @summary: the new summary of the journal entry. It is copied
  * so client code is reponsible of its lifecyle.
  *
  * Set the summary of the journal entry
  */
-void moko_j_entry_set_summary (MokoJEntry *entry, const gchar* summary) ;
+void moko_journal_entry_set_summary (MokoJournalEntry *entry,
+                                     const gchar* summary) ;
 
 /**
- * moko_j_entry_get_dtdstart:
+ * moko_journal_entry_get_dtdstart:
  * @entry: the current instance of journal entry
  *
  * get the starting date associated to the journal entry
@@ -239,29 +242,29 @@ void moko_j_entry_set_summary (MokoJEntry *entry, const gchar* summary) ;
  * Return value: an icaltimetype representing the starting date expected.
  * It can be NULL. Client code must not deallocate it.
  */
-const MokoTime* moko_j_entry_get_dtstart (MokoJEntry *entry) ;
+const MokoTime* moko_journal_entry_get_dtstart (MokoJournalEntry *entry) ;
 
 /**
- * moko_j_entry_set_dtstart:
+ * moko_journal_entry_set_dtstart:
  * @entry: the current instance of journal entry
  * @dtstart: the new starting date associated to the journal entry.
  */
-void moko_j_entry_set_dtstart (MokoJEntry *entry, MokoTime* dtstart);
+void moko_journal_entry_set_dtstart (MokoJournalEntry *entry, MokoTime* dtstart);
 
 /*<email info>*/
 
 /**
- * moko_j_entry_get_email_info:
+ * moko_journal_entry_get_email_info:
  * @entry: the current instance of journal entry
  * @info: extra information attached to the email info, or NULL.
  * Client code must *NOT* of deallocate the returned info.
- * It is the duty of the MokoJEntry code to deallocate it when
+ * It is the duty of the MokoJournalEntry code to deallocate it when
  * necessary
  *
  * Return value: TRUE if the call succeeded, FALSE otherwise.
  */
-gboolean moko_j_entry_get_email_info (MokoJEntry *entry,
-                                      MokoJEmailInfo **info) ;
+gboolean moko_journal_entry_get_email_info (MokoJournalEntry *entry,
+                                            MokoJournalEmailInfo **info) ;
 
 /**
  * moko_j_email_info_get_was_sent:
@@ -271,7 +274,7 @@ gboolean moko_j_entry_get_email_info (MokoJEntry *entry,
  *
  * Return value: TRUE if the email was sent, false if it was received
  */
-gboolean moko_j_email_info_get_was_sent (MokoJEmailInfo *info) ;
+gboolean moko_j_email_info_get_was_sent (MokoJournalEmailInfo *info) ;
 
 /**
  * moko_j_email_info_set_was_sent:
@@ -280,7 +283,8 @@ gboolean moko_j_email_info_get_was_sent (MokoJEmailInfo *info) ;
  *
  * Set a boolean property stating if the email was sent or received
  */
-void moko_j_email_info_set_was_sent (MokoJEmailInfo *info, gboolean was_sent) ;
+void moko_j_email_info_set_was_sent (MokoJournalEmailInfo *info,
+                                     gboolean was_sent) ;
 
 /*</email info>*/
 
