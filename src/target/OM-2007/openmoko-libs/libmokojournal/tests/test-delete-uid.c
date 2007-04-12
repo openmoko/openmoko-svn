@@ -25,6 +25,7 @@ int
 main ()
 {
     MokoJournal *journal=NULL ;
+    MokoJournalEntry *entry=NULL ;
     int result=-1 ;
 
     g_type_init () ;
@@ -44,14 +45,30 @@ main ()
     /*remove all entries from journal starting from the oldest one*/
     while (moko_journal_get_nb_entries (journal) > 0)
     {
-        if (!moko_journal_remove_entry_at (journal, 0))
+        entry = NULL ;
+        /*get the oldest entry*/
+        if (!moko_journal_get_entry_at (journal, 0, &entry) || !entry)
         {
-            g_message ("failed to remove an entry from journal") ;
+            g_message ("failed to get entry at index 0\n") ;
+            goto out ;
+        }
+        /*make sure it has an UID*/
+        if (!moko_journal_entry_get_uid (entry))
+        {
+            g_message ("error: came accross an entry without UID\n") ;
+            goto out ;
+        }
+        /*remove the entry from the journal, using its UID*/
+        if (!moko_journal_remove_entry_by_uid
+                                        (journal,
+                                         moko_journal_entry_get_uid (entry)))
+        {
+            g_message ("failed to remove entry of UID '%s' from journal\n",
+                       moko_journal_entry_get_uid (entry)) ;
             goto out ;
         }
     }
-
-    /*write the modifications we did to persistent storage*/
+    /*write the modifications we did, back to persistent storage*/
     if (!moko_journal_write_to_storage (journal))
     {
         g_message ("failed to write to storage\n") ;

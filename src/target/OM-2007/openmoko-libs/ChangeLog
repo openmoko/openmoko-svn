@@ -1,5 +1,13 @@
 2007-04-12 Dodji Seketeli <dodji@openedhand.com>
 
+	* openmoko-libs/libmokojournal/src/moko-journal.c,h:
+	  (moko_journal_remove_entry_by_uid): added this new entry point.
+	  (moko_journal_entry_get_uid): ditto
+	* openmoko-libs/libmokojournal/tests/test-delete-uid.c: added
+	  this to test/debug removal by uid.
+
+2007-04-12 Dodji Seketeli <dodji@openedhand.com>
+
 	*  openmoko-libs/libmokojournal/src/moko-journal.[c|h]:
 	   change moko_j_entry* into moko_journal_entry*,
 	   MokoJEntry, into MokoJournalEntry, etc.

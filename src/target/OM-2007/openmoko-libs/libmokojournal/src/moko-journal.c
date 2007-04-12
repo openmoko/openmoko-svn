@@ -686,6 +686,37 @@ moko_journal_remove_entry_at (MokoJournal *a_journal,
 }
 
 /**
+ * moko_journal_remove_entry_by_uid:
+ * @journal: the current instance of journal
+ * @uid: the uid of the journal entry to remove
+ *
+ * Remove the journal entry that has a given UID.
+ *
+ * Return value: TRUE in case of success, FALSE otherwise
+ */
+gboolean
+moko_journal_remove_entry_by_uid (MokoJournal *a_journal,
+                                  const gchar* a_uid)
+{
+  int i=0 ;
+  MokoJournalEntry *entry=NULL ;
+
+  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (a_journal->entries, FALSE) ;
+  g_return_val_if_fail (a_uid, FALSE) ;
+
+  for (i=0 ; i < a_journal->entries->len ; ++i)
+  {
+    entry = g_array_index (a_journal->entries, MokoJournalEntry*, i) ;
+    if (entry && entry->uid && !strcmp (entry->uid, a_uid))
+    {
+      return moko_journal_remove_entry_at (a_journal, i) ;
+    }
+  }
+  return FALSE ;
+}
+
+/**
  * moko_journal_write_to_storage:
  * @journal: the journal to save to storage
  *
@@ -1052,6 +1083,24 @@ moko_journal_entry_set_type (MokoJournalEntry *a_entry,
   g_return_if_fail (a_type != UNDEF_ENTRY) ;
 
   a_entry->type = a_type ;
+}
+
+/**
+ * moko_journal_entry_get_uid:
+ * @entry: the current instance of journal entry
+ *
+ * Gets the UID of the current entry. This UID is non NULL if and
+ * only if the entry has been persistet at least once.
+ *
+ * Return value: the UID in case the entry has been persisted at least once,
+ * NULL otherwise. The client code must *NOT* free the returned string.
+ */
+const gchar*
+moko_journal_entry_get_uid (MokoJournalEntry *a_entry)
+{
+  g_return_val_if_fail (a_entry, NULL) ;
+
+  return a_entry->uid ;
 }
 
 /**

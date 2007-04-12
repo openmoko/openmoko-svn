@@ -114,12 +114,26 @@ gboolean moko_journal_get_entry_at (MokoJournal *journal,
  * @index: the index to remove the entry from
  *
  * Remove a journal entry from index #index
+ *
+ * Return value: TRUE in case of success, FALSE otherwise
  */
 gboolean moko_journal_remove_entry_at (MokoJournal *journal,
                                        guint index) ;
 
 /**
- * moko_journal_weite_to_storage:
+ * moko_journal_remove_entry_by_uid:
+ * @journal: the current instance of journal
+ * @uid: the uid of the journal entry to remove
+ *
+ * Remove the journal entry that has a given UID.
+ *
+ * Return value: TRUE in case of success, FALSE otherwise
+ */
+gboolean moko_journal_remove_entry_by_uid (MokoJournal *journal,
+                                           const gchar* uid) ;
+
+/**
+ * moko_journal_write_to_storage:
  * @journal: the journal to save to storage
  *
  * Saves the journal to persistent storage (e.g disk) using the
@@ -186,6 +200,18 @@ MokoJournalEntryType moko_journal_entry_get_type (MokoJournalEntry *entry) ;
  */
 void moko_journal_entry_set_type (MokoJournalEntry *entry,
                                   MokoJournalEntryType type) ;
+
+/**
+ * moko_journal_entry_get_uid:
+ * @entry: the current instance of journal entry
+ *
+ * Gets the UID of the current entry. This UID is non NULL if and
+ * only if the entry has been persistet at least once.
+ *
+ * Return value: the UID in case the entry has been persisted at least once,
+ * NULL otherwise. The client code must *NOT* free the returned string.
+ */
+const gchar* moko_journal_entry_get_uid (MokoJournalEntry *entry) ;
 
 /**
  * moko_journal_entry_get_contact_uid:
