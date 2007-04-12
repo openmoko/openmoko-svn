@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = libmokocore libmokonet libmokoui libmokojournal
+SUBDIRS = libmokocore libmokogsmd libmokonet libmokoui libmokojournal

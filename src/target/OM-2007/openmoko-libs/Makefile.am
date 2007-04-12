@@ -1,4 +1,3 @@
-# SUBDIRS = libmokocore libmokoui libmokopim libmokonet
 SUBDIRS = libmokoui libmokojournal data
 
 pcdata_DATA= openmoko-libs.pc

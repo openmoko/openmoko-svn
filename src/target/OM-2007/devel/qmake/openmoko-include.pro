@@ -33,6 +33,12 @@ mokocore {
 	LIBS += -lmokocore -L$(OPENMOKODIR)/lib
 }
 
+mokogsmd {
+	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
+	PKGCONFIG += libgsmd
+	LIBS += -lmokogsmd -L$(OPENMOKODIR)/lib
+}
+
 mokoui {
 	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
 	PKGCONFIG += gtk+-2.0
@@ -47,6 +53,11 @@ mokopim {
 mokonet {
 	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
 	LIBS += -lmokonet -L$(OPENMOKODIR)/lib
+}
+
+mokojournal {
+	INCLUDEPATH += $(OPENMOKODIR)/openmoko-libs
+	LIBS += -lmokojournal -L$(OPENMOKODIR)/lib
 }
 
 # handle pkgconfig for CFLAGS, CXXFLAGS and LIBS already handled by qmake
