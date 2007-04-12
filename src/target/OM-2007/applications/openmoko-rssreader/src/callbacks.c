@@ -208,8 +208,6 @@ void cb_refresh_all_button_clicked( GtkButton *btn, struct RSSReaderData *data )
     }
 
 }
-void cb_searchbox_visible( MokoToolBox *box, struct RSSReaderData *data ) {}
-void cb_searchbox_invisible( MokoToolBox *box, struct RSSReaderData *data ) {}
 
 /*
  * TODO: Update the text and make it rich text.
@@ -235,6 +233,31 @@ void cb_treeview_selection_changed( GtkTreeSelection *selection, struct RSSReade
     }
 }
 
-gboolean cb_treeview_keypress_event( GtkWidget *entry, GdkEventKey *key, struct RSSReaderData *data ) { return TRUE; }
-void cb_search_entry_changed      ( GtkWidget *entry, struct RSSReaderData *data ) {}
+/*
+ * search functionality
+ */
+void cb_searchbox_visible( MokoToolBox *box, struct RSSReaderData *data ) {
+    cb_search_entry_changed (moko_tool_box_get_entry (box), data);
+}
+
+void cb_searchbox_invisible( MokoToolBox *box, struct RSSReaderData *data ) {
+    if ( data->current_search_text ) {
+        g_free (data->current_search_text);
+        data->current_search_text = NULL;
+    }
+
+    filter_feeds (data);
+}
+
+gboolean cb_treeview_keypress_event( GtkWidget *entry, GdkEventKey *key, struct RSSReaderData *data ) {
+    return TRUE;
+}
+
+void cb_search_entry_changed      ( GtkWidget *entry, struct RSSReaderData *data ) {
+    if ( data->current_search_text )
+        g_free (data->current_search_text);
+
+    data->current_search_text = g_strdup (gtk_entry_get_text (GTK_ENTRY(entry)));
+    filter_feeds (data);
+}
 

@@ -23,6 +23,7 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
+#define _GNU_SOURCE
 #include "config.h"
 #include <glib/gi18n.h>
 
@@ -50,15 +51,41 @@ rss_filter_entries (GtkTreeModel *model, GtkTreeIter *iter, struct RSSReaderData
         gchar *category;
         gtk_tree_model_get (model, iter,  RSS_READER_COLUMN_CATEGORY, &category,  -1);
 
+        /*
+         * how does this happen?
+         */
+        if ( !category )
+            return FALSE;
 
         if ( strcmp(category, data->current_filter) != 0 )
             return FALSE;
+
+        g_free (category);
     }
 
 
     /*
      * filter the text according to the search now
      */
+    if ( data->current_search_text ) {
+        gchar *text;
+
+        #define FILTER_SEARCH(column)                                      \
+        gtk_tree_model_get (model, iter, column, &text, -1);               \
+        if ( text && strcasestr (text, data->current_search_text) != NULL ) { \
+            g_free (text);                                                 \
+            return TRUE;                                                   \
+        }
+
+        FILTER_SEARCH(RSS_READER_COLUMN_AUTHOR)
+        FILTER_SEARCH(RSS_READER_COLUMN_SUBJECT)
+        FILTER_SEARCH(RSS_READER_COLUMN_SOURCE)
+        FILTER_SEARCH(RSS_READER_COLUMN_LINK)
+        FILTER_SEARCH(RSS_READER_COLUMN_TEXT)
+
+        #undef FILTER_SEARCH
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -73,12 +100,20 @@ rss_sort_dates (GtkTreeModel *model, GtkTreeIter *_left, GtkTreeIter *_right, gp
     gtk_tree_model_get (model, _left,  RSS_READER_COLUMN_DATE, &left,  -1);
     gtk_tree_model_get (model, _right, RSS_READER_COLUMN_DATE, &right, -1);
 
+    int result;
     if ( left == NULL )
-        return -1;
+        result = -1;
     else if ( right == NULL )
-        return 1;
+        result = 1;
     else
-        return rss_rfc_date_compare (left, right);
+        result = rss_rfc_date_compare (left, right);
+
+    if ( left )
+        g_object_unref (left);
+    if ( right )
+        g_object_unref (right);
+
+    return result;
 }
 
 static void
@@ -89,6 +124,7 @@ rss_cell_data_func (GtkTreeViewColumn *tree_column, GtkCellRenderer *renderer, G
 
     g_assert (date);
     g_object_set ( G_OBJECT(renderer), "text", rss_rfc_date_as_string(date), NULL);
+    g_object_unref (G_OBJECT(date));
 }
 
 /*
