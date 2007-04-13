@@ -1,5 +1,13 @@
 2007-04-13 Dodji Seketeli <dodji@openedhand.com>
 
+	* openmoko-libs/libmokojournal/src/moko-journal.c:
+	  (moko_journal_load_from_storage): make sure we get notified when
+	  another process removes an entry.
+	  (on_entries_removed_cb): added this to handle entry removal by
+	  another process.
+
+2007-04-13 Dodji Seketeli <dodji@openedhand.com>
+
 	* *.h,c: changed moko_j_email_info* into moko_journal_email_info*
 	* openmoko-libs/libmokojournal/src/moko-journal.c:
 	  (moko_journal_remove_entry_at): only entries that has been

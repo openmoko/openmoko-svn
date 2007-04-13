@@ -92,6 +92,11 @@ static gboolean icalcomponent_find_property_as_string
 static void on_entries_added_cb (ECalView *a_view,
                                  GList *a_entries,
                                  MokoJournal *a_journal) ;
+static void on_entries_removed_cb (ECalView *a_view,
+                                   GList *uids,
+                                   MokoJournal *a_journal) ;
+
+
 static const gchar*
 entry_type_to_string (MokoJournalEntryType a_type)
 {
@@ -953,6 +958,33 @@ on_entries_added_cb (ECalView *a_view,
   }
 }
 
+static void
+on_entries_removed_cb (ECalView *a_view,
+                       GList *a_uids,
+                       MokoJournal *a_journal)
+{
+  GList *cur = NULL ;
+
+  g_return_if_fail (a_view && E_IS_CAL_VIEW (a_view)) ;
+  g_return_if_fail (a_journal) ;
+
+  /*TODO:
+   * we should notify the world before removing an entry.
+   * Otherwise, client code may hold a reference to
+   * what will become a dangling pointer after we remove it here
+   */
+  for (cur = a_uids ; cur ; cur = cur->next)
+  {
+    if (cur->data)
+    {
+      if (!moko_journal_remove_entry_by_uid (a_journal, cur->data))
+      {
+        g_message ("failed to remove entry of uid %s\n", cur->data) ;
+      }
+    }
+  }
+}
+
 /**
  * moko_journal_load_from_storage:
  * @a_journal: the journal to load entries into
@@ -998,6 +1030,11 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
                       "objects-added",
                       G_CALLBACK (on_entries_added_cb),
                       a_journal) ;
+    g_signal_connect (G_OBJECT (a_journal->ecal_view),
+                      "objects-removed",
+                      G_CALLBACK (on_entries_removed_cb),
+                      a_journal) ;
+
     e_cal_view_start (a_journal->ecal_view) ;
   }
 
