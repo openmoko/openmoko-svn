@@ -1,4 +1,4 @@
-SUBDIRS = libmokoui libmokojournal data
+SUBDIRS = libmokogsmd libmokoui libmokojournal data
 
 pcdata_DATA= openmoko-libs.pc
 pcdatadir= $(libdir)/pkgconfig
