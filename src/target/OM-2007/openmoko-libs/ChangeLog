@@ -1,3 +1,16 @@
+2007-04-13 Dodji Seketeli <dodji@openedhand.com>
+
+	* *.h,c: changed moko_j_email_info* into moko_journal_email_info*
+	* openmoko-libs/libmokojournal/src/moko-journal.c:
+	  (moko_journal_remove_entry_at): only entries that has been
+	  persisted should be queued for removal from eds.
+	  (moko_journal_write_to_storage): do not cry too much when
+	  an entry queued for removal could not be removed. It can happen
+	  in nominal cases, for instance another process could have
+	  deleted it already.
+	* openmoko-libs/libmokojournal/tests/test-create.c: update this
+	  because of the moko_j_email* into moko_journal_email renaming.
+
 2007-04-12 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/libmokojournal/src/moko-journal.c,h:

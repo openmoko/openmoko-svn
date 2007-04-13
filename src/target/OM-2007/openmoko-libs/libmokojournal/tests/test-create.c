@@ -65,7 +65,7 @@ main ()
         g_warning ("failed to get email extra info from journal entry\n") ;
         goto out ;
     }
-    moko_j_email_info_set_was_sent (email_info, TRUE) ;
+    moko_journal_email_info_set_was_sent (email_info, TRUE) ;
     /*****************************
      * </fill the entry with data>
      *****************************/

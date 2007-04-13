@@ -196,13 +196,13 @@ moko_journal_free (MokoJournal *a_journal)
 }
 
 MokoJournalEmailInfo*
-moko_j_email_info_new ()
+moko_journal_email_info_new ()
 {
   return g_new0 (MokoJournalEmailInfo, 1) ;
 }
 
 void
-moko_j_email_info_free (MokoJournalEmailInfo *a_info)
+moko_journal_email_info_free (MokoJournalEmailInfo *a_info)
 {
   g_return_if_fail (a_info) ;
   g_free (a_info) ;
@@ -253,7 +253,7 @@ moko_journal_entry_free_real (MokoJournalEntry *a_entry)
     case EMAIL_JOURNAL_ENTRY:
       if (a_entry->extra_info.email_info)
       {
-        moko_j_email_info_free (a_entry->extra_info.email_info) ;
+        moko_journal_email_info_free (a_entry->extra_info.email_info) ;
         a_entry->extra_info.email_info = NULL ;
       }
       break ;
@@ -334,7 +334,7 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
         MokoJournalEmailInfo *info=NULL ;
         if (!moko_journal_entry_get_email_info (a_entry, &info) || !info)
           goto out ;
-        if (moko_j_email_info_get_was_sent (info))
+        if (moko_journal_email_info_get_was_sent (info))
           prop = icalproperty_new_x ("YES") ;
         else
           prop = icalproperty_new_x ("NO") ;
@@ -451,9 +451,9 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
                                              &prop_value))
         {
           if (prop_value && !strcmp (prop_value, "YES"))
-            moko_j_email_info_set_was_sent (info, TRUE) ;
+            moko_journal_email_info_set_was_sent (info, TRUE) ;
           else
-            moko_j_email_info_set_was_sent (info, FALSE) ;
+            moko_journal_email_info_set_was_sent (info, FALSE) ;
         }
       }
       break ;
@@ -669,17 +669,37 @@ gboolean
 moko_journal_remove_entry_at (MokoJournal *a_journal,
                               guint a_index)
 {
+  MokoJournalEntry *entry = NULL ;
+
   g_return_val_if_fail (a_journal, FALSE) ;
   g_return_val_if_fail (a_journal->entries, FALSE) ;
   g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
 
-  if (g_array_index (a_journal->entries, MokoJournalEntry*, a_index))
+  entry = g_array_index (a_journal->entries, MokoJournalEntry*, a_index) ;
+  if (entry)
   {
-    a_journal->entries_to_delete =
-      g_list_prepend (a_journal->entries_to_delete,
-                      g_array_index (a_journal->entries,
-                                     MokoJournalEntry*, a_index));
+    /*
+     * if entry has been persisted already,
+     * queue a removal from storage
+     */
+    if (entry->uid)
+    {
+      a_journal->entries_to_delete =
+        g_list_prepend (a_journal->entries_to_delete, entry);
+    }
+    /*
+     * remove entry from memory cache
+     */
     g_array_remove_index (a_journal->entries, a_index) ;
+    /*
+     * if entry has not been pushed onto
+     * storage deletion queue,
+     * deallocate its memory
+     */
+    if (!entry->uid)
+    {
+      moko_journal_entry_free (entry) ;
+    }
     return TRUE ;
   }
   return FALSE ;
@@ -822,7 +842,10 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
     }
   }
 
-  /*remove entries that are to be removed*/
+  /*
+   * remove entries that have been
+   * queued to be removed
+   */
   for (cur_elem = a_journal->entries_to_delete ;
        cur_elem ;
        cur_elem = cur_elem->next)
@@ -836,7 +859,12 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
                                 ((MokoJournalEntry*)cur_elem->data)->uid,
                                 &error))
       {
-        g_warning ("failed to remove object of UID %s\n",
+        /*
+         * this can happen if another process for instance, has
+         * already deleted the entry. In that case, we just
+         * print message and continue
+         */
+        g_message ("failed to remove object with UID %s\n",
                    ((MokoJournalEntry*)cur_elem->data)->uid) ;
       }
       if (error)
@@ -1238,7 +1266,7 @@ moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
 
   if (!a_entry->extra_info.email_info)
   {
-    a_entry->extra_info.email_info = moko_j_email_info_new () ;
+    a_entry->extra_info.email_info = moko_journal_email_info_new () ;
   }
   g_return_val_if_fail (a_entry->extra_info.email_info, FALSE) ;
 
@@ -1247,7 +1275,7 @@ moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
 }
 
 /**
- * moko_j_email_info_get_was_sent:
+ * moko_journal_email_info_get_was_sent:
  * @info: the current instance of email info
  *
  * Get a boolean property stating if the email was sent or received.
@@ -1255,21 +1283,21 @@ moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
  * Return value: TRUE if the email was sent, false if it was received
  */
 gboolean
-moko_j_email_info_get_was_sent (MokoJournalEmailInfo *a_info)
+moko_journal_email_info_get_was_sent (MokoJournalEmailInfo *a_info)
 {
   g_return_val_if_fail (a_info, FALSE) ;
   return a_info->was_sent ;
 }
 
 /**
- * moko_j_email_info_set_was_sent:
+ * moko_journal_email_info_set_was_sent:
  * @info: the current instance of email info
  * @was_sent: TRUE if the email was sent, FALSE if it was received
  *
  * Set a boolean property stating if the email was sent or received
  */
 void
-moko_j_email_info_set_was_sent (MokoJournalEmailInfo *a_info,
+moko_journal_email_info_set_was_sent (MokoJournalEmailInfo *a_info,
                                 gboolean a_was_sent)
 {
   g_return_if_fail (a_info) ;

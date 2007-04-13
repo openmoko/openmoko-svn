@@ -300,7 +300,7 @@ gboolean moko_journal_entry_get_email_info (MokoJournalEntry *entry,
  *
  * Return value: TRUE if the email was sent, false if it was received
  */
-gboolean moko_j_email_info_get_was_sent (MokoJournalEmailInfo *info) ;
+gboolean moko_journal_email_info_get_was_sent (MokoJournalEmailInfo *info) ;
 
 /**
  * moko_j_email_info_set_was_sent:
@@ -309,8 +309,8 @@ gboolean moko_j_email_info_get_was_sent (MokoJournalEmailInfo *info) ;
  *
  * Set a boolean property stating if the email was sent or received
  */
-void moko_j_email_info_set_was_sent (MokoJournalEmailInfo *info,
-                                     gboolean was_sent) ;
+void moko_journal_email_info_set_was_sent (MokoJournalEmailInfo *info,
+                                           gboolean was_sent) ;
 
 /*</email info>*/
 
