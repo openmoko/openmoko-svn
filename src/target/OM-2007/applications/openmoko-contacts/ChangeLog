@@ -1,5 +1,10 @@
 2007-04-13  Thomas Wood  <thomas@openedhand.com>
 
+	* src/contacts-callbacks-ui.c: (contacts_selection_cb): Don't try to commit a
+	NULL contact when selection changes. Fixes bug 423.
+
+2007-04-13  Thomas Wood  <thomas@openedhand.com>
+
 	* src/contacts-callbacks-ebook.c: (contacts_changed_cb):
 
 	Make sure cell phone column is updated when a contact is saved. Fixes bug 400.

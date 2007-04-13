@@ -118,7 +118,7 @@ contacts_selection_cb (GtkTreeSelection * selection, ContactsData *data)
 	gint current_pane;
 
 	/* if we have modified the previous contact, but not saved it, do so now */
-	if (data->changed)
+	if (data->changed && data->contact)
 		e_book_async_commit_contact (data->book, data->contact, NULL, NULL);
 
 	current_pane = gtk_notebook_get_current_page (GTK_NOTEBOOK (data->ui->main_notebook));
