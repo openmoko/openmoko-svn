@@ -56,17 +56,8 @@ static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
 
 static void _button_release(GtkWidget* w, MokoToolBox* self)
 {
-    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
-    static int current_page = 1;
-    gtk_notebook_set_current_page( GTK_NOTEBOOK(self), current_page );
-    moko_debug( "moko_tool_box_button_release: current_page is now: %d", current_page );
-
-    if( current_page == 1 )
-        gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
-
-    current_page = 1 - current_page;
-    g_signal_emit( G_OBJECT(self), current_page ? moko_tool_box_signals[SEARCHBOX_INVISIBLE] : moko_tool_box_signals[SEARCHBOX_VISIBLE], 0, NULL );
-
+    MokoToolBoxPriv *priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    moko_tool_box_make_search_visible (self, !GTK_WIDGET_DRAWABLE(priv->entry) );
 }
 
 static gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
@@ -181,6 +172,19 @@ void moko_tool_box_clear(MokoToolBox* self) /* Destruction */
 }
 
 /* add new methods here */
+void moko_tool_box_make_search_visible(MokoToolBox *self, gboolean visible)
+{
+    MokoToolBoxPriv *priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    g_return_if_fail (priv->entry != NULL);
+
+    gtk_notebook_set_current_page( GTK_NOTEBOOK(self), visible );
+    moko_debug( "%s: current_page is now: %d", __FUNCTION__, visible );
+
+    if( visible )
+        gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
+
+    g_signal_emit( G_OBJECT(self), visible ? moko_tool_box_signals[SEARCHBOX_VISIBLE] : moko_tool_box_signals[SEARCHBOX_INVISIBLE], 0, NULL );
+}
 
 void moko_tool_box_add_search_button(MokoToolBox* self)
 {

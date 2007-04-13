@@ -57,7 +57,9 @@ GtkWidget*     moko_tool_box_new();
 GtkWidget*     moko_tool_box_new_with_search();
 void           moko_tool_box_clear(MokoToolBox* self);
 
-GtkWidget* moko_tool_box_get_button_box( MokoToolBox* self );
+void moko_tool_box_make_search_visible(MokoToolBox *self, gboolean visible);
+
+GtkWidget* moko_tool_box_get_button_box(MokoToolBox* self );
 GtkWidget* moko_tool_box_get_entry(MokoToolBox* self);
 GtkWidget* moko_tool_box_add_action_button(MokoToolBox* self);
 
