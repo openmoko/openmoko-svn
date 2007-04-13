@@ -51,6 +51,7 @@ AC_OUTPUT([
 Makefile
 openmoko-libs.pc
 libmokocore/Makefile
+libmokogsmd/Makefile
 libmokoui/Makefile
 libmokopim/Makefile
 libmokonet/Makefile
