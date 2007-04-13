@@ -1,10 +1,10 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-04-02 20:55:06.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-04-02 20:56:34.000000000 +0200
+--- linux-2.6.20.4-moko.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Kconfig
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -20,10 +20,10 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
  config ARCH_S3C2440
  	bool "SMDK2440"
  	select CPU_S3C2440
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-04-02 20:55:06.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-04-02 20:56:33.000000000 +0200
+--- linux-2.6.20.4-moko.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Makefile
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -31,11 +31,11 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
 +obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
  
  obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c	2007-04-02 20:57:23.000000000 +0200
-@@ -0,0 +1,735 @@
+--- /dev/null
++++ linux-2.6.20.4-moko/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -0,0 +1,740 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -260,11 +260,12 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +		break;
 +	case GTA01Bv3_SYSTEM_REV:
 +	case GTA01Bv2_SYSTEM_REV:
-+		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG].name = "user1";
-+		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG].flags =
-+							PMU_VRAIL_F_UNUSED;
-+		gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCUD].flags =
-+							PMU_VRAIL_F_SUSPEND_ON;
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG]
++					.name = "user1";
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG]
++					.flags &= ~PMU_VRAIL_F_SUSPEND_ON;
++		gta01_pcf_pdata.rails[PCF50606_REGULATOR_D3REG]
++					.flags = PMU_VRAIL_F_UNUSED;
 +		break;
 +	case GTA01v4_SYSTEM_REV:
 +		cfg_pmu_vrail(&gta01_pcf_pdata.rails[PCF50606_REGULATOR_DCUD],
@@ -742,9 +743,13 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +	switch (system_rev) {
 +	case GTA01v3_SYSTEM_REV:
 +	case GTA01v4_SYSTEM_REV:
++		/* just use the default (GTA01_IRQ_PCF50606) */
++		break;
 +	case GTA01Bv2_SYSTEM_REV:
 +	case GTA01Bv3_SYSTEM_REV:
 +		/* just use the default (GTA01_IRQ_PCF50606) */
++		gta01_led_resources[0].start =
++			gta01_led_resources[0].end = GTA01Bv2_GPIO_VIBRATOR_ON;
 +		break;
 +	case GTA01Bv4_SYSTEM_REV:
 +		gta01_pmu_resources[0].start =
@@ -771,10 +776,10 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.20.4-moko/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/gta01.h	2007-04-02 20:55:32.000000000 +0200
+--- /dev/null
++++ linux-2.6.20.4-moko/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,69 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
