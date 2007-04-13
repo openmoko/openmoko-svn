@@ -1,3 +1,9 @@
+2007-04-13  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-callbacks-ebook.c: (contacts_changed_cb):
+
+	Make sure cell phone column is updated when a contact is saved. Fixes bug 400.
+
 2007-04-04  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-contact-pane.c: (set_type), (get_type),

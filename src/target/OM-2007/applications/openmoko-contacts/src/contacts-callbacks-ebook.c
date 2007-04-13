@@ -125,7 +125,7 @@ contacts_changed_cb (EBookView *book_view, const GList *contacts,
 		EContact *contact = E_CONTACT (c->data);
 		EContactListHash *hash;
 		GList *contact_groups;
-		const gchar *uid, *name;
+		const gchar *uid, *name, *cell;
 
 		/* Lookup if contact exists in internal list (it should) */
 		uid = e_contact_get_const (contact, E_CONTACT_UID);
@@ -144,8 +144,12 @@ contacts_changed_cb (EBookView *book_view, const GList *contacts,
 		name = e_contact_get_const (contact, E_CONTACT_FULL_NAME);
 		if ((!name) || (g_utf8_strlen (name, -1) <= 0))
 			name = "Unnamed";
-		gtk_list_store_set (model, &hash->iter, CONTACT_NAME_COL, name,
-			-1);
+		gtk_list_store_set (model, &hash->iter, CONTACT_NAME_COL, name, -1);
+
+		cell = e_contact_get_const (contact, E_CONTACT_PHONE_MOBILE);
+		if ((!cell) || (g_utf8_strlen (cell, -1) <= 0))
+      cell = "";
+			gtk_list_store_set (model, &hash->iter, CONTACT_CELLPHONE_COL, cell, -1);
 
 		/* If contact is currently selected, update display */
 		if (current_contact) {
