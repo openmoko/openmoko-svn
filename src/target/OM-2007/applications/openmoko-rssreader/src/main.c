@@ -178,7 +178,7 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
      * Allow sorting of the base model
      */
     data->sort_model = GTK_TREE_MODEL_SORT(gtk_tree_model_sort_new_with_model( GTK_TREE_MODEL(data->filter_model) ));
-    gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE,    GTK_SORT_ASCENDING );
+    gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE,    GTK_SORT_DESCENDING );
     gtk_tree_sortable_set_sort_func ( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE, rss_sort_dates, NULL, NULL);
 
     data->treeView = MOKO_TREE_VIEW(moko_tree_view_new_with_model(GTK_TREE_MODEL(data->sort_model)));
@@ -303,6 +303,7 @@ int main( int argc, char** argv )
     moko_menu_box_set_active_filter( data->menubox, _("All") );
 
     gtk_widget_show_all( GTK_WIDGET(data->window) );
+    gtk_widget_grab_focus (GTK_WIDGET(data->treeView));
     gtk_main();
     gdk_threads_leave();
 
