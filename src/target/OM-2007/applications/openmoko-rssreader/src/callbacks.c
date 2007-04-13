@@ -30,6 +30,8 @@
 #include "callbacks.h"
 #include "rfcdate.h"
 
+#include <libmokoui/moko-tool-box.h>
+
 #include <mrss.h>
 #include <string.h>
 
@@ -247,9 +249,22 @@ void cb_searchbox_invisible( MokoToolBox *box, struct RSSReaderData *data ) {
     }
 
     filter_feeds (data);
+    gtk_widget_grab_focus (GTK_WIDGET(data->treeView));
 }
 
-gboolean cb_treeview_keypress_event( GtkWidget *entry, GdkEventKey *key, struct RSSReaderData *data ) {
+/*
+ * route this to the search box
+ */
+gboolean cb_treeview_keypress_event( GtkWidget *tree_view, GdkEventKey *key, struct RSSReaderData *data ) {
+    moko_tool_box_make_search_visible (data->box, TRUE);
+    gtk_entry_set_text (GTK_ENTRY(moko_tool_box_get_entry(data->box)), "");
+
+    /*
+     * forward the key event
+     */
+    GtkEntry *entry = GTK_ENTRY(moko_tool_box_get_entry(data->box));
+    GTK_WIDGET_CLASS(GTK_ENTRY_GET_CLASS(entry))->key_press_event (GTK_WIDGET(entry), key);
+
     return TRUE;
 }
 
