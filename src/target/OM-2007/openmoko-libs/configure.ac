@@ -17,7 +17,8 @@ LIBECAL_VERSION=1.4.2
 PKG_CHECK_MODULES(DEPS,
                   gtk+-2.0 >= $GTK_VERSION
                   libecal-1.2 >= $LIBECAL_VERSION
-                  gdk-pixbuf-2.0)
+                  gdk-pixbuf-2.0
+                  libgsmd)
 
 if test x$MOKO_DEVEL = xon ; then
     AC_MSG_NOTICE([removing -O2 from CFLAGS])
