@@ -2,10 +2,10 @@ This patch adds driver support for the FIC GTA01 vibrator device.  The driver
 uses the existing LED class driver framework, since there's a lot of
 similarity between the LED and the vibrator function.
 
-Index: linux-2.6.20.4/drivers/leds/leds-gta01.c
+Index: linux-2.6.20.4-moko/drivers/leds/leds-gta01.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/leds/leds-gta01.c	2007-03-30 22:58:37.000000000 +0200
+--- /dev/null
++++ linux-2.6.20.4-moko/drivers/leds/leds-gta01.c
 @@ -0,0 +1,133 @@
 +/*
 + * LED driver for the FIC GTA01 (Neo1973) GSM Phone Vibrator
@@ -43,10 +43,10 @@ Index: linux-2.6.20.4/drivers/leds/leds-gta01.c
 +
 +static inline struct gta01_vib_priv *to_vpriv(struct led_classdev *led_cdev)
 +{
-+	return container_of(led_cdev, struct gta01_vib_priv, cdev);
++	return dev_get_drvdata(led_cdev->class_dev->dev);
 +}
 +
-+static void gta01led_vib_set(struct led_classdev *led_cdev, enum led_brightness value)
++static void gta01vib_vib_set(struct led_classdev *led_cdev, enum led_brightness value)
 +{
 +	struct gta01_vib_priv *vp = to_vpriv(led_cdev);
 +
@@ -58,24 +58,24 @@ Index: linux-2.6.20.4/drivers/leds/leds-gta01.c
 +
 +static struct led_classdev gta01_vib_led = {
 +	.name			= "gta01:vibrator",
-+	.brightness_set		= gta01led_vib_set,
++	.brightness_set		= gta01vib_vib_set,
 +};
 +
 +#ifdef CONFIG_PM
-+static int gta01led_suspend(struct platform_device *dev, pm_message_t state)
++static int gta01vib_suspend(struct platform_device *dev, pm_message_t state)
 +{
 +	led_classdev_suspend(&gta01_vib_led);
 +	return 0;
 +}
 +
-+static int gta01led_resume(struct platform_device *dev)
++static int gta01vib_resume(struct platform_device *dev)
 +{
 +	led_classdev_resume(&gta01_vib_led);
 +	return 0;
 +}
 +#endif
 +
-+static int gta01led_probe(struct platform_device *pdev)
++static int gta01vib_probe(struct platform_device *pdev)
 +{
 +	struct gta01_vib_priv *vp;
 +	struct resource *r;
@@ -101,7 +101,7 @@ Index: linux-2.6.20.4/drivers/leds/leds-gta01.c
 +	return led_classdev_register(&pdev->dev, &gta01_vib_led);
 +}
 +
-+static int gta01led_remove(struct platform_device *pdev)
++static int gta01vib_remove(struct platform_device *pdev)
 +{
 +	struct gta01_vib_priv *vp = pdev_to_vpriv(pdev);
 +
@@ -112,38 +112,38 @@ Index: linux-2.6.20.4/drivers/leds/leds-gta01.c
 +	return 0;
 +}
 +
-+static struct platform_driver gta01led_driver = {
-+	.probe		= gta01led_probe,
-+	.remove		= gta01led_remove,
++static struct platform_driver gta01vib_driver = {
++	.probe		= gta01vib_probe,
++	.remove		= gta01vib_remove,
 +#ifdef CONFIG_PM
-+	.suspend	= gta01led_suspend,
-+	.resume		= gta01led_resume,
++	.suspend	= gta01vib_suspend,
++	.resume		= gta01vib_resume,
 +#endif
 +	.driver		= {
 +		.name		= "gta01-led",
 +	},
 +};
 +
-+static int __init gta01led_init(void)
++static int __init gta01vib_init(void)
 +{
-+	return platform_driver_register(&gta01led_driver);
++	return platform_driver_register(&gta01vib_driver);
 +}
 +
-+static void __exit gta01led_exit(void)
++static void __exit gta01vib_exit(void)
 +{
-+ 	platform_driver_unregister(&gta01led_driver);
++ 	platform_driver_unregister(&gta01vib_driver);
 +}
 +
-+module_init(gta01led_init);
-+module_exit(gta01led_exit);
++module_init(gta01vib_init);
++module_exit(gta01vib_exit);
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
-+MODULE_DESCRIPTION("FIC GTA01 LED driver");
++MODULE_DESCRIPTION("FIC GTA01 Vibrator driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.20.4/drivers/leds/Kconfig
+Index: linux-2.6.20.4-moko/drivers/leds/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/drivers/leds/Kconfig	2007-03-30 22:55:57.000000000 +0200
-+++ linux-2.6.20.4/drivers/leds/Kconfig	2007-03-30 22:56:03.000000000 +0200
+--- linux-2.6.20.4-moko.orig/drivers/leds/Kconfig
++++ linux-2.6.20.4-moko/drivers/leds/Kconfig
 @@ -82,6 +82,12 @@
  	help
  	  This option enables support for the PCEngines WRAP programmable LEDs.
@@ -157,10 +157,10 @@ Index: linux-2.6.20.4/drivers/leds/Kconfig
  comment "LED Triggers"
  
  config LEDS_TRIGGERS
-Index: linux-2.6.20.4/drivers/leds/Makefile
+Index: linux-2.6.20.4-moko/drivers/leds/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/drivers/leds/Makefile	2007-03-30 22:55:59.000000000 +0200
-+++ linux-2.6.20.4/drivers/leds/Makefile	2007-03-30 22:56:03.000000000 +0200
+--- linux-2.6.20.4-moko.orig/drivers/leds/Makefile
++++ linux-2.6.20.4-moko/drivers/leds/Makefile
 @@ -14,6 +14,7 @@
  obj-$(CONFIG_LEDS_AMS_DELTA)		+= leds-ams-delta.o
  obj-$(CONFIG_LEDS_NET48XX)		+= leds-net48xx.o
