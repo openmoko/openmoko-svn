@@ -40,6 +40,10 @@ typedef struct {
 GType moko_gsmd_connection_get_type();
 MokoGsmdConnection* moko_gsmd_connection_new();
 
+/* signals */
+void moko_gsmd_connection_incoming_call(MokoGsmdConnection* self, int type);
+void moko_gsmd_connection_signal_strength_changed(MokoGsmdConnection* self, int strength);
+
 G_END_DECLS
 
 #endif // _MOKO_GSMD_CONNECTION_H_
