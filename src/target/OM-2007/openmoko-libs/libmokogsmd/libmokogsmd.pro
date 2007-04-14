@@ -1,6 +1,9 @@
 TEMPLATE = lib
 TARGET = mokogsmd
 
+GENMARSHALS = moko-gsmd-marshal.list
+GENMARSHALS_PREFIX = moko_gsmd_marshal
+
 HEADERS += moko-gsmd-connection.h
 SOURCES += moko-gsmd-connection.c
 

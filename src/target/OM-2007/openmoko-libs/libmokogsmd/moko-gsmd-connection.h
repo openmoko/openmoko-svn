@@ -39,9 +39,23 @@ typedef struct {
 
 GType moko_gsmd_connection_get_type();
 MokoGsmdConnection* moko_gsmd_connection_new();
+void moko_gsmd_connection_network_register(MokoGsmdConnection* self); //TODO add type, i.e. MOKO_GSMD_CONNECTION_NETREG_AUTO
+void moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on);
+
+enum {
+    MOKO_GSMD_CONNECTION_NETREG_NONE = 0,
+    MOKO_GSMD_CONNECTION_NETREG_HOME = 1,
+    MOKO_GSMD_CONNECTION_NETREG_SEARCHING = 2,
+    MOKO_GSMD_CONNECTION_NETREG_DENIED = 3,
+    MOKO_GSMD_CONNECTION_NETREG_ROAMING = 5,
+} MokoGsmdConnectionNetregType;
 
 /* signals */
 void moko_gsmd_connection_incoming_call(MokoGsmdConnection* self, int type);
+//sms
+//gprs
+void moko_gsmd_connection_incoming_clip(MokoGsmdConnection* self, const char* number);
+void moko_gsmd_connection_network_registration(MokoGsmdConnection* self, int type, int lac, int cell);
 void moko_gsmd_connection_signal_strength_changed(MokoGsmdConnection* self, int strength);
 
 G_END_DECLS

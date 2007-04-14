@@ -49,10 +49,10 @@ enum {
     LAST_SIGNAL,
 };
 
+static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
+
 static void moko_tool_box_class_init          (MokoToolBoxClass *klass);
 static void moko_tool_box_init                (MokoToolBox      *self);
-
-static guint moko_tool_box_signals[LAST_SIGNAL] = { 0 };
 
 static void _button_release(GtkWidget* w, MokoToolBox* self)
 {
