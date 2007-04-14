@@ -1,6 +1,6 @@
 /*  openmoko-panel-gsm.c
  *
- *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
+ *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *  Copyright (C) 2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -14,6 +14,7 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
+#include <libmokogsmd/moko-gsmd-connection.h>
 #include <libmokoui/moko-panel-applet.h>
 
 #include <gtk/gtkimage.h>
@@ -21,108 +22,50 @@
 #include <gtk/gtk.h>
 #include <time.h>
 
-#include "moko-gsm-conn.h"
-
-typedef struct{
-  GtkWidget *image;
-  SignalStatus status;
-} MokoSignal;
-
 typedef struct {
-  MokoSignal gsm;
-  MokoSignal gprs;
-  GtkWidget *hbox;
-  guint timeout_id;
+    GtkImage* image;
+    gboolean gprs_mode;
 } GsmApplet;
 
-static gchar *gsm_q_name[TOTAL_STATUS]={
-  "SignalStrength_01.png",
-  "SignalStrength_02.png",
-  "SignalStrength_03.png",
-  "SignalStrength_04.png",
-  "SignalStrength_05.png",
-  "SignalStrength_00.png"
-};
-
-static gchar *gprs_q_name[TOTAL_STATUS]={
-  "SignalStrength25g_01.png",
-  "SignalStrength25g_02.png",
-  "SignalStrength25g_03.png",
-  "SignalStrength25g_04.png",
-  "SignalStrength25g_05.png",
-  NULL
-};
-
-static void
-gsm_applet_free (GsmApplet *applet)
+static void gsm_applet_free(GsmApplet *applet)
 {
-  g_source_remove (applet->timeout_id);
-
-  g_slice_free (GsmApplet, applet);
+    g_slice_free( GsmApplet, applet );
 }
 
-static gboolean
-timeout_cb (GsmApplet *applet)
+static void gsm_applet_update_signal_strength(MokoGsmdConnection* connection, int strength, GsmApplet *applet)
 {
-  char path[512];
-  static SignalStatus status = 0;
-  
-  status = moko_panel_gsm_signal_quality ();
-  if (status != applet->gsm.status )
-  {
-    applet->gsm.status = status;
-    snprintf (path, 512, "%s/%s", PKGDATADIR, gsm_q_name[applet->gsm.status]);
-    if (GTK_IS_IMAGE(applet->gsm.image))
-      gtk_image_set_from_file (GTK_IMAGE(applet->gsm.image), path);
-    else 
-      g_error ("gsm image set failed");
-  }
+    g_debug( "gsm_applet_update_signal_strength: signal strength = %d", strength );
+    //TODO calibrate
+    int pixmap = 0;
+    if ( strength > 30 )
+        pixmap = 5;
+    else if ( strength > 20 )
+        pixmap = 4;
+    else if ( strength > 17 )
+        pixmap = 3;
+    else if ( strength > 13 )
+        pixmap = 2;
+    else if ( strength > 10 )
+        pixmap = 1;
 
-  status = moko_panel_gprs_signal_quality (); 
-  g_debug ("status = %d", status);
-  if (status == UN_CONN && GTK_WIDGET (applet->gprs.image))
-  {
-    gtk_widget_hide (GTK_WIDGET(applet->gprs.image));
-  }
-  else
-  {
-    applet->gprs.status = status;
-    snprintf (path, 512, "%s/%s", PKGDATADIR, gprs_q_name[applet->gprs.status]);
-    if (GTK_IS_IMAGE(applet->gprs.image))
-      gtk_image_set_from_file (GTK_IMAGE(applet->gprs.image), path);
-    gtk_widget_show (GTK_WIDGET (applet->gprs.image));
-  }
-  
-  /* keep going*/
-  return TRUE;
+    const char* imagestring = g_strdup_printf( "%s/SignalStrength%s%02d.png", PKGDATADIR, applet->gprs_mode ? "25g_" : "_", pixmap );
+    gtk_image_set_from_file( GTK_IMAGE(applet->image), imagestring );
 }
 
-G_MODULE_EXPORT GtkWidget* 
-mb_panel_applet_create(const char* id, GtkOrientation orientation)
+G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-  MokoPanelApplet* mokoapplet = moko_panel_applet_new();
+    MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
-  GsmApplet *applet;
-  applet = g_slice_new (GsmApplet);
-   
-  g_object_weak_ref (G_OBJECT(mokoapplet), (GWeakNotify) gsm_applet_free, applet );
-  applet->timeout_id = g_timeout_add(4000, (GSourceFunc) timeout_cb, applet);
+    GsmApplet *applet;
+    applet = g_slice_new(GsmApplet);
+    applet->image = GTK_IMAGE(gtk_image_new_from_file( PKGDATADIR "/SignalStrength_NR.png" ) );
+    applet->gprs_mode = FALSE;
+    gtk_widget_set_name( GTK_WIDGET(applet->image), "openmoko-gsm-applet" );
+    g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) gsm_applet_free, applet );
+    moko_panel_applet_set_widget( mokoapplet, GTK_WIDGET(applet->image) );
+    gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
 
-  applet->gsm.image = gtk_image_new ();//make an empty GtkImage object
-  applet->gsm.status = UN_INIT;
-  applet->gprs.image = gtk_image_new ();//make an empty GtkImage object
-  applet->gprs.status = UN_INIT;
-
-  applet->hbox = gtk_hbox_new(FALSE, 0);
-  gtk_widget_show (applet->hbox);
-
-  gtk_box_pack_start (GTK_BOX(applet->hbox), GTK_WIDGET(applet->gprs.image), FALSE, FALSE, 2);
-  gtk_box_pack_end (GTK_BOX(applet->hbox), GTK_WIDGET(applet->gsm.image), FALSE, FALSE, 2);
-
-  moko_panel_applet_set_widget (GTK_CONTAINER(mokoapplet), GTK_WIDGET(applet->hbox));
-  gtk_widget_show_all (GTK_WIDGET(mokoapplet) );
-
-  gsm_watcher_install ();
-
-  return GTK_WIDGET(mokoapplet);
+    MokoGsmdConnection* gsm = moko_gsmd_connection_new();
+    g_signal_connect( G_OBJECT(gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
+    return GTK_WIDGET(mokoapplet);
 };

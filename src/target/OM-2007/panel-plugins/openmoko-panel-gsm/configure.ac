@@ -11,14 +11,11 @@ AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 # base deps
-PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.2,,
-                 AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.2 not installed ***]))
+PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.3,,
+                 AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.3 not installed ***]))
 
-PKG_CHECK_MODULES(LIBGSMD, libgsmd,,
-		exit)
-
-LIBS="$LIBS $OPENMOKO_LIBS $LIBGSMD_LIBS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBGSMD_CFLAGS" 
+LIBS="$LIBS $OPENMOKO_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS"
 
 # output stuff
 AC_OUTPUT([
