@@ -19,6 +19,21 @@ PLATFORM = $$system(uname -m)
 MOC_DIR=.moc/$$PLATFORM
 OBJECTS_DIR=.obj/$$PLATFORM
 
+#
+# integrate glib-genmarshal as additional compiler
+#
+QMAKE_GENMARSHAL_CC  = glib-genmarshal
+glib-genmarshal.commands = $${QMAKE_GENMARSHAL_CC} --prefix=$${GENMARSHALS_PREFIX} ${QMAKE_FILE_IN} --header --body >${QMAKE_FILE_OUT}
+glib-genmarshal.output = $$OUT_PWD/${QMAKE_FILE_BASE}.h
+glib-genmarshal.input = GENMARSHALS
+glib-genmarshal.CONFIG = no_link
+glib-genmarshal.variable_out = PRE_TARGETDEPS
+glib-genmarshal.name = GENMARSHALS
+QMAKE_EXTRA_UNIX_COMPILERS += glib-genmarshal
+
+#
+# integrate dbus-binding-tool as additional compiler
+#
 QMAKE_DBUS_CC  = dbus-binding-tool
 dbus-binding-tool.commands = $${QMAKE_DBUS_CC} --mode=glib-server ${QMAKE_FILE_IN} >${QMAKE_FILE_OUT}
 dbus-binding-tool.output = $$OUT_PWD/${QMAKE_FILE_BASE}.h
