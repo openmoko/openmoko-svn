@@ -6,7 +6,7 @@ stamp_files=stamp-moko-gsmd-marshal.h stamp-moko-gsmd-marshal.c
 sources=moko-gsmd-connection.c
 
 $(libmokogsmd_la_OBJECTS): $(built_sources)
-libmokogsmd_la_SOURCES= $(public_headers) $(sources)
+libmokogsmd_la_SOURCES= $(public_headers) $(sources) $(built_sources)
 libmokogsmd_la_LIBADD=
 libmokogsmd_la_LDFLAGS= -version-info 0:0:0
 AM_CFLAGS = -Wall -pedantic -std=c99
