@@ -1,8 +1,10 @@
 (Ordered by Priority)
 
+- split up into individually buildable libraries (esp. regarding pkgconfig support)
 - MokoPopupMenu:
   -- moko_popup_menu_add_item( label, callback, userdata, notification );
   -- after item has been selected, make notification popup via OSD
+  -- distinguish finger and stylus modes
 - Add MokoBanner (as OSD)
 - Start Footer Application and implement Status Bar Interface
 - Add Status Bar Interface to MokoApplication
