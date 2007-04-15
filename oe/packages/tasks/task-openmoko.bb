@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r36"
+PR = "r37"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -87,6 +87,7 @@ RDEPENDS_task-openmoko-ui = "\
 #
 DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Top Panel, and Footer"
 RDEPENDS_task-openmoko-base = "\
+  gtkterm2 \
   openmoko-mainmenu \
   matchbox-panel-2 \
   matchbox-panel-2-applets \
@@ -156,7 +157,6 @@ RDEPENDS_task-openmoko-demo = "\
   matchbox-config-gtk \
   xcursor-transparent-theme \
   web \
-  rxvt-unicode \
   mtpaint \
 "
 
