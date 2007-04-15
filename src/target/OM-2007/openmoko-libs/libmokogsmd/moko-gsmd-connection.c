@@ -268,6 +268,7 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
     if ( !priv->handle )
     {
         g_warning( "libgsmd: can't connect to gsmd. You won't receive any events." );
+        return;
     }
     else
     {

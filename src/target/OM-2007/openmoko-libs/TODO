@@ -1,11 +1,11 @@
 (Ordered by Priority)
 
-- Add MokoBanner (see HildonBanner)
+- MokoPopupMenu:
+  -- moko_popup_menu_add_item( label, callback, userdata, notification );
+  -- after item has been selected, make notification popup via OSD
+- Add MokoBanner (as OSD)
 - Start Footer Application and implement Status Bar Interface
 - Add Status Bar Interface to MokoApplication
-- Start with Panel Plugins
-- Main Menu
-- Add automatic .desktop file generation for OE
 - Add MIME handling
 - Add dbus service interfaces
 - Refactor moko_paned_window_set_application_menu and moko_finger_window_set_application_menu
