@@ -269,7 +269,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			memcpy(cmd->buf, buf, len);
 		}
 	} else {
-		if (!strcmp(buf, "RING")) {
+		if (!strcmp(buf, "RING") ||
+		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '2')) {
 			/* this is the only non-extended unsolicited return
 			 * code, part of Case 'B' */
 			return unsolicited_parse(g, buf, len, NULL);
@@ -285,8 +286,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			goto final_cb;
 		}
 
-		if (!strncmp(buf, "OK", 2)
-		    || ((g->flags & GSMD_FLAG_V0) && buf[0] == '0')) {
+		if (!strncmp(buf, "OK", 2) ||
+		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '0')) {
 			/* Part of Case 'C' */
 			if (cmd)
 				cmd->ret = 0;
@@ -296,13 +297,15 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 		/* FIXME: handling of those special commands in response to
 		 * ATD / ATA */
-		if (!strncmp(buf, "NO CARRIER", 11)) {
+		if (!strncmp(buf, "NO CARRIER", 11) ||
+		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '3')) {
 			/* Part of Case 'D' */
 			final = 1;
 			goto final_cb;
 		}
 
-		if (!strncmp(buf, "BUSY", 4)) {
+		if (!strncmp(buf, "BUSY", 4) ||
+		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '7')) {
 			/* Part of Case 'D' */
 			final = 1;
 			goto final_cb;
