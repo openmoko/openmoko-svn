@@ -5,9 +5,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-02-27 00:38:04.000000000 +0100
-+++ u-boot/Makefile	2007-02-28 02:48:47.000000000 +0100
-@@ -1934,6 +1934,9 @@
+--- u-boot.orig/Makefile
++++ u-boot/Makefile
+@@ -1976,6 +1976,9 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -19,8 +19,8 @@ Index: u-boot/Makefile
  
 Index: u-boot/board/qt2410/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/Makefile	2007-02-27 00:38:10.000000000 +0100
+--- /dev/null
++++ u-boot/board/qt2410/Makefile
 @@ -0,0 +1,47 @@
 +#
 +# (C) Copyright 2000, 2001, 2002
@@ -71,8 +71,8 @@ Index: u-boot/board/qt2410/Makefile
 +#########################################################################
 Index: u-boot/board/qt2410/config.mk
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/config.mk	2007-02-27 00:38:10.000000000 +0100
+--- /dev/null
++++ u-boot/board/qt2410/config.mk
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -101,8 +101,8 @@ Index: u-boot/board/qt2410/config.mk
 +TEXT_BASE = 0x33F80000
 Index: u-boot/board/qt2410/flash.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/flash.c	2007-02-27 00:38:10.000000000 +0100
+--- /dev/null
++++ u-boot/board/qt2410/flash.c
 @@ -0,0 +1,435 @@
 +/*
 + * (C) Copyright 2002
@@ -541,8 +541,8 @@ Index: u-boot/board/qt2410/flash.c
 +}
 Index: u-boot/board/qt2410/lowlevel_init.S
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/lowlevel_init.S	2007-02-27 00:38:10.000000000 +0100
+--- /dev/null
++++ u-boot/board/qt2410/lowlevel_init.S
 @@ -0,0 +1,173 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -719,8 +719,8 @@ Index: u-boot/board/qt2410/lowlevel_init.S
 +    .word 0x30
 Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/qt2410.c	2007-02-27 00:38:10.000000000 +0100
+--- /dev/null
++++ u-boot/board/qt2410/qt2410.c
 @@ -0,0 +1,128 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
@@ -852,8 +852,8 @@ Index: u-boot/board/qt2410/qt2410.c
 +}
 Index: u-boot/board/qt2410/u-boot.lds
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/qt2410/u-boot.lds	2007-02-27 00:38:10.000000000 +0100
+--- /dev/null
++++ u-boot/board/qt2410/u-boot.lds
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
@@ -915,8 +915,8 @@ Index: u-boot/board/qt2410/u-boot.lds
 +}
 Index: u-boot/include/configs/qt2410.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/qt2410.h	2007-02-28 02:49:17.000000000 +0100
+--- /dev/null
++++ u-boot/include/configs/qt2410.h
 @@ -0,0 +1,287 @@
 +/*
 + * (C) Copyright 2002
@@ -1162,7 +1162,7 @@ Index: u-boot/include/configs/qt2410.h
 +
 +/* FAT driver in u-boot is broken currently */
 +#define CONFIG_FAT		1
-+#define CONFIG_SUPPORT_VFAT	1
++#define CONFIG_SUPPORT_VFAT
 +
 +#if 1
 +/* JFFS2 driver */
