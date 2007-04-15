@@ -60,6 +60,7 @@ SRCDATE_openmoko-footer = "now"
 SRCDATE_openmoko-phone = "now"
 SRCDATE_openmoko-mainmenu = "now"
 SRCDATE_openmoko-taskmanager = "now"
+SRCDATE_openmoko-terminal = "now"
 
 #
 # Multimedia
