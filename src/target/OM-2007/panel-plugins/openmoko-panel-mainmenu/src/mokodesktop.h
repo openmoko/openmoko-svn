@@ -20,7 +20,7 @@
 #define VFOLDERDIR 		"/usr/share/matchbox"
 #define DD_DIR 		 	"/usr/share/applications/"
 
-#define PIXMAP_PATH 	"/usr/local/share/pixmaps"
+#define PIXMAP_PATH 	"/usr/share/pixmaps"
 
 #ifdef DEBUG
 #define DBG(txt, args... ) fprintf(stderr, "DT-DEBUG: " txt , ##args )

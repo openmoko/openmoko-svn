@@ -175,8 +175,6 @@ gboolean panel_mainmenu_aux_timeout( guint timeout )
 // this is hardcoded to the Neo1973
 void panel_mainmenu_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gboolean* push_in, gpointer user_data )
 {
-    g_debug( "aux_menu = %p, power_menu = %p", aux_menu, power_menu );
-    g_debug( "menu = %p", menu );
     GtkRequisition req;
     gtk_widget_size_request( GTK_WIDGET(menu), &req );
     gint screen_width = gdk_screen_width();
@@ -198,11 +196,20 @@ void panel_mainmenu_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gbool
 
 void panel_mainmenu_popup_selected_lock( GtkMenuItem* menu, gpointer user_data )
 {
-    system( "apm -s");
+    //FIXME talk to neod
+    int fd = open( "/sys/power/state", O_WRONLY );
+    if ( fd != -1 )
+    {
+        char command[] = "mem\n";
+        write(fd, &command, sizeof(command) );
+        close( fd );
+    }
 }
 
 void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_data )
 {
+    //FIXME talk to neod
+    //FIXME notify user
     system( "/bin/sh poweroff");
 }
 
