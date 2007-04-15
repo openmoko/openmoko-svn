@@ -10,6 +10,8 @@ uboot-strtoul.patch
 uboot-cramfs_but_no_jffs2.patch
 mmc_parititon_fix.patch
 nand-read_write_oob.patch
+uboot-arm920t-gd_in_irq.patch
+uboot-arm920_s3c2410_irq_demux.patch
 uboot-s3c2410-nand.patch
 uboot-cmd_s3c2410.patch
 uboot-s3c2410-mmc.patch
@@ -27,13 +29,10 @@ boot-from-ram-and-nand.patch
 wakeup-reason-nand-only.patch
 uboot-neo1973-resume.patch
 
-uboot-arm920t-gd_in_irq.patch
-
 # this will be somewhat more difficult
 nand-dynamic_partitions.patch
 uboot-s3c2410-norelocate_irqvec_cpy.patch
 uboot-usbtty-acm.patch
-uboot-arm920_s3c2410_irq_demux.patch
 uboot-s3c2410_udc.patch
 
 # those need to be cleaned up
@@ -66,7 +65,9 @@ uboot-neo1973-defaultenv.patch
 uboot-nand-markbad-reallybad.patch
 usbdcore-multiple_configs.patch
 neo1973-chargefast.patch
+
 uboot-s3c2440.patch
 uboot-smdk2440.patch
 uboot-hxd8.patch
+
 uboot-license.patch
