@@ -1,5 +1,5 @@
-#ifndef _LIBGSMD_H
-#define _LIBGSMD_H
+#ifndef _LIBGSMD_MISC_H
+#define _LIBGSMD_MISC_H
 
 /* libgsmd.h - Library API for gsmd, the GSM Daemon
  * (C) 2006 by Harald Welte <hwelte@hmw-consulting.de>

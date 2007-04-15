@@ -78,6 +78,13 @@ int gsmd_initsettings(struct gsmd *gsmd)
 	rc |= gsmd_simplecmd(gsmd, "AT+COLP=1");
 	/* power on the phone */
 	rc |= gsmd_simplecmd(gsmd, "AT+CFUN=1");
+	/* configure message format as PDU mode*/
+	/* FIXME: TEXT mode support!! */
+	rc |= gsmd_simplecmd(gsmd, "AT+CMGF=0");
+#if 0
+	/* Select TE character set */		
+	rc |= gsmd_simplecmd(gsmd, "AT+CSCS=\"UCS2\"");
+#endif	
 
 	if (gsmd->vendorpl && gsmd->vendorpl->initsettings)
 		return gsmd->vendorpl->initsettings(gsmd);

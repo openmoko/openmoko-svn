@@ -412,6 +412,433 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
+static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;	
+
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_SMS,
+			      GSMD_SMS_LIST, 0);
+	if (!ucmd)
+		return -ENOMEM;
+
+	/* FIXME: implementation */
+	strcpy(ucmd->buf, resp);
+	
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;	
+
+	/* FIXME: implementation */
+
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_SMS,
+			      GSMD_SMS_READ, 0);
+	if (!ucmd)
+		return -ENOMEM;
+
+	strcpy(ucmd->buf, resp);	
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int sms_send_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;	
+	
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_SMS,
+			      GSMD_SMS_SEND, 0);
+	if (!ucmd)
+		return -ENOMEM;
+	
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int sms_write_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;	
+	
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_SMS,
+			      GSMD_SMS_WRITE, 0);
+	if (!ucmd)
+		return -ENOMEM;	
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int sms_delete_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;	
+
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_SMS,
+			      GSMD_SMS_DELETE, 0);
+	if (!ucmd)
+		return -ENOMEM;	
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
+			 int len)
+{
+	/* FIXME: TEXT mode support!!  */
+	struct gsmd_atcmd *cmd = NULL;
+	struct gsmd_sms_delete *gsd;
+	struct gsmd_sms *gs;
+	struct gsmd_sms_write *gsw;
+	int *stat, *index;
+	int atcmd_len;
+	char buf[1024];
+	
+	switch (gph->msg_subtype) {
+	case GSMD_SMS_LIST:
+		/* FIXME: only support PDU mode!! */
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		stat = (int *) ((void *)gph + sizeof(*gph));	
+
+		sprintf(buf, "%d", *stat);	
+				
+		atcmd_len = 1 + strlen("AT+CMGL=") + strlen(buf);
+		cmd = atcmd_fill("AT+CMGL=", atcmd_len,
+				 &sms_list_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CMGL=%s", buf);
+		break;
+	case GSMD_SMS_READ:
+		/* FIXME: only support PDU mode!! */
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		index = (int *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d", *index);
+		
+		atcmd_len = 1 + strlen("AT+CMGR=") + strlen(buf);
+		cmd = atcmd_fill("AT+CMGR=", atcmd_len,
+				 &sms_read_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CMGR=%s", buf);
+		break;
+#if 0
+	case GSMD_SMS_SEND:
+		/* FIXME: only support PDU mode!! */
+		if(len < sizeof(*gph) + sizeof(*gs))
+			return -EINVAL;
+		gs = (struct gsmd_sms *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d", *index);
+		
+		atcmd_len = 1 + strlen("AT+CMGR=") + 1;
+		cmd = atcmd_fill("AT+CMGR=", atcmd_len,
+				 &sms_send_cb, gu, gph->id);
+		if (!cmd)GSMD_SMS_WRITE
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CMGR=%d", index);
+		break;
+	case GSMD_SMS_WRITE:
+		/* FIXME: only support PDU mode!! */
+		if(len < sizeof(*gph) + sizeof(*gsw))
+			return -EINVAL;
+		&index = (int *) ((void *)gph + sizeof(*gph));
+		
+		atcmd_len = 1 + strlen("AT+CMGR=") + 1;
+		cmd = atcmd_fill("AT+CMGR=", atcmd_len,
+				 &sms_write_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CMGR=%d", index);
+		break;
+#endif
+	case GSMD_SMS_DELETE:		
+		if(len < sizeof(*gph) + sizeof(*gsd))
+			return -EINVAL;
+		gsd = (struct gsmd_sms_delete *) ((void *)gph + sizeof(*gph));
+	    
+		sprintf(buf, "%d,%d", gsd->index, gsd->delflg);
+	
+		atcmd_len = 1 + strlen("AT+CMGR=") + strlen(buf);
+		cmd = atcmd_fill("AT+CMGD=", atcmd_len,
+				 &sms_delete_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CMGD=%s", buf);		
+		break;	
+	default:
+		return -EINVAL;
+	}
+		
+	gsmd_log(GSMD_DEBUG, "%s\n", cmd->buf);
+	if (cmd)
+		return atcmd_submit(gu->gsmd, cmd);
+	else
+		return 0;
+}
+
+#if 0
+static int phonebook_find_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;			
+	
+	/* FIXME: implementation */
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONEBOOK,
+			      GSMD_PHONEBOOK_FIND, 0);
+	if (!ucmd)
+		return -ENOMEM;	
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+	return 0;
+}
+
+static int phonebook_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_phonebook *gp;
+	struct gsmd_ucmd *ucmd;
+	char *fcomma, *lcomma;
+	char *ptr;
+	/* FIXME: We should check this case "When the entry is empty" */
+	ucmd = gsmd_ucmd_fill(sizeof(*gp), GSMD_MSG_PHONEBOOK,
+			      GSMD_PHONEBOOK_READ, 0);	
+
+	if (!ucmd)
+		return -ENOMEM;	
+	gp = (struct gsmd_phonebook *) ucmd->buf;
+	
+	ptr = strchr(resp, ' ');	
+	gp->index = atoi(ptr+1);		
+	
+	fcomma = strchr(resp, '"');
+	lcomma = strchr(fcomma+1, '"');		
+	strncpy(gp->numb, fcomma+1, (lcomma-fcomma-1));	
+	gp->numb[(lcomma-fcomma)-1] = '\0';			
+		
+	gp->type = atoi(lcomma+2);		
+
+	ptr = strrchr(resp, ',');
+	fcomma = ptr+1;
+	lcomma = strchr(fcomma+1, '"');
+	strncpy(gp->text, fcomma+1, (lcomma-fcomma-1));
+	gp->text[(lcomma-fcomma)-1] = '\0';
+			
+	usock_cmd_enqueue(ucmd, gu);
+	
+	return 0;
+}
+
+static int phonebook_readrg_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd;	
+	
+	/* FIXME: implementation */
+	
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONEBOOK,
+			      GSMD_PHONEBOOK_READRG, 0);
+	if (!ucmd)
+		return -ENOMEM;	
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int phonebook_write_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;	
+	struct gsmd_ucmd *ucmd;	
+		
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONEBOOK,
+			      GSMD_PHONEBOOK_WRITE, 0);
+	if (!ucmd)
+		return -ENOMEM;
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int phonebook_delete_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;		
+	struct gsmd_ucmd *ucmd;		
+		
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONEBOOK,
+			      GSMD_PHONEBOOK_DELETE, 0);
+	if (!ucmd)
+		return -ENOMEM;	
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int phonebook_support_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_phonebook_support *gps;
+	struct gsmd_ucmd *ucmd;
+	char *fcomma, *lcomma;
+	char *dash;
+	
+	ucmd = gsmd_ucmd_fill(sizeof(*gps), GSMD_MSG_PHONEBOOK,
+			      GSMD_PHONEBOOK_GET_SUPPORT, 0);
+	if (!ucmd)
+		return -ENOMEM;
+	
+	gps = (struct gsmd_phonebook_support *) ucmd->buf;
+		
+	dash = strchr(resp, '-');
+	if (!dash) {
+		talloc_free(ucmd);
+		return -EIO;
+	}	
+	gps->index = atoi(dash+1);
+
+	fcomma = strchr(resp, ',');
+	if (!fcomma) {
+		talloc_free(ucmd);
+		return -EIO;
+	}
+	gps->nlength = atoi(fcomma+1);
+	
+	lcomma = strrchr(resp, ',');
+	if (!lcomma) {
+		talloc_free(ucmd);
+		return -EIO;
+	}	
+	gps->tlength = atoi(lcomma+1);	
+
+	usock_cmd_enqueue(ucmd, gu);
+	return 0;
+}
+
+static int usock_rcv_phonebook(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
+			 int len)
+{	
+	struct gsmd_atcmd *cmd = NULL;
+	struct gsmd_phonebook_readrg *gpr;
+	struct gsmd_phonebook *gp;
+	struct gsmd_phonebook_find *gpf;
+	int *index;
+	int atcmd_len;
+	char buf[1024];
+	
+	switch (gph->msg_subtype) {
+	case GSMD_PHONEBOOK_FIND:
+		if(len < sizeof(*gph) + sizeof(*gpf))
+			return -EINVAL;
+		gpf = (struct gsmd_phonebook_find *) ((void *)gph + sizeof(*gph));		
+				
+		atcmd_len = 1 + strlen("AT+CPBF=\"") + strlen(gpf->findtext) + strlen("\"");
+		cmd = atcmd_fill("AT+CPBF=\"", atcmd_len,
+				 &phonebook_find_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CPBF=\"%s\"", gpf->findtext);
+		break;
+	case GSMD_PHONEBOOK_READ:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		index = (int *) ((void *)gph + sizeof(*gph));
+		
+		sprintf(buf, "%d", *index);		
+
+		atcmd_len = 1 + strlen("AT+CPBR=") + strlen(buf);
+		cmd = atcmd_fill("AT+CPBR=", atcmd_len,
+				 &phonebook_read_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CPBR=%d", *index);
+		break;
+	case GSMD_PHONEBOOK_READRG:		
+		if(len < sizeof(*gph) + sizeof(*gpr))
+			return -EINVAL;
+		gpr = (struct gsmd_phonebook_readrg *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,%d", gpr->index1, gpr->index2);		
+
+		atcmd_len = 1 + strlen("AT+CPBR=") + strlen(buf);
+		cmd = atcmd_fill("AT+CPBR=", atcmd_len,
+				 &phonebook_readrg_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CPBR=%s", buf);
+		break;
+	case GSMD_PHONEBOOK_WRITE:
+		if(len < sizeof(*gph) + sizeof(*gp))
+			return -EINVAL;
+		gp = (struct gsmd_phonebook *) ((void *)gph + sizeof(*gph));
+
+		sprintf(buf, "%d,\"%s\",%d,\"%s\"", gp->index, gp->numb, gp->type, gp->text);
+		
+		atcmd_len = 1 + strlen("AT+CPBW=") + strlen(buf);
+		cmd = atcmd_fill("AT+CPBW=", atcmd_len,
+				 &phonebook_write_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CPBW=%s", buf);
+		break;
+	case GSMD_PHONEBOOK_DELETE:
+		if(len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+		index = (int *) ((void *)gph + sizeof(*gph));
+	    	
+		sprintf(buf, "%d", *index);
+		
+		atcmd_len = 1 + strlen("AT+CPBW=") + strlen(buf);
+		cmd = atcmd_fill("AT+CPBW=", atcmd_len,
+				 &phonebook_delete_cb, gu, gph->id);
+		if (!cmd)
+			return -ENOMEM;
+		sprintf(cmd->buf, "AT+CPBW=%s", buf);
+		break;	
+	case GSMD_PHONEBOOK_GET_SUPPORT:
+		cmd = atcmd_fill("AT+CPBR=?", 9+1,
+				 &phonebook_support_cb, gu, gph->id);
+		break;
+	default:
+		return -EINVAL;
+	}	
+
+	if (cmd)
+		return atcmd_submit(gu->gsmd, cmd);
+	else
+		return 0;
+}
+#endif
 
 static usock_msg_handler *pcmd_type_handlers[__NUM_GSMD_MSGS] = {
 	[GSMD_MSG_PASSTHROUGH]	= &usock_rcv_passthrough,
@@ -420,6 +847,8 @@ static usock_msg_handler *pcmd_type_handlers[__NUM_GSMD_MSGS] = {
 	[GSMD_MSG_PIN]		= &usock_rcv_pin,
 	[GSMD_MSG_PHONE]	= &usock_rcv_phone,
 	[GSMD_MSG_NETWORK]	= &usock_rcv_network,
+	[GSMD_MSG_SMS]		= &usock_rcv_sms,	
+	//[GSMD_MSG_PHONEBOOK]	= &usock_rcv_phonebook,
 };
 
 static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)

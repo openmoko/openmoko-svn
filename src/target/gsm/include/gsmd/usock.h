@@ -21,6 +21,7 @@ enum gsmd_msg_type {
 	GSMD_MSG_NETWORK	= 6,
 	GSMD_MSG_PHONE		= 7,
 	GSMD_MSG_PIN		= 8,
+	GSMD_MSG_SMS		= 9,
 	__NUM_GSMD_MSGS
 };
 
@@ -61,6 +62,102 @@ enum gsmd_msg_network {
 	GSMD_NETWORK_VMAIL_SET	= 4,
 	GSMD_NETWORK_OPER_GET	= 5,
 	GSMD_NETWORK_CIND_GET	= 6,
+};
+
+enum gsmd_msg_sms {
+	GSMD_SMS_LIST		= 1,
+	GSMD_SMS_READ		= 2,
+	GSMD_SMS_SEND		= 3,
+	GSMD_SMS_WRITE		= 4,
+	GSMD_SMS_DELETE		= 5,	
+};
+
+/* SMS stat from 3GPP TS 07.05, Clause 3.1 */
+enum gsmd_msg_sms_type {
+	GSMD_SMS_REC_UNREAD	= 0,
+	GSMD_SMS_REC_READ	= 1,
+	GSMD_SMS_STO_UNSENT	= 2,
+	GSMD_SMS_STO_SENT	= 3,
+	GSMD_SMS_ALL		= 4,
+};
+
+/* SMS format from 3GPP TS 07.05, Clause 3.2.3 */
+enum gsmd_msg_sms_fmt {
+	GSMD_SMS_FMT_PDU	= 0,
+	GSMD_SMS_FMT_TEXT	= 1,
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.1 */
+enum gsmd_sms_tp_mti {
+	GSMD_SMS_TP_MTI_DELIVER		= 0,
+	GSMD_SMS_TP_MTI_DELIVER_REPORT	= 0,
+	GSMD_SMS_TP_MTI_STATUS_REPORT	= 2,
+	GSMD_SMS_TP_MTI_COMMAND		= 2,
+	GSMD_SMS_TP_MTI_SUBMIT		= 1,
+	GSMD_SMS_TP_MTI_SUBMIT_REPORT	= 1,
+	GSMD_SMS_TP_MTI_RESERVED	= 3,
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.2, */
+/* for SMS-DELIVER, SMS-STATUS-REPORT */
+enum gsmd_sms_tp_mms {
+	GSMD_SMS_TP_MMS_MORE		= (0<<2),
+	GSMD_SMS_TP_MMS_NO_MORE		= (1<<2),
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.3, */
+/* for SMS-SUBMIT */
+enum gsmd_sms_tp_vpf {
+	GSMD_SMS_TP_VPF_NOT_PRESENT	= (0<<3),
+	GSMD_SMS_TP_VPF_RESERVED	= (1<<3),
+	GSMD_SMS_TP_VPF_RELATIVE	= (2<<3),	
+	GSMD_SMS_TP_VPF_ABSOLUTE	= (3<<3),
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.4, */
+/* for SMS-DELIVER */
+enum gsmd_sms_tp_sri {
+	GSMD_SMS_TP_SRI_NOT_RETURN	= (0<<5),
+	GSMD_SMS_TP_SRI_STATUS_RETURN	= (1<<5),
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.5, */
+/* for SMS-SUBMIT, SMS-COMMAND */
+enum gsmd_sms_tp_srr {
+	GSMD_SMS_TP_SRR_NOT_REQUEST	= (0<<5),
+	GSMD_SMS_TP_SRR_STATUS_REQUEST	= (1<<5),
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.17, */
+/* for SMS-SUBMIT, SMS-DELIVER */
+enum gsmd_sms_tp_rp {
+	GSMD_SMS_TP_RP_NOT_SET		= (0<<7),
+	GSMD_SMS_TP_RP_SET		= (1<<7),
+};
+
+/* Refer to GSM 03.40 subclause 9.2.3.23 */
+/* for SMS-SUBMIT, SMS-DELIVER */
+enum gsmd_sms_tp_udhi {
+	GSMD_SMS_TP_UDHI_NO_HEADER	= (0<<6),
+	GSMD_SMS_TP_UDHI_WTIH_HEADER	= (1<<6),
+};
+
+/* SMS delflg from 3GPP TS 07.05, Clause 3.5.4 */
+enum gsmd_msg_sms_delflg {
+	GSMD_SMS_DELFLG_INDEX		= 0,
+	GSMD_SMS_DELFLG_READ		= 1,
+	GSMD_SMS_DELFLG_READ_SENT	= 2,
+	GSMD_SMS_DELFLG_LEAVING_UNREAD	= 3,
+	GSMD_SMS_DELFLG_ALL		= 4,
+};
+
+enum gsmd_msg_phonebook {
+	GSMD_PHONEBOOK_FIND		= 1,
+	GSMD_PHONEBOOK_READ		= 2,
+	GSMD_PHONEBOOK_READRG		= 3,
+	GSMD_PHONEBOOK_WRITE		= 4,
+	GSMD_PHONEBOOK_DELETE		= 5,	
+	GSMD_PHONEBOOK_GET_SUPPORT	= 6,
 };
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
@@ -137,6 +234,72 @@ struct gsmd_evt_auxdata {
 	} u;
 } __attribute__((packed));
 
+/* Refer to GSM 07.05 subclause 3.5.4 */
+struct gsmd_sms_delete {
+	u_int8_t index;
+	u_int8_t delflg;	
+} __attribute__ ((packed));
+
+/* Refer to GSM 03.40 subclause 9.2.2.2 and GSM 07.05 subclause 4.3 */
+#define GSMD_SMS_DATA_MAXLEN	164 
+struct gsmd_sms {
+	u_int8_t length;	
+	char data[GSMD_SMS_DATA_MAXLEN+1];	
+} __attribute__ ((packed));
+
+/* Refer to GSM 07.05 subclause 4.4 */
+struct gsmd_sms_write {
+	u_int8_t stat;
+	struct gsmd_sms sms;
+} __attribute__ ((packed));
+
+/* Refer to GSM 03.40 subclause 9.2.2.2 */
+struct gsmd_sms_submit {
+	u_int8_t length;	
+	char data[GSMD_SMS_DATA_MAXLEN+1];	
+} __attribute__ ((packed));
+
+/* Refer to GSM 03.40 subclause 9.2.2.1 */
+struct gsmd_sms_deliver {
+	u_int8_t length;	
+	char origl_addr[12];
+	u_int8_t proto_ident;
+	u_int8_t coding_scheme;
+	char time_stamp[7];	
+	char user_data[140];
+} __attribute__ ((packed));
+
+/* Refer to GSM 07.07 subclause 8.12 */
+struct gsmd_phonebook_readrg {
+	u_int8_t index1;
+	u_int8_t index2;	
+} __attribute__ ((packed));
+
+/* Refer to GSM 07.07 subclause 8.14 */
+/* FIXME: the nlength and tlength depend on SIM, use +CPBR=? to get */ 
+#define	GSMD_PB_NUMB_MAXLEN	44
+#define GSMD_PB_TEXT_MAXLEN	14
+struct gsmd_phonebook {
+	u_int8_t index;
+	char numb[GSMD_PB_NUMB_MAXLEN+1];
+	u_int8_t type;
+	char text[GSMD_PB_TEXT_MAXLEN+1];
+} __attribute__ ((packed));
+
+
+/* Refer to GSM 07.07 subclause 8.13 */
+/* FIXME: the tlength depends on SIM, use +CPBR=? to get */ 
+struct gsmd_phonebook_find {	
+	char findtext[GSMD_PB_TEXT_MAXLEN+1];
+} __attribute__ ((packed));
+
+/* Refer to GSM 07.07 subclause 8.12 */
+struct gsmd_phonebook_support {	
+	u_int8_t index;
+	u_int8_t nlength;
+	u_int8_t tlength;
+} __attribute__ ((packed));
+
 struct gsmd_msg_hdr {
 	u_int8_t version;
 	u_int8_t msg_type;
@@ -146,7 +309,6 @@ struct gsmd_msg_hdr {
 	u_int16_t len;
 	u_int8_t data[];
 } __attribute__((packed));
-
 
 #ifdef __GSMD__
 

@@ -20,6 +20,36 @@ enum lgsm_pbook_type {
 	LGSM_PB_TA_PHONEBOOK		= 11,
 };
 
+/* Refer to GSM 07.07 subclause 8.14 */
+enum lgsm_pb_addr_type {	
+	LGSM_PB_ATYPE_INTL		= 145,
+	LGSM_PB_ATYPE_OTHE		= 129,
+};
+
+/* Refer to GSM 07.07 subclause 8.12 */
+struct lgsm_phonebook_readrg {
+	int index1;
+	int index2;
+};
+
+/* Refer to GSM 07.07 subclause 8.14 */
+/* FIXME: the nlength and tlength depend on SIM, use +CPBR=? to get */ 
+#define	LGSM_PB_NUMB_MAXLEN	44
+#define LGSM_PB_TEXT_MAXLEN	14
+struct lgsm_phonebook {
+	int index;
+	char numb[LGSM_PB_NUMB_MAXLEN+1];
+	enum lgsm_pb_addr_type type;
+	char text[LGSM_PB_TEXT_MAXLEN+1];
+};
+
+/* Refer to GSM 07.07 subclause 8.13 */
+/* FIXME: the tlength depends on SIM, use +CPBR=? to get */ 
+struct lgsm_phonebook_find {	
+	char findtext[LGSM_PB_TEXT_MAXLEN+1];
+};
+
+#if 0
 /* Get a bitmask of supported phonebook types */
 extern int lgsm_pb_get_types(struct lgsm_handle *lh, u_int32 *typemask);
 
@@ -30,6 +60,7 @@ extern int lgsm_pb_get_range(struct lgsm_handle *lh,
 			     u_int32_t *nlength, *u_int32_t tlength);
 
 #define LGSM_PB_TEXT_MAXLEN	31
+#endif
 
 struct lgsm_pb_entry {
 	struct lgsm_pb_entry	*next;
@@ -47,5 +78,26 @@ extern int lgsm_pb_get_entry(struct lgsm_handle *lh,
 extern int lgsm_pb_set_entry(struct lgsm_handle *lh,
 			     struct lgsm_pb_entry *pb);
 
+/* Find phonebook entires which alphanumeric filed start 
+ * with string <findtext> */
+extern int lgsm_pb_find_entry(struct lgsm_handle *lh, 
+		const struct lgsm_phonebook_find *pb_find);
+
+/* Read phonebook entry in location number index */
+extern int lgsm_pb_read_entry(struct lgsm_handle *lh, int index);
+
+/* Read phonebook entries in location number range */
+extern int lgsm_pb_read_entryies(struct lgsm_handle *lh, 
+		const struct lgsm_phonebook_readrg *pb_readrg);
+
+/* Delete phonebook entry in location index */
+extern int lgsmd_pb_del_entry(struct lgsm_handle *lh, int index);
+
+/* Write phonebook entry in location */
+extern int lgsmd_pb_write_entry(struct lgsm_handle *lh, 
+		const struct lgsm_phonebook *pb);
+
+/* Get the location range/nlength/tlength supported */
+extern int lgsm_pb_get_support(struct lgsm_handle *lh);
 
 #endif
