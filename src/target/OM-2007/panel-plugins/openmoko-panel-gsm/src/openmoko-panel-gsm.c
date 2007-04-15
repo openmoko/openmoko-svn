@@ -25,6 +25,7 @@
 typedef struct {
     GtkImage* image;
     gboolean gprs_mode;
+    MokoGsmdConnection* gsm;
 } GsmApplet;
 
 static void gsm_applet_free(GsmApplet *applet)
@@ -32,7 +33,7 @@ static void gsm_applet_free(GsmApplet *applet)
     g_slice_free( GsmApplet, applet );
 }
 
-static void gsm_applet_update_signal_strength(MokoGsmdConnection* connection, int strength, GsmApplet *applet)
+static void gsm_applet_update_signal_strength(MokoGsmdConnection* connection, int strength, GsmApplet* applet)
 {
     g_debug( "gsm_applet_update_signal_strength: signal strength = %d", strength );
     //TODO calibrate
@@ -52,11 +53,28 @@ static void gsm_applet_update_signal_strength(MokoGsmdConnection* connection, in
     gtk_image_set_from_file( GTK_IMAGE(applet->image), imagestring );
 }
 
+static void gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
+{
+    //TODO notify user
+    moko_gsmd_connection_set_antenna_power( applet->gsm, TRUE );
+}
+
+static void gsm_applet_autoregister_network(GtkWidget* menu, GsmApplet* applet)
+{
+    moko_gsmd_connection_network_register( applet->gsm );
+}
+
+static void gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
+{
+    //TODO notify user
+    moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE );
+}
+
 G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
-    GsmApplet *applet;
+    GsmApplet* applet;
     applet = g_slice_new(GsmApplet);
     applet->image = GTK_IMAGE(gtk_image_new_from_file( PKGDATADIR "/SignalStrength_NR.png" ) );
     applet->gprs_mode = FALSE;
@@ -65,7 +83,22 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     moko_panel_applet_set_widget( mokoapplet, GTK_WIDGET(applet->image) );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
 
-    MokoGsmdConnection* gsm = moko_gsmd_connection_new();
-    g_signal_connect( G_OBJECT(gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
+    applet->gsm = moko_gsmd_connection_new();
+    g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
+
+    // tap-with-hold menu (NOTE: temporary: left button atm.)
+    GtkMenu* menu = gtk_menu_new();
+    GtkWidget* item1 = gtk_menu_item_new_with_label( "Power-Up GSM Antenna" );
+    g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_power_up_antenna), applet );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menu), item1 );
+    GtkWidget* item2 = gtk_menu_item_new_with_label( "Autoregister with Network" );
+    g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_autoregister_network), applet );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menu), item2 );
+    GtkWidget* item3 = gtk_menu_item_new_with_label( "Power-Down GSM Antenna" );
+    g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_power_down_antenna), applet );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menu), item3 );
+    gtk_widget_show_all( GTK_WIDGET(menu) );
+
+    moko_panel_applet_set_popup( mokoapplet, menu, MOKO_PANEL_APPLET_CLICK_POPUP );
     return GTK_WIDGET(mokoapplet);
 };
