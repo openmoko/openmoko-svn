@@ -118,7 +118,7 @@ Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/neo1973.c
-@@ -0,0 +1,363 @@
+@@ -0,0 +1,372 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -409,6 +409,15 @@ Index: u-boot/board/neo1973/neo1973.c
 +
 +	/* switch on the backlight */
 +	neo1973_backlight(1);
++
++#if defined(CONFIG_ARCH_GTA01B_v4)
++	{
++		/* check if sd card is inserted, and power-up if it is */
++		S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++		if (!(gpio->GPFDAT & (1 << 5)))
++			gpio->GPBDAT &= ~(1 << 2);
++	}
++#endif
 +
 +	return 0;
 +}
