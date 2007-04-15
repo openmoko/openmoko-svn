@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -1988,6 +1988,14 @@
+@@ -1976,6 +1976,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -118,7 +118,7 @@ Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/neo1973.c
-@@ -0,0 +1,362 @@
+@@ -0,0 +1,363 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -306,8 +306,9 @@ Index: u-boot/board/neo1973/neo1973.c
 +	gpio->GPACON = 0x0005E0FFF;
 +	gpio->GPADAT |= (1 << 16);	/* Set GPA16 to high (nNAND_WP) */
 +
-+	gpio->GPBCON = 0x00045456;
++	gpio->GPBCON = 0x00045455;
 +	gpio->GPBUP = 0x000007FF;
++	gpio->GPBDAT |= 0x4;            /* Set GPB2 to high (SD power down) */
 +
 +	gpio->GPCCON = 0xAAAA12A9;
 +	gpio->GPCUP = 0x0000FFFF;
@@ -960,7 +961,7 @@ Index: u-boot/include/configs/neo1973.h
 +#define CONFIG_EXT2		1
 +
 +#define CONFIG_FAT		1
-+#define CONFIG_SUPPORT_VFAT	1
++#define CONFIG_SUPPORT_VFAT
 +
 +#if 0
 +/* JFFS2 driver */
