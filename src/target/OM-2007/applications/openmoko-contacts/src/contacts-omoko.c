@@ -269,6 +269,12 @@ add_menu_item (gchar *group, GtkMenu *menu)
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), gtk_menu_item_new_with_label (group));
 }
 
+static void
+container_remove (GtkWidget *child, GtkWidget *container)
+{
+	gtk_container_remove (GTK_CONTAINER (container), child);
+}
+
 void
 contacts_ui_update_groups_list (ContactsData *data)
 {
@@ -292,6 +298,14 @@ contacts_ui_update_groups_list (ContactsData *data)
 	/* add group editor checkboxes */
 	GtkWidget *widget;
 	GList *cur;
+
+	if (g_list_length (data->contacts_groups) == 0)
+		gtk_box_pack_start (GTK_BOX (data->ui->groups_vbox), gtk_label_new (_("No Groups")), TRUE, TRUE, 0);
+	else if (g_hash_table_size (data->groups_widgets_hash) == 0)
+		/* there are groups defined, but no checkboxes yet, so make sure the pane is
+		 * empty */
+		gtk_container_foreach (GTK_CONTAINER (data->ui->groups_vbox), (GtkCallback) container_remove, data->ui->groups_vbox);
+
 	for (cur = data->contacts_groups; cur; cur = g_list_next (cur))
 	{
 		if (g_hash_table_lookup (data->groups_widgets_hash, cur->data))

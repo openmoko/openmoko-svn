@@ -85,6 +85,12 @@ contacts_groups_pane_update_selection (GtkTreeSelection *selection, ContactsData
 
 }
 
+static void
+container_remove (GtkWidget *child, GtkWidget *container)
+{
+	gtk_container_remove (GTK_CONTAINER (container), child);
+}
+
 void
 contacts_groups_new_cb (GtkWidget *button, ContactsData *data)
 {
@@ -115,6 +121,10 @@ contacts_groups_new_cb (GtkWidget *button, ContactsData *data)
 
 	if (!text || !strcmp (text, ""))
 		return;
+
+	/* if there were no previous groups, remove the "no groups" label */
+	if (g_list_length (data->contacts_groups) == 0)
+		gtk_container_foreach (GTK_CONTAINER (data->ui->groups_vbox), (GtkCallback) container_remove, data->ui->groups_vbox);
 
 	/* add the group to the list of groups */
 	if (!g_list_find_custom (data->contacts_groups, text, (GCompareFunc) strcmp))

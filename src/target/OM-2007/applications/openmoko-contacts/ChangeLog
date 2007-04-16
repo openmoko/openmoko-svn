@@ -1,3 +1,12 @@
+2007-04-16  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-groups-editor.c:
+	(contacts_groups_pane_update_selection), (contacts_groups_new_cb):
+	* src/contacts-omoko.c: (add_menu_item),
+	(contacts_ui_update_groups_list):
+
+	Add a "No Groups" message to the details pane when there are no groups defined
+
 2007-04-13  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-callbacks-ui.c: (contacts_selection_cb): Don't try to commit a
