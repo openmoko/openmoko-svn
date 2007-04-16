@@ -65,12 +65,12 @@ static void
 moko_pixmap_button_class_init (MokoPixmapButtonClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
     /* register private data */
     g_type_class_add_private (klass, sizeof (MokoPixmapButtonPrivate));
 
     /* hook virtual methods */
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->size_request = moko_pixmap_button_size_request;
 
     /* install properties */
@@ -123,14 +123,14 @@ static void
 moko_pixmap_button_init (MokoPixmapButton *self)
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
-    
+
     moko_debug( "moko_pixmap_button_init" );
     gtk_button_set_focus_on_click( GTK_BUTTON(self), FALSE ); //FIXME probably don't need this when focus is invisible
     GTK_WIDGET_UNSET_FLAGS( GTK_WIDGET(self), GTK_CAN_FOCUS); // The default value of can-focus is TRUE, So it is necessory
 
     priv->buttonvbox = gtk_vbox_new (FALSE, 0);
     gtk_container_add (GTK_CONTAINER (self), priv->buttonvbox);
-    
+
     g_signal_connect( G_OBJECT(self), "clicked", G_CALLBACK(cb_button_clicked), NULL );
 }
 
@@ -150,7 +150,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
                           "focus-padding", &focus_pad,
                           "size-request", &size_request, // modified
                           NULL);
-    
+
     if ( size_request && size_request->left + size_request->right + size_request->top + size_request->bottom ) // new fixed thing
     {
         moko_debug( "moko_pixmap_button_size_request: style requested size = '%d x %d'", size_request->right, size_request->bottom );
@@ -162,7 +162,7 @@ moko_pixmap_button_size_request (GtkWidget *widget, GtkRequisition *requisition)
             GtkRequisition child_requisition;
             gtk_widget_size_request (GTK_BIN (button)->child, &child_requisition);
         }
-        
+
     }
     else // old dynamic routine
     {
@@ -213,18 +213,18 @@ void
 moko_pixmap_button_set_action_btn_upper_stock (MokoPixmapButton* self, const gchar *stock_name)
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
-	  
+
     if ( priv->actionbtnstockimage )
         return;
-	  
+
     GtkWidget *upperalignment = gtk_alignment_new (0.5, 0.5, 1, 1);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), upperalignment, TRUE, TRUE, 0);
-    
+
     priv->actionbtnstockimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_BUTTON);
     gtk_container_add (GTK_CONTAINER (upperalignment), priv->actionbtnstockimage);
-	  
+
     gtk_misc_set_alignment (GTK_MISC (priv->actionbtnstockimage), 0.5, 0.0);
-    
+
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
@@ -235,26 +235,26 @@ moko_pixmap_button_set_action_btn_lower_label (MokoPixmapButton* self, const gch
 
     if ( priv->actionbtnlowerlabel )
         return;
-    
+
     GtkWidget *loweralignment = gtk_alignment_new (0.5, 0.5, 1, 1);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
-    
+
     priv->actionbtnlowerlabel = gtk_label_new (label);
-    
+
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->actionbtnlowerlabel);
-    
+
     gtk_widget_set_size_request (priv->actionbtnlowerlabel, 38, 23);  //FIXME get size from style
     gtk_misc_set_alignment (GTK_MISC (priv->actionbtnlowerlabel), 0.5, 0.0);
-    
+
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
-    
+
 }
 
 void
 moko_pixmap_button_set_center_stock (MokoPixmapButton* self, const gchar *stock_name)
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
-	  
+
     if ( priv->centerimage )
         return;
 
@@ -263,7 +263,7 @@ moko_pixmap_button_set_center_stock (MokoPixmapButton* self, const gchar *stock_
 
     priv->centerimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_DND);
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->centerimage);
-	  
+
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
@@ -272,7 +272,7 @@ void
 moko_pixmap_button_set_center_image (MokoPixmapButton* self, GtkWidget* image)
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
-	  
+
     if ( priv->centerimage )
         return;
 
@@ -281,7 +281,7 @@ moko_pixmap_button_set_center_image (MokoPixmapButton* self, GtkWidget* image)
 
     priv->centerimage = image;
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->centerimage);
-	  
+
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }
 
@@ -300,22 +300,22 @@ void
 moko_pixmap_button_set_finger_toolbox_btn_center_image_pixbuf (MokoPixmapButton* self, GdkPixbuf* pixbuf)
 {
     MokoPixmapButtonPrivate* priv = MOKO_PIXMAP_BUTTON_GET_PRIVATE (self);
-	  
+
     GdkPixbuf *dest_pixbuf = gdk_pixbuf_scale_simple (pixbuf, 35, 35, GDK_INTERP_NEAREST);
 
     if ( priv->fingertoolboxbtnimage == NULL )
     {
         priv->fingertoolboxbtnloweralignment = gtk_alignment_new (0.45, 0.28, 0, 0);
         gtk_box_pack_start (GTK_BOX (priv->buttonvbox), priv->fingertoolboxbtnloweralignment, TRUE, TRUE, 0);
-    
+
     }
     else
     {
         gtk_container_remove (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
     }
-	  
+
     priv->fingertoolboxbtnimage = gtk_image_new_from_pixbuf (dest_pixbuf);
     gtk_container_add (GTK_CONTAINER (priv->fingertoolboxbtnloweralignment), priv->fingertoolboxbtnimage);
-    
+
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
 }

@@ -18,7 +18,15 @@
 
 #include "moko-tree-view.h"
 
-G_DEFINE_TYPE (MokoTreeView, moko_tree_view, GTK_TYPE_TREE_VIEW);
+#undef DEBUG_THIS_FILE
+#ifdef DEBUG_THIS_FILE
+#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
+#define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
+#else
+#define moko_debug(fmt,...)
+#endif
+
+G_DEFINE_TYPE (MokoTreeView, moko_tree_view, GTK_TYPE_TREE_VIEW)
 
 #define TREE_VIEW_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_TREE_VIEW, MokoTreeViewPrivate))
 
@@ -26,8 +34,11 @@ typedef struct _MokoTreeViewPrivate
 {
 } MokoTreeViewPrivate;
 
+/* parent class pointer */
+GObjectClass* parent_class = NULL;
+
 /* forward declarations */
-/* ... */
+void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition);
 
 static void
 moko_tree_view_dispose (GObject *object)
@@ -45,13 +56,16 @@ moko_tree_view_finalize (GObject *object)
 static void
 moko_tree_view_class_init (MokoTreeViewClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    /* hook parent */
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    parent_class = g_type_class_peek_parent( klass );
 
     /* register private data */
-    g_type_class_add_private (klass, sizeof (MokoTreeViewPrivate));
+    g_type_class_add_private( klass, sizeof (MokoTreeViewPrivate) );
 
     /* hook virtual methods */
-    /* ... */
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->size_request = moko_tree_view_size_request;
 
     /* install properties */
     /* ... */
@@ -79,6 +93,30 @@ moko_tree_view_new_with_model (GtkTreeModel *model)
     return GTK_WIDGET(g_object_new(moko_tree_view_get_type(), "model", model, NULL));
 }
 
+/* reimplemented to enforce entry-height granularity */
+void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition)
+{
+    moko_debug( "moko_tree_view_size_request" );
+    MokoTreeView* self = MOKO_TREE_VIEW(widget);
+    GTK_WIDGET_CLASS(parent_class)->size_request( widget, requisition );
+#if 0 /* it doesn't work with size_request... should we try overwriting size_alloc? */
+    moko_debug( "-- [old] requesting %d, %d", requisition->width, requisition->height );
+
+    // compute height as a whole-number factor of the cell height
+    GtkTreeViewColumn* first_column = gtk_tree_view_get_column( GTK_TREE_VIEW(self), 0 );
+    g_assert( first_column ); // fail here if no columns added yet
+    gint cr_x_offset;
+    gint cr_y_offset;
+    gint cr_width;
+    gint cr_height;
+    gtk_tree_view_column_cell_get_size( first_column, NULL, &cr_x_offset, &cr_y_offset, &cr_width, &cr_height );
+
+    // prevent half cells to be visible
+    requisition->height -= requisition->height % (cr_height+2);
+    moko_debug( "-- [old] requesting %d, %d", requisition->width, requisition->height );
+#endif
+}
+
 void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column)
 {
     gtk_tree_view_column_set_alignment( column, 0.5 );
@@ -90,13 +128,13 @@ void moko_tree_view_append_column(MokoTreeView* self, GtkTreeViewColumn* column)
 
     g_object_set( G_OBJECT(column),
                   "resizable", TRUE,
-                  "reorderable", TRUE,
+                  "reorderable", FALSE,
                   "sort-indicator", TRUE,
                   NULL );
 
 }
 
-_moko_tree_view_adjustment_changed(GtkAdjustment* adj, MokoTreeView* self)
+void _moko_tree_view_adjustment_changed(GtkAdjustment* adj, MokoTreeView* self)
 {
     // compute value for vadjustment
     gtk_tree_view_set_fixed_height_mode( GTK_TREE_VIEW(self), TRUE );
