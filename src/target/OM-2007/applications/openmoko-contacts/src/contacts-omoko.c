@@ -37,8 +37,7 @@ static GtkMenu *filter_menu;
 GtkWidget *
 create_contacts_list (ContactsData *data)
 {
-	MokoNavigationList *moko_navigation_list = moko_navigation_list_new ();
-	GtkWidget *treeview = GTK_WIDGET (moko_navigation_list_get_tree_view (moko_navigation_list));
+	GtkWidget *treeview = moko_tree_view_new ();
 
 	gtk_tree_view_set_model (GTK_TREE_VIEW (treeview),
 				 GTK_TREE_MODEL (data->contacts_filter));
@@ -53,16 +52,16 @@ create_contacts_list (ContactsData *data)
 	column = gtk_tree_view_column_new_with_attributes (_("Name"), renderer,
 							"text", CONTACT_NAME_COL, NULL);
 	gtk_tree_view_column_set_sort_column_id (column, CONTACT_NAME_COL);
-	moko_navigation_list_append_column (moko_navigation_list, column);
+	moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), column);
 
 	/* mobile column */
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes (_("Cell Phone"), renderer,
 							"text", CONTACT_CELLPHONE_COL, NULL);
 	gtk_tree_view_column_set_sort_column_id (column, CONTACT_CELLPHONE_COL);
-	moko_navigation_list_append_column (moko_navigation_list, column);
+	moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), column);
 
-	return GTK_WIDGET (moko_navigation_list);
+	return treeview;
 }
 
 void
@@ -139,11 +138,13 @@ create_main_window (ContactsData *contacts_data)
 
 	/*** contacts list ***/
 
-	GtkWidget *moko_navigation_list = create_contacts_list (contacts_data);
+	widget = create_contacts_list (contacts_data);
 	g_object_unref (contacts_data->contacts_liststore);
 
-	moko_paned_window_set_upper_pane (MOKO_PANED_WINDOW (ui->main_window), GTK_WIDGET (moko_navigation_list));
-	ui->contacts_treeview = GTK_WIDGET (moko_navigation_list_get_tree_view (MOKO_NAVIGATION_LIST (moko_navigation_list)));
+	moko_paned_window_set_upper_pane (MOKO_PANED_WINDOW (ui->main_window),
+      moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (widget)));
+
+	ui->contacts_treeview = widget;
 
 	/* Connect signal for selection changed event */
 	GtkTreeSelection *selection;

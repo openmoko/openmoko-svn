@@ -1,5 +1,10 @@
 2007-04-16  Thomas Wood  <thomas@openedhand.com>
 
+	* src/contacts-omoko.c: (create_contacts_list),
+	(create_main_window): Don't use MokoNavigationView. Fixes bug 472.
+
+2007-04-16  Thomas Wood  <thomas@openedhand.com>
+
 	* src/contacts-groups-editor.c:
 	(contacts_groups_pane_update_selection), (contacts_groups_new_cb):
 	* src/contacts-omoko.c: (add_menu_item),
