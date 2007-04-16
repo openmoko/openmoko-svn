@@ -1,4 +1,4 @@
-/*  moko-dialog.c
+/*  moko-message-dialog.c
  *
  *  Authored (in part) by Rob Bradford <rob@openedhand.com>
  *
@@ -61,6 +61,9 @@ struct _MokoMessageDialogPrivate
   GtkWidget *image;
   GtkWidget *image_alignment;
   gboolean window_shaped;
+  GdkPixbuf *background_pixbuf;
+  GdkPixbuf *root_pixbuf;
+  GdkPixbuf *pixbuf;
 };
 
 static void
@@ -96,10 +99,46 @@ moko_message_dialog_finalize (GObject *object)
   G_OBJECT_CLASS (moko_message_dialog_parent_class)->finalize (object);
 }
 
+/* 
+ * We need to override the map event handling to grab the root window before
+ * our widget gets drawn onto it.
+ */
+static void
+moko_message_dialog_map (GObject *object)
+{
+  MokoMessageDialogPrivate *priv = MESSAGE_DIALOG_PRIVATE (object);
+  MokoMessageDialog *dialog = MOKO_MESSAGE_DIALOG (object);
+
+  gint w, h;
+  GdkWindow *root_window;
+  GdkPixbuf *root_pixbuf;
+
+  GdkPixbuf *old_pixbuf;
+
+  /* Grab the root window and its dimensions */
+  root_window = gtk_widget_get_root_window (GTK_WIDGET(dialog));
+  gdk_drawable_get_size (root_window, &w, &h);
+
+  /* Generate a pixbuf from this root window */
+  root_pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, w, h);
+  gdk_pixbuf_get_from_drawable (root_pixbuf, root_window, NULL, 0, 0, 0, 0, w, h);
+
+  old_pixbuf = priv->root_pixbuf;
+  priv->root_pixbuf = root_pixbuf;
+  g_object_unref (old_pixbuf);
+
+  g_object_unref (priv->pixbuf);
+  priv->pixbuf = NULL;
+
+  if (GTK_WIDGET_CLASS (moko_message_dialog_parent_class)->map)
+    GTK_WIDGET_CLASS (moko_message_dialog_parent_class)->map (object);
+}
+
 static void
 moko_message_dialog_class_init (MokoMessageDialogClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MokoMessageDialogPrivate));
 
@@ -107,8 +146,11 @@ moko_message_dialog_class_init (MokoMessageDialogClass *klass)
   object_class->set_property = moko_message_dialog_set_property;
   object_class->dispose = moko_message_dialog_dispose;
   object_class->finalize = moko_message_dialog_finalize;
+
+  widget_class->map = moko_message_dialog_map;
 }
 
+/*
 static void
 moko_message_dialog_shape_window (GtkWidget *widget)
 {
@@ -141,15 +183,71 @@ moko_message_dialog_shape_window (GtkWidget *widget)
 
   priv->window_shaped = TRUE;
 }
+*/
 
+/* 
+ * Need to grab the pixbuf for background in the realize callback since we
+ * need to have the style setup
+ */
 static void
 moko_message_dialog_realize_cb (GtkWidget *widget, gpointer user_data)
 {
   MokoMessageDialogPrivate* priv = MESSAGE_DIALOG_PRIVATE (widget);
 
-  if (!priv->window_shaped)
-    moko_message_dialog_shape_window (widget);
+  GtkRcStyle *rc_style;
+  GError *error = NULL;
 
+  if (!priv->background_pixbuf)
+  {
+    rc_style = widget->style->rc_style;
+
+    priv->background_pixbuf = gdk_pixbuf_new_from_file (rc_style->bg_pixmap_name[GTK_STATE_NORMAL], &error);
+
+    if (priv->background_pixbuf == NULL)
+    {
+      g_warning ("Error loading background pixbuf: %s", error->message);
+      g_clear_error (&error);
+      return;
+    }
+  }
+}
+
+static gboolean
+moko_message_dialog_expose_event_cb (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+{
+  MokoMessageDialogPrivate *priv = MESSAGE_DIALOG_PRIVATE (widget);
+  int x, y, w, h;
+  
+  gdk_drawable_get_size (widget->window, &w, &h);
+
+  if (!priv->pixbuf)
+  {
+    gdk_window_get_origin (widget->window, &x, &y);
+
+    /* 
+     * Extract a sub pixbuf for the area of the root window which the window
+     * now covers
+     */
+    priv->pixbuf = gdk_pixbuf_new_subpixbuf (priv->root_pixbuf, x, y, w, h);
+
+    /* Composite the background pixbuf over said subpixbuf */
+    gdk_pixbuf_composite (priv->background_pixbuf, priv->pixbuf, 
+        0, 0, 
+        w, h, 
+        0, 0, 
+        1, 1, 
+        GDK_INTERP_BILINEAR, 
+        255);  
+  }
+
+  /* Draw our pixbuf onto the window */
+  gdk_draw_pixbuf (widget->window, NULL, priv->pixbuf, 
+      0, 0, 
+      0, 0, 
+      w, h, 
+      GDK_RGB_DITHER_NONE, 0, 0);
+
+  return FALSE;
 }
 
 static void
@@ -190,14 +288,23 @@ moko_message_dialog_init (MokoMessageDialog *self)
 
   gtk_dialog_set_has_separator (GTK_DIALOG (self), FALSE);
 
-  gtk_widget_set_size_request (GTK_WIDGET (self), 320, 480);
+  gtk_widget_set_size_request (GTK_WIDGET (self), 480, 560);
   gtk_window_set_decorated (GTK_WINDOW (self), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (self), FALSE);
 
+
+  /* Indicate that we want to paint this ourselves */
+  gtk_widget_set_app_paintable (self, TRUE);
+
   g_signal_connect (self, "realize", G_CALLBACK (moko_message_dialog_realize_cb), NULL);
+  g_signal_connect (self, "expose-event", G_CALLBACK (moko_message_dialog_expose_event_cb), NULL);
 
   priv->image_alignment = image_alignment;
   priv->label = label;
+
+  priv->root_pixbuf = NULL;
+  priv->background_pixbuf = NULL;
+  priv->pixbuf = NULL;
 }
 
 void

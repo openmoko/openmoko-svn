@@ -1,3 +1,11 @@
+2007-04-16  Rob Bradford  <rob@openedhand.com>
+
+	* libmokoui/moko-message-dialog.c: (moko_message_dialog_map),
+	(moko_message_dialog_class_init), (moko_message_dialog_realize_cb),
+	(moko_message_dialog_expose_event_cb), (moko_message_dialog_init):
+	Add support for pseudo-transparent blending of the dialog box's
+	background.
+
 2007-04-13 Dodji Seketeli <dodji@openedhand.com>
 
 	* openmoko-libs/libmokojournal/src/moko-journal.c:
