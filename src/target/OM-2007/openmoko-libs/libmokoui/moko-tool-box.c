@@ -57,7 +57,7 @@ static void moko_tool_box_init                (MokoToolBox      *self);
 static void _button_release(GtkWidget* w, MokoToolBox* self)
 {
     MokoToolBoxPriv *priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
-    moko_tool_box_make_search_visible (self, !GTK_WIDGET_DRAWABLE(priv->entry) );
+    moko_tool_box_set_search_visible (self, !GTK_WIDGET_DRAWABLE(priv->entry) );
 }
 
 static gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
@@ -172,7 +172,7 @@ void moko_tool_box_clear(MokoToolBox* self) /* Destruction */
 }
 
 /* add new methods here */
-void moko_tool_box_make_search_visible(MokoToolBox *self, gboolean visible)
+void moko_tool_box_set_search_visible(MokoToolBox *self, gboolean visible)
 {
     MokoToolBoxPriv *priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
     g_return_if_fail (priv->entry != NULL);

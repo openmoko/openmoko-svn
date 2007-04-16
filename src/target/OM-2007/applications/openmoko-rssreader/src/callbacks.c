@@ -256,7 +256,7 @@ void cb_searchbox_invisible( MokoToolBox *box, struct RSSReaderData *data ) {
  * route this to the search box
  */
 gboolean cb_treeview_keypress_event( GtkWidget *tree_view, GdkEventKey *key, struct RSSReaderData *data ) {
-    moko_tool_box_make_search_visible (data->box, TRUE);
+    moko_tool_box_set_search_visible (data->box, TRUE);
     gtk_entry_set_text (GTK_ENTRY(moko_tool_box_get_entry(data->box)), "");
 
     /*
