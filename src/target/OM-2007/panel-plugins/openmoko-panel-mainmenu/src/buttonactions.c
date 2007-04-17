@@ -32,7 +32,7 @@
 #include <linux/input.h>
 
 #undef DEBUG_THIS_FILE
-//#define DEBUG_THIS_FILE 1
+//#define DEBUG_THIS_FILE
 
 //FIXME find out through sysfs
 #ifndef DEBUG_THIS_FILE
@@ -50,8 +50,8 @@
 GPollFD aux_fd;
 GPollFD power_fd;
 
-GTimer* aux_timer = 0;
-GTimer* power_timer = 0;
+int aux_timer = -1;
+int power_timer = -1;
 
 GtkWidget* aux_menu = 0;
 GtkWidget* power_menu = 0;
@@ -81,12 +81,10 @@ gboolean panel_mainmenu_install_watcher()
     aux_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
     aux_fd.revents = 0;
     g_source_add_poll( button_watcher, &aux_fd );
-    aux_timer = g_timer_new();
     power_fd.fd = powerfd;
     power_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
     power_fd.revents = 0;
     g_source_add_poll( button_watcher, &power_fd );
-    power_timer = g_timer_new();
     g_source_attach( button_watcher, NULL );
     return TRUE;
 }
@@ -94,39 +92,40 @@ gboolean panel_mainmenu_install_watcher()
 
 gboolean panel_mainmenu_input_prepare( GSource* source, gint* timeout )
 {
-    g_debug( "prepare" );
     return FALSE;
 }
 
 
 gboolean panel_mainmenu_input_check( GSource* source )
 {
-    g_debug( "check" );
     return ( ( aux_fd.revents & G_IO_IN ) || ( power_fd.revents & G_IO_IN ) );
 }
 
 
 gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, gpointer data )
 {
-    g_debug( "dispatch" );
     if ( aux_fd.revents & G_IO_IN )
     {
         struct input_event event;
         int size = read( aux_fd.fd, &event, sizeof( struct input_event ) );
         g_debug( "read %d bytes from aux_fd %d", size, aux_fd.fd );
         g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
-        //g_timeout_add( 1 * 1000, (GSourceFunc) panel_mainmenu_input_timeout, NULL);
         if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
         {
             if ( event.value == 1 ) /* pressed */
             {
-                g_debug( "resetting aux timer" );
-                g_timer_reset( aux_timer );
+                g_debug( "triggering aux timer" );
+                aux_timer = g_timeout_add( 1 * 1000, (GSourceFunc) panel_mainmenu_aux_timeout, (gpointer)1 );
             }
             else if ( event.value == 0 ) /* released */
             {
-                g_debug( "triggering aux function" );
-                panel_mainmenu_aux_timeout( g_timer_elapsed( aux_timer, NULL ) );
+                g_debug( "resetting aux timer" );
+                if ( aux_timer != -1 )
+                {
+                    g_source_remove( aux_timer );
+                    panel_mainmenu_aux_timeout( 0 );
+                }
+                aux_timer = -1;
             }
         }
     }
@@ -136,18 +135,22 @@ gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, g
         int size = read( power_fd.fd, &event, sizeof( struct input_event ) );
         g_debug( "read %d bytes from power_fd %d", size, power_fd.fd );
         g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
-        //g_timeout_add( 1 * 1000, (GSourceFunc) panel_mainmenu_power_timeout, NULL);
         if ( event.type == 1 && event.code == POWER_BUTTON_KEYCODE )
         {
             if ( event.value == 1 ) /* pressed */
             {
-                g_debug( "resetting power timer" );
-                g_timer_reset( power_timer );
+                g_debug( "triggering power timer" );
+                power_timer = g_timeout_add( 1 * 1000, (GSourceFunc) panel_mainmenu_power_timeout, (gpointer)1 );
             }
             else if ( event.value == 0 ) /* released */
             {
-                g_debug( "triggering power function" );
-                panel_mainmenu_power_timeout( g_timer_elapsed( power_timer, NULL ) );
+                g_debug( "resetting power timer" );
+                if ( power_timer != -1 )
+                {
+                    g_source_remove( power_timer );
+                    panel_mainmenu_power_timeout( 0 );
+                }
+                power_timer = -1;
             }
         }
     }
@@ -157,6 +160,7 @@ gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, g
 gboolean panel_mainmenu_aux_timeout( guint timeout )
 {
     g_debug( "aux pressed for %d", timeout );
+    aux_timer = -1;
     if ( timeout < 1 )
     {
         // make dialer interface show up
@@ -216,6 +220,7 @@ void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_da
 gboolean panel_mainmenu_power_timeout( guint timeout )
 {
     g_debug( "power pressed for %d", timeout );
+    power_timer = -1;
     if ( timeout < 1 )
     {
         // close current application
