@@ -633,6 +633,13 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
   return box;
 }
 
+static void
+choose_photo_cb (GtkWidget *button, ContactsContactPane *pane)
+{
+	pane->priv->dirty = TRUE;
+	contacts_choose_photo (button, pane->priv->contact);
+}
+
 /*
  * Update the widgets, called when the contact or editable mode has changed.
  */
@@ -641,7 +648,7 @@ update_ui (ContactsContactPane *pane)
 {
   int i;
   GtkWidget *w;
-    EVCardAttribute *attr;
+  EVCardAttribute *attr;
 
   g_assert (CONTACTS_IS_CONTACT_PANE (pane));
 
@@ -691,17 +698,17 @@ update_ui (ContactsContactPane *pane)
     has_org_field = TRUE;
   }
 
-  GtkWidget *photo = contacts_load_photo (pane->priv->contact);
+  GtkImage *photo = contacts_load_photo (pane->priv->contact);
   if (pane->priv->editable)
   {
     w = gtk_button_new ();
     gtk_widget_set_name (w, "mokofingerbutton-big");
-    gtk_container_add (GTK_CONTAINER (w), photo);
-    g_signal_connect (w, "clicked", contacts_choose_photo, pane->priv->contact);
+    gtk_container_add (GTK_CONTAINER (w), GTK_WIDGET (photo));
+    g_signal_connect (w, "clicked", (GCallback) choose_photo_cb, pane);
   }
   else
   {
-    w = photo;
+    w = GTK_WIDGET (photo);
   }
   if (has_org_field)
     gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 2, 0, 0, 6, 6);

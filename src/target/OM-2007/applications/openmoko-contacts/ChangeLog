@@ -1,5 +1,10 @@
 2007-04-17  Thomas Wood  <thomas@openedhand.com>
 
+	* src/contacts-contact-pane.c: (choose_photo_cb), (update_ui): Make
+	sure the contact is committed when the photo is changed.
+
+2007-04-17  Thomas Wood  <thomas@openedhand.com>
+
 	* src/contacts-contact-pane.c: (make_widget), (update_ui): Add photo chooser. Closes bug 473.
 
 2007-04-16  Thomas Wood  <thomas@openedhand.com>
