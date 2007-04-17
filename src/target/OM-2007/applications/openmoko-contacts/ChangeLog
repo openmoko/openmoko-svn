@@ -1,3 +1,7 @@
+2007-04-17  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-contact-pane.c: (make_widget), (update_ui): Add photo chooser. Closes bug 473.
+
 2007-04-16  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-omoko.c: (create_contacts_list),

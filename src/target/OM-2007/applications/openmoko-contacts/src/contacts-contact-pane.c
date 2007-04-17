@@ -22,6 +22,7 @@
 #include <gtk/gtk.h>
 #include <libebook/e-book.h>
 #include "contacts-contact-pane.h"
+#include "contacts-utils.h"
 
 G_DEFINE_TYPE (ContactsContactPane, contacts_contact_pane, GTK_TYPE_VBOX);
 
@@ -472,7 +473,10 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
   box = gtk_hbox_new (FALSE, 0);
 
-  type = get_type (attr);
+  if (attr)
+    type = get_type (attr);
+  else
+    type = NULL;
 
 
   if (type == NULL && info->types != NULL)
@@ -570,16 +574,19 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
   /* load the attribute value, returning a semicolon seperated string for
    * multivalue attributes
    */
-  GList *l = e_vcard_attribute_get_values (attr);
-  if (l)
+  if (attr)
   {
-    attr_value = g_strdup (l->data);
-
-    while ((l = g_list_next (l)))
+    GList *l = e_vcard_attribute_get_values (attr);
+    if (l)
     {
-      gchar *old = attr_value;
-      attr_value = g_strdup_printf ("%s; %s", old, (gchar*) l->data);
-      g_free (old);
+      attr_value = g_strdup (l->data);
+
+      while ((l = g_list_next (l)))
+      {
+        gchar *old = attr_value;
+        attr_value = g_strdup_printf ("%s; %s", old, (gchar*) l->data);
+        g_free (old);
+      }
     }
   }
 
@@ -600,6 +607,8 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
     g_signal_connect (value, "focus-in-event", G_CALLBACK (field_focus_in), info);
     g_signal_connect (value, "focus-out-event", G_CALLBACK (field_focus_out), info);
   } else {
+    if (!attr_value)
+      attr_value = g_strdup ("");
     if (info->format)
     {
       escaped_str = g_markup_printf_escaped (info->format, attr_value);
@@ -631,6 +640,8 @@ static void
 update_ui (ContactsContactPane *pane)
 {
   int i;
+  GtkWidget *w;
+    EVCardAttribute *attr;
 
   g_assert (CONTACTS_IS_CONTACT_PANE (pane));
 
@@ -645,7 +656,6 @@ update_ui (ContactsContactPane *pane)
       /* TODO: check for error here */
       e_book_add_contact (e_book_view_get_book (pane->priv->bookview), pane->priv->contact, NULL);
     } else {
-      GtkWidget *w;
       w = gtk_label_new ("No contact to display");
       gtk_widget_show (w);
       gtk_box_pack_start (GTK_BOX (pane), w, TRUE, TRUE, 0);
@@ -655,10 +665,54 @@ update_ui (ContactsContactPane *pane)
 
   pane->priv->size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 
-  for (i = 0; i < G_N_ELEMENTS (fields); i++) {
+  /* Add Name, Organisation and Photo fields into a special arrangement */
+  GtkWidget *table = gtk_table_new (2, 4, FALSE);
+  gtk_box_pack_start (GTK_BOX (pane), table, FALSE, FALSE, 4);
+
+  /* Fast path unique fields, no need to search the entire contact */
+  attr = e_vcard_get_attribute (E_VCARD (pane->priv->contact), fields[0].vcard_field);
+  if (!attr && pane->priv->editable) {
+    attr = e_vcard_attribute_new ("", fields[0].vcard_field);
+    e_vcard_add_attribute (E_VCARD (pane->priv->contact), attr);
+  }
+  w = make_widget (pane, attr, &fields[0]);
+  gtk_table_attach_defaults (GTK_TABLE (table), w, 1, 2, 0, 1);
+
+  attr = e_vcard_get_attribute (E_VCARD (pane->priv->contact), fields[1].vcard_field);
+  if (!attr && pane->priv->editable) {
+    attr = e_vcard_attribute_new ("", fields[1].vcard_field);
+    e_vcard_add_attribute (E_VCARD (pane->priv->contact), attr);
+  }
+  gboolean has_org_field = FALSE;
+  if (attr || pane->priv->editable)
+  {
+    w = make_widget (pane, attr, &fields[1]);
+    gtk_table_attach_defaults (GTK_TABLE (table), w, 1, 2, 1, 2);
+    has_org_field = TRUE;
+  }
+
+  GtkWidget *photo = contacts_load_photo (pane->priv->contact);
+  if (pane->priv->editable)
+  {
+    w = gtk_button_new ();
+    gtk_widget_set_name (w, "mokofingerbutton-big");
+    gtk_container_add (GTK_CONTAINER (w), photo);
+    g_signal_connect (w, "clicked", contacts_choose_photo, pane->priv->contact);
+  }
+  else
+  {
+    w = photo;
+  }
+  if (has_org_field)
+    gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 2, 0, 0, 6, 6);
+  else
+    gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 1, 0, 0, 6, 6);
+
+  gtk_widget_show_all (table);
+
+
+  for (i = 2; i < G_N_ELEMENTS (fields); i++) {
     FieldInfo *info;
-    EVCardAttribute *attr;
-    GtkWidget *w;
 
     info = &fields[i];
     if (info->unique) {
