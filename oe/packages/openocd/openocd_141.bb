@@ -8,7 +8,6 @@ FILESDIR = "${@os.path.dirname(bb.data.getVar('FILE',d,1))}/openocd"
 inherit autotools
 
 SRC_URI = "svn://svn.berlios.de/;module=openocd;rev=${PV} \
-	   http://svn.openmoko.org/developers/werner/openocd-wait-patiently.patch;patch=1 \
 	   file://openocd-link-static.patch;patch=1"
 S = "${WORKDIR}/openocd/trunk"
 
