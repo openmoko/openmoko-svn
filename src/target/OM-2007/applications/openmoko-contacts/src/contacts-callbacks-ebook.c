@@ -134,7 +134,7 @@ contacts_changed_cb (EBookView *book_view, const GList *contacts,
 
 		/* TODO: There's some funniness going on here... */
 		/* Replace contact */
-/*		g_object_unref (hash->contact);*/
+		g_object_unref (hash->contact);
 		hash->contact = g_object_ref (contact);
 		hash->contacts_data = data;
 		g_hash_table_steal (data->contacts_table, uid);

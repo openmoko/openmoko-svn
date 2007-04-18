@@ -136,7 +136,6 @@ contacts_bacon_cb (const char *message, ContactsData *data)
 int
 main (int argc, char **argv)
 {
-	GError *error = NULL;
 	BaconMessageConnection *mc;
 #ifdef HAVE_GCONF
 	const char *search;

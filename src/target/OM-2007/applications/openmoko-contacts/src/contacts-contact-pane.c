@@ -43,6 +43,7 @@ struct _ContactsContactPanePrivate
 
 enum {
   FULLNAME_CHANGED,
+  CELL_CHANGED,
   LAST_SIGNAL
 };
 
@@ -214,10 +215,12 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
 
   if (info->vcard_field == EVC_FN)
   {
-    /* update treeview */
     g_signal_emit (pane, contacts_contact_pane_signals[FULLNAME_CHANGED], 0, pane->priv->contact);
   }
-
+  else if (info->vcard_field == EVC_TEL)
+  {
+    g_signal_emit (pane, contacts_contact_pane_signals[CELL_CHANGED], 0, pane->priv->contact);
+  }
   pane->priv->dirty = TRUE;
 }
 
@@ -823,7 +826,7 @@ contacts_contact_pane_class_init (ContactsContactPaneClass *klass)
   entry_quark = g_quark_from_static_string("contact-pane-entry");
 
 
-    contacts_contact_pane_signals[FULLNAME_CHANGED] = g_signal_new (("fullname-changed"),
+  contacts_contact_pane_signals[FULLNAME_CHANGED] = g_signal_new (("fullname-changed"),
       G_OBJECT_CLASS_TYPE (klass),
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (ContactsContactPaneClass, fullname_changed),
@@ -831,6 +834,16 @@ contacts_contact_pane_class_init (ContactsContactPaneClass *klass)
       g_cclosure_marshal_VOID__OBJECT,
       G_TYPE_NONE, 1,
       E_TYPE_CONTACT);
+
+  contacts_contact_pane_signals[CELL_CHANGED] = g_signal_new (("cell-changed"),
+      G_OBJECT_CLASS_TYPE (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (ContactsContactPaneClass, cell_changed),
+      NULL, NULL,
+      g_cclosure_marshal_VOID__OBJECT,
+      G_TYPE_NONE, 1,
+      E_TYPE_CONTACT);
+
 
 }
 

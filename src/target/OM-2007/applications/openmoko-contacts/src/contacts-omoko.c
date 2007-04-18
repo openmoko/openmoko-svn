@@ -37,9 +37,42 @@ static GtkMenu *filter_menu;
 static void
 fullname_changed_cb (ContactsContactPane *pane, EContact *contact, ContactsData *data)
 {
-	GList *l = g_list_prepend (NULL, contact);
-	contacts_changed_cb (data->book_view, l, data);
-	g_list_free (l);
+	EContactListHash *hash;
+	gchar *name = NULL;
+	const gchar *uid;
+
+	uid = e_contact_get_const (contact, E_CONTACT_UID);
+	hash = g_hash_table_lookup (data->contacts_table, uid);
+	name = e_contact_get (contact, E_CONTACT_FULL_NAME);
+
+	if ((!name) || (g_utf8_strlen (name, -1) <= 0))
+	{
+		g_free (name);
+		name = g_strdup (_("Unnamed"));
+	}
+	gtk_list_store_set (data->contacts_liststore, &hash->iter, CONTACT_NAME_COL, name, -1);
+
+	g_free (name);
+}
+
+static void
+cell_changed_cb (ContactsContactPane *pane, EContact *contact, ContactsData *data)
+{
+	EContactListHash *hash;
+	gchar *cell = NULL;
+	const gchar *uid;
+
+	uid = e_contact_get_const (contact, E_CONTACT_UID);
+	hash = g_hash_table_lookup (data->contacts_table, uid);
+	cell = e_contact_get (contact, E_CONTACT_PHONE_MOBILE);
+
+	if (!cell)
+	{
+		cell = g_strdup ("");
+	}
+	gtk_list_store_set (data->contacts_liststore, &hash->iter, CONTACT_CELLPHONE_COL, cell, -1);
+
+	g_free (cell);
 }
 
 GtkWidget *
@@ -213,6 +246,7 @@ create_main_window (ContactsData *contacts_data)
 	ui->contact_pane = contacts_contact_pane_new();
 
 	g_signal_connect (ui->contact_pane, "fullname-changed", (GCallback) fullname_changed_cb, contacts_data);
+	g_signal_connect (ui->contact_pane, "cell-changed", (GCallback) cell_changed_cb, contacts_data);
 
 	contacts_contact_pane_set_editable (CONTACTS_CONTACT_PANE (ui->contact_pane), FALSE);
 	/* The book view is set later when we get it back */
