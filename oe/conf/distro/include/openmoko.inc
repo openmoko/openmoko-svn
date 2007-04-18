@@ -52,6 +52,12 @@ MACHINE_TASK_PROVIDER = "task-base"
 require conf/distro/include/sane-srcdates.inc
 
 #
+# Console & Libraries
+#
+PREFERRED_PROVIDER_virtual/db = "db"
+PREFERRED_PROVIDER_virtual/db-native = "db-native"
+
+#
 # Framebuffer & X
 #
 PREFERRED_PROVIDER_virtual/libx11 ?= "libx11"
@@ -108,13 +114,6 @@ PREFERRED_PROVIDER_gdk-pixbuf-loader-xpm  ?= "gtk+"
 # GPE
 #
 PREFERRED_PROVIDER_libgpewidget = "libgpewidget"
-
-#
-# O-Hand
-#
-PREFERRED_VERSION_contacts = "0.1"
-PREFERRED_VERSION_dates = "0.1"
-# PREFERRED_VERSION_web = "???"
 
 #
 # Development
