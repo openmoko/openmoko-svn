@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r38"
+PR = "r39"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -208,7 +208,7 @@ RDEPENDS_task-openmoko-debug = "\
 "
 
 #
-# task-openmoko-sdk-native
+# task-openmoko-native-sdk
 #
 DESCRIPTION_task-openmoko-native-sdk = "OpenMoko: Native SDK"
 RDEPENDS_task-openmoko-native-sdk = "\
@@ -218,6 +218,7 @@ RDEPENDS_task-openmoko-native-sdk = "\
   gcc-symlinks \
   cpp \
   cpp-symlinks \
+  cvs \
   libc6-dev \
   libgcc-dev \
   libgcc-s-dev \
