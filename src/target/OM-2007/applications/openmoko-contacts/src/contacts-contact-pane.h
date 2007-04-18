@@ -57,6 +57,7 @@ typedef struct {
 
 typedef struct {
   GtkVBoxClass parent_class;
+  void (* fullname_changed) (ContactsContactPane *self, EContact *contact);
 } ContactsContactPaneClass;
 
 GType contacts_contact_pane_get_type (void);

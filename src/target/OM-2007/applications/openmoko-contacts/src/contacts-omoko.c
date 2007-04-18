@@ -25,6 +25,7 @@
 #include "contacts-ui.h"
 #include "contacts-omoko.h"
 #include "contacts-groups-editor.h"
+#include "contacts-callbacks-ebook.h"
 
 
 
@@ -33,6 +34,13 @@ static void moko_filter_changed (GtkWidget *widget, gchar *text, ContactsData *d
 /* these are specific to the omoko frontend */
 static GtkMenu *filter_menu;
 
+static void
+fullname_changed_cb (ContactsContactPane *pane, EContact *contact, ContactsData *data)
+{
+	GList *l = g_list_prepend (NULL, contact);
+	contacts_changed_cb (data->book_view, l, data);
+	g_list_free (l);
+}
 
 GtkWidget *
 create_contacts_list (ContactsData *data)
@@ -203,6 +211,9 @@ create_main_window (ContactsData *contacts_data)
 
 	/*** view mode ****/
 	ui->contact_pane = contacts_contact_pane_new();
+
+	g_signal_connect (ui->contact_pane, "fullname-changed", (GCallback) fullname_changed_cb, contacts_data);
+
 	contacts_contact_pane_set_editable (CONTACTS_CONTACT_PANE (ui->contact_pane), FALSE);
 	/* The book view is set later when we get it back */
 	gtk_notebook_append_page (GTK_NOTEBOOK (ui->main_notebook), ui->contact_pane, NULL);

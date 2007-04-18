@@ -152,13 +152,14 @@ contacts_changed_cb (EBookView *book_view, const GList *contacts,
 			gtk_list_store_set (model, &hash->iter, CONTACT_CELLPHONE_COL, cell, -1);
 
 		/* If contact is currently selected, update display */
+		/*
 		if (current_contact) {
 			if (strcmp (e_contact_get_const
 					(contact, E_CONTACT_UID),
 				    e_contact_get_const
 					(current_contact, E_CONTACT_UID)) == 0)
 				contacts_display_summary (contact, data);
-		}
+		}*/
 
 		/* Check for groups and add them to group list */
 		contact_groups =
