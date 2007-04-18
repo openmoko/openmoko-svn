@@ -101,26 +101,31 @@ SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
 
 usage()
 {
-    echo "usage: $0 [-t] [variable=value ...]" 1>&2
+    echo "usage: $0 [-c config_file] [-t] [variable=value ...]" 1>&2
     exit 1
 }
 
 
 tarball=false
+config=config
 
-for n in "$@"; do
-    case "$n" in
+while [ ! -z "$*" ]; do
+    case "$1" in
+	-c)	shift
+		[ ! -z "$1" ] || usage
+		config=$1;;
 	-t)	tarball=true;;
-	*=*)	eval "$n";;
+	*=*)	eval "$1";;
 	*)	usage;;
     esac
+    shift
 done
 
 
 # --- Read config file --------------------------------------------------------
 
 
-. config
+. $config
 
 
 # --- Post configuration ------------------------------------------------------
