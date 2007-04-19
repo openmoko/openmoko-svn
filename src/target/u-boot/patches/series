@@ -8,7 +8,6 @@ uboot-mokoversion.patch
 uboot-s3c2410-warnings-fix.patch
 uboot-strtoul.patch
 uboot-cramfs_but_no_jffs2.patch
-mmc_parititon_fix.patch
 nand-read_write_oob.patch
 uboot-arm920t-gd_in_irq.patch
 uboot-arm920_s3c2410_irq_demux.patch

@@ -18,7 +18,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  #if 0
  #define dbg_ep0(lvl,fmt,args...) serial_printf("[%s] %s:%d: "fmt"\n",__FILE__,__FUNCTION__,__LINE__,##args)
  #else
-@@ -213,7 +218,7 @@ static int ep0_get_descriptor (struct us
+@@ -213,7 +218,7 @@
  			urb->buffer = device_descriptor;
  			urb->actual_length = MIN(sizeof(*device_descriptor), max);
  		}
@@ -27,7 +27,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		break;
  
  	case USB_DESCRIPTOR_TYPE_CONFIGURATION:
-@@ -267,7 +272,24 @@ static int ep0_get_descriptor (struct us
+@@ -267,7 +272,24 @@
  		return -1;
  	case USB_DESCRIPTOR_TYPE_ENDPOINT:
  		return -1;
@@ -52,7 +52,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		{
  			return -1;	/* unsupported at this time */
  #if 0
-@@ -294,6 +316,7 @@ static int ep0_get_descriptor (struct us
+@@ -294,6 +316,7 @@
  				     max);
  #endif
  		}
@@ -60,7 +60,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		break;
  	case USB_DESCRIPTOR_TYPE_REPORT:
  		{
-@@ -388,6 +411,24 @@ int ep0_recv_setup (struct urb *urb)
+@@ -388,6 +411,24 @@
  		 le16_to_cpu (request->wLength),
  		 USBD_DEVICE_REQUESTS (request->bRequest));
  
@@ -85,7 +85,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  	/* handle USB Standard Request (c.f. USB Spec table 9-2) */
  	if ((request->bmRequestType & USB_REQ_TYPE_MASK) != 0) {
  		if (device->device_state <= STATE_CONFIGURED)
-@@ -570,7 +611,8 @@ int ep0_recv_setup (struct urb *urb)
+@@ -570,7 +611,8 @@
  			device->interface = le16_to_cpu (request->wIndex);
  			device->alternate = le16_to_cpu (request->wValue);
  			/*dbg_ep0(2, "set interface: %d alternate: %d", device->interface, device->alternate); */
@@ -99,7 +99,7 @@ Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdfu.c
-@@ -0,0 +1,1043 @@
+@@ -0,0 +1,1042 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -586,8 +586,7 @@ Index: u-boot/drivers/usbdfu.c
 +			remain = len;
 +
 +		debug("copying %u bytes ", remain);
-+//		memcpy(urb->buffer, ds->ptr, remain);
-+		urb->buffer = ds->ptr;
++		memcpy(urb->buffer, ds->ptr, remain);
 +		ds->ptr += remain;
 +		urb->actual_length = remain;
 +
@@ -1147,15 +1146,15 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -46,7 +46,7 @@ COBJS	= 3c589.o 5701rls.o ali512x.o atme
- 	  sl811_usb.o sm501.o smc91111.o smiLynxEM.o \
+@@ -47,7 +47,7 @@
  	  status_led.o sym53c8xx.o systemace.o ahci.o \
  	  ti_pci1410a.o tigon3.o tsec.o \
+ 	  tsi108_eth.o tsi108_i2c.o tsi108_pci.o \
 -	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
 +	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
- 	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
+ 	  pcf50606.o \
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore.c
@@ -1168,7 +1167,7 @@ Index: u-boot/drivers/usbdcore.c
  
  #define MAX_INTERFACES 2
  
-@@ -212,6 +213,10 @@ struct usb_alternate_instance *usbd_devi
+@@ -212,6 +213,10 @@
   */
  struct usb_device_descriptor *usbd_device_device_descriptor (struct usb_device_instance *device, int port)
  {
@@ -1179,7 +1178,7 @@ Index: u-boot/drivers/usbdcore.c
  	return (device->device_descriptor);
  }
  
-@@ -232,6 +237,10 @@ struct usb_configuration_descriptor *usb
+@@ -232,6 +237,10 @@
  	if (!(configuration_instance = usbd_device_configuration_instance (device, port, configuration))) {
  		return NULL;
  	}
@@ -1190,7 +1189,7 @@ Index: u-boot/drivers/usbdcore.c
  	return (configuration_instance->configuration_descriptor);
  }
  
-@@ -253,6 +262,13 @@ struct usb_interface_descriptor *usbd_de
+@@ -253,6 +262,13 @@
  	if (!(interface_instance = usbd_device_interface_instance (device, port, configuration, interface))) {
  		return NULL;
  	}
@@ -1204,7 +1203,7 @@ Index: u-boot/drivers/usbdcore.c
  	if ((alternate < 0) || (alternate >= interface_instance->alternates)) {
  		return NULL;
  	}
-@@ -681,4 +697,7 @@ void usbd_device_event_irq (struct usb_d
+@@ -681,4 +697,7 @@
  		/* usbdbg("calling device->event"); */
  		device->event(device, event, data);
  	}
@@ -1225,7 +1224,7 @@ Index: u-boot/drivers/usbtty.c
  #include <config.h>		/* If defined, override Linux identifiers with
  			   	 * vendor specific ones */
  
-@@ -118,7 +120,7 @@ extern struct usb_string_descriptor **us
+@@ -118,7 +120,7 @@
  static unsigned short rx_endpoint = 0;
  static unsigned short tx_endpoint = 0;
  static unsigned short interface_count = 0;
@@ -1234,7 +1233,7 @@ Index: u-boot/drivers/usbtty.c
  
  /* USB Descriptor Strings */
  static u8 wstrLang[4] = {4,USB_DT_STRING,0x9,0x4};
-@@ -169,6 +171,10 @@ struct acm_config_desc {
+@@ -169,6 +171,10 @@
  	struct usb_interface_descriptor data_class_interface;
  	struct usb_endpoint_descriptor 
  		data_endpoints[NUM_ENDPOINTS-1] __attribute__((packed));
@@ -1245,7 +1244,7 @@ Index: u-boot/drivers/usbtty.c
  } __attribute__((packed));
  
  static struct acm_config_desc acm_configuration_descriptors[NUM_CONFIGS] = {
-@@ -179,7 +185,11 @@ static struct acm_config_desc acm_config
+@@ -179,7 +185,11 @@
      			.bDescriptorType = USB_DT_CONFIG,
  			.wTotalLength =	 
  				cpu_to_le16(sizeof(struct acm_config_desc)),
@@ -1257,7 +1256,7 @@ Index: u-boot/drivers/usbtty.c
      			.bConfigurationValue = 1,
  			.iConfiguration = STR_CONFIG,
  			.bmAttributes = 
-@@ -278,6 +288,11 @@ static struct acm_config_desc acm_config
+@@ -278,6 +288,11 @@
  				.bInterval		= 0xFF,
  			},
  		},
@@ -1269,7 +1268,7 @@ Index: u-boot/drivers/usbtty.c
  	},
  };	
  
-@@ -390,7 +405,7 @@ static int fill_buffer (circbuf_t * buf)
+@@ -390,7 +405,7 @@
  void usbtty_poll (void);
  
  /* utility function for converting char* to wide string used by USB */
@@ -1278,7 +1277,7 @@ Index: u-boot/drivers/usbtty.c
  {
  	int i;
  	for (i = 0; i < strlen (str) && str[i]; i++){
-@@ -652,6 +667,9 @@ static void usbtty_init_instances (void)
+@@ -652,6 +667,9 @@
  	device_instance->bus = bus_instance;
  	device_instance->configurations = NUM_CONFIGS;
  	device_instance->configuration_instance_array = config_instance;
@@ -1292,7 +1291,7 @@ Index: u-boot/include/configs/neo1973.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973.h
 +++ u-boot/include/configs/neo1973.h
-@@ -165,7 +165,7 @@
+@@ -167,7 +167,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
  #ifdef CONFIG_USE_IRQ
@@ -1301,7 +1300,7 @@ Index: u-boot/include/configs/neo1973.h
  #define CONFIG_STACKSIZE_FIQ	(4*1024)	/* FIQ stack */
  #endif
  
-@@ -182,6 +182,10 @@
+@@ -184,6 +184,10 @@
  #define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
  #define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
  #define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
@@ -1527,7 +1526,7 @@ Index: u-boot/include/usbdcore.h
  
  
  #define MAX_URBS_QUEUED 5
-@@ -475,7 +476,11 @@ typedef struct urb_link {
+@@ -475,7 +476,11 @@
   * function driver to inform it that data has arrived.
   */
  
@@ -1539,7 +1538,7 @@ Index: u-boot/include/usbdcore.h
  struct urb {
  
  	struct usb_endpoint_instance *endpoint;
-@@ -603,6 +608,12 @@ struct usb_device_instance {
+@@ -603,6 +608,12 @@
  	unsigned long usbd_rxtx_timestamp;
  	unsigned long usbd_last_rxtx_timestamp;
  
@@ -1552,7 +1551,7 @@ Index: u-boot/include/usbdcore.h
  };
  
  /* Bus Interface configuration structure
-@@ -632,6 +643,8 @@ extern char *usbd_device_status[];
+@@ -632,6 +643,8 @@
  extern char *usbd_device_requests[];
  extern char *usbd_device_descriptors[];
  
