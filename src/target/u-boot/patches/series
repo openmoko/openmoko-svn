@@ -39,7 +39,6 @@ bbt-create-optional.patch
 nand-createbbt.patch
 dontask.patch
 nand-badisbad.patch
-dynpart-absorb-bad.patch
 uboot-bbt-quiet.patch
 
 # splash screen
