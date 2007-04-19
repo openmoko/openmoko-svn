@@ -1,5 +1,13 @@
 2007-04-19  Thomas Wood  <thomas@openedhand.com>
 
+	* src/contacts-callbacks-ebook.c: (contacts_added_cb),
+	(contacts_changed_cb):
+	* src/contacts-contact-pane.c: (field_changed), (make_widget):
+
+	Plug some leaks and other potential problems
+
+2007-04-19  Thomas Wood  <thomas@openedhand.com>
+
 	* src/contacts-contact-pane.c: (make_widget), (update_ui):
 	- Add support for internally tagging multi line fields
 	- Add address, birthday and notes fields

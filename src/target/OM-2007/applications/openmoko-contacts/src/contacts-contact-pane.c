@@ -215,15 +215,18 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
   /* don't save the value if we're just displaying the field name */
   if (value && !strcmp (info->display_name, value))
     return;
-  
-  /* TODO: this only handles single-valued attributes at the moment */
+
+  /* remove the current attributes */
   e_vcard_attribute_remove_values (attr);
 
+  /* add the new attributes */
   int i = 0;
   gchar* s;
   gchar** values = g_strsplit (value, ";", 0);
   while ((s = values[i])) {
-    e_vcard_attribute_add_value (attr, g_strstrip (s));
+    g_strstrip (s);
+    if (s)
+      e_vcard_attribute_add_value (attr, s);
     i++;
   }
   g_strfreev (values);
@@ -513,7 +516,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
   if (type == NULL && info->types != NULL)
   {
-    type = info->types[0].vcard;
+    type = g_strdup (info->types[0].vcard);
   }
 
   /* insert add/remove buttons */
@@ -672,6 +675,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
   gtk_widget_show_all (box);
   g_free (attr_value);
+  g_free (type);
   return box;
 }
 
