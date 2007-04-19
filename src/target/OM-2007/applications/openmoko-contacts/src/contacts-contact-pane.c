@@ -70,26 +70,41 @@ static VCardTypes phone_types[] = {
   {}
 };
 
+typedef enum {
+  FIELD_UNIQUE    = (1 << 1),
+  FIELD_MULTILINE = (1 << 2),
+  FIELD_NOLABEL   = (1 << 3),
+} FieldOptions;
+
 typedef struct {
   char *vcard_field; /* vCard field name */
   char *display_name; /* Human-readable name for display */
   char *icon; /* Icon name for the menu */
-  gboolean unique; /* If there can be only one of this field */
+  FieldOptions options; /* If there can be only one of this field */
   char *format; /* format string */
   VCardTypes *types;
   /* TODO: add an extra changed callback so that N handler can update FN, etc */
 } FieldInfo;
+
+#define FIELD_IS_UNIQUE(x) (x->options & FIELD_UNIQUE)
+#define FIELD_IS_MULTILINE(x) (x->options & FIELD_MULTILINE)
+#define FIELD_IS_NOLABEL(x) (x->options & FIELD_NOLABEL)
+
 
 static GQuark attr_quark = 0;
 static GQuark field_quark = 0;
 static GQuark entry_quark = 0;
 
 static FieldInfo fields[] = {
-  { EVC_FN, "Name", NULL, TRUE, "<big><b>%s</b></big>", NULL },
-  { EVC_ORG, "Organization", NULL, TRUE, "<span size=\"small\">%s</span>", NULL },
-  { EVC_EMAIL, "E-Mail", "stock_mail", FALSE, NULL, email_types },
-  { EVC_TEL, "Telephone", NULL, FALSE, NULL, phone_types },
-  { EVC_X_JABBER, "Jabber", GTK_STOCK_MISSING_IMAGE, FALSE, NULL, email_types },
+  { EVC_FN, "Name", NULL, FIELD_UNIQUE | FIELD_NOLABEL,  "<big><b>%s</b></big>", NULL },
+  { EVC_ORG, "Organization", NULL, FIELD_UNIQUE | FIELD_NOLABEL, "<span size=\"small\">%s</span>", NULL },
+
+  { EVC_EMAIL, "E-Mail", "stock_mail", 0, NULL, email_types },
+  { EVC_TEL, "Telephone", "stock_telephone", 0, NULL, phone_types },
+  { EVC_BDAY, "Birthday", "stock_birthday", FIELD_UNIQUE, NULL, NULL },
+  { EVC_ADR, "Address", "stock_address", FIELD_MULTILINE, NULL, email_types },
+
+  { EVC_NOTE, "Notes", NULL, FIELD_UNIQUE | FIELD_MULTILINE, NULL, NULL },
 };
 
 /* Function prototypes */
@@ -502,7 +517,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
   }
 
   /* insert add/remove buttons */
-  if (pane->priv->editable && !info->unique)
+  if (pane->priv->editable && !FIELD_IS_UNIQUE (info))
   {
     /* need to use an alignment here to stop the button expanding vertically */
     GtkWidget *btn, *alignment;
@@ -525,23 +540,32 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
 
   /* The label (if required) */
-  if (!info->unique && !pane->priv->editable && type)
+  if (!FIELD_IS_NOLABEL (info) && (!pane->priv->editable || FIELD_IS_UNIQUE(info)))
   {
     s = NULL;
 
-    /* find the display name for the type */
-    for (i = 0; info->types[i].display; i++)
+    /* Unique fields don't have different types, so just use the display name
+     * for the label */
+    if (FIELD_IS_UNIQUE (info))
     {
-       if (compare_types (type, info->types[i].vcard))
-       {
-          s = g_strdup_printf ("%s:", info->types[i].display);
-          break;
-       }
+      s = g_strdup_printf ("%s:", info->display_name);
     }
-
-    if (!s)
+    else
     {
-      s = g_strdup_printf ("%s:", type);
+      /* find the display name for the current type */
+      for (i = 0; info->types[i].display; i++)
+      {
+         if (compare_types (type, info->types[i].vcard))
+         {
+            s = g_strdup_printf ("%s:", info->types[i].display);
+            break;
+         }
+      }
+      /* if we couldn't find a display name, use the raw vcard name */
+      if (!s)
+      {
+        s = g_strdup_printf ("%s:", type);
+      }
     }
 
 
@@ -553,7 +577,8 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
     g_free (s);
   }
 
-  if (info->types && pane->priv->editable)
+  /* Create the type selector, or label, depending on field */
+  if (!FIELD_IS_UNIQUE(info) && pane->priv->editable)
   {
     GtkWidget *combo;
     gboolean is_custom_type = TRUE;
@@ -693,7 +718,7 @@ update_ui (ContactsContactPane *pane)
   GtkWidget *table = gtk_table_new (2, 4, FALSE);
   gtk_box_pack_start (GTK_BOX (pane), table, FALSE, FALSE, 4);
 
-  /* Fast path unique fields, no need to search the entire contact */
+  /* Name Field */
   attr = e_vcard_get_attribute (E_VCARD (pane->priv->contact), fields[0].vcard_field);
   if (!attr && pane->priv->editable) {
     attr = e_vcard_attribute_new ("", fields[0].vcard_field);
@@ -702,6 +727,7 @@ update_ui (ContactsContactPane *pane)
   w = make_widget (pane, attr, &fields[0]);
   gtk_table_attach_defaults (GTK_TABLE (table), w, 1, 2, 0, 1);
 
+  /* Organisation Field (if required) */
   attr = e_vcard_get_attribute (E_VCARD (pane->priv->contact), fields[1].vcard_field);
   if (!attr && pane->priv->editable) {
     attr = e_vcard_attribute_new ("", fields[1].vcard_field);
@@ -715,12 +741,13 @@ update_ui (ContactsContactPane *pane)
     has_org_field = TRUE;
   }
 
+  /* Add Photo */
   GtkImage *photo = contacts_load_photo (pane->priv->contact);
   if (pane->priv->editable)
   {
     w = gtk_button_new ();
     gtk_widget_set_name (w, "mokofingerbutton-big");
-    gtk_container_add (GTK_CONTAINER (w), GTK_WIDGET (photo));
+    gtk_button_set_image (GTK_BUTTON (w), GTK_WIDGET (photo));
     g_signal_connect (w, "clicked", (GCallback) choose_photo_cb, pane);
   }
   else
@@ -728,9 +755,9 @@ update_ui (ContactsContactPane *pane)
     w = GTK_WIDGET (photo);
   }
   if (has_org_field)
-    gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 2, 0, 0, 6, 6);
+    gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 2, 0, 0, 0, 0);
   else
-    gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 1, 0, 0, 6, 6);
+    gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 1, 0, 0, 0, 0);
 
   gtk_widget_show_all (table);
 
@@ -739,7 +766,7 @@ update_ui (ContactsContactPane *pane)
     FieldInfo *info;
 
     info = &fields[i];
-    if (info->unique) {
+    if (FIELD_IS_UNIQUE (info)) {
       /* Fast path unique fields, no need to search the entire contact */
       attr = e_vcard_get_attribute (E_VCARD (pane->priv->contact), info->vcard_field);
       if (!attr && pane->priv->editable) {
@@ -767,7 +794,7 @@ update_ui (ContactsContactPane *pane)
       }
     }
   }
-  
+
   g_object_unref (pane->priv->size_group);
 }
 
