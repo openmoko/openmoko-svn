@@ -606,7 +606,7 @@ Index: u-boot/include/configs/hxd8.h
 +#define CONFIG_USB_OHCI		1
 +#endif
 +
-+#if 0
++#if 1
 +#define CONFIG_USB_DEVICE	1
 +#define CONFIG_USB_TTY		1
 +#define CFG_CONSOLE_IS_IN_ENV	1

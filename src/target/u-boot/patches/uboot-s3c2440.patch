@@ -860,6 +860,15 @@ Index: u-boot/cpu/arm920t/start.S
  
  #if 0
  	@ get ready to call C functions (for nand_read())
+@@ -377,7 +416,7 @@
+ #endif /* CONFIG_S3C2410_NAND_BOOT */
+ done_relocate:
+ 
+-#if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
++#if defined(CONFIG_USE_IRQ) && (defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440))
+ 	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
+ 	   ended up in RAM, then that ram is mapped to 0x30000000 and not 0.
+ 	   So we need to copy the interrupt vectors, etc.  */
 Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 ===================================================================
 --- u-boot.orig/cpu/arm920t/s3c24x0/nand_read.c
