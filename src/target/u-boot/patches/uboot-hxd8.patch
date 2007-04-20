@@ -612,7 +612,7 @@ Index: u-boot/include/configs/hxd8.h
 +#define CFG_CONSOLE_IS_IN_ENV	1
 +#define CONFIG_USBD_VENDORID 		0x1457     /* Linux/NetChip */
 +#define CONFIG_USBD_PRODUCTID_GSERIAL	0x5120    /* gserial */
-+#define CONFIG_USBD_PRODUCTID_CDCACM 	0x5119    /* CDC ACM */
++#define CONFIG_USBD_PRODUCTID_CDCACM 	0x511a    /* CDC ACM */
 +#define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
 +#define CONFIG_USBD_PRODUCT_NAME	"HXD8 Bootloader " U_BOOT_VERSION
 +#define CONFIG_USBD_DFU			1
