@@ -388,7 +388,7 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 	switch (gph->msg_subtype) {
 	case GSMD_NETWORK_REGISTER:
-		cmd = atcmd_fill("AT+COPS", 9+1,
+		cmd = atcmd_fill("AT+COPS=0", 9+1,
 				 &null_cmd_cb, gu, 0);
 		break;
 	case GSMD_NETWORK_VMAIL_GET:
