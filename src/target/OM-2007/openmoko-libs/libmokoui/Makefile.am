@@ -12,6 +12,7 @@ source_h = \
     moko-panel-applet.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
+    moko-scrolled-pane.h \
     moko-tool-box.h \
     moko-tree-view.h \
     moko-window.h \
@@ -32,8 +33,9 @@ source_c = \
     moko-panel-applet.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
-    moko-tree-view.c \
+    moko-scrolled-pane.c \
     moko-tool-box.c \
+    moko-tree-view.c \
     moko-window.c \
     moko-dialog.c \
     moko-message-dialog.c

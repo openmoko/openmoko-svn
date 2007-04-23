@@ -18,6 +18,7 @@
  */
 #include "moko-paned-window.h"
 #include "moko-alignment.h"
+#include "moko-scrolled-pane.h"
 
 #include <gtk/gtktoolbar.h>
 #include <gtk/gtkvbox.h>
@@ -47,16 +48,17 @@ typedef struct _MokoPanedWindowPriv
 
 } MokoPanedWindowPriv;
 
-/* add your signals here */
+/* signals */
 enum {
     MOKO_PANED_WINDOW_SIGNAL,
     LAST_SIGNAL
 };
-
-static void moko_paned_window_class_init          (MokoPanedWindowClass *klass);
-static void moko_paned_window_init                (MokoPanedWindow      *self);
-
 static guint moko_paned_window_signals[LAST_SIGNAL] = { 0 };
+
+/* forwards */
+static void moko_paned_window_class_init(MokoPanedWindowClass* klass);
+static void moko_paned_window_init(MokoPanedWindow* self);
+static void _moko_paned_window_fullscreen_toggled(MokoScrolledPane* pane, gint on, MokoPanedWindow* self);
 
 static void moko_paned_window_class_init (MokoPanedWindowClass *klass) /* Class Initialization */
 {
@@ -130,6 +132,15 @@ void moko_paned_window_set_filter_menu(MokoPanedWindow* self, GtkMenu* menu)
     moko_menu_box_set_filter_menu( MOKO_MENU_BOX (priv->menubox), menu );
 }
 
+void moko_paned_window_set_ratio(MokoPanedWindow* self, guint ratio)
+{
+    MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
+    moko_debug( "moko_paned_window_set_ratio" );
+    //FIXME calculate this correctly, need to subtract the height of tool box and menu box
+    //      which is probably not 120 ;-)
+    gtk_paned_set_position( GTK_PANED(priv->outerframe), ratio*(gdk_screen_height()-120)/100 );
+}
+
 void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 {
     moko_debug( "moko_paned_window_set_upper_pane" );
@@ -141,6 +152,10 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
     gtk_alignment_set_padding( GTK_ALIGNMENT(priv->upperenclosing), 7, 7, 11, 11 ); //FIXME get from style (MokoAlignment::padding)
     gtk_box_pack_end( GTK_BOX(priv->upper), priv->upperenclosing, TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->upperenclosing), child );
+
+    if ( MOKO_IS_SCROLLED_PANE(child) )
+        g_signal_connect( G_OBJECT(child), "fullscreen-toggled", G_CALLBACK(_moko_paned_window_fullscreen_toggled), self );
+
 }
 
 void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
@@ -158,6 +173,9 @@ void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
     gtk_box_pack_end( GTK_BOX(priv->lower), priv->lowerenclosing, TRUE, TRUE, 0 );
     gtk_container_add( GTK_CONTAINER(priv->lowerenclosing), child );
 #endif
+
+    if ( MOKO_IS_SCROLLED_PANE(child) )
+        g_signal_connect( G_OBJECT(child), "fullscreen-toggled", G_CALLBACK(_moko_paned_window_fullscreen_toggled), self );
 }
 
 void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox)
@@ -180,4 +198,25 @@ void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b)
     {
         gtk_widget_show( priv->upper );
     }
+}
+
+static void _moko_paned_window_fullscreen_toggled(MokoScrolledPane* pane, gint b, MokoPanedWindow* self)
+{
+    MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
+    if ( pane == gtk_bin_get_child( GTK_BIN(priv->lowerenclosing) ) )
+    {
+        if ( b )
+            gtk_widget_hide( priv->upper );
+        else
+            gtk_widget_show( priv->upper );
+    }
+    else if ( pane == gtk_bin_get_child( GTK_BIN(priv->upperenclosing) ) )
+    {
+        if ( b )
+            gtk_widget_hide( priv->lower );
+        else
+            gtk_widget_show( priv->lower );
+    }
+    else
+        g_assert( FALSE ); // fail here, if invalid pane
 }

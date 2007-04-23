@@ -18,8 +18,9 @@ HEADERS = \
     moko-panel-applet.h \
     moko-pixmap-button.h \
     moko-paned-window.h \
-    moko-tool-box.h \
+    moko-scrolled-pane.h \
     moko-tree-view.h \
+    moko-tool-box.h \
     moko-window.h
 
 SOURCES = \
@@ -38,6 +39,7 @@ SOURCES = \
     moko-panel-applet.c \
     moko-pixmap-button.c \
     moko-paned-window.c \
+    moko-scrolled-pane.c \
     moko-tree-view.c \
     moko-tool-box.c \
     moko-window.c
