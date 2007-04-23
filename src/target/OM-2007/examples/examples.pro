@@ -5,7 +5,6 @@ SUBDIRS = \
   openmoko-finger-demo \
   openmoko-panel-demo-simple \
   openmoko-panel-demo \
-  openmoko-dialog-demo \
   openmoko-gsmd-demo
 
 

@@ -18,7 +18,7 @@
  */
 
 #include <libmokoui/moko-application.h>
-#include <libmokoui/moko-details-window.h>
+#include <libmokoui/moko-scrolled-pane.h>
 #include <libmokoui/moko-dialog-window.h>
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
@@ -301,7 +301,12 @@ int main( int argc, char** argv )
     gtk_tree_view_set_model (moko_treeview, GTK_TREE_MODEL (model) );
     clist_insert(moko_treeview);
 
-    moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(moko_treeview)) );
+    /*moko_paned_window_set_upper_pane( window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(moko_treeview)) );*/
+
+    MokoScrolledPane* navigationwindow = moko_scrolled_pane_new();
+    GtkScrolledWindow* scrolledwindow1 = moko_scrolled_pane_get_scrolled_window( navigationwindow );
+    gtk_container_add( scrolledwindow1, GTK_WIDGET(moko_treeview) );
+    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigationwindow) );
 
     GtkButton* button1;
     GtkButton* button2;
@@ -356,10 +361,12 @@ int main( int argc, char** argv )
             "\ndata entry here\n \n \n \n \n \n \n \nThis particular label\n \nis very long\n"
             "\nto make the fullscreen\n \ntrigger more interesting\n \n \n" );
 
-    MokoDetailsWindow* detailswindow = moko_details_window_new();
-    gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(detailswindow), GTK_WIDGET(details) );
+    MokoScrolledPane* detailswindow = moko_scrolled_pane_new();
+    GtkScrolledWindow* scrolledwindow2 = moko_scrolled_pane_get_scrolled_window( detailswindow );
+    gtk_scrolled_window_add_with_viewport( scrolledwindow2, GTK_WIDGET(details) );
+    moko_paned_window_set_lower_pane( window, GTK_WIDGET(detailswindow) );
 
-    moko_paned_window_set_lower_pane( window, GTK_WIDGET(moko_details_window_put_in_box(detailswindow) ) );
+    moko_paned_window_set_ratio( window, 50 );
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
