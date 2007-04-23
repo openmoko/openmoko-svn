@@ -111,6 +111,7 @@ include "gtkspinbutton"
 include "gtktreeview"
 
 include "mokodetailswindow"
+include "mokoscrolledpane"
 include "mokodialogwindow"
 include "mokofingerbutton"
 include "mokofingertoolbox"
