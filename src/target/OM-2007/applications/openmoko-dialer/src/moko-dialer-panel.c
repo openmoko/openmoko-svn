@@ -27,8 +27,8 @@ G_DEFINE_TYPE (MokoDialerPanel, moko_dialer_panel, GTK_TYPE_VBOX)
 
 //forward definition
      static gboolean moko_dialer_panel_pressed (MokoDigitButton * button,
-                                            GdkEventButton * event,
-                                            gpointer data);
+                                                GdkEventButton * event,
+                                                gpointer data);
 
      static gint moko_dialer_panel_signals[LAST_SIGNAL] = { 0 };
 

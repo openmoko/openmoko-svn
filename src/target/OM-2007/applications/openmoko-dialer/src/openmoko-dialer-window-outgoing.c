@@ -41,7 +41,7 @@
 /* function declerations */
 void window_outgoing_setup_timer (MOKO_DIALER_APP_DATA * appdata);
 
-void 
+void
 cb_speaker_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
@@ -60,7 +60,7 @@ cb_speaker_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 
   DBG_TRACE ();
 //  gtk_widget_show_all (appdata->window_talking);
-  gtk_widget_show(appdata->window_talking);
+  gtk_widget_show (appdata->window_talking);
 
 
   DBG_LEAVE ();
@@ -91,7 +91,7 @@ cb_cancel_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   DBG_ENTER ();
   gsm_hangup ();
   appdata->g_state.callstate = STATE_FAILED;
-  DBG_TRACE();
+  DBG_TRACE ();
   gtk_widget_hide (appdata->window_outgoing);
   DBG_LEAVE ();
 }
@@ -239,8 +239,8 @@ on_window_outgoing_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   //DBG_TRACE ();
   appdata->g_state.historytype = OUTGOING;
   //DBG_TRACE ();
-  int retv=gsm_dial (appdata->g_peer_info.number);
-  DBG_MESSAGE("GSM_DIAL returns %d",retv);
+  int retv = gsm_dial (appdata->g_peer_info.number);
+  DBG_MESSAGE ("GSM_DIAL returns %d", retv);
   //DBG_LEAVE ();
 }
 
@@ -259,11 +259,16 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     vbox = gtk_vbox_new (FALSE, 0);
     status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "outgoing_0.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "outgoing_1.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "outgoing_2.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status), "outgoing_3.png");    
-    moko_dialer_status_set_error_icon(MOKO_DIALER_STATUS (status),"failure.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                        "outgoing_0.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                        "outgoing_1.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                        "outgoing_2.png");
+    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                        "outgoing_3.png");
+    moko_dialer_status_set_error_icon (MOKO_DIALER_STATUS (status),
+                                       "failure.png");
     moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
 
     gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
@@ -271,7 +276,8 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     GtkWidget *hbox2 = gtk_hbox_new (FALSE, 0);
     GtkWidget *button = gtk_button_new_with_label ("Speaker");
-    gtk_button_set_image(GTK_BUTTON(button),file_new_image_from_relative_path("speaker.png"));
+    gtk_button_set_image (GTK_BUTTON (button),
+                          file_new_image_from_relative_path ("speaker.png"));
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
     p_dialer_data->buttonSpeaker = button;
@@ -279,7 +285,8 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 40);
 
     button = gtk_button_new_with_label ("Redial");
-    gtk_button_set_image(GTK_BUTTON(button),file_new_image_from_relative_path("redial.png"));
+    gtk_button_set_image (GTK_BUTTON (button),
+                          file_new_image_from_relative_path ("redial.png"));
     p_dialer_data->buttonRedial = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_redial_button_clicked), p_dialer_data);
@@ -288,7 +295,8 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     button = gtk_button_new_with_label ("Cancel");
-    gtk_button_set_image(GTK_BUTTON(button),file_new_image_from_relative_path("cancel.png"));
+    gtk_button_set_image (GTK_BUTTON (button),
+                          file_new_image_from_relative_path ("cancel.png"));
     p_dialer_data->buttonCancel = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_cancel_button_clicked), p_dialer_data);
@@ -303,11 +311,13 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 //  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
 
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE); //FIXME: this line seems only necessary on my PC. tony
+    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);      //FIXME: this line seems only necessary on my PC. tony
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
 
-    moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status), "Outgoing call");
-    moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status), "Calling ... (00:00:00)");
+    moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status),
+                                        "Outgoing call");
+    moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status),
+                                         "Calling ... (00:00:00)");
 
     p_dialer_data->window_outgoing = GTK_WIDGET (window);
     p_dialer_data->status_outgoing = MOKO_DIALER_STATUS (status);
@@ -329,4 +339,3 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
   DBG_LEAVE ();
   return 1;
 }
-

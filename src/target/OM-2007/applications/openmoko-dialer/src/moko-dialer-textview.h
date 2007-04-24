@@ -63,14 +63,17 @@ GtkWidget *moko_dialer_textview_new ();
 int moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
                                  const gchar * number);
 
-gchar *moko_dialer_textview_get_input (MokoDialerTextview * moko_dialer_textview,
+gchar *moko_dialer_textview_get_input (MokoDialerTextview *
+                                       moko_dialer_textview,
                                        gboolean all_text);
 int moko_dialer_textview_empty (MokoDialerTextview * moko_dialer_textview);
 int moko_dialer_textview_fill_it (MokoDialerTextview * moko_dialer_textview,
                                   gchar * string);
 int moko_dialer_textview_delete (MokoDialerTextview * moko_dialer_textview);
-void moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview);
-gint moko_dialer_textview_confirm_it (MokoDialerTextview * moko_dialer_textview,
+void moko_dialer_textview_set_color (MokoDialerTextview *
+                                     moko_dialer_textview);
+gint moko_dialer_textview_confirm_it (MokoDialerTextview *
+                                      moko_dialer_textview,
                                       const gchar * string);
 
 G_END_DECLS

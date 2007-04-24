@@ -34,8 +34,8 @@ G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
 
 //static gint moko_dialer_textview_signals[LAST_SIGNAL] = { 0 };
 
-static void
-moko_dialer_textview_class_init (MokoDialerTextviewClass * class)
+     static void
+       moko_dialer_textview_class_init (MokoDialerTextviewClass * class)
 {
 
   GtkObjectClass *object_class;
@@ -155,7 +155,8 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
     gtk_text_buffer_remove_all_tags (buffer, &start, &end);
 
     gtk_text_buffer_get_iter_at_offset (buffer, &cursoriter_1, cur - 1);
-    gtk_text_buffer_apply_tag (buffer, moko_dialer_textview->tag_for_inputed,
+    gtk_text_buffer_apply_tag (buffer,
+                               moko_dialer_textview->tag_for_inputed,
                                &start, &cursoriter);
     gtk_text_buffer_apply_tag (buffer,
                                moko_dialer_textview->tag_for_autofilled,
@@ -254,7 +255,8 @@ moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
   if (len >= 0 && len < MOKO_DIALER_MAX_NUMBER_LEN)
   {
 
-    gtk_text_buffer_insert_at_cursor (buffer, number, g_utf8_strlen (number, -1));
+    gtk_text_buffer_insert_at_cursor (buffer, number,
+                                      g_utf8_strlen (number, -1));
     len = len + g_utf8_strlen (number, -1);
   }
   else

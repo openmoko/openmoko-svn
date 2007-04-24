@@ -170,8 +170,8 @@ gsm_dial (const char *number)
 {
   struct lgsm_addr addr;
   addr.type = 129;
-  strncpy (addr.addr, number, g_utf8_strlen (number,-1));
-  addr.addr[g_utf8_strlen (number,-1)] = '\0';
+  strncpy (addr.addr, number, g_utf8_strlen (number, -1));
+  addr.addr[g_utf8_strlen (number, -1)] = '\0';
   return lgsm_voice_out_init (lgsmh, &addr);
 
 }
@@ -287,17 +287,19 @@ gsm_dtmf_send (char dtmf)
   DBG_MESSAGE ("lgsm_voice_dtmf");
   lgsm_voice_dtmf (lgsmh, dtmf);
 }
+
 #define PIN_SIZE 32
 
 static int
-gsm_pin_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+gsm_pin_handler (struct lgsm_handle *lh, int evt,
+                 struct gsmd_evt_auxdata *aux)
 {
- 
+
   int rc;
 
   printf ("EVENT: PIN request (type=%u) ", aux->u.pin.type);
 
-  gsm_pin_require(lh);
+  gsm_pin_require (lh);
 
 
   return 0;

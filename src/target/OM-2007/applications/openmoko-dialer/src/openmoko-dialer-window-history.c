@@ -132,7 +132,7 @@ on_eventboxTop_button_release_event (GtkWidget * widget,
 }
 
 void
-cb_openmoko_history_wheel_press_left_up(GtkWidget * widget,
+cb_openmoko_history_wheel_press_left_up (GtkWidget * widget,
                                          MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
@@ -349,7 +349,7 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 //now the container--window
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
+    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     p_dialer_data->window_history = GTK_WIDGET (window);
 
 
@@ -362,8 +362,8 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect ((gpointer) window, "hide",
                       G_CALLBACK (on_window_history_hide), p_dialer_data);
 
-   //FIXME: without gtk_widget_show_all first and then hide, the history view will not show properly. -tony
-   //gtk_widget_show_all(GTK_WIDGET(window));
+    //FIXME: without gtk_widget_show_all first and then hide, the history view will not show properly. -tony
+    //gtk_widget_show_all(GTK_WIDGET(window));
 
     //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
     // This causes a segfault for me... maybe a problem in libmokoui? - thomas
@@ -375,7 +375,8 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
                       p_dialer_data);
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
                       "press_right_down",
-                      G_CALLBACK (cb_openmoko_history_wheel_press_right_down),
+                      G_CALLBACK
+                      (cb_openmoko_history_wheel_press_right_down),
                       p_dialer_data);
 
     g_signal_connect (G_OBJECT (moko_finger_window_get_wheel (window)),
@@ -389,8 +390,8 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     /* TODO: remove the GTK_WIDGET() casts when libmokoui is fixed */
     button = moko_finger_tool_box_add_button_without_label (tools);
     image = file_new_image_from_relative_path ("phone.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button), image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_call_clicked),
                       p_dialer_data);
@@ -398,8 +399,8 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("sms.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button), image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_sms_clicked),
                       p_dialer_data);
@@ -408,21 +409,22 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("delete_01.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button), image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_delete_clicked),
                       p_dialer_data);
     button =
       GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
     image = file_new_image_from_relative_path ("exit.png");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button), image);
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_back_clicked),
                       p_dialer_data);
 
-    p_dialer_data->wheel_history = GTK_WIDGET (moko_finger_window_get_wheel (window));
+    p_dialer_data->wheel_history =
+      GTK_WIDGET (moko_finger_window_get_wheel (window));
     p_dialer_data->toolbox_history = GTK_WIDGET (tools);
     DBG_LEAVE ();
   }
@@ -444,7 +446,9 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
   int hasname;
   MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) user_data;
 
-  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (p_dialer_data->treeview_history));
+  selection =
+    gtk_tree_view_get_selection (GTK_TREE_VIEW
+                                 (p_dialer_data->treeview_history));
 
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
   {
@@ -669,39 +673,39 @@ history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data)
   p_dialer_data->g_iconReceived = create_pixbuf ("received.png");
 
   /* FIXME: error handling hasn't been implemented yet!
-  p_dialer_data->g_iconReceived = create_pixbuf ("received.png", &error);
-  if (error)
-  {
-    DBG_WARN ("Cound not load icon :%s", error->message);
-    g_error_free (error);
-    p_dialer_data->g_iconReceived = NULL;
-    error = NULL;
-  }
-  */
+     p_dialer_data->g_iconReceived = create_pixbuf ("received.png", &error);
+     if (error)
+     {
+     DBG_WARN ("Cound not load icon :%s", error->message);
+     g_error_free (error);
+     p_dialer_data->g_iconReceived = NULL;
+     error = NULL;
+     }
+   */
 
   p_dialer_data->g_iconDialed = create_pixbuf ("dialed.png");
   /* FIXME: error handling hasn't been implemented yet!
-  p_dialer_data->g_iconDialed = create_pixbuf ("dialed.png", &error);
-  if (error)
-  {
-    DBG_WARN ("Cound not load icon :%s", error->message);
-    g_error_free (error);
-    p_dialer_data->g_iconDialed = NULL;
-    error = NULL;
-  }
-  */
+     p_dialer_data->g_iconDialed = create_pixbuf ("dialed.png", &error);
+     if (error)
+     {
+     DBG_WARN ("Cound not load icon :%s", error->message);
+     g_error_free (error);
+     p_dialer_data->g_iconDialed = NULL;
+     error = NULL;
+     }
+   */
 
   p_dialer_data->g_iconMissed = create_pixbuf ("missed.png");
   /* FIXME: error handling hasn't been implemented yet!
-  p_dialer_data->g_iconMissed = create_pixbuf ("missed.png", &error);
-  if (error)
-  {
-    DBG_WARN ("Cound not load icon :%s", error->message);
-    g_error_free (error);
-    p_dialer_data->g_iconMissed = NULL;
-    error = NULL;
-  }
-  */
+     p_dialer_data->g_iconMissed = create_pixbuf ("missed.png", &error);
+     if (error)
+     {
+     DBG_WARN ("Cound not load icon :%s", error->message);
+     g_error_free (error);
+     p_dialer_data->g_iconMissed = NULL;
+     error = NULL;
+     }
+   */
 
   while (entry)
   {
@@ -720,39 +724,39 @@ history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data)
     }
     else
     {
-      gtk_list_store_set (list_store, &iter, COLUMN_NAME_NUMBER, entry->name,
-                          -1);
+      gtk_list_store_set (list_store, &iter, COLUMN_NAME_NUMBER,
+                          entry->name, -1);
       gtk_list_store_set (list_store, &iter, COLUMN_HASNAME, 1, -1);
     }
     switch (entry->type)
     {
-      case INCOMING:
-        {
-          gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                              p_dialer_data->g_iconReceived, -1);
-          //      icon=gdk_pixbuf_new_from_file("./received.png",&error);
-          break;
-        }
-      case OUTGOING:
-        {                       //     icon=gdk_pixbuf_new_from_file("./dialed.png",&error);
-          gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                              p_dialer_data->g_iconDialed, -1);
-          break;
-        }
-      case MISSED:
-        {                       //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
-          gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                              p_dialer_data->g_iconMissed, -1);
-          break;
-        }
+    case INCOMING:
+      {
+        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                            p_dialer_data->g_iconReceived, -1);
+        //      icon=gdk_pixbuf_new_from_file("./received.png",&error);
+        break;
+      }
+    case OUTGOING:
+      {                         //     icon=gdk_pixbuf_new_from_file("./dialed.png",&error);
+        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                            p_dialer_data->g_iconDialed, -1);
+        break;
+      }
+    case MISSED:
+      {                         //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
+        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                            p_dialer_data->g_iconMissed, -1);
+        break;
+      }
 
-      default:
+    default:
 
-        {                       //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
-          gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                              p_dialer_data->g_iconMissed, -1);
-          break;
-        }
+      {                         //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
+        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                            p_dialer_data->g_iconMissed, -1);
+        break;
+      }
     }
 
 
@@ -979,8 +983,8 @@ history_list_view_add (MOKO_DIALER_APP_DATA * appdata, HISTORY_ENTRY * entry)
   if (entry->name == 0)
   {
     //DBG_MESSAGE(entry->number);
-    gtk_list_store_set (list_store, &iter, COLUMN_NAME_NUMBER, entry->number,
-                        -1);
+    gtk_list_store_set (list_store, &iter, COLUMN_NAME_NUMBER,
+                        entry->number, -1);
     gtk_list_store_set (list_store, &iter, COLUMN_HASNAME, 0, -1);
   }
   else
@@ -991,33 +995,33 @@ history_list_view_add (MOKO_DIALER_APP_DATA * appdata, HISTORY_ENTRY * entry)
   }
   switch (entry->type)
   {
-    case INCOMING:
-      {
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            appdata->g_iconReceived, -1);
-        //      icon=gdk_pixbuf_new_from_file("./received.png",&error);
-        break;
-      }
-    case OUTGOING:
-      {                         //     icon=gdk_pixbuf_new_from_file("./dialed.png",&error);
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            appdata->g_iconDialed, -1);
-        break;
-      }
-    case MISSED:
-      {                         //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            appdata->g_iconMissed, -1);
-        break;
-      }
+  case INCOMING:
+    {
+      gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                          appdata->g_iconReceived, -1);
+      //      icon=gdk_pixbuf_new_from_file("./received.png",&error);
+      break;
+    }
+  case OUTGOING:
+    {                           //     icon=gdk_pixbuf_new_from_file("./dialed.png",&error);
+      gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                          appdata->g_iconDialed, -1);
+      break;
+    }
+  case MISSED:
+    {                           //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
+      gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                          appdata->g_iconMissed, -1);
+      break;
+    }
 
-    default:
+  default:
 
-      {                         //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            appdata->g_iconMissed, -1);
-        break;
-      }
+    {                           //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
+      gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
+                          appdata->g_iconMissed, -1);
+      break;
+    }
   }
   history_update_counter (appdata);
   return 1;
@@ -1029,10 +1033,10 @@ add_histroy_entry (MOKO_DIALER_APP_DATA * appdata, HISTORY_TYPE type,
                    const char *name, const char *number, const char *id,
                    char *time, char *date, int durationsec)
 {
-  
+
 //DBG_ENTER();
-    //DBG_MESSAGE("History add:%s,%s,%s,%s,%s,%d",name,number,picpath,time,date,durationsec);
-    HISTORY_ENTRY * pentry =
+  //DBG_MESSAGE("History add:%s,%s,%s,%s,%s,%d",name,number,picpath,time,date,durationsec);
+  HISTORY_ENTRY *pentry =
     history_add_entry (&(appdata->g_historylist), type, name, number, id,
                        time, date, durationsec);
   return history_list_view_add (appdata, pentry);

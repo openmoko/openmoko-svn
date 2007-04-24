@@ -99,7 +99,7 @@ int pin_init(struct lgsm_handle *lh, const char *pin_preset);
  * @retval
  */
 
- void gsm_pin_require();
+  void gsm_pin_require ();
 
   void *gsm_monitor_thread (struct lgsm_handle *lgsmh);
 

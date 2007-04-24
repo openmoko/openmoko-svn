@@ -161,7 +161,8 @@ moko_dialer_status_set_person_image (MokoDialerStatus * moko_dialer_status,
 //file_load_person_image_scalable_from_relative_path(moko_dialer_status->imagePerson,path);
 //file_load_person_image_from_relative_path(moko_dialer_status->imagePerson,path);
 
-  contact_load_contact_photo (GTK_IMAGE (moko_dialer_status->imagePerson), id);
+  contact_load_contact_photo (GTK_IMAGE (moko_dialer_status->imagePerson),
+                              id);
 //file_load_person_image_scalable_from_relative_path(moko_dialer_status->imagePerson,path);
 }
 
@@ -171,7 +172,8 @@ moko_dialer_status_add_status_icon (MokoDialerStatus * moko_dialer_status,
 {
   if (moko_dialer_status->number_of_the_icons < MOKO_DIALER_MAX_STATUS_ICONS)
   {
-    moko_dialer_status->iconStatus[moko_dialer_status->number_of_the_icons] =
+    moko_dialer_status->iconStatus[moko_dialer_status->
+                                   number_of_the_icons] =
       create_pixbuf (text);
 
     moko_dialer_status->number_of_the_icons++;

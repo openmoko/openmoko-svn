@@ -128,24 +128,24 @@ netreg_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 
   switch (aux->u.netreg.state)
   {
-    case GSMD_NETREG_NONE:
-      printf ("not searching for network ");
-      break;
-    case 1:
-      printf ("registered (home network) ");
-      break;
+  case GSMD_NETREG_NONE:
+    printf ("not searching for network ");
+    break;
+  case 1:
+    printf ("registered (home network) ");
+    break;
     /* 
      * FIXME: these are not defined in gsmd/event.h
      *
-    case 2:
-      printf ("searching for network ");
-      break;
-    case 3:
-      printf ("registration denied ");
-      break;
-    case 5:
-      printf ("registered (roaming) ");
-      break;
+     case 2:
+     printf ("searching for network ");
+     break;
+     case 3:
+     printf ("registration denied ");
+     break;
+     case 5:
+     printf ("registered (roaming) ");
+     break;
      *
      *
      */
@@ -220,7 +220,7 @@ cprog_handler (struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
   if (aux->u.call_status.prog == GSMD_CALLPROG_DISCONNECT)
   {
 //    if (aux->u.call_status.dir == GSMD_CALL_DIR_MO)
-      gsm_peer_disconnect ();
+    gsm_peer_disconnect ();
 
   }
 

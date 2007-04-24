@@ -97,8 +97,8 @@ void moko_dialer_status_set_error (MokoDialerStatus * moko_dialer_status);
 void moko_dialer_status_update_icon (MokoDialerStatus * moko_dialer_status);
 int moko_dialer_status_add_status_icon (MokoDialerStatus * moko_dialer_status,
                                         const gchar * text);
-void moko_dialer_status_set_icon_by_index (MokoDialerStatus * moko_dialer_status,
-                                           gint index);
+void moko_dialer_status_set_icon_by_index (MokoDialerStatus *
+                                           moko_dialer_status, gint index);
 
 
 G_END_DECLS

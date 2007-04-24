@@ -47,7 +47,7 @@ pin_ok_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
   //   gchar *codesinput;
 //    codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_pin_text_view, TRUE));
 
-  if (!appdata->str_sim_pin||g_utf8_strlen (appdata->str_sim_pin, -1) < 1)
+  if (!appdata->str_sim_pin || g_utf8_strlen (appdata->str_sim_pin, -1) < 1)
   {
     //user didn't input anything
     DBG_MESSAGE ("no input for pin");
@@ -128,7 +128,7 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     MokoFingerWindow *window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
+    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     g_signal_connect ((gpointer) window, "show",
                       G_CALLBACK (on_window_pin_show), p_dialer_data);
     g_signal_connect ((gpointer) window, "hide",
@@ -151,8 +151,8 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 //    moko_dialer_textview_fill_it(mokotextview , "Please input the pin:");
 
     gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
-    gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (eventbox1), FALSE, FALSE,
-                        0);
+    gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (eventbox1), FALSE,
+                        FALSE, 0);
 
     MokoDialerPanel *mokodialerpanel = moko_dialer_panel_new ();
 
@@ -174,11 +174,10 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (pin_delete_button_clicked), p_dialer_data);
     gtk_widget_set_name (GTK_WIDGET (button1), "mokofingerbutton-orange");
-    
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button1),
-                                                            file_new_image_from_relative_path
-                                                            ("delete.png"));
+
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button1),
+       file_new_image_from_relative_path ("delete.png"));
 
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button1), "Delete");
@@ -193,10 +192,9 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button2), "clicked",
                       G_CALLBACK (pin_ok_button_clicked), p_dialer_data);
     gtk_widget_set_name (GTK_WIDGET (button1), "mokofingerbutton-orange");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button2),
-                                                            file_new_image_from_relative_path
-                                                            ("phone.png"));
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button2),
+       file_new_image_from_relative_path ("phone.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button2), "OK");
     //gtk_widget_set_size_request (button2, WINDOW_DIALER_BUTTON_SIZE_X,

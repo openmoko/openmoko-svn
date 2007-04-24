@@ -65,7 +65,8 @@ cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
       DBG_MESSAGE ("input %s", codesinput);
       if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
       {
-        moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
+        moko_dialer_autolist_refresh_by_string (appdata->
+                                                moko_dialer_autolist,
                                                 codesinput, FALSE);
         moko_dialer_textview_set_color (appdata->moko_dialer_text_view);
       }
@@ -102,15 +103,17 @@ window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
   codesinput =
     g_strdup (moko_dialer_textview_get_input
               (appdata->moko_dialer_text_view, FALSE));
-  DBG_TRACE();
-  if ((!codesinput)||((codesinput!=NULL)&&g_utf8_strlen (codesinput, -1) )< 1)
+  DBG_TRACE ();
+  if ((!codesinput)
+      || ((codesinput != NULL) && g_utf8_strlen (codesinput, -1)) < 1)
   {
     //user didn't input anything, maybe it's a redial, so we just insert the last dialed number and return this time.
     if (g_utf8_strlen (appdata->g_state.lastnumber, -1) > 0)
     {
       moko_dialer_textview_insert (appdata->moko_dialer_text_view,
                                    appdata->g_state.lastnumber);
-      moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
+      moko_dialer_autolist_refresh_by_string (appdata->
+                                              moko_dialer_autolist,
                                               appdata->g_state.lastnumber,
                                               TRUE);
     }
@@ -172,15 +175,15 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
   codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
-  if(ready_contact->p_entry->content)
-  lenstring = g_utf8_strlen (ready_contact->p_entry->content, -1);
+  if (ready_contact->p_entry->content)
+    lenstring = g_utf8_strlen (ready_contact->p_entry->content, -1);
   else
-  lenstring=0;
-  
-  if(codesinput)
-  leninput = g_utf8_strlen (codesinput, -1);
+    lenstring = 0;
+
+  if (codesinput)
+    leninput = g_utf8_strlen (codesinput, -1);
   else
-  leninput =0; 
+    leninput = 0;
   if (lenstring > leninput)
   {
 
@@ -190,7 +193,7 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
 
   }
   else
-  moko_dialer_textview_fill_it (moko_dialer_text_view,"");
+    moko_dialer_textview_fill_it (moko_dialer_text_view, "");
   g_free (codesinput);
 
 }
@@ -263,7 +266,8 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   codesinput =
     g_strdup (moko_dialer_textview_get_input (moko_dialer_text_view, FALSE));
 
-  if (codesinput&&(g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN))
+  if (codesinput
+      && (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN))
   {
     moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
                                             codesinput, TRUE);
@@ -320,7 +324,7 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     GtkWidget *window = moko_finger_window_new ();
-    gtk_window_set_decorated(GTK_WINDOW(window ),FALSE);
+    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
 
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
     GtkWidget *closeitem = gtk_menu_item_new_with_label ("Close");
@@ -415,10 +419,9 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (cb_delete_button_clicked), p_dialer_data);
     gtk_widget_set_name (button1, "mokofingerbutton-orange");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button1),
-                                                            file_new_image_from_relative_path
-                                                            ("delete.png"));
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button1),
+       file_new_image_from_relative_path ("delete.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button1), "Delete");
     gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X,
@@ -430,10 +433,9 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button3), "clicked",
                       G_CALLBACK (cb_history_button_clicked), p_dialer_data);
     gtk_widget_set_name (button3, "mokofingerbutton-orange");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button3),
-                                                            file_new_image_from_relative_path
-                                                            ("history.png"));
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button3),
+       file_new_image_from_relative_path ("history.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button3), "History");
     gtk_widget_set_size_request (button3, WINDOW_DIALER_BUTTON_SIZE_X,
@@ -446,10 +448,9 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
     g_signal_connect (G_OBJECT (button2), "clicked",
                       G_CALLBACK (cb_dialer_button_clicked), p_dialer_data);
     gtk_widget_set_name (button2, "mokofingerbutton-black");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image (MOKO_PIXMAP_BUTTON
-                                                            (button2),
-                                                            file_new_image_from_relative_path
-                                                            ("phone.png"));
+    moko_pixmap_button_set_finger_toolbox_btn_center_image
+      (MOKO_PIXMAP_BUTTON (button2),
+       file_new_image_from_relative_path ("phone.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button2), "Dial");
     gtk_widget_set_size_request (button2, WINDOW_DIALER_BUTTON_SIZE_X + 20,

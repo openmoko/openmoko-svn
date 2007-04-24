@@ -62,13 +62,13 @@ moko_digit_button_new_with_labels (const gchar * string_digit,
 {
 
   PangoFontDescription *font_desc_label = 0;
-  font_desc_label = pango_font_description_new ();  
+  font_desc_label = pango_font_description_new ();
   MokoDigitButton *digitbutton =
     (MokoDigitButton *) g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL);
 
   gtk_widget_show (GTK_WIDGET (digitbutton));
   gtk_widget_set_size_request (GTK_WIDGET (digitbutton), 64, 64);
-  GTK_WIDGET_UNSET_FLAGS( GTK_WIDGET(digitbutton), GTK_CAN_FOCUS);
+  GTK_WIDGET_UNSET_FLAGS (GTK_WIDGET (digitbutton), GTK_CAN_FOCUS);
 //  GtkWidget * hbox = gtk_hbox_new (TRUE, 0);
   GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
   gtk_widget_show (hbox);
@@ -95,19 +95,17 @@ moko_digit_button_new_with_labels (const gchar * string_digit,
 
   MokoDigitButtonPrivate *priv =
     (MokoDigitButtonPrivate *) MOKO_DIGIT_BUTTON_GET_PRIVATE (digitbutton);
- //set the fonts of each side.
-   pango_font_description_set_size (font_desc_label, 32 * PANGO_SCALE);
+  //set the fonts of each side.
+  pango_font_description_set_size (font_desc_label, 32 * PANGO_SCALE);
   if (font_desc_label)
-    gtk_widget_modify_font (labelDigit ,
-                            font_desc_label);
-   pango_font_description_set_size (font_desc_label,  10*PANGO_SCALE);
+    gtk_widget_modify_font (labelDigit, font_desc_label);
+  pango_font_description_set_size (font_desc_label, 10 * PANGO_SCALE);
   if (font_desc_label)
-    gtk_widget_modify_font (labelAcrobat,
-                            font_desc_label);
+    gtk_widget_modify_font (labelAcrobat, font_desc_label);
 
-  if(font_desc_label)
-    pango_font_description_free(font_desc_label);
-  
+  if (font_desc_label)
+    pango_font_description_free (font_desc_label);
+
   priv->labelDigit = labelDigit;
   priv->labelAcrobat = labelAcrobat;
 
