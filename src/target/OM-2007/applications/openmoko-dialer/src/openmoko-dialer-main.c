@@ -317,16 +317,9 @@ main (int argc, char **argv)
   g_set_application_name ("OpenMoko Dialer");
 
 
-//   gtk_main();
-
-
-
-  GMainLoop *mainloop = 0;
-  mainloop = g_main_loop_new (NULL, FALSE);
-  p_dialer_data->mainloop = mainloop;
-
   signal (SIGUSR1, handle_sigusr1);
-//init the dialer window
+
+  //init the dialer window
   window_dialer_init (p_dialer_data);
   window_incoming_init (p_dialer_data);
   window_pin_init (p_dialer_data);

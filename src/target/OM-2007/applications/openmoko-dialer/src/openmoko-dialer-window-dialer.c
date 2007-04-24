@@ -232,8 +232,7 @@ void
 on_dialer_menu_close (GtkWidget * widget, gpointer user_data)
 {
   MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
-  g_main_loop_quit (appdata->mainloop);
-
+  gtk_main_quit ();
 }
 
 void
