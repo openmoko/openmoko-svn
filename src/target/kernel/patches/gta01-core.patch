@@ -1,10 +1,10 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.4-moko.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Kconfig
+--- linux-2.6.20.7-moko.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Kconfig
 @@ -86,6 +86,14 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -20,10 +20,10 @@ Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Kconfig
  config ARCH_S3C2440
  	bool "SMDK2440"
  	select CPU_S3C2440
-Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.4-moko.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Makefile
+--- linux-2.6.20.7-moko.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Makefile
 @@ -89,5 +89,6 @@
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
@@ -31,11 +31,11 @@ Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/Makefile
 +obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
  
  obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.4-moko/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,740 @@
++++ linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -0,0 +1,741 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -333,6 +333,7 @@ Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +				  S3C2410_LCDCON4_HSPW(7),	/* 8 */
 +
 +		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVCLK |
 +				  S3C2410_LCDCON5_INVVLINE |
 +				  S3C2410_LCDCON5_INVVFRAME |
 +				  S3C2410_LCDCON5_PWREN |
@@ -776,10 +777,10 @@ Index: linux-2.6.20.4-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.20.4-moko/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.20.7-moko/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.4-moko/include/asm-arm/arch-s3c2410/gta01.h
++++ linux-2.6.20.7-moko/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,69 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
