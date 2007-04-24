@@ -36,7 +36,6 @@
 #include "openmoko-dialer-window-outgoing.h"
 #include "openmoko-dialer-window-history.h"
 #include "openmoko-dialer-window-talking.h"
-#include "dialergsm.h"
 
 /* function declerations */
 void window_outgoing_setup_timer (MOKO_DIALER_APP_DATA * appdata);
@@ -80,7 +79,9 @@ cb_redial_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 
   appdata->g_state.callstate = STATE_CALLING;
   appdata->g_state.historytype = OUTGOING;
-  gsm_dial (appdata->g_peer_info.number);
+  /* TOOD: MokoGsmdConnection->dial
+   * gsm_dial (appdata->g_peer_info.number);
+   */
 
   DBG_LEAVE ();
 }
@@ -89,7 +90,9 @@ void
 cb_cancel_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 {
   DBG_ENTER ();
-  gsm_hangup ();
+  /* TODO: MokoGsmdConnection->hangup
+   * gsm_hangup ();
+   */
   appdata->g_state.callstate = STATE_FAILED;
   DBG_TRACE ();
   gtk_widget_hide (appdata->window_outgoing);
@@ -239,8 +242,10 @@ on_window_outgoing_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   //DBG_TRACE ();
   appdata->g_state.historytype = OUTGOING;
   //DBG_TRACE ();
-  int retv = gsm_dial (appdata->g_peer_info.number);
-  DBG_MESSAGE ("GSM_DIAL returns %d", retv);
+  /* TODO: MokoGsmdConnection->dial
+   * int retv = gsm_dial (appdata->g_peer_info.number);
+   * DBG_MESSAGE ("GSM_DIAL returns %d", retv);
+   */
   //DBG_LEAVE ();
 }
 

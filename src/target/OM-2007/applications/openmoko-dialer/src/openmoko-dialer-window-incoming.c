@@ -36,23 +36,26 @@
 #include "openmoko-dialer-window-incoming.h"
 #include "openmoko-dialer-window-talking.h"
 #include "openmoko-dialer-window-history.h"
-#include "dialergsm.h"
 #include "history.h"
 void 
 cb_answer_button_clicked (GtkButton * button,
                           MOKO_DIALER_APP_DATA * appdata) 
 {
-  DBG_ENTER ();
-  appdata->g_state.callstate = STATE_TALKING;
-  gsm_answer ();
-  gtk_widget_hide (appdata->window_incoming);
-  
-//transfer the contact info
-    window_talking_prepare (appdata);
-  gtk_widget_show (appdata->window_talking);
-  DBG_LEAVE ();
-} void 
+  DBG_ENTER ();
+  appdata->g_state.callstate = STATE_TALKING;
+  /* TODO: MokoGsmdConnection->answer
+   * gsm_answer ();
+   */
 
+  gtk_widget_hide (appdata->window_incoming);
+
+  //transfer the contact info
+   window_talking_prepare (appdata);
+  gtk_widget_show (appdata->window_talking);
+  DBG_LEAVE ();
+} 
+
+void
 cb_ignore_button_clicked (GtkButton * button,
                           MOKO_DIALER_APP_DATA * appdata) 
 {
@@ -65,13 +68,16 @@ cb_ignore_button_clicked (GtkButton * button,
 cb_reject_button_clicked (GtkButton * button,
                           MOKO_DIALER_APP_DATA * appdata) 
 {
-  DBG_ENTER ();
-  gsm_hangup ();
-  appdata->g_state.callstate = STATE_REJECTED;
-  gtk_widget_hide (appdata->window_incoming);
-  DBG_LEAVE ();
-} void 
+  DBG_ENTER ();
+  /* TODO: MokoGsmdConnection->hangup
+   * gsm_hangup ();
+   */
+  appdata->g_state.callstate = STATE_REJECTED;
+  gtk_widget_hide (appdata->window_incoming);
+  DBG_LEAVE ();
+}
 
+void
 window_incoming_prepare (MOKO_DIALER_APP_DATA * appdata) 
 {
   if (!appdata)

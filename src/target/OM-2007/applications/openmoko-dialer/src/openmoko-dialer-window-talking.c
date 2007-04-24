@@ -36,7 +36,6 @@
 #include "moko-dialer-status.h"
 #include "openmoko-dialer-window-talking.h"
 #include "openmoko-dialer-window-history.h"
-#include "dialergsm.h"
 
 void
 openmoko_wheel_press_left_up_cb (GtkWidget * widget,
@@ -112,7 +111,9 @@ void
 cb_tool_button_hangup_clicked (GtkButton * button,
                                MOKO_DIALER_APP_DATA * appdata)
 {
-  gsm_hangup ();
+  /* TODO: MokoGsmdConnection->hangup
+   * gsm_hangup ();
+   */
   gtk_widget_hide (appdata->window_talking);
 
 }
@@ -132,7 +133,9 @@ on_dtmf_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
   moko_dialer_textview_insert (moko_dtmf_text_view, input);
 
 
-  gsm_dtmf_send (input[0]);
+  /* TODO: MokoGsmdConnection->dtmf_send
+   * gsm_dtmf_send (input[0]);
+   */
 //lgsm_voice_dtmf(lgsmh, buf[1]);
 
 }

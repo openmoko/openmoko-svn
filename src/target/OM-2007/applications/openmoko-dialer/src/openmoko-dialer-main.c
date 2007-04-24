@@ -36,7 +36,7 @@
 #include "contacts.h"
 #include  "history.h"
 #include "error.h"
-#include "dialergsm.h"
+#include "errno.h"
 #include "openmoko-dialer-main.h"
 #include "openmoko-dialer-window-dialer.h"
 #include "openmoko-dialer-window-talking.h"
@@ -166,7 +166,10 @@ gsm_peer_disconnect ()
 {
 
   MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
-  gsm_hangup ();
+  /* TODO: MokoGsmdConnection->hangup 
+   * gsm_hangup ();
+   */
+
   if (appdata->window_talking)
     gtk_widget_hide (appdata->window_talking);
   if (appdata->window_outgoing)
@@ -337,14 +340,7 @@ main (int argc, char **argv)
     handle_sigusr1 (SIGUSR1);
   }
 
-//from now on we will not use multithreads.
-  gsm_lgsm_start (mainloop);
-
-//for debug only>>
-//gsm_incoming_call("13917209523");
-//<<for debug only
-
-  g_main_loop_run (mainloop);
+  gtk_main ();
 
 
 //release everything    

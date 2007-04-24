@@ -14,7 +14,6 @@ event.c\
 history.c\
 contacts.c\
 common.c\
-dialergsm.c\
 openmoko-dialer-window-history.c\
 openmoko-dialer-window-dialer.c\
 openmoko-dialer-window-outgoing.c\
