@@ -311,7 +311,6 @@ window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 //  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
 
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);      //FIXME: this line seems only necessary on my PC. tony
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
 
     moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status),

@@ -368,7 +368,6 @@ window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
     //now the container--window
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     p_dialer_data->window_talking = GTK_WIDGET (window);
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
     g_signal_connect ((gpointer) window, "show",

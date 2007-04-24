@@ -246,7 +246,6 @@ on_window_incoming_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 //   MokoDialogWindow* window = (MokoDialogWindow *)(moko_dialog_window_new());
 //  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
       window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
     
       //FIXME: dear thomas, I know that show & hide is not good, but when you removed the following 2 lines, the incoming window

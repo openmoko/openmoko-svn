@@ -128,7 +128,6 @@ window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     MokoFingerWindow *window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     g_signal_connect ((gpointer) window, "show",
                       G_CALLBACK (on_window_pin_show), p_dialer_data);
     g_signal_connect ((gpointer) window, "hide",

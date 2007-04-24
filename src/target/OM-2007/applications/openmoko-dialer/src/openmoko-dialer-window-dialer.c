@@ -324,7 +324,6 @@ window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 
     GtkWidget *window = moko_finger_window_new ();
-    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
 
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
     GtkWidget *closeitem = gtk_menu_item_new_with_label ("Close");

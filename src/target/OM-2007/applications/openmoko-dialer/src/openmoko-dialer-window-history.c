@@ -349,7 +349,6 @@ window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
 
 //now the container--window
     window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
     p_dialer_data->window_history = GTK_WIDGET (window);
 
 
