@@ -397,7 +397,7 @@ void populate_navigation_area( MessengerData* d )
 
   GtkTreeSelection* selection = gtk_tree_view_get_selection( GTK_TREE_VIEW(d->view) );
   g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d );
-  moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(d->view))) );
+  moko_paned_window_set_navigation_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(MOKO_TREE_VIEW(d->view))) );
 }
 
 void populate_detail_area( MessengerData* d )
@@ -405,7 +405,7 @@ void populate_detail_area( MessengerData* d )
   d->details = detail_area_new();
   gtk_widget_show (d->details);
   gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(DETAIL_AREA(d->details)));
-  moko_paned_window_set_lower_pane( MOKO_PANED_WINDOW(d->window), 
+  moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(d->window), 
           GTK_WIDGET(moko_details_window_put_in_box(MOKO_DETAILS_WINDOW(d->details))));
 }
 

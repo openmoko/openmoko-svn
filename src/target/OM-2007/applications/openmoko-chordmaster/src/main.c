@@ -145,7 +145,7 @@ void populate_navigation_area( ChordMasterData* d )
     column = gtk_tree_view_column_new_with_attributes( "Fretboard", ren, "text", COLUMN_FRETS, NULL );
     moko_tree_view_append_column( d->view, column );
 
-    moko_paned_window_set_upper_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(d->view)) );
+    moko_paned_window_set_navigation_pane( d->window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(d->view)) );
 
     GtkTreeSelection* selection = gtk_tree_view_get_selection( d->view );
     g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_cursor_changed), d );
@@ -162,5 +162,5 @@ void populate_navigation_area( ChordMasterData* d )
 void populate_details_area( ChordMasterData* d )
 {
     d->fretboard = fretboard_widget_new();
-    moko_paned_window_set_lower_pane( d->window, GTK_WIDGET(d->fretboard) );
+    moko_paned_window_set_details_pane( d->window, GTK_WIDGET(d->fretboard) );
 }

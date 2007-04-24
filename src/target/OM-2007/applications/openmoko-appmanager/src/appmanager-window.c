@@ -93,13 +93,13 @@ main (int argc, char* argv[])
   application_manager_data_set_menubox (appdata, menubox);
 
   navigation = navigation_area_new (appdata);
-  moko_paned_window_set_upper_pane (window, navigation);
+  moko_paned_window_set_navigation_pane (window, navigation);
 
   toolbox = tool_box_new (appdata);
   moko_paned_window_add_toolbox (window, toolbox);
 
   detail = detail_area_new (appdata);
-  moko_paned_window_set_lower_pane (window, detail);
+  moko_paned_window_set_details_pane (window, detail);
 
   /* Load the list of all package in the memory */
   ret = init_package_list (appdata);

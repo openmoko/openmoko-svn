@@ -125,7 +125,7 @@ int main( int argc, char** argv )
 
     /* navigation area */
     GtkLabel* navigation = gtk_label_new( "Add your widget for navigating\n \nthrough appplication specific\n \ndata here" );
-    moko_paned_window_set_upper_pane( window, GTK_WIDGET(navigation) );
+    moko_paned_window_set_navigation_pane( window, GTK_WIDGET(navigation) );
 
     GtkButton* button1;
     GtkButton* button2;
@@ -177,7 +177,7 @@ int main( int argc, char** argv )
     MokoDetailsWindow* detailswindow = moko_details_window_new();
     gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(detailswindow), GTK_WIDGET(details) );
 
-    moko_paned_window_set_lower_pane( window, GTK_WIDGET(moko_details_window_put_in_box(detailswindow) ) );
+    moko_paned_window_set_details_pane( window, GTK_WIDGET(moko_details_window_put_in_box(detailswindow) ) );
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );

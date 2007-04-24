@@ -141,9 +141,9 @@ void moko_paned_window_set_ratio(MokoPanedWindow* self, guint ratio)
     gtk_paned_set_position( GTK_PANED(priv->outerframe), ratio*(gdk_screen_height()-120)/100 );
 }
 
-void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
+void moko_paned_window_set_navigation_pane(MokoPanedWindow* self, GtkWidget* child)
 {
-    moko_debug( "moko_paned_window_set_upper_pane" );
+    moko_debug( "moko_paned_window_set_navigation_pane" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
 
     priv->upperenclosing = moko_alignment_new();
@@ -158,9 +158,9 @@ void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child)
 
 }
 
-void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child)
+void moko_paned_window_set_details_pane(MokoPanedWindow* self, GtkWidget* child)
 {
-    moko_debug( "moko_paned_window_set_lower_pane" );
+    moko_debug( "moko_paned_window_set_details_pane" );
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
 
 #if 0

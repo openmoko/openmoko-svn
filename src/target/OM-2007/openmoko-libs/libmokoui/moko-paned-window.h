@@ -66,8 +66,8 @@ void moko_paned_window_add_toolbox(MokoPanedWindow* self, MokoToolBox* toolbox);
 
 /* panes */
 void moko_paned_window_set_ratio(MokoPanedWindow* self, guint ratio);
-void moko_paned_window_set_upper_pane(MokoPanedWindow* self, GtkWidget* child);
-void moko_paned_window_set_lower_pane(MokoPanedWindow* self, GtkWidget* child);
+void moko_paned_window_set_navigation_pane(MokoPanedWindow* self, GtkWidget* child);
+void moko_paned_window_set_details_pane(MokoPanedWindow* self, GtkWidget* child);
 
 /* fullscreen */
 void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b);

@@ -182,7 +182,7 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
     gtk_tree_sortable_set_sort_func ( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE, rss_sort_dates, NULL, NULL);
 
     data->treeView = MOKO_TREE_VIEW(moko_tree_view_new_with_model(GTK_TREE_MODEL(data->sort_model)));
-    moko_paned_window_set_upper_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_tree_view_put_into_scrolled_window(data->treeView)) );
+    moko_paned_window_set_navigation_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_tree_view_put_into_scrolled_window(data->treeView)) );
 
     /*
      * Only show the SUBJECT and DATE header
@@ -230,7 +230,7 @@ static void create_details_area( struct RSSReaderData* data ) {
 
     GtkWidget *scrollWindow = GTK_WIDGET(moko_details_window_new());
     gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollWindow), GTK_WIDGET (data->textView));
-    moko_paned_window_set_lower_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_details_window_put_in_box(MOKO_DETAILS_WINDOW(scrollWindow))) );
+    moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_details_window_put_in_box(MOKO_DETAILS_WINDOW(scrollWindow))) );
 }
 
 /*
