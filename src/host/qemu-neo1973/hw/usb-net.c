@@ -111,14 +111,14 @@ static const uint8_t qemu_net_dev_descriptor[] = {
 	STRING_MANUFACTURER, /*  u8  iManufacturer; */
 	STRING_PRODUCT,      /*  u8  iProduct; */
 	STRING_SERIALNUMBER, /*  u8  iSerialNumber; */
-	0x02                 /*  u8  bNumConfigurations; */
+	0x01                 /*  u8  bNumConfigurations; */
 };
 
 static const uint8_t qemu_net_rndis_config_descriptor[] = {
 	/* Configuration Descriptor */
 	0x09,                /*  u8  bLength */
 	USB_DT_CONFIG,       /*  u8  bDescriptorType */
-        0x00, 0x00,          /*  le16 wTotalLength */
+        0x43, 0x00,          /*  le16 wTotalLength */
         0x02,                /*  u8  bNumInterfaces */
         DEV_RNDIS_CONFIG_VALUE, /*  u8  bConfigurationValue */
         STRING_RNDIS,        /*  u8  iConfiguration */
@@ -193,7 +193,7 @@ static const uint8_t qemu_net_cdc_config_descriptor[] = {
 	/* Configuration Descriptor */
 	0x09,                /*  u8  bLength */
 	USB_DT_CONFIG,       /*  u8  bDescriptorType */
-        0x00, 0x00,          /*  le16 wTotalLength */
+        0x50, 0x00,          /*  le16 wTotalLength */
         0x02,                /*  u8  bNumInterfaces */
         DEV_RNDIS_CONFIG_VALUE, /*  u8  bConfigurationValue */
         STRING_RNDIS,        /*  u8  iConfiguration */
@@ -972,12 +972,12 @@ static int usb_net_handle_control(USBDevice *dev, int request, int value,
 
 		case USB_DT_CONFIG:
 			switch (value & 0xff) {
-			case 0:
+			case 1:
 				ret = sizeof(qemu_net_rndis_config_descriptor);
 				memcpy(data, qemu_net_rndis_config_descriptor, ret);
 				break;
 
-			case 1:
+			case 0:
 				ret = sizeof(qemu_net_cdc_config_descriptor);
 				memcpy(data, qemu_net_cdc_config_descriptor, ret);
 				break;

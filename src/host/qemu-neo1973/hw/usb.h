@@ -214,6 +214,9 @@ void usb_ohci_init_memio(target_phys_addr_t base, int num_ports, int devfn,
 USBDevice *usb_host_device_open(const char *devname);
 void usb_host_info(void);
 
+/* usb-linux-gadget.c */
+int usb_gadget_init(void);
+
 /* usb-hid.c */
 USBDevice *usb_mouse_init(void);
 USBDevice *usb_tablet_init(void);

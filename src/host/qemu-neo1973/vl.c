@@ -6135,6 +6135,7 @@ void help(void)
 #endif
            "-usb            enable the USB driver (will be the default soon)\n"
            "-usbdevice name add the host or guest USB device 'name'\n"
+           "-usbgadget      enable the linux USB GadgetFS as an HCD\n"
 #if defined(TARGET_PPC) || defined(TARGET_SPARC)
            "-g WxH[xDEPTH]  Set the initial graphical resolution and depth\n"
 #endif
@@ -6287,6 +6288,7 @@ enum {
     QEMU_OPTION_win2k_hack,
     QEMU_OPTION_usb,
     QEMU_OPTION_usbdevice,
+    QEMU_OPTION_usbgadget,
     QEMU_OPTION_smp,
     QEMU_OPTION_vnc,
     QEMU_OPTION_no_acpi,
@@ -6369,6 +6371,7 @@ const QEMUOption qemu_options[] = {
     { "pidfile", HAS_ARG, QEMU_OPTION_pidfile },
     { "win2k-hack", 0, QEMU_OPTION_win2k_hack },
     { "usbdevice", HAS_ARG, QEMU_OPTION_usbdevice },
+    { "usbgadget", 0, QEMU_OPTION_usbgadget },
     { "smp", HAS_ARG, QEMU_OPTION_smp },
     { "vnc", HAS_ARG, QEMU_OPTION_vnc },
 
@@ -6626,6 +6629,7 @@ int main(int argc, char **argv)
     QEMUMachine *machine;
     char usb_devices[MAX_USB_CMDLINE][128];
     int usb_devices_index;
+    int usbgadget_enabled = 0;
     int fds[2];
 
     LIST_INIT (&vm_change_state_head);
@@ -7038,6 +7042,9 @@ int main(int argc, char **argv)
                         optarg);
                 usb_devices_index++;
                 break;
+            case QEMU_OPTION_usbgadget:
+                usbgadget_enabled = 1;
+                break;
             case QEMU_OPTION_smp:
                 smp_cpus = atoi(optarg);
                 if (smp_cpus < 1 || smp_cpus > MAX_CPUS) {
@@ -7321,6 +7328,12 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Warning: could not add USB device %s\n",
                         usb_devices[i]);
             }
+        }
+    }
+
+    if (usbgadget_enabled) {
+        if (usb_gadget_init() < 0) {
+            fprintf(stderr, "Warning: could not find USB gadgetfs\n");
         }
     }
 
