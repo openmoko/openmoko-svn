@@ -10,7 +10,6 @@ moko-dialer-panel.c\
 moko-dialer-textview.c\
 moko-dialer-tip.c\
 moko-dialer-autolist.c\
-event.c\
 history.c\
 contacts.c\
 common.c\

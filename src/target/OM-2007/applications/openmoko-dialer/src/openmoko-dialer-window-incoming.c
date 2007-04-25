@@ -160,9 +160,11 @@ on_window_incoming_hide (GtkWidget * widget, MokoDialerData * appdata)
     g_source_remove (appdata->g_timer_data.ptimer);
     appdata->g_timer_data.ptimer = 0;
   }
+  /*
   event_reset_clip_signaled ();
   event_reset_incoming_signaled ();
   event_reset_keep_calling ();
+  */
   if (appdata->g_state.callstate != STATE_TALKING)
     
   {                             //     add_histroy_entry(g_state.historytype,g_state.contactinfo.name,g_state.contactinfo.number,g_state.contactinfo.picpath,g_state.starttime,0);
