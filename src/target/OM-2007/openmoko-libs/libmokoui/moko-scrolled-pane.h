@@ -46,6 +46,7 @@ GtkWidget* moko_scrolled_pane_new();
 void moko_scrolled_pane_pack (MokoScrolledPane *pane, GtkWidget *child);
 void moko_scrolled_pane_unpack (MokoScrolledPane *pane, GtkWidget *child);
 GtkWidget *moko_scrolled_pane_get_child (MokoScrolledPane *pane);
+void moko_scrolled_pane_pack_with_viewport (MokoScrolledPane *pane, GtkWidget *child);
 
 G_END_DECLS
 

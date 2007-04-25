@@ -155,6 +155,17 @@ void moko_scrolled_pane_pack (MokoScrolledPane *pane, GtkWidget *child)
   gtk_container_add (GTK_CONTAINER (priv->scrolledwindow), child);
 }
 
+void moko_scrolled_pane_pack_with_viewport (MokoScrolledPane *pane, GtkWidget *child)
+{
+  MokoScrolledPanePrivate *priv;
+
+  g_return_if_fail (MOKO_IS_SCROLLED_PANE (pane));
+
+  priv = SCROLLED_PANE_GET_PRIVATE (pane);
+
+  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (priv->scrolledwindow), child);
+}
+
 void moko_scrolled_pane_unpack (MokoScrolledPane *pane, GtkWidget *child)
 {
   MokoScrolledPanePrivate *priv;

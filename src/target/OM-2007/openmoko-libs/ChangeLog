@@ -1,5 +1,12 @@
 2007-04-25  Rob Bradford  <rob@openedhand.com>
 
+	* libmokoui/moko-scrolled-pane.c:
+	(moko_scrolled_pane_pack_with_viewport):
+	* libmokoui/moko-scrolled-pane.h:
+	Add a moko_scrolled_pane_pack_with_viewport function.
+
+2007-04-25  Rob Bradford  <rob@openedhand.com>
+
 	* libmokoui/moko-scrolled-pane.c: (moko_scrolled_pane_pack),
 	(moko_scrolled_pane_unpack), (moko_scrolled_pane_get_child):
 	* libmokoui/moko-scrolled-pane.h:
