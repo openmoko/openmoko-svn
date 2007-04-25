@@ -247,7 +247,7 @@ on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata)
     gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE,
                          10);
     gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 50);
-    
+    
 //currently     MokoDialogWindow is not finished, wating...
 //   MokoDialogWindow* window = (MokoDialogWindow *)(moko_dialog_window_new());
 //  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
@@ -264,7 +264,7 @@ on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata)
     moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status), "");
     p_dialer_data->window_incoming = GTK_WIDGET (window);
     p_dialer_data->status_incoming = MOKO_DIALER_STATUS (status);
-    
+    
 //   DBG_MESSAGE("p_dialer_data->status_incoming=0X%x",p_dialer_data->status_incoming);
       g_signal_connect ((gpointer) window, "show",
                           G_CALLBACK (on_window_incoming_show),
@@ -276,4 +276,4 @@ on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata)
   return 1;
 }
 
-
+
