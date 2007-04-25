@@ -1,5 +1,15 @@
 2007-04-25  Rob Bradford  <rob@openedhand.com>
 
+	* libmokoui/moko-paned-window.c: (moko_paned_window_init),
+	(moko_paned_window_set_ratio):
+	Improve the moko_paned_window_set_ratio function. It's just the ratio
+	of the top half (including menu area and toolbox) to the bottom half.
+	No need to be try and be clever about considering the menu and toolbox
+	because its not clear what the ratio means in that case.
+	Set a default ratio of 1:1.
+
+2007-04-25  Rob Bradford  <rob@openedhand.com>
+
 	* libmokoui/moko-scrolled-pane.c:
 	(moko_scrolled_pane_pack_with_viewport):
 	* libmokoui/moko-scrolled-pane.h:

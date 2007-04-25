@@ -86,6 +86,8 @@ static void moko_paned_window_init (MokoPanedWindow *self) /* Instance Construct
     gtk_paned_add2( GTK_PANED(priv->outerframe), priv->lower );
     priv->menubox = NULL;
     priv->toolbox = NULL;
+
+    moko_paned_window_set_ratio (self, 50);
 }
 
 GtkWidget* moko_paned_window_new() /* Construction */
@@ -136,9 +138,11 @@ void moko_paned_window_set_ratio(MokoPanedWindow* self, guint ratio)
 {
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     moko_debug( "moko_paned_window_set_ratio" );
-    //FIXME calculate this correctly, need to subtract the height of tool box and menu box
-    //      which is probably not 120 ;-)
-    gtk_paned_set_position( GTK_PANED(priv->outerframe), ratio*(gdk_screen_height()-120)/100 );
+    guint height;
+
+    gtk_window_get_size (GTK_WIDGET (self), NULL, &height);
+
+    gtk_paned_set_position( GTK_PANED(priv->outerframe), ratio * height / 100 );
 }
 
 void moko_paned_window_set_navigation_pane(MokoPanedWindow* self, GtkWidget* child)
