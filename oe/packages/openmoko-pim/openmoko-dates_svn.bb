@@ -9,7 +9,6 @@ PR = "r9"
 inherit gnome autotools pkgconfig gtk-icon-cache
 
 SRC_URI = "svn://svn.o-hand.com/repos/dates/branches/;module=openmoko;proto=http \
-	   http://people.openmoko.org/laforge/tmp/openmoko-dates-450-moko_pane_api_change.patch;patch=1 \
            file://openmoko-dates.png \
            file://openmoko-dates.desktop"
 
