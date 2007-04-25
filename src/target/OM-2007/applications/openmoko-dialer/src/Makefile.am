@@ -4,7 +4,9 @@ AM_CFLAGS = -Wall -pedantic -std=c99 @CFLAGS@
 
 bin_PROGRAMS = openmoko-dialer
 
-openmoko_dialer_SOURCES = openmoko-dialer-main.c\
+openmoko_dialer_SOURCES = \
+dialer-callbacks-connection.c\
+openmoko-dialer-main.c\
 moko-digit-button.c\
 moko-dialer-panel.c\
 moko-dialer-textview.c\

@@ -16,6 +16,7 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
 #include "moko-dialer-includes.h"
+#include <libmokogsmd/moko-gsmd-connection.h>
 /*
 
 typedef struct _window_outgoing
@@ -33,7 +34,7 @@ GtkWidget* buttonRedial;
 typedef struct _dialer_data
 {
   //the global data area begins here
-  struct lgsm_handle *lh;
+  MokoGsmdConnection *connection;
 
   char str_sim_pin[MOKO_DIALER_MAX_PIN_LEN + 1];
   gint int_sim_pin_end_point;

@@ -57,7 +57,7 @@ pin_ok_button_clicked (GtkButton * button, MokoDialerData * appdata)
 
     DBG_MESSAGE ("here we send the pin:%s", appdata->str_sim_pin);
     //FIXME:why this call will cause segment fault?
-    lgsm_pin (appdata->lh, appdata->str_sim_pin);
+    //lgsm_pin (appdata->lh, appdata->str_sim_pin);
     //lgsm_pin (appdata->lh, "1234");
     DBG_MESSAGE ("pin:%s sent", appdata->str_sim_pin);
     gtk_widget_hide (appdata->window_pin);

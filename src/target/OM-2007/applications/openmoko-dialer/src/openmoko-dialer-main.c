@@ -20,14 +20,10 @@
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
 
-#include <gtk/gtkalignment.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmain.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtktogglebutton.h>
-#include <gtk/gtkvbox.h>
+#include <libmokogsmd/moko-gsmd-connection.h>
+
+
+#include <gtk/gtk.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -45,141 +41,14 @@
 #include "openmoko-dialer-window-pin.h"
 #include "openmoko-dialer-window-history.h"
 
+#include "dialer-callbacks-connection.h"
+
 MokoDialerData *p_dialer_data = 0;
 MokoDialerData *
 moko_get_app_data ()
 {
   return p_dialer_data;
 }
-
-void
-gsm_pin_require (struct lgsm_handle *lh)
-{
-  MokoDialerData *appdata = moko_get_app_data ();
-
-  if (appdata)
-  {
-    appdata->lh = lh;
-    gtk_widget_show (appdata->window_pin);
-  }
-  else
-  {
-    DBG_ERROR ("gui failed to initialize.try another time.");
-  }
-
-
-}
-void
-gsm_incoming_call (gchar * number)
-{
-
-  MokoDialerData *appdata = moko_get_app_data ();
-
-  if (appdata)
-  {
-//first, we should remove the "" from the number.
-    char *temp = NULL;
-    int start = 0;
-    int end = strlen (number) - 1;
-    while (number[start] == '\"' && start < end)
-      start++;
-    if (end > 0)
-      while (number[end] == '\"' && start < end)
-        end--;
-
-    g_return_if_fail (start <= end);
-
-    DBG_MESSAGE ("START=%d,END=%d", start, end);
-    temp = g_strndup (number + start, end - start + 1);
-
-    g_return_if_fail (temp != NULL);
-
-    DBG_MESSAGE ("%s", temp);
-
-//got the number;
-    g_stpcpy (appdata->g_peer_info.number, temp);
-
-    g_free (temp);
-//retrieve the contact information if any.
-    contact_get_peer_info_from_number (appdata->g_contactlist.contacts,
-                                       &(appdata->g_peer_info));
-// contact_get_peer_info_from_number
-
-
-//transfer the contact info
-    window_incoming_prepare (appdata);
-
-    gtk_widget_show (appdata->window_incoming);
-  }
-  else
-  {
-    DBG_ERROR ("gui failed to initialize.try another time.");
-  }
-
-
-}
-
-void
-gsm_peer_accept ()
-{
-  MokoDialerData *appdata = moko_get_app_data ();
-  DBG_ENTER ();
-//moko_dialer_status_update_icon(appdata->status_outgoing);
-
-
-  appdata->g_state.callstate = STATE_TALKING;
-
-  gtk_widget_hide (appdata->window_outgoing);
-
-
-//transfer the contact info
-  window_talking_prepare (appdata);
-
-//start talking.
-
-  gtk_widget_show (appdata->window_talking);
-
-
-  DBG_LEAVE ();
-}
-
-void
-gsm_peer_refuse ()
-{
-  MokoDialerData *appdata = moko_get_app_data ();
-  window_outgoing_fails (appdata);
-}
-
-void
-gsm_peer_abort ()
-{
-
-  MokoDialerData *appdata = moko_get_app_data ();
-  if (appdata->window_incoming)
-    gtk_widget_hide (appdata->window_incoming);
-
-
-}
-
-void
-gsm_peer_disconnect ()
-{
-
-  MokoDialerData *appdata = moko_get_app_data ();
-  /* TODO: MokoGsmdConnection->hangup 
-   * gsm_hangup ();
-   */
-
-  if (appdata->window_talking)
-    gtk_widget_hide (appdata->window_talking);
-  if (appdata->window_outgoing)
-    gtk_widget_hide (appdata->window_outgoing);
-  if (appdata->window_incoming)
-    gtk_widget_hide (appdata->window_incoming);
-
-}
-
-
 
 static void
 handle_sigusr1 (int value)
@@ -305,7 +174,7 @@ main (int argc, char **argv)
   setlock ("/tmp/dialer.lock");
 
 
-  p_dialer_data = calloc (1, sizeof (MokoDialerData));
+  p_dialer_data = g_new0 (MokoDialerData, 1);
 
   //init application data
   contact_init_contact_data (&(p_dialer_data->g_contactlist));
@@ -316,6 +185,11 @@ main (int argc, char **argv)
 //    MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
   g_set_application_name ("OpenMoko Dialer");
 
+  /* Set up gsmd connection object */
+  MokoGsmdConnection* conn = p_dialer_data->connection = moko_gsmd_connection_new ();
+  g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, NULL);
+  g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, NULL);
+  g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, NULL);
 
   signal (SIGUSR1, handle_sigusr1);
 
