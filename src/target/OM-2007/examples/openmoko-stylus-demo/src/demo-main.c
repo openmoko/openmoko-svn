@@ -303,9 +303,8 @@ int main( int argc, char** argv )
 
     /*moko_paned_window_set_navigation_pane( window, GTK_WIDGET(moko_tree_view_put_into_scrolled_window(moko_treeview)) );*/
 
-    MokoScrolledPane* navigationwindow = moko_scrolled_pane_new();
-    GtkScrolledWindow* scrolledwindow1 = moko_scrolled_pane_get_scrolled_window( navigationwindow );
-    gtk_container_add( scrolledwindow1, GTK_WIDGET(moko_treeview) );
+    MokoScrolledPane *navigationwindow = moko_scrolled_pane_new();
+    moko_scrolled_pane_pack (MOKO_SCROLLED_PANE (navigationwindow), GTK_WIDGET(moko_treeview));
     moko_paned_window_set_navigation_pane( window, GTK_WIDGET(navigationwindow) );
 
     GtkButton* button1;
@@ -362,8 +361,7 @@ int main( int argc, char** argv )
             "\nto make the fullscreen\n \ntrigger more interesting\n \n \n" );
 
     MokoScrolledPane* detailswindow = moko_scrolled_pane_new();
-    GtkScrolledWindow* scrolledwindow2 = moko_scrolled_pane_get_scrolled_window( detailswindow );
-    gtk_scrolled_window_add_with_viewport( scrolledwindow2, GTK_WIDGET(details) );
+    moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE (detailswindow), GTK_WIDGET (details));
     moko_paned_window_set_details_pane( window, GTK_WIDGET(detailswindow) );
 
     moko_paned_window_set_ratio( window, 50 );
