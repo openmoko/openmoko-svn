@@ -108,9 +108,12 @@ create_contacts_list (ContactsData *data)
 void
 create_main_window (ContactsData *contacts_data)
 {
-	GtkWidget *contacts_menu_menu, *scrolledwindow3, *widget;
+	GtkWidget *contacts_menu_menu, *widget;
 	GtkAccelGroup *accel_group;
 	GtkWidget *moko_tool_box;
+	GtkWidget *details_pane;
+	GtkWidget *navigation_pane;
+
 	ContactsUI *ui = contacts_data->ui;
 
 	accel_group = gtk_accel_group_new ();
@@ -182,8 +185,10 @@ create_main_window (ContactsData *contacts_data)
 	widget = create_contacts_list (contacts_data);
 	g_object_unref (contacts_data->contacts_liststore);
 
-	moko_paned_window_set_navigation_pane (MOKO_PANED_WINDOW (ui->main_window),
-      moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (widget)));
+	navigation_pane = moko_scrolled_pane_new ();
+	moko_scrolled_pane_pack (MOKO_SCROLLED_PANE (navigation_pane), widget);
+	moko_paned_window_set_navigation_pane (MOKO_PANED_WINDOW (ui->main_window), 
+			navigation_pane);
 
 	ui->contacts_treeview = widget;
 
@@ -235,9 +240,11 @@ create_main_window (ContactsData *contacts_data)
 
 	/* note book for switching between view/edit mode */
 	ui->main_notebook = gtk_notebook_new ();
-	scrolledwindow3 = (GtkWidget*) moko_details_window_new();
-	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrolledwindow3), GTK_WIDGET (ui->main_notebook));
-	moko_paned_window_set_details_pane (MOKO_PANED_WINDOW (ui->main_window), GTK_WIDGET(moko_details_window_put_in_box (MOKO_DETAILS_WINDOW (scrolledwindow3))));
+
+	details_pane = moko_scrolled_pane_new ();
+	moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE (details_pane), GTK_WIDGET(ui->main_notebook));
+	moko_paned_window_set_details_pane (MOKO_PANED_WINDOW (ui->main_window), details_pane);
+
 	GTK_WIDGET_UNSET_FLAGS (ui->main_notebook, GTK_CAN_FOCUS);
 	gtk_notebook_set_show_tabs (GTK_NOTEBOOK (ui->main_notebook), FALSE);
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (ui->main_notebook), FALSE);

@@ -28,6 +28,7 @@
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-navigation-list.h>
+#include <libmokoui/moko-scrolled-pane.h>
 
 
 #ifndef OMOKO_H
