@@ -144,9 +144,39 @@ static void _moko_scrolled_pane_fullscreen_clicked(GtkButton * button, MokoScrol
     on = !on;
 }
 
-GtkScrolledWindow* moko_scrolled_pane_get_scrolled_window(MokoScrolledPane* self)
+void moko_scrolled_pane_pack (MokoScrolledPane *pane, GtkWidget *child)
 {
-    MokoScrolledPanePrivate* priv = SCROLLED_PANE_GET_PRIVATE(self);
-    g_assert( priv->scrolledwindow );
-    return priv->scrolledwindow;
+  MokoScrolledPanePrivate *priv;
+
+  g_return_if_fail (MOKO_IS_SCROLLED_PANE (pane));
+
+  priv = SCROLLED_PANE_GET_PRIVATE (pane);
+
+  gtk_container_add (GTK_CONTAINER (priv->scrolledwindow), child);
 }
+
+void moko_scrolled_pane_unpack (MokoScrolledPane *pane, GtkWidget *child)
+{
+  MokoScrolledPanePrivate *priv;
+
+  g_return_if_fail (MOKO_IS_SCROLLED_PANE (pane));
+
+  priv = SCROLLED_PANE_GET_PRIVATE (pane);
+
+  gtk_container_remove (GTK_CONTAINER (priv->scrolledwindow), child);
+}
+
+GtkWidget *moko_scrolled_pane_get_child (MokoScrolledPane *pane)
+{
+  MokoScrolledPanePrivate *priv;
+  GtkWidget *child;
+
+  g_return_val_if_fail (MOKO_IS_SCROLLED_PANE (pane), NULL);
+
+  priv = SCROLLED_PANE_GET_PRIVATE (pane);
+
+  child = gtk_bin_get_child (GTK_BIN(priv->scrolledwindow));
+
+  return child;
+}
+

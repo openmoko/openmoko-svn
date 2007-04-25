@@ -43,6 +43,10 @@ typedef struct {
 GType moko_scrolled_pane_get_type();
 GtkWidget* moko_scrolled_pane_new();
 
+void moko_scrolled_pane_pack (MokoScrolledPane *pane, GtkWidget *child);
+void moko_scrolled_pane_unpack (MokoScrolledPane *pane, GtkWidget *child);
+GtkWidget *moko_scrolled_pane_get_child (MokoScrolledPane *pane);
+
 G_END_DECLS
 
 #endif // _MOKO_SCROLLED_PANE_H_

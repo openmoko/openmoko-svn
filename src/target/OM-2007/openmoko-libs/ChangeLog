@@ -1,3 +1,10 @@
+2007-04-25  Rob Bradford  <rob@openedhand.com>
+
+	* libmokoui/moko-scrolled-pane.c: (moko_scrolled_pane_pack),
+	(moko_scrolled_pane_unpack), (moko_scrolled_pane_get_child):
+	* libmokoui/moko-scrolled-pane.h:
+	Improve the API for the MokoScrolledPane widget (see Bugzilla #512.)
+
 2007-04-16  Rob Bradford  <rob@openedhand.com>
 
 	* libmokoui/moko-message-dialog.c: (moko_message_dialog_map),
