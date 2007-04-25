@@ -141,7 +141,7 @@ window_pin_init (MokoDialerData * p_dialer_data)
 
     GtkEventBox *eventbox1 = gtk_event_box_new ();
     gtk_widget_show (eventbox1);
-    gtk_widget_set_name (GTK_WIDGET (eventbox1), "gtkeventbox-black");
+    gtk_widget_set_name (GTK_WIDGET (eventbox1), "gtkeventbox-black");
     gtk_widget_modify_bg (eventbox1, GTK_STATE_NORMAL, &color);
 //        gtk_widget_set_size_request (eventbox1, 480, 132);
 

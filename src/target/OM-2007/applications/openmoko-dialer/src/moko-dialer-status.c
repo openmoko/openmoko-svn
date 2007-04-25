@@ -191,7 +191,7 @@ void
 moko_dialer_status_set_error_icon (MokoDialerStatus * moko_dialer_status,
                                    const gchar * text)
 {
-  moko_dialer_status->iconError = create_pixbuf (text);
+  moko_dialer_status->iconError = create_pixbuf (text);
 //      file_load_person_image_from_relative_path(moko_dialer_status->iconError,text);
 }
 
