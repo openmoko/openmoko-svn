@@ -99,4 +99,4 @@ typedef struct _dialer_data
   HISTORY_TYPE g_history_filter_type;   ///<indicates the current history filter type, the gtktreeview will be filtered on the value.
 
   GdkPixbuf *g_iconReceived, *g_iconMissed, *g_iconDialed;      ///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
-} MOKO_DIALER_APP_DATA;
+} MokoDialerData;

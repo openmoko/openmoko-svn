@@ -29,7 +29,7 @@ extern "C"
 #endif
 
 
-  gint window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data);
+  gint window_dialer_init (MokoDialerData * p_dialer_data);
 
 #ifdef __cplusplus
 }

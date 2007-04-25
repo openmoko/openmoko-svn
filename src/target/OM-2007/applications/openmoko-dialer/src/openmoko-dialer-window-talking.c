@@ -39,7 +39,7 @@
 
 void
 openmoko_wheel_press_left_up_cb (GtkWidget * widget,
-                                 MOKO_DIALER_APP_DATA * appdata)
+                                 MokoDialerData * appdata)
 {
   DBG_ENTER ();
   gint l, r;
@@ -59,7 +59,7 @@ openmoko_wheel_press_left_up_cb (GtkWidget * widget,
 
 void
 openmoko_wheel_press_right_down_cb (GtkWidget * widget,
-                                    MOKO_DIALER_APP_DATA * appdata)
+                                    MokoDialerData * appdata)
 {
   gint l, r;
   alsa_get_volume (&l, &r);
@@ -73,14 +73,14 @@ openmoko_wheel_press_right_down_cb (GtkWidget * widget,
 
 void
 cb_tool_button_speaker_clicked (GtkButton * button,
-                                MOKO_DIALER_APP_DATA * appdata)
+                                MokoDialerData * appdata)
 {
   DBG_ENTER ();
 }
 
 void
 cb_tool_button_dtmf_talk_clicked (GtkButton * button,
-                                  MOKO_DIALER_APP_DATA * appdata)
+                                  MokoDialerData * appdata)
 {
   DBG_ENTER ();
 
@@ -109,7 +109,7 @@ cb_tool_button_dtmf_talk_clicked (GtkButton * button,
 
 void
 cb_tool_button_hangup_clicked (GtkButton * button,
-                               MOKO_DIALER_APP_DATA * appdata)
+                               MokoDialerData * appdata)
 {
   /* TODO: MokoGsmdConnection->hangup
    * gsm_hangup ();
@@ -127,7 +127,7 @@ on_dtmf_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
   input[1] = 0;
 
 
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dtmf_text_view = appdata->moko_dtmf_text_view;
 
   moko_dialer_textview_insert (moko_dtmf_text_view, input);
@@ -143,7 +143,7 @@ on_dtmf_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
 
 
 void
-window_talking_prepare (MOKO_DIALER_APP_DATA * appdata)
+window_talking_prepare (MokoDialerData * appdata)
 {
   DBG_ENTER ();
 
@@ -181,7 +181,7 @@ window_talking_prepare (MOKO_DIALER_APP_DATA * appdata)
 }
 
 gint
-timer_talking_time_out (MOKO_DIALER_APP_DATA * appdata)
+timer_talking_time_out (MokoDialerData * appdata)
 {
 //DBG_ENTER();
   TIMER_DATA *timer_data = &(appdata->g_timer_data);
@@ -216,7 +216,7 @@ timer_talking_time_out (MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-on_window_talking_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_talking_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
 
 
@@ -241,7 +241,7 @@ on_window_talking_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-on_window_talking_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_talking_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
 
@@ -289,7 +289,7 @@ on_window_talking_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 
 
 gint
-window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data)
+window_talking_init (MokoDialerData * p_dialer_data)
 {
 
   DBG_ENTER ();

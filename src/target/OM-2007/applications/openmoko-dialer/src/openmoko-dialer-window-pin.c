@@ -29,7 +29,7 @@
 #include "openmoko-dialer-main.h"
 
 void
-pin_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+pin_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   if (appdata->int_sim_pin_end_point)
   {
@@ -42,7 +42,7 @@ pin_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 
 
 void
-pin_ok_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+pin_ok_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   //   gchar *codesinput;
 //    codesinput =g_strdup(moko_dialer_textview_get_input (appdata->moko_pin_text_view, TRUE));
@@ -76,7 +76,7 @@ on_pin_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
   input[1] = 0;
 
 //DBG_TRACE();
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_pin_text_view = appdata->moko_pin_text_view;
   if (appdata->int_sim_pin_end_point < MOKO_DIALER_MAX_NUMBER_LEN)
   {
@@ -94,14 +94,14 @@ on_pin_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
 }
 
 void
-on_window_pin_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_pin_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   appdata->window_present = 0;
 
 }
 
 void
-on_window_pin_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_pin_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
   appdata->window_present = widget;
@@ -113,7 +113,7 @@ on_window_pin_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 
 
 gint
-window_pin_init (MOKO_DIALER_APP_DATA * p_dialer_data)
+window_pin_init (MokoDialerData * p_dialer_data)
 {
 
   if (!p_dialer_data->window_pin)

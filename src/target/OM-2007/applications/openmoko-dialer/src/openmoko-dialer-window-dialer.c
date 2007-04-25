@@ -38,7 +38,7 @@
 #include "openmoko-dialer-window-outgoing.h"
 
 void
-cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   g_debug ("delete button clicked");
 
@@ -85,7 +85,7 @@ cb_delete_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-cb_history_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+cb_history_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   if (!appdata->window_history)
     window_history_init (appdata);
@@ -96,7 +96,7 @@ cb_history_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-window_dialer_dial_out (MOKO_DIALER_APP_DATA * appdata)
+window_dialer_dial_out (MokoDialerData * appdata)
 {
   gchar *codesinput;
   //get the input digits
@@ -157,7 +157,7 @@ gtk_widget_show(appdata->window_incoming);
 }
 
 void
-cb_dialer_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+cb_dialer_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   window_dialer_dial_out (appdata);
 }
@@ -171,7 +171,7 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   gchar *codesinput;
   gint lenstring = 0;
   gint leninput = 0;
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
   codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
@@ -203,7 +203,7 @@ on_dialer_autolist_user_confirmed (GtkWidget * widget, gpointer para_pointer,
                                    gpointer user_data)
 {
 
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
   DBG_MESSAGE ("GOT THE MESSAGE OF confirmed:%s",
@@ -220,7 +220,7 @@ void
 on_dialer_autolist_nomatch (GtkWidget * widget, gpointer user_data)
 {
 
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
 
   DBG_MESSAGE ("GOT THE MESSAGE OF no match");
@@ -231,12 +231,12 @@ on_dialer_autolist_nomatch (GtkWidget * widget, gpointer user_data)
 void
 on_dialer_menu_close (GtkWidget * widget, gpointer user_data)
 {
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   gtk_main_quit ();
 }
 
 void
-on_dialer_menu_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_dialer_menu_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   gtk_widget_hide (appdata->window_dialer);
 }
@@ -254,7 +254,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   gchar *codesinput = NULL;
 
 //DBG_TRACE();
-  MOKO_DIALER_APP_DATA *appdata = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
 
 
@@ -289,13 +289,13 @@ on_dialer_panel_user_hold (GtkWidget * widget, gchar parac,
 }
 
 void
-on_window_dialer_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_dialer_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   appdata->window_present = 0;
 }
 
 void
-on_window_dialer_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_dialer_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
   appdata->window_present = widget;
@@ -310,7 +310,7 @@ on_window_dialer_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 #define WINDOW_DIALER_BUTTON_SIZE_X 100
 #define WINDOW_DIALER_BUTTON_SIZE_Y 100
 gint
-window_dialer_init (MOKO_DIALER_APP_DATA * p_dialer_data)
+window_dialer_init (MokoDialerData * p_dialer_data)
 {
 
   if (!p_dialer_data->window_dialer)

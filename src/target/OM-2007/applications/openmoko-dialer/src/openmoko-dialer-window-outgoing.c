@@ -38,10 +38,10 @@
 #include "openmoko-dialer-window-talking.h"
 
 /* function declerations */
-void window_outgoing_setup_timer (MOKO_DIALER_APP_DATA * appdata);
+void window_outgoing_setup_timer (MokoDialerData * appdata);
 
 void
-cb_speaker_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+cb_speaker_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   DBG_ENTER ();
   //moko_dialer_status_update_icon(appdata->status_outgoing);
@@ -66,7 +66,7 @@ cb_speaker_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-cb_redial_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+cb_redial_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   DBG_ENTER ();
   gtk_widget_hide (appdata->buttonRedial);
@@ -87,7 +87,7 @@ cb_redial_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-cb_cancel_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
+cb_cancel_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   DBG_ENTER ();
   /* TODO: MokoGsmdConnection->hangup
@@ -100,7 +100,7 @@ cb_cancel_button_clicked (GtkButton * button, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-window_outgoing_prepare (MOKO_DIALER_APP_DATA * appdata)
+window_outgoing_prepare (MokoDialerData * appdata)
 {
   DBG_ENTER ();
   if (appdata->window_outgoing == 0)
@@ -129,7 +129,7 @@ window_outgoing_prepare (MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-window_outgoing_fails (MOKO_DIALER_APP_DATA * appdata)
+window_outgoing_fails (MokoDialerData * appdata)
 {
   DBG_ENTER ();
   moko_dialer_status_set_error (appdata->status_outgoing);
@@ -141,7 +141,7 @@ window_outgoing_fails (MOKO_DIALER_APP_DATA * appdata)
 }
 
 gint
-timer_outgoing_time_out (MOKO_DIALER_APP_DATA * appdata)
+timer_outgoing_time_out (MokoDialerData * appdata)
 {
 //DBG_ENTER();
   TIMER_DATA *timer_data = &(appdata->g_timer_data);
@@ -180,7 +180,7 @@ timer_outgoing_time_out (MOKO_DIALER_APP_DATA * appdata)
 
 
 void
-on_window_outgoing_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_outgoing_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   if (appdata->g_timer_data.ptimer != 0)
   {
@@ -203,7 +203,7 @@ on_window_outgoing_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-window_outgoing_setup_timer (MOKO_DIALER_APP_DATA * appdata)
+window_outgoing_setup_timer (MokoDialerData * appdata)
 {
   time_t timep;
   struct tm *p;
@@ -232,7 +232,7 @@ window_outgoing_setup_timer (MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-on_window_outgoing_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
 {
 
   //DBG_ENTER ();
@@ -251,7 +251,7 @@ on_window_outgoing_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 
 
 gint
-window_outgoing_init (MOKO_DIALER_APP_DATA * p_dialer_data)
+window_outgoing_init (MokoDialerData * p_dialer_data)
 {
 
   DBG_ENTER ();

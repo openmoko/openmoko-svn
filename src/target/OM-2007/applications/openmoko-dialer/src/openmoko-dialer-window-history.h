@@ -29,18 +29,18 @@ extern "C"
 #endif
 
 
-  GtkWidget *create_window_history_content (MOKO_DIALER_APP_DATA *
+  GtkWidget *create_window_history_content (MokoDialerData *
                                             p_dialer_data);
-  gint window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data);
-  gint history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data);
-  void window_history_prepare (MOKO_DIALER_APP_DATA * appdata);
-  GtkWidget *history_create_menu_history (MOKO_DIALER_APP_DATA *
+  gint window_history_init (MokoDialerData * p_dialer_data);
+  gint history_build_history_list_view (MokoDialerData * p_dialer_data);
+  void window_history_prepare (MokoDialerData * appdata);
+  GtkWidget *history_create_menu_history (MokoDialerData *
                                           p_dialer_data);
-  gint add_histroy_entry (MOKO_DIALER_APP_DATA * appdata, HISTORY_TYPE type,
+  gint add_histroy_entry (MokoDialerData * appdata, HISTORY_TYPE type,
                           const char *name, const char *number,
                           const char *picpath, char *time, char *date,
                           int durationsec);
-  gint history_list_view_add (MOKO_DIALER_APP_DATA * appdata,
+  gint history_list_view_add (MokoDialerData * appdata,
                               HISTORY_ENTRY * entry);
 #ifdef __cplusplus
 }

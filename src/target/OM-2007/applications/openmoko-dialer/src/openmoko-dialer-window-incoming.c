@@ -39,7 +39,7 @@
 #include "history.h"
 void 
 cb_answer_button_clicked (GtkButton * button,
-                          MOKO_DIALER_APP_DATA * appdata) 
+                          MokoDialerData * appdata) 
 {
   DBG_ENTER ();
   appdata->g_state.callstate = STATE_TALKING;
@@ -57,7 +57,7 @@ cb_answer_button_clicked (GtkButton * button,
 
 void
 cb_ignore_button_clicked (GtkButton * button,
-                          MOKO_DIALER_APP_DATA * appdata) 
+                          MokoDialerData * appdata) 
 {
   DBG_ENTER ();
   DBG_MESSAGE ("We will mute the phone for this call.");
@@ -66,7 +66,7 @@ cb_ignore_button_clicked (GtkButton * button,
 } void 
 
 cb_reject_button_clicked (GtkButton * button,
-                          MOKO_DIALER_APP_DATA * appdata) 
+                          MokoDialerData * appdata) 
 {
   DBG_ENTER ();
   /* TODO: MokoGsmdConnection->hangup
@@ -78,7 +78,7 @@ cb_reject_button_clicked (GtkButton * button,
 }
 
 void
-window_incoming_prepare (MOKO_DIALER_APP_DATA * appdata) 
+window_incoming_prepare (MokoDialerData * appdata) 
 {
   if (!appdata)
     
@@ -110,11 +110,11 @@ window_incoming_prepare (MOKO_DIALER_APP_DATA * appdata)
   }
 }
 void 
-window_incoming_fails (MOKO_DIALER_APP_DATA * appdata) 
+window_incoming_fails (MokoDialerData * appdata) 
 {
   DBG_ENTER ();
   DBG_LEAVE ();
-} gint  timer_incoming_time_out (MOKO_DIALER_APP_DATA * appdata) 
+} gint  timer_incoming_time_out (MokoDialerData * appdata) 
 {
   
 //DBG_ENTER();
@@ -151,7 +151,7 @@ window_incoming_fails (MOKO_DIALER_APP_DATA * appdata)
     return 1;
 }
 void 
-on_window_incoming_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata) 
+on_window_incoming_hide (GtkWidget * widget, MokoDialerData * appdata) 
 {
   DBG_ENTER ();
   if (appdata->g_timer_data.ptimer != 0)
@@ -176,7 +176,7 @@ on_window_incoming_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
   DBG_LEAVE ();
 }
 void 
-window_incoming_setup_timer (MOKO_DIALER_APP_DATA * appdata) 
+window_incoming_setup_timer (MokoDialerData * appdata) 
 {
   time_t timep;
   struct tm *p;
@@ -199,13 +199,13 @@ window_incoming_setup_timer (MOKO_DIALER_APP_DATA * appdata)
                     (gpointer) appdata);
 }
 void 
-on_window_incoming_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata) 
+on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata) 
 {
   DBG_ENTER ();
   appdata->g_state.callstate = STATE_INCOMING;
   window_incoming_setup_timer (appdata);
   DBG_LEAVE ();
-} gint  window_incoming_init (MOKO_DIALER_APP_DATA * p_dialer_data) 
+} gint  window_incoming_init (MokoDialerData * p_dialer_data) 
 {
   DBG_ENTER ();
   MokoFingerWindow * window;

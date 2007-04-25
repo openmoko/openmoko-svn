@@ -30,9 +30,9 @@ extern "C"
 
 
 
-  gint window_talking_init (MOKO_DIALER_APP_DATA * p_dialer_data);
+  gint window_talking_init (MokoDialerData * p_dialer_data);
 
-  void window_talking_prepare (MOKO_DIALER_APP_DATA * appdata);
+  void window_talking_prepare (MokoDialerData * appdata);
 #ifdef __cplusplus
 }
 #endif

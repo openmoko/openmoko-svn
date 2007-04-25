@@ -45,8 +45,8 @@
 #include "openmoko-dialer-window-pin.h"
 #include "openmoko-dialer-window-history.h"
 
-MOKO_DIALER_APP_DATA *p_dialer_data = 0;
-MOKO_DIALER_APP_DATA *
+MokoDialerData *p_dialer_data = 0;
+MokoDialerData *
 moko_get_app_data ()
 {
   return p_dialer_data;
@@ -55,7 +55,7 @@ moko_get_app_data ()
 void
 gsm_pin_require (struct lgsm_handle *lh)
 {
-  MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
+  MokoDialerData *appdata = moko_get_app_data ();
 
   if (appdata)
   {
@@ -73,7 +73,7 @@ void
 gsm_incoming_call (gchar * number)
 {
 
-  MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
+  MokoDialerData *appdata = moko_get_app_data ();
 
   if (appdata)
   {
@@ -122,7 +122,7 @@ gsm_incoming_call (gchar * number)
 void
 gsm_peer_accept ()
 {
-  MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
+  MokoDialerData *appdata = moko_get_app_data ();
   DBG_ENTER ();
 //moko_dialer_status_update_icon(appdata->status_outgoing);
 
@@ -146,7 +146,7 @@ gsm_peer_accept ()
 void
 gsm_peer_refuse ()
 {
-  MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
+  MokoDialerData *appdata = moko_get_app_data ();
   window_outgoing_fails (appdata);
 }
 
@@ -154,7 +154,7 @@ void
 gsm_peer_abort ()
 {
 
-  MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
+  MokoDialerData *appdata = moko_get_app_data ();
   if (appdata->window_incoming)
     gtk_widget_hide (appdata->window_incoming);
 
@@ -165,7 +165,7 @@ void
 gsm_peer_disconnect ()
 {
 
-  MOKO_DIALER_APP_DATA *appdata = moko_get_app_data ();
+  MokoDialerData *appdata = moko_get_app_data ();
   /* TODO: MokoGsmdConnection->hangup 
    * gsm_hangup ();
    */
@@ -185,7 +185,7 @@ static void
 handle_sigusr1 (int value)
 {
   DBG_ENTER ();
-  MOKO_DIALER_APP_DATA *p_data = moko_get_app_data ();
+  MokoDialerData *p_data = moko_get_app_data ();
   if (!p_data)
     return;
   GtkWidget *mainwindow = p_data->window_present;
@@ -305,7 +305,7 @@ main (int argc, char **argv)
   setlock ("/tmp/dialer.lock");
 
 
-  p_dialer_data = calloc (1, sizeof (MOKO_DIALER_APP_DATA));
+  p_dialer_data = calloc (1, sizeof (MokoDialerData));
 
   //init application data
   contact_init_contact_data (&(p_dialer_data->g_contactlist));

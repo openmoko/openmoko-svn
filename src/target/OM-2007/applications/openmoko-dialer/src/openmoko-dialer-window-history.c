@@ -45,7 +45,7 @@
 
 /* function declarations */
 
-gint history_update_counter (MOKO_DIALER_APP_DATA * p_dialer_data);
+gint history_update_counter (MokoDialerData * p_dialer_data);
 
 
 /**
@@ -59,7 +59,7 @@ gint history_update_counter (MOKO_DIALER_APP_DATA * p_dialer_data);
  */
 
 int
-history_view_change_filter (MOKO_DIALER_APP_DATA * p_dialer_data,
+history_view_change_filter (MokoDialerData * p_dialer_data,
                             HISTORY_TYPE type)
 {
   GtkTreePath *path;
@@ -80,7 +80,7 @@ history_view_change_filter (MOKO_DIALER_APP_DATA * p_dialer_data,
 void
 on_all_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
-  MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "All");
   history_view_change_filter (p_dialer_data, ALL);
@@ -91,7 +91,7 @@ on_all_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 void
 on_missed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
-  MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "Missed");
   history_view_change_filter (p_dialer_data, MISSED);
@@ -102,7 +102,7 @@ on_missed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 void
 on_dialed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
-  MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "Dialed");
   history_view_change_filter (p_dialer_data, OUTGOING);
@@ -113,7 +113,7 @@ on_dialed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 void
 on_received_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
-  MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "Received");
   history_view_change_filter (p_dialer_data, INCOMING);
@@ -123,7 +123,7 @@ on_received_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 gboolean
 on_eventboxTop_button_release_event (GtkWidget * widget,
                                      GdkEventButton * event,
-                                     MOKO_DIALER_APP_DATA * appdata)
+                                     MokoDialerData * appdata)
 {
 
   gtk_menu_popup (GTK_MENU (appdata->menu_history), 0, 0, 0, 0, 0, 0);
@@ -133,7 +133,7 @@ on_eventboxTop_button_release_event (GtkWidget * widget,
 
 void
 cb_openmoko_history_wheel_press_left_up (GtkWidget * widget,
-                                         MOKO_DIALER_APP_DATA * appdata)
+                                         MokoDialerData * appdata)
 {
   DBG_ENTER ();
   GtkTreeSelection *selection;
@@ -169,7 +169,7 @@ cb_openmoko_history_wheel_press_left_up (GtkWidget * widget,
 
 void
 cb_openmoko_history_wheel_press_right_down (GtkWidget * widget,
-                                            MOKO_DIALER_APP_DATA * appdata)
+                                            MokoDialerData * appdata)
 {
   DBG_ENTER ();
   GtkTreeSelection *selection;
@@ -203,7 +203,7 @@ cb_openmoko_history_wheel_press_right_down (GtkWidget * widget,
 
 void
 cb_tool_button_history_delete_clicked (GtkButton * button,
-                                       MOKO_DIALER_APP_DATA * appdata)
+                                       MokoDialerData * appdata)
 {
   GtkTreeIter iter;             //iter of the filter store
   GtkTreeIter iter0;            //iter of the back store
@@ -268,7 +268,7 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
 
 void
 cb_tool_button_history_call_clicked (GtkButton * button,
-                                     MOKO_DIALER_APP_DATA * appdata)
+                                     MokoDialerData * appdata)
 {
   DBG_ENTER ();
 
@@ -278,7 +278,7 @@ cb_tool_button_history_call_clicked (GtkButton * button,
 
 void
 cb_tool_button_history_sms_clicked (GtkButton * button,
-                                    MOKO_DIALER_APP_DATA * appdata)
+                                    MokoDialerData * appdata)
 {
   DBG_ENTER ();
 
@@ -288,7 +288,7 @@ cb_tool_button_history_sms_clicked (GtkButton * button,
 
 void
 cb_tool_button_history_back_clicked (GtkButton * button,
-                                     MOKO_DIALER_APP_DATA * appdata)
+                                     MokoDialerData * appdata)
 {
   gtk_widget_hide (appdata->window_history);
 
@@ -296,7 +296,7 @@ cb_tool_button_history_back_clicked (GtkButton * button,
 
 
 void
-on_window_history_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_history_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
 
   gtk_widget_hide (appdata->wheel_history);
@@ -305,7 +305,7 @@ on_window_history_hide (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 }
 
 void
-on_window_history_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
+on_window_history_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
 
@@ -331,7 +331,7 @@ on_window_history_show (GtkWidget * widget, MOKO_DIALER_APP_DATA * appdata)
 
 
 gint
-window_history_init (MOKO_DIALER_APP_DATA * p_dialer_data)
+window_history_init (MokoDialerData * p_dialer_data)
 {
 
   DBG_ENTER ();
@@ -443,7 +443,7 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
   GtkTreeSelection *selection;
   HISTORY_ENTRY *p;
   int hasname;
-  MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) user_data;
+  MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
 
   selection =
     gtk_tree_view_get_selection (GTK_TREE_VIEW
@@ -467,7 +467,7 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
 
 
 GtkWidget *
-create_window_history_content (MOKO_DIALER_APP_DATA * p_dialer_data)
+create_window_history_content (MokoDialerData * p_dialer_data)
 {
 
   GtkWidget *treeviewHistory;
@@ -571,7 +571,7 @@ static gboolean
 history_view_filter_visible_function (GtkTreeModel * model,
                                       GtkTreeIter * iter, gpointer data)
 {
-  MOKO_DIALER_APP_DATA *p_dialer_data = (MOKO_DIALER_APP_DATA *) data;
+  MokoDialerData *p_dialer_data = (MokoDialerData *) data;
   HISTORY_TYPE type;
   if (p_dialer_data->g_history_filter_type == ALL)
     return TRUE;
@@ -597,7 +597,7 @@ history_view_filter_visible_function (GtkTreeModel * model,
  */
 
 gint
-history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data)
+history_build_history_list_view (MokoDialerData * p_dialer_data)
 {
   GtkListStore *list_store;
 
@@ -781,7 +781,7 @@ history_build_history_list_view (MOKO_DIALER_APP_DATA * p_dialer_data)
  * @return 1
  */
 gint
-history_update_counter (MOKO_DIALER_APP_DATA * p_dialer_data)
+history_update_counter (MokoDialerData * p_dialer_data)
 {
   DBG_ENTER ();
   GtkTreeIter iter;
@@ -830,7 +830,7 @@ history_update_counter (MOKO_DIALER_APP_DATA * p_dialer_data)
 }
 
 GtkWidget *
-history_create_menu_history (MOKO_DIALER_APP_DATA * p_dialer_data)
+history_create_menu_history (MokoDialerData * p_dialer_data)
 {
   if (!p_dialer_data->menu_history)
   {
@@ -942,7 +942,7 @@ history_create_menu_history (MOKO_DIALER_APP_DATA * p_dialer_data)
  * @retval 1 everything is OK
  */
 gint
-history_list_view_add (MOKO_DIALER_APP_DATA * appdata, HISTORY_ENTRY * entry)
+history_list_view_add (MokoDialerData * appdata, HISTORY_ENTRY * entry)
 {
   DBG_ENTER ();
   if (entry == 0)
@@ -1028,7 +1028,7 @@ history_list_view_add (MOKO_DIALER_APP_DATA * appdata, HISTORY_ENTRY * entry)
 
 
 gint
-add_histroy_entry (MOKO_DIALER_APP_DATA * appdata, HISTORY_TYPE type,
+add_histroy_entry (MokoDialerData * appdata, HISTORY_TYPE type,
                    const char *name, const char *number, const char *id,
                    char *time, char *date, int durationsec)
 {
