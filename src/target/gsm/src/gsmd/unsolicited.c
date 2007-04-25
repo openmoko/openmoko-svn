@@ -160,7 +160,8 @@ static int creg_parse(char *buf, int len, const char *param,
 		if (!comma)
 			return -EINVAL;
 		aux->u.netreg.ci = strtoul(comma+2, NULL, 16);
-	}
+	} else
+		aux->u.netreg.lac = aux->u.netreg.ci = 0;
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_NETREG);
 }
