@@ -1,10 +1,10 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.c	2007-04-02 19:12:27.000000000 +0200
-@@ -0,0 +1,1921 @@
+--- /dev/null
++++ linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
+@@ -0,0 +1,1923 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -862,16 +862,18 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +	if (reg_id < 0)
 +		return -EIO;
 +
-+	/* FIXME: consult platform-specific table to make sure we don't
-+	 * set a too high voltage on any regulator! */
-+
-+	DEBUGP("setting %s(%d) to %lu mvolts\n", attr->attr.name, reg_id,
-+		mvolts);
++	DEBUGP("attempting to set %s(%d) to %lu mvolts\n", attr->attr.name,
++		reg_id, mvolts);
 +
 +	if (mvolts == 0) {
 +		pcf50606_onoff_set(pcf, reg_id, 0);
 +	} else {
-+		pcf50606_voltage_set(pcf, reg_id, mvolts);
++		if (pcf50606_voltage_set(pcf, reg_id, mvolts) < 0) {
++			dev_warn(dev, "refusing to set %s(%d) to %lu mvolts "
++				 "(max=%u)\n", attr->attr.name, reg_id, mvolts,
++				 pcf->pdata->rails[reg_id].voltage.max);
++			return -EINVAL;
++		}
 +		pcf50606_onoff_set(pcf, reg_id, 1);
 +	}
 +
@@ -1926,10 +1928,10 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/i2c/chips/pcf50606.h	2007-04-01 12:46:15.000000000 +0200
+--- /dev/null
++++ linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2233,10 +2235,10 @@ Index: linux-2.6.20.4/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.20.4/drivers/i2c/chips/Kconfig
+Index: linux-2.6.20.7-moko/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/drivers/i2c/chips/Kconfig	2007-03-23 20:52:51.000000000 +0100
-+++ linux-2.6.20.4/drivers/i2c/chips/Kconfig	2007-03-26 19:01:17.000000000 +0200
+--- linux-2.6.20.7-moko.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.20.7-moko/drivers/i2c/chips/Kconfig
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -2255,10 +2257,10 @@ Index: linux-2.6.20.4/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on I2C && EXPERIMENTAL
-Index: linux-2.6.20.4/drivers/i2c/chips/Makefile
+Index: linux-2.6.20.7-moko/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/drivers/i2c/chips/Makefile	2007-03-23 20:52:51.000000000 +0100
-+++ linux-2.6.20.4/drivers/i2c/chips/Makefile	2007-03-26 19:01:17.000000000 +0200
+--- linux-2.6.20.7-moko.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.20.7-moko/drivers/i2c/chips/Makefile
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2267,10 +2269,10 @@ Index: linux-2.6.20.4/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.20.4/include/linux/i2c-id.h
+Index: linux-2.6.20.7-moko/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.20.4.orig/include/linux/i2c-id.h	2007-03-26 19:01:17.000000000 +0200
-+++ linux-2.6.20.4/include/linux/i2c-id.h	2007-03-26 19:01:17.000000000 +0200
+--- linux-2.6.20.7-moko.orig/include/linux/i2c-id.h
++++ linux-2.6.20.7-moko/include/linux/i2c-id.h
 @@ -159,6 +159,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -2279,10 +2281,10 @@ Index: linux-2.6.20.4/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.20.4/include/linux/pcf50606.h
+Index: linux-2.6.20.7-moko/include/linux/pcf50606.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/linux/pcf50606.h	2007-04-01 13:01:16.000000000 +0200
+--- /dev/null
++++ linux-2.6.20.7-moko/include/linux/pcf50606.h
 @@ -0,0 +1,101 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
