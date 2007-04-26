@@ -373,7 +373,7 @@ void moko_journal_entry_set_source (MokoJournalEntry *entry,
                                     const gchar *source) ;
 /**
  * moko_journal_entry_set_gsm_location:
- * @info: the current instance of voice call extra properties set
+ * @entry: the current instance of journal entry
  * @location: the gsm location
  *
  * Returns: TRUE upon completion, FALSE otherwise
@@ -383,12 +383,36 @@ gboolean moko_journal_entry_info_set_gsm_location (MokoJournalEntry *entry,
 
 /**
  * moko_journal_entry_get_gsm_location:
- * @info: the current instance of voice call extra properties set
+ * @entry: the current instance of journal entry
  *
  * Returns TRUE upon completion, FALSE otherwise
  */
 gboolean moko_journal_entry_get_gsm_location (MokoJournalEntry *entry,
                                               MokoGSMLocation *location);
+
+/**
+ * moko_journal_entry_set_wifi_ap_mac_address:
+ * @entry: the current instance of journal entry
+ *
+ * the mac address of the wifi access point.
+ * It is must be a 48 bits long string of bytes.
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean moko_journal_entry_set_wifi_ap_mac_address (MokoJournalEntry *entry,
+                                                     const guchar *address) ;
+
+/**
+ * moko_journal_entry_get_wifi_ap_mac_address:
+ * @entry: the current instance of journal entry
+ *
+ * Returns: the mac address of the wifi access point.
+ * It is a 48 bits long string of bytes. The calling code must
+ * *NOT* delete this pointer. This function can also return NULL if
+ * no wifi access point mac address has been set in the entry.
+ */
+const guchar *moko_journal_entry_get_wifi_ap_mac_address
+                                                  (MokoJournalEntry *entry) ;
 /*<voice call info>*/
 
 /**
@@ -404,6 +428,23 @@ gboolean moko_journal_entry_get_gsm_location (MokoJournalEntry *entry,
  */
 gboolean moko_journal_entry_get_voice_info (MokoJournalEntry *entry,
                                             MokoJournalVoiceInfo **info) ;
+
+
+/**
+ * moko_journal_voice_info_set_dialed_number:
+ * @info: the current
+ * @info: the extra property set attached to the voice call
+ */
+void moko_journal_voice_info_set_dialed_number (MokoJournalVoiceInfo *info,
+                                                gchar *number) ;
+
+const gchar* moko_journal_voice_info_get_dialed_number
+                                                (MokoJournalVoiceInfo *info) ;
+
+void moko_journal_voice_info_set_was_missed (MokoJournalVoiceInfo *info,
+                                             gboolean a_flag) ;
+
+gboolean moko_journal_voice_info_get_was_missed (MokoJournalVoiceInfo *info) ;
 
 /*</voice call info>*/
 

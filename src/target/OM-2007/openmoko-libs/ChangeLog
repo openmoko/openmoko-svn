@@ -1,5 +1,16 @@
 2007-04-26 Dodji Seketeli <dodji@openedhand.com>
 
+	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c,h:
+	  added MokoJournalVoiceInfo::dialed_number
+	  and MokoJournalVoiceInfo::was_missed properties. These a serialized
+	  and deserialized.
+	  Started to add MokoJournalEntry::wifi_ap_mac and
+	  MokoJournalEntry::bluetooth_ap_mac entries. not finished
+	* src/target/OM-2007/openmoko-libs/libmokojournal/tests/test-create.c:
+	  updated this to test dialed number an "was-missed" property.
+
+2007-04-26 Dodji Seketeli <dodji@openedhand.com>
+
 	* oe/conf/distro/include/sane-srcdates.inc: this needs and update of the version
 	  of edsdbus to svn 20070426 because we pushed a couple of fixes and enhancement in
 	  there. These fixes/enhancements are mandatory for this patch to work.

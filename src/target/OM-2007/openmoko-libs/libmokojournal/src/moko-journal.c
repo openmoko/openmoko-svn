@@ -27,6 +27,8 @@
 #include "moko-journal.h"
 #include "moko-time-priv.h"
 
+#define WIFI_AP_MAC_ADDR_LEN 48
+
 struct _MokoJournal
 {
   ECal *ecal ;
@@ -37,7 +39,8 @@ struct _MokoJournal
 
 struct _MokoJournalVoiceInfo
 {
-  int nothing ;
+  gchar *dialed_number ;
+  gboolean was_missed ;
 };
 
 struct _MokoJournalFaxInfo
@@ -73,6 +76,8 @@ struct _MokoJournalEntry
   float start_latitude ;
   gchar *source ;
   MokoGSMLocation gsm_loc ;
+  guchar *wifi_ap_mac ;
+  guchar *bluetooth_ap_mac ;
   union
   {
     MokoJournalEmailInfo *email_info ;
@@ -283,6 +288,15 @@ static void
 moko_journal_voice_info_free (MokoJournalVoiceInfo *a_info)
 {
   g_return_if_fail (a_info) ;
+
+  if (a_info)
+  {
+    if (a_info->dialed_number)
+    {
+      g_free (a_info->dialed_number) ;
+      a_info->dialed_number = NULL ;
+    }
+  }
   g_free (a_info) ;
 }
 
@@ -350,6 +364,16 @@ moko_journal_entry_free_real (MokoJournalEntry *a_entry)
   {
     g_free (a_entry->source) ;
     a_entry->source = NULL ;
+  }
+  if (a_entry->wifi_ap_mac)
+  {
+    g_free (a_entry->wifi_ap_mac) ;
+    a_entry->wifi_ap_mac = NULL ;
+  }
+  if (a_entry->bluetooth_ap_mac)
+  {
+    g_free (a_entry->bluetooth_ap_mac) ;
+    a_entry->bluetooth_ap_mac = NULL;
   }
 
   switch (a_entry->type)
@@ -506,6 +530,36 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
     case EMAIL_JOURNAL_ENTRY:
       break ;
     case VOICE_JOURNAL_ENTRY:
+      {
+        MokoJournalVoiceInfo *info = NULL ;
+        gchar *number="NULL" ;
+        gchar *missed=NULL ;
+
+        if (!moko_journal_entry_get_voice_info (a_entry, &info))
+          break ;
+        if (!info)
+          break ;
+
+        /*
+         * serialize dialed number
+         */
+        if (moko_journal_voice_info_get_dialed_number (info))
+          number = (gchar*)moko_journal_voice_info_get_dialed_number (info) ;
+        prop = icalproperty_new_x (number) ;
+        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-DIALED-NUMBER") ;
+        icalcomponent_add_property (comp, prop) ;
+
+        /*
+         * serialize the "was-missed" property
+         */
+        if (moko_journal_voice_info_get_was_missed (info))
+          missed = "YES" ;
+        else
+          missed = "NO" ;
+        prop = icalproperty_new_x (missed) ;
+        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALL-WAS-MISSED") ;
+        icalcomponent_add_property (comp, prop) ;
+      }
       break ;
     case FAX_JOURNAL_ENTRY:
       break ;
@@ -653,6 +707,40 @@ icalcomponent_to_entry (icalcomponent *a_comp,
   {
     case VOICE_JOURNAL_ENTRY:
       {
+        MokoJournalVoiceInfo *info = NULL ;
+        prop = NULL ;
+        prop_value = NULL ;
+
+        moko_journal_entry_get_voice_info (entry, &info) ;
+        g_return_val_if_fail (info, FALSE) ;
+
+        /*
+         * deserialize dialed number
+         */
+        if (icalcomponent_find_property_as_string
+                                          (a_comp,
+                                           "X-OPENMOKO-VOICE-DIALED-NUMBER",
+                                           &prop_value))
+        {
+          if (prop_value)
+          {
+            moko_journal_voice_info_set_dialed_number (info, prop_value) ;
+          }
+        }
+        prop_value = NULL ;
+        if (icalcomponent_find_property_as_string
+                                        (a_comp,
+                                         "X-OPENMOKO-VOICE-CALL-WAS-MISSED",
+                                         &prop_value))
+        {
+          if (prop_value)
+          {
+            gboolean was_missed = FALSE ;
+            if (!strcmp ("YES", prop_value))
+              was_missed = TRUE ;
+            moko_journal_voice_info_set_was_missed (info, was_missed) ;
+          }
+        }
       }
       break ;
     case FAX_JOURNAL_ENTRY:
@@ -1634,8 +1722,60 @@ moko_journal_entry_get_gsm_location (MokoJournalEntry *a_info,
   g_return_val_if_fail (a_info, FALSE) ;
   g_return_val_if_fail (a_info, FALSE) ;
 
-  memset (a_location, &a_info->gsm_loc, sizeof (MokoGSMLocation)) ;
+  memcpy (a_location, &a_info->gsm_loc, sizeof (MokoGSMLocation)) ;
   return TRUE ;
+}
+
+/**
+ * moko_journal_entry_set_wifi_ap_mac_address:
+ * @entry: the current instance of journal entry
+ *
+ * the mac address of the wifi access point.
+ * It is must be a 48 bits long string of bytes.
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean
+moko_journal_entry_set_wifi_ap_mac_address (MokoJournalEntry *a_entry,
+                                            const guchar *a_address)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+
+  if (!a_address)
+  {
+    if (a_entry->wifi_ap_mac)
+    {
+      g_free (a_entry->wifi_ap_mac) ;
+      a_entry->wifi_ap_mac = NULL ;
+    }
+    return TRUE ;
+  }
+
+  if (!a_entry->wifi_ap_mac)
+  {
+    a_entry->wifi_ap_mac = g_new0 (guchar, WIFI_AP_MAC_ADDR_LEN) ;
+  }
+  g_return_val_if_fail (a_entry->wifi_ap_mac, FALSE) ;
+  memcpy (a_entry->wifi_ap_mac, a_address, WIFI_AP_MAC_ADDR_LEN) ;
+
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_get_wifi_ap_mac_address:
+ * @entry: the current instance of journal entry
+ *
+ * Returns: the mac address of the wifi access point.
+ * It is a 48 bits long string of bytes. The calling code must
+ * *NOT* delete this pointer. This function can also return NULL if
+ * no wifi access point mac address has been set in the entry.
+ */
+const guchar*
+moko_journal_entry_get_wifi_ap_mac_address (MokoJournalEntry *a_entry)
+{
+  g_return_val_if_fail (a_entry, NULL) ;
+
+  return a_entry->wifi_ap_mac ;
 }
 
 /**
@@ -1664,6 +1804,46 @@ moko_journal_entry_get_voice_info (MokoJournalEntry *a_entry,
   g_return_val_if_fail (a_entry->extra.voice_info, FALSE) ;
   *a_info = a_entry->extra.voice_info ;
   return TRUE ;
+}
+
+void
+moko_journal_voice_info_set_dialed_number (MokoJournalVoiceInfo *a_info,
+                                           gchar *a_number)
+{
+  g_return_if_fail (a_info) ;
+
+  if (a_info->dialed_number)
+  {
+    g_free (a_info->dialed_number) ;
+    a_info->dialed_number = NULL ;
+  }
+  if (a_number)
+    a_info->dialed_number = g_strdup (a_number) ;
+}
+
+const gchar*
+moko_journal_voice_info_get_dialed_number (MokoJournalVoiceInfo *a_info)
+{
+  g_return_val_if_fail (a_info, NULL) ;
+
+  return a_info->dialed_number ;
+}
+
+void
+moko_journal_voice_info_set_was_missed (MokoJournalVoiceInfo *a_info,
+                                        gboolean a_flag)
+{
+  g_return_if_fail (a_info) ;
+
+  a_info->was_missed = a_flag ;
+}
+
+gboolean
+moko_journal_voice_info_get_was_missed (MokoJournalVoiceInfo *a_info)
+{
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  return a_info->was_missed ;
 }
 
 /**
