@@ -34,23 +34,48 @@
 
 typedef struct _MokoJournal MokoJournal ;
 typedef struct _MokoJournalEntry MokoJournalEntry ;
-typedef struct _MokoJournalEmailInfo MokoJournalEmailInfo ;
+typedef struct _MokoJournalVoiceInfo MokoJournalVoiceInfo ;
+typedef struct _MokoJournalDataInfo MokoJournalDataInfo ;
+typedef struct _MokoJournalFaxInfo MokoJournalFaxInfo ;
 typedef struct _MokoJournalSMSInfo MokoJournalSMSInfo ;
-typedef struct _MokoJournalMMSInfo MokoJournalMMSInfo ;
-typedef struct _MokoJournalCallInfo MokoJournalCallInfo ;
+typedef struct _MokoJournalEmailInfo MokoJournalEmailInfo ;
 
 /**
  * this represents the primary type of
  * a journal entry.
  */
-typedef enum _MokoJournalEntryType {
+enum MokoJournalEntryType {
   UNDEF_ENTRY=0,
   EMAIL_JOURNAL_ENTRY,
+  /*sms calls*/
   SMS_JOURNAL_ENTRY,
-  MMS_JOURNAL_ENTRY,
-  CALL_JOURNAL_ENTRY,
+  /*voice calls*/
+  VOICE_JOURNAL_ENTRY,
+  /*fax call*/
+  FAX_JOURNAL_ENTRY,
+  /*data calls (like modems)*/
+  DATA_JOURNAL_ENTRY,
   NB_OF_ENTRY_TYPES /*must always be the last*/
-} MokoJournalEntryType ;
+} ;
+
+enum MessageDirection {
+  DIRECTION_IN=0,
+  DIRECTION_OUT
+};
+
+typedef struct
+{
+  float longitude ;
+  float latitude ;
+} MokoLocation ;
+
+typedef struct
+{
+  /*local area code*/
+  gushort lac ;
+  /*cell id*/
+  gushort cid ;
+} MokoGSMLocation ;
 
 /*<journal management>*/
 /**
@@ -171,7 +196,7 @@ gboolean moko_journal_load_from_storage (MokoJournal *journal) ;
  *
  * Return value: the newly created journal entry object
  */
-MokoJournalEntry* moko_journal_entry_new (MokoJournalEntryType type) ;
+MokoJournalEntry* moko_journal_entry_new (enum MokoJournalEntryType type) ;
 
 /**
  * moko_journal_entry_free:
@@ -189,7 +214,7 @@ void moko_journal_entry_free (MokoJournalEntry *entry) ;
  *
  * Return value: the type of the journal entry
  */
-MokoJournalEntryType moko_journal_entry_get_type (MokoJournalEntry *entry) ;
+enum MokoJournalEntryType moko_journal_entry_get_type (MokoJournalEntry *entry);
 
 /**
  * moko_journal_entry_set_type:
@@ -199,7 +224,7 @@ MokoJournalEntryType moko_journal_entry_get_type (MokoJournalEntry *entry) ;
  * Set the type of the journal entry
  */
 void moko_journal_entry_set_type (MokoJournalEntry *entry,
-                                  MokoJournalEntryType type) ;
+                                  enum MokoJournalEntryType type) ;
 
 /**
  * moko_journal_entry_get_uid:
@@ -260,12 +285,62 @@ void moko_journal_entry_set_summary (MokoJournalEntry *entry,
                                      const gchar* summary) ;
 
 /**
+ * moko_journal_entry_get_start_location:
+ * @entry: the current instance of journal entry
+ * @location: the requested location
+ *
+ * Get the location at which the message got received or sent.
+ *
+ * Returns: TRUE upon sucessful completion, FALSE otherwise.
+ */
+gboolean moko_journal_entry_get_start_location (MokoJournalEntry *entry,
+                                                MokoLocation *location) ;
+
+/**
+ * moko_journal_entry_set_location:
+ * @entry: the current intance of journal entry
+ * @location: the new location
+ *
+ * Set a new location to the journal entry
+ * Location represents the longitude/latitude at which a call or message
+ * occured.
+ *
+ * Returns: TRUE upon successful completion, FALSE otherwise.
+ */
+gboolean moko_journal_entry_set_start_location (MokoJournalEntry *entry,
+                                                MokoLocation *location) ;
+
+/**
+ * moko_journal_entry_get_direction:
+ * @entry: the current instance of journal entry
+ * @direction: either DIRECTION_IN for a received message or DIRECTION_OUT
+ * for a sent message.
+ *
+ * get the direction of the message
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean moko_journal_entry_get_direction (MokoJournalEntry *entry,
+                                           enum MessageDirection *direction) ;
+
+/**
+ * moko_journal_entry_set_direction:
+ * @entry: the current instance of journal entry
+ * @direction: the new message direction to set
+ *
+ * set message direction
+ *
+ */
+void moko_journal_entry_set_direction (MokoJournalEntry *entry,
+                                       enum MessageDirection direction) ;
+
+/**
  * moko_journal_entry_get_dtdstart:
  * @entry: the current instance of journal entry
  *
  * get the starting date associated to the journal entry
  *
- * Return value: an icaltimetype representing the starting date expected.
+ * Returns: an icaltimetype representing the starting date expected.
  * It can be NULL. Client code must not deallocate it.
  */
 const MokoTime* moko_journal_entry_get_dtstart (MokoJournalEntry *entry) ;
@@ -276,6 +351,103 @@ const MokoTime* moko_journal_entry_get_dtstart (MokoJournalEntry *entry) ;
  * @dtstart: the new starting date associated to the journal entry.
  */
 void moko_journal_entry_set_dtstart (MokoJournalEntry *entry, MokoTime* dtstart);
+
+/**
+ * moko_journal_entry_get_source:
+ * @entry: the current instance of journal entry
+ *
+ * Returns: the source property. It is an arbitrary string representing
+ * the application that was the source of the entry (like mokodialer)
+ */
+const gchar* moko_journal_entry_get_source (MokoJournalEntry *entry) ;
+
+/**
+ * moko_journal_entry_set_source:
+ * @entry: the current instance of journal entry
+ * @source: the new source to set
+ *
+ * Set the source property. It is an arbitrary string representing
+ * the application that was the source of the entry (like mokodialer)
+ */
+void moko_journal_entry_set_source (MokoJournalEntry *entry,
+                                    const gchar *source) ;
+/**
+ * moko_journal_entry_set_gsm_location:
+ * @info: the current instance of voice call extra properties set
+ * @location: the gsm location
+ *
+ * Returns: TRUE upon completion, FALSE otherwise
+ */
+gboolean moko_journal_entry_info_set_gsm_location (MokoJournalEntry *entry,
+                                                   MokoGSMLocation *location) ;
+
+/**
+ * moko_journal_entry_get_gsm_location:
+ * @info: the current instance of voice call extra properties set
+ *
+ * Returns TRUE upon completion, FALSE otherwise
+ */
+gboolean moko_journal_entry_get_gsm_location (MokoJournalEntry *entry,
+                                              MokoGSMLocation *location);
+/*<voice call info>*/
+
+/**
+ * moko_journal_entry_get_voice_info:
+ * @entry: the current instance of journal entry
+ * @info: the extra property set or NULL if info is not of type
+ * VOICE_JOURNAL_ENTRY
+ *
+ * Returns the specific property set associated to instance of MokoJournalEntry
+ * of type VOICE_JOURNAL_ENTRY.
+ *
+ * Returns: TRUE upon successful completion, FALSE otherwise.
+ */
+gboolean moko_journal_entry_get_voice_info (MokoJournalEntry *entry,
+                                            MokoJournalVoiceInfo **info) ;
+
+/*</voice call info>*/
+
+/*<fax call info>*/
+
+/**
+ * moko_journal_entry_get_fax_info:
+ * @entry: the current instance of journal entry
+ * @info: the fax info properties set
+ *
+ * get the extra properties set associated to journal entries of
+ * type FAX_JOURNAL_ENTRY
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean moko_journal_entry_get_fax_info (MokoJournalEntry *entry,
+                                          MokoJournalFaxInfo **info) ;
+
+/**
+ * moko_journal_entry_get_data_info:
+ * @entry: the current instance of journal entry
+ * @info: the resulting properties set
+ *
+ * Get the extra properties set associated to journal entries of type
+ * DATA_JOURNAL_ENTRY
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean moko_journal_entry_get_data_info (MokoJournalEntry *entry,
+                                           MokoJournalDataInfo **info) ;
+/*</fax call info>*/
+
+/*<sms info>*/
+/**
+ * moko_journal_entry_get_sms_info:
+ * @entry: the current instance of journal entry
+ * @info: the resulting properties set
+ *
+ * Get the extra properties set associated to journal entries of type
+ * SMS_JOURNAL_ENTRY
+ */
+gboolean moko_journal_entry_get_sms_info (MokoJournalEntry *entry,
+                                          MokoJournalSMSInfo **info) ;
+/*</sms info>*/
 
 /*<email info>*/
 
@@ -291,26 +463,6 @@ void moko_journal_entry_set_dtstart (MokoJournalEntry *entry, MokoTime* dtstart)
  */
 gboolean moko_journal_entry_get_email_info (MokoJournalEntry *entry,
                                             MokoJournalEmailInfo **info) ;
-
-/**
- * moko_j_email_info_get_was_sent:
- * @info: the current instance of email info
- *
- * Get a boolean property stating if the email was sent or received.
- *
- * Return value: TRUE if the email was sent, false if it was received
- */
-gboolean moko_journal_email_info_get_was_sent (MokoJournalEmailInfo *info) ;
-
-/**
- * moko_j_email_info_set_was_sent:
- * @info: the current instance of email info
- * @was_sent: TRUE if the email was sent, FALSE if it was received
- *
- * Set a boolean property stating if the email was sent or received
- */
-void moko_journal_email_info_set_was_sent (MokoJournalEmailInfo *info,
-                                           gboolean was_sent) ;
 
 /*</email info>*/
 

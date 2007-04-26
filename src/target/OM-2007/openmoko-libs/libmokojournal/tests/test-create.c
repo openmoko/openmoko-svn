@@ -28,6 +28,8 @@ main ()
     MokoJournal *journal=NULL ;
     MokoJournalEntry *entry=NULL ;
     MokoJournalEmailInfo *email_info=NULL ;
+    MokoLocation loc ;
+    MokoGSMLocation gsm_loc ;
     int result = 1 ;
 
     g_type_init () ;
@@ -60,12 +62,18 @@ main ()
     moko_journal_entry_set_contact_uid (entry, "foobarbazuid") ;
     moko_journal_entry_set_summary (entry, "back from fostel") ;
     moko_journal_entry_set_dtstart (entry, moko_time_new_today ()) ;
+    moko_journal_entry_set_direction (entry, DIRECTION_OUT) ;
+    loc.latitude = 37.386013;
+    loc.longitude =  10.082932;
+    moko_journal_entry_set_start_location (entry, &loc) ;
+    gsm_loc.lac = 68 ;
+    gsm_loc.cid = 100 ;
+    moko_journal_entry_set_gsm_location (entry, &gsm_loc) ;
     if (!moko_journal_entry_get_email_info (entry, &email_info) || !email_info)
     {
         g_warning ("failed to get email extra info from journal entry\n") ;
         goto out ;
     }
-    moko_journal_email_info_set_was_sent (email_info, TRUE) ;
     /*****************************
      * </fill the entry with data>
      *****************************/

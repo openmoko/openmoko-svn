@@ -21,6 +21,7 @@
 #include <string.h>
 #include <strings.h>
 #include <glib-object.h>
+#include <libical/icaltypes.h>
 #include <libecal/e-cal.h>
 #include <libecal/e-cal-component.h>
 #include "moko-journal.h"
@@ -34,52 +35,93 @@ struct _MokoJournal
   GArray *entries ;
 };
 
+struct _MokoJournalVoiceInfo
+{
+  int nothing ;
+};
+
+struct _MokoJournalFaxInfo
+{
+  int nothing ;
+};
+
+struct _MokoJournalDataInfo
+{
+  int nothing ;
+};
+
 struct _MokoJournalEmailInfo
 {
-  gboolean was_sent ;
+  int nothing ;
+};
+
+struct _MokoJournalSMSInfo
+{
+  int nothing ;
 };
 
 struct _MokoJournalEntry
 {
-  MokoJournalEntryType type;
+  enum MokoJournalEntryType type;
   gchar *uid ;
   gchar *contact_uid ;
   gchar *summary ;
+  enum MessageDirection direction ;
   MokoTime *dtstart ;
   MokoTime *dtend ;
+  float start_longitude ;
+  float start_latitude ;
+  gchar *source ;
+  MokoGSMLocation gsm_loc ;
   union
   {
     MokoJournalEmailInfo *email_info ;
-  } extra_info ;
+    MokoJournalVoiceInfo *voice_info ;
+    MokoJournalFaxInfo *fax_info ;
+    MokoJournalDataInfo *data_info ;
+    MokoJournalSMSInfo *sms_info ;
+  } extra ;
 };
 
 struct _MokoJournalEntryInfo
 {
-  MokoJournalEntryType type;
+  enum MokoJournalEntryType type;
   const gchar *type_as_string ;
 };
 typedef struct _MokoJournalEntryInfo MokoJournalEntryInfo ;
 
 static const MokoJournalEntryInfo entries_info[] =
 {
+  {VOICE_JOURNAL_ENTRY, "VOICEENTRY"},
   {EMAIL_JOURNAL_ENTRY, "EMAILENTRY"},
   {SMS_JOURNAL_ENTRY, "SMSENTRY"},
-  {MMS_JOURNAL_ENTRY, "MMSENTRY"},
-  {CALL_JOURNAL_ENTRY, "CALLENTRY"},
+  {FAX_JOURNAL_ENTRY, "FAXENTRY"},
+  {DATA_JOURNAL_ENTRY, "DATAENTRY"},
   {0}
 } ;
 
 static MokoJournal* moko_journal_alloc () ;
+static MokoJournalEmailInfo* moko_journal_email_info_new () ;
+static MokoJournalVoiceInfo* moko_journal_voice_info_new () ;
+static MokoJournalFaxInfo* moko_journal_fax_info_new () ;
+static MokoJournalSMSInfo* moko_journal_sms_info_new () ;
+static void moko_journal_voice_info_free (MokoJournalVoiceInfo *a_info) ;
+static void moko_journal_fax_info_free (MokoJournalFaxInfo *a_info) ;
+static void moko_journal_data_info_free (MokoJournalDataInfo *a_info) ;
+static void moko_journal_email_info_free (MokoJournalEmailInfo *a_info) ;
+static void moko_journal_sms_info_free (MokoJournalSMSInfo *a_info) ;
+static MokoJournalDataInfo* moko_journal_data_info_new () ;
 static gboolean moko_journal_find_entry_from_uid (MokoJournal *a_journal,
                                                   const gchar *a_uid,
                                                   MokoJournalEntry **a_entry,
                                                   int *a_offset) ;
-static const gchar* entry_type_to_string (MokoJournalEntryType a_type) ;
-static MokoJournalEntryType entry_type_from_string (const gchar* a_str) ;
-static gboolean moko_journal_entry_type_is_valid (MokoJournalEntryType a_type) ;
+static const gchar* entry_type_to_string (enum MokoJournalEntryType a_type) ;
+static enum MokoJournalEntryType entry_type_from_string (const gchar* a_str) ;
+static gboolean moko_journal_entry_type_is_valid
+                                          (enum MokoJournalEntryType a_type) ;
 static gboolean moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
                                                      icalcomponent **a_comp) ;
-static gboolean icalcomponent_to_j_entry (icalcomponent *a_comp,
+static gboolean icalcomponent_to_entry (icalcomponent *a_comp,
                                           MokoJournalEntry **a_entry) ;
 static gboolean icalcomponent_find_property (const icalcomponent *a_comp,
                                              const gchar *a_name,
@@ -98,7 +140,7 @@ static void on_entries_removed_cb (ECalView *a_view,
 
 
 static const gchar*
-entry_type_to_string (MokoJournalEntryType a_type)
+entry_type_to_string (enum MokoJournalEntryType a_type)
 {
   MokoJournalEntryInfo *cur ;
 
@@ -110,7 +152,7 @@ entry_type_to_string (MokoJournalEntryType a_type)
   return NULL ;
 }
 
-static MokoJournalEntryType
+static enum MokoJournalEntryType
 entry_type_from_string (const gchar* a_str)
 {
   MokoJournalEntryInfo *cur ;
@@ -200,14 +242,66 @@ moko_journal_free (MokoJournal *a_journal)
   g_free (a_journal) ;
 }
 
-MokoJournalEmailInfo*
+static MokoJournalEmailInfo*
 moko_journal_email_info_new ()
 {
   return g_new0 (MokoJournalEmailInfo, 1) ;
 }
 
-void
+static MokoJournalVoiceInfo*
+moko_journal_voice_info_new ()
+{
+  return g_new0 (MokoJournalVoiceInfo, 1) ;
+}
+
+static MokoJournalFaxInfo*
+moko_journal_fax_info_new ()
+{
+  return g_new0 (MokoJournalFaxInfo, 1) ;
+}
+
+static MokoJournalDataInfo*
+moko_journal_data_info_new ()
+{
+  return g_new0 (MokoJournalDataInfo, 1) ;
+}
+
+static MokoJournalSMSInfo*
+moko_journal_sms_info_new ()
+{
+  return g_new0 (MokoJournalSMSInfo, 1) ;
+}
+
+static void
 moko_journal_email_info_free (MokoJournalEmailInfo *a_info)
+{
+  g_return_if_fail (a_info) ;
+  g_free (a_info) ;
+}
+
+static void
+moko_journal_voice_info_free (MokoJournalVoiceInfo *a_info)
+{
+  g_return_if_fail (a_info) ;
+  g_free (a_info) ;
+}
+
+static void
+moko_journal_fax_info_free (MokoJournalFaxInfo *a_info)
+{
+  g_return_if_fail (a_info) ;
+  g_free (a_info) ;
+}
+
+static void
+moko_journal_data_info_free (MokoJournalDataInfo *a_info)
+{
+  g_return_if_fail (a_info) ;
+  g_free (a_info) ;
+}
+
+static void
+moko_journal_sms_info_free (MokoJournalSMSInfo *a_info)
 {
   g_return_if_fail (a_info) ;
   g_free (a_info) ;
@@ -252,31 +346,58 @@ moko_journal_entry_free_real (MokoJournalEntry *a_entry)
     moko_time_free (a_entry->dtend) ;
     a_entry->dtend = NULL ;
   }
+  if (a_entry->source)
+  {
+    g_free (a_entry->source) ;
+    a_entry->source = NULL ;
+  }
 
   switch (a_entry->type)
   {
     case EMAIL_JOURNAL_ENTRY:
-      if (a_entry->extra_info.email_info)
+      if (a_entry->extra.email_info)
       {
-        moko_journal_email_info_free (a_entry->extra_info.email_info) ;
-        a_entry->extra_info.email_info = NULL ;
+        moko_journal_email_info_free (a_entry->extra.email_info) ;
+        a_entry->extra.email_info = NULL ;
+      }
+      break ;
+    case VOICE_JOURNAL_ENTRY:
+      if (a_entry->extra.voice_info)
+      {
+        moko_journal_voice_info_free (a_entry->extra.voice_info) ;
+        a_entry->extra.voice_info = NULL ;
+      }
+      break ;
+    case FAX_JOURNAL_ENTRY:
+      if (a_entry->extra.fax_info)
+      {
+        moko_journal_fax_info_free (a_entry->extra.fax_info) ;
+        a_entry->extra.fax_info = NULL;
+      }
+      break ;
+    case DATA_JOURNAL_ENTRY:
+      if (a_entry->extra.data_info)
+      {
+        moko_journal_data_info_free (a_entry->extra.data_info) ;
+        a_entry->extra.data_info = NULL ;
       }
       break ;
     case SMS_JOURNAL_ENTRY:
+      if (a_entry->extra.sms_info)
+      {
+        moko_journal_sms_info_free (a_entry->extra.sms_info) ;
+        a_entry->extra.sms_info = NULL ;
+      }
       break ;
-    case MMS_JOURNAL_ENTRY:
-      break ;
-    case CALL_JOURNAL_ENTRY:
-         break ;
     default:
-         g_warning ("unknown journal entry type. This is a leak!\n") ;
-         break ;
+      g_warning ("unknown journal entry type. This is a leak!\n") ;
+      break ;
   }
   g_free (a_entry) ;
 }
 
 static gboolean
-moko_journal_entry_type_is_valid (MokoJournalEntryType a_type)
+moko_journal_entry_type_is_valid (enum MokoJournalEntryType a_type)
 {
   if (a_type > 0 && a_type < NB_OF_ENTRY_TYPES)
     return TRUE ;
@@ -290,6 +411,8 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
   icalcomponent *comp = NULL ;
   icalproperty *prop = NULL ;
   gboolean result = FALSE ;
+  gchar *str=NULL ;
+  enum MessageDirection dir = DIRECTION_IN ;
 
   g_return_val_if_fail (a_entry, FALSE) ;
   g_return_val_if_fail (a_comp, FALSE) ;
@@ -314,15 +437,61 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
   prop = icalproperty_new_summary (moko_journal_entry_get_summary (a_entry)) ;
   icalcomponent_add_property (comp, prop) ;
 
+  /*add direction*/
+  if (!moko_journal_entry_get_direction (a_entry, &dir))
+  {
+    g_warning ("failed to get entry direction") ;
+    goto out ;
+  }
+  if (dir == DIRECTION_IN)
+  {
+    prop = icalproperty_new_x ("IN") ;
+  }
+  else
+  {
+    prop = icalproperty_new_x ("OUT") ;
+  }
+  icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-DIRECTION") ;
+  icalcomponent_add_property (comp, prop) ;
+
   /*add dtstart*/
   const MokoTime *date = moko_journal_entry_get_dtstart (a_entry) ;
-  prop = NULL ;
   if (!date)
     goto out ;
-
   prop = icalproperty_new_dtstart (date->t) ;
   icalcomponent_add_property (comp, prop) ;
 
+  /*add location start*/
+  struct icalgeotype geo;
+  if (moko_journal_entry_get_start_location (a_entry, (MokoLocation*)&geo))
+  {
+    prop = icalproperty_new_geo (geo) ;
+    icalcomponent_add_property (comp, prop) ;
+  }
+
+  /*add source*/
+  if (moko_journal_entry_get_source (a_entry))
+    prop = icalproperty_new_x (moko_journal_entry_get_source (a_entry)) ;
+  else
+    prop = icalproperty_new_x ("null") ;
+  icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-SOURCE") ;
+  icalcomponent_add_property (comp, prop) ;
+
+  /*
+   * add gsm location (pair of "local area code" and "cell id".
+   * gsm location is stored in an
+   * x-property named X-OPENMOKO-ENTRY-GSM-LOCATION that has the form:
+   * X-OPENMOKO-GSMLOCATION;LAC="<int16>";CID=<int 16>: dummy
+   */
+  prop = icalproperty_new_x ("dummy") ;
+  icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-GSM-LOCATION") ;
+  str = g_strdup_printf ("%d", a_entry->gsm_loc.lac);
+  icalproperty_set_parameter_from_string (prop, "X-LAC", str) ;
+  g_free (str) ;
+  str = g_strdup_printf ("%d", a_entry->gsm_loc.cid);
+  icalproperty_set_parameter_from_string (prop, "X-CID", str) ;
+  g_free (str) ;
+  icalcomponent_add_property (comp, prop) ;
   /*add entry type*/
   prop = icalproperty_new_x
                 (entry_type_to_string (moko_journal_entry_get_type (a_entry))) ;
@@ -335,23 +504,14 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
       g_warning ("entry is of undefined type\n") ;
       return FALSE ;
     case EMAIL_JOURNAL_ENTRY:
-      {
-        MokoJournalEmailInfo *info=NULL ;
-        if (!moko_journal_entry_get_email_info (a_entry, &info) || !info)
-          goto out ;
-        if (moko_journal_email_info_get_was_sent (info))
-          prop = icalproperty_new_x ("YES") ;
-        else
-          prop = icalproperty_new_x ("NO") ;
-        icalproperty_set_x_name (prop, "X-OPENMOKO-EMAIL-WAS-SENT") ;
-        icalcomponent_add_property (comp, prop) ;
-      }
+      break ;
+    case VOICE_JOURNAL_ENTRY:
+      break ;
+    case FAX_JOURNAL_ENTRY:
+      break ;
+    case DATA_JOURNAL_ENTRY:
       break ;
     case SMS_JOURNAL_ENTRY:
-      break ;
-    case MMS_JOURNAL_ENTRY:
-      break ;
-    case CALL_JOURNAL_ENTRY:
       break ;
     default:
       break ;
@@ -372,12 +532,12 @@ out:
 }
 
 static gboolean
-icalcomponent_to_j_entry (icalcomponent *a_comp,
-                          MokoJournalEntry **a_entry)
+icalcomponent_to_entry (icalcomponent *a_comp,
+                        MokoJournalEntry **a_entry)
 {
-  icalproperty *prop = NULL ;
-  gchar *prop_name = NULL ;
-  MokoJournalEntry *entry = NULL;
+  icalproperty *prop=NULL ;
+  gchar *prop_name=NULL, *prop_value=NULL ;
+  MokoJournalEntry *entry=NULL;
 
   g_return_val_if_fail (a_comp, FALSE) ;
   g_return_val_if_fail (icalcomponent_isa (a_comp) == ICAL_VJOURNAL_COMPONENT,
@@ -385,7 +545,74 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
 
   entry = moko_journal_entry_alloc () ;
 
-  /*iterate through properties to scan core properties*/
+  /*get the type*/
+  if (icalcomponent_find_property_as_string (a_comp, "X-OPENMOKO-ENTRY-TYPE",
+                                             &prop_value))
+  {
+    enum MokoJournalEntryType entry_type = UNDEF_ENTRY ;
+    if (!prop_value)
+    {
+      g_warning ("could not get entry type") ;
+      goto out ;
+    }
+    entry_type = entry_type_from_string (prop_value) ;
+    if (entry_type == UNDEF_ENTRY)
+    {
+      g_warning ("Could not recognize type of entry from: %s\n", prop_value);
+      goto out ;
+    }
+    entry->type = entry_type ;
+  }
+  /*make sure we got the type*/
+  if (entry->type == UNDEF_ENTRY || entry->type >= NB_OF_ENTRY_TYPES)
+  {
+    g_warning ("bad entry type") ;
+    goto out ;
+  }
+
+  /*look for the x-properties we may have*/
+  if (icalcomponent_find_property_as_string
+                                    (a_comp, "X-OPENMOKO-ENTRY-DIRECTION",
+                                     &prop_value))
+  {
+    if (prop_value && !strcmp (prop_value, "IN"))
+      moko_journal_entry_set_direction (entry, DIRECTION_IN) ;
+    else
+      moko_journal_entry_set_direction (entry, DIRECTION_OUT) ;
+  }
+  if (icalcomponent_find_property_as_string
+                                    (a_comp, "X-OPENMOKO-ENTRY-SOURCE",
+                                     &prop_value))
+  {
+    if (!prop_value || (prop_value && !strcmp (prop_value, "null")))
+    {
+      moko_journal_entry_set_source (entry, NULL) ;
+    }
+    else
+    {
+      moko_journal_entry_set_source (entry, prop_value) ;
+    }
+  }
+
+  if (icalcomponent_find_property (a_comp,
+                                   "X-OPENMOKO-ENTRY-GSM-LOCATION",
+                                   &prop))
+  {
+    if (prop )
+    {
+      gchar *str=NULL ;
+      gint code=0 ;
+      str = (gchar*)icalproperty_get_parameter_as_string (prop, "X-LAC") ;
+      code = atoi (str) ;
+      entry->gsm_loc.lac = (gushort)code ;
+      str = (gchar*)icalproperty_get_parameter_as_string (prop, "X-CID") ;
+      code = atoi (str) ;
+      entry->gsm_loc.cid = (gushort)code ;
+    }
+  }
+
+
+  /*now iterate through properties to scan core properties*/
   for (prop = icalcomponent_get_first_property (a_comp, ICAL_ANY_PROPERTY);
        prop ;
        prop = icalcomponent_get_next_property (a_comp, ICAL_ANY_PROPERTY))
@@ -411,62 +638,30 @@ icalcomponent_to_j_entry (icalcomponent *a_comp,
     else if (icalproperty_isa (prop) == ICAL_DTSTART_PROPERTY)
     {
       moko_journal_entry_set_dtstart
-      (entry,
-       moko_time_new_from_icaltimetype (icalproperty_get_dtstart (prop)));
+        (entry,
+         moko_time_new_from_icaltimetype (icalproperty_get_dtstart (prop)));
     }
-    else if (icalproperty_get_x_name (prop)
-             && !strcmp (icalproperty_get_x_name (prop),
-                         "X-OPENMOKO-ENTRY-TYPE"))
+    else if (icalproperty_isa (prop) == ICAL_GEO_PROPERTY)
     {
-      MokoJournalEntryType entry_type = UNDEF_ENTRY ;
-      const char *x_val = icalproperty_get_value_as_string (prop) ;
-      if (!x_val)
-        continue ;
-      entry_type = entry_type_from_string (x_val) ;
-      if (entry_type == UNDEF_ENTRY)
-      {
-        g_warning ("Could not recognize type of entry from: %s\n", x_val);
-        continue ;
-      }
-      entry->type = entry_type ;
+      struct icalgeotype geo = icalproperty_get_geo (prop);
+      moko_journal_entry_set_start_location (entry, (MokoLocation*)&geo) ;
     }
-  }
-
-  if (entry->type == UNDEF_ENTRY || entry->type >= NB_OF_ENTRY_TYPES)
-  {
-    g_warning ("bad entry type") ;
-    goto out ;
   }
 
   /*scan extra info related properties*/
   switch (entry->type)
   {
-    case EMAIL_JOURNAL_ENTRY:
+    case VOICE_JOURNAL_ENTRY:
       {
-        MokoJournalEmailInfo *info=NULL ;
-        gchar *prop_value = NULL ;
-        if (!moko_journal_entry_get_email_info (entry, &info))
-        {
-          g_warning ("failed to get email info") ;
-          goto out ;
-        }
-        if (icalcomponent_find_property_as_string
-                                            (a_comp,
-                                             "X-OPENMOKO-EMAIL-WAS-SENT",
-                                             &prop_value))
-        {
-          if (prop_value && !strcmp (prop_value, "YES"))
-            moko_journal_email_info_set_was_sent (info, TRUE) ;
-          else
-            moko_journal_email_info_set_was_sent (info, FALSE) ;
-        }
       }
+      break ;
+    case FAX_JOURNAL_ENTRY:
+      break ;
+    case DATA_JOURNAL_ENTRY:
       break ;
     case SMS_JOURNAL_ENTRY:
       break ;
-    case MMS_JOURNAL_ENTRY:
-      break ;
-    case CALL_JOURNAL_ENTRY:
+    case EMAIL_JOURNAL_ENTRY:
       break ;
     default:
       break ;
@@ -944,7 +1139,7 @@ on_entries_added_cb (ECalView *a_view,
      * in memory
      */
     ical_comp = cur_entry->data ;
-    if (!icalcomponent_to_j_entry (ical_comp, &entry) || !entry)
+    if (!icalcomponent_to_entry (ical_comp, &entry) || !entry)
     {
       if (entry)
       {
@@ -979,7 +1174,8 @@ on_entries_removed_cb (ECalView *a_view,
     {
       if (!moko_journal_remove_entry_by_uid (a_journal, cur->data))
       {
-        g_message ("failed to remove entry of uid %s\n", cur->data) ;
+        g_message ("failed to remove entry of uid %s\n",
+                   (const char*)cur->data) ;
       }
     }
   }
@@ -1060,7 +1256,7 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
     {
       if (!icalcomponent_isa (cur->data))
         continue ;
-      if (icalcomponent_to_j_entry (cur->data, &entry) && entry)
+      if (icalcomponent_to_entry (cur->data, &entry) && entry)
       {
         moko_journal_add_entry (a_journal, entry) ;
         entry = NULL ;
@@ -1094,7 +1290,7 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
  * Return value: the newly created journal entry object
  */
 MokoJournalEntry*
-moko_journal_entry_new (MokoJournalEntryType a_type)
+moko_journal_entry_new (enum MokoJournalEntryType a_type)
 {
   MokoJournalEntry *result ;
   result = moko_journal_entry_alloc () ;
@@ -1124,7 +1320,7 @@ moko_journal_entry_free (MokoJournalEntry *a_entry)
  *
  * Return value: the type of the journal entry
  */
-MokoJournalEntryType
+enum MokoJournalEntryType
 moko_journal_entry_get_type (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, UNDEF_ENTRY) ;
@@ -1142,7 +1338,7 @@ moko_journal_entry_get_type (MokoJournalEntry *a_entry)
  */
 void
 moko_journal_entry_set_type (MokoJournalEntry *a_entry,
-                             MokoJournalEntryType a_type)
+                             enum MokoJournalEntryType a_type)
 {
   g_return_if_fail (a_entry) ;
   g_return_if_fail (a_type != UNDEF_ENTRY) ;
@@ -1266,6 +1462,89 @@ moko_journal_entry_get_dtstart (MokoJournalEntry *a_entry)
 }
 
 /**
+ * moko_journal_entry_get_start_location:
+ * @a_entry: the current instance of journal entry
+ * @a_location: the requested location
+ *
+ * Get the location at which the message got received or sent.
+ *
+ * Returns: TRUE upon sucessful completion, FALSE otherwise.
+ */
+gboolean
+moko_journal_entry_get_start_location (MokoJournalEntry *a_entry,
+                                       MokoLocation *a_location)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_location, FALSE) ;
+
+  a_location->longitude = a_entry->start_longitude ;
+  a_location->latitude = a_entry->start_latitude ;
+
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_set_location:
+ * @a_entry: the current intance of journal entry
+ * @a_location: the new location
+ *
+ * Set a new location to the journal entry
+ * Location represents the longitude/latitude at which a call or message
+ * occured.
+ *
+ * Returns: TRUE upon successful completion, FALSE otherwise.
+ */
+gboolean
+moko_journal_entry_set_start_location (MokoJournalEntry *a_entry,
+                                       MokoLocation *a_location)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_location, FALSE) ;
+
+  a_entry->start_longitude = a_location->longitude ;
+  a_entry->start_latitude = a_location->latitude ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_get_direction:
+ * @entry: the current instance of journal entry
+ * @direction: either DIRECTION_IN for a received message or DIRECTION_OUT
+ * for a sent message.
+ *
+ * get the direction of the message
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean
+moko_journal_entry_get_direction (MokoJournalEntry *a_entry,
+                                  enum MessageDirection *a_direction)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_direction, FALSE) ;
+
+  *a_direction = a_entry->direction ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_set_direction:
+ * @entry: the current instance of journal entry
+ * @direction: the new message direction to set
+ *
+ * set message direction
+ *
+ */
+void moko_journal_entry_set_direction (MokoJournalEntry *a_entry,
+                                       enum MessageDirection direction)
+{
+  g_return_if_fail (a_entry) ;
+  g_return_if_fail (direction) ;
+
+  a_entry->direction = direction ;
+}
+
+/**
  * moko_journal_entry_set_dtstart:
  * @entry: the current instance of journal entry
  * @dtstart: the new starting date associated to the journal entry.
@@ -1286,6 +1565,186 @@ moko_journal_entry_set_dtstart (MokoJournalEntry *a_entry, MokoTime* a_dtstart)
 }
 
 /**
+ * moko_journal_entry_get_source:
+ * @a_entry: the current instance of journal entry
+ *
+ * Returns: the source property. It is an arbitrary string representing
+ * the application that was the source of the entry (like mokodialer)
+ */
+const gchar*
+moko_journal_entry_get_source (MokoJournalEntry *a_entry)
+{
+  g_return_val_if_fail (a_entry, NULL) ;
+
+  return a_entry->source ;
+}
+
+/**
+ * moko_journal_entry_set_source:
+ * @a_entry: the current instance of journal entry
+ * @a_source: the new source to set
+ *
+ * Set the source property. It is an arbitrary string representing
+ * the application that was the source of the entry (like mokodialer)
+ */
+void
+moko_journal_entry_set_source (MokoJournalEntry *a_entry,
+                               const gchar *a_source)
+{
+  g_return_if_fail (a_entry) ;
+
+  if (a_entry->source)
+  {
+    g_free (a_entry->source) ;
+    a_entry->source = NULL ;
+  }
+  if (a_source)
+    a_entry->source = g_strdup (a_source) ;
+}
+
+/**
+ * moko_journal_entry_set_gsm_location:
+ * @a_entry: the current instance of voice call extra properties set
+ * @a_location: the gsm location
+ *
+ * Returns: TRUE upon completion, FALSE otherwise
+ */
+gboolean
+moko_journal_entry_set_gsm_location (MokoJournalEntry *a_entry,
+                                     MokoGSMLocation *a_location)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_location, FALSE) ;
+
+  memcpy (&a_entry->gsm_loc, a_location, sizeof (MokoGSMLocation)) ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_get_gsm_location:
+ * @a_entry: the current instance of voice call extra properties set
+ * @a_location: the gsm location
+ *
+ * Returns TRUE upon completion, FALSE otherwise
+ */
+gboolean
+moko_journal_entry_get_gsm_location (MokoJournalEntry *a_info,
+                                     MokoGSMLocation *a_location)
+{
+  g_return_val_if_fail (a_info, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  memset (a_location, &a_info->gsm_loc, sizeof (MokoGSMLocation)) ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_get_voice_info:
+ * @a_entry: the current instance of journal entry
+ * @a_info: the extra property set or NULL if info is not of type
+ * VOICE_JOURNAL_ENTRY
+ *
+ * Returns the specific property set associated to instance of MokoJournalEntry
+ * of type VOICE_JOURNAL_ENTRY.
+ *
+ * Returns: TRUE upon successful completion, FALSE otherwise.
+ */
+gboolean
+moko_journal_entry_get_voice_info (MokoJournalEntry *a_entry,
+                                   MokoJournalVoiceInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == VOICE_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (!a_entry->extra.voice_info)
+  {
+    a_entry->extra.voice_info = moko_journal_voice_info_new ();
+  }
+  g_return_val_if_fail (a_entry->extra.voice_info, FALSE) ;
+  *a_info = a_entry->extra.voice_info ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_get_fax_info:
+ * @entry: the current instance of journal entry
+ * @info: the fax info properties set
+ *
+ * get the extra properties set associated to journal entries of
+ * type FAX_JOURNAL_ENTRY
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean
+moko_journal_entry_get_fax_info (MokoJournalEntry *a_entry,
+                                 MokoJournalFaxInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == FAX_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (!a_entry->extra.fax_info)
+  {
+    a_entry->extra.fax_info = moko_journal_fax_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.fax_info, FALSE) ;
+  *a_info = a_entry->extra.fax_info ;
+  return FALSE ;
+}
+
+/**
+ * moko_journal_entry_get_data_info:
+ * @a_entry: the current instance of journal entry
+ * @a_info: the resulting properties set
+ *
+ * Get the extra properties set associated to journal entries of type
+ * DATA_JOURNAL_ENTRY
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
+gboolean moko_journal_entry_get_data_info (MokoJournalEntry *a_entry,
+                                           MokoJournalDataInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == DATA_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (!a_entry->extra.data_info)
+  {
+    a_entry->extra.data_info = moko_journal_data_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.data_info, FALSE) ;
+  *a_info = a_entry->extra.data_info ;
+  return TRUE ;
+}
+
+/**
+ * moko_journal_entry_get_sms_info:
+ * @a_entry: the current instance of journal entry
+ * @a_info: the resulting properties set
+ *
+ * Get the extra properties set associated to journal entries of type
+ * SMS_JOURNAL_ENTRY
+ */
+gboolean
+moko_journal_entry_get_sms_info (MokoJournalEntry *a_entry,
+                                 MokoJournalSMSInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == SMS_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (a_entry->extra.sms_info)
+  {
+    a_entry->extra.sms_info = moko_journal_sms_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.sms_info, FALSE) ;
+  *a_info = a_entry->extra.sms_info ;
+  return TRUE ;
+}
+
+/**
  * moko_journal_entry_get_email_info:
  * @entry: the current instance of journal entry
  * @info: extra information attached to the email info, or NULL.
@@ -1301,44 +1760,14 @@ moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
 {
   g_return_val_if_fail (a_entry->type == EMAIL_JOURNAL_ENTRY, FALSE) ;
 
-  if (!a_entry->extra_info.email_info)
+  if (!a_entry->extra.email_info)
   {
-    a_entry->extra_info.email_info = moko_journal_email_info_new () ;
+    a_entry->extra.email_info = moko_journal_email_info_new () ;
   }
-  g_return_val_if_fail (a_entry->extra_info.email_info, FALSE) ;
+  g_return_val_if_fail (a_entry->extra.email_info, FALSE) ;
 
-  *a_info = a_entry->extra_info.email_info ;
+  *a_info = a_entry->extra.email_info ;
   return TRUE ;
-}
-
-/**
- * moko_journal_email_info_get_was_sent:
- * @info: the current instance of email info
- *
- * Get a boolean property stating if the email was sent or received.
- *
- * Return value: TRUE if the email was sent, false if it was received
- */
-gboolean
-moko_journal_email_info_get_was_sent (MokoJournalEmailInfo *a_info)
-{
-  g_return_val_if_fail (a_info, FALSE) ;
-  return a_info->was_sent ;
-}
-
-/**
- * moko_journal_email_info_set_was_sent:
- * @info: the current instance of email info
- * @was_sent: TRUE if the email was sent, FALSE if it was received
- *
- * Set a boolean property stating if the email was sent or received
- */
-void
-moko_journal_email_info_set_was_sent (MokoJournalEmailInfo *a_info,
-                                gboolean a_was_sent)
-{
-  g_return_if_fail (a_info) ;
-  a_info->was_sent = a_was_sent ;
 }
 
 /*</public funcs>*/

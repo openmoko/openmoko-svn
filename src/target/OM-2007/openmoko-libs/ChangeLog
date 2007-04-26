@@ -1,3 +1,14 @@
+2007-04-26 Dodji Seketeli <dodji@openedhand.com>
+
+	* oe/conf/distro/include/sane-srcdates.inc: this needs and update of the version
+	  of edsdbus to svn 20070426 because we pushed a couple of fixes and enhancement in
+	  there. These fixes/enhancements are mandatory for this patch to work.
+	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c,h: 
+	  re-organize the properties supported. Added "direction", "gsmlocation"
+	  and "startlocation" properties.
+	* src/target/OM-2007/openmoko-libs/libmokojournal/tests/test-create.c:
+	  Update this to test the new properties.
+
 2007-04-25  Rob Bradford  <rob@openedhand.com>
 
 	* libmokoui/moko-paned-window.c: (moko_paned_window_init),
