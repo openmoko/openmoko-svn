@@ -229,7 +229,7 @@ static void create_details_area( struct RSSReaderData* data ) {
     gtk_text_view_set_wrap_mode( data->textView, GTK_WRAP_WORD_CHAR );
 
     GtkWidget *scrollWindow = GTK_WIDGET(moko_scrolled_pane_new());
-    moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE(scrollWindow, GTK_WIDGET (data->textView)));
+    moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE(scrollWindow), GTK_WIDGET (data->textView));
     moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(data->window), scrollWindow ) ;
 }
 
