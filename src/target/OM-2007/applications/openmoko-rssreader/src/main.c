@@ -31,7 +31,7 @@
 #include "callbacks.h"
 #include "rfcdate.h"
 
-#include <libmokoui/moko-details-window.h>
+#include <libmokoui/moko-scrolled-pane.h>
 
 #include <string.h>
 #include <assert.h>
