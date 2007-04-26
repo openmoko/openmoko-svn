@@ -32,10 +32,10 @@
 
 #include "common.h"
 #include "contacts.h"
-#include "openmoko-dialer-main.h"
-#include "openmoko-dialer-window-dialer.h"
-#include "openmoko-dialer-window-history.h"
-#include "openmoko-dialer-window-outgoing.h"
+#include "dialer-main.h"
+#include "dialer-window-dialer.h"
+#include "dialer-window-history.h"
+#include "dialer-window-outgoing.h"
 
 void
 cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)

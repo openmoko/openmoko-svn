@@ -31,11 +31,11 @@
 #include <gtk/gtkvbox.h>
   
 #include "contacts.h"
-#include "openmoko-dialer-main.h"
+#include "dialer-main.h"
 #include "moko-dialer-status.h"
-#include "openmoko-dialer-window-incoming.h"
-#include "openmoko-dialer-window-talking.h"
-#include "openmoko-dialer-window-history.h"
+#include "dialer-window-incoming.h"
+#include "dialer-window-talking.h"
+#include "dialer-window-history.h"
 #include "history.h"
 void 
 cb_answer_button_clicked (GtkButton * button,

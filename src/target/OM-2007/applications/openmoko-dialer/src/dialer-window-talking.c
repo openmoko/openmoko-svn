@@ -32,10 +32,10 @@
 
 #include "contacts.h"
 #include "common.h"
-#include "openmoko-dialer-main.h"
+#include "dialer-main.h"
 #include "moko-dialer-status.h"
-#include "openmoko-dialer-window-talking.h"
-#include "openmoko-dialer-window-history.h"
+#include "dialer-window-talking.h"
+#include "dialer-window-history.h"
 
 void
 openmoko_wheel_press_left_up_cb (GtkWidget * widget,

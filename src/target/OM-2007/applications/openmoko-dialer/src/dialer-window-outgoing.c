@@ -31,11 +31,11 @@
 #include <gtk/gtkvbox.h>
 
 #include "contacts.h"
-#include "openmoko-dialer-main.h"
+#include "dialer-main.h"
 #include "moko-dialer-status.h"
-#include "openmoko-dialer-window-outgoing.h"
-#include "openmoko-dialer-window-history.h"
-#include "openmoko-dialer-window-talking.h"
+#include "dialer-window-outgoing.h"
+#include "dialer-window-history.h"
+#include "dialer-window-talking.h"
 
 /* function declerations */
 void window_outgoing_setup_timer (MokoDialerData * appdata);

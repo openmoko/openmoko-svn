@@ -26,7 +26,7 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkmenuitem.h>
 #include <gtk/gtkvbox.h>
-#include "openmoko-dialer-main.h"
+#include "dialer-main.h"
 
 void
 pin_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)

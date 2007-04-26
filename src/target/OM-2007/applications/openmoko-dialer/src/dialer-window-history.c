@@ -37,10 +37,10 @@
 
 #include "common.h"
 #include "contacts.h"
-#include "openmoko-dialer-main.h"
+#include "dialer-main.h"
 #include "moko-dialer-status.h"
 #include "history.h"
-#include "openmoko-dialer-window-history.h"
+#include "dialer-window-history.h"
 
 
 /* function declarations */

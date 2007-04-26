@@ -33,13 +33,13 @@
 #include  "history.h"
 #include "error.h"
 #include "errno.h"
-#include "openmoko-dialer-main.h"
-#include "openmoko-dialer-window-dialer.h"
-#include "openmoko-dialer-window-talking.h"
-#include "openmoko-dialer-window-outgoing.h"
-#include "openmoko-dialer-window-incoming.h"
-#include "openmoko-dialer-window-pin.h"
-#include "openmoko-dialer-window-history.h"
+#include "dialer-main.h"
+#include "dialer-window-dialer.h"
+#include "dialer-window-talking.h"
+#include "dialer-window-outgoing.h"
+#include "dialer-window-incoming.h"
+#include "dialer-window-pin.h"
+#include "dialer-window-history.h"
 
 #include "dialer-callbacks-connection.h"
 
@@ -200,7 +200,7 @@ main (int argc, char **argv)
   window_outgoing_init (p_dialer_data);
   window_history_init (p_dialer_data);
   DBG_MSG
-    ("\nusage: \"openmoko-dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
+    ("\nusage: \"dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 
   if (show_gui)
   {
