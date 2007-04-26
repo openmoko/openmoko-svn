@@ -46,7 +46,7 @@ detail_area_new (ApplicationManagerData *appdata)
   moko_scrolled_pane_pack (MOKO_SCROLLED_PANE (detail), text);
   application_manager_data_set_tvdetail (appdata, text);
 
-  return GTK_WIDGET (box);
+  return GTK_WIDGET (detail);
 }
 
 /*
