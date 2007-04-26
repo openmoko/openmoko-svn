@@ -1,7 +1,7 @@
 AC_PREREQ(2.53)
 AC_INIT(openmoko-dialer, %(APPVERSION), %(APPCONTACT))
 AM_INIT_AUTOMAKE()
-AC_CONFIG_SRCDIR(src/openmoko-dialer-main.c)
+AC_CONFIG_SRCDIR(src/dialer-main.c)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
