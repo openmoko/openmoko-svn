@@ -1,6 +1,14 @@
 2007-04-26 Dodji Seketeli <dodji@openedhand.com>
 
 	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c,h:
+	  added a MokoJournalVoiceInfo::callee_number.
+	  Rename MokoJournalVoiceInfo::dialed_number into
+	  MokoJournalVoiceInfo::caller_number. Both properties are serialized.
+
+
+2007-04-26 Dodji Seketeli <dodji@openedhand.com>
+
+	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c,h:
 	  added MokoJournalVoiceInfo::dialed_number
 	  and MokoJournalVoiceInfo::was_missed properties. These a serialized
 	  and deserialized.

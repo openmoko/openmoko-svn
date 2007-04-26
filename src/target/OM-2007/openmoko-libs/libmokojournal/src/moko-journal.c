@@ -39,7 +39,8 @@ struct _MokoJournal
 
 struct _MokoJournalVoiceInfo
 {
-  gchar *dialed_number ;
+  gchar *caller_number ;
+  gchar *callee_number ;
   gboolean was_missed ;
 };
 
@@ -291,10 +292,15 @@ moko_journal_voice_info_free (MokoJournalVoiceInfo *a_info)
 
   if (a_info)
   {
-    if (a_info->dialed_number)
+    if (a_info->caller_number)
     {
-      g_free (a_info->dialed_number) ;
-      a_info->dialed_number = NULL ;
+      g_free (a_info->caller_number) ;
+      a_info->caller_number = NULL ;
+    }
+    if (a_info->callee_number)
+    {
+      g_free (a_info->callee_number) ;
+      a_info->callee_number = NULL ;
     }
   }
   g_free (a_info) ;
@@ -541,12 +547,21 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
           break ;
 
         /*
-         * serialize dialed number
+         * serialize caller number
          */
-        if (moko_journal_voice_info_get_dialed_number (info))
-          number = (gchar*)moko_journal_voice_info_get_dialed_number (info) ;
+        if (moko_journal_voice_info_get_caller_number (info))
+          number = (gchar*)moko_journal_voice_info_get_caller_number (info) ;
         prop = icalproperty_new_x (number) ;
-        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-DIALED-NUMBER") ;
+        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLER-NUMBER") ;
+        icalcomponent_add_property (comp, prop) ;
+
+        /*
+         * serialize the callee_number property
+         */
+        if (moko_journal_voice_info_get_callee_number (info))
+          number = (gchar*)moko_journal_voice_info_get_caller_number (info) ;
+        prop = icalproperty_new_x (number) ;
+        icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLEE-NUMBER") ;
         icalcomponent_add_property (comp, prop) ;
 
         /*
@@ -715,16 +730,30 @@ icalcomponent_to_entry (icalcomponent *a_comp,
         g_return_val_if_fail (info, FALSE) ;
 
         /*
-         * deserialize dialed number
+         * deserialize caller number
          */
         if (icalcomponent_find_property_as_string
                                           (a_comp,
-                                           "X-OPENMOKO-VOICE-DIALED-NUMBER",
+                                           "X-OPENMOKO-VOICE-CALLER-NUMBER",
                                            &prop_value))
         {
           if (prop_value)
           {
-            moko_journal_voice_info_set_dialed_number (info, prop_value) ;
+            moko_journal_voice_info_set_caller_number (info, prop_value) ;
+          }
+        }
+
+        /*
+         * deserialize callee number
+         */
+        if (icalcomponent_find_property_as_string
+                                          (a_comp,
+                                           "X-OPENMOKO-VOICE-CALLEE-NUMBER",
+                                           &prop_value))
+        {
+          if (prop_value)
+          {
+            moko_journal_voice_info_set_callee_number (info, prop_value) ;
           }
         }
         prop_value = NULL ;
@@ -1807,26 +1836,49 @@ moko_journal_entry_get_voice_info (MokoJournalEntry *a_entry,
 }
 
 void
-moko_journal_voice_info_set_dialed_number (MokoJournalVoiceInfo *a_info,
+moko_journal_voice_info_set_caller_number (MokoJournalVoiceInfo *a_info,
                                            gchar *a_number)
 {
   g_return_if_fail (a_info) ;
 
-  if (a_info->dialed_number)
+  if (a_info->caller_number)
   {
-    g_free (a_info->dialed_number) ;
-    a_info->dialed_number = NULL ;
+    g_free (a_info->caller_number) ;
+    a_info->caller_number = NULL ;
   }
   if (a_number)
-    a_info->dialed_number = g_strdup (a_number) ;
+    a_info->caller_number = g_strdup (a_number) ;
 }
 
 const gchar*
-moko_journal_voice_info_get_dialed_number (MokoJournalVoiceInfo *a_info)
+moko_journal_voice_info_get_caller_number (MokoJournalVoiceInfo *a_info)
 {
   g_return_val_if_fail (a_info, NULL) ;
 
-  return a_info->dialed_number ;
+  return a_info->caller_number ;
+}
+
+void
+moko_journal_voice_info_set_callee_number (MokoJournalVoiceInfo *a_info,
+                                           const gchar *a_number)
+{
+  g_return_if_fail (a_info);
+  g_return_if_fail (a_number) ;
+
+  if (a_info->callee_number)
+  {
+    g_free (a_info->callee_number) ;
+    a_info->callee_number = NULL ;
+  }
+  if (a_number)
+    a_info->callee_number = g_strdup (a_number) ;
+}
+
+const gchar*
+moko_journal_voice_info_get_callee_number (MokoJournalVoiceInfo *a_info)
+{
+  g_return_val_if_fail (a_info, NULL) ;
+  return a_info->callee_number ;
 }
 
 void
