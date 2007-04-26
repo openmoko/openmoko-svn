@@ -21,7 +21,7 @@
 
 #include <gtk/gtk.h>
 #include <glib-object.h>
-#include <libmokoui/moko-details-window.h>
+#include <libmokoui/moko-scrolled-pane.h>
 #include <libmokoui/moko-pixmap-button.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-fixed.h>
@@ -57,7 +57,7 @@ EditAttributes;
 
 typedef struct _DetailArea
   {
-    MokoDetailsWindow parent;
+    MokoScrolledPane parent;
     GtkNotebook* notebook;
     GtkVBox* detailbox;
     GtkHBox* toolbox;
@@ -69,7 +69,7 @@ DetailArea;
 
 typedef struct _DetailAreaClass
   {
-    MokoDetailsWindowClass parent_class;
+    MokoScrolledPaneClass parent_class;
   }
 DetailAreaClass;
 

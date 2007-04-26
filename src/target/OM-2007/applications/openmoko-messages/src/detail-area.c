@@ -21,7 +21,7 @@
 
 GtkWidget* detail_area_mode_read (DetailArea* self);
 
-G_DEFINE_TYPE (DetailArea, detail_area, MOKO_TYPE_DETAILS_WINDOW)
+G_DEFINE_TYPE (DetailArea, detail_area, MOKO_TYPE_SCROLLED_PANE)
 
 #define DETAIL_AREA_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_DETAIL_AREA, DetailAreaPrivate))
 
@@ -64,12 +64,12 @@ detail_area_class_init (DetailAreaClass *klass)
 static void
 detail_area_init (DetailArea *self)
 {
-  gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(self), GTK_POLICY_NEVER, GTK_POLICY_NEVER );
-
   self->notebook = GTK_NOTEBOOK( gtk_notebook_new() );
   gtk_notebook_append_page (self->notebook,detail_area_mode_read(self),NULL);
   gtk_notebook_set_show_tabs (self->notebook,FALSE);
   gtk_notebook_set_show_border (self->notebook,FALSE);
+
+  moko_scrolled_pane_pack (MOKO_SCROLLED_PANE (self), self->notebook);
 }
 
 GtkWidget* detail_area_new (void)

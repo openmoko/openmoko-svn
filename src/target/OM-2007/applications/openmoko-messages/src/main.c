@@ -403,10 +403,10 @@ void populate_navigation_area( MessengerData* d )
 void populate_detail_area( MessengerData* d )
 {
   d->details = detail_area_new();
+
   gtk_widget_show (d->details);
-  gtk_scrolled_window_add_with_viewport( GTK_SCROLLED_WINDOW(d->details), detail_area_get_notebook(DETAIL_AREA(d->details)));
   moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(d->window), 
-          GTK_WIDGET(moko_details_window_put_in_box(MOKO_DETAILS_WINDOW(d->details))));
+          GTK_WIDGET(d->details));
 }
 
 void main_quit(GtkMenuItem* item, MessengerData* d)
