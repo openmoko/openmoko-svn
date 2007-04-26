@@ -228,9 +228,9 @@ static void create_details_area( struct RSSReaderData* data ) {
     g_object_set_property( G_OBJECT(data->textView), "cursor-visible", &value );
     gtk_text_view_set_wrap_mode( data->textView, GTK_WRAP_WORD_CHAR );
 
-    GtkWidget *scrollWindow = GTK_WIDGET(moko_details_window_new());
-    gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollWindow), GTK_WIDGET (data->textView));
-    moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_details_window_put_in_box(MOKO_DETAILS_WINDOW(scrollWindow))) );
+    GtkWidget *scrollWindow = GTK_WIDGET(moko_scrolled_pane_new());
+    moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE(scrollWindow, GTK_WIDGET (data->textView)));
+    moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(data->window), scrollWindow ) ;
 }
 
 /*
