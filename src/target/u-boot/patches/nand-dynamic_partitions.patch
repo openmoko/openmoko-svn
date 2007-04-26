@@ -19,7 +19,7 @@ Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
 --- u-boot.orig/drivers/nand/nand_bbt.c
 +++ u-boot/drivers/nand/nand_bbt.c
-@@ -1044,9 +1044,83 @@
+@@ -1044,9 +1044,85 @@ int nand_isbad_bbt (struct mtd_info *mtd
  	switch ((int)res) {
  	case 0x00:	return 0;
  	case 0x01:	return 1;
@@ -30,8 +30,11 @@ Index: u-boot/drivers/nand/nand_bbt.c
  }
  
 +#if defined(CONFIG_NAND_DYNPART)
-+extern unsigned int *dynpart_size;
-+extern char **dynpart_names;
++
++extern unsigned int dynpart_size[];
++extern char *dynpart_names[];
++
++#define MTDPARTS_MAX_SIZE 512
 +
 +
 +static int skip_offs(const struct nand_chip *this, unsigned int offs)
@@ -49,12 +52,11 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +	char *mtdparts;
 +	unsigned int cur_offs = 0;
 +
-+	mtdparts = malloc(512); /* FIXME: bounds checking */
++	mtdparts = malloc(MTDPARTS_MAX_SIZE); /* FIXME: bounds checking */
 +	if (!mtdparts)
 +		return -ENOMEM;
 +
-+	memset(mtdparts, 0, sizeof(mtdparts));
-+	sprintf(mtdparts, "mtdparts=" CFG_NAND_DYNPART_MTD_KERNEL_NAME);
++	sprintf(mtdparts, "mtdparts=" CFG_NAND_DYNPART_MTD_KERNEL_NAME ":");
 +
 +	for (part = 0; dynpart_size[part] != 0; part++) {
 +		unsigned int bb_delta = 0;
@@ -90,10 +92,10 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +		sprintf(mtdpart, "0x%.8x(%.16s),", dynpart_size[part] + bb_delta,
 +			dynpart_names[part]);
 +		mtdpart[sizeof(mtdpart)-1] = '\0';
-+		strncat(mtdparts, mtdpart, sizeof(mtdparts)-strlen(mtdparts)-1);
++		strncat(mtdparts, mtdpart,
++		    MTDPARTS_MAX_SIZE-strlen(mtdparts)-1);
 +	}
 +
-+	mtdparts[strlen(mtdparts)-1] = '\0';
 +	printf("mtdparts %s\n", mtdparts);
 +	setenv("mtdparts", mtdparts);
 +
@@ -147,7 +149,7 @@ Index: u-boot/common/cmd_jffs2.c
 ===================================================================
 --- u-boot.orig/common/cmd_jffs2.c
 +++ u-boot/common/cmd_jffs2.c
-@@ -1841,6 +1841,29 @@
+@@ -1841,6 +1841,29 @@ static struct part_info* jffs2_part_info
  	return NULL;
  }
  
@@ -177,7 +179,7 @@ Index: u-boot/common/cmd_jffs2.c
  /***************************************************/
  /* U-boot commands				   */
  /***************************************************/
-@@ -2132,6 +2155,24 @@
+@@ -2132,6 +2155,24 @@ int do_jffs2_mtdparts(cmd_tbl_t *cmdtp, 
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -202,7 +204,7 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2197,6 +2238,15 @@
+@@ -2197,6 +2238,15 @@ U_BOOT_CMD(
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );
@@ -222,7 +224,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -101,7 +101,7 @@
+@@ -101,7 +101,7 @@ static inline int str2long(char *p, ulon
  }
  
  int
@@ -231,7 +233,7 @@ Index: u-boot/common/cmd_nand.c
  {
  	int idx = nand_curr_device;
  #if (CONFIG_COMMANDS & CFG_CMD_JFFS2) && defined(CONFIG_JFFS2_CMDLINE)
-@@ -122,10 +122,17 @@
+@@ -122,10 +122,17 @@ arg_off_size(int argc, char *argv[], nan
  					printf("'%s' is not a number\n", argv[1]);
  					return -1;
  				}
@@ -252,7 +254,7 @@ Index: u-boot/common/cmd_nand.c
  			}
  			idx = dev->id->num;
  			*nand = nand_info[idx];
-@@ -261,7 +268,7 @@
+@@ -261,7 +268,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  
  		printf("\nNAND %s: ", scrub ? "scrub" : "erase");
  		/* skip first two or three arguments, look for offset and size */
@@ -261,7 +263,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		memset(&opts, 0, sizeof(opts));
-@@ -323,7 +330,7 @@
+@@ -323,7 +330,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  
  		read = strncmp(cmd, "read", 4) == 0; /* 1 = read, 0 = write */
  		printf("\nNAND %s: ", read ? "read" : "write");
@@ -270,7 +272,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		s = strchr(cmd, '.');
-@@ -445,7 +452,7 @@
+@@ -445,7 +452,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  	}
  
  	if (strcmp(cmd, "unlock") == 0) {
@@ -283,7 +285,7 @@ Index: u-boot/common/cmd_dynenv.c
 ===================================================================
 --- u-boot.orig/common/cmd_dynenv.c
 +++ u-boot/common/cmd_dynenv.c
-@@ -60,7 +60,7 @@
+@@ -60,7 +60,7 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
  		buf[2] = 'V';
  		buf[3] = '0';
  
@@ -308,7 +310,7 @@ Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/neo1973.c
 +++ u-boot/board/neo1973/neo1973.c
-@@ -375,3 +375,14 @@
+@@ -382,3 +382,14 @@ int neo1973_911_key_pressed(void)
  		return 0;
  	return 1;
  }
@@ -327,7 +329,7 @@ Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
 --- u-boot.orig/board/qt2410/qt2410.c
 +++ u-boot/board/qt2410/qt2410.c
-@@ -126,3 +126,9 @@
+@@ -126,3 +126,9 @@ int dram_init (void)
  
  	return 0;
  }
