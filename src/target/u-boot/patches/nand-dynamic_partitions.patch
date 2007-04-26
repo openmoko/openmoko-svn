@@ -19,7 +19,7 @@ Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
 --- u-boot.orig/drivers/nand/nand_bbt.c
 +++ u-boot/drivers/nand/nand_bbt.c
-@@ -1044,9 +1044,85 @@ int nand_isbad_bbt (struct mtd_info *mtd
+@@ -1044,9 +1044,86 @@ int nand_isbad_bbt (struct mtd_info *mtd
  	switch ((int)res) {
  	case 0x00:	return 0;
  	case 0x01:	return 1;
@@ -96,6 +96,7 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +		    MTDPARTS_MAX_SIZE-strlen(mtdparts)-1);
 +	}
 +
++	mtdparts[strlen(mtdparts)-1] = '\0';
 +	printf("mtdparts %s\n", mtdparts);
 +	setenv("mtdparts", mtdparts);
 +
