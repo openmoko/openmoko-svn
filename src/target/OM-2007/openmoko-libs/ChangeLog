@@ -1,3 +1,10 @@
+2007-04-27  Rob Bradford  <rob@openedhand.com>
+
+	* libmokoui/moko-window.c: (moko_window_set_status_message),
+	(moko_window_set_status_progress):
+	* libmokoui/moko-window.h:
+	Add functionality for controlling footer.
+
 2007-04-26 Dodji Seketeli <dodji@openedhand.com>
 
 	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c,h:

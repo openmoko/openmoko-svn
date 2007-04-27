@@ -231,3 +231,33 @@ moko_window_update_topmost(MokoWindow* self, Window window_id)
     }
 }
 
+void
+moko_window_set_status_message (MokoWindow *self, gchar *message)
+{
+  GtkWidget *window = GTK_WIDGET (self);
+
+  g_return_if_fail (MOKO_IS_WINDOW (self));
+
+  XChangeProperty(GDK_WINDOW_XDISPLAY (window->window), GDK_WINDOW_XID(window->window),
+    gdk_x11_get_xatom_by_name ("_MOKO_STATUS_MESSAGE"),
+    XA_STRING,
+    8,
+    PropModeReplace,
+    message,
+    strlen (message) + 1);
+}
+
+void
+moko_window_set_status_progress (MokoWindow *self, gdouble progress)
+{
+  GtkWidget *window = GTK_WIDGET (self);
+  g_return_if_fail (MOKO_IS_WINDOW (self));
+
+  XChangeProperty(GDK_WINDOW_XDISPLAY (window->window), GDK_WINDOW_XID(window->window),
+    gdk_x11_get_xatom_by_name ("_MOKO_STATUS_PROGRESS"),
+    XA_STRING,
+    8,
+    PropModeReplace,
+    (char *)&progress,
+    sizeof (progress));
+}

@@ -53,6 +53,9 @@ void moko_window_update_topmost (MokoWindow* self, Window window_id);
 
 Window moko_window_get_active_window();
 
+void moko_window_set_status_message (MokoWindow *self, gchar *message);
+void moko_window_set_status_progress (MokoWindow *self, gdouble progress);
+
 G_END_DECLS
 
 #endif /* _MOKO_WINDOW_H_ */
