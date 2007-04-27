@@ -20,29 +20,14 @@
 #ifndef OM_TASK_MANAGER_H
 #define OM_TASK_MANAGER_H
 
+#include <gtk/gtk.h>
 #include "footer.h"
 
-#ifndef DBUS_API_SUBJECT_TO_CHANGE
-#define DBUS_API_SUBJECT_TO_CHANGE
-#endif
-
-#include <glib/gmain.h>
-#include <gdk/gdk.h>
-#include <dbus/dbus.h>
-#include <gtk/gtkwidget.h>
-
-/**
- * @typedef MokoFooter
- *
- * Opaque structure used for representing an Openmoko Task Manager App. 
- */
-/* Types */
-typedef struct _MokoFooter 
+typedef struct _MokoFooterApp
 {
-    DBusConnection* bus;
-    GMainLoop* loop;
-    GtkWidget* toplevel_win;
-    Footer* footer;
-} MokoFooter;
+    GtkWidget *toplevel_window;
+    GtkWidget *footer;
+    GdkWindow *target_window;
+} MokoFooterApp;
 
 #endif /* main.h */

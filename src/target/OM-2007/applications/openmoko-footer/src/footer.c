@@ -16,76 +16,32 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  */
+
 #include "footer.h"
 
-enum {
-    FOOTER_SIGNAL,
-    LAST_SIGNAL
+G_DEFINE_TYPE (Footer, footer, GTK_TYPE_HBOX);
+
+#define FOOTER_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_FOOTER, FooterPrivate))
+
+typedef struct _FooterPrivate FooterPrivate;
+
+struct _FooterPrivate
+{
 };
 
-static void footer_class_init          (FooterClass *klass);
-static void footer_init                (Footer      *f);
-
-static guint footer_signals[LAST_SIGNAL] = { 0 };
-
-/**
-*@brief retrun fooer type.
-*@param none
-*@return GType
-*/
-GType footer_get_type (void) /* Typechecking */
+static void
+footer_class_init (FooterClass *klass)
 {
-    static GType f_type = 0;
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-    if (!f_type)
-    {
-        static const GTypeInfo f_info =
-        {
-            sizeof (FooterClass),
-            NULL, /* base_init */
-            NULL, /* base_finalize */
-            (GClassInitFunc) footer_class_init,
-            NULL, /* class_finalize */
-            NULL, /* class_data */
-            sizeof (Footer),
-            0,
-            (GInstanceInitFunc) footer_init,
-            NULL
-        };
-
-        f_type = g_type_register_static(GTK_TYPE_HBOX, "Footer", &f_info, 0);
-    }
-
-    return f_type;
+  g_type_class_add_private (klass, sizeof (FooterPrivate));
 }
 
-/**
-*@brief initialize footer class.
-*@param klass	FooterClass
-*@return none
-*/
-static void footer_class_init (FooterClass *Klass) /* Class Initialization */
-{
-    footer_signals[FOOTER_SIGNAL] = g_signal_new ("footer",
-            G_TYPE_FROM_CLASS (Klass),
-            G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
-            G_STRUCT_OFFSET (FooterClass, footer),
-            NULL,
-            NULL,
-            g_cclosure_marshal_VOID__VOID,
-            G_TYPE_NONE, 0);
-}
-
-/**
-*@brief initialize footer UI.
-*@param f	Footer instance
-*@return none
-*/
 static void footer_init (Footer *f) /* Instance Construction */
 {
-    PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
+    PangoFontDescription *PangoFont = pango_font_description_new(); //get system default PangoFontDesc
 
-/*left image*/
     f->LeftEventBox = gtk_event_box_new (); 
     gtk_widget_show (GTK_WIDGET (f->LeftEventBox));
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(f->LeftEventBox),FALSE);
@@ -96,21 +52,31 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_widget_show (GTK_WIDGET (f->LeftImage));
     gtk_container_add ( GTK_CONTAINER (f->LeftEventBox), f->LeftImage);
 
-/*Label to show dbus message */
+/*
     f->CenterLabel = gtk_label_new("OpenMoko Taskmanager");
     gtk_widget_show (GTK_WIDGET (f->CenterLabel));
     gtk_widget_set_name (GTK_WIDGET (f->CenterLabel), "label_footer");
     gtk_misc_set_alignment (GTK_MISC (f->CenterLabel), LABEL_ALIGNMENT_X, LABEL_ALIGNMENT_Y);
     gtk_label_set_single_line_mode (GTK_LABEL (f->CenterLabel), TRUE);
+
     if (PangoFont){
         pango_font_description_set_size (PangoFont, FONT_SIZE);
         gtk_widget_modify_font (GTK_WIDGET (f->CenterLabel), PangoFont);
     }
+
     gtk_label_set_ellipsize (GTK_LABEL (f->CenterLabel), PANGO_ELLIPSIZE_END);
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET (f->CenterLabel), TRUE, TRUE, LABEL_PADDING);
     gtk_label_set_text (GTK_LABEL (f->CenterLabel), "OpenMoko Task Manager");
+*/
 
-/*right image*/
+    f->ProgressBar = gtk_progress_bar_new();
+    gtk_widget_show (f->ProgressBar);
+    gtk_progress_bar_set_bar_style (f->ProgressBar, GTK_PROGRESS_CONTINUOUS);
+    gtk_box_pack_start( f, GTK_WIDGET(f->ProgressBar), TRUE, TRUE, 0);
+    gtk_progress_bar_set_fraction (f->ProgressBar, 0);
+    gtk_progress_bar_set_text (f->ProgressBar, "OpenMoko TaskManager");
+    gtk_progress_bar_set_ellipsize (GTK_PROGRESS_BAR (f->ProgressBar), PANGO_ELLIPSIZE_END);
+
     f->RightEventBox = gtk_event_box_new (); 
     gtk_widget_show (f->RightEventBox);
     gtk_event_box_set_visible_window (GTK_EVENT_BOX(f->RightEventBox),FALSE);
@@ -120,74 +86,20 @@ static void footer_init (Footer *f) /* Instance Construction */
     f->RightImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_toggle.png");
     gtk_widget_show (GTK_WIDGET (f->RightImage));
     gtk_container_add (GTK_CONTAINER (f->RightEventBox), f->RightImage);
-
-/*progressbar*/
-/*
-    f->progressbar = gtk_progress_bar_new();
-    gtk_widget_show (f->progressbar);
-    gtk_progress_bar_set_bar_style (f->progressbar, GTK_PROGRESS_CONTINUOUS);
-    gtk_box_pack_start( f, GTK_WIDGET(f->progressbar), TRUE, TRUE, 0 );
-    gtk_progress_bar_set_fraction (f->progressbar, 0.5);
-    gtk_progress_bar_set_text (f->progressbar, "OpenMoko TaskManager");
-    */
-
 }
 
-/**
-*@brief create Footer widget object.
-*@param none
-*@return footer widget of GtkWidget type.
-*/
-GtkWidget* footer_new() /* Construction */
+
+GtkWidget* footer_new()
 {
-    return GTK_WIDGET(g_object_new(footer_get_type(), NULL));
+    return GTK_WIDGET(g_object_new(TYPE_FOOTER, NULL));
 }
 
-/**
-*@brief clear footer widget
-*/
-void footer_clear(Footer *f) /* Destruction */
+void footer_set_status_message (Footer *f, const gchar *text)
 {
-     if (!f) g_free (f);
+  gtk_progress_bar_set_text (GTK_PROGRESS_BAR (f->ProgressBar), text);
 }
 
-/**
-*@brief set footer progressbar status.
-*@param f    Footer reference
-*@param s    string which is consist of status message and progressbar percent,
-*            the string of message and percent is connected by symbol "@".
-*@return none
-*/
-void footer_set_status(Footer *f, const char* s)
+void footer_set_status_progress (Footer *f, gdouble fraction)
 {
-//    gtk_statusbar_push( f->statusbar, 1, s );
-    gtk_label_set_text (GTK_LABEL (f->CenterLabel), s);
-    /*char message[128];
-    char str_fraction[3];
-    char* p_fraction;
-    int StrLength;
-    gdouble fraction;
-    int i;
-
-    strcpy(message,s);
-    if(p_fraction = strrchr(s, '@'))
-         StrLength = strlen(s)-strlen(p_fraction);
-    else StrLength = strlen(s);
-
-    memcpy(message,s,StrLength);
-    message[StrLength] = '\0';
-    for (i=0; i<4; i++)
-         str_fraction[i] = s[StrLength+1+i];
-    str_fraction[3] = '\0';
-
-    fraction = atoi(str_fraction)/(double)100;
-
-    g_print ("messsage is : %s\nthe char pointer is : %s\nlength of s and p_fraction: %d\nfraction is %lf:",message,p_fraction,StrLength,fraction );
-
-    gtk_progress_bar_set_text (f->progressbar, message);
-
-    if(fraction<=1 && fraction>=0)
-         gtk_progress_bar_set_fraction (f->progressbar, fraction);
-         */
-
+  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (f->ProgressBar), fraction);
 }

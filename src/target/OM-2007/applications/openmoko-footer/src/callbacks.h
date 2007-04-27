@@ -35,5 +35,11 @@ void footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data);
 
 void footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data);
 
+GdkFilterReturn target_window_event_filter_cb (GdkXEvent *xevent, 
+    GdkEvent *event, gpointer user_data);
+
+GdkFilterReturn root_window_event_filter_cb (GdkXEvent *xevent, 
+    GdkEvent *event, gpointer user_data);
+
 /* dbus */
 DBusHandlerResult signal_filter (DBusConnection *connection, DBusMessage *message, void *user_data);

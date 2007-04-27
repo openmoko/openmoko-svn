@@ -43,45 +43,37 @@ G_BEGIN_DECLS
 /*Pango Font spec*/
 #define FONT_SIZE 12*PANGO_SCALE
 
-#define FOOTER_TYPE            (footer_get_type())
-#define FOOTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), FOOTER_TYPE, Footer))
-#define FOOTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), FOOTER_TYPE, FooterClass))
-#define IS_FOOTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), FOOTER_TYPE))
-#define IS_FOOTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), FOOTER_TYPE))
+#define TYPE_FOOTER            (footer_get_type())
+#define FOOTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_FOOTER, Footer))
+#define FOOTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_FOOTER, FooterClass))
+#define IS_FOOTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_FOOTER))
+#define IS_FOOTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_FOOTER))
 
 typedef struct _Footer    Footer;
 typedef struct _FooterClass    FooterClass;
 
-/**
- * @typedef OMFooter
- *
- * Opaque structure used for representing an Openmoko footer app UI.
- */
 struct _Footer
 {
     GtkHBox hbox;
 
-    GtkWidget* LeftEventBox;
-    GtkWidget* LeftImage;
-    GtkWidget* CenterLabel;
-    GtkWidget* RightEventBox;
-    GtkWidget* RightImage; 
+    GtkWidget *LeftEventBox;
+    GtkWidget *LeftImage;
+    GtkWidget *CenterLabel;
+    GtkWidget *RightEventBox;
+    GtkWidget *RightImage; 
+    GtkWidget *ProgressBar;
 };
 
 struct _FooterClass
 {
     GtkHBoxClass parent_class;
-
-    void (*footer) (Footer *f);
 };
 
 GType footer_get_type (void);
+GtkWidget *footer_new (void);
 
-GtkWidget* footer_new (void);
-
-void footer_clear (Footer *f);
-
-void footer_set_status (Footer *f, const char* s);
+void footer_set_status_message (Footer *f, const gchar *text);
+void footer_set_status_progress (Footer *f, gdouble fraction);
 
 G_END_DECLS
 

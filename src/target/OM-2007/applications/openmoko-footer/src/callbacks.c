@@ -98,14 +98,14 @@ footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data)
   //function for "tap" action, execute "openmoko-clocks application".
     if (done == 1)
     {
-      g_debug ("tab");
+      g_debug ("tap");
       mbcommand(dpy, MB_CMD_NEXT, NULL);
       return;
     }
   //function for "tap with hold" action, pop a popupmenu to change time format.
     else if (done == 2)
     {
-      g_debug ("tab hold");
+      g_debug ("tap hold");
       mbcommand(dpy, MB_CMD_PREV, NULL);
     }
   /* Fixme : click event
@@ -116,54 +116,200 @@ footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data)
   */
 }
 
-
-/* dbus */
-/**
-*@brief dbus filter function, which use to receive and filter dbus message.
-*@param connection	DBusConnection
-*@param message		DBusMessage
-*@param user_data	
-*@return none
-*/
-DBusHandlerResult signal_filter(DBusConnection *connection, DBusMessage *message, void *user_data)
+GdkFilterReturn
+target_window_event_filter_cb (GdkXEvent *xevent, GdkEvent *event, gpointer user_data)
 {
-    g_debug( "signal_filter called" );
-    g_debug( "type of message was %d", dbus_message_get_type(message));
-    g_debug( "path of message was %s", dbus_message_get_path(message));
-    g_debug( "interface of message was %s", dbus_message_get_interface(message));
+  MokoFooterApp *app = (MokoFooterApp *)user_data;
 
-    /* Application object is the user data */
-    MokoFooter* app = user_data;
+  XEvent *xev;
+  gchar *message;
 
-    /* A signal from the bus saying we are about to be disconnected */
-    if (dbus_message_is_signal
-        (message, DBUS_INTERFACE_LOCAL, "Disconnected")) 
+  xev = (XEvent *) xevent;
+
+  if (xev->type == PropertyNotify)
+  {
+    if (xev->xproperty.atom == 
+        gdk_x11_get_xatom_by_name ("_MOKO_STATUS_MESSAGE"))
     {
-        /* Tell the main loop to quit */
-        g_main_loop_quit(app->loop);
-        /* We have handled this message, don't pass it on */
-        return DBUS_HANDLER_RESULT_HANDLED;
+      Atom actual_type;
+      int actual_format;
+      unsigned long nitems;
+      unsigned long bytes;
+      guchar *data;
+      Display *xdisplay;
+      Window w;
+
+      xdisplay = gdk_x11_get_default_xdisplay ();
+
+      w = GDK_WINDOW_XID (app->target_window);
+
+      XGetWindowProperty (xdisplay,
+          w,
+          gdk_x11_get_xatom_by_name ("_MOKO_STATUS_MESSAGE"),
+          0, 512, FALSE,
+          AnyPropertyType,
+          &actual_type,
+          &actual_format,
+          &nitems,
+          &bytes,
+          &data);
+
+        if (nitems > 0)
+        {
+          message = g_strndup (data, nitems);
+          footer_set_status_message (FOOTER (app->footer), message);
+          g_free (message);
+        }
+
+        XFree (data);
     }
-        /* A message on our interface */
-    else if (dbus_message_is_signal(message, "org.openmoko.dbus.TaskManager", "push_statusbar_message")) 
+
+    if (xev->xproperty.atom == 
+        gdk_x11_get_xatom_by_name ("_MOKO_STATUS_PROGRESS"))
     {
-        DBusError error;
-        char *s;
-        dbus_error_init (&error);
-        if (dbus_message_get_args
-                (message, &error, DBUS_TYPE_STRING, &s, DBUS_TYPE_INVALID)) 
+      Atom actual_type;
+      int actual_format;
+      unsigned long nitems;
+      unsigned long bytes;
+      guchar *data;
+      Display *xdisplay;
+      Window w;
+
+      xdisplay = gdk_x11_get_default_xdisplay ();
+
+      w = GDK_WINDOW_XID (app->target_window);
+
+      XGetWindowProperty (xdisplay,
+          w,
+          gdk_x11_get_xatom_by_name ("_MOKO_STATUS_PROGRESS"),
+          0, sizeof (gdouble), FALSE,
+          AnyPropertyType,
+          &actual_type,
+          &actual_format,
+          &nitems,
+          &bytes,
+          &data);
+
+        if (nitems > 0)
         {
-            g_debug("Setting status bar text to '%s", s);
-            footer_set_status( app->footer, s );
-            //FIXME: SIGSEGV, when uncommented. It now leaks! :M:
-            //dbus_free(s);
+          gdouble progress;
+
+          progress = *((gdouble *)data);
+          footer_set_status_progress (FOOTER (app->footer), progress);
         }
-        else
-        {
-            g_print("Ping received, but error getting message: %s", error.message);
-                    dbus_error_free (&error);
-        }
-        return DBUS_HANDLER_RESULT_HANDLED;
+
+        XFree (data);
     }
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  return GDK_FILTER_CONTINUE;
 }
+
+GdkFilterReturn 
+root_window_event_filter_cb (GdkXEvent *xevent, GdkEvent *event, gpointer user_data)
+{
+  MokoFooterApp *app = (MokoFooterApp *)user_data;
+  gchar *message;
+  XEvent *xev;
+
+  xev = (XEvent *) xevent;
+
+  if (xev->type == PropertyNotify)
+  {
+    if (xev->xproperty.atom == 
+        gdk_x11_get_xatom_by_name ("_NET_ACTIVE_WINDOW"))
+    {
+      Atom actual_type;
+      int actual_format;
+      unsigned long nitems;
+      unsigned long bytes;
+      guchar *data;
+      Display *xdisplay;
+      Window xroot_window;
+      Window w;
+
+      xdisplay = gdk_x11_get_default_xdisplay ();
+      xroot_window = gdk_x11_get_default_root_xwindow ();
+
+      XGetWindowProperty (xdisplay, 
+          xroot_window, 
+          gdk_x11_get_xatom_by_name ("_NET_ACTIVE_WINDOW"),
+          0, 3, FALSE, 
+          AnyPropertyType,
+          &actual_type,
+          &actual_format,
+          &nitems,
+          &bytes,
+          &data);
+
+      w = (Window)((gint32 *)data)[0];
+
+      XFree (data);
+
+      if (w != 0)
+      {
+        if (app->target_window == NULL || w != GDK_WINDOW_XID (app->target_window))
+        {
+          if (app->target_window != NULL)
+          {
+            gdk_window_remove_filter (app->target_window, 
+                (GdkFilterFunc)target_window_event_filter_cb, app);
+
+            gdk_window_set_events (app->target_window, 
+            gdk_window_get_events (app->target_window) & ~GDK_PROPERTY_CHANGE_MASK);
+          }
+
+          app->target_window = gdk_window_foreign_new (w);
+          gdk_window_set_events (app->target_window, 
+              gdk_window_get_events (app->target_window) | GDK_PROPERTY_CHANGE_MASK);
+          gdk_window_add_filter (app->target_window, 
+              (GdkFilterFunc)target_window_event_filter_cb, app);
+        }
+
+        XGetWindowProperty (xdisplay,
+          w,
+          gdk_x11_get_xatom_by_name ("_MOKO_STATUS_MESSAGE"),
+          0, 512, FALSE,
+          AnyPropertyType,
+          &actual_type,
+          &actual_format,
+          &nitems,
+          &bytes,
+          &data);
+
+        if (nitems > 0)
+        {
+          message = g_strndup (data, nitems);
+          footer_set_status_message (FOOTER (app->footer), message);
+          g_free (message);
+        }
+
+        XFree (data);
+
+        XGetWindowProperty (xdisplay,
+          w,
+          gdk_x11_get_xatom_by_name ("_MOKO_STATUS_PROGRESS"),
+          0, sizeof (gdouble), FALSE,
+          AnyPropertyType,
+          &actual_type,
+          &actual_format,
+          &nitems,
+          &bytes,
+          &data);
+
+        if (nitems > 0)
+        {
+          gdouble progress;
+
+          progress = *((gdouble *)data);
+          footer_set_status_progress (FOOTER (app->footer), progress);
+        }
+
+        XFree (data);
+      }
+    }
+  }
+
+  return GDK_FILTER_CONTINUE;
+}
+
