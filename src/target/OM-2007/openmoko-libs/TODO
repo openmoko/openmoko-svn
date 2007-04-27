@@ -1,5 +1,6 @@
 (Ordered by Priority)
 
+- MokoApplication -> GSettings, set theme
 - split up into individually buildable libraries (esp. regarding pkgconfig support)
 - MokoPopupMenu:
   -- moko_popup_menu_add_item( label, callback, userdata, notification );

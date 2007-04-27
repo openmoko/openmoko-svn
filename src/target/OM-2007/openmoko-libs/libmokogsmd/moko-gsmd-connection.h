@@ -52,11 +52,16 @@ enum {
 
 /* signals */
 void moko_gsmd_connection_incoming_call(MokoGsmdConnection* self, int type);
+void moko_gsmd_connection_call_status_progress(MokoGsmdConnection* self, int type);
 //sms
 //gprs
 void moko_gsmd_connection_incoming_clip(MokoGsmdConnection* self, const char* number);
 void moko_gsmd_connection_network_registration(MokoGsmdConnection* self, int type, int lac, int cell);
 void moko_gsmd_connection_signal_strength_changed(MokoGsmdConnection* self, int strength);
+//voice
+void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self);
+void moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self);
+void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number);
 
 G_END_DECLS
 
