@@ -62,6 +62,7 @@ void moko_gsmd_connection_signal_strength_changed(MokoGsmdConnection* self, int 
 void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self);
 void moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self);
 void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number);
+void moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number);
 
 G_END_DECLS
 

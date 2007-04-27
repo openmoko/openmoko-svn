@@ -363,3 +363,10 @@ void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* numb
     g_stpcpy( &addr.addr[0], number );
     lgsm_voice_out_init( priv->handle, &addr );
 }
+
+void moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number)
+{
+    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    g_return_if_fail( priv->handle );
+    lgsm_voice_dtmf( priv->handle, number );
+}
