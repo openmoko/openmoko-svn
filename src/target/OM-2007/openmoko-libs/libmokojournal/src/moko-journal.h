@@ -431,20 +431,20 @@ gboolean moko_journal_entry_get_voice_info (MokoJournalEntry *entry,
 
 
 /**
- * moko_journal_voice_info_set_caller_number:
+ * moko_journal_voice_info_set_distant_number:
  * @info: the current
  * @info: the extra property set attached to the voice call
  */
-void moko_journal_voice_info_set_caller_number (MokoJournalVoiceInfo *info,
+void moko_journal_voice_info_set_distant_number (MokoJournalVoiceInfo *info,
                                                 gchar *number) ;
 
-const gchar* moko_journal_voice_info_get_caller_number
+const gchar* moko_journal_voice_info_get_distant_number
                                                 (MokoJournalVoiceInfo *info) ;
 
-void moko_journal_voice_info_set_callee_number (MokoJournalVoiceInfo *info,
+void moko_journal_voice_info_set_local_number (MokoJournalVoiceInfo *info,
                                                 const gchar *number) ;
 
-const gchar* moko_journal_voice_info_get_callee_number
+const gchar* moko_journal_voice_info_get_local_number
                                                 (MokoJournalVoiceInfo *info) ;
 
 void moko_journal_voice_info_set_was_missed (MokoJournalVoiceInfo *info,

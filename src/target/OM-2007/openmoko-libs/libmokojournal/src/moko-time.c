@@ -79,3 +79,10 @@ moko_time_as_ical_string (MokoTime *a_t)
     g_return_val_if_fail (a_t, NULL) ;
     return icaltime_as_ical_string (a_t->t) ;
 }
+
+time_t
+moko_time_as_timet (MokoTime *time)
+{
+  g_return_val_if_fail (time, 0) ;
+  return icaltime_as_timet (time->t) ;
+}

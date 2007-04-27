@@ -1,3 +1,10 @@
+2007-04-27 Dodji Seketeli <dodji@openedhand.org>
+
+	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c:
+	  changed the caller/callee number props into local/distant props.
+	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-time.c,h:
+	  added moko_time_as_timet()
+
 2007-04-27  Rob Bradford  <rob@openedhand.com>
 
 	* libmokoui/moko-window.c: (moko_window_set_status_message),
