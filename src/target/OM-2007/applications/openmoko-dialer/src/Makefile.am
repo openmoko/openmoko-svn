@@ -12,7 +12,6 @@ moko-dialer-panel.c\
 moko-dialer-textview.c\
 moko-dialer-tip.c\
 moko-dialer-autolist.c\
-history.c\
 contacts.c\
 common.c\
 dialer-window-history.c\

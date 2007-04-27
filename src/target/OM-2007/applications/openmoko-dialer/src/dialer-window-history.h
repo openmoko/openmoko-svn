@@ -18,32 +18,9 @@
 #include "moko-dialer-includes.h"
 
 #ifndef _OPENMOKO_DIALER_WINDOW_HISTORY_H
+
+gint window_history_init (MokoDialerData * p_dialer_data);
+
 #define _OPENMOKO_DIALER_WINDOW_HISTORY_H
-
-#ifdef __cplusplus
-
-
-
-extern "C"
-{
-#endif
-
-
-  GtkWidget *create_window_history_content (MokoDialerData *
-                                            p_dialer_data);
-  gint window_history_init (MokoDialerData * p_dialer_data);
-  gint history_build_history_list_view (MokoDialerData * p_dialer_data);
-  void window_history_prepare (MokoDialerData * appdata);
-  GtkWidget *history_create_menu_history (MokoDialerData *
-                                          p_dialer_data);
-  gint add_histroy_entry (MokoDialerData * appdata, HISTORY_TYPE type,
-                          const char *name, const char *number,
-                          const char *picpath, char *time, char *date,
-                          int durationsec);
-  gint history_list_view_add (MokoDialerData * appdata,
-                              HISTORY_ENTRY * entry);
-#ifdef __cplusplus
-}
-#endif
 
 #endif

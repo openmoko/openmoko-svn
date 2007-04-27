@@ -49,8 +49,6 @@ typedef struct _dialer_data
 
   DIALER_CONTACT_PEER_INFO g_peer_info; ///<hold the peer's name, number, etc.
 
-  HISTORY_LIST_HEAD g_historylist;      ///< the whole list of the talk history
-  HISTORY_ENTRY *g_currentselected;     ///<pointer to the history entry which in the GUI the user selects.
   GLOBAL_STATE g_state;         ///< the global states holder. we count on it a lot.
 
 
@@ -96,8 +94,6 @@ typedef struct _dialer_data
   gboolean history_need_to_update;
 
   GtkTreeModel *g_list_store_filter;    ///<the list store used by the gtktreeview, for displaying the history list dynamically.
-
-  HISTORY_TYPE g_history_filter_type;   ///<indicates the current history filter type, the gtktreeview will be filtered on the value.
 
   GdkPixbuf *g_iconReceived, *g_iconMissed, *g_iconDialed;      ///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
 } MokoDialerData;

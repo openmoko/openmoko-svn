@@ -78,7 +78,7 @@ cb_redial_button_clicked (GtkButton * button, MokoDialerData * appdata)
   window_outgoing_setup_timer (appdata);
 
   appdata->g_state.callstate = STATE_CALLING;
-  appdata->g_state.historytype = OUTGOING;
+  //appdata->g_state.historytype = OUTGOING;
   /* TOOD: MokoGsmdConnection->dial
    * gsm_dial (appdata->g_peer_info.number);
    */
@@ -189,14 +189,14 @@ on_window_outgoing_hide (GtkWidget * widget, MokoDialerData * appdata)
   }
   if (appdata->g_state.callstate != STATE_TALKING)
   {                             //     add_histroy_entry(g_state.historytype,g_state.contactinfo.name,g_state.contactinfo.number,g_state.contactinfo.picpath,g_state.starttime,0);
-
+/*
     add_histroy_entry (appdata, appdata->g_state.historytype,
                        appdata->g_peer_info.name,
                        appdata->g_peer_info.number,
                        appdata->g_peer_info.picpath,
                        appdata->g_state.starttime,
                        appdata->g_state.startdate, 0);
-
+*/
   }
 
 
@@ -240,7 +240,7 @@ on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
   //DBG_TRACE ();
   appdata->g_state.callstate = STATE_CALLING;
   //DBG_TRACE ();
-  appdata->g_state.historytype = OUTGOING;
+  //appdata->g_state.historytype = OUTGOING;
   //DBG_TRACE ();
   /* TODO: MokoGsmdConnection->dial
    * int retv = gsm_dial (appdata->g_peer_info.number);

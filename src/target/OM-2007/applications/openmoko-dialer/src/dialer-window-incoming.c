@@ -36,7 +36,6 @@
 #include "dialer-window-incoming.h"
 #include "dialer-window-talking.h"
 #include "dialer-window-history.h"
-#include "history.h"
 void 
 cb_answer_button_clicked (GtkButton * button,
                           MokoDialerData * appdata) 
@@ -168,12 +167,13 @@ on_window_incoming_hide (GtkWidget * widget, MokoDialerData * appdata)
   if (appdata->g_state.callstate != STATE_TALKING)
     
   {                             //     add_histroy_entry(g_state.historytype,g_state.contactinfo.name,g_state.contactinfo.number,g_state.contactinfo.picpath,g_state.starttime,0);
-    add_histroy_entry (appdata, appdata->g_state.historytype,
+    /*add_histroy_entry (appdata, appdata->g_state.historytype,
                         appdata->g_peer_info.name,
                         appdata->g_peer_info.number,
                         appdata->g_peer_info.ID,
                         appdata->g_state.starttime,
                         appdata->g_state.startdate, 0);
+                        */
   }
   DBG_LEAVE ();
 }

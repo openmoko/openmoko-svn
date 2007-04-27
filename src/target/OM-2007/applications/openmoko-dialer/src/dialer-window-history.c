@@ -20,32 +20,31 @@
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
 #include <libmokoui/moko-pixmap-button.h>
+#include <libmokojournal/moko-journal.h>
 
-#include <gtk/gtkalignment.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmain.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtkmenuitem.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtktreeview.h>
-#include <gtk/gtktreemodelfilter.h>
-#include <gtk/gtkscrolledwindow.h>
-#include <gtk/gtkimagemenuitem.h>
-#include <gtk/gtkmenu.h>
+#include <gtk/gtk.h>
 
 #include "common.h"
 #include "contacts.h"
 #include "dialer-main.h"
 #include "moko-dialer-status.h"
-#include "history.h"
 #include "dialer-window-history.h"
 
+/* call types */
+typedef enum {
+  ALL,
+  MISSED,
+  OUTGOING,
+  INCOMING
+} CallFilter;
 
 /* function declarations */
 
 gint history_update_counter (MokoDialerData * p_dialer_data);
+
+GtkWidget *create_window_history_content (MokoDialerData * p_dialer_data);
+GtkWidget *history_create_menu_history (MokoDialerData * p_dialer_data);
+gint history_build_history_list_view (MokoDialerData * p_dialer_data);
 
 
 /**
@@ -53,28 +52,16 @@ gint history_update_counter (MokoDialerData * p_dialer_data);
  *
  * 
  *
- * @param type HISTORY_TYPE, indicating only the history items of that type will be displayed
+ * @param type CallType, indicating only the history items of that type will be displayed
  * @return 1
  * @retval
  */
 
 int
 history_view_change_filter (MokoDialerData * p_dialer_data,
-                            HISTORY_TYPE type)
+                            CallFilter type)
 {
-  GtkTreePath *path;
-  DBG_TRACE ();
-  p_dialer_data->g_history_filter_type = type;
-  gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
-                                  (p_dialer_data->g_list_store_filter));
-
-  path = gtk_tree_path_new_first ();
-  gtk_tree_view_set_cursor (GTK_TREE_VIEW (p_dialer_data->treeview_history),
-                            path, 0, 0);
-  gtk_tree_path_free (path);
-
-
-  return 1;
+ return 0;
 }
 
 void
@@ -221,12 +208,12 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
     return;
   }
 
-  if (appdata->g_currentselected)
+  /*if (appdata->g_currentselected)
   {
     DBG_MESSAGE ("to delete %s", appdata->g_currentselected->number);
     history_delete_entry (&(appdata->g_historylist),
                           appdata->g_currentselected);
-  }
+  }*/
 
   path = gtk_tree_model_get_path (model, &iter);
 
@@ -343,7 +330,7 @@ window_history_init (MokoDialerData * p_dialer_data)
     history_create_menu_history (p_dialer_data);
 
     MokoFingerWindow *window = NULL;
-    MokoFingerToolBox *tools = NULL;
+    GtkWidget *tools = NULL;
     GtkWidget *button;
     GtkWidget *image;
 
@@ -386,8 +373,7 @@ window_history_init (MokoDialerData * p_dialer_data)
 
     tools = moko_finger_window_get_toolbox (window);
 
-    /* TODO: remove the GTK_WIDGET() casts when libmokoui is fixed */
-    button = moko_finger_tool_box_add_button_without_label (tools);
+    button = moko_finger_tool_box_add_button_without_label (MOKO_FINGER_TOOL_BOX (tools));
     image = file_new_image_from_relative_path ("phone.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image
       (MOKO_PIXMAP_BUTTON (button), image);
@@ -395,8 +381,7 @@ window_history_init (MokoDialerData * p_dialer_data)
                       G_CALLBACK (cb_tool_button_history_call_clicked),
                       p_dialer_data);
 
-    button =
-      GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
+    button = moko_finger_tool_box_add_button_without_label (MOKO_FINGER_TOOL_BOX (tools));
     image = file_new_image_from_relative_path ("sms.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image
       (MOKO_PIXMAP_BUTTON (button), image);
@@ -405,16 +390,14 @@ window_history_init (MokoDialerData * p_dialer_data)
                       p_dialer_data);
 
 
-    button =
-      GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
+    button = moko_finger_tool_box_add_button_without_label (MOKO_FINGER_TOOL_BOX (tools));
     image = file_new_image_from_relative_path ("delete_01.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image
       (MOKO_PIXMAP_BUTTON (button), image);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_tool_button_history_delete_clicked),
                       p_dialer_data);
-    button =
-      GTK_WIDGET (moko_finger_tool_box_add_button_without_label (tools));
+    button = moko_finger_tool_box_add_button_without_label (MOKO_FINGER_TOOL_BOX (tools));
     image = file_new_image_from_relative_path ("exit.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image
       (MOKO_PIXMAP_BUTTON (button), image);
@@ -441,7 +424,7 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
   GtkTreeIter iter;
   GtkTreeModel *model;
   GtkTreeSelection *selection;
-  HISTORY_ENTRY *p;
+  /*HISTORY_ENTRY*/void *p;
   int hasname;
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
 
@@ -451,13 +434,13 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
 
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
   {
-    p_dialer_data->g_currentselected = 0;
+    //p_dialer_data->g_currentselected = 0;
     return;
   }
 
   gtk_tree_model_get (model, &iter, COLUMN_ENTRYPOINTER, &p, -1);
 
-  p_dialer_data->g_currentselected = p;
+  //p_dialer_data->g_currentselected = p;
 
   gtk_tree_model_get (model, &iter, COLUMN_HASNAME, &hasname, -1);
   history_update_counter (p_dialer_data);
@@ -571,8 +554,9 @@ static gboolean
 history_view_filter_visible_function (GtkTreeModel * model,
                                       GtkTreeIter * iter, gpointer data)
 {
+  /*
   MokoDialerData *p_dialer_data = (MokoDialerData *) data;
-  HISTORY_TYPE type;
+  CallFilter type;
   if (p_dialer_data->g_history_filter_type == ALL)
     return TRUE;
   gtk_tree_model_get (model, iter, COLUMN_TYPE, &type, -1);
@@ -580,6 +564,8 @@ history_view_filter_visible_function (GtkTreeModel * model,
     return TRUE;
   else
     return FALSE;
+    */
+  return TRUE;
 }
 
 
@@ -601,8 +587,8 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
 {
   GtkListStore *list_store;
 
-  GtkTreeIter iter;
-  HISTORY_ENTRY *entry;
+//  GtkTreeIter iter;
+//  HISTORY_ENTRY *entry;
 
   //copied
   GtkTreeViewColumn *col;
@@ -614,7 +600,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   //DBG_ENTER();
 
   //DBG_TRACE();
-  p_dialer_data->g_history_filter_type = ALL;
+  //p_dialer_data->g_history_filter_type = ALL;
   contactview = p_dialer_data->treeview_history;
 
   if (contactview == NULL)
@@ -651,7 +637,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   gtk_tree_view_append_column (GTK_TREE_VIEW (contactview), col);
 
 
-  entry = p_dialer_data->g_historylist.first;
+  //entry = p_dialer_data->g_historylist.first;
 
   list_store = gtk_list_store_new (N_COLUMN, G_TYPE_INT, GDK_TYPE_PIXBUF,
                                    G_TYPE_STRING, G_TYPE_STRING,
@@ -705,7 +691,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
      error = NULL;
      }
    */
-
+#if 0
   while (entry)
   {
     //DBG_MESSAGE(entry->number);
@@ -762,7 +748,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
 
     entry = entry->next;
   }
-
+#endif
   gtk_tree_view_set_model (GTK_TREE_VIEW (contactview),
                            GTK_TREE_MODEL (p_dialer_data->
                                            g_list_store_filter));
@@ -942,8 +928,9 @@ history_create_menu_history (MokoDialerData * p_dialer_data)
  * @retval 1 everything is OK
  */
 gint
-history_list_view_add (MokoDialerData * appdata, HISTORY_ENTRY * entry)
+history_list_view_add (MokoDialerData * appdata, MokoJournalEntry * entry)
 {
+#if 0
   DBG_ENTER ();
   if (entry == 0)
   {
@@ -1023,20 +1010,15 @@ history_list_view_add (MokoDialerData * appdata, HISTORY_ENTRY * entry)
     }
   }
   history_update_counter (appdata);
+#endif
   return 1;
 }
 
 
 gint
-add_histroy_entry (MokoDialerData * appdata, HISTORY_TYPE type,
+add_histroy_entry (MokoDialerData * appdata, CallFilter type,
                    const char *name, const char *number, const char *id,
                    char *time, char *date, int durationsec)
 {
-
-//DBG_ENTER();
-  //DBG_MESSAGE("History add:%s,%s,%s,%s,%s,%d",name,number,picpath,time,date,durationsec);
-  HISTORY_ENTRY *pentry =
-    history_add_entry (&(appdata->g_historylist), type, name, number, id,
-                       time, date, durationsec);
-  return history_list_view_add (appdata, pentry);
+return 0;
 }

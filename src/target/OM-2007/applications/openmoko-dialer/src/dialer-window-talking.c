@@ -230,13 +230,13 @@ on_window_talking_hide (GtkWidget * widget, MokoDialerData * appdata)
   gtk_widget_hide (appdata->toolbox_talking);
 
   moko_dialer_textview_empty (appdata->moko_dtmf_text_view);
-  add_histroy_entry (appdata, appdata->g_state.historytype,
+/*  add_histroy_entry (appdata, appdata->g_state.historytype,
                      appdata->g_peer_info.name,
                      appdata->g_peer_info.number,
                      appdata->g_peer_info.picpath,
                      appdata->g_state.starttime,
                      appdata->g_state.startdate, appdata->g_timer_data.ticks);
-
+*/
 
 }
 

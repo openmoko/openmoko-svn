@@ -22,7 +22,6 @@
 #include "moko-dialer-declares.h"
 #include "error.h"
 #include "contacts.h"
-#include "history.h"
 #include "moko-dialer-autolist.h"
 #include "moko-dialer-panel.h"
 #include "moko-dialer-textview.h"
@@ -73,7 +72,6 @@ typedef struct _globalstate
   CONNECTION_STATE callstate;
   WINDOW_STATE talkingstate;
   SPEAKER_STATE speakerstate;
-  HISTORY_TYPE historytype;
   char starttime[24];
   char startdate[24];
   char lastnumber[MOKO_DIALER_MAX_NUMBER_LEN + 1];

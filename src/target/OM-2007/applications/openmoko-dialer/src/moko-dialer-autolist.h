@@ -31,8 +31,6 @@
 #include "moko-dialer-tip.h"
 #include "moko-dialer-declares.h"
 #include "contacts.h"
-#include "history.h"
-//#include "moko-dialer-includes.h"
 
 G_BEGIN_DECLS
 #define MOKO_TYPE_DIALER_AUTOLIST                (moko_dialer_autolist_get_type())

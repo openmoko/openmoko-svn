@@ -30,7 +30,6 @@
 #include <fcntl.h>
 
 #include "contacts.h"
-#include  "history.h"
 #include "error.h"
 #include "errno.h"
 #include "dialer-main.h"
@@ -178,7 +177,6 @@ main (int argc, char **argv)
 
   //init application data
   contact_init_contact_data (&(p_dialer_data->g_contactlist));
-  history_init_history_data (&(p_dialer_data->g_historylist));
 
 
   /* application object */
@@ -199,8 +197,6 @@ main (int argc, char **argv)
   window_pin_init (p_dialer_data);
   window_outgoing_init (p_dialer_data);
   window_history_init (p_dialer_data);
-  DBG_MSG
-    ("\nusage: \"dialer\" will not show any GUI initialy until you reactivate the app using another \"openmoko-dialer\" command");
 
   if (show_gui)
   {
@@ -213,6 +209,5 @@ main (int argc, char **argv)
 //release everything    
   contact_release_contact_list (&(p_dialer_data->g_contactlist));
 
-  history_release_history_list (&(p_dialer_data->g_historylist));
   return 0;
 }
