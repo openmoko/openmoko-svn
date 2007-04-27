@@ -23,6 +23,7 @@
 #include <libmokoui/moko-paned-window.h>
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-tree-view.h>
+#include <libmokoui/moko-window.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
@@ -368,7 +369,11 @@ int main( int argc, char** argv )
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
-    g_debug( "openmoko-stylus-demo entering main loop" );
+ 
+    moko_window_set_status_message (MOKO_WINDOW (window), "Test message");
+    moko_window_set_status_progress (MOKO_WINDOW (window), 0.5);
+
+   g_debug( "openmoko-stylus-demo entering main loop" );
     gtk_main();
     g_debug( "openmoko-stylus-demo left main loop" );
 
