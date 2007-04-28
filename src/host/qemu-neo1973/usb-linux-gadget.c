@@ -19,7 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#if defined(__linux__)
+#include "config-host.h"
+#if defined(CONFIG_GADGETFS)
 #include <linux/usb_ch9.h>
 #include <linux/usb_gadgetfs.h>
 #include <poll.h>
@@ -711,12 +712,13 @@ int usb_gadget_init(void)
         return ret;
     atexit(gadget_done);
 
-    qemu_register_usb_port(&hci->port, hci, 0, gadget_attach);
+    qemu_register_usb_port(&hci->port, hci, USB_INDEX_HOST, gadget_attach);
 
     return ret;
 }
 
 #else
+#include "vl.h"
 
 int usb_gadget_init(void)
 {

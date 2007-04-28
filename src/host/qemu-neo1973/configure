@@ -96,6 +96,7 @@ check_gcc="yes"
 softmmu="yes"
 user="no"
 build_docs="no"
+gadgetfs="no"
 uname_release=""
 
 # OS specific
@@ -557,6 +558,18 @@ docdir="$prefix/share/doc/qemu"
 bindir="$prefix/bin"
 fi
 
+##########################################
+# usb_gadgetfs headers
+
+cat > $TMPC << EOF
+#include <linux/usb_ch9.h>
+#include <linux/usb_gadgetfs.h>
+int main(void) { return 0; }
+EOF
+if $cc -o $TMPE $TMPC 2> /dev/null ; then
+  gadgetfs="yes"
+fi
+
 echo "Install prefix    $prefix"
 echo "BIOS directory    $datadir"
 echo "binary directory  $bindir"
@@ -765,6 +778,11 @@ if [ "$bsd" = "yes" ] ; then
 fi
 
 echo "#define CONFIG_UNAME_RELEASE \"$uname_release\"" >> $config_h
+
+if test "$gadgetfs" = "yes" ; then
+  echo "CONFIG_GADGETFS=yes" >> $config_mak
+  echo "#define CONFIG_GADGETFS 1" >> $config_h
+fi
 
 for target in $target_list; do
 target_dir="$target"
