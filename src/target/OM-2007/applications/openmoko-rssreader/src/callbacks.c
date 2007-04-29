@@ -53,10 +53,6 @@ static void remove_container_item( GtkWidget *item, GtkWidget *container ) {
     gtk_container_remove(GTK_CONTAINER(container), item);
 }
 
-
-/*
- * TODO: Use the ModelFilter to filter for All or Category
- */
 void filter_feeds( struct RSSReaderData *data ) {
     gtk_tree_model_filter_refilter (data->filter_model);
 }
@@ -98,7 +94,24 @@ void cb_subscribe_button_clicked( GtkButton *btn, struct RSSReaderData *data ) {
 
 /*
  * asynchronous update thread!
- * This breaks with ATK+
+ * This breaks with ATK+. See http://wiki.ekiga.org/index.php/Bug::ATK::Threads and bugs
+ * #329454, #349047, #335838
+ *
+ * DISCUSSION:
+ *    - Should everything be updated?
+ *    - What happens if we update but some feeds can not be connected? Should the old
+ *      data be kept?
+ *      ( Just keeping/building a new ListStore does not help, we need a model that consists
+ *        out of models... )
+ *
+ *
+ * Clear the current model
+ *
+ * For each feed:
+ *    - Get the Data
+ *    - Fill the GtkListStore
+ *
+ * Refilter the model...
  */
 static void feed_update_thread( struct RSSReaderData *data ) {
     GtkTreeIter iter;
@@ -127,6 +140,9 @@ static void feed_update_thread( struct RSSReaderData *data ) {
                         description = tag->value;
 
                         for ( mrss_attribute_t *attribute = tag->attributes; attribute; attribute = attribute->next ) {
+                            /*
+                             * Detect the type of the content. Currently we know about text/plain and html
+                             */
                             if ( strcmp( attribute->name, "type" ) == 0 ) {
                                 if ( strcmp( attribute->value, "plain" ) == 0 ) {
                                     content_type = RSS_READER_TEXT_TYPE_PLAIN;
@@ -145,7 +161,8 @@ static void feed_update_thread( struct RSSReaderData *data ) {
             }
 
             /*
-             * update the model here
+             * update the model here. The order in gtk_list_store_set must match
+             * with the order in application-data.h
              */
             RSSRFCDate *date = RSS_RFC_DATE(rss_rfc_date_new ());
             rss_rfc_date_set (date, item->pubDate);
@@ -174,22 +191,7 @@ static void feed_update_thread( struct RSSReaderData *data ) {
 }
 
 /*
- * TODO use gconf and GThread as this will block
- * DISCUSSION:
- *    - Should everything be updated?
- *    - What happens if we update but some feeds can not be connected? Should the old
- *      data be kept?
- *      ( Just keeping/building a new ListStore does not help, we need a model that consists
- *        out of models... )
- *
- *
- * Clear the current model
- *
- * For each feed:
- *    - Get the Data
- *    - Fill the GtkListStore
- *
- * Refilter the model...
+ * Start the update-job in a separate thread
  */
 void cb_refresh_all_button_clicked( GtkButton *btn, struct RSSReaderData *data ) {
     /*
@@ -231,7 +233,7 @@ void cb_treeview_selection_changed( GtkTreeSelection *selection, struct RSSReade
         if ( message )
             gtk_text_buffer_set_text( data->textBuffer, message, -1 );
         else
-            gtk_text_buffer_set_text( data->textBuffer, g_strdup( "Failed to read the text" ), -1 );
+            gtk_text_buffer_set_text( data->textBuffer, g_strdup( _("Failed to read the text") ), -1 );
     }
 }
 

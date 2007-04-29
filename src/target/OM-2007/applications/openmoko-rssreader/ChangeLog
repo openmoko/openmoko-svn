@@ -1,5 +1,11 @@
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        * src/callbacks.c: Update documentation, move it around
+        (feed_update_thread): Update documentation
+        (cb_treeview_selection_changed): make the string i18nable
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         * src/rfcdate.h: Add a proper license header
 
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
