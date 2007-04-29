@@ -1,5 +1,9 @@
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        * src/rfcdate.h: Add a proper license header
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         * src/rfcdate.c: Do not include malloc.h as this is not portable
 
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
