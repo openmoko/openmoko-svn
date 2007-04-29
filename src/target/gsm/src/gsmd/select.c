@@ -20,6 +20,7 @@
  */ 
 
 #include <fcntl.h>
+#include <sys/select.h>
 #include <common/linux_list.h>
 
 #include "gsmd.h"
