@@ -33,7 +33,7 @@ G_BEGIN_DECLS
 
 #define RSS_TYPE_RFC_DATE            (rss_rfc_date_get_type())
 #define RSS_RFC_DATE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_RFC_DATE, RSSRFCDate))
-#define RSS_RFC_DATE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((obj),    RSS_TYPE_RFC_DATE, RSSRFCDateClass))
+#define RSS_RFC_DATE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_RFC_DATE, RSSRFCDateClass))
 #define RSS_IS_RFC_DATE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), RSS_TYPE_RFC_DATE))
 #define RSS_IS_RFC_DATE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_RFC_DATE))
 #define RSS_RFC_DATE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_RFC_DATE, RSSRFCDateClass))

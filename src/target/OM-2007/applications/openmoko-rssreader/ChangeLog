@@ -1,5 +1,9 @@
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        * src/rfcdate.h: s/obj/klass/ in the macro. (fixlet)
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Add a class to handle caching of feeds while making sure not consuming
 		too much space. This class is meant to be copied to mokocore once done
 
