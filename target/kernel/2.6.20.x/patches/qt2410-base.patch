@@ -1,0 +1,391 @@
+Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig
+===================================================================
+--- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Kconfig	2007-02-20 21:32:44.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/Kconfig	2007-02-21 16:28:00.000000000 +0100
+@@ -80,6 +80,12 @@
+ 	   Say Y here if you are using the SMDK2410 or the derived module A9M2410
+            <http://www.fsforth.de>
+ 
++config MACH_QT2410
++	bool "QT2410"
++	select CPU_S3C2410
++	help
++	   Say Y here if you are using the Armzone QT2410
++
+ config ARCH_S3C2440
+ 	bool "SMDK2440"
+ 	select CPU_S3C2440
+Index: linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile
+===================================================================
+--- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/Makefile	2007-02-20 21:32:44.000000000 +0100
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/Makefile	2007-02-21 16:28:00.000000000 +0100
+@@ -88,5 +88,6 @@
+ obj-$(CONFIG_MACH_OTOM)		+= mach-otom.o
+ obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
+ obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
++obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
+ 
+-obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
+\ No newline at end of file
++obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
+Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-qt2410.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20.1/arch/arm/mach-s3c2410/mach-qt2410.c	2007-02-21 16:28:56.000000000 +0100
+@@ -0,0 +1,356 @@
++/*
++ *
++ * linux/arch/arm/mach-s3c2410/mach-qt2410.c
++ *
++ * Copyright (C) 2006 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/interrupt.h>
++#include <linux/list.h>
++#include <linux/timer.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/serial_core.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/spi_bitbang.h>
++
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/nand_ecc.h>
++#include <linux/mtd/partitions.h>
++
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++#include <asm/mach/irq.h>
++
++#include <asm/hardware.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/mach-types.h>
++
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/regs-serial.h>
++#include <asm/arch/fb.h>
++#include <asm/arch/nand.h>
++#include <asm/arch/udc.h>
++#include <asm/arch/ts.h>
++#include <asm/arch/spi.h>
++#include <asm/arch/spi-gpio.h>
++
++#include "devs.h"
++#include "cpu.h"
++
++#include "pm.h"
++
++static struct map_desc qt2410_iodesc[] __initdata = {
++	{ 0xe0000000, __phys_to_pfn(S3C2410_CS3+0x01000000), SZ_1M, MT_DEVICE }
++};
++
++#define UCON S3C2410_UCON_DEFAULT
++#define ULCON S3C2410_LCON_CS8 | S3C2410_LCON_PNONE | S3C2410_LCON_STOPB
++#define UFCON S3C2410_UFCON_RXTRIG8 | S3C2410_UFCON_FIFOMODE
++
++static struct s3c2410_uartcfg smdk2410_uartcfgs[] = {
++	[0] = {
++		.hwport	     = 0,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++	[1] = {
++		.hwport	     = 1,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++	[2] = {
++		.hwport	     = 2,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	}
++};
++
++/* LCD driver info */
++
++static struct s3c2410fb_mach_info qt2410_lcd_cfg __initdata = {
++	.type = S3C2410_LCDCON1_TFT,
++	.regs	= {
++
++		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
++				  S3C2410_LCDCON1_TFT |
++				  S3C2410_LCDCON1_CLKVAL(0x04),
++
++		.lcdcon2	= S3C2410_LCDCON2_VBPD(1) |
++				  S3C2410_LCDCON2_LINEVAL(319) |
++				  S3C2410_LCDCON2_VFPD(6) |
++				  S3C2410_LCDCON2_VSPW(3),
++
++		.lcdcon3	= S3C2410_LCDCON3_HBPD(12) |
++				  S3C2410_LCDCON3_HOZVAL(239) |
++				  S3C2410_LCDCON3_HFPD(7),
++
++		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
++				  S3C2410_LCDCON4_HSPW(3),
++
++		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVLINE |
++				  S3C2410_LCDCON5_INVVFRAME |
++				  S3C2410_LCDCON5_PWREN |
++				  S3C2410_LCDCON5_HWSWP,
++	},
++
++#if 0
++	/* currently setup by downloader */
++	.gpccon		= 0xaa940659,
++	.gpccon_mask	= 0xffffffff,
++	.gpcup		= 0x0000ffff,
++	.gpcup_mask	= 0xffffffff,
++	.gpdcon		= 0xaa84aaa0,
++	.gpdcon_mask	= 0xffffffff,
++	.gpdup		= 0x0000faff,
++	.gpdup_mask	= 0xffffffff,
++#endif
++
++	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
++
++	.width		= 240,
++	.height		= 320,
++
++	.xres		= {
++		.min	= 240,
++		.max	= 240,
++		.defval	= 240,
++	},
++
++	.yres		= {
++		.min	= 320,
++		.max	= 320,
++		.defval = 320,
++	},
++
++	.bpp		= {
++		.min	= 16,
++		.max	= 16,
++		.defval = 16,
++	},
++};
++
++static struct resource cs89x0_resources[] = {
++	[0] = {
++		.start	= 0x19000000,
++		.end	= 0x19000000 + 16,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= IRQ_EINT9,
++		.end	= IRQ_EINT9,
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static struct platform_device cs89x0_device = {
++	.name		= "cirrus-cs89x0",
++	.num_resources	= ARRAY_SIZE(cs89x0_resources),
++	.resource	= cs89x0_resources,
++};
++
++static struct platform_device *qt2410_devices[] __initdata = {
++	&s3c_device_usb,
++	&s3c_device_lcd,
++	&s3c_device_wdt,
++	&s3c_device_i2c,
++	&s3c_device_iis,
++	&s3c_device_sdi,
++	&s3c_device_usbgadget,
++	&s3c_device_nand,
++	&s3c_device_ts,
++	&cs89x0_device,
++};
++
++static struct s3c24xx_board qt2410_board __initdata = {
++	.devices       = qt2410_devices,
++	.devices_count = ARRAY_SIZE(qt2410_devices)
++};
++
++static struct s3c2410_nand_set qt2410_nand_sets[] = {
++	[0] = {
++		.name		= "qt2410-nand",
++		.nr_chips	= 1,
++	},
++};
++
++/* choose a set of timings which should suit most 512Mbit
++ * chips and beyond.
++ */
++
++static struct s3c2410_platform_nand qt2410_nand_info = {
++	.tacls		= 20,
++	.twrph0		= 60,
++	.twrph1		= 20,
++	.nr_sets	= ARRAY_SIZE(qt2410_nand_sets),
++	.sets		= qt2410_nand_sets,
++};
++
++/* SPI */
++static struct spi_board_info qt2410_spi_board_info[] __initdata = {
++	{
++		.modalias	= "jbt6k74",
++		/* platform_data */
++		/* controller_data */
++		/* irq */
++		.max_speed_hz	= 10 * 1000 * 1000,
++		.bus_num	= 1,
++		/* chip_select */
++	},
++};
++
++static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
++{
++	switch (cs) {
++	case BITBANG_CS_ACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPB5, 0);
++		break;
++	case BITBANG_CS_INACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPB5, 1);
++		break;
++	}
++}
++
++static struct s3c2410_spigpio_info spi_gpio_cfg = {
++	.pin_clk	= S3C2410_GPG7,
++	.pin_mosi	= S3C2410_GPG6,
++	.pin_miso	= S3C2410_GPG5,
++	.board_size	= ARRAY_SIZE(qt2410_spi_board_info),
++	.board_info	= qt2410_spi_board_info,
++	.chip_select	= &spi_gpio_cs,
++};
++
++static struct resource s3c_spi_lcm_resource[] = {
++	[0] = {
++		.start = S3C2410_GPB5,
++		.end   = S3C2410_GPB5,
++		.flags = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start = S3C2410_GPG5,
++		.end   = S3C2410_GPG5,
++		.flags = IORESOURCE_MEM,
++	},
++	[2] = {
++		.start = S3C2410_GPG6,
++		.end   = S3C2410_GPG6,
++		.flags = IORESOURCE_MEM,
++	},
++	[3] = {
++		.start = S3C2410_GPG7,
++		.end   = S3C2410_GPG7,
++		.flags = IORESOURCE_MEM,
++	},
++};
++
++static struct platform_device s3c_device_spi_lcm = {
++	.name		  = "s3c24xx-spi-gpio",
++	.id		  = 1,
++	.num_resources	  = ARRAY_SIZE(s3c_spi_lcm_resource),
++	.resource	  = s3c_spi_lcm_resource,
++	.dev = {
++		.platform_data = &spi_gpio_cfg,
++	},
++};
++
++static void qt2410_udc_pullup(enum s3c2410_udc_cmd_e cmd)
++{
++	printk(KERN_DEBUG "udc: pullup(%d)\n", cmd);
++
++	switch (cmd) {
++	case S3C2410_UDC_P_ENABLE:
++		break;
++	case S3C2410_UDC_P_DISABLE:
++		break;
++	case S3C2410_UDC_P_RESET:
++		break;
++	default:
++		break;
++	}
++}
++
++static struct s3c2410_udc_mach_info qt2410_udc_cfg = {
++	.udc_command	= qt2410_udc_pullup,
++};
++
++static struct s3c2410_ts_mach_info qt2410_ts_cfg = {
++	.delay = 10000,
++	.presc = 49,
++	.oversampling_shift = 2,
++};
++
++static void __init qt2410_map_io(void)
++{
++	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
++	s3c24xx_init_clocks(12*1000*1000);
++	s3c24xx_init_uarts(smdk2410_uartcfgs, ARRAY_SIZE(smdk2410_uartcfgs));
++	s3c24xx_set_board(&qt2410_board);
++}
++
++static void __init qt2410_machine_init(void)
++{
++	/* Configure the LEDs (even if we have no LED support)*/
++
++	s3c2410_gpio_cfgpin(S3C2410_GPF4, S3C2410_GPF4_OUTP);
++	s3c2410_gpio_cfgpin(S3C2410_GPF5, S3C2410_GPF5_OUTP);
++	s3c2410_gpio_cfgpin(S3C2410_GPF6, S3C2410_GPF6_OUTP);
++	s3c2410_gpio_cfgpin(S3C2410_GPF7, S3C2410_GPF7_OUTP);
++
++	s3c2410_gpio_setpin(S3C2410_GPF4, 1);
++	s3c2410_gpio_setpin(S3C2410_GPF5, 1);
++	s3c2410_gpio_setpin(S3C2410_GPF6, 1);
++	s3c2410_gpio_setpin(S3C2410_GPF7, 1);
++
++	s3c_device_nand.dev.platform_data = &qt2410_nand_info;
++	s3c24xx_fb_set_platdata(&qt2410_lcd_cfg);
++	s3c24xx_udc_set_platdata(&qt2410_udc_cfg);
++	set_s3c2410ts_info(&qt2410_ts_cfg);
++
++	s3c2410_gpio_cfgpin(S3C2410_GPB5, S3C2410_GPIO_OUTPUT);
++	spi_register_board_info(qt2410_spi_board_info,
++				ARRAY_SIZE(qt2410_spi_board_info));
++	platform_device_register(&s3c_device_spi_lcm);
++
++	s3c2410_pm_init();
++}
++
++MACHINE_START(QT2410, "QT2410")
++	.phys_io	= S3C2410_PA_UART,
++	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
++	.boot_params	= S3C2410_SDRAM_PA + 0x100,
++	.map_io		= qt2410_map_io,
++	.init_irq	= s3c24xx_init_irq,
++	.init_machine	= qt2410_machine_init,
++	.timer		= &s3c24xx_timer,
++MACHINE_END
++
++

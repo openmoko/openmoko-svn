@@ -1,0 +1,17 @@
+qt2410-base.patch
+qt2410-cs8900.patch
+mmc.patch
+udc.patch
+mmc-get_ro.patch
+mmc-sdipre_limit.patch
+mmc-fixdmalockup.patch
+mmc-fixdebugp.patch
+qt2410-biglcd.patch
+qt2410-touchscreen.patch
+s3c2410_serial-nodebug.patch
+2.6.17-arm-usb_gadget-ether-link.patch
+2.6.17-s3c2410-spi-mode23.patch
+gta01-core.patch
+gta01-jbt6k74.patch
+gta01-backlight.patch
+gta01-pcf50606.patch

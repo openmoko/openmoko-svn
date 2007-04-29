@@ -1,0 +1,23 @@
+diff --exclude patches --exclude .pc -Nru linux-2.6.17.7-fic1/drivers/usb/gadget/ether.c linux-2.6.17.7-new/drivers/usb/gadget/ether.c
+--- linux-2.6.17.7-fic1/drivers/usb/gadget/ether.c	2006-07-25 05:36:01.000000000 +0200
++++ linux-2.6.17.7-new/drivers/usb/gadget/ether.c	2006-10-27 16:12:27.000000000 +0200
+@@ -2132,7 +2132,7 @@
+ }
+ 
+ 
+-static void __exit
++static void 
+ eth_unbind (struct usb_gadget *gadget)
+ {
+ 	struct eth_dev		*dev = get_gadget_data (gadget);
+@@ -2190,7 +2190,8 @@
+ 	return 1;
+ }
+ 
+-static int __init
++//static int __init
++static int
+ eth_bind (struct usb_gadget *gadget)
+ {
+ 	struct eth_dev		*dev;
+

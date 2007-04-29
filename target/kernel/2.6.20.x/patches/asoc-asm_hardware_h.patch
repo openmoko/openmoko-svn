@@ -1,0 +1,17 @@
+Don't include <asm/arch/hardware.h>, but <asm/hardware.h>
+
+Signed-off-by: Harald Welte <laforge@openmko.org>
+
+Index: linux-2.6.20/sound/soc/s3c24xx/neo1973_wm8753.c
+===================================================================
+--- linux-2.6.20.orig/sound/soc/s3c24xx/neo1973_wm8753.c	2007-02-15 16:27:53.000000000 +0100
++++ linux-2.6.20/sound/soc/s3c24xx/neo1973_wm8753.c	2007-02-15 16:28:02.000000000 +0100
+@@ -33,7 +33,7 @@
+ #include <asm/arch/regs-iis.h>
+ #include <asm/arch/regs-clock.h>
+ #include <asm/arch/regs-gpio.h>
+-#include <asm/arch/hardware.h>
++#include <asm/hardware.h>
+ #include <asm/arch/audio.h>
+ #include <asm/io.h>
+ #include <asm/arch/spi-gpio.h>
