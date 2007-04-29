@@ -1,3 +1,7 @@
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * scripts/prepare-ChangeLog: Added.
+
 2007-03-20: Fix the size of the column headers
 	Combat the GtkTreeViewColumn sizing
 
