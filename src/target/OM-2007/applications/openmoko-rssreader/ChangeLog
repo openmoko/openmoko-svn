@@ -1,5 +1,21 @@
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Add a class to handle caching of feeds while making sure not consuming
+		too much space. This class is meant to be copied to mokocore once done
+
+        * src/Makefile.am: Add moko_cache.[h,c]
+        * src/moko_cache.c: Added.
+        (moko_cache_finalize): Clean the filename
+        (moko_cache_class_init): Make sure to clean the filename
+        (moko_cache_init): Initialize it
+        (moko_cache_new): Copy the profile name
+        (moko_cache_get_allowed_size): not implemented
+        (moko_cache_get_utilized_size): not implemtned
+        (moko_cache_write_object): not implemented
+        (moko_cache_read_object): not implemented
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         * src/rfcdate.c: Handle wrong dates
         (rss_rfc_date_set): If we can't parse set it to 26.01.1983
         (rss_rfc_date_compare): Check if the dates we pass to g_date_compae
