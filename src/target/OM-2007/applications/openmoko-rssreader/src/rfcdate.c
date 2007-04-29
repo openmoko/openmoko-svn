@@ -28,7 +28,7 @@
 #include "rfcdate.h"
 #include <glib/gi18n.h>
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 G_DEFINE_TYPE(RSSRFCDate, rss_rfc_date, G_TYPE_OBJECT)
