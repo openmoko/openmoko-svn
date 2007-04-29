@@ -1,5 +1,12 @@
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        * src/rfcdate.c: Handle wrong dates
+        (rss_rfc_date_set): If we can't parse set it to 26.01.1983
+        (rss_rfc_date_compare): Check if the dates we pass to g_date_compae
+are valid
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         * src/callbacks.c: Update documentation, move it around
         (feed_update_thread): Update documentation
         (cb_treeview_selection_changed): make the string i18nable

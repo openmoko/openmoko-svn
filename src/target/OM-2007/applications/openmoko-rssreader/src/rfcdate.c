@@ -194,6 +194,7 @@ rss_rfc_date_set (RSSRFCDate *self, const gchar* rfc822date)
      * What should we do with these dates? round to the nearest legal date?
      */
     if ( !g_date_valid (self->date) ) {
+        g_date_set_dmy (self->date, 26, G_DATE_JANUARY, 1983 );
         g_print ("Setting RFC Date failed: '%s' %d %d %s %d  %ld\n",
                         rfc822date,
                         day,
@@ -207,10 +208,14 @@ rss_rfc_date_set (RSSRFCDate *self, const gchar* rfc822date)
 /*
  * Start by comparing the dates and only if they are equal compare
  * the times.
+ * For invalid dates we need a special treatment
  */
 gint
 rss_rfc_date_compare (RSSRFCDate *left, RSSRFCDate *right)
 {
+    g_assert ( g_date_valid (left->date) );
+    g_assert ( g_date_valid (right->date) );
+
     int date_result = g_date_compare( left->date, right->date );
     if (  date_result != 0 )
         return date_result;
