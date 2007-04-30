@@ -424,8 +424,8 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
   GtkTreeIter iter;
   GtkTreeModel *model;
   GtkTreeSelection *selection;
-  /*HISTORY_ENTRY*/void *p;
-  int hasname;
+  //HISTORY_ENTRY void *p;
+  //int hasname;
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
 
   selection =
@@ -438,12 +438,13 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
     return;
   }
 
-  gtk_tree_model_get (model, &iter, COLUMN_ENTRYPOINTER, &p, -1);
+  /*gtk_tree_model_get (model, &iter, COLUMN_ENTRYPOINTER, &p, -1);
 
   //p_dialer_data->g_currentselected = p;
 
   gtk_tree_model_get (model, &iter, COLUMN_HASNAME, &hasname, -1);
   history_update_counter (p_dialer_data);
+  */
 
 }
 
@@ -587,14 +588,9 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
 {
   GtkListStore *list_store;
 
-//  GtkTreeIter iter;
-//  HISTORY_ENTRY *entry;
-
-  //copied
   GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
 
-  //GtkTreeModel        *model;
   GtkWidget *contactview = NULL;
 
   //DBG_ENTER();
@@ -605,45 +601,29 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
 
   if (contactview == NULL)
     return 0;
-//pack image and label
+
+  /* Create column with icon and text */
   col = gtk_tree_view_column_new ();
-
-  gtk_tree_view_column_set_title (col, ("Title"));
-  gtk_tree_view_column_set_resizable (col, TRUE);
-
-
 
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
   gtk_tree_view_column_set_attributes (col, renderer,
-                                       "pixbuf", COLUMN_TYPEICON, NULL);
-
-  renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_column_pack_start (col, renderer, FALSE);
-  gtk_tree_view_column_set_attributes (col, renderer,
-                                       "text", COLUMN_TIME, NULL);
-
-  renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_column_pack_start (col, renderer, FALSE);
-  gtk_tree_view_column_set_attributes (col, renderer,
-                                       "text", COLUMN_SEPRATE, NULL);
+                                       "icon-name", HISTORY_ICON_NAME_COLUMN, NULL);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, TRUE);
   gtk_tree_view_column_set_attributes (col, renderer,
-                                       "text", COLUMN_NAME_NUMBER, NULL);
-
+                                       "text", HISTORY_DISPLAY_TEXT_COLUMN, NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (contactview), col);
 
 
-  //entry = p_dialer_data->g_historylist.first;
+  /* Set up a list store for the history items */
+  /* UID, DSTART, MISSED, DIRECTION */
+  list_store = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN, G_TYPE_INT);
 
-  list_store = gtk_list_store_new (N_COLUMN, G_TYPE_INT, GDK_TYPE_PIXBUF,
-                                   G_TYPE_STRING, G_TYPE_STRING,
-                                   G_TYPE_STRING, G_TYPE_INT, G_TYPE_POINTER,
-                                   G_TYPE_INT, -1);
-  //we will use a filter to facilitate the filtering in treeview without rebuilding the database.                         
+
+  //we will use a filter to facilitate the filtering in treeview without rebuilding the database.
   p_dialer_data->g_list_store_filter =
     gtk_tree_model_filter_new (GTK_TREE_MODEL (list_store), NULL);
   gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER
@@ -653,107 +633,60 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
                                           p_dialer_data, NULL);
 
   //load the three icons to memory.
-
-  // GError *error = NULL;
-  p_dialer_data->g_iconReceived = create_pixbuf ("received.png");
-
-  /* FIXME: error handling hasn't been implemented yet!
-     p_dialer_data->g_iconReceived = create_pixbuf ("received.png", &error);
-     if (error)
-     {
-     DBG_WARN ("Cound not load icon :%s", error->message);
-     g_error_free (error);
-     p_dialer_data->g_iconReceived = NULL;
-     error = NULL;
-     }
-   */
-
-  p_dialer_data->g_iconDialed = create_pixbuf ("dialed.png");
-  /* FIXME: error handling hasn't been implemented yet!
-     p_dialer_data->g_iconDialed = create_pixbuf ("dialed.png", &error);
-     if (error)
-     {
-     DBG_WARN ("Cound not load icon :%s", error->message);
-     g_error_free (error);
-     p_dialer_data->g_iconDialed = NULL;
-     error = NULL;
-     }
-   */
-
-  p_dialer_data->g_iconMissed = create_pixbuf ("missed.png");
-  /* FIXME: error handling hasn't been implemented yet!
-     p_dialer_data->g_iconMissed = create_pixbuf ("missed.png", &error);
-     if (error)
-     {
-     DBG_WARN ("Cound not load icon :%s", error->message);
-     g_error_free (error);
-     p_dialer_data->g_iconMissed = NULL;
-     error = NULL;
-     }
-   */
-#if 0
-  while (entry)
-  {
-    //DBG_MESSAGE(entry->number);
-    gtk_list_store_append (list_store, &iter);
-    gtk_list_store_set (list_store, &iter, COLUMN_TYPE, entry->type,
-                        COLUMN_SEPRATE, "--", COLUMN_TIME, entry->time,
-                        COLUMN_DURATION, entry->durationsec,
-                        COLUMN_ENTRYPOINTER, entry, COLUMN_HASNAME, 0, -1);
-    if (entry->name == 0)
-    {
-      //DBG_MESSAGE(entry->number);
-      gtk_list_store_set (list_store, &iter, COLUMN_NAME_NUMBER,
-                          entry->number, -1);
-      gtk_list_store_set (list_store, &iter, COLUMN_HASNAME, 0, -1);
-    }
-    else
-    {
-      gtk_list_store_set (list_store, &iter, COLUMN_NAME_NUMBER,
-                          entry->name, -1);
-      gtk_list_store_set (list_store, &iter, COLUMN_HASNAME, 1, -1);
-    }
-    switch (entry->type)
-    {
-    case INCOMING:
-      {
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            p_dialer_data->g_iconReceived, -1);
-        //      icon=gdk_pixbuf_new_from_file("./received.png",&error);
-        break;
-      }
-    case OUTGOING:
-      {                         //     icon=gdk_pixbuf_new_from_file("./dialed.png",&error);
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            p_dialer_data->g_iconDialed, -1);
-        break;
-      }
-    case MISSED:
-      {                         //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            p_dialer_data->g_iconMissed, -1);
-        break;
-      }
-
-    default:
-
-      {                         //icon=gdk_pixbuf_new_from_file("./missed.png",&error);
-        gtk_list_store_set (list_store, &iter, COLUMN_TYPEICON,
-                            p_dialer_data->g_iconMissed, -1);
-        break;
-      }
-    }
-
-
-
-    entry = entry->next;
-  }
-#endif
   gtk_tree_view_set_model (GTK_TREE_VIEW (contactview),
                            GTK_TREE_MODEL (p_dialer_data->
                                            g_list_store_filter));
 
-  g_object_unref (list_store);
+
+  /* add the initial contents of the list store */
+  int i = 0;
+  MokoJournalEntry *j_entry;
+
+  /* if there aren't any entries in the journal, we don't need to do any more
+   * here
+   */
+  if (moko_journal_get_nb_entries (p_dialer_data->journal))
+    return 1;
+
+  j_entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
+
+  while (moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry))
+  {
+    const gchar *uid, *number;
+    gchar *icon_name, *display_text;
+    int dstart;
+    enum MessageDirection direction;
+    gboolean was_missed;
+    const MokoTime *time;
+
+    uid = moko_journal_entry_get_contact_uid (j_entry);
+    moko_journal_entry_get_direction (j_entry, &direction);
+    time = moko_journal_entry_get_dtstart (j_entry);
+    was_missed = moko_journal_voice_info_get_was_missed ((MokoJournalVoiceInfo*) j_entry);
+    number = moko_journal_voice_info_get_distant_number ((MokoJournalVoiceInfo*)j_entry);
+
+    if (direction == DIRECTION_OUT)
+      icon_name = "call-in";
+    else
+      if (was_missed)
+        icon_name = "call-missed";
+      else
+        icon_name = "call-out";
+
+    /* display text should be either the contact name, or the number if the
+     * contact name is not know */
+    /* FIXME: look up uid */
+    display_text = number;
+
+    gtk_list_store_insert_with_values (list_store, NULL, 0,
+        HISTORY_NUMBER_COLUMN, number,
+        HISTORY_DSTART_COLUMN, dstart,
+        HISTORY_ICON_NAME_COLUMN, icon_name,
+        HISTORY_DISPLAY_TEXT_COLUMN, display_text,
+        -1);
+  }
+
+
 
   return 1;
 }

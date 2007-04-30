@@ -17,24 +17,16 @@
  */
 #include "moko-dialer-includes.h"
 #include <libmokogsmd/moko-gsmd-connection.h>
-/*
+#include <libmokojournal/moko-journal.h>
 
-typedef struct _window_outgoing
-{
-
-MokoDialerStatus * status_outgoing;
-
-GtkWidget* window_outgoing;
-
-GtkWidget* buttonSpeaker;
-GtkWidget* buttonCancel;
-GtkWidget* buttonRedial;
-}WindowOutgoing;
-*/
 typedef struct _dialer_data
 {
   //the global data area begins here
+
   MokoGsmdConnection *connection;
+  MokoJournal *journal;
+
+  GtkListStore *history;
 
   char str_sim_pin[MOKO_DIALER_MAX_PIN_LEN + 1];
   gint int_sim_pin_end_point;

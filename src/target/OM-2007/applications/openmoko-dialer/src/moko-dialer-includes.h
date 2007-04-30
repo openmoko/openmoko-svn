@@ -92,18 +92,6 @@ typedef struct _timerdata
   char timestring[MOKO_DIALER_MAX_TIME_STATUS_LEN + 1];
 } TIMER_DATA;
 
-enum
-{
-  COLUMN_TYPE,
-  COLUMN_TYPEICON,
-  COLUMN_SEPRATE,
-  COLUMN_NAME_NUMBER,
-  COLUMN_TIME,
-  COLUMN_DURATION,
-  COLUMN_ENTRYPOINTER,
-  COLUMN_HASNAME,
-  N_COLUMN
-};
 void gsm_incoming_call (gchar * number);
 void gsm_peer_accept ();
 void gsm_peer_abort ();

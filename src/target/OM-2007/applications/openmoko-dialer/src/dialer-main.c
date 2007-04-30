@@ -180,7 +180,6 @@ main (int argc, char **argv)
 
 
   /* application object */
-//    MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
   g_set_application_name ("OpenMoko Dialer");
 
   /* Set up gsmd connection object */
@@ -188,6 +187,9 @@ main (int argc, char **argv)
   g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, NULL);
   g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, NULL);
   g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, NULL);
+
+  /* Set up journal handling */
+  p_dialer_data->journal = moko_journal_open_default ();
 
   signal (SIGUSR1, handle_sigusr1);
 
@@ -206,8 +208,11 @@ main (int argc, char **argv)
   gtk_main ();
 
 
-//release everything    
+  //release everything
   contact_release_contact_list (&(p_dialer_data->g_contactlist));
+
+  /* closes the journal and frees allocated memory */
+  moko_journal_close (p_dialer_data->journal);
 
   return 0;
 }

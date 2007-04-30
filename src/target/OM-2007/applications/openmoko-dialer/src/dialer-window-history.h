@@ -19,6 +19,15 @@
 
 #ifndef _OPENMOKO_DIALER_WINDOW_HISTORY_H
 
+/* columns available in the history list store */
+enum history_columns {
+  HISTORY_NUMBER_COLUMN, /* number for re-dial */
+  HISTORY_DSTART_COLUMN, /* call time, used for sorting */
+  HISTORY_ICON_NAME_COLUMN, /* icon name for display */
+  HISTORY_DISPLAY_TEXT_COLUMN, /* name or number for display */
+};
+
+
 gint window_history_init (MokoDialerData * p_dialer_data);
 
 #define _OPENMOKO_DIALER_WINDOW_HISTORY_H
