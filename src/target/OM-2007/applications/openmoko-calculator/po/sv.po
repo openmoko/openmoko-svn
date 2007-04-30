@@ -1,0 +1,38 @@
+# Swedish translation for openmoko's calculator.
+# Copyright (C) 2007 Free Software Foundation, Inc.
+# This file is distributed under the same license as the openmoko package.
+# Daniel Nylander <po@danielnylander.se>, 2007.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: openmoko calculator\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-03-24 13:52+0100\n"
+"PO-Revision-Date: 2007-04-04 11:18+0100\n"
+"Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
+"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/calc-main.c:87
+msgid "Clear All"
+msgstr "Töm allt"
+
+#: src/calc-main.c:87
+msgid "Clear"
+msgstr "Töm"
+
+#: src/calc-main.c:91
+msgid "<big><b>.</b></big>"
+msgstr "<big><b>.</b></big>"
+
+#. application object
+#. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
+#: src/calc-main.c:349
+msgid "Calculator"
+msgstr "Miniräknare"
+
+#: src/calc-main.c:356
+msgid "Close"
+msgstr "Stäng"
