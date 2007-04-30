@@ -1,11 +1,11 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.7-moko.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Kconfig
-@@ -86,6 +86,14 @@
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
+@@ -109,5 +109,12 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
  
@@ -16,26 +16,22 @@ Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Kconfig
 +	help
 +	   Say Y here if you are using the FIC Neo1973 GSM Phone
 +
-+
- config ARCH_S3C2440
- 	bool "SMDK2440"
- 	select CPU_S3C2440
-Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Makefile
+ endmenu
+ 
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.20.7-moko.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6.20.7-moko/arch/arm/mach-s3c2410/Makefile
-@@ -89,5 +89,6 @@
- obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
- obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.21-moko/arch/arm/mach-s3c2410/Makefile
+@@ -29,3 +29,4 @@
+ obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
+ obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
 +obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
- 
- obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,741 @@
++++ linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -0,0 +1,740 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -105,10 +101,9 @@ Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +#include <asm/arch/gta01.h>
 +
-+#include "devs.h"
-+#include "cpu.h"
-+
-+#include "pm.h"
++#include <asm/plat-s3c24xx/devs.h>
++#include <asm/plat-s3c24xx/cpu.h>
++#include <asm/plat-s3c24xx/pm.h>
 +
 +static struct map_desc gta01_iodesc[] __initdata = {
 +	{
@@ -766,7 +761,7 @@ Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +	s3c2410_pm_init();
 +}
 +
-+MACHINE_START(GTA01, "GTA01")
++MACHINE_START(NEO1973_GTA01, "GTA01")
 +	.phys_io	= S3C2410_PA_UART,
 +	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
 +	.boot_params	= S3C2410_SDRAM_PA + 0x100,
@@ -777,10 +772,10 @@ Index: linux-2.6.20.7-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.20.7-moko/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.7-moko/include/asm-arm/arch-s3c2410/gta01.h
++++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,69 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H

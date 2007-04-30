@@ -1,9 +1,9 @@
 This is the latest S3C MMC/SD driver by Thomas Kleffel
 
-Index: linux-2.6.20.1/drivers/mmc/Kconfig
+Index: linux-2.6.21-moko/drivers/mmc/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/drivers/mmc/Kconfig	2007-02-26 00:46:48.000000000 +0100
-+++ linux-2.6.20.1/drivers/mmc/Kconfig	2007-02-26 00:46:55.000000000 +0100
+--- linux-2.6.21-moko.orig/drivers/mmc/Kconfig
++++ linux-2.6.21-moko/drivers/mmc/Kconfig
 @@ -125,4 +125,16 @@
            To compile this driver as a module, choose M here: the
  	  module will be called tifm_sd.
@@ -21,10 +21,10 @@ Index: linux-2.6.20.1/drivers/mmc/Kconfig
 +
 +
  endmenu
-Index: linux-2.6.20.1/drivers/mmc/mmc_debug.c
+Index: linux-2.6.21-moko/drivers/mmc/mmc_debug.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/mmc/mmc_debug.c	2007-02-26 00:46:55.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/drivers/mmc/mmc_debug.c
 @@ -0,0 +1,59 @@
 +/*
 + *  linux/drivers/mmc/mmc_debug.c
@@ -85,10 +85,10 @@ Index: linux-2.6.20.1/drivers/mmc/mmc_debug.c
 +	}
 +}
 +EXPORT_SYMBOL(mmc_err2str);
-Index: linux-2.6.20.1/drivers/mmc/mmc_debug.h
+Index: linux-2.6.21-moko/drivers/mmc/mmc_debug.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/mmc/mmc_debug.h	2007-02-26 00:46:55.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/drivers/mmc/mmc_debug.h
 @@ -0,0 +1,7 @@
 +#ifndef MMC_DEBUG_H
 +#define MMC_DEBUG_H
@@ -97,10 +97,10 @@ Index: linux-2.6.20.1/drivers/mmc/mmc_debug.h
 +char *mmc_err2str(int err);
 +
 +#endif /* MMC_DEBUG_H */
-Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
+Index: linux-2.6.21-moko/drivers/mmc/s3cmci.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/mmc/s3cmci.c	2007-03-02 12:55:44.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/drivers/mmc/s3cmci.c
 @@ -0,0 +1,1339 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1293,8 +1293,8 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +	mmc->f_min 	= host->clk_rate / (host->clk_div * 256);
 +	mmc->f_max 	= host->clk_rate / host->clk_div;
 +
-+	mmc->max_sectors	= 4095;
-+	mmc->max_seg_size	= mmc->max_sectors << 9;
++	mmc->max_req_size	= 4095 * 512;
++	mmc->max_seg_size	= mmc->max_req_size;
 +
 +	mmc->max_phys_segs	= 128;
 +	mmc->max_hw_segs	= 128;
@@ -1441,10 +1441,10 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
 +
-Index: linux-2.6.20.1/drivers/mmc/s3cmci.h
+Index: linux-2.6.21-moko/drivers/mmc/s3cmci.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/mmc/s3cmci.h	2007-03-02 12:55:41.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/drivers/mmc/s3cmci.h
 @@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1517,10 +1517,10 @@ Index: linux-2.6.20.1/drivers/mmc/s3cmci.h
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
 +};
-Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/regs-sdi.h
+Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/regs-sdi.h
 ===================================================================
---- linux-2.6.20.1.orig/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-02-26 00:46:48.000000000 +0100
-+++ linux-2.6.20.1/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-02-26 00:46:55.000000000 +0100
+--- linux-2.6.21-moko.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
++++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/regs-sdi.h
 @@ -28,9 +28,15 @@
  #define S3C2410_SDIDCNT               (0x30)
  #define S3C2410_SDIDSTA               (0x34)
@@ -1588,11 +1588,11 @@ Index: linux-2.6.20.1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIFSTA_RFLAST         (1<<9)
  #define S3C2410_SDIFSTA_RFFULL         (1<<8)
  #define S3C2410_SDIFSTA_RFHALF         (1<<7)
-Index: linux-2.6.20.1/include/linux/mmc/mmc.h
+Index: linux-2.6.21-moko/include/linux/mmc/mmc.h
 ===================================================================
---- linux-2.6.20.1.orig/include/linux/mmc/mmc.h	2007-02-26 00:46:48.000000000 +0100
-+++ linux-2.6.20.1/include/linux/mmc/mmc.h	2007-02-26 00:46:55.000000000 +0100
-@@ -54,12 +54,15 @@
+--- linux-2.6.21-moko.orig/include/linux/mmc/mmc.h
++++ linux-2.6.21-moko/include/linux/mmc/mmc.h
+@@ -55,12 +55,15 @@
  	unsigned int		retries;	/* max number of retries */
  	unsigned int		error;		/* command error */
  
@@ -1614,10 +1614,10 @@ Index: linux-2.6.20.1/include/linux/mmc/mmc.h
  
  	struct mmc_data		*data;		/* data segment associated with cmd */
  	struct mmc_request	*mrq;		/* associated request */
-Index: linux-2.6.20.1/drivers/mmc/Makefile
+Index: linux-2.6.21-moko/drivers/mmc/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/drivers/mmc/Makefile	2007-03-02 10:18:32.000000000 +0100
-+++ linux-2.6.20.1/drivers/mmc/Makefile	2007-03-02 10:18:14.000000000 +0100
+--- linux-2.6.21-moko.orig/drivers/mmc/Makefile
++++ linux-2.6.21-moko/drivers/mmc/Makefile
 @@ -24,10 +24,12 @@
  obj-$(CONFIG_MMC_OMAP)		+= omap.o
  obj-$(CONFIG_MMC_AT91)		+= at91_mci.o

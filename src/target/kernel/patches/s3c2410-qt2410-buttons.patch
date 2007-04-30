@@ -1,8 +1,8 @@
-Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-qt2410.c
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
---- linux-2.6.20.1.orig/arch/arm/mach-s3c2410/mach-qt2410.c	2007-02-21 17:23:47.000000000 +0100
-+++ linux-2.6.20.1/arch/arm/mach-s3c2410/mach-qt2410.c	2007-02-21 17:26:52.000000000 +0100
-@@ -457,6 +457,24 @@
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/mach-qt2410.c
++++ linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-qt2410.c
+@@ -408,6 +408,24 @@
  	.ocr_avail 	= MMC_VDD_32_33,
  };
  
@@ -27,19 +27,11 @@ Index: linux-2.6.20.1/arch/arm/mach-s3c2410/mach-qt2410.c
  static void __init qt2410_map_io(void)
  {
  	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-@@ -502,6 +520,7 @@
- 	spi_register_board_info(qt2410_spi_board_info,
- 				ARRAY_SIZE(qt2410_spi_board_info));
- 	platform_device_register(&s3c_device_spi_lcm);
-+	platform_device_register(&qt2410_button_dev);
- 
- 	s3c2410_pm_init();
- }
-Index: linux-2.6.20.1/drivers/input/keyboard/Kconfig
+Index: linux-2.6.21-moko/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/drivers/input/keyboard/Kconfig	2007-02-21 17:22:08.000000000 +0100
-+++ linux-2.6.20.1/drivers/input/keyboard/Kconfig	2007-02-21 17:22:39.000000000 +0100
-@@ -225,5 +225,10 @@
+--- linux-2.6.21-moko.orig/drivers/input/keyboard/Kconfig
++++ linux-2.6.21-moko/drivers/input/keyboard/Kconfig
+@@ -240,5 +240,10 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called gta01kbd.
  
@@ -50,10 +42,10 @@ Index: linux-2.6.20.1/drivers/input/keyboard/Kconfig
 +
  
  endif
-Index: linux-2.6.20.1/drivers/input/keyboard/Makefile
+Index: linux-2.6.21-moko/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/drivers/input/keyboard/Makefile	2007-02-21 17:22:06.000000000 +0100
-+++ linux-2.6.20.1/drivers/input/keyboard/Makefile	2007-02-21 17:22:53.000000000 +0100
+--- linux-2.6.21-moko.orig/drivers/input/keyboard/Makefile
++++ linux-2.6.21-moko/drivers/input/keyboard/Makefile
 @@ -14,6 +14,7 @@
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
  obj-$(CONFIG_KEYBOARD_CORGI)		+= corgikbd.o
@@ -62,10 +54,10 @@ Index: linux-2.6.20.1/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6.20.1/drivers/input/keyboard/qt2410kbd.c
+Index: linux-2.6.21-moko/drivers/input/keyboard/qt2410kbd.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/input/keyboard/qt2410kbd.c	2007-02-21 17:25:50.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/drivers/input/keyboard/qt2410kbd.c
 @@ -0,0 +1,218 @@
 +/*
 + * Keyboard driver for Armzone QT2410 

@@ -1,16 +1,16 @@
-diff --git a/arch/arm/mach-s3c2410/devs.c b/arch/arm/mach-s3c2410/devs.c
-index e55a6a9..9a2a67b 100644
---- a/arch/arm/mach-s3c2410/devs.c
-+++ b/arch/arm/mach-s3c2410/devs.c
-@@ -29,6 +29,7 @@ #include <asm/irq.h>
+Index: linux-2.6.21-moko/arch/arm/plat-s3c24xx/devs.c
+===================================================================
+--- linux-2.6.21-moko.orig/arch/arm/plat-s3c24xx/devs.c
++++ linux-2.6.21-moko/arch/arm/plat-s3c24xx/devs.c
+@@ -30,6 +30,7 @@
  
  #include <asm/arch/regs-serial.h>
  #include <asm/arch/udc.h>
 +#include <asm/arch/ts.h>
  
- #include "devs.h"
- #include "cpu.h"
-@@ -205,6 +206,23 @@ struct platform_device s3c_device_nand =
+ #include <asm/plat-s3c24xx/devs.h>
+ #include <asm/plat-s3c24xx/cpu.h>
+@@ -206,6 +207,23 @@
  
  EXPORT_SYMBOL(s3c_device_nand);
  
@@ -34,11 +34,11 @@ index e55a6a9..9a2a67b 100644
  /* USB Device (Gadget)*/
  
  static struct resource s3c_usbgadget_resource[] = {
-diff --git a/arch/arm/mach-s3c2410/devs.h b/arch/arm/mach-s3c2410/devs.h
-index 14fb0ba..0fc63cf 100644
---- a/arch/arm/mach-s3c2410/devs.h
-+++ b/arch/arm/mach-s3c2410/devs.h
-@@ -41,6 +41,7 @@ extern struct platform_device s3c_device
+Index: linux-2.6.21-moko/include/asm-arm/plat-s3c24xx/devs.h
+===================================================================
+--- linux-2.6.21-moko.orig/include/asm-arm/plat-s3c24xx/devs.h
++++ linux-2.6.21-moko/include/asm-arm/plat-s3c24xx/devs.h
+@@ -41,6 +41,7 @@
  extern struct platform_device s3c_device_timer3;
  
  extern struct platform_device s3c_device_usbgadget;
@@ -46,19 +46,19 @@ index 14fb0ba..0fc63cf 100644
  
  /* s3c2440 specific devices */
  
-diff --git a/arch/arm/mach-s3c2410/mach-h1940.c b/arch/arm/mach-s3c2410/mach-h1940.c
-index f539535..f65b7ce 100644
---- a/arch/arm/mach-s3c2410/mach-h1940.c
-+++ b/arch/arm/mach-s3c2410/mach-h1940.c
-@@ -39,6 +39,7 @@ #include <asm/arch/h1940.h>
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-h1940.c
+===================================================================
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/mach-h1940.c
++++ linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-h1940.c
+@@ -38,6 +38,7 @@
  #include <asm/arch/h1940-latch.h>
  #include <asm/arch/fb.h>
  #include <asm/arch/udc.h>
 +#include <asm/arch/ts.h>
  
- #include <linux/serial_core.h>
- 
-@@ -132,6 +133,11 @@ static struct s3c2410_udc_mach_info h194
+ #include <asm/plat-s3c24xx/clock.h>
+ #include <asm/plat-s3c24xx/devs.h>
+@@ -129,6 +130,11 @@
  };
  
  
@@ -70,15 +70,15 @@ index f539535..f65b7ce 100644
  
  /**
   * Set lcd on or off
-@@ -183,6 +189,7 @@ static struct platform_device *h1940_dev
+@@ -185,6 +191,7 @@
  	&s3c_device_i2c,
  	&s3c_device_iis,
  	&s3c_device_usbgadget,
 +	&s3c_device_ts,
+ 	&s3c_device_leds,
  };
  
- static struct s3c24xx_board h1940_board __initdata = {
-@@ -213,6 +220,7 @@ static void __init h1940_init(void)
+@@ -218,6 +225,7 @@
  	u32 tmp;
  
  	s3c24xx_fb_set_platdata(&h1940_lcdcfg);
@@ -86,11 +86,11 @@ index f539535..f65b7ce 100644
   	s3c24xx_udc_set_platdata(&h1940_udc_cfg);
  
  	/* Turn off suspend on both USB ports, and switch the
-diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-index 6b46c9b..91f5f4f 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -49,6 +49,24 @@ config TOUCHSCREEN_CORGI
+Index: linux-2.6.21-moko/drivers/input/touchscreen/Kconfig
+===================================================================
+--- linux-2.6.21-moko.orig/drivers/input/touchscreen/Kconfig
++++ linux-2.6.21-moko/drivers/input/touchscreen/Kconfig
+@@ -54,6 +54,24 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called corgi_ts.
  
@@ -115,20 +115,19 @@ index 6b46c9b..91f5f4f 100644
  config TOUCHSCREEN_GUNZE
  	tristate "Gunze AHL-51S touchscreen"
  	select SERIO
-diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
-index 30e6e22..8cbaac5 100644
---- a/drivers/input/touchscreen/Makefile
-+++ b/drivers/input/touchscreen/Makefile
-@@ -16,3 +16,4 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= pe
+Index: linux-2.6.21-moko/drivers/input/touchscreen/Makefile
+===================================================================
+--- linux-2.6.21-moko.orig/drivers/input/touchscreen/Makefile
++++ linux-2.6.21-moko/drivers/input/touchscreen/Makefile
+@@ -16,3 +16,4 @@
  obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
  obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
  obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
 +obj-$(CONFIG_TOUCHSCREEN_S3C2410)	+= s3c2410_ts.o
-diff --git a/drivers/input/touchscreen/s3c2410_ts.c b/drivers/input/touchscreen/s3c2410_ts.c
-new file mode 100644
-index 0000000..0dea2ef
+Index: linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
+===================================================================
 --- /dev/null
-+++ b/drivers/input/touchscreen/s3c2410_ts.c
++++ linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
 @@ -0,0 +1,401 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -531,24 +530,10 @@ index 0000000..0dea2ef
 +        c-basic-offset: 8
 +    End:
 +*/
-diff --git a/include/asm-arm/arch-s3c2410/regs-adc.h b/include/asm-arm/arch-s3c2410/regs-adc.h
-index 3196a28..c7f2319 100644
---- a/include/asm-arm/arch-s3c2410/regs-adc.h
-+++ b/include/asm-arm/arch-s3c2410/regs-adc.h
-@@ -41,7 +41,7 @@ #define S3C2410_ADCTSC_XM_SEN		(1<<5)
- #define S3C2410_ADCTSC_XP_SEN		(1<<4)
- #define S3C2410_ADCTSC_PULL_UP_DISABLE	(1<<3)
- #define S3C2410_ADCTSC_AUTO_PST		(1<<2)
--#define S3C2410_ADCTSC_XY_PST		(0x3<<0)
-+#define S3C2410_ADCTSC_XY_PST(x)	(((x)&0x3)<<0)
- 
- /* ADCDAT0 Bits */
- #define S3C2410_ADCDAT0_UPDOWN		(1<<15)
-diff --git a/include/asm-arm/arch-s3c2410/ts.h b/include/asm-arm/arch-s3c2410/ts.h
-new file mode 100644
-index 0000000..8566f25
+Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/ts.h
+===================================================================
 --- /dev/null
-+++ b/include/asm-arm/arch-s3c2410/ts.h
++++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/ts.h
 @@ -0,0 +1,28 @@
 +/* linux/include/asm/arch-s3c2410/ts.h
 + *

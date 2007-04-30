@@ -1,22 +1,21 @@
-Index: linux-2.6.20.1/fs/Kconfig
+Index: linux-2.6.21-moko/fs/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/fs/Kconfig	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20.1/fs/Kconfig	2007-03-04 16:08:19.000000000 +0100
-@@ -1196,6 +1196,10 @@
+--- linux-2.6.21-moko.orig/fs/Kconfig
++++ linux-2.6.21-moko/fs/Kconfig
+@@ -1189,6 +1189,9 @@
  	  To compile the EFS file system support as a module, choose M here: the
  	  module will be called efs.
  
-+
 +# Patched by YAFFS
 +source "fs/yaffs2/Kconfig"
 +
- config JFFS_FS
- 	tristate "Journalling Flash File System (JFFS) support"
- 	depends on MTD && BLOCK && BROKEN
-Index: linux-2.6.20.1/fs/yaffs2/Kconfig
+ config JFFS2_FS
+ 	tristate "Journalling Flash File System v2 (JFFS2) support"
+ 	select CRC32
+Index: linux-2.6.21-moko/fs/yaffs2/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/Kconfig	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/Kconfig
 @@ -0,0 +1,159 @@
 +#
 +# YAFFS file system configurations
@@ -177,10 +176,10 @@ Index: linux-2.6.20.1/fs/yaffs2/Kconfig
 +	  but makes look-ups faster.
 +
 +	  If unsure, say Y.
-Index: linux-2.6.20.1/fs/yaffs2/Makefile
+Index: linux-2.6.21-moko/fs/yaffs2/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/Makefile	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/Makefile
 @@ -0,0 +1,10 @@
 +#
 +# Makefile for the linux YAFFS filesystem routines.
@@ -192,10 +191,10 @@ Index: linux-2.6.20.1/fs/yaffs2/Makefile
 +yaffs-y += yaffs_packedtags2.o yaffs_nand.o yaffs_qsort.o
 +yaffs-y += yaffs_tagscompat.o yaffs_tagsvalidity.o
 +yaffs-y += yaffs_mtdif.o yaffs_mtdif2.o
-Index: linux-2.6.20.1/fs/yaffs2/devextras.h
+Index: linux-2.6.21-moko/fs/yaffs2/devextras.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/devextras.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/devextras.h
 @@ -0,0 +1,264 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -461,10 +460,10 @@ Index: linux-2.6.20.1/fs/yaffs2/devextras.h
 +#endif
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/moduleconfig.h
+Index: linux-2.6.21-moko/fs/yaffs2/moduleconfig.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/moduleconfig.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/moduleconfig.h
 @@ -0,0 +1,51 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -517,10 +516,10 @@ Index: linux-2.6.20.1/fs/yaffs2/moduleconfig.h
 +#endif /* YAFFS_OUT_OF_TREE */
 +
 +#endif /* __YAFFS_CONFIG_H__ */
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_checkptrw.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_checkptrw.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_checkptrw.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_checkptrw.c
 @@ -0,0 +1,384 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -906,10 +905,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_checkptrw.c
 +
 +
 +
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_checkptrw.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_checkptrw.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_checkptrw.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_checkptrw.h
 @@ -0,0 +1,33 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -944,10 +943,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_checkptrw.h
 +
 +#endif
 +
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_ecc.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_ecc.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_ecc.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_ecc.c
 @@ -0,0 +1,331 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -1280,10 +1279,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_ecc.c
 +
 +}
 +
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_ecc.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_ecc.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_ecc.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_ecc.h
 @@ -0,0 +1,44 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -1329,10 +1328,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_ecc.h
 +			  yaffs_ECCOther * read_ecc,
 +			  const yaffs_ECCOther * test_ecc);
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_fs.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_fs.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_fs.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_fs.c
 @@ -0,0 +1,2136 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -3470,10 +3469,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_fs.c
 +MODULE_DESCRIPTION("YAFFS2 - a NAND specific flash file system");
 +MODULE_AUTHOR("Charles Manning, Aleph One Ltd., 2002-2006");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_guts.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_guts.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_guts.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_guts.c
 @@ -0,0 +1,6674 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -10149,10 +10148,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_guts.c
 +
 +	    return YAFFS_OK;
 +}
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_guts.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_guts.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_guts.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_guts.h
 @@ -0,0 +1,889 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -11043,10 +11042,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_guts.h
 +void yaffs_HandleChunkError(yaffs_Device *dev, yaffs_BlockInfo *bi);
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_mtdif.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif.c
 @@ -0,0 +1,241 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -11289,10 +11288,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif.c
 +	return YAFFS_OK;
 +}
 +
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_mtdif.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif.h
 @@ -0,0 +1,27 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -11321,10 +11320,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif.h
 +int nandmtd_EraseBlockInNAND(yaffs_Device * dev, int blockNumber);
 +int nandmtd_InitialiseNAND(yaffs_Device * dev);
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif2.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif2.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_mtdif2.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif2.c
 @@ -0,0 +1,232 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -11558,10 +11557,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif2.c
 +		return YAFFS_FAIL;
 +}
 +
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif2.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif2.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_mtdif2.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_mtdif2.h
 @@ -0,0 +1,29 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -11592,10 +11591,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_mtdif2.h
 +			    yaffs_BlockState * state, int *sequenceNumber);
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_nand.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_nand.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_nand.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_nand.c
 @@ -0,0 +1,134 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -11731,10 +11730,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_nand.c
 +
 +
 + 
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_nand.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_nand.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_nand.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_nand.h
 @@ -0,0 +1,44 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -11780,10 +11779,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_nand.h
 +
 +#endif
 +
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_nandemul2k.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_nandemul2k.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_nandemul2k.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_nandemul2k.h
 @@ -0,0 +1,39 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -11824,10 +11823,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_nandemul2k.h
 +int nandemul2k_GetNumberOfBlocks(void);
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags1.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags1.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_packedtags1.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags1.c
 @@ -0,0 +1,52 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -11881,10 +11880,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags1.c
 +
 +	}
 +}
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags1.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags1.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_packedtags1.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags1.h
 @@ -0,0 +1,37 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -11923,10 +11922,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags1.h
 +void yaffs_PackTags1(yaffs_PackedTags1 * pt, const yaffs_ExtendedTags * t);
 +void yaffs_UnpackTags1(yaffs_ExtendedTags * t, const yaffs_PackedTags1 * pt);
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags2.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags2.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_packedtags2.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags2.c
 @@ -0,0 +1,182 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -12110,10 +12109,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags2.c
 +	yaffs_DumpTags2(t);
 +
 +}
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags2.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags2.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_packedtags2.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_packedtags2.h
 @@ -0,0 +1,38 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12153,10 +12152,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_packedtags2.h
 +void yaffs_PackTags2(yaffs_PackedTags2 * pt, const yaffs_ExtendedTags * t);
 +void yaffs_UnpackTags2(yaffs_ExtendedTags * t, yaffs_PackedTags2 * pt);
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_qsort.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_qsort.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_qsort.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_qsort.c
 @@ -0,0 +1,156 @@
 +/*
 + * Copyright (c) 1992, 1993
@@ -12314,10 +12313,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_qsort.c
 +	}
 +/*		qsort(pn - r, r / es, es, cmp);*/
 +}
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_qsort.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_qsort.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_qsort.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_qsort.h
 @@ -0,0 +1,23 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12342,10 +12341,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_qsort.h
 +                   int (*cmp)(const void *, const void *));
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagscompat.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_tagscompat.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_tagscompat.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_tagscompat.c
 @@ -0,0 +1,530 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -12877,10 +12876,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagscompat.c
 +
 +	return YAFFS_OK;
 +}
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagscompat.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_tagscompat.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_tagscompat.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_tagscompat.h
 @@ -0,0 +1,36 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12918,10 +12917,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagscompat.h
 +					  state, int *sequenceNumber);
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagsvalidity.c
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_tagsvalidity.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_tagsvalidity.c	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_tagsvalidity.c
 @@ -0,0 +1,28 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -12951,10 +12950,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagsvalidity.c
 +		tags->validMarker1 == 0x55555555);
 +
 +}
-Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagsvalidity.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffs_tagsvalidity.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffs_tagsvalidity.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffs_tagsvalidity.h
 @@ -0,0 +1,24 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12980,10 +12979,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffs_tagsvalidity.h
 +void yaffs_InitialiseTags(yaffs_ExtendedTags * tags);
 +int yaffs_ValidateTags(yaffs_ExtendedTags * tags);
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yaffsinterface.h
+Index: linux-2.6.21-moko/fs/yaffs2/yaffsinterface.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yaffsinterface.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yaffsinterface.h
 @@ -0,0 +1,21 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13006,10 +13005,10 @@ Index: linux-2.6.20.1/fs/yaffs2/yaffsinterface.h
 +int yaffs_Initialise(unsigned nBlocks);
 +
 +#endif
-Index: linux-2.6.20.1/fs/yaffs2/yportenv.h
+Index: linux-2.6.21-moko/fs/yaffs2/yportenv.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/fs/yaffs2/yportenv.h	2007-03-04 16:08:19.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/fs/yaffs2/yportenv.h
 @@ -0,0 +1,162 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13173,11 +13172,11 @@ Index: linux-2.6.20.1/fs/yaffs2/yportenv.h
 +#endif
 +
 +#endif
-Index: linux-2.6.20.1/fs/Makefile
+Index: linux-2.6.21-moko/fs/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/fs/Makefile	2007-03-04 16:08:24.000000000 +0100
-+++ linux-2.6.20.1/fs/Makefile	2007-03-04 16:09:34.000000000 +0100
-@@ -115,3 +115,4 @@
+--- linux-2.6.21-moko.orig/fs/Makefile
++++ linux-2.6.21-moko/fs/Makefile
+@@ -114,3 +114,4 @@
  obj-$(CONFIG_DEBUG_FS)		+= debugfs/
  obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
  obj-$(CONFIG_GFS2_FS)           += gfs2/

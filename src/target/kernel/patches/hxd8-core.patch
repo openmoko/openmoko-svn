@@ -1,11 +1,11 @@
 This patch adds another machine, the FIC HXD8
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:33:04.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:33:04.000000000 +0200
-@@ -94,6 +94,12 @@
- 	help
- 	   Say Y here if you are using the FIC Neo1973 GSM Phone
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.21-moko/arch/arm/mach-s3c2440/Kconfig
+@@ -66,6 +66,12 @@
+ 	default y if ARCH_S3C2440
+ 	select CPU_S3C2440
  
 +config MACH_HXD8
 +	bool "FIC HXD8"
@@ -14,25 +14,23 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
 +	help
 +	   Say Y here if you are using the FIC Neo1973 GSM Phone
  
- config ARCH_S3C2440
- 	bool "SMDK2440"
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile
-===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:32:42.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Makefile	2007-03-30 21:33:04.000000000 +0200
-@@ -90,5 +90,6 @@
- obj-$(CONFIG_MACH_VSTMS)	+= mach-vstms.o
- obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
- obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
-+obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
+ endmenu
  
- obj-$(CONFIG_MACH_SMDK)		+= common-smdk.o
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c	2007-03-30 22:39:28.000000000 +0200
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.21-moko/arch/arm/mach-s3c2440/Makefile
+@@ -21,3 +21,4 @@
+ obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715.o
+ obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
+ obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
++obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
+===================================================================
+--- /dev/null
++++ linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 @@ -0,0 +1,428 @@
-+/* linux/arch/arm/mach-s3c2410/mach-hxd8.c
++/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
 + *
@@ -99,15 +97,15 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 +#include <asm/arch/spi-gpio.h>
 +#include <asm/arch/usb-control.h>
 +
-+#include <asm/arch/hxd8.h>
++#include <asm/arch-s3c2440/hxd8.h>
 +#include <asm/arch/gta01.h>
 +
 +//#include "s3c2410.h"
 +//#include "s3c2440.h"
 +//#include "clock.h"
-+#include "devs.h"
-+#include "cpu.h"
-+#include "pm.h"
++#include <asm/plat-s3c24xx/devs.h>
++#include <asm/plat-s3c24xx/cpu.h>
++#include <asm/plat-s3c24xx/pm.h>
 +
 +static struct map_desc hxd8_iodesc[] __initdata = {
 +	/* ISA IO Space map (memory space selected by A24) */
@@ -460,10 +458,10 @@ Index: linux-2.6.20.4/arch/arm/mach-s3c2410/mach-hxd8.c
 +	.init_machine	= hxd8_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6.20.4/include/asm-arm/arch-s3c2410/hxd8.h
+Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2440/hxd8.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/hxd8.h	2007-03-30 21:33:04.000000000 +0200
+--- /dev/null
++++ linux-2.6.21-moko/include/asm-arm/arch-s3c2440/hxd8.h
 @@ -0,0 +1,16 @@
 +#ifndef _HXD8_H
 +#define _HXD8_H

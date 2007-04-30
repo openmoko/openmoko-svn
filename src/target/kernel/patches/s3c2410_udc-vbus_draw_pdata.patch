@@ -2,22 +2,22 @@ Introduce a platform_device (machine) specific callback function
 which gets called when the amount of power we can draw from Vbus
 has changed.
 
-Index: linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c
+Index: linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
 ===================================================================
---- linux-2.6.20.orig/drivers/usb/gadget/s3c2410_udc.c	2007-02-15 14:55:45.000000000 +0100
-+++ linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c	2007-02-15 15:00:11.000000000 +0100
+--- linux-2.6.21-moko.orig/drivers/usb/gadget/s3c2410_udc.c
++++ linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
 @@ -1404,12 +1404,23 @@
  	return IRQ_HANDLED;
  }
  
-+static void s3c2410_vbus_draw(struct usb_gadget *_gadget, int ma)
++static int s3c2410_vbus_draw(struct usb_gadget *_gadget, int ma)
 +{
 +	struct s3c2410_udc  *udc;
 +
 +	dprintk(DEBUG_NORMAL, "s3c2410_vbus_draw()\n");
 +
 +	if (udc_info && udc_info->vbus_draw)
-+		udc_info->vbus_draw(ma);
++		return udc_info->vbus_draw(ma);
 +}
 +
  static const struct usb_gadget_ops s3c2410_ops = {
@@ -30,23 +30,16 @@ Index: linux-2.6.20/drivers/usb/gadget/s3c2410_udc.c
  };
  
  /*------------------------- gadget driver handling---------------------------*/
-Index: linux-2.6.20/include/asm-arm/arch-s3c2410/udc.h
+Index: linux-2.6.21-moko/include/asm/arch-s3c2410/udc.h
 ===================================================================
---- linux-2.6.20.orig/include/asm-arm/arch-s3c2410/udc.h	2007-02-15 14:54:49.000000000 +0100
-+++ linux-2.6.20/include/asm-arm/arch-s3c2410/udc.h	2007-02-15 15:00:50.000000000 +0100
-@@ -12,6 +12,7 @@
-  *	14-Mar-2005	RTP	Created file
-  *	02-Aug-2005	RTP	File rename
-  *	07-Sep-2005	BJD	Minor cleanups, changed cmd to enum
-+ *	18-Jan-2007	HMW	Add per-platform vbus_draw function
- */
- 
- #ifndef __ASM_ARM_ARCH_UDC_H
-@@ -25,6 +26,7 @@
+--- linux-2.6.21-moko.orig/include/asm/arch-s3c2410/udc.h
++++ linux-2.6.21-moko/include/asm/arch-s3c2410/udc.h
+@@ -26,7 +26,7 @@
  
  struct s3c2410_udc_mach_info {
  	void	(*udc_command)(enum s3c2410_udc_cmd_e);
-+ 	void	(*vbus_draw)(unsigned int ma);
+- 	void	(*vbus_draw)(unsigned int ma);
++ 	int	(*vbus_draw)(unsigned int ma);
  	unsigned int vbus_pin;
  	unsigned char vbus_pin_inverted;
  };

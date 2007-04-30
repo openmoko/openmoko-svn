@@ -1,10 +1,10 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1923 @@
++++ linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
+@@ -0,0 +1,1925 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -55,8 +55,8 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
 +#include <linux/sched.h>
 +#include <linux/platform_device.h>
 +#include <linux/pcf50606.h>
++#include <linux/apm-emulation.h>
 +
-+#include <asm/apm.h>
 +#include <asm/mach-types.h>
 +#include <asm/arch/gta01.h>
 +
@@ -1478,23 +1478,20 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
 +static int pcf50606bl_set_intensity(struct backlight_device *bd)
 +{
 +	struct pcf50606_data *pcf = class_get_devdata(&bd->class_dev);
-+	int intensity = bd->props->brightness;
++	int intensity = bd->props.brightness;
 +
-+	if (bd->props->power != FB_BLANK_UNBLANK)
++	if (bd->props.power != FB_BLANK_UNBLANK)
 +		intensity = 0;
-+	if (bd->props->fb_blank != FB_BLANK_UNBLANK)
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
 +		intensity = 0;
 +
 +	return reg_set_bit_mask(pcf, PCF50606_REG_PWMC1, 0x1e,
 +				(intensity << PCF50606_PWMC1_DC_SHIFT));
 +}
 +
-+static struct backlight_properties pcf50606bl_prop = {
-+	.owner		= THIS_MODULE,
++static struct backlight_ops pcf50606bl_ops = {
 +	.get_brightness	= pcf50606bl_get_intensity,
 +	.update_status	= pcf50606bl_set_intensity,
-+	.max_brightness	= 16,
-+	.brightness	= 0,
 +};
 +
 +/***********************************************************************
@@ -1671,9 +1668,14 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
 +		data->backlight = backlight_device_register("pcf50606-bl",
 +							    &new_client->dev,
 +							    data,
-+							    &pcf50606bl_prop);
++							    &pcf50606bl_ops);
 +		if (!data->backlight)
 +			goto exit_misc;
++		/* FIXME: are we sure we want default == off? */
++		data->backlight->props.max_brightness = 16;
++		data->backlight->props.power = FB_BLANK_UNBLANK;
++		data->backlight->props.brightness = 0;
++		backlight_update_status(data->backlight);
 +	}
 +
 +	data->input_dev = input_allocate_device();
@@ -1695,7 +1697,7 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
 +	apm_get_power_status = pcf50606_get_power_status;
 +
 +#ifdef CONFIG_MACH_GTA01
-+	if (machine_is_gta01()) {
++	if (machine_is_neo1973_gta01()) {
 +		gta01_pm_gps_dev.dev.parent = &new_client->dev;
 +		switch (system_rev) {
 +		case GTA01Bv2_SYSTEM_REV:
@@ -1928,10 +1930,10 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.h
++++ linux-2.6.21-moko/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2235,10 +2237,10 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.20.7-moko/drivers/i2c/chips/Kconfig
+Index: linux-2.6.21-moko/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.20.7-moko.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.20.7-moko/drivers/i2c/chips/Kconfig
+--- linux-2.6.21-moko.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.21-moko/drivers/i2c/chips/Kconfig
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -2257,10 +2259,10 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on I2C && EXPERIMENTAL
-Index: linux-2.6.20.7-moko/drivers/i2c/chips/Makefile
+Index: linux-2.6.21-moko/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.20.7-moko.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.20.7-moko/drivers/i2c/chips/Makefile
+--- linux-2.6.21-moko.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.21-moko/drivers/i2c/chips/Makefile
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2269,10 +2271,10 @@ Index: linux-2.6.20.7-moko/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.20.7-moko/include/linux/i2c-id.h
+Index: linux-2.6.21-moko/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.20.7-moko.orig/include/linux/i2c-id.h
-+++ linux-2.6.20.7-moko/include/linux/i2c-id.h
+--- linux-2.6.21-moko.orig/include/linux/i2c-id.h
++++ linux-2.6.21-moko/include/linux/i2c-id.h
 @@ -159,6 +159,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -2281,10 +2283,10 @@ Index: linux-2.6.20.7-moko/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.20.7-moko/include/linux/pcf50606.h
+Index: linux-2.6.21-moko/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.20.7-moko/include/linux/pcf50606.h
++++ linux-2.6.21-moko/include/linux/pcf50606.h
 @@ -0,0 +1,101 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
