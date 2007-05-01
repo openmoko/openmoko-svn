@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -1976,6 +1976,14 @@
+@@ -1984,6 +1984,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -1784,7 +1784,7 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -49,6 +49,7 @@
+@@ -50,6 +50,7 @@
  	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbtty.o \
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
@@ -1796,7 +1796,7 @@ Index: u-boot/drivers/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/pcf50606.c
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,112 @@
 +
 +#include <common.h>
 +
@@ -1804,32 +1804,64 @@ Index: u-boot/drivers/pcf50606.c
 +
 +#include <i2c.h>
 +#include <pcf50606.h>
++#include <asm/atomic.h>
 +#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 +
 +#define PCF50606_I2C_ADDR		0x08
 +
-+void pcf50606_reg_write(u_int8_t reg, u_int8_t val)
++void __pcf50606_reg_write(u_int8_t reg, u_int8_t val)
 +{
 +	i2c_write(PCF50606_I2C_ADDR, reg, 1, &val, 1);
 +}
 +
-+u_int8_t pcf50606_reg_read(u_int8_t reg)
++u_int8_t __pcf50606_reg_read(u_int8_t reg)
 +{
 +	u_int8_t tmp;
 +	i2c_read(PCF50606_I2C_ADDR, reg, 1, &tmp, 1);
 +	return tmp;
 +}
 +
++void pcf50606_reg_write(u_int8_t reg, u_int8_t val)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	__pcf50606_reg_write(reg, val);
++	local_irq_restore(flags);
++}
++
++u_int8_t pcf50606_reg_read(u_int8_t reg)
++{
++	unsigned long flags;
++	u_int8_t tmp;
++
++	local_irq_save(flags);
++	tmp = __pcf50606_reg_read(reg);
++	local_irq_restore(flags);
++
++	return tmp;
++}
++
 +void pcf50606_reg_set_bit_mask(u_int8_t reg, u_int8_t mask, u_int8_t val)
 +{
-+	u_int8_t tmp = pcf50606_reg_read(reg);
-+	pcf50606_reg_write(reg, (val & mask) | (tmp & ~mask));
++	unsigned long flags;
++	u_int8_t tmp;
++
++	local_irq_save(flags);
++	tmp = __pcf50606_reg_read(reg);
++	__pcf50606_reg_write(reg, (val & mask) | (tmp & ~mask));
++	local_irq_restore(flags);
 +}
 +
 +void pcf50606_reg_clear_bits(u_int8_t reg, u_int8_t bits)
 +{
-+	u_int8_t tmp = pcf50606_reg_read(reg);
++	unsigned long flags;
++	u_int8_t tmp;
++
++	local_irq_save(flags);
++	tmp = pcf50606_reg_read(reg);
 +	pcf50606_reg_write(reg, (tmp & ~bits));
++	local_irq_restore(flags);
 +}
 +
 +static const u_int8_t regs_valid[] = {
@@ -1852,10 +1884,15 @@ Index: u-boot/drivers/pcf50606.c
 +/* initialize PCF50606 register set */
 +void pcf50606_init(void)
 +{
++	unsigned long flags;
 +	int i;
-+	for (i = 0; i < ARRAY_SIZE(regs_valid); i++)
-+		pcf50606_reg_write(regs_valid[i],
-+				   pcf50606_initial_regs[regs_valid[i]]);
++
++	local_irq_save(flags);
++	for (i = 0; i < ARRAY_SIZE(regs_valid); i++) {
++		__pcf50606_reg_write(regs_valid[i],
++				     pcf50606_initial_regs[regs_valid[i]]);
++	}
++	local_irq_restore(flags);
 +}
 +
 +void pcf50606_charge_autofast(int on)
