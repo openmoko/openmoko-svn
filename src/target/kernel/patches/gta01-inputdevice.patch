@@ -1,16 +1,16 @@
 This provides support for the GTA01 keyboard
 
-Index: linux-2.6.20.1/drivers/input/keyboard/Kconfig
+Index: linux-2.6.21-moko/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.20.1.orig/drivers/input/keyboard/Kconfig	2007-03-08 13:37:56.000000000 +0100
-+++ linux-2.6.20.1/drivers/input/keyboard/Kconfig	2007-03-08 14:03:22.000000000 +0100
-@@ -214,4 +214,16 @@
+--- linux-2.6.21-moko.orig/drivers/input/keyboard/Kconfig
++++ linux-2.6.21-moko/drivers/input/keyboard/Kconfig
+@@ -229,4 +229,16 @@
  	  To compile this driver as a module, choose M here: the
- 	  module will be called aaed2000_kbd.
+ 	  module will be called gpio-keys.
  
 +config KEYBOARD_GTA01
-+	tristate "GTA01 buttons"
-+	depends on MACH_GTA01
++	tristate "FIC Neo1973 (GTA01) buttons"
++	depends on MACH_NEO1973_GTA01
 +	default y
 +	help
 +	  Say Y here to enable the buttons on the FIC Neo1973 (GTA01)
@@ -21,10 +21,10 @@ Index: linux-2.6.20.1/drivers/input/keyboard/Kconfig
 +
 +
  endif
-Index: linux-2.6.20.1/drivers/input/keyboard/Makefile
+Index: linux-2.6.21-moko/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.20.1.orig/drivers/input/keyboard/Makefile	2007-03-08 13:37:56.000000000 +0100
-+++ linux-2.6.20.1/drivers/input/keyboard/Makefile	2007-03-08 14:03:22.000000000 +0100
+--- linux-2.6.21-moko.orig/drivers/input/keyboard/Makefile
++++ linux-2.6.21-moko/drivers/input/keyboard/Makefile
 @@ -13,6 +13,7 @@
  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
@@ -33,10 +33,10 @@ Index: linux-2.6.20.1/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6.20.1/drivers/input/keyboard/gta01kbd.c
+Index: linux-2.6.21-moko/drivers/input/keyboard/gta01kbd.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.1/drivers/input/keyboard/gta01kbd.c	2007-03-08 14:01:38.000000000 +0100
+--- /dev/null
++++ linux-2.6.21-moko/drivers/input/keyboard/gta01kbd.c
 @@ -0,0 +1,249 @@
 +/*
 + * Keyboard driver for FIC GTA01 (Neo1973) GSM phone

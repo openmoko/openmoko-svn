@@ -1,34 +1,34 @@
 This driver adds support for LCM initialization of the JBT6K74 LCM
 as found on the FIC GTA01 hardware
 
-Index: linux-2.6.20.4/drivers/spi/Kconfig
+Index: linux-2.6.21-moko/drivers/spi/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/drivers/spi/Kconfig	2007-03-30 20:45:38.000000000 +0200
-+++ linux-2.6.20.4/drivers/spi/Kconfig	2007-03-30 20:45:59.000000000 +0200
-@@ -129,5 +129,9 @@
+--- linux-2.6.21-moko.orig/drivers/spi/Kconfig
++++ linux-2.6.21-moko/drivers/spi/Kconfig
+@@ -160,5 +160,9 @@
  
  # (slave support would go here)
  
 +config SPI_SLAVE_JBT6K74
 +	tristate "tpo JP6K74 LCM ASIC"
-+	depends on SPI_MASTER && (MACH_GTA01 || MACH_QT2410)
++	depends on SPI_MASTER && (MACH_NEO1973_GTA01 || MACH_QT2410)
 +
  endmenu # "SPI support"
  
-Index: linux-2.6.20.4/drivers/spi/Makefile
+Index: linux-2.6.21-moko/drivers/spi/Makefile
 ===================================================================
---- linux-2.6.20.4.orig/drivers/spi/Makefile	2007-03-30 20:45:38.000000000 +0200
-+++ linux-2.6.20.4/drivers/spi/Makefile	2007-03-30 20:45:59.000000000 +0200
-@@ -26,4 +26,5 @@
+--- linux-2.6.21-moko.orig/drivers/spi/Makefile
++++ linux-2.6.21-moko/drivers/spi/Makefile
+@@ -30,4 +30,5 @@
  # 	... add above this line ...
  
  # SPI slave drivers (protocol for that link)
 +obj-$(CONFIG_SPI_SLAVE_JBT6K74)		+= jbt6k74.o
  # 	... add above this line ...
-Index: linux-2.6.20.4/drivers/spi/jbt6k74.c
+Index: linux-2.6.21-moko/drivers/spi/jbt6k74.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/drivers/spi/jbt6k74.c	2007-03-30 21:05:58.000000000 +0200
+--- /dev/null
++++ linux-2.6.21-moko/drivers/spi/jbt6k74.c
 @@ -0,0 +1,540 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
@@ -570,11 +570,11 @@ Index: linux-2.6.20.4/drivers/spi/jbt6k74.c
 +
 +module_init(jbt_init);
 +module_exit(jbt_exit);
-Index: linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.20.4.orig/arch/arm/mach-s3c2410/Kconfig	2007-03-30 20:45:38.000000000 +0200
-+++ linux-2.6.20.4/arch/arm/mach-s3c2410/Kconfig	2007-03-30 21:05:37.000000000 +0200
-@@ -83,6 +83,7 @@
+--- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
+@@ -106,6 +106,7 @@
  config MACH_QT2410
  	bool "QT2410"
  	select CPU_S3C2410

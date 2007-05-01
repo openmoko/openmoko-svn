@@ -1,7 +1,7 @@
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.c
+Index: linux-2.6.21-moko/sound/soc/codecs/ak4535.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.c
++++ linux-2.6.21-moko/sound/soc/codecs/ak4535.c
 @@ -0,0 +1,697 @@
 +/*
 + * ak4535.c  --  AK4535 ALSA Soc Audio driver
@@ -700,10 +700,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.c
 +MODULE_DESCRIPTION("Soc AK4535 driver");
 +MODULE_AUTHOR("Richard Purdie");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.h
+Index: linux-2.6.21-moko/sound/soc/codecs/ak4535.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.h
++++ linux-2.6.21-moko/sound/soc/codecs/ak4535.h
 @@ -0,0 +1,46 @@
 +/*
 + * ak4535.h  --  AK4535 Soc Audio driver
@@ -751,10 +751,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/ak4535.h
 +extern struct snd_soc_codec_device soc_codec_dev_ak4535;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.c
+Index: linux-2.6.21-moko/sound/soc/codecs/uda1380.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.c
++++ linux-2.6.21-moko/sound/soc/codecs/uda1380.c
 @@ -0,0 +1,745 @@
 +/*
 + * uda1380.c - Philips UDA1380 ALSA SoC audio driver
@@ -1501,10 +1501,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.c
 +MODULE_AUTHOR("Giorgio Padrin");
 +MODULE_DESCRIPTION("Audio support for codec Philips UDA1380");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.h
+Index: linux-2.6.21-moko/sound/soc/codecs/uda1380.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.h
++++ linux-2.6.21-moko/sound/soc/codecs/uda1380.h
 @@ -0,0 +1,89 @@
 +/*
 + * Audio support for Philips UDA1380
@@ -1595,10 +1595,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/uda1380.h
 +extern struct snd_soc_codec_device soc_codec_dev_uda1380;
 +
 +#endif /* _UDA1380_H */
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8753.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8753.c
 @@ -0,0 +1,1782 @@
 +/*
 + * wm8753.c  --  WM8753 ALSA Soc Audio driver
@@ -3382,10 +3382,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.c
 +MODULE_DESCRIPTION("ASoC WM8753 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8753.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8753.h
 @@ -0,0 +1,126 @@
 +/*
 + * wm8753.h  --  audio driver for WM8753
@@ -3513,10 +3513,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8753.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8753;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8772.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8772.c
 @@ -0,0 +1,603 @@
 +/*
 + * wm8772.c  --  WM8772 ALSA Soc Audio driver
@@ -4121,10 +4121,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.c
 +MODULE_DESCRIPTION("ASoC WM8772 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8772.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8772.h
 @@ -0,0 +1,46 @@
 +/*
 + * wm8772.h  --  audio driver for WM8772
@@ -4172,10 +4172,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8772.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8772;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8971.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8971.c
 @@ -0,0 +1,971 @@
 +/*
 + * wm8971.c  --  WM8971 ALSA SoC Audio driver
@@ -5148,10 +5148,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.c
 +MODULE_DESCRIPTION("ASoC WM8971 driver");
 +MODULE_AUTHOR("Lab126");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8971.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8971.h
 @@ -0,0 +1,63 @@
 +/*
 + * wm8971.h  --  audio driver for WM8971
@@ -5216,10 +5216,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8971.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8971;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8974.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8974.c
 @@ -0,0 +1,873 @@
 +/*
 + * wm8974.c  --  WM8974 ALSA Soc Audio driver
@@ -6094,10 +6094,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.c
 +MODULE_DESCRIPTION("ASoC WM8974 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8974.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8974.h
 @@ -0,0 +1,104 @@
 +/*
 + * wm8974.h  --  WM8974 Soc Audio driver
@@ -6203,10 +6203,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8974.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8974;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm9713.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm9713.c
 @@ -0,0 +1,1220 @@
 +/*
 + * wm9713.c  --  ALSA Soc WM9713 codec support
@@ -7428,10 +7428,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.c
 +MODULE_DESCRIPTION("ASoC WM9713/WM9714 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm9713.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm9713.h
 @@ -0,0 +1,51 @@
 +/*
 + * wm9713.h  --  WM9713 Soc Audio driver
@@ -7484,10 +7484,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm9713.h
 +int wm9713_reset(struct snd_soc_codec *codec,  int try_warm);
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone.c
 @@ -0,0 +1,127 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -7616,10 +7616,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_baseband.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_baseband.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_baseband.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_baseband.c
 @@ -0,0 +1,212 @@
 +/*
 + * mainstone_baseband.c
@@ -7833,10 +7833,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_baseband.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("Mainstone Example Baseband PCM Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_bluetooth.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_bluetooth.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_bluetooth.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_bluetooth.c
 @@ -0,0 +1,371 @@
 +/*
 + * mainstone_bluetooth.c
@@ -8209,10 +8209,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_bluetooth.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("Mainstone Example Bluetooth PCM Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8731.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_wm8731.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8731.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_wm8731.c
 @@ -0,0 +1,203 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -8417,10 +8417,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8731.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8731 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8753.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_wm8753.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8753.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_wm8753.c
 @@ -0,0 +1,547 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -8969,10 +8969,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8753.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8974.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_wm8974.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8974.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_wm8974.c
 @@ -0,0 +1,104 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -9078,10 +9078,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm8974.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9712.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_wm9712.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9712.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_wm9712.c
 @@ -0,0 +1,172 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -9255,10 +9255,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9712.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM9712 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9713.c
+Index: linux-2.6.21-moko/sound/soc/pxa/mainstone_wm9713.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9713.c
++++ linux-2.6.21-moko/sound/soc/pxa/mainstone_wm9713.c
 @@ -0,0 +1,318 @@
 +/*
 + * mainstone.c  --  SoC audio for Mainstone
@@ -9578,10 +9578,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/mainstone_wm9713.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM9713 Mainstone");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.c
+Index: linux-2.6.21-moko/sound/soc/pxa/pxa2xx-ssp.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.c
++++ linux-2.6.21-moko/sound/soc/pxa/pxa2xx-ssp.c
 @@ -0,0 +1,666 @@
 +/*
 + * pxa2xx-ssp.c  --  ALSA Soc Audio Layer
@@ -10249,10 +10249,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("pxa2xx SSP/PCM SoC Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.c
+Index: linux-2.6.21-moko/sound/soc/imx/imx-ssi.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.c
++++ linux-2.6.21-moko/sound/soc/imx/imx-ssi.c
 @@ -0,0 +1,591 @@
 +/*
 + * imx-ssi.c  --  SSI driver for Freescale IMX
@@ -10845,10 +10845,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("i.MX ASoC I2S driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/imx/Kconfig
+Index: linux-2.6.21-moko/sound/soc/imx/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/Kconfig
++++ linux-2.6.21-moko/sound/soc/imx/Kconfig
 @@ -0,0 +1,31 @@
 +menu "SoC Audio for the Freescale i.MX"
 +
@@ -10881,10 +10881,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/Kconfig
 +	  with the WM8753.
 +
 +endmenu
-Index: linux-2.6-asoc-pxa/sound/soc/imx/Makefile
+Index: linux-2.6.21-moko/sound/soc/imx/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/Makefile
++++ linux-2.6.21-moko/sound/soc/imx/Makefile
 @@ -0,0 +1,18 @@
 +# i.MX Platform Support
 +snd-soc-imx21-objs := imx21-pcm.o
@@ -10904,10 +10904,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/Makefile
 +snd-soc-mx21ads-wm8731-objs := mx21ads_wm8731.o
 +obj-$(CONFIG_SND_SOC_MX21ADS_WM8731) += snd-soc-mx21ads-wm8731.o
 +
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8711.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8711.c
 @@ -0,0 +1,715 @@
 +/*
 + * wm8711.c  --  WM8711 ALSA SoC Audio driver
@@ -11624,10 +11624,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.c
 +MODULE_DESCRIPTION("ASoC WM8711 driver");
 +MODULE_AUTHOR("Mike Arthur");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8711.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8711.h
 @@ -0,0 +1,42 @@
 +/*
 + * wm8711.h  --  WM8711 Soc Audio driver
@@ -11671,10 +11671,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8711.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8711;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8980.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8980.c
 @@ -0,0 +1,923 @@
 +/*
 + * wm8980.c  --  WM8980 ALSA Soc Audio driver
@@ -12599,10 +12599,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.c
 +MODULE_DESCRIPTION("ASoC WM8980 driver");
 +MODULE_AUTHOR("Mike Arthur");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8980.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8980.h
 @@ -0,0 +1,116 @@
 +/*
 + * wm8980.h  --  WM8980 Soc Audio driver
@@ -12720,10 +12720,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8980.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8980;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8510.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8510.c
 @@ -0,0 +1,860 @@
 +/*
 + * wm8510.c  --  WM8510 ALSA Soc Audio driver
@@ -13585,10 +13585,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.c
 +MODULE_DESCRIPTION("ASoC WM8510 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8510.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8510.h
 @@ -0,0 +1,103 @@
 +/*
 + * wm8510.h  --  WM8510 Soc Audio driver
@@ -13693,10 +13693,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8510.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8510;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ac97.c
+Index: linux-2.6.21-moko/sound/soc/imx/imx-ac97.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx-ac97.c
++++ linux-2.6.21-moko/sound/soc/imx/imx-ac97.c
 @@ -0,0 +1,222 @@
 +/*
 + * imx-ssi.c  --  SSI driver for Freescale IMX
@@ -13920,10 +13920,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ac97.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("i.MX ASoC AC97 driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8976.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8976.c
 @@ -0,0 +1,885 @@
 +/*
 + * wm8976.c  --  WM8976 ALSA Soc Audio driver
@@ -14810,10 +14810,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.c
 +MODULE_DESCRIPTION("ASoC WM8976 driver");
 +MODULE_AUTHOR("Graeme Gregory");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8976.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8976.h
 @@ -0,0 +1,112 @@
 +/*
 + * wm8976.h  --  WM8976 Soc Audio driver
@@ -14927,10 +14927,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8976.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8976;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.c
+Index: linux-2.6.21-moko/sound/soc/imx/imx21-pcm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.c
++++ linux-2.6.21-moko/sound/soc/imx/imx21-pcm.c
 @@ -0,0 +1,454 @@
 +/*
 + * linux/sound/arm/mxc-pcm.c -- ALSA SoC interface for the Freescale i.MX CPU's
@@ -15386,10 +15386,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.c
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_DESCRIPTION("Freescale i.MX PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.h
+Index: linux-2.6.21-moko/sound/soc/imx/imx21-pcm.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.h
++++ linux-2.6.21-moko/sound/soc/imx/imx21-pcm.h
 @@ -0,0 +1,237 @@
 +/*
 + * mxc-pcm.h :- ASoC platform header for Freescale i.MX
@@ -15628,10 +15628,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx21-pcm.h
 +
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.c
+Index: linux-2.6.21-moko/sound/soc/imx/imx31-pcm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.c
++++ linux-2.6.21-moko/sound/soc/imx/imx31-pcm.c
 @@ -0,0 +1,417 @@
 +/*
 + * linux/sound/arm/mxc-pcm.c -- ALSA SoC interface for the Freescale i.MX CPU's
@@ -16050,10 +16050,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.c
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_DESCRIPTION("Freescale i.MX31 PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.h
+Index: linux-2.6.21-moko/sound/soc/imx/imx31-pcm.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.h
++++ linux-2.6.21-moko/sound/soc/imx/imx31-pcm.h
 @@ -0,0 +1,241 @@
 +/*
 + * mxc-pcm.h :- ASoC platform header for Freescale i.MX
@@ -16296,10 +16296,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx31-pcm.h
 +extern struct snd_ac97_bus_ops mxc_ac97_ops;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/magician.c
+Index: linux-2.6.21-moko/sound/soc/pxa/magician.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/magician.c
++++ linux-2.6.21-moko/sound/soc/pxa/magician.c
 @@ -0,0 +1,563 @@
 +/*
 + * SoC audio for HTC Magician
@@ -16864,10 +16864,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/magician.c
 +MODULE_AUTHOR("Philipp Zabel");
 +MODULE_DESCRIPTION("ALSA SoC Magician");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-ac97.c
+Index: linux-2.6.21-moko/sound/soc/templates/template-ac97.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-ac97.c
++++ linux-2.6.21-moko/sound/soc/templates/template-ac97.c
 @@ -0,0 +1,270 @@
 +/*
 + * ltemplate-ac97.c -- AC97 support for the xxx chip.
@@ -17139,10 +17139,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-ac97.c
 +};
 +EXPORT_SYMBOL_GPL(template_ac97_dai);
 +
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-codec.c
+Index: linux-2.6.21-moko/sound/soc/templates/template-codec.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-codec.c
++++ linux-2.6.21-moko/sound/soc/templates/template-codec.c
 @@ -0,0 +1,784 @@
 +/*
 + * template-codec.c  --  Template Codec  Audio driver
@@ -17928,10 +17928,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-codec.c
 +
 +EXPORT_SYMBOL_GPL(soc_codec_dev_template_codec);
 +
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-i2s.c
+Index: linux-2.6.21-moko/sound/soc/templates/template-i2s.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-i2s.c
++++ linux-2.6.21-moko/sound/soc/templates/template-i2s.c
 @@ -0,0 +1,223 @@
 +/*
 + *  This program is free software; you can redistribute  it and/or modify it
@@ -18156,10 +18156,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-i2s.c
 +};
 +
 +EXPORT_SYMBOL_GPL(template_i2s_dai);
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.c
+Index: linux-2.6.21-moko/sound/soc/templates/template-pcm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.c
++++ linux-2.6.21-moko/sound/soc/templates/template-pcm.c
 @@ -0,0 +1,166 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -18327,10 +18327,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.c
 +	.pcm_free	= template_pcm_free_dma_buffers,
 +};
 +EXPORT_SYMBOL_GPL(template_soc_platform);
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.h
+Index: linux-2.6.21-moko/sound/soc/templates/template-pcm.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.h
++++ linux-2.6.21-moko/sound/soc/templates/template-pcm.h
 @@ -0,0 +1,19 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -18351,10 +18351,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-pcm.h
 +extern struct snd_ac97_bus_ops tempalte_ac97_ops;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-codec.h
+Index: linux-2.6.21-moko/sound/soc/templates/template-codec.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-codec.h
++++ linux-2.6.21-moko/sound/soc/templates/template-codec.h
 @@ -0,0 +1,21 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -18377,10 +18377,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-codec.h
 +extern struct snd_soc_codec_device soc_codec_dev_template_codec;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/templates/template-machine.c
+Index: linux-2.6.21-moko/sound/soc/templates/template-machine.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/templates/template-machine.c
++++ linux-2.6.21-moko/sound/soc/templates/template-machine.c
 @@ -0,0 +1,161 @@
 +/*
 + *  This program is free software; you can redistribute  it and/or modify it
@@ -18543,10 +18543,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/templates/template-machine.c
 +module_init(template_init);
 +module_exit(template_exit);
 +
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.h
+Index: linux-2.6.21-moko/sound/soc/pxa/pxa2xx-ssp.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.h
++++ linux-2.6.21-moko/sound/soc/pxa/pxa2xx-ssp.h
 @@ -0,0 +1,43 @@
 +/*
 + * linux/sound/arm/pxa2xx-ssp.h
@@ -18591,11 +18591,11 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/pxa2xx-ssp.h
 +extern struct snd_soc_cpu_dai pxa_ssp_dai[3];
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/Kconfig
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/Kconfig
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/Kconfig
-@@ -0,0 +1,31 @@
++++ linux-2.6.21-moko/sound/soc/s3c24xx/Kconfig
+@@ -0,0 +1,32 @@
 +menu "SoC Audio for the Samsung S3C24XX"
 +
 +config SND_S3C24XX_SOC
@@ -18614,23 +18614,24 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/Kconfig
 +	tristate "SoC I2S Audio support for SMDK2440"
 +	depends on SND_S3C24XX_SOC && MACH_SMDK
 +	select SND_S3C24XX_SOC_I2S
++	select SND_SOC_UDA1380
 +	help
 +	  Say Y if you want to add support for SoC audio on SMDK2440
 +
 +config SND_S3C24XX_SOC_NEO1973_WM8753
 +	tristate "SoC I2S Audio support for NEO1973 - WM8753"
-+	depends on SND_S3C24XX_SOC && MACH_GTA01
++	depends on SND_S3C24XX_SOC && MACH_NEO1973_GTA01
 +	select SND_S3C24XX_SOC_I2S
 +	select SND_SOC_WM8753
 +	help
-+	  Say Y if you want to add support for SoC audio on smdk2440
++	  Say Y if you want to add support for SoC audio on FIC Neo1973
 +	  with the WM8753.
 +endmenu
 +
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/Makefile
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/Makefile
++++ linux-2.6.21-moko/sound/soc/s3c24xx/Makefile
 @@ -0,0 +1,13 @@
 +# S3c24XX Platform Support
 +snd-soc-s3c24xx-objs := s3c24xx-pcm.o
@@ -18645,10 +18646,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/Makefile
 +
 +obj-$(CONFIG_SND_S3C24XX_SOC_SMDK2440) += snd-soc-smdk2440.o
 +obj-$(CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753) += snd-soc-neo1973-wm8753.o
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.c
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-i2s.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.c
++++ linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-i2s.c
 @@ -0,0 +1,439 @@
 +/*
 + * s3c24xx-i2s.c  --  ALSA Soc Audio Layer
@@ -19089,10 +19090,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("s3c24xx I2S SoC Interface");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.h
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-i2s.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.h
++++ linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-i2s.h
 @@ -0,0 +1,35 @@
 +/*
 + * s3c24xx-i2s.c  --  ALSA Soc Audio Layer
@@ -19129,10 +19130,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-i2s.h
 +u32 s3c24xx_i2s_get_clockrate(void);
 +
 +#endif /*S3C24XXI2S_H_*/
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.c
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.c
++++ linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.c
 @@ -0,0 +1,462 @@
 +/*
 + * s3c24xx-pcm.c  --  ALSA Soc Audio Layer
@@ -19596,10 +19597,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("Samsung S3C24XX PCM DMA module");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.h
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.h
++++ linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.h
 @@ -0,0 +1,32 @@
 +/*
 + *  s3c24xx-pcm.h --
@@ -19633,11 +19634,11 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/s3c24xx-pcm.h
 +extern struct snd_ac97_bus_ops s3c24xx_ac97_ops;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/smdk2440.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
-@@ -0,0 +1,320 @@
++++ linux-2.6.21-moko/sound/soc/s3c24xx/smdk2440.c
+@@ -0,0 +1,318 @@
 +/*
 + * smdk2440.c  --  ALSA Soc Audio Layer
 + *
@@ -19673,11 +19674,11 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
 +#include <sound/soc-dapm.h>
 +
 +#include <asm/mach-types.h>
++#include <asm/hardware.h>
 +#include <asm/hardware/scoop.h>
 +#include <asm/arch/regs-iis.h>
 +#include <asm/arch/regs-clock.h>
 +#include <asm/arch/regs-gpio.h>
-+#include <asm/arch/hardware.h>
 +#include <asm/arch/audio.h>
 +#include <asm/io.h>
 +#include <asm/arch/spi-gpio.h>
@@ -19706,14 +19707,12 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
 +	return 0;
 +}
 +
-+static int smdk2440_shutdown(struct snd_pcm_substream *substream)
++static void smdk2440_shutdown(struct snd_pcm_substream *substream)
 +{
 +	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 +	struct snd_soc_codec *codec = rtd->socdev->codec;
 +
 +	DBG("Entered smdk2440_shutdown\n");
-+
-+	return 0;
 +}
 +
 +static int smdk2440_hw_params(struct snd_pcm_substream *substream,
@@ -19859,7 +19858,7 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
 +	.name = "WM8731",
 +	.stream_name = "WM8731",
 +	.cpu_dai = &s3c24xx_i2s_dai,
-+	.codec_dai = &uda1380_dai,
++	.codec_dai = uda1380_dai,
 +	.init = smdk2440_uda1341_init,
 +	.ops = &smdk2440_ops,
 +};
@@ -19958,10 +19957,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("ALSA SoC SMDK2440");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8956.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8956.c
 @@ -0,0 +1,724 @@
 +/*
 + * wm8956.c  --  WM8956 ALSA SoC Audio driver
@@ -20687,10 +20686,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.c
 +MODULE_DESCRIPTION("ASoC WM8956 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8956.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8956.h
 @@ -0,0 +1,116 @@
 +/*
 + * wm8956.h  --  WM8956 Soc Audio driver
@@ -20808,10 +20807,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8956.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8956;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.c
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8960.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.c
++++ linux-2.6.21-moko/sound/soc/codecs/wm8960.c
 @@ -0,0 +1,766 @@
 +/*
 + * wm8960.c  --  WM8960 ALSA SoC Audio driver
@@ -21579,10 +21578,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.c
 +MODULE_DESCRIPTION("ASoC WM8960 driver");
 +MODULE_AUTHOR("Liam Girdwood");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.h
+Index: linux-2.6.21-moko/sound/soc/codecs/wm8960.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.h
++++ linux-2.6.21-moko/sound/soc/codecs/wm8960.h
 @@ -0,0 +1,121 @@
 +/*
 + * wm8960.h  --  WM8960 Soc Audio driver
@@ -21705,10 +21704,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/wm8960.h
 +extern struct snd_soc_codec_device soc_codec_dev_wm8960;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440_wm8956.c
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/smdk2440_wm8956.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440_wm8956.c
++++ linux-2.6.21-moko/sound/soc/s3c24xx/smdk2440_wm8956.c
 @@ -0,0 +1,335 @@
 +/*
 + * smdk2440.c  --  ALSA Soc Audio Layer
@@ -22045,10 +22044,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/smdk2440_wm8956.c
 +MODULE_AUTHOR("Ben Dooks, <ben@simtec.co.uk>");
 +MODULE_DESCRIPTION("ALSA SoC SMDK2440");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.h
+Index: linux-2.6.21-moko/sound/soc/imx/imx-ssi.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.h
++++ linux-2.6.21-moko/sound/soc/imx/imx-ssi.h
 @@ -0,0 +1,28 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
@@ -22078,10 +22077,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/imx-ssi.h
 +extern struct snd_soc_cpu_dai imx_ssi_pcm_dai[2];
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/imx/mx31ads_wm8753.c
+Index: linux-2.6.21-moko/sound/soc/imx/mx31ads_wm8753.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/imx/mx31ads_wm8753.c
++++ linux-2.6.21-moko/sound/soc/imx/mx31ads_wm8753.c
 @@ -0,0 +1,400 @@
 +/*
 + * mx31ads_wm8753.c  --  SoC audio for mx31ads
@@ -22483,10 +22482,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/imx/mx31ads_wm8753.c
 +MODULE_AUTHOR("Liam Girdwood, liam.girdwood@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 mx31ads");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/lm4857.h
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/lm4857.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/lm4857.h
++++ linux-2.6.21-moko/sound/soc/s3c24xx/lm4857.h
 @@ -0,0 +1,15 @@
 +#ifndef LM4857_H_
 +#define LM4857_H_
@@ -22503,10 +22502,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/lm4857.h
 +#define LM4857_EPGAIN 4
 +
 +#endif /*LM4857_H_*/
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.c
+Index: linux-2.6.21-moko/sound/soc/codecs/tlv320.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.c
++++ linux-2.6.21-moko/sound/soc/codecs/tlv320.c
 @@ -0,0 +1,609 @@
 +/*
 + * tlv320.c  --  TLV 320 ALSA Soc Audio driver
@@ -23117,10 +23116,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.c
 +MODULE_DESCRIPTION("ASoC TLV320 driver");
 +MODULE_AUTHOR("Nicola Perrino");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.h
+Index: linux-2.6.21-moko/sound/soc/codecs/tlv320.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.h
++++ linux-2.6.21-moko/sound/soc/codecs/tlv320.h
 @@ -0,0 +1,111 @@
 +/*
 + * tlv320.h  --  TLV 320 ALSA Soc Audio driver
@@ -23233,10 +23232,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/codecs/tlv320.h
 +extern struct snd_soc_codec_device soc_codec_dev_tlv320;
 +
 +#endif
-Index: linux-2.6-asoc-pxa/sound/soc/pxa/amesom_tlv320.c
+Index: linux-2.6.21-moko/sound/soc/pxa/amesom_tlv320.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/pxa/amesom_tlv320.c
++++ linux-2.6.21-moko/sound/soc/pxa/amesom_tlv320.c
 @@ -0,0 +1,211 @@
 +/*
 + * amesom_tlv320.c  --  SoC audio for Amesom
@@ -23449,10 +23448,10 @@ Index: linux-2.6-asoc-pxa/sound/soc/pxa/amesom_tlv320.c
 +MODULE_AUTHOR("Nicola Perrino");
 +MODULE_DESCRIPTION("ALSA SoC TLV320 Amesom");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/neo1973_wm8753.c
+Index: linux-2.6.21-moko/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-asoc-pxa/sound/soc/s3c24xx/neo1973_wm8753.c
++++ linux-2.6.21-moko/sound/soc/s3c24xx/neo1973_wm8753.c
 @@ -0,0 +1,686 @@
 +/*
 + * neo1973_wm8753.c  --  SoC audio for Neo1973
@@ -24140,3 +24139,131 @@ Index: linux-2.6-asoc-pxa/sound/soc/s3c24xx/neo1973_wm8753.c
 +MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");
 +MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973");
 +MODULE_LICENSE("GPL");
+Index: linux-2.6.21-moko/sound/soc/Kconfig
+===================================================================
+--- linux-2.6.21-moko.orig/sound/soc/Kconfig
++++ linux-2.6.21-moko/sound/soc/Kconfig
+@@ -25,7 +25,9 @@
+ menu "SoC Platforms"
+ depends on SND_SOC
+ source "sound/soc/at91/Kconfig"
++source "sound/soc/imx/Kconfig"
+ source "sound/soc/pxa/Kconfig"
++source "sound/soc/s3c24xx/Kconfig"
+ endmenu
+ 
+ # Supported codecs
+Index: linux-2.6.21-moko/sound/soc/Makefile
+===================================================================
+--- linux-2.6.21-moko.orig/sound/soc/Makefile
++++ linux-2.6.21-moko/sound/soc/Makefile
+@@ -1,4 +1,4 @@
+ snd-soc-core-objs := soc-core.o soc-dapm.o
+ 
+ obj-$(CONFIG_SND_SOC)	+= snd-soc-core.o
+-obj-$(CONFIG_SND_SOC)	+= codecs/ at91/ pxa/
++obj-$(CONFIG_SND_SOC)	+= codecs/ at91/ imx/ pxa/ s3c24xx/
+Index: linux-2.6.21-moko/sound/soc/codecs/Kconfig
+===================================================================
+--- linux-2.6.21-moko.orig/sound/soc/codecs/Kconfig
++++ linux-2.6.21-moko/sound/soc/codecs/Kconfig
+@@ -2,6 +2,14 @@
+ 	tristate
+ 	depends on SND_SOC
+ 
++config SND_SOC_WM8510
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8711
++	tristate
++	depends on SND_SOC
++
+ config SND_SOC_WM8731
+ 	tristate
+ 	depends on SND_SOC
+@@ -10,6 +18,46 @@
+ 	tristate
+ 	depends on SND_SOC
+ 
++config SND_SOC_WM8753
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8772
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8956
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8960
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8971
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8974
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8976
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_WM8980
++	tristate
++	depends on SND_SOC
++
++config SND_SOC_UDA1380
++	tristate
++	depends on SND_SOC
++
+ config SND_SOC_WM9712
+ 	tristate
+ 	depends on SND_SOC
++
++config SND_SOC_WM9713
++	tristate
++	depends on SND_SOC
+Index: linux-2.6.21-moko/sound/soc/codecs/Makefile
+===================================================================
+--- linux-2.6.21-moko.orig/sound/soc/codecs/Makefile
++++ linux-2.6.21-moko/sound/soc/codecs/Makefile
+@@ -1,9 +1,33 @@
+ snd-soc-ac97-objs := ac97.o
++snd-soc-wm8711-objs := wm8711.o
++snd-soc-wm8510-objs := wm8510.o
+ snd-soc-wm8731-objs := wm8731.o
+ snd-soc-wm8750-objs := wm8750.o
++snd-soc-wm8753-objs := wm8753.o
++snd-soc-wm8772-objs := wm8772.o
++snd-soc-wm8956-objs := wm8956.o
++snd-soc-wm8960-objs := wm8960.o
++snd-soc-wm8971-objs := wm8971.o
++snd-soc-wm8974-objs := wm8974.o
++snd-soc-wm8976-objs := wm8976.o
++snd-soc-wm8980-objs := wm8980.o
++snd-soc-uda1380-objs := uda1380.o
+ snd-soc-wm9712-objs := wm9712.o
++snd-soc-wm9713-objs := wm9713.o
+ 
+ obj-$(CONFIG_SND_SOC_AC97_CODEC)	+= snd-soc-ac97.o
++obj-$(CONFIG_SND_SOC_WM8711)	+= snd-soc-wm8711.o
++obj-$(CONFIG_SND_SOC_WM8510)	+= snd-soc-wm8510.o
+ obj-$(CONFIG_SND_SOC_WM8731)	+= snd-soc-wm8731.o
+ obj-$(CONFIG_SND_SOC_WM8750)	+= snd-soc-wm8750.o
++obj-$(CONFIG_SND_SOC_WM8753)	+= snd-soc-wm8753.o
++obj-$(CONFIG_SND_SOC_WM8772)	+= snd-soc-wm8772.o
++obj-$(CONFIG_SND_SOC_WM8956)	+= snd-soc-wm8956.o
++obj-$(CONFIG_SND_SOC_WM8960)	+= snd-soc-wm8960.o
++obj-$(CONFIG_SND_SOC_WM8971)	+= snd-soc-wm8971.o
++obj-$(CONFIG_SND_SOC_WM8974)	+= snd-soc-wm8974.o
++obj-$(CONFIG_SND_SOC_WM8976)	+= snd-soc-wm8976.o
++obj-$(CONFIG_SND_SOC_WM8980)	+= snd-soc-wm8980.o
++obj-$(CONFIG_SND_SOC_UDA1380)	+= snd-soc-uda1380.o
+ obj-$(CONFIG_SND_SOC_WM9712)	+= snd-soc-wm9712.o
++obj-$(CONFIG_SND_SOC_WM9713)	+= snd-soc-wm9713.o

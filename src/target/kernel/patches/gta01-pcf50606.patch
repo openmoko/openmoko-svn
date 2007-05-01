@@ -1498,7 +1498,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 + * Driver initialization
 + ***********************************************************************/
 +
-+#ifdef CONFIG_MACH_GTA01
++#ifdef CONFIG_MACH_NEO1973_GTA01
 +/* We currently place those platform devices here to make sure the device
 + * suspend/resume order is correct */
 +static struct platform_device gta01_pm_gps_dev = {
@@ -1696,7 +1696,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +
 +	apm_get_power_status = pcf50606_get_power_status;
 +
-+#ifdef CONFIG_MACH_GTA01
++#ifdef CONFIG_MACH_NEO1973_GTA01
 +	if (machine_is_neo1973_gta01()) {
 +		gta01_pm_gps_dev.dev.parent = &new_client->dev;
 +		switch (system_rev) {
@@ -1729,7 +1729,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +	if (data->pdata->used_features & PCF50606_FEAT_RTC)
 +		rtc_device_unregister(pcf50606_global->rtc);
 +exit_irq:
-+	free_irq(GTA01_IRQ_PCF50606, pcf50606_global);
++	free_irq(pcf50606_global->irq, pcf50606_global);
 +exit_sysfs:
 +	pm_power_off = NULL;
 +	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
@@ -1765,7 +1765,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +	if (pcf->pdata->used_features & PCF50606_FEAT_RTC)
 +		rtc_device_unregister(pcf->rtc);
 +
-+	free_irq(GTA01_IRQ_PCF50606, pcf);
++	free_irq(pcf->irq, pcf);
 +
 +	sysfs_remove_group(&client->dev.kobj, &pcf_attr_group);
 +

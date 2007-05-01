@@ -149,8 +149,8 @@ Index: linux-2.6.21-moko/drivers/leds/Kconfig
  	  This option enables support for the front LED on Cobalt Server
  
 +config LEDS_GTA01
-+	tristate "LED Support for the FIC Neo1973 Vibrator"
-+	depends on LEDS_CLASS && MACH_GTA01
++	tristate "Vibrator Support for the FIC Neo1973 (GTA01) Vibrator"
++	depends on LEDS_CLASS && MACH_NEO1973_GTA01
 +	help
 +	  This option enables support for the Vibrator on the FIC Neo1973.
 +

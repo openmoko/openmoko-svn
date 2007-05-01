@@ -29,7 +29,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,428 @@
+@@ -0,0 +1,430 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -380,7 +380,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +
 +/* USB Charger */
 +
-+static void hxd8_udc_vbus_draw(unsigned int ma)
++static int hxd8_udc_vbus_draw(unsigned int ma)
 +{
 +	if (ma >= 500) {
 +		/* enable fast charge */
@@ -391,6 +391,8 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +		printk(KERN_DEBUG "udc: disabling fast charge\n");
 +		s3c2410_gpio_setpin(HXD8_GPIO_USB_CUR_SEL, 0);
 +	}
++
++	return 0;
 +}
 +
 +static struct s3c2410_udc_mach_info hxd8_udc_cfg = {
