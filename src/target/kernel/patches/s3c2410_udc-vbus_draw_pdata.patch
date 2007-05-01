@@ -6,11 +6,11 @@ Index: linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
 ===================================================================
 --- linux-2.6.21-moko.orig/drivers/usb/gadget/s3c2410_udc.c
 +++ linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
-@@ -1404,12 +1404,23 @@
+@@ -1404,12 +1404,25 @@
  	return IRQ_HANDLED;
  }
  
-+static int s3c2410_vbus_draw(struct usb_gadget *_gadget, int ma)
++static int s3c2410_vbus_draw(struct usb_gadget *_gadget, unsigned int ma)
 +{
 +	struct s3c2410_udc  *udc;
 +
@@ -18,6 +18,8 @@ Index: linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
 +
 +	if (udc_info && udc_info->vbus_draw)
 +		return udc_info->vbus_draw(ma);
++	else
++		return 0;
 +}
 +
  static const struct usb_gadget_ops s3c2410_ops = {
@@ -30,7 +32,7 @@ Index: linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
  };
  
  /*------------------------- gadget driver handling---------------------------*/
-Index: linux-2.6.21-moko/include/asm/arch-s3c2410/udc.h
+Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/udc.h
 ===================================================================
 --- linux-2.6.21-moko.orig/include/asm-arm/arch-s3c2410/udc.h
 +++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/udc.h
