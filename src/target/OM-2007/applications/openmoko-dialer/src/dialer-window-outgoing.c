@@ -16,19 +16,15 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
 
+#include <string.h>
+
 #include <libmokoui/moko-finger-tool-box.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
 #include <libmokoui/moko-pixmap-button.h>
+#include <libmokoui/moko-message-dialog.h>
 
-#include <gtk/gtkalignment.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmain.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtkmenuitem.h>
-#include <gtk/gtkvbox.h>
+#include <gtk/gtk.h>
 
 #include "contacts.h"
 #include "dialer-main.h"
@@ -253,8 +249,6 @@ on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
 gint
 window_outgoing_init (MokoDialerData * p_dialer_data)
 {
-
-  DBG_ENTER ();
   MokoFingerWindow *window;
   GtkWidget *vbox;
   GtkWidget *status;
@@ -278,16 +272,20 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 
     gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
 
+    /* Set up window */
+    window = moko_message_dialog_new ();
+    moko_message_dialog_set_image_from_stock (MOKO_MESSAGE_DIALOG (window), "connecting");
+    moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (window), "Calling ... ");
+    gtk_window_set_title (GTK_WINDOW (window), "Outgoing Call");
 
-    GtkWidget *hbox2 = gtk_hbox_new (FALSE, 0);
+
+    /* Set up buttons */
     GtkWidget *button = gtk_button_new_with_label ("Speaker");
     gtk_button_set_image (GTK_BUTTON (button),
                           file_new_image_from_relative_path ("speaker.png"));
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
     p_dialer_data->buttonSpeaker = button;
-//gtk_widget_set_size_request(button,100,32);
-    gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 40);
 
     button = gtk_button_new_with_label ("Redial");
     gtk_button_set_image (GTK_BUTTON (button),
@@ -295,7 +293,6 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
     p_dialer_data->buttonRedial = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_redial_button_clicked), p_dialer_data);
-    gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 40);
     g_object_set (G_OBJECT (button), "no-show-all", TRUE, NULL);
 
 
@@ -305,18 +302,11 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
     p_dialer_data->buttonCancel = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_cancel_button_clicked), p_dialer_data);
-//gtk_widget_set_size_request(button,100,32);
-    gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE, 40);
-
-    gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 50);
 
 
-//currently     MokoDialogWindow is not finished, wating...
-//   MokoDialogWindow* window = (MokoDialogWindow *)(moko_dialog_window_new());
-//  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->action_area), p_dialer_data->buttonSpeaker, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->action_area), p_dialer_data->buttonCancel, FALSE, FALSE, 0);
 
-    window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
 
     moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status),
                                         "Outgoing call");
@@ -326,9 +316,6 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
     p_dialer_data->window_outgoing = GTK_WIDGET (window);
     p_dialer_data->status_outgoing = MOKO_DIALER_STATUS (status);
 
-//   DBG_MESSAGE("p_dialer_data->status_outgoing=0X%x",p_dialer_data->status_outgoing);
-
-
     g_signal_connect ((gpointer) window, "show",
                       G_CALLBACK (on_window_outgoing_show), p_dialer_data);
     g_signal_connect ((gpointer) window, "hide",
@@ -336,10 +323,5 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 
   }
 
-
-
-// gtk_widget_show(p_dialer_data->window_outgoing);
-
-  DBG_LEAVE ();
   return 1;
 }
