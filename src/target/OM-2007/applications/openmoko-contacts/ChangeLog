@@ -1,3 +1,9 @@
+2007-05-01  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-omoko.c: (create_contacts_list): Change "Cell Phone" to more
+	generic "Mobile"
+	(create_main_window): Set application name to "Contacts". Fixes bug 490.
+
 2007-04-25  Rob Bradford  <rob@openedhand.com>
 
 	* src/contacts-omoko.c: (create_main_window):

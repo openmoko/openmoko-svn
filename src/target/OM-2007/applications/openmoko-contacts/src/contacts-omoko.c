@@ -97,7 +97,7 @@ create_contacts_list (ContactsData *data)
 
 	/* mobile column */
 	renderer = gtk_cell_renderer_text_new ();
-	column = gtk_tree_view_column_new_with_attributes (_("Cell Phone"), renderer,
+	column = gtk_tree_view_column_new_with_attributes (_("Mobile"), renderer,
 							"text", CONTACT_CELLPHONE_COL, NULL);
 	gtk_tree_view_column_set_sort_column_id (column, CONTACT_CELLPHONE_COL);
 	moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), column);
@@ -120,7 +120,7 @@ create_main_window (ContactsData *contacts_data)
 
 	//? MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
 
-	g_set_application_name ("Phone Book");
+	g_set_application_name (_("Contacts"));
 
 	ui->main_window = moko_paned_window_new ();
 	gtk_window_set_title (GTK_WINDOW (ui->main_window), _("Contacts"));
@@ -285,13 +285,6 @@ create_main_window (ContactsData *contacts_data)
 			  G_CALLBACK (contacts_disable_search_cb), contacts_data);
 	g_signal_connect (G_OBJECT(moko_tool_box), "searchbox_visible",
 			  G_CALLBACK (contacts_enable_search_cb), contacts_data);
-
-	/* temporary settings */
-	GtkSettings *settings = gtk_settings_get_default ();
-	g_object_set (settings,
-			"gtk-theme-name", "openmoko-standard",
-			NULL);
-
 
 	gtk_widget_show_all (ui->main_window);
 }
