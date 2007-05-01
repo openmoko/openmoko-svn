@@ -161,8 +161,9 @@ static const ContactsField contacts_fields[] = {
 	{ "EMAIL", 0, N_("Email"), FALSE, 30, FALSE },
 	{ "ADR", 0, N_("Address"), FALSE, 40, FALSE },
 	{ "NICKNAME", E_CONTACT_NICKNAME, NULL, FALSE, 110, TRUE },
-	{ "URL", E_CONTACT_HOMEPAGE_URL, N_("Homepage"), FALSE, 120, FALSE },
-	{ "NOTE", E_CONTACT_NOTE, NULL, TRUE, 130, TRUE },
+	{ "BDAY", E_CONTACT_BIRTH_DATE, NULL, FALSE, 120, TRUE },
+	{ "URL", E_CONTACT_HOMEPAGE_URL, N_("Homepage"), FALSE, 130, FALSE },
+	{ "NOTE", E_CONTACT_NOTE, NULL, TRUE, 140, TRUE },
 	{ NULL }
 };
 
@@ -469,7 +470,7 @@ gchar *
 contacts_string_list_as_string (GList *list, const gchar *separator,
 				gboolean include_empty)
 {
-	gchar *old_string, *new_string;
+	gchar *old_string, *new_string = NULL;
 	GList *c;
 	
 	if (!include_empty)

@@ -136,11 +136,8 @@ contacts_bacon_cb (const char *message, ContactsData *data)
 int
 main (int argc, char **argv)
 {
+	GError *error = NULL;
 	BaconMessageConnection *mc;
-#ifdef HAVE_GCONF
-	const char *search;
-	GConfClient *client;
-#endif
 	ContactsData *data;	/* Variable for passing around data -
 					 * see contacts-defs.h.
 					 */
@@ -182,9 +179,11 @@ main (int argc, char **argv)
 	//g_log_set_always_fatal (G_LOG_LEVEL_CRITICAL);
 
 	/* Load the system addressbook */
-	data->book = e_book_new_system_addressbook (NULL);
-	if (!data->book)
-		g_critical ("Could not load system addressbook");
+	data->book = e_book_new_system_addressbook (&error);
+	if (!data->book) {
+		g_critical ("Could not load system addressbook: %s", error->message);
+		g_error_free (error);
+	}
 
 	data->contacts_table = g_hash_table_new_full (g_str_hash,
 						g_str_equal, NULL, 
@@ -227,9 +226,6 @@ main (int argc, char **argv)
 				  G_CALLBACK (gtk_main_quit), NULL);
 		gtk_widget_show_all (widget);
 	}
-
-	/* fix icon sizes to 16x16 for the moment... */
-	gtk_rc_parse_string ("gtk_icon_sizes=\"gtk-button=16,16:gtk-menu=16,16\"");
 
 	gtk_main ();
 
