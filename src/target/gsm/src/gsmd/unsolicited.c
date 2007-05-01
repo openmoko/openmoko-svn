@@ -254,7 +254,8 @@ static int clip_parse(char *buf, int len, const char *param,
 	if (comma - param > GSMD_ADDR_MAXLEN)
 		return -EINVAL;
 
-	memcpy(aux->u.clip.addr.number, param, comma-param);
+	aux->u.clip.addr.number[0] = '\0';
+	strncat(aux->u.clip.addr.number, param, comma-param);
 	/* FIXME: parse of subaddr, etc. */
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CLIP);
@@ -280,7 +281,8 @@ static int colp_parse(char *buf, int len, const char *param,
 	if (comma - param > GSMD_ADDR_MAXLEN)
 		return -EINVAL;
 
-	memcpy(aux->u.colp.addr.number, param, comma-param);
+	aux->u.colp.addr.number[0] = '\0';
+	strncat(aux->u.colp.addr.number, param, comma-param);
 	/* FIXME: parse of subaddr, etc. */
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_COLP);
