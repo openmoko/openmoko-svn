@@ -93,14 +93,14 @@ on_pin_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
 
 }
 
-void
+static void
 on_window_pin_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   appdata->window_present = 0;
 
 }
 
-void
+static void
 on_window_pin_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();

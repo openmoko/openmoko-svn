@@ -20,20 +20,8 @@
 #ifndef _OPENMOKO_DIALER_WINDOW_OUTGOING_H
 #define _OPENMOKO_DIALER_WINDOW_OUTGOING_H
 
-#ifdef __cplusplus
-
-
-
-extern "C"
-{
-#endif
-
-  gint window_outgoing_init (MokoDialerData * p_dialer_data);
-  void window_outgoing_prepare (MokoDialerData * appdata);
-  void window_outgoing_fails (MokoDialerData * appdata);
-
-#ifdef __cplusplus
-}
-#endif
+gint window_outgoing_init (MokoDialerData * p_dialer_data);
+void window_outgoing_prepare (MokoDialerData * appdata);
+void window_outgoing_fails (MokoDialerData * appdata);
 
 #endif

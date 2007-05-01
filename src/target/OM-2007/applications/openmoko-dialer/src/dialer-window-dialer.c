@@ -37,7 +37,7 @@
 #include "dialer-window-history.h"
 #include "dialer-window-outgoing.h"
 
-void
+static void
 cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   g_debug ("delete button clicked");
@@ -84,7 +84,7 @@ cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 
 }
 
-void
+static void
 cb_history_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   if (!appdata->window_history)
@@ -95,7 +95,7 @@ cb_history_button_clicked (GtkButton * button, MokoDialerData * appdata)
 
 }
 
-void
+static void
 window_dialer_dial_out (MokoDialerData * appdata)
 {
   gchar *codesinput;
@@ -156,7 +156,7 @@ gtk_widget_show(appdata->window_incoming);
 
 }
 
-void
+static void
 cb_dialer_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   window_dialer_dial_out (appdata);
@@ -164,7 +164,7 @@ cb_dialer_button_clicked (GtkButton * button, MokoDialerData * appdata)
 
 
 
-void
+static void
 on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
                                   gpointer user_data)
 {
@@ -198,7 +198,7 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
 
 }
 
-void
+static void
 on_dialer_autolist_user_confirmed (GtkWidget * widget, gpointer para_pointer,
                                    gpointer user_data)
 {
@@ -216,7 +216,7 @@ on_dialer_autolist_user_confirmed (GtkWidget * widget, gpointer para_pointer,
 
 }
 
-void
+static void
 on_dialer_autolist_nomatch (GtkWidget * widget, gpointer user_data)
 {
 
@@ -228,23 +228,8 @@ on_dialer_autolist_nomatch (GtkWidget * widget, gpointer user_data)
 
 }
 
-void
-on_dialer_menu_close (GtkWidget * widget, gpointer user_data)
-{
-  MokoDialerData *appdata = (MokoDialerData *) user_data;
-  gtk_main_quit ();
-}
 
-void
-on_dialer_menu_hide (GtkWidget * widget, MokoDialerData * appdata)
-{
-  gtk_widget_hide (appdata->window_dialer);
-}
-
-
-
-
-void
+static void
 on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
                             gpointer user_data)
 {
@@ -281,20 +266,20 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
 
 }
 
-void
+static void
 on_dialer_panel_user_hold (GtkWidget * widget, gchar parac,
                            gpointer user_data)
 {
   g_print ("on_dialer_panel_user_hold:%c\n", parac);
 }
 
-void
+static void
 on_window_dialer_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   appdata->window_present = 0;
 }
 
-void
+static void
 on_window_dialer_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
@@ -327,13 +312,13 @@ window_dialer_init (MokoDialerData * p_dialer_data)
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
     GtkWidget *closeitem = gtk_menu_item_new_with_label ("Close");
     g_signal_connect (G_OBJECT (closeitem), "activate",
-                      G_CALLBACK (on_dialer_menu_close), p_dialer_data);
+                      G_CALLBACK (gtk_main_quit), p_dialer_data);
     gtk_menu_shell_append (GTK_MENU_SHELL (appmenu), closeitem);
 
     GtkMenuItem *hideitem =
       GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Hide"));
-    g_signal_connect (G_OBJECT (hideitem), "activate",
-                      G_CALLBACK (on_dialer_menu_hide), p_dialer_data);
+    g_signal_connect_swapped (G_OBJECT (hideitem), "activate",
+                      G_CALLBACK (gtk_widget_hide), p_dialer_data->window_dialer);
     gtk_menu_shell_append (GTK_MENU_SHELL (appmenu), GTK_WIDGET (hideitem));
 
 

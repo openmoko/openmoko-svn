@@ -40,11 +40,11 @@ typedef enum {
 
 /* function declarations */
 
-gint history_update_counter (MokoDialerData * p_dialer_data);
+static gint history_update_counter (MokoDialerData * p_dialer_data);
 
-GtkWidget *create_window_history_content (MokoDialerData * p_dialer_data);
-GtkWidget *history_create_menu_history (MokoDialerData * p_dialer_data);
-gint history_build_history_list_view (MokoDialerData * p_dialer_data);
+static GtkWidget *create_window_history_content (MokoDialerData * p_dialer_data);
+static GtkWidget *history_create_menu_history (MokoDialerData * p_dialer_data);
+static gint history_build_history_list_view (MokoDialerData * p_dialer_data);
 
 
 /**
@@ -57,14 +57,14 @@ gint history_build_history_list_view (MokoDialerData * p_dialer_data);
  * @retval
  */
 
-int
+static int
 history_view_change_filter (MokoDialerData * p_dialer_data,
                             CallFilter type)
 {
  return 0;
 }
 
-void
+static void
 on_all_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
@@ -75,7 +75,7 @@ on_all_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 }
 
 
-void
+static void
 on_missed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
@@ -86,7 +86,7 @@ on_missed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 }
 
 
-void
+static void
 on_dialed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
@@ -97,7 +97,7 @@ on_dialed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 }
 
 
-void
+static void
 on_received_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
 {
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
@@ -107,7 +107,7 @@ on_received_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
   history_update_counter (p_dialer_data);
 }
 
-gboolean
+static gboolean
 on_eventboxTop_button_release_event (GtkWidget * widget,
                                      GdkEventButton * event,
                                      MokoDialerData * appdata)
@@ -118,7 +118,7 @@ on_eventboxTop_button_release_event (GtkWidget * widget,
   return FALSE;
 }
 
-void
+static void
 cb_openmoko_history_wheel_press_left_up (GtkWidget * widget,
                                          MokoDialerData * appdata)
 {
@@ -154,7 +154,7 @@ cb_openmoko_history_wheel_press_left_up (GtkWidget * widget,
 
 }
 
-void
+static void
 cb_openmoko_history_wheel_press_right_down (GtkWidget * widget,
                                             MokoDialerData * appdata)
 {
@@ -188,7 +188,7 @@ cb_openmoko_history_wheel_press_right_down (GtkWidget * widget,
 }
 
 
-void
+static void
 cb_tool_button_history_delete_clicked (GtkButton * button,
                                        MokoDialerData * appdata)
 {
@@ -253,7 +253,7 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
   DBG_ENTER ();
 }
 
-void
+static void
 cb_tool_button_history_call_clicked (GtkButton * button,
                                      MokoDialerData * appdata)
 {
@@ -263,7 +263,7 @@ cb_tool_button_history_call_clicked (GtkButton * button,
 
 }
 
-void
+static void
 cb_tool_button_history_sms_clicked (GtkButton * button,
                                     MokoDialerData * appdata)
 {
@@ -273,7 +273,7 @@ cb_tool_button_history_sms_clicked (GtkButton * button,
 
 }
 
-void
+static void
 cb_tool_button_history_back_clicked (GtkButton * button,
                                      MokoDialerData * appdata)
 {
@@ -282,7 +282,7 @@ cb_tool_button_history_back_clicked (GtkButton * button,
 }
 
 
-void
+static void
 on_window_history_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
 
@@ -291,7 +291,7 @@ on_window_history_hide (GtkWidget * widget, MokoDialerData * appdata)
 
 }
 
-void
+static void
 on_window_history_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
@@ -418,7 +418,7 @@ window_history_init (MokoDialerData * p_dialer_data)
   return 1;
 }
 
-void
+static void
 on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
 {
   GtkTreeIter iter;
@@ -450,7 +450,7 @@ on_treeviewHistory_cursor_changed (GtkTreeView * treeview, gpointer user_data)
 
 
 
-GtkWidget *
+static GtkWidget *
 create_window_history_content (MokoDialerData * p_dialer_data)
 {
 
@@ -583,7 +583,7 @@ history_view_filter_visible_function (GtkTreeModel * model,
  * @retval 1 everything is OK
  */
 
-gint
+static gint
 history_build_history_list_view (MokoDialerData * p_dialer_data)
 {
   GtkListStore *list_store;
@@ -699,7 +699,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
  *
  * @return 1
  */
-gint
+static gint
 history_update_counter (MokoDialerData * p_dialer_data)
 {
   DBG_ENTER ();
@@ -748,7 +748,7 @@ history_update_counter (MokoDialerData * p_dialer_data)
 
 }
 
-GtkWidget *
+static GtkWidget *
 history_create_menu_history (MokoDialerData * p_dialer_data)
 {
   if (!p_dialer_data->menu_history)
@@ -860,7 +860,7 @@ history_create_menu_history (MokoDialerData * p_dialer_data)
  * @retval 0 error occured
  * @retval 1 everything is OK
  */
-gint
+static gint
 history_list_view_add (MokoDialerData * appdata, MokoJournalEntry * entry)
 {
 #if 0
@@ -948,7 +948,7 @@ history_list_view_add (MokoDialerData * appdata, MokoJournalEntry * entry)
 }
 
 
-gint
+static gint
 add_histroy_entry (MokoDialerData * appdata, CallFilter type,
                    const char *name, const char *number, const char *id,
                    char *time, char *date, int durationsec)

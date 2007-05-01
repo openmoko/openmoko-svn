@@ -38,9 +38,9 @@
 #include "dialer-window-talking.h"
 
 /* function declerations */
-void window_outgoing_setup_timer (MokoDialerData * appdata);
+static void window_outgoing_setup_timer (MokoDialerData * appdata);
 
-void
+static void
 cb_speaker_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   DBG_ENTER ();
@@ -65,7 +65,7 @@ cb_speaker_button_clicked (GtkButton * button, MokoDialerData * appdata)
   DBG_LEAVE ();
 }
 
-void
+static void
 cb_redial_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   DBG_ENTER ();
@@ -86,7 +86,7 @@ cb_redial_button_clicked (GtkButton * button, MokoDialerData * appdata)
   DBG_LEAVE ();
 }
 
-void
+static void
 cb_cancel_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   DBG_ENTER ();
@@ -179,7 +179,7 @@ timer_outgoing_time_out (MokoDialerData * appdata)
 
 
 
-void
+static void
 on_window_outgoing_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
   if (appdata->g_timer_data.ptimer != 0)
@@ -202,7 +202,7 @@ on_window_outgoing_hide (GtkWidget * widget, MokoDialerData * appdata)
 
 }
 
-void
+static void
 window_outgoing_setup_timer (MokoDialerData * appdata)
 {
   time_t timep;
@@ -231,7 +231,7 @@ window_outgoing_setup_timer (MokoDialerData * appdata)
 
 }
 
-void
+static void
 on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
 {
 

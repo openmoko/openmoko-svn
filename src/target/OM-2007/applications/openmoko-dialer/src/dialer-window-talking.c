@@ -37,7 +37,7 @@
 #include "dialer-window-talking.h"
 #include "dialer-window-history.h"
 
-void
+static void
 openmoko_wheel_press_left_up_cb (GtkWidget * widget,
                                  MokoDialerData * appdata)
 {
@@ -57,7 +57,7 @@ openmoko_wheel_press_left_up_cb (GtkWidget * widget,
 
 }
 
-void
+static void
 openmoko_wheel_press_right_down_cb (GtkWidget * widget,
                                     MokoDialerData * appdata)
 {
@@ -71,14 +71,14 @@ openmoko_wheel_press_right_down_cb (GtkWidget * widget,
 }
 
 
-void
+static void
 cb_tool_button_speaker_clicked (GtkButton * button,
                                 MokoDialerData * appdata)
 {
   DBG_ENTER ();
 }
 
-void
+static void
 cb_tool_button_dtmf_talk_clicked (GtkButton * button,
                                   MokoDialerData * appdata)
 {
@@ -107,19 +107,7 @@ cb_tool_button_dtmf_talk_clicked (GtkButton * button,
 
 }
 
-void
-cb_tool_button_hangup_clicked (GtkButton * button,
-                               MokoDialerData * appdata)
-{
-  /* TODO: MokoGsmdConnection->hangup
-   * gsm_hangup ();
-   */
-  gtk_widget_hide (appdata->window_talking);
-
-}
-
-
-void
+static void
 on_dtmf_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
 {
   char input[2];
@@ -180,7 +168,7 @@ window_talking_prepare (MokoDialerData * appdata)
 
 }
 
-gint
+static gint
 timer_talking_time_out (MokoDialerData * appdata)
 {
 //DBG_ENTER();
@@ -215,7 +203,7 @@ timer_talking_time_out (MokoDialerData * appdata)
     return 1;
 }
 
-void
+static void
 on_window_talking_hide (GtkWidget * widget, MokoDialerData * appdata)
 {
 
@@ -240,7 +228,7 @@ on_window_talking_hide (GtkWidget * widget, MokoDialerData * appdata)
 
 }
 
-void
+static void
 on_window_talking_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
@@ -433,9 +421,9 @@ window_talking_init (MokoDialerData * p_dialer_data)
     image = file_new_image_from_relative_path ("hangup.png");
     moko_pixmap_button_set_finger_toolbox_btn_center_image
       (MOKO_PIXMAP_BUTTON (button), image);
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (cb_tool_button_hangup_clicked),
-                      p_dialer_data);
+    g_signal_connect_swapped (G_OBJECT (button), "clicked",
+                      G_CALLBACK (gtk_widget_hide),
+                      p_dialer_data->window_talking);
     gtk_widget_show (GTK_WIDGET (tools));
     gtk_widget_show (GTK_WIDGET (wheel));
 
