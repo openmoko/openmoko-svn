@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.21
-# Sun Apr 29 05:01:00 2007
+# Tue May  1 10:13:25 2007
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -33,7 +33,7 @@ CONFIG_INIT_ENV_ARG_LIMIT=32
 #
 # General setup
 #
-CONFIG_LOCALVERSION="-moko10"
+CONFIG_LOCALVERSION="-moko8"
 # CONFIG_LOCALVERSION_AUTO is not set
 CONFIG_SWAP=y
 CONFIG_SYSVIPC=y
@@ -167,7 +167,7 @@ CONFIG_S3C2410_CLOCK=y
 # CONFIG_MACH_AML_M5900 is not set
 # CONFIG_MACH_VR1000 is not set
 CONFIG_MACH_QT2410=y
-CONFIG_MACH_GTA01=y
+CONFIG_MACH_NEO1973_GTA01=y
 
 #
 # S3C2412 Machines
@@ -1257,8 +1257,22 @@ CONFIG_SND_SOC=y
 #
 
 #
+# SoC Audio for the Freescale i.MX
+#
+
+#
 # SoC Audio for the Intel PXA2xx
 #
+
+#
+# SoC Audio for the Samsung S3C24XX
+#
+CONFIG_SND_S3C24XX_SOC=m
+CONFIG_SND_S3C24XX_SOC_I2S=m
+CONFIG_SND_S3C24XX_SOC_SMDK2440=m
+CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753=m
+CONFIG_SND_SOC_WM8753=m
+CONFIG_SND_SOC_UDA1380=m
 
 #
 # Open Sound System
