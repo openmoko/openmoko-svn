@@ -586,7 +586,7 @@ Index: u-boot/drivers/usbdfu.c
 +			remain = len;
 +
 +		debug("copying %u bytes ", remain);
-+		memcpy(urb->buffer, ds->ptr, remain);
++		urb->buffer = ds->ptr;
 +		ds->ptr += remain;
 +		urb->actual_length = remain;
 +
@@ -605,7 +605,7 @@ Index: u-boot/drivers/usbdfu.c
 +		break;
 +	}
 +
-+	printf("returning len=%u\n", len);
++	debug("returning len=%u\n", len);
 +	return len;
 +}
 +
