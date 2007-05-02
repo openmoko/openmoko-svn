@@ -1,3 +1,21 @@
+/*
+ *  libmokoui -- OpenMoko Application Framework UI Library
+ *
+ *  Authored by OpenedHand Ltd <info@openedhand.com>
+ *
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
+ */
 
 /*
  * OpenMoko Stock Items
@@ -12,6 +30,10 @@
  * alphabetical order.
  *
  */
+
+
+#ifndef _MOKO_STOCK_H_
+#define _MOKO_STOCK_H_
 
 #define MOKO_STOCK_CALL_HANGUP "moko-stock-call-hangup"
 #define MOKO_STOCK_CALL_HOLD "moko-stock-call-hold"
@@ -35,3 +57,6 @@
 #define MOKO_STOCK_SMS_NEW "moko-stock-new-sms"
 #define MOKO_STOCK_SPEAKER "moko-stock-speaker"
 #define MOKO_STOCK_VIEW "moko-stock-view"
+
+
+#endif /* _MOKO_STOCK_H_ */

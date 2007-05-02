@@ -1,5 +1,15 @@
 2007-05-02  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/Makefile.am:
+	* libmokoui/moko-ui.h:
+	Added moko-ui.h to include all libmokoui headers
+
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h:
+	Add copyright headers
+
+2007-05-02  Thomas Wood  <thomas@openedhand.com>
+
 	* Makefile.am:
 	* configure.ac:
 	* po/LINGUAS:

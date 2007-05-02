@@ -1,4 +1,5 @@
 source_h = \
+    moko-ui.h \
     moko-alignment.h \
     moko-application.h \
     moko-details-window.h \
