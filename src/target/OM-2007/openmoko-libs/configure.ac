@@ -13,6 +13,13 @@ AC_PROG_LIBTOOL
 GTK_VERSION=2.6
 LIBECAL_VERSION=1.4.2
 
+dnl i18n support
+GETTEXT_PACKAGE=openmoko-libs
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
+AC_SUBST(GETTEXT_PACKAGE)
+AM_GLIB_GNU_GETTEXT
+
+
 # base deps
 PKG_CHECK_MODULES(DEPS,
                   gtk+-2.0 >= $GTK_VERSION
@@ -50,6 +57,7 @@ AC_SUBST(GLIB_GENMARSHAL)
 AC_OUTPUT([
 Makefile
 openmoko-libs.pc
+po/Makefile.in
 libmokocore/Makefile
 libmokogsmd/Makefile
 libmokoui/Makefile

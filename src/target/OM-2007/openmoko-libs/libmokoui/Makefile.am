@@ -13,6 +13,7 @@ source_h = \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-scrolled-pane.h \
+    moko-stock.h \
     moko-tool-box.h \
     moko-tree-view.h \
     moko-window.h \
@@ -34,6 +35,7 @@ source_c = \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-scrolled-pane.c \
+    moko-stock.c \
     moko-tool-box.c \
     moko-tree-view.c \
     moko-window.c \
