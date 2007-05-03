@@ -361,6 +361,8 @@ static void gadget_ep_parse(USBPacket *packet, void *opaque)
     if (src->bDescriptorType != USB_DT_CONFIG)
         goto fail;
     cfg = (struct usb_config_descriptor *) src;
+    if (packet->len < cfg->wTotalLength)
+        goto fail;
     if (dl + cfg->wTotalLength > sizeof(buffer))
         goto fail;
     cfg->bMaxPower = 0x00;
@@ -376,6 +378,8 @@ static void gadget_ep_parse(USBPacket *packet, void *opaque)
     if (dl + hci->desc_len > sizeof(buffer))
         goto fail;
     memcpy(dst, hci->dev_desc, hci->desc_len);
+    /* HACK: report always only a single Configuration */
+    ((struct usb_device_descriptor *) dst)->bNumConfigurations = 1;
     dl += hci->desc_len;
     dst += hci->desc_len;
 
@@ -491,13 +495,13 @@ static void gadget_read(void *opaque)
     struct usb_gadgetfs_event event;
     int ret, len;
 
-    if (!s->addr)
+    if (!s->connected)
         return;
 
     ret = read(s->ep0fd, &event, sizeof(event));
     if (ret < 0 && errno != EAGAIN)
         fprintf(stderr, "%s: event error: %i\n", __FUNCTION__, errno);
-    if (ret < sizeof(event))
+    if (ret < (int) sizeof(event))
         return;
 
     switch (event.type) {
@@ -711,6 +715,8 @@ int usb_gadget_init(void)
     if (ret < 0)
         return ret;
     atexit(gadget_done);
+
+    hci->addr = 0;
 
     qemu_register_usb_port(&hci->port, hci, USB_INDEX_HOST, gadget_attach);
 

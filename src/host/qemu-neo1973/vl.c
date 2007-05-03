@@ -3955,6 +3955,8 @@ void do_info_network(void)
 
 static USBPort *used_usb_ports;
 static USBPort *free_usb_ports;
+static USBPort *host_usb_ports;
+static USBDevice *usb_gadget;
 
 /* ??? Maybe change this to register a hub to keep track of the topology.  */
 void qemu_register_usb_port(USBPort *port, void *opaque, int index,
@@ -3963,8 +3965,18 @@ void qemu_register_usb_port(USBPort *port, void *opaque, int index,
     port->opaque = opaque;
     port->index = index;
     port->attach = attach;
-    port->next = free_usb_ports;
-    free_usb_ports = port;
+    if (index == USB_INDEX_HOST) {
+        port->next = host_usb_ports;
+        host_usb_ports = port;
+    } else {
+        port->next = free_usb_ports;
+        free_usb_ports = port;
+    }
+}
+
+void qemu_register_usb_gadget(USBDevice *device)
+{
+    usb_gadget = device;
 }
 
 static int usb_device_add(const char *devname)
@@ -3989,8 +4001,14 @@ static int usb_device_add(const char *devname)
 	if (nr >= (unsigned int)nb_nics || strcmp(nd_table[nr].model, "usb"))
 		return -1;
         dev = usb_net_init(&nd_table[nr]);
+    } else if (!strcmp(devname, "gadget")) {
+        dev = usb_gadget;
+        port = host_usb_ports;
+        if (!dev || !port)
+            return -1;
+        goto attach;
     } else {
-        return -1;
+        return 0;
     }
     if (!dev)
         return -1;
@@ -4013,6 +4031,7 @@ static int usb_device_add(const char *devname)
     free_usb_ports = port->next;
     port->next = used_usb_ports;
     used_usb_ports = port;
+attach:
     usb_attach(port, dev);
     return 0;
 }
@@ -4024,6 +4043,14 @@ static int usb_device_del(const char *devname)
     USBDevice *dev;
     int bus_num, addr;
     const char *p;
+
+    if (!strcmp(devname, "gadget")) {
+        port = host_usb_ports;
+        if (!port)
+            return -1;
+        usb_attach(port, NULL);
+        return 0;
+    }
 
     if (!used_usb_ports)
         return -1;

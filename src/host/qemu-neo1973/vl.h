@@ -1229,8 +1229,10 @@ int cuda_init(SetIRQFunc *set_irq, void *irq_opaque, int irq);
 
 /* usb ports of the VM */
 
+#define USB_INDEX_HOST  -1
 void qemu_register_usb_port(USBPort *port, void *opaque, int index,
                             usb_attachfn attach);
+void qemu_register_usb_gadget(USBDevice *device);
 
 #define VM_USB_HUB_SIZE 8
 
@@ -1456,6 +1458,8 @@ struct pcmcia_card_s *dscm1xxxx_init(BlockDriverState *bdrv);
 typedef void (*gpio_handler_t)(int line, int level, void *opaque);
 
 #include "hw/i2c.h"
+
+#define unlikely(cond)	__builtin_expect(cond, 0)
 
 #ifdef TARGET_ARM
 #include "hw/pxa.h"
