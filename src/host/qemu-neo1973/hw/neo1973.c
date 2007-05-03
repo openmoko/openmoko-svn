@@ -366,7 +366,7 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
 #if 0
     cpu->env->regs[15] = S3C_SRAM_BASE;
 
-    arm_load_kernel(ram_size, kernel_filename, kernel_cmdline,
+    arm_load_kernel(neo_ram, kernel_filename, kernel_cmdline,
                     initrd_filename, 0x49e, S3C_RAM_BASE);
 #else
     load_image("u-boot.bin",
