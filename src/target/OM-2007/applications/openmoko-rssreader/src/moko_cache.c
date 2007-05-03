@@ -29,6 +29,16 @@
 
 #include "moko_cache.h"
 
+#include <glib.h>
+#include <glib/gstdio.h>
+
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+
+#define CACHE_NAME ".moko-cache"
+
 G_DEFINE_TYPE(MokoCache, moko_cache, G_TYPE_OBJECT)
 
 #define MOKO_CACHE_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE((obj), MOKO_TYPE_CACHE, MokoCachePrivate))
@@ -37,6 +47,49 @@ typedef struct _MokoCachePrivate MokoCachePrivate;
 struct _MokoCachePrivate {
     gint allowed_size;
 };
+
+/*
+ * Create the dirs
+ */
+static void
+moko_cache_create_dirs (gchar *cache_name)
+{
+    gchar *path = g_build_path (G_DIR_SEPARATOR_S, g_get_home_dir (), CACHE_NAME, NULL);
+    if (g_file_test (path, G_FILE_TEST_EXISTS))
+        g_mkdir (path, 0700);
+    g_free (path);
+
+    path = g_build_path (G_DIR_SEPARATOR_S, g_get_home_dir (), CACHE_NAME, cache_name, NULL);
+    if (g_file_test (path, G_FILE_TEST_EXISTS))
+        g_mkdir (path, 0700);
+    g_free (path);
+    
+}
+
+/*
+ * return a path to the cache directory
+ */
+static gchar*
+moko_cache_create_path (gchar *cache_name, gchar *file_name)
+{
+    return g_build_path (G_DIR_SEPARATOR_S, g_get_home_dir (), CACHE_NAME, cache_name, file_name, NULL);
+}
+
+/*
+ * The secret of this is to create a valid file name. This can be either a hash or
+ * an escaped method
+ */
+static gchar*
+object_name_to_file_name (gchar *file_name)
+{
+    gchar *result = g_strdup (file_name);
+    const int l = strlen(result);
+    for (int i = 0; i < l; ++i)
+        if ( result[i] == '/' || result[i] == ':' || result[i] == '.' )
+            result[i] = '_';
+
+    return result;
+}
 
 static void
 moko_cache_finalize (GObject *object)
@@ -88,14 +141,45 @@ moko_cache_get_utilized_size(MokoCache *self)
 }
 
 gint
-moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, guint size)
+moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gsize size)
 {
-    return MOKO_CACHE_WRITE_UNKNOWN_ERROR;
+    int error = MOKO_CACHE_WRITE_SUCCESS;
+    size = size == -1 ? strlen(content) : size;
+    
+    moko_cache_create_dirs (self->cache_name);
+    gchar *file_name = object_name_to_file_name (object_name);
+    gchar *path = moko_cache_create_path (self->cache_name, file_name);
+
+    int fd = g_open (path, O_WRONLY|O_TRUNC, 0700);
+    if ( fd < 0 ) {
+        error = MOKO_CACHE_WRITE_UNKNOWN_ERROR;
+        goto error_path;
+    }
+
+    if ( write (fd, content, size) < 0 ) {
+        error = MOKO_CACHE_WRITE_UNKNOWN_ERROR;
+        goto error_path;
+    }
+
+error_path:
+    g_free (path);
+    g_free (file_name);
+    return error;
 }
 
 gchar*
-moko_cache_read_object  (MokoCache *self, gchar *object_name, gint *size)
+moko_cache_read_object  (MokoCache *self, gchar *object_name, gsize *size)
 {
-    *size = -1;
-    return NULL;
+    gchar *file_name = object_name_to_file_name (object_name);
+    gchar *path = moko_cache_create_path (self->cache_name, file_name);
+
+    gchar *result = NULL;
+    g_file_get_contents (path, &result, size, NULL);
+    if (result == NULL && *size == 0 )
+        *size = -1;
+
+    g_free (path);
+    g_free (file_name);
+
+    return result;
 }

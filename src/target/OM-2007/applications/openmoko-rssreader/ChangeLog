@@ -1,5 +1,20 @@
 2007-05-03  Holger Freyther  <zecke@selfish.org>
 
+        Start implementing the test (untested)
+
+        * src/moko_cache.c:
+        (moko_cache_create_dirs): Make sure to create the dir. Somehow there
+        is no recursive mkdir in glib 
+        (moko_cache_create_path): Create/build a path for the cache
+        (object_name_to_file_name): sanitize the object name. e.g.
+        http://wwww.example.org/feed.xml and escape the ':', '/' and other
+        characthers
+        (moko_cache_write_object): Implement
+        (moko_cache_read_object): Implement
+        * src/moko_cache.h: switch from gint to gsize for the size
+
+2007-05-03  Holger Freyther  <zecke@selfish.org>
+
         * src/callbacks.c:
         (cb_treeview_keypress_event): Cursor keys are not forwarded to the
         search bar but are left to the TreeView

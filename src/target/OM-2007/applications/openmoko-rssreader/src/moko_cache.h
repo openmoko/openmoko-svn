@@ -71,8 +71,8 @@ GObject*      moko_cache_new (gchar *cache_policy_name);
 gint          moko_cache_get_allowed_size (MokoCache *self);
 gint          moko_cache_get_utilized_size(MokoCache *self);
 
-gint          moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, guint size);
-gchar*        moko_cache_read_object  (MokoCache *self, gchar *object_name, gint *size);
+gint          moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gsize size);
+gchar*        moko_cache_read_object  (MokoCache *self, gchar *object_name, gsize *size);
 
 /**
  * \fn moko_cache_new(gchar *cache_policy_name)
