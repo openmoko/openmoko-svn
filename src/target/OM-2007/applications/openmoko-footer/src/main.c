@@ -37,11 +37,6 @@ int
 main( int argc, char **argv )
 {
   MokoFooterApp *app;
-  GError* err = NULL;
-  GdkPixbuf *pixbuf;
-  GtkStyle *style;
-  GdkPixmap *pixmap;
-  GdkBitmap *bitmap;
   GdkWindow *root_window;
 
   app = g_new0 (MokoFooterApp, 1);
@@ -61,12 +56,6 @@ main( int argc, char **argv )
   gtk_widget_set_uposition (GTK_WIDGET (app->toplevel_window), FOOTER_PROPERTY_X, FOOTER_PROPERTY_Y);
   gtk_widget_show (app->toplevel_window);
 
-  pixbuf = gdk_pixbuf_new_from_file (PKGDATADIR "/bg_footer.png", &err);
-  gdk_pixbuf_render_pixmap_and_mask(pixbuf, &pixmap, &bitmap, NULL);
-  style = gtk_rc_get_style(app->toplevel_window);
-  style->bg_pixmap[app->toplevel_window->state] = pixmap;
-  gtk_style_set_background(style, app->toplevel_window->window, app->toplevel_window->state);
-
   app->footer = footer_new (); 
   gtk_widget_show_all (GTK_WIDGET (app->footer));
 
@@ -76,13 +65,6 @@ main( int argc, char **argv )
   gtk_container_add (GTK_CONTAINER (app->toplevel_window), GTK_WIDGET(app->footer));
 
   gtk_main ();
-
-  if (pixbuf)
-      g_free (pixbuf);
-  if (pixmap)
-      g_free (pixmap);
-  if (bitmap)
-      g_free (bitmap);
 
   g_free (app);
 
