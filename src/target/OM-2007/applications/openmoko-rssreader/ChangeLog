@@ -1,3 +1,9 @@
+2007-05-03  Holger Freyther  <zecke@selfish.org>
+
+        * src/callbacks.c:
+        (cb_treeview_keypress_event): Cursor keys are not forwarded to the
+        search bar but are left to the TreeView
+
 2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         * src/rfcdate.h: s/obj/klass/ in the macro. (fixlet)

@@ -31,6 +31,7 @@
 #include "rfcdate.h"
 
 #include <libmokoui/moko-tool-box.h>
+#include <gdk/gdkkeysyms.h>
 
 #include <mrss.h>
 #include <string.h>
@@ -255,9 +256,14 @@ void cb_searchbox_invisible( MokoToolBox *box, struct RSSReaderData *data ) {
 }
 
 /*
- * route this to the search box
+ * route this to the search box unless this is a cursor movement
  */
 gboolean cb_treeview_keypress_event( GtkWidget *tree_view, GdkEventKey *key, struct RSSReaderData *data ) {
+    if ( key->keyval == GDK_Left || key->keyval == GDK_Right ||
+         key->keyval == GDK_Up   || key->keyval == GDK_Down ) {
+        return FALSE;
+    }
+    
     moko_tool_box_set_search_visible (data->box, TRUE);
     gtk_entry_set_text (GTK_ENTRY(moko_tool_box_get_entry(data->box)), "");
 
