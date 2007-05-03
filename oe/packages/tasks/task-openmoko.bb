@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r39"
+PR = "r40"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -133,6 +133,7 @@ RDEPENDS_task-openmoko-pim = "\
   eds-dbus \
   openmoko-contacts \
   openmoko-dates \
+  openmoko-tasks \
   openmoko-today \
   openmoko-messages \
   openmoko-rssreader \

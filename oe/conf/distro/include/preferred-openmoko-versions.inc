@@ -45,13 +45,13 @@ SRCDATE_openmoko-panel-demo-simple = "now"
 #
 SRCDATE_openmoko-contacts = "now"
 SRCDATE_openmoko-dates = "now"
+SRCDATE_openmoko-tasks = "now"
 SRCDATE_openmoko-today = "now"
 SRCDATE_openmoko-messages = "now"
 SRCDATE_openmoko-rssreader = "now"
-SRCDATE_openmoko-calculator = "now"
 
 #
-# Applications
+# Stylus Applications
 #
 SRCDATE_openmoko-appmanager = "now"
 SRCDATE_openmoko-chordmaster = "now"
@@ -61,6 +61,11 @@ SRCDATE_openmoko-phone = "now"
 SRCDATE_openmoko-mainmenu = "now"
 SRCDATE_openmoko-taskmanager = "now"
 SRCDATE_openmoko-terminal = "now"
+
+#
+# Finger Applications
+#
+SRCDATE_openmoko-calculator = "now"
 
 #
 # Multimedia
