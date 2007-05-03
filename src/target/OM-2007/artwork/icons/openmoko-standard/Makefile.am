@@ -1,4 +1,4 @@
-SUBDIRS=128x128 32x32 48x48 scalable
+SUBDIRS=128x128 32x32 22x22 48x48 scalable
 themedir = $(datadir)/icons/openmoko-standard
 theme_DATA = index.theme
 EXTRA_DIST = index.theme

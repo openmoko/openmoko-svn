@@ -2,8 +2,17 @@
 Name=OpenMoko
 Comment=OpenMoko Icon Theme
 
-Directories=128x128/apps,128x128/categories,128x128/places,128x128/actions,32x32/apps,32x32/categories,32x32/places,32x32/actions,48x48/apps,48x48/categories,48x48/places,48x48/actions,scalable/stock
+Directories=22x22/stock,32x32/actions,32x32/apps,32x32/categories,32x32/places,36x36/stock,48x48/actions,48x48/apps,48x48/categories,48x48/places,128x128/actions,128x128/apps,128x128/categories,128x128/places,
 
+[22x22/stock]
+Size=22
+Context=stock
+Type=Fixed
+
+[32x32/actions]
+Size=32
+Context=actions
+Type=Fixed
 
 [32x32/apps]
 Size=32
@@ -20,8 +29,13 @@ Size=32
 Context=places
 Type=Fixed
 
-[32x32/actions]
-Size=32
+[36x36/stock]
+Size=36
+Context=stock
+Type=Fixed
+
+[48x48/actions]
+Size=48
 Context=actions
 Type=Fixed
 
@@ -40,11 +54,10 @@ Size=48
 Context=places
 Type=Fixed
 
-[48x48/actions]
-Size=48
+[128x128/actions]
+Size=128
 Context=actions
 Type=Fixed
-
 
 [128x128/apps]
 Size=128
@@ -60,14 +73,3 @@ Type=Fixed
 Size=128
 Context=places
 Type=Fixed
-
-[128x128/actions]
-Size=128
-Context=actions
-Type=Fixed
-
-
-[scalable/stock]
-Size=24
-Context=Stock
-Type=Scalable
