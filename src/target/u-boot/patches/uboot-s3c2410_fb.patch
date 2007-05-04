@@ -1,8 +1,8 @@
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile	2007-02-13 02:23:40.000000000 +0100
-+++ u-boot/drivers/Makefile	2007-02-15 02:26:32.000000000 +0100
-@@ -51,7 +51,7 @@
+--- u-boot.orig/drivers/Makefile
++++ u-boot/drivers/Makefile
+@@ -52,7 +52,7 @@
  	  ks8695eth.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
  	  rpx_pcmcia.o \
@@ -13,8 +13,8 @@ Index: u-boot/drivers/Makefile
  OBJS	:= $(addprefix $(obj),$(COBJS))
 Index: u-boot/drivers/s3c2410_fb.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/drivers/s3c2410_fb.c	2007-02-15 02:27:02.000000000 +0100
+--- /dev/null
++++ u-boot/drivers/s3c2410_fb.c
 @@ -0,0 +1,187 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
@@ -166,7 +166,7 @@ Index: u-boot/drivers/s3c2410_fb.c
 +	lcd->LCDCON2 = 0x019fc3c1;
 +	lcd->LCDCON3 = 0x0039df67;
 +	lcd->LCDCON4 = 0x00000007;
-+	lcd->LCDCON5 = 0x0001cb08;
++	lcd->LCDCON5 = 0x0001cf08;
 +	lcd->LPCSEL  = 0x00000000;
 +
 +	lcd->LCDSADDR1 = LCD_VIDEO_ADDR >> 1;
@@ -205,8 +205,8 @@ Index: u-boot/drivers/s3c2410_fb.c
 +#endif /* CONFIG_VIDEO_S3C2410 */
 Index: u-boot/drivers/cfb_console.c
 ===================================================================
---- u-boot.orig/drivers/cfb_console.c	2007-02-13 02:23:40.000000000 +0100
-+++ u-boot/drivers/cfb_console.c	2007-02-15 00:43:40.000000000 +0100
+--- u-boot.orig/drivers/cfb_console.c
++++ u-boot/drivers/cfb_console.c
 @@ -141,6 +141,14 @@
  #endif
  

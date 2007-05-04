@@ -38,8 +38,8 @@ Index: u-boot/drivers/s3c2410_fb.c
  	lcd->LCDCON2 = 0x019fc3c1;
  	lcd->LCDCON3 = 0x0039df67;
  	lcd->LCDCON4 = 0x00000007;
--	lcd->LCDCON5 = 0x0001cb08;
-+	lcd->LCDCON5 = 0x0001cb09;
+-	lcd->LCDCON5 = 0x0001cf08;
++	lcd->LCDCON5 = 0x0001cf09;
  	lcd->LPCSEL  = 0x00000000;
  
  	lcd->LCDSADDR1 = LCD_VIDEO_ADDR >> 1;
