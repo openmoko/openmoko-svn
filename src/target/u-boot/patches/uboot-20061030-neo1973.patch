@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -1984,6 +1984,14 @@
+@@ -1988,6 +1988,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -1355,7 +1355,7 @@ Index: u-boot/board/neo1973/jbt6k74.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/jbt6k74.c
-@@ -0,0 +1,405 @@
+@@ -0,0 +1,406 @@
 +/* u-boot driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -1470,7 +1470,7 @@ Index: u-boot/board/neo1973/jbt6k74.c
 +
 +/* 150uS minimum clock cycle, we have two of this plus our other
 + * instructions */
-+#define SPI_DELAY	udelay(75)
++#define SPI_DELAY	udelay(100)	/* 200uS */
 +
 +
 +#define JBT_TX_BUF_SIZE
@@ -1756,8 +1756,9 @@ Index: u-boot/board/neo1973/jbt6k74.c
 +	/* get LCM out of reset */
 +	gpio->GPCDAT |= (1 << 6);
 +
-+	/* wait 50ms (Tpos of LCM) */
-+	udelay(50000);
++	/* according to data sheet: wait 50ms (Tpos of LCM). However, 50ms
++	 * seems unreliable with later LCM batches, increasing to 90ms */
++	udelay(90000);
 +
 +	return 0;
 +}
