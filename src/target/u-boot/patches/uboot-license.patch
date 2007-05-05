@@ -1,10 +1,10 @@
 Index: u-boot/common/Makefile
 ===================================================================
---- u-boot.orig/common/Makefile	2007-03-30 10:33:55.000000000 +0200
-+++ u-boot/common/Makefile	2007-03-30 10:34:03.000000000 +0200
+--- u-boot.orig/common/Makefile
++++ u-boot/common/Makefile
 @@ -34,7 +34,7 @@
  	  cmd_dynenv.o cmd_eeprom.o cmd_elf.o cmd_ext2.o \
- 	  cmd_fat.o cmd_fdc.o cmd_fdos.o cmd_flash.o cmd_fpga.o \
+ 	  cmd_fat.o cmd_fdc.o cmd_fdt.o cmd_fdos.o cmd_flash.o cmd_fpga.o \
  	  cmd_i2c.o cmd_ide.o cmd_immap.o cmd_itest.o cmd_jffs2.o \
 -	  cmd_load.o cmd_log.o \
 +	  cmd_license.o cmd_load.o cmd_log.o \
@@ -13,8 +13,8 @@ Index: u-boot/common/Makefile
  	  cmd_pci.o cmd_pcmcia.o cmd_portio.o \
 Index: u-boot/common/cmd_license.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/common/cmd_license.c	2007-03-30 15:29:02.000000000 +0200
+--- /dev/null
++++ u-boot/common/cmd_license.c
 @@ -0,0 +1,57 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -75,8 +75,8 @@ Index: u-boot/common/cmd_license.c
 +#endif /* CFG_CMD_LICENSE */
 Index: u-boot/include/cmd_confdefs.h
 ===================================================================
---- u-boot.orig/include/cmd_confdefs.h	2007-03-30 13:17:55.000000000 +0200
-+++ u-boot/include/cmd_confdefs.h	2007-03-30 13:18:08.000000000 +0200
+--- u-boot.orig/include/cmd_confdefs.h
++++ u-boot/include/cmd_confdefs.h
 @@ -75,6 +75,7 @@
  #define CFG_CMD_FPGA	0x0000010000000000ULL	/* FPGA configuration Support	*/
  #define CFG_CMD_HWFLOW	0x0000020000000000ULL	/* RTS/CTS hw flow control	*/
@@ -87,8 +87,8 @@ Index: u-boot/include/cmd_confdefs.h
  #define CFG_CMD_VFD	0x0000400000000000ULL	/* VFD support (TRAB)		*/
 Index: u-boot/include/license.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/license.h	2007-03-30 15:40:40.000000000 +0200
+--- /dev/null
++++ u-boot/include/license.h
 @@ -0,0 +1,584 @@
 +/* bin2header converting 'gpl.gz' */
 +unsigned char gpl_gz[] = {
@@ -676,8 +676,8 @@ Index: u-boot/include/license.h
 +};
 Index: u-boot/include/configs/neo1973.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h	2007-03-30 14:57:06.000000000 +0200
-+++ u-boot/include/configs/neo1973.h	2007-03-30 14:57:23.000000000 +0200
+--- u-boot.orig/include/configs/neo1973.h
++++ u-boot/include/configs/neo1973.h
 @@ -110,6 +110,7 @@
  			CFG_CMD_MMC	 | \
  			CFG_CMD_FAT	 | \
@@ -688,8 +688,8 @@ Index: u-boot/include/configs/neo1973.h
  #include <cmd_confdefs.h>
 Index: u-boot/include/configs/hxd8.h
 ===================================================================
---- u-boot.orig/include/configs/hxd8.h	2007-03-30 15:12:26.000000000 +0200
-+++ u-boot/include/configs/hxd8.h	2007-03-30 15:12:40.000000000 +0200
+--- u-boot.orig/include/configs/hxd8.h
++++ u-boot/include/configs/hxd8.h
 @@ -110,6 +110,7 @@
  			CFG_CMD_MMC	 | \
  			CFG_CMD_FAT	 | \
@@ -700,12 +700,12 @@ Index: u-boot/include/configs/hxd8.h
  #include <cmd_confdefs.h>
 Index: u-boot/include/configs/smdk2440.h
 ===================================================================
---- u-boot.orig/include/configs/smdk2440.h	2007-03-30 15:30:50.000000000 +0200
-+++ u-boot/include/configs/smdk2440.h	2007-03-30 15:34:43.000000000 +0200
+--- u-boot.orig/include/configs/smdk2440.h
++++ u-boot/include/configs/smdk2440.h
 @@ -110,6 +110,7 @@
- 			/*CFG_CMD_PORTIO	 | */ \
+ 			CFG_CMD_PORTIO	 | \
  			CFG_CMD_REGINFO  | \
- 			/*CFG_CMD_SAVES	 | */ \
+ 			CFG_CMD_SAVES	 | \
 +			CFG_CMD_LICENSE	 | \
  			CFG_CMD_USB)
  

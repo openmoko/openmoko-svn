@@ -2,9 +2,9 @@ Add support for the Samsung SMDK2440 development board
 
 Index: u-boot/Makefile
 ===================================================================
---- u-boot.orig/Makefile	2007-03-28 21:10:45.000000000 +0200
-+++ u-boot/Makefile	2007-03-29 21:41:38.000000000 +0200
-@@ -1997,6 +1997,9 @@
+--- u-boot.orig/Makefile
++++ u-boot/Makefile
+@@ -2008,6 +2008,9 @@
  smdk2410_config	:	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t smdk2410 NULL s3c24x0
  
@@ -16,9 +16,9 @@ Index: u-boot/Makefile
  
 Index: u-boot/include/configs/smdk2440.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/smdk2440.h	2007-03-28 21:10:49.000000000 +0200
-@@ -0,0 +1,294 @@
+--- /dev/null
++++ u-boot/include/configs/smdk2440.h
+@@ -0,0 +1,296 @@
 +/*
 + * (C) Copyright 2002
 + * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
@@ -26,7 +26,7 @@ Index: u-boot/include/configs/smdk2440.h
 + * Gary Jennejohn <gj@denx.de>
 + * David Mueller <d.mueller@elsoft.ch>
 + *
-+ * Configuation settings for the SAMSUNG SMDK2410 board.
++ * Configuation settings for the SAMSUNG SMDK2440 board.
 + *
 + * See file CREDITS for list of people who contributed to this
 + * project.
@@ -72,7 +72,7 @@ Index: u-boot/include/configs/smdk2440.h
 +#define CONFIG_SMDK2440		1	/* on a SAMSUNG SMDK2440 Board  */
 +
 +/* input clock of PLL */
-+#define CONFIG_SYS_CLK_FREQ	16934400/* the SMDK2410 has 12MHz input clock */
++#define CONFIG_SYS_CLK_FREQ	16934400/* SMDK2440 has 16.9344MHz input clock */
 +
 +
 +#define USE_920T_MMU		1
@@ -95,8 +95,8 @@ Index: u-boot/include/configs/smdk2440.h
 +/*
 + * select serial console configuration
 + */
-+#define CONFIG_SERIAL3          1	/* we use SERIAL 1 on SMDK2410 */
-+//#define CONFIG_HWFLOW		1
++#define CONFIG_SERIAL1          1	/* we use SERIAL 1 on SMDK2440 */
++#define CONFIG_HWFLOW		1
 +
 +/************************************************************
 + * RTC
@@ -119,18 +119,18 @@ Index: u-boot/include/configs/smdk2440.h
 +			/*CFG_CMD_DHCP	 | */ \
 +			CFG_CMD_DIAG	 | \
 +			CFG_CMD_ELF	 | \
-+			/*CFG_CMD_EXT2	 | */ \
-+			/*CFG_CMD_FAT	 | */ \
++			CFG_CMD_EXT2	 | \
++			CFG_CMD_FAT	 | \
 +			/*CFG_CMD_HWFLOW	 | */ \
 +			/* CFG_CMD_IDE	 | */ \
 +			/* CFG_CMD_IRQ	 | */ \
 +			CFG_CMD_JFFS2	 | \
-+			/*CFG_CMD_MMC	 | */ \
++			CFG_CMD_MMC	 | \
 +			CFG_CMD_NAND	 | \
 +			CFG_CMD_PING	 | \
-+			/*CFG_CMD_PORTIO	 | */ \
++			CFG_CMD_PORTIO	 | \
 +			CFG_CMD_REGINFO  | \
-+			/*CFG_CMD_SAVES	 | */ \
++			CFG_CMD_SAVES	 | \
 +			CFG_CMD_USB)
 +
 +/* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
@@ -158,7 +158,7 @@ Index: u-boot/include/configs/smdk2440.h
 + * Miscellaneous configurable options
 + */
 +#define	CFG_LONGHELP				/* undef to save memory		*/
-+#define	CFG_PROMPT		"HXD8 # "	/* Monitor Command Prompt	*/
++#define	CFG_PROMPT		"SMDK2440 # "	/* Monitor Command Prompt	*/
 +#define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
 +#define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
 +#define	CFG_MAXARGS		32		/* max number of command args	*/
@@ -208,7 +208,7 @@ Index: u-boot/include/configs/smdk2440.h
 +#define CONFIG_USBD_PRODUCTID_GSERIAL	0x5120    /* gserial */
 +#define CONFIG_USBD_PRODUCTID_CDCACM	0x5119    /* CDC ACM */
 +#define CONFIG_USBD_MANUFACTURER	"FiWin"
-+#define CONFIG_USBD_PRODUCT_NAME	"S2C2440 Bootloader " U_BOOT_VERSION
++#define CONFIG_USBD_PRODUCT_NAME	"S3C2440 Bootloader " U_BOOT_VERSION
 +#define CONFIG_EXTRA_ENV_SETTINGS	"usbtty=cdc_acm\0"
 +#define CONFIG_USBD_DFU			1
 +#define CONFIG_USBD_DFU_XFER_SIZE	4096
@@ -252,11 +252,8 @@ Index: u-boot/include/configs/smdk2440.h
 +
 +#define	CFG_ENV_IS_IN_NAND	1
 +#define CFG_ENV_SIZE		0x20000		/* 128k Total Size of Environment Sector */
-+#define CFG_ENV_OFFSET		0xa0000		/* environment after bootloader */
-+#define NAND_ENV_BADBLOCK_CHK	1	/* Check for Environment Badblock*/
-+#ifdef NAND_ENV_BADBLOCK_CHK
-+#define	CFG_ENV_END		0xe0000		/*The last block for Environment*/
-+#endif
++#define CFG_ENV_OFFSET_OOB	1
++#define CFG_PREBOOT_OVERRIDE	1
 +
 +#define NAND_MAX_CHIPS		1
 +#define CFG_NAND_BASE		0x4e000000
@@ -306,17 +303,22 @@ Index: u-boot/include/configs/smdk2440.h
 +#define LCD_VIDEO_ADDR		0x33d00000
 +#endif
 +
++#define CONFIG_S3C2410_NAND_BBT		1
++//#define CONFIG_S3C2410_NAND_HWECC	1
++
 +#define CFG_NAND_YAFFS_WRITE
 +#define CFG_NAND_YAFFS1_NEW_OOB_LAYOUT
 +
-+#define MTDIDS_DEFAULT		"nand0=qt2440-nand"
-+#define MTPARTS_DEFAULT		"qt2440-nand:0x00100000(u-boot),0x00200000(kernel),0x00200000(update),0x00100000(splash),0x01400000(jffs2),-(temp)"
++#define MTDIDS_DEFAULT		"nand0=smdk2440-nand"
++#define MTPARTS_DEFAULT		"smdk2440-nand:0x00100000(u-boot),0x00200000(kernel),0x00200000(update),0x00100000(splash),0x01400000(jffs2),-(temp)"
++#define CFG_NAND_DYNPART_MTD_KERNEL_NAME "smdk2440-nand"
++#define CONFIG_NAND_DYNPART
 +
 +#endif	/* __CONFIG_H */
 Index: u-boot/include/configs/smdk2440nand.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/include/configs/smdk2440nand.h	2007-03-28 21:10:49.000000000 +0200
+--- /dev/null
++++ u-boot/include/configs/smdk2440nand.h
 @@ -0,0 +1,47 @@
 +/*
 + * (C) Copyright 2004 
@@ -367,9 +369,9 @@ Index: u-boot/include/configs/smdk2440nand.h
 +
 Index: u-boot/board/smdk2440/Makefile
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/Makefile	2007-03-28 21:10:49.000000000 +0200
-@@ -0,0 +1,51 @@
+--- /dev/null
++++ u-boot/board/smdk2440/Makefile
+@@ -0,0 +1,67 @@
 +#
 +# (C) Copyright 2000-2006
 +# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
@@ -400,12 +402,28 @@ Index: u-boot/board/smdk2440/Makefile
 +COBJS	:= smdk2440.o flash.o udc.o
 +SOBJS	:= lowlevel_init.o
 +
++.PHONY:	all
++
++all:	$(LIB) lowlevel_foo.bin
++
 +SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
 +OBJS	:= $(addprefix $(obj),$(COBJS))
 +SOBJS	:= $(addprefix $(obj),$(SOBJS))
 +
 +$(LIB):	$(obj).depend $(OBJS) $(SOBJS)
 +	$(AR) $(ARFLAGS) $@ $(OBJS) $(SOBJS)
++
++lowlevel_foo.o:	lowlevel_foo.S
++	$(CC) -c -DTEXT_BASE=0x33F80000 -march=armv4 \
++	  -o lowlevel_foo.o lowlevel_foo.S
++
++lowlevel_foo:	lowlevel_foo.o lowlevel_init.o lowlevel_foo.lds
++	$(LD) -T ./lowlevel_foo.lds -Ttext 0x33f80000 -Bstatic \
++	  lowlevel_init.o lowlevel_foo.o -o lowlevel_foo
++
++lowlevel_foo.bin:	lowlevel_foo
++	$(CROSS_COMPILE)objcopy --gap-fill=0xff -O binary \
++	  lowlevel_foo lowlevel_foo.bin
 +
 +clean:
 +	rm -f $(SOBJS) $(OBJS)
@@ -423,8 +441,8 @@ Index: u-boot/board/smdk2440/Makefile
 +#########################################################################
 Index: u-boot/board/smdk2440/config.mk
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/config.mk	2007-03-28 21:10:49.000000000 +0200
+--- /dev/null
++++ u-boot/board/smdk2440/config.mk
 @@ -0,0 +1,25 @@
 +#
 +# (C) Copyright 2002
@@ -453,8 +471,8 @@ Index: u-boot/board/smdk2440/config.mk
 +TEXT_BASE = 0x33F80000
 Index: u-boot/board/smdk2440/flash.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/flash.c	2007-03-28 21:10:49.000000000 +0200
+--- /dev/null
++++ u-boot/board/smdk2440/flash.c
 @@ -0,0 +1,433 @@
 +/*
 + * (C) Copyright 2002
@@ -891,8 +909,8 @@ Index: u-boot/board/smdk2440/flash.c
 +}
 Index: u-boot/board/smdk2440/lowlevel_init.S
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/lowlevel_init.S	2007-03-28 21:10:49.000000000 +0200
+--- /dev/null
++++ u-boot/board/smdk2440/lowlevel_init.S
 @@ -0,0 +1,167 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
@@ -1063,9 +1081,9 @@ Index: u-boot/board/smdk2440/lowlevel_init.S
 +    .word 0x30
 Index: u-boot/board/smdk2440/smdk2440.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/smdk2440.c	2007-03-28 21:10:49.000000000 +0200
-@@ -0,0 +1,139 @@
+--- /dev/null
++++ u-boot/board/smdk2440/smdk2440.c
+@@ -0,0 +1,150 @@
 +/*
 + * (C) Copyright 2002
 + * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
@@ -1165,7 +1183,7 @@ Index: u-boot/board/smdk2440/smdk2440.c
 +	gpio->GPEUP = 0x0000FFFF;
 +	gpio->GPFCON = 0x000055AA;
 +	gpio->GPFUP = 0x000000FF;
-+	gpio->GPGCON = 0xFF95FFBA;
++	gpio->GPGCON = 0xFD95FFBA;
 +	gpio->GPGUP = 0x0000FFFF;
 +#ifdef CONFIG_SERIAL3
 +	gpio->GPHCON = 0x002AAAAA;
@@ -1205,10 +1223,21 @@ Index: u-boot/board/smdk2440/smdk2440.c
 +
 +	return 0;
 +}
++
++/* The sum of all part_size[]s must equal to the NAND size, i.e., 0x4000000.
++   "initrd" is sized such that it can hold two uncompressed 16 bit 640*480
++   images: 640*480*2*2 = 1228800 < 1245184. */
++
++unsigned int dynpart_size[] = {
++    CFG_UBOOT_SIZE, 0x20000, 0x200000, 0xa0000, 0x3d5c000-CFG_UBOOT_SIZE, 0 };
++char *dynpart_names[] = {
++    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
++
++
 Index: u-boot/board/smdk2440/u-boot.lds
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/u-boot.lds	2007-03-28 21:10:49.000000000 +0200
+--- /dev/null
++++ u-boot/board/smdk2440/u-boot.lds
 @@ -0,0 +1,58 @@
 +/*
 + * (C) Copyright 2002
@@ -1268,12 +1297,11 @@ Index: u-boot/board/smdk2440/u-boot.lds
 +	.bss : { *(.bss) }
 +	_end = .;
 +}
-
 Index: u-boot/board/smdk2440/udc.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/smdk2440/udc.c	2007-03-28 21:10:49.000000000 +0200
-@@ -0,0 +1,20 @@
+--- /dev/null
++++ u-boot/board/smdk2440/udc.c
+@@ -0,0 +1,23 @@
 +
 +#include <common.h>
 +#include <usbdcore.h>
@@ -1285,7 +1313,10 @@ Index: u-boot/board/smdk2440/udc.c
 +
 +	switch (event) {
 +	case UDC_CTRL_PULLUP_ENABLE:
-+		/* FIXME: implement this */
++		if (param)
++			gpio->GPGDAT |= (1 << 12);
++		else
++			gpio->GPGDAT &= ~(1 << 12);
 +		break;
 +	case UDC_CTRL_500mA_ENABLE:
 +		/* IGNORE */
@@ -1294,4 +1325,151 @@ Index: u-boot/board/smdk2440/udc.c
 +		break;
 +	}
 +}
-
+Index: u-boot/board/smdk2440/lowlevel_foo.S
+===================================================================
+--- /dev/null
++++ u-boot/board/smdk2440/lowlevel_foo.S
+@@ -0,0 +1,82 @@
++
++_start:
++	b 	reset
++undefvec:
++	b	undefvec
++swivec:
++	b	swivec
++pabtvec:
++	b	pabtvec
++dabtvec:
++	b	dabtvec
++rsvdvec:
++	b	rsvdvec
++irqvec:
++	b	irqvec
++fiqvec:
++	b	fiqvec
++
++reset:
++	/*
++	 * set the cpu to SVC32 mode
++	 */
++	mrs	r0,cpsr
++	bic	r0,r0,#0x1f
++	orr	r0,r0,#0xd3
++	msr	cpsr,r0
++
++/* turn off the watchdog */
++#define pWTCON		0x53000000
++#define INTMSK		0x4A000008	/* Interupt-Controller base addresses */
++#define INTSUBMSK	0x4A00001C
++#define CLKDIVN	0x4C000014	/* clock divisor register */
++
++	ldr     r0, =pWTCON
++	mov     r1, #0x0
++	str     r1, [r0]
++
++	mov	r1, #0xffffffff
++	ldr	r0, =INTMSK
++	str	r1, [r0]
++	ldr	r1, =0x3ff
++	ldr	r0, =INTSUBMSK
++	str	r1, [r0]
++
++	/* FCLK:HCLK:PCLK = 1:2:4 */
++	/* default FCLK is 120 MHz ! */
++	ldr	r0, =CLKDIVN
++	mov	r1, #3
++	str	r1, [r0]
++
++	bl	cpu_init_crit
++	ldr	r0,=TEXT_BASE
++	mov	pc, r0
++
++cpu_init_crit:
++	/*
++	 * flush v4 I/D caches
++	 */
++	mov	r0, #0
++	mcr	p15, 0, r0, c7, c7, 0	/* flush v3/v4 cache */
++	mcr	p15, 0, r0, c8, c7, 0	/* flush v4 TLB */
++
++	/*
++	 * disable MMU stuff and caches
++	 */
++	mrc	p15, 0, r0, c1, c0, 0
++	bic	r0, r0, #0x00002300	@ clear bits 13, 9:8 (--V- --RS)
++	bic	r0, r0, #0x00000087	@ clear bits 7, 2:0 (B--- -CAM)
++	orr	r0, r0, #0x00000002	@ set bit 2 (A) Align
++	orr	r0, r0, #0x00001000	@ set bit 12 (I) I-Cache
++	mcr	p15, 0, r0, c1, c0, 0
++
++	/*
++	 * before relocating, we have to setup RAM timing
++	 * because memory timing is board-dependend, you will
++	 * find a lowlevel_init.S in your board directory.
++	 */
++	mov	ip, lr
++	bl	lowlevel_init
++	mov	lr, ip
++	mov	pc, lr
++
+Index: u-boot/board/smdk2440/lowlevel_foo.lds
+===================================================================
+--- /dev/null
++++ u-boot/board/smdk2440/lowlevel_foo.lds
+@@ -0,0 +1,56 @@
++/*
++ * (C) Copyright 2002
++ * Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
++OUTPUT_ARCH(arm)
++ENTRY(_start)
++SECTIONS
++{
++	. = 0x00000000;
++
++	. = ALIGN(4);
++	.text      :
++	{
++	  lowlevel_foo.o (.text)
++	  *(.text)
++	}
++
++	. = ALIGN(4);
++	.rodata : { *(.rodata) }
++
++	. = ALIGN(4);
++	.data : { *(.data) }
++
++	. = ALIGN(4);
++	.got : { *(.got) }
++
++	. = .;
++	__u_boot_cmd_start = .;
++	.u_boot_cmd : { *(.u_boot_cmd) }
++	__u_boot_cmd_end = .;
++
++	. = ALIGN(4);
++	__bss_start = .;
++	.bss : { *(.bss) }
++	_end = .;
++}
