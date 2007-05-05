@@ -4,7 +4,7 @@ LICENSE = "GPL"
 SECTION = "bootloader"
 PRIORITY = "optional"
 PV = "1.2.0+svn${SRCDATE}"
-PR = "r4"
+PR = "r5"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
@@ -21,6 +21,19 @@ UBOOT_MACHINES = "gta01v3 gta01v4 gta01bv2 gta01bv3 gta01bv4 smdk2440 hxd8"
 do_quilt() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
         rm -Rf patches .pc
+}
+
+do_svnrev() {
+	FILE=${S}/tools/setlocalversion
+	OLDFILE=$FILE.old
+	NEWFILE=$FILE.new
+	cp $FILE $OLDFILE
+	LINES=`cat $OLDFILE | wc -l`
+	LINES_WE_WANT=$(($LINES-1))
+	LASTLINE=`cat $OLDFILE | tail -n 1`
+	cat $OLDFILE | head -n $LINES_WE_WANT > $NEWFILE
+	echo ${LASTLINE}_${PR} >> $NEWFILE
+	rm $FILE && mv $NEWFILE $FILE
 }
 
 do_compile () {
@@ -54,3 +67,4 @@ do_deploy () {
 do_deploy[dirs] = "${S}"
 addtask deploy before do_package after do_install
 addtask quilt before do_patch after do_unpack
+addtask svnrev before do_patch after do_quilt
