@@ -800,7 +800,7 @@ static uint16_t s3c_timers_get(struct s3c_timers_state_s *s, int tm)
 
     elapsed = muldiv64(qemu_get_clock(vm_clock) - s->timer[tm].reload,
                     s->timer[tm].divider, ticks_per_sec);
-    if (elapsed > s->timer[tm].count)	/* unlikely() */
+    if (unlikely(elapsed > s->timer[tm].count))
         return s->timer[tm].count;
 
     return s->timer[tm].count - elapsed;
@@ -2157,6 +2157,7 @@ inline void s3c2410_reset(struct s3c_state_s *s)
     s3c_i2s_reset(s->i2s);
     s3c_rtc_reset(s->rtc);
     s3c_spi_reset(s->spi);
+    s3c_udc_reset(s->udc);
     s3c_clkpwr_reset(s);
     s3c_nand_reset(s);
     for (i = 0; s3c2410_uart[i].base; i ++)
@@ -2212,7 +2213,8 @@ struct s3c_state_s *s3c2410_init(DisplayState *ds)
 
     s->timers = s3c_timers_init(0x51000000, s->pic, s->dma);
 
-    /* USBDevice at 0x52000000 */
+    s->udc = s3c_udc_init(0x52000000, s->pic, s->dma);
+
     /* Watchdog at 0x53000000 */
 
     s->i2c = s3c_i2c_init(0x54000000, s->pic);

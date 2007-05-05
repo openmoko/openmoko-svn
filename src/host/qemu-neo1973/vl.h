@@ -1459,7 +1459,7 @@ typedef void (*gpio_handler_t)(int line, int level, void *opaque);
 
 #include "hw/i2c.h"
 
-#define unlikely(cond)	__builtin_expect(cond, 0)
+#define unlikely(cond)	__builtin_expect(!!(cond), 0)
 
 #ifdef TARGET_ARM
 #include "hw/pxa.h"

@@ -382,8 +382,8 @@ VL_OBJS+= pxa2xx_pic.o pxa2xx_gpio.o pxa2xx_timer.o pxa2xx_dma.o spitz.o
 VL_OBJS+= pxa2xx_lcd.o pxa2xx_mmci.o pxa2xx_pcmcia.o max111x.o max7310.o
 VL_OBJS+= ads7846.o sd.o ide.o serial.o nand.o $(AUDIODRV) wm8750.o wm8753.o
 VL_OBJS+= s3c2410.o s3c24xx_gpio.o s3c24xx_lcd.o s3c24xx_mmci.o s3c24xx_rtc.o
-VL_OBJS+= neo1973.o pcf5060x.o jbt6k74.o modem.o
-CPPFLAGS += -DHAS_AUDIO -DHIGH_LATENCY
+VL_OBJS+= s3c24xx_udc.o neo1973.o pcf5060x.o jbt6k74.o modem.o
+CPPFLAGS += -DHAS_AUDIO
 endif
 ifeq ($(TARGET_BASE_ARCH), sh4)
 VL_OBJS+= shix.o sh7750.o sh7750_regnames.o tc58128.o

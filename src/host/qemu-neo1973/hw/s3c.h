@@ -33,6 +33,7 @@
 # define S3C_PIC_SDI	21
 # define S3C_PIC_SPI0	22
 # define S3C_PIC_UART1	23
+# define S3C_PIC_USBD	25
 # define S3C_PIC_USBH	26
 # define S3C_PIC_IIC	27
 # define S3C_PIC_UART0	28
@@ -151,6 +152,12 @@ struct s3c_rtc_state_s;
 struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, void *pic);
 void s3c_rtc_reset(struct s3c_rtc_state_s *s);
 
+/* s3c24xx_udc.c */
+struct s3c_udc_state_s;
+struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base, void *pic,
+                void *dma);
+void s3c_udc_reset(struct s3c_udc_state_s *s);
+
 /* s3c2410.c */
 struct s3c_spi_state_s;
 struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base, void *pic,
@@ -174,6 +181,7 @@ struct s3c_state_s {
     struct s3c_i2s_state_s *i2s;
     struct s3c_rtc_state_s *rtc;
     struct s3c_spi_state_s *spi;
+    struct s3c_udc_state_s *udc;
 
     /* Memory controller */
     target_phys_addr_t mc_base;

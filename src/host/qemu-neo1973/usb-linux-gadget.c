@@ -32,6 +32,7 @@
 
 struct gadget_state_s {
     USBPort port;
+    uint8_t config_num;
     int connected;
     int speed;
     int hosthighspeed;
@@ -44,6 +45,10 @@ struct gadget_state_s {
         char *path;
         int num;
         struct gadget_state_s *state;
+
+        int busy;
+        uint8_t buffer[4096];
+        USBPacket packet;
     } ep[16];
 
     /* Device descriptor */
@@ -122,6 +127,27 @@ next:
     }
 }
 
+static void gadget_ep_run(struct ep_s *ep)
+{
+    USBDevice *dev = ep->state->port.dev;
+    int ret;
+
+    ret = dev->handle_packet(dev, &ep->packet);
+
+    if (ret >= 0) {
+        ep->packet.len = ret;
+        ep->packet.complete_cb(&ep->packet, ep->packet.complete_opaque);
+    } else if (ret == USB_RET_STALL) {
+        gadget_stall(ep->state, &ep->packet);
+    } else if (ret == USB_RET_ASYNC) {
+        ep->busy = 1;
+    } else {
+        fprintf(stderr, "%s: packet unhandled: %i\n", __FUNCTION__, ret);
+        if (ret != USB_RET_NAK)
+            gadget_detach(ep->state);
+    }
+}
+
 static void gadget_respond(USBPacket *packet, void *opaque)
 {
     struct gadget_state_s *hci = (struct gadget_state_s *) opaque;
@@ -141,8 +167,9 @@ static void gadget_respond(USBPacket *packet, void *opaque)
 static void gadget_token_in(USBPacket *packet, void *opaque)
 {
     struct ep_s *ep = (struct ep_s *) opaque;
-    if (packet->len > 0)
-        write(ep->fd, packet->data, packet->len);
+    ep->busy = 0;
+    while (write(ep->fd, packet->data, packet->len) < packet->len &&
+                    errno == EINTR);
 }
 
 #if 0
@@ -160,36 +187,32 @@ static void gadget_ep_read(void *opaque)
     struct ep_s *ep = (struct ep_s *) opaque;
     struct gadget_state_s *hci = ep->state;
 
+    if (ep->busy)
+        return;
+
 #if 0
     if (!gadget_ep_poll(opaque))
         return;
 #endif
 
     /* write() is supposed to not block here */
-    if (write(ep->fd, hci->buffer, 0))
+    if (write(ep->fd, ep->buffer, 0))
         return;
 
-    if (hci->async_count) {
-        fprintf(stderr, "%s: overrun\n", __FUNCTION__);
-        gadget_detach(hci);
-        return;
-    }
+    ep->packet.pid = USB_TOKEN_IN;
+    ep->packet.devaddr = hci->addr;
+    ep->packet.devep = ep->num;
+    ep->packet.data = ep->buffer;
+    ep->packet.len = sizeof(ep->buffer);
+    ep->packet.complete_cb = gadget_token_in;
+    ep->packet.complete_opaque = ep;
 
-    hci->async_count = 1;
-
-    hci->packet->pid = USB_TOKEN_IN;
-    hci->packet->devaddr = hci->addr;
-    hci->packet->devep = ep->num;
-    hci->packet->data = hci->buffer;
-    hci->packet->len = sizeof(hci->buffer);
-    hci->packet->complete_cb = gadget_token_in;
-    hci->packet->complete_opaque = ep;
-
-    gadget_run(0, hci);
+    gadget_ep_run(ep);
 }
 
 static void gadget_nop(USBPacket *prev_packet, void *opaque)
 {
+    ((struct ep_s *) opaque)->busy = 0;
 }
 
 static void gadget_ep_write(void *opaque)
@@ -198,27 +221,22 @@ static void gadget_ep_write(void *opaque)
     struct gadget_state_s *hci = ep->state;
     int ret;
 
-    ret = read(ep->fd, hci->buffer, sizeof(hci->buffer));
+    if (ep->busy)
+        return;
+
+    ret = read(ep->fd, ep->buffer, sizeof(ep->buffer));
     if (ret <= 0)
         return;
 
-    if (hci->async_count) {
-        fprintf(stderr, "%s: overrun\n", __FUNCTION__);
-        gadget_detach(hci);
-        return;
-    }
+    ep->packet.pid = USB_TOKEN_OUT;
+    ep->packet.devaddr = hci->addr;
+    ep->packet.devep = ep->num;
+    ep->packet.data = ep->buffer;
+    ep->packet.len = ret;
+    ep->packet.complete_cb = gadget_nop;
+    ep->packet.complete_opaque = ep;
 
-    hci->async_count = 1;
-
-    hci->packet->pid = USB_TOKEN_OUT;
-    hci->packet->devaddr = hci->addr;
-    hci->packet->devep = ep->num;
-    hci->packet->data = hci->buffer;
-    hci->packet->len = ret;
-    hci->packet->complete_cb = gadget_nop;
-    hci->packet->complete_opaque = ep;
-
-    gadget_run(0, hci);
+    gadget_ep_run(ep);
 }
 
 static int gadget_ep_open(struct gadget_state_s *hci,
@@ -267,6 +285,8 @@ static int gadget_ep_open(struct gadget_state_s *hci,
         close(ep->fd);
         goto fail;
     }
+
+    ep->busy = 0;
 
     if (desc->bEndpointAddress & USB_DIR_IN)
         qemu_set_fd_handler(ep->fd, NULL, gadget_ep_read, ep);
@@ -471,7 +491,7 @@ static void gadget_ep_configure(struct gadget_state_s *hci)
     req = (struct usb_ctrlrequest *) (hci->buffer + 16);
     req->bRequestType = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
     req->bRequest = USB_REQ_GET_DESCRIPTOR;
-    req->wValue = (USB_DT_CONFIG << 8) | 0;
+    req->wValue = (USB_DT_CONFIG << 8) | hci->config_num;
     req->wIndex = 0x0000;
     req->wLength = sizeof(hci->buffer);
 
@@ -495,7 +515,7 @@ static void gadget_read(void *opaque)
     struct usb_gadgetfs_event event;
     int ret, len;
 
-    if (!s->connected)
+    if (!s->addr)
         return;
 
     ret = read(s->ep0fd, &event, sizeof(event));
@@ -525,12 +545,12 @@ static void gadget_read(void *opaque)
 
         s->async_count = 2;
 
-        memcpy(s->buffer, &event.u.setup, 8);
+        memcpy(s->buffer, &event.u.setup, sizeof(event.u.setup));
         s->packet[1].pid = USB_TOKEN_SETUP;
         s->packet[1].devaddr = s->addr;
         s->packet[1].devep = 0;
         s->packet[1].data = s->buffer;
-        s->packet[1].len = 8;
+        s->packet[1].len = sizeof(event.u.setup);
         s->packet[1].complete_cb = gadget_run;
         s->packet[1].complete_opaque = s;
 
@@ -717,6 +737,7 @@ int usb_gadget_init(void)
     atexit(gadget_done);
 
     hci->addr = 0;
+    hci->config_num = 0;
 
     qemu_register_usb_port(&hci->port, hci, USB_INDEX_HOST, gadget_attach);
 
