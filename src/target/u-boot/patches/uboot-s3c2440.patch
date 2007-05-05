@@ -903,10 +903,10 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 +#define NFDATA		__REGb(NF_BASE + 0x10)
 +#define NFDATA16	__REGw(NF_BASE + 0x10)
 +#define NFSTAT		__REGb(NF_BASE + 0x20)
-+#define NFSTAT_BUSY	(1 << 2)
++#define NFSTAT_BUSY	1
 +#define nand_select()	(NFCONT &= ~(1 << 1))
 +#define nand_deselect()	(NFCONT |= (1 << 1))
-+#define nand_clear_RnB()	(NFSTAT |= NFSTAT_BUSY)
++#define nand_clear_RnB()	(NFSTAT |= (1 << 2))
 +#endif
  
 -#define BUSY 1
@@ -991,7 +991,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 +	NFADDR = (addr >> 17) & 0xff;
 +	NFADDR = (addr >> 25) & 0xff;
 +#elif (NAND_PAGE_SIZE == 2048)
-+	page_num = addr > 11; /* addr / 2048 */
++	page_num = addr >> 11; /* addr / 2048 */
 +	/* Write Address */
 +	NFADDR = 0;
 +	NFADDR = 0;
@@ -1012,7 +1012,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand_read.c
 +#elif defined(CONFIG_S3C2440)
 +	for (i = 0; i < NAND_PAGE_SIZE/2; i++) {
 +		*ptr16 = NFDATA16;
-+		*ptr16++;
++		ptr16++;
 +	}
 +#endif
 +
