@@ -283,7 +283,12 @@ static int gadget_ep_open(struct gadget_state_s *hci,
     dst += desc->bLength;
     dl += desc->bLength;
 
-    /* XXX write highspeed descriptor if hci->hosthighspeed */
+    if (hci->hosthighspeed) {
+        /* Send the same information again as high-speed descriptors */
+        memcpy(dst, desc, desc->bLength);
+        dst += desc->bLength;
+        dl += desc->bLength;
+    }
 
     ret = write(ep->fd, buffer, dl);
     if (ret < dl) {
@@ -345,8 +350,8 @@ static void gadget_ep_setup(struct gadget_state_s *hci)
             if (ret < 0) {
                 if (ret != -ESHUTDOWN)
                     goto fail;
-                fprintf(stderr, "%s: EPs not configured due to disconnect\n",
-                                __FUNCTION__);
+                fprintf(stderr, "%s: EPs not configured due to disconnect - "
+                                "will retry\n", __FUNCTION__);
                 return;
             }
         }
@@ -364,7 +369,21 @@ fail:
 static void gadget_desc_parse(USBPacket *packet, void *opaque)
 {
     struct gadget_state_s *hci = (struct gadget_state_s *) opaque;
+    uint8_t *p;
     hci->desc_len = packet->len;
+
+    /* HACK: report always only a single Configuration */
+    ((struct usb_device_descriptor *) hci->dev_desc)->bNumConfigurations = 1;
+
+    if (hci->hosthighspeed) {
+        /* We need to fake a USB 2.0 device if we're already faking
+         * a high-speed device (due to gadgetfs limitations).  */
+        p = (uint8_t *) &((struct usb_device_descriptor *)
+                        hci->dev_desc)->bcdUSB;
+        p[0] = 0x20;
+        p[1] = 0x00;
+    }
+
     gadget_run(packet, hci);
 }
 
@@ -373,6 +392,7 @@ static void gadget_ep_parse(USBPacket *packet, void *opaque)
     struct gadget_state_s *hci = (struct gadget_state_s *) opaque;
     uint8_t buffer[4096];
     int dl = 0;
+    int sl = 0;
     struct usb_config_descriptor *cfg;
     struct usb_descriptor_header *src =
             (struct usb_descriptor_header *) packet->data;
@@ -396,19 +416,41 @@ static void gadget_ep_parse(USBPacket *packet, void *opaque)
         goto fail;
     cfg->bMaxPower = 0x00;
     cfg->bmAttributes = 0xc0; /* dummy_hcd is picky about power */
+
+    if (hci->hosthighspeed) {
+        /* For high-speed devies we need to set the interval for
+         * Interrupt Enpoints as high as possible so that the host doesn't
+         * expect really fast responses from the emulator and thus
+         * time-out on some packets.  */
+        while (sl < cfg->wTotalLength) {
+            if (src->bDescriptorType == USB_DT_ENDPOINT) {
+                if (((struct usb_endpoint_descriptor *) src)->bmAttributes ==
+                                USB_ENDPOINT_XFER_INT)
+                    ((struct usb_endpoint_descriptor *) src)->bInterval = 0x0e;
+            }
+            sl += src->bLength;
+            src = (typeof(src)) ((uint8_t *) src + src->bLength);
+        }
+    }
+
     memcpy(dst, cfg, cfg->wTotalLength);
     memcpy(&hci->config_desc, cfg, cfg->wTotalLength);
     dl += cfg->wTotalLength;
     dst += cfg->wTotalLength;
 
-    /* XXX write highspeed descriptor if hci->hosthighspeed */
+    if (hci->hosthighspeed) {
+        /* Send the same information again as high-speed descriptors */
+        if (dl + cfg->wTotalLength > sizeof(buffer))
+            goto fail;
+        memcpy(dst, cfg, cfg->wTotalLength);
+        dl += cfg->wTotalLength;
+        dst += cfg->wTotalLength;
+    }
 
     /* Write the device descriptor */
     if (dl + hci->desc_len > sizeof(buffer))
         goto fail;
     memcpy(dst, hci->dev_desc, hci->desc_len);
-    /* HACK: report always only a single Configuration */
-    ((struct usb_device_descriptor *) dst)->bNumConfigurations = 1;
     dl += hci->desc_len;
     dst += hci->desc_len;
 
@@ -721,6 +763,8 @@ static int gadget_autoconfig(struct gadget_state_s *s)
     return -ENOENT;
 
 found:
+    /* XXX gadgetfs seems to always believe it's high-speed */
+    s->hosthighspeed = 1;
     return 0;
 }
 

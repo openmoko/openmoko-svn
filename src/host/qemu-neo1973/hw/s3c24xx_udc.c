@@ -545,7 +545,7 @@ static int s3c_udc_handle_packet(USBDevice *dev, USBPacket *p)
         s3c_udc_interrupt(s, -1);
         break;
     case USB_TOKEN_SETUP:
-        if (unlikely(s->ep0.packet))
+        if (unlikely(s->ep0.packet || (s->ep0.csr & (1 << 0))))	/* OUT_PKT_R */
             printf("%s: EP0 overrun\n", __FUNCTION__);
         if (s->ep0.csr & (1 << 5)) {			/* SEND_STALL */
             ret = USB_RET_STALL;
@@ -651,8 +651,21 @@ static int s3c_udc_handle_packet(USBDevice *dev, USBPacket *p)
     return ret;
 }
 
-static void s3c_udc_handle_destroy(USBDevice *s)
+static void s3c_udc_handle_destroy(USBDevice *dev)
 {
+    struct s3c_udc_state_s *s = (struct s3c_udc_state_s *) dev->opaque;
+    int i;
+    s->ep0.len = 0;
+    s->ep0.csr = 0x00;
+    s->ep0.packet = 0;
+    for (i = 0; i < S3C_EPS - 1; i ++) {
+        s->ep1[i].len = 0;
+        s->ep1[i].in_csr[0] = 0;
+        s->ep1[i].in_csr[1] = 0;
+        s->ep1[i].out_csr[0] = 0;
+        s->ep1[i].out_csr[1] = 0;
+        s->ep1[i].packet = 0;
+    }
 }
 
 struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base,
