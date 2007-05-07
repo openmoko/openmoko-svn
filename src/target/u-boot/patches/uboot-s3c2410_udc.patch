@@ -1114,10 +1114,10 @@ Index: u-boot/drivers/usbdcore_ep0.c
  			return 0;
  
  		case USB_REQ_SET_DESCRIPTOR:	/* XXX should we support this? */
-Index: u-boot/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
+--- u-boot.orig/include/configs/neo1973_gta01.h
++++ u-boot/include/configs/neo1973_gta01.h
 @@ -173,6 +173,16 @@
  #define CONFIG_USB_OHCI		1
  #endif
@@ -1166,10 +1166,10 @@ Index: u-boot/drivers/usbtty.h
  #endif
  
  #include <config.h>
-Index: u-boot/board/neo1973/cmd_neo1973.c
+Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
---- u-boot.orig/board/neo1973/cmd_neo1973.c
-+++ u-boot/board/neo1973/cmd_neo1973.c
+--- u-boot.orig/board/neo1973/common/cmd_neo1973.c
++++ u-boot/board/neo1973/common/cmd_neo1973.c
 @@ -93,6 +93,18 @@
  			neo1973_vibrator(1);
  		else
@@ -1196,23 +1196,23 @@ Index: u-boot/board/neo1973/cmd_neo1973.c
 +	"neo1973 udc pullup (on|off) - switch pull-up on or off\n"
  );
  #endif	/* CFG_CMD_BDI */
-Index: u-boot/board/neo1973/Makefile
+Index: u-boot/board/neo1973/gta01/Makefile
 ===================================================================
---- u-boot.orig/board/neo1973/Makefile
-+++ u-boot/board/neo1973/Makefile
+--- u-boot.orig/board/neo1973/gta01/Makefile
++++ u-boot/board/neo1973/gta01/Makefile
 @@ -25,7 +25,7 @@
  
  LIB	= lib$(BOARD).a
  
--OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o
-+OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o udc.o
- SOBJS	:= lowlevel_init.o
+-OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o
++OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o
+ SOBJS	:= ../common/lowlevel_init.o
  
  $(LIB):	$(OBJS) $(SOBJS)
-Index: u-boot/board/neo1973/udc.c
+Index: u-boot/board/neo1973/common/udc.c
 ===================================================================
 --- /dev/null
-+++ u-boot/board/neo1973/udc.c
++++ u-boot/board/neo1973/common/udc.c
 @@ -0,0 +1,23 @@
 +
 +#include <common.h>

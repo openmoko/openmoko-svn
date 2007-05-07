@@ -274,10 +274,10 @@ Index: u-boot/drivers/usbtty.h
  
  #define STR_LANG		0x00
  #define STR_MANUFACTURER	0x01
-Index: u-boot/board/neo1973/udc.c
+Index: u-boot/board/neo1973/common/udc.c
 ===================================================================
---- u-boot.orig/board/neo1973/udc.c	2007-03-28 16:05:09.000000000 +0200
-+++ u-boot/board/neo1973/udc.c	2007-03-28 16:07:22.000000000 +0200
+--- u-boot.orig/board/neo1973/common/udc.c	2007-03-28 16:05:09.000000000 +0200
++++ u-boot/board/neo1973/common/udc.c	2007-03-28 16:07:22.000000000 +0200
 @@ -16,6 +16,9 @@
  			gpio->GPBDAT &= ~(1 << 9);
  #endif

@@ -674,10 +674,10 @@ Index: u-boot/include/license.h
 +	0xfe, 0x17, 0x84, 0xf3, 0x1b, 0xef, 0x12, 0x3b, 0x00, 0x00,
 +	
 +};
-Index: u-boot/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
+--- u-boot.orig/include/configs/neo1973_gta01.h
++++ u-boot/include/configs/neo1973_gta01.h
 @@ -110,6 +110,7 @@
  			CFG_CMD_MMC	 | \
  			CFG_CMD_FAT	 | \

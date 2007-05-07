@@ -48,10 +48,10 @@ Index: u-boot/cpu/arm920t/start.S
  
  	/* Set up the stack						    */
  stack_setup:
-Index: u-boot/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
+--- u-boot.orig/include/configs/neo1973_gta01.h
++++ u-boot/include/configs/neo1973_gta01.h
 @@ -28,7 +28,6 @@
  
  #if defined(BUILD_FOR_RAM)

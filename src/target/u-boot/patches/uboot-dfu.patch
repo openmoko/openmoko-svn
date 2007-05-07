@@ -1287,10 +1287,10 @@ Index: u-boot/drivers/usbtty.c
  
  	/* initialize bus instance */
  	memset (bus_instance, 0, sizeof (struct usb_bus_instance));
-Index: u-boot/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
+--- u-boot.orig/include/configs/neo1973_gta01.h
++++ u-boot/include/configs/neo1973_gta01.h
 @@ -167,7 +167,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */

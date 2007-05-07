@@ -20,10 +20,10 @@ board/neo1973/neo1973.h, board/neo1973/neo1973.c, board/neo1973/bootmenu.c:
 
 - Werner Almesberger <werner@openmoko.org>
 
-Index: u-boot/board/neo1973/bootmenu.c
+Index: u-boot/board/neo1973/common/bootmenu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/bootmenu.c	2007-03-28 16:03:55.000000000 +0200
++++ u-boot/board/neo1973/common/bootmenu.c	2007-03-28 16:03:55.000000000 +0200
 @@ -0,0 +1,375 @@
 +/*
 + * bootmenu.c - Boot menu
@@ -400,10 +400,10 @@ Index: u-boot/board/neo1973/bootmenu.c
 +	init_bootmenu();
 +	console_poll_hook = bootmenu_hook;
 +}
-Index: u-boot/board/neo1973/neo1973.c
+Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.c	2007-03-28 15:51:09.000000000 +0200
-+++ u-boot/board/neo1973/neo1973.c	2007-03-28 16:03:55.000000000 +0200
+--- u-boot.orig/board/neo1973/gta01/gta01.c	2007-03-28 15:51:09.000000000 +0200
++++ u-boot/board/neo1973/gta01/gta01.c	2007-03-28 16:03:55.000000000 +0200
 @@ -227,10 +227,15 @@
  	extern unsigned char booted_from_nand;
  	unsigned char tmp;
@@ -519,23 +519,23 @@ Index: u-boot/board/neo1973/neo1973.c
  {
  	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
  	if (gpio->GPFDAT & (1 << 6))
-Index: u-boot/board/neo1973/Makefile
+Index: u-boot/board/neo1973/gta01/Makefile
 ===================================================================
---- u-boot.orig/board/neo1973/Makefile	2007-03-28 16:03:47.000000000 +0200
-+++ u-boot/board/neo1973/Makefile	2007-03-28 16:04:15.000000000 +0200
+--- u-boot.orig/board/neo1973/gta01/Makefile	2007-03-28 16:03:47.000000000 +0200
++++ u-boot/board/neo1973/gta01/Makefile	2007-03-28 16:04:15.000000000 +0200
 @@ -25,7 +25,7 @@
  
  LIB	= lib$(BOARD).a
  
--OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o udc.o
-+OBJS	:= neo1973.o pcf50606.o cmd_neo1973.o jbt6k74.o udc.o bootmenu.o
- SOBJS	:= lowlevel_init.o
+-OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o
++OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
+ SOBJS	:= ../common/lowlevel_init.o
  
  .PHONY:	all
 Index: u-boot/board/neo1973/neo1973.h
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.h	2007-03-28 15:51:09.000000000 +0200
-+++ u-boot/board/neo1973/neo1973.h	2007-03-28 16:03:55.000000000 +0200
+--- u-boot.orig/board/neo1973/common/neo1973.h	2007-03-28 15:51:09.000000000 +0200
++++ u-boot/board/neo1973/common/neo1973.h	2007-03-28 16:03:55.000000000 +0200
 @@ -15,4 +15,10 @@
  void neo1973_backlight(int on);
  void neo1973_vibrator(int on);

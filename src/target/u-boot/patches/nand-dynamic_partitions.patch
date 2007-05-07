@@ -19,7 +19,7 @@ Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
 --- u-boot.orig/drivers/nand/nand_bbt.c
 +++ u-boot/drivers/nand/nand_bbt.c
-@@ -1044,9 +1044,86 @@ int nand_isbad_bbt (struct mtd_info *mtd
+@@ -1044,9 +1044,86 @@
  	switch ((int)res) {
  	case 0x00:	return 0;
  	case 0x01:	return 1;
@@ -106,10 +106,10 @@ Index: u-boot/drivers/nand/nand_bbt.c
 +#endif /* CONFIG_NAND_DYNPART */
 +
  #endif
-Index: u-boot/include/configs/neo1973.h
+Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
---- u-boot.orig/include/configs/neo1973.h
-+++ u-boot/include/configs/neo1973.h
+--- u-boot.orig/include/configs/neo1973_gta01.h
++++ u-boot/include/configs/neo1973_gta01.h
 @@ -99,7 +99,7 @@
  			CFG_CMD_ELF	 | \
  			CFG_CMD_MISC	 | \
@@ -150,7 +150,7 @@ Index: u-boot/common/cmd_jffs2.c
 ===================================================================
 --- u-boot.orig/common/cmd_jffs2.c
 +++ u-boot/common/cmd_jffs2.c
-@@ -1841,6 +1841,29 @@ static struct part_info* jffs2_part_info
+@@ -1841,6 +1841,29 @@
  	return NULL;
  }
  
@@ -180,7 +180,7 @@ Index: u-boot/common/cmd_jffs2.c
  /***************************************************/
  /* U-boot commands				   */
  /***************************************************/
-@@ -2132,6 +2155,24 @@ int do_jffs2_mtdparts(cmd_tbl_t *cmdtp, 
+@@ -2132,6 +2155,24 @@
  	printf ("Usage:\n%s\n", cmdtp->usage);
  	return 1;
  }
@@ -205,7 +205,7 @@ Index: u-boot/common/cmd_jffs2.c
  #endif /* #ifdef CONFIG_JFFS2_CMDLINE */
  
  /***************************************************/
-@@ -2197,6 +2238,15 @@ U_BOOT_CMD(
+@@ -2197,6 +2238,15 @@
  	"<name>     := '(' NAME ')'\n"
  	"<ro-flag>  := when set to 'ro' makes partition read-only (not used, passed to kernel)\n"
  );
@@ -225,7 +225,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -101,7 +101,7 @@ static inline int str2long(char *p, ulon
+@@ -101,7 +101,7 @@
  }
  
  int
@@ -234,7 +234,7 @@ Index: u-boot/common/cmd_nand.c
  {
  	int idx = nand_curr_device;
  #if (CONFIG_COMMANDS & CFG_CMD_JFFS2) && defined(CONFIG_JFFS2_CMDLINE)
-@@ -122,10 +122,17 @@ arg_off_size(int argc, char *argv[], nan
+@@ -122,10 +122,17 @@
  					printf("'%s' is not a number\n", argv[1]);
  					return -1;
  				}
@@ -255,7 +255,7 @@ Index: u-boot/common/cmd_nand.c
  			}
  			idx = dev->id->num;
  			*nand = nand_info[idx];
-@@ -261,7 +268,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
+@@ -261,7 +268,7 @@
  
  		printf("\nNAND %s: ", scrub ? "scrub" : "erase");
  		/* skip first two or three arguments, look for offset and size */
@@ -264,7 +264,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		memset(&opts, 0, sizeof(opts));
-@@ -323,7 +330,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
+@@ -323,7 +330,7 @@
  
  		read = strncmp(cmd, "read", 4) == 0; /* 1 = read, 0 = write */
  		printf("\nNAND %s: ", read ? "read" : "write");
@@ -273,7 +273,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		s = strchr(cmd, '.');
-@@ -445,7 +452,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
+@@ -445,7 +452,7 @@
  	}
  
  	if (strcmp(cmd, "unlock") == 0) {
@@ -286,7 +286,7 @@ Index: u-boot/common/cmd_dynenv.c
 ===================================================================
 --- u-boot.orig/common/cmd_dynenv.c
 +++ u-boot/common/cmd_dynenv.c
-@@ -60,7 +60,7 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -60,7 +60,7 @@
  		buf[2] = 'V';
  		buf[3] = '0';
  
@@ -307,14 +307,28 @@ Index: u-boot/include/util.h
 +  ulong *size, int net);
  
  #endif /* UTIL_H */
-Index: u-boot/board/neo1973/neo1973.c
+Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.c
-+++ u-boot/board/neo1973/neo1973.c
-@@ -382,3 +382,14 @@ int neo1973_911_key_pressed(void)
- 		return 0;
- 	return 1;
+--- u-boot.orig/board/qt2410/qt2410.c
++++ u-boot/board/qt2410/qt2410.c
+@@ -126,3 +126,9 @@
+ 
+ 	return 0;
  }
++
++unsigned int dynpart_size[] = {
++    CFG_UBOOT_SIZE, 0x4000, 0x200000, 0xa0000, 0x3d5c000-CFG_UBOOT_SIZE, 0 };
++char *dynpart_names[] = {
++    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
++
+Index: u-boot/board/neo1973/gta01/gta01.c
+===================================================================
+--- u-boot.orig/board/neo1973/gta01/gta01.c
++++ u-boot/board/neo1973/gta01/gta01.c
+@@ -429,3 +434,14 @@
+ 	return 0;
+ }
+ 
 +
 +/* The sum of all part_size[]s must equal to the NAND size, i.e., 0x4000000.
 +   "initrd" is sized such that it can hold two uncompressed 16 bit 640*480
@@ -325,20 +339,6 @@ Index: u-boot/board/neo1973/neo1973.c
 +char *dynpart_names[] = {
 +    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
 +
-+
-Index: u-boot/board/qt2410/qt2410.c
-===================================================================
---- u-boot.orig/board/qt2410/qt2410.c
-+++ u-boot/board/qt2410/qt2410.c
-@@ -126,3 +126,9 @@ int dram_init (void)
- 
- 	return 0;
- }
-+
-+unsigned int dynpart_size[] = {
-+    CFG_UBOOT_SIZE, 0x4000, 0x200000, 0xa0000, 0x3d5c000-CFG_UBOOT_SIZE, 0 };
-+char *dynpart_names[] = {
-+    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
 +
 Index: u-boot/include/configs/qt2410.h
 ===================================================================

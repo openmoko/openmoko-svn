@@ -1,7 +1,7 @@
 Index: u-boot/board/neo1973/neo1973.c
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.c
-+++ u-boot/board/neo1973/neo1973.c
+--- u-boot.orig/board/neo1973/gta01/gta01.c
++++ u-boot/board/neo1973/gta01/gta01.c
 @@ -68,8 +68,12 @@ DECLARE_GLOBAL_DATA_PTR;
  #define U_M_PDIV	0x2
  #define U_M_SDIV	0x3
@@ -27,7 +27,7 @@ Index: u-boot/board/neo1973/neo1973.c
 +	}
 +
  	/* arch number of SMDK2410-Board */
- 	gd->bd->bi_arch_number = MACH_TYPE_NEO1973;
+ 	gd->bd->bi_arch_number = MACH_TYPE_NEO1973_GTA01;
  
 @@ -200,7 +211,7 @@ int board_late_init(void)
  	pcf50606_init();

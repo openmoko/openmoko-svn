@@ -8,11 +8,11 @@ board/neo1973/neo1973.c (board_late_init): if booted from RAM, assume that
 
 - Werner Almesberger <werner@openmoko.org>
 
-Index: u-boot/board/neo1973/neo1973.c
+Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
---- u-boot.orig/board/neo1973/neo1973.c
-+++ u-boot/board/neo1973/neo1973.c
-@@ -193,12 +193,16 @@ int board_init (void)
+--- u-boot.orig/board/neo1973/gta01/gta01.c
++++ u-boot/board/neo1973/gta01/gta01.c
+@@ -226,12 +226,16 @@
  
  int board_late_init(void)
  {
@@ -29,7 +29,7 @@ Index: u-boot/board/neo1973/neo1973.c
  	/* obtain wake-up reason, save INT1 in environment */
  	tmp = pcf50606_reg_read(PCF50606_REG_INT1);
  	sprintf(buf, "0x%02x", tmp);
-@@ -241,6 +245,7 @@ int board_late_init(void)
+@@ -274,6 +278,7 @@
  		neo1973_poweroff();
  	}
  
@@ -41,7 +41,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -77,6 +77,14 @@ _fiq:			.word fiq
+@@ -77,6 +77,14 @@
   *************************************************************************
   */
  
@@ -56,7 +56,7 @@ Index: u-boot/cpu/arm920t/start.S
  _TEXT_BASE:
  	.word	TEXT_BASE
  
-@@ -281,6 +289,9 @@ notmatch:
+@@ -281,6 +289,9 @@
  #endif
  1:	b	1b
  done_nand_read:
