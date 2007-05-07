@@ -1083,7 +1083,7 @@ Index: u-boot/board/smdk2440/smdk2440.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/smdk2440/smdk2440.c
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,152 @@
 +/*
 + * (C) Copyright 2002
 + * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
@@ -1173,7 +1173,7 @@ Index: u-boot/board/smdk2440/smdk2440.c
 +
 +	/* set up the I/O ports */
 +	gpio->GPACON = 0x007FFFFF;
-+	gpio->GPBCON = 0x00044555;
++	gpio->GPBCON = 0x002a9655;
 +	gpio->GPBUP = 0x000007FF;
 +	gpio->GPCCON = 0xAAAAAAAA;
 +	gpio->GPCUP = 0x0000FFFF;
@@ -1191,6 +1191,8 @@ Index: u-boot/board/smdk2440/smdk2440.c
 +	gpio->GPHCON = 0x002AFAAA;
 +#endif
 +	gpio->GPHUP = 0x000007FF;
++
++	gpio->GPJCON = 0x2AAAAAA;
 +
 +#if 0
 +	/* USB Device Part */
