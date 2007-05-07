@@ -1,6 +1,5 @@
 # just some local hacks
 uboot-machtypes.patch
-uboot-arm920t_cp15_cmd.patch
 ext2load_hex.patch
 uboot-mokoversion.patch
 
