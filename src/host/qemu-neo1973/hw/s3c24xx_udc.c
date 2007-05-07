@@ -637,6 +637,11 @@ static int s3c_udc_handle_packet(USBDevice *dev, USBPacket *p)
             }
             /* TODO: DMA */
         }
+        /* Perhaps it is a good idea to return USB_RET_ASYNC here and in
+         * USB_TOKEN_SETUP and trigger completion only after OUT_PKT_RDY
+         * condition is serviced by the guest to avoid potential overruns
+         * and so that the host can know about timeouts (seems there's no
+         * way to indicate other errors asynchronously).  */
         break;
     default:
     fail:

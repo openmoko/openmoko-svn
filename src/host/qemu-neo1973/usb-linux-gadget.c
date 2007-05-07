@@ -24,6 +24,7 @@
 #include <linux/usb_ch9.h>
 #include <linux/usb_gadgetfs.h>
 #include <poll.h>
+#include <signal.h>
 
 /* Must be after usb_ch9.h */
 #include "vl.h"
@@ -142,7 +143,8 @@ static void gadget_ep_run(struct ep_s *ep)
     } else if (ret == USB_RET_ASYNC) {
         ep->busy = 1;
     } else {
-        fprintf(stderr, "%s: packet unhandled: %i\n", __FUNCTION__, ret);
+        fprintf(stderr, "%s: EP%i packet unhandled: %i\n", __FUNCTION__,
+                        ep->num, ret);
         if (ret != USB_RET_NAK)
             gadget_detach(ep->state);
     }
@@ -167,9 +169,16 @@ static void gadget_respond(USBPacket *packet, void *opaque)
 static void gadget_token_in(USBPacket *packet, void *opaque)
 {
     struct ep_s *ep = (struct ep_s *) opaque;
+    sigset_t new, old;
     ep->busy = 0;
+    sigfillset(&new);
+    /* The packets reach 1.5 kB and the loop alone, with unblocked
+     * signals locks qemu up for ~10s until a 1.5 kB write succeeds
+     * uninterrupted.  */
+    pthread_sigmask(SIG_BLOCK, &new, &old);
     while (write(ep->fd, packet->data, packet->len) < packet->len &&
                     errno == EINTR);
+    pthread_sigmask(SIG_SETMASK, &old, 0);
 }
 
 #if 0
