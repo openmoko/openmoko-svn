@@ -35,7 +35,7 @@ Index: linux-2.6.21-moko/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/drivers/video/backlight/gta01_bl.c
-@@ -0,0 +1,287 @@
+@@ -0,0 +1,286 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -104,11 +104,11 @@ Index: linux-2.6.21-moko/drivers/video/backlight/gta01_bl.c
 +
 +static int gta01bl_send_intensity(struct backlight_device *bd)
 +{
-+	int intensity = bd->props->brightness;
++	int intensity = bd->props.brightness;
 +
-+	if (bd->props->power != FB_BLANK_UNBLANK)
++	if (bd->props.power != FB_BLANK_UNBLANK)
 +		intensity = 0;
-+	if (bd->props->fb_blank != FB_BLANK_UNBLANK)
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
 +		intensity = 0;
 +	if (gta01bl_flags & GTA01BL_SUSPENDED)
 +		intensity = 0;
@@ -122,7 +122,7 @@ Index: linux-2.6.21-moko/drivers/video/backlight/gta01_bl.c
 +	else
 +		s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 0);
 +#else
-+	if (intensity == bd->props->max_brightness) {
++	if (intensity == bd->props.max_brightness) {
 +		s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
 +	} else  {
@@ -232,8 +232,7 @@ Index: linux-2.6.21-moko/drivers/video/backlight/gta01_bl.c
 +EXPORT_SYMBOL(gta01bl_limit_intensity);
 +
 +
-+static struct backlight_properties gta01bl_prop = {
-+	.owner          = THIS_MODULE,
++static struct backlight_ops gta01bl_ops = {
 +	.get_brightness = gta01bl_get_intensity,
 +	.update_status  = gta01bl_set_intensity,
 +};
@@ -262,7 +261,7 @@ Index: linux-2.6.21-moko/drivers/video/backlight/gta01_bl.c
 +
 +	gta01_backlight_device = backlight_device_register("gta01-bl",
 +							   &pdev->dev, NULL,
-+							   &gta01bl_prop);
++							   &gta01bl_ops);
 +	if (IS_ERR(gta01_backlight_device))
 +		return PTR_ERR(gta01_backlight_device);
 +
