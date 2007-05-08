@@ -797,12 +797,22 @@ int usb_gadget_init(void)
     return ret;
 }
 
+void usb_gadget_config_set(USBPort *port, int config)
+{
+    struct gadget_state_s *hci = (struct gadget_state_s *) port->opaque;
+    hci->config_num = config;
+}
+
 #else
 #include "vl.h"
 
 int usb_gadget_init(void)
 {
     return -ENODEV;
+}
+
+void usb_gadget_config_set(USBPort *port, int config)
+{
 }
 
 #endif

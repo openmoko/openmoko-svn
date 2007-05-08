@@ -4001,10 +4001,14 @@ static int usb_device_add(const char *devname)
 	if (nr >= (unsigned int)nb_nics || strcmp(nd_table[nr].model, "usb"))
 		return -1;
         dev = usb_net_init(&nd_table[nr]);
-    } else if (!strcmp(devname, "gadget")) {
+    } else if (strstart(devname, "gadget", &p)) {
         dev = usb_gadget;
         port = host_usb_ports;
         if (!dev || !port)
+            return -1;
+        if (p[0] == ':')
+            usb_gadget_config_set(port, strtoul(&p[1], NULL, 0));
+        else if (p[0] != 0)
             return -1;
         goto attach;
     } else {
@@ -4130,6 +4134,187 @@ void usb_info(void)
         term_printf("  Device %d.%d, Speed %s Mb/s, Product %s\n", 
                     0, dev->addr, speed_str, dev->devname);
     }
+}
+
+struct usb_slave_info_s {
+    uint8_t buffer[256];
+    int config_num;
+    int packet_num;
+    USBPacket packet[2];
+    uint64_t timeout;
+    USBDevice *slave;
+    int timedout;
+    int config;
+    int manf_str;
+    int prod_str;
+    USBCallback *cb;
+    QEMUTimer *timeout_tm;
+};
+
+static void usb_packet_next(USBPacket *prev, void *opaque)
+{
+    struct usb_slave_info_s *info = (struct usb_slave_info_s *) opaque;
+    int ret;
+    int num;
+
+    if (info->timedout)
+        return;
+
+    num = info->packet_num ++;
+
+    if (num >= 2) {
+        if (qemu_timer_pending(info->timeout_tm))
+            qemu_del_timer(info->timeout_tm);
+        info->cb(prev, opaque);
+        return;
+    }
+
+    ret = info->slave->handle_packet(info->slave, &info->packet[num]);
+
+    if (ret >= 0) {
+        info->packet[num].len = ret;
+        info->packet[num].complete_cb(&info->packet[num],
+                                      info->packet[num].complete_opaque);
+    } else if (ret == USB_RET_ASYNC) {
+        qemu_mod_timer(info->timeout_tm,
+                       qemu_get_clock(rt_clock) + info->timeout);
+    } else {
+        term_printf("Packet not handled\n");
+    }
+}
+
+static void usb_get_descriptor(struct usb_slave_info_s *info, USBCallback cb,
+                               int desc, int idx)
+{
+    info->packet_num = 0;
+    info->cb = cb;
+
+    /* Ask for the descriptor */
+    info->packet[0].pid = USB_TOKEN_SETUP;
+    info->packet[0].devaddr = 0;
+    info->packet[0].devep = 0;
+    info->packet[0].data = info->buffer;
+    info->packet[0].len = 8;
+    info->packet[0].complete_cb = usb_packet_next;
+    info->packet[0].complete_opaque = info;
+
+    info->buffer[0] = USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE;
+    info->buffer[1] = USB_REQ_GET_DESCRIPTOR;
+    info->buffer[2] = idx;
+    info->buffer[3] = desc;
+    info->buffer[4] = 0x00;
+    info->buffer[5] = 0x00;
+    info->buffer[6] = sizeof(info->buffer) & 0xff;
+    info->buffer[7] = sizeof(info->buffer) >> 8;
+
+    /* Read the response */
+    info->packet[1].pid = USB_TOKEN_IN;
+    info->packet[1].devaddr = 0;
+    info->packet[1].devep = 0;
+    info->packet[1].data = info->buffer;
+    info->packet[1].len = sizeof(info->buffer);
+    info->packet[1].complete_cb = usb_packet_next;
+    info->packet[1].complete_opaque = info;
+
+    usb_packet_next(0, info);
+}
+
+static void usb_config_desc(USBPacket *packet, void *opaque)
+{
+    struct usb_slave_info_s *info = (struct usb_slave_info_s *) opaque;
+    char buffer[128];
+    int config_str;
+
+    if (packet->data[1] == USB_DT_CONFIG) {
+        config_str = packet->data[6];
+        usb_get_descriptor(info, usb_config_desc, USB_DT_STRING, config_str);
+    } else if (packet->data[1] == USB_DT_STRING) {
+        get_usb_string(buffer, packet->data);
+        term_printf("Configuration %i: %s\n", info->config, buffer);
+
+        if (++ info->config < info->config_num)
+            usb_get_descriptor(info, usb_config_desc,
+                               USB_DT_CONFIG, info->config);
+    } else {
+        term_printf("Response unrecognised\n");
+    }
+}
+
+static void usb_prod_string(USBPacket *packet, void *opaque)
+{
+    struct usb_slave_info_s *info = (struct usb_slave_info_s *) opaque;
+    char buffer[128];
+
+    if (packet->data[1] != USB_DT_STRING) {
+        term_printf("Response unrecognised\n");
+        return;
+    }
+
+    get_usb_string(buffer, packet->data);
+    term_printf("Product: %s\n", buffer);
+
+    info->config = 0;
+    usb_get_descriptor(info, usb_config_desc, USB_DT_CONFIG, 0);
+}
+
+static void usb_manf_string(USBPacket *packet, void *opaque)
+{
+    struct usb_slave_info_s *info = (struct usb_slave_info_s *) opaque;
+    char buffer[128];
+
+    if (packet->data[1] != USB_DT_STRING) {
+        term_printf("Response unrecognised\n");
+        return;
+    }
+
+    get_usb_string(buffer, packet->data);
+    term_printf("Manufacturer: %s\n", buffer);
+
+    usb_get_descriptor(info, usb_prod_string, USB_DT_STRING, info->prod_str);
+}
+
+static void usb_dev_desc(USBPacket *packet, void *opaque)
+{
+    struct usb_slave_info_s *info = (struct usb_slave_info_s *) opaque;
+
+    if (packet->data[1] != USB_DT_DEVICE) {
+        term_printf("Response unrecognised\n");
+        return;
+    }
+
+    info->config_num = packet->data[17];
+    info->manf_str = packet->data[14];
+    info->prod_str = packet->data[15];
+    term_printf("USB%x.%x device %04x:%04x:\n",
+                packet->data[3], packet->data[4],
+                (packet->data[9] << 8) | packet->data[8],
+                (packet->data[11] << 8) | packet->data[10]);
+
+    usb_get_descriptor(info, usb_manf_string, USB_DT_STRING, info->manf_str);
+}
+
+void usb_timeout_tick(void *opaque)
+{
+    struct usb_slave_info_s *info = (struct usb_slave_info_s *) opaque;
+    term_printf("Slave device response time-out\n");
+    info->timedout = 1;
+}
+
+void usb_slave_info(void)
+{
+    struct usb_slave_info_s *info =
+            qemu_mallocz(sizeof(struct usb_slave_info_s));
+    if (!usb_gadget) {
+        term_printf("No USB slave functionality\n");
+        return;
+    }
+
+    info->slave = usb_gadget;
+    info->timeout = 500;
+    info->timedout = 0;
+    info->timeout_tm = qemu_new_timer(rt_clock, usb_timeout_tick, info);
+
+    usb_get_descriptor(info, usb_dev_desc, USB_DT_DEVICE, 0);
 }
 
 /***********************************************************/

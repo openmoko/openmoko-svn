@@ -1279,6 +1279,8 @@ static term_cmd_t info_cmds[] = {
       "", "show guest USB devices", },
     { "usbhost", "", usb_host_info,
       "", "show host USB devices", },
+    { "usbslave", "", usb_slave_info,
+      "", "show USB configurations exported by guest", },
     { "profile", "", do_info_profile,
       "", "show profiling information", },
     { "capture", "", do_info_capture,

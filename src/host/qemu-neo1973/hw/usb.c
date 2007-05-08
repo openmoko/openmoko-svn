@@ -184,12 +184,28 @@ int set_usb_string(uint8_t *buf, const char *str)
     q = buf;
     len = strlen(str);
     *q++ = 2 * len + 2;
-    *q++ = 3;
+    *q++ = USB_DT_STRING;
     for(i = 0; i < len; i++) {
         *q++ = str[i];
         *q++ = 0;
     }
     return q - buf;
+}
+
+int get_usb_string(char *buf, const uint8_t *str)
+{
+    int len, i;
+    char *q;
+
+    q = str;
+    len = (*q++ - 2) / 2;
+    q++;
+    for(i = 0; i < len; i++) {
+        buf[i] = *q++;
+        q++;
+    }
+    buf[i] = 0;
+    return len;
 }
 
 /* Send an internal message to a USB device.  */

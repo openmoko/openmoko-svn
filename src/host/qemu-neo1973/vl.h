@@ -1239,6 +1239,7 @@ void qemu_register_usb_gadget(USBDevice *device);
 void do_usb_add(const char *devname);
 void do_usb_del(const char *devname);
 void usb_info(void);
+void usb_slave_info(void);
 
 /* scsi-disk.c */
 enum scsi_reason {

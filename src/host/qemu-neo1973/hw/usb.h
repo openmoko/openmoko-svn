@@ -195,6 +195,7 @@ static inline void usb_cancel_packet(USBPacket * p)
 void usb_attach(USBPort *port, USBDevice *dev);
 int usb_generic_handle_packet(USBDevice *s, USBPacket *p);
 int set_usb_string(uint8_t *buf, const char *str);
+int get_usb_string(char *buf, const uint8_t *str);
 void usb_send_msg(USBDevice *dev, int msg);
 
 void usb_packet_complete(USBPacket *p);
@@ -216,6 +217,7 @@ void usb_host_info(void);
 
 /* usb-linux-gadget.c */
 int usb_gadget_init(void);
+void usb_gadget_config_set(USBPort *port, int config);
 
 /* usb-hid.c */
 USBDevice *usb_mouse_init(void);
