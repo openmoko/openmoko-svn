@@ -10,7 +10,7 @@ Index: linux-2.6.21-moko/drivers/video/backlight/Kconfig
  
 +config BACKLIGHT_GTA01
 +	tristate "FIC Neo1973 GTA01 Backlight Driver"
-+	depends on BACKLIGHT_DEVICE && MACH_NEO1973_GTA01
++	depends on BACKLIGHT_CLASS_DEVICE && MACH_NEO1973_GTA01
 +	default y
 +	help
 +	  If you have a FIC GTA01 say y to enable the backlight driver.
