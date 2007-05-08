@@ -33,7 +33,7 @@ menu_1=
   Boot from microSD:
   setenv bootargs
     ${bootargs_base} rootfstype=ext2 rootfs=/dev/mmcblk0p1 rootdelay=5
-    ${mtdparts};
+    ${mtdparts} ro;
   mmcinit;
   ext2load mmc 0 0x32000000 /boot/${sd_image_name};
   bootm 0x32000000
