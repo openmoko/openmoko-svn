@@ -29,7 +29,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,430 @@
+@@ -0,0 +1,393 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -161,47 +161,10 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +	}
 +};
 +
-+/* NAND partitions.  Once we use dynpart, this goes away */
-+static struct mtd_partition hxd8_default_nand_part[] = {
-+	[0] = {
-+		.name	= "U-Boot",
-+		.size	= 0x100000,
-+		.offset	= 0,
-+	},
-+	[1] = {
-+		.name	= "kernel",
-+		.offset = 0x100000,
-+		.size	= SZ_2M,
-+	},
-+	[2] = {
-+		.name	= "update",
-+		.offset = 0x300000,
-+		.size	= SZ_2M,
-+	},
-+	[3] = {
-+		.name	= "splash",
-+		.offset	= 0x500000,
-+		.size	= SZ_1M,
-+	},
-+	[4] = {
-+		.name	= "jffs2",
-+		.offset = 0x600000,
-+		.size	= SZ_2M * 10,
-+	},
-+	[5] = {
-+		.name	= "temp",
-+		.offset	= 0x1a00000,
-+		.size	= 0x30000000,
-+	},
-+};
-+
 +static struct s3c2410_nand_set hxd8_nand_sets[] = {
 +	[0] = {
 +		.name		= "hxd8-nand",
 +		.nr_chips	= 1,
-+		/* FIXME: the static partition table should be removed soon */
-+		.nr_partitions	= ARRAY_SIZE(hxd8_default_nand_part),
-+		.partitions	= hxd8_default_nand_part,
 +	},
 +};
 +
@@ -449,7 +412,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +	s3c2410_pm_init();
 +}
 +
-+MACHINE_START(S3C2440, "HXD8")
++MACHINE_START(HXD8, "HXD8")
 +	/* Maintainer: Harald Welte <laforge@openmoko.org> */
 +	.phys_io	= S3C2410_PA_UART,
 +	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
