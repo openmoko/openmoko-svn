@@ -150,6 +150,7 @@ main (int argc, char **argv)
 
   /* Initialize GTK+ */
   gtk_init (&argc, &argv);
+  moko_stock_register ();
 
   if (argc != 1)
   {

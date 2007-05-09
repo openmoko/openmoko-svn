@@ -18,12 +18,8 @@
 
 #include <string.h>
 
-#include <libmokoui/moko-finger-tool-box.h>
-#include <libmokoui/moko-finger-window.h>
-#include <libmokoui/moko-finger-wheel.h>
-#include <libmokoui/moko-pixmap-button.h>
-#include <libmokoui/moko-message-dialog.h>
-
+#include <libmokoui/moko-ui.h>
+#
 #include <gtk/gtk.h>
 
 #include "contacts.h"
@@ -231,18 +227,12 @@ static void
 on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
 {
 
-  //DBG_ENTER ();
   window_outgoing_setup_timer (appdata);
-  //DBG_TRACE ();
   appdata->g_state.callstate = STATE_CALLING;
-  //DBG_TRACE ();
-  //appdata->g_state.historytype = OUTGOING;
-  //DBG_TRACE ();
   /* TODO: MokoGsmdConnection->dial
    * int retv = gsm_dial (appdata->g_peer_info.number);
    * DBG_MESSAGE ("GSM_DIAL returns %d", retv);
    */
-  //DBG_LEAVE ();
 }
 
 
@@ -280,25 +270,19 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 
 
     /* Set up buttons */
-    GtkWidget *button = gtk_button_new_with_label ("Speaker");
-    gtk_button_set_image (GTK_BUTTON (button),
-                          file_new_image_from_relative_path ("speaker.png"));
+    GtkWidget *button = gtk_button_new_from_stock (MOKO_STOCK_SPEAKER);
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
     p_dialer_data->buttonSpeaker = button;
 
-    button = gtk_button_new_with_label ("Redial");
-    gtk_button_set_image (GTK_BUTTON (button),
-                          file_new_image_from_relative_path ("redial.png"));
+    button = gtk_button_new_from_stock (MOKO_STOCK_CALL_REDIAL);
     p_dialer_data->buttonRedial = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_redial_button_clicked), p_dialer_data);
     g_object_set (G_OBJECT (button), "no-show-all", TRUE, NULL);
 
 
-    button = gtk_button_new_with_label ("Cancel");
-    gtk_button_set_image (GTK_BUTTON (button),
-                          file_new_image_from_relative_path ("cancel.png"));
+    button = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
     p_dialer_data->buttonCancel = button;
     g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_cancel_button_clicked), p_dialer_data);
@@ -324,4 +308,11 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
   }
 
   return 1;
+}
+
+void
+window_outgoing_run (MokoDialerData *appdata, gchar *number)
+{
+  moko_gsmd_connection_voice_dial (appdata->connection, number);
+  gtk_dialog_run (appdata->window_outgoing);
 }
