@@ -71,35 +71,9 @@ today_update_date (GtkLabel * label)
   }
 
   /* TODO: use something nicer from the locale here */
-  strftime (date_str, sizeof (date_str), "%a %d/%b/%Y", tmp);
-  gtk_label_set_text (label, date_str);
+  strftime (date_str, sizeof (date_str), "<big>%a %d/%b/%Y</big>", tmp);
+  gtk_label_set_markup (label, date_str);
 
-}
-
-/**
- * today_update_time ()
- *
- * Update the specified GtkLabel with the current time
- */
-static void
-today_update_time (GtkLabel * label)
-{
-  time_t t;
-  struct tm *tmp;
-  gchar time_str[64];
-
-  t = time (NULL);
-  tmp = localtime (&t);
-
-  if (tmp == NULL)
-  {
-    // error = could not get localtime
-    return;
-  }
-
-  /* TODO: make 12/24 hr optional */
-  strftime (time_str, sizeof (time_str), "<big>%I:%M</big> %p", tmp);
-  gtk_label_set_markup (label, time_str);
 }
 
 /* information lines */
@@ -261,16 +235,6 @@ create_ui ()
   gtk_box_pack_start (GTK_BOX (vbox), alignment, FALSE, FALSE, 0);
   today_update_date (GTK_LABEL (date));
   g_timeout_add (60 * 60 * 1000, (GSourceFunc) today_update_date, date);
-
-  /* time */
-  alignment = gtk_alignment_new (1, 0, 0, 0);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 0, 0, 0, 12);
-  time_label = gtk_label_new (NULL);
-  gtk_label_set_markup (GTK_LABEL (time_label), "<big>10:30am</big>");
-  gtk_container_add (GTK_CONTAINER (alignment), time_label);
-  gtk_box_pack_start (GTK_BOX (vbox), alignment, FALSE, FALSE, 0);
-  today_update_time (GTK_LABEL (time_label));
-  g_timeout_add (60 * 1000, (GSourceFunc) today_update_time, time_label);
 
   /* main message */
   alignment = gtk_alignment_new (0.5, 0.5, 0, 0);
