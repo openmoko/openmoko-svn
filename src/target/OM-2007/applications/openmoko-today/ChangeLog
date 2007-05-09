@@ -1,5 +1,12 @@
 2007-05-09  Thomas Wood  <thomas@openedhand.com>
 
+	* Makefile.am:
+	* configure.ac:
+	* src/Makefile.am:
+	Fix various issues so that make distcheck works. Closes bug 534.
+
+2007-05-09  Thomas Wood  <thomas@openedhand.com>
+
 	* src/today-main.c: (today_update_date), (create_ui): Remove the clock. Closes bug 469.
 
 Fri, 30 Mar 2007 13:18:28 +0200 Dodji Seketeli
