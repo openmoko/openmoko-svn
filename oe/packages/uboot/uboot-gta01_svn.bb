@@ -1,10 +1,10 @@
 DESCRIPTION = "U-boot bootloader w/ Neo1973 (GTA01) support"
-AUTHOR = "Harald Welte <laforge@openmoko.org>
+AUTHOR = "Harald Welte <laforge@openmoko.org>"
 LICENSE = "GPL"
 SECTION = "bootloader"
 PRIORITY = "optional"
 PV = "1.2.0+svn${SRCDATE}"
-PR = "r5"
+PR = "r6"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
@@ -37,7 +37,7 @@ do_svnrev() {
 }
 
 do_compile () {
-	chmod +x board/neo1973/split_by_variant.sh
+	chmod +x board/neo1973/gta*/split_by_variant.sh
 	for mach in ${UBOOT_MACHINES}
 	do
 		oe_runmake ${mach}_config
