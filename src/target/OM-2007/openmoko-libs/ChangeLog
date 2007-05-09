@@ -1,5 +1,13 @@
 2007-05-09  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-message-dialog.c:
+	(moko_message_dialog_set_message),
+	(moko_message_dialog_set_image_from_stock):
+	* libmokoui/moko-message-dialog.h:
+	Add moko_message_dialog_set_image () and replace some deprecated functions
+
+2007-05-09  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-application.c: (moko_application_init):
 	* libmokoui/moko-stock.c: (moko_stock_register):
 	* libmokoui/moko-stock.h:

@@ -63,6 +63,7 @@ void moko_message_dialog_set_message (MokoMessageDialog *dialog,
     ...)G_GNUC_PRINTF (2, 3);
 void moko_message_dialog_set_image_from_stock (MokoMessageDialog *dialog,
     const gchar *stock_id);
+void moko_message_dialog_set_image (MokoMessageDialog *dialog, GtkWidget *image);
 
 G_END_DECLS
 

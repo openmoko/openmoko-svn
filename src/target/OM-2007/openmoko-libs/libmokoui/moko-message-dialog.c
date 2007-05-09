@@ -319,7 +319,7 @@ moko_message_dialog_set_message (MokoMessageDialog *dialog, const gchar *message
   priv->message = g_strdup_vprintf (message_format, args);
   va_end (args);
 
-  gtk_label_set (GTK_LABEL (priv->label), priv->message);
+  gtk_label_set_text (GTK_LABEL (priv->label), priv->message);
 }
 
 void
@@ -339,6 +339,27 @@ moko_message_dialog_set_image_from_stock (MokoMessageDialog *dialog, const gchar
   if (old_image !=NULL)
     g_object_unref (old_image);
 }
+
+
+void
+moko_message_dialog_set_image (MokoMessageDialog *dialog, GtkWidget *image)
+{
+  MokoMessageDialogPrivate* priv = MESSAGE_DIALOG_PRIVATE(dialog);
+  GtkWidget *old_image = priv->image;
+
+  priv->image = image;
+
+  if (old_image != NULL)
+    gtk_container_remove (GTK_CONTAINER (priv->image_alignment), old_image);
+
+  gtk_container_add (GTK_CONTAINER (priv->image_alignment), priv->image);
+  gtk_widget_show_all (GTK_WIDGET (priv->image_alignment));
+
+  if (old_image !=NULL)
+    g_object_unref (old_image);
+}
+
+
 
 GtkWidget*
 moko_message_dialog_new (void)
