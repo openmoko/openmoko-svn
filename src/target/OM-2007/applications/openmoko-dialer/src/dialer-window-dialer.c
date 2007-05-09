@@ -96,70 +96,12 @@ cb_history_button_clicked (GtkButton * button, MokoDialerData * appdata)
 }
 
 static void
-window_dialer_dial_out (MokoDialerData * appdata)
-{
-  gchar *codesinput;
-  //get the input digits
-  codesinput =
-    g_strdup (moko_dialer_textview_get_input
-              (appdata->moko_dialer_text_view, FALSE));
-  DBG_TRACE ();
-  if ((!codesinput)
-      || ((codesinput != NULL) && g_utf8_strlen (codesinput, -1)) < 1)
-  {
-    //user didn't input anything, maybe it's a redial, so we just insert the last dialed number and return this time.
-    if (g_utf8_strlen (appdata->g_state.lastnumber, -1) > 0)
-    {
-      moko_dialer_textview_insert (appdata->moko_dialer_text_view,
-                                   appdata->g_state.lastnumber);
-      moko_dialer_autolist_refresh_by_string (appdata->
-                                              moko_dialer_autolist,
-                                              appdata->g_state.lastnumber,
-                                              TRUE);
-    }
-    return;
-  }
-//empty the textview
-  moko_dialer_textview_empty (appdata->moko_dialer_text_view);
-
-//and we set the selected autolist to be No
-  moko_dialer_autolist_set_select (appdata->moko_dialer_autolist, -1);
-  moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
-
-//got the number;//FIXME:which function should I use if not g_strdup. & strcpy.
-  //strcpy(appdata->g_peer_info.number, codesinput );
-  g_stpcpy (appdata->g_peer_info.number, codesinput);
-
-//retrieve the contact information if any.
-  contact_get_peer_info_from_number (appdata->g_contactlist.contacts,
-                                     &(appdata->g_peer_info));
-// contact_get_peer_info_from_number
-
-/*
-if(!appdata->window_outgoing)
-	window_incoming_init(appdata);
-
-//transfer the contact info
-window_incoming_prepare(appdata);
-
-//start dialling.
-gtk_widget_show(appdata->window_incoming);
-*/
-
-//transfer the contact info
-  window_outgoing_prepare (appdata);
-
-//start dialling.
-  gtk_widget_show_all (appdata->window_outgoing);
-
-  g_free (codesinput);
-
-}
-
-static void
 cb_dialer_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
-  window_dialer_dial_out (appdata);
+  gchar *number;
+  number = moko_dialer_textview_get_input (appdata->moko_dialer_text_view, TRUE);
+  g_debug ("Dialing: %s", number);
+  window_outgoing_dial (appdata, number);
 }
 
 
@@ -202,7 +144,7 @@ static void
 on_dialer_autolist_user_confirmed (GtkWidget * widget, gpointer para_pointer,
                                    gpointer user_data)
 {
-
+#if 0
   MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
   DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
@@ -210,10 +152,8 @@ on_dialer_autolist_user_confirmed (GtkWidget * widget, gpointer para_pointer,
                ready_contact->p_entry->content);
   moko_dialer_textview_confirm_it (moko_dialer_text_view,
                                    ready_contact->p_entry->content);
-  DBG_MESSAGE ("And here we are supposed to call out directly");
-  window_dialer_dial_out (appdata);
 
-
+#endif
 }
 
 static void

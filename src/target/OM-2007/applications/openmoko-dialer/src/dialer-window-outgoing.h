@@ -21,7 +21,6 @@
 #define _OPENMOKO_DIALER_WINDOW_OUTGOING_H
 
 gint window_outgoing_init (MokoDialerData * p_dialer_data);
-void window_outgoing_prepare (MokoDialerData * appdata);
-void window_outgoing_fails (MokoDialerData * appdata);
+void window_outgoing_dial (MokoDialerData *data, gchar *number);
 
 #endif

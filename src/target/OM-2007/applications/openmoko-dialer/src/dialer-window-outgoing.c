@@ -49,12 +49,6 @@ cb_speaker_button_clicked (GtkButton * button, MokoDialerData * appdata)
 
   //start dialling.
 
-  DBG_TRACE ();
-//  gtk_widget_show_all (appdata->window_talking);
-  gtk_widget_show (appdata->window_talking);
-
-
-  DBG_LEAVE ();
 }
 
 static void
@@ -91,47 +85,6 @@ cb_cancel_button_clicked (GtkButton * button, MokoDialerData * appdata)
   DBG_LEAVE ();
 }
 
-void
-window_outgoing_prepare (MokoDialerData * appdata)
-{
-  DBG_ENTER ();
-  if (appdata->window_outgoing == 0)
-    window_outgoing_init (appdata);
-
-
-  moko_dialer_status_set_person_number (appdata->status_outgoing,
-                                        appdata->g_peer_info.number);
-  if (appdata->g_peer_info.hasname)
-  {
-    moko_dialer_status_set_person_image (appdata->status_outgoing,
-                                         appdata->g_peer_info.ID);
-    moko_dialer_status_set_person_name (appdata->status_outgoing,
-                                        appdata->g_peer_info.name);
-  }
-  else
-  {
-    moko_dialer_status_set_person_image (appdata->status_outgoing, "");
-    moko_dialer_status_set_person_name (appdata->status_outgoing, "");
-
-  }
-//  strcpy (appdata->g_state.lastnumber, appdata->g_peer_info.number);
-  g_stpcpy (appdata->g_state.lastnumber, appdata->g_peer_info.number);
-  DBG_LEAVE ();
-
-}
-
-void
-window_outgoing_fails (MokoDialerData * appdata)
-{
-  DBG_ENTER ();
-  moko_dialer_status_set_error (appdata->status_outgoing);
-  moko_dialer_status_set_title_label (appdata->status_outgoing,
-                                      "Call Failure");
-  gtk_widget_hide (appdata->buttonSpeaker);
-  gtk_widget_show (appdata->buttonRedial);
-  DBG_LEAVE ();
-}
-
 gint
 timer_outgoing_time_out (MokoDialerData * appdata)
 {
@@ -162,7 +115,7 @@ timer_outgoing_time_out (MokoDialerData * appdata)
     g_source_remove (timer_data->ptimer);
     timer_data->ptimer = 0;
 //maybe it failes
-    window_outgoing_fails (appdata);
+//    window_outgoing_fails (appdata);
     return 0;                   //0 stops the timer.
   }
   else
@@ -311,7 +264,7 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 }
 
 void
-window_outgoing_run (MokoDialerData *appdata, gchar *number)
+window_outgoing_dial (MokoDialerData *appdata, gchar *number)
 {
   moko_gsmd_connection_voice_dial (appdata->connection, number);
   gtk_dialog_run (appdata->window_outgoing);
