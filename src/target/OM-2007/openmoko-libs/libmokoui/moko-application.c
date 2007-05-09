@@ -126,6 +126,8 @@ static void moko_application_init(MokoApplication *self)
     priv->mb_current_app_window_atom = XInternAtom( GDK_DISPLAY(), "_MB_CURRENT_APP_WINDOW", False );
     priv->net_active_window_atom = XInternAtom( GDK_DISPLAY(), "_NET_ACTIVE_WINDOW", False );
     priv->seen_matchbox_atom = FALSE;
+
+    moko_stock_register ();
 }
 
 static void moko_application_finalize (GObject *self)

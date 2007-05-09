@@ -59,4 +59,7 @@
 #define MOKO_STOCK_VIEW "moko-stock-view"
 
 
+void moko_stock_register ();
+
+
 #endif /* _MOKO_STOCK_H_ */

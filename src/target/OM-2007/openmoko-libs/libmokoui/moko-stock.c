@@ -54,7 +54,7 @@ static const GtkStockItem moko_items [] =
 static gboolean registered = FALSE;
 
 void
-moko_register_stock ()
+moko_stock_register ()
 {
   /* make sure we never register the icons twice */
   if (registered)

@@ -1,3 +1,10 @@
+2007-05-09  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-application.c: (moko_application_init):
+	* libmokoui/moko-stock.c: (moko_stock_register):
+	* libmokoui/moko-stock.h:
+	Add moko_stock_register
+
 2007-05-02  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/Makefile.am:
