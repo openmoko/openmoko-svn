@@ -1,5 +1,5 @@
 TEMPLATE = lib
-VERSION = 0.0.2
+VERSION = 0.0.3
 TARGET = mokoui
 
 HEADERS = \
@@ -19,8 +19,10 @@ HEADERS = \
     moko-pixmap-button.h \
     moko-paned-window.h \
     moko-scrolled-pane.h \
+    moko-stock.h \
     moko-tree-view.h \
     moko-tool-box.h \
+    moko-ui.h \
     moko-window.h
 
 SOURCES = \
@@ -40,6 +42,7 @@ SOURCES = \
     moko-pixmap-button.c \
     moko-paned-window.c \
     moko-scrolled-pane.c \
+    moko-stock.c \
     moko-tree-view.c \
     moko-tool-box.c \
     moko-window.c
