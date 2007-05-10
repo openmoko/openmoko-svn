@@ -188,7 +188,7 @@ Index: u-boot/drivers/usbdfu.c
 +	 * This saves us from having to clean up dynamic allications in the
 +	 * various error paths of the code.  Also, it will always work, no
 +	 * matter what the memory situation is. */
-+	unsigned char _buf[0x4000];
++	unsigned char _buf[0x20000];	/* FIXME: depends flash page size */
 +};
 +
 +static struct dnload_state _dnstate;
