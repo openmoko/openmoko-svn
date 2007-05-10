@@ -19,6 +19,7 @@
 #define _MOKO_GSMD_CONNECTION_H_
 
 #include <glib-object.h>
+#include <gsmd/event.h>
 
 G_BEGIN_DECLS
 

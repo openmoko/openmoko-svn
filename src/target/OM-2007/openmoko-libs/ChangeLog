@@ -1,3 +1,11 @@
+2007-05-10  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.h: Include gsmd/error.h (for enums)
+	* libmokoui/moko-message-dialog.c:
+	(moko_message_dialog_realize_cb): Add some error trapping
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h: Add MOKO_STOCK_HANDSET
+
 2007-05-09  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-message-dialog.c:

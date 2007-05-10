@@ -47,6 +47,7 @@ static const GtkStockItem moko_items [] =
   { MOKO_STOCK_PHONE_BOOK, N_("Phone Book"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_SMS_NEW, N_("New SMS"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_SPEAKER, N_("Speaker"), 0, 0, GETTEXT_PACKAGE },
+  { MOKO_STOCK_HANDSET, N_("Handset"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_VIEW, N_("View"), 0, 0, GETTEXT_PACKAGE },
 };
 

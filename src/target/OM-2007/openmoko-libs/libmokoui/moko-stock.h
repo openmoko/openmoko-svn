@@ -56,6 +56,7 @@
 #define MOKO_STOCK_PHONE_BOOK "moko-stock-phone-book"
 #define MOKO_STOCK_SMS_NEW "moko-stock-new-sms"
 #define MOKO_STOCK_SPEAKER "moko-stock-speaker"
+#define MOKO_STOCK_HANDSET "moko-stock-handset"
 #define MOKO_STOCK_VIEW "moko-stock-view"
 
 

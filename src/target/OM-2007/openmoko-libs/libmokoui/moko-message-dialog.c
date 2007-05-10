@@ -205,8 +205,15 @@ moko_message_dialog_realize_cb (GtkWidget *widget, gpointer user_data)
 
     if (priv->background_pixbuf == NULL)
     {
-      g_warning ("Error loading background pixbuf: %s", error->message);
-      g_clear_error (&error);
+      if (error)
+      {
+        g_warning ("Error loading background pixbuf: %s", error->message);
+        g_clear_error (&error);
+      }
+      else
+      {
+        g_warning ("Error loading background pixbuf");
+      }
       return;
     }
   }
