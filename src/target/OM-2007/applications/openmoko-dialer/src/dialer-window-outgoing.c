@@ -202,8 +202,7 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 
     /* Set up window */
     window = moko_message_dialog_new ();
-    moko_message_dialog_set_image_from_stock (MOKO_MESSAGE_DIALOG (window), "connecting");
-    moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (window), "Calling ... ");
+    moko_message_dialog_set_image (MOKO_MESSAGE_DIALOG (window), gtk_image_new_from_file (PKGDATADIR G_DIR_SEPARATOR_S "outgoing_1.png"));
     gtk_window_set_title (GTK_WINDOW (window), "Outgoing Call");
 
 
@@ -269,6 +268,7 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   g_signal_connect (data->connection, "call-progress", call_progress_cb, data);
   g_object_set_data (G_OBJECT (data->window_outgoing), "current-number", number);
   moko_gsmd_connection_voice_dial (data->connection, number);
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_outgoing), "Calling %s", number);
   if (gtk_dialog_run (data->window_outgoing) == GTK_RESPONSE_OK)
   {
     /* call has connected, so open the talking window */
