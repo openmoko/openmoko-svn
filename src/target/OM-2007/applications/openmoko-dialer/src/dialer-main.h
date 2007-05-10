@@ -60,8 +60,9 @@ typedef struct _dialer_data
 
 //buttons
   GtkWidget *buttonSpeaker;
-  GtkWidget *buttonCancel;
+  GtkWidget *buttonHandset;
   GtkWidget *buttonRedial;
+  GtkWidget *buttonCancel;
 
   GtkWidget *imageTALK;
   GtkWidget *imageDTMF;
