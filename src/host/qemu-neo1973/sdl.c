@@ -34,6 +34,7 @@ static int gui_grab; /* if true, all keyboard/mouse events are grabbed */
 static int last_vm_running;
 static int gui_saved_grab;
 static int gui_fullscreen;
+static int gui_noframe;
 static int gui_key_modifier_pressed;
 static int gui_keysym;
 static int gui_fullscreen_initial_grab;
@@ -43,6 +44,9 @@ static int width, height;
 static SDL_Cursor *sdl_cursor_normal;
 static SDL_Cursor *sdl_cursor_hidden;
 static int absolute_enabled = 0;
+static int guest_cursor = 0;
+static int guest_x, guest_y;
+static SDL_Cursor *guest_sprite = 0;
 
 static void sdl_update(DisplayState *ds, int x, int y, int w, int h)
 {
@@ -59,6 +63,8 @@ static void sdl_resize(DisplayState *ds, int w, int h)
     flags = SDL_HWSURFACE|SDL_ASYNCBLIT|SDL_HWACCEL;
     if (gui_fullscreen)
         flags |= SDL_FULLSCREEN;
+    if (gui_noframe)
+        flags |= SDL_NOFRAME;
 
     width = w;
     height = h;
@@ -122,88 +128,6 @@ static uint8_t sdl_keyevent_to_keycode(const SDL_KeyboardEvent *ev)
 
 #else
 
-static const uint8_t x_keycode_to_pc_keycode[115] = {
-   0xc7,      /*  97  Home   */
-   0xc8,      /*  98  Up     */
-   0xc9,      /*  99  PgUp   */
-   0xcb,      /* 100  Left   */
-   0x4c,        /* 101  KP-5   */
-   0xcd,      /* 102  Right  */
-   0xcf,      /* 103  End    */
-   0xd0,      /* 104  Down   */
-   0xd1,      /* 105  PgDn   */
-   0xd2,      /* 106  Ins    */
-   0xd3,      /* 107  Del    */
-   0x9c,      /* 108  Enter  */
-   0x9d,      /* 109  Ctrl-R */
-   0x0,       /* 110  Pause  */
-   0xb7,      /* 111  Print  */
-   0xb5,      /* 112  Divide */
-   0xb8,      /* 113  Alt-R  */
-   0xc6,      /* 114  Break  */   
-   0x0,         /* 115 */
-   0x0,         /* 116 */
-   0x0,         /* 117 */
-   0x0,         /* 118 */
-   0x0,         /* 119 */
-   0x0,         /* 120 */
-   0x0,         /* 121 */
-   0x0,         /* 122 */
-   0x0,         /* 123 */
-   0x0,         /* 124 */
-   0x0,         /* 125 */
-   0x0,         /* 126 */
-   0x0,         /* 127 */
-   0x0,         /* 128 */
-   0x79,         /* 129 Henkan */
-   0x0,         /* 130 */
-   0x7b,         /* 131 Muhenkan */
-   0x0,         /* 132 */
-   0x7d,         /* 133 Yen */
-   0x0,         /* 134 */
-   0x0,         /* 135 */
-   0x47,         /* 136 KP_7 */
-   0x48,         /* 137 KP_8 */
-   0x49,         /* 138 KP_9 */
-   0x4b,         /* 139 KP_4 */
-   0x4c,         /* 140 KP_5 */
-   0x4d,         /* 141 KP_6 */
-   0x4f,         /* 142 KP_1 */
-   0x50,         /* 143 KP_2 */
-   0x51,         /* 144 KP_3 */
-   0x52,         /* 145 KP_0 */
-   0x53,         /* 146 KP_. */
-   0x47,         /* 147 KP_HOME */
-   0x48,         /* 148 KP_UP */
-   0x49,         /* 149 KP_PgUp */
-   0x4b,         /* 150 KP_Left */
-   0x4c,         /* 151 KP_ */
-   0x4d,         /* 152 KP_Right */
-   0x4f,         /* 153 KP_End */
-   0x50,         /* 154 KP_Down */
-   0x51,         /* 155 KP_PgDn */
-   0x52,         /* 156 KP_Ins */
-   0x53,         /* 157 KP_Del */
-   0x0,         /* 158 */
-   0x0,         /* 159 */
-   0x0,         /* 160 */
-   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,         /* 170 */
-   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,         /* 180 */
-   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,         /* 190 */
-   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,         /* 200 */
-   0x0,         /* 201 */
-   0x0,         /* 202 */
-   0x0,         /* 203 */
-   0x0,         /* 204 */
-   0x0,         /* 205 */
-   0x0,         /* 206 */
-   0x0,         /* 207 */
-   0x70,         /* 208 Hiragana_Katakana */
-   0x0,         /* 209 */
-   0x0,         /* 210 */
-   0x73,         /* 211 backslash */
-};
-
 static uint8_t sdl_keyevent_to_keycode(const SDL_KeyboardEvent *ev)
 {
     int keycode;
@@ -216,7 +140,7 @@ static uint8_t sdl_keyevent_to_keycode(const SDL_KeyboardEvent *ev)
         keycode -= 8; /* just an offset */
     } else if (keycode < 212) {
         /* use conversion table */
-        keycode = x_keycode_to_pc_keycode[keycode - 97];
+        keycode = _translate_keycode(keycode - 97);
     } else {
         keycode = 0;
     }
@@ -295,13 +219,18 @@ static void sdl_process_key(SDL_KeyboardEvent *ev)
 static void sdl_update_caption(void)
 {
     char buf[1024];
-    strcpy(buf, "QEMU");
-    if (!vm_running) {
-        strcat(buf, " [Stopped]");
-    }
-    if (gui_grab) {
-        strcat(buf, " - Press Ctrl-Alt to exit grab");
-    }
+    const char *status = "";
+
+    if (!vm_running)
+        status = " [Stopped]";
+    else if (gui_grab)
+        status = " - Press Ctrl-Alt to exit grab";
+
+    if (qemu_name)
+        snprintf(buf, sizeof(buf), "QEMU (%s)%s", qemu_name, status);
+    else
+        snprintf(buf, sizeof(buf), "QEMU%s", status);
+
     SDL_WM_SetCaption(buf, "QEMU");
 }
 
@@ -325,13 +254,21 @@ static void sdl_show_cursor(void)
 
     if (!kbd_mouse_is_absolute()) {
         SDL_ShowCursor(1);
-        SDL_SetCursor(sdl_cursor_normal);
+        if (guest_cursor &&
+                (gui_grab || kbd_mouse_is_absolute() || absolute_enabled))
+            SDL_SetCursor(guest_sprite);
+        else
+            SDL_SetCursor(sdl_cursor_normal);
     }
 }
 
 static void sdl_grab_start(void)
 {
-    sdl_hide_cursor();
+    if (guest_cursor) {
+        SDL_SetCursor(guest_sprite);
+        SDL_WarpMouse(guest_x, guest_y);
+    } else
+        sdl_hide_cursor();
     SDL_WM_GrabInput(SDL_GRAB_ON);
     /* dummy read to avoid moving the mouse */
     SDL_GetRelativeMouseState(NULL, NULL);
@@ -342,8 +279,8 @@ static void sdl_grab_start(void)
 static void sdl_grab_end(void)
 {
     SDL_WM_GrabInput(SDL_GRAB_OFF);
-    sdl_show_cursor();
     gui_grab = 0;
+    sdl_show_cursor();
     sdl_update_caption();
 }
 
@@ -374,6 +311,12 @@ static void sdl_send_mouse_event(int dz)
     } else if (absolute_enabled) {
 	sdl_show_cursor();
 	absolute_enabled = 0;
+    } else if (guest_cursor) {
+        SDL_GetMouseState(&dx, &dy);
+        dx -= guest_x;
+        dy -= guest_y;
+        guest_x += dx;
+        guest_y += dy;
     }
 
     kbd_mouse_event(dx, dy, dz, buttons);
@@ -552,12 +495,81 @@ static void sdl_refresh(DisplayState *ds)
     }
 }
 
+static void sdl_fill(DisplayState *ds, int x, int y, int w, int h, uint32_t c)
+{
+    SDL_Rect dst = { x, y, w, h };
+    SDL_FillRect(screen, &dst, c);
+}
+
+static void sdl_mouse_warp(int x, int y, int on)
+{
+    if (on) {
+        if (!guest_cursor)
+            sdl_show_cursor();
+        if (gui_grab || kbd_mouse_is_absolute() || absolute_enabled) {
+            SDL_SetCursor(guest_sprite);
+            SDL_WarpMouse(x, y);
+        }
+    } else if (gui_grab)
+        sdl_hide_cursor();
+    guest_cursor = on;
+    guest_x = x, guest_y = y;
+}
+
+static void sdl_mouse_define(int width, int height, int bpp,
+                             int hot_x, int hot_y,
+                             uint8_t *image, uint8_t *mask)
+{
+    uint8_t sprite[256], *line;
+    int x, y, dst, bypl, src = 0;
+    if (guest_sprite)
+        SDL_FreeCursor(guest_sprite);
+
+    memset(sprite, 0, 256);
+    bypl = ((width * bpp + 31) >> 5) << 2;
+    for (y = 0, dst = 0; y < height; y ++, image += bypl) {
+        line = image;
+        for (x = 0; x < width; x ++, dst ++) {
+            switch (bpp) {
+            case 24:
+                src = *(line ++); src |= *(line ++); src |= *(line ++);
+                break;
+            case 16:
+            case 15:
+                src = *(line ++); src |= *(line ++);
+                break;
+            case 8:
+                src = *(line ++);
+                break;
+            case 4:
+                src = 0xf & (line[x >> 1] >> ((x & 1)) << 2);
+                break;
+            case 2:
+                src = 3 & (line[x >> 2] >> ((x & 3)) << 1);
+                break;
+            case 1:
+                src = 1 & (line[x >> 3] >> (x & 7));
+                break;
+            }
+            if (!src)
+                sprite[dst >> 3] |= (1 << (~dst & 7)) & mask[dst >> 3];
+        }
+    }
+    guest_sprite = SDL_CreateCursor(sprite, mask, width, height, hot_x, hot_y);
+
+    if (guest_cursor &&
+            (gui_grab || kbd_mouse_is_absolute() || absolute_enabled))
+        SDL_SetCursor(guest_sprite);
+}
+
 static void sdl_cleanup(void) 
 {
+    if (guest_sprite)
+        SDL_FreeCursor(guest_sprite);
     SDL_Quit();
 }
 
-void sdl_display_init(DisplayState *ds, int full_screen)
+void sdl_display_init(DisplayState *ds, int full_screen, int no_frame)
 {
     int flags;
     uint8_t data = 0;
@@ -573,6 +585,9 @@ void sdl_display_init(DisplayState *ds, int full_screen)
             exit(1);
     }
 
+    if (no_frame)
+        gui_noframe = 1;
+
     flags = SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE;
     if (SDL_Init (flags)) {
         fprintf(stderr, "Could not initialize SDL - exiting\n");
@@ -587,6 +602,9 @@ void sdl_display_init(DisplayState *ds, int full_screen)
     ds->dpy_update = sdl_update;
     ds->dpy_resize = sdl_resize;
     ds->dpy_refresh = sdl_refresh;
+    ds->dpy_fill = sdl_fill;
+    ds->mouse_set = sdl_mouse_warp;
+    ds->cursor_define = sdl_mouse_define;
 
     sdl_resize(ds, 640, 400);
     sdl_update_caption();

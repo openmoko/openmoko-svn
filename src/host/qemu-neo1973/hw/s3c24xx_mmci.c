@@ -11,10 +11,10 @@
 
 struct s3c_mmci_state_s {
     target_phys_addr_t base;
-    void *pic;
-    void *dma;
+    qemu_irq irq;
+    qemu_irq *dma;
 
-    struct sd_state_s *card;
+    SDState *card;
 
     int blklen;
     int blknum;
@@ -72,25 +72,25 @@ static void s3c_mmci_fifo_run(struct s3c_mmci_state_s *s)
         s->dstatus |= 1 << 0;					/* RxDatOn */
         while (s->fifolen < 64 && s->blklen_cnt) {
             s->fifo[(s->fifostart + s->fifolen ++) & 63] =
-                    sd_read_datline(s->card);
+                    sd_read_data(s->card);
             if (!(-- s->blklen_cnt))
                 if (-- s->blknum_cnt)
                     s->blklen_cnt = s->blklen;
         }
         if ((s->mask & (1 << 0)) &&				/* RFHalf */
                         s->fifolen > 31 && len < 32)
-            pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+            qemu_irq_raise(s->irq);
         if ((s->mask & (1 << 1)) &&				/* RFFull */
                         s->fifolen > 63 && len < 64)
-            pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+            qemu_irq_raise(s->irq);
         if ((s->mask & (1 << 2)) && !s->blklen_cnt)		/* RFLast */
-            pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+            qemu_irq_raise(s->irq);
         dmalevel = !!s->fifolen;
     } else if (((s->dcontrol >> 12) & 3) == 3) {		/* DatMode */
         s->dstatus &= ~3;
         s->dstatus |= 1 << 0;					/* TxDatOn */
         while (s->fifolen && s->blklen_cnt) {
-            sd_write_datline(s->card, s->fifo[s->fifostart ++]);
+            sd_write_data(s->card, s->fifo[s->fifostart ++]);
             s->fifostart &= 63;
             s->fifolen --;
             if (!(-- s->blklen_cnt))
@@ -98,10 +98,10 @@ static void s3c_mmci_fifo_run(struct s3c_mmci_state_s *s)
                     s->blklen_cnt = s->blklen;
         }
         if ((s->mask & (1 << 3)) && !s->fifolen && len)		/* TFEmpty */
-            pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+            qemu_irq_raise(s->irq);
         if ((s->mask & (1 << 4)) &&				/* TFHalf */
                         s->fifolen < 33 && len > 32)
-            pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+            qemu_irq_raise(s->irq);
         dmalevel = (s->fifolen < 64) && (s->blklen_cnt > 0);
     } else
         return;
@@ -111,31 +111,31 @@ static void s3c_mmci_fifo_run(struct s3c_mmci_state_s *s)
         s->dstatus &= ~3;
         s->dstatus |= 1 << 4;					/* DatFin */
         if (s->mask & (1 << 7))					/* DatFin */
-            pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+            qemu_irq_raise(s->irq);
     }
 dmaupdate:
     if (s->dcontrol & (1 << 15)) {				/* EnDMA */
-        pic_set_irq_new(s->dma, S3C_RQ_SDI0, dmalevel);
-        pic_set_irq_new(s->dma, S3C_RQ_SDI1, dmalevel);
-        pic_set_irq_new(s->dma, S3C_RQ_SDI2, dmalevel);
+        qemu_set_irq(s->dma[S3C_RQ_SDI0], dmalevel);
+        qemu_set_irq(s->dma[S3C_RQ_SDI1], dmalevel);
+        qemu_set_irq(s->dma[S3C_RQ_SDI2], dmalevel);
     }
 }
 
 static void s3c_mmci_cmd_submit(struct s3c_mmci_state_s *s)
 {
-    int rsplen;
+    int rsplen, i;
     struct sd_request_s request;
-    union sd_response_u response;
+    char response[16];
 
     request.cmd = s->ccontrol & 0x3f;
     request.arg = s->arg;
     request.crc = 0;	/* FIXME */
 
-    response = sd_write_cmdline(s->card, request, &rsplen);
+    rsplen = sd_do_command(s->card, &request, response);
     s->cstatus = (s->cstatus & ~0x11ff) | request.cmd;		/* RspIndex */
     s->cstatus |= 1 << 11;					/* CmdSent */
     if (s->mask & (1 << 16))					/* CmdSent */
-        pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+        qemu_irq_raise(s->irq);
 
     memset(s->resp, 0, sizeof(s->resp));
     if (!(s->ccontrol & (1 << 9)))				/* WaitRsp */
@@ -143,42 +143,20 @@ static void s3c_mmci_cmd_submit(struct s3c_mmci_state_s *s)
 
     if (s->ccontrol & (1 << 10)) {				/* LongRsp */
         /* R2 */
-        if (rsplen < 128)
+        if (rsplen < 16)
             goto timeout;
-
-        s->resp[0] = bswap16(response.r2.reg[1]) |
-                (bswap16(response.r2.reg[0]) << 16);
-        s->resp[1] = bswap16(response.r2.reg[3]) |
-                (bswap16(response.r2.reg[2]) << 16);
-        s->resp[2] = bswap16(response.r2.reg[5]) |
-                (bswap16(response.r2.reg[4]) << 16);
-        s->resp[3] = bswap16(response.r2.reg[7]) |
-                (bswap16(response.r2.reg[6]) << 16);
     } else {
         /* R1, R3, R4, R5 or R6 */
-        if (request.cmd == 3) {		/* R6 */
-            if (rsplen < 48)
-                goto timeout;
-
-            s->resp[0] = response.r6.status | (response.r6.arg << 16);
-            s->resp[1] = response.r6.crc << 24;
-        } else if (request.cmd == 41) {	/* R3 */
-            if (rsplen < 32)
-                goto timeout;
-
-            s->resp[0] = response.r3.ocr_reg;
-        } else {
-            if (rsplen < 48)
-                goto timeout;
-
-            s->resp[0] = response.r1.status;
-            s->resp[1] = response.r1.crc << 24;
-        }
+        if (rsplen < 4)
+            goto timeout;
     }
+
+    for (i = 0; i < rsplen; i ++)
+        s->resp[i >> 2] |= response[i] << ((i & 3) << 3);
 
     s->cstatus |= 1 << 9;					/* RspFin */
     if (s->mask & (1 << 14))					/* RspEnd */
-        pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+        qemu_irq_raise(s->irq);
 
 complete:
     s->blklen_cnt = s->blklen;
@@ -198,7 +176,7 @@ complete:
 timeout:
     s->cstatus |= 1 << 10;					/* CmdTout */
     if (s->mask & (1 << 15))					/* CmdTout */
-        pic_set_irq_new(s->pic, S3C_PIC_SDI, 1);
+        qemu_irq_raise(s->irq);
 }
 
 #define S3C_SDICON	0x00	/* SDI Control register */
@@ -378,14 +356,14 @@ static CPUWriteMemoryFunc *s3c_mmci_writefn[] = {
 };
 
 struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
-                void *pic, void *dma)
+                qemu_irq irq, qemu_irq *dma)
 {
     int iomemtype;
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *)
             qemu_mallocz(sizeof(struct s3c_mmci_state_s));
 
     s->base = base;
-    s->pic = pic;
+    s->irq = irq;
     s->dma = dma;
 
     s3c_mmci_reset(s);
@@ -395,7 +373,7 @@ struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
 
     /* Instantiate the actual storage */
-    s->card = sd_init();
+    s->card = sd_init(sd_bdrv);
 
     return s;
 }

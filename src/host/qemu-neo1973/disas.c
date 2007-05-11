@@ -197,6 +197,9 @@ void target_disas(FILE *out, target_ulong code, target_ulong size, int flags)
 #elif defined(TARGET_SH4)
     disasm_info.mach = bfd_mach_sh4;
     print_insn = print_insn_sh;
+#elif defined(TARGET_ALPHA)
+    disasm_info.mach = bfd_mach_alpha;
+    print_insn = print_insn_alpha;
 #else
     fprintf(out, "0x" TARGET_FMT_lx
 	    ": Asm output not supported on this arch\n", code);
@@ -255,6 +258,9 @@ void disas(FILE *out, void *code, unsigned long size)
     print_insn = print_insn_alpha;
 #elif defined(__sparc__)
     print_insn = print_insn_sparc;
+#if defined(__sparc_v8plus__) || defined(__sparc_v8plusa__) || defined(__sparc_v9__)
+    disasm_info.mach = bfd_mach_sparc_v9b;
+#endif
 #elif defined(__arm__) 
     print_insn = print_insn_arm;
 #elif defined(__MIPSEB__)
@@ -378,6 +384,9 @@ void monitor_disas(CPUState *env,
     print_insn = print_insn_arm;
 #elif defined(TARGET_SPARC)
     print_insn = print_insn_sparc;
+#ifdef TARGET_SPARC64
+    disasm_info.mach = bfd_mach_sparc_v9b;
+#endif
 #elif defined(TARGET_PPC)
 #ifdef TARGET_PPC64
     disasm_info.mach = bfd_mach_ppc64;

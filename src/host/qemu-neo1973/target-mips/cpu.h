@@ -12,23 +12,16 @@
 
 // uint_fast8_t and uint_fast16_t not in <sys/int_types.h>
 // XXX: move that elsewhere
-#if defined(HOST_SOLARIS) && SOLARISREV < 10
+#if defined(HOST_SOLARIS) && HOST_SOLARIS < 10
 typedef unsigned char           uint_fast8_t;
 typedef unsigned int            uint_fast16_t;
-#endif
-
-/* target_ulong size spec */
-#ifdef MIPS_HAS_MIPS64
-#define TLSZ "%016llx"
-#else
-#define TLSZ "%08x"
 #endif
 
 typedef union fpr_t fpr_t;
 union fpr_t {
     float64  fd;   /* ieee double precision */
     float32  fs[2];/* ieee single precision */
-    uint64_t d;    /* binary single fixed-point */
+    uint64_t d;    /* binary double fixed-point */
     uint32_t w[2]; /* binary single fixed-point */
 };
 /* define FP_ENDIAN_IDX to access the same location
@@ -44,8 +37,7 @@ union fpr_t {
 typedef struct tlb_t tlb_t;
 struct tlb_t {
     target_ulong VPN;
-    target_ulong end;
-    target_ulong end2;
+    uint32_t PageMask;
     uint_fast8_t ASID;
     uint_fast16_t G:1;
     uint_fast16_t C0:3;
@@ -70,61 +62,63 @@ struct CPUMIPSState {
     target_ulong t2;
 #endif
     target_ulong HI, LO;
-    uint32_t DCR; /* ? */
-#if defined(MIPS_USES_FPU)
     /* Floating point registers */
-    fpr_t fpr[16];
-#define FPR(cpu, n) ((fpr_t*)&(cpu)->fpr[(n) / 2])
-#define FPR_FD(cpu, n) (FPR(cpu, n)->fd)
-#define FPR_FS(cpu, n) (FPR(cpu, n)->fs[((n) & 1) ^ FP_ENDIAN_IDX])
-#define FPR_D(cpu, n)  (FPR(cpu, n)->d)
-#define FPR_W(cpu, n)  (FPR(cpu, n)->w[((n) & 1) ^ FP_ENDIAN_IDX])
-
+    fpr_t fpr[32];
 #ifndef USE_HOST_FLOAT_REGS
     fpr_t ft0;
     fpr_t ft1;
     fpr_t ft2;
 #endif
     float_status fp_status;
-    /* fpu implementation/revision register */
+    /* fpu implementation/revision register (fir) */
     uint32_t fcr0;
+#define FCR0_F64 22
+#define FCR0_L 21
+#define FCR0_W 20
+#define FCR0_3D 19
+#define FCR0_PS 18
+#define FCR0_D 17
+#define FCR0_S 16
+#define FCR0_PRID 8
+#define FCR0_REV 0
     /* fcsr */
     uint32_t fcr31;
-#define SET_FP_COND(reg)     do { (reg) |= (1<<23); } while(0)
-#define CLEAR_FP_COND(reg)   do { (reg) &= ~(1<<23); } while(0)
-#define IS_FP_COND_SET(reg)  (((reg) & (1<<23)) != 0)
-#define GET_FP_CAUSE(reg)    (((reg) >> 12) & 0x3f)
-#define GET_FP_ENABLE(reg)   (((reg) >>  7) & 0x1f)
-#define GET_FP_FLAGS(reg)    (((reg) >>  2) & 0x1f)
-#define SET_FP_CAUSE(reg,v)  do { (reg) = ((reg) & ~(0x3f << 12)) | ((v) << 12); } while(0)
-#define SET_FP_ENABLE(reg,v) do { (reg) = ((reg) & ~(0x1f <<  7)) | ((v) << 7); } while(0)
-#define SET_FP_FLAGS(reg,v)  do { (reg) = ((reg) & ~(0x1f <<  2)) | ((v) << 2); } while(0)
+#define SET_FP_COND(num,env)     do { (env->fcr31) |= ((num) ? (1 << ((num) + 24)) : (1 << ((num) + 23))); } while(0)
+#define CLEAR_FP_COND(num,env)   do { (env->fcr31) &= ~((num) ? (1 << ((num) + 24)) : (1 << ((num) + 23))); } while(0)
+#define IS_FP_COND_SET(num,env)  (((env->fcr31) & ((num) ? (1 << ((num) + 24)) : (1 << ((num) + 23)))) != 0)
+#define GET_FP_CAUSE(reg)        (((reg) >> 12) & 0x3f)
+#define GET_FP_ENABLE(reg)       (((reg) >>  7) & 0x1f)
+#define GET_FP_FLAGS(reg)        (((reg) >>  2) & 0x1f)
+#define SET_FP_CAUSE(reg,v)      do { (reg) = ((reg) & ~(0x3f << 12)) | ((v & 0x3f) << 12); } while(0)
+#define SET_FP_ENABLE(reg,v)     do { (reg) = ((reg) & ~(0x1f <<  7)) | ((v & 0x1f) << 7); } while(0)
+#define SET_FP_FLAGS(reg,v)      do { (reg) = ((reg) & ~(0x1f <<  2)) | ((v & 0x1f) << 2); } while(0)
+#define UPDATE_FP_FLAGS(reg,v)   do { (reg) |= ((v & 0x1f) << 2); } while(0)
 #define FP_INEXACT        1
 #define FP_UNDERFLOW      2
 #define FP_OVERFLOW       4
 #define FP_DIV0           8
 #define FP_INVALID        16
 #define FP_UNIMPLEMENTED  32
-		
-#endif
+
 #if defined(MIPS_USES_R4K_TLB)
     tlb_t tlb[MIPS_TLB_MAX];
     uint32_t tlb_in_use;
+    uint32_t nb_tlb;
 #endif
-    uint32_t CP0_index;
-    uint32_t CP0_random;
-    uint64_t CP0_EntryLo0;
-    uint64_t CP0_EntryLo1;
-    uint64_t CP0_Context;
-    uint32_t CP0_PageMask;
-    uint32_t CP0_PageGrain;
-    uint32_t CP0_Wired;
-    uint32_t CP0_HWREna;
+    int32_t CP0_Index;
+    int32_t CP0_Random;
+    target_ulong CP0_EntryLo0;
+    target_ulong CP0_EntryLo1;
+    target_ulong CP0_Context;
+    int32_t CP0_PageMask;
+    int32_t CP0_PageGrain;
+    int32_t CP0_Wired;
+    int32_t CP0_HWREna;
     target_ulong CP0_BadVAddr;
-    uint32_t CP0_Count;
-    uint64_t CP0_EntryHi;
-    uint32_t CP0_Compare;
-    uint32_t CP0_Status;
+    int32_t CP0_Count;
+    target_ulong CP0_EntryHi;
+    int32_t CP0_Compare;
+    int32_t CP0_Status;
 #define CP0St_CU3   31
 #define CP0St_CU2   30
 #define CP0St_CU1   29
@@ -147,9 +141,10 @@ struct CPUMIPSState {
 #define CP0St_ERL   2
 #define CP0St_EXL   1
 #define CP0St_IE    0
-    uint32_t CP0_IntCtl;
-    uint32_t CP0_SRSCtl;
-    uint32_t CP0_Cause;
+    int32_t CP0_IntCtl;
+    int32_t CP0_SRSCtl;
+    int32_t CP0_SRSMap;
+    int32_t CP0_Cause;
 #define CP0Ca_BD   31
 #define CP0Ca_TI   30
 #define CP0Ca_CE   28
@@ -158,11 +153,12 @@ struct CPUMIPSState {
 #define CP0Ca_IV   23
 #define CP0Ca_WP   22
 #define CP0Ca_IP    8
+#define CP0Ca_IP_mask 0x0000FF00
 #define CP0Ca_EC    2
     target_ulong CP0_EPC;
-    uint32_t CP0_PRid;
-    target_ulong CP0_EBase;
-    uint32_t CP0_Config0;
+    int32_t CP0_PRid;
+    int32_t CP0_EBase;
+    int32_t CP0_Config0;
 #define CP0C0_M    31
 #define CP0C0_K23  28
 #define CP0C0_KU   25
@@ -175,7 +171,7 @@ struct CPUMIPSState {
 #define CP0C0_MT   7
 #define CP0C0_VI   3
 #define CP0C0_K0   0
-    uint32_t CP0_Config1;
+    int32_t CP0_Config1;
 #define CP0C1_M    31
 #define CP0C1_MMU  25
 #define CP0C1_IS   22
@@ -191,7 +187,7 @@ struct CPUMIPSState {
 #define CP0C1_CA   2
 #define CP0C1_EP   1
 #define CP0C1_FP   0
-    uint32_t CP0_Config2;
+    int32_t CP0_Config2;
 #define CP0C2_M    31
 #define CP0C2_TU   28
 #define CP0C2_TS   24
@@ -201,7 +197,7 @@ struct CPUMIPSState {
 #define CP0C2_SS   8
 #define CP0C2_SL   4
 #define CP0C2_SA   0
-    uint32_t CP0_Config3;
+    int32_t CP0_Config3;
 #define CP0C3_M    31
 #define CP0C3_DSPP 10
 #define CP0C3_LPA  7
@@ -211,12 +207,14 @@ struct CPUMIPSState {
 #define CP0C3_MT   2
 #define CP0C3_SM   1
 #define CP0C3_TL   0
+    int32_t CP0_Config6;
+    int32_t CP0_Config7;
     target_ulong CP0_LLAddr;
-    uint32_t CP0_WatchLo;
-    uint32_t CP0_WatchHi;
-    uint32_t CP0_XContext;
-    uint32_t CP0_Framemask;
-    uint32_t CP0_Debug;
+    target_ulong CP0_WatchLo;
+    int32_t CP0_WatchHi;
+    target_ulong CP0_XContext;
+    int32_t CP0_Framemask;
+    int32_t CP0_Debug;
 #define CPDB_DBD   31
 #define CP0DB_DM   30
 #define CP0DB_LSNM 28
@@ -236,13 +234,13 @@ struct CPUMIPSState {
 #define CP0DB_DBp  1
 #define CP0DB_DSS  0
     target_ulong CP0_DEPC;
-    uint32_t CP0_Performance0;
-    uint32_t CP0_TagLo;
-    uint32_t CP0_DataLo;
-    uint32_t CP0_TagHi;
-    uint32_t CP0_DataHi;
+    int32_t CP0_Performance0;
+    int32_t CP0_TagLo;
+    int32_t CP0_DataLo;
+    int32_t CP0_TagHi;
+    int32_t CP0_DataHi;
     target_ulong CP0_ErrorEPC;
-    uint32_t CP0_DESAVE;
+    int32_t CP0_DESAVE;
     /* Qemu */
     int interrupt_request;
     jmp_buf jmp_env;
@@ -254,8 +252,6 @@ struct CPUMIPSState {
 #define MIPS_HFLAG_TMASK  0x007F
 #define MIPS_HFLAG_MODE   0x001F /* execution modes                    */
 #define MIPS_HFLAG_UM     0x0001 /* user mode                          */
-#define MIPS_HFLAG_ERL    0x0002 /* Error mode                         */
-#define MIPS_HFLAG_EXL    0x0004 /* Exception mode                     */
 #define MIPS_HFLAG_DM     0x0008 /* Debug mode                         */
 #define MIPS_HFLAG_SM     0x0010 /* Supervisor mode                    */
 #define MIPS_HFLAG_RE     0x0040 /* Reversed endianness                */
@@ -275,6 +271,13 @@ struct CPUMIPSState {
 
     int SYNCI_Step; /* Address step size for SYNCI */
     int CCRes; /* Cycle count resolution/divisor */
+    int Status_rw_bitmask; /* Read/write bits in CP0_Status */
+
+#if defined(CONFIG_USER_ONLY)
+    target_ulong tls_value;
+#else
+    void *irq[8];
+#endif
 
     CPU_COMMON
 
@@ -285,6 +288,11 @@ struct CPUMIPSState {
 
     struct QEMUTimer *timer; /* Internal timer */
 };
+
+typedef struct mips_def_t mips_def_t;
+int mips_find_by_name (const unsigned char *name, mips_def_t **def);
+void mips_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
+int cpu_mips_register (CPUMIPSState *env, mips_def_t *def);
 
 #include "cpu-all.h"
 
@@ -327,10 +335,11 @@ enum {
     EXCP_RI,
     EXCP_OVERFLOW,
     EXCP_TRAP,
+    EXCP_FPE,
     EXCP_DDBS,
     EXCP_DWATCH,
-    EXCP_LAE,
-    EXCP_SAE, /* 24 */
+    EXCP_LAE, /* 24 */
+    EXCP_SAE,
     EXCP_LTLBL,
     EXCP_TLBL,
     EXCP_TLBS,

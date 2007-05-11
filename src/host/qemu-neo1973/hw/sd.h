@@ -54,76 +54,29 @@
 #define AKE_SEQ_ERROR		(1 << 3)
 
 typedef enum {
-	sd_none = -1,
-	sd_bc = 0,	/* broadcast -- no response */
-	sd_bcr,		/* broadcast with response */
-	sd_ac,		/* addressed -- no data transfer */
-	sd_adtc,	/* addressed with data transfer */
+    sd_none = -1,
+    sd_bc = 0,	/* broadcast -- no response */
+    sd_bcr,		/* broadcast with response */
+    sd_ac,		/* addressed -- no data transfer */
+    sd_adtc,	/* addressed with data transfer */
 } sd_cmd_type_t;
 
-typedef enum {
-	sd_nore = 0,	/* no response */
-	sd_r1,		/* normal response command */
-	sd_r2,		/* CID, CSD registers */
-	sd_r3,		/* OCR register */
-	sd_r6 = 6,	/* Published RCA response */
-	sd_r1b = -1,
-} sd_rsp_type_t;
-
 struct sd_request_s {
-	uint8_t cmd;
-	uint32_t arg;
-	uint8_t crc;
+    uint8_t cmd;
+    uint32_t arg;
+    uint8_t crc;
 };
 
-struct sd_response_none_s {
-};
+typedef struct SDState SDState;
 
-struct sd_response_r1_s {
-	uint8_t cmd;
-	uint32_t status;
-	uint8_t crc;
-};
-
-struct sd_response_r1b_s {
-	uint8_t cmd;
-	uint32_t status;
-	uint8_t crc;
-};
-
-struct sd_response_r2_s {
-	uint16_t reg[8];
-};
-
-struct sd_response_r3_s {
-	uint32_t ocr_reg;
-};
-
-struct sd_response_r6_s {
-	uint8_t cmd;
-	uint16_t arg;
-	uint16_t status;
-	uint8_t crc;
-};
-
-union sd_response_u {
-	struct sd_response_none_s none;
-	struct sd_response_r1_s r1;
-	struct sd_response_r1b_s r1b;
-	struct sd_response_r2_s r2;
-	struct sd_response_r3_s r3;
-	struct sd_response_r6_s r6;
-};
-
-struct sd_state_s;
-
-struct sd_state_s *sd_init(void);
-union sd_response_u sd_write_cmdline(struct sd_state_s *sd,
-		struct sd_request_s req, int *rsplen);
-void sd_write_datline(struct sd_state_s *sd, uint8_t value);
-uint8_t sd_read_datline(struct sd_state_s *sd);
-void sd_set_cb(struct sd_state_s *sd, void *opaque,
-		void (*readonly_cb)(void *, int),
-		void (*inserted_cb)(void *, int));
+SDState *sd_init(BlockDriverState *bs);
+int sd_do_command(SDState *sd, struct sd_request_s *req,
+                  uint8_t *response);
+void sd_write_data(SDState *sd, uint8_t value);
+uint8_t sd_read_data(SDState *sd);
+void sd_set_cb(SDState *sd, void *opaque,
+               void (*readonly_cb)(void *, int),
+               void (*inserted_cb)(void *, int));
+int sd_data_ready(SDState *sd);
 
 #endif	/* __hw_sd_h */

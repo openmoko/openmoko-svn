@@ -17,9 +17,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#include <stdlib.h>
 #include "exec.h"
-
-#define MIPS_DEBUG_DISAS
 
 #define GETPC() (__builtin_return_address(0))
 
@@ -56,10 +55,15 @@ void do_restore_state (void *pc_ptr)
   cpu_restore_state (tb, env, pc, NULL);
 }
 
-void do_raise_exception_direct (uint32_t exception)
+void do_raise_exception_direct_err (uint32_t exception, int error_code)
 {
     do_restore_state (GETPC ());
-    do_raise_exception_err (exception, 0);
+    do_raise_exception_err (exception, error_code);
+}
+
+void do_raise_exception_direct (uint32_t exception)
+{
+    do_raise_exception_direct_err (exception, 0);
 }
 
 #define MEMSUFFIX _raw
@@ -74,7 +78,7 @@ void do_raise_exception_direct (uint32_t exception)
 #undef MEMSUFFIX
 #endif
 
-#ifdef MIPS_HAS_MIPS64
+#ifdef TARGET_MIPS64
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 /* Those might call libgcc functions.  */
 void do_dsll (void)
@@ -114,8 +118,7 @@ void do_drotr (void)
     if (T1) {
        tmp = T0 << (0x40 - T1);
        T0 = (T0 >> T1) | tmp;
-    } else
-       T0 = T1;
+    }
 }
 
 void do_drotr32 (void)
@@ -125,8 +128,7 @@ void do_drotr32 (void)
     if (T1) {
        tmp = T0 << (0x40 - (32 + T1));
        T0 = (T0 >> (32 + T1)) | tmp;
-    } else
-       T0 = T1;
+    }
 }
 
 void do_dsllv (void)
@@ -156,7 +158,7 @@ void do_drotrv (void)
        T0 = T1;
 }
 #endif /* TARGET_LONG_BITS > HOST_LONG_BITS */
-#endif /* MIPS_HAS_MIPS64 */
+#endif /* TARGET_MIPS64 */
 
 /* 64 bits arithmetic for 32 bits hosts */
 #if TARGET_LONG_BITS > HOST_LONG_BITS
@@ -214,32 +216,48 @@ void do_msubu (void)
 }
 #endif
 
-#ifdef MIPS_HAS_MIPS64
+#if HOST_LONG_BITS < 64
+void do_div (void)
+{
+    /* 64bit datatypes because we may see overflow/underflow. */
+    if (T1 != 0) {
+        env->LO = (int32_t)((int64_t)(int32_t)T0 / (int32_t)T1);
+        env->HI = (int32_t)((int64_t)(int32_t)T0 % (int32_t)T1);
+    }
+}
+#endif
+
+#ifdef TARGET_MIPS64
 void do_dmult (void)
 {
+    env->LO = (int64_t)T0 * (int64_t)T1;
     /* XXX */
-    set_HILO((int64_t)T0 * (int64_t)T1);
+    env->HI = (env->LO | (1ULL << 63)) ? ~0ULL : 0ULL;
 }
 
 void do_dmultu (void)
 {
+    env->LO = T0 * T1;
     /* XXX */
-    set_HILO((uint64_t)T0 * (uint64_t)T1);
+    env->HI = 0;
 }
 
 void do_ddiv (void)
 {
     if (T1 != 0) {
-        env->LO = (int64_t)T0 / (int64_t)T1;
-        env->HI = (int64_t)T0 % (int64_t)T1;
+        lldiv_t res = lldiv((int64_t)T0, (int64_t)T1);
+        env->LO = res.quot;
+        env->HI = res.rem;
     }
 }
 
 void do_ddivu (void)
 {
     if (T1 != 0) {
-        env->LO = T0 / T1;
-        env->HI = T0 % T1;
+        /* XXX: lldivu? */
+        lldiv_t res = lldiv(T0, T1);
+        env->LO = (uint64_t)res.quot;
+        env->HI = (uint64_t)res.rem;
     }
 }
 #endif
@@ -263,6 +281,11 @@ void cpu_mips_store_count(CPUState *env, uint32_t value)
 void cpu_mips_store_compare(CPUState *env, uint32_t value)
 {
     cpu_abort(env, "mtc0 compare\n");
+}
+
+void cpu_mips_update_irq(CPUState *env)
+{
+    cpu_abort(env, "mtc0 status / mtc0 cause\n");
 }
 
 void do_mtc0_status_debug(uint32_t old, uint32_t val)
@@ -315,19 +338,18 @@ void do_mfc0_count (void)
 
 void do_mtc0_status_debug(uint32_t old, uint32_t val)
 {
-    const uint32_t mask = 0x0000FF00;
-    fprintf(logfile, "Status %08x => %08x Cause %08x (%08x %08x %08x)\n",
-            old, val, env->CP0_Cause, old & mask, val & mask,
-            env->CP0_Cause & mask);
+    fprintf(logfile, "Status %08x (%08x) => %08x (%08x) Cause %08x",
+            old, old & env->CP0_Cause & CP0Ca_IP_mask,
+            val, val & env->CP0_Cause & CP0Ca_IP_mask,
+            env->CP0_Cause);
+    (env->hflags & MIPS_HFLAG_UM) ? fputs(", UM\n", logfile)
+                                  : fputs("\n", logfile);
 }
 
 void do_mtc0_status_irqraise_debug(void)
 {
     fprintf(logfile, "Raise pending IRQs\n");
 }
-
-#ifdef MIPS_USES_FPU
-#include "softfloat.h"
 
 void fpu_handle_exception(void)
 {
@@ -365,7 +387,6 @@ void fpu_handle_exception(void)
     SET_FP_CAUSE(env->fcr31, 0);
 #endif
 }
-#endif /* MIPS_USES_FPU */
 
 /* TLB management */
 #if defined(MIPS_USES_R4K_TLB)
@@ -373,7 +394,7 @@ void cpu_mips_tlb_flush (CPUState *env, int flush_global)
 {
     /* Flush qemu's TLB and discard all shadowed entries.  */
     tlb_flush (env, flush_global);
-    env->tlb_in_use = MIPS_TLB_NB;
+    env->tlb_in_use = env->nb_tlb;
 }
 
 static void mips_tlb_flush_extra (CPUState *env, int first)
@@ -387,16 +408,12 @@ static void mips_tlb_flush_extra (CPUState *env, int first)
 static void fill_tlb (int idx)
 {
     tlb_t *tlb;
-    int size;
 
     /* XXX: detect conflicting TLBs and raise a MCHECK exception when needed */
     tlb = &env->tlb[idx];
-    tlb->VPN = env->CP0_EntryHi & (int32_t)0xFFFFE000;
+    tlb->VPN = env->CP0_EntryHi & ~(target_ulong)0x1FFF;
     tlb->ASID = env->CP0_EntryHi & 0xFF;
-    size = env->CP0_PageMask >> 13;
-    size = 4 * (size + 1);
-    tlb->end = tlb->VPN + (1 << (8 + size));
-    tlb->end2 = tlb->end + (1 << (8 + size));
+    tlb->PageMask = env->CP0_PageMask;
     tlb->G = env->CP0_EntryLo0 & env->CP0_EntryLo1 & 1;
     tlb->V0 = (env->CP0_EntryLo0 & 2) != 0;
     tlb->D0 = (env->CP0_EntryLo0 & 4) != 0;
@@ -413,12 +430,10 @@ void do_tlbwi (void)
     /* Discard cached TLB entries.  We could avoid doing this if the
        tlbwi is just upgrading access permissions on the current entry;
        that might be a further win.  */
-    mips_tlb_flush_extra (env, MIPS_TLB_NB);
+    mips_tlb_flush_extra (env, env->nb_tlb);
 
-    /* Wildly undefined effects for CP0_index containing a too high value and
-       MIPS_TLB_NB not being a power of two.  But so does real silicon.  */
-    invalidate_tlb(env, env->CP0_index & (MIPS_TLB_NB - 1), 0);
-    fill_tlb(env->CP0_index & (MIPS_TLB_NB - 1));
+    invalidate_tlb(env, env->CP0_Index % env->nb_tlb, 0);
+    fill_tlb(env->CP0_Index % env->nb_tlb);
 }
 
 void do_tlbwr (void)
@@ -438,18 +453,18 @@ void do_tlbp (void)
 
     tag = env->CP0_EntryHi & (int32_t)0xFFFFE000;
     ASID = env->CP0_EntryHi & 0xFF;
-    for (i = 0; i < MIPS_TLB_NB; i++) {
+    for (i = 0; i < env->nb_tlb; i++) {
         tlb = &env->tlb[i];
         /* Check ASID, virtual page number & size */
         if ((tlb->G == 1 || tlb->ASID == ASID) && tlb->VPN == tag) {
             /* TLB match */
-            env->CP0_index = i;
+            env->CP0_Index = i;
             break;
         }
     }
-    if (i == MIPS_TLB_NB) {
+    if (i == env->nb_tlb) {
         /* No match.  Discard any shadow entries, if any of them match.  */
-        for (i = MIPS_TLB_NB; i < env->tlb_in_use; i++) {
+        for (i = env->nb_tlb; i < env->tlb_in_use; i++) {
 	    tlb = &env->tlb[i];
 
 	    /* Check ASID, virtual page number & size */
@@ -459,7 +474,7 @@ void do_tlbp (void)
 	    }
 	}
 
-        env->CP0_index |= 0x80000000;
+        env->CP0_Index |= 0x80000000;
     }
 }
 
@@ -467,20 +482,18 @@ void do_tlbr (void)
 {
     tlb_t *tlb;
     uint8_t ASID;
-    int size;
 
     ASID = env->CP0_EntryHi & 0xFF;
-    tlb = &env->tlb[env->CP0_index & (MIPS_TLB_NB - 1)];
+    tlb = &env->tlb[env->CP0_Index % env->nb_tlb];
 
     /* If this will change the current ASID, flush qemu's TLB.  */
     if (ASID != tlb->ASID)
         cpu_mips_tlb_flush (env, 1);
 
-    mips_tlb_flush_extra(env, MIPS_TLB_NB);
+    mips_tlb_flush_extra(env, env->nb_tlb);
 
     env->CP0_EntryHi = tlb->VPN | tlb->ASID;
-    size = (tlb->end - tlb->VPN) >> 12;
-    env->CP0_PageMask = (size - 1) << 13;
+    env->CP0_PageMask = tlb->PageMask;
     env->CP0_EntryLo0 = tlb->G | (tlb->V0 << 1) | (tlb->D0 << 2) |
                         (tlb->C0 << 3) | (tlb->PFN[0] >> 6);
     env->CP0_EntryLo1 = tlb->G | (tlb->V1 << 1) | (tlb->D1 << 2) |
@@ -493,24 +506,40 @@ void do_tlbr (void)
 void dump_ldst (const unsigned char *func)
 {
     if (loglevel)
-        fprintf(logfile, "%s => " TLSZ " " TLSZ "\n", __func__, T0, T1);
+        fprintf(logfile, "%s => " TARGET_FMT_lx " " TARGET_FMT_lx "\n", __func__, T0, T1);
 }
 
 void dump_sc (void)
 {
     if (loglevel) {
-        fprintf(logfile, "%s " TLSZ " at " TLSZ " (" TLSZ ")\n", __func__,
+        fprintf(logfile, "%s " TARGET_FMT_lx " at " TARGET_FMT_lx " (" TARGET_FMT_lx ")\n", __func__,
                 T1, T0, env->CP0_LLAddr);
     }
 }
 
-void debug_eret (void)
+void debug_pre_eret (void)
 {
-    if (loglevel) {
-        fprintf(logfile, "ERET: pc " TLSZ " EPC " TLSZ " ErrorEPC " TLSZ " (%d)\n",
-                env->PC, env->CP0_EPC, env->CP0_ErrorEPC,
-                env->hflags & MIPS_HFLAG_ERL ? 1 : 0);
-    }
+    fprintf(logfile, "ERET: PC " TARGET_FMT_lx " EPC " TARGET_FMT_lx,
+            env->PC, env->CP0_EPC);
+    if (env->CP0_Status & (1 << CP0St_ERL))
+        fprintf(logfile, " ErrorEPC " TARGET_FMT_lx, env->CP0_ErrorEPC);
+    if (env->hflags & MIPS_HFLAG_DM)
+        fprintf(logfile, " DEPC " TARGET_FMT_lx, env->CP0_DEPC);
+    fputs("\n", logfile);
+}
+
+void debug_post_eret (void)
+{
+    fprintf(logfile, "  =>  PC " TARGET_FMT_lx " EPC " TARGET_FMT_lx,
+            env->PC, env->CP0_EPC);
+    if (env->CP0_Status & (1 << CP0St_ERL))
+        fprintf(logfile, " ErrorEPC " TARGET_FMT_lx, env->CP0_ErrorEPC);
+    if (env->hflags & MIPS_HFLAG_DM)
+        fprintf(logfile, " DEPC " TARGET_FMT_lx, env->CP0_DEPC);
+    if (env->hflags & MIPS_HFLAG_UM)
+        fputs(", UM\n", logfile);
+    else
+        fputs("\n", logfile);
 }
 
 void do_pmon (int function)

@@ -42,11 +42,6 @@ void irq_info(void)
     /* XXXXX */
 }
 
-void pic_set_irq(int irq, int level)
-{
-    /* XXXXX */
-}
-
 void pic_info()
 {
     /* XXXXX */
@@ -70,7 +65,7 @@ void vga_screen_dump(const char *filename)
 void shix_init(int ram_size, int vga_ram_size, int boot_device,
 	       DisplayState * ds, const char **fd_filename, int snapshot,
 	       const char *kernel_filename, const char *kernel_cmdline,
-	       const char *initrd_filename)
+	       const char *initrd_filename, const char *cpu_model)
 {
     int ret;
     CPUState *env;

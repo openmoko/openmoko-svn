@@ -1,16 +1,18 @@
 /*
- * Sharp Zaurus SL-C1000/C3000/C3100/C3200 platforms.
+ * PXA270-based Clamshell PDA platforms.
  *
  * Copyright (c) 2006 Openedhand Ltd.
  * Written by Andrzej Zaborowski <balrog@zabor.org>
  *
- * This code is licensed under the GPLv2.
+ * This code is licensed under the GNU GPL v2.
  */
 
 #include "vl.h"
 
 #define spitz_printf(format, ...)	\
     fprintf(stderr, "%s: " format, __FUNCTION__, ##__VA_ARGS__)
+#undef REG_FMT
+#define REG_FMT			"0x%02lx"
 
 /* Spitz Flash */
 #define FLASH_BASE		0x0c000000
@@ -30,16 +32,16 @@
 #define FLASHCTL_RYBY		(1 << 5)
 #define FLASHCTL_NCE		(FLASHCTL_CE0 | FLASHCTL_CE1)
 
-struct sharpsl_nand_s {
+struct sl_nand_s {
     target_phys_addr_t target_base;
     struct nand_flash_s *nand;
     uint8_t ctl;
     struct ecc_state_s ecc;
 };
 
-static uint32_t sharpsl_readb(void *opaque, target_phys_addr_t addr)
+static uint32_t sl_readb(void *opaque, target_phys_addr_t addr)
 {
-    struct sharpsl_nand_s *s = (struct sharpsl_nand_s *) opaque;
+    struct sl_nand_s *s = (struct sl_nand_s *) opaque;
     int ryby;
     addr -= s->target_base;
 
@@ -71,15 +73,15 @@ static uint32_t sharpsl_readb(void *opaque, target_phys_addr_t addr)
         return ecc_digest(&s->ecc, nand_getio(s->nand));
 
     default:
-        spitz_printf("Bad register offset 0x%02lx\n", addr);
+        spitz_printf("Bad register offset " REG_FMT "\n", addr);
     }
     return 0;
 }
 
-static void sharpsl_writeb(void *opaque, target_phys_addr_t addr,
+static void sl_writeb(void *opaque, target_phys_addr_t addr,
                 uint32_t value)
 {
-    struct sharpsl_nand_s *s = (struct sharpsl_nand_s *) opaque;
+    struct sl_nand_s *s = (struct sl_nand_s *) opaque;
     addr -= s->target_base;
 
     switch (addr) {
@@ -103,7 +105,7 @@ static void sharpsl_writeb(void *opaque, target_phys_addr_t addr,
         break;
 
     default:
-        spitz_printf("Bad register offset 0x%02lx\n", addr);
+        spitz_printf("Bad register offset " REG_FMT "\n", addr);
     }
 }
 
@@ -112,23 +114,22 @@ enum {
     FLASH_1024M,
 };
 
-static void sharpsl_flash_register(struct pxa2xx_state_s *cpu, int size)
+static void sl_flash_register(struct pxa2xx_state_s *cpu, int size)
 {
     int iomemtype;
-    struct sharpsl_nand_s *s;
-    CPUReadMemoryFunc *sharpsl_readfn[] = {
-        sharpsl_readb,
-        sharpsl_readb,
-        sharpsl_readb,
+    struct sl_nand_s *s;
+    CPUReadMemoryFunc *sl_readfn[] = {
+        sl_readb,
+        sl_readb,
+        sl_readb,
     };
-    CPUWriteMemoryFunc *sharpsl_writefn[] = {
-        sharpsl_writeb,
-        sharpsl_writeb,
-        sharpsl_writeb,
+    CPUWriteMemoryFunc *sl_writefn[] = {
+        sl_writeb,
+        sl_writeb,
+        sl_writeb,
     };
 
-    s = (struct sharpsl_nand_s *)
-            qemu_mallocz(sizeof(struct sharpsl_nand_s));
+    s = (struct sl_nand_s *) qemu_mallocz(sizeof(struct sl_nand_s));
     s->target_base = FLASH_BASE;
     s->ctl = 0;
     if (size == FLASH_128M)
@@ -136,8 +137,8 @@ static void sharpsl_flash_register(struct pxa2xx_state_s *cpu, int size)
     else if (size == FLASH_1024M)
         s->nand = nand_init(NAND_MFR_SAMSUNG, 0xf1);
 
-    iomemtype = cpu_register_io_memory(0, sharpsl_readfn,
-                    sharpsl_writefn, s);
+    iomemtype = cpu_register_io_memory(0, sl_readfn,
+                    sl_writefn, s);
     cpu_register_physical_memory(s->target_base, 0x40, iomemtype);
 }
 
@@ -302,7 +303,7 @@ static void spitz_keyboard_handler(struct spitz_keyboard_s *s, int keycode)
             QUEUE_KEY(0x2a | (~keycode & 0x80));
         if ((code & FN   ) && (s->modifiers & 2))
             QUEUE_KEY(0x36 | (~keycode & 0x80));
-#endif
+#else
         if (keycode & 0x80) {
             if ((s->imodifiers & 1   ) && !(s->modifiers & 1))
                 QUEUE_KEY(0x2a | 0x80);
@@ -339,6 +340,7 @@ static void spitz_keyboard_handler(struct spitz_keyboard_s *s, int keycode)
                 s->imodifiers |= 0x20;
             }
         }
+#endif
     }
 
     QUEUE_KEY((code & 0x7f) | (keycode & 0x80));
@@ -508,7 +510,7 @@ static uint32_t scoop_readb(void *opaque, target_phys_addr_t addr)
     case SCOOP_GPRR:
         return s->gprr;
     default:
-        spitz_printf("Bad register offset 0x%02lx\n", addr);
+        spitz_printf("Bad register offset " REG_FMT "\n", addr);
     }
 
     return 0;
@@ -556,7 +558,7 @@ static void scoop_writeb(void *opaque, target_phys_addr_t addr, uint32_t value)
         s->gprr = value;
         break;
     default:
-        spitz_printf("Bad register offset 0x%02lx\n", addr);
+        spitz_printf("Bad register offset " REG_FMT "\n", addr);
     }
 }
 
@@ -755,7 +757,7 @@ static void spitz_adc_temp_on(int line, int level, void *opaque)
         max111x_set_input(max1111, MAX1111_BATT_TEMP, 0);
 }
 
-static void spitz_pendown_set(void *opaque, int level)
+static void spitz_pendown_set(void *opaque, int line, int level)
 {
     struct pxa2xx_state_s *cpu = (struct pxa2xx_state_s *) opaque;
     pxa2xx_gpio_set(cpu->gpio, SPITZ_GPIO_TP_INT, level);
@@ -765,9 +767,9 @@ static void spitz_ssp_attach(struct pxa2xx_state_s *cpu)
 {
     lcd_en = ads_en = max_en = 0;
 
-    ads7846 = ads7846_init(spitz_pendown_set, cpu);
+    ads7846 = ads7846_init(qemu_allocate_irqs(spitz_pendown_set, cpu, 1)[0]);
 
-    max1111 = max1111_init(0, cpu);
+    max1111 = max1111_init(0);
     max111x_set_input(max1111, MAX1111_BATT_VOLT, SPITZ_BATTERY_VOLT);
     max111x_set_input(max1111, MAX1111_BATT_TEMP, 0);
     max111x_set_input(max1111, MAX1111_ACIN_VOLT, SPITZ_CHARGEON_ACIN);
@@ -802,30 +804,41 @@ static void spitz_microdrive_attach(struct pxa2xx_state_s *cpu)
 /* Wm8750 and Max7310 on I2C */
 
 #define AKITA_MAX_ADDR	0x18
-#define SPITZ_WM_ADDR	0x1b
+#define SPITZ_WM_ADDRL	0x1a
+#define SPITZ_WM_ADDRH	0x1b
+
+#define SPITZ_GPIO_WM	5
+
+#ifdef HAS_AUDIO
+static void spitz_wm8750_addr(int line, int level, void *opaque)
+{
+    i2c_slave *wm = (i2c_slave *) opaque;
+    if (level)
+        i2c_set_slave_address(wm, SPITZ_WM_ADDRH);
+    else
+        i2c_set_slave_address(wm, SPITZ_WM_ADDRL);
+}
+#endif
 
 static void spitz_i2c_setup(struct pxa2xx_state_s *cpu)
 {
+    /* Attach the CPU on one end of our I2C bus.  */
+    i2c_bus *bus = cpu->i2c[0]->bus;
+
 #ifdef HAS_AUDIO
     AudioState *audio;
-    struct i2c_slave_s *wm;
-#endif
-    struct i2c_bus_s *bus = (struct i2c_bus_s *)
-            qemu_mallocz(sizeof(struct i2c_bus_s));
+    i2c_slave *wm;
 
-    /* Attach the CPU on one end of our I2C bus.  */
-    i2c_master_attach(bus, &cpu->i2c[0]->master);
-
-#ifdef HAS_AUDIO
     audio = AUD_init();
     if (!audio)
         return;
-    wm = wm8750_init(audio);
-
     /* Attach a WM8750 to the bus */
-    i2c_slave_attach(bus, SPITZ_WM_ADDR, wm);
+    wm = wm8750_init(bus, audio);
+
+    spitz_wm8750_addr(0, 0, wm);
+    pxa2xx_gpio_handler_set(cpu->gpio, SPITZ_GPIO_WM, spitz_wm8750_addr, wm);
     /* .. and to the sound interface.  */
-    cpu->i2s->opaque = wm->opaque;
+    cpu->i2s->opaque = wm;
     cpu->i2s->codec_out = wm8750_dac_dat;
     cpu->i2s->codec_in = wm8750_adc_dat;
     wm8750_data_req_set(wm, cpu->i2s->data_req, cpu->i2s);
@@ -835,7 +848,7 @@ static void spitz_i2c_setup(struct pxa2xx_state_s *cpu)
 static void spitz_akita_i2c_setup(struct pxa2xx_state_s *cpu)
 {
     /* Attach a Max7310 to Akita I2C bus.  */
-    i2c_slave_attach(cpu->i2c[0]->master.bus, AKITA_MAX_ADDR, max7310_init());
+    i2c_set_slave_address(max7310_init(cpu->i2c[0]->bus), AKITA_MAX_ADDR);
 }
 
 /* Other peripherals */
@@ -929,8 +942,19 @@ static void spitz_mmc_writeprotect_change(void *opaque, int wp)
     pxa2xx_gpio_set(cpu->gpio, SPITZ_GPIO_SD_WP, wp);
 }
 
+static void spitz_pcmcia_cb(void *opaque, int line, int level)
+{
+    struct pxa2xx_state_s *cpu = (struct pxa2xx_state_s *) opaque;
+    static const int gpio_map[] = {
+        SPITZ_GPIO_CF1_IRQ, SPITZ_GPIO_CF1_CD,
+        SPITZ_GPIO_CF2_IRQ, SPITZ_GPIO_CF2_CD,
+    };
+    pxa2xx_gpio_set(cpu->gpio, gpio_map[line], level);
+}
+
 static void spitz_gpio_setup(struct pxa2xx_state_s *cpu, int slots)
 {
+    qemu_irq *pcmcia_cb;
     /*
      * Bad hack: We toggle the LCD hsync GPIO on every GPIO status
      * read to satisfy broken guests that poll-wait for hsync.
@@ -952,14 +976,11 @@ static void spitz_gpio_setup(struct pxa2xx_state_s *cpu, int slots)
     pxa2xx_gpio_handler_set(cpu->gpio, SPITZ_GPIO_ON_RESET, pxa2xx_reset, cpu);
 
     /* PCMCIA signals: card's IRQ and Card-Detect */
+    pcmcia_cb = qemu_allocate_irqs(spitz_pcmcia_cb, cpu, slots * 2);
     if (slots >= 1)
-        pxa2xx_pcmcia_set_irq_cb(cpu->pcmcia[0],
-                        (void (*)(void *, int, int)) pxa2xx_gpio_set,
-                        SPITZ_GPIO_CF1_IRQ, SPITZ_GPIO_CF1_CD, cpu->gpio);
+        pxa2xx_pcmcia_set_irq_cb(cpu->pcmcia[0], pcmcia_cb[0], pcmcia_cb[1]);
     if (slots >= 2)
-        pxa2xx_pcmcia_set_irq_cb(cpu->pcmcia[1],
-                        (void (*)(void *, int, int)) pxa2xx_gpio_set,
-                        SPITZ_GPIO_CF2_IRQ, SPITZ_GPIO_CF2_CD, cpu->gpio);
+        pxa2xx_pcmcia_set_irq_cb(cpu->pcmcia[1], pcmcia_cb[2], pcmcia_cb[3]);
 
     /* Initialise the screen rotation related signals */
     spitz_gpio_invert[3] = 0;	/* Always open */
@@ -976,7 +997,7 @@ static void spitz_gpio_setup(struct pxa2xx_state_s *cpu, int slots)
 
 #define MAGIC_CHG(a, b, c, d)	((d << 24) | (c << 16) | (b << 8) | a)
 
-struct __attribute__ ((__packed__)) sharpsl_param_info {
+struct __attribute__ ((__packed__)) sl_param_info {
     uint32_t comadj_keyword;
     int32_t comadj;
 
@@ -1007,227 +1028,130 @@ struct __attribute__ ((__packed__)) sharpsl_param_info {
     .phadadj		= 0x01,
 };
 
-static void sharpsl_bootparam_write(uint32_t ptr)
+static void sl_bootparam_write(uint32_t ptr)
 {
     memcpy(phys_ram_base + ptr, &spitz_bootparam,
-                    sizeof(struct sharpsl_param_info));
+                    sizeof(struct sl_param_info));
 }
 
-#define SHARPSL_PXA_PARAM_BASE	0xa0000a00
+#define SL_PXA_PARAM_BASE	0xa0000a00
 
 /* Board init.  */
+enum spitz_model_e { spitz, akita, borzoi, terrier };
 
-static void spitz_init(int ram_size, int vga_ram_size, int boot_device,
-                DisplayState *ds, const char **fd_filename, int snapshot,
-                const char *kernel_filename, const char *kernel_cmdline,
-                const char *initrd_filename)
+static void spitz_common_init(int ram_size, int vga_ram_size,
+                DisplayState *ds, const char *kernel_filename,
+                const char *kernel_cmdline, const char *initrd_filename,
+                const char *cpu_model, enum spitz_model_e model, int arm_id)
 {
     uint32_t spitz_ram = 0x04000000;
     uint32_t spitz_rom = 0x00800000;
     struct pxa2xx_state_s *cpu;
     struct scoop_info_s *scp;
 
-    cpu = pxa270_init(ds, 4);
+    if (!cpu_model)
+        cpu_model = (model == terrier) ? "pxa270-c5" : "pxa270-c0";
 
-    /* Setup memory */
+    /* Setup CPU & memory */
     if (ram_size < spitz_ram + spitz_rom) {
         fprintf(stderr, "This platform requires %i bytes of memory\n",
                         spitz_ram + spitz_rom);
         exit(1);
     }
-    cpu_register_physical_memory(PXA2XX_RAM_BASE, spitz_ram, IO_MEM_RAM);
+    cpu = pxa270_init(spitz_ram, ds, cpu_model);
 
-    sharpsl_flash_register(cpu, FLASH_128M);
+    sl_flash_register(cpu, (model == spitz) ? FLASH_128M : FLASH_1024M);
 
-    cpu_register_physical_memory(0, spitz_rom, spitz_ram | IO_MEM_ROM);
+    cpu_register_physical_memory(0, spitz_rom,
+                    qemu_ram_alloc(spitz_rom) | IO_MEM_ROM);
 
     /* Setup peripherals */
     spitz_keyboard_register(cpu);
 
     spitz_ssp_attach(cpu);
 
-    scp = spitz_scoop_init(cpu, 2);
+    scp = spitz_scoop_init(cpu, (model == akita) ? 1 : 2);
 
-    spitz_scoop_gpio_setup(cpu, scp, 2);
+    spitz_scoop_gpio_setup(cpu, scp, (model == akita) ? 1 : 2);
 
-    spitz_gpio_setup(cpu, 2);
+    spitz_gpio_setup(cpu, (model == akita) ? 1 : 2);
 
     spitz_i2c_setup(cpu);
 
-    /* A 4.0 GB microdrive is permanently sitting in CF slot 0 */
-    spitz_microdrive_attach(cpu);
+    if (model == akita)
+        spitz_akita_i2c_setup(cpu);
+
+    if (model == terrier)
+        /* A 6.0 GB microdrive is permanently sitting in CF slot 0.  */
+        spitz_microdrive_attach(cpu);
+    else if (model != akita)
+        /* A 4.0 GB microdrive is permanently sitting in CF slot 0.  */
+        spitz_microdrive_attach(cpu);
 
     /* Setup initial (reset) machine state */
-    cpu->env->regs[15] = PXA2XX_RAM_BASE;
+    cpu->env->regs[15] = PXA2XX_SDRAM_BASE;
 
-    arm_load_kernel(ram_size, kernel_filename, kernel_cmdline,
-                    initrd_filename, 0x2c9, PXA2XX_RAM_BASE);
-    sharpsl_bootparam_write(SHARPSL_PXA_PARAM_BASE - PXA2XX_RAM_BASE);
+    arm_load_kernel(cpu->env, spitz_ram, kernel_filename, kernel_cmdline,
+                    initrd_filename, arm_id, PXA2XX_SDRAM_BASE);
+    sl_bootparam_write(SL_PXA_PARAM_BASE - PXA2XX_SDRAM_BASE);
 }
 
-/* TODO: remember to update this when Spitz support is more complete */
+static void spitz_init(int ram_size, int vga_ram_size, int boot_device,
+                DisplayState *ds, const char **fd_filename, int snapshot,
+                const char *kernel_filename, const char *kernel_cmdline,
+                const char *initrd_filename, const char *cpu_model)
+{
+    spitz_common_init(ram_size, vga_ram_size, ds, kernel_filename,
+                kernel_cmdline, initrd_filename, cpu_model, spitz, 0x2c9);
+}
+
 static void borzoi_init(int ram_size, int vga_ram_size, int boot_device,
                 DisplayState *ds, const char **fd_filename, int snapshot,
                 const char *kernel_filename, const char *kernel_cmdline,
-                const char *initrd_filename)
+                const char *initrd_filename, const char *cpu_model)
 {
-    uint32_t spitz_ram = 0x04000000;
-    uint32_t spitz_rom = 0x00800000;
-    struct pxa2xx_state_s *cpu;
-    struct scoop_info_s *scp;
-
-    cpu = pxa270_init(ds, 4);
-
-    /* Setup memory */
-    if (ram_size < spitz_ram) {
-        fprintf(stderr, "This platform requires %i bytes of memory\n",
-                        ram_size);
-        exit(1);
-    }
-    cpu_register_physical_memory(PXA2XX_RAM_BASE, spitz_ram, IO_MEM_RAM);
-
-    sharpsl_flash_register(cpu, FLASH_1024M);
-
-    cpu_register_physical_memory(0, spitz_rom, spitz_ram | IO_MEM_ROM);
-
-    /* Setup peripherals */
-    spitz_keyboard_register(cpu);
-
-    spitz_ssp_attach(cpu);
-
-    scp = spitz_scoop_init(cpu, 2);
-
-    spitz_scoop_gpio_setup(cpu, scp, 2);
-
-    spitz_gpio_setup(cpu, 2);
-
-    spitz_i2c_setup(cpu);
-
-    /* A 4.0 GB microdrive is permanently sitting in CF slot 0 */
-    spitz_microdrive_attach(cpu);
-
-    /* Setup initial (reset) machine state */
-    cpu->env->regs[15] = PXA2XX_RAM_BASE;
-
-    arm_load_kernel(ram_size, kernel_filename, kernel_cmdline,
-                    initrd_filename, 0x33f, PXA2XX_RAM_BASE);
-    sharpsl_bootparam_write(SHARPSL_PXA_PARAM_BASE - PXA2XX_RAM_BASE);
+    spitz_common_init(ram_size, vga_ram_size, ds, kernel_filename,
+                kernel_cmdline, initrd_filename, cpu_model, borzoi, 0x33f);
 }
 
 static void akita_init(int ram_size, int vga_ram_size, int boot_device,
                 DisplayState *ds, const char **fd_filename, int snapshot,
                 const char *kernel_filename, const char *kernel_cmdline,
-                const char *initrd_filename)
+                const char *initrd_filename, const char *cpu_model)
 {
-    uint32_t spitz_ram = 0x04000000;
-    uint32_t spitz_rom = 0x00800000;
-    struct pxa2xx_state_s *cpu;
-    struct scoop_info_s *scp;
-
-    cpu = pxa270_init(ds, 4);
-
-    /* Setup memory */
-    if (ram_size < spitz_ram) {
-        fprintf(stderr, "This platform requires %i bytes of memory\n",
-                        ram_size);
-        exit(1);
-    }
-    cpu_register_physical_memory(PXA2XX_RAM_BASE, spitz_ram, IO_MEM_RAM);
-
-    sharpsl_flash_register(cpu, FLASH_1024M);
-
-    cpu_register_physical_memory(0, spitz_rom, spitz_ram | IO_MEM_ROM);
-
-    /* Setup peripherals */
-    spitz_keyboard_register(cpu);
-
-    spitz_ssp_attach(cpu);
-
-    scp = spitz_scoop_init(cpu, 1);
-
-    spitz_scoop_gpio_setup(cpu, scp, 1);
-
-    spitz_gpio_setup(cpu, 1);
-
-    spitz_i2c_setup(cpu);
-    spitz_akita_i2c_setup(cpu);
-
-    /* Setup initial (reset) machine state */
-    cpu->env->regs[15] = PXA2XX_RAM_BASE;
-
-    arm_load_kernel(ram_size, kernel_filename, kernel_cmdline,
-                    initrd_filename, 0x2e8, PXA2XX_RAM_BASE);
-    sharpsl_bootparam_write(SHARPSL_PXA_PARAM_BASE - PXA2XX_RAM_BASE);
+    spitz_common_init(ram_size, vga_ram_size, ds, kernel_filename,
+                kernel_cmdline, initrd_filename, cpu_model, akita, 0x2e8);
 }
 
 static void terrier_init(int ram_size, int vga_ram_size, int boot_device,
                 DisplayState *ds, const char **fd_filename, int snapshot,
                 const char *kernel_filename, const char *kernel_cmdline,
-                const char *initrd_filename)
+                const char *initrd_filename, const char *cpu_model)
 {
-    uint32_t spitz_ram = 0x04000000;
-    uint32_t spitz_rom = 0x00800000;
-    struct pxa2xx_state_s *cpu;
-    struct scoop_info_s *scp;
-
-    cpu = pxa270_init(ds, 7);
-
-    /* Setup memory */
-    if (ram_size < spitz_ram) {
-        fprintf(stderr, "This platform requires %i bytes of memory\n",
-                        ram_size);
-        exit(1);
-    }
-    cpu_register_physical_memory(PXA2XX_RAM_BASE, spitz_ram, IO_MEM_RAM);
-
-    sharpsl_flash_register(cpu, FLASH_1024M);
-
-    cpu_register_physical_memory(0, spitz_rom, spitz_ram | IO_MEM_ROM);
-
-    /* Setup peripherals */
-    spitz_keyboard_register(cpu);
-
-    spitz_ssp_attach(cpu);
-
-    scp = spitz_scoop_init(cpu, 2);
-
-    spitz_scoop_gpio_setup(cpu, scp, 2);
-
-    spitz_gpio_setup(cpu, 2);
-
-    spitz_i2c_setup(cpu);
-
-    /* A 6.0 GB microdrive is permanently sitting in CF slot 0 */
-    spitz_microdrive_attach(cpu);
-
-    /* Setup initial (reset) machine state */
-    cpu->env->regs[15] = PXA2XX_RAM_BASE;
-
-    arm_load_kernel(ram_size, kernel_filename, kernel_cmdline,
-                    initrd_filename, 0x33f, PXA2XX_RAM_BASE);
-    sharpsl_bootparam_write(SHARPSL_PXA_PARAM_BASE - PXA2XX_RAM_BASE);
+    spitz_common_init(ram_size, vga_ram_size, ds, kernel_filename,
+                kernel_cmdline, initrd_filename, cpu_model, terrier, 0x33f);
 }
 
-QEMUMachine zaurusakita_machine = {
+QEMUMachine akitapda_machine = {
     "akita",
-    "Sharp Zaurus SL-C1000 aka Akita (PXA270)",
+    "Akita PDA (PXA270)",
     akita_init,
 };
 
-QEMUMachine zaurusspitz_machine = {
+QEMUMachine spitzpda_machine = {
     "spitz",
-    "Sharp Zaurus SL-C3000 aka Spitz (PXA270)",
+    "Spitz PDA (PXA270)",
     spitz_init,
 };
 
-QEMUMachine zaurusborzoi_machine = {
+QEMUMachine borzoipda_machine = {
     "borzoi",
-    "Sharp Zaurus SL-C3100 aka Borzoi (PXA270)",
+    "Borzoi PDA (PXA270)",
     borzoi_init,
 };
 
-QEMUMachine zaurusterrier_machine = {
+QEMUMachine terrierpda_machine = {
     "terrier",
-    "Sharp Zaurus SL-C3200 aka Terrier (PXA270)",
+    "Terrier PDA (PXA270)",
     terrier_init,
 };

@@ -20,7 +20,7 @@
 #ifndef CPU_ALL_H
 #define CPU_ALL_H
 
-#if defined(__arm__) || defined(__sparc__)
+#if defined(__arm__) || defined(__sparc__) || defined(__mips__)
 #define WORDS_ALIGNED
 #endif
 
@@ -644,12 +644,14 @@ static inline void stfq_be_p(void *ptr, float64 v)
 #define lduw_code(p) lduw_raw(p)
 #define ldsw_code(p) ldsw_raw(p)
 #define ldl_code(p) ldl_raw(p)
+#define ldq_code(p) ldq_raw(p)
 
 #define ldub_kernel(p) ldub_raw(p)
 #define ldsb_kernel(p) ldsb_raw(p)
 #define lduw_kernel(p) lduw_raw(p)
 #define ldsw_kernel(p) ldsw_raw(p)
 #define ldl_kernel(p) ldl_raw(p)
+#define ldq_kernel(p) ldq_raw(p)
 #define ldfl_kernel(p) ldfl_raw(p)
 #define ldfq_kernel(p) ldfq_raw(p)
 #define stb_kernel(p, v) stb_raw(p, v)
@@ -746,6 +748,13 @@ void page_unprotect_range(target_ulong data, target_ulong data_size);
 #define cpu_gen_code cpu_sh4_gen_code
 #define cpu_signal_handler cpu_sh4_signal_handler
 
+#elif defined(TARGET_ALPHA)
+#define CPUState CPUAlphaState
+#define cpu_init cpu_alpha_init
+#define cpu_exec cpu_alpha_exec
+#define cpu_gen_code cpu_alpha_gen_code
+#define cpu_signal_handler cpu_alpha_signal_handler
+
 #else
 
 #error unsupported target CPU
@@ -754,11 +763,17 @@ void page_unprotect_range(target_ulong data, target_ulong data_size);
 
 #endif /* SINGLE_CPU_DEFINES */
 
+CPUState *cpu_copy(CPUState *env);
+
 void cpu_dump_state(CPUState *env, FILE *f, 
                     int (*cpu_fprintf)(FILE *f, const char *fmt, ...),
                     int flags);
+void cpu_dump_statistics (CPUState *env, FILE *f,
+                          int (*cpu_fprintf)(FILE *f, const char *fmt, ...),
+                          int flags);
 
-void cpu_abort(CPUState *env, const char *fmt, ...);
+void cpu_abort(CPUState *env, const char *fmt, ...)
+    __attribute__ ((__format__ (__printf__, 2, 3)));
 extern CPUState *first_cpu;
 extern CPUState *cpu_single_env;
 extern int code_copy_enabled;
@@ -770,10 +785,13 @@ extern int code_copy_enabled;
 #define CPU_INTERRUPT_FIQ    0x10 /* Fast interrupt pending.  */
 #define CPU_INTERRUPT_HALT   0x20 /* CPU halt wanted */
 #define CPU_INTERRUPT_SMI    0x40 /* (x86 only) SMI interrupt pending */
+#define CPU_INTERRUPT_DEBUG  0x80 /* Debug event occured.  */
 
 void cpu_interrupt(CPUState *s, int mask);
 void cpu_reset_interrupt(CPUState *env, int mask);
 
+int cpu_watchpoint_insert(CPUState *env, target_ulong addr);
+int cpu_watchpoint_remove(CPUState *env, target_ulong addr);
 int cpu_breakpoint_insert(CPUState *env, target_ulong pc);
 int cpu_breakpoint_remove(CPUState *env, target_ulong pc);
 void cpu_single_step(CPUState *env, int enabled);
@@ -782,7 +800,7 @@ void cpu_reset(CPUState *s);
 /* Return the physical page corresponding to a virtual one. Use it
    only for debugging because no protection checks are done. Return -1
    if no page found. */
-target_ulong cpu_get_phys_page_debug(CPUState *env, target_ulong addr);
+target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr);
 
 #define CPU_LOG_TB_OUT_ASM (1 << 0) 
 #define CPU_LOG_TB_IN_ASM  (1 << 1)
@@ -848,6 +866,8 @@ void cpu_register_physical_memory(target_phys_addr_t start_addr,
                                   unsigned long size,
                                   unsigned long phys_offset);
 uint32_t cpu_get_physical_page_desc(target_phys_addr_t addr);
+ram_addr_t qemu_ram_alloc(unsigned int size);
+void qemu_ram_free(ram_addr_t addr);
 int cpu_register_io_memory(int io_index,
                            CPUReadMemoryFunc **mem_read,
                            CPUWriteMemoryFunc **mem_write,
@@ -872,6 +892,7 @@ uint32_t lduw_phys(target_phys_addr_t addr);
 uint32_t ldl_phys(target_phys_addr_t addr);
 uint64_t ldq_phys(target_phys_addr_t addr);
 void stl_phys_notdirty(target_phys_addr_t addr, uint32_t val);
+void stq_phys_notdirty(target_phys_addr_t addr, uint64_t val);
 void stb_phys(target_phys_addr_t addr, uint32_t val);
 void stw_phys(target_phys_addr_t addr, uint32_t val);
 void stl_phys(target_phys_addr_t addr, uint32_t val);
@@ -980,7 +1001,7 @@ static inline int64_t cpu_get_real_ticks(void)
     return val;
 }
 
-#elif defined(__sparc_v9__)
+#elif defined(__sparc_v8plus__) || defined(__sparc_v8plusa__) || defined(__sparc_v9__)
 
 static inline int64_t cpu_get_real_ticks (void)
 {
@@ -1001,10 +1022,31 @@ static inline int64_t cpu_get_real_ticks (void)
         return rval.i64;
 #endif
 }
+
+#elif defined(__mips__)
+
+static inline int64_t cpu_get_real_ticks(void)
+{
+#if __mips_isa_rev >= 2
+    uint32_t count;
+    static uint32_t cyc_per_count = 0;
+
+    if (!cyc_per_count)
+        __asm__ __volatile__("rdhwr %0, $3" : "=r" (cyc_per_count));
+
+    __asm__ __volatile__("rdhwr %1, $2" : "=r" (count));
+    return (int64_t)(count * cyc_per_count);
+#else
+    /* FIXME */
+    static int64_t ticks = 0;
+    return ticks++;
+#endif
+}
+
 #else
 /* The host CPU doesn't have an easily accessible cycle counter.
-   Just return a monotonically increasing vlue.  This will be totally wrong,
-   but hopefully better than nothing.  */
+   Just return a monotonically increasing value.  This will be
+   totally wrong, but hopefully better than nothing.  */
 static inline int64_t cpu_get_real_ticks (void)
 {
     static int64_t ticks = 0;

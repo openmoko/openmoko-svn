@@ -25,7 +25,7 @@
 * Installation::
 * QEMU PC System emulator::
 * QEMU System emulator for non PC targets::
-* QEMU Linux User space emulator::
+* QEMU User space emulator::
 * compilation:: Compilation from the sources
 * Index::
 @end menu
@@ -57,8 +57,8 @@ peripherals. It can be used to launch different Operating Systems
 without rebooting the PC or to debug system code.
 
 @item 
-User mode emulation (Linux host only). In this mode, QEMU can launch
-Linux processes compiled for one CPU on another CPU. It can be used to
+User mode emulation. In this mode, QEMU can launch
+processes compiled for one CPU on another CPU. It can be used to
 launch the Wine Windows API emulator (@url{http://www.winehq.org}) or
 to ease cross-compilation and cross-debugging.
 
@@ -77,8 +77,10 @@ For system emulation, the following hardware targets are supported:
 @item Sun4m (32-bit Sparc processor)
 @item Sun4u (64-bit Sparc processor, in progress)
 @item Malta board (32-bit MIPS processor)
-@item ARM Integrator/CP (ARM926E or 1026E processor)
+@item ARM Integrator/CP (ARM926E, 1026E or 946E processor)
 @item ARM Versatile baseboard (ARM926E)
+@item ARM RealView Emulation baseboard (ARM926EJ-S)
+@item Spitz, Akita, Borzoi and Terrier PDAs (PXA270 processor)
 @end itemize
 
 For user emulation, x86, PowerPC, ARM, MIPS, Sparc32/64 and ColdFire(m68k) CPUs are supported.
@@ -247,6 +249,12 @@ command line application. The emulated serial port is redirected on
 the console. Therefore, you can still use QEMU to debug a Linux kernel
 with a serial console.
 
+@item -no-frame
+
+Do not use decorations for SDL windows and start them using the whole
+available screen space. This makes the using QEMU in a dedicated desktop
+workspace more convenient.
+
 @item -vnc display
 
 Normally, QEMU uses SDL to display the VGA output.  With this option,
@@ -324,6 +332,10 @@ slows down the IDE transfers).
 Load the contents of file as an option ROM.  This option is useful to load
 things like EtherBoot.
 
+@item -name string
+Sets the name of the guest.  This name will be display in the SDL window
+caption.  The name will also be used for the VNC server.
+
 @end table
 
 USB options:
@@ -345,10 +357,12 @@ Create a new Network Interface Card and connect it to VLAN @var{n} (@var{n}
 = 0 is the default). The NIC is currently an NE2000 on the PC
 target. Optionally, the MAC address can be changed. If no
 @option{-net} option is specified, a single NIC is created.
-Qemu can emulate several different models of network card.  Valid values for
-@var{type} are @code{ne2k_pci}, @code{ne2k_isa}, @code{rtl8139},
-@code{smc91c111} and @code{lance}.  Not all devices are supported on all
-targets.
+Qemu can emulate several different models of network card.
+Valid values for @var{type} are
+@code{i82551}, @code{i82557b}, @code{i82559er},
+@code{ne2k_pci}, @code{ne2k_isa}, @code{pcnet}, @code{rtl8139},
+@code{smc91c111} and @code{lance}.
+Not all devices are supported on all targets.
 
 @item -net user[,vlan=n][,hostname=name]
 Use the user mode network stack which requires no administrator
@@ -358,7 +372,8 @@ hostname reported by the builtin DHCP server.
 @item -net tap[,vlan=n][,fd=h][,ifname=name][,script=file]
 Connect the host TAP network interface @var{name} to VLAN @var{n} and
 use the network script @var{file} to configure it. The default
-network script is @file{/etc/qemu-ifup}. If @var{name} is not
+network script is @file{/etc/qemu-ifup}. Use @option{script=no} to
+disable script execution. If @var{name} is not
 provided, the OS automatically provides one.  @option{fd=h} can be
 used to specify the handle of an already opened host TAP interface. Example:
 
@@ -437,13 +452,22 @@ Indicate that no network devices should be configured. It is used to
 override the default configuration (@option{-net nic -net user}) which
 is activated if no @option{-net} options are provided.
 
-@item -tftp prefix
+@item -tftp dir
 When using the user mode network stack, activate a built-in TFTP
-server. All filenames beginning with @var{prefix} can be downloaded
-from the host to the guest using a TFTP client. The TFTP client on the
-guest must be configured in binary mode (use the command @code{bin} of
-the Unix TFTP client). The host IP address on the guest is as usual
-10.0.2.2.
+server. The files in @var{dir} will be exposed as the root of a TFTP server.
+The TFTP client on the guest must be configured in binary mode (use the command
+@code{bin} of the Unix TFTP client). The host IP address on the guest is as
+usual 10.0.2.2.
+
+@item -bootp file
+When using the user mode network stack, broadcast @var{file} as the BOOTP
+filename.  In conjunction with @option{-tftp}, this can be used to network boot
+a guest from a local directory.
+
+Example (using pxelinux):
+@example
+qemu -hda linux.img -boot n -tftp /path/to/tftp/files -bootp /pxelinux.0
+@end example
 
 @item -smb dir
 When using the user mode network stack, activate a built-in SMB
@@ -540,7 +564,7 @@ void device
 parameters are set according to the emulated ones.
 @item /dev/parportN
 [Linux only, parallel port only] Use host parallel port
-@var{N}. Currently only SPP parallel port features can be used.
+@var{N}. Currently SPP and EPP parallel port features can be used.
 @item file:filename
 Write output to filename. No character can be read.
 @item stdio
@@ -576,13 +600,14 @@ localhost 5555
 @end table
 
 
-@item tcp:[host]:port[,server][,nowait]
+@item tcp:[host]:port[,server][,nowait][,nodelay]
 The TCP Net Console has two modes of operation.  It can send the serial
 I/O to a location or wait for a connection from a location.  By default
 the TCP Net Console is sent to @var{host} at the @var{port}.  If you use
 the @var{server} option QEMU will wait for a client socket application
 to connect to the port before continuing, unless the @code{nowait}
-option was specified. If @var{host} is omitted, 0.0.0.0 is assumed. Only
+option was specified.  The @code{nodelay} option disables the Nagle buffering
+algoritm.  If @var{host} is omitted, 0.0.0.0 is assumed. Only
 one TCP connection at a time is accepted. You can use @code{telnet} to
 connect to the corresponding character device.
 @table @code
@@ -594,7 +619,7 @@ connect to the corresponding character device.
 -serial tcp:192.168.0.100:4444,server,nowait
 @end table
 
-@item telnet:host:port[,server][,nowait]
+@item telnet:host:port[,server][,nowait][,nodelay]
 The telnet protocol is used instead of raw tcp sockets.  The options
 work the same as if you had specified @code{-serial tcp}.  The
 difference is that the port acts like a telnet server or client using
@@ -607,6 +632,18 @@ type "send break" followed by pressing the enter key.
 A unix domain socket is used instead of a tcp socket.  The option works the
 same as if you had specified @code{-serial tcp} except the unix domain socket
 @var{path} is used for connections.
+
+@item mon:dev_string
+This is a special option to allow the monitor to be multiplexed onto
+another serial port.  The monitor is accessed with key sequence of
+@key{Control-a} and then pressing @key{c}. See monitor access
+@ref{pcsys_keys} in the -nographic section for more keys.
+@var{dev_string} should be any one of the serial devices specified
+above.  An example to multiplex the monitor onto a telnet server
+listening on port 4444 would be:
+@table @code
+@item -serial mon:telnet::4444,server,nowait
+@end table
 
 @end table
 
@@ -627,10 +664,24 @@ serial port).
 The default device is @code{vc} in graphical mode and @code{stdio} in
 non graphical mode.
 
+@item -echr numeric_ascii_value
+Change the escape character used for switching to the monitor when using
+monitor and serial sharing.  The default is @code{0x01} when using the
+@code{-nographic} option.  @code{0x01} is equal to pressing
+@code{Control-a}.  You can select a different character from the ascii
+control keys where 1 through 26 map to Control-a through Control-z.  For
+instance you could use the either of the following to change the escape
+character to Control-t.
+@table @code
+@item -echr 0x14
+@item -echr 20
+@end table
+
 @item -s
 Wait gdb connection to port 1234 (@pxref{gdb_usage}). 
 @item -p port
-Change gdb connection port.
+Change gdb connection port.  @var{port} can be either a decimal number
+to specify a TCP port, or a host device (same devices as the serial port).
 @item -S
 Do not start CPU at startup (you must type 'c' in the monitor).
 @item -d             
@@ -661,6 +712,11 @@ Exit instead of rebooting.
 
 @item -loadvm file
 Start right away with a saved state (@code{loadvm} in monitor)
+
+@item -semihosting
+Enable "Angel" semihosting interface (ARM target machines only).
+Note that this allows guest direct access to the host filesystem,
+so should only be used with trusted guest OS.
 @end table
 
 @c man end
@@ -703,6 +759,8 @@ Print this help
 Exit emulator
 @item Ctrl-a s    
 Save disk data back to file (if -snapshot)
+@item Ctrl-a t
+toggle console timestamps
 @item Ctrl-a b
 Send break (magic sysrq in Linux)
 @item Ctrl-a c
@@ -734,7 +792,7 @@ emulator. You can use it to:
 @itemize @minus
 
 @item
-Remove or insert removable medias images
+Remove or insert removable media images
 (such as CD-ROM or floppies)
 
 @item 
@@ -787,10 +845,10 @@ show which guest mouse is receiving events
 Quit the emulator.
 
 @item eject [-f] device
-Eject a removable media (use -f to force it).
+Eject a removable medium (use -f to force it).
 
 @item change device filename
-Change a removable media.
+Change a removable medium.
 
 @item screendump filename
 Save screen into PPM image @var{filename}.
@@ -1085,7 +1143,7 @@ The prefered syntax is the drive letter (e.g. @file{d:}). The
 alternate syntax @file{\\.\d:} is supported. @file{/dev/cdrom} is
 supported as an alias to the first CDROM drive.
 
-Currently there is no specific code to handle removable medias, so it
+Currently there is no specific code to handle removable media, so it
 is better to use the @code{change} or @code{eject} monitor commands to
 change or eject media.
 @item Hard disks
@@ -1103,7 +1161,7 @@ modifications are written in a temporary file).
 
 @file{/dev/cdrom} is an alias to the first CDROM. 
 
-Currently there is no specific code to handle removable medias, so it
+Currently there is no specific code to handle removable media, so it
 is better to use the @code{change} or @code{eject} monitor commands to
 change or eject media.
 
@@ -1605,6 +1663,15 @@ The following options are specific to the Sparc emulation:
 
 Set the initial TCX graphic mode. The default is 1024x768.
 
+@item -prom-env string
+
+Set OpenBIOS variables in NVRAM, for example:
+
+@example
+qemu-system-sparc -prom-env 'auto-boot?=false' \
+ -prom-env 'boot-device=sd(0,2,0):d' -prom-env 'boot-args=linux single'
+@end example
+
 @end table
 
 @c man end 
@@ -1655,7 +1722,7 @@ devices:
 
 @itemize @minus
 @item
-ARM926E or ARM1026E CPU
+ARM926E, ARM1026E or ARM946E CPU
 @item
 Two PL011 UARTs
 @item 
@@ -1664,6 +1731,8 @@ SMC 91c111 Ethernet adapter
 PL110 LCD controller
 @item
 PL050 KMI with PS/2 keyboard and mouse.
+@item
+PL181 MultiMedia Card Interface with SD card.
 @end itemize
 
 The ARM Versatile baseboard is emulated with the following devices:
@@ -1691,13 +1760,91 @@ mapped control registers.
 PCI OHCI USB controller.
 @item
 LSI53C895A PCI SCSI Host Bus Adapter with hard disk and CD-ROM devices.
+@item
+PL181 MultiMedia Card Interface with SD card.
+@end itemize
+
+The ARM RealView Emulation baseboard is emulated with the following devices:
+
+@itemize @minus
+@item
+ARM926E CPU
+@item
+ARM AMBA Generic/Distributed Interrupt Controller
+@item
+Four PL011 UARTs
+@item 
+SMC 91c111 Ethernet adapter
+@item
+PL110 LCD controller
+@item
+PL050 KMI with PS/2 keyboard and mouse
+@item
+PCI host bridge
+@item
+PCI OHCI USB controller
+@item
+LSI53C895A PCI SCSI Host Bus Adapter with hard disk and CD-ROM devices
+@item
+PL181 MultiMedia Card Interface with SD card.
+@end itemize
+
+The XScale-based clamshell PDA models ("Spitz", "Akita", "Borzoi"
+and "Terrier") emulation includes the following peripherals:
+
+@itemize @minus
+@item
+Intel PXA270 System-on-chip (ARM V5TE core)
+@item
+NAND Flash memory
+@item
+IBM/Hitachi DSCM microdrive in a PXA PCMCIA slot - not in "Akita"
+@item
+On-chip OHCI USB controller
+@item
+On-chip LCD controller
+@item
+On-chip Real Time Clock
+@item
+TI ADS7846 touchscreen controller on SSP bus
+@item
+Maxim MAX1111 analog-digital converter on I@math{^2}C bus
+@item
+GPIO-connected keyboard controller and LEDs
+@item
+Secure Digital card connected to PXA MMC/SD host
+@item
+Three on-chip UARTs
+@item
+WM8750 audio CODEC on I@math{^2}C and I@math{^2}S busses
 @end itemize
 
 A Linux 2.6 test image is available on the QEMU web site. More
 information is available in the QEMU mailing-list archive.
 
-@node QEMU Linux User space emulator 
-@chapter QEMU Linux User space emulator 
+@node QEMU User space emulator 
+@chapter QEMU User space emulator 
+
+@menu
+* Supported Operating Systems ::
+* Linux User space emulator::
+* Mac OS X/Darwin User space emulator ::
+@end menu
+
+@node Supported Operating Systems
+@section Supported Operating Systems
+
+The following OS are supported in user space emulation:
+
+@itemize @minus
+@item
+Linux (refered as qemu-linux-user)
+@item
+Mac OS X/Darwin (refered as qemu-darwin-user)
+@end itemize
+
+@node Linux User space emulator
+@section Linux User space emulator
 
 @menu
 * Quick Start::
@@ -1707,7 +1854,7 @@ information is available in the QEMU mailing-list archive.
 @end menu
 
 @node Quick Start
-@section Quick Start
+@subsection Quick Start
 
 In order to launch a Linux process, QEMU needs the process executable
 itself and all the target (x86) dynamic libraries used by it. 
@@ -1724,7 +1871,8 @@ qemu-i386 -L / /bin/ls
 @code{-L /} tells that the x86 dynamic linker must be searched with a
 @file{/} prefix.
 
-@item Since QEMU is also a linux process, you can launch qemu with qemu (NOTE: you can only do that if you compiled QEMU from the sources):
+@item Since QEMU is also a linux process, you can launch qemu with
+qemu (NOTE: you can only do that if you compiled QEMU from the sources):
 
 @example 
 qemu-i386 -L / qemu-i386 -L / /bin/ls
@@ -1757,7 +1905,7 @@ qemu-i386 /usr/local/qemu-i386/bin/qemu-i386 \
 @end itemize
 
 @node Wine launch
-@section Wine launch
+@subsection Wine launch
 
 @itemize
 
@@ -1786,7 +1934,7 @@ qemu-i386 /usr/local/qemu-i386/wine/bin/wine \
 @end itemize
 
 @node Command line options
-@section Command line options
+@subsection Command line options
 
 @example
 usage: qemu-i386 [-h] [-d] [-L path] [-s size] program [arguments...]
@@ -1811,7 +1959,7 @@ Act as if the host page size was 'pagesize' bytes
 @end table
 
 @node Other binaries
-@section Other binaries
+@subsection Other binaries
 
 @command{qemu-arm} is also capable of running ARM "Angel" semihosted ELF
 binaries (as implemented by the arm-elf and arm-eabi Newlib/GDB
@@ -1822,6 +1970,91 @@ configurations), and arm-uclinux bFLT format binaries.
 coldfire uClinux bFLT format binaries.
 
 The binary format is detected automatically.
+
+@node Mac OS X/Darwin User space emulator
+@section Mac OS X/Darwin User space emulator
+
+@menu
+* Mac OS X/Darwin Status::
+* Mac OS X/Darwin Quick Start::
+* Mac OS X/Darwin Command line options::
+@end menu
+
+@node Mac OS X/Darwin Status
+@subsection Mac OS X/Darwin Status
+
+@itemize @minus
+@item
+target x86 on x86: Most apps (Cocoa and Carbon too) works. [1]
+@item
+target PowerPC on x86: Not working as the ppc commpage can't be mapped (yet!)
+@item
+target PowerPC on PowerPC: Most apps (Cocoa and Carbon too) works. [1]
+@item
+target x86 on PowerPC: most utilities work. Cocoa and Carbon apps are not yet supported.
+@end itemize
+
+[1] If you're host commpage can be executed by qemu.
+
+@node Mac OS X/Darwin Quick Start
+@subsection Quick Start
+
+In order to launch a Mac OS X/Darwin process, QEMU needs the process executable
+itself and all the target dynamic libraries used by it. If you don't have the FAT
+libraries (you're running Mac OS X/ppc) you'll need to obtain it from a Mac OS X
+CD or compile them by hand.
+
+@itemize
+
+@item On x86, you can just try to launch any process by using the native
+libraries:
+
+@example 
+qemu-i386 /bin/ls
+@end example
+
+or to run the ppc version of the executable:
+
+@example 
+qemu-ppc /bin/ls
+@end example
+
+@item On ppc, you'll have to tell qemu where your x86 libraries (and dynamic linker)
+are installed:
+
+@example 
+qemu-i386 -L /opt/x86_root/ /bin/ls
+@end example
+
+@code{-L /opt/x86_root/} tells that the dynamic linker (dyld) path is in
+@file{/opt/x86_root/usr/bin/dyld}.
+
+@end itemize
+
+@node Mac OS X/Darwin Command line options
+@subsection Command line options
+
+@example
+usage: qemu-i386 [-h] [-d] [-L path] [-s size] program [arguments...]
+@end example
+
+@table @option
+@item -h
+Print the help
+@item -L path   
+Set the library root path (default=/)
+@item -s size
+Set the stack size in bytes (default=524288)
+@end table
+
+Debug options:
+
+@table @option
+@item -d
+Activate log (logfile=/tmp/qemu.log)
+@item -p pagesize
+Act as if the host page size was 'pagesize' bytes
+@end table
 
 @node compilation
 @chapter Compilation from the sources
@@ -1857,39 +2090,15 @@ make install
 @end example
 to install QEMU in @file{/usr/local}.
 
-@subsection Tested tool versions
+@subsection GCC version
 
 In order to compile QEMU successfully, it is very important that you
-have the right tools. The most important one is gcc. I cannot guaranty
-that QEMU works if you do not use a tested gcc version. Look at
-'configure' and 'Makefile' if you want to make a different gcc
-version work.
-
-@example
-host      gcc      binutils      glibc    linux       distribution
-----------------------------------------------------------------------
-x86       3.2      2.13.2        2.1.3    2.4.18
-          2.96     2.11.93.0.2   2.2.5    2.4.18      Red Hat 7.3
-          3.2.2    2.13.90.0.18  2.3.2    2.4.20      Red Hat 9
-
-PowerPC   3.3 [4]  2.13.90.0.18  2.3.1    2.4.20briq
-          3.2
-
-Alpha     3.3 [1]  2.14.90.0.4   2.2.5    2.2.20 [2]  Debian 3.0
-
-Sparc32   2.95.4   2.12.90.0.1   2.2.5    2.4.18      Debian 3.0
-
-ARM       2.95.4   2.12.90.0.1   2.2.5    2.4.9 [3]   Debian 3.0
-
-[1] On Alpha, QEMU needs the gcc 'visibility' attribute only available
-    for gcc version >= 3.3.
-[2] Linux >= 2.4.20 is necessary for precise exception support
-    (untested).
-[3] 2.4.9-ac10-rmk2-np1-cerf2
-
-[4] gcc 2.95.x generates invalid code when using too many register
-variables. You must use gcc 3.x on PowerPC.
-@end example
+have the right tools. The most important one is gcc. On most hosts and
+in particular on x86 ones, @emph{gcc 4.x is not supported}. If your
+Linux distribution includes a gcc 4.x compiler, you can usually
+install an older version (it is invoked by @code{gcc32} or
+@code{gcc34}). The QEMU configure script automatically probes for
+these older versions so that usally you don't have to do anything.
 
 @node Windows
 @section Windows

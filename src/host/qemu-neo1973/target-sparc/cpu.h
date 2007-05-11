@@ -35,10 +35,14 @@
 #define TT_NFPU_INSN 0x04
 #define TT_WIN_OVF  0x05
 #define TT_WIN_UNF  0x06 
+#define TT_UNALIGNED 0x07
 #define TT_FP_EXCP  0x08
 #define TT_DFAULT   0x09
+#define TT_TOVF     0x0a
 #define TT_EXTINT   0x10
+#define TT_DATA_ACCESS 0x29
 #define TT_DIV_ZERO 0x2a
+#define TT_NCP_INSN 0x24
 #define TT_TRAP     0x80
 #else
 #define TT_TFAULT   0x08
@@ -47,11 +51,14 @@
 #define TT_PRIV_INSN 0x11
 #define TT_NFPU_INSN 0x20
 #define TT_FP_EXCP  0x21
+#define TT_TOVF     0x23
 #define TT_CLRWIN   0x24
 #define TT_DIV_ZERO 0x28
 #define TT_DFAULT   0x30
 #define TT_DMISS    0x31
-#define TT_DPROT    0x32
+#define TT_DATA_ACCESS 0x32
+#define TT_DPROT    0x33
+#define TT_UNALIGNED 0x34
 #define TT_PRIV_ACT 0x37
 #define TT_EXTINT   0x40
 #define TT_SPILL    0x80
@@ -124,6 +131,7 @@
 #define FSR_FTT_MASK (FSR_FTT2 | FSR_FTT1 | FSR_FTT0)
 #define FSR_FTT_IEEE_EXCP (1 << 14)
 #define FSR_FTT_UNIMPFPOP (3 << 14)
+#define FSR_FTT_SEQ_ERROR (4 << 14)
 #define FSR_FTT_INVAL_FPR (6 << 14)
 
 #define FSR_FCC1  (1<<11)
@@ -150,6 +158,8 @@
 /* 2 <= NWINDOWS <= 32. In QEMU it must also be a power of two. */
 #define NWINDOWS  8
 
+typedef struct sparc_def_t sparc_def_t;
+
 typedef struct CPUSPARCState {
     target_ulong gregs[8]; /* general registers */
     target_ulong *regwptr; /* pointer to current register window */
@@ -168,6 +178,7 @@ typedef struct CPUSPARCState {
     int      psret;    /* enable traps */
     uint32_t psrpil;   /* interrupt level */
     int      psref;    /* enable fpu */
+    target_ulong version;
     jmp_buf  jmp_env;
     int user_mode_only;
     int exception_index;
@@ -213,10 +224,12 @@ typedef struct CPUSPARCState {
     uint64_t bgregs[8]; /* backup for normal global registers */
     uint64_t igregs[8]; /* interrupt general registers */
     uint64_t mgregs[8]; /* mmu general registers */
-    uint64_t version;
     uint64_t fprs;
     uint64_t tick_cmpr, stick_cmpr;
     uint64_t gsr;
+    uint32_t gl; // UA2005
+    /* UA 2005 hyperprivileged registers */
+    uint64_t hpstate, htstate[MAXTL], hintp, htba, hver, hstick_cmpr, ssr;
 #endif
 #if !defined(TARGET_SPARC64) && !defined(reg_T2)
     target_ulong t2;
@@ -231,22 +244,22 @@ typedef struct CPUSPARCState {
 #define PUT_FSR64(env, val) do { uint64_t _tmp = val;	\
 	env->fsr = _tmp & 0x3fcfc1c3ffULL;		\
     } while (0)
-// Manuf 0x17, version 0x11, mask 0 (UltraSparc-II)
-#define GET_VER(env) ((0x17ULL << 48) | (0x11ULL << 32) |		\
-		      (0 << 24) | (MAXTL << 8) | (NWINDOWS - 1))
 #else
 #define GET_FSR32(env) (env->fsr)
-#define PUT_FSR32(env, val) do { uint32_t _tmp = val;	\
-	env->fsr = _tmp & 0xcfc1ffff;			\
+#define PUT_FSR32(env, val) do { uint32_t _tmp = val;                   \
+        env->fsr = (_tmp & 0xcfc1dfff) | (env->fsr & 0x000e0000);       \
     } while (0)
 #endif
 
 CPUSPARCState *cpu_sparc_init(void);
 int cpu_sparc_exec(CPUSPARCState *s);
 int cpu_sparc_close(CPUSPARCState *s);
+int sparc_find_by_name (const unsigned char *name, const sparc_def_t **def);
+void sparc_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt,
+                                                 ...));
+int cpu_sparc_register (CPUSPARCState *env, const sparc_def_t *def);
 
-/* Fake impl 0, version 4 */
-#define GET_PSR(env) ((0 << 28) | (4 << 24) | (env->psr & PSR_ICC) |	\
+#define GET_PSR(env) (env->version | (env->psr & PSR_ICC) |             \
 		      (env->psref? PSR_EF : 0) |			\
 		      (env->psrpil << 8) |				\
 		      (env->psrs? PSR_S : 0) |				\
@@ -264,7 +277,7 @@ void cpu_set_cwp(CPUSPARCState *env1, int new_cwp);
 	env->psrs = (_tmp & PSR_S)? 1 : 0;				\
 	env->psrps = (_tmp & PSR_PS)? 1 : 0;				\
 	env->psret = (_tmp & PSR_ET)? 1 : 0;				\
-	cpu_set_cwp(env, _tmp & PSR_CWP & (NWINDOWS - 1));		\
+        cpu_set_cwp(env, _tmp & PSR_CWP);                               \
     } while (0)
 
 #ifdef TARGET_SPARC64
@@ -275,8 +288,8 @@ void cpu_set_cwp(CPUSPARCState *env1, int new_cwp);
     } while (0)
 #endif
 
-struct siginfo;
-int cpu_sparc_signal_handler(int hostsignum, struct siginfo *info, void *puc);
+int cpu_sparc_signal_handler(int host_signum, void *pinfo, void *puc);
+void raise_exception(int tt);
 
 #include "cpu-all.h"
 

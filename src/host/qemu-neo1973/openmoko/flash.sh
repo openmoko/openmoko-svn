@@ -43,7 +43,7 @@ ${make} splash.gz || exit -1
 # We assume they have numeric date or some build number in their names.
 most_recent () {
 	cd $src_dir
-	export $2="`basename \`ls -d -1 $img_dir/$1 | sort | tail -n 1\``"
+	export $2="`basename \`ls -d -1 $img_dir/$1 | sort -n | tail -n 1\``"
 	export $3="`python -c \"import os; print '0x%lx' \
 		%(os.stat('$img_dir/${!2}').st_size)\"`"
 	cd $script_dir

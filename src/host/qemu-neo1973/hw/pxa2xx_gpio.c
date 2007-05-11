@@ -13,7 +13,7 @@
 
 struct pxa2xx_gpio_info_s {
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq *pic;
     int lines;
     CPUState *cpu_env;
 
@@ -69,19 +69,19 @@ static struct {
 static void pxa2xx_gpio_irq_update(struct pxa2xx_gpio_info_s *s)
 {
     if (s->status[0] & (1 << 0))
-        pic_set_irq_new(s->pic, PXA2XX_PIC_GPIO_0, 1);
+        qemu_irq_raise(s->pic[PXA2XX_PIC_GPIO_0]);
     else
-        pic_set_irq_new(s->pic, PXA2XX_PIC_GPIO_0, 0);
+        qemu_irq_lower(s->pic[PXA2XX_PIC_GPIO_0]);
 
     if (s->status[0] & (1 << 1))
-        pic_set_irq_new(s->pic, PXA2XX_PIC_GPIO_1, 1);
+        qemu_irq_raise(s->pic[PXA2XX_PIC_GPIO_1]);
     else
-        pic_set_irq_new(s->pic, PXA2XX_PIC_GPIO_1, 0);
+        qemu_irq_lower(s->pic[PXA2XX_PIC_GPIO_1]);
 
     if ((s->status[0] & ~3) | s->status[1] | s->status[2] | s->status[3])
-        pic_set_irq_new(s->pic, PXA2XX_PIC_GPIO_X, 1);
+        qemu_irq_raise(s->pic[PXA2XX_PIC_GPIO_X]);
     else
-        pic_set_irq_new(s->pic, PXA2XX_PIC_GPIO_X, 0);
+        qemu_irq_lower(s->pic[PXA2XX_PIC_GPIO_X]);
 }
 
 /* Bitmap of pins used as standby and sleep wake-up sources.  */
@@ -149,34 +149,34 @@ static uint32_t pxa2xx_gpio_read(void *opaque, target_phys_addr_t offset)
 
     bank = pxa2xx_gpio_regs[offset].bank;
     switch (pxa2xx_gpio_regs[offset].reg) {
-    case GPDR:		/* GPIO Pin-Direction Registers */
+    case GPDR:		/* GPIO Pin-Direction registers */
         return s->dir[bank];
 
-    case GRER:		/* GPIO Rising-Edge Detect Enable Registers */
+    case GRER:		/* GPIO Rising-Edge Detect Enable registers */
         return s->rising[bank];
 
-    case GFER:		/* GPIO Falling-Edge Detect Enable Registers */
+    case GFER:		/* GPIO Falling-Edge Detect Enable registers */
         return s->falling[bank];
 
-    case GAFR_L:	/* GPIO Alternate Function Registers */
+    case GAFR_L:	/* GPIO Alternate Function registers */
         return s->gafr[bank * 2];
 
-    case GAFR_U:	/* GPIO Alternate Function Registers */
+    case GAFR_U:	/* GPIO Alternate Function registers */
         return s->gafr[bank * 2 + 1];
 
-    case GPLR:		/* GPIO Pin-Level Registers */
+    case GPLR:		/* GPIO Pin-Level registers */
         ret = (s->olevel[bank] & s->dir[bank]) |
                 (s->ilevel[bank] & ~s->dir[bank]);
         if (s->read_notify)
             s->read_notify(s->opaque);
         return ret;
 
-    case GEDR:		/* GPIO Edge Detect Status Registers */
+    case GEDR:		/* GPIO Edge Detect Status registers */
         return s->status[bank];
 
     default:
         cpu_abort(cpu_single_env,
-                "%s: Bad offset %x\n", __FUNCTION__, offset);
+                "%s: Bad offset " REG_FMT "\n", __FUNCTION__, offset);
     }
 
     return 0;
@@ -193,45 +193,45 @@ static void pxa2xx_gpio_write(void *opaque,
 
     bank = pxa2xx_gpio_regs[offset].bank;
     switch (pxa2xx_gpio_regs[offset].reg) {
-    case GPDR:		/* GPIO Pin-Direction Registers */
+    case GPDR:		/* GPIO Pin-Direction registers */
         s->dir[bank] = value;
         pxa2xx_gpio_handler_update(s);
         break;
 
-    case GPSR:		/* GPIO Pin-Output Set Registers */
+    case GPSR:		/* GPIO Pin-Output Set registers */
         s->olevel[bank] |= value;
         pxa2xx_gpio_handler_update(s);
         break;
 
-    case GPCR:		/* GPIO Pin-Output Clear Registers */
+    case GPCR:		/* GPIO Pin-Output Clear registers */
         s->olevel[bank] &= ~value;
         pxa2xx_gpio_handler_update(s);
         break;
 
-    case GRER:		/* GPIO Rising-Edge Detect Enable Registers */
+    case GRER:		/* GPIO Rising-Edge Detect Enable registers */
         s->rising[bank] = value;
         break;
 
-    case GFER:		/* GPIO Falling-Edge Detect Enable Registers */
+    case GFER:		/* GPIO Falling-Edge Detect Enable registers */
         s->falling[bank] = value;
         break;
 
-    case GAFR_L:	/* GPIO Alternate Function Registers */
+    case GAFR_L:	/* GPIO Alternate Function registers */
         s->gafr[bank * 2] = value;
         break;
 
-    case GAFR_U:	/* GPIO Alternate Function Registers */
+    case GAFR_U:	/* GPIO Alternate Function registers */
         s->gafr[bank * 2 + 1] = value;
         break;
 
-    case GEDR:		/* GPIO Edge Detect Status Registers */
+    case GEDR:		/* GPIO Edge Detect Status registers */
         s->status[bank] &= ~value;
         pxa2xx_gpio_irq_update(s);
         break;
 
     default:
         cpu_abort(cpu_single_env,
-                "%s: Bad offset %x\n", __FUNCTION__, offset);
+                "%s: Bad offset " REG_FMT "\n", __FUNCTION__, offset);
     }
 }
 
@@ -248,7 +248,7 @@ static CPUWriteMemoryFunc *pxa2xx_gpio_writefn[] = {
 };
 
 struct pxa2xx_gpio_info_s *pxa2xx_gpio_init(target_phys_addr_t base,
-                CPUState *env, void *pic, int lines)
+                CPUState *env, qemu_irq *pic, int lines)
 {
     int iomemtype;
     struct pxa2xx_gpio_info_s *s;

@@ -472,6 +472,96 @@ void OPPROTO op_addx_T1_T0_cc(void)
     FORCE_RET();
 }
 
+void OPPROTO op_tadd_T1_T0_cc(void)
+{
+    target_ulong src1;
+
+    src1 = T0;
+    T0 += T1;
+    env->psr = 0;
+#ifdef TARGET_SPARC64
+    if (!(T0 & 0xffffffff))
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if ((T0 & 0xffffffff) < (src1 & 0xffffffff))
+	env->psr |= PSR_CARRY;
+    if ((((src1 & 0xffffffff) ^ (T1 & 0xffffffff) ^ -1) &
+	 ((src1 & 0xffffffff) ^ (T0 & 0xffffffff))) & (1 << 31))
+	env->psr |= PSR_OVF;
+    if ((src1 & 0x03) || (T1 & 0x03))
+	env->psr |= PSR_OVF;
+
+    env->xcc = 0;
+    if (!T0)
+	env->xcc |= PSR_ZERO;
+    if ((int64_t) T0 < 0)
+	env->xcc |= PSR_NEG;
+    if (T0 < src1)
+	env->xcc |= PSR_CARRY;
+    if (((src1 ^ T1 ^ -1) & (src1 ^ T0)) & (1ULL << 63))
+	env->xcc |= PSR_OVF;
+#else
+    if (!T0)
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if (T0 < src1)
+	env->psr |= PSR_CARRY;
+    if (((src1 ^ T1 ^ -1) & (src1 ^ T0)) & (1 << 31))
+	env->psr |= PSR_OVF;
+    if ((src1 & 0x03) || (T1 & 0x03))
+	env->psr |= PSR_OVF;
+#endif
+    FORCE_RET();
+}
+
+void OPPROTO op_tadd_T1_T0_ccTV(void)
+{
+    target_ulong src1;
+
+    if ((T0 & 0x03) || (T1 & 0x03))
+        raise_exception(TT_TOVF);
+
+    src1 = T0;
+    T0 += T1;
+
+#ifdef TARGET_SPARC64
+    if ((((src1 & 0xffffffff) ^ (T1 & 0xffffffff) ^ -1) &
+	 ((src1 & 0xffffffff) ^ (T0 & 0xffffffff))) & (1 << 31))
+        raise_exception(TT_TOVF);
+#else
+    if ((src1 & 0x03) || (T1 & 0x03))
+        raise_exception(TT_TOVF);
+#endif
+
+    env->psr = 0;
+#ifdef TARGET_SPARC64
+    if (!(T0 & 0xffffffff))
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if ((T0 & 0xffffffff) < (src1 & 0xffffffff))
+	env->psr |= PSR_CARRY;
+
+    env->xcc = 0;
+    if (!T0)
+	env->xcc |= PSR_ZERO;
+    if ((int64_t) T0 < 0)
+	env->xcc |= PSR_NEG;
+    if (T0 < src1)
+	env->xcc |= PSR_CARRY;
+#else
+    if (!T0)
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if (T0 < src1)
+	env->psr |= PSR_CARRY;
+#endif
+    FORCE_RET();
+}
+
 void OPPROTO op_sub_T1_T0(void)
 {
     T0 -= T1;
@@ -582,6 +672,96 @@ void OPPROTO op_subx_T1_T0_cc(void)
     FORCE_RET();
 }
 
+void OPPROTO op_tsub_T1_T0_cc(void)
+{
+    target_ulong src1;
+
+    src1 = T0;
+    T0 -= T1;
+    env->psr = 0;
+#ifdef TARGET_SPARC64
+    if (!(T0 & 0xffffffff))
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if ((src1 & 0xffffffff) < (T1 & 0xffffffff))
+	env->psr |= PSR_CARRY;
+    if ((((src1 & 0xffffffff) ^ (T1 & 0xffffffff)) &
+	 ((src1 & 0xffffffff) ^ (T0 & 0xffffffff))) & (1 << 31))
+	env->psr |= PSR_OVF;
+    if ((src1 & 0x03) || (T1 & 0x03))
+	env->psr |= PSR_OVF;
+
+    env->xcc = 0;
+    if (!T0)
+	env->xcc |= PSR_ZERO;
+    if ((int64_t) T0 < 0)
+	env->xcc |= PSR_NEG;
+    if (src1 < T1)
+	env->xcc |= PSR_CARRY;
+    if (((src1 ^ T1) & (src1 ^ T0)) & (1ULL << 63))
+	env->xcc |= PSR_OVF;
+#else
+    if (!T0)
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if (src1 < T1)
+	env->psr |= PSR_CARRY;
+    if (((src1 ^ T1) & (src1 ^ T0)) & (1 << 31))
+	env->psr |= PSR_OVF;
+    if ((src1 & 0x03) || (T1 & 0x03))
+	env->psr |= PSR_OVF;
+#endif
+    FORCE_RET();
+}
+
+void OPPROTO op_tsub_T1_T0_ccTV(void)
+{
+    target_ulong src1;
+
+    if ((T0 & 0x03) || (T1 & 0x03))
+        raise_exception(TT_TOVF);
+
+    src1 = T0;
+    T0 -= T1;
+
+#ifdef TARGET_SPARC64
+    if ((((src1 & 0xffffffff) ^ (T1 & 0xffffffff)) &
+	 ((src1 & 0xffffffff) ^ (T0 & 0xffffffff))) & (1 << 31))
+        raise_exception(TT_TOVF);
+#else
+    if (((src1 ^ T1) & (src1 ^ T0)) & (1 << 31))
+        raise_exception(TT_TOVF);
+#endif
+
+    env->psr = 0;
+#ifdef TARGET_SPARC64
+    if (!(T0 & 0xffffffff))
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if ((src1 & 0xffffffff) < (T1 & 0xffffffff))
+	env->psr |= PSR_CARRY;
+
+    env->xcc = 0;
+    if (!T0)
+	env->xcc |= PSR_ZERO;
+    if ((int64_t) T0 < 0)
+	env->xcc |= PSR_NEG;
+    if (src1 < T1)
+	env->xcc |= PSR_CARRY;
+#else
+    if (!T0)
+	env->psr |= PSR_ZERO;
+    if ((int32_t) T0 < 0)
+	env->psr |= PSR_NEG;
+    if (src1 < T1)
+	env->psr |= PSR_CARRY;
+#endif
+    FORCE_RET();
+}
+
 void OPPROTO op_and_T1_T0(void)
 {
     T0 &= T1;
@@ -671,6 +851,11 @@ void OPPROTO op_udiv_T1_T0(void)
 
     x0 = T0 | ((uint64_t) (env->y) << 32);
     x1 = T1;
+
+    if (x1 == 0) {
+        raise_exception(TT_DIV_ZERO);
+    }
+
     x0 = x0 / x1;
     if (x0 > 0xffffffff) {
 	T0 = 0xffffffff;
@@ -689,6 +874,11 @@ void OPPROTO op_sdiv_T1_T0(void)
 
     x0 = T0 | ((int64_t) (env->y) << 32);
     x1 = T1;
+
+    if (x1 == 0) {
+        raise_exception(TT_DIV_ZERO);
+    }
+
     x0 = x0 / x1;
     if ((int32_t) x0 != x0) {
 	T0 = x0 < 0? 0x80000000: 0x7fffffff;
@@ -736,12 +926,18 @@ void OPPROTO op_mulx_T1_T0(void)
 
 void OPPROTO op_udivx_T1_T0(void)
 {
+    if (T1 == 0) {
+        raise_exception(TT_DIV_ZERO);
+    }
     T0 /= T1;
     FORCE_RET();
 }
 
 void OPPROTO op_sdivx_T1_T0(void)
 {
+    if (T1 == 0) {
+        raise_exception(TT_DIV_ZERO);
+    }
     if (T0 == INT64_MIN && T1 == -1)
 	T0 = INT64_MIN;
     else
@@ -775,38 +971,43 @@ void OPPROTO op_logic_T0_cc(void)
 
 void OPPROTO op_sll(void)
 {
-    T0 <<= T1;
+    T0 <<= (T1 & 0x1f);
 }
 
 #ifdef TARGET_SPARC64
+void OPPROTO op_sllx(void)
+{
+    T0 <<= (T1 & 0x3f);
+}
+
 void OPPROTO op_srl(void)
 {
-    T0 = (T0 & 0xffffffff) >> T1;
+    T0 = (T0 & 0xffffffff) >> (T1 & 0x1f);
 }
 
 void OPPROTO op_srlx(void)
 {
-    T0 >>= T1;
+    T0 >>= (T1 & 0x3f);
 }
 
 void OPPROTO op_sra(void)
 {
-    T0 = ((int32_t) (T0 & 0xffffffff)) >> T1;
+    T0 = ((int32_t) (T0 & 0xffffffff)) >> (T1 & 0x1f);
 }
 
 void OPPROTO op_srax(void)
 {
-    T0 = ((int64_t) T0) >> T1;
+    T0 = ((int64_t) T0) >> (T1 & 0x3f);
 }
 #else
 void OPPROTO op_srl(void)
 {
-    T0 >>= T1;
+    T0 >>= (T1 & 0x1f);
 }
 
 void OPPROTO op_sra(void)
 {
-    T0 = ((int32_t) T0) >> T1;
+    T0 = ((int32_t) T0) >> (T1 & 0x1f);
 }
 #endif
 
@@ -900,7 +1101,7 @@ void OPPROTO op_rdtick(void)
 
 void OPPROTO op_wrtick(void)
 {
-    // XXX write cycle counter and bit 31
+    T0 = 0; // XXX write cycle counter and bit 31
 }
 
 void OPPROTO op_rdtpc(void)
@@ -1291,7 +1492,10 @@ void OPPROTO op_movl_npc_im(void)
 
 void OPPROTO op_movl_npc_T0(void)
 {
-    env->npc = T0;
+    if (T0 & 0x3)
+	raise_exception(TT_UNALIGNED);
+    else
+	env->npc = T0;
 }
 
 void OPPROTO op_mov_pc_npc(void)
@@ -1339,16 +1543,25 @@ void OPPROTO op_flush_T0(void)
     helper_flush(T0);
 }
 
+void OPPROTO op_clear_ieee_excp_and_FTT(void)
+{
+    env->fsr &= ~(FSR_FTT_MASK | FSR_CEXC_MASK);;
+}
+
 #define F_OP(name, p) void OPPROTO op_f##name##p(void)
 
 #define F_BINOP(name)                                           \
     F_OP(name, s)                                               \
     {                                                           \
+	set_float_exception_flags(0, &env->fp_status);		\
         FT0 = float32_ ## name (FT0, FT1, &env->fp_status);     \
+	check_ieee_exceptions();				\
     }                                                           \
     F_OP(name, d)                                               \
     {                                                           \
+	set_float_exception_flags(0, &env->fp_status);		\
         DT0 = float64_ ## name (DT0, DT1, &env->fp_status);     \
+	check_ieee_exceptions();				\
     }
 
 F_BINOP(add);
@@ -1359,9 +1572,11 @@ F_BINOP(div);
 
 void OPPROTO op_fsmuld(void)
 {
+    set_float_exception_flags(0, &env->fp_status);
     DT0 = float64_mul(float32_to_float64(FT0, &env->fp_status),
                       float32_to_float64(FT1, &env->fp_status),
                       &env->fp_status);
+    check_ieee_exceptions();
 }
 
 #define F_HELPER(name)    \
@@ -1387,6 +1602,7 @@ F_OP(abs, s)
 }
 
 F_HELPER(cmp);
+F_HELPER(cmpe);
 
 #ifdef TARGET_SPARC64
 F_OP(neg, d)
@@ -1428,6 +1644,37 @@ void OPPROTO op_fcmpd_fcc3(void)
 {
     do_fcmpd_fcc3();
 }
+
+void OPPROTO op_fcmpes_fcc1(void)
+{
+    do_fcmpes_fcc1();
+}
+
+void OPPROTO op_fcmped_fcc1(void)
+{
+    do_fcmped_fcc1();
+}
+
+void OPPROTO op_fcmpes_fcc2(void)
+{
+    do_fcmpes_fcc2();
+}
+
+void OPPROTO op_fcmped_fcc2(void)
+{
+    do_fcmped_fcc2();
+}
+
+void OPPROTO op_fcmpes_fcc3(void)
+{
+    do_fcmpes_fcc3();
+}
+
+void OPPROTO op_fcmped_fcc3(void)
+{
+    do_fcmped_fcc3();
+}
+
 #endif
 
 /* Integer to float conversion.  */
@@ -1436,23 +1683,31 @@ F_HELPER(ito);
 #else
 F_OP(ito, s)
 {
+    set_float_exception_flags(0, &env->fp_status);
     FT0 = int32_to_float32(*((int32_t *)&FT1), &env->fp_status);
+    check_ieee_exceptions();
 }
 
 F_OP(ito, d)
 {
+    set_float_exception_flags(0, &env->fp_status);
     DT0 = int32_to_float64(*((int32_t *)&FT1), &env->fp_status);
+    check_ieee_exceptions();
 }
 
 #ifdef TARGET_SPARC64
 F_OP(xto, s)
 {
+    set_float_exception_flags(0, &env->fp_status);
     FT0 = int64_to_float32(*((int64_t *)&DT1), &env->fp_status);
+    check_ieee_exceptions();
 }
 
 F_OP(xto, d)
 {
+    set_float_exception_flags(0, &env->fp_status);
     DT0 = int64_to_float64(*((int64_t *)&DT1), &env->fp_status);
+    check_ieee_exceptions();
 }
 #endif
 #endif
@@ -1461,34 +1716,46 @@ F_OP(xto, d)
 /* floating point conversion */
 void OPPROTO op_fdtos(void)
 {
+    set_float_exception_flags(0, &env->fp_status);
     FT0 = float64_to_float32(DT1, &env->fp_status);
+    check_ieee_exceptions();
 }
 
 void OPPROTO op_fstod(void)
 {
+    set_float_exception_flags(0, &env->fp_status);
     DT0 = float32_to_float64(FT1, &env->fp_status);
+    check_ieee_exceptions();
 }
 
 /* Float to integer conversion.  */
 void OPPROTO op_fstoi(void)
 {
-    *((int32_t *)&FT0) = float32_to_int32(FT1, &env->fp_status);
+    set_float_exception_flags(0, &env->fp_status);
+    *((int32_t *)&FT0) = float32_to_int32_round_to_zero(FT1, &env->fp_status);
+    check_ieee_exceptions();
 }
 
 void OPPROTO op_fdtoi(void)
 {
-    *((int32_t *)&FT0) = float64_to_int32(DT1, &env->fp_status);
+    set_float_exception_flags(0, &env->fp_status);
+    *((int32_t *)&FT0) = float64_to_int32_round_to_zero(DT1, &env->fp_status);
+    check_ieee_exceptions();
 }
 
 #ifdef TARGET_SPARC64
 void OPPROTO op_fstox(void)
 {
-    *((int64_t *)&DT0) = float32_to_int64(FT1, &env->fp_status);
+    set_float_exception_flags(0, &env->fp_status);
+    *((int64_t *)&DT0) = float32_to_int64_round_to_zero(FT1, &env->fp_status);
+    check_ieee_exceptions();
 }
 
 void OPPROTO op_fdtox(void)
 {
-    *((int64_t *)&DT0) = float64_to_int64(DT1, &env->fp_status);
+    set_float_exception_flags(0, &env->fp_status);
+    *((int64_t *)&DT0) = float64_to_int64_round_to_zero(DT1, &env->fp_status);
+    check_ieee_exceptions();
 }
 
 void OPPROTO op_fmovs_cc(void)
@@ -1557,8 +1824,7 @@ void OPPROTO op_retry(void)
 
 void OPPROTO op_sir(void)
 {
-    // XXX
-
+    T0 = 0;  // XXX
 }
 
 void OPPROTO op_ld_asi_reg()
@@ -1585,6 +1851,44 @@ void OPPROTO op_st_asi()
 }
 
 #ifdef TARGET_SPARC64
+// This function uses non-native bit order
+#define GET_FIELD(X, FROM, TO)                                  \
+    ((X) >> (63 - (TO)) & ((1ULL << ((TO) - (FROM) + 1)) - 1))
+
+// This function uses the order in the manuals, i.e. bit 0 is 2^0
+#define GET_FIELD_SP(X, FROM, TO)               \
+    GET_FIELD(X, 63 - (TO), 63 - (FROM))
+
+void OPPROTO op_array8()
+{
+    T0 = (GET_FIELD_SP(T0, 60, 63) << (17 + 2 * T1)) |
+        (GET_FIELD_SP(T0, 39, 39 + T1 - 1) << (17 + T1)) |
+        (GET_FIELD_SP(T0, 17 + T1 - 1, 17) << 17) |
+        (GET_FIELD_SP(T0, 56, 59) << 13) | (GET_FIELD_SP(T0, 35, 38) << 9) |
+        (GET_FIELD_SP(T0, 13, 16) << 5) | (((T0 >> 55) & 1) << 4) |
+        (GET_FIELD_SP(T0, 33, 34) << 2) | GET_FIELD_SP(T0, 11, 12);
+}
+
+void OPPROTO op_array16()
+{
+    T0 = ((GET_FIELD_SP(T0, 60, 63) << (17 + 2 * T1)) |
+          (GET_FIELD_SP(T0, 39, 39 + T1 - 1) << (17 + T1)) |
+          (GET_FIELD_SP(T0, 17 + T1 - 1, 17) << 17) |
+          (GET_FIELD_SP(T0, 56, 59) << 13) | (GET_FIELD_SP(T0, 35, 38) << 9) |
+          (GET_FIELD_SP(T0, 13, 16) << 5) | (((T0 >> 55) & 1) << 4) |
+          (GET_FIELD_SP(T0, 33, 34) << 2) | GET_FIELD_SP(T0, 11, 12)) << 1;
+}
+
+void OPPROTO op_array32()
+{
+    T0 = ((GET_FIELD_SP(T0, 60, 63) << (17 + 2 * T1)) |
+          (GET_FIELD_SP(T0, 39, 39 + T1 - 1) << (17 + T1)) |
+          (GET_FIELD_SP(T0, 17 + T1 - 1, 17) << 17) |
+          (GET_FIELD_SP(T0, 56, 59) << 13) | (GET_FIELD_SP(T0, 35, 38) << 9) |
+          (GET_FIELD_SP(T0, 13, 16) << 5) | (((T0 >> 55) & 1) << 4) |
+          (GET_FIELD_SP(T0, 33, 34) << 2) | GET_FIELD_SP(T0, 11, 12)) << 2;
+}
+
 void OPPROTO op_alignaddr()
 {
     uint64_t tmp;
@@ -1601,6 +1905,440 @@ void OPPROTO op_faligndata()
 
     tmp = (*((uint64_t *)&DT0)) << ((env->gsr & 7) * 8);
     tmp |= (*((uint64_t *)&DT1)) >> (64 - (env->gsr & 7) * 8);
-    (*((uint64_t *)&DT0)) = tmp;
+    *((uint64_t *)&DT0) = tmp;
 }
+
+void OPPROTO op_movl_FT0_0(void)
+{
+    *((uint32_t *)&FT0) = 0;
+}
+
+void OPPROTO op_movl_DT0_0(void)
+{
+    *((uint64_t *)&DT0) = 0;
+}
+
+void OPPROTO op_movl_FT0_1(void)
+{
+    *((uint32_t *)&FT0) = 0xffffffff;
+}
+
+void OPPROTO op_movl_DT0_1(void)
+{
+    *((uint64_t *)&DT0) = 0xffffffffffffffffULL;
+}
+
+void OPPROTO op_fnot(void)
+{
+    *(uint64_t *)&DT0 = ~*(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fnots(void)
+{
+    *(uint32_t *)&FT0 = ~*(uint32_t *)&FT1;
+}
+
+void OPPROTO op_fnor(void)
+{
+    *(uint64_t *)&DT0 = ~(*(uint64_t *)&DT0 | *(uint64_t *)&DT1);
+}
+
+void OPPROTO op_fnors(void)
+{
+    *(uint32_t *)&FT0 = ~(*(uint32_t *)&FT0 | *(uint32_t *)&FT1);
+}
+
+void OPPROTO op_for(void)
+{
+    *(uint64_t *)&DT0 |= *(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fors(void)
+{
+    *(uint32_t *)&FT0 |= *(uint32_t *)&FT1;
+}
+
+void OPPROTO op_fxor(void)
+{
+    *(uint64_t *)&DT0 ^= *(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fxors(void)
+{
+    *(uint32_t *)&FT0 ^= *(uint32_t *)&FT1;
+}
+
+void OPPROTO op_fand(void)
+{
+    *(uint64_t *)&DT0 &= *(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fands(void)
+{
+    *(uint32_t *)&FT0 &= *(uint32_t *)&FT1;
+}
+
+void OPPROTO op_fornot(void)
+{
+    *(uint64_t *)&DT0 = *(uint64_t *)&DT0 | ~*(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fornots(void)
+{
+    *(uint32_t *)&FT0 = *(uint32_t *)&FT0 | ~*(uint32_t *)&FT1;
+}
+
+void OPPROTO op_fandnot(void)
+{
+    *(uint64_t *)&DT0 = *(uint64_t *)&DT0 & ~*(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fandnots(void)
+{
+    *(uint32_t *)&FT0 = *(uint32_t *)&FT0 & ~*(uint32_t *)&FT1;
+}
+
+void OPPROTO op_fnand(void)
+{
+    *(uint64_t *)&DT0 = ~(*(uint64_t *)&DT0 & *(uint64_t *)&DT1);
+}
+
+void OPPROTO op_fnands(void)
+{
+    *(uint32_t *)&FT0 = ~(*(uint32_t *)&FT0 & *(uint32_t *)&FT1);
+}
+
+void OPPROTO op_fxnor(void)
+{
+    *(uint64_t *)&DT0 ^= ~*(uint64_t *)&DT1;
+}
+
+void OPPROTO op_fxnors(void)
+{
+    *(uint32_t *)&FT0 ^= ~*(uint32_t *)&FT1;
+}
+
+#ifdef WORDS_BIGENDIAN
+#define VIS_B64(n) b[7 - (n)]
+#define VIS_W64(n) w[3 - (n)]
+#define VIS_SW64(n) sw[3 - (n)]
+#define VIS_L64(n) l[1 - (n)]
+#define VIS_B32(n) b[3 - (n)]
+#define VIS_W32(n) w[1 - (n)]
+#else
+#define VIS_B64(n) b[n]
+#define VIS_W64(n) w[n]
+#define VIS_SW64(n) sw[n]
+#define VIS_L64(n) l[n]
+#define VIS_B32(n) b[n]
+#define VIS_W32(n) w[n]
+#endif
+
+typedef union {
+    uint8_t b[8];
+    uint16_t w[4];
+    int16_t sw[4];
+    uint32_t l[2];
+    float64 d;
+} vis64;
+
+typedef union {
+    uint8_t b[4];
+    uint16_t w[2];
+    uint32_t l;
+    float32 f;
+} vis32;
+
+void OPPROTO op_fpmerge(void)
+{
+    vis64 s, d;
+
+    s.d = DT0;
+    d.d = DT1;
+
+    // Reverse calculation order to handle overlap
+    d.VIS_B64(7) = s.VIS_B64(3);
+    d.VIS_B64(6) = d.VIS_B64(3);
+    d.VIS_B64(5) = s.VIS_B64(2);
+    d.VIS_B64(4) = d.VIS_B64(2);
+    d.VIS_B64(3) = s.VIS_B64(1);
+    d.VIS_B64(2) = d.VIS_B64(1);
+    d.VIS_B64(1) = s.VIS_B64(0);
+    //d.VIS_B64(0) = d.VIS_B64(0);
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmul8x16(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                 \
+    tmp = (int32_t)d.VIS_SW64(r) * (int32_t)s.VIS_B64(r);       \
+    if ((tmp & 0xff) > 0x7f)                                    \
+        tmp += 0x100;                                           \
+    d.VIS_W64(r) = tmp >> 8;
+
+    PMUL(0);
+    PMUL(1);
+    PMUL(2);
+    PMUL(3);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmul8x16al(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                 \
+    tmp = (int32_t)d.VIS_SW64(1) * (int32_t)s.VIS_B64(r);       \
+    if ((tmp & 0xff) > 0x7f)                                    \
+        tmp += 0x100;                                           \
+    d.VIS_W64(r) = tmp >> 8;
+
+    PMUL(0);
+    PMUL(1);
+    PMUL(2);
+    PMUL(3);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmul8x16au(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                 \
+    tmp = (int32_t)d.VIS_SW64(0) * (int32_t)s.VIS_B64(r);       \
+    if ((tmp & 0xff) > 0x7f)                                    \
+        tmp += 0x100;                                           \
+    d.VIS_W64(r) = tmp >> 8;
+
+    PMUL(0);
+    PMUL(1);
+    PMUL(2);
+    PMUL(3);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmul8sux16(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                         \
+    tmp = (int32_t)d.VIS_SW64(r) * ((int32_t)s.VIS_SW64(r) >> 8);       \
+    if ((tmp & 0xff) > 0x7f)                                            \
+        tmp += 0x100;                                                   \
+    d.VIS_W64(r) = tmp >> 8;
+
+    PMUL(0);
+    PMUL(1);
+    PMUL(2);
+    PMUL(3);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmul8ulx16(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                         \
+    tmp = (int32_t)d.VIS_SW64(r) * ((uint32_t)s.VIS_B64(r * 2));        \
+    if ((tmp & 0xff) > 0x7f)                                            \
+        tmp += 0x100;                                                   \
+    d.VIS_W64(r) = tmp >> 8;
+
+    PMUL(0);
+    PMUL(1);
+    PMUL(2);
+    PMUL(3);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmuld8sux16(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                         \
+    tmp = (int32_t)d.VIS_SW64(r) * ((int32_t)s.VIS_SW64(r) >> 8);       \
+    if ((tmp & 0xff) > 0x7f)                                            \
+        tmp += 0x100;                                                   \
+    d.VIS_L64(r) = tmp;
+
+    // Reverse calculation order to handle overlap
+    PMUL(1);
+    PMUL(0);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fmuld8ulx16(void)
+{
+    vis64 s, d;
+    uint32_t tmp;
+
+    s.d = DT0;
+    d.d = DT1;
+
+#define PMUL(r)                                                         \
+    tmp = (int32_t)d.VIS_SW64(r) * ((uint32_t)s.VIS_B64(r * 2));        \
+    if ((tmp & 0xff) > 0x7f)                                            \
+        tmp += 0x100;                                                   \
+    d.VIS_L64(r) = tmp;
+
+    // Reverse calculation order to handle overlap
+    PMUL(1);
+    PMUL(0);
+#undef PMUL
+
+    DT0 = d.d;
+}
+
+void OPPROTO op_fexpand(void)
+{
+    vis32 s;
+    vis64 d;
+
+    s.l = (uint32_t)(*(uint64_t *)&DT0 & 0xffffffff);
+    d.d = DT1;
+    d.VIS_L64(0) = s.VIS_W32(0) << 4;
+    d.VIS_L64(1) = s.VIS_W32(1) << 4;
+    d.VIS_L64(2) = s.VIS_W32(2) << 4;
+    d.VIS_L64(3) = s.VIS_W32(3) << 4;
+
+    DT0 = d.d;
+}
+
+#define VIS_OP(name, F)                                 \
+    void OPPROTO name##16(void)                         \
+    {                                                   \
+        vis64 s, d;                                     \
+                                                        \
+        s.d = DT0;                                      \
+        d.d = DT1;                                      \
+                                                        \
+        d.VIS_W64(0) = F(d.VIS_W64(0), s.VIS_W64(0));   \
+        d.VIS_W64(1) = F(d.VIS_W64(1), s.VIS_W64(1));   \
+        d.VIS_W64(2) = F(d.VIS_W64(2), s.VIS_W64(2));   \
+        d.VIS_W64(3) = F(d.VIS_W64(3), s.VIS_W64(3));   \
+                                                        \
+        DT0 = d.d;                                      \
+    }                                                   \
+                                                        \
+    void OPPROTO name##16s(void)                        \
+    {                                                   \
+        vis32 s, d;                                     \
+                                                        \
+        s.f = FT0;                                      \
+        d.f = FT1;                                      \
+                                                        \
+        d.VIS_W32(0) = F(d.VIS_W32(0), s.VIS_W32(0));   \
+        d.VIS_W32(1) = F(d.VIS_W32(1), s.VIS_W32(1));   \
+                                                        \
+        FT0 = d.f;                                      \
+    }                                                   \
+                                                        \
+    void OPPROTO name##32(void)                         \
+    {                                                   \
+        vis64 s, d;                                     \
+                                                        \
+        s.d = DT0;                                      \
+        d.d = DT1;                                      \
+                                                        \
+        d.VIS_L64(0) = F(d.VIS_L64(0), s.VIS_L64(0));   \
+        d.VIS_L64(1) = F(d.VIS_L64(1), s.VIS_L64(1));   \
+                                                        \
+        DT0 = d.d;                                      \
+    }                                                   \
+                                                        \
+    void OPPROTO name##32s(void)                        \
+    {                                                   \
+        vis32 s, d;                                     \
+                                                        \
+        s.f = FT0;                                      \
+        d.f = FT1;                                      \
+                                                        \
+        d.l = F(d.l, s.l);                              \
+                                                        \
+        FT0 = d.f;                                      \
+    }
+
+#define FADD(a, b) ((a) + (b))
+#define FSUB(a, b) ((a) - (b))
+VIS_OP(op_fpadd, FADD)
+VIS_OP(op_fpsub, FSUB)
+
+#define VIS_CMPOP(name, F)                                        \
+    void OPPROTO name##16(void)                                   \
+    {                                                             \
+        vis64 s, d;                                               \
+                                                                  \
+        s.d = DT0;                                                \
+        d.d = DT1;                                                \
+                                                                  \
+        d.VIS_W64(0) = F(d.VIS_W64(0), s.VIS_W64(0))? 1: 0;       \
+        d.VIS_W64(0) |= F(d.VIS_W64(1), s.VIS_W64(1))? 2: 0;      \
+        d.VIS_W64(0) |= F(d.VIS_W64(2), s.VIS_W64(2))? 4: 0;      \
+        d.VIS_W64(0) |= F(d.VIS_W64(3), s.VIS_W64(3))? 8: 0;      \
+                                                                  \
+        DT0 = d.d;                                                \
+    }                                                             \
+                                                                  \
+    void OPPROTO name##32(void)                                   \
+    {                                                             \
+        vis64 s, d;                                               \
+                                                                  \
+        s.d = DT0;                                                \
+        d.d = DT1;                                                \
+                                                                  \
+        d.VIS_L64(0) = F(d.VIS_L64(0), s.VIS_L64(0))? 1: 0;       \
+        d.VIS_L64(0) |= F(d.VIS_L64(1), s.VIS_L64(1))? 2: 0;      \
+                                                                  \
+        DT0 = d.d;                                                \
+    }
+
+#define FCMPGT(a, b) ((a) > (b))
+#define FCMPEQ(a, b) ((a) == (b))
+#define FCMPLE(a, b) ((a) <= (b))
+#define FCMPNE(a, b) ((a) != (b))
+
+VIS_CMPOP(op_fcmpgt, FCMPGT)
+VIS_CMPOP(op_fcmpeq, FCMPEQ)
+VIS_CMPOP(op_fcmple, FCMPLE)
+VIS_CMPOP(op_fcmpne, FCMPNE)
+
 #endif

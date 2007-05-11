@@ -40,7 +40,8 @@ int tb_invalidated_flag;
 //#define DEBUG_EXEC
 //#define DEBUG_SIGNAL
 
-#if defined(TARGET_ARM) || defined(TARGET_SPARC) || defined(TARGET_M68K)
+#if defined(TARGET_ARM) || defined(TARGET_SPARC) || defined(TARGET_M68K) || \
+    defined(TARGET_ALPHA)
 /* XXX: unify with i386 target */
 void cpu_loop_exit(void)
 {
@@ -202,6 +203,10 @@ static inline TranslationBlock *tb_find_fast(void)
     flags = env->sr & (SR_MD | SR_RB);
     cs_base = 0;         /* XXXXX */
     pc = env->pc;
+#elif defined(TARGET_ALPHA)
+    flags = env->ps;
+    cs_base = 0;
+    pc = env->pc;
 #else
 #error unsupported CPU
 #endif
@@ -226,43 +231,16 @@ static inline TranslationBlock *tb_find_fast(void)
 
 int cpu_exec(CPUState *env1)
 {
-    int saved_T0, saved_T1;
-#if defined(reg_T2)
-    int saved_T2;
-#endif
-    CPUState *saved_env;
-#if defined(TARGET_I386)
-#ifdef reg_EAX
-    int saved_EAX;
-#endif
-#ifdef reg_ECX
-    int saved_ECX;
-#endif
-#ifdef reg_EDX
-    int saved_EDX;
-#endif
-#ifdef reg_EBX
-    int saved_EBX;
-#endif
-#ifdef reg_ESP
-    int saved_ESP;
-#endif
-#ifdef reg_EBP
-    int saved_EBP;
-#endif
-#ifdef reg_ESI
-    int saved_ESI;
-#endif
-#ifdef reg_EDI
-    int saved_EDI;
-#endif
-#elif defined(TARGET_SPARC)
+#define DECLARE_HOST_REGS 1
+#include "hostregs_helper.h"
+#if defined(TARGET_SPARC)
 #if defined(reg_REGWPTR)
     uint32_t *saved_regwptr;
 #endif
 #endif
 #if defined(__sparc__) && !defined(HOST_SOLARIS)
-    int saved_i7, tmp_T0;
+    int saved_i7;
+    target_ulong tmp_T0;
 #endif
     int ret, interrupt_request;
     void (*gen_func)(void);
@@ -283,8 +261,7 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_PPC)
     if (env1->halted) {
         if (env1->msr[MSR_EE] && 
-            (env1->interrupt_request & 
-             (CPU_INTERRUPT_HARD | CPU_INTERRUPT_TIMER))) {
+            (env1->interrupt_request & CPU_INTERRUPT_HARD)) {
             env1->halted = 0;
         } else {
             return EXCP_HALTED;
@@ -302,7 +279,8 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_ARM)
     if (env1->halted) {
         /* An interrupt wakes the CPU even if the I and F CPSR bits are
-           set.  */
+           set.  We use EXITTB to silently wake CPU without causing an
+           actual interrupt.  */
         if (env1->interrupt_request &
             (CPU_INTERRUPT_FIQ | CPU_INTERRUPT_HARD | CPU_INTERRUPT_EXITTB)) {
             env1->halted = 0;
@@ -319,49 +297,28 @@ int cpu_exec(CPUState *env1)
             return EXCP_HALTED;
         }
     }
+#elif defined(TARGET_ALPHA)
+    if (env1->halted) {
+        if (env1->interrupt_request & CPU_INTERRUPT_HARD) {
+            env1->halted = 0;
+        } else {
+            return EXCP_HALTED;
+        }
+    }
 #endif
 
     cpu_single_env = env1; 
 
     /* first we save global registers */
-    saved_env = env;
+#define SAVE_HOST_REGS 1
+#include "hostregs_helper.h"
     env = env1;
-    saved_T0 = T0;
-    saved_T1 = T1;
-#if defined(reg_T2)
-    saved_T2 = T2;
-#endif
 #if defined(__sparc__) && !defined(HOST_SOLARIS)
     /* we also save i7 because longjmp may not restore it */
     asm volatile ("mov %%i7, %0" : "=r" (saved_i7));
 #endif
 
 #if defined(TARGET_I386)
-#ifdef reg_EAX
-    saved_EAX = EAX;
-#endif
-#ifdef reg_ECX
-    saved_ECX = ECX;
-#endif
-#ifdef reg_EDX
-    saved_EDX = EDX;
-#endif
-#ifdef reg_EBX
-    saved_EBX = EBX;
-#endif
-#ifdef reg_ESP
-    saved_ESP = ESP;
-#endif
-#ifdef reg_EBP
-    saved_EBP = EBP;
-#endif
-#ifdef reg_ESI
-    saved_ESI = ESI;
-#endif
-#ifdef reg_EDI
-    saved_EDI = EDI;
-#endif
-
     env_to_regs();
     /* put eflags in CPU temporary format */
     CC_SRC = env->eflags & (CC_O | CC_S | CC_Z | CC_A | CC_P | CC_C);
@@ -381,6 +338,8 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_MIPS)
 #elif defined(TARGET_SH4)
     /* XXXXX */
+#elif defined(TARGET_ALPHA)
+    env_to_regs();
 #else
 #error unsupported target CPU
 #endif
@@ -417,6 +376,8 @@ int cpu_exec(CPUState *env1)
                                  env->exception_is_int, 
                                  env->error_code, 
                                  env->exception_next_eip, 0);
+                    /* successfully delivered */
+                    env->old_exception = -1;
 #elif defined(TARGET_PPC)
                     do_interrupt(env);
 #elif defined(TARGET_MIPS)
@@ -427,6 +388,8 @@ int cpu_exec(CPUState *env1)
                     do_interrupt(env);
 #elif defined(TARGET_SH4)
 		    do_interrupt(env);
+#elif defined(TARGET_ALPHA)
+                    do_interrupt(env);
 #endif
                 }
                 env->exception_index = -1;
@@ -465,6 +428,20 @@ int cpu_exec(CPUState *env1)
 #endif	    
                 interrupt_request = env->interrupt_request;
                 if (__builtin_expect(interrupt_request, 0)) {
+                    if (interrupt_request & CPU_INTERRUPT_DEBUG) {
+                        env->interrupt_request &= ~CPU_INTERRUPT_DEBUG;
+                        env->exception_index = EXCP_DEBUG;
+                        cpu_loop_exit();
+                    }
+#if defined(TARGET_ARM) || defined(TARGET_SPARC) || defined(TARGET_MIPS) || \
+    defined(TARGET_PPC) || defined(TARGET_ALPHA)
+                    if (interrupt_request & CPU_INTERRUPT_HALT) {
+                        env->interrupt_request &= ~CPU_INTERRUPT_HALT;
+                        env->halted = 1;
+                        env->exception_index = EXCP_HLT;
+                        cpu_loop_exit();
+                    }
+#endif
 #if defined(TARGET_I386)
                     if ((interrupt_request & CPU_INTERRUPT_SMI) &&
                         !(env->hflags & HF_SMM_MASK)) {
@@ -499,43 +476,27 @@ int cpu_exec(CPUState *env1)
                         cpu_ppc_reset(env);
                     }
 #endif
-                    if (msr_ee != 0) {
-                        if ((interrupt_request & CPU_INTERRUPT_HARD)) {
-			    /* Raise it */
-			    env->exception_index = EXCP_EXTERNAL;
-			    env->error_code = 0;
-                            do_interrupt(env);
+                    if (interrupt_request & CPU_INTERRUPT_HARD) {
+                        ppc_hw_interrupt(env);
+                        if (env->pending_interrupts == 0)
                             env->interrupt_request &= ~CPU_INTERRUPT_HARD;
 #if defined(__sparc__) && !defined(HOST_SOLARIS)
-                            tmp_T0 = 0;
+                        tmp_T0 = 0;
 #else
-                            T0 = 0;
+                        T0 = 0;
 #endif
-                        } else if ((interrupt_request & CPU_INTERRUPT_TIMER)) {
-                            /* Raise it */
-                            env->exception_index = EXCP_DECR;
-                            env->error_code = 0;
-                            do_interrupt(env);
-                            env->interrupt_request &= ~CPU_INTERRUPT_TIMER;
-#if defined(__sparc__) && !defined(HOST_SOLARIS)
-                            tmp_T0 = 0;
-#else
-                            T0 = 0;
-#endif
-                        }
                     }
 #elif defined(TARGET_MIPS)
                     if ((interrupt_request & CPU_INTERRUPT_HARD) &&
+                        (env->CP0_Status & env->CP0_Cause & CP0Ca_IP_mask) &&
                         (env->CP0_Status & (1 << CP0St_IE)) &&
-                        (env->CP0_Status & env->CP0_Cause & 0x0000FF00) &&
-                        !(env->hflags & MIPS_HFLAG_EXL) &&
-                        !(env->hflags & MIPS_HFLAG_ERL) &&
+                        !(env->CP0_Status & (1 << CP0St_EXL)) &&
+                        !(env->CP0_Status & (1 << CP0St_ERL)) &&
                         !(env->hflags & MIPS_HFLAG_DM)) {
                         /* Raise it */
                         env->exception_index = EXCP_EXT_INTERRUPT;
                         env->error_code = 0;
                         do_interrupt(env);
-                        env->interrupt_request &= ~CPU_INTERRUPT_HARD;
 #if defined(__sparc__) && !defined(HOST_SOLARIS)
                         tmp_T0 = 0;
 #else
@@ -563,12 +524,7 @@ int cpu_exec(CPUState *env1)
 		    } else if (interrupt_request & CPU_INTERRUPT_TIMER) {
 			//do_interrupt(0, 0, 0, 0, 0);
 			env->interrupt_request &= ~CPU_INTERRUPT_TIMER;
-		    } else if (interrupt_request & CPU_INTERRUPT_HALT) {
-			env->interrupt_request &= ~CPU_INTERRUPT_HALT;
-			env->halted = 1;
-			env->exception_index = EXCP_HLT;
-			cpu_loop_exit();
-                    }
+		    }
 #elif defined(TARGET_ARM)
                     if (interrupt_request & CPU_INTERRUPT_FIQ
                         && !(env->uncached_cpsr & CPSR_F)) {
@@ -580,14 +536,12 @@ int cpu_exec(CPUState *env1)
                         env->exception_index = EXCP_IRQ;
                         do_interrupt(env);
                     }
-                    if (interrupt_request & CPU_INTERRUPT_HALT) {
-                        env->interrupt_request &= ~CPU_INTERRUPT_HALT;
-                        env->halted = 1;
-                        env->exception_index = EXCP_HLT;
-                        cpu_loop_exit();
-                    }
 #elif defined(TARGET_SH4)
 		    /* XXXXX */
+#elif defined(TARGET_ALPHA)
+                    if (interrupt_request & CPU_INTERRUPT_HARD) {
+                        do_interrupt(env);
+                    }
 #endif
                    /* Don't use the cached interupt_request value,
                       do_interrupt may have updated the EXITTB flag. */
@@ -656,6 +610,8 @@ int cpu_exec(CPUState *env1)
                     cpu_dump_state(env, logfile, fprintf, 0);
 #elif defined(TARGET_SH4)
 		    cpu_dump_state(env, logfile, fprintf, 0);
+#elif defined(TARGET_ALPHA)
+                    cpu_dump_state(env, logfile, fprintf, 0);
 #else
 #error unsupported target CPU 
 #endif
@@ -706,6 +662,7 @@ int cpu_exec(CPUState *env1)
                                      : /* no outputs */
                                      : "r" (gen_func) 
                                      : "i0", "i1", "i2", "i3", "i4", "i5",
+                                       "o0", "o1", "o2", "o3", "o4", "o5",
                                        "l0", "l1", "l2", "l3", "l4", "l5",
                                        "l6", "l7");
 #elif defined(__arm__)
@@ -833,32 +790,6 @@ int cpu_exec(CPUState *env1)
 #endif
     /* restore flags in standard format */
     env->eflags = env->eflags | cc_table[CC_OP].compute_all() | (DF & DF_MASK);
-
-    /* restore global registers */
-#ifdef reg_EAX
-    EAX = saved_EAX;
-#endif
-#ifdef reg_ECX
-    ECX = saved_ECX;
-#endif
-#ifdef reg_EDX
-    EDX = saved_EDX;
-#endif
-#ifdef reg_EBX
-    EBX = saved_EBX;
-#endif
-#ifdef reg_ESP
-    ESP = saved_ESP;
-#endif
-#ifdef reg_EBP
-    EBP = saved_EBP;
-#endif
-#ifdef reg_ESI
-    ESI = saved_ESI;
-#endif
-#ifdef reg_EDI
-    EDI = saved_EDI;
-#endif
 #elif defined(TARGET_ARM)
     /* XXX: Save/restore host fpu exception state?.  */
 #elif defined(TARGET_SPARC)
@@ -873,19 +804,18 @@ int cpu_exec(CPUState *env1)
               | env->cc_dest | (env->cc_x << 4);
 #elif defined(TARGET_MIPS)
 #elif defined(TARGET_SH4)
+#elif defined(TARGET_ALPHA)
     /* XXXXX */
 #else
 #error unsupported target CPU
 #endif
+
+    /* restore global registers */
 #if defined(__sparc__) && !defined(HOST_SOLARIS)
     asm volatile ("mov %0, %%i7" : : "r" (saved_i7));
 #endif
-    T0 = saved_T0;
-    T1 = saved_T1;
-#if defined(reg_T2)
-    T2 = saved_T2;
-#endif
-    env = saved_env;
+#include "hostregs_helper.h"
+
     /* fail safe : never use cpu_single_env outside cpu_exec() */
     cpu_single_env = NULL; 
     return ret;
@@ -1261,11 +1191,68 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     /* never comes here */
     return 1;
 }
+
+#elif defined (TARGET_ALPHA)
+static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
+                                    int is_write, sigset_t *old_set,
+                                    void *puc)
+{
+    TranslationBlock *tb;
+    int ret;
+    
+    if (cpu_single_env)
+        env = cpu_single_env; /* XXX: find a correct solution for multithread */
+#if defined(DEBUG_SIGNAL)
+    printf("qemu: SIGSEGV pc=0x%08lx address=%08lx w=%d oldset=0x%08lx\n", 
+           pc, address, is_write, *(unsigned long *)old_set);
+#endif
+    /* XXX: locking issue */
+    if (is_write && page_unprotect(h2g(address), pc, puc)) {
+        return 1;
+    }
+
+    /* see if it is an MMU fault */
+    ret = cpu_alpha_handle_mmu_fault(env, address, is_write, 1, 0);
+    if (ret < 0)
+        return 0; /* not an MMU fault */
+    if (ret == 0)
+        return 1; /* the MMU fault was handled without causing real CPU fault */
+
+    /* now we have a real cpu fault */
+    tb = tb_find_pc(pc);
+    if (tb) {
+        /* the PC is inside the translated code. It means that we have
+           a virtual CPU fault */
+        cpu_restore_state(tb, env, pc, puc);
+    }
+#if 0
+        printf("PF exception: NIP=0x%08x error=0x%x %p\n", 
+               env->nip, env->error_code, tb);
+#endif
+    /* we restore the process signal mask as the sigreturn should
+       do it (XXX: use sigsetjmp) */
+    sigprocmask(SIG_SETMASK, old_set, NULL);
+    cpu_loop_exit();
+    /* never comes here */
+    return 1;
+}
 #else
 #error unsupported target CPU
 #endif
 
 #if defined(__i386__)
+
+#if defined(__APPLE__)
+# include <sys/ucontext.h>
+
+# define EIP_sig(context)  (*((unsigned long*)&(context)->uc_mcontext->ss.eip))
+# define TRAP_sig(context)    ((context)->uc_mcontext->es.trapno)
+# define ERROR_sig(context)   ((context)->uc_mcontext->es.err)
+#else
+# define EIP_sig(context)     ((context)->uc_mcontext.gregs[REG_EIP])
+# define TRAP_sig(context)    ((context)->uc_mcontext.gregs[REG_TRAPNO])
+# define ERROR_sig(context)   ((context)->uc_mcontext.gregs[REG_ERR])
+#endif
 
 #if defined(USE_CODE_COPY)
 static void cpu_send_trap(unsigned long pc, int trap, 
@@ -1287,9 +1274,10 @@ static void cpu_send_trap(unsigned long pc, int trap,
 }
 #endif
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long pc;
     int trapno;
@@ -1300,8 +1288,8 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 #define REG_ERR    ERR
 #define REG_TRAPNO TRAPNO
 #endif
-    pc = uc->uc_mcontext.gregs[REG_EIP];
-    trapno = uc->uc_mcontext.gregs[REG_TRAPNO];
+    pc = EIP_sig(uc);
+    trapno = TRAP_sig(uc);
 #if defined(TARGET_I386) && defined(USE_CODE_COPY)
     if (trapno == 0x00 || trapno == 0x05) {
         /* send division by zero or bound exception */
@@ -1311,15 +1299,16 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 #endif
         return handle_cpu_signal(pc, (unsigned long)info->si_addr, 
                                  trapno == 0xe ? 
-                                 (uc->uc_mcontext.gregs[REG_ERR] >> 1) & 1 : 0,
+                                 (ERROR_sig(uc) >> 1) & 1 : 0,
                                  &uc->uc_sigmask, puc);
 }
 
 #elif defined(__x86_64__)
 
-int cpu_signal_handler(int host_signum, struct siginfo *info,
+int cpu_signal_handler(int host_signum, void *pinfo,
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long pc;
 
@@ -1381,9 +1370,10 @@ typedef struct ucontext SIGCONTEXT;
 # define TRAP_sig(context)			EXCEPREG_sig(exception, context) /* number of powerpc exception taken */
 #endif /* __APPLE__ */
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long pc;
     int is_write;
@@ -1404,9 +1394,10 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 
 #elif defined(__alpha__)
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                            void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     uint32_t *pc = uc->uc_mcontext.sc_pc;
     uint32_t insn = *pc;
@@ -1433,9 +1424,10 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 }
 #elif defined(__sparc__)
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     uint32_t *regs = (uint32_t *)(info + 1);
     void *sigmask = (regs + 20);
     unsigned long pc;
@@ -1466,9 +1458,10 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 
 #elif defined(__arm__)
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long pc;
     int is_write;
@@ -1483,9 +1476,10 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 
 #elif defined(__mc68000)
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long pc;
     int is_write;
@@ -1505,8 +1499,9 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
 # define __ISR_VALID	1
 #endif
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, void *puc)
+int cpu_signal_handler(int host_signum, void *pinfo, void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long ip;
     int is_write = 0;
@@ -1533,9 +1528,10 @@ int cpu_signal_handler(int host_signum, struct siginfo *info, void *puc)
 
 #elif defined(__s390__)
 
-int cpu_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_signal_handler(int host_signum, void *pinfo, 
                        void *puc)
 {
+    siginfo_t *info = pinfo;
     struct ucontext *uc = puc;
     unsigned long pc;
     int is_write;
@@ -1544,8 +1540,23 @@ int cpu_signal_handler(int host_signum, struct siginfo *info,
     /* XXX: compute is_write */
     is_write = 0;
     return handle_cpu_signal(pc, (unsigned long)info->si_addr, 
-                             is_write,
-                             &uc->uc_sigmask, puc);
+                             is_write, &uc->uc_sigmask, puc);
+}
+
+#elif defined(__mips__)
+
+int cpu_signal_handler(int host_signum, void *pinfo, 
+                       void *puc)
+{
+    siginfo_t *info = pinfo;
+    struct ucontext *uc = puc;
+    greg_t pc = uc->uc_mcontext.pc;
+    int is_write;
+    
+    /* XXX: compute is_write */
+    is_write = 0;
+    return handle_cpu_signal(pc, (unsigned long)info->si_addr, 
+                             is_write, &uc->uc_sigmask, puc);
 }
 
 #else

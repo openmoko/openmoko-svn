@@ -6,7 +6,7 @@
  * Copyright (c) 2006 Openedhand Ltd.
  * Written by Andrzej Zaborowski <balrog@zabor.org>
  *
- * This code is licensed under the GPLv2.
+ * This code is licensed under the GNU GPL v2.
  */
 
 #ifndef NAND_IO
@@ -396,24 +396,14 @@ struct nand_flash_s *nand_init(int manf_id, int chip_id)
 {
     int pagesize;
     struct nand_flash_s *s;
-    BlockDriverState *bs = 0;
 
     if (nand_flash_ids[chip_id].size == 0) {
         cpu_abort(cpu_single_env, "%s: Unsupported NAND chip ID.\n",
                         __FUNCTION__);
     }
 
-    if (mtd_filename) {
-        bs = bdrv_new("mtd");
-        if (bdrv_open(bs, mtd_filename, snapshot ? BDRV_O_SNAPSHOT : 0) < 0 ||
-                        qemu_key_check(bs, mtd_filename)) {
-            bdrv_delete(bs);
-            bs = 0;
-        }
-    }
- 
     s = (struct nand_flash_s *) qemu_mallocz(sizeof(struct nand_flash_s));
-    s->bdrv = bs;
+    s->bdrv = mtd_bdrv;
     s->manf_id = manf_id;
     s->chip_id = chip_id;
     s->size = nand_flash_ids[s->chip_id].size << 20;
@@ -442,13 +432,13 @@ struct nand_flash_s *nand_init(int manf_id, int chip_id)
 
     pagesize = 1 << s->oob_shift;
     s->mem_oob = 1;
-    if (bs && bdrv_getlength(bs) >=
+    if (s->bdrv && bdrv_getlength(s->bdrv) >=
                     (s->pages << s->page_shift) + (s->pages << s->oob_shift)) {
         pagesize = 0;
         s->mem_oob = 0;
     }
 
-    if (!bs)
+    if (!s->bdrv)
         pagesize += 1 << s->page_shift;
     if (pagesize)
         s->storage = (uint8_t *) memset(qemu_malloc(s->pages * pagesize),

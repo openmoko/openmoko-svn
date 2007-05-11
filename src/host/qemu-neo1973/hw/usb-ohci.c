@@ -53,12 +53,14 @@ typedef struct OHCIPort {
     uint32_t ctrl;
 } OHCIPort;
 
-typedef void (*ohci_irq_service_t)(void *opaque, int irq, int level);
+enum ohci_type {
+    OHCI_TYPE_PCI,
+    OHCI_TYPE_MEMIO
+};
 
 typedef struct {
-    void *pic;
-    int irq;
-    ohci_irq_service_t set_irq;
+    qemu_irq irq;
+    enum ohci_type type;
     target_phys_addr_t mem_base;
     int mem;
     int num_ports;
@@ -279,7 +281,7 @@ static inline void ohci_intr_update(OHCIState *ohci)
         (ohci->intr_status & ohci->intr))
         level = 1;
 
-    ohci->set_irq(ohci->pic, ohci->irq, level);
+    qemu_set_irq(ohci->irq, level);
 }
 
 /* Set an interrupt */
@@ -1257,7 +1259,7 @@ static CPUWriteMemoryFunc *ohci_writefn[3]={
 };
 
 static void usb_ohci_init(OHCIState *ohci, int num_ports, int devfn,
-            void *pic, int irq, ohci_irq_service_t set_irq, const char *name)
+            qemu_irq irq, enum ohci_type type, const char *name)
 {
     int i;
 
@@ -1280,9 +1282,8 @@ static void usb_ohci_init(OHCIState *ohci, int num_ports, int devfn,
     ohci->mem = cpu_register_io_memory(0, ohci_readfn, ohci_writefn, ohci);
     ohci->name = name;
 
-    ohci->pic = pic;
     ohci->irq = irq;
-    ohci->set_irq = set_irq;
+    ohci->type = type;
 
     ohci->num_ports = num_ports;
     for (i = 0; i < num_ports; i++) {
@@ -1328,20 +1329,20 @@ void usb_ohci_init_pci(struct PCIBus *bus, int num_ports, int devfn)
     ohci->pci_dev.config[0x0b] = 0xc;
     ohci->pci_dev.config[0x3d] = 0x01; /* interrupt pin 1 */
 
-    usb_ohci_init(&ohci->state, num_ports, devfn, &ohci->pci_dev,
-                  0, (ohci_irq_service_t) pci_set_irq, ohci->pci_dev.name);
+    usb_ohci_init(&ohci->state, num_ports, devfn, ohci->pci_dev.irq[0],
+                  OHCI_TYPE_PCI, ohci->pci_dev.name);
 
     pci_register_io_region((struct PCIDevice *)ohci, 0, 256,
                            PCI_ADDRESS_SPACE_MEM, ohci_mapfunc);
 }
 
 void usb_ohci_init_memio(target_phys_addr_t base, int num_ports, int devfn,
-            void *pic, int irq)
+                         qemu_irq irq)
 {
     OHCIState *ohci = (OHCIState *)qemu_mallocz(sizeof(OHCIState));
 
-    usb_ohci_init(ohci, num_ports, devfn, pic, irq,
-                  pic_set_irq_new, "OHCI USB");
+    usb_ohci_init(ohci, num_ports, devfn, irq,
+                  OHCI_TYPE_MEMIO, "OHCI USB");
     ohci->mem_base = base;
 
     cpu_register_physical_memory(ohci->mem_base, 0xfff, ohci->mem);

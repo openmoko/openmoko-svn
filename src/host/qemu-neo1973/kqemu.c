@@ -26,6 +26,9 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #endif
+#ifdef HOST_SOLARIS
+#include <sys/ioccom.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -174,7 +177,8 @@ int kqemu_init(CPUState *env)
     kqemu_fd = open(KQEMU_DEVICE, O_RDWR);
 #endif
     if (kqemu_fd == KQEMU_INVALID_FD) {
-        fprintf(stderr, "Could not open '%s' - QEMU acceleration layer not activated\n", KQEMU_DEVICE);
+        fprintf(stderr, "Could not open '%s' - QEMU acceleration layer not activated: %s\n",
+                KQEMU_DEVICE, strerror(errno));
         return -1;
     }
     version = 0;
@@ -480,7 +484,7 @@ static int do_syscall(CPUState *env,
         cpu_x86_set_cpl(env, 0);
         cpu_x86_load_seg_cache(env, R_CS, selector & 0xfffc, 
                                0, 0xffffffff, 
-                               DESC_G_MASK | DESC_B_MASK | DESC_P_MASK |
+                               DESC_G_MASK | DESC_P_MASK |
                                DESC_S_MASK |
                                DESC_CS_MASK | DESC_R_MASK | DESC_A_MASK | DESC_L_MASK);
         cpu_x86_load_seg_cache(env, R_SS, (selector + 8) & 0xfffc, 

@@ -12,10 +12,8 @@
 #define VERBOSE 1
 
 struct pcf_s {
-    int i2c_dir;
-    struct i2c_slave_s i2c;
-    void *pic;
-    int irq;
+    i2c_slave i2c;
+    qemu_irq irq;
 
     int firstbyte;
     int charging;
@@ -59,17 +57,14 @@ struct pcf_s {
         uint8_t alm_mon;
         uint8_t alm_year;
     } rtc;
-    struct {
-        gpio_handler_t fn;
-        void *opaque;
-    } gpo_handler[6];
+    qemu_irq gpo_handler[6];
     uint8_t gpo;
     QEMUTimer *onkeylow;
 };
 
-void pcf_reset(struct i2c_slave_s *i2c)
+void pcf_reset(i2c_slave *i2c)
 {
-    struct pcf_s *s = (struct pcf_s *) i2c->opaque;
+    struct pcf_s *s = (struct pcf_s *) i2c;
     time_t ti;
     s->charging = 1;
     s->reg = 0x00;
@@ -132,7 +127,7 @@ void pcf_reset(struct i2c_slave_s *i2c)
 
 static inline void pcf_update(struct pcf_s *s)
 {
-    pic_set_irq_new(s->pic, s->irq,
+    qemu_set_irq(s->irq,
                     (s->intr[0] & ~s->intm[0]) ||
                     (s->intr[1] & ~s->intm[1]) ||
                     (s->intr[2] & ~s->intm[2]));
@@ -267,8 +262,8 @@ static inline int from_bcd(uint8_t val)
 static void pcf_gpo_set(struct pcf_s *s, int line, int state, int inv)
 {
     state = (!!state) ^ inv;
-    if (s->gpo_handler[line].fn && ((s->gpo & 1) ^ state))
-        s->gpo_handler[line].fn(line, state, s->gpo_handler[line].opaque);
+    if (s->gpo_handler[line] && ((s->gpo & 1) ^ state))
+        qemu_set_irq(s->gpo_handler[line], state);
     s->gpo &= ~(1 << line);
     s->gpo |= state << line;
 }
@@ -755,31 +750,31 @@ static void pcf_write(void *opaque, uint8_t addr, uint8_t value)
     }
 }
 
-static void pcf_start(void *opaque, int dir)
+static void pcf_event(i2c_slave *i2c, enum i2c_event event)
 {
-    struct pcf_s *s = (struct pcf_s *) opaque;
-    s->i2c_dir = dir;
-    s->firstbyte = 1;
+    struct pcf_s *s = (struct pcf_s *) i2c;
+
+    if (event == I2C_START_SEND)
+        s->firstbyte = 1;
 }
 
-static int pcf_tx(void *opaque, uint8_t *data, int len)
+static int pcf_tx(i2c_slave *i2c, uint8_t data)
 {
-    struct pcf_s *s = (struct pcf_s *) opaque;
+    struct pcf_s *s = (struct pcf_s *) i2c;
     /* Interpret register address byte */
-    if (s->firstbyte && len && !s->i2c_dir) {
-        s->reg = *(data ++);
-        len --;
+    if (s->firstbyte) {
+        s->reg = data;
         s->firstbyte = 0;
-    }
-
-    while (len --) {
-        if (s->i2c_dir)
-            *(data ++) = pcf_read(opaque, s->reg ++);
-        else
-            pcf_write(opaque, s->reg ++, *(data ++));
-    }
+    } else
+        pcf_write(s, s->reg ++, data);
 
     return 0;
+}
+
+static int pcf_rx(i2c_slave *i2c)
+{
+    struct pcf_s *s = (struct pcf_s *) i2c;
+    return pcf_read(s, s->reg ++);
 }
 
 static void pcf_onkey1s(void *opaque)
@@ -790,14 +785,14 @@ static void pcf_onkey1s(void *opaque)
     pcf_update(s);
 }
 
-struct i2c_slave_s *pcf5060x_init(void *pic, int irq, int tsc)
+i2c_slave *pcf5060x_init(i2c_bus *bus, qemu_irq irq, int tsc)
 {
-    struct pcf_s *s = qemu_mallocz(sizeof(struct pcf_s));
-    s->i2c.opaque = s;
-    s->i2c.tx = pcf_tx;
-    s->i2c.start = pcf_start;
+    struct pcf_s *s = (struct pcf_s *)
+            i2c_slave_init(bus, 0, sizeof(struct pcf_s));
+    s->i2c.event = pcf_event;
+    s->i2c.recv = pcf_rx;
+    s->i2c.send = pcf_tx;
 
-    s->pic = pic;
     s->irq = irq;
     s->rtc.hz = qemu_new_timer(rt_clock, pcf_rtc_hz, s);
     s->onkeylow = qemu_new_timer(vm_clock, pcf_onkey1s, s);
@@ -815,19 +810,17 @@ struct i2c_slave_s *pcf5060x_init(void *pic, int irq, int tsc)
     return &s->i2c;
 }
 
-void pcf_gpo_handler_set(struct i2c_slave_s *i2c, int line,
-                gpio_handler_t handler, void *opaque)
+void pcf_gpo_handler_set(i2c_slave *i2c, int line, qemu_irq handler)
 {
-    struct pcf_s *s = (struct pcf_s *) i2c->opaque;
+    struct pcf_s *s = (struct pcf_s *) i2c;
     if (line >= 6 || line < 0)
         cpu_abort(cpu_single_env, "%s: No GPO line %i\n", __FUNCTION__, line);
-    s->gpo_handler[line].fn = handler;
-    s->gpo_handler[line].opaque = opaque;
+    s->gpo_handler[line] = handler;
 }
 
-void pcf_onkey_set(struct i2c_slave_s *i2c, int level)
+void pcf_onkey_set(i2c_slave *i2c, int level)
 {
-    struct pcf_s *s = (struct pcf_s *) i2c->opaque;
+    struct pcf_s *s = (struct pcf_s *) i2c;
     if (level) {
         s->oocs |= 1 << 0;		/* set ONKEY */
         s->intr[0] |= 1 << 0;		/* set ONKEYR */
@@ -840,9 +833,9 @@ void pcf_onkey_set(struct i2c_slave_s *i2c, int level)
     pcf_update(s);
 }
 
-void pcf_exton_set(struct i2c_slave_s *i2c, int level)
+void pcf_exton_set(i2c_slave *i2c, int level)
 {
-    struct pcf_s *s = (struct pcf_s *) i2c->opaque;
+    struct pcf_s *s = (struct pcf_s *) i2c;
     if (level) {
         s->oocs |= 1 << 1;		/* set EXTON */
         s->intr[0] |= 1 << 3;		/* set EXTONR */

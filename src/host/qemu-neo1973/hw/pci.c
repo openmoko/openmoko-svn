@@ -33,7 +33,7 @@ struct PCIBus {
     uint32_t config_reg; /* XXX: suppress */
     /* low level pic */
     SetIRQFunc *low_set_irq;
-    void *irq_opaque;
+    qemu_irq *irq_opaque;
     PCIDevice *devices[256];
     PCIDevice *parent_dev;
     PCIBus *next;
@@ -43,13 +43,14 @@ struct PCIBus {
 };
 
 static void pci_update_mappings(PCIDevice *d);
+static void pci_set_irq(void *opaque, int irq_num, int level);
 
 target_phys_addr_t pci_mem_base;
 static int pci_irq_index;
 static PCIBus *first_bus;
 
 PCIBus *pci_register_bus(pci_set_irq_fn set_irq, pci_map_irq_fn map_irq,
-                         void *pic, int devfn_min, int nirq)
+                         qemu_irq *pic, int devfn_min, int nirq)
 {
     PCIBus *bus;
     bus = qemu_mallocz(sizeof(PCIBus) + (nirq * sizeof(int)));
@@ -129,6 +130,7 @@ PCIDevice *pci_register_device(PCIBus *bus, const char *name,
     pci_dev->config_write = config_write;
     pci_dev->irq_index = pci_irq_index++;
     bus->devices[devfn] = pci_dev;
+    pci_dev->irq = qemu_allocate_irqs(pci_set_irq, pci_dev, 4);
     return pci_dev;
 }
 
@@ -433,8 +435,9 @@ uint32_t pci_data_read(void *opaque, uint32_t addr, int len)
 /* generic PCI irq support */
 
 /* 0 <= irq_num <= 3. level must be 0 or 1 */
-void pci_set_irq(PCIDevice *pci_dev, int irq_num, int level)
+static void pci_set_irq(void *opaque, int irq_num, int level)
 {
+    PCIDevice *pci_dev = (PCIDevice *)opaque;
     PCIBus *bus;
     int change;
     
@@ -466,11 +469,38 @@ static pci_class_desc pci_class_descriptions[] =
 {
     { 0x0100, "SCSI controller"},
     { 0x0101, "IDE controller"},
+    { 0x0102, "Floppy controller"},
+    { 0x0103, "IPI controller"},
+    { 0x0104, "RAID controller"},
+    { 0x0106, "SATA controller"},
+    { 0x0107, "SAS controller"},
+    { 0x0180, "Storage controller"},
     { 0x0200, "Ethernet controller"},
+    { 0x0201, "Token Ring controller"},
+    { 0x0202, "FDDI controller"},
+    { 0x0203, "ATM controller"},
+    { 0x0280, "Network controller"},
     { 0x0300, "VGA controller"},
+    { 0x0301, "XGA controller"},
+    { 0x0302, "3D controller"},
+    { 0x0380, "Display controller"},
+    { 0x0400, "Video controller"},
+    { 0x0401, "Audio controller"},
+    { 0x0402, "Phone"},
+    { 0x0480, "Multimedia controller"},
+    { 0x0500, "RAM controller"},
+    { 0x0501, "Flash controller"},
+    { 0x0580, "Memory controller"},
     { 0x0600, "Host bridge"},
     { 0x0601, "ISA bridge"},
+    { 0x0602, "EISA bridge"},
+    { 0x0603, "MC bridge"},
     { 0x0604, "PCI bridge"},
+    { 0x0605, "PCMCIA bridge"},
+    { 0x0606, "NUBUS bridge"},
+    { 0x0607, "CARDBUS bridge"},
+    { 0x0608, "RACEWAY bridge"},
+    { 0x0680, "Bridge"},
     { 0x0c03, "USB controller"},
     { 0, NULL}
 };
@@ -544,14 +574,20 @@ void pci_info(void)
 }
 
 /* Initialize a PCI NIC.  */
-void pci_nic_init(PCIBus *bus, NICInfo *nd)
+void pci_nic_init(PCIBus *bus, NICInfo *nd, int devfn)
 {
     if (strcmp(nd->model, "ne2k_pci") == 0) {
-        pci_ne2000_init(bus, nd);
+        pci_ne2000_init(bus, nd, devfn);
+    } else if (strcmp(nd->model, "i82551") == 0) {
+        pci_i82551_init(bus, nd, devfn);
+    } else if (strcmp(nd->model, "i82557b") == 0) {
+        pci_i82557b_init(bus, nd, devfn);
+    } else if (strcmp(nd->model, "i82559er") == 0) {
+        pci_i82559er_init(bus, nd, devfn);
     } else if (strcmp(nd->model, "rtl8139") == 0) {
-        pci_rtl8139_init(bus, nd);
+        pci_rtl8139_init(bus, nd, devfn);
     } else if (strcmp(nd->model, "pcnet") == 0) {
-        pci_pcnet_init(bus, nd);
+        pci_pcnet_init(bus, nd, devfn);
     } else {
         fprintf(stderr, "qemu: Unsupported NIC: %s\n", nd->model);
         exit (1);
@@ -587,7 +623,7 @@ PCIBus *pci_bridge_init(PCIBus *bus, int devfn, uint32_t id,
     s = (PCIBridge *)pci_register_device(bus, name, sizeof(PCIBridge), 
                                          devfn, NULL, pci_bridge_write_config);
     s->dev.config[0x00] = id >> 16;
-    s->dev.config[0x01] = id > 24;
+    s->dev.config[0x01] = id >> 24;
     s->dev.config[0x02] = id; // device_id
     s->dev.config[0x03] = id >> 8;
     s->dev.config[0x04] = 0x06; // command = bus master, pci mem

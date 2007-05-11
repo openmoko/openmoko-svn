@@ -4,14 +4,13 @@
  * Copyright (c) 2006 Openedhand Ltd.
  * Written by Andrzej Zaborowski <balrog@zabor.org>
  *
- * This code is licensed under the GPLv2.
+ * This code is licensed under the GNU GPL v2.
  */
 
 #include <vl.h>
 
 struct ads7846_state_s {
-    void (*interrupt)(void *opaque, int level);
-    void *opaque;
+    qemu_irq interrupt;
 
     int input[8];
     int pressure;
@@ -48,7 +47,7 @@ struct ads7846_state_s {
 static void ads7846_int_update(struct ads7846_state_s *s)
 {
     if (s->interrupt)
-        s->interrupt(s->opaque, s->pressure == 0);
+        qemu_set_irq(s->interrupt, s->pressure == 0);
 }
 
 uint32_t ads7846_read(void *opaque)
@@ -101,13 +100,15 @@ static void ads7846_ts_event(void *opaque,
         s->input[4] = ADS_Z2POS(x, y);
         s->input[5] = ADS_XPOS(x, y);
     }
-    s->pressure = !!buttons_state;
 
-    ads7846_int_update(s);
+    if (s->pressure == !buttons_state) {
+        s->pressure = !!buttons_state;
+
+         ads7846_int_update(s);
+    }
 }
 
-struct ads7846_state_s *ads7846_init(
-                void (*penirq)(void *opaque, int level), void *opaque)
+struct ads7846_state_s *ads7846_init(qemu_irq penirq)
 {
     struct ads7846_state_s *s;
     s = (struct ads7846_state_s *)
@@ -115,7 +116,6 @@ struct ads7846_state_s *ads7846_init(
     memset(s, 0, sizeof(struct ads7846_state_s));
 
     s->interrupt = penirq;
-    s->opaque = opaque;
 
     s->input[0] = ADS_TEMP0;	/* TEMP0 */
     s->input[2] = ADS_VBAT;	/* VBAT */

@@ -111,7 +111,7 @@ static const uint8_t qemu_net_dev_descriptor[] = {
 	STRING_MANUFACTURER, /*  u8  iManufacturer; */
 	STRING_PRODUCT,      /*  u8  iProduct; */
 	STRING_SERIALNUMBER, /*  u8  iSerialNumber; */
-	0x01                 /*  u8  bNumConfigurations; */
+	0x02                 /*  u8  bNumConfigurations; */
 };
 
 static const uint8_t qemu_net_rndis_config_descriptor[] = {
@@ -195,8 +195,8 @@ static const uint8_t qemu_net_cdc_config_descriptor[] = {
 	USB_DT_CONFIG,       /*  u8  bDescriptorType */
         0x50, 0x00,          /*  le16 wTotalLength */
         0x02,                /*  u8  bNumInterfaces */
-        DEV_RNDIS_CONFIG_VALUE, /*  u8  bConfigurationValue */
-        STRING_RNDIS,        /*  u8  iConfiguration */
+        DEV_CONFIG_VALUE,    /*  u8  bConfigurationValue */
+        STRING_CDC,          /*  u8  iConfiguration */
         0xc0,                /*  u8  bmAttributes */
         0x32,                /*  u8  bMaxPower */
 	/* CDC Control Interface */
@@ -972,12 +972,12 @@ static int usb_net_handle_control(USBDevice *dev, int request, int value,
 
 		case USB_DT_CONFIG:
 			switch (value & 0xff) {
-			case 1:
+			case 0:
 				ret = sizeof(qemu_net_rndis_config_descriptor);
 				memcpy(data, qemu_net_rndis_config_descriptor, ret);
 				break;
 
-			case 0:
+			case 1:
 				ret = sizeof(qemu_net_cdc_config_descriptor);
 				memcpy(data, qemu_net_cdc_config_descriptor, ret);
 				break;

@@ -10,7 +10,7 @@ uint32_t cpu_mips_get_random (CPUState *env)
     static uint32_t seed = 0;
     uint32_t idx;
     seed = seed * 314159 + 1;
-    idx = (seed >> 16) % (MIPS_TLB_NB - env->CP0_Wired) + env->CP0_Wired;
+    idx = (seed >> 16) % (env->nb_tlb - env->CP0_Wired) + env->CP0_Wired;
     return idx;
 }
 
@@ -22,11 +22,11 @@ uint32_t cpu_mips_get_count (CPUState *env)
                            100 * 1000 * 1000, ticks_per_sec);
 }
 
-static void cpu_mips_update_count (CPUState *env, uint32_t count,
-                                   uint32_t compare)
+void cpu_mips_store_count (CPUState *env, uint32_t count)
 {
     uint64_t now, next;
     uint32_t tmp;
+    uint32_t compare = env->CP0_Compare;
 
     tmp = count;
     if (count == compare)
@@ -49,16 +49,21 @@ static void cpu_mips_update_count (CPUState *env, uint32_t count,
     qemu_mod_timer(env->timer, next);
 }
 
-void cpu_mips_store_count (CPUState *env, uint32_t value)
+static void cpu_mips_update_count (CPUState *env, uint32_t count)
 {
-    cpu_mips_update_count(env, value, env->CP0_Compare);
+    if (env->CP0_Cause & (1 << CP0Ca_DC))
+        return;
+
+    cpu_mips_store_count(env, count);
 }
 
 void cpu_mips_store_compare (CPUState *env, uint32_t value)
 {
-    cpu_mips_update_count(env, cpu_mips_get_count(env), value);
-    env->CP0_Cause &= ~0x00008000;
-    cpu_reset_interrupt(env, CPU_INTERRUPT_HARD);
+    env->CP0_Compare = value;
+    cpu_mips_update_count(env, cpu_mips_get_count(env));
+    if ((env->CP0_Config0 & (0x7 << CP0C0_AR)) == (1 << CP0C0_AR))
+        env->CP0_Cause &= ~(1 << CP0Ca_TI);
+    qemu_irq_lower(env->irq[7]);
 }
 
 static void mips_timer_cb (void *opaque)
@@ -71,15 +76,15 @@ static void mips_timer_cb (void *opaque)
         fprintf(logfile, "%s\n", __func__);
     }
 #endif
-    cpu_mips_update_count(env, cpu_mips_get_count(env), env->CP0_Compare);
-    env->CP0_Cause |= 0x00008000;
-    cpu_interrupt(env, CPU_INTERRUPT_HARD);
+    cpu_mips_update_count(env, cpu_mips_get_count(env));
+    if ((env->CP0_Config0 & (0x7 << CP0C0_AR)) == (1 << CP0C0_AR))
+        env->CP0_Cause |= 1 << CP0Ca_TI;
+    qemu_irq_raise(env->irq[7]);
 }
 
 void cpu_mips_clock_init (CPUState *env)
 {
     env->timer = qemu_new_timer(vm_clock, &mips_timer_cb, env);
     env->CP0_Compare = 0;
-    cpu_mips_update_count(env, 1, 0);
+    cpu_mips_update_count(env, 1);
 }
-

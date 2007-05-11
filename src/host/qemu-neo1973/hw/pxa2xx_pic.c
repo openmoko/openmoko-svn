@@ -27,24 +27,16 @@
 #define IPR32	0xb0	/* Interrupt Controller Priority register 32 */
 #define IPR39	0xcc	/* Interrupt Controller Priority register 39 */
 
-/* The first element of an individual PIC state structures should
- * be a pointer to the handler routine.  */
-typedef void (*pxa2xx_pic_handler_t)(void *opaque, int irq, int level);
-
 #define PXA2XX_PIC_SRCS	40
 
 struct pxa2xx_pic_state_s {
-    pxa2xx_pic_handler_t handler;
-    CPUState *cpu_env;
     target_phys_addr_t base;
+    CPUState *cpu_env;
     uint32_t int_enabled[2];
     uint32_t int_pending[2];
     uint32_t is_fiq[2];
     uint32_t int_idle;
     uint32_t priority[PXA2XX_PIC_SRCS];
-    void *parent;
-    int parent_irq;
-    int parent_fiq;
 };
 
 static void pxa2xx_pic_update(void *opaque)
@@ -156,7 +148,7 @@ static uint32_t pxa2xx_pic_mem_read(void *opaque, target_phys_addr_t offset)
     case ICHP:	/* Highest Priority register */
         return pxa2xx_pic_highest(s);
     default:
-        printf("%s: Bad register offset 0x%lx\n", __FUNCTION__, offset);
+        printf("%s: Bad register offset " REG_FMT "\n", __FUNCTION__, offset);
         return 0;
     }
 }
@@ -190,7 +182,7 @@ static void pxa2xx_pic_mem_write(void *opaque, target_phys_addr_t offset,
         s->priority[32 + ((offset - IPR32) >> 2)] = value & 0x8000003f;
         break;
     default:
-        printf("%s: Bad register offset 0x%lx\n", __FUNCTION__, offset);
+        printf("%s: Bad register offset " REG_FMT "\n", __FUNCTION__, offset);
         return;
     }
     pxa2xx_pic_update(opaque);
@@ -253,11 +245,11 @@ static CPUWriteMemoryFunc *pxa2xx_pic_writefn[] = {
     pxa2xx_pic_mem_write,
 };
 
-struct pxa2xx_pic_state_s *pxa2xx_pic_init(target_phys_addr_t base,
-                CPUState *env, int parent_irq, int parent_fiq)
+qemu_irq *pxa2xx_pic_init(target_phys_addr_t base, CPUState *env)
 {
     struct pxa2xx_pic_state_s *s;
     int iomemtype;
+    qemu_irq *qi;
 
     s = (struct pxa2xx_pic_state_s *)
             qemu_mallocz(sizeof(struct pxa2xx_pic_state_s));
@@ -273,7 +265,8 @@ struct pxa2xx_pic_state_s *pxa2xx_pic_init(target_phys_addr_t base,
     s->int_enabled[1] = 0;
     s->is_fiq[0] = 0;
     s->is_fiq[1] = 0;
-    s->handler = pxa2xx_pic_set_irq;
+
+    qi = qemu_allocate_irqs(pxa2xx_pic_set_irq, s, PXA2XX_PIC_SRCS);
 
     /* Enable IC memory-mapped registers access.  */
     iomemtype = cpu_register_io_memory(0, pxa2xx_pic_readfn,
@@ -283,5 +276,5 @@ struct pxa2xx_pic_state_s *pxa2xx_pic_init(target_phys_addr_t base,
     /* Enable IC coprocessor access.  */
     cpu_arm_set_cp_io(env, 6, pxa2xx_pic_cp_read, pxa2xx_pic_cp_write, s);
 
-    return s;
+    return qi;
 }

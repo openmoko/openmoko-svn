@@ -816,6 +816,7 @@ int apic_init(CPUState *env)
     env->apic_state = s;
     apic_init_ipi(s);
     s->id = last_apic_id++;
+    env->cpuid_apic_id = s->id;
     s->cpu_env = env;
     s->apicbase = 0xfee00000 | 
         (s->id ? 0 : MSR_IA32_APICBASE_BSP) | MSR_IA32_APICBASE_ENABLE;
@@ -831,7 +832,7 @@ int apic_init(CPUState *env)
     }
     s->timer = qemu_new_timer(vm_clock, apic_timer, s);
 
-    register_savevm("apic", 0, 1, apic_save, apic_load, s);
+    register_savevm("apic", 0, 2, apic_save, apic_load, s);
     qemu_register_reset(apic_reset, s);
     
     local_apics[s->id] = s;

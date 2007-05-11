@@ -19,16 +19,13 @@ struct pxa2xx_dma_channel_s {
     int request;
 };
 
-/* The first element of an individual PIC state structures should
- * be a pointer to the handler routine.  We allow the DMA to be used
- * as a PIC. */
+/* Allow the DMA to be used as a PIC.  */
 typedef void (*pxa2xx_dma_handler_t)(void *opaque, int irq, int level);
 
 struct pxa2xx_dma_state_s {
     pxa2xx_dma_handler_t handler;
     target_phys_addr_t base;
-    void *pic;
-    int irq;
+    qemu_irq irq;
 
     uint32_t stopintr;
     uint32_t eorintr;
@@ -53,19 +50,19 @@ struct pxa2xx_dma_state_s {
 
 #define PXA2XX_DMA_NUM_REQUESTS	75
 
-#define DCSR0	0x0000	/* DMA Control / Status Register for Channel 0 */
-#define DCSR31	0x007c	/* DMA Control / Status Register for Channel 31 */
-#define DALGN	0x00a0	/* DMA Alignment Register */
-#define DPCSR	0x00a4	/* DMA Programmed I/O Control Status Register */
-#define DRQSR0	0x00e0	/* DMA DREQ<0> Status Register */
-#define DRQSR1	0x00e4	/* DMA DREQ<1> Status Register */
-#define DRQSR2	0x00e8	/* DMA DREQ<2> Status Register */
-#define DINT	0x00f0	/* DMA Interrupt Register */
-#define DRCMR0	0x0100	/* Request to Channel Map Register 0 */
-#define DRCMR63	0x01fc	/* Request to Channel Map Register 63 */
+#define DCSR0	0x0000	/* DMA Control / Status register for Channel 0 */
+#define DCSR31	0x007c	/* DMA Control / Status register for Channel 31 */
+#define DALGN	0x00a0	/* DMA Alignment register */
+#define DPCSR	0x00a4	/* DMA Programmed I/O Control Status register */
+#define DRQSR0	0x00e0	/* DMA DREQ<0> Status register */
+#define DRQSR1	0x00e4	/* DMA DREQ<1> Status register */
+#define DRQSR2	0x00e8	/* DMA DREQ<2> Status register */
+#define DINT	0x00f0	/* DMA Interrupt register */
+#define DRCMR0	0x0100	/* Request to Channel Map register 0 */
+#define DRCMR63	0x01fc	/* Request to Channel Map register 63 */
 #define D_CH0	0x0200	/* Channel 0 Descriptor start */
-#define DRCMR64	0x1100	/* Request to Channel Map Register 64 */
-#define DRCMR74	0x1128	/* Request to Channel Map Register 74 */
+#define DRCMR64	0x1100	/* Request to Channel Map register 64 */
+#define DRCMR74	0x1128	/* Request to Channel Map register 74 */
 
 /* Per-channel register */
 #define DDADR	0x00
@@ -142,9 +139,9 @@ static inline void pxa2xx_dma_update(struct pxa2xx_dma_state_s *s, int ch)
     }
 
     if (s->stopintr | s->eorintr | s->rasintr | s->startintr | s->endintr)
-        pic_set_irq_new(s->pic, s->irq, 1);
+        qemu_irq_raise(s->irq);
     else
-        pic_set_irq_new(s->pic, s->irq, 0);
+        qemu_irq_lower(s->irq);
 }
 
 static inline void pxa2xx_dma_descriptor_fetch(
@@ -305,7 +302,8 @@ static uint32_t pxa2xx_dma_read(void *opaque, target_phys_addr_t offset)
         }
     }
 
-    cpu_abort(cpu_single_env, "%s: Bad offset 0x%04x\n", __FUNCTION__, offset);
+    cpu_abort(cpu_single_env,
+                    "%s: Bad offset 0x%04lx\n", __FUNCTION__, offset);
     return 7;
 }
 
@@ -403,7 +401,7 @@ static void pxa2xx_dma_write(void *opaque,
             break;
         }
     fail:
-        cpu_abort(cpu_single_env, "%s: Bad offset 0x%04x\n",
+        cpu_abort(cpu_single_env, "%s: Bad offset 0x%04lx\n",
                 __FUNCTION__, offset);
     }
 }
@@ -433,7 +431,7 @@ static CPUWriteMemoryFunc *pxa2xx_dma_writefn[] = {
 };
 
 static struct pxa2xx_dma_state_s *pxa2xx_dma_init(target_phys_addr_t base,
-                void *pic, int irq, int channels)
+                qemu_irq irq, int channels)
 {
     int i, iomemtype;
     struct pxa2xx_dma_state_s *s;
@@ -443,7 +441,6 @@ static struct pxa2xx_dma_state_s *pxa2xx_dma_init(target_phys_addr_t base,
     s->channels = channels;
     s->chan = qemu_mallocz(sizeof(struct pxa2xx_dma_channel_s) * s->channels);
     s->base = base;
-    s->pic = pic;
     s->irq = irq;
     s->handler = (pxa2xx_dma_handler_t) pxa2xx_dma_request;
     s->req = qemu_mallocz(sizeof(int) * PXA2XX_DMA_NUM_REQUESTS);
@@ -462,15 +459,15 @@ static struct pxa2xx_dma_state_s *pxa2xx_dma_init(target_phys_addr_t base,
 }
 
 struct pxa2xx_dma_state_s *pxa27x_dma_init(target_phys_addr_t base,
-                void *pic, int irq)
+                qemu_irq irq)
 {
-    return pxa2xx_dma_init(base, pic, irq, PXA27X_DMA_NUM_CHANNELS);
+    return pxa2xx_dma_init(base, irq, PXA27X_DMA_NUM_CHANNELS);
 }
 
 struct pxa2xx_dma_state_s *pxa255_dma_init(target_phys_addr_t base,
-                void *pic, int irq)
+                qemu_irq irq)
 {
-    return pxa2xx_dma_init(base, pic, irq, PXA255_DMA_NUM_CHANNELS);
+    return pxa2xx_dma_init(base, irq, PXA255_DMA_NUM_CHANNELS);
 }
 
 void pxa2xx_dma_request(struct pxa2xx_dma_state_s *s, int req_num, int on)

@@ -1,17 +1,16 @@
 /*
- * MAX1110/1111 ADC chip emulation.
+ * Maxim MAX1110/1111 ADC chip emulation.
  *
  * Copyright (c) 2006 Openedhand Ltd.
  * Written by Andrzej Zaborowski <balrog@zabor.org>
  *
- * This code is licensed under the GPLv2.
+ * This code is licensed under the GNU GPLv2.
  */
 
 #include <vl.h>
 
 struct max111x_s {
-    void (*interrupt)(void *opaque);
-    void *opaque;
+    qemu_irq interrupt;
     uint8_t tb1, rb2, rb3;
     int cycle;
 
@@ -87,10 +86,10 @@ void max111x_write(void *opaque, uint32_t value)
     s->rb3 = (measure << 6) & 0xc0;
 
     if (s->interrupt)
-        s->interrupt(s->opaque);
+        qemu_irq_raise(s->interrupt);
 }
 
-struct max111x_s *max111x_init(void (*cb)(void *opaque), void *opaque)
+static struct max111x_s *max111x_init(qemu_irq cb)
 {
     struct max111x_s *s;
     s = (struct max111x_s *)
@@ -98,7 +97,6 @@ struct max111x_s *max111x_init(void (*cb)(void *opaque), void *opaque)
     memset(s, 0, sizeof(struct max111x_s));
 
     s->interrupt = cb;
-    s->opaque = opaque;
 
     /* TODO: add a user interface for setting these */
     s->input[0] = 0xf0;
@@ -113,16 +111,16 @@ struct max111x_s *max111x_init(void (*cb)(void *opaque), void *opaque)
     return s;
 }
 
-struct max111x_s *max1110_init(void (*cb)(void *opaque), void *opaque)
+struct max111x_s *max1110_init(qemu_irq cb)
 {
-    struct max111x_s *s = max111x_init(cb, opaque);
+    struct max111x_s *s = max111x_init(cb);
     s->inputs = 8;
     return s;
 }
 
-struct max111x_s *max1111_init(void (*cb)(void *opaque), void *opaque)
+struct max111x_s *max1111_init(qemu_irq cb)
 {
-    struct max111x_s *s = max111x_init(cb, opaque);
+    struct max111x_s *s = max111x_init(cb);
     s->inputs = 4;
     return s;
 }

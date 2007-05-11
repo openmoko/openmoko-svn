@@ -84,7 +84,7 @@ static kbd_layout_t *parse_keyboard_layout(const char *language,
 		*end_of_keysym = 0;
 		keysym = get_keysym(line);
 		if (keysym == 0) {
-                    		    fprintf(stderr, "Warning: unknown keysym %s\n", line);
+                    //		    fprintf(stderr, "Warning: unknown keysym %s\n", line);
 		} else {
 		    const char *rest = end_of_keysym + 1;
 		    int keycode = strtol(rest, NULL, 0);

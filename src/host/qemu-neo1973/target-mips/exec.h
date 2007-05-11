@@ -6,25 +6,18 @@
 #include "config.h"
 #include "mips-defs.h"
 #include "dyngen-exec.h"
+#include "cpu-defs.h"
 
 register struct CPUMIPSState *env asm(AREG0);
-
-#if defined (USE_64BITS_REGS)
-typedef int64_t host_int_t;
-typedef uint64_t host_uint_t;
-#else
-typedef int32_t host_int_t;
-typedef uint32_t host_uint_t;
-#endif
 
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 #define T0 (env->t0)
 #define T1 (env->t1)
 #define T2 (env->t2)
 #else
-register host_uint_t T0 asm(AREG1);
-register host_uint_t T1 asm(AREG2);
-register host_uint_t T2 asm(AREG3);
+register target_ulong T0 asm(AREG1);
+register target_ulong T1 asm(AREG2);
+register target_ulong T2 asm(AREG3);
 #endif
 
 #if defined (USE_HOST_FLOAT_REGS)
@@ -36,12 +29,18 @@ register host_uint_t T2 asm(AREG3);
 #define FST0 (env->ft0.fs[FP_ENDIAN_IDX])
 #define FST1 (env->ft1.fs[FP_ENDIAN_IDX])
 #define FST2 (env->ft2.fs[FP_ENDIAN_IDX])
+#define FSTH0 (env->ft0.fs[!FP_ENDIAN_IDX])
+#define FSTH1 (env->ft1.fs[!FP_ENDIAN_IDX])
+#define FSTH2 (env->ft2.fs[!FP_ENDIAN_IDX])
 #define DT0 (env->ft0.d)
 #define DT1 (env->ft1.d)
 #define DT2 (env->ft2.d)
 #define WT0 (env->ft0.w[FP_ENDIAN_IDX])
 #define WT1 (env->ft1.w[FP_ENDIAN_IDX])
 #define WT2 (env->ft2.w[FP_ENDIAN_IDX])
+#define WTH0 (env->ft0.w[!FP_ENDIAN_IDX])
+#define WTH1 (env->ft1.w[!FP_ENDIAN_IDX])
+#define WTH2 (env->ft2.w[!FP_ENDIAN_IDX])
 #endif
 
 #if defined (DEBUG_OP)
@@ -65,7 +64,7 @@ static inline void regs_to_env(void)
 {
 }
 
-#ifdef MIPS_HAS_MIPS64
+#ifdef TARGET_MIPS64
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 void do_dsll (void);
 void do_dsll32 (void);
@@ -82,6 +81,9 @@ void do_drotrv (void);
 #endif
 #endif
 
+#if HOST_LONG_BITS < 64
+void do_div (void);
+#endif
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 void do_mult (void);
 void do_multu (void);
@@ -89,10 +91,12 @@ void do_madd (void);
 void do_maddu (void);
 void do_msub (void);
 void do_msubu (void);
+#endif
+#ifdef TARGET_MIPS64
 void do_ddiv (void);
+#if TARGET_LONG_BITS > HOST_LONG_BITS
 void do_ddivu (void);
 #endif
-#ifdef MIPS_HAS_MIPS64
 void do_dmult (void);
 void do_dmultu (void);
 #endif
@@ -105,18 +109,16 @@ void do_tlbwi (void);
 void do_tlbwr (void);
 void do_tlbp (void);
 void do_tlbr (void);
-#ifdef MIPS_USES_FPU
 void dump_fpu(CPUState *env);
 void fpu_dump_state(CPUState *env, FILE *f, 
                     int (*fpu_fprintf)(FILE *f, const char *fmt, ...),
                     int flags);
-#endif
 void dump_sc (void);
 void do_lwl_raw (uint32_t);
 void do_lwr_raw (uint32_t);
 uint32_t do_swl_raw (uint32_t);
 uint32_t do_swr_raw (uint32_t);
-#ifdef MIPS_HAS_MIPS64
+#ifdef TARGET_MIPS64
 void do_ldl_raw (uint64_t);
 void do_ldr_raw (uint64_t);
 uint64_t do_sdl_raw (uint64_t);
@@ -131,7 +133,7 @@ uint32_t do_swl_user (uint32_t);
 uint32_t do_swl_kernel (uint32_t);
 uint32_t do_swr_user (uint32_t);
 uint32_t do_swr_kernel (uint32_t);
-#ifdef MIPS_HAS_MIPS64
+#ifdef TARGET_MIPS64
 void do_ldl_user (uint64_t);
 void do_ldl_kernel (uint64_t);
 void do_ldr_user (uint64_t);
@@ -154,6 +156,7 @@ void invalidate_tlb (CPUState *env, int idx, int use_extra);
 void cpu_loop_exit(void);
 void do_raise_exception_err (uint32_t exception, int error_code);
 void do_raise_exception (uint32_t exception);
+void do_raise_exception_direct_err (uint32_t exception, int error_code);
 void do_raise_exception_direct (uint32_t exception);
 
 void cpu_dump_state(CPUState *env, FILE *f, 
@@ -164,6 +167,7 @@ uint32_t cpu_mips_get_random (CPUState *env);
 uint32_t cpu_mips_get_count (CPUState *env);
 void cpu_mips_store_count (CPUState *env, uint32_t value);
 void cpu_mips_store_compare (CPUState *env, uint32_t value);
+void cpu_mips_update_irq (CPUState *env);
 void cpu_mips_clock_init (CPUState *env);
 void cpu_mips_tlb_flush (CPUState *env, int flush_global);
 

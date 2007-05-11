@@ -10,7 +10,7 @@
 
 struct s3c_rtc_state_s {
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq irq;
     int enable;
     QEMUTimer *timer;
     QEMUTimer *hz;
@@ -60,7 +60,7 @@ static void s3c_rtc_tick(void *opaque)
     struct s3c_rtc_state_s *s = (struct s3c_rtc_state_s *) opaque;
     if (!(s->tick & (1 << 7)))
         return;
-    pic_set_irq_new(s->pic, S3C_PIC_RTC, 1);
+    qemu_irq_raise(s->irq);
 
     s3c_rtc_tick_mod(s);
 }
@@ -268,14 +268,14 @@ static CPUWriteMemoryFunc *s3c_rtc_writefn[] = {
     s3c_rtc_write,
 };
 
-struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, void *pic)
+struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, qemu_irq irq)
 {
     int iomemtype;
     struct s3c_rtc_state_s *s = (struct s3c_rtc_state_s *)
             qemu_mallocz(sizeof(struct s3c_rtc_state_s));
 
     s->base = base;
-    s->pic = pic;
+    s->irq = irq;
     s->timer = qemu_new_timer(vm_clock, s3c_rtc_tick, s);
     s->hz = qemu_new_timer(rt_clock, s3c_rtc_hz, s);
 

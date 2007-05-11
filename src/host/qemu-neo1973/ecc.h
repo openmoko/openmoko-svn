@@ -5,7 +5,7 @@
  * Copyright (c) 2006 Openedhand Ltd.
  * Written by Andrzej Zaborowski <balrog@zabor.org>
  *
- * This code is licensed under the GPLv2.
+ * This code is licensed under the GNU GPL v2.
  */
 
 struct ecc_state_s {

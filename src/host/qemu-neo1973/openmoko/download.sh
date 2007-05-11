@@ -34,7 +34,7 @@ most_recent () {
 			${echo} "$name" > .list
 		fi
 	done
-	export $2=`sort .list | tail -n 1`
+	export $2=`sort -n .list | tail -n 1`
 	rm -rf .list
 	[ -z "${!2}" ] && ( ${echo} not found; exit -1 )
 	${echo} ${!2}

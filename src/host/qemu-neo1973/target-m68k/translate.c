@@ -2551,8 +2551,9 @@ optimize_flags(void)
 #endif
 
 /* generate intermediate code for basic block 'tb'.  */
-int gen_intermediate_code_internal(CPUState *env, TranslationBlock *tb,
-                                   int search_pc)
+static inline int
+gen_intermediate_code_internal(CPUState *env, TranslationBlock *tb,
+                               int search_pc)
 {
     DisasContext dc1, *dc = &dc1;
     uint16_t *gen_opc_end;
@@ -2737,7 +2738,7 @@ void cpu_dump_state(CPUState *env, FILE *f,
 }
 
 /* ??? */
-target_ulong cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
+target_phys_addr_t cpu_get_phys_page_debug(CPUState *env, target_ulong addr)
 {
     return addr;
 }

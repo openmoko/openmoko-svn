@@ -12,7 +12,7 @@ typedef void (*s3c_drawfn_t)(uint32_t *, uint8_t *, const uint8_t *, int, int);
 
 struct s3c_lcd_state_s {
     target_phys_addr_t base;
-    void *pic;
+    void *irq;
     DisplayState *ds;
     s3c_drawfn_t *line_fn;
 
@@ -48,7 +48,7 @@ struct s3c_lcd_state_s {
 static void s3c_lcd_update(struct s3c_lcd_state_s *s)
 {
     s->intpnd |= s->srcpnd & ~s->intmsk;
-    pic_set_irq_new(s->pic, S3C_PIC_LCD, !!s->intpnd);
+    qemu_set_irq(s->irq, !!s->intpnd);
 }
 
 void s3c_lcd_reset(struct s3c_lcd_state_s *s)
@@ -184,7 +184,7 @@ static void s3c_lcd_write(void *opaque, target_phys_addr_t addr,
         break;
     case S3C_LCDSADDR1:
         s->saddr[0] = value;
-        s->fb = phys_ram_base + S3C_SRAM_SIZE +
+        s->fb = phys_ram_base +
                 (((s->saddr[0] << 1) & 0x7ffffffe) - S3C_RAM_BASE);
         s->invalidate = 1;
         break;
@@ -428,10 +428,8 @@ static void s3c_update_display(void *opaque)
         }
         if (dirty[0] || s->invalidate) {
             s->fn(s->palette, dest, src, s->width, s->dest_width);
-            if (y > maxy) {
-                maxy = y;
-                end = new_addr;
-            }
+            maxy = y;
+            end = new_addr;
             if (y < miny) {
                 miny = y;
                 start = addr;
@@ -474,14 +472,14 @@ static void s3c_screen_dump(void *opaque, const char *filename)
 #include "s3c24xx_template.h"
 
 struct s3c_lcd_state_s *s3c_lcd_init(target_phys_addr_t base, DisplayState *ds,
-                void *pic)
+                qemu_irq irq)
 {
     int iomemtype;
     struct s3c_lcd_state_s *s = (struct s3c_lcd_state_s *)
             qemu_mallocz(sizeof(struct s3c_lcd_state_s));
 
     s->base = base;
-    s->pic = pic;
+    s->irq = irq;
     s->ds = ds;
 
     s3c_lcd_reset(s);

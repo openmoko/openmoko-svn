@@ -164,7 +164,7 @@ struct USBPacket {
     USBCallback *complete_cb;
     void *complete_opaque;
     USBCallback *cancel_cb;
-    void * *cancel_opaque;
+    void *cancel_opaque;
 };
 
 /* Defer completion of a USB packet.  The hadle_packet routine should then
@@ -209,7 +209,7 @@ void usb_uhci_init(PCIBus *bus, int devfn);
 /* usb-ohci.c */
 void usb_ohci_init_pci(struct PCIBus *bus, int num_ports, int devfn);
 void usb_ohci_init_memio(target_phys_addr_t base, int num_ports, int devfn,
-                         void *pic, int irq);
+                         qemu_irq irq);
 
 /* usb-linux.c */
 USBDevice *usb_host_device_open(const char *devname);
@@ -225,6 +225,3 @@ USBDevice *usb_tablet_init(void);
 
 /* usb-msd.c */
 USBDevice *usb_msd_init(const char *filename);
-
-/* usb-net.c */
-USBDevice *usb_net_init(NICInfo *nd);

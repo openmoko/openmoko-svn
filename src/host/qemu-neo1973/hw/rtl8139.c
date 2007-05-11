@@ -461,7 +461,6 @@ typedef struct RTL8139State {
     uint16_t CpCmd;
     uint8_t  TxThresh;
 
-    int irq;
     PCIDevice *pci_dev;
     VLANClientState *vc;
     uint8_t macaddr[6];
@@ -685,16 +684,10 @@ static void rtl8139_update_irq(RTL8139State *s)
     int isr;
     isr = (s->IntrStatus & s->IntrMask) & 0xffff;
 
-    DEBUG_PRINT(("RTL8139: Set IRQ line %d to %d (%04x %04x)\n",
-       s->irq, isr ? 1 : 0, s->IntrStatus, s->IntrMask));
+    DEBUG_PRINT(("RTL8139: Set IRQ to %d (%04x %04x)\n",
+       isr ? 1 : 0, s->IntrStatus, s->IntrMask));
 
-    if (s->irq == 16) {
-        /* PCI irq */
-        pci_set_irq(s->pci_dev, 0, (isr != 0));
-    } else {
-        /* ISA irq */
-        pic_set_irq(s->irq, (isr != 0));
-    }
+    qemu_set_irq(s->pci_dev->irq[0], (isr != 0));
 }
 
 #define POLYNOMIAL 0x04c11db6
@@ -1192,7 +1185,10 @@ static void rtl8139_reset(RTL8139State *s)
     s->eeprom.contents[1] = 0x10ec;
     s->eeprom.contents[2] = 0x8139;
 #endif
-    memcpy(&s->eeprom.contents[7], s->macaddr, 6);
+
+    s->eeprom.contents[7] = s->macaddr[0] | s->macaddr[1] << 8;
+    s->eeprom.contents[8] = s->macaddr[2] | s->macaddr[3] << 8;
+    s->eeprom.contents[9] = s->macaddr[4] | s->macaddr[5] << 8;
 
     /* mark all status registers as owned by host */
     for (i = 0; i < 4; ++i)
@@ -2455,12 +2451,12 @@ static void rtl8139_TxAddr_write(RTL8139State *s, uint32_t txAddrOffset, uint32_
 {
     DEBUG_PRINT(("RTL8139: TxAddr write offset=0x%x val=0x%08x\n", txAddrOffset, val));
 
-    s->TxAddr[txAddrOffset/4] = le32_to_cpu(val);
+    s->TxAddr[txAddrOffset/4] = val;
 }
 
 static uint32_t rtl8139_TxAddr_read(RTL8139State *s, uint32_t txAddrOffset)
 {
-    uint32_t ret = cpu_to_le32(s->TxAddr[txAddrOffset/4]);
+    uint32_t ret = s->TxAddr[txAddrOffset/4];
 
     DEBUG_PRINT(("RTL8139: TxAddr read offset=0x%x val=0x%08x\n", txAddrOffset, ret));
 
@@ -3170,7 +3166,8 @@ static void rtl8139_save(QEMUFile* f,void* opaque)
     qemu_put_be16s(f, &s->CpCmd);
     qemu_put_8s(f, &s->TxThresh);
 
-    qemu_put_be32s(f, &s->irq);
+    i = 0;
+    qemu_put_be32s(f, &i); /* unused.  */
     qemu_put_buffer(f, s->macaddr, 6);
     qemu_put_be32s(f, &s->rtl8139_mmio_io_addr);
 
@@ -3264,7 +3261,7 @@ static int rtl8139_load(QEMUFile* f,void* opaque,int version_id)
     qemu_get_be16s(f, &s->CpCmd);
     qemu_get_8s(f, &s->TxThresh);
 
-    qemu_get_be32s(f, &s->irq);
+    qemu_get_be32s(f, &i); /* unused.  */
     qemu_get_buffer(f, s->macaddr, 6);
     qemu_get_be32s(f, &s->rtl8139_mmio_io_addr);
 
@@ -3409,7 +3406,7 @@ static void rtl8139_timer(void *opaque)
 }
 #endif /* RTL8139_ONBOARD_TIMER */
 
-void pci_rtl8139_init(PCIBus *bus, NICInfo *nd)
+void pci_rtl8139_init(PCIBus *bus, NICInfo *nd, int devfn)
 {
     PCIRTL8139State *d;
     RTL8139State *s;
@@ -3417,7 +3414,7 @@ void pci_rtl8139_init(PCIBus *bus, NICInfo *nd)
     
     d = (PCIRTL8139State *)pci_register_device(bus,
                                               "RTL8139", sizeof(PCIRTL8139State),
-                                              -1, 
+                                              devfn, 
                                               NULL, NULL);
     pci_conf = d->dev.config;
     pci_conf[0x00] = 0xec; /* Realtek 8139 */
@@ -3444,7 +3441,6 @@ void pci_rtl8139_init(PCIBus *bus, NICInfo *nd)
     pci_register_io_region(&d->dev, 1, 0x100, 
                            PCI_ADDRESS_SPACE_MEM, rtl8139_mmio_map);
 
-    s->irq = 16; /* PCI interrupt */
     s->pci_dev = (PCIDevice *)d;
     memcpy(s->macaddr, nd->macaddr, 6);
     rtl8139_reset(s);

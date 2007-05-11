@@ -8,10 +8,9 @@ include config-host.mak
 BASE_CFLAGS=
 BASE_LDFLAGS=
 
-BASE_CFLAGS += $(OS_CFLAGS)
-ifeq ($(ARCH),sparc)
-BASE_CFLAGS += -mcpu=ultrasparc
-endif
+BASE_CFLAGS += $(OS_CFLAGS) $(ARCH_CFLAGS)
+BASE_LDFLAGS += $(OS_LDFLAGS) $(ARCH_LDFLAGS)
+
 CPPFLAGS += -I. -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 LIBS=
 TOOLS=qemu-img$(EXESUF) raw2flash$(EXESUF) flash2raw$(EXESUF)
@@ -135,7 +134,8 @@ dvi: qemu-doc.dvi qemu-tech.dvi
 
 html: qemu-doc.html qemu-tech.html
 
-FILE=qemu-$(shell cat VERSION)
+VERSION ?= $(shell cat VERSION)
+FILE = qemu-$(VERSION)
 
 # tar release (use 'make -k tar' on a checkouted tree)
 tar:
@@ -149,18 +149,24 @@ tarbin:
 	( cd / ; tar zcvf ~/qemu-$(VERSION)-i386.tar.gz \
 	$(bindir)/qemu \
 	$(bindir)/qemu-system-ppc \
+	$(bindir)/qemu-system-ppc64 \
+	$(bindir)/qemu-system-ppcemb \
 	$(bindir)/qemu-system-sparc \
 	$(bindir)/qemu-system-x86_64 \
 	$(bindir)/qemu-system-mips \
 	$(bindir)/qemu-system-mipsel \
+	$(bindir)/qemu-system-mips64 \
+	$(bindir)/qemu-system-mips64el \
 	$(bindir)/qemu-system-arm \
 	$(bindir)/qemu-i386 \
         $(bindir)/qemu-arm \
         $(bindir)/qemu-armeb \
         $(bindir)/qemu-sparc \
         $(bindir)/qemu-ppc \
+        $(bindir)/qemu-ppc64 \
         $(bindir)/qemu-mips \
         $(bindir)/qemu-mipsel \
+        $(bindir)/qemu-alpha \
         $(bindir)/qemu-img \
 	$(datadir)/bios.bin \
 	$(datadir)/vgabios.bin \
@@ -169,6 +175,9 @@ tarbin:
 	$(datadir)/video.x \
 	$(datadir)/openbios-sparc32 \
 	$(datadir)/linux_boot.bin \
+        $(datadir)/pxe-ne2k_pci.bin \
+	$(datadir)/pxe-rtl8139.bin \
+        $(datadir)/pxe-pcnet.bin \
 	$(docdir)/qemu-doc.html \
 	$(docdir)/qemu-tech.html \
 	$(mandir)/man1/qemu.1 $(mandir)/man1/qemu-img.1 )

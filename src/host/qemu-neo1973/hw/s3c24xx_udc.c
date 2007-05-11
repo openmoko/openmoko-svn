@@ -13,8 +13,8 @@
 struct s3c_udc_state_s {
     target_phys_addr_t base;
     USBDevice dev;
-    void *pic;
-    void *dma;
+    qemu_irq irq;
+    qemu_irq *dma;
 
     /* Use FIFOs big enough to hold entire packets, just don't report
      * lengths greater than 16 and 64 bytes for EP0 and EP1-4 respectively.  */
@@ -90,7 +90,7 @@ static void s3c_udc_interrupt(struct s3c_udc_state_s *s, int ep)
         s->ep_intr |= 1 << ep;
     s->ep_intr &= s->ep_mask;
     s->usb_intr &= s->usb_mask;
-    pic_set_irq_new(s->pic, S3C_PIC_USBD, s->ep_intr | s->usb_intr);
+    qemu_set_irq(s->irq, s->ep_intr | s->usb_intr);
 }
 
 static void s3c_udc_queue_packet(uint8_t *dst, uint8_t *src,
@@ -669,14 +669,14 @@ static void s3c_udc_handle_destroy(USBDevice *dev)
 }
 
 struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base,
-                void *pic, void *dma)
+                qemu_irq irq, qemu_irq *dma)
 {
     int iomemtype;
     struct s3c_udc_state_s *s = (struct s3c_udc_state_s *)
             qemu_mallocz(sizeof(struct s3c_udc_state_s));
 
     s->base = base;
-    s->pic = pic;
+    s->irq = irq;
     s->dma = dma;
 
     s->dev.speed = USB_SPEED_FULL;

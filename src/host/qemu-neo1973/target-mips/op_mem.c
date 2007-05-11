@@ -117,6 +117,10 @@ void glue(op_ll, MEMSUFFIX) (void)
 void glue(op_sc, MEMSUFFIX) (void)
 {
     CALL_FROM_TB0(dump_sc);
+    if (T0 & 0x3) {
+        env->CP0_BadVAddr = T0;
+        CALL_FROM_TB1(do_raise_exception, EXCP_AdES);
+    }
     if (T0 == env->CP0_LLAddr) {
         glue(stl, MEMSUFFIX)(T0, T1);
         T0 = 1;
@@ -126,7 +130,7 @@ void glue(op_sc, MEMSUFFIX) (void)
     RETURN();
 }
 
-#ifdef MIPS_HAS_MIPS64
+#ifdef TARGET_MIPS64
 void glue(op_ld, MEMSUFFIX) (void)
 {
     T0 = glue(ldq, MEMSUFFIX)(T0);
@@ -182,6 +186,10 @@ void glue(op_lld, MEMSUFFIX) (void)
 void glue(op_scd, MEMSUFFIX) (void)
 {
     CALL_FROM_TB0(dump_sc);
+    if (T0 & 0x7) {
+        env->CP0_BadVAddr = T0;
+        CALL_FROM_TB1(do_raise_exception, EXCP_AdES);
+    }
     if (T0 == env->CP0_LLAddr) {
         glue(stq, MEMSUFFIX)(T0, T1);
         T0 = 1;
@@ -190,9 +198,8 @@ void glue(op_scd, MEMSUFFIX) (void)
     }
     RETURN();
 }
-#endif /* MIPS_HAS_MIPS64 */
+#endif /* TARGET_MIPS64 */
 
-#ifdef MIPS_USES_FPU
 void glue(op_lwc1, MEMSUFFIX) (void)
 {
     WT0 = glue(ldl, MEMSUFFIX)(T0);
@@ -213,4 +220,35 @@ void glue(op_sdc1, MEMSUFFIX) (void)
     glue(stq, MEMSUFFIX)(T0, DT0);
     RETURN();
 }
-#endif
+void glue(op_lwxc1, MEMSUFFIX) (void)
+{
+    WT0 = glue(ldl, MEMSUFFIX)(T0 + T1);
+    RETURN();
+}
+void glue(op_swxc1, MEMSUFFIX) (void)
+{
+    glue(stl, MEMSUFFIX)(T0 + T1, WT0);
+    RETURN();
+}
+void glue(op_ldxc1, MEMSUFFIX) (void)
+{
+    DT0 = glue(ldq, MEMSUFFIX)(T0 + T1);
+    RETURN();
+}
+void glue(op_sdxc1, MEMSUFFIX) (void)
+{
+    glue(stq, MEMSUFFIX)(T0 + T1, DT0);
+    RETURN();
+}
+void glue(op_luxc1, MEMSUFFIX) (void)
+{
+    /* XXX: is defined as unaligned */
+    DT0 = glue(ldq, MEMSUFFIX)(T0 + T1);
+    RETURN();
+}
+void glue(op_suxc1, MEMSUFFIX) (void)
+{
+    /* XXX: is defined as unaligned */
+    glue(stq, MEMSUFFIX)(T0 + T1, DT0);
+    RETURN();
+}

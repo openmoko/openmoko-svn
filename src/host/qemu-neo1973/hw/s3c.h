@@ -52,6 +52,8 @@
 # define S3C_PICS_ERR2	40
 # define S3C_PICS_TC	41
 # define S3C_PICS_ADC	42
+
+# define S3C_PIC_MAX	43
 /* External interrupt numbers */
 # define S3C_EINT(n)	((n >= 8) ? (6 << 5) | (n - 8) : (5 << 5) | n)
 
@@ -77,6 +79,8 @@
 # define S3C_RQ_USB_EP3	0x24
 # define S3C_RQ_USB_EP4	0x34
 
+# define S3C_RQ_MAX	0x35
+
 /* I/O port numbers */
 # define S3C_GP(b, n)	(((b) << 5) | n)
 # define S3C_GPA(n)	S3C_GP(0, n)
@@ -87,6 +91,7 @@
 # define S3C_GPF(n)	S3C_GP(5, n)
 # define S3C_GPG(n)	S3C_GP(6, n)
 # define S3C_GPH(n)	S3C_GP(7, n)
+# define S3C_GP_MAX	S3C_GP(8, 0)
 
 # define S3C_RAM_BASE	0x30000000
 # define S3C_SRAM_BASE	0x40000000
@@ -97,51 +102,54 @@
 
 /* s3c2410.c */
 struct s3c_pic_state_s;
-struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base, CPUState *env);
+struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base,
+                qemu_irq *arm_pic);
+qemu_irq *s3c_pic_get(struct s3c_pic_state_s *s);
 
 struct s3c_dma_state_s;
-struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, void *pic);
+struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic);
+qemu_irq *s3c_dma_get(struct s3c_dma_state_s *s);
 
 struct s3c_timers_state_s;
 struct s3c_timers_state_s *s3c_timers_init(target_phys_addr_t base,
-                void *pic, void *dma);
+                qemu_irq *pic, qemu_irq *dma);
 void s3c_timers_cmp_handler_set(void *opaque, int line,
                 gpio_handler_t handler, void *cmp_opaque);
 
 struct s3c_uart_state_s;
 struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
-                void *pic, void *dma, int irq[], int drq[]);
+                qemu_irq *irqs, qemu_irq *dma);
 void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr);
 
 struct s3c_adc_state_s;
-struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, void *pic);
+struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
+                qemu_irq tcirq);
 
 struct s3c_i2c_state_s;
-struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, void *pic);
-struct i2c_master_s *s3c_i2c_master(struct s3c_i2c_state_s *s);
+struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq);
+i2c_bus *s3c_i2c_bus(struct s3c_i2c_state_s *s);
 
 struct s3c_i2s_state_s;
-struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, void *dma);
+struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma);
 
 /* s3c24xx_gpio.c */
 struct s3c_gpio_state_s;
-struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, void *pic);
-void s3c_gpio_set(void *opaque, int line, int level);
-void s3c_gpio_handler_set(struct s3c_gpio_state_s *s, int line,
-                gpio_handler_t handler, void *opaque);
+struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic);
+qemu_irq *s3c_gpio_in_get(struct s3c_gpio_state_s *s);
+void s3c_gpio_out_set(struct s3c_gpio_state_s *s, int line, qemu_irq handler);
 void s3c_gpio_setpwrstat(struct s3c_gpio_state_s *s, int stat);
 void s3c_gpio_reset(struct s3c_gpio_state_s *s);
 
 /* s3c24xx_lcd.c */
 struct s3c_lcd_state_s;
 struct s3c_lcd_state_s *s3c_lcd_init(target_phys_addr_t base, DisplayState *ds,
-                void *pic);
+                qemu_irq irq);
 void s3c_lcd_reset(struct s3c_lcd_state_s *s);
 
 /* s3c24xx_mmci.c */
 struct s3c_mmci_state_s;
 struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
-                void *pic, void *dma);
+                qemu_irq irq, qemu_irq *dma);
 void s3c_mmci_handlers(struct s3c_mmci_state_s *s, void *opaque,
                 void (*readonly_cb)(void *, int),
                 void (*coverswitch_cb)(void *, int));
@@ -149,26 +157,28 @@ void s3c_mmci_reset(struct s3c_mmci_state_s *s);
 
 /* s3c24xx_rtc.c */
 struct s3c_rtc_state_s;
-struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, void *pic);
+struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, qemu_irq irq);
 void s3c_rtc_reset(struct s3c_rtc_state_s *s);
 
 /* s3c24xx_udc.c */
 struct s3c_udc_state_s;
-struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base, void *pic,
-                void *dma);
+struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base, qemu_irq irq,
+                qemu_irq *dma);
 void s3c_udc_reset(struct s3c_udc_state_s *s);
 
 /* s3c2410.c */
 struct s3c_spi_state_s;
-struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base, void *pic,
-                void *dma, struct s3c_gpio_state_s *gpio);
+struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base,
+                qemu_irq irq0, qemu_irq drq0, qemu_irq irq1, qemu_irq drq1,
+                struct s3c_gpio_state_s *gpio);
 void s3c_spi_attach(struct s3c_spi_state_s *s, int ch,
                 uint8_t (*txrx)(void *opaque, uint8_t value),
                 uint8_t (*btxrx)(void *opaque, uint8_t value), void *opaque);
 
 struct s3c_state_s {
     CPUState *env;
-    uint32_t free_ram_start;/* XXX */
+    qemu_irq *irq;
+    qemu_irq *drq;
     struct s3c_pic_state_s *pic;
     struct s3c_dma_state_s *dma;
     struct s3c_gpio_state_s *io;
@@ -202,14 +212,12 @@ struct s3c_state_s {
 
 /* s3c2410.c */
 void s3c2410_reset(struct s3c_state_s *s);
-struct s3c_state_s *s3c2410_init(DisplayState *ds);
+struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds);
 void s3c_nand_register(struct s3c_state_s *s, struct nand_flash_s *chip);
-typedef void (*s3c_pic_handler_t)(void *opaque, int irq, int level);
 
 struct s3c_i2s_state_s { /* XXX move to .c */
     target_phys_addr_t base;
-    void *pic;
-    void *dma;
+    qemu_irq *dma;
     void (*data_req)(void *, int, int);
 
     uint16_t control;

@@ -46,7 +46,7 @@
 
 #include "softfloat.h"
 
-#if defined(__i386__) && !defined(CONFIG_SOFTMMU)
+#if defined(__i386__) && !defined(CONFIG_SOFTMMU) && !defined(__APPLE__)
 #define USE_CODE_COPY
 #endif
 
@@ -515,6 +515,7 @@ typedef struct CPUX86State {
     uint32_t smbase;
     int interrupt_request; 
     int user_mode_only; /* user mode only simulation */
+    int old_exception;  /* exception in flight */
 
     CPU_COMMON
 
@@ -529,6 +530,7 @@ typedef struct CPUX86State {
     uint32_t cpuid_xlevel;
     uint32_t cpuid_model[12];
     uint32_t cpuid_ext2_features;
+    uint32_t cpuid_apic_id;
     
 #ifdef USE_KQEMU
     int kqemu_enabled;
@@ -628,8 +630,7 @@ void cpu_x86_frstor(CPUX86State *s, uint8_t *ptr, int data32);
 /* you can call this signal handler from your SIGBUS and SIGSEGV
    signal handlers to inform the virtual CPU of exceptions. non zero
    is returned if the signal was handled by the virtual CPU.  */
-struct siginfo;
-int cpu_x86_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_x86_signal_handler(int host_signum, void *pinfo, 
                            void *puc);
 void cpu_x86_set_a20(CPUX86State *env, int a20_state);
 

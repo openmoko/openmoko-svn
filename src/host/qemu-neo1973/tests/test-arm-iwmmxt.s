@@ -1,12 +1,11 @@
-@ Should print "testtesttesttest" if iwMMXt is functional.
+@ Checks whether iwMMXt is functional.
 .code	32
-.align	4
 .globl	main
 
 main:
-adr	r0, data0
-adr	r1, data1
-adr	r2, data2
+ldr	r0, =data0
+ldr	r1, =data1
+ldr	r2, =data2
 #ifndef FPA
 wldrd	wr0, [r0, #0]
 wldrd	wr1, [r0, #8]
@@ -41,9 +40,10 @@ swi	#0x900004
 mov	r0, #0
 swi	#0x900001
 
+.data
 data0:
 .string	"aaaabbbbccccdddd"
 data1:
 .string	"bbbbccccddddeeee"
 data2:
-.string	"sdrssdrssdrssdrs\n"
+.string	"hvLLWs\x1fsdrs9\x1fNJ-\n"

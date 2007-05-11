@@ -194,9 +194,12 @@ void cpu_loop(CPUX86State *env)
             queue_signal(info.si_signo, &info);
             break;
         case EXCP0D_GPF:
+#ifndef TARGET_X86_64
             if (env->eflags & VM_MASK) {
                 handle_vm86_fault(env);
-            } else {
+            } else
+#endif
+            {
                 info.si_signo = SIGSEGV;
                 info.si_errno = 0;
                 info.si_code = TARGET_SI_KERNEL;
@@ -215,9 +218,12 @@ void cpu_loop(CPUX86State *env)
             queue_signal(info.si_signo, &info);
             break;
         case EXCP00_DIVZ:
+#ifndef TARGET_X86_64
             if (env->eflags & VM_MASK) {
                 handle_vm86_trap(env, trapnr);
-            } else {
+            } else
+#endif
+            {
                 /* division by zero */
                 info.si_signo = SIGFPE;
                 info.si_errno = 0;
@@ -228,9 +234,12 @@ void cpu_loop(CPUX86State *env)
             break;
         case EXCP01_SSTP:
         case EXCP03_INT3:
+#ifndef TARGET_X86_64
             if (env->eflags & VM_MASK) {
                 handle_vm86_trap(env, trapnr);
-            } else {
+            } else
+#endif
+            {
                 info.si_signo = SIGTRAP;
                 info.si_errno = 0;
                 if (trapnr == EXCP01_SSTP) {
@@ -245,9 +254,12 @@ void cpu_loop(CPUX86State *env)
             break;
         case EXCP04_INTO:
         case EXCP05_BOUND:
+#ifndef TARGET_X86_64
             if (env->eflags & VM_MASK) {
                 handle_vm86_trap(env, trapnr);
-            } else {
+            } else
+#endif
+            {
                 info.si_signo = SIGSEGV;
                 info.si_errno = 0;
                 info.si_code = TARGET_SI_KERNEL;
@@ -670,18 +682,23 @@ void cpu_ppc_store_tbl (CPUState *env, uint32_t value)
 {
     cpu_ppc_store_tb(env, ((uint64_t)cpu_ppc_load_tbl(env) << 32) | value);
 }
-  
-uint32_t cpu_ppc_load_decr (CPUState *env)
+
+void cpu_ppc601_store_rtcu (CPUState *env, uint32_t value)
+__attribute__ (( alias ("cpu_ppc_store_tbu") ));
+
+uint32_t cpu_ppc601_load_rtcu (CPUState *env)
+__attribute__ (( alias ("cpu_ppc_load_tbu") ));
+
+void cpu_ppc601_store_rtcl (CPUState *env, uint32_t value)
 {
-    /* TO FIX */
-    return -1;
+    cpu_ppc_store_tbl(env, value & 0x3FFFFF80);
 }
- 
-void cpu_ppc_store_decr (CPUState *env, uint32_t value)
+
+uint32_t cpu_ppc601_load_rtcl (CPUState *env)
 {
-    /* TO FIX */
+    return cpu_ppc_load_tbl(env) & 0x3FFFFF80;
 }
- 
+
 void cpu_loop(CPUPPCState *env)
 {
     target_siginfo_t info;
@@ -738,10 +755,10 @@ void cpu_loop(CPUPPCState *env)
             info._sifields._sigfault._addr = env->nip - 4;
             queue_signal(info.si_signo, &info);
         case EXCP_DSI:
-            fprintf(stderr, "Invalid data memory access: 0x%08x\n",
+            fprintf(stderr, "Invalid data memory access: 0x" ADDRX "\n",
                     env->spr[SPR_DAR]);
             if (loglevel) {
-                fprintf(logfile, "Invalid data memory access: 0x%08x\n",
+                fprintf(logfile, "Invalid data memory access: 0x" ADDRX "\n",
                         env->spr[SPR_DAR]);
             }
             switch (env->error_code & 0xFF000000) {
@@ -1297,6 +1314,7 @@ static const uint8_t mips_syscall_args[] = {
 	MIPS_SYS(sys_add_key	, 5)
 	MIPS_SYS(sys_request_key	, 4)
 	MIPS_SYS(sys_keyctl	, 5)
+	MIPS_SYS(sys_set_thread_area, 1)
 };
 
 #undef MIPS_SYS
@@ -1528,16 +1546,107 @@ void cpu_loop(CPUM68KState *env)
 }
 #endif /* TARGET_M68K */
 
+#ifdef TARGET_ALPHA
+void cpu_loop (CPUState *env)
+{
+    int trapnr;
+    target_siginfo_t info;
+    
+    while (1) {
+        trapnr = cpu_alpha_exec (env);
+        
+        switch (trapnr) {
+        case EXCP_RESET:
+            fprintf(stderr, "Reset requested. Exit\n");
+            exit(1);
+            break;
+        case EXCP_MCHK:
+            fprintf(stderr, "Machine check exception. Exit\n");
+            exit(1);
+            break;
+        case EXCP_ARITH:
+            fprintf(stderr, "Arithmetic trap.\n");
+            exit(1);
+            break;
+        case EXCP_HW_INTERRUPT:
+            fprintf(stderr, "External interrupt. Exit\n"); 
+            exit(1);
+            break;
+        case EXCP_DFAULT:
+            fprintf(stderr, "MMU data fault\n");
+            exit(1);
+            break;
+        case EXCP_DTB_MISS_PAL:
+            fprintf(stderr, "MMU data TLB miss in PALcode\n");
+            exit(1);
+            break;
+        case EXCP_ITB_MISS:
+            fprintf(stderr, "MMU instruction TLB miss\n");
+            exit(1);
+            break;
+        case EXCP_ITB_ACV:
+            fprintf(stderr, "MMU instruction access violation\n");
+            exit(1);
+            break;
+        case EXCP_DTB_MISS_NATIVE:
+            fprintf(stderr, "MMU data TLB miss\n");
+            exit(1);
+            break;
+        case EXCP_UNALIGN:
+            fprintf(stderr, "Unaligned access\n");
+            exit(1);
+            break;
+        case EXCP_OPCDEC:
+            fprintf(stderr, "Invalid instruction\n");
+            exit(1);
+            break;
+        case EXCP_FEN:
+            fprintf(stderr, "Floating-point not allowed\n");
+            exit(1);
+            break;
+        case EXCP_CALL_PAL ... (EXCP_CALL_PALP - 1):
+            fprintf(stderr, "Call to PALcode\n");
+            call_pal(env, (trapnr >> 6) | 0x80);
+            break;
+        case EXCP_CALL_PALP ... (EXCP_CALL_PALE - 1):
+            fprintf(stderr, "Priviledged call to PALcode\n");
+            exit(1);
+            break;
+        case EXCP_DEBUG:
+            {
+                int sig;
+
+                sig = gdb_handlesig (env, TARGET_SIGTRAP);
+                if (sig)
+                  {
+                    info.si_signo = sig;
+                    info.si_errno = 0;
+                    info.si_code = TARGET_TRAP_BRKPT;
+                    queue_signal(info.si_signo, &info);
+                  }
+            }
+            break;
+        default:
+            printf ("Unhandled trap: 0x%x\n", trapnr);
+            cpu_dump_state(env, stderr, fprintf, 0);
+            exit (1);
+        }
+        process_pending_signals (env);
+    }
+}
+#endif /* TARGET_ALPHA */
+
 void usage(void)
 {
-    printf("qemu-" TARGET_ARCH " version " QEMU_VERSION ", Copyright (c) 2003-2005 Fabrice Bellard\n"
-           "usage: qemu-" TARGET_ARCH " [-h] [-g] [-d opts] [-L path] [-s size] program [arguments...]\n"
+    printf("qemu-" TARGET_ARCH " version " QEMU_VERSION ", Copyright (c) 2003-2007 Fabrice Bellard\n"
+           "usage: qemu-" TARGET_ARCH " [-h] [-g] [-d opts] [-L path] [-s size] [-cpu model] program [arguments...]\n"
            "Linux CPU emulator (compiled for %s emulation)\n"
            "\n"
            "-h           print this help\n"
            "-g port      wait gdb connection to port\n"
            "-L path      set the elf interpreter prefix (default=%s)\n"
            "-s size      set the stack size in bytes (default=%ld)\n"
+           "-cpu model   select CPU (-cpu ? for list)\n"
            "\n"
            "debug options:\n"
 #ifdef USE_CODE_COPY
@@ -1561,6 +1670,7 @@ TaskState *first_task_state;
 int main(int argc, char **argv)
 {
     const char *filename;
+    const char *cpu_model;
     struct target_pt_regs regs1, *regs = &regs1;
     struct image_info info1, *info = &info1;
     TaskState ts1, *ts = &ts1;
@@ -1575,6 +1685,7 @@ int main(int argc, char **argv)
     /* init debug */
     cpu_set_log_filename(DEBUG_LOGFILE);
 
+    cpu_model = NULL;
     optind = 1;
     for(;;) {
         if (optind >= argc)
@@ -1625,6 +1736,20 @@ int main(int argc, char **argv)
             gdbstub_port = atoi(argv[optind++]);
 	} else if (!strcmp(r, "r")) {
 	    qemu_uname_release = argv[optind++];
+        } else if (!strcmp(r, "cpu")) {
+            cpu_model = argv[optind++];
+            if (strcmp(cpu_model, "?") == 0) {
+#if defined(TARGET_PPC)
+                ppc_cpu_list(stdout, &fprintf);
+#elif defined(TARGET_ARM)
+                arm_cpu_list();
+#elif defined(TARGET_MIPS)
+                mips_cpu_list(stdout, &fprintf);
+#elif defined(TARGET_SPARC)
+                sparc_cpu_list(stdout, &fprintf);
+#endif
+                _exit(1);
+            }
         } else 
 #ifdef USE_CODE_COPY
         if (!strcmp(r, "no-code-copy")) {
@@ -1696,6 +1821,17 @@ int main(int argc, char **argv)
     env->eflags |= IF_MASK;
     
     /* linux register setup */
+#if defined(TARGET_X86_64)
+    env->regs[R_EAX] = regs->rax;
+    env->regs[R_EBX] = regs->rbx;
+    env->regs[R_ECX] = regs->rcx;
+    env->regs[R_EDX] = regs->rdx;
+    env->regs[R_ESI] = regs->rsi;
+    env->regs[R_EDI] = regs->rdi;
+    env->regs[R_EBP] = regs->rbp;
+    env->regs[R_ESP] = regs->rsp;
+    env->eip = regs->rip;
+#else
     env->regs[R_EAX] = regs->eax;
     env->regs[R_EBX] = regs->ebx;
     env->regs[R_ECX] = regs->ecx;
@@ -1705,6 +1841,7 @@ int main(int argc, char **argv)
     env->regs[R_EBP] = regs->ebp;
     env->regs[R_ESP] = regs->esp;
     env->eip = regs->eip;
+#endif
 
     /* linux interrupt setup */
     env->idt.base = h2g(idt_table);
@@ -1750,7 +1887,9 @@ int main(int argc, char **argv)
 #elif defined(TARGET_ARM)
     {
         int i;
-        cpu_arm_set_model(env, ARM_CPUID_ARM1026);
+        if (cpu_model == NULL)
+            cpu_model = "arm926";
+        cpu_arm_set_model(env, cpu_model);
         cpsr_write(env, regs->uregs[16], 0xffffffff);
         for(i = 0; i < 16; i++) {
             env->regs[i] = regs->uregs[i];
@@ -1763,6 +1902,20 @@ int main(int argc, char **argv)
 #elif defined(TARGET_SPARC)
     {
         int i;
+        const sparc_def_t *def;
+#ifdef TARGET_SPARC64
+        if (cpu_model == NULL)
+            cpu_model = "TI UltraSparc II";
+#else
+        if (cpu_model == NULL)
+            cpu_model = "Fujitsu MB86904";
+#endif
+        sparc_find_by_name(cpu_model, &def);
+        if (def == NULL) {
+            fprintf(stderr, "Unable to find Sparc CPU definition\n");
+            exit(1);
+        }
+        cpu_sparc_register(env, def);
 	env->pc = regs->pc;
 	env->npc = regs->npc;
         env->y = regs->y;
@@ -1777,15 +1930,9 @@ int main(int argc, char **argv)
         int i;
 
         /* Choose and initialise CPU */
-        /* XXX: CPU model (or PVR) should be provided on command line */
-        //        ppc_find_by_name("750gx", &def);
-        //        ppc_find_by_name("750fx", &def);
-        //        ppc_find_by_name("750p", &def);
-        ppc_find_by_name("750", &def);
-        //        ppc_find_by_name("G3", &def);
-        //        ppc_find_by_name("604r", &def);
-        //        ppc_find_by_name("604e", &def);
-        //        ppc_find_by_name("604", &def);
+        if (cpu_model == NULL)
+            cpu_model = "750";
+        ppc_find_by_name(cpu_model, &def);
         if (def == NULL) {
             cpu_abort(env,
                       "Unable to find PowerPC CPU definition\n");
@@ -1796,6 +1943,9 @@ int main(int argc, char **argv)
             if (i != 12 && i != 6 && i != 13)
                 env->msr[i] = (regs->msr >> i) & 1;
         }
+#if defined(TARGET_PPC64)
+        msr_sf = 1;
+#endif
         env->nip = regs->nip;
         for(i = 0; i < 32; i++) {
             env->gpr[i] = regs->gpr[i];
@@ -1832,15 +1982,24 @@ int main(int argc, char **argv)
     }
 #elif defined(TARGET_MIPS)
     {
+        mips_def_t *def;
         int i;
+
+        /* Choose and initialise CPU */
+        if (cpu_model == NULL)
+            cpu_model = "24Kf";
+        mips_find_by_name(cpu_model, &def);
+        if (def == NULL)
+            cpu_abort(env, "Unable to find MIPS CPU definition\n");
+        cpu_mips_register(env, def);
 
         for(i = 0; i < 32; i++) {
             env->gpr[i] = regs->regs[i];
         }
         env->PC = regs->cp0_epc;
-#ifdef MIPS_USES_FPU
-        env->CP0_Status |= (1 << CP0St_CU1);
-#endif
+        if (env->CP0_Config1 & (1 << CP0C1_FP)) {
+            env->CP0_Status |= (1 << CP0St_CU1);
+        }
     }
 #elif defined(TARGET_SH4)
     {
@@ -1850,6 +2009,18 @@ int main(int argc, char **argv)
             env->gregs[i] = regs->regs[i];
         }
         env->pc = regs->pc;
+    }
+#elif defined(TARGET_ALPHA)
+    {
+        int i;
+
+        for(i = 0; i < 28; i++) {
+            env->ir[i] = ((target_ulong *)regs)[i];
+        }
+        env->ipr[IPR_USP] = regs->usp;
+        env->ir[30] = regs->usp;
+        env->pc = regs->pc;
+        env->unique = regs->unique;
     }
 #else
 #error unsupported target CPU

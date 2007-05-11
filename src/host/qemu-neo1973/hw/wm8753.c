@@ -16,8 +16,9 @@
 
 struct wm_rate_s;
 struct wm8753_s {
-    int i2c_dir;
-    struct i2c_slave_s i2c;
+    i2c_slave i2c;
+    uint8_t i2c_data[2];
+    int i2c_len;
     QEMUSoundCard card;
     SWVoiceIn *adc_voice[IN_PORT_N];
     SWVoiceOut *dac_voice[OUT_PORT_N];
@@ -48,10 +49,10 @@ struct wm8753_s {
     uint8_t intintr;
     uint8_t intprev;
     struct {
-        gpio_handler_t fn;
-        void *opaque;
+        qemu_irq handler;
         enum { input, low, high, intr } type;
-    } handler[8];
+    } line[8];
+    qemu_irq *gpio_in;
 
     uint8_t response;
 
@@ -219,24 +220,23 @@ static void wm8753_int_update(struct wm8753_s *s)
 
     while ((line = ffs(level))) {
         line --;
-        if (s->handler[line].fn)
-            s->handler[line].fn(line, (s->intprev >> line) & 1,
-                            s->handler[line].opaque);
+        if (s->line[line].handler)
+            qemu_set_irq(s->line[line].handler, (s->intprev >> line) & 1);
         level ^= 1 << line;
     }
 }
 
 static inline void wm8753_input_update(struct wm8753_s *s, int line)
 {
-    if (s->handler[line].type == input)
+    if (s->line[line].type == input)
         s->intinput |= 1 << line;
     else
         s->intinput &= ~(1 << line);
-    if (s->handler[line].type == high)
+    if (s->line[line].type == high)
         s->inthigh |= 1 << line;
     else
         s->inthigh &= ~(1 << line);
-    if (s->handler[line].type == intr)
+    if (s->line[line].type == intr)
         s->intintr |= 1 << line;
     else
         s->intintr &= ~(1 << line);
@@ -283,10 +283,10 @@ static uint8_t wm8753_read(struct wm8753_s *s, int readsel)
     return 0;
 }
 
-void wm8753_reset(struct i2c_slave_s *i2c)
+void wm8753_reset(i2c_slave *i2c)
 {
     int i;
-    struct wm8753_s *s = (struct wm8753_s *) i2c->opaque;
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
     s->enable = 0;
     wm8753_set_format(s);
 
@@ -326,7 +326,7 @@ void wm8753_reset(struct i2c_slave_s *i2c)
     s->inthigh = 0x00;
     s->intintr = 0x00;
     for (i = 0; i < 8; i ++)
-        s->handler[i].type = input;
+        s->line[i].type = input;
 
     s->power[0] = 0x000;
     s->power[1] = 0x000;
@@ -346,10 +346,24 @@ void wm8753_reset(struct i2c_slave_s *i2c)
     wm8753_mask_update(s);
 }
 
-static void wm8753_start(void *opaque, int dir)
+static void wm8753_event(i2c_slave *i2c, enum i2c_event event)
 {
-    struct wm8753_s *s = (struct wm8753_s *) opaque;
-    s->i2c_dir = dir;
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
+
+    switch (event) {
+    case I2C_START_SEND:
+        s->i2c_len = 0;
+        break;
+    case I2C_FINISH:
+#ifdef VERBOSE
+        if (s->i2c_len < 2)
+            printf("%s: message too short (%i bytes)\n",
+                            __FUNCTION__, s->i2c_len);
+#endif
+        break;
+    default:
+        break;
+    }
 }
 
 #define WM8753_DAC	0x01
@@ -413,26 +427,24 @@ static void wm8753_start(void *opaque, int dir)
 #define WM8753_BIASCTL	0x3d
 #define WM8753_ADCTL2	0x3f
 
-static int wm8753_tx(void *opaque, uint8_t *data, int len)
+static int wm8753_tx(i2c_slave *i2c, uint8_t data)
 {
-    struct wm8753_s *s = (struct wm8753_s *) opaque;
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
     uint8_t cmd;
     uint16_t value;
 
-    if (s->i2c_dir)
+    if (s->i2c_len >= 2) {
+        printf("%s: long message (%i bytes)\n", __FUNCTION__, s->i2c_len);
+#ifdef VERBOSE
         return 1;
-    if (len < 2) {
-#ifdef VERBOSE
-        printf("%s: message too short (%i bytes)\n", __FUNCTION__, len);
 #endif
-        return 0;
     }
-    cmd = data[0] >> 1;
-    value = ((data[0] << 8) | data[1]) & 0x1ff;
-#ifdef VERBOSE
-    if (len > 2)
-        printf("%s: long message (%i bytes)\n", __FUNCTION__, len);
-#endif
+    s->i2c_data[s->i2c_len ++] = data;
+    if (s->i2c_len != 2)
+        return 0;
+
+    cmd = s->i2c_data[0] >> 1;
+    value = ((s->i2c_data[0] << 8) | s->i2c_data[1]) & 0x1ff;
 
     switch (cmd) {
     case WM8753_ADCIN:		/* ADC Input Mode */
@@ -601,17 +613,17 @@ static int wm8753_tx(void *opaque, uint8_t *data, int len)
     case WM8753_GPIO1:		/* GPIO Control (1) */
         s->inten = !!(value & 3);
         switch ((value >> 3) & 3) {
-        case 0:  s->handler[5].type = input; break;
-        case 1:  s->handler[5].type = intr; break;
-        case 2:  s->handler[5].type = low; break;
-        case 3:  s->handler[5].type = high; break;
+        case 0:  s->line[5].type = input; break;
+        case 1:  s->line[5].type = intr; break;
+        case 2:  s->line[5].type = low; break;
+        case 3:  s->line[5].type = high; break;
         }
         wm8753_input_update(s, 5);
         switch ((value >> 0) & 7) {
-        case 4:  s->handler[4].type = low; break;
-        case 5:  s->handler[4].type = high; break;
-        case 7:  s->handler[4].type = intr; break;
-        default: s->handler[4].type = input; break;
+        case 4:  s->line[4].type = low; break;
+        case 5:  s->line[4].type = high; break;
+        case 7:  s->line[4].type = intr; break;
+        default: s->line[4].type = input; break;
         }
         wm8753_input_update(s, 4);
         wm8753_int_update(s);
@@ -619,24 +631,24 @@ static int wm8753_tx(void *opaque, uint8_t *data, int len)
 
     case WM8753_GPIO2:		/* GPIO Control (2) */
         switch ((value >> 6) & 7) {
-        case 4:  s->handler[3].type = low; break;
-        case 5:  s->handler[3].type = high; break;
-        case 7:  s->handler[3].type = intr; break;
-        default: s->handler[3].type = input; break;
+        case 4:  s->line[3].type = low; break;
+        case 5:  s->line[3].type = high; break;
+        case 7:  s->line[3].type = intr; break;
+        default: s->line[3].type = input; break;
         }
         wm8753_input_update(s, 3);
         switch ((value >> 3) & 7) {
-        case 0:  s->handler[2].type = low; break;
-        case 1:  s->handler[2].type = high; break;
-        case 3:  s->handler[2].type = intr; break;
-        default: s->handler[2].type = input; break;
+        case 0:  s->line[2].type = low; break;
+        case 1:  s->line[2].type = high; break;
+        case 3:  s->line[2].type = intr; break;
+        default: s->line[2].type = input; break;
         }
         wm8753_input_update(s, 2);
         switch ((value >> 0) & 7) {
-        case 0:  s->handler[1].type = low; break;
-        case 1:  s->handler[1].type = high; break;
-        case 3:  s->handler[1].type = intr; break;
-        default: s->handler[1].type = input; break;
+        case 0:  s->line[1].type = low; break;
+        case 1:  s->line[1].type = high; break;
+        case 3:  s->line[1].type = intr; break;
+        default: s->line[1].type = input; break;
         }
         wm8753_input_update(s, 1);
         wm8753_int_update(s);
@@ -688,29 +700,14 @@ static int wm8753_tx(void *opaque, uint8_t *data, int len)
     return 0;
 }
 
-struct i2c_slave_s *wm8753_init(AudioState *audio)
+static int wm8753_rx(i2c_slave *i2c)
 {
-    struct wm8753_s *s = qemu_mallocz(sizeof(struct wm8753_s));
-    s->i2c.opaque = s;
-    s->i2c.tx = wm8753_tx;
-    s->i2c.start = wm8753_start;
-
-    AUD_register_card(audio, CODEC, &s->card);
-    wm8753_reset(&s->i2c);
-    return &s->i2c;
+    return 0x00;
 }
 
-void wm8753_fini(struct i2c_slave_s *i2c)
+static void wm8753_gpio_set(void *opaque, int line, int level)
 {
-    struct wm8753_s *s = (struct wm8753_s *) i2c->opaque;
-    wm8753_reset(&s->i2c);
-    AUD_remove_card(&s->card);
-    qemu_free(s);
-}
-
-void wm8753_gpio_set(struct i2c_slave_s *i2c, int line, int level)
-{
-    struct wm8753_s *s = (struct wm8753_s *) i2c->opaque;
+    struct wm8753_s *s = (struct wm8753_s *) opaque;
     if (level)
         s->intlevel |= 1 << line;
     else
@@ -718,22 +715,49 @@ void wm8753_gpio_set(struct i2c_slave_s *i2c, int line, int level)
     wm8753_int_update(s);
 }
 
-void wm8753_gpio_handler_set(struct i2c_slave_s *i2c, int line,
-                gpio_handler_t handler, void *opaque) {
-    struct wm8753_s *s = (struct wm8753_s *) i2c->opaque;
+i2c_slave *wm8753_init(i2c_bus *bus, AudioState *audio)
+{
+    struct wm8753_s *s = (struct wm8753_s *)
+            i2c_slave_init(bus, 0, sizeof(struct wm8753_s));
+    s->i2c.event = wm8753_event;
+    s->i2c.recv = wm8753_rx;
+    s->i2c.send = wm8753_tx;
+    s->gpio_in = qemu_allocate_irqs(wm8753_gpio_set, s, 8);
+
+    AUD_register_card(audio, CODEC, &s->card);
+    wm8753_reset(&s->i2c);
+    return &s->i2c;
+}
+
+void wm8753_fini(i2c_slave *i2c)
+{
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
+    wm8753_reset(&s->i2c);
+    AUD_remove_card(&s->card);
+    qemu_free(s);
+}
+
+qemu_irq *wm8753_gpio_in_get(i2c_slave *i2c)
+{
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
+    return s->gpio_in;
+}
+
+void wm8753_gpio_out_set(i2c_slave *i2c, int line, qemu_irq handler)
+{
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
     if (line >= 8) {
         printf("%s: No GPIO pin %i\n", __FUNCTION__, line);
         return;
     }
 
-    s->handler[line].fn = handler;
-    s->handler[line].opaque = opaque;
+    s->line[line].handler = handler;
 }
 
-void wm8753_data_req_set(struct i2c_slave_s *i2c,
+void wm8753_data_req_set(i2c_slave *i2c,
                 void (*data_req)(void *, int, int), void *opaque)
 {
-    struct wm8753_s *s = (struct wm8753_s *) i2c->opaque;
+    struct wm8753_s *s = (struct wm8753_s *) i2c;
     s->data_req = data_req;
     s->opaque = opaque;
 }

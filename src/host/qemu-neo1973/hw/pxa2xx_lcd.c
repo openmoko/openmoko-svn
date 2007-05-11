@@ -13,7 +13,7 @@ typedef void (*drawfn)(uint32_t *, uint8_t *, const uint8_t *, int, int);
 
 struct pxa2xx_lcdc_s {
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq irq;
     int irqlevel;
 
     int invalidated;
@@ -73,44 +73,44 @@ struct __attribute__ ((__packed__)) pxa_frame_descriptor_s {
     uint32_t ldcmd;
 };
 
-#define LCCR0	0x000	/* LCD Controller Control Register 0 */
-#define LCCR1	0x004	/* LCD Controller Control Register 1 */
-#define LCCR2	0x008	/* LCD Controller Control Register 2 */
-#define LCCR3	0x00c	/* LCD Controller Control Register 3 */
-#define LCCR4	0x010	/* LCD Controller Control Register 4 */
-#define LCCR5	0x014	/* LCD Controller Control Register 5 */
+#define LCCR0	0x000	/* LCD Controller Control register 0 */
+#define LCCR1	0x004	/* LCD Controller Control register 1 */
+#define LCCR2	0x008	/* LCD Controller Control register 2 */
+#define LCCR3	0x00c	/* LCD Controller Control register 3 */
+#define LCCR4	0x010	/* LCD Controller Control register 4 */
+#define LCCR5	0x014	/* LCD Controller Control register 5 */
 
-#define FBR0	0x020	/* DMA Channel 0 Frame Branch Register */
-#define FBR1	0x024	/* DMA Channel 1 Frame Branch Register */
-#define FBR2	0x028	/* DMA Channel 2 Frame Branch Register */
-#define FBR3	0x02c	/* DMA Channel 3 Frame Branch Register */
-#define FBR4	0x030	/* DMA Channel 4 Frame Branch Register */
-#define FBR5	0x110	/* DMA Channel 5 Frame Branch Register */
-#define FBR6	0x114	/* DMA Channel 6 Frame Branch Register */
+#define FBR0	0x020	/* DMA Channel 0 Frame Branch register */
+#define FBR1	0x024	/* DMA Channel 1 Frame Branch register */
+#define FBR2	0x028	/* DMA Channel 2 Frame Branch register */
+#define FBR3	0x02c	/* DMA Channel 3 Frame Branch register */
+#define FBR4	0x030	/* DMA Channel 4 Frame Branch register */
+#define FBR5	0x110	/* DMA Channel 5 Frame Branch register */
+#define FBR6	0x114	/* DMA Channel 6 Frame Branch register */
 
-#define LCSR1	0x034	/* LCD Controller Status Register 1 */
-#define LCSR0	0x038	/* LCD Controller Status Register 0 */
-#define LIIDR	0x03c	/* LCD Controller Interrupt ID Register */
+#define LCSR1	0x034	/* LCD Controller Status register 1 */
+#define LCSR0	0x038	/* LCD Controller Status register 0 */
+#define LIIDR	0x03c	/* LCD Controller Interrupt ID register */
 
-#define TRGBR	0x040	/* TMED RGB Seed Register */
-#define TCR	0x044	/* TMED Control Register */
+#define TRGBR	0x040	/* TMED RGB Seed register */
+#define TCR	0x044	/* TMED Control register */
 
-#define OVL1C1	0x050	/* Overlay 1 Control Register 1 */
-#define OVL1C2	0x060	/* Overlay 1 Control Register 2 */
-#define OVL2C1	0x070	/* Overlay 2 Control Register 1 */
-#define OVL2C2	0x080	/* Overlay 2 Control Register 2 */
-#define CCR	0x090	/* Cursor Control Register */
+#define OVL1C1	0x050	/* Overlay 1 Control register 1 */
+#define OVL1C2	0x060	/* Overlay 1 Control register 2 */
+#define OVL2C1	0x070	/* Overlay 2 Control register 1 */
+#define OVL2C2	0x080	/* Overlay 2 Control register 2 */
+#define CCR	0x090	/* Cursor Control register */
 
-#define CMDCR	0x100	/* Command Control Register */
-#define PRSR	0x104	/* Panel Read Status Register */
+#define CMDCR	0x100	/* Command Control register */
+#define PRSR	0x104	/* Panel Read Status register */
 
 #define PXA_LCDDMA_CHANS	7
-#define DMA_FDADR		0x00	/* Frame Descriptor Address Register */
-#define DMA_FSADR		0x04	/* Frame Source Address Register */
-#define DMA_FIDR		0x08	/* Frame ID Register */
-#define DMA_LDCMD		0x0c	/* Command Register */
+#define DMA_FDADR		0x00	/* Frame Descriptor Address register */
+#define DMA_FSADR		0x04	/* Frame Source Address register */
+#define DMA_FIDR		0x08	/* Frame ID register */
+#define DMA_LDCMD		0x0c	/* Command register */
 
-/* LCD Buffer Strength Control Register */
+/* LCD Buffer Strength Control register */
 #define BSCNTR	0x04000054
 
 /* Bitfield masks */
@@ -190,7 +190,7 @@ static void pxa2xx_lcdc_int_update(struct pxa2xx_lcdc_s *s)
     level |= (s->status[0] & LCSR0_CMDINT) && !(s->control[0] & LCCR0_CMDIM);
     level |= (s->status[1] & ~s->control[5]);
 
-    pic_set_irq_new(s->pic, PXA2XX_PIC_LCD, !!level);
+    qemu_set_irq(s->irq, !!level);
     s->irqlevel = level;
 }
 
@@ -300,11 +300,11 @@ static void pxa2xx_descriptor_load(struct pxa2xx_lcdc_s *s)
         } else
             descptr = s->dma_ch[i].descriptor;
 
-        if (!(descptr >= PXA2XX_RAM_BASE && descptr +
-                    sizeof(*desc[i]) <= PXA2XX_RAM_BASE + phys_ram_size))
+        if (!(descptr >= PXA2XX_SDRAM_BASE && descptr +
+                    sizeof(*desc[i]) <= PXA2XX_SDRAM_BASE + phys_ram_size))
             continue;
 
-        descptr -= PXA2XX_RAM_BASE;
+        descptr -= PXA2XX_SDRAM_BASE;
         desc[i] = (struct pxa_frame_descriptor_s *) (phys_ram_base + descptr);
         s->dma_ch[i].descriptor = desc[i]->fdaddr;
         s->dma_ch[i].source = desc[i]->fsaddr;
@@ -402,7 +402,7 @@ static uint32_t pxa2xx_lcdc_read(void *opaque, target_phys_addr_t offset)
     default:
     fail:
         cpu_abort(cpu_single_env,
-                "%s: Bad offset %x\n", __FUNCTION__, offset);
+                "%s: Bad offset " REG_FMT "\n", __FUNCTION__, offset);
     }
 
     return 0;
@@ -559,7 +559,7 @@ static void pxa2xx_lcdc_write(void *opaque,
     default:
     fail:
         cpu_abort(cpu_single_env,
-                "%s: Bad offset %x\n", __FUNCTION__, offset);
+                "%s: Bad offset " REG_FMT "\n", __FUNCTION__, offset);
     }
 }
 
@@ -722,7 +722,7 @@ static void pxa2xx_lcdc_dma0_redraw_horiz(struct pxa2xx_lcdc_s *s,
     dest_width = s->xres * s->dest_width;
 
     addr = (ram_addr_t) (fb - phys_ram_base);
-    start = addr + (s->yres + 1) * src_width;
+    start = addr + s->yres * src_width;
     end = addr;
     dirty[0] = dirty[1] = cpu_physical_memory_get_dirty(start, VGA_DIRTY_FLAG);
     for (y = 0; y < s->yres; y ++) {
@@ -750,7 +750,8 @@ static void pxa2xx_lcdc_dma0_redraw_horiz(struct pxa2xx_lcdc_s *s,
         dest += dest_width;
     }
 
-    cpu_physical_memory_reset_dirty(start, end, VGA_DIRTY_FLAG);
+    if (end > start)
+        cpu_physical_memory_reset_dirty(start, end, VGA_DIRTY_FLAG);
 }
 
 static void pxa2xx_lcdc_dma0_redraw_vert(struct pxa2xx_lcdc_s *s,
@@ -793,8 +794,7 @@ static void pxa2xx_lcdc_dma0_redraw_vert(struct pxa2xx_lcdc_s *s,
                             dest, src, s->xres, -dest_width);
             if (addr < start)
                 start = addr;
-            if (new_addr > end)
-                end = new_addr;
+            end = new_addr;
             if (y < *miny)
                 *miny = y;
             if (y >= *maxy)
@@ -806,7 +806,8 @@ static void pxa2xx_lcdc_dma0_redraw_vert(struct pxa2xx_lcdc_s *s,
         dest += s->dest_width;
     }
 
-    cpu_physical_memory_reset_dirty(start, end, VGA_DIRTY_FLAG);
+    if (end > start)
+        cpu_physical_memory_reset_dirty(start, end, VGA_DIRTY_FLAG);
 }
 
 static void pxa2xx_lcdc_resize(struct pxa2xx_lcdc_s *s)
@@ -853,12 +854,12 @@ static void pxa2xx_update_display(void *opaque)
                 continue;
             }
             fbptr = s->dma_ch[ch].source;
-            if (!(fbptr >= PXA2XX_RAM_BASE &&
-                    fbptr <= PXA2XX_RAM_BASE + phys_ram_size)) {
+            if (!(fbptr >= PXA2XX_SDRAM_BASE &&
+                    fbptr <= PXA2XX_SDRAM_BASE + phys_ram_size)) {
                 pxa2xx_dma_ber_set(s, ch);
                 continue;
             }
-            fbptr -= PXA2XX_RAM_BASE;
+            fbptr -= PXA2XX_SDRAM_BASE;
             fb = phys_ram_base + fbptr;
 
             if (s->dma_ch[ch].command & LDCMD_PAL) {
@@ -935,7 +936,7 @@ void pxa2xx_lcdc_orientation(void *opaque, int angle)
 #define BITS 32
 #include "pxa2xx_template.h"
 
-struct pxa2xx_lcdc_s *pxa2xx_lcdc_init(target_phys_addr_t base, void *pic,
+struct pxa2xx_lcdc_s *pxa2xx_lcdc_init(target_phys_addr_t base, qemu_irq irq,
                 DisplayState *ds)
 {
     int iomemtype;
@@ -944,7 +945,7 @@ struct pxa2xx_lcdc_s *pxa2xx_lcdc_init(target_phys_addr_t base, void *pic,
     s = (struct pxa2xx_lcdc_s *) qemu_mallocz(sizeof(struct pxa2xx_lcdc_s));
     s->base = base;
     s->invalidated = 1;
-    s->pic = pic;
+    s->irq = irq;
     s->ds = ds;
 
     pxa2xx_lcdc_orientation(s, graphic_rotate);

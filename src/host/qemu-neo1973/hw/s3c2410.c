@@ -10,9 +10,9 @@
 
 /* Interrupt controller */
 struct s3c_pic_state_s {
-    s3c_pic_handler_t handler;
-    CPUState *cpu;
     target_phys_addr_t base;
+    qemu_irq *parent_pic;
+    qemu_irq *irqs;
 
     uint32_t srcpnd;
     uint32_t intpnd;
@@ -26,15 +26,10 @@ struct s3c_pic_state_s {
 
 static void s3c_pic_update(struct s3c_pic_state_s *s)
 {
-    if (s->srcpnd & ~s->intmsk & s->intmod)
-        cpu_interrupt(s->cpu, CPU_INTERRUPT_FIQ);
-    else
-        cpu_reset_interrupt(s->cpu, CPU_INTERRUPT_FIQ);
-
-    if (s->intpnd & ~s->intmsk & ~s->intmod)
-        cpu_interrupt(s->cpu, CPU_INTERRUPT_HARD);
-    else
-        cpu_reset_interrupt(s->cpu, CPU_INTERRUPT_HARD);
+    qemu_set_irq(s->parent_pic[ARM_PIC_CPU_FIQ],
+                    s->srcpnd & ~s->intmsk & s->intmod);
+    qemu_set_irq(s->parent_pic[ARM_PIC_CPU_IRQ],
+                    s->intpnd & ~s->intmsk & ~s->intmod);
 }
 
 static const uint32_t s3c_arbmsk[6] = {
@@ -246,15 +241,16 @@ static CPUWriteMemoryFunc *s3c_pic_writefn[] = {
     s3c_pic_write,
 };
 
-struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base, CPUState *env)
+struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base,
+                qemu_irq *arm_pic)
 {
     int iomemtype;
     struct s3c_pic_state_s *s = (struct s3c_pic_state_s *)
             qemu_mallocz(sizeof(struct s3c_pic_state_s));
 
     s->base = base;
-    s->cpu = env;
-    s->handler = s3c_pic_set_irq;
+    s->parent_pic = arm_pic;
+    s->irqs = qemu_allocate_irqs(s3c_pic_set_irq, s, S3C_PIC_MAX);
 
     s3c_pic_reset(s);
 
@@ -263,6 +259,11 @@ struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base, CPUState *env)
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
 
     return s;
+}
+
+qemu_irq *s3c_pic_get(struct s3c_pic_state_s *s)
+{
+    return s->irqs;
 }
 
 /* Memory controller */
@@ -540,12 +541,11 @@ static CPUWriteMemoryFunc *s3c_clkpwr_writefn[] = {
 #define S3C_DMA_CH_N	4
 
 struct s3c_dma_ch_state_s;
-struct s3c_dma_state_s {
-    s3c_pic_handler_t handler;	/* Modelled as an interrupt controller */
+struct s3c_dma_state_s {	/* Modelled as an interrupt controller */
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq *drqs;
     struct s3c_dma_ch_state_s {
-        int intr;
+        qemu_irq intr;
         int curr_tc;
         int req;
         int running;
@@ -591,7 +591,7 @@ static void s3c_dma_ch_run(struct s3c_dma_state_s *s,
         }
         ch->running = 0;
         if (!ch->curr_tc && (ch->con & (1 << 29)))		/* INT */
-            pic_set_irq_new(s->pic, ch->intr, 1);
+            qemu_irq_raise(ch->intr);
 
         if (ch->con & (1 << 22)) {				/* RELOAD */
             if (!(ch->con & (1 << 23))) {			/* SWHW_SEL */
@@ -741,19 +741,18 @@ static CPUWriteMemoryFunc *s3c_dma_writefn[] = {
     s3c_dma_write,
 };
 
-struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, void *pic)
+struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic)
 {
     int iomemtype;
     struct s3c_dma_state_s *s = (struct s3c_dma_state_s *)
             qemu_mallocz(sizeof(struct s3c_dma_state_s));
 
     s->base = base;
-    s->pic = pic;
-    s->ch[0].intr = S3C_PIC_DMA0;
-    s->ch[1].intr = S3C_PIC_DMA1;
-    s->ch[2].intr = S3C_PIC_DMA2;
-    s->ch[3].intr = S3C_PIC_DMA3;
-    s->handler = s3c_dma_dreq;
+    s->ch[0].intr = pic[0];
+    s->ch[1].intr = pic[1];
+    s->ch[2].intr = pic[2];
+    s->ch[3].intr = pic[3];
+    s->drqs = qemu_allocate_irqs(s3c_dma_dreq, s, S3C_RQ_MAX);
 
     s3c_dma_reset(s);
 
@@ -764,12 +763,16 @@ struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, void *pic)
     return s;
 }
 
+qemu_irq *s3c_dma_get(struct s3c_dma_state_s *s)
+{
+    return s->drqs;
+}
+
 /* PWM timers controller */
 struct s3c_timer_state_s;
 struct s3c_timers_state_s {
     target_phys_addr_t base;
-    void *pic;
-    void *dma;
+    qemu_irq *dma;
     DisplayState *ds;
     struct s3c_timer_state_s {
         QEMUTimer *t;
@@ -779,7 +782,7 @@ struct s3c_timers_state_s {
         uint32_t divider;
         uint16_t count;
         int64_t reload;
-        int irq;
+        qemu_irq irq;
         gpio_handler_t cmp_cb;
         void *cmp_opaque;
     } timer[5];
@@ -855,11 +858,11 @@ static void s3c_timers_tick(void *opaque)
         return;
 
     if (((s->config[1] >> 20) & 0xf) == t->n + 1) {
-        pic_set_irq_new(s->dma, S3C_RQ_TIMER0, 1);	/* TODO */
-        pic_set_irq_new(s->dma, S3C_RQ_TIMER1, 1);
-        pic_set_irq_new(s->dma, S3C_RQ_TIMER2, 1);
+        qemu_irq_raise(s->dma[S3C_RQ_TIMER0]);	/* TODO */
+        qemu_irq_raise(s->dma[S3C_RQ_TIMER1]);
+        qemu_irq_raise(s->dma[S3C_RQ_TIMER2]);
     } else
-        pic_set_irq_new(s->pic, t->irq, 1);
+        qemu_irq_raise(t->irq);
 
     t->running = 0;
     t->count = 0;
@@ -994,14 +997,13 @@ static CPUWriteMemoryFunc *s3c_timers_writefn[] = {
 };
 
 struct s3c_timers_state_s *s3c_timers_init(target_phys_addr_t base,
-                void *pic, void *dma)
+                qemu_irq *pic, qemu_irq *dma)
 {
     int i, iomemtype;
     struct s3c_timers_state_s *s = (struct s3c_timers_state_s *)
             qemu_mallocz(sizeof(struct s3c_timers_state_s));
 
     s->base = base;
-    s->pic = pic;
     s->dma = dma;
 
     s3c_timers_reset(s);
@@ -1012,12 +1014,8 @@ struct s3c_timers_state_s *s3c_timers_init(target_phys_addr_t base,
         s->timer[i].s = s;
         s->timer[i].n = i;
         s->timer[i].cmp_cb = 0;
+        s->timer[i].irq = pic[i];
     }
-    s->timer[0].irq = S3C_PIC_TIMER0;
-    s->timer[1].irq = S3C_PIC_TIMER1;
-    s->timer[2].irq = S3C_PIC_TIMER2;
-    s->timer[3].irq = S3C_PIC_TIMER3;
-    s->timer[4].irq = S3C_PIC_TIMER4;
 
     iomemtype = cpu_register_io_memory(0, s3c_timers_readfn,
                     s3c_timers_writefn, s);
@@ -1041,10 +1039,8 @@ void s3c_timers_cmp_handler_set(void *opaque, int line,
 /* UART */
 struct s3c_uart_state_s {
     target_phys_addr_t base;
-    void *pic;
-    void *dma;
-    int *irq;
-    int *drq;
+    qemu_irq *irq;
+    qemu_irq *dma;
     uint8_t data;
     uint8_t rxfifo[16];
     int rxstart;
@@ -1108,7 +1104,7 @@ static void s3c_uart_err(struct s3c_uart_state_s *s, int err)
 {
     s->errstat |= err;
     if (s->control & (1 << 6))
-        pic_set_irq_new(s->pic, s->irq[2], 1);
+        qemu_irq_raise(s->irq[2]);
 }
 
 static void s3c_uart_full(struct s3c_uart_state_s *s)
@@ -1119,11 +1115,11 @@ static void s3c_uart_full(struct s3c_uart_state_s *s)
 
     switch ((s->control >> 0) & 3) {		/* ReceiveMode */
     case 1:
-        pic_set_irq_new(s->pic, s->irq[0], 1);
+        qemu_irq_raise(s->irq[0]);
         break;
     case 2:
     case 3:
-        pic_set_irq_new(s->dma, s->drq[0], 1);
+        qemu_irq_raise(s->dma[0]);
         break;
     }
 }
@@ -1132,11 +1128,11 @@ static void s3c_uart_empty(struct s3c_uart_state_s *s)
 {
     switch ((s->control >> 2) & 3) {		/* TransmitMode */
     case 1:
-        pic_set_irq_new(s->pic, s->irq[1], 1);
+        qemu_irq_raise(s->irq[1]);
         break;
     case 2:
     case 3:
-        pic_set_irq_new(s->dma, s->drq[0], 1);
+        qemu_irq_raise(s->dma[0]);
         break;
     }
 }
@@ -1174,6 +1170,11 @@ static void s3c_uart_rx(void *opaque, const uint8_t *buf, int size)
         s->data = buf[0];
     }
     s3c_uart_full(s);
+}
+
+/* S3C2410 UART doesn't seem to understand break conditions.  */
+static void s3c_uart_event(void *opaque, int event)
+{
 }
 
 #define S3C_ULCON	0x00	/* UART Line Control register */
@@ -1296,17 +1297,15 @@ static CPUWriteMemoryFunc *s3c_uart_writefn[] = {
 };
 
 struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
-                void *pic, void *dma, int irq[], int drq[])
+                qemu_irq *irqs, qemu_irq *dma)
 {
     int iomemtype;
     struct s3c_uart_state_s *s = (struct s3c_uart_state_s *)
             qemu_mallocz(sizeof(struct s3c_uart_state_s));
 
     s->base = base;
-    s->pic = pic;
+    s->irq = irqs;
     s->dma = dma;
-    s->irq = irq;
-    s->drq = drq;
 
     s3c_uart_reset(s);
 
@@ -1323,14 +1322,15 @@ void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr)
         cpu_abort(cpu_single_env, "%s: Too many devices\n", __FUNCTION__);
     s->chr[s->chr_num ++] = chr;
 
-    qemu_chr_add_read_handler(chr, s3c_uart_is_empty, s3c_uart_rx, s);
-    /* S3C2410 UART doesn't seem to understand break conditions.  */
+    qemu_chr_add_handlers(chr, s3c_uart_is_empty,
+                    s3c_uart_rx, s3c_uart_event, s);
 }
 
 /* ADC & Touchscreen interface */
 struct s3c_adc_state_s {
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq irq;
+    qemu_irq tcirq;
     QEMUTimer *convt;
     QEMUTimer *tst;
     int x;
@@ -1371,7 +1371,7 @@ static void s3c_adc_done(void *opaque)
     struct s3c_adc_state_s *s = (struct s3c_adc_state_s *) opaque;
     s->xdata = s->input[s->in_idx] & 0x3ff;
     s->control |= 1 << 15;
-    pic_set_irq_new(s->pic, S3C_PICS_ADC, 1);
+    qemu_irq_raise(s->irq);
 }
 
 static void s3c_adc_tick(void *opaque)
@@ -1379,13 +1379,13 @@ static void s3c_adc_tick(void *opaque)
     struct s3c_adc_state_s *s = (struct s3c_adc_state_s *) opaque;
     if (s->down) {
         if ((s->ts & 3) == 3 && s->enable)
-            pic_set_irq_new(s->pic, S3C_PICS_TC, 1);
+            qemu_irq_raise(s->tcirq);
         else if (s->enable && ((s->ts & (1 << 2)) || (s->ts & 3))) {
             s->xdata = (s->x >> 5) | (1 << 14) | ((s->ts & 3) << 12);
             s->ydata = (s->y >> 5) | (1 << 14) | ((s->ts & 3) << 12);
             s->xdata ^= s->noise >> 1;
             s->ydata ^= s->noise >> 2;
-            pic_set_irq_new(s->pic, S3C_PICS_ADC, 1);
+            qemu_irq_raise(s->irq);
             s->noise ++;
             s->noise &= 7;
         }
@@ -1476,14 +1476,16 @@ static CPUWriteMemoryFunc *s3c_adc_writefn[] = {
     s3c_adc_write,
 };
 
-struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, void *pic)
+struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
+                qemu_irq tcirq)
 {
     int iomemtype;
     struct s3c_adc_state_s *s = (struct s3c_adc_state_s *)
             qemu_mallocz(sizeof(struct s3c_adc_state_s));
 
     s->base = base;
-    s->pic = pic;
+    s->irq = irq;
+    s->tcirq = tcirq;
     s->convt = qemu_new_timer(vm_clock, s3c_adc_done, s);
     s->tst = qemu_new_timer(vm_clock, s3c_adc_tick, s);
 
@@ -1502,15 +1504,15 @@ struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, void *pic)
 
 /* IIC-bus serial interface */
 struct s3c_i2c_state_s {
+    i2c_slave slave;
+    i2c_bus *bus;
     target_phys_addr_t base;
-    void *pic;
-    struct i2c_master_s master;
-    struct i2c_slave_s slave;
+    qemu_irq irq;
 
     uint8_t control;
     uint8_t status;
     uint8_t data;
-    uint8_t address;
+    uint8_t addy;
     int busy;
     int newstart;
 };
@@ -1519,7 +1521,7 @@ static void s3c_i2c_irq(struct s3c_i2c_state_s *s)
 {
     s->control |= 1 << 4;
     if (s->control & (1 << 5))
-        pic_set_irq_new(s->pic, S3C_PIC_IIC, 1);
+        qemu_irq_raise(s->irq);
 }
 
 static void s3c_i2c_reset(struct s3c_i2c_state_s *s)
@@ -1530,64 +1532,95 @@ static void s3c_i2c_reset(struct s3c_i2c_state_s *s)
     s->newstart = 0;
 }
 
-static void s3c_i2c_start(void *opaque, int dir)
+static void s3c_i2c_event(i2c_slave *i2c, enum i2c_event event)
 {
-    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) opaque;
+    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) i2c;
     if (!(s->status & (1 << 4)))
         return;
 
-    s->status &= ~(1 << 2);
-    s3c_i2c_irq(s);
+    switch (event) {
+    case I2C_START_RECV:
+    case I2C_START_SEND:
+        s->status |= 1 << 2;
+        s3c_i2c_irq(s);
+        break;
+    case I2C_FINISH:
+        s->status &= ~6;
+        break;
+    case I2C_NACK:
+        s->status |= 1 << 0;
+        break;
+    default:
+        break;
+    }
 }
 
-static void s3c_i2c_stop(void *opaque)
+static int s3c_i2c_tx(i2c_slave *i2c, uint8_t data)
 {
-    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) opaque;
-    s->status &= ~(1 << 2);
-}
-
-static int s3c_i2c_tx(void *opaque, uint8_t *message, int len)
-{
-    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) opaque;
+    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) i2c;
     if (!(s->status & (1 << 4)))
         return 1;
 
-    if (len) {
-        if ((s->status >> 6) == 0)
-            s->master.data = message[0];		/* TODO */
-        else if ((s->status >> 6) == 1)
-            message[0] = s->master.data;		/* TODO */
-    }
+    if ((s->status >> 6) == 0)
+        s->data = data;						/* TODO */
+    s->status &= ~(1 << 0);
     s3c_i2c_irq(s);
 
     return !(s->control & (1 << 7));
 }
 
+static int s3c_i2c_rx(i2c_slave *i2c)
+{
+    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) i2c;
+    if (!(s->status & (1 << 4)))
+        return 1;
+
+    if ((s->status >> 6) == 1) {
+        s->status &= ~(1 << 0);
+        s3c_i2c_irq(s);
+        return s->data;
+    }
+
+    return 0x00;
+}
+
 static void s3c_master_work(void *opaque)
 {
     struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) opaque;
-    int start = 0;
+    int start = 0, stop = 0, ack = 1;
     if (s->control & (1 << 4))				/* Interrupt pending */
         return;
     if ((s->status & 0x90) != 0x90)			/* Master */
         return;
+    stop = ~s->status & (1 << 5);
     if (s->newstart && s->status & (1 << 5)) {		/* START */
         s->busy = 1;
         start = 1;
-        s->master.data |= (~s->status >> 6) & 1;
     }
     s->newstart = 0;
     if (!s->busy)
         return;
 
-    i2c_master_submit(&s->master, start, (~s->status >> 4) & 2);
+    if (start)
+        ack = !i2c_start_transfer(s->bus, s->data >> 1, (~s->status >> 6) & 1);
+    else if (stop)
+        i2c_end_transfer(s->bus);
+    else if (s->status & (1 << 6))
+        ack = !i2c_send(s->bus, s->data);
+    else {
+        s->data = i2c_recv(s->bus);
+
+        if (!(s->control & (1 << 7)))			/* ACK */
+            i2c_nack(s->bus);
+    }
+
     if (!(s->status & (1 << 5))) {
         s->busy = 0;
         return;
     }
     s->status &= ~1;
-    s->status |= !s->master.ack;
-    if (!s->master.ack)
+    s->status |= !ack;
+    if (!ack)
         s->busy = 0;
     s3c_i2c_irq(s);
 }
@@ -1608,9 +1641,9 @@ static uint32_t s3c_i2c_read(void *opaque, target_phys_addr_t addr)
     case S3C_IICSTAT:
         return s->status & ~(1 << 5);			/* Busy signal */
     case S3C_IICADD:
-        return s->slave.address;
+        return s->addy;
     case S3C_IICDS:
-        return s->master.data;
+        return s->data;
     default:
         printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr);
         break;
@@ -1640,12 +1673,12 @@ static void s3c_i2c_write(void *opaque, target_phys_addr_t addr,
         break;
 
     case S3C_IICADD:
-        if (s->master.bus)
-            i2c_slave_attach(s->master.bus, value & 0x7f, &s->slave);
+        s->addy = value & 0x7f;
+        i2c_set_slave_address(&s->slave, s->addy);
         break;
 
     case S3C_IICDS:
-        s->master.data = value & 0xff;
+        s->data = value & 0xff;
         break;
 
     default:
@@ -1665,18 +1698,18 @@ static CPUWriteMemoryFunc *s3c_i2c_writefn[] = {
     s3c_i2c_write,
 };
 
-struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, void *pic)
+struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq)
 {
     int iomemtype;
     struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *)
             qemu_mallocz(sizeof(struct s3c_i2c_state_s));
 
     s->base = base;
-    s->pic = pic;
-    s->slave.tx = s3c_i2c_tx;
-    s->slave.start = s3c_i2c_start;
-    s->slave.stop = s3c_i2c_stop;
-    s->slave.opaque = s;
+    s->irq = irq;
+    s->slave.event = s3c_i2c_event;
+    s->slave.send = s3c_i2c_tx;
+    s->slave.recv = s3c_i2c_rx;
+    s->bus = i2c_init_bus();
 
     s3c_i2c_reset(s);
 
@@ -1687,19 +1720,20 @@ struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, void *pic)
     return s;
 }
 
-struct i2c_master_s *s3c_i2c_master(struct s3c_i2c_state_s *s)
+i2c_bus *s3c_i2c_bus(struct s3c_i2c_state_s *s)
 {
-    return &s->master;
+    return s->bus;
 }
 
 /* Serial Peripheral Interface */
 struct s3c_spi_state_s {
     target_phys_addr_t base;
-    void *pic;
-    void *dma;
-    struct s3c_gpio_state_s *gpio;
 
     struct {
+        qemu_irq irq;
+        qemu_irq drq;
+        qemu_irq miso;
+
         uint8_t control;
         uint8_t pin;
         uint8_t pre;
@@ -1719,22 +1753,16 @@ struct s3c_spi_state_s {
 
 static void s3c_spi_update(struct s3c_spi_state_s *s)
 {
-    switch ((s->chan[0].control >> 5) & 3) {			/* SMOD */
-    case 1:
-        pic_set_irq_new(s->pic, S3C_PIC_SPI0, 1);
-        break;
-    case 2:
-        pic_set_irq_new(s->dma, S3C_RQ_SPI0, 1);
-        break;
-    }
-
-    switch ((s->chan[1].control >> 5) & 3) {			/* SMOD */
-    case 1:
-        pic_set_irq_new(s->pic, S3C_PIC_SPI1, 1);
-        break;
-    case 2:
-        pic_set_irq_new(s->dma, S3C_RQ_SPI1, 1);
-        break;
+    int i;
+    for (i = 0; i < 2; i ++) {
+        switch ((s->chan[i].control >> 5) & 3) {		/* SMOD */
+        case 1:
+            qemu_irq_raise(s->chan[i].irq);
+            break;
+        case 2:
+            qemu_irq_raise(s->chan[i].drq);
+            break;
+        }
     }
 }
 
@@ -1851,17 +1879,10 @@ static CPUWriteMemoryFunc *s3c_spi_writefn[] = {
     s3c_spi_write,
 };
 
-static const struct {
-    int cs, clk, miso, mosi;
-} s3c_spi_pins[2] = {
-    { S3C_GPG(2), S3C_GPE(13), S3C_GPE(11), S3C_GPE(12) },
-    { S3C_GPG(3), S3C_GPG(7),  S3C_GPG(5),  S3C_GPG(6)  },
-};
-
-static void s3c_spi_bitbang_cs(int line, int level, void *opaque)
+static void s3c_spi_bitbang_cs(void *opaque, int line, int level)
 {
     struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
-    int ch = (line == s3c_spi_pins[1].cs);
+    int ch = line;
     if (s->chan[ch].cs_pin || level) {
         if (s->chan[ch].bit && s->txrx[ch] && !s->btxrx[ch]) {
             s->chan[ch].txbuf <<= 8 - s->chan[ch].bit;
@@ -1874,10 +1895,10 @@ static void s3c_spi_bitbang_cs(int line, int level, void *opaque)
     s->chan[ch].cs_pin = !level;
 }
 
-static void s3c_spi_bitbang_clk(int line, int level, void *opaque)
+static void s3c_spi_bitbang_clk(void *opaque, int line, int level)
 {
     struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
-    int ch = (line == s3c_spi_pins[1].clk);
+    int ch = line;
     if (!s->chan[ch].cs_pin)
         goto done;
 
@@ -1886,7 +1907,7 @@ static void s3c_spi_bitbang_clk(int line, int level, void *opaque)
         goto done;
 
     if (s->btxrx[ch]) {
-        s3c_gpio_set(s->gpio, s3c_spi_pins[ch].miso,
+        qemu_set_irq(s->chan[ch].miso,
                         s->btxrx[ch](s->opaque[ch], s->chan[ch].mosi_pin));
         goto done;
     }
@@ -1894,7 +1915,7 @@ static void s3c_spi_bitbang_clk(int line, int level, void *opaque)
     s->chan[ch].txbuf <<= 1;
     s->chan[ch].txbuf |= s->chan[ch].mosi_pin;
 
-    s3c_gpio_set(s->gpio, s3c_spi_pins[ch].miso, (s->chan[ch].rxbuf >> 7) & 1);
+    qemu_set_irq(s->chan[ch].miso, (s->chan[ch].rxbuf >> 7) & 1);
     s->chan[ch].rxbuf <<= 1;
 
     if (++ s->chan[ch].bit == 8) {
@@ -1907,39 +1928,49 @@ done:
     s->chan[ch].clk_pin = level;
 }
 
-static void s3c_spi_bitbang_mosi(int line, int level, void *opaque)
+static void s3c_spi_bitbang_mosi(void *opaque, int line, int level)
 {
     struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
-    int ch = (line == s3c_spi_pins[1].mosi);
+    int ch = line;
     s->chan[ch].mosi_pin = level;
 }
+
+static const struct {
+    int cs, clk, miso, mosi;
+} s3c_spi_pins[2] = {
+    { S3C_GPG(2), S3C_GPE(13), S3C_GPE(11), S3C_GPE(12) },
+    { S3C_GPG(3), S3C_GPG(7),  S3C_GPG(5),  S3C_GPG(6)  },
+};
 
 static void s3c_spi_bitbang_init(struct s3c_spi_state_s *s,
                 struct s3c_gpio_state_s *gpio)
 {
     int i;
-    for (i = 0; i < 2; i ++) {
-        s3c_gpio_handler_set(gpio, s3c_spi_pins[i].cs,
-                        s3c_spi_bitbang_cs, s);
-        s3c_gpio_handler_set(gpio, s3c_spi_pins[i].clk,
-                        s3c_spi_bitbang_clk, s);
-        s3c_gpio_handler_set(gpio, s3c_spi_pins[i].mosi,
-                        s3c_spi_bitbang_mosi, s);
-    }
+    qemu_irq *cs = qemu_allocate_irqs(s3c_spi_bitbang_cs, s, 2);
+    qemu_irq *clk = qemu_allocate_irqs(s3c_spi_bitbang_clk, s, 2);
+    qemu_irq *mosi = qemu_allocate_irqs(s3c_spi_bitbang_mosi, s, 2);
 
-    s->gpio = gpio;
+    for (i = 0; i < 2; i ++) {
+        s3c_gpio_out_set(gpio, s3c_spi_pins[i].cs, cs[i]);
+        s3c_gpio_out_set(gpio, s3c_spi_pins[i].clk, clk[i]);
+        s->chan[i].miso = s3c_gpio_in_get(gpio)[s3c_spi_pins[i].miso];
+        s3c_gpio_out_set(gpio, s3c_spi_pins[i].mosi, mosi[i]);
+    }
 }
 
 struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base,
-                void *pic, void *dma, struct s3c_gpio_state_s *gpio)
+                qemu_irq irq0, qemu_irq drq0, qemu_irq irq1, qemu_irq drq1,
+                struct s3c_gpio_state_s *gpio)
 {
     int iomemtype;
     struct s3c_spi_state_s *s = (struct s3c_spi_state_s *)
             qemu_mallocz(sizeof(struct s3c_spi_state_s));
 
     s->base = base;
-    s->pic = pic;
-    s->dma = dma;
+    s->chan[0].irq = irq0;
+    s->chan[0].drq = drq0;
+    s->chan[1].irq = irq1;
+    s->chan[1].drq = drq1;
 
     s3c_spi_reset(s);
 
@@ -1980,11 +2011,11 @@ static inline void s3c_i2s_update(struct s3c_i2s_state_s *s)
     if (s->rx_en && s->rx_len)
         s->control |= (1 << 6);
 
-    pic_set_irq_new(s->dma, S3C_RQ_I2SSDO, (s->control >> 5) &
+    qemu_set_irq(s->dma[S3C_RQ_I2SSDO], (s->control >> 5) &
                     (s->control >> 7) & (s->fcontrol >> 15) & 1);
-    pic_set_irq_new(s->dma, S3C_RQ_I2SSDI0, (s->control >> 4) &
+    qemu_set_irq(s->dma[S3C_RQ_I2SSDI0], (s->control >> 4) &
                     (s->control >> 6) & (s->fcontrol >> 14) & 1);
-    pic_set_irq_new(s->dma, S3C_RQ_I2SSDI1, (s->control >> 4) &
+    qemu_set_irq(s->dma[S3C_RQ_I2SSDI1], (s->control >> 4) &
                     (s->control >> 6) & (s->fcontrol >> 14) & 1);
 }
 
@@ -2098,7 +2129,7 @@ static void s3c_i2s_data_req(void *opaque, int tx, int rx)
     s3c_i2s_update(s);
 }
 
-struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, void *dma)
+struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma)
 {
     int iomemtype;
     struct s3c_i2s_state_s *s = (struct s3c_i2s_state_s *)
@@ -2166,29 +2197,32 @@ inline void s3c2410_reset(struct s3c_state_s *s)
 }
 
 /* Initialise an S3C2410A microprocessor.  */
-struct s3c_state_s *s3c2410_init(DisplayState *ds)
+struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
 {
     struct s3c_state_s *s;
     int iomemtype, i;
     s = (struct s3c_state_s *) qemu_mallocz(sizeof(struct s3c_state_s));
 
-    s->free_ram_start = 0;
     s->env = cpu_init();
-    cpu_arm_set_model(s->env, ARM_CPUID_ARM920T);
+    cpu_arm_set_model(s->env, "arm920t");
+
+    cpu_register_physical_memory(S3C_RAM_BASE, sdram_size,
+                    qemu_ram_alloc(sdram_size) | IO_MEM_RAM);
 
     /* If OM pins are 00, SRAM is mapped at 0x0 instead.  */
     cpu_register_physical_memory(S3C_SRAM_BASE, S3C_SRAM_SIZE,
-                    s->free_ram_start | IO_MEM_RAM);
-    s->free_ram_start += S3C_SRAM_SIZE;
+                    qemu_ram_alloc(S3C_SRAM_SIZE) | IO_MEM_RAM);
 
     s->mc_base = 0x48000000;
     s3c_mc_reset(s);
     iomemtype = cpu_register_io_memory(0, s3c_mc_readfn, s3c_mc_writefn, s);
     cpu_register_physical_memory(s->mc_base, 0xffffff, iomemtype);
 
-    s->pic = s3c_pic_init(0x4a000000, s->env);
+    s->pic = s3c_pic_init(0x4a000000, arm_pic_init_cpu(s->env));
+    s->irq = s3c_pic_get(s->pic);
 
-    s->dma = s3c_dma_init(0x4b000000, s->pic);
+    s->dma = s3c_dma_init(0x4b000000, &s->irq[S3C_PIC_DMA0]);
+    s->drq = s3c_dma_get(s->dma);
 
     s->clkpwr_base = 0x4c000000;
     s3c_clkpwr_reset(s);
@@ -2196,7 +2230,7 @@ struct s3c_state_s *s3c2410_init(DisplayState *ds)
                     s3c_clkpwr_writefn, s);
     cpu_register_physical_memory(s->clkpwr_base, 0xffffff, iomemtype);
 
-    s->lcd = s3c_lcd_init(0x4d000000, ds, s->pic);
+    s->lcd = s3c_lcd_init(0x4d000000, ds, s->irq[S3C_PIC_LCD]);
 
     s->nand_base = 0x4e000000;
     s3c_nand_reset(s);
@@ -2205,34 +2239,38 @@ struct s3c_state_s *s3c2410_init(DisplayState *ds)
     cpu_register_physical_memory(s->nand_base, 0xffffff, iomemtype);
 
     for (i = 0; s3c2410_uart[i].base; i ++) {
-        s->uart[i] = s3c_uart_init(s3c2410_uart[i].base, s->pic, s->dma,
-                        s3c2410_uart[i].irq, s3c2410_uart[i].dma);
+        s->uart[i] = s3c_uart_init(s3c2410_uart[i].base,
+                        &s->irq[s3c2410_uart[i].irq[0]],
+                        &s->drq[s3c2410_uart[i].dma[0]]);
         if (serial_hds[i])
             s3c_uart_attach(s->uart[i], serial_hds[i]);
     }
 
-    s->timers = s3c_timers_init(0x51000000, s->pic, s->dma);
+    s->timers = s3c_timers_init(0x51000000, &s->irq[S3C_PIC_TIMER0], s->drq);
 
-    s->udc = s3c_udc_init(0x52000000, s->pic, s->dma);
+    s->udc = s3c_udc_init(0x52000000, s->irq[S3C_PIC_USBD], s->drq);
 
     /* Watchdog at 0x53000000 */
 
-    s->i2c = s3c_i2c_init(0x54000000, s->pic);
+    s->i2c = s3c_i2c_init(0x54000000, s->irq[S3C_PIC_IIC]);
 
-    s->i2s = s3c_i2s_init(0x55000000, s->dma);
+    s->i2s = s3c_i2s_init(0x55000000, s->drq);
 
-    s->io = s3c_gpio_init(0x56000000, s->pic);
+    s->io = s3c_gpio_init(0x56000000, s->irq);
 
-    s->rtc = s3c_rtc_init(0x57000000, s->pic);
+    s->rtc = s3c_rtc_init(0x57000000, s->irq[S3C_PIC_RTC]);
 
-    s->adc = s3c_adc_init(0x58000000, s->pic);
+    s->adc = s3c_adc_init(0x58000000, s->irq[S3C_PICS_ADC],
+                    s->irq[S3C_PICS_TC]);
 
-    s->spi = s3c_spi_init(0x59000000, s->pic, s->dma, s->io);
+    s->spi = s3c_spi_init(0x59000000,
+                    s->irq[S3C_PIC_SPI0], s->drq[S3C_RQ_SPI0],
+                    s->irq[S3C_PIC_SPI1], s->drq[S3C_RQ_SPI1], s->io);
 
-    s->mmci = s3c_mmci_init(0x5a000000, s->pic, s->dma);
+    s->mmci = s3c_mmci_init(0x5a000000, s->irq[S3C_PIC_SDI], s->drq);
 
     if (usb_enabled) {
-        usb_ohci_init_memio(0x49000000, 3, -1, s->pic, S3C_PIC_USBH);
+        usb_ohci_init_memio(0x49000000, 3, -1, s->irq[S3C_PIC_USBH]);
     }
 
     /* Power on reset */

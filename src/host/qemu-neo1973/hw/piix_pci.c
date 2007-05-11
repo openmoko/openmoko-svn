@@ -40,7 +40,7 @@ static uint32_t i440fx_addr_readl(void* opaque, uint32_t addr)
     return s->config_reg;
 }
 
-static void piix3_set_irq(void *pic, int irq_num, int level);
+static void piix3_set_irq(qemu_irq *pic, int irq_num, int level);
 
 /* return the global irq number corresponding to a given device irq
    pin. We could also use the bus number to have a more precise
@@ -155,14 +155,14 @@ static int i440fx_load(QEMUFile* f, void *opaque, int version_id)
     return 0;
 }
 
-PCIBus *i440fx_init(PCIDevice **pi440fx_state)
+PCIBus *i440fx_init(PCIDevice **pi440fx_state, qemu_irq *pic)
 {
     PCIBus *b;
     PCIDevice *d;
     I440FXState *s;
 
     s = qemu_mallocz(sizeof(I440FXState));
-    b = pci_register_bus(piix3_set_irq, pci_slot_get_pirq, NULL, 0, 4);
+    b = pci_register_bus(piix3_set_irq, pci_slot_get_pirq, pic, 0, 4);
     s->bus = b;
 
     register_ioport_write(0xcf8, 4, 4, i440fx_addr_writel, s);
@@ -196,14 +196,15 @@ PCIBus *i440fx_init(PCIDevice **pi440fx_state)
 
 /* PIIX3 PCI to ISA bridge */
 
-static PCIDevice *piix3_dev;
+PCIDevice *piix3_dev;
+PCIDevice *piix4_dev;
 
 /* just used for simpler irq handling. */
 #define PCI_IRQ_WORDS   ((PCI_DEVICES_MAX + 31) / 32)
 
 static int pci_irq_levels[4];
 
-static void piix3_set_irq(void *pic, int irq_num, int level)
+static void piix3_set_irq(qemu_irq *pic, int irq_num, int level)
 {
     int i, pic_irq, pic_level;
 
@@ -220,7 +221,7 @@ static void piix3_set_irq(void *pic, int irq_num, int level)
             if (pic_irq == piix3_dev->config[0x60 + i])
                 pic_level |= pci_irq_levels[i];
         }
-        pic_set_irq(pic_irq, pic_level);
+        qemu_set_irq(pic[pic_irq], pic_level);
     }
 }
 
@@ -245,6 +246,42 @@ static void piix3_reset(PCIDevice *d)
     pci_conf[0x80] = 0x00;
     pci_conf[0x82] = 0x00;
     pci_conf[0xa0] = 0x08;
+    pci_conf[0xa2] = 0x00;
+    pci_conf[0xa3] = 0x00;
+    pci_conf[0xa4] = 0x00;
+    pci_conf[0xa5] = 0x00;
+    pci_conf[0xa6] = 0x00;
+    pci_conf[0xa7] = 0x00;
+    pci_conf[0xa8] = 0x0f;
+    pci_conf[0xaa] = 0x00;
+    pci_conf[0xab] = 0x00;
+    pci_conf[0xac] = 0x00;
+    pci_conf[0xae] = 0x00;
+}
+
+static void piix4_reset(PCIDevice *d)
+{
+    uint8_t *pci_conf = d->config;
+
+    pci_conf[0x04] = 0x07; // master, memory and I/O
+    pci_conf[0x05] = 0x00;
+    pci_conf[0x06] = 0x00;
+    pci_conf[0x07] = 0x02; // PCI_status_devsel_medium
+    pci_conf[0x4c] = 0x4d;
+    pci_conf[0x4e] = 0x03;
+    pci_conf[0x4f] = 0x00;
+    pci_conf[0x60] = 0x0a; // PCI A -> IRQ 10
+    pci_conf[0x61] = 0x0a; // PCI B -> IRQ 10
+    pci_conf[0x62] = 0x0b; // PCI C -> IRQ 11
+    pci_conf[0x63] = 0x0b; // PCI D -> IRQ 11
+    pci_conf[0x69] = 0x02;
+    pci_conf[0x70] = 0x80;
+    pci_conf[0x76] = 0x0c;
+    pci_conf[0x77] = 0x0c;
+    pci_conf[0x78] = 0x02;
+    pci_conf[0x79] = 0x00;
+    pci_conf[0x80] = 0x00;
+    pci_conf[0x82] = 0x00;
     pci_conf[0xa0] = 0x08;
     pci_conf[0xa2] = 0x00;
     pci_conf[0xa3] = 0x00;
@@ -273,13 +310,38 @@ static int piix_load(QEMUFile* f, void *opaque, int version_id)
     return pci_device_load(d, f);
 }
 
-int piix3_init(PCIBus *bus)
+int piix_init(PCIBus *bus, int devfn)
+{
+    PCIDevice *d;
+    uint8_t *pci_conf;
+
+    d = pci_register_device(bus, "PIIX", sizeof(PCIDevice),
+                                    devfn, NULL, NULL);
+    register_savevm("PIIX", 0, 2, piix_save, piix_load, d);
+
+    piix3_dev = d;
+    pci_conf = d->config;
+
+    pci_conf[0x00] = 0x86; // Intel
+    pci_conf[0x01] = 0x80;
+    pci_conf[0x02] = 0x2E; // 82371FB PIIX PCI-to-ISA bridge
+    pci_conf[0x03] = 0x12;
+    pci_conf[0x08] = 0x02; // Step A1
+    pci_conf[0x0a] = 0x01; // class_sub = PCI_ISA
+    pci_conf[0x0b] = 0x06; // class_base = PCI_bridge
+    pci_conf[0x0e] = 0x80; // header_type = PCI_multifunction, generic
+
+    piix3_reset(d);
+    return d->devfn;
+}
+
+int piix3_init(PCIBus *bus, int devfn)
 {
     PCIDevice *d;
     uint8_t *pci_conf;
 
     d = pci_register_device(bus, "PIIX3", sizeof(PCIDevice),
-                                    -1, NULL, NULL);
+                                    devfn, NULL, NULL);
     register_savevm("PIIX3", 0, 2, piix_save, piix_load, d);
 
     piix3_dev = d;
@@ -294,5 +356,29 @@ int piix3_init(PCIBus *bus)
     pci_conf[0x0e] = 0x80; // header_type = PCI_multifunction, generic
 
     piix3_reset(d);
+    return d->devfn;
+}
+
+int piix4_init(PCIBus *bus, int devfn)
+{
+    PCIDevice *d;
+    uint8_t *pci_conf;
+
+    d = pci_register_device(bus, "PIIX4", sizeof(PCIDevice),
+                                    devfn, NULL, NULL);
+    register_savevm("PIIX4", 0, 2, piix_save, piix_load, d);
+
+    piix4_dev = d;
+    pci_conf = d->config;
+
+    pci_conf[0x00] = 0x86; // Intel
+    pci_conf[0x01] = 0x80;
+    pci_conf[0x02] = 0x10; // 82371AB/EB/MB PIIX4 PCI-to-ISA bridge
+    pci_conf[0x03] = 0x71;
+    pci_conf[0x0a] = 0x01; // class_sub = PCI_ISA
+    pci_conf[0x0b] = 0x06; // class_base = PCI_bridge
+    pci_conf[0x0e] = 0x80; // header_type = PCI_multifunction, generic
+
+    piix4_reset(d);
     return d->devfn;
 }

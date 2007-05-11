@@ -16,8 +16,9 @@
 
 struct wm_rate_s;
 struct wm8750_s {
-    int i2c_dir;
-    struct i2c_slave_s i2c;
+    i2c_slave i2c;
+    uint8_t i2c_data[2];
+    int i2c_len;
     QEMUSoundCard card;
     SWVoiceIn *adc_voice[IN_PORT_N];
     SWVoiceOut *dac_voice[OUT_PORT_N];
@@ -207,9 +208,9 @@ void inline wm8750_mask_update(struct wm8750_s *s)
             (s->mute ? NONE : BOTH);
 }
 
-void wm8750_reset(struct i2c_slave_s *i2c)
+void wm8750_reset(i2c_slave *i2c)
 {
-    struct wm8750_s *s = (struct wm8750_s *) i2c->opaque;
+    struct wm8750_s *s = (struct wm8750_s *) i2c;
     s->enable = 0;
     wm8750_set_format(s);
     s->diff[0] = 0;
@@ -245,12 +246,27 @@ void wm8750_reset(struct i2c_slave_s *i2c)
     s->idx_out = 0;
     s->req_out = 0;
     wm8750_mask_update(s);
+    s->i2c_len = 0;
 }
 
-static void wm8750_start(void *opaque, int dir)
+static void wm8750_event(i2c_slave *i2c, enum i2c_event event)
 {
-    struct wm8750_s *s = (struct wm8750_s *) opaque;
-    s->i2c_dir = dir;
+    struct wm8750_s *s = (struct wm8750_s *) i2c;
+
+    switch (event) {
+    case I2C_START_SEND:
+        s->i2c_len = 0;
+        break;
+    case I2C_FINISH:
+#ifdef VERBOSE
+        if (s->i2c_len < 2)
+            printf("%s: message too short (%i bytes)\n",
+                            __FUNCTION__, s->i2c_len);
+#endif
+        break;
+    default:
+        break;
+    }
 }
 
 #define WM8750_LINVOL	0x00
@@ -290,26 +306,24 @@ static void wm8750_start(void *opaque, int dir)
 #define WM8750_ROUT2V	0x29
 #define WM8750_MOUTV	0x2a
 
-static int wm8750_tx(void *opaque, uint8_t *data, int len)
+static int wm8750_tx(i2c_slave *i2c, uint8_t data)
 {
-    struct wm8750_s *s = (struct wm8750_s *) opaque;
+    struct wm8750_s *s = (struct wm8750_s *) i2c;
     uint8_t cmd;
     uint16_t value;
 
-    if (s->i2c_dir)
+    if (s->i2c_len >= 2) {
+        printf("%s: long message (%i bytes)\n", __FUNCTION__, s->i2c_len);
+#ifdef VERBOSE
         return 1;
-    if (len < 2) {
-#ifdef VERBOSE
-        printf("%s: message too short (%i bytes)\n", __FUNCTION__, len);
 #endif
-        return 0;
     }
-    cmd = data[0] >> 1;
-    value = ((data[0] << 8) | data[1]) & 0x1ff;
-#ifdef VERBOSE
-    if (len > 2)
-        printf("%s: long message (%i bytes)\n", __FUNCTION__, len);
-#endif
+    s->i2c_data[s->i2c_len ++] = data;
+    if (s->i2c_len != 2)
+        return 0;
+
+    cmd = s->i2c_data[0] >> 1;
+    value = ((s->i2c_data[0] << 8) | s->i2c_data[1]) & 0x1ff;
 
     switch (cmd) {
     case WM8750_LADCIN:	/* ADC Signal Path Control (Left) */
@@ -472,30 +486,36 @@ static int wm8750_tx(void *opaque, uint8_t *data, int len)
     return 0;
 }
 
-struct i2c_slave_s *wm8750_init(AudioState *audio)
+static int wm8750_rx(i2c_slave *i2c)
 {
-    struct wm8750_s *s = qemu_mallocz(sizeof(struct wm8750_s));
-    s->i2c.opaque = s;
-    s->i2c.tx = wm8750_tx;
-    s->i2c.start = wm8750_start;
+    return 0x00;
+}
+
+i2c_slave *wm8750_init(i2c_bus *bus, AudioState *audio)
+{
+    struct wm8750_s *s = (struct wm8750_s *)
+            i2c_slave_init(bus, 0, sizeof(struct wm8750_s));
+    s->i2c.event = wm8750_event;
+    s->i2c.recv = wm8750_rx;
+    s->i2c.send = wm8750_tx;
 
     AUD_register_card(audio, CODEC, &s->card);
     wm8750_reset(&s->i2c);
     return &s->i2c;
 }
 
-void wm8750_fini(struct i2c_slave_s *i2c)
+void wm8750_fini(i2c_slave *i2c)
 {
-    struct wm8750_s *s = (struct wm8750_s *) i2c->opaque;
+    struct wm8750_s *s = (struct wm8750_s *) i2c;
     wm8750_reset(&s->i2c);
     AUD_remove_card(&s->card);
     qemu_free(s);
 }
 
-void wm8750_data_req_set(struct i2c_slave_s *i2c,
+void wm8750_data_req_set(i2c_slave *i2c,
                 void (*data_req)(void *, int, int), void *opaque)
 {
-    struct wm8750_s *s = (struct wm8750_s *) i2c->opaque;
+    struct wm8750_s *s = (struct wm8750_s *) i2c;
     s->data_req = data_req;
     s->opaque = opaque;
 }

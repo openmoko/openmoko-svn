@@ -12,10 +12,10 @@
 
 struct pxa2xx_mmci_s {
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq irq;
     void *dma;
 
-    struct sd_state_s *card;
+    SDState *card;
 
     uint32_t status;
     uint32_t clkrt;
@@ -45,26 +45,26 @@ struct pxa2xx_mmci_s {
     int ac_width;
 };
 
-#define MMC_STRPCL	0x00	/* MMC Clock Start/Stop Register */
-#define MMC_STAT	0x04	/* MMC Status Register */
-#define MMC_CLKRT	0x08	/* MMC Clock Rate Register */
-#define MMC_SPI		0x0c	/* MMC SPI Mode Register */
-#define MMC_CMDAT	0x10	/* MMC Command/Data Register */
-#define MMC_RESTO	0x14	/* MMC Response Time-Out Register */
-#define MMC_RDTO	0x18	/* MMC Read Time-Out Register */
-#define MMC_BLKLEN	0x1c	/* MMC Block Length Register */
-#define MMC_NUMBLK	0x20	/* MMC Number of Blocks Register */
-#define MMC_PRTBUF	0x24	/* MMC Buffer Partly Full Register */
-#define MMC_I_MASK	0x28	/* MMC Interrupt Mask Register */
-#define MMC_I_REG	0x2c	/* MMC Interrupt Request Register */
-#define MMC_CMD		0x30	/* MMC Command Register */
-#define MMC_ARGH	0x34	/* MMC Argument High Register */
-#define MMC_ARGL	0x38	/* MMC Argument Low Register */
+#define MMC_STRPCL	0x00	/* MMC Clock Start/Stop register */
+#define MMC_STAT	0x04	/* MMC Status register */
+#define MMC_CLKRT	0x08	/* MMC Clock Rate register */
+#define MMC_SPI		0x0c	/* MMC SPI Mode register */
+#define MMC_CMDAT	0x10	/* MMC Command/Data register */
+#define MMC_RESTO	0x14	/* MMC Response Time-Out register */
+#define MMC_RDTO	0x18	/* MMC Read Time-Out register */
+#define MMC_BLKLEN	0x1c	/* MMC Block Length register */
+#define MMC_NUMBLK	0x20	/* MMC Number of Blocks register */
+#define MMC_PRTBUF	0x24	/* MMC Buffer Partly Full register */
+#define MMC_I_MASK	0x28	/* MMC Interrupt Mask register */
+#define MMC_I_REG	0x2c	/* MMC Interrupt Request register */
+#define MMC_CMD		0x30	/* MMC Command register */
+#define MMC_ARGH	0x34	/* MMC Argument High register */
+#define MMC_ARGL	0x38	/* MMC Argument Low register */
 #define MMC_RES		0x3c	/* MMC Response FIFO */
 #define MMC_RXFIFO	0x40	/* MMC Receive FIFO */
 #define MMC_TXFIFO	0x44	/* MMC Transmit FIFO */
-#define MMC_RDWAIT	0x48	/* MMC RD_WAIT Register */
-#define MMC_BLKS_REM	0x4c	/* MMC Blocks Remaining Register */
+#define MMC_RDWAIT	0x48	/* MMC RD_WAIT register */
+#define MMC_BLKS_REM	0x4c	/* MMC Blocks Remaining register */
 
 /* Bitfield masks */
 #define STRPCL_STOP_CLK	(1 << 0)
@@ -102,13 +102,13 @@ static void pxa2xx_mmci_int_update(struct pxa2xx_mmci_s *s)
     if (s->cmdat & CMDAT_DMA_EN) {
         mask |= INT_RXFIFO_REQ | INT_TXFIFO_REQ;
 
-        pic_set_irq_new(s->dma, PXA2XX_RX_RQ_MMCI,
-                        !!(s->intreq & INT_RXFIFO_REQ));
-        pic_set_irq_new(s->dma, PXA2XX_TX_RQ_MMCI,
-                        !!(s->intreq & INT_TXFIFO_REQ));
+        pxa2xx_dma_request((struct pxa2xx_dma_state_s *) s->dma,
+                        PXA2XX_RX_RQ_MMCI, !!(s->intreq & INT_RXFIFO_REQ));
+        pxa2xx_dma_request((struct pxa2xx_dma_state_s *) s->dma,
+                        PXA2XX_TX_RQ_MMCI, !!(s->intreq & INT_TXFIFO_REQ));
     }
 
-    pic_set_irq_new(s->pic, PXA2XX_PIC_MMC, !!(s->intreq & ~mask));
+    qemu_set_irq(s->irq, !!(s->intreq & ~mask));
 }
 
 static void pxa2xx_mmci_fifo_update(struct pxa2xx_mmci_s *s)
@@ -118,7 +118,7 @@ static void pxa2xx_mmci_fifo_update(struct pxa2xx_mmci_s *s)
 
     if (s->cmdat & CMDAT_WR_RD) {
         while (s->bytesleft && s->tx_len) {
-            sd_write_datline(s->card, s->tx_fifo[s->tx_start ++]);
+            sd_write_data(s->card, s->tx_fifo[s->tx_start ++]);
             s->tx_start &= 0x1f;
             s->tx_len --;
             s->bytesleft --;
@@ -128,7 +128,7 @@ static void pxa2xx_mmci_fifo_update(struct pxa2xx_mmci_s *s)
     } else
         while (s->bytesleft && s->rx_len < 32) {
             s->rx_fifo[(s->rx_start + (s->rx_len ++)) & 0x1f] =
-                sd_read_datline(s->card);
+                sd_read_data(s->card);
             s->bytesleft --;
             s->intreq |= INT_RXFIFO_REQ;
         }
@@ -149,9 +149,9 @@ static void pxa2xx_mmci_fifo_update(struct pxa2xx_mmci_s *s)
 
 static void pxa2xx_mmci_wakequeues(struct pxa2xx_mmci_s *s)
 {
-    int rsplen;
+    int rsplen, i;
     struct sd_request_s request;
-    union sd_response_u response;
+    uint8_t response[16];
 
     s->active = 1;
     s->rx_len = 0;
@@ -162,53 +162,36 @@ static void pxa2xx_mmci_wakequeues(struct pxa2xx_mmci_s *s)
     request.arg = s->arg;
     request.crc = 0;	/* FIXME */
 
-    response = sd_write_cmdline(s->card, request, &rsplen);
+    rsplen = sd_do_command(s->card, &request, response);
     s->intreq |= INT_END_CMD;
 
     memset(s->resp_fifo, 0, sizeof(s->resp_fifo));
     switch (s->cmdat & CMDAT_RES_TYPE) {
-#define PXAMMCI_RESP(wd, value)	\
-        s->resp_fifo[(wd) + 0] |= (value) >> 8;	\
-        s->resp_fifo[(wd) + 1] |= (value) << 8;
+#define PXAMMCI_RESP(wd, value0, value1)	\
+        s->resp_fifo[(wd) + 0] |= (value0);	\
+        s->resp_fifo[(wd) + 1] |= (value1) << 8;
     case 0:	/* No response */
         goto complete;
 
     case 1:	/* R1, R4, R5 or R6 */
-        if (rsplen < 48)
+        if (rsplen < 4)
             goto timeout;
-
-        if (request.cmd == 3) {	/* R6 */
-            PXAMMCI_RESP(0, response.r6.arg);
-            PXAMMCI_RESP(1, response.r6.status);
-        } else {
-            PXAMMCI_RESP(0, response.r1.status >> 16);
-            PXAMMCI_RESP(1, response.r1.status & 0x0000ffff);
-        }
         goto complete;
 
     case 2:	/* R2 */
-        if (rsplen < 128)
+        if (rsplen < 16)
             goto timeout;
-
-        PXAMMCI_RESP(0, bswap16(response.r2.reg[0]));
-        PXAMMCI_RESP(1, bswap16(response.r2.reg[1]));
-        PXAMMCI_RESP(2, bswap16(response.r2.reg[2]));
-        PXAMMCI_RESP(3, bswap16(response.r2.reg[3]));
-        PXAMMCI_RESP(4, bswap16(response.r2.reg[4]));
-        PXAMMCI_RESP(5, bswap16(response.r2.reg[5]));
-        PXAMMCI_RESP(6, bswap16(response.r2.reg[6]));
-        PXAMMCI_RESP(7, bswap16(response.r2.reg[7]));
         goto complete;
 
     case 3:	/* R3 */
-        if (rsplen < 32)
+        if (rsplen < 4)
             goto timeout;
-
-        PXAMMCI_RESP(0, response.r3.ocr_reg >> 16);
-        PXAMMCI_RESP(1, response.r3.ocr_reg & 0x0000ffff);
         goto complete;
 
     complete:
+        for (i = 0; rsplen > 0; i ++, rsplen -= 2) {
+            PXAMMCI_RESP(i, response[i * 2], response[i * 2 + 1]);
+        }
         s->status |= STAT_END_CMDRES;
 
         if (!(s->cmdat & CMDAT_DATA_EN))
@@ -284,7 +267,8 @@ static uint32_t pxa2xx_mmci_read(void *opaque, target_phys_addr_t offset)
     case MMC_BLKS_REM:
         return s->numblk;
     default:
-        cpu_abort(cpu_single_env, "%s: Bad offset %x\n", __FUNCTION__, offset);
+        cpu_abort(cpu_single_env, "%s: Bad offset " REG_FMT "\n",
+                        __FUNCTION__, offset);
     }
 
     return 0;
@@ -397,7 +381,8 @@ static void pxa2xx_mmci_write(void *opaque,
         break;
 
     default:
-        cpu_abort(cpu_single_env, "%s: Bad offset %x\n", __FUNCTION__, offset);
+        cpu_abort(cpu_single_env, "%s: Bad offset " REG_FMT "\n",
+                        __FUNCTION__, offset);
     }
 }
 
@@ -459,14 +444,14 @@ static CPUWriteMemoryFunc *pxa2xx_mmci_writefn[] = {
 };
 
 struct pxa2xx_mmci_s *pxa2xx_mmci_init(target_phys_addr_t base,
-                void *pic, void *dma)
+                qemu_irq irq, void *dma)
 {
     int iomemtype;
     struct pxa2xx_mmci_s *s;
 
     s = (struct pxa2xx_mmci_s *) qemu_mallocz(sizeof(struct pxa2xx_mmci_s));
     s->base = base;
-    s->pic = pic;
+    s->irq = irq;
     s->dma = dma;
 
     iomemtype = cpu_register_io_memory(0, pxa2xx_mmci_readfn,
@@ -474,7 +459,7 @@ struct pxa2xx_mmci_s *pxa2xx_mmci_init(target_phys_addr_t base,
     cpu_register_physical_memory(base, 0x000fffff, iomemtype);
 
     /* Instantiate the actual storage */
-    s->card = sd_init();
+    s->card = sd_init(sd_bdrv);
 
     return s;
 }

@@ -16,10 +16,8 @@ struct pxa2xx_pcmcia_s {
     target_phys_addr_t attr_base;
     target_phys_addr_t io_base;
 
-    void *pic;
-    int irq;
-    int cd_irq;
-    void (*set_irq)(void *opaque, int line, int level);
+    qemu_irq irq;
+    qemu_irq cd_irq;
 };
 
 static uint32_t pxa2xx_pcmcia_common_read(void *opaque,
@@ -133,10 +131,10 @@ static CPUWriteMemoryFunc *pxa2xx_pcmcia_io_writefn[] = {
 static void pxa2xx_pcmcia_set_irq(void *opaque, int line, int level)
 {
     struct pxa2xx_pcmcia_s *s = (struct pxa2xx_pcmcia_s *) opaque;
-    if (!s->set_irq)
+    if (!s->irq)
         return;
 
-    s->set_irq(s->pic, s->irq, level);
+    qemu_set_irq(s->irq, level);
 }
 
 struct pxa2xx_pcmcia_s *pxa2xx_pcmcia_init(target_phys_addr_t base)
@@ -171,8 +169,7 @@ struct pxa2xx_pcmcia_s *pxa2xx_pcmcia_init(target_phys_addr_t base)
         s->slot.slot_string = "PXA PC Card Socket 1";
     else
         s->slot.slot_string = "PXA PC Card Socket 0";
-    s->slot.opaque = s;
-    s->slot.set_irq = pxa2xx_pcmcia_set_irq;
+    s->slot.irq = qemu_allocate_irqs(pxa2xx_pcmcia_set_irq, s, 1)[0];
     pcmcia_socket_register(&s->slot);
     return s;
 }
@@ -184,8 +181,8 @@ int pxa2xx_pcmcia_attach(void *opaque, struct pcmcia_card_s *card)
     if (s->slot.attached)
         return -EEXIST;
 
-    if (s->set_irq) {
-        s->set_irq(s->pic, s->cd_irq, 1);
+    if (s->cd_irq) {
+        qemu_irq_raise(s->cd_irq);
     }
 
     s->card = card;
@@ -210,21 +207,18 @@ int pxa2xx_pcmcia_dettach(void *opaque)
 
     s->slot.attached = 0;
 
-    if (s->set_irq) {
-        s->set_irq(s->pic, s->irq, 0);
-        s->set_irq(s->pic, s->cd_irq, 0);
-    }
+    if (s->irq)
+        qemu_irq_lower(s->irq);
+    if (s->cd_irq)
+        qemu_irq_lower(s->cd_irq);
 
     return 0;
 }
 
 /* Who to notify on card events */
-void pxa2xx_pcmcia_set_irq_cb(void *opaque, void (*set_irq)(void *opaque,
-                        int line, int level), int irq, int cd_irq, void *pic)
+void pxa2xx_pcmcia_set_irq_cb(void *opaque, qemu_irq irq, qemu_irq cd_irq)
 {
     struct pxa2xx_pcmcia_s *s = (struct pxa2xx_pcmcia_s *) opaque;
-    s->set_irq = set_irq;
-    s->pic = pic;
     s->irq = irq;
     s->cd_irq = cd_irq;
 }

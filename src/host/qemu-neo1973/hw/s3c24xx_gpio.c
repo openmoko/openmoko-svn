@@ -10,10 +10,10 @@
 
 #define S3C_IO_BANKS	8
 
-struct s3c_gpio_state_s {
-    s3c_pic_handler_t handler;	/* Modelled as an interrupt controller */
+struct s3c_gpio_state_s {	/* Modelled as an interrupt controller */
     target_phys_addr_t base;
-    void *pic;
+    qemu_irq *pic;
+    qemu_irq *in;
 
     struct {
         int n;
@@ -21,10 +21,7 @@ struct s3c_gpio_state_s {
         uint32_t dat;
         uint32_t up;
         uint32_t mask;
-        struct {
-            gpio_handler_t fn;
-            void *opaque;
-        } handler[32];
+        qemu_irq handler[32];
     } bank[S3C_IO_BANKS];
 
     uint32_t inform[2];
@@ -44,18 +41,18 @@ static inline void s3c_gpio_extint(struct s3c_gpio_state_s *s, int irq)
     s->eintpend |= (1 << irq) & 0x00fffff0;
     switch (irq) {
     case 0 ... 3:
-        pic_set_irq_new(s->pic, S3C_PIC_EINT0 + irq, 1);
+        qemu_irq_raise(s->pic[S3C_PIC_EINT0 + irq]);
         break;
     case 4 ... 7:
-        pic_set_irq_new(s->pic, S3C_PIC_EINT4, 1);
+        qemu_irq_raise(s->pic[S3C_PIC_EINT4]);
         break;
     case 8 ... 23:
-        pic_set_irq_new(s->pic, S3C_PIC_EINT8, 1);
+        qemu_irq_raise(s->pic[S3C_PIC_EINT8]);
         break;
     }
 }
 
-void s3c_gpio_set(void *opaque, int line, int level)
+static void s3c_gpio_set(void *opaque, int line, int level)
 {
     struct s3c_gpio_state_s *s = (struct s3c_gpio_state_s *) opaque;
     int e, eint, bank = line >> 5;
@@ -106,15 +103,18 @@ void s3c_gpio_set(void *opaque, int line, int level)
     }
 }
 
-void s3c_gpio_handler_set(struct s3c_gpio_state_s *s, int line,
-                gpio_handler_t handler, void *opaque)
+qemu_irq *s3c_gpio_in_get(struct s3c_gpio_state_s *s)
+{
+    return s->in;
+}
+
+void s3c_gpio_out_set(struct s3c_gpio_state_s *s, int line, qemu_irq handler)
 {
     int bank = line >> 5;
     line &= 0x1f;
     if (bank >= S3C_IO_BANKS || line >= s->bank[bank].n)
         cpu_abort(cpu_single_env, "%s: No I/O port %i\n", __FUNCTION__, line);
-    s->bank[bank].handler[line].fn = handler;
-    s->bank[bank].handler[line].opaque = opaque;
+    s->bank[bank].handler[line] = handler;
 }
 
 void s3c_gpio_reset(struct s3c_gpio_state_s *s)
@@ -281,17 +281,11 @@ static void s3c_gpio_write(void *opaque, target_phys_addr_t addr,
         s->bank[bank].dat = value;
         while ((ln = ffs(diff))) {
             ln --;
-            if (s->bank[bank].handler[ln].fn) {
+            if (s->bank[bank].handler[ln]) {
                 if (bank && ((s->bank[bank].con >> (2 * ln)) & 3) == 1)
-                    s->bank[bank].handler[ln].fn(
-                                    (bank << 5) | ln,
-                                    (value >> ln) & 1,
-                                    s->bank[bank].handler[ln].opaque);
+                    qemu_set_irq(s->bank[bank].handler[ln], (value >> ln) & 1);
                 else if (!bank && ((s->bank[bank].con >> ln) & 1) == 0)
-                    s->bank[bank].handler[ln].fn(
-                                    (bank << 5) | ln,
-                                    (value >> ln) & 1,
-                                    s->bank[bank].handler[ln].opaque);
+                    qemu_set_irq(s->bank[bank].handler[ln], (value >> ln) & 1);
             }
             diff &= ~(1 << ln);
         }
@@ -316,7 +310,7 @@ static CPUWriteMemoryFunc *s3c_gpio_writefn[] = {
     s3c_gpio_write,
 };
 
-struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, void *pic)
+struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic)
 {
     int iomemtype;
     struct s3c_gpio_state_s *s = (struct s3c_gpio_state_s *)
@@ -324,7 +318,7 @@ struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, void *pic)
 
     s->base = base;
     s->pic = pic;
-    s->handler = s3c_gpio_set;
+    s->in = qemu_allocate_irqs(s3c_gpio_set, s, S3C_GP_MAX);
 
     s->bank[0].n = 23;
     s->bank[1].n = 11;

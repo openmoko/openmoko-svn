@@ -46,7 +46,7 @@ typedef struct USBMouseState {
 static const uint8_t qemu_mouse_dev_descriptor[] = {
 	0x12,       /*  u8 bLength; */
 	0x01,       /*  u8 bDescriptorType; Device */
-	0x10, 0x00, /*  u16 bcdUSB; v1.0 */
+	0x00, 0x01, /*  u16 bcdUSB; v1.0 */
 
 	0x00,	    /*  u8  bDeviceClass; */
 	0x00,	    /*  u8  bDeviceSubClass; */
@@ -170,7 +170,7 @@ static const uint8_t qemu_tablet_config_descriptor[] = {
 	0x81,       /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
  	0x03,       /*  u8  ep_bmAttributes; Interrupt */
  	0x08, 0x00, /*  u16 ep_wMaxPacketSize; */
-	0x03,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
+	0x0a,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
 };
 
 static const uint8_t qemu_mouse_hid_report_descriptor[] = {

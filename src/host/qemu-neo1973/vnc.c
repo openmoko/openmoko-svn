@@ -68,6 +68,13 @@ struct VncState
     int depth; /* internal VNC frame buffer byte per pixel */
     int has_resize;
     int has_hextile;
+    int has_pointer_type_change;
+    int absolute;
+    int last_x;
+    int last_y;
+
+    const char *display;
+
     Buffer output;
     Buffer input;
     kbd_layout_t *kbd_layout;
@@ -84,6 +91,24 @@ struct VncState
     /* input */
     uint8_t modifiers_state[256];
 };
+
+static VncState *vnc_state; /* needed for info vnc */
+
+void do_info_vnc(void)
+{
+    if (vnc_state == NULL)
+	term_printf("VNC server disabled\n");
+    else {
+	term_printf("VNC server active on: ");
+	term_print_filename(vnc_state->display);
+	term_printf("\n");
+
+	if (vnc_state->csock == -1)
+	    term_printf("No client connected\n");
+	else
+	    term_printf("Client connected\n");
+    }
+}
 
 /* TODO
    1) Get the queue working for IO.
@@ -671,6 +696,19 @@ static void client_cut_text(VncState *vs, size_t len, char *text)
 {
 }
 
+static void check_pointer_type_change(VncState *vs, int absolute)
+{
+    if (vs->has_pointer_type_change && vs->absolute != absolute) {
+	vnc_write_u8(vs, 0);
+	vnc_write_u8(vs, 0);
+	vnc_write_u16(vs, 1);
+	vnc_framebuffer_update(vs, absolute, 0,
+			       vs->ds->width, vs->ds->height, -257);
+	vnc_flush(vs);
+    }
+    vs->absolute = absolute;
+}
+
 static void pointer_event(VncState *vs, int button_mask, int x, int y)
 {
     int buttons = 0;
@@ -686,21 +724,26 @@ static void pointer_event(VncState *vs, int button_mask, int x, int y)
 	dz = -1;
     if (button_mask & 0x10)
 	dz = 1;
-	    
-    if (kbd_mouse_is_absolute()) {
+
+    if (vs->absolute) {
 	kbd_mouse_event(x * 0x7FFF / vs->ds->width,
 			y * 0x7FFF / vs->ds->height,
 			dz, buttons);
+    } else if (vs->has_pointer_type_change) {
+	x -= 0x7FFF;
+	y -= 0x7FFF;
+
+	kbd_mouse_event(x, y, dz, buttons);
     } else {
-	static int last_x = -1;
-	static int last_y = -1;
-
-	if (last_x != -1)
-	    kbd_mouse_event(x - last_x, y - last_y, dz, buttons);
-
-	last_x = x;
-	last_y = y;
+	if (vs->last_x != -1)
+	    kbd_mouse_event(x - vs->last_x,
+			    y - vs->last_y,
+			    dz, buttons);
+	vs->last_x = x;
+	vs->last_y = y;
     }
+
+    check_pointer_type_change(vs, kbd_mouse_is_absolute());
 }
 
 static void reset_keys(VncState *vs)
@@ -809,6 +852,15 @@ static void framebuffer_update_request(VncState *vs, int incremental,
 				       int x_position, int y_position,
 				       int w, int h)
 {
+    if (x_position > vs->ds->width)
+        x_position = vs->ds->width;
+    if (y_position > vs->ds->height)
+        y_position = vs->ds->height;
+    if (x_position + w >= vs->ds->width)
+        w = vs->ds->width  - x_position;
+    if (y_position + h >= vs->ds->height)
+        h = vs->ds->height - y_position;
+
     int i;
     vs->need_update = 1;
     if (!incremental) {
@@ -829,6 +881,8 @@ static void set_encodings(VncState *vs, int32_t *encodings, size_t n_encodings)
 
     vs->has_hextile = 0;
     vs->has_resize = 0;
+    vs->has_pointer_type_change = 0;
+    vs->absolute = -1;
     vs->ds->dpy_copy = NULL;
 
     for (i = n_encodings - 1; i >= 0; i--) {
@@ -845,10 +899,15 @@ static void set_encodings(VncState *vs, int32_t *encodings, size_t n_encodings)
 	case -223: /* DesktopResize */
 	    vs->has_resize = 1;
 	    break;
+	case -257:
+	    vs->has_pointer_type_change = 1;
+	    break;
 	default:
 	    break;
 	}
     }
+
+    check_pointer_type_change(vs, kbd_mouse_is_absolute());
 }
 
 static int compute_nbits(unsigned int val)
@@ -1006,6 +1065,8 @@ static int protocol_client_msg(VncState *vs, char *data, size_t len)
 static int protocol_client_init(VncState *vs, char *data, size_t len)
 {
     char pad[3] = { 0, 0, 0 };
+    char buf[1024];
+    int size;
 
     vs->width = vs->ds->width;
     vs->height = vs->ds->height;
@@ -1050,8 +1111,13 @@ static int protocol_client_init(VncState *vs, char *data, size_t len)
 	
     vnc_write(vs, pad, 3);           /* padding */
 
-    vnc_write_u32(vs, 4);        
-    vnc_write(vs, "QEMU", 4);
+    if (qemu_name)
+        size = snprintf(buf, sizeof(buf), "QEMU (%s)", qemu_name);
+    else
+        size = snprintf(buf, sizeof(buf), "QEMU");
+
+    vnc_write_u32(vs, size);
+    vnc_write(vs, buf, size);
     vnc_flush(vs);
 
     vnc_read_when(vs, protocol_client_msg, 1);
@@ -1120,10 +1186,14 @@ void vnc_display_init(DisplayState *ds, const char *arg)
 	exit(1);
 
     ds->opaque = vs;
+    vnc_state = vs;
+    vs->display = arg;
 
     vs->lsock = -1;
     vs->csock = -1;
     vs->depth = 4;
+    vs->last_x = -1;
+    vs->last_y = -1;
 
     vs->ds = ds;
 

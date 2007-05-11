@@ -56,15 +56,15 @@
 
 struct neo_board_s {
     struct s3c_state_s *cpu;
-    struct i2c_slave_s *pmu;
-    struct i2c_slave_s *wm;
-    struct i2c_slave_s *lcm;
+    i2c_slave *pmu;
+    i2c_slave *wm;
+    i2c_slave *lcm;
     CharDriverState *modem;
-    void *kbd_pic;
+    qemu_irq *kbd_pic;
 };
 
 /* Handlers for output ports */
-static void neo_bl_switch(int line, int level, void *opaque)
+static void neo_bl_switch(void *opaque, int line, int level)
 {
     neo_printf("LCD Backlight now %s.\n", level ? "on" : "off");
 }
@@ -80,46 +80,46 @@ static void neo_bl_intensity(int line, int level, void *opaque)
 #endif
 }
 
-static void neo_gpspwr_switch(int line, int level, void *opaque)
+static void neo_gpspwr_switch(void *opaque, int line, int level)
 {
     neo_printf("GPS powered %s.\n", level ? "up" : "down");
 }
 
-static void neo_modem_rst_switch(int line, int level, void *opaque)
+static void neo_modem_rst_switch(void *opaque, int line, int level)
 {
     if (level)
         neo_printf("Modem reset.\n");
 }
 
-static void neo_modem_switch(int line, int level, void *opaque)
+static void neo_modem_switch(void *opaque, int line, int level)
 {
     struct neo_board_s *s = (struct neo_board_s *) opaque;
     modem_enable(s->modem, level);
     neo_printf("Modem powered %s.\n", level ? "up" : "down");
 }
 
-static void neo_lcd_rst_switch(int line, int level, void *opaque)
+static void neo_lcd_rst_switch(void *opaque, int line, int level)
 {
     if (level)
         neo_printf("LCD reset.\n");
 }
 
-static void neo_vib_switch(int line, int level, void *opaque)
+static void neo_vib_switch(void *opaque, int line, int level)
 {
     neo_printf("%s.\n", level ? "Buzz, buzz" : "Vibrator stopped");
 }
 
-static void neo_gsm_switch(int line, int level, void *opaque)
+static void neo_gsm_switch(void *opaque, int line, int level)
 {
     neo_printf("GSM %sabled.\n", level ? "dis" : "en");
 }
 
-static void neo_bt_switch(int line, int level, void *opaque)
+static void neo_bt_switch(void *opaque, int line, int level)
 {
     neo_printf("Bluetooth transciever %sabled.\n", level ? "en" : "dis");
 }
 
-static void neo_gps_switch(int line, int level, void *opaque)
+static void neo_gps_switch(void *opaque, int line, int level)
 {
     neo_printf("GPS %sV supply is now %s.\n",
 #ifdef GTA01Bv3
@@ -130,19 +130,19 @@ static void neo_gps_switch(int line, int level, void *opaque)
                     level ? "on" : "off");
 }
 
-static void neo_gps_rst_switch(int line, int level, void *opaque)
+static void neo_gps_rst_switch(void *opaque, int line, int level)
 {
     if (level)
         neo_printf("GPS reset.\n");
 }
 
 /* Handlers for input ports */
-static void neo_mmc_cover_switch(void *pic, int in)
+static void neo_mmc_cover_switch(void *irq, int in)
 {
-    pic_set_irq_new(pic, GTA01_IRQ_nSD_DETECT, !in);
+    qemu_set_irq((qemu_irq) irq, !in);
 }
 
-static void neo_mmc_writeprotect_switch(void *pic, int wp)
+static void neo_mmc_writeprotect_switch(void *irq, int wp)
 {
 }
 
@@ -152,10 +152,10 @@ static void neo_kbd_handler(void *opaque, int keycode)
     struct neo_board_s *s = (struct neo_board_s *) opaque;
     switch (keycode & 0x7f) {
     case 0x1c:	/* Return */
-        pic_set_irq_new(s->kbd_pic, GTA01_IRQ_911_KEY, !(keycode & 0x80));
+        qemu_set_irq(s->kbd_pic[GTA01_IRQ_911_KEY], !(keycode & 0x80));
         break;
     case 0x39:	/* Space */
-        pic_set_irq_new(s->kbd_pic, GTA01_IRQ_HOLD_KEY, !(keycode & 0x80));
+        qemu_set_irq(s->kbd_pic[GTA01_IRQ_HOLD_KEY], !(keycode & 0x80));
         pcf_onkey_set(s->pmu, !(keycode & 80));	/* Active LOW */
         break;
     }
@@ -163,45 +163,47 @@ static void neo_kbd_handler(void *opaque, int keycode)
 
 static void neo_kbd_init(struct neo_board_s *s)
 {
-    s->kbd_pic = s->cpu->io;
+    s->kbd_pic = s3c_gpio_in_get(s->cpu->io);
     qemu_add_kbd_event_handler(neo_kbd_handler, s);
 }
 
 static void neo_gpio_setup(struct neo_board_s *s)
 {
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_BACKLIGHT,
-                    neo_bl_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_PWRON,
-                    neo_gpspwr_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_MODEM_RST,
-                    neo_modem_rst_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_MODEM_ON,
-                    neo_modem_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_LCD_RESET,
-                    neo_lcd_rst_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON,
-                    neo_vib_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON2,
-                    neo_vib_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01v3_GPIO_nGSM_EN,
-                    neo_gsm_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01Bv2_GPIO_nGSM_EN,
-                    neo_gsm_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_BT_EN,
-                    neo_bt_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_EN_2V8,
-                    neo_gps_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_EN_3V,
-                    neo_gps_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_EN_3V3,
-                    neo_gps_switch, s);
-    s3c_gpio_handler_set(s->cpu->io, GTA01_GPIO_GPS_RESET,
-                    neo_gps_rst_switch, s);
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_BACKLIGHT,
+                    *qemu_allocate_irqs(neo_bl_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_PWRON,
+                    *qemu_allocate_irqs(neo_gpspwr_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_MODEM_RST,
+                    *qemu_allocate_irqs(neo_modem_rst_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_MODEM_ON,
+                    *qemu_allocate_irqs(neo_modem_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_LCD_RESET,
+                    *qemu_allocate_irqs(neo_lcd_rst_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON,
+                    *qemu_allocate_irqs(neo_vib_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON2,
+                    *qemu_allocate_irqs(neo_vib_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01v3_GPIO_nGSM_EN,
+                    *qemu_allocate_irqs(neo_gsm_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01Bv2_GPIO_nGSM_EN,
+                    *qemu_allocate_irqs(neo_gsm_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_BT_EN,
+                    *qemu_allocate_irqs(neo_bt_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_EN_2V8,
+                    *qemu_allocate_irqs(neo_gps_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_EN_3V,
+                    *qemu_allocate_irqs(neo_gps_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_EN_3V3,
+                    *qemu_allocate_irqs(neo_gps_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_RESET,
+                    *qemu_allocate_irqs(neo_gps_rst_switch, s, 1));
 
     s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
     /* MMC/SD host */
-    s3c_mmci_handlers(s->cpu->mmci, s->cpu->io, neo_mmc_writeprotect_switch,
+    s3c_mmci_handlers(s->cpu->mmci,
+                    s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_nSD_DETECT],
+                    neo_mmc_writeprotect_switch,
                     neo_mmc_cover_switch);
 }
 
@@ -214,48 +216,47 @@ static void neo_gpio_setup(struct neo_board_s *s)
 
 /* National Semiconductor LM4857 Boomer audio amplifier */
 struct lm4857_s {
-    int i2c_dir;
-    struct i2c_slave_s i2c;
+    i2c_slave i2c;
     uint8_t regs[4];
 };
 
-void lm_reset(struct i2c_slave_s *i2c)
+void lm_reset(i2c_slave *i2c)
 {
-    struct lm4857_s *s = (struct lm4857_s *) i2c->opaque;
+    struct lm4857_s *s = (struct lm4857_s *) i2c;
     memset(s->regs, 0, sizeof(s->regs));
 }
 
-static void lm_start(void *opaque, int dir)
+static void lm_event(i2c_slave *i2c, enum i2c_event event)
 {
-    struct lm4857_s *s = (struct lm4857_s *) opaque;
-    s->i2c_dir = dir;
 }
 
-static int lm_tx(void *opaque, uint8_t *data, int len)
+static int lm_rx(i2c_slave *i2c)
 {
-    struct lm4857_s *s = (struct lm4857_s *) opaque;
+    return 0x00;
+}
+
+static int lm_tx(i2c_slave *i2c, uint8_t data)
+{
+    struct lm4857_s *s = (struct lm4857_s *) i2c;
     int reg, value;
-    if (s->i2c_dir)
-        return 1;
 
-    while (len --) {
-        reg = *data >> 6;
-        value = *(data ++) & 0x3f;
+    reg = data >> 6;
+    value = data & 0x3f;
 
-        if ((reg == 1 || reg == 2) && ((s->regs[reg] ^ value) & (1 << 5)))
-            printf("%s: 3D enhance %s.\n", __FUNCTION__,
-                            (value & (1 << 5)) ? "On" : "Off");
-        s->regs[reg] = value;
-    }
+    if ((reg == 1 || reg == 2) && ((s->regs[reg] ^ value) & (1 << 5)))
+        printf("%s: 3D enhance %s.\n", __FUNCTION__,
+                        (value & (1 << 5)) ? "On" : "Off");
+    s->regs[reg] = value;
     return 0;
 }
 
-struct i2c_slave_s *lm4857_init()
+i2c_slave *lm4857_init(i2c_bus *bus)
 {
-    struct lm4857_s *s = qemu_mallocz(sizeof(struct lm4857_s));
-    s->i2c.opaque = s;
-    s->i2c.tx = lm_tx;
-    s->i2c.start = lm_start;
+    struct lm4857_s *s = (struct lm4857_s *)
+            i2c_slave_init(bus, 0, sizeof(struct lm4857_s));
+    s->i2c.event = lm_event;
+    s->i2c.send = lm_tx;
+    s->i2c.recv = lm_rx;
 
     lm_reset(&s->i2c);
 
@@ -269,34 +270,32 @@ struct i2c_slave_s *lm4857_init()
 
 static void neo_i2c_setup(struct neo_board_s *s)
 {
-    struct i2c_bus_s *bus = (struct i2c_bus_s *)
-            qemu_mallocz(sizeof(struct i2c_bus_s));
+    /* Attach the CPU on one end of our I2C bus.  */
+    i2c_bus *bus = s3c_i2c_bus(s->cpu->i2c);
 #ifdef HAS_AUDIO
     AudioState *audio;
 #endif
 
-    s->pmu = pcf5060x_init(s->cpu->pic, GTA01_IRQ_PCF50606, 0);
-    s->lcm = lm4857_init();
-
-    /* Attach the CPU on one end of our I2C bus.  */
-    i2c_master_attach(bus, s3c_i2c_master(s->cpu->i2c));
-
     /* Attach a PCF50606 to the bus */
-    i2c_slave_attach(bus, NEO_PMU_ADDR, s->pmu);
+    s->pmu = pcf5060x_init(bus,
+                    s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_PCF50606], 0);
+    i2c_set_slave_address(s->pmu, NEO_PMU_ADDR);
 
     /* Attach a LM4857 to the bus */
-    i2c_slave_attach(bus, NEO_AMP_ADDR, s->lcm);
+    s->lcm = lm4857_init(bus);
+    i2c_set_slave_address(s->lcm, NEO_AMP_ADDR);
 
 #ifdef HAS_AUDIO
     audio = AUD_init();
     if (!audio)
         return;
-    s->wm = wm8753_init(audio);
 
     /* Attach a WM8750 to the bus */
-    i2c_slave_attach(bus, NEO_WM_ADDR, s->wm);
+    s->wm = wm8753_init(bus, audio);
+    i2c_set_slave_address(s->wm, NEO_WM_ADDR);
+
     /* .. and to the sound interface.  */
-    s->cpu->i2s->opaque = s->wm->opaque;
+    s->cpu->i2s->opaque = s->wm;
     s->cpu->i2s->codec_out = wm8753_dac_dat;
     s->cpu->i2s->codec_in = wm8753_adc_dat;
     wm8753_data_req_set(s->wm, s->cpu->i2s->data_req, s->cpu->i2s);
@@ -329,23 +328,23 @@ static void neo_reset(void *opaque)
 static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                 DisplayState *ds, const char **fd_filename, int snapshot,
                 const char *kernel_filename, const char *kernel_cmdline,
-                const char *initrd_filename)
+                const char *initrd_filename, const char *cpu_model)
 {
     uint32_t neo_ram = 0x08000000;
     struct neo_board_s *s = (struct neo_board_s *)
             qemu_mallocz(sizeof(struct neo_board_s));
 
-    s->cpu = s3c2410_init(ds);
-
-    /* Setup memory */
-    if (ram_size < neo_ram + s->cpu->free_ram_start) {
+    /* Setup CPU & memory */
+    if (ram_size < neo_ram + S3C_SRAM_SIZE) {
         fprintf(stderr, "This platform requires %i bytes of memory\n",
-                        neo_ram + s->cpu->free_ram_start);
+                        neo_ram + S3C_SRAM_SIZE);
         exit(1);
     }
-    cpu_register_physical_memory(S3C_RAM_BASE, neo_ram,
-                    s->cpu->free_ram_start | IO_MEM_RAM);
-    s->cpu->free_ram_start += neo_ram;
+    if (cpu_model && strcmp(cpu_model, "arm920t")) {
+        fprintf(stderr, "This platform requires an ARM920T core\n");
+        exit(2);
+    }
+    s->cpu = s3c2410_init(neo_ram, ds);
 
     s3c_nand_register(s->cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
 
@@ -370,9 +369,9 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                     initrd_filename, 0x49e, S3C_RAM_BASE);
 #else
     load_image("u-boot.bin",
-                    phys_ram_base + S3C_SRAM_SIZE + 0x03f80000);
+                    phys_ram_base + 0x03f80000);
     load_image(kernel_filename,
-                    phys_ram_base + S3C_SRAM_SIZE + 0x02000000);
+                    phys_ram_base + 0x02000000);
     s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
 #endif
 

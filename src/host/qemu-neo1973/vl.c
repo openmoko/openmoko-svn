@@ -1,7 +1,7 @@
 /*
  * QEMU System Emulator
  * 
- * Copyright (c) 2003-2006 Fabrice Bellard
+ * Copyright (c) 2003-2007 Fabrice Bellard
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,22 @@
 #include <malloc.h>
 #include <linux/rtc.h>
 #include <linux/ppdev.h>
+#include <linux/parport.h>
+#else
+#include <sys/stat.h>
+#include <sys/ethernet.h>
+#include <sys/sockio.h>
+#include <arpa/inet.h>
+#include <netinet/arp.h>
+#include <netinet/in.h>
+#include <netinet/in_systm.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h> // must come after ip.h
+#include <netinet/udp.h>
+#include <netinet/tcp.h>
+#include <net/if.h>
+#include <syslog.h>
+#include <stropts.h>
 #endif
 #endif
 #endif
@@ -122,10 +138,12 @@ IOPortWriteFunc *ioport_write_table[3][MAX_IOPORTS];
 /* Note: bs_table[MAX_DISKS] is a dummy block driver if none available
    to store the VM snapshots */
 BlockDriverState *bs_table[MAX_DISKS + 1], *fd_table[MAX_FD];
+BlockDriverState *pflash_table[MAX_PFLASH];
+BlockDriverState *sd_bdrv;
+BlockDriverState *mtd_bdrv;
 /* point to the block driver where the snapshots are managed */
 BlockDriverState *bs_snapshots;
 int vga_ram_size;
-int bios_size;
 static DisplayState display_state;
 int nographic;
 const char* keyboard_layout = NULL;
@@ -139,15 +157,18 @@ QEMUTimer *gui_timer;
 int vm_running;
 int rtc_utc = 1;
 int cirrus_vga_enabled = 1;
+int vmsvga_enabled = 0;
 #ifdef TARGET_SPARC
 int graphic_width = 1024;
 int graphic_height = 768;
+int graphic_depth = 8;
 #else
 int graphic_width = 800;
 int graphic_height = 600;
-#endif
 int graphic_depth = 15;
+#endif
 int full_screen = 0;
+int no_frame = 0;
 int no_quit = 0;
 CharDriverState *serial_hds[MAX_SERIAL_PORTS];
 CharDriverState *parallel_hds[MAX_PARALLEL_PORTS];
@@ -169,13 +190,17 @@ int acpi_enabled = 1;
 int fd_bootchk = 1;
 int no_reboot = 0;
 int cursor_hide = 1;
-int snapshot = 0;
-const char *sd_filename = 0;
-const char *mtd_filename = 0;
 int graphic_rotate = 0;
 int daemonize = 0;
 const char *option_rom[MAX_OPTION_ROMS];
 int nb_option_roms;
+int semihosting_enabled = 0;
+int autostart = 1;
+const char *qemu_name;
+#ifdef TARGET_SPARC
+unsigned int nb_prom_envs = 0;
+const char *prom_envs[MAX_PROM_ENVS];
+#endif
 
 /***********************************************************/
 /* x86 ISA bus support */
@@ -186,7 +211,7 @@ PicState2 *isa_pic;
 uint32_t default_ioport_readb(void *opaque, uint32_t address)
 {
 #ifdef DEBUG_UNUSED_IOPORT
-    fprintf(stderr, "inb: port=0x%04x\n", address);
+    fprintf(stderr, "unused inb: port=0x%04x\n", address);
 #endif
     return 0xff;
 }
@@ -194,7 +219,7 @@ uint32_t default_ioport_readb(void *opaque, uint32_t address)
 void default_ioport_writeb(void *opaque, uint32_t address, uint32_t data)
 {
 #ifdef DEBUG_UNUSED_IOPORT
-    fprintf(stderr, "outb: port=0x%04x data=0x%02x\n", address, data);
+    fprintf(stderr, "unused outb: port=0x%04x data=0x%02x\n", address, data);
 #endif
 }
 
@@ -218,7 +243,7 @@ void default_ioport_writew(void *opaque, uint32_t address, uint32_t data)
 uint32_t default_ioport_readl(void *opaque, uint32_t address)
 {
 #ifdef DEBUG_UNUSED_IOPORT
-    fprintf(stderr, "inl: port=0x%04x\n", address);
+    fprintf(stderr, "unused inl: port=0x%04x\n", address);
 #endif
     return 0xffffffff;
 }
@@ -226,7 +251,7 @@ uint32_t default_ioport_readl(void *opaque, uint32_t address)
 void default_ioport_writel(void *opaque, uint32_t address, uint32_t data)
 {
 #ifdef DEBUG_UNUSED_IOPORT
-    fprintf(stderr, "outl: port=0x%04x data=0x%02x\n", address, data);
+    fprintf(stderr, "unused outl: port=0x%04x data=0x%02x\n", address, data);
 #endif
 }
 
@@ -1132,11 +1157,17 @@ void quit_timers(void)
 /***********************************************************/
 /* character device */
 
+static void qemu_chr_event(CharDriverState *s, int event)
+{
+    if (!s->chr_event)
+        return;
+    s->chr_event(s->handler_opaque, event);
+}
+
 static void qemu_chr_reset_bh(void *opaque)
 {
     CharDriverState *s = opaque;
-    if (s->chr_event)
-	s->chr_event(s, CHR_EVENT_RESET);
+    qemu_chr_event(s, CHR_EVENT_RESET);
     qemu_bh_delete(s->bh);
     s->bh = NULL;
 }
@@ -1161,6 +1192,19 @@ int qemu_chr_ioctl(CharDriverState *s, int cmd, void *arg)
     return s->chr_ioctl(s, cmd, arg);
 }
 
+int qemu_chr_can_read(CharDriverState *s)
+{
+    if (!s->chr_can_read)
+        return 0;
+    return s->chr_can_read(s->handler_opaque);
+}
+
+void qemu_chr_read(CharDriverState *s, uint8_t *buf, int len)
+{
+    s->chr_read(s->handler_opaque, buf, len);
+}
+
+
 void qemu_chr_printf(CharDriverState *s, const char *fmt, ...)
 {
     char buf[4096];
@@ -1177,27 +1221,23 @@ void qemu_chr_send_event(CharDriverState *s, int event)
         s->chr_send_event(s, event);
 }
 
-void qemu_chr_add_read_handler(CharDriverState *s, 
-                               IOCanRWHandler *fd_can_read, 
-                               IOReadHandler *fd_read, void *opaque)
+void qemu_chr_add_handlers(CharDriverState *s, 
+                           IOCanRWHandler *fd_can_read, 
+                           IOReadHandler *fd_read,
+                           IOEventHandler *fd_event,
+                           void *opaque)
 {
-    s->chr_add_read_handler(s, fd_can_read, fd_read, opaque);
+    s->chr_can_read = fd_can_read;
+    s->chr_read = fd_read;
+    s->chr_event = fd_event;
+    s->handler_opaque = opaque;
+    if (s->chr_update_read_handler)
+        s->chr_update_read_handler(s);
 }
              
-void qemu_chr_add_event_handler(CharDriverState *s, IOEventHandler *chr_event)
-{
-    s->chr_event = chr_event;
-}
-
 static int null_chr_write(CharDriverState *chr, const uint8_t *buf, int len)
 {
     return len;
-}
-
-static void null_chr_add_read_handler(CharDriverState *chr, 
-                                    IOCanRWHandler *fd_can_read, 
-                                    IOReadHandler *fd_read, void *opaque)
-{
 }
 
 static CharDriverState *qemu_chr_open_null(void)
@@ -1208,9 +1248,220 @@ static CharDriverState *qemu_chr_open_null(void)
     if (!chr)
         return NULL;
     chr->chr_write = null_chr_write;
-    chr->chr_add_read_handler = null_chr_add_read_handler;
     return chr;
 }
+
+/* MUX driver for serial I/O splitting */
+static int term_timestamps;
+static int64_t term_timestamps_start;
+#define MAX_MUX 4
+typedef struct {
+    IOCanRWHandler *chr_can_read[MAX_MUX];
+    IOReadHandler *chr_read[MAX_MUX];
+    IOEventHandler *chr_event[MAX_MUX];
+    void *ext_opaque[MAX_MUX];
+    CharDriverState *drv;
+    int mux_cnt;
+    int term_got_escape;
+    int max_size;
+} MuxDriver;
+
+
+static int mux_chr_write(CharDriverState *chr, const uint8_t *buf, int len)
+{
+    MuxDriver *d = chr->opaque;
+    int ret;
+    if (!term_timestamps) {
+        ret = d->drv->chr_write(d->drv, buf, len);
+    } else {
+        int i;
+
+        ret = 0;
+        for(i = 0; i < len; i++) {
+            ret += d->drv->chr_write(d->drv, buf+i, 1);
+            if (buf[i] == '\n') {
+                char buf1[64];
+                int64_t ti;
+                int secs;
+
+                ti = get_clock();
+                if (term_timestamps_start == -1)
+                    term_timestamps_start = ti;
+                ti -= term_timestamps_start;
+                secs = ti / 1000000000;
+                snprintf(buf1, sizeof(buf1),
+                         "[%02d:%02d:%02d.%03d] ",
+                         secs / 3600,
+                         (secs / 60) % 60,
+                         secs % 60,
+                         (int)((ti / 1000000) % 1000));
+                d->drv->chr_write(d->drv, buf1, strlen(buf1));
+            }
+        }
+    }
+    return ret;
+}
+
+static char *mux_help[] = {
+    "% h    print this help\n\r",
+    "% x    exit emulator\n\r",
+    "% s    save disk data back to file (if -snapshot)\n\r",
+    "% t    toggle console timestamps\n\r"
+    "% b    send break (magic sysrq)\n\r",
+    "% c    switch between console and monitor\n\r",
+    "% %  sends %\n\r",
+    NULL
+};
+
+static int term_escape_char = 0x01; /* ctrl-a is used for escape */
+static void mux_print_help(CharDriverState *chr)
+{
+    int i, j;
+    char ebuf[15] = "Escape-Char";
+    char cbuf[50] = "\n\r";
+
+    if (term_escape_char > 0 && term_escape_char < 26) {
+        sprintf(cbuf,"\n\r");
+        sprintf(ebuf,"C-%c", term_escape_char - 1 + 'a');
+    } else {
+        sprintf(cbuf,"\n\rEscape-Char set to Ascii: 0x%02x\n\r\n\r", term_escape_char);
+    }
+    chr->chr_write(chr, cbuf, strlen(cbuf));
+    for (i = 0; mux_help[i] != NULL; i++) {
+        for (j=0; mux_help[i][j] != '\0'; j++) {
+            if (mux_help[i][j] == '%')
+                chr->chr_write(chr, ebuf, strlen(ebuf));
+            else
+                chr->chr_write(chr, &mux_help[i][j], 1);
+        }
+    }
+}
+
+static int mux_proc_byte(CharDriverState *chr, MuxDriver *d, int ch)
+{
+    if (d->term_got_escape) {
+        d->term_got_escape = 0;
+        if (ch == term_escape_char)
+            goto send_char;
+        switch(ch) {
+        case '?':
+        case 'h':
+            mux_print_help(chr);
+            break;
+        case 'x':
+            {
+                 char *term =  "QEMU: Terminated\n\r";
+                 chr->chr_write(chr,term,strlen(term));
+                 exit(0);
+                 break;
+            }
+        case 's':
+            {
+                int i;
+                for (i = 0; i < MAX_DISKS; i++) {
+                    if (bs_table[i])
+                        bdrv_commit(bs_table[i]);
+                }
+            }
+            break;
+        case 'b':
+            if (chr->chr_event)
+                chr->chr_event(chr->opaque, CHR_EVENT_BREAK);
+            break;
+        case 'c':
+            /* Switch to the next registered device */
+            chr->focus++;
+            if (chr->focus >= d->mux_cnt)
+                chr->focus = 0;
+            break;
+       case 't':
+           term_timestamps = !term_timestamps;
+           term_timestamps_start = -1;
+           break;
+        }
+    } else if (ch == term_escape_char) {
+        d->term_got_escape = 1;
+    } else {
+    send_char:
+        return 1;
+    }
+    return 0;
+}
+
+static int mux_chr_can_read(void *opaque)
+{
+    CharDriverState *chr = opaque;
+    MuxDriver *d = chr->opaque;
+    if (d->chr_can_read[chr->focus])
+       return d->chr_can_read[chr->focus](d->ext_opaque[chr->focus]);
+    return 0;
+}
+
+static void mux_chr_read(void *opaque, const uint8_t *buf, int size)
+{
+    CharDriverState *chr = opaque;
+    MuxDriver *d = chr->opaque;
+    int i;
+    for(i = 0; i < size; i++)
+        if (mux_proc_byte(chr, d, buf[i]))
+            d->chr_read[chr->focus](d->ext_opaque[chr->focus], &buf[i], 1);
+}
+
+static void mux_chr_event(void *opaque, int event)
+{
+    CharDriverState *chr = opaque;
+    MuxDriver *d = chr->opaque;
+    int i;
+
+    /* Send the event to all registered listeners */
+    for (i = 0; i < d->mux_cnt; i++)
+        if (d->chr_event[i])
+            d->chr_event[i](d->ext_opaque[i], event);
+}
+
+static void mux_chr_update_read_handler(CharDriverState *chr)
+{
+    MuxDriver *d = chr->opaque;
+
+    if (d->mux_cnt >= MAX_MUX) {
+        fprintf(stderr, "Cannot add I/O handlers, MUX array is full\n");
+        return;
+    }
+    d->ext_opaque[d->mux_cnt] = chr->handler_opaque;
+    d->chr_can_read[d->mux_cnt] = chr->chr_can_read;
+    d->chr_read[d->mux_cnt] = chr->chr_read;
+    d->chr_event[d->mux_cnt] = chr->chr_event;
+    /* Fix up the real driver with mux routines */
+    if (d->mux_cnt == 0) {
+        qemu_chr_add_handlers(d->drv, mux_chr_can_read, mux_chr_read,
+                              mux_chr_event, chr);
+    }
+    chr->focus = d->mux_cnt;
+    d->mux_cnt++;
+}
+
+CharDriverState *qemu_chr_open_mux(CharDriverState *drv)
+{
+    CharDriverState *chr;
+    MuxDriver *d;
+
+    chr = qemu_mallocz(sizeof(CharDriverState));
+    if (!chr)
+        return NULL;
+    d = qemu_mallocz(sizeof(MuxDriver));
+    if (!d) {
+        free(chr);
+        return NULL;
+    }
+
+    chr->opaque = d;
+    d->drv = drv;
+    chr->focus = -1;
+    chr->chr_write = mux_chr_write;
+    chr->chr_update_read_handler = mux_chr_update_read_handler;
+    return chr;
+}
+
 
 #ifdef _WIN32
 
@@ -1300,16 +1551,11 @@ void socket_set_nonblock(int fd)
 
 typedef struct {
     int fd_in, fd_out;
-    IOCanRWHandler *fd_can_read; 
-    IOReadHandler *fd_read;
-    void *fd_opaque;
     int max_size;
 } FDCharDriver;
 
-#define STDIO_MAX_CLIENTS 2
-
-static int stdio_nb_clients;
-static CharDriverState *stdio_clients[STDIO_MAX_CLIENTS];
+#define STDIO_MAX_CLIENTS 1
+static int stdio_nb_clients = 0;
 
 static int fd_chr_write(CharDriverState *chr, const uint8_t *buf, int len)
 {
@@ -1322,7 +1568,7 @@ static int fd_chr_read_poll(void *opaque)
     CharDriverState *chr = opaque;
     FDCharDriver *s = chr->opaque;
 
-    s->max_size = s->fd_can_read(s->fd_opaque);
+    s->max_size = qemu_chr_can_read(chr);
     return s->max_size;
 }
 
@@ -1345,20 +1591,15 @@ static void fd_chr_read(void *opaque)
         return;
     }
     if (size > 0) {
-        s->fd_read(s->fd_opaque, buf, size);
+        qemu_chr_read(chr, buf, size);
     }
 }
 
-static void fd_chr_add_read_handler(CharDriverState *chr, 
-                                    IOCanRWHandler *fd_can_read, 
-                                    IOReadHandler *fd_read, void *opaque)
+static void fd_chr_update_read_handler(CharDriverState *chr)
 {
     FDCharDriver *s = chr->opaque;
 
     if (s->fd_in >= 0) {
-        s->fd_can_read = fd_can_read;
-        s->fd_read = fd_read;
-        s->fd_opaque = opaque;
         if (nographic && s->fd_in == 0) {
         } else {
             qemu_set_fd_handler2(s->fd_in, fd_chr_read_poll, 
@@ -1385,7 +1626,7 @@ static CharDriverState *qemu_chr_open_fd(int fd_in, int fd_out)
     s->fd_out = fd_out;
     chr->opaque = s;
     chr->chr_write = fd_chr_write;
-    chr->chr_add_read_handler = fd_chr_add_read_handler;
+    chr->chr_update_read_handler = fd_chr_update_read_handler;
 
     qemu_chr_reset(chr);
 
@@ -1427,166 +1668,45 @@ static CharDriverState *qemu_chr_open_pipe(const char *filename)
 /* for STDIO, we handle the case where several clients use it
    (nographic mode) */
 
-#define TERM_ESCAPE 0x01 /* ctrl-a is used for escape */
-
 #define TERM_FIFO_MAX_SIZE 1
 
-static int term_got_escape, client_index;
 static uint8_t term_fifo[TERM_FIFO_MAX_SIZE];
 static int term_fifo_size;
-static int term_timestamps;
-static int64_t term_timestamps_start;
-
-void term_print_help(void)
-{
-    printf("\n"
-           "C-a h    print this help\n"
-           "C-a x    exit emulator\n"
-           "C-a s    save disk data back to file (if -snapshot)\n"
-           "C-a b    send break (magic sysrq)\n"
-           "C-a t    toggle console timestamps\n"
-           "C-a c    switch between console and monitor\n"
-           "C-a C-a  send C-a\n"
-           );
-}
-
-/* called when a char is received */
-static void stdio_received_byte(int ch)
-{
-    if (term_got_escape) {
-        term_got_escape = 0;
-        switch(ch) {
-        case 'h':
-            term_print_help();
-            break;
-        case 'x':
-            exit(0);
-            break;
-        case 's': 
-            {
-                int i;
-                for (i = 0; i < MAX_DISKS; i++) {
-                    if (bs_table[i])
-                        bdrv_commit(bs_table[i]);
-                }
-            }
-            break;
-        case 'b':
-            if (client_index < stdio_nb_clients) {
-                CharDriverState *chr;
-                FDCharDriver *s;
-
-                chr = stdio_clients[client_index];
-                s = chr->opaque;
-                chr->chr_event(s->fd_opaque, CHR_EVENT_BREAK);
-            }
-            break;
-        case 'c':
-            client_index++;
-            if (client_index >= stdio_nb_clients)
-                client_index = 0;
-            if (client_index == 0) {
-                /* send a new line in the monitor to get the prompt */
-                ch = '\r';
-                goto send_char;
-            }
-            break;
-        case 't':
-            term_timestamps = !term_timestamps;
-            term_timestamps_start = -1;
-            break;
-        case TERM_ESCAPE:
-            goto send_char;
-        }
-    } else if (ch == TERM_ESCAPE) {
-        term_got_escape = 1;
-    } else {
-    send_char:
-        if (client_index < stdio_nb_clients) {
-            uint8_t buf[1];
-            CharDriverState *chr;
-            FDCharDriver *s;
-            
-            chr = stdio_clients[client_index];
-            s = chr->opaque;
-            if (s->fd_can_read(s->fd_opaque) > 0) {
-                buf[0] = ch;
-                s->fd_read(s->fd_opaque, buf, 1);
-            } else if (term_fifo_size == 0) {
-                term_fifo[term_fifo_size++] = ch;
-            }
-        }
-    }
-}
 
 static int stdio_read_poll(void *opaque)
 {
-    CharDriverState *chr;
-    FDCharDriver *s;
+    CharDriverState *chr = opaque;
 
-    if (client_index < stdio_nb_clients) {
-        chr = stdio_clients[client_index];
-        s = chr->opaque;
-        /* try to flush the queue if needed */
-        if (term_fifo_size != 0 && s->fd_can_read(s->fd_opaque) > 0) {
-            s->fd_read(s->fd_opaque, term_fifo, 1);
-            term_fifo_size = 0;
-        }
-        /* see if we can absorb more chars */
-        if (term_fifo_size == 0)
-            return 1;
-        else
-            return 0;
-    } else {
-        return 1;
+    /* try to flush the queue if needed */
+    if (term_fifo_size != 0 && qemu_chr_can_read(chr) > 0) {
+        qemu_chr_read(chr, term_fifo, 1);
+        term_fifo_size = 0;
     }
+    /* see if we can absorb more chars */
+    if (term_fifo_size == 0)
+        return 1;
+    else
+        return 0;
 }
 
 static void stdio_read(void *opaque)
 {
     int size;
     uint8_t buf[1];
-    
+    CharDriverState *chr = opaque;
+
     size = read(0, buf, 1);
     if (size == 0) {
         /* stdin has been closed. Remove it from the active list.  */
         qemu_set_fd_handler2(0, NULL, NULL, NULL, NULL);
         return;
     }
-    if (size > 0)
-        stdio_received_byte(buf[0]);
-}
-
-static int stdio_write(CharDriverState *chr, const uint8_t *buf, int len)
-{
-    FDCharDriver *s = chr->opaque;
-    if (!term_timestamps) {
-        return unix_write(s->fd_out, buf, len);
-    } else {
-        int i;
-        char buf1[64];
-
-        for(i = 0; i < len; i++) {
-            unix_write(s->fd_out, buf + i, 1);
-            if (buf[i] == '\n') {
-                int64_t ti;
-                int secs;
-
-                ti = get_clock();
-                if (term_timestamps_start == -1)
-                    term_timestamps_start = ti;
-                ti -= term_timestamps_start;
-                secs = ti / 1000000000;
-                snprintf(buf1, sizeof(buf1), 
-                         "[%02d:%02d:%02d.%03d] ",
-                         secs / 3600,
-                         (secs / 60) % 60,
-                         secs % 60,
-                         (int)((ti / 1000000) % 1000));
-                unix_write(s->fd_out, buf1, strlen(buf1));
-            }
+    if (size > 0) {
+        if (qemu_chr_can_read(chr) > 0) {
+            qemu_chr_read(chr, buf, 1);
+        } else if (term_fifo_size == 0) {
+            term_fifo[term_fifo_size++] = buf[0];
         }
-        return len;
     }
 }
 
@@ -1631,24 +1751,13 @@ static CharDriverState *qemu_chr_open_stdio(void)
 {
     CharDriverState *chr;
 
-    if (nographic) {
-        if (stdio_nb_clients >= STDIO_MAX_CLIENTS)
-            return NULL;
-        chr = qemu_chr_open_fd(0, 1);
-        chr->chr_write = stdio_write;
-        if (stdio_nb_clients == 0)
-            qemu_set_fd_handler2(0, stdio_read_poll, stdio_read, NULL, NULL);
-        client_index = stdio_nb_clients;
-    } else {
-        if (stdio_nb_clients != 0)
-            return NULL;
-        chr = qemu_chr_open_fd(0, 1);
-    }
-    stdio_clients[stdio_nb_clients++] = chr;
-    if (stdio_nb_clients == 1) {
-        /* set the terminal in raw mode */
-        term_init();
-    }
+    if (stdio_nb_clients >= STDIO_MAX_CLIENTS)
+        return NULL;
+    chr = qemu_chr_open_fd(0, 1);
+    qemu_set_fd_handler2(0, stdio_read_poll, stdio_read, NULL, chr);
+    stdio_nb_clients++;
+    term_init();
+
     return chr;
 }
 
@@ -1810,9 +1919,26 @@ static CharDriverState *qemu_chr_open_tty(const char *filename)
     return chr;
 }
 
+typedef struct {
+    int fd;
+    int mode;
+} ParallelCharDriver;
+
+static int pp_hw_mode(ParallelCharDriver *s, uint16_t mode)
+{
+    if (s->mode != mode) {
+	int m = mode;
+        if (ioctl(s->fd, PPSETMODE, &m) < 0)
+            return 0;
+	s->mode = mode;
+    }
+    return 1;
+}
+
 static int pp_ioctl(CharDriverState *chr, int cmd, void *arg)
 {
-    int fd = (int)chr->opaque;
+    ParallelCharDriver *drv = chr->opaque;
+    int fd = drv->fd;
     uint8_t b;
 
     switch(cmd) {
@@ -1829,7 +1955,10 @@ static int pp_ioctl(CharDriverState *chr, int cmd, void *arg)
     case CHR_IOCTL_PP_READ_CONTROL:
         if (ioctl(fd, PPRCONTROL, &b) < 0)
             return -ENOTSUP;
-        *(uint8_t *)arg = b;
+	/* Linux gives only the lowest bits, and no way to know data
+	   direction! For better compatibility set the fixed upper
+	   bits. */
+        *(uint8_t *)arg = b | 0xc0;
         break;
     case CHR_IOCTL_PP_WRITE_CONTROL:
         b = *(uint8_t *)arg;
@@ -1841,15 +1970,63 @@ static int pp_ioctl(CharDriverState *chr, int cmd, void *arg)
             return -ENOTSUP;
         *(uint8_t *)arg = b;
         break;
+    case CHR_IOCTL_PP_EPP_READ_ADDR:
+	if (pp_hw_mode(drv, IEEE1284_MODE_EPP|IEEE1284_ADDR)) {
+	    struct ParallelIOArg *parg = arg;
+	    int n = read(fd, parg->buffer, parg->count);
+	    if (n != parg->count) {
+		return -EIO;
+	    }
+	}
+        break;
+    case CHR_IOCTL_PP_EPP_READ:
+	if (pp_hw_mode(drv, IEEE1284_MODE_EPP)) {
+	    struct ParallelIOArg *parg = arg;
+	    int n = read(fd, parg->buffer, parg->count);
+	    if (n != parg->count) {
+		return -EIO;
+	    }
+	}
+        break;
+    case CHR_IOCTL_PP_EPP_WRITE_ADDR:
+	if (pp_hw_mode(drv, IEEE1284_MODE_EPP|IEEE1284_ADDR)) {
+	    struct ParallelIOArg *parg = arg;
+	    int n = write(fd, parg->buffer, parg->count);
+	    if (n != parg->count) {
+		return -EIO;
+	    }
+	}
+        break;
+    case CHR_IOCTL_PP_EPP_WRITE:
+	if (pp_hw_mode(drv, IEEE1284_MODE_EPP)) {
+	    struct ParallelIOArg *parg = arg;
+	    int n = write(fd, parg->buffer, parg->count);
+	    if (n != parg->count) {
+		return -EIO;
+	    }
+	}
+        break;
     default:
         return -ENOTSUP;
     }
     return 0;
 }
 
+static void pp_close(CharDriverState *chr)
+{
+    ParallelCharDriver *drv = chr->opaque;
+    int fd = drv->fd;
+
+    pp_hw_mode(drv, IEEE1284_MODE_COMPAT);
+    ioctl(fd, PPRELEASE);
+    close(fd);
+    qemu_free(drv);
+}
+
 static CharDriverState *qemu_chr_open_pp(const char *filename)
 {
     CharDriverState *chr;
+    ParallelCharDriver *drv;
     int fd;
 
     fd = open(filename, O_RDWR);
@@ -1861,15 +2038,24 @@ static CharDriverState *qemu_chr_open_pp(const char *filename)
         return NULL;
     }
 
-    chr = qemu_mallocz(sizeof(CharDriverState));
-    if (!chr) {
+    drv = qemu_mallocz(sizeof(ParallelCharDriver));
+    if (!drv) {
         close(fd);
         return NULL;
     }
-    chr->opaque = (void *)fd;
+    drv->fd = fd;
+    drv->mode = IEEE1284_MODE_COMPAT;
+
+    chr = qemu_mallocz(sizeof(CharDriverState));
+    if (!chr) {
+	qemu_free(drv);
+        close(fd);
+        return NULL;
+    }
     chr->chr_write = null_chr_write;
-    chr->chr_add_read_handler = null_chr_add_read_handler;
     chr->chr_ioctl = pp_ioctl;
+    chr->chr_close = pp_close;
+    chr->opaque = drv;
 
     qemu_chr_reset(chr);
 
@@ -1887,9 +2073,6 @@ static CharDriverState *qemu_chr_open_pty(void)
 
 #ifdef _WIN32
 typedef struct {
-    IOCanRWHandler *fd_can_read; 
-    IOReadHandler *fd_read;
-    void *win_opaque;
     int max_size;
     HANDLE hcom, hrecv, hsend;
     OVERLAPPED orecv, osend;
@@ -1905,8 +2088,10 @@ typedef struct {
 static int win_chr_poll(void *opaque);
 static int win_chr_pipe_poll(void *opaque);
 
-static void win_chr_close2(WinCharState *s)
+static void win_chr_close(CharDriverState *chr)
 {
+    WinCharState *s = chr->opaque;
+
     if (s->hsend) {
         CloseHandle(s->hsend);
         s->hsend = NULL;
@@ -1920,19 +2105,14 @@ static void win_chr_close2(WinCharState *s)
         s->hcom = NULL;
     }
     if (s->fpipe)
-        qemu_del_polling_cb(win_chr_pipe_poll, s);
+        qemu_del_polling_cb(win_chr_pipe_poll, chr);
     else
-        qemu_del_polling_cb(win_chr_poll, s);
+        qemu_del_polling_cb(win_chr_poll, chr);
 }
 
-static void win_chr_close(CharDriverState *chr)
+static int win_chr_init(CharDriverState *chr, const char *filename)
 {
     WinCharState *s = chr->opaque;
-    win_chr_close2(s);
-}
-
-static int win_chr_init(WinCharState *s, const char *filename)
-{
     COMMCONFIG comcfg;
     COMMTIMEOUTS cto = { 0, 0, 0, 0, 0};
     COMSTAT comstat;
@@ -1989,11 +2169,11 @@ static int win_chr_init(WinCharState *s, const char *filename)
         fprintf(stderr, "Failed ClearCommError\n");
         goto fail;
     }
-    qemu_add_polling_cb(win_chr_poll, s);
+    qemu_add_polling_cb(win_chr_poll, chr);
     return 0;
 
  fail:
-    win_chr_close2(s);
+    win_chr_close(chr);
     return -1;
 }
 
@@ -2031,14 +2211,17 @@ static int win_chr_write(CharDriverState *chr, const uint8_t *buf, int len1)
     return len1 - len;
 }
 
-static int win_chr_read_poll(WinCharState *s)
+static int win_chr_read_poll(CharDriverState *chr)
 {
-    s->max_size = s->fd_can_read(s->win_opaque);
+    WinCharState *s = chr->opaque;
+
+    s->max_size = qemu_chr_can_read(chr);
     return s->max_size;
 }
-            
-static void win_chr_readfile(WinCharState *s)
+
+static void win_chr_readfile(CharDriverState *chr)
 {
+    WinCharState *s = chr->opaque;
     int ret, err;
     uint8_t buf[1024];
     DWORD size;
@@ -2054,45 +2237,37 @@ static void win_chr_readfile(WinCharState *s)
     }
 
     if (size > 0) {
-        s->fd_read(s->win_opaque, buf, size);
+        qemu_chr_read(chr, buf, size);
     }
 }
 
-static void win_chr_read(WinCharState *s)
+static void win_chr_read(CharDriverState *chr)
 {
+    WinCharState *s = chr->opaque;
+
     if (s->len > s->max_size)
         s->len = s->max_size;
     if (s->len == 0)
         return;
     
-    win_chr_readfile(s);
+    win_chr_readfile(chr);
 }
 
 static int win_chr_poll(void *opaque)
 {
-    WinCharState *s = opaque;
+    CharDriverState *chr = opaque;
+    WinCharState *s = chr->opaque;
     COMSTAT status;
     DWORD comerr;
     
     ClearCommError(s->hcom, &comerr, &status);
     if (status.cbInQue > 0) {
         s->len = status.cbInQue;
-        win_chr_read_poll(s);
-        win_chr_read(s);
+        win_chr_read_poll(chr);
+        win_chr_read(chr);
         return 1;
     }
     return 0;
-}
-
-static void win_chr_add_read_handler(CharDriverState *chr, 
-                                    IOCanRWHandler *fd_can_read, 
-                                    IOReadHandler *fd_read, void *opaque)
-{
-    WinCharState *s = chr->opaque;
-
-    s->fd_can_read = fd_can_read;
-    s->fd_read = fd_read;
-    s->win_opaque = opaque;
 }
 
 static CharDriverState *qemu_chr_open_win(const char *filename)
@@ -2110,10 +2285,9 @@ static CharDriverState *qemu_chr_open_win(const char *filename)
     }
     chr->opaque = s;
     chr->chr_write = win_chr_write;
-    chr->chr_add_read_handler = win_chr_add_read_handler;
     chr->chr_close = win_chr_close;
 
-    if (win_chr_init(s, filename) < 0) {
+    if (win_chr_init(chr, filename) < 0) {
         free(s);
         free(chr);
         return NULL;
@@ -2124,21 +2298,23 @@ static CharDriverState *qemu_chr_open_win(const char *filename)
 
 static int win_chr_pipe_poll(void *opaque)
 {
-    WinCharState *s = opaque;
+    CharDriverState *chr = opaque;
+    WinCharState *s = chr->opaque;
     DWORD size;
 
     PeekNamedPipe(s->hcom, NULL, 0, NULL, &size, NULL);
     if (size > 0) {
         s->len = size;
-        win_chr_read_poll(s);
-        win_chr_read(s);
+        win_chr_read_poll(chr);
+        win_chr_read(chr);
         return 1;
     }
     return 0;
 }
 
-static int win_chr_pipe_init(WinCharState *s, const char *filename)
+static int win_chr_pipe_init(CharDriverState *chr, const char *filename)
 {
+    WinCharState *s = chr->opaque;
     OVERLAPPED ov;
     int ret;
     DWORD size;
@@ -2190,11 +2366,11 @@ static int win_chr_pipe_init(WinCharState *s, const char *filename)
         CloseHandle(ov.hEvent);
         ov.hEvent = NULL;
     }
-    qemu_add_polling_cb(win_chr_pipe_poll, s);
+    qemu_add_polling_cb(win_chr_pipe_poll, chr);
     return 0;
 
  fail:
-    win_chr_close2(s);
+    win_chr_close(chr);
     return -1;
 }
 
@@ -2214,10 +2390,9 @@ static CharDriverState *qemu_chr_open_win_pipe(const char *filename)
     }
     chr->opaque = s;
     chr->chr_write = win_chr_write;
-    chr->chr_add_read_handler = win_chr_add_read_handler;
     chr->chr_close = win_chr_close;
     
-    if (win_chr_pipe_init(s, filename) < 0) {
+    if (win_chr_pipe_init(chr, filename) < 0) {
         free(s);
         free(chr);
         return NULL;
@@ -2242,7 +2417,6 @@ static CharDriverState *qemu_chr_open_win_file(HANDLE fd_out)
     s->hcom = fd_out;
     chr->opaque = s;
     chr->chr_write = win_chr_write;
-    chr->chr_add_read_handler = win_chr_add_read_handler;
     qemu_chr_reset(chr);
     return chr;
 }
@@ -2264,9 +2438,6 @@ static CharDriverState *qemu_chr_open_win_file_out(const char *file_out)
 /* UDP Net console */
 
 typedef struct {
-    IOCanRWHandler *fd_can_read;
-    IOReadHandler *fd_read;
-    void *fd_opaque;
     int fd;
     struct sockaddr_in daddr;
     char buf[1024];
@@ -2288,15 +2459,15 @@ static int udp_chr_read_poll(void *opaque)
     CharDriverState *chr = opaque;
     NetCharDriver *s = chr->opaque;
 
-    s->max_size = s->fd_can_read(s->fd_opaque);
+    s->max_size = qemu_chr_can_read(chr);
 
     /* If there were any stray characters in the queue process them
      * first
      */
     while (s->max_size > 0 && s->bufptr < s->bufcnt) {
-        s->fd_read(s->fd_opaque, &s->buf[s->bufptr], 1);
+        qemu_chr_read(chr, &s->buf[s->bufptr], 1);
         s->bufptr++;
-        s->max_size = s->fd_can_read(s->fd_opaque);
+        s->max_size = qemu_chr_can_read(chr);
     }
     return s->max_size;
 }
@@ -2315,22 +2486,17 @@ static void udp_chr_read(void *opaque)
 
     s->bufptr = 0;
     while (s->max_size > 0 && s->bufptr < s->bufcnt) {
-        s->fd_read(s->fd_opaque, &s->buf[s->bufptr], 1);
+        qemu_chr_read(chr, &s->buf[s->bufptr], 1);
         s->bufptr++;
-        s->max_size = s->fd_can_read(s->fd_opaque);
+        s->max_size = qemu_chr_can_read(chr);
     }
 }
 
-static void udp_chr_add_read_handler(CharDriverState *chr,
-                                    IOCanRWHandler *fd_can_read,
-                                    IOReadHandler *fd_read, void *opaque)
+static void udp_chr_update_read_handler(CharDriverState *chr)
 {
     NetCharDriver *s = chr->opaque;
 
     if (s->fd >= 0) {
-        s->fd_can_read = fd_can_read;
-        s->fd_read = fd_read;
-        s->fd_opaque = opaque;
         qemu_set_fd_handler2(s->fd, udp_chr_read_poll,
                              udp_chr_read, NULL, chr);
     }
@@ -2380,7 +2546,7 @@ static CharDriverState *qemu_chr_open_udp(const char *def)
     s->bufptr = 0;
     chr->opaque = s;
     chr->chr_write = udp_chr_write;
-    chr->chr_add_read_handler = udp_chr_add_read_handler;
+    chr->chr_update_read_handler = udp_chr_update_read_handler;
     return chr;
 
 return_err:
@@ -2397,13 +2563,11 @@ return_err:
 /* TCP Net console */
 
 typedef struct {
-    IOCanRWHandler *fd_can_read;
-    IOReadHandler *fd_read;
-    void *fd_opaque;
     int fd, listen_fd;
     int connected;
     int max_size;
     int do_telnetopt;
+    int do_nodelay;
     int is_unix;
 } TCPCharDriver;
 
@@ -2426,9 +2590,7 @@ static int tcp_chr_read_poll(void *opaque)
     TCPCharDriver *s = chr->opaque;
     if (!s->connected)
         return 0;
-    if (!s->fd_can_read)
-	return 0;
-    s->max_size = s->fd_can_read(s->fd_opaque);
+    s->max_size = qemu_chr_can_read(chr);
     return s->max_size;
 }
 
@@ -2461,7 +2623,7 @@ static void tcp_chr_process_IAC_bytes(CharDriverState *chr,
             } else {
                 if ((unsigned char)buf[i] == IAC_BREAK && s->do_telnetopt == 2) {
                     /* Handle IAC break commands by sending a serial break */
-                    chr->chr_event(s->fd_opaque, CHR_EVENT_BREAK);
+                    qemu_chr_event(chr, CHR_EVENT_BREAK);
                     s->do_telnetopt++;
                 }
                 s->do_telnetopt++;
@@ -2508,19 +2670,8 @@ static void tcp_chr_read(void *opaque)
         if (s->do_telnetopt)
             tcp_chr_process_IAC_bytes(chr, s, buf, &size);
         if (size > 0)
-            s->fd_read(s->fd_opaque, buf, size);
+            qemu_chr_read(chr, buf, size);
     }
-}
-
-static void tcp_chr_add_read_handler(CharDriverState *chr,
-                                     IOCanRWHandler *fd_can_read,
-                                    IOReadHandler *fd_read, void *opaque)
-{
-    TCPCharDriver *s = chr->opaque;
-
-    s->fd_can_read = fd_can_read;
-    s->fd_read = fd_read;
-    s->fd_opaque = opaque;
 }
 
 static void tcp_chr_connect(void *opaque)
@@ -2547,6 +2698,12 @@ static void tcp_chr_telnet_init(int fd)
     send(fd, (char *)buf, 3, 0);
     IACSET(buf, 0xff, 0xfd, 0x00);  /* IAC DO Binary */
     send(fd, (char *)buf, 3, 0);
+}
+
+static void socket_set_nodelay(int fd)
+{
+    int val = 1;
+    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *)&val, sizeof(val));
 }
 
 static void tcp_chr_accept(void *opaque)
@@ -2582,6 +2739,8 @@ static void tcp_chr_accept(void *opaque)
         }
     }
     socket_set_nonblock(fd);
+    if (s->do_nodelay)
+        socket_set_nodelay(fd);
     s->fd = fd;
     qemu_set_fd_handler(s->listen_fd, NULL, NULL, NULL);
     tcp_chr_connect(chr);
@@ -2606,6 +2765,7 @@ static CharDriverState *qemu_chr_open_tcp(const char *host_str,
     int fd = -1, ret, err, val;
     int is_listen = 0;
     int is_waitconnect = 1;
+    int do_nodelay = 0;
     const char *ptr;
     struct sockaddr_in saddr;
 #ifndef _WIN32
@@ -2636,6 +2796,8 @@ static CharDriverState *qemu_chr_open_tcp(const char *host_str,
             is_listen = 1;
         } else if (!strncmp(ptr,"nowait",6)) {
             is_waitconnect = 0;
+        } else if (!strncmp(ptr,"nodelay",6)) {
+            do_nodelay = 1;
         } else {
             printf("Unknown option: %s\n", ptr);
             goto fail;
@@ -2668,10 +2830,10 @@ static CharDriverState *qemu_chr_open_tcp(const char *host_str,
     s->fd = -1;
     s->listen_fd = -1;
     s->is_unix = is_unix;
+    s->do_nodelay = do_nodelay && !is_unix;
 
     chr->opaque = s;
     chr->chr_write = tcp_chr_write;
-    chr->chr_add_read_handler = tcp_chr_add_read_handler;
     chr->chr_close = tcp_chr_close;
 
     if (is_listen) {
@@ -2709,6 +2871,10 @@ static CharDriverState *qemu_chr_open_tcp(const char *host_str,
                 if (err == EINTR || err == EWOULDBLOCK) {
                 } else if (err == EINPROGRESS) {
                     break;
+#ifdef _WIN32
+                } else if (err == WSAEALREADY) {
+                    break;
+#endif
                 } else {
                     goto fail;
                 }
@@ -2718,6 +2884,7 @@ static CharDriverState *qemu_chr_open_tcp(const char *host_str,
             }
         }
         s->fd = fd;
+        socket_set_nodelay(fd);
         if (s->connected)
             tcp_chr_connect(chr);
         else
@@ -2756,6 +2923,16 @@ CharDriverState *qemu_chr_open(const char *filename)
     } else
     if (strstart(filename, "udp:", &p)) {
         return qemu_chr_open_udp(p);
+    } else
+    if (strstart(filename, "mon:", &p)) {
+        CharDriverState *drv = qemu_chr_open(p);
+        if (drv) {
+            drv = qemu_chr_open_mux(drv);
+            monitor_init(drv, !nographic);
+            return drv;
+        }
+        printf("Unable to open driver: %s\n", p);
+        return 0;
     } else
 #ifndef _WIN32
     if (strstart(filename, "unix:", &p)) {
@@ -3235,7 +3412,15 @@ static void tap_send(void *opaque)
     uint8_t buf[4096];
     int size;
 
+#ifdef __sun__
+    struct strbuf sbuf;
+    int f = 0;
+    sbuf.maxlen = sizeof(buf);
+    sbuf.buf = buf;
+    size = getmsg(s->fd, NULL, &sbuf, &f) >=0 ? sbuf.len : -1;
+#else
     size = read(s->fd, buf, sizeof(buf));
+#endif
     if (size > 0) {
         qemu_send_packet(s->vc, buf, size);
     }
@@ -3278,10 +3463,135 @@ static int tap_open(char *ifname, int ifname_size)
     return fd;
 }
 #elif defined(__sun__)
+#define TUNNEWPPA       (('T'<<16) | 0x0001)
+/* 
+ * Allocate TAP device, returns opened fd. 
+ * Stores dev name in the first arg(must be large enough).
+ */  
+int tap_alloc(char *dev)
+{
+    int tap_fd, if_fd, ppa = -1;
+    static int ip_fd = 0;
+    char *ptr;
+
+    static int arp_fd = 0;
+    int ip_muxid, arp_muxid;
+    struct strioctl  strioc_if, strioc_ppa;
+    int link_type = I_PLINK;;
+    struct lifreq ifr;
+    char actual_name[32] = "";
+
+    memset(&ifr, 0x0, sizeof(ifr));
+
+    if( *dev ){
+       ptr = dev;	
+       while( *ptr && !isdigit((int)*ptr) ) ptr++; 
+       ppa = atoi(ptr);
+    }
+
+    /* Check if IP device was opened */
+    if( ip_fd )
+       close(ip_fd);
+
+    if( (ip_fd = open("/dev/udp", O_RDWR, 0)) < 0){
+       syslog(LOG_ERR, "Can't open /dev/ip (actually /dev/udp)");
+       return -1;
+    }
+
+    if( (tap_fd = open("/dev/tap", O_RDWR, 0)) < 0){
+       syslog(LOG_ERR, "Can't open /dev/tap");
+       return -1;
+    }
+
+    /* Assign a new PPA and get its unit number. */
+    strioc_ppa.ic_cmd = TUNNEWPPA;
+    strioc_ppa.ic_timout = 0;
+    strioc_ppa.ic_len = sizeof(ppa);
+    strioc_ppa.ic_dp = (char *)&ppa;
+    if ((ppa = ioctl (tap_fd, I_STR, &strioc_ppa)) < 0)
+       syslog (LOG_ERR, "Can't assign new interface");
+
+    if( (if_fd = open("/dev/tap", O_RDWR, 0)) < 0){
+       syslog(LOG_ERR, "Can't open /dev/tap (2)");
+       return -1;
+    }
+    if(ioctl(if_fd, I_PUSH, "ip") < 0){
+       syslog(LOG_ERR, "Can't push IP module");
+       return -1;
+    }
+
+    if (ioctl(if_fd, SIOCGLIFFLAGS, &ifr) < 0)
+	syslog(LOG_ERR, "Can't get flags\n");
+
+    snprintf (actual_name, 32, "tap%d", ppa);
+    strncpy (ifr.lifr_name, actual_name, sizeof (ifr.lifr_name));
+
+    ifr.lifr_ppa = ppa;
+    /* Assign ppa according to the unit number returned by tun device */
+
+    if (ioctl (if_fd, SIOCSLIFNAME, &ifr) < 0)
+        syslog (LOG_ERR, "Can't set PPA %d", ppa);
+    if (ioctl(if_fd, SIOCGLIFFLAGS, &ifr) <0)
+        syslog (LOG_ERR, "Can't get flags\n");
+    /* Push arp module to if_fd */
+    if (ioctl (if_fd, I_PUSH, "arp") < 0)
+        syslog (LOG_ERR, "Can't push ARP module (2)");
+
+    /* Push arp module to ip_fd */
+    if (ioctl (ip_fd, I_POP, NULL) < 0)
+        syslog (LOG_ERR, "I_POP failed\n");
+    if (ioctl (ip_fd, I_PUSH, "arp") < 0)
+        syslog (LOG_ERR, "Can't push ARP module (3)\n");
+    /* Open arp_fd */
+    if ((arp_fd = open ("/dev/tap", O_RDWR, 0)) < 0)
+       syslog (LOG_ERR, "Can't open %s\n", "/dev/tap");
+
+    /* Set ifname to arp */
+    strioc_if.ic_cmd = SIOCSLIFNAME;
+    strioc_if.ic_timout = 0;
+    strioc_if.ic_len = sizeof(ifr);
+    strioc_if.ic_dp = (char *)&ifr;
+    if (ioctl(arp_fd, I_STR, &strioc_if) < 0){
+        syslog (LOG_ERR, "Can't set ifname to arp\n");
+    }
+
+    if((ip_muxid = ioctl(ip_fd, I_LINK, if_fd)) < 0){
+       syslog(LOG_ERR, "Can't link TAP device to IP");
+       return -1;
+    }
+
+    if ((arp_muxid = ioctl (ip_fd, link_type, arp_fd)) < 0)
+        syslog (LOG_ERR, "Can't link TAP device to ARP");
+
+    close (if_fd);
+
+    memset(&ifr, 0x0, sizeof(ifr));
+    strncpy (ifr.lifr_name, actual_name, sizeof (ifr.lifr_name));
+    ifr.lifr_ip_muxid  = ip_muxid;
+    ifr.lifr_arp_muxid = arp_muxid;
+
+    if (ioctl (ip_fd, SIOCSLIFMUXID, &ifr) < 0)
+    {
+      ioctl (ip_fd, I_PUNLINK , arp_muxid);
+      ioctl (ip_fd, I_PUNLINK, ip_muxid);
+      syslog (LOG_ERR, "Can't set multiplexor id");
+    }
+
+    sprintf(dev, "tap%d", ppa);
+    return tap_fd;
+}
+
 static int tap_open(char *ifname, int ifname_size)
 {
-    fprintf(stderr, "warning: tap_open not yet implemented\n");
-    return -1;
+    char  dev[10]="";
+    int fd;
+    if( (fd = tap_alloc(dev)) < 0 ){
+       fprintf(stderr, "Cannot allocate TAP device\n");
+       return -1;
+    }
+    pstrcpy(ifname, ifname_size, dev);
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    return fd;
 }
 #else
 static int tap_open(char *ifname, int ifname_size)
@@ -3329,13 +3639,21 @@ static int net_tap_init(VLANState *vlan, const char *ifname1,
     if (fd < 0)
         return -1;
 
-    if (!setup_script)
+    if (!setup_script || !strcmp(setup_script, "no"))
         setup_script = "";
     if (setup_script[0] != '\0') {
         /* try to launch network init script */
         pid = fork();
         if (pid >= 0) {
             if (pid == 0) {
+                int open_max = sysconf (_SC_OPEN_MAX), i;
+                for (i = 0; i < open_max; i++)
+                    if (i != STDIN_FILENO &&
+                        i != STDOUT_FILENO &&
+                        i != STDERR_FILENO &&
+                        i != fd)
+                        close(i);
+
                 parg = args;
                 *parg++ = (char *)setup_script;
                 *parg++ = ifname;
@@ -3617,7 +3935,7 @@ static NetSocketState *net_socket_fd_init(VLANState *vlan, int fd,
     int so_type=-1, optlen=sizeof(so_type);
 
     if(getsockopt(fd, SOL_SOCKET, SO_TYPE, (char *)&so_type, &optlen)< 0) {
-	fprintf(stderr, "qemu: error: setsockopt(SO_TYPE) for fd=%d failed\n", fd);
+	fprintf(stderr, "qemu: error: getsockopt(SO_TYPE) for fd=%d failed\n", fd);
 	return NULL;
     }
     switch(so_type) {
@@ -3724,6 +4042,10 @@ static int net_socket_connect_init(VLANState *vlan, const char *host_str)
             if (err == EINTR || err == EWOULDBLOCK) {
             } else if (err == EINPROGRESS) {
                 break;
+#ifdef _WIN32
+            } else if (err == WSAEALREADY) {
+                break;
+#endif
             } else {
                 perror("connect");
                 closesocket(fd);
@@ -3901,7 +4223,9 @@ static int net_client_init(const char *str)
             if (net_tap_fd_init(vlan, fd))
                 ret = 0;
         } else {
-            get_param_value(ifname, sizeof(ifname), "ifname", p);
+            if (get_param_value(ifname, sizeof(ifname), "ifname", p) <= 0) {
+                ifname[0] = '\0';
+            }
             if (get_param_value(setup_script, sizeof(setup_script), "script", p) == 0) {
                 pstrcpy(setup_script, sizeof(setup_script), DEFAULT_NETWORK_SCRIPT);
             }
@@ -3998,8 +4322,8 @@ static int usb_device_add(const char *devname)
         dev = usb_msd_init(p);
     } else if (strstart(devname, "net:", &p)) {
         unsigned int nr = strtoul(p, NULL, 0);
-	if (nr >= (unsigned int)nb_nics || strcmp(nd_table[nr].model, "usb"))
-		return -1;
+        if (nr >= (unsigned int) nb_nics || strcmp(nd_table[nr].model, "usb"))
+            return -1;
         dev = usb_net_init(&nd_table[nr]);
     } else if (strstart(devname, "gadget", &p)) {
         dev = usb_gadget;
@@ -4012,7 +4336,7 @@ static int usb_device_add(const char *devname)
             return -1;
         goto attach;
     } else {
-        return 0;
+        return -1;
     }
     if (!dev)
         return -1;
@@ -4355,48 +4679,8 @@ void pcmcia_info(void)
 
     for (iter = pcmcia_sockets; iter; iter = iter->next)
         term_printf("%s: %s\n", iter->socket->slot_string,
-                        iter->socket->attached ? iter->socket->card_string :
-                        "Empty");
-}
-
-/***********************************************************/
-/* pid file */
-
-static char *pid_filename;
-
-/* Remove PID file. Called on normal exit */
-
-static void remove_pidfile(void) 
-{
-    unlink (pid_filename);
-}
-
-static void create_pidfile(const char *filename)
-{
-    struct stat pidstat;
-    FILE *f;
-
-    /* Try to write our PID to the named file */
-    if (stat(filename, &pidstat) < 0) {
-        if (errno == ENOENT) {
-            if ((f = fopen (filename, "w")) == NULL) {
-                perror("Opening pidfile");
-                exit(1);
-            }
-            fprintf(f, "%d\n", getpid());
-            fclose(f);
-            pid_filename = qemu_strdup(filename);
-            if (!pid_filename) {
-                fprintf(stderr, "Could not save PID filename");
-                exit(1);
-            }
-            atexit(remove_pidfile);
-        }
-    } else {
-        fprintf(stderr, "%s already exists. Remove it and try again.\n", 
-                filename);
-        exit(1);
-    }
+                    iter->socket->attached ? iter->socket->card_string :
+                    "Empty");
 }
 
 /***********************************************************/
@@ -4435,6 +4719,7 @@ typedef struct IOHandlerRecord {
     IOCanRWHandler *fd_read_poll;
     IOHandler *fd_read;
     IOHandler *fd_write;
+    int deleted;
     void *opaque;
     /* temporary data */
     struct pollfd *ufd;
@@ -4460,8 +4745,7 @@ int qemu_set_fd_handler2(int fd,
             if (ioh == NULL)
                 break;
             if (ioh->fd == fd) {
-                *pioh = ioh->next;
-                qemu_free(ioh);
+                ioh->deleted = 1;
                 break;
             }
             pioh = &ioh->next;
@@ -4482,6 +4766,7 @@ int qemu_set_fd_handler2(int fd,
         ioh->fd_read = fd_read;
         ioh->fd_write = fd_write;
         ioh->opaque = opaque;
+        ioh->deleted = 0;
     }
     return 0;
 }
@@ -6130,9 +6415,12 @@ void qemu_system_powerdown_request(void)
 
 void main_loop_wait(int timeout)
 {
-    IOHandlerRecord *ioh, *ioh_next;
+    IOHandlerRecord *ioh;
     fd_set rfds, wfds, xfds;
     int ret, nfds;
+#ifdef _WIN32
+    int ret2, i;
+#endif
     struct timeval tv;
     PollingEntry *pe;
 
@@ -6143,7 +6431,7 @@ void main_loop_wait(int timeout)
         ret |= pe->func(pe->opaque);
     }
 #ifdef _WIN32
-    if (ret == 0 && timeout > 0) {
+    if (ret == 0) {
         int err;
         WaitObjects *w = &wait_objects;
         
@@ -6151,10 +6439,25 @@ void main_loop_wait(int timeout)
         if (WAIT_OBJECT_0 + 0 <= ret && ret <= WAIT_OBJECT_0 + w->num - 1) {
             if (w->func[ret - WAIT_OBJECT_0])
                 w->func[ret - WAIT_OBJECT_0](w->opaque[ret - WAIT_OBJECT_0]);
+                
+            /* Check for additional signaled events */ 
+            for(i = (ret - WAIT_OBJECT_0 + 1); i < w->num; i++) {
+                                
+                /* Check if event is signaled */
+                ret2 = WaitForSingleObject(w->events[i], 0);
+                if(ret2 == WAIT_OBJECT_0) {
+                    if (w->func[i])
+                        w->func[i](w->opaque[i]);
+                } else if (ret2 == WAIT_TIMEOUT) {
+                } else {
+                    err = GetLastError();
+                    fprintf(stderr, "WaitForSingleObject error %d %d\n", i, err);
+                }                
+            }                 
         } else if (ret == WAIT_TIMEOUT) {
         } else {
             err = GetLastError();
-            fprintf(stderr, "Wait error %d %d\n", ret, err);
+            fprintf(stderr, "WaitForMultipleObjects error %d %d\n", ret, err);
         }
     }
 #endif
@@ -6165,6 +6468,8 @@ void main_loop_wait(int timeout)
     FD_ZERO(&wfds);
     FD_ZERO(&xfds);
     for(ioh = first_io_handler; ioh != NULL; ioh = ioh->next) {
+        if (ioh->deleted)
+            continue;
         if (ioh->fd_read &&
             (!ioh->fd_read_poll ||
              ioh->fd_read_poll(ioh->opaque) != 0)) {
@@ -6192,15 +6497,28 @@ void main_loop_wait(int timeout)
 #endif
     ret = select(nfds + 1, &rfds, &wfds, &xfds, &tv);
     if (ret > 0) {
-        /* XXX: better handling of removal */
-        for(ioh = first_io_handler; ioh != NULL; ioh = ioh_next) {
-            ioh_next = ioh->next;
+        IOHandlerRecord **pioh;
+
+        for(ioh = first_io_handler; ioh != NULL; ioh = ioh->next) {
+            if (ioh->deleted)
+                continue;
             if (FD_ISSET(ioh->fd, &rfds)) {
                 ioh->fd_read(ioh->opaque);
             }
             if (FD_ISSET(ioh->fd, &wfds)) {
                 ioh->fd_write(ioh->opaque);
             }
+        }
+
+	/* remove deleted IO handlers */
+	pioh = &first_io_handler;
+	while (*pioh) {
+            ioh = *pioh;
+            if (ioh->deleted) {
+                *pioh = ioh->next;
+                qemu_free(ioh);
+            } else 
+                pioh = &ioh->next;
         }
     }
 #if defined(CONFIG_SLIRP)
@@ -6255,13 +6573,16 @@ int main_loop(void)
 #ifdef CONFIG_PROFILER
                 qemu_time += profile_getclock() - ti;
 #endif
+                if (ret == EXCP_HLT) {
+                    /* Give the next CPU a chance to run.  */
+                    cur_cpu = env;
+                    continue;
+                }
                 if (ret != EXCP_HALTED)
                     break;
                 /* all CPUs are halted ? */
-                if (env == cur_cpu) {
-                    ret = EXCP_HLT;
+                if (env == cur_cpu)
                     break;
-                }
             }
             cur_cpu = env;
 
@@ -6282,9 +6603,9 @@ int main_loop(void)
             if (ret == EXCP_DEBUG) {
                 vm_stop(EXCP_DEBUG);
             }
-            /* if hlt instruction, we wait until the next IRQ */
+            /* If all cpus are halted then wait until the next IRQ */
             /* XXX: use timeout computed from timers */
-            if (ret == EXCP_HLT)
+            if (ret == EXCP_HALTED)
                 timeout = 10;
             else
                 timeout = 0;
@@ -6305,22 +6626,25 @@ int main_loop(void)
 
 void help(void)
 {
-    printf("QEMU PC emulator version " QEMU_VERSION ", Copyright (c) 2003-2006 Fabrice Bellard\n"
+    printf("QEMU PC emulator version " QEMU_VERSION ", Copyright (c) 2003-2007 Fabrice Bellard\n"
            "usage: %s [options] [disk_image]\n"
            "\n"
            "'disk_image' is a raw hard image image for IDE hard disk 0\n"
            "\n"
            "Standard options:\n"
            "-M machine      select emulated machine (-M ? for list)\n"
+           "-cpu cpu        select CPU (-cpu ? for list)\n"
            "-fda/-fdb file  use 'file' as floppy disk 0/1 image\n"
            "-hda/-hdb file  use 'file' as IDE hard disk 0/1 image\n"
            "-hdc/-hdd file  use 'file' as IDE hard disk 2/3 image\n"
            "-cdrom file     use 'file' as IDE cdrom image (cdrom is ide1 master)\n"
            "-mtdblock file  use 'file' as on-board Flash memory image\n"
            "-sd file        use 'file' as SecureDigital card image\n"
+           "-pflash file    use 'file' as a parallel flash image\n"
            "-boot [a|c|d|n] boot on floppy (a), hard disk (c), CD-ROM (d), or network (n)\n"
            "-snapshot       write to temporary files instead of disk image files\n"
 #ifdef CONFIG_SDL
+           "-no-frame       open SDL window without a frame and window decorations\n"
            "-no-quit        disable SDL window close capability\n"
 #endif
 #ifdef TARGET_I386
@@ -6329,7 +6653,7 @@ void help(void)
            "-m megs         set virtual RAM size to megs MB [default=%d]\n"
            "-smp n          set the number of CPUs to 'n' [default=1]\n"
            "-nographic      disable graphical output and redirect serial I/Os to console\n"
-           "-vertical       rotate graphical output left (only PXA targets)\n"
+           "-portrait       rotate graphical output 90 deg left (only PXA LCD)\n"
 #ifndef _WIN32
            "-k language     use keyboard layout (for example \"fr\" for French)\n"
 #endif
@@ -6351,6 +6675,7 @@ void help(void)
 #if defined(TARGET_PPC) || defined(TARGET_SPARC)
            "-g WxH[xDEPTH]  Set the initial graphical resolution and depth\n"
 #endif
+           "-name string    set the name of the guest\n"
            "\n"
            "Network options:\n"
            "-net nic[,vlan=n][,macaddr=addr][,model=type]\n"
@@ -6367,6 +6692,7 @@ void help(void)
            "-net tap[,vlan=n][,fd=h][,ifname=name][,script=file]\n"
            "                connect the host TAP network interface to VLAN 'n' and use\n"
            "                the network script 'file' (default=%s);\n"
+           "                use 'script=no' to disable script execution;\n"
            "                use 'fd=h' to connect to an already opened TAP interface\n"
 #endif
            "-net socket[,vlan=n][,fd=h][,listen=[host]:port][,connect=host:port]\n"
@@ -6377,7 +6703,8 @@ void help(void)
            "                is provided, the default is '-net nic -net user'\n"
            "\n"
 #ifdef CONFIG_SLIRP
-           "-tftp prefix    allow tftp access to files starting with prefix [-net user]\n"
+           "-tftp dir       allow tftp access to files in dir [-net user]\n"
+           "-bootp file     advertise file in BOOTP replies\n"
 #ifndef _WIN32
            "-smb dir        allow SMB access to files in 'dir' [-net user]\n"
 #endif
@@ -6396,8 +6723,8 @@ void help(void)
            "-parallel dev   redirect the parallel port to char device 'dev'\n"
            "-pidfile file   Write PID to 'file'\n"
            "-S              freeze CPU at startup (use 'c' to start execution)\n"
-           "-s              wait gdb connection to port %d\n"
-           "-p port         change gdb connection port\n"
+           "-s              wait gdb connection to port\n"
+           "-p port         set gdb connection port [default=%s]\n"
            "-d item1,...    output log to %s (use -d ? for a list of log items)\n"
            "-hdachs c,h,s[,t]  force hard disk 0 physical geometry and the optional BIOS\n"
            "                translation (t=none or lba) (usually qemu can guess them)\n"
@@ -6421,6 +6748,9 @@ void help(void)
 	   "-daemonize      daemonize QEMU after initializing\n"
 #endif
 	   "-option-rom rom load a file, rom, into the option ROM space\n"
+#ifdef TARGET_SPARC
+           "-prom-env variable=value  set OpenBIOS nvram variables\n"
+#endif
            "\n"
            "During emulation, the following keys are useful:\n"
            "ctrl-alt-f      toggle full screen\n"
@@ -6445,6 +6775,7 @@ enum {
     QEMU_OPTION_h,
 
     QEMU_OPTION_M,
+    QEMU_OPTION_cpu,
     QEMU_OPTION_fda,
     QEMU_OPTION_fdb,
     QEMU_OPTION_hda,
@@ -6454,6 +6785,7 @@ enum {
     QEMU_OPTION_cdrom,
     QEMU_OPTION_mtdblock,
     QEMU_OPTION_sd,
+    QEMU_OPTION_pflash,
     QEMU_OPTION_boot,
     QEMU_OPTION_snapshot,
 #ifdef TARGET_I386
@@ -6461,7 +6793,7 @@ enum {
 #endif
     QEMU_OPTION_m,
     QEMU_OPTION_nographic,
-    QEMU_OPTION_vertical,
+    QEMU_OPTION_portrait,
 #ifdef HAS_AUDIO
     QEMU_OPTION_audio_help,
     QEMU_OPTION_soundhw,
@@ -6469,6 +6801,7 @@ enum {
 
     QEMU_OPTION_net,
     QEMU_OPTION_tftp,
+    QEMU_OPTION_bootp,
     QEMU_OPTION_smb,
     QEMU_OPTION_redir,
 
@@ -6486,13 +6819,16 @@ enum {
     QEMU_OPTION_k,
     QEMU_OPTION_localtime,
     QEMU_OPTION_cirrusvga,
+    QEMU_OPTION_vmsvga,
     QEMU_OPTION_g,
     QEMU_OPTION_std_vga,
+    QEMU_OPTION_echr,
     QEMU_OPTION_monitor,
     QEMU_OPTION_serial,
     QEMU_OPTION_parallel,
     QEMU_OPTION_loadvm,
     QEMU_OPTION_full_screen,
+    QEMU_OPTION_no_frame,
     QEMU_OPTION_no_quit,
     QEMU_OPTION_pidfile,
     QEMU_OPTION_no_kqemu,
@@ -6508,6 +6844,9 @@ enum {
     QEMU_OPTION_show_cursor,
     QEMU_OPTION_daemonize,
     QEMU_OPTION_option_rom,
+    QEMU_OPTION_semihosting,
+    QEMU_OPTION_name,
+    QEMU_OPTION_prom_env,
 };
 
 typedef struct QEMUOption {
@@ -6518,8 +6857,10 @@ typedef struct QEMUOption {
 
 const QEMUOption qemu_options[] = {
     { "h", 0, QEMU_OPTION_h },
+    { "help", 0, QEMU_OPTION_h },
 
     { "M", HAS_ARG, QEMU_OPTION_M },
+    { "cpu", HAS_ARG, QEMU_OPTION_cpu },
     { "fda", HAS_ARG, QEMU_OPTION_fda },
     { "fdb", HAS_ARG, QEMU_OPTION_fdb },
     { "hda", HAS_ARG, QEMU_OPTION_hda },
@@ -6529,6 +6870,7 @@ const QEMUOption qemu_options[] = {
     { "cdrom", HAS_ARG, QEMU_OPTION_cdrom },
     { "mtdblock", HAS_ARG, QEMU_OPTION_mtdblock },
     { "sd", HAS_ARG, QEMU_OPTION_sd },
+    { "pflash", HAS_ARG, QEMU_OPTION_pflash },
     { "boot", HAS_ARG, QEMU_OPTION_boot },
     { "snapshot", 0, QEMU_OPTION_snapshot },
 #ifdef TARGET_I386
@@ -6536,7 +6878,7 @@ const QEMUOption qemu_options[] = {
 #endif
     { "m", HAS_ARG, QEMU_OPTION_m },
     { "nographic", 0, QEMU_OPTION_nographic },
-    { "vertical", 0, QEMU_OPTION_vertical },
+    { "portrait", 0, QEMU_OPTION_portrait },
     { "k", HAS_ARG, QEMU_OPTION_k },
 #ifdef HAS_AUDIO
     { "audio-help", 0, QEMU_OPTION_audio_help },
@@ -6546,6 +6888,7 @@ const QEMUOption qemu_options[] = {
     { "net", HAS_ARG, QEMU_OPTION_net},
 #ifdef CONFIG_SLIRP
     { "tftp", HAS_ARG, QEMU_OPTION_tftp },
+    { "bootp", HAS_ARG, QEMU_OPTION_bootp },
 #ifndef _WIN32
     { "smb", HAS_ARG, QEMU_OPTION_smb },
 #endif
@@ -6572,12 +6915,14 @@ const QEMUOption qemu_options[] = {
 #endif
     { "localtime", 0, QEMU_OPTION_localtime },
     { "std-vga", 0, QEMU_OPTION_std_vga },
+    { "echr", 1, QEMU_OPTION_echr },
     { "monitor", 1, QEMU_OPTION_monitor },
     { "serial", 1, QEMU_OPTION_serial },
     { "parallel", 1, QEMU_OPTION_parallel },
     { "loadvm", HAS_ARG, QEMU_OPTION_loadvm },
     { "full-screen", 0, QEMU_OPTION_full_screen },
 #ifdef CONFIG_SDL
+    { "no-frame", 0, QEMU_OPTION_no_frame },
     { "no-quit", 0, QEMU_OPTION_no_quit },
 #endif
     { "pidfile", HAS_ARG, QEMU_OPTION_pidfile },
@@ -6590,11 +6935,19 @@ const QEMUOption qemu_options[] = {
     /* temporary options */
     { "usb", 0, QEMU_OPTION_usb },
     { "cirrusvga", 0, QEMU_OPTION_cirrusvga },
+    { "vmwarevga", 0, QEMU_OPTION_vmsvga },
     { "no-acpi", 0, QEMU_OPTION_no_acpi },
     { "no-reboot", 0, QEMU_OPTION_no_reboot },
     { "show-cursor", 0, QEMU_OPTION_show_cursor },
     { "daemonize", 0, QEMU_OPTION_daemonize },
     { "option-rom", HAS_ARG, QEMU_OPTION_option_rom },
+#if defined(TARGET_ARM)
+    { "semihosting", 0, QEMU_OPTION_semihosting },
+#endif
+    { "name", HAS_ARG, QEMU_OPTION_name },
+#if defined(TARGET_SPARC)
+    { "prom-env", HAS_ARG, QEMU_OPTION_prom_env },
+#endif
     { NULL },
 };
 
@@ -6663,27 +7016,33 @@ void register_machines(void)
     qemu_register_machine(&heathrow_machine);
     qemu_register_machine(&core99_machine);
     qemu_register_machine(&prep_machine);
+    qemu_register_machine(&ref405ep_machine);
+    qemu_register_machine(&taihu_machine);
 #elif defined(TARGET_MIPS)
     qemu_register_machine(&mips_machine);
+    qemu_register_machine(&mips_malta_machine);
+    qemu_register_machine(&mips_pica61_machine);
 #elif defined(TARGET_SPARC)
 #ifdef TARGET_SPARC64
     qemu_register_machine(&sun4u_machine);
 #else
-    qemu_register_machine(&sun4m_machine);
+    qemu_register_machine(&ss5_machine);
+    qemu_register_machine(&ss10_machine);
 #endif
 #elif defined(TARGET_ARM)
-    qemu_register_machine(&integratorcp926_machine);
-    qemu_register_machine(&integratorcp1026_machine);
+    qemu_register_machine(&integratorcp_machine);
     qemu_register_machine(&versatilepb_machine);
     qemu_register_machine(&versatileab_machine);
     qemu_register_machine(&realview_machine);
-    qemu_register_machine(&zaurusakita_machine);
-    qemu_register_machine(&zaurusspitz_machine);
-    qemu_register_machine(&zaurusborzoi_machine);
-    qemu_register_machine(&zaurusterrier_machine);
+    qemu_register_machine(&akitapda_machine);
+    qemu_register_machine(&spitzpda_machine);
+    qemu_register_machine(&borzoipda_machine);
+    qemu_register_machine(&terrierpda_machine);
     qemu_register_machine(&neo1973_machine);
 #elif defined(TARGET_SH4)
     qemu_register_machine(&shix_machine);
+#elif defined(TARGET_ALPHA)
+    /* XXX: TODO */
 #else
 #error unsupported CPU
 #endif
@@ -6817,16 +7176,19 @@ static BOOL WINAPI qemu_ctrl_handler(DWORD type)
 int main(int argc, char **argv)
 {
 #ifdef CONFIG_GDBSTUB
-    int use_gdbstub, gdbstub_port;
+    int use_gdbstub;
+    const char *gdbstub_port;
 #endif
-    int i, cdrom_index;
-    int linux_boot;
+    int i, cdrom_index, pflash_index;
+    int snapshot, linux_boot;
     const char *initrd_filename;
     const char *hd_filename[MAX_DISKS], *fd_filename[MAX_FD];
+    const char *pflash_filename[MAX_PFLASH];
+    const char *sd_filename;
+    const char *mtd_filename;
     const char *kernel_filename, *kernel_cmdline;
     DisplayState *ds = &display_state;
     int cyls, heads, secs, translation;
-    int start_emulation = 1;
     char net_clients[MAX_NET_CLIENTS][256];
     int nb_net_clients;
     int optind;
@@ -6839,10 +7201,12 @@ int main(int argc, char **argv)
     int parallel_device_index;
     const char *loadvm = NULL;
     QEMUMachine *machine;
+    const char *cpu_model;
     char usb_devices[MAX_USB_CMDLINE][128];
     int usb_devices_index;
     int usbgadget_enabled = 0;
     int fds[2];
+    const char *pid_file = NULL;
 
     LIST_INIT (&vm_change_state_head);
 #ifndef _WIN32
@@ -6877,14 +7241,19 @@ int main(int argc, char **argv)
 
     register_machines();
     machine = first_machine;
+    cpu_model = NULL;
     initrd_filename = NULL;
     for(i = 0; i < MAX_FD; i++)
         fd_filename[i] = NULL;
     for(i = 0; i < MAX_DISKS; i++)
         hd_filename[i] = NULL;
+    for(i = 0; i < MAX_PFLASH; i++)
+        pflash_filename[i] = NULL;
+    pflash_index = 0;
+    sd_filename = NULL;
+    mtd_filename = NULL;
     ram_size = DEFAULT_RAM_SIZE * 1024 * 1024;
     vga_ram_size = VGA_RAM_SIZE;
-    bios_size = BIOS_SIZE;
 #ifdef CONFIG_GDBSTUB
     use_gdbstub = 0;
     gdbstub_port = DEFAULT_GDBSTUB_PORT;
@@ -6930,6 +7299,9 @@ int main(int argc, char **argv)
             const QEMUOption *popt;
 
             optind++;
+            /* Treat --foo the same as -foo.  */
+            if (r[1] == '-')
+                r++;
             popt = qemu_options;
             for(;;) {
                 if (!popt->name) {
@@ -6966,6 +7338,23 @@ int main(int argc, char **argv)
                     exit(1);
                 }
                 break;
+            case QEMU_OPTION_cpu:
+                /* hw initialization will check this */
+                if (optarg[0] == '?') {
+#if defined(TARGET_PPC)
+                    ppc_cpu_list(stdout, &fprintf);
+#elif defined(TARGET_ARM)
+                    arm_cpu_list();
+#elif defined(TARGET_MIPS)
+                    mips_cpu_list(stdout, &fprintf);
+#elif defined(TARGET_SPARC)
+                    sparc_cpu_list(stdout, &fprintf);
+#endif
+                    exit(1);
+                } else {
+                    cpu_model = optarg;
+                }
+                break;
             case QEMU_OPTION_initrd:
                 initrd_filename = optarg;
                 break;
@@ -6986,6 +7375,13 @@ int main(int argc, char **argv)
                 break;
             case QEMU_OPTION_sd:
                 sd_filename = optarg;
+                break;
+            case QEMU_OPTION_pflash:
+                if (pflash_index >= MAX_PFLASH) {
+                    fprintf(stderr, "qemu: too many parallel flash images\n");
+                    exit(1);
+                }
+                pflash_filename[pflash_index++] = optarg;
                 break;
             case QEMU_OPTION_snapshot:
                 snapshot = 1;
@@ -7027,11 +7423,12 @@ int main(int argc, char **argv)
                 }
                 break;
             case QEMU_OPTION_nographic:
-                pstrcpy(monitor_device, sizeof(monitor_device), "stdio");
                 pstrcpy(serial_devices[0], sizeof(serial_devices[0]), "stdio");
+                pstrcpy(parallel_devices[0], sizeof(parallel_devices[0]), "null");
+                pstrcpy(monitor_device, sizeof(monitor_device), "stdio");
                 nographic = 1;
                 break;
-            case QEMU_OPTION_vertical:
+            case QEMU_OPTION_portrait:
                 graphic_rotate = 1;
                 break;
             case QEMU_OPTION_kernel:
@@ -7085,6 +7482,9 @@ int main(int argc, char **argv)
             case QEMU_OPTION_tftp:
 		tftp_prefix = optarg;
                 break;
+            case QEMU_OPTION_bootp:
+                bootp_filename = optarg;
+                break;
 #ifndef _WIN32
             case QEMU_OPTION_smb:
 		net_slirp_smb(optarg);
@@ -7137,14 +7537,14 @@ int main(int argc, char **argv)
                 use_gdbstub = 1;
                 break;
             case QEMU_OPTION_p:
-                gdbstub_port = atoi(optarg);
+                gdbstub_port = optarg;
                 break;
 #endif
             case QEMU_OPTION_L:
                 bios_dir = optarg;
                 break;
             case QEMU_OPTION_S:
-                start_emulation = 0;
+                autostart = 0;
                 break;
 	    case QEMU_OPTION_k:
 		keyboard_layout = optarg;
@@ -7154,9 +7554,15 @@ int main(int argc, char **argv)
                 break;
             case QEMU_OPTION_cirrusvga:
                 cirrus_vga_enabled = 1;
+                vmsvga_enabled = 0;
+                break;
+            case QEMU_OPTION_vmsvga:
+                cirrus_vga_enabled = 0;
+                vmsvga_enabled = 1;
                 break;
             case QEMU_OPTION_std_vga:
                 cirrus_vga_enabled = 0;
+                vmsvga_enabled = 0;
                 break;
             case QEMU_OPTION_g:
                 {
@@ -7192,6 +7598,14 @@ int main(int argc, char **argv)
                     graphic_depth = depth;
                 }
                 break;
+            case QEMU_OPTION_echr:
+                {
+                    char *r;
+                    term_escape_char = strtol(optarg, &r, 0);
+                    if (r == optarg)
+                        printf("Bad argument to echr\n");
+                    break;
+                }
             case QEMU_OPTION_monitor:
                 pstrcpy(monitor_device, sizeof(monitor_device), optarg);
                 break;
@@ -7220,12 +7634,15 @@ int main(int argc, char **argv)
                 full_screen = 1;
                 break;
 #ifdef CONFIG_SDL
+            case QEMU_OPTION_no_frame:
+                no_frame = 1;
+                break;
             case QEMU_OPTION_no_quit:
                 no_quit = 1;
                 break;
 #endif
             case QEMU_OPTION_pidfile:
-                create_pidfile(optarg);
+                pid_file = optarg;
                 break;
 #ifdef TARGET_I386
             case QEMU_OPTION_win2k_hack:
@@ -7287,6 +7704,22 @@ int main(int argc, char **argv)
 		option_rom[nb_option_roms] = optarg;
 		nb_option_roms++;
 		break;
+            case QEMU_OPTION_semihosting:
+                semihosting_enabled = 1;
+                break;
+            case QEMU_OPTION_name:
+                qemu_name = optarg;
+                break;
+#ifdef TARGET_SPARC
+            case QEMU_OPTION_prom_env:
+                if (nb_prom_envs >= MAX_PROM_ENVS) {
+                    fprintf(stderr, "Too many prom variables\n");
+                    exit(1);
+                }
+                prom_envs[nb_prom_envs] = optarg;
+                nb_prom_envs++;
+                break;
+#endif
             }
         }
     }
@@ -7311,16 +7744,19 @@ int main(int argc, char **argv)
 	    close(fds[1]);
 
 	again:
-	    len = read(fds[0], &status, 1);
-	    if (len == -1 && (errno == EINTR))
-		goto again;
-	    
-	    if (len != 1 || status != 0)
-		exit(1);
-	    else
-		exit(0);
+            len = read(fds[0], &status, 1);
+            if (len == -1 && (errno == EINTR))
+                goto again;
+
+            if (len != 1)
+                exit(1);
+            else if (status == 1) {
+                fprintf(stderr, "Could not acquire pidfile\n");
+                exit(1);
+            } else
+                exit(0);
 	} else if (pid < 0)
-	    exit(1);
+            exit(1);
 
 	setsid();
 
@@ -7339,6 +7775,15 @@ int main(int argc, char **argv)
     }
 #endif
 
+    if (pid_file && qemu_create_pidfile(pid_file) != 0) {
+        if (daemonize) {
+            uint8_t status = 1;
+            write(fds[1], &status, 1);
+        } else
+            fprintf(stderr, "Could not acquire pid file\n");
+        exit(1);
+    }
+
 #ifdef USE_KQEMU
     if (smp_cpus > 1)
         kqemu_allowed = 0;
@@ -7346,6 +7791,7 @@ int main(int argc, char **argv)
     linux_boot = (kernel_filename != NULL);
 
     if (!linux_boot &&
+        boot_device != 'n' &&
         hd_filename[0] == '\0' && 
         (cdrom_index >= 0 && hd_filename[cdrom_index] == '\0') &&
         fd_filename[0] == '\0')
@@ -7407,16 +7853,7 @@ int main(int argc, char **argv)
 #endif
 
     /* init the memory */
-    phys_ram_size = ram_size + vga_ram_size + bios_size;
-
-    for (i = 0; i < nb_option_roms; i++) {
-	int ret = get_image_size(option_rom[i]);
-	if (ret == -1) {
-	    fprintf(stderr, "Could not load option rom '%s'\n", option_rom[i]);
-	    exit(1);
-	}
-	phys_ram_size += ret;
-    }
+    phys_ram_size = ram_size + vga_ram_size + MAX_BIOS_SIZE;
 
     phys_ram_base = qemu_vmalloc(phys_ram_size);
     if (!phys_ram_base) {
@@ -7474,6 +7911,48 @@ int main(int argc, char **argv)
         }
     }
 
+    /* Open the virtual parallel flash block devices */
+    for(i = 0; i < MAX_PFLASH; i++) {
+        if (pflash_filename[i]) {
+            if (!pflash_table[i]) {
+                char buf[64];
+                snprintf(buf, sizeof(buf), "fl%c", i + 'a');
+                pflash_table[i] = bdrv_new(buf);
+            }
+            if (bdrv_open(pflash_table[i], pflash_filename[i],
+                          snapshot ? BDRV_O_SNAPSHOT : 0) < 0) {
+                fprintf(stderr, "qemu: could not open flash image '%s'\n",
+                        pflash_filename[i]);
+                exit(1);
+            }
+        }
+    }
+
+    sd_bdrv = bdrv_new ("sd");
+    /* FIXME: This isn't really a floppy, but it's a reasonable
+       approximation.  */
+    bdrv_set_type_hint(sd_bdrv, BDRV_TYPE_FLOPPY);
+    if (sd_filename) {
+        if (bdrv_open(sd_bdrv, sd_filename,
+                      snapshot ? BDRV_O_SNAPSHOT : 0) < 0) {
+            fprintf(stderr, "qemu: could not open SD card image %s\n",
+                    sd_filename);
+        } else
+            qemu_key_check(sd_bdrv, sd_filename);
+    }
+
+    if (mtd_filename) {
+        mtd_bdrv = bdrv_new ("mtd");
+        if (bdrv_open(mtd_bdrv, mtd_filename,
+                      snapshot ? BDRV_O_SNAPSHOT : 0) < 0 ||
+            qemu_key_check(mtd_bdrv, mtd_filename)) {
+            fprintf(stderr, "qemu: could not open Flash image %s\n",
+                    mtd_filename);
+            bdrv_delete(mtd_bdrv);
+            mtd_bdrv = 0;
+        }
+    }
+
     register_savevm("timer", 0, 2, timer_save, timer_load, NULL);
     register_savevm("ram", 0, 2, ram_save, ram_load, NULL);
 
@@ -7486,7 +7965,7 @@ int main(int argc, char **argv)
 	vnc_display_init(ds, vnc_display);
     } else {
 #if defined(CONFIG_SDL)
-        sdl_display_init(ds, full_screen);
+        sdl_display_init(ds, full_screen, no_frame);
 #elif defined(CONFIG_COCOA)
         cocoa_display_init(ds, full_screen);
 #else
@@ -7494,12 +7973,27 @@ int main(int argc, char **argv)
 #endif
     }
 
-    monitor_hd = qemu_chr_open(monitor_device);
-    if (!monitor_hd) {
-        fprintf(stderr, "qemu: could not open monitor device '%s'\n", monitor_device);
-        exit(1);
+    /* Maintain compatibility with multiple stdio monitors */
+    if (!strcmp(monitor_device,"stdio")) {
+        for (i = 0; i < MAX_SERIAL_PORTS; i++) {
+            if (!strcmp(serial_devices[i],"mon:stdio")) {
+                monitor_device[0] = '\0';
+                break;
+            } else if (!strcmp(serial_devices[i],"stdio")) {
+                monitor_device[0] = '\0';
+                pstrcpy(serial_devices[0], sizeof(serial_devices[0]), "mon:stdio");
+                break;
+            }
+        }
     }
-    monitor_init(monitor_hd, !nographic);
+    if (monitor_device[0] != '\0') {
+        monitor_hd = qemu_chr_open(monitor_device);
+        if (!monitor_hd) {
+            fprintf(stderr, "qemu: could not open monitor device '%s'\n", monitor_device);
+            exit(1);
+        }
+        monitor_init(monitor_hd, !nographic);
+    }
 
     for(i = 0; i < MAX_SERIAL_PORTS; i++) {
         const char *devname = serial_devices[i];
@@ -7531,7 +8025,7 @@ int main(int argc, char **argv)
 
     machine->init(ram_size, vga_ram_size, boot_device,
                   ds, fd_filename, snapshot,
-                  kernel_filename, kernel_cmdline, initrd_filename);
+                  kernel_filename, kernel_cmdline, initrd_filename, cpu_model);
 
     /* init USB devices */
     if (usb_enabled) {
@@ -7554,12 +8048,12 @@ int main(int argc, char **argv)
 
 #ifdef CONFIG_GDBSTUB
     if (use_gdbstub) {
+        /* XXX: use standard host:port notation and modify options
+           accordingly. */
         if (gdbserver_start(gdbstub_port) < 0) {
-            fprintf(stderr, "Could not open gdbserver socket on port %d\n", 
+            fprintf(stderr, "qemu: could not open gdbstub device on port '%s'\n",
                     gdbstub_port);
             exit(1);
-        } else {
-            printf("Waiting gdb connection on port %d\n", gdbstub_port);
         }
     } else 
 #endif
@@ -7569,7 +8063,7 @@ int main(int argc, char **argv)
     {
         /* XXX: simplify init */
         read_passwords();
-        if (start_emulation) {
+        if (autostart) {
             vm_start();
         }
     }

@@ -46,6 +46,7 @@ typedef struct DisasContext {
     struct TranslationBlock *tb;
     int singlestep_enabled;
     int thumb;
+    int is_mem;
 #if !defined(CONFIG_USER_ONLY)
     int user;
 #endif
@@ -291,6 +292,7 @@ static inline void gen_bx(DisasContext *s)
 #define gen_ldst(name, s) gen_op_##name##_raw()
 #else
 #define gen_ldst(name, s) do { \
+    s->is_mem = 1; \
     if (IS_USER(s)) \
         gen_op_##name##_user(); \
     else \
@@ -392,9 +394,9 @@ static inline void gen_add_datah_offset(DisasContext *s, unsigned int insn,
     if (insn & (1 << 22)) {
         /* immediate */
         val = (insn & 0xf) | ((insn >> 4) & 0xf0);
-        val += extra;
         if (!(insn & (1 << 23)))
             val = -val;
+        val += extra;
         if (val != 0)
             gen_op_addl_T1_im(val);
     } else {
@@ -501,7 +503,7 @@ static inline int gen_iwmmxt_address(DisasContext *s, uint32_t insn)
     rd = (insn >> 16) & 0xf;
     gen_movl_T1_reg(s, rd);
 
-    offset = (insn & 0xff) << ((insn >> 6) & 4);
+    offset = (insn & 0xff) << ((insn >> 7) & 2);
     if (insn & (1 << 24)) {
         /* Pre indexed */
         if (insn & (1 << 23))
@@ -547,9 +549,6 @@ static int disas_iwmmxt_insn(CPUState *env, DisasContext *s, uint32_t insn)
 {
     int rd, wrd;
     int rdhi, rdlo, rd0, rd1, i;
-
-    if (!arm_feature(env, ARM_FEATURE_IWMMXT))
-        return 1;
 
     if ((insn & 0x0e000e00) == 0x0c000000) {
         if ((insn & 0x0fe00ff0) == 0x0c400000) {
@@ -1482,32 +1481,110 @@ static int disas_iwmmxt_insn(CPUState *env, DisasContext *s, uint32_t insn)
     return 0;
 }
 
+/* Disassemble an XScale DSP instruction.  Returns nonzero if an error occured
+   (ie. an undefined instruction).  */
+static int disas_dsp_insn(CPUState *env, DisasContext *s, uint32_t insn)
+{
+    int acc, rd0, rd1, rdhi, rdlo;
+
+    if ((insn & 0x0ff00f10) == 0x0e200010) {
+        /* Multiply with Internal Accumulate Format */
+        rd0 = (insn >> 12) & 0xf;
+        rd1 = insn & 0xf;
+        acc = (insn >> 5) & 7;
+
+        if (acc != 0)
+            return 1;
+
+        switch ((insn >> 16) & 0xf) {
+        case 0x0:					/* MIA */
+            gen_op_movl_TN_reg[0][rd0]();
+            gen_op_movl_TN_reg[1][rd1]();
+            gen_op_iwmmxt_muladdsl_M0_T0_T1();
+            break;
+        case 0x8:					/* MIAPH */
+            gen_op_movl_TN_reg[0][rd0]();
+            gen_op_movl_TN_reg[1][rd1]();
+            gen_op_iwmmxt_muladdsw_M0_T0_T1();
+            break;
+        case 0xc:					/* MIABB */
+        case 0xd:					/* MIABT */
+        case 0xe:					/* MIATB */
+        case 0xf:					/* MIATT */
+            gen_op_movl_TN_reg[1][rd0]();
+            if (insn & (1 << 16))
+                gen_op_shrl_T1_im(16);
+            gen_op_movl_T0_T1();
+            gen_op_movl_TN_reg[1][rd1]();
+            if (insn & (1 << 17))
+                gen_op_shrl_T1_im(16);
+            gen_op_iwmmxt_muladdswl_M0_T0_T1();
+            break;
+        default:
+            return 1;
+        }
+
+        gen_op_iwmmxt_movq_wRn_M0(acc);
+        return 0;
+    }
+
+    if ((insn & 0x0fe00ff8) == 0x0c400000) {
+        /* Internal Accumulator Access Format */
+        rdhi = (insn >> 16) & 0xf;
+        rdlo = (insn >> 12) & 0xf;
+        acc = insn & 7;
+
+        if (acc != 0)
+            return 1;
+
+        if (insn & ARM_CP_RW_BIT) {			/* MRA */
+            gen_op_iwmmxt_movl_T0_T1_wRn(acc);
+            gen_op_movl_reg_TN[0][rdlo]();
+            gen_op_movl_T0_im((1 << (40 - 32)) - 1);
+            gen_op_andl_T0_T1();
+            gen_op_movl_reg_TN[0][rdhi]();
+        } else {					/* MAR */
+            gen_op_movl_TN_reg[0][rdlo]();
+            gen_op_movl_TN_reg[1][rdhi]();
+            gen_op_iwmmxt_movl_wRn_T0_T1(acc);
+        }
+        return 0;
+    }
+
+    return 1;
+}
+
 /* Disassemble system coprocessor instruction.  Return nonzero if
    instruction is not defined.  */
-static int disas_cp_insn(DisasContext *s, uint32_t insn)
+static int disas_cp_insn(CPUState *env, DisasContext *s, uint32_t insn)
 {
     uint32_t rd = (insn >> 12) & 0xf;
+    uint32_t cp = (insn >> 8) & 0xf;
     if (IS_USER(s)) {
         return 1;
     }
 
     if (insn & ARM_CP_RW_BIT) {
+        if (!env->cp[cp].cp_read)
+            return 1;
+        gen_op_movl_T0_im((uint32_t) s->pc);
+        gen_op_movl_reg_TN[0][15]();
         gen_op_movl_T0_cp(insn);
         gen_movl_reg_T0(s, rd);
     } else {
+        if (!env->cp[cp].cp_write)
+            return 1;
         gen_op_movl_T0_im((uint32_t) s->pc);
         gen_op_movl_reg_TN[0][15]();
         gen_movl_T0_reg(s, rd);
         gen_op_movl_cp_T0(insn);
-        s->is_jmp = DISAS_UPDATE;
     }
-
     return 0;
 }
 
 /* Disassemble system coprocessor (cp15) instruction.  Return nonzero if
    instruction is not defined.  */
-static int disas_cp15_insn(DisasContext *s, uint32_t insn)
+static int disas_cp15_insn(CPUState *env, DisasContext *s, uint32_t insn)
 {
     uint32_t rd;
 
@@ -1533,10 +1610,13 @@ static int disas_cp15_insn(DisasContext *s, uint32_t insn)
     } else {
         gen_movl_T0_reg(s, rd);
         gen_op_movl_cp15_T0(insn);
+        /* Normally we would always end the TB here, but Linux
+         * arch/arm/mach-pxa/sleep.S expects two instructions following
+         * an MMU enable to execute from cache.  Imitate this behaviour.  */
+        if (!arm_feature(env, ARM_FEATURE_XSCALE) ||
+                (insn & 0x0fff0fff) != 0x0e010f10)
+            gen_lookup_tb(s);
     }
-#if 0
-    gen_lookup_tb(s);
-#endif
     return 0;
 }
 
@@ -2552,6 +2632,7 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                 }
             } else {
                 int address_offset;
+                int load;
                 /* Misc load/store */
                 rn = (insn >> 16) & 0xf;
                 rd = (insn >> 12) & 0xf;
@@ -2573,7 +2654,7 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                         gen_ldst(ldsw, s);
                         break;
                     }
-                    gen_movl_reg_T0(s, rd);
+                    load = 1;
                 } else if (sh & 2) {
                     /* doubleword */
                     if (sh & 1) {
@@ -2583,20 +2664,27 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                         gen_op_addl_T1_im(4);
                         gen_movl_T0_reg(s, rd + 1);
                         gen_ldst(stl, s);
+                        load = 0;
                     } else {
                         /* load */
                         gen_ldst(ldl, s);
                         gen_movl_reg_T0(s, rd);
                         gen_op_addl_T1_im(4);
                         gen_ldst(ldl, s);
-                        gen_movl_reg_T0(s, rd + 1);
+                        rd++;
+                        load = 1;
                     }
                     address_offset = -4;
                 } else {
                     /* store */
                     gen_movl_T0_reg(s, rd);
                     gen_ldst(stw, s);
+                    load = 0;
                 }
+                /* Perform base writeback before the loaded value to
+                   ensure correct behavior with overlapping index registers.
+                   ldrd with base writeback is is undefined if the
+                   destination and index registers overlap.  */
                 if (!(insn & (1 << 24))) {
                     gen_add_datah_offset(s, insn, address_offset);
                     gen_movl_reg_T1(s, rn);
@@ -2604,6 +2692,10 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                     if (address_offset)
                         gen_op_addl_T1_im(address_offset);
                     gen_movl_reg_T1(s, rn);
+                }
+                if (load) {
+                    /* Complete the load.  */
+                    gen_movl_reg_T0(s, rd);
                 }
             }
             break;
@@ -2629,6 +2721,7 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                 gen_add_data_offset(s, insn);
             if (insn & (1 << 20)) {
                 /* load */
+                s->is_mem = 1;
 #if defined(CONFIG_USER_ONLY)
                 if (insn & (1 << 22))
                     gen_op_ldub_raw();
@@ -2647,10 +2740,6 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                         gen_op_ldl_kernel();
                 }
 #endif
-                if (rd == 15)
-                    gen_bx(s);
-                else
-                    gen_movl_reg_T0(s, rd);
             } else {
                 /* store */
                 gen_movl_T0_reg(s, rd);
@@ -2678,6 +2767,13 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                 gen_movl_reg_T1(s, rn);
             } else if (insn & (1 << 21))
                 gen_movl_reg_T1(s, rn); {
+            }
+            if (insn & (1 << 20)) {
+                /* Complete the load.  */
+                if (rd == 15)
+                    gen_bx(s);
+                else
+                    gen_movl_reg_T0(s, rd);
             }
             break;
         case 0x08:
@@ -2816,12 +2912,18 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                 goto illegal_op;
             switch (op1) {
             case 0 ... 1:
-                if (disas_iwmmxt_insn(env, s, insn))
+                if (arm_feature(env, ARM_FEATURE_IWMMXT)) {
+                    if (disas_iwmmxt_insn(env, s, insn))
+                        goto illegal_op;
+                } else if (arm_feature(env, ARM_FEATURE_XSCALE)) {
+                    if (disas_dsp_insn(env, s, insn))
+                        goto illegal_op;
+                } else
                     goto illegal_op;
                 break;
             case 2 ... 9:
             case 12 ... 14:
-                if (disas_cp_insn(s, insn))
+                if (disas_cp_insn (env, s, insn))
                     goto illegal_op;
                 break;
             case 10:
@@ -2830,7 +2932,7 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
                     goto illegal_op;
                 break;
             case 15:
-                if (disas_cp15_insn (s, insn))
+                if (disas_cp15_insn (env, s, insn))
                     goto illegal_op;
                 break;
             default:
@@ -3438,6 +3540,7 @@ static inline int gen_intermediate_code_internal(CPUState *env,
     dc->singlestep_enabled = env->singlestep_enabled;
     dc->condjmp = 0;
     dc->thumb = env->thumb;
+    dc->is_mem = 0;
 #if !defined(CONFIG_USER_ONLY)
     dc->user = (env->uncached_cpsr & 0x1f) == ARM_CPU_MODE_USR;
 #endif
@@ -3476,6 +3579,12 @@ static inline int gen_intermediate_code_internal(CPUState *env,
             gen_set_label(dc->condlabel);
             dc->condjmp = 0;
         }
+        /* Terminate the TB on memory ops if watchpoints are present.  */
+        /* FIXME: This should be replacd by the deterministic execution
+         * IRQ raising bits.  */
+        if (dc->is_mem && env->nb_watchpoints)
+            break;
+
         /* Translation stops when a conditional branch is enoutered.
          * Otherwise the subsequent code could get translated several times.
          * Also stop translation when a page boundary is reached.  This
@@ -3587,8 +3696,8 @@ void cpu_dump_state(CPUState *env, FILE *f,
             cpu_fprintf(f, " ");
     }
     psr = cpsr_read(env);
-    cpu_fprintf(f, "PSR=%08x %c%c%c%c %c %s%d %x\n", 
-                psr, 
+    cpu_fprintf(f, "PSR=%08x %c%c%c%c %c %s%d\n",
+                psr,
                 psr & (1 << 31) ? 'N' : '-',
                 psr & (1 << 30) ? 'Z' : '-',
                 psr & (1 << 29) ? 'C' : '-',

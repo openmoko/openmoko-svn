@@ -38,9 +38,10 @@
 #define EXCP_FIQ             6
 #define EXCP_BKPT            7
 
-typedef void ARMWriteCPFunc(void *opaque,
-                int op2, int reg, int crm, uint32_t value);
-typedef uint32_t ARMReadCPFunc(void *opaque, int op2, int reg, int crm);
+typedef void ARMWriteCPFunc(void *opaque, int cp_info,
+                            int srcreg, int operand, uint32_t value);
+typedef uint32_t ARMReadCPFunc(void *opaque, int cp_info,
+                               int dstreg, int operand);
 
 /* We currently assume float and double are IEEE single and double
    precision respectively.
@@ -82,10 +83,14 @@ typedef struct CPUARMState {
         uint32_t c0_cachetype;
         uint32_t c1_sys; /* System control register.  */
         uint32_t c1_coproc; /* Coprocessor access register.  */
-        uint32_t c2; /* MMU translation table base.  */
-        uint32_t c3; /* MMU domain access control register.  */
+        uint32_t c2_base; /* MMU translation table base.  */
+        uint32_t c2_data; /* MPU data cachable bits.  */
+        uint32_t c2_insn; /* MPU instruction cachable bits.  */
+        uint32_t c3; /* MMU domain access control register
+                        MPU write buffer control.  */
         uint32_t c5_insn; /* Fault status registers.  */
         uint32_t c5_data;
+        uint32_t c6_region[8]; /* MPU base/size registers.  */
         uint32_t c6_insn; /* Fault address registers.  */
         uint32_t c6_data;
         uint32_t c9_insn; /* Cache lockdown registers.  */
@@ -143,6 +148,13 @@ typedef struct CPUARMState {
 
     CPU_COMMON
 
+    /* These fields after the common ones so they are preserved on reset.  */
+    int ram_size;
+    const char *kernel_filename;
+    const char *kernel_cmdline;
+    const char *initrd_filename;
+    int board_id;
+    target_phys_addr_t loader_start;
 } CPUARMState;
 
 CPUARMState *cpu_arm_init(void);
@@ -154,8 +166,7 @@ void switch_mode(CPUARMState *, int);
 /* you can call this signal handler from your SIGBUS and SIGSEGV
    signal handlers to inform the virtual CPU of exceptions. non zero
    is returned if the signal was handled by the virtual CPU.  */
-struct siginfo;
-int cpu_arm_signal_handler(int host_signum, struct siginfo *info, 
+int cpu_arm_signal_handler(int host_signum, void *pinfo, 
                            void *puc);
 
 #define CPSR_M (0x1f)
@@ -236,6 +247,7 @@ enum arm_features {
     ARM_FEATURE_XSCALE, /* Intel XScale extensions.  */
     ARM_FEATURE_IWMMXT, /* Intel iwMMXt extension.  */
     ARM_FEATURE_S3C,    /* S3C specific bits.  */
+    ARM_FEATURE_MPU     /* Only has Memory Protection Unit, not full MMU.  */
 };
 
 static inline int arm_feature(CPUARMState *env, int feature)
@@ -243,14 +255,16 @@ static inline int arm_feature(CPUARMState *env, int feature)
     return (env->features & (1u << feature)) != 0;
 }
 
-void cpu_arm_set_model(CPUARMState *env, uint32_t id);
+void arm_cpu_list(void);
+void cpu_arm_set_model(CPUARMState *env, const char *name);
 
 void cpu_arm_set_cp_io(CPUARMState *env, int cpnum,
-                ARMReadCPFunc *cp_read, ARMWriteCPFunc *cp_write,
-                void *opaque);
+                       ARMReadCPFunc *cp_read, ARMWriteCPFunc *cp_write,
+                       void *opaque);
 
 #define ARM_CPUID_ARM1026   0x4106a262
 #define ARM_CPUID_ARM926    0x41069265
+#define ARM_CPUID_ARM946    0x41059461
 #define ARM_CPUID_ARM920T   0x41129200
 #define ARM_CPUID_PXA250    0x69052100
 #define ARM_CPUID_PXA255    0x69052d00

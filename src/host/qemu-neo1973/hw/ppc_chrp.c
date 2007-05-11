@@ -1,7 +1,7 @@
 /*
  * QEMU PPC CHRP/PMAC hardware System Emulator
  * 
- * Copyright (c) 2004 Fabrice Bellard
+ * Copyright (c) 2004-2007 Fabrice Bellard
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,9 @@
  * THE SOFTWARE.
  */
 #include "vl.h"
+
+/* SMP is not enabled, for now */
+#define MAX_CPUS 1
 
 #define BIOS_FILENAME "ppc_rom.bin"
 #define VGABIOS_FILENAME "video.x"
@@ -45,7 +48,7 @@ static int macio_nvram_mem_index = -1;
 
 static void dbdma_writeb (void *opaque, target_phys_addr_t addr, uint32_t value)
 {
-    printf("%s: 0x%08x <= 0x%08x\n", __func__, addr, value);
+    printf("%s: 0x" PADDRX " <= 0x%08x\n", __func__, addr, value);
 }
 
 static void dbdma_writew (void *opaque, target_phys_addr_t addr, uint32_t value)
@@ -58,7 +61,7 @@ static void dbdma_writel (void *opaque, target_phys_addr_t addr, uint32_t value)
 
 static uint32_t dbdma_readb (void *opaque, target_phys_addr_t addr)
 {
-    printf("%s: 0x%08x => 0x00000000\n", __func__, addr);
+    printf("%s: 0x" PADDRX " => 0x00000000\n", __func__, addr);
     return 0;
 }
 
@@ -258,15 +261,10 @@ static int vga_osi_call(CPUState *env)
         /* R6 = x, R7 = y, R8 = visible, R9 = data */
         break;
     default:
-        fprintf(stderr, "unsupported OSI call R5=%08x\n", env->gpr[5]);
+        fprintf(stderr, "unsupported OSI call R5=" REGX "\n", env->gpr[5]);
         break;
     }
     return 1; /* osi_call handled */
-}
-
-/* XXX: suppress that */
-static void pic_irq_request(void *opaque, int level)
-{
 }
 
 static uint8_t nvram_chksum(const uint8_t *buf, int n)
@@ -292,18 +290,18 @@ void pmac_format_nvram_partition(uint8_t *buf, int len)
 }    
 
 /* PowerPC CHRP hardware initialisation */
-static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
-                          DisplayState *ds, const char **fd_filename, 
-                          int snapshot,
-                          const char *kernel_filename, 
-                          const char *kernel_cmdline,
-                          const char *initrd_filename,
-                          int is_heathrow)
+static void ppc_chrp_init (int ram_size, int vga_ram_size, int boot_device,
+                           DisplayState *ds, const char **fd_filename,
+                           int snapshot,
+                           const char *kernel_filename,
+                           const char *kernel_cmdline,
+                           const char *initrd_filename,
+                           const char *cpu_model,
+                           int is_heathrow)
 {
-    CPUState *env;
+    CPUState *env, *envs[MAX_CPUS];
     char buf[1024];
-    SetIRQFunc *set_irq;
-    void *pic;
+    qemu_irq *pic, **openpic_irqs;
     m48t59_t *nvram;
     int unin_memory;
     int linux_boot, i;
@@ -313,38 +311,35 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
     PCIBus *pci_bus;
     const char *arch_name;
     int vga_bios_size, bios_size;
+    qemu_irq *dummy_irq;
 
     linux_boot = (kernel_filename != NULL);
 
     /* init CPUs */
     env = cpu_init();
+    qemu_register_reset(&cpu_ppc_reset, env);
     register_savevm("cpu", 0, 3, cpu_save, cpu_load, env);
 
-    /* Register CPU as a 74x/75x */
+    /* Default CPU is a generic 74x/75x */
+    if (cpu_model == NULL)
+        cpu_model = "750";
     /* XXX: CPU model (or PVR) should be provided on command line */
     //    ppc_find_by_name("750gx", &def); // Linux boot OK
     //    ppc_find_by_name("750fx", &def); // Linux boot OK
     /* Linux does not boot on 750cxe (and probably other 750cx based)
      * because it assumes it has 8 IBAT & DBAT pairs as it only have 4.
      */
-    //    ppc_find_by_name("750cxe", &def);
-    //    ppc_find_by_name("750p", &def);
-    //    ppc_find_by_name("740p", &def);
-    ppc_find_by_name("750", &def);
-    //    ppc_find_by_name("740", &def);
-    //    ppc_find_by_name("G3", &def);
-    //    ppc_find_by_name("604r", &def);
-    //    ppc_find_by_name("604e", &def);
-    //    ppc_find_by_name("604", &def);
+    ppc_find_by_name(cpu_model, &def);
     if (def == NULL) {
         cpu_abort(env, "Unable to find PowerPC CPU definition\n");
     }
-    cpu_ppc_register(env, def);
-
-    /* Set time-base frequency to 100 Mhz */
-    cpu_ppc_tb_init(env, 100UL * 1000UL * 1000UL);
-    
-    env->osi_call = vga_osi_call;
+    for (i = 0; i < smp_cpus; i++) {
+        cpu_ppc_register(env, def);
+        /* Set time-base frequency to 100 Mhz */
+        cpu_ppc_tb_init(env, 100UL * 1000UL * 1000UL);
+        env->osi_call = vga_osi_call;
+        envs[i] = env;
+    }
 
     /* allocate RAM */
     cpu_register_physical_memory(0, ram_size, IO_MEM_RAM);
@@ -354,11 +349,11 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
     snprintf(buf, sizeof(buf), "%s/%s", bios_dir, BIOS_FILENAME);
     bios_size = load_image(buf, phys_ram_base + bios_offset);
     if (bios_size < 0 || bios_size > BIOS_SIZE) {
-        fprintf(stderr, "qemu: could not load PowerPC bios '%s'\n", buf);
+        cpu_abort(env, "qemu: could not load PowerPC bios '%s'\n", buf);
         exit(1);
     }
     bios_size = (bios_size + 0xfff) & ~0xfff;
-    cpu_register_physical_memory((uint32_t)(-bios_size), 
+    cpu_register_physical_memory((uint32_t)(-bios_size),
                                  bios_size, bios_offset | IO_MEM_ROM);
     
     /* allocate and load VGA BIOS */
@@ -387,8 +382,8 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
         /* now we can load the kernel */
         kernel_size = load_image(kernel_filename, phys_ram_base + kernel_base);
         if (kernel_size < 0) {
-            fprintf(stderr, "qemu: could not load kernel '%s'\n", 
-                    kernel_filename);
+            cpu_abort(env, "qemu: could not load kernel '%s'\n",
+                      kernel_filename);
             exit(1);
         }
         /* load initrd */
@@ -397,8 +392,8 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
             initrd_size = load_image(initrd_filename,
                                      phys_ram_base + initrd_base);
             if (initrd_size < 0) {
-                fprintf(stderr, "qemu: could not load initial ram disk '%s'\n", 
-                        initrd_filename);
+                cpu_abort(env, "qemu: could not load initial ram disk '%s'\n",
+                          initrd_filename);
                 exit(1);
             }
         } else {
@@ -415,34 +410,37 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
 
     if (is_heathrow) {
         isa_mem_base = 0x80000000;
-        
+
         /* Register 2 MB of ISA IO space */
         isa_mmio_init(0xfe000000, 0x00200000);
 
         /* init basic PC hardware */
+        if (PPC_INPUT(env) != PPC_FLAGS_INPUT_6xx) {
+            cpu_abort(env, "Only 6xx bus is supported on heathrow machine\n");
+            exit(1);
+        }
         pic = heathrow_pic_init(&heathrow_pic_mem_index);
-        set_irq = heathrow_pic_set_irq;
         pci_bus = pci_grackle_init(0xfec00000, pic);
-        pci_vga_init(pci_bus, ds, phys_ram_base + ram_size, 
+        pci_vga_init(pci_bus, ds, phys_ram_base + ram_size,
                      ram_size, vga_ram_size,
                      vga_bios_offset, vga_bios_size);
 
         /* XXX: suppress that */
-        isa_pic = pic_init(pic_irq_request, NULL);
+        dummy_irq = i8259_init(NULL);
         
         /* XXX: use Mac Serial port */
-        serial_init(&pic_set_irq_new, isa_pic, 0x3f8, 4, serial_hds[0]);
+        serial_init(0x3f8, dummy_irq[4], serial_hds[0]);
         
         for(i = 0; i < nb_nics; i++) {
             if (!nd_table[i].model)
                 nd_table[i].model = "ne2k_pci";
-            pci_nic_init(pci_bus, &nd_table[i]);
+            pci_nic_init(pci_bus, &nd_table[i], -1);
         }
         
         pci_cmd646_ide_init(pci_bus, &bs_table[0], 0);
 
         /* cuda also initialize ADB */
-        cuda_mem_index = cuda_init(set_irq, pic, 0x12);
+        cuda_mem_index = cuda_init(pic[0x12]);
         
         adb_kbd_init(&adb_bus);
         adb_mouse_init(&adb_bus);
@@ -454,22 +452,64 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
         }
 
         macio_init(pci_bus, 0x0017);
-        
-        nvram = m48t59_init(8, 0xFFF04000, 0x0074, NVRAM_SIZE, 59);
-        
+
+        nvram = m48t59_init(dummy_irq[8], 0xFFF04000, 0x0074, NVRAM_SIZE, 59);
+
         arch_name = "HEATHROW";
     } else {
         isa_mem_base = 0x80000000;
-        
+
         /* Register 8 MB of ISA IO space */
         isa_mmio_init(0xf2000000, 0x00800000);
-        
+
         /* UniN init */
         unin_memory = cpu_register_io_memory(0, unin_read, unin_write, NULL);
         cpu_register_physical_memory(0xf8000000, 0x00001000, unin_memory);
 
-        pic = openpic_init(NULL, &openpic_mem_index, 1, &env);
-        set_irq = openpic_set_irq;
+        openpic_irqs = qemu_mallocz(smp_cpus * sizeof(qemu_irq *));
+        openpic_irqs[0] =
+            qemu_mallocz(smp_cpus * sizeof(qemu_irq) * OPENPIC_OUTPUT_NB);
+        for (i = 0; i < smp_cpus; i++) {
+            /* Mac99 IRQ connection between OpenPIC outputs pins
+             * and PowerPC input pins
+             */
+            switch (PPC_INPUT(env)) {
+            case PPC_FLAGS_INPUT_6xx:
+                openpic_irqs[i] = openpic_irqs[0] + (i * OPENPIC_OUTPUT_NB);
+                openpic_irqs[i][OPENPIC_OUTPUT_INT] =
+                    ((qemu_irq *)env->irq_inputs)[PPC6xx_INPUT_INT];
+                openpic_irqs[i][OPENPIC_OUTPUT_CINT] =
+                    ((qemu_irq *)env->irq_inputs)[PPC6xx_INPUT_INT];
+                openpic_irqs[i][OPENPIC_OUTPUT_MCK] =
+                    ((qemu_irq *)env->irq_inputs)[PPC6xx_INPUT_MCP];
+                /* Not connected ? */
+                openpic_irqs[i][OPENPIC_OUTPUT_DEBUG] = NULL;
+                /* Check this */
+                openpic_irqs[i][OPENPIC_OUTPUT_RESET] =
+                    ((qemu_irq *)env->irq_inputs)[PPC6xx_INPUT_HRESET];
+                break;
+            case PPC_FLAGS_INPUT_970:
+                openpic_irqs[i] = openpic_irqs[0] + (i * OPENPIC_OUTPUT_NB);
+                openpic_irqs[i][OPENPIC_OUTPUT_INT] =
+                    ((qemu_irq *)env->irq_inputs)[PPC970_INPUT_INT];
+                openpic_irqs[i][OPENPIC_OUTPUT_CINT] =
+                    ((qemu_irq *)env->irq_inputs)[PPC970_INPUT_INT];
+                openpic_irqs[i][OPENPIC_OUTPUT_MCK] =
+                    ((qemu_irq *)env->irq_inputs)[PPC970_INPUT_MCP];
+                /* Not connected ? */
+                openpic_irqs[i][OPENPIC_OUTPUT_DEBUG] = NULL;
+                /* Check this */
+                openpic_irqs[i][OPENPIC_OUTPUT_RESET] =
+                    ((qemu_irq *)env->irq_inputs)[PPC970_INPUT_HRESET];
+                break;
+            default:
+                cpu_abort(env,
+                          "Only bus model not supported on mac99 machine\n");
+                exit(1);
+            }
+        }
+        pic = openpic_init(NULL, &openpic_mem_index, smp_cpus,
+                           openpic_irqs, NULL);
         pci_bus = pci_pmac_init(pic);
         /* init basic PC hardware */
         pci_vga_init(pci_bus, ds, phys_ram_base + ram_size,
@@ -477,30 +517,30 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
                      vga_bios_offset, vga_bios_size);
 
         /* XXX: suppress that */
-        isa_pic = pic_init(pic_irq_request, NULL);
-        
+        dummy_irq = i8259_init(NULL);
+
         /* XXX: use Mac Serial port */
-        serial_init(&pic_set_irq_new, isa_pic, 0x3f8, 4, serial_hds[0]);
-        
+        serial_init(0x3f8, dummy_irq[4], serial_hds[0]);
         for(i = 0; i < nb_nics; i++) {
-            pci_ne2000_init(pci_bus, &nd_table[i]);
+            if (!nd_table[i].model)
+                nd_table[i].model = "ne2k_pci";
+            pci_nic_init(pci_bus, &nd_table[i], -1);
         }
-        
 #if 1
-        ide0_mem_index = pmac_ide_init(&bs_table[0], set_irq, pic, 0x13);
-        ide1_mem_index = pmac_ide_init(&bs_table[2], set_irq, pic, 0x14);
+        ide0_mem_index = pmac_ide_init(&bs_table[0], pic[0x13]);
+        ide1_mem_index = pmac_ide_init(&bs_table[2], pic[0x14]);
 #else
         pci_cmd646_ide_init(pci_bus, &bs_table[0], 0);
 #endif
         /* cuda also initialize ADB */
-        cuda_mem_index = cuda_init(set_irq, pic, 0x19);
+        cuda_mem_index = cuda_init(pic[0x19]);
         
         adb_kbd_init(&adb_bus);
         adb_mouse_init(&adb_bus);
         
         macio_init(pci_bus, 0x0022);
         
-        nvram = m48t59_init(8, 0xFFF04000, 0x0074, NVRAM_SIZE, 59);
+        nvram = m48t59_init(dummy_irq[8], 0xFFF04000, 0x0074, NVRAM_SIZE, 59);
         
         arch_name = "MAC99";
     }
@@ -525,30 +565,32 @@ static void ppc_chrp_init(int ram_size, int vga_ram_size, int boot_device,
     register_ioport_write(0x0F00, 4, 1, &PPC_debug_write, NULL);
 }
 
-static void ppc_core99_init(int ram_size, int vga_ram_size, int boot_device,
-                            DisplayState *ds, const char **fd_filename, 
-                            int snapshot,
-                            const char *kernel_filename, 
-                            const char *kernel_cmdline,
-                            const char *initrd_filename)
+static void ppc_core99_init (int ram_size, int vga_ram_size, int boot_device,
+                             DisplayState *ds, const char **fd_filename,
+                             int snapshot,
+                             const char *kernel_filename,
+                             const char *kernel_cmdline,
+                             const char *initrd_filename,
+                             const char *cpu_model)
 {
     ppc_chrp_init(ram_size, vga_ram_size, boot_device,
                   ds, fd_filename, snapshot,
                   kernel_filename, kernel_cmdline,
-                  initrd_filename, 0);
+                  initrd_filename, cpu_model, 0);
 }
     
-static void ppc_heathrow_init(int ram_size, int vga_ram_size, int boot_device,
-                              DisplayState *ds, const char **fd_filename, 
-                              int snapshot,
-                              const char *kernel_filename, 
-                              const char *kernel_cmdline,
-                              const char *initrd_filename)
+static void ppc_heathrow_init (int ram_size, int vga_ram_size, int boot_device,
+                               DisplayState *ds, const char **fd_filename,
+                               int snapshot,
+                               const char *kernel_filename,
+                               const char *kernel_cmdline,
+                               const char *initrd_filename,
+                               const char *cpu_model)
 {
     ppc_chrp_init(ram_size, vga_ram_size, boot_device,
                   ds, fd_filename, snapshot,
                   kernel_filename, kernel_cmdline,
-                  initrd_filename, 1);
+                  initrd_filename, cpu_model, 1);
 }
 
 QEMUMachine core99_machine = {

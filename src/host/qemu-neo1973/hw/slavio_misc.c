@@ -41,7 +41,7 @@ do { printf("MISC: " fmt , ##args); } while (0)
 #endif
 
 typedef struct MiscState {
-    int irq;
+    qemu_irq irq;
     uint8_t config;
     uint8_t aux1, aux2;
     uint8_t diag, mctrl, sysctrl;
@@ -54,9 +54,11 @@ static void slavio_misc_update_irq(void *opaque)
     MiscState *s = opaque;
 
     if ((s->aux2 & 0x4) && (s->config & 0x8)) {
-        pic_set_irq(s->irq, 1);
+        MISC_DPRINTF("Raise IRQ\n");
+        qemu_irq_raise(s->irq);
     } else {
-        pic_set_irq(s->irq, 0);
+        MISC_DPRINTF("Lower IRQ\n");
+        qemu_irq_lower(s->irq);
     }
 }
 
@@ -180,8 +182,10 @@ static CPUWriteMemoryFunc *slavio_misc_mem_write[3] = {
 static void slavio_misc_save(QEMUFile *f, void *opaque)
 {
     MiscState *s = opaque;
+    int tmp;
 
-    qemu_put_be32s(f, &s->irq);
+    tmp = 0;
+    qemu_put_be32s(f, &tmp); /* ignored, was IRQ.  */
     qemu_put_8s(f, &s->config);
     qemu_put_8s(f, &s->aux1);
     qemu_put_8s(f, &s->aux2);
@@ -193,11 +197,12 @@ static void slavio_misc_save(QEMUFile *f, void *opaque)
 static int slavio_misc_load(QEMUFile *f, void *opaque, int version_id)
 {
     MiscState *s = opaque;
+    int tmp;
 
     if (version_id != 1)
         return -EINVAL;
 
-    qemu_get_be32s(f, &s->irq);
+    qemu_get_be32s(f, &tmp);
     qemu_get_8s(f, &s->config);
     qemu_get_8s(f, &s->aux1);
     qemu_get_8s(f, &s->aux2);
@@ -207,7 +212,7 @@ static int slavio_misc_load(QEMUFile *f, void *opaque, int version_id)
     return 0;
 }
 
-void *slavio_misc_init(uint32_t base, int irq)
+void *slavio_misc_init(uint32_t base, qemu_irq irq)
 {
     int slavio_misc_io_memory;
     MiscState *s;

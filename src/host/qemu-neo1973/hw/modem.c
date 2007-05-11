@@ -11,9 +11,6 @@
 struct modem_s {
     int enable;
     CharDriverState chr;
-    IOCanRWHandler *can_read;
-    IOReadHandler *read;
-    void *opaque;
     int cmd_len;
     char cmd[1024];
 #define FIFO_LEN	4096
@@ -31,24 +28,15 @@ static void modem_reset(struct modem_s *s)
     s->baud_delay = ticks_per_sec;
 }
 
-static void modem_add_read_handler(CharDriverState *chr,
-                IOCanRWHandler *modem_can_read, IOReadHandler *modem_read,
-                void *opaque)
-{
-    struct modem_s *s = (struct modem_s *) chr->opaque;
-
-    s->can_read = modem_can_read;
-    s->read = modem_read;
-    s->opaque = opaque;
-}
-
 static inline void modem_fifo_wake(struct modem_s *s)
 {
     if (!s->enable || !s->out_len)
         return;
 
-    if (s->can_read && s->can_read(s->opaque) && s->read) {
-        s->read(s->opaque, s->outfifo + s->out_start ++, 1);
+    if (s->chr.chr_can_read && s->chr.chr_can_read(s->chr.handler_opaque) &&
+                    s->chr.chr_read) {
+        s->chr.chr_read(s->chr.handler_opaque,
+                        s->outfifo + s->out_start ++, 1);
         s->out_len --;
         s->out_start &= FIFO_LEN - 1;
     }
@@ -440,7 +428,6 @@ CharDriverState *modem_init()
     s->chr.opaque = s;
     s->chr.chr_write = modem_write;
     s->chr.chr_ioctl = modem_ioctl;
-    s->chr.chr_add_read_handler = modem_add_read_handler;
     s->out_tm = qemu_new_timer(vm_clock, modem_out_tick, s);
 
     return &s->chr;

@@ -54,7 +54,8 @@ typedef struct term_cmd_t {
     const char *help;
 } term_cmd_t;
 
-static CharDriverState *monitor_hd;
+#define MAX_MON 4
+static CharDriverState *monitor_hd[MAX_MON];
 static int hide_banner;
 
 static term_cmd_t term_cmds[];
@@ -69,8 +70,11 @@ CPUState *mon_cpu = NULL;
 
 void term_flush(void)
 {
+    int i;
     if (term_outbuf_index > 0) {
-        qemu_chr_write(monitor_hd, term_outbuf, term_outbuf_index);
+        for (i = 0; i < MAX_MON; i++)
+            if (monitor_hd[i] && monitor_hd[i]->focus == 0)
+                qemu_chr_write(monitor_hd[i], term_outbuf, term_outbuf_index);
         term_outbuf_index = 0;
     }
 }
@@ -231,6 +235,12 @@ static void do_info_version(void)
   term_printf("%s\n", QEMU_VERSION);
 }
 
+static void do_info_name(void)
+{
+    if (qemu_name)
+        term_printf("%s\n", qemu_name);
+}
+
 static void do_info_block(void)
 {
     bdrv_info();
@@ -327,6 +337,17 @@ static void do_info_history (void)
     }
 }
 
+#if defined(TARGET_PPC)
+/* XXX: not implemented in other targets */
+static void do_info_cpu_stats (void)
+{
+    CPUState *env;
+
+    env = mon_get_cpu();
+    cpu_dump_statistics(env, NULL, &monitor_fprintf, 0);
+}
+#endif
+
 static void do_quit(void)
 {
     exit(0);
@@ -409,14 +430,14 @@ static void do_cont(void)
 }
 
 #ifdef CONFIG_GDBSTUB
-static void do_gdbserver(int has_port, int port)
+static void do_gdbserver(const char *port)
 {
-    if (!has_port)
+    if (!port)
         port = DEFAULT_GDBSTUB_PORT;
     if (gdbserver_start(port) < 0) {
-        qemu_printf("Could not open gdbserver socket on port %d\n", port);
+        qemu_printf("Could not open gdbserver socket on port '%s'\n", port);
     } else {
-        qemu_printf("Waiting gdb connection on port %d\n", port);
+        qemu_printf("Waiting gdb connection on port '%s'\n", port);
     }
 }
 #endif
@@ -1184,9 +1205,9 @@ static term_cmd_t term_cmds[] = {
     { "q|quit", "", do_quit,
       "", "quit the emulator" },
     { "eject", "-fB", do_eject,
-      "[-f] device", "eject a removable media (use -f to force it)" },
+      "[-f] device", "eject a removable medium (use -f to force it)" },
     { "change", "BF", do_change,
-      "device filename", "change a removable media" },
+      "device filename", "change a removable medium" },
     { "screendump", "F", do_screen_dump, 
       "filename", "save screen into PPM image 'filename'" },
     { "log", "s", do_log,
@@ -1202,7 +1223,7 @@ static term_cmd_t term_cmds[] = {
     { "c|cont", "", do_cont, 
       "", "resume emulation", },
 #ifdef CONFIG_GDBSTUB
-    { "gdbserver", "i?", do_gdbserver, 
+    { "gdbserver", "s?", do_gdbserver, 
       "[port]", "start gdbserver session (default port=1234)", },
 #endif
     { "x", "/l", do_memory_dump, 
@@ -1291,6 +1312,14 @@ static term_cmd_t info_cmds[] = {
       "", "show guest PCMCIA status" },
     { "mice", "", do_info_mice,
       "", "show which guest mouse is receiving events" },
+    { "vnc", "", do_info_vnc,
+      "", "show the vnc server status"},
+    { "name", "", do_info_name,
+      "", "show the current VM name" },
+#if defined(TARGET_PPC)
+    { "cpustats", "", do_info_cpu_stats,
+      "", "show CPU statistics", },
+#endif
     { NULL, NULL, },
 };
 
@@ -2081,9 +2110,9 @@ static void monitor_handle_command(const char *cmdline)
                 }
                 if (nb_args + 3 > MAX_ARGS)
                     goto error_args;
-                args[nb_args++] = (void*)count;
-                args[nb_args++] = (void*)format;
-                args[nb_args++] = (void*)size;
+                args[nb_args++] = (void*)(long)count;
+                args[nb_args++] = (void*)(long)format;
+                args[nb_args++] = (void*)(long)size;
             }
             break;
         case 'i':
@@ -2111,7 +2140,7 @@ static void monitor_handle_command(const char *cmdline)
                     typestr++;
                     if (nb_args >= MAX_ARGS)
                         goto error_args;
-                    args[nb_args++] = (void *)has_arg;
+                    args[nb_args++] = (void *)(long)has_arg;
                     if (!has_arg) {
                         if (nb_args >= MAX_ARGS)
                             goto error_args;
@@ -2125,16 +2154,16 @@ static void monitor_handle_command(const char *cmdline)
                 if (c == 'i') {
                     if (nb_args >= MAX_ARGS)
                         goto error_args;
-                    args[nb_args++] = (void *)(int)val;
+                    args[nb_args++] = (void *)(long)val;
                 } else {
                     if ((nb_args + 1) >= MAX_ARGS)
                         goto error_args;
 #if TARGET_LONG_BITS == 64
-                    args[nb_args++] = (void *)(int)((val >> 32) & 0xffffffff);
+                    args[nb_args++] = (void *)(long)((val >> 32) & 0xffffffff);
 #else
                     args[nb_args++] = (void *)0;
 #endif
-                    args[nb_args++] = (void *)(int)(val & 0xffffffff);
+                    args[nb_args++] = (void *)(long)(val & 0xffffffff);
                 }
             }
             break;
@@ -2161,7 +2190,7 @@ static void monitor_handle_command(const char *cmdline)
                 }
                 if (nb_args >= MAX_ARGS)
                     goto error_args;
-                args[nb_args++] = (void *)has_option;
+                args[nb_args++] = (void *)(long)has_option;
             }
             break;
         default:
@@ -2444,13 +2473,28 @@ static void term_event(void *opaque, int event)
     monitor_start_input();
 }
 
+static int is_first_init = 1;
+
 void monitor_init(CharDriverState *hd, int show_banner)
 {
-    monitor_hd = hd;
+    int i;
+
+    if (is_first_init) {
+        for (i = 0; i < MAX_MON; i++) {
+            monitor_hd[i] = NULL;
+        }
+        is_first_init = 0;
+    }
+    for (i = 0; i < MAX_MON; i++) {
+        if (monitor_hd[i] == NULL) {
+            monitor_hd[i] = hd;
+            break;
+        }
+    }
+
     hide_banner = !show_banner;
 
-    qemu_chr_add_read_handler(hd, term_can_read, term_read, NULL);
-    qemu_chr_add_event_handler(hd, term_event);
+    qemu_chr_add_handlers(hd, term_can_read, term_read, term_event, NULL);
 }
 
 /* XXX: use threads ? */
@@ -2468,8 +2512,12 @@ static void monitor_readline_cb(void *opaque, const char *input)
 void monitor_readline(const char *prompt, int is_password,
                       char *buf, int buf_size)
 {
+    int i;
+
     if (is_password) {
-        qemu_chr_send_event(monitor_hd, CHR_EVENT_FOCUS);
+        for (i = 0; i < MAX_MON; i++)
+            if (monitor_hd[i] && monitor_hd[i]->focus == 0)
+                qemu_chr_send_event(monitor_hd[i], CHR_EVENT_FOCUS);
     }
     readline_start(prompt, is_password, monitor_readline_cb, NULL);
     monitor_readline_buf = buf;

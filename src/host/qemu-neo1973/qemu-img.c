@@ -1,7 +1,7 @@
 /*
  * QEMU disk image utility
  * 
- * Copyright (c) 2003-2006 Fabrice Bellard
+ * Copyright (c) 2003-2007 Fabrice Bellard
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +93,7 @@ static void format_print(void *opaque, const char *name)
 
 void help(void)
 {
-    printf("qemu-img version " QEMU_VERSION ", Copyright (c) 2004-2006 Fabrice Bellard\n"
+    printf("qemu-img version " QEMU_VERSION ", Copyright (c) 2004-2007 Fabrice Bellard\n"
            "usage: qemu-img command [command options]\n"
            "QEMU disk image utility\n"
            "\n"
@@ -457,7 +457,7 @@ static int img_convert(int argc, char **argv)
 
     drv = bdrv_find_format(out_fmt);
     if (!drv)
-        error("Unknown file format '%s'", fmt);
+        error("Unknown file format '%s'", out_fmt);
     if (compress && drv != &bdrv_qcow && drv != &bdrv_qcow2)
         error("Compression not supported for this file format");
     if (encrypt && drv != &bdrv_qcow && drv != &bdrv_qcow2)

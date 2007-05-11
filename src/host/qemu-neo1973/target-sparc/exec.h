@@ -1,9 +1,10 @@
 #ifndef EXEC_SPARC_H
 #define EXEC_SPARC_H 1
-#include "dyngen-exec.h"
 #include "config.h"
+#include "dyngen-exec.h"
 
 register struct CPUSPARCState *env asm(AREG0);
+
 #ifdef TARGET_SPARC64
 #define T0 (env->t0)
 #define T1 (env->t1)
@@ -15,7 +16,11 @@ register uint32_t T1 asm(AREG2);
 
 #undef REG_REGWPTR // Broken
 #ifdef REG_REGWPTR
+#if defined(__sparc__)
+register uint32_t *REGWPTR asm(AREG4);
+#else
 register uint32_t *REGWPTR asm(AREG3);
+#endif
 #define reg_REGWPTR
 
 #ifdef AREG4
@@ -28,8 +33,8 @@ register uint32_t T2 asm(AREG4);
 #else
 #define REGWPTR env->regwptr
 register uint32_t T2 asm(AREG3);
-#define reg_T2
 #endif
+#define reg_T2
 #endif
 
 #define FT0 (env->ft0)
@@ -56,6 +61,8 @@ void do_fsqrts(void);
 void do_fsqrtd(void);
 void do_fcmps(void);
 void do_fcmpd(void);
+void do_fcmpes(void);
+void do_fcmped(void);
 #ifdef TARGET_SPARC64
 void do_fabsd(void);
 void do_fcmps_fcc1(void);
@@ -64,6 +71,12 @@ void do_fcmps_fcc2(void);
 void do_fcmpd_fcc2(void);
 void do_fcmps_fcc3(void);
 void do_fcmpd_fcc3(void);
+void do_fcmpes_fcc1(void);
+void do_fcmped_fcc1(void);
+void do_fcmpes_fcc2(void);
+void do_fcmped_fcc2(void);
+void do_fcmpes_fcc3(void);
+void do_fcmped_fcc3(void);
 void do_popc();
 void do_wrpstate();
 void do_done();
@@ -74,6 +87,7 @@ void do_ldd_user(target_ulong addr);
 void do_ldd_raw(target_ulong addr);
 void do_interrupt(int intno);
 void raise_exception(int tt);
+void check_ieee_exceptions();
 void memcpy32(target_ulong *dst, const target_ulong *src);
 target_ulong mmu_probe(CPUState *env, target_ulong address, int mmulev);
 void dump_mmu(CPUState *env);
