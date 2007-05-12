@@ -132,6 +132,9 @@ i2c_bus *s3c_i2c_bus(struct s3c_i2c_state_s *s);
 struct s3c_i2s_state_s;
 struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma);
 
+struct s3c_wdt_state_s;
+struct s3c_wdt_state_s *s3c_wdt_init(target_phys_addr_t base, qemu_irq irq);
+
 /* s3c24xx_gpio.c */
 struct s3c_gpio_state_s;
 struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic);
@@ -192,6 +195,7 @@ struct s3c_state_s {
     struct s3c_rtc_state_s *rtc;
     struct s3c_spi_state_s *spi;
     struct s3c_udc_state_s *udc;
+    struct s3c_wdt_state_s *wdt;
 
     /* Memory controller */
     target_phys_addr_t mc_base;
@@ -212,7 +216,6 @@ struct s3c_state_s {
 };
 
 /* s3c2410.c */
-void s3c2410_reset(struct s3c_state_s *s);
 struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds);
 void s3c_nand_register(struct s3c_state_s *s, struct nand_flash_s *chip);
 void s3c_nand_setwp(struct s3c_state_s *s, int wp);

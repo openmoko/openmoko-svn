@@ -65,11 +65,13 @@
 
 struct neo_board_s {
     struct s3c_state_s *cpu;
+    unsigned int ram;
     i2c_slave *pmu;
     i2c_slave *wm;
     i2c_slave *lcm;
     CharDriverState *modem;
     qemu_irq *kbd_pic;
+    const char *kernel;
 };
 
 /* Handlers for output ports */
@@ -348,8 +350,19 @@ static void neo_gsm_setup(struct neo_board_s *s)
 static void neo_reset(void *opaque)
 {
     struct neo_board_s *s = (struct neo_board_s *) opaque;
-    s3c2410_reset(s->cpu);
-    s->cpu->env->regs[15] = S3C_RAM_BASE;
+#if 0
+    s->cpu->env->regs[15] = S3C_SRAM_BASE;
+#else
+    load_image("u-boot.bin", phys_ram_base + 0x03f80000);
+    load_image(s->kernel, phys_ram_base + 0x02000000);
+    s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
+#endif
+
+    /* Imitate ONKEY wakeup */
+    pcf_onkey_set(s->pmu, 0);
+    pcf_onkey_set(s->pmu, 1);
+    /* Connect the charger */
+    pcf_exton_set(s->pmu, 1);
 }
 
 /* Board init.  */
@@ -358,21 +371,22 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                 const char *kernel_filename, const char *kernel_cmdline,
                 const char *initrd_filename, const char *cpu_model)
 {
-    uint32_t neo_ram = 0x08000000;
     struct neo_board_s *s = (struct neo_board_s *)
             qemu_mallocz(sizeof(struct neo_board_s));
+    s->ram = 0x08000000;
+    s->kernel = kernel_filename;
 
     /* Setup CPU & memory */
-    if (ram_size < neo_ram + S3C_SRAM_SIZE) {
+    if (ram_size < s->ram + S3C_SRAM_SIZE) {
         fprintf(stderr, "This platform requires %i bytes of memory\n",
-                        neo_ram + S3C_SRAM_SIZE);
+                        s->ram + S3C_SRAM_SIZE);
         exit(1);
     }
     if (cpu_model && strcmp(cpu_model, "arm920t")) {
         fprintf(stderr, "This platform requires an ARM920T core\n");
         exit(2);
     }
-    s->cpu = s3c2410_init(neo_ram, ds);
+    s->cpu = s3c2410_init(s->ram, ds);
 
     s3c_nand_register(s->cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
 
@@ -387,27 +401,13 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
 
     neo_gsm_setup(s);
 
-    qemu_register_reset(neo_reset, s);
-
     /* Setup initial (reset) machine state */
+    qemu_register_reset(neo_reset, s);
 #if 0
-    cpu->env->regs[15] = S3C_SRAM_BASE;
-
-    arm_load_kernel(neo_ram, kernel_filename, kernel_cmdline,
+    arm_load_kernel(s->ram, kernel_filename, kernel_cmdline,
                     initrd_filename, 0x49e, S3C_RAM_BASE);
-#else
-    load_image("u-boot.bin",
-                    phys_ram_base + 0x03f80000);
-    load_image(kernel_filename,
-                    phys_ram_base + 0x02000000);
-    s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
 #endif
-
-    /* Imitate ONKEY wakeup */
-    pcf_onkey_set(s->pmu, 0);
-    pcf_onkey_set(s->pmu, 1);
-    /* Connect the charger */
-    pcf_exton_set(s->pmu, 1);
+    neo_reset(s);
 }
 
 QEMUMachine neo1973_machine = {
