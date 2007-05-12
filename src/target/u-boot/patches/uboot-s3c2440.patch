@@ -848,7 +848,22 @@ Index: u-boot/cpu/arm920t/start.S
  
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
  #ifndef CONFIG_LL_INIT_NAND_ONLY
-@@ -290,6 +317,7 @@
+@@ -274,7 +301,7 @@
+ #if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
+ 	bl	cpu_init_crit
+ #endif
+-#if defined(CONFIG_S3C2410)
++#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ 	/* ensure some refresh has happened */
+ 	ldr	r1, =0xfffff
+ 1:	subs	r1, r1, #1
+@@ -285,11 +312,12 @@
+ 	ldr	r0, [ r1 ]
+ 	tst	r0, #0x02		/* is this resume from power down */
+ 	ldrne	pc, [r1, #4]		/* gstatus3 */
+-#endif /* CONFIG_S3C2410 */
++#endif /* CONFIG_S3C2410 || CONFIG_S3C2440 */
+ #endif /* CONFIG_SKIP_LOWLEVEL_INIT */
  
  	/* mov	r10, lr */
  
