@@ -152,7 +152,7 @@ static void s3c_mmci_cmd_submit(struct s3c_mmci_state_s *s)
     }
 
     for (i = 0; i < rsplen; i ++)
-        s->resp[i >> 2] |= response[i] << ((i & 3) << 3);
+        s->resp[i >> 2] |= response[i] << ((~i & 3) << 3);
 
     s->cstatus |= 1 << 9;					/* RspFin */
     if (s->mask & (1 << 14))					/* RspEnd */

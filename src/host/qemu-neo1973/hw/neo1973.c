@@ -13,6 +13,8 @@
 #define neo_printf(format, ...)	\
     fprintf(stderr, "%s: " format, __FUNCTION__, ##__VA_ARGS__)
 
+#define GTA01Bv4		1
+
 /* Wiring common to all revisions */
 #define GTA01_GPIO_BACKLIGHT	S3C_GPB(0)
 #define GTA01_GPIO_GPS_PWRON	S3C_GPB(1)
@@ -30,7 +32,7 @@
 #define GTA01_IRQ_nSD_DETECT	S3C_EINT(5)
 #define GTA01_IRQ_911_KEY	S3C_EINT(6)
 #define GTA01_IRQ_HOLD_KEY	S3C_EINT(7)
-#define GTA01_IRQ_PCF50606      S3C_EINT(16)
+#define GTA01_IRQ_PCF50606	S3C_EINT(16)
 
 /* GTA01v3 */
 #define GTA01v3_GPIO_nGSM_EN	S3C_GPG(9)
@@ -53,6 +55,13 @@
 #define GTA01_GPIO_GPS_EN_2V8	S3C_GPG(9)
 #define GTA01_GPIO_GPS_EN_3V	S3C_GPG(10)
 #define GTA01_GPIO_GPS_RESET	S3C_GPC(0)
+
+/* GTA01Bv4 */
+#define GTA01Bv4_GPIO_nNAND_WP	S3C_GPA(16)
+#define GTA01Bv4_GPIO_VIBRA_ON	S3C_GPB(3)
+#define GTA01Bv4_GPIO_PMU_IRQ	S3C_GPG(1)
+
+#define GTA01Bv4_IRQ_PCF50606	S3C_EINT(9)
 
 struct neo_board_s {
     struct s3c_state_s *cpu;
@@ -122,7 +131,7 @@ static void neo_bt_switch(void *opaque, int line, int level)
 static void neo_gps_switch(void *opaque, int line, int level)
 {
     neo_printf("GPS %sV supply is now %s.\n",
-#ifdef GTA01Bv3
+#if defined(GTA01Bv3) || defined (GTA01Bv4)
                     line == GTA01_GPIO_GPS_EN_3V3 ? "3.3" : "3.0",
 #else
                     line == GTA01_GPIO_GPS_EN_2V8 ? "2.8" : "3.0",
@@ -144,6 +153,12 @@ static void neo_mmc_cover_switch(void *irq, int in)
 
 static void neo_mmc_writeprotect_switch(void *irq, int wp)
 {
+}
+
+static void neo_nand_wp_switch(void *opaque, int line, int level)
+{
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+    s3c_nand_setwp(s->cpu, level);
 }
 
 /* Hardware keys */
@@ -169,6 +184,8 @@ static void neo_kbd_init(struct neo_board_s *s)
 
 static void neo_gpio_setup(struct neo_board_s *s)
 {
+    qemu_irq vib_output = *qemu_allocate_irqs(neo_vib_switch, s, 1);
+
     s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_BACKLIGHT,
                     *qemu_allocate_irqs(neo_bl_switch, s, 1));
     s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_PWRON,
@@ -179,10 +196,15 @@ static void neo_gpio_setup(struct neo_board_s *s)
                     *qemu_allocate_irqs(neo_modem_switch, s, 1));
     s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_LCD_RESET,
                     *qemu_allocate_irqs(neo_lcd_rst_switch, s, 1));
+#ifdef GTA01Bv4
+    s3c_gpio_out_set(s->cpu->io, GTA01Bv4_GPIO_VIBRA_ON,
+                    vib_output);
+#else
     s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON,
-                    *qemu_allocate_irqs(neo_vib_switch, s, 1));
+                    vib_output);
     s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_VIBRATOR_ON2,
-                    *qemu_allocate_irqs(neo_vib_switch, s, 1));
+                    vib_output);
+#endif
     s3c_gpio_out_set(s->cpu->io, GTA01v3_GPIO_nGSM_EN,
                     *qemu_allocate_irqs(neo_gsm_switch, s, 1));
     s3c_gpio_out_set(s->cpu->io, GTA01Bv2_GPIO_nGSM_EN,
@@ -197,6 +219,8 @@ static void neo_gpio_setup(struct neo_board_s *s)
                     *qemu_allocate_irqs(neo_gps_switch, s, 1));
     s3c_gpio_out_set(s->cpu->io, GTA01_GPIO_GPS_RESET,
                     *qemu_allocate_irqs(neo_gps_rst_switch, s, 1));
+    s3c_gpio_out_set(s->cpu->io, GTA01Bv4_GPIO_nNAND_WP,
+                    *qemu_allocate_irqs(neo_nand_wp_switch, s, 1));
 
     s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
@@ -278,7 +302,11 @@ static void neo_i2c_setup(struct neo_board_s *s)
 
     /* Attach a PCF50606 to the bus */
     s->pmu = pcf5060x_init(bus,
+#ifdef GTA01Bv4
+                    s3c_gpio_in_get(s->cpu->io)[GTA01Bv4_IRQ_PCF50606], 0);
+#else
                     s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_PCF50606], 0);
+#endif
     i2c_set_slave_address(s->pmu, NEO_PMU_ADDR);
 
     /* Attach a LM4857 to the bus */

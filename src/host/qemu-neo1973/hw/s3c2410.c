@@ -414,17 +414,17 @@ static void s3c_nand_write(void *opaque, target_phys_addr_t addr,
     case S3C_NFCMD:
         s->nfcmd = value & 0xff;
         if (s->nfconf & (1 << 15)) {
-            nand_setpins(s->nand, 1, 0, (s->nfconf >> 11) & 1, 1, 0);
+            nand_setpins(s->nand, 1, 0, (s->nfconf >> 11) & 1, s->nfwp, 0);
             nand_setio(s->nand, s->nfcmd);
-            nand_setpins(s->nand, 0, 0, (s->nfconf >> 11) & 1, 1, 0);
+            nand_setpins(s->nand, 0, 0, (s->nfconf >> 11) & 1, s->nfwp, 0);
         }
         break;
     case S3C_NFADDR:
         s->nfaddr = value & 0xff;
         if (s->nfconf & (1 << 15)) {
-            nand_setpins(s->nand, 0, 1, (s->nfconf >> 11) & 1, 1, 0);
+            nand_setpins(s->nand, 0, 1, (s->nfconf >> 11) & 1, s->nfwp, 0);
             nand_setio(s->nand, s->nfaddr);
-            nand_setpins(s->nand, 0, 0, (s->nfconf >> 11) & 1, 1, 0);
+            nand_setpins(s->nand, 0, 0, (s->nfconf >> 11) & 1, s->nfwp, 0);
         }
         break;
     case S3C_NFDATA:
@@ -439,6 +439,11 @@ static void s3c_nand_write(void *opaque, target_phys_addr_t addr,
 void s3c_nand_register(struct s3c_state_s *s, struct nand_flash_s *chip)
 {
     s->nand = chip;
+}
+
+void s3c_nand_setwp(struct s3c_state_s *s, int wp)
+{
+    s->nfwp = wp;
 }
 
 static CPUReadMemoryFunc *s3c_nand_readfn[] = {
@@ -2272,6 +2277,8 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
     if (usb_enabled) {
         usb_ohci_init_memio(0x49000000, 3, -1, s->irq[S3C_PIC_USBH]);
     }
+
+    s3c_nand_setwp(s, 1);
 
     /* Power on reset */
     s3c_gpio_setpwrstat(s->io, 1);

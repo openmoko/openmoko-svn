@@ -204,6 +204,7 @@ struct s3c_state_s {
     uint8_t nfcmd;
     uint8_t nfaddr;
     struct ecc_state_s nfecc;
+    int nfwp;
 
     /* Clock & power management */
     target_phys_addr_t clkpwr_base;
@@ -214,6 +215,7 @@ struct s3c_state_s {
 void s3c2410_reset(struct s3c_state_s *s);
 struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds);
 void s3c_nand_register(struct s3c_state_s *s, struct nand_flash_s *chip);
+void s3c_nand_setwp(struct s3c_state_s *s, int wp);
 
 struct s3c_i2s_state_s { /* XXX move to .c */
     target_phys_addr_t base;

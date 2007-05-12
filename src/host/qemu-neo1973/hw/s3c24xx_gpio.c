@@ -244,9 +244,12 @@ static void s3c_gpio_write(void *opaque, target_phys_addr_t addr,
         s->inform[1] = value;
         break;
     case S3C_MISCCR:
-        s->misccr = value & 0x000f377b;
-        if (value & (1 << 16))
+        if (value & (1 << 16))				/* nRSTCON */
             printf("%s: software reset.\n", __FUNCTION__);
+        if ((value ^ s->misccr) & (1 << 3))		/* USBPAD */
+            printf("%s: now in USB %s mode.\n", __FUNCTION__,
+                            (value >> 3) & 1 ? "host" : "slave");
+        s->misccr = value & 0x000f377b;
         break;
     case S3C_DCLKCON:
         s->dclkcon = value & 0x0ff30ff3;
