@@ -27,11 +27,21 @@ struct s3c_pic_state_s {
 static void s3c_pic_update(struct s3c_pic_state_s *s)
 {
     qemu_set_irq(s->parent_pic[ARM_PIC_CPU_FIQ],
-                    s->srcpnd & ~s->intmsk & s->intmod);
+                    s->srcpnd & s->intmod);
     qemu_set_irq(s->parent_pic[ARM_PIC_CPU_IRQ],
                     s->intpnd & ~s->intmsk & ~s->intmod);
 }
 
+/*
+ * Performs interrupt arbitration and notifies the CPU.
+ *
+ * Since it's a complex logic which cannot be relied on by the OS
+ * anyway - first because real hardware doesn't do it accurately,
+ * second because it only matters when interrupts occur at the
+ * same time which normally can't be predicted - we use a simpler
+ * version for non-debug runs.
+ */
+#ifdef DEBUG
 static const uint32_t s3c_arbmsk[6] = {
     0x0000000f,
     0x000003f0,
@@ -41,25 +51,18 @@ static const uint32_t s3c_arbmsk[6] = {
     0xf0000000,
 };
 
-#define S3C_ARB_SEL(i)		((s->priority >> (7 + (i << 1))) & 3)
-#define S3C_ARB_MODE(i)	((s->priority >> i) & 1)
-#define S3C_ARB_SEL_SET(i, v)	\
+# define S3C_ARB_SEL(i)		((s->priority >> (7 + (i << 1))) & 3)
+# define S3C_ARB_MODE(i)	((s->priority >> i) & 1)
+# define S3C_ARB_SEL_SET(i, v)	\
     s->priority &= ~(3 << (7 + (i << 1))); \
     s->priority |= v << (7 + (i << 1));
 
-/*
- * Performs interrupt arbitration without notifying the CPU.
- *
- * XXX: Perhaps we should replace this with something much simpler
- * and faster and not 100% compliant.  It's unlikely that any OS
- * relies on accurate arbitration.
- */
 static void s3c_pic_arbitrate(struct s3c_pic_state_s *s)
 {
     uint32_t pnd = s->srcpnd & ~s->intmsk & ~s->intmod;
     int offset, i, arb;
-    if (!pnd) {
-        s->intoffset = 0;
+    if (s->intpnd || !pnd) {
+        s3c_pic_update(s);
         return;
     }
 
@@ -103,8 +106,18 @@ static void s3c_pic_arbitrate(struct s3c_pic_state_s *s)
     offset += i & 3;
 known_offset:
     s->intoffset = offset;
-    s->intpnd = 1 << offset;	/* Note: |= breaks Linux */
+    s->intpnd = 1 << offset;
+    s3c_pic_update(s);
 }
+#else
+inline static void s3c_pic_arbitrate(struct s3c_pic_state_s *s)
+{
+    uint32_t pnd = s->srcpnd & ~s->intmsk & ~s->intmod;
+    if (pnd && !s->intpnd)
+        s->intpnd = 1 << (s->intoffset = ffs(pnd) - 1);
+    s3c_pic_update(s);
+}
+#endif
 
 static const int s3c_sub_src_map[] = {
     [S3C_PICS_RXD0 & 31] = S3C_PIC_UART0,
@@ -123,6 +136,7 @@ static const int s3c_sub_src_map[] = {
 static void s3c_pic_set_irq(void *opaque, int irq, int req)
 {
     struct s3c_pic_state_s *s = (struct s3c_pic_state_s *) opaque;
+    uint32_t mask;
     /* This interrupt controller doesn't clear any request signals
      * or register bits automatically.  */
     if (!req)
@@ -132,14 +146,24 @@ static void s3c_pic_set_irq(void *opaque, int irq, int req)
         irq &= 31;
         s->subsrcpnd |= 1 << irq;
         if (~s->intsubmsk & (1 << irq))
-            s->srcpnd |= 1 << s3c_sub_src_map[irq];
+            irq = s3c_sub_src_map[irq];
         else
             return;
-    } else
-        s->srcpnd |= 1 << irq;
+    }
+    s->srcpnd |= (mask = 1 << irq);
 
-    s3c_pic_arbitrate(s);
-    s3c_pic_update(s);
+    /* A FIQ */
+    if (s->intmod & mask)
+        qemu_irq_raise(s->parent_pic[ARM_PIC_CPU_FIQ]);
+    else if (!s->intpnd && !(s->intmsk & mask)) {
+#ifdef DEBUG
+        s3c_pic_arbitrate(s);
+#else
+        s->intpnd = mask;
+        s->intoffset = irq;
+        qemu_irq_raise(s->parent_pic[ARM_PIC_CPU_IRQ]);
+#endif
+    }
 }
 
 static void s3c_pic_reset(struct s3c_pic_state_s *s)
@@ -202,15 +226,23 @@ static void s3c_pic_write(void *opaque, target_phys_addr_t addr,
     switch (addr) {
     case S3C_SRCPND:
         s->srcpnd &= ~value;
+        if (value & s->intmod)
+            s3c_pic_update(s);
         break;
     case S3C_INTPND:
-        s->intpnd &= ~value;
-        s3c_pic_arbitrate(s);
-        s3c_pic_update(s);
+        if (s->intpnd & value) {
+            s->intpnd = 0;
+            s->intoffset = 0;
+            s3c_pic_arbitrate(s);
+        }
         break;
     case S3C_INTMSK:
         s->intmsk = value;
-        s3c_pic_update(s);
+        if (s->intpnd & value) {
+            s->intpnd = 0;
+            s->intoffset = 0;
+        }
+        s3c_pic_arbitrate(s);
         break;
     case S3C_INTMOD:
         s->intmod = value;

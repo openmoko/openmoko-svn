@@ -225,3 +225,6 @@ USBDevice *usb_tablet_init(void);
 
 /* usb-msd.c */
 USBDevice *usb_msd_init(const char *filename);
+
+/* usb-net.c */
+USBDevice *usb_net_init(NICInfo *nd);
