@@ -256,7 +256,13 @@ field_focus_in (GtkWidget *entry, GdkEventFocus *event, FieldInfo *info)
     gtk_widget_modify_text (GTK_WIDGET (entry), GTK_STATE_NORMAL, &gray);
 
     gtk_entry_set_text (GTK_ENTRY (entry), "");
+    
   }
+  
+  /* Restore the frame & set the base colour to normal */
+  gtk_entry_set_has_frame (GTK_ENTRY (entry), TRUE);
+  gtk_widget_modify_base (entry, GTK_STATE_NORMAL, NULL);  
+  
   return FALSE;
 }
 
@@ -266,9 +272,20 @@ field_focus_in (GtkWidget *entry, GdkEventFocus *event, FieldInfo *info)
 static gboolean
 field_focus_out (GtkWidget *entry, GdkEventFocus *event, FieldInfo *info)
 {
+  GtkWidget *parent = NULL;
+  
   if (!strcmp (gtk_entry_get_text (GTK_ENTRY (entry)), "")) {
     field_set_blank (GTK_ENTRY (entry), info);
   }
+  
+  /* Remove the frame & set the base colour to the background of the parent */
+  gtk_entry_set_has_frame (GTK_ENTRY (entry), FALSE);  
+  
+  parent = gtk_widget_get_parent (entry);
+  if (parent)
+    gtk_widget_modify_base (entry, 
+                            GTK_STATE_NORMAL,
+    			    &(parent->style->bg[GTK_STATE_NORMAL]));    
   return FALSE;
 }
 
@@ -638,6 +655,13 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
   if (pane->priv->editable) {
     value = gtk_entry_new ();
+    /* Make the entry "transparent" by setting the base colour to that of
+       the parent, and removing the frame */
+    gtk_entry_set_has_frame (GTK_ENTRY (value), FALSE);
+    gtk_widget_modify_base (value, 
+                            GTK_STATE_NORMAL,
+	                    &(GTK_WIDGET (pane)->style->bg[GTK_STATE_NORMAL]));
+    
     if (attr_value)
       gtk_entry_set_text (GTK_ENTRY (value), attr_value);
     else

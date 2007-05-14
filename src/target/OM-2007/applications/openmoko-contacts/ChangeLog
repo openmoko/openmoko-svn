@@ -1,3 +1,10 @@
+2007-05-14  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Neil J Patel <njp@o-hand.com>
+
+	* src/contacts-contact-pane.c: (field_focus_in), (field_focus_out),
+	(make_widget): Remove frames from entry boxes when not focused in edit mode
+
 2007-05-01  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-callbacks-ebook.c: (contacts_added_cb):
