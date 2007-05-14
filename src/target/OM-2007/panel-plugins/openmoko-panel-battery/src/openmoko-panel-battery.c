@@ -51,7 +51,7 @@ battery_applet_free (BatteryApplet *applet)
 static gboolean
 timeout (BatteryApplet *applet)
 {
-    g_debug( "openmoko-panel-battery::timeout" );
+    // g_debug( "openmoko-panel-battery::timeout" );
 
     apm_info info;
     // How about g_new0 here?
@@ -69,8 +69,8 @@ timeout (BatteryApplet *applet)
 
     //FIXME Can we actually find out, when the battery is full?
 
-    g_debug( "-- info.battery_status = %0xd", info.battery_status );
-    g_debug( "-- info.battery_percentage = %0xd", info.battery_percentage );
+    // g_debug( "-- info.battery_status = %0xd", info.battery_status );
+    // g_debug( "-- info.battery_percentage = %0xd", info.battery_percentage );
 
     if ( info.battery_status == BATTERY_STATUS_ABSENT ||
          info.battery_status == BATTERY_STATUS_CHARGING )
