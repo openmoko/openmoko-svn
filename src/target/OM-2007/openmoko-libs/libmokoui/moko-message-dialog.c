@@ -125,10 +125,14 @@ moko_message_dialog_map (GObject *object)
 
   old_pixbuf = priv->root_pixbuf;
   priv->root_pixbuf = root_pixbuf;
-  g_object_unref (old_pixbuf);
+  if (old_pixbuf)
+    g_object_unref (old_pixbuf);
 
-  g_object_unref (priv->pixbuf);
-  priv->pixbuf = NULL;
+  if (priv->pixbuf)
+  {
+    g_object_unref (priv->pixbuf);
+    priv->pixbuf = NULL;
+  }
 
   if (GTK_WIDGET_CLASS (moko_message_dialog_parent_class)->map)
     GTK_WIDGET_CLASS (moko_message_dialog_parent_class)->map (object);

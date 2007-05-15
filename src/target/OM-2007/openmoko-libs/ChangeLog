@@ -1,3 +1,12 @@
+2007-05-15  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-message-dialog.c: (moko_message_dialog_map): Check for
+	NULL before using g_object_unref(), as the inbuilt assertion is not
+	available in openembedded.
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h:
+	Add two more stock items
+
 2007-05-10  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.h: Include gsmd/error.h (for enums)

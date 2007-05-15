@@ -35,9 +35,11 @@
 #ifndef _MOKO_STOCK_H_
 #define _MOKO_STOCK_H_
 
+#define MOKO_STOCK_CALL_ANSWER "moko-stock-call-answer"
 #define MOKO_STOCK_CALL_HANGUP "moko-stock-call-hangup"
 #define MOKO_STOCK_CALL_HOLD "moko-stock-call-hold"
 #define MOKO_STOCK_CALL_REDIAL "moko-stock-call-redial"
+#define MOKO_STOCK_CALL_REJECT "moko-stock-call-reject"
 #define MOKO_STOCK_CONTACT_ADDRESS "moko-stock-contact-address"
 #define MOKO_STOCK_CONTACT_DELETE "moko-stock-contact-delete"
 #define MOKO_STOCK_CONTACT_EMAIL "moko-stock-contact-email"
