@@ -100,7 +100,12 @@ cb_dialer_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
   gchar *number;
   number = moko_dialer_textview_get_input (appdata->moko_dialer_text_view, TRUE);
-  g_debug ("Dialing: %s", number);
+  if (!number)
+  {
+    /* show the history window if no number entered */
+    gtk_widget_show_all (appdata->window_history);
+    return;
+  }
   window_outgoing_dial (appdata, number);
 }
 

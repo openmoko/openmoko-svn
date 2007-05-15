@@ -15,26 +15,14 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-#include "moko-dialer-includes.h"
 
 #ifndef _OPENMOKO_DIALER_WINDOW_INCOMING_H
 #define _OPENMOKO_DIALER_WINDOW_INCOMING_H
 
-#ifdef __cplusplus
+#include "dialer-main.h"
 
-
-
-extern "C"
-{
-#endif
-
-
-
-  gint window_incoming_init (MokoDialerData * p_dialer_data);
-
-  void window_incoming_prepare (MokoDialerData * appdata);
-#ifdef __cplusplus
-}
-#endif
+void window_incoming_init (MokoDialerData * p_dialer_data);
+void window_incoming_prepare (MokoDialerData * appdata);
+void window_incoming_show (MokoDialerData *data);
 
 #endif

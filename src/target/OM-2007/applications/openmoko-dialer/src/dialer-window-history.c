@@ -650,6 +650,10 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
 
   j_entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
 
+  /* Bail out if we couldn't get the entry. Do we need to display a warning here? */
+  if (!j_entry)
+    return 0;
+
   while (moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry))
   {
     const gchar *uid, *number;

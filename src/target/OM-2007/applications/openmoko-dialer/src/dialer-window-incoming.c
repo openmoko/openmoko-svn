@@ -16,20 +16,9 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */  
   
-#include <libmokoui/moko-finger-tool-box.h>
-#include <libmokoui/moko-finger-window.h>
-#include <libmokoui/moko-finger-wheel.h>
-#include <libmokoui/moko-pixmap-button.h>
+#include <libmokoui/moko-ui.h>
   
-#include <gtk/gtkalignment.h>
-#include <gtk/gtkbutton.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmain.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtkmenuitem.h>
-#include <gtk/gtkvbox.h>
-  
+#include <gtk/gtk.h>
 #include "contacts.h"
 #include "dialer-main.h"
 #include "moko-dialer-status.h"
@@ -207,75 +196,27 @@ on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata)
   appdata->g_state.callstate = STATE_INCOMING;
   window_incoming_setup_timer (appdata);
   DBG_LEAVE ();
-} gint  window_incoming_init (MokoDialerData * p_dialer_data) 
-{
-  DBG_ENTER ();
-  MokoFingerWindow * window;
-  GtkWidget * vbox;
-  GtkWidget * status;
-  if (p_dialer_data->window_incoming == 0)
-    
-  {
-    vbox = gtk_vbox_new (FALSE, 0);
-    status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                         "incoming_0.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                         "incoming_1.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                         "incoming_2.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                         "incoming_3.png");
-    moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
-    gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
-    GtkWidget * hbox2 = gtk_hbox_new (FALSE, 0);
-    GtkWidget * button = gtk_button_new_with_label ("Answer");
-    gtk_button_set_image (GTK_BUTTON (button),
-                           file_new_image_from_relative_path ("answer.png"));
-    g_signal_connect (G_OBJECT (button), "clicked",
-                       G_CALLBACK (cb_answer_button_clicked), p_dialer_data);
-    gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE,
-                          10);
-    button = gtk_button_new_with_label ("Ignore");
-    g_signal_connect (G_OBJECT (button), "clicked",
-                       G_CALLBACK (cb_ignore_button_clicked), p_dialer_data);
-    gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE,
-                         10);
-    button = gtk_button_new_with_label ("Reject");
-    gtk_button_set_image (GTK_BUTTON (button),
-                           file_new_image_from_relative_path ("cancel.png"));
-    g_signal_connect (G_OBJECT (button), "clicked",
-                       G_CALLBACK (cb_reject_button_clicked), p_dialer_data);
-    gtk_box_pack_start (GTK_BOX (hbox2), GTK_WIDGET (button), TRUE, TRUE,
-                         10);
-    gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 50);
-    
-//currently     MokoDialogWindow is not finished, wating...
-//   MokoDialogWindow* window = (MokoDialogWindow *)(moko_dialog_window_new());
-//  moko_dialog_window_set_contents( window, GTK_WIDGET(vbox) );
-      window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
-    moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
-    
-      //FIXME: dear thomas, I know that show & hide is not good, but when you removed the following 2 lines, the incoming window
-      //is simply not displaying well. please have a try and then commit. If you cannot test the incoming window, you can simply modify the code to show it out debuggingly.
-      //Pardon me to re-add the 2 lines. Tony Guan 14,3,2007
-      gtk_widget_show_all (GTK_WIDGET (window));
-    gtk_widget_hide (GTK_WIDGET (window));
-    moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status),
-                                          "Incoming call");
-    moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status), "");
-    p_dialer_data->window_incoming = GTK_WIDGET (window);
-    p_dialer_data->status_incoming = MOKO_DIALER_STATUS (status);
-    
-//   DBG_MESSAGE("p_dialer_data->status_incoming=0X%x",p_dialer_data->status_incoming);
-      g_signal_connect ((gpointer) window, "show",
-                          G_CALLBACK (on_window_incoming_show),
-                          p_dialer_data);
-    g_signal_connect ((gpointer) window, "hide",
-                       G_CALLBACK (on_window_incoming_hide), p_dialer_data);
-  }
-  DBG_LEAVE ();
-  return 1;
 }
 
+void
+window_incoming_init (MokoDialerData * p_dialer_data) 
+{
+  GtkWidget * window;
 
+  if (p_dialer_data->window_incoming)
+     return;
+
+  window = moko_message_dialog_new ();
+
+  gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_ANSWER, GTK_RESPONSE_OK);
+  gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_REJECT, GTK_RESPONSE_OK);
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (window), "Incoming Call");
+
+}
+
+void
+window_incoming_show (MokoDialerData *data)
+{
+  gtk_dialog_run (data->window_incoming);
+  gtk_widget_hide (data->window_incoming);
+}

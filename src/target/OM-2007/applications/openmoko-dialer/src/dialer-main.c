@@ -15,11 +15,7 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-#include <libmokoui/moko-application.h>
-#include <libmokoui/moko-finger-tool-box.h>
-#include <libmokoui/moko-finger-window.h>
-#include <libmokoui/moko-finger-wheel.h>
-
+#include <libmokoui/moko-ui.h>
 #include <libmokogsmd/moko-gsmd-connection.h>
 
 
@@ -185,9 +181,9 @@ main (int argc, char **argv)
 
   /* Set up gsmd connection object */
   MokoGsmdConnection* conn = p_dialer_data->connection = moko_gsmd_connection_new ();
-  g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, NULL);
-  g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, NULL);
-  g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, NULL);
+  g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, p_dialer_data);
+  g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, p_dialer_data);
+  g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, p_dialer_data);
 
   /* Set up journal handling */
   p_dialer_data->journal = moko_journal_open_default ();

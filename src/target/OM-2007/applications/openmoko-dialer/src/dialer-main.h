@@ -15,6 +15,10 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
+
+#ifndef _DIALER_MAIN_H_
+#define _DIALER_MAIN_H_
+
 #include "moko-dialer-includes.h"
 #include <libmokogsmd/moko-gsmd-connection.h>
 #include <libmokojournal/moko-journal.h>
@@ -90,3 +94,5 @@ typedef struct _dialer_data
 
   GdkPixbuf *g_iconReceived, *g_iconMissed, *g_iconDialed;      ///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
 } MokoDialerData;
+
+#endif
