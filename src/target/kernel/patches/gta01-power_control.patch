@@ -11,7 +11,7 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
-@@ -0,0 +1,552 @@
+@@ -0,0 +1,558 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
 + *
@@ -325,7 +325,8 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +		ret = gps_power_3v3_get();
 +	} else if (!strcmp(attr->attr.name, "power_pll_core_2v5")) {
 +		ret = gps_power_2v5_get();
-+	} else if (!strcmp(attr->attr.name, "power_core_1v5")) {
++	} else if (!strcmp(attr->attr.name, "power_core_1v5") ||
++		   !strcmp(attr->attr.name, "power_vdd_core_1v5")) {
 +		ret = gps_power_1v5_get();
 +	}
 +
@@ -353,7 +354,8 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +		gps_power_3v3_set(on);
 +	} else if (!strcmp(attr->attr.name, "power_pll_core_2v5")) {
 +		gps_power_2v5_set(on);
-+	} else if (!strcmp(attr->attr.name, "power_core_1v5")) {
++	} else if (!strcmp(attr->attr.name, "power_core_1v5") ||
++		   !strcmp(attr->attr.name, "power_vdd_core_1v5")) {
 +		gps_power_1v5_set(on);
 +	}
 +
@@ -445,6 +447,7 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +static DEVICE_ATTR(power_lp_io_3v3, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_pll_core_2v5, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_core_1v5, 0644, power_gps_read, power_gps_write);
++static DEVICE_ATTR(power_vdd_core_1v5, 0644, power_gps_read, power_gps_write);
 +static DEVICE_ATTR(power_sequence, 0644, power_sequence_read, power_sequence_write);
 +
 +#ifdef CONFIG_PM
@@ -475,8 +478,9 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +	&dev_attr_power_lp_io_3v3.attr,
 +	&dev_attr_power_pll_core_2v5.attr,
 +	&dev_attr_power_sequence.attr,
-+	NULL,
-+	NULL
++	NULL,	/* power_core_1v5 */
++	NULL,	/* power_vdd_core_1v5 */
++	NULL	/* terminating entry */
 +};
 +
 +static struct attribute_group gta01_gps_attr_group = {
@@ -522,8 +526,10 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +		break;
 +	case GTA01Bv3_SYSTEM_REV:
 +	case GTA01Bv4_SYSTEM_REV:
-+		gta01_gps_sysfs_entries[ARRAY_SIZE(gta01_gps_sysfs_entries)-2] =
++		gta01_gps_sysfs_entries[ARRAY_SIZE(gta01_gps_sysfs_entries)-3] =
 +							&dev_attr_power_core_1v5.attr;
++		gta01_gps_sysfs_entries[ARRAY_SIZE(gta01_gps_sysfs_entries)-2] =
++							&dev_attr_power_vdd_core_1v5.attr;
 +		break;
 +	}
 +
