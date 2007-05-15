@@ -441,6 +441,6 @@ Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2440/hxd8.h
 +#define HXD8_GPIO_USB_PULLUP	S3C2410_GPB9
 +#define HXD8_GPIO_PCF50606	S3C2410_GPF6
 +
-+#define HXD8_IRQ_PCF50606	S3C2410_GPF6_EINT6
++#define HXD8_IRQ_PCF50606	IRQ_EINT6
 +
 +#endif
