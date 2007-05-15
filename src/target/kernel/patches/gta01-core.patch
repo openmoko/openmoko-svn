@@ -31,7 +31,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,742 @@
+@@ -0,0 +1,753 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -704,6 +704,12 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +	s3c24xx_set_board(&gta01_board);
 +}
 +
++static irqreturn_t gta01_modem_irq(int irq, void *param)
++{
++	printk(KERN_DEBUG "modem wakeup interrupt\n");
++	return IRQ_HANDLED;
++}
++
 +static void __init gta01_machine_init(void)
 +{
 +	if (system_rev == GTA01v4_SYSTEM_REV ||
@@ -761,6 +767,11 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +	platform_device_register(&gta01_led_dev);
 +
 +	s3c2410_pm_init();
++
++	set_irq_type(GTA01_IRQ_MODEM, IRQT_RISING);
++	request_irq(GTA01_IRQ_MODEM, gta01_modem_irq,
++		    SA_INTERRUPT, "modem", NULL);
++	enable_irq_wake(GTA01_IRQ_MODEM);
 +}
 +
 +MACHINE_START(NEO1973_GTA01, "GTA01")
@@ -778,7 +789,7 @@ Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,70 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
 +
@@ -812,6 +823,7 @@ Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
 +#define GTA01_GPIO_HOLD_KEY	S3C2410_GPF7
 +#define GTA01_GPIO_VIBRATOR_ON	S3C2410_GPG11
 +
++#define GTA01_IRQ_MODEM		IRQ_EINT1
 +#define GTA01_IRQ_JACK_INSERT	IRQ_EINT4
 +#define GTA01_IRQ_nSD_DETECT	IRQ_EINT5
 +#define GTA01_IRQ_AUX_KEY	IRQ_EINT6
