@@ -29,7 +29,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,393 @@
+@@ -0,0 +1,401 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -164,6 +164,14 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +static struct s3c2410_nand_set hxd8_nand_sets[] = {
 +	[0] = {
 +		.name		= "hxd8-nand",
++		.nr_chips	= 1,
++	},
++	[1] = {
++		.name		= "hxd8-nand-1",
++		.nr_chips	= 1,
++	},
++	[2] = {
++		.name		= "hxd8-nand-2",
 +		.nr_chips	= 1,
 +	},
 +};
