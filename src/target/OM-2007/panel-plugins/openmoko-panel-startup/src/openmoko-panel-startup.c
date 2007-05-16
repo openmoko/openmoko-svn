@@ -146,7 +146,7 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 			}
 
 			item->next = NULL;
-			item->id = strdup(id);
+			item->id = g_strdup(id);
 			t = time(NULL);
 			item->when = t + TIMEOUT;
 

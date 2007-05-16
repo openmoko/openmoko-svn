@@ -1,3 +1,10 @@
+2007-05-17 Stefan Schmidt <stefan@openmoko.org>
+
+        * src/openmoko-panel-startup.c:
+        (monitor_event_func):
+		As C99 is policy in openmoko we can't use strdup. So we use g_strdup
+		instead
+
 2007-05-16  Stefan Schmidt <stefan@openmoko.org>
 
 	* ChangeLog:
