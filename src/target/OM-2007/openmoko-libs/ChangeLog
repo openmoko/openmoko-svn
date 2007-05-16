@@ -1,3 +1,8 @@
+2007-05-16  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
+	(moko_gsmd_connection_voice_dial): Fix logic
+
 2007-05-15  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-message-dialog.c: (moko_message_dialog_map): Check for

@@ -357,7 +357,7 @@ void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* numb
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     g_return_if_fail( number );
-    g_return_if_fail( strlen( number ) < 2 );
+    g_return_if_fail( strlen( number ) > 2 );
     struct lgsm_addr addr;
     addr.type = 129; //???
     g_stpcpy( &addr.addr[0], number );
