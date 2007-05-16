@@ -1,0 +1,3 @@
+2007-05-16  Mickey Lauer <mickey@openmoko.org>
+
+* gsmd.c (gsmd_initsettings): always power off gsm to have a sane starting point
