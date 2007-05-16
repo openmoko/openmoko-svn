@@ -19,6 +19,7 @@
 #include <glib.h>
 #include <X11/Xlib.h>
 #include <dbus/dbus.h>
+#include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <glib/gthread.h>
 #include <pthread.h>
@@ -31,11 +32,11 @@
 /**
 *@brief footer leftbutton clicked callback function
 *@param widget	GtkWidget reference
-*@param my_data	user data
+*@param user_data	user data
 *@return none
 */
-void 
-footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data)
+gboolean
+footer_leftbutton_clicked(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
     switch (fork())
     {
@@ -47,6 +48,8 @@ footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data)
           g_debug ("Failed to fork()");
           break;
      }
+
+     return TRUE;
 }
 
 
@@ -54,11 +57,11 @@ footer_leftbutton_clicked(GtkWidget *widget, gpointer my_data)
 /**
 *@brief footer rightbutton clicked callback function
 *@param widget	GtkWidget reference
-*@param my_data	user data
+*@param user_data	user data
 *@return none
 */
-void 
-footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data)
+gboolean
+footer_rightbutton_clicked(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
     XEvent ev;
     int done = 0;
@@ -100,7 +103,7 @@ footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data)
     {
       g_debug ("tap");
       mbcommand(dpy, MB_CMD_NEXT, NULL);
-      return;
+      return TRUE;
     }
   //function for "tap with hold" action, pop a popupmenu to change time format.
     else if (done == 2)
@@ -114,6 +117,7 @@ footer_rightbutton_clicked(GtkWidget *widget, gpointer my_data)
   	mbcommand(dpy, MB_CMD_DESKTOP, NULL);
   }
   */
+    return TRUE;
 }
 
 GdkFilterReturn

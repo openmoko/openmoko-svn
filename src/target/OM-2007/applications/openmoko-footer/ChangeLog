@@ -1,0 +1,10 @@
+2007-05-16  Daniel Willmann <daniel@totalueberwachung.de>
+
+        * AUTHORS:
+        * ChangeLog:
+
+        * src/callbacks.c:
+        (footer_leftbutton_clicked):
+        (footer_rightbutton_clicked):
+        * src/callbacks.h:
+        Fix the signature of the callback functions
