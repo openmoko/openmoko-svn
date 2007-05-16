@@ -199,11 +199,11 @@ on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata)
 }
 
 void
-window_incoming_init (MokoDialerData * p_dialer_data) 
+window_incoming_init (MokoDialerData * data) 
 {
   GtkWidget * window;
 
-  if (p_dialer_data->window_incoming)
+  if (data->window_incoming)
      return;
 
   window = moko_message_dialog_new ();
@@ -211,6 +211,8 @@ window_incoming_init (MokoDialerData * p_dialer_data)
   gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_ANSWER, GTK_RESPONSE_OK);
   gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_REJECT, GTK_RESPONSE_CANCEL);
   moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (window), "Incoming call");
+
+  data->window_incoming = window;
 
 }
 
