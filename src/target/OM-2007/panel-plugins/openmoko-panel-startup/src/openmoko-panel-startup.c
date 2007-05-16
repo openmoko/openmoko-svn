@@ -28,6 +28,8 @@
  * SOFTWARE.
  */
 
+#include <libmokoui/moko-panel-applet.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -249,6 +251,8 @@ static GdkFilterReturn filter_func(GdkXEvent *gdk_xevent, GdkEvent *event, Start
 G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 						  GtkOrientation orientation)
 {
+    MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
+
 	StartupApplet *applet;
 	Display *xdisplay;
 	SnMonitorContext *context;
@@ -266,14 +270,14 @@ G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 
 	/* preload pixbufs */
 	guint i = 0;
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-0.png", NULL);
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-1.png", NULL);
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-2.png", NULL);
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-3.png", NULL);
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-4.png", NULL);
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-5.png", NULL);
-	applet->hglass[i++] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-6.png", NULL);
-	applet->hglass[i] = gdk_pixbuf_new_from_file(DATADIR "/hourglass-7.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-0.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-1.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-2.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-3.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-4.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-5.png", NULL);
+	applet->hglass[i++] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-6.png", NULL);
+	applet->hglass[i] = gdk_pixbuf_new_from_file(PKGDATADIR "/hourglass-7.png", NULL);
 
 	xdisplay = GDK_DISPLAY_XDISPLAY
 				(gtk_widget_get_display(GTK_WIDGET (applet->image)));
@@ -300,7 +304,8 @@ G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 	/* Show! */
 	applet->eventbox = gtk_event_box_new();
 	gtk_container_add(GTK_CONTAINER(applet->eventbox), GTK_WIDGET(applet->image));
-	gtk_widget_show_all(GTK_WIDGET(applet->eventbox));
+	moko_panel_applet_set_widget( MOKO_PANEL_APPLET(mokoapplet), GTK_WIDGET(applet->image) );
+	gtk_widget_show_all(GTK_WIDGET(mokoapplet));
 
-	return GTK_WIDGET(applet->eventbox);
+	return GTK_WIDGET(mokoapplet);
 }
