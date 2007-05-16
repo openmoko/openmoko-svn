@@ -1,0 +1,41 @@
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* ChangeLog:
+	  Switch to changelog commit style
+
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* src/openmoko-panel-startup.c: Use libmokoui
+	  Adjust PATH for images
+
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* configure.ac, src/Makefile.am: Adjust dependencies for
+	  libstartup-notification
+
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* src/Makefile.am: The applet needs libstartup-notification
+
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* src/Makefile.am, src/openmoko-panel-startup.c: Not yet, but
+	  hopefully soon, upstream version from startup-notification
+	  applet.
+	  NOTE: This version is only checked in to have the full changes in
+	  svn history.
+
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* data/Makefile.am, data/hourglass-0.png, data/hourglass-1.png,
+	  data/hourglass-2.png, data/hourglass-3.png, data/hourglass-4.png,
+	  data/hourglass-5.png, data/hourglass-6.png, data/hourglass-7.png:
+	  o Applet images and Makefile
+
+2007-05-16  Stefan Schmidt <stefan@openmoko.org>
+
+	* ., AUTHORS, ChangeLog, Makefile.am, NEWS, README, autogen.sh,
+	  configure.ac, data, openmoko-panel-startup.pro, src: o Prepare
+	  infrastructure for new startup-notification matchbox-panel-2
+	  applet.
+
