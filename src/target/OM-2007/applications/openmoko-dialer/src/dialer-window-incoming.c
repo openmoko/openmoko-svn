@@ -217,6 +217,11 @@ window_incoming_init (MokoDialerData * p_dialer_data)
 void
 window_incoming_show (MokoDialerData *data)
 {
+  if (!data->window_incoming)
+  {
+    window_incoming_init (data);
+  }
+
   if (gtk_dialog_run (GTK_DIALOG (data->window_incoming)) == GTK_RESPONSE_OK)
   {
     moko_gsmd_connection_voice_accept (data->connection);
