@@ -228,6 +228,8 @@ window_incoming_show (MokoDialerData *data)
   {
     moko_gsmd_connection_voice_accept (data->connection);
     /* dialer_window_talking_show (data); */
+    if (!data->window_talking)
+      window_talking_init ();
     gtk_widget_show_all (data->window_talking);
   }
   else

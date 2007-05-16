@@ -218,6 +218,10 @@ on_window_talking_hide (GtkWidget * widget, MokoDialerData * appdata)
   gtk_widget_hide (appdata->toolbox_talking);
 
   moko_dialer_textview_empty (appdata->moko_dtmf_text_view);
+
+  /* talking window has been hidden, so we should probably make sure the... */
+  moko_gsmd_connection_voice_hangup (data->connection);
+
 /*  add_histroy_entry (appdata, appdata->g_state.historytype,
                      appdata->g_peer_info.name,
                      appdata->g_peer_info.number,
@@ -367,12 +371,6 @@ window_talking_init (MokoDialerData * p_dialer_data)
                       G_CALLBACK (on_window_talking_hide), p_dialer_data);
 
 
-    //now the wheel and tool box, why should the wheel and toolbox created after the gtk_widget_show_all???
-    //please refer to bug 175.
-    //FIXME:Dear Thomas, please modify the libmokoui before deleting the show_all & hide codes. I don't want to splash
-    //any window either, but for now, it's the most convenient way to debug the application. We will remove it, but later, OK?
-    //Tony Guan 14/3/2007
-    gtk_widget_show_all (GTK_WIDGET (window));
     gtk_widget_hide (content_dtmf);     //And this line is necessary because dtmf interface & talking interface share the same window.
     //we have to hide it first.
     wheel = moko_finger_window_get_wheel (window);
