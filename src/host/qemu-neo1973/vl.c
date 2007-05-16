@@ -4309,6 +4309,18 @@ static int usb_device_add(const char *devname)
     USBDevice *dev;
     USBPort *port;
 
+    if (strstart(devname, "gadget", &p)) {
+        dev = usb_gadget;
+        port = host_usb_ports;
+        if (!dev || !port)
+            return -1;
+        if (p[0] == ':')
+            usb_gadget_config_set(port, strtoul(&p[1], NULL, 0));
+        else if (p[0] != 0)
+            return -1;
+        goto attach;
+    }
+
     if (!free_usb_ports)
         return -1;
 
@@ -4325,16 +4337,6 @@ static int usb_device_add(const char *devname)
         if (nr >= (unsigned int) nb_nics || strcmp(nd_table[nr].model, "usb"))
             return -1;
         dev = usb_net_init(&nd_table[nr]);
-    } else if (strstart(devname, "gadget", &p)) {
-        dev = usb_gadget;
-        port = host_usb_ports;
-        if (!dev || !port)
-            return -1;
-        if (p[0] == ':')
-            usb_gadget_config_set(port, strtoul(&p[1], NULL, 0));
-        else if (p[0] != 0)
-            return -1;
-        goto attach;
     } else {
         return -1;
     }

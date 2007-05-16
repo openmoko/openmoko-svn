@@ -71,24 +71,33 @@ ${make} $flash_image || exit -1
 # Launch the emulator assuming that u-boot is now functional enough
 # for us to be able to issue u-boot commands.
 # This is also an example of how you *shouldn't* write scripts.
+# We should parse the u-boot output for command prompt lines and only
+# issue commands when u-boot is awaiting them.
 emu () {
 	$qemu -mtdblock "$script_dir/$flash_image" -kernel "$script_dir/$1" \
 		-serial stdio -nographic -usb -monitor null <&0 & pid=$!
 }
 uboot () {
 	cd $src_dir
-	emu $1 <<< "$3"
+	emu $1 <<< "                               
+$3
+neo1973 power-off
+"
 	echo Please wait, programming the NAND flash...
-	sleep $2
-	kill $pid # Ugly, use the qemu monitor instead
-	sleep 1
-	kill -9 $pid
-	sleep 1
+	(sleep $2; kill $pid; sleep 1; kill -KILL $pid)& timer=$!
+	if ! wait $pid; then
+		kill $timer
+		echo
+		echo U-boot failed to finish writing in $2 seconds, giving up.
+		echo
+		exit -1
+	fi
+	kill $timer
 	cd $script_dir
 }
 
 # Set up BBT, u-boot environment, boot menu and program u-boot binary.
-uboot $uboot_image 40 "               
+uboot $uboot_image 300 "
 setenv dontask y
 nand createbbt
 setenv bootcmd 'setenv bootargs \${bootargs_base} \${mtdparts}; bootm $kernel_addr'
@@ -103,15 +112,15 @@ dynenv set u-boot_env
 saveenv"
 
 # Program bootsplash.
-uboot splash.gz 10 "               
+uboot splash.gz 60 "
 nand write.e $kernel_addr splash $splash_size"
 
 # Program the kernel binary.
-uboot $kernel_image 10 "               
+uboot $kernel_image 60 "
 nand write.e $kernel_addr kernel $kernel_size"
 
 # Program the root filesystem.
-uboot $rootfs_image 20 "               
+uboot $rootfs_image 120 "
 nand write.jffs2 $kernel_addr rootfs $rootfs_size"
 
 # Make the kernel image accessible under a fixed name
