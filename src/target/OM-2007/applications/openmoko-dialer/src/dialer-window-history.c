@@ -645,7 +645,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   /* if there aren't any entries in the journal, we don't need to do any more
    * here
    */
-  if (moko_journal_get_nb_entries (p_dialer_data->journal))
+  if (!p_dialer_data->journal || moko_journal_get_nb_entries (p_dialer_data->journal))
     return 1;
 
   j_entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
