@@ -144,9 +144,6 @@ main (int argc, char **argv)
 {
   pid_t lockapp;
 
-  /* Initialize GTK+ */
-  gtk_init (&argc, &argv);
-  moko_stock_register ();
 
   if (argc != 1)
   {
@@ -160,6 +157,7 @@ main (int argc, char **argv)
 
     g_option_context_free (context);
   }
+
   //FIXME: the following lines to enable unique instance will be changed.
   lockapp = testlock ("/tmp/dialer.lock");
   if (lockapp > 0)
@@ -169,6 +167,9 @@ main (int argc, char **argv)
   }
   setlock ("/tmp/dialer.lock");
 
+  /* Initialize GTK+ */
+  gtk_init (&argc, &argv);
+  moko_stock_register ();
 
   p_dialer_data = g_new0 (MokoDialerData, 1);
 
@@ -181,6 +182,9 @@ main (int argc, char **argv)
 
   /* Set up gsmd connection object */
   MokoGsmdConnection* conn = p_dialer_data->connection = moko_gsmd_connection_new ();
+  moko_gsmd_connection_set_antenna_power (conn, TRUE);
+  sleep (4); /* FIXME: this is horrible */
+  moko_gsmd_connection_network_register (conn);
   g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, p_dialer_data);

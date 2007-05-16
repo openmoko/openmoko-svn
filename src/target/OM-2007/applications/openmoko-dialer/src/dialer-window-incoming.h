@@ -24,5 +24,7 @@
 void window_incoming_init (MokoDialerData * p_dialer_data);
 void window_incoming_prepare (MokoDialerData * appdata);
 void window_incoming_show (MokoDialerData *data);
+void window_incoming_update_message (MokoDialerData *data, const gchar *clip);
+
 
 #endif

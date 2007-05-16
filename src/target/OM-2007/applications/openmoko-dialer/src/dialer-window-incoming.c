@@ -209,14 +209,30 @@ window_incoming_init (MokoDialerData * p_dialer_data)
   window = moko_message_dialog_new ();
 
   gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_ANSWER, GTK_RESPONSE_OK);
-  gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_REJECT, GTK_RESPONSE_OK);
-  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (window), "Incoming Call");
+  gtk_dialog_add_button (GTK_DIALOG (window), MOKO_STOCK_CALL_REJECT, GTK_RESPONSE_CANCEL);
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (window), "Incoming call");
 
 }
 
 void
 window_incoming_show (MokoDialerData *data)
 {
-  gtk_dialog_run (data->window_incoming);
+  if (gtk_dialog_run (GTK_DIALOG (data->window_incoming)) == GTK_RESPONSE_OK)
+  {
+    moko_gsmd_connection_voice_accept (data->connection);
+    /* dialer_window_talking_show (data); */
+    gtk_widget_show_all (data->window_talking);
+  }
+  else
+  {
+    moko_gsmd_connection_voice_hangup (data->connection);
+  }
+
   gtk_widget_hide (data->window_incoming);
+}
+
+void
+window_incoming_update_message (MokoDialerData *data, const gchar *clip)
+{
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_incoming), "Incoming call from %s", clip);
 }

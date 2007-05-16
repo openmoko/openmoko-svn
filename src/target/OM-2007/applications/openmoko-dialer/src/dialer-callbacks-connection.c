@@ -17,7 +17,8 @@ incoming_call_cb (MokoGsmdConnection *self, int type, MokoDialerData *data)
 }
 
 void
-incoming_clip_cb (MokoGsmdConnection *self, const char *number)
+incoming_clip_cb (MokoGsmdConnection *self, const char *number, MokoDialerData *data)
 {
   /* caller id */
+  window_incoming_update_message (data, number);
 }
