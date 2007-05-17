@@ -250,13 +250,13 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 void
 call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data)
 {
-  if (type == GSMD_CALLPROG_REJECT)
+  if (type == MOKO_GSMD_PROG_REJECT)
   {
     g_debug ("call rejected");
     return;
   }
 
-  if (type ==  GSMD_CALLPROG_CONNECTED)
+  if (type ==  MOKO_GSMD_PROG_CONNECTED)
   {
     gtk_dialog_response (data->window_outgoing, GTK_RESPONSE_OK);
   }
