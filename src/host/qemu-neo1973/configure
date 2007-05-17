@@ -928,6 +928,9 @@ fi
 if test "$target_user_only" = "no" ; then
   mkdir -p $target_dir/slirp
 fi
+if test "$target" = "arm-softmmu" ; then
+  mkdir -p $target_dir/gnokiigsm
+fi
 
 #
 # don't use ln -sf as not all "ln -sf" over write the file/link

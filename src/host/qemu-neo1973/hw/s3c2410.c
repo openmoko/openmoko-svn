@@ -133,6 +133,19 @@ static const int s3c_sub_src_map[] = {
     [S3C_PICS_ADC  & 31] = S3C_PIC_ADC,
 };
 
+static void s3c_pic_subupdate(struct s3c_pic_state_s *s)
+{
+    int next;
+    const int *sub = &s3c_sub_src_map[-1];
+    uint32_t pnd = s->subsrcpnd & ~s->intsubmsk;
+    while ((next = ffs(pnd))) {
+        sub += next;
+        pnd >>= next;
+        s->srcpnd |= 1 << *sub;
+    }
+    s3c_pic_arbitrate(s);
+}
+
 static void s3c_pic_set_irq(void *opaque, int irq, int req)
 {
     struct s3c_pic_state_s *s = (struct s3c_pic_state_s *) opaque;
@@ -145,10 +158,10 @@ static void s3c_pic_set_irq(void *opaque, int irq, int req)
     if (irq & 32) {
         irq &= 31;
         s->subsrcpnd |= 1 << irq;
-        if (~s->intsubmsk & (1 << irq))
-            irq = s3c_sub_src_map[irq];
-        else
+        if (s->intsubmsk & (1 << irq))
             return;
+        else
+            irq = s3c_sub_src_map[irq];
     }
     s->srcpnd |= (mask = 1 << irq);
 
@@ -255,6 +268,7 @@ static void s3c_pic_write(void *opaque, target_phys_addr_t addr,
         break;
     case S3C_INTSUBMSK:
         s->intsubmsk = value;
+        s3c_pic_subupdate(s);
         break;
     default:
         printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr);
@@ -1106,6 +1120,51 @@ static void s3c_uart_reset(struct s3c_uart_state_s *s)
     s->rxlen = 0;
 }
 
+static void s3c_uart_err(struct s3c_uart_state_s *s, int err)
+{
+    s->errstat |= err;
+    if (s->control & (1 << 6))
+        qemu_irq_raise(s->irq[2]);
+}
+
+inline static void s3c_uart_full(struct s3c_uart_state_s *s, int pulse)
+{
+    if (s->fcontrol & 1)			/* FIFOEnable */
+        if (s->rxlen < (((s->fcontrol >> 4) & 3) + 1) * 4)
+            return;
+
+    switch ((s->control >> 0) & 3) {		/* ReceiveMode */
+    case 1:
+        if ((s->control & (1 << 8)) || pulse)	/* RxInterruptType */
+            qemu_irq_raise(s->irq[0]);
+        break;
+    case 2:
+    case 3:
+        qemu_irq_raise(s->dma[0]);
+        break;
+    }
+}
+
+inline static void s3c_uart_empty(struct s3c_uart_state_s *s, int pulse)
+{
+    switch ((s->control >> 2) & 3) {		/* TransmitMode */
+    case 1:
+        if ((s->control & (1 << 9)) || pulse)	/* TxInterruptType */
+            qemu_irq_raise(s->irq[1]);
+        break;
+    case 2:
+    case 3:
+        qemu_irq_raise(s->dma[0]);
+        break;
+    }
+}
+
+inline static void s3c_uart_update(struct s3c_uart_state_s *s)
+{
+    s3c_uart_empty(s, 0);
+    s3c_uart_full(s, 0);
+}
+
 static void s3c_uart_params_update(struct s3c_uart_state_s *s)
 {
     QEMUSerialSetParams ssp;
@@ -1135,43 +1194,6 @@ static void s3c_uart_params_update(struct s3c_uart_state_s *s)
 
     for (i = 0; i < s->chr_num; i ++)
         qemu_chr_ioctl(s->chr[i], CHR_IOCTL_SERIAL_SET_PARAMS, &ssp);
-}
-
-static void s3c_uart_err(struct s3c_uart_state_s *s, int err)
-{
-    s->errstat |= err;
-    if (s->control & (1 << 6))
-        qemu_irq_raise(s->irq[2]);
-}
-
-static void s3c_uart_full(struct s3c_uart_state_s *s)
-{
-    if (s->fcontrol & 1)			/* FIFOEnable */
-        if (s->rxlen < (((s->fcontrol >> 4) & 3) + 1) * 4)
-            return;
-
-    switch ((s->control >> 0) & 3) {		/* ReceiveMode */
-    case 1:
-        qemu_irq_raise(s->irq[0]);
-        break;
-    case 2:
-    case 3:
-        qemu_irq_raise(s->dma[0]);
-        break;
-    }
-}
-
-static void s3c_uart_empty(struct s3c_uart_state_s *s)
-{
-    switch ((s->control >> 2) & 3) {		/* TransmitMode */
-    case 1:
-        qemu_irq_raise(s->irq[1]);
-        break;
-    case 2:
-    case 3:
-        qemu_irq_raise(s->dma[0]);
-        break;
-    }
 }
 
 static int s3c_uart_is_empty(void *opaque)
@@ -1206,7 +1228,7 @@ static void s3c_uart_rx(void *opaque, const uint8_t *buf, int size)
         s->rxlen = 1;
         s->data = buf[0];
     }
-    s3c_uart_full(s);
+    s3c_uart_full(s, 1);
 }
 
 /* S3C2410 UART doesn't seem to understand break conditions.  */
@@ -1244,14 +1266,19 @@ static uint32_t s3c_uart_read(void *opaque, target_phys_addr_t addr)
     case S3C_UTRSTAT:
         return 6 | !!s->rxlen;
     case S3C_UERSTAT:
+        /* XXX: UERSTAT[3] is Reserved but Linux thinks it is BREAK */
         ret = s->errstat;
         s->errstat = 0;
+        s3c_uart_update(s);
         return ret;
     case S3C_UFSTAT:
-        return ((!!s->rxlen) << 8) | s->rxlen;
+        s3c_uart_update(s);
+        return s->rxlen ? s->rxlen | (1 << 8) : 0;
     case S3C_UMSTAT:
-        return 1;
+        s3c_uart_update(s);
+        return 0x11;
     case S3C_URXH:
+        s3c_uart_update(s);
         if (s->rxlen) {
             s->rxlen --;
             if (s->fcontrol & 1) {		/* FIFOEnable */
@@ -1286,17 +1313,21 @@ static void s3c_uart_write(void *opaque, target_phys_addr_t addr,
                             (value & (1 << 6)) ? "on" : "off");
         s->lcontrol = value;
         s3c_uart_params_update(s);
+        s3c_uart_update(s);
         break;
     case S3C_UCON:
+        /* XXX: UCON[4] is Reserved but Linux thinks it is BREAK */
         if ((s->control ^ value) & (1 << 5))
             printf("%s: UART loopback test mode %s\n", __FUNCTION__,
                             (value & (1 << 5)) ? "on" : "off");
         s->control = value & 0x7ef;
+        s3c_uart_update(s);
         break;
     case S3C_UFCON:
         if (value & (1 << 1))			/* RxReset */
             s->rxlen = 0;
         s->fcontrol = value & 0xf1;
+        s3c_uart_update(s);
         break;
     case S3C_UMCON:
         if ((s->mcontrol ^ value) & (1 << 4)) {
@@ -1305,16 +1336,19 @@ static void s3c_uart_write(void *opaque, target_phys_addr_t addr,
                 qemu_chr_ioctl(s->chr[i], CHR_IOCTL_MODEM_HANDSHAKE, &afc);
         }
         s->mcontrol = value & 0x11;
+        s3c_uart_update(s);
         break;
     case S3C_UTXH:
         ch = value & 0xff;
         for (i = 0; i < s->chr_num; i ++)
             qemu_chr_write(s->chr[i], &ch, 1);
-        s3c_uart_empty(s);
+        s3c_uart_empty(s, 1);
+        s3c_uart_update(s);
         break;
     case S3C_UBRDIV:
         s->brdiv = value & 0xffff;
         s3c_uart_params_update(s);
+        s3c_uart_update(s);
         break;
     default:
         printf("%s: Bad register 0x%lx\n", __FUNCTION__, addr);
