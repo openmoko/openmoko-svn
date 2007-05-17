@@ -16,8 +16,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  */
-#ifndef OPENMOKO_FOOTER_H
-#define OPENMOKO_FOOTER_H
+#ifndef _FOOTER_H_
+#define _FOOTER_H_
 
 #include <glib.h>
 #include <glib-object.h>
@@ -77,4 +77,5 @@ void footer_set_status_progress (Footer *f, gdouble fraction);
 
 G_END_DECLS
 
-#endif /* OPENMOKO_FOOTER_H */
+#endif /* _FOOTER_H_ */
+

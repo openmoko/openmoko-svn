@@ -17,8 +17,8 @@
  * General Public License for more details.
  */
 
-#ifndef OM_TASK_MANAGER_H
-#define OM_TASK_MANAGER_H
+#ifndef _MAIN_H_
+#define _MAIN_H_
 
 #include <gtk/gtk.h>
 #include "footer.h"

@@ -17,6 +17,8 @@
  * General Public License for more details.
  */
 
+#ifndef _CALLBACKS_H_
+#define _CALLBACKS_H_
 
 #include <gtk/gtk.h>
 
@@ -40,3 +42,5 @@ GdkFilterReturn target_window_event_filter_cb (GdkXEvent *xevent,
 
 GdkFilterReturn root_window_event_filter_cb (GdkXEvent *xevent, 
     GdkEvent *event, gpointer user_data);
+
+#endif
