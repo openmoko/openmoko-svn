@@ -25,8 +25,8 @@
 #include <string.h>
 #include <errno.h>
 
-#undef DEBUG_THIS_FILE
 #define DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
 
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
@@ -177,7 +177,18 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         G_TYPE_INT,
         NULL);
 
-    //TODO add SIGNAL_GSMD_EVT_PIN
+    moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_PIN] = g_signal_new
+        ("pin-requested",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+        NULL,
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__INT,
+        G_TYPE_NONE,
+        1,
+        G_TYPE_INT,
+        NULL);
 
     moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS] = g_signal_new
         ("call-progress",
@@ -279,6 +290,14 @@ int _moko_gsmd_connection_eventhandler(struct lgsm_handle *lh, int evt_type, str
     return 0;
 }
 
+/* this is the handler for receiving passthrough responses */
+static int
+pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+    char *payload = (char *)gmh + sizeof(*gmh);
+    g_debug("PASSTHROUGH RESPONSE = '%s'", payload);
+}
+
 static void
 moko_gsmd_connection_init(MokoGsmdConnection* self)
 {
@@ -321,6 +340,7 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
         moko_debug( "-- registered for event %d, return code %d", i, rc );
     }
 
+    lgsm_register_handler( priv->handle, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
 }
 
 /* public API */
@@ -369,4 +389,11 @@ void moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar numbe
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     lgsm_voice_dtmf( priv->handle, number );
+}
+
+void moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self)
+{
+    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    g_return_if_fail( priv->handle );
+    lgsm_signal_quality( priv->handle );
 }

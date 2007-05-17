@@ -72,6 +72,7 @@ void moko_gsmd_connection_call_status_progress(MokoGsmdConnection* self, int typ
 //gprs
 void moko_gsmd_connection_incoming_clip(MokoGsmdConnection* self, const char* number);
 void moko_gsmd_connection_network_registration(MokoGsmdConnection* self, int type, int lac, int cell);
+void moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self);
 void moko_gsmd_connection_signal_strength_changed(MokoGsmdConnection* self, int strength);
 //voice
 void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self);
