@@ -1,3 +1,27 @@
+2007-05-17  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Neil J Patel <njp@o-hand.com>
+
+	* src/contacts-contact-pane.c:
+	* src/contacts-omoko.h:
+
+	- Uses colours from the theme instead of hard-coded values.
+	- Correct alignments for the GtkLabel.
+	- When a entry is in focus, its combobox will turn to an 'active' state.
+	- When a combobox is active, its entry will turn to an 'active' state.
+	- If you change the value of the combobox, it will automatically make
+	  the corresponding entry take focus (so you don't have to click twice).
+	- Added a h-sep between the picture/title/org and the rest of the
+	  fields, like in the mockups. It does need to be themed, however.
+	- Fixed a bug where selecting the 'mobile' field when the entry was 
+	  blank would crash contacts.
+	- Adding/removing fields works all the time now, and never removes the
+	  last field of its type.
+	- Updated the icon names for open-moko.
+	- When in 'view-mode', the field labels will show the corresponding icon
+	  for each type.
+
+
 2007-05-14  Thomas Wood  <thomas@openedhand.com>
 
 	Patch by: Neil J Patel <njp@o-hand.com>

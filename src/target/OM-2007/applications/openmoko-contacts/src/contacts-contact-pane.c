@@ -24,6 +24,7 @@
 #include "contacts-contact-pane.h"
 #include "contacts-utils.h"
 #include "contacts-callbacks-ebook.h"
+#include "contacts-omoko.h"
 
 G_DEFINE_TYPE (ContactsContactPane, contacts_contact_pane, GTK_TYPE_VBOX);
 
@@ -94,15 +95,16 @@ typedef struct {
 static GQuark attr_quark = 0;
 static GQuark field_quark = 0;
 static GQuark entry_quark = 0;
+static GQuark combo_quark = 0;
 
 static FieldInfo fields[] = {
   { EVC_FN, "Name", NULL, FIELD_UNIQUE | FIELD_NOLABEL,  "<big><b>%s</b></big>", NULL },
   { EVC_ORG, "Organization", NULL, FIELD_UNIQUE | FIELD_NOLABEL, "<span size=\"small\">%s</span>", NULL },
 
-  { EVC_EMAIL, "E-Mail", "stock_mail", 0, NULL, email_types },
-  { EVC_TEL, "Telephone", "stock_telephone", 0, NULL, phone_types },
-  { EVC_BDAY, "Birthday", "stock_birthday", FIELD_UNIQUE, NULL, NULL },
-  { EVC_ADR, "Address", "stock_address", FIELD_MULTILINE, NULL, email_types },
+  { EVC_EMAIL, "E-Mail", MOKO_STOCK_CONTACT_EMAIL, 0, NULL, email_types },
+  { EVC_TEL, "Telephone", MOKO_STOCK_CONTACT_PHONE, 0, NULL, phone_types },
+  { EVC_BDAY, "Birthday", "moko-stock-contact-birthday", FIELD_UNIQUE, NULL, NULL },
+  { EVC_ADR, "Address", MOKO_STOCK_CONTACT_ADDRESS, FIELD_MULTILINE, NULL, email_types },
 
   { EVC_NOTE, "Notes", NULL, FIELD_UNIQUE | FIELD_MULTILINE, NULL, NULL },
 };
@@ -186,11 +188,10 @@ strip_empty_attributes (EVCard *card)
 static void
 field_set_blank (GtkEntry *entry, FieldInfo *info)
 {
-  /* TODO: use some colour from the theme */
-  GdkColor gray;
-  gdk_color_parse ("LightGray", &gray);
   gtk_entry_set_text (GTK_ENTRY (entry), info->display_name);
-  gtk_widget_modify_text (GTK_WIDGET (entry), GTK_STATE_NORMAL, &gray);
+  gtk_widget_modify_text (GTK_WIDGET (entry), 
+                          GTK_STATE_NORMAL, 
+                          &(GTK_WIDGET (entry)->style->dark[GTK_STATE_NORMAL]));
 }
 
 /*
@@ -202,7 +203,7 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
   EVCardAttribute *attr;
   FieldInfo *info;
   const char *value;
-
+  
   attr = g_object_get_qdata (G_OBJECT (entry), attr_quark);
   g_assert (attr);
 
@@ -211,7 +212,7 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
 
 
   value = gtk_entry_get_text (GTK_ENTRY (entry));
-
+  
   /* don't save the value if we're just displaying the field name */
   if (value && !strcmp (info->display_name, value))
     return;
@@ -235,11 +236,47 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
   {
     g_signal_emit (pane, contacts_contact_pane_signals[FULLNAME_CHANGED], 0, pane->priv->contact);
   }
-  else if (info->vcard_field == EVC_TEL)
+  else if (info->vcard_field == EVC_TEL && (g_utf8_strlen (value, -1) > 0))
   {
     g_signal_emit (pane, contacts_contact_pane_signals[CELL_CHANGED], 0, pane->priv->contact);
   }
   pane->priv->dirty = TRUE;
+}
+
+static void
+make_entry_visible (GtkWidget *entry, gboolean visible)
+{
+  GtkWidget *parent = NULL;
+  
+  g_return_if_fail (GTK_IS_ENTRY (entry));
+  
+  if (visible) {
+    /* Restore the frame & set the base colour to normal */
+    gtk_entry_set_has_frame (GTK_ENTRY (entry), TRUE);
+    gtk_widget_modify_base (entry, GTK_STATE_NORMAL, NULL); 
+    
+  } else {
+    /* Remove the frame & set the base colour to the background of the parent */
+    gtk_entry_set_has_frame (GTK_ENTRY (entry), FALSE);  
+  
+    parent = gtk_widget_get_parent (entry);
+    if (parent)
+      gtk_widget_modify_base (entry, 
+                            GTK_STATE_NORMAL,
+    			    &(parent->style->bg[GTK_STATE_NORMAL]));       
+  }
+}
+
+static void
+change_state_cb (GtkWidget *widget, gpointer bool)
+{
+  if (GPOINTER_TO_INT  (bool)) {
+    /* We want to 'active' the widget */
+    gtk_widget_set_state (widget, GTK_STATE_PRELIGHT);
+  } else {
+    /* We want to return its state to normal */
+    gtk_widget_set_state (widget, GTK_STATE_NORMAL);
+  }
 }
 
 /*
@@ -248,20 +285,28 @@ field_changed (GtkWidget *entry, ContactsContactPane *pane)
 static gboolean
 field_focus_in (GtkWidget *entry, GdkEventFocus *event, FieldInfo *info)
 {
+  GtkWidget *combo;
+  
   if (!strcmp (gtk_entry_get_text (GTK_ENTRY (entry)), info->display_name)) {
-    /* TODO: use some colour from the theme */
-    GdkColor gray;
-    gdk_color_parse ("Black", &gray);
-    gtk_entry_set_text (GTK_ENTRY (entry), info->display_name);
-    gtk_widget_modify_text (GTK_WIDGET (entry), GTK_STATE_NORMAL, &gray);
+    gtk_widget_modify_text (GTK_WIDGET (entry), 
+                            GTK_STATE_NORMAL, 
+                            NULL);
 
     gtk_entry_set_text (GTK_ENTRY (entry), "");
     
   }
   
+  /* Set the combo to 'active' */
+  combo = (GtkWidget*)g_object_get_qdata (G_OBJECT (entry), combo_quark);
+  if (GTK_IS_CONTAINER (combo)) {
+    gtk_container_forall (GTK_CONTAINER (combo), 
+                          (GtkCallback)change_state_cb,
+                          GINT_TO_POINTER (1));    
+    gtk_widget_queue_draw (combo);
+  }
+  
   /* Restore the frame & set the base colour to normal */
-  gtk_entry_set_has_frame (GTK_ENTRY (entry), TRUE);
-  gtk_widget_modify_base (entry, GTK_STATE_NORMAL, NULL);  
+  make_entry_visible (entry, TRUE);  
   
   return FALSE;
 }
@@ -272,20 +317,22 @@ field_focus_in (GtkWidget *entry, GdkEventFocus *event, FieldInfo *info)
 static gboolean
 field_focus_out (GtkWidget *entry, GdkEventFocus *event, FieldInfo *info)
 {
-  GtkWidget *parent = NULL;
+  GtkWidget *combo;
   
   if (!strcmp (gtk_entry_get_text (GTK_ENTRY (entry)), "")) {
     field_set_blank (GTK_ENTRY (entry), info);
   }
   
+  /* Set the combo to 'normal' */
+  combo = (GtkWidget*)g_object_get_qdata (G_OBJECT (entry), combo_quark);
+  if (GTK_IS_CONTAINER (combo)) {
+    gtk_container_forall (GTK_CONTAINER (combo), 
+                          (GtkCallback)change_state_cb,
+                          GINT_TO_POINTER (0));
+    gtk_widget_queue_draw (combo);
+  }
   /* Remove the frame & set the base colour to the background of the parent */
-  gtk_entry_set_has_frame (GTK_ENTRY (entry), FALSE);  
-  
-  parent = gtk_widget_get_parent (entry);
-  if (parent)
-    gtk_widget_modify_base (entry, 
-                            GTK_STATE_NORMAL,
-    			    &(parent->style->bg[GTK_STATE_NORMAL]));    
+  make_entry_visible (entry, FALSE);     
   return FALSE;
 }
 
@@ -415,7 +462,8 @@ set_type_cb (GtkWidget *widget, EVCardAttribute *attr)
   gchar *vcard_type = NULL;
   GtkWidget *box;
   FieldInfo *info;
-
+  gpointer entry;
+  
   /* TODO: use quarks here */
   gchar *display_type = gtk_combo_box_get_active_text (GTK_COMBO_BOX (widget));
   ContactsContactPane *pane = g_object_get_data (G_OBJECT (widget), "contact-pane");
@@ -429,6 +477,8 @@ set_type_cb (GtkWidget *widget, EVCardAttribute *attr)
 
   for (i = 0; &(info->types[i]); i++)
   {
+     if (!info->types[i].display)
+       continue;
      /* search the types array */
      if (!strcmp (info->types[i].display, display_type))
      {
@@ -439,6 +489,12 @@ set_type_cb (GtkWidget *widget, EVCardAttribute *attr)
 
   set_type (attr, vcard_type);
   pane->priv->dirty = TRUE;
+  
+  /* Finally, activate the associated entry */  
+  entry = g_object_get_data (G_OBJECT (widget), "entry");
+  if (GTK_IS_ENTRY (entry)) {
+    gtk_widget_grab_focus (GTK_WIDGET (entry));
+  }
 }
 
 static void
@@ -478,9 +534,10 @@ field_button_remove_cb (GtkWidget *button,  ContactsContactPane *pane)
   GtkWidget *box, *entry;
   EVCardAttribute *attr;
   FieldInfo *info;
-  GList *attrs;
-  gboolean remove = FALSE;
-  gchar *type, *old_type;
+  GList *rows = gtk_container_get_children (GTK_CONTAINER (pane));
+  GList *r;
+  gint res = 0;
+  
 
   box = button->parent->parent;
   if (!GTK_IS_HBOX (box))
@@ -490,21 +547,18 @@ field_button_remove_cb (GtkWidget *button,  ContactsContactPane *pane)
   entry = g_object_get_qdata (G_OBJECT (box), entry_quark);
   info = g_object_get_qdata (G_OBJECT (box), field_quark);
 
-  /* check this wasn't the last attribute of it's type before removing it */
-  old_type = get_type (attr);
-  if (old_type) {
-    for (attrs = e_vcard_get_attributes (E_VCARD (pane->priv->contact));
-         (attrs = g_list_next (attrs)); ) {
-      type = get_type (attrs->data);
-      if (type && !strcmp (type, old_type)) {
-        remove = TRUE;
-        break;
-      }
-
+  /* Check this isn't the last field of this type */
+  for (r = rows; r != NULL; r = r->next) {
+    GtkWidget *row = r->data;
+    FieldInfo *i = g_object_get_qdata (G_OBJECT (row), field_quark);
+    
+    if (GTK_IS_HBOX (row) && i != NULL) {
+      if (strcmp (info->vcard_field, i->vcard_field) == 0)
+        res++;
     }
   }
-
-  if (remove) {
+  
+  if (res > 1) {
     gtk_container_remove (GTK_CONTAINER (pane), box);
     e_vcard_remove_attribute (E_VCARD (pane->priv->contact), attr);
   }
@@ -516,10 +570,29 @@ field_button_remove_cb (GtkWidget *button,  ContactsContactPane *pane)
 
 }
 
+static void
+combo_popup_changed_cb (GObject *gobject, GParamSpec *arg1, GtkWidget *entry)
+{
+  g_return_if_fail (GTK_IS_COMBO_BOX (gobject));
+  g_return_if_fail (GTK_IS_ENTRY (entry));
+
+  gboolean shown = FALSE;
+  g_object_get (gobject, "popup-shown", &shown, NULL);
+  
+  if (shown) {
+    make_entry_visible (entry, TRUE);
+  } else {
+    make_entry_visible (entry, FALSE);
+  }  
+}
+
 static GtkWidget *
 make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 {
-  GtkWidget *box, *type_label = NULL, *value;
+#define BUTTON_WIDTH 24
+#define BUTTON_HEIGHT 21
+
+  GtkWidget *box, *type_label = NULL, *key = NULL, *value;
   gchar *attr_value = NULL, *escaped_str, *type, *s;
   gint i = 0;
 
@@ -544,14 +617,14 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
     btn = gtk_button_new ();
     gtk_widget_set_name (btn, "addbutton");
     alignment = gtk_alignment_new (0.5, 0.5, 0, 0);
-    gtk_widget_set_size_request (btn, 24, 21);
+    gtk_widget_set_size_request (btn, BUTTON_WIDTH, BUTTON_HEIGHT);
     gtk_container_add (GTK_CONTAINER (alignment), btn);
     gtk_box_pack_start (GTK_BOX (box), alignment, FALSE, FALSE, 0);
     g_signal_connect (G_OBJECT (btn), "clicked", G_CALLBACK (field_button_add_cb), pane);
 
     btn = gtk_button_new ();
     gtk_widget_set_name (btn, "removebutton");
-    gtk_widget_set_size_request (btn, 24, 21);
+    gtk_widget_set_size_request (btn, BUTTON_WIDTH, BUTTON_HEIGHT);
     alignment = gtk_alignment_new (0.5, 0.5, 0, 0);
     gtk_container_add (GTK_CONTAINER (alignment), btn);
     gtk_box_pack_start (GTK_BOX (box), alignment, FALSE, FALSE, 0);
@@ -563,7 +636,8 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
   if (!FIELD_IS_NOLABEL (info) && (!pane->priv->editable || FIELD_IS_UNIQUE(info)))
   {
     s = NULL;
-
+    GtkWidget *align;
+    
     /* Unique fields don't have different types, so just use the display name
      * for the label */
     if (FIELD_IS_UNIQUE (info))
@@ -587,13 +661,22 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
         s = g_strdup_printf ("%s:", type);
       }
     }
-
+    /* Pack into an alignment with a left padding of twice the BUTTON_WIDTH size
+       so we take into account the missing buttons-width, which the comboboxes
+       will have */
+    align  = gtk_alignment_new (0.5, 0.5, 1, 1);
+    gtk_alignment_set_padding (GTK_ALIGNMENT (align), 0, 0, BUTTON_WIDTH *2, 0);
 
     type_label = gtk_label_new (s);
+    key = type_label;
     gtk_widget_set_name (type_label, "fieldlabel");
+    gtk_widget_set_size_request (type_label, -1, 46);
+    gtk_misc_set_alignment (GTK_MISC (type_label), 0.0, 0.5);
+    
     if (pane->priv->size_group)
       gtk_size_group_add_widget (pane->priv->size_group, type_label);
-    gtk_box_pack_start (GTK_BOX (box), type_label, FALSE, FALSE, 4);
+    gtk_container_add (GTK_CONTAINER (align), type_label);
+    gtk_box_pack_start (GTK_BOX (box), align, FALSE, FALSE, 4);
     g_free (s);
   }
 
@@ -603,6 +686,7 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
     GtkWidget *combo;
     gboolean is_custom_type = TRUE;
     combo = gtk_combo_box_new_text ();
+    key = combo;
     gtk_widget_set_size_request (combo, -1, 46);
     i = 0;
 
@@ -622,9 +706,9 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
        gtk_combo_box_append_text (GTK_COMBO_BOX (combo), type);
        gtk_combo_box_set_active (GTK_COMBO_BOX (combo), i);
     }
-
     g_object_set_data (G_OBJECT (combo), "contact-pane", pane);
     g_signal_connect (G_OBJECT (combo), "changed", G_CALLBACK (set_type_cb), attr);
+    g_object_notify (G_OBJECT (combo), "popup-shown");
     if (pane->priv->size_group)
       gtk_size_group_add_widget (pane->priv->size_group, combo);
     gtk_box_pack_start (GTK_BOX (box), combo, FALSE, FALSE, 4);
@@ -655,6 +739,8 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
 
   if (pane->priv->editable) {
     value = gtk_entry_new ();
+    gtk_widget_set_size_request (value, -1, 34);
+    
     /* Make the entry "transparent" by setting the base colour to that of
        the parent, and removing the frame */
     gtk_entry_set_has_frame (GTK_ENTRY (value), FALSE);
@@ -666,28 +752,67 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
       gtk_entry_set_text (GTK_ENTRY (value), attr_value);
     else
     {
-      /* this is a field that doesn't have a value yet */
-      field_set_blank (GTK_ENTRY (value), info);
+      gtk_entry_set_text (GTK_ENTRY (value), info->display_name);
+      gtk_widget_modify_text (GTK_WIDGET (value), 
+                          GTK_STATE_NORMAL, 
+                          &(GTK_WIDGET (pane)->style->dark[GTK_STATE_NORMAL]));
     }
 
     g_object_set_qdata (G_OBJECT (value), attr_quark, attr);
     g_object_set_qdata (G_OBJECT (value), field_quark, (gpointer)info);
+    if (key) {
+      g_object_set_qdata (G_OBJECT (value), combo_quark, (gpointer)key);
+      if (GTK_IS_COMBO_BOX (key)) {
+        g_signal_connect (G_OBJECT (key), "notify", 
+                          G_CALLBACK (combo_popup_changed_cb), (gpointer)value);
+        g_object_set_data (G_OBJECT (key), "entry", (gpointer)value);
+      }
+    }
     g_signal_connect (value, "changed", G_CALLBACK (field_changed), pane);
     g_signal_connect (value, "focus-in-event", G_CALLBACK (field_focus_in), info);
     g_signal_connect (value, "focus-out-event", G_CALLBACK (field_focus_out), info);
+  
   } else {
+    GtkWidget *label, *image;
+    GdkPixbuf *pixbuf = NULL;
+    gchar *icon = NULL;
+    
     if (!attr_value)
       attr_value = g_strdup ("");
     if (info->format)
     {
       escaped_str = g_markup_printf_escaped (info->format, attr_value);
-      value = gtk_label_new (NULL);
-      gtk_label_set_markup (GTK_LABEL (value), escaped_str);
+      label = gtk_label_new (NULL);
+      gtk_label_set_markup (GTK_LABEL (label), escaped_str);
       g_free (escaped_str);
     }
     else
-      value = gtk_label_new (attr_value);
-    gtk_misc_set_alignment (GTK_MISC (value), 0.0, 0.5);
+      label = gtk_label_new (attr_value);
+    
+    gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+    
+    /* Load the correct pixbuf */
+    icon = info->icon;
+    if (icon)
+      pixbuf = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
+                                         icon,
+                                         24,
+                                         0, NULL);
+    if (pixbuf) {
+      value = gtk_hbox_new (FALSE, 10);
+      
+      image = gtk_image_new_from_pixbuf (pixbuf);
+      gtk_box_pack_start (GTK_BOX (value), image, FALSE, FALSE, 0);
+      gtk_box_pack_start (GTK_BOX (value), label, TRUE, TRUE, 0);
+      
+    } else
+      value = label;
+    
+    /* We want to remove any size-requests as we are in viewmode */
+    if (key) {
+      gtk_widget_set_size_request (key, -1, 24);
+      gtk_misc_set_alignment (GTK_MISC (key), 1, 0.5);
+    }
   }
   gtk_box_pack_start (GTK_BOX (box), value, TRUE, TRUE, 4);
 
@@ -723,6 +848,7 @@ update_ui (ContactsContactPane *pane)
   g_assert (CONTACTS_IS_CONTACT_PANE (pane));
 
   /* First, clear the pane */
+  gtk_container_set_border_width (GTK_CONTAINER (pane), 6);
   gtk_container_foreach (GTK_CONTAINER (pane),
                          (GtkCallback)gtk_widget_destroy, NULL);
   
@@ -768,7 +894,7 @@ update_ui (ContactsContactPane *pane)
     gtk_table_attach_defaults (GTK_TABLE (table), w, 1, 2, 1, 2);
     has_org_field = TRUE;
   }
-
+  
   /* Add Photo */
   GtkImage *photo = contacts_load_photo (pane->priv->contact);
   if (pane->priv->editable)
@@ -788,7 +914,11 @@ update_ui (ContactsContactPane *pane)
     gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 1, 0, 0, 0, 0);
 
   gtk_widget_show_all (table);
-
+  
+  /* The HSep between the name/org and the fields */
+  GtkWidget *sep = gtk_hseparator_new ();
+  gtk_widget_show (sep);
+  gtk_box_pack_start (GTK_BOX (pane), sep, FALSE, FALSE, 5);
 
   for (i = 2; i < G_N_ELEMENTS (fields); i++) {
     FieldInfo *info;
@@ -879,7 +1009,7 @@ contacts_contact_pane_class_init (ContactsContactPaneClass *klass)
   attr_quark = g_quark_from_static_string("contact-pane-attribute");
   field_quark = g_quark_from_static_string("contact-pane-fieldinfo");
   entry_quark = g_quark_from_static_string("contact-pane-entry");
-
+  combo_quark = g_quark_from_static_string("contact-pane-combo");
 
   contacts_contact_pane_signals[FULLNAME_CHANGED] = g_signal_new (("fullname-changed"),
       G_OBJECT_CLASS_TYPE (klass),

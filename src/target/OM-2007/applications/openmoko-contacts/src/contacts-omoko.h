@@ -29,6 +29,7 @@
 #include <libmokoui/moko-tool-box.h>
 #include <libmokoui/moko-navigation-list.h>
 #include <libmokoui/moko-scrolled-pane.h>
+#include <libmokoui/moko-stock.h>
 
 
 #ifndef OMOKO_H
