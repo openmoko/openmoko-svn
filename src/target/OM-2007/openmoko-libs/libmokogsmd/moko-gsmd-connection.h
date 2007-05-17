@@ -19,7 +19,6 @@
 #define _MOKO_GSMD_CONNECTION_H_
 
 #include <glib-object.h>
-#include <gsmd/event.h>
 
 G_BEGIN_DECLS
 
@@ -50,6 +49,21 @@ enum {
     MOKO_GSMD_CONNECTION_NETREG_DENIED = 3,
     MOKO_GSMD_CONNECTION_NETREG_ROAMING = 5,
 } MokoGsmdConnectionNetregType;
+
+
+enum {
+  MOKO_GSMD_PROG_SETUP = 0,
+  MOKO_GSMD_PROG_DISCONNECT = 1,
+  MOKO_GSMD_PROG_ALERT = 2,
+  MOKO_GSMD_PROG_CALL_PROCEED = 3,
+  MOKO_GSMD_PROG_SYNC = 4,
+  MOKO_GSMD_PROG_PROGRESS = 5,
+  MOKO_GSMD_PROG_CONNECTED = 6,
+  MOKO_GSMD_PROG_RELEASE = 7,
+  MOKO_GSMD_PROG_REJECT = 8,
+  MOKO_GSMD_PROG_UNKNOWN = 9,
+} MokoGsmdConnectionProgress;
+
 
 /* signals */
 void moko_gsmd_connection_incoming_call(MokoGsmdConnection* self, int type);
