@@ -22,15 +22,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <libmokoui/moko-application.h>
-#include <libmokoui/moko-details-window.h>
-#include <libmokoui/moko-dialog-window.h>
-#include <libmokoui/moko-paned-window.h>
-#include <libmokoui/moko-tool-box.h>
-#include <libmokoui/moko-navigation-list.h>
-#include <libmokoui/moko-scrolled-pane.h>
-#include <libmokoui/moko-stock.h>
-
+#include <libmokoui/moko-ui.h>
 
 #ifndef OMOKO_H
 #define OMOKO_H

@@ -121,6 +121,7 @@ create_main_window (ContactsData *contacts_data)
 	//? MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
 
 	g_set_application_name (_("Contacts"));
+	moko_stock_register ();
 
 	ui->main_window = moko_paned_window_new ();
 	gtk_window_set_title (GTK_WINDOW (ui->main_window), _("Contacts"));
@@ -212,15 +213,13 @@ create_main_window (ContactsData *contacts_data)
 
 	/* groups button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget),
-						       "openmoko-action-button-group-icon");
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget), MOKO_STOCK_CONTACT_GROUPS);
 	g_signal_connect (G_OBJECT (widget), "clicked",
 			  G_CALLBACK (contacts_groups_pane_show), contacts_data);
 
 	/* history button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget),
-						       "openmoko-action-button-history-icon");
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget), MOKO_STOCK_HISTORY);
 
 	/* edit button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
@@ -230,8 +229,7 @@ create_main_window (ContactsData *contacts_data)
 
 	/* view button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
-	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget),
-						       "openmoko-action-button-view-icon");
+	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget), MOKO_STOCK_VIEW);
 	g_signal_connect (G_OBJECT (widget), "clicked",
 			  G_CALLBACK (contacts_view_cb), contacts_data);
 

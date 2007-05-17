@@ -1,5 +1,11 @@
 2007-05-17  Thomas Wood  <thomas@openedhand.com>
 
+	* src/contacts-omoko.c: (create_main_window):
+	* src/contacts-omoko.h:
+	Use moko stock icons
+
+2007-05-17  Thomas Wood  <thomas@openedhand.com>
+
 	Patch by: Neil J Patel <njp@o-hand.com>
 
 	* src/contacts-contact-pane.c:
