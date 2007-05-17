@@ -1,4 +1,4 @@
-/*   openmoko-dialer.c
+/*  openmoko-dialer.c
  *
  *  Authored by Tony Guan<tonyguan@fic-sh.com.cn>
  *
@@ -17,7 +17,6 @@
  */
 #include <libmokoui/moko-ui.h>
 #include <libmokogsmd/moko-gsmd-connection.h>
-
 
 #include <gtk/gtk.h>
 #include <signal.h>
@@ -182,12 +181,16 @@ main (int argc, char **argv)
 
   /* Set up gsmd connection object */
   MokoGsmdConnection* conn = p_dialer_data->connection = moko_gsmd_connection_new ();
+
+  /* power on GSM */
   moko_gsmd_connection_set_antenna_power (conn, TRUE);
-  sleep (4); /* FIXME: this is horrible */
-  moko_gsmd_connection_network_register (conn);
+  /* handle network registration 4 seconds after powering GSM */
+  g_timeout_add( 4 * 1000, (GSourceFunc) initial_timeout_cb, conn );
+
   g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, p_dialer_data);
+  g_signal_connect (G_OBJECT (conn), "pin-requested", (GCallback) incoming_pin_request_cb, p_dialer_data);
 
   /* Set up journal handling */
   p_dialer_data->journal = moko_journal_open_default ();
