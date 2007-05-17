@@ -66,6 +66,7 @@ widget "*.mokoscrolledpane-fullscreen-button-on" style "mokoscrolledpane-fullscr
 style "mokoscrolledpane" {
     bg[NORMAL] = "#e5e5e5"
     fg[NORMAL] = "#000"
+    fg[ACTIVE] = "#000"
     bg_pixmap[NORMAL] = ""
 }
 widget "*.MokoScrolledPane.*" style "mokoscrolledpane"

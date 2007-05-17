@@ -1,22 +1,83 @@
 
 style "fieldcombo" {
+        xthickness = 4
 	engine "pixmap" {
+
+		image {
+			function = BOX
+			file = "fieldcombo-normal.png"
+			stretch = TRUE
+			state = NORMAL
+			border = { 22, 22, 21, 24 }
+		}
 		image {
 			function = BOX
 			file = "field_widget_bg.png"
 			stretch = TRUE
+			state = ACTIVE
 			border = { 22, 22, 21, 24 }
 		}
 		image {
+			function = BOX
+			file = "field_widget_bg.png"
+			stretch = TRUE
+			state = PRELIGHT
+			border = { 22, 22, 21, 24 }
+		}
+		image {
+			function = BOX
+			file = "field_widget_bg.png"
+			stretch = TRUE
+			state = INSENSITIVE
+			border = { 22, 22, 21, 24 }
+		}				        
+        	image {
 			function = VLINE
 		}
 		image {
 			function = ARROW
 		}
 	}
+	font_name = "Vera Sans 16"
+	text[NORMAL] = "#666"
+	text[ACTIVE] = "#FFF"
+	text[SELECTED] = "#FFF"
+	text[PRELIGHT] = "#FFF"
+	
 }
 widget "*.ContactsContactPane.*.GtkComboBox.*" style "fieldcombo"
 
+style "fieldentry" {
+        xthickness = 15
+        ythickness = 6
+        engine "pixmap" {
+                image {
+                        function        = SHADOW
+                        shadow          = IN
+                        file            = "fieldentry.png"
+                        recolorable     = TRUE
+                        border          = { 17, 17, 15, 15 }
+                }
+        }
+        GtkEntry::inner-border  = { 0, 0, 0, 0 }
+        text[NORMAL] = "#000000"
+        base[NORMAL] = "#ffeddb"
+        fg[NORMAL] = "#000000"
+        text[INSENSITIVE] = "#223344" # dark grey
+	
+}
+widget_class "*.ContactsContactPane.*.GtkEntry*" style "fieldentry"
+
+style "fieldlabel" {
+        xthickness = 4
+        font_name = "Vera Sans 16"
+        text[NORMAL] = "#666"
+        fg[NORMAL] = "#666"
+	fg[ACTIVE] = "#FFF"
+	fg[SELECTED] = "#FFF"
+	fg[PRELIGHT] = "#F87C00"        
+}
+widget "*.fieldlabel" style "fieldlabel"
 
 style "addbutton" {
 	xthickness = 0
