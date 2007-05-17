@@ -20,13 +20,16 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
-#include <gtk/gtk.h>
+#include "taskmanager.h"
 #include "footer.h"
+
+#include <gtk/gtk.h>
 
 typedef struct _MokoFooterApp
 {
     GtkWidget *toplevel_window;
     GtkWidget *footer;
+    MokoTaskManager *taskmanager;
     GdkWindow *target_window;
 } MokoFooterApp;
 

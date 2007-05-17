@@ -1,3 +1,19 @@
+2007-05-17  Daniel Willmann <daniel@totalueberwachung.de>
+
+        * src/Makefile.am:
+        * src/main.h:
+        * src/taskmanager.c: Added.
+        * src/taskmanager.h: Added.
+				Add initial taskmanager framework to footer (yet unused)
+
+2007-05-17  Daniel Willmann  <daniel@totalueberwachung.de>
+
+        * src/callbacks.h:
+        * src/footer.h:
+        * src/main.h:
+        * src/misc.h:
+				Add proper #ifdefs around header files
+
 2007-05-17  Daniel Willmann  <daniel@totalueberwachung.de>
 
         * configure.ac:
