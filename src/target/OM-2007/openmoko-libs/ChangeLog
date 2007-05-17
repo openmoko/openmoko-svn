@@ -1,3 +1,10 @@
+2007-05-17  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h:
+
+	Modify/add stock items
+
 2007-05-16  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
