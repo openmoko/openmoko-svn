@@ -1,3 +1,11 @@
+2007-05-17  Daniel Willmann  <daniel@totalueberwachung.de>
+
+        * configure.ac:
+        * src/callbacks.c:
+        * src/callbacks.h:
+        * src/main.c:
+				Remove any dbus cruft since we don't use it anymore
+
 2007-05-16  Daniel Willmann <daniel@totalueberwachung.de>
 
         * AUTHORS:

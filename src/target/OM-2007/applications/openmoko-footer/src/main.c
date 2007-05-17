@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <dbus/dbus-glib-lowlevel.h>
 
 #include "main.h"
 #include "callbacks.h"
@@ -27,7 +26,6 @@
 
 #include <glib/gmain.h>
 #include <gdk/gdk.h>
-#include <dbus/dbus.h>
 #include <gtk/gtkwidget.h>
 
 #include <X11/Xlib.h>

@@ -18,7 +18,6 @@
  */
 #include <glib.h>
 #include <X11/Xlib.h>
-#include <dbus/dbus.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <glib/gthread.h>

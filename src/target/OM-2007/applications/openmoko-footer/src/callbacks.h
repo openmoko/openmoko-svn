@@ -40,6 +40,3 @@ GdkFilterReturn target_window_event_filter_cb (GdkXEvent *xevent,
 
 GdkFilterReturn root_window_event_filter_cb (GdkXEvent *xevent, 
     GdkEvent *event, gpointer user_data);
-
-/* dbus */
-DBusHandlerResult signal_filter (DBusConnection *connection, DBusMessage *message, void *user_data);
