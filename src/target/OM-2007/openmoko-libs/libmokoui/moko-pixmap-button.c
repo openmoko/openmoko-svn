@@ -266,7 +266,8 @@ moko_pixmap_button_set_center_stock (MokoPixmapButton* self, const gchar *stock_
                                                   36,
                                                   0, NULL);
     priv->centerimage = gtk_image_new_from_pixbuf (pixbuf);
-    g_object_unref (pixbuf);
+    if (pixbuf)
+      g_object_unref (pixbuf);
 
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->centerimage);
 

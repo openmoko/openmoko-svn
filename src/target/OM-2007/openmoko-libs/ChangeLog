@@ -1,5 +1,10 @@
 2007-05-18  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-pixmap-button.c:
+	(moko_pixmap_button_set_center_stock): Add check before g_object_unref ()
+
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-finger-tool-box.c: (cb_configure): Remove useless code
 	(also currently is causing a crash)
 	* libmokoui/moko-pixmap-button.c:
