@@ -1,4 +1,8 @@
 /*
+ * Copyright (c) 2007 OpenMoko, Inc.
+ * Modified for use in QEMU by Andrzej Zaborowski <andrew@openedhand.com>
+ */
+/*
 
   $Id: virtmodem.c,v 1.49 2006/10/19 16:05:35 dforsi Exp $
 
@@ -58,6 +62,46 @@
 #include "datapump.h"
 #include "device.h"
 
+/* Functions from parts of GNOKII not included in QEMU */
+GNOKII_API void gn_data_clear(gn_data *data)
+{
+	memset(data, 0, sizeof(gn_data));
+}
+
+GNOKII_API gn_state gn_sm_loop(int timeout, struct gn_statemachine *state)
+{
+	return GN_SM_Initialised;
+}
+
+GNOKII_API gn_error gn_sm_functions(gn_operation op, gn_data *data,
+		struct gn_statemachine *sm)
+{
+	return sm->info->gn_sm_functions(op, data, sm);
+}
+
+GNOKII_API gn_error gn_sms_get(gn_data *data, struct gn_statemachine *state)
+{
+	return gn_sm_functions(GN_OP_GetSMS, data, state);
+}
+
+GNOKII_API gn_error gn_sms_send(gn_data *data, struct gn_statemachine *state)
+{
+	return gn_sm_functions(GN_OP_SendSMS, data, state);
+}
+
+bool GTerminateThread = false;
+
+GNOKII_API gn_error gn_cfg_phone_load(const char *iname,
+		struct gn_statemachine *state)
+{
+	return GN_ERR_NOTSUPPORTED;
+}
+
+GNOKII_API gn_error gn_gsm_initialise(struct gn_statemachine *sm)
+{
+	return GN_ERR_NOTSUPPORTED;
+}
+
 /* Defines */
 
 #ifndef AF_LOCAL 
@@ -112,12 +156,12 @@ bool gn_vm_initialise(const char *iname, bool GSMInit)
 		return (false);
 	}
 
-	if (gn_atem_initialise(PtyRDFD, PtyWRFD, sm) != true) {
+	if (gn_atem_initialise(sm) != true) {
 		fprintf (stderr, _("gn_vm_initialise - gn_atem_initialise failed!\n"));
 		return (false);
 	}
 
-	if (dp_Initialise(PtyRDFD, PtyWRFD) != true) {
+	if (dp_Initialise() != true) {
 		fprintf (stderr, _("gn_vm_Initialise - dp_Initialise failed!\n"));
 		return (false);
 	}

@@ -62,21 +62,19 @@ static int	DP_SendRLPFrame(gn_rlp_f96_frame *frame, bool out_dtx);
 extern bool CommandMode;
 
 /* Local variables */
-static int	PtyRDFD;	/* File descriptor for reading and writing to/from */
-static int	PtyWRFD;	/* pty interface - only different in debug mode. */
 u8 pluscount;
 bool connected;
 
-bool dp_Initialise(int read_fd, int write_fd)
+bool dp_Initialise(void)
 {
-	PtyRDFD = read_fd;
-	PtyWRFD = write_fd;
 	rlp_initialise(DP_SendRLPFrame, DP_CallBack);
 	rlp_user_request_set(Attach_Req, true);
 	pluscount = 0;
 	connected = false;
 	data.rlp_rx_callback = rlp_f96_frame_display;
 	gn_sm_functions(GN_OP_SetRLPRXCallback, &data, sm);
+
+	CommandMode = true;
 
 	return true;
 }
@@ -88,7 +86,9 @@ static int DP_CallBack(rlp_user_inds ind, u8 *buffer, int length)
 
 	switch(ind) {
 	case Data:
-		if (CommandMode == false) write(PtyWRFD, buffer, length);
+		if (CommandMode == false)
+			sm->info->write(sm->info->opaque,
+					"%*s", length, buffer);
 		break;
 	case Conn_Ind:
 		if (CommandMode == false) gn_atem_modem_result(MR_CARRIER);

@@ -35,7 +35,7 @@
 #include "gnokii.h"
 
 	/* Prototypes */
-bool	gn_atem_initialise(int read_fd, int write_fd, struct gn_statemachine *sm);
+bool	gn_atem_initialise(struct gn_statemachine *sm);
 void	gn_atem_incoming_data_handle(const char *buffer, int length);
 void	gn_atem_registers_init(void);
 void	gn_atem_string_out(char *buffer);

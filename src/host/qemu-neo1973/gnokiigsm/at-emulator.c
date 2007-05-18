@@ -1,4 +1,8 @@
 /*
+ * Copyright (c) 2007 OpenMoko, Inc.
+ * Modified for use in QEMU by Andrzej Zaborowski <andrew@openedhand.com>
+ */
+/*
 
   $Id: at-emulator.c,v 1.45 2006/10/03 21:26:37 pkot Exp $
 
@@ -97,15 +101,12 @@ static gn_call_info callinfo;
 static 	char imei[64], model[64], revision[64], manufacturer[64];
 
 /* Local variables */
-static int	PtyRDFD;	/* File descriptor for reading and writing to/from */
-static int	PtyWRFD;	/* pty interface - only different in debug mode. */
-
 static u8	ModemRegisters[MAX_MODEM_REGISTERS];
 static char	CmdBuffer[MAX_CMD_BUFFERS][CMD_BUFFER_LENGTH];
 static int	CurrentCmdBuffer;
 static int	CurrentCmdBufferIndex;
 static int	IncomingCallNo;
-static int     MessageFormat;          /* Message Format (text or pdu) */
+static int	MessageFormat;          /* Message Format (text or pdu) */
 static int	CallerIDMode;
 
 	/* Current command parser */
@@ -117,11 +118,8 @@ static int 	SMSNumber;
 
 /* If initialised in debug mode, stdin/out is used instead
    of ptys for interface. */
-bool gn_atem_initialise(int read_fd, int write_fd, struct gn_statemachine *vmsm)
+bool gn_atem_initialise(struct gn_statemachine *vmsm)
 {
-	PtyRDFD = read_fd;
-	PtyWRFD = write_fd;
-
 	gn_data_clear(&data);
 	memset(&sms, 0, sizeof(sms));
 	memset(&callinfo, 0, sizeof(callinfo));
@@ -197,14 +195,14 @@ static void  gn_atem_hangup_phone(void)
 		gn_sm_functions(GN_OP_CancelCall, &data, sm);
 		IncomingCallNo = -1;
 	}
-	dp_Initialise(PtyRDFD, PtyWRFD);
+	dp_Initialise();
 }
 
 
 static void  gn_atem_answer_phone(void)
 {
 	/* For now we'll also initialise the datapump + rlp code again */
-	dp_Initialise(PtyRDFD, PtyWRFD);
+	dp_Initialise();
 	data.call_notification = dp_CallPassup;
 	gn_sm_functions(GN_OP_SetCallNotification, &data, sm);
 	data.call_info->call_id = IncomingCallNo;
@@ -378,7 +376,7 @@ void	gn_atem_at_parse(char *cmd_buffer)
 			/* Dial Data :-) */
 			/* FIXME - should parse this better */
 			/* For now we'll also initialise the datapump + rlp code again */
-			dp_Initialise(PtyRDFD, PtyWRFD);
+			dp_Initialise();
 			buf++;
 			if (toupper(*buf) == 'T' || toupper(*buf) == 'P') buf++;
 			while (*buf == ' ') buf++;

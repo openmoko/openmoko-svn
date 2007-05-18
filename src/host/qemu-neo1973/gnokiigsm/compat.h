@@ -61,11 +61,6 @@ typedef uint32_t	u32;
 #include "config-host.h"
 #define VERSION	"QEMU " QEMU_VERSION
 
-struct gsmmodem_info_s {
-	void (*write)(void *opaque, const char *fmt, ...);
-	void *opaque;
-};
-
 #define GNOKII_API
 
 #undef timerisset

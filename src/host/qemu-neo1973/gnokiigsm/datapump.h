@@ -35,7 +35,7 @@
 #include "gnokii.h"
 
 /* Prototypes */
-bool	dp_Initialise(int read_fd, int write_fd);
+bool	dp_Initialise(void);
 void    dp_CallPassup(gn_call_status call_status, gn_call_info *call_info, struct gn_statemachine *state);
 
 #endif	/* _gnokii_data_datapump_h */

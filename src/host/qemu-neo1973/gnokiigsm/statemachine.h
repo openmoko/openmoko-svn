@@ -98,6 +98,13 @@ struct gn_statemachine {
 	struct gsmmodem_info_s *info;
 };
 
+struct gsmmodem_info_s {
+	gn_error (*gn_sm_functions)(gn_operation op, gn_data *data,
+			struct gn_statemachine *sm);
+	void (*write)(void *opaque, const char *fmt, ...);
+	void *opaque;
+};
+
 GNOKII_API gn_state gn_sm_loop(int timeout, struct gn_statemachine *state);
 
 /* General way to call any driver function */
