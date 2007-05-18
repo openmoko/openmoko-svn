@@ -1,3 +1,12 @@
+2007-05-18  Daniel Willmann <daniel@totalueberwachung.de>
+
+        * src/Makefile.am:
+        * src/taskitem.c: Added.
+        * src/taskitem.h: Added.
+        * src/taskmanager.c:
+        (taskmanager_init):
+				Add support for taskitems (consisting of an image and a label)
+
 2007-05-17  Daniel Willmann <daniel@totalueberwachung.de>
 
         * src/Makefile.am:

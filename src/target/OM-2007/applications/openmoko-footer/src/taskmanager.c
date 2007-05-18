@@ -17,6 +17,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#include "taskitem.h"
 #include "taskmanager.h"
 #include "callbacks.h"
 
@@ -32,6 +33,9 @@ void taskmanager_init (MokoTaskManager *tm)
 {
   Display *dpy;
   GtkWidget *image;
+  GdkPixbuf *pixbuf;
+  GtkScrolledWindow *scroll;
+  MokoTaskItem *test;
 
   dpy = GDK_DISPLAY();
 
@@ -65,5 +69,16 @@ void taskmanager_init (MokoTaskManager *tm)
 
   tm->table = gtk_table_new( 3, 3, TRUE );
 
-  moko_finger_window_set_contents( tm->window, GTK_WIDGET(tm->table) );
+  test = g_new0( MokoTaskItem, 1 );
+
+  pixbuf = gdk_pixbuf_new_from_file (PKGDATADIR"/icon_app_history.png", NULL);
+  moko_task_item_init( test, "Testentry", pixbuf );
+  gtk_table_attach_defaults( tm->table, GTK_WIDGET(test->box), 0, 1, 0, 1);
+
+  scroll = gtk_scrolled_window_new( NULL, NULL );
+  gtk_scrolled_window_set_policy( scroll, GTK_POLICY_NEVER, GTK_POLICY_NEVER );
+  gtk_widget_set_size_request (GTK_WINDOW(scroll), -1, 400);
+  gtk_scrolled_window_add_with_viewport(GTK_CONTAINER(scroll), GTK_WIDGET(tm->table) );
+
+  moko_finger_window_set_contents( tm->window, GTK_WIDGET(scroll) );
 }
