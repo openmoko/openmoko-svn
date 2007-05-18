@@ -216,9 +216,44 @@ static void feed_update_thread( struct RSSReaderData *data ) {
 
 /**
  * read the feeds from disk
+ * Similiar to the Thread, but
+ *  -We do not run from a thread, so no gdk locking is necessary
+ *  -We do not load from a url but from the cache
+ *  -We do not need to cache ;)
  */
 void load_data_from_cache (struct RSSReaderData *data)
 {
+    gsize size;
+
+    for ( int i = 0; i < NUMBER_OF_FEEDS; ++i ) {
+        mrss_t *rss_data;
+        gchar *url = s_feeds[i].url;
+        g_debug ("Reading cached object '%s'\n", url);
+        gchar *content = moko_cache_read_object (data->cache, url, &size);
+        if ( !content || size == -1 ) {
+            g_debug ("Noting in the cache for '%s'\n", url);
+            continue;
+        }
+
+        int ret = mrss_parse_buffer( content, size, &rss_data );
+        if ( ret ) {
+            /* TODO use the footer to report error? */
+            g_debug( "parse_buffer of '%s' failed with '%d'", url, ret );
+            continue;
+        }
+
+        /*
+         * create the new item(s)
+         */
+        gdk_threads_leave();
+        add_mrss_item (data, rss_data, url, s_feeds[i].category);
+        gdk_threads_enter();
+
+        g_free (content);
+        mrss_free (rss_data);
+    }
+
+    g_debug ("Done loading from cache\n");
 }
 
 /*

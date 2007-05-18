@@ -1,3 +1,13 @@
+2007-05-19  Holger Freyther  <zecke@selfish.org>
+
+        Load data from the cache. Currently libmrss has some issues
+        parsing the data it wrote.
+
+        * src/callbacks.c:
+        (load_data_from_cache): Implement loading from cache,
+        * src/main.c: Call loading.
+        (main):
+
 2007-05-18  Holger Freyther  <zecke@selfish.org>
 
         Start caching data

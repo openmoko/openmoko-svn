@@ -299,8 +299,9 @@ int main( int argc, char** argv )
     /*
      * load data
      */
-    refresh_categories( data );
     data->is_all_filter = TRUE;
+    refresh_categories( data );
+    load_data_from_cache (data);
     moko_menu_box_set_active_filter( data->menubox, _("All") );
 
     gtk_widget_show_all( GTK_WIDGET(data->window) );
