@@ -53,7 +53,6 @@ typedef struct {
 	GtkImage *image;
 	GdkPixbuf *hglass[HOURGLASS_PIXMAPS];
 	const char *last_icon;
-	guint timeout_id;
 	GdkWindow *root_window;
 	SnDisplay *sn_display;
 } StartupApplet;
@@ -63,6 +62,7 @@ typedef struct LaunchList LaunchList;
 struct LaunchList {
 	char *id;
 	time_t when;
+	guint timeout_id;
 	LaunchList *next;
 };
 
@@ -76,7 +76,6 @@ static void startup_applet_free(StartupApplet *applet)
 {
 	gdk_window_remove_filter (applet->root_window,
 					(GdkFilterFunc) filter_func, applet);
-	g_source_remove(applet->timeout_id);
 	g_slice_free(StartupApplet, applet);
 }
 
@@ -120,10 +119,6 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 		{
 			g_message("Entered SN_MONITOR_EVENT_INITIATED");
 
-			/* Set up a timeout that will be called every 0.5 seconds */
-			applet->timeout_id = g_timeout_add(500,
-					   (GSourceFunc) applet_main, applet);
-
 			LaunchList *item = launch_list;
 
 			/* Reset counter */
@@ -144,6 +139,10 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 			t = time(NULL);
 			item->when = t + TIMEOUT;
 
+			/* Set up a timeout that will be called every 0.5 seconds */
+			item->timeout_id = g_timeout_add(500,
+					   (GSourceFunc) applet_main, applet);
+
 			if (!hourglass_shown)
 				show_hourglass(applet);
 		}
@@ -163,6 +162,7 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 					else
 						last_item->next = item->next;
 
+					g_source_remove(item->timeout_id);
 					free(item->id);
 					free(item);
 
@@ -174,8 +174,6 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 
 			if (launch_list == NULL && hourglass_shown)
 				hide_hourglass(applet);
-
-			g_source_remove(applet->timeout_id);
 		}
 		break;
 	default:
@@ -204,6 +202,7 @@ static gboolean applet_main(StartupApplet *applet)
 			else
 				last_item->next = item->next;
 
+			g_source_remove(item->timeout_id);
 			free(item->id);
 			free(item);
 
@@ -237,7 +236,7 @@ static GdkFilterReturn filter_func(GdkXEvent *gdk_xevent, GdkEvent *event, Start
 
 	ret = sn_display_process_event(applet->sn_display, xevent);
 
-	g_message("%s: sn_display_process return value: %i", G_STRFUNC, ret);
+	//g_message("%s: sn_display_process return value: %i", G_STRFUNC, ret);
 
 	return GDK_FILTER_CONTINUE;
 }

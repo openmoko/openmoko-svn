@@ -1,11 +1,22 @@
-2007-05-18  Stefan Schmidt,,,  <stefan@openmoko.org>
+2007-05-18  Stefan Schmidt <stefan@openmoko.org>
 
-        Reviewed by NOBODY (OOPS!).
+        * ChangeLog:
+        * src/openmoko-panel-startup.c:
+        (startup_applet_free):
+        (monitor_event_func):
+        (applet_main):
+        (filter_func):
+		Make it less noisy by disableing debug for sn_process return value.
+		Correct the timer add and remove handling.
+
+2007-05-18  Stefan Schmidt <stefan@openmoko.org>
 
         * src/openmoko-panel-startup.c:
         (show_hourglass):
         (hide_hourglass):
         (mb_panel_applet_create):
+		A special eventbox around the image is not needed.
+		Cleanup some unneeded code
 
 2007-05-18 Stefan Schmidt <stefan@openmoko.org>
 
