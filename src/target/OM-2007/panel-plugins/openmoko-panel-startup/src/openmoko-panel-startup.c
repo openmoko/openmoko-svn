@@ -41,13 +41,8 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-/* FIXME */
-#define USE_LIBSN
-
-#ifdef USE_LIBSN
-  #define SN_API_NOT_YET_FROZEN 1
-  #include <libsn/sn.h>
-#endif
+#define SN_API_NOT_YET_FROZEN 1
+#include <libsn/sn.h>
 
 #include <string.h>
 
@@ -60,7 +55,6 @@ typedef struct {
 	const char *last_icon;
 	guint timeout_id;
 	GdkWindow *root_window;
-	GtkWidget* eventbox;
 	SnDisplay *sn_display;
 } StartupApplet;
 
@@ -97,14 +91,14 @@ static int hourglass_cur_frame_n = 0;
 static void show_hourglass(StartupApplet *applet)
 {
 	g_message("Entered %s", G_STRFUNC);
-	gtk_widget_show_all(GTK_WIDGET (applet->eventbox));
+	gtk_widget_show_all(GTK_WIDGET (applet->image));
 	hourglass_shown = TRUE;
 }
 
 static void hide_hourglass(StartupApplet *applet)
 {
 	g_message("Entered %s", G_STRFUNC);
-	gtk_widget_hide_all(GTK_WIDGET (applet->eventbox));
+	gtk_widget_hide_all(GTK_WIDGET (applet->image));
 	hourglass_shown = FALSE;
 }
 
@@ -260,8 +254,6 @@ G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 	/* Create applet data structure */
 	applet = g_slice_new(StartupApplet);
 
-	//applet->last_icon = NULL;
-
 	/* Create image */
     applet->image = GTK_IMAGE(gtk_image_new());
 
@@ -293,18 +285,11 @@ G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 	 */
 	XSelectInput (xdisplay, DefaultRootWindow(xdisplay), PropertyChangeMask);
 
-	/* Get root window */
-	//applet->root_window = gdk_screen_get_root_window
-	//					(gtk_widget_get_screen( GTK_WIDGET (applet->image)));
-
 	applet->root_window = gdk_window_lookup_for_display(gdk_x11_lookup_xdisplay(xdisplay), 0);
 
 	gdk_window_add_filter (applet->root_window, (GdkFilterFunc) filter_func, applet);
 
 	/* Show! */
-	applet->eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(applet->eventbox), GTK_WIDGET(applet->image));
-	gtk_event_box_set_visible_window(applet->eventbox, FALSE);
 	moko_panel_applet_set_widget( MOKO_PANEL_APPLET(mokoapplet), GTK_WIDGET(applet->image) );
 	gtk_widget_show_all(GTK_WIDGET(mokoapplet));
 
