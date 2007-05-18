@@ -2,6 +2,18 @@
 
 	Patch by: Neil J Patel <njp@o-hand.com>
 
+	* src/contacts-callbacks-ui.c: (contacts_delete_cb):
+	* src/contacts-history.c: (contacts_history_refresh_ui):
+	- Replaces GtkDialog with MokoMessageDialog.
+	- Shows 'No communication history', when there is no
+	  communication history.
+
+
+
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Neil J Patel <njp@o-hand.com>
+
 	* src/Makefile.am:
 	* src/contacts-callbacks-ui.c: (contacts_selection_cb):
 	* src/contacts-defs.h:

@@ -34,6 +34,7 @@
 #include "contacts-callbacks-ebook.h"
 #include "contacts-main.h"
 #include "contacts-history-view.h"
+#include "contacts-omoko.h"
 
 void
 contacts_chooser_add_cb (GtkWidget *button, ContactsData *data)
@@ -195,7 +196,7 @@ contacts_delete_cb (GtkWidget *source, ContactsData *data)
 	GtkWidget *dialog, *main_window;
 	gint result, count_selected;
 	EContact *contact;
-	GList *widgets, *selected_paths, *current_path;
+	GList *selected_paths, *current_path;
 	GList *contact_list = NULL;
 	const gchar *name;
 	gchar *message = NULL;
@@ -241,14 +242,19 @@ contacts_delete_cb (GtkWidget *source, ContactsData *data)
 
 
 	main_window = data->ui->main_window;
-	dialog = gtk_message_dialog_new (GTK_WINDOW (main_window),
-					 0, GTK_MESSAGE_QUESTION,
-					 GTK_BUTTONS_CANCEL,
-					 message);
-	gtk_dialog_add_buttons (GTK_DIALOG (dialog), GTK_STOCK_DELETE,
-		GTK_RESPONSE_YES, NULL);
+	main_window = data->ui->main_window;
+	dialog = moko_message_dialog_new ();
+	
+	moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (dialog),
+	                                 "%s", message);
+        moko_message_dialog_set_image_from_stock (MOKO_MESSAGE_DIALOG (dialog),
+                                                  GTK_STOCK_DIALOG_QUESTION);
+	
+	gtk_dialog_add_buttons (GTK_DIALOG (dialog), 
+	                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,  
+	                        GTK_STOCK_DELETE, GTK_RESPONSE_YES,
+	                        NULL);
 
-	widgets = contacts_set_widgets_desensitive (main_window);
 	result = gtk_dialog_run (GTK_DIALOG (dialog));
 	switch (result) {
 		case GTK_RESPONSE_YES:
@@ -261,8 +267,6 @@ contacts_delete_cb (GtkWidget *source, ContactsData *data)
 	g_list_foreach (contact_list, (GFunc) g_free, NULL);
 	g_list_free (contact_list);
 	gtk_widget_destroy (dialog);
-	contacts_set_widgets_sensitive (widgets);
-	g_list_free (widgets);
 }
 
 void

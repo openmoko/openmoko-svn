@@ -491,7 +491,6 @@ contacts_history_refresh_ui (ContactsHistory *history)
      correspond to the the priv->uid
      FIXME : MokoJournal should have a special function for this. 
   */
-  g_print ("%s\n", priv->uid);
   gint len = moko_journal_get_nb_entries (priv->journal);
   gint i;
   for (i = 0; i < len; i++) {
@@ -507,6 +506,13 @@ contacts_history_refresh_ui (ContactsHistory *history)
   /* Sort the list in order of time, most recent first */
   children = g_list_sort (children, (GCompareFunc)_sort_by_date);
   
+  if (!children) {
+    GtkWidget *label = gtk_label_new ("No communication history");
+    gtk_box_pack_start (GTK_BOX (history), label, TRUE, TRUE, 0);
+    gtk_widget_show_all (GTK_WIDGET (history));
+    return;
+  }
+    
   /* Finally, go through the sorted list creating the widgets and adding them */
   for (c = children; c != NULL; c = c->next) {
     GtkWidget *preview = NULL;
