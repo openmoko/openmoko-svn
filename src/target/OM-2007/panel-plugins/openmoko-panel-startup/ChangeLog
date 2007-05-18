@@ -1,3 +1,9 @@
+2007-05-18 Stefan Schmidt <stefan@openmoko.org>
+
+        * src/openmoko-panel-startup.c:
+        (mb_panel_applet_create):
+		Make the eventbox around behind the image invisible.
+
 2007-05-17 Stefan Schmidt <stefan@openmoko.org>
 
         * src/openmoko-panel-startup.c:

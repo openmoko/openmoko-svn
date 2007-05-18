@@ -304,6 +304,7 @@ G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 	/* Show! */
 	applet->eventbox = gtk_event_box_new();
 	gtk_container_add(GTK_CONTAINER(applet->eventbox), GTK_WIDGET(applet->image));
+	gtk_event_box_set_visible_window(applet->eventbox, FALSE);
 	moko_panel_applet_set_widget( MOKO_PANEL_APPLET(mokoapplet), GTK_WIDGET(applet->image) );
 	gtk_widget_show_all(GTK_WIDGET(mokoapplet));
 
