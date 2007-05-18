@@ -4,7 +4,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1925 @@
+@@ -0,0 +1,1928 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -1620,6 +1620,23 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +
 +	/* create virtual charger 'device' */
 +
++	/* input device registration */
++	data->input_dev = input_allocate_device();
++	if (!data->input_dev)
++		goto exit_sysfs;
++
++	data->input_dev->name = "FIC Neo1973 PMU events";
++	data->input_dev->phys = "FIXME";
++	data->input_dev->id.bustype = BUS_I2C;
++	data->input_dev->cdev.dev = &new_client->dev;
++
++	data->input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_PWR);
++	set_bit(KEY_POWER, data->input_dev->keybit);
++	set_bit(KEY_POWER2, data->input_dev->keybit);
++	set_bit(KEY_BATTERY, data->input_dev->keybit);
++
++	input_register_device(data->input_dev);
++
 +	/* register power off handler with core power management */
 +	pm_power_off = &pcf50606_go_standby;
 +
@@ -1631,7 +1648,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +	err = request_irq(irq, pcf50606_irq, SA_INTERRUPT,
 +			  "pcf50606", data);
 +	if (err < 0)
-+		goto exit_sysfs;
++		goto exit_input;
 +
 +	set_irq_type(irq, IRQT_FALLING);
 +
@@ -1678,22 +1695,6 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +		backlight_update_status(data->backlight);
 +	}
 +
-+	data->input_dev = input_allocate_device();
-+	if (!data->input_dev)
-+		goto exit_pwm;
-+
-+	data->input_dev->name = "FIC Neo1973 PMU events";
-+	data->input_dev->phys = "FIXME";
-+	data->input_dev->id.bustype = BUS_I2C;
-+	data->input_dev->cdev.dev = &new_client->dev;
-+
-+	data->input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_PWR);
-+	set_bit(KEY_POWER, data->input_dev->keybit);
-+	set_bit(KEY_POWER2, data->input_dev->keybit);
-+	set_bit(KEY_BATTERY, data->input_dev->keybit);
-+
-+	input_register_device(data->input_dev);
-+
 +	apm_get_power_status = pcf50606_get_power_status;
 +
 +#ifdef CONFIG_MACH_NEO1973_GTA01
@@ -1730,8 +1731,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +		rtc_device_unregister(pcf50606_global->rtc);
 +exit_irq:
 +	free_irq(pcf50606_global->irq, pcf50606_global);
-+exit_sysfs:
++exit_input:
 +	pm_power_off = NULL;
++	input_unregister_device(pcf->input_dev);
++exit_sysfs:
 +	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
 +exit_detach:
 +	i2c_detach_client(new_client);
