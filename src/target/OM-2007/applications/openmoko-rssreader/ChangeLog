@@ -1,5 +1,20 @@
 2007-05-18  Holger Freyther  <zecke@selfish.org>
 
+        Start caching data
+
+        * src/application-data.h: Hold a MokoCache object
+        * src/callbacks.c: Move the filling of the GtkListStore into a method
+        to be used by the method loading from a cache. 
+        (add_mrss_item): The refactored method
+        (feed_update_thread): Move the code to add_mrss_item and cache the
+        data.
+        (load_data_from_cache): Empty stub
+        * src/callbacks.h:
+        * src/main.c:
+        (main): Create the MokoCache
+
+2007-05-18  Holger Freyther  <zecke@selfish.org>
+
         Test the cache implementation
 
         * src/moko_cache.c:

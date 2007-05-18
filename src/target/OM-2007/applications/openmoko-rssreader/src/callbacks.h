@@ -38,6 +38,7 @@ gboolean cb_filter_changed(GtkWidget* widget, gchar* text, struct RSSReaderData*
 /*
  * toolbox callbacks
  */
+void load_data_from_cache (struct RSSReaderData *data);
 void cb_subscribe_button_clicked  ( GtkButton *btn, struct RSSReaderData *d);
 void refresh_categories( struct RSSReaderData* );
 void refresh_feeds( struct RSSReaderData *data );

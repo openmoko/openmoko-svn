@@ -33,10 +33,13 @@
 #include <libmokoui/moko-tree-view.h>
 #include <libmokoui/moko-tool-box.h>
 
+#include "moko_cache.h"
+
 #include <gtk/gtk.h>
 
 struct RSSReaderData {
     MokoApplication   *app;
+    MokoCache         *cache;
     GtkMenu           *menu;
     GtkMenu           *filter;
     MokoPanedWindow   *window;

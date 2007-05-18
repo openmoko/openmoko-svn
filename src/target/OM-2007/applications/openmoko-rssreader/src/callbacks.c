@@ -29,12 +29,14 @@
 
 #include "callbacks.h"
 #include "rfcdate.h"
+#include "moko_cache.h"
 
 #include <libmokoui/moko-tool-box.h>
 #include <gdk/gdkkeysyms.h>
 
 #include <mrss.h>
 #include <string.h>
+#include <stdlib.h>
 
 struct FeedEntry {
     gchar *category;
@@ -93,6 +95,70 @@ gboolean cb_filter_changed( GtkWidget* widget, gchar *text, struct RSSReaderData
 void cb_subscribe_button_clicked( GtkButton *btn, struct RSSReaderData *data ) {}
 
 
+static
+void add_mrss_item ( struct RSSReaderData *data, const mrss_t *rss_data, const gchar *url, const gchar *category)
+{
+    GtkTreeIter iter;
+    mrss_item_t *item = rss_data->item;
+
+    while ( item ) {
+        gint content_type = RSS_READER_TEXT_TYPE_NONE;
+        gchar *description = item->description;
+
+        /*
+         * let us try to find the 'content' tag
+         * and then extract the type
+         */
+        if ( !description && rss_data->version == MRSS_VERSION_ATOM_1_0 && item->other_tags ) {
+            for ( mrss_tag_t *tag = item->other_tags; tag; tag = tag->next ) {
+                if ( strcmp( tag->name, "content" ) == 0 ) {
+                    description = tag->value;
+
+                    for ( mrss_attribute_t *attribute = tag->attributes; attribute; attribute = attribute->next ) {
+                        /*
+                         * Detect the type of the content. Currently we know about text/plain and html
+                         */
+                        if ( strcmp( attribute->name, "type" ) == 0 ) {
+                            if ( strcmp( attribute->value, "plain" ) == 0 ) {
+                                content_type = RSS_READER_TEXT_TYPE_PLAIN;
+                            } else if ( strcmp( attribute->name, "html" ) == 0 ) {
+                                content_type = RSS_READER_TEXT_TYPE_HTML;
+                            } else {
+                                content_type = RSS_READER_TEXT_TYPE_UNKNOWN;
+                            }
+                        }
+                    }
+
+                    /* we are done */
+                    break;
+                }
+            }
+        }
+
+        /*
+         * update the model here. The order in gtk_list_store_set must match
+         * with the order in application-data.h
+         */
+        RSSRFCDate *date = RSS_RFC_DATE(rss_rfc_date_new ());
+        rss_rfc_date_set (date, item->pubDate);
+        gdk_threads_enter();
+        gtk_list_store_append( data->feed_data, &iter );
+        gtk_list_store_set   ( data->feed_data, &iter,
+                RSS_READER_COLUMN_AUTHOR, g_strdup( item->author  ),
+                RSS_READER_COLUMN_SUBJECT,g_strdup( item->title   ),
+                RSS_READER_COLUMN_DATE,   date,
+                RSS_READER_COLUMN_LINK,   g_strdup( item->link    ),
+                RSS_READER_COLUMN_TEXT,   g_strdup( description   ),
+                RSS_READER_COLUMN_TEXT_TYPE, content_type          ,
+                RSS_READER_COLUMN_CATEGORY, g_strdup( category ),
+                RSS_READER_COLUMN_SOURCE,  g_strdup( url ),
+                -1 );
+        gdk_threads_leave();
+        item = item->next;
+    }
+
+}
+
 /*
  * asynchronous update thread!
  * This breaks with ATK+. See http://wiki.ekiga.org/index.php/Bug::ATK::Threads and bugs
@@ -115,80 +181,44 @@ void cb_subscribe_button_clicked( GtkButton *btn, struct RSSReaderData *data ) {
  * Refilter the model...
  */
 static void feed_update_thread( struct RSSReaderData *data ) {
-    GtkTreeIter iter;
-
     for ( int i = 0; i < NUMBER_OF_FEEDS; ++i ) {
         mrss_t *rss_data;
-        int ret = mrss_parse_url( s_feeds[i].url, &rss_data );
+        gchar *url = s_feeds[i].url;
+        int ret = mrss_parse_url( url, &rss_data );
         if ( ret ) {
             /* TODO use the footer to report error? */
             g_debug( "parse_url failed.." );
             continue;
         }
 
-        mrss_item_t *item = rss_data->item;
-        while ( item ) {
-            gint content_type = RSS_READER_TEXT_TYPE_NONE;
-            gchar *description = item->description;
+        /*
+         * create the new item(s)
+         */
+        add_mrss_item (data, rss_data, url, s_feeds[i].category);
 
-            /*
-             * let us try to find the 'content' tag
-             * and then extract the type
-             */
-            if ( !description && rss_data->version == MRSS_VERSION_ATOM_1_0 && item->other_tags ) {
-                for ( mrss_tag_t *tag = item->other_tags; tag; tag = tag->next ) {
-                    if ( strcmp( tag->name, "content" ) == 0 ) {
-                        description = tag->value;
-
-                        for ( mrss_attribute_t *attribute = tag->attributes; attribute; attribute = attribute->next ) {
-                            /*
-                             * Detect the type of the content. Currently we know about text/plain and html
-                             */
-                            if ( strcmp( attribute->name, "type" ) == 0 ) {
-                                if ( strcmp( attribute->value, "plain" ) == 0 ) {
-                                    content_type = RSS_READER_TEXT_TYPE_PLAIN;
-                                } else if ( strcmp( attribute->name, "html" ) == 0 ) {
-                                    content_type = RSS_READER_TEXT_TYPE_HTML;
-                                } else {
-                                    content_type = RSS_READER_TEXT_TYPE_UNKNOWN;
-                                }
-                            }
-                        }
-
-                        /* we are done */
-                        break;
-                    }
-                }
-            }
-
-            /*
-             * update the model here. The order in gtk_list_store_set must match
-             * with the order in application-data.h
-             */
-            RSSRFCDate *date = RSS_RFC_DATE(rss_rfc_date_new ());
-            rss_rfc_date_set (date, item->pubDate);
-            gdk_threads_enter();
-            gtk_list_store_append( data->feed_data, &iter );
-            gtk_list_store_set   ( data->feed_data, &iter,
-                                   RSS_READER_COLUMN_AUTHOR, g_strdup( item->author  ),
-                                   RSS_READER_COLUMN_SUBJECT,g_strdup( item->title   ),
-                                   RSS_READER_COLUMN_DATE,   date,
-                                   RSS_READER_COLUMN_LINK,   g_strdup( item->link    ),
-                                   RSS_READER_COLUMN_TEXT,   g_strdup( description   ),
-                                   RSS_READER_COLUMN_TEXT_TYPE, content_type          ,
-                                   RSS_READER_COLUMN_CATEGORY, g_strdup( s_feeds[i].category ),
-                                   RSS_READER_COLUMN_SOURCE,  g_strdup( s_feeds[i].url ),
-                                   -1 );
-            gdk_threads_leave();
-            item = item->next;
+        /*
+         * now cache the feed, a bit inefficient as we do not write to a file directly
+         */
+        char *buffer = NULL;
+        mrss_write_buffer (rss_data, &buffer);
+        if (buffer) {
+            moko_cache_write_object (data->cache, url, buffer, -1, NULL);
         }
 
-        mrss_free( data );
+        free (buffer);
+        mrss_free( rss_data );
     }
 
     gdk_threads_enter();
     filter_feeds( data );
     gdk_threads_leave();
+}
+
+/**
+ * read the feeds from disk
+ */
+void load_data_from_cache (struct RSSReaderData *data)
+{
 }
 
 /*

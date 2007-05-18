@@ -292,6 +292,7 @@ int main( int argc, char** argv )
 
     data->app = MOKO_APPLICATION( moko_application_get_instance() );
     g_set_application_name( _("FeedReader") );
+    data->cache = MOKO_CACHE(moko_cache_new ("rss-reader"));
 
     setup_ui( data );
 
