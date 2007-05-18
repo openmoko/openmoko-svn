@@ -70,6 +70,7 @@ static void footer_init (Footer *f) /* Instance Construction */
 */
 
     f->ProgressBar = gtk_progress_bar_new();
+    gtk_widget_set_name( GTK_WIDGET (f->ProgressBar), "openmoko-footer-progress");
     gtk_widget_show (f->ProgressBar);
     gtk_progress_bar_set_bar_style (f->ProgressBar, GTK_PROGRESS_CONTINUOUS);
     gtk_box_pack_start( f, GTK_WIDGET(f->ProgressBar), TRUE, TRUE, 0);

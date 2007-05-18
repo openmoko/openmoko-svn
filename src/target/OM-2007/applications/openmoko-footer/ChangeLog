@@ -1,5 +1,15 @@
 2007-05-18  Daniel Willmann <daniel@totalueberwachung.de>
 
+        * data/Makefile.am:
+        * data/bg_footer.png: Removed.
+        * src/footer.c:
+        (footer_init):
+        * src/main.c:
+        (main):
+				Set names of widgets to get the styling from the theme
+
+2007-05-18  Daniel Willmann <daniel@totalueberwachung.de>
+
         * src/Makefile.am:
         * src/taskitem.c: Added.
         * src/taskitem.h: Added.

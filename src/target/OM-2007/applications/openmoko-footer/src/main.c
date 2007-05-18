@@ -47,7 +47,7 @@ main( int argc, char **argv )
   gdk_window_add_filter (root_window, (GdkFilterFunc)root_window_event_filter_cb, app);
 
   app->toplevel_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_name (app->toplevel_window, "bg_footer");
+  gtk_widget_set_name( app->toplevel_window, "openmoko-footer");
   gtk_window_set_title (GTK_WINDOW (app->toplevel_window), "OpenMoko Task Manager");
   gtk_window_set_type_hint (GTK_WINDOW (app->toplevel_window), GDK_WINDOW_TYPE_HINT_DOCK);
   gtk_window_set_default_size (GTK_WINDOW (app->toplevel_window), FOOTER_PROPERTY_WIDTH, FOOTER_PROPERTY_HEIGHT);
