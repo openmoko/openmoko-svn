@@ -40,8 +40,11 @@
 static void
 cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
-  g_debug ("delete button clicked");
 
+  moko_dialer_textview_delete (appdata->moko_dialer_text_view);
+
+  /* skip the auto list for the moment as it is too slow */
+#if 0
   if (moko_dialer_autolist_has_selected (appdata->moko_dialer_autolist))
   {
 //first of all, we un-select the selection.
@@ -81,7 +84,7 @@ cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 
 
   }
-
+#endif
 }
 
 static void
@@ -90,7 +93,6 @@ cb_history_button_clicked (GtkButton * button, MokoDialerData * appdata)
   if (!appdata->window_history)
     window_history_init (appdata);
 
-//start dialling.
   gtk_widget_show_all (appdata->window_history);
 
 }
@@ -191,7 +193,8 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   moko_dialer_textview_insert (moko_dialer_text_view, input);
 //DBG_TRACE();
 
-
+    /* skip auto complete for the moment as it is too slow */
+#if 0
   codesinput =
     g_strdup (moko_dialer_textview_get_input (moko_dialer_text_view, FALSE));
 
@@ -208,6 +211,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
 
   if (codesinput)
     g_free (codesinput);
+#endif
 
 }
 
