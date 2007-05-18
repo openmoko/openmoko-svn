@@ -1,0 +1,76 @@
+Index: settings-daemon.c
+===================================================================
+--- settings-daemon.c	(revision 1490)
++++ settings-daemon.c	(working copy)
+@@ -130,8 +130,8 @@
+  * translations, below. The more specific the paths, the better.
+  */
+ static const char* toplevels[] = {
+-  "/desktop/poky/interface",
+-  "/desktop/poky/peripherals",
++  "/desktop/openmoko/interface",
++  "/desktop/openmoko/peripherals",
+ #ifdef HAVE_XFT2
+   FONT_RENDER_DIR
+ #endif
+@@ -144,42 +144,42 @@
+ /* TODO: include the Xft settings here for neatness */
+ static const TranslationEntry translations [] = {
+   /* Hardware settings */
+-  { "/desktop/poky/peripherals/mouse/double_click", "Net/DoubleClickTime",
++  { "/desktop/openmoko/peripherals/mouse/double_click", "Net/DoubleClickTime",
+     GCONF_VALUE_INT, translate_int_int },
+-  { "/desktop/poky/peripherals/mouse/drag_threshold", "Net/DndDragThreshold",
++  { "/desktop/openmoko/peripherals/mouse/drag_threshold", "Net/DndDragThreshold",
+     GCONF_VALUE_INT, translate_int_int },
+-  { "/desktop/poky/peripherals/stylus_mode", "Gtk/StylusMode",
++  { "/desktop/openmoko/peripherals/stylus_mode", "Gtk/StylusMode",
+     GCONF_VALUE_BOOL, translate_bool_int },
+   /* Appearance */
+-  { "/desktop/poky/interface/gtk-color-palette", "Gtk/ColorPalette",
++  { "/desktop/openmoko/interface/gtk-color-palette", "Gtk/ColorPalette",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/font_name", "Gtk/FontName",
++  { "/desktop/openmoko/interface/font_name", "Gtk/FontName",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/gtk_key_theme", "Gtk/KeyThemeName",
++  { "/desktop/openmoko/interface/gtk_key_theme", "Gtk/KeyThemeName",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/toolbar_style", "Gtk/ToolbarStyle",
++  { "/desktop/openmoko/interface/toolbar_style", "Gtk/ToolbarStyle",
+     GCONF_VALUE_STRING, translate_string_string_toolbar },
+-  { "/desktop/poky/interface/toolbar_icon_size", "Gtk/ToolbarIconSize",
++  { "/desktop/openmoko/interface/toolbar_icon_size", "Gtk/ToolbarIconSize",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/can_change_accels", "Gtk/CanChangeAccels",
++  { "/desktop/openmoko/interface/can_change_accels", "Gtk/CanChangeAccels",
+     GCONF_VALUE_BOOL, translate_bool_int },
+-  { "/desktop/poky/interface/cursor_blink", "Net/CursorBlink",
++  { "/desktop/openmoko/interface/cursor_blink", "Net/CursorBlink",
+     GCONF_VALUE_BOOL,translate_bool_int },
+-  { "/desktop/poky/interface/cursor_blink_time", "Net/CursorBlinkTime",
++  { "/desktop/openmoko/interface/cursor_blink_time", "Net/CursorBlinkTime",
+     GCONF_VALUE_INT, translate_int_int },
+-  { "/desktop/poky/interface/theme", "Net/ThemeName",
++  { "/desktop/openmoko/interface/theme", "Net/ThemeName",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/gtk-im-preedit-style", "Gtk/IMPreeditStyle",
++  { "/desktop/openmoko/interface/gtk-im-preedit-style", "Gtk/IMPreeditStyle",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/gtk-im-status-style", "Gtk/IMStatusStyle",
++  { "/desktop/openmoko/interface/gtk-im-status-style", "Gtk/IMStatusStyle",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/icon_theme", "Net/IconThemeName",
++  { "/desktop/openmoko/interface/icon_theme", "Net/IconThemeName",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/file_chooser_backend", "Gtk/FileChooserBackend",
++  { "/desktop/openmoko/interface/file_chooser_backend", "Gtk/FileChooserBackend",
+     GCONF_VALUE_STRING, translate_string_string },
+-  { "/desktop/poky/interface/menus_have_icons", "Gtk/MenuImages",
++  { "/desktop/openmoko/interface/menus_have_icons", "Gtk/MenuImages",
+     GCONF_VALUE_BOOL, translate_bool_int },
+-  { "/desktop/poky/interface/touchscreen", "Gtk/TouchscreenMode",
++  { "/desktop/openmoko/interface/touchscreen", "Gtk/TouchscreenMode",
+     GCONF_VALUE_BOOL, translate_bool_int },
+ };
+ 

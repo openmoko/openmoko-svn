@@ -1,0 +1,177 @@
+Index: settings-daemon/settings-daemon.schemas
+===================================================================
+--- settings-daemon/settings-daemon.schemas	(wersja 1544)
++++ settings-daemon/settings-daemon.schemas	(kopia robocza)
+@@ -3,11 +3,11 @@
+ <schemalist>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/theme</key>
+-    <applyto>/desktop/poky/interface/theme</applyto>
++    <key>/schemas/desktop/openmoko/interface/theme</key>
++    <applyto>/desktop/openmoko/interface/theme</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+-    <default>Clearlooks</default>
++    <default>openmoko-standard</default>
+     <locale name="C">
+       <short>Desktop theme</short>
+       <long>The theme name for Matchbox and GTK+ to use.</long>
+@@ -15,8 +15,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/gtk-color-palette</key>
+-    <applyto>/desktop/poky/interface/gtk-color-palette</applyto>
++    <key>/schemas/desktop/openmoko/interface/gtk-color-palette</key>
++    <applyto>/desktop/openmoko/interface/gtk-color-palette</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+     <locale name="C">
+@@ -26,8 +26,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/font_name</key>
+-    <applyto>/desktop/poky/interface/font_name</applyto>
++    <key>/schemas/desktop/openmoko/interface/font_name</key>
++    <applyto>/desktop/openmoko/interface/font_name</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+     <default>Sans 8</default>
+@@ -38,8 +38,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/gtk_key_theme</key>
+-    <applyto>/desktop/poky/interface/gtk_key_theme</applyto>
++    <key>/schemas/desktop/openmoko/interface/gtk_key_theme</key>
++    <applyto>/desktop/openmoko/interface/gtk_key_theme</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+     <default>Default</default>
+@@ -50,8 +50,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/toolbar_style</key>
+-    <applyto>/desktop/poky/interface/toolbar_style</applyto>
++    <key>/schemas/desktop/openmoko/interface/toolbar_style</key>
++    <applyto>/desktop/openmoko/interface/toolbar_style</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+     <default>icons</default>
+@@ -63,8 +63,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/toolbar_icon_size</key>
+-    <applyto>/desktop/poky/interface/toolbar_icon_size</applyto>
++    <key>/schemas/desktop/openmoko/interface/toolbar_icon_size</key>
++    <applyto>/desktop/openmoko/interface/toolbar_icon_size</applyto>
+     <type>int</type>
+     <owner>settings-daemon</owner>
+     <locale name="C">
+@@ -74,8 +74,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/can_change_accels</key>
+-    <applyto>/desktop/poky/interface/can_change_accels</applyto>
++    <key>/schemas/desktop/openmoko/interface/can_change_accels</key>
++    <applyto>/desktop/openmoko/interface/can_change_accels</applyto>
+     <type>bool</type>
+     <owner>settings-daemon</owner>
+     <default>false</default>
+@@ -87,8 +87,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/cursor_blink</key>
+-    <applyto>/desktop/poky/interface/cursor_blink</applyto>
++    <key>/schemas/desktop/openmoko/interface/cursor_blink</key>
++    <applyto>/desktop/openmoko/interface/cursor_blink</applyto>
+     <type>bool</type>
+     <owner>settings-daemon</owner>
+     <default>true</default>
+@@ -99,8 +99,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/cursor_blink_time</key>
+-    <applyto>/desktop/poky/interface/cursor_blink_time</applyto>
++    <key>/schemas/desktop/openmoko/interface/cursor_blink_time</key>
++    <applyto>/desktop/openmoko/interface/cursor_blink_time</applyto>
+     <type>int</type>
+     <owner>settings-daemon</owner>
+     <default>1200</default>
+@@ -111,11 +111,11 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/icon_theme</key>
+-    <applyto>/desktop/poky/interface/icon_theme</applyto>
++    <key>/schemas/desktop/openmoko/interface/icon_theme</key>
++    <applyto>/desktop/openmoko/interface/icon_theme</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+-    <default>Sato</default>
++    <default>openmoko-standard</default>
+     <locale name="C">
+       <short>Icon Theme</short>
+       <long>The name of the icon theme to use in applications</long>
+@@ -123,8 +123,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/file_chooser_backend</key>
+-    <applyto>/desktop/poky/interface/file_chooser_backend</applyto>
++    <key>/schemas/desktop/openmoko/interface/file_chooser_backend</key>
++    <applyto>/desktop/openmoko/interface/file_chooser_backend</applyto>
+     <type>string</type>
+     <owner>settings-daemon</owner>
+     <locale name="C">
+@@ -136,8 +136,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/menus_have_icons</key>
+-    <applyto>/desktop/poky/interface/menus_have_icons</applyto>
++    <key>/schemas/desktop/openmoko/interface/menus_have_icons</key>
++    <applyto>/desktop/openmoko/interface/menus_have_icons</applyto>
+     <type>bool</type>
+     <owner>settings-daemon</owner>
+     <default>false</default>
+@@ -148,8 +148,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/touchscreen</key>
+-    <applyto>/desktop/poky/interface/touchscreen</applyto>
++    <key>/schemas/desktop/openmoko/interface/touchscreen</key>
++    <applyto>/desktop/openmoko/interface/touchscreen</applyto>
+     <type>bool</type>
+     <owner>settings-daemon</owner>
+     <default>true</default>
+@@ -162,8 +162,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/gtk-im-preedit-style</key>
+-    <applyto>/desktop/poky/interface/gtk-im-preedit-style</applyto>
++    <key>/schemas/desktop/openmoko/interface/gtk-im-preedit-style</key>
++    <applyto>/desktop/openmoko/interface/gtk-im-preedit-style</applyto>
+     <owner>gnome</owner>
+     <type>string</type>
+     <default>callback</default>
+@@ -174,8 +174,8 @@
+   </schema>
+ 
+   <schema>
+-    <key>/schemas/desktop/poky/interface/gtk-im-status-style</key>
+-    <applyto>/desktop/poky/interface/gtk-im-status-style</applyto>
++    <key>/schemas/desktop/openmoko/interface/gtk-im-status-style</key>
++    <applyto>/desktop/openmoko/interface/gtk-im-status-style</applyto>
+     <owner>gnome</owner>
+     <type>string</type>
+     <default>callback</default>
