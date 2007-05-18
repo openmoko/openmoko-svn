@@ -245,9 +245,7 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     gtk_widget_show( image );
     gtk_widget_show( window );
 #endif
-    GdkPixmap* pixmap;
-    gdk_pixbuf_render_pixmap_and_mask( pixbuf, &pixmap, &priv->mask, 1);
-    g_object_unref( pixmap );
+    gdk_pixbuf_render_pixmap_and_mask( pixbuf, NULL, &priv->mask, 1);
     gtk_widget_shape_combine_mask(priv->popup, priv->mask, 0, 0);
 
     priv->buttonWidth = w;

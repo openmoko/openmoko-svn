@@ -1,5 +1,13 @@
 2007-05-18  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-finger-tool-box.c: (cb_configure): Remove useless code
+	(also currently is causing a crash)
+	* libmokoui/moko-pixmap-button.c:
+	(moko_pixmap_button_set_center_stock): Load center stock icons at the
+	size they have been supplied by designers (36x36)
+
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
 	Patch by: Neil J Patel <njp@o-hand.com>
 
 	* libmokojournal/src/moko-journal.c:

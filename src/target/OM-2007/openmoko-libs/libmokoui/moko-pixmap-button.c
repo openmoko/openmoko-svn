@@ -261,7 +261,13 @@ moko_pixmap_button_set_center_stock (MokoPixmapButton* self, const gchar *stock_
     GtkWidget *loweralignment = gtk_alignment_new (0.5, 0.5, 0, 0);
     gtk_box_pack_start (GTK_BOX (priv->buttonvbox), loweralignment, TRUE, TRUE, 0);
 
-    priv->centerimage = gtk_image_new_from_stock (stock_name, GTK_ICON_SIZE_DND);
+    GdkPixbuf *pixbuf = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
+                                                  stock_name,
+                                                  36,
+                                                  0, NULL);
+    priv->centerimage = gtk_image_new_from_pixbuf (pixbuf);
+    g_object_unref (pixbuf);
+
     gtk_container_add (GTK_CONTAINER (loweralignment), priv->centerimage);
 
     gtk_widget_show_all (GTK_WIDGET (priv->buttonvbox));
