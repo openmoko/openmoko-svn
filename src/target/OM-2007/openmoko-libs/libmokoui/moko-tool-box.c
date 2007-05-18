@@ -40,6 +40,7 @@ typedef struct _MokoToolBoxPriv
     GtkWidget* buttonbox;      /* GtkHBox   */
     GtkWidget* searchbar_page; /* MokoFixed */
     GtkWidget* entry;          /* GtkEntry  */
+    gboolean   entry_visible;
 } MokoToolBoxPriv;
 
 /* add your signals here */
@@ -57,7 +58,8 @@ static void moko_tool_box_init                (MokoToolBox      *self);
 static void _button_release(GtkWidget* w, MokoToolBox* self)
 {
     MokoToolBoxPriv *priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
-    moko_tool_box_set_search_visible (self, !GTK_WIDGET_DRAWABLE(priv->entry) );
+    priv->entry_visible = !priv->entry_visible;
+    moko_tool_box_set_search_visible (self, priv->entry_visible );
 }
 
 static gboolean _entry_focus_in(GtkWidget *widget, GdkEventFocus *event, MokoToolBox* self)
@@ -102,6 +104,10 @@ static void moko_tool_box_class_init (MokoToolBoxClass *klass) /* Class Initiali
 static void moko_tool_box_init(MokoToolBox* self) /* Instance Construction */
 {
     moko_debug( "moko_tool_box_init" );
+    MokoToolBoxPriv* priv = MOKO_TOOL_BOX_GET_PRIVATE(self);
+    
+    priv->entry_visible = FALSE;
+    
     gtk_notebook_set_show_border( GTK_NOTEBOOK(self), FALSE );
     gtk_notebook_set_show_tabs( GTK_NOTEBOOK(self), FALSE );
 }

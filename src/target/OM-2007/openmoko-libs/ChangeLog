@@ -1,5 +1,12 @@
 2007-05-18  Thomas Wood  <thomas@openedhand.com>
 
+	Patch by: Neil J Patel <njp@o-hand.com>
+
+	* libmokoui/moko-tool-box.c: (_button_release),
+	(moko_tool_box_init): Use a private boolean to store entry visibility
+
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-message-dialog.c: (moko_message_dialog_init): Add
 	padding and center align the message text
 
