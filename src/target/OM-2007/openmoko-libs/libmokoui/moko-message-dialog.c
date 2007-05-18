@@ -287,21 +287,20 @@ moko_message_dialog_init (MokoMessageDialog *self)
 
   gtk_misc_set_padding (GTK_MISC (label), 12, 12);
 
-  gtk_widget_set_size_request (GTK_WIDGET (label), 300, -1);
-
-  gtk_box_pack_end (GTK_BOX (vbox), label, TRUE, FALSE, 6);
+  gtk_box_pack_end (GTK_BOX (vbox), label, TRUE, TRUE, 6);
 
   gtk_widget_show_all (GTK_WIDGET (GTK_DIALOG (self)->vbox));
 
   gtk_window_set_modal (GTK_WINDOW (self), TRUE);
 
-  gtk_box_pack_start (GTK_BOX (vbox), image_alignment, TRUE, TRUE, 6);
+  gtk_box_pack_start (GTK_BOX (vbox), image_alignment, TRUE, TRUE, 0);
 
   gtk_dialog_set_has_separator (GTK_DIALOG (self), FALSE);
 
   gtk_widget_set_size_request (GTK_WIDGET (self), 480, 560);
   gtk_window_set_decorated (GTK_WINDOW (self), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (self), FALSE);
+  gtk_container_set_border_width (GTK_CONTAINER (self), 85);
 
 
   /* Indicate that we want to paint this ourselves */

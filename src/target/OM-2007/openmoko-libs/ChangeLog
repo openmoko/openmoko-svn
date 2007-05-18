@@ -1,3 +1,8 @@
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-message-dialog.c: (moko_message_dialog_init): Add
+	padding and center align the message text
+
 2007-05-17  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.h: Add MokoGsmdConnectionProgress
