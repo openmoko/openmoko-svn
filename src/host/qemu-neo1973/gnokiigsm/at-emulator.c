@@ -331,6 +331,252 @@ void	gn_atem_incoming_data_handle(const char *buffer, int length)
 	}
 }
 
+struct gn_atem_op {
+	char *op;
+	int writable;
+	enum {
+		gn_var_string,	/* "A","B","C" */
+		gn_var_bool,	/* 0,1 */
+		gn_var_numbers,	/* (1-5),(9-20) */
+	} type;
+	char *default_val;
+	char *string_val[];
+};
+
+bool	gn_atem_parse_option(char *buf, struct gn_atem_op *op, char *val)
+{
+	char	buffer[MAX_LINE_LENGTH], **strval;
+	int	len;
+	if (buf[0] == 0 || (buf[0] == '?' && buf[1] == 0)) {
+		gsprintf(buffer, MAX_LINE_LENGTH, "%s: %s\r\n", op->op, val);
+		gn_atem_string_out(buffer);
+		return (false);
+	}
+
+	if (*buf++ != '=')
+		return (true);
+	if (!strcasecmp(buf, "?")) {
+		len = gsprintf(buffer, MAX_LINE_LENGTH, "%s: ", op->op);
+		switch (op->type) {
+		case gn_var_string:
+			strval = op->string_val;
+			len += gsprintf(buffer + len,
+					MAX_LINE_LENGTH - len,
+					"\"%s\"", *strval++);
+			while (*strval)
+				len += gsprintf(buffer + len,
+						MAX_LINE_LENGTH - len,
+						",\"%s\"", *strval++);
+			break;
+
+		case gn_var_numbers:
+			strval = op->string_val;
+			len += gsprintf(buffer + len,
+					MAX_LINE_LENGTH - len,
+					"\"%s\"", *strval++);
+			/* TODO */
+			break;
+
+		case gn_var_bool:
+			len += gsprintf(buffer + len,
+					MAX_LINE_LENGTH - len, "(0,1)");
+			break;
+		}
+		gsprintf(buffer + len, MAX_LINE_LENGTH - len, "\r\n");
+		return (false);
+	}
+
+	if (!op->writable)
+		return (true);
+
+	switch (op->type) {
+	case gn_var_string:
+		for (strval = op->string_val; *strval; strval++)
+			if (!strcasecmp(buf, *strval)) {
+				gsprintf(val, MAX_LINE_LENGTH,
+						"\"%s\"", *strval);
+				return (false);
+			}
+		break;
+
+	case gn_var_bool:
+		if (!strcasecmp(buf, "0") || !strcasecmp(buf, "1")) {
+			strncpy(val, buf, MAX_LINE_LENGTH);
+			return (false);
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return (true);
+}
+
+static struct gn_atem_op gn_atem_op_cscs = {
+	.op		= "+CSCS",
+	.writable	= 1,
+	.type		= gn_var_string,
+	.default_val	= "IRA",
+	.string_val	= {
+		"GSM", "IRA", "PCCP437", "PCDN", "8859-1", "HEX", "UCS2", 0,
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cmux = {
+	.op		= "+CMUX",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "1,0,1,10,1,0,2,1,1",
+	.string_val	= {
+		"(1),(0),(1-5),(10-100),(1-255),(0-100),(2-255),(1-255),(1-7)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_ws46 = {
+	.op		= "+WS46",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "12",
+	.string_val	= {
+		"(12)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_csta = {
+	.op		= "+CSTA",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "129",
+	.string_val	= {
+		"(129,145)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cmod = {
+	.op		= "+CMOD",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0",
+	.string_val	= {
+		"(0-3)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cbst = {
+	.op		= "+CBST",
+	.writable	= 0,
+	.type		= gn_var_numbers,
+	.default_val	= "7,0,1",
+	.string_val	= {
+		"(0-7,12,14,65,66,68,70,71,75),(0),(0-3)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_crlp = {
+	.op		= "+CRLP",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "61,61,48,6",
+	.string_val	= {
+		"(0-61),(0-61),(39-255),(1-255)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cr = {
+	.op		= "+CR",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0",
+	.string_val	= {
+		"(0,1)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_crc = {
+	.op		= "+CRC",
+	.writable	= 1,
+	.type		= gn_var_bool,
+	.default_val	= "0",
+};
+
+static struct gn_atem_op gn_atem_op_csns = {
+	.op		= "+CSNS",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0",
+	.string_val	= {
+		"(0-7)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_creg = {
+	.op		= "+CREG",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0,0",
+	.string_val	= {
+		"(0-2)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cops = {
+	.op		= "+COPS",
+	.writable	= 1,
+	.type		= gn_var_bool,
+	.default_val	= "0",
+};
+
+static struct gn_atem_op gn_atem_op_cpas = {
+	.op		= "+CPAS",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0",
+	.string_val	= {
+		"(0-5)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cfun = {
+	.op		= "+CFUN",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "1",
+	.string_val	= {
+		"(0,1,4),(0)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cbc = {
+	.op		= "+CBC",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0,0",
+	.string_val	= {
+		"(0-3),(0-100)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_band = {
+	.op		= "%BAND",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0",
+	.string_val	= {
+		"(0-1),(1-31)",
+	},
+};
+
+static struct gn_atem_op gn_atem_op_cssn = {
+	.op		= "CSSN",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0,0",
+	.string_val	= {
+		"(0,1),(0,1)",
+	},
+};
+
 
 /* Parser for standard AT commands.  cmd_buffer must be null terminated. */
 void	gn_atem_at_parse(char *cmd_buffer)
@@ -558,6 +804,14 @@ void	gn_atem_at_parse(char *cmd_buffer)
 		/* + is the precursor to another set of commands */
 		case '+':
 			buf++;
+
+			/* AT+WS46 is wireless network selection */
+			if (strncasecmp(buf, "WS46", 3) == 0) {
+				if (!gn_atem_parse_option(buf + 4,
+						&gn_atem_op_ws46, data.ws46))
+					break;
+			}
+
 			switch (toupper(*buf)) {
 			case 'C':
 				buf++;
@@ -592,6 +846,17 @@ void	gn_atem_at_parse(char *cmd_buffer)
 				return;
 			}
 			break;
+
+		/* % is the precursor to another set of commands */
+		case '%':
+			buf++;
+			if (strncasecmp(buf, "BAND", 3) == 0) {
+				if (!gn_atem_parse_option(buf + 4,
+						&gn_atem_op_band, data.band))
+					break;
+			}
+			gn_atem_modem_result(MR_ERROR);
+			return;
 
 		default:
 			gn_atem_modem_result(MR_ERROR);
@@ -1009,6 +1274,105 @@ bool	gn_atem_command_plusc(char **buf)
 			return (true);
 		}
 		return (false);
+	}
+
+	/* AT+CSCS is character set selection */
+	if (strncasecmp(*buf, "SCS", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cscs, data.cscs);
+	}
+
+	/* AT+CIMI is international mobile subscriber identity */
+	if (strcasecmp(*buf, "IMI") == 0) {
+		gn_atem_string_out("QEMU_IMSI\r\n");
+		return (false);
+	}
+
+	/* AT+CMUX is multiplexing mode */
+	if (strncasecmp(*buf, "MUX", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cmux, data.cmux);
+	}
+
+	/* AT+CSTA is address type selection */
+	if (strncasecmp(*buf, "STA", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_csta, data.csta);
+	}
+
+	/* AT+CMOD is call mode */
+	if (strncasecmp(*buf, "MOD", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cmod, data.cmod);
+	}
+
+	/* AT+CBST is bearer service type */
+	if (strncasecmp(*buf, "BST", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cbst, data.cbst);
+	}
+
+	/* AT+CRLP is radio link protocol */
+	if (strncasecmp(*buf, "RLP", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_crlp, data.crlp);
+	}
+
+	/* AT+CR is reporting control */
+	if (strncasecmp(*buf, "R", 1) == 0) {
+		return gn_atem_parse_option(buf[0] + 1,
+				&gn_atem_op_cr, data.cr);
+	}
+
+	/* AT+CEER is extended error report */
+	if (strncasecmp(*buf, "EER", 3) == 0) {
+		gn_atem_string_out("+CEER: 0,0,5,16,normal call clearing\r\n");
+		return (false);
+	}
+
+	/* AT+CRC is cellular result codes */
+	if (strncasecmp(*buf, "RC", 2) == 0) {
+		return gn_atem_parse_option(buf[0] + 2,
+				&gn_atem_op_crc, data.crc);
+	}
+
+	/* AT+CSNS is single numbering scheme */
+	if (strncasecmp(*buf, "SNS", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_csns, data.csns);
+	}
+
+	/* AT+CREG is network registration */
+	if (strncasecmp(*buf, "REG", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_creg, data.creg);
+	}
+
+	/* AT+COPS is PLMN selection */
+	if (strncasecmp(*buf, "OPS", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cops, data.cops);
+	}
+
+	/* AT+CPAS is phone activity status */
+	if (strncasecmp(*buf, "PAS", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cpas, data.cpas);
+	}
+
+	/* AT+CFUN is phone functionality */
+	if (strncasecmp(*buf, "FUN", 3) == 0) {
+		return gn_atem_parse_option(buf[0] + 3,
+				&gn_atem_op_cfun, data.cfun);
+	}
+
+	if (strncasecmp(*buf, "BC", 2) == 0) {
+		return gn_atem_parse_option(buf[0] + 2,
+				&gn_atem_op_cbc, data.cbc);
+	}
+	if (strncasecmp(*buf, "CSSN", 2) == 0) {
+		return gn_atem_parse_option(buf[0] + 2,
+				&gn_atem_op_cssn, data.cssn);
 	}
 
 	return (true);

@@ -45,7 +45,7 @@ typedef struct {
 } gn_phone_model;
 
 /* For all 'AT+XXXX=?' commands */
-typedef char gn_choice[10];
+typedef char gn_choice[256];
 
 /* This is a generic holder for high level information - eg a gn_bmp */
 typedef struct {
@@ -115,6 +115,8 @@ typedef struct {
 	gn_choice cbst;
 	gn_choice crlp;
 	gn_choice cr;
+	gn_choice crc;
+	gn_choice cmod;
 	gn_choice csns;
 	gn_choice creg;
 	gn_choice cpas;
