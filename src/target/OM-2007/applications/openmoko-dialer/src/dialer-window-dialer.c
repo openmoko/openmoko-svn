@@ -255,15 +255,11 @@ window_dialer_init (MokoDialerData * p_dialer_data)
     GtkWidget *window = moko_finger_window_new ();
 
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
-    GtkWidget *closeitem = gtk_menu_item_new_with_label ("Close");
-    g_signal_connect (G_OBJECT (closeitem), "activate",
-                      G_CALLBACK (gtk_main_quit), p_dialer_data);
-    gtk_menu_shell_append (GTK_MENU_SHELL (appmenu), closeitem);
 
     GtkMenuItem *hideitem =
-      GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Hide"));
+      GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Close"));
     g_signal_connect_swapped (G_OBJECT (hideitem), "activate",
-                      G_CALLBACK (gtk_widget_hide), p_dialer_data->window_dialer);
+                      G_CALLBACK (gtk_widget_hide), window);
     gtk_menu_shell_append (GTK_MENU_SHELL (appmenu), GTK_WIDGET (hideitem));
 
 
