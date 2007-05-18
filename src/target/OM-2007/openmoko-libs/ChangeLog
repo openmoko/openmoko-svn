@@ -2,6 +2,18 @@
 
 	Patch by: Neil J Patel <njp@o-hand.com>
 
+	* libmokojournal/src/moko-journal.c:
+	(moko_journal_entry_set_direction):
+	* libmokojournal/src/moko-time.c: (moko_time_as_timet):
+	* libmokojournal/src/moko-time.h:
+	- Removes a g_return_if_fail on a enum.
+	- Makes the moko_time_as_time_t accept a const MokoTime, to
+	  suppress warnings.
+
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Neil J Patel <njp@o-hand.com>
+
 	* libmokoui/moko-tool-box.c: (_button_release),
 	(moko_tool_box_init): Use a private boolean to store entry visibility
 

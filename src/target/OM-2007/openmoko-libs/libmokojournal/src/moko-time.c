@@ -81,7 +81,7 @@ moko_time_as_ical_string (MokoTime *a_t)
 }
 
 time_t
-moko_time_as_timet (MokoTime *time)
+moko_time_as_timet (const MokoTime *time)
 {
   g_return_val_if_fail (time, 0) ;
   return icaltime_as_timet (time->t) ;

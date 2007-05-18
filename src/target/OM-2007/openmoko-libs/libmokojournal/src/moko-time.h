@@ -29,7 +29,7 @@ MokoTime* moko_time_new_today () ;
 MokoTime* moko_time_from_timet (const time_t t, gboolean is_date) ;
 MokoTime* moko_time_from_string (const gchar *iso_format_date) ;
 void moko_time_free (MokoTime *time) ;
-time_t moko_time_as_timet (MokoTime *time) ;
+time_t moko_time_as_timet (const MokoTime *time) ;
 
 const gchar* moko_time_as_ical_string (MokoTime *t) ;
 #endif /*__MOKO_TIME_H__*/

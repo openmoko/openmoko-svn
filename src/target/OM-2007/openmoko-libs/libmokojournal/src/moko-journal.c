@@ -1656,7 +1656,6 @@ void moko_journal_entry_set_direction (MokoJournalEntry *a_entry,
                                        enum MessageDirection direction)
 {
   g_return_if_fail (a_entry) ;
-  g_return_if_fail (direction) ;
 
   a_entry->direction = direction ;
 }
