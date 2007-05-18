@@ -55,13 +55,18 @@ static void
 moko_cache_create_dirs (gchar *cache_name)
 {
     gchar *path = g_build_path (G_DIR_SEPARATOR_S, g_get_home_dir (), CACHE_NAME, NULL);
-    if (g_file_test (path, G_FILE_TEST_EXISTS))
+    if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
+        g_debug ("Trying to create dir '%s'\n", path);
         g_mkdir (path, 0700);
+    }
+
     g_free (path);
 
     path = g_build_path (G_DIR_SEPARATOR_S, g_get_home_dir (), CACHE_NAME, cache_name, NULL);
-    if (g_file_test (path, G_FILE_TEST_EXISTS))
+    if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
+        g_debug ("Trying to create app cache dir '%s'\n", path);
         g_mkdir (path, 0700);
+    }
     g_free (path);
     
 }
@@ -85,7 +90,7 @@ object_name_to_file_name (gchar *file_name)
     gchar *result = g_strdup (file_name);
     const int l = strlen(result);
     for (int i = 0; i < l; ++i)
-        if ( result[i] == '/' || result[i] == ':' || result[i] == '.' )
+        if ( result[i] == '/' || result[i] == ':' || result[i] == '.' || result[i] == '~' )
             result[i] = '_';
 
     return result;
@@ -141,7 +146,7 @@ moko_cache_get_utilized_size(MokoCache *self)
 }
 
 gint
-moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gsize size)
+moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gsize size, GError **g_error)
 {
     int error = MOKO_CACHE_WRITE_SUCCESS;
     size = size == -1 ? strlen(content) : size;
@@ -150,18 +155,10 @@ moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gs
     gchar *file_name = object_name_to_file_name (object_name);
     gchar *path = moko_cache_create_path (self->cache_name, file_name);
 
-    int fd = g_open (path, O_WRONLY|O_TRUNC, 0700);
-    if ( fd < 0 ) {
+    gboolean result = g_file_set_contents (path, content, size, g_error);
+    if (!result )
         error = MOKO_CACHE_WRITE_UNKNOWN_ERROR;
-        goto error_path;
-    }
 
-    if ( write (fd, content, size) < 0 ) {
-        error = MOKO_CACHE_WRITE_UNKNOWN_ERROR;
-        goto error_path;
-    }
-
-error_path:
     g_free (path);
     g_free (file_name);
     return error;

@@ -1,6 +1,19 @@
+2007-05-18  Holger Freyther  <zecke@selfish.org>
+
+        Test the cache implementation
+
+        * src/moko_cache.c:
+        (moko_cache_create_dirs): Fix the g_file_test logic
+        (object_name_to_file_name): replace the tile as well (~)
+        (moko_cache_write_object): use g_set_file_contents to gain atomic
+        writes
+        * src/moko_cache.h: Update write prototype to gain a GError**
+        * tests/Makefile.am:
+        * tests/cache_test.c: Added.
+
 2007-05-03  Holger Freyther  <zecke@selfish.org>
 
-        Start implementing the test (untested)
+        Start implementing the cache (untested)
 
         * src/moko_cache.c:
         (moko_cache_create_dirs): Make sure to create the dir. Somehow there

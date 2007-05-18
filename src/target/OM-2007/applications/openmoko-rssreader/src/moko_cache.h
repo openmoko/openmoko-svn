@@ -71,7 +71,7 @@ GObject*      moko_cache_new (gchar *cache_policy_name);
 gint          moko_cache_get_allowed_size (MokoCache *self);
 gint          moko_cache_get_utilized_size(MokoCache *self);
 
-gint          moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gsize size);
+gint          moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, gsize size, GError** error);
 gchar*        moko_cache_read_object  (MokoCache *self, gchar *object_name, gsize *size);
 
 /**
@@ -95,10 +95,12 @@ gchar*        moko_cache_read_object  (MokoCache *self, gchar *object_name, gsiz
  */
 
 /**
- * \fn moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, guint size);
+ * \fn moko_cache_write_object (MokoCache *self, gchar *object_name, gchar *content, guint size, GError** error);
  * @param object_name The name of the object. E.g. http://www.heise.de/atom.xml
  * @param content     The actual content to be written to the cache
  * @param size        The size of the content. If it is -1 strlen will be used to determine the size
+ * @param error       The error containing a nice string.
+ * @return one of the MokoCacheWriteResult
  */
 
 /**
