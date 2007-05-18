@@ -114,3 +114,52 @@ style "removebutton" {
 	}
 }
 widget "*.removebutton" style "removebutton"
+
+# History view
+style "mokohistorylabel" {
+	font_name = "Vera Sans 14"
+	fg[PRELIGHT] = "#666"
+}
+widget "*.mokohistorylabel" style "mokohistorylabel"
+
+style "mokohistorycall-in" {
+	text[PRELIGHT] = "#666"
+        base[PRELIGHT] = "#000"
+        bg[PRELIGHT] = "#E7FFE6"
+        fg[PRELIGHT] = "#00FF00"
+}
+widget "*.mokohistorycall-in" style "mokohistorycall-in"
+
+style "mokohistorycall-out" {
+	text[PRELIGHT] = "#666"
+        base[PRELIGHT] = "#000"
+        bg[PRELIGHT] = "#FFF7E6"
+        fg[PRELIGHT] = "#00FF00"
+}
+widget "*.mokohistorycall-out" style "mokohistorycall-out"
+
+style "mokohistorycall-missed" {
+	text[PRELIGHT] = "#666"
+        base[PRELIGHT] = "#000"
+        bg[PRELIGHT] = "#FAD7D2"
+        fg[PRELIGHT] = "#00FF00"
+}
+widget "*.mokohistorycall-missed" style "mokohistorycall-missed"
+
+style "mokohistoryemail" {
+	text[PRELIGHT] = "#666"
+        base[PRELIGHT] = "#000"
+        bg[PRELIGHT] = "#FFF"
+        fg[PRELIGHT] = "#00FF00"
+}
+widget "*.mokohistoryemail" style "mokohistoryemail"
+
+style "mokohistorysms" {
+	text[PRELIGHT] = "#666"
+        base[PRELIGHT] = "#000"
+        bg[PRELIGHT] = "#E6F9FF"
+        fg[PRELIGHT] = "#00FF00"
+}
+widget "*.mokohistorysms" style "mokohistorysms"
+
+
