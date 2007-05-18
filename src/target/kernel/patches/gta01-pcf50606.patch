@@ -1733,7 +1733,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +	free_irq(pcf50606_global->irq, pcf50606_global);
 +exit_input:
 +	pm_power_off = NULL;
-+	input_unregister_device(pcf->input_dev);
++	input_unregister_device(pcf50606_global->input_dev);
 +exit_sysfs:
 +	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
 +exit_detach:
