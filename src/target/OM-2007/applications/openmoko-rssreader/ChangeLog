@@ -1,5 +1,12 @@
 2007-05-19  Holger Freyther  <zecke@selfish.org>
 
+        Do not crash on non valid pubDates
+
+        * src/callbacks.c:
+        (add_mrss_item):
+
+2007-05-19  Holger Freyther  <zecke@selfish.org>
+
         Load data from the cache. Currently libmrss has some issues
         parsing the data it wrote.
 

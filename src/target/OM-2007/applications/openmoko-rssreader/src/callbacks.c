@@ -140,7 +140,7 @@ void add_mrss_item ( struct RSSReaderData *data, const mrss_t *rss_data, const g
          * with the order in application-data.h
          */
         RSSRFCDate *date = RSS_RFC_DATE(rss_rfc_date_new ());
-        rss_rfc_date_set (date, item->pubDate);
+        rss_rfc_date_set (date, item->pubDate ? item->pubDate : "");
         gdk_threads_enter();
         gtk_list_store_append( data->feed_data, &iter );
         gtk_list_store_set   ( data->feed_data, &iter,
