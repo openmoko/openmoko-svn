@@ -1,3 +1,29 @@
+2007-05-18  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Neil J Patel <njp@o-hand.com>
+
+	* src/Makefile.am:
+	* src/contacts-callbacks-ui.c: (contacts_selection_cb):
+	* src/contacts-defs.h:
+	* src/contacts-omoko.c: (create_contacts_list),
+	(create_main_window):
+	- Adds a new page onto the main notebook, hooks up signals, and 
+	  makes contacts aware that there is a history pane.
+	- Creates a contacts-history-view.h/c which handles the creation
+	  and updating of the ContactsHistory widget. It also has 
+	  connects to the 'entry-activated' signal on the history 
+	  widget.
+	- Adds the ContactsHistory widget, which is a self contained 
+	  vbox that uses libmokojournal to display a list of 
+	  communication with a contact-uid.
+	- History is displayed with the most recent first.
+	- Each 'preview widget' van be clicked to reveal more 
+	  information (if it exists), and clicked again to close.
+	- Each 'preview widget' has a tap-and-hold menu, which
+	  allows the user to either select or activate the 
+	  current widget.
+	- Each 'preview widget' is theme-able.
+
 2007-05-17  Thomas Wood  <thomas@openedhand.com>
 
 	* src/contacts-omoko.c: (create_main_window):

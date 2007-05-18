@@ -33,6 +33,7 @@
 #include "contacts-contact-pane.h"
 #include "contacts-callbacks-ebook.h"
 #include "contacts-main.h"
+#include "contacts-history-view.h"
 
 void
 contacts_chooser_add_cb (GtkWidget *button, ContactsData *data)
@@ -128,17 +129,21 @@ contacts_selection_cb (GtkTreeSelection * selection, ContactsData *data)
 
 	contacts_set_available_options (data, TRUE, GPOINTER_TO_INT (data->contact), GPOINTER_TO_INT (data->contact));
 
-	if (current_pane == CONTACTS_CONTACT_PANE)
-	{
-		contacts_display_summary (data->contact, data);
-	}
-
-	if (current_pane == CONTACTS_GROUPS_PANE)
-	{
-		contacts_groups_pane_update_selection (
-				selection,
-				data);
-	}
+        switch (current_pane) {
+                case CONTACTS_CONTACT_PANE:
+                        contacts_display_summary (data->contact, data);
+                        break;
+                case CONTACTS_GROUPS_PANE:
+                        contacts_groups_pane_update_selection (selection,
+				                               data);
+		        break;
+		case CONTACTS_HISTORY_PANE:
+		        contacts_history_pane_update_selection (selection,
+		                                                data);
+                        break;
+                default:
+                        break;
+        }
 }
 
 void

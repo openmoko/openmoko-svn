@@ -47,7 +47,8 @@ enum {
 
 enum {
 	CONTACTS_CONTACT_PANE = 0,
-	CONTACTS_GROUPS_PANE
+	CONTACTS_GROUPS_PANE,
+	CONTACTS_HISTORY_PANE
 };
 
 typedef struct {
@@ -84,6 +85,7 @@ typedef struct {
 	GtkWidget *preview_header_hbox;
 
 	GtkWidget *groups_vbox;
+	GtkWidget *history;
 
 	GtkWidget *add_field_button;
 	GtkWidget *remove_field_button;

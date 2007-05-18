@@ -26,6 +26,7 @@
 #include "contacts-omoko.h"
 #include "contacts-groups-editor.h"
 #include "contacts-callbacks-ebook.h"
+#include "contacts-history-view.h"
 
 
 
@@ -93,6 +94,7 @@ create_contacts_list (ContactsData *data)
 	column = gtk_tree_view_column_new_with_attributes (_("Name"), renderer,
 							"text", CONTACT_NAME_COL, NULL);
 	gtk_tree_view_column_set_sort_column_id (column, CONTACT_NAME_COL);
+        gtk_tree_view_column_set_expand (column, TRUE);
 	moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), column);
 
 	/* mobile column */
@@ -100,6 +102,7 @@ create_contacts_list (ContactsData *data)
 	column = gtk_tree_view_column_new_with_attributes (_("Mobile"), renderer,
 							"text", CONTACT_CELLPHONE_COL, NULL);
 	gtk_tree_view_column_set_sort_column_id (column, CONTACT_CELLPHONE_COL);
+	gtk_tree_view_column_set_expand (column, TRUE);
 	moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), column);
 
 	return treeview;
@@ -220,6 +223,8 @@ create_main_window (ContactsData *contacts_data)
 	/* history button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
 	moko_pixmap_button_set_center_stock (MOKO_PIXMAP_BUTTON (widget), MOKO_STOCK_HISTORY);
+	g_signal_connect (G_OBJECT (widget), "clicked",
+ 			 G_CALLBACK (contacts_history_pane_show),contacts_data);
 
 	/* edit button */
 	widget = GTK_WIDGET (moko_tool_box_add_action_button (MOKO_TOOL_BOX (moko_tool_box)));
@@ -262,6 +267,12 @@ create_main_window (ContactsData *contacts_data)
 	ui->groups_vbox = gtk_vbox_new (FALSE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (ui->groups_vbox), 12);
 	gtk_notebook_append_page (GTK_NOTEBOOK (ui->main_notebook), ui->groups_vbox, NULL);
+	
+	/*** history mode ***/
+	ui->history = contacts_history_pane_new ();
+	gtk_notebook_append_page (GTK_NOTEBOOK (ui->main_notebook),
+	                          ui->history,
+	                          NULL);
 
 	/*** connect signals ***/
 	g_signal_connect ((gpointer) ui->main_window, "destroy",
