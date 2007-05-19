@@ -17,7 +17,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdcore_s3c2410.c
-@@ -0,0 +1,721 @@
+@@ -0,0 +1,730 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -47,6 +47,15 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +#if defined(CONFIG_S3C2410) && defined(CONFIG_USB_DEVICE)
 +
 +#include <common.h>
++
++/* we can't use the regular debug macros since the console might be
++ * set to usbtty, which would cause deadlocks! */
++#ifdef	DEBUG
++#undef debug
++#undef debugX
++#define debug(fmt,args...)	serial_printf (fmt ,##args)
++#define debugX(level,fmt,args...) if (DEBUG>=level) serial_printf(fmt,##args)
++#endif
 +
 +DECLARE_GLOBAL_DATA_PTR;
 +
@@ -233,7 +242,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +				/* Not a setup packet, stall next EP0 transaction */
 +				debug("can't parse setup packet1\n");
 +				set_ep0_ss();
-+				//set_ep0_de_out();
++				set_ep0_de_out();
 +				ep0->state = EP0_IDLE;
 +				return;
 +			}
@@ -1170,7 +1179,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/common/cmd_neo1973.c
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -93,6 +93,18 @@
+@@ -72,6 +72,18 @@
  			neo1973_vibrator(1);
  		else
  			neo1973_vibrator(0);
@@ -1189,7 +1198,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
  	} else {
  out_help:
  		printf("Usage:\n%s\n", cmdtp->usage);
-@@ -116,5 +128,6 @@
+@@ -95,5 +107,6 @@
  	"neo1973 charger off - disable charging\n"
  	"neo1973 backlight (on|off) - switch backlight on or off\n"
  	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
