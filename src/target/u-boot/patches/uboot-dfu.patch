@@ -99,7 +99,7 @@ Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdfu.c
-@@ -0,0 +1,1042 @@
+@@ -0,0 +1,1066 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -155,6 +155,7 @@ Index: u-boot/drivers/usbdfu.c
 +#include <usbdcore.h>
 +#include <usb_dfu.h>
 +#include <usb_dfu_descriptors.h>
++#include <usb_dfu_trailer.h>
 +
 +#include <nand.h>
 +#include <jffs2/load_kernel.h>
@@ -192,6 +193,19 @@ Index: u-boot/drivers/usbdfu.c
 +};
 +
 +static struct dnload_state _dnstate;
++
++static int dfu_trailer_matching(const struct uboot_dfu_trailer *trailer)
++{
++	if (trailer->magic == UBOOT_DFU_TRAILER_MAGIC &&
++	    trailer->version == UBOOT_DFU_TRAILER_V1 &&
++	    trailer->vendor == CONFIG_USBD_VENDORID &&
++	    (trailer->product == CONFIG_USBD_PRODUCTID_CDCACM ||
++	     trailer->product == CONFIG_USBD_PRODUCTID_GSERIAL) &&
++	    trailer->revision == get_board_rev())
++		return 1;
++
++	return 0;
++}
 +
 +static struct part_info *get_partition_nand(int idx)
 +{
@@ -407,7 +421,17 @@ Index: u-boot/drivers/usbdfu.c
 +			ds->ptr = ds->buf;
 +			break;
 +		case 1:
-+			if (ds->ptr > ds->buf) {
++			if (ds->ptr >
++			    ds->buf + sizeof(struct uboot_dfu_trailer)) {
++				struct uboot_dfu_trailer trailer;
++				dfu_trailer_mirror(&trailer, ds->ptr);
++				if (!dfu_trailer_matching(&trailer)) {
++					printf("DFU TRAILER NOT OK\n");
++					dev->dfu_state = DFU_STATE_dfuERROR;
++					dev->dfu_status = DFU_STATUS_errTARGET;
++					return RET_STALL;
++				}
++
 +				rc = erase_flash_verify_nand(urb, ds,
 +							ds->part->size,
 +							ds->part_net_size);
@@ -1589,3 +1613,466 @@ Index: u-boot/include/configs/qt2410.h
  
  /*-----------------------------------------------------------------------
   * Physical Memory Map
+Index: u-boot/tools/Makefile
+===================================================================
+--- u-boot.orig/tools/Makefile
++++ u-boot/tools/Makefile
+@@ -21,10 +21,10 @@
+ # MA 02111-1307 USA
+ #
+ 
+-BIN_FILES	= img2srec$(SFX) mkimage$(SFX) envcrc$(SFX) gen_eth_addr$(SFX) bmp_logo$(SFX)
++BIN_FILES	= img2srec$(SFX) mkimage$(SFX) envcrc$(SFX) gen_eth_addr$(SFX) bmp_logo$(SFX) mkudfu$(SFX)
+ 
+ OBJ_LINKS	= environment.o crc32.o
+-OBJ_FILES	= img2srec.o mkimage.o envcrc.o gen_eth_addr.o bmp_logo.o
++OBJ_FILES	= img2srec.o mkimage.o envcrc.o gen_eth_addr.o bmp_logo.o mkudfu.o
+ 
+ ifeq ($(ARCH),mips)
+ BIN_FILES	+= inca-swap-bytes$(SFX)
+@@ -137,6 +137,10 @@
+ 		$(CC) $(CFLAGS) $(HOST_LDFLAGS) -o $@ $^
+ 		$(STRIP) $@
+ 
++$(obj)mkudfu$(SFX):	$(obj)mkudfu.o
++		$(CC) $(CFLAGS) $(HOST_LDFLAGS) -o $@ $^
++		$(STRIP) $@
++
+ $(obj)ncb$(SFX):	$(obj)ncb.o
+ 		$(CC) $(CFLAGS) $(HOST_LDFLAGS) -o $@ $^
+ 		$(STRIP) $@
+Index: u-boot/tools/mkudfu.c
+===================================================================
+--- /dev/null
++++ u-boot/tools/mkudfu.c
+@@ -0,0 +1,314 @@
++/*
++ * USB DFU file trailer tool
++ * (C) Copyright by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * based on mkimage.c, copyright information as follows:
++ *
++ * (C) Copyright 2000-2004
++ * DENX Software Engineering
++ * Wolfgang Denk, wd@denx.de
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <errno.h>
++#include <fcntl.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#ifndef __WIN32__
++#include <netinet/in.h>		/* for host / network byte order conversions	*/
++#endif
++#include <sys/mman.h>
++#include <sys/stat.h>
++#include <time.h>
++#include <unistd.h>
++
++#if defined(__BEOS__) || defined(__NetBSD__) || defined(__APPLE__)
++#include <inttypes.h>
++#endif
++
++#ifdef __WIN32__
++typedef unsigned int __u32;
++
++#define SWAP_LONG(x) \
++	((__u32)( \
++		(((__u32)(x) & (__u32)0x000000ffUL) << 24) | \
++		(((__u32)(x) & (__u32)0x0000ff00UL) <<  8) | \
++		(((__u32)(x) & (__u32)0x00ff0000UL) >>  8) | \
++		(((__u32)(x) & (__u32)0xff000000UL) >> 24) ))
++typedef		unsigned char	uint8_t;
++typedef		unsigned short	uint16_t;
++typedef		unsigned int	uint32_t;
++
++#define     ntohl(a)	SWAP_LONG(a)
++#define     htonl(a)	SWAP_LONG(a)
++#endif	/* __WIN32__ */
++
++#ifndef	O_BINARY		/* should be define'd on __WIN32__ */
++#define O_BINARY	0
++#endif
++
++#include <usb_dfu_trailer.h>
++
++extern int errno;
++
++#ifndef MAP_FAILED
++#define MAP_FAILED (-1)
++#endif
++
++static char *cmdname;
++
++static char *datafile;
++static char *imagefile;
++
++
++static void usage()
++{
++	fprintf (stderr, "%s - create / display u-boot DFU trailer\n", cmdname);
++	fprintf (stderr, "Usage: %s -l image\n"
++			 "          -l ==> list image header information\n"
++			 "       %s -v VID -p PID -r REV -d data_file image\n",
++		cmdname, cmdname);
++	fprintf (stderr, "          -v ==> set vendor ID to 'VID'\n"
++			 "          -p ==> set product ID system to 'PID'\n"
++			 "          -r ==> set hardware revision to 'REV'\n"
++			 "          -d ==> use 'data_file' as input file\n"
++		);
++	exit (EXIT_FAILURE);
++}
++
++static void print_trailer(struct uboot_dfu_trailer *trailer)
++{
++	printf("===> DFU Trailer information:\n");
++	printf("Trailer Vers.:	%d\n", trailer->version);
++	printf("Trailer Length:	%d\n", trailer->length);
++	printf("VendorID:	0x%04x\n", trailer->vendor);
++	printf("ProductID:	0x%04x\n", trailer->product);
++	printf("HW Revision:	0x%04x\n", trailer->revision);
++}
++
++static void copy_file (int ifd, const char *datafile, int pad)
++{
++	int dfd;
++	struct stat sbuf;
++	unsigned char *ptr;
++	int tail;
++	int zero = 0;
++	int offset = 0;
++	int size;
++
++	if ((dfd = open(datafile, O_RDONLY|O_BINARY)) < 0) {
++		fprintf (stderr, "%s: Can't open %s: %s\n",
++			cmdname, datafile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	if (fstat(dfd, &sbuf) < 0) {
++		fprintf (stderr, "%s: Can't stat %s: %s\n",
++			cmdname, datafile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	ptr = (unsigned char *)mmap(0, sbuf.st_size,
++				    PROT_READ, MAP_SHARED, dfd, 0);
++	if (ptr == (unsigned char *)MAP_FAILED) {
++		fprintf (stderr, "%s: Can't read %s: %s\n",
++			cmdname, datafile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	size = sbuf.st_size - offset;
++	if (write(ifd, ptr + offset, size) != size) {
++		fprintf (stderr, "%s: Write error on %s: %s\n",
++			cmdname, imagefile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	if (pad && ((tail = size % 4) != 0)) {
++
++		if (write(ifd, (char *)&zero, 4-tail) != 4-tail) {
++			fprintf (stderr, "%s: Write error on %s: %s\n",
++				cmdname, imagefile, strerror(errno));
++			exit (EXIT_FAILURE);
++		}
++	}
++
++	(void) munmap((void *)ptr, sbuf.st_size);
++	(void) close (dfd);
++}
++
++
++int main(int argc, char **argv)
++{
++	int ifd;
++	int lflag = 0;
++	struct stat sbuf;
++	u_int16_t opt_vendor, opt_product, opt_revision;
++	struct uboot_dfu_trailer _hdr, _mirror, *hdr = &_hdr;
++
++	opt_vendor = opt_product = opt_revision = 0;
++
++	cmdname = *argv;
++
++	while (--argc > 0 && **++argv == '-') {
++		while (*++*argv) {
++			switch (**argv) {
++			case 'l':
++				lflag = 1;
++				break;
++			case 'v':
++				if (--argc <= 0)
++					usage ();
++				opt_vendor = strtoul(*++argv, NULL, 16);
++				goto NXTARG;
++			case 'p':
++				if (--argc <= 0)
++					usage ();
++				opt_product = strtoul(*++argv, NULL, 16);
++				goto NXTARG;
++			case 'r':
++				if (--argc <= 0)
++					usage ();
++				opt_revision = strtoul(*++argv, NULL, 16);
++				goto NXTARG;
++			case 'd':
++				if (--argc <= 0)
++					usage ();
++				datafile = *++argv;
++				goto NXTARG;
++			case 'h':
++				usage();
++				break;
++			default:
++				usage();
++			}
++		}
++NXTARG:		;
++	}
++
++	if (argc != 1)
++		usage();
++
++	imagefile = *argv;
++
++	if (lflag)
++		ifd = open(imagefile, O_RDONLY|O_BINARY);
++	else
++		ifd = open(imagefile, O_RDWR|O_CREAT|O_TRUNC|O_BINARY, 0666);
++
++	if (ifd < 0) {
++		fprintf (stderr, "%s: Can't open %s: %s\n",
++			cmdname, imagefile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	if (lflag) {
++		unsigned char *ptr;
++		/* list header information of existing image */
++		if (fstat(ifd, &sbuf) < 0) {
++			fprintf (stderr, "%s: Can't stat %s: %s\n",
++				cmdname, imagefile, strerror(errno));
++			exit (EXIT_FAILURE);
++		}
++
++		if ((unsigned)sbuf.st_size < sizeof(struct uboot_dfu_trailer)) {
++			fprintf (stderr,
++				"%s: Bad size: \"%s\" is no valid image\n",
++				cmdname, imagefile);
++			exit (EXIT_FAILURE);
++		}
++
++		ptr = (unsigned char *)mmap(0, sbuf.st_size,
++					    PROT_READ, MAP_SHARED, ifd, 0);
++		if ((caddr_t)ptr == (caddr_t)-1) {
++			fprintf (stderr, "%s: Can't read %s: %s\n",
++				cmdname, imagefile, strerror(errno));
++			exit (EXIT_FAILURE);
++		}
++
++		dfu_trailer_mirror(hdr, ptr+sbuf.st_size);
++
++		if (hdr->magic != UBOOT_DFU_TRAILER_MAGIC) {
++			fprintf (stderr,
++				"%s: Bad Magic Number: \"%s\" is no valid image\n",
++				cmdname, imagefile);
++			exit (EXIT_FAILURE);
++		}
++
++		/* for multi-file images we need the data part, too */
++		print_trailer(hdr);
++
++		(void) munmap((void *)ptr, sbuf.st_size);
++		(void) close (ifd);
++
++		exit (EXIT_SUCCESS);
++	}
++
++	/* if we're not listing: */
++
++	copy_file (ifd, datafile, 0);
++
++	memset (hdr, 0, sizeof(struct uboot_dfu_trailer));
++
++	/* Build new header */
++	hdr->version	= UBOOT_DFU_TRAILER_V1;
++	hdr->magic	= UBOOT_DFU_TRAILER_MAGIC;
++	hdr->length	= sizeof(struct uboot_dfu_trailer);
++	hdr->vendor	= opt_vendor;
++	hdr->product	= opt_product;
++	hdr->revision	= opt_revision;
++
++	print_trailer(hdr);
++	dfu_trailer_mirror(&_mirror, (unsigned char *)hdr+sizeof(*hdr));
++
++	if (write(ifd, &_mirror, sizeof(struct uboot_dfu_trailer))
++					!= sizeof(struct uboot_dfu_trailer)) {
++		fprintf (stderr, "%s: Write error on %s: %s\n",
++			cmdname, imagefile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	/* We're a bit of paranoid */
++#if defined(_POSIX_SYNCHRONIZED_IO) && !defined(__sun__) && !defined(__FreeBSD__)
++	(void) fdatasync (ifd);
++#else
++	(void) fsync (ifd);
++#endif
++
++	if (fstat(ifd, &sbuf) < 0) {
++		fprintf (stderr, "%s: Can't stat %s: %s\n",
++			cmdname, imagefile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	/* We're a bit of paranoid */
++#if defined(_POSIX_SYNCHRONIZED_IO) && !defined(__sun__) && !defined(__FreeBSD__)
++	(void) fdatasync (ifd);
++#else
++	(void) fsync (ifd);
++#endif
++
++	if (close(ifd)) {
++		fprintf (stderr, "%s: Write error on %s: %s\n",
++			cmdname, imagefile, strerror(errno));
++		exit (EXIT_FAILURE);
++	}
++
++	exit (EXIT_SUCCESS);
++}
+Index: u-boot/include/usb_dfu_trailer.h
+===================================================================
+--- /dev/null
++++ u-boot/include/usb_dfu_trailer.h
+@@ -0,0 +1,31 @@
++#ifndef _USB_DFU_TRAILER_H
++#define _USB_DFU_TRAILER_H
++
++/* trailer handling for DFU files */
++
++#define UBOOT_DFU_TRAILER_V1	1
++#define UBOOT_DFU_TRAILER_MAGIC	0x19731978
++struct uboot_dfu_trailer {
++	u_int32_t	magic;
++	u_int16_t	version;
++	u_int16_t	length;
++	u_int16_t	vendor;
++	u_int16_t	product;
++	u_int32_t	revision;
++} __attribute__((packed));
++
++/* we mirror the trailer because we want it to be longer in later versions
++ * while keeping backwards compatibility */
++static inline void dfu_trailer_mirror(struct uboot_dfu_trailer *trailer,
++				      unsigned char *eof)
++{
++	int i;
++	int len = sizeof(struct uboot_dfu_trailer);
++	unsigned char *src = eof - len;
++	unsigned char *dst = (unsigned char *) trailer;
++
++	for (i = 0; i < len; i++)
++		dst[len-1-i] = src[i];
++}
++
++#endif /* _USB_DFU_TRAILER_H */
+Index: u-boot/Makefile
+===================================================================
+--- u-boot.orig/Makefile
++++ u-boot/Makefile
+@@ -261,6 +261,12 @@
+ $(obj)u-boot.bin:	$(obj)u-boot
+ 		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
+ 
++$(obj)u-boot.udfu:	$(obj)u-boot.bin
++		./tools/mkudfu -v $(CONFIG_USB_DFU_VENDOR) \
++			       -p $(CONFIG_USB_DFU_PRODUCT) \
++			       -r $(CONFIG_USB_DFU_REVISION) \
++			       -d $< $@
++
+ $(obj)u-boot.img:	$(obj)u-boot.bin
+ 		./tools/mkimage -A $(ARCH) -T firmware -C none \
+ 		-a $(TEXT_BASE) -e 0 \
+Index: u-boot/board/neo1973/gta01/split_by_variant.sh
+===================================================================
+--- u-boot.orig/board/neo1973/gta01/split_by_variant.sh
++++ u-boot/board/neo1973/gta01/split_by_variant.sh
+@@ -15,37 +15,44 @@
+ 	echo "$0:: No parameters - using GTA01Bv3 config"
+ 	echo "#define CONFIG_ARCH_GTA01B_v3" > $CFGINC
+ 	echo "GTA01_BIG_RAM=y" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0230" > $CFGTMP
+ else
+ 	case "$1" in
+ 	gta01v4_config)
+ 	echo "#define CONFIG_ARCH_GTA01_v4" > $CFGINC
+ 	echo "GTA01_BIG_RAM=n" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0140" > $CFGTMP
+ 	;;
+ 
+ 	gta01v3_config)
+ 	echo "#define CONFIG_ARCH_GTA01_v3" > $CFGINC
+ 	echo "GTA01_BIG_RAM=n" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0130" > $CFGTMP
+ 	;;
+ 
+ 	gta01bv2_config)
+ 	echo "#define CONFIG_ARCH_GTA01B_v2" > $CFGINC
+ 	echo "GTA01_BIG_RAM=y" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0220" > $CFGTMP
+ 	;;
+ 
+ 	gta01bv3_config)
+ 	echo "#define CONFIG_ARCH_GTA01B_v3" > $CFGINC
+ 	echo "GTA01_BIG_RAM=y" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0230" > $CFGTMP
+ 	;;
+ 
+ 	gta01bv4_config)
+ 	echo "#define CONFIG_ARCH_GTA01B_v4" > $CFGINC
+ 	echo "GTA01_BIG_RAM=y" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0240" > $CFGTMP
+ 	;;
+ 
+ 	*)
+ 	echo "$0:: Unrecognised config - using GTA01Bv4 config"
+ 	echo "#define CONFIG_ARCH_GTA01B_v4" > $CFGINC
+ 	echo "GTA01_BIG_RAM=y" > $CFGTMP
++	echo "CONFIG_USB_DFU_REVISION=0x0240" > $CFGTMP
+ 	;;
+ 
+ 	esac
+Index: u-boot/board/neo1973/gta01/config.mk
+===================================================================
+--- u-boot.orig/board/neo1973/gta01/config.mk
++++ u-boot/board/neo1973/gta01/config.mk
+@@ -24,6 +24,9 @@
+ #
+ # download area is 3200'0000 or 3300'0000
+ 
++CONFIG_USB_DFU_VENDOR=0x1457
++CONFIG_USB_DFU_PRODUCT=0x5119
++
+ sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
+ 
+ ifeq ($(GTA01_BIG_RAM),y)
