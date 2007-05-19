@@ -46,6 +46,14 @@
 
 #include <string.h>
 
+#undef DEBUG_THIS_FILE
+
+#ifdef DEBUG_THIS_FILE
+#define DEBUG(_format_, ...) g_debug(_format_, ## __VA_ARGS__)
+#else
+#define DEBUG(...)
+#endif
+
 #define TIMEOUT		   20
 #define HOURGLASS_PIXMAPS 8
 
@@ -89,14 +97,14 @@ static int hourglass_cur_frame_n = 0;
 
 static void show_hourglass(StartupApplet *applet)
 {
-	g_message("Entered %s", G_STRFUNC);
+	DEBUG("Entered %s", G_STRFUNC);
 	gtk_widget_show_all(GTK_WIDGET (applet->image));
 	hourglass_shown = TRUE;
 }
 
 static void hide_hourglass(StartupApplet *applet)
 {
-	g_message("Entered %s", G_STRFUNC);
+	DEBUG("Entered %s", G_STRFUNC);
 	gtk_widget_hide_all(GTK_WIDGET (applet->image));
 	hourglass_shown = FALSE;
 }
@@ -109,7 +117,7 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 	time_t t;
 	StartupApplet *applet = (StartupApplet *) user_data;
 
-	g_message("Entered %s", G_STRFUNC);
+	DEBUG("Entered %s", G_STRFUNC);
 	context = sn_monitor_event_get_context(event);
 	sequence = sn_monitor_event_get_startup_sequence(event);
 	id = sn_startup_sequence_get_id(sequence);
@@ -117,7 +125,7 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 	switch (sn_monitor_event_get_type(event)) {
 	case SN_MONITOR_EVENT_INITIATED:
 		{
-			g_message("Entered SN_MONITOR_EVENT_INITIATED");
+			DEBUG("Entered SN_MONITOR_EVENT_INITIATED");
 
 			LaunchList *item = launch_list;
 
@@ -151,7 +159,7 @@ static void monitor_event_func(SnMonitorEvent *event, void *user_data)
 	case SN_MONITOR_EVENT_COMPLETED:
 	case SN_MONITOR_EVENT_CANCELED:
 		{
-			g_message("Entered SN_MONITOR_EVENT_CANCELED/COMPLETED");
+			DEBUG("Entered SN_MONITOR_EVENT_CANCELED/COMPLETED");
 			LaunchList *item = launch_list, *last_item = NULL;
 
 			/* Find actual list item and free it*/
@@ -187,7 +195,7 @@ static gboolean applet_main(StartupApplet *applet)
 	LaunchList *last_item = NULL;
 	time_t t;
 
-	g_message("Entered %s", G_STRFUNC);
+	DEBUG("Entered %s", G_STRFUNC);
 
 	if (!hourglass_shown)
 		return TRUE;
@@ -222,7 +230,7 @@ static gboolean applet_main(StartupApplet *applet)
 	if (hourglass_cur_frame_n == 8)
 		hourglass_cur_frame_n = 0;
 
-	g_message("hourglass_cur_frame_n =%i", hourglass_cur_frame_n);
+	DEBUG("hourglass_cur_frame_n =%i", hourglass_cur_frame_n);
 
     gtk_image_set_from_pixbuf( applet->image, applet->hglass[hourglass_cur_frame_n] );
 
@@ -235,8 +243,6 @@ static GdkFilterReturn filter_func(GdkXEvent *gdk_xevent, GdkEvent *event, Start
 	gboolean ret;
 
 	ret = sn_display_process_event(applet->sn_display, xevent);
-
-	//g_message("%s: sn_display_process return value: %i", G_STRFUNC, ret);
 
 	return GDK_FILTER_CONTINUE;
 }

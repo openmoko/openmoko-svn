@@ -1,3 +1,13 @@
+2007-05-19  Stefan Schmidt <stefan@openmoko.org>
+
+        * src/openmoko-panel-startup.c:
+        (show_hourglass):
+        (hide_hourglass):
+        (monitor_event_func):
+        (applet_main):
+        (filter_func):
+		Define a debug macro and disbale debug by default.
+
 2007-05-18  Stefan Schmidt <stefan@openmoko.org>
 
         * ChangeLog:
