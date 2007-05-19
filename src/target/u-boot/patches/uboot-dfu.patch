@@ -99,7 +99,7 @@ Index: u-boot/drivers/usbdfu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdfu.c
-@@ -0,0 +1,1066 @@
+@@ -0,0 +1,1069 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -196,15 +196,18 @@ Index: u-boot/drivers/usbdfu.c
 +
 +static int dfu_trailer_matching(const struct uboot_dfu_trailer *trailer)
 +{
-+	if (trailer->magic == UBOOT_DFU_TRAILER_MAGIC &&
-+	    trailer->version == UBOOT_DFU_TRAILER_V1 &&
-+	    trailer->vendor == CONFIG_USBD_VENDORID &&
-+	    (trailer->product == CONFIG_USBD_PRODUCTID_CDCACM ||
-+	     trailer->product == CONFIG_USBD_PRODUCTID_GSERIAL) &&
-+	    trailer->revision == get_board_rev())
-+		return 1;
++	if (trailer->magic != UBOOT_DFU_TRAILER_MAGIC ||
++	    trailer->version != UBOOT_DFU_TRAILER_V1 ||
++	    trailer->vendor != CONFIG_USBD_VENDORID ||
++	    (trailer->product != CONFIG_USBD_PRODUCTID_CDCACM &&
++	     trailer->product != CONFIG_USBD_PRODUCTID_GSERIAL))
++		return 0;
++#ifdef CONFIG_REVISION_TAG
++	if (trailer->revision != get_board_rev())
++		return 0;
++#endif
 +
-+	return 0;
++	return 1;
 +}
 +
 +static struct part_info *get_partition_nand(int idx)
