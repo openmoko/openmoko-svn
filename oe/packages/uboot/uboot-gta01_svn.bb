@@ -4,7 +4,7 @@ LICENSE = "GPL"
 SECTION = "bootloader"
 PRIORITY = "optional"
 PV = "1.2.0+svn${SRCDATE}"
-PR = "r7"
+PR = "r8"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
@@ -43,7 +43,12 @@ do_compile () {
 		oe_runmake ${mach}_config
 		oe_runmake clean
 		oe_runmake all
-		mv u-boot.bin u-boot_${mach}.bin
+		oe_runmake u-boot.udfu
+		if [ -f u-boot.udfu ]; then
+			mv u-boot.udfu u-boot_${mach}.bin
+		else
+			mv u-boot.bin u-boot_${mach}.bin
+		fi
 		if [ -f board/${mach}/lowlevel_foo.bin ]; then
 			mv board/${mach}/lowlevel_foo.bin lowlevel_foo_${mach}.bin
 		fi
