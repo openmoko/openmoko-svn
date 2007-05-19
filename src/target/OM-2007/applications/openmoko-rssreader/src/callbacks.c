@@ -184,7 +184,9 @@ static void feed_update_thread( struct RSSReaderData *data ) {
     for ( int i = 0; i < NUMBER_OF_FEEDS; ++i ) {
         mrss_t *rss_data;
         gchar *url = s_feeds[i].url;
-        int ret = mrss_parse_url( url, &rss_data );
+        gchar *buffer = NULL;
+        int  size;
+        int ret = mrss_parse_url_and_transfer_buffer( url, &rss_data, NULL, &buffer, &size );
         if ( ret ) {
             /* TODO use the footer to report error? */
             g_debug( "parse_url failed.." );
@@ -199,13 +201,11 @@ static void feed_update_thread( struct RSSReaderData *data ) {
         /*
          * now cache the feed, a bit inefficient as we do not write to a file directly
          */
-        char *buffer = NULL;
-        mrss_write_buffer (rss_data, &buffer);
         if (buffer) {
-            moko_cache_write_object (data->cache, url, buffer, -1, NULL);
+            moko_cache_write_object (data->cache, url, buffer, size, NULL);
+            free (buffer);
         }
 
-        free (buffer);
         mrss_free( rss_data );
     }
 

@@ -1,5 +1,16 @@
 2007-05-19  Holger Freyther  <zecke@selfish.org>
 
+        Improve caching. org.openembedded.dev has a patch to libmrss
+        0.17.2 to add a new method. Using this method we take over the
+        ownership of the buffer of the downloaded file. This avoid all
+        errors with mrss_write.
+        We are now caching the original file.
+
+        * src/callbacks.c:
+        (feed_update_thread):
+
+2007-05-19  Holger Freyther  <zecke@selfish.org>
+
         Do not crash on non valid pubDates
 
         * src/callbacks.c:
