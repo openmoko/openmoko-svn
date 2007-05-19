@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -1988,6 +1988,14 @@
+@@ -2009,6 +2009,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -35,7 +35,7 @@ Index: u-boot/common/main.c
  
  #ifndef CONFIG_CMDLINE_EDITING
  static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
-@@ -404,7 +405,7 @@
+@@ -376,7 +377,7 @@
  
  	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
  
@@ -1805,7 +1805,7 @@ Index: u-boot/board/neo1973/gta01/split_by_variant.sh
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta01/split_by_variant.sh
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,57 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
 +#  Set the core module defines according to Core Module
@@ -1814,43 +1814,46 @@ Index: u-boot/board/neo1973/gta01/split_by_variant.sh
 +# Set up the GTA01 type define
 +# ---------------------------------------------------------
 +
++CFGINC=${obj}include/config.h
++CFGTMP=${obj}board/neo1973/gta01/config.tmp
++
 +mkdir -p ${obj}include
 +if [ "$1" == "" ]
 +then
 +	echo "$0:: No parameters - using GTA01Bv3 config"
-+	echo "#define CONFIG_ARCH_GTA01B_v3" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=y" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01B_v3" > $CFGINC
++	echo "GTA01_BIG_RAM=y" > $CFGTMP
 +else
 +	case "$1" in
 +	gta01v4_config)
-+	echo "#define CONFIG_ARCH_GTA01_v4" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=n" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01_v4" > $CFGINC
++	echo "GTA01_BIG_RAM=n" > $CFGTMP
 +	;;
 +
 +	gta01v3_config)
-+	echo "#define CONFIG_ARCH_GTA01_v3" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=n" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01_v3" > $CFGINC
++	echo "GTA01_BIG_RAM=n" > $CFGTMP
 +	;;
 +
 +	gta01bv2_config)
-+	echo "#define CONFIG_ARCH_GTA01B_v2" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=y" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01B_v2" > $CFGINC
++	echo "GTA01_BIG_RAM=y" > $CFGTMP
 +	;;
 +
 +	gta01bv3_config)
-+	echo "#define CONFIG_ARCH_GTA01B_v3" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=y" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01B_v3" > $CFGINC
++	echo "GTA01_BIG_RAM=y" > $CFGTMP
 +	;;
 +
 +	gta01bv4_config)
-+	echo "#define CONFIG_ARCH_GTA01B_v4" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=y" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01B_v4" > $CFGINC
++	echo "GTA01_BIG_RAM=y" > $CFGTMP
 +	;;
 +
 +	*)
 +	echo "$0:: Unrecognised config - using GTA01Bv4 config"
-+	echo "#define CONFIG_ARCH_GTA01B_v4" > ${obj}include/config.h
-+	echo "GTA01_BIG_RAM=y" > ${obj}board/neo1973/config.tmp
++	echo "#define CONFIG_ARCH_GTA01B_v4" > $CFGINC
++	echo "GTA01_BIG_RAM=y" > $CFGTMP
 +	;;
 +
 +	esac
