@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -1988,6 +1988,10 @@
+@@ -2015,6 +2015,10 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -736,7 +736,7 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/split_by_variant.sh
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,37 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
 +#  Set the core module defines according to Core Module
@@ -745,20 +745,26 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 +# Set up the GTA01 type define
 +# ---------------------------------------------------------
 +
++CFGINC=${obj}include/config.h
++CFGTMP=${obj}board/neo1973/gta02/config.tmp
++
 +mkdir -p ${obj}include
 +if [ "$1" == "" ]
 +then
 +	echo "$0:: No parameters - using GTA02Bv1 config"
-+	echo "#define CONFIG_ARCH_GTA02_v1" > ${obj}include/config.h
++	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0310" > $CFGTMP
 +else
 +	case "$1" in
 +	gta02v1_config)
-+	echo "#define CONFIG_ARCH_GTA02_v1" > ${obj}include/config.h
++	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0310" > $CFGTMP
 +	;;
 +
 +	*)
 +	echo "$0:: Unrecognised config - using GTA02v1 config"
-+	echo "#define CONFIG_ARCH_GTA02_v1" > ${obj}include/config.h
++	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0310" > $CFGTMP
 +	;;
 +
 +	esac
@@ -1175,3 +1181,40 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +
 +	/* FIXME */
 +};
+Index: u-boot/board/neo1973/gta02/config.mk
+===================================================================
+--- /dev/null
++++ u-boot/board/neo1973/gta02/config.mk
+@@ -0,0 +1,32 @@
++#
++# (C) Copyright 2002
++# Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
++# David Mueller, ELSOFT AG, <d.mueller@elsoft.ch>
++#
++# FIC Neo1973 GTA01 board with S3C2410X (ARM920T) cpu
++#
++# see http://www.samsung.com/ for more information on SAMSUNG
++#
++
++# GTA01v3 has 1 bank of 64 MB SDRAM
++# GTA01v4 has 1 bank of 64 MB SDRAM
++#
++# 	3000'0000 to 3400'0000
++# we load ourself to 33F8'0000
++#
++# GTA01Bv2 or later has 1 bank of 128 MB SDRAM
++#
++# 	3000'0000 to 3800'0000
++# we load ourself to 37F8'0000
++#
++# Linux-Kernel is expected to be at 3000'8000, entry 3000'8000
++# optionally with a ramdisk at 3080'0000
++#
++# download area is 3200'0000 or 3300'0000
++
++CONFIG_USB_DFU_VENDOR=0x1457
++CONFIG_USB_DFU_PRODUCT=0x5119
++
++sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
++
++TEXT_BASE = 0x33F80000

@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -1999,6 +1999,9 @@
+@@ -2026,6 +2026,9 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
  
@@ -826,7 +826,7 @@ Index: u-boot/board/hxd8/config.mk
 ===================================================================
 --- /dev/null
 +++ u-boot/board/hxd8/config.mk
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,27 @@
 +#
 +# (C) Copyright 2002
 +# Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
@@ -837,6 +837,11 @@ Index: u-boot/board/hxd8/config.mk
 +# see http://www.samsung.com/ for more information on SAMSUNG
 +#
 +
++CONFIG_USB_DFU_VENDOR=0x1457
++CONFIG_USB_DFU_PRODUCT=0x511a
++CONFIG_USB_DFU_REVISION=0x0100
++
++#
 +# HXD81v011 or later has 1 bank of 128 MB SDRAM
 +#
 +# 	3000'0000 to 3800'0000

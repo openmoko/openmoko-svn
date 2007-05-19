@@ -2,7 +2,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2014,6 +2014,9 @@
+@@ -2045,6 +2045,9 @@
  smdk2440_config :	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t smdk2440 NULL s3c24x0
  
@@ -852,19 +852,23 @@ Index: u-boot/board/smdk2443/config.mk
 ===================================================================
 --- /dev/null
 +++ u-boot/board/smdk2443/config.mk
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,29 @@
 +#
 +# (C) Copyright 2002
 +# Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
 +# David Mueller, ELSOFT AG, <d.mueller@elsoft.ch>
 +#
-+# SAMSUNG SMDK2410 board with S3C2410X (ARM920T) cpu
++# SAMSUNG SMDK2443 board with S3C2443 (ARM920T) cpu
 +#
 +# see http://www.samsung.com/ for more information on SAMSUNG
 +#
 +
++CONFIG_USB_DFU_VENDOR=0x1457
++CONFIG_USB_DFU_PRODUCT=0x511c
++CONFIG_USB_DFU_REVISION=0x0100
++
 +#
-+# SMDK2410 has 1 bank of 64 MB DRAM
++# SMDK2443 has 1 bank of 64 MB DRAM
 +#
 +# 3000'0000 to 3400'0000
 +#
