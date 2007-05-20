@@ -10,12 +10,11 @@ matchbox-desktop --icon-size 96 \
 
 
 matchbox-panel \
-  --start-applets=openmoko-panel-mainmenu,systray \
+  --start-applets=openmoko-panel-mainmenu,systray,openmoko-panel-startup \
   --end-applets=openmoko-panel-battery,openmoko-panel-gsm,openmoko-panel-gps,openmoko-panel-usb,openmoko-panel-bt,openmoko-panel-clock &
 
-# start some old-style panel plugins to get a keyboard and startup notification
+# start old-style panel plugin to get a keyboard
 mbinputmgr &
-mb-applet-startup-monitor &
 
 openmoko-footer &
 openmoko-dialer &
