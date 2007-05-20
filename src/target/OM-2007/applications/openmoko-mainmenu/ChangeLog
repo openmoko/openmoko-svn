@@ -1,5 +1,14 @@
 2007-05-20  Stefan Schmidt <stefan@openmoko.org>
 
+        * src/mokodesktop.c:
+        * src/mokodesktop.h:
+        * src/mokodesktop_item.c:
+        * src/mokodesktop_item.h:
+
+		Add missing licence header.
+
+2007-05-20  Stefan Schmidt <stefan@openmoko.org>
+
         * src/*.{c,h}:
 
 		Remove tons of trailing whitspaces
