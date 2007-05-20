@@ -1,9 +1,9 @@
 /**
  *  @file main.h
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify

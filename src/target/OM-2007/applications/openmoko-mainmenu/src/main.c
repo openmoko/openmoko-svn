@@ -1,9 +1,9 @@
 /**
  *  @file main.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 
 static MokoMainmenuApp *mma;
 
-static void 
+static void
 handle_sigusr1 (int value)
 {
   if (!mma)
@@ -45,7 +45,7 @@ handle_sigusr1 (int value)
   signal (SIGUSR1, handle_sigusr1);
 }
 
-static pid_t 
+static pid_t
 testlock (char *fname)
 {
   int fd;
@@ -83,7 +83,7 @@ testlock (char *fname)
   return fl.l_pid;
 }
 
-static void 
+static void
 setlock (char *fname)
 {
   int fd;
@@ -114,7 +114,7 @@ moko_mainmenu_usage (const char *bin_name)
   fprintf (stderr, "%s usage: %s [Options...]\n"
     "Where options are:\n"
 	"--help, -h             print help\n"
-	"--finger-menum, -fm    Show finger menu when application started\n", 
+	"--finger-menum, -fm    Show finger menu when application started\n",
 	bin_name, bin_name);
   exit (1);
 }
@@ -138,14 +138,14 @@ moko_mainmenu_init(MokoMainmenuApp *mma, int argc, char** argv)
   }
 
   /* Buid Root item, don't display */
-  mma->top_item = mokodesktop_item_new_with_params ("Home", 
+  mma->top_item = mokodesktop_item_new_with_params ("Home",
 						       NULL,
 						       NULL,
 						       ITEM_TYPE_ROOT );
 
-  /* Build Lists (parse .directory and .desktop files) */	
+  /* Build Lists (parse .directory and .desktop files) */
   ret = mokodesktop_init(mma->top_item, ITEM_TYPE_CNT);
-    
+
   gtk_init( &argc, &argv );
 
   /*MokoFingerMenu object*/
@@ -158,8 +158,8 @@ moko_mainmenu_init(MokoMainmenuApp *mma, int argc, char** argv)
   mma->sm = moko_stylus_menu_new ();
   moko_stylus_menu_build (mma->sm, mma->top_item);
 }
-int 
-main( int argc, char** argv ) 
+int
+main( int argc, char** argv )
 {
     pid_t lockapp;
     lockapp = testlock (LOCK_FILE);
@@ -172,12 +172,12 @@ main( int argc, char** argv )
      }
 
     setlock (LOCK_FILE);
-    
+
     mma = g_malloc0 (sizeof (MokoMainmenuApp));
     if (!mma)
     {
         g_error ("openmoko-mainmenu application initialize FAILED.");
-    	exit (0);
+		exit (0);
     }
     memset (mma, 0, sizeof (MokoMainmenuApp));
 
@@ -186,18 +186,18 @@ main( int argc, char** argv )
         g_error ("Failed to initial dbus connection.");
 		exit (0);
     }
-  
+
  // moko_mainmenu_init (mma, argc, argv);
 
   /* Buid Root item, don't display */
-  mma->top_item = mokodesktop_item_new_with_params ("Home", 
+  mma->top_item = mokodesktop_item_new_with_params ("Home",
 						       NULL,
 						       NULL,
 						       ITEM_TYPE_ROOT );
 
-  /* Build Lists (parse .directory and .desktop files) */	
+  /* Build Lists (parse .directory and .desktop files) */
   ret = mokodesktop_init(mma->top_item, ITEM_TYPE_CNT);
-    
+
   gtk_init( &argc, &argv );
 
   /*MokoFingerMenu object*/
@@ -214,8 +214,8 @@ main( int argc, char** argv )
 
   if (mma)
   {
-   	g_free (mma);
+	g_free (mma);
   }
-  
+
   return 0;
 }

@@ -1,7 +1,7 @@
 /**
  *  @file callbacks.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
@@ -37,7 +37,7 @@ void
 moko_wheel_bottom_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 {
   MokoDesktopItem *current = NULL;
-  
+
   current = moko_finger_menu_get_current_item (fm);
 
   if (current->type != ITEM_TYPE_ROOT)
@@ -45,7 +45,7 @@ moko_wheel_bottom_press_cb (GtkWidget *self, MokoFingerMenu *fm)
     current = mokodesktop_item_get_parent(current);
     moko_finger_menu_update_content (fm, current);
   }
-  else 
+  else
   {
     //gtk_window_iconify (GTK_WINDOW (mma->window));
 	moko_finger_menu_hide(fm);
@@ -69,8 +69,8 @@ moko_wheel_right_down_press_cb (GtkWidget *self, MokoFingerMenu *fm)
 }
 
 void
-moko_icon_view_item_acitvated_cb(MokoIconView *icon_view, 
-				GtkTreePath *path, MokoFingerMenu *fm) 
+moko_icon_view_item_acitvated_cb(MokoIconView *icon_view,
+				GtkTreePath *path, MokoFingerMenu *fm)
 {
     MokoDesktopItem *selected_item = NULL;
 	GtkTreeModel *tree_model;
@@ -79,7 +79,7 @@ moko_icon_view_item_acitvated_cb(MokoIconView *icon_view,
 	tree_model = moko_icon_view_get_model (icon_view);
 	gtk_tree_model_get_iter (tree_model, &iter, path);
 	gtk_tree_model_get (tree_model, &iter, OBJECT_COLUMN, &selected_item, -1);
-  
+
     if (selected_item->type == ITEM_TYPE_FOLDER)
     {
       moko_finger_menu_update_content (fm, selected_item);
@@ -92,19 +92,19 @@ moko_icon_view_item_acitvated_cb(MokoIconView *icon_view,
 		gtk_tree_model_get (tree_model, &iter, PIXBUF_COLUMN, &pixbuf, -1);
 
 		if (pixbuf)
-	      moko_finger_menu_set_app_history(fm, pixbuf, selected_item);	
+	      moko_finger_menu_set_app_history(fm, pixbuf, selected_item);
     }
 }
 
 void
-moko_icon_view_selection_changed_cb(MokoIconView *iconview, 
-		MokoFingerMenu *fm) 
+moko_icon_view_selection_changed_cb(MokoIconView *iconview,
+		MokoFingerMenu *fm)
 {
     GList *selected_item;
     GtkTreeIter iter;
     GtkTreeModel *icon_view_model;
     gchar *text;
-  
+
     selected_item = moko_icon_view_get_selected_items (iconview);
 
     if (!selected_item)
@@ -125,7 +125,7 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
     moko_main_menu_update_item_total_label (fm->mm);
 }
 
-void 
+void
 moko_tool_box_btn_clicked_cb (GtkButton *btn, MokoAppHistory *history)
 {
 	MokoDesktopItem *selected_item = NULL;
@@ -144,7 +144,7 @@ moko_tool_box_btn_clicked_cb (GtkButton *btn, MokoAppHistory *history)
 		else
 			continue;
 	}
-	
+
 	if (selected_item)
 	{
 		moko_cb_run_app (selected_item->data);
@@ -157,7 +157,7 @@ moko_stylus_menu_activate_item (GtkMenuItem *menuitem, gpointer data)
   moko_cb_run_app (data);
 }
 
-void 
+void
 moko_cb_run_app (const char * data)
 {
 	switch (fork())

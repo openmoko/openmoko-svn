@@ -1,9 +1,9 @@
 /**
  *  @file dbus-conn.h
  *  @brief dbus connection and message send for openmoko mainmenu
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify

@@ -1,11 +1,11 @@
 /**
  *  @file mokoiconview.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
  *  Based on gtkiconview.c by Anders Carlsson <andersca@gnome.org>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -40,11 +40,11 @@
 
 #define FRAME_OFFSET 10
 
-typedef struct 
+typedef struct
 {
   GtkTreeIter iter;
   int index;
-  
+
   gint row, col;
 
   /* Bounding boxes */
@@ -68,20 +68,20 @@ struct _MokoIconViewPrivate
   gint text_column;
   gint markup_column;
   gint pixbuf_column;
-  
+
   GtkSelectionMode selection_mode;
 
   GdkWindow *bin_window;
 
   GtkTreeModel *model;
-  
+
   GList *items;
-  
+
   GtkAdjustment *hadjustment;
   GtkAdjustment *vadjustment;
 
   guint layout_idle_id;
-  
+
   gboolean doing_rubberband;
   gint rubberband_x1, rubberband_y1;
   gint rubberband_x2, rubberband_y2;
@@ -103,7 +103,7 @@ struct _MokoIconViewPrivate
 
   guint ctrl_pressed : 1;
   guint shift_pressed : 1;
-  
+
   MokoIconViewItem *last_single_clicked;
 
 #ifdef DND_WORKS
@@ -115,7 +115,7 @@ struct _MokoIconViewPrivate
 
   /* Layout used to draw icon text */
   PangoLayout *layout;
-  
+
   GtkOrientation orientation;
 
   gint columns;
@@ -146,7 +146,7 @@ enum
   PROP_0,
   PROP_PIXBUF_COLUMN,
   PROP_TEXT_COLUMN,
-  PROP_MARKUP_COLUMN,  
+  PROP_MARKUP_COLUMN,
   PROP_SELECTION_MODE,
   PROP_ORIENTATION,
   PROP_MODEL,
@@ -166,10 +166,10 @@ enum
 };
 
 /* GObject signals */
-static void 
+static void
 moko_icon_view_finalize     (GObject      *object);
 
-static void 
+static void
 moko_icon_view_set_property (GObject      *object,
 					guint         prop_id,
 					const GValue *value,
@@ -183,36 +183,36 @@ moko_icon_view_get_property (GObject      *object,
 
 
 /* GtkObject signals */
-static void 
+static void
 moko_icon_view_destroy (GtkObject *object);
 
 /* GtkWidget signals */
-static void     
+static void
 moko_icon_view_realize        (GtkWidget      *widget);
 
-static void     
+static void
 moko_icon_view_unrealize      (GtkWidget      *widget);
 
-static void     
+static void
 moko_icon_view_map            (GtkWidget      *widget);
 
-static void     
+static void
 moko_icon_view_size_request   (GtkWidget      *widget,
 					      GtkRequisition *requisition);
 
-static void     
+static void
 moko_icon_view_size_allocate  (GtkWidget      *widget,
 					      GtkAllocation  *allocation);
 
-static gboolean 
+static gboolean
 moko_icon_view_expose         (GtkWidget      *widget,
 					      GdkEventExpose *expose);
 
-static gboolean 
+static gboolean
 moko_icon_view_motion         (GtkWidget      *widget,
 					      GdkEventMotion *event);
 
-static gboolean 
+static gboolean
 moko_icon_view_button_press   (GtkWidget      *widget,
 					      GdkEventButton *event);
 
@@ -221,66 +221,66 @@ moko_icon_view_button_release (GtkWidget      *widget,
 					      GdkEventButton *event);
 
 /* MokoIconView signals */
-static void     
+static void
 moko_icon_view_set_adjustments           (MokoIconView   *icon_view,
 							 GtkAdjustment *hadj,
 							 GtkAdjustment *vadj);
 
-static void     
+static void
 moko_icon_view_real_select_all           (MokoIconView   *icon_view);
 
-static void     
+static void
 moko_icon_view_real_unselect_all         (MokoIconView   *icon_view);
 
-static void     
+static void
 moko_icon_view_real_select_cursor_item   (MokoIconView   *icon_view);
 
-static void     
+static void
 moko_icon_view_real_toggle_cursor_item   (MokoIconView   *icon_view);
 
-static gboolean 
+static gboolean
 moko_icon_view_real_activate_cursor_item (MokoIconView   *icon_view);
 
 /* Internal functions */
-static void       
+static void
 moko_icon_view_adjustment_changed          (GtkAdjustment   *adjustment,
 							     MokoIconView     *icon_view);
 
-static void       
+static void
 moko_icon_view_layout                      (MokoIconView     *icon_view);
 
-static void       
+static void
 moko_icon_view_paint_item                  (MokoIconView     *icon_view,
 							     MokoIconViewItem *item,
 							     GdkRectangle    *area);
 
-static void       
+static void
 moko_icon_view_paint_rubberband            (MokoIconView     *icon_view,
 							     GdkRectangle    *area);
 
-static void       
+static void
 moko_icon_view_queue_draw_item             (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
-static void       
+static void
 moko_icon_view_queue_layout                (MokoIconView     *icon_view);
 
-static void       
+static void
 moko_icon_view_set_cursor_item             (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
-static void       
+static void
 moko_icon_view_start_rubberbanding         (MokoIconView     *icon_view,
 							     gint             x,
 							     gint             y);
 
-static void       
+static void
 moko_icon_view_stop_rubberbanding          (MokoIconView     *icon_view);
 
-static void       
+static void
 moko_icon_view_update_rubberband_selection (MokoIconView     *icon_view);
 
-static gboolean   
+static gboolean
 moko_icon_view_item_hit_test               (MokoIconViewItem *item,
 							     gint             x,
 							     gint             y,
@@ -288,57 +288,57 @@ moko_icon_view_item_hit_test               (MokoIconViewItem *item,
 							     gint             height);
 
 #ifdef DND_WORKS
-static gboolean   
+static gboolean
 moko_icon_view_maybe_begin_dragging_items  (MokoIconView     *icon_view,
 							     GdkEventMotion  *event);
 #endif
 
-static gboolean   
+static gboolean
 moko_icon_view_unselect_all_internal       (MokoIconView     *icon_view);
 
-static void       
+static void
 moko_icon_view_calculate_item_size         (MokoIconView     *icon_view,
 							     MokoIconViewItem *item,
 							     gint             item_width);
 
-static void       
+static void
 moko_icon_view_update_rubberband           (gpointer         data);
 
-static void       
+static void
 moko_icon_view_item_invalidate_size        (MokoIconViewItem *item);
 
-static void       
+static void
 moko_icon_view_invalidate_sizes            (MokoIconView     *icon_view);
 
-static void       
+static void
 moko_icon_view_add_move_binding            (GtkBindingSet   *binding_set,
 							     guint            keyval,
 							     guint            modmask,
 							     GtkMovementStep  step,
 							     gint             count);
 
-static gboolean   
+static gboolean
 moko_icon_view_real_move_cursor            (MokoIconView     *icon_view,
 							     GtkMovementStep  step,
 							     gint             count);
 
-static void       
+static void
 moko_icon_view_move_cursor_up_down         (MokoIconView     *icon_view,
 							     gint             count);
 
-static void       
+static void
 moko_icon_view_move_cursor_page_up_down    (MokoIconView     *icon_view,
 							     gint             count);
 
-static void       
+static void
 moko_icon_view_move_cursor_left_right      (MokoIconView     *icon_view,
 							     gint             count);
 
-static void      
+static void
 moko_icon_view_move_cursor_start_end       (MokoIconView     *icon_view,
 							     gint             count);
 
-static void       
+static void
 moko_icon_view_scroll_to_item              (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
@@ -346,19 +346,19 @@ static GdkPixbuf *
 moko_icon_view_get_item_icon               (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
-static void       
+static void
 moko_icon_view_update_item_text            (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
-static void       
+static void
 moko_icon_view_select_item                 (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
-static void       
+static void
 moko_icon_view_unselect_item               (MokoIconView     *icon_view,
 							     MokoIconViewItem *item);
 
-static gboolean 
+static gboolean
 moko_icon_view_select_all_between            (MokoIconView     *icon_view,
 							     MokoIconViewItem *anchor,
 							     MokoIconViewItem *cursor);
@@ -493,14 +493,14 @@ G_DEFINE_TYPE (MokoIconView, moko_icon_view, GTK_TYPE_CONTAINER);
 *@param klass	MokoIconView Class
 *@return none
 */
-static void 
+static void
 moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 {
   GObjectClass *gobject_class;
   GtkObjectClass *object_class;
   GtkWidgetClass *widget_class;
   GtkBindingSet *binding_set;
-  
+
   parent_class = g_type_class_peek_parent (klass);
   binding_set = gtk_binding_set_by_class (klass);
 
@@ -513,7 +513,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   gobject_class->finalize = moko_icon_view_finalize;
   gobject_class->set_property = moko_icon_view_set_property;
   gobject_class->get_property = moko_icon_view_get_property;
-  
+
   object_class->destroy = moko_icon_view_destroy;
 
   widget_class->realize = moko_icon_view_realize;
@@ -532,7 +532,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   //klass->unselect_all = moko_icon_view_real_unselect_all;
   //klass->select_cursor_item = moko_icon_view_real_select_cursor_item;
   //klass->toggle_cursor_item = moko_icon_view_real_toggle_cursor_item;
-  klass->activate_cursor_item = moko_icon_view_real_activate_cursor_item;  
+  klass->activate_cursor_item = moko_icon_view_real_activate_cursor_item;
   klass->move_cursor = moko_icon_view_real_move_cursor;
 
 
@@ -541,7 +541,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
    /**
    * MokoIconView::bg-icon:
    *
-   * Selected icon column background image, the decorated property should be set first. 
+   * Selected icon column background image, the decorated property should be set first.
    * Default value NULL.
    *
    */
@@ -551,7 +551,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
                                                         P_("Decoration Background"),
                                                         P_("Background image used to decorated selected icon column."),
                                                         GDK_TYPE_PIXBUF,
-                                                        G_PARAM_READWRITE)); 
+                                                        G_PARAM_READWRITE));
  /**
    * MokoIconView::bg-text:
    *
@@ -565,13 +565,13 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
                                                         P_("text Layout Background"),
                                                         P_("Background image used to decorated selected text column."),
                                                         GDK_TYPE_PIXBUF,
-                                                        G_PARAM_READWRITE)); 
+                                                        G_PARAM_READWRITE));
 
 /**
    * MokoIconView::decr-width:
    *
-   * The decoration-width property specifies the decorated width to use for each item. 
-   * 
+   * The decoration-width property specifies the decorated width to use for each item.
+   *
    * Since: 2.6
    */
     g_object_class_install_property (gobject_class,
@@ -580,7 +580,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("Width for Decoration"),
 						     P_("The width used for scale icon and draw decoration"),
 						     -1, G_MAXINT, -1,
-						     G_PARAM_READWRITE)); 
+						     G_PARAM_READWRITE));
 /**
    * MokoIconView::decorated:
    *
@@ -608,7 +608,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("Maximum Text column Length"),
 						     P_("The width used for scale icon and draw decoration"),
 						     -1, G_MAXINT, -1,
-						     G_PARAM_READWRITE)); 
+						     G_PARAM_READWRITE));
 
 /**
    * MokoIconViewItem::index:
@@ -622,7 +622,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("index of cursor item"),
 						     P_(""),
 						     -1, G_MAXINT, -1,
-						     G_PARAM_READABLE)); 
+						     G_PARAM_READABLE));
 
 /**
    * MokoIconView::total-items:
@@ -636,12 +636,12 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("total items number"),
 						     P_(""),
 						     -1, G_MAXINT, -1,
-						     G_PARAM_READABLE)); 
-     
+						     G_PARAM_READABLE));
+
 /*Old properties of GtkIconView*/
   /**
    * MokoIconView:selection-mode:
-   * 
+   *
    * The ::selection-mode property specifies the selection mode of
    * icon view. If the mode is #GTK_SELECTION_MULTIPLE, rubberband selection
    * is enabled, for the other modes, only keyboard selection is possible.
@@ -661,7 +661,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
    * MokoIconView:pixbuf-column:
    *
    * The ::pixbuf-column property contains the number of the model column
-   * containing the pixbufs which are displayed. The pixbuf column must be 
+   * containing the pixbufs which are displayed. The pixbuf column must be
    * of type #GDK_TYPE_PIXBUF. Setting this property to -1 turns off the
    * display of pixbufs.
    *
@@ -679,9 +679,9 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
    * MokoIconView:text-column:
    *
    * The ::text-column property contains the number of the model column
-   * containing the texts which are displayed. The text column must be 
-   * of type #G_TYPE_STRING. If this property and the :markup-column 
-   * property are both set to -1, no texts are displayed.   
+   * containing the texts which are displayed. The text column must be
+   * of type #G_TYPE_STRING. If this property and the :markup-column
+   * property are both set to -1, no texts are displayed.
    *
    * Since: 2.6
    */
@@ -693,15 +693,15 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     -1, G_MAXINT, -1,
 						     G_PARAM_READWRITE));
 
-  
+
   /**
    * MokoIconView:markup-column:
    *
    * The ::markup-column property contains the number of the model column
-   * containing markup information to be displayed. The markup column must be 
-   * of type #G_TYPE_STRING. If this property and the :text-column property 
+   * containing markup information to be displayed. The markup column must be
+   * of type #G_TYPE_STRING. If this property and the :text-column property
    * are both set to column numbers, it overrides the text column.
-   * If both are set to -1, no texts are displayed.   
+   * If both are set to -1, no texts are displayed.
    *
    * Since: 2.6
    */
@@ -712,7 +712,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("Model column used to retrieve the text if using Pango markup"),
 						     -1, G_MAXINT, -1,
 						     G_PARAM_READWRITE));
-  
+
   g_object_class_install_property (gobject_class,
                                    PROP_MODEL,
                                    g_param_spec_object ("model",
@@ -720,7 +720,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 							P_("The model for the icon view"),
 							GTK_TYPE_TREE_MODEL,
 							G_PARAM_READWRITE));
-  
+
   /**
    * MokoIconView:columns:
    *
@@ -737,13 +737,13 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("Number of columns to display"),
 						     -1, G_MAXINT, -1,
 						     G_PARAM_READWRITE));
-  
+
 
   /**
    * MokoIconView::item-width:
    *
-   * The item-width property specifies the width to use for each item. 
-   * If it is set to -1, the icon view will automatically determine a 
+   * The item-width property specifies the width to use for each item.
+   * If it is set to -1, the icon view will automatically determine a
    * suitable item size.
    *
    * Since: 2.6
@@ -754,7 +754,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 						     P_("Width for each item"),
 						     P_("The width used for each item"),
 						     -1, G_MAXINT, -1,
-						     G_PARAM_READWRITE));  
+						     G_PARAM_READWRITE));
 
   /**
    * MokoIconView::spacing:
@@ -807,7 +807,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   /**
    * MokoIconView::margin:
    *
-   * The margin property specifies the space which is inserted 
+   * The margin property specifies the space which is inserted
    * at the edges of the icon view.
    *
    * Since: 2.6
@@ -824,7 +824,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   /**
    * MokoIconView::orientation:
    *
-   * The orientation property specifies how the cells (i.e. the icon and 
+   * The orientation property specifies how the cells (i.e. the icon and
    * the text) of the item are positioned relative to each other.
    *
    * Since: 2.6
@@ -863,7 +863,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 		  G_TYPE_FROM_CLASS (gobject_class),
 		  G_SIGNAL_RUN_LAST,
 		  G_STRUCT_OFFSET (MokoIconViewClass, set_scroll_adjustments),
-		  NULL, NULL, 
+		  NULL, NULL,
 		  moko_marshal_VOID__OBJECT_OBJECT,
 		  G_TYPE_NONE, 2,
 		  GTK_TYPE_ADJUSTMENT, GTK_TYPE_ADJUSTMENT);
@@ -924,7 +924,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
 		  NULL, NULL,
 		  moko_marshal_BOOLEAN__VOID,
 		  G_TYPE_BOOLEAN, 0);
-    
+
 /*Only for test delete later*/
   gtk_binding_entry_add_signal (binding_set, GDK_a, GDK_CONTROL_MASK, "select_all", 0);
   gtk_binding_entry_add_signal (binding_set, GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK, "unselect_all", 0);
@@ -935,7 +935,7 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   gtk_binding_entry_add_signal (binding_set, GDK_ISO_Enter, 0, "activate_cursor_item", 0);
   gtk_binding_entry_add_signal (binding_set, GDK_KP_Enter, 0, "activate_cursor_item", 0);
 
-    
+
 /*Only for test delete later*/
   moko_icon_view_add_move_binding (binding_set, GDK_Up, 0,
 				  GTK_MOVEMENT_DISPLAY_LINES, -1);
@@ -947,19 +947,19 @@ moko_icon_view_class_init(MokoIconViewClass* klass) /* Class Initialization */
   moko_icon_view_add_move_binding (binding_set, GDK_KP_Down, 0,
 				  GTK_MOVEMENT_DISPLAY_LINES, 1);
 
-  moko_icon_view_add_move_binding (binding_set, GDK_Right, 0, 
+  moko_icon_view_add_move_binding (binding_set, GDK_Right, 0,
 				  GTK_MOVEMENT_VISUAL_POSITIONS, 1);
-  moko_icon_view_add_move_binding (binding_set, GDK_Left, 0, 
+  moko_icon_view_add_move_binding (binding_set, GDK_Left, 0,
 				  GTK_MOVEMENT_VISUAL_POSITIONS, -1);
 
-  moko_icon_view_add_move_binding (binding_set, GDK_KP_Right, 0, 
+  moko_icon_view_add_move_binding (binding_set, GDK_KP_Right, 0,
 				  GTK_MOVEMENT_VISUAL_POSITIONS, 1);
-  moko_icon_view_add_move_binding (binding_set, GDK_KP_Left, 0, 
+  moko_icon_view_add_move_binding (binding_set, GDK_KP_Left, 0,
 				  GTK_MOVEMENT_VISUAL_POSITIONS, -1);
-				  
+
 }
 
-/*@brief initialize 	MokoIconView instance
+/*@brief initializei	MokoIconView instance
  *@param mm	MokoIconView*
  *@return none
  */
@@ -967,7 +967,7 @@ static void
 moko_icon_view_init(MokoIconView *icon_view)
 {
   icon_view->priv = MOKO_ICON_VIEW_GET_PRIVATE (icon_view);
-  
+
   icon_view->priv->width = 120;
   icon_view->priv->height = 120;
   icon_view->priv->selection_mode = GTK_SELECTION_SINGLE;
@@ -977,7 +977,7 @@ moko_icon_view_init(MokoIconView *icon_view)
   icon_view->priv->press_start_y = -1;
 #endif
   icon_view->priv->text_column = -1;
-  icon_view->priv->markup_column = -1;  
+  icon_view->priv->markup_column = -1;
   icon_view->priv->pixbuf_column = -1;
 
   icon_view->priv->layout = gtk_widget_create_pango_layout (GTK_WIDGET (icon_view), NULL);
@@ -985,11 +985,11 @@ moko_icon_view_init(MokoIconView *icon_view)
   icon_view->priv->max_text_len = 30;
   icon_view->priv->decr_width = 10;
   icon_view->priv->decorated = FALSE;
-  
+
   pango_layout_set_wrap (icon_view->priv->layout, PANGO_WRAP_WORD_CHAR);
 
   GTK_WIDGET_SET_FLAGS (icon_view, GTK_CAN_FOCUS);
-  
+
   moko_icon_view_set_adjustments (icon_view, NULL, NULL);
 
   icon_view->priv->orientation = GTK_ORIENTATION_VERTICAL;
@@ -1006,9 +1006,9 @@ moko_icon_view_init(MokoIconView *icon_view)
 
 
 /* Destruction */
-void 
+void
 moko_icon_view_clear(MokoIconView *self)
-{ 
+{
   if (!self) g_free (self);
 }
 
@@ -1060,10 +1060,10 @@ moko_icon_view_realize (GtkWidget *widget)
   gdk_window_set_user_data (icon_view->priv->bin_window, widget);
 
   widget->style = gtk_style_attach (widget->style, widget->window);
-  
+
   //SUNZY:draw window backgound with window BG_PIXBUF
   gtk_style_set_background (widget->style, icon_view->priv->bin_window, widget->state);
-  gtk_style_set_background (widget->style, widget->window, widget->state);  
+  gtk_style_set_background (widget->style, widget->window, widget->state);
 }
 
 static void
@@ -1130,7 +1130,7 @@ create_colorized_pixbuf (GdkPixbuf *src, GdkColor *new_color)
 			       gdk_pixbuf_get_bits_per_sample (src),
 			       gdk_pixbuf_get_width (src),
 			       gdk_pixbuf_get_height (src));
-	
+
 	has_alpha = gdk_pixbuf_get_has_alpha (src);
 	width = gdk_pixbuf_get_width (src);
 	height = gdk_pixbuf_get_height (src);
@@ -1142,7 +1142,7 @@ create_colorized_pixbuf (GdkPixbuf *src, GdkColor *new_color)
 	for (i = 0; i < height; i++) {
 		pixdest = target_pixels + i*dst_row_stride;
 		pixsrc = original_pixels + i*src_row_stride;
-		for (j = 0; j < width; j++) {		
+		for (j = 0; j < width; j++) {
 			*pixdest++ = (*pixsrc++ * red_value) >> 8;
 			*pixdest++ = (*pixsrc++ * green_value) >> 8;
 			*pixdest++ = (*pixsrc++ * blue_value) >> 8;
@@ -1165,12 +1165,12 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
 
   if (!VALID_MODEL_AND_COLUMNS (icon_view))
     return;
-  
+
   gtk_widget_style_get (GTK_WIDGET (icon_view),
 			"focus-line-width", &focus_width,
 			"focus-padding", &focus_pad,
 			NULL);
- 
+
   if (GTK_WIDGET_HAS_FOCUS (icon_view))
     state = GTK_STATE_SELECTED;
   else
@@ -1187,60 +1187,60 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
       scaled_h = item->pixbuf_height - 2*decr_width;
       scaled_x = item->pixbuf_x + decr_width;
       scaled_y = item->pixbuf_y + decr_width;
-      
-      scaled = gdk_pixbuf_scale_simple (pixbuf, 
-      				scaled_w, scaled_h, GDK_INTERP_NEAREST);
-      
-      if (item->selected && icon_view->priv->decorated) 
-      	 {
-	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_icon, 
-	  					item->pixbuf_width, item->pixbuf_height,
-	  					GDK_INTERP_NEAREST);
 
-	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, 
-	  					tmp,
-		       			0, 0,
-		       			item->pixbuf_x, item->pixbuf_y,
-		       			item->pixbuf_width,  item->pixbuf_height,
-		       			GDK_RGB_DITHER_NORMAL,
-		       			item->pixbuf_width,  item->pixbuf_height);
+      scaled = gdk_pixbuf_scale_simple (pixbuf,
+					scaled_w, scaled_h, GDK_INTERP_NEAREST);
+
+      if (item->selected && icon_view->priv->decorated)
+		 {
+	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_icon,
+						item->pixbuf_width, item->pixbuf_height,
+						GDK_INTERP_NEAREST);
+
+	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL,
+						tmp,
+						0, 0,
+						item->pixbuf_x, item->pixbuf_y,
+						item->pixbuf_width,  item->pixbuf_height,
+						GDK_RGB_DITHER_NORMAL,
+						item->pixbuf_width,  item->pixbuf_height);
 
 	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, scaled,
-		      			0, 0,
-		      			scaled_x, scaled_y,
-		       		scaled_w, scaled_h,
-		       		GDK_RGB_DITHER_NORMAL,
-		       		scaled_w, scaled_h);
-	  
+						0, 0,
+						scaled_x, scaled_y,
+						scaled_w, scaled_h,
+						GDK_RGB_DITHER_NORMAL,
+						scaled_w, scaled_h);
+
 	    g_object_unref (tmp);
 	    g_object_unref (scaled);
 	 }
       else if (item->selected && !icon_view->priv->decorated)
-      	{ 
-      	    tmp = create_colorized_pixbuf (scaled,
+		{
+		    tmp = create_colorized_pixbuf (scaled,
 					    &GTK_WIDGET (icon_view)->style->base[state]);
-    	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, tmp,
-		      			0, 0,
-		      			scaled_x, scaled_y,
-		       		scaled_w, scaled_h,
-		       		GDK_RGB_DITHER_NORMAL,
-		       		scaled_w, scaled_h);
-   	    g_object_unref (tmp);
-      	}
+		    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, tmp,
+						0, 0,
+						scaled_x, scaled_y,
+						scaled_w, scaled_h,
+						GDK_RGB_DITHER_NORMAL,
+						scaled_w, scaled_h);
+			g_object_unref (tmp);
+		}
       else
-      	{
+		{
 	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, scaled,
-		      			0, 0,
-		      			scaled_x, scaled_y,
-		       		scaled_w, scaled_h,
-		       		GDK_RGB_DITHER_NORMAL,
-		       		scaled_w, scaled_h);
-	  
+						0, 0,
+						scaled_x, scaled_y,
+						scaled_w, scaled_h,
+						GDK_RGB_DITHER_NORMAL,
+						scaled_w, scaled_h);
+
 	    g_object_unref (scaled);
-      	}
+		}
 
        g_object_unref (pixbuf);
-       
+
     }
 
   if (icon_view->priv->text_column != -1 ||
@@ -1248,33 +1248,33 @@ moko_icon_view_paint_item (MokoIconView     *icon_view,
     {
       if (item->selected && icon_view->priv->decorated)
 	{
-	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_text, 
-	  					 item->layout_width + 2 * ICON_TEXT_PADDING,
-	  					  item->layout_height + 2 * ICON_TEXT_PADDING,
-	  					GDK_INTERP_NEAREST);
+	    tmp = gdk_pixbuf_scale_simple (icon_view->priv->bg_text,
+						 item->layout_width + 2 * ICON_TEXT_PADDING,
+						  item->layout_height + 2 * ICON_TEXT_PADDING,
+						GDK_INTERP_NEAREST);
 
-	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, 
-	  					tmp,
-		       			0, 0,
-		       			item->layout_x - ICON_TEXT_PADDING,
-		       			item->layout_y - ICON_TEXT_PADDING,
-		       			item->layout_width + 2 * ICON_TEXT_PADDING,
-		       			item->layout_height + 2 * ICON_TEXT_PADDING,
-		       			GDK_RGB_DITHER_NORMAL,
-		       			item->layout_width + 2 * ICON_TEXT_PADDING,
-		       			item->layout_height + 2 * ICON_TEXT_PADDING);
+	    gdk_draw_pixbuf (icon_view->priv->bin_window, NULL,
+						tmp,
+						0, 0,
+						item->layout_x - ICON_TEXT_PADDING,
+						item->layout_y - ICON_TEXT_PADDING,
+						item->layout_width + 2 * ICON_TEXT_PADDING,
+						item->layout_height + 2 * ICON_TEXT_PADDING,
+						GDK_RGB_DITHER_NORMAL,
+						item->layout_width + 2 * ICON_TEXT_PADDING,
+						item->layout_height + 2 * ICON_TEXT_PADDING);
 	 g_object_unref (tmp);
 	}
-      else if (item->selected && !icon_view->priv->decorated) 
-      	{
-      	    gdk_draw_rectangle (icon_view->priv->bin_window,
+      else if (item->selected && !icon_view->priv->decorated)
+		{
+		    gdk_draw_rectangle (icon_view->priv->bin_window,
 			      GTK_WIDGET (icon_view)->style->base_gc[state],
 			      TRUE,
 			      item->layout_x - ICON_TEXT_PADDING,
 			      item->layout_y - ICON_TEXT_PADDING,
 			      item->layout_width + 2 * ICON_TEXT_PADDING,
 			      item->layout_height + 2 * ICON_TEXT_PADDING);
-      	}
+		}
 
       moko_icon_view_update_item_text (icon_view, item);
       pango_layout_set_alignment (icon_view->priv->layout, PANGO_ALIGN_CENTER);
@@ -1339,9 +1339,9 @@ moko_icon_view_paint_rubberband (MokoIconView     *icon_view,
     {
       pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, rect.width, rect.height);
       gdk_pixbuf_fill (pixbuf, fill_color);
-      
+
       gdk_draw_pixbuf (icon_view->priv->bin_window, NULL, pixbuf,
-		       0, 0, 
+		       0, 0,
 		       rect.x,rect.y,
 		       rect.width, rect.height,
 		       GDK_RGB_DITHER_NONE,
@@ -1387,17 +1387,17 @@ moko_icon_view_expose (GtkWidget *widget,
     gdk_draw_rectangle (icon_view->priv->bin_window,
 			GTK_WIDGET (icon_view)->style->black_gc,
 			FALSE,
-			item->x, item->y, 
+			item->x, item->y,
 			item->width, item->height);
     gdk_draw_rectangle (icon_view->priv->bin_window,
 			GTK_WIDGET (icon_view)->style->black_gc,
 			FALSE,
-			item->pixbuf_x, item->pixbuf_y, 
+			item->pixbuf_x, item->pixbuf_y,
 			item->pixbuf_width, item->pixbuf_height);
     gdk_draw_rectangle (icon_view->priv->bin_window,
 			GTK_WIDGET (icon_view)->style->black_gc,
 			FALSE,
-			item->layout_x, item->layout_y, 
+			item->layout_x, item->layout_y,
 			item->layout_width, item->layout_height);
 #endif
     moko_icon_view_paint_item (icon_view, item, &expose->area);
@@ -1407,17 +1407,17 @@ moko_icon_view_expose (GtkWidget *widget,
     {
       GdkRectangle *rectangles;
       gint n_rectangles;
-      
+
       gdk_region_get_rectangles (expose->region,
 				 &rectangles,
 				 &n_rectangles);
-      
+
       while (n_rectangles--)
 	moko_icon_view_paint_rubberband (icon_view, &rectangles[n_rectangles]);
 
       g_free (rectangles);
     }
-  
+
   return TRUE;
 }
 
@@ -1428,7 +1428,7 @@ scroll_timeout (gpointer data)
   gdouble value;
 
   GDK_THREADS_ENTER ();
-  
+
   icon_view = data;
 
   value = MOKO_MIN (icon_view->priv->vadjustment->value +
@@ -1440,7 +1440,7 @@ scroll_timeout (gpointer data)
 			    value);
 
   moko_icon_view_update_rubberband (icon_view);
-  
+
   GDK_THREADS_LEAVE ();
 
   return TRUE;
@@ -1460,7 +1460,7 @@ moko_icon_view_motion (GtkWidget      *widget,
   if (icon_view->priv->doing_rubberband)
     {
       moko_icon_view_update_rubberband (widget);
-      
+
       abs_y = event->y - icon_view->priv->height *
 	(icon_view->priv->vadjustment->value /
 	 (icon_view->priv->vadjustment->upper -
@@ -1486,7 +1486,7 @@ moko_icon_view_motion (GtkWidget      *widget,
 	  icon_view->priv->scroll_timeout_id = 0;
 	}
     }
-  
+
   return TRUE;
 }
 
@@ -1498,7 +1498,7 @@ moko_icon_view_button_press (GtkWidget      *widget,
   MokoIconViewItem *item;
   gboolean dirty = FALSE;
   gboolean activate = FALSE;
-  
+
   icon_view = MOKO_ICON_VIEW (widget);
 
   if (event->window != icon_view->priv->bin_window)
@@ -1515,7 +1515,7 @@ moko_icon_view_button_press (GtkWidget      *widget,
       if (item != NULL)
 	{
 	  moko_icon_view_scroll_to_item (icon_view, item);
-	  
+
 	  if (icon_view->priv->selection_mode == GTK_SELECTION_NONE)
 	    {
 	      moko_icon_view_set_cursor_item (icon_view, item);
@@ -1528,13 +1528,13 @@ moko_icon_view_button_press (GtkWidget      *widget,
 	      moko_icon_view_set_cursor_item (icon_view, item);
 	      if (!icon_view->priv->anchor_item)
 		    icon_view->priv->anchor_item = item;
-	      else 
+	      else
 		    moko_icon_view_select_all_between (icon_view,
 						  icon_view->priv->anchor_item,
 						  item);
 	      dirty = TRUE;
 	    }
-	  else 
+	  else
 	    {
 	      if ((icon_view->priv->selection_mode == GTK_SELECTION_MULTIPLE ||
 		  ((icon_view->priv->selection_mode == GTK_SELECTION_SINGLE) && item->selected)) &&
@@ -1553,9 +1553,9 @@ moko_icon_view_button_press (GtkWidget      *widget,
 		      moko_icon_view_queue_draw_item (icon_view, item);
 		      dirty = TRUE;
 		    }
-		  else 
+		  else
 		      activate = TRUE;
-		  
+
 		}
 	      moko_icon_view_set_cursor_item (icon_view, item);
 	      icon_view->priv->anchor_item = item;
@@ -1579,7 +1579,7 @@ moko_icon_view_button_press (GtkWidget      *widget,
 	    {
 	      dirty = moko_icon_view_unselect_all_internal (icon_view);
 	    }
-	  
+
 	  if (icon_view->priv->selection_mode == GTK_SELECTION_MULTIPLE)
 	    moko_icon_view_start_rubberbanding (icon_view, event->x, event->y);
 	}
@@ -1635,7 +1635,7 @@ moko_icon_view_update_rubberband (gpointer data)
   GdkRectangle new_area;
   GdkRectangle common;
   GdkRegion *invalid_region;
-  
+
   icon_view = MOKO_ICON_VIEW (data);
 
   gdk_window_get_pointer (icon_view->priv->bin_window, &x, &y, NULL);
@@ -1651,7 +1651,7 @@ moko_icon_view_update_rubberband (gpointer data)
 			icon_view->priv->rubberband_x1) + 1;
   old_area.height = MOKO_ABS (icon_view->priv->rubberband_y2 -
 			 icon_view->priv->rubberband_y1) + 1;
-  
+
   new_area.x = MOKO_MIN (icon_view->priv->rubberband_x1, x);
   new_area.y = MOKO_MIN (icon_view->priv->rubberband_y1, y);
   new_area.width = MOKO_ABS (x - icon_view->priv->rubberband_x1) + 1;
@@ -1670,19 +1670,19 @@ moko_icon_view_update_rubberband (gpointer data)
       common.y += 1;
       common.width -= 2;
       common.height -= 2;
-      
+
       common_region = gdk_region_rectangle (&common);
 
       gdk_region_subtract (invalid_region, common_region);
       gdk_region_destroy (common_region);
     }
-  
+
   gdk_window_invalidate_region (icon_view->priv->bin_window, invalid_region, TRUE);
-    
+
   gdk_region_destroy (invalid_region);
 
   icon_view->priv->rubberband_x2 = x;
-  icon_view->priv->rubberband_y2 = y;  
+  icon_view->priv->rubberband_y2 = y;
 
   moko_icon_view_update_rubberband_selection (icon_view);
 }
@@ -1702,7 +1702,7 @@ moko_icon_view_start_rubberbanding (MokoIconView  *icon_view,
 
       item->selected_before_rubberbanding = item->selected;
     }
-  
+
   icon_view->priv->rubberband_x1 = x;
   icon_view->priv->rubberband_y1 = y;
   icon_view->priv->rubberband_x2 = x;
@@ -1722,7 +1722,7 @@ moko_icon_view_stop_rubberbanding (MokoIconView *icon_view)
   icon_view->priv->doing_rubberband = FALSE;
 
   gtk_grab_remove (GTK_WIDGET (icon_view));
-  
+
   gtk_widget_queue_draw (GTK_WIDGET (icon_view));
 }
 
@@ -1732,22 +1732,22 @@ moko_icon_view_update_rubberband_selection (MokoIconView *icon_view)
   GList *items;
   gint x, y, width, height;
   gboolean dirty = FALSE;
-  
+
   x = MOKO_MIN (icon_view->priv->rubberband_x1,
 	   icon_view->priv->rubberband_x2);
   y = MOKO_MIN (icon_view->priv->rubberband_y1,
 	   icon_view->priv->rubberband_y2);
-  width = MOKO_ABS (icon_view->priv->rubberband_x1 - 
+  width = MOKO_ABS (icon_view->priv->rubberband_x1 -
 	       icon_view->priv->rubberband_x2);
-  height = MOKO_ABS (icon_view->priv->rubberband_y1 - 
+  height = MOKO_ABS (icon_view->priv->rubberband_y1 -
 		icon_view->priv->rubberband_y2);
-  
+
   for (items = icon_view->priv->items; items; items = items->next)
     {
       MokoIconViewItem *item = items->data;
       gboolean is_in;
       gboolean selected;
-      
+
       is_in = moko_icon_view_item_hit_test (item, x, y, width, height);
 
       selected = is_in ^ item->selected_before_rubberbanding;
@@ -1780,7 +1780,7 @@ moko_icon_view_item_hit_test (MokoIconViewItem  *item,
   if (MOKO_MIN (x + width, item->layout_x + item->layout_width) - MOKO_MAX (x, item->layout_x) > 0 &&
       MOKO_MIN (y + height, item->layout_y + item->layout_height) - MOKO_MAX (y, item->layout_y) > 0)
     return TRUE;
-  
+
   return FALSE;
 }
 
@@ -1802,7 +1802,7 @@ moko_icon_view_maybe_begin_dragging_items (MokoIconView     *icon_view,
 
   button = icon_view->priv->pressed_button;
   icon_view->priv->pressed_button = -1;
-  
+
   {
     static GtkTargetEntry row_targets[] = {
       { "MOKO_ICON_VIEW_ITEMS", GTK_TARGET_SAME_APP, 0 }
@@ -1810,9 +1810,9 @@ moko_icon_view_maybe_begin_dragging_items (MokoIconView     *icon_view,
     GtkTargetList *target_list;
     GdkDragContext *context;
     MokoIconViewItem *item;
-    
+
     retval = TRUE;
-    
+
     target_list = gtk_target_list_new (row_targets, G_N_ELEMENTS (row_targets));
 
     context = gtk_drag_begin (GTK_WIDGET (icon_view),
@@ -1828,7 +1828,7 @@ moko_icon_view_maybe_begin_dragging_items (MokoIconView     *icon_view,
 			      event->x - item->x,
 			      event->y - item->y);
   }
-  
+
   return retval;
 }
 #endif
@@ -1931,7 +1931,7 @@ static void
 moko_icon_view_real_select_cursor_item (MokoIconView *icon_view)
 {
   moko_icon_view_unselect_all (icon_view);
-  
+
   if (icon_view->priv->cursor_item != NULL)
     moko_icon_view_select_item (icon_view, icon_view->priv->cursor_item);
 }
@@ -1940,12 +1940,12 @@ static gboolean
 moko_icon_view_real_activate_cursor_item (MokoIconView *icon_view)
 {
   GtkTreePath *path;
-  
+
   if (!icon_view->priv->cursor_item)
     return FALSE;
 
   path = gtk_tree_path_new_from_indices (icon_view->priv->cursor_item->index, -1);
-  
+
   moko_icon_view_item_activated (icon_view, path);
 
   gtk_tree_path_free (path);
@@ -1974,8 +1974,8 @@ moko_icon_view_real_toggle_cursor_item (MokoIconView *icon_view)
       break;
     case GTK_SELECTION_MULTIPLE:
       icon_view->priv->cursor_item->selected = !icon_view->priv->cursor_item->selected;
-      g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0); 
-      
+      g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
+
       moko_icon_view_queue_draw_item (icon_view, icon_view->priv->cursor_item);
       break;
     }
@@ -1992,8 +1992,8 @@ moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
   gint spacing, padding;
   gint colspan;
   GdkPixbuf *pixbuf;
-  
-  if (item->width != -1 && item->height != -1) 
+
+  if (item->width != -1 && item->height != -1)
     return;
 
   gtk_widget_style_get (GTK_WIDGET (icon_view),
@@ -2016,7 +2016,7 @@ moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
       item->pixbuf_height = 0;
       spacing = 0;
     }
-  
+
   if (icon_view->priv->orientation == GTK_ORIENTATION_HORIZONTAL &&
       item_width > 0)
     {
@@ -2025,7 +2025,7 @@ moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
     }
   else
     maximum_layout_width = MOKO_MAX (item_width, item->pixbuf_width);
-    
+
   if (icon_view->priv->markup_column != -1 ||
       icon_view->priv->text_column != -1)
     {
@@ -2033,9 +2033,9 @@ moko_icon_view_calculate_item_size (MokoIconView     *icon_view,
 
       pango_layout_set_alignment (icon_view->priv->layout, PANGO_ALIGN_CENTER);
       pango_layout_set_width (icon_view->priv->layout, maximum_layout_width * PANGO_SCALE);
-      
+
       pango_layout_get_pixel_size (icon_view->priv->layout, &layout_width, &layout_height);
-      
+
       item->layout_width = layout_width;
       item->layout_height = layout_height;
       padding = 2 * (ICON_TEXT_PADDING + focus_width + focus_pad);
@@ -2079,11 +2079,11 @@ moko_icon_view_adjustment_changed (GtkAdjustment *adjustment,
 }
 
 static GList *
-moko_icon_view_layout_single_row (MokoIconView *icon_view, 
-				 GList       *first_item, 
+moko_icon_view_layout_single_row (MokoIconView *icon_view,
+				 GList       *first_item,
 				 gint         item_width,
 				 gint         row,
-				 gint        *y, 
+				 gint        *y,
 				 gint        *maximum_width)
 {
   gint focus_width, focus_pad;
@@ -2117,7 +2117,7 @@ moko_icon_view_layout_single_row (MokoIconView *icon_view,
 
       colspan = 1 + (item->width - 1) / (item_width + icon_view->priv->column_spacing);
       current_width += colspan * (item_width + icon_view->priv->column_spacing);
-	
+
       if (items != first_item)
 	{
 	  if ((icon_view->priv->columns <= 0 && current_width > GTK_WIDGET (icon_view)->allocation.width) ||
@@ -2139,7 +2139,7 @@ moko_icon_view_layout_single_row (MokoIconView *icon_view,
 	      else
 		item->pixbuf_x = item->x;
 	    }
-	  else 
+	  else
 	    {
 	      item->pixbuf_x = item->x;
 	      if (icon_view->priv->pixbuf_column != -1)
@@ -2157,11 +2157,11 @@ moko_icon_view_layout_single_row (MokoIconView *icon_view,
 	  item->layout_x = item->x + (item->width - item->layout_width) / 2;
 	}
 
-      x = current_width - icon_view->priv->margin; 
+      x = current_width - icon_view->priv->margin;
 
       max_height = MOKO_MAX (max_height, item->height);
       max_pixbuf_height = MOKO_MAX (max_pixbuf_height, item->pixbuf_height);
-      
+
       if (current_width > *maximum_width)
 	*maximum_width = current_width;
 
@@ -2187,7 +2187,7 @@ moko_icon_view_layout_single_row (MokoIconView *icon_view,
 	  item->pixbuf_y = item->y;
 	  item->layout_y = item->y + ICON_TEXT_PADDING + focus_width + focus_pad;
 	}
-      else 
+      else
 	{
 	  item->pixbuf_y = item->y + (max_pixbuf_height - item->pixbuf_height);
 	  if (icon_view->priv->pixbuf_column != -1)
@@ -2205,7 +2205,7 @@ moko_icon_view_layout_single_row (MokoIconView *icon_view,
       if (rtl)
 	item->col = col - 1 - item->col;
     }
-  
+
   return last_item;
 }
 
@@ -2223,7 +2223,7 @@ moko_icon_view_set_adjustment_upper (GtkAdjustment *adj,
     {
       gdouble min = MOKO_MAX (0.0, upper - adj->page_size);
       gboolean value_changed = FALSE;
-      
+
       adj->upper = upper;
 
       if (adj->value > min)
@@ -2231,9 +2231,9 @@ moko_icon_view_set_adjustment_upper (GtkAdjustment *adj,
 	  adj->value = min;
 	  value_changed = TRUE;
 	}
-      
+
       gtk_adjustment_changed (adj);
-      
+
       if (value_changed)
 	gtk_adjustment_value_changed (adj);
     }
@@ -2267,13 +2267,13 @@ moko_icon_view_layout (MokoIconView *icon_view)
 	  moko_icon_view_item_invalidate_size (item);
 	}
     }
-  
+
   icons = icon_view->priv->items;
   row = 0;
 
   do
     {
-      icons = moko_icon_view_layout_single_row (icon_view, icons, 
+      icons = moko_icon_view_layout_single_row (icon_view, icons,
 					       item_width, row,
 					       &y, &maximum_width);
       row++;
@@ -2285,7 +2285,7 @@ moko_icon_view_layout (MokoIconView *icon_view)
       icon_view->priv->width = maximum_width;
     }
   y += icon_view->priv->margin;
-  
+
    icon_view->priv->height = y ;
 
   moko_icon_view_set_adjustment_upper (icon_view->priv->hadjustment, icon_view->priv->width);
@@ -2350,15 +2350,15 @@ moko_icon_view_destroy (GtkObject *object)
   MokoIconView *icon_view;
 
   icon_view = MOKO_ICON_VIEW (object);
-  
+
   moko_icon_view_set_model (icon_view, NULL);
-  
+
   if (icon_view->priv->layout_idle_id != 0)
     g_source_remove (icon_view->priv->layout_idle_id);
 
   if (icon_view->priv->scroll_timeout_id != 0)
     g_source_remove (icon_view->priv->scroll_timeout_id);
-  
+
   (GTK_OBJECT_CLASS (parent_class)->destroy) (object);
 }
 
@@ -2370,7 +2370,7 @@ moko_icon_view_finalize (GObject *object)
   icon_view = MOKO_ICON_VIEW (object);
 
   g_object_unref (icon_view->priv->layout);
-  
+
   (G_OBJECT_CLASS (parent_class)->finalize) (object);
 }
 
@@ -2437,12 +2437,12 @@ moko_icon_view_set_property (GObject      *object,
     case PROP_MAX_TEXT_LENGTH:
       moko_icon_view_set_max_text_length (icon_view, g_value_get_int (value));
       break;
-    	
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
     }
-  
+
 }
 
 static void
@@ -2508,7 +2508,7 @@ moko_icon_view_get_property (GObject      *object,
     case PROP_TOTAL_ITEMS:
       g_value_set_int (value, icon_view->priv->total_items);
       break;
-      	
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -2545,11 +2545,11 @@ layout_callback (gpointer user_data)
   GDK_THREADS_ENTER ();
 
   icon_view = MOKO_ICON_VIEW (user_data);
-  
+
   icon_view->priv->layout_idle_id = 0;
 
   moko_icon_view_layout (icon_view);
-  
+
   GDK_THREADS_LEAVE();
 
   return FALSE;
@@ -2576,10 +2576,10 @@ moko_icon_view_set_cursor_item (MokoIconView     *icon_view,
 
   if (icon_view->priv->cursor_item != NULL)
     moko_icon_view_queue_draw_item (icon_view, icon_view->priv->cursor_item);
-  
+
   icon_view->priv->cursor_item = item;
   moko_icon_view_queue_draw_item (icon_view, item);
-  
+
   /* Notify that accessible focus object has changed */
   obj = gtk_widget_get_accessible (GTK_WIDGET (icon_view));
   item_obj = atk_object_ref_accessible_child (obj, item->index);
@@ -2587,7 +2587,7 @@ moko_icon_view_set_cursor_item (MokoIconView     *icon_view,
   if (item_obj != NULL)
     {
       atk_focus_tracker_notify (item_obj);
-      g_object_unref (item_obj); 
+      g_object_unref (item_obj);
     }
 }
 
@@ -2601,7 +2601,7 @@ moko_icon_view_item_new (void)
 
   item->width = -1;
   item->height = -1;
-  
+
   return item;
 }
 
@@ -2621,9 +2621,9 @@ moko_icon_view_update_item_text (MokoIconView     *icon_view,
   GtkTreeIter iter;
   GtkTreePath *path;
   gchar *text;
-  
+
   iters_persist = gtk_tree_model_get_flags (icon_view->priv->model) & GTK_TREE_MODEL_ITERS_PERSIST;
-  
+
   if (!iters_persist)
     {
       path = gtk_tree_path_new_from_indices (item->index, -1);
@@ -2639,7 +2639,7 @@ moko_icon_view_update_item_text (MokoIconView     *icon_view,
 			  icon_view->priv->markup_column, &text,
 			  -1);
       pango_layout_set_markup (icon_view->priv->layout, text, -1);
-      g_free (text);        
+      g_free (text);
     }
   else if (icon_view->priv->text_column != -1)
     {
@@ -2647,12 +2647,12 @@ moko_icon_view_update_item_text (MokoIconView     *icon_view,
 			  icon_view->priv->text_column, &text,
 			  -1);
       if (strlen(text) > icon_view->priv->max_text_len)
-      	{
-      	   pango_layout_set_text (icon_view->priv->layout, text, icon_view->priv->max_text_len);
-      	}
+		{
+		   pango_layout_set_text (icon_view->priv->layout, text, icon_view->priv->max_text_len);
+		}
       else
-      	   pango_layout_set_text (icon_view->priv->layout, text, -1);
-      g_free (text); 
+		   pango_layout_set_text (icon_view->priv->layout, text, -1);
+      g_free (text);
     }
   else
       pango_layout_set_text (icon_view->priv->layout, "", -1);
@@ -2666,11 +2666,11 @@ moko_icon_view_get_item_icon (MokoIconView      *icon_view,
   GtkTreeIter iter;
   GtkTreePath *path;
   GdkPixbuf *pixbuf;
-  
+
   g_return_val_if_fail (item != NULL, NULL);
 
   iters_persist = gtk_tree_model_get_flags (icon_view->priv->model) & GTK_TREE_MODEL_ITERS_PERSIST;
-  
+
   if (!iters_persist)
     {
       path = gtk_tree_path_new_from_indices (item->index, -1);
@@ -2679,7 +2679,7 @@ moko_icon_view_get_item_icon (MokoIconView      *icon_view,
     }
   else
     iter = item->iter;
-  
+
   gtk_tree_model_get (icon_view->priv->model, &iter,
 		      icon_view->priv->pixbuf_column, &pixbuf,
 		      -1);
@@ -2694,11 +2694,11 @@ moko_icon_view_get_item_at_pos (MokoIconView *icon_view,
 			       gint         y)
 {
   GList *items;
-  
+
   for (items = icon_view->priv->items; items; items = items->next)
     {
       MokoIconViewItem *item = items->data;
-      
+
       if (x > item->x && x < item->x + item->width &&
 	  y > item->y && y < item->y + item->height)
 	{
@@ -2725,7 +2725,7 @@ moko_icon_view_select_item (MokoIconView      *icon_view,
 
   if (item->selected)
     return;
-  
+
   if (icon_view->priv->selection_mode == GTK_SELECTION_NONE)
     return;
   else if (icon_view->priv->selection_mode != GTK_SELECTION_MULTIPLE)
@@ -2748,11 +2748,11 @@ moko_icon_view_unselect_item (MokoIconView      *icon_view,
 
   if (!item->selected)
     return;
-  
+
   if (icon_view->priv->selection_mode == GTK_SELECTION_NONE ||
       icon_view->priv->selection_mode == GTK_SELECTION_BROWSE)
     return;
-  
+
   item->selected = FALSE;
 
   g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
@@ -2788,7 +2788,7 @@ moko_icon_view_row_changed (GtkTreeModel *model,
   MokoIconView *icon_view;
 
   icon_view = MOKO_ICON_VIEW (data);
-  
+
   index = gtk_tree_path_get_indices(path)[0];
   item = g_list_nth (icon_view->priv->items, index)->data;
 
@@ -2809,10 +2809,10 @@ moko_icon_view_row_inserted (GtkTreeModel *model,
   gboolean iters_persist;
   MokoIconView *icon_view;
   GList *list;
-  
+
   icon_view = MOKO_ICON_VIEW (data);
   iters_persist = gtk_tree_model_get_flags (icon_view->priv->model) & GTK_TREE_MODEL_ITERS_PERSIST;
-  
+
   length = gtk_tree_model_iter_n_children (model, NULL);
   index = gtk_tree_path_get_indices(path)[0];
 
@@ -2829,7 +2829,7 @@ moko_icon_view_row_inserted (GtkTreeModel *model,
   */
   icon_view->priv->items = g_list_insert (icon_view->priv->items,
 					 item, index);
-  
+
   list = g_list_nth (icon_view->priv->items, index + 1);
   for (; list; list = list->next)
     {
@@ -2837,7 +2837,7 @@ moko_icon_view_row_inserted (GtkTreeModel *model,
 
       item->index++;
     }
-    
+
   verify_items (icon_view);
 }
 
@@ -2851,7 +2851,7 @@ moko_icon_view_row_deleted (GtkTreeModel *model,
   MokoIconViewItem *item;
   GList *list, *next;
   gboolean emit = FALSE;
-  
+
   icon_view = MOKO_ICON_VIEW (data);
 
   index = gtk_tree_path_get_indices(path)[0];
@@ -2867,7 +2867,7 @@ moko_icon_view_row_deleted (GtkTreeModel *model,
 
   if (item->selected)
     emit = TRUE;
-  
+
   moko_icon_view_item_free (item);
 
   for (next = list->next; next; next = next->next)
@@ -2876,13 +2876,13 @@ moko_icon_view_row_deleted (GtkTreeModel *model,
 
       item->index--;
     }
-  
+
   icon_view->priv->items = g_list_delete_link (icon_view->priv->items, list);
 
   moko_icon_view_queue_layout (icon_view);
 
-  verify_items (icon_view);  
-  
+  verify_items (icon_view);
+
   if (emit)
     g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 }
@@ -2900,7 +2900,7 @@ moko_icon_view_rows_reordered (GtkTreeModel *model,
   GList *items = NULL, *list;
   MokoIconViewItem **item_array;
   gint *order;
-  
+
   icon_view = MOKO_ICON_VIEW (data);
 
   length = gtk_tree_model_iter_n_children (model, NULL);
@@ -2919,12 +2919,12 @@ moko_icon_view_rows_reordered (GtkTreeModel *model,
       item_array[i]->index = i;
       items = g_list_prepend (items, item_array[i]);
     }
-  
+
   g_free (item_array);
   g_list_free (icon_view->priv->items);
   icon_view->priv->items = items;
 
-  verify_items (icon_view);  
+  verify_items (icon_view);
 }
 
 static void
@@ -2936,13 +2936,13 @@ moko_icon_view_build_items (MokoIconView *icon_view)
   GList *items = NULL;
 
   iters_persist = gtk_tree_model_get_flags (icon_view->priv->model) & GTK_TREE_MODEL_ITERS_PERSIST;
-  
+
   if (!gtk_tree_model_get_iter_first (icon_view->priv->model,
 				      &iter))
     return;
 
   i = 0;
-  
+
   do
     {
       MokoIconViewItem *item = moko_icon_view_item_new ();
@@ -2951,11 +2951,11 @@ moko_icon_view_build_items (MokoIconView *icon_view)
 	item->iter = iter;
 
       item->index = i;
-      
+
       i++;
 
       items = g_list_prepend (items, item);
-      
+
     } while (gtk_tree_model_iter_next (icon_view->priv->model, &iter));
 
   icon_view->priv->items = g_list_reverse (items);
@@ -2968,7 +2968,7 @@ moko_icon_view_add_move_binding (GtkBindingSet  *binding_set,
 				GtkMovementStep step,
 				gint            count)
 {
-  
+
   gtk_binding_entry_add_signal (binding_set, keyval, modmask,
                                 "move_cursor", 2,
                                 G_TYPE_ENUM, step,
@@ -3053,7 +3053,7 @@ find_item (MokoIconView     *icon_view,
   GList *items;
   MokoIconViewItem *item;
 
-  /* FIXME: this could be more efficient 
+  /* FIXME: this could be more efficient
    */
   row = current->row + row_ofs;
   col = current->col + col_ofs;
@@ -3064,7 +3064,7 @@ find_item (MokoIconView     *icon_view,
       if (item->row == row && item->col == col)
 	return item;
     }
-  
+
   return NULL;
 }
 
@@ -3076,7 +3076,7 @@ find_item_page_up_down (MokoIconView     *icon_view,
 {
   GList *item, *next;
   gint y, col;
-  
+
   col = current->col;
   y = current->y + count * icon_view->priv->vadjustment->page_size;
 
@@ -3096,7 +3096,7 @@ find_item_page_up_down (MokoIconView     *icon_view,
 	  item = next;
 	}
     }
-  else 
+  else
     {
       while (item)
 	{
@@ -3127,7 +3127,7 @@ moko_icon_view_select_all_between (MokoIconView     *icon_view,
   MokoIconViewItem *item;
   gint row1, row2, col1, col2;
   gboolean dirty = FALSE;
-  
+
   if (anchor->row < cursor->row)
     {
       row1 = anchor->row;
@@ -3161,7 +3161,7 @@ moko_icon_view_select_all_between (MokoIconView     *icon_view,
 	    dirty = TRUE;
 
 	  item->selected = TRUE;
-	  
+
 	  moko_icon_view_queue_draw_item (icon_view, item);
 	}
     }
@@ -3169,33 +3169,33 @@ moko_icon_view_select_all_between (MokoIconView     *icon_view,
   return dirty;
 }
 
-static void 
+static void
 moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
 				   gint         count)
 {
   MokoIconViewItem *item;
   gboolean dirty = FALSE;
-  
- // if (!GTK_WIDGET_HAS_FOCUS (icon_view)) 
+
+ // if (!GTK_WIDGET_HAS_FOCUS (icon_view))
     //return;
 
   if (icon_view->priv->cursor_item)
     {
 	g_debug ("cursor item row = %d, col = %d", icon_view->priv->cursor_item->row, icon_view->priv->cursor_item->col);
-     item = find_item (icon_view, 
+     item = find_item (icon_view,
 		      icon_view->priv->cursor_item,
 		      count, 0);
 
-     while (!item && count >= 0) //SUNZY:Can't find next row item in the same column. 
-        { 
+     while (!item && count >= 0) //SUNZY:Can't find next row item in the same column.
+        {
            gint col = 0;
            for (col ; col + icon_view->priv->columns >0 && !item ; col--)
-  	   	item = find_item (icon_view, 
+		item = find_item (icon_view,
 		      icon_view->priv->cursor_item,
 		      count, col);
 	     count --;
 	     col = icon_view->priv->columns;
-    	    g_debug ("count = %d column = %d", count, col);
+	    g_debug ("count = %d column = %d", count, col);
         }
     }
   else
@@ -3209,7 +3209,7 @@ moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
 
       item = list ? list->data : NULL;
     }
- 
+
   if (!item)
 	return;
 
@@ -3225,7 +3225,7 @@ moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
       icon_view->priv->selection_mode != GTK_SELECTION_NONE)
     {
       moko_icon_view_unselect_all_internal (icon_view);
-      dirty = moko_icon_view_select_all_between (icon_view, 
+      dirty = moko_icon_view_select_all_between (icon_view,
 						icon_view->priv->anchor_item,
 						item);
     }
@@ -3236,16 +3236,16 @@ moko_icon_view_move_cursor_up_down (MokoIconView *icon_view,
     g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 }
 
-static void 
+static void
 moko_icon_view_move_cursor_page_up_down (MokoIconView *icon_view,
 					gint         count)
 {
   MokoIconViewItem *item;
   gboolean dirty = FALSE;
-  
+
   if (!GTK_WIDGET_HAS_FOCUS (icon_view))
     return;
-  
+
   if (!icon_view->priv->cursor_item)
     {
       GList *list;
@@ -3258,7 +3258,7 @@ moko_icon_view_move_cursor_page_up_down (MokoIconView *icon_view,
       item = list ? list->data : NULL;
     }
   else
-    item = find_item_page_up_down (icon_view, 
+    item = find_item_page_up_down (icon_view,
 				   icon_view->priv->cursor_item,
 				   count);
 
@@ -3277,7 +3277,7 @@ moko_icon_view_move_cursor_page_up_down (MokoIconView *icon_view,
       icon_view->priv->selection_mode != GTK_SELECTION_NONE)
     {
       moko_icon_view_unselect_all_internal (icon_view);
-      dirty = moko_icon_view_select_all_between (icon_view, 
+      dirty = moko_icon_view_select_all_between (icon_view,
 						icon_view->priv->anchor_item,
 						item);
     }
@@ -3285,19 +3285,19 @@ moko_icon_view_move_cursor_page_up_down (MokoIconView *icon_view,
   moko_icon_view_scroll_to_item (icon_view, item);
 
   if (dirty)
-    g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);  
+    g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 }
 
-static void 
+static void
 moko_icon_view_move_cursor_left_right (MokoIconView *icon_view,
 				      gint         count)
 {
   MokoIconViewItem *item;
   gboolean dirty = FALSE;
-  
+
   if (!GTK_WIDGET_HAS_FOCUS (icon_view))
     return;
-  
+
   if (!icon_view->priv->cursor_item)
     {
       GList *list;
@@ -3310,7 +3310,7 @@ moko_icon_view_move_cursor_left_right (MokoIconView *icon_view,
       item = list ? list->data : NULL;
     }
   else
-    item = find_item (icon_view, 
+    item = find_item (icon_view,
 		      icon_view->priv->cursor_item,
 		      0, count);
 
@@ -3329,7 +3329,7 @@ moko_icon_view_move_cursor_left_right (MokoIconView *icon_view,
       icon_view->priv->selection_mode != GTK_SELECTION_NONE)
     {
       moko_icon_view_unselect_all_internal (icon_view);
-      dirty = moko_icon_view_select_all_between (icon_view, 
+      dirty = moko_icon_view_select_all_between (icon_view,
 						icon_view->priv->anchor_item,
 						item);
     }
@@ -3340,22 +3340,22 @@ moko_icon_view_move_cursor_left_right (MokoIconView *icon_view,
     g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 }
 
-static void 
+static void
 moko_icon_view_move_cursor_start_end (MokoIconView *icon_view,
 				     gint         count)
 {
   MokoIconViewItem *item;
   GList *list;
   gboolean dirty = FALSE;
-  
+
   if (!GTK_WIDGET_HAS_FOCUS (icon_view))
     return;
-  
+
   if (count < 0)
     list = icon_view->priv->items;
   else
     list = g_list_last (icon_view->priv->items);
-  
+
   item = list ? list->data : NULL;
 
   if (!item)
@@ -3373,7 +3373,7 @@ moko_icon_view_move_cursor_start_end (MokoIconView *icon_view,
       icon_view->priv->selection_mode != GTK_SELECTION_NONE)
     {
       moko_icon_view_unselect_all (icon_view);
-      dirty = moko_icon_view_select_all_between (icon_view, 
+      dirty = moko_icon_view_select_all_between (icon_view,
 						icon_view->priv->anchor_item,
 						item);
     }
@@ -3384,8 +3384,8 @@ moko_icon_view_move_cursor_start_end (MokoIconView *icon_view,
     g_signal_emit (icon_view, moko_icon_view_signals[SELECTION_CHANGED], 0);
 }
 
-static void     
-moko_icon_view_scroll_to_item (MokoIconView     *icon_view, 
+static void
+moko_icon_view_scroll_to_item (MokoIconView     *icon_view,
 			      MokoIconViewItem *item)
 {
   gint y, height;
@@ -3401,11 +3401,11 @@ moko_icon_view_scroll_to_item (MokoIconView     *icon_view,
       gtk_adjustment_set_value (icon_view->priv->vadjustment, value);
     }
   else if (above_item && y + item->y > 0)
-    {      
+    {
       value = icon_view->priv->vadjustment->value + y + above_item->y;
       gtk_adjustment_set_value (icon_view->priv->vadjustment, value);
     }
- 
+
 }
 
 /* Public API */
@@ -3413,9 +3413,9 @@ moko_icon_view_scroll_to_item (MokoIconView     *icon_view,
 
 /**
  * moko_icon_view_new:
- * 
+ *
  * Creates a new #MokoIconView widget
- * 
+ *
  * Return value: A newly created #MokoIconView widget
  *
  **/
@@ -3428,9 +3428,9 @@ moko_icon_view_new (void)
 /**
  * moko_icon_view_new_with_model:
  * @model: The model.
- * 
+ *
  * Creates a new #MokoIconView widget with the model @model.
- * 
+ *
  * Return value: A newly created #MokoIconView widget.
  *
  **/
@@ -3446,9 +3446,9 @@ moko_icon_view_new_with_model (GtkTreeModel *model)
  * @icon_view: A #MokoIconView.
  * @x: The x position to be identified
  * @y: The y position to be identified
- * 
+ *
  * Finds the path at the point (@x, @y), relative to widget coordinates.
- * 
+ *
  * Return value: The #GtkTreePath corresponding to the icon or %NULL
  * if no icon exists at that position.
  *
@@ -3460,7 +3460,7 @@ moko_icon_view_get_path_at_pos (MokoIconView *icon_view,
 {
   MokoIconViewItem *item;
   GtkTreePath *path;
-  
+
   g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), NULL);
 
   item = moko_icon_view_get_item_at_pos (icon_view, x, y);
@@ -3478,7 +3478,7 @@ moko_icon_view_get_path_at_pos (MokoIconView *icon_view,
  * @icon_view: A #MokoIconView.
  * @func: The funcion to call for each selected icon.
  * @data: User data to pass to the function.
- * 
+ *
  * Calls a function for each selected icon. Note that the model or
  * selection cannot be modified from within this function.
  *
@@ -3489,7 +3489,7 @@ moko_icon_view_selected_foreach (MokoIconView           *icon_view,
 				gpointer               data)
 {
   GList *list;
-  
+
   for (list = icon_view->priv->items; list; list = list->next)
     {
       MokoIconViewItem *item = list->data;
@@ -3506,7 +3506,7 @@ moko_icon_view_selected_foreach (MokoIconView           *icon_view,
  * moko_icon_view_set_selection_mode:
  * @icon_view: A #MokoIconView.
  * @mode: The selection mode
- * 
+ *
  * Sets the selection mode of the @icon_view.
  *
  **/
@@ -3518,11 +3518,11 @@ moko_icon_view_set_selection_mode (MokoIconView      *icon_view,
 
   if (mode == icon_view->priv->selection_mode)
     return;
-  
+
   if (mode == GTK_SELECTION_NONE ||
       icon_view->priv->selection_mode == GTK_SELECTION_MULTIPLE)
     moko_icon_view_unselect_all (icon_view);
-  
+
   icon_view->priv->selection_mode = mode;
 
   g_object_notify (G_OBJECT (icon_view), "selection_mode");
@@ -3531,7 +3531,7 @@ moko_icon_view_set_selection_mode (MokoIconView      *icon_view,
 /**
  * moko_icon_view_get_selection_mode:
  * @icon_view: A #MokoIconView.
- * 
+ *
  * Gets the selection mode of the @icon_view.
  *
  * Return value: the current selection mode
@@ -3550,8 +3550,8 @@ moko_icon_view_get_selection_mode (MokoIconView *icon_view)
  * @icon_view: A #MokoIconView.
  * @model: The model.
  *
- * Sets the model for a #MokoIconView.  
- * If the @icon_view already has a model set, it will remove 
+ * Sets the model for a #MokoIconView.
+ * If the @icon_view already has a model set, it will remove
  * it before setting the new model.  If @model is %NULL, then
  * it will unset the old model.
  *
@@ -3562,20 +3562,20 @@ moko_icon_view_set_model (MokoIconView *icon_view,
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
   g_return_if_fail (model == NULL || GTK_IS_TREE_MODEL (model));
-  
+
   if (icon_view->priv->model == model)
     return;
 
   if (model)
     {
       GType column_type;
-      
+
       g_return_if_fail (gtk_tree_model_get_flags (model) & GTK_TREE_MODEL_LIST_ONLY);
 
       if (icon_view->priv->pixbuf_column != -1)
 	{
 	  column_type = gtk_tree_model_get_column_type (model,
-							icon_view->priv->pixbuf_column);	  
+							icon_view->priv->pixbuf_column);
 
 	  g_return_if_fail (column_type == GDK_TYPE_PIXBUF);
 	}
@@ -3583,7 +3583,7 @@ moko_icon_view_set_model (MokoIconView *icon_view,
       if (icon_view->priv->text_column != -1)
 	{
 	  column_type = gtk_tree_model_get_column_type (model,
-							icon_view->priv->text_column);	  
+							icon_view->priv->text_column);
 
 	  g_return_if_fail (column_type == G_TYPE_STRING);
 	}
@@ -3591,13 +3591,13 @@ moko_icon_view_set_model (MokoIconView *icon_view,
       if (icon_view->priv->markup_column != -1)
 	{
 	  column_type = gtk_tree_model_get_column_type (model,
-							icon_view->priv->markup_column);	  
+							icon_view->priv->markup_column);
 
 	  g_return_if_fail (column_type == G_TYPE_STRING);
 	}
-      
+
     }
-  
+
   if (icon_view->priv->model)
     {
       g_signal_handlers_disconnect_by_func (icon_view->priv->model,
@@ -3614,7 +3614,7 @@ moko_icon_view_set_model (MokoIconView *icon_view,
 					    icon_view);
 
       g_object_unref (icon_view->priv->model);
-      
+
       g_list_foreach (icon_view->priv->items, (GFunc)moko_icon_view_item_free, NULL);
       g_list_free (icon_view->priv->items);
       icon_view->priv->items = NULL;
@@ -3650,7 +3650,7 @@ moko_icon_view_set_model (MokoIconView *icon_view,
 
   moko_icon_view_queue_layout (icon_view);
 
-  g_object_notify (G_OBJECT (icon_view), "model");  
+  g_object_notify (G_OBJECT (icon_view), "model");
 }
 
 /**
@@ -3675,7 +3675,7 @@ moko_icon_view_get_model (MokoIconView *icon_view)
  * moko_icon_view_set_text_column:
  * @icon_view: A #MokoIconView.
  * @column: A column in the currently used model.
- * 
+ *
  * Sets the column with text for @icon_view to be @column. The text
  * column must be of type #G_TYPE_STRING.
  *
@@ -3686,7 +3686,7 @@ moko_icon_view_set_text_column (MokoIconView *icon_view,
 {
   if (column == icon_view->priv->text_column)
     return;
-  
+
   if (column == -1)
     icon_view->priv->text_column = -1;
   else
@@ -3694,18 +3694,18 @@ moko_icon_view_set_text_column (MokoIconView *icon_view,
       if (icon_view->priv->model != NULL)
 	{
 	  GType column_type;
-	  
+
 	  column_type = gtk_tree_model_get_column_type (icon_view->priv->model, column);
 
 	  g_return_if_fail (column_type == G_TYPE_STRING);
 	}
-      
+
       icon_view->priv->text_column = column;
     }
 
   moko_icon_view_invalidate_sizes (icon_view);
   moko_icon_view_queue_layout (icon_view);
-  
+
   g_object_notify (G_OBJECT (icon_view), "text_column");
 }
 
@@ -3730,7 +3730,7 @@ moko_icon_view_get_text_column (MokoIconView  *icon_view)
  * moko_icon_view_set_markup_column:
  * @icon_view: A #MokoIconView.
  * @column: A column in the currently used model.
- * 
+ *
  * Sets the column with markup information for @icon_view to be
  * @column. The markup column must be of type #G_TYPE_STRING.
  * If the markup column is set to something, it overrides
@@ -3743,7 +3743,7 @@ moko_icon_view_set_markup_column (MokoIconView *icon_view,
 {
   if (column == icon_view->priv->markup_column)
     return;
-  
+
   if (column == -1)
     icon_view->priv->markup_column = -1;
   else
@@ -3751,18 +3751,18 @@ moko_icon_view_set_markup_column (MokoIconView *icon_view,
       if (icon_view->priv->model != NULL)
 	{
 	  GType column_type;
-	  
+
 	  column_type = gtk_tree_model_get_column_type (icon_view->priv->model, column);
 
 	  g_return_if_fail (column_type == G_TYPE_STRING);
 	}
-      
+
       icon_view->priv->markup_column = column;
     }
 
   moko_icon_view_invalidate_sizes (icon_view);
   moko_icon_view_queue_layout (icon_view);
-  
+
   g_object_notify (G_OBJECT (icon_view), "markup_column");
 }
 
@@ -3787,7 +3787,7 @@ moko_icon_view_get_markup_column (MokoIconView  *icon_view)
  * moko_icon_view_set_pixbuf_column:
  * @icon_view: A #MokoIconView.
  * @column: A column in the currently used model.
- * 
+ *
  * Sets the column with pixbufs for @icon_view to be @column. The pixbuf
  * column must be of type #GDK_TYPE_PIXBUF
  *
@@ -3798,7 +3798,7 @@ moko_icon_view_set_pixbuf_column (MokoIconView *icon_view,
 {
   if (column == icon_view->priv->pixbuf_column)
     return;
-  
+
   if (column == -1)
     icon_view->priv->pixbuf_column = -1;
   else
@@ -3806,20 +3806,20 @@ moko_icon_view_set_pixbuf_column (MokoIconView *icon_view,
       if (icon_view->priv->model != NULL)
 	{
 	  GType column_type;
-	  
+
 	  column_type = gtk_tree_model_get_column_type (icon_view->priv->model, column);
 
 	  g_return_if_fail (column_type == GDK_TYPE_PIXBUF);
 	}
-      
+
       icon_view->priv->pixbuf_column = column;
     }
 
   moko_icon_view_invalidate_sizes (icon_view);
   moko_icon_view_queue_layout (icon_view);
-  
+
   g_object_notify (G_OBJECT (icon_view), "pixbuf_column");
-  
+
 }
 
 /**
@@ -3843,7 +3843,7 @@ moko_icon_view_get_pixbuf_column (MokoIconView  *icon_view)
  * moko_icon_view_select_path:
  * @icon_view: A #MokoIconView.
  * @path: The #GtkTreePath to be selected.
- * 
+ *
  * Selects the row at @path.
  *
  **/
@@ -3852,7 +3852,7 @@ moko_icon_view_select_path (MokoIconView *icon_view,
 			   GtkTreePath *path)
 {
   MokoIconViewItem *item;
-  
+
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
   g_return_if_fail (icon_view->priv->model != NULL);
   g_return_if_fail (path != NULL);
@@ -3862,7 +3862,7 @@ moko_icon_view_select_path (MokoIconView *icon_view,
 
   if (!item)
     return;
-  
+
   moko_icon_view_select_item (icon_view, item);
 }
 
@@ -3870,7 +3870,7 @@ moko_icon_view_select_path (MokoIconView *icon_view,
  * moko_icon_view_unselect_path:
  * @icon_view: A #MokoIconView.
  * @path: The #GtkTreePath to be unselected.
- * 
+ *
  * Unselects the row at @path.
  *
  **/
@@ -3879,7 +3879,7 @@ moko_icon_view_unselect_path (MokoIconView *icon_view,
 			     GtkTreePath *path)
 {
   MokoIconViewItem *item;
-  
+
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
   g_return_if_fail (icon_view->priv->model != NULL);
   g_return_if_fail (path != NULL);
@@ -3889,7 +3889,7 @@ moko_icon_view_unselect_path (MokoIconView *icon_view,
 
   if (!item)
     return;
-  
+
   moko_icon_view_unselect_item (icon_view, item);
 }
 
@@ -3916,9 +3916,9 @@ moko_icon_view_get_selected_items (MokoIconView *icon_view)
 {
   GList *list;
   GList *selected = NULL;
-  
+
   g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), NULL);
-  
+
   for (list = icon_view->priv->items; list != NULL; list = list->next)
     {
       MokoIconViewItem *item = list->data;
@@ -3937,7 +3937,7 @@ moko_icon_view_get_selected_items (MokoIconView *icon_view)
 /**
  * moko_icon_view_select_all:
  * @icon_view: A #MokoIconView.
- * 
+ *
  * Selects all the icons. @icon_view must has its selection mode set
  * to #GTK_SELECTION_MULTIPLE.
  *
@@ -3947,7 +3947,7 @@ moko_icon_view_select_all (MokoIconView *icon_view)
 {
   GList *items;
   gboolean dirty = FALSE;
-  
+
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
 
   if (icon_view->priv->selection_mode != GTK_SELECTION_MULTIPLE)
@@ -3956,7 +3956,7 @@ moko_icon_view_select_all (MokoIconView *icon_view)
   for (items = icon_view->priv->items; items; items = items->next)
     {
       MokoIconViewItem *item = items->data;
-      
+
       if (!item->selected)
 	{
 	  dirty = TRUE;
@@ -3972,7 +3972,7 @@ moko_icon_view_select_all (MokoIconView *icon_view)
 /**
  * moko_icon_view_unselect_all:
  * @icon_view: A #MokoIconView.
- * 
+ *
  * Unselects all the icons.
  *
  **/
@@ -3980,7 +3980,7 @@ void
 moko_icon_view_unselect_all (MokoIconView *icon_view)
 {
   gboolean dirty = FALSE;
-  
+
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
 
   if (icon_view->priv->selection_mode == GTK_SELECTION_BROWSE)
@@ -3996,10 +3996,10 @@ moko_icon_view_unselect_all (MokoIconView *icon_view)
  * moko_icon_view_path_is_selected:
  * @icon_view: A #MokoIconView.
  * @path: A #GtkTreePath to check selection on.
- * 
+ *
  * Returns %TRUE if the icon pointed to by @path is currently
  * selected. If @icon does not point to a valid location, %FALSE is returned.
- * 
+ *
  * Return value: %TRUE if @path is selected.
  *
  **/
@@ -4008,17 +4008,17 @@ moko_icon_view_path_is_selected (MokoIconView *icon_view,
 				GtkTreePath *path)
 {
   MokoIconViewItem *item;
-  
+
   g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), FALSE);
   g_return_val_if_fail (icon_view->priv->model != NULL, FALSE);
   g_return_val_if_fail (path != NULL, FALSE);
-  
+
   item = g_list_nth (icon_view->priv->items,
 		     gtk_tree_path_get_indices(path)[0])->data;
 
   if (!item)
     return FALSE;
-  
+
   return item->selected;
 }
 
@@ -4026,7 +4026,7 @@ moko_icon_view_path_is_selected (MokoIconView *icon_view,
  * moko_icon_view_item_activated:
  * @icon_view: A #MokoIconView
  * @path: The #GtkTreePath to be activated
- * 
+ *
  * Activates the item determined by @path.
  *
  **/
@@ -4036,20 +4036,20 @@ moko_icon_view_item_activated (MokoIconView      *icon_view,
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
   g_return_if_fail (path != NULL);
-  
+
   g_signal_emit (icon_view, moko_icon_view_signals[ITEM_ACTIVATED], 0, path);
 }
 
 /**
  * moko_icon_view_set_orientation:
  * @icon_view: a #MokoIconView
- * @orientation: the relative position of texts and icons 
- * 
- * Sets the ::orientation property which determines whether the labels 
+ * @orientation: the relative position of texts and icons
+ *
+ * Sets the ::orientation property which determines whether the labels
  * are drawn beside the icons instead of below.
  *
  **/
-void 
+void
 moko_icon_view_set_orientation (MokoIconView    *icon_view,
 			       GtkOrientation  orientation)
 {
@@ -4061,7 +4061,7 @@ moko_icon_view_set_orientation (MokoIconView    *icon_view,
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "orientation");
     }
 }
@@ -4069,36 +4069,36 @@ moko_icon_view_set_orientation (MokoIconView    *icon_view,
 /**
  * moko_icon_view_get_orientation:
  * @icon_view: a #MokoIconView
- * 
- * Returns the value of the ::orientation property which determines 
- * whether the labels are drawn beside the icons instead of below. 
- * 
- * Return value: the relative position of texts and icons 
+ *
+ * Returns the value of the ::orientation property which determines
+ * whether the labels are drawn beside the icons instead of below.
+ *
+ * Return value: the relative position of texts and icons
  *
  **/
 GtkOrientation
 moko_icon_view_get_orientation (MokoIconView *icon_view)
 {
-  g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), 
+  g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view),
 			GTK_ORIENTATION_VERTICAL);
 
   return icon_view->priv->orientation;
 }
 
-void 
+void
 moko_icon_view_set_columns (MokoIconView *icon_view,
 				gint         columns)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->columns != columns)
     {
       icon_view->priv->columns = columns;
 
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "columns");
-    }  
+    }
 }
 
 gint
@@ -4113,16 +4113,16 @@ void moko_icon_view_set_item_width (MokoIconView *icon_view,
 				   gint         item_width)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->item_width != item_width)
     {
       icon_view->priv->item_width = item_width;
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "item-width");
-    }  
+    }
 }
 
 gint
@@ -4138,16 +4138,16 @@ void moko_icon_view_set_spacing (MokoIconView *icon_view,
 				gint         spacing)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->spacing != spacing)
     {
       icon_view->priv->spacing = spacing;
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "spacing");
-    }  
+    }
 }
 
 gint
@@ -4162,16 +4162,16 @@ void moko_icon_view_set_row_spacing (MokoIconView *icon_view,
 				    gint         row_spacing)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->row_spacing != row_spacing)
     {
       icon_view->priv->row_spacing = row_spacing;
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "row-spacing");
-    }  
+    }
 }
 
 gint
@@ -4186,16 +4186,16 @@ void moko_icon_view_set_column_spacing (MokoIconView *icon_view,
 				       gint         column_spacing)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->column_spacing != column_spacing)
     {
       icon_view->priv->column_spacing = column_spacing;
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "column-spacing");
-    }  
+    }
 }
 
 gint
@@ -4210,16 +4210,16 @@ void moko_icon_view_set_margin (MokoIconView *icon_view,
 			       gint         margin)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->margin != margin)
     {
       icon_view->priv->margin = margin;
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "margin");
-    }  
+    }
 }
 
 gint
@@ -4233,7 +4233,7 @@ moko_icon_view_get_margin (MokoIconView *icon_view)
 /**
  *moko_icon_view_set_icon_bg:
  *@icon_view A #MokoIconView
- *@bg_icon A gchar* 
+ *@bg_icon A gchar*
  *
  *Set selected icon column background image, the ::decorated property
  *must be set TRUE first, more see moko_icon_view_set_decorated ().
@@ -4243,7 +4243,7 @@ void
 moko_icon_view_set_icon_bg (MokoIconView *icon_view, const gchar *bg_icon)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (bg_icon)
     {
       icon_view->priv->bg_icon = gdk_pixbuf_new_from_file (bg_icon, NULL);
@@ -4251,15 +4251,15 @@ moko_icon_view_set_icon_bg (MokoIconView *icon_view, const gchar *bg_icon)
 
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "bg_icon");
-    }  
+    }
 }
 
 /**
  *moko_icon_view_set_text_bg:
- *@icon_view 	a #MokoIconView
- *@bg_text 	gchar*
+ *@icon_view	a #MokoIconView
+ *@bg_text	gchar*
  *
  *Set selected text column background image, the ::decorated property
  *must be set TRUE first, more see moko_icon_view_set_decorated ().
@@ -4269,16 +4269,16 @@ void
 moko_icon_view_set_text_bg (MokoIconView *icon_view, const gchar *bg_text)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (bg_text)
     {
       icon_view->priv->bg_text = gdk_pixbuf_new_from_file (bg_text, NULL);
           if (!icon_view->priv->bg_text)
-          
+
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
       g_object_notify (G_OBJECT (icon_view), "bg_text");
-    }  
+    }
 }
 
 /**
@@ -4289,11 +4289,11 @@ moko_icon_view_set_text_bg (MokoIconView *icon_view, const gchar *bg_text)
  *Set icon decoration width(pixels), the icon will be scaled with this argumnet.
  *This argument will be efficient when #decorated set.
  */
-void 
+void
 moko_icon_view_set_decoration_width (MokoIconView *icon_view, gint decr_width)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->decr_width!= decr_width)
     {
       icon_view->priv->decr_width = decr_width;
@@ -4301,7 +4301,7 @@ moko_icon_view_set_decoration_width (MokoIconView *icon_view, gint decr_width)
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
       g_object_notify (G_OBJECT (icon_view), "decr_width");
-    }  
+    }
 }
 
 /**
@@ -4311,7 +4311,7 @@ moko_icon_view_set_decoration_width (MokoIconView *icon_view, gint decr_width)
  *Returns decoration width.
  *
  */
-gint 
+gint
 moko_icon_view_get_decoration_width (MokoIconView *icon_view)
 {
    g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
@@ -4321,7 +4321,7 @@ moko_icon_view_get_decoration_width (MokoIconView *icon_view)
 
 /**
  *moko_icon_view_set_decorated:
- *@icon_view 		a #MokoIconView
+ *@icon_view		a #MokoIconView
  *@decorated		gboolean
  *
  *Changer ::decorated property, default value is FALSE.
@@ -4336,26 +4336,26 @@ moko_icon_view_set_decorated (MokoIconView *icon_view, gboolean decorated)
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
 
   decorated = decorated != FALSE;
-  
+
   if (icon_view->priv->decorated != decorated)
     {
       icon_view->priv->decorated = decorated;
 
         moko_icon_view_invalidate_sizes (icon_view);
         moko_icon_view_queue_layout (icon_view);
-      
+
       g_object_notify (G_OBJECT (icon_view), "decorated");
-    } 
-    
+    }
+
 }
 
 /**
  *moko_icon_view_get_decorated:
- *@icon_view 		a #MokoIconView
+ *@icon_view		a #MokoIconView
  *
  *Return ::decorated property.
  *TRUE	Use costom image to decorated selected item.
- *FALSE 	UnUse custom image to decorated selected item.
+ *FALSE	UnUse custom image to decorated selected item.
  *
  */
 gboolean
@@ -4368,7 +4368,7 @@ moko_icon_view_get_decorated (MokoIconView *icon_view)
 
 /**
  *moko_icon_view_set_max_text_length:
- *@icon_view 			a #MokoIconView
+ *@icon_view			a #MokoIconView
  *@max_text_length	gint
  *
  *Set maximum text column length.
@@ -4378,7 +4378,7 @@ void
 moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint max_text_length)
 {
   g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-  
+
   if (icon_view->priv->max_text_len!= max_text_length)
     {
       icon_view->priv->max_text_len = max_text_length;
@@ -4386,7 +4386,7 @@ moko_icon_view_set_max_text_length (MokoIconView *icon_view, gint max_text_lengt
       moko_icon_view_invalidate_sizes (icon_view);
       moko_icon_view_queue_layout (icon_view);
       g_object_notify (G_OBJECT (icon_view), "max_text_len");
-    }  
+    }
 
 }
 
@@ -4417,7 +4417,7 @@ moko_icon_view_get_cursor_positon (MokoIconView *icon_view)
 {
   g_return_val_if_fail (MOKO_IS_ICON_VIEW (icon_view), -1);
   if (!icon_view->priv->cursor_item)
-  	return -1;
+	return -1;
   return (icon_view->priv->cursor_item->index + 1);
 }
 
@@ -4440,7 +4440,7 @@ void
 moko_icon_view_move_cursor_line_up (MokoIconView *icon_view)
 {
     g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-    
+
     moko_icon_view_move_cursor_up_down (icon_view, -1);
 
 }
@@ -4449,7 +4449,7 @@ void
 moko_icon_view_move_cursor_line_down (MokoIconView *icon_view)
 {
     g_return_if_fail (MOKO_IS_ICON_VIEW (icon_view));
-    
+
     moko_icon_view_move_cursor_up_down (icon_view, 1);
 
 }
@@ -4462,6 +4462,6 @@ moko_icon_view_refresh (MokoIconView *icon_view)
   if (icon_view->priv->items)
   {
      MokoIconViewItem *item = icon_view->priv->items->data;
-     moko_icon_view_scroll_to_item (icon_view, item);     
+     moko_icon_view_scroll_to_item (icon_view, item);
   }
 }

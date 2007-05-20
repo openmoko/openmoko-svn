@@ -1,9 +1,9 @@
 /**
  *  @file mainmenu.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ static void moko_main_menu_init(MokoMainMenu *mm);
 *@param none
 *@return GType
 */
-GType 
+GType
 moko_main_menu_get_type (void) /* Typechecking */
 {
     static GType menu_type = 0;
@@ -70,23 +70,23 @@ moko_main_menu_get_type (void) /* Typechecking */
 *@param klass	MokoMainMenu class
 *@return none
 */
-static void 
-moko_main_menu_class_init(MokoMainMenuClass* Klass) 
+static void
+moko_main_menu_class_init(MokoMainMenuClass* Klass)
 {
 
 }
 
 
-/*@brief initialize 	MokoManiMenu instance
+/*@brief initialize	MokoManiMenu instance
  *@param mm	MokoMainMenu*
  *@return none
  */
 void
-moko_main_menu_init(MokoMainMenu *mm) 
+moko_main_menu_init(MokoMainMenu *mm)
 {
     PangoFontDescription* PangoFont = pango_font_description_new(); //get system default PangoFontDesc
     GtkWidget *eventbox;
-	
+
     mm->top_item = NULL;
     mm->current = NULL;
 
@@ -106,12 +106,12 @@ moko_main_menu_init(MokoMainMenu *mm)
     gtk_label_set_width_chars (GTK_LABEL(mm->item_total), ITME_TOTAL_WIDTH);
     gtk_misc_set_alignment (GTK_MISC (mm->item_total), ITEM_TOTAL_ALG_X, ITEM_TOTAL_ALG_Y);
     if (PangoFont) {
-    	  pango_font_description_set_size (PangoFont, FONT_SIZE_ITEM);
+	  pango_font_description_set_size (PangoFont, FONT_SIZE_ITEM);
 	  gtk_widget_modify_font (mm->item_total, PangoFont);
 	  }
     else {
-    	  g_debug("FAILED to load FONT ");
-    	  }
+	  g_debug("FAILED to load FONT ");
+	  }
 
     //Only used to change background
     eventbox = gtk_event_box_new ();
@@ -146,23 +146,23 @@ moko_main_menu_init(MokoMainMenu *mm)
 
     mm->hbox = gtk_hbox_new (FALSE, FALSE);
     gtk_widget_show (mm->hbox);
-    
+
     gtk_box_pack_start (GTK_BOX(mm), eventbox, FALSE, FALSE, 0);
-    gtk_container_add (GTK_CONTAINER(eventbox), mm->hbox); 
+    gtk_container_add (GTK_CONTAINER(eventbox), mm->hbox);
     gtk_box_pack_start (GTK_BOX(mm->hbox), mm->section_name, TRUE, TRUE, 0);
     gtk_box_pack_end (GTK_BOX(mm->hbox), mm->item_total, FALSE, FALSE, 0);
     gtk_box_pack_end (GTK_BOX(mm), GTK_WIDGET(mm->scrolled), TRUE, TRUE, 0);
 
 
     if (PangoFont)
-    	  pango_font_description_free (PangoFont);
+	  pango_font_description_free (PangoFont);
 }
 
 static void
 moko_set_label_content(GtkLabel *label, const char *content)
 {
     if (label)
-    	  gtk_label_set_text (label, content);
+	  gtk_label_set_text (label, content);
 }
 
 /**
@@ -173,7 +173,7 @@ moko_set_label_content(GtkLabel *label, const char *content)
 *@return Bool
 */
 static gboolean
-moko_fill_model(GtkListStore *store, const char* icon_path, 
+moko_fill_model(GtkListStore *store, const char* icon_path,
 		const char* icon_name, MokoDesktopItem *item)
 {
     if (!icon_path && !icon_name)
@@ -195,14 +195,14 @@ moko_fill_model(GtkListStore *store, const char* icon_path,
 
 /**
  * moko_main_menu_new:
- * 
+ *
  * Creates a new #MokoMainMenu widget
- * 
+ *
  * Return value: A newly created #MokoMainMenu widget
  *
  **/
-GtkWidget* 
-moko_main_menu_new () 
+GtkWidget*
+moko_main_menu_new ()
 {
     return GTK_WIDGET(g_object_new(moko_main_menu_get_type(), NULL));
 }
@@ -210,13 +210,13 @@ moko_main_menu_new ()
 /**
  * moko_main_menu_clear:
  * @mm #MokoMainMenu instance.
- * 
+ *
  * clear a #MokoMainMenu widget.
- * 
+ *
  **/
-void 
-moko_main_menu_clear(MokoMainMenu *mm) 
-{ 
+void
+moko_main_menu_clear(MokoMainMenu *mm)
+{
     if (mm->top_item)
     {
         /* Free Lists (free .directory and .desktop files) */
@@ -224,7 +224,7 @@ moko_main_menu_clear(MokoMainMenu *mm)
 	/* Free Root item */
 	mokodesktop_item_free(mm->top_item);
     }
-    
+
     if (mm) g_free (mm);
 }
 
@@ -232,11 +232,11 @@ moko_main_menu_clear(MokoMainMenu *mm)
  * moko_main_menu_update_content:
  * @mm #MokoMainMenu.
  * @item #MokoDesktopItem list.
- * 
+ *
  * Reinstall a #MokoMainMenu widget content.
  *
  * Return value: %TRUE if @update successful is selected.
- * 
+ *
  **/
 gboolean
 moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
@@ -245,7 +245,7 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
     gint count = 0;
     char total_item[6];
     //g_debug("mokodesktop: item [%d][%s][%s]\n", item->type, item->name, item->icon_name);
-    
+
 	if (!mm)
         return FALSE;
 	mm->current = item;
@@ -256,39 +256,39 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
 
     if (item->type == ITEM_TYPE_ROOT)
     {
-  	  moko_set_label_content (GTK_LABEL(mm->section_name), "Main Menu");
+	  moko_set_label_content (GTK_LABEL(mm->section_name), "Main Menu");
     }
     else if (item->type == ITEM_TYPE_FOLDER)
     {
       moko_set_label_content (GTK_LABEL(mm->section_name), item->name);
     }
-    else 
-  	return FALSE; // neither ROOT nor FOLDER
+    else
+	return FALSE; // neither ROOT nor FOLDER
 
     if (mm->list_store)
-  	  gtk_list_store_clear (mm->list_store);
+	  gtk_list_store_clear (mm->list_store);
 
     moko_icon_view_refresh (mm->icon_view);
 
     mokodesktop_items_enumerate_siblings(item->item_child, item_new)
-    { 
+    {
         count +=1;
-     
+
         if (access (item_new->icon_name, 0) == 0)
         {
-      	    moko_fill_model(mm->list_store, item_new->icon_name, item_new->name, item_new);
+		    moko_fill_model(mm->list_store, item_new->icon_name, item_new->name, item_new);
         }
-        else 
+        else
         {
             char path[512];
             snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);//FIXME: "PIXMAP_PATH" this path will not find out all icons.
-            
+
 			if (access (path, 0) == 0)
                 moko_fill_model(mm->list_store, path, item_new->name, item_new);
             else
             {
 	            snprintf (path, 512, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
-      	        moko_fill_model(mm->list_store, path, item_new->name, item_new);
+		        moko_fill_model(mm->list_store, path, item_new->name, item_new);
             }
         }
     }
@@ -308,7 +308,7 @@ moko_main_menu_update_content (MokoMainMenu *mm, MokoDesktopItem *item)
  **/
 void
 moko_main_menu_update_item_total_label (MokoMainMenu *mm)
-{  
+{
     gint total = 0, cursor = 0;
     char item_total[6];
 
@@ -316,7 +316,7 @@ moko_main_menu_update_item_total_label (MokoMainMenu *mm)
     cursor = moko_icon_view_get_cursor_positon (mm->icon_view);
 
     if (cursor <0)
-  	return;
+	return;
 
     snprintf (item_total, 6, "%.2d/%.2d", cursor, total);
     moko_set_label_content (GTK_LABEL(mm->item_total), item_total);

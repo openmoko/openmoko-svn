@@ -1,9 +1,9 @@
 /**
  *  @file mainmenu.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 #include "mokoiconview.h"
 #include "mokodesktop.h"
 
-enum { 
+enum {
     PIXBUF_COLUMN,
     TEXT_COLUMN,
     OBJECT_COLUMN,
@@ -49,7 +49,7 @@ G_BEGIN_DECLS
 #define ITME_TOTAL_WIDTH    5
 #define DECORATION_WIDTH    10
 
-#define PIXBUF_WIDTH    120 
+#define PIXBUF_WIDTH    120
 #define PIXBUF_HEIGHT   120
 
 #define SECTION_ALG_X    0.6
@@ -60,9 +60,9 @@ G_BEGIN_DECLS
 #define ITEM_TOTAL_ALG_Y    0.9
 
 /*Font styles*/
-#define FONT_SIZE_SECTION 	12*PANGO_SCALE
-#define FONT_SIZE_ITEM 		11*PANGO_SCALE
-	
+#define FONT_SIZE_SECTION	12*PANGO_SCALE
+#define FONT_SIZE_ITEM		11*PANGO_SCALE
+
 #define MAINMENU_TYPE				(moko_main_menu_get_type())
 #define MAINMENU(obj)				(G_TYPE_CHECK_INSTANCE_CAST ((obj), MAINMENU_TYPE, MokoMainMenu))
 #define MAINMENU_CLASS(klass)		(G_TYPE_CHECK_CLASS_CAST ((klass), MAINMENU_TYPE, MokoMainMenuClass))
@@ -70,8 +70,8 @@ G_BEGIN_DECLS
 #define IS_MAINMENU_CLASS(klass)	(G_TYPE_CHECK_CLASS_CAST ((klass), MAINMENU_TYPE))
 
 
-typedef struct _MokoMainMenu 			MokoMainMenu;
-typedef struct _MokoMainMenuClass 	MokoMainMenuClass;
+typedef struct _MokoMainMenu			MokoMainMenu;
+typedef struct _MokoMainMenuClass	MokoMainMenuClass;
 
 struct _MokoMainMenu {
     GtkVBox vbox;
@@ -92,13 +92,13 @@ struct _MokoMainMenuClass {
     void(*moko_main_menu_function)(MokoMainMenu *mm);
     };
 
-GType 
+GType
 moko_main_menu_get_type (void);
 
 GtkWidget*
 moko_main_menu_new ();
 
-void 
+void
 moko_main_menu_clear (MokoMainMenu *mm);
 
 gboolean

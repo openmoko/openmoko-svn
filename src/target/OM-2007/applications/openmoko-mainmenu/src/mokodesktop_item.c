@@ -10,7 +10,7 @@ mokodesktop_item_new()
   MokoDesktopItem *ditem;
   ditem = malloc(sizeof(MokoDesktopItem));
   memset(ditem, 0, sizeof(MokoDesktopItem));
-  
+
   ditem->type = ITEM_TYPE_UNKNOWN;
 
   return ditem;
@@ -19,10 +19,10 @@ mokodesktop_item_new()
 void
 mokodesktop_item_free(MokoDesktopItem *item)
 {
-  if (item->name)               	free(item->name);
-  if (item->name_extended)      	free(item->name_extended);
-  if (item->comment)            	free(item->comment);
-  if (item->icon_name)         	free(item->icon_name);
+  if (item->name)			free(item->name);
+  if (item->name_extended)	free(item->name_extended);
+  if (item->comment)		free(item->comment);
+  if (item->icon_name)		free(item->icon_name);
 
   free(item);
 }
@@ -57,19 +57,19 @@ mokodesktop_item_folder_contents_free( MokoDesktopItem *top_head_item,
 	       if (item_cur->item_child)
 	            mokodesktop_item_folder_contents_free(top_head_item, item_cur->item_child);
 
-	       mokodesktop_item_free(item_cur); 
+	       mokodesktop_item_free(item_cur);
 	       item_cur = item_tmp;
 	    }
-	    
+
       if ( item != top_head_item)
 	       item->item_child->item_next_sibling = NULL;
     }
-    
+
   // fprintf(stdout, "moko:  free ok!\n");
 }
 
 MokoDesktopItem *
-mokodesktop_item_new_with_params (  const char    *name, 
+mokodesktop_item_new_with_params (  const char    *name,
 			                              const char    *icon_name,
 			                              void          *data,
 			                              int            type)
@@ -83,9 +83,9 @@ mokodesktop_item_new_with_params (  const char    *name,
       if (strlen(icon_name) > 5
 	  && icon_name[strlen(icon_name)-4] != '.'
 	  && icon_name[strlen(icon_name)-5] != '.')
-   	  {
+	  {
 	      ditem->icon_name = malloc(sizeof(char)*(strlen(icon_name)+5));
-	      sprintf(ditem->icon_name, "%s.png", icon_name); 
+	      sprintf(ditem->icon_name, "%s.png", icon_name);
 	    }
       else
 	    {
@@ -114,14 +114,14 @@ mokodesktop_items_append ( MokoDesktopItem *item_head,
 
   item_tmp->item_next_sibling = item;
   item->item_prev_sibling = item_tmp;
-  
+
   item->item_parent = item_head->item_parent;
 
 }
 
 void
 mokodesktop_items_insert_after ( MokoDesktopItem *suffix_item,
-		  	                         MokoDesktopItem *item )
+			                         MokoDesktopItem *item )
 {
   if (!suffix_item->item_next_sibling)
     {
@@ -135,7 +135,7 @@ mokodesktop_items_insert_after ( MokoDesktopItem *suffix_item,
 
   suffix_item->item_next_sibling = item;
 
-  item->item_prev_sibling = suffix_item;  
+  item->item_prev_sibling = suffix_item;
 }
 
 void
@@ -143,13 +143,13 @@ mokodesktop_items_append_to_folder ( MokoDesktopItem  *item_folder,
 				                             MokoDesktopItem  *item )
 {
   if (!item_folder->item_child)
-  	{
-  	   item_folder->item_child = item;
-  	   item_folder->item_child->item_parent = item_folder;
-  	   return;	
-  	} 
-  	
-  	
+	{
+	   item_folder->item_child = item;
+	   item_folder->item_child->item_parent = item_folder;
+	   return;
+	}
+
+
   mokodesktop_items_append (item_folder->item_child, item);
 
 }
@@ -165,7 +165,7 @@ mokodesktop_items_append_to_top_level ( MokoDesktopItem  *top_head_item,
   if (top_level->item_child == NULL)
     top_level->item_child = item;
   else
-    mokodesktop_items_append (top_level->item_child, item); 
+    mokodesktop_items_append (top_level->item_child, item);
 }
 
 void
@@ -230,7 +230,7 @@ mokodesktop_item_get_last_sibling(MokoDesktopItem *item)
 
 
 void
-mokodesktop_item_set_name ( MokoDesktopItem *item, 
+mokodesktop_item_set_name ( MokoDesktopItem *item,
 			                      char            *name)
 {
   if (item->name) free(item->name);
@@ -244,7 +244,7 @@ mokodesktop_item_get_name (MokoDesktopItem *item)
 }
 
 void
-mokodesktop_item_set_comment ( MokoDesktopItem *item, 
+mokodesktop_item_set_comment ( MokoDesktopItem *item,
 			                         char            *comment)
 {
   if (item->comment) free(item->comment);
@@ -259,7 +259,7 @@ mokodesktop_item_get_comment (MokoDesktopItem *item)
 
 
 void
-mokodesktop_item_set_extended_name ( MokoDesktopItem *item, 
+mokodesktop_item_set_extended_name ( MokoDesktopItem *item,
 				                             char            *name)
 {
   if (item->name_extended) free(item->name_extended);
@@ -273,10 +273,10 @@ mokodesktop_item_get_extended_name (MokoDesktopItem *item)
 }
 
 void
-mokodesktop_item_set_user_data ( MokoDesktopItem *item, 
+mokodesktop_item_set_user_data ( MokoDesktopItem *item,
 			                         void          *data)
 {
-  if (item->data) free(item->data); 
+  if (item->data) free(item->data);
   item->data = data;
 }
 
@@ -287,7 +287,7 @@ mokodesktop_item_get_user_data (MokoDesktopItem *item)
 }
 
 void
-mokodesktop_item_set_activate_callback (MokoDesktopItem *item, 
+mokodesktop_item_set_activate_callback (MokoDesktopItem *item,
 				                                MokoDesktopCB    activate_cb)
 {
   item->activate_cb = activate_cb;
@@ -309,13 +309,13 @@ mokodesktop_item_get_type (MokoDesktopItem *item)
 void
 mokodesktop_item_folder_activate_cb(void *data1, void *data2)
 {
-  MokoDesktopItem *top_head_item = (MokoDesktopItem *)data1; 
-  MokoDesktopItem *item = (MokoDesktopItem *)data2; 
+  MokoDesktopItem *top_head_item = (MokoDesktopItem *)data1;
+  MokoDesktopItem *item = (MokoDesktopItem *)data2;
 }
 
 void
 mbdesktop_item_folder_prev_activate_cb(void *data1, void *data2)
 {
-  MokoDesktopItem *top_head_item = (MokoDesktopItem *)data1; 
-  MokoDesktopItem *item = (MokoDesktopItem *)data2; 
+  MokoDesktopItem *top_head_item = (MokoDesktopItem *)data1;
+  MokoDesktopItem *item = (MokoDesktopItem *)data2;
 }

@@ -22,14 +22,14 @@ get_folder_from_name ( MokoDesktopItem *top_head_item, char *name )
   item_top = mokodesktop_get_top_level_folder(top_head_item);
 
   if (!strcasecmp(name, "root"))
-    return item_top; 
+    return item_top;
 
   mokodesktop_items_enumerate_siblings(mokodesktop_item_get_child(item_top), item)
     {
       if (!strcmp(name, mokodesktop_item_get_name (item)))
 	    return item;
     }
-  
+
   return NULL;
 }
 
@@ -37,9 +37,9 @@ static MokoDesktopItem *
 match_folder ( MokoDesktopItem *top_head_item, char *category )
 {
   MokoDesktopItem *item, *item_fallback = NULL, *item_top;
-  char          *match_str;  
+  char          *match_str;
 
-  if (category && strstr(category, "Action")) 
+  if (category && strstr(category, "Action"))
     return NULL;
 
   item_top = mokodesktop_get_top_level_folder(top_head_item);
@@ -75,12 +75,12 @@ match_folder ( MokoDesktopItem *top_head_item, char *category )
 	      }
 	    }
     }
-  return item_fallback; 
+  return item_fallback;
 }
 
 
 static void
-add_a_dotdesktop_item (MokoDesktopItem  *top_head_item, 
+add_a_dotdesktop_item (MokoDesktopItem  *top_head_item,
 		       MBDotDesktop     *dd,
 		       MokoDesktopItem  *folder)
 {
@@ -93,8 +93,8 @@ add_a_dotdesktop_item (MokoDesktopItem  *top_head_item,
     found_folder_item = match_folder( top_head_item, mb_dotdesktop_get(dd, "Categories"));
 
   if ( found_folder_item == NULL) return;
-      
-  item_new = mokodesktop_item_new_with_params( 
+
+  item_new = mokodesktop_item_new_with_params(
 					     mb_dotdesktop_get(dd, "Name"),
 					     mb_dotdesktop_get(dd, "Icon"),
 					     (void *)mb_dotdesktop_get_exec(dd),
@@ -102,44 +102,44 @@ add_a_dotdesktop_item (MokoDesktopItem  *top_head_item,
 					     );
   if (item_new == NULL ) return;
 
-  mokodesktop_item_set_activate_callback (item_new, item_activate_cb); 
+  mokodesktop_item_set_activate_callback (item_new, item_activate_cb);
 
   item_before = mokodesktop_item_get_child (found_folder_item);
 
 
   if(!item_before)
   {
-  	
-  	mokodesktop_items_append_to_folder( found_folder_item, item_new);
-  	have_attached = True;
+
+	mokodesktop_items_append_to_folder( found_folder_item, item_new);
+	have_attached = True;
   }
-  else 
+  else
   {
 
      do
-       {
+		{
          MokoDesktopItem *item_next = NULL;
          if ((item_next = mokodesktop_item_get_next_sibling(item_before)) != NULL)
-       	{
-      		
-   	      if (item_next->type == ITEM_TYPE_FOLDER
-   	          || item_next->type == ITEM_TYPE_PREVIOUS)
-   	          continue;
-   	  
-   	      if ( (strcasecmp(item_before->name, item_new->name) < 0
-   		       || item_before->type == ITEM_TYPE_FOLDER
-   		       || item_before->type == ITEM_TYPE_PREVIOUS )
-   	         && strcasecmp(item_next->name, item_new->name) > 0)
-   	      {
-   	        have_attached = True;
-   	        mokodesktop_items_insert_after (item_before, item_new);
-   	        break;
-   	      }
-   	    }
+		{
+
+	      if (item_next->type == ITEM_TYPE_FOLDER
+	          || item_next->type == ITEM_TYPE_PREVIOUS)
+	          continue;
+
+	      if ( (strcasecmp(item_before->name, item_new->name) < 0
+		       || item_before->type == ITEM_TYPE_FOLDER
+		       || item_before->type == ITEM_TYPE_PREVIOUS )
+	         && strcasecmp(item_next->name, item_new->name) > 0)
+	      {
+	        have_attached = True;
+	        mokodesktop_items_insert_after (item_before, item_new);
+	        break;
+	      }
+	    }
        }
      while ((item_before = mokodesktop_item_get_next_sibling(item_before)) != NULL);
    }
-   
+
 
   if (!have_attached)
     {
@@ -164,8 +164,8 @@ mokodesktop_folder_create ( MokoDesktopItem *top_head_item,
 				      ITEM_TYPE_FOLDER
 				      );
 
-  mokodesktop_item_set_activate_callback (item_folder, 
-					mokodesktop_item_folder_activate_cb); 
+  mokodesktop_item_set_activate_callback (item_folder,
+					mokodesktop_item_folder_activate_cb);
 
   return item_folder;
 }
@@ -195,16 +195,16 @@ mokodesktop_init ( MokoDesktopItem *top_head_item,
   char                     app_paths[APP_PATHS_N][256];
   struct dirent          **namelist;
 /*
-	top_head_item  = mokodesktop_item_new_with_params ("Home", 
+	top_head_item  = mokodesktop_item_new_with_params ("Home",
 						       NULL,
 						       NULL,
 						       ITEM_TYPE_ROOT );
 */
 	ItemTypeDotDesktop  = type_reg_cnt;
-  
-  snprintf( vfolder_path_root, 512, "%s/.matchbox/vfolders/Root.directory", 
+
+  snprintf( vfolder_path_root, 512, "%s/.matchbox/vfolders/Root.directory",
 	    mb_util_get_homedir());
-  snprintf( vfolder_path, 512, "%s/.matchbox/vfolders", 
+  snprintf( vfolder_path, 512, "%s/.matchbox/vfolders",
 	    mb_util_get_homedir());
 
  if (stat(vfolder_path_root, &stat_info))
@@ -212,24 +212,24 @@ mokodesktop_init ( MokoDesktopItem *top_head_item,
       snprintf(vfolder_path_root, 512, VFOLDERDIR"/vfolders/Root.directory");
       snprintf(vfolder_path, 512, VFOLDERDIR "/vfolders" );
     }
- 
+
 fprintf(stdout, "moko: vfolder_path_root=[%s]\n", vfolder_path_root);
 fprintf(stdout, "moko: vfolder_path=[%s]\n", vfolder_path);
-  
+
   dd = mb_dotdesktop_new_from_file(vfolder_path_root);
 
-  if (!dd) 
-    { 
-      fprintf( stderr, "mokodesktop: cant open %s\n", vfolder_path ); 
-      return -1; 
+  if (!dd)
+    {
+      fprintf( stderr, "mokodesktop: cant open %s\n", vfolder_path );
+      return -1;
     }
 
   RootMatchStr = mb_dotdesktop_get(dd, "Match");
 
 fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
-  
-  mokodesktop_item_set_name (top_head_item, 
-			   mb_dotdesktop_get(dd, "Name"));  
+
+  mokodesktop_item_set_name (top_head_item,
+			   mb_dotdesktop_get(dd, "Name"));
   ddfolders = mb_dot_desktop_folders_new(vfolder_path);
 
   mb_dot_desktop_folders_enumerate(ddfolders, ddentry)
@@ -239,15 +239,15 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
 					   mb_dot_desktop_folder_entry_get_name(ddentry),
 					   mb_dot_desktop_folder_entry_get_icon(ddentry));
 
-      mokodesktop_item_set_user_data (item_new, 
+      mokodesktop_item_set_user_data (item_new,
 				    (void *)mb_dot_desktop_folder_entry_get_match(ddentry));
 
       mokodesktop_item_set_type (item_new, ItemTypeDotDesktop);
 
       mokodesktop_items_append_to_top_level (top_head_item, item_new);
     }
-  
-  
+
+
   snprintf(app_paths[0], 256, "%s/applications", DATADIR);
   snprintf(app_paths[1], 256, "/usr/share/applications");
   snprintf(app_paths[2], 256, "/usr/local/share/applications");
@@ -271,16 +271,16 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
 	       fprintf(stderr, "mokodesktop: failed to open %s\n", app_paths[i]);
 	       continue;
 	    }
-  
+
       chdir(app_paths[i]);
 
       //n = scandir(".", &namelist, 0, alphasort);
       n = scandir(".", &namelist, 0, NULL);
 
-      
+
       while (j < n && n > 0)
 	    {
-    	  if (namelist[j]->d_name[0] ==  '.')
+		  if (namelist[j]->d_name[0] ==  '.')
 	         goto end;
 
 	      if (strcmp(namelist[j]->d_name+strlen(namelist[j]->d_name)-8,".desktop"))
@@ -302,7 +302,7 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
 		              char             full_path[512];
 		              char          *folder_name = NULL;
 
-		      	      add_a_dotdesktop_item (top_head_item, dd, folder);
+				      add_a_dotdesktop_item (top_head_item, dd, folder);
 		          }
 		          mb_dotdesktop_free(dd);
 		       }
@@ -311,11 +311,11 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
 	         free(namelist[j]);
 	         ++j;
 	    }
-      
+
       closedir(dp);
       free(namelist);
     }
-    
+
   chdir(orig_wd);
 
   return 1;

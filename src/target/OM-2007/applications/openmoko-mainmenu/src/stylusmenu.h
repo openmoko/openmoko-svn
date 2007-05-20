@@ -33,6 +33,6 @@ MokoStylusMenu *moko_stylus_menu_new ();
 void moko_stylus_menu_build (GtkMenu *menu, MokoDesktopItem *dd_item);
 
 void moko_menu_position_cb (GtkMenu *menu, int *x, int *y, gboolean *push_in, GtkWidget  *button);
- 
+
 G_END_DECLS
 #endif /*_MOKO_STYLUS_MAIN_MENU_H*/

@@ -1,9 +1,9 @@
 /**
  *  @file fingermenu.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@ static void moko_finger_menu_init(MokoFingerMenu *self);
 
 static void moko_finger_menu_class_init(MokoFingerMenuClass *self);
 
-GType 
+GType
 moko_finger_menu_get_type (void) /* Typechecking */
 {
     static GType menu_type = 0;
@@ -52,7 +52,7 @@ moko_finger_menu_get_type (void) /* Typechecking */
     return menu_type;
 }
 
-void 
+void
 moko_finger_menu_class_init(MokoFingerMenuClass *self)
 {
 
@@ -60,7 +60,7 @@ moko_finger_menu_class_init(MokoFingerMenuClass *self)
 
 void
 moko_finger_menu_init(MokoFingerMenu *self)
-{ 
+{
   self->app = MOKO_APPLICATION(moko_application_get_instance());
   g_set_application_name( "OpenMoko Main Menu" );
 
@@ -93,8 +93,8 @@ void
 moko_finger_menu_show (MokoFingerMenu *self)
 {
   if (!self)
-   	return;
-    
+	return;
+
   gtk_widget_show_all (GTK_WIDGET(self->window));
   gtk_widget_show_all (GTK_WIDGET(self->mm));
 
@@ -120,12 +120,12 @@ moko_finger_menu_build (MokoFingerMenu *self, MokoDesktopItem *item)
 {
   if (!self)
     return;
-  
+
   self->mm->top_item = item;
   moko_main_menu_update_content (self->mm, item);
 }
 
-void 
+void
 moko_finger_menu_update_content (MokoFingerMenu *self, MokoDesktopItem *item)
 {
   if (!self || !item)
@@ -133,7 +133,7 @@ moko_finger_menu_update_content (MokoFingerMenu *self, MokoDesktopItem *item)
   moko_main_menu_update_content (self->mm, item);
 }
 
-MokoDesktopItem * 
+MokoDesktopItem *
 moko_finger_menu_get_current_item (MokoFingerMenu *self)
 {
   if (!self->mm->current)
@@ -142,7 +142,7 @@ moko_finger_menu_get_current_item (MokoFingerMenu *self)
     return self->mm->current;
 }
 
-void 
+void
 moko_finger_menu_set_current_item (MokoFingerMenu *self, MokoDesktopItem *item)
 {
   if(!self || !item)
@@ -150,7 +150,7 @@ moko_finger_menu_set_current_item (MokoFingerMenu *self, MokoDesktopItem *item)
   self->mm->current = item;
 }
 
-void 
+void
 moko_finger_menu_move_cursor_up(MokoFingerMenu *self)
 {
   if (!self)
@@ -166,7 +166,7 @@ moko_finger_menu_move_cursor_down(MokoFingerMenu *self)
   moko_icon_view_move_cursor_line_down (self->mm->icon_view);
 }
 
-void 
+void
 moko_finger_menu_set_app_history(MokoFingerMenu *self, GdkPixbuf *pixbuf, MokoDesktopItem *item)
 {
   if (!self || !pixbuf || !item)

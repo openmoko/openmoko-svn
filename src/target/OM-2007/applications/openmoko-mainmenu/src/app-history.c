@@ -1,9 +1,9 @@
 /**
  *  @file app-history.c
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,13 +24,13 @@
 
 static gint current = 0;
 
-static void 
+static void
 pointer_check()
 {
     if (current < MAX_RECORD_APP )
-    	return;
+		return;
     else
-    	current = 0;
+		current = 0;
 }
 
 MokoAppHistory *
@@ -49,7 +49,7 @@ moko_app_history_init (MokoFingerToolBox *toolbox)
 
 	for (i; i<MAX_RECORD_APP; i++)
 	{
-    	self->btn[i] = moko_finger_tool_box_add_button_without_label (toolbox);
+		self->btn[i] = moko_finger_tool_box_add_button_without_label (toolbox);
         g_signal_connect( G_OBJECT(self->btn[i]), "clicked", G_CALLBACK(moko_tool_box_btn_clicked_cb), self);
         gtk_widget_show (self->btn[i]);
 		self->item[i] = NULL;

@@ -1,11 +1,11 @@
 /**
  *  @file mokoiconview.h
  *  @brief The Main Menu in the Openmoko
- *  
+ *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
  *  Based on gtkiconview.h by Anders Carlsson <andersca@gnome.org>
- *  
+ *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -32,30 +32,30 @@
 
 G_BEGIN_DECLS
 /*widgets property(s)*/
-#define ICON_HEIGHT 	160
-#define ICON_WIDTH 		160
+#define ICON_HEIGHT		160
+#define ICON_WIDTH		160
 
 #define MOKO_TYPE_ICON_VIEW				(moko_icon_view_get_type ())
 #define MOKO_ICON_VIEW(obj)				(GTK_CHECK_CAST ((obj), MOKO_TYPE_ICON_VIEW, MokoIconView))
 #define MOKO_ICON_VIEW_CLASS(klass)		(GTK_CHECK_CLASS_CAST ((klass), MOKO_TYPE_ICON_VIEW, MokoIconViewClass))
 #define MOKO_IS_ICON_VIEW(obj)				(GTK_CHECK_TYPE ((obj), MOKO_TYPE_ICON_VIEW))
 #define MOKO_IS_ICON_VIEW_CLASS(klass)		(GTK_CHECK_CAST ((klass), MOKO_TYPE_ICON_VIEW))
-#define MOKO_ICON_VIEW_GET_CLASS(obj)    	(GTK_CHECK_CLASS_CAST ((obj), MOKO_TYPE_ICON_VIEW, MokoIconViewClass))
+#define MOKO_ICON_VIEW_GET_CLASS(obj)	(GTK_CHECK_CLASS_CAST ((obj), MOKO_TYPE_ICON_VIEW, MokoIconViewClass))
 
 typedef struct _MokoIconView			MokoIconView;
-typedef struct _MokoIconViewClass      	MokoIconViewClass;
-typedef struct _MokoIconViewPrivate    	MokoIconViewPrivate;
+typedef struct _MokoIconViewClass		MokoIconViewClass;
+typedef struct _MokoIconViewPrivate		MokoIconViewPrivate;
 
-typedef void 
-(* MokoIconViewForeachFunc) (MokoIconView *icon_view, 
+typedef void
+(* MokoIconViewForeachFunc) (MokoIconView *icon_view,
 						GtkTreePath *path, gpointer data);
 
-struct _MokoIconView 
+struct _MokoIconView
 {
   GtkContainer parent;
 
   MokoIconViewPrivate *priv;
-  
+
 };
 
 struct _MokoIconViewClass
@@ -67,7 +67,7 @@ struct _MokoIconViewClass
   void    (* set_scroll_adjustments) (MokoIconView      *icon_view,
 				      GtkAdjustment    *hadjustment,
 				      GtkAdjustment    *vadjustment);
-  
+
   void    (* item_activated)         (MokoIconView      *icon_view,
 				      GtkTreePath      *path);
   void    (* selection_changed)      (MokoIconView      *icon_view);
@@ -86,7 +86,7 @@ struct _MokoIconViewClass
 
 };
 
-GType      
+GType
 moko_icon_view_get_type (void) ;
 
 GtkWidget *
@@ -104,16 +104,16 @@ moko_icon_view_get_model (MokoIconView *icon_view);
 void
 moko_icon_view_set_text_column (MokoIconView *icon_view, gint column);
 
-gint          
+gint
 moko_icon_view_get_text_column (MokoIconView *icon_view);
 
 void
 moko_icon_view_set_markup_column (MokoIconView *icon_view, gint column);
 
-gint 
+gint
 moko_icon_view_get_markup_column (MokoIconView  *icon_view);
 
-void 
+void
 moko_icon_view_set_pixbuf_column (MokoIconView  *icon_view, gint column);
 
 gint
@@ -122,7 +122,7 @@ moko_icon_view_get_pixbuf_column (MokoIconView *icon_view);
 void
 moko_icon_view_set_orientation (MokoIconView *icon_view, GtkOrientation orientation);
 
-GtkOrientation 
+GtkOrientation
 moko_icon_view_get_orientation (MokoIconView *icon_view);
 
 void
@@ -152,7 +152,7 @@ moko_icon_view_get_row_spacing (MokoIconView *icon_view);
 void
 moko_icon_view_set_column_spacing (MokoIconView *icon_view, gint column_spacing);
 
-gint 
+gint
 moko_icon_view_get_column_spacing (MokoIconView *icon_view);
 
 void
@@ -167,10 +167,10 @@ moko_icon_view_set_icon_bg (MokoIconView *icon_view, const gchar *bg_decoration)
 void
 moko_icon_view_set_text_bg (MokoIconView *icon_view, const gchar *bg_layout);
 
-void 
+void
 moko_icon_view_set_decoration_width (MokoIconView *icon_view, gint decr_width);
 
-gint 
+gint
 moko_icon_view_get_decoration_width (MokoIconView *icon_view);
 
 void
@@ -196,16 +196,16 @@ GtkTreePath *
 moko_icon_view_get_path_at_pos (MokoIconView *icon_view, gint x, gint y);
 
 void
-moko_icon_view_selected_foreach (MokoIconView *icon_view, 
+moko_icon_view_selected_foreach (MokoIconView *icon_view,
 					MokoIconViewForeachFunc  func, gpointer data);
 
 void
 moko_icon_view_set_selection_mode (MokoIconView *icon_view, GtkSelectionMode mode);
 
-GtkSelectionMode 
+GtkSelectionMode
 moko_icon_view_get_selection_mode (MokoIconView *icon_view);
 
-void 
+void
 moko_icon_view_select_path (MokoIconView *icon_view, GtkTreePath *path);
 
 void
@@ -226,7 +226,7 @@ moko_icon_view_select_all (MokoIconView *icon_view);
 void
 moko_icon_view_unselect_all (MokoIconView *icon_view);
 
-void 
+void
 moko_icon_view_item_activated (MokoIconView *icon_view, GtkTreePath *path);
 
 void

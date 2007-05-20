@@ -1,0 +1,5 @@
+2007-05-20  Stefan Schmidt <stefan@openmoko.org>
+
+        * src/*.{c,h}:
+
+		Remove tons of trailing whitspaces
