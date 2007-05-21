@@ -1,3 +1,13 @@
+2007-05-21  Daniel Willmann <daniel@totalueberwachung.de>
+
+        * data/icon_app_tasklist.png: Added.
+        * data/icon_app_taskswitch.png: Added.
+				Add the old images for the footer.
+        * data/Makefile.am:
+        * src/footer.c:
+        (footer_init):
+				Show the old images instead of the new ones.
+
 2007-05-18  Daniel Willmann <daniel@totalueberwachung.de>
 
         * data/Makefile.am:

@@ -48,7 +48,7 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_box_pack_start (GTK_BOX (f), GTK_WIDGET(f->LeftEventBox), FALSE, FALSE, BUTTON_PADDING);
     gtk_widget_set_events (GTK_WIDGET (f->LeftEventBox), GDK_BUTTON_PRESS_MASK);
 
-    f->LeftImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_history.png");
+    f->LeftImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_tasklist.png");
     gtk_widget_show (GTK_WIDGET (f->LeftImage));
     gtk_container_add ( GTK_CONTAINER (f->LeftEventBox), f->LeftImage);
 
@@ -84,7 +84,7 @@ static void footer_init (Footer *f) /* Instance Construction */
     gtk_box_pack_end (GTK_BOX (f), GTK_WIDGET(f->RightEventBox), FALSE, FALSE, BUTTON_PADDING);
     gtk_widget_set_events (f->RightEventBox,GDK_BUTTON_PRESS_MASK);
 
-    f->RightImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_toggle.png");
+    f->RightImage = gtk_image_new_from_file (PKGDATADIR"/icon_app_taskswitch.png");
     gtk_widget_show (GTK_WIDGET (f->RightImage));
     gtk_container_add (GTK_CONTAINER (f->RightEventBox), f->RightImage);
 }
