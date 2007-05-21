@@ -20,6 +20,7 @@
  */
 
 #include <libmokoui/moko-application.h>
+#include <libmokoui/moko-window.h>
 #include <libmokoui/moko-finger-window.h>
 #include <libmokoui/moko-finger-wheel.h>
 #include <libmokoui/moko-finger-tool-box.h>
@@ -108,7 +109,10 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
     selected_item = moko_icon_view_get_selected_items (iconview);
 
     if (!selected_item)
+    {
+        moko_window_set_status_message (fm->window, "Openmoko main menu");
         return;
+    }
 
     icon_view_model = moko_icon_view_get_model (iconview);
     gtk_tree_model_get_iter (icon_view_model, &iter, selected_item->data);
@@ -116,7 +120,7 @@ moko_icon_view_selection_changed_cb(MokoIconView *iconview,
 
     if (text)
 	{
-		moko_dbus_send_message (text);
+		moko_window_set_status_message (fm->window, text);
 	}
 
 	g_list_foreach (selected_item, (GFunc) gtk_tree_path_free, NULL);

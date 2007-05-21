@@ -23,6 +23,8 @@
 
 
 #include "main.h"
+
+#include <libmokoui/moko-window.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -40,7 +42,7 @@ handle_sigusr1 (int value)
        return;
   //gtk_window_present (GTK_WINDOW(mma->window));
   g_debug ("Show finger menu");
-  moko_dbus_send_message ("Openmoko main menu");
+  moko_window_set_status_message (mma->fm->window, "Openmoko main menu");
 
   signal (SIGUSR1, handle_sigusr1);
 }
