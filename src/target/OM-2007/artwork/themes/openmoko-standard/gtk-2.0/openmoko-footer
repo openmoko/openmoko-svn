@@ -1,4 +1,6 @@
 style "openmoko-footer-progress" {
+    fg[NORMAL]="#ffffff"
+    fg[PRELIGHT]="#000000"
     engine "pixmap" {
         image {
             function                  = BOX
@@ -16,11 +18,11 @@ style "openmoko-footer-progress" {
             stretch                   = TRUE
             orientation               = HORIZONTAL
         }
-}
+    }
 }
 
 style "openmoko-footer" {
-  bg_pixmap[NORMAL] = "openmoko-footer-background.png"
+    bg_pixmap[NORMAL] = "openmoko-footer-background.png"
 }
 
 
