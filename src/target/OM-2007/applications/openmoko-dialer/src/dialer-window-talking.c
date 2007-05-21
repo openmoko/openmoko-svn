@@ -370,6 +370,8 @@ window_talking_init (MokoDialerData * p_dialer_data)
     g_signal_connect ((gpointer) window, "hide",
                       G_CALLBACK (on_window_talking_hide), p_dialer_data);
 
+    /* this is required so that the finger widgets do not cause a crash if show is called later on */
+    gtk_widget_show_all (GTK_WIDGET (window));
 
     gtk_widget_hide (content_dtmf);     //And this line is necessary because dtmf interface & talking interface share the same window.
     //we have to hide it first.
