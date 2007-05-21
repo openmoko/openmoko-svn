@@ -276,6 +276,21 @@ static int lm_tx(i2c_slave *i2c, uint8_t data)
     return 0;
 }
 
+static void lm_save(QEMUFile *f, void *opaque)
+{
+    struct lm4857_s *s = (struct lm4857_s *) opaque;
+    qemu_put_buffer(f, s->regs, sizeof(s->regs));
+    i2c_slave_save(f, &s->i2c);
+}
+
+static int lm_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct lm4857_s *s = (struct lm4857_s *) opaque;
+    qemu_get_buffer(f, s->regs, sizeof(s->regs));
+    i2c_slave_load(f, &s->i2c);
+    return 0;
+}
+
 i2c_slave *lm4857_init(i2c_bus *bus)
 {
     struct lm4857_s *s = (struct lm4857_s *)
@@ -285,6 +300,7 @@ i2c_slave *lm4857_init(i2c_bus *bus)
     s->i2c.recv = lm_rx;
 
     lm_reset(&s->i2c);
+    register_savevm("lm4857", 0, 0, lm_save, lm_load, s);
 
     return &s->i2c;
 }

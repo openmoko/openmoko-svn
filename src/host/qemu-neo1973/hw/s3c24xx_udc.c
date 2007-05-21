@@ -523,6 +523,67 @@ static CPUWriteMemoryFunc *s3c_udc_writefn[] = {
     s3c_udc_write,
 };
 
+static void s3c_udc_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_udc_state_s *s = (struct s3c_udc_state_s *) opaque;
+    int i;
+    qemu_put_8s(f, &s->ep0.csr);
+    qemu_put_8s(f, &s->ep0.maxpacket);
+
+    for (i = 0; i < S3C_EPS - 1; i ++) {
+        qemu_put_8s(f, &s->ep1[i].in_csr[0]);
+        qemu_put_8s(f, &s->ep1[i].in_csr[1]);
+        qemu_put_8s(f, &s->ep1[i].out_csr[0]);
+        qemu_put_8s(f, &s->ep1[i].out_csr[1]);
+        qemu_put_8s(f, &s->ep1[i].maxpacket);
+        qemu_put_8s(f, &s->ep1[i].control);
+        qemu_put_8s(f, &s->ep1[i].unit_cnt);
+        qemu_put_8s(f, &s->ep1[i].fifo_cnt);
+        qemu_put_be32s(f, &s->ep1[i].dma_size);
+    }
+
+    qemu_put_8s(f, &s->index);
+    qemu_put_8s(f, &s->power);
+    qemu_put_8s(f, &s->ep_intr);
+    qemu_put_8s(f, &s->ep_mask);
+    qemu_put_8s(f, &s->usb_intr);
+    qemu_put_8s(f, &s->usb_mask);
+    qemu_put_be16s(f, &s->frame);
+    qemu_put_8s(f, &s->address);
+}
+
+static int s3c_udc_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_udc_state_s *s = (struct s3c_udc_state_s *) opaque;
+    int i;
+    /* TODO: Make it look more like a disconnect */
+    qemu_put_8s(f, &s->ep0.csr);
+    qemu_put_8s(f, &s->ep0.maxpacket);
+
+    for (i = 0; i < S3C_EPS - 1; i ++) {
+        qemu_put_8s(f, &s->ep1[i].in_csr[0]);
+        qemu_put_8s(f, &s->ep1[i].in_csr[1]);
+        qemu_put_8s(f, &s->ep1[i].out_csr[0]);
+        qemu_put_8s(f, &s->ep1[i].out_csr[1]);
+        qemu_put_8s(f, &s->ep1[i].maxpacket);
+        qemu_put_8s(f, &s->ep1[i].control);
+        qemu_put_8s(f, &s->ep1[i].unit_cnt);
+        qemu_put_8s(f, &s->ep1[i].fifo_cnt);
+        qemu_put_be32s(f, &s->ep1[i].dma_size);
+    }
+
+    qemu_put_8s(f, &s->index);
+    qemu_put_8s(f, &s->power);
+    qemu_put_8s(f, &s->ep_intr);
+    qemu_put_8s(f, &s->ep_mask);
+    qemu_put_8s(f, &s->usb_intr);
+    qemu_put_8s(f, &s->usb_mask);
+    qemu_put_be16s(f, &s->frame);
+    qemu_put_8s(f, &s->address);
+
+    return 0;
+}
+
 static int s3c_udc_handle_packet(USBDevice *dev, USBPacket *p)
 {
     struct s3c_udc_state_s *s = (struct s3c_udc_state_s *) dev->opaque;
@@ -689,6 +750,8 @@ struct s3c_udc_state_s *s3c_udc_init(target_phys_addr_t base,
     iomemtype = cpu_register_io_memory(0, s3c_udc_readfn,
                     s3c_udc_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_udc", 0, 0, s3c_udc_save, s3c_udc_load, s);
 
     qemu_register_usb_gadget(&s->dev);
 

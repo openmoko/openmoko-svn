@@ -287,6 +287,34 @@ static CPUWriteMemoryFunc *s3c_pic_writefn[] = {
     s3c_pic_write,
 };
 
+static void s3c_pic_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_pic_state_s *s = (struct s3c_pic_state_s *) opaque;
+    qemu_put_be32s(f, &s->srcpnd);
+    qemu_put_be32s(f, &s->intpnd);
+    qemu_put_be32s(f, &s->intmsk);
+    qemu_put_be32s(f, &s->intmod);
+    qemu_put_be32s(f, &s->priority);
+    qemu_put_be32s(f, &s->subsrcpnd);
+    qemu_put_be32s(f, &s->intsubmsk);
+    qemu_put_be32(f, s->intoffset);
+}
+
+static int s3c_pic_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_pic_state_s *s = (struct s3c_pic_state_s *) opaque;
+    qemu_get_be32s(f, &s->srcpnd);
+    qemu_get_be32s(f, &s->intpnd);
+    qemu_get_be32s(f, &s->intmsk);
+    qemu_get_be32s(f, &s->intmod);
+    qemu_get_be32s(f, &s->priority);
+    qemu_get_be32s(f, &s->subsrcpnd);
+    qemu_get_be32s(f, &s->intsubmsk);
+    s->intoffset = qemu_get_be32(f);
+    s3c_pic_update(s);
+    return 0;
+}
+
 struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base,
                 qemu_irq *arm_pic)
 {
@@ -303,6 +331,8 @@ struct s3c_pic_state_s *s3c_pic_init(target_phys_addr_t base,
     iomemtype = cpu_register_io_memory(0, s3c_pic_readfn,
                     s3c_pic_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_pic", 0, 0, s3c_pic_save, s3c_pic_load, s);
 
     return s;
 }
@@ -385,6 +415,23 @@ static CPUWriteMemoryFunc *s3c_mc_writefn[] = {
     s3c_mc_write,
     s3c_mc_write,
 };
+
+static void s3c_mc_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
+    int i;
+    for (i = 0; i < 13; i ++)
+        qemu_put_be32s(f, &s->mc_regs[i]);
+}
+
+static int s3c_mc_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
+    int i;
+    for (i = 0; i < 13; i ++)
+        qemu_get_be32s(f, &s->mc_regs[i]);
+    return 0;
+}
 
 /* NAND Flash controller */
 #define S3C_NFCONF	0x00	/* NAND Flash Configuration register */
@@ -504,6 +551,27 @@ static CPUWriteMemoryFunc *s3c_nand_writefn[] = {
     s3c_nand_write,
 };
 
+static void s3c_nand_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
+    qemu_put_be16s(f, &s->nfconf);
+    qemu_put_8s(f, &s->nfcmd);
+    qemu_put_8s(f, &s->nfaddr);
+    qemu_put_be32(f, s->nfwp);
+    ecc_put(f, &s->nfecc);
+}
+
+static int s3c_nand_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
+    qemu_get_be16s(f, &s->nfconf);
+    qemu_get_8s(f, &s->nfcmd);
+    qemu_get_8s(f, &s->nfaddr);
+    s->nfwp = qemu_get_be32(f);
+    ecc_get(f, &s->nfecc);
+    return 0;
+}
+
 /* Clock & power management */
 #define S3C_LOCKTIME	0x00	/* PLL Lock Time Count register */
 #define S3C_MPLLCON	0x04	/* MPLL Configuration register */
@@ -587,6 +655,23 @@ static CPUWriteMemoryFunc *s3c_clkpwr_writefn[] = {
     s3c_clkpwr_write,
     s3c_clkpwr_write,
 };
+
+static void s3c_clkpwr_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
+    int i;
+    for (i = 0; i < 6; i ++)
+        qemu_put_be32s(f, &s->clkpwr_regs[i]);
+}
+
+static int s3c_clkpwr_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_state_s *s = (struct s3c_state_s *) opaque;
+    int i;
+    for (i = 0; i < 6; i ++)
+        qemu_get_be32s(f, &s->clkpwr_regs[i]);
+    return 0;
+}
 
 /* DMA controller */
 #define S3C_DMA_CH_N	4
@@ -792,6 +877,43 @@ static CPUWriteMemoryFunc *s3c_dma_writefn[] = {
     s3c_dma_write,
 };
 
+static void s3c_dma_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_dma_state_s *s = (struct s3c_dma_state_s *) opaque;
+    int i;
+    for (i = 0; i < S3C_DMA_CH_N; i ++) {
+        qemu_put_be32(f, s->ch[i].curr_tc);
+        qemu_put_be32(f, s->ch[i].req);
+        qemu_put_be32s(f, &s->ch[i].con);
+        qemu_put_be32s(f, &s->ch[i].isrc);
+        qemu_put_be32s(f, &s->ch[i].isrcc);
+        qemu_put_be32s(f, &s->ch[i].idst);
+        qemu_put_be32s(f, &s->ch[i].idstc);
+        qemu_put_be32s(f, &s->ch[i].csrc);
+        qemu_put_be32s(f, &s->ch[i].cdst);
+        qemu_put_be32s(f, &s->ch[i].mask);
+    }
+}
+
+static int s3c_dma_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_dma_state_s *s = (struct s3c_dma_state_s *) opaque;
+    int i;
+    for (i = 0; i < S3C_DMA_CH_N; i ++) {
+        s->ch[i].curr_tc = qemu_get_be32(f);
+        s->ch[i].req = qemu_get_be32(f);
+        qemu_get_be32s(f, &s->ch[i].con);
+        qemu_get_be32s(f, &s->ch[i].isrc);
+        qemu_get_be32s(f, &s->ch[i].isrcc);
+        qemu_get_be32s(f, &s->ch[i].idst);
+        qemu_get_be32s(f, &s->ch[i].idstc);
+        qemu_get_be32s(f, &s->ch[i].csrc);
+        qemu_get_be32s(f, &s->ch[i].cdst);
+        qemu_get_be32s(f, &s->ch[i].mask);
+    }
+    return 0;
+}
+
 struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic)
 {
     int iomemtype;
@@ -810,6 +932,8 @@ struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic)
     iomemtype = cpu_register_io_memory(0, s3c_dma_readfn,
                     s3c_dma_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_dma", 0, 0, s3c_dma_save, s3c_dma_load, s);
 
     return s;
 }
@@ -1047,6 +1171,52 @@ static CPUWriteMemoryFunc *s3c_timers_writefn[] = {
     s3c_timers_write,
 };
 
+static void s3c_timers_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_timers_state_s *s = (struct s3c_timers_state_s *) opaque;
+    int i;
+    for (i = 0; i < 5; i ++) {
+        qemu_put_be32(f, s->timer[i].running);
+        s3c_timers_stop(s, i);
+        qemu_put_be32s(f, &s->timer[i].divider);
+        qemu_put_be16s(f, &s->timer[i].count);
+        qemu_put_be64s(f, &s->timer[i].reload);
+    }
+
+    for (i = 0; i < 4; i ++)
+        qemu_put_be16s(f, &s->compareb[i]);
+    for (i = 0; i < 5; i ++)
+        qemu_put_be16s(f, &s->countb[i]);
+    for (i = 0; i < 2; i ++)
+        qemu_put_be32s(f, &s->config[i]);
+    qemu_put_be32s(f, &s->control);
+}
+
+static int s3c_timers_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_timers_state_s *s = (struct s3c_timers_state_s *) opaque;
+    int i;
+    for (i = 0; i < 5; i ++) {
+        s->timer[i].running = qemu_get_be32(f);
+        qemu_get_be32s(f, &s->timer[i].divider);
+        qemu_get_be16s(f, &s->timer[i].count);
+        qemu_get_be64s(f, &s->timer[i].reload);
+    }
+
+    for (i = 0; i < 4; i ++)
+        qemu_get_be16s(f, &s->compareb[i]);
+    for (i = 0; i < 5; i ++)
+        qemu_get_be16s(f, &s->countb[i]);
+    for (i = 0; i < 2; i ++)
+        qemu_get_be32s(f, &s->config[i]);
+    qemu_get_be32s(f, &s->control);
+
+    for (i = 0; i < 5; i ++)
+        s3c_timers_start(s, i);
+
+    return 0;
+}
+
 struct s3c_timers_state_s *s3c_timers_init(target_phys_addr_t base,
                 qemu_irq *pic, qemu_irq *dma)
 {
@@ -1071,6 +1241,9 @@ struct s3c_timers_state_s *s3c_timers_init(target_phys_addr_t base,
     iomemtype = cpu_register_io_memory(0, s3c_timers_readfn,
                     s3c_timers_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_timers", 0, 0,
+                    s3c_timers_save, s3c_timers_load, s);
 
     return s;
 }
@@ -1367,6 +1540,38 @@ static CPUWriteMemoryFunc *s3c_uart_writefn[] = {
     s3c_uart_write,
 };
 
+static void s3c_uart_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_uart_state_s *s = (struct s3c_uart_state_s *) opaque;
+    qemu_put_8s(f, &s->data);
+    qemu_put_buffer(f, s->rxfifo, sizeof(s->rxfifo));
+    qemu_put_be32(f, s->rxstart);
+    qemu_put_be32(f, s->rxlen);
+    qemu_put_8s(f, &s->lcontrol);
+    qemu_put_8s(f, &s->fcontrol);
+    qemu_put_8s(f, &s->mcontrol);
+    qemu_put_be16s(f, &s->control);
+    qemu_put_be16s(f, &s->brdiv);
+    qemu_put_8s(f, &s->errstat);
+}
+
+static int s3c_uart_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_uart_state_s *s = (struct s3c_uart_state_s *) opaque;
+    qemu_get_8s(f, &s->data);
+    qemu_get_buffer(f, s->rxfifo, sizeof(s->rxfifo));
+    s->rxstart = qemu_get_be32(f);
+    s->rxlen = qemu_get_be32(f);
+    qemu_get_8s(f, &s->lcontrol);
+    qemu_get_8s(f, &s->fcontrol);
+    qemu_get_8s(f, &s->mcontrol);
+    qemu_get_be16s(f, &s->control);
+    qemu_get_be16s(f, &s->brdiv);
+    qemu_get_8s(f, &s->errstat);
+
+    return 0;
+}
+
 struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
                 qemu_irq *irqs, qemu_irq *dma)
 {
@@ -1383,6 +1588,8 @@ struct s3c_uart_state_s *s3c_uart_init(target_phys_addr_t base,
     iomemtype = cpu_register_io_memory(0, s3c_uart_readfn,
                     s3c_uart_writefn, s);
     cpu_register_physical_memory(s->base, 0xfff, iomemtype);
+
+    register_savevm("s3c24xx_uart", base, 0, s3c_uart_save, s3c_uart_load, s);
 
     return s;
 }
@@ -1430,7 +1637,7 @@ static void s3c_adc_reset(struct s3c_adc_state_s *s)
 
 static void s3c_adc_start(struct s3c_adc_state_s *s)
 {
-    if (!s->enable && (s->ts & 7) == 0)
+    if (!s->enable || (s->ts & 7) == 0)
         return;
     s->control &= ~(1 << 15);
     s->in_idx = (s->control >> 3) & 7;
@@ -1547,6 +1754,45 @@ static CPUWriteMemoryFunc *s3c_adc_writefn[] = {
     s3c_adc_write,
 };
 
+static void s3c_adc_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_adc_state_s *s = (struct s3c_adc_state_s *) opaque;
+    int i;
+    qemu_put_be32(f, s->enable);
+    for (i = 0; i < 8; i ++)
+        qemu_put_be32(f, s->input[i]);
+    qemu_put_be32(f, s->in_idx);
+    qemu_put_be32(f, s->noise);
+
+    qemu_put_be16s(f, &s->control);
+    qemu_put_be16s(f, &s->ts);
+    qemu_put_be16s(f, &s->delay);
+    qemu_put_be16s(f, &s->xdata);
+    qemu_put_be16s(f, &s->ydata);
+}
+
+static int s3c_adc_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_adc_state_s *s = (struct s3c_adc_state_s *) opaque;
+    int i;
+    s->enable = qemu_get_be32(f);
+    for (i = 0; i < 8; i ++)
+        s->input[i] = qemu_get_be32(f);
+    s->in_idx = qemu_get_be32(f);
+    s->noise = qemu_get_be32(f);
+
+    qemu_get_be16s(f, &s->control);
+    qemu_get_be16s(f, &s->ts);
+    qemu_get_be16s(f, &s->delay);
+    qemu_get_be16s(f, &s->xdata);
+    qemu_get_be16s(f, &s->ydata);
+
+    if (s->enable && (s->ts & 7) && !(s->control & (1 << 15)))
+        s3c_adc_start(s);
+
+    return 0;
+}
+
 struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
                 qemu_irq tcirq)
 {
@@ -1569,6 +1815,8 @@ struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
     /* We want absolute coordinates */
     qemu_add_mouse_event_handler(s3c_adc_event, s, 1,
                     "QEMU S3C2410-driven Touchscreen");
+
+    register_savevm("s3c24xx_adc", 0, 0, s3c_adc_save, s3c_adc_load, s);
 
     return s;
 }
@@ -1769,6 +2017,37 @@ static CPUWriteMemoryFunc *s3c_i2c_writefn[] = {
     s3c_i2c_write,
 };
 
+static void s3c_i2c_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) opaque;
+    qemu_put_8s(f, &s->control);
+    qemu_put_8s(f, &s->status);
+    qemu_put_8s(f, &s->data);
+    qemu_put_8s(f, &s->addy);
+
+    qemu_put_be32(f, s->busy);
+    qemu_put_be32(f, s->newstart);
+
+    i2c_bus_save(f, s->bus);
+    i2c_slave_save(f, &s->slave);
+}
+
+static int s3c_i2c_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_i2c_state_s *s = (struct s3c_i2c_state_s *) opaque;
+    qemu_get_8s(f, &s->control);
+    qemu_get_8s(f, &s->status);
+    qemu_get_8s(f, &s->data);
+    qemu_get_8s(f, &s->addy);
+
+    s->busy = qemu_get_be32(f);
+    s->newstart = qemu_get_be32(f);
+
+    i2c_bus_load(f, s->bus);
+    i2c_slave_load(f, &s->slave);
+    return 0;
+}
+
 struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq)
 {
     int iomemtype;
@@ -1787,6 +2066,8 @@ struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq)
     iomemtype = cpu_register_io_memory(0, s3c_i2c_readfn,
                     s3c_i2c_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_i2c", 0, 0, s3c_i2c_save, s3c_i2c_load, s);
 
     return s;
 }
@@ -1950,6 +2231,44 @@ static CPUWriteMemoryFunc *s3c_spi_writefn[] = {
     s3c_spi_write,
 };
 
+static void s3c_spi_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
+    int i;
+    for (i = 0; i < 2; i ++) {
+        qemu_put_8s(f, &s->chan[i].control);
+        qemu_put_8s(f, &s->chan[i].pin);
+        qemu_put_8s(f, &s->chan[i].pre);
+
+        qemu_put_8s(f, &s->chan[i].txbuf);
+        qemu_put_8s(f, &s->chan[i].rxbuf);
+        qemu_put_be32(f, s->chan[i].cs_pin);
+        qemu_put_be32(f, s->chan[i].clk_pin);
+        qemu_put_be32(f, s->chan[i].mosi_pin);
+        qemu_put_be32(f, s->chan[i].bit);
+    }
+}
+
+static int s3c_spi_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
+    int i;
+    for (i = 0; i < 2; i ++) {
+        qemu_get_8s(f, &s->chan[i].control);
+        qemu_get_8s(f, &s->chan[i].pin);
+        qemu_get_8s(f, &s->chan[i].pre);
+
+        qemu_get_8s(f, &s->chan[i].txbuf);
+        qemu_get_8s(f, &s->chan[i].rxbuf);
+        s->chan[i].cs_pin = qemu_get_be32(f);
+        s->chan[i].clk_pin = qemu_get_be32(f);
+        s->chan[i].mosi_pin = qemu_get_be32(f);
+        s->chan[i].bit = qemu_get_be32(f);
+    }
+
+    return 0;
+}
+
 static void s3c_spi_bitbang_cs(void *opaque, int line, int level)
 {
     struct s3c_spi_state_s *s = (struct s3c_spi_state_s *) opaque;
@@ -2050,6 +2369,8 @@ struct s3c_spi_state_s *s3c_spi_init(target_phys_addr_t base,
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
 
     s3c_spi_bitbang_init(s, gpio);
+
+    register_savevm("s3c24xx_spi", 0, 0, s3c_spi_save, s3c_spi_load, s);
 
     return s;
 }
@@ -2192,6 +2513,40 @@ static CPUWriteMemoryFunc *s3c_i2s_writefn[] = {
     s3c_i2s_write,
 };
 
+static void s3c_i2s_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_i2s_state_s *s = (struct s3c_i2s_state_s *) opaque;
+    qemu_put_be16s(f, &s->control);
+    qemu_put_be16s(f, &s->mode);
+    qemu_put_be16s(f, &s->prescaler);
+    qemu_put_be16s(f, &s->fcontrol);
+
+    qemu_put_be32(f, s->tx_en);
+    qemu_put_be32(f, s->rx_en);
+    qemu_put_be32(f, s->tx_len);
+    qemu_put_be32(f, s->rx_len);
+    qemu_put_be16(f, s->buffer);
+    qemu_put_be32(f, s->cycle);
+}
+
+static int s3c_i2s_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_i2s_state_s *s = (struct s3c_i2s_state_s *) opaque;
+    qemu_get_be16s(f, &s->control);
+    qemu_get_be16s(f, &s->mode);
+    qemu_get_be16s(f, &s->prescaler);
+    qemu_get_be16s(f, &s->fcontrol);
+
+    s->tx_en = qemu_get_be32(f);
+    s->rx_en = qemu_get_be32(f);
+    s->tx_len = qemu_get_be32(f);
+    s->rx_len = qemu_get_be32(f);
+    s->buffer = qemu_get_be16(f);
+    s->cycle = qemu_get_be32(f);
+
+    return 0;
+}
+
 static void s3c_i2s_data_req(void *opaque, int tx, int rx)
 {
     struct s3c_i2s_state_s *s = (struct s3c_i2s_state_s *) opaque;
@@ -2215,6 +2570,8 @@ struct s3c_i2s_state_s *s3c_i2s_init(target_phys_addr_t base, qemu_irq *dma)
     iomemtype = cpu_register_io_memory(0, s3c_i2s_readfn,
                     s3c_i2s_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_iis", 0, 0, s3c_i2s_save, s3c_i2s_load, s);
 
     return s;
 }
@@ -2336,6 +2693,30 @@ static CPUWriteMemoryFunc *s3c_wdt_writefn[] = {
     s3c_wdt_write,
 };
 
+static void s3c_wdt_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_wdt_state_s *s = (struct s3c_wdt_state_s *) opaque;
+
+    s3c_wdt_stop(s);
+    qemu_put_be16s(f, &s->control);
+    qemu_put_be16s(f, &s->data);
+    qemu_put_be16s(f, &s->count);
+    qemu_put_be64s(f, &s->timestamp);
+}
+
+static int s3c_wdt_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_wdt_state_s *s = (struct s3c_wdt_state_s *) opaque;
+
+    qemu_get_be16s(f, &s->control);
+    qemu_get_be16s(f, &s->data);
+    qemu_get_be16s(f, &s->count);
+    qemu_get_be64s(f, &s->timestamp);
+    s3c_wdt_start(s);
+
+    return 0;
+}
+
 struct s3c_wdt_state_s *s3c_wdt_init(target_phys_addr_t base, qemu_irq irq)
 {
     int iomemtype;
@@ -2351,6 +2732,8 @@ struct s3c_wdt_state_s *s3c_wdt_init(target_phys_addr_t base, qemu_irq irq)
     iomemtype = cpu_register_io_memory(0, s3c_wdt_readfn,
                     s3c_wdt_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_wdt", 0, 0, s3c_wdt_save, s3c_wdt_load, s);
 
     return s;
 }
@@ -2414,6 +2797,7 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
 
     s->env = cpu_init();
     cpu_arm_set_model(s->env, "arm920t");
+    register_savevm("cpu", 0, 0, cpu_save, cpu_load, s->env);
 
     cpu_register_physical_memory(S3C_RAM_BASE, sdram_size,
                     qemu_ram_alloc(sdram_size) | IO_MEM_RAM);
@@ -2426,6 +2810,7 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
     s3c_mc_reset(s);
     iomemtype = cpu_register_io_memory(0, s3c_mc_readfn, s3c_mc_writefn, s);
     cpu_register_physical_memory(s->mc_base, 0xffffff, iomemtype);
+    register_savevm("s3c24xx_mc", 0, 0, s3c_mc_save, s3c_mc_load, s);
 
     s->pic = s3c_pic_init(0x4a000000, arm_pic_init_cpu(s->env));
     s->irq = s3c_pic_get(s->pic);
@@ -2438,6 +2823,8 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
     iomemtype = cpu_register_io_memory(0, s3c_clkpwr_readfn,
                     s3c_clkpwr_writefn, s);
     cpu_register_physical_memory(s->clkpwr_base, 0xffffff, iomemtype);
+    register_savevm("s3c24xx_clkpwr", 0, 0,
+                    s3c_clkpwr_save, s3c_clkpwr_load, s);
 
     s->lcd = s3c_lcd_init(0x4d000000, ds, s->irq[S3C_PIC_LCD]);
 
@@ -2446,6 +2833,7 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
     iomemtype = cpu_register_io_memory(0, s3c_nand_readfn,
                     s3c_nand_writefn, s);
     cpu_register_physical_memory(s->nand_base, 0xffffff, iomemtype);
+    register_savevm("s3c24xx_nand", 0, 0, s3c_nand_save, s3c_nand_load, s);
 
     for (i = 0; s3c2410_uart[i].base; i ++) {
         s->uart[i] = s3c_uart_init(s3c2410_uart[i].base,

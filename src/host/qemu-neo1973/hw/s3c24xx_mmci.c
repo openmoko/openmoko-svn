@@ -355,6 +355,62 @@ static CPUWriteMemoryFunc *s3c_mmci_writefn[] = {
     s3c_mmci_write,
 };
 
+static void s3c_mmci_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+    qemu_put_be32(f, s->blklen);
+    qemu_put_be32(f, s->blknum);
+    qemu_put_be32(f, s->blklen_cnt);
+    qemu_put_be32(f, s->blknum_cnt);
+    qemu_put_buffer(f, s->fifo, sizeof(s->fifo));
+    qemu_put_be32(f, s->fifolen);
+    qemu_put_be32(f, s->fifostart);
+    qemu_put_be32(f, s->data);
+
+    qemu_put_be32s(f, &s->control);
+    qemu_put_be32s(f, &s->arg);
+    qemu_put_be32s(f, &s->ccontrol);
+    qemu_put_be32s(f, &s->cstatus);
+    qemu_put_be32s(f, &s->dcontrol);
+    qemu_put_be32s(f, &s->dstatus);
+    qemu_put_be32s(f, &s->resp[0]);
+    qemu_put_be32s(f, &s->resp[1]);
+    qemu_put_be32s(f, &s->resp[2]);
+    qemu_put_be32s(f, &s->resp[3]);
+    qemu_put_be16s(f, &s->dtimer);
+    qemu_put_be32s(f, &s->mask);
+    qemu_put_8s(f, &s->prescaler);
+}
+
+static int s3c_mmci_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+    s->blklen = qemu_get_be32(f);
+    s->blknum = qemu_get_be32(f);
+    s->blklen_cnt = qemu_get_be32(f);
+    s->blknum_cnt = qemu_get_be32(f);
+    qemu_get_buffer(f, s->fifo, sizeof(s->fifo));
+    s->fifolen = qemu_get_be32(f);
+    s->fifostart = qemu_get_be32(f);
+    s->data = qemu_get_be32(f);
+
+    qemu_get_be32s(f, &s->control);
+    qemu_get_be32s(f, &s->arg);
+    qemu_get_be32s(f, &s->ccontrol);
+    qemu_get_be32s(f, &s->cstatus);
+    qemu_get_be32s(f, &s->dcontrol);
+    qemu_get_be32s(f, &s->dstatus);
+    qemu_get_be32s(f, &s->resp[0]);
+    qemu_get_be32s(f, &s->resp[1]);
+    qemu_get_be32s(f, &s->resp[2]);
+    qemu_get_be32s(f, &s->resp[3]);
+    qemu_get_be16s(f, &s->dtimer);
+    qemu_get_be32s(f, &s->mask);
+    qemu_get_8s(f, &s->prescaler);
+
+    return 0;
+}
+
 struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
                 qemu_irq irq, qemu_irq *dma)
 {
@@ -371,6 +427,8 @@ struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
     iomemtype = cpu_register_io_memory(0, s3c_mmci_readfn,
                     s3c_mmci_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_mmci", 0, 0, s3c_mmci_save, s3c_mmci_load, s);
 
     /* Instantiate the actual storage */
     s->card = sd_init(sd_bdrv);

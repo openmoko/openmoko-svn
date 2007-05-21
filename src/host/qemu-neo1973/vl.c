@@ -1361,6 +1361,8 @@ static int mux_proc_byte(CharDriverState *chr, MuxDriver *d, int ch)
                 for (i = 0; i < MAX_DISKS; i++) {
                     if (bs_table[i])
                         bdrv_commit(bs_table[i]);
+                    if (mtd_bdrv)
+                        bdrv_commit(mtd_bdrv);
                 }
             }
             break;
@@ -5283,6 +5285,9 @@ static BlockDriverState *get_bs_snapshots(void)
         if (bdrv_can_snapshot(bs))
             goto ok;
     }
+    bs = mtd_bdrv;
+    if (bdrv_can_snapshot(bs))
+        goto ok;
     return NULL;
  ok:
     bs_snapshots = bs;
@@ -5313,9 +5318,9 @@ static int bdrv_snapshot_find(BlockDriverState *bs, QEMUSnapshotInfo *sn_info,
 
 void do_savevm(const char *name)
 {
-    BlockDriverState *bs, *bs1;
+    BlockDriverState *bs;
     QEMUSnapshotInfo sn1, *sn = &sn1, old_sn1, *old_sn = &old_sn1;
-    int must_delete, ret, i;
+    int must_delete, ret;
     BlockDriverInfo bdi1, *bdi = &bdi1;
     QEMUFile *f;
     int saved_vm_running;
@@ -5387,21 +5392,18 @@ void do_savevm(const char *name)
     
     /* create the snapshots */
 
-    for(i = 0; i < MAX_DISKS; i++) {
-        bs1 = bs_table[i];
-        if (bdrv_has_snapshot(bs1)) {
-            if (must_delete) {
-                ret = bdrv_snapshot_delete(bs1, old_sn->id_str);
-                if (ret < 0) {
-                    term_printf("Error while deleting snapshot on '%s'\n",
-                                bdrv_get_device_name(bs1));
-                }
-            }
-            ret = bdrv_snapshot_create(bs1, sn);
+    if (bdrv_has_snapshot(bs)) {
+        if (must_delete) {
+            ret = bdrv_snapshot_delete(bs, old_sn->id_str);
             if (ret < 0) {
-                term_printf("Error while creating snapshot on '%s'\n",
-                            bdrv_get_device_name(bs1));
+                term_printf("Error while deleting snapshot on '%s'\n",
+                            bdrv_get_device_name(bs));
             }
+        }
+        ret = bdrv_snapshot_create(bs, sn);
+        if (ret < 0) {
+            term_printf("Error while creating snapshot on '%s'\n",
+                        bdrv_get_device_name(bs));
         }
     }
 
@@ -5412,10 +5414,10 @@ void do_savevm(const char *name)
 
 void do_loadvm(const char *name)
 {
-    BlockDriverState *bs, *bs1;
+    BlockDriverState *bs;
     BlockDriverInfo bdi1, *bdi = &bdi1;
     QEMUFile *f;
-    int i, ret;
+    int ret;
     int saved_vm_running;
 
     bs = get_bs_snapshots();
@@ -5430,31 +5432,25 @@ void do_loadvm(const char *name)
     saved_vm_running = vm_running;
     vm_stop(0);
 
-    for(i = 0; i <= MAX_DISKS; i++) {
-        bs1 = bs_table[i];
-        if (bdrv_has_snapshot(bs1)) {
-            ret = bdrv_snapshot_goto(bs1, name);
-            if (ret < 0) {
-                if (bs != bs1)
-                    term_printf("Warning: ");
-                switch(ret) {
-                case -ENOTSUP:
-                    term_printf("Snapshots not supported on device '%s'\n",
-                                bdrv_get_device_name(bs1));
-                    break;
-                case -ENOENT:
-                    term_printf("Could not find snapshot '%s' on device '%s'\n",
-                                name, bdrv_get_device_name(bs1));
-                    break;
-                default:
-                    term_printf("Error %d while activating snapshot on '%s'\n",
-                                ret, bdrv_get_device_name(bs1));
-                    break;
-                }
-                /* fatal on snapshot block device */
-                if (bs == bs1)
-                    goto the_end;
+    if (bdrv_has_snapshot(bs)) {
+        ret = bdrv_snapshot_goto(bs, name);
+        if (ret < 0) {
+            switch(ret) {
+            case -ENOTSUP:
+                term_printf("Snapshots not supported on device '%s'\n",
+                            bdrv_get_device_name(bs));
+                break;
+            case -ENOENT:
+                term_printf("Could not find snapshot '%s' on device '%s'\n",
+                            name, bdrv_get_device_name(bs));
+                break;
+            default:
+                term_printf("Error %d while activating snapshot on '%s'\n",
+                            ret, bdrv_get_device_name(bs));
+                break;
             }
+            /* fatal on snapshot block device */
+            goto the_end;
         }
     }
 
@@ -5482,34 +5478,31 @@ void do_loadvm(const char *name)
 
 void do_delvm(const char *name)
 {
-    BlockDriverState *bs, *bs1;
-    int i, ret;
+    BlockDriverState *bs;
+    int ret;
 
     bs = get_bs_snapshots();
     if (!bs) {
         term_printf("No block device supports snapshots\n");
         return;
     }
-    
-    for(i = 0; i <= MAX_DISKS; i++) {
-        bs1 = bs_table[i];
-        if (bdrv_has_snapshot(bs1)) {
-            ret = bdrv_snapshot_delete(bs1, name);
-            if (ret < 0) {
-                if (ret == -ENOTSUP)
-                    term_printf("Snapshots not supported on device '%s'\n",
-                                bdrv_get_device_name(bs1));
-                else
-                    term_printf("Error %d while deleting snapshot on '%s'\n",
-                                ret, bdrv_get_device_name(bs1));
-            }
+  
+    if (bdrv_has_snapshot(bs)) {
+        ret = bdrv_snapshot_delete(bs, name);
+        if (ret < 0) {
+            if (ret == -ENOTSUP)
+                term_printf("Snapshots not supported on device '%s'\n",
+                            bdrv_get_device_name(bs));
+            else
+                term_printf("Error %d while deleting snapshot on '%s'\n",
+                            ret, bdrv_get_device_name(bs));
         }
     }
 }
 
 void do_info_snapshots(void)
 {
-    BlockDriverState *bs, *bs1;
+    BlockDriverState *bs;
     QEMUSnapshotInfo *sn_tab, *sn;
     int nb_sns, i;
     char buf[256];
@@ -5520,13 +5513,8 @@ void do_info_snapshots(void)
         return;
     }
     term_printf("Snapshot devices:");
-    for(i = 0; i <= MAX_DISKS; i++) {
-        bs1 = bs_table[i];
-        if (bdrv_has_snapshot(bs1)) {
-            if (bs == bs1)
-                term_printf(" %s", bdrv_get_device_name(bs1));
-        }
-    }
+    if (bdrv_has_snapshot(bs))
+        term_printf(" %s", bdrv_get_device_name(bs));
     term_printf("\n");
 
     nb_sns = bdrv_snapshot_list(bs, &sn_tab);
@@ -5899,13 +5887,144 @@ int cpu_load(QEMUFile *f, void *opaque, int version_id)
 
 #elif defined(TARGET_ARM)
 
-/* ??? Need to implement these.  */
 void cpu_save(QEMUFile *f, void *opaque)
 {
+    int i;
+    CPUARMState *env = (CPUARMState *)opaque;
+
+    for (i = 0; i < 16; i++) {
+        qemu_put_be32(f, env->regs[i]);
+    }
+    qemu_put_be32(f, cpsr_read(env));
+    qemu_put_be32(f, env->spsr);
+    for (i = 0; i < 6; i++) {
+        qemu_put_be32(f, env->banked_spsr[i]);
+        qemu_put_be32(f, env->banked_r13[i]);
+        qemu_put_be32(f, env->banked_r14[i]);
+    }
+    for (i = 0; i < 5; i++) {
+        qemu_put_be32(f, env->usr_regs[i]);
+        qemu_put_be32(f, env->fiq_regs[i]);
+    }
+    qemu_put_be32(f, env->cp15.c0_cpuid);
+    qemu_put_be32(f, env->cp15.c0_cachetype);
+    qemu_put_be32(f, env->cp15.c1_sys);
+    qemu_put_be32(f, env->cp15.c1_coproc);
+    qemu_put_be32(f, env->cp15.c2_base);
+    qemu_put_be32(f, env->cp15.c2_data);
+    qemu_put_be32(f, env->cp15.c2_insn);
+    qemu_put_be32(f, env->cp15.c3);
+    qemu_put_be32(f, env->cp15.c5_insn);
+    qemu_put_be32(f, env->cp15.c5_data);
+    for (i = 0; i < 8; i++) {
+        qemu_put_be32(f, env->cp15.c6_region[i]);
+    }
+    qemu_put_be32(f, env->cp15.c6_insn);
+    qemu_put_be32(f, env->cp15.c6_data);
+    qemu_put_be32(f, env->cp15.c9_insn);
+    qemu_put_be32(f, env->cp15.c9_data);
+    qemu_put_be32(f, env->cp15.c13_fcse);
+    qemu_put_be32(f, env->cp15.c13_context);
+    qemu_put_be32(f, env->cp15.c15_cpar);
+
+    qemu_put_be32(f, env->features);
+
+    if (arm_feature(env, ARM_FEATURE_VFP)) {
+        for (i = 0;  i < 16; i++) {
+            CPU_DoubleU u;
+            u.d = env->vfp.regs[i];
+            qemu_put_be32(f, u.l.upper);
+            qemu_put_be32(f, u.l.lower);
+        }
+        for (i = 0; i < 16; i++) {
+            qemu_put_be32(f, env->vfp.xregs[i]);
+        }
+
+        /* TODO: Should use proper FPSCR access functions.  */
+        qemu_put_be32(f, env->vfp.vec_len);
+        qemu_put_be32(f, env->vfp.vec_stride);
+    }
+
+    if (arm_feature(env, ARM_FEATURE_IWMMXT)) {
+        for (i = 0; i < 16; i++) {
+            qemu_put_be64(f, env->iwmmxt.regs[i]);
+        }
+        for (i = 0; i < 16; i++) {
+            qemu_put_be32(f, env->iwmmxt.cregs[i]);
+        }
+    }
 }
 
 int cpu_load(QEMUFile *f, void *opaque, int version_id)
 {
+    CPUARMState *env = (CPUARMState *)opaque;
+    int i;
+
+    if (version_id != 0)
+        return -EINVAL;
+
+    for (i = 0; i < 16; i++) {
+        env->regs[i] = qemu_get_be32(f);
+    }
+    cpsr_write(env, qemu_get_be32(f), 0xffffffff);
+    env->spsr = qemu_get_be32(f);
+    for (i = 0; i < 6; i++) {
+        env->banked_spsr[i] = qemu_get_be32(f);
+        env->banked_r13[i] = qemu_get_be32(f);
+        env->banked_r14[i] = qemu_get_be32(f);
+    }
+    for (i = 0; i < 5; i++) {
+        env->usr_regs[i] = qemu_get_be32(f);
+        env->fiq_regs[i] = qemu_get_be32(f);
+    }
+    env->cp15.c0_cpuid = qemu_get_be32(f);
+    env->cp15.c0_cachetype = qemu_get_be32(f);
+    env->cp15.c1_sys = qemu_get_be32(f);
+    env->cp15.c1_coproc = qemu_get_be32(f);
+    env->cp15.c2_base = qemu_get_be32(f);
+    env->cp15.c2_data = qemu_get_be32(f);
+    env->cp15.c2_insn = qemu_get_be32(f);
+    env->cp15.c3 = qemu_get_be32(f);
+    env->cp15.c5_insn = qemu_get_be32(f);
+    env->cp15.c5_data = qemu_get_be32(f);
+    for (i = 0; i < 8; i++) {
+        env->cp15.c6_region[i] = qemu_get_be32(f);
+    }
+    env->cp15.c6_insn = qemu_get_be32(f);
+    env->cp15.c6_data = qemu_get_be32(f);
+    env->cp15.c9_insn = qemu_get_be32(f);
+    env->cp15.c9_data = qemu_get_be32(f);
+    env->cp15.c13_fcse = qemu_get_be32(f);
+    env->cp15.c13_context = qemu_get_be32(f);
+    env->cp15.c15_cpar = qemu_get_be32(f);
+
+    env->features = qemu_get_be32(f);
+
+    if (arm_feature(env, ARM_FEATURE_VFP)) {
+        for (i = 0;  i < 16; i++) {
+            CPU_DoubleU u;
+            u.l.upper = qemu_get_be32(f);
+            u.l.lower = qemu_get_be32(f);
+            env->vfp.regs[i] = u.d;
+        }
+        for (i = 0; i < 16; i++) {
+            env->vfp.xregs[i] = qemu_get_be32(f);
+        }
+
+        /* TODO: Should use proper FPSCR access functions.  */
+        env->vfp.vec_len = qemu_get_be32(f);
+        env->vfp.vec_stride = qemu_get_be32(f);
+    }
+
+    if (arm_feature(env, ARM_FEATURE_IWMMXT)) {
+        for (i = 0; i < 16; i++) {
+            env->iwmmxt.regs[i] = qemu_get_be64(f);
+        }
+        for (i = 0; i < 16; i++) {
+            env->iwmmxt.cregs[i] = qemu_get_be32(f);
+        }
+    }
+
     return 0;
 }
 

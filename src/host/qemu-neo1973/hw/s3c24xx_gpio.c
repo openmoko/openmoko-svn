@@ -313,6 +313,58 @@ static CPUWriteMemoryFunc *s3c_gpio_writefn[] = {
     s3c_gpio_write,
 };
 
+static void s3c_gpio_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_gpio_state_s *s = (struct s3c_gpio_state_s *) opaque;
+    int i;
+    for (i = 0; i < S3C_IO_BANKS; i ++) {
+        qemu_put_be32s(f, &s->bank[i].con);
+        qemu_put_be32s(f, &s->bank[i].dat);
+        qemu_put_be32s(f, &s->bank[i].up);
+        qemu_put_be32s(f, &s->bank[i].mask);
+    }
+
+    qemu_put_be32s(f, &s->inform[0]);
+    qemu_put_be32s(f, &s->inform[1]);
+    qemu_put_be32s(f, &s->pwrstat);
+    qemu_put_be32s(f, &s->misccr);
+    qemu_put_be32s(f, &s->dclkcon);
+    qemu_put_be32s(f, &s->extint[0]);
+    qemu_put_be32s(f, &s->extint[1]);
+    qemu_put_be32s(f, &s->extint[2]);
+    qemu_put_be32s(f, &s->eintflt[0]);
+    qemu_put_be32s(f, &s->eintflt[1]);
+    qemu_put_be32s(f, &s->eintmask);
+    qemu_put_be32s(f, &s->eintpend);
+}
+
+static int s3c_gpio_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_gpio_state_s *s = (struct s3c_gpio_state_s *) opaque;
+    int i;
+    for (i = 0; i < S3C_IO_BANKS; i ++) {
+        qemu_get_be32s(f, &s->bank[i].con);
+        qemu_get_be32s(f, &s->bank[i].dat);
+        qemu_get_be32s(f, &s->bank[i].up);
+        qemu_get_be32s(f, &s->bank[i].mask);
+    }
+
+    qemu_get_be32s(f, &s->inform[0]);
+    qemu_get_be32s(f, &s->inform[1]);
+    qemu_get_be32s(f, &s->pwrstat);
+    qemu_get_be32s(f, &s->misccr);
+    qemu_get_be32s(f, &s->dclkcon);
+    qemu_get_be32s(f, &s->extint[0]);
+    qemu_get_be32s(f, &s->extint[1]);
+    qemu_get_be32s(f, &s->extint[2]);
+    qemu_get_be32s(f, &s->eintflt[0]);
+    qemu_get_be32s(f, &s->eintflt[1]);
+    qemu_get_be32s(f, &s->eintmask);
+    qemu_get_be32s(f, &s->eintpend);
+
+    return 0;
+}
+
 struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic)
 {
     int iomemtype;
@@ -337,6 +389,8 @@ struct s3c_gpio_state_s *s3c_gpio_init(target_phys_addr_t base, qemu_irq *pic)
     iomemtype = cpu_register_io_memory(0, s3c_gpio_readfn,
                     s3c_gpio_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_io", 0, 0, s3c_gpio_save, s3c_gpio_load, s);
 
     return s;
 }

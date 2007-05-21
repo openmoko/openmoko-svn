@@ -785,6 +785,137 @@ static void pcf_onkey1s(void *opaque)
     pcf_update(s);
 }
 
+static void pcf_save(QEMUFile *f, void *opaque)
+{
+    struct pcf_s *s = (struct pcf_s *) opaque;
+    qemu_put_be32(f, s->firstbyte);
+    qemu_put_be32(f, s->charging);
+    qemu_put_8s(f, &s->reg);
+    qemu_put_8s(f, &s->oocs);
+    qemu_put_8s(f, &s->oocc[0]);
+    qemu_put_8s(f, &s->oocc[1]);
+    qemu_put_8s(f, &s->intr[0]);
+    qemu_put_8s(f, &s->intr[1]);
+    qemu_put_8s(f, &s->intr[2]);
+    qemu_put_8s(f, &s->intm[0]);
+    qemu_put_8s(f, &s->intm[1]);
+    qemu_put_8s(f, &s->intm[2]);
+    qemu_put_8s(f, &s->pssc);
+    qemu_put_8s(f, &s->pwrokm);
+    qemu_put_8s(f, &s->dcdc[0]);
+    qemu_put_8s(f, &s->dcdc[1]);
+    qemu_put_8s(f, &s->dcdc[2]);
+    qemu_put_8s(f, &s->dcdc[3]);
+    qemu_put_8s(f, &s->dcdec[0]);
+    qemu_put_8s(f, &s->dcdec[1]);
+    qemu_put_8s(f, &s->dcudc[0]);
+    qemu_put_8s(f, &s->dcudc[1]);
+    qemu_put_8s(f, &s->ioregc);
+    qemu_put_8s(f, &s->dregc[0]);
+    qemu_put_8s(f, &s->dregc[1]);
+    qemu_put_8s(f, &s->dregc[2]);
+    qemu_put_8s(f, &s->lpregc[0]);
+    qemu_put_8s(f, &s->lpregc[1]);
+    qemu_put_8s(f, &s->mbcc[0]);
+    qemu_put_8s(f, &s->mbcc[1]);
+    qemu_put_8s(f, &s->mbcc[2]);
+    qemu_put_8s(f, &s->bbcc);
+    qemu_put_8s(f, &s->adcc[0]);
+    qemu_put_8s(f, &s->adcc[1]);
+    qemu_put_8s(f, &s->adcs[0]);
+    qemu_put_8s(f, &s->adcs[1]);
+    qemu_put_8s(f, &s->adcs[2]);
+    qemu_put_8s(f, &s->acdc[0]);
+    qemu_put_8s(f, &s->bvmc);
+    qemu_put_8s(f, &s->pwmc[0]);
+    qemu_put_8s(f, &s->ledc[0]);
+    qemu_put_8s(f, &s->ledc[1]);
+    qemu_put_8s(f, &s->gpoc[0]);
+    qemu_put_8s(f, &s->gpoc[1]);
+    qemu_put_8s(f, &s->gpoc[2]);
+    qemu_put_8s(f, &s->gpoc[3]);
+    qemu_put_8s(f, &s->gpoc[4]);
+    qemu_put_be32(f, s->ts.x);
+    qemu_put_be32(f, s->ts.y);
+    qemu_put_be32s(f, &s->rtc.sec);
+    qemu_put_8s(f, &s->rtc.alm_sec);
+    qemu_put_8s(f, &s->rtc.alm_min);
+    qemu_put_8s(f, &s->rtc.alm_hour);
+    qemu_put_8s(f, &s->rtc.alm_wday);
+    qemu_put_8s(f, &s->rtc.alm_mday);
+    qemu_put_8s(f, &s->rtc.alm_mon);
+    qemu_put_8s(f, &s->rtc.alm_year);
+    qemu_put_8s(f, &s->gpo);
+    i2c_slave_save(f, &s->i2c);
+}
+
+static int pcf_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct pcf_s *s = (struct pcf_s *) opaque;
+    s->firstbyte = qemu_get_be32(f);
+    s->charging = qemu_get_be32(f);
+    qemu_get_8s(f, &s->reg);
+    qemu_get_8s(f, &s->oocs);
+    qemu_get_8s(f, &s->oocc[0]);
+    qemu_get_8s(f, &s->oocc[1]);
+    qemu_get_8s(f, &s->intr[0]);
+    qemu_get_8s(f, &s->intr[1]);
+    qemu_get_8s(f, &s->intr[2]);
+    qemu_get_8s(f, &s->intm[0]);
+    qemu_get_8s(f, &s->intm[1]);
+    qemu_get_8s(f, &s->intm[2]);
+    qemu_get_8s(f, &s->pssc);
+    qemu_get_8s(f, &s->pwrokm);
+    qemu_get_8s(f, &s->dcdc[0]);
+    qemu_get_8s(f, &s->dcdc[1]);
+    qemu_get_8s(f, &s->dcdc[2]);
+    qemu_get_8s(f, &s->dcdc[3]);
+    qemu_get_8s(f, &s->dcdec[0]);
+    qemu_get_8s(f, &s->dcdec[1]);
+    qemu_get_8s(f, &s->dcudc[0]);
+    qemu_get_8s(f, &s->dcudc[1]);
+    qemu_get_8s(f, &s->ioregc);
+    qemu_get_8s(f, &s->dregc[0]);
+    qemu_get_8s(f, &s->dregc[1]);
+    qemu_get_8s(f, &s->dregc[2]);
+    qemu_get_8s(f, &s->lpregc[0]);
+    qemu_get_8s(f, &s->lpregc[1]);
+    qemu_get_8s(f, &s->mbcc[0]);
+    qemu_get_8s(f, &s->mbcc[1]);
+    qemu_get_8s(f, &s->mbcc[2]);
+    qemu_get_8s(f, &s->bbcc);
+    qemu_get_8s(f, &s->adcc[0]);
+    qemu_get_8s(f, &s->adcc[1]);
+    qemu_get_8s(f, &s->adcs[0]);
+    qemu_get_8s(f, &s->adcs[1]);
+    qemu_get_8s(f, &s->adcs[2]);
+    qemu_get_8s(f, &s->acdc[0]);
+    qemu_get_8s(f, &s->bvmc);
+    qemu_get_8s(f, &s->pwmc[0]);
+    qemu_get_8s(f, &s->ledc[0]);
+    qemu_get_8s(f, &s->ledc[1]);
+    qemu_get_8s(f, &s->gpoc[0]);
+    qemu_get_8s(f, &s->gpoc[1]);
+    qemu_get_8s(f, &s->gpoc[2]);
+    qemu_get_8s(f, &s->gpoc[3]);
+    qemu_get_8s(f, &s->gpoc[4]);
+    s->ts.x = qemu_get_be32(f);
+    s->ts.y = qemu_get_be32(f);
+    qemu_get_be32s(f, &s->rtc.sec);
+    qemu_get_8s(f, &s->rtc.alm_sec);
+    qemu_get_8s(f, &s->rtc.alm_min);
+    qemu_get_8s(f, &s->rtc.alm_hour);
+    qemu_get_8s(f, &s->rtc.alm_wday);
+    qemu_get_8s(f, &s->rtc.alm_mday);
+    qemu_get_8s(f, &s->rtc.alm_mon);
+    qemu_get_8s(f, &s->rtc.alm_year);
+    qemu_get_8s(f, &s->gpo);
+    i2c_slave_load(f, &s->i2c);
+    return 0;
+}
+
+static int pcf_iid = 0;
+
 i2c_slave *pcf5060x_init(i2c_bus *bus, qemu_irq irq, int tsc)
 {
     struct pcf_s *s = (struct pcf_s *)
@@ -804,8 +935,10 @@ i2c_slave *pcf5060x_init(i2c_bus *bus, qemu_irq irq, int tsc)
     if (tsc) {
         /* We want absolute coordinates */
         qemu_add_mouse_event_handler(pcf_adc_event, s, 1,
-                        "QEMU ADS7846-driven Touchscreen");
+                        "QEMU PCF50606-driven Touchscreen");
     }
+
+    register_savevm("pcf5060x", pcf_iid ++, 0, pcf_save, pcf_load, s);
 
     return &s->i2c;
 }

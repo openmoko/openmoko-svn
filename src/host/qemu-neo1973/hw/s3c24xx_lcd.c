@@ -471,6 +471,61 @@ static void s3c_screen_dump(void *opaque, const char *filename)
 #define BITS 32
 #include "s3c24xx_template.h"
 
+static void s3c_lcd_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_lcd_state_s *s = (struct s3c_lcd_state_s *) opaque;
+    int i;
+    for (i = 0; i < 5; i ++)
+        qemu_put_be32s(f, &s->con[i]);
+    for (i = 0; i < 3; i ++)
+        qemu_put_be32s(f, &s->saddr[i]);
+    qemu_put_be32s(f, &s->r);
+    qemu_put_be32s(f, &s->g);
+    qemu_put_be16s(f, &s->b);
+    qemu_put_be32s(f, &s->dithmode);
+    qemu_put_be32s(f, &s->tpal);
+    qemu_put_8s(f, &s->intpnd);
+    qemu_put_8s(f, &s->srcpnd);
+    qemu_put_8s(f, &s->intmsk);
+    qemu_put_8s(f, &s->lpcsel);
+    for (i = 0; i < 0x100; i ++)
+        qemu_put_be16s(f, &s->raw_pal[i]);
+}
+
+static int s3c_lcd_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_lcd_state_s *s = (struct s3c_lcd_state_s *) opaque;
+    int i;
+    for (i = 0; i < 5; i ++)
+        qemu_get_be32s(f, &s->con[i]);
+    for (i = 0; i < 3; i ++)
+        qemu_get_be32s(f, &s->saddr[i]);
+    qemu_get_be32s(f, &s->r);
+    qemu_get_be32s(f, &s->g);
+    qemu_get_be16s(f, &s->b);
+    qemu_get_be32s(f, &s->dithmode);
+    qemu_get_be32s(f, &s->tpal);
+    qemu_get_8s(f, &s->intpnd);
+    qemu_get_8s(f, &s->srcpnd);
+    qemu_get_8s(f, &s->intmsk);
+    qemu_get_8s(f, &s->lpcsel);
+
+    s->invalidate = 1;
+    s->invalidatep = 1;
+    s->width = -1;
+    s->height = -1;
+    s->bpp = (s->con[0] >> 1) & 0xf;
+    s->enable = s->con[0] & 1;
+    s->msb = (s->con[4] >> 12) & 1;
+    s->frm565 = (s->con[4] >> 11) & 1;
+    s->fb = phys_ram_base + (((s->saddr[0] << 1) & 0x7ffffffe) - S3C_RAM_BASE);
+
+    for (i = 0; i < 0x100; i ++)
+        qemu_get_be16s(f, &s->raw_pal[i]);
+
+    return 0;
+}
+
 struct s3c_lcd_state_s *s3c_lcd_init(target_phys_addr_t base, DisplayState *ds,
                 qemu_irq irq)
 {
@@ -490,6 +545,8 @@ struct s3c_lcd_state_s *s3c_lcd_init(target_phys_addr_t base, DisplayState *ds,
     iomemtype = cpu_register_io_memory(0, s3c_lcd_readfn,
                     s3c_lcd_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_lcd", 0, 0, s3c_lcd_save, s3c_lcd_load, s);
 
     switch (s->ds->depth) {
     case 0:

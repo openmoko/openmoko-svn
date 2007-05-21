@@ -216,10 +216,48 @@ uint8_t jbt6k74_txrx(void *opaque, uint8_t value)
     return ret;
 }
 
+static void jbt6k74_save(QEMUFile *f, void *opaque)
+{
+    struct jbt6k74_s *s = (struct jbt6k74_s *) opaque;
+    int i;
+
+    qemu_put_8s(f, &s->command);
+    qemu_put_be32s(f, &s->parameter);
+    qemu_put_be32s(f, &s->response);
+    qemu_put_be32(f, s->dc);
+    qemu_put_be32(f, s->bit);
+    qemu_put_be32(f, s->bytes);
+    qemu_put_be32(f, s->respbit);
+    for (i = 0; i < 0x100; i ++)
+        qemu_put_be16s(f, &s->regs[i]);
+}
+
+static int jbt6k74_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct jbt6k74_s *s = (struct jbt6k74_s *) opaque;
+    int i;
+
+    qemu_get_8s(f, &s->command);
+    qemu_get_be32s(f, &s->parameter);
+    qemu_get_be32s(f, &s->response);
+    s->dc = qemu_get_be32(f);
+    s->bit = qemu_get_be32(f);
+    s->bytes = qemu_get_be32(f);
+    s->respbit = qemu_get_be32(f);
+    for (i = 0; i < 0x100; i ++)
+        qemu_get_be16s(f, &s->regs[i]);
+
+    return 0;
+}
+
+static int jbt6k74_iid = 0;
+
 void *jbt6k74_init()
 {
     struct jbt6k74_s *s = qemu_mallocz(sizeof(struct jbt6k74_s));
     jbt6k74_reset(s);
+    register_savevm("jbt6k74", jbt6k74_iid ++, 0,
+                    jbt6k74_save, jbt6k74_load, s);
 
     return s;
 }

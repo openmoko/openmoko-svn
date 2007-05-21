@@ -268,6 +268,46 @@ static CPUWriteMemoryFunc *s3c_rtc_writefn[] = {
     s3c_rtc_write,
 };
 
+static void s3c_rtc_save(QEMUFile *f, void *opaque)
+{
+    struct s3c_rtc_state_s *s = (struct s3c_rtc_state_s *) opaque;
+    qemu_put_be64s(f, &s->next);
+    qemu_put_8s(f, &s->control);
+    qemu_put_8s(f, &s->tick);
+    qemu_put_8s(f, &s->alarm);
+    qemu_put_8s(f, &s->almsec);
+    qemu_put_8s(f, &s->almmin);
+    qemu_put_8s(f, &s->almday);
+    qemu_put_8s(f, &s->almhour);
+    qemu_put_8s(f, &s->almmon);
+    qemu_put_8s(f, &s->almyear);
+    qemu_put_8s(f, &s->reset);
+    qemu_put_be32s(f, &s->sec);
+}
+
+static int s3c_rtc_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct s3c_rtc_state_s *s = (struct s3c_rtc_state_s *) opaque;
+    qemu_get_be64s(f, &s->next);
+    qemu_get_8s(f, &s->control);
+    qemu_get_8s(f, &s->tick);
+    qemu_get_8s(f, &s->alarm);
+    qemu_get_8s(f, &s->almsec);
+    qemu_get_8s(f, &s->almmin);
+    qemu_get_8s(f, &s->almday);
+    qemu_get_8s(f, &s->almhour);
+    qemu_get_8s(f, &s->almmon);
+    qemu_get_8s(f, &s->almyear);
+    qemu_get_8s(f, &s->reset);
+    qemu_get_be32s(f, &s->sec);
+
+    s->enable = (s->control == 0x1);
+    if (s->tick & (1 << 7))
+        s3c_rtc_tick_mod(s);
+
+    return 0;
+}
+
 struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, qemu_irq irq)
 {
     int iomemtype;
@@ -286,6 +326,8 @@ struct s3c_rtc_state_s *s3c_rtc_init(target_phys_addr_t base, qemu_irq irq)
     iomemtype = cpu_register_io_memory(0, s3c_rtc_readfn,
                     s3c_rtc_writefn, s);
     cpu_register_physical_memory(s->base, 0xffffff, iomemtype);
+
+    register_savevm("s3c24xx_rtc", 0, 0, s3c_rtc_save, s3c_rtc_load, s);
 
     return s;
 }
