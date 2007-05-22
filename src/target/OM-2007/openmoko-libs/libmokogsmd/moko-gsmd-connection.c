@@ -240,7 +240,12 @@ gboolean _moko_gsmd_connection_source_dispatch( MokoGsmdConnectionSource* self, 
     if ( size < 0 )
         g_warning( "moko_gsmd_connection_source_dispatch: read error from libgsmd: %s", strerror( errno ) );
     else
+    {
+        if ( size == 0 ) /* EOF */
+          return FALSE;
+
         lgsm_handle_packet( self->handle, buf, size );
+    }
     return TRUE;
 }
 

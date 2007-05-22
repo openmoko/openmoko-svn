@@ -1,3 +1,9 @@
+2007-05-22  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
+	(_moko_gsmd_connection_source_dispatch): Prevent the mainloop from
+	locking up if gsmd goes away
+
 2007-05-18  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-pixmap-button.c:
