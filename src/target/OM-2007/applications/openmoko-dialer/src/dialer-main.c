@@ -162,6 +162,11 @@ main (int argc, char **argv)
   if (lockapp > 0)
   {
     kill (lockapp, SIGUSR1);
+
+    /* make sure startup notifaction is terminated */
+    gdk_init(&argc, &argv);
+    gdk_notify_startup_complete ();
+
     return 0;
   }
   setlock ("/tmp/dialer.lock");
