@@ -68,6 +68,7 @@ enum {
 /* signals */
 void moko_gsmd_connection_incoming_call(MokoGsmdConnection* self, int type);
 void moko_gsmd_connection_call_status_progress(MokoGsmdConnection* self, int type);
+void moko_gsmd_connection_pin_requested(MokoGsmdConnection* self, int type);
 //sms
 //gprs
 void moko_gsmd_connection_incoming_clip(MokoGsmdConnection* self, const char* number);
