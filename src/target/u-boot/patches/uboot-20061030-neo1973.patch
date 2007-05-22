@@ -177,7 +177,7 @@ Index: u-boot/include/pcf50606.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/pcf50606.h
-@@ -0,0 +1,272 @@
+@@ -0,0 +1,273 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
 +
@@ -272,6 +272,7 @@ Index: u-boot/include/pcf50606.h
 +	PCF50606_OOCC1_CHGWAK	= 0x20,
 +	PCF50606_OOCC1_EXTONWAK_HIGH	= 0x40,
 +	PCF50606_OOCC1_EXTONWAK_LOW	= 0x80,
++	PCF50606_OOCC1_EXTONWAK_NO_WAKEUP = 0x3f,
 +};
 +
 +enum pcf50606_reg_oocc2 {
