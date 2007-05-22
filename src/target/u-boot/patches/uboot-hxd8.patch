@@ -88,7 +88,7 @@ Index: u-boot/board/hxd8/hxd8.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/hxd8/hxd8.c
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,172 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -130,7 +130,7 @@ Index: u-boot/board/hxd8/hxd8.c
 +#define M_MDIV	0xC3
 +#define M_PDIV	0x4
 +#define M_SDIV	0x1
-+#elif FCLK_SPEED==1	
++#elif FCLK_SPEED==1
 +#if 0
 +#define M_MDIV	0x6e	/* Fout = 399.65MHz */
 +#define M_PDIV	0x3
@@ -204,6 +204,8 @@ Index: u-boot/board/hxd8/hxd8.c
 +	gpio->GPHUP = 0x000007FF;
 +	gpio->GPJCON = 0x00000000;
 +
++	/* USB CHG enable */
++	gpio->GPGDAT |= ( 1 << 11);
 +#if 0
 +	/* USB Device Part */
 +	/*GPGCON is reset for USB Device */
@@ -772,8 +774,8 @@ Index: u-boot/board/hxd8/pcf50606.c
 +				  PCF50606_INT2_CHGWDEXP,
 +	[PCF50606_REG_INT3M]	= PCF50606_INT3_TSCPRES,
 +	[PCF50606_REG_OOCC1] 	= PCF50606_OOCC1_RTCWAK |
-+				  PCF50606_OOCC1_CHGWAK |
-+				  PCF50606_OOCC1_EXTONWAK_HIGH,
++				  PCF50606_OOCC1_CHGWAK &
++				  PCF50606_OOCC1_EXTONWAK_NO_WAKEUP,
 +	[PCF50606_REG_OOCC2]	= PCF50606_OOCC2_ONKEYDB_14ms |
 +				  PCF50606_OOCC2_EXTONDB_14ms,
 +	/* gap */
@@ -788,7 +790,7 @@ Index: u-boot/board/hxd8/pcf50606.c
 +	[PCF50606_REG_DCDEC1]	= 0xe8, /* IO1_3V3: off */
 +	[PCF50606_REG_DCDEC2]	= 0x00,
 +
-+	[PCF50606_REG_DCUDC1]	= 0xe8, /* RF_3V3: on */
++	[PCF50606_REG_DCUDC1]	= 0x08, /* RF_3V3: off */
 +	[PCF50606_REG_DCUDC2]	= 0x30, /* 1.25A current limit */
 +
 +	[PCF50606_REG_IOREGC]	= 0xf8, /* AUDIO_3V3: on */
@@ -811,11 +813,11 @@ Index: u-boot/board/hxd8/pcf50606.c
 +	/* gap */
 +	[PCF50606_REG_ACDC1]	= 0x00,
 +	[PCF50606_REG_BVMC]	= PCF50606_BVMC_THRSHLD_3V3,
-+	[PCF50606_REG_PWMC1]	= 0x00,
++	[PCF50606_REG_PWMC1]	= 0x1f,	/* clock: 512 DC: 15/16*/
 +	[PCF50606_REG_LEDC1]	= 0x00,
 +	[PCF50606_REG_LEDC2]	= 0x00,
-+	[PCF50606_REG_GPOC1]	= 0x00,
-+	[PCF50606_REG_GPOC2]	= 0x00,
++	[PCF50606_REG_GPOC1]	= 0x03,	/* PWM ACTIVE */
++	[PCF50606_REG_GPOC2]	= 0x07,	/* back light pull low */
 +	[PCF50606_REG_GPOC3]	= 0x00,
 +	[PCF50606_REG_GPOC4]	= 0x00,
 +	[PCF50606_REG_GPOC5]	= 0x00,
