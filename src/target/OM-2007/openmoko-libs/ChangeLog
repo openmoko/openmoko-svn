@@ -1,3 +1,9 @@
+2007-05-22  Michael Lauer <mickey@openmoko.org>
+
+	* libmokogsmd/moko-gsmd-connection.h: Add prototype for PIN request signal
+	* libmokogsmd/moko-gsmd-connection.c:
+	(_moko_gsmd_connection_eventhandler): Emit PIN request signal
+
 2007-05-22  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
@@ -112,7 +118,7 @@
 	* libmokoui/moko-stock.h:
 	Add moko-stock for adding OpenMoko stock items
 
-2007-04-27 Dodji Seketeli <dodji@openedhand.org>
+2007-04-27 Dodji Seketeli <dodji@openedhand.com>
 
 	* src/target/OM-2007/openmoko-libs/libmokojournal/src/moko-journal.c:
 	  changed the caller/callee number props into local/distant props.

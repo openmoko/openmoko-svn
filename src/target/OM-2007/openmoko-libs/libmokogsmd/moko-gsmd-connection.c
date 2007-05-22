@@ -276,7 +276,7 @@ int _moko_gsmd_connection_eventhandler(struct lgsm_handle *lh, int evt_type, str
         case GSMD_EVT_SIGNAL:
             g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SIGNAL], 0, aux->u.signal.sigq.rssi ); break;
         case GSMD_EVT_PIN:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_PIN]; break;
+            g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_PIN], 0, aux->u.pin.type ); break;
         case GSMD_EVT_OUT_STATUS:
             g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS], 0, aux->u.call_status.prog ); break;
         case GSMD_EVT_OUT_COLP:
@@ -360,7 +360,8 @@ void moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean o
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
-    lgsm_phone_power( priv->handle, on ? 1 : 0 );
+    int result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
+    g_debug( "lgsm_phone_power returned %d", result );
 }
 
 void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
