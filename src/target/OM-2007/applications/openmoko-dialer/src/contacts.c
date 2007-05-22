@@ -18,6 +18,8 @@
 #include "contacts.h"
 #include "config.h"
 
+#include <string.h>
+
 /**
  * @brief initialze the contact list, this will be called from outside, contactlist
 */
@@ -206,7 +208,7 @@ contact_add_contact_to_list (DIALER_CONTACTS_LIST_HEAD * head,
 
 
 DIALER_CONTACT *
-contact_new_contact (char *name, char *id)
+contact_new_contact (const char *name, const char *id)
 {
   DIALER_CONTACT *nextcontact;
 
@@ -236,7 +238,8 @@ contact_new_contact (char *name, char *id)
 
 
 DIALER_CONTACT_ENTRY *
-contact_add_entry (DIALER_CONTACT * contact, char *desc, char *content)
+contact_add_entry (DIALER_CONTACT * contact, const char *desc, 
+                   const char *content)
 {
 
   DIALER_CONTACT_ENTRY *nextentry;
@@ -320,8 +323,8 @@ contact_init_contact_list (DIALER_CONTACTS_LIST_HEAD * head)
     EContact *contact = E_CONTACT (c->data);
     dialercontact = 0;
 //        printf("id=%s\n",e_contact_get_const(contact,E_CONTACT_UID));
-    gchar *name_or_org = e_contact_get_const (contact, E_CONTACT_NAME_OR_ORG);
-    gchar *phone;
+    const gchar *name_or_org = e_contact_get_const (contact, E_CONTACT_NAME_OR_ORG);
+    const gchar *phone;
     if ((!name_or_org) || (g_utf8_strlen (name_or_org, -1) <= 0))
       name_or_org = "Unnamed";
     if (name_or_org)

@@ -40,7 +40,7 @@ cb_speaker_button_clicked (GtkButton * button, MokoDialerData * data)
   else
     gtk_widget_show (data->buttonSpeaker);
 
-  gtk_widget_hide (button);
+  gtk_widget_hide (GTK_WIDGET (button));
   // do something else here too
 }
 
@@ -49,7 +49,7 @@ cb_redial_button_clicked (GtkButton * button, MokoDialerData * data)
 {
   gchar *number = g_object_get_data (G_OBJECT (button), "current-number");
 
-  gtk_widget_hide (button);
+  gtk_widget_hide (GTK_WIDGET (button));
   gtk_widget_show (data->buttonCancel);
 
 
@@ -57,6 +57,7 @@ cb_redial_button_clicked (GtkButton * button, MokoDialerData * data)
   moko_gsmd_connection_voice_dial (data->connection, number);
 }
 
+#if 0 /* Not used at the moment */
 static void
 cb_cancel_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
@@ -69,6 +70,7 @@ cb_cancel_button_clicked (GtkButton * button, MokoDialerData * appdata)
   gtk_widget_hide (appdata->window_outgoing);
   DBG_LEAVE ();
 }
+#endif 
 
 gint
 timer_outgoing_time_out (MokoDialerData * appdata)
@@ -177,72 +179,73 @@ on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
 gint
 window_outgoing_init (MokoDialerData * p_dialer_data)
 {
-  MokoFingerWindow *window;
+  GtkWidget *window;
   GtkWidget *vbox;
   GtkWidget *status;
+  GtkWidget *button;
 
-  if (p_dialer_data->window_outgoing == 0)
-  {
+  if (p_dialer_data->window_outgoing != 0)
+    return 1;
+  
+  vbox = gtk_vbox_new (FALSE, 0);
+  status = moko_dialer_status_new ();
+  moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                      "outgoing_0.png");
+  moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                      "outgoing_1.png");
+  moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                      "outgoing_2.png");
+  moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
+                                      "outgoing_3.png");
+  //moko_dialer_status_set_error_icon (MOKO_DIALER_STATUS (status),
+  //                                   "failure.png");
+  //moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
 
-    vbox = gtk_vbox_new (FALSE, 0);
-    status = moko_dialer_status_new ();
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                        "outgoing_0.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                        "outgoing_1.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                        "outgoing_2.png");
-    moko_dialer_status_add_status_icon (MOKO_DIALER_STATUS (status),
-                                        "outgoing_3.png");
-    //moko_dialer_status_set_error_icon (MOKO_DIALER_STATUS (status),
-    //                                   "failure.png");
-    //moko_dialer_status_set_icon_by_index (MOKO_DIALER_STATUS (status), 0);
+  gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
 
-    gtk_box_pack_start (GTK_BOX (vbox), status, FALSE, FALSE, 0);
+  /* Set up window */
+  window = moko_message_dialog_new ();
+  moko_message_dialog_set_image (MOKO_MESSAGE_DIALOG (window), 
+       gtk_image_new_from_file (PKGDATADIR G_DIR_SEPARATOR_S "outgoing_1.png"));
+  gtk_window_set_title (GTK_WINDOW (window), "Outgoing Call");
 
-    /* Set up window */
-    window = moko_message_dialog_new ();
-    moko_message_dialog_set_image (MOKO_MESSAGE_DIALOG (window), gtk_image_new_from_file (PKGDATADIR G_DIR_SEPARATOR_S "outgoing_1.png"));
-    gtk_window_set_title (GTK_WINDOW (window), "Outgoing Call");
+  /* Set up buttons */
+  button = gtk_button_new_from_stock (MOKO_STOCK_SPEAKER);
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
+  p_dialer_data->buttonSpeaker = button;
+  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->action_area), button, 
+                      FALSE, FALSE, 0);
+  gtk_widget_show (button);
 
+  button = gtk_button_new_from_stock (MOKO_STOCK_HANDSET);
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
+  p_dialer_data->buttonHandset = button;
+  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->action_area), button, 
+                      FALSE, FALSE, 0);
 
-    /* Set up buttons */
-    GtkWidget *button = gtk_button_new_from_stock (MOKO_STOCK_SPEAKER);
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
-    p_dialer_data->buttonSpeaker = button;
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->action_area), button, FALSE, FALSE, 0);
-    gtk_widget_show (button);
+  button = gtk_button_new_from_stock (MOKO_STOCK_CALL_REDIAL);
+  p_dialer_data->buttonRedial = button;
+  g_signal_connect (G_OBJECT (button), "clicked",
+                    G_CALLBACK (cb_redial_button_clicked), p_dialer_data);
 
-    button = gtk_button_new_from_stock (MOKO_STOCK_HANDSET);
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (cb_speaker_button_clicked), p_dialer_data);
-    p_dialer_data->buttonHandset = button;
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (window)->action_area), button, FALSE, FALSE, 0);
+  p_dialer_data->buttonCancel = gtk_dialog_add_button (GTK_DIALOG (window),
+                                                       GTK_STOCK_CANCEL,
+                                                       GTK_RESPONSE_CANCEL);
 
+  moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status),
+                                      "Outgoing call");
+  moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status),
+                                       "Calling ... (00:00:00)");
 
-    button = gtk_button_new_from_stock (MOKO_STOCK_CALL_REDIAL);
-    p_dialer_data->buttonRedial = button;
-    g_signal_connect (G_OBJECT (button), "clicked",
-                      G_CALLBACK (cb_redial_button_clicked), p_dialer_data);
+  p_dialer_data->window_outgoing = GTK_WIDGET (window);
+  p_dialer_data->status_outgoing = MOKO_DIALER_STATUS (status);
 
-    p_dialer_data->buttonCancel = gtk_dialog_add_button (GTK_DIALOG (window), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
-
-
-    moko_dialer_status_set_title_label (MOKO_DIALER_STATUS (status),
-                                        "Outgoing call");
-    moko_dialer_status_set_status_label (MOKO_DIALER_STATUS (status),
-                                         "Calling ... (00:00:00)");
-
-    p_dialer_data->window_outgoing = GTK_WIDGET (window);
-    p_dialer_data->status_outgoing = MOKO_DIALER_STATUS (status);
-
-    g_signal_connect ((gpointer) window, "show",
-                      G_CALLBACK (on_window_outgoing_show), p_dialer_data);
-    g_signal_connect ((gpointer) window, "hide",
-                      G_CALLBACK (on_window_outgoing_hide), p_dialer_data);
-
-  }
+  g_signal_connect (G_OBJECT (window), "show",
+                    G_CALLBACK (on_window_outgoing_show), p_dialer_data);
+  g_signal_connect (G_OBJECT (window), "hide",
+                    G_CALLBACK (on_window_outgoing_hide), p_dialer_data);
 
   return 1;
 }
@@ -258,18 +261,19 @@ call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data
 
   if (type ==  MOKO_GSMD_PROG_CONNECTED)
   {
-    gtk_dialog_response (data->window_outgoing, GTK_RESPONSE_OK);
+    gtk_dialog_response (GTK_DIALOG (data->window_outgoing), GTK_RESPONSE_OK);
   }
 }
 
 void
 window_outgoing_dial (MokoDialerData *data, gchar *number)
 {
-  g_signal_connect (data->connection, "call-progress", call_progress_cb, data);
+  g_signal_connect (data->connection, "call-progress", 
+                    G_CALLBACK (call_progress_cb), data);
   g_object_set_data (G_OBJECT (data->window_outgoing), "current-number", number);
   moko_gsmd_connection_voice_dial (data->connection, number);
   moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_outgoing), "Calling %s", number);
-  if (gtk_dialog_run (data->window_outgoing) == GTK_RESPONSE_OK)
+  if (gtk_dialog_run (GTK_DIALOG (data->window_outgoing)) == GTK_RESPONSE_OK)
   {
     /* call has connected, so open the talking window */
     /* window_talking_show (); */

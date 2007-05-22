@@ -657,7 +657,8 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   while (moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry))
   {
     const gchar *uid, *number;
-    gchar *icon_name, *display_text;
+    gchar *icon_name;
+    const gchar *display_text;
     int dstart;
     enum MessageDirection direction;
     gboolean was_missed;
@@ -757,101 +758,99 @@ history_update_counter (MokoDialerData * p_dialer_data)
 static GtkWidget *
 history_create_menu_history (MokoDialerData * p_dialer_data)
 {
-  if (!p_dialer_data->menu_history)
-  {
-    GtkWidget *menu_history;
-    GtkWidget *all_calls;
-    GtkWidget *imageAll;
-    GtkWidget *separator1;
-    GtkWidget *missed_calls;
-    GtkWidget *imageMissed;
-    GtkWidget *separator3;
-    GtkWidget *dialed_calls;
-    GtkWidget *imageDialed;
-    GtkWidget *separator2;
-    GtkWidget *received_calls;
-    GtkWidget *imageReceived;
+  GtkWidget *menu_history;
+  GtkWidget *all_calls;
+  GtkWidget *imageAll;
+  GtkWidget *separator1;
+  GtkWidget *missed_calls;
+  GtkWidget *imageMissed;
+  GtkWidget *separator3;
+  GtkWidget *dialed_calls;
+  GtkWidget *imageDialed;
+  GtkWidget *separator2;
+  GtkWidget *received_calls;
+  GtkWidget *imageReceived;
 
-    menu_history = gtk_menu_new ();
-    gtk_container_set_border_width (GTK_CONTAINER (menu_history), 2);
-
-    all_calls = gtk_image_menu_item_new_with_mnemonic (("Calls All"));
-    gtk_widget_show (all_calls);
-    gtk_container_add (GTK_CONTAINER (menu_history), all_calls);
-    gtk_widget_set_size_request (all_calls, 250, 60);
-
-
-    imageAll = file_new_image_from_relative_path ("all.png");
-    gtk_widget_show (imageAll);
-    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (all_calls), imageAll);
-
-    separator1 = gtk_separator_menu_item_new ();
-    gtk_widget_show (separator1);
-    gtk_container_add (GTK_CONTAINER (menu_history), separator1);
-    gtk_widget_set_size_request (separator1, 120, -1);
-    gtk_widget_set_sensitive (separator1, FALSE);
-
-    missed_calls = gtk_image_menu_item_new_with_mnemonic (("Calls Missed "));
-    gtk_widget_show (missed_calls);
-    gtk_container_add (GTK_CONTAINER (menu_history), missed_calls);
-    gtk_widget_set_size_request (missed_calls, 120, 60);
-
-    //imageMissed = gtk_image_new_from_stock ("gtk-goto-bottom", GTK_ICON_SIZE_MENU);
-    imageMissed = file_new_image_from_relative_path ("missed.png");
-
-    gtk_widget_show (imageMissed);
-    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (missed_calls),
-                                   imageMissed);
-
-    separator3 = gtk_separator_menu_item_new ();
-    gtk_widget_show (separator3);
-    gtk_container_add (GTK_CONTAINER (menu_history), separator3);
-    gtk_widget_set_size_request (separator3, 120, -1);
-    gtk_widget_set_sensitive (separator3, FALSE);
-
-    dialed_calls = gtk_image_menu_item_new_with_mnemonic (("Calls Dialed"));
-    gtk_widget_show (dialed_calls);
-    gtk_container_add (GTK_CONTAINER (menu_history), dialed_calls);
-    gtk_widget_set_size_request (dialed_calls, 120, 60);
-
-    // imageDialed = gtk_image_new_from_stock ("gtk-go-up", GTK_ICON_SIZE_MENU);
-    imageDialed = file_new_image_from_relative_path ("dialed.png");
-    gtk_widget_show (imageDialed);
-    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (dialed_calls),
-                                   imageDialed);
-
-    separator2 = gtk_separator_menu_item_new ();
-    gtk_widget_show (separator2);
-    gtk_container_add (GTK_CONTAINER (menu_history), separator2);
-    gtk_widget_set_size_request (separator2, 120, -1);
-    gtk_widget_set_sensitive (separator2, FALSE);
-
-    received_calls =
-      gtk_image_menu_item_new_with_mnemonic (("Calls Received "));
-    gtk_widget_show (received_calls);
-    gtk_container_add (GTK_CONTAINER (menu_history), received_calls);
-    gtk_widget_set_size_request (received_calls, 120, 60);
-
-//  imageReceived = gtk_image_new_from_stock ("gtk-go-down", GTK_ICON_SIZE_MENU);
-    imageReceived = file_new_image_from_relative_path ("received.png");
-    gtk_widget_show (imageReceived);
-    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (received_calls),
-                                   imageReceived);
-
-    g_signal_connect ((gpointer) all_calls, "activate",
-                      G_CALLBACK (on_all_calls_activate), p_dialer_data);
-    g_signal_connect ((gpointer) missed_calls, "activate",
-                      G_CALLBACK (on_missed_calls_activate), p_dialer_data);
-    g_signal_connect ((gpointer) dialed_calls, "activate",
-                      G_CALLBACK (on_dialed_calls_activate), p_dialer_data);
-    g_signal_connect ((gpointer) received_calls, "activate",
-                      G_CALLBACK (on_received_calls_activate), p_dialer_data);
-
-    p_dialer_data->menu_history = menu_history;
-    return menu_history;
-  }
-  else
+  if (p_dialer_data->menu_history)
     return p_dialer_data->menu_history;
+  
+  
+  menu_history = gtk_menu_new ();
+  gtk_container_set_border_width (GTK_CONTAINER (menu_history), 2);
+
+  all_calls = gtk_image_menu_item_new_with_mnemonic (("Calls All"));
+  gtk_widget_show (all_calls);
+  gtk_container_add (GTK_CONTAINER (menu_history), all_calls);
+  gtk_widget_set_size_request (all_calls, 250, 60);
+
+
+  imageAll = file_new_image_from_relative_path ("all.png");
+  gtk_widget_show (imageAll);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (all_calls), imageAll);
+
+  separator1 = gtk_separator_menu_item_new ();
+  gtk_widget_show (separator1);
+  gtk_container_add (GTK_CONTAINER (menu_history), separator1);
+  gtk_widget_set_size_request (separator1, 120, -1);
+  gtk_widget_set_sensitive (separator1, FALSE);
+
+  missed_calls = gtk_image_menu_item_new_with_mnemonic (("Calls Missed "));
+  gtk_widget_show (missed_calls);
+  gtk_container_add (GTK_CONTAINER (menu_history), missed_calls);
+  gtk_widget_set_size_request (missed_calls, 120, 60);
+
+  //imageMissed = gtk_image_new_from_stock ("gtk-goto-bottom", GTK_ICON_SIZE_MENU);
+  imageMissed = file_new_image_from_relative_path ("missed.png");
+  gtk_widget_show (imageMissed);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (missed_calls),
+                                 imageMissed);
+
+  separator3 = gtk_separator_menu_item_new ();
+  gtk_widget_show (separator3);
+  gtk_container_add (GTK_CONTAINER (menu_history), separator3);
+  gtk_widget_set_size_request (separator3, 120, -1);
+  gtk_widget_set_sensitive (separator3, FALSE);
+
+  dialed_calls = gtk_image_menu_item_new_with_mnemonic (("Calls Dialed"));
+  gtk_widget_show (dialed_calls);
+  gtk_container_add (GTK_CONTAINER (menu_history), dialed_calls);
+  gtk_widget_set_size_request (dialed_calls, 120, 60);
+
+  // imageDialed = gtk_image_new_from_stock ("gtk-go-up", GTK_ICON_SIZE_MENU);
+  imageDialed = file_new_image_from_relative_path ("dialed.png");
+  gtk_widget_show (imageDialed);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (dialed_calls),
+                                 imageDialed);
+
+  separator2 = gtk_separator_menu_item_new ();
+  gtk_widget_show (separator2);
+  gtk_container_add (GTK_CONTAINER (menu_history), separator2);
+  gtk_widget_set_size_request (separator2, 120, -1);
+  gtk_widget_set_sensitive (separator2, FALSE);
+
+  received_calls = gtk_image_menu_item_new_with_mnemonic (("Calls Received "));
+  gtk_widget_show (received_calls);
+  gtk_container_add (GTK_CONTAINER (menu_history), received_calls);
+  gtk_widget_set_size_request (received_calls, 120, 60);
+
+  // imageReceived = gtk_image_new_from_stock ("gtk-go-down", GTK_ICON_SIZE_MENU);
+  imageReceived = file_new_image_from_relative_path ("received.png");
+  gtk_widget_show (imageReceived);
+  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (received_calls),
+                                 imageReceived);
+
+  g_signal_connect ((gpointer) all_calls, "activate",
+                    G_CALLBACK (on_all_calls_activate), p_dialer_data);
+  g_signal_connect ((gpointer) missed_calls, "activate",
+                    G_CALLBACK (on_missed_calls_activate), p_dialer_data);
+  g_signal_connect ((gpointer) dialed_calls, "activate",
+                    G_CALLBACK (on_dialed_calls_activate), p_dialer_data);
+  g_signal_connect ((gpointer) received_calls, "activate",
+                    G_CALLBACK (on_received_calls_activate), p_dialer_data);
+
+  p_dialer_data->menu_history = menu_history;
+
+  return menu_history;
 }
 
 

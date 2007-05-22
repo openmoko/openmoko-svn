@@ -183,7 +183,7 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   char input[2];
   input[0] = parac;
   input[1] = 0;
-  gchar *codesinput = NULL;
+  // gchar *codesinput = NULL;
 
 //DBG_TRACE();
   MokoDialerData *appdata = (MokoDialerData *) user_data;

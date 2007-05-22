@@ -19,6 +19,7 @@
 #include <libmokoui/moko-ui.h>
   
 #include <gtk/gtk.h>
+#include <string.h>
 #include "contacts.h"
 #include "dialer-main.h"
 #include "moko-dialer-status.h"
@@ -102,14 +103,18 @@ window_incoming_fails (MokoDialerData * appdata)
 {
   DBG_ENTER ();
   DBG_LEAVE ();
-} gint  timer_incoming_time_out (MokoDialerData * appdata) 
+} 
+
+gint  
+timer_incoming_time_out (MokoDialerData * appdata) 
 {
   
 //DBG_ENTER();
-    TIMER_DATA * timer_data = &(appdata->g_timer_data);
+  //TIMER_DATA * timer_data = &(appdata->g_timer_data);
   moko_dialer_status_update_icon (appdata->status_incoming);
   
-//now that we have the incoming call status report correctly, the timeout mechanism is not needed.
+  //now that we have the incoming call status report correctly, the timeout 
+  //mechanism is not needed.
 /*
   if (event_get_keep_calling ())
   {
@@ -117,7 +122,7 @@ window_incoming_fails (MokoDialerData * appdata)
     timer_data->ticks = 0;
   }
   else
-  {                             //we count 4 before we confirm that there are no calling at all.
+  { //we count 4 before we confirm that there are no calling at all.
     if (timer_data->ticks >= 3)
     {
       DBG_MESSAGE ("THE CALLER aborted, we quit.");
@@ -186,9 +191,9 @@ window_incoming_setup_timer (MokoDialerData * appdata)
   memset (&(appdata->g_timer_data), 0, sizeof (appdata->g_timer_data));
   appdata->g_timer_data.stopsec = 0;
   appdata->g_timer_data.ptimer =
-    g_timeout_add (1000, (GSourceFunc) timer_incoming_time_out,
-                    (gpointer) appdata);
+  g_timeout_add (1000, (GSourceFunc)timer_incoming_time_out, (gpointer)appdata);
 }
+
 void 
 on_window_incoming_show (GtkWidget * widget, MokoDialerData * appdata) 
 {
@@ -243,5 +248,6 @@ window_incoming_show (MokoDialerData *data)
 void
 window_incoming_update_message (MokoDialerData *data, const gchar *clip)
 {
-  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_incoming), "Incoming call from %s", clip);
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_incoming),
+                                   "Incoming call from %s", clip);
 }

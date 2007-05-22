@@ -23,7 +23,7 @@
 static snd_mixer_elem_t *pcm_element = NULL;
 static snd_mixer_t *mixer = NULL;
 
-static mixer_start = TRUE;;
+static gboolean mixer_start = TRUE;
 
 static guint mixer_timeout;
 

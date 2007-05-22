@@ -19,6 +19,9 @@
 #include "moko-dialer-autolist.h"
 #include "error.h"
 #include "common.h"
+
+#include <string.h>
+
 G_DEFINE_TYPE (MokoDialerAutolist, moko_dialer_autolist, GTK_TYPE_HBOX)
      enum
      {
