@@ -65,10 +65,8 @@
 qemu_irq *pxa2xx_pic_init(target_phys_addr_t base, CPUState *env);
 
 /* pxa2xx_timer.c */
-void pxa25x_timer_init(target_phys_addr_t base,
-                qemu_irq *irqs, CPUState *cpustate);
-void pxa27x_timer_init(target_phys_addr_t base,
-                qemu_irq *irqs, qemu_irq irq4, CPUState *cpustate);
+void pxa25x_timer_init(target_phys_addr_t base, qemu_irq *irqs);
+void pxa27x_timer_init(target_phys_addr_t base, qemu_irq *irqs, qemu_irq irq4);
 
 /* pxa2xx_gpio.c */
 struct pxa2xx_gpio_info_s;

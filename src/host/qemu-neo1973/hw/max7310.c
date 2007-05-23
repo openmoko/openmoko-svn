@@ -146,6 +146,41 @@ static void max7310_event(i2c_slave *i2c, enum i2c_event event)
     }
 }
 
+static void max7310_save(QEMUFile *f, void *opaque)
+{
+    struct max7310_s *s = (struct max7310_s *) opaque;
+
+    qemu_put_be32(f, s->i2c_command_byte);
+    qemu_put_be32(f, s->len);
+
+    qemu_put_8s(f, &s->level);
+    qemu_put_8s(f, &s->direction);
+    qemu_put_8s(f, &s->polarity);
+    qemu_put_8s(f, &s->status);
+    qemu_put_8s(f, &s->command);
+
+    i2c_slave_save(f, &s->i2c);
+}
+
+static int max7310_load(QEMUFile *f, void *opaque, int version_id)
+{
+    struct max7310_s *s = (struct max7310_s *) opaque;
+
+    s->i2c_command_byte = qemu_get_be32(f);
+    s->len = qemu_get_be32(f);
+
+    qemu_get_8s(f, &s->level);
+    qemu_get_8s(f, &s->direction);
+    qemu_get_8s(f, &s->polarity);
+    qemu_get_8s(f, &s->status);
+    qemu_get_8s(f, &s->command);
+
+    i2c_slave_load(f, &s->i2c);
+    return 0;
+}
+
+static int max7310_iid = 0;
+
 /* MAX7310 is SMBus-compatible (can be used with only SMBus protocols),
  * but also accepts sequences that are not SMBus so return an I2C device.  */
 struct i2c_slave *max7310_init(i2c_bus *bus)
@@ -157,6 +192,10 @@ struct i2c_slave *max7310_init(i2c_bus *bus)
     s->i2c.send = max7310_tx;
 
     max7310_reset(&s->i2c);
+
+    register_savevm("max7310", max7310_iid ++, 0,
+                    max7310_save, max7310_load, s);
+
     return &s->i2c;
 }
 
