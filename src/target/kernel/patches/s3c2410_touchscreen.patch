@@ -373,7 +373,7 @@ Index: linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
 +
 +
 +	/* If we acutally are a S3C2410: Configure GPIOs */
-+	if (!strcmp(pdev->dev.name, "s3c2410-ts"))
++	if (!strcmp(pdev->name, "s3c2410-ts"))
 +		s3c2410_ts_connect();
 +
 +	if ((info->presc&0xff) > 0)
