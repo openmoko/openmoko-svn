@@ -17,94 +17,196 @@
  */
 
 #include "moko-dialer-autolist.h"
+
+#include "moko-dialer-tip.h"
 #include "error.h"
 #include "common.h"
 
 #include <string.h>
 
 G_DEFINE_TYPE (MokoDialerAutolist, moko_dialer_autolist, GTK_TYPE_HBOX)
-     enum
-     {
-       SELECTED_SIGNAL,
-       CONFIRMED_SIGNAL,
-       NOMATCH_SIGNAL,
-       LAST_SIGNAL
-     };
 
-//forward definition
+#define MOKO_DIALER_AUTOLIST_GET_PRIVATE(obj) \
+        (G_TYPE_INSTANCE_GET_PRIVATE ((obj),\
+	MOKO_TYPE_DIALER_AUTOLIST, MokoDialerAutolistPrivate))
 
-     gboolean on_tip_press_event (MokoDialerTip * tip, GdkEventButton * event,
-                                  gpointer user_data);
+struct _MokoDialerAutolistPrivate 
+{
+  GtkHBox hbox;
+  
+  /* An sorted list of AutolistEntries */
+  GList *numbers;
+  
+  /* The list of entries for the previous search */
+  GList *last;
+  
+  /* Previous search string */
+  gchar *last_string;
+  
+  /* old method of finding data */
+  DIALER_CONTACTS_LIST_HEAD *head;
+  DIALER_READY_CONTACT readycontacts[MOKO_DIALER_MAX_TIPS];
+  
+  gint g_alternatecount_last_time; 
 
-     static gint moko_dialer_autolist_signals[LAST_SIGNAL] = { 0 };
+  gchar g_last_string[MOKO_DIALER_MAX_NUMBER_LEN]; 
+
+  gboolean selected; 
+
+  gint g_alternatecount;
+
+  gboolean tipscreated;
+  
+  GtkWidget *tips[MOKO_DIALER_MAX_TIPS];
+  GtkWidget *imagePerson;
+  
+};
+
+enum
+{
+  SELECTED_SIGNAL,
+  CONFIRMED_SIGNAL,
+  NOMATCH_SIGNAL,
+  LAST_SIGNAL
+};
+
+static gint moko_dialer_autolist_signals[LAST_SIGNAL] = { 0 };
+
+static GtkHBoxClass *parent_class = NULL;
+
+/* Forward declerations */
+gboolean        on_tip_press_event (MokoDialerTip * tip, GdkEventButton * event,
+                                    MokoDialerAutolist *moko_dialer_autolist);
 
 static void
-moko_dialer_autolist_class_init (MokoDialerAutolistClass * class)
+moko_dialer_autolist_finalize (GObject *obj)
 {
-/*
-  GtkVBoxClass* vbox_class;
+  MokoDialerAutolistPrivate *priv;
+  GList *n;
+  AutolistEntry *entry;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (obj);
+  
+  /* Go through priv->numbers and free the entry strings */
+  for (n = priv->numbers; n != NULL; n = n->next)
+  {
+    entry = (AutolistEntry*)n->data;
+    g_free (entry->number);
+    g_free (entry);
+    n->data = NULL;
+  }
+  g_list_free (priv->numbers);
+  g_list_free (priv->last);
+  
+  if (G_OBJECT_CLASS(parent_class)->finalize)
+    G_OBJECT_CLASS(parent_class)->finalize(obj);
+}
 
-  vbox_class= (GtkVBoxClass*) class;
-*/
+static void
+moko_dialer_autolist_class_init (MokoDialerAutolistClass * klass)
+{
+  GObjectClass *object_class;
 
-  GtkObjectClass *object_class;
+  object_class = G_OBJECT_CLASS (klass);
+  parent_class = GTK_HBOX_CLASS (klass);
 
-  object_class = (GtkObjectClass *) class;
-
-  g_print ("moko_dialer_autolist:start signal register\n");
-
+  object_class->finalize = moko_dialer_autolist_finalize;
+  
+  g_type_class_add_private (object_class, sizeof (MokoDialerAutolistPrivate));
+  
+  /* Setup signals */
   moko_dialer_autolist_signals[SELECTED_SIGNAL] =
     g_signal_new ("user_selected",
                   G_OBJECT_CLASS_TYPE (object_class),
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MokoDialerAutolistClass,
-                                   moko_dialer_autolist_selected), NULL, NULL,
+                                   _autolist_selected), NULL, NULL,
                   g_cclosure_marshal_VOID__POINTER, G_TYPE_NONE, 1,
                   g_type_from_name ("gpointer"));
-
-
-
-
-
+ 
   moko_dialer_autolist_signals[CONFIRMED_SIGNAL] =
     g_signal_new ("user_confirmed",
                   G_OBJECT_CLASS_TYPE (object_class),
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MokoDialerAutolistClass,
-                                   moko_dialer_autolist_confirmed), NULL,
+                                   _autolist_confirmed), NULL,
                   NULL, g_cclosure_marshal_VOID__POINTER, G_TYPE_NONE, 1,
                   g_type_from_name ("gpointer"));
 
-//moko_dialer_autolist_nomatch
   moko_dialer_autolist_signals[NOMATCH_SIGNAL] =
     g_signal_new ("autolist_nomatch",
                   G_OBJECT_CLASS_TYPE (object_class),
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MokoDialerAutolistClass,
-                                   moko_dialer_autolist_nomatch), NULL, NULL,
+                                   _autolist_nomatch), NULL, NULL,
                   g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
-
-
-
 }
 
 
 static void
 moko_dialer_autolist_init (MokoDialerAutolist * moko_dialer_autolist)
 {
-//DBG_ENTER();
+  MokoDialerAutolistPrivate *priv;
   int i;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  /* Set all the tips pointers to NULL */
   for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
-    moko_dialer_autolist->tips[i] = 0;
-  moko_dialer_autolist->tipscreated = FALSE;
-  moko_dialer_autolist->head = 0;
-  moko_dialer_autolist->g_alternatecount = 0;
-  moko_dialer_autolist->imagePerson = 0;
-  moko_dialer_autolist->g_alternatecount_last_time = 0;
-  moko_dialer_autolist->g_last_string[0] = 0;   ///<memorize last sensentive string.
+    priv->tips[i] = NULL;
+    
+  priv->tipscreated = FALSE;
+  priv->head = 0;
+  priv->g_alternatecount = 0;
+  priv->imagePerson = 0;
+  priv->g_alternatecount_last_time = 0;
+  priv->g_last_string[0] = 0;  
+  
+  for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
+    priv->tips[i] = NULL;
+  
+  priv->tipscreated = FALSE;
+  priv->head = 0;
+  priv->g_alternatecount = 0;
+  priv->imagePerson = 0;
+  priv->g_alternatecount_last_time = 0;
+  priv->g_last_string[0] = 0;
 
   gtk_widget_set_size_request (GTK_WIDGET (moko_dialer_autolist), 480, 40);
+}
 
+/*
+ * Takes a standard number as entered by the user, and removes all the 'fancy'
+ * chars, such as spaces and dashs. This way, we can match "01234567890" even
+ * when "01234 567 890" was in the 'content' field
+ */
+static gchar*
+_normalize (const gchar *string)
+{
+  gint len = strlen (string);
+  gchar buf[len];
+  gint i;
+  gint j = 0;
+  
+  for (i = 0; i < len; i++)
+  {
+    char c = string[i];
+    if (c != ' ' && c != '-')
+    {
+      buf[j] = c;
+      j++;
+    }
+  }
+  return g_strdup (buf);
+}
+
+/*
+ * Takes two AutolistEntrys, and strcmp's the numbers
+ */
+static gint
+_entry_compare (AutolistEntry *e1, AutolistEntry *e2)
+{
+  return strcmp (e1->number, e2->number);
 }
 
 /**
@@ -114,34 +216,56 @@ gboolean
 moko_dialer_autolist_set_data (MokoDialerAutolist * moko_dialer_autolist,
                                DIALER_CONTACTS_LIST_HEAD * head)
 {
-/*
-if(moko_dialer_autolist->head)
-	contact_release_contact_list(moko_dialer_autolist->head);
-	*/
-
-  moko_dialer_autolist->head = head;
-
-//contact_print_contact_list(moko_dialer_autolist->head);
-
+  MokoDialerAutolistPrivate *priv;
+  DIALER_CONTACT *contact = head->contacts;
+  DIALER_CONTACT_ENTRY *entry;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  /* We go through each of the contacts and their numbers, creating an 
+   * optimised list of entries which are ordered, and therefore can be searched
+   * through quickly
+   */ 
+  while (contact != NULL)
+  {
+    entry = contact->entry;
+    while (entry != NULL)
+    {
+      AutolistEntry *aentry = g_new0 (AutolistEntry, 1);
+      aentry->contact = contact;
+      aentry->entry = entry;
+      aentry->number = _normalize (entry->content);
+      
+      priv->numbers = g_list_insert_sorted (priv->numbers, 
+                                            (gpointer)aentry,
+                                            (GCompareFunc)_entry_compare);
+      entry = entry->next;
+    }
+    contact = contact->next;
+  }
+  
+  priv->head = head;
   return TRUE;
 }
 
 gint
-moko_dialer_autolist_hide_all_tips (MokoDialerAutolist * moko_dialer_autolist)
+moko_dialer_autolist_hide_all_tips (MokoDialerAutolist *moko_dialer_autolist)
 {
-
-  if (moko_dialer_autolist->tipscreated)
+  MokoDialerAutolistPrivate *priv;
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  if (priv->tipscreated)
   {
-    moko_dialer_autolist->selected = FALSE;
+    priv->selected = FALSE;
     //no alternative, hide all 3 labels.
     gint i;
     for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
     {
-      moko_dialer_tip_set_selected (moko_dialer_autolist->tips[i], FALSE);
-      gtk_widget_hide (moko_dialer_autolist->tips[i]);
+      moko_dialer_tip_set_selected (priv->tips[i], FALSE);
+      gtk_widget_hide (priv->tips[i]);
     }
     //hide the imagePerson
-    gtk_widget_hide (moko_dialer_autolist->imagePerson);
+    gtk_widget_hide (priv->imagePerson);
   }
   return 1;
 
@@ -160,35 +284,38 @@ moko_dialer_autolist_hide_all_tips (MokoDialerAutolist * moko_dialer_autolist)
  */
 
 int
-moko_dialer_autolist_fill_alternative (MokoDialerAutolist *
-                                       moko_dialer_autolist, gint count,
+moko_dialer_autolist_fill_alternative (MokoDialerAutolist *moko_dialer_autolist,
+                                       gint count,
                                        gboolean selectdefault)
 {
+  MokoDialerAutolistPrivate *priv;
   gint i;
-//DBG_ENTER();
-  moko_dialer_autolist->selected = FALSE;
-
-  moko_dialer_autolist->g_alternatecount = count;
-
+  AutolistEntry *entry = NULL;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  priv->selected = FALSE;
+  
   if (count > 0)
   {
     //init the labels.
     for (i = 0; i < count && i < MOKO_DIALER_MAX_TIPS; i++)
     {
-      moko_dialer_tip_set_label (moko_dialer_autolist->tips[i],
-                                 moko_dialer_autolist->readycontacts[i].
-                                 p_contact->name);
-      moko_dialer_tip_set_index (moko_dialer_autolist->tips[i], i);
-      moko_dialer_tip_set_selected (moko_dialer_autolist->tips[i], FALSE);
-      gtk_widget_show (moko_dialer_autolist->tips[i]);
+      entry = (AutolistEntry*)g_list_nth_data (priv->last, i);
+      
+      moko_dialer_tip_set_label (priv->tips[i], entry->contact->name);
+      moko_dialer_tip_set_index (priv->tips[i], i);
+      moko_dialer_tip_set_selected (priv->tips[i], FALSE);
+      gtk_widget_show (priv->tips[i]);
     }
-
+    
+    /* Invalidate the remaining tips */
     for (; i < MOKO_DIALER_MAX_TIPS; i++)
     {
-      moko_dialer_tip_set_index (moko_dialer_autolist->tips[i], -1);
-      moko_dialer_tip_set_label (moko_dialer_autolist->tips[i], "");
-      gtk_widget_hide (moko_dialer_autolist->tips[i]);
-      moko_dialer_tip_set_selected (moko_dialer_autolist->tips[i], FALSE);
+      moko_dialer_tip_set_index (priv->tips[i], -1);
+      moko_dialer_tip_set_label (priv->tips[i], "");
+      gtk_widget_hide (priv->tips[i]);
+      moko_dialer_tip_set_selected (priv->tips[i], FALSE);
     }
 
     if (selectdefault)
@@ -200,196 +327,164 @@ moko_dialer_autolist_fill_alternative (MokoDialerAutolist *
   else
   {
     moko_dialer_autolist_hide_all_tips (moko_dialer_autolist);
-    //notify the client that no match has been foudn
-//              autolist_nomatch
+    
+    //notify the client that no match has been found
     g_signal_emit (moko_dialer_autolist,
                    moko_dialer_autolist_signals[NOMATCH_SIGNAL], 0, 0);
   }
   return 1;
 }
 
-//if selectdefault, then we will automatically emit the message to fill the sensed string
-//else, we only refresh our tip list.
-gint
-moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *
-                                        moko_dialer_autolist, gchar * string,
-                                        gboolean selectdefault)
+static void
+moko_dialer_autolist_create_tips (MokoDialerAutolist *moko_dialer_autolist)
 {
-//first, we fill the ready list
-
-  DIALER_CONTACT *contacts;     //=moko_dialer_autolist->head->contacts;
-
-  DIALER_CONTACT_ENTRY *entry;
-
-  gint inserted = 0;
-
-//  DBG_TRACE();
-
-//insert the tips here to avoid the _show_all show it from the start.
+  MokoDialerAutolistPrivate *priv;
+  int i;
   GtkWidget *imagePerson;
   GtkWidget *tip;
 
-  if (!moko_dialer_autolist->tipscreated)
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  gchar *filepath;
+  if ((filepath =
+       file_create_data_path_for_the_file
+       (MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH)))
   {
-    gchar *filepath;
-    if ((filepath =
-         file_create_data_path_for_the_file
-         (MOKO_DIALER_DEFAULT_PERSON_IMAGE_PATH)))
-    {
-      imagePerson = gtk_image_new_from_file (filepath);
-    }
-    else
-    {
-      imagePerson = gtk_image_new_from_stock ("gtk-yes", GTK_ICON_SIZE_DND);
-    }
-    gtk_widget_hide (imagePerson);
-    gtk_widget_set_size_request (imagePerson, 40, 40);
-//  gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, TRUE, 0);
-//gtk_box_pack_start (GTK_CONTAINER(moko_dialer_autolist), imagePerson, TRUE, FALSE, 0);
-    gtk_box_pack_start (GTK_BOX (moko_dialer_autolist), imagePerson,
-                        FALSE, FALSE, 0);
-
-    moko_dialer_autolist->imagePerson = imagePerson;
-    gint i;
-    for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
-    {
-      tip = moko_dialer_tip_new ();
-
-      moko_dialer_tip_set_index (tip, i);
-
-      moko_dialer_tip_set_label (tip, "tony guan");
-
-      moko_dialer_tip_set_selected (tip, FALSE);
-
-      gtk_box_pack_start (GTK_BOX (moko_dialer_autolist), tip, TRUE, TRUE, 0);
-//       gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, FALSE,FALSE, 0);                  
-//       gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, FALSE,TRUE, 0);
-//                       gtk_box_pack_start(GTK_CONTAINER(moko_dialer_autolist), tip, TRUE, FALSE,0);
-
-      g_signal_connect ((gpointer) tip, "button_press_event",
-                        G_CALLBACK (on_tip_press_event),
-                        moko_dialer_autolist);
-
-//      gtk_widget_set_size_request (tip, 20, 20);      
-
-      gtk_widget_hide (tip);
-
-      moko_dialer_autolist->tips[i] = tip;
-    }
-    moko_dialer_autolist->tipscreated = TRUE;
-  }
-  //if last time, we searched ,so we want to know if the last results can be used for this time.
-  int included = contact_string_has_sensentive (string,
-                                                moko_dialer_autolist->
-                                                g_last_string)
-    && (g_utf8_strlen (moko_dialer_autolist->g_last_string, -1) >=
-        MOKO_DIALER_MIN_SENSATIVE_LEN);
-
-  if (included && (moko_dialer_autolist->g_alternatecount_last_time == 0))
-  {
-    inserted = 0;
-    DBG_MESSAGE ("NO NEED TO SEARCH ANYMORE");
-    //last result is null, so we save time by not searching it at all.
-  }
-  else if (included
-           && (moko_dialer_autolist->g_alternatecount_last_time <
-               MOKO_DIALER_MAX_TIPS))
-  {
-    //we search last result here.
-    //now we start from the end of the list.
-    int i = moko_dialer_autolist->g_alternatecount_last_time - 1;
-    DBG_MESSAGE ("we search the last resutls.");
-    while (i >= 0 && i >= inserted)
-    {
-      //here inserted stands as the next inserted position.
-
-      if (contact_string_has_sensentive
-          (moko_dialer_autolist->readycontacts[i].p_entry->content, string))
-      {
-        DBG_MESSAGE ("find one match.");
-        //we use the idle readycontacts[MOKO_DIALER_MAX_TIPS] for exchange space,to swap the 2 items.
-        if (i > inserted)
-        {
-          moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].
-            p_entry = moko_dialer_autolist->readycontacts[inserted].p_entry;
-          moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].
-            p_contact =
-            moko_dialer_autolist->readycontacts[inserted].p_contact;
-          moko_dialer_autolist->readycontacts[inserted].p_entry =
-            moko_dialer_autolist->readycontacts[i].p_entry;
-          moko_dialer_autolist->readycontacts[inserted].p_contact =
-            moko_dialer_autolist->readycontacts[i].p_contact;
-          moko_dialer_autolist->readycontacts[i].p_entry =
-            moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].p_entry;
-          moko_dialer_autolist->readycontacts[i].p_contact =
-            moko_dialer_autolist->readycontacts[MOKO_DIALER_MAX_TIPS].
-            p_contact;
-        }
-        inserted++;
-      }
-      else
-      {
-        //we just move the point back.
-        i--;
-      }
-
-    }
-
+    imagePerson = gtk_image_new_from_file (filepath);
   }
   else
   {
-    //we had to search all the contact list. may be we can improve the performance by draw every suitalbe items to be the first of the list.
-    contacts = moko_dialer_autolist->head->contacts;
+    imagePerson = gtk_image_new_from_stock ("gtk-yes", GTK_ICON_SIZE_DND);
+  }
+  gtk_widget_hide (imagePerson);
+  gtk_widget_set_size_request (imagePerson, 40, 40);
 
-    DBG_MESSAGE ("we search the whole contact list.");
-    while (contacts != NULL && inserted < MOKO_DIALER_MAX_TIPS)
-    {
-      entry = contacts->entry;
-      while (entry != NULL && inserted < MOKO_DIALER_MAX_TIPS)
-      {
-        //judge if the entry includes the string
-        if (contact_string_has_sensentive (entry->content, string))
-        {
-          DBG_MESSAGE ("find one match from the whole list.");
-          //if the person not inserted, then insert first
-          moko_dialer_autolist->readycontacts[inserted].p_contact = contacts;
-          moko_dialer_autolist->readycontacts[inserted].p_entry = entry;
-          inserted++;
-          //break;
-        }
-        entry = entry->next;
-      }
+  gtk_box_pack_start (GTK_BOX (moko_dialer_autolist), imagePerson,
+                      FALSE, FALSE, 0);
 
-      contacts = contacts->next;
+  priv->imagePerson = imagePerson;
+  
+  for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
+  {
+    tip = moko_dialer_tip_new ();
+    moko_dialer_tip_set_index (tip, i);
+    moko_dialer_tip_set_label (tip, "tony guan");
+    moko_dialer_tip_set_selected (tip, FALSE);
+    gtk_box_pack_start (GTK_BOX (moko_dialer_autolist), tip, TRUE, TRUE, 0);
+    g_signal_connect ((gpointer) tip, "button_press_event",
+                      G_CALLBACK (on_tip_press_event),
+                      moko_dialer_autolist);
+    gtk_widget_hide (tip);
 
-    }
-
-  }                             //
-  strcpy (moko_dialer_autolist->g_last_string, string);
-  moko_dialer_autolist->g_alternatecount_last_time = inserted;
-
-//DBG_MESSAGE("inserted=%d",inserted);
-  moko_dialer_autolist_fill_alternative (moko_dialer_autolist, inserted,
-                                         selectdefault);
-
-//DBG_LEAVE();
-  return inserted;
+    priv->tips[i] = tip;
+  }
+  priv->tipscreated = TRUE;
 }
+
+/* 
+ * Go through the list looking for matches, we know the list is optimized, so
+ * we can make some assuptions and our search is therefore faster
+ */
+static GList*
+_autolist_find_number_in_entry_list (GList *numbers, const char *string)
+{
+  GList *matches = NULL;
+  GList *n;
+  AutolistEntry *entry = NULL;
+  gint i = 0;
+  gint len = strlen (string);
+  gboolean found_one = FALSE;
+  gboolean prev_matched = FALSE;
+  
+  for (n = numbers; n != NULL; n = n->next)
+  {
+    entry = (AutolistEntry*)n->data;
+    if (g_strstr_len (entry->number, len, string))
+    {
+      matches = g_list_append (matches, (gpointer)entry);
+      found_one = prev_matched = TRUE;
+      i++;
+    }
+    else
+    {
+      /* 
+       * If we have already found at least one, but the previous entry didn't
+       * match, we don't bother continuing.
+       */
+      if (found_one && !prev_matched)
+        break;
+      prev_matched = FALSE;
+    }
+  }
+  
+  return matches;
+}
+
+gint
+moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *autolist, 
+                                        gchar * string,
+                                        gboolean selectdefault)
+{
+  MokoDialerAutolistPrivate *priv;
+  GList *matches = NULL;
+  gint n_matches = 0;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (autolist);
+  
+  if (!priv->tipscreated)
+    moko_dialer_autolist_create_tips (autolist);
+
+  /* First we check if the new string is just the last one with on more number*/
+  if (priv->last && priv->last_string) {
+    
+    if (strlen (string) < strlen (priv->last_string))
+    {
+      /* We have 'deleted' so we can't use our previous results */
+      g_print ("Deleted\n");
+    }
+    else if (strstr (string, priv->last_string))
+    {
+      matches = _autolist_find_number_in_entry_list (priv->last, string);
+    }
+  }
+  
+  if (matches == NULL)
+  {
+    /* We need to look though the whole list */
+    matches = _autolist_find_number_in_entry_list (priv->numbers, string);
+  }
+  
+
+  /* We reset the last & last_string variables */
+  if (priv->last)
+    g_list_free (priv->last);
+  priv->last = matches;
+  if (priv->last_string)
+    g_free (priv->last_string);
+  priv->last_string = g_strdup (string);
+  
+  n_matches = g_list_length (matches);
+  moko_dialer_autolist_fill_alternative (autolist, 
+                                         n_matches,
+                                         selectdefault);
+  return n_matches;
+}
+
 
 gboolean
 on_tip_press_event (MokoDialerTip * tip, GdkEventButton * event,
-                    gpointer user_data)
+                    MokoDialerAutolist *moko_dialer_autolist)
 {
 
-//DBG_ENTER();
-  MokoDialerAutolist *moko_dialer_autolist;
-  moko_dialer_autolist = (MokoDialerAutolist *) user_data;
-
-  gint selected = moko_dialer_tip_get_index (tip);
-
-
+  MokoDialerAutolistPrivate *priv;
+  gint selected;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  selected = moko_dialer_tip_get_index (tip);
+  
   if (selected != -1 && selected < MOKO_DIALER_MAX_TIPS
-      && moko_dialer_autolist->g_alternatecount)
+      && g_list_length (priv->last))
   {
 
     return moko_dialer_autolist_set_select (moko_dialer_autolist, selected);
@@ -408,7 +503,11 @@ on_tip_press_event (MokoDialerTip * tip, GdkEventButton * event,
 gboolean
 moko_dialer_autolist_has_selected (MokoDialerAutolist * moko_dialer_autolist)
 {
-  return moko_dialer_autolist->selected;
+  MokoDialerAutolistPrivate *priv;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+  
+  return priv->selected;
 }
 
 // selected ==-1 means there are no selected tips
@@ -416,72 +515,68 @@ gboolean
 moko_dialer_autolist_set_select (MokoDialerAutolist * moko_dialer_autolist,
                                  gint selected)
 {
+  MokoDialerAutolistPrivate *priv;
+  AutolistEntry *entry = NULL;
+  gint len;
+  
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
+
+  len = g_list_length (priv->last);
   gint i;
   if (selected == -1)
   {
-
     //set the selected status to be false
-    for (i = 0; i < moko_dialer_autolist->g_alternatecount; i++)
+    for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
     {
-      moko_dialer_tip_set_selected (moko_dialer_autolist->tips[i], FALSE);
+      moko_dialer_tip_set_selected (priv->tips[i], FALSE);
     }
-    //set
-    gtk_widget_hide (moko_dialer_autolist->imagePerson);
-    moko_dialer_autolist->selected = FALSE;
+    gtk_widget_hide (priv->imagePerson);
+    priv->selected = FALSE;
     return TRUE;
   }
-
-
-  if (selected < MOKO_DIALER_MAX_TIPS
-      && moko_dialer_autolist->g_alternatecount)
+  
+  if (selected < len)
   {
-    //first of all, determin if this tip is already selected previously.
-    if (moko_dialer_tip_is_selected (moko_dialer_autolist->tips[selected]))
+    entry = (AutolistEntry*)g_list_nth_data (priv->last, selected);
+    //first of all, determine if this tip is already selected previously.
+    if (moko_dialer_tip_is_selected (priv->tips[selected]))
     {
-
       //hide the others;
-      for (i = 0; i < moko_dialer_autolist->g_alternatecount; i++)
+      for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
       {
         if (i != selected)
         {                       //hide the others
-          gtk_widget_hide (moko_dialer_autolist->tips[i]);
+          gtk_widget_hide (priv->tips[i]);
         }
       }
-      moko_dialer_autolist->selected = FALSE;
-      //emit confirm message;
-//              DBG_MESSAGE("we confirm %s is right.",moko_dialer_autolist->readycontacts[selected].p_contact->name);                   
+      priv->selected = FALSE;
+      
+      
       g_signal_emit (moko_dialer_autolist,
-                     moko_dialer_autolist_signals[CONFIRMED_SIGNAL], 0,
-                     &(moko_dialer_autolist->readycontacts[selected]));
-
+                     moko_dialer_autolist_signals[CONFIRMED_SIGNAL], 0, entry);
+      
     }
     else
     {
-
-      //refresh the imagePerson widget
-//      file_load_person_image_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
-//      file_load_person_image_scalable_from_relative_path(moko_dialer_autolist->imagePerson,moko_dialer_autolist->readycontacts[selected].p_contact->picpath);
-      contact_load_contact_photo (GTK_IMAGE
-                                  (moko_dialer_autolist->imagePerson),
-                                  moko_dialer_autolist->
-                                  readycontacts[selected].p_contact->ID);
-      gtk_widget_show (moko_dialer_autolist->imagePerson);
+      contact_load_contact_photo (GTK_IMAGE (priv->imagePerson), 
+                                  entry->contact->ID);
+      gtk_widget_show (priv->imagePerson);
+      
       //just change the selected attribute of the tips
-      for (i = 0; i < moko_dialer_autolist->g_alternatecount; i++)
+      for (i = 0; i < MOKO_DIALER_MAX_TIPS; i++)
       {
         if (i != selected)
-        {                       //set selected to false;
-          moko_dialer_tip_set_selected (moko_dialer_autolist->tips[i], FALSE);
+        {                       //set unselected to false;
+          moko_dialer_tip_set_selected (priv->tips[i], FALSE);
         }
         else
-          moko_dialer_tip_set_selected (moko_dialer_autolist->tips[i], TRUE);
+          moko_dialer_tip_set_selected (priv->tips[i], TRUE);
       }
-      moko_dialer_autolist->selected = TRUE;
-      //emit selected message
-//              DBG_MESSAGE(" %s is selectd.",moko_dialer_autolist->readycontacts[selected].p_contact->name);
+      priv->selected = TRUE;
+      
       g_signal_emit (moko_dialer_autolist,
-                     moko_dialer_autolist_signals[SELECTED_SIGNAL], 0,
-                     &(moko_dialer_autolist->readycontacts[selected]));
+                     moko_dialer_autolist_signals[SELECTED_SIGNAL], 0, entry);
+      
     }
     return TRUE;
   }
@@ -491,6 +586,7 @@ moko_dialer_autolist_set_select (MokoDialerAutolist * moko_dialer_autolist,
     return FALSE;
   }
 
+  return FALSE;
 }
 
 GtkWidget *

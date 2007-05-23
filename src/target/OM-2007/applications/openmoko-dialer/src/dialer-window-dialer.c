@@ -40,51 +40,37 @@
 static void
 cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
-
+  gchar *codesinput = NULL;
+  
   moko_dialer_textview_delete (appdata->moko_dialer_text_view);
 
   /* skip the auto list for the moment as it is too slow */
-#if 0
   if (moko_dialer_autolist_has_selected (appdata->moko_dialer_autolist))
   {
-//first of all, we un-select the selection.
+    //first of all, we un-select the selection.
     moko_dialer_autolist_set_select (appdata->moko_dialer_autolist, -1);
 
-//fill the textview with ""
+    //fill the textview with ""
     moko_dialer_textview_fill_it (appdata->moko_dialer_text_view, "");
-//moko_dialer_textview_set_color(moko_dialer_textview);
+    //moko_dialer_textview_set_color(moko_dialer_textview);
+  }
+  codesinput =
+    g_strdup (moko_dialer_textview_get_input (appdata->moko_dialer_text_view, FALSE));
+
+  if (codesinput
+      && (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN))
+  {
+    moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
+                                            codesinput, TRUE);
   }
   else
   {
-    moko_dialer_textview_delete (appdata->moko_dialer_text_view);
-//refresh the autolist,but do not automaticall fill the textview
-    gchar *codesinput = 0;
-    codesinput =
-      g_strdup (moko_dialer_textview_get_input
-                (appdata->moko_dialer_text_view, FALSE));
-
-    if (codesinput)
-    {
-      DBG_MESSAGE ("input %s", codesinput);
-      if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
-      {
-        moko_dialer_autolist_refresh_by_string (appdata->
-                                                moko_dialer_autolist,
-                                                codesinput, FALSE);
-        moko_dialer_textview_set_color (appdata->moko_dialer_text_view);
-      }
-      else
-        moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
-      g_free (codesinput);
-    }
-    else
-    {
-      DBG_WARN ("No input now.");
-    }
-
-
+    moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
   }
-#endif
+
+  if (codesinput)
+    g_free (codesinput);
+
 }
 
 static void
@@ -122,10 +108,10 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   gint leninput = 0;
   MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
-  DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
+  AutolistEntry *ready_contact = (AutolistEntry *) para_pointer;
   codesinput = moko_dialer_textview_get_input (moko_dialer_text_view, FALSE);
-  if (ready_contact->p_entry->content)
-    lenstring = g_utf8_strlen (ready_contact->p_entry->content, -1);
+  if (ready_contact->entry->content)
+    lenstring = g_utf8_strlen (ready_contact->entry->content, -1);
   else
     lenstring = 0;
 
@@ -137,7 +123,7 @@ on_dialer_autolist_user_selected (GtkWidget * widget, gpointer para_pointer,
   {
 
     moko_dialer_textview_fill_it (moko_dialer_text_view,
-                                  &(ready_contact->p_entry->
+                                  &(ready_contact->entry->
                                     content[leninput]));
 
   }
@@ -151,15 +137,15 @@ static void
 on_dialer_autolist_user_confirmed (GtkWidget * widget, gpointer para_pointer,
                                    gpointer user_data)
 {
-#if 0
+#if 10
   MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
-  DIALER_READY_CONTACT *ready_contact = (DIALER_READY_CONTACT *) para_pointer;
+  AutolistEntry *ready_contact = (AutolistEntry *) para_pointer;
   DBG_MESSAGE ("GOT THE MESSAGE OF confirmed:%s",
-               ready_contact->p_entry->content);
+               ready_contact->entry->content);
   moko_dialer_textview_confirm_it (moko_dialer_text_view,
-                                   ready_contact->p_entry->content);
-
+                                   ready_contact->entry->content);
+  
 #endif
 }
 
@@ -183,18 +169,14 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
   char input[2];
   input[0] = parac;
   input[1] = 0;
-  // gchar *codesinput = NULL;
+  gchar *codesinput = NULL;
 
-//DBG_TRACE();
   MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_dialer_text_view = appdata->moko_dialer_text_view;
 
 
   moko_dialer_textview_insert (moko_dialer_text_view, input);
-//DBG_TRACE();
 
-    /* skip auto complete for the moment as it is too slow */
-#if 0
   codesinput =
     g_strdup (moko_dialer_textview_get_input (moko_dialer_text_view, FALSE));
 
@@ -211,8 +193,6 @@ on_dialer_panel_user_input (GtkWidget * widget, gchar parac,
 
   if (codesinput)
     g_free (codesinput);
-#endif
-
 }
 
 static void
