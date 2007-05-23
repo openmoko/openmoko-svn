@@ -39,8 +39,17 @@ typedef struct {
 
 GType moko_gsmd_connection_get_type();
 MokoGsmdConnection* moko_gsmd_connection_new();
-void moko_gsmd_connection_network_register(MokoGsmdConnection* self); //TODO add type, i.e. MOKO_GSMD_CONNECTION_NETREG_AUTO
+// power
 void moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on);
+// pin
+void moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin);
+// network
+void moko_gsmd_connection_network_register(MokoGsmdConnection* self); //TODO add type, i.e. MOKO_GSMD_CONNECTION_NETREG_AUTO
+// voice calls
+void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self);
+void moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self);
+void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number);
+void moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number);
 
 enum {
     MOKO_GSMD_CONNECTION_NETREG_NONE = 0,
@@ -69,18 +78,12 @@ enum {
 void moko_gsmd_connection_incoming_call(MokoGsmdConnection* self, int type);
 void moko_gsmd_connection_call_status_progress(MokoGsmdConnection* self, int type);
 void moko_gsmd_connection_pin_requested(MokoGsmdConnection* self, int type);
-//sms
-//gprs
+// sms
+// gprs
 void moko_gsmd_connection_incoming_clip(MokoGsmdConnection* self, const char* number);
 void moko_gsmd_connection_network_registration(MokoGsmdConnection* self, int type, int lac, int cell);
 void moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self);
 void moko_gsmd_connection_signal_strength_changed(MokoGsmdConnection* self, int strength);
-//voice
-void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self);
-void moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self);
-void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number);
-void moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number);
-
 G_END_DECLS
 
 #endif // _MOKO_GSMD_CONNECTION_H_

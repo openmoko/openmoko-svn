@@ -242,7 +242,7 @@ gboolean _moko_gsmd_connection_source_dispatch( MokoGsmdConnectionSource* self, 
     else
     {
         if ( size == 0 ) /* EOF */
-          return FALSE;
+            return FALSE;
 
         lgsm_handle_packet( self->handle, buf, size );
     }
@@ -349,19 +349,30 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
 }
 
 /* public API */
-void moko_gsmd_connection_network_register(MokoGsmdConnection* self)
-{
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
-    g_return_if_fail( priv->handle );
-    lgsm_netreg_register( priv->handle, 0 );
-}
-
 void moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     int result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
     g_debug( "lgsm_phone_power returned %d", result );
+}
+
+void moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
+{
+    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    g_return_if_fail( priv->handle );
+    g_return_if_fail( pin );
+    g_return_if_fail( strlen( pin ) >= 4 );
+    //FIXME lgsm_pin_auth is not yet implemented, so we call lgsm_pin directly...
+    //lgsm_pin_auth( priv->handle, pin );
+    lgsm_pin( priv->handle, 1, pin, NULL);
+}
+
+void moko_gsmd_connection_network_register(MokoGsmdConnection* self)
+{
+    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    g_return_if_fail( priv->handle );
+    lgsm_netreg_register( priv->handle, 0 );
 }
 
 void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
