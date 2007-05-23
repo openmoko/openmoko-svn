@@ -1266,6 +1266,18 @@ static int pxa2xx_rtc_load(QEMUFile *f, void *opaque, int version_id)
 }
 
 /* I2C Interface */
+struct pxa2xx_i2c_s {
+    i2c_slave slave;
+    i2c_bus *bus;
+    target_phys_addr_t base;
+    qemu_irq irq;
+
+    uint16_t control;
+    uint16_t status;
+    uint8_t ibmr;
+    uint8_t data;
+};
+
 #define IBMR	0x80	/* I2C Bus Monitor register */
 #define IDBR	0x88	/* I2C Data Buffer register */
 #define ICR	0x90	/* I2C Control register */
@@ -1471,7 +1483,7 @@ static int pxa2xx_i2c_load(QEMUFile *f, void *opaque, int version_id)
     return 0;
 }
 
-static struct pxa2xx_i2c_s *pxa2xx_i2c_init(target_phys_addr_t base,
+struct pxa2xx_i2c_s *pxa2xx_i2c_init(target_phys_addr_t base,
                 qemu_irq irq, int ioregister)
 {
     int iomemtype;
@@ -1495,6 +1507,11 @@ static struct pxa2xx_i2c_s *pxa2xx_i2c_init(target_phys_addr_t base,
                     pxa2xx_i2c_save, pxa2xx_i2c_load, s);
 
     return s;
+}
+
+i2c_bus *pxa2xx_i2c_bus(struct pxa2xx_i2c_s *s)
+{
+    return s->bus;
 }
 
 /* PXA Inter-IC Sound Controller */
@@ -2034,7 +2051,7 @@ struct pxa2xx_state_s *pxa270_init(unsigned int sdram_size,
     s->dma = pxa27x_dma_init(0x40000000, s->pic[PXA2XX_PIC_DMA]);
 
     pxa27x_timer_init(0x40a00000, &s->pic[PXA2XX_PIC_OST_0],
-                    s->pic[PXA27X_PIC_OST_4_11], s->env);
+                    s->pic[PXA27X_PIC_OST_4_11]);
 
     s->gpio = pxa2xx_gpio_init(0x40e00000, s->env, s->pic, 121);
 
@@ -2146,7 +2163,7 @@ struct pxa2xx_state_s *pxa255_init(unsigned int sdram_size,
 
     s->dma = pxa255_dma_init(0x40000000, s->pic[PXA2XX_PIC_DMA]);
 
-    pxa25x_timer_init(0x40a00000, &s->pic[PXA2XX_PIC_OST_0], s->env);
+    pxa25x_timer_init(0x40a00000, &s->pic[PXA2XX_PIC_OST_0]);
 
     s->gpio = pxa2xx_gpio_init(0x40e00000, s->env, s->pic, 85);
 

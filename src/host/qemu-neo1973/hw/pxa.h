@@ -116,6 +116,10 @@ void pxa2xx_ssp_attach(struct pxa2xx_ssp_s *port,
                 void (*writefn)(void *opaque, uint32_t value), void *opaque);
 
 struct pxa2xx_i2c_s;
+struct pxa2xx_i2c_s *pxa2xx_i2c_init(target_phys_addr_t base,
+                qemu_irq irq, int ioregister);
+i2c_bus *pxa2xx_i2c_bus(struct pxa2xx_i2c_s *s);
+
 struct pxa2xx_i2s_s;
 struct pxa2xx_fir_s;
 
@@ -174,18 +178,6 @@ struct pxa2xx_state_s {
     QEMUTimer *rtc_swal1;
     QEMUTimer *rtc_swal2;
     QEMUTimer *rtc_pi;
-};
-
-struct pxa2xx_i2c_s {
-    i2c_slave slave;
-    i2c_bus *bus;
-    target_phys_addr_t base;
-    qemu_irq irq;
-
-    uint16_t control;
-    uint16_t status;
-    uint8_t ibmr;
-    uint8_t data;
 };
 
 struct pxa2xx_i2s_s {

@@ -302,8 +302,7 @@ static int s3c_rtc_load(QEMUFile *f, void *opaque, int version_id)
     qemu_get_be32s(f, &s->sec);
 
     s->enable = (s->control == 0x1);
-    if (s->tick & (1 << 7))
-        s3c_rtc_tick_mod(s);
+    s3c_rtc_tick_mod(s);
 
     return 0;
 }

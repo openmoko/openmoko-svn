@@ -938,7 +938,7 @@ static void spitz_wm8750_addr(int line, int level, void *opaque)
 static void spitz_i2c_setup(struct pxa2xx_state_s *cpu)
 {
     /* Attach the CPU on one end of our I2C bus.  */
-    i2c_bus *bus = cpu->i2c[0]->bus;
+    i2c_bus *bus = pxa2xx_i2c_bus(cpu->i2c[0]);
 
 #ifdef HAS_AUDIO
     AudioState *audio;
@@ -963,7 +963,8 @@ static void spitz_i2c_setup(struct pxa2xx_state_s *cpu)
 static void spitz_akita_i2c_setup(struct pxa2xx_state_s *cpu)
 {
     /* Attach a Max7310 to Akita I2C bus.  */
-    i2c_set_slave_address(max7310_init(cpu->i2c[0]->bus), AKITA_MAX_ADDR);
+    i2c_set_slave_address(max7310_init(pxa2xx_i2c_bus(cpu->i2c[0])),
+                    AKITA_MAX_ADDR);
 }
 
 /* Other peripherals */

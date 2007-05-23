@@ -53,9 +53,8 @@ void i2c_slave_load(QEMUFile *f, i2c_slave *dev);
 /* max7310.c */
 i2c_slave *max7310_init(i2c_bus *bus);
 void max7310_reset(i2c_slave *i2c);
-void max7310_gpio_set(i2c_slave *i2c, int line, int level);
-void max7310_gpio_handler_set(i2c_slave *i2c, int line,
-                gpio_handler_t handler, void *opaque);
+qemu_irq *max7310_gpio_in_get(i2c_slave *i2c);
+void max7310_gpio_out_set(i2c_slave *i2c, int line, qemu_irq handler);
 
 /* wm8750.c */
 i2c_slave *wm8750_init(i2c_bus *bus, AudioState *audio);

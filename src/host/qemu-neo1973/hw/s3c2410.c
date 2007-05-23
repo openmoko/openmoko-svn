@@ -1177,9 +1177,8 @@ static void s3c_timers_save(QEMUFile *f, void *opaque)
     int i;
     for (i = 0; i < 5; i ++) {
         qemu_put_be32(f, s->timer[i].running);
-        s3c_timers_stop(s, i);
         qemu_put_be32s(f, &s->timer[i].divider);
-        qemu_put_be16s(f, &s->timer[i].count);
+        qemu_put_be16(f, s3c_timers_get(s, i));
         qemu_put_be64s(f, &s->timer[i].reload);
     }
 
@@ -1195,9 +1194,10 @@ static void s3c_timers_save(QEMUFile *f, void *opaque)
 static int s3c_timers_load(QEMUFile *f, void *opaque, int version_id)
 {
     struct s3c_timers_state_s *s = (struct s3c_timers_state_s *) opaque;
-    int i;
+    int i, running[5];
     for (i = 0; i < 5; i ++) {
-        s->timer[i].running = qemu_get_be32(f);
+        s->timer[i].running = 0;
+        running[i] = qemu_get_be32(f);
         qemu_get_be32s(f, &s->timer[i].divider);
         qemu_get_be16s(f, &s->timer[i].count);
         qemu_get_be64s(f, &s->timer[i].reload);
@@ -1212,7 +1212,8 @@ static int s3c_timers_load(QEMUFile *f, void *opaque, int version_id)
     qemu_get_be32s(f, &s->control);
 
     for (i = 0; i < 5; i ++)
-        s3c_timers_start(s, i);
+        if (running[i])
+            s3c_timers_start(s, i);
 
     return 0;
 }

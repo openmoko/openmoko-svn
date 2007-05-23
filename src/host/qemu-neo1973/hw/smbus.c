@@ -11,7 +11,7 @@
 
 #include "vl.h"
 
-#define DEBUG_SMBUS 1
+//#define DEBUG_SMBUS 1
 
 #ifdef DEBUG_SMBUS
 #define DPRINTF(fmt, args...) \
@@ -42,9 +42,6 @@ static void smbus_do_quick_cmd(SMBusDevice *dev, int recv)
 
 static void smbus_do_write(SMBusDevice *dev)
 {
-    uint8_t *p;
-    int len;
-
     if (dev->data_len == 0) {
         smbus_do_quick_cmd(dev, 0);
     } else if (dev->data_len == 1) {
