@@ -110,72 +110,6 @@ timer_outgoing_time_out (MokoDialerData * appdata)
 }
 
 
-
-static void
-on_window_outgoing_hide (GtkWidget * widget, MokoDialerData * appdata)
-{
-  if (appdata->g_timer_data.ptimer != 0)
-  {
-    g_source_remove (appdata->g_timer_data.ptimer);
-    appdata->g_timer_data.ptimer = 0;
-  }
-  if (appdata->g_state.callstate != STATE_TALKING)
-  {                             //     add_histroy_entry(g_state.historytype,g_state.contactinfo.name,g_state.contactinfo.number,g_state.contactinfo.picpath,g_state.starttime,0);
-/*
-    add_histroy_entry (appdata, appdata->g_state.historytype,
-                       appdata->g_peer_info.name,
-                       appdata->g_peer_info.number,
-                       appdata->g_peer_info.picpath,
-                       appdata->g_state.starttime,
-                       appdata->g_state.startdate, 0);
-*/
-  }
-
-
-}
-
-static void
-window_outgoing_setup_timer (MokoDialerData * appdata)
-{
-  time_t timep;
-  struct tm *p;
-  time (&timep);
-  p = localtime (&timep);
-
-  sprintf (appdata->g_state.starttime, "%02d:%02d:%02d", p->tm_hour,
-           p->tm_min, p->tm_sec);
-  sprintf (appdata->g_state.startdate, "%04d/%02d/%02d", p->tm_year,
-           p->tm_mon, p->tm_mday);
-
-  if (appdata->g_timer_data.ptimer != 0)
-  {
-    g_source_remove (appdata->g_timer_data.ptimer);
-    appdata->g_timer_data.ptimer = 0;
-  }
-
-  memset (&(appdata->g_timer_data), 0, sizeof (appdata->g_timer_data));
-// 1:30 timeout
-  appdata->g_timer_data.stopsec = 90;
-
-  appdata->g_timer_data.ptimer =
-    g_timeout_add (1000, (GSourceFunc) timer_outgoing_time_out, appdata);
-
-
-}
-
-static void
-on_window_outgoing_show (GtkWidget * widget, MokoDialerData * appdata)
-{
-
-  window_outgoing_setup_timer (appdata);
-  appdata->g_state.callstate = STATE_CALLING;
-  /* TODO: MokoGsmdConnection->dial
-   * int retv = gsm_dial (appdata->g_peer_info.number);
-   * DBG_MESSAGE ("GSM_DIAL returns %d", retv);
-   */
-}
-
-
 gint
 window_outgoing_init (MokoDialerData * p_dialer_data)
 {
@@ -242,20 +176,16 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
   p_dialer_data->window_outgoing = GTK_WIDGET (window);
   p_dialer_data->status_outgoing = MOKO_DIALER_STATUS (status);
 
-  g_signal_connect (G_OBJECT (window), "show",
-                    G_CALLBACK (on_window_outgoing_show), p_dialer_data);
-  g_signal_connect (G_OBJECT (window), "hide",
-                    G_CALLBACK (on_window_outgoing_hide), p_dialer_data);
-
   return 1;
 }
 
-void
+static void
 call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data)
 {
   if (type == MOKO_GSMD_PROG_REJECT)
   {
     g_debug ("call rejected");
+    gtk_dialog_response (GTK_DIALOG (data->window_outgoing), GTK_RESPONSE_CANCEL);
     return;
   }
 
@@ -268,7 +198,10 @@ call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data
 void
 window_outgoing_dial (MokoDialerData *data, gchar *number)
 {
-  g_signal_connect (data->connection, "call-progress", 
+  gulong progress_handler;
+
+  /* connect our handler to track call progress */
+  progress_handler = g_signal_connect (data->connection, "call-progress", 
                     G_CALLBACK (call_progress_cb), data);
   g_object_set_data (G_OBJECT (data->window_outgoing), "current-number", number);
   moko_gsmd_connection_voice_dial (data->connection, number);
@@ -288,4 +221,7 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
 
   gtk_widget_hide (data->window_outgoing);
   g_object_steal_data (G_OBJECT (data->window_outgoing), "current-number");
+
+  /* disconnect the call progress handler since we no longer need it */
+  g_signal_handler_disconnect (data->connection, progress_handler);
 }
