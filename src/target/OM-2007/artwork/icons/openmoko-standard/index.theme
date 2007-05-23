@@ -2,14 +2,7 @@
 Name=OpenMoko
 Comment=OpenMoko Icon Theme
 
-Directories=22x22/stock,32x32/actions,32x32/apps,32x32/categories,32x32/places,32x32/stock,36x36/stock,48x48/actions,48x48/apps,48x48/categories,48x48/places,128x128/actions,128x128/apps,128x128/categories,128x128/places,scalable/stock
-
-[scalable/stock]
-Size=32
-Context=stock
-Type=Scalable
-MinSize=8
-MaxSize=256
+Directories=22x22/stock,32x32/actions,32x32/apps,32x32/categories,32x32/places,32x32/stock,36x36/stock,48x48/actions,48x48/apps,48x48/categories,48x48/places,128x128/actions,128x128/apps,128x128/categories,128x128/places
 
 [22x22/stock]
 Size=22
