@@ -19134,7 +19134,7 @@ Index: linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.c
-@@ -0,0 +1,462 @@
+@@ -0,0 +1,464 @@
 +/*
 + * s3c24xx-pcm.c  --  ALSA Soc Audio Layer
 + *
@@ -19467,6 +19467,8 @@ Index: linux-2.6.21-moko/sound/soc/s3c24xx/s3c24xx-pcm.c
 +	prtd = kzalloc(sizeof(struct s3c24xx_runtime_data), GFP_KERNEL);
 +	if (prtd == NULL)
 +		return -ENOMEM;
++
++	spin_lock_init(&prtd->lock);
 +
 +	runtime->private_data = prtd;
 +	return 0;
