@@ -128,7 +128,7 @@ Index: linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,426 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -165,6 +165,8 @@ Index: linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
 + *      - Make use of some undocumented features of the touchscreen
 + *        controller
 + *
++ * 2007-05-23: Harald Welte <laforge@openmoko.org>
++ * 	- Add proper support for S32440
 + */
 +
 +#include <linux/errno.h>
@@ -370,8 +372,9 @@ Index: linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
 +	}
 +
 +
-+	/* Configure GPIOs */
-+	s3c2410_ts_connect();
++	/* If we acutally are a S3C2410: Configure GPIOs */
++	if (!strcmp(pdev->dev.name, "s3c2410-ts"))
++		s3c2410_ts_connect();
 +
 +	if ((info->presc&0xff) > 0)
 +		writel(S3C2410_ADCCON_PRSCEN | S3C2410_ADCCON_PRSCVL(info->presc&0xFF),\
@@ -510,14 +513,36 @@ Index: linux-2.6.21-moko/drivers/input/touchscreen/s3c2410_ts.c
 +
 +};
 +
++static struct platform_driver s3c2440ts_driver = {
++       .driver         = {
++	       .name   = "s3c2440-ts",
++	       .owner  = THIS_MODULE,
++       },
++       .probe          = s3c2410ts_probe,
++       .remove         = s3c2410ts_remove,
++       .suspend        = s3c2410ts_suspend,
++       .resume         = s3c2410ts_resume,
++
++};
 +
 +static int __init s3c2410ts_init(void)
 +{
-+	return platform_driver_register(&s3c2410ts_driver);
++	int rc;
++
++	rc = platform_driver_register(&s3c2410ts_driver);
++	if (rc < 0)
++		return rc;
++
++	rc = platform_driver_register(&s3c2440ts_driver);
++	if (rc < 0)
++		platform_driver_unregister(&s3c2410ts_driver);
++
++	return rc;
 +}
 +
 +static void __exit s3c2410ts_exit(void)
 +{
++	platform_driver_unregister(&s3c2440ts_driver);
 +	platform_driver_unregister(&s3c2410ts_driver);
 +}
 +
@@ -563,3 +588,15 @@ Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/ts.h
 +
 +#endif /* __ASM_ARM_TS_H */
 +
+Index: linux-2.6.21-moko/arch/arm/plat-s3c24xx/s3c244x.c
+===================================================================
+--- linux-2.6.21-moko.orig/arch/arm/plat-s3c24xx/s3c244x.c
++++ linux-2.6.21-moko/arch/arm/plat-s3c24xx/s3c244x.c
+@@ -68,6 +68,7 @@
+ 
+ 	s3c_device_i2c.name  = "s3c2440-i2c";
+ 	s3c_device_nand.name = "s3c2440-nand";
++	s3c_device_ts.name = "s3c2440-ts";
+ 	s3c_device_usbgadget.name = "s3c2440-usbgadget";
+ }
+ 
