@@ -228,9 +228,9 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +	case GTA01Bv4_SYSTEM_REV:
 +		if (on)
 +			pcf50606_voltage_set(pcf50606_global,
-+					     PCF50606_REGULATOR_D2REG, 1500);
++					     PCF50606_REGULATOR_DCD, 1500);
 +		pcf50606_onoff_set(pcf50606_global,
-+				   PCF50606_REGULATOR_D2REG, on);
++				   PCF50606_REGULATOR_DCD, on);
 +		break;
 +	}
 +}
@@ -249,9 +249,9 @@ Index: linux-2.6.21-moko/arch/arm/common/gta01_pm_gps.c
 +	case GTA01Bv3_SYSTEM_REV:
 +	case GTA01Bv4_SYSTEM_REV:
 +		if (pcf50606_onoff_get(pcf50606_global,
-+				       PCF50606_REGULATOR_D2REG) &&
++				       PCF50606_REGULATOR_DCD) &&
 +		    pcf50606_voltage_get(pcf50606_global,
-+					 PCF50606_REGULATOR_D2REG) == 1500)
++					 PCF50606_REGULATOR_DCD) == 1500)
 +			ret = 1;
 +		break;
 +	}
