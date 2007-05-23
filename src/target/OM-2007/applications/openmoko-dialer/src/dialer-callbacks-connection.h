@@ -28,6 +28,6 @@ void incoming_call_cb (MokoGsmdConnection *self, int type, MokoDialerData *data)
 void incoming_clip_cb (MokoGsmdConnection *self, const char *number, MokoDialerData *data);
 void incoming_pin_request_cb (MokoGsmdConnection *self, int type, MokoDialerData *data);
 
-gboolean initial_timeout_cb (MokoGsmdConnection *conn);
+gboolean initial_timeout_cb (MokoDialerData *data);
 
 #endif

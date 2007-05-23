@@ -28,6 +28,7 @@
 #include <gtk/gtkvbox.h>
 #include "dialer-main.h"
 #include "common.h"
+#include "dialer-callbacks-connection.h"
 
 
 void
@@ -58,13 +59,11 @@ pin_ok_button_clicked (GtkButton * button, MokoDialerData * appdata)
   {                             //here send the pin codes and hide our window.
 
     DBG_MESSAGE ("here we send the pin:%s", appdata->str_sim_pin);
-    //FIXME:why this call will cause segment fault?
-    //lgsm_pin (appdata->lh, appdata->str_sim_pin);
-    //lgsm_pin (appdata->lh, "1234");
+    moko_gsmd_connection_send_pin( appdata->connection, appdata->str_sim_pin );
     DBG_MESSAGE ("pin:%s sent", appdata->str_sim_pin);
+    g_timeout_add( 1 * 1000, (GSourceFunc) initial_timeout_cb, appdata );
     gtk_widget_hide (appdata->window_pin);
   }
-
 }
 
 
@@ -76,7 +75,7 @@ on_pin_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
   MokoDialerData *appdata = (MokoDialerData *) user_data;
   MokoDialerTextview *moko_pin_text_view = appdata->moko_pin_text_view;
   char input[2];
-  
+
   input[0] = parac;
   input[1] = 0;
 
@@ -122,13 +121,13 @@ window_pin_init (MokoDialerData * p_dialer_data)
   GdkColor color;
   GtkWidget *vbox, *hbox, *eventbox1, *vbox2, *button1, *button2;
   GtkWidget *mokotextview, *mokodialerpanel;
-  
+
   if (p_dialer_data->window_pin)
     return 1;
-  
+
   g_stpcpy (p_dialer_data->str_sim_pin, "");
   p_dialer_data->int_sim_pin_end_point = 0;
-  
+
   gdk_color_parse ("black", &color);
 
   window = MOKO_FINGER_WINDOW (moko_finger_window_new ());
@@ -136,7 +135,7 @@ window_pin_init (MokoDialerData * p_dialer_data)
                       G_CALLBACK (on_window_pin_show), p_dialer_data);
   g_signal_connect ((gpointer) window, "hide",
                      G_CALLBACK (on_window_pin_hide), p_dialer_data);
-  
+
   /* contents */
   vbox = gtk_vbox_new (FALSE, 0);
   hbox = gtk_hbox_new (FALSE, 10);
@@ -149,13 +148,14 @@ window_pin_init (MokoDialerData * p_dialer_data)
 
   mokotextview = moko_dialer_textview_new ();
   p_dialer_data->moko_pin_text_view = MOKO_DIALER_TEXTVIEW (mokotextview);
-  // moko_dialer_textview_fill_it(mokotextview , "Please input the pin:");
+
+  moko_dialer_textview_fill_it(mokotextview , " PIN?");
 
   gtk_container_add (GTK_CONTAINER (eventbox1), mokotextview);
   gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (eventbox1), FALSE, FALSE, 0);
 
   mokodialerpanel = moko_dialer_panel_new ();
-  gtk_widget_set_size_request (mokodialerpanel, 380, 384);
+  gtk_widget_set_size_request (mokodialerpanel, 380, 384); //??? why hard coded
   g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_input",
                     G_CALLBACK (on_pin_panel_user_input), p_dialer_data);
   gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (mokodialerpanel), TRUE,
@@ -170,10 +170,10 @@ window_pin_init (MokoDialerData * p_dialer_data)
 
   moko_pixmap_button_set_finger_toolbox_btn_center_image
                             (MOKO_PIXMAP_BUTTON (button1),
-                            file_new_image_from_relative_path ("delete.png")); 
+                            file_new_image_from_relative_path ("delete.png"));
 
-  moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button1), 
-                                                 "Delete");
+  moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button1),
+                                                 "Del");
   // gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X,
   //                              WINDOW_DIALER_BUTTON_SIZE_Y);
 
@@ -184,8 +184,8 @@ window_pin_init (MokoDialerData * p_dialer_data)
   moko_pixmap_button_set_finger_toolbox_btn_center_image
                                (MOKO_PIXMAP_BUTTON (button2),
                                file_new_image_from_relative_path ("phone.png"));
-  moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button2), 
-                                                 "OK");
+  moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON (button2),
+                                                 "Ok");
   g_signal_connect (G_OBJECT (button2), "clicked",
                     G_CALLBACK (pin_ok_button_clicked), p_dialer_data);
   //gtk_widget_set_size_request (button2, WINDOW_DIALER_BUTTON_SIZE_X,
@@ -194,7 +194,7 @@ window_pin_init (MokoDialerData * p_dialer_data)
 
   gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (vbox2), TRUE, TRUE, 5);
   gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (hbox), TRUE, TRUE, 5);
-  
+
   moko_finger_window_set_contents (window, GTK_WIDGET (vbox));
   p_dialer_data->window_pin = GTK_WIDGET (window);
 

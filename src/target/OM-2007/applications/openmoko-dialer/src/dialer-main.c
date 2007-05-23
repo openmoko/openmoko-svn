@@ -180,7 +180,6 @@ main (int argc, char **argv)
   //init application data
   contact_init_contact_data (&(p_dialer_data->g_contactlist));
 
-
   /* application object */
   g_set_application_name ("OpenMoko Dialer");
 
@@ -189,8 +188,8 @@ main (int argc, char **argv)
 
   /* power on GSM */
   moko_gsmd_connection_set_antenna_power (conn, TRUE);
-  /* handle network registration 4 seconds after powering GSM */
-  g_timeout_add( 4 * 1000, (GSourceFunc) initial_timeout_cb, conn );
+  /* handle network registration some seconds after powering GSM */
+  g_timeout_add( 5 * 1000, (GSourceFunc) initial_timeout_cb, p_dialer_data );
 
   g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, p_dialer_data);
@@ -215,7 +214,6 @@ main (int argc, char **argv)
   }
 
   gtk_main ();
-
 
   //release everything
   contact_release_contact_list (&(p_dialer_data->g_contactlist));

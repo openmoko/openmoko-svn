@@ -44,12 +44,22 @@ incoming_clip_cb (MokoGsmdConnection *self, const char *number, MokoDialerData *
 void
 incoming_pin_request_cb (MokoGsmdConnection *self, int type, MokoDialerData *data)
 {
-    g_debug( "INCOMING PIN REQUEST!\n!\n!\n!\n" );
+    g_debug( "incoming pin request for type %d", type );
+    gtk_widget_show_all( data->window_pin );
 }
 
-gboolean initial_timeout_cb (MokoGsmdConnection *conn)
+gboolean initial_timeout_cb (MokoDialerData* data)
 {
-    g_debug( "INITIAL TIMEOUT" );
-    //moko_gsmd_connection_network_register( conn );
+    g_debug( "initial timeout" );
+    /* check whether PIN window is currently visible -- if not, issue register */
+    if ( GTK_WIDGET_MAPPED( data->window_pin ) )
+    {
+        g_debug( "pin window is visible, delaying call to register" );
+    }
+    else
+    {
+        g_debug( "pin window not visible, calling register" );
+        moko_gsmd_connection_network_register( data->connection );
+    }
     return FALSE;
 }
