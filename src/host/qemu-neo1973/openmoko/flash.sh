@@ -65,8 +65,8 @@ echo Using \'$uboot_image\' as bootloader.
 rm -rf $uboot_symlink
 ln -s $script_dir_relative/$uboot_image $uboot_symlink
 
-rm -rf $flash_image
-${make} $flash_image || exit -1
+rm -rf $flash_base
+${make} $flash_base || exit -1
 
 # Launch the emulator assuming that u-boot is now functional enough
 # for us to be able to issue u-boot commands.
@@ -74,7 +74,7 @@ ${make} $flash_image || exit -1
 # We should parse the u-boot output for command prompt lines and only
 # issue commands when u-boot is awaiting them.
 emu () {
-	$qemu -mtdblock "$script_dir/$flash_image" -kernel "$script_dir/$1" \
+	$qemu -mtdblock "$script_dir/$flash_base" -kernel "$script_dir/$1" \
 		-serial stdio -nographic -usb -monitor null <&0 & pid=$!
 }
 uboot () {
@@ -126,6 +126,10 @@ nand write.jffs2 $kernel_addr rootfs $rootfs_size"
 # Make the kernel image accessible under a fixed name
 rm -rf openmoko-kernel.bin
 ln -s $kernel_image openmoko-kernel.bin
+
+# Make the flash image accessible under a fixed name
+rm -rf $flash_image
+${make} $flash_image || exit -1
 
 echo
 echo "    "All done.

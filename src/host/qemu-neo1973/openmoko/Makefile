@@ -20,7 +20,8 @@
 #
 SPLASH=splashimg.pl
 SPLASHIMG=System_boot.png
-FLASHIMG=openmoko-flash.image
+FLASHIMG=openmoko-flash.base
+FLASHOVERLAY=openmoko-flash.image
 SHELL=bash
 
 splash.gz: splash
@@ -57,5 +58,9 @@ $(FLASHIMG):
 	cat .16ksec .16ksec .16ksec .16ksec .16ksec .16ksec .16ksec .16ksec > $@
 	rm -rf .8b .16b .512b .sec .8sec .64sec .512sec .2ksec .16ksec
 
+$(FLASHOVERLAY): $(FLASHIMG)
+	../qemu-img create -b $^ -f qcow2 $@
+
 clean:
-	rm -rf $(SPLASH) $(SPLASHIMG) $(FLASHIMG) splash splash.gz
+	rm -rf $(SPLASH) $(SPLASHIMG) $(FLASHIMG) $(FLASHOVERLAY) \
+		splash splash.gz
