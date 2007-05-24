@@ -29,7 +29,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,402 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -303,6 +303,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +	},
 +
 +	.lpcsel		= ((0xCE6) & ~7),
++	.type		= S3C2410_LCDCON1_TFT,
 +
 +	.width		= 480,
 +	.height		= 272,
