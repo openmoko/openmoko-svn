@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "contacts.h"
 #include "error.h"
@@ -171,7 +172,9 @@ main (int argc, char **argv)
   }
   setlock ("/tmp/dialer.lock");
 
-  /* Initialize GTK+ */
+  /* Initialize Threading & GTK+ */
+  g_thread_init (NULL);
+  gdk_threads_init ();
   gtk_init (&argc, &argv);
   moko_stock_register ();
 
@@ -201,7 +204,7 @@ main (int argc, char **argv)
 
   signal (SIGUSR1, handle_sigusr1);
 
-  //init the dialer window
+  //init the dialer windows
   window_dialer_init (p_dialer_data);
   window_incoming_init (p_dialer_data);
   window_pin_init (p_dialer_data);
@@ -212,8 +215,10 @@ main (int argc, char **argv)
   {
     handle_sigusr1 (SIGUSR1);
   }
-
+  
+  gdk_threads_enter ();
   gtk_main ();
+  gdk_threads_leave ();
 
   //release everything
   contact_release_contact_list (&(p_dialer_data->g_contactlist));

@@ -43,6 +43,11 @@ struct _MokoDialerAutolistPrivate
   /* Previous search string */
   gchar *last_string;
   
+  /* The current list to search */
+  GThread *thread;
+  GList *search_list;
+  gboolean selectdefault;
+  
   /* old method of finding data */
   DIALER_CONTACTS_LIST_HEAD *head;
   DIALER_READY_CONTACT readycontacts[MOKO_DIALER_MAX_TIPS];
@@ -282,7 +287,7 @@ moko_dialer_autolist_hide_all_tips (MokoDialerAutolist *moko_dialer_autolist)
  *  else, we only refresh our tip list.
  * @retval 
  */
-
+#if 0
 int
 moko_dialer_autolist_fill_alternative (MokoDialerAutolist *moko_dialer_autolist,
                                        gint count,
@@ -292,49 +297,54 @@ moko_dialer_autolist_fill_alternative (MokoDialerAutolist *moko_dialer_autolist,
   gint i;
   AutolistEntry *entry = NULL;
   
+  
   priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (moko_dialer_autolist);
   
   priv->selected = FALSE;
-  
   if (count > 0)
   {
     //init the labels.
     for (i = 0; i < count && i < MOKO_DIALER_MAX_TIPS; i++)
     {
       entry = (AutolistEntry*)g_list_nth_data (priv->last, i);
-      
+      gdk_threads_enter ();
       moko_dialer_tip_set_label (priv->tips[i], entry->contact->name);
       moko_dialer_tip_set_index (priv->tips[i], i);
       moko_dialer_tip_set_selected (priv->tips[i], FALSE);
       gtk_widget_show (priv->tips[i]);
+      gdk_threads_leave ();
     }
-    
     /* Invalidate the remaining tips */
     for (; i < MOKO_DIALER_MAX_TIPS; i++)
     {
+      gdk_threads_enter ();
       moko_dialer_tip_set_index (priv->tips[i], -1);
       moko_dialer_tip_set_label (priv->tips[i], "");
       gtk_widget_hide (priv->tips[i]);
       moko_dialer_tip_set_selected (priv->tips[i], FALSE);
+      gdk_threads_leave ();
     }
-
     if (selectdefault)
     {
       //we set the first one as defaultly selected
+      gdk_threads_enter ();
       moko_dialer_autolist_set_select (moko_dialer_autolist, 0);
+      gdk_threads_leave ();
     }
   }
   else
   {
+    gdk_threads_enter ();    
     moko_dialer_autolist_hide_all_tips (moko_dialer_autolist);
     
     //notify the client that no match has been found
     g_signal_emit (moko_dialer_autolist,
                    moko_dialer_autolist_signals[NOMATCH_SIGNAL], 0, 0);
+    gdk_threads_leave ();    
   }
   return 1;
 }
-
+#endif
 static void
 moko_dialer_autolist_create_tips (MokoDialerAutolist *moko_dialer_autolist)
 {
@@ -420,16 +430,106 @@ _autolist_find_number_in_entry_list (GList *numbers, const char *string)
   return matches;
 }
 
+gpointer
+moko_dialer_autolist_worker (MokoDialerAutolist *autolist)
+{
+  MokoDialerAutolistPrivate *priv;
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (autolist);
+  GList *numbers = priv->search_list;
+  const gchar *string = priv->last_string;
+  GList *matches = NULL;
+  gint count = 0;
+  GList *n;
+  AutolistEntry *entry = NULL;
+  gint i = 0;
+  gint len = strlen (string);
+  gboolean found_one = FALSE;
+  gboolean prev_matched = FALSE;
+  gboolean selectdefault = priv->selectdefault;
+  
+  for (n = numbers; n != NULL; n = n->next)
+  {
+    entry = (AutolistEntry*)n->data;
+    if (g_strstr_len (entry->number, len, string))
+    {
+      matches = g_list_append (matches, (gpointer)entry);
+      found_one = prev_matched = TRUE;
+      i++;
+    }
+    else
+    {
+      /* 
+       * If we have already found at least one, but the previous entry didn't
+       * match, we don't bother continuing.
+       */
+      if (found_one && !prev_matched)
+        break;
+      prev_matched = FALSE;
+    }
+  }
+  priv->last = matches;
+  
+  count = g_list_length (matches);
+  priv->selected = FALSE;
+  if (count > 0)
+  {
+    //init the labels.
+    for (i = 0; i < count && i < MOKO_DIALER_MAX_TIPS; i++)
+    {
+      entry = (AutolistEntry*)g_list_nth_data (priv->last, i);
+      gdk_threads_enter ();
+      moko_dialer_tip_set_label (priv->tips[i], entry->contact->name);
+      moko_dialer_tip_set_index (priv->tips[i], i);
+      moko_dialer_tip_set_selected (priv->tips[i], FALSE);
+      gtk_widget_show (priv->tips[i]);
+      gdk_threads_leave ();
+    }
+    /* Invalidate the remaining tips */
+    for (; i < MOKO_DIALER_MAX_TIPS; i++)
+    {
+      gdk_threads_enter ();
+      moko_dialer_tip_set_index (priv->tips[i], -1);
+      moko_dialer_tip_set_label (priv->tips[i], "");
+      gtk_widget_hide (priv->tips[i]);
+      moko_dialer_tip_set_selected (priv->tips[i], FALSE);
+      gdk_threads_leave ();
+    }
+    if (selectdefault)
+    {
+      //we set the first one as defaultly selected
+      gdk_threads_enter ();
+      moko_dialer_autolist_set_select (autolist, 0);
+      gdk_threads_leave ();
+    }
+  }
+  else
+  {
+    gdk_threads_enter ();    
+    moko_dialer_autolist_hide_all_tips (autolist);
+    
+    //notify the client that no match has been found
+    g_signal_emit (autolist,
+                   moko_dialer_autolist_signals[NOMATCH_SIGNAL], 0, 0);
+    gdk_threads_leave ();    
+  }
+  
+  return 0;
+}
+
 gint
 moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *autolist, 
                                         gchar * string,
                                         gboolean selectdefault)
 {
   MokoDialerAutolistPrivate *priv;
+  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (autolist);
+  if (priv->thread)
+    g_thread_join (priv->thread);
+  priv->thread = NULL;
   GList *matches = NULL;
   gint n_matches = 0;
   
-  priv = MOKO_DIALER_AUTOLIST_GET_PRIVATE (autolist);
+  
   
   if (!priv->tipscreated)
     moko_dialer_autolist_create_tips (autolist);
@@ -440,33 +540,35 @@ moko_dialer_autolist_refresh_by_string (MokoDialerAutolist *autolist,
     if (strlen (string) < strlen (priv->last_string))
     {
       /* We have 'deleted' so we can't use our previous results */
-      g_print ("Deleted\n");
+      ;
     }
     else if (strstr (string, priv->last_string))
     {
-      matches = _autolist_find_number_in_entry_list (priv->last, string);
+      matches = priv->last;
     }
   }
   
   if (matches == NULL)
   {
+    if (priv->last)
+      g_list_free (priv->last);
+    priv->last = NULL;
+    
     /* We need to look though the whole list */
-    matches = _autolist_find_number_in_entry_list (priv->numbers, string);
+    matches = priv->numbers;
   }
   
 
   /* We reset the last & last_string variables */
-  if (priv->last)
-    g_list_free (priv->last);
-  priv->last = matches;
+  priv->search_list = matches;
   if (priv->last_string)
     g_free (priv->last_string);
   priv->last_string = g_strdup (string);
-  
-  n_matches = g_list_length (matches);
-  moko_dialer_autolist_fill_alternative (autolist, 
-                                         n_matches,
-                                         selectdefault);
+  priv->selectdefault = selectdefault;
+  priv->thread = g_thread_create ((GThreadFunc)moko_dialer_autolist_worker,
+                                  (gpointer)autolist,
+                                  TRUE,
+                                  NULL);
   return n_matches;
 }
 

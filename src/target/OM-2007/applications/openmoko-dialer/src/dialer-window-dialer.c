@@ -37,6 +37,7 @@
 #include "dialer-window-history.h"
 #include "dialer-window-outgoing.h"
 
+#if 1
 static void
 cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
@@ -62,6 +63,8 @@ cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
   {
     moko_dialer_autolist_refresh_by_string (appdata->moko_dialer_autolist,
                                             codesinput, TRUE);
+
+    moko_dialer_textview_set_color (appdata->moko_dialer_text_view);
   }
   else
   {
@@ -72,7 +75,55 @@ cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
     g_free (codesinput);
 
 }
+#else
+ static void
+ cb_delete_button_clicked (GtkButton * button, MokoDialerData * appdata)
+ {
 
+   moko_dialer_textview_delete (appdata->moko_dialer_text_view);
+   g_print (moko_dialer_textview_get_input
+                (appdata->moko_dialer_text_view, FALSE));
+ 
+   if (moko_dialer_autolist_has_selected (appdata->moko_dialer_autolist))
+   {
+   //first of all, we un-select the selection.
+     moko_dialer_autolist_set_select (appdata->moko_dialer_autolist, -1);
+ 
+     //fill the textview with ""
+     moko_dialer_textview_fill_it (appdata->moko_dialer_text_view, " ");
+     //moko_dialer_textview_set_color(moko_dialer_textview);
+   }
+   else
+   {
+    moko_dialer_textview_delete (appdata->moko_dialer_text_view);
+    //refresh the autolist,but do not automaticall fill the textview
+    gchar *codesinput = 0;
+    codesinput =
+      g_strdup (moko_dialer_textview_get_input
+                (appdata->moko_dialer_text_view, FALSE));
+ 
+    if (codesinput)
+    {
+     DBG_MESSAGE ("input %s", codesinput);
+      if (g_utf8_strlen (codesinput, -1) >= MOKO_DIALER_MIN_SENSATIVE_LEN)
+      {
+        moko_dialer_autolist_refresh_by_string (appdata->
+                                                moko_dialer_autolist,
+                                                codesinput, FALSE);
+        moko_dialer_textview_set_color (appdata->moko_dialer_text_view);
+      }
+      else
+        moko_dialer_autolist_hide_all_tips (appdata->moko_dialer_autolist);
+      g_free (codesinput);
+    }
+    else
+    {
+      DBG_WARN ("No input now.");
+    }
+  }
+  
+ }
+#endif
 static void
 cb_history_button_clicked (GtkButton * button, MokoDialerData * appdata)
 {
