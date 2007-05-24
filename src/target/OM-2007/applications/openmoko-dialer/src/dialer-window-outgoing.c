@@ -29,9 +29,6 @@
 #include "dialer-window-history.h"
 #include "dialer-window-talking.h"
 
-/* function declerations */
-static void window_outgoing_setup_timer (MokoDialerData * appdata);
-
 static void
 cb_speaker_button_clicked (GtkButton * button, MokoDialerData * data)
 {
@@ -55,58 +52,6 @@ cb_redial_button_clicked (GtkButton * button, MokoDialerData * data)
 
   moko_gsmd_connection_voice_hangup (data->connection);
   moko_gsmd_connection_voice_dial (data->connection, number);
-}
-
-#if 0 /* Not used at the moment */
-static void
-cb_cancel_button_clicked (GtkButton * button, MokoDialerData * appdata)
-{
-  DBG_ENTER ();
-  /* TODO: MokoGsmdConnection->hangup
-   * gsm_hangup ();
-   */
-  appdata->g_state.callstate = STATE_FAILED;
-  DBG_TRACE ();
-  gtk_widget_hide (appdata->window_outgoing);
-  DBG_LEAVE ();
-}
-#endif 
-
-gint
-timer_outgoing_time_out (MokoDialerData * appdata)
-{
-//DBG_ENTER();
-  TIMER_DATA *timer_data = &(appdata->g_timer_data);
-
-
-  timer_data->ticks++;
-  timer_data->hour = timer_data->ticks / 3600;
-  timer_data->min = (timer_data->ticks - timer_data->hour * 3600) / 60;
-  timer_data->sec = timer_data->ticks % 60;
-
-
-  sprintf (timer_data->timestring, "Calling ... (%02d:%02d:%02d)",
-           timer_data->hour, timer_data->min, timer_data->sec);
-
-//ok,we update the label now.
-
-
-  moko_dialer_status_set_status_label (appdata->status_outgoing,
-                                       timer_data->timestring);
-  moko_dialer_status_update_icon (appdata->status_outgoing);
-
-  if (timer_data->stopsec != 0 && timer_data->ticks >= timer_data->stopsec)
-  {
-
-    timer_data->timeout = 1;
-    g_source_remove (timer_data->ptimer);
-    timer_data->ptimer = 0;
-//maybe it failes
-//    window_outgoing_fails (appdata);
-    return 0;                   //0 stops the timer.
-  }
-  else
-    return 1;
 }
 
 
@@ -182,6 +127,7 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 static void
 call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data)
 {
+  g_debug ("Outgoing Call Progress: %d", type);
   if (type == MOKO_GSMD_PROG_REJECT)
   {
     g_debug ("call rejected");
