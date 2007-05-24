@@ -281,7 +281,7 @@ static void smb_transaction(PIIX4PMState *s)
     case 0x3:
         if (read) {
             uint16_t val;
-            smbus_read_word(bus, addr, cmd);
+            val = smbus_read_word(bus, addr, cmd);
             s->smb_data0 = val;
             s->smb_data1 = val >> 8;
         } else {

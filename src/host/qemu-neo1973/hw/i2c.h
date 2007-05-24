@@ -80,4 +80,5 @@ void pcf_reset(i2c_slave *i2c);
 void pcf_gpo_handler_set(i2c_slave *i2c, int line, qemu_irq handler);
 void pcf_onkey_set(i2c_slave *i2c, int level);
 void pcf_exton_set(i2c_slave *i2c, int level);
+
 #endif

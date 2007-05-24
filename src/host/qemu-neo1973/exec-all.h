@@ -584,6 +584,8 @@ static inline target_ulong get_phys_addr_code(CPUState *env, target_ulong addr)
     is_user = ((env->sr & SR_MD) == 0);
 #elif defined (TARGET_ALPHA)
     is_user = ((env->ps >> 3) & 3);
+#elif defined (TARGET_M68K)
+    is_user = ((env->sr & SR_S) == 0);
 #else
 #error unimplemented CPU
 #endif
@@ -593,7 +595,11 @@ static inline target_ulong get_phys_addr_code(CPUState *env, target_ulong addr)
     }
     pd = env->tlb_table[is_user][index].addr_code & ~TARGET_PAGE_MASK;
     if (pd > IO_MEM_ROM && !(pd & IO_MEM_ROMD)) {
+#ifdef TARGET_SPARC
+        do_unassigned_access(addr, 0, 1, 0);
+#else
         cpu_abort(env, "Trying to execute code outside RAM or ROM at 0x" TARGET_FMT_lx "\n", addr);
+#endif
     }
     return addr + env->tlb_table[is_user][index].addend - (unsigned long)phys_ram_base;
 }

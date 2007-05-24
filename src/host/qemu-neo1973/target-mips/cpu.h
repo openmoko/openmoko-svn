@@ -81,9 +81,9 @@ struct CPUMIPSState {
 #define FCR0_REV 0
     /* fcsr */
     uint32_t fcr31;
-#define SET_FP_COND(num,env)     do { (env->fcr31) |= ((num) ? (1 << ((num) + 24)) : (1 << ((num) + 23))); } while(0)
-#define CLEAR_FP_COND(num,env)   do { (env->fcr31) &= ~((num) ? (1 << ((num) + 24)) : (1 << ((num) + 23))); } while(0)
-#define IS_FP_COND_SET(num,env)  (((env->fcr31) & ((num) ? (1 << ((num) + 24)) : (1 << ((num) + 23)))) != 0)
+#define SET_FP_COND(num,env)     do { ((env)->fcr31) |= ((num) ? (1 << ((num) + 24)) : (1 << 23)); } while(0)
+#define CLEAR_FP_COND(num,env)   do { ((env)->fcr31) &= ~((num) ? (1 << ((num) + 24)) : (1 << 23)); } while(0)
+#define GET_FP_COND(env)         ((((env)->fcr31 >> 24) & 0xfe) | (((env)->fcr31 >> 23) & 0x1))
 #define GET_FP_CAUSE(reg)        (((reg) >> 12) & 0x3f)
 #define GET_FP_ENABLE(reg)       (((reg) >>  7) & 0x1f)
 #define GET_FP_FLAGS(reg)        (((reg) >>  2) & 0x1f)
@@ -216,8 +216,8 @@ struct CPUMIPSState {
     int32_t CP0_Config6;
     int32_t CP0_Config7;
     target_ulong CP0_LLAddr;
-    target_ulong CP0_WatchLo;
-    int32_t CP0_WatchHi;
+    target_ulong CP0_WatchLo[8];
+    int32_t CP0_WatchHi[8];
     target_ulong CP0_XContext;
     int32_t CP0_Framemask;
     int32_t CP0_Debug;

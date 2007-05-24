@@ -1361,14 +1361,13 @@ static int mux_proc_byte(CharDriverState *chr, MuxDriver *d, int ch)
                 for (i = 0; i < MAX_DISKS; i++) {
                     if (bs_table[i])
                         bdrv_commit(bs_table[i]);
-                    if (mtd_bdrv)
-                        bdrv_commit(mtd_bdrv);
                 }
+                if (mtd_bdrv)
+                    bdrv_commit(mtd_bdrv);
             }
             break;
         case 'b':
-            if (chr->chr_event)
-                chr->chr_event(chr->opaque, CHR_EVENT_BREAK);
+            qemu_chr_event(chr, CHR_EVENT_BREAK);
             break;
         case 'c':
             /* Switch to the next registered device */
@@ -6661,7 +6660,6 @@ void main_loop_wait(int timeout)
     }
 #endif
     qemu_aio_poll();
-    qemu_bh_poll();
 
     if (vm_running) {
         qemu_run_timers(&active_timers[QEMU_TIMER_VIRTUAL], 
@@ -6669,10 +6667,15 @@ void main_loop_wait(int timeout)
         /* run dma transfers, if any */
         DMA_run();
     }
-    
+
     /* real time timers */
     qemu_run_timers(&active_timers[QEMU_TIMER_REALTIME], 
                     qemu_get_clock(rt_clock));
+
+    /* Check bottom-halves last in case any of the earlier events triggered
+       them.  */
+    qemu_bh_poll();
+    
 }
 
 static CPUState *cur_cpu;
@@ -7172,6 +7175,8 @@ void register_machines(void)
     qemu_register_machine(&shix_machine);
 #elif defined(TARGET_ALPHA)
     /* XXX: TODO */
+#elif defined(TARGET_M68K)
+    qemu_register_machine(&an5206_machine);
 #else
 #error unsupported CPU
 #endif
