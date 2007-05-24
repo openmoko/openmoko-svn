@@ -1103,6 +1103,28 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
 ===================================================================
 --- u-boot.orig/board/neo1973/common/lowlevel_init.S
 +++ u-boot/board/neo1973/common/lowlevel_init.S
+@@ -49,7 +49,7 @@
+ #define WAIT		 	(0x1<<2)
+ #define UBLB		 	(0x1<<3)
+ 
+-#define B1_BWSCON	  	(DW32)
++#define B1_BWSCON	  	(DW16 + WAIT + UBLB)
+ #define B2_BWSCON	  	(DW16)
+ #define B3_BWSCON	  	(DW16 + WAIT + UBLB)
+ #define B4_BWSCON	  	(DW16)
+@@ -68,9 +68,9 @@
+ 
+ /* BANK1CON */
+ #define B1_Tacs		 	0x0	/*  0clk */
+-#define B1_Tcos		 	0x0	/*  0clk */
+-#define B1_Tacc		 	0x7	/* 14clk */
+-#define B1_Tcoh		 	0x0	/*  0clk */
++#define B1_Tcos		 	0x1	/*  1clk */
++#define B1_Tacc		 	0x4	/*  4clk */
++#define B1_Tcoh		 	0x1	/*  1clk */
+ #define B1_Tah		 	0x0	/*  0clk */
+ #define B1_Tacp		 	0x0
+ #define B1_PMC		 	0x0
 @@ -167,6 +167,18 @@
  	str	r1, [r0]
  #endif
@@ -1218,3 +1240,42 @@ Index: u-boot/board/neo1973/gta02/config.mk
 +sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
 +
 +TEXT_BASE = 0x33F80000
+Index: u-boot/drivers/smedia3362.c
+===================================================================
+--- /dev/null
++++ u-boot/drivers/smedia3362.c
+@@ -0,0 +1,34 @@
++/*
++ * (C) Copyright 2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <common.h>
++
++#if defined(CONFIG_VIDEO_GLAMO3362)
++
++#include <video_fb.h>
++#include "videomodes.h"
++#include <s3c2410.h>
++/*
++ * Export Graphic Device
++ */
++GraphicDevice smi;
++
++
++#endif /* CONFIG_VIDEO_GLAMO3362 */
