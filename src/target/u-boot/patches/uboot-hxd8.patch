@@ -88,7 +88,7 @@ Index: u-boot/board/hxd8/hxd8.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/hxd8/hxd8.c
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,219 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -120,6 +120,7 @@ Index: u-boot/board/hxd8/hxd8.c
 + */
 +
 +#include <common.h>
++#include <video_fb.h>
 +#include <nand.h>
 +#include <pcf50606.h>
 +#include <s3c2440.h>
@@ -200,7 +201,7 @@ Index: u-boot/board/hxd8/hxd8.c
 +	gpio->GPEUP = 0x0000FFFF;
 +	gpio->GPFCON = 0x0000AAA9;
 +	gpio->GPFUP = 0x000000FF;
-+	gpio->GPGCON = 0x027D0016;
++	gpio->GPGCON = 0x027D0316;
 +	gpio->GPGUP = 0x0000FFFF;
 +	gpio->GPHCON = 0x0014AAAA;
 +	gpio->GPHUP = 0x000007FF;
@@ -230,6 +231,21 @@ Index: u-boot/board/hxd8/hxd8.c
 +	dcache_enable();
 +
 +	return 0;
++}
++
++void board_video_init(GraphicDevice *pGD)
++{
++	S3C24X0_LCD * const lcd = S3C24X0_GetBase_LCD();
++
++	lcd->LCDCON1 = 0x0000057b;
++	lcd->LCDCON2 = 0x0143c049;
++	lcd->LCDCON3 = 0x0009df01;
++	lcd->LCDCON4 = 0x00000028;
++	lcd->LCDCON5 = 0x00000b08;
++
++	lcd->TPAL = 0x01202020;
++
++	//lcd->LCDCON5 |= (0x01 << 3);
 +}
 +
 +int board_late_init(void)
@@ -292,7 +308,6 @@ Index: u-boot/board/hxd8/hxd8.c
 +	if (chip == -1)
 +		this->hwcontrol(NULL, NAND_CTL_CLRNCE);
 +}
-+
 Index: u-boot/board/hxd8/lowlevel_init.S
 ===================================================================
 --- /dev/null
@@ -723,7 +738,7 @@ Index: u-boot/include/configs/hxd8.h
 +/* we have a board_late_init() function */
 +#define BOARD_LATE_INIT			1
 +
-+#if 0
++#if 1
 +#define CONFIG_VIDEO
 +#define CONFIG_VIDEO_S3C2410
 +#define CONFIG_CFB_CONSOLE
