@@ -15,7 +15,7 @@ Index: u-boot/drivers/s3c2410_fb.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/s3c2410_fb.c
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,166 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -50,6 +50,8 @@ Index: u-boot/drivers/s3c2410_fb.c
 +
 +#define VIDEO_MEM_SIZE	0x200000	/* 480x640x16bit = 614400 bytes */
 +
++extern void board_video_init(GraphicDevice *pGD);
++
 +/*******************************************************************************
 + *
 + * Init video chip with common Linux graphic modes (lilo)
@@ -65,7 +67,6 @@ Index: u-boot/drivers/s3c2410_fb.c
 +	struct ctfb_res_modes *res_mode;
 +	struct ctfb_res_modes var_mode;
 +	unsigned char videoout;
-+	unsigned int *vm;
 +
 +	/* Search for video chip */
 +	printf("Video: ");
@@ -151,41 +152,19 @@ Index: u-boot/drivers/s3c2410_fb.c
 +	pGD->gdfBytesPP = 2;
 +	pGD->gdfIndex = GDF_16BIT_565RGB;
 +
-+#if 0
-+	pGD->isaBase = CFG_ISA_IO;
-+	pGD->pciBase = pci_mem_base;
-+	pGD->dprBase = (pci_mem_base + 0x400000 + 0x8000);
-+	pGD->vprBase = (pci_mem_base + 0x400000 + 0xc000);
-+	pGD->cprBase = (pci_mem_base + 0x400000 + 0xe000);
-+#endif
 +	pGD->frameAdrs = LCD_VIDEO_ADDR;
 +	pGD->memSize = VIDEO_MEM_SIZE;
 +
-+	lcd->LCDCON1 = 0x00000178; /* CLKVAL=1, BPPMODE=16bpp, TFT, ENVID=0 */
++	board_video_init(pGD);
 +
-+	lcd->LCDCON2 = 0x019fc3c1;
-+	lcd->LCDCON3 = 0x0039df67;
-+	lcd->LCDCON4 = 0x00000007;
-+	lcd->LCDCON5 = 0x0001cf08;
-+	lcd->LPCSEL  = 0x00000000;
-+
-+	lcd->LCDSADDR1 = LCD_VIDEO_ADDR >> 1;
++	lcd->LCDSADDR1 = pGD->frameAdrs >> 1;
 +
 +	/* This marks the end of the frame buffer. */
 +	lcd->LCDSADDR2 = (lcd->LCDSADDR1&0x1fffff) + (pGD->winSizeX+0) * pGD->winSizeY;
 +	lcd->LCDSADDR3 = pGD->winSizeX;
 +
-+	videoout = 2;	    /* Default output is CRT */
-+	if ((penv = getenv ("videoout")) != NULL) {
-+		/* deceide if it is a string */
-+		videoout = (int) simple_strtoul (penv, NULL, 16);
-+	}
-+
 +	/* Clear video memory */
-+	i = pGD->memSize/4;
-+	vm = (unsigned int *)pGD->frameAdrs;
-+	while(i--)
-+		*vm++ = 0;
++	memset(pGD->frameAdrs, 0, pGD->memSize);
 +
 +	/* Enable  Display  */
 +	lcd->LCDCON1 |= 0x01;	/* ENVID = 1 */
@@ -222,3 +201,15 @@ Index: u-boot/drivers/cfb_console.c
  /* Include video_fb.h after definitions of VIDEO_HW_RECTFILL etc	     */
  /*****************************************************************************/
  #include <video_fb.h>
+@@ -307,6 +315,11 @@
+ #define SHORTSWAP32(x)	 (x)
+ #endif
+ 
++#ifdef CONFIG_VIDEO_S3C2410
++#undef SHORTSWAP32
++#define	SHORTSWAP32(x)	((((x) & 0xffff) << 16) | (((x) >> 16) & 0xffff))
++#endif
++
+ #if defined(DEBUG) || defined(DEBUG_CFB_CONSOLE)
+ #define PRINTD(x)	  printf(x)
+ #else

@@ -42,7 +42,6 @@ uboot-bbt-quiet.patch
 
 # splash screen
 raise-limits.patch
-set-hwswp.patch
 splashimage-command.patch
 cmd-unzip.patch
 enable-splash-bmp.patch
