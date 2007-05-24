@@ -721,7 +721,7 @@ Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/qt2410/qt2410.c
-@@ -0,0 +1,145 @@
+@@ -0,0 +1,152 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -756,6 +756,7 @@ Index: u-boot/board/qt2410/qt2410.c
 +
 +#include <common.h>
 +#include <video_fb.h>
++#include <usbdcore.h>
 +#include <s3c2410.h>
 +
 +DECLARE_GLOBAL_DATA_PTR;
@@ -843,6 +844,12 @@ Index: u-boot/board/qt2410/qt2410.c
 +
 +	return 0;
 +}
++
++#if defined(CONFIG_USB_DEVICE)
++void udc_ctrl(enum usbd_event event, int param)
++{
++}
++#endif
 +
 +void board_video_init(GraphicDevice *pGD)
 +{
