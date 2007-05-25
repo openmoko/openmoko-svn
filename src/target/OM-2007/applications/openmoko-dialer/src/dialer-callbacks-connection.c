@@ -35,13 +35,6 @@ incoming_call_cb (MokoGsmdConnection *self, int type, MokoDialerData *data)
 }
 
 void
-incoming_clip_cb (MokoGsmdConnection *self, const char *number, MokoDialerData *data)
-{
-  /* caller id */
-  window_incoming_update_message (data, number);
-}
-
-void
 incoming_pin_request_cb (MokoGsmdConnection *self, int type, MokoDialerData *data)
 {
     g_debug( "incoming pin request for type %d", type );

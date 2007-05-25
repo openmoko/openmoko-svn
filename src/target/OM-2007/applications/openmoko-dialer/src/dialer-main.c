@@ -173,8 +173,6 @@ main (int argc, char **argv)
   setlock ("/tmp/dialer.lock");
 
   /* Initialize Threading & GTK+ */
-  g_thread_init (NULL);
-  gdk_threads_init ();
   gtk_init (&argc, &argv);
   moko_stock_register ();
 
@@ -196,11 +194,11 @@ main (int argc, char **argv)
 
   g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, p_dialer_data);
-  g_signal_connect (G_OBJECT (conn), "incoming-clip", (GCallback) incoming_clip_cb, p_dialer_data);
   g_signal_connect (G_OBJECT (conn), "pin-requested", (GCallback) incoming_pin_request_cb, p_dialer_data);
 
   /* Set up journal handling */
   p_dialer_data->journal = moko_journal_open_default ();
+  moko_journal_load_from_storage (p_dialer_data->journal);
 
   signal (SIGUSR1, handle_sigusr1);
 
@@ -216,10 +214,8 @@ main (int argc, char **argv)
     handle_sigusr1 (SIGUSR1);
   }
   
-  gdk_threads_enter ();
   gtk_main ();
-  gdk_threads_leave ();
-
+  
   //release everything
   contact_release_contact_list (&(p_dialer_data->g_contactlist));
 

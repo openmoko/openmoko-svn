@@ -27,39 +27,12 @@
 #include "dialer-window-talking.h"
 #include "dialer-window-history.h"
 
-void
-window_incoming_prepare (MokoDialerData * appdata) 
-{
-  if (!appdata)
-    
-  {
-    DBG_WARN ("appdata=NULL!");
-    return;
-  }
-  if (appdata->window_incoming == 0)
-    
-  {
-    window_incoming_init (appdata);
-  }
-  moko_dialer_status_set_person_number (appdata->status_incoming,
-                                          appdata->g_peer_info.number);
-  if (appdata->g_peer_info.hasname)
-    
-  {
-    moko_dialer_status_set_person_image (appdata->status_incoming,
-                                           appdata->g_peer_info.ID);
-    moko_dialer_status_set_person_name (appdata->status_incoming,
-                                         appdata->g_peer_info.name);
-  }
-  
-  else
-    
-  {
-    moko_dialer_status_set_person_image (appdata->status_incoming, "");
-    moko_dialer_status_set_person_name (appdata->status_incoming, "");
-  }
-}
+struct clip_callback_data {
+  MokoDialerData *data;
+  MokoJournalVoiceInfo *voice_info;
+};
 
+static void incoming_clip_cb (MokoGsmdConnection *self, char *number, struct clip_callback_data *clip_data);
 
 void
 window_incoming_init (MokoDialerData * data) 
@@ -96,7 +69,8 @@ window_incoming_show (MokoDialerData *data)
 {
   MokoJournalEntry *entry = NULL;
   MokoJournalVoiceInfo *info = NULL;
-  gulong progress_handler;
+  gulong progress_handler, clip_handler;
+  struct clip_callback_data clip_data;
 
   if (!data->window_incoming)
   {
@@ -111,8 +85,12 @@ window_incoming_show (MokoDialerData *data)
   moko_journal_add_entry (data->journal, entry);
 
   /* connect our handler to track call progress */
-  progress_handler = g_signal_connect (data->connection, "call-progress", 
+  progress_handler = g_signal_connect (data->connection, "call-progress",
                     G_CALLBACK (call_progress_cb), data);
+  clip_data.voice_info = info;
+  clip_data.data = data;
+  clip_handler = g_signal_connect (data->connection, "incoming-clip",
+                    G_CALLBACK (incoming_clip_cb), &clip_data);
 
 
   if (gtk_dialog_run (GTK_DIALOG (data->window_incoming)) == GTK_RESPONSE_OK)
@@ -135,15 +113,20 @@ window_incoming_show (MokoDialerData *data)
 
   gtk_widget_hide (data->window_incoming);
 
-  /* disconnect the call progress handler since we no longer need it */
+  /* disconnect the call progress and clip handlers since we no longer need them */
   g_signal_handler_disconnect (data->connection, progress_handler);
+  g_signal_handler_disconnect (data->connection, clip_handler);
+
+  /* commit the journal entry */
+  moko_journal_write_to_storage (data->journal);
 }
 
-void
-window_incoming_update_message (MokoDialerData *data, const gchar *clip)
+static void
+incoming_clip_cb (MokoGsmdConnection *self, char *number, struct clip_callback_data *clip_data)
 {
-  g_debug ("Incoming Call CLIP: %s", clip);
-  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_incoming),
-                                   "Incoming call from %s", clip);
-  // moko_journal_voice_info_set_distant_number ();
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (clip_data->data->window_incoming),
+                                   "Incoming call from %s", number);
+
+  moko_journal_voice_info_set_distant_number (clip_data->voice_info, number);
 }
+
