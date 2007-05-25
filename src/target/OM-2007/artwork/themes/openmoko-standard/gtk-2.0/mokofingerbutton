@@ -2,7 +2,6 @@ style "mokofingerbutton-orange" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_type01.png"
             border          = { 17, 17, 17, 17 }
@@ -10,7 +9,6 @@ style "mokofingerbutton-orange" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_type01.png"
             border          = { 17, 17, 17, 17 }
@@ -18,7 +16,6 @@ style "mokofingerbutton-orange" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_type01_p.png"
             border          = { 17, 17, 17, 17 }
@@ -35,7 +32,6 @@ style "mokofingerbutton-black" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_type04.png"
             border          = { 27, 27, 29, 29 }
@@ -43,7 +39,6 @@ style "mokofingerbutton-black" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_type04.png"
             border          = { 27, 27, 29, 29 }
@@ -51,7 +46,6 @@ style "mokofingerbutton-black" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_type04_p.png"
             border          = { 27, 27, 29, 29 }
@@ -68,7 +62,6 @@ style "mokofingerbutton-dialer" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_type05.png"
             border          = { 40, 20, 8, 7 }
@@ -76,7 +69,6 @@ style "mokofingerbutton-dialer" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_type05.png"
             border          = { 40, 20, 8, 7 }
@@ -84,7 +76,6 @@ style "mokofingerbutton-dialer" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_type05_p.png"
             border          = { 40, 20, 8, 7 }
@@ -102,21 +93,18 @@ style "mokofingerbutton-white" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_white.png"
             stretch         = TRUE
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_white.png"
             stretch         = TRUE
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_white_p.png"
             stretch         = TRUE
@@ -135,21 +123,18 @@ style "mokofingerbutton-big" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_big.png"
             stretch         = TRUE
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_big.png"
             stretch         = TRUE
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_big_p.png"
             stretch         = TRUE
@@ -174,7 +159,6 @@ style "mokofingerbutton-main-menu-icon"
     image
       {
         function        = BOX
-        recolorable     = TRUE
         state           = NORMAL
         file            = "transparency100.png"
         stretch         = TRUE
@@ -182,7 +166,6 @@ style "mokofingerbutton-main-menu-icon"
     image
       {
         function        = BOX
-        recolorable     = TRUE
         state           = PRELIGHT
         file            = "main_menu_sel_icon.png"
         stretch         = TRUE
@@ -190,7 +173,6 @@ style "mokofingerbutton-main-menu-icon"
     image
       {
         function        = BOX
-        recolorable     = TRUE
         state           = ACTIVE
         file            = "main_menu_sel_icon.png"
         stretch         = TRUE

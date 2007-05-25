@@ -5,7 +5,6 @@ style "mokonavigationlist-background" {
     image
       {
         function        = FLAT_BOX
-        recolorable     = TRUE
         detail          = "viewportbin"
         file            = "openmoko-navigation-list-background.png"
         stretch         = TRUE

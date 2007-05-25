@@ -36,7 +36,6 @@ style "gtkspinbutton" {
         image   
         {
             function        = ARROW 
-            recolorable     = TRUE  
             overlay_file    = "gtkspinbutton-plus.png"
             overlay_border  = { 0, 0, 0, 0 }
             overlay_stretch = FALSE 
@@ -45,7 +44,6 @@ style "gtkspinbutton" {
         image   
         {
             function        = ARROW 
-            recolorable     = TRUE  
             overlay_file    = "gtkspinbutton-minus.png"
             overlay_border  = { 0, 0, 0, 0 }
             overlay_stretch = FALSE 

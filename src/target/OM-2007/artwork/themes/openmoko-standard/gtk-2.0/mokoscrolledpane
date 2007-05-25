@@ -2,7 +2,6 @@ style "mokoscrolledpane-fullscreen-button" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "openmoko-scroll-fullscreen-btn-off.png"
             border          = { 0, 0, 0, 0 }
@@ -10,7 +9,6 @@ style "mokoscrolledpane-fullscreen-button" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "openmoko-scroll-fullscreen-btn-off.png"
             border          = { 0, 0, 0, 0 }
@@ -18,7 +16,6 @@ style "mokoscrolledpane-fullscreen-button" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "openmoko-scroll-fullscreen-btn-off-pressed.png"
             border          = { 0, 0, 0, 0 }
@@ -34,7 +31,6 @@ style "mokoscrolledpane-fullscreen-button-on" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             shadow          = OUT
             file            = "openmoko-scroll-fullscreen-btn-on.png"
@@ -43,7 +39,6 @@ style "mokoscrolledpane-fullscreen-button-on" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "openmoko-scroll-fullscreen-btn-on.png"
             border          = { 0, 0, 0, 0 }
@@ -51,7 +46,6 @@ style "mokoscrolledpane-fullscreen-button-on" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "openmoko-scroll-fullscreen-btn-on-pressed.png"
             border          = { 0, 0, 0, 0 }

@@ -2,7 +2,6 @@ style "gtkmenuitem" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "transparency100.png"
             border          = { 0, 0, 0, 0 }
@@ -10,7 +9,6 @@ style "gtkmenuitem" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "gtkmenuitem-selected.png"
             border          = { 11, 11, 11, 11 }

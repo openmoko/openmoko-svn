@@ -2,7 +2,6 @@ style "gtktreeview" {
     engine "pixmap" {    
       image {
             function        = FLAT_BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "entry-background.png"
             border          = { 0, 0, 0, 0 }
@@ -10,7 +9,6 @@ style "gtktreeview" {
       }
       image {
             function        = FLAT_BOX
-            recolorable     = TRUE
             state           = SELECTED
             file            = "list_bg_row_sel_stretch.png"
             border          = { 0, 0, 0, 0 }
@@ -18,7 +16,6 @@ style "gtktreeview" {
       }
 #      image {
 #          function        = FOCUS
-#          recolorable     = FALSE
 #          file            = "list_bg_row_sel_stretch.png"
 #          border          = { 0, 0, 0, 0 }
 #          stretch         = TRUE
@@ -43,7 +40,6 @@ style "gtktreeview-button" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             #state           = NORMAL
             file            = "gtktreeview-gtkbutton.png"
             border          = { 5, 5, 5, 5 }
@@ -85,7 +81,6 @@ style "gtktreeview-black"
     engine "pixmap" {
       image {
             function        = FLAT_BOX
-            recolorable     = TRUE
             state           = SELECTED
             file            = "gtktreeview-black-row-sel-stretch.png"
             border          = { 0, 0, 0, 0 }
@@ -93,7 +88,6 @@ style "gtktreeview-black"
       }
       image {
             function        = FLAT_BOX
-            recolorable     = TRUE
 #            state           = NORMAL
             file            = "gtktreeview-black-background.png"
             border          = { 0, 0, 0, 0 }

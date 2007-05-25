@@ -1,7 +1,8 @@
 style "moko-window-default" {
-    # FIXME do we want a general background brush? Or just a color?
-	# NOTE bg_pixmap[NORMAL] _must_ match with the SHADOW pixmaps
-    bg_pixmap[NORMAL] = "gtkwidget.png"
+
+    # We do not want a general background brush because it is loaded for every
+    # GtkRcStyle created
+    # bg_pixmap[NORMAL] = "gtkwidget.png"
 
     bg[NORMAL]        = "#666666" #
     bg[PRELIGHT]      = "#ff0000" # light beige
@@ -34,7 +35,6 @@ style "moko-window-default" {
     engine "pixmap" {
         image {
             function        = SHADOW
-            recolorable     = TRUE
             shadow          = IN
             file            = "openmoko-shadow-in.png"
             border          = { 6, 6, 6, 6 }
@@ -42,7 +42,6 @@ style "moko-window-default" {
         }
         image {
             function        = SHADOW
-            recolorable     = TRUE
             shadow          = OUT
             file            = "openmoko-shadow-in.png" # FIXME add proper shadow
             border          = { 6, 6, 6, 6 }
@@ -50,7 +49,6 @@ style "moko-window-default" {
         }
         image {
             function        = SHADOW
-            recolorable     = TRUE
             shadow          = ETCHED_IN
             file            = "openmoko-shadow-in.png" # FIXME add proper shadow
             border          = { 6, 6, 6, 6 }
@@ -58,7 +56,6 @@ style "moko-window-default" {
         }
         image {
             function        = SHADOW
-            recolorable     = TRUE
             shadow          = ETCHED_OUT
             file            = "openmoko-shadow-in.png" # FIXME add proper shadow
             border          = { 6, 6, 6, 6 }
@@ -82,13 +79,6 @@ style "moko-window-default" {
 }
 
 class "GtkWidget" style "moko-window-default"
-class "GtkLabel" style "moko-window-default"
-
-#FIXME that doesn't look correct, but is there a better way to get
-#a) Frames and Labels inherit the default color
-#b) items on menubar _not_ the default color
-widget_class "*.GtkLabel*" style "moko-window-default"
-#FIXME e.g. how to say widget "*" style "moko-window-default", but change menuitem color afterwards. that doesn't seem to work!?
 
 include "transparent"
 include "matchboxpanel"

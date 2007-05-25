@@ -2,7 +2,6 @@ style "mokomenubox-application-menubar" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             file            = "openmoko-application-menu-bg.png"
             border          = { 0, 20, 0, 0 }
             stretch         = TRUE
@@ -17,7 +16,6 @@ style "mokomenubox-filter-menubar" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             file            = "openmoko-filter-menu-bg.png"
             border          = { 0, 30, 0, 0 }
             stretch         = TRUE

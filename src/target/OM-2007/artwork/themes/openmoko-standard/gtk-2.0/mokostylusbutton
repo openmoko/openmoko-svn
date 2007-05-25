@@ -2,7 +2,6 @@ style "mokostylusbutton-white" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "mokostylusbutton-white.png"
             border          = { 0, 0, 0, 0 }
@@ -10,7 +9,6 @@ style "mokostylusbutton-white" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "mokostylusbutton-white.png"
             border          = { 0, 0, 0, 0 }
@@ -18,7 +16,6 @@ style "mokostylusbutton-white" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "mokostylusbutton-white-pressed.png"
             border          = { 0, 0, 0, 0 }
@@ -39,7 +36,6 @@ style "mokostylusbutton-black" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "mokostylusbutton-black.png"
             border          = { 0, 0, 0, 0 }
@@ -47,7 +43,6 @@ style "mokostylusbutton-black" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "mokostylusbutton-black.png"
             border          = { 0, 0, 0, 0 }
@@ -55,7 +50,6 @@ style "mokostylusbutton-black" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "mokostylusbutton-black-pressed.png"
             border          = { 0, 0, 0, 0 }

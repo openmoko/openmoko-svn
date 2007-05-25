@@ -55,7 +55,6 @@ style "fieldentry" {
                         function        = SHADOW
                         shadow          = IN
                         file            = "fieldentry.png"
-                        recolorable     = TRUE
                         border          = { 17, 17, 15, 15 }
                 }
         }

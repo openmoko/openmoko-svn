@@ -2,7 +2,6 @@ style "mokofingertoolbox-leftarrow" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_dialog_prev.png"
             border          = { 0, 0, 0, 0 }
@@ -10,7 +9,6 @@ style "mokofingertoolbox-leftarrow" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_dialog_prev.png"
             border          = { 0, 0, 0, 0 }
@@ -18,7 +16,6 @@ style "mokofingertoolbox-leftarrow" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_dialog_prev_p.png"
             border          = { 0, 0, 0, 0 }
@@ -36,7 +33,6 @@ style "mokofingertoolbox-rightarrow" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_dialog_next.png"
             border          = { 0, 0, 0, 0 }
@@ -44,7 +40,6 @@ style "mokofingertoolbox-rightarrow" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_dialog_next.png"
             border          = { 0, 0, 0, 0 }
@@ -52,7 +47,6 @@ style "mokofingertoolbox-rightarrow" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_dialog_next_p.png"
             border          = { 0, 0, 0, 0 }
@@ -70,7 +64,6 @@ style "mokofingertoolbox-toolbutton" {
    engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "btn_type03.png"
             border          = { 0, 0, 0, 0 }
@@ -78,7 +71,6 @@ style "mokofingertoolbox-toolbutton" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "btn_type03.png"
             border          = { 0, 0, 0, 0 }
@@ -86,7 +78,6 @@ style "mokofingertoolbox-toolbutton" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "btn_type03_p.png"
             border          = { 0, 0, 0, 0 }

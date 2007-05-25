@@ -6,7 +6,6 @@ style "gtkentry" {
             function        = SHADOW
             shadow          = IN
             file            = "gtkentry.png"
-            recolorable     = TRUE
             border          = { 17, 17, 15, 15 }
               }
 	 }

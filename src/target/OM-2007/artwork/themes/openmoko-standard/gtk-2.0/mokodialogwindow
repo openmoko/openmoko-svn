@@ -16,7 +16,6 @@ style "mokodialogwindow-closebutton" {
     engine "pixmap" {
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = NORMAL
             file            = "mokodialogwindow-closebutton.png"
             border          = { 0, 0, 0, 0 }
@@ -24,7 +23,6 @@ style "mokodialogwindow-closebutton" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = PRELIGHT
             file            = "mokodialogwindow-closebutton.png"
             border          = { 0, 0, 0, 0 }
@@ -32,7 +30,6 @@ style "mokodialogwindow-closebutton" {
         }
         image {
             function        = BOX
-            recolorable     = TRUE
             state           = ACTIVE
             file            = "mokodialogwindow-closebutton-pressed.png"
             border          = { 0, 0, 0, 0 }

@@ -22,7 +22,6 @@ style "scrollbar" {
 #
     image {
         function        = BOX
-        recolorable     = TRUE
         detail          = "slider"
         file            = "openmoko-scrollbar-horizontal.png"
         border          = { 13, 12, 2, 2 }
@@ -31,7 +30,6 @@ style "scrollbar" {
     }
     image {
         function        = BOX
-        recolorable     = TRUE
         detail          = "slider"
         state           = NORMAL
         file            = "openmoko-scrollbar-vertical.png"
@@ -41,7 +39,6 @@ style "scrollbar" {
     }
     image {
         function        = BOX
-        recolorable     = TRUE
         detail          = "slider"
         state           = PRELIGHT
         file            = "openmoko-scrollbar-vertical-pressed.png"
@@ -54,7 +51,6 @@ style "scrollbar" {
 #
     image {
         function        = BOX
-        recolorable     = TRUE
         detail          = "trough"
         file            = "vtrough.png"
         border          = { 3, 3, 23, 23 }
@@ -63,7 +59,6 @@ style "scrollbar" {
     }
     image {
         function        = BOX
-        recolorable     = TRUE
         detail          = "trough"
         file            = "htrough.png"
         border          = { 23, 23, 3, 3 }
@@ -151,14 +146,12 @@ style "scrollbar" {
 #
 #    image {
 #        function        = BOX
-#        recolorable     = TRUE
 #        file            = "arrow-background.png"
 #        border          = { 0, 0, 0, 0 }
 #        stretch         = TRUE
 #    }
     image {
         function        = ARROW
-        recolorable     = TRUE
         overlay_file    = "arrow-up.png"
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
@@ -166,7 +159,6 @@ style "scrollbar" {
     }
     image {
         function        = ARROW
-        recolorable     = TRUE
         overlay_file    = "arrow-down.png"
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
@@ -174,7 +166,6 @@ style "scrollbar" {
     }
     image {
         function        = ARROW
-        recolorable     = TRUE
         overlay_file    = "arrow-left.png"
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
@@ -182,7 +173,6 @@ style "scrollbar" {
     }
     image {
         function        = ARROW
-        recolorable     = TRUE
         overlay_file    = "arrow-right.png"
         overlay_border  = { 0, 0, 0, 0 }
         overlay_stretch = TRUE
