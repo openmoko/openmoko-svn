@@ -128,9 +128,8 @@ static void
 call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data)
 {
   g_debug ("Outgoing Call Progress: %d", type);
-  if (type == MOKO_GSMD_PROG_REJECT)
+  if (type == MOKO_GSMD_PROG_DISCONNECT)
   {
-    g_debug ("call rejected");
     gtk_dialog_response (GTK_DIALOG (data->window_outgoing), GTK_RESPONSE_CANCEL);
     return;
   }
