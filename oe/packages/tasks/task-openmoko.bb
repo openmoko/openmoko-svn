@@ -92,7 +92,6 @@ RDEPENDS_task-openmoko-base = "\
   matchbox-panel-2 \
   matchbox-panel-2-applets \
   matchbox-applet-inputmanager \
-  matchbox-applet-startup-monitor \
   openmoko-appmanager \
   openmoko-keyboard \
   openmoko-footer \
