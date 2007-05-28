@@ -1,15 +1,17 @@
-DESCRIPTION = "Settings-daemon is a bridge between xst/gpe-confd and gconf"
+DESCRIPTION = "Settings-daemon provides a bridge between gconf and xsettings"
 LICENSE = "GPL"
-DEPENDS = "gconf xst glib-2.0"
+DEPENDS = "gconf glib-2.0"
+RDEPENDS = "xrdb"
 SECTION = "x11"
-PR = "r3"
+PV = "0.0+svn${SRCDATE}"
+PR = "r4"
 
 SRC_URI = "svn://svn.o-hand.com/repos/matchbox/trunk;module=${PN};proto=http \
            file://70settings-daemon "
 
 S = "${WORKDIR}/${PN}"
 
-inherit autotools pkgconfig gettext
+inherit autotools pkgconfig gettext gconf
 
 do_configure_append() {
 	if [ "${DISTRO}" = "openmoko" ]; then
