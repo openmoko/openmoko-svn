@@ -40,8 +40,7 @@ CMDLINE = "${CMDLINE_CON} ${CMDLINE_ROOT} ${CMDLINE_IP} ${CMDLINE_ROTATE} ${CMDL
 #
 module_autoload_ohci-hcd = "ohci-hcd"
 module_autoload_g_ether = "g_ether"
-#module_autoload_snd-pcm-oss = "snd-pcm-oss"
-#module_autoload_snd-soc-corgi_c7x0 = "snd-soc-s3c24xx"
+module_autoload_snd-soc-neo1973-wm8753 = "snd-soc-neo1973-wm8753"
 
 do_prepatch() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
