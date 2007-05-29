@@ -35,6 +35,13 @@ struct _MokoJournal
   ECalView *ecal_view ;
   GList *entries_to_delete ;
   GArray *entries ;
+  
+  /* Callbacks */
+  MokoJournalEntryAddedFunc added_func ;
+  gpointer added_data ;
+
+  MokoJournalEntryRemovedFunc removed_func ;
+  gpointer removed_data ;  
 };
 
 struct _MokoJournalVoiceInfo
@@ -144,6 +151,24 @@ static void on_entries_removed_cb (ECalView *a_view,
                                    GList *uids,
                                    MokoJournal *a_journal) ;
 
+
+static void
+notify_entry_added (MokoJournal *a_journal, MokoJournalEntry *entry)
+{
+  if (a_journal->added_func == NULL)
+    return;
+  
+  a_journal->added_func (a_journal, entry, a_journal->added_data);
+}
+
+static void
+notify_entry_removed (MokoJournal *a_journal, MokoJournalEntry *entry)
+{
+  if (a_journal->removed_func == NULL)
+    return;
+  
+  a_journal->removed_func (a_journal, entry, a_journal->removed_data);
+}
 
 static const gchar*
 entry_type_to_string (enum MokoJournalEntryType a_type)
@@ -915,6 +940,48 @@ moko_journal_close (MokoJournal *a_journal)
 }
 
 /**
+ * moko_journal_set_entry_added_callback:
+ * @journal: the current instance of journal
+ * @func: the function that will be called when an entry is added or NULL.
+ * @data: the data you would like to pass to the callback or NULL.
+ * This will replace the current callback.
+ *
+ * Add a callback to the journal to ne notified when an entry is added.
+ *
+ * Return value: 
+ */
+void moko_journal_set_entry_added_callback (MokoJournal *a_journal,  
+                                            MokoJournalEntryAddedFunc func,
+                                            gpointer data)
+{
+  g_return_if_fail (a_journal) ;
+  
+  a_journal->added_func = func;
+  a_journal->added_data = data;
+}
+
+/**
+ * moko_journal_set_entry_removed_callback:
+ * @journal: the current instance of journal
+ * @func: the function that will be called when an entry is removed or NULL.
+ * @data: the data you would like to pass to the callback or NULL. 
+ * This will replace the current callback.
+ *
+ * Add a callback to the journal to ne notified when an entry is removed.
+ *
+ * Return value: 
+ */
+void moko_journal_set_entry_removed_callback (MokoJournal *a_journal,  
+                                              MokoJournalEntryRemovedFunc func,
+                                              gpointer data)
+{
+  g_return_if_fail (a_journal) ;
+  
+  a_journal->removed_func = func;
+  a_journal->removed_data = data;
+}
+
+/**
  * moko_journal_add_entry:
  * @journal: the current instance of journal
  * @entry: the new entry to add to the journal. The journal is responsible
@@ -1047,6 +1114,7 @@ moko_journal_remove_entry_by_uid (MokoJournal *a_journal,
     entry = g_array_index (a_journal->entries, MokoJournalEntry*, i) ;
     if (entry && entry->uid && !strcmp (entry->uid, a_uid))
     {
+      notify_entry_removed (a_journal, entry);
       return moko_journal_remove_entry_at (a_journal, i) ;
     }
   }
@@ -1266,6 +1334,7 @@ on_entries_added_cb (ECalView *a_view,
       continue ;
     }
     moko_journal_add_entry (a_journal, entry) ;
+    notify_entry_added (a_journal, entry);
     entry = NULL ;
   }
 }

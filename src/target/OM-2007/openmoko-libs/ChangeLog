@@ -1,3 +1,19 @@
+2007-05-29  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Neil J Patel <njp@o-hand.com>
+
+	* libmokojournal/src/moko-journal.c: (moko_journal_open_default),
+	(moko_journal_close), (moko_journal_remove_entry_at),
+	(moko_journal_remove_entry_by_uid),
+	(moko_journal_write_to_storage), (on_entries_added_cb):
+	* libmokojournal/src/moko-journal.h:
+
+        - Adds ability to set callbacks for being notified when entrys 
+          are added & removed from the journal.
+        - Callbacks are called only when ecal updates, they are not 
+          called for _add_entry or _remove_entry, as these are not
+          persistent until write_to_storage is called. 
+
 2007-05-22  Michael Lauer <mickey@openmoko.org>
 
 	* libmokogsmd/moko-gsmd-connection.h: Add prototype for PIN request signal

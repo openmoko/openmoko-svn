@@ -77,6 +77,17 @@ typedef struct
   gushort cid ;
 } MokoGSMLocation ;
 
+/* The 'entry added' callback function */
+typedef void (*MokoJournalEntryAddedFunc) (MokoJournal *journal, 
+                                           MokoJournalEntry *entry,
+                                           gpointer user_data);
+
+/* The 'entry added' callback function */
+typedef void (*MokoJournalEntryRemovedFunc) (MokoJournal *journal, 
+                                             const MokoJournalEntry *entry,
+                                             gpointer user_data);
+
+
 /*<journal management>*/
 /**
  * moko_journal_open_default:
@@ -95,6 +106,37 @@ MokoJournal* moko_journal_open_default () ;
  * This function deallocates the memory of the Journal object.
  */
 void moko_journal_close (MokoJournal *journal) ;
+
+/**
+ * moko_journal_set_entry_added_callback:
+ * @journal: the current instance of journal
+ * @func: the function that will be called when an entry is added or NULL.
+ * @data: the data you would like to pass to the callback or NULL.
+ * This will replace the current callback.
+ *
+ * Add a callback to the journal to ne notified when an entry is added.
+ *
+ * Return value: 
+ */
+void moko_journal_set_entry_added_callback (MokoJournal *journal,  
+                                            MokoJournalEntryAddedFunc func,
+                                            gpointer data) ;
+
+/**
+ * moko_journal_set_entry_removed_callback:
+ * @journal: the current instance of journal
+ * @func: the function that will be called when an entry is removed or NULL.
+ * @data: the data you would like to pass to the callback or NULL. 
+ * This will replace the current callback.
+ *
+ * Add a callback to the journal to ne notified when an entry is removed.
+ *
+ * Return value: 
+ */
+void moko_journal_set_entry_removed_callback (MokoJournal *journal,  
+                                              MokoJournalEntryRemovedFunc func,
+                                              gpointer data) ;
+
 
 /**
  * moko_journal_add_entry:
