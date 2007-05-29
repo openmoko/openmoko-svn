@@ -25,6 +25,7 @@ enum history_columns {
   HISTORY_DSTART_COLUMN, /* call time, used for sorting */
   HISTORY_ICON_NAME_COLUMN, /* icon name for display */
   HISTORY_DISPLAY_TEXT_COLUMN, /* name or number for display */
+  HISTORY_CALL_TYPE_COLUMN /* Used for identifying the type of call */
 };
 
 

@@ -90,8 +90,10 @@ typedef struct _dialer_data
   gboolean dtmf_in_talking_window;
   gboolean history_need_to_update;
 
+  GtkListStore *g_list_store; /* The actual list store */
   GtkTreeModel *g_list_store_filter;    ///<the list store used by the gtktreeview, for displaying the history list dynamically.
-
+  gint g_history_filter_type;
+  
   GdkPixbuf *g_iconReceived, *g_iconMissed, *g_iconDialed;      ///<the global pixbuf for the 3 icons displayed in the history window.}DIALER_APP_DATA;
 } MokoDialerData;
 
