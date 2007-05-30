@@ -1,8 +1,8 @@
 DESCRIPTION = "Matchbox session files for OpenMoko"
 SECTION = "openmoko/base"
 RDEPENDS = "matchbox-panel-2 matchbox-wm gconf"
-PV = "0.0+svn${SRCDATE}"
-PR = "r10"
+PV = "0.1+svn${SRCDATE}"
+PR = "r0"
 
 inherit openmoko-base
 
@@ -24,6 +24,5 @@ if [ "x$D" != "x" ]; then
     exit 1
 fi
 
-#FIXME might add openmoko theme here as default!?
-#gconftool-2 --config-source=xml::$D${sysconfdir}/gconf/gconf.xml.defaults --direct --type string --set /desktop/openmoko/interface/theme Clearlooks
+gconftool-2 --config-source=xml::$D${sysconfdir}/gconf/gconf.xml.defaults --direct --type string --set /desktop/openmoko/interface/theme openmoko-standard
 }
