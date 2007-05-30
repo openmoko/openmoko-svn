@@ -73,7 +73,7 @@ Index: u-boot/board/qt2410/config.mk
 ===================================================================
 --- /dev/null
 +++ u-boot/board/qt2410/config.mk
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,29 @@
 +#
 +# (C) Copyright 2002
 +# Gary Jennejohn, DENX Software Engineering, <gj@denx.de>
@@ -83,6 +83,10 @@ Index: u-boot/board/qt2410/config.mk
 +#
 +# see http://www.samsung.com/ for more information on SAMSUNG
 +#
++
++CONFIG_USB_DFU_VENDOR=0x1457
++CONFIG_USB_DFU_PRODUCT=0x511d
++CONFIG_USB_DFU_REVISION=0x0100
 +
 +#
 +# SMDK2410 has 1 bank of 64 MB DRAM
@@ -1138,7 +1142,7 @@ Index: u-boot/include/configs/qt2410.h
 +#define CFG_CONSOLE_IS_IN_ENV	1
 +#define CONFIG_USBD_VENDORID		0x1457     /* Linux/NetChip */
 +#define CONFIG_USBD_PRODUCTID_GSERIAL	0x5120    /* gserial */
-+#define CONFIG_USBD_PRODUCTID_CDCACM	0x5119    /* CDC ACM */
++#define CONFIG_USBD_PRODUCTID_CDCACM	0x511d    /* CDC ACM */
 +#define CONFIG_USBD_MANUFACTURER	"Armzone"
 +#define CONFIG_USBD_PRODUCT_NAME	"QT2410 Bootloader " U_BOOT_VERSION
 +#define CONFIG_EXTRA_ENV_SETTINGS	"usbtty=cdc_acm\0"
