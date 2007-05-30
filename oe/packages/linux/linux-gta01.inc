@@ -38,9 +38,15 @@ CMDLINE = "${CMDLINE_CON} ${CMDLINE_ROOT} ${CMDLINE_IP} ${CMDLINE_ROTATE} ${CMDL
 ###############################################################
 # module configs specific to this kernel
 #
+
+# usb
 module_autoload_ohci-hcd = "ohci-hcd"
+module_autoload_hci_usb = "hci_usb"
 module_autoload_g_ether = "g_ether"
+# audio
 module_autoload_snd-soc-neo1973-wm8753 = "snd-soc-neo1973-wm8753"
+# sd/mmc
+module_autoload_s3cmci = "s3cmci"
 
 do_prepatch() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
