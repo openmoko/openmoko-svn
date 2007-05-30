@@ -422,18 +422,6 @@ moko_application_get_is_topmost(MokoApplication* self)
 }
 
 /**
- * moko_application_get_style_pixmap_dir:
- *
- * @returns the style pixmap directory
- * @note this is not necessarily $GTK_DATA_DIR/themes/$THEME_NAME/gtk-2.0/
- **/
-gchar* moko_application_get_style_pixmap_dir()
-{
-    GtkStyle* style = gtk_rc_get_style_by_paths( gtk_settings_get_default(), "GtkWidget", "GtkWidget", GTK_TYPE_WIDGET );
-    return g_path_get_dirname( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL] );
-}
-
-/**
  * moko_application_add_stock_icons:
  *
  * register a number of stock icons given by name

@@ -53,7 +53,6 @@ void moko_application_set_main_window(MokoApplication* self, MokoWindow* window)
 GtkWidget* moko_application_get_main_window(MokoApplication* self);
 void moko_application_add_window (MokoApplication *self, MokoWindow *window);
 
-gchar* moko_application_get_style_pixmap_dir();
 void moko_application_add_stock_icons(MokoApplication* self, ...);
 
 GtkWidget* moko_application_execute_dialog(MokoApplication* self, const gchar* title, GtkWidget* contents);

@@ -190,7 +190,14 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     {
         gchar *filename;
         if (filename = style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL])
-            priv->background_pixbuf = gdk_pixbuf_new_from_file( style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL], NULL);
+        {
+          priv->background_pixbuf = gdk_pixbuf_new_from_file( filename, NULL);
+          if (!priv->background_pixbuf)
+          {
+            g_warning ("moko_finger_tool_box: could not load pixbuf for the finger tool box: %s", filename);
+            return;
+          }
+        }
         else
         {
             g_warning ("moko_finger_tool_box: theme does not specify a background image for the finger tool box");
@@ -199,9 +206,6 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
 
     }
     GdkPixbuf* pixbuf = gdk_pixbuf_scale_simple( priv->background_pixbuf, a->width, a->height, GDK_INTERP_BILINEAR );
-    
-    if ( !priv->button_pixbuf )
-        priv->button_pixbuf = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_type03.png", NULL ), NULL );
     guint w = gdk_pixbuf_get_width( priv->button_pixbuf );
     guint h = gdk_pixbuf_get_height( priv->button_pixbuf );
     guint x = padding_left - 1;
