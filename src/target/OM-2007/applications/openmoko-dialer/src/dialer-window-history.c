@@ -21,6 +21,7 @@
 #include <libmokoui/moko-finger-wheel.h>
 #include <libmokoui/moko-pixmap-button.h>
 #include <libmokojournal/moko-journal.h>
+#include <libmokoui/moko-ui.h>
 
 #include <gtk/gtk.h>
 #include <string.h>
@@ -30,6 +31,7 @@
 #include "dialer-main.h"
 #include "moko-dialer-status.h"
 #include "dialer-window-history.h"
+#include "dialer-window-outgoing.h"
 
 /* call types */
 typedef enum {
@@ -203,13 +205,20 @@ static void
 cb_tool_button_history_delete_clicked (GtkButton * button,
                                        MokoDialerData * appdata)
 {
+  GtkWidget *dialog;
   GtkTreeIter iter;             //iter of the filter store
-  GtkTreeIter iter0;            //iter of the back store
+  GtkTreeIter iter0;
+  GtkTreeIter iter1;            //iter of the back store
   GtkTreeModel *model;
   GtkTreeModel *model0;
+  GtkTreeModel *model1;
   GtkTreeSelection *selection;
   GtkTreeView *treeview;
   GtkTreePath *path;
+  MokoJournalEntry *entry = NULL;
+  const gchar *uid;
+  gint result = 0;
+  
   treeview = GTK_TREE_VIEW (appdata->treeview_history);
   selection = gtk_tree_view_get_selection (treeview);
 
@@ -218,29 +227,54 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
   {
     return;
   }
-
-  /*if (appdata->g_currentselected)
+  
+  gtk_tree_model_get (model, &iter, HISTORY_ENTRY_POINTER, &entry, -1);
+  
+  if (!(uid = moko_journal_entry_get_uid (entry))) 
   {
-    DBG_MESSAGE ("to delete %s", appdata->g_currentselected->number);
-    history_delete_entry (&(appdata->g_historylist),
-                          appdata->g_currentselected);
-  }*/
+    g_print ("Unable to get entry\n");
+    return;
+  }
+  /* We need to show a dialog to make sure this is what the user wants */
+  dialog = moko_message_dialog_new ();
+  
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (dialog),
+                                   "%s",
+                      "Are you sure you want to permenantly remove this call?");
+  moko_message_dialog_set_image_from_stock (MOKO_MESSAGE_DIALOG (dialog),
+                                            GTK_STOCK_DIALOG_QUESTION);
+	
+  gtk_dialog_add_buttons (GTK_DIALOG (dialog), 
+                          "Don't Delete", GTK_RESPONSE_CANCEL,  
+                          GTK_STOCK_DELETE, GTK_RESPONSE_YES,
+                          NULL);
 
+  result = gtk_dialog_run (GTK_DIALOG (dialog));
+  switch (result) {
+    case GTK_RESPONSE_YES: 
+      break;
+    default:
+      gtk_widget_destroy (dialog);
+      break;
+  }
+  
+  /* Remove the entry from the journal & commit the change */
+  if (moko_journal_remove_entry_by_uid (appdata->journal, uid))
+    moko_journal_write_to_storage (appdata->journal);
+  
+  
+  /* The user wants to delete, so delete */
   path = gtk_tree_model_get_path (model, &iter);
-
-
-  model0 = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
-
-
-  gtk_tree_model_filter_convert_iter_to_child_iter (GTK_TREE_MODEL_FILTER
-                                                    (model), &iter0, &iter);
-
+  model1 = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (model));
+  gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model),
+                                                   &iter1, &iter);
+  model0 = gtk_tree_model_sort_get_model (GTK_TREE_MODEL_SORT (model1));
+  gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(model1),
+                                                 &iter0, &iter1);
+  
   gtk_list_store_remove (GTK_LIST_STORE (model0), &iter0);
-
-
   gtk_tree_view_set_cursor (treeview, path, 0, 0);
-
-
+  
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
   {
     if (!gtk_tree_path_prev (path))
@@ -258,7 +292,8 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
   }
 
   gtk_tree_path_free (path);
-
+  gtk_widget_destroy (dialog);
+  
   return;
 
   DBG_ENTER ();
@@ -268,10 +303,27 @@ static void
 cb_tool_button_history_call_clicked (GtkButton * button,
                                      MokoDialerData * appdata)
 {
-  DBG_ENTER ();
+  GtkTreeSelection *selection;
+  GtkTreeView *treeview;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *number;
+  
+  treeview = GTK_TREE_VIEW (appdata->treeview_history);
+  selection = gtk_tree_view_get_selection (treeview);
+  model = gtk_tree_view_get_model (treeview);
 
 
-
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+  {
+    return;
+  }
+  
+  gtk_tree_model_get (model, &iter, HISTORY_NUMBER_COLUMN, &number, -1);
+  
+  window_outgoing_dial (appdata, number);
+  
+  g_free (number);
 }
 
 static void
@@ -582,6 +634,72 @@ history_view_filter_visible_function (GtkTreeModel * model,
 }
 
 
+static gboolean
+history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
+{
+  const gchar *uid, *number;
+  gchar *icon_name;
+  const gchar *display_text;
+  time_t dstart;
+  enum MessageDirection direction;
+  gboolean was_missed;
+  const MokoTime *time;
+  MokoJournalVoiceInfo *info = NULL;
+  CallFilter type;
+    
+  /* We're not interested in anything other than voice entrys */
+  if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
+  {
+    return FALSE;
+  }
+    
+  uid = moko_journal_entry_get_contact_uid (j_entry);
+  moko_journal_entry_get_direction (j_entry, &direction);
+  time = moko_journal_entry_get_dtstart (j_entry);
+  dstart = moko_time_as_timet (time);
+  moko_journal_entry_get_voice_info (j_entry, &info);
+  was_missed = moko_journal_voice_info_get_was_missed (info);
+  number = moko_journal_voice_info_get_distant_number (info);
+    
+  /* If the number is null, the number may have been stored in the summary*/
+  if (strcmp (number, "NULL") == 0) 
+    number = moko_journal_entry_get_summary (j_entry);
+  
+  /* Load the correct icon */
+  if (direction == DIRECTION_OUT)
+  {
+    icon_name = HISTORY_CALL_OUTGOING_ICON;
+    type = OUTGOING;
+  }
+  else
+  {
+    if (was_missed)
+    {
+      icon_name = HISTORY_CALL_MISSED_ICON;
+      type = MISSED;
+    }
+    else
+    { 
+      icon_name = HISTORY_CALL_INCOMING_ICON;
+      type = INCOMING;      
+    }
+  }
+  /* display text should be either the contact name, or the number if the
+   * contact name is not know */
+  /* FIXME: look up uid */
+  display_text = number;
+  
+  gtk_list_store_insert_with_values (store, NULL, 0,
+      HISTORY_NUMBER_COLUMN, number,
+      HISTORY_DSTART_COLUMN, dstart,
+      HISTORY_ICON_NAME_COLUMN, icon_name,
+      HISTORY_DISPLAY_TEXT_COLUMN, display_text,
+      HISTORY_CALL_TYPE_COLUMN, type,
+      HISTORY_ENTRY_POINTER, (gpointer)j_entry,
+      -1);
+  return TRUE;
+}
+
 
 /**
  * @brief find the treeview in the window, fill-in the data and show it on the screen.
@@ -599,16 +717,15 @@ static gint
 history_build_history_list_view (MokoDialerData * p_dialer_data)
 {
   GtkListStore *list_store;
-
+  GtkTreeModel *sorted;
   GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
-
   GtkWidget *contactview = NULL;
-
+  int i = 0, j =0;
+  MokoJournalEntry *j_entry;
   //DBG_ENTER();
 
   //DBG_TRACE();
-  //p_dialer_data->g_history_filter_type = ALL;
   contactview = p_dialer_data->treeview_history;
 
   if (contactview == NULL)
@@ -620,47 +737,51 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
   gtk_tree_view_column_set_attributes (col, renderer,
-                                       "icon-name", HISTORY_ICON_NAME_COLUMN, NULL);
+                                       "icon-name", HISTORY_ICON_NAME_COLUMN,
+                                        NULL);
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, TRUE);
   gtk_tree_view_column_set_attributes (col, renderer,
-                                       "text", HISTORY_DISPLAY_TEXT_COLUMN, NULL);
+                                       "text", HISTORY_DISPLAY_TEXT_COLUMN,
+                                       NULL);
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (contactview), col);
 
 
   /* Set up a list store for the history items */
   /* UID, DSTART, MISSED, DIRECTION */
-  list_store = gtk_list_store_new (5, G_TYPE_STRING, 
+  list_store = gtk_list_store_new (6, G_TYPE_STRING, 
                                       G_TYPE_INT, 
                                       G_TYPE_STRING, 
                                       G_TYPE_STRING,
-                                      G_TYPE_INT);
+                                      G_TYPE_INT,
+                                      G_TYPE_POINTER);
                                       
   p_dialer_data->g_list_store = list_store;
-
+  
+  /* We setup the sorting model */
+  sorted = gtk_tree_model_sort_new_with_model (GTK_TREE_MODEL (list_store));
+  gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (sorted),
+                                        HISTORY_DSTART_COLUMN,
+                                        GTK_SORT_DESCENDING);
+  
   /* We setup the default filter */
   p_dialer_data->g_history_filter_type = ALL;
   
   //we will use a filter to facilitate the filtering in treeview without rebuilding the database.  p_dialer_data->g_list_store_filter =
   p_dialer_data->g_list_store_filter = 
-    gtk_tree_model_filter_new (GTK_TREE_MODEL (list_store), NULL);
+    gtk_tree_model_filter_new (GTK_TREE_MODEL (sorted), NULL);
   gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER
                                           (p_dialer_data->
                                            g_list_store_filter),
                                           history_view_filter_visible_function,
                                           p_dialer_data, NULL);
 
-  //load the three icons to memory.
   gtk_tree_view_set_model (GTK_TREE_VIEW (contactview),
                            GTK_TREE_MODEL (p_dialer_data->
                                            g_list_store_filter));
 
-
-  /* add the initial contents of the list store */
-  int i = 0;
-  MokoJournalEntry *j_entry;
 
   /* if there aren't any entries in the journal, we don't need to do any more
    * here
@@ -684,71 +805,16 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
 
   while (moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry))
   {
-    const gchar *uid, *number;
-    gchar *icon_name;
-    const gchar *display_text;
-    time_t dstart;
-    enum MessageDirection direction;
-    gboolean was_missed;
-    const MokoTime *time;
-    MokoJournalVoiceInfo *info = NULL;
-    CallFilter type;
-    
     /* We're not interested in anything other than voice entrys */
     if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
     {
       i++;
       continue;
     }
-    
-    uid = moko_journal_entry_get_contact_uid (j_entry);
-    moko_journal_entry_get_direction (j_entry, &direction);
-    time = moko_journal_entry_get_dtstart (j_entry);
-    dstart = moko_time_as_timet (time);
-    moko_journal_entry_get_voice_info (j_entry, &info);
-    was_missed = moko_journal_voice_info_get_was_missed (info);
-    number = moko_journal_voice_info_get_distant_number (info);
-    
-    /* If the number is null, the number may have been stored in the summary*/
-    if (strcmp (number, "NULL") == 0) 
-      number = moko_journal_entry_get_summary (j_entry);
-
-    /* Load the correct icon */
-    if (direction == DIRECTION_OUT)
-    {
-      icon_name = HISTORY_CALL_OUTGOING_ICON;
-      type = OUTGOING;
-    }
-    else
-    {
-      if (was_missed)
-      {
-        icon_name = HISTORY_CALL_MISSED_ICON;
-        type = MISSED;
-      }
-      else
-      { 
-        icon_name = HISTORY_CALL_INCOMING_ICON;
-        type = INCOMING;      
-      }
-    }
-    /* display text should be either the contact name, or the number if the
-     * contact name is not know */
-    /* FIXME: look up uid */
-    display_text = number;
-    
-    gtk_list_store_insert_with_values (list_store, NULL, 0,
-        HISTORY_NUMBER_COLUMN, number,
-        HISTORY_DSTART_COLUMN, dstart,
-        HISTORY_ICON_NAME_COLUMN, icon_name,
-        HISTORY_DISPLAY_TEXT_COLUMN, display_text,
-        HISTORY_CALL_TYPE_COLUMN, type,
-        -1);
+    if (history_add_entry (list_store, j_entry))
+      j++;
     i++;
   }
-
-
-
   return 1;
 }
 
@@ -913,69 +979,18 @@ on_entry_added_cb (MokoJournal *journal,
                    MokoDialerData * p_dialer_data)
 {
   GtkListStore *list_store;
-  const gchar *uid, *number;
-  gchar *icon_name;
-  const gchar *display_text;
-  time_t dstart;
-  enum MessageDirection direction;
-  gboolean was_missed;
-  const MokoTime *time;
-  MokoJournalVoiceInfo *info = NULL;
-  CallFilter type;
     
   g_return_if_fail (p_dialer_data);
+  
   /* We're not interested in anything other than voice entrys */
   if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
   {
     return;
   }
+
   /* Get the list store*/
   list_store = p_dialer_data->g_list_store;
-  
-  uid = moko_journal_entry_get_contact_uid (j_entry);
-  moko_journal_entry_get_direction (j_entry, &direction);
-  time = moko_journal_entry_get_dtstart (j_entry);
-  dstart = moko_time_as_timet (time);
-  moko_journal_entry_get_voice_info (j_entry, &info);
-  was_missed = moko_journal_voice_info_get_was_missed (info);
-  number = moko_journal_voice_info_get_distant_number (info);
-    
-  /* If the number is null, the number may have been stored in the summary*/
-  if (strcmp (number, "NULL") == 0)
-    number = moko_journal_entry_get_summary (j_entry);
-
-  /* Load the correct icon */
-  if (direction == DIRECTION_OUT)
-  {
-    icon_name = HISTORY_CALL_OUTGOING_ICON;
-    type = OUTGOING;
-  }
-  else
-  {
-    if (was_missed)
-    {
-      icon_name = HISTORY_CALL_MISSED_ICON;
-      type = MISSED;
-    }
-    else
-    { 
-      icon_name = HISTORY_CALL_INCOMING_ICON;
-      type = INCOMING;      
-    }
-  }
- 
-  /* display text should be either the contact name, or the number if the
-   * contact name is not know */
-  /* FIXME: look up uid */
-  display_text = number;
-    
-  gtk_list_store_insert_with_values (list_store, NULL, 0,
-      HISTORY_NUMBER_COLUMN, number,
-      HISTORY_DSTART_COLUMN, dstart,
-      HISTORY_ICON_NAME_COLUMN, icon_name,
-      HISTORY_DISPLAY_TEXT_COLUMN, display_text,
-      HISTORY_CALL_TYPE_COLUMN, type,
-      -1);
+  history_add_entry (list_store, j_entry);
 }
 
 
