@@ -89,9 +89,11 @@ today_update_date (GtkLabel * label)
  */
 
 static GtkWidget *
-today_infoline_new (gchar * stock_id, gchar * message)
+today_infoline_new (gchar * exec, gchar * message)
 {
   GtkWidget *eventbox, *hbox, *icon, *label;
+  GtkIconTheme *icon_theme = gtk_icon_theme_get_default ();
+  GdkPixbuf *pb;
 
   eventbox = gtk_event_box_new ();
   gtk_event_box_set_visible_window (GTK_EVENT_BOX (eventbox), FALSE);
@@ -100,8 +102,16 @@ today_infoline_new (gchar * stock_id, gchar * message)
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (eventbox), hbox);
 
-  icon = gtk_image_new ();
-  gtk_image_set_from_stock (GTK_IMAGE (icon), stock_id, GTK_ICON_SIZE_MENU);
+  if (gtk_icon_theme_has_icon (icon_theme, exec))
+  {
+    pb = gtk_icon_theme_load_icon (icon_theme, exec, 32, GTK_ICON_LOOKUP_NO_SVG, NULL);
+  }
+  else
+  {
+    pb = gtk_icon_theme_load_icon (icon_theme, GTK_STOCK_MISSING_IMAGE, 32, GTK_ICON_LOOKUP_NO_SVG, NULL);
+  }
+  icon = gtk_image_new_from_pixbuf (pb);
+  g_object_unref (pb);
   gtk_misc_set_alignment (GTK_MISC (icon), 0, 0);
   gtk_widget_show (icon) ;
   gtk_box_pack_start (GTK_BOX (hbox), icon, FALSE, FALSE, 0);
@@ -152,8 +162,6 @@ today_launcher_button_new (gchar * exec)
   GdkPixbuf *pb;
   GtkIconTheme *icon_theme = gtk_icon_theme_get_default ();
 
-  /* libmokoui api really needs fixing... */
-
   if (gtk_icon_theme_has_icon (icon_theme, exec))
   {
     pb = gtk_icon_theme_load_icon (icon_theme, exec, 48, GTK_ICON_LOOKUP_NO_SVG, NULL);
@@ -200,7 +208,7 @@ static void
 create_ui ()
 {
   GtkWidget *window, *vbox;
-  GtkWidget *date, *time_label;
+  GtkWidget *date;
   GtkWidget *message;
 
   GtkWidget *alignment;
@@ -230,7 +238,7 @@ create_ui ()
   /* date */
   alignment = gtk_alignment_new (1, 0, 0, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (alignment), 12, 0, 0, 12);
-  date = gtk_label_new ("MON 15/JAN/2007");
+  date = gtk_label_new (NULL);
   gtk_container_add (GTK_CONTAINER (alignment), date);
   gtk_box_pack_start (GTK_BOX (vbox), alignment, FALSE, FALSE, 0);
   today_update_date (GTK_LABEL (date));
@@ -246,11 +254,11 @@ create_ui ()
 
 
   /* unread messages */
-  infoline = today_infoline_new (GTK_STOCK_YES, "Unread Messages (5)");
+  infoline = today_infoline_new ("openmoko-messages", "Unread Messages");
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* missed calls */
-  infoline = today_infoline_new (GTK_STOCK_NO, "Missed Calls (1)");
+  infoline = today_infoline_new ("openmoko-dialer", "Missed Calls");
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* upcoming events */
@@ -278,11 +286,6 @@ create_ui ()
   g_signal_connect (G_OBJECT (window), "delete-event",
                     (GCallback) gtk_main_quit, NULL);
 
-
-  /* temporary */
-  GtkSettings *settings = gtk_settings_get_default ();
-  g_object_set (G_OBJECT (settings), "gtk-theme-name", "openmoko-standard",
-                NULL);
 
   gtk_widget_show_all (window);
 

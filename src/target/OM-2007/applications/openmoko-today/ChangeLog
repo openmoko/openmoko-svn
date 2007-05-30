@@ -1,3 +1,9 @@
+2007-05-30  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (today_infoline_new),
+	(today_launcher_button_new), (today_setup_events_area),
+	(create_ui): Use correct icons in Missed Calls/Unread Messages lines
+
 2007-05-09  Thomas Wood  <thomas@openedhand.com>
 
 	* Makefile.am:
