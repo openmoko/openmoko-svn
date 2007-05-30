@@ -231,9 +231,9 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
 
     if ( priv->rightArrowVisible )
     {
-        
+      /* FIXME: this really should be retrieved from the style */
         if ( !priv->rightarrow_pixbuf )
-            priv->rightarrow_pixbuf = gdk_pixbuf_new_from_file( g_build_filename( moko_application_get_style_pixmap_dir(), "btn_dialog_next.png", NULL ), NULL );
+            priv->rightarrow_pixbuf = gdk_pixbuf_new_from_file( gtk_rc_find_pixmap_in_path (gtk_settings_get_default (), NULL, "btn_dialog_next.png"), NULL);
 
         guint rightarrow_w = gdk_pixbuf_get_width( priv->rightarrow_pixbuf );
         guint rightarrow_h = gdk_pixbuf_get_height( priv->rightarrow_pixbuf );

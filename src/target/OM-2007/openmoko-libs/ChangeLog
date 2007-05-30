@@ -1,5 +1,10 @@
 2007-05-30  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-finger-tool-box.c: (cb_configure): Remove use of
+	moko_application_get_style_pixmap_dir
+
+2007-05-30  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-application.c:
 	* libmokoui/moko-application.h:
 	Remove moko_application_get_style_pixmap_dir()
