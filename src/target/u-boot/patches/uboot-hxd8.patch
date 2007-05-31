@@ -88,7 +88,7 @@ Index: u-boot/board/hxd8/hxd8.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/hxd8/hxd8.c
-@@ -0,0 +1,219 @@
+@@ -0,0 +1,189 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -278,36 +278,6 @@ Index: u-boot/board/hxd8/hxd8.c
 +char *dynpart_names[] = {
 +    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
 +
-+/* 4G Nand flash chip select function */
-+void board_nand_select_device(struct nand_chip *this, int chip)
-+{
-+	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
-+
-+	if (chip == 0)
-+		gpio->GPGDAT &=  ~(1 << 1);
-+	else
-+		gpio->GPGDAT |=  (1 << 1);
-+
-+	if (chip == 1)
-+		gpio->GPADAT &=  ~(1 << 15);
-+	else
-+		gpio->GPADAT |= (1 << 15);
-+
-+	if (chip == 2)
-+		gpio->GPADAT &=  ~(1 << 16);
-+	else
-+		gpio->GPADAT |=  (1 << 16);
-+
-+	if (chip == 3)
-+		gpio->GPADAT &=  ~(1 << 14);
-+	else
-+		gpio->GPADAT |= (1 << 14);
-+
-+	/* UGLY: ew don't have mtd_info pointer, but know that
-+	 * s3c24xx hwcontrol function does not use it for CLRNCE */
-+	if (chip == -1)
-+		this->hwcontrol(NULL, NAND_CTL_CLRNCE);
-+}
 Index: u-boot/board/hxd8/lowlevel_init.S
 ===================================================================
 --- /dev/null
@@ -488,7 +458,7 @@ Index: u-boot/include/configs/hxd8.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/hxd8.h
-@@ -0,0 +1,278 @@
+@@ -0,0 +1,277 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -701,7 +671,6 @@ Index: u-boot/include/configs/hxd8.h
 +#define CFG_NAND_BASE		0x4e000000
 +#define CFG_MAX_NAND_DEVICE	NAND_MAX_CHIPS
 +#define CFG_NAND_BASE_LIST	{ CFG_NAND_BASE, CFG_NAND_BASE, CFG_NAND_BASE }
-+#define CFG_NAND_SELECT_DEVICE
 +
 +#define CONFIG_MMC		1
 +#define CFG_MMC_BASE		0xff000000
@@ -1126,12 +1095,12 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
 ===================================================================
 --- u-boot.orig/cpu/arm920t/s3c24x0/nand.c
 +++ u-boot/cpu/arm920t/s3c24x0/nand.c
-@@ -83,6 +83,26 @@
+@@ -83,6 +83,59 @@
  #define	NFDATA		__REGb(NF_BASE + oNFDATA)
  #define	NFSTAT		__REGb(NF_BASE + oNFSTAT)
  
 +#if defined(CONFIG_HXD8)
-+static int hxd8_dev_ready(struct mtd_info *mtd)
++static int hxd8_nand_dev_ready(struct mtd_info *mtd)
 +{
 +	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +	u_int32_t val = gpio->GPCDAT;
@@ -1149,18 +1118,50 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
 +			return 0;
 +	}
 +}
++
++/* 4G Nand flash chip select function */
++static void hxd8_nand_select_chip(struct nand_chip *this, int chip)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++
++	if (chip == 0)
++		gpio->GPGDAT &=  ~(1 << 1);
++	else
++		gpio->GPGDAT |=  (1 << 1);
++
++	if (chip == 1)
++		gpio->GPADAT &=  ~(1 << 15);
++	else
++		gpio->GPADAT |= (1 << 15);
++
++	if (chip == 2)
++		gpio->GPADAT &=  ~(1 << 16);
++	else
++		gpio->GPADAT |=  (1 << 16);
++
++	if (chip == 3)
++		gpio->GPADAT &=  ~(1 << 14);
++	else
++		gpio->GPADAT |= (1 << 14);
++
++	/* UGLY: ew don't have mtd_info pointer, but know that
++	 * s3c24xx hwcontrol function does not use it for CLRNCE */
++	if (chip == -1)
++		this->hwcontrol(NULL, NAND_CTL_CLRNCE);
++	else
++		this->hwcontrol(NULL, NAND_CTL_SETNCE);
++}
 +#endif
  
  static void s3c2410_hwcontrol(struct mtd_info *mtd, int cmd)
  {
-@@ -251,6 +271,12 @@
+@@ -251,6 +304,11 @@
  	nand->eccmode = NAND_ECC_SOFT;
  #endif
  
 +#if defined(CONFIG_HXD8)
-+	//printk("Initial new cs\n");
-+	//nand->select_chip = hxd8_nand_select_chip;
-+	nand->dev_ready = hxd8_dev_ready;
++	nand->dev_ready = hxd8_nand_dev_ready;
++	nand->select_chip = hxd8_nand_select_chip;
 +#endif
 +
  #ifdef CONFIG_S3C2410_NAND_BBT
