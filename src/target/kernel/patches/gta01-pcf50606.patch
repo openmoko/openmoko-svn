@@ -4,7 +4,7 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
-@@ -0,0 +1,1928 @@
+@@ -0,0 +1,1929 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
 + * (C) 2006 by OpenMoko, Inc.
@@ -1691,7 +1691,8 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +		/* FIXME: are we sure we want default == off? */
 +		data->backlight->props.max_brightness = 16;
 +		data->backlight->props.power = FB_BLANK_UNBLANK;
-+		data->backlight->props.brightness = 0;
++		data->backlight->props.brightness =
++					data->pdata->init_brightness;
 +		backlight_update_status(data->backlight);
 +	}
 +
@@ -2290,7 +2291,7 @@ Index: linux-2.6.21-moko/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/include/linux/pcf50606.h
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,104 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
 +
@@ -2384,6 +2385,9 @@ Index: linux-2.6.21-moko/include/linux/pcf50606.h
 +	unsigned int r_fix_batt;
 +	unsigned int r_fix_batt_par;
 +	unsigned int r_sense_milli;
++
++	/* backlight related */
++	unsigned int init_brightness;
 +
 +	struct {
 +		u_int8_t mbcc3; /* charger voltage / current */

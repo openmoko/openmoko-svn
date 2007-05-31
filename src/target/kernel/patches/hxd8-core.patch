@@ -29,7 +29,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,402 @@
+@@ -0,0 +1,403 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -199,6 +199,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +			  PCF50606_FEAT_PWM_BL |
 +			  PCF50606_FEAT_BATVOLT,
 +	.onkey_seconds_required	= 5,
++	.init_brightness = 8,
 +	.rails	= {
 +		[PCF50606_REGULATOR_D1REG] = {
 +			.name		= "rc_3v3",
