@@ -1,5 +1,11 @@
 2007-05-31  Thomas Wood  <thomas@openedhand.com>
 
+	* src/today-main.c: (today_update_date), (today_infoline_new),
+	(today_launcher_button_new): Run appropriate program when an infoline is
+	clicked
+
+2007-05-31  Thomas Wood  <thomas@openedhand.com>
+
 	* configure.ac:
 	* src/today-main.c: (today_infoline_new): Add startup-notification support
 

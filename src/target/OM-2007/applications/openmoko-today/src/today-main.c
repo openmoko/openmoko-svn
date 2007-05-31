@@ -42,6 +42,11 @@ g_warning ("Got error '%s', code '%d'", \
 
 #define FREE_ERROR g_error_free (error) ; error = NULL ;
 
+
+/*** functions ***/
+static void today_launcher_clicked_cb (GtkWidget *widget, gchar *command);
+
+
 /*** configuration options ***/
 /* default to false, although this might want to be reversed in the future */
 static gboolean enable_desktop = FALSE;
@@ -82,6 +87,12 @@ today_update_date (GtkLabel * label)
 
 /* information lines */
 
+static void
+today_infoline_clicked_cb (GtkWidget *widget, GdkEventButton *button, gchar *data)
+{
+  today_launcher_clicked_cb (widget, data);
+}
+
 /**
  * today_infoline_new:
  * @stock_id: name of the stock icon to use
@@ -102,6 +113,10 @@ today_infoline_new (gchar * exec, gchar * message)
   eventbox = gtk_event_box_new ();
   gtk_event_box_set_visible_window (GTK_EVENT_BOX (eventbox), FALSE);
   gtk_container_set_border_width (GTK_CONTAINER (eventbox), 6);
+
+  gtk_widget_add_events (eventbox, GDK_BUTTON_PRESS_MASK);
+
+  g_signal_connect (G_OBJECT (eventbox), "button-press-event", (GCallback) today_infoline_clicked_cb, exec);
 
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (eventbox), hbox);
@@ -136,7 +151,7 @@ today_infoline_new (gchar * exec, gchar * message)
  * callback for luncher buttons
  */
 
-void
+static void
 today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
 {
   /* The following code is a modified version of code from launcher-util.c in
@@ -215,7 +230,7 @@ today_launcher_button_new (gchar * exec)
  * Return value: The widget to use as the events area
  *
  */
-GtkWidget *
+static GtkWidget *
 today_setup_events_area (const gchar *stock_id)
 {
   GtkWidget        *events_area;
