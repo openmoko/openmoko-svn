@@ -22,6 +22,7 @@ AM_GLIB_GNU_GETTEXT
 
 PKG_CHECK_MODULES(TODAY,
                   openmoko-libs
+                  libstartup-notification-1.0
                   libebook-1.2 >= $LIBEBOOK_VERSION
                   libecal-1.2 >= $LIBEBOOK_VERSION)
 

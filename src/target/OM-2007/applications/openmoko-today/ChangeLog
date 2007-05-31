@@ -1,3 +1,8 @@
+2007-05-31  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/today-main.c: (today_infoline_new): Add startup-notification support
+
 2007-05-30  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-main.c: (today_infoline_new),

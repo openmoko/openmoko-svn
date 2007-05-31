@@ -24,10 +24,14 @@
 
 #include <string.h>
 #include <glib.h>
-#include <glib/gprintf.h>
 #include <gtk/gtk.h>
-#include <libmokoui/moko-window.h>
-#include <libmokoui/moko-pixmap-button.h>
+#include <unistd.h>
+#include <libmokoui/moko-ui.h>
+
+#define SN_API_NOT_YET_FROZEN 1
+#include <libsn/sn-launcher.h>
+#include <gdk/gdkx.h>
+
 #include "today-events-area.h"
 #include "today-utils.h"
 #include "xutil.h"
@@ -131,20 +135,42 @@ today_infoline_new (gchar * exec, gchar * message)
 /**
  * callback for luncher buttons
  */
+
 void
-today_launcher_clicked_cb (GtkWidget *button, gchar *command)
+today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
 {
-  GError *error = NULL;
+  /* The following code is a modified version of code from launcher-util.c in
+   * matchbox-desktop-2 and is copyright (C) 2007 OpenedHand Ltd, made available
+   * under the GNU General Public License.
+   */
+  pid_t child_pid = 0;
+  SnLauncherContext *context;
+  SnDisplay *sn_dpy;
+  Display *display;
+  int screen;
 
-  g_spawn_command_line_async (command, &error);
+  display = gdk_x11_display_get_xdisplay (gtk_widget_get_display (widget));
+  sn_dpy = sn_display_new (display, NULL, NULL);
 
-  if (error)
-  {
-    LOG_ERROR;
-    g_error_free (error);
+  screen = gdk_screen_get_number (gtk_widget_get_screen (widget));
+  context = sn_launcher_context_new (sn_dpy, screen);
+  sn_display_unref (sn_dpy);
+
+  /* sn_launcher_context_set_name (context, data->name); */
+  sn_launcher_context_set_binary_name (context, command);
+  sn_launcher_context_initiate (context, "openmoko-today", command, CurrentTime);
+  switch ((child_pid = fork ())) {
+  case -1:
+    g_warning ("Fork failed");
+    break;
+  case 0:
+    sn_launcher_context_setup_child_process (context);
+    execlp (command, NULL);
+    g_warning ("Failed to execlp() %s", command);
+    _exit (1);
+    break;
   }
-
-  /* TODO: should we hide or quit after launching an application? */
+  sn_launcher_context_unref (context);
 }
 
 /**
