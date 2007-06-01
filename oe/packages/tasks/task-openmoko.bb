@@ -152,7 +152,7 @@ RDEPENDS_task-openmoko-net = "\
 #
 DESCRIPTION_task-openmoko-demo = "OpenMoko: Demo Applications"
 RDEPENDS_task-openmoko-demo = "\
-  matchbox-desktop \
+  matchbox-desktop-2 \
   matchbox-keyboard \
   matchbox-stroke \
   matchbox-config-gtk \
