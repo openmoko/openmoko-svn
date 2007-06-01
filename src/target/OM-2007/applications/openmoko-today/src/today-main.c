@@ -32,6 +32,7 @@
 #include <libsn/sn-launcher.h>
 #include <gdk/gdkx.h>
 
+#include <libmokogsmd/moko-gsmd-connection.h>
 #include "today-events-area.h"
 #include "today-utils.h"
 #include "xutil.h"
@@ -83,6 +84,14 @@ today_update_date (GtkLabel * label)
   strftime (date_str, sizeof (date_str), "<big>%a %d/%b/%Y</big>", tmp);
   gtk_label_set_markup (label, date_str);
 
+}
+
+static void
+network_register_cb (MokoGsmdConnection* self, int type, int lac, int cell, GtkLabel *label)
+{
+  // TODO: get operator name somehow?
+  // update label with operator name
+  //gtk_label_set_markup (label, "<span size=\"x-large\">%s</span>", operator_name);
 }
 
 /* information lines */
@@ -327,6 +336,10 @@ create_ui ()
   g_signal_connect (G_OBJECT (window), "delete-event",
                     (GCallback) gtk_main_quit, NULL);
 
+  /* set up connection management */
+  MokoGsmdConnection *connection = moko_gsmd_connection_new ();
+  g_signal_connect (G_OBJECT (connection), "network-registration", network_register_cb, message);
+
 
   gtk_widget_show_all (window);
 
@@ -348,6 +361,8 @@ main (int argc, char **argv)
 
   /* create the UI and run */
   create_ui ();
+
+
   gtk_main ();
 
   return 0;

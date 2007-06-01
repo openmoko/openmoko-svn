@@ -1,3 +1,13 @@
+2007-06-01  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (network_register_cb), (create_ui), (main): Add MokoGsmdConnection object
+
+2007-06-01  Thomas Wood  <thomas@openedhand.com>
+
+	reviewed by: <delete if not using a buddy>
+
+	* src/today-main.c: (network_register_cb), (create_ui), (main):
+
 2007-05-31  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-main.c: (today_update_date), (today_infoline_new),
