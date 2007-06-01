@@ -3,11 +3,11 @@
  *
  *  Authored by Sun Zhiyong <sunzhiyong@fic-sh.com.cn>
  *
- *  Copyright (C) 2006 First International Computer Inc.
+ *  Copyright (C) 2006-2007 OpenMoko, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Public License as published by
- *  the Free Software Foundation; version 2.1 of the license.
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; version 2.0 of the license.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,13 +41,13 @@ g_debug ("menu build-------------------------V");
      }
      else
      {
-       char path[512];
-       snprintf (path, 512, "%s/%s", PIXMAP_PATH, item_new->icon_name);
+       char path[PATH_MAX];
+       snprintf (path, PATH_MAX, "%s/%s", PIXMAP_PATH, item_new->icon_name);
        if (access (path, 0) == 0)
            menu_item = moko_build_new_menu_item (item_new->name, path);
        else
          {
-	     snprintf (path, 512, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
+	     snprintf (path, PATH_MAX, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
 	     menu_item = moko_build_new_menu_item (item_new->name, path);
 	     //moko_fill_model(self->list_store, path, item_new->name, item_new);
          }
@@ -69,13 +69,13 @@ g_debug ("menu build-------------------------V");
         }
         else
         {
-          char path[512];
-          snprintf (path, 512, "%s/%s", PIXMAP_PATH, tmp_item->icon_name);
+          char path[PATH_MAX];
+          snprintf (path, PATH_MAX, "%s/%s", PIXMAP_PATH, tmp_item->icon_name);
           if (access (path, 0) == 0)
             menu_item = moko_build_new_menu_item (tmp_item->name, path);
           else
           {
-	        snprintf (path, 512, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
+	        snprintf (path, PATH_MAX, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
 	        menu_item = moko_build_new_menu_item (tmp_item->name, path);
 	     //moko_fill_model(self->list_store, path, item_new->name, item_new);
            }

@@ -179,9 +179,9 @@ mokodesktop_init ( MokoDesktopItem *top_head_item,
   DIR *dp;
   struct stat    stat_info;
 
-  char vfolder_path_root[512];
-  char vfolder_path[512];
-  char orig_wd[256];
+  char vfolder_path_root[PATH_MAX];
+  char vfolder_path[PATH_MAX];
+  char orig_wd[PATH_MAX];
 
   int   desktops_dirs_n  = APP_PATHS_N;
 
@@ -192,7 +192,7 @@ mokodesktop_init ( MokoDesktopItem *top_head_item,
   MokoDesktopItem         *item_new = NULL;
   MBDotDesktop            *dd, *user_overides = NULL;
 
-  char                     app_paths[APP_PATHS_N][256];
+  char                     app_paths[APP_PATHS_N][PATH_MAX];
   struct dirent          **namelist;
 /*
 	top_head_item  = mokodesktop_item_new_with_params ("Home", 
@@ -202,15 +202,15 @@ mokodesktop_init ( MokoDesktopItem *top_head_item,
 */
 	ItemTypeDotDesktop  = type_reg_cnt;
   
-  snprintf( vfolder_path_root, 512, "%s/.matchbox/vfolders/Root.directory", 
+  snprintf( vfolder_path_root, PATH_MAX, "%s/.matchbox/vfolders/Root.directory", 
 	    mb_util_get_homedir());
-  snprintf( vfolder_path, 512, "%s/.matchbox/vfolders", 
+  snprintf( vfolder_path, PATH_MAX, "%s/.matchbox/vfolders", 
 	    mb_util_get_homedir());
 
  if (stat(vfolder_path_root, &stat_info))
     {
-      snprintf(vfolder_path_root, 512, VFOLDERDIR"/vfolders/Root.directory");
-      snprintf(vfolder_path, 512, VFOLDERDIR "/vfolders" );
+      snprintf(vfolder_path_root, PATH_MAX, VFOLDERDIR"/vfolders/Root.directory");
+      snprintf(vfolder_path, PATH_MAX, VFOLDERDIR "/vfolders" );
     }
  
 fprintf(stdout, "moko: vfolder_path_root=[%s]\n", vfolder_path_root);
@@ -248,13 +248,13 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
     }
   
   
-  //snprintf(app_paths[0], 256, "%s/applications", DATADIR);
-  snprintf(app_paths[0], 256, "/usr/share/applications");
-  snprintf(app_paths[1], 256, "/usr/share/applications");
-  snprintf(app_paths[2], 256, "/usr/local/share/applications");
-  snprintf(app_paths[3], 256, "%s/.applications", mb_util_get_homedir());
+  //snprintf(app_paths[0], PATH_MAX-1, "%s/applications", DATADIR);
+  snprintf(app_paths[0], PATH_MAX-1, "/usr/share/applications");
+  snprintf(app_paths[1], PATH_MAX-1, "/usr/share/applications");
+  snprintf(app_paths[2], PATH_MAX-1, "/usr/local/share/applications");
+  snprintf(app_paths[3], PATH_MAX-1, "%s/.applications", mb_util_get_homedir());
 
-  if (getcwd(orig_wd, 255) == (char *)NULL)
+  if (getcwd(orig_wd, PATH_MAX-1) == (char *)NULL)
     {
       fprintf(stderr, "Cant get current directory\n");
       return -1;
@@ -300,7 +300,7 @@ fprintf(stdout, "moko: RootMatchStr=[%s]\n", RootMatchStr);
 		              && mb_dotdesktop_get(dd, "Exec"))
 		          {
 		              MokoDesktopItem *folder = NULL;
-		              char             full_path[512];
+		              char             full_path[PATH_MAX];
 		              char          *folder_name = NULL;
 
 		      	      add_a_dotdesktop_item (top_head_item, dd, folder);
