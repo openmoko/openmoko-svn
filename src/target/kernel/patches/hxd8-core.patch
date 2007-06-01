@@ -376,7 +376,7 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2440/mach-hxd8.c
 +static struct s3c2410_ts_mach_info hxd8_ts_cfg = {
 +	.delay = 10000,
 +	.presc = 49,
-+	.oversampling_shift = 2,
++	.oversampling_shift = 4,
 +};
 +
 +static struct platform_device *hxd8_devices[] __initdata = {
