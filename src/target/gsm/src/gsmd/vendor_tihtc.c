@@ -1,8 +1,7 @@
-/* TI [Calypso] compatible gsmd plugin
+/* TI [Calypso] with HTC firmware gsmd plugin
  *
- * (C) 2006-2007 by OpenMoko, Inc.
- * Written by Harald Welte <laforge@openmoko.org>
- * All Rights Reserved
+ * Written by Philipp Zabel <philipp.zabel@gmail.com>
+ * based on vendor_ti.c
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- */ 
+ */
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -37,13 +36,30 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/unsolicited.h>
 
+static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	printf("`%s' returned `%s'\n", cmd->buf, resp);
+	return 0;
+}
+
+int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
+{
+	struct gsmd_atcmd *cmd;
+	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0);
+	if (!cmd)
+		return -ENOMEM;
+
+	return atcmd_submit(gsmd, cmd);
+}
+
+
 #if 0
 #include "vendorplugin.h"
 
-static int 
+static int
 ti_getopt(struct gsmd *gh, int optname, void *optval, int *optlen)
 {
-	switch (optname) {
+ 	switch (optname) {
 	case GSMD_OPT_CIPHER_IND:
 		/* FIXME: send AT%CPRI=? */
 		break;
@@ -52,7 +68,7 @@ ti_getopt(struct gsmd *gh, int optname, void *optval, int *optlen)
 	}
 }
 
-static int 
+static int
 ti_setopt(struct gsmd *gh, int optname, const void *optval, int optlen)
 {
 	switch (optname) {
@@ -67,7 +83,7 @@ ti_setopt(struct gsmd *gh, int optname, const void *optval, int optlen)
 #endif
 
 
-static int csq_parse(char *buf, int len, const char *param,
+static int htccsq_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
 	char *tok;
@@ -75,24 +91,19 @@ static int csq_parse(char *buf, int len, const char *param,
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_SIGNAL,
 					     sizeof(*aux));
 
-	DEBUGP("entering csq_parse param=`%s'\n", param);
+	DEBUGP("entering htccsq_parse param=`%s'\n", param);
 	if (!ucmd)
 		return -EINVAL;
-	
-	
+
+
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
-	tok = strtok(param, ",");
-	if (!tok)
-		goto out_free_io;
-	
-	aux->u.signal.sigq.rssi = atoi(tok);
 
-	tok = strtok(NULL, ",");
-	if (!tok)
-		goto out_free_io;
+	/* FIXME: contains values 1-5, should be mapped to 0-31 somehow? */
+	/* 2 --> 11 */
+	aux->u.signal.sigq.rssi = atoi(buf);
+	aux->u.signal.sigq.ber = 99;
 
-	aux->u.signal.sigq.ber = atoi(tok);
-
+	DEBUGP("sending EVT_SIGNAL\n");
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_SIGNAL);
 
 	return 0;
@@ -109,7 +120,7 @@ static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	tok1 = strtok(buf, ",");
 	if (!tok1)
 		return -EIO;
-	
+
 	tok2 = strtok(NULL, ",");
 	if (!tok2) {
 		switch (atoi(tok1)) {
@@ -142,13 +153,6 @@ static int cpri_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	return 0;
 }
 
-static int ctzv_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
-{
-	/* FIXME: decide what to do with it.  send as event to clients? or keep
-	 * locally? Offer option to sync system RTC? */
-	return 0;
-}
-
 /* Call Progress Information */
 static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
@@ -157,11 +161,11 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
 						   GSMD_EVT_OUT_STATUS,
 						   sizeof(*aux));
-	
+
 	DEBUGP("entering cpi_parse param=`%s'\n", param);
 	if (!ucmd)
 		return -EINVAL;
-	
+
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 
 	/* Format: cId, msgType, ibt, tch, dir,[mode],[number],[type],[alpha],[cause],line */
@@ -186,7 +190,7 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 		aux->u.call_status.ibt = 1;
 	else
 		aux->u.call_status.ibt = 0;
-	
+
 	/* TCH allocated */
 	tok = strtok(NULL, ",");
 	if (!tok)
@@ -196,12 +200,12 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 		aux->u.call_status.tch = 1;
 	else
 		aux->u.call_status.tch = 0;
-	
+
 	/* direction */
 	tok = strtok(NULL, ",");
 	if (!tok)
 		goto out_send;
-	
+
 	switch (*tok) {
 	case '0':
 	case '1':
@@ -217,7 +221,7 @@ static int cpi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	tok = strtok(NULL, ",");
 	if (!tok)
 		goto out_send;
-	
+
 out_send:
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_OUT_STATUS);
 
@@ -228,21 +232,14 @@ out_free_io:
 	return -EIO;
 }
 
-static const struct gsmd_unsolicit ticalypso_unsolicit[] = {
-	{ "%CSQ",	&csq_parse },	/* Signal Quality */
+static const struct gsmd_unsolicit tihtc_unsolicit[] = {
+	{ "%HTCCSQ",	&htccsq_parse },	/* Signal Quality */
 	{ "%CPRI",	&cpri_parse },	/* Ciphering Indication */
 	{ "%CPI",	&cpi_parse },	/* Call Progress Information */
-	{ "%CTZV",	&ctzv_parse },	/* network time and data */
 
-	/* FIXME: parse all the below and generate the respective events */
+	/* FIXME: parse the below and generate the respective events */
 
-	/* %CPROAM: CPHS Home Country Roaming Indicator */
-	/* %CPVWI: CPHS Voice Message Waiting */
 	/* %CGREG: reports extended information about GPRS registration state */
-	/* %CNIV: reports network name information */
-	/* %CPKY: Press Key */
-	/* %CMGRS: Message Retransmission Service */
-	/* %CGEV: reports GPRS network events */
 };
 
 static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -253,7 +250,7 @@ static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	if (strncmp(resp, "%CPI: ", 6))
 		return -EINVAL;
 	resp += 6;
-	
+
 	er = extrsp_parse(cmd, resp);
 	if (!er)
 		return -EINVAL;
@@ -269,27 +266,25 @@ static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
-static int ticalypso_detect(struct gsmd *g)
+static int tihtc_detect(struct gsmd *g)
 {
 	/* FIXME: do actual detection of vendor if we have multiple vendors */
+	/* open /proc/cpuinfo and check for HTC Magician or HTC Blueangel? */
+	/* check for N_TIHTC ldisc? or set it ourselves? */
 	return 1;
 }
 
-static int ticalypso_initsettings(struct gsmd *g)
+static int tihtc_initsettings(struct gsmd *g)
 {
 	int rc;
 	struct gsmd_atcmd *cmd;
 
-	/* use +CTZR: to report time zone changes */
-	rc |= gsmd_simplecmd(g, "AT+CTZR=1");
-	/* use %CTZV: Report time and date */
-	rc |= gsmd_simplecmd(g, "AT%CTZV=1");
 	/* use %CGREG */
 	//rc |= gsmd_simplecmd(g, "AT%CGREG=3");
 	/* enable %CPRI: ciphering indications */
 	rc |= gsmd_simplecmd(g, "AT%CPRI=1");
-	/* enable %CSQ: signal quality reports */
-	rc |= gsmd_simplecmd(g, "AT%CSQ=1");
+	/* enable %HTCCSQ: signal quality reports */
+	rc |= gsmd_simplecmd(g, "AT%HTCCSQ=1");
 	/* send unsolicited commands at any time */
 	rc |= gsmd_simplecmd(g, "AT%CUNS=0");
 
@@ -302,9 +297,9 @@ static int ticalypso_initsettings(struct gsmd *g)
 }
 
 struct gsmd_vendor_plugin gsmd_vendor_plugin = {
-	.name = "TI Calypso",
-	.num_unsolicit = ARRAY_SIZE(ticalypso_unsolicit),
-	.unsolicit = ticalypso_unsolicit,
-	.detect = &ticalypso_detect,
-	.initsettings = &ticalypso_initsettings,
+	.name = "TI Calypso / HTC firmware",
+	.num_unsolicit = ARRAY_SIZE(tihtc_unsolicit),
+	.unsolicit = tihtc_unsolicit,
+	.detect = &tihtc_detect,
+	.initsettings = &tihtc_initsettings,
 };

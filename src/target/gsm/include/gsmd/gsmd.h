@@ -7,6 +7,7 @@
 
 #include <common/linux_list.h>
 
+#include <gsmd/machineplugin.h>
 #include <gsmd/vendorplugin.h>
 #include <gsmd/select.h>
 #include <gsmd/state.h>
@@ -58,12 +59,14 @@ struct gsmd;
 
 struct gsmd {
 	unsigned int flags;
+	int interpreter_ready;
 	struct gsmd_fd gfd_uart;
 	struct gsmd_fd gfd_sock;
 	struct llparser llp;
 	struct llist_head users;
 	struct llist_head pending_atcmds;	/* our busy gsmd_atcmds */
 	struct llist_head busy_atcmds;	/* our busy gsmd_atcmds */
+	struct gsmd_machine_plugin *machinepl;
 	struct gsmd_vendor_plugin *vendorpl;
 	struct gsmd_device_state dev_state;
 

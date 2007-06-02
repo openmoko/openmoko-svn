@@ -20,7 +20,11 @@
  *
  */ 
 
+#include <dlfcn.h>
 #include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
 
 #include <common/linux_list.h>
 
@@ -52,10 +56,38 @@ int gsmd_vendor_plugin_find(struct gsmd *g)
 	
 	llist_for_each_entry(pl, &vendorpl_list, list) {
 		if (pl->detect(g) == 1) {
+			DEBUGP("selecting vendor plugin \"%s\"\n", pl->name);
 			g->vendorpl = pl;
 			return 1;
 		}
 	}
 
 	return 0;
+}
+
+int gsmd_vendor_plugin_load(char *name)
+{
+	int rc = -1;
+	void *lib;
+	struct gsmd_vendor_plugin *pl;
+	char buf[PATH_MAX+1];
+
+	DEBUGP("loading vendor plugin \"%s\"\n", name);
+
+	buf[PATH_MAX] = '\0';
+	snprintf(buf, sizeof(buf), PLUGINDIR "/libgsmd-vendor_%s.so", name);
+
+	lib = dlopen(buf, RTLD_LAZY);
+	if (!lib) {
+		fprintf(stderr, "gsmd_vendor_plugin_load: %s\n", dlerror());
+		return -1;
+	}
+
+	pl = dlsym(lib, "gsmd_vendor_plugin");
+	if (pl)
+		rc = gsmd_vendor_plugin_register(pl);
+	else
+		dlclose(lib);
+
+	return rc;
 }

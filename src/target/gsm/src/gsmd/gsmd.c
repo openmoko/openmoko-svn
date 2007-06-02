@@ -261,6 +261,21 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	if (gsmd_machine_plugin_init(&g) < 0) {
+		fprintf(stderr, "no machine plugins found\n");
+		exit(1);
+	}
+
+	/* select a machine plugin and load possible vendor plugins */
+	gsmd_machine_plugin_find(&g);
+
+	/* initialize the machine plugin */
+	if (g.machinepl->init &&
+	    (g.machinepl->init(&g, fd) < 0)) {
+		fprintf(stderr, "couldn't initialize machine plugin\n");
+		exit(1);
+	}
+
 	if (atcmd_init(&g, fd) < 0) {
 		fprintf(stderr, "can't initialize UART device\n");
 		exit(1);
@@ -282,12 +297,11 @@ int main(int argc, char **argv)
 		setsid();
 	}
 
-	/* FIXME: do this dynamically */
-	ticalypso_init();
-
+	/* select a vendor plugin */
 	gsmd_vendor_plugin_find(&g);
 
-	gsmd_initsettings(&g);
+	if (g.interpreter_ready)
+		gsmd_initsettings(&g);
 
 	gsmd_opname_init(&g);
 

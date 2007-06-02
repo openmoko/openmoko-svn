@@ -183,6 +183,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	 * an empty string or that 'ready' string, we need to init the modem */
 	if (strlen(buf) == 0 ||
 	    !strcmp(buf, "AT-Command Interpreter ready")) {
+		g->interpreter_ready = 1;
 		gsmd_initsettings(g);
 		return 0;
 	}
@@ -375,7 +376,7 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 	}
 
 	/* write pending commands to UART */
-	if (what & GSMD_FD_WRITE) {
+	if ((what & GSMD_FD_WRITE) && g->interpreter_ready) {
 		struct gsmd_atcmd *pos, *pos2;
 		llist_for_each_entry_safe(pos, pos2, &g->pending_atcmds, list) {
 			len = strlen(pos->buf);
