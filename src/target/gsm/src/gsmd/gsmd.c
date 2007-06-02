@@ -163,11 +163,15 @@ static struct option opts[] = {
 	{ 0, 0, 0, 0 }
 };
 
-static void print_help(void)
+static void print_header(void)
 {
 	printf("gsmd - (C) 2006-2007 by Harald Welte <laforge@gnumonks.org>\n"
-	       "This program is FREE SOFTWARE under the terms of GNU GPL\n\n"
-	       "Usage:\n"
+	       "This program is FREE SOFTWARE under the terms of GNU GPL\n\n");
+}
+
+static void print_usage(void)
+{
+	printf("Usage:\n"
 	       "\t-V\t--version\tDisplay program version\n"
 	       "\t-d\t--daemon\tDeamonize\n"
 	       "\t-h\t--help\t\tDisplay this help message\n"
@@ -202,7 +206,7 @@ int main(int argc, char **argv)
 	int daemonize = 0;
 	int bps = 115200;
 	int hwflow = 0;
-	char *device = "/dev/ttyUSB0";
+	char *device = NULL;
 	char *logfile = "syslog";
 	char *vendor_name = NULL;
 	char *machine_name = NULL;
@@ -213,6 +217,8 @@ int main(int argc, char **argv)
 	signal(SIGUSR1, sig_handler);
 	
 	gsmd_tallocs = talloc_named_const(NULL, 1, "GSMD");
+
+	print_header();
 
 	/*FIXME: parse commandline, set daemonize, device, ... */
 	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:v:m:", opts, NULL)) != -1) {
@@ -231,7 +237,7 @@ int main(int argc, char **argv)
 			break;
 		case 'h':
 			/* FIXME */
-			print_help();
+			print_usage();
 			exit(0);
 			break;
 		case 'p':
@@ -253,6 +259,12 @@ int main(int argc, char **argv)
 			machine_name = optarg;
 			break;
 		}
+	}
+
+	if (!device) {
+		fprintf(stderr, "ERROR: you have to specify a port (-p port)\n");
+		print_usage();
+		exit(2);
 	}
 
 	/* use direct access to device node ([virtual] tty device) */
