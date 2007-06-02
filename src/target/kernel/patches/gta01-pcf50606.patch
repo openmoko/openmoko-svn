@@ -1,9 +1,9 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
++++ linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
 @@ -0,0 +1,1929 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -1608,8 +1608,6 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +		goto exit_free;
 +	}
 +
-+	pcf50606_global = data;
-+
 +	populate_sysfs_group(data);
 +
 +	err = sysfs_create_group(&new_client->dev.kobj, &pcf_attr_group);
@@ -1655,6 +1653,8 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +	if (enable_irq_wake(irq) < 0)
 +		dev_err(&new_client->dev, "IRQ %u cannot be enabled as wake-up"
 +		        "source in this hardware revision!", irq);
++
++	pcf50606_global = data;
 +
 +	if (data->pdata->used_features & PCF50606_FEAT_RTC) {
 +		data->rtc = rtc_device_register("pcf50606", &new_client->dev,
@@ -1732,16 +1732,16 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +		rtc_device_unregister(pcf50606_global->rtc);
 +exit_irq:
 +	free_irq(pcf50606_global->irq, pcf50606_global);
++	pcf50606_global = NULL;
 +exit_input:
 +	pm_power_off = NULL;
-+	input_unregister_device(pcf50606_global->input_dev);
++	input_unregister_device(data->input_dev);
 +exit_sysfs:
 +	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
 +exit_detach:
 +	i2c_detach_client(new_client);
 +exit_free:
 +	kfree(data);
-+	pcf50606_global = NULL;
 +	return err;
 +}
 +
@@ -1934,10 +1934,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/drivers/i2c/chips/pcf50606.h
++++ linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2241,10 +2241,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.21-moko/drivers/i2c/chips/Kconfig
+Index: linux-2.6.21.3-moko/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.21-moko/drivers/i2c/chips/Kconfig
+--- linux-2.6.21.3-moko.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.21.3-moko/drivers/i2c/chips/Kconfig
 @@ -36,6 +36,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -2263,10 +2263,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on I2C && EXPERIMENTAL
-Index: linux-2.6.21-moko/drivers/i2c/chips/Makefile
+Index: linux-2.6.21.3-moko/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.21-moko/drivers/i2c/chips/Makefile
+--- linux-2.6.21.3-moko.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.21.3-moko/drivers/i2c/chips/Makefile
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2275,10 +2275,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.21-moko/include/linux/i2c-id.h
+Index: linux-2.6.21.3-moko/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.21-moko.orig/include/linux/i2c-id.h
-+++ linux-2.6.21-moko/include/linux/i2c-id.h
+--- linux-2.6.21.3-moko.orig/include/linux/i2c-id.h
++++ linux-2.6.21.3-moko/include/linux/i2c-id.h
 @@ -159,6 +159,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -2287,10 +2287,10 @@ Index: linux-2.6.21-moko/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.21-moko/include/linux/pcf50606.h
+Index: linux-2.6.21.3-moko/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/include/linux/pcf50606.h
++++ linux-2.6.21.3-moko/include/linux/pcf50606.h
 @@ -0,0 +1,104 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H
