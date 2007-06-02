@@ -4,21 +4,21 @@ style "gtkbutton" {
             function        = BOX
             state           = NORMAL
             file            = "gtkbutton.png"
-#            border          = { 22, 33, 18, 25 }
+            border          = { 22, 33, 18, 25 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = PRELIGHT
             file            = "gtkbutton.png"
-#            border          = { 22, 33, 18, 25 }
+            border          = { 22, 33, 18, 25 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = ACTIVE
             file            = "gtkbutton_p.png"
-#            border          = { 22, 33, 18, 25 }
+            border          = { 22, 33, 18, 25 }
             stretch         = TRUE
         }
     }
