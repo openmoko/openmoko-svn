@@ -17,10 +17,15 @@ plugin_LTLIBRARIES = libgsmd-machine_generic.la \
 		     libgsmd-vendor_qc.la
 
 libgsmd_machine_generic_la_SOURCES = machine_generic.c
+libgsmd_machine_generic_la_LDFLAGS = -module
 libgsmd_machine_tihtc_la_SOURCES = machine_tihtc.c
+libgsmd_machine_tihtc_la_LDFLAGS = -module
 
 libgsmd_vendor_ti_la_SOURCES = vendor_ti.c
+libgsmd_vendor_ti_la_LDFLAGS = -module
 libgsmd_vendor_tihtc_la_SOURCES = vendor_tihtc.c
+libgsmd_vendor_tihtc_la_LDFLAGS = -module
 libgsmd_vendor_qc_la_SOURCES = vendor_qc.c
+libgsmd_vendor_qc_la_LDFLAGS = -module
 
 noinst_HEADERS = gsmd.h
