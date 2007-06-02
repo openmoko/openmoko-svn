@@ -21,7 +21,7 @@
 //#include "callbacks.h"
 
 static GtkImageMenuItem *moko_build_new_menu_item (const char *icon_name, const char *icon_path);
-static void moko_stylus_menu_activate_item(GtkWidget* widget, const char* name);
+static void moko_stylus_menu_activate_item(GtkWidget* widget, void *user_data);
 
 void
 moko_stylus_menu_build (GtkMenu *menu, MokoDesktopItem *item)
@@ -54,8 +54,8 @@ g_debug ("menu build-------------------------V");
       }
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), GTK_WIDGET(menu_item));
     gtk_widget_show (GTK_WIDGET(menu_item));
-
-    if (item_new->type == ITEM_TYPE_FOLDER)
+    switch (item_new->type) {
+    case ITEM_TYPE_FOLDER:
     {
       MokoDesktopItem *tmp_item;
       GtkWidget *sub_menu;
@@ -81,13 +81,25 @@ g_debug ("menu build-------------------------V");
            }
          }
 
-		 if (tmp_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||tmp_item->type == ITEM_TYPE_APP )
-            g_signal_connect (menu_item, "activate" ,G_CALLBACK(moko_stylus_menu_activate_item), tmp_item->data);
+	 if (tmp_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||
+	     tmp_item->type == ITEM_TYPE_APP )
+               g_signal_connect(menu_item, "activate" ,
+	       			G_CALLBACK(moko_stylus_menu_activate_item),
+				tmp_item);
          gtk_menu_shell_append( GTK_MENU_SHELL(sub_menu), GTK_WIDGET(menu_item) );
          gtk_widget_show (GTK_WIDGET(menu_item));
       }
     }
-  }
+    break;
+    case ITEM_TYPE_DOTDESKTOP_ITEM:
+    case ITEM_TYPE_APP:
+      g_signal_connect (item_new, "activate",
+      			G_CALLBACK(moko_stylus_menu_activate_item),
+			item_new);
+      break;
+  } /* case */
+
+  } /* enumerate */
 
   return ;
 }
@@ -111,9 +123,21 @@ moko_build_new_menu_item(const char *name, const char *path)
     return GTK_IMAGE_MENU_ITEM(item);
 }
 
-static void moko_stylus_menu_activate_item(GtkWidget* widget, const char* name)
+static void moko_stylus_menu_activate_item(GtkWidget* widget,
+					   void *user_data)
 {
-    g_debug( "item activated: %s", name );
+    MokoDesktopItem *ditem = user_data;
+    g_debug( "item activated: %s", ditem->data );
+    switch (fork())
+    {
+    case 0:
+      mb_exec((char *)ditem->data);
+      fprintf(stderr, "exec failed, cleaning up child\n");
+      exit(1);
+    case -1:
+      fprintf(stderr, "can't fork\n");
+      break;
+    }
 }
 
 void
