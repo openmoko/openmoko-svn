@@ -20,134 +20,156 @@
 #include "stylusmenu.h"
 //#include "callbacks.h"
 
-static GtkImageMenuItem *moko_build_new_menu_item (const char *icon_name, const char *icon_path);
-static void moko_stylus_menu_activate_item(GtkWidget* widget, void *user_data);
+static GtkImageMenuItem *moko_build_new_menu_item(const char *icon_name,
+						  const char *icon_path);
+static void moko_stylus_menu_activate_item(GtkWidget * widget, void *user_data);
+
+void moko_stylus_menu_build(GtkMenu * menu, MokoDesktopItem * item)
+{
+	//GtkMenu *sub_menu;
+	GtkImageMenuItem *menu_item;
+
+	MokoDesktopItem *item_new;
+	g_debug("menu build-------------------------V");
+	mokodesktop_items_enumerate_siblings(item->item_child, item_new) {
+
+		if (access(item_new->icon_name, 0) == 0) {
+			g_debug("item patch %s", item_new->icon_name);
+			menu_item =
+			    moko_build_new_menu_item(item_new->name,
+						     item_new->icon_name);
+		} else {
+			char path[PATH_MAX];
+			snprintf(path, PATH_MAX, "%s/%s", PIXMAP_PATH,
+				 item_new->icon_name);
+			if (access(path, 0) == 0)
+				menu_item =
+				    moko_build_new_menu_item(item_new->name,
+							     path);
+			else {
+				snprintf(path, PATH_MAX, "%s/%s", PKGDATADIR,
+					 "default-app-icon.xpm");
+				menu_item =
+				    moko_build_new_menu_item(item_new->name,
+							     path);
+				//moko_fill_model(self->list_store, path, item_new->name, item_new);
+			}
+		}
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu),
+				      GTK_WIDGET(menu_item));
+		gtk_widget_show(GTK_WIDGET(menu_item));
+		switch (item_new->type) {
+		case ITEM_TYPE_FOLDER:
+			{
+				MokoDesktopItem *tmp_item;
+				GtkWidget *sub_menu;
+				sub_menu = gtk_menu_new();
+				gtk_menu_item_set_submenu(GTK_MENU_ITEM
+							  (menu_item),
+							  GTK_WIDGET(sub_menu));
+				mokodesktop_items_enumerate_siblings(item_new->
+								     item_child,
+								     tmp_item) {
+					if (access(tmp_item->icon_name, 0) == 0) {
+						menu_item =
+						    moko_build_new_menu_item
+						    (tmp_item->name,
+						     tmp_item->icon_name);
+					} else {
+						char path[PATH_MAX];
+						snprintf(path, PATH_MAX,
+							 "%s/%s", PIXMAP_PATH,
+							 tmp_item->icon_name);
+						if (access(path, 0) == 0)
+							menu_item =
+							    moko_build_new_menu_item
+							    (tmp_item->name,
+							     path);
+						else {
+							snprintf(path, PATH_MAX,
+								 "%s/%s",
+								 PKGDATADIR,
+								 "default-app-icon.xpm");
+							menu_item =
+							    moko_build_new_menu_item
+							    (tmp_item->name,
+							     path);
+							//moko_fill_model(self->list_store, path, item_new->name, item_new);
+						}
+					}
+
+					if (tmp_item->type ==
+					    ITEM_TYPE_DOTDESKTOP_ITEM
+					    || tmp_item->type == ITEM_TYPE_APP)
+						g_signal_connect(menu_item,
+								 "activate",
+								 G_CALLBACK
+								 (moko_stylus_menu_activate_item),
+								 tmp_item);
+					gtk_menu_shell_append(GTK_MENU_SHELL
+							      (sub_menu),
+							      GTK_WIDGET
+							      (menu_item));
+					gtk_widget_show(GTK_WIDGET(menu_item));
+				}
+			}
+			break;
+		case ITEM_TYPE_DOTDESKTOP_ITEM:
+		case ITEM_TYPE_APP:
+			g_signal_connect(menu_item, "activate",
+					 G_CALLBACK
+					 (moko_stylus_menu_activate_item),
+					 item_new);
+			break;
+		}		/* case */
+
+	}			/* enumerate */
+
+	return;
+}
+
+static GtkImageMenuItem *moko_build_new_menu_item(const char *name,
+						  const char *path)
+{
+	GdkPixbuf *pixbuf;
+	GtkWidget *image;
+	GtkWidget *item;
+
+	pixbuf = gdk_pixbuf_new_from_file_at_size(path, 32, 32, NULL);
+	if (!pixbuf)
+		g_debug("Can't get pixbuf");
+	image = gtk_image_new_from_pixbuf(pixbuf);
+
+	item = gtk_image_menu_item_new_with_label(name);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), image);
+	gtk_widget_show(GTK_WIDGET(item));
+
+	return GTK_IMAGE_MENU_ITEM(item);
+}
+
+static void moko_stylus_menu_activate_item(GtkWidget * widget, void *user_data)
+{
+	MokoDesktopItem *ditem = user_data;
+	g_debug("item activated: %s", ditem->data);
+	switch (fork()) {
+	case 0:
+		mb_exec((char *)ditem->data);
+		fprintf(stderr, "exec failed, cleaning up child\n");
+		exit(1);
+	case -1:
+		fprintf(stderr, "can't fork\n");
+		break;
+	}
+}
 
 void
-moko_stylus_menu_build (GtkMenu *menu, MokoDesktopItem *item)
+moko_menu_position_cb(GtkMenu * menu, int *x, int *y, gboolean * push_in,
+		      GtkWidget * data)
 {
-  //GtkMenu *sub_menu;
-  GtkImageMenuItem *menu_item;
+	GtkAllocation *allocation = &GTK_WIDGET(data)->allocation;
 
-  MokoDesktopItem *item_new;
-g_debug ("menu build-------------------------V");
-  mokodesktop_items_enumerate_siblings(item->item_child, item_new)
-  {
+	*x = allocation->x;
+	*y = allocation->y + allocation->height;
 
-     if (access (item_new->icon_name, 0) == 0)
-     {
-         g_debug ("item patch %s", item_new->icon_name);
-         menu_item = moko_build_new_menu_item (item_new->name, item_new->icon_name);
-     }
-     else
-     {
-       char path[PATH_MAX];
-       snprintf (path, PATH_MAX, "%s/%s", PIXMAP_PATH, item_new->icon_name);
-       if (access (path, 0) == 0)
-           menu_item = moko_build_new_menu_item (item_new->name, path);
-       else
-         {
-	     snprintf (path, PATH_MAX, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
-	     menu_item = moko_build_new_menu_item (item_new->name, path);
-	     //moko_fill_model(self->list_store, path, item_new->name, item_new);
-         }
-      }
-    gtk_menu_shell_append( GTK_MENU_SHELL(menu), GTK_WIDGET(menu_item));
-    gtk_widget_show (GTK_WIDGET(menu_item));
-    switch (item_new->type) {
-    case ITEM_TYPE_FOLDER:
-    {
-      MokoDesktopItem *tmp_item;
-      GtkWidget *sub_menu;
-      sub_menu = gtk_menu_new();
-      gtk_menu_item_set_submenu (GTK_MENU_ITEM(menu_item), GTK_WIDGET(sub_menu));
-      mokodesktop_items_enumerate_siblings(item_new->item_child, tmp_item)
-      {
-        if (access (tmp_item->icon_name, 0) == 0)
-        {
-          menu_item = moko_build_new_menu_item (tmp_item->name, tmp_item->icon_name);
-        }
-        else
-        {
-          char path[PATH_MAX];
-          snprintf (path, PATH_MAX, "%s/%s", PIXMAP_PATH, tmp_item->icon_name);
-          if (access (path, 0) == 0)
-            menu_item = moko_build_new_menu_item (tmp_item->name, path);
-          else
-          {
-	        snprintf (path, PATH_MAX, "%s/%s", PKGDATADIR, "default-app-icon.xpm");
-	        menu_item = moko_build_new_menu_item (tmp_item->name, path);
-	     //moko_fill_model(self->list_store, path, item_new->name, item_new);
-           }
-         }
-
-	 if (tmp_item->type == ITEM_TYPE_DOTDESKTOP_ITEM ||
-	     tmp_item->type == ITEM_TYPE_APP )
-               g_signal_connect(menu_item, "activate" ,
-	       			G_CALLBACK(moko_stylus_menu_activate_item),
-				tmp_item);
-         gtk_menu_shell_append( GTK_MENU_SHELL(sub_menu), GTK_WIDGET(menu_item) );
-         gtk_widget_show (GTK_WIDGET(menu_item));
-      }
-    }
-    break;
-    case ITEM_TYPE_DOTDESKTOP_ITEM:
-    case ITEM_TYPE_APP:
-      g_signal_connect (menu_item, "activate",
-      			G_CALLBACK(moko_stylus_menu_activate_item),
-			item_new);
-      break;
-  } /* case */
-
-  } /* enumerate */
-
-  return ;
+	*push_in = TRUE;
 }
-
-
-static GtkImageMenuItem *
-moko_build_new_menu_item(const char *name, const char *path)
-{
-    GdkPixbuf *pixbuf;
-    GtkWidget *image;
-    GtkWidget *item;
-
-    pixbuf = gdk_pixbuf_new_from_file_at_size (path, 32, 32, NULL);
-    if(!pixbuf) g_debug ("Can't get pixbuf");
-    image = gtk_image_new_from_pixbuf (pixbuf);
-
-    item = gtk_image_menu_item_new_with_label (name);
-    gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM(item), image);
-    gtk_widget_show (GTK_WIDGET(item));
-
-    return GTK_IMAGE_MENU_ITEM(item);
-}
-
-static void moko_stylus_menu_activate_item(GtkWidget* widget,
-					   void *user_data)
-{
-    MokoDesktopItem *ditem = user_data;
-    g_debug( "item activated: %s", ditem->data );
-    switch (fork())
-    {
-    case 0:
-      mb_exec((char *)ditem->data);
-      fprintf(stderr, "exec failed, cleaning up child\n");
-      exit(1);
-    case -1:
-      fprintf(stderr, "can't fork\n");
-      break;
-    }
-}
-
-void
-moko_menu_position_cb (GtkMenu *menu, int *x, int *y, gboolean *push_in, GtkWidget *data)
-{
-    GtkAllocation* allocation = &GTK_WIDGET(data)->allocation;
-
-    *x = allocation->x;
-    *y = allocation->y + allocation->height;
-
-    *push_in = TRUE;
-}
-

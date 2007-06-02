@@ -1,0 +1,4 @@
+2007-06-02  Stefan Schmidt <stefan@openmoko.org>
+
+			Lindent run over all files besides buttonactions.{c,h} as mickey is
+			working on them right now.
