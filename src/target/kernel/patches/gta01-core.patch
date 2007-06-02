@@ -1,10 +1,10 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
+--- linux-2.6.21.3-moko.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.21.3-moko/arch/arm/mach-s3c2410/Kconfig
 @@ -109,5 +109,12 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -18,20 +18,20 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/Kconfig
 +
  endmenu
  
-Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6.21-moko/arch/arm/mach-s3c2410/Makefile
+--- linux-2.6.21.3-moko.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.21.3-moko/arch/arm/mach-s3c2410/Makefile
 @@ -29,3 +29,4 @@
  obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
  obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
 +obj-$(CONFIG_MACH_NEO1973_GTA01)+= mach-gta01.o
-Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,753 @@
++++ linux-2.6.21.3-moko/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -0,0 +1,759 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -524,6 +524,12 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +static void __gta01_udc_vbus_draw(struct work_struct *work)
 +{
++	/* FIXME: this is a quick fix to work around boot-time
++	 * ordering problems if the s3c2410_udc is initialized
++	 * before the pcf50606 driver has defined pcf50606_global */
++	if (!pcf50606_global)
++		return;
++
 +	if (gta01_udc_vbus_drawer.ma >= 500) {
 +		/* enable fast charge */
 +		printk(KERN_DEBUG "udc: enabling fast charge\n");
@@ -785,10 +791,10 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/gta01.h
++++ linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,70 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H
