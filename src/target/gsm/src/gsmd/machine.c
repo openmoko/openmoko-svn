@@ -102,11 +102,11 @@ struct machines {
 	{ NULL, NULL, NULL },
 };
 
-int gsmd_machine_plugin_init(struct gsmd *g, int fd)
+int gsmd_machine_plugin_init(struct gsmd *g, char *machine_name, char *vendor_name)
 {
 	FILE *cpuinfo;
 	char buf[1024];
-	char *line, *machine = NULL;
+	char *line, *hw = NULL;
 	int i, rc;
 
 	cpuinfo = fopen("/proc/cpuinfo", "r");
@@ -117,23 +117,46 @@ int gsmd_machine_plugin_init(struct gsmd *g, int fd)
 	line = strtok(buf, "\n");
 	while (line = strtok(NULL, "\n")) {
 		if (strncmp(line, "Hardware\t: ", 11) == 0) {
-			machine = line+11;
+			hw = line+11;
 			break;
 		}
 	}
-	/* FIXME: do this dynamically */
-	for (i = 0; machines[i].cpuinfo; i++) {
-		if (machine && strcmp(machine, machines[i].cpuinfo) == 0) {
-			DEBUGP("detected %s\n", machine);
-			rc = gsmd_machine_plugin_load(machines[i].machine);
-			rc |= gsmd_vendor_plugin_load(machines[i].vendor);
-			return rc;
+
+	if (hw) {
+		/* FIXME: do this dynamically */
+		for (i = 0; machines[i].cpuinfo; i++) {
+			if (strcmp(hw, machines[i].cpuinfo) == 0) {
+				DEBUGP("detected '%s' hardware\n", hw);
+				if (machine_name)
+					DEBUGP("warning: auto-detected machine '%s', "
+						"but user override to '%s'\n",
+						machines[i].machine, machine_name);
+				else
+					machine_name = machines[i].machine;
+
+				if (vendor_name)
+					DEBUGP("wanring: auto-detected vendor '%s', "
+						"but user override to '%s'\m",
+						machines[i].vendor, vendor_name);
+				else
+					vendor_name = machines[i].vendor;
+				break;
+			}
 		}
 	}
-	/* load generic machine and all vendor plugins */
-	rc = gsmd_machine_plugin_load("generic");
-	gsmd_vendor_plugin_load("ti");
-	gsmd_vendor_plugin_load("tihtc");
-	gsmd_vendor_plugin_load("qc");
+
+	if (machine_name)
+		rc = gsmd_machine_plugin_load(machine_name);
+	else
+		rc = gsmd_machine_plugin_load("generic");
+	
+	if (vendor_name)
+		gsmd_vendor_plugin_load(vendor_name);
+	else {
+		gsmd_vendor_plugin_load("ti");
+		gsmd_vendor_plugin_load("tihtc");
+		gsmd_vendor_plugin_load("qc");
+	}
+
 	return rc;
 }

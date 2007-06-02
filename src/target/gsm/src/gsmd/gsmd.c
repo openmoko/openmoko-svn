@@ -158,15 +158,17 @@ static struct option opts[] = {
 	{ "logfile", 1, NULL, 'l' },
 	{ "hwflow", 0, NULL, 'F' },
 	{ "leak-report", 0, NULL, 'L' },
+	{ "vendor", 1, NULL, 'v' },
+	{ "machine", 1, NULL, 'm' },
 	{ 0, 0, 0, 0 }
 };
 
 static void print_help(void)
 {
-	printf("gsmd - (C) 2006 by Harald Welte <laforge@gnumonks.org>\n"
+	printf("gsmd - (C) 2006-2007 by Harald Welte <laforge@gnumonks.org>\n"
 	       "This program is FREE SOFTWARE under the terms of GNU GPL\n\n"
 	       "Usage:\n"
-	       "\t-v\t--version\tDisplay program version\n"
+	       "\t-V\t--version\tDisplay program version\n"
 	       "\t-d\t--daemon\tDeamonize\n"
 	       "\t-h\t--help\t\tDisplay this help message\n"
 	       "\t-p dev\t--device dev\tSpecify serial device to be used\n"
@@ -174,6 +176,8 @@ static void print_help(void)
 	       "\t-F\t--hwflow\tHardware Flow Control (RTS/CTS)\n"
 	       "\t-L\t--leak-report\tLeak Report of talloc memory allocator\n"
 	       "\t-l file\t--logfile file\tSpecify a logfile to log to\n"
+	       "\t-v\t--vendor v\tSpecify GSM modem vendor plugin\n"
+	       "\t-m\t--machine m\tSpecify GSM modem machine plugin\n"
 	       );
 }
 
@@ -200,6 +204,8 @@ int main(int argc, char **argv)
 	int hwflow = 0;
 	char *device = "/dev/ttyUSB0";
 	char *logfile = "syslog";
+	char *vendor_name = NULL;
+	char *machine_name = NULL;
 
 	signal(SIGTERM, sig_handler);
 	signal(SIGINT, sig_handler);
@@ -209,7 +215,7 @@ int main(int argc, char **argv)
 	gsmd_tallocs = talloc_named_const(NULL, 1, "GSMD");
 
 	/*FIXME: parse commandline, set daemonize, device, ... */
-	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:", opts, NULL)) != -1) {
+	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:v:m:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
 			/* FIXME */
@@ -240,6 +246,12 @@ int main(int argc, char **argv)
 				exit(2);
 			}
 			break;
+		case 'v':
+			vendor_name = optarg;
+			break;
+		case 'm':
+			machine_name = optarg;
+			break;
 		}
 	}
 
@@ -261,7 +273,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (gsmd_machine_plugin_init(&g) < 0) {
+	if (gsmd_machine_plugin_init(&g, machine_name, vendor_name) < 0) {
 		fprintf(stderr, "no machine plugins found\n");
 		exit(1);
 	}
