@@ -93,7 +93,7 @@ g_debug ("menu build-------------------------V");
     break;
     case ITEM_TYPE_DOTDESKTOP_ITEM:
     case ITEM_TYPE_APP:
-      g_signal_connect (item_new, "activate",
+      g_signal_connect (menu_item, "activate",
       			G_CALLBACK(moko_stylus_menu_activate_item),
 			item_new);
       break;
