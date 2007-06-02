@@ -4,7 +4,7 @@ LICENSE = "GPL"
 SECTION = "libs/gsm"
 PROVIDES += "gsmd"
 PV = "0.0+svn${SRCDATE}"
-PR = "r8"
+PR = "r9"
 
 SRC_URI = "svn://svn.openmoko.org/trunk/src/target;module=gsm;proto=http \
            file://gsmd"
@@ -27,7 +27,7 @@ do_install_append() {
 PACKAGES =+ "${PN}-tools gsmd"
 RDEPENDS_${PN} = "gsmd"
 FILES_${PN}-tools = "${bindir}/*"
-FILES_gsmd = "${sbindir}/gsmd ${sysconfdir}"
+FILES_gsmd = "${sbindir}/gsmd ${libdir}/gsmd ${sysconfdir}"
 
 PACKAGES_DYNAMIC = "libgsmd* gsmd"
 
