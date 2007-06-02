@@ -98,6 +98,27 @@ void __gsmd_log(int level, const char *file, int line, const char *function, con
 
 extern int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt);
 
+/***********************************************************************
+ * timer handling
+ ***********************************************************************/
+
+struct gsmd_timer {
+	struct llist_head list;
+	struct timeval expires;
+	void (*cb)(struct gsmd_timer *tmr, void *data);
+	void *data;
+};
+
+int gsmd_timer_init(void);
+void gmsd_timer_check_n_run(void);
+
+struct gsmd_timer *gsmd_timer_alloc(void);
+int gsmd_timer_register(struct gsmd_timer *timer);
+void gsmd_timer_unregister(struct gsmd_timer *timer);
+
+struct gsmd_timer *gsmd_timer_create(struct timeval *expires,
+				     void (*cb)(struct gsmd_timer *tmr, void *data), void *data);
+#define gsmd_timer_free(x) talloc_free(x)
 #endif /* __GSMD__ */
 
 #endif /* _GSMD_H */

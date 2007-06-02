@@ -44,9 +44,111 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/talloc.h>
 
+#define GSMD_ALIVECMD		"ATE0"
+#define GSMD_ALIVE_INTERVAL	5*60
+#define GSMD_ALIVE_TIMEOUT	30
+
+/* alive checking */
+
+struct gsmd_alive_priv {
+	struct gsmd *gsmd;
+	int alive_responded;
+};
+
+static int gsmd_alive_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_alive_priv *alp = ctx;
+
+	DEBUGP("alp=%p - `%s' returned `%s'\n", alp, cmd->buf, resp);
+	if (!strcmp(resp, "OK")) {
+		DEBUGP("`%s' returned `%s': OK\n", cmd->buf, resp);
+		alp->alive_responded = 1;
+	}
+	return 0;
+}
+
+static void alive_tmr_cb(struct gsmd_timer *tmr, void *data)
+{
+	struct gsmd_alive_priv *alp = data;
+
+	DEBUGP("alp=%p gsmd_alive timer expired\n", alp);
+
+	if (alp->alive_responded == 0) {
+		DEBUGP("modem dead!\n");
+		exit(3);
+	} else
+		DEBUGP("modem alive!\n");
+
+	/* FIXME: update some global state */
+
+	gsmd_timer_free(tmr);
+	talloc_free(alp);
+}
+
+static int gsmd_modem_alive(struct gsmd *gsmd)
+{
+	struct gsmd_atcmd *cmd;
+	struct gsmd_alive_priv *alp;
+	struct timeval tv;
+
+	alp = talloc(gsmd_tallocs, struct gsmd_alive_priv);
+	if (!alp)
+		return -ENOMEM;
+
+	alp->gsmd = gsmd;
+	alp->alive_responded = 0;
+
+	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
+	cmd = atcmd_fill(GSMD_ALIVECMD, strlen(GSMD_ALIVECMD)+1, 
+			 &gsmd_alive_cb, alp, 0);
+	if (!cmd) {
+		talloc_free(alp);
+		return -ENOMEM;
+	}
+
+	tv.tv_usec = 0;
+	gsmd_timer_create(&tv, &alive_tmr_cb, alp);
+	
+	return atcmd_submit(gsmd, cmd);
+}
+
+static void alive_interval_tmr_cb(struct gsmd_timer *tmr, void *data)
+{
+	struct gsmd *gsmd = data;
+
+	DEBUGP("interval expired, starting next alive inquiry\n");
+
+	/* start a new alive check iteration */
+	gsmd_modem_alive(gsmd);
+
+	/* re-add the timer for the next interval */
+	tmr->expires.tv_sec = GSMD_ALIVE_INTERVAL;
+	tmr->expires.tv_usec = 0;
+
+	gsmd_timer_register(tmr);
+}
+
+static int gmsd_alive_start(struct gsmd *gsmd)
+{
+	struct timeval tv;
+
+	tv.tv_sec = GSMD_ALIVE_INTERVAL;
+	tv.tv_usec = 0;
+
+	if (!gsmd_timer_create(&tv, &alive_interval_tmr_cb, gsmd))
+		return -1;
+
+	gsmd_modem_alive(gsmd);
+
+	return 0;
+}
+
+
+/* initial startup code */
+
 static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	printf("`%s' returned `%s'\n", cmd->buf, resp);
+	DEBUGP("`%s' returned `%s'\n", cmd->buf, resp);
 	return 0;
 }
 
@@ -60,7 +162,7 @@ int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 	return atcmd_submit(gsmd, cmd);
 }
 
-int gsmd_initsettings(struct gsmd *gsmd)
+static int gsmd_initsettings2(struct gsmd *gsmd)
 {
 	int rc;
 	
@@ -90,6 +192,28 @@ int gsmd_initsettings(struct gsmd *gsmd)
 		return gsmd->vendorpl->initsettings(gsmd);
 	else
 		return rc;
+}
+
+/* we submit the first atcmd and wait synchronously for a valid response */
+static int firstcmd_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd *gsmd = ctx;
+	DEBUGP("`%s' returned `%s'\n", cmd->buf, resp);
+	if (strcmp(resp, "OK")) {
+		fprintf(stderr, "response '%s' to initial command invalid", resp);
+		exit(1);
+	}
+	return gsmd_initsettings2(gsmd);
+}
+
+int gsmd_initsettings(struct gsmd *gsmd)
+{
+	struct gsmd_atcmd *cmd;
+	cmd = atcmd_fill("ATE0V1", strlen("ATE0V1")+1, &firstcmd_atcb, gsmd, 0);
+	if (!cmd)
+		return -ENOMEM;
+	
+	return atcmd_submit(gsmd, cmd);
 }
 
 struct bdrt {
@@ -195,6 +319,8 @@ static void sig_handler(int signr)
 		break;
 	case SIGUSR1:
 		talloc_report_full(gsmd_tallocs, stderr);
+	case SIGALRM:
+		gsmd_timer_check_n_run();
 		break;
 	}
 }
@@ -215,6 +341,7 @@ int main(int argc, char **argv)
 	signal(SIGINT, sig_handler);
 	signal(SIGSEGV, sig_handler);
 	signal(SIGUSR1, sig_handler);
+	signal(SIGALRM, sig_handler);
 	
 	gsmd_tallocs = talloc_named_const(NULL, 1, "GSMD");
 
@@ -285,6 +412,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	gsmd_timer_init();
+
 	if (gsmd_machine_plugin_init(&g, machine_name, vendor_name) < 0) {
 		fprintf(stderr, "no machine plugins found\n");
 		exit(1);
@@ -326,6 +455,8 @@ int main(int argc, char **argv)
 
 	if (g.interpreter_ready)
 		gsmd_initsettings(&g);
+	
+	gmsd_alive_start(&g);
 
 	gsmd_opname_init(&g);
 
@@ -335,7 +466,7 @@ int main(int argc, char **argv)
 			continue;
 
 		if (ret < 0) {
-			if (errno == -EINTR)
+			if (errno == EINTR)
 				continue;
 			else {
 				DEBUGP("select returned error (%s)\n",
