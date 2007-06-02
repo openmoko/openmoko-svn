@@ -48,6 +48,9 @@
 #define GSMD_ALIVE_INTERVAL	5*60
 #define GSMD_ALIVE_TIMEOUT	30
 
+static struct gsmd g;
+static int daemonize = 0;
+
 /* alive checking */
 
 struct gsmd_alive_priv {
@@ -59,11 +62,8 @@ static int gsmd_alive_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_alive_priv *alp = ctx;
 
-	DEBUGP("alp=%p - `%s' returned `%s'\n", alp, cmd->buf, resp);
-	if (!strcmp(resp, "OK")) {
-		DEBUGP("`%s' returned `%s': OK\n", cmd->buf, resp);
+	if (!strcmp(resp, "OK"))
 		alp->alive_responded = 1;
-	}
 	return 0;
 }
 
@@ -71,13 +71,13 @@ static void alive_tmr_cb(struct gsmd_timer *tmr, void *data)
 {
 	struct gsmd_alive_priv *alp = data;
 
-	DEBUGP("alp=%p gsmd_alive timer expired\n", alp);
+	DEBUGP("gsmd_alive timer expired\n", alp);
 
 	if (alp->alive_responded == 0) {
-		DEBUGP("modem dead!\n");
+		gsmd_log(GSMD_FATAL, "modem dead!\n");
 		exit(3);
 	} else
-		DEBUGP("modem alive!\n");
+		gsmd_log(GSMD_INFO, "modem alive!\n");
 
 	/* FIXME: update some global state */
 
@@ -98,7 +98,6 @@ static int gsmd_modem_alive(struct gsmd *gsmd)
 	alp->gsmd = gsmd;
 	alp->alive_responded = 0;
 
-	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
 	cmd = atcmd_fill(GSMD_ALIVECMD, strlen(GSMD_ALIVECMD)+1, 
 			 &gsmd_alive_cb, alp, 0);
 	if (!cmd) {
@@ -106,6 +105,7 @@ static int gsmd_modem_alive(struct gsmd *gsmd)
 		return -ENOMEM;
 	}
 
+	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
 	tv.tv_usec = 0;
 	gsmd_timer_create(&tv, &alive_tmr_cb, alp);
 	
@@ -194,25 +194,55 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 		return rc;
 }
 
+static int firstcmd_response = 0;
+
 /* we submit the first atcmd and wait synchronously for a valid response */
 static int firstcmd_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd *gsmd = ctx;
-	DEBUGP("`%s' returned `%s'\n", cmd->buf, resp);
+
 	if (strcmp(resp, "OK")) {
-		fprintf(stderr, "response '%s' to initial command invalid", resp);
-		exit(1);
+		gsmd_log(GSMD_FATAL, "response '%s' to initial command invalid", resp);
+		exit(5);
 	}
+
+	firstcmd_response = 1;
+
+	if (daemonize) {
+		if (fork()) {
+			exit(0);
+		}
+		fclose(stdout);
+		fclose(stderr);
+		fclose(stdin);
+		setsid();
+	}
+
 	return gsmd_initsettings2(gsmd);
+}
+
+static void firstcmd_tmr_cb(struct gsmd_timer *tmr, void *data)
+{
+	if (firstcmd_response == 0) {
+		gsmd_log(GSMD_FATAL, "No response from GSM Modem");
+		exit(4);
+	}
+	gsmd_timer_free(tmr);
 }
 
 int gsmd_initsettings(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
+	struct timeval tv;
+
 	cmd = atcmd_fill("ATE0V1", strlen("ATE0V1")+1, &firstcmd_atcb, gsmd, 0);
 	if (!cmd)
 		return -ENOMEM;
 	
+	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
+	tv.tv_usec = 0;
+	gsmd_timer_create(&tv, &firstcmd_tmr_cb, NULL);
+
 	return atcmd_submit(gsmd, cmd);
 }
 
@@ -262,9 +292,6 @@ static int set_baudrate(int fd, int baudrate, int hwflow)
 
 	return tcsetattr(fd, 0, &ti);
 }
-
-
-static struct gsmd g;
 
 static int gsmd_initialize(struct gsmd *g)
 {
@@ -329,7 +356,6 @@ int main(int argc, char **argv)
 {
 	int fd, argch; 
 
-	int daemonize = 0;
 	int bps = 115200;
 	int hwflow = 0;
 	char *device = NULL;
@@ -438,16 +464,6 @@ int main(int argc, char **argv)
 	if (usock_init(&g) < 0) {
 		fprintf(stderr, "can't open unix socket\n");
 		exit(1);
-	}
-
-	if (daemonize) {
-		if (fork()) {
-			exit(0);
-		}
-		fclose(stdout);
-		fclose(stderr);
-		fclose(stdin);
-		setsid();
 	}
 
 	/* select a vendor plugin */
