@@ -9,6 +9,10 @@ matchbox-panel \
 # start old-style panel plugin to get a keyboard
 mbinputmgr &
 
+# set default alsa configuration and play welcome sound
+alsactl restore 0 -f /etc/alsa/stereoout.state
+madplay /usr/share/openmoko/sounds/startup_openmoko.mp3 &
+
 openmoko-footer &
 openmoko-today --desktop &
 openmoko-dialer &
