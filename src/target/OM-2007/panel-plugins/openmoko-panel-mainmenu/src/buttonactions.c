@@ -22,6 +22,10 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkmenuitem.h>
 
+#include <gdk/gdkx.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -41,9 +45,9 @@
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
     #define POWER_BUTTON_KEYCODE 116
 #else
-    #define AUX_BUTTON_EVENT_PATH "/dev/input/event4"
+    #define AUX_BUTTON_EVENT_PATH "/dev/input/event1"
     #define AUX_BUTTON_KEYCODE 0x25
-    #define POWER_BUTTON_EVENT_PATH "/dev/input/event3"
+    #define POWER_BUTTON_EVENT_PATH "/dev/input/event0"
     #define POWER_BUTTON_KEYCODE 0x25
 #endif
 
@@ -55,6 +59,46 @@ int power_timer = -1;
 
 GtkWidget* aux_menu = 0;
 GtkWidget* power_menu = 0;
+
+/* Borrowed from libwnck */
+static Window
+        get_window_property (Window  xwindow,
+                             Atom    atom)
+{
+    Atom type;
+    int format;
+    gulong nitems;
+    gulong bytes_after;
+    Window *w;
+    int err, result;
+    Window retval;
+
+    gdk_error_trap_push ();
+
+    type = None;
+    result = XGetWindowProperty (gdk_display,
+                                 xwindow,
+                                 atom,
+                                 0, G_MAXLONG,
+                                 False, XA_WINDOW, &type, &format, &nitems,
+                                 &bytes_after, (unsigned char **) &w);
+    err = gdk_error_trap_pop ();
+
+    if (err != Success ||
+        result != Success)
+        return None;
+
+    if (type != XA_WINDOW)
+    {
+        XFree (w);
+        return None;
+    }
+
+    retval = *w;
+    XFree (w);
+
+    return retval;
+}
 
 gboolean panel_mainmenu_install_watcher()
 {
@@ -214,7 +258,7 @@ void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_da
 {
     //FIXME talk to neod
     //FIXME notify user
-    system( "/bin/sh poweroff");
+    system( "/sbin/poweroff");
 }
 
 gboolean panel_mainmenu_power_timeout( guint timeout )
@@ -223,7 +267,33 @@ gboolean panel_mainmenu_power_timeout( guint timeout )
     power_timer = -1;
     if ( timeout < 1 )
     {
-        // close current application
+        Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
+        g_debug( "active Window = %d", (int) xwindow );
+
+        Display* display = XOpenDisplay( NULL );
+
+        //xwindow = gdk_x11_drawable_get_xid (window);
+
+        XEvent xev;
+        xev.xclient.type = ClientMessage;
+        xev.xclient.serial = 0;
+        xev.xclient.send_event = True;
+        xev.xclient.display = display;
+        xev.xclient.window = xwindow;
+        xev.xclient.message_type = gdk_x11_get_xatom_by_name( "_NET_CLOSE_WINDOW" );
+        xev.xclient.format = 32;
+        xev.xclient.data.l[0] = 0;
+        xev.xclient.data.l[1] = 0;
+        xev.xclient.data.l[2] = 0;
+        xev.xclient.data.l[3] = 0;
+        xev.xclient.data.l[4] = 0;
+
+        //TODO: add timeout checking for response
+
+        XSendEvent (display, gdk_x11_get_default_root_xwindow (), False,
+                    SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+        XCloseDisplay( display );
+
     }
     else
     {
