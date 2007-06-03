@@ -23,6 +23,9 @@
 #include <gtk/gtkmenuitem.h>
 
 #include <gdk/gdkx.h>
+
+#include <glib.h>
+
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
@@ -40,30 +43,43 @@
 
 //FIXME find out through sysfs
 #ifndef DEBUG_THIS_FILE
-    #define AUX_BUTTON_EVENT_PATH "/dev/input/event0"
+    #define AUX_BUTTON_EVENT_PATH "/dev/input/event1"
     #define AUX_BUTTON_KEYCODE 169
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
     #define POWER_BUTTON_KEYCODE 116
+    #define TOUCHSCREEN_EVENT_PATH "/dev/input/touchscreen0"
 #else
     #define AUX_BUTTON_EVENT_PATH "/dev/input/event1"
     #define AUX_BUTTON_KEYCODE 0x25
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event0"
     #define POWER_BUTTON_KEYCODE 0x25
+    #define TOUCHSCREEN_EVENT_PATH "/dev/input/event2"
 #endif
 
 GPollFD aux_fd;
 GPollFD power_fd;
+GIOChannel* touchscreen_io;
 
 int aux_timer = -1;
 int power_timer = -1;
+int powersave_timer1 = -1;
+int powersave_timer2 = -1;
+int powersave_timer3 = -1;
 
 GtkWidget* aux_menu = 0;
 GtkWidget* power_menu = 0;
 
+typedef enum _PowerState
+{
+    NORMAL,
+    DISPLAY_DIM,
+    DISPLAY_OFF,
+    SUSPEND,
+} PowerState;
+PowerState power_state = NORMAL;
+
 /* Borrowed from libwnck */
-static Window
-        get_window_property (Window  xwindow,
-                             Atom    atom)
+static Window get_window_property( Window xwindow, Atom atom )
 {
     Atom type;
     int format;
@@ -130,6 +146,19 @@ gboolean panel_mainmenu_install_watcher()
     power_fd.revents = 0;
     g_source_add_poll( button_watcher, &power_fd );
     g_source_attach( button_watcher, NULL );
+
+    int tsfd = open( TOUCHSCREEN_EVENT_PATH, O_RDONLY );
+    if ( tsfd < 0 )
+    {
+        g_debug( "can't open " TOUCHSCREEN_EVENT_PATH " (%s)", strerror( errno ) );
+        return FALSE;
+    }
+    touchscreen_io = g_io_channel_unix_new( tsfd );
+    g_io_add_watch( touchscreen_io, G_IO_IN, panel_mainmenu_touchscreen_cb, NULL );
+
+    panel_mainmenu_powersave_reset();
+    panel_mainmenu_set_display( 100 );
+
     return TRUE;
 }
 
@@ -318,3 +347,73 @@ gboolean panel_mainmenu_power_timeout( guint timeout )
     return FALSE;
 }
 
+gboolean panel_mainmenu_touchscreen_cb( GIOChannel *source, GIOCondition condition, gpointer data )
+{
+    g_debug( "mainmenu touchscreen event" );
+
+    struct input_event event;
+    int size = read( g_io_channel_unix_get_fd( source ), &event, sizeof( struct input_event ) );
+    g_debug( "read %d bytes from power_fd %d", size, power_fd.fd );
+    g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+
+    panel_mainmenu_powersave_reset();
+    if ( power_state != NORMAL )
+    {
+        panel_mainmenu_set_display( 100 );
+        power_state = NORMAL;
+    }
+    return TRUE;
+}
+
+void panel_mainmenu_powersave_reset()
+{
+    g_debug( "mainmenu powersave reset" );
+    if ( powersave_timer1 != -1 )
+        g_source_remove( powersave_timer1 );
+    if ( powersave_timer2 != -1 )
+        g_source_remove( powersave_timer2 );
+    if ( powersave_timer3 != -1 )
+        g_source_remove( powersave_timer3 );
+
+    //TODO load this from preferences
+    powersave_timer1 = g_timeout_add( 10 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout1, (gpointer)1 );
+    powersave_timer2 = g_timeout_add( 20 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout2, (gpointer)1 );
+    powersave_timer3 = g_timeout_add( 40 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout3, (gpointer)1 );
+}
+
+void panel_mainmenu_set_display( int brightness )
+{
+    g_debug( "mainmenu set display %d", brightness );
+}
+
+gboolean panel_mainmenu_powersave_timeout1( guint timeout )
+{
+    g_debug( "mainmenu powersave timeout 1" );
+    //FIXME talk to neod
+    //FIXME dim display
+    power_state = DISPLAY_DIM;
+    panel_mainmenu_set_display( 50 );
+    return FALSE;
+}
+
+gboolean panel_mainmenu_powersave_timeout2( guint timeout )
+{
+    g_debug( "mainmenu powersave timeout 2" );
+    //FIXME talk to neod
+    //FIXME turn off display
+    panel_mainmenu_set_display( 0 );
+    power_state = DISPLAY_OFF;
+    return FALSE;
+}
+
+gboolean panel_mainmenu_powersave_timeout3( guint timeout )
+{
+    g_debug( "mainmenu powersave timeout 3" );
+    //FIXME talk to neod
+    power_state = SUSPEND;
+    system( "/usr/bin/apm -s");
+    panel_mainmenu_powersave_reset();
+    panel_mainmenu_set_display( 100 );
+    power_state = NORMAL;
+    return FALSE;
+}
