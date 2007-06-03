@@ -361,23 +361,42 @@ static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+#define GSMD_OPER_MAXLEN	16
 static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
-	struct gsmd_signal_quality *gsq;
 	struct gsmd_ucmd *ucmd;
-	char *comma;
+	char *comma, *opname;
 	
-	ucmd = gsmd_ucmd_fill(sizeof(*gsq), GSMD_MSG_NETWORK,
+	ucmd = gsmd_ucmd_fill(GSMD_OPER_MAXLEN+1, GSMD_MSG_NETWORK,
 			      GSMD_NETWORK_OPER_GET, 0);
 	if (!ucmd)
 		return -ENOMEM;
 
-	/* FIXME: implementation */
+	/* Format: <mode>[, <format>, <oper>] */
+	comma = strchr(resp, ',');
+	if (!comma)
+		goto out_err;
+
+	if (atoi(comma+1) != 0) {
+		gsmd_log(GSMD_NOTICE, "COPS format !=0 not supported yet!\n");
+		goto out_err;
+	}
+	comma = strchr(resp, ',');
+	if (!comma || *(comma+1) != '"')
+		goto out_err;
+	opname = comma+2;
+
+	memcpy(ucmd->buf, opname, strlen(opname-1));
+	ucmd->buf[strlen(opname)] = '\0';
 
 	usock_cmd_enqueue(ucmd, gu);
 
 	return 0;
+
+out_err:
+	talloc_free(ucmd);
+	return -EIO;
 }
 
 static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
