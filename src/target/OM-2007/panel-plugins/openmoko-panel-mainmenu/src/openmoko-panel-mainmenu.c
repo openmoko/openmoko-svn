@@ -77,9 +77,6 @@ G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
 {
 	g_debug("openmoko-panel-mainmenu new");
 
-    //FIXME for testing only
-    system( "madplay /usr/share/openmoko/sounds/startup_openmoko.mp3 &" );
-
 	MokoPanelApplet *applet = moko_panel_applet_new();
 	g_debug("applet is %p", applet);
 	moko_panel_applet_set_icon(applet, PKGDATADIR "/btn_menu.png", TRUE);
