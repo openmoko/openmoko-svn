@@ -23,14 +23,12 @@ start() {
 	# FIXME remove Neo1973 specifics here and catch up with OE upstream, once we're stable
 	echo -n "Setting Neo1973 temporary demo specifics..."
 	dmesg -n1
-	alsactl -f /etc/alsa/gsmhandset.state restore 0
 	echo "done"
 	# Power on GSM device
 	if [ -e "${GSM_POW}" ]
 	then
 		echo -n "Powering up GSM device..."
 		echo "1" > ${GSM_POW}
-		sleep 1
 		echo "done"
 	else
 		echo "GSM device not found. Aborting startup"
