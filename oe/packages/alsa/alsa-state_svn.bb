@@ -1,7 +1,7 @@
 DESCRIPTION = "ALSA state files"
 LICENSE = "MIT"
 SECTION = "base"
-PR = "r1"
+PR = "r2"
 
 SRC_URI = "file://capturehandset.state \
            file://captureheadset.state \
