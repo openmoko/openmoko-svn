@@ -156,8 +156,8 @@ gboolean panel_mainmenu_install_watcher()
     touchscreen_io = g_io_channel_unix_new( tsfd );
     g_io_add_watch( touchscreen_io, G_IO_IN, panel_mainmenu_touchscreen_cb, NULL );
 
-    panel_mainmenu_powersave_reset();
-    panel_mainmenu_set_display( 100 );
+    //panel_mainmenu_powersave_reset();
+    //panel_mainmenu_set_display( 100 );
 
     return TRUE;
 }
