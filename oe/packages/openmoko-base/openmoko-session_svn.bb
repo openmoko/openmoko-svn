@@ -2,7 +2,7 @@ DESCRIPTION = "Matchbox session files for OpenMoko"
 SECTION = "openmoko/base"
 RDEPENDS = "matchbox-panel-2 matchbox-wm gconf"
 PV = "0.1+svn${SRCDATE}"
-PR = "r1"
+PR = "r2"
 
 inherit openmoko-base
 
@@ -23,6 +23,5 @@ pkg_postinst_openmoko-session () {
 if [ "x$D" != "x" ]; then
     exit 1
 fi
-
 gconftool-2 --config-source=xml::$D${sysconfdir}/gconf/gconf.xml.defaults --direct --type string --set /desktop/openmoko/interface/theme openmoko-standard
 }
