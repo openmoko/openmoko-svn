@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r40"
+PR = "r41"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -79,6 +79,7 @@ RDEPENDS_task-openmoko-ui = "\
   openmoko-session \
   openmoko-theme-standard \
   openmoko-icon-theme-standard \
+  openmoko-sound-theme-standard \
 #  psplash \
 "
 
