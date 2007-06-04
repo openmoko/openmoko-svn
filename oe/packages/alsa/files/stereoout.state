@@ -815,7 +815,7 @@ state.neo1973 {
 		comment.range '0 - 31'
 		iface MIXER
 		name 'Amp Left Playback Volume'
-		value 25
+		value 21
 	}
 	control.87 {
 		comment.access 'read write'
@@ -824,7 +824,7 @@ state.neo1973 {
 		comment.range '0 - 31'
 		iface MIXER
 		name 'Amp Right Playback Volume'
-		value 25
+		value 21
 	}
 	control.88 {
 		comment.access 'read write'
