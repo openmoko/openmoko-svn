@@ -143,14 +143,29 @@ call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data
 void
 window_outgoing_dial (MokoDialerData *data, gchar *number)
 {
+  MokoJournalEntry *entry = NULL;
+  MokoJournalVoiceInfo *info = NULL;
+  
   gulong progress_handler;
+  
+  /* create the journal entry for this call and add it to the journal */
+  entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
+  moko_journal_entry_set_direction (entry, DIRECTION_OUT);
+  moko_journal_entry_get_voice_info (entry, &info);
+  moko_journal_entry_set_dtstart (entry, moko_time_new_today ());
+  moko_journal_add_entry (data->journal, entry);
+  moko_journal_voice_info_set_distant_number (info, number);
+  /* FIXME: We should be able to associate a number with a number, and add that
+            info to the entry */
 
   /* connect our handler to track call progress */
   progress_handler = g_signal_connect (data->connection, "call-progress", 
-                    G_CALLBACK (call_progress_cb), data);
+                                       G_CALLBACK (call_progress_cb), data);
   g_object_set_data (G_OBJECT (data->window_outgoing), "current-number", number);
   moko_gsmd_connection_voice_dial (data->connection, number);
-  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_outgoing), "Calling %s", number);
+  moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_outgoing),
+                                   "Calling %s", number);               
+  
   if (gtk_dialog_run (GTK_DIALOG (data->window_outgoing)) == GTK_RESPONSE_OK)
   {
     /* call has connected, so open the talking window */
@@ -169,4 +184,7 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
 
   /* disconnect the call progress handler since we no longer need it */
   g_signal_handler_disconnect (data->connection, progress_handler);
+  
+  /* commit the journal entry */
+  moko_journal_write_to_storage (data->journal);
 }

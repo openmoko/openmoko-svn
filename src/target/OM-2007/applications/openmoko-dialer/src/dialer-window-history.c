@@ -41,7 +41,7 @@ typedef enum {
   INCOMING
 } CallFilter;
 
-#define HISTORY_MAX_ENTRIES 25
+#define HISTORY_MAX_ENTRIES 50
 
 #define HISTORY_CALL_INCOMING_ICON "moko-history-call-in"
 #define HISTORY_CALL_OUTGOING_ICON "moko-history-call-out"
@@ -819,7 +819,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
                         
   
   n_entries = moko_journal_get_nb_entries (p_dialer_data->journal);
-  g_print ("Journal entries = %d", n_entries);
+  g_print ("Journal entries = %d\n", n_entries);
   if (n_entries < 1)
   {
     g_print ("there are no entries in the journal\n");
@@ -1006,6 +1006,8 @@ on_entry_added_cb (MokoJournal *journal,
   GtkListStore *list_store;
     
   g_return_if_fail (p_dialer_data);
+  
+  g_print ("A new entry has been added\n");
   
   /* We're not interested in anything other than voice entrys */
   if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
