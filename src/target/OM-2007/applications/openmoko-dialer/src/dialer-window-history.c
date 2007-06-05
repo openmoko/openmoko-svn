@@ -636,6 +636,7 @@ history_view_filter_visible_function (GtkTreeModel * model,
 static gboolean
 history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
 {
+  GtkTreeIter iter;
   const gchar *uid, *number;
   gchar *icon_name;
   const gchar *display_text;
@@ -688,7 +689,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   /* FIXME: look up uid */
   display_text = number;
   
-  gtk_list_store_insert_with_values (store, NULL, 0,
+  gtk_list_store_insert_with_values (store, &iter, 0,
       HISTORY_NUMBER_COLUMN, number,
       HISTORY_DSTART_COLUMN, dstart,
       HISTORY_ICON_NAME_COLUMN, icon_name,
