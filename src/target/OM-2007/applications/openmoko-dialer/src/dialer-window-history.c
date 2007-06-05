@@ -45,6 +45,10 @@ typedef enum {
 #define HISTORY_CALL_OUTGOING_ICON "moko-history-call-out"
 #define HISTORY_CALL_MISSED_ICON "moko-history-call-missed"
 
+static GdkPixbuf *history_in_icon = NULL;
+static GdkPixbuf *history_out_icon = NULL;
+static GdkPixbuf *history_missed_icon = NULL;
+
 /* function declarations */
 
 static gint history_update_counter (MokoDialerData * p_dialer_data);
@@ -376,7 +380,24 @@ on_window_history_show (GtkWidget * widget, MokoDialerData * appdata)
   DBG_LEAVE ();
 }
 
-
+static void
+history_create_icons ()
+{
+        GtkIconTheme *theme = gtk_icon_theme_get_default ();
+        
+        history_in_icon = gtk_icon_theme_load_icon (theme, 
+                                                    HISTORY_CALL_INCOMING_ICON,
+                                                    GTK_ICON_SIZE_MENU,
+                                                    0, NULL);
+        history_out_icon = gtk_icon_theme_load_icon (theme, 
+                                                    HISTORY_CALL_OUTGOING_ICON,
+                                                    GTK_ICON_SIZE_MENU,
+                                                    0, NULL);
+        history_missed_icon = gtk_icon_theme_load_icon (theme, 
+                                                    HISTORY_CALL_MISSED_ICON,
+                                                    GTK_ICON_SIZE_MENU,
+                                                    0, NULL);
+}
 
 
 gint
@@ -388,7 +409,7 @@ window_history_init (MokoDialerData * p_dialer_data)
 
   if (p_dialer_data->window_history == 0)
   {
-
+    history_create_icons ();
     history_create_menu_history (p_dialer_data);
 
     MokoFingerWindow *window = NULL;
@@ -638,7 +659,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
 {
   GtkTreeIter iter;
   const gchar *uid, *number;
-  gchar *icon_name;
+  GdkPixbuf *icon = NULL;
   const gchar *display_text;
   time_t dstart;
   enum MessageDirection direction;
@@ -668,19 +689,19 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   /* Load the correct icon */
   if (direction == DIRECTION_OUT)
   {
-    icon_name = HISTORY_CALL_OUTGOING_ICON;
+    icon = history_out_icon;
     type = OUTGOING;
   }
   else
   {
     if (was_missed)
     {
-      icon_name = HISTORY_CALL_MISSED_ICON;
+      icon = history_missed_icon;
       type = MISSED;
     }
     else
     { 
-      icon_name = HISTORY_CALL_INCOMING_ICON;
+      icon = history_in_icon;
       type = INCOMING;      
     }
   }
@@ -692,7 +713,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   gtk_list_store_insert_with_values (store, &iter, 0,
       HISTORY_NUMBER_COLUMN, number,
       HISTORY_DSTART_COLUMN, dstart,
-      HISTORY_ICON_NAME_COLUMN, icon_name,
+      HISTORY_ICON_NAME_COLUMN, icon,
       HISTORY_DISPLAY_TEXT_COLUMN, display_text,
       HISTORY_CALL_TYPE_COLUMN, type,
       HISTORY_ENTRY_POINTER, (gpointer)j_entry,
@@ -737,7 +758,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
   gtk_tree_view_column_set_attributes (col, renderer,
-                                       "icon-name", HISTORY_ICON_NAME_COLUMN,
+                                       "pixbuf", HISTORY_ICON_NAME_COLUMN,
                                         NULL);
 
   renderer = gtk_cell_renderer_text_new ();
@@ -753,7 +774,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   /* UID, DSTART, MISSED, DIRECTION */
   list_store = gtk_list_store_new (6, G_TYPE_STRING, 
                                       G_TYPE_INT, 
-                                      G_TYPE_STRING, 
+                                      GDK_TYPE_PIXBUF, 
                                       G_TYPE_STRING,
                                       G_TYPE_INT,
                                       G_TYPE_POINTER);
