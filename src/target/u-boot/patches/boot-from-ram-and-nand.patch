@@ -14,7 +14,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -157,18 +157,21 @@ reset:
+@@ -157,18 +157,26 @@
  	str	r1, [r0]
  #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
  
@@ -34,7 +34,12 @@ Index: u-boot/cpu/arm920t/start.S
  	adr	r0, _start		/* r0 <- current position of code   */
 +
 +#ifdef CONFIG_S3C2410_NAND_BOOT
-+	teq	r0, #0			/* are we running from NAND ?       */
++					/* are we running from NAND ?	    */
++#define	BWSCON	0x48000000
++	ldr	r1, =BWSCON		/* Z = CPU booted from NAND	    */
++	ldr	r1, [r1]
++	tst	r1, #6			/* BWSCON[2:1] = OM[1:0]	    */
++	teqeq	r0, #0			/* Z &= running at address 0	    */
 +	beq	nand_load
 +#endif /* CONFIG_S3C2410_NAND_BOOT */
 +
@@ -42,7 +47,7 @@ Index: u-boot/cpu/arm920t/start.S
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
  	beq     done_relocate
-@@ -188,10 +191,13 @@ copy_loop:
+@@ -188,10 +196,13 @@
  	ldr	pc, _done_relocate	/* jump to relocated code */
  _done_relocate:
  	.word	done_relocate
@@ -60,7 +65,7 @@ Index: u-boot/cpu/arm920t/start.S
  	/* mov	r10, lr */
  
  	@ reset NAND
-@@ -275,7 +281,8 @@ notmatch:
+@@ -275,7 +286,8 @@
  #endif
  1:	b	1b
  done_nand_read:
@@ -89,5 +94,5 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CONFIG_S3C2410_NAND_SKIP_BAD	1
 -#endif
  
- /*
-  * High Level Configuration Options
+ #define CFG_UBOOT_SIZE		0x40000 /* size of u-boot, for NAND loading */
+ 
