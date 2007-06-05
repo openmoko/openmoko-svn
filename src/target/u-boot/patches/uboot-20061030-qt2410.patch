@@ -547,7 +547,7 @@ Index: u-boot/board/qt2410/lowlevel_init.S
 ===================================================================
 --- /dev/null
 +++ u-boot/board/qt2410/lowlevel_init.S
-@@ -0,0 +1,173 @@
+@@ -0,0 +1,171 @@
 +/*
 + * Memory Setup stuff - taken from blob memsetup.S
 + *
@@ -685,9 +685,7 @@ Index: u-boot/board/qt2410/lowlevel_init.S
 +	/* memory control configuration */
 +	/* make r0 relative the current location so that it */
 +	/* reads SMRDATA out of FLASH rather than memory ! */
-+	ldr     r0, =SMRDATA
-+	ldr	r1, _TEXT_BASE
-+	sub	r0, r0, r1
++	adr	r0, SMRDATA
 +	ldr	r1, =BWSCON	/* Bus Width Status Controller */
 +	add     r2, r0, #13*4
 +0:
