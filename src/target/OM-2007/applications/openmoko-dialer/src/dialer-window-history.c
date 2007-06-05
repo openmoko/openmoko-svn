@@ -41,6 +41,8 @@ typedef enum {
   INCOMING
 } CallFilter;
 
+#define HISTORY_MAX_ENTRIES 25
+
 #define HISTORY_CALL_INCOMING_ICON "moko-history-call-in"
 #define HISTORY_CALL_OUTGOING_ICON "moko-history-call-out"
 #define HISTORY_CALL_MISSED_ICON "moko-history-call-missed"
@@ -219,7 +221,6 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
   GtkTreeSelection *selection;
   GtkTreeView *treeview;
   GtkTreePath *path;
-  MokoJournalEntry *entry = NULL;
   const gchar *uid;
   gint result = 0;
   
@@ -232,16 +233,10 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
     return;
   }
   
-  gtk_tree_model_get (model, &iter, HISTORY_ENTRY_POINTER, &entry, -1);
+  gtk_tree_model_get (model, &iter, HISTORY_ENTRY_POINTER, &uid, -1);
   
-  if (entry == NULL)
+  if (uid == NULL)
         return;
-  
-  if (!(uid = moko_journal_entry_get_uid (entry))) 
-  {
-    g_print ("Unable to get entry\n");
-    return;
-  }
   /* We need to show a dialog to make sure this is what the user wants */
   dialog = moko_message_dialog_new ();
   
@@ -720,7 +715,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
       HISTORY_ICON_NAME_COLUMN, icon,
       HISTORY_DISPLAY_TEXT_COLUMN, display_text,
       HISTORY_CALL_TYPE_COLUMN, type,
-      HISTORY_ENTRY_POINTER, (gpointer)j_entry,
+      HISTORY_ENTRY_POINTER, uid,
       -1);
   return TRUE;
 }
@@ -781,7 +776,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
                                       GDK_TYPE_PIXBUF, 
                                       G_TYPE_STRING,
                                       G_TYPE_INT,
-                                      G_TYPE_POINTER);
+                                      G_TYPE_STRING);
                                       
   p_dialer_data->g_list_store = list_store;
   
@@ -832,17 +827,17 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   }
   
   i = j = 0;
-  while (moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry))
+  for (i = 0; i < n_entries && j < HISTORY_MAX_ENTRIES; i++)
   {
+    moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry);
+    
     /* We're not interested in anything other than voice entrys */
     if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
     {
-      i++;
       continue;
     }
     if (history_add_entry (list_store, j_entry))
       j++;
-    i++;
   }
   
   return 1;
