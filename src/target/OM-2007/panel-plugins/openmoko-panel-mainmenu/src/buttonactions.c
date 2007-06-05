@@ -48,12 +48,14 @@
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
     #define POWER_BUTTON_KEYCODE 116
     #define TOUCHSCREEN_EVENT_PATH "/dev/input/touchscreen0"
+    #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #else
     #define AUX_BUTTON_EVENT_PATH "/dev/input/event1"
     #define AUX_BUTTON_KEYCODE 0x25
     #define POWER_BUTTON_EVENT_PATH "/dev/input/event0"
     #define POWER_BUTTON_KEYCODE 0x25
     #define TOUCHSCREEN_EVENT_PATH "/dev/input/event2"
+    #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
 GPollFD aux_fd;
@@ -147,17 +149,23 @@ gboolean panel_mainmenu_install_watcher()
     g_source_add_poll( button_watcher, &power_fd );
     g_source_attach( button_watcher, NULL );
 
-    int tsfd = open( TOUCHSCREEN_EVENT_PATH, O_RDONLY );
-    if ( tsfd < 0 )
+    if ( getenv( "MOKO_POWERSAVE" ) )
     {
-        g_debug( "can't open " TOUCHSCREEN_EVENT_PATH " (%s)", strerror( errno ) );
-        return FALSE;
-    }
-    touchscreen_io = g_io_channel_unix_new( tsfd );
-    g_io_add_watch( touchscreen_io, G_IO_IN, panel_mainmenu_touchscreen_cb, NULL );
 
-    //panel_mainmenu_powersave_reset();
-    //panel_mainmenu_set_display( 100 );
+        int tsfd = open( TOUCHSCREEN_EVENT_PATH, O_RDONLY );
+        if ( tsfd < 0 )
+        {
+            g_debug( "can't open " TOUCHSCREEN_EVENT_PATH " (%s)", strerror( errno ) );
+            return FALSE;
+        }
+        touchscreen_io = g_io_channel_unix_new( tsfd );
+        g_io_add_watch( touchscreen_io, G_IO_IN, panel_mainmenu_touchscreen_cb, NULL );
+
+        panel_mainmenu_powersave_reset();
+        panel_mainmenu_set_display( 100 );
+    }
+    else
+        g_debug( "MOKO_POWERSAVE set. Not enabling power management." );
 
     return TRUE;
 }
@@ -353,14 +361,27 @@ gboolean panel_mainmenu_touchscreen_cb( GIOChannel *source, GIOCondition conditi
 
     struct input_event event;
     int size = read( g_io_channel_unix_get_fd( source ), &event, sizeof( struct input_event ) );
-    g_debug( "read %d bytes from power_fd %d", size, power_fd.fd );
+    g_debug( "read %d bytes from touchscreen_fd %d", size, g_io_channel_unix_get_fd( source ) );
     g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
 
-    panel_mainmenu_powersave_reset();
-    if ( power_state != NORMAL )
+    if ( event.type == 1 && event.code == TOUCHSCREEN_BUTTON_KEYCODE )
     {
-        panel_mainmenu_set_display( 100 );
-        power_state = NORMAL;
+        if ( event.value == 1 ) /* pressed */
+        {
+            g_debug( "stylus pressed" );
+            panel_mainmenu_play_stylus_click();
+        }
+        else if ( event.value == 0 ) /* released */
+        {
+            g_debug( "stylus released" );
+        }
+
+        panel_mainmenu_powersave_reset();
+        if ( power_state != NORMAL )
+        {
+            panel_mainmenu_set_display( 100 );
+            power_state = NORMAL;
+        }
     }
     return TRUE;
 }
@@ -416,4 +437,12 @@ gboolean panel_mainmenu_powersave_timeout3( guint timeout )
     panel_mainmenu_set_display( 100 );
     power_state = NORMAL;
     return FALSE;
+}
+
+void panel_mainmenu_play_stylus_click()
+{
+    g_debug( "mainmenu play stylus click" );
+    //TODO add function to libmokoui that talks alsa
+    //yes, this is hardcoded... it's just a proof of concept
+    system( "/usr/bin/aplay /usr/share/openmoko/touchscreen_click.wav &" );
 }
