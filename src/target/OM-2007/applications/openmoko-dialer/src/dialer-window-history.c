@@ -288,7 +288,6 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
       gtk_tree_view_set_cursor (treeview, path, 0, 0);
     }
     //we deleted the last one.
-
   }
 
   gtk_tree_path_free (path);
@@ -721,7 +720,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
   GtkWidget *contactview = NULL;
-  int i = 0, j =0;
+  int i = 0, j =0, n_entries;
   MokoJournalEntry *j_entry;
   //DBG_ENTER();
 
@@ -788,7 +787,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
    */
   if (!p_dialer_data->journal)
   {
-    g_print ("there is no journal\n");
+    g_warning ("there is no journal\n");
     return 1;
   } 
     /* We register callbacks for when an entry is added, so we can keep the
@@ -797,12 +796,16 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
                         (MokoJournalEntryAddedFunc)on_entry_added_cb,
                         (gpointer)p_dialer_data);
                         
-  if (!moko_journal_get_nb_entries (p_dialer_data->journal))
+  
+  n_entries = moko_journal_get_nb_entries (p_dialer_data->journal);
+  g_print ("Journal entries = %d", n_entries);
+  if (n_entries < 1)
   {
     g_print ("there are no entries in the journal\n");
     return 1;
   }
-
+  
+  i = j = 0;
   while (moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry))
   {
     /* We're not interested in anything other than voice entrys */
