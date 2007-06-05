@@ -234,6 +234,9 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
   
   gtk_tree_model_get (model, &iter, HISTORY_ENTRY_POINTER, &entry, -1);
   
+  if (entry == NULL)
+        return;
+  
   if (!(uid = moko_journal_entry_get_uid (entry))) 
   {
     g_print ("Unable to get entry\n");
@@ -259,6 +262,7 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
       break;
     default:
       gtk_widget_destroy (dialog);
+      return;
       break;
   }
   
@@ -840,6 +844,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
       j++;
     i++;
   }
+  
   return 1;
 }
 
