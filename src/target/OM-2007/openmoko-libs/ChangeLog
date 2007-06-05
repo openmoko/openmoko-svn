@@ -1,3 +1,8 @@
+2007-06-05  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-finger-tool-box.c: (cb_configure): Use bg_pixmap as reference
+	for compositing pixmap
+
 2007-05-30  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-finger-tool-box.c: (cb_configure): Remove use of

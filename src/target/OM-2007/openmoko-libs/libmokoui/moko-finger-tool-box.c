@@ -64,6 +64,11 @@ typedef struct _MokoFingerToolBoxPrivate
 
 } MokoFingerToolBoxPrivate;
 
+static gchar* get_bg_pixmap_name (GtkWidget *widget)
+{
+   return widget->style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL];
+}
+
 static void
 moko_finger_tool_box_dispose (GObject *object)
 {
@@ -182,14 +187,10 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     if ( priv->rightArrowVisible ) maxButtonsPerPage--;
     moko_debug( "max buttons per page is %d", maxButtonsPerPage );
 
-    //gtk_widget_ensure_style( GTK_WIDGET(self) );
-    GtkStyle* style = gtk_rc_get_style( GTK_WIDGET(self) );
-    g_assert( style->rc_style );
-
     if ( !priv->background_pixbuf )
     {
         gchar *filename;
-        if (filename = style->rc_style->bg_pixmap_name[GTK_STATE_NORMAL])
+        if (filename = get_bg_pixmap_name (GTK_WIDGET (self)))
         {
           priv->background_pixbuf = gdk_pixbuf_new_from_file( filename, NULL);
           if (!priv->background_pixbuf)
@@ -203,7 +204,12 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
             g_warning ("moko_finger_tool_box: theme does not specify a background image for the finger tool box");
             return;
         }
-
+        /* TODO: ideally this should inspect bg_pixmap of the child items */
+        gchar *dirname = g_path_get_dirname (filename);
+        gchar *buttonfile = g_build_filename (dirname, "btn_type03.png", NULL);
+        priv->button_pixbuf = gdk_pixbuf_new_from_file( buttonfile, NULL);
+        g_free (dirname);
+        g_free (buttonfile);
     }
     GdkPixbuf* pixbuf = gdk_pixbuf_scale_simple( priv->background_pixbuf, a->width, a->height, GDK_INTERP_BILINEAR );
     guint w = gdk_pixbuf_get_width( priv->button_pixbuf );
@@ -233,7 +239,7 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
     {
       /* FIXME: this really should be retrieved from the style */
         if ( !priv->rightarrow_pixbuf )
-            priv->rightarrow_pixbuf = gdk_pixbuf_new_from_file( gtk_rc_find_pixmap_in_path (gtk_settings_get_default (), NULL, "btn_dialog_next.png"), NULL);
+            priv->rightarrow_pixbuf = gdk_pixbuf_new_from_file( get_bg_pixmap_name (priv->rightarrow) , NULL);
 
         guint rightarrow_w = gdk_pixbuf_get_width( priv->rightarrow_pixbuf );
         guint rightarrow_h = gdk_pixbuf_get_height( priv->rightarrow_pixbuf );
