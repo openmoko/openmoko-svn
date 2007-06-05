@@ -161,17 +161,26 @@ today_infoline_new (gchar * exec, gchar * message)
  */
 
 static void
+child_setup (gpointer user_data)
+{
+  if (user_data) {
+    sn_launcher_context_setup_child_process (user_data);
+  }
+}
+
+static void
 today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
 {
   /* The following code is a modified version of code from launcher-util.c in
    * matchbox-desktop-2 and is copyright (C) 2007 OpenedHand Ltd, made available
    * under the GNU General Public License.
    */
-  pid_t child_pid = 0;
   SnLauncherContext *context;
   SnDisplay *sn_dpy;
   Display *display;
   int screen;
+  GError *error = NULL;
+  gchar *argv[1];
 
   display = gdk_x11_display_get_xdisplay (gtk_widget_get_display (widget));
   sn_dpy = sn_display_new (display, NULL, NULL);
@@ -183,16 +192,15 @@ today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
   /* sn_launcher_context_set_name (context, data->name); */
   sn_launcher_context_set_binary_name (context, command);
   sn_launcher_context_initiate (context, "openmoko-today", command, CurrentTime);
-  switch ((child_pid = fork ())) {
-  case -1:
-    g_warning ("Fork failed");
-    break;
-  case 0:
-    sn_launcher_context_setup_child_process (context);
-    execlp (command, NULL);
-    g_warning ("Failed to execlp() %s", command);
-    _exit (1);
-    break;
+
+  argv[0] = command;
+  if (!g_spawn_async (NULL, argv, NULL,
+                            G_SPAWN_SEARCH_PATH, child_setup, context,
+                            NULL, &error))
+  {
+    g_warning ("Cannot launch %s: %s", command, error->message);
+    g_error_free (error);
+    sn_launcher_context_complete (context);
   }
   sn_launcher_context_unref (context);
 }
@@ -338,7 +346,7 @@ create_ui ()
 
   /* set up connection management */
   MokoGsmdConnection *connection = moko_gsmd_connection_new ();
-  g_signal_connect (G_OBJECT (connection), "network-registration", network_register_cb, message);
+  g_signal_connect (G_OBJECT (connection), "network-registration", (GCallback) network_register_cb, message);
 
 
   gtk_widget_show_all (window);

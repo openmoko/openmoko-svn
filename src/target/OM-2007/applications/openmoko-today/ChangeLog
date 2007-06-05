@@ -1,3 +1,8 @@
+2007-06-05  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (today_launcher_clicked_cb), (create_ui): Update launcher
+	code to use g_spawn_async ()
+
 2007-06-01  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-main.c: (network_register_cb), (create_ui), (main): Add MokoGsmdConnection object
