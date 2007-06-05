@@ -33,14 +33,6 @@
 #include "dialer-window-history.h"
 #include "dialer-window-outgoing.h"
 
-/* call types */
-typedef enum {
-  ALL =0,
-  MISSED,
-  OUTGOING,
-  INCOMING
-} CallFilter;
-
 #define HISTORY_MAX_ENTRIES 50
 
 #define HISTORY_CALL_INCOMING_ICON "moko-history-call-in"
@@ -74,7 +66,7 @@ static void on_entry_added_cb (MokoJournal *journal,
 
 static int
 history_view_change_filter (MokoDialerData * p_dialer_data,
-                            CallFilter type)
+                            CallHistoryFilter type)
 {
  p_dialer_data->g_history_filter_type = type;
  gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER
@@ -89,7 +81,7 @@ on_all_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "All");
-  history_view_change_filter (p_dialer_data, ALL);
+  history_view_change_filter (p_dialer_data, CALLS_ALL);
   history_update_counter (p_dialer_data);
 }
 
@@ -100,7 +92,7 @@ on_missed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "Missed");
-  history_view_change_filter (p_dialer_data, MISSED);
+  history_view_change_filter (p_dialer_data, CALLS_MISSED);
   history_update_counter (p_dialer_data);
 }
 
@@ -111,7 +103,7 @@ on_dialed_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "Dialed");
-  history_view_change_filter (p_dialer_data, OUTGOING);
+  history_view_change_filter (p_dialer_data, CALLS_OUTGOING);
   history_update_counter (p_dialer_data);
 }
 
@@ -122,8 +114,22 @@ on_received_calls_activate (GtkMenuItem * menuitem, gpointer user_data)
   MokoDialerData *p_dialer_data = (MokoDialerData *) user_data;
   GtkWidget *label = p_dialer_data->label_filter_history;
   gtk_label_set_text (GTK_LABEL (label), "Received");
-  history_view_change_filter (p_dialer_data, INCOMING);
+  history_view_change_filter (p_dialer_data, CALLS_INCOMING);
   history_update_counter (p_dialer_data);
+}
+
+void window_history_filter (MokoDialerData *data, CallHistoryFilter filter)
+{
+  /* FIXME: this is ugly */
+  switch (filter)
+  {
+    case CALLS_INCOMING: on_received_calls_activate (NULL, data); break;
+    case CALLS_OUTGOING: on_dialed_calls_activate (NULL, data); break;
+    case CALLS_MISSED: on_missed_calls_activate (NULL, data); break;
+    case CALLS_ALL:
+    default:
+         on_all_calls_activate (NULL, data);
+  }
 }
 
 static gboolean
@@ -638,8 +644,8 @@ history_view_filter_visible_function (GtkTreeModel * model,
                                       GtkTreeIter * iter, gpointer data)
 {
   MokoDialerData *p_dialer_data = (MokoDialerData *) data;
-  CallFilter type;
-  if (p_dialer_data->g_history_filter_type == ALL)
+  CallHistoryFilter type;
+  if (p_dialer_data->g_history_filter_type == CALLS_ALL)
     return TRUE;
   
   gtk_tree_model_get (model, iter, HISTORY_CALL_TYPE_COLUMN, &type, -1);
@@ -665,7 +671,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   gboolean was_missed;
   const MokoTime *time;
   MokoJournalVoiceInfo *info = NULL;
-  CallFilter type;
+  CallHistoryFilter type;
     
   /* We're not interested in anything other than voice entrys */
   if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
@@ -689,19 +695,19 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   if (direction == DIRECTION_OUT)
   {
     icon = history_out_icon;
-    type = OUTGOING;
+    type = CALLS_OUTGOING;
   }
   else
   {
     if (was_missed)
     {
       icon = history_missed_icon;
-      type = MISSED;
+      type = CALLS_MISSED;
     }
     else
     { 
       icon = history_in_icon;
-      type = INCOMING;      
+      type = CALLS_INCOMING;
     }
   }
   /* display text should be either the contact name, or the number if the
@@ -787,7 +793,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
                                         GTK_SORT_DESCENDING);
   
   /* We setup the default filter */
-  p_dialer_data->g_history_filter_type = ALL;
+  p_dialer_data->g_history_filter_type = CALLS_ALL;
   
   //we will use a filter to facilitate the filtering in treeview without rebuilding the database.  p_dialer_data->g_list_store_filter =
   p_dialer_data->g_list_store_filter = 

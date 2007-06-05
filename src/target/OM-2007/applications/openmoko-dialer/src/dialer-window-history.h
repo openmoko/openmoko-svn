@@ -29,9 +29,16 @@ enum history_columns {
   HISTORY_ENTRY_POINTER /*  needed for deletes */
 };
 
+typedef enum {
+  CALLS_ALL = 0,
+  CALLS_MISSED,
+  CALLS_OUTGOING,
+  CALLS_INCOMING
+} CallHistoryFilter;
+
 
 gint window_history_init (MokoDialerData * p_dialer_data);
-
+void window_history_filter (MokoDialerData *data, CallHistoryFilter filter);
 #define _OPENMOKO_DIALER_WINDOW_HISTORY_H
 
 #endif

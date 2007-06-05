@@ -48,7 +48,6 @@ moko_get_app_data ()
 static void
 handle_sigusr1 (int value)
 {
-  DBG_ENTER ();
   MokoDialerData *p_data = moko_get_app_data ();
   if (!p_data)
     return;
@@ -62,10 +61,32 @@ handle_sigusr1 (int value)
   }
   gtk_widget_show_all (mainwindow);
   gtk_window_present (GTK_WINDOW (mainwindow));
-  DBG_TRACE ();
   signal (SIGUSR1, handle_sigusr1);
-  DBG_LEAVE ();
 }
+
+static void
+handle_sigusr2 (int value)
+{
+  /* Show missed calls */
+  MokoDialerData *p_data = moko_get_app_data ();
+  if (!p_data)
+    return;
+  GtkWidget *window = p_data->window_history;
+
+  if (!window)
+    return;
+
+  /*
+   * Filter history on missed calls
+   */
+  window_history_filter (p_data, CALLS_MISSED);
+
+  gtk_widget_show_all (window);
+  gtk_window_present (GTK_WINDOW (window));
+  signal (SIGUSR2, handle_sigusr2);
+}
+
+
 
 static pid_t
 testlock (char *fname)
@@ -130,11 +151,14 @@ setlock (char *fname)
   }
 }
 
-static gboolean show_gui;
+static gboolean show_dialer;
+static gboolean show_missed;
 
 static GOptionEntry entries[] = {
-  {"show-gui", 's', 0, G_OPTION_ARG_NONE, &show_gui,
-   "Show the GUI at startup (default off)", "N"},
+  {"show-dialer", 's', 0, G_OPTION_ARG_NONE, &show_dialer,
+   "Show the dialer at startup", "N"},
+  {"show-missed", 'm', 0, G_OPTION_ARG_NONE, &show_missed,
+   "Show the history window filtered by the missed, none.", "N"},
   {NULL}
 };
 
@@ -160,9 +184,13 @@ main (int argc, char **argv)
 
   //FIXME: the following lines to enable unique instance will be changed.
   lockapp = testlock ("/tmp/dialer.lock");
+
   if (lockapp > 0)
   {
-    kill (lockapp, SIGUSR1);
+    if (show_missed)
+      kill (lockapp, SIGUSR2);
+    else
+      kill (lockapp, SIGUSR1);
 
     /* make sure startup notifaction is terminated */
     gdk_init(&argc, &argv);
@@ -200,7 +228,9 @@ main (int argc, char **argv)
   p_dialer_data->journal = moko_journal_open_default ();
   moko_journal_load_from_storage (p_dialer_data->journal);
 
+  /* set up signal handling */
   signal (SIGUSR1, handle_sigusr1);
+  signal (SIGUSR2, handle_sigusr2);
 
   //init the dialer windows
   window_dialer_init (p_dialer_data);
@@ -209,11 +239,16 @@ main (int argc, char **argv)
   window_outgoing_init (p_dialer_data);
   window_history_init (p_dialer_data);
 
-  if (show_gui)
+  if (show_dialer)
   {
     handle_sigusr1 (SIGUSR1);
   }
-  
+
+  if (show_missed)
+  {
+    handle_sigusr2 (SIGUSR2);
+  }
+ 
   gtk_main ();
   
   //release everything
