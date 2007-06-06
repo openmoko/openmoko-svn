@@ -36,3 +36,4 @@ hxd8-core.patch
 s3c2410_fb-truecolor.patch
 s3c2440-nand-disable-hwecc.patch
 hxd8-tsl256x.patch
+pcf50633.patch
