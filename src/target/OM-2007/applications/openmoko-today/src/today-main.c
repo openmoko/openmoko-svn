@@ -45,7 +45,7 @@ g_warning ("Got error '%s', code '%d'", \
 
 
 /*** functions ***/
-static void today_launcher_clicked_cb (GtkWidget *widget, gchar *command);
+static void today_launcher_clicked_cb (GtkWidget *widget, gchar **argv);
 
 
 /*** configuration options ***/
@@ -99,7 +99,9 @@ network_register_cb (MokoGsmdConnection* self, int type, int lac, int cell, GtkL
 static void
 today_infoline_clicked_cb (GtkWidget *widget, GdkEventButton *button, gchar *data)
 {
-  today_launcher_clicked_cb (widget, data);
+  gchar *argv[1];
+  argv[0] = data;
+  today_launcher_clicked_cb (widget, argv);
 }
 
 /**
@@ -113,7 +115,7 @@ today_infoline_clicked_cb (GtkWidget *widget, GdkEventButton *button, gchar *dat
  */
 
 static GtkWidget *
-today_infoline_new (gchar * exec, gchar * message)
+today_infoline_new (gchar **argv, gchar * message)
 {
   GtkWidget *eventbox, *hbox, *icon, *label;
   GtkIconTheme *icon_theme = gtk_icon_theme_get_default ();
@@ -125,14 +127,14 @@ today_infoline_new (gchar * exec, gchar * message)
 
   gtk_widget_add_events (eventbox, GDK_BUTTON_PRESS_MASK);
 
-  g_signal_connect (G_OBJECT (eventbox), "button-press-event", (GCallback) today_infoline_clicked_cb, exec);
+  g_signal_connect (G_OBJECT (eventbox), "button-press-event", (GCallback) today_infoline_clicked_cb, argv);
 
   hbox = gtk_hbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (eventbox), hbox);
 
-  if (gtk_icon_theme_has_icon (icon_theme, exec))
+  if (gtk_icon_theme_has_icon (icon_theme, argv[0]))
   {
-    pb = gtk_icon_theme_load_icon (icon_theme, exec, 32, GTK_ICON_LOOKUP_NO_SVG, NULL);
+    pb = gtk_icon_theme_load_icon (icon_theme, argv[0], 32, GTK_ICON_LOOKUP_NO_SVG, NULL);
   }
   else
   {
@@ -169,7 +171,7 @@ child_setup (gpointer user_data)
 }
 
 static void
-today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
+today_launcher_clicked_cb (GtkWidget *widget, gchar **argv)
 {
   /* The following code is a modified version of code from launcher-util.c in
    * matchbox-desktop-2 and is copyright (C) 2007 OpenedHand Ltd, made available
@@ -180,7 +182,6 @@ today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
   Display *display;
   int screen;
   GError *error = NULL;
-  gchar *argv[1];
 
   display = gdk_x11_display_get_xdisplay (gtk_widget_get_display (widget));
   sn_dpy = sn_display_new (display, NULL, NULL);
@@ -190,15 +191,14 @@ today_launcher_clicked_cb (GtkWidget *widget, gchar *command)
   sn_display_unref (sn_dpy);
 
   /* sn_launcher_context_set_name (context, data->name); */
-  sn_launcher_context_set_binary_name (context, command);
-  sn_launcher_context_initiate (context, "openmoko-today", command, CurrentTime);
+  sn_launcher_context_set_binary_name (context, argv[0]);
+  sn_launcher_context_initiate (context, "openmoko-today", argv[0], CurrentTime);
 
-  argv[0] = command;
   if (!g_spawn_async (NULL, argv, NULL,
                             G_SPAWN_SEARCH_PATH, child_setup, context,
                             NULL, &error))
   {
-    g_warning ("Cannot launch %s: %s", command, error->message);
+    g_warning ("Cannot launch %s: %s", argv[0], error->message);
     g_error_free (error);
     sn_launcher_context_complete (context);
   }
@@ -273,6 +273,9 @@ create_ui ()
   GtkWidget *infoline;
   GtkWidget *button_box;
 
+  gchar *missed_calls_cmd[] = { "openmoko-dialer", "--show-missed" };
+  gchar *messages_inbox_cmd[] = { "openmoko-messages" };
+
   /* main window */
   window = moko_window_new ();
   gtk_widget_set_name (window, "today-application-window");
@@ -312,11 +315,11 @@ create_ui ()
 
 
   /* unread messages */
-  infoline = today_infoline_new ("openmoko-messages", "Unread Messages");
+  infoline = today_infoline_new (messages_inbox_cmd, "Unread Messages");
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* missed calls */
-  infoline = today_infoline_new ("openmoko-dialer", "Missed Calls");
+  infoline = today_infoline_new (missed_calls_cmd, "Missed Calls");
   gtk_box_pack_start (GTK_BOX (vbox), infoline, FALSE, FALSE, 0);
 
   /* upcoming events */

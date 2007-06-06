@@ -1,3 +1,10 @@
+2007-06-06  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (today_infoline_new), (child_setup),
+	(today_launcher_clicked_cb), (create_ui):
+	Use argv array to start applications. Open the dialer with --show-missed when
+	missed call info is clicked
+
 2007-06-05  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-main.c: (today_launcher_clicked_cb), (create_ui): Update launcher
