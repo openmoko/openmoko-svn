@@ -194,6 +194,11 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		cmd = llist_entry(g->busy_atcmds.next,
 				  struct gsmd_atcmd, list);
 
+	if (cmd && !strcmp(buf, cmd->buf)) {
+		DEBUGP("ignoring echo\n");
+		return 0;
+	}
+
 	/* we have to differentiate between the following cases:
 	 *
 	 * A) an information response ("+whatever: ...")
