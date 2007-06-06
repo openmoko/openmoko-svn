@@ -175,7 +175,7 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   {
     g_print ("Outgoing: Preparing talking window\n");
     /* call has connected, so open the talking window */
-    /* window_talking_show (); */
+    gtk_widget_show (data->window_talking);
     window_talking_prepare (data);
      
     g_print ("Outgoing: Showing window\n");
