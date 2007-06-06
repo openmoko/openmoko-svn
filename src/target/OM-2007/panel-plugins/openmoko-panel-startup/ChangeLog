@@ -1,3 +1,8 @@
+2007-06-06  Stefan Schmidt <stefan@openmoko.org>
+
+        * configure.ac:
+        Fix typo
+
 2007-05-19  Stefan Schmidt <stefan@openmoko.org>
 
         * src/openmoko-panel-startup.c:
