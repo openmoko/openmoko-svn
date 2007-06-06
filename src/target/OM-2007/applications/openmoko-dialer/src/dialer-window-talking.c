@@ -239,7 +239,7 @@ on_window_talking_show (GtkWidget * widget, MokoDialerData * appdata)
 
   appdata->dtmf_in_talking_window = TRUE;
   //hide the talking button in talking mode.
-
+  g_print ("Talking: Show\n");
   time_t timep;
   struct tm *p;
   time (&timep);
@@ -259,9 +259,11 @@ on_window_talking_show (GtkWidget * widget, MokoDialerData * appdata)
 
   if (appdata->toolbox_talking)
   {
+    g_print ("Talking: Show toolbox\n");
     gtk_widget_show (appdata->toolbox_talking);
     moko_pixmap_button_set_finger_toolbox_btn_center_image
       (MOKO_PIXMAP_BUTTON (appdata->buttonTalk_DTMF), appdata->imageDTMF);
+    g_print ("Talking: Show content talk\n");
     gtk_widget_hide (appdata->content_dtmf);
     gtk_widget_show (appdata->content_talk);
   }
@@ -385,7 +387,6 @@ window_talking_init (MokoDialerData * p_dialer_data)
                       "press_right_down",
                       G_CALLBACK (openmoko_wheel_press_right_down_cb),
                       p_dialer_data);
-
 
 
 
