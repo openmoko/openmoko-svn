@@ -153,10 +153,10 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   moko_journal_entry_set_direction (entry, DIRECTION_OUT);
   moko_journal_entry_get_voice_info (entry, &info);
   moko_journal_entry_set_dtstart (entry, moko_time_new_today ());
-  moko_journal_add_entry (data->journal, entry);
   moko_journal_voice_info_set_distant_number (info, number);
-  /* FIXME: We should be able to associate a number with a number, and add that
-            info to the entry */
+  moko_journal_add_entry (data->journal, entry);
+  /* FIXME: We should be able to associate a number with a contact uid, and 
+            add that info to the entry */
 
   /* connect our handler to track call progress */
   progress_handler = g_signal_connect (data->connection, "call-progress", 

@@ -726,6 +726,22 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   return TRUE;
 }
 
+/* Sort two entries by date */
+static gint
+sort_by_date (MokoJournalEntry *a, MokoJournalEntry *b)
+{
+  const MokoTime *at, *bt;
+  time_t ta, tb;
+  
+  at = moko_journal_entry_get_dtstart (a);
+  bt = moko_journal_entry_get_dtstart (b);
+  
+  ta = moko_time_as_timet (at);
+  tb = moko_time_as_timet (bt);
+  
+  return (gint)difftime (ta, tb);
+}
+
 
 /**
  * @brief find the treeview in the window, fill-in the data and show it on the screen.
@@ -749,6 +765,7 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   GtkWidget *contactview = NULL;
   int i = 0, j =0, n_entries;
   MokoJournalEntry *j_entry;
+  GList *entries = NULL, *e;
   //DBG_ENTER();
 
   //DBG_TRACE();
@@ -833,15 +850,20 @@ history_build_history_list_view (MokoDialerData * p_dialer_data)
   }
   
   i = j = 0;
-  for (i = 0; i < n_entries && j < HISTORY_MAX_ENTRIES; i++)
+  for (i = 0; i < n_entries; i++)
   {
     moko_journal_get_entry_at (p_dialer_data->journal, i, &j_entry);
     
     /* We're not interested in anything other than voice entrys */
     if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
-    {
       continue;
-    }
+
+    entries = g_list_insert_sorted (entries, 
+                                    (gpointer)j_entry,
+                                    (GCompareFunc)sort_by_date);
+  }
+  for (e = entries; e != NULL && j < HISTORY_MAX_ENTRIES; e = e->next) 
+  {
     if (history_add_entry (list_store, j_entry))
       j++;
   }
