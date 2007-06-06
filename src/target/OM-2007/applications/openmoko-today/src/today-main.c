@@ -214,11 +214,12 @@ today_launcher_clicked_cb (GtkWidget *widget, gchar **argv)
  * Return value: The parent widget of the new widgets
  */
 static GtkWidget *
-today_launcher_button_new (gchar * exec)
+today_launcher_button_new (gchar *exec)
 {
   GtkWidget *button = moko_pixmap_button_new ();
   GdkPixbuf *pb;
   GtkIconTheme *icon_theme = gtk_icon_theme_get_default ();
+  gchar **argv;
 
   if (gtk_icon_theme_has_icon (icon_theme, exec))
   {
@@ -234,10 +235,13 @@ today_launcher_button_new (gchar * exec)
   g_object_unref (pb);
   gtk_widget_set_name (button, "mokofingertoolbox-toolbutton");
 
+  /* FIXME: this is less than ideal */
+  argv = g_malloc0 (2);
+  argv[0] = exec;
   g_signal_connect (G_OBJECT (button),
                     "clicked",
                     G_CALLBACK (today_launcher_clicked_cb),
-                    exec);
+                    argv);
   return button;
 }
 

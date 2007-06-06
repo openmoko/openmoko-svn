@@ -26,12 +26,7 @@
 /*#include <libecal/e-cal-time-util.h>*/
 #include <libecal/e-cal-view.h>
 #include <libical/icalcomponent.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtkhbox.h>
-#include <gtk/gtktable.h>
-#include <gtk/gtkimage.h>
-#include <gtk/gtkeventbox.h>
-#include <gtk/gtklabel.h>
+#include <gtk/gtk.h>
 #include "today-utils.h"
 #include "today-events-area.h"
 #include <math.h>
@@ -419,7 +414,7 @@ get_property (GObject *a_this, guint a_prop_id,
   g_return_if_fail (a_this && TODAY_IS_EVENTS_AREA (a_this)) ;
   g_return_if_fail (a_val && a_pspec) ;
 
-  area = TODAY_EVENTS_AREA (area) ;
+  area = TODAY_EVENTS_AREA (a_this) ;
 
   switch (a_prop_id)
   {
@@ -521,6 +516,9 @@ clear_left_hand_side (TodayEventsArea *a_this)
 static void
 init_left_hand_side (TodayEventsArea *a_this)
 {
+  GtkWidget *vbox, *image;
+  GdkPixbuf *icon;
+
   g_return_if_fail (a_this
                     && TODAY_IS_EVENTS_AREA (a_this)
                     && a_this->priv) ;
@@ -543,8 +541,17 @@ init_left_hand_side (TodayEventsArea *a_this)
                     G_CALLBACK (on_button_pressed_in_left_cb),
                     a_this) ;
   a_this->priv->paging_info = gtk_label_new ("0/0") ;
-  gtk_container_add (GTK_CONTAINER (a_this->priv->left_event_box),
-                     a_this->priv->paging_info) ;
+
+  icon = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (), "openmoko-sketchbook", 32, 0, NULL);
+  image = gtk_image_new_from_pixbuf (icon);
+  g_object_unref (icon);
+
+  vbox = gtk_vbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), image, FALSE, FALSE, 6);
+  gtk_box_pack_start (GTK_BOX (vbox), a_this->priv->paging_info, FALSE, FALSE, 6);
+
+
+  gtk_container_add (GTK_CONTAINER (a_this->priv->left_event_box), vbox);
 
   a_this->priv->left = gtk_vbox_new (TRUE, 0) ;
   gtk_box_pack_start (GTK_BOX (a_this->priv->left),
