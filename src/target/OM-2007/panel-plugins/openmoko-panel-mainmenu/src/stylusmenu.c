@@ -20,6 +20,10 @@
 #include "stylusmenu.h"
 //#include "callbacks.h"
 
+#define SN_API_NOT_YET_FROZEN 1
+#include <libsn/sn-launcher.h>
+#include <gdk/gdkx.h>
+
 static GtkImageMenuItem *moko_build_new_menu_item(const char *icon_name,
 						  const char *icon_path);
 static void moko_stylus_menu_activate_item(GtkWidget * widget, void *user_data);
@@ -150,16 +154,37 @@ static GtkImageMenuItem *moko_build_new_menu_item(const char *name,
 static void moko_stylus_menu_activate_item(GtkWidget * widget, void *user_data)
 {
 	MokoDesktopItem *ditem = user_data;
+	char* child = (char *)ditem->data;
+	SnLauncherContext* sn_context;
+	SnDisplay* sn_dpy;
+	Display* display;
+	int screen;
+	pid_t pid = 0;
+
 	g_debug("item activated: %s", ditem->data);
-	switch (fork()) {
+    
+	display = gdk_x11_display_get_xdisplay(gtk_widget_get_display (widget));
+	sn_dpy = sn_display_new(display, NULL, NULL);
+
+	screen = gdk_screen_get_number(gtk_widget_get_screen (widget));
+	sn_context = sn_launcher_context_new(sn_dpy, screen);
+	sn_display_unref(sn_dpy);
+
+    sn_launcher_context_set_binary_name(sn_context, child);
+	sn_launcher_context_initiate(sn_context, "openmoko-panel-mainmenu", child, CurrentTime);
+	
+	switch ((pid =fork())) {
 	case 0:
-		mb_exec((char *)ditem->data);
-		fprintf(stderr, "exec failed, cleaning up child\n");
+	    sn_launcher_context_setup_child_process(sn_context);
+		mb_exec(child);
+	    g_warning("Failed to exec %s", child);
 		exit(1);
 	case -1:
-		fprintf(stderr, "can't fork\n");
+	    g_warning("Failed to fork %s", child);
 		break;
 	}
+
+	sn_launcher_context_unref(sn_context);
 }
 
 void
