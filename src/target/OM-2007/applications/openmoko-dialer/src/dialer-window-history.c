@@ -236,13 +236,17 @@ cb_tool_button_history_delete_clicked (GtkButton * button,
 
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
   {
+    g_print ("History: No selection to delete\n");
     return;
   }
   
   gtk_tree_model_get (model, &iter, HISTORY_ENTRY_POINTER, &uid, -1);
   
   if (uid == NULL)
-        return;
+  {
+    g_print ("History: Unable to obtain the UID of the entry\n");
+    return;
+  }
   /* We need to show a dialog to make sure this is what the user wants */
   dialog = moko_message_dialog_new ();
   

@@ -84,6 +84,9 @@ window_outgoing_init (MokoDialerData * p_dialer_data)
 
   /* Set up window */
   window = moko_message_dialog_new ();
+
+  gtk_widget_realize (GTK_WIDGET (window));
+  
   moko_message_dialog_set_image (MOKO_MESSAGE_DIALOG (window), 
        gtk_image_new_from_file (PKGDATADIR G_DIR_SEPARATOR_S "outgoing_1.png"));
   gtk_window_set_title (GTK_WINDOW (window), "Outgoing Call");
@@ -148,6 +151,7 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   
   gulong progress_handler;
   
+  g_print ("Outgoing: creating new entry\n");
   /* create the journal entry for this call and add it to the journal */
   entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
   moko_journal_entry_set_direction (entry, DIRECTION_OUT);
@@ -157,15 +161,20 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   moko_journal_add_entry (data->journal, entry);
   /* FIXME: We should be able to associate a number with a contact uid, and 
             add that info to the entry */
-
+  
+  g_print ("Outgoing: Adding handler\n");
   /* connect our handler to track call progress */
   progress_handler = g_signal_connect (data->connection, "call-progress", 
                                        G_CALLBACK (call_progress_cb), data);
   g_object_set_data (G_OBJECT (data->window_outgoing), "current-number", number);
   moko_gsmd_connection_voice_dial (data->connection, number);
+
+  g_print ("Outgoing: Setting message\n");
   moko_message_dialog_set_message (MOKO_MESSAGE_DIALOG (data->window_outgoing),
                                    "Calling %s", number);               
-  
+
+  g_print ("Outgoing: Running dialog\n");
+
   if (gtk_dialog_run (GTK_DIALOG (data->window_outgoing)) == GTK_RESPONSE_OK)
   {
     /* call has connected, so open the talking window */
