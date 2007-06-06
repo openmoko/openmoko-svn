@@ -189,8 +189,8 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
 
     if ( !priv->background_pixbuf )
     {
-        gchar *filename;
-        if (filename = get_bg_pixmap_name (GTK_WIDGET (self)))
+        gchar *filename = NULL;
+        if ((filename = get_bg_pixmap_name (GTK_WIDGET (self))))
         {
           priv->background_pixbuf = gdk_pixbuf_new_from_file( filename, NULL);
           if (!priv->background_pixbuf)
@@ -211,14 +211,22 @@ cb_configure(GtkWidget* widget, GtkAllocation* a, MokoFingerToolBox* self)
         g_free (dirname);
         g_free (buttonfile);
     }
-    GdkPixbuf* pixbuf = gdk_pixbuf_scale_simple( priv->background_pixbuf, a->width, a->height, GDK_INTERP_BILINEAR );
+    GdkPixbuf* pixbuf = NULL;
     guint w = gdk_pixbuf_get_width( priv->button_pixbuf );
     guint h = gdk_pixbuf_get_height( priv->button_pixbuf );
     guint x = padding_left - 1;
     guint y = 0;
 
-    gdk_pixbuf_copy_area( priv->background_pixbuf, 0, 0, gdk_pixbuf_get_width( priv->background_pixbuf ), gdk_pixbuf_get_height( priv->background_pixbuf ), pixbuf, 0, 0 );
-
+    if (GDK_IS_PIXBUF (priv->background_pixbuf))
+    {
+        pixbuf = gdk_pixbuf_scale_simple( priv->background_pixbuf, 
+                                                     a->width, a->height,
+                                                     GDK_INTERP_BILINEAR );
+        gdk_pixbuf_copy_area( priv->background_pixbuf, 0, 0, 
+                              gdk_pixbuf_get_width( priv->background_pixbuf ),
+                              gdk_pixbuf_get_height( priv->background_pixbuf ),
+                              pixbuf, 0, 0 );
+    }
     guint composite_num;
     if ( maxButtonsPerPage == 0 )
         composite_num = priv->numberOfButtons - priv->leftButton;
