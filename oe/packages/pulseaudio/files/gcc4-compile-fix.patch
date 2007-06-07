@@ -1,0 +1,13 @@
+Index: pulseaudio-0.9.6/src/pulsecore/core-util.c
+===================================================================
+--- pulseaudio-0.9.6.orig/src/pulsecore/core-util.c
++++ pulseaudio-0.9.6/src/pulsecore/core-util.c
+@@ -535,7 +535,7 @@ void pa_raise_priority(void) {
+         pa_log_info("Successfully gained high priority class.");
+ #endif
+ 
+-fail:
++fail:;
+ 
+ #if defined(HAVE_SYS_CAPABILITY_H)
+     if (caps) {
