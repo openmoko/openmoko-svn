@@ -18,7 +18,7 @@ kernel_addr=0x32000000
 splash_addr=0x36000000
 splash_size=0x5000
 
-kernel_wildcard="uImage-2.6-*-fic-gta01.bin"
+kernel_wildcard="uImage-2.6.*-fic-gta01.bin"
 rootfs_wildcard="openmoko-*.rootfs.jffs2"
 uboot_wildcard="u-boot-gta01b*.bin"
 
