@@ -85,7 +85,7 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50633.c
 +#include <linux/apm-emulation.h>
 +
 +#include <asm/mach-types.h>
-+#include <asm/arch/gta01.h>
++#include <asm/arch/gta02.h>
 +
 +#include "pcf50633.h"
 +
@@ -857,7 +857,7 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50633.c
 + * Charger Control
 + ***********************************************************************/
 +
-+/* Enable/disable fast charging (500mA in the GTA01) */
++/* Enable/disable fast charging (500mA in the GTA02) */
 +void pcf50633_charge_fast(struct pcf50633_data *pcf, int on)
 +{
 +#if 0
