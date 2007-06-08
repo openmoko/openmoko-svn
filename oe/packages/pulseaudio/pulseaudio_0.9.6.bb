@@ -51,7 +51,7 @@ do_install_append() {
 LEAD_SONAME = "libpulse.so"
 
 PACKAGES =+ "${PN}-bin ${PN}-conf"
-PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-* libpulse-module-* libpulse-lib*"
+PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-* libpulse-bin libpulse-module-* libpulse-lib*"
 
 FILES_${PN}-dbg += "${libexecdir}/pulse/.debug \
                     ${libdir}/pulse-0.9/modules/.debug"

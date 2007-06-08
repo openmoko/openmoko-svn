@@ -14,7 +14,7 @@ do_install() {
         for i in *.mp3; do
                 cp -fpPR ${S}/$i ${D}${datadir}/openmoko/sounds/
         done
-        for i in touchscreen_click.wav notify_doorbell.wav openmoko_startup.wav; do
+        for i in touchscreen_click.wav notify_doorbell.wav startup_openmoko.wav; do
                 cp -f ${S}/$i ${D}${datadir}/openmoko/sounds/
         done
 }
