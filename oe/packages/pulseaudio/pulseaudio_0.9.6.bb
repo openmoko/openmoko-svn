@@ -6,7 +6,7 @@ LICENSE = "LGPL"
 DEPENDS = "libatomic-ops liboil avahi libsamplerate0 libsndfile1 libtool"
 # optional
 DEPENDS += "alsa-lib"
-PR = "r0"
+PR = "r1"
 
 SRC_URI = "http://0pointer.de/lennart/projects/pulseaudio/pulseaudio-${PV}.tar.gz \
            file://gcc4-compile-fix.patch;patch=1 \
@@ -27,6 +27,18 @@ PARALLEL_MAKE = ""
 
 export TARGET_FPU="${TARGET_FPU}"
 
+do_stage() {
+    autotools_stage_all
+}
+
+python populate_packages_prepend() {
+        #bb.data.setVar('PKG_pulseaudio', 'pulseaudio', d)
+
+        plugindir = bb.data.expand('${libdir}/pulse-0.9/modules/', d)
+        do_split_packages(d, plugindir, '^module-(.*)\.so$', 'pulseaudio-module-%s', 'PulseAudio module for %s', extra_depends='')
+        do_split_packages(d, plugindir, '^lib(.*)\.so$', 'pulseaudio-lib-%s', 'PulseAudio library for %s', extra_depends='')
+}
+
 do_install_append() {
 	install -d ${D}${sysconfdir}/default/volatiles
 	install -m 0644 ${WORKDIR}/volatiles.04_pulse  ${D}${sysconfdir}/default/volatiles/volatiles.04_pulse
@@ -39,7 +51,7 @@ do_install_append() {
 LEAD_SONAME = "libpulse.so"
 
 PACKAGES =+ "${PN}-bin ${PN}-conf"
-PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-*"
+PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-* libpulse-module-* libpulse-lib*"
 
 FILES_${PN}-dbg += "${libexecdir}/pulse/.debug \
                     ${libdir}/pulse-0.9/modules/.debug"
@@ -72,20 +84,3 @@ else
         deluser pulse
 fi
 }
-
-
-
-
-do_stage() {
-	autotools_stage_all
-}
-
-
-python populate_packages_prepend() {
-        #bb.data.setVar('PKG_pulseaudio', 'pulseaudio', d)
-
-        plugindir = bb.data.expand('${libdir}/pulse-0.9/modules/', d)
-        do_split_packages(d, plugindir, '^module-(.*)\.so$', 'pulseaudio-module-%s', 'PulseAudio module for %s', extra_depends='' )
-        do_split_packages(d, plugindir, '^lib(.*)\.so$', 'pulseaudio-lib-%s', 'PulseAudio library for %s', extra_depends='' )
-}
-
