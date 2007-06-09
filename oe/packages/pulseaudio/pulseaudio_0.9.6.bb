@@ -50,7 +50,7 @@ do_install_append() {
 
 PACKAGES =+ "libpulsecore libpulse libpulse-simple libpulse-browse libpulse-mainloop-glib pulseaudio-server \
   pulseaudio-misc pulseaudio-gconf-helper"
-PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-* libpulse-bin libpulse-module-* libpulse-lib*"
+PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-*"
 
 FILES_libpulsecore = "${libdir}/libpulsecore.so.*"
 FILES_libpulse = "${libdir}/libpulse.so.*"

@@ -1,16 +1,16 @@
 DESCRIPTION = "OpenMoko Sound System"
 SECTION = "openmoko/base"
 RDEPENDS = "\
-  libpulse-bin \
-  libpulse-module-alsa-sink \
-  libpulse-module-alsa-source \
-  libpulse-module-cli \
-  libpulse-module-esound-protocol-unix \
-  libpulse-module-simple-protocol-tcp \
-  libpulse-module-native-protocol-unix \
-  libpulse-module-cli-protocol-unix \
+  pulseaudio-server \
+  pulseaudio-module-alsa-sink \
+  pulseaudio-module-alsa-source \
+  pulseaudio-module-cli \
+  pulseaudio-module-esound-protocol-unix \
+  pulseaudio-module-simple-protocol-tcp \
+  pulseaudio-module-native-protocol-unix \
+  pulseaudio-module-cli-protocol-unix \
 "
-PR = "r0"
+PR = "r1"
 
 inherit openmoko-base
 
