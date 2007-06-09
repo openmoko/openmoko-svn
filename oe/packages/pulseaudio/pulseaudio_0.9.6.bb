@@ -48,17 +48,22 @@ do_install_append() {
 	fi
 }
 
-LEAD_SONAME = "libpulse.so"
-
-PACKAGES =+ "${PN}-bin ${PN}-conf"
+PACKAGES =+ "libpulsecore libpulse libpulse-simple libpulse-browse libpulse-mainloop-glib pulseaudio-server \
+  pulseaudio-misc pulseaudio-gconf-helper"
 PACKAGES_DYNAMIC = "pulseaudio-module-* pulseaudio-lib-* libpulse-bin libpulse-module-* libpulse-lib*"
+
+FILES_libpulsecore = "${libdir}/libpulsecore.so.*"
+FILES_libpulse = "${libdir}/libpulse.so.*"
+FILES_libpulse-simple = "${libdir}/libpulse-simple.so.*"
+FILES_libpulse-browse = "${libdir}/libpulse-browse.so.*"
+FILES_libpulse-mainloop-glib = "${libdir}/libpulse-mainloop-glib.so.*"
 
 FILES_${PN}-dbg += "${libexecdir}/pulse/.debug \
                     ${libdir}/pulse-0.9/modules/.debug"
 FILES_${PN}-dev += "${libdir}/pulse-0.9/modules/*.la"		    
-FILES_${PN}-conf = "${sysconfdir}"
-FILES_${PN}-bin = "${bindir}/* \
-                   ${sysconfdir}/default/volatiles/volatiles.04_pulse"
+FILES_${PN}-server = "${bindir}/pulseaudio ${sysconfdir}"
+FILES_${PN}-gconf-helper = "${libexecdir}/pulse/gconf-helper"
+FILES_${PN}-misc = "${bindir}"
 
 CONFFILES_${PN}-conf = "\ 
                        ${sysconfdir}/pulse/default.pa \
