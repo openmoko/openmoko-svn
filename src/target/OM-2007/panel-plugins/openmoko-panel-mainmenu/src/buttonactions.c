@@ -29,6 +29,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#include <pulse/pulseaudio.h>
+
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -38,8 +40,8 @@
 #include <sys/stat.h>
 #include <linux/input.h>
 
-#undef DEBUG_THIS_FILE
-//#define DEBUG_THIS_FILE
+//#undef DEBUG_THIS_FILE
+#define DEBUG_THIS_FILE
 
 //FIXME find out through sysfs
 #ifndef DEBUG_THIS_FILE
@@ -79,6 +81,8 @@ typedef enum _PowerState
     SUSPEND,
 } PowerState;
 PowerState power_state = NORMAL;
+
+static pa_context* pac;
 
 /* Borrowed from libwnck */
 static Window get_window_property( Window xwindow, Atom atom )
@@ -149,7 +153,7 @@ gboolean panel_mainmenu_install_watcher()
     g_source_add_poll( button_watcher, &power_fd );
     g_source_attach( button_watcher, NULL );
 
-    if ( getenv( "MOKO_POWERSAVE" ) )
+    if ( getenv( "MOKO_POWERSAVE" ) == NULL )
     {
 
         int tsfd = open( TOUCHSCREEN_EVENT_PATH, O_RDONLY );
@@ -163,6 +167,7 @@ gboolean panel_mainmenu_install_watcher()
 
         panel_mainmenu_powersave_reset();
         panel_mainmenu_set_display( 100 );
+        panel_mainmenu_sound_init();
     }
     else
         g_debug( "MOKO_POWERSAVE set. Not enabling power management." );
@@ -369,7 +374,7 @@ gboolean panel_mainmenu_touchscreen_cb( GIOChannel *source, GIOCondition conditi
         if ( event.value == 1 ) /* pressed */
         {
             g_debug( "stylus pressed" );
-            panel_mainmenu_play_stylus_click();
+            panel_mainmenu_sound_play( "touchscreen" );
         }
         else if ( event.value == 0 ) /* released */
         {
@@ -439,10 +444,46 @@ gboolean panel_mainmenu_powersave_timeout3( guint timeout )
     return FALSE;
 }
 
-void panel_mainmenu_play_stylus_click()
+void panel_mainmenu_sound_state_cb( pa_context* pac, void* userdata )
 {
-    g_debug( "mainmenu play stylus click" );
-    //TODO add function to libmokoui that talks alsa
-    //yes, this is hardcoded... it's just a proof of concept
-    system( "/usr/bin/aplay /usr/share/openmoko/touchscreen_click.wav &" );
+    if ( pa_context_get_state( pac ) == PA_CONTEXT_READY )
+    {
+        panel_mainmenu_sound_play( "startup" );
+    }
+}
+
+void panel_mainmenu_sound_init()
+{
+    pa_threaded_mainloop* mainloop = pa_threaded_mainloop_new();
+
+    if ( !mainloop )
+    {
+        printf( "couldn't create mainloop: %s", strerror( errno ) );
+        return;
+    }
+
+    pa_mainloop_api* mapi = pa_threaded_mainloop_get_api( mainloop );
+
+    pac = pa_context_new( mapi, "test client" );
+    if ( !pac )
+    {
+        printf( "couldn't create pa_context: %s", strerror( errno ) );
+        return;
+    }
+
+    pa_context_set_state_callback( pac, panel_mainmenu_sound_state_cb, NULL );
+    pa_context_connect( pac, NULL, 0, NULL );
+    pa_threaded_mainloop_start( mainloop );
+}
+
+void panel_mainmenu_sound_play( const gchar* samplename )
+{
+    pa_context_play_sample( pac,
+                            "startup",       // Name of my sample
+                            NULL,            // Use default sink
+                            PA_VOLUME_NORM,  // Full volume
+                            NULL,            // Don't need a callback
+                            NULL
+                           );
+
 }

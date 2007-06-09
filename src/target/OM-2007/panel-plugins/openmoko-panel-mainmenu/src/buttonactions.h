@@ -37,7 +37,8 @@ gboolean panel_mainmenu_powersave_timeout1( guint timeout );
 gboolean panel_mainmenu_powersave_timeout2( guint timeout );
 gboolean panel_mainmenu_powersave_timeout3( guint timeout );
 
+void panel_mainmenu_sound_init();
 void panel_mainmenu_set_display( int brightness );
-void panel_mainmenu_play_stylus_click();
+void panel_mainmenu_sound_play( const gchar* samplename );
 
 #endif

@@ -17,12 +17,12 @@ PKG_CHECK_MODULES(LIBMB, libmb,,
                  AC_MSG_ERROR([matchbox-lib required]))
 PKG_CHECK_MODULES(LIBSN, libstartup-notification-1.0, ,
                  AC_MSG_ERROR([*** Required Startup Notification library not installed ***]))
+PKG_CHECK_MODULES(LIBPULSE, libpulse,,
+                 AC_MSG_ERROR([*** Required pulseaudio client library not installed ***]))
 
-#AC_SUBST(SN_LIBS)
-#AC_SUBST(SN_CFLAGS)
 
-LIBS="$LIBS $OPENMOKO_LIBS $LIBMB_LIBS $LIBSN_LIBS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBMB_CFLAGS $LIBSN_CFLAGS"
+LIBS="$LIBS $OPENMOKO_LIBS $LIBMB_LIBS $LIBSN_LIBS $LIBPULSE_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBMB_CFLAGS $LIBSN_CFLAGS $LIBPULSE_CFLAGS"
 
 # output stuff
 AC_OUTPUT([
