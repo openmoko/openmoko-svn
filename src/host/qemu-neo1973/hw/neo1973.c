@@ -360,7 +360,9 @@ static void neo_gsm_setup(struct neo_board_s *s)
 {
     s->modem = modem_init();
 
+#if 0
     s3c_uart_attach(s->cpu->uart[0], s->modem);
+#endif
 }
 
 static void neo_reset(void *opaque)
@@ -370,7 +372,7 @@ static void neo_reset(void *opaque)
     s->cpu->env->regs[15] = S3C_SRAM_BASE;
 #else
     load_image("u-boot.bin", phys_ram_base + 0x03f80000);
-    load_image(s->kernel, phys_ram_base + 0x02000000);
+    load_image(s->kernel, phys_ram_base + 0x01000000);
     s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
 #endif
 
