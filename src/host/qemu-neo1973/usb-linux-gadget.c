@@ -21,15 +21,22 @@
  */
 #include "config-host.h"
 #if defined(CONFIG_GADGETFS)
-#include <linux/usb_ch9.h>
-#include <linux/usb_gadgetfs.h>
-#include <poll.h>
-#include <signal.h>
+# include <stdlib.h>
+# include <linux/version.h>
+# if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 21)
+#  include <linux/usb_ch9.h>
+#  include <linux/usb_gadgetfs.h>
+# else
+#  include <linux/usb/ch9.h>
+#  include <linux/usb_gadgetfs.h>
+# endif
+# include <poll.h>
+# include <signal.h>
 
 /* Must be after usb_ch9.h */
-#include "vl.h"
+# include "vl.h"
 
-#define USBGADGETFS_PATH "/dev/gadget"
+# define USBGADGETFS_PATH "/dev/gadget"
 
 struct gadget_state_s {
     USBPort port;
@@ -804,7 +811,7 @@ void usb_gadget_config_set(USBPort *port, int config)
 }
 
 #else
-#include "vl.h"
+# include "vl.h"
 
 int usb_gadget_init(void)
 {

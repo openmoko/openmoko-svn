@@ -632,8 +632,36 @@ fi
 # usb_gadgetfs headers
 
 cat > $TMPC << EOF
-#include <linux/usb_ch9.h>
-#include <linux/usb_gadgetfs.h>
+/* usb-linux-gadget.c */
+#include <stdlib.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 21)
+# include <linux/usb_ch9.h>
+# include <linux/usb_gadgetfs.h>
+#else
+# include <linux/usb/ch9.h>
+# include <linux/usb_gadgetfs.h>
+#endif
+#include <poll.h>
+#include <signal.h>
+
+/* vl.h */
+# include <stdlib.h>
+# include <stdio.h>
+# include <stdarg.h>
+# include <string.h>
+# include <inttypes.h>
+# include <limits.h>
+# include <time.h>
+# include <ctype.h>
+# include <errno.h>
+# include <unistd.h>
+# include <fcntl.h>
+# include <sys/stat.h>
+
+/* hw/usb.h */
+# define USB_SPEED_LOW			0
+
 int main(void) { return 0; }
 EOF
 if $cc -o $TMPE $TMPC 2> /dev/null ; then
