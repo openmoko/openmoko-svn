@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# pulseaudio	This shell script starts and stops pulseaudio.
+#
+# chkconfig: 345 90 40
+# description: Pulseaudio manages the sound input/output
+# processname: pulseaudio
+
+# If you must specify special options, uncomment and modify the next line
+OPTS="-s 115200 -F"
+
+# Source function library.
+#. /etc/rc.d/init.d/functions
+
+RETVAL=0
+prog="pulseaudio"
+
+start() {
+    echo -n "Starting the audio server..."
+	pulseaudio --system -nDF /etc/share/pulseaudio/session
+	echo "success"
+}
+
+stop() {
+	# Stop daemons.
+	echo -n "Shutting down $prog: "
+	killall pulseaudio
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	stop
+	start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $RETVAL

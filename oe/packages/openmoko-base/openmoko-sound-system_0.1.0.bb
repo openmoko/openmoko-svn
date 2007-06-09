@@ -10,16 +10,22 @@ RDEPENDS = "\
   pulseaudio-module-native-protocol-unix \
   pulseaudio-module-cli-protocol-unix \
 "
-PR = "r1"
+PR = "r3"
 
-inherit openmoko-base
+inherit openmoko-base update-rc.d
 
-SRC_URI = "file://session"
+INITSCRIPT_NAME = "pulseaudio"
+INITSCRIPT_PARAMS = "defaults 35"
+
+SRC_URI = "file://pulseaudio \
+           file://session"
 S = "${WORKDIR}"
 
 do_install() {
-    install -d ${D}/${sysconfdir}/pulseaudio
-	install -m 0755 ${WORKDIR}/session ${D}/${sysconfdir}/pulseaudio/session
+    install -d ${D}/${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/pulseaudio ${D}/${sysconfdir}/init.d/
+    install -d ${D}/${sysconfdir}/pulse
+	install -m 0755 ${WORKDIR}/session ${D}/${sysconfdir}/pulse/session
 }
 
 PACKAGE_ARCH = "all"

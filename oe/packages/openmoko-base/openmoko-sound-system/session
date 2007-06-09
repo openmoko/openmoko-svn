@@ -21,9 +21,6 @@ set-default-source input
 load-sample-lazy  /usr/share/openmoko/sounds/notify_doorbell.wav x11-bell
 load-module module-x11-bell sample=x11-bell
 
-# Load key click sample
-load-sample /usr/share/openmoko/sounds/touchscreen_click.wav
-
-# Play a welcome sound
-play-file /usr/share/openmoko/sounds/openmoko_startup.wav output
-
+# Load samples
+load-sample startup /usr/share/openmoko/sounds/openmoko_startup.wav
+load-sample touchscreen /usr/share/openmoko/sounds/touchscreen_click.wav
