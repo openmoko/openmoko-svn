@@ -40,7 +40,7 @@
 #include <sys/stat.h>
 #include <linux/input.h>
 
-//#undef DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
 #define DEBUG_THIS_FILE
 
 //FIXME find out through sysfs
@@ -153,7 +153,7 @@ gboolean panel_mainmenu_install_watcher()
     g_source_add_poll( button_watcher, &power_fd );
     g_source_attach( button_watcher, NULL );
 
-    if ( getenv( "MOKO_POWERSAVE" ) == NULL )
+    if ( getenv( "MOKO_POWERSAVE" ) != NULL )
     {
 
         int tsfd = open( TOUCHSCREEN_EVENT_PATH, O_RDONLY );
@@ -170,7 +170,7 @@ gboolean panel_mainmenu_install_watcher()
         panel_mainmenu_sound_init();
     }
     else
-        g_debug( "MOKO_POWERSAVE set. Not enabling power management." );
+        g_debug( "MOKO_POWERSAVE=yes not set. Not enabling power management." );
 
     return TRUE;
 }
