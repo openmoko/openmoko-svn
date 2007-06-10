@@ -414,7 +414,7 @@ void panel_mainmenu_set_display( int brightness )
 {
     g_debug( "mainmenu set display %d", brightness );
     int fd = g_open( "/sys/class/backlight/gta01-bl/brightness" );
-    if ( fd != -1 )
+    if ( fd == -1 )
         g_debug( "can't open backlight device: %s", strerror( errno ) );
     else
     {
@@ -459,6 +459,7 @@ gboolean panel_mainmenu_powersave_timeout3( guint timeout )
 
 void panel_mainmenu_sound_state_cb( pa_context* pac, void* userdata )
 {
+    g_debug( "mainmenu sound state callback. state = %d", pa_context_get_state( pac ) );
     if ( pa_context_get_state( pac ) == PA_CONTEXT_READY )
     {
         panel_mainmenu_sound_play( "startup" );
@@ -467,6 +468,7 @@ void panel_mainmenu_sound_state_cb( pa_context* pac, void* userdata )
 
 void panel_mainmenu_sound_init()
 {
+    g_debug( "panel mainmenu sound init" );
     pa_threaded_mainloop* mainloop = pa_threaded_mainloop_new();
 
     if ( !mainloop )
@@ -487,6 +489,8 @@ void panel_mainmenu_sound_init()
     pa_context_set_state_callback( pac, panel_mainmenu_sound_state_cb, NULL );
     pa_context_connect( pac, NULL, 0, NULL );
     pa_threaded_mainloop_start( mainloop );
+
+    g_debug( "sound init ok. threaded mainloop started" );
 }
 
 void panel_mainmenu_sound_play( const gchar* samplename )
