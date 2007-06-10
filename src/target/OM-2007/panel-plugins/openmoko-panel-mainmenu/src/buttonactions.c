@@ -41,7 +41,10 @@
 #include <linux/input.h>
 
 #undef DEBUG_THIS_FILE
-#define DEBUG_THIS_FILE
+//#define DEBUG_THIS_FILE
+
+//FIXME load this from sysfs
+static const int MAX_BRIGHTNESS = 5000;
 
 //FIXME find out through sysfs
 #ifndef DEBUG_THIS_FILE
@@ -410,6 +413,16 @@ void panel_mainmenu_powersave_reset()
 void panel_mainmenu_set_display( int brightness )
 {
     g_debug( "mainmenu set display %d", brightness );
+    int fd = g_open( "/sys/class/backlight/gta01-bl/brightness" );
+    if ( fd != -1 )
+        g_debug( "can't open backlight device: %s", strerror( errno ) );
+    else
+    {
+        char buf[10];
+        int numbytes = g_sprintf( buf, "%d\0", MAX_BRIGHTNESS * 100 / brightness );
+        write( fd, buf, numbytes );
+        close( fd );
+    }
 }
 
 gboolean panel_mainmenu_powersave_timeout1( guint timeout )
