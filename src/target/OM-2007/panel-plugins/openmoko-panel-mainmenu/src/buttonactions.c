@@ -407,7 +407,7 @@ void panel_mainmenu_powersave_reset()
     //TODO load this from preferences
     powersave_timer1 = g_timeout_add( 10 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout1, (gpointer)1 );
     powersave_timer2 = g_timeout_add( 20 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout2, (gpointer)1 );
-    powersave_timer3 = g_timeout_add( 40 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout3, (gpointer)1 );
+    powersave_timer3 = g_timeout_add( 60 * 5 * 1000, (GSourceFunc) panel_mainmenu_powersave_timeout3, (gpointer)1 );
 }
 
 void panel_mainmenu_set_display( int brightness )
@@ -419,7 +419,7 @@ void panel_mainmenu_set_display( int brightness )
     else
     {
         char buf[10];
-        int numbytes = g_sprintf( buf, "%d\0", MAX_BRIGHTNESS * 100 / brightness );
+        int numbytes = g_sprintf( buf, "%d\0", MAX_BRIGHTNESS / 100 * (brightness+1 ) );
         write( fd, buf, numbytes );
         close( fd );
     }
