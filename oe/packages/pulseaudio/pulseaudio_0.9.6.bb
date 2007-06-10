@@ -6,7 +6,7 @@ LICENSE = "LGPL"
 DEPENDS = "libatomic-ops liboil avahi libsamplerate0 libsndfile1 libtool"
 # optional
 DEPENDS += "alsa-lib"
-PR = "r1"
+PR = "r2"
 
 SRC_URI = "http://0pointer.de/lennart/projects/pulseaudio/pulseaudio-${PV}.tar.gz \
            file://gcc4-compile-fix.patch;patch=1 \
@@ -25,7 +25,7 @@ EXTRA_OECONF = "\
 
 PARALLEL_MAKE = ""
 
-export TARGET_FPU="${TARGET_FPU}"
+export TARGET_FPU := "${TARGET_FPU}"
 
 do_stage() {
     autotools_stage_all
@@ -70,7 +70,9 @@ CONFFILES_${PN}-conf = "\
 		       ${sysconfdir}/pulse/daemon.conf \
 		       ${sysconfdir}/pulse/client.conf \
 		       "
-pkg_postinst_${PN}-bin() {
+# libpulse is correct, rather than pulseaudio-server, because
+# libpulse can spawn a server as well
+pkg_postinst_libpulse() {
 if test "x$D" != "x"; then
         exit 1
 else
@@ -82,7 +84,7 @@ else
 fi
 }
 
-pkg_postrm${PN}-bin() {
+pkg_postrm_libpulse() {
 if test "x$D" != "x"; then
         exit 1
 else
