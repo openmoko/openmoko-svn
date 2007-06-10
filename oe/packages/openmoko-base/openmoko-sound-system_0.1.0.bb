@@ -10,7 +10,7 @@ RDEPENDS = "\
   pulseaudio-module-native-protocol-unix \
   pulseaudio-module-cli-protocol-unix \
 "
-PR = "r3"
+PR = "r4"
 
 inherit openmoko-base update-rc.d
 
