@@ -413,7 +413,7 @@ void panel_mainmenu_powersave_reset()
 void panel_mainmenu_set_display( int brightness )
 {
     g_debug( "mainmenu set display %d", brightness );
-    int fd = g_open( "/sys/class/backlight/gta01-bl/brightness" );
+    int fd = g_open( "/sys/class/backlight/gta01-bl/brightness", O_WRONLY, 0 );
     if ( fd == -1 )
         g_debug( "can't open backlight device: %s", strerror( errno ) );
     else
@@ -496,7 +496,7 @@ void panel_mainmenu_sound_init()
 void panel_mainmenu_sound_play( const gchar* samplename )
 {
     pa_context_play_sample( pac,
-                            "startup",       // Name of my sample
+                            samplename,      // Name of my sample
                             NULL,            // Use default sink
                             PA_VOLUME_NORM,  // Full volume
                             NULL,            // Don't need a callback
