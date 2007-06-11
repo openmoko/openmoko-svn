@@ -15,7 +15,7 @@ prog="pulseaudio"
 start() {
     echo -n "Starting the audio server..."
     # FIXME once alsa/shm permissions have been fixed, supply --system
-	pulseaudio -D -nF /etc/pulse/session
+	pulseaudio --resample-method=trivial -D -nF /etc/pulse/session
 	echo $prog
 }
 
