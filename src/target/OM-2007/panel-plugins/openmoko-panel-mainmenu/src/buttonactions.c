@@ -369,8 +369,6 @@ gboolean panel_mainmenu_touchscreen_cb( GIOChannel *source, GIOCondition conditi
 
     struct input_event event;
     int size = read( g_io_channel_unix_get_fd( source ), &event, sizeof( struct input_event ) );
-    g_debug( "read %d bytes from touchscreen_fd %d", size, g_io_channel_unix_get_fd( source ) );
-    g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
 
     if ( event.type == 1 && event.code == TOUCHSCREEN_BUTTON_KEYCODE )
     {
@@ -429,9 +427,8 @@ gboolean panel_mainmenu_powersave_timeout1( guint timeout )
 {
     g_debug( "mainmenu powersave timeout 1" );
     //FIXME talk to neod
-    //FIXME dim display
     power_state = DISPLAY_DIM;
-    panel_mainmenu_set_display( 50 );
+    panel_mainmenu_set_display( 25 );
     return FALSE;
 }
 
@@ -439,7 +436,6 @@ gboolean panel_mainmenu_powersave_timeout2( guint timeout )
 {
     g_debug( "mainmenu powersave timeout 2" );
     //FIXME talk to neod
-    //FIXME turn off display
     panel_mainmenu_set_display( 0 );
     power_state = DISPLAY_OFF;
     return FALSE;
