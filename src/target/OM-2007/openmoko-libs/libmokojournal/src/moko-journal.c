@@ -999,6 +999,7 @@ moko_journal_add_entry (MokoJournal *a_journal, MokoJournalEntry *a_entry)
   g_return_val_if_fail (a_entry, FALSE) ;
 
   g_array_append_val (a_journal->entries, a_entry) ;
+  
   return TRUE ;
 }
 
@@ -1313,6 +1314,8 @@ on_entries_added_cb (ECalView *a_view,
                                      &offset))
     {
       /*we already have the component in memory, ignore it*/
+      if (entry)
+        notify_entry_added (a_journal, entry);
       continue ;
     }
     /*****************
