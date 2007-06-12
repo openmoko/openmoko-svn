@@ -21,7 +21,27 @@ dialer-window-incoming.c\
 dialer-window-talking.c\
 dialer-window-pin.c\
 moko-dialer-status.c\
-alsa.c
+alsa.c \
+alsa.h \
+common.h \
+contacts.h \
+dialer-callbacks-connection.h \
+dialer-main.h \
+dialer-window-dialer.h \
+dialer-window-history.h \
+dialer-window-incoming.h \
+dialer-window-outgoing.h \
+dialer-window-pin.h \
+dialer-window-talking.h \
+error.h \
+moko-dialer-autolist.h \
+moko-dialer-declares.h \
+moko-dialer-includes.h \
+moko-dialer-panel.h \
+moko-dialer-status.h \
+moko-dialer-textview.h \
+moko-dialer-tip.h \
+moko-digit-button.h
 
 openmoko_dialer_LDADD = @LIBS@
 

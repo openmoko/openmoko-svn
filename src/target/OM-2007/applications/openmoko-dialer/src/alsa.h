@@ -17,6 +17,11 @@
 #ifndef ALSA_H
 #define ALSA_H
 
+/* The following define is used to refrain the compiler from
+ * stopping with an error while the ALSA headers fails with
+ * ANSI C source.
+ */
+#define _POSIX_C_SOURCE 199309
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #define ALSA_PCM_NEW_SW_PARAMS_API
 #include <alsa/asoundlib.h>
