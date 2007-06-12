@@ -29,7 +29,7 @@ moko_time_new_today ()
 {
     MokoTime *result ;
     result = g_new0 (MokoTime, 1) ;
-    result->t = icaltime_today () ;
+    result->t = icaltime_from_timet_with_zone (time (NULL), FALSE, NULL);
     return result ;
 }
 
