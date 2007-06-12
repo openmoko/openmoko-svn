@@ -544,7 +544,8 @@ init_left_hand_side (TodayEventsArea *a_this)
 
   icon = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (), "openmoko-sketchbook", 32, 0, NULL);
   image = gtk_image_new_from_pixbuf (icon);
-  g_object_unref (icon);
+  if (icon)
+    g_object_unref (icon);
 
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), image, FALSE, FALSE, 6);

@@ -1,3 +1,8 @@
+2007-06-12  Daniel Willmann <daniel@totalueberwachung.de>
+
+	* src/today-events-area.c: (init_left_hand_side): Check if icon is
+	NULL befor unref'ing (prevents segfaulting on older gtk versions)
+
 2007-06-06  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-events-area.c: (get_property), (init_left_hand_side): Add icon to
