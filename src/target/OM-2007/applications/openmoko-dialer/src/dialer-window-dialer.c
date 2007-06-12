@@ -16,11 +16,7 @@
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
 
-#include <libmokoui/moko-finger-tool-box.h>
-#include <libmokoui/moko-finger-window.h>
-#include <libmokoui/moko-finger-wheel.h>
-#include <libmokoui/moko-pixmap-button.h>
-
+#include <libmokoui/moko-ui.h>
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkhbox.h>
@@ -366,43 +362,32 @@ window_dialer_init (MokoDialerData * p_dialer_data)
 //the buttons
 
     GtkWidget *vbox2 = gtk_vbox_new (FALSE, 10);
-    GtkWidget *button1 = moko_pixmap_button_new ();
+    GtkWidget *button1 = gtk_button_new ();
+    gtk_button_set_image (GTK_BUTTON (button1), gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON));
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (cb_delete_button_clicked), p_dialer_data);
     gtk_widget_set_name (button1, "mokofingerbutton-orange");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image
-      (MOKO_PIXMAP_BUTTON (button1),
-       file_new_image_from_relative_path ("delete.png"));
-    moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
-                                                   (button1), "Delete");
 
     gtk_box_pack_start (GTK_BOX (vbox2), button1, FALSE, FALSE, 0);
 
-    GtkWidget *button3 = moko_pixmap_button_new ();
+    GtkWidget *button3 = gtk_button_new ();
+    gtk_button_set_image (GTK_BUTTON (button3), gtk_image_new_from_stock (MOKO_STOCK_CALL_HISTORY, GTK_ICON_SIZE_BUTTON));
+
     g_signal_connect (G_OBJECT (button3), "clicked",
                       G_CALLBACK (cb_history_button_clicked), p_dialer_data);
     gtk_widget_set_name (button3, "mokofingerbutton-orange");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image
-      (MOKO_PIXMAP_BUTTON (button3),
-       file_new_image_from_relative_path ("history.png"));
-    moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
-                                                   (button3), "History");
     gtk_box_pack_start (GTK_BOX (vbox2), button3, FALSE, FALSE, 0);
 
 
-    GtkWidget *button2 = moko_pixmap_button_new ();
+    GtkWidget *button2 = gtk_button_new ();
 
     g_signal_connect (G_OBJECT (button2), "clicked",
                       G_CALLBACK (cb_dialer_button_clicked), p_dialer_data);
     gtk_widget_set_name (button2, "mokofingerbutton-black");
-    moko_pixmap_button_set_finger_toolbox_btn_center_image
-      (MOKO_PIXMAP_BUTTON (button2),
-       file_new_image_from_relative_path ("phone.png"));
-    moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
-                                                   (button2), "Dial");
+    gtk_button_set_image (GTK_BUTTON (button3), gtk_image_new_from_stock (MOKO_STOCK_CALL_DIAL, GTK_ICON_SIZE_BUTTON));
+
 
     gtk_box_pack_start (GTK_BOX (vbox2), button2, TRUE, TRUE, 0);
-
 
     gtk_box_pack_start (GTK_BOX (hbox), vbox2, FALSE, FALSE, 5);
 
