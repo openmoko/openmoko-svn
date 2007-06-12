@@ -1,3 +1,10 @@
+2007-06-12  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h:
+
+	Add Dial and History stock items for openmoko-dialer
+
 2007-06-05  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-finger-tool-box.c: (cb_configure): Use bg_pixmap as reference
