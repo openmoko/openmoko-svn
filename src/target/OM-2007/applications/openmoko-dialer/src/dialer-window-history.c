@@ -553,7 +553,6 @@ create_window_history_content (MokoDialerData * p_dialer_data)
   GtkWidget *eventboxTop = gtk_event_box_new ();
   gtk_widget_show (eventboxTop);
   gtk_box_pack_start (GTK_BOX (vbox), eventboxTop, FALSE, FALSE, 5);
-  gtk_widget_set_size_request (eventboxTop, 480, 64);
   gtk_widget_set_name (eventboxTop, "gtkeventbox-black");
 
   GtkWidget *hbox67 = gtk_hbox_new (FALSE, 0);
@@ -574,7 +573,6 @@ create_window_history_content (MokoDialerData * p_dialer_data)
   GtkWidget *labelHistoryTitle = gtk_label_new (("History-"));
   gtk_widget_show (labelHistoryTitle);
   gtk_box_pack_start (GTK_BOX (hbox67), labelHistoryTitle, FALSE, FALSE, 0);
-  gtk_widget_set_size_request (labelHistoryTitle, 221, -1);
   gtk_label_set_justify (GTK_LABEL (labelHistoryTitle), GTK_JUSTIFY_RIGHT);
   gtk_misc_set_alignment (GTK_MISC (labelHistoryTitle), 1, 0.5);
 
@@ -611,16 +609,12 @@ create_window_history_content (MokoDialerData * p_dialer_data)
 
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeviewHistory), FALSE);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeviewHistory), FALSE);
-//   gtk_misc_set_alignment (GTK_MISC (treeviewHistory), 0.5, 0.5);
   gtk_box_pack_start (GTK_BOX (vbox), align, TRUE, TRUE, 0);
 
 
   gtk_widget_set_name (treeviewHistory, "gtktreeview-black");
   p_dialer_data->treeview_history = treeviewHistory;
   history_build_history_list_view (p_dialer_data);
-  gtk_widget_set_size_request (scrolledwindow, -1, 400);
-//  gtk_misc_set_alignment (GTK_MISC (treeviewHistory),1,0.1);
-
 
   g_signal_connect ((gpointer) treeviewHistory, "cursor_changed",
                     G_CALLBACK (on_treeviewHistory_cursor_changed),

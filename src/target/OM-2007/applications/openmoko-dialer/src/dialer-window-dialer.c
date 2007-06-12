@@ -269,13 +269,6 @@ on_window_dialer_show (GtkWidget * widget, MokoDialerData * appdata)
   DBG_LEAVE ();
 }
 
-
-
-
-
-
-#define WINDOW_DIALER_BUTTON_SIZE_X 100
-#define WINDOW_DIALER_BUTTON_SIZE_Y 100
 gint
 window_dialer_init (MokoDialerData * p_dialer_data)
 {
@@ -375,7 +368,7 @@ window_dialer_init (MokoDialerData * p_dialer_data)
 
 //the buttons
 
-    GtkWidget *vbox2 = gtk_vbox_new (FALSE, 0);
+    GtkWidget *vbox2 = gtk_vbox_new (FALSE, 10);
     GtkWidget *button1 = moko_pixmap_button_new ();
     g_signal_connect (G_OBJECT (button1), "clicked",
                       G_CALLBACK (cb_delete_button_clicked), p_dialer_data);
@@ -385,10 +378,8 @@ window_dialer_init (MokoDialerData * p_dialer_data)
        file_new_image_from_relative_path ("delete.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button1), "Delete");
-    gtk_widget_set_size_request (button1, WINDOW_DIALER_BUTTON_SIZE_X,
-                                 WINDOW_DIALER_BUTTON_SIZE_Y);
 
-    gtk_box_pack_start (GTK_BOX (vbox2), button1, FALSE, FALSE, 5);
+    gtk_box_pack_start (GTK_BOX (vbox2), button1, FALSE, FALSE, 0);
 
     GtkWidget *button3 = moko_pixmap_button_new ();
     g_signal_connect (G_OBJECT (button3), "clicked",
@@ -399,9 +390,7 @@ window_dialer_init (MokoDialerData * p_dialer_data)
        file_new_image_from_relative_path ("history.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button3), "History");
-    gtk_widget_set_size_request (button3, WINDOW_DIALER_BUTTON_SIZE_X,
-                                 WINDOW_DIALER_BUTTON_SIZE_Y);
-    gtk_box_pack_start (GTK_BOX (vbox2), button3, FALSE, FALSE, 5);
+    gtk_box_pack_start (GTK_BOX (vbox2), button3, FALSE, FALSE, 0);
 
 
     GtkWidget *button2 = moko_pixmap_button_new ();
@@ -414,15 +403,11 @@ window_dialer_init (MokoDialerData * p_dialer_data)
        file_new_image_from_relative_path ("phone.png"));
     moko_pixmap_button_set_action_btn_lower_label (MOKO_PIXMAP_BUTTON
                                                    (button2), "Dial");
-    gtk_widget_set_size_request (button2, WINDOW_DIALER_BUTTON_SIZE_X + 20,
-                                 WINDOW_DIALER_BUTTON_SIZE_Y + 80);
 
-    gtk_box_pack_start (GTK_BOX (vbox2), button2, FALSE, FALSE, 20);
+    gtk_box_pack_start (GTK_BOX (vbox2), button2, TRUE, TRUE, 0);
 
 
     gtk_box_pack_start (GTK_BOX (hbox), vbox2, TRUE, TRUE, 5);
-
-
 
     gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 5);
 
