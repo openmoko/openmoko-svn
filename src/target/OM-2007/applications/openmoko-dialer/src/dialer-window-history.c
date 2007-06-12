@@ -570,7 +570,7 @@ create_window_history_content (MokoDialerData * p_dialer_data)
   gtk_widget_show (imageLeftMenu);
   gtk_container_add (GTK_CONTAINER (eventboxLeftTop), imageLeftMenu);
 
-  GtkWidget *labelHistoryTitle = gtk_label_new (("History-"));
+  GtkWidget *labelHistoryTitle = gtk_label_new (("Call History - "));
   gtk_widget_show (labelHistoryTitle);
   gtk_box_pack_start (GTK_BOX (hbox67), labelHistoryTitle, FALSE, FALSE, 0);
   gtk_label_set_justify (GTK_LABEL (labelHistoryTitle), GTK_JUSTIFY_RIGHT);
