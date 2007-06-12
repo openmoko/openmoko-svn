@@ -138,7 +138,6 @@ moko_dialer_panel_init (MokoDialerPanel * moko_dialer_panel)
                         G_CALLBACK (moko_dialer_panel_pressed),
                         moko_dialer_panel);
 
-      gtk_widget_set_size_request (moko_dialer_panel->buttons[i][j], 20, 20);
       gtk_widget_show (moko_dialer_panel->buttons[i][j]);
     }
 

@@ -28,25 +28,21 @@
 
 G_DEFINE_TYPE (MokoDigitButton, moko_digit_button, GTK_TYPE_BUTTON)
 #define MOKO_DIGIT_BUTTON_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_DIGIT_BUTTON, MokoDigitButtonPrivate))
-     struct _MokoDigitButtonPrivate
-     {
-
-       GtkWidget *labelDigit;
-       GtkWidget *labelAcrobat;
-       gchar leftclickdigit;
-       gchar rightclickdigit;
-
-     };
-
-
-
-     typedef struct _MokoDigitButtonPrivate MokoDigitButtonPrivate;
-
-     GtkWidget *moko_digit_button_new ()
+struct _MokoDigitButtonPrivate
 {
+  GtkWidget *labelDigit;
+  GtkWidget *labelAcrobat;
+  gchar leftclickdigit;
+  gchar rightclickdigit;
+};
 
-//g_print("moko_digit_button_new\n");
-// return (GTK_WIDGET(g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL)));
+
+
+typedef struct _MokoDigitButtonPrivate MokoDigitButtonPrivate;
+
+GtkWidget
+*moko_digit_button_new ()
+{
   return moko_digit_button_new_with_labels ("1", "ABC");
 }
 
@@ -60,55 +56,42 @@ GtkWidget *
 moko_digit_button_new_with_labels (const gchar * string_digit,
                                    const gchar * string_acrobat)
 {
-
-  PangoFontDescription *font_desc_label = 0;
-  font_desc_label = pango_font_description_new ();
+  gchar *str;
   MokoDigitButton *digitbutton =
     (MokoDigitButton *) g_object_new (MOKO_TYPE_DIGIT_BUTTON, NULL);
 
   gtk_widget_show (GTK_WIDGET (digitbutton));
-  gtk_widget_set_size_request (GTK_WIDGET (digitbutton), 64, 64);
   GTK_WIDGET_UNSET_FLAGS (GTK_WIDGET (digitbutton), GTK_CAN_FOCUS);
-//  GtkWidget * hbox = gtk_hbox_new (TRUE, 0);
-  GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
-  gtk_widget_show (hbox);
-  gtk_container_add (GTK_CONTAINER (digitbutton), hbox);
 
-
-  GtkWidget *vbox = gtk_vbox_new (TRUE, 0);
-  gtk_widget_show (vbox);
-  gtk_box_pack_start (GTK_BOX (hbox), vbox, FALSE, FALSE, 15);
-
-  GtkWidget *labelDigit = gtk_label_new (string_digit);
-  gtk_widget_show (labelDigit);
-  gtk_box_pack_start (GTK_BOX (vbox), labelDigit, TRUE, TRUE, 0);
-
-  GtkWidget *alignment = gtk_alignment_new (0, 1, 0, 0.3);
+  GtkWidget *alignment = gtk_alignment_new (0.5, 0.5, 0, 0);
+  gtk_container_add (GTK_CONTAINER (digitbutton), alignment);
   gtk_widget_show (alignment);
-  gtk_box_pack_start (GTK_BOX (hbox), alignment, TRUE, TRUE, 0);
 
-  GtkWidget *labelAcrobat = gtk_label_new (string_acrobat);
-  gtk_widget_show (labelAcrobat);
-  gtk_container_add (GTK_CONTAINER (alignment), labelAcrobat);
+  GtkWidget *hbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (alignment), hbox);
+
+
+  GtkWidget *labelDigit = gtk_label_new (NULL);
+  str = g_markup_printf_escaped ("<span size=\"xx-large\">%s</span>", string_digit);
+  gtk_label_set_markup (GTK_LABEL (labelDigit), str);
+  gtk_box_pack_start (GTK_BOX (hbox), labelDigit, TRUE, TRUE, 0);
+  g_free (str);
+
+  GtkWidget *labelAcrobat = gtk_label_new (NULL);
+  str = g_markup_printf_escaped ("<small>%s</small>", string_acrobat);
+  gtk_label_set_markup (GTK_LABEL (labelAcrobat), str);
+  g_free (str);
+  gtk_container_add (GTK_CONTAINER (hbox), labelAcrobat);
 
   gtk_widget_set_name (GTK_WIDGET (digitbutton), "mokofingerbutton-dialer");
 
   MokoDigitButtonPrivate *priv =
     (MokoDigitButtonPrivate *) MOKO_DIGIT_BUTTON_GET_PRIVATE (digitbutton);
-  //set the fonts of each side.
-  pango_font_description_set_size (font_desc_label, 32 * PANGO_SCALE);
-  if (font_desc_label)
-    gtk_widget_modify_font (labelDigit, font_desc_label);
-  pango_font_description_set_size (font_desc_label, 10 * PANGO_SCALE);
-  if (font_desc_label)
-    gtk_widget_modify_font (labelAcrobat, font_desc_label);
-
-  if (font_desc_label)
-    pango_font_description_free (font_desc_label);
 
   priv->labelDigit = labelDigit;
   priv->labelAcrobat = labelAcrobat;
 
+  gtk_widget_show_all (alignment);
 
   return GTK_WIDGET (digitbutton);
 
@@ -125,19 +108,13 @@ moko_digit_button_set_numbers (GtkWidget * widget, gchar left, gchar right)
 
   priv->leftclickdigit = left;
   priv->rightclickdigit = right;
-// g_print("moko_digit_button_set_numbers:%c,%d\n",left,right);
   return TRUE;
 }
 
 static void
 moko_digit_button_class_init (MokoDigitButtonClass * klass)
 {
-//g_print("moko_digit_button_class_init\n");
-
-// GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
   g_type_class_add_private (klass, sizeof (MokoDigitButtonPrivate));
-
   return;
 }
 
@@ -153,7 +130,6 @@ moko_digit_button_init (MokoDigitButton * self)
   priv->labelAcrobat = 0;
   priv->leftclickdigit = -1;
   priv->rightclickdigit = -1;
-//g_print("moko_digit_button_init\n");
   return;
 }
 
@@ -161,45 +137,13 @@ gchar
 moko_digit_button_get_left (MokoDigitButton * button)
 {
   MokoDigitButtonPrivate *priv = MOKO_DIGIT_BUTTON_GET_PRIVATE (button);
-// g_print("moko_digit_button_get_left:%c\n",priv->leftclickdigit);
   return (priv->leftclickdigit);
-
 }
 
 gchar
 moko_digit_button_get_right (MokoDigitButton * button)
 {
   MokoDigitButtonPrivate *priv = MOKO_DIGIT_BUTTON_GET_PRIVATE (button);
-// g_print("moko_digit_button_get_right:%c\n",priv->rightclickdigit);
   return (priv->rightclickdigit);
-
 }
 
-/*
-GType moko_digit_button_get_type(void)
-{
-    static GType self_type = 0;
-
-    if (!self_type)
-    {
-        static const GTypeInfo f_info =
-        {
-            sizeof (MokoDigitButtonClass),
-            NULL, // base_init 
-            NULL, // base_finalize
-            (GClassInitFunc) moko_digit_button_class_init,
-            NULL, // class_finalize 
-            NULL, // class_data 
-            sizeof (MokoDigitButton),
-            0,
-            (GInstanceInitFunc) moko_digit_button_init,
-        };
-
-       // add the type of your parent class here 
-        self_type = g_type_register_static(GTK_TYPE_BUTTON, "MokoDigitButton", &f_info, 0);
-    }
-
-    return self_type;
-}
-
-*/

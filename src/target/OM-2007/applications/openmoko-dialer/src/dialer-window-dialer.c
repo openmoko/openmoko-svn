@@ -352,9 +352,6 @@ window_dialer_init (MokoDialerData * p_dialer_data)
 
     GtkWidget *mokodialerpanel = moko_dialer_panel_new ();
 
-    gtk_widget_set_size_request (mokodialerpanel, 380, 384);
-
-
     g_signal_connect (GTK_OBJECT (mokodialerpanel), "user_input",
                       G_CALLBACK (on_dialer_panel_user_input), p_dialer_data);
 
@@ -407,7 +404,7 @@ window_dialer_init (MokoDialerData * p_dialer_data)
     gtk_box_pack_start (GTK_BOX (vbox2), button2, TRUE, TRUE, 0);
 
 
-    gtk_box_pack_start (GTK_BOX (hbox), vbox2, TRUE, TRUE, 5);
+    gtk_box_pack_start (GTK_BOX (hbox), vbox2, FALSE, FALSE, 5);
 
     gtk_box_pack_start (GTK_BOX (vbox), hbox, TRUE, TRUE, 5);
 
