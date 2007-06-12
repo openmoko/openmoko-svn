@@ -1034,7 +1034,7 @@ on_entry_added_cb (MokoJournal *journal,
   g_return_if_fail (p_dialer_data);
   
   g_print ("A new entry has been added\n");
-  
+ 
   /* We're not interested in anything other than voice entrys */
   if (moko_journal_entry_get_type (j_entry) != VOICE_JOURNAL_ENTRY)
   {
@@ -1044,6 +1044,5 @@ on_entry_added_cb (MokoJournal *journal,
   /* Get the list store*/
   list_store = p_dialer_data->g_list_store;
   history_add_entry (list_store, j_entry);
+  history_update_counter (p_dialer_data);
 }
-
-
