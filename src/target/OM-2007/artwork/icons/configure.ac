@@ -29,8 +29,6 @@ openmoko-standard/48x48/apps/Makefile
 openmoko-standard/48x48/categories/Makefile
 openmoko-standard/48x48/places/Makefile
 openmoko-standard/48x48/actions/Makefile
-openmoko-standard/scalable/Makefile
-openmoko-standard/scalable/stock/Makefile
 ])
 
 AC_OUTPUT
