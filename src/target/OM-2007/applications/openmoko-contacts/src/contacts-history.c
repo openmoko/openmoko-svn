@@ -497,7 +497,9 @@ contacts_history_refresh_ui (ContactsHistory *history)
     MokoJournalEntry *entry = NULL;
     
     if (moko_journal_get_entry_at (priv->journal, i, &entry)) {
-      if (strcmp (priv->uid, moko_journal_entry_get_contact_uid (entry)) == 0) {
+      const gchar *uid = moko_journal_entry_get_contact_uid (entry);
+
+      if (uid && strcmp (priv->uid, uid) == 0) {
         children = g_list_append (children, entry);
       }
     }
