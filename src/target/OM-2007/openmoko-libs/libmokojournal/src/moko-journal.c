@@ -1289,11 +1289,12 @@ on_entries_added_cb (ECalView *a_view,
 {
   icalcomponent *ical_comp = NULL ;
   GList *cur_entry = NULL ;
-  MokoJournalEntry *entry = NULL ;
   int offset=0 ;
 
   for (cur_entry = a_entries ; cur_entry ; cur_entry = cur_entry->next)
   {
+    MokoJournalEntry *entry = NULL ;
+
     /*****************
      * <sanity checks>
      *****************/
@@ -1337,8 +1338,7 @@ on_entries_added_cb (ECalView *a_view,
       continue ;
     }
     moko_journal_add_entry (a_journal, entry) ;
-    notify_entry_added (a_journal, entry);
-    entry = NULL ;
+    notify_entry_added (a_journal, entry) ;
   }
 }
 
