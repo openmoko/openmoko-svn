@@ -37,9 +37,12 @@
 
 #define MOKO_STOCK_CALL_ANSWER "moko-call-answer"
 #define MOKO_STOCK_CALL_DIAL "moko-call-dial"
+#define MOKO_STOCK_CALL_DIALED "moko-history-call-out"
 #define MOKO_STOCK_CALL_HANGUP "moko-call-hangup"
 #define MOKO_STOCK_CALL_HISTORY "moko-call-history"
 #define MOKO_STOCK_CALL_HOLD "moko-call-hold"
+#define MOKO_STOCK_CALL_IN "moko-history-call-in"
+#define MOKO_STOCK_CALL_MISSED "moko-history-call-missed"
 #define MOKO_STOCK_CALL_REDIAL "moko-call-redial"
 #define MOKO_STOCK_CALL_REJECT "moko-call-reject"
 #define MOKO_STOCK_CONTACT_ADDRESS "moko-contact-address"

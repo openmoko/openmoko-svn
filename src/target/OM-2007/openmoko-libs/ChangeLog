@@ -1,3 +1,10 @@
+2007-06-12  Thomas  <thomas@openedhand.com>
+
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h:
+
+	Add call missed/recieved/dialed stock items
+
 2007-06-12  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-stock.c:
