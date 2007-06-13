@@ -201,6 +201,7 @@ const char *qemu_name;
 unsigned int nb_prom_envs = 0;
 const char *prom_envs[MAX_PROM_ENVS];
 #endif
+struct bt_piconet_s *local_piconet;
 
 /***********************************************************/
 /* x86 ISA bus support */
@@ -4312,6 +4313,32 @@ void qemu_register_usb_gadget(USBDevice *device)
     usb_gadget = device;
 }
 
+int usb_device_attach(USBDevice *dev)
+{
+    USBPort *port;
+
+    /* Find a USB port to add the device to.  */
+    port = free_usb_ports;
+    if (!port->next) {
+        USBDevice *hub;
+
+        /* Create a new hub and chain it on.  */
+        free_usb_ports = NULL;
+        port->next = used_usb_ports;
+        used_usb_ports = port;
+
+        hub = usb_hub_init(VM_USB_HUB_SIZE);
+        usb_attach(port, hub);
+        port = free_usb_ports;
+    }
+
+    free_usb_ports = port->next;
+    port->next = used_usb_ports;
+    used_usb_ports = port;
+    usb_attach(port, dev);
+    return 0;
+}
+
 static int usb_device_add(const char *devname)
 {
     const char *p;
@@ -4327,7 +4354,8 @@ static int usb_device_add(const char *devname)
             usb_gadget_config_set(port, strtoul(&p[1], NULL, 0));
         else if (p[0] != 0)
             return -1;
-        goto attach;
+        usb_attach(port, dev);
+        return 0;
     }
 
     if (!free_usb_ports)
@@ -4352,27 +4380,7 @@ static int usb_device_add(const char *devname)
     if (!dev)
         return -1;
 
-    /* Find a USB port to add the device to.  */
-    port = free_usb_ports;
-    if (!port->next) {
-        USBDevice *hub;
-
-        /* Create a new hub and chain it on.  */
-        free_usb_ports = NULL;
-        port->next = used_usb_ports;
-        used_usb_ports = port;
-
-        hub = usb_hub_init(VM_USB_HUB_SIZE);
-        usb_attach(port, hub);
-        port = free_usb_ports;
-    }
-
-    free_usb_ports = port->next;
-    port->next = used_usb_ports;
-    used_usb_ports = port;
-attach:
-    usb_attach(port, dev);
-    return 0;
+    return usb_device_attach(dev);
 }
 
 static int usb_device_del(const char *devname)
@@ -8156,6 +8164,8 @@ int main(int argc, char **argv)
                 qemu_chr_printf(parallel_hds[i], "parallel%d console\r\n", i);
         }
     }
+
+    local_piconet = qemu_mallocz(sizeof(struct bt_piconet_s));
 
     machine->init(ram_size, vga_ram_size, boot_device,
                   ds, fd_filename, snapshot,

@@ -409,10 +409,13 @@ VL_OBJS+= scsi-disk.o cdrom.o lsi53c895a.o
 
 # USB layer
 VL_OBJS+= usb.o usb-hub.o usb-linux.o usb-hid.o usb-ohci.o usb-msd.o usb-net.o
-VL_OBJS+= usb-linux-gadget.o
+VL_OBJS+= usb-linux-gadget.o usb-bt.o
 
 # EEPROM emulation
 VL_OBJS += eeprom93xx.o
+
+# Bluetooth subsystem
+VL_OBJS += bt-hci.o
 
 # PCI network cards
 VL_OBJS += eepro100.o

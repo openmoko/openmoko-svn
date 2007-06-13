@@ -28,10 +28,15 @@ struct modem_s {
     struct gsmmodem_info_s info;
 };
 
-#define TICALYPSO_MANF	"<manufacturer>"
-#define TICALYPSO_MODEL	"<model>"
-#define TICALYPSO_REV	"<revision>"
-#define TICALYPSO_IMEI	"<serial number>"
+#define TICALYPSOv3_MANF	"<manufacturer>"
+#define TICALYPSOv3_MODEL	"<model>"
+#define TICALYPSOv3_REV		"<revision>"
+#define TICALYPSOv3_IMEI	"<serial number>"
+
+#define TICALYPSOv4_MANF	"FIC"
+#define TICALYPSOv4_MODEL	"GTA01 Embedded GSM Modem"
+#define TICALYPSOv4_REV		"GTA01Bv4"
+#define TICALYPSOv4_IMEI	"354651010000000"
 
 static gn_error modem_ops(gn_operation op, gn_data *data,
                 struct gn_statemachine *sm)
@@ -66,22 +71,22 @@ static gn_error modem_ops(gn_operation op, gn_data *data,
         break;
 
     case GN_OP_GetImei:
-        strcpy(data->imei, TICALYPSO_IMEI);
+        strcpy(data->imei, TICALYPSOv4_IMEI);
         break;
 
     case GN_OP_GetRevision:
-        strcpy(data->revision, TICALYPSO_REV);
+        strcpy(data->revision, TICALYPSOv4_REV);
         break;
 
     case GN_OP_GetModel:
-        strcpy(data->revision, TICALYPSO_MODEL);
+        strcpy(data->revision, TICALYPSOv4_MODEL);
         break;
 
     case GN_OP_Identify:
-        strcpy(data->model, TICALYPSO_MODEL);
-        strcpy(data->revision, TICALYPSO_REV);
-        strcpy(data->imei, TICALYPSO_IMEI);
-        strcpy(data->manufacturer, TICALYPSO_MANF);
+        strcpy(data->model, TICALYPSOv4_MODEL);
+        strcpy(data->revision, TICALYPSOv4_REV);
+        strcpy(data->imei, TICALYPSOv4_IMEI);
+        strcpy(data->manufacturer, TICALYPSOv4_MANF);
         break;
 
     default:

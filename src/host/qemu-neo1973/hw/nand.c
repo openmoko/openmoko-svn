@@ -356,11 +356,10 @@ void nand_setio(struct nand_flash_s *s, uint8_t value)
         }
         if (value == NAND_CMD_READ0)
             s->offset = 0;
-	else if (value == NAND_CMD_READ1) {
+        else if (value == NAND_CMD_READ1) {
             s->offset = 0x100;
             value = NAND_CMD_READ0;
-        }
-	else if (value == NAND_CMD_READ2) {
+        } else if (value == NAND_CMD_READ2) {
             s->offset = 1 << s->page_shift;
             value = NAND_CMD_READ0;
         }

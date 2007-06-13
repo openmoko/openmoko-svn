@@ -1135,6 +1135,10 @@ typedef void (*gpio_handler_t)(int line, int level, void *opaque);
 
 #include "hw/smbus.h"
 
+/* Bluetooth */
+#include "hw/bt.h"
+extern struct bt_piconet_s *local_piconet;
+
 /* acpi.c */
 extern int acpi_enabled;
 i2c_bus *piix4_pm_init(PCIBus *bus, int devfn);
@@ -1375,6 +1379,7 @@ void do_usb_add(const char *devname);
 void do_usb_del(const char *devname);
 void usb_info(void);
 void usb_slave_info(void);
+int usb_device_attach(USBDevice *dev);
 
 /* scsi-disk.c */
 enum scsi_reason {

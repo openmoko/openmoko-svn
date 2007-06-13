@@ -419,6 +419,8 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
 
     neo_gsm_setup(s);
 
+    usb_device_attach(usb_bt_init(local_piconet));
+
     /* Setup initial (reset) machine state */
     qemu_register_reset(neo_reset, s);
 #if 0

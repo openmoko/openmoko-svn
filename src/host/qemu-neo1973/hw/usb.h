@@ -228,3 +228,6 @@ USBDevice *usb_msd_init(const char *filename);
 
 /* usb-net.c */
 USBDevice *usb_net_init(NICInfo *nd);
+
+/* usb-bt.c */
+USBDevice *usb_bt_init(struct bt_piconet_s *net);
