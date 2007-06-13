@@ -469,7 +469,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,274 @@
+@@ -0,0 +1,276 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -623,6 +623,8 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +
 +/* valid baudrates */
 +#define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
++
++#define CFG_BOOTMENU
 +
 +/*-----------------------------------------------------------------------
 + * Stack sizes
@@ -1544,9 +1546,9 @@ Index: u-boot/board/neo1973/common/udc.c
  
  void udc_ctrl(enum usbd_event event, int param)
  {
-@@ -22,6 +23,11 @@
- #if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v3) || \
-     defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
+@@ -23,6 +24,11 @@
+     defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
+     defined(CONFIG_ARCH_GTA01B_v4)
  		pcf50606_charge_autofast(param);
 +#elif defined(CONFIG_ARCH_GTA02_v1)
 +		if (param)

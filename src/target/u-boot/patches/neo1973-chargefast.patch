@@ -292,7 +292,7 @@ Index: u-boot/board/neo1973/common/udc.c
  		break;
 +	case UDC_CTRL_500mA_ENABLE:
 +#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
-+    defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) \
++    defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
 +    defined(CONFIG_ARCH_GTA01B_v4)
 +		pcf50606_charge_autofast(param);
 +#endif
