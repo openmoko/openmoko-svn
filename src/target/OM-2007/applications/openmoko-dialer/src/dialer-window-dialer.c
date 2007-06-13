@@ -384,7 +384,7 @@ window_dialer_init (MokoDialerData * p_dialer_data)
     g_signal_connect (G_OBJECT (button2), "clicked",
                       G_CALLBACK (cb_dialer_button_clicked), p_dialer_data);
     gtk_widget_set_name (button2, "mokofingerbutton-black");
-    gtk_button_set_image (GTK_BUTTON (button3), gtk_image_new_from_stock (MOKO_STOCK_CALL_DIAL, GTK_ICON_SIZE_BUTTON));
+    gtk_button_set_image (GTK_BUTTON (button2), gtk_image_new_from_stock (MOKO_STOCK_CALL_DIAL, GTK_ICON_SIZE_BUTTON));
 
 
     gtk_box_pack_start (GTK_BOX (vbox2), button2, TRUE, TRUE, 0);
