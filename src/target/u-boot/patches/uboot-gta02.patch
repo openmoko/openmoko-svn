@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2015,6 +2015,10 @@
+@@ -2038,6 +2038,10 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -47,7 +47,7 @@ Index: u-boot/board/neo1973/gta02/Makefile
 +
 +LIB	= lib$(BOARD).a
 +
-+OBJS	:= gta02.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
++OBJS	:= gta02.o pcf50633.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
 +SOBJS	:= ../common/lowlevel_init.o
 +
 +.PHONY:	all
@@ -88,7 +88,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,313 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -135,12 +135,12 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +/* That many seconds the power key needs to be pressed to power up */
 +#define POWER_KEY_SECONDS	2
 +
-+#define M_MDIV	0x6e		/* Fout = 399.65MHz */
-+#define M_PDIV	0x3
++#define M_MDIV	0x7f		/* Fout = 405.00MHz */
++#define M_PDIV	0x2
 +#define M_SDIV	0x1
 +
-+#define U_M_MDIV	0x3c
-+#define U_M_PDIV	0x4
++#define U_M_MDIV	0x38
++#define U_M_PDIV	0x2
 +#define U_M_SDIV	0x2
 +
 +unsigned int neo1973_wakeup_cause;
@@ -180,8 +180,9 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	/* set up the I/O ports */
 +#if defined(CONFIG_ARCH_GTA02_v1)
 +	gpio->GPACON = 0x007E1FFF;
++	gpio->GPADAT |= (1 << 16);      /* Set GPA16 to high (nNAND_WP) */
 +
-+	gpio->GPBCON = 0x001555AA;
++	gpio->GPBCON = 0x00155555;
 +	gpio->GPBUP = 0x000007FF;
 +
 +	gpio->GPCCON = 0x55551155;
@@ -279,10 +280,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	neo1973_poweroff();
 +
 +continue_boot:
-+#endif
 +	jbt6k74_init();
 +	jbt6k74_enter_state(JBT_STATE_NORMAL);
 +	jbt6k74_display_onoff(1);
++#endif
 +
 +	/* issue a short pulse with the vibrator */
 +	neo1973_vibrator(1);
@@ -367,8 +368,8 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +int neo1973_on_key_pressed(void)
 +{
-+	return !(pcf50606_reg_read(PCF50633_REG_OOCSTAT)
-+						& PFC50633_OOCSTAT_ONKEY);
++	return !(pcf50633_reg_read(PCF50633_REG_OOCSTAT)
++						& PCF50633_OOCSTAT_ONKEY);
 +}
 +
 +/* FIXME: shared */
@@ -385,11 +386,22 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +   images: 640*480*2*2 = 1228800 < 1245184. */
 +
 +unsigned int dynpart_size[] = {
-+    CFG_UBOOT_SIZE, 0x4000, 0x200000, 0xa0000, 0x3d5c000-CFG_UBOOT_SIZE, 0 };
++    CFG_UBOOT_SIZE, CFG_ENV_SIZE, 0x200000, 0xa0000, 0x1fce0000, 0 };
 +char *dynpart_names[] = {
 +    "u-boot", "u-boot_env", "kernel", "splash", "rootfs", NULL };
 +
 +
++const char *neo1973_get_charge_status(void)
++{
++	/* FIXME */
++	return "unknown";
++}
++
++int neo1973_set_charge_mode(enum neo1973_charger_cmd cmd)
++{
++	/* FIXME */
++	return 0;
++}
 Index: u-boot/board/neo1973/gta02/u-boot.lds
 ===================================================================
 --- /dev/null
@@ -502,7 +514,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define CONFIG_SMDK2440		1	/* on a SAMSUNG SMDK2410 Board  */
 +
 +/* input clock of PLL */
-+#define CONFIG_SYS_CLK_FREQ	16934400/* the GTA02 has this input clock */
++#define CONFIG_SYS_CLK_FREQ	12000000/* the GTA02 has this input clock */
 +
 +
 +#define USE_920T_MMU		1
@@ -548,7 +560,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +			/* CFG_CMD_IRQ	 | */  \
 +			CFG_CMD_BOOTD	 | \
 +			CFG_CMD_CONSOLE	 | \
-+			CFG_CMD_BMP	 | \
++			/* CFG_CMD_BMP	 | */ \
 +			CFG_CMD_ASKENV	 | \
 +			CFG_CMD_RUN	 | \
 +			CFG_CMD_ECHO	 | \
@@ -660,8 +672,8 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define CFG_NO_FLASH		1
 +
 +#define	CFG_ENV_IS_IN_NAND	1
-+#define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
-+#define CFG_ENV_OFFSET_OOB    1               /* Location of ENV stored in block 0 OOB */
++#define CFG_ENV_SIZE		0x40000	/* 128k Total Size of Environment Sector */
++#define CFG_ENV_OFFSET_OOB	1	/* Location of ENV stored in block 0 OOB */
 +#define	CFG_PREBOOT_OVERRIDE	1	/* allow preboot from memory */
 +
 +#define NAND_MAX_CHIPS		1
@@ -722,7 +734,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#endif
 +
 +#define CONFIG_S3C2410_NAND_BBT                1
-+#define CONFIG_S3C2410_NAND_HWECC              1
++//#define CONFIG_S3C2410_NAND_HWECC              1
 +
 +#define CONFIG_DRIVER_PCF50633		1
 +
@@ -778,7 +790,7 @@ Index: u-boot/include/pcf50633.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/pcf50633.h
-@@ -0,0 +1,234 @@
+@@ -0,0 +1,235 @@
 +#ifndef _PCF50633_H
 +#define _PCF50633_H
 +
@@ -846,8 +858,8 @@ Index: u-boot/include/pcf50633.h
 +	PCF50633_REG_LDO5ENA	= 0x36,
 +	PCF50633_REG_LDO6OUT	= 0x37,
 +	PCF50633_REG_LDO6ENA	= 0x38,
-+	PCF50633_REG_HCDLDOOUT	= 0x39,
-+	PCF50633_REG_HCDLDOENA	= 0x3a,
++	PCF50633_REG_HCLDOOUT	= 0x39,
++	PCF50633_REG_HCLDOENA	= 0x3a,
 +	PCF50633_REG_STBYCTL1	= 0x3b,
 +	PCF50633_REG_STBYCTL2	= 0x3c,
 +	PCF50633_REG_DEBPF1	= 0x3d,
@@ -997,6 +1009,7 @@ Index: u-boot/include/pcf50633.h
 +#define	PCF50633_MBCC2_VBATCOND_MASK	  0x03
 +#define PCF50633_MBCC2_VMAX_MASK	  0x3c
 +
++#define PCF50633_OOCSTAT_ONKEY		0x01
 +
 +/* this is to be provided by the board implementation */
 +extern const u_int8_t pcf50633_initial_regs[__NUM_PCF50633_REGS];
@@ -1009,15 +1022,15 @@ Index: u-boot/include/pcf50633.h
 +void pcf50633_reg_clear_bits(u_int8_t reg, u_int8_t bits);
 +
 +void pcf50633_init(void);
-+void pcf50633_charge_autofast(int on);
++void pcf50633_usb_maxcurrent(unsigned int ma);
 +
-+#endif /* _PCF50606_H */
++#endif /* _PCF50633_H */
 +
 Index: u-boot/drivers/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/pcf50633.c
-@@ -0,0 +1,81 @@
+@@ -0,0 +1,142 @@
 +#include <common.h>
 +
 +#ifdef CONFIG_DRIVER_PCF50633
@@ -1084,18 +1097,79 @@ Index: u-boot/drivers/pcf50633.c
 +	local_irq_restore(flags);
 +}
 +
++static const u_int8_t regs_invalid[] = {
++	PCF50633_REG_VERSION,
++	PCF50633_REG_VARIANT,
++	PCF50633_REG_OOCSHDWN,
++	PCF50633_REG_INT1,
++	PCF50633_REG_INT2,
++	PCF50633_REG_INT3,
++	PCF50633_REG_INT4,
++	PCF50633_REG_INT5,
++	PCF50633_REG_OOCSTAT,
++	0x2c,
++	PCF50633_REG_DCDCSTAT,
++	PCF50633_REG_LDOSTAT,
++	PCF50633_REG_MBCS1,
++	PCF50633_REG_MBCS2,
++	PCF50633_REG_MBCS3,
++	PCF50633_REG_ALMDATA,
++	0x51,
++	/* 0x55 ... 0x6e: don't write */
++	/* 0x6f ... 0x83: reserved */
++};
++#define PCF50633_LAST_REG	0x55
++
++static int reg_is_invalid(u_int8_t reg)
++{
++	int i;
++
++	/* all registers above 0x55 (ADCS1) except 0x84 */
++	if (reg == PCF50633_REG_DCDCPFM)
++		return 0;
++	if (reg >= 0x55)
++		return 1;
++
++	for (i = 0; i < ARRAY_SIZE(regs_invalid); i++) {
++		if (regs_invalid[i] > reg)
++			return 0;
++		if (regs_invalid[i] == reg)
++			return 1;
++	}
++
++	return 0;
++}
++
++
 +/* initialize PCF50633 register set */
 +void pcf50633_init(void)
 +{
 +	unsigned long flags;
-+	int i;
++	u_int8_t i;
 +
 +	local_irq_save(flags);
-+	for (i = 0; i < ARRAY_SIZE(regs_valid); i++) {
-+		__pcf50633_reg_write(regs_valid[i],
-+				     pcf50633_initial_regs[regs_valid[i]]);
++	for (i = 0; i < PCF50633_LAST_REG; i++) {
++		if (reg_is_invalid(i))
++			continue;
++		__pcf50633_reg_write(i, pcf50633_initial_regs[i]);
 +	}
 +	local_irq_restore(flags);
++}
++
++void pcf50633_usb_maxcurrent(unsigned int ma)
++{
++	u_int8_t val;
++
++	if (ma < 100)
++		val = 0x03;
++	else if (ma < 500)
++		val = 0x00;
++	else if (ma < 1000)
++		val = 0x01;
++	else
++		val = 0x02;
++
++	return pcf50633_reg_set_bit_mask(PCF50633_REG_MBCC7, 0x03, val);
 +}
 +
 +#endif /* CONFIG DRIVER_PCF50633 */
@@ -1125,7 +1199,16 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  #define B1_Tah		 	0x0	/*  0clk */
  #define B1_Tacp		 	0x0
  #define B1_PMC		 	0x0
-@@ -167,6 +167,18 @@
+@@ -112,7 +112,7 @@
+ #if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+ #define B6_SCAN		 	0x1	/* 9bit */
+ #elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
+-      defined(CONFIG_ARCH_GTA01B_v4)
++      defined(CONFIG_ARCH_GTA01B_v4) || defined(CONFIG_ARCH_GTA02_v1)
+ #define B6_SCAN		 	0x2	/* 10bit */
+ #endif
+ 
+@@ -165,6 +165,18 @@
  	str	r1, [r0]
  #endif
  
@@ -1148,7 +1231,7 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/pcf50633.c
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,91 @@
 +
 +#include <common.h>
 +#include <pcf50633.h>
@@ -1156,11 +1239,37 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +/* initial register set for PCF50633 in Neo1973 GTA02 devices */
 +const u_int8_t pcf50633_initial_regs[__NUM_PCF50633_REGS] = {
 +	/* gap */
-+	[PCF50633_REG_INT1M]	= PCF50606_INT1_SECOND,
-+	[PCF50633_REG_INT2M]	= 0x00,
-+	[PCF50633_REG_INT3M]	= PCF50606_INT3_TSCPRES,
-+	[PCF50633_REG_INT4M]	= PCF50606_INT3_TSCPRES,
-+	[PCF50633_REG_INT5M]	= PCF50606_INT3_TSCPRES,
++	[PCF50633_REG_INT1M]	= PCF50633_INT1_SECOND,
++	[PCF50633_REG_INT2M]	= PCF50633_INT2_EXTON3F |
++				  PCF50633_INT2_EXTON3R |
++				  PCF50633_INT2_EXTON2F |
++				  PCF50633_INT2_EXTON2R |
++				  PCF50633_INT2_EXTON1R |
++				  PCF50633_INT2_EXTON1F,
++	[PCF50633_REG_INT3M]	= PCF50633_INT3_ADCRDY,
++	[PCF50633_REG_INT4M]	= 0x00,
++	[PCF50633_REG_INT5M]	= 0x00,
++
++	[PCF50633_REG_OOCWAKE]	= 0xd3, /* wake from ONKEY,EXTON!,RTC,USB,ADP */
++	[PCF50633_REG_OOCTIM1]	= 0xaa,	/* debounce 14ms everything */
++	[PCF50633_REG_OOCTIM2]	= 0x4a,
++	[PCF50633_REG_OOCMODE]	= 0x55,
++	[PCF50633_REG_OOCCTL]	= 0x44,
++
++	[PCF50633_REG_GPIOCTL]	= 0x01,	/* only GPIO1 is input */
++	[PCF50633_REG_GPIO2CFG]	= 0x00,
++	[PCF50633_REG_GPIO3CFG]	= 0x00,
++	[PCF50633_REG_GPOCFG]	= 0x00,
++
++	[PCF50633_REG_SVMCTL]	= 0x08,	/* 3.10V SYS voltage thresh. */
++	[PCF50633_REG_BVMCTL]	= 0x02,	/* 2.80V BAT voltage thresh. */
++
++	[PCF50633_REG_STBYCTL1]	= 0x00,
++	[PCF50633_REG_STBYCTL2]	= 0x00,
++
++	[PCF50633_REG_DEBPF1]	= 0xff,
++	[PCF50633_REG_DEBPF2]	= 0xff,
++	[PCF50633_REG_DEBPF2]	= 0x3f,
 +
 +	[PCF50633_REG_AUTOOUT]	= 0x6b,	/* 3.300V */
 +	[PCF50633_REG_AUTOENA]	= 0x01,	/* always on */
@@ -1201,7 +1310,18 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +	[PCF50633_REG_HCLDOOUT]	= 0x18,	/* 3.3V (24 * 0.1V + 0.9V) */
 +	[PCF50633_REG_HCLDOENA]	= 0x00, /* off by default*/
 +
-+	/* FIXME */
++	[PCF50633_REG_DCDCPFM]	= 0x00, /* off by default*/
++
++	[PCF50633_REG_MBCC1]	= 0xe6,
++	[PCF50633_REG_MBCC2]	= 0x28,	/* Vbatconid=2.7V, Vmax=4.20V */
++	[PCF50633_REG_MBCC3]	= 0x19,	/* 25/255 == 98mA pre-charge */
++	[PCF50633_REG_MBCC4]	= 0xff, /* 255/255 == 1A adapter fast */
++	[PCF50633_REG_MBCC5]	= 0x7f,	/* 127/255 == 500mA usb fast */
++	[PCF50633_REG_MBCC6]	= 0x00, /* cutoff current 1/32 * Ichg */
++	[PCF50633_REG_MBCC7]	= 0x00,	/* 1.6A max bat curr, USB 100mA */
++	[PCF50633_REG_MBCC8]	= 0x00,
++
++	[PCF50633_REG_BBCCTL]	= 0x19,	/* 3V, 200uA, on */
 +};
 Index: u-boot/board/neo1973/gta02/config.mk
 ===================================================================
@@ -1244,7 +1364,7 @@ Index: u-boot/drivers/smedia3362.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/smedia3362.c
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,125 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -1272,10 +1392,167 @@ Index: u-boot/drivers/smedia3362.c
 +#include <video_fb.h>
 +#include "videomodes.h"
 +#include <s3c2410.h>
++#include "smedia3362.h"
++
 +/*
 + * Export Graphic Device
 + */
 +GraphicDevice smi;
 +
 +
++struct glamo_script {
++	u_int16_t reg;
++	u_int16_t val;
++} __attribute__((packed));
++
++/* from 'initial glamo 3365 script' */
++static struct glamo_script gl3362_init_script[] = {
++	/* clock */
++	{ GLAMO_REG_CLOCK_MEMORY, 	0x300a },
++	{ GLAMO_REG_CLOCK_LCD,		0x10aa },
++	{ GLAMO_REG_CLOCK_MMC,		0x100a },
++	{ GLAMO_REG_CLOCK_ISP,		0x32aa },
++	{ GLAMO_REG_CLOCK_JPEG,		0x100a },
++	{ GLAMO_REG_CLOCK_3D,		0x302a },
++	{ GLAMO_REG_CLOCK_2D,		0x302a },
++	//{ GLAMO_REG_CLOCK_RISC1,	0x1aaa },
++	//{ GLAMO_REG_CLOCK_RISC2,	0x002a },
++	{ GLAMO_REG_CLOCK_MPEG,		0x3aaa },
++	{ GLAMO_REG_CLOCK_MPROC,	0x12aa },
++		{ 0xfffe, 5 },
++	{ GLAMO_REG_CLOCK_HOST,		0x000d },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x000a }I,
++	{ GLAMO_REG_CLOCK_LCD,		0x00ee },
++	{ GLAMO_REG_CLOCK_MMC,		0x000a },
++	{ GLAMO_REG_CLOCK_ISP,		0x02aa },
++	{ GLAMO_REG_CLOCK_JPEG,		0x000a },
++	{ GLAMO_REG_CLOCK_3D,		0x002a },
++	{ GLAMO_REG_CLOCK_2D,		0x002a },
++	//{ GLAMO_REG_CLOCK_RISC1,	0x0aaa },
++	//{ GLAMO_REG_CLOCK_RISC2,	0x002a },
++	{ GLAMO_REG_CLOCK_MPEG,		0x0aaa },
++	{ GLAMO_REG_CLOCK_MPROC,	0x02aa },
++		{ 0xfffe, 5 },
++	{ GLAMO_REG_PLL_GEN1,		0x061a }, /* PLL1=50MHz, OSCI=32kHz */
++	{ GLAMO_REG_PLL_GEN3,		0x09c3 }, /* PLL2=80MHz, OSCI=32kHz */
++		{ 0xfffe, 5 },
++	{ GLAMO_REG_CLOCK_GEN5_1,	0x18ff },
++	{ GLAMO_REG_CLOCK_GEN5_2,	0x051f },
++	{ GLAMO_REG_CLOCK_GEN6,		0x2000 },
++	{ GLAMO_REG_CLOCK_GEN7,		0x0105 },
++	{ GLAMO_REG_CLOCK_GEN8,		0x0100 },
++	{ GLAMO_REG_CLOCK_GEN10,	0x0017 },
++	{ GLAMO_REG_CLOCK_GEN11,	0x0017 },
++
++	/* hostbus interface */
++	{ GLAMO_REG_HOSTBUS(1),		0x0e00 },
++	{ GLAMO_REG_HOSTBUS(2),		0x07ff },
++	{ GLAMO_REG_HOSTBUS(4),		0x0080 },
++	{ GLAMO_REG_HOSTBUS(5),		0x0244 },
++	{ GLAMO_REG_HOSTBUS(6),		0x0600 },
++	{ GLAMO_REG_HOSTBUS(12),	0xf00e },
++
++	/* memory */
++	{ GLAMO_REG_MEM_TYPE,		0x0874 }, /* VRAM 8Mbyte */
++	{ GLAMO_REG_MEM_GEN,		0xafaf },
++	{ GLAMO_REG_MEM_TIMING(1),	0x0108 },
++	{ GLAMO_REG_MEM_TIMING(2),	0x0010 },
++	{ GLAMO_REG_MEM_TIMING(3),	0x0000 },
++	{ GLAMO_REG_MEM_TIMING(4),	0x0000 },
++	{ GLAMO_REG_MEM_TIMING(5),	0x0000 },
++	{ GLAMO_REG_MEM_TIMING(6),	0x0000 },
++	{ GLAMO_REG_MEM_TIMING(7),	0x0000 },
++	{ GLAMO_REG_MEM_TIMING(8),	0x1002 },
++	{ GLAMO_REG_MEM_TIMING(9),	0x6006 },
++	{ GLAMO_REG_MEM_TIMING(10),	0x00ff },
++	{ GLAMO_REG_MEM_TIMING(11),	0x0001 },
++	{ GLAMO_REG_MEM_POWER1,		0x0020 },
++	{ GLAMO_REG_MEM_POWRE2,		0x0000 },
++	{ GLAMO_REG_MEM_DRAM1,		0x0000 },
++		{ 0xfffe, 1 },
++	{ GLAMO_REG_MEM_DRAM1,		0xc100 },
++	{ GLAMO_REG_MEM_DRAM2,		0x01d6 },
++};
++
++static int glamo3362_init(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(gl3362_init_script); i++) {
++		struct glamo_reg *reg = gl3362_init_script[i];
++
++		if (reg->reg == 0xfffe)
++			delay(reg->val);
++		else
++			gl3362_reg_write(reg->reg, reg->val);
++	}
++	/* FIXME */
++}
++
 +#endif /* CONFIG_VIDEO_GLAMO3362 */
+Index: u-boot/drivers/Makefile
+===================================================================
+--- u-boot.orig/drivers/Makefile
++++ u-boot/drivers/Makefile
+@@ -50,7 +50,7 @@
+ 	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
+ 	  videomodes.o w83c553f.o \
+ 	  ks8695eth.o \
+-	  pcf50606.o \
++	  pcf50606.o pcf50633.o \
+ 	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
+ 	  rpx_pcmcia.o \
+ 	  fsl_i2c.o s3c2410_fb.o
+Index: u-boot/common/cmd_nand.c
+===================================================================
+--- u-boot.orig/common/cmd_nand.c
++++ u-boot/common/cmd_nand.c
+@@ -208,8 +208,10 @@
+ 		putc('\n');
+ 		for (i = 0; i < CFG_MAX_NAND_DEVICE; i++) {
+ 			if (nand_info[i].name)
+-				printf("Device %d: %s, sector size %lu KiB\n",
++				printf("Device %d: %s, page size %lu, "
++					"sector size %lu KiB\n",
+ 					i, nand_info[i].name,
++					nand_info[i].oobblock,
+ 					nand_info[i].erasesize >> 10);
+ 		}
+ 		return 0;
+Index: u-boot/drivers/nand/nand_ids.c
+===================================================================
+--- u-boot.orig/drivers/nand/nand_ids.c
++++ u-boot/drivers/nand/nand_ids.c
+@@ -67,7 +67,7 @@
+ 
+ 	{"NAND 256MiB 3,3V 8-bit", 	0x71, 512, 256, 0x4000, 0},
+ 
+-	{"NAND 512MiB 3,3V 8-bit", 	0xDC, 512, 512, 0x4000, 0},
++	//{"NAND 512MiB 3,3V 8-bit", 	0xDC, 512, 512, 0x4000, 0},
+ 
+ 	/* These are the new chips with large page size. The pagesize
+ 	* and the erasesize is determined from the extended id bytes
+Index: u-boot/board/neo1973/common/udc.c
+===================================================================
+--- u-boot.orig/board/neo1973/common/udc.c
++++ u-boot/board/neo1973/common/udc.c
+@@ -3,6 +3,7 @@
+ #include <usbdcore.h>
+ #include <s3c2410.h>
+ #include <pcf50606.h>
++#include <pcf50633.h>
+ 
+ void udc_ctrl(enum usbd_event event, int param)
+ {
+@@ -22,6 +23,11 @@
+ #if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v3) || \
+     defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
+ 		pcf50606_charge_autofast(param);
++#elif defined(CONFIG_ARCH_GTA02_v1)
++		if (param)
++			pcf50633_usb_maxcurrent(500);
++		else
++			pcf50633_usb_maxcurrent(0);
+ #endif
+ 		break;
+ 	default:
