@@ -1237,6 +1237,9 @@ bool	gn_atem_command_plusc(char **buf)
 				status = GN_SMS_Unsent;
 			} else if (strcasecmp(*buf, "4") == 0 ||
 				strcasecmp(*buf, "\"ALL\"") == 0) {
+				/* TODO: in TEXT mode only "ALL" should be
+				 * accepted, and in PDU mode only the "4"
+				 * form.  */
 				status = 4; /* ALL */
 			} else {
 				return true;
