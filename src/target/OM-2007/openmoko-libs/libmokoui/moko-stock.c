@@ -63,17 +63,65 @@ static const GtkStockItem moko_items [] =
 };
 
 
-static gboolean registered = FALSE;
+static gboolean        registered        = FALSE;
+
+static void
+_moko_stock_add_icon (GtkIconFactory *factory, const GtkStockItem *item)
+{
+  static GtkIconTheme *theme = NULL;
+  GtkIconSource       *source = NULL;
+  GtkIconSet          *set = NULL;
+  GdkPixbuf           *pixbuf = NULL;
+
+  if (theme == NULL)
+    theme = gtk_icon_theme_get_default ();
+
+  source = gtk_icon_source_new ();
+
+  gtk_icon_source_set_size (source, GTK_ICON_SIZE_BUTTON);
+  gtk_icon_source_set_size_wildcarded (source, FALSE);
+
+  pixbuf = gtk_icon_theme_load_icon (theme, item->stock_id,
+                                     32, 0, NULL);
+  if (pixbuf == NULL)
+  {
+    g_warning ("Cannot load stock icon from theme : %s\n", item->stock_id);
+    return;
+  }
+
+  gtk_icon_source_set_pixbuf (source, pixbuf);
+
+  g_object_unref (G_OBJECT (pixbuf));
+
+  set = gtk_icon_set_new ();
+
+  gtk_icon_set_add_source (set, source);
+  gtk_icon_source_free (source);
+
+  gtk_icon_factory_add (factory, item->stock_id, set);
+  gtk_icon_set_unref (set);
+}
 
 void
 moko_stock_register ()
 {
+  gint i = 0;
+  static GtkIconFactory *moko_icon_factory = NULL;
+
   /* make sure we never register the icons twice */
   if (registered)
     return;
-
+  
+  moko_icon_factory = gtk_icon_factory_new ();
+  
+  for (i = 0; i < G_N_ELEMENTS (moko_items); i++)
+  {
+    _moko_stock_add_icon (moko_icon_factory, &moko_items[i]);
+  }
+  
+  gtk_icon_factory_add_default (moko_icon_factory);
+  
   gtk_stock_add_static (moko_items, G_N_ELEMENTS (moko_items));
-
 
   registered = TRUE;
 }
