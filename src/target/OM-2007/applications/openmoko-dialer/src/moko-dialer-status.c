@@ -62,10 +62,11 @@ for(gint i=0;i<MOKO_DIALER_MAX_STATUS_ICONS;i++)
 
   moko_dialer_status->labelStatus = gtk_label_new (""); ///<the status label
   gtk_misc_set_alignment (GTK_MISC (moko_dialer_status->labelStatus), 0, 0);
-//                gtk_misc_set_padding(GTK_MISC (moko_dialer_status->labelStatus), 20,0);
-  moko_dialer_status->labelPersonName = gtk_label_new ("");     ///<the person name
-  gtk_misc_set_alignment (GTK_MISC (moko_dialer_status->labelPersonName), 0,
-                          0);
+  gtk_label_set_width_chars (GTK_LABEL (moko_dialer_status->labelStatus), 20);
+  //gtk_misc_set_padding(GTK_MISC (moko_dialer_status->labelStatus), 20,0);
+
+  moko_dialer_status->labelPersonName = gtk_label_new (""); ///<the person name
+  gtk_misc_set_alignment (GTK_MISC (moko_dialer_status->labelPersonName), 0, 0);
   moko_dialer_status->labelNumber = gtk_label_new (""); ///<the number of the person
   gtk_misc_set_alignment (GTK_MISC (moko_dialer_status->labelNumber), 0, 0);
 //private section
