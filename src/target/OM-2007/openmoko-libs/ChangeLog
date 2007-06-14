@@ -1,3 +1,12 @@
+2007-06-14  Mickey  <mickey@openmoko.org>
+
+	* configure.ac:
+	* libmokoui/Makefile.in:
+	* libmokoui/banner.c:
+	* libmokoui/banner.h:
+
+	Add MokoBanner as on-screen display
+
 2007-06-12  Thomas  <thomas@openedhand.com>
 
 	* libmokoui/moko-stock.c:
