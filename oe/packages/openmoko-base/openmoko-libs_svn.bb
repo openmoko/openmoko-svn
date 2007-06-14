@@ -3,9 +3,9 @@ application framework for mobile communications applications \
 based on Gtk+ 2.x"
 SECTION = "openmoko/libs"
 LICENSE = "LGPL"
-DEPENDS += "gtk+ eds-dbus libgsmd"
-PV = "0.0.1+svn${SRCDATE}"
-PR = "r4"
+DEPENDS += "gtk+ eds-dbus libgsmd libxosd"
+PV = "0.4.0+svn${SRCDATE}"
+PR = "r0"
 
 inherit openmoko
 
