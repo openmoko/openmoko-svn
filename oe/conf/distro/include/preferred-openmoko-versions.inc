@@ -46,8 +46,7 @@ SRCDATE_openmoko-panel-demo-simple = "now"
 #
 SRCDATE_openmoko-contacts = "now"
 SRCDATE_openmoko-dates = "now"
-#FIXME: Change back to now when bug #585 is fixed
-SRCDATE_openmoko-tasks = "20070527"
+SRCDATE_openmoko-tasks = "now"
 SRCDATE_openmoko-today = "now"
 SRCDATE_openmoko-messages = "now"
 SRCDATE_openmoko-rssreader = "now"
