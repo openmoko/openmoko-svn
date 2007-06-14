@@ -27,13 +27,15 @@ PKG_CHECK_MODULES(DEPS,
                   gdk-pixbuf-2.0
                   libgsmd)
 
+AM_PATH_LIBXOSD(have_xosd=true,AC_MSG_ERROR([*** Required libxosd not installed ***]))
+
 if test x$MOKO_DEVEL = xon ; then
     AC_MSG_NOTICE([removing -O2 from CFLAGS])
     CFLAGS="-g -Wall"
 fi
 
-LIBS="$LIBS $DEPS_LIBS"
-CFLAGS="$CFLAGS $DEPS_CFLAGS"
+LIBS="$LIBS $DEPS_LIBS $LIBXOSD_LIBS"
+CFLAGS="$CFLAGS $DEPS_CFLAGS $LIBXOSD_CLFAGS"
 
 AC_SUBST(LIBS)
 

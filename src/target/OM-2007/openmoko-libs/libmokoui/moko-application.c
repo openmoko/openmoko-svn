@@ -113,11 +113,6 @@ static void moko_application_init(MokoApplication *self)
     priv->icon_factory = gtk_icon_factory_new();
     gtk_icon_factory_add_default( priv->icon_factory );
 
-#if 0
-    moko_application_add_stock_icons( self,
-                                      "openmoko-default-application",
-                                      NULL );
-#endif
     priv->windows = NULL;
     priv->is_topmost = FALSE;
     priv->window_group = GDK_WINDOW_XID(gdk_display_get_default_group(gdk_display_get_default()));
@@ -127,7 +122,7 @@ static void moko_application_init(MokoApplication *self)
     priv->net_active_window_atom = XInternAtom( GDK_DISPLAY(), "_NET_ACTIVE_WINDOW", False );
     priv->seen_matchbox_atom = FALSE;
 
-    moko_stock_register ();
+    moko_stock_register();
 }
 
 static void moko_application_finalize (GObject *self)

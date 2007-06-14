@@ -2,6 +2,7 @@ source_h = \
     moko-ui.h \
     moko-alignment.h \
     moko-application.h \
+    moko-banner.h \
     moko-details-window.h \
     moko-dialog-window.h \
     moko-finger-tool-box.h \
@@ -24,6 +25,7 @@ source_h = \
 source_c = \
     moko-alignment.c \
     moko-application.c \
+    moko-banner.c \
     moko-details-window.c \
     moko-dialog-window.c \
     moko-finger-tool-box.c \
@@ -53,7 +55,7 @@ AM_CFLAGS = -Wall -pedantic -std=c99
 lib_LTLIBRARIES      = libmokoui.la
 libmokoui_la_SOURCES     = $(source_c) $(source_h)
 libmokoui_la_LIBADD      =
-libmokoui_la_LDFLAGS = -version-info 0:1:0
+libmokoui_la_LDFLAGS = -version-info 0:2:0
 
 libopenmokouiheadersdir = $(includedir)/openmoko-libs/libmokoui
 libopenmokouiheaders_DATA = $(source_h)

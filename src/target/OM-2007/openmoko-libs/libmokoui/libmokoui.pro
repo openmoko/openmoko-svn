@@ -1,10 +1,11 @@
 TEMPLATE = lib
-VERSION = 0.0.3
+VERSION = 0.2.0
 TARGET = mokoui
 
 HEADERS = \
     moko-alignment.h \
     moko-application.h \
+    moko-banner.h \
     moko-details-window.h \
     moko-dialog.h \
     moko-dialog-window.h \
@@ -28,6 +29,7 @@ HEADERS = \
 SOURCES = \
     moko-alignment.c \
     moko-application.c \
+    moko-banner.c \
     moko-details-window.c \
     moko-dialog.c \
     moko-dialog-window.c \
@@ -48,5 +50,7 @@ SOURCES = \
     moko-window.c
 
 PKGCONFIG += gtk+-2.0
+QMAKE_CFLAGS += `xosd-config --cflags`
+LIBS += `xosd-config --libs`
 
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
