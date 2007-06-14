@@ -14,5 +14,7 @@ SOURCES = \
   src/mokodesktop_item.c \
   src/stylusmenu.c
 
+PKGCONFIG += libstartup-notification-1.0
+
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
 
