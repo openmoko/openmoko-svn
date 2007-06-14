@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2026,6 +2026,9 @@
+@@ -2049,6 +2049,9 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
  
@@ -860,7 +860,7 @@ Index: u-boot/board/hxd8/config.mk
 +
 +CONFIG_USB_DFU_VENDOR=0x1457
 +CONFIG_USB_DFU_PRODUCT=0x511a
-+CONFIG_USB_DFU_REVISION=0x0100
++CONFIG_USB_DFU_REVISION=0x0110
 +
 +#
 +# HXD81v011 or later has 1 bank of 128 MB SDRAM
