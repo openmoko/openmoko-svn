@@ -18,6 +18,7 @@
  */
 
 #include <libmokoui/moko-application.h>
+#include <libmokoui/moko-banner.h>
 #include <libmokoui/moko-scrolled-pane.h>
 #include <libmokoui/moko-dialog-window.h>
 #include <libmokoui/moko-paned-window.h>
@@ -120,17 +121,27 @@ void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
 {
     g_debug( "openmoko-stylus-demo: searchbox now visible" );
     // populate the entry completion here and/or connect signals to entry
+
+    MokoBanner* banner = moko_banner_new();
+    moko_banner_show_text( banner, "Searchbox visible", 2 );
+    g_object_unref( banner );
 }
 
 void cb_searchbox_invisible(MokoToolBox* toolbox, gpointer user_data)
 {
     g_debug( "openmoko-stylus-demo: searchbox now invisible" );
     // free resources and/or disconnect signals
+    MokoBanner* banner = moko_banner_new();
+    moko_banner_show_text( banner, "Searchbox invisible", 2 );
+    g_object_unref( banner );
 }
 
 void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
 {
     g_debug( "openmoko-stylus-demo: filter changed to '%s'", text );
+    MokoBanner* banner = moko_banner_new();
+    moko_banner_show_text( banner, "Filter has been changed", 2 );
+    g_object_unref( banner );
 }
 
 void cb_button1_clicked(GtkButton *button, gpointer user_data)
@@ -369,11 +380,11 @@ int main( int argc, char** argv )
 
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
- 
+
     moko_window_set_status_message (MOKO_WINDOW (window), "Test message");
     moko_window_set_status_progress (MOKO_WINDOW (window), 0.5);
 
-   g_debug( "openmoko-stylus-demo entering main loop" );
+    g_debug( "openmoko-stylus-demo entering main loop" );
     gtk_main();
     g_debug( "openmoko-stylus-demo left main loop" );
 
