@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r42"
+PR = "r43"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -147,6 +147,7 @@ RDEPENDS_task-openmoko-pim = "\
 DESCRIPTION_task-openmoko-net = "OpenMoko: Linux Advanced Networking"
 RDEPENDS_task-openmoko-net = "\
   bluez-utils \
+  bridge-utils \
 "
 
 #
