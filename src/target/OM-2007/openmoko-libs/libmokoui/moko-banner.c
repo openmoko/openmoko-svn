@@ -5,8 +5,8 @@
  *  Copyright (C) 2007 OpenMoko, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Public License as published by
- *  the Free Software Foundation; version 2.1 of the license.
+ *  it under the terms of the GNU Lesser Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -78,7 +78,7 @@ moko_banner_class_init(MokoBannerClass* klass)
     /* initialize libxosd and configure defaults */
     klass->osd = xosd_create( 2 );
     if ( !klass->osd )
-        g_warning( "Could not create libxosd contect. On Screen Display won't be available" );
+        g_warning( "Could not create libxosd contect (%s). On Screen Display won't be available", xosd_error );
     else
     {
         xosd_set_font( klass->osd, "-bitstream-bitstream vera sans-*-r-*-*-*-200-*-*" );
