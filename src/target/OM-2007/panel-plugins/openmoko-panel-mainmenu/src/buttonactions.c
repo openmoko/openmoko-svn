@@ -249,6 +249,10 @@ gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, g
 gboolean panel_mainmenu_aux_timeout( guint timeout )
 {
     g_debug( "aux pressed for %d", timeout );
+
+    panel_mainmenu_sound_play( "touchscreen" );
+    panel_mainmenu_powersave_reset();
+
     aux_timer = -1;
     if ( timeout < 1 )
     {
@@ -299,6 +303,20 @@ void panel_mainmenu_popup_selected_lock( GtkMenuItem* menu, gpointer user_data )
     }
 }
 
+void panel_mainmenu_popup_selected_restartUI( GtkMenuItem* menu, gpointer user_data )
+{
+    //FIXME talk to neod
+    //FIXME notify user
+    system( "/etc/init.d/xserver-nodm restart");
+}
+
+void panel_mainmenu_popup_selected_reboot( GtkMenuItem* menu, gpointer user_data )
+{
+    //FIXME talk to neod
+    //FIXME notify user
+    system( "/sbin/reboot");
+}
+
 void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_data )
 {
     //FIXME talk to neod
@@ -309,6 +327,10 @@ void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_da
 gboolean panel_mainmenu_power_timeout( guint timeout )
 {
     g_debug( "power pressed for %d", timeout );
+
+    panel_mainmenu_sound_play( "touchscreen" );
+    panel_mainmenu_powersave_reset();
+
     power_timer = -1;
     if ( timeout < 1 )
     {
@@ -353,6 +375,10 @@ gboolean panel_mainmenu_power_timeout( guint timeout )
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
             GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
+            GtkWidget* restartUI = gtk_menu_item_new_with_label( "Restart UI" );
+            g_signal_connect( G_OBJECT(restartUI), "activate", G_CALLBACK(panel_mainmenu_popup_selected_restartUI), NULL );
+            GtkWidget* reboot = gtk_menu_item_new_with_label( "Reboot" );
+            g_signal_connect( G_OBJECT(reboot), "activate", G_CALLBACK(panel_mainmenu_popup_selected_reboot), NULL );
             GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
             g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(panel_mainmenu_popup_selected_poweroff), NULL );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), poweroff );
