@@ -62,6 +62,14 @@ struct pcf_s {
     QEMUTimer *onkeylow;
 };
 
+static inline void pcf_update(struct pcf_s *s)
+{
+    qemu_set_irq(s->irq,
+                    !((s->intr[0] & ~s->intm[0]) ||
+                      (s->intr[1] & ~s->intm[1]) ||
+                      (s->intr[2] & ~s->intm[2])));
+}
+
 void pcf_reset(i2c_slave *i2c)
 {
     struct pcf_s *s = (struct pcf_s *) i2c;
@@ -123,14 +131,7 @@ void pcf_reset(i2c_slave *i2c)
     s->gpoc[3] = 0x00;
     s->gpoc[4] = 0x00;
     s->gpo = 0x3c;
-}
-
-static inline void pcf_update(struct pcf_s *s)
-{
-    qemu_set_irq(s->irq,
-                    (s->intr[0] & ~s->intm[0]) ||
-                    (s->intr[1] & ~s->intm[1]) ||
-                    (s->intr[2] & ~s->intm[2]));
+    pcf_update(s);
 }
 
 #define BATVOLT			88	/* Percentage */
