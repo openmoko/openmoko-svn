@@ -4,7 +4,7 @@ ALLOW_EMPTY = "1"
 PACKAGE_ARCH = "all"
 LICENSE = "MIT"
 PROVIDES = "task-openmoko-everything"
-PR = "r43"
+PR = "r44"
 
 PACKAGES = "\
   task-openmoko-linux \
@@ -69,6 +69,7 @@ RDEPENDS_task-openmoko-ui = "\
   xserver-kdrive-fbdev \
   xserver-kdrive-common \
   xserver-nodm-init \
+  x11-c-locale \
   ttf-bitstream-vera \
   xauth \
   xhost \
