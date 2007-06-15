@@ -14,7 +14,7 @@ SOURCES += src/today-events-area.c \
            src/xutil.c
 
 MOKOCONFIG = mokoui
-PKGCONFIG += libebook-1.2 libecal-1.2
+PKGCONFIG += libebook-1.2 libecal-1.2 startup-notification-1.0
 DEFINES += RSSREADER_LOCALE_DIR=\\\"/tmp/\\\"
 include ( $(OPENMOKODIR)/devel/qmake/openmoko-include.pro )
 
