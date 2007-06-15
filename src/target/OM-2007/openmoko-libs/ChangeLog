@@ -1,3 +1,9 @@
+2007-06-15	Mickey	<mickey@openmoko.org>
+
+	* libmokoui/banner.c:
+
+	Tweak banner look and feel
+
 2007-06-14  Mickey  <mickey@openmoko.org>
 
 	* configure.ac:
