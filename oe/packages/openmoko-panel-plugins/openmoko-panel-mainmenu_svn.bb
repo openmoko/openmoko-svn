@@ -1,7 +1,7 @@
-DESCRIPTION = "Shows the current time in the OpenMoko panel"
-PV = "0.0.1+svn${SRCDATE}"
+DESCRIPTION = "A finger based main menu for the OpenMoko panel"
+PV = "0.1.0+svn${SRCDATE}"
 
-DEPENDS += "libmatchbox"
+DEPENDS += "libmatchbox libpulse startup-notification"
 
 inherit openmoko-panel-plugin
 
