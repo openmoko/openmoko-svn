@@ -784,6 +784,8 @@ static void pcf_onkey1s(void *opaque)
 
     s->intr[0] |= 1 << 2;	/* set ONKEY1S */
     pcf_update(s);
+    /* Does the timer start when INTR0[ONKEY1S] is cleared instead? */
+    qemu_mod_timer(s->onkeylow, qemu_get_clock(vm_clock) + ticks_per_sec);
 }
 
 static void pcf_save(QEMUFile *f, void *opaque)
