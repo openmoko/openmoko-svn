@@ -722,7 +722,7 @@ static void s3c_dma_ch_run(struct s3c_dma_state_s *s,
                     ch->cdst += width;
             }
 
-            if (!(ch->con & (1 << 27)))				/* SERVMODE */
+            if (!(ch->con & (1 << 27)) && !ch->req)		/* SERVMODE */
                 break;
         }
         ch->running = 0;
