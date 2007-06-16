@@ -17,14 +17,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#include <libmokoui/moko-application.h>
-#include <libmokoui/moko-banner.h>
-#include <libmokoui/moko-scrolled-pane.h>
-#include <libmokoui/moko-dialog-window.h>
-#include <libmokoui/moko-paned-window.h>
-#include <libmokoui/moko-tool-box.h>
-#include <libmokoui/moko-tree-view.h>
-#include <libmokoui/moko-window.h>
+#include <libmokoui/moko-ui.h>
 
 #include <gtk/gtkactiongroup.h>
 #include <gtk/gtkbutton.h>
@@ -122,9 +115,7 @@ void cb_searchbox_visible(MokoToolBox* toolbox, gpointer user_data)
     g_debug( "openmoko-stylus-demo: searchbox now visible" );
     // populate the entry completion here and/or connect signals to entry
 
-    MokoBanner* banner = moko_banner_new();
-    moko_banner_show_text( banner, "Searchbox visible", 2 );
-    g_object_unref( banner );
+    moko_ui_banner_show_text( 2, "Searchbox now visible" );
 }
 
 void cb_searchbox_invisible(MokoToolBox* toolbox, gpointer user_data)
@@ -139,9 +130,7 @@ void cb_searchbox_invisible(MokoToolBox* toolbox, gpointer user_data)
 void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
 {
     g_debug( "openmoko-stylus-demo: filter changed to '%s'", text );
-    MokoBanner* banner = moko_banner_new();
-    moko_banner_show_text( banner, "Filter has been changed", 2 );
-    g_object_unref( banner );
+    moko_ui_banner_show_text( 2, "Filter has been changed to %s", text );
 }
 
 void cb_button1_clicked(GtkButton *button, gpointer user_data)
@@ -373,6 +362,7 @@ int main( int argc, char** argv )
             "\nto make the fullscreen\n \ntrigger more interesting\n \n \n" );
 
     MokoScrolledPane* detailswindow = moko_scrolled_pane_new();
+    moko_scrolled_pane_set_fullscreen_position( detailswindow, 1 );
     moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE (detailswindow), GTK_WIDGET (details));
     moko_paned_window_set_details_pane( window, GTK_WIDGET(detailswindow) );
 
