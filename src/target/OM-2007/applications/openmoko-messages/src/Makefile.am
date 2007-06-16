@@ -1,5 +1,6 @@
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
-              -DPKGDATADIR=\"$(pkgdatadir)\"
+              -DPKGDATADIR=\"$(pkgdatadir)\" \
+              -DDBUS_API_SUBJECT_TO_CHANGE
 
 INCLUDES = -DPKGDATADIR=\"$(pkgdatadir)\" @OPENMOKO_CFLAGS@ -Wall -std=c99 -pedantic
 
@@ -11,7 +12,8 @@ openmoko_messages_SOURCES = main.c main.h \
 			    detail-area.c detail-area.h \
 			    sms-dialog-window.c sms-dialog-window.h \
 			    sms-membership-window.c sms-membership-window.h \
-			    sms-contact-window.c sms-contact-window.h
+			    sms-contact-window.c sms-contact-window.h \
+                            message.h
 
 openmoko_messages_LDADD = @OPENMOKO_LIBS@
 
