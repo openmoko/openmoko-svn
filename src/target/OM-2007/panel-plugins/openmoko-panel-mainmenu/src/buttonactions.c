@@ -18,6 +18,8 @@
  */
 #include "buttonactions.h"
 
+#include <libmokoui/moko-ui.h>
+
 #include <gtk/gtklabel.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkmenuitem.h>
@@ -313,14 +315,14 @@ void panel_mainmenu_popup_selected_restartUI( GtkMenuItem* menu, gpointer user_d
 void panel_mainmenu_popup_selected_reboot( GtkMenuItem* menu, gpointer user_data )
 {
     //FIXME talk to neod
-    //FIXME notify user
+    moko_ui_banner_show_text( 4, "Rebooting System..." );
     system( "/sbin/reboot");
 }
 
 void panel_mainmenu_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_data )
 {
     //FIXME talk to neod
-    //FIXME notify user
+    moko_ui_banner_show_text( 4, "Shutting down System..." );
     system( "/sbin/poweroff");
 }
 
