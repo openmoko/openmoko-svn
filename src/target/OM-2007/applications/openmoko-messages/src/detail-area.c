@@ -32,7 +32,7 @@ typedef struct _DetailAreaPrivate{
 }DetailAreaPrivate;
 
 /* parent class pointer */
-GtkWindowClass* parent_class = NULL;
+static GtkWindowClass* parent_class = NULL;
 
 static void
 detail_area_dispose (GObject *object)

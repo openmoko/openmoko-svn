@@ -35,7 +35,7 @@ typedef struct _MokoTreeViewPrivate
 } MokoTreeViewPrivate;
 
 /* parent class pointer */
-GObjectClass* parent_class = NULL;
+static GObjectClass* parent_class = NULL;
 
 /* forward declarations */
 void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition);
