@@ -44,7 +44,7 @@ module_id() {
 
 export USER=root
 
-ARGS=" -br -pn -pf built-ins,/usr/share/fonts/ttf,/usr/share/fonts/truetype"
+ARGS=" -br -pn -fp built-ins,/usr/share/fonts/ttf,/usr/share/fonts/truetype"
 
 # use ucb 1x00 touchscreen if present
 if [ -z "$TSLIB_TSDEVICE" ] && [ -e /dev/touchscreen/ucb1x00 ]; then
