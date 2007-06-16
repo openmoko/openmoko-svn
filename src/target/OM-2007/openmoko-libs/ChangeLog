@@ -1,3 +1,16 @@
+2007-06-16  Mickey  <mickey@openmoko.org>
+
+	* libmokoui/moko-scrolled-pane.h:
+	* libmokoui/moko-scrolled-pane.c:
+
+	Add function for changing the position of
+	the fullscreen button. NOTE: API may vanish,
+	please don't just rely on it now.
+
+	* libmokoui/moko.ui.h:
+
+	Add convenience API for showing a MokoBanner
+
 2007-06-15	Mickey	<mickey@openmoko.org>
 
 	* libmokoui/banner.c:
