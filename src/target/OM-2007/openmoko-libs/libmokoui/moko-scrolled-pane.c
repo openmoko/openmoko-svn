@@ -2,7 +2,7 @@
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2007 Vanille-Media
+ *  Copyright (C) 2007 OpenMoko, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
@@ -191,3 +191,8 @@ GtkWidget *moko_scrolled_pane_get_child (MokoScrolledPane *pane)
   return child;
 }
 
+void moko_scrolled_pane_set_fullscreen_position( MokoScrolledPane* self, gboolean top )
+{
+    MokoScrolledPanePrivate* priv = SCROLLED_PANE_GET_PRIVATE( self );
+    gtk_box_reorder_child( GTK_BOX(priv->vbox), GTK_WIDGET(priv->button), top ? 1: 0 );
+}

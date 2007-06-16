@@ -2,7 +2,7 @@
  *
  *  Authored By Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
- *  Copyright (C) 2007 Vanille-Media
+ *  Copyright (C) 2007 OpenMoko, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Public License as published by
@@ -47,6 +47,7 @@ void moko_scrolled_pane_pack (MokoScrolledPane *pane, GtkWidget *child);
 void moko_scrolled_pane_unpack (MokoScrolledPane *pane, GtkWidget *child);
 GtkWidget *moko_scrolled_pane_get_child (MokoScrolledPane *pane);
 void moko_scrolled_pane_pack_with_viewport (MokoScrolledPane *pane, GtkWidget *child);
+void moko_scrolled_pane_set_fullscreen_position( MokoScrolledPane* self, gboolean top );
 
 G_END_DECLS
 
