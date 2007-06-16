@@ -85,7 +85,7 @@ moko_banner_class_init(MokoBannerClass* klass)
         xosd_set_colour( klass->osd, "orange" ); // x11 should gain a moko-orange...
         xosd_set_outline_offset( klass->osd, 2 );
         xosd_set_outline_colour( klass->osd, "black" );
-        xosd_set_shadow_offset( klass->osd, 5 );
+        xosd_set_shadow_offset( klass->osd, 4 );
         xosd_set_pos( klass->osd, XOSD_middle );
         xosd_set_vertical_offset( klass->osd, -100 );
         xosd_set_align( klass->osd, XOSD_center );
