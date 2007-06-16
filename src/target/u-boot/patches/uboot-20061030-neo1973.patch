@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2009,6 +2009,14 @@
+@@ -2032,6 +2032,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -60,7 +60,7 @@ Index: u-boot/drivers/pcf50606.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/pcf50606.c
-@@ -0,0 +1,112 @@
+@@ -0,0 +1,161 @@
 +
 +#include <common.h>
 +
@@ -171,6 +171,55 @@ Index: u-boot/drivers/pcf50606.c
 +		pcf50606_reg_write(PCF50606_REG_MBCC1, 0x00);
 +	}
 +}
++
++#if defined(CONFIG_RTC_PCF50606) && (CONFIG_COMMANDS & CFG_CMD_DATE)
++
++#include <rtc.h>
++
++static unsigned bcd2bin (uchar n)
++{
++	return ((((n >> 4) & 0x0F) * 10) + (n & 0x0F));
++}
++
++static unsigned char bin2bcd (unsigned int n)
++{
++	return (((n / 10) << 4) | (n % 10));
++}
++
++
++void rtc_get(struct rtc_time *tmp)
++{
++	tmp->tm_sec = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCSC));
++	tmp->tm_min = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCMN));
++	tmp->tm_hour = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCHR));
++	tmp->tm_wday = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCWD));
++	tmp->tm_mday = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCDT));
++	tmp->tm_mon = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCMT));
++	tmp->tm_year = bcd2bin(pcf50606_reg_read(PCF50606_REG_RTCYR));
++	if (tmp->tm_year < 70)
++		tmp->tm_year += 2000;
++	else
++		tmp->tm_year += 1900;
++	tmp->tm_yday = 0;
++	tmp->tm_isdst = 0;
++}
++
++void rtc_set(struct rtc_time *tmp)
++{
++	pcf50606_reg_write(PCF50606_REG_RTCSC, bin2bcd(tmp->tm_sec));
++	pcf50606_reg_write(PCF50606_REG_RTCMN, bin2bcd(tmp->tm_min));
++	pcf50606_reg_write(PCF50606_REG_RTCHR, bin2bcd(tmp->tm_hour));
++	pcf50606_reg_write(PCF50606_REG_RTCWD, bin2bcd(tmp->tm_wday));
++	pcf50606_reg_write(PCF50606_REG_RTCDT, bin2bcd(tmp->tm_mday));
++	pcf50606_reg_write(PCF50606_REG_RTCMN, bin2bcd(tmp->tm_mon));
++	pcf50606_reg_write(PCF50606_REG_RTCYR, bin2bcd(tmp->tm_year % 100));
++}
++
++void rtc_reset(void)
++{
++	/* FIXME */
++}
++#endif /* CONFIG_RTC_PCF50606 && CFG_CMD_DATE */
 +
 +#endif /* CONFIG DRIVER_PCF50606 */
 Index: u-boot/include/pcf50606.h
@@ -1943,7 +1992,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -0,0 +1,265 @@
+@@ -0,0 +1,261 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2013,11 +2062,6 @@ Index: u-boot/include/configs/neo1973_gta01.h
 + * select serial console configuration
 + */
 +#define CONFIG_SERIAL1          1	/* we use SERIAL 1 on GTA01 */
-+
-+/************************************************************
-+ * RTC
-+ ************************************************************/
-+#define	CONFIG_RTC_S3C24X0	1
 +
 +/* allow to overwrite serial and ethaddr */
 +#define CONFIG_ENV_OVERWRITE
@@ -2207,6 +2251,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 +#define CONFIG_S3C2410_NAND_HWECC              1
 +
 +#define CONFIG_DRIVER_PCF50606		1
++#define CONFIG_RTC_PCF50606		1
 +
 +#endif	/* __CONFIG_H */
 Index: u-boot/board/neo1973/common/neo1973.h
