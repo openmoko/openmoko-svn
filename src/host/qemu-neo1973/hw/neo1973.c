@@ -173,7 +173,7 @@ static void neo_kbd_handler(void *opaque, int keycode)
         break;
     case 0x39:	/* Space */
         qemu_set_irq(s->kbd_pic[GTA01_IRQ_HOLD_KEY], !(keycode & 0x80));
-        pcf_onkey_set(s->pmu, !(keycode & 80));	/* Active LOW */
+        pcf_onkey_set(s->pmu, !(keycode & 0x80));	/* Active LOW */
         break;
     }
 }

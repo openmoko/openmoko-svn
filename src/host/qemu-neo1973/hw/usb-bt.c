@@ -295,7 +295,6 @@ static int usb_bt_handle_control(USBDevice *dev, int request, int value,
 {
     struct USBBtState *s = (struct USBBtState *) dev->opaque;
     int ret = 0;
-        printf("setup token req %x val %x idx %x len %x\n", request, value, index, length);////
 
     switch (request) {
     case DeviceRequest | USB_REQ_GET_STATUS:
