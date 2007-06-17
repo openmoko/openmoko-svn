@@ -74,10 +74,10 @@ static inline void wm8753_in_load(struct wm8753_s *s)
 
 static inline void wm8753_out_flush(struct wm8753_s *s)
 {
-    int sent;
-    if (!s->idx_out)
-        return;
-    sent = AUD_write(*s->out[0], s->data_out, s->idx_out);
+    int sent = 0;
+    while (sent < s->idx_out)
+        sent += AUD_write(*s->out[0], s->data_out + sent, s->idx_out - sent)
+                ?: s->idx_out;
     s->idx_out = 0;
 }
 
@@ -91,10 +91,14 @@ static void wm8753_audio_in_cb(void *opaque, int avail_b)
 static void wm8753_audio_out_cb(void *opaque, int free_b)
 {
     struct wm8753_s *s = (struct wm8753_s *) opaque;
-    wm8753_out_flush(s);
+    if (s->idx_out >= free_b) {
+        s->idx_out = free_b;
+        s->req_out = 0;
+        wm8753_out_flush(s);
+    } else
+        s->req_out = free_b - s->idx_out;
 
-    s->req_out = free_b;
-    s->data_req(s->opaque, free_b >> 2, s->req_in >> 2);
+    s->data_req(s->opaque, s->req_out >> 2, s->req_in >> 2);
 }
 
 struct wm_rate_s {

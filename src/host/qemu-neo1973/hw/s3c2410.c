@@ -696,7 +696,7 @@ struct s3c_dma_state_s {	/* Modelled as an interrupt controller */
     } ch[S3C_DMA_CH_N];
 };
 
-static void s3c_dma_ch_run(struct s3c_dma_state_s *s,
+static inline void s3c_dma_ch_run(struct s3c_dma_state_s *s,
                 struct s3c_dma_ch_state_s *ch)
 {
     int width, burst, t;
@@ -704,12 +704,12 @@ static void s3c_dma_ch_run(struct s3c_dma_state_s *s,
     width = 1 << ((ch->con >> 20) & 3);				/* DSZ */
     burst = (ch->con & (1 << 28)) ? 4 : 1;			/* TSZ */
 
-    while (!ch->running && ch->req && (ch->mask & (1 << 1))) {	/* ON_OFF */
+    while (!ch->running && ch->curr_tc > 0 && ch->req &&
+                    (ch->mask & (1 << 1))) {		/* ON_OFF */
         if (width > sizeof(buffer)) {
             printf("%s: wrong access width\n", __FUNCTION__);
             return;
         }
-        ch->curr_tc = ch->con & 0xfffff;			/* TC */
         ch->running = 1;
         while (ch->curr_tc --) {
             for (t = 0; t < burst; t ++) {
@@ -726,24 +726,35 @@ static void s3c_dma_ch_run(struct s3c_dma_state_s *s,
                 break;
         }
         ch->running = 0;
-        if (!ch->curr_tc && (ch->con & (1 << 29)))		/* INT */
-            qemu_irq_raise(ch->intr);
 
-        if (ch->con & (1 << 22)) {				/* RELOAD */
-            if (!(ch->con & (1 << 23))) {			/* SWHW_SEL */
-                printf("%s: auto-reload software controlled transfer\n",
-                                __FUNCTION__);
-                break;
-            }
-            ch->csrc = ch->isrc;				/* S_ADDR */
-            ch->cdst = ch->idst;				/* D_ADDR */
-            ch->curr_tc = ch->con & 0xfffff;			/* TC */
-        }
         if (!(ch->con & (1 << 23))) {				/* SWHW_SEL */
             ch->req = 0;
         }
-        if (!ch->curr_tc && !(ch->con & (1 << 22)))		/* RELOAD */
-            ch->mask &= ~(1 << 1);				/* ON_OFF */
+
+        if (ch->curr_tc <= 0) {
+            if (ch->con & (1 << 22))				/* RELOAD */
+                ch->mask &= ~(1 << 1);				/* ON_OFF */
+            else {
+                if (!(ch->con & (1 << 23))) {			/* SWHW_SEL */
+                    printf("%s: auto-reload software controlled transfer\n",
+                                    __FUNCTION__);
+                    break;
+                }
+                ch->csrc = ch->isrc;				/* S_ADDR */
+                ch->cdst = ch->idst;				/* D_ADDR */
+                ch->curr_tc = ch->con & 0xfffff;		/* TC */
+                ch->con |= 1 << 22;				/* ON_OFF */
+            }
+
+            if (ch->con & (1 << 31))				/* DMD_HS */
+                ch->req = 0;
+
+            if (ch->con & (1 << 29)) {				/* INT */
+                qemu_irq_raise(ch->intr);
+                /* Give the system a chance to respond.  */
+                break;
+            }
+        }
     }
 }
 
@@ -839,22 +850,27 @@ static void s3c_dma_write(void *opaque, target_phys_addr_t addr,
         ch->con = value;
         break;
     case S3C_DISRC:
-        ch->csrc = ch->isrc = value;
+        ch->isrc = value;
         break;
     case S3C_DISRCC:
         ch->isrcc = value;
         break;
     case S3C_DIDST:
-        ch->cdst = ch->idst = value;
+        ch->idst = value;
         break;
     case S3C_DIDSTC:
         ch->idstc = value;
         break;
     case S3C_DMASKTRIG:
+        if (~ch->mask & value & (1 << 1)) {			/* ON_OFF */
+            ch->curr_tc = ch->con & 0xfffff;			/* TC */
+            ch->csrc = ch->isrc;				/* S_ADDR */
+            ch->cdst = ch->idst;				/* D_ADDR */
+        }
+
         ch->mask = value;
         if (value & (1 << 2)) {					/* STOP */
-            ch->curr_tc = 0;
-            ch->mask &= ~(1 << 1);				/* ON_OFF */
+            ch->mask &= ~(3 << 1);				/* ON_OFF */
         } else if (!(ch->con & (1 << 23))) {			/* SWHW_SEL */
             ch->req = value & 1;				/* SW_TRIG */
             s3c_dma_ch_run(s, ch);
