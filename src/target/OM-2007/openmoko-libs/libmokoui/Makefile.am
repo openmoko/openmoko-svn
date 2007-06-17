@@ -23,6 +23,7 @@ source_h = \
     moko-message-dialog.h
 
 source_c = \
+    moko-ui.c \
     moko-alignment.c \
     moko-application.c \
     moko-banner.c \

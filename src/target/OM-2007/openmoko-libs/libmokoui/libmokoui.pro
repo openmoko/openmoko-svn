@@ -47,6 +47,7 @@ SOURCES = \
     moko-stock.c \
     moko-tree-view.c \
     moko-tool-box.c \
+    moko-ui.c \
     moko-window.c
 
 PKGCONFIG += gtk+-2.0
