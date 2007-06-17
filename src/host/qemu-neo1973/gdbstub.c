@@ -549,41 +549,41 @@ static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
     ptr = mem_buf;
     for (i = 0; i < 32; i++)
       {
-        *(uint32_t *)ptr = tswapl(env->gpr[i]);
-        ptr += 4;
+        *(target_ulong *)ptr = tswapl(env->gpr[i]);
+        ptr += sizeof(target_ulong);
       }
 
-    *(uint32_t *)ptr = tswapl(env->CP0_Status);
-    ptr += 4;
+    *(target_ulong *)ptr = tswapl(env->CP0_Status);
+    ptr += sizeof(target_ulong);
 
-    *(uint32_t *)ptr = tswapl(env->LO);
-    ptr += 4;
+    *(target_ulong *)ptr = tswapl(env->LO);
+    ptr += sizeof(target_ulong);
 
-    *(uint32_t *)ptr = tswapl(env->HI);
-    ptr += 4;
+    *(target_ulong *)ptr = tswapl(env->HI);
+    ptr += sizeof(target_ulong);
 
-    *(uint32_t *)ptr = tswapl(env->CP0_BadVAddr);
-    ptr += 4;
+    *(target_ulong *)ptr = tswapl(env->CP0_BadVAddr);
+    ptr += sizeof(target_ulong);
 
-    *(uint32_t *)ptr = tswapl(env->CP0_Cause);
-    ptr += 4;
+    *(target_ulong *)ptr = tswapl(env->CP0_Cause);
+    ptr += sizeof(target_ulong);
 
-    *(uint32_t *)ptr = tswapl(env->PC);
-    ptr += 4;
+    *(target_ulong *)ptr = tswapl(env->PC);
+    ptr += sizeof(target_ulong);
 
     if (env->CP0_Config1 & (1 << CP0C1_FP))
       {
         for (i = 0; i < 32; i++)
           {
-            *(uint32_t *)ptr = tswapl(env->fpr[i].fs[FP_ENDIAN_IDX]);
-            ptr += 4;
+            *(target_ulong *)ptr = tswapl(env->fpr[i].fs[FP_ENDIAN_IDX]);
+            ptr += sizeof(target_ulong);
           }
 
-        *(uint32_t *)ptr = tswapl(env->fcr31);
-        ptr += 4;
+        *(target_ulong *)ptr = tswapl(env->fcr31);
+        ptr += sizeof(target_ulong);
 
-        *(uint32_t *)ptr = tswapl(env->fcr0);
-        ptr += 4;
+        *(target_ulong *)ptr = tswapl(env->fcr0);
+        ptr += sizeof(target_ulong);
       }
 
     /* 32 FP registers, fsr, fir, fp.  Not yet implemented.  */
@@ -611,41 +611,41 @@ static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
     ptr = mem_buf;
     for (i = 0; i < 32; i++)
       {
-        env->gpr[i] = tswapl(*(uint32_t *)ptr);
-        ptr += 4;
+        env->gpr[i] = tswapl(*(target_ulong *)ptr);
+        ptr += sizeof(target_ulong);
       }
 
-    env->CP0_Status = tswapl(*(uint32_t *)ptr);
-    ptr += 4;
+    env->CP0_Status = tswapl(*(target_ulong *)ptr);
+    ptr += sizeof(target_ulong);
 
-    env->LO = tswapl(*(uint32_t *)ptr);
-    ptr += 4;
+    env->LO = tswapl(*(target_ulong *)ptr);
+    ptr += sizeof(target_ulong);
 
-    env->HI = tswapl(*(uint32_t *)ptr);
-    ptr += 4;
+    env->HI = tswapl(*(target_ulong *)ptr);
+    ptr += sizeof(target_ulong);
 
-    env->CP0_BadVAddr = tswapl(*(uint32_t *)ptr);
-    ptr += 4;
+    env->CP0_BadVAddr = tswapl(*(target_ulong *)ptr);
+    ptr += sizeof(target_ulong);
 
-    env->CP0_Cause = tswapl(*(uint32_t *)ptr);
-    ptr += 4;
+    env->CP0_Cause = tswapl(*(target_ulong *)ptr);
+    ptr += sizeof(target_ulong);
 
-    env->PC = tswapl(*(uint32_t *)ptr);
-    ptr += 4;
+    env->PC = tswapl(*(target_ulong *)ptr);
+    ptr += sizeof(target_ulong);
 
     if (env->CP0_Config1 & (1 << CP0C1_FP))
       {
         for (i = 0; i < 32; i++)
           {
-            env->fpr[i].fs[FP_ENDIAN_IDX] = tswapl(*(uint32_t *)ptr);
-            ptr += 4;
+            env->fpr[i].fs[FP_ENDIAN_IDX] = tswapl(*(target_ulong *)ptr);
+            ptr += sizeof(target_ulong);
           }
 
-        env->fcr31 = tswapl(*(uint32_t *)ptr) & 0x0183FFFF;
-        ptr += 4;
+        env->fcr31 = tswapl(*(target_ulong *)ptr) & 0x0183FFFF;
+        ptr += sizeof(target_ulong);
 
-        env->fcr0 = tswapl(*(uint32_t *)ptr);
-        ptr += 4;
+        env->fcr0 = tswapl(*(target_ulong *)ptr);
+        ptr += sizeof(target_ulong);
 
         /* set rounding mode */
         RESTORE_ROUNDING_MODE;
@@ -908,8 +908,11 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
         if (strncmp(p, "Offsets", 7) == 0) {
             TaskState *ts = env->opaque;
 
-            sprintf(buf, "Text=%x;Data=%x;Bss=%x", ts->info->code_offset,
-                ts->info->data_offset, ts->info->data_offset);
+            sprintf(buf,
+                    "Text=" TARGET_FMT_lx ";Data=" TARGET_FMT_lx ";Bss=" TARGET_FMT_lx,
+                    ts->info->code_offset,
+                    ts->info->data_offset,
+                    ts->info->data_offset);
             put_packet(s, buf);
             break;
         }
@@ -963,14 +966,16 @@ static void gdb_vm_stopped(void *opaque, int reason)
 
 /* Send a gdb syscall request.
    This accepts limited printf-style format specifiers, specifically:
-    %x - target_ulong argument printed in hex.
-    %s - string pointer (target_ulong) and length (int) pair.  */
+    %x  - target_ulong argument printed in hex.
+    %lx - 64-bit argument printed in hex.
+    %s  - string pointer (target_ulong) and length (int) pair.  */
 void gdb_do_syscall(gdb_syscall_complete_cb cb, char *fmt, ...)
 {
     va_list va;
     char buf[256];
     char *p;
     target_ulong addr;
+    uint64_t i64;
     GDBState *s;
 
     s = gdb_syscall_state;
@@ -993,11 +998,18 @@ void gdb_do_syscall(gdb_syscall_complete_cb cb, char *fmt, ...)
                 addr = va_arg(va, target_ulong);
                 p += sprintf(p, TARGET_FMT_lx, addr);
                 break;
+            case 'l':
+                if (*(fmt++) != 'x')
+                    goto bad_format;
+                i64 = va_arg(va, uint64_t);
+                p += sprintf(p, "%" PRIx64, i64);
+                break;
             case 's':
                 addr = va_arg(va, target_ulong);
                 p += sprintf(p, TARGET_FMT_lx "/%x", addr, va_arg(va, int));
                 break;
             default:
+            bad_format:
                 fprintf(stderr, "gdbstub: Bad syscall format string '%s'\n",
                         fmt - 1);
                 break;

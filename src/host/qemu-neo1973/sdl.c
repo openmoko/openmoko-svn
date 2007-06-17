@@ -87,7 +87,7 @@ static void sdl_resize(DisplayState *ds, int w, int h)
     ds->data = screen->pixels;
     ds->linesize = screen->pitch;
     ds->depth = screen->format->BitsPerPixel;
-    if (ds->depth == 32 && screen->format->Rshift == 0) {
+    if (screen->format->Bshift > screen->format->Rshift) {
         ds->bgr = 1;
     } else {
         ds->bgr = 0;
@@ -407,7 +407,8 @@ static void sdl_refresh(DisplayState *ds)
                         case SDLK_END: keysym = QEMU_KEY_END; break;
                         case SDLK_PAGEUP: keysym = QEMU_KEY_PAGEUP; break;
                         case SDLK_PAGEDOWN: keysym = QEMU_KEY_PAGEDOWN; break;
-                        case SDLK_BACKSPACE: keysym = QEMU_KEY_BACKSPACE; break;                        case SDLK_DELETE: keysym = QEMU_KEY_DELETE; break;
+                        case SDLK_BACKSPACE: keysym = QEMU_KEY_BACKSPACE; break;
+                        case SDLK_DELETE: keysym = QEMU_KEY_DELETE; break;
                         default: break;
                         }
                     }

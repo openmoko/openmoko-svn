@@ -48,6 +48,8 @@ struct r4k_tlb_t {
     target_ulong PFN[2];
 };
 
+typedef struct mips_def_t mips_def_t;
+
 typedef struct CPUMIPSState CPUMIPSState;
 struct CPUMIPSState {
     /* General integer registers */
@@ -256,10 +258,13 @@ struct CPUMIPSState {
     uint32_t hflags;    /* CPU State */
     /* TMASK defines different execution modes */
 #define MIPS_HFLAG_TMASK  0x007F
-#define MIPS_HFLAG_MODE   0x001F /* execution modes                    */
+#define MIPS_HFLAG_MODE   0x0007 /* execution modes                    */
 #define MIPS_HFLAG_UM     0x0001 /* user mode                          */
-#define MIPS_HFLAG_DM     0x0008 /* Debug mode                         */
-#define MIPS_HFLAG_SM     0x0010 /* Supervisor mode                    */
+#define MIPS_HFLAG_DM     0x0002 /* Debug mode                         */
+#define MIPS_HFLAG_SM     0x0004 /* Supervisor mode                    */
+#define MIPS_HFLAG_64     0x0008 /* 64-bit instructions enabled        */
+#define MIPS_HFLAG_FPU    0x0010 /* FPU enabled                        */
+#define MIPS_HFLAG_F64    0x0020 /* 64-bit FPU enabled                 */
 #define MIPS_HFLAG_RE     0x0040 /* Reversed endianness                */
     /* If translation is interrupted between the branch instruction and
      * the delay slot, record what type of branch it is so that we can
@@ -279,10 +284,8 @@ struct CPUMIPSState {
     int CCRes; /* Cycle count resolution/divisor */
     int Status_rw_bitmask; /* Read/write bits in CP0_Status */
 
-#if defined(CONFIG_USER_ONLY)
+#ifdef CONFIG_USER_ONLY
     target_ulong tls_value;
-#else
-    void *irq[8];
 #endif
 
     CPU_COMMON
@@ -291,6 +294,11 @@ struct CPUMIPSState {
     const char *kernel_filename;
     const char *kernel_cmdline;
     const char *initrd_filename;
+
+    mips_def_t *cpu_model;
+#ifndef CONFIG_USER_ONLY
+    void *irq[8];
+#endif
 
     struct QEMUTimer *timer; /* Internal timer */
 };
@@ -305,10 +313,15 @@ void r4k_do_tlbwi (void);
 void r4k_do_tlbwr (void);
 void r4k_do_tlbp (void);
 void r4k_do_tlbr (void);
-typedef struct mips_def_t mips_def_t;
 int mips_find_by_name (const unsigned char *name, mips_def_t **def);
 void mips_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
 int cpu_mips_register (CPUMIPSState *env, mips_def_t *def);
+
+#define CPUState CPUMIPSState
+#define cpu_init cpu_mips_init
+#define cpu_exec cpu_mips_exec
+#define cpu_gen_code cpu_mips_gen_code
+#define cpu_signal_handler cpu_mips_signal_handler
 
 #include "cpu-all.h"
 

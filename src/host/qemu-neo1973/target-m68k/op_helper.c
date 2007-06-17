@@ -28,6 +28,8 @@ void do_interrupt(int is_hw)
 
 #else
 
+extern int semihosting_enabled;
+
 #define MMUSUFFIX _mmu
 #define GETPC() (__builtin_return_address(0))
 
@@ -85,6 +87,7 @@ static void do_rte(void)
     env->pc = ldl_kernel(sp + 4);
     sp |= (fmt >> 28) & 3;
     env->sr = fmt & 0xffff;
+    m68k_switch_sp(env);
     env->aregs[7] = sp + 8;
 }
 
@@ -104,6 +107,20 @@ void do_interrupt(int is_hw)
             /* Return from an exception.  */
             do_rte();
             return;
+        case EXCP_HALT_INSN:
+            if (semihosting_enabled
+                    && (env->sr & SR_S) != 0
+                    && (env->pc & 3) == 0
+                    && lduw_code(env->pc - 4) == 0x4e71
+                    && ldl_code(env->pc) == 0x4e7bf000) {
+                env->pc += 4;
+                do_m68k_semihosting(env, env->dregs[0]);
+                return;
+            }
+            env->halted = 1;
+            env->exception_index = EXCP_HLT;
+            cpu_loop_exit();
+            return;
         }
         if (env->exception_index >= EXCP_TRAP0
             && env->exception_index <= EXCP_TRAP15) {
@@ -112,15 +129,21 @@ void do_interrupt(int is_hw)
         }
     }
 
-    /* TODO: Implement USP.  */
-    sp = env->aregs[7];
-
     vector = env->exception_index << 2;
+
+    sp = env->aregs[7];
 
     fmt |= 0x40000000;
     fmt |= (sp & 3) << 28;
     fmt |= vector << 16;
     fmt |= env->sr;
+
+    env->sr |= SR_S;
+    if (is_hw) {
+        env->sr = (env->sr & ~SR_I) | (env->pending_level << SR_I_SHIFT);
+        env->sr &= ~SR_M;
+    }
+    m68k_switch_sp(env);
 
     /* ??? This could cause MMU faults.  */
     sp &= ~3;
@@ -129,10 +152,6 @@ void do_interrupt(int is_hw)
     sp -= 4;
     stl_kernel(sp, fmt);
     env->aregs[7] = sp;
-    env->sr |= SR_S;
-    if (is_hw) {
-        env->sr = (env->sr & ~SR_I) | (env->pending_level << SR_I_SHIFT);
-    }
     /* Jump to vector.  */
     env->pc = ldl_kernel(env->vbr + vector);
 }

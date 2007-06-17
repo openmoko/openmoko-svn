@@ -24,10 +24,6 @@
 
 /*****************************************************************************/
 /* Exceptions processing helpers */
-void cpu_loop_exit(void)
-{
-    longjmp(env->jmp_env, 1);
-}
 
 void do_raise_exception_err (uint32_t exception, int error_code)
 {
@@ -237,16 +233,16 @@ void do_ddiv (void)
     }
 }
 
+#if TARGET_LONG_BITS > HOST_LONG_BITS
 void do_ddivu (void)
 {
     if (T1 != 0) {
-        /* XXX: lldivu? */
-        lldiv_t res = lldiv(T0, T1);
-        env->LO = (uint64_t)res.quot;
-        env->HI = (uint64_t)res.rem;
+        env->LO = T0 / T1;
+        env->HI = T0 % T1;
     }
 }
 #endif
+#endif /* TARGET_MIPS64 */
 
 #if defined(CONFIG_USER_ONLY) 
 void do_mfc0_random (void)
@@ -1147,7 +1143,6 @@ void do_cmpabs_s_ ## op (long cc)              \
 
 flag float32_is_unordered(int sig, float32 a, float32 b STATUS_PARAM)
 {
-    extern flag float32_is_nan(float32 a);
     if (float32_is_signaling_nan(a) ||
         float32_is_signaling_nan(b) ||
         (sig && (float32_is_nan(a) || float32_is_nan(b)))) {

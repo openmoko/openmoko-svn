@@ -146,9 +146,59 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 16,
         .CCRes = 2,
         .Status_rw_bitmask = 0x3678FFFF,
-        .CP1_fcr0 = (1 << FCR0_F64) | (1 << FCR0_L) | (1 << FCR0_W) |
+	/* The R4000 has a full 64bit FPU doesn't use the fcr0 bits. */
+        .CP1_fcr0 = (0x5 << FCR0_PRID) | (0x0 << FCR0_REV),
+    },
+    {
+        .name = "5Kc",
+        .CP0_PRid = 0x00018100,
+        .CP0_Config0 = MIPS_CONFIG0 | (0x2 << CP0C0_AT),
+        .CP0_Config1 = MIPS_CONFIG1 | (31 << CP0C1_MMU) |
+		    (1 << CP0C1_IS) | (4 << CP0C1_IL) | (1 << CP0C1_IA) |
+		    (1 << CP0C1_DS) | (4 << CP0C1_DL) | (1 << CP0C1_DA) |
+		    (1 << CP0C1_PC) | (1 << CP0C1_WR) | (1 << CP0C1_EP),
+        .CP0_Config2 = MIPS_CONFIG2,
+        .CP0_Config3 = MIPS_CONFIG3,
+        .SYNCI_Step = 32,
+        .CCRes = 2,
+        .Status_rw_bitmask = 0x32F8FFFF,
+    },
+    {
+        .name = "5Kf",
+        .CP0_PRid = 0x00018100,
+        .CP0_Config0 = MIPS_CONFIG0 | (0x2 << CP0C0_AT),
+        .CP0_Config1 = MIPS_CONFIG1 | (1 << CP0C1_FP) | (31 << CP0C1_MMU) |
+		    (1 << CP0C1_IS) | (4 << CP0C1_IL) | (1 << CP0C1_IA) |
+		    (1 << CP0C1_DS) | (4 << CP0C1_DL) | (1 << CP0C1_DA) |
+		    (1 << CP0C1_PC) | (1 << CP0C1_WR) | (1 << CP0C1_EP),
+        .CP0_Config2 = MIPS_CONFIG2,
+        .CP0_Config3 = MIPS_CONFIG3,
+        .SYNCI_Step = 32,
+        .CCRes = 2,
+        .Status_rw_bitmask = 0x36F8FFFF,
+	/* The 5Kf has F64 / L / W but doesn't use the fcr0 bits. */
+        .CP1_fcr0 = (1 << FCR0_D) | (1 << FCR0_S) |
+                    (0x81 << FCR0_PRID) | (0x0 << FCR0_REV),
+    },
+    {
+        .name = "20Kc",
+	/* We emulate a later version of the 20Kc, earlier ones had a broken
+           WAIT instruction. */
+        .CP0_PRid = 0x000182a0,
+        .CP0_Config0 = MIPS_CONFIG0 | (0x2 << CP0C0_AT) | (1 << CP0C0_VI),
+        .CP0_Config1 = MIPS_CONFIG1 | (1 << CP0C1_FP) | (47 << CP0C1_MMU) |
+		    (2 << CP0C1_IS) | (4 << CP0C1_IL) | (3 << CP0C1_IA) |
+		    (2 << CP0C1_DS) | (4 << CP0C1_DL) | (3 << CP0C1_DA) |
+		    (1 << CP0C1_PC) | (1 << CP0C1_WR) | (1 << CP0C1_EP),
+        .CP0_Config2 = MIPS_CONFIG2,
+        .CP0_Config3 = MIPS_CONFIG3,
+        .SYNCI_Step = 32,
+        .CCRes = 2,
+        .Status_rw_bitmask = 0x36FBFFFF,
+	/* The 20Kc has F64 / L / W but doesn't use the fcr0 bits. */
+        .CP1_fcr0 = (1 << FCR0_3D) | (1 << FCR0_PS) |
                     (1 << FCR0_D) | (1 << FCR0_S) |
-                    (0x5 << FCR0_PRID) | (0x0 << FCR0_REV),
+                    (0x82 << FCR0_PRID) | (0x0 << FCR0_REV),
     },
 #endif
 };
@@ -207,12 +257,14 @@ static void r4k_mmu_init (CPUMIPSState *env, mips_def_t *def)
 int cpu_mips_register (CPUMIPSState *env, mips_def_t *def)
 {
     if (!def)
+        def = env->cpu_model;
+    if (!def)
         cpu_abort(env, "Unable to find MIPS CPU definition\n");
+    env->cpu_model = def;
     env->CP0_PRid = def->CP0_PRid;
-#ifdef TARGET_WORDS_BIGENDIAN
-    env->CP0_Config0 = def->CP0_Config0 | (1 << CP0C0_BE);
-#else
     env->CP0_Config0 = def->CP0_Config0;
+#ifdef TARGET_WORDS_BIGENDIAN
+    env->CP0_Config0 |= (1 << CP0C0_BE);
 #endif
     env->CP0_Config1 = def->CP0_Config1;
     env->CP0_Config2 = def->CP0_Config2;
@@ -223,7 +275,16 @@ int cpu_mips_register (CPUMIPSState *env, mips_def_t *def)
     env->CCRes = def->CCRes;
     env->Status_rw_bitmask = def->Status_rw_bitmask;
     env->fcr0 = def->CP1_fcr0;
-#ifndef CONFIG_USER_ONLY
+#ifdef CONFIG_USER_ONLY
+    if (env->CP0_Config1 & (1 << CP0C1_FP))
+        env->hflags |= MIPS_HFLAG_FPU;
+    if (env->fcr0 & (1 << FCR0_F64))
+        env->hflags |= MIPS_HFLAG_F64;
+#else
+    /* There are more full-featured MMU variants in older MIPS CPUs,
+       R3000, R6000 and R8000 come to mind. If we ever support them,
+       this check will need to look up a different place than those
+       newfangled config registers. */
     switch ((env->CP0_Config0 >> CP0C0_MT) & 3) {
         case 0:
             no_mmu_init(env, def);
@@ -235,7 +296,6 @@ int cpu_mips_register (CPUMIPSState *env, mips_def_t *def)
             fixed_mmu_init(env, def);
             break;
         default:
-            /* Older CPUs like the R3000 may need nonstandard handling here. */
             cpu_abort(env, "MMU type not supported\n");
     }
     env->CP0_Random = env->nb_tlb - 1;

@@ -20,10 +20,87 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "config.h"
 #include "cpu.h"
 #include "exec-all.h"
+
+enum m68k_cpuid {
+    M68K_CPUID_M5206,
+    M68K_CPUID_M5208,
+    M68K_CPUID_CFV4E,
+    M68K_CPUID_ANY,
+};
+
+struct m68k_def_t {
+    const char * name;
+    enum m68k_cpuid id;
+};
+
+static m68k_def_t m68k_cpu_defs[] = {
+    {"m5206", M68K_CPUID_M5206}, 
+    {"m5208", M68K_CPUID_M5208}, 
+    {"cfv4e", M68K_CPUID_CFV4E},
+    {"any", M68K_CPUID_ANY},
+    {NULL, 0}, 
+};
+
+static void m68k_set_feature(CPUM68KState *env, int feature)
+{
+    env->features |= (1u << feature);
+}
+
+int cpu_m68k_set_model(CPUM68KState *env, const char * name)
+{
+    m68k_def_t *def;
+
+    for (def = m68k_cpu_defs; def->name; def++) {
+        if (strcmp(def->name, name) == 0)
+            break;
+    }
+    if (!def->name)
+        return 1;
+
+    switch (def->id) {
+    case M68K_CPUID_M5206:
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_A);
+        break;
+    case M68K_CPUID_M5208:
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_A);
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_APLUSC);
+        m68k_set_feature(env, M68K_FEATURE_BRAL);
+        m68k_set_feature(env, M68K_FEATURE_CF_EMAC);
+        m68k_set_feature(env, M68K_FEATURE_USP);
+        break;
+    case M68K_CPUID_CFV4E:
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_A);
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_B);
+        m68k_set_feature(env, M68K_FEATURE_BRAL);
+        m68k_set_feature(env, M68K_FEATURE_CF_FPU);
+        m68k_set_feature(env, M68K_FEATURE_CF_EMAC);
+        m68k_set_feature(env, M68K_FEATURE_USP);
+        break;
+    case M68K_CPUID_ANY:
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_A);
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_B);
+        m68k_set_feature(env, M68K_FEATURE_CF_ISA_APLUSC);
+        m68k_set_feature(env, M68K_FEATURE_BRAL);
+        m68k_set_feature(env, M68K_FEATURE_CF_FPU);
+        /* MAC and EMAC are mututally exclusive, so pick EMAC.
+           It's mostly backwards compatible.  */
+        m68k_set_feature(env, M68K_FEATURE_CF_EMAC);
+        m68k_set_feature(env, M68K_FEATURE_CF_EMAC_B);
+        m68k_set_feature(env, M68K_FEATURE_USP);
+        m68k_set_feature(env, M68K_FEATURE_EXT_FULL);
+        m68k_set_feature(env, M68K_FEATURE_WORD_INDEX);
+        break;
+    }
+
+    register_m68k_insns(env);
+
+    return 0;
+}
 
 void cpu_m68k_flush_flags(CPUM68KState *env, int cc_op)
 {
@@ -152,7 +229,11 @@ void helper_movec(CPUM68KState *env, int reg, uint32_t val)
 {
     switch (reg) {
     case 0x02: /* CACR */
-        /* Ignored.  */
+        env->cacr = val;
+        m68k_switch_sp(env);
+        break;
+    case 0x04: case 0x05: case 0x06: case 0x07: /* ACR[0-3] */
+        /* TODO: Implement Access Control Registers.  */
         break;
     case 0x801: /* VBR */
         env->vbr = val;
@@ -162,6 +243,51 @@ void helper_movec(CPUM68KState *env, int reg, uint32_t val)
         cpu_abort(env, "Unimplemented control register write 0x%x = 0x%x\n",
                   reg, val);
     }
+}
+
+void m68k_set_macsr(CPUM68KState *env, uint32_t val)
+{
+    uint32_t acc;
+    int8_t exthigh;
+    uint8_t extlow;
+    uint64_t regval;
+    int i;
+    if ((env->macsr ^ val) & (MACSR_FI | MACSR_SU)) {
+        for (i = 0; i < 4; i++) {
+            regval = env->macc[i];
+            exthigh = regval >> 40;
+            if (env->macsr & MACSR_FI) {
+                acc = regval >> 8;
+                extlow = regval;
+            } else {
+                acc = regval;
+                extlow = regval >> 32;
+            }
+            if (env->macsr & MACSR_FI) {
+                regval = (((uint64_t)acc) << 8) | extlow;
+                regval |= ((int64_t)exthigh) << 40;
+            } else if (env->macsr & MACSR_SU) {
+                regval = acc | (((int64_t)extlow) << 32);
+                regval |= ((int64_t)exthigh) << 40;
+            } else {
+                regval = acc | (((uint64_t)extlow) << 32);
+                regval |= ((uint64_t)(uint8_t)exthigh) << 40;
+            }
+            env->macc[i] = regval;
+        }
+    }
+    env->macsr = val;
+}
+
+void m68k_switch_sp(CPUM68KState *env)
+{
+    int new_sp;
+
+    env->sp[env->current_sp] = env->aregs[7];
+    new_sp = (env->sr & SR_S && env->cacr & M68K_CACR_EUSP)
+             ? M68K_SSP : M68K_USP;
+    env->aregs[7] = env->sp[new_sp];
+    env->current_sp = new_sp;
 }
 
 /* MMU */

@@ -976,6 +976,14 @@ void op_save_btarget (void)
     RETURN();
 }
 
+#ifdef TARGET_MIPS64
+void op_save_btarget64 (void)
+{
+    env->btarget = ((uint64_t)PARAM1 << 32) | (uint32_t)PARAM2;
+    RETURN();
+}
+#endif
+
 /* Conditional branch */
 void op_set_bcond (void)
 {
@@ -1341,8 +1349,7 @@ void op_mtc0_status (void)
     uint32_t val, old;
     uint32_t mask = env->Status_rw_bitmask;
 
-    /* No reverse endianness, no MDMX/DSP, no 64bit ops
-       implemented. */
+    /* No reverse endianness, no MDMX/DSP implemented. */
     val = T0 & mask;
     old = env->CP0_Status;
     if (!(val & (1 << CP0St_EXL)) &&
@@ -1350,6 +1357,20 @@ void op_mtc0_status (void)
         !(env->hflags & MIPS_HFLAG_DM) &&
         (val & (1 << CP0St_UM)))
         env->hflags |= MIPS_HFLAG_UM;
+#ifdef TARGET_MIPS64
+    if ((env->hflags & MIPS_HFLAG_UM) &&
+        !(val & (1 << CP0St_PX)) &&
+        !(val & (1 << CP0St_UX)))
+        env->hflags &= ~MIPS_HFLAG_64;
+#endif
+    if (val & (1 << CP0St_CU1))
+        env->hflags |= MIPS_HFLAG_FPU;
+    else
+        env->hflags &= ~MIPS_HFLAG_FPU;
+    if (val & (1 << CP0St_FR))
+        env->hflags |= MIPS_HFLAG_F64;
+    else
+        env->hflags &= ~MIPS_HFLAG_F64;
     env->CP0_Status = (env->CP0_Status & ~mask) | val;
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB2(do_mtc0_status_debug, old, val);
@@ -1588,41 +1609,6 @@ void op_cp0_enabled(void)
     if (!(env->CP0_Status & (1 << CP0St_CU0)) &&
 	(env->hflags & MIPS_HFLAG_UM)) {
         CALL_FROM_TB2(do_raise_exception_err, EXCP_CpU, 0);
-    }
-    RETURN();
-}
-
-void op_cp1_enabled(void)
-{
-    if (!(env->CP0_Status & (1 << CP0St_CU1))) {
-        CALL_FROM_TB2(do_raise_exception_err, EXCP_CpU, 1);
-    }
-    RETURN();
-}
-
-void op_cp1_64bitmode(void)
-{
-    if (!(env->CP0_Status & (1 << CP0St_FR))) {
-        CALL_FROM_TB1(do_raise_exception, EXCP_RI);
-    }
-    RETURN();
-}
-
-/*
- * Verify if floating point register is valid; an operation is not defined
- * if bit 0 of any register specification is set and the FR bit in the
- * Status register equals zero, since the register numbers specify an
- * even-odd pair of adjacent coprocessor general registers. When the FR bit
- * in the Status register equals one, both even and odd register numbers
- * are valid. This limitation exists only for 64 bit wide (d,l,ps) registers.
- *
- * Multiple 64 bit wide registers can be checked by calling
- * gen_op_cp1_registers(freg1 | freg2 | ... | fregN);
- */
-void op_cp1_registers(void)
-{
-    if (!(env->CP0_Status & (1 << CP0St_FR)) && (PARAM1 & 1)) {
-        CALL_FROM_TB1(do_raise_exception, EXCP_RI);
     }
     RETURN();
 }
@@ -2330,6 +2316,12 @@ void op_eret (void)
         !(env->hflags & MIPS_HFLAG_DM) &&
         (env->CP0_Status & (1 << CP0St_UM)))
         env->hflags |= MIPS_HFLAG_UM;
+#ifdef TARGET_MIPS64
+    if ((env->hflags & MIPS_HFLAG_UM) &&
+        !(env->CP0_Status & (1 << CP0St_PX)) &&
+        !(env->CP0_Status & (1 << CP0St_UX)))
+        env->hflags &= ~MIPS_HFLAG_64;
+#endif
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB0(debug_post_eret);
     env->CP0_LLAddr = 1;
@@ -2347,6 +2339,12 @@ void op_deret (void)
         !(env->hflags & MIPS_HFLAG_DM) &&
         (env->CP0_Status & (1 << CP0St_UM)))
         env->hflags |= MIPS_HFLAG_UM;
+#ifdef TARGET_MIPS64
+    if ((env->hflags & MIPS_HFLAG_UM) &&
+        !(env->CP0_Status & (1 << CP0St_PX)) &&
+        !(env->CP0_Status & (1 << CP0St_UX)))
+        env->hflags &= ~MIPS_HFLAG_64;
+#endif
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB0(debug_post_eret);
     env->CP0_LLAddr = 1;
@@ -2408,6 +2406,14 @@ void op_save_pc (void)
     env->PC = PARAM1;
     RETURN();
 }
+
+#ifdef TARGET_MIPS64
+void op_save_pc64 (void)
+{
+    env->PC = ((uint64_t)PARAM1 << 32) | (uint32_t)PARAM2;
+    RETURN();
+}
+#endif
 
 void op_interrupt_restart (void)
 {

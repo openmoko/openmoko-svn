@@ -1,5 +1,5 @@
 /*
- * QEMU Malta board support
+ * QEMU Acer Pica Machine support
  *
  * Copyright (c) 2007 Hervé Poussineau
  *
@@ -51,6 +51,7 @@ static void main_cpu_reset(void *opaque)
 {
     CPUState *env = opaque;
     cpu_reset(env);
+    cpu_mips_register(env, NULL);
 }
 
 static

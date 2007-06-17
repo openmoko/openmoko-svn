@@ -391,6 +391,7 @@ typedef struct VLANState {
     int id;
     VLANClientState *first_client;
     struct VLANState *next;
+    unsigned int nb_guest_devs, nb_host_devs;
 } VLANState;
 
 VLANState *qemu_find_vlan(int id);
@@ -852,7 +853,7 @@ PCIBus *pci_grackle_init(uint32_t base, qemu_irq *pic);
 PCIBus *pci_pmac_init(qemu_irq *pic);
 
 /* apb_pci.c */
-PCIBus *pci_apb_init(target_ulong special_base, target_ulong mem_base,
+PCIBus *pci_apb_init(target_phys_addr_t special_base, target_phys_addr_t mem_base,
                      qemu_irq *pic);
 
 PCIBus *pci_vpb_init(qemu_irq *pic, int irq, int realview);
@@ -915,6 +916,7 @@ struct DisplayState {
     int width;
     int height;
     void *opaque;
+    QEMUTimer *gui_timer;
 
     void (*dpy_update)(struct DisplayState *s, int x, int y, int w, int h);
     void (*dpy_resize)(struct DisplayState *s, int w, int h);
@@ -984,6 +986,8 @@ void pci_cmd646_ide_init(PCIBus *bus, BlockDriverState **hd_table,
                          int secondary_ide_enabled);
 void pci_piix3_ide_init(PCIBus *bus, BlockDriverState **hd_table, int devfn,
                         qemu_irq *pic);
+void pci_piix4_ide_init(PCIBus *bus, BlockDriverState **hd_table, int devfn,
+                        qemu_irq *pic);
 int pmac_ide_init (BlockDriverState **hd_table, qemu_irq irq);
 
 /* cdrom.c */
@@ -992,7 +996,7 @@ int cdrom_read_toc_raw(int nb_sectors, uint8_t *buf, int msf, int session_num);
 
 /* ds1225y.c */
 typedef struct ds1225y_t ds1225y_t;
-ds1225y_t *ds1225y_init(target_ulong mem_base, const char *filename);
+ds1225y_t *ds1225y_init(target_phys_addr_t mem_base, const char *filename);
 
 /* es1370.c */
 int es1370_init (PCIBus *bus, AudioState *s);
@@ -1048,8 +1052,7 @@ void pci_rtl8139_init(PCIBus *bus, NICInfo *nd, int devfn);
 /* pcnet.c */
 
 void pci_pcnet_init(PCIBus *bus, NICInfo *nd, int devfn);
-void pcnet_h_reset(void *opaque);
-void *lance_init(NICInfo *nd, target_phys_addr_t leaddr, void *dma_opaque,
+void lance_init(NICInfo *nd, target_phys_addr_t leaddr, void *dma_opaque,
                  qemu_irq irq);
 
 /* vmmouse.c */
@@ -1058,7 +1061,8 @@ void *vmmouse_init(void *m);
 /* pckbd.c */
 
 void i8042_init(qemu_irq kbd_irq, qemu_irq mouse_irq, uint32_t io_base);
-void i8042_mm_init(qemu_irq kbd_irq, qemu_irq mouse_irq, target_ulong base, int it_shift);
+void i8042_mm_init(qemu_irq kbd_irq, qemu_irq mouse_irq,
+                   target_phys_addr_t base, int it_shift);
 
 /* mc146818rtc.c */
 
@@ -1073,7 +1077,7 @@ void rtc_set_date(RTCState *s, const struct tm *tm);
 
 typedef struct SerialState SerialState;
 SerialState *serial_init(int base, qemu_irq irq, CharDriverState *chr);
-SerialState *serial_mm_init (target_ulong base, int it_shift,
+SerialState *serial_mm_init (target_phys_addr_t base, int it_shift,
                              qemu_irq irq, CharDriverState *chr,
                              int ioregister);
 uint32_t serial_mm_readb (void *opaque, target_phys_addr_t addr);
@@ -1141,7 +1145,7 @@ extern struct bt_piconet_s *local_piconet;
 
 /* acpi.c */
 extern int acpi_enabled;
-i2c_bus *piix4_pm_init(PCIBus *bus, int devfn);
+i2c_bus *piix4_pm_init(PCIBus *bus, int devfn, uint32_t smb_io_base);
 void piix4_smbus_register_device(SMBusDevice *dev, uint8_t addr);
 void acpi_bios_init(void);
 
@@ -1240,11 +1244,10 @@ void tcx_init(DisplayState *ds, target_phys_addr_t addr, uint8_t *vram_base,
               int depth);
 
 /* slavio_intctl.c */
-void pic_set_irq_cpu(void *opaque, int irq, int level, unsigned int cpu);
 void *slavio_intctl_init(target_phys_addr_t addr, target_phys_addr_t addrg,
                          const uint32_t *intbit_to_level,
-                         qemu_irq **irq);
-void slavio_intctl_set_cpu(void *opaque, unsigned int cpu, CPUState *env);
+                         qemu_irq **irq, qemu_irq **cpu_irq,
+                         qemu_irq **parent_irq, unsigned int cputimer);
 void slavio_pic_info(void *opaque);
 void slavio_irq_info(void *opaque);
 
@@ -1257,8 +1260,7 @@ int load_aout(const char *filename, uint8_t *addr);
 int load_uboot(const char *filename, target_ulong *ep, int *is_linux);
 
 /* slavio_timer.c */
-void slavio_timer_init(target_phys_addr_t addr, int irq, int mode,
-                       unsigned int cpu, void *intctl);
+void slavio_timer_init(target_phys_addr_t addr, qemu_irq irq, int mode);
 
 /* slavio_serial.c */
 SerialState *slavio_serial_init(target_phys_addr_t base, qemu_irq irq,
@@ -1273,23 +1275,19 @@ void slavio_set_power_fail(void *opaque, int power_failing);
 /* esp.c */
 void esp_scsi_attach(void *opaque, BlockDriverState *bd, int id);
 void *esp_init(BlockDriverState **bd, target_phys_addr_t espaddr,
-               void *dma_opaque);
-void esp_reset(void *opaque);
+               void *dma_opaque, qemu_irq irq);
 
 /* sparc32_dma.c */
-void *sparc32_dma_init(target_phys_addr_t daddr, qemu_irq espirq,
-                       qemu_irq leirq, void *iommu);
-void ledma_set_irq(void *opaque, int isr);
+void *sparc32_dma_init(target_phys_addr_t daddr, qemu_irq parent_irq,
+                       void *iommu, qemu_irq **dev_irq);
 void ledma_memory_read(void *opaque, target_phys_addr_t addr, 
                        uint8_t *buf, int len, int do_bswap);
 void ledma_memory_write(void *opaque, target_phys_addr_t addr, 
                         uint8_t *buf, int len, int do_bswap);
-void espdma_raise_irq(void *opaque);
-void espdma_clear_irq(void *opaque);
 void espdma_memory_read(void *opaque, uint8_t *buf, int len);
 void espdma_memory_write(void *opaque, uint8_t *buf, int len);
-void sparc32_dma_set_reset_data(void *opaque, void *esp_opaque,
-                                void *lance_opaque);
+void sparc32_dma_set_reset_data(void *opaque, void (*dev_reset)(void *opaque),
+                                void *dev_opaque);
 
 /* cs4231.c */
 void cs_init(target_phys_addr_t base, int irq, void *intctl);
@@ -1504,9 +1502,9 @@ int tc58128_init(struct SH7750State *s, char *zone1, char *zone2);
 extern BlockDriverState *pflash_table[MAX_PFLASH];
 typedef struct pflash_t pflash_t;
 
-pflash_t *pflash_register (target_ulong base, ram_addr_t off,
+pflash_t *pflash_register (target_phys_addr_t base, ram_addr_t off,
                            BlockDriverState *bs,
-                           target_ulong sector_len, int nb_blocs, int width,
+                           uint32_t sector_len, int nb_blocs, int width,
                            uint16_t id0, uint16_t id1, 
                            uint16_t id2, uint16_t id3);
 
@@ -1611,22 +1609,40 @@ typedef void (*ptimer_cb)(void *opaque);
 ptimer_state *ptimer_init(QEMUBH *bh);
 void ptimer_set_period(ptimer_state *s, int64_t period);
 void ptimer_set_freq(ptimer_state *s, uint32_t freq);
-void ptimer_set_limit(ptimer_state *s, uint32_t limit, int reload);
-uint32_t ptimer_get_count(ptimer_state *s);
-void ptimer_set_count(ptimer_state *s, uint32_t count);
+void ptimer_set_limit(ptimer_state *s, uint64_t limit, int reload);
+uint64_t ptimer_get_count(ptimer_state *s);
+void ptimer_set_count(ptimer_state *s, uint64_t count);
 void ptimer_run(ptimer_state *s, int oneshot);
 void ptimer_stop(ptimer_state *s);
+void qemu_put_ptimer(QEMUFile *f, ptimer_state *s);
+void qemu_get_ptimer(QEMUFile *f, ptimer_state *s);
 
 #define unlikely(cond)	__builtin_expect(!!(cond), 0)
 
 #include "hw/pxa.h"
 #include "hw/s3c.h"
 
+/* mcf_uart.c */
+uint32_t mcf_uart_read(void *opaque, target_phys_addr_t addr);
+void mcf_uart_write(void *opaque, target_phys_addr_t addr, uint32_t val);
+void *mcf_uart_init(qemu_irq irq, CharDriverState *chr);
+void mcf_uart_mm_init(target_phys_addr_t base, qemu_irq irq,
+                      CharDriverState *chr);
+
+/* mcf_intc.c */
+qemu_irq *mcf_intc_init(target_phys_addr_t base, CPUState *env);
+
+/* mcf_fec.c */
+void mcf_fec_init(NICInfo *nd, target_phys_addr_t base, qemu_irq *irq);
+
 /* mcf5206.c */
 qemu_irq *mcf5206_init(uint32_t base, CPUState *env);
 
 /* an5206.c */
 extern QEMUMachine an5206_machine;
+
+/* mcf5208.c */
+extern QEMUMachine mcf5208evb_machine;
 
 #include "gdbstub.h"
 

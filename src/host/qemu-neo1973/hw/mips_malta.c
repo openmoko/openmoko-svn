@@ -42,7 +42,7 @@
 #define ENVP_NB_ENTRIES	 	16
 #define ENVP_ENTRY_SIZE	 	256
 
-
+extern int nographic;
 extern FILE *logfile;
 
 typedef struct {
@@ -67,16 +67,18 @@ static void malta_fpga_update_display(void *opaque)
     int i;
     MaltaFPGAState *s = opaque;
 
-    for (i = 7 ; i >= 0 ; i--) {
-        if (s->leds & (1 << i))
-            leds_text[i] = '#';
-	else
-            leds_text[i] = ' ';
-    }
-    leds_text[8] = '\0';
+    if (!nographic) {
+        for (i = 7 ; i >= 0 ; i--) {
+            if (s->leds & (1 << i))
+                leds_text[i] = '#';
+            else
+                leds_text[i] = ' ';
+        }
+        leds_text[8] = '\0';
 
-    qemu_chr_printf(s->display, "\e[H\n\n|\e[32m%-8.8s\e[00m|\r\n", leds_text);
-    qemu_chr_printf(s->display, "\n\n\n\n|\e[31m%-8.8s\e[00m|", s->display_text);
+        qemu_chr_printf(s->display, "\e[H\n\n|\e[32m%-8.8s\e[00m|\r\n", leds_text);
+        qemu_chr_printf(s->display, "\n\n\n\n|\e[31m%-8.8s\e[00m|", s->display_text);
+    }
 }
 
 /*
@@ -236,17 +238,7 @@ static uint32_t malta_fpga_readl(void *opaque, target_phys_addr_t addr)
         val = s->brk;
         break;
 
-    /* UART Registers */
-    case 0x00900:
-    case 0x00908:
-    case 0x00910:
-    case 0x00918:
-    case 0x00920:
-    case 0x00928:
-    case 0x00930:
-    case 0x00938:
-        val = serial_mm_readb(s->uart, addr);
-        break;
+    /* UART Registers are handled directly by the serial device */
 
     /* GPOUT Register */
     case 0x00a00:
@@ -348,17 +340,7 @@ static void malta_fpga_writel(void *opaque, target_phys_addr_t addr,
         s->brk = val & 0xff;
         break;
 
-    /* UART Registers */
-    case 0x00900:
-    case 0x00908:
-    case 0x00910:
-    case 0x00918:
-    case 0x00920:
-    case 0x00928:
-    case 0x00930:
-    case 0x00938:
-        serial_mm_writeb(s->uart, addr, val);
-        break;
+    /* UART Registers are handled directly by the serial device */
 
     /* GPOUT Register */
     case 0x00a00:
@@ -430,22 +412,25 @@ MaltaFPGAState *malta_fpga_init(target_phys_addr_t base, CPUState *env)
     malta = cpu_register_io_memory(0, malta_fpga_read,
                                    malta_fpga_write, s);
 
-    cpu_register_physical_memory(base, 0x100000, malta);
+    cpu_register_physical_memory(base, 0x900, malta);
+    cpu_register_physical_memory(base + 0xa00, 0x100000 - 0xa00, malta);
 
-    s->display = qemu_chr_open("vc");
-    qemu_chr_printf(s->display, "\e[HMalta LEDBAR\r\n");
-    qemu_chr_printf(s->display, "+--------+\r\n");
-    qemu_chr_printf(s->display, "+        +\r\n");
-    qemu_chr_printf(s->display, "+--------+\r\n");
-    qemu_chr_printf(s->display, "\n");
-    qemu_chr_printf(s->display, "Malta ASCII\r\n");
-    qemu_chr_printf(s->display, "+--------+\r\n");
-    qemu_chr_printf(s->display, "+        +\r\n");
-    qemu_chr_printf(s->display, "+--------+\r\n");
+    if (!nographic) {
+        s->display = qemu_chr_open("vc");
+        qemu_chr_printf(s->display, "\e[HMalta LEDBAR\r\n");
+        qemu_chr_printf(s->display, "+--------+\r\n");
+        qemu_chr_printf(s->display, "+        +\r\n");
+        qemu_chr_printf(s->display, "+--------+\r\n");
+        qemu_chr_printf(s->display, "\n");
+        qemu_chr_printf(s->display, "Malta ASCII\r\n");
+        qemu_chr_printf(s->display, "+--------+\r\n");
+        qemu_chr_printf(s->display, "+        +\r\n");
+        qemu_chr_printf(s->display, "+--------+\r\n");
 
-    uart_chr = qemu_chr_open("vc");
-    qemu_chr_printf(uart_chr, "CBUS UART\r\n");
-    s->uart = serial_mm_init(base, 3, env->irq[2], uart_chr, 0);
+        uart_chr = qemu_chr_open("vc");
+        qemu_chr_printf(uart_chr, "CBUS UART\r\n");
+        s->uart = serial_mm_init(base + 0x900, 3, env->irq[2], uart_chr, 1);
+    }
 
     malta_fpga_reset(s);
     qemu_register_reset(malta_fpga_reset, s);
@@ -470,17 +455,8 @@ static void audio_init (PCIBus *pci_bus)
         s = AUD_init ();
         if (s) {
             for (c = soundhw; c->name; ++c) {
-                if (c->enabled) {
-                    if (c->isa) {
-                        fprintf(stderr, "qemu: Unsupported Sound Card: %s\n", c->name);
-                        exit(1);
-                    }
-                    else {
-                        if (pci_bus) {
-                            c->init.init_pci (pci_bus, s);
-                        }
-                    }
-                }
+                if (c->enabled)
+                    c->init.init_pci (pci_bus, s);
             }
         }
     }
@@ -558,9 +534,9 @@ static void write_bootloader (CPUState *env, unsigned long bios_offset, int64_t 
     p = (uint32_t *) (phys_ram_base + bios_offset + 0x580);
     stl_raw(p++, 0x24040002);                                      /* addiu a0, zero, 2 */
     stl_raw(p++, 0x3c1d0000 | (((ENVP_ADDR - 64) >> 16) & 0xffff)); /* lui sp, high(ENVP_ADDR) */
-    stl_raw(p++, 0x37bd0000 | ((ENVP_ADDR - 64) & 0xffff));        /* ori sp, a0, low(ENVP_ADDR) */
+    stl_raw(p++, 0x37bd0000 | ((ENVP_ADDR - 64) & 0xffff));        /* ori sp, sp, low(ENVP_ADDR) */
     stl_raw(p++, 0x3c050000 | ((ENVP_ADDR >> 16) & 0xffff));       /* lui a1, high(ENVP_ADDR) */
-    stl_raw(p++, 0x34a50000 | (ENVP_ADDR & 0xffff));               /* ori a1, a0, low(ENVP_ADDR) */
+    stl_raw(p++, 0x34a50000 | (ENVP_ADDR & 0xffff));               /* ori a1, a1, low(ENVP_ADDR) */
     stl_raw(p++, 0x3c060000 | (((ENVP_ADDR + 8) >> 16) & 0xffff)); /* lui a2, high(ENVP_ADDR + 8) */
     stl_raw(p++, 0x34c60000 | ((ENVP_ADDR + 8) & 0xffff));         /* ori a2, a2, low(ENVP_ADDR + 8) */
     stl_raw(p++, 0x3c070000 | (env->ram_size >> 16));              /* lui a3, high(env->ram_size) */
@@ -699,7 +675,7 @@ static int64_t load_kernel (CPUState *env)
                  &kernel_entry, &kernel_low, &kernel_high) < 0) {
         fprintf(stderr, "qemu: could not load kernel '%s'\n",
                 env->kernel_filename);
-      exit(1);
+        exit(1);
     }
 
     /* load initrd */
@@ -748,6 +724,7 @@ static void main_cpu_reset(void *opaque)
 {
     CPUState *env = opaque;
     cpu_reset(env);
+    cpu_mips_register(env, NULL);
 
     /* The bootload does not need to be rewritten as it is located in a
        read only location. The kernel location and the arguments table
@@ -775,11 +752,15 @@ void mips_malta_init (int ram_size, int vga_ram_size, int boot_device,
     int ret;
     mips_def_t *def;
     qemu_irq *i8259;
+    int piix4_devfn;
+    uint8_t *eeprom_buf;
+    i2c_bus *smbus;
+    int i;
 
     /* init CPUs */
     if (cpu_model == NULL) {
 #ifdef TARGET_MIPS64
-        cpu_model = "R4000";
+        cpu_model = "20Kc";
 #else
         cpu_model = "24Kf";
 #endif
@@ -801,9 +782,35 @@ void mips_malta_init (int ram_size, int vga_ram_size, int boot_device,
     cpu_register_physical_memory(0x1fc00000LL,
                                  BIOS_SIZE, bios_offset | IO_MEM_ROM);
 
-    /* Load a BIOS image except if a kernel image has been specified. In
-       the later case, just write a small bootloader to the flash
-       location. */
+    /* FPGA */
+    malta_fpga = malta_fpga_init(0x1f000000LL, env);
+
+    /* Load a BIOS image unless a kernel image has been specified. */
+    if (!kernel_filename) {
+        snprintf(buf, sizeof(buf), "%s/%s", bios_dir, BIOS_FILENAME);
+        ret = load_image(buf, phys_ram_base + bios_offset);
+        if (ret < 0 || ret > BIOS_SIZE) {
+            fprintf(stderr,
+                    "qemu: Could not load MIPS bios '%s', and no -kernel argument was specified\n",
+                    buf);
+            exit(1);
+        }
+        /* In little endian mode the 32bit words in the bios are swapped,
+           a neat trick which allows bi-endian firmware. */
+#ifndef TARGET_WORDS_BIGENDIAN
+        {
+            uint32_t *addr;
+            for (addr = (uint32_t *)(phys_ram_base + bios_offset);
+                 addr < (uint32_t *)(phys_ram_base + bios_offset + ret);
+		 addr++) {
+                *addr = bswap32(*addr);
+            }
+        }
+#endif
+    }
+
+    /* If a kernel image has been specified, write a small bootloader
+       to the flash location. */
     if (kernel_filename) {
         env->ram_size = ram_size;
         env->kernel_filename = kernel_filename;
@@ -812,14 +819,6 @@ void mips_malta_init (int ram_size, int vga_ram_size, int boot_device,
         kernel_entry = load_kernel(env);
         env->CP0_Status &= ~((1 << CP0St_BEV) | (1 << CP0St_ERL));
         write_bootloader(env, bios_offset, kernel_entry);
-    } else {
-        snprintf(buf, sizeof(buf), "%s/%s", bios_dir, BIOS_FILENAME);
-        ret = load_image(buf, phys_ram_base + bios_offset);
-        if (ret < 0 || ret > BIOS_SIZE) {
-            fprintf(stderr, "qemu: Warning, could not load MIPS bios '%s'\n",
-                    buf);
-            exit(1);
-        }
     }
 
     /* Board ID = 0x420 (Malta Board with CoreLV)
@@ -832,9 +831,6 @@ void mips_malta_init (int ram_size, int vga_ram_size, int boot_device,
     cpu_mips_clock_init(env);
     cpu_mips_irqctrl_init();
 
-    /* FPGA */
-    malta_fpga = malta_fpga_init(0x1f000000LL, env);
-
     /* Interrupt controller */
     /* The 8259 is attached to the MIPS CPU INT0 pin, ie interrupt 2 */
     i8259 = i8259_init(env->irq[2]);
@@ -843,10 +839,15 @@ void mips_malta_init (int ram_size, int vga_ram_size, int boot_device,
     pci_bus = pci_gt64120_init(i8259);
 
     /* Southbridge */
-    piix4_init(pci_bus, 80);
-    pci_piix3_ide_init(pci_bus, bs_table, 81, i8259);
-    usb_uhci_init(pci_bus, 82);
-    piix4_pm_init(pci_bus, 83);
+    piix4_devfn = piix4_init(pci_bus, 80);
+    pci_piix4_ide_init(pci_bus, bs_table, piix4_devfn + 1, i8259);
+    usb_uhci_piix4_init(pci_bus, piix4_devfn + 2);
+    smbus = piix4_pm_init(pci_bus, piix4_devfn + 3, 0x1100);
+    eeprom_buf = qemu_mallocz(8 * 256); /* XXX: make this persistent */
+    for (i = 0; i < 8; i++) {
+        /* TODO: Populate SPD eeprom data.  */
+        smbus_eeprom_device_init(smbus, 0x50 + i, eeprom_buf + (i * 256));
+    }
     pit = pit_init(0x40, i8259[0]);
     DMA_init(0);
 

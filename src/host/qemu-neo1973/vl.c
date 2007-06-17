@@ -153,7 +153,6 @@ int ram_size;
 int pit_min_timer_count = 0;
 int nb_nics;
 NICInfo nd_table[MAX_NICS];
-QEMUTimer *gui_timer;
 int vm_running;
 int rtc_utc = 1;
 int cirrus_vga_enabled = 1;
@@ -4198,6 +4197,7 @@ static int net_client_init(const char *str)
         }
         nd->vlan = vlan;
         nb_nics++;
+        vlan->nb_guest_devs++;
         ret = 0;
     } else
     if (!strcmp(device, "none")) {
@@ -4210,6 +4210,7 @@ static int net_client_init(const char *str)
         if (get_param_value(buf, sizeof(buf), "hostname", p)) {
             pstrcpy(slirp_hostname, sizeof(slirp_hostname), buf);
         }
+        vlan->nb_host_devs++;
         ret = net_slirp_init(vlan);
     } else
 #endif
@@ -4220,6 +4221,7 @@ static int net_client_init(const char *str)
             fprintf(stderr, "tap: no interface name\n");
             return -1;
         }
+        vlan->nb_host_devs++;
         ret = tap_win32_init(vlan, ifname);
     } else
 #else
@@ -4227,6 +4229,7 @@ static int net_client_init(const char *str)
         char ifname[64];
         char setup_script[1024];
         int fd;
+        vlan->nb_host_devs++;
         if (get_param_value(buf, sizeof(buf), "fd", p) > 0) {
             fd = strtol(buf, NULL, 0);
             ret = -1;
@@ -4260,6 +4263,7 @@ static int net_client_init(const char *str)
             fprintf(stderr, "Unknown socket options: %s\n", p);
             return -1;
         }
+        vlan->nb_host_devs++;
     } else
     {
         fprintf(stderr, "Unknown network device: %s\n", device);
@@ -4374,6 +4378,8 @@ static int usb_device_add(const char *devname)
         if (nr >= (unsigned int) nb_nics || strcmp(nd_table[nr].model, "usb"))
             return -1;
         dev = usb_net_init(&nd_table[nr]);
+    } else if (!strcmp(devname, "wacom-tablet")) {
+        dev = usb_wacom_init();
     } else {
         return -1;
     }
@@ -4700,32 +4706,6 @@ void pcmcia_info(void)
         term_printf("%s: %s\n", iter->socket->slot_string,
                     iter->socket->attached ? iter->socket->card_string :
                     "Empty");
-}
-
-/***********************************************************/
-/* dumb display */
-
-static void dumb_update(DisplayState *ds, int x, int y, int w, int h)
-{
-}
-
-static void dumb_resize(DisplayState *ds, int w, int h)
-{
-}
-
-static void dumb_refresh(DisplayState *ds)
-{
-    vga_hw_update();
-}
-
-void dumb_display_init(DisplayState *ds)
-{
-    ds->data = NULL;
-    ds->linesize = 0;
-    ds->depth = 0;
-    ds->dpy_update = dumb_update;
-    ds->dpy_resize = dumb_resize;
-    ds->dpy_refresh = dumb_refresh;
 }
 
 /***********************************************************/
@@ -6406,8 +6386,9 @@ QEMUMachine *find_machine(const char *name)
 
 void gui_update(void *opaque)
 {
-    display_state.dpy_refresh(&display_state);
-    qemu_mod_timer(gui_timer, GUI_REFRESH_INTERVAL + qemu_get_clock(rt_clock));
+    DisplayState *ds = opaque;
+    ds->dpy_refresh(ds);
+    qemu_mod_timer(ds->gui_timer, GUI_REFRESH_INTERVAL + qemu_get_clock(rt_clock));
 }
 
 struct vm_change_state_entry {
@@ -7081,7 +7062,7 @@ const QEMUOption qemu_options[] = {
     { "show-cursor", 0, QEMU_OPTION_show_cursor },
     { "daemonize", 0, QEMU_OPTION_daemonize },
     { "option-rom", HAS_ARG, QEMU_OPTION_option_rom },
-#if defined(TARGET_ARM)
+#if defined(TARGET_ARM) || defined(TARGET_M68K)
     { "semihosting", 0, QEMU_OPTION_semihosting },
 #endif
     { "name", HAS_ARG, QEMU_OPTION_name },
@@ -7184,6 +7165,7 @@ void register_machines(void)
 #elif defined(TARGET_ALPHA)
     /* XXX: TODO */
 #elif defined(TARGET_M68K)
+    qemu_register_machine(&mcf5208evb_machine);
     qemu_register_machine(&an5206_machine);
 #else
 #error unsupported CPU
@@ -7349,6 +7331,7 @@ int main(int argc, char **argv)
     int usbgadget_enabled = 0;
     int fds[2];
     const char *pid_file = NULL;
+    VLANState *vlan;
 
     LIST_INIT (&vm_change_state_head);
 #ifndef _WIN32
@@ -7971,6 +7954,18 @@ int main(int argc, char **argv)
         if (net_client_init(net_clients[i]) < 0)
             exit(1);
     }
+    for(vlan = first_vlan; vlan != NULL; vlan = vlan->next) {
+        if (vlan->nb_guest_devs == 0 && vlan->nb_host_devs == 0)
+            continue;
+        if (vlan->nb_guest_devs == 0) {
+            fprintf(stderr, "Invalid vlan (%d) with no nics\n", vlan->id);
+            exit(1);
+        }
+        if (vlan->nb_host_devs == 0)
+            fprintf(stderr,
+                    "Warning: vlan %d is not connected to host network\n",
+                    vlan->id);
+    }
 
 #ifdef TARGET_I386
     if (boot_device == 'n') {
@@ -8101,17 +8096,16 @@ int main(int argc, char **argv)
     init_ioports();
 
     /* terminal init */
+    memset(&display_state, 0, sizeof(display_state));
     if (nographic) {
-        dumb_display_init(ds);
+        /* nothing to do */
     } else if (vnc_display != NULL) {
-	vnc_display_init(ds, vnc_display);
+        vnc_display_init(ds, vnc_display);
     } else {
 #if defined(CONFIG_SDL)
         sdl_display_init(ds, full_screen, no_frame);
 #elif defined(CONFIG_COCOA)
         cocoa_display_init(ds, full_screen);
-#else
-        dumb_display_init(ds);
 #endif
     }
 
@@ -8187,8 +8181,10 @@ int main(int argc, char **argv)
         }
     }
 
-    gui_timer = qemu_new_timer(rt_clock, gui_update, NULL);
-    qemu_mod_timer(gui_timer, qemu_get_clock(rt_clock));
+    if (display_state.dpy_refresh) {
+        display_state.gui_timer = qemu_new_timer(rt_clock, gui_update, &display_state);
+        qemu_mod_timer(display_state.gui_timer, qemu_get_clock(rt_clock));
+    }
 
 #ifdef CONFIG_GDBSTUB
     if (use_gdbstub) {

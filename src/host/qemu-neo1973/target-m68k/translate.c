@@ -42,6 +42,8 @@ static inline void qemu_assert(int cond, const char *msg)
 
 /* internal defines */
 typedef struct DisasContext {
+    CPUM68KState *env;
+    target_ulong insn_pc; /* Start of the current instruction.  */
     target_ulong pc;
     int is_jmp;
     int cc_op;
@@ -49,6 +51,7 @@ typedef struct DisasContext {
     uint32_t fpcr;
     struct TranslationBlock *tb;
     int singlestep_enabled;
+    int is_mem;
 } DisasContext;
 
 #define DISAS_JUMP_NEXT 4
@@ -108,25 +111,6 @@ enum {
 #define AREG(insn, pos) (((insn >> pos) & 7) + QREG_A0)
 #define FREG(insn, pos) (((insn >> pos) & 7) + QREG_F0)
 
-#define M68K_INSN_CF_A    (1 << 0)
-#define M68K_INSN_CF_B    (1 << 1)
-#define M68K_INSN_CF_C    (1 << 2)
-#define M68K_INSN_CF_MAC  (1 << 3)
-#define M68K_INSN_CF_EMAC (1 << 4)
-#define M68K_INSN_CF_FPU  (1 << 5)
-
-struct m68k_def_t {
-    const char * name;
-    uint32_t insns;
-};
-
-static m68k_def_t m68k_cpu_defs[] = {
-    {"m5206", M68K_INSN_CF_A},
-    {"cfv4e", M68K_INSN_CF_A | M68K_INSN_CF_B | M68K_INSN_CF_C
-            | M68K_INSN_CF_MAC | M68K_INSN_CF_EMAC | M68K_INSN_CF_FPU},
-    {NULL, 0}, 
-};
-
 typedef void (*disas_proc)(DisasContext *, uint16_t);
 
 #ifdef DEBUG_DISPATCH
@@ -146,6 +130,7 @@ typedef void (*disas_proc)(DisasContext *, uint16_t);
 static inline int gen_load(DisasContext * s, int opsize, int addr, int sign)
 {
     int tmp;
+    s->is_mem = 1;
     switch(opsize) {
     case OS_BYTE:
         tmp = gen_new_qreg(QMODE_I32);
@@ -183,6 +168,7 @@ static inline int gen_load(DisasContext * s, int opsize, int addr, int sign)
 /* Generate a store.  */
 static inline void gen_store(DisasContext *s, int opsize, int addr, int val)
 {
+    s->is_mem = 1;
     switch(opsize) {
     case OS_BYTE:
         gen_st(s, 8, addr, val);
@@ -217,38 +203,6 @@ static int gen_ldst(DisasContext *s, int opsize, int addr, int val)
     }
 }
 
-/* Handle a base + index + displacement effective addresss.  A base of
-   -1 means pc-relative.  */
-static int gen_lea_indexed(DisasContext *s, int opsize, int base)
-{
-    int scale;
-    uint32_t offset;
-    uint16_t ext;
-    int add;
-    int tmp;
-
-    offset = s->pc;
-    ext = lduw_code(s->pc);
-    s->pc += 2;
-    tmp = ((ext >> 12) & 7) + ((ext & 0x8000) ? QREG_A0 : QREG_D0);
-    /* ??? Check W/L bit.  */
-    scale = (ext >> 9) & 3;
-    if (scale == 0) {
-        add = tmp;
-    } else {
-        add = gen_new_qreg(QMODE_I32);
-        gen_op_shl32(add, tmp, gen_im32(scale));
-    }
-    tmp = gen_new_qreg(QMODE_I32);
-    if (base != -1) {
-        gen_op_add32(tmp, base, gen_im32((int8_t)ext));
-        gen_op_add32(tmp, tmp, add);
-    } else {
-        gen_op_add32(tmp, add, gen_im32(offset + (int8_t)ext));
-    }
-    return tmp;
-}
-
 /* Read a 32-bit immediate constant.  */
 static inline uint32_t read_im32(DisasContext *s)
 {
@@ -260,6 +214,127 @@ static inline uint32_t read_im32(DisasContext *s)
     return im;
 }
 
+/* Calculate and address index.  */
+static int gen_addr_index(uint16_t ext, int tmp)
+{
+    int add;
+    int scale;
+
+    add = (ext & 0x8000) ? AREG(ext, 12) : DREG(ext, 12);
+    if ((ext & 0x800) == 0) {
+        gen_op_ext16s32(tmp, add);
+        add = tmp;
+    }
+    scale = (ext >> 9) & 3;
+    if (scale != 0) {
+        gen_op_shl32(tmp, add, gen_im32(scale));
+        add = tmp;
+    }
+    return add;
+}
+
+/* Handle a base + index + displacement effective addresss.  A base of
+   -1 means pc-relative.  */
+static int gen_lea_indexed(DisasContext *s, int opsize, int base)
+{
+    uint32_t offset;
+    uint16_t ext;
+    int add;
+    int tmp;
+    uint32_t bd, od;
+
+    offset = s->pc;
+    ext = lduw_code(s->pc);
+    s->pc += 2;
+
+    if ((ext & 0x800) == 0 && !m68k_feature(s->env, M68K_FEATURE_WORD_INDEX))
+        return -1;
+
+    if (ext & 0x100) {
+        /* full extension word format */
+        if (!m68k_feature(s->env, M68K_FEATURE_EXT_FULL))
+            return -1;
+
+        if ((ext & 0x30) > 0x10) {
+            /* base displacement */
+            if ((ext & 0x30) == 0x20) {
+                bd = (int16_t)lduw_code(s->pc);
+                s->pc += 2;
+            } else {
+                bd = read_im32(s);
+            }
+        } else {
+            bd = 0;
+        }
+        tmp = gen_new_qreg(QMODE_I32);
+        if ((ext & 0x44) == 0) {
+            /* pre-index */
+            add = gen_addr_index(ext, tmp);
+        } else {
+            add = QREG_NULL;
+        }
+        if ((ext & 0x80) == 0) {
+            /* base not suppressed */
+            if (base == -1) {
+                base = gen_im32(offset + bd);
+                bd = 0;
+            }
+            if (add) {
+                gen_op_add32(tmp, add, base);
+                add = tmp;
+            } else {
+                add = base;
+            }
+        }
+        if (add) {
+            if (bd != 0) {
+                gen_op_add32(tmp, add, gen_im32(bd));
+                add = tmp;
+            }
+        } else {
+            add = gen_im32(bd);
+        }
+        if ((ext & 3) != 0) {
+            /* memory indirect */
+            base = gen_load(s, OS_LONG, add, 0);
+            if ((ext & 0x44) == 4) {
+                add = gen_addr_index(ext, tmp);
+                gen_op_add32(tmp, add, base);
+                add = tmp;
+            } else {
+                add = base;
+            }
+            if ((ext & 3) > 1) {
+                /* outer displacement */
+                if ((ext & 3) == 2) {
+                    od = (int16_t)lduw_code(s->pc);
+                    s->pc += 2;
+                } else {
+                    od = read_im32(s);
+                }
+            } else {
+                od = 0;
+            }
+            if (od != 0) {
+                gen_op_add32(tmp, add, gen_im32(od));
+                add = tmp;
+            }
+        }
+    } else {
+        /* brief extension word format */
+        tmp = gen_new_qreg(QMODE_I32);
+        add = gen_addr_index(ext, tmp);
+        if (base != -1) {
+            gen_op_add32(tmp, add, base);
+            if ((int8_t)ext)
+                gen_op_add32(tmp, tmp, gen_im32((int8_t)ext));
+        } else {
+            gen_op_add32(tmp, add, gen_im32(offset + (int8_t)ext));
+        }
+        add = tmp;
+    }
+    return add;
+}
 
 /* Update the CPU env CC_OP state.  */
 static inline void gen_flush_cc_op(DisasContext *s)
@@ -273,7 +348,8 @@ static inline void gen_flush_flags(DisasContext *s)
 {
     if (s->cc_op == CC_OP_FLAGS)
         return;
-    gen_op_flush_flags(s->cc_op);
+    gen_flush_cc_op(s);
+    gen_op_flush_flags();
     s->cc_op = CC_OP_FLAGS;
 }
 
@@ -366,8 +442,7 @@ static int gen_lea(DisasContext *s, uint16_t insn, int opsize)
     switch ((insn >> 3) & 7) {
     case 0: /* Data register direct.  */
     case 1: /* Address register direct.  */
-        /* ??? generate bad addressing mode fault.  */
-        qemu_assert(0, "invalid addressing mode");
+        return -1;
     case 2: /* Indirect register */
     case 3: /* Indirect postincrement.  */
         reg += QREG_A0;
@@ -406,8 +481,7 @@ static int gen_lea(DisasContext *s, uint16_t insn, int opsize)
             return gen_lea_indexed(s, opsize, -1);
         case 4: /* Immediate.  */
         default:
-            /* ??? generate bad addressing mode fault.  */
-            qemu_assert(0, "invalid addressing mode");
+            return -1;
         }
     }
     /* Should never happen.  */
@@ -425,6 +499,8 @@ static inline int gen_ea_once(DisasContext *s, uint16_t insn, int opsize,
         tmp = *addrp;
     } else {
         tmp = gen_lea(s, insn, opsize);
+        if (tmp == -1)
+            return -1;
         if (addrp)
             *addrp = tmp;
     }
@@ -477,6 +553,8 @@ static int gen_ea(DisasContext *s, uint16_t insn, int opsize, int val,
                 tmp = *addrp;
             } else {
                 tmp = gen_lea(s, insn, opsize);
+                if (tmp == -1)
+                    return -1;
                 if (addrp)
                     *addrp = tmp;
             }
@@ -524,7 +602,7 @@ static int gen_ea(DisasContext *s, uint16_t insn, int opsize, int val,
             }
             return gen_im32(offset);
         default:
-            qemu_assert(0, "invalid addressing mode");
+            return -1;
         }
     }
     /* Should never happen.  */
@@ -682,6 +760,27 @@ static void gen_exception(DisasContext *s, uint32_t where, int nr)
     gen_op_raise_exception(nr);
 }
 
+static inline void gen_addr_fault(DisasContext *s)
+{
+    gen_exception(s, s->insn_pc, EXCP_ADDRESS);
+}
+
+#define SRC_EA(result, opsize, val, addrp) do { \
+    result = gen_ea(s, insn, opsize, val, addrp); \
+    if (result == -1) { \
+        gen_addr_fault(s); \
+        return; \
+    } \
+    } while (0)
+
+#define DEST_EA(insn, opsize, val, addrp) do { \
+    int ea_result = gen_ea(s, insn, opsize, val, addrp); \
+    if (ea_result == -1) { \
+        gen_addr_fault(s); \
+        return; \
+    } \
+    } while (0)
+
 /* Generate a jump to an immediate address.  */
 static void gen_jmp_tb(DisasContext *s, int n, uint32_t dest)
 {
@@ -735,7 +834,7 @@ DISAS_INSN(mulw)
         gen_op_ext16s32(tmp, reg);
     else
         gen_op_ext16u32(tmp, reg);
-    src = gen_ea(s, insn, OS_WORD, sign ? -1 : 0, NULL);
+    SRC_EA(src, OS_WORD, sign ? -1 : 0, NULL);
     gen_op_mul32(tmp, tmp, src);
     gen_op_mov32(reg, tmp);
     /* Unlike m68k, coldfire always clears the overflow bit.  */
@@ -756,7 +855,7 @@ DISAS_INSN(divw)
     } else {
         gen_op_ext16u32(QREG_DIV1, reg);
     }
-    src = gen_ea(s, insn, OS_WORD, sign ? -1 : 0, NULL);
+    SRC_EA(src, OS_WORD, sign ? -1 : 0, NULL);
     gen_op_mov32(QREG_DIV2, src);
     if (sign) {
         gen_op_divs(1);
@@ -789,7 +888,7 @@ DISAS_INSN(divl)
     num = DREG(ext, 12);
     reg = DREG(ext, 0);
     gen_op_mov32(QREG_DIV1, num);
-    den = gen_ea(s, insn, OS_LONG, 0, NULL);
+    SRC_EA(den, OS_LONG, 0, NULL);
     gen_op_mov32(QREG_DIV2, den);
     if (ext & 0x0800) {
         gen_op_divs(2);
@@ -820,11 +919,11 @@ DISAS_INSN(addsub)
     reg = DREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
     if (insn & 0x100) {
-        tmp = gen_ea(s, insn, OS_LONG, 0, &addr);
+        SRC_EA(tmp, OS_LONG, 0, &addr);
         src = reg;
     } else {
         tmp = reg;
-        src = gen_ea(s, insn, OS_LONG, 0, NULL);
+        SRC_EA(src, OS_LONG, 0, NULL);
     }
     if (add) {
         gen_op_add32(dest, tmp, src);
@@ -837,7 +936,7 @@ DISAS_INSN(addsub)
     }
     gen_op_update_cc_add(dest, src);
     if (insn & 0x100) {
-        gen_ea(s, insn, OS_LONG, dest, &addr);
+        DEST_EA(insn, OS_LONG, dest, &addr);
     } else {
         gen_op_mov32(reg, dest);
     }
@@ -895,7 +994,7 @@ DISAS_INSN(bitop_reg)
     else
         opsize = OS_LONG;
     op = (insn >> 6) & 3;
-    src1 = gen_ea(s, insn, opsize, 0, op ? &addr: NULL);
+    SRC_EA(src1, opsize, 0, op ? &addr: NULL);
     src2 = DREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
 
@@ -925,7 +1024,7 @@ DISAS_INSN(bitop_reg)
         break;
     }
     if (op)
-        gen_ea(s, insn, opsize, dest, &addr);
+        DEST_EA(insn, opsize, dest, &addr);
 }
 
 DISAS_INSN(sats)
@@ -970,6 +1069,10 @@ DISAS_INSN(movem)
     mask = lduw_code(s->pc);
     s->pc += 2;
     tmp = gen_lea(s, insn, OS_LONG);
+    if (tmp == -1) {
+        gen_addr_fault(s);
+        return;
+    }
     addr = gen_new_qreg(QMODE_I32);
     gen_op_mov32(addr, tmp);
     is_load = ((insn & 0x0400) != 0);
@@ -1015,7 +1118,7 @@ DISAS_INSN(bitop_im)
         return;
     }
 
-    src1 = gen_ea(s, insn, opsize, 0, op ? &addr: NULL);
+    SRC_EA(src1, opsize, 0, op ? &addr: NULL);
 
     gen_flush_flags(s);
     tmp = gen_new_qreg(QMODE_I32);
@@ -1045,7 +1148,7 @@ DISAS_INSN(bitop_im)
         break;
     }
     if (op)
-        gen_ea(s, insn, opsize, dest, &addr);
+        DEST_EA(insn, opsize, dest, &addr);
 }
 
 DISAS_INSN(arith_im)
@@ -1057,7 +1160,7 @@ DISAS_INSN(arith_im)
     int addr;
 
     op = (insn >> 9) & 7;
-    src1 = gen_ea(s, insn, OS_LONG, 0, (op == 6) ? NULL : &addr);
+    SRC_EA(src1, OS_LONG, 0, (op == 6) ? NULL : &addr);
     src2 = gen_im32(read_im32(s));
     dest = gen_new_qreg(QMODE_I32);
     switch (op) {
@@ -1097,7 +1200,7 @@ DISAS_INSN(arith_im)
         abort();
     }
     if (op != 6) {
-        gen_ea(s, insn, OS_LONG, dest, &addr);
+        DEST_EA(insn, OS_LONG, dest, &addr);
     }
 }
 
@@ -1129,7 +1232,7 @@ DISAS_INSN(move)
     default:
         abort();
     }
-    src = gen_ea(s, insn, opsize, -1, NULL);
+    SRC_EA(src, opsize, -1, NULL);
     op = (insn >> 6) & 7;
     if (op == 1) {
         /* movea */
@@ -1140,7 +1243,7 @@ DISAS_INSN(move)
         /* normal move */
         uint16_t dest_ea;
         dest_ea = ((insn >> 9) & 7) | (op << 3);
-        gen_ea(s, dest_ea, opsize, src, NULL);
+        DEST_EA(dest_ea, opsize, src, NULL);
         /* This will be correct because loads sign extend.  */
         gen_logic_cc(s, src);
     }
@@ -1176,6 +1279,10 @@ DISAS_INSN(lea)
 
     reg = AREG(insn, 9);
     tmp = gen_lea(s, insn, OS_LONG);
+    if (tmp == -1) {
+        gen_addr_fault(s);
+        return;
+    }
     gen_op_mov32(reg, tmp);
 }
 
@@ -1196,7 +1303,7 @@ DISAS_INSN(clr)
     default:
         abort();
     }
-    gen_ea (s, insn, opsize, gen_im32(0), NULL);
+    DEST_EA(insn, opsize, gen_im32(0), NULL);
     gen_logic_cc(s, gen_im32(0));
 }
 
@@ -1242,7 +1349,7 @@ static void gen_set_sr_im(DisasContext *s, uint16_t val, int ccr_only)
     gen_op_logic_cc(gen_im32(val & 0xf));
     gen_op_update_xflag_tst(gen_im32((val & 0x10) >> 4));
     if (!ccr_only) {
-        gen_op_mov32(QREG_SR, gen_im32(val & 0xff00));
+        gen_op_set_sr(gen_im32(val & 0xff00));
     }
 }
 
@@ -1262,7 +1369,7 @@ static void gen_set_sr(DisasContext *s, uint16_t insn, int ccr_only)
         gen_op_and32(src1, src1, gen_im32(1));
         gen_op_update_xflag_tst(src1);
         if (!ccr_only) {
-            gen_op_and32(QREG_SR, reg, gen_im32(0xff00));
+            gen_op_set_sr(reg);
         }
       }
     else if ((insn & 0x3f) == 0x3c)
@@ -1313,6 +1420,10 @@ DISAS_INSN(pea)
     int tmp;
 
     tmp = gen_lea(s, insn, OS_LONG);
+    if (tmp == -1) {
+        gen_addr_fault(s);
+        return;
+    }
     gen_push(s, tmp);
 }
 
@@ -1354,7 +1465,7 @@ DISAS_INSN(tst)
     default:
         abort();
     }
-    tmp = gen_ea(s, insn, opsize, -1, NULL);
+    SRC_EA(tmp, opsize, -1, NULL);
     gen_logic_cc(s, tmp);
 }
 
@@ -1376,10 +1487,10 @@ DISAS_INSN(tas)
     int addr;
 
     dest = gen_new_qreg(QMODE_I32);
-    src1 = gen_ea(s, insn, OS_BYTE, -1, &addr);
+    SRC_EA(src1, OS_BYTE, -1, &addr);
     gen_logic_cc(s, src1);
     gen_op_or32(dest, src1, gen_im32(0x80));
-    gen_ea(s, insn, OS_BYTE, dest, &addr);
+    DEST_EA(insn, OS_BYTE, dest, &addr);
 }
 
 DISAS_INSN(mull)
@@ -1398,7 +1509,7 @@ DISAS_INSN(mull)
         return;
     }
     reg = DREG(ext, 12);
-    src1 = gen_ea(s, insn, OS_LONG, 0, NULL);
+    SRC_EA(src1, OS_LONG, 0, NULL);
     dest = gen_new_qreg(QMODE_I32);
     gen_op_mul32(dest, src1, reg);
     gen_op_mov32(reg, dest);
@@ -1457,6 +1568,10 @@ DISAS_INSN(jump)
     /* Load the target address first to ensure correct exception
        behavior.  */
     tmp = gen_lea(s, insn, OS_LONG);
+    if (tmp == -1) {
+        gen_addr_fault(s);
+        return;
+    }
     if ((insn & 0x40) == 0) {
         /* jsr */
         gen_push(s, gen_im32(s->pc));
@@ -1472,7 +1587,7 @@ DISAS_INSN(addsubq)
     int val;
     int addr;
 
-    src1 = gen_ea(s, insn, OS_LONG, 0, &addr);
+    SRC_EA(src1, OS_LONG, 0, &addr);
     val = (insn >> 9) & 7;
     if (val == 0)
         val = 8;
@@ -1499,7 +1614,7 @@ DISAS_INSN(addsubq)
         }
         gen_op_update_cc_add(dest, src2);
     }
-    gen_ea(s, insn, OS_LONG, dest, &addr);
+    DEST_EA(insn, OS_LONG, dest, &addr);
 }
 
 DISAS_INSN(tpf)
@@ -1571,7 +1686,7 @@ DISAS_INSN(mvzs)
         opsize = OS_WORD;
     else
         opsize = OS_BYTE;
-    src = gen_ea(s, insn, opsize, (insn & 0x80) ? 0 : -1, NULL);
+    SRC_EA(src, opsize, (insn & 0x80) ? 0 : -1, NULL);
     reg = DREG(insn, 9);
     gen_op_mov32(reg, src);
     gen_logic_cc(s, src);
@@ -1587,11 +1702,11 @@ DISAS_INSN(or)
     reg = DREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
     if (insn & 0x100) {
-        src = gen_ea(s, insn, OS_LONG, 0, &addr);
+        SRC_EA(src, OS_LONG, 0, &addr);
         gen_op_or32(dest, src, reg);
-        gen_ea(s, insn, OS_LONG, dest, &addr);
+        DEST_EA(insn, OS_LONG, dest, &addr);
     } else {
-        src = gen_ea(s, insn, OS_LONG, 0, NULL);
+        SRC_EA(src, OS_LONG, 0, NULL);
         gen_op_or32(dest, src, reg);
         gen_op_mov32(reg, dest);
     }
@@ -1603,7 +1718,7 @@ DISAS_INSN(suba)
     int src;
     int reg;
 
-    src = gen_ea(s, insn, OS_LONG, 0, NULL);
+    SRC_EA(src, OS_LONG, 0, NULL);
     reg = AREG(insn, 9);
     gen_op_sub32(reg, reg, src);
 }
@@ -1643,7 +1758,7 @@ DISAS_INSN(mov3q)
         val = -1;
     src = gen_im32(val);
     gen_logic_cc(s, src);
-    gen_ea(s, insn, OS_LONG, src, NULL);
+    DEST_EA(insn, OS_LONG, src, NULL);
 }
 
 DISAS_INSN(cmp)
@@ -1671,7 +1786,7 @@ DISAS_INSN(cmp)
     default:
         abort();
     }
-    src = gen_ea(s, insn, opsize, -1, NULL);
+    SRC_EA(src, opsize, -1, NULL);
     reg = DREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
     gen_op_sub32(dest, reg, src);
@@ -1690,7 +1805,7 @@ DISAS_INSN(cmpa)
     } else {
         opsize = OS_WORD;
     }
-    src = gen_ea(s, insn, opsize, -1, NULL);
+    SRC_EA(src, opsize, -1, NULL);
     reg = AREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
     gen_op_sub32(dest, reg, src);
@@ -1705,12 +1820,12 @@ DISAS_INSN(eor)
     int dest;
     int addr;
 
-    src = gen_ea(s, insn, OS_LONG, 0, &addr);
+    SRC_EA(src, OS_LONG, 0, &addr);
     reg = DREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
     gen_op_xor32(dest, src, reg);
     gen_logic_cc(s, dest);
-    gen_ea(s, insn, OS_LONG, dest, &addr);
+    DEST_EA(insn, OS_LONG, dest, &addr);
 }
 
 DISAS_INSN(and)
@@ -1723,11 +1838,11 @@ DISAS_INSN(and)
     reg = DREG(insn, 9);
     dest = gen_new_qreg(QMODE_I32);
     if (insn & 0x100) {
-        src = gen_ea(s, insn, OS_LONG, 0, &addr);
+        SRC_EA(src, OS_LONG, 0, &addr);
         gen_op_and32(dest, src, reg);
-        gen_ea(s, insn, OS_LONG, dest, &addr);
+        DEST_EA(insn, OS_LONG, dest, &addr);
     } else {
-        src = gen_ea(s, insn, OS_LONG, 0, NULL);
+        SRC_EA(src, OS_LONG, 0, NULL);
         gen_op_and32(dest, src, reg);
         gen_op_mov32(reg, dest);
     }
@@ -1739,7 +1854,7 @@ DISAS_INSN(adda)
     int src;
     int reg;
 
-    src = gen_ea(s, insn, OS_LONG, 0, NULL);
+    SRC_EA(src, OS_LONG, 0, NULL);
     reg = AREG(insn, 9);
     gen_op_add32(reg, reg, src);
 }
@@ -1818,7 +1933,10 @@ DISAS_INSN(shift_reg)
 
 DISAS_INSN(ff1)
 {
-    cpu_abort(NULL, "Unimplemented insn: ff1");
+    int reg;
+    reg = DREG(insn, 0);
+    gen_logic_cc(s, reg);
+    gen_op_ff1(reg, reg);
 }
 
 static int gen_get_sr(DisasContext *s)
@@ -1901,7 +2019,6 @@ DISAS_INSN(move_to_usp)
 
 DISAS_INSN(halt)
 {
-    gen_flush_cc_op(s);
     gen_jmp(s, gen_im32(s->pc));
     gen_op_halt();
 }
@@ -1919,7 +2036,8 @@ DISAS_INSN(stop)
     s->pc += 2;
 
     gen_set_sr_im(s, ext, 0);
-    disas_halt(s, insn);
+    gen_jmp(s, gen_im32(s->pc));
+    gen_op_stop();
 }
 
 DISAS_INSN(rte)
@@ -2043,7 +2161,7 @@ DISAS_INSN(fpu)
         default:
             goto undef;
         }
-        gen_ea(s, insn, opsize, res, NULL);
+        DEST_EA(insn, opsize, res, NULL);
         return;
     case 4: /* fmove to control register.  */
         switch ((ext >> 10) & 7) {
@@ -2070,7 +2188,7 @@ DISAS_INSN(fpu)
                       (ext >> 10) & 7);
             goto undef;
         }
-        gen_ea(s, insn, OS_LONG, res, NULL);
+        DEST_EA(insn, OS_LONG, res, NULL);
         break;
     case 6: /* fmovem */ 
     case 7:
@@ -2080,12 +2198,17 @@ DISAS_INSN(fpu)
         if ((ext & 0x1f00) != 0x1000 || (ext & 0xff) == 0)
             goto undef;
         src = gen_lea(s, insn, OS_LONG);
+        if (src == -1) {
+            gen_addr_fault(s);
+            return;
+        }
         addr = gen_new_qreg(QMODE_I32);
         gen_op_mov32(addr, src);
         mask = 0x80;
         dest = QREG_F0;
         while (mask) {
             if (ext & mask) {
+                s->is_mem = 1;
                 if (ext & (1 << 13)) {
                     /* store */
                     gen_st(s, f64, addr, dest);
@@ -2115,7 +2238,7 @@ DISAS_INSN(fpu)
         default:
             goto undef;
         }
-        tmp = gen_ea(s, insn, opsize, -1, NULL);
+        SRC_EA(tmp, opsize, -1, NULL);
         if (opsize == OS_DOUBLE) {
             src = tmp;
         } else {
@@ -2315,6 +2438,283 @@ DISAS_INSN(fsave)
     qemu_assert(0, "FSAVE not implemented");
 }
 
+static inline int gen_mac_extract_word(DisasContext *s, int val, int upper)
+{
+    int tmp = gen_new_qreg(QMODE_I32);
+    if (s->env->macsr & MACSR_FI) {
+        if (upper)
+            gen_op_and32(tmp, val, gen_im32(0xffff0000));
+        else
+            gen_op_shl32(tmp, val, gen_im32(16));
+    } else if (s->env->macsr & MACSR_SU) {
+        if (upper)
+            gen_op_sar32(tmp, val, gen_im32(16));
+        else
+            gen_op_ext16s32(tmp, val);
+    } else {
+        if (upper)
+            gen_op_shr32(tmp, val, gen_im32(16));
+        else
+            gen_op_ext16u32(tmp, val);
+    }
+    return tmp;
+}
+
+DISAS_INSN(mac)
+{
+    int rx;
+    int ry;
+    uint16_t ext;
+    int acc;
+    int l1;
+    int tmp;
+    int addr;
+    int loadval;
+    int dual;
+    int saved_flags = -1;
+
+    ext = lduw_code(s->pc);
+    s->pc += 2;
+
+    acc = ((insn >> 7) & 1) | ((ext >> 3) & 2);
+    dual = ((insn & 0x30) != 0 && (ext & 3) != 0);
+    if (dual && !m68k_feature(s->env, M68K_FEATURE_CF_EMAC_B)) {
+        disas_undef(s, insn);
+        return;
+    }
+    if (insn & 0x30) {
+        /* MAC with load.  */
+        tmp = gen_lea(s, insn, OS_LONG);
+        addr = gen_new_qreg(QMODE_I32);
+        gen_op_and32(addr, tmp, QREG_MAC_MASK);
+        /* Load the value now to ensure correct exception behavior.
+           Perform writeback after reading the MAC inputs.  */
+        loadval = gen_load(s, OS_LONG, addr, 0);
+
+        acc ^= 1;
+        rx = (ext & 0x8000) ? AREG(ext, 12) : DREG(insn, 12);
+        ry = (ext & 8) ? AREG(ext, 0) : DREG(ext, 0);
+    } else {
+        loadval = addr = -1;
+        rx = (insn & 0x40) ? AREG(insn, 9) : DREG(insn, 9);
+        ry = (insn & 8) ? AREG(insn, 0) : DREG(insn, 0);
+    }
+
+    gen_op_mac_clear_flags();
+    l1 = -1;
+    if ((s->env->macsr & MACSR_OMC) != 0 && !dual) {
+        /* Skip the multiply if we know we will ignore it.  */
+        l1 = gen_new_label();
+        tmp = gen_new_qreg(QMODE_I32);
+        gen_op_and32(tmp, QREG_MACSR, gen_im32(1 << (acc + 8)));
+        gen_op_jmp_nz32(tmp, l1);
+    }
+
+    if ((ext & 0x0800) == 0) {
+        /* Word.  */
+        rx = gen_mac_extract_word(s, rx, (ext & 0x80) != 0);
+        ry = gen_mac_extract_word(s, ry, (ext & 0x40) != 0);
+    }
+    if (s->env->macsr & MACSR_FI) {
+        gen_op_macmulf(rx, ry);
+    } else {
+        if (s->env->macsr & MACSR_SU)
+            gen_op_macmuls(rx, ry);
+        else
+            gen_op_macmulu(rx, ry);
+        switch ((ext >> 9) & 3) {
+        case 1:
+            gen_op_macshl();
+            break;
+        case 3:
+            gen_op_macshr();
+            break;
+        }
+    }
+
+    if (dual) {
+        /* Save the overflow flag from the multiply.  */
+        saved_flags = gen_new_qreg(QMODE_I32);
+        gen_op_mov32(saved_flags, QREG_MACSR);
+    }
+
+    if ((s->env->macsr & MACSR_OMC) != 0 && dual) {
+        /* Skip the accumulate if the value is already saturated.  */
+        l1 = gen_new_label();
+        tmp = gen_new_qreg(QMODE_I32);
+        gen_op_and32(tmp, QREG_MACSR, gen_im32(MACSR_PAV0 << acc));
+        gen_op_jmp_nz32(tmp, l1);
+    }
+
+    if (insn & 0x100)
+        gen_op_macsub(acc);
+    else
+        gen_op_macadd(acc);
+
+    if (s->env->macsr & MACSR_FI)
+        gen_op_macsatf(acc);
+    else if (s->env->macsr & MACSR_SU)
+        gen_op_macsats(acc);
+    else
+        gen_op_macsatu(acc);
+
+    if (l1 != -1)
+        gen_set_label(l1);
+
+    if (dual) {
+        /* Dual accumulate variant.  */
+        acc = (ext >> 2) & 3;
+        /* Restore the overflow flag from the multiplier.  */
+        gen_op_mov32(QREG_MACSR, saved_flags);
+        if ((s->env->macsr & MACSR_OMC) != 0) {
+            /* Skip the accumulate if the value is already saturated.  */
+            l1 = gen_new_label();
+            tmp = gen_new_qreg(QMODE_I32);
+            gen_op_and32(tmp, QREG_MACSR, gen_im32(MACSR_PAV0 << acc));
+            gen_op_jmp_nz32(tmp, l1);
+        }
+        if (ext & 2)
+            gen_op_macsub(acc);
+        else
+            gen_op_macadd(acc);
+        if (s->env->macsr & MACSR_FI)
+            gen_op_macsatf(acc);
+        else if (s->env->macsr & MACSR_SU)
+            gen_op_macsats(acc);
+        else
+            gen_op_macsatu(acc);
+        if (l1 != -1)
+            gen_set_label(l1);
+    }
+    gen_op_mac_set_flags(acc);
+
+    if (insn & 0x30) {
+        int rw;
+        rw = (insn & 0x40) ? AREG(insn, 9) : DREG(insn, 9);
+        gen_op_mov32(rw, loadval);
+        /* FIXME: Should address writeback happen with the masked or
+           unmasked value?  */
+        switch ((insn >> 3) & 7) {
+        case 3: /* Post-increment.  */
+            gen_op_add32(AREG(insn, 0), addr, gen_im32(4));
+            break;
+        case 4: /* Pre-decrement.  */
+            gen_op_mov32(AREG(insn, 0), addr);
+        }
+    }
+}
+
+DISAS_INSN(from_mac)
+{
+    int rx;
+    int acc;
+
+    rx = (insn & 8) ? AREG(insn, 0) : DREG(insn, 0);
+    acc = (insn >> 9) & 3;
+    if (s->env->macsr & MACSR_FI) {
+        gen_op_get_macf(rx, acc);
+    } else if ((s->env->macsr & MACSR_OMC) == 0) {
+        gen_op_get_maci(rx, acc);
+    } else if (s->env->macsr & MACSR_SU) {
+        gen_op_get_macs(rx, acc);
+    } else {
+        gen_op_get_macu(rx, acc);
+    }
+    if (insn & 0x40)
+        gen_op_clear_mac(acc);
+}
+
+DISAS_INSN(move_mac)
+{
+    int src;
+    int dest;
+    src = insn & 3;
+    dest = (insn >> 9) & 3;
+    gen_op_move_mac(dest, src);
+    gen_op_mac_clear_flags();
+    gen_op_mac_set_flags(dest);
+}
+
+DISAS_INSN(from_macsr)
+{
+    int reg;
+
+    reg = (insn & 8) ? AREG(insn, 0) : DREG(insn, 0);
+    gen_op_mov32(reg, QREG_MACSR);
+}
+
+DISAS_INSN(from_mask)
+{
+    int reg;
+    reg = (insn & 8) ? AREG(insn, 0) : DREG(insn, 0);
+    gen_op_mov32(reg, QREG_MAC_MASK);
+}
+
+DISAS_INSN(from_mext)
+{
+    int reg;
+    int acc;
+    reg = (insn & 8) ? AREG(insn, 0) : DREG(insn, 0);
+    acc = (insn & 0x400) ? 2 : 0;
+    if (s->env->macsr & MACSR_FI)
+        gen_op_get_mac_extf(reg, acc);
+    else
+        gen_op_get_mac_exti(reg, acc);
+}
+
+DISAS_INSN(macsr_to_ccr)
+{
+    gen_op_mov32(QREG_CC_X, gen_im32(0));
+    gen_op_and32(QREG_CC_DEST, QREG_MACSR, gen_im32(0xf));
+    s->cc_op = CC_OP_FLAGS;
+}
+
+DISAS_INSN(to_mac)
+{
+    int acc;
+    int val;
+    acc = (insn >>9) & 3;
+    SRC_EA(val, OS_LONG, 0, NULL);
+    if (s->env->macsr & MACSR_FI) {
+        gen_op_set_macf(val, acc);
+    } else if (s->env->macsr & MACSR_SU) {
+        gen_op_set_macs(val, acc);
+    } else {
+        gen_op_set_macu(val, acc);
+    }
+    gen_op_mac_clear_flags();
+    gen_op_mac_set_flags(acc);
+}
+
+DISAS_INSN(to_macsr)
+{
+    int val;
+    SRC_EA(val, OS_LONG, 0, NULL);
+    gen_op_set_macsr(val);
+    gen_lookup_tb(s);
+}
+
+DISAS_INSN(to_mask)
+{
+    int val;
+    SRC_EA(val, OS_LONG, 0, NULL);
+    gen_op_or32(QREG_MAC_MASK, val, gen_im32(0xffff0000));
+}
+
+DISAS_INSN(to_mext)
+{
+    int val;
+    int acc;
+    SRC_EA(val, OS_LONG, 0, NULL);
+    acc = (insn & 0x400) ? 2 : 0;
+    if (s->env->macsr & MACSR_FI)
+        gen_op_set_mac_extf(val, acc);
+    else if (s->env->macsr & MACSR_SU)
+        gen_op_set_mac_exts(val, acc);
+    else
+        gen_op_set_mac_extu(val, acc);
+}
+
 static disas_proc opcode_table[65536];
 
 static void
@@ -2325,8 +2725,12 @@ register_opcode (disas_proc proc, uint16_t opcode, uint16_t mask)
   int to;
 
   /* Sanity check.  All set bits must be included in the mask.  */
-  if (opcode & ~mask)
+  if (opcode & ~mask) {
+      fprintf(stderr,
+              "qemu internal error: bogus opcode definition %04x/%04x\n",
+              opcode, mask);
       abort();
+  }
   /* This could probably be cleverer.  For now just optimize the case where
      the top bits are known.  */
   /* Find the first zero bit in the mask.  */
@@ -2348,109 +2752,127 @@ register_opcode (disas_proc proc, uint16_t opcode, uint16_t mask)
 
 /* Register m68k opcode handlers.  Order is important.
    Later insn override earlier ones.  */
-static void
-register_m68k_insns (m68k_def_t *def)
+void register_m68k_insns (CPUM68KState *env)
 {
-    uint32_t iflags;
+#define INSN(name, opcode, mask, feature) do { \
+    if (m68k_feature(env, M68K_FEATURE_##feature)) \
+        register_opcode(disas_##name, 0x##opcode, 0x##mask); \
+    } while(0)
+    INSN(undef,     0000, 0000, CF_ISA_A);
+    INSN(arith_im,  0080, fff8, CF_ISA_A);
+    INSN(bitrev,    00c0, fff8, CF_ISA_APLUSC);
+    INSN(bitop_reg, 0100, f1c0, CF_ISA_A);
+    INSN(bitop_reg, 0140, f1c0, CF_ISA_A);
+    INSN(bitop_reg, 0180, f1c0, CF_ISA_A);
+    INSN(bitop_reg, 01c0, f1c0, CF_ISA_A);
+    INSN(arith_im,  0280, fff8, CF_ISA_A);
+    INSN(byterev,   02c0, fff8, CF_ISA_APLUSC);
+    INSN(arith_im,  0480, fff8, CF_ISA_A);
+    INSN(ff1,       04c0, fff8, CF_ISA_APLUSC);
+    INSN(arith_im,  0680, fff8, CF_ISA_A);
+    INSN(bitop_im,  0800, ffc0, CF_ISA_A);
+    INSN(bitop_im,  0840, ffc0, CF_ISA_A);
+    INSN(bitop_im,  0880, ffc0, CF_ISA_A);
+    INSN(bitop_im,  08c0, ffc0, CF_ISA_A);
+    INSN(arith_im,  0a80, fff8, CF_ISA_A);
+    INSN(arith_im,  0c00, ff38, CF_ISA_A);
+    INSN(move,      1000, f000, CF_ISA_A);
+    INSN(move,      2000, f000, CF_ISA_A);
+    INSN(move,      3000, f000, CF_ISA_A);
+    INSN(strldsr,   40e7, ffff, CF_ISA_APLUSC);
+    INSN(negx,      4080, fff8, CF_ISA_A);
+    INSN(move_from_sr, 40c0, fff8, CF_ISA_A);
+    INSN(lea,       41c0, f1c0, CF_ISA_A);
+    INSN(clr,       4200, ff00, CF_ISA_A);
+    INSN(undef,     42c0, ffc0, CF_ISA_A);
+    INSN(move_from_ccr, 42c0, fff8, CF_ISA_A);
+    INSN(neg,       4480, fff8, CF_ISA_A);
+    INSN(move_to_ccr, 44c0, ffc0, CF_ISA_A);
+    INSN(not,       4680, fff8, CF_ISA_A);
+    INSN(move_to_sr, 46c0, ffc0, CF_ISA_A);
+    INSN(pea,       4840, ffc0, CF_ISA_A);
+    INSN(swap,      4840, fff8, CF_ISA_A);
+    INSN(movem,     48c0, fbc0, CF_ISA_A);
+    INSN(ext,       4880, fff8, CF_ISA_A);
+    INSN(ext,       48c0, fff8, CF_ISA_A);
+    INSN(ext,       49c0, fff8, CF_ISA_A);
+    INSN(tst,       4a00, ff00, CF_ISA_A);
+    INSN(tas,       4ac0, ffc0, CF_ISA_B);
+    INSN(halt,      4ac8, ffff, CF_ISA_A);
+    INSN(pulse,     4acc, ffff, CF_ISA_A);
+    INSN(illegal,   4afc, ffff, CF_ISA_A);
+    INSN(mull,      4c00, ffc0, CF_ISA_A);
+    INSN(divl,      4c40, ffc0, CF_ISA_A);
+    INSN(sats,      4c80, fff8, CF_ISA_B);
+    INSN(trap,      4e40, fff0, CF_ISA_A);
+    INSN(link,      4e50, fff8, CF_ISA_A);
+    INSN(unlk,      4e58, fff8, CF_ISA_A);
+    INSN(move_to_usp, 4e60, fff8, USP);
+    INSN(move_from_usp, 4e68, fff8, USP);
+    INSN(nop,       4e71, ffff, CF_ISA_A);
+    INSN(stop,      4e72, ffff, CF_ISA_A);
+    INSN(rte,       4e73, ffff, CF_ISA_A);
+    INSN(rts,       4e75, ffff, CF_ISA_A);
+    INSN(movec,     4e7b, ffff, CF_ISA_A);
+    INSN(jump,      4e80, ffc0, CF_ISA_A);
+    INSN(jump,      4ec0, ffc0, CF_ISA_A);
+    INSN(addsubq,   5180, f1c0, CF_ISA_A);
+    INSN(scc,       50c0, f0f8, CF_ISA_A);
+    INSN(addsubq,   5080, f1c0, CF_ISA_A);
+    INSN(tpf,       51f8, fff8, CF_ISA_A);
 
-    iflags = def->insns;
-#define INSN(name, opcode, mask, isa) \
-    if (iflags & M68K_INSN_##isa) \
-        register_opcode(disas_##name, 0x##opcode, 0x##mask)
-    INSN(undef,     0000, 0000, CF_A);
-    INSN(arith_im,  0080, fff8, CF_A);
-    INSN(bitrev,    00c0, fff8, CF_C);
-    INSN(bitop_reg, 0100, f1c0, CF_A);
-    INSN(bitop_reg, 0140, f1c0, CF_A);
-    INSN(bitop_reg, 0180, f1c0, CF_A);
-    INSN(bitop_reg, 01c0, f1c0, CF_A);
-    INSN(arith_im,  0280, fff8, CF_A);
-    INSN(byterev,   02c0, fff8, CF_A);
-    INSN(arith_im,  0480, fff8, CF_A);
-    INSN(ff1,       04c0, fff8, CF_C);
-    INSN(arith_im,  0680, fff8, CF_A);
-    INSN(bitop_im,  0800, ffc0, CF_A);
-    INSN(bitop_im,  0840, ffc0, CF_A);
-    INSN(bitop_im,  0880, ffc0, CF_A);
-    INSN(bitop_im,  08c0, ffc0, CF_A);
-    INSN(arith_im,  0a80, fff8, CF_A);
-    INSN(arith_im,  0c00, ff38, CF_A);
-    INSN(move,      1000, f000, CF_A);
-    INSN(move,      2000, f000, CF_A);
-    INSN(move,      3000, f000, CF_A);
-    INSN(strldsr,   40e7, ffff, CF_A);
-    INSN(negx,      4080, fff8, CF_A);
-    INSN(move_from_sr, 40c0, fff8, CF_A);
-    INSN(lea,       41c0, f1c0, CF_A);
-    INSN(clr,       4200, ff00, CF_A);
-    INSN(undef,     42c0, ffc0, CF_A);
-    INSN(move_from_ccr, 42c0, fff8, CF_A);
-    INSN(neg,       4480, fff8, CF_A);
-    INSN(move_to_ccr, 44c0, ffc0, CF_A);
-    INSN(not,       4680, fff8, CF_A);
-    INSN(move_to_sr, 46c0, ffc0, CF_A);
-    INSN(pea,       4840, ffc0, CF_A);
-    INSN(swap,      4840, fff8, CF_A);
-    INSN(movem,     48c0, fbc0, CF_A);
-    INSN(ext,       4880, fff8, CF_A);
-    INSN(ext,       48c0, fff8, CF_A);
-    INSN(ext,       49c0, fff8, CF_A);
-    INSN(tst,       4a00, ff00, CF_A);
-    INSN(tas,       4ac0, ffc0, CF_B);
-    INSN(halt,      4ac8, ffff, CF_A);
-    INSN(pulse,     4acc, ffff, CF_A);
-    INSN(illegal,   4afc, ffff, CF_A);
-    INSN(mull,      4c00, ffc0, CF_A);
-    INSN(divl,      4c40, ffc0, CF_A);
-    INSN(sats,      4c80, fff8, CF_B);
-    INSN(trap,      4e40, fff0, CF_A);
-    INSN(link,      4e50, fff8, CF_A);
-    INSN(unlk,      4e58, fff8, CF_A);
-    INSN(move_to_usp, 4e60, fff8, CF_B);
-    INSN(move_from_usp, 4e68, fff8, CF_B);
-    INSN(nop,       4e71, ffff, CF_A);
-    INSN(stop,      4e72, ffff, CF_A);
-    INSN(rte,       4e73, ffff, CF_A);
-    INSN(rts,       4e75, ffff, CF_A);
-    INSN(movec,     4e7b, ffff, CF_A);
-    INSN(jump,      4e80, ffc0, CF_A);
-    INSN(jump,      4ec0, ffc0, CF_A);
-    INSN(addsubq,   5180, f1c0, CF_A);
-    INSN(scc,       50c0, f0f8, CF_A);
-    INSN(addsubq,   5080, f1c0, CF_A);
-    INSN(tpf,       51f8, fff8, CF_A);
-    INSN(branch,    6000, f000, CF_A);
-    INSN(moveq,     7000, f100, CF_A);
-    INSN(mvzs,      7100, f100, CF_B);
-    INSN(or,        8000, f000, CF_A);
-    INSN(divw,      80c0, f0c0, CF_A);
-    INSN(addsub,    9000, f000, CF_A);
-    INSN(subx,      9180, f1f8, CF_A);
-    INSN(suba,      91c0, f1c0, CF_A);
-    INSN(undef_mac, a000, f000, CF_A);
-    INSN(mov3q,     a140, f1c0, CF_B);
-    INSN(cmp,       b000, f1c0, CF_B); /* cmp.b */
-    INSN(cmp,       b040, f1c0, CF_B); /* cmp.w */
-    INSN(cmpa,      b0c0, f1c0, CF_B); /* cmpa.w */
-    INSN(cmp,       b080, f1c0, CF_A);
-    INSN(cmpa,      b1c0, f1c0, CF_A);
-    INSN(eor,       b180, f1c0, CF_A);
-    INSN(and,       c000, f000, CF_A);
-    INSN(mulw,      c0c0, f0c0, CF_A);
-    INSN(addsub,    d000, f000, CF_A);
-    INSN(addx,      d180, f1f8, CF_A);
-    INSN(adda,      d1c0, f1c0, CF_A);
-    INSN(shift_im,  e080, f0f0, CF_A);
-    INSN(shift_reg, e0a0, f0f0, CF_A);
-    INSN(undef_fpu, f000, f000, CF_A);
+    /* Branch instructions.  */
+    INSN(branch,    6000, f000, CF_ISA_A);
+    /* Disable long branch instructions, then add back the ones we want.  */
+    INSN(undef,     60ff, f0ff, CF_ISA_A); /* All long branches.  */
+    INSN(branch,    60ff, f0ff, CF_ISA_B);
+    INSN(undef,     60ff, ffff, CF_ISA_B); /* bra.l */
+    INSN(branch,    60ff, ffff, BRAL);
+
+    INSN(moveq,     7000, f100, CF_ISA_A);
+    INSN(mvzs,      7100, f100, CF_ISA_B);
+    INSN(or,        8000, f000, CF_ISA_A);
+    INSN(divw,      80c0, f0c0, CF_ISA_A);
+    INSN(addsub,    9000, f000, CF_ISA_A);
+    INSN(subx,      9180, f1f8, CF_ISA_A);
+    INSN(suba,      91c0, f1c0, CF_ISA_A);
+
+    INSN(undef_mac, a000, f000, CF_ISA_A);
+    INSN(mac,       a000, f100, CF_EMAC);
+    INSN(from_mac,  a180, f9b0, CF_EMAC);
+    INSN(move_mac,  a110, f9fc, CF_EMAC);
+    INSN(from_macsr,a980, f9f0, CF_EMAC);
+    INSN(from_mask, ad80, fff0, CF_EMAC);
+    INSN(from_mext, ab80, fbf0, CF_EMAC);
+    INSN(macsr_to_ccr, a9c0, ffff, CF_EMAC);
+    INSN(to_mac,    a100, f9c0, CF_EMAC);
+    INSN(to_macsr,  a900, ffc0, CF_EMAC);
+    INSN(to_mext,   ab00, fbc0, CF_EMAC);
+    INSN(to_mask,   ad00, ffc0, CF_EMAC);
+
+    INSN(mov3q,     a140, f1c0, CF_ISA_B);
+    INSN(cmp,       b000, f1c0, CF_ISA_B); /* cmp.b */
+    INSN(cmp,       b040, f1c0, CF_ISA_B); /* cmp.w */
+    INSN(cmpa,      b0c0, f1c0, CF_ISA_B); /* cmpa.w */
+    INSN(cmp,       b080, f1c0, CF_ISA_A);
+    INSN(cmpa,      b1c0, f1c0, CF_ISA_A);
+    INSN(eor,       b180, f1c0, CF_ISA_A);
+    INSN(and,       c000, f000, CF_ISA_A);
+    INSN(mulw,      c0c0, f0c0, CF_ISA_A);
+    INSN(addsub,    d000, f000, CF_ISA_A);
+    INSN(addx,      d180, f1f8, CF_ISA_A);
+    INSN(adda,      d1c0, f1c0, CF_ISA_A);
+    INSN(shift_im,  e080, f0f0, CF_ISA_A);
+    INSN(shift_reg, e0a0, f0f0, CF_ISA_A);
+    INSN(undef_fpu, f000, f000, CF_ISA_A);
     INSN(fpu,       f200, ffc0, CF_FPU);
     INSN(fbcc,      f280, ffc0, CF_FPU);
     INSN(frestore,  f340, ffc0, CF_FPU);
     INSN(fsave,     f340, ffc0, CF_FPU);
-    INSN(intouch,   f340, ffc0, CF_A);
-    INSN(cpushl,    f428, ff38, CF_A);
-    INSN(wddata,    fb00, ff00, CF_A);
-    INSN(wdebug,    fbc0, ffc0, CF_A);
+    INSN(intouch,   f340, ffc0, CF_ISA_A);
+    INSN(cpushl,    f428, ff38, CF_ISA_A);
+    INSN(wddata,    fb00, ff00, CF_ISA_A);
+    INSN(wdebug,    fbc0, ffc0, CF_ISA_A);
 #undef INSN
 }
 
@@ -2744,12 +3166,14 @@ gen_intermediate_code_internal(CPUState *env, TranslationBlock *tb,
     gen_opc_end = gen_opc_buf + OPC_MAX_SIZE;
     gen_opparam_ptr = gen_opparam_buf;
 
+    dc->env = env;
     dc->is_jmp = DISAS_NEXT;
     dc->pc = pc_start;
     dc->cc_op = CC_OP_DYNAMIC;
     dc->singlestep_enabled = env->singlestep_enabled;
     dc->fpcr = env->fpcr;
     dc->user = (env->sr & SR_S) == 0;
+    dc->is_mem = 0;
     nb_gen_labels = 0;
     lj = -1;
     do {
@@ -2778,7 +3202,14 @@ gen_intermediate_code_internal(CPUState *env, TranslationBlock *tb,
             gen_opc_instr_start[lj] = 1;
         }
         last_cc_op = dc->cc_op;
+        dc->insn_pc = dc->pc;
 	disas_m68k_insn(env, dc);
+
+        /* Terminate the TB on memory ops if watchpoints are present.  */
+        /* FIXME: This should be replacd by the deterministic execution
+         * IRQ raising bits.  */
+        if (dc->is_mem && env->nb_watchpoints)
+            break;
     } while (!dc->is_jmp && gen_opc_ptr < gen_opc_end &&
              !env->singlestep_enabled &&
              (pc_offset) < (TARGET_PAGE_SIZE - 32));
@@ -2855,6 +3286,7 @@ void cpu_reset(CPUM68KState *env)
 #if !defined (CONFIG_USER_ONLY)
     env->sr = 0x2700;
 #endif
+    m68k_switch_sp(env);
     /* ??? FP regs should be initialized to NaN.  */
     env->cc_op = CC_OP_FLAGS;
     /* TODO: We should set PC from the interrupt vector.  */
@@ -2878,22 +3310,6 @@ CPUM68KState *cpu_m68k_init(void)
 void cpu_m68k_close(CPUM68KState *env)
 {
     free(env);
-}
-
-int cpu_m68k_set_model(CPUM68KState *env, const char * name)
-{
-    m68k_def_t *def;
-
-    for (def = m68k_cpu_defs; def->name; def++) {
-        if (strcmp(def->name, name) == 0)
-            break;
-    }
-    if (!def->name)
-        return 1;
-
-    register_m68k_insns(def);
-
-    return 0;
 }
 
 void cpu_dump_state(CPUState *env, FILE *f, 
