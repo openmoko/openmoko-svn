@@ -519,6 +519,7 @@ void panel_mainmenu_sound_init()
 
 void panel_mainmenu_sound_play( const gchar* samplename )
 {
+    g_return_if_fail( pac );
     pa_context_play_sample( pac,
                             samplename,      // Name of my sample
                             NULL,            // Use default sink
