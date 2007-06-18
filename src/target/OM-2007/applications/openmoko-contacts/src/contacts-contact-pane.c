@@ -779,16 +779,26 @@ make_widget (ContactsContactPane *pane, EVCardAttribute *attr, FieldInfo *info)
     
     if (!attr_value)
       attr_value = g_strdup ("");
-    if (info->format)
+
+    if (!strcmp (info->vcard_field, EVC_TEL))
     {
-      escaped_str = g_markup_printf_escaped (info->format, attr_value);
-      label = gtk_label_new (NULL);
-      gtk_label_set_markup (GTK_LABEL (label), escaped_str);
-      g_free (escaped_str);
+      /* telephone fields are buttons to launch dialer */
+      label = gtk_button_new_with_label (attr_value);
+      gtk_widget_set_name (label, "mokofingerbutton-white");
+      /* TODO: add some callback to launch dialer */
     }
     else
-      label = gtk_label_new (attr_value);
-    
+    {
+      if (info->format)
+      {
+        escaped_str = g_markup_printf_escaped (info->format, attr_value);
+        label = gtk_label_new (NULL);
+        gtk_label_set_markup (GTK_LABEL (label), escaped_str);
+        g_free (escaped_str);
+      }
+      else
+        label = gtk_label_new (attr_value);
+    }
     gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
     
     /* Load the correct pixbuf */

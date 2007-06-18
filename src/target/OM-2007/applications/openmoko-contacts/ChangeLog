@@ -1,3 +1,8 @@
+2007-06-18  Thomas Wood  <thomas@openedhand.com>
+
+	* src/contacts-contact-pane.c: (make_widget): Add a button for telephone
+	fields that can be used to launch the dialer
+
 2007-05-18  Thomas Wood  <thomas@openedhand.com>
 
 	Patch by: Neil J Patel <njp@o-hand.com>
