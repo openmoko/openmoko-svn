@@ -95,6 +95,7 @@ struct machines {
 	char *vendor;
 } machines[] = {
 	{ "GTA01",		"generic",	"ti" },
+	{ "GTA02",		"generic",	"ti" },
 	{ "HTC Blueangel",	"tihtc",	"tihtc" },
 	{ "HTC Himalaya",	"tihtc",	"tihtc" },
 	{ "HTC Magician",	"tihtc",	"tihtc" },
