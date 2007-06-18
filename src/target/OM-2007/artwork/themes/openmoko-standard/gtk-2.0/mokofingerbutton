@@ -95,27 +95,33 @@ style "mokofingerbutton-white" {
             function        = BOX
             state           = NORMAL
             file            = "btn_white.png"
+            border          = { 11, 18, 11, 18 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = PRELIGHT
             file            = "btn_white.png"
+            border          = { 11, 18, 11, 18 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = ACTIVE
             file            = "btn_white_p.png"
+            border          = { 11, 18, 11, 18 }
             stretch         = TRUE
         }
     }
-    MokoPixmapButton::size-request = { 0, 63, 0, 62 }
-    xthickness = 0
-    ythickness = 0
+    xthickness = 6
+    ythickness = 6
     GtkButton::focus-line-width = 0
+
+    # this is a white button, the text should always be black ...
+    fg[NORMAL] = "black"
+    fg[PRELIGHT] = "black"
 }
-widget "*.mokofingerbutton-white" style "mokofingerbutton-white"
+widget "*mokofingerbutton-white*" style "mokofingerbutton-white"
 
 
 
