@@ -271,17 +271,12 @@ window_dialer_init (MokoDialerData * p_dialer_data)
 
   if (!p_dialer_data->window_dialer)
   {
-
     GdkColor color;
     gdk_color_parse ("black", &color);
 
     GtkWidget *vbox = NULL;
-
-
     GtkWidget *window = moko_finger_window_new ();
-
     GtkMenu *appmenu = GTK_MENU (gtk_menu_new ());
-
     GtkMenuItem *hideitem =
       GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Close"));
     g_signal_connect_swapped (G_OBJECT (hideitem), "activate",
@@ -359,35 +354,62 @@ window_dialer_init (MokoDialerData * p_dialer_data)
 
 
 
-//the buttons
+    //the buttons
 
+    GtkStockItem stock_item;
     GtkWidget *vbox2 = gtk_vbox_new (FALSE, 10);
-    GtkWidget *button1 = gtk_button_new ();
-    gtk_button_set_image (GTK_BUTTON (button1), gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON));
-    g_signal_connect (G_OBJECT (button1), "clicked",
+
+    GtkWidget *button_vbox, *alignment;
+    GtkWidget *icon, *label;
+    GtkWidget *button;
+
+    /* delete button */
+    button = gtk_button_new ();
+    button_vbox = gtk_vbox_new (FALSE, 0);
+    icon = gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON);
+    label = gtk_label_new ("Delete");
+    gtk_box_pack_start (GTK_BOX (button_vbox), icon, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (button_vbox), label, FALSE, FALSE, 0);
+    g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_delete_button_clicked), p_dialer_data);
-    gtk_widget_set_name (button1, "mokofingerbutton-orange");
+    gtk_container_add (GTK_CONTAINER (button), button_vbox);
+    gtk_widget_set_name (button, "mokofingerbutton-orange");
 
-    gtk_box_pack_start (GTK_BOX (vbox2), button1, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox2), button, FALSE, FALSE, 0);
 
-    GtkWidget *button3 = gtk_button_new ();
-    gtk_button_set_image (GTK_BUTTON (button3), gtk_image_new_from_stock (MOKO_STOCK_CALL_HISTORY, GTK_ICON_SIZE_BUTTON));
 
-    g_signal_connect (G_OBJECT (button3), "clicked",
+    /* history button */
+    button = gtk_button_new ();
+    button_vbox = gtk_vbox_new (FALSE, 0);
+    gtk_stock_lookup (MOKO_STOCK_CALL_HISTORY, &stock_item);
+    icon = gtk_image_new_from_stock (MOKO_STOCK_CALL_HISTORY, GTK_ICON_SIZE_BUTTON);
+    label = gtk_label_new (stock_item.label);
+    gtk_box_pack_start (button_vbox, icon, FALSE, FALSE, 0);
+    gtk_box_pack_start (button_vbox, label, FALSE, FALSE, 0);
+    gtk_container_add (GTK_CONTAINER (button), button_vbox);
+    g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_history_button_clicked), p_dialer_data);
-    gtk_widget_set_name (button3, "mokofingerbutton-orange");
-    gtk_box_pack_start (GTK_BOX (vbox2), button3, FALSE, FALSE, 0);
+    gtk_widget_set_name (button, "mokofingerbutton-orange");
+    gtk_box_pack_start (GTK_BOX (vbox2), button, FALSE, FALSE, 0);
 
 
-    GtkWidget *button2 = gtk_button_new ();
-
-    g_signal_connect (G_OBJECT (button2), "clicked",
+    /* dial button */
+    button = gtk_button_new ();
+    button_vbox = gtk_vbox_new (FALSE, 0);
+    alignment = gtk_alignment_new (0.5, 0.5, 0, 0);
+    gtk_container_add (GTK_CONTAINER (alignment), button_vbox);
+    gtk_stock_lookup (MOKO_STOCK_CALL_DIAL, &stock_item);
+    icon = gtk_image_new_from_stock (MOKO_STOCK_CALL_DIAL, GTK_ICON_SIZE_BUTTON);
+    label = gtk_label_new (stock_item.label);
+    gtk_box_pack_start (button_vbox, icon, FALSE, FALSE, 0);
+    gtk_box_pack_start (button_vbox, label, FALSE, FALSE, 0);
+    g_signal_connect (G_OBJECT (button), "clicked",
                       G_CALLBACK (cb_dialer_button_clicked), p_dialer_data);
-    gtk_widget_set_name (button2, "mokofingerbutton-black");
-    gtk_button_set_image (GTK_BUTTON (button2), gtk_image_new_from_stock (MOKO_STOCK_CALL_DIAL, GTK_ICON_SIZE_BUTTON));
+    gtk_container_add (GTK_CONTAINER (button), alignment);
+    gtk_widget_set_name (button, "mokofingerbutton-black");
 
 
-    gtk_box_pack_start (GTK_BOX (vbox2), button2, TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX (vbox2), button, TRUE, TRUE, 0);
 
     gtk_box_pack_start (GTK_BOX (hbox), vbox2, FALSE, FALSE, 5);
 
