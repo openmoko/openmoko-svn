@@ -43,7 +43,7 @@ Index: linux-2.6.21.3-moko/drivers/video/Makefile
  obj-$(CONFIG_FB_IBM_GXT4500)	  += gxt4500.o
  obj-$(CONFIG_FB_PS3)		  += ps3fb.o
  obj-$(CONFIG_FB_SM501)            += sm501fb.o
-+obj-$(CONFIG_FB_GLAMO)		  += glamo/
++obj-$(CONFIG_GLAMO)		  += glamo/
  
  # Platform or fallback drivers go here
  obj-$(CONFIG_FB_VESA)             += vesafb.o
@@ -66,7 +66,7 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
-@@ -0,0 +1,385 @@
+@@ -0,0 +1,394 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
 +
@@ -206,6 +206,8 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 +	GLAMO_REG_MEM_DRAM2	= REG_MEM(0x36),
 +	GLAMO_REG_MEM_CRC	= REG_MEM(0x38),
 +};
++
++#define GLAMO_MEM_TYPE_MASK	0x03
 +
 +enum glamo_irq {
 +	GLAMO_IRQ_HOSTBUS	= 0x0001,
@@ -451,6 +453,13 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 +	GLAMO_LCD_MODE3_18BITS		= 0x0040,
 +};
 +
++enum glamo_core_revisions {
++	GLAMO_CORE_REV_A0		= 0x0000,
++	GLAMO_CORE_REV_A1		= 0x0001,
++	GLAMO_CORE_REV_A2		= 0x0002,
++	GLAMO_CORE_REV_A3		= 0x0003,
++};
++
 +#endif /* _GLAMO_REGS_H */
 Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
 ===================================================================
@@ -664,7 +673,7 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
-@@ -0,0 +1,389 @@
+@@ -0,0 +1,683 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -723,6 +732,9 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	int irq;
 +	struct resource *mem;
 +	void __iomem *base;
++	struct platform_device *pdev;
++	u_int16_t type;
++	u_int16_t revision;
 +};
 +
 +static struct glamo_core *glamo_handle;
@@ -737,6 +749,27 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +				   u_int16_t reg)
 +{
 +	return readw(glamo->base + reg);
++}
++
++static inline void glamo_vmem_write(struct glamo_core *glamo, u_int32_t addr,
++				    u_int16_t *src, int len)
++{
++	if (addr & 0x0001 || (unsigned long)src & 0x0001 || len & 0x0001) {
++		dev_err(&glamo->pdev->dev, "unaligned write(0x%08x, 0x%p, "
++			"0x%x)!!\n", addr, src, len);
++	}
++
++}
++
++static inline void glamo_vmem_read(struct glamo_core *glamo, u_int16_t *buf,
++				   u_int32_t addr, int len)
++{
++	if (addr & 0x0001 || (unsigned long) buf & 0x0001 || len & 0x0001) {
++		dev_err(&glamo->pdev->dev, "unaligned read(0x%p, 0x08%x, "
++			"0x%x)!!\n", buf, addr, len);
++	}
++
++
 +}
 +
 +/* resources of 'sibling' devices */
@@ -912,6 +945,262 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	spin_unlock(&desc->lock);
 +}
 +
++
++/* script support */
++
++struct glamo_script {
++	u_int16_t reg;
++	u_int16_t val;
++};
++
++int glamo_run_script(struct glamo_core *glamo, struct glamo_script *script, int len)
++{
++	int i;
++
++	for (i = 0; i < len; i++) {
++		struct glamo_script *line = &script[i];
++
++		if (line->reg == 0xffff)
++			return 0;
++		else if (line->reg == 0xfffe)
++			msleep(line->val);
++		else
++			__reg_write(glamo, script[i].reg, script[i].val);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(glamo_run_script);
++
++static struct glamo_script glamo_init_script[] = {
++	{ 0x10,		0x1000 },
++		{ 0xfffe, 1 },
++	{ 0x12, 	0x1000 },
++	{ 0x12,		0x2000 },
++	{ 0x14,		0x1000 },
++	{ 0x16,		0x1000 },
++	{ 0x18,		0x1000 },
++	{ 0x18,		0x2000 },
++	{ 0x1a,		0x1000 },
++	{ 0x1c,		0x1000 },
++	{ 0x1c,		0x2000 },
++	{ 0x1e,		0x1000 },
++	{ 0x1e,		0x2000 },
++	{ 0x20,		0x1000 },
++	{ 0x24,		0x3000 },
++	{ 0x24,		0x3000 },
++	{ 0x26,		0x1000 },
++		{ 0xfffe, 1 },
++	{ 0x10,		0x0000 },
++	{ 0x12,		0x0000 },
++	{ 0x12,		0x0000 },
++	{ 0x14,		0x0000 },
++	{ 0x16,		0x0000 },
++	{ 0x18,		0x0000 },
++	{ 0x18,		0x0000 },
++	{ 0x1a,		0x0000 },
++	{ 0x1c,		0x0000 },
++	{ 0x1c,		0x0000 },
++	{ 0x1e,		0x0000 },
++	{ 0x1e,		0x0000 },
++	{ 0x20,		0x0000 },
++	{ 0x24,		0x0000 },
++	{ 0x24,		0x0000 },
++	{ 0x26,		0x0000 },
++		{ 0xfffe, 1 },
++	{ 0x40,		0x0588 },
++	{ 0x44,		0x0a27 },
++		{ 0xfffe, 300 },
++	{ 0x06,		0xffff },
++	{ 0x34,		0x2000 },
++	{ 0x36,		0x010b },
++	{ 0x38,		0x0100 },
++	{ 0x10,		0x000d },
++	{ 0x200,	0x0ef0 },
++	{ 0x202, 	0x7fff },
++	{ 0x212,	0x0000 },
++	{ 0x214,	0x4000 },
++	{ 0x216,	0xf00e },
++	{ 0x302,	0xafaf },
++	{ 0x304,	0x0108 },
++	{ 0x306,	0x0010 },
++	{ 0x308,	0x0000 },
++	{ 0x30a,	0x0000 },
++	{ 0x30c,	0x0000 },
++	{ 0x30e,	0x0000 },
++	{ 0x310,	0x0000 },
++	{ 0x312,	0x1002 },
++	{ 0x314,	0x6006 },
++	{ 0x316,	0x00ff },
++	{ 0x318,	0x0001 },
++	{ 0x31a,	0x0020 },
++	{ 0x31c,	0x0000 },
++	{ 0x336,	0x01d6 },
++	{ 0x12,		0x000a },
++	{ 0x12,		0x000b },
++	{ 0x300,	0x0873 },
++};
++
++#if 0 /* MM370 */
++static const struct glamo_script regs_vram_2mb = {
++	{ GLAMO_REG_CLOCK_MEMORY,	0x3aaa },
++		{ 0xfffe, 50 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x0aaa },
++		{ 0xfffe, 3 },
++	{ GLAMO_REG_MEM_POWER1,		0x0020 },
++	{ 0x033a,			0x0000 },
++	{ 0x033c,			0x0000 },
++	{ 0x033e,			0x0000 },
++	{ 0x0340,			0x0000 },
++	{ 0x0342,			0x0000 },
++	{ 0x0344,			0x0000 },
++	{ 0x0346,			0x0240 },
++	{ GLAMO_REG_MEM_TIMING8,	0x1016 },
++	{ GLAMO_REG_MEM_TIMING9,	0x6067 },
++	{ GLAMO_REG_MEM_TIMING10,	0x00ff },
++	{ GLAMO_REG_MEM_TIMING11,	0x0030 },
++	{ GLAMO_REG_MEM_GEN,		0x3fff },
++	{ GLAMO_REG_MEM_GEN,		0xafaf },
++	{ GLAMO_REG_MEM_TIMING1,	0x0108 },
++	{ GLAMO_REG_MEM_TIMING2,	0x0010 },
++	{ GLAMO_REG_MEM_DRAM1,		0x0a00 },
++		{ 0xfffe, 3 },
++	{ GLAMO_REG_MEM_DRAM1,		0xe200 },
++		{ 0xfffe, 1 },
++};
++
++static const struct glamo_script regs_vram_8mb = {
++	{ GLAMO_REG_CLOCK_MEMORY,	0x3aaa },
++		{ 0xfffe, 50 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x0aaa },
++		{ 0xfffe, 3 },
++	{ GLAMO_REG_MEM_POWER1,		0x0020 },
++	{ 0x033a,			0x45cf },
++	{ 0x033c, 			0x4240 },
++	{ 0x033e,			0x53e0 },
++	{ 0x0340,			0x1401 },
++	{ 0x0342,			0x0c44 },
++	{ 0x0344,			0x1d0b },
++	{ 0x0346,			0x25ac },
++	{ 0x0348,			0x1953 },
++		{ 0xfffe, 1 },
++	{ GLAMO_REG_MEM_TYPE,		0x087a },
++	{ GLAMO_REG_MEM_DRAM2,		0x01d6 },
++	{ GLAMO_REG_MEM_TIMING8,	0x1060 },
++	{ GLAMO_REG_MEM_TIMING9,	0x6067 },
++	{ GLAMO_REG_MEM_TIMING10,	0x00ff },
++	{ GLAMO_REG_MEM_TIMING11,	0x0030 },
++	{ GLAMO_REG_MEM_GEN,		0x3fff },
++	{ GLAMO_REG_MEM_GEN,		0xafaf },
++	{ GLAMO_REG_MEM_TIMING1,	0x3108 },
++	{ GLAMO_REG_MEM_TIMING2,	0x0010 },
++	{ GLAMO_REG_MEM_DRAM1,		0x0a00 },
++		{ 0xfffe, 3 },
++	{ GLAMO_REG_MEM_DRAM1,		0xe200 },
++		{ 0xfffe, 1 },
++};
++#endif
++
++
++#define MEMDETECT_RETRY	6
++static unsigned int detect_memsize(struct glamo_core *glamo)
++{
++	int i;
++
++	static const u_int16_t pattern[] = {
++		0x1111, 0x8a8a, 0x2222, 0x7a7a,
++		0x3333, 0x6a6a, 0x4444, 0x5a5a,
++		0x5555, 0x4a4a, 0x6666, 0x3a3a,
++		0x7777, 0x2a2a, 0x8888, 0x1a1a
++	};
++
++	for (i = 0; i < MEMDETECT_RETRY; i++) {
++		switch (glamo->type) {
++		case 3600:
++			__reg_write(glamo, GLAMO_REG_MEM_TYPE, 0x0072);
++			__reg_write(glamo, GLAMO_REG_MEM_DRAM1, 0xc100);
++			break;
++		case 3650:
++			switch (glamo->revision) {
++			case GLAMO_CORE_REV_A0:
++				if (i & 1)
++					__reg_write(glamo, GLAMO_REG_MEM_TYPE,
++						    0x097a);
++				else
++					__reg_write(glamo, GLAMO_REG_MEM_TYPE,
++						    0x0173);
++
++				__reg_write(glamo, GLAMO_REG_MEM_DRAM1, 0x0000);
++				msleep(1);
++				__reg_write(glamo, GLAMO_REG_MEM_DRAM1, 0xc100);
++				break;
++			default:
++				if (i & 1)
++					__reg_write(glamo, GLAMO_REG_MEM_TYPE,
++						    0x0972);
++				else
++					__reg_write(glamo, GLAMO_REG_MEM_TYPE,
++						    0x0872);
++
++				__reg_write(glamo, GLAMO_REG_MEM_DRAM1, 0x0000);
++				msleep(1);
++				__reg_write(glamo, GLAMO_REG_MEM_DRAM1, 0xe100);
++				break;
++			}
++			break;
++		case 3700:
++			/* FIXME */
++		default:
++			break;
++		}
++
++#if 0
++		/* FIXME: finish implementation */
++		for (j = 0; j < 8; j++) {
++			__
++#endif
++	}
++
++}
++
++/* Find out if we can support this version of the Glamo chip */
++static int glamo_supported(struct glamo_core *glamo)
++{
++	u_int16_t dev_id, rev_id, memsize;
++
++	dev_id = __reg_read(glamo, GLAMO_REG_DEVICE_ID);
++	rev_id = __reg_read(glamo, GLAMO_REG_REVISION_ID);
++
++	dev_info(&glamo->pdev->dev, "Detected Glamo core %04x Revision %04x\n",
++		 dev_id, rev_id);
++
++	switch (dev_id) {
++	case 0x3650:
++		switch (rev_id) {
++		case GLAMO_CORE_REV_A2:
++			break;
++		case GLAMO_CORE_REV_A0:
++		case GLAMO_CORE_REV_A1:
++		case GLAMO_CORE_REV_A3:
++			dev_warn(&glamo->pdev->dev, "untested core revision "
++				 "%04x, your mileage may vary\n", rev_id);
++			break;
++		default:
++			dev_warn(&glamo->pdev->dev, "unknown glamo revision "
++				 "%04x, your mileage may vary\n", rev_id);
++			/* maybe should abort ? */
++		}
++		break;
++	default:
++		dev_err(&glamo->pdev->dev, "unsupported glamo device %04x\n",
++			dev_id);
++		return 0;
++	}
++
++	return 1;
++}
++
++
 +static int __init glamo_probe(struct platform_device *pdev)
 +{
 +	int rc, irq;
@@ -927,6 +1216,8 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	if (!glamo)
 +		return -ENOMEM;
 +
++	glamo_handle = glamo;
++	glamo->pdev = pdev;
 +	glamo->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 +	glamo->irq = platform_get_irq(pdev, 0);
 +	if (!glamo->irq || !glamo->mem) {
@@ -947,6 +1238,11 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	glamo->base = ioremap(glamo->mem->start, GLAMO_REGOFS_VIDCAP);
 +	if (!glamo->base) {
 +		dev_err(&pdev->dev, "failed to ioremap() memory region\n");
++		goto out_free;
++	}
++
++	if (!glamo_supported(glamo)) {
++		dev_err(&pdev->dev, "This Glamo is not supported\n");
 +		goto out_free;
 +	}
 +
@@ -972,6 +1268,11 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +
 +	platform_set_drvdata(pdev, glamo);
 +
++	printk("running init script\n");
++	glamo_run_script(glamo, glamo_init_script, ARRAY_SIZE(glamo_init_script));
++
++	printk("interrupts\n");
++
 +	/* FIXME: do we need to request_irq() it ? */
 +	for (irq = IRQ_GLAMO(0); irq <= IRQ_GLAMO(8); irq++) {
 +		set_irq_chip(irq, &glamo_irq_chip);
@@ -981,14 +1282,16 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	set_irq_chained_handler(glamo->irq, glamo_irq_demux_handler);
 +	set_irq_type(glamo->irq, IRQT_FALLING);
 +
++
 +	return 0;
 +
 +out_free:
++	glamo_handle = NULL;
 +	kfree(glamo);
 +	return rc;
 +}
 +
-+static int __exit glamo_remove(struct platform_device *pdev)
++static int glamo_remove(struct platform_device *pdev)
 +{
 +	struct glamo_core *glamo = platform_get_drvdata(pdev);
 +	int irq;
@@ -1076,7 +1379,7 @@ Index: linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/irqs.h
 + * within sensible limits.
 + */
 +#define IRQ_BOARD_START		_NR_IRQS
-+#define IRQ_BOARD_END		(_NR_IRQS + 1)
++#define IRQ_BOARD_END		(_NR_IRQS + 10)
 +
 +#if defined(CONFIG_MACH_NEO1973_GTA02)
 +#define NR_IRQS			(IRQ_BOARD_END)
