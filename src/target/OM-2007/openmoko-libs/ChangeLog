@@ -17,6 +17,13 @@
 
 	Tweak banner look and feel
 
+2007-06-14 Neil Jagdish Patel <njp@o-hand.com>
+
+	* libmokoui/moko-stock.c:
+	Correctly load stock items, so they can be used as expected.
+	Only load stock items for GTK_ICON_SIZE_BUTTON for the moment, to save
+	memory as other sizes are not required right now.
+
 2007-06-14  Mickey  <mickey@openmoko.org>
 
 	* configure.ac:
