@@ -88,7 +88,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,313 @@
+@@ -0,0 +1,323 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -135,7 +135,8 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +/* That many seconds the power key needs to be pressed to power up */
 +#define POWER_KEY_SECONDS	2
 +
-+#define M_MDIV	0x7f		/* Fout = 405.00MHz */
++//#define M_MDIV	0x7f		/* Fout = 405.00MHz */
++#define M_MDIV	0x7d		/* Fout = 399.00MHz */
 +#define M_PDIV	0x2
 +#define M_SDIV	0x1
 +
@@ -222,6 +223,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +int board_late_init(void)
 +{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
 +	extern unsigned char booted_from_nand;
 +	unsigned char tmp;
 +	char buf[32];
@@ -230,6 +232,14 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +	/* Initialize the Power Management Unit with a safe register set */
 +	pcf50633_init();
++
++	/* Glamo3362 reset and power cycle */
++	gpio->GPJDAT &= ~0x000000001;
++	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0);
++	udelay(50*1000);
++	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0x2);
++	gpio->GPJDAT |= 0x000000001;
++
 +#if 0
 +	/* if there's no other reason, must be regular reset */
 +	neo1973_wakeup_cause = NEO1973_WAKEUP_RESET;
@@ -469,7 +479,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,272 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -535,11 +545,6 @@ Index: u-boot/include/configs/neo1973_gta02.h
 + * select serial console configuration
 + */
 +#define CONFIG_SERIAL3          1	/* we use SERIAL 1 on GTA01 */
-+
-+/************************************************************
-+ * RTC
-+ ************************************************************/
-+#define	CONFIG_RTC_S3C24X0	1
 +
 +/* allow to overwrite serial and ethaddr */
 +#define CONFIG_ENV_OVERWRITE
@@ -719,7 +724,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +
 +#if 0
 +#define CONFIG_VIDEO
-+#define CONFIG_VIDEO_S3C2410
++#define CONFIG_VIDEO_GLAMO3362
 +#define CONFIG_CFB_CONSOLE
 +#define CONFIG_VIDEO_LOGO
 +#define CONFIG_SPLASH_SCREEN
@@ -732,13 +737,14 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define VIDEO_TSTC_FCT		serial_tstc
 +#define VIDEO_GETC_FCT		serial_getc
 +
-+#define LCD_VIDEO_ADDR		0x33d00000
++#define CONFIG_GLAMO_BASE	0x08000000
 +#endif
 +
 +#define CONFIG_S3C2410_NAND_BBT                1
 +//#define CONFIG_S3C2410_NAND_HWECC              1
 +
 +#define CONFIG_DRIVER_PCF50633		1
++#define	CONFIG_RTC_PCF50633		1
 +
 +#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
 +#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),128k(u-boot_env),2M(kernel),640k(splash),-(jffs2)"
@@ -1032,7 +1038,7 @@ Index: u-boot/drivers/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/pcf50633.c
-@@ -0,0 +1,142 @@
+@@ -0,0 +1,192 @@
 +#include <common.h>
 +
 +#ifdef CONFIG_DRIVER_PCF50633
@@ -1173,6 +1179,56 @@ Index: u-boot/drivers/pcf50633.c
 +
 +	return pcf50633_reg_set_bit_mask(PCF50633_REG_MBCC7, 0x03, val);
 +}
++
++#if defined(CONFIG_RTC_PCF50633) && (CONFIG_COMMANDS & CFG_CMD_DATE)
++
++#include <rtc.h>
++
++static unsigned bcd2bin (uchar n)
++{
++	return ((((n >> 4) & 0x0F) * 10) + (n & 0x0F));
++}
++
++static unsigned char bin2bcd (unsigned int n)
++{
++	return (((n / 10) << 4) | (n % 10));
++}
++
++
++void rtc_get(struct rtc_time *tmp)
++{
++	tmp->tm_sec = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCSC));
++	tmp->tm_min = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCMN));
++	tmp->tm_hour = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCHR));
++	tmp->tm_wday = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCWD));
++	tmp->tm_mday = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCDT));
++	tmp->tm_mon = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCMT));
++	tmp->tm_year = bcd2bin(pcf50633_reg_read(PCF50633_REG_RTCYR));
++	if (tmp->tm_year < 70)
++		tmp->tm_year += 2000;
++	else
++		tmp->tm_year += 1900;
++	tmp->tm_yday = 0;
++	tmp->tm_isdst = 0;
++}
++
++void rtc_set(struct rtc_time *tmp)
++{
++	pcf50633_reg_write(PCF50633_REG_RTCSC, bin2bcd(tmp->tm_sec));
++	pcf50633_reg_write(PCF50633_REG_RTCMN, bin2bcd(tmp->tm_min));
++	pcf50633_reg_write(PCF50633_REG_RTCHR, bin2bcd(tmp->tm_hour));
++	pcf50633_reg_write(PCF50633_REG_RTCWD, bin2bcd(tmp->tm_wday));
++	pcf50633_reg_write(PCF50633_REG_RTCDT, bin2bcd(tmp->tm_mday));
++	pcf50633_reg_write(PCF50633_REG_RTCMN, bin2bcd(tmp->tm_mon));
++	pcf50633_reg_write(PCF50633_REG_RTCYR, bin2bcd(tmp->tm_year % 100));
++}
++
++void rtc_reset(void)
++{
++	/* FIXME */
++}
++#endif /* CONFIG_RTC_PCF50633 && CFG_CMD_DATE */
++
 +
 +#endif /* CONFIG DRIVER_PCF50633 */
 Index: u-boot/board/neo1973/common/lowlevel_init.S
@@ -1366,7 +1422,7 @@ Index: u-boot/drivers/smedia3362.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/smedia3362.c
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,188 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -1396,16 +1452,27 @@ Index: u-boot/drivers/smedia3362.c
 +#include <s3c2410.h>
 +#include "smedia3362.h"
 +
-+/*
-+ * Export Graphic Device
-+ */
++#define ARRAY_SIZE(x)           (sizeof(x) / sizeof((x)[0]))
++
++/* Export Graphic Device */
 +GraphicDevice smi;
 +
++#define GLAMO_REG(x)	(*(volatile unsigned short *)(CONFIG_GLAMO_BASE + x))
++
++static inline void glamo_reg_write(u_int16_t reg, u_int16_t val)
++{
++	GLAMO_REG(reg) = val;
++}
++
++static inline u_int16_t glamo_reg_read(u_int16_t reg)
++{
++	return GLAMO_REG(reg);
++}
 +
 +struct glamo_script {
 +	u_int16_t reg;
 +	u_int16_t val;
-+} __attribute__((packed));
++}; // __attribute__((packed));
 +
 +/* from 'initial glamo 3365 script' */
 +static struct glamo_script gl3362_init_script[] = {
@@ -1423,7 +1490,7 @@ Index: u-boot/drivers/smedia3362.c
 +	{ GLAMO_REG_CLOCK_MPROC,	0x12aa },
 +		{ 0xfffe, 5 },
 +	{ GLAMO_REG_CLOCK_HOST,		0x000d },
-+	{ GLAMO_REG_CLOCK_MEMORY,	0x000a }I,
++	{ GLAMO_REG_CLOCK_MEMORY,	0x000a },
 +	{ GLAMO_REG_CLOCK_LCD,		0x00ee },
 +	{ GLAMO_REG_CLOCK_MMC,		0x000a },
 +	{ GLAMO_REG_CLOCK_ISP,		0x02aa },
@@ -1469,26 +1536,78 @@ Index: u-boot/drivers/smedia3362.c
 +	{ GLAMO_REG_MEM_TIMING(10),	0x00ff },
 +	{ GLAMO_REG_MEM_TIMING(11),	0x0001 },
 +	{ GLAMO_REG_MEM_POWER1,		0x0020 },
-+	{ GLAMO_REG_MEM_POWRE2,		0x0000 },
++	{ GLAMO_REG_MEM_POWER2,		0x0000 },
 +	{ GLAMO_REG_MEM_DRAM1,		0x0000 },
 +		{ 0xfffe, 1 },
 +	{ GLAMO_REG_MEM_DRAM1,		0xc100 },
 +	{ GLAMO_REG_MEM_DRAM2,		0x01d6 },
 +};
 +
-+static int glamo3362_init(void)
++#if 0
++static struct glamo_script gl3362_init_script[] = {
++	/* clock */
++	{ GLAMO_REG_CLOCK_MEMORY, 	0x300a },
++};
++#endif
++
++static void glamo_run_script(struct glamo_script *script, int num)
 +{
 +	int i;
-+
 +	for (i = 0; i < ARRAY_SIZE(gl3362_init_script); i++) {
-+		struct glamo_reg *reg = gl3362_init_script[i];
++		struct glamo_script *reg = script + i;
++		printf("reg=0x%04x, val=0x%04x\n", reg->reg, reg->val);
 +
 +		if (reg->reg == 0xfffe)
-+			delay(reg->val);
++			udelay(reg->val*1000);
 +		else
-+			gl3362_reg_write(reg->reg, reg->val);
++			glamo_reg_write(reg->reg, reg->val);
 +	}
-+	/* FIXME */
++
++}
++
++static void glamo_core_init(void)
++{
++	printf("Glamo core device ID: 0x%04x, Revision 0x%04x\n",
++		glamo_reg_read(GLAMO_REG_DEVICE_ID),
++		glamo_reg_read(GLAMO_REG_REVISION_ID));
++
++	glamo_run_script(gl3362_init_script, ARRAY_SIZE(gl3362_init_script));
++}
++
++void *video_hw_init(void)
++{
++	u_int16_t reg;
++	GraphicDevice *pGD = (GraphicDevice *)&smi;
++
++	glamo_core_init();
++
++	printf("Video: ");
++
++	/* FIXME: returning since vram access still locks up system */
++	return NULL;
++
++	/* FIXME: this is static */
++	pGD->winSizeX = pGD->plnSizeX = 480;
++	pGD->winSizeY = pGD->plnSizeY = 640;
++	pGD->gdfBytesPP = 2;
++	pGD->gdfIndex = GDF_16BIT_565RGB;
++
++	pGD->frameAdrs = CONFIG_GLAMO_BASE + 0x00800000;
++	pGD->memSize = 0x200000; /* 480x640x16bit = 614400 bytes */
++
++	//printf("memset ");
++	//memset(pGD->frameAdrs, 0, pGD->memSize);
++
++	printf("END\n");
++
++	return &smi;
++}
++
++void
++video_set_lut(unsigned int index, unsigned char r,
++	      unsigned char g, unsigned char b)
++{
++	/* FIXME: we don't support any palletized formats */
 +}
 +
 +#endif /* CONFIG_VIDEO_GLAMO3362 */
@@ -1496,7 +1615,7 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -50,7 +50,7 @@
+@@ -50,10 +50,10 @@
  	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
@@ -1504,7 +1623,11 @@ Index: u-boot/drivers/Makefile
 +	  pcf50606.o pcf50633.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
  	  rpx_pcmcia.o \
- 	  fsl_i2c.o s3c2410_fb.o
+-	  fsl_i2c.o s3c2410_fb.o
++	  fsl_i2c.o s3c2410_fb.o smedia3362.o
+ 
+ SRCS	:= $(COBJS:.o=.c)
+ OBJS	:= $(addprefix $(obj),$(COBJS))
 Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
@@ -1546,7 +1669,17 @@ Index: u-boot/board/neo1973/common/udc.c
  
  void udc_ctrl(enum usbd_event event, int param)
  {
-@@ -23,6 +24,11 @@
+@@ -11,7 +12,8 @@
+ 	switch (event) {
+ 	case UDC_CTRL_PULLUP_ENABLE:
+ #if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
+-    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
++    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4) || \
++    defined(CONFIG_ARCH_GTA02_v1)
+ 		if (param)
+ 			gpio->GPBDAT |= (1 << 9);
+ 		else
+@@ -23,6 +25,11 @@
      defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
      defined(CONFIG_ARCH_GTA01B_v4)
  		pcf50606_charge_autofast(param);
@@ -1558,3 +1691,393 @@ Index: u-boot/board/neo1973/common/udc.c
  #endif
  		break;
  	default:
+Index: u-boot/drivers/smedia3362.h
+===================================================================
+--- /dev/null
++++ u-boot/drivers/smedia3362.h
+@@ -0,0 +1,385 @@
++#ifndef _GLAMO_REGS_H
++#define _GLAMO_REGS_H
++
++/* Smedia Glamo 336x/337x driver
++ *
++ * (C) 2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++enum glamo_regster_offsets {
++	GLAMO_REGOFS_GENERIC	= 0x0000,
++	GLAMO_REGOFS_HOSTBUS	= 0x0200,
++	GLAMO_REGOFS_MEMORY	= 0x0300,
++	GLAMO_REGOFS_VIDCAP	= 0x0400,
++	GLAMO_REGOFS_ISP	= 0x0500,
++	GLAMO_REGOFS_JPEG	= 0x0800,
++	GLAMO_REGOFS_MPEG	= 0x0c00,
++	GLAMO_REGOFS_LCD	= 0x1100,
++	GLAMO_REGOFS_MMC	= 0x1400,
++	GLAMO_REGOFS_MPROC0	= 0x1500,
++	GLAMO_REGOFS_MPROC1	= 0x1580,
++	GLAMO_REGOFS_CMDQUEUE	= 0x1600,
++	GLAMO_REGOFS_RISC	= 0x1680,
++	GLAMO_REGOFS_2D		= 0x1700,
++	GLAMO_REGOFS_3D		= 0x1b00,
++};
++
++
++enum glamo_register_generic {
++	GLAMO_REG_GCONF1	= 0x0000,
++	GLAMO_REG_GCONF2	= 0x0002,
++#define	GLAMO_REG_DEVICE_ID	GLAMO_REG_GCONF2
++	GLAMO_REG_GCONF3	= 0x0004,
++#define	GLAMO_REG_REVISION_ID	GLAMO_REG_GCONF3
++	GLAMO_REG_IRQ_GEN1	= 0x0006,
++#define GLAMO_REG_IRQ_ENABLE	GLAMO_REG_IRQ_GEN1
++	GLAMO_REG_IRQ_GEN2	= 0x0008,
++#define GLAMO_REG_IRQ_SET	GLAMO_REG_IRQ_GEN2
++	GLAMO_REG_IRQ_GEN3	= 0x000a,
++#define GLAMO_REG_IRQ_CLEAR	GLAMO_REG_IRQ_GEN3
++	GLAMO_REG_IRQ_GEN4	= 0x000c,
++#define GLAMO_REG_IRQ_STATUS	GLAMO_REG_IRQ_GEN4
++	GLAMO_REG_CLOCK_HOST	= 0x0010,
++	GLAMO_REG_CLOCK_MEMORY	= 0x0012,
++	GLAMO_REG_CLOCK_LCD	= 0x0014,
++	GLAMO_REG_CLOCK_MMC	= 0x0016,
++	GLAMO_REG_CLOCK_ISP	= 0x0018,
++	GLAMO_REG_CLOCK_JPEG	= 0x001a,
++	GLAMO_REG_CLOCK_3D	= 0x001c,
++	GLAMO_REG_CLOCK_2D	= 0x001e,
++	GLAMO_REG_CLOCK_RISC1	= 0x0020,	/* 3365 only? */
++	GLAMO_REG_CLOCK_RISC2	= 0x0022,	/* 3365 only? */
++	GLAMO_REG_CLOCK_MPEG	= 0x0024,
++	GLAMO_REG_CLOCK_MPROC	= 0x0026,
++
++	GLAMO_REG_CLOCK_GEN5_1	= 0x0030,
++	GLAMO_REG_CLOCK_GEN5_2	= 0x0032,
++	GLAMO_REG_CLOCK_GEN6	= 0x0034,
++	GLAMO_REG_CLOCK_GEN7	= 0x0036,
++	GLAMO_REG_CLOCK_GEN8	= 0x0038,
++	GLAMO_REG_CLOCK_GEN9	= 0x003a,
++	GLAMO_REG_CLOCK_GEN10	= 0x003c,
++	GLAMO_REG_CLOCK_GEN11	= 0x003e,
++	GLAMO_REG_PLL_GEN1	= 0x0040,
++	GLAMO_REG_PLL_GEN2	= 0x0042,
++	GLAMO_REG_PLL_GEN3	= 0x0044,
++	GLAMO_REG_PLL_GEN4	= 0x0046,
++	GLAMO_REG_PLL_GEN5	= 0x0048,
++	GLAMO_REG_GPIO_GEN1	= 0x0050,
++	GLAMO_REG_GPIO_GEN2	= 0x0052,
++	GLAMO_REG_GPIO_GEN3	= 0x0054,
++	GLAMO_REG_GPIO_GEN4	= 0x0056,
++	GLAMO_REG_GPIO_GEN5	= 0x0058,
++	GLAMO_REG_GPIO_GEN6	= 0x005a,
++	GLAMO_REG_GPIO_GEN7	= 0x005c,
++	GLAMO_REG_GPIO_GEN8	= 0x005e,
++	GLAMO_REG_GPIO_GEN9	= 0x0060,
++	GLAMO_REG_GPIO_GEN10	= 0x0062,
++	GLAMO_REG_DFT_GEN1	= 0x0070,
++	GLAMO_REG_DFT_GEN2	= 0x0072,
++	GLAMO_REG_DFT_GEN3	= 0x0074,
++	GLAMO_REG_DFT_GEN4	= 0x0076,
++
++	GLAMO_REG_PLL_GEN6	= 0x01e0,
++	GLAMO_REG_PLL_GEN7	= 0x01f0,
++};
++
++#define GLAMO_REG_HOSTBUS(x)	(GLAMO_REGOFS_HOSTBUS-2+(x*2))
++
++#define REG_MEM(x)		(GLAMO_REGOFS_MEMORY+(x))
++#define GLAMO_REG_MEM_TIMING(x)	(GLAMO_REG_MEM_TIMING1-2+(x*2))
++
++enum glamo_register_mem {
++	GLAMO_REG_MEM_TYPE	= REG_MEM(0x00),
++	GLAMO_REG_MEM_GEN	= REG_MEM(0x02),
++	GLAMO_REG_MEM_TIMING1	= REG_MEM(0x04),
++	GLAMO_REG_MEM_TIMING2	= REG_MEM(0x06),
++	GLAMO_REG_MEM_TIMING3	= REG_MEM(0x08),
++	GLAMO_REG_MEM_TIMING4	= REG_MEM(0x0a),
++	GLAMO_REG_MEM_TIMING5	= REG_MEM(0x0c),
++	GLAMO_REG_MEM_TIMING6	= REG_MEM(0x0e),
++	GLAMO_REG_MEM_TIMING7	= REG_MEM(0x10),
++	GLAMO_REG_MEM_TIMING8	= REG_MEM(0x12),
++	GLAMO_REG_MEM_TIMING9	= REG_MEM(0x14),
++	GLAMO_REG_MEM_TIMING10	= REG_MEM(0x16),
++	GLAMO_REG_MEM_TIMING11	= REG_MEM(0x18),
++	GLAMO_REG_MEM_POWER1	= REG_MEM(0x1a),
++	GLAMO_REG_MEM_POWER2	= REG_MEM(0x1c),
++	GLAMO_REG_MEM_LCD_BUF1	= REG_MEM(0x1e),
++	GLAMO_REG_MEM_LCD_BUF2	= REG_MEM(0x20),
++	GLAMO_REG_MEM_LCD_BUF3	= REG_MEM(0x22),
++	GLAMO_REG_MEM_LCD_BUF4	= REG_MEM(0x24),
++	GLAMO_REG_MEM_BIST1	= REG_MEM(0x26),
++	GLAMO_REG_MEM_BIST2	= REG_MEM(0x28),
++	GLAMO_REG_MEM_BIST3	= REG_MEM(0x2a),
++	GLAMO_REG_MEM_BIST4	= REG_MEM(0x2c),
++	GLAMO_REG_MEM_BIST5	= REG_MEM(0x2e),
++	GLAMO_REG_MEM_MAH1	= REG_MEM(0x30),
++	GLAMO_REG_MEM_MAH2	= REG_MEM(0x32),
++	GLAMO_REG_MEM_DRAM1	= REG_MEM(0x34),
++	GLAMO_REG_MEM_DRAM2	= REG_MEM(0x36),
++	GLAMO_REG_MEM_CRC	= REG_MEM(0x38),
++};
++
++enum glamo_irq {
++	GLAMO_IRQ_HOSTBUS	= 0x0001,
++	GLAMO_IRQ_JPEG		= 0x0002,
++	GLAMO_IRQ_MPEG		= 0x0004,
++	GLAMO_IRQ_MPROC1	= 0x0008,
++	GLAMO_IRQ_MPROC0	= 0x0010,
++	GLAMO_IRQ_CMDQUEUE	= 0x0020,
++	GLAMO_IRQ_2D		= 0x0040,
++	GLAMO_IRQ_MMC		= 0x0080,
++	GLAMO_IRQ_RISC		= 0x0100,
++};
++
++enum glamo_reg_clock_host {
++	GLAMO_CLOCK_HOST_DG_BCLK	= 0x0001,
++	GLAMO_CLOCK_HOST_DG_M0CLK	= 0x0004,
++	GLAMO_CLOCK_HOST_RESET		= 0x1000,
++};
++
++enum glamo_reg_clock_mem {
++	GLAMO_CLOCK_MEM_DG_M1CLK	= 0x0001,
++	GLAMO_CLOCK_MEM_EN_M1CLK	= 0x0002,
++	GLAMO_CLOCK_MEM_DG_MOCACLK	= 0x0004,
++	GLAMO_CLOCK_MEM_EN_MOCACLK	= 0x0008,
++	GLAMO_CLOCK_MEM_RESET		= 0x1000,
++	GLAMO_CLOCK_MOCA_RESET		= 0x2000,
++};
++
++enum glamo_reg_clock_lcd {
++	GLAMO_CLOCK_LCD_DG_DCLK		= 0x0001,
++	GLAMO_CLOCK_LCD_EN_DCLK		= 0x0002,
++	GLAMO_CLOCK_LCD_DG_DMCLK	= 0x0004,
++	GLAMO_CLOCK_LCD_EN_DMCLK	= 0x0008,
++	//
++	GLAMO_CLOCK_LCD_EN_DHCLK	= 0x0020,
++	GLAMO_CLOCK_LCD_DG_M5CLK	= 0x0040,
++	GLAMO_CLOCK_LCD_EN_M5CLK	= 0x0080,
++	GLAMO_CLOCK_LCD_RESET		= 0x1000,
++};
++
++enum glamo_reg_clock_mmc {
++	GLAMO_CLOCK_MMC_DG_TCLK		= 0x0001,
++	GLAMO_CLOCK_MMC_EN_TCLK		= 0x0002,
++	GLAMO_CLOCK_MMC_DG_M9CLK	= 0x0004,
++	GLAMO_CLOCK_MMC_EN_M9CLK	= 0x0008,
++	GLAMO_CLOCK_MMC_RESET		= 0x1000,
++};
++
++enum glamo_reg_clock_isp {
++	GLAMO_CLOCK_ISP_DG_I1CLK	= 0x0001,
++	GLAMO_CLOCK_ISP_EN_I1CLK	= 0x0002,
++	GLAMO_CLOCK_ISP_DG_CCLK		= 0x0004,
++	GLAMO_CLOCK_ISP_EN_CCLK		= 0x0008,
++	//
++	GLAMO_CLOCK_ISP_EN_SCLK		= 0x0020,
++	GLAMO_CLOCK_ISP_DG_M2CLK	= 0x0040,
++	GLAMO_CLOCK_ISP_EN_M2CLK	= 0x0080,
++	GLAMO_CLOCK_ISP_DG_M15CLK	= 0x0100,
++	GLAMO_CLOCK_ISP_EN_M15CLK	= 0x0200,
++	GLAMO_CLOCK_ISP1_RESET		= 0x1000,
++	GLAMO_CLOCK_ISP2_RESET		= 0x2000,
++};
++
++enum glamo_reg_clock_jpeg {
++	GLAMO_CLOCK_JPEG_DG_JCLK	= 0x0001,
++	GLAMO_CLOCK_JPEG_EN_JCLK	= 0x0002,
++	GLAMO_CLOCK_JPEG_DG_M3CLK	= 0x0004,
++	GLAMO_CLOCK_JPEG_EN_M3CLK	= 0x0008,
++	GLAMO_CLOCK_JPEG_RESET		= 0x1000,
++};
++
++enum glamo_reg_clock_3d {
++	GLAMO_CLOCK_3D_DG_GCLK		= 0x0001,
++	GLAMO_CLOCK_3D_EN_GCLK		= 0x0002,
++	GLAMO_CLOCK_3D_DG_M7CLK		= 0x0004,
++	GLAMO_CLOCK_3D_EN_M7CLK		= 0x0008,
++	GLAMO_CLOCK_3D_DG_M6CLK		= 0x0010,
++	GLAMO_CLOCK_3D_EN_M6CLK		= 0x0020,
++	GLAMO_CLOCK_3D_2D_RESET		= 0x1000,
++	GLAMO_CLOCK_3D_CQ_RESET		= 0x2000,
++};
++
++enum glamo_reg_clock_mpeg {
++	GLAMO_CLOCK_MPEG_DG_X0CLK	= 0x0001,
++	GLAMO_CLOCK_MPEG_EN_X0CLK	= 0x0002,
++	GLAMO_CLOCK_MPEG_DG_X1CLK	= 0x0004,
++	GLAMO_CLOCK_MPEG_EN_X1CLK	= 0x0008,
++	GLAMO_CLOCK_MPEG_DG_X2CLK	= 0x0010,
++	GLAMO_CLOCK_MPEG_EN_X2CLK	= 0x0020,
++	GLAMO_CLOCK_MPEG_DG_X3CLK	= 0x0040,
++	GLAMO_CLOCK_MPEG_EN_X3CLK	= 0x0080,
++	GLAMO_CLOCK_MPEG_DG_X4CLK	= 0x0100,
++	GLAMO_CLOCK_MPEG_EN_X4CLK	= 0x0200,
++	GLAMO_CLOCK_MPEG_DG_X6CLK	= 0x0400,
++	GLAMO_CLOCK_MPEG_EN_X6CLK	= 0x0800,
++	GLAMO_CLOCK_MPEG_ENC_RESET	= 0x1000,
++	GLAMO_CLOCK_MPEG_DEC_RESET	= 0x2000,
++};
++
++/* LCD Controller */
++
++#define REG_LCD(x)	(x)
++enum glamo_reg_lcd {
++	GLAMO_REG_LCD_MODE1		= REG_LCD(0x00),
++	GLAMO_REG_LCD_MODE2		= REG_LCD(0x02),
++	GLAMO_REG_LCD_MODE3		= REG_LCD(0x04),
++	GLAMO_REG_LCD_WIDTH		= REG_LCD(0x06),
++	GLAMO_REG_LCD_HEIGHT		= REG_LCD(0x08),
++	GLAMO_REG_LCD_POLARITY		= REG_LCD(0x0a),
++	GLAMO_REG_LCD_A_BASE1		= REG_LCD(0x0c),
++	GLAMO_REG_LCD_A_BASE2		= REG_LCD(0x0e),
++	GLAMO_REG_LCD_B_BASE1		= REG_LCD(0x10),
++	GLAMO_REG_LCD_B_BASE2		= REG_LCD(0x12),
++	GLAMO_REG_LCD_C_BASE1		= REG_LCD(0x14),
++	GLAMO_REG_LCD_C_BASE2		= REG_LCD(0x16),
++	GLAMO_REG_LCD_PITCH		= REG_LCD(0x18),
++	/* RES */
++	GLAMO_REG_LCD_HORIZ_TOTAL	= REG_LCD(0x1c),
++	/* RES */
++	GLAMO_REG_LCD_HORIZ_RETR_START	= REG_LCD(0x20),
++	/* RES */
++	GLAMO_REG_LCD_HORIZ_RETR_END	= REG_LCD(0x24),
++	/* RES */
++	GLAMO_REG_LCD_HORIZ_DISP_START	= REG_LCD(0x28),
++	/* RES */
++	GLAMO_REG_LCD_HORIZ_DISP_END	= REG_LCD(0x2c),
++	/* RES */
++	GLAMO_REG_LCD_VERT_TOTAL	= REG_LCD(0x30),
++	/* RES */
++	GLAMO_REG_LCD_VERT_RETR_START	= REG_LCD(0x34),
++	/* RES */
++	GLAMO_REG_LCD_VERT_RETR_END	= REG_LCD(0x38),
++	/* RES */
++	GLAMO_REG_LCD_VERT_DISP_START	= REG_LCD(0x3c),
++	/* RES */
++	GLAMO_REG_LCD_VERT_DISP_END	= REG_LCD(0x40),
++	/* RES */
++	GLAMO_REG_LCD_POL		= REG_LCD(0x44),
++	GLAMO_REG_LCD_DATA_START	= REG_LCD(0x46),
++	GLAMO_REG_LCD_FRATE_CONTRO	= REG_LCD(0x48),
++	GLAMO_REG_LCD_DATA_CMD_HDR	= REG_LCD(0x4a),
++	GLAMO_REG_LCD_SP_START		= REG_LCD(0x4c),
++	GLAMO_REG_LCD_SP_END		= REG_LCD(0x4e),
++	GLAMO_REG_LCD_CURSOR_BASE1	= REG_LCD(0x50),
++	GLAMO_REG_LCD_CURSOR_BASE2	= REG_LCD(0x52),
++	GLAMO_REG_LCD_CURSOR_PITCH	= REG_LCD(0x54),
++	GLAMO_REG_LCD_CURSOR_X_SIZE	= REG_LCD(0x56),
++	GLAMO_REG_LCD_CURSOR_Y_SIZE	= REG_LCD(0x58),
++	GLAMO_REG_LCD_CURSOR_X_POS	= REG_LCD(0x5a),
++	GLAMO_REG_LCD_CURSOR_Y_POS	= REG_LCD(0x5c),
++	GLAMO_REG_LCD_CURSOR_PRESET	= REG_LCD(0x5e),
++	GLAMO_REG_LCD_CURSOR_FG_COLOR	= REG_LCD(0x60),
++	/* RES */
++	GLAMO_REG_LCD_CURSOR_BG_COLOR	= REG_LCD(0x64),
++	/* RES */
++	GLAMO_REG_LCD_CURSOR_DST_COLOR	= REG_LCD(0x68),
++	/* RES */
++	GLAMO_REG_LCD_STATUS1		= REG_LCD(0x80),
++	GLAMO_REG_LCD_STATUS2		= REG_LCD(0x82),
++	GLAMO_REG_LCD_STATUS3		= REG_LCD(0x84),
++	GLAMO_REG_LCD_STATUS4		= REG_LCD(0x86),
++	/* RES */
++	GLAMO_REG_LCD_COMMAND1		= REG_LCD(0xa0),
++	GLAMO_REG_LCD_COMMAND2		= REG_LCD(0xa2),
++	/* RES */
++	GLAMO_REG_LCD_WFORM_DELAY1	= REG_LCD(0xb0),
++	GLAMO_REG_LCD_WFORM_DELAY2	= REG_LCD(0xb2),
++	/* RES */
++	GLAMO_REG_LCD_GAMMA_CORR	= REG_LCD(0x100),
++	/* RES */
++	GLAMO_REG_LCD_GAMMA_R_ENTRY01	= REG_LCD(0x110),
++	GLAMO_REG_LCD_GAMMA_R_ENTRY23	= REG_LCD(0x112),
++	GLAMO_REG_LCD_GAMMA_R_ENTRY45	= REG_LCD(0x114),
++	GLAMO_REG_LCD_GAMMA_R_ENTRY67	= REG_LCD(0x116),
++	GLAMO_REG_LCD_GAMMA_R_ENTRY8	= REG_LCD(0x118),
++	/* RES */
++	GLAMO_REG_LCD_GAMMA_G_ENTRY01	= REG_LCD(0x130),
++	GLAMO_REG_LCD_GAMMA_G_ENTRY23	= REG_LCD(0x132),
++	GLAMO_REG_LCD_GAMMA_G_ENTRY45	= REG_LCD(0x134),
++	GLAMO_REG_LCD_GAMMA_G_ENTRY67	= REG_LCD(0x136),
++	GLAMO_REG_LCD_GAMMA_G_ENTRY8	= REG_LCD(0x138),
++	/* RES */
++	GLAMO_REG_LCD_GAMMA_B_ENTRY01	= REG_LCD(0x150),
++	GLAMO_REG_LCD_GAMMA_B_ENTRY23	= REG_LCD(0x152),
++	GLAMO_REG_LCD_GAMMA_B_ENTRY45	= REG_LCD(0x154),
++	GLAMO_REG_LCD_GAMMA_B_ENTRY67	= REG_LCD(0x156),
++	GLAMO_REG_LCD_GAMMA_B_ENTRY8	= REG_LCD(0x158),
++	/* RES */
++	GLAMO_REG_LCD_SRAM_DRIVING1	= REG_LCD(0x160),
++	GLAMO_REG_LCD_SRAM_DRIVING2	= REG_LCD(0x162),
++	GLAMO_REG_LCD_SRAM_DRIVING3	= REG_LCD(0x164),
++};
++
++enum glamo_reg_lcd_mode1 {
++	GLAMO_LCD_MODE1_PWRSAVE		= 0x0001,
++	GLAMO_LCD_MODE1_PARTIAL_PRT	= 0x0002,
++	GLAMO_LCD_MODE1_HWFLIP		= 0x0004,
++	GLAMO_LCD_MODE1_LCD2		= 0x0008,
++	/* RES */
++	GLAMO_LCD_MODE1_PARTIAL_MODE	= 0x0020,
++	GLAMO_LCD_MODE1_CURSOR_DSTCOLOR	= 0x0040,
++	GLAMO_LCD_MODE1_PARTIAL_ENABLE	= 0x0080,
++	GLAMO_LCD_MODE1_TVCLK_IN_ENABLE	= 0x0100,
++	GLAMO_LCD_MODE1_HSYNC_HIGH_ACT	= 0x0200,
++	GLAMO_LCD_MODE1_VSYNC_HIGH_ACT	= 0x0400,
++	GLAMO_LCD_MODE1_HSYNC_FLIP	= 0x0800,
++	GLAMO_LCD_MODE1_GAMMA_COR_EN	= 0x1000,
++	GLAMO_LCD_MODE1_DITHER_EN	= 0x2000,
++	GLAMO_LCD_MODE1_CURSOR_EN	= 0x4000,
++	GLAMO_LCD_MODE1_ROTATE_EN	= 0x8000,
++};
++
++enum glamo_reg_lcd_mode2 {
++	GLAMO_LCD_MODE2_CRC_CHECK_EN	= 0x0001,
++	GLAMO_LCD_MODE2_DCMD_PER_LINE	= 0x0002,
++	GLAMO_LCD_MODE2_NOUSE_BDEF	= 0x0004,
++	GLAMO_LCD_MODE2_OUT_POS_MODE	= 0x0008,
++	GLAMO_LCD_MODE2_FRATE_CTRL_EN	= 0x0010,
++	GLAMO_LCD_MODE2_SINGLE_BUFFER	= 0x0020,
++	GLAMO_LCD_MODE2_SER_LSB_TO_MSB	= 0x0040,
++	/* FIXME */
++};
++
++enum glamo_reg_lcd_mode3 {
++	/* LCD color source data format */
++	GLAMO_LCD_SRC_RGB565		= 0x0000,
++	GLAMO_LCD_SRC_ARGB1555		= 0x4000,
++	GLAMO_LCD_SRC_ARGB4444		= 0x8000,
++	/* interface type */
++	GLAMO_LCD_MODE3_LCD		= 0x1000,
++	GLAMO_LCD_MODE3_RGB		= 0x0800,
++	GLAMO_LCD_MODE3_CPU		= 0x0000,
++	/* mode */
++	GLAMO_LCD_MODE3_RGB332		= 0x0000,
++	GLAMO_LCD_MODE3_RGB444		= 0x0100,
++	GLAMO_LCD_MODE3_RGB565		= 0x0200,
++	GLAMO_LCD_MODE3_RGB666		= 0x0300,
++	/* depth */
++	GLAMO_LCD_MODE3_6BITS		= 0x0000,
++	GLAMO_LCD_MODE3_8BITS		= 0x0010,
++	GLAMO_LCD_MODE3_9BITS		= 0x0020,
++	GLAMO_LCD_MODE3_16BITS		= 0x0030,
++	GLAMO_LCD_MODE3_18BITS		= 0x0040,
++};
++
++#endif /* _GLAMO_REGS_H */
