@@ -2,7 +2,7 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,604 @@
+@@ -0,0 +1,610 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -39,6 +39,7 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +#include <linux/platform_device.h>
 +#include <linux/serial_core.h>
 +#include <linux/spi/spi.h>
++#include <linux/spi/glamo.h>
 +#include <linux/spi/spi_bitbang.h>
 +#include <linux/mmc/protocol.h>
 +#include <linux/mmc/host.h>
@@ -277,7 +278,7 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	&s3c_device_wdt,
 +	&s3c_device_i2c,
 +	&s3c_device_iis,
-+	&s3c_device_sdi,
++	// &s3c_device_sdi, /* FIXME: temporary disable to avoid s3cmci bind */
 +	&s3c_device_usbgadget,
 +	&s3c_device_nand,
 +	&s3c_device_ts,
@@ -388,8 +389,7 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +/* SPI */
 +
-+#if 0
-+static struct spi_board_info gta01_spi_board_info[] __initdata = {
++static struct spi_board_info gta02_spi_board_info[] __initdata = {
 +	{
 +		.modalias	= "jbt6k74",
 +		/* platform_data */
@@ -401,7 +401,12 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +};
 +
++static struct glamo_spi_info glamo_spi_cfg = {
++	.board_size	= ARRAY_SIZE(gta02_spi_board_info),
++	.board_info	= gta02_spi_board_info,
++};
 +
++#if 0
 +#ifdef SPI_HARD
 +static struct s3c2410_spi_info spi_cfg = {
 +	.pin_cs		= S3C2410_GPG3,
@@ -530,12 +535,13 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +		.max	= 16,
 +		.defval	= 16,
 +	},
++	.spi_info	= &glamo_spi_cfg,
 +};
 +
 +static struct resource gta02_glamo_resources[] = {
 +	[0] = {
 +		.start	= S3C2410_CS1,
-+		.end	= S3C2410_CS1 + 0x800000,
++		.end	= S3C2410_CS1 + 0x1000000,
 +		.flags	= IORESOURCE_MEM,
 +	},
 +	[1] = {
@@ -753,3 +759,75 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
  	/* we pull reset to low to make sure that the chip doesn't
  	 * drain power through the reset line */
  	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
+Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
+===================================================================
+--- linux-2.6.21.3-moko.orig/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
+@@ -19,7 +19,9 @@
+ #include <linux/errno.h>
+ 
+ #include <asm/hardware.h>
++#include <asm/mach-types.h>
+ #include <asm/arch/gta01.h>
++#include <asm/arch/gta02.h>
+ 
+ struct gta01pm_priv {
+ 	int gpio_ngsm_en;
+@@ -70,11 +72,12 @@
+ 
+ 	if (!strcmp(attr->attr.name, "power_on")) {
+ 		if (on) {
+-			dev_info(dev, "powering up GSM, thus disconnecting "
+-				 "serial console\n");
++			if (gta01_gsm.con) {
++				dev_info(dev, "powering up GSM, thus "
++					 "disconnecting serial console\n");
+ 
+-			if (gta01_gsm.con)
+ 				console_stop(gta01_gsm.con);
++			}
+ 
+ 			if (gta01_gsm.gpio_ngsm_en)
+ 				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 0);
+@@ -86,11 +89,12 @@
+ 			if (gta01_gsm.gpio_ngsm_en)
+ 				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 1);
+ 
+-			if (gta01_gsm.con)
++			if (gta01_gsm.con) {
+ 				console_start(gta01_gsm.con);
+ 
+-			dev_info(dev, "powered down GSM, thus enabling "
+-				 "serial console\n");
++				dev_info(dev, "powered down GSM, thus enabling "
++					 "serial console\n");
++			}
+ 		}
+ 	} else if (!strcmp(attr->attr.name, "reset")) {
+ 		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
+@@ -157,6 +161,8 @@
+ 		case GTA01Bv4_SYSTEM_REV:
+ 			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
+ 			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
++		case GTA02v1_SYSTEM_REV:
++			gta01_gsm.gpio_ngsm_en = 0;
+ 			break;
+ 		default:
+ 			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
+@@ -175,9 +181,13 @@
+ 		break;
+ 	}
+ 
+-	gta01_gsm.con = find_s3c24xx_console();
+-	if (!gta01_gsm.con)
+-		dev_warn(&pdev->dev, "cannot find S3C24xx console driver\n");
++	if (machine_is_neo1973_gta01()) {
++		gta01_gsm.con = find_s3c24xx_console();
++		if (!gta01_gsm.con)
++			dev_warn(&pdev->dev,
++				 "cannot find S3C24xx console driver\n");
++	} else
++		gta01_gsm.con = NULL;
+ 
+ 	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
+ }

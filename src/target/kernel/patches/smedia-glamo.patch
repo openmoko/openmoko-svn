@@ -24,9 +24,9 @@ Index: linux-2.6.21.3-moko/drivers/video/Kconfig
 +
 +	  If unsure, say N.
 +
-+config FB_GLAMO_SPI
++config GLAMO_SPI
 +       bool "Enable SPI Support"
-+       depends on FB_GLAMO
++       depends on GLAMO
 +       help
 +         Enable a bitbanging SPI adapter driver for the Smedia Glamo. This
 +	 SPI interface is frequently used to interconnect the LCM control
@@ -61,12 +61,12 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/Makefile
 +
 +glamofb-objs		:= glamo-fb.o
 +
-+obj-$(CONFIG_FB_GLAMO_SPI)	+= glamo-spi.o
++obj-$(CONFIG_GLAMO_SPI)	+= glamo-spi.o
 Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
-@@ -0,0 +1,394 @@
+@@ -0,0 +1,457 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
 +
@@ -279,15 +279,26 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 +	GLAMO_CLOCK_JPEG_RESET		= 0x1000,
 +};
 +
++enum glamo_reg_clock_2d {
++	GLAMO_CLOCK_2D_DG_GCLK		= 0x0001,
++	GLAMO_CLOCK_2D_EN_GCLK		= 0x0002,
++	GLAMO_CLOCK_2D_DG_M7CLK		= 0x0004,
++	GLAMO_CLOCK_2D_EN_M7CLK		= 0x0008,
++	GLAMO_CLOCK_2D_DG_M6CLK		= 0x0010,
++	GLAMO_CLOCK_2D_EN_M6CLK		= 0x0020,
++	GLAMO_CLOCK_2D_RESET		= 0x1000,
++	GLAMO_CLOCK_2D_CQ_RESET		= 0x2000,
++};
++
 +enum glamo_reg_clock_3d {
-+	GLAMO_CLOCK_3D_DG_GCLK		= 0x0001,
-+	GLAMO_CLOCK_3D_EN_GCLK		= 0x0002,
-+	GLAMO_CLOCK_3D_DG_M7CLK		= 0x0004,
-+	GLAMO_CLOCK_3D_EN_M7CLK		= 0x0008,
-+	GLAMO_CLOCK_3D_DG_M6CLK		= 0x0010,
-+	GLAMO_CLOCK_3D_EN_M6CLK		= 0x0020,
-+	GLAMO_CLOCK_3D_2D_RESET		= 0x1000,
-+	GLAMO_CLOCK_3D_CQ_RESET		= 0x2000,
++	GLAMO_CLOCK_3D_DG_ECLK		= 0x0001,
++	GLAMO_CLOCK_3D_EN_ECLK		= 0x0002,
++	GLAMO_CLOCK_3D_DG_RCLK		= 0x0004,
++	GLAMO_CLOCK_3D_EN_RCLK		= 0x0008,
++	GLAMO_CLOCK_3D_DG_M8CLK		= 0x0010,
++	GLAMO_CLOCK_3D_EN_M8CLK		= 0x0020,
++	GLAMO_CLOCK_3D_BACK_RESET	= 0x1000,
++	GLAMO_CLOCK_3D_FRONT_RESET	= 0x2000,
 +};
 +
 +enum glamo_reg_clock_mpeg {
@@ -305,6 +316,32 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 +	GLAMO_CLOCK_MPEG_EN_X6CLK	= 0x0800,
 +	GLAMO_CLOCK_MPEG_ENC_RESET	= 0x1000,
 +	GLAMO_CLOCK_MPEG_DEC_RESET	= 0x2000,
++};
++
++enum glamo_reg_clock51 {
++	GLAMO_CLOCK_GEN51_EN_DIV_MCLK	= 0x0001,
++	GLAMO_CLOCK_GEN51_EN_DIV_SCLK	= 0x0002,
++	GLAMO_CLOCK_GEN51_EN_DIV_JCLK	= 0x0004,
++	GLAMO_CLOCK_GEN51_EN_DIV_DCLK	= 0x0008,
++	GLAMO_CLOCK_GEN51_EN_DIV_DMCLK	= 0x0010,
++	GLAMO_CLOCK_GEN51_EN_DIV_DHCLK	= 0x0020,
++	GLAMO_CLOCK_GEN51_EN_DIV_GCLK	= 0x0040,
++	GLAMO_CLOCK_GEN51_EN_DIV_TCLK	= 0x0080,
++	/* FIXME: higher bits */
++};
++
++enum glamo_reg_hostbus2 {
++	GLAMO_HOSTBUS2_MMIO_EN_ISP	= 0x0001,
++	GLAMO_HOSTBUS2_MMIO_EN_JPEG	= 0x0002,
++	GLAMO_HOSTBUS2_MMIO_EN_MPEG	= 0x0004,
++	GLAMO_HOSTBUS2_MMIO_EN_LCD	= 0x0008,
++	GLAMO_HOSTBUS2_MMIO_EN_MMC	= 0x0010,
++	GLAMO_HOSTBUS2_MMIO_EN_MICROP0	= 0x0020,
++	GLAMO_HOSTBUS2_MMIO_EN_MICROP1	= 0x0040,
++	GLAMO_HOSTBUS2_MMIO_EN_CQ	= 0x0080,
++	GLAMO_HOSTBUS2_MMIO_EN_RISC	= 0x0100,
++	GLAMO_HOSTBUS2_MMIO_EN_2D	= 0x0200,
++	GLAMO_HOSTBUS2_MMIO_EN_3D	= 0x0400,
 +};
 +
 +/* LCD Controller */
@@ -453,6 +490,32 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-regs.h
 +	GLAMO_LCD_MODE3_18BITS		= 0x0040,
 +};
 +
++enum glamo_lcd_cmd_type {
++	GLAMO_LCD_CMD_TYPE_DISP		= 0x0000,
++	GLAMO_LCD_CMD_TYPE_PARALLEL	= 0x4000,
++	GLAMO_LCD_CMD_TYPE_SERIAL	= 0x8000,
++	GLAMO_LCD_CMD_TYPE_SERIAL_DIRECT= 0xc000,
++};
++#define GLAMO_LCD_CMD_TYPE_MASK		0xc000
++
++enum glamo_lcd_cmds {
++	GLAMO_LCD_CMD_DATA_DISP_FIRE	= 0x00,
++	GLAMO_LCD_CMD_DATA_DISP_SYNC	= 0x01,		/* RGB only */
++	/* switch to command mode, no display */
++	GLAMO_LCD_CMD_DATA_FIRE_NO_DISP	= 0x02,
++	/* display until VSYNC, switch to command */
++	GLAMO_LCD_CMD_DATA_FIRE_VSYNC	= 0x11,
++	/* display until HSYNC, switch to command */
++	GLAMO_LCD_CMD_DATA_FIRE_HSYNC	= 0x12,
++	/* display until VSYNC, 1 black frame, VSYNC, switch to command */
++	GLAMO_LCD_CMD_DATA_FIRE_VSYNC_B	= 0x13,
++	/* don't care about display and switch to command */
++	GLAMO_LCD_CMD_DATA_FIRE_FREE	= 0x14,		/* RGB only */
++	/* don't care about display, keep data display but disable data,
++	 * and switch to command */
++	GLAMO_LCD_CMD_DATA_FIRE_FREE_D	= 0x15,		/* RGB only */
++};
++
 +enum glamo_core_revisions {
 +	GLAMO_CORE_REV_A0		= 0x0000,
 +	GLAMO_CORE_REV_A1		= 0x0001,
@@ -465,7 +528,7 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
-@@ -0,0 +1,203 @@
+@@ -0,0 +1,241 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -476,130 +539,168 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + *
++ * This driver currently only implements a minimum subset of the hardware
++ * features, esp. those features that are required to drive the jbt6k74
++ * LCM controller asic in the TD028TTEC1 LCM.
++ *
 +*/
++
++#define DEBUG
 +
 +#include <linux/kernel.h>
 +#include <linux/init.h>
 +#include <linux/delay.h>
++#include <linux/device.h>
 +#include <linux/spinlock.h>
 +#include <linux/workqueue.h>
 +#include <linux/platform_device.h>
 +
 +#include <linux/spi/spi.h>
 +#include <linux/spi/spi_bitbang.h>
++#include <linux/spi/glamo.h>
 +
-+#include <asm/arch/regs-gpio.h>
-+#include <asm/arch/spi-gpio.h>
++#include <linux/glamofb.h>
++
 +#include <asm/hardware.h>
 +
-+struct glamo_spigpio {
-+	struct spi_bitbang		 bitbang;
++#include "glamo-core.h"
++#include "glamo-regs.h"
 +
-+	struct glamo_spigpio_info	*info;
-+	struct platform_device		*dev;
++struct glamo_spi {
++	struct spi_bitbang	bitbang;
++	struct spi_master	*master;
++	struct glamo_spi_info	*info;
++	struct device		*dev;
 +};
 +
-+static inline struct glamo_spigpio *spidev_to_sg(struct spi_device *spi)
++static inline struct glamo_spi *to_gs(struct spi_device *spi)
 +{
 +	return spi->controller_data;
 +}
 +
-+static inline void setsck(struct spi_device *dev, int on)
++static int glamo_spi_setupxfer(struct spi_device *spi, struct spi_transfer *t)
 +{
-+	struct glamp_spigpio *sg = spidev_to_sg(dev);
-+	s3c2410_gpio_setpin(sg->info->pin_clk, on ? 1 : 0);
++	struct glamo_spi *gs = to_gs(spi);
++	unsigned int bpw;
++
++	bpw = t ? t->bits_per_word : spi->bits_per_word;
++
++	if (bpw != 9 && bpw != 8) {
++		dev_err(&spi->dev, "invalid bits-per-word (%d)\n", bpw);
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 +
-+static inline void setmosi(struct spi_device *dev, int on)
++static void glamo_spi_chipsel(struct spi_device *spi, int value)
 +{
-+	struct glamo_spigpio *sg = spidev_to_sg(dev);
-+	s3c2410_gpio_setpin(sg->info->pin_mosi, on ? 1 : 0);
++#if 0
++	struct glamo_spi *gs = to_gs(spi);
++
++	dev_dbg(&spi->dev, "chipsel %d: spi=%p, gs=%p, info=%p, handle=%p\n",
++		value, spi, gs, gs->info, gs->info->glamofb_handle);
++
++	glamofb_cmd_mode(gs->info->glamofb_handle, value);
++#endif
 +}
 +
-+static inline u32 getmiso(struct spi_device *dev)
++static int glamo_spi_txrx(struct spi_device *spi, struct spi_transfer *t)
 +{
-+	struct glamo_spigpio *sg = spidev_to_sg(dev);
-+	return s3c2410_gpio_getpin(sg->info->pin_miso) ? 1 : 0;
++	struct glamo_spi *gs = to_gs(spi);
++	const u_int16_t *ui16 = (const u_int16_t *) t->tx_buf;
++	u_int16_t nine_bits;
++	int i;
++
++	dev_dbg(&spi->dev, "txrx: tx %p, rx %p, bpw %d, len %d\n",
++		t->tx_buf, t->rx_buf, t->bits_per_word, t->len);
++
++	if (spi->bits_per_word == 9)
++		nine_bits = (1 << 9);
++	else
++		nine_bits = 0;
++
++	if (t->len > 3 * sizeof(u_int16_t)) {
++		dev_err(&spi->dev, "this driver doesn't support "
++			"%u sized xfers\n", t->len);
++		return -EINVAL;
++	}
++
++	for (i = 0; i < t->len/sizeof(u_int16_t); i++) {
++		/* actually transfer the data */
++#if 1
++		glamofb_cmd_write(gs->info->glamofb_handle,
++				  GLAMO_LCD_CMD_TYPE_SERIAL | nine_bits |
++				  (1 << 10) | (1 << 11) | (ui16[i] & 0x1ff));
++#endif
++		/* FIXME: fire ?!? */
++		if (i == 0 && (ui16[i] & 0x1ff) == 0x29) {
++			dev_dbg(&spi->dev, "leaving command mode\n");
++			glamofb_cmd_mode(gs->info->glamofb_handle, 0);
++		}
++	}
++
++	return t->len;
 +}
 +
-+#define spidelay(x) ndelay(x)
-+
-+#define	EXPAND_BITBANG_TXRX
-+#include <linux/spi/spi_bitbang.h>
-+
-+
-+static u32 glamo_spigpio_txrx_mode0(struct spi_device *spi,
-+				      unsigned nsecs, u32 word, u8 bits)
++static int glamo_spi_setup(struct spi_device *spi)
 +{
-+	return bitbang_txrx_be_cpha0(spi, nsecs, 0, word, bits);
++	int ret;
++
++	if (!spi->bits_per_word)
++		spi->bits_per_word = 9;
++
++	/* FIXME: hardware can do this */
++	if (spi->mode & SPI_LSB_FIRST)
++		return -EINVAL;
++
++	ret = glamo_spi_setupxfer(spi, NULL);
++	if (ret < 0) {
++		dev_err(&spi->dev, "setupxfer returned %d\n", ret);
++		return ret;
++	}
++
++	dev_dbg(&spi->dev, "%s: mode %d, %u bpw\n",
++		__FUNCTION__, spi->mode, spi->bits_per_word);
++
++	return 0;
 +}
 +
-+static u32 glamo_spigpio_txrx_mode1(struct spi_device *spi,
-+				      unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha1(spi, nsecs, 0, word, bits);
-+}
-+
-+static u32 glamo_spigpio_txrx_mode2(struct spi_device *spi,
-+				      unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha0(spi, nsecs, 1, word, bits);
-+}
-+
-+static u32 glamo_spigpio_txrx_mode3(struct spi_device *spi,
-+				      unsigned nsecs, u32 word, u8 bits)
-+{
-+	return bitbang_txrx_be_cpha1(spi, nsecs, 1, word, bits);
-+}
-+
-+
-+static void glamo_spigpio_chipselect(struct spi_device *dev, int value)
-+{
-+	struct glamo_spigpio *sg = spidev_to_sg(dev);
-+
-+	if (sg->info && sg->info->chip_select)
-+		(sg->info->chip_select)(sg->info, value);
-+}
-+
-+static int glamo_spigpio_probe(struct platform_device *dev)
++static int glamo_spi_probe(struct platform_device *pdev)
 +{
 +	struct spi_master *master;
-+	struct glamo_spigpio *sp;
++	struct glamo_spi *sp;
 +	int ret;
 +	int i;
 +
-+	master = spi_alloc_master(&dev->dev, sizeof(struct glamo_spigpio));
++	master = spi_alloc_master(&pdev->dev, sizeof(struct glamo_spi));
 +	if (master == NULL) {
-+		dev_err(&dev->dev, "failed to allocate spi master\n");
++		dev_err(&pdev->dev, "failed to allocate spi master\n");
 +		ret = -ENOMEM;
 +		goto err;
 +	}
 +
 +	sp = spi_master_get_devdata(master);
++	memset(sp, 0, sizeof(struct glamo_spi));
 +
-+	platform_set_drvdata(dev, sp);
++	sp->master = spi_master_get(master);
++	sp->info = pdev->dev.platform_data;
++	if (!sp->info) {
++		dev_err(&pdev->dev, "can't operate without platform data\n");
++		ret = -EIO;
++		goto err_no_pdev;
++	}
++	dev_dbg(&pdev->dev, "sp->info(pdata) = %p\n", sp->info);
 +
-+	/* copy in the plkatform data */
-+	sp->info = dev->dev.platform_data;
++	sp->dev = &pdev->dev;
 +
-+	/* setup spi bitbang adaptor */
-+	sp->bitbang.master = spi_master_get(master);
-+	sp->bitbang.chipselect = glamo_spigpio_chipselect;
++	platform_set_drvdata(pdev, sp);
 +
-+	sp->bitbang.txrx_word[SPI_MODE_0] = glamo_spigpio_txrx_mode0;
-+	sp->bitbang.txrx_word[SPI_MODE_1] = glamo_spigpio_txrx_mode1;
-+	sp->bitbang.txrx_word[SPI_MODE_2] = glamo_spigpio_txrx_mode2;
-+	sp->bitbang.txrx_word[SPI_MODE_3] = glamo_spigpio_txrx_mode3;
-+
-+#if 0
-+	/* set state of spi pins */
-+	s3c2410_gpio_setpin(sp->info->pin_clk, 0);
-+	s3c2410_gpio_setpin(sp->info->pin_mosi, 0);
-+
-+	s3c2410_gpio_cfgpin(sp->info->pin_clk, S3C2410_GPIO_OUTPUT);
-+	s3c2410_gpio_cfgpin(sp->info->pin_mosi, S3C2410_GPIO_OUTPUT);
-+	s3c2410_gpio_cfgpin(sp->info->pin_miso, S3C2410_GPIO_INPUT);
-+#endif
++	sp->bitbang.master = sp->master;
++	sp->bitbang.setup_transfer = glamo_spi_setupxfer;
++	sp->bitbang.chipselect = glamo_spi_chipsel;
++	sp->bitbang.txrx_bufs = glamo_spi_txrx;
++	sp->bitbang.master->setup = glamo_spi_setup;
 +
 +	ret = spi_bitbang_start(&sp->bitbang);
 +	if (ret)
@@ -607,8 +708,10 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
 +
 +	/* register the chips to go with the board */
 +
++	glamofb_cmd_mode(sp->info->glamofb_handle, 1);
++
 +	for (i = 0; i < sp->info->board_size; i++) {
-+		dev_info(&dev->dev, "registering %p: %s\n",
++		dev_info(&pdev->dev, "registering %p: %s\n",
 +			 &sp->info->board_info[i],
 +			 sp->info->board_info[i].modalias);
 +
@@ -618,16 +721,18 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
 +
 +	return 0;
 +
-+ err_no_bitbang:
++err_no_bitbang:
++	platform_set_drvdata(pdev, NULL);
++err_no_pdev:
 +	spi_master_put(sp->bitbang.master);
-+ err:
++err:
 +	return ret;
 +
 +}
 +
-+static int glamo_spigpio_remove(struct platform_device *dev)
++static int glamo_spi_remove(struct platform_device *pdev)
 +{
-+	struct glamo_spigpio *sp = platform_get_drvdata(dev);
++	struct glamo_spi *sp = platform_get_drvdata(pdev);
 +
 +	spi_bitbang_stop(&sp->bitbang);
 +	spi_master_put(sp->bitbang.master);
@@ -635,45 +740,41 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-spi.c
 +	return 0;
 +}
 +
-+/* all gpio should be held over suspend/resume, so we should
-+ * not need to deal with this
-+*/
++#define glamo_spi_suspend NULL
++#define glamo_spi_resume NULL
 +
-+#define glamo_spigpio_suspend NULL
-+#define glamo_spigpio_resume NULL
-+
-+static struct platform_driver glamo_spigpio_drv = {
-+	.probe		= glamo_spigpio_probe,
-+        .remove		= glamo_spigpio_remove,
-+        .suspend	= glamo_spigpio_suspend,
-+        .resume		= glamo_spigpio_resume,
++static struct platform_driver glamo_spi_drv = {
++	.probe		= glamo_spi_probe,
++        .remove		= glamo_spi_remove,
++        .suspend	= glamo_spi_suspend,
++        .resume		= glamo_spi_resume,
 +        .driver		= {
-+		.name	= "glamo-spi",
++		.name	= "glamo-lcm-spi",
 +		.owner	= THIS_MODULE,
 +        },
 +};
 +
-+static int __init glamo_spigpio_init(void)
++static int __init glamo_spi_init(void)
 +{
-+        return platform_driver_register(&glamo_spigpio_drv);
++        return platform_driver_register(&glamo_spi_drv);
 +}
 +
-+static void __exit glamo_spigpio_exit(void)
++static void __exit glamo_spi_exit(void)
 +{
-+        platform_driver_unregister(&glamo_spigpio_drv);
++        platform_driver_unregister(&glamo_spi_drv);
 +}
 +
-+module_init(glamo_spigpio_init);
-+module_exit(glamo_spigpio_exit);
++module_init(glamo_spi_init);
++module_exit(glamo_spi_exit);
 +
-+MODULE_DESCRIPTION("Smedia Glamo 336x/337x SPI Driver");
++MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
 Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
-@@ -0,0 +1,683 @@
+@@ -0,0 +1,795 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -707,14 +808,13 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +#include <linux/fb.h>
 +#include <linux/init.h>
 +#include <linux/irq.h>
-+#include <linux/vmalloc.h>
-+#include <linux/dma-mapping.h>
 +#include <linux/interrupt.h>
 +#include <linux/workqueue.h>
 +#include <linux/wait.h>
 +#include <linux/platform_device.h>
 +#include <linux/kernel_stat.h>
-+#include <linux/clk.h>
++#include <linux/spinlock.h>
++#include <linux/glamofb.h>
 +
 +#include <asm/io.h>
 +#include <asm/uaccess.h>
@@ -725,16 +825,20 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +#endif
 +
 +#include "glamo-regs.h"
++#include "glamo-core.h"
 +
 +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
 +
 +struct glamo_core {
 +	int irq;
 +	struct resource *mem;
++	struct resource *mem_core;
 +	void __iomem *base;
 +	struct platform_device *pdev;
++	struct glamofb_platform_data *pdata;
 +	u_int16_t type;
 +	u_int16_t revision;
++	spinlock_t lock;
 +};
 +
 +static struct glamo_core *glamo_handle;
@@ -749,6 +853,29 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +				   u_int16_t reg)
 +{
 +	return readw(glamo->base + reg);
++}
++
++static void __reg_set_bit_mask(struct glamo_core *glamo,
++				u_int16_t reg, u_int16_t mask,
++				u_int16_t val)
++{
++	u_int16_t tmp;
++
++	val &= mask;
++
++	tmp = __reg_read(glamo, reg);
++	tmp &= ~mask;
++	tmp |= val;
++	__reg_write(glamo, reg, tmp);
++}
++
++static void reg_set_bit_mask(struct glamo_core *glamo,
++				u_int16_t reg, u_int16_t mask,
++				u_int16_t val)
++{
++	spin_lock(&glamo->lock);
++	__reg_set_bit_mask(glamo, reg, mask, val);
++	spin_unlock(&glamo->lock);
 +}
 +
 +static inline void glamo_vmem_write(struct glamo_core *glamo, u_int32_t addr,
@@ -772,7 +899,9 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +
 +}
 +
-+/* resources of 'sibling' devices */
++/***********************************************************************
++ * resources of sibling devices
++ ***********************************************************************/
 +
 +#if 0
 +static struct resource glamo_core_resources[] = {
@@ -821,7 +950,8 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +
 +/* we only allocate the minimum possible size for the framebuffer to make
 + * sure we have sufficient memory for other functions of the chip */
-+#define GLAMO_FB_SIZE	(640*480*4)	/* == 0x12c000 */
++//#define GLAMO_FB_SIZE	(640*480*4)	/* == 0x12c000 */
++#define GLAMO_FB_SIZE	0x800000
 +
 +static struct resource glamo_fb_resources[] = {
 +	/* FIXME: those need to be incremented by parent base */
@@ -858,9 +988,11 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	}
 +}
 +
++/***********************************************************************
++ * IRQ demultiplexer
++ ***********************************************************************/
 +#define irq2glamo(x)	(x - IRQ_GLAMO(0))
 +
-+/* IRQ demultiplexer */
 +static void glamo_ack_irq(unsigned int irq)
 +{
 +	/* clear interrupt source */
@@ -945,13 +1077,88 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	spin_unlock(&desc->lock);
 +}
 +
++/***********************************************************************
++ * 'engine' support
++ ***********************************************************************/
 +
-+/* script support */
++int glamo_engine_enable(struct glamo_core *glamo, enum glamo_engine engine)
++{
++	spin_lock(&glamo->lock);
++	switch (engine) {
++	case GLAMO_ENGINE_LCD:
++		__reg_set_bit_mask(glamo, GLAMO_REG_CLOCK_LCD,
++			    GLAMO_CLOCK_LCD_EN_M5CLK |
++			    GLAMO_CLOCK_LCD_EN_DHCLK |
++			    GLAMO_CLOCK_LCD_EN_DMCLK |
++			    GLAMO_CLOCK_LCD_EN_DCLK |
++			    GLAMO_CLOCK_LCD_DG_M5CLK |
++			    GLAMO_CLOCK_LCD_DG_DMCLK, 0xffff);
++		__reg_set_bit_mask(glamo, GLAMO_REG_CLOCK_GEN5_1,
++			    GLAMO_CLOCK_GEN51_EN_DIV_DHCLK |
++			    GLAMO_CLOCK_GEN51_EN_DIV_DMCLK |
++			    GLAMO_CLOCK_GEN51_EN_DIV_DCLK, 0xffff);
++		__reg_set_bit_mask(glamo, GLAMO_REG_HOSTBUS(2),
++			    GLAMO_HOSTBUS2_MMIO_EN_LCD,
++			    0xffff);
++		break;
++	case GLAMO_ENGINE_MMC:
++		__reg_set_bit_mask(glamo, GLAMO_REG_CLOCK_MMC,
++				   GLAMO_CLOCK_MMC_EN_M9CLK |
++				   GLAMO_CLOCK_MMC_EN_TCLK |
++				   GLAMO_CLOCK_MMC_DG_M9CLK |
++				   GLAMO_CLOCK_MMC_DG_TCLK, 0xffff);
++		__reg_set_bit_mask(glamo, GLAMO_REG_HOSTBUS(2),
++				   GLAMO_HOSTBUS2_MMIO_EN_MMC,
++				   GLAMO_HOSTBUS2_MMIO_EN_MMC);
++		break;
++	case GLAMO_ENGINE_2D:
++		__reg_set_bit_mask(glamo, GLAMO_REG_CLOCK_2D,
++				   GLAMO_CLOCK_2D_EN_M7CLK |
++				   GLAMO_CLOCK_2D_EN_GCLK |
++				   GLAMO_CLOCK_2D_DG_M7CLK |
++				   GLAMO_CLOCK_2D_DG_GCLK, 0xffff);
++		__reg_set_bit_mask(glamo, GLAMO_REG_HOSTBUS(2),
++				   GLAMO_HOSTBUS2_MMIO_EN_2D,
++				   GLAMO_HOSTBUS2_MMIO_EN_2D);
++		break;
++	case GLAMO_ENGINE_CMDQ:
++		__reg_set_bit_mask(glamo, GLAMO_REG_CLOCK_2D,
++				   GLAMO_CLOCK_2D_EN_M6CLK, 0xffff);
++		__reg_set_bit_mask(glamo, GLAMO_REG_HOSTBUS(2),
++				   GLAMO_HOSTBUS2_MMIO_EN_CQ,
++				   GLAMO_HOSTBUS2_MMIO_EN_CQ);
++		break;
++	/* FIXME: Implementation */
++	}
++	spin_unlock(&glamo->lock);
 +
-+struct glamo_script {
-+	u_int16_t reg;
-+	u_int16_t val;
-+};
++	return 0;
++}
++EXPORT_SYMBOL_GPL(glamo_engine_enable);
++
++int glamo_engine_disable(struct glamo_core *glamo, enum glamo_engine engine)
++{
++	spin_lock(&glamo->lock);
++	switch (engine) {
++	/* FIXME: Implementation */
++	default:
++		break;
++	}
++	spin_unlock(&glamo->lock);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(glamo_engine_disable);
++
++void glamo_engine_reset(struct glamo_core *glamo, enum glamo_engine engine)
++{
++	/* FIXME: Implementation */
++}
++EXPORT_SYMBOL_GPL(glamo_engine_reset);
++
++/***********************************************************************
++ * script support
++ ***********************************************************************/
 +
 +int glamo_run_script(struct glamo_core *glamo, struct glamo_script *script, int len)
 +{
@@ -973,72 +1180,72 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +EXPORT_SYMBOL(glamo_run_script);
 +
 +static struct glamo_script glamo_init_script[] = {
-+	{ 0x10,		0x1000 },
++	{ GLAMO_REG_CLOCK_HOST,		0x1000 },
 +		{ 0xfffe, 1 },
-+	{ 0x12, 	0x1000 },
-+	{ 0x12,		0x2000 },
-+	{ 0x14,		0x1000 },
-+	{ 0x16,		0x1000 },
-+	{ 0x18,		0x1000 },
-+	{ 0x18,		0x2000 },
-+	{ 0x1a,		0x1000 },
-+	{ 0x1c,		0x1000 },
-+	{ 0x1c,		0x2000 },
-+	{ 0x1e,		0x1000 },
-+	{ 0x1e,		0x2000 },
-+	{ 0x20,		0x1000 },
-+	{ 0x24,		0x3000 },
-+	{ 0x24,		0x3000 },
-+	{ 0x26,		0x1000 },
++	{ GLAMO_REG_CLOCK_MEMORY, 	0x1000 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x2000 },
++	{ GLAMO_REG_CLOCK_LCD,		0x1000 },
++	{ GLAMO_REG_CLOCK_MMC,		0x1000 },
++	{ GLAMO_REG_CLOCK_ISP,		0x1000 },
++	{ GLAMO_REG_CLOCK_ISP,		0x2000 },
++	{ GLAMO_REG_CLOCK_JPEG,		0x1000 },
++	{ GLAMO_REG_CLOCK_3D,		0x1000 },
++	{ GLAMO_REG_CLOCK_3D,		0x2000 },
++	{ GLAMO_REG_CLOCK_2D,		0x1000 },
++	{ GLAMO_REG_CLOCK_2D,		0x2000 },
++	{ GLAMO_REG_CLOCK_RISC1,	0x1000 },
++	{ GLAMO_REG_CLOCK_MPEG,		0x3000 },
++	{ GLAMO_REG_CLOCK_MPEG,		0x3000 },
++	{ GLAMO_REG_CLOCK_MPROC,	0x1000 },
 +		{ 0xfffe, 1 },
-+	{ 0x10,		0x0000 },
-+	{ 0x12,		0x0000 },
-+	{ 0x12,		0x0000 },
-+	{ 0x14,		0x0000 },
-+	{ 0x16,		0x0000 },
-+	{ 0x18,		0x0000 },
-+	{ 0x18,		0x0000 },
-+	{ 0x1a,		0x0000 },
-+	{ 0x1c,		0x0000 },
-+	{ 0x1c,		0x0000 },
-+	{ 0x1e,		0x0000 },
-+	{ 0x1e,		0x0000 },
-+	{ 0x20,		0x0000 },
-+	{ 0x24,		0x0000 },
-+	{ 0x24,		0x0000 },
-+	{ 0x26,		0x0000 },
++	{ GLAMO_REG_CLOCK_HOST,		0x0000 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x0000 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x0000 },
++	{ GLAMO_REG_CLOCK_LCD,		0x0000 },
++	{ GLAMO_REG_CLOCK_MMC,		0x0000 },
++	{ GLAMO_REG_CLOCK_ISP,		0x0000 },
++	{ GLAMO_REG_CLOCK_ISP,		0x0000 },
++	{ GLAMO_REG_CLOCK_JPEG,		0x0000 },
++	{ GLAMO_REG_CLOCK_3D,		0x0000 },
++	{ GLAMO_REG_CLOCK_3D,		0x0000 },
++	{ GLAMO_REG_CLOCK_2D,		0x0000 },
++	{ GLAMO_REG_CLOCK_2D,		0x0000 },
++	{ GLAMO_REG_CLOCK_RISC1,	0x0000 },
++	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
++	{ GLAMO_REG_CLOCK_MPEG,		0x0000 },
++	{ GLAMO_REG_CLOCK_MPROC,	0x0000 },
 +		{ 0xfffe, 1 },
-+	{ 0x40,		0x0588 },
-+	{ 0x44,		0x0a27 },
++	{ GLAMO_REG_PLL_GEN1,		0x0588 },
++	{ GLAMO_REG_PLL_GEN3,		0x0a27 },
 +		{ 0xfffe, 300 },
-+	{ 0x06,		0xffff },
-+	{ 0x34,		0x2000 },
-+	{ 0x36,		0x010b },
-+	{ 0x38,		0x0100 },
-+	{ 0x10,		0x000d },
++	{ GLAMO_REG_IRQ_ENABLE,		0xffff },
++	{ GLAMO_REG_CLOCK_GEN6,		0x2000 },
++	{ GLAMO_REG_CLOCK_GEN7,		0x010b },
++	{ GLAMO_REG_CLOCK_GEN8,		0x0100 },
++	{ GLAMO_REG_CLOCK_HOST,		0x000d },
 +	{ 0x200,	0x0ef0 },
 +	{ 0x202, 	0x7fff },
 +	{ 0x212,	0x0000 },
 +	{ 0x214,	0x4000 },
 +	{ 0x216,	0xf00e },
-+	{ 0x302,	0xafaf },
-+	{ 0x304,	0x0108 },
-+	{ 0x306,	0x0010 },
-+	{ 0x308,	0x0000 },
-+	{ 0x30a,	0x0000 },
-+	{ 0x30c,	0x0000 },
-+	{ 0x30e,	0x0000 },
-+	{ 0x310,	0x0000 },
-+	{ 0x312,	0x1002 },
-+	{ 0x314,	0x6006 },
-+	{ 0x316,	0x00ff },
-+	{ 0x318,	0x0001 },
-+	{ 0x31a,	0x0020 },
-+	{ 0x31c,	0x0000 },
-+	{ 0x336,	0x01d6 },
-+	{ 0x12,		0x000a },
-+	{ 0x12,		0x000b },
-+	{ 0x300,	0x0873 },
++	{ GLAMO_REG_MEM_GEN,		0xafaf },
++	{ GLAMO_REG_MEM_TIMING1,	0x0108 },
++	{ GLAMO_REG_MEM_TIMING2,	0x0010 },
++	{ GLAMO_REG_MEM_TIMING3,	0x0000 },
++	{ GLAMO_REG_MEM_TIMING4,	0x0000 },
++	{ GLAMO_REG_MEM_TIMING5,	0x0000 },
++	{ GLAMO_REG_MEM_TIMING6,	0x0000 },
++	{ GLAMO_REG_MEM_TIMING7,	0x0000 },
++	{ GLAMO_REG_MEM_TIMING8,	0x1002 },
++	{ GLAMO_REG_MEM_TIMING9,	0x6006 },
++	{ GLAMO_REG_MEM_TIMING10,	0x00ff },
++	{ GLAMO_REG_MEM_TIMING11,	0x0001 },
++	{ GLAMO_REG_MEM_POWER1,		0x0020 },
++	{ GLAMO_REG_MEM_POWER2,		0x0000 },
++	{ GLAMO_REG_MEM_DRAM2,		0x01d6 },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x000a },
++	{ GLAMO_REG_CLOCK_MEMORY,	0x000b },
++	{ GLAMO_REG_MEM_TYPE,		0x0873 },
 +};
 +
 +#if 0 /* MM370 */
@@ -1191,6 +1398,8 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +			/* maybe should abort ? */
 +		}
 +		break;
++	case 0x3600:
++	case 0x3700:
 +	default:
 +		dev_err(&glamo->pdev->dev, "unsupported glamo device %04x\n",
 +			dev_id);
@@ -1220,14 +1429,38 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +	glamo->pdev = pdev;
 +	glamo->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 +	glamo->irq = platform_get_irq(pdev, 0);
-+	if (!glamo->irq || !glamo->mem) {
++	glamo->pdata = pdev->dev.platform_data;
++	if (!glamo->irq || !glamo->mem || !glamo->pdata) {
 +		dev_err(&pdev->dev, "platform device with no IRQ/MEM ?\n");
 +		rc = -ENOENT;
 +		goto out_free;
 +	}
 +
-+	glamo->mem = request_mem_region(glamo->mem->start,
-+					RESSIZE(glamo->mem), pdev->name);
++	/* register a number of sibling devices whoise IOMEM resources
++	 * are siblings of pdev's IOMEM resource */
++#if 0
++	glamo_core_dev.dev.parent = &pdev.dev;
++	mangle_mem_resources(glamo_core_dev.resources,
++			     glamo_core_dev.num_resources, glamo->mem);
++	glamo_core_dev.resources[1].start = glamo->irq;
++	glamo_core_dev.resources[1].end = glamo->irq;
++	platform_device_register(&glamo_core_dev);
++#endif
++
++	glamo_mmc_dev.dev.parent = &pdev->dev;
++	mangle_mem_resources(glamo_mmc_dev.resource,
++			     glamo_mmc_dev.num_resources, glamo->mem);
++	platform_device_register(&glamo_mmc_dev);
++
++	glamo->pdata->glamo = glamo;
++	glamo_fb_dev.dev.parent = &pdev->dev;
++	glamo_fb_dev.dev.platform_data = glamo->pdata;
++	mangle_mem_resources(glamo_fb_dev.resource,
++			     glamo_fb_dev.num_resources, glamo->mem);
++	platform_device_register(&glamo_fb_dev);
++
++	glamo->mem = request_mem_region(glamo->mem->start, 0x400,
++					"glamo-core");
 +	if (!glamo->mem) {
 +		dev_err(&pdev->dev, "failed to request memory region\n");
 +		goto out_free;
@@ -1245,26 +1478,6 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.c
 +		dev_err(&pdev->dev, "This Glamo is not supported\n");
 +		goto out_free;
 +	}
-+
-+	/* ... and register a number of sibling devices whoise IOMEM resources
-+	 * are siblings of pdev's IOMEM resource */
-+#if 0
-+	glamo_core_dev.dev.parent = &pdev.dev;
-+	mangle_mem_resources(glamo_core_dev.resources,
-+			     glamo_core_dev.num_resources, glamo->mem);
-+	glamo_core_dev.resources[1].start = glamo->irq;
-+	glamo_core_dev.resources[1].end = glamo->irq;
-+#endif
-+
-+	glamo_mmc_dev.dev.parent = &pdev->dev;
-+	mangle_mem_resources(glamo_mmc_dev.resource,
-+			     glamo_mmc_dev.num_resources, glamo->mem);
-+	platform_device_register(&glamo_mmc_dev);
-+
-+	glamo_fb_dev.dev.parent = &pdev->dev;
-+	mangle_mem_resources(glamo_fb_dev.resource,
-+			     glamo_fb_dev.num_resources, glamo->mem);
-+	platform_device_register(&glamo_fb_dev);
 +
 +	platform_set_drvdata(pdev, glamo);
 +
@@ -1405,7 +1618,7 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
-@@ -0,0 +1,353 @@
+@@ -0,0 +1,494 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1427,6 +1640,8 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 + * MA 02111-1307 USA
 + */
++
++#define DEBUG
 +
 +#include <linux/module.h>
 +#include <linux/kernel.h>
@@ -1456,8 +1671,11 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +#include <linux/glamofb.h>
 +
 +#include "glamo-regs.h"
++#include "glamo-core.h"
 +
 +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
++
++#define GLAMO_FB_ALLOC	(640*480*2)
 +
 +struct glamofb_handle {
 +	struct fb_info *fb;
@@ -1466,12 +1684,79 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +	struct resource *fb_res;
 +	char __iomem *base;
 +	struct glamofb_platform_data *mach_info;
++	struct glamo_core *glamo;
++};
++
++/* 'sibling' spi device for lcm init */
++static struct platform_device glamo_spi_dev = {
++	.name		= "glamo-lcm-spi",
 +};
 +
 +static inline int reg_read(struct glamofb_handle *glamo,
 +			   u_int16_t reg)
 +{
 +	return readw(glamo->base + reg);
++}
++
++static inline void reg_write(struct glamofb_handle *glamo,
++			     u_int16_t reg, u_int16_t val)
++{
++	writew(val, glamo->base + reg);
++}
++
++static struct glamo_script glamo_regs[] = {
++	{ GLAMO_REG_LCD_MODE1, 0x0020 },
++	/* no display rotation, no hardware cursor, no dither, no gamma,
++	 * no retrace flip, vsync low-active, hsync low active,
++	 * no TVCLK, no partial display, hw dest color from fb,
++	 * no partial display mode, LCD1, software flip,  */
++	{ GLAMO_REG_LCD_MODE2, 0x1020 },
++	  /* no video flip, no ptr, no ptr, dhclk,
++	   * normal mode,  no cpuif,
++	   * res, serial msb first, single fb, no fr ctrl,
++	   * cpu if bits all zero, no crc
++	   * 0000 0000 0010  0000 */
++	{ GLAMO_REG_LCD_MODE3, 0x0b40 },
++	  /* src data rgb565, res, 18bit rgb666
++	   * 000 01 011 0100 0000 */
++	{ GLAMO_REG_LCD_WIDTH, 480 },
++	{ GLAMO_REG_LCD_HEIGHT, 640 },
++	{ GLAMO_REG_LCD_POLARITY, 0x440c },
++	  /* DE high active, no cpu/lcd if, cs0 force low, a0 low active,
++	   * np cpu if, 9bit serial data, sclk rising edge latch data
++	   * 01 00 0 100 0 000 01 0 0 */
++	{ GLAMO_REG_LCD_A_BASE1, 0x0000 }, /* display A base address 15:0 */
++	{ GLAMO_REG_LCD_A_BASE2, 0x0000 }, /* display A base address 22:16 */
++	{ GLAMO_REG_LCD_PITCH, 480*2 },
++	{ GLAMO_REG_LCD_HORIZ_TOTAL, 480 + 8 + 8 + 104 }, /* 600 */
++	{ GLAMO_REG_LCD_HORIZ_RETR_START, 0 },
++	{ GLAMO_REG_LCD_HORIZ_RETR_END, 8 },
++	{ GLAMO_REG_LCD_HORIZ_DISP_START, 8 + 104 },
++	{ GLAMO_REG_LCD_HORIZ_DISP_END, 8 + 104 + 480 },
++	{ GLAMO_REG_LCD_VERT_TOTAL, 640 + 2 + 2 + 16 }, /* 660 */
++	{ GLAMO_REG_LCD_VERT_RETR_START, 0 },
++	{ GLAMO_REG_LCD_VERT_RETR_END, 2 },
++	{ GLAMO_REG_LCD_VERT_DISP_START, 2 + 2 },
++	{ GLAMO_REG_LCD_VERT_DISP_END, 2 + 2 + 640 },
++};
++
++static int glamofb_run_script(struct glamofb_handle *glamo,
++				struct glamo_script *script, int len)
++{
++	int i;
++
++	for (i = 0; i < len; i++) {
++		struct glamo_script *line = &script[i];
++
++		if (line->reg == 0xffff)
++			return 0;
++		else if (line->reg == 0xfffe)
++			msleep(line->val);
++		else
++			reg_write(glamo, script[i].reg, script[i].val);
++	}
++
++	return 0;
 +}
 +
 +static int glamofb_check_var(struct fb_var_screeninfo *var,
@@ -1560,6 +1845,60 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +	return 0;
 +}
 +
++static inline int glamofb_cmdq_empty(struct glamofb_handle *gfb)
++{
++	return reg_read(gfb, GLAMO_REG_LCD_STATUS1) & (1 << 15);
++}
++
++void glamofb_cmd_mode(struct glamofb_handle *gfb, int on)
++{
++	dev_dbg(gfb->dev, "glamofb_cmd_mode(gfb=%p, on=%d)\n", gfb, on);
++	if (on) {
++		dev_dbg(gfb->dev, "%s: waiting for cmdq empty: ",
++			__FUNCTION__);
++		while (!glamofb_cmdq_empty(gfb))
++			yield();
++		dev_dbg(gfb->dev, "empty!\n");
++
++		/* display the entire frame then switch to command */
++		reg_write(gfb, GLAMO_REG_LCD_COMMAND1,
++			  GLAMO_LCD_CMD_TYPE_DISP |
++			  GLAMO_LCD_CMD_DATA_FIRE_VSYNC);
++
++		/* wait until LCD is idle */
++		dev_dbg(gfb->dev, "waiting for LCD idle: ");
++		while (!reg_read(gfb, GLAMO_REG_LCD_STATUS2) & (1 << 12))
++			yield();
++		dev_dbg(gfb->dev, "idle!\n");
++	} else {
++		/* RGB interface needs vsync/hsync */
++		if (reg_read(gfb, GLAMO_REG_LCD_MODE3) & GLAMO_LCD_MODE3_RGB)
++			reg_write(gfb, GLAMO_REG_LCD_COMMAND1,
++				  GLAMO_LCD_CMD_TYPE_DISP |
++				  GLAMO_LCD_CMD_DATA_DISP_SYNC);
++
++		reg_write(gfb, GLAMO_REG_LCD_COMMAND1,
++			  GLAMO_LCD_CMD_TYPE_DISP |
++			  GLAMO_LCD_CMD_DATA_DISP_FIRE);
++	}
++}
++EXPORT_SYMBOL_GPL(glamofb_cmd_mode);
++
++int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val)
++{
++
++	dev_dbg(gfb->dev, "%s: waiting for cmdq empty\n",
++		__FUNCTION__);
++	while (!glamofb_cmdq_empty(gfb))
++		yield();
++	dev_dbg(gfb->dev, "idle, writing 0x%04x\n", val);
++
++	reg_write(gfb, GLAMO_REG_LCD_COMMAND1, val);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(glamofb_cmd_write);
++
 +static struct fb_ops glamofb_ops = {
 +	.owner		= THIS_MODULE,
 +	.fb_check_var	= glamofb_check_var,
@@ -1577,6 +1916,9 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +	struct fb_info *fbinfo;
 +	struct glamofb_handle *glamofb;
 +	struct glamofb_platform_data *mach_info = pdev->dev.platform_data;
++
++	printk(KERN_INFO "SMEDIA Glamo frame buffer driver (C) 2007 "
++		"OpenMoko, Inc.\n");
 +
 +	fbinfo = framebuffer_alloc(sizeof(struct glamofb_handle), &pdev->dev);
 +	if (!fbinfo)
@@ -1607,22 +1949,22 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +	glamofb->reg = request_mem_region(glamofb->reg->start,
 +					  RESSIZE(glamofb->reg), pdev->name);
 +	if (!glamofb->reg) {
-+		dev_err(&pdev->dev, "failed to request memory region\n");
++		dev_err(&pdev->dev, "failed to request mmio region\n");
 +		goto out_free;
 +	}
 +
 +	glamofb->fb_res = request_mem_region(glamofb->fb_res->start,
-+					  RESSIZE(glamofb->fb_res), pdev->name);
++					     GLAMO_FB_ALLOC, pdev->name);
 +	if (!glamofb->fb_res) {
-+		dev_err(&pdev->dev, "failed to request memory region\n");
++		dev_err(&pdev->dev, "failed to request vram region\n");
 +		goto out_release_reg;
 +	}
 +
 +	/* we want to remap only the registers required for this core
 +	 * driver. */
-+	glamofb->base = ioremap(glamofb->reg->start, GLAMO_REGOFS_VIDCAP);
++	glamofb->base = ioremap(glamofb->reg->start, RESSIZE(glamofb->reg));
 +	if (!glamofb->base) {
-+		dev_err(&pdev->dev, "failed to ioremap() memory region\n");
++		dev_err(&pdev->dev, "failed to ioremap() mmio memory\n");
 +		goto out_release_fb;
 +	}
 +	fbinfo->fix.smem_start = (unsigned long) glamofb->base;
@@ -1630,7 +1972,7 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +	fbinfo->screen_base = ioremap(glamofb->fb_res->start,
 +				       RESSIZE(glamofb->fb_res));
 +	if (!fbinfo->screen_base) {
-+		dev_err(&pdev->dev, "failed to ioremap() memory region\n");
++		dev_err(&pdev->dev, "failed to ioremap() vram memory\n");
 +		goto out_release_fb;
 +	}
 +
@@ -1665,11 +2007,11 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +#if 0
 +	fbinfo->var.upper_margin =
 +	fbinfo->var.lower_margin =
-+	fbinfo->var.vsync_len =
++	fbinfo->var.vsync_len = 2;
 +
 +	fbinfo->var.left_margin =
 +	fbinfo->var.right_margin =
-+	fbinfo->var.hsync_len =
++	fbinfo->var.hsync_len = 8;
 +#endif
 +
 +	fbinfo->var.red.offset = 11;
@@ -1684,11 +2026,23 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +			       mach_info->yres.max *
 +			       mach_info->bpp.max / 8;
 +
++	glamofb_run_script(glamofb, glamo_regs, ARRAY_SIZE(glamo_regs));
++	glamo_engine_enable(mach_info->glamo, GLAMO_ENGINE_LCD);
++
 +	rc = register_framebuffer(fbinfo);
 +	if (rc < 0) {
 +		dev_err(&pdev->dev, "failed to register framebuffer\n");
 +		goto out_unmap_fb;
 +	}
++
++	/* register the sibling spi device */
++	mach_info->spi_info->glamofb_handle = glamofb;
++	glamo_spi_dev.dev.parent = &pdev->dev;
++	glamo_spi_dev.dev.platform_data = mach_info->spi_info;
++	platform_device_register(&glamo_spi_dev);
++
++	printk(KERN_INFO "fb%d: %s frame buffer device\n",
++		fbinfo->node, fbinfo->fix.id);
 +
 +	return 0;
 +
@@ -1705,7 +2059,7 @@ Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-fb.c
 +	return rc;
 +}
 +
-+static int __exit glamofb_remove(struct platform_device *pdev)
++static int glamofb_remove(struct platform_device *pdev)
 +{
 +	struct glamofb_handle *glamofb = platform_get_drvdata(pdev);
 +
@@ -1763,9 +2117,11 @@ Index: linux-2.6.21.3-moko/include/linux/glamofb.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/include/linux/glamofb.h
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,28 @@
 +#ifndef _LINUX_GLAMOFB_H
 +#define _LINUX_GLAMOFB_H
++
++#include <linux/spi/glamo.h>
 +
 +struct glamofb_val {
 +	unsigned int defval;
@@ -1773,12 +2129,83 @@ Index: linux-2.6.21.3-moko/include/linux/glamofb.h
 +	unsigned int max;
 +};
 +
++struct glamo_core;
++
 +struct glamofb_platform_data {
 +	int width, height;
 +
 +	struct glamofb_val xres;
 +	struct glamofb_val yres;
 +	struct glamofb_val bpp;
++
++	struct glamo_spi_info *spi_info;
++	struct glamo_core *glamo;
++};
++
++void glamofb_cmd_mode(struct glamofb_handle *gfb, int on);
++int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val);
++
++#endif
+Index: linux-2.6.21.3-moko/include/linux/spi/glamo.h
+===================================================================
+--- /dev/null
++++ linux-2.6.21.3-moko/include/linux/spi/glamo.h
+@@ -0,0 +1,13 @@
++#ifndef __GLAMO_SPI_H
++#define __GLAMO_SPI_H
++
++struct spi_board_info;
++struct glamofb_handle;
++
++struct glamo_spi_info {
++	unsigned long 		board_size;
++	struct spi_board_info	*board_info;
++	struct glamofb_handle	*glamofb_handle;
 +};
 +
 +#endif
+Index: linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.h
+===================================================================
+--- /dev/null
++++ linux-2.6.21.3-moko/drivers/video/glamo/glamo-core.h
+@@ -0,0 +1,40 @@
++#ifndef __GLAMO_CORE_H
++#define __GLAMO_CORE_H
++
++struct glamo_core;
++
++struct glamo_script {
++	u_int16_t reg;
++	u_int16_t val;
++};
++
++int glamo_run_script(struct glamo_core *glamo,
++		     struct glamo_script *script, int len);
++
++enum glamo_engine {
++	GLAMO_ENGINE_CAPTURE,
++	GLAMO_ENGINE_ISP,
++	GLAMO_ENGINE_JPEG,
++	GLAMO_ENGINE_MPEG_ENC,
++	GLAMO_ENGINE_MPEG_DEC,
++	GLAMO_ENGINE_LCD,
++	GLAMO_ENGINE_CMDQ,
++	GLAMO_ENGINE_2D,
++	GLAMO_ENGINE_3D,
++	GLAMO_ENGINE_MMC,
++	GLAMO_ENGINE_MICROP0,
++	GLAMO_ENGINE_RISC,
++	GLAMO_ENGINE_MICROP1_MPEG_ENC,
++	GLAMO_ENGINE_MICROP1_MPEG_DEC,
++#if 0
++	GLAMO_ENGINE_H264_DEC,
++	GLAMO_ENGINE_RISC1,
++	GLAMO_ENGINE_SPI,
++#endif
++	__NUM_GLAMO_ENGINES
++};
++
++int glamo_engine_enable(struct glamo_core *glamo, enum glamo_engine engine);
++int glamo_engine_disable(struct glamo_core *glamo, enum glamo_engine engine);
++
++#endif /* __GLAMO_CORE_H */
