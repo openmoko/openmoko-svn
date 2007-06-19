@@ -140,5 +140,6 @@ echo \ \$ $qemu_relative -mtdblock $script_dir_relative/$flash_image -kernel $sc
 echo
 echo "    "Append \'-snapshot\' to make the flash image read-only so that every
 echo "    "time emulation starts in the original unmodified state.
-echo "    "[Enter] for AUX button, [Space] for POWER.
+echo "    "Use [Enter] for AUX button, [Space] for POWER.
+echo "    "Append \'-usbdevice keyboard\' to attach a standard keyboard.
 echo
