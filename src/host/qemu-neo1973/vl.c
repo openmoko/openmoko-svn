@@ -4370,7 +4370,9 @@ static int usb_device_add(const char *devname)
     } else if (!strcmp(devname, "mouse")) {
         dev = usb_mouse_init();
     } else if (!strcmp(devname, "tablet")) {
-	dev = usb_tablet_init();
+        dev = usb_tablet_init();
+    } else if (!strcmp(devname, "keyboard")) {
+        dev = usb_keyboard_init();
     } else if (strstart(devname, "disk:", &p)) {
         dev = usb_msd_init(p);
     } else if (strstart(devname, "net:", &p)) {

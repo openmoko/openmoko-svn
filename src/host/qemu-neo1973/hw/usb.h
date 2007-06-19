@@ -223,6 +223,7 @@ void usb_gadget_config_set(USBPort *port, int config);
 /* usb-hid.c */
 USBDevice *usb_mouse_init(void);
 USBDevice *usb_tablet_init(void);
+USBDevice *usb_keyboard_init(void);
 
 /* usb-msd.c */
 USBDevice *usb_msd_init(const char *filename);
