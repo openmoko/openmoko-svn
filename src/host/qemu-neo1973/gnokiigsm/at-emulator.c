@@ -343,19 +343,21 @@ struct gn_atem_op {
 	char *string_val[];
 };
 
-bool	gn_atem_parse_option(char *buf, struct gn_atem_op *op, char *val)
+bool	gn_atem_parse_option(char **buf, struct gn_atem_op *op, char *val)
 {
 	char	buffer[MAX_LINE_LENGTH], **strval;
 	int	len;
-	if (buf[0] == 0 || (buf[0] == '?' && buf[1] == 0)) {
+	if ((*buf)[0] == 0 || ((*buf)[0] == '?' && (*buf)[1] == 0)) {
+		*buf += strlen(*buf);
 		gsprintf(buffer, MAX_LINE_LENGTH, "%s: %s\r\n", op->op, val);
 		gn_atem_string_out(buffer);
 		return (false);
 	}
 
-	if (*buf++ != '=')
+	if (*(*buf) ++ != '=')
 		return (true);
-	if (!strcasecmp(buf, "?")) {
+	if (!strcasecmp(*buf, "?")) {
+		(*buf) ++;
 		len = gsprintf(buffer, MAX_LINE_LENGTH, "%s: ", op->op);
 		switch (op->type) {
 		case gn_var_string:
@@ -392,16 +394,21 @@ bool	gn_atem_parse_option(char *buf, struct gn_atem_op *op, char *val)
 	switch (op->type) {
 	case gn_var_string:
 		for (strval = op->string_val; *strval; strval++)
-			if (!strcasecmp(buf, *strval)) {
+			if (!strcasecmp(*buf, *strval)) {
 				gsprintf(val, MAX_LINE_LENGTH,
 						"\"%s\"", *strval);
+				*buf += strlen(*buf);
 				return (false);
 			}
 		break;
 
 	case gn_var_bool:
-		if (!strcasecmp(buf, "0") || !strcasecmp(buf, "1")) {
-			strncpy(val, buf, MAX_LINE_LENGTH);
+		switch (gn_atem_num_get(buf)) {
+		case 0:
+			strcpy(val, "0");
+			return (false);
+		case 1:
+			strcpy(val, "1");
 			return (false);
 		}
 		break;
@@ -577,7 +584,6 @@ static struct gn_atem_op gn_atem_op_cssn = {
 	},
 };
 
-
 /* Parser for standard AT commands.  cmd_buffer must be null terminated. */
 void	gn_atem_at_parse(char *cmd_buffer)
 {
@@ -585,7 +591,8 @@ void	gn_atem_at_parse(char *cmd_buffer)
 	int regno, val;
 	char str[256];
 
-	if (!cmd_buffer[0]) return;
+	if (!cmd_buffer[0])
+		return;
 
 	if (strncasecmp (cmd_buffer, "AT", 2) != 0) {
 		gn_atem_modem_result(MR_ERROR);
@@ -786,7 +793,7 @@ void	gn_atem_at_parse(char *cmd_buffer)
 			}
 			break;
 
-		  /* Handle AT* commands (Nokia proprietary I think) */
+		/* Handle AT* commands (Nokia proprietary I think) */
 		case '*':
 			buf++;
 			if (!strcasecmp(buf, "NOKIATEST")) {
@@ -807,7 +814,8 @@ void	gn_atem_at_parse(char *cmd_buffer)
 
 			/* AT+WS46 is wireless network selection */
 			if (strncasecmp(buf, "WS46", 3) == 0) {
-				if (!gn_atem_parse_option(buf + 4,
+				buf += 4;
+				if (!gn_atem_parse_option(&buf,
 						&gn_atem_op_ws46, data.ws46))
 					break;
 			}
@@ -851,7 +859,8 @@ void	gn_atem_at_parse(char *cmd_buffer)
 		case '%':
 			buf++;
 			if (strncasecmp(buf, "BAND", 3) == 0) {
-				if (!gn_atem_parse_option(buf + 4,
+				buf += 4;
+				if (!gn_atem_parse_option(&buf,
 						&gn_atem_op_band, data.band))
 					break;
 			}
@@ -1281,101 +1290,103 @@ bool	gn_atem_command_plusc(char **buf)
 
 	/* AT+CSCS is character set selection */
 	if (strncasecmp(*buf, "SCS", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cscs, data.cscs);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cscs, data.cscs);
 	}
 
 	/* AT+CIMI is international mobile subscriber identity */
 	if (strcasecmp(*buf, "IMI") == 0) {
+		buf[0] += 3;
 		gn_atem_string_out("QEMU_IMSI\r\n");
 		return (false);
 	}
 
 	/* AT+CMUX is multiplexing mode */
 	if (strncasecmp(*buf, "MUX", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cmux, data.cmux);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cmux, data.cmux);
 	}
 
 	/* AT+CSTA is address type selection */
 	if (strncasecmp(*buf, "STA", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_csta, data.csta);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_csta, data.csta);
 	}
 
 	/* AT+CMOD is call mode */
 	if (strncasecmp(*buf, "MOD", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cmod, data.cmod);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cmod, data.cmod);
 	}
 
 	/* AT+CBST is bearer service type */
 	if (strncasecmp(*buf, "BST", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cbst, data.cbst);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cbst, data.cbst);
 	}
 
 	/* AT+CRLP is radio link protocol */
 	if (strncasecmp(*buf, "RLP", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_crlp, data.crlp);
-	}
-
-	/* AT+CR is reporting control */
-	if (strncasecmp(*buf, "R", 1) == 0) {
-		return gn_atem_parse_option(buf[0] + 1,
-				&gn_atem_op_cr, data.cr);
-	}
-
-	/* AT+CEER is extended error report */
-	if (strncasecmp(*buf, "EER", 3) == 0) {
-		gn_atem_string_out("+CEER: 0,0,5,16,normal call clearing\r\n");
-		return (false);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_crlp, data.crlp);
 	}
 
 	/* AT+CRC is cellular result codes */
 	if (strncasecmp(*buf, "RC", 2) == 0) {
-		return gn_atem_parse_option(buf[0] + 2,
-				&gn_atem_op_crc, data.crc);
+		buf[0] += 2;
+		return gn_atem_parse_option(buf, &gn_atem_op_crc, data.crc);
+	}
+
+	/* AT+CR is reporting control */
+	if (strncasecmp(*buf, "R", 1) == 0) {
+		buf[0] += 1;
+		return gn_atem_parse_option(buf, &gn_atem_op_cr, data.cr);
+	}
+
+	/* AT+CEER is extended error report */
+	if (strncasecmp(*buf, "EER", 3) == 0) {
+		buf[0] += 3;
+		gn_atem_string_out("+CEER: 0,0,5,16,normal call clearing\r\n");
+		return (false);
 	}
 
 	/* AT+CSNS is single numbering scheme */
 	if (strncasecmp(*buf, "SNS", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_csns, data.csns);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_csns, data.csns);
 	}
 
 	/* AT+CREG is network registration */
 	if (strncasecmp(*buf, "REG", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_creg, data.creg);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_creg, data.creg);
 	}
 
 	/* AT+COPS is PLMN selection */
 	if (strncasecmp(*buf, "OPS", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cops, data.cops);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cops, data.cops);
 	}
 
 	/* AT+CPAS is phone activity status */
 	if (strncasecmp(*buf, "PAS", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cpas, data.cpas);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cpas, data.cpas);
 	}
 
 	/* AT+CFUN is phone functionality */
 	if (strncasecmp(*buf, "FUN", 3) == 0) {
-		return gn_atem_parse_option(buf[0] + 3,
-				&gn_atem_op_cfun, data.cfun);
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cfun, data.cfun);
 	}
 
 	if (strncasecmp(*buf, "BC", 2) == 0) {
-		return gn_atem_parse_option(buf[0] + 2,
-				&gn_atem_op_cbc, data.cbc);
+		buf[0] += 2;
+		return gn_atem_parse_option(buf, &gn_atem_op_cbc, data.cbc);
 	}
-	if (strncasecmp(*buf, "CSSN", 2) == 0) {
-		return gn_atem_parse_option(buf[0] + 2,
-				&gn_atem_op_cssn, data.cssn);
+	if (strncasecmp(*buf, "CSSN", 4) == 0) {
+		buf[0] += 4;
+		return gn_atem_parse_option(buf, &gn_atem_op_cssn, data.cssn);
 	}
 
 	return (true);
@@ -1516,13 +1527,12 @@ int gn_atem_num_get(char **p)
    command mode - data pump is used when connected.  */
 void	gn_atem_string_out(char *buffer)
 {
-	int	count = 0;
 	char	out_char;
 
-	while (count < strlen(buffer)) {
+	while (*buffer) {
 
 		/* Translate CR/LF/BS as appropriate */
-		switch (buffer[count]) {
+		switch (*buffer) {
 			case '\r':
 				out_char = ModemRegisters[REG_CR];
 				break;
@@ -1533,11 +1543,11 @@ void	gn_atem_string_out(char *buffer)
 				out_char = ModemRegisters[REG_BS];
 				break;
 			default:
-				out_char = buffer[count];
+				out_char = *buffer;
 				break;
 		}
 
 		sm->info->write(sm->info->opaque, "%c", out_char);
-		count++;
+		buffer ++;
 	}
 }

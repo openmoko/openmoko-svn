@@ -70,6 +70,7 @@ struct neo_board_s {
     i2c_slave *wm;
     i2c_slave *lcm;
     CharDriverState *modem;
+    QEMUTimer *modem_timer;
     qemu_irq *kbd_pic;
     const char *kernel;
 };
@@ -102,10 +103,29 @@ static void neo_modem_rst_switch(void *opaque, int line, int level)
         neo_printf("Modem reset.\n");
 }
 
+static void neo_modem_switch_tick(void *opaque)
+{
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+    modem_enable(s->modem, 1);
+}
+
 static void neo_modem_switch(void *opaque, int line, int level)
 {
     struct neo_board_s *s = (struct neo_board_s *) opaque;
-    modem_enable(s->modem, level);
+
+    /* The GSM modem seems to take a little while to power up and
+     * start talking to the serial.  This turns out to be critical because
+     * before gsmd runs and disables Local Echo for the UART, everything
+     * that the modem outputs is looped back and confuses the parser.
+     */
+    if (level)
+        qemu_mod_timer(s->modem_timer, qemu_get_clock(vm_clock) +
+                        (ticks_per_sec >> 4));
+    else {
+        qemu_del_timer(s->modem_timer);
+        modem_enable(s->modem, 0);
+    }
+
     neo_printf("Modem powered %s.\n", level ? "up" : "down");
 }
 
@@ -359,10 +379,9 @@ static void neo_spi_setup(struct neo_board_s *s)
 static void neo_gsm_setup(struct neo_board_s *s)
 {
     s->modem = modem_init();
+    s->modem_timer = qemu_new_timer(vm_clock, neo_modem_switch_tick, s);
 
-#if 0
     s3c_uart_attach(s->cpu->uart[0], s->modem);
-#endif
 }
 
 static void neo_reset(void *opaque)

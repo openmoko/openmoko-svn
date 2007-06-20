@@ -167,8 +167,10 @@ static int modem_ioctl(struct CharDriverState *chr, int cmd, void *arg)
     case CHR_IOCTL_MODEM_HANDSHAKE:
         if (!s->enable)
             return -ENOTSUP;
+#if 0
         if (*(int *) arg)
             modem_resp(s, "AT-Command Interpreter Ready\r\nOK\r\n");
+#endif
         break;
 
     default:
