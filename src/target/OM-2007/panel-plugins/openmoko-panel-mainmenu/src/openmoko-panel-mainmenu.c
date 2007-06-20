@@ -21,12 +21,8 @@
 #include "stylusmenu.h"
 #include "mokodesktop.h"
 #include "mokodesktop_item.h"
-#include "callbacks.h"
-#include "fingermenu.h"
-#include "dbus-conn.h"
 
 #include <libmokoui/moko-panel-applet.h>
-#include <libmokoui/moko-window.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -36,16 +32,7 @@
 
 #include <unistd.h>
 
-/*typedef struct _MokoMainmenuApp MokoMainmenuApp;
-
-struct _MokoMainmenuApp {
-	MokoFingerMenu *fm;
-	MokoStylusMenu *sm;
-    MokoDesktopItem *top_item;
-};*/
-
 static GtkWidget *sm = NULL;
-static MokoMainmenuApp *mma;
 
 static void click(MokoPanelApplet * applet)
 {
@@ -83,45 +70,6 @@ static void tap_hold(MokoPanelApplet * applet)
 
 	XSendEvent(DisplayOfScreen(screen), RootWindowOfScreen(screen), False,
 		   SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-
-	mma = g_malloc0 (sizeof (MokoMainmenuApp));
-    if (!mma)
-    {
-        g_error ("openmoko-mainmenu application initialize FAILED.");
-		exit (0);
-    }
-    memset (mma, 0, sizeof (MokoMainmenuApp));
-
-    if (!moko_dbus_connect_init ())
-    {
-        g_error ("Failed to initial dbus connection.");
-		exit (0);
-    }
-
- // moko_mainmenu_init (mma, argc, argv);
-
-  /* Buid Root item, don't display */
-  mma->top_item = mokodesktop_item_new_with_params ("Home",
-						       NULL,
-						       NULL,
-						       ITEM_TYPE_ROOT );
-
-  /* Build Lists (parse .directory and .desktop files) */
-  mokodesktop_init(mma->top_item, ITEM_TYPE_CNT);
-
-//  gtk_init();
-
-  /*MokoFingerMenu object*/
-  mma->fm = moko_finger_menu_new ();
-  moko_finger_menu_build (mma->fm, mma->top_item);
-  moko_finger_menu_show (mma->fm);
-
-  gtk_main();
-
-  if (mma)
-  {
-	g_free (mma);
-  }
 }
 
 G_MODULE_EXPORT GtkWidget *mb_panel_applet_create(const char *id,
