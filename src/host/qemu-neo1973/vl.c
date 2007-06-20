@@ -6523,6 +6523,8 @@ void qemu_system_shutdown_request(void)
     shutdown_requested = 1;
     if (cpu_single_env)
         cpu_interrupt(cpu_single_env, CPU_INTERRUPT_EXIT);
+    /* In case the emulation is stopped */
+    vm_start();
 }
 
 void qemu_system_powerdown_request(void)

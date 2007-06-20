@@ -451,7 +451,7 @@ static void sdl_refresh(DisplayState *ds)
             break;
         case SDL_QUIT:
             if (!no_quit) {
-               qemu_system_shutdown_request();
+                qemu_system_shutdown_request();
             }
             break;
         case SDL_MOUSEMOTION:
