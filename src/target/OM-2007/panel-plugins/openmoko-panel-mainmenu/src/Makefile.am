@@ -9,7 +9,14 @@ libopenmoko_panel_mainmenu_la_SOURCES = \
   buttonactions.c \
   stylusmenu.c \
   mokodesktop.c \
-  mokodesktop_item.c
+  mokodesktop_item.c \
+  fingermenu.c \
+  mainmenu.c \
+  mokoiconview.c \
+  callbacks.c \
+  app-history.c \
+  dbus-conn.c
+
 libopenmoko_panel_mainmenu_la_LIBADD = @OPENMOKO_LIBS@ @LIBMB_LIBS@ @LIBSN_LIBS@
 
 MAINTAINERCLEANFILES = Makefile.in

@@ -105,7 +105,6 @@ RDEPENDS_task-openmoko-base = "\
   openmoko-panel-clock \
   openmoko-panel-usb \
   openmoko-panel-gps \
-#  openmoko-panel-startup \
 "
 
 #
