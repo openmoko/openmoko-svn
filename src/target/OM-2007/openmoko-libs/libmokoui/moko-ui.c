@@ -7,9 +7,7 @@ void moko_ui_banner_show_text( gint timeout, const gchar* message, ... )
     va_start( a, message );
     const gchar* string = g_strdup_vprintf( message, a );
     va_end( a );
-    MokoBanner* banner = moko_banner_new();
-    moko_banner_show_text( banner, string, timeout );
-    g_object_unref( banner );
+    moko_banner_show_text( moko_banner_get_instance (), string, timeout );
     g_free( string );
 }
 

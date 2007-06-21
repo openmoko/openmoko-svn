@@ -1,3 +1,19 @@
+2007-06-21  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Don't require X11 in the OpenMoko API. Make the usage of
+        xosd a private implementation detail.
+        Convert MokoBanner to a singleton hopefully similiar to the ones
+        in Gtk+.
+
+        * libmokoui/moko-banner.c: Make it a true singleton
+        (moko_banner_class_init): Remove unused parent_class
+        (moko_banner_get_instance): Introduce the singleton method
+        (moko_banner_show_text):
+        (moko_banner_hide):
+        * libmokoui/moko-banner.h: Don't hardcode X11
+        * libmokoui/moko-ui.c:
+        (moko_ui_banner_show_text): Use moko_banner_get_instance
+
 2007-06-16  Mickey  <mickey@openmoko.org>
 
 	* libmokoui/moko-scrolled-pane.h:
