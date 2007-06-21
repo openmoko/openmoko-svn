@@ -29,7 +29,7 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoPanedWindow, moko_paned_window, MOKO_TYPE_WINDOW)
@@ -138,9 +138,9 @@ void moko_paned_window_set_ratio(MokoPanedWindow* self, guint ratio)
 {
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
     moko_debug( "moko_paned_window_set_ratio" );
-    guint height;
+    gint height;
 
-    gtk_window_get_size (GTK_WIDGET (self), NULL, &height);
+    gtk_window_get_size (GTK_WINDOW (self), NULL, &height);
 
     gtk_paned_set_position( GTK_PANED(priv->outerframe), ratio * height / 100 );
 }
@@ -207,14 +207,14 @@ void moko_paned_window_set_fullscreen(MokoPanedWindow* self, gboolean b)
 static void _moko_paned_window_fullscreen_toggled(MokoScrolledPane* pane, gint b, MokoPanedWindow* self)
 {
     MokoPanedWindowPriv* priv = MOKO_PANED_WINDOW_GET_PRIVATE(self);
-    if ( pane == gtk_bin_get_child( GTK_BIN(priv->lowerenclosing) ) )
+    if ( GTK_WIDGET(pane) == gtk_bin_get_child( GTK_BIN(priv->lowerenclosing) ) )
     {
         if ( b )
             gtk_widget_hide( priv->upper );
         else
             gtk_widget_show( priv->upper );
     }
-    else if ( pane == gtk_bin_get_child( GTK_BIN(priv->upperenclosing) ) )
+    else if ( GTK_WIDGET(pane) == gtk_bin_get_child( GTK_BIN(priv->upperenclosing) ) )
     {
         if ( b )
             gtk_widget_hide( priv->lower );

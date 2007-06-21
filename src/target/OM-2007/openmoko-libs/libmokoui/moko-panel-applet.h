@@ -19,14 +19,6 @@
 #ifndef _MOKO_PANEL_APPLET_H_
 #define _MOKO_PANEL_APPLET_H_
 
-#define DEBUG_THIS_FILE
-#ifdef DEBUG_THIS_FILE
-#define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
-#define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
-#else
-#define moko_debug(fmt,...)
-#endif
-
 #include <gtk/gtkalignment.h>
 #include <gtk/gtkeventbox.h>
 #include <gtk/gtkimage.h>

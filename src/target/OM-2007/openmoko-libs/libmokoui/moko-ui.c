@@ -8,6 +8,6 @@ void moko_ui_banner_show_text( gint timeout, const gchar* message, ... )
     const gchar* string = g_strdup_vprintf( message, a );
     va_end( a );
     moko_banner_show_text( moko_banner_get_instance (), string, timeout );
-    g_free( string );
+    g_free( (gchar*)string );
 }
 

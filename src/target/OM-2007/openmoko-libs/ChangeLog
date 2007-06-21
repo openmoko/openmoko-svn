@@ -1,5 +1,63 @@
 2007-06-21  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Remove custom parent_class handling as this is done by
+        the DEFINE_TYPE macro.
+        Compile with -Wall -Werror by adding casts, removing inner
+        functions, adjusting signed-nes, returning values.
+        The most intrusive change is to cb_size_allocate which makes this
+        method non-reentrant (I think it wasn't before) and to disable a
+        couple of DEBUG_THIS_FILE.
+
+        * libmokoui/moko-alignment.c:
+        (moko_alignment_class_init):
+        * libmokoui/moko-application.c:
+        * libmokoui/moko-details-window.c:
+        (moko_details_window_class_init):
+        * libmokoui/moko-dialog-window.c:
+        * libmokoui/moko-finger-tool-box.c:
+        (moko_finger_tool_box_class_init):
+        (checkstatus):
+        (cb_size_allocate):
+        (moko_finger_tool_box_show):
+        (moko_finger_tool_box_hide):
+        * libmokoui/moko-finger-wheel.c:
+        (moko_finger_wheel_class_init):
+        (moko_finger_wheel_show):
+        (moko_finger_wheel_hide):
+        * libmokoui/moko-finger-window.c:
+        (moko_finger_window_get_geometry_hint):
+        * libmokoui/moko-fixed.c:
+        (moko_fixed_class_init):
+        (moko_fixed_realize):
+        * libmokoui/moko-menu-box.c:
+        * libmokoui/moko-message-dialog.c:
+        (moko_message_dialog_map):
+        (moko_message_dialog_init):
+        * libmokoui/moko-paned-window.c:
+        (moko_paned_window_set_ratio):
+        (_moko_paned_window_fullscreen_toggled):
+        * libmokoui/moko-panel-applet.c:
+        (moko_panel_applet_class_init):
+        (moko_panel_applet_get_positioning_hint):
+        * libmokoui/moko-panel-applet.h:
+        * libmokoui/moko-pixmap-button.c:
+        * libmokoui/moko-scrolled-pane.c:
+        (moko_scrolled_pane_class_init):
+        (moko_scrolled_pane_init):
+        * libmokoui/moko-tool-box.c:
+        * libmokoui/moko-tree-view.c:
+        (moko_tree_view_class_init):
+        (moko_tree_view_size_request):
+        * libmokoui/moko-ui.c:
+        (moko_ui_banner_show_text):
+        * libmokoui/moko-window.c:
+        (moko_window_class_init):
+        (moko_window_notify):
+        (moko_window_set_status_message):
+        (moko_window_set_status_progress):
+
+2007-06-21  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Don't require X11 in the OpenMoko API. Make the usage of
         xosd a private implementation detail.
         Convert MokoBanner to a singleton hopefully similiar to the ones

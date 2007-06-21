@@ -38,7 +38,7 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 /* add your signals here */
@@ -60,7 +60,6 @@ static void moko_window_notify(GObject* gobject, GParamSpec* param);
 static void moko_window_is_topmost_notify(MokoWindow* self);
 
 static guint moko_window_signals[LAST_SIGNAL] = { 0 };
-static GtkWindowClass* parent_class = NULL;
 
 G_DEFINE_TYPE (MokoWindow, moko_window, GTK_TYPE_WINDOW)
 
@@ -75,16 +74,12 @@ typedef struct _MokoWindowPrivate
 static void moko_window_class_init(MokoWindowClass *klass) /* Class Initialization */
 {
     moko_debug( "moko_window_class_init" );
-    /* GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass); */
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-
-    /* Set the global parent_class here */
-    parent_class = g_type_class_peek_parent(klass);
 
     /* register private data */
     g_type_class_add_private( klass, sizeof(MokoWindowPrivate) );
 
     /* hook virtual methods */
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->set_property = moko_window_set_property;
     object_class->get_property = moko_window_get_property;
     object_class->notify = moko_window_notify;
@@ -173,8 +168,8 @@ moko_window_notify(GObject* gobject, GParamSpec* param)
         moko_window_is_topmost_notify(window);
     }
 
-    if (G_OBJECT_CLASS(parent_class)->notify)
-        G_OBJECT_CLASS(parent_class)->notify( gobject, param );
+    if (G_OBJECT_CLASS(moko_window_parent_class)->notify)
+        G_OBJECT_CLASS(moko_window_parent_class)->notify( gobject, param );
 }
 
 static void
@@ -243,7 +238,7 @@ moko_window_set_status_message (MokoWindow *self, gchar *message)
     XA_STRING,
     8,
     PropModeReplace,
-    message,
+    (guchar*)message,
     strlen (message) + 1);
 }
 
@@ -258,6 +253,6 @@ moko_window_set_status_progress (MokoWindow *self, gdouble progress)
     XA_STRING,
     8,
     PropModeReplace,
-    (char *)&progress,
+    (unsigned char *)&progress,
     sizeof (progress));
 }

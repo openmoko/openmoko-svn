@@ -27,7 +27,7 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoToolBox, moko_tool_box, GTK_TYPE_NOTEBOOK)

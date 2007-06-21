@@ -25,12 +25,12 @@
 #include <gtk/gtkbutton.h>
 #include <gtk/gtkwindow.h>
 
-#define DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 enum {
@@ -48,7 +48,6 @@ G_DEFINE_TYPE (MokoFingerWheel, moko_finger_wheel, MOKO_TYPE_FIXED)
 
 #define MOKO_FINGER_WHEEL_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_WHEEL, MokoFingerWheelPrivate))
 
-static MokoFixedClass *parent_class = NULL;
 static guint wheel_signals[LAST_SIGNAL] = { 0 };
 
 typedef struct _MokoFingerWheelPrivate
@@ -82,9 +81,6 @@ moko_finger_wheel_finalize (GObject *object)
 static void
 moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    parent_class = g_type_class_peek_parent(klass);
-
     /* register private data */
     g_type_class_add_private( klass, sizeof(MokoFingerWheelPrivate) );
 
@@ -100,6 +96,7 @@ moko_finger_wheel_class_init(MokoFingerWheelClass *klass)
     /* install properties */
     /* ... */
 
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->dispose = moko_finger_wheel_dispose;
     object_class->finalize = moko_finger_wheel_finalize;
 
@@ -215,7 +212,7 @@ static void moko_finger_wheel_show(GtkWidget* widget)
 {
     gtk_widget_ensure_style( widget ); //FIXME needed here?
     moko_debug( "moko_finger_wheel_show" );
-    GTK_WIDGET_CLASS(parent_class)->show(widget);
+    GTK_WIDGET_CLASS(moko_finger_wheel_parent_class)->show(widget);
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
     if ( !priv->popup )
     {
@@ -276,7 +273,7 @@ static void moko_finger_wheel_show(GtkWidget* widget)
 static void moko_finger_wheel_hide(GtkWidget* widget)
 {
     moko_debug( "moko_finger_wheel_hide" );
-    GTK_WIDGET_CLASS(parent_class)->hide(widget);
+    GTK_WIDGET_CLASS(moko_finger_wheel_parent_class)->hide(widget);
     MokoFingerWheelPrivate* priv = MOKO_FINGER_WHEEL_GET_PRIVATE(widget);
     gtk_widget_hide( priv->popup );
 

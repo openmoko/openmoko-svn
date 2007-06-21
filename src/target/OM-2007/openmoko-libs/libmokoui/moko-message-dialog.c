@@ -104,7 +104,7 @@ moko_message_dialog_finalize (GObject *object)
  * our widget gets drawn onto it.
  */
 static void
-moko_message_dialog_map (GObject *object)
+moko_message_dialog_map (GtkWidget *object)
 {
   MokoMessageDialogPrivate *priv = MESSAGE_DIALOG_PRIVATE (object);
   MokoMessageDialog *dialog = MOKO_MESSAGE_DIALOG (object);
@@ -304,7 +304,7 @@ moko_message_dialog_init (MokoMessageDialog *self)
 
 
   /* Indicate that we want to paint this ourselves */
-  gtk_widget_set_app_paintable (self, TRUE);
+  gtk_widget_set_app_paintable (GTK_WIDGET (self), TRUE);
 
   g_signal_connect (self, "realize", G_CALLBACK (moko_message_dialog_realize_cb), NULL);
   g_signal_connect (self, "expose-event", G_CALLBACK (moko_message_dialog_expose_event_cb), NULL);

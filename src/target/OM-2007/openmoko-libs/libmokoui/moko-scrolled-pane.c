@@ -23,7 +23,7 @@
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoScrolledPane, moko_scrolled_pane, GTK_TYPE_HBOX)
@@ -37,9 +37,6 @@ typedef struct _MokoScrolledPanePrivate
     GtkWidget* button; /* MokoPixmapButton */
     GtkWidget* scrollbar; /* GtkScrollBar */
 } MokoScrolledPanePrivate;
-
-/* parent class pointer */
-static GtkHBoxClass* parent_class = NULL;
 
 /* signals */
 enum {
@@ -67,14 +64,11 @@ moko_scrolled_pane_finalize(GObject* object)
 static void
 moko_scrolled_pane_class_init(MokoScrolledPaneClass* klass)
 {
-    /* hook parent */
-    GObjectClass* object_class = G_OBJECT_CLASS (klass);
-    parent_class = g_type_class_peek_parent(klass);
-
     /* add private */
     g_type_class_add_private (klass, sizeof(MokoScrolledPanePrivate));
 
     /* hook destruction */
+    GObjectClass* object_class = G_OBJECT_CLASS (klass);
     object_class->dispose = moko_scrolled_pane_dispose;
     object_class->finalize = moko_scrolled_pane_finalize;
 
@@ -82,7 +76,7 @@ moko_scrolled_pane_class_init(MokoScrolledPaneClass* klass)
     moko_scrolled_pane_signals[FULLSCREEN_TOGGLED] = g_signal_new ("fullscreen-toggled",
             G_TYPE_FROM_CLASS (klass),
             G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-            NULL,
+            0,
             NULL,
             NULL,
             g_cclosure_marshal_VOID__INT,
@@ -110,7 +104,7 @@ moko_scrolled_pane_init(MokoScrolledPane* self)
 
     MokoScrolledPanePrivate* priv = SCROLLED_PANE_GET_PRIVATE(self);
     priv->scrolledwindow = gtk_scrolled_window_new( NULL, NULL );
-    gtk_scrolled_window_set_policy( priv->scrolledwindow, GTK_POLICY_NEVER, GTK_POLICY_NEVER );
+    gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(priv->scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_NEVER );
 
     priv->vbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(self), priv->scrolledwindow, TRUE, TRUE, 0 );

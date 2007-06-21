@@ -23,19 +23,12 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoTreeView, moko_tree_view, GTK_TYPE_TREE_VIEW)
 
 #define TREE_VIEW_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_TREE_VIEW, MokoTreeViewPrivate))
-
-typedef struct _MokoTreeViewPrivate
-{
-} MokoTreeViewPrivate;
-
-/* parent class pointer */
-static GObjectClass* parent_class = NULL;
 
 /* forward declarations */
 void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition);
@@ -56,12 +49,7 @@ moko_tree_view_finalize (GObject *object)
 static void
 moko_tree_view_class_init (MokoTreeViewClass *klass)
 {
-    /* hook parent */
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    parent_class = g_type_class_peek_parent( klass );
-
     /* register private data */
-    g_type_class_add_private( klass, sizeof (MokoTreeViewPrivate) );
 
     /* hook virtual methods */
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
@@ -70,6 +58,7 @@ moko_tree_view_class_init (MokoTreeViewClass *klass)
     /* install properties */
     /* ... */
 
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
     object_class->dispose = moko_tree_view_dispose;
     object_class->finalize = moko_tree_view_finalize;
 }
@@ -97,9 +86,9 @@ moko_tree_view_new_with_model (GtkTreeModel *model)
 void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition)
 {
     moko_debug( "moko_tree_view_size_request" );
-    MokoTreeView* self = MOKO_TREE_VIEW(widget);
-    GTK_WIDGET_CLASS(parent_class)->size_request( widget, requisition );
+    GTK_WIDGET_CLASS(moko_tree_view_parent_class)->size_request( widget, requisition );
 #if 0 /* it doesn't work with size_request... should we try overwriting size_alloc? */
+    MokoTreeView* self = MOKO_TREE_VIEW(widget);
     moko_debug( "-- [old] requesting %d, %d", requisition->width, requisition->height );
 
     // compute height as a whole-number factor of the cell height

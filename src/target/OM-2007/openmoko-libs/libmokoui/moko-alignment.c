@@ -24,18 +24,12 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoAlignment, moko_alignment, GTK_TYPE_ALIGNMENT)
 
 #define MOKO_ALIGNMENT_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_ALIGNMENT, MokoAlignmentPrivate))
-
-static GtkAlignmentClass* parent_class = NULL;
-
-typedef struct _MokoAlignmentPrivate
-{
-} MokoAlignmentPrivate;
 
 /* forward declarations */
 static void moko_alignment_realize(GtkWidget* widget);
@@ -47,13 +41,11 @@ static void
 moko_alignment_class_init (MokoAlignmentClass *klass)
 {
     /* hook parent */
-    parent_class = g_type_class_peek_parent(klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
     /* register private data */
-    g_type_class_add_private (klass, sizeof (MokoAlignmentPrivate));
 
     /* hook virtual methods */
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     widget_class->realize = moko_alignment_realize;
     widget_class->size_request = moko_alignment_size_request;
     widget_class->size_allocate = moko_alignment_size_allocate;

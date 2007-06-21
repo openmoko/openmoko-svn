@@ -24,20 +24,12 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoFixed, moko_fixed, GTK_TYPE_FIXED)
 
 #define PIXMAP_CONTAINER_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FIXED, MokoFixedPrivate))
-
-typedef struct _MokoFixedPrivate MokoFixedPrivate;
-
-struct _MokoFixedPrivate
-{
-};
-
-static GtkFixedClass *parent_class = NULL;
 
 /* declare virtual methods */
 static void moko_fixed_realize(GtkWidget *widget);
@@ -60,16 +52,11 @@ moko_fixed_finalize (GObject *object)
 static void
 moko_fixed_class_init (MokoFixedClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS(klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-
-    /* get pointer to parent */
-    parent_class = g_type_class_peek_parent(klass);
-
     /* add private data */
-    g_type_class_add_private (klass, sizeof (MokoFixedPrivate));
 
     /* hook virtual methods */
+    GObjectClass *object_class = G_OBJECT_CLASS(klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->realize = moko_fixed_realize;
     widget_class->size_request = moko_fixed_size_request;
     widget_class->size_allocate = moko_fixed_size_allocate;
@@ -113,7 +100,7 @@ moko_fixed_realize(GtkWidget *widget)
     gint attributes_mask;
 
     if (GTK_WIDGET_NO_WINDOW (widget))
-        GTK_WIDGET_CLASS (parent_class)->realize (widget);
+        GTK_WIDGET_CLASS (moko_fixed_parent_class)->realize (widget);
     else
     {
         GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);

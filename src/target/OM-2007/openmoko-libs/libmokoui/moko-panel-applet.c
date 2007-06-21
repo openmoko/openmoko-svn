@@ -20,12 +20,12 @@
 
 #include <gtk/gtkmenu.h>
 
-#define DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoPanelApplet, moko_panel_applet, GTK_TYPE_ALIGNMENT)
@@ -49,9 +49,6 @@ enum {
 
 static guint moko_panel_applet_signals[LAST_SIGNAL] = { 0, };
 
-/* parent class pointer */
-static GObjectClass* parent_class = NULL;
-
 /* forward declarations */
 static gboolean cb_moko_panel_applet_button_release_event( GtkWidget* widget, GdkEventButton* event, MokoPanelApplet* self);
 void moko_panel_applet_signal_clicked(MokoPanelApplet* self);
@@ -73,10 +70,6 @@ moko_panel_applet_finalize(GObject* object)
 static void
 moko_panel_applet_class_init(MokoPanelAppletClass* klass)
 {
-    /* hook parent */
-    GObjectClass* object_class = G_OBJECT_CLASS (klass);
-    parent_class = g_type_class_peek_parent(klass);
-
     /* default signal handlers */
     klass->clicked = moko_panel_applet_signal_clicked;
     klass->tap_hold = moko_panel_applet_signal_tap_hold;
@@ -85,6 +78,7 @@ moko_panel_applet_class_init(MokoPanelAppletClass* klass)
     g_type_class_add_private (klass, sizeof(MokoPanelAppletPrivate));
 
     /* hook destruction */
+    GObjectClass* object_class = G_OBJECT_CLASS (klass);
     object_class->dispose = moko_panel_applet_dispose;
     object_class->finalize = moko_panel_applet_finalize;
 
@@ -147,8 +141,11 @@ void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* po
     int win_h;
     gdk_window_get_geometry( self->toplevelwindow->window, NULL, NULL, &win_w, &win_h, NULL );
     moko_debug( "-- popup geom = %d, %d", win_w, win_h );
+
+#ifdef DEBUG_THIS_FILE
     GtkAllocation* allocation = &self->toplevelwindow->allocation;
     moko_debug( "-- popup alloc = %d, %d", allocation->width, allocation->height );
+#endif
 
     GtkAllocation* applet_alloc = &GTK_WIDGET(self)->allocation;
     moko_debug( "-- applet alloc = %d, %d", applet_alloc->width, applet_alloc->height );

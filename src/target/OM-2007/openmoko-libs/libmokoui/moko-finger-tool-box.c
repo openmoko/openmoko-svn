@@ -30,7 +30,7 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoFingerToolBox, moko_finger_tool_box, MOKO_TYPE_ALIGNMENT)
@@ -40,8 +40,6 @@ G_DEFINE_TYPE (MokoFingerToolBox, moko_finger_tool_box, MOKO_TYPE_ALIGNMENT)
 #define INNER_PADDING 10
 static void moko_finger_tool_box_show(GtkWidget* widget);
 static void moko_finger_tool_box_hide(GtkWidget* widget);
-
-static MokoAlignmentClass* parent_class = NULL;
 
 typedef struct _MokoFingerToolBoxPrivate
 {
@@ -61,6 +59,8 @@ typedef struct _MokoFingerToolBoxPrivate
     GdkPixbuf* background_pixbuf;
     GdkPixbuf* button_pixbuf;
     GdkPixbuf* rightarrow_pixbuf;
+
+    guint numChild;
 
 } MokoFingerToolBoxPrivate;
 
@@ -85,9 +85,6 @@ moko_finger_tool_box_finalize (GObject *object)
 static void
 moko_finger_tool_box_class_init(MokoFingerToolBoxClass *klass)
 {
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    parent_class = g_type_class_peek_parent(klass);
-
     /* register private data */
     g_type_class_add_private (klass, sizeof (MokoFingerToolBoxPrivate));
 
@@ -99,8 +96,35 @@ moko_finger_tool_box_class_init(MokoFingerToolBoxClass *klass)
     /* install properties */
     /* ... */
 
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
     object_class->dispose = moko_finger_tool_box_dispose;
     object_class->finalize = moko_finger_tool_box_finalize;
+}
+
+static void
+checkstatus( GtkWidget* child, MokoFingerToolBox* self )
+{
+    MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
+    guint maxButtonsPerPage = priv->maxButtonsPerPage;
+    if ( priv->rightArrowVisible ) maxButtonsPerPage--;
+
+    moko_debug( "maxButtonsPerPage = %d", maxButtonsPerPage );
+
+    moko_debug( "child: '%s'", gtk_widget_get_name( child ) );
+    if ( strcmp( "mokofingertoolbox-toolbutton", gtk_widget_get_name( child ) ) == 0 )
+    {
+            if ( priv->numChild < priv->leftButton || priv->numChild > priv->leftButton + maxButtonsPerPage-1 )
+            {
+                    moko_debug( "hiding child %d", priv->numChild );
+                    gtk_widget_hide( child );
+            }
+            else
+            {
+                    moko_debug( "showing child %d", priv->numChild );
+                    gtk_widget_show( child );
+            }
+    }
+    priv->numChild++;
 }
 
 static void
@@ -116,34 +140,8 @@ cb_size_allocate(GtkWidget* widget, GtkAllocation* allocation, MokoFingerToolBox
     priv->maxButtonsPerPage = a->width / ( priv->buttonWidth + (INNER_PADDING/2) );
     moko_debug( "-- width % buttonWidth = %d", a->width % priv->buttonWidth );
 
-    guint numChild = 0;
-
-    void checkstatus( GtkWidget* child, MokoFingerToolBox* self )
-    {
-        MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(self);
-        guint maxButtonsPerPage = priv->maxButtonsPerPage;
-        if ( priv->rightArrowVisible ) maxButtonsPerPage--;
-
-        moko_debug( "maxButtonsPerPage = %d", maxButtonsPerPage );
-
-        moko_debug( "child: '%s'", gtk_widget_get_name( child ) );
-        if ( strcmp( "mokofingertoolbox-toolbutton", gtk_widget_get_name( child ) ) == 0 )
-        {
-            if ( numChild < priv->leftButton || numChild > priv->leftButton + maxButtonsPerPage-1 )
-            {
-                moko_debug( "hiding child %d", numChild );
-                gtk_widget_hide( child );
-            }
-            else
-            {
-                moko_debug( "showing child %d", numChild );
-                gtk_widget_show( child );
-            }
-        }
-        numChild++;
-    }
-
     priv->rightArrowVisible = priv->numberOfButtons > priv->maxButtonsPerPage;
+    priv->numChild = 0;
 
     gtk_container_foreach( GTK_CONTAINER(priv->hbox), (GtkCallback) checkstatus, self );
 
@@ -284,7 +282,7 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
 {
     //gtk_widget_ensure_style( widget ); //FIXME needed here?
     moko_debug( "moko_finger_wheel_show" );
-    GTK_WIDGET_CLASS(parent_class)->show(widget);
+    GTK_WIDGET_CLASS(moko_finger_tool_box_parent_class)->show(widget);
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
     if ( !priv->popup )
     {
@@ -315,7 +313,7 @@ static void moko_finger_tool_box_show(GtkWidget* widget)
 static void moko_finger_tool_box_hide(GtkWidget* widget)
 {
     moko_debug( "moko_finger_tool_box_hide" );
-    GTK_WIDGET_CLASS(parent_class)->hide(widget);
+    GTK_WIDGET_CLASS(moko_finger_tool_box_parent_class)->hide(widget);
     MokoFingerToolBoxPrivate* priv = MOKO_FINGER_TOOL_BOX_GET_PRIVATE(widget);
     gtk_widget_hide( priv->popup );
 }

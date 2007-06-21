@@ -28,12 +28,12 @@
 
 #include <glib/gmain.h>
 
-#define DEBUG_THIS_FILE
+#undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoDialogWindow, moko_dialog_window, MOKO_TYPE_WINDOW)

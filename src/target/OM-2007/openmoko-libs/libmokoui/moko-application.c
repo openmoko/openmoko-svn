@@ -18,6 +18,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 #include "moko-application.h"
+#include "moko-stock.h"
 
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkiconfactory.h>
@@ -34,7 +35,7 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #endif
 

@@ -31,19 +31,12 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoDetailsWindow, moko_details_window, GTK_TYPE_SCROLLED_WINDOW)
 
 #define DETAILS_WINDOW_GET_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_DETAILS_WINDOW, MokoDetailsWindowPrivate))
-
-typedef struct _MokoDetailsWindowPrivate
-{
-} MokoDetailsWindowPrivate;
-
-/* parent class pointer */
-static GtkScrolledWindowClass* parent_class = NULL;
 
 /* forward declarations */
 static void _cb_fullscreen_clicked(GtkButton* button, MokoDetailsWindow* self);
@@ -65,11 +58,8 @@ static void
 moko_details_window_class_init (MokoDetailsWindowClass *klass)
 {
     /* hook parent */
-    GObjectClass *object_class = G_OBJECT_CLASS (klass);
-    parent_class = g_type_class_peek_parent(klass);
 
     /* register private data */
-    g_type_class_add_private (klass, sizeof (MokoDetailsWindowPrivate));
 
     /* hook virtual methods */
     /* ... */
@@ -77,6 +67,7 @@ moko_details_window_class_init (MokoDetailsWindowClass *klass)
     /* install properties */
     /* ... */
 
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
     object_class->dispose = moko_details_window_dispose;
     object_class->finalize = moko_details_window_finalize;
 }

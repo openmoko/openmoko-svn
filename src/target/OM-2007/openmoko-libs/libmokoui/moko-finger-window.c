@@ -34,7 +34,7 @@
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(...)
 #endif
 
 G_DEFINE_TYPE (MokoFingerWindow, moko_finger_window, MOKO_TYPE_WINDOW)
@@ -135,7 +135,7 @@ gboolean moko_finger_window_get_geometry_hint(MokoFingerWindow* self, GtkWidget*
     int absy;
 
     if (!GTK_WIDGET(self)->window)
-        return;
+        return FALSE;
 
     gtk_widget_size_request( hintee, &req );
     gdk_window_get_geometry( GTK_WIDGET(self)->window, &x, &y, &w, &h, NULL );
