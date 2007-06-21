@@ -1,5 +1,11 @@
 2007-06-21  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Match the declaration with the definition
+
+        * libmokoui/moko-banner.h: show_hide -> hide
+
+2007-06-21  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Remove custom parent_class handling as this is done by
         the DEFINE_TYPE macro.
         Compile with -Wall -Werror by adding casts, removing inner

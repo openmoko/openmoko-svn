@@ -42,7 +42,7 @@ GType moko_banner_get_type(void);
 MokoBanner* moko_banner_get_instance(void);
 
 void moko_banner_show_text(MokoBanner* self, const gchar* text, gint timeout);
-void moko_banner_show_hide(MokoBanner* self);
+void moko_banner_hide(MokoBanner* self);
 
 
 G_END_DECLS
