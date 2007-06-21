@@ -2,12 +2,12 @@ Index: libftdi-0.8/configure.in
 ===================================================================
 --- libftdi-0.8.orig/configure.in
 +++ libftdi-0.8/configure.in
-@@ -32,9 +32,5 @@
+@@ -32,9 +32,5 @@ else
     AC_MSG_RESULT(yes)
  fi
  
 -dnl check for doxygen
--AC_PATH_PROG(DOXYGEN, doxygen)
+-AC_PATH_PROG(DOXYGEN, doxygen, $PATH)
 -AM_CONDITIONAL(HAVE_DOXYGEN, test -n $DOXYGEN);
 -
  AC_OUTPUT([libftdi-config],[chmod a+x libftdi-config])
