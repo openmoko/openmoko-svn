@@ -122,9 +122,7 @@ void cb_searchbox_invisible(MokoToolBox* toolbox, gpointer user_data)
 {
     g_debug( "openmoko-stylus-demo: searchbox now invisible" );
     // free resources and/or disconnect signals
-    MokoBanner* banner = moko_banner_new();
-    moko_banner_show_text( banner, "Searchbox invisible", 2 );
-    g_object_unref( banner );
+    moko_banner_show_text( moko_banner_get_instance (), "Searchbox invisible", 2 );
 }
 
 void cb_filter_changed(GtkMenu* menu, gchar* text, gpointer user_data )
