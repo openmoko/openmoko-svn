@@ -7,9 +7,13 @@ applet_LTLIBRARIES = libopenmoko-panel-mainmenu.la
 libopenmoko_panel_mainmenu_la_SOURCES = \
   openmoko-panel-mainmenu.c \
   buttonactions.c \
+  buttonactions.h \
   stylusmenu.c \
+  stylusmenu.h \
   mokodesktop.c \
-  mokodesktop_item.c
+  mokodesktop.h \
+  mokodesktop_item.c \
+  mokodesktop_item.h
 libopenmoko_panel_mainmenu_la_LIBADD = @OPENMOKO_LIBS@ @LIBMB_LIBS@ @LIBSN_LIBS@
 
 MAINTAINERCLEANFILES = Makefile.in
