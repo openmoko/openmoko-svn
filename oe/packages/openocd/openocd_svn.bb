@@ -2,10 +2,11 @@ DESCRIPTION = "Free and Open On-Chip Debugging, In-System Programming and Bounda
 HOMEPAGE = "http://openocd.berlios.de/"
 LICENSE = "GPL"
 PV = "0.0+svn${SRCDATE}"
+PR = "r1"
 
 inherit autotools
 
-SRC_URI = "svn://svn.berlios.de/;module=openocd/trunk \
+SRC_URI = "svn://svn.berlios.de/openocd;module=trunk \
            file://openocd-link-static.patch;patch=1"
 S = "${WORKDIR}/trunk"
 
