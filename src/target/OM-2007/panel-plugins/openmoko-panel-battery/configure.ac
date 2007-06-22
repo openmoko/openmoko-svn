@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(openmoko-panel-battery, %(1.0.0), http://www.openmoko.org/)
+AC_INIT(openmoko-panel-battery, 1.0.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/openmoko-panel-battery.c)
 AM_CONFIG_HEADER(config.h)
