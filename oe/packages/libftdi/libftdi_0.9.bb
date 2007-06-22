@@ -3,10 +3,10 @@ FT232BM, FT245BM and FT2232C type chips including the popular bitbang mode."
 HOMEPAGE = "http://www.intra2net.com/de/produkte/opensource/ftdi"
 LICENSE = "GPL"
 DEPENDS = "libusb"
+PR = "r1"
 
 SRC_URI = "http://www.intra2net.com/de/produkte/opensource/ftdi/TGZ/libftdi-${PV}.tar.gz \
-	   file://doxygen-configure.patch;patch=1 \
-	  "
+	   file://doxygen-configure.patch;patch=1 "
 S = "${WORKDIR}/libftdi-${PV}"
 
 inherit autotools
