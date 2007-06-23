@@ -1551,6 +1551,10 @@ void *jbt6k74_init();
 /* modem.c */
 CharDriverState *modem_init();
 void modem_enable(CharDriverState *chr, int enable);
+extern struct modem_ops_s {
+    void *opaque;
+    void (*ring)(void *opaque);
+} modem_ops;
 
 /* PCMCIA/Cardbus */
 

@@ -227,6 +227,12 @@ void gn_atem_call_passup(gn_call_status CallStatus, gn_call_info *CallInfo, stru
 		break;
 	case GN_CALL_LocalHangup:
 	case GN_CALL_RemoteHangup:
+		if (IncomingCallNo > 0) {
+			gn_atem_cpi(GSMD_CALLPROG_DISCONNECT,
+					GSMD_CALL_DIR_MT, 0);
+			gn_atem_cpi(GSMD_CALLPROG_RELEASE,
+					GSMD_CALL_DIR_MT, 0);
+		}
 		IncomingCallNo = -1;
 		break;
 	default:
@@ -365,6 +371,10 @@ bool	gn_atem_parse_option(char **buf, struct gn_atem_op *op, char *val)
 {
 	char	buffer[MAX_LINE_LENGTH], **strval;
 	int	len;
+
+	if (*val == 0)
+		strcpy(val, op->default_val);
+
 	if ((*buf)[0] == 0 || ((*buf)[0] == '?' && (*buf)[1] == 0)) {
 		*buf += strlen(*buf);
 		gsprintf(buffer, MAX_LINE_LENGTH, "%s: %s\r\n", op->op, val);
@@ -838,6 +848,22 @@ static bool gn_atem_cpi_set(char **buf, struct gn_atem_op *op, char *val)
 	return (false);
 }
 
+void	gn_atem_cpi(enum gsmd_call_progress msg,
+		enum gsmd_call_direction dir, int inband)
+{
+	char *buffer;
+
+	if (data.cpi[0] < '1')
+		return;
+
+	/* Format: %CPI: <cId>,<msgType>,<ibt>,<tch>,<dir>,[<mode>],
+	 * [<number>],[<type>],[<alpha>],[<cause>],<line> */
+	asprintf(&buffer, "%%CPI: %i,%i,0,%i,%i,0,,,,,0\r\n",
+			data.call_info->call_id, msg, inband, dir);
+	gn_atem_string_out(buffer);
+	free(buffer);
+}
+
 static struct gn_atem_op gn_atem_op_cpi = {
 	.op		= "%CPI",
 	.writable	= 1,
@@ -919,6 +945,8 @@ void	gn_atem_at_parse(char *cmd_buffer)
 			if (gn_sm_functions(GN_OP_MakeCall, &data, sm) != GN_ERR_NONE) {
 				CommandMode = true;
 				dp_CallPassup(GN_CALL_RemoteHangup, NULL, NULL);
+				data.call_notification = gn_atem_call_passup;
+				gn_sm_functions(GN_OP_SetCallNotification, &data, sm);
 			} else {
 				IncomingCallNo = data.call_info->call_id;
 				gn_sm_loop(10, sm);
@@ -931,6 +959,12 @@ void	gn_atem_at_parse(char *cmd_buffer)
 			switch (gn_atem_num_get(&buf)) {
 			case -1:
 			case 0:	/* hook off the phone */
+				if (IncomingCallNo > 0) {
+					gn_atem_cpi(GSMD_CALLPROG_DISCONNECT,
+							GSMD_CALL_DIR_MT, 0);
+					gn_atem_cpi(GSMD_CALLPROG_RELEASE,
+							GSMD_CALL_DIR_MT, 0);
+				}
 				gn_atem_hangup_phone();
 				break;
 			case 1:	/* hook on the phone */
@@ -1890,14 +1924,21 @@ void	gn_atem_modem_result(int code)
 				break;
 
 		        case MR_RING:
+				gn_atem_cpi(GSMD_CALLPROG_SETUP,
+						GSMD_CALL_DIR_MT, 0);
+				gn_atem_cpi(GSMD_CALLPROG_SETUP,
+						GSMD_CALL_DIR_MT, 1);
 				if (!strcmp(data.crc, "1"))
 					gn_atem_string_out(
 							"+CRING: VOICE\r\n");
 				else
 					gn_atem_string_out("RING\r\n");
+				/* XXX: Standard format is "313373",145 */
 				if (!strcmp(data.clip, "1,1"))
-					gn_atem_string_out("+CLIP: "
-							"\"313373\",0\r\n");
+					gn_atem_string_out("+CLIP: \"313373\""
+							",145,,,,1\r\n");
+				gn_atem_cpi(GSMD_CALLPROG_SYNC,
+						GSMD_CALL_DIR_MT, 1);
 				break;
 
 			default:

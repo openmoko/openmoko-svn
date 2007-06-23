@@ -201,6 +201,7 @@ unsigned int nb_prom_envs = 0;
 const char *prom_envs[MAX_PROM_ENVS];
 #endif
 struct bt_piconet_s *local_piconet;
+struct modem_ops_s modem_ops;
 
 /***********************************************************/
 /* x86 ISA bus support */

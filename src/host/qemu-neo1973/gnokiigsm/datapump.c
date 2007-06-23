@@ -75,6 +75,8 @@ bool dp_Initialise(void)
 	gn_sm_functions(GN_OP_SetRLPRXCallback, &data, sm);
 
 	CommandMode = true;
+	data.call_notification = gn_atem_call_passup;
+	gn_sm_functions(GN_OP_SetCallNotification, &data, sm);
 
 	return true;
 }

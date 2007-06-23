@@ -29,6 +29,9 @@ struct modem_s {
     QEMUTimer *csq_tm;
     QEMUTimer *reg_tm;
     gn_data *reg_data;
+    void (*call_notification)(gn_call_status call_status,
+                    gn_call_info *call_info, struct gn_statemachine *state);
+    int next_call_id;
 };
 
 #define TICALYPSOv3_MANF	"<manufacturer>"
@@ -41,7 +44,7 @@ struct modem_s {
 #define TICALYPSOv4_REV		"GTA01Bv4"
 #define TICALYPSOv4_IMEI	"354651010000000"
 
-static gn_error modem_ops(gn_operation op, gn_data *data,
+static gn_error modem_gsm_ops(gn_operation op, gn_data *data,
                 struct gn_statemachine *sm)
 {
     struct modem_s *s = (struct modem_s *) sm->info->opaque;
@@ -61,6 +64,14 @@ static gn_error modem_ops(gn_operation op, gn_data *data,
         fprintf(stderr, "%s: hangup.\n", __FUNCTION__);
         break;
 
+    case GN_OP_AnswerCall:
+        fprintf(stderr, "%s: call answered.\n", __FUNCTION__);
+        if (!s->enable || !s->reg_data || !s->call_notification)
+            break;
+
+        s->call_notification(GN_CALL_RemoteHangup, NULL, &s->state);
+        break;
+
     case GN_OP_GetSMS:
         fprintf(stderr, "%s: SMS number %i requested\n",
                         __FUNCTION__, data->sms->number);
@@ -77,7 +88,7 @@ static gn_error modem_ops(gn_operation op, gn_data *data,
         return GN_ERR_NOTSUPPORTED;
 
     case GN_OP_GetRFLevel:
-        *data->rf_level = 30.0f;	/* Some -50 dBm */
+        *data->rf_level = 15.0f + ((time(0) & 15) ^ 2);	/* Around -70 dBm */
         break;
 
     case GN_OP_GetImei:
@@ -109,6 +120,11 @@ static gn_error modem_ops(gn_operation op, gn_data *data,
         qemu_del_timer(s->csq_tm);
         if (data->network_change_notification)
             data->network_change_notification(0, &s->state);
+        s->reg_data = 0;
+        break;
+
+    case GN_OP_SetCallNotification:
+        s->call_notification = data->call_notification;
         break;
 
     default:
@@ -130,7 +146,7 @@ static void modem_csq_report(void *opaque)
     struct modem_s *s = (struct modem_s *) opaque;
     if (s->reg_data && s->reg_data->signal_quality_notification)
         s->reg_data->signal_quality_notification(&s->state);
-    qemu_mod_timer(s->csq_tm, qemu_get_clock(vm_clock) + ticks_per_sec * 30);
+    qemu_mod_timer(s->csq_tm, qemu_get_clock(vm_clock) + ticks_per_sec * 50);
 }
 
 static void modem_network_register(void *opaque)
@@ -232,6 +248,23 @@ static void modem_out_tick(void *opaque)
     modem_fifo_wake((struct modem_s *) opaque);
 }
 
+static void modem_ring(void *opaque)
+{
+    struct modem_s *s = (struct modem_s *) opaque;
+    gn_call_info call_info;
+
+    if (!s->enable || !s->reg_data || !s->call_notification)
+        return;
+
+    call_info.type = GN_CALL_Voice;
+    snprintf(call_info.number, sizeof(call_info.number), "6100918");
+    snprintf(call_info.name, sizeof(call_info.name), "Red Riding Hood");
+    call_info.send_number = GN_CALL_Always;
+    call_info.call_id = s->next_call_id ++;
+
+    s->call_notification(GN_CALL_Incoming, &call_info, &s->state);
+}
+
 CharDriverState *modem_init()
 {
     struct modem_s *s = (struct modem_s *)
@@ -243,17 +276,23 @@ CharDriverState *modem_init()
 
     s->state.info = &s->info;
     s->info.write = modem_resp;
-    s->info.gn_sm_functions = modem_ops;
+    s->info.gn_sm_functions = modem_gsm_ops;
     s->info.opaque = s;
     s->info.non_at_ok = 1;	/* Return OK on non-AT commands.  */
     s->reg_tm = qemu_new_timer(vm_clock, modem_network_register, s);
     s->csq_tm = qemu_new_timer(vm_clock, modem_csq_report, s);
+    s->next_call_id = 1;
 
     if (!gn_atem_initialise(&s->state))
         goto fail;
 
     if (!dp_Initialise())
         goto fail;
+
+    /* If this is the first modem, register it as the one to receive
+     * "modem .." commands.  */
+    modem_ops.opaque = s;
+    modem_ops.ring = modem_ring;
 
     return &s->chr;
 fail:

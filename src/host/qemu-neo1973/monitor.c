@@ -60,6 +60,7 @@ static int hide_banner;
 
 static term_cmd_t term_cmds[];
 static term_cmd_t info_cmds[];
+static term_cmd_t modem_cmds[];
 
 static char term_outbuf[1024];
 static int term_outbuf_index;
@@ -181,6 +182,8 @@ static void help_cmd(const char *name)
 {
     if (name && !strcmp(name, "info")) {
         help_cmd1(info_cmds, "info ", NULL);
+    } else if (name && !strcmp(name, "modem")) {
+        help_cmd1(modem_cmds, "modem ", NULL);
     } else {
         help_cmd1(term_cmds, "", name);
         if (name && !strcmp(name, "log")) {
@@ -1198,6 +1201,29 @@ static void do_wav_capture (const char *path,
 }
 #endif
 
+static void do_modem(const char *item)
+{
+    term_cmd_t *cmd;
+
+    if (!item)
+        goto help;
+    for(cmd = modem_cmds; cmd->name != NULL; cmd++) {
+        if (compare_cmd(item, cmd->name)) 
+            goto found;
+    }
+ help:
+    help_cmd("modem");
+    return;
+ found:
+    cmd->handler();
+}
+
+static void do_modem_ring(const char *item)
+{
+    if (modem_ops.ring)
+        modem_ops.ring(modem_ops.opaque);
+}
+
 static term_cmd_t term_cmds[] = {
     { "help|?", "s?", do_help, 
       "[cmd]", "show the help" },
@@ -1263,10 +1289,12 @@ static term_cmd_t term_cmds[] = {
       "path [frequency bits channels]",
       "capture audio to a wave file (default frequency=44100 bits=16 channels=2)" },
 #endif
-     { "stopcapture", "i", do_stop_capture,
-       "capture index", "stop capture" },
+    { "stopcapture", "i", do_stop_capture,
+      "capture index", "stop capture" },
     { "memsave", "lis", do_memory_save, 
       "addr size file", "save to disk virtual memory dump starting at 'addr' of size 'size'", },
+    { "modem", "s?", do_modem,
+      "subcommand", "cause various actions in the virtual modem", },
     { NULL, NULL, }, 
 };
 
@@ -1323,6 +1351,12 @@ static term_cmd_t info_cmds[] = {
     { "cpustats", "", do_info_cpu_stats,
       "", "show CPU statistics", },
 #endif
+    { NULL, NULL, },
+};
+
+static term_cmd_t modem_cmds[] = {
+    { "ring", "", do_modem_ring,
+      "", "make the virtual modem output a RING notification" },
     { NULL, NULL, },
 };
 
@@ -2429,6 +2463,11 @@ void readline_find_completion(const char *cmdline)
                 completion_index = strlen(str);
                 for(key = key_defs; key->name != NULL; key++) {
                     cmd_completion(str, key->name);
+                }
+            } else if (!strcmp(cmd->name, "modem")) {
+                completion_index = strlen(str);
+                for(cmd = modem_cmds; cmd->name != NULL; cmd++) {
+                    cmd_completion(str, cmd->name);
                 }
             }
             break;
