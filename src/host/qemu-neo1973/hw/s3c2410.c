@@ -1320,8 +1320,16 @@ static void s3c_uart_err(struct s3c_uart_state_s *s, int err)
 inline static void s3c_uart_full(struct s3c_uart_state_s *s, int pulse)
 {
     if (s->fcontrol & 1)			/* FIFOEnable */
-        if (s->rxlen < (((s->fcontrol >> 4) & 3) + 1) * 4)
-            return;
+        if (s->rxlen < (((s->fcontrol >> 4) & 3) + 1) * 4) {
+            if (((s->control >> 0) & 3) != 1 ||	/* ReceiveMode */
+                            !s->rxlen)
+                return;
+            if (!(s->control & (1 << 7)))	/* RxTimeOutEnable */
+                return;
+            /* When the Rx FIFO trigger level is not reached, the interrupt
+             * is generated anyway, just after a small timeout instead of
+             * immediately.  */
+        }
 
     switch ((s->control >> 0) & 3) {		/* ReceiveMode */
     case 1:
