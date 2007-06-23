@@ -26,6 +26,9 @@ struct modem_s {
 
     struct gn_statemachine state;
     struct gsmmodem_info_s info;
+    QEMUTimer *csq_tm;
+    QEMUTimer *reg_tm;
+    gn_data *reg_data;
 };
 
 #define TICALYPSOv3_MANF	"<manufacturer>"
@@ -41,10 +44,17 @@ struct modem_s {
 static gn_error modem_ops(gn_operation op, gn_data *data,
                 struct gn_statemachine *sm)
 {
+    struct modem_s *s = (struct modem_s *) sm->info->opaque;
+    int len;
+
     switch (op) {
     case GN_OP_MakeCall:
-        fprintf(stderr, "%s: calling %s: busy.\n", __FUNCTION__,
-                        data->call_info->number);
+        len = strlen(data->call_info->number);
+        if (data->call_info->number[len - 1] == ';')
+            len --;
+        fprintf(stderr, "%s: calling %.*s: busy.\n", __FUNCTION__,
+                        len, data->call_info->number);
+        /* FIXME: this is not the right way to signal busy line.  */
         return GN_ERR_LINEBUSY;
 
     case GN_OP_CancelCall:
@@ -67,7 +77,7 @@ static gn_error modem_ops(gn_operation op, gn_data *data,
         return GN_ERR_NOTSUPPORTED;
 
     case GN_OP_GetRFLevel:
-        *data->rf_level = 32.0f;	/* Some -50 dBm */
+        *data->rf_level = 30.0f;	/* Some -50 dBm */
         break;
 
     case GN_OP_GetImei:
@@ -89,6 +99,18 @@ static gn_error modem_ops(gn_operation op, gn_data *data,
         strcpy(data->manufacturer, TICALYPSOv4_MANF);
         break;
 
+    case GN_OP_NetworkRegister:
+        s->reg_data = data;
+        qemu_mod_timer(s->reg_tm, qemu_get_clock(vm_clock) + ticks_per_sec);
+        break;
+
+    case GN_OP_NetworkUnregister:
+        qemu_del_timer(s->reg_tm);
+        qemu_del_timer(s->csq_tm);
+        if (data->network_change_notification)
+            data->network_change_notification(0, &s->state);
+        break;
+
     default:
         return GN_ERR_NOTSUPPORTED;
     }
@@ -99,6 +121,24 @@ static void modem_reset(struct modem_s *s)
 {
     s->out_len = 0;
     s->baud_delay = ticks_per_sec;
+    qemu_del_timer(s->reg_tm);
+    qemu_del_timer(s->csq_tm);
+}
+
+static void modem_csq_report(void *opaque)
+{
+    struct modem_s *s = (struct modem_s *) opaque;
+    if (s->reg_data && s->reg_data->signal_quality_notification)
+        s->reg_data->signal_quality_notification(&s->state);
+    qemu_mod_timer(s->csq_tm, qemu_get_clock(vm_clock) + ticks_per_sec * 30);
+}
+
+static void modem_network_register(void *opaque)
+{
+    struct modem_s *s = (struct modem_s *) opaque;
+    if (s->reg_data && s->reg_data->network_change_notification)
+        s->reg_data->network_change_notification(1, &s->state);
+    modem_csq_report(opaque);
 }
 
 static inline void modem_fifo_wake(struct modem_s *s)
@@ -205,6 +245,9 @@ CharDriverState *modem_init()
     s->info.write = modem_resp;
     s->info.gn_sm_functions = modem_ops;
     s->info.opaque = s;
+    s->info.non_at_ok = 1;	/* Return OK on non-AT commands.  */
+    s->reg_tm = qemu_new_timer(vm_clock, modem_network_register, s);
+    s->csq_tm = qemu_new_timer(vm_clock, modem_csq_report, s);
 
     if (!gn_atem_initialise(&s->state))
         goto fail;

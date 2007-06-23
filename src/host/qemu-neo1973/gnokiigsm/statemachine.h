@@ -103,6 +103,7 @@ struct gsmmodem_info_s {
 			struct gn_statemachine *sm);
 	void (*write)(void *opaque, const char *fmt, ...);
 	void *opaque;
+	int non_at_ok;
 };
 
 GNOKII_API gn_state gn_sm_loop(int timeout, struct gn_statemachine *state);

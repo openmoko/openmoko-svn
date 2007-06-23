@@ -155,13 +155,14 @@ bool gn_atem_initialise(struct gn_statemachine *vmsm)
 	gn_sm_functions(GN_OP_SetCallNotification, &data, sm);
 
 	/* query model, revision and imei */
-	if (gn_sm_functions(GN_OP_Identify, &data, sm) != GN_ERR_NONE) return false;
+	if (gn_sm_functions(GN_OP_Identify, &data, sm) != GN_ERR_NONE)
+		return false;
 
 	/* We're ready to roll... */
 	gn_atem_initialised = true;
+	data.connected = 0;
 	return (true);
 }
-
 
 /* Initialise the "registers" used by the virtual modem. */
 void	gn_atem_registers_init(void)
@@ -287,7 +288,7 @@ void	gn_atem_incoming_data_handle(const char *buffer, int length)
 			/* Echo character if appropriate. */
 			if (buffer[count] == ModemRegisters[REG_CR] &&
 				(ModemRegisters[REG_ECHO] & BIT_ECHO)) {
-				gn_atem_string_out("\r\n");
+				gn_atem_string_out("\r");	/* XXX */
 			}
 
 			/* Save CTRL-Z and ESCAPE for the parser */
@@ -331,6 +332,22 @@ void	gn_atem_incoming_data_handle(const char *buffer, int length)
 	}
 }
 
+static char *gn_atem_cme(int code)
+{
+	static char err[80];
+
+	if (!strcmp(data.cmee, "0"))
+		return "ERROR";
+
+	if (!strcmp(data.cmee, "1"))
+		snprintf(err, sizeof(err), "+CME ERROR: %i", code);
+
+	if (!strcmp(data.cmee, "2"))
+		snprintf(err, sizeof(err), "+CME ERROR: phone error");
+
+	return err;
+}
+
 struct gn_atem_op {
 	char *op;
 	int writable;
@@ -339,6 +356,7 @@ struct gn_atem_op {
 		gn_var_bool,	/* 0,1 */
 		gn_var_numbers,	/* (1-5),(9-20) */
 	} type;
+	bool (*set_val)(char **buf, struct gn_atem_op *op, char *val);
 	char *default_val;
 	char *string_val[];
 };
@@ -391,6 +409,9 @@ bool	gn_atem_parse_option(char **buf, struct gn_atem_op *op, char *val)
 	if (!op->writable)
 		return (true);
 
+	if (op->set_val)
+		return op->set_val(buf, op, val);
+
 	switch (op->type) {
 	case gn_var_string:
 		for (strval = op->string_val; *strval; strval++)
@@ -438,6 +459,81 @@ static struct gn_atem_op gn_atem_op_cmux = {
 	.string_val	= {
 		"(1),(0),(1-5),(10-100),(1-255),(0-100),(2-255),(1-255),(1-7)",
 	},
+};
+
+static bool gn_atem_cmee_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	switch (gn_atem_num_get(buf)) {
+	case 0:
+		strcpy(val, "0");
+		return (false);
+	case 1:
+		strcpy(val, "1");
+		return (false);
+	case 2:
+		strcpy(val, "2");
+		return (false);
+	}
+	return (true);
+}
+
+static struct gn_atem_op gn_atem_op_cmee = {
+	.op		= "+CMEE",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0",
+	.string_val	= {
+		"(0-2)",
+	},
+	.set_val	= gn_atem_cmee_set,
+};
+
+static bool gn_atem_clip_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	switch (gn_atem_num_get(buf)) {
+	case 0:
+		strcpy(val, "0,1");	/* CLIP provisioned in this network */
+		return (false);
+	case 1:
+		strcpy(val, "1,1");	/* CLIP provisioned in this network */
+		return (false);
+	}
+	return (true);
+}
+
+static struct gn_atem_op gn_atem_op_clip = {
+	.op		= "+CLIP",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0,1",
+	.string_val	= {
+		"(0,1)",
+	},
+	.set_val	= gn_atem_clip_set,
+};
+
+static bool gn_atem_colp_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	switch (gn_atem_num_get(buf)) {
+	case 0:
+		strcpy(val, "0,1");	/* COLP provisioned in this network */
+		return (false);
+	case 1:
+		strcpy(val, "1,1");	/* COLP provisioned in this network */
+		return (false);
+	}
+	return (true);
+}
+
+static struct gn_atem_op gn_atem_op_colp = {
+	.op		= "+COLP",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "0,1",
+	.string_val	= {
+		"(0,1)",
+	},
+	.set_val	= gn_atem_colp_set,
 };
 
 static struct gn_atem_op gn_atem_op_ws46 = {
@@ -517,6 +613,39 @@ static struct gn_atem_op gn_atem_op_csns = {
 	},
 };
 
+static bool gn_atem_creg_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	/* <stat> values are:
+	 * 0	not registered, MT is not currently searching a
+	 *	new operator to register to
+	 * 1	registered, home network
+	 * 2	not registered, but MT is currently searching a
+	 *	new operator to register to
+	 * 3	registration denied
+	 * 4	unknown
+	 * 5	registered, roaming
+	 */
+	switch (gn_atem_num_get(buf)) {
+	case 0:
+		/* No unsolicited +CREG. */
+		strcpy(val, "0,1");
+		return (false);
+	case 1:
+		/* +CREG Syntax is <stat> when there's a change in network
+		 * registration status.
+		 */
+		strcpy(val, "1,1");
+		return (false);
+	case 2:
+		/* +CREG Syntax is <stat>[,<lac>,<ci>[,<AcT>]] when we've (MT)
+		 * succesfully registered in the network cell.
+		 */
+		strcpy(val, "2,1");
+		return (false);
+	}
+	return (true);
+}
+
 static struct gn_atem_op gn_atem_op_creg = {
 	.op		= "+CREG",
 	.writable	= 1,
@@ -525,13 +654,64 @@ static struct gn_atem_op gn_atem_op_creg = {
 	.string_val	= {
 		"(0-2)",
 	},
+	.set_val	= gn_atem_creg_set,
 };
+
+static void gn_atem_network_msg(int connected,
+			struct gn_statemachine *state)
+{
+	char *buffer;
+
+	data.connected = connected;
+	/* TODO: Send +COPS and +CREG separately */
+	/* TODO: Take COPS format and CREG format settings into account */
+	if (connected) {
+		strcpy(data.cops, "1,\"012C\",\"0DCC\"");
+	} else {
+		strcpy(data.cops, "2");
+	}
+	if (strcmp(data.creg, "0"))
+		asprintf(&buffer, "+CREG: %s\r\n", data.cops);
+	else
+		/* +CREG: is disabled, but +COPS is allowed */
+		asprintf(&buffer, "+COPS: %s\r\n", data.cops);
+	gn_atem_string_out(buffer);
+	free(buffer);
+}
+
+static bool gn_atem_cops_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	data.network_change_notification = gn_atem_network_msg;
+
+	/* Syntax is <mode>[,<format>[,<oper>]] */
+	switch (gn_atem_num_get(buf)) {	/* Parse <mode> */
+	case 0:
+	case 1:
+	case 4:
+		if (gn_sm_functions(GN_OP_NetworkRegister, &data, sm) !=
+				GN_ERR_NONE)
+			break;
+		return (false);
+	case 2:
+		if (gn_sm_functions(GN_OP_NetworkUnregister, &data, sm) !=
+				GN_ERR_NONE)
+			break;
+		return (false);
+	case 3:	/* Only sets <format>, TODO */
+		return (false);
+	}
+	return (true);
+}
 
 static struct gn_atem_op gn_atem_op_cops = {
 	.op		= "+COPS",
 	.writable	= 1,
-	.type		= gn_var_bool,
-	.default_val	= "0",
+	.type		= gn_var_numbers,
+	.default_val	= "2",
+	.string_val	= {
+		"(0-4)",
+	},
+	.set_val	= gn_atem_cops_set,
 };
 
 static struct gn_atem_op gn_atem_op_cpas = {
@@ -544,14 +724,50 @@ static struct gn_atem_op gn_atem_op_cpas = {
 	},
 };
 
+static bool gn_atem_cfun_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	/* Format is <fun>[,<Rst] */
+	switch (gn_atem_num_get(buf)) {	/* Ignore the Reset argument */
+	case 0:
+		/* Minimum functionality */
+		strcpy(val, "0");
+		return (false);
+	case 1:
+		/* Full functionality */
+		strcpy(val, "1");
+		return (false);
+	case 2:
+		/* Disable phone transmit RF circuits only */
+		strcpy(val, "2");
+		return (false);
+	case 3:
+		/* Disable phone receive RF circuits only */
+		strcpy(val, "3");
+		return (false);
+	case 4:
+		/* Disable phone both transmit and receive RF circuits */
+		strcpy(val, "4");
+		return (false);
+	}
+	return (true);
+}
+
 static struct gn_atem_op gn_atem_op_cfun = {
 	.op		= "+CFUN",
 	.writable	= 1,
 	.type		= gn_var_numbers,
 	.default_val	= "1",
 	.string_val	= {
-		"(0,1,4),(0)",
+		"(0-4),(0)",
 	},
+	.set_val	= gn_atem_cfun_set,
+};
+
+static struct gn_atem_op gn_atem_op_ctzr = {
+	.op		= "+CTZR",
+	.writable	= 1,
+	.type		= gn_var_bool,
+	.default_val	= "0",
 };
 
 static struct gn_atem_op gn_atem_op_cbc = {
@@ -564,6 +780,24 @@ static struct gn_atem_op gn_atem_op_cbc = {
 	},
 };
 
+static bool gn_atem_band_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	/* Syntax is <band>[,<mode>] */
+	switch (gn_atem_num_get(buf)) {
+	case 0:
+		/* Automatic */
+		strcpy(val, "0");
+		break;
+	case 1:
+		/* Manual */
+		strcpy(val, "1");
+		break;
+	default:
+		return (true);
+	}
+	return (false);
+}
+
 static struct gn_atem_op gn_atem_op_band = {
 	.op		= "%BAND",
 	.writable	= 1,
@@ -572,10 +806,51 @@ static struct gn_atem_op gn_atem_op_band = {
 	.string_val	= {
 		"(0-1),(1-31)",
 	},
+	.set_val	= gn_atem_band_set,
+};
+
+static bool gn_atem_cpi_set(char **buf, struct gn_atem_op *op, char *val)
+{
+	switch (gn_atem_num_get(buf)) {
+	case 0:
+		/* Disable */
+		strcpy(val, "0");
+		break;
+	case 1:
+		/* Enable */
+		strcpy(val, "1");
+		break;
+	case 2:
+		/* Status */
+		strcpy(val, "2");
+		break;
+	case 3:
+		/* Append cause and ALS bearer state to unsolicited results */
+		strcpy(val, "3");
+		break;
+	case 4:
+		/* Append Advance Cause Code */
+		strcpy(val, "4");
+		break;
+	default:
+		return (true);
+	}
+	return (false);
+}
+
+static struct gn_atem_op gn_atem_op_cpi = {
+	.op		= "%CPI",
+	.writable	= 1,
+	.type		= gn_var_numbers,
+	.default_val	= "1",
+	.string_val	= {
+		"(0-4)",
+	},
+	.set_val	= gn_atem_cpi_set,
 };
 
 static struct gn_atem_op gn_atem_op_cssn = {
-	.op		= "CSSN",
+	.op		= "+CSSN",
 	.writable	= 1,
 	.type		= gn_var_numbers,
 	.default_val	= "0,0",
@@ -594,8 +869,8 @@ void	gn_atem_at_parse(char *cmd_buffer)
 	if (!cmd_buffer[0])
 		return;
 
-	if (strncasecmp (cmd_buffer, "AT", 2) != 0) {
-		gn_atem_modem_result(MR_ERROR);
+	if (strncasecmp(cmd_buffer, "AT", 2) != 0) {
+		gn_atem_modem_result(sm->info->non_at_ok ? MR_OK : MR_ERROR);
 		return;
 	}
 
@@ -623,7 +898,6 @@ void	gn_atem_at_parse(char *cmd_buffer)
 			buf++;
 			gn_atem_answer_phone();
 			return;
-			break;
 
 		case 'D':
 			/* Dial Data :-) */
@@ -650,7 +924,6 @@ void	gn_atem_at_parse(char *cmd_buffer)
 				gn_sm_loop(10, sm);
 			}
 			return;
-			break;
 
 		case 'H':
 			/* Hang Up */
@@ -858,14 +1131,12 @@ void	gn_atem_at_parse(char *cmd_buffer)
 		/* % is the precursor to another set of commands */
 		case '%':
 			buf++;
-			if (strncasecmp(buf, "BAND", 3) == 0) {
-				buf += 4;
-				if (!gn_atem_parse_option(&buf,
-						&gn_atem_op_band, data.band))
-					break;
+			/* Returns true if error occured */
+			if (gn_atem_command_percent(&buf) == true) {
+				gn_atem_modem_result(MR_ERROR);
+				return;
 			}
-			gn_atem_modem_result(MR_ERROR);
-			return;
+			break;
 
 		default:
 			gn_atem_modem_result(MR_ERROR);
@@ -981,7 +1252,8 @@ void	gn_atem_dir_parse(char *buff)
 			if (gn_sm_functions(GN_OP_DeleteSMS, &data, sm) == GN_ERR_NONE) {
 				gn_atem_modem_result(MR_OK);
 			} else {
-				gn_atem_modem_result(MR_ERROR);
+				gn_atem_string_out(gn_atem_cme(21));
+				gn_atem_string_out("\r\n");
 			}
 			return;
 		case 'Q':
@@ -1022,7 +1294,8 @@ void	gn_atem_sms_parseText(char *buff)
 				gn_atem_string_out(buffer);
 				gn_atem_modem_result(MR_OK);
 			} else {
-				gn_atem_modem_result(MR_ERROR);
+				gn_atem_string_out(gn_atem_cme(0));
+				gn_atem_string_out("\r\n");
 			}
 			return;
 		} else if (buff[i] == ModemRegisters[REG_ESCAPE]) {
@@ -1060,7 +1333,9 @@ bool	gn_atem_command_plusc(char **buf)
 		data.rf_unit = &rfunits;
 		data.rf_level = &rflevel;
 		if (gn_sm_functions(GN_OP_GetRFLevel, &data, sm) == GN_ERR_NONE) {
-			gsprintf(buffer, MAX_LINE_LENGTH, "+CSQ: %0.0f, 99\r\n", *(data.rf_level));
+			gsprintf(buffer, MAX_LINE_LENGTH,
+					"+CSQ: %0.0f, 99\r\n",
+					*(data.rf_level));
 			gn_atem_string_out(buffer);
 			return (false);
 		} else {
@@ -1080,7 +1355,7 @@ bool	gn_atem_command_plusc(char **buf)
 	/* AT+CGSN is IMEI */
 	if (strncasecmp(*buf, "GSN", 3) == 0) {
 		buf[0] += 3;
-		strcpy(data.imei, "+CME ERROR: 0");
+		strcpy(data.imei, gn_atem_cme(0));
 		if (gn_sm_functions(GN_OP_GetImei, &data, sm) == GN_ERR_NONE) {
 			gsprintf(buffer, MAX_LINE_LENGTH, "%s\r\n", data.imei);
 			gn_atem_string_out(buffer);
@@ -1093,7 +1368,7 @@ bool	gn_atem_command_plusc(char **buf)
 	/* AT+CGMR is Revision (hardware) */
 	if (strncasecmp(*buf, "GMR", 3) == 0) {
 		buf[0] += 3;
-		strcpy(data.revision, "+CME ERROR: 0");
+		strcpy(data.revision, gn_atem_cme(0));
 		if (gn_sm_functions(GN_OP_GetRevision, &data, sm) == GN_ERR_NONE) {
 			gsprintf(buffer, MAX_LINE_LENGTH, "%s\r\n", data.revision);
 			gn_atem_string_out(buffer);
@@ -1106,7 +1381,7 @@ bool	gn_atem_command_plusc(char **buf)
 	/* AT+CGMM is Model code  */
 	if (strncasecmp(*buf, "GMM", 3) == 0) {
 		buf[0] += 3;
-		strcpy(data.model, "+CME ERROR: 0");
+		strcpy(data.model, gn_atem_cme(0));
 		if (gn_sm_functions(GN_OP_GetModel, &data, sm) == GN_ERR_NONE) {
 			gsprintf(buffer, MAX_LINE_LENGTH, "%s\r\n", data.model);
 			gn_atem_string_out(buffer);
@@ -1307,6 +1582,24 @@ bool	gn_atem_command_plusc(char **buf)
 		return gn_atem_parse_option(buf, &gn_atem_op_cmux, data.cmux);
 	}
 
+	/* AT+CMEE is Mobile Termination error reporting */
+	if (strncasecmp(*buf, "MEE", 3) == 0) {
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cmee, data.cmee);
+	}
+
+	/* AT+CLIP is calling line identification presentation */
+	if (strncasecmp(*buf, "LIP", 3) == 0) {
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_clip, data.clip);
+	}
+
+	/* AT+COLP is connected line identification presentation */
+	if (strncasecmp(*buf, "OLP", 3) == 0) {
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_colp, data.colp);
+	}
+
 	/* AT+CSTA is address type selection */
 	if (strncasecmp(*buf, "STA", 3) == 0) {
 		buf[0] += 3;
@@ -1337,6 +1630,12 @@ bool	gn_atem_command_plusc(char **buf)
 		return gn_atem_parse_option(buf, &gn_atem_op_crc, data.crc);
 	}
 
+	/* AT+CREG is network registration */
+	if (strncasecmp(*buf, "REG", 3) == 0) {
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_creg, data.creg);
+	}
+
 	/* AT+CR is reporting control */
 	if (strncasecmp(*buf, "R", 1) == 0) {
 		buf[0] += 1;
@@ -1354,12 +1653,6 @@ bool	gn_atem_command_plusc(char **buf)
 	if (strncasecmp(*buf, "SNS", 3) == 0) {
 		buf[0] += 3;
 		return gn_atem_parse_option(buf, &gn_atem_op_csns, data.csns);
-	}
-
-	/* AT+CREG is network registration */
-	if (strncasecmp(*buf, "REG", 3) == 0) {
-		buf[0] += 3;
-		return gn_atem_parse_option(buf, &gn_atem_op_creg, data.creg);
 	}
 
 	/* AT+COPS is PLMN selection */
@@ -1380,13 +1673,99 @@ bool	gn_atem_command_plusc(char **buf)
 		return gn_atem_parse_option(buf, &gn_atem_op_cfun, data.cfun);
 	}
 
+	/* AT+CTZR is time zone reporting */
+	if (strncasecmp(*buf, "TZR", 3) == 0) {
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_ctzr, data.ctzr);
+	}
+
+	/* AT+CBC is battery charge */
 	if (strncasecmp(*buf, "BC", 2) == 0) {
 		buf[0] += 2;
 		return gn_atem_parse_option(buf, &gn_atem_op_cbc, data.cbc);
 	}
+
+	/* AT+CSSN is supplementary service notifications */
 	if (strncasecmp(*buf, "CSSN", 4) == 0) {
 		buf[0] += 4;
 		return gn_atem_parse_option(buf, &gn_atem_op_cssn, data.cssn);
+	}
+
+	return (true);
+}
+
+static void gn_atem_signal_quality(struct gn_statemachine *state)
+{
+	float		rflevel = -1;
+	gn_rf_unit	rfunits = GN_RF_CSQ;
+	char		buffer[MAX_LINE_LENGTH];
+
+	if (!data.csq)
+		return;
+
+	data.rf_unit = &rfunits;
+	data.rf_level = &rflevel;
+	if (gn_sm_functions(GN_OP_GetRFLevel, &data, sm) == GN_ERR_NONE) {
+		gsprintf(buffer, MAX_LINE_LENGTH,
+				"%%CSQ: %.f, 99, 2\r\n", *(data.rf_level));
+		gn_atem_string_out(buffer);
+	}
+}
+
+/* Handle AT% commands, this is a quick hack together at this
+   stage. */
+bool	gn_atem_command_percent(char **buf)
+{
+	char		buffer[MAX_LINE_LENGTH];
+
+	/* This command is undocumented.  */
+	if (!strncasecmp(*buf, "CSQ", 3)) {
+		buf[0] += 3;
+		switch (**buf) {
+		case '=':
+			buf[0]++;
+			switch (**buf) {
+			case '0':
+				buf[0]++;
+				data.csq = 0;
+				break;
+			case '1':
+				buf[0]++;
+				data.csq = 1;
+				data.signal_quality_notification =
+					gn_atem_signal_quality;
+				break;
+			case '?':
+				break;
+			default:
+				return (true);
+			}
+			gsprintf(buffer, MAX_LINE_LENGTH,
+					"%%CSQ: %i\r\n", data.csq);
+			break;
+		case '?':
+			buf[0]++;
+			gsprintf(buffer, MAX_LINE_LENGTH,
+					"%%CSQ: (0-31,99),(0-7,99)\r\n");
+			gn_atem_string_out(buffer);
+			break;
+		default:
+			return (true);
+		}
+
+		return (false);
+	}
+
+	/* AT%BAND is Frequency Band Information */
+	if (!strncasecmp(*buf, "BAND", 4)) {
+		buf[0] += 4;
+		return gn_atem_parse_option(buf, &gn_atem_op_band, data.band);
+	}
+
+	/* AT%CPI is Call Progress Information */
+	if (!strncasecmp(*buf, "CPI", 3)) {
+		buf[0] += 3;
+		return gn_atem_parse_option(buf, &gn_atem_op_cpi, data.cpi);
 	}
 
 	return (true);
@@ -1427,7 +1806,17 @@ bool	gn_atem_command_plusg(char **buf)
 	if (strncasecmp(*buf, "SN", 3) == 0) {
 		buf[0] += 2;
 
-		gsprintf(buffer, MAX_LINE_LENGTH, _("none built in, choose your own\r\n"));
+		gsprintf(buffer, MAX_LINE_LENGTH,
+				_("none built in, choose your own\r\n"));
+		gn_atem_string_out(buffer);
+		return (false);
+	}
+
+	/* AT+GCAP is overall capabilities of TA */
+	if (strncasecmp(*buf, "CAP", 4) == 0) {
+		buf[0] += 3;
+
+		gsprintf(buffer, MAX_LINE_LENGTH, "+GCAP:+CGSM,+FCLASS\r\n");
 		gn_atem_string_out(buffer);
 		return (false);
 	}
@@ -1473,36 +1862,47 @@ void	gn_atem_modem_result(int code)
 {
 	char	buffer[16];
 
+	gn_atem_string_out("\r\n");	/* XXX Some modems do this */
+
 	if (!(ModemRegisters[REG_VERBOSE] & BIT_VERBOSE)) {
 		sprintf(buffer, "%d\r\n", code);
 		gn_atem_string_out(buffer);
 	} else {
 		switch (code) {
 			case MR_OK:
-					gn_atem_string_out("OK\r\n");
-					break;
+				gn_atem_string_out("OK\r\n");
+				break;
 
 			case MR_ERROR:
-					gn_atem_string_out("ERROR\r\n");
-					break;
+				gn_atem_string_out("ERROR\r\n");
+				break;
 
 			case MR_CARRIER:
-					gn_atem_string_out("CARRIER\r\n");
-					break;
+				gn_atem_string_out("CARRIER\r\n");
+				break;
 
 			case MR_CONNECT:
-					gn_atem_string_out("CONNECT\r\n");
-					break;
+				gn_atem_string_out("CONNECT\r\n");
+				break;
 
 			case MR_NOCARRIER:
-					gn_atem_string_out("NO CARRIER\r\n");
-					break;
+				gn_atem_string_out("NO CARRIER\r\n");
+				break;
+
 		        case MR_RING:
+				if (!strcmp(data.crc, "1"))
+					gn_atem_string_out(
+							"+CRING: VOICE\r\n");
+				else
 					gn_atem_string_out("RING\r\n");
-					break;
+				if (!strcmp(data.clip, "1,1"))
+					gn_atem_string_out("+CLIP: "
+							"\"313373\",0\r\n");
+				break;
+
 			default:
-					gn_atem_string_out(_("\r\nUnknown Result Code!\r\n"));
-					break;
+				gn_atem_string_out(_("\r\nUnknown Result Code!\r\n"));
+				break;
 		}
 	}
 
@@ -1530,21 +1930,20 @@ void	gn_atem_string_out(char *buffer)
 	char	out_char;
 
 	while (*buffer) {
-
 		/* Translate CR/LF/BS as appropriate */
 		switch (*buffer) {
-			case '\r':
-				out_char = ModemRegisters[REG_CR];
-				break;
-			case '\n':
-				out_char = ModemRegisters[REG_LF];
-				break;
-			case '\b':
-				out_char = ModemRegisters[REG_BS];
-				break;
-			default:
-				out_char = *buffer;
-				break;
+		case '\r':
+			out_char = ModemRegisters[REG_CR];
+			break;
+		case '\n':
+			out_char = ModemRegisters[REG_LF];
+			break;
+		case '\b':
+			out_char = ModemRegisters[REG_BS];
+			break;
+		default:
+			out_char = *buffer;
+			break;
 		}
 
 		sm->info->write(sm->info->opaque, "%c", out_char);

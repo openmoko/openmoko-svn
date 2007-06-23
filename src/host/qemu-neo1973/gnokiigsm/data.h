@@ -108,23 +108,33 @@ typedef struct {
 	gn_file_list *file_list;
 	gn_file *file;
 
+	void (*network_change_notification)(int connected,
+			struct gn_statemachine *state);
+	int connected;
+	void (*signal_quality_notification)(struct gn_statemachine *state);
 	gn_choice cscs;
 	gn_choice cmux;
+	gn_choice cmee;
 	gn_choice ws46;
 	gn_choice csta;
 	gn_choice cbst;
 	gn_choice crlp;
 	gn_choice cr;
 	gn_choice crc;
+	gn_choice clip;
 	gn_choice cmod;
 	gn_choice csns;
 	gn_choice creg;
 	gn_choice cpas;
 	gn_choice cops;
+	gn_choice colp;
 	gn_choice cfun;
 	gn_choice cbc;
+	gn_choice cpi;
 	gn_choice band;
 	gn_choice cssn;
+	gn_choice ctzr;
+	int csq;
 } gn_data;
 
 /* 
@@ -271,6 +281,8 @@ typedef enum {
 	GN_OP_GetFileDetailsById,
 	GN_OP_GetFileById,
 	GN_OP_DeleteFileById,
+	GN_OP_NetworkRegister,
+	GN_OP_NetworkUnregister,
 	GN_OP_Max,	/* don't append anything after this entry */
 } gn_operation;
 
