@@ -28,13 +28,18 @@
 #define GET_REPORT   0xa101
 #define GET_IDLE     0xa102
 #define GET_PROTOCOL 0xa103
-#define SET_REPORT   0x2101
+#define SET_REPORT   0x2109
 #define SET_IDLE     0x210a
 #define SET_PROTOCOL 0x210b
 
-#define USB_MOUSE    1
-#define USB_TABLET   2
-#define USB_KEYBOARD 3
+/* HID descriptor types */
+#define USB_DT_HID    0x21
+#define USB_DT_REPORT 0x22
+#define USB_DT_PHY    0x23
+
+#define USB_MOUSE     1
+#define USB_TABLET    2
+#define USB_KEYBOARD  3
 
 typedef struct USBMouseState {
     int dx, dy, dz, buttons_state;
@@ -117,7 +122,7 @@ static const uint8_t qemu_mouse_config_descriptor[] = {
 	0x03,       /*  u8  if_bInterfaceClass; */
 	0x01,       /*  u8  if_bInterfaceSubClass; */
 	0x02,       /*  u8  if_bInterfaceProtocol; [usb1.1 or single tt] */
-	0x05,       /*  u8  if_iInterface; */
+	0x07,       /*  u8  if_iInterface; */
      
         /* HID descriptor */
         0x09,        /*  u8  bLength; */
@@ -144,7 +149,7 @@ static const uint8_t qemu_tablet_config_descriptor[] = {
 	0x22, 0x00, /*  u16 wTotalLength; */
 	0x01,       /*  u8  bNumInterfaces; (1) */
 	0x01,       /*  u8  bConfigurationValue; */
-	0x04,       /*  u8  iConfiguration; */
+	0x05,       /*  u8  iConfiguration; */
 	0xa0,       /*  u8  bmAttributes; 
 				 Bit 7: must be set,
 				     6: Self-powered,
@@ -172,7 +177,7 @@ static const uint8_t qemu_tablet_config_descriptor[] = {
 	0x03,       /*  u8  if_bInterfaceClass; */
 	0x01,       /*  u8  if_bInterfaceSubClass; */
 	0x02,       /*  u8  if_bInterfaceProtocol; [usb1.1 or single tt] */
-	0x05,       /*  u8  if_iInterface; */
+	0x07,       /*  u8  if_iInterface; */
 
         /* HID descriptor */
         0x09,        /*  u8  bLength; */
@@ -193,58 +198,58 @@ static const uint8_t qemu_tablet_config_descriptor[] = {
 };
 
 static const uint8_t qemu_keyboard_config_descriptor[] = {
-        /* one configuration */
-        0x09,       /*  u8  bLength; */
-        0x02,       /*  u8  bDescriptorType; Configuration */
-        0x22, 0x00, /*  u16 wTotalLength; */
-        0x01,       /*  u8  bNumInterfaces; (1) */
-        0x01,       /*  u8  bConfigurationValue; */
-        0x04,       /*  u8  iConfiguration; */
-        0xa0,       /*  u8  bmAttributes; 
-				 Bit 7: must be set,
-				     6: Self-powered,
-				     5: Remote wakeup,
-				     4..0: resvd */
-        0x32,       /*  u8  MaxPower; */
+    /* one configuration */
+    0x09,		/*  u8  bLength; */
+    USB_DT_CONFIG,	/*  u8  bDescriptorType; Configuration */
+    0x22, 0x00,		/*  u16 wTotalLength; */
+    0x01,		/*  u8  bNumInterfaces; (1) */
+    0x01,		/*  u8  bConfigurationValue; */
+    0x06,		/*  u8  iConfiguration; */
+    0xa0,		/*  u8  bmAttributes; 
+				Bit 7: must be set,
+				    6: Self-powered,
+				    5: Remote wakeup,
+				    4..0: resvd */
+    0x32,		/*  u8  MaxPower; */
 
-        /* USB 1.1:
-         * USB 2.0, single TT organization (mandatory):
-         *	one interface, protocol 0
-         *
-         * USB 2.0, multiple TT organization (optional):
-         *	two interfaces, protocols 1 (like single TT)
-         *	and 2 (multiple TT mode) ... config is
-         *	sometimes settable
-         *	NOT IMPLEMENTED
-         */
+    /* USB 1.1:
+     * USB 2.0, single TT organization (mandatory):
+     *	one interface, protocol 0
+     *
+     * USB 2.0, multiple TT organization (optional):
+     *	two interfaces, protocols 1 (like single TT)
+     *	and 2 (multiple TT mode) ... config is
+     *	sometimes settable
+     *	NOT IMPLEMENTED
+     */
 
-        /* one interface */
-        0x09,       /*  u8  if_bLength; */
-        0x04,       /*  u8  if_bDescriptorType; Interface */
-        0x00,       /*  u8  if_bInterfaceNumber; */
-        0x00,       /*  u8  if_bAlternateSetting; */
-        0x01,       /*  u8  if_bNumEndpoints; */
-        0x03,       /*  u8  if_bInterfaceClass; HID */
-        0x01,       /*  u8  if_bInterfaceSubClass; Boot */
-        0x01,       /*  u8  if_bInterfaceProtocol; Keyboard */
-        0x05,       /*  u8  if_iInterface; */
+    /* one interface */
+    0x09,		/*  u8  if_bLength; */
+    USB_DT_INTERFACE,	/*  u8  if_bDescriptorType; Interface */
+    0x00,		/*  u8  if_bInterfaceNumber; */
+    0x00,		/*  u8  if_bAlternateSetting; */
+    0x01,		/*  u8  if_bNumEndpoints; */
+    0x03,		/*  u8  if_bInterfaceClass; HID */
+    0x01,		/*  u8  if_bInterfaceSubClass; Boot */
+    0x01,		/*  u8  if_bInterfaceProtocol; Keyboard */
+    0x07,		/*  u8  if_iInterface; */
 
-        /* HID descriptor */
-        0x09,        /*  u8  bLength; */
-        0x21,        /*  u8  bDescriptorType; */
-        0x11, 0x01,  /*  u16 HID_class */
-        0x00,        /*  u8  country_code */
-        0x01,        /*  u8  num_descriptors */
-        0x22,        /*  u8  type; Report */
-        0x3f, 0x00,  /*  u16 len */
+    /* HID descriptor */
+    0x09,		/*  u8  bLength; */
+    USB_DT_HID,		/*  u8  bDescriptorType; */
+    0x11, 0x01,		/*  u16 HID_class */
+    0x00,		/*  u8  country_code */
+    0x01,		/*  u8  num_descriptors */
+    USB_DT_REPORT,	/*  u8  type; Report */
+    0x3f, 0x00,		/*  u16 len */
 
-        /* one endpoint (status change endpoint) */
-        0x07,       /*  u8  ep_bLength; */
-        0x05,       /*  u8  ep_bDescriptorType; Endpoint */
-        0x81,       /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
-        0x03,       /*  u8  ep_bmAttributes; Interrupt */
-        0x08, 0x00, /*  u16 ep_wMaxPacketSize; */
-        0x0a,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
+    /* one endpoint (status change endpoint) */
+    0x07,		/*  u8  ep_bLength; */
+    USB_DT_ENDPOINT,	/*  u8  ep_bDescriptorType; Endpoint */
+    USB_DIR_IN | 0x01,	/*  u8  ep_bEndpointAddress; IN Endpoint 1 */
+    0x03,		/*  u8  ep_bmAttributes; Interrupt */
+    0x08, 0x00,		/*  u16 ep_wMaxPacketSize; */
+    0x0a,		/*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
 };
 
 static const uint8_t qemu_mouse_hid_report_descriptor[] = {
@@ -423,24 +428,21 @@ static void usb_keyboard_event(void *opaque, int keycode)
     case 0xe8 ... 0xef:
         s->modifiers |= 1 << (hid_code & 0x0f);
         return;
+    }
 
-    default:
-        if (keycode & (1 << 7)) {
-            s->keys --;
-            for (i = 0; i <= s->keys; i ++)
-                if (s->key[i] == hid_code) {
-                    s->key[i] = s->key[s->keys];
-                    s->key[s->keys] = 0x00;
-                    return;
-                }
-        } else {
-            for (i = 0; i < s->keys; i ++)
-                if (s->key[i] == hid_code)
-                    return;
-            if (s->keys < sizeof(s->key))
-                s->key[s->keys] = hid_code;
-            s->keys ++;
-        }
+    if (keycode & (1 << 7)) {
+        for (i = s->keys - 1; i >= 0; i --)
+            if (s->key[i] == hid_code) {
+                s->key[i] = s->key[-- s->keys];
+                s->key[s->keys] = 0x00;
+                return;
+            }
+    } else {
+        for (i = s->keys - 1; i >= 0; i --)
+            if (s->key[i] == hid_code)
+                return;
+        if (s->keys < sizeof(s->key))
+            s->key[s->keys ++] = hid_code;
     }
 }
 
@@ -570,7 +572,7 @@ static void usb_keyboard_handle_reset(USBDevice *dev)
 {
     USBHIDState *s = (USBHIDState *)dev;
 
-    qemu_add_kbd_event_handler(usb_keyboard_event, &s->kbd);	/* XXX: once */
+    qemu_add_kbd_event_handler(usb_keyboard_event, &s->kbd);
     s->protocol = 1;
 }
 
@@ -627,7 +629,7 @@ static int usb_hid_handle_control(USBDevice *dev, int request, int value,
                 memcpy(data, qemu_keyboard_config_descriptor, 
                        sizeof(qemu_keyboard_config_descriptor));
                 ret = sizeof(qemu_keyboard_config_descriptor);
-            }		
+            }
             break;
         case USB_DT_STRING:
             switch(value & 0xff) {
@@ -655,6 +657,12 @@ static int usb_hid_handle_control(USBDevice *dev, int request, int value,
                 ret = set_usb_string(data, "HID Mouse");
                 break;
             case 5:
+                ret = set_usb_string(data, "HID Tablet");
+                break;
+            case 6:
+                ret = set_usb_string(data, "HID Keyboard");
+                break;
+            case 7:
                 ret = set_usb_string(data, "Endpoint1 Interrupt Pipe");
                 break;
             default:
@@ -774,7 +782,7 @@ static void usb_hid_handle_destroy(USBDevice *dev)
 {
     USBHIDState *s = (USBHIDState *)dev;
 
-    if (!s->kind == USB_KEYBOARD)
+    if (s->kind != USB_KEYBOARD)
         qemu_remove_mouse_event_handler(s->ptr.eh_entry);
     /* TODO: else */
     qemu_free(s);
