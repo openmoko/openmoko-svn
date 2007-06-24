@@ -1,3 +1,10 @@
+2007-06-24  Stefan Schmidt <stefan@openmoko.org>
+
+        Copy most of the files from openmoko-mainmenu to the panel applet.
+		First step to obsolete openmoko-mainmenu. The finger menu functionality
+		will be merged into the applet and started with tapn-and-hold. (See
+		#121)
+
 2007-06-22  Stefan Schmidt <stefan@openmoko.org>
 
         * configure.ac:

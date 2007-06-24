@@ -19,10 +19,13 @@ PKG_CHECK_MODULES(LIBSN, libstartup-notification-1.0, ,
                  AC_MSG_ERROR([*** Required Startup Notification library not installed ***]))
 PKG_CHECK_MODULES(LIBPULSE, libpulse,,
                  AC_MSG_ERROR([*** Required pulseaudio client library not installed ***]))
-
-
-LIBS="$LIBS $OPENMOKO_LIBS $LIBMB_LIBS $LIBSN_LIBS $LIBPULSE_LIBS"
-CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBMB_CFLAGS $LIBSN_CFLAGS $LIBPULSE_CFLAGS"
+PKG_CHECK_MODULES(DBUSGLIB, dbus-glib-1,,
+                 AC_MSG_ERROR([*** Required dbus-glib-1 not installed ***]))
+PKG_CHECK_MODULES(DBUS, dbus-1,,
+                 AC_MSG_ERROR([*** Required dbus-1 not installed ***]))
+ 
+LIBS="$LIBS $OPENMOKO_LIBS $LIBMB_LIBS $LIBSN_LIBS $LIBPULSE_LIBS $DBUSGLIB_LIBS $DBUS_LIBS"
+CFLAGS="$CFLAGS $OPENMOKO_CFLAGS $LIBMB_CFLAGS $LIBSN_CFLAGS $LIBPULSE_CFLAGS $DBUSGLIB_CFLAGS $DBUS_CFALGS"
 
 # output stuff
 AC_OUTPUT([
