@@ -199,8 +199,8 @@ gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, g
     {
         struct input_event event;
         int size = read( aux_fd.fd, &event, sizeof( struct input_event ) );
-        g_debug( "read %d bytes from aux_fd %d", size, aux_fd.fd );
-        g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+        //g_debug( "read %d bytes from aux_fd %d", size, aux_fd.fd );
+        //g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
         if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
         {
             if ( event.value == 1 ) /* pressed */
@@ -224,8 +224,8 @@ gboolean panel_mainmenu_input_dispatch( GSource* source, GSourceFunc callback, g
     {
         struct input_event event;
         int size = read( power_fd.fd, &event, sizeof( struct input_event ) );
-        g_debug( "read %d bytes from power_fd %d", size, power_fd.fd );
-        g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+        //g_debug( "read %d bytes from power_fd %d", size, power_fd.fd );
+        //g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
         if ( event.type == 1 && event.code == POWER_BUTTON_KEYCODE )
         {
             if ( event.value == 1 ) /* pressed */

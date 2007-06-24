@@ -1,5 +1,12 @@
 2007-06-24  Stefan Schmidt <stefan@openmoko.org>
 
+        * src/buttonactions.c:
+        (panel_mainmenu_input_dispatch):
+
+		Comment out some noisy debug statements.
+
+2007-06-24  Stefan Schmidt <stefan@openmoko.org>
+
         Copy most of the files from openmoko-mainmenu to the panel applet.
 		First step to obsolete openmoko-mainmenu. The finger menu functionality
 		will be merged into the applet and started with tapn-and-hold. (See
