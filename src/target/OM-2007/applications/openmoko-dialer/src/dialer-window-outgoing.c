@@ -24,6 +24,7 @@
 
 #include "contacts.h"
 #include "dialer-main.h"
+#include "moko-dialer.h"
 #include "moko-dialer-status.h"
 #include "dialer-window-outgoing.h"
 #include "dialer-window-history.h"
@@ -146,10 +147,14 @@ call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data
 void
 window_outgoing_dial (MokoDialerData *data, gchar *number)
 {
+  MokoDialer *dialer = moko_dialer_get_default ();
   MokoJournalEntry *entry = NULL;
   MokoJournalVoiceInfo *info = NULL;
   
   gulong progress_handler;
+
+  /* Let dialer know that we have started dialing */
+  moko_dialer_outgoing_call (dialer, number);
   
   /* create the journal entry for this call and add it to the journal */
   entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
@@ -173,6 +178,9 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   
   if (gtk_dialog_run (GTK_DIALOG (data->window_outgoing)) == GTK_RESPONSE_OK)
   {
+    /* Tell dialer we a talking */
+    moko_dialer_talking (dialer);
+    
     g_print ("Outgoing: Preparing talking window\n");
     /* call has connected, so open the talking window */
     //gtk_widget_show (data->window_talking);
@@ -185,6 +193,7 @@ window_outgoing_dial (MokoDialerData *data, gchar *number)
   {
     /* call canceled */
     moko_gsmd_connection_voice_hangup (data->connection);
+    moko_dialer_hung_up (dialer);
   }
 
   gtk_widget_hide (data->window_outgoing);

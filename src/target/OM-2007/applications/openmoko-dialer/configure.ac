@@ -11,7 +11,7 @@ AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 # base deps
-PKG_CHECK_MODULES(DIALER, openmoko-libs >= 0.0.1 alsa libebook-1.2)
+PKG_CHECK_MODULES(DIALER, openmoko-libs >= 0.0.1 alsa libebook-1.2 dbus-glib-1)
 
 old_cflags=$CFLAGS
 CFLAGS=$DIALER_CFLAGS
@@ -26,6 +26,13 @@ fi
 LIBS="$DIALER_LIBS  -lm -ldl"
 
 CFLAGS="$DIALER_CFLAGS"
+
+dnl ==============================================
+dnl DBUS
+dnl ==============================================
+
+DBUS_GLIB_BIN="`$PKG_CONFIG --variable=exec_prefix dbus-glib-1`/bin"
+AC_SUBST(DBUS_GLIB_BIN)
 
 # output stuff
 AC_OUTPUT([

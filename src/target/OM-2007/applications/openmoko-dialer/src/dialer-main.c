@@ -15,30 +15,26 @@
  *
  *  Current Version: $Rev$ ($Date) [$Author: Tony Guan $]
  */
-#include <libmokoui/moko-ui.h>
-#include <libmokogsmd/moko-gsmd-connection.h>
-
 #include <gtk/gtk.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
 
-#include "contacts.h"
 #include "error.h"
 #include "errno.h"
+#include "moko-dialer.h"
 #include "dialer-main.h"
-#include "dialer-window-dialer.h"
-#include "dialer-window-talking.h"
-#include "dialer-window-outgoing.h"
-#include "dialer-window-incoming.h"
-#include "dialer-window-pin.h"
 #include "dialer-window-history.h"
 
-#include "dialer-callbacks-connection.h"
+#define DIALER_NAMESPACE "org.openmoko.Dialer"
+#define DIALER_OBJECT "/org/openmoko/Dialer"
 
-MokoDialerData *p_dialer_data = 0;
+static MokoDialerData *p_dialer_data = 0;
+
 MokoDialerData *
 moko_get_app_data ()
 {
@@ -46,109 +42,45 @@ moko_get_app_data ()
 }
 
 static void
-handle_sigusr1 (int value)
+_show_dialer (DBusGConnection *conn)
 {
-  MokoDialerData *p_data = moko_get_app_data ();
-  if (!p_data)
-    return;
-  GtkWidget *mainwindow = p_data->window_present;
-  if (mainwindow == 0)
-    mainwindow = p_data->window_dialer;
+  DBusGProxy *proxy = NULL;
+  GError *error = NULL;
 
-  if (mainwindow == NULL)
-  {
+  proxy = dbus_g_proxy_new_for_name (conn,
+                                      DIALER_NAMESPACE,
+                                      DIALER_OBJECT,
+                                      DIALER_NAMESPACE);
+
+  if (!proxy)
     return;
-  }
-  gtk_widget_show_all (mainwindow);
-  gtk_window_present (GTK_WINDOW (mainwindow));
-  signal (SIGUSR1, handle_sigusr1);
+  
+  dbus_g_proxy_call (proxy, "ShowDialer", &error,
+                     G_TYPE_INVALID, G_TYPE_INVALID);
+  if (error)
+    g_warning (error->message);
+
 }
 
 static void
-handle_sigusr2 (int value)
+_show_missed (DBusGConnection *conn)
 {
-  /* Show missed calls */
-  MokoDialerData *p_data = moko_get_app_data ();
-  if (!p_data)
+  DBusGProxy *proxy = NULL;
+  GError *error = NULL;
+
+  proxy = dbus_g_proxy_new_for_name (conn,
+                                      DIALER_NAMESPACE,
+                                      DIALER_OBJECT,
+                                      DIALER_NAMESPACE);
+
+  if (!proxy)
     return;
-  GtkWidget *window = p_data->window_history;
+  
+  dbus_g_proxy_call (proxy, "ShowMissedCalls", &error,
+                     G_TYPE_INVALID, G_TYPE_INVALID);
+  if (error)
+    g_warning (error->message);
 
-  if (!window)
-    return;
-
-  /*
-   * Filter history on missed calls
-   */
-  window_history_filter (p_data, CALLS_MISSED);
-
-  gtk_widget_show_all (window);
-  gtk_window_present (GTK_WINDOW (window));
-  signal (SIGUSR2, handle_sigusr2);
-}
-
-
-
-static pid_t
-testlock (char *fname)
-{
-  int fd;
-  struct flock fl;
-
-  fd = open (fname, O_WRONLY, S_IWUSR);
-  if (fd < 0)
-  {
-    if (errno == ENOENT)
-    {
-      return 0;
-    }
-    else
-    {
-      perror ("Test lock open file");
-      return -1;
-    }
-  }
-
-  fl.l_type = F_WRLCK;
-  fl.l_whence = SEEK_SET;
-  fl.l_start = 0;
-  fl.l_len = 0;
-
-  if (fcntl (fd, F_GETLK, &fl) < 0)
-  {
-    close (fd);
-    return -1;
-  }
-  close (fd);
-
-  if (fl.l_type == F_UNLCK)
-    return 0;
-
-  return fl.l_pid;
-}
-
-static void
-setlock (char *fname)
-{
-  int fd;
-  struct flock fl;
-
-  fd = open (fname, O_WRONLY | O_CREAT, S_IWUSR);
-  if (fd < 0)
-  {
-    perror ("Set lock open file");
-    return;
-  }
-
-  fl.l_type = F_WRLCK;
-  fl.l_whence = SEEK_SET;
-  fl.l_start = 0;
-  fl.l_len = 0;
-
-  if (fcntl (fd, F_SETLK, &fl) < 0)
-  {
-    perror ("Lock file");
-    close (fd);
-  }
 }
 
 static gboolean show_dialer;
@@ -162,12 +94,14 @@ static GOptionEntry entries[] = {
   {NULL}
 };
 
-
 int
 main (int argc, char **argv)
 {
-  pid_t lockapp;
-
+  MokoDialer *dialer;
+  DBusGConnection *connection;
+  DBusGProxy *proxy;
+  GError *error = NULL;
+  guint32 ret;
 
   if (argc != 1)
   {
@@ -182,80 +116,72 @@ main (int argc, char **argv)
     g_option_context_free (context);
   }
 
-  //FIXME: the following lines to enable unique instance will be changed.
-  lockapp = testlock ("/tmp/dialer.lock");
-
-  if (lockapp > 0)
-  {
-    if (show_missed)
-      kill (lockapp, SIGUSR2);
-    else
-      kill (lockapp, SIGUSR1);
-
-    /* make sure startup notifaction is terminated */
-    gdk_init(&argc, &argv);
-    gdk_notify_startup_complete ();
-
-    return 0;
-  }
-  setlock ("/tmp/dialer.lock");
-
   /* Initialize Threading & GTK+ */
   gtk_init (&argc, &argv);
   moko_stock_register ();
 
-  p_dialer_data = g_new0 (MokoDialerData, 1);
+  /* Try and setup our DBus service */
+  connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+  if (connection == NULL)
+  {
+    g_warning ("Failed to make a connection to the session bus: %s", 
+               error->message);
+    g_error_free (error);
+  }
+  proxy = dbus_g_proxy_new_for_name (connection, 
+                                     DBUS_SERVICE_DBUS,
+                                     DBUS_PATH_DBUS, 
+                                     DBUS_INTERFACE_DBUS);
+  if (!org_freedesktop_DBus_request_name (proxy,
+                                          DIALER_NAMESPACE,
+                                          0, &ret, &error))
+  {
+    /* Error requesting the name */
+    g_warning ("There was an error requesting the name: %s\n",error->message);
+    g_error_free (error);
+    
+    gdk_init(&argc, &argv);
+    gdk_notify_startup_complete ();
 
-  //init application data
-  contact_init_contact_data (&(p_dialer_data->g_contactlist));
+    return 1;
+  }
+  if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
+  {
+    /* Someone else hase registere dthe object */
+    g_warning ("Another instance is running\n");
+
+    if (show_missed)
+      _show_missed (connection);
+    else
+      _show_dialer (connection);
+    
+    dbus_g_connection_unref (connection);
+    
+
+    gdk_init(&argc, &argv);
+    gdk_notify_startup_complete ();
+    return 1;
+  }
+  
+  /* Create the MokoDialer object */
+  dialer = moko_dialer_get_default ();
+
+  p_dialer_data = moko_dialer_get_data (dialer);
+
+  /* Add the object onto the bus */
+  dbus_g_connection_register_g_object (connection, 
+                                       DIALER_OBJECT,
+                                       G_OBJECT (dialer));
 
   /* application object */
   g_set_application_name ("OpenMoko Dialer");
-
-  /* Set up gsmd connection object */
-  MokoGsmdConnection* conn = p_dialer_data->connection = moko_gsmd_connection_new ();
-
-  /* power on GSM */
-  moko_gsmd_connection_set_antenna_power (conn, TRUE);
-  /* handle network registration some seconds after powering GSM */
-  g_timeout_add( 5 * 1000, (GSourceFunc) initial_timeout_cb, p_dialer_data );
-
-  g_signal_connect (G_OBJECT (conn), "network-registration", (GCallback) network_registration_cb, p_dialer_data);
-  g_signal_connect (G_OBJECT (conn), "incoming-call", (GCallback) incoming_call_cb, p_dialer_data);
-  g_signal_connect (G_OBJECT (conn), "pin-requested", (GCallback) incoming_pin_request_cb, p_dialer_data);
-
-  /* Set up journal handling */
-  p_dialer_data->journal = moko_journal_open_default ();
-  moko_journal_load_from_storage (p_dialer_data->journal);
-
-  /* set up signal handling */
-  signal (SIGUSR1, handle_sigusr1);
-  signal (SIGUSR2, handle_sigusr2);
-
-  //init the dialer windows
-  window_dialer_init (p_dialer_data);
-  window_incoming_init (p_dialer_data);
-  window_pin_init (p_dialer_data);
-  window_outgoing_init (p_dialer_data);
-  window_history_init (p_dialer_data);
-
-  if (show_dialer)
-  {
-    handle_sigusr1 (SIGUSR1);
-  }
-
-  if (show_missed)
-  {
-    handle_sigusr2 (SIGUSR2);
-  }
  
+  if (show_dialer)
+    moko_dialer_show_dialer (dialer, NULL);
+  else if (show_missed)
+    moko_dialer_show_missed_calls (dialer, NULL);
+
   gtk_main ();
   
-  //release everything
-  contact_release_contact_list (&(p_dialer_data->g_contactlist));
-
-  /* closes the journal and frees allocated memory */
-  moko_journal_close (p_dialer_data->journal);
-
   return 0;
 }

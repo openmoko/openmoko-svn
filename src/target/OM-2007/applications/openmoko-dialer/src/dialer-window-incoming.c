@@ -22,6 +22,7 @@
 #include <string.h>
 #include "contacts.h"
 #include "dialer-main.h"
+#include "moko-dialer.h"
 #include "moko-dialer-status.h"
 #include "dialer-window-incoming.h"
 #include "dialer-window-talking.h"
@@ -67,6 +68,7 @@ call_progress_cb (MokoGsmdConnection *connection, int type, MokoDialerData *data
 void
 window_incoming_show (MokoDialerData *data)
 {
+  MokoDialer *dialer = moko_dialer_get_default ();
   MokoJournalEntry *entry = NULL;
   MokoJournalVoiceInfo *info = NULL;
   gulong progress_handler, clip_handler;
@@ -101,9 +103,13 @@ window_incoming_show (MokoDialerData *data)
       window_talking_init (data);
     gtk_widget_show_all (data->window_talking);
     moko_journal_voice_info_set_was_missed (info, FALSE);
+    /* Tell dialer we're talking */
+    moko_dialer_talking (dialer);
   }
   else
   {
+    /* Tell dialer we rejected the call */
+    moko_dialer_rejected (dialer);
     moko_gsmd_connection_voice_hangup (data->connection);
     /* mark the call as misssed
      * FIXME: this is not strictly true if the call was rejected

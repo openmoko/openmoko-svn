@@ -32,6 +32,7 @@
 
 #include "contacts.h"
 #include "common.h"
+#include "moko-dialer.h"
 #include "dialer-main.h"
 #include "moko-dialer-status.h"
 #include "dialer-window-talking.h"
@@ -107,6 +108,14 @@ cb_tool_button_dtmf_talk_clicked (GtkButton * button,
 
 }
 
+static void
+cb_tool_button_hang_up_clicked (GtkButton *button, MokoDialerData *data)
+{
+  MokoDialer *dialer = moko_dialer_get_default ();
+
+  moko_dialer_hung_up (dialer);
+}
+  
 static void
 on_dtmf_panel_user_input (GtkWidget * widget, gchar parac, gpointer user_data)
 {
@@ -236,7 +245,9 @@ static void
 on_window_talking_show (GtkWidget * widget, MokoDialerData * appdata)
 {
   DBG_ENTER ();
+  MokoDialer *dialer = moko_dialer_get_default ();
 
+  moko_dialer_talking (dialer);
   appdata->dtmf_in_talking_window = TRUE;
   //hide the talking button in talking mode.
   g_print ("Talking: Show\n");
@@ -425,6 +436,9 @@ window_talking_init (MokoDialerData * p_dialer_data)
     g_signal_connect_swapped (G_OBJECT (button), "clicked",
                       G_CALLBACK (gtk_widget_hide),
                       p_dialer_data->window_talking);
+    g_signal_connect (G_OBJECT (button), "clicked",
+                      G_CALLBACK (cb_tool_button_hang_up_clicked), 
+                      p_dialer_data);
     gtk_widget_show (GTK_WIDGET (tools));
     gtk_widget_show (GTK_WIDGET (wheel));
 

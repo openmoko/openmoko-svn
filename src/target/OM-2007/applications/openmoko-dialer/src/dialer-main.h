@@ -22,14 +22,14 @@
 #include "moko-dialer-includes.h"
 #include <libmokogsmd/moko-gsmd-connection.h>
 #include <libmokojournal/moko-journal.h>
+#include <libmokoui/moko-ui.h>
 
 typedef struct _dialer_data
 {
   //the global data area begins here
-
   MokoGsmdConnection *connection;
   MokoJournal *journal;
-
+  
   GtkListStore *history;
 
   char str_sim_pin[MOKO_DIALER_MAX_PIN_LEN + 1];
