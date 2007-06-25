@@ -135,7 +135,7 @@ moko_dialer_get_status (MokoDialer *dialer, gint *OUT_status, GError *error)
 }
 
 static gboolean
-moko_dialer_dial (MokoDialer *dialer, gchar *number, GError *error)
+moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
 {
   MokoDialerPrivate *priv;
 
@@ -150,7 +150,7 @@ moko_dialer_dial (MokoDialer *dialer, gchar *number, GError *error)
 }
 
 static gboolean
-moko_dialer_hang_up (MokoDialer *dialer, gchar *message, GError *error)
+moko_dialer_hang_up (MokoDialer *dialer, const gchar *message, GError *error)
 {
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
   
