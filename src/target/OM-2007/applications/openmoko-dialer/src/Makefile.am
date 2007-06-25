@@ -51,7 +51,7 @@ openmoko_dialer_LDADD = @LIBS@
 moko-dialer-glue.h: moko-dialer-dbus.xml
 	$(LIBTOOL) --mode=execute $(DBUS_GLIB_BIN)/dbus-binding-tool --prefix=moko_dialer --mode=glib-server --output=$@ $<
 	
-BUILT_SOURCES =                         \
+#BUILT_SOURCES =                         \
         moko-dialer-glue.h
 
 EXTRA_DIST =                            \
