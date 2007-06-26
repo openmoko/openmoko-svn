@@ -6,3 +6,4 @@ DEPENDS += "libgsmd eds-dbus"
 
 inherit openmoko
 
+FILES_${PN} += "${datadir}/dbus-1/services"
