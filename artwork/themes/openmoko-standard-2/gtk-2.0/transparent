@@ -1,0 +1,21 @@
+style "transparent" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            # state = ALL
+            file            = "transparency100.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = FLAT_BOX
+            # state = ALL
+            file            = "transparency100.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+
+    }
+}
+widget "*.transparent" style "transparent"
+

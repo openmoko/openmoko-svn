@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko-Standard 2
+Type=X-GNOME-Metatheme
+Comment=Standard Look and Feel for the OpenMoko Platform
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=OpenMoko-Standard-2
+#MetacityTheme=OpenMoko-Standard
+#IconTheme=OpenMoko-Standard
+

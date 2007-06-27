@@ -1,0 +1,63 @@
+style "gtkcombobox"
+{
+    engine "pixmap"
+    {
+      image
+      {
+        function      = BOX
+        state         = PRELIGHT
+        file          = "combobox-normal.png"
+        border        = {0, 0, 0, 0}
+        stretch       = TRUE
+      }
+    }
+    engine "pixmap"
+    {
+      image
+      {
+        function      = BOX
+        state         = NORMAL
+        file          = "combobox-normal.png"
+        border        = {0, 0, 0, 0}
+        stretch       = TRUE
+      }
+    }
+    engine "pixmap"
+    {
+      image
+      {
+        function      = BOX
+        state         = ACTIVE
+        file          = "combobox-normal.png"
+        border        = {0, 0, 0, 0}
+        stretch       = TRUE
+      }
+    }
+    engine "pixmap"
+    {
+      image
+      {
+        function      = BOX
+        state         = INSENSITIVE
+        file          = "combobox-normal.png"
+        border        = {0, 0, 0, 0}
+        stretch       = TRUE
+      }
+    }
+ 
+    text[NORMAL]      = "#ffffff"
+    text[PRELIGHT]    = "#ffffff"
+    text[ACTIVE]      = "#ffffff"
+    text[SELECTED]    = "#ffffff"
+    text[INSENSITIVE] = "#666666"
+}
+widget "*Combo*" style "gtkcombobox"
+
+style "gtkcombobox-cellrenderer"
+{
+    font_name = "Vera Sans 16"
+    text[NORMAL] = "#000000"
+    fg[NORMAL] = "#e5e5e5"
+}
+widget_class "*Combo*.GtkCellRenderer*" style "gtkcombobox-cellrenderer"
+widget "GtkCellRendererText" style "gtkcombobox-cellrenderer"

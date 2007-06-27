@@ -1,0 +1,25 @@
+style "toolbutton"
+{
+  xthickness = 1
+  ythickness = 1
+  engine "pixmap" 
+  {
+    image
+    {
+      function    = BOX
+      state       = ACTIVE
+      file        = "toolbutton-active.png"
+      border      = {0, 0, 0, 0}
+      stretch     = TRUE
+    }
+    image
+    {
+      function    = BOX
+      state       = PRELIGHT
+      file        = "toolbutton-active.png"
+      border      = {0, 0, 0, 0}
+      stretch     = TRUE
+    }  }
+}
+widget_class "*Tool*GtkToggleButton" style "toolbutton"
+widget_class "*Tool*GtkButton" style "toolbutton"

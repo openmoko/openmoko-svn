@@ -1,0 +1,136 @@
+gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
+
+style "moko-window-default" {
+
+    # We do not want a general background brush because it is loaded for every
+    # GtkRcStyle created
+    # bg_pixmap[NORMAL] = "gtkwidget.png"
+
+    bg[NORMAL]        = "#e5e5e5" #
+    bg[PRELIGHT]      = "#ff0000" # light beige
+    bg[ACTIVE]        = "#ff0000" # dark beige
+    bg[SELECTED]      = "#ff0000" # olive
+    bg[INSENSITIVE]   = "#ff0000" # beige
+
+    base[NORMAL]      = "#e5e5e5" # light cherry
+    base[PRELIGHT]    = "#00ff00" #
+    base[ACTIVE]      = "#00ff00" #
+    base[SELECTED]    = "#00ff00" #
+    base[INSENSITIVE] = "#00ff00" #
+
+    fg[NORMAL]      = "#d3d3d3" # light grey
+    fg[PRELIGHT]    = "#ffffff" # white
+    fg[ACTIVE]      = "#e5e5e5" # light grey
+    fg[SELECTED]    = "#ffffff" # white
+    fg[INSENSITIVE] = "#223344" # dark grey
+
+    text[NORMAL]      = "#666666" # mid grey
+    text[PRELIGHT]    = "#ffffff" # white
+    text[ACTIVE]      = "#e5e5e5" # light grey
+    text[SELECTED]    = "#ffffff" # white
+    text[INSENSITIVE] = "#223344" # dark grey
+
+    GtkFrame::shadow_type = GTK_SHADOW_NONE
+    GtkToolbar::shadow_type = GTK_SHADOW_NONE
+    GtkNotebook::shadow_type = GTK_SHADOW_NONE
+#
+# How to draw shadows in general
+#
+    engine "pixmap" {
+        image {
+            function        = SHADOW
+            shadow          = IN
+            file            = "transparency100.png"
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            shadow          = OUT
+            file            = "transparency100.png" # FIXME add proper shadow
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            shadow          = ETCHED_IN
+            file            = "transparency100.png" # FIXME add proper shadow
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            shadow          = ETCHED_OUT
+            file            = "transparency100.png" # FIXME add proper shadow
+            border          = { 6, 6, 6, 6 }
+            stretch         = TRUE
+        }
+        image {
+            function        = SHADOW
+            shadow          = NONE
+            file            = "transparency100.png"
+            border          = {0, 0, 0, 0}
+            stretch         = TRUE
+        }
+#
+# How to draw lines in general
+#
+        image {
+            function        = HLINE
+            file            = "hline.png"
+            stretch         = TRUE
+        }
+        image {
+            function        = VLINE
+            file            = "hline.png" # FIXME add proper vline
+            stretch         = TRUE
+        }
+    }
+    font_name = "Vera Sans 16"
+}
+
+class "GtkWidget" style "moko-window-default"
+
+include "transparent"
+include "matchboxpanel"
+
+#include "gtkbutton"
+include "gtkcheckbutton"
+include "gtkcombobox"
+#include "gtkentry"
+#include "gtkeventbox"
+#include "gtkframe"
+#include "gtkmenu"
+#include "gtkmenuitem"
+include "gtknotebook"
+#include "gtkpaned"
+#include "gtkprogressbar"
+#include "gtkradiobutton"
+#include "gtkscale"
+#include "gtkscrolledwindow"
+#include "gtkscrollbar"
+#include "gtkspinbutton"
+include "gtktoolbar"
+include "gtktoolbutton"
+#include "gtktreeview"
+
+#include "mokodetailswindow"
+#include "mokoscrolledpane"
+#include "mokodialogwindow"
+#include "mokofingerbutton"
+#include "mokofingertoolbox"
+#include "mokofingerwheel"
+#include "mokomenubox"
+#include "mokopanedwindow"
+#include "mokotoolbox"
+#include "mokotreeview"
+#include "mokostylusbutton"
+#include "mokonavigationlist"
+
+#include "mokoicons"
+
+#include "contactspane"
+#include "openmoko-today"
+#include "openmoko-footer"
+
+#include "mokomessagedialog"

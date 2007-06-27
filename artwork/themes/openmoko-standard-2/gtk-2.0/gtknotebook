@@ -1,0 +1,33 @@
+style "notebook"
+{
+  engine "pixmap"
+  {
+    image 
+    {
+      function    = EXTENSION
+      state       = ACTIVE
+      file        = "tab-normal.png"
+      border      = {1, 1, 2, 2}
+      stretch     = TRUE
+      gap_side    = TOP
+    }
+    image 
+    {
+      function    = EXTENSION
+      file        = "tab-active.png"
+      border      = {1, 1, 2, 2}
+      stretch     = TRUE
+      gap_side    = TOP
+    }  
+    image
+    {
+      function    = BOX
+      file        = "transparency100.png"
+      border      = {0, 0, 0, 0}
+      stretch     = FALSE
+      #gap_side    = TOP
+    }
+  }
+  GtkNotebook::shadow_type = GTK_SHADOW_NONE
+}
+class "GtkNotebook" style "notebook"
