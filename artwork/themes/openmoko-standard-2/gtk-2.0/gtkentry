@@ -1,19 +1,22 @@
-style "gtkentry" {
-    xthickness = 5
-    ythickness = 10
-    engine "pixmap" {
-        image {
-            function        = SHADOW
-            shadow          = IN
-            file            = "entry/entry-normal.png"
-            border          = {10, 10, 10, 10}
-              }
-	 }
-    GtkEntry::inner-border  = {0, 50, 0, 0}
-    text[NORMAL] = "#000000"
-    base[NORMAL] = "#ffffff"
-    fg[NORMAL] = "#000000"
-    text[INSENSITIVE] = "#999999" # dark grey
+style "gtkentry" 
+{
+  xthickness = 1
+  ythickness = 10
+  GtkEntry::inner_border = {5, 5, 2, 2}
+  engine "pixmap" 
+  {
+    image 
+    {
+      function        = SHADOW
+      shadow          = IN
+      file            = "entry/entry-normal.png"
+      border          = {10, 10, 10, 10}
+    }
+  }
+  text[NORMAL] = "#000000"
+  base[NORMAL] = "#ffffff"
+  fg[NORMAL] = "#000000"
+  text[INSENSITIVE] = "#999999" # dark grey
 }
 class "GtkEntry" style "gtkentry"
 widget_class "*.GtkEntry*" style "gtkentry"
