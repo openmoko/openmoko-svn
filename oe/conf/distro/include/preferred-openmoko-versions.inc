@@ -46,7 +46,8 @@ SRCDATE_openmoko-panel-demo-simple = "now"
 #
 SRCDATE_openmoko-contacts = "now"
 SRCDATE_openmoko-dates = "now"
-SRCDATE_openmoko-tasks = "now"
+# Fixed version until #621 is fixed
+SRCDATE_openmoko-tasks = "20070626"
 SRCDATE_openmoko-today = "now"
 SRCDATE_openmoko-messages = "now"
 SRCDATE_openmoko-rssreader = "now"
