@@ -2,7 +2,7 @@ style "matchboxpanel" {
    engine "pixmap" {
         image {
             function        = FLAT_BOX
-            file            = "matchbox-panel-background.png"
+            file            = "matchbox-panel/matchbox-panel-background.png"
             border          = { 0, 0, 0, 0 }
             stretch         = TRUE
         }
