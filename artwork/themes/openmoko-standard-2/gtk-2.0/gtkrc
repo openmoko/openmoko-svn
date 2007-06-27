@@ -2,10 +2,6 @@ gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,
 
 style "moko-window-default" {
 
-    # We do not want a general background brush because it is loaded for every
-    # GtkRcStyle created
-    # bg_pixmap[NORMAL] = "gtkwidget.png"
-
     bg[NORMAL]        = "#e5e5e5" #
     bg[PRELIGHT]      = "#ff0000" # light beige
     bg[ACTIVE]        = "#ff0000" # dark beige
@@ -19,7 +15,7 @@ style "moko-window-default" {
     base[INSENSITIVE] = "#e5e5e5" #
 
     fg[NORMAL]      = "#000000" # black
-    fg[PRELIGHT]    = "#ffffff" # white
+    fg[PRELIGHT]    = "#000000" # black
     fg[ACTIVE]      = "#000000" # black
     fg[SELECTED]    = "#ffffff" # white
     fg[INSENSITIVE] = "#999999" # grey
