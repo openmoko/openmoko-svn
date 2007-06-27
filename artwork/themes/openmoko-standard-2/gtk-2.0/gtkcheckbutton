@@ -77,4 +77,4 @@ style "gtkcheckbutton-label"
     fg[NORMAL] = "#000000"
     fg[ACTIVE] = "#000000"
 }
-widget_class "*.GtkCheckButton.GtkLabel" style "gtkcheckbutton-label"
+#widget_class "*.GtkCheckButton.GtkLabel" style "gtkcheckbutton-label"

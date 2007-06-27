@@ -29,8 +29,8 @@ style "gtkbutton" {
 class "GtkButton" style "gtkbutton"
 
 style "gtkbutton-label" {
-    font_name = "Vera Sans 10"
-    fg[NORMAL] = "#e5e5e5"
+    fg[NORMAL]   = "#ffffff"
     fg[PRELIGHT] = "#ffffff"
+    fg[ACTIVE]   = "#ffffff"
 }
 widget "*.GtkButton.*" style "gtkbutton-label"

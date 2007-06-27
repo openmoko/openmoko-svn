@@ -13,26 +13,24 @@ style "moko-window-default" {
     bg[INSENSITIVE]   = "#ff0000" # beige
 
     base[NORMAL]      = "#e5e5e5" # light cherry
-    base[PRELIGHT]    = "#00ff00" #
-    base[ACTIVE]      = "#00ff00" #
-    base[SELECTED]    = "#00ff00" #
-    base[INSENSITIVE] = "#00ff00" #
+    base[PRELIGHT]    = "#ff7800" #
+    base[ACTIVE]      = "#e5e5e5" #
+    base[SELECTED]    = "#ff7800" #
+    base[INSENSITIVE] = "#e5e5e5" #
 
-    fg[NORMAL]      = "#d3d3d3" # light grey
+    fg[NORMAL]      = "#000000" # black
     fg[PRELIGHT]    = "#ffffff" # white
-    fg[ACTIVE]      = "#e5e5e5" # light grey
+    fg[ACTIVE]      = "#000000" # black
     fg[SELECTED]    = "#ffffff" # white
-    fg[INSENSITIVE] = "#223344" # dark grey
+    fg[INSENSITIVE] = "#999999" # grey
 
-    text[NORMAL]      = "#666666" # mid grey
-    text[PRELIGHT]    = "#ffffff" # white
-    text[ACTIVE]      = "#e5e5e5" # light grey
+    text[NORMAL]      = "#000000" # mid grey
+    text[PRELIGHT]    = "#999999" # white
+    text[ACTIVE]      = "#000000" # light grey
     text[SELECTED]    = "#ffffff" # white
-    text[INSENSITIVE] = "#223344" # dark grey
+    text[INSENSITIVE] = "#cccccc" # dark grey
 
     GtkFrame::shadow_type = GTK_SHADOW_NONE
-    GtkToolbar::shadow_type = GTK_SHADOW_NONE
-    GtkNotebook::shadow_type = GTK_SHADOW_NONE
 #
 # How to draw shadows in general
 #
