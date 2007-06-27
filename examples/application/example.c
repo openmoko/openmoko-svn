@@ -18,18 +18,34 @@
 
 #include <gtk/gtk.h>
 
+
+/* type definitions */
+
+typedef struct
+{
+  GtkWidget *search_entry;
+  GtkWidget *filter_combo;
+} ApplicationData;
+
+/* signal callbacks */
+
+static void search_toggle_cb (GtkWidget * button, ApplicationData * data);
+
 int
 main (int argc, char **argv)
 {
   GtkWidget *window, *notebook, *icon;
-  GtkWidget *box, *toolbar, *details, *navigation, *w;
+  GtkWidget *box, *hbox, *toolbar, *details, *navigation, *w;
   GtkTreeViewColumn *column;
   GtkWidget *widget;
   GtkToolItem *toolitem;
   GtkListStore *liststore;
   GtkTreeIter it;
+  ApplicationData *data;
 
   gtk_init (&argc, &argv);
+
+  data = g_new0 (ApplicationData, 1);
 
   /* main window */
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -65,12 +81,39 @@ main (int argc, char **argv)
   gtk_tool_item_set_expand (toolitem, TRUE);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), toolitem, 2);
 
+  /* search/filter bar */
+  hbox = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), hbox, FALSE, FALSE, 0);
+
+  w = gtk_toggle_button_new ();
+  g_signal_connect (G_OBJECT (w), "toggled", (GCallback) search_toggle_cb,
+                    data);
+  gtk_button_set_image (GTK_BUTTON (w),
+                        gtk_image_new_from_stock (GTK_STOCK_FIND,
+                                                  GTK_ICON_SIZE_SMALL_TOOLBAR));
+  gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
+
+  data->search_entry = gtk_entry_new ();
+  g_object_set (G_OBJECT (data->search_entry), "no-show-all", TRUE, NULL);
+  gtk_box_pack_start (GTK_BOX (hbox), data->search_entry, TRUE, TRUE, 0);
+
+  data->filter_combo = gtk_combo_box_new_text ();
+  gtk_combo_box_append_text (GTK_COMBO_BOX (data->filter_combo),
+                             "Filter Menu");
+  gtk_combo_box_append_text (GTK_COMBO_BOX (data->filter_combo), "Small");
+  gtk_combo_box_append_text (GTK_COMBO_BOX (data->filter_combo), "Medium");
+  gtk_combo_box_append_text (GTK_COMBO_BOX (data->filter_combo), "Large");
+  gtk_combo_box_set_active (GTK_COMBO_BOX (data->filter_combo), 0);
+  gtk_box_pack_start (GTK_BOX (hbox), data->filter_combo, TRUE, TRUE, 0);
+
+
+  /* list */
   w = gtk_scrolled_window_new (NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (w),
                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, 0);
 
-  /* list */
+
   liststore = gtk_list_store_new (1, G_TYPE_STRING);
   gtk_list_store_insert_with_values (liststore, &it, 0, 0, "One", -1);
   gtk_list_store_insert_with_values (liststore, &it, 1, 0, "Two", -1);
@@ -117,5 +160,27 @@ main (int argc, char **argv)
   gtk_widget_show_all (window);
   gtk_main ();
 
+  g_free (data);
   return 0;
+}
+
+/* signal callbacks */
+
+static void
+search_toggle_cb (GtkWidget * button, ApplicationData * data)
+{
+  gboolean search;
+
+  search = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
+
+  if (search)
+    {
+      gtk_widget_show (data->search_entry);
+      gtk_widget_hide (data->filter_combo);
+    }
+  else
+    {
+      gtk_widget_show (data->filter_combo);
+      gtk_widget_hide (data->search_entry);
+    }
 }
