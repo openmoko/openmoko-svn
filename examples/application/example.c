@@ -24,6 +24,7 @@ main (int argc, char **argv)
   GtkWidget *window, *notebook, *icon;
   GtkWidget *box, *toolbar, *details, *navigation, *w;
   GtkTreeViewColumn *column;
+  GtkWidget *widget;
   GtkToolItem *toolitem;
   GtkListStore *liststore;
   GtkTreeIter it;
@@ -87,7 +88,24 @@ main (int argc, char **argv)
 
 
   /* details */
-  details = gtk_image_new_from_stock (GTK_STOCK_EDIT, GTK_ICON_SIZE_DIALOG);
+  details = gtk_vbox_new (FALSE, 6);
+  
+  widget = gtk_entry_new ();
+  gtk_entry_set_text (GTK_ENTRY (widget), "Hello, I am an entry");
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+
+  widget = gtk_button_new_from_stock (GTK_STOCK_ADD);
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+
+  widget = gtk_check_button_new_with_label ("Checkbutton");
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+
+  widget = gtk_spin_button_new_with_range (0, 100, 1);
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+  
+  widget = gtk_radio_button_new_with_label (NULL, "RadioButton");
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), details,
                             gtk_image_new_from_stock (GTK_STOCK_EDIT,
                                                       GTK_ICON_SIZE_LARGE_TOOLBAR));
