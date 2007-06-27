@@ -6,7 +6,7 @@ style "notebook"
     {
       function    = EXTENSION
       state       = ACTIVE
-      file        = "tab-normal.png"
+      file        = "notebook/tab-normal.png"
       border      = {20, 20, 0, 0}
       stretch     = TRUE
       gap_side    = TOP
@@ -14,7 +14,7 @@ style "notebook"
     image 
     {
       function    = EXTENSION
-      file        = "tab-active.png"
+      file        = "notebook/tab-active.png"
       border      = {20, 20, 0, 0}
       stretch     = TRUE
       gap_side    = TOP
