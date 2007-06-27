@@ -3,21 +3,21 @@ style "gtkbutton" {
         image {
             function        = BOX
             state           = NORMAL
-            file            = "button-normal.png"
+            file            = "button/button-normal.png"
             border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = PRELIGHT
-            file            = "button-normal.png"
+            file            = "button/button-normal.png"
             border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = ACTIVE
-            file            = "button-active.png"
+            file            = "button/button-active.png"
             border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
