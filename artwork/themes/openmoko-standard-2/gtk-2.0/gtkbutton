@@ -33,4 +33,4 @@ style "gtkbutton-label" {
     fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
 }
-iwidget "*.GtkButton.*" style "gtkbutton-label"
+widget "*.GtkButton.*" style "gtkbutton-label"

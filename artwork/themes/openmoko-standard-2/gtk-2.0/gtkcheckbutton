@@ -4,7 +4,7 @@ style "gtkcheckbutton" {
             function        = CHECK
             state           = NORMAL
             shadow          = OUT
-            overlay_file    = "checkbutton-checked.png"
+            overlay_file    = "checkbutton-unchecked.png"
             overlay_stretch = TRUE
         }
         image {
@@ -74,7 +74,7 @@ class "GtkCheckButton" style "gtkcheckbutton"
 style "gtkcheckbutton-label"
 {
     font_name = "Vera Sans 14"
-    fg[NORMAL] = "#cccccc"
-    fg[PRELIGHT] = "#eeeeee"
+    fg[NORMAL] = "#000000"
+    fg[ACTIVE] = "#000000"
 }
 widget_class "*.GtkCheckButton.GtkLabel" style "gtkcheckbutton-label"
