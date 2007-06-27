@@ -84,7 +84,6 @@ style "moko-window-default" {
             stretch         = TRUE
         }
     }
-    font_name = "Vera Sans 20"
 }
 
 class "GtkWidget" style "moko-window-default"
