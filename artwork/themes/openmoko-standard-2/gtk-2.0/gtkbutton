@@ -1,0 +1,36 @@
+style "gtkbutton" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            file            = "button-normal.png"
+            border          = { 5, 5, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = PRELIGHT
+            file            = "button-normal.png"
+            border          = { 5, 5, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = ACTIVE
+            file            = "button-active.png"
+            border          = { 5, 5, 10, 10 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 22
+    ythickness = 10
+    GtkButton::focus-line-width = 0
+}
+class "GtkButton" style "gtkbutton"
+
+style "gtkbutton-label" {
+    font_name = "Vera Sans 10"
+    fg[NORMAL] = "#e5e5e5"
+    fg[PRELIGHT] = "#ffffff"
+}
+widget "*.GtkButton.*" style "gtkbutton-label"
