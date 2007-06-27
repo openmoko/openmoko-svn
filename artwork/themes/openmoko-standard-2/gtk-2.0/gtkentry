@@ -5,7 +5,7 @@ style "gtkentry" {
         image {
             function        = SHADOW
             shadow          = IN
-            file            = "entry-normal.png"
+            file            = "entry/entry-normal.png"
             border          = {10, 10, 10, 10}
               }
 	 }
