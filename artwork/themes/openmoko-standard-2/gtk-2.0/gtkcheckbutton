@@ -62,7 +62,7 @@ style "gtkcheckbutton" {
         image {
             function        = FLAT_BOX
             file            = "transparency100.png"
-            border          = { 10,5,5,10 }
+            border          = {10, 5, 5, 10}
             stretch         = TRUE
         }
     }
@@ -70,11 +70,3 @@ style "gtkcheckbutton" {
     GtkCheckButton::indicator-spacing = 5
 }
 class "GtkCheckButton" style "gtkcheckbutton"
-
-style "gtkcheckbutton-label"
-{
-    font_name = "Vera Sans 14"
-    fg[NORMAL] = "#000000"
-    fg[ACTIVE] = "#000000"
-}
-#widget_class "*.GtkCheckButton.GtkLabel" style "gtkcheckbutton-label"
