@@ -1,7 +1,7 @@
 style "toolbutton"
 {
-  xthickness = 1
-  ythickness = 1
+  xthickness = 8
+  ythickness = 8
   engine "pixmap" 
   {
     image

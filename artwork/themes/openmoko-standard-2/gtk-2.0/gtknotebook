@@ -18,16 +18,10 @@ style "notebook"
       border      = {20, 20, 0, 0}
       stretch     = TRUE
       gap_side    = TOP
-    }  
-    image
-    {
-      function    = BOX
-      file        = "transparency100.png"
-      border      = {20, 20, 20, 20}
-      stretch     = FALSE
-      #gap_side    = TOP
     }
   }
-  GtkNotebook::shadow_type = GTK_SHADOW_NONE
+
+  xthickness = 0
+  ythickness = 0
 }
 class "GtkNotebook" style "notebook"
