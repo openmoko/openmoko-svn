@@ -6,7 +6,7 @@ style "gtkcombobox"
       {
         function      = BOX
         state         = PRELIGHT
-        file          = "combobox-normal.png"
+        file          = "combobox/combobox-normal.png"
         border        = {0, 0, 0, 0}
         stretch       = TRUE
       }
@@ -17,7 +17,7 @@ style "gtkcombobox"
       {
         function      = BOX
         state         = NORMAL
-        file          = "combobox-normal.png"
+        file          = "combobox/combobox-normal.png"
         border        = {0, 0, 0, 0}
         stretch       = TRUE
       }
@@ -28,7 +28,7 @@ style "gtkcombobox"
       {
         function      = BOX
         state         = ACTIVE
-        file          = "combobox-normal.png"
+        file          = "combobox/combobox-normal.png"
         border        = {0, 0, 0, 0}
         stretch       = TRUE
       }
@@ -39,7 +39,7 @@ style "gtkcombobox"
       {
         function      = BOX
         state         = INSENSITIVE
-        file          = "combobox-normal.png"
+        file          = "combobox/combobox-normal.png"
         border        = {0, 0, 0, 0}
         stretch       = TRUE
       }
@@ -53,11 +53,11 @@ style "gtkcombobox"
 }
 widget "*Combo*" style "gtkcombobox"
 
-style "gtkcombobox-cellrenderer"
+style "gtkcombobox/combobox-cellrenderer"
 {
     font_name = "Vera Sans 16"
     text[NORMAL] = "#000000"
     fg[NORMAL] = "#e5e5e5"
 }
-widget_class "*Combo*.GtkCellRenderer*" style "gtkcombobox-cellrenderer"
-widget "GtkCellRendererText" style "gtkcombobox-cellrenderer"
+widget_class "*Combo*.GtkCellRenderer*" style "gtkcombobox/combobox-cellrenderer"
+widget "GtkCellRendererText" style "gtkcombobox/combobox-cellrenderer"
