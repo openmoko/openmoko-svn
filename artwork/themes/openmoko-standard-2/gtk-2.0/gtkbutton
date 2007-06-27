@@ -4,21 +4,21 @@ style "gtkbutton" {
             function        = BOX
             state           = NORMAL
             file            = "button-normal.png"
-            border          = { 5, 5, 10, 10 }
+            border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = PRELIGHT
             file            = "button-normal.png"
-            border          = { 5, 5, 10, 10 }
+            border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
         image {
             function        = BOX
             state           = ACTIVE
             file            = "button-active.png"
-            border          = { 5, 5, 10, 10 }
+            border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
     }
@@ -33,4 +33,4 @@ style "gtkbutton-label" {
     fg[NORMAL] = "#e5e5e5"
     fg[PRELIGHT] = "#ffffff"
 }
-widget "*.GtkButton.*" style "gtkbutton-label"
+iwidget "*.GtkButton.*" style "gtkbutton-label"
