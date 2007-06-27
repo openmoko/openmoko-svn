@@ -7,7 +7,7 @@ style "notebook"
       function    = EXTENSION
       state       = ACTIVE
       file        = "tab-normal.png"
-      border      = {1, 1, 2, 2}
+      border      = {20, 20, 0, 0}
       stretch     = TRUE
       gap_side    = TOP
     }
@@ -15,7 +15,7 @@ style "notebook"
     {
       function    = EXTENSION
       file        = "tab-active.png"
-      border      = {1, 1, 2, 2}
+      border      = {20, 20, 0, 0}
       stretch     = TRUE
       gap_side    = TOP
     }  
@@ -23,7 +23,7 @@ style "notebook"
     {
       function    = BOX
       file        = "transparency100.png"
-      border      = {0, 0, 0, 0}
+      border      = {20, 20, 20, 20}
       stretch     = FALSE
       #gap_side    = TOP
     }
