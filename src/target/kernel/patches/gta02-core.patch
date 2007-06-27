@@ -2,7 +2,7 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,610 @@
+@@ -0,0 +1,625 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -72,6 +72,7 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +#include <asm/arch/spi-gpio.h>
 +#include <asm/arch/usb-control.h>
 +
++#include <asm/arch/gta01.h>
 +#include <asm/arch/gta02.h>
 +
 +#include <asm/plat-s3c24xx/devs.h>
@@ -406,6 +407,15 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	.board_info	= gta02_spi_board_info,
 +};
 +
++static struct glamo_spigpio_info glamo_spigpio_cfg = {
++	.pin_clk	= GLAMO_GPIO10_OUTPUT,
++	.pin_mosi	= GLAMO_GPIO11_OUTPUT,
++	.pin_cs		= GLAMO_GPIO12_OUTPUT,
++	.pin_miso	= 0,
++	.board_size	= ARRAY_SIZE(gta02_spi_board_info),
++	.board_info	= gta02_spi_board_info,
++};
++
 +#if 0
 +#ifdef SPI_HARD
 +static struct s3c2410_spi_info spi_cfg = {
@@ -535,7 +545,8 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +		.max	= 16,
 +		.defval	= 16,
 +	},
-+	.spi_info	= &glamo_spi_cfg,
++	//.spi_info	= &glamo_spi_cfg,
++	.spigpio_info	= &glamo_spigpio_cfg,
 +};
 +
 +static struct resource gta02_glamo_resources[] = {
@@ -597,6 +608,10 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	platform_device_register(&gta02_glamo_dev);
 +
 +	s3c2410_pm_init();
++
++	/* Set LCD_RESET / XRES to high */
++	s3c2410_gpio_cfgpin(GTA01_GPIO_LCD_RESET, S3C2410_GPIO_OUTPUT);
++	s3c2410_gpio_setpin(GTA01_GPIO_LCD_RESET, 1);
 +
 +	set_irq_type(GTA02_IRQ_MODEM, IRQT_RISING);
 +	request_irq(GTA02_IRQ_MODEM, gta02_modem_irq,
