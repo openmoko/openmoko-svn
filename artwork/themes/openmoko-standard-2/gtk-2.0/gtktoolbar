@@ -5,7 +5,7 @@ style "toolbar"
     image
     {
       function      = BOX
-      file          = "toolbar.png"
+      file          = "toolbar/toolbar.png"
       border        = {0, 0, 0, 0}
       stretch       = TRUE
     }
