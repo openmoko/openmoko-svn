@@ -88,7 +88,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,323 @@
+@@ -0,0 +1,326 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -346,7 +346,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +void neo1973_backlight(int on)
 +{
-+	/* FIXME: PMU based implementation */
++	if (on)
++		pcf50633_reg_write(PCF50633_REG_LEDENA, 0x01);
++	else
++		pcf50633_reg_write(PCF50633_REG_LEDENA, 0x00);
 +}
 +
 +/* FIXME: shared */
