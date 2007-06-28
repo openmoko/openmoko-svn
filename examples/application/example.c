@@ -148,7 +148,16 @@ main (int argc, char **argv)
   widget = gtk_spin_button_new_with_range (0, 100, 1);
   gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
   
-  widget = gtk_radio_button_new_with_label (NULL, "RadioButton");
+  widget = gtk_radio_button_new_with_label (NULL, "RadioButton 1");
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+
+  widget = gtk_radio_button_new_with_label_from_widget (
+                                                     GTK_RADIO_BUTTON (widget), 
+                                                        "RadioButton 2");
+  gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
+
+  widget = gtk_radio_button_new_with_label (NULL, "RadioButton 3");
+  gtk_widget_set_state (widget, GTK_STATE_INSENSITIVE);
   gtk_box_pack_start (GTK_BOX (details), widget, FALSE, FALSE, 0);
 
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), details,
