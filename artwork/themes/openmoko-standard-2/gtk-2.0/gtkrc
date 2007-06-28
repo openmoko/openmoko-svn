@@ -107,6 +107,7 @@ include "gtktoolbar"
 include "gtktoolbutton"
 #include "gtktreeview"
 
+include "mokosearchbar"
 #include "mokodetailswindow"
 #include "mokoscrolledpane"
 #include "mokodialogwindow"
