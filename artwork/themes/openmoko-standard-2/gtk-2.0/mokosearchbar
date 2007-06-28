@@ -1,0 +1,56 @@
+style "searchbutton"
+{
+  engine "pixmap" 
+  {
+    image 
+    {
+      function        = BOX
+      state           = NORMAL
+      file            = "searchbar/bg.png"
+      border          = { 10, 10, 10, 10 }
+      stretch         = TRUE
+    }
+    image 
+    {
+      function        = BOX
+      state           = PRELIGHT
+      file            = "searchbar/bg.png"
+      border          = { 10, 10, 10, 10 }
+      stretch         = TRUE
+    }
+    image 
+    {
+      function        = BOX
+      state           = ACTIVE
+      file            = "searchbar/bg.png"
+      border          = { 10, 10, 10, 10 }
+      stretch         = TRUE
+    }
+  }
+  xthickness = 10
+  ythickness = 10
+  GtkButton::focus-line-width = 0
+}
+widget "*mokosearchbutton*" style "searchbutton"
+
+style "mokoentry" 
+{
+  xthickness = 7
+  ythickness = 16
+  GtkEntry::inner_border = {10, 10, 2, 2}
+  engine "pixmap" 
+  {
+    image 
+    {
+      function        = SHADOW
+      shadow          = IN
+      file            = "searchbar/searchentry.png"
+      border          = {10, 10, 10, 10}
+    }
+  }
+  text[NORMAL] = "#000000"
+  base[NORMAL] = "#ffffff"
+  fg[NORMAL] = "#000000"
+  text[INSENSITIVE] = "#999999" # dark grey
+}
+widget "*mokosearchentry*" style "mokoentry"
