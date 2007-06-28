@@ -1,0 +1,22 @@
+style "gtkmenuitem" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            file            = "transparency100.png"
+            border          = { 0, 0, 0, 0 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = PRELIGHT
+            file            = "menu/menuitem-selected.png"
+            border          = { 11, 11, 11, 11 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 10
+    ythickness = 10
+    fg[PRELIGHT] = "#000000"
+}
+class "GtkMenuItem" style "gtkmenuitem"

@@ -1,0 +1,13 @@
+style "gtkmenu" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            file            = "menu/menu.png"
+            border          = { 20, 20, 20, 20 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 10
+    ythickness = 8
+}
+class "GtkMenu" style "gtkmenu"
