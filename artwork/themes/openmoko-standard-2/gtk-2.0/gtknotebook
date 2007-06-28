@@ -19,6 +19,14 @@ style "notebook"
       stretch     = TRUE
       gap_side    = TOP
     }
+    image
+    {
+      function        = BOX_GAP
+      gap_side        = BOTTOM
+      shadow          = OUT
+      file            = "transparency100.png"
+     }
+
   }
 
   xthickness = 0
