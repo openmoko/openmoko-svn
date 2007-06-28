@@ -86,6 +86,7 @@ main (int argc, char **argv)
   gtk_box_pack_start (GTK_BOX (box), hbox, FALSE, FALSE, 0);
 
   w = gtk_toggle_button_new ();
+  gtk_widget_set_name (w, "mokosearchbutton");
   g_signal_connect (G_OBJECT (w), "toggled", (GCallback) search_toggle_cb,
                     data);
   gtk_button_set_image (GTK_BUTTON (w),
@@ -94,6 +95,7 @@ main (int argc, char **argv)
   gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, FALSE, 0);
 
   data->search_entry = gtk_entry_new ();
+  gtk_widget_set_name (data->search_entry, "mokosearchentry");
   g_object_set (G_OBJECT (data->search_entry), "no-show-all", TRUE, NULL);
   gtk_box_pack_start (GTK_BOX (hbox), data->search_entry, TRUE, TRUE, 0);
 
