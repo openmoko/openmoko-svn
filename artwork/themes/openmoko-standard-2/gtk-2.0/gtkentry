@@ -1,8 +1,7 @@
 style "gtkentry" 
 {
-  xthickness = 1
-  ythickness = 10
-  GtkEntry::inner_border = {5, 5, 2, 2}
+  xthickness = 8
+  ythickness = 8
   engine "pixmap" 
   {
     image 
@@ -10,7 +9,7 @@ style "gtkentry"
       function        = SHADOW
       shadow          = IN
       file            = "entry/entry-normal.png"
-      border          = {10, 10, 10, 10}
+      border          = {7, 7, 7, 7}
     }
   }
   text[NORMAL] = "#000000"
