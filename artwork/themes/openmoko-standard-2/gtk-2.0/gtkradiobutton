@@ -1,0 +1,72 @@
+style "gtkradiobutton" {
+    engine "pixmap" {
+        image {
+            function        = OPTION
+            state           = NORMAL
+            shadow          = OUT
+            overlay_file    = "radiobuttons/radio-off.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = PRELIGHT
+            shadow          = OUT
+            overlay_file    = "radiobuttons/radio-off.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = ACTIVE
+            shadow          = OUT
+            overlay_file    = "radiobuttons/radio-off.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = INSENSITIVE
+            shadow          = OUT
+            overlay_file    = "radiobuttons/radio-disable.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = NORMAL
+            shadow          = IN
+            overlay_file    = "radiobuttons/radio-on.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = PRELIGHT
+            shadow          = IN
+            overlay_file    = "radiobuttons/radio-on.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = ACTIVE
+            shadow          = IN
+            overlay_file    = "radiobuttons/radio-on.png"
+            overlay_stretch = TRUE
+        }
+        image {
+            function        = OPTION
+            state           = INSENSITIVE
+            shadow          = IN
+            overlay_file    = "radiobuttons/radio-on-disable.png"
+            overlay_stretch = TRUE
+        }
+#
+# check button flat box
+#
+        image {
+            function        = FLAT_BOX
+            file            = "transparency100.png"
+            border          = { 10,5,5,10 }
+            stretch         = TRUE
+        }
+    }
+    GtkCheckButton::indicator-size = 35
+    GtkCheckButton::indicator-spacing = 5
+}
+class "GtkRadioButton" style "gtkradiobutton"
