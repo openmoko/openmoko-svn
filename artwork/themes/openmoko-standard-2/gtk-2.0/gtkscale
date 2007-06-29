@@ -1,0 +1,25 @@
+#FIXME add missing vertical slider styling
+
+style "gtkscale" {
+    engine "pixmap" {
+        image {
+            function                  = BOX
+            detail                    = "trough"
+            file                      = "progress/progressbar-trough.png"
+            border                    = {20, 20, 4, 4}
+            stretch                   = TRUE
+            orientation               = HORIZONTAL
+        }
+        image {
+            function                  = SLIDER
+            file                      = "progress/progressbar-bar.png"
+            stretch                   = TRUE
+            orientation               = HORIZONTAL
+        }
+    }
+    GtkRange::trough_border = 0
+    GtkRange::slider-width = 28
+    GtkScale::slider-length = 56
+}
+class "GtkHScale" style "gtkscale"
+widget_class "*.GtkHScale" style "gtkscale"
