@@ -57,7 +57,12 @@ main( int argc, char **argv )
   app->footer = footer_new (); 
   gtk_widget_show_all (GTK_WIDGET (app->footer));
 
-  g_signal_connect (FOOTER (app->footer)->LeftEventBox, "button_press_event", G_CALLBACK (footer_leftbutton_clicked), app);
+  app->taskmenu = g_new0 (MokoTaskMenu, 1);
+  moko_taskmenu_init (app->taskmenu);
+
+  // FIXME: We want the menu to pop up on button press, but disappear after the second button press...
+  g_signal_connect (FOOTER (app->footer)->LeftEventBox, "button_release_event", G_CALLBACK (footer_leftbutton_clicked), app);
+
   g_signal_connect (FOOTER (app->footer)->RightEventBox, "button_press_event", G_CALLBACK (footer_rightbutton_clicked), app);
 
   gtk_container_add (GTK_CONTAINER (app->toplevel_window), GTK_WIDGET(app->footer));

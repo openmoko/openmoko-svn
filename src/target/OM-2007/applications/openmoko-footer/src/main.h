@@ -20,7 +20,7 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
-#include "taskmanager.h"
+#include "taskmenu.h"
 #include "footer.h"
 
 #include <gtk/gtk.h>
@@ -29,7 +29,7 @@ typedef struct _MokoFooterApp
 {
     GtkWidget *toplevel_window;
     GtkWidget *footer;
-    MokoTaskManager *taskmanager;
+    MokoTaskMenu *taskmenu;
     GdkWindow *target_window;
 } MokoFooterApp;
 

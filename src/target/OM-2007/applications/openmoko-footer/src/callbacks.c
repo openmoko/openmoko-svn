@@ -35,20 +35,10 @@
 *@return none
 */
 gboolean
-footer_leftbutton_clicked(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+footer_leftbutton_clicked(GtkWidget *widget, GdkEvent *event, MokoFooterApp *app)
 {
-    switch (fork())
-    {
-        case 0:
-          setpgid(0, 0); /* Stop us killing child */
-          execvp("openmoko-taskmanager", NULL);
-          exit(1);
-        case -1:
-          g_debug ("Failed to fork()");
-          break;
-     }
-
-     return TRUE;
+    gtk_menu_popup( GTK_MENU(app->taskmenu->menu), NULL, NULL, moko_taskmenu_popup_positioning_cb, app->toplevel_window, 0, GDK_CURRENT_TIME );
+    return TRUE;
 }
 
 

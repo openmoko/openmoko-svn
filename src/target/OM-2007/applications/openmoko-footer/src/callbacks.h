@@ -33,7 +33,7 @@
 #define TASK_MANAGER_PROPERTY_Y    45
 
 /* footer */
-gboolean footer_leftbutton_clicked(GtkWidget *widget, GdkEvent *event, gpointer user_data);
+gboolean footer_leftbutton_clicked(GtkWidget *widget, GdkEvent *event, MokoFooterApp *app);
 
 gboolean footer_rightbutton_clicked(GtkWidget *widget, GdkEvent *event, gpointer user_data);
 

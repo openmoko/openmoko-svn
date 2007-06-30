@@ -1,3 +1,18 @@
+2007-06-30  Daniel Willmann <daniel@totalueberwachung.de>
+
+        * src/Makefile.am:
+        * src/callbacks.c:
+        (footer_leftbutton_clicked):
+        * src/callbacks.h:
+        * src/main.c:
+        (main):
+        * src/main.h:
+        * src/taskmenu.c: Added.
+        * src/taskmenu.h: Added.
+				Add first version of the taskmenu and integrate it into the footer
+				The taskmenu doesn't actually do anything yet - it just displays
+				the window titles in a menu.
+
 2007-05-21  Daniel Willmann <daniel@totalueberwachung.de>
 
         * data/icon_app_tasklist.png: Added.
