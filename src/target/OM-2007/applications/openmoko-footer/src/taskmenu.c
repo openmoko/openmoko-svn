@@ -27,21 +27,27 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 
-//GdkFilterReturn
-//moko_window_filter (GdkXEvent *xev, GdkEvent *gev, MokoTaskMenu *tm)
-//{
-//    XEvent *ev = (XEvent *)xev;
-//    Display *dpy = ev->xany.display;
-//
-//    if (ev->xany.type == PropertyNotify && ev->xproperty.window == DefaultRootWindow (dpy)
-//        && (ev->xproperty.atom == atoms[_NET_CLIENT_LIST]))
-//    {
-//        moko_update_task_list(dpy, tm->list);
-//    }
-//
-//    return GDK_FILTER_CONTINUE;
-//}
-//
+GdkFilterReturn
+moko_window_filter (GdkXEvent *xev, GdkEvent *gev, gpointer user_data)
+{
+    XEvent *ev = (XEvent *)xev;
+    Display *dpy = ev->xany.display;
+    MokoTaskMenu *tm = user_data;
+
+    if (ev->xany.type == PropertyNotify && ev->xproperty.window == DefaultRootWindow (dpy)
+        && (ev->xproperty.atom == gdk_x11_atom_to_xatom(gdk_atom_intern("_NET_CLIENT_LIST", FALSE))))
+    {
+        if (moko_update_task_list(dpy, tm)) {
+            g_object_ref_sink(tm->menu);
+            tm->menu = GTK_MENU(gtk_menu_new());
+            moko_taskmenu_populate(dpy, tm);
+            gtk_widget_show_all( GTK_WIDGET(tm->menu) );
+        }
+    }
+
+    return GDK_FILTER_CONTINUE;
+}
+
 
 gchar *
 moko_get_window_name (Display *dpy, Window w)
@@ -177,8 +183,8 @@ void moko_taskmenu_init (MokoTaskMenu *tm)
 
     gtk_widget_show_all( GTK_WIDGET(tm->menu) );
 
-    //gdk_window_add_filter (NULL, moko_window_filter, tm);
-    //XSelectInput (dpy, DefaultRootWindow (dpy), PropertyChangeMask);
+    gdk_window_add_filter (NULL, moko_window_filter, tm);
+    XSelectInput (dpy, DefaultRootWindow (dpy), PropertyChangeMask);
 }
 
 void moko_taskmenu_populate(Display *dpy, MokoTaskMenu *tm)

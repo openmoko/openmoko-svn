@@ -35,6 +35,7 @@ typedef struct _MokoTaskMenu
 
 
 void moko_taskmenu_init (MokoTaskMenu *tm);
+gboolean moko_update_task_list (Display *dpy, MokoTaskMenu *tm);
 void moko_taskmenu_populate(Display *dpy, MokoTaskMenu *tm);
 void moko_taskmenu_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gboolean* push_in, GtkWidget *parent );
 
