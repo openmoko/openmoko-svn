@@ -17,6 +17,7 @@ static void cpu_reset_model_id(CPUARMState *env, uint32_t id)
     case ARM_CPUID_ARM920T:
         set_feature(env, ARM_FEATURE_S3C);
         env->cp15.c0_cachetype = 0xd172172;
+        env->cp15.c1_sys = 0x00000078;
         break;
     case ARM_CPUID_ARM926:
         set_feature(env, ARM_FEATURE_VFP);

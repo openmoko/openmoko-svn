@@ -219,8 +219,8 @@ void gn_atem_call_passup(gn_call_status CallStatus, gn_call_info *CallInfo, stru
 
 	switch (CallStatus) {
 	case GN_CALL_Incoming:
-		gn_atem_modem_result(MR_RING);
 		IncomingCallNo = CallInfo->call_id;
+		gn_atem_modem_result(MR_RING);
 		ModemRegisters[REG_RINGCNT]++;
 		gn_atem_cid_out(CallInfo);
 		if (ModemRegisters[REG_RINGATA] != 0) gn_atem_answer_phone();
@@ -859,7 +859,7 @@ void	gn_atem_cpi(enum gsmd_call_progress msg,
 	/* Format: %CPI: <cId>,<msgType>,<ibt>,<tch>,<dir>,[<mode>],
 	 * [<number>],[<type>],[<alpha>],[<cause>],<line> */
 	asprintf(&buffer, "%%CPI: %i,%i,0,%i,%i,0,,,,,0\r\n",
-			data.call_info->call_id, msg, inband, dir);
+			IncomingCallNo, msg, inband, dir);
 	gn_atem_string_out(buffer);
 	free(buffer);
 }
