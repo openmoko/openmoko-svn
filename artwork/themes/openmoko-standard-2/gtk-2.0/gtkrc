@@ -34,35 +34,35 @@ style "moko-window-default" {
         image {
             function        = SHADOW
             shadow          = IN
-            file            = "transparency100.png"
+            file            = "shadow-in.png"
             border          = { 6, 6, 6, 6 }
             stretch         = TRUE
         }
         image {
             function        = SHADOW
             shadow          = OUT
-            file            = "transparency100.png" # FIXME add proper shadow
+            file            = "shadow-in.png" # FIXME add proper shadow
             border          = { 6, 6, 6, 6 }
             stretch         = TRUE
         }
         image {
             function        = SHADOW
             shadow          = ETCHED_IN
-            file            = "transparency100.png" # FIXME add proper shadow
+            file            = "shadow-in.png" # FIXME add proper shadow
             border          = { 6, 6, 6, 6 }
             stretch         = TRUE
         }
         image {
             function        = SHADOW
             shadow          = ETCHED_OUT
-            file            = "transparency100.png" # FIXME add proper shadow
+            file            = "shadow-in.png" # FIXME add proper shadow
             border          = { 6, 6, 6, 6 }
             stretch         = TRUE
         }
         image {
             function        = SHADOW
             shadow          = NONE
-            file            = "transparency100.png"
+            file            = "shadow-in.png"
             border          = {0, 0, 0, 0}
             stretch         = TRUE
         }
@@ -105,7 +105,7 @@ include "gtkscale"
 include "gtkspinbutton"
 include "gtktoolbar"
 include "gtktoolbutton"
-#include "gtktreeview"
+include "gtktreeview"
 
 include "mokosearchbar"
 #include "mokodetailswindow"
