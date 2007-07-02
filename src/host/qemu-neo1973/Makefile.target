@@ -446,6 +446,7 @@ endif
 ifeq ($(TARGET_BASE_ARCH), mips)
 VL_OBJS+= mips_r4k.o mips_malta.o mips_pica61.o
 VL_OBJS+= mips_timer.o mips_int.o dma.o vga.o serial.o i8254.o i8259.o
+VL_OBJS+= jazz_led.o
 VL_OBJS+= ide.o gt64xxx.o pckbd.o ps2.o fdc.o mc146818rtc.o usb-uhci.o acpi.o ds1225y.o
 VL_OBJS+= piix_pci.o smbus_eeprom.o parallel.o mixeng.o cirrus_vga.o $(SOUND_HW) $(AUDIODRV)
 CPPFLAGS += -DHAS_AUDIO
@@ -463,7 +464,7 @@ endif
 endif
 ifeq ($(TARGET_BASE_ARCH), arm)
 VL_OBJS+= integratorcp.o versatilepb.o ps2.o smc91c111.o arm_pic.o arm_timer.o
-VL_OBJS+= arm_boot.o pl011.o pl050.o pl080.o pl110.o pl181.o pl190.o
+VL_OBJS+= arm_boot.o pl011.o pl031.o pl050.o pl080.o pl110.o pl181.o pl190.o
 VL_OBJS+= versatile_pci.o sd.o ptimer.o
 VL_OBJS+= arm_gic.o realview.o arm_sysctl.o
 VL_OBJS+= arm-semi.o

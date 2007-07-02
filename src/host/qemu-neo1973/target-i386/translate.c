@@ -2277,7 +2277,7 @@ static void gen_eob(DisasContext *s)
     if (s->singlestep_enabled) {
         gen_op_debug();
     } else if (s->tf) {
-        gen_op_raise_exception(EXCP01_SSTP);
+	gen_op_single_step();
     } else {
         gen_op_movl_T0_0();
         gen_op_exit_tb();
@@ -5327,8 +5327,12 @@ static target_ulong disas_insn(DisasContext *s, target_ulong pc_start)
         if (CODE64(s))
             goto illegal_op;
         val = ldub_code(s->pc++);
-        gen_op_aam(val);
-        s->cc_op = CC_OP_LOGICB;
+        if (val == 0) {
+            gen_exception(s, EXCP00_DIVZ, pc_start - s->cs_base);
+        } else {
+            gen_op_aam(val);
+            s->cc_op = CC_OP_LOGICB;
+        }
         break;
     case 0xd5: /* aad */
         if (CODE64(s))

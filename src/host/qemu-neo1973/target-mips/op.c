@@ -297,7 +297,7 @@ void op_addr_add (void)
    with Status_UX = 0 should be casted to 32-bit and sign extended.
    See the MIPS64 PRA manual, section 4.10. */
 #ifdef TARGET_MIPS64
-    if ((env->CP0_Status & (1 << CP0St_UM)) &&
+    if ((env->hflags & MIPS_HFLAG_UM) &&
         !(env->CP0_Status & (1 << CP0St_UX)))
         T0 = (int64_t)(int32_t)(T0 + T1);
     else
@@ -1328,7 +1328,7 @@ void op_mtc0_entryhi (void)
     /* 1k pages not implemented */
     val = T0 & ((TARGET_PAGE_MASK << 1) | 0xFF);
 #ifdef TARGET_MIPS64
-    val = T0 & 0xC00000FFFFFFFFFFULL;
+    val &= env->SEGMask;
 #endif
     old = env->CP0_EntryHi;
     env->CP0_EntryHi = val;
@@ -1433,7 +1433,7 @@ void op_mtc0_ebase (void)
 
 void op_mtc0_config0 (void)
 {
-    env->CP0_Config0 = (env->CP0_Config0 & 0x81FFFFF8) | (T0 & 0x00000001);
+    env->CP0_Config0 = (env->CP0_Config0 & 0x81FFFFF8) | (T0 & 0x00000007);
     RETURN();
 }
 
@@ -1526,7 +1526,8 @@ void op_mtc0_desave (void)
 #ifdef TARGET_MIPS64
 void op_mtc0_xcontext (void)
 {
-    env->CP0_XContext = (env->CP0_XContext & 0x1ffffffffULL) | (T0 & ~0x1ffffffffULL);
+    target_ulong mask = (1ULL << (env->SEGBITS - 7)) - 1;
+    env->CP0_XContext = (env->CP0_XContext & mask) | (T0 & ~mask);
     RETURN();
 }
 
@@ -1607,7 +1608,7 @@ void op_dmfc0_errorepc (void)
 void op_cp0_enabled(void)
 {
     if (!(env->CP0_Status & (1 << CP0St_CU0)) &&
-	(env->hflags & MIPS_HFLAG_UM)) {
+        (env->hflags & MIPS_HFLAG_UM)) {
         CALL_FROM_TB2(do_raise_exception_err, EXCP_CpU, 0);
     }
     RETURN();

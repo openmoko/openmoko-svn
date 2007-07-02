@@ -156,6 +156,7 @@ extern int graphic_depth;
 extern const char *keyboard_layout;
 extern int kqemu_allowed;
 extern int win2k_install_hack;
+extern int alt_grab;
 extern int usb_enabled;
 extern int smp_cpus;
 extern int cursor_hide;
@@ -1091,6 +1092,7 @@ void serial_mm_writel (void *opaque, target_phys_addr_t addr, uint32_t value);
 
 typedef struct ParallelState ParallelState;
 ParallelState *parallel_init(int base, qemu_irq irq, CharDriverState *chr);
+ParallelState *parallel_mm_init(target_phys_addr_t base, int it_shift, qemu_irq irq, CharDriverState *chr);
 
 /* i8259.c */
 
@@ -1127,6 +1129,9 @@ int pit_get_gate(PITState *pit, int channel);
 int pit_get_initial_count(PITState *pit, int channel);
 int pit_get_mode(PITState *pit, int channel);
 int pit_get_out(PITState *pit, int channel, int64_t current_time);
+
+/* jazz_led.c */
+extern void jazz_led_init(DisplayState *ds, target_phys_addr_t base);
 
 /* pcspk.c */
 void pcspk_init(PITState *);
@@ -1439,6 +1444,9 @@ void ps2_mouse_fake_event(void *opaque);
 
 /* smc91c111.c */
 void smc91c111_init(NICInfo *, uint32_t, qemu_irq);
+
+/* pl031.c */
+void pl031_init(uint32_t base, qemu_irq irq);
 
 /* pl110.c */
 void *pl110_init(DisplayState *ds, uint32_t base, qemu_irq irq, int);
