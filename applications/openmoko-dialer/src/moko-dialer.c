@@ -49,7 +49,21 @@ G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
 struct _MokoDialerPrivate
 {
-  gint            status;
+  gint                status;
+
+  /* Main Widgets */
+  GtkWidget          *window;
+  GtkWidget          *notebook;
+  
+  /* Pages of the notebook */
+  GtkWidget          *talking;
+  GtkWidget          *keypad;
+  GtkWidget          *history;
+
+  /* Special objects */
+  MokoGsmdConnection *connection;
+  MokoJournal        *journal;
+    
 };
 
 enum
@@ -289,7 +303,7 @@ moko_dialer_dispose (GObject *object)
   priv = dialer->priv;
 
   /* Close journal */
-  //moko_journal_close (priv->data->journal);
+  moko_journal_close (priv->journal);
 
   /* Free contacts list */
   //contact_release_contact_list (&(priv->data->g_contactlist));
@@ -373,16 +387,15 @@ moko_dialer_init (MokoDialer *dialer)
   MokoGsmdConnection *conn;
 
   priv = dialer->priv = MOKO_DIALER_GET_PRIVATE (dialer);
-#if 0
+
   /* create the dialer_data struct */
-  priv->data = g_new0 (MokoDialerData, 1);
   priv->status = DIALER_STATUS_NORMAL;
 
   /* Initialise the contacts list */
-  contact_init_contact_data (&(priv->data->g_contactlist));
+  //contact_init_contact_data (&(priv->data->g_contactlist));
 
   /* Init the gsmd connection, and power it up */
-  conn = priv->data->connection = moko_gsmd_connection_new ();
+  conn = priv->connection = moko_gsmd_connection_new ();
   moko_gsmd_connection_set_antenna_power (conn, TRUE);
 
   /* Handle network registration a few seconds after powering up the antenna*/ 
@@ -401,9 +414,9 @@ moko_dialer_init (MokoDialer *dialer)
                     G_CALLBACK (on_call_progress_changed), (gpointer)dialer);
 
   /* Set up the journal */
-  priv->data->journal = moko_journal_open_default ();
-  moko_journal_load_from_storage (priv->data->journal);
-
+  priv->journal = moko_journal_open_default ();
+  moko_journal_load_from_storage (priv->journal);
+#if 0
   /* Initialise the dialer windows */
   window_dialer_init (priv->data);
   window_incoming_init (priv->data);
@@ -411,6 +424,28 @@ moko_dialer_init (MokoDialer *dialer)
   window_outgoing_init (priv->data);
   window_history_init (priv->data);
 #endif
+
+  /* Create the window */
+  priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  g_signal_connect (G_OBJECT (priv->window), "delete-event",
+                    (GCallback) gtk_main_quit, NULL);
+  gtk_window_set_title (GTK_WINDOW (priv->window), "Dialer");
+
+  /* Notebook */
+  priv->notebook = gtk_notebook_new ();
+  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (priv->notebook), GTK_POS_BOTTOM);
+  gtk_container_add (GTK_CONTAINER (priv->window), priv->notebook);
+
+  /* Keypad */
+  priv->keypad = moko_keypad_new ();
+  gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->keypad,
+                            gtk_image_new_from_file (PKGDATADIR"/dtmf.png"));
+  gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->keypad,
+                          "tab-expand", TRUE,
+                          NULL);
+
+  gtk_widget_show_all (priv->notebook);
+  gtk_window_present (GTK_WINDOW (priv->window));
 }
 
 MokoDialer*

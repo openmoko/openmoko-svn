@@ -1,5 +1,19 @@
 2007-07-03  Neil J. Patel  <njp@o-hand.com>
 
+	* src/Makefile.am:
+	* src/moko-dialer.c: (moko_dialer_dispose), (moko_dialer_init):
+	Init the connection with gsmd through MokoGsmdConnection.
+	Init MokoJournal. 
+	Create the initial window (and present straight away for now).
+	Create the notebook, and pack in the keypad.
+
+	* src/moko-keypad.c: (moko_keypad_dispose), (moko_keypad_finalize),
+	(moko_keypad_class_init), (moko_keypad_init), (moko_keypad_new):
+	* src/moko-keypad.h:
+	Added the beginiings of a keypad.
+
+2007-07-03  Neil J. Patel  <njp@o-hand.com>
+
 	* AUTHORS:
 	* INSTALL:
 	* Makefile.am:
