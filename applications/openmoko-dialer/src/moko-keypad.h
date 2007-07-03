@@ -60,6 +60,7 @@ struct _MokoKeypadClass
   GtkVBoxClass    parent_class;
   
   /* signals */
+  void (*dial_number) (MokoKeypad *keypad, const gchar *number);
 
   /* future padding */
   void (*_moko_keypad_1) (void);

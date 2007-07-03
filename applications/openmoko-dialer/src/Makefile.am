@@ -9,6 +9,12 @@ openmoko_dialer_SOURCES = \
 	moko-dialer.c			\
 	moko-dialer.h			\
 	moko-dialer-glue.h		\
+	moko-dialer-panel.c		\
+	moko-dialer-panel.h		\
+	moko-dialer-textview.c		\
+	moko-dialer-textview.h		\
+	moko-digit-button.c		\
+	moko-digit-button.h		\
 	moko-keypad.c			\
 	moko-keypad.h			
 	

@@ -1,6 +1,34 @@
 2007-07-03  Neil J. Patel  <njp@o-hand.com>
 
 	* src/Makefile.am:
+	* src/moko-dialer-declares.h:
+	* src/moko-dialer-panel.c: (moko_dialer_panel_class_init),
+	(moko_dialer_panel_init), (moko_dialer_panel_pressed),
+	(moko_dialer_panel_new):
+	* src/moko-dialer-panel.h:
+	* src/moko-dialer-textview.c: (moko_dialer_textview_class_init),
+	(moko_dialer_textview_init), (moko_dialer_textview_new),
+	(moko_dialer_textview_set_color), (moko_dialer_textview_insert),
+	(moko_dialer_textview_get_input), (moko_dialer_textview_empty),
+	(moko_dialer_textview_delete), (moko_dialer_textview_fill_it),
+	(moko_dialer_textview_confirm_it):
+	* src/moko-dialer-textview.h:
+	* src/moko-digit-button.c: (moko_digit_button_new),
+	(moko_digit_button_new_with_labels),
+	(moko_digit_button_set_numbers), (moko_digit_button_class_init),
+	(moko_digit_button_init), (moko_digit_button_get_left),
+	(moko_digit_button_get_right):
+	* src/moko-digit-button.h:
+	* src/moko-keypad.c: (on_dial_clicked), (on_delete_clicked),
+	(on_panel_user_input), (on_panel_user_hold), (moko_keypad_dispose),
+	(moko_keypad_class_init), (moko_keypad_init), (moko_keypad_new):
+	* src/moko-keypad.h:
+	Added the MokoDigitButton, MokoDialerPanel and MokoDialerTextview classes
+	from the orignal dialer, and added them into the new MokoKeypad object.
+
+2007-07-03  Neil J. Patel  <njp@o-hand.com>
+
+	* src/Makefile.am:
 	* src/moko-dialer.c: (moko_dialer_dispose), (moko_dialer_init):
 	Init the connection with gsmd through MokoGsmdConnection.
 	Init MokoJournal. 
