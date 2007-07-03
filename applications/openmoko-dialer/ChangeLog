@@ -1,0 +1,27 @@
+2007-07-03  Neil J. Patel  <njp@o-hand.com>
+
+	* AUTHORS:
+	* INSTALL:
+	* Makefile.am:
+	* README:
+	* autogen.sh:
+	* configure.ac:
+	* data/Makefile.am:
+	* data/openmoko-dialer.desktop:
+	* data/org.openmoko.Dialer.service.in:
+	* src/Makefile.am:
+	* src/dialer-main.c: (_show_dialer), (_show_missed), (main):
+	* src/moko-dialer-dbus.xml:
+	* src/moko-dialer-glue.h:
+	* src/moko-dialer.c: (moko_dialer_show_dialer),
+	(moko_dialer_show_missed_calls), (moko_dialer_get_status),
+	(moko_dialer_dial), (moko_dialer_hang_up),
+	(moko_dialer_outgoing_call), (moko_dialer_talking),
+	(moko_dialer_hung_up), (moko_dialer_rejected),
+	(on_network_registered), (on_incoming_call), (on_pin_requested),
+	(on_call_progress_changed), (register_network_cb),
+	(moko_dialer_dispose), (moko_dialer_finalize),
+	(moko_dialer_class_init), (moko_dialer_init),
+	(moko_dialer_get_default):
+	* src/moko-dialer.h:
+	Intial Import
