@@ -1,0 +1,12 @@
+2007-07-04  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	Check for ECalComponentId
+
+	* src/today-header-box.c: (today_header_box_expose_cb):
+	* src/today-main.c: (main):
+	* src/today.h:
+	Just use a GtkTreeView instead of the custom widget. Display events
+	within the next week from the main calendar. General UI shuffling.
+

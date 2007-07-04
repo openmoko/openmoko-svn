@@ -80,8 +80,8 @@ today_header_box_expose_cb (GtkWidget *widget, GdkEventExpose *event,
 			&color, FALSE, TRUE);
 
 		gdk_gc_set_foreground (gc, &color);
-		gdk_draw_line (widget->window, gc, offset, line,
-			width - offset, line);
+		gdk_draw_line (widget->window, gc, offset - 1, line,
+			width - offset + 1, line);
 	}
 	gdk_gc_set_foreground (gc, &widget->style->light[GTK_STATE_NORMAL]);
 	gdk_draw_layout (widget->window, gc, priv->padding, priv->padding,

@@ -6,9 +6,8 @@
 
 typedef struct {
 	GtkWidget *window;
-	GtkWidget *vbox;
-	GtkWidget *toolbar;
 	GtkWidget *notebook;
+	GtkWidget *home_toolbar;
 	GtkWidget *message_box;
 	GtkWidget *events_box;
 	GtkToolItem *dial_button;

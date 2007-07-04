@@ -32,6 +32,15 @@ if test x$TODAY_DEVEL != x ; then
     CFLAGS="-Wall -Wextra -Wshadow -Wpointer-arith -g"
 fi
 
+old_cflags=$CFLAGS
+CFLAGS=$TODAY_CFLAGS
+AC_CHECK_TYPE(ECalComponentId, [], [], [#include <libecal/e-cal.h>])
+CFLAGS=$old_cflags
+
+if test $ac_cv_type_ECalComponentId = yes; then
+        AC_DEFINE(HAVE_CID_TYPE, 1, [Defined if ECalComponentId exists])
+fi
+
 AC_OUTPUT([
 Makefile
 po/Makefile.in

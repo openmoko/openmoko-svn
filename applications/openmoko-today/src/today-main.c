@@ -6,6 +6,7 @@
 #include "config.h"
 #include "today.h"
 #include "today-header-box.h"
+#include "today-events.h"
 
 static GtkToolItem *
 today_toolbutton_new (const gchar *icon_name)
@@ -59,54 +60,57 @@ main (int argc, char **argv)
 	/* Create widgets */
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (data.window), _("Today"));
-	data.vbox = gtk_vbox_new (FALSE, 0);
-	gtk_container_add (GTK_CONTAINER (data.window), data.vbox);
-	
-	/* Toolbar */
-	data.toolbar = gtk_toolbar_new ();
-	gtk_box_pack_start (GTK_BOX (data.vbox), data.toolbar, FALSE, FALSE, 0);
-
-	data.dates_button = today_toolbutton_new ("dates");
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar), data.dates_button, 0);
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar),
-		gtk_separator_tool_item_new (), 0);
-	data.messages_button = today_toolbutton_new ("openmoko-messages");
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar), data.messages_button, 0);
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar),
-		gtk_separator_tool_item_new (), 0);
-	data.contacts_button = today_toolbutton_new ("contacts");
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar), data.contacts_button, 0);
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar),
-		gtk_separator_tool_item_new (), 0);
-	data.dial_button = today_toolbutton_new ("openmoko-dialer");
-	gtk_toolbar_insert (GTK_TOOLBAR (data.toolbar), data.dial_button, 0);
 	
 	/* Notebook */
 	data.notebook = gtk_notebook_new ();
 	g_object_set (G_OBJECT (data.notebook), "can-focus", FALSE, NULL);
 	gtk_notebook_set_tab_pos (GTK_NOTEBOOK (data.notebook), GTK_POS_BOTTOM);
-	gtk_box_pack_end (GTK_BOX (data.vbox), data.notebook, TRUE, TRUE, 0);
-	
+	gtk_container_add (GTK_CONTAINER (data.window), data.notebook);
+
 	/* Add home page */
+	vbox = gtk_vbox_new (FALSE, 0);
+	today_notebook_add_page_with_icon (data.notebook, vbox,
+		GTK_STOCK_HOME, 6);
+		
+	/* Toolbar */
+	data.home_toolbar = gtk_toolbar_new ();
+	gtk_box_pack_start (GTK_BOX (vbox), data.home_toolbar, FALSE, TRUE, 0);
+
+	data.dates_button = today_toolbutton_new ("dates");
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		data.dates_button, 0);
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		gtk_separator_tool_item_new (), 0);
+	data.messages_button = today_toolbutton_new ("openmoko-messages");
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		data.messages_button, 0);
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		gtk_separator_tool_item_new (), 0);
+	data.contacts_button = today_toolbutton_new ("contacts");
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		data.contacts_button, 0);
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		gtk_separator_tool_item_new (), 0);
+	data.dial_button = today_toolbutton_new ("openmoko-dialer");
+	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
+		data.dial_button, 0);
+
 	viewport = gtk_viewport_new (NULL, NULL);
+	gtk_box_pack_start (GTK_BOX (vbox), viewport, TRUE, TRUE, 0);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
 				      GTK_SHADOW_NONE);
 	align = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
-	vbox = gtk_vbox_new (FALSE, 12);
-	gtk_container_add (GTK_CONTAINER (align), vbox);
 	gtk_container_add (GTK_CONTAINER (viewport), align);
 
+	vbox = gtk_vbox_new (FALSE, 6);
+	gtk_container_add (GTK_CONTAINER (align), vbox);
 	data.message_box = today_header_box_new_with_markup (
 		"<b>Provider goes here</b>");
-	gtk_box_pack_start (GTK_BOX (vbox), data.message_box, FALSE, TRUE, 0);
+	//gtk_box_pack_start (GTK_BOX (vbox), data.message_box, FALSE, TRUE, 0);
 
-	data.events_box = today_header_box_new_with_markup (
-		"<b>The date</b>");
+	data.events_box = today_events_box_new ();
 	gtk_box_pack_start (GTK_BOX (vbox), data.events_box, FALSE, TRUE, 0);
-	
-	today_notebook_add_page_with_icon (data.notebook, viewport,
-		GTK_STOCK_HOME, 6);
 	
 	/* Add new tasks page */
 	placeholder = gtk_label_new ("New tasks");
