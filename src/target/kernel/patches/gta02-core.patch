@@ -820,16 +820,17 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
  		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
-@@ -157,6 +161,8 @@
+@@ -157,6 +161,9 @@
  		case GTA01Bv4_SYSTEM_REV:
  			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
++			break;
 +		case GTA02v1_SYSTEM_REV:
 +			gta01_gsm.gpio_ngsm_en = 0;
  			break;
  		default:
  			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
-@@ -175,9 +181,13 @@
+@@ -175,9 +182,13 @@
  		break;
  	}
  
