@@ -1,3 +1,22 @@
+2007-07-04  Neil J. Patel  <njp@o-hand.com>
+
+	* src/Makefile.am:
+	* src/moko-dialer.c: (moko_dialer_hang_up),
+	(on_keypad_dial_clicked), (moko_dialer_init):
+	* src/moko-history.c: (moko_history_load_entries),
+	(moko_history_dispose), (moko_history_finalize),
+	(moko_history_set_property), (moko_history_get_property),
+	(moko_history_class_init), (moko_history_init), (moko_history_new):
+	* src/moko-history.h:
+	Started to convert history from old dialer.
+	Added a toolbar, converted custom menu to GtkComboBox.
+
+	* src/moko-talking.c: (moko_talking_dispose),
+	(moko_talking_finalize), (moko_talking_class_init),
+	(moko_talking_init), (moko_talking_new):
+	* src/moko-talking.h:
+	A stub for a talking tab.
+
 2007-07-03  Neil J. Patel  <njp@o-hand.com>
 
 	* src/Makefile.am:

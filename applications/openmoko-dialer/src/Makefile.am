@@ -15,9 +15,13 @@ openmoko_dialer_SOURCES = \
 	moko-dialer-textview.h		\
 	moko-digit-button.c		\
 	moko-digit-button.h		\
+	moko-history.c			\
+	moko-history.h			\
 	moko-keypad.c			\
-	moko-keypad.h			
-	
+	moko-keypad.h			\
+	moko-talking.c			\
+	moko-talking.h
+
 
 openmoko_dialer_LDADD = @LIBS@
 

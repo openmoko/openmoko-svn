@@ -24,8 +24,13 @@
 
 #include <libmokogsmd/moko-gsmd-connection.h>
 #include <libmokojournal/moko-journal.h>
+#include <libmokoui/moko-stock.h>
 
 #include "moko-dialer.h"
+
+#include "moko-keypad.h"
+#include "moko-talking.h"
+#include "moko-history.h"
 
 /*
 #include "contacts.h"
@@ -164,7 +169,7 @@ moko_dialer_hang_up (MokoDialer *dialer, const gchar *message, GError *error)
   /* FIXME: Create a dialog and let the user know that another program is
    * requesting the connection be dropped, and why ($message).
    */
-
+  return TRUE;
 }
 
 /* </dbus functions> */
@@ -206,6 +211,19 @@ moko_dialer_rejected (MokoDialer *dialer)
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
 }
 
+/* Callbacks from widgets */
+static void
+on_keypad_dial_clicked (MokoKeypad  *keypad,
+                        const gchar *number,
+                        MokoDialer  *dialer)
+{
+  MokoDialerPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_DIALER (dialer));
+  priv = dialer->priv;
+
+  g_print ("on_keypad_dial_clicked: %s\n", number);
+}
 
 /* Callbacks for MokoGsmdConnection */
 static void
@@ -421,7 +439,7 @@ moko_dialer_init (MokoDialer *dialer)
   window_dialer_init (priv->data);
   window_incoming_init (priv->data);
   window_pin_init (priv->data);
-  window_outgoing_init (priv->data);
+  window_outgoing_init (priv->data); 
   window_history_init (priv->data);
 #endif
 
@@ -436,13 +454,31 @@ moko_dialer_init (MokoDialer *dialer)
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (priv->notebook), GTK_POS_BOTTOM);
   gtk_container_add (GTK_CONTAINER (priv->window), priv->notebook);
 
+  /* Talking: We don't actually add it to the mnotebok yet, as it is only added
+   * as/when needed. Therefore we just create it, and ref it (so it will 
+   * survive when we remove it from the notebook later on.
+   */
+  priv->talking = moko_talking_new ();
+  g_object_ref (G_OBJECT (priv->talking));
+
   /* Keypad */
   priv->keypad = moko_keypad_new ();
+  g_signal_connect (G_OBJECT (priv->keypad), "dial_number",
+                    G_CALLBACK (on_keypad_dial_clicked), (gpointer)dialer);
   gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->keypad,
                             gtk_image_new_from_file (PKGDATADIR"/dtmf.png"));
   gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->keypad,
                           "tab-expand", TRUE,
                           NULL);
+
+  /* History */
+  priv->history = moko_history_new (priv->journal);
+  gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->history,
+                            gtk_image_new_from_stock (MOKO_STOCK_CALL_HISTORY,
+                                                      GTK_ICON_SIZE_BUTTON));
+  gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->history,
+                           "tab-expand", TRUE,
+                           NULL);
 
   gtk_widget_show_all (priv->notebook);
   gtk_window_present (GTK_WINDOW (priv->window));
