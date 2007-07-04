@@ -225,6 +225,14 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   g_print ("on_keypad_dial_clicked: %s\n", number);
 }
 
+static void
+on_history_dial_number (MokoHistory *history,
+                        const gchar *number,
+                        MokoDialer  *dialer)
+{
+  g_print ("on_history_dial_number: %s\n", number);
+}
+
 /* Callbacks for MokoGsmdConnection */
 static void
 on_network_registered (MokoGsmdConnection *conn, 
@@ -473,6 +481,8 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* History */
   priv->history = moko_history_new (priv->journal);
+  g_signal_connect (G_OBJECT (priv->history), "dial_number",
+                    G_CALLBACK (on_history_dial_number), (gpointer)dialer);
   gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->history,
                             gtk_image_new_from_stock (MOKO_STOCK_CALL_HISTORY,
                                                       GTK_ICON_SIZE_BUTTON));

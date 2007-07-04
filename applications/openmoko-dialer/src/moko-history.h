@@ -59,6 +59,10 @@ struct _MokoHistoryClass
 {
   /*< private >*/
   GtkVBoxClass    parent_class;
+
+  /* signals */
+  void (*dial_number) (MokoHistory *history, const gchar *number);
+
 };
 
 typedef enum {

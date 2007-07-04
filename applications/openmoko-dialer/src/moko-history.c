@@ -67,6 +67,15 @@ struct _MokoHistoryPrivate
 
 enum
 {
+  DIAL_NUMBER,
+
+  LAST_SIGNAL
+};
+
+static guint history_signals[LAST_SIGNAL] = {0, };
+
+enum
+{
   PROP_JOURNAL=1
 };
 
@@ -80,10 +89,32 @@ enum history_columns
   ENTRY_POINTER_COLUMN
 };
 
+
 static void
 on_dial_clicked (GtkWidget *button, MokoHistory *history)
 {
-  g_print ("dial clicked\n");
+  MokoHistoryPrivate *priv;
+  GtkTreeSelection *selection;
+  GtkTreeView *treeview;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *number;
+ 
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  treeview = GTK_TREE_VIEW (priv->treeview);
+  selection = gtk_tree_view_get_selection (treeview);
+  model = gtk_tree_view_get_model (treeview);
+
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    return;
+
+  gtk_tree_model_get (model, &iter, NUMBER_COLUMN, &number, -1);
+
+  g_signal_emit (G_OBJECT (history), history_signals[DIAL_NUMBER], 0, number);
+
+  g_free (number);
 }
 
 static void
@@ -390,6 +421,15 @@ moko_history_class_init (MokoHistoryClass *klass)
                          "MokoJournal",
                          "A MokoJournal Object",
                          G_PARAM_CONSTRUCT|G_PARAM_READWRITE));
+  history_signals[DIAL_NUMBER] =
+    g_signal_new ("dial_number", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoHistoryClass, dial_number),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__STRING,
+                  G_TYPE_NONE, 
+                  1, G_TYPE_STRING);
 
   g_type_class_add_private (obj_class, sizeof (MokoHistoryPrivate)); 
 }

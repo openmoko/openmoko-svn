@@ -1,5 +1,15 @@
 2007-07-04  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_history_dial_number), (moko_dialer_init):
+	Connect to new "dial_number" signal in MokoHistory
+
+	* src/moko-history.c: (on_dial_clicked), (moko_history_class_init):
+	* src/moko-history.h:
+	Add a "dial_number" signal to alert the MokoDialer object that the user
+	wants to dial a number.
+
+2007-07-04  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-history.c: (on_dial_clicked), (on_sms_clicked),
 	(on_delete_clicked), (history_add_entry), (on_entry_added_cb),
 	(moko_history_filter_visible_func), (on_filter_changed),
