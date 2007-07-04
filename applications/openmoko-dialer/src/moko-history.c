@@ -166,7 +166,7 @@ moko_history_init (MokoHistory *history)
   gint i;
   GtkListStore *store;
   GtkTreeIter iter;
-  GtkWidget *toolbar, *combo, *treeview;
+  GtkWidget *toolbar, *combo, *treeview, *image;
   GtkToolItem *item;
   GtkCellRenderer *renderer;
   GdkPixbuf *icon;
@@ -188,27 +188,57 @@ moko_history_init (MokoHistory *history)
   toolbar = gtk_toolbar_new ();
   gtk_box_pack_start (GTK_BOX (history), toolbar, FALSE, FALSE, 0);
 
-  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_DIAL);
+  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/phone.png", NULL);
+  image = gtk_image_new_from_pixbuf (icon);
+  item = gtk_tool_button_new (image, "Dial");
   gtk_tool_item_set_expand (item, TRUE);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
   
+  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/sms.png", NULL);
+  image = gtk_image_new_from_pixbuf (icon);
+  item = gtk_tool_button_new (image, "SMS");
+ gtk_tool_item_set_expand (item, TRUE);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
+
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
+  
   item = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
   gtk_tool_item_set_expand (item, TRUE);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
   
-  /* Test combobox */
+  /* Filter combo */
   store = gtk_list_store_new (3, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_INT);
   
+  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/received.png", NULL);
+  gtk_list_store_insert_with_values (store, &iter, 0, 
+                                     0, icon, 
+                                     1, "Call History - Received",
+                                     2, HISTORY_FILTER_RECEIVED,
+                                     -1);  
+  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/dialed.png", NULL);
+  gtk_list_store_insert_with_values (store, &iter, 0, 
+                                     0, icon, 
+                                     1, "Call History - Dialed",
+                                     2, HISTORY_FILTER_DIALED,
+                                     -1);  
+
+  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/missed.png", NULL);
+  gtk_list_store_insert_with_values (store, &iter, 0, 
+                                     0, icon, 
+                                     1, "Call History - Missed",
+                                     2, HISTORY_FILTER_MISSED,
+                                     -1);
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/all.png", NULL);
   gtk_list_store_insert_with_values (store, &iter, 0, 
                                      0, icon, 
                                      1, "Call History - All",
                                      2, HISTORY_FILTER_ALL,
                                      -1);
-
+  
   combo = gtk_combo_box_new_with_model (GTK_TREE_MODEL (store));
+  gtk_combo_box_set_active (GTK_COMBO_BOX (combo), 0);
   
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), renderer, FALSE);
@@ -217,6 +247,7 @@ moko_history_init (MokoHistory *history)
                                   NULL);
 
   renderer = gtk_cell_renderer_text_new ();
+  g_object_set (G_OBJECT (renderer), "xpad", 10, NULL);
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), renderer, TRUE);
   gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo), renderer,
                                   "text", 1,

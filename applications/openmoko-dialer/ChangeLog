@@ -1,5 +1,15 @@
 2007-07-04  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-history.c: (moko_history_init):
+	Fixed icons in the toolbar.
+	Added the rest of the filter options, with correct icons.
+
+	* src/moko-history.h:
+	Replaced OUTGOING/INCOMING with DIALED/RECEIVED to match with the text of
+	the combobox.
+
+2007-07-04  Neil J. Patel  <njp@o-hand.com>
+
 	* src/Makefile.am:
 	* src/moko-dialer.c: (moko_dialer_hang_up),
 	(on_keypad_dial_clicked), (moko_dialer_init):
