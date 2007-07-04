@@ -55,6 +55,14 @@ static GdkPixbuf *icons[N_CALL_TYPES] = {NULL, NULL, NULL};
 struct _MokoHistoryPrivate
 {
   MokoJournal       *journal;
+
+  GtkWidget         *treeview;
+  GtkWidget         *combo;
+
+  GtkTreeModel      *main_model;
+  GtkTreeModel      *sort_model;
+  GtkTreeModel      *filter_model;
+
 };
 
 enum
@@ -73,9 +81,237 @@ enum history_columns
 };
 
 static void
+on_dial_clicked (GtkWidget *button, MokoHistory *history)
+{
+  g_print ("dial clicked\n");
+}
+
+static void
+on_sms_clicked (GtkWidget *button, MokoHistory *history)
+{
+  g_print ("sms clicked\n");
+}
+
+static void
+on_delete_clicked (GtkWidget *button, MokoHistory *history)
+{
+  g_print ("Delete clicked\n");
+}
+
+
+static gboolean
+history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
+{
+  GtkTreeIter iter;
+  const gchar *uid, *number;
+  GdkPixbuf *icon = NULL;
+  const gchar *display_text;
+  time_t dstart;
+  enum MessageDirection direction;
+  gboolean was_missed;
+  const MokoTime *time;
+  MokoJournalVoiceInfo *info = NULL;
+  gint type;
+
+  uid = moko_journal_entry_get_contact_uid (entry);
+  moko_journal_entry_get_direction (entry, &direction);
+  time = moko_journal_entry_get_dtstart (entry);
+  dstart = moko_time_as_timet (time);
+  moko_journal_entry_get_voice_info (entry, &info);
+  was_missed = moko_journal_voice_info_get_was_missed (info);
+  number = moko_journal_voice_info_get_distant_number (info);
+
+  /* Load the correct icon */
+  if (direction == DIRECTION_OUT)
+  {
+    icon = icons[CALL_OUTGOING];
+    type = HISTORY_FILTER_DIALED;
+  }
+  else
+  {
+    if (was_missed)
+    {
+      icon = icons[CALL_MISSED];
+      type = HISTORY_FILTER_MISSED;
+    }
+    else
+    {
+      icon = icons[CALL_INCOMING];
+      type = HISTORY_FILTER_RECEIVED;
+    }
+  }
+
+  /* display text should be the contact name or the number dialed */
+  /* FIXME: look up contact uid if stored */
+
+  if ( number == NULL || display_text == NULL || uid == NULL)
+    return FALSE;
+
+  gtk_list_store_insert_with_values (store, &iter, 0,
+    NUMBER_COLUMN, number,
+    DSTART_COLUMN, dstart,
+    ICON_NAME_COLUMN, icon,
+    DISPLAY_TEXT_COLUMN, display_text,
+    CALL_TYPE_COLUMN, type,
+    ENTRY_POINTER_COLUMN, uid,
+    -1);
+
+  return TRUE;
+}
+
+static void
+on_entry_added_cb (MokoJournal *journal,
+                   MokoJournalEntry *entry,
+                   MokoHistory *history)
+{
+  MokoHistoryPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  if (moko_journal_entry_get_type (entry) != VOICE_JOURNAL_ENTRY)
+    return;
+
+  history_add_entry (GTK_LIST_STORE (priv->main_model), entry);
+}
+
+static gboolean
+moko_history_filter_visible_func (GtkTreeModel *model, 
+                                  GtkTreeIter  *iter,
+                                  MokoHistory  *history)
+{
+  MokoHistoryPrivate *priv;
+  gint type;
+  gint active;
+
+  g_return_val_if_fail (MOKO_IS_HISTORY (history), TRUE);
+  priv = history->priv;
+
+  active = gtk_combo_box_get_active (GTK_COMBO_BOX (priv->combo));
+
+  if (active == HISTORY_FILTER_ALL)
+    return TRUE;
+
+  gtk_tree_model_get (model, iter, CALL_TYPE_COLUMN, &type, -1);
+
+  if (active == type)
+    return TRUE;
+
+  return FALSE;
+}
+
+static void
+on_filter_changed (GtkWidget *combo, MokoHistory *history)
+{
+  MokoHistoryPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (priv->filter_model));
+}
+
+static gint
+sort_by_date (MokoJournalEntry *a, MokoJournalEntry *b)
+{
+  const MokoTime *at, *bt;
+  time_t ta, tb;
+
+  at = moko_journal_entry_get_dtstart (a);
+  bt = moko_journal_entry_get_dtstart (b);
+
+  ta = moko_time_as_timet (at);
+  tb = moko_time_as_timet (bt);
+
+  return (gint)difftime (ta, tb);
+}
+
+static void
 moko_history_load_entries (MokoHistory *history)
 {
-  g_print ("Loading entries\n");
+  MokoHistoryPrivate *priv;
+  GtkListStore *store;
+  GtkTreeModel *sorted;
+  GtkTreeModel *filtered;
+  GtkTreeViewColumn *col;
+  GtkCellRenderer *renderer;
+  MokoJournalEntry *entry;
+  gint i, j, n_entries;
+  GList *entries = NULL, *e;
+
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  /* Create the columns */
+  col = gtk_tree_view_column_new ();
+
+  renderer = gtk_cell_renderer_pixbuf_new ();
+  gtk_tree_view_column_pack_start (col, renderer, FALSE);
+  gtk_tree_view_column_set_attributes (col, renderer, 
+                                       "pixbuf", ICON_NAME_COLUMN,
+                                       NULL);
+
+  renderer = gtk_cell_renderer_text_new ();
+  gtk_tree_view_column_pack_start (col, renderer, TRUE);
+  gtk_tree_view_column_set_attributes (col, renderer,
+                                       "text", DISPLAY_TEXT_COLUMN,
+                                       NULL);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (priv->treeview), col);
+
+  /* Set up the list store */
+  store = gtk_list_store_new (6, G_TYPE_STRING,
+                                 G_TYPE_INT,
+                                 GDK_TYPE_PIXBUF,
+                                 G_TYPE_STRING,
+                                 G_TYPE_INT,
+                                 G_TYPE_STRING);
+  priv->main_model = GTK_TREE_MODEL (store);
+
+  sorted = gtk_tree_model_sort_new_with_model (priv->main_model);
+  priv->sort_model = sorted;
+  gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (sorted), 
+                                       DSTART_COLUMN,
+                                       GTK_SORT_DESCENDING);
+
+  /* Set up the filtered column */
+  filtered = gtk_tree_model_filter_new (sorted, NULL);
+  priv->filter_model = filtered;
+  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (filtered),
+               (GtkTreeModelFilterVisibleFunc) moko_history_filter_visible_func,
+                                          history,
+                                          NULL);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (priv->treeview), filtered);
+
+  moko_journal_set_entry_added_callback (priv->journal,
+                                  (MokoJournalEntryAddedFunc)on_entry_added_cb,
+                                          (gpointer)history);
+  
+  n_entries = moko_journal_get_nb_entries (priv->journal);
+  if (n_entries < 1)
+  {
+    g_print ("The Journal is empty\n");
+    return;
+  }
+
+  i = j = 0;
+  for (i = 0; i < n_entries; i++)
+  {
+    moko_journal_get_entry_at (priv->journal, i, &entry);
+    
+    /* We are not interested in anything other than voice entries */
+    if (moko_journal_entry_get_type (entry) != VOICE_JOURNAL_ENTRY)
+      continue;
+
+    entries = g_list_insert_sorted (entries, 
+                                    (gpointer)entry, 
+                                    (GCompareFunc)sort_by_date);
+  }
+
+  for (e = entries; e != NULL; e = e->next)
+  {
+    if (history_add_entry (store, entry))
+      j++;
+  }
 }
 
 /* GObject functions */
@@ -166,7 +402,7 @@ moko_history_init (MokoHistory *history)
   gint i;
   GtkListStore *store;
   GtkTreeIter iter;
-  GtkWidget *toolbar, *combo, *treeview, *image;
+  GtkWidget *toolbar, *combo, *treeview, *image, *scroll;
   GtkToolItem *item;
   GtkCellRenderer *renderer;
   GdkPixbuf *icon;
@@ -192,6 +428,8 @@ moko_history_init (MokoHistory *history)
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "Dial");
   gtk_tool_item_set_expand (item, TRUE);
+  g_signal_connect (G_OBJECT (item), "clicked", 
+                    G_CALLBACK (on_dial_clicked), (gpointer)history);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
@@ -199,13 +437,17 @@ moko_history_init (MokoHistory *history)
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/sms.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "SMS");
- gtk_tool_item_set_expand (item, TRUE);
+  gtk_tool_item_set_expand (item, TRUE);
+  g_signal_connect (G_OBJECT (item), "clicked", 
+                    G_CALLBACK (on_sms_clicked), (gpointer)history); 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
   
   item = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
   gtk_tool_item_set_expand (item, TRUE);
+  g_signal_connect (G_OBJECT (item), "clicked", 
+                    G_CALLBACK (on_delete_clicked), (gpointer)history); 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
   
   /* Filter combo */
@@ -238,7 +480,10 @@ moko_history_init (MokoHistory *history)
                                      -1);
   
   combo = gtk_combo_box_new_with_model (GTK_TREE_MODEL (store));
+  priv->combo  = combo;
   gtk_combo_box_set_active (GTK_COMBO_BOX (combo), 0);
+  g_signal_connect (G_OBJECT (combo), "changed", 
+                    G_CALLBACK (on_filter_changed), history);
   
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), renderer, FALSE);
@@ -255,8 +500,16 @@ moko_history_init (MokoHistory *history)
 
   gtk_box_pack_start (GTK_BOX (history), combo, FALSE, FALSE, 0);
 
-  treeview = gtk_tree_view_new ();
-  gtk_box_pack_start (GTK_BOX (history), treeview, TRUE, TRUE, 0);
+  /* Treeview */
+  scroll = gtk_scrolled_window_new (NULL, NULL);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
+                                  GTK_POLICY_AUTOMATIC,
+                                  GTK_POLICY_AUTOMATIC);
+  gtk_box_pack_start (GTK_BOX (history), scroll, TRUE, TRUE, 0);
+
+  treeview = priv->treeview = gtk_tree_view_new ();
+  gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
+  gtk_container_add (GTK_CONTAINER (scroll), treeview);
 }
 
 GtkWidget*
