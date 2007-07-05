@@ -126,7 +126,88 @@ on_sms_clicked (GtkWidget *button, MokoHistory *history)
 static void
 on_delete_clicked (GtkWidget *button, MokoHistory *history)
 {
-  g_print ("Delete clicked\n");
+  MokoHistoryPrivate *priv;
+  GtkWidget *dialog;
+  GtkTreeIter iter0;
+  GtkTreeIter iter1;
+  GtkTreeIter iter2;
+  GtkTreeModel *filtered;
+  GtkTreeModel *sorted;
+  GtkTreeModel *store;
+  GtkTreeSelection *selection;
+  GtkTreeView *treeview;
+  GtkTreePath *path;
+  const gchar *uid;
+  gint result = 0;
+
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  treeview = GTK_TREE_VIEW (priv->treeview);
+  selection = gtk_tree_view_get_selection (treeview);
+
+  if (!gtk_tree_selection_get_selected (selection, &filtered, &iter0))
+    ;//return;
+
+  //gtk_tree_model_get (filtered, &iter0, ENTRY_POINTER_COLUMN, &uid, -1);
+
+  /* Create a dialog */
+  dialog = gtk_message_dialog_new (gtk_widget_get_ancestor(GTK_WIDGET (history),
+                                                            GTK_TYPE_WINDOW),
+                                   0,
+                                   GTK_MESSAGE_QUESTION,
+                                   GTK_BUTTONS_NONE,
+                                   "Are you sure you want to permanantly "\
+                                   "delete this call?", NULL);
+
+  gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                          "Don't Delete", GTK_RESPONSE_CANCEL,
+                          GTK_STOCK_DELETE, GTK_RESPONSE_YES,
+                          NULL);
+  gtk_widget_set_name (dialog, "mokomessagedialog");
+  gtk_container_set_border_width (GTK_CONTAINER (dialog), 0);
+
+  /* Just some tests
+  gtk_widget_set_size_request (dialog, 
+                               GTK_WIDGET (history)->allocation.width,
+                               GTK_WIDGET (history)->allocation.height);
+
+  gtk_window_move (GTK_WINDOW (dialog),
+                   GTK_WIDGET (history)->allocation.x,
+                   GTK_WIDGET (history)->allocation.y);
+  */
+  
+  result = gtk_dialog_run (GTK_DIALOG (dialog));
+  switch (result)
+  {
+    case GTK_RESPONSE_YES:
+      break;
+    default:
+      gtk_widget_destroy (dialog);
+      return;
+      break;
+  }
+
+  /* Remove the entry from the journal */
+  if (moko_journal_remove_entry_by_uid (priv->journal, uid))
+    moko_journal_write_to_storage (priv->journal);
+
+  /* Remove the row from the list store */
+  path = gtk_tree_model_get_path (filtered, &iter0);
+  sorted = priv->sort_model;
+  gtk_tree_model_filter_convert_iter_to_child_iter (
+                                              GTK_TREE_MODEL_FILTER (filtered),
+                                              &iter1, &iter0);
+
+  store = priv->main_model;
+  gtk_tree_model_sort_convert_iter_to_child_iter (GTK_TREE_MODEL_SORT (sorted),
+                                                  &iter2, &iter1);
+  gtk_list_store_remove (GTK_LIST_STORE (store), &iter2);
+  gtk_tree_view_set_cursor (treeview, path, 0, 0);
+
+  /* Clean up */
+  gtk_tree_path_free (path);
+  gtk_widget_destroy (dialog);
 }
 
 

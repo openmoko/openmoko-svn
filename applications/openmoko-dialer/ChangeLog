@@ -1,3 +1,8 @@
+2007-07-05  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-history.c: (on_delete_clicked):
+	Implemented the 'delete' action.
+
 2007-07-04  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_history_dial_number), (moko_dialer_init):
