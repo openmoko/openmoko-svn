@@ -1,3 +1,66 @@
+2007-07-05  Chris Lord  <set EMAIL_ADDRESS environment variable>
+
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* libkoto/Makefile.am:
+	* libkoto/ical-util.c:
+	* libkoto/ical-util.h:
+	* libkoto/koto-all-group.c:
+	* libkoto/koto-all-group.h:
+	* libkoto/koto-category-group.c:
+	* libkoto/koto-category-group.h:
+	* libkoto/koto-cell-renderer-pixbuf.c:
+	* libkoto/koto-cell-renderer-pixbuf.h:
+	* libkoto/koto-date-combo.c:
+	* libkoto/koto-date-combo.h:
+	* libkoto/koto-field-editor-factory.c:
+	* libkoto/koto-field-editor-factory.h:
+	* libkoto/koto-group-combo.c:
+	* libkoto/koto-group-combo.h:
+	* libkoto/koto-group-filter-model.c:
+	* libkoto/koto-group-filter-model.h:
+	* libkoto/koto-group-store.c:
+	* libkoto/koto-group-store.h:
+	* libkoto/koto-group.c:
+	* libkoto/koto-group.h:
+	* libkoto/koto-hint-entry.c:
+	* libkoto/koto-hint-entry.h:
+	* libkoto/koto-meta-group.c:
+	* libkoto/koto-meta-group.h:
+	* libkoto/koto-no-category-group.c:
+	* libkoto/koto-no-category-group.h:
+	* libkoto/koto-platform.h:
+	* libkoto/koto-priority-combo.c:
+	* libkoto/koto-priority-combo.h:
+	* libkoto/koto-task-editor-dialog.c:
+	* libkoto/koto-task-editor-dialog.h:
+	* libkoto/koto-task-editor.c:
+	* libkoto/koto-task-editor.h:
+	* libkoto/koto-task-store.c:
+	* libkoto/koto-task-store.h:
+	* libkoto/koto-task-summary.c:
+	* libkoto/koto-task-summary.h:
+	* libkoto/koto-task-view.c:
+	* libkoto/koto-task-view.h:
+	* libkoto/koto-task.c:
+	* libkoto/koto-task.h:
+	* libkoto/koto-utils.c:
+	* libkoto/koto-utils.h:
+	Add libkoto
+
+	* src/Makefile.am:
+	* src/today-events-list-store.c:
+	* src/today-events-list-store.h:
+	* src/today-events-store.c: (today_events_store_get_property),
+	(today_events_store_set_property), (today_events_store_finalize),
+	(today_events_store_objects_added),
+	(today_events_store_objects_removed), (today_events_store_start),
+	(today_events_store_init):
+	* src/today-events-store.h:
+	* src/today-events.c: (today_events_box_new):
+	Rename TodayEventsListStore->TodayEventsStore
+
 2007-07-05  Thomas Wood <thomas@openedhand.com>
 
 	* autogen.sh: Correct PKG_NAME

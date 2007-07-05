@@ -5,17 +5,17 @@
 #include <libecal/e-cal-component.h>
 #include <libecal/e-cal-time-util.h>
 #include <libical/icalcomponent.h>
-#include "today-events-list-store.h"
+#include "today-events-store.h"
 #include "config.h"
 
-G_DEFINE_TYPE (TodayEventsListStore, today_events_list_store, GTK_TYPE_LIST_STORE)
+G_DEFINE_TYPE (TodayEventsStore, today_events_store, GTK_TYPE_LIST_STORE)
 
-#define EVENTS_LIST_STORE_PRIVATE(o) \
-(G_TYPE_INSTANCE_GET_PRIVATE ((o), TODAY_TYPE_EVENTS_LIST_STORE, TodayEventsListStorePrivate))
+#define EVENTS_STORE_PRIVATE(o) \
+(G_TYPE_INSTANCE_GET_PRIVATE ((o), TODAY_TYPE_EVENTS_STORE, TodayEventsStorePrivate))
 
-typedef struct _TodayEventsListStorePrivate TodayEventsListStorePrivate;
+typedef struct _TodayEventsStorePrivate TodayEventsStorePrivate;
 
-struct _TodayEventsListStorePrivate
+struct _TodayEventsStorePrivate
 {
 	ECalView *events_view;
 	ECal *events_ecal;
@@ -23,7 +23,7 @@ struct _TodayEventsListStorePrivate
 };
 
 static void
-today_events_list_store_get_property (GObject *object, guint property_id,
+today_events_store_get_property (GObject *object, guint property_id,
 				      GValue *value, GParamSpec *pspec)
 {
 	switch (property_id) {
@@ -33,7 +33,7 @@ today_events_list_store_get_property (GObject *object, guint property_id,
 }
 
 static void
-today_events_list_store_set_property (GObject *object, guint property_id,
+today_events_store_set_property (GObject *object, guint property_id,
 				      const GValue *value, GParamSpec *pspec)
 {
 	switch (property_id) {
@@ -43,20 +43,20 @@ today_events_list_store_set_property (GObject *object, guint property_id,
 }
 
 static void
-today_events_list_store_dispose (GObject *object)
+today_events_store_dispose (GObject *object)
 {
-	if (G_OBJECT_CLASS (today_events_list_store_parent_class)->dispose)
-		G_OBJECT_CLASS (today_events_list_store_parent_class)->dispose (
+	if (G_OBJECT_CLASS (today_events_store_parent_class)->dispose)
+		G_OBJECT_CLASS (today_events_store_parent_class)->dispose (
 			object);
 }
 
 static void
-today_events_list_store_finalize (GObject *object)
+today_events_store_finalize (GObject *object)
 {
-	G_OBJECT_CLASS (today_events_list_store_parent_class)->
+	G_OBJECT_CLASS (today_events_store_parent_class)->
 		finalize (object);
 	
-	TodayEventsListStorePrivate *priv = EVENTS_LIST_STORE_PRIVATE (object);
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (object);
 	
 	g_hash_table_destroy (priv->hash_table);
 	if (priv->events_view) g_object_unref (priv->events_view);
@@ -66,23 +66,23 @@ today_events_list_store_finalize (GObject *object)
 }
 
 static void
-today_events_list_store_class_init (TodayEventsListStoreClass *klass)
+today_events_store_class_init (TodayEventsStoreClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	
-	g_type_class_add_private (klass, sizeof (TodayEventsListStorePrivate));
+	g_type_class_add_private (klass, sizeof (TodayEventsStorePrivate));
 	
-	object_class->get_property = today_events_list_store_get_property;
-	object_class->set_property = today_events_list_store_set_property;
-	object_class->dispose = today_events_list_store_dispose;
-	object_class->finalize = today_events_list_store_finalize;
+	object_class->get_property = today_events_store_get_property;
+	object_class->set_property = today_events_store_set_property;
+	object_class->dispose = today_events_store_dispose;
+	object_class->finalize = today_events_store_finalize;
 }
 
 static void
-today_events_list_store_objects_added (ECalView *ecalview, GList *objects,
-				       TodayEventsListStore *store)
+today_events_store_objects_added (ECalView *ecalview, GList *objects,
+				       TodayEventsStore *store)
 {
-	TodayEventsListStorePrivate *priv = EVENTS_LIST_STORE_PRIVATE (store);
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
 
 	for (; objects; objects = objects->next) {
 		struct tm start_tm;
@@ -108,8 +108,8 @@ today_events_list_store_objects_added (ECalView *ecalview, GList *objects,
 		iter = g_new0 (GtkTreeIter, 1);
 		gtk_list_store_insert_with_values (GTK_LIST_STORE (store),
 			iter, 0,
-			TODAY_EVENTS_LIST_STORE_COL_STRING, string,
-			TODAY_EVENTS_LIST_STORE_COL_UID, uid,
+			TODAY_EVENTS_STORE_COL_STRING, string,
+			TODAY_EVENTS_STORE_COL_UID, uid,
 			-1);
 		g_hash_table_insert (priv->hash_table, (gpointer)uid,
 			(gpointer)iter);
@@ -117,16 +117,16 @@ today_events_list_store_objects_added (ECalView *ecalview, GList *objects,
 }
 
 static void
-today_events_list_store_objects_modified (ECalView *ecalview, GList *objects,
-					  TodayEventsListStore *store)
+today_events_store_objects_modified (ECalView *ecalview, GList *objects,
+					  TodayEventsStore *store)
 {
 }
 
 static void
-today_events_list_store_objects_removed (ECalView *ecalview, GList *uids,
-					 TodayEventsListStore *store)
+today_events_store_objects_removed (ECalView *ecalview, GList *uids,
+					 TodayEventsStore *store)
 {
-	TodayEventsListStorePrivate *priv = EVENTS_LIST_STORE_PRIVATE (store);
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
 
 	for (; uids; uids = uids->next) {
 		const gchar *uid;
@@ -146,7 +146,7 @@ today_events_list_store_objects_removed (ECalView *ecalview, GList *uids,
 		if (!iter) continue;
 		
 		gtk_tree_model_get (GTK_TREE_MODEL (store), iter,
-			TODAY_EVENTS_LIST_STORE_COL_STRING, &string, -1);
+			TODAY_EVENTS_STORE_COL_STRING, &string, -1);
 		gtk_list_store_remove (GTK_LIST_STORE (store), iter);
 		g_hash_table_remove (priv->hash_table, uid);
 		g_free (string);
@@ -154,10 +154,10 @@ today_events_list_store_objects_removed (ECalView *ecalview, GList *uids,
 }
 
 static gboolean
-today_events_list_store_start (gpointer data)
+today_events_store_start (gpointer data)
 {
-	TodayEventsListStore *store = TODAY_EVENTS_LIST_STORE (data);
-	TodayEventsListStorePrivate *priv = EVENTS_LIST_STORE_PRIVATE (store);
+	TodayEventsStore *store = TODAY_EVENTS_STORE (data);
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
 	
 	if ((priv->events_ecal = e_cal_new_system_calendar ())) {
 		GError *error = NULL;
@@ -176,18 +176,18 @@ today_events_list_store_start (gpointer data)
 				g_signal_connect (G_OBJECT (priv->events_view),
 					"objects-added",
 					G_CALLBACK (
-					today_events_list_store_objects_added),
+					today_events_store_objects_added),
 					store);
 				g_signal_connect (G_OBJECT (priv->events_view),
 					"objects-modified",
 					G_CALLBACK (
-					today_events_list_store_objects_modified
+					today_events_store_objects_modified
 					),
 					store);
 				g_signal_connect (G_OBJECT (priv->events_view),
 					"objects-removed",
 					G_CALLBACK (
-					today_events_list_store_objects_removed
+					today_events_store_objects_removed
 					),
 					store);
 				e_cal_view_start (priv->events_view);
@@ -213,9 +213,9 @@ today_events_list_store_start (gpointer data)
 }
 
 static void
-today_events_list_store_init (TodayEventsListStore *self)
+today_events_store_init (TodayEventsStore *self)
 {
-	TodayEventsListStorePrivate *priv = EVENTS_LIST_STORE_PRIVATE (self);
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (self);
 
 	priv->events_ecal = NULL;
 	priv->events_view = NULL;
@@ -225,11 +225,11 @@ today_events_list_store_init (TodayEventsListStore *self)
 	gtk_list_store_set_column_types (GTK_LIST_STORE (self), 2,
 		(GType []){ G_TYPE_STRING, G_TYPE_STRING });
 	
-	g_idle_add (today_events_list_store_start, self);
+	g_idle_add (today_events_store_start, self);
 }
 
-TodayEventsListStore *
-today_events_list_store_new (void)
+TodayEventsStore *
+today_events_store_new (void)
 {
-	return g_object_new (TODAY_TYPE_EVENTS_LIST_STORE, NULL);
+	return g_object_new (TODAY_TYPE_EVENTS_STORE, NULL);
 }
