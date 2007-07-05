@@ -460,6 +460,12 @@ moko_dialer_init (MokoDialer *dialer)
    */
   priv->talking = moko_talking_new (priv->journal);
   g_object_ref (G_OBJECT (priv->talking));
+  moko_talking_outgoing_call (MOKO_TALKING (priv->talking), "01923820124");
+  gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
+                            gtk_image_new_from_file (PKGDATADIR"/phone.png"));
+  gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->talking,
+                           "tab-expand", TRUE,
+                           NULL);
 
   /* Keypad */
   priv->keypad = moko_keypad_new ();

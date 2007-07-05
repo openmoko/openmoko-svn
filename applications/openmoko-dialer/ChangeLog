@@ -1,6 +1,17 @@
 2007-07-05  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (moko_dialer_init):
+	Added the talkign apge on _init () for testing.
+
+	* src/moko-talking.c: (moko_talking_incoming_call),
+	(moko_talking_outgoing_call), (moko_talking_accepted_call),
+	(moko_talking_init):
+	* src/moko-talking.h:
+	Added the functions for changing the ui for the current status.
+
+2007-07-05  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer.c: (moko_dialer_init):
 	Updated for new moko_talking_new signature.
 
 	* src/moko-talking.c: (on_answer_clicked), (on_reject_clicked),

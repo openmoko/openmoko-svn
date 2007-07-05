@@ -49,7 +49,7 @@ typedef struct _MokoTalkingPrivate MokoTalkingPrivate;
 
 struct _MokoTalking
 {
-  GtkHBox         parent;
+  GtkVBox         parent;
 
   /*< private >*/
   MokoTalkingPrivate   *priv;
@@ -58,7 +58,7 @@ struct _MokoTalking
 struct _MokoTalkingClass 
 {
   /*< private >*/
-  GtkHBoxClass    parent_class;
+  GtkVBoxClass    parent_class;
 
   /* Signals */
   void (*accept_call) (MokoTalking *talking);
@@ -71,6 +71,15 @@ GType moko_talking_get_type (void) G_GNUC_CONST;
 
 GtkWidget*        
 moko_talking_new (MokoJournal *journal);
+
+void
+moko_talking_incoming_call (MokoTalking *talking, const gchar *number);
+
+void
+moko_talking_outgoing_call (MokoTalking *talking, const gchar *number);
+
+void
+moko_talking_accepted_call (MokoTalking *talking, const gchar *number);
 
 G_END_DECLS
 

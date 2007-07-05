@@ -23,7 +23,7 @@
 
 #include "moko-talking.h"
 
-G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_HBOX)
+G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_VBOX)
 
 #define MOKO_TALKING_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_TALKING, MokoTalkingPrivate))
@@ -53,6 +53,68 @@ enum
 };
 
 static guint talking_signals[LAST_SIGNAL] = {0, };
+
+
+void
+moko_talking_incoming_call (MokoTalking *talking, const gchar *number)
+{
+  MokoTalkingPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  gtk_widget_hide (priv->main_bar);
+  gtk_widget_show (priv->incoming_bar);
+
+  gtk_label_set_text (GTK_LABEL (priv->title), "Incoming Call");
+  gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
+                           PKGDATADIR"/incoming_3.png");
+
+  gtk_label_set_text (GTK_LABEL (priv->status), number);
+  gtk_image_set_from_file (GTK_IMAGE (priv->person),
+                           PKGDATADIR"/unkown.png");
+}
+
+void
+moko_talking_outgoing_call (MokoTalking *talking, const gchar *number)
+{
+  MokoTalkingPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  gtk_widget_hide (priv->incoming_bar);
+  gtk_widget_show (priv->main_bar);
+
+  gtk_label_set_text (GTK_LABEL (priv->title), "Outgoing Call");
+  gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
+                           PKGDATADIR"/outgoing_1.png");
+
+  gtk_label_set_text (GTK_LABEL (priv->status), number);
+  gtk_image_set_from_file (GTK_IMAGE (priv->person),
+                           PKGDATADIR"/unkown.png");
+}
+
+void
+moko_talking_accepted_call (MokoTalking *talking, const gchar *number)
+{
+  MokoTalkingPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  gtk_widget_hide (priv->incoming_bar);
+  gtk_widget_show (priv->main_bar);
+
+  gtk_label_set_text (GTK_LABEL (priv->title), "Talking");
+  gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
+                           PKGDATADIR"/talking_3.png");
+
+  gtk_label_set_text (GTK_LABEL (priv->status), number);
+  gtk_image_set_from_file (GTK_IMAGE (priv->person),
+                           PKGDATADIR"/unkown.png");
+}
+
 
 /* Toolbar callbacks */
 static void
@@ -152,11 +214,13 @@ moko_talking_init (MokoTalking *talking)
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
   
   priv->incoming_bar = toolbar = gtk_toolbar_new ();
+  gtk_widget_set_no_show_all (priv->incoming_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/answer.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "Answer");
+  gtk_widget_show_all (GTK_WIDGET (item));
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_answer_clicked), (gpointer)talking);
@@ -167,18 +231,22 @@ moko_talking_init (MokoTalking *talking)
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "Reject");
+  gtk_widget_show_all (GTK_WIDGET (item)); 
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_reject_clicked), (gpointer)talking);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
 
     
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();
+  gtk_widget_set_no_show_all (priv->main_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "Cancel");
+  gtk_widget_show_all (GTK_WIDGET (item)); 
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_cancel_clicked), (gpointer)talking);
@@ -191,13 +259,15 @@ moko_talking_init (MokoTalking *talking)
   item = gtk_toggle_tool_button_new ();
   gtk_tool_button_set_icon_widget (GTK_TOOL_BUTTON (item), image);
   gtk_tool_button_set_label (GTK_TOOL_BUTTON (item), "Speaker Phone");
+  gtk_widget_show_all (GTK_WIDGET (item)); 
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "toggled", 
                     G_CALLBACK (on_speaker_toggled), (gpointer)talking);
-
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
   
   /* The title label and image */
   vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
   gtk_box_pack_start (GTK_BOX (talking), vbox, FALSE, FALSE, 0);
   
   priv->title = label = gtk_label_new ("Incoming Call");
