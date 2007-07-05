@@ -1,5 +1,18 @@
 2007-07-05  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (moko_dialer_init):
+	Updated for new moko_talking_new signature.
+
+	* src/moko-talking.c: (on_answer_clicked), (on_reject_clicked),
+	(on_cancel_clicked), (on_speaker_toggled),
+	(moko_talking_class_init), (moko_talking_init), (moko_talking_new):
+	* src/moko-talking.h:
+	Added the skeleton for the integrated talking/incoming/outgoing widgets.
+	Added the signals and callbacks for the MokoDialer application to connect
+	to.
+	
+2007-07-05  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-history.c: (on_delete_clicked):
 	Implemented the 'delete' action.
 

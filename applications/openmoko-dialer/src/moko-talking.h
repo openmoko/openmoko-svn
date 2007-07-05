@@ -59,12 +59,18 @@ struct _MokoTalkingClass
 {
   /*< private >*/
   GtkHBoxClass    parent_class;
+
+  /* Signals */
+  void (*accept_call) (MokoTalking *talking);
+  void (*reject_call) (MokoTalking *talking);
+  void (*cancel_call) (MokoTalking *talking);
+  void (*speaker_toggle) (MokoTalking *talking, gboolean speaker_phone);
 }; 
 
 GType moko_talking_get_type (void) G_GNUC_CONST;
 
 GtkWidget*        
-moko_talking_new (void);
+moko_talking_new (MokoJournal *journal);
 
 G_END_DECLS
 

@@ -442,14 +442,6 @@ moko_dialer_init (MokoDialer *dialer)
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
   moko_journal_load_from_storage (priv->journal);
-#if 0
-  /* Initialise the dialer windows */
-  window_dialer_init (priv->data);
-  window_incoming_init (priv->data);
-  window_pin_init (priv->data);
-  window_outgoing_init (priv->data); 
-  window_history_init (priv->data);
-#endif
 
   /* Create the window */
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -462,11 +454,11 @@ moko_dialer_init (MokoDialer *dialer)
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (priv->notebook), GTK_POS_BOTTOM);
   gtk_container_add (GTK_CONTAINER (priv->window), priv->notebook);
 
-  /* Talking: We don't actually add it to the mnotebok yet, as it is only added
+  /* Talking: We don't actually add it to the notebook yet, as it is only added
    * as/when needed. Therefore we just create it, and ref it (so it will 
-   * survive when we remove it from the notebook later on.
+   * survive reparenting.
    */
-  priv->talking = moko_talking_new ();
+  priv->talking = moko_talking_new (priv->journal);
   g_object_ref (G_OBJECT (priv->talking));
 
   /* Keypad */
