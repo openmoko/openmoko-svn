@@ -1,3 +1,7 @@
+2007-07-05  Thomas Wood <thomas@openedhand.com>
+
+	* autogen.sh: Correct PKG_NAME
+
 2007-07-04  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:

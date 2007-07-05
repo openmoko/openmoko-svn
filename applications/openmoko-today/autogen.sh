@@ -3,7 +3,7 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="dates"
+PKG_NAME="openmoko-today"
 
 (test -f $srcdir/configure.ac) || {
 	echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
