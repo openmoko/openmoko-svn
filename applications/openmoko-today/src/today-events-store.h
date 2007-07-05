@@ -37,7 +37,7 @@ typedef struct {
 } TodayEventsStoreClass;
 
 enum {
-	TODAY_EVENTS_STORE_COL_STRING,
+	TODAY_EVENTS_STORE_COL_SUMMARY,
 	TODAY_EVENTS_STORE_COL_UID,
 };
 

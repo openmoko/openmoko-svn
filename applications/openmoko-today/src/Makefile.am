@@ -19,9 +19,12 @@ openmoko_today_SOURCES =		\
 	today-utils.c			\
 	today-utils.h			\
 	today-events-store.h		\
-	today-events-store.c 
+	today-events-store.c           \
+	today-tasks-store.c           \
+	today-tasks-store.h
 
-openmoko_today_LDADD          = @GTK_LIBS@ @ECAL_LIBS@ @EBOOK_LIBS@
+openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
+			@GTK_LIBS@ @ECAL_LIBS@ @EBOOK_LIBS@
 
 MAINTAINERCLEANFILES  = config.h.in Makefile.in
 

@@ -1,4 +1,17 @@
-2007-07-05  Chris Lord  <set EMAIL_ADDRESS environment variable>
+2007-07-05  Chris Lord  <chris@openedhand.com>
+
+	* src/today-events-store.c: (today_events_store_objects_added),
+	(today_events_store_objects_removed):
+	* src/today-events-store.h:
+	* src/today-events.c:
+	Show date instead of time for events not occuring today
+
+	* src/Makefile.am:
+	* src/today-tasks-store.c:
+	* src/today-tasks-store.h:
+	Add new TodayTasksStore using libkoto
+
+2007-07-05  Chris Lord  <chris@openedhand.com>
 
 	* Makefile.am:
 	* autogen.sh:
