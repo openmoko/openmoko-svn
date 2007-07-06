@@ -78,7 +78,7 @@ SRCDATE_openmoko-simplemediaplayer = "now"
 #
 SRCDATE_openmoko-panel-clock = "now"
 SRCDATE_openmoko-panel-battery = "now"
-SRCDATE_openmoko-panel-mainmenu = "now"
+SRCDATE_openmoko-panel-mainmenu = "20070705"
 SRCDATE_openmoko-panel-gsm = "now"
 SRCDATE_openmoko-panel-gps = "now"
 SRCDATE_openmoko-panel-bt = "now"
