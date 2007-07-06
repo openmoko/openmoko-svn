@@ -1,8 +1,6 @@
 alsa
 initscripts
 linux
-openmoko*
-task-openmoko
 u-boot
 x11-c-locale
 
