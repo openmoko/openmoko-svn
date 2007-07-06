@@ -2,7 +2,7 @@ INCLUDES = -I$(top_srcdir)
 
 AM_CPPFLAGS = $(GTK_CFLAGS) $(SN_CFLAGS) -DPKGDATADIR=\"$(PKGDATADIR)\"
 AM_CFLAGS = -Wall
-LDADD = $(GTK_LIBS) $(SN_LIBS)
+AM_LDFLAGS = $(GTK_LIBS) $(SN_LIBS)
 
 noinst_LIBRARIES = libtaku.a
 libtaku_a_SOURCES = \

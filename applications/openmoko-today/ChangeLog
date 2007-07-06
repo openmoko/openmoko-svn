@@ -1,5 +1,17 @@
 2007-07-06  Chris Lord  <chris@openedhand.com>
 
+	* libtaku/Makefile.am:
+	* src/Makefile.am:
+	Fix library flags
+
+	* src/today-main.c: (today_notebook_add_page_with_icon),
+	(load_data_dir), (today_create_home_page),
+	(today_tasks_search_toggle_cb), (today_create_tasks_page), (main):
+	* src/today.h:
+	Add preliminary task launcher
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
 	* Makefile.am:
 	* configure.ac:
 	* libtaku/Makefile.am:
