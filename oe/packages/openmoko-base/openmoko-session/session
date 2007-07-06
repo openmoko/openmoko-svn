@@ -2,6 +2,8 @@
 
 SHOWCURSOR="no"
 
+export GTK_MODULES=libgtkstylus.so
+
 matchbox-panel-2 \
   --start-applets=openmoko-panel-mainmenu,systray,startup \
   --end-applets=openmoko-panel-battery,openmoko-panel-gsm,openmoko-panel-gps,openmoko-panel-usb,openmoko-panel-bt,openmoko-panel-clock &
