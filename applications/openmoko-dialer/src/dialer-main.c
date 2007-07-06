@@ -87,6 +87,7 @@ main (int argc, char **argv)
   DBusGProxy *proxy;
   GError *error = NULL;
   guint32 ret;
+  gchar *out = NULL, *err = NULL;
 
   if (argc != 1)
   {
@@ -156,7 +157,8 @@ main (int argc, char **argv)
    */
   g_debug ("(re)starting gsmd\n");
   g_spawn_command_line_sync ("/etc/init.d/gsmd restart",
-                             NULL, NULL, NULL, NULL);
+                             &out, &err, NULL, NULL);
+  g_print ("%s\n%s\n", out, err);
 
   /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();

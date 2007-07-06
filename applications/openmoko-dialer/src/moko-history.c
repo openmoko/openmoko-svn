@@ -89,6 +89,16 @@ enum history_columns
   ENTRY_POINTER_COLUMN
 };
 
+void
+moko_history_set_filter (MokoHistory *history, gint filter)
+{
+  MokoHistoryPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_HISTORY (history));
+  priv = history->priv;
+
+  gtk_combo_box_set_active (GTK_COMBO_BOX (priv->combo), filter);
+}
 
 static void
 on_dial_clicked (GtkWidget *button, MokoHistory *history)
@@ -152,13 +162,14 @@ on_delete_clicked (GtkWidget *button, MokoHistory *history)
   //gtk_tree_model_get (filtered, &iter0, ENTRY_POINTER_COLUMN, &uid, -1);
 
   /* Create a dialog */
-  dialog = gtk_message_dialog_new (gtk_widget_get_ancestor(GTK_WIDGET (history),
-                                                            GTK_TYPE_WINDOW),
+  dialog = gtk_message_dialog_new (GTK_WINDOW (
+                                   gtk_widget_get_ancestor(GTK_WIDGET (history),
+                                                            GTK_TYPE_WINDOW)),
                                    0,
                                    GTK_MESSAGE_QUESTION,
                                    GTK_BUTTONS_NONE,
-                                   "Are you sure you want to permanantly "\
-                                   "delete this call?", NULL);
+                      "Are you sure you want to permanantly delete this call?",
+                                   NULL);
 
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                           "Don't Delete", GTK_RESPONSE_CANCEL,

@@ -1,6 +1,14 @@
 2007-07-06  Neil J. Patel  <njp@o-hand.com>
 
 	* src/dialer-main.c: (main):
+	* src/moko-dialer.c: (moko_dialer_show_dialer),
+	(moko_dialer_show_missed_calls), (moko_dialer_init):
+	Don't show dialer unless -s is used.
+	The dbus functions ShowDialer/ShowMissedCalls/DialerDial work now.
+
+2007-07-06  Neil J. Patel  <njp@o-hand.com>
+
+	* src/dialer-main.c: (main):
 	Issue a "/etc/init.d/gsmd restart" before starting the dialer, to make sure
 	we have a running gsmd. Yes its hacky, but its the only way gsmd will learn.
 

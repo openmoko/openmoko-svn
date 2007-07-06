@@ -87,31 +87,27 @@ enum
 
 static guint dialer_signals[LAST_SIGNAL] = {0, };
 
+static void  on_keypad_dial_clicked (MokoKeypad  *keypad,
+                                     const gchar *number,
+                                     MokoDialer  *dialer);
+
+
 /* DBus functions */
 gboolean
 moko_dialer_show_dialer (MokoDialer *dialer, GError *error)
 {
   MokoDialerPrivate *priv;
-  //GtkWidget *window;
-
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
   priv = dialer->priv;
  
-/*  window = priv->data->window_present;
-  if (window == 0)
-    window = priv->data->window_dialer;
-
-  if (window == NULL)
-    return FALSE;
-
-  gtk_widget_show_all (window);
-  gtk_window_present (GTK_WINDOW (window));
-*/
+  gtk_widget_show (priv->window);
+  gtk_window_present (GTK_WINDOW (priv->window));
   return TRUE;
 }
 
 
 gboolean
+
 moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error)
 {
   MokoDialerPrivate *priv;
@@ -119,20 +115,16 @@ moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error)
 
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
   priv = dialer->priv;
-/*
-  window = priv->data->window_history;
-
-  if (!window)
-    return FALSE;
-
   
   //Filter history on missed calls
   
-  window_history_filter (priv->data, CALLS_MISSED);
+  moko_history_set_filter (MOKO_HISTORY (priv->history), HISTORY_FILTER_MISSED);
 
-  gtk_widget_show_all (window);
-  gtk_window_present (GTK_WINDOW (window));
-*/
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), -1);
+  
+  gtk_widget_show (priv->window);
+  gtk_window_present (GTK_WINDOW (priv->window));
+
   return TRUE;
 }
 
@@ -159,8 +151,7 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
   g_return_val_if_fail (moko_dialer_show_dialer (dialer, NULL), FALSE);
   priv = dialer->priv;
 
-  //window_outgoing_dial (priv->data, number);
-
+  on_keypad_dial_clicked (NULL, number, dialer);
   return TRUE;
 }
 
@@ -641,7 +632,7 @@ moko_dialer_init (MokoDialer *dialer)
                            NULL);
 
   gtk_widget_show_all (priv->notebook);
-  gtk_window_present (GTK_WINDOW (priv->window));
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
 }
 
 MokoDialer*

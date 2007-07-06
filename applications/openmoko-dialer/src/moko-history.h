@@ -78,6 +78,9 @@ GType moko_history_get_type (void) G_GNUC_CONST;
 GtkWidget*        
 moko_history_new (MokoJournal *journal);
 
+void
+moko_history_set_filter (MokoHistory *history,  gint filter);
+
 G_END_DECLS
 
 #endif /* _HAVE_MOKO_HISTORY_H */
