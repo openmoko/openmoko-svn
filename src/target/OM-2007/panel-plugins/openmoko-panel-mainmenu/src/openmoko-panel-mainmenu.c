@@ -62,7 +62,7 @@ static void click(MokoPanelApplet * applet)
 static void tap_hold(MokoPanelApplet * applet)
 {
 	g_debug("tap hold event callback");
-	GtkWidget *widget = GTK_WIDGET(applet);
+/*	GtkWidget *widget = GTK_WIDGET(applet);
 	Screen *screen = GDK_SCREEN_XSCREEN(gtk_widget_get_screen(widget));
 	XEvent xev;
 
@@ -83,7 +83,7 @@ static void tap_hold(MokoPanelApplet * applet)
 
 	XSendEvent(DisplayOfScreen(screen), RootWindowOfScreen(screen), False,
 		   SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-
+*/
 	mma = g_malloc0 (sizeof (MokoMainmenuApp));
     if (!mma)
     {

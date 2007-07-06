@@ -91,7 +91,6 @@ RDEPENDS_task-openmoko-ui = "\
 DESCRIPTION_task-openmoko-base = "OpenMoko: Main-Menu Launcher, Top Panel, and Footer"
 RDEPENDS_task-openmoko-base = "\
   openmoko-terminal \
-  openmoko-mainmenu \
   matchbox-panel-2 \
   matchbox-panel-2-applets \
   matchbox-applet-inputmanager \

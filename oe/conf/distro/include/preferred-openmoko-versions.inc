@@ -59,7 +59,6 @@ SRCDATE_openmoko-chordmaster = "now"
 SRCDATE_openmoko-dialer = "now"
 SRCDATE_openmoko-footer = "20070628"
 SRCDATE_openmoko-phone = "now"
-SRCDATE_openmoko-mainmenu = "now"
 SRCDATE_openmoko-taskmanager = "now"
 SRCDATE_openmoko-terminal = "now"
 
