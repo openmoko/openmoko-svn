@@ -31,7 +31,7 @@ G_DEFINE_TYPE (MokoTreeView, moko_tree_view, GTK_TYPE_TREE_VIEW)
 #define TREE_VIEW_PRIVATE(o)     (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_TREE_VIEW, MokoTreeViewPrivate))
 
 /* forward declarations */
-void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition);
+static void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition);
 
 static void
 moko_tree_view_dispose (GObject *object)
@@ -83,7 +83,8 @@ moko_tree_view_new_with_model (GtkTreeModel *model)
 }
 
 /* reimplemented to enforce entry-height granularity */
-void moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition)
+static void
+moko_tree_view_size_request(GtkWidget* widget, GtkRequisition* requisition)
 {
     moko_debug( "moko_tree_view_size_request" );
     GTK_WIDGET_CLASS(moko_tree_view_parent_class)->size_request( widget, requisition );

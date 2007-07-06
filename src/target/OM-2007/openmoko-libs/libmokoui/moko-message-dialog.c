@@ -205,6 +205,8 @@ moko_message_dialog_realize_cb (GtkWidget *widget, gpointer user_data)
   {
     rc_style = widget->style->rc_style;
 
+    g_return_if_fail(rc_style != NULL);
+
     priv->background_pixbuf = gdk_pixbuf_new_from_file (rc_style->bg_pixmap_name[GTK_STATE_NORMAL], &error);
 
     if (priv->background_pixbuf == NULL)
