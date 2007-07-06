@@ -1,5 +1,16 @@
 2007-07-06  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (today_notebook_add_page_with_icon), (main):
+	Don't call gtk_widget_show_all on the main window
+
+	* src/today-pim-summary.c: (today_pim_summary_update_date):
+	- Filter the tasks view. Only show tasks that are uncompleted or
+	  recently created
+	- Completed tasks are drawn with a strikethrough
+	- If there are no events/tasks, show a notice saying so
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	* libkoto/Makefile.am:
 	Move config.h to top directory and define HAVE_ECALCOMPONENTID instead

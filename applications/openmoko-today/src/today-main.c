@@ -26,10 +26,10 @@ today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 		GTK_ICON_SIZE_LARGE_TOOLBAR);
 	GtkWidget *align = gtk_alignment_new (0.5, 0.5, 1, 1);
 
-	gtk_widget_show (icon);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), padding,
 		padding, padding, padding);
 	gtk_container_add (GTK_CONTAINER (align), icon);
+	gtk_widget_show_all (align);
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), child, align);
 	gtk_container_child_set (GTK_CONTAINER (notebook), child,
 		"tab-expand", TRUE, NULL);
@@ -66,11 +66,13 @@ main (int argc, char **argv)
 	g_object_set (G_OBJECT (data.notebook), "can-focus", FALSE, NULL);
 	gtk_notebook_set_tab_pos (GTK_NOTEBOOK (data.notebook), GTK_POS_BOTTOM);
 	gtk_container_add (GTK_CONTAINER (data.window), data.notebook);
+	gtk_widget_show (data.notebook);
 
 	/* Add home page */
 	vbox = gtk_vbox_new (FALSE, 0);
 	today_notebook_add_page_with_icon (data.notebook, vbox,
 		GTK_STOCK_HOME, 6);
+	gtk_widget_show (vbox);
 		
 	/* Toolbar */
 	data.home_toolbar = gtk_toolbar_new ();
@@ -94,33 +96,39 @@ main (int argc, char **argv)
 	data.dial_button = today_toolbutton_new ("openmoko-dialer");
 	gtk_toolbar_insert (GTK_TOOLBAR (data.home_toolbar),
 		data.dial_button, 0);
+	gtk_widget_show_all (data.home_toolbar);
 
 	viewport = gtk_viewport_new (NULL, NULL);
 	gtk_box_pack_start (GTK_BOX (vbox), viewport, TRUE, TRUE, 0);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
 				      GTK_SHADOW_NONE);
+	gtk_widget_show (viewport);
 	align = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
 	gtk_container_add (GTK_CONTAINER (viewport), align);
 
 	vbox = gtk_vbox_new (FALSE, 6);
 	gtk_container_add (GTK_CONTAINER (align), vbox);
+	gtk_widget_show_all (align);
 	/*data.message_box = today_header_box_new_with_markup (
 		"<b>Provider goes here</b>");
 	gtk_box_pack_start (GTK_BOX (vbox), data.message_box, FALSE, TRUE, 0);*/
 
 	data.summary_box = today_pim_summary_box_new ();
 	gtk_box_pack_start (GTK_BOX (vbox), data.summary_box, FALSE, TRUE, 0);
+	gtk_widget_show (data.summary_box);
 	
 	/* Add new tasks page */
 	placeholder = gtk_label_new ("New tasks");
 	today_notebook_add_page_with_icon (data.notebook, placeholder,
 		GTK_STOCK_ADD, 6);
+	gtk_widget_show (placeholder);
 
 	/* Add running tasks page */
 	placeholder = gtk_label_new ("Running tasks");
 	today_notebook_add_page_with_icon (data.notebook, placeholder,
 		GTK_STOCK_EXECUTE, 6);
+	gtk_widget_show (placeholder);
 	
 	/* Connect up signals */
 	g_signal_connect (G_OBJECT (data.window), "delete-event",
@@ -132,12 +140,11 @@ main (int argc, char **argv)
 		"gtk-theme-name", "openmoko-standard-2", 
 		"gtk-icon-theme-name", "openmoko-standard",
 		NULL);
-	gtk_window_set_default_size (GTK_WINDOW (data.window), 448, 640);
 #endif
 
 	
 	/* Show and start */
-	gtk_widget_show_all (data.window);
+	gtk_widget_show (data.window);
 	gtk_main ();
 
 	return 0;
