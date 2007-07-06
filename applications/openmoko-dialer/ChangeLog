@@ -1,3 +1,8 @@
+2007-07-06  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-history.c: (history_add_entry), (moko_history_init):
+	Fixed bug where history entries were not showing.
+
 2007-07-05  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (moko_dialer_init):

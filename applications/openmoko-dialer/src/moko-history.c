@@ -229,6 +229,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   moko_journal_entry_get_direction (entry, &direction);
   time = moko_journal_entry_get_dtstart (entry);
   dstart = moko_time_as_timet (time);
+  
   moko_journal_entry_get_voice_info (entry, &info);
   was_missed = moko_journal_voice_info_get_was_missed (info);
   number = moko_journal_voice_info_get_distant_number (info);
@@ -255,10 +256,13 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
 
   /* display text should be the contact name or the number dialed */
   /* FIXME: look up contact uid if stored */
+  display_text = number;
 
   if ( number == NULL || display_text == NULL || uid == NULL)
-    return FALSE;
-
+  {
+    //g_print ("Not adding\n");
+    //return FALSE;
+  }
   gtk_list_store_insert_with_values (store, &iter, 0,
     NUMBER_COLUMN, number,
     DSTART_COLUMN, dstart,
@@ -631,6 +635,8 @@ moko_history_init (MokoHistory *history)
   treeview = priv->treeview = gtk_tree_view_new ();
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
   gtk_container_add (GTK_CONTAINER (scroll), treeview);
+
+  gtk_widget_show_all (GTK_WIDGET (history));
 }
 
 GtkWidget*
