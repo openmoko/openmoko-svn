@@ -6,7 +6,7 @@
 #include "config.h"
 #include "today.h"
 #include "today-header-box.h"
-#include "today-events.h"
+#include "today-pim-summary.h"
 
 static GtkToolItem *
 today_toolbutton_new (const gchar *icon_name)
@@ -105,12 +105,12 @@ main (int argc, char **argv)
 
 	vbox = gtk_vbox_new (FALSE, 6);
 	gtk_container_add (GTK_CONTAINER (align), vbox);
-	data.message_box = today_header_box_new_with_markup (
+	/*data.message_box = today_header_box_new_with_markup (
 		"<b>Provider goes here</b>");
-	//gtk_box_pack_start (GTK_BOX (vbox), data.message_box, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), data.message_box, FALSE, TRUE, 0);*/
 
-	data.events_box = today_events_box_new ();
-	gtk_box_pack_start (GTK_BOX (vbox), data.events_box, FALSE, TRUE, 0);
+	data.summary_box = today_pim_summary_box_new ();
+	gtk_box_pack_start (GTK_BOX (vbox), data.summary_box, FALSE, TRUE, 0);
 	
 	/* Add new tasks page */
 	placeholder = gtk_label_new ("New tasks");

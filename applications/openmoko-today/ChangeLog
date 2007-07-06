@@ -1,3 +1,29 @@
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* libkoto/Makefile.am:
+	Move config.h to top directory and define HAVE_ECALCOMPONENTID instead
+	of HAVE_CID for libkoto
+
+	* src/today-events-store.c: (today_events_store_objects_added),
+	(today_events_store_objects_removed), (today_events_store_start),
+	(today_events_store_compare), (today_events_store_init):
+	* src/today-events-store.h:
+	Sort TodayEventsStore
+
+	* src/Makefile.am:
+	* src/today-events.c:
+	* src/today-events.h:
+	* src/today-main.c: (main):
+	* src/today.h:
+	* src/today-pim-summary.c: (today_pim_summary_update_date),
+	(today_pim_summary_box_new):
+	* src/today-pim-summary.h:
+	Rename today-events.[ch] -> today-pim-summary.[ch]
+
+	* src/today-tasks-store.c: (today_tasks_store_start):
+	Use simple query, will filter manually
+
 2007-07-05  Chris Lord  <chris@openedhand.com>
 
 	* src/today-events-store.c: (today_events_store_objects_added),

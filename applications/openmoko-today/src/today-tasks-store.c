@@ -29,15 +29,7 @@ today_tasks_store_start (gpointer data)
 	if ((priv->tasks_ecal = e_cal_new_system_tasks ())) {
 		GError *error = NULL;
 		if (e_cal_open (priv->tasks_ecal, FALSE, &error)) {
-			time_t t;
-			time (&t);
-			gchar *isodate = isodate_from_time_t (t);
-			gchar *query = g_strdup_printf (
-				/*"((!(is-completed?)) or ((is-completed?) and "
-				"(!(completed-before? "
-				"(time-day-begin (make-time %s))))))",
-				isodate*/
-				"#t");
+			gchar *query = g_strdup_printf ("#t");
 			if (e_cal_get_query (priv->tasks_ecal,
 			     query, &priv->tasks_view, &error)) {
 				koto_task_store_set_view (
@@ -52,7 +44,6 @@ today_tasks_store_start (gpointer data)
 				error = NULL;
 			}
 			g_free (query);
-			g_free (isodate);
 		} else {
 			g_warning ("Unable to open system tasks: %s",
 				error->message);

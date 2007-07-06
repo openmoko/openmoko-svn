@@ -9,7 +9,7 @@ typedef struct {
 	GtkWidget *notebook;
 	GtkWidget *home_toolbar;
 	GtkWidget *message_box;
-	GtkWidget *events_box;
+	GtkWidget *summary_box;
 	GtkToolItem *dial_button;
 	GtkToolItem *contacts_button;
 	GtkToolItem *messages_button;

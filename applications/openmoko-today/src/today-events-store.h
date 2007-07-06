@@ -39,6 +39,7 @@ typedef struct {
 enum {
 	TODAY_EVENTS_STORE_COL_SUMMARY,
 	TODAY_EVENTS_STORE_COL_UID,
+	TODAY_EVENTS_STORE_COL_COMP,
 };
 
 GType today_events_store_get_type (void);

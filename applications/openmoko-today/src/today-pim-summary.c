@@ -11,7 +11,7 @@
  * Update the specified GtkTreeViewColumn with the current date
  */
 static void
-today_events_update_date (GtkTreeViewColumn *column)
+today_pim_summary_update_date (GtkTreeViewColumn *column)
 {
 	time_t t;
 	struct tm *tmp;
@@ -26,7 +26,7 @@ today_events_update_date (GtkTreeViewColumn *column)
 }
 
 GtkWidget *
-today_events_box_new ()
+today_pim_summary_box_new ()
 {
 	GtkTreeModel *events_model, *tasks_model;
 	GtkWidget *vbox, *events_tree, *tasks_tree;
@@ -56,9 +56,9 @@ today_events_box_new ()
 	gtk_box_pack_start (GTK_BOX (vbox), events_tree, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), tasks_tree, FALSE, TRUE, 0);
 	
-	today_events_update_date (column);
+	today_pim_summary_update_date (column);
 	g_timeout_add (60 * 60 * 1000, (GSourceFunc)
-		today_events_update_date, column);
+		today_pim_summary_update_date, column);
 
 	return vbox;
 }

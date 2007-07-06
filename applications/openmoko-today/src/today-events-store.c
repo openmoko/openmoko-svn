@@ -1,4 +1,5 @@
 
+#include <config.h>
 #include <gtk/gtk.h>
 #include <libecal/e-cal.h>
 #include <libecal/e-cal-view.h>
@@ -6,7 +7,6 @@
 #include <libecal/e-cal-time-util.h>
 #include <libical/icalcomponent.h>
 #include "today-events-store.h"
-#include "config.h"
 
 G_DEFINE_TYPE (TodayEventsStore, today_events_store, GTK_TYPE_LIST_STORE)
 
@@ -93,7 +93,8 @@ today_events_store_objects_added (ECalView *ecalview, GList *objects,
 		gchar *string;
 		GtkTreeIter *iter;
 		
-		icalcomponent *comp = (icalcomponent *)objects->data;
+		icalcomponent *comp = icalcomponent_new_clone (
+			(icalcomponent *)objects->data);
 		gchar *uid = (gchar *)icalcomponent_get_uid (comp);
 		
 		if (!uid) continue;
@@ -104,6 +105,7 @@ today_events_store_objects_added (ECalView *ecalview, GList *objects,
 		day_t = time_day_begin (time (NULL));
 		start_t = time_day_begin (mktime (&start_tm));
 		
+		/* TODO: Read some setting to decide on 24hr/12hr time */
 		if (day_t == start_t)
 			strftime (time_string, sizeof (time_string), "%I:%M%p",
 				&start_tm);
@@ -114,10 +116,12 @@ today_events_store_objects_added (ECalView *ecalview, GList *objects,
 		string = g_strdup_printf ("%s %s", time_string,
 			string ? string : "New event");
 		iter = g_new0 (GtkTreeIter, 1);
+		
 		gtk_list_store_insert_with_values (GTK_LIST_STORE (store),
 			iter, 0,
 			TODAY_EVENTS_STORE_COL_SUMMARY, string,
 			TODAY_EVENTS_STORE_COL_UID, uid,
+			TODAY_EVENTS_STORE_COL_COMP, comp,
 			-1);
 		g_hash_table_insert (priv->hash_table, (gpointer)uid,
 			(gpointer)iter);
@@ -140,8 +144,9 @@ today_events_store_objects_removed (ECalView *ecalview, GList *uids,
 		const gchar *uid;
 		gchar *string;
 		GtkTreeIter *iter;
+		icalcomponent *comp;
 		
-#ifdef HAVE_CID_TYPE
+#ifdef HAVE_ECALCOMPONENTID
 		ECalComponentId *id = uids->data;
 		/* FIXME: What happens with uid/rid here? */
 		uid = id->uid;
@@ -154,10 +159,12 @@ today_events_store_objects_removed (ECalView *ecalview, GList *uids,
 		if (!iter) continue;
 		
 		gtk_tree_model_get (GTK_TREE_MODEL (store), iter,
-			TODAY_EVENTS_STORE_COL_SUMMARY, &string, -1);
+			TODAY_EVENTS_STORE_COL_SUMMARY, &string,
+			TODAY_EVENTS_STORE_COL_COMP, &comp, -1);
 		gtk_list_store_remove (GTK_LIST_STORE (store), iter);
 		g_hash_table_remove (priv->hash_table, uid);
 		g_free (string);
+		icalcomponent_free (comp);
 	}
 }
 
@@ -220,6 +227,25 @@ today_events_store_start (gpointer data)
 	return FALSE;
 }
 
+static gint
+today_events_store_compare (GtkTreeModel *model, GtkTreeIter *a,
+			    GtkTreeIter *b, gpointer user_data)
+{
+	icalcomponent *comp1, *comp2;
+	icaltimetype start1, start2;
+	TodayEventsStore *store = TODAY_EVENTS_STORE (user_data);
+	
+	gtk_tree_model_get (GTK_TREE_MODEL (store), a,
+		TODAY_EVENTS_STORE_COL_COMP, &comp1, -1);
+	gtk_tree_model_get (GTK_TREE_MODEL (store), b,
+		TODAY_EVENTS_STORE_COL_COMP, &comp2, -1);
+	
+	start1 = icalcomponent_get_dtstart (comp1);
+	start2 = icalcomponent_get_dtstart (comp2);
+	
+	return icaltime_compare (start1, start2);
+}
+
 static void
 today_events_store_init (TodayEventsStore *self)
 {
@@ -230,8 +256,13 @@ today_events_store_init (TodayEventsStore *self)
 	priv->hash_table = g_hash_table_new_full (g_str_hash, g_str_equal,
 		g_free, g_free);
 	
-	gtk_list_store_set_column_types (GTK_LIST_STORE (self), 2,
-		(GType []){ G_TYPE_STRING, G_TYPE_STRING });
+	gtk_list_store_set_column_types (GTK_LIST_STORE (self), 3,
+		(GType []){G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER});
+	gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (self),
+		TODAY_EVENTS_STORE_COL_UID, today_events_store_compare,
+		self, NULL);
+	gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (self),
+		TODAY_EVENTS_STORE_COL_UID, GTK_SORT_ASCENDING);
 	
 	g_idle_add (today_events_store_start, self);
 }

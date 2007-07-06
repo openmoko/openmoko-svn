@@ -2,7 +2,7 @@ AC_PREREQ(2.53)
 AC_INIT(today, 0.1, http://www.openedhand.com/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/today-main.c)
-AM_CONFIG_HEADER(src/config.h)
+AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
 LIBEBOOK_VERSION=1.4.2
@@ -40,7 +40,7 @@ CFLAGS=$ECAL_CFLAGS
 AC_CHECK_TYPE(ECalComponentId, [], [], [#include <libecal/e-cal.h>])
 
 if test $ac_cv_type_ECalComponentId = yes; then
-        AC_DEFINE(HAVE_CID_TYPE, 1, [Defined if ECalComponentId exists])
+        AC_DEFINE(HAVE_ECALCOMPONENTID, 1, [Defined if ECalComponentId exists])
 fi
 
 CFLAGS=$GTK_CFLAGS

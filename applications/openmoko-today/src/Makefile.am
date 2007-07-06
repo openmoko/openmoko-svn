@@ -14,13 +14,13 @@ openmoko_today_SOURCES =		\
 	today.h				\
 	today-header-box.h		\
 	today-header-box.c		\
-	today-events.c			\
-	today-events.h			\
+	today-pim-summary.c		\
+	today-pim-summary.h		\
 	today-utils.c			\
 	today-utils.h			\
 	today-events-store.h		\
-	today-events-store.c           \
-	today-tasks-store.c           \
+	today-events-store.c		\
+	today-tasks-store.c		\
 	today-tasks-store.h
 
 openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\

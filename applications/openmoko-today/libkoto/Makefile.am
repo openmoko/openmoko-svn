@@ -1,3 +1,5 @@
+INCLUDES = -I$(top_srcdir)
+
 localedir = $(datadir)/locale
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\" -DPKGDATADIR=\"$(pkgdatadir)\" $(GTK_CFLAGS) $(ECAL_CFLAGS) $(SEXY_CFLAGS) -Wall
 AM_LDFLAGS = $(GTK_LIBS) $(ECAL_LIBS) $(SEXY_LIBS)
