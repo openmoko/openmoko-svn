@@ -51,7 +51,7 @@ dist_appicon_DATA = Dialer.png
 # Dbus service file
 #
 servicedir = $(datadir)/dbus-1/services
-service_in_files = org.openmoko.Dialer.service.in
+dist_service_in_files = org.openmoko.Dialer.service.in
 service_DATA = $(service_in_files:.service.in=.service)
 
 # Expand the bindir in the service file
