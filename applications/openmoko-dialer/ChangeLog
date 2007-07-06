@@ -1,5 +1,27 @@
 2007-07-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (moko_dialer_outgoing_call),
+	(moko_dialer_hung_up), (moko_dialer_rejected),
+	(on_keypad_dial_clicked), (on_talking_accept_call),
+	(on_talking_reject_call), (on_talking_cancel_call),
+	(on_history_dial_number), (on_incoming_call), (on_incoming_clip),
+	(on_call_progress_changed), (register_network_cb),
+	(moko_dialer_init):
+	* src/moko-dialer.h:
+	Hooked up most of the Gsmd functions, apart from the PIN stuff.
+	Changed the registering timeout to keep going until the dialer has
+	registered, otherwise it will keep asked gsm to connect.
+	
+	* src/moko-keypad.c: (moko_keypad_set_talking), (moko_keypad_init):
+	* src/moko-keypad.h:
+	Added a state for when your in a call, which hides the 'delete' and 'dial'
+	keys.
+
+	* src/moko-talking.c: (on_speaker_toggled):
+	Don't unnecessaryly emit a signal, for now.
+
+2007-07-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked),
 	(on_talking_accept_call), (on_talking_reject_call),
 	(on_talking_cancel_call), (on_talking_speaker_toggle),

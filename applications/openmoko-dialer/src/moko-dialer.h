@@ -47,7 +47,7 @@ typedef struct _MokoDialer MokoDialer;
 typedef struct _MokoDialerClass MokoDialerClass;
 typedef struct _MokoDialerPrivate MokoDialerPrivate;
 
-enum MokoDialerStatus
+enum
 {
   DIALER_STATUS_NORMAL=0,
   DIALER_STATUS_INCOMING,

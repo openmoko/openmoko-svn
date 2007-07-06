@@ -38,6 +38,8 @@ struct _MokoKeypadPrivate
   GtkWidget     *panel;
   GtkWidget     *delete;
   GtkWidget     *dial;
+
+  GtkWidget     *dialbox;
 };
 
 enum
@@ -50,8 +52,21 @@ enum
 
 static guint keypad_signals[LAST_SIGNAL] = {0, };
 
-/* Callbacks */
+void
+moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking)
+{
+  MokoKeypadPrivate *priv;
 
+  g_return_if_fail (MOKO_IS_KEYPAD (keypad));
+  priv = keypad->priv;
+
+  if (talking)
+    gtk_widget_hide (priv->dialbox);
+  else
+    gtk_widget_show_all (priv->dialbox);
+}
+
+/* Callbacks */
 static void
 on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
 {
@@ -178,7 +193,7 @@ moko_keypad_init (MokoKeypad *keypad)
 
   gtk_box_pack_start (GTK_BOX (hbox), priv->panel, TRUE, TRUE, 0);
 
-  vbox = gtk_vbox_new (FALSE, 12);
+  priv->dialbox = vbox = gtk_vbox_new (FALSE, 12);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, FALSE, FALSE, 0);
   
   /* Delete button */
@@ -196,7 +211,8 @@ moko_keypad_init (MokoKeypad *keypad)
   gtk_container_add (GTK_CONTAINER (priv->delete), bvbox);
   gtk_widget_set_name (priv->delete, "mokofingerbutton-orange");
   gtk_box_pack_start (GTK_BOX (vbox), priv->delete, FALSE, FALSE, 0);
-   /* Dial button */
+  
+  /* Dial button */
   priv->dial = gtk_button_new ();
   g_signal_connect (G_OBJECT (priv->dial), "clicked",
                     G_CALLBACK (on_dial_clicked), (gpointer)keypad);
