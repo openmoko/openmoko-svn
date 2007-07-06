@@ -1,5 +1,17 @@
 2007-07-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked),
+	(on_talking_accept_call), (on_talking_reject_call),
+	(on_talking_cancel_call), (on_talking_speaker_toggle),
+	(on_keypad_digit_pressed), (moko_dialer_init):
+	Connected to the remaining signals from the main objects.
+
+	* src/moko-keypad.c: (moko_keypad_class_init):
+	* src/moko-keypad.h:
+	Added a "digit_pressed" signal, which will be used for dtmf.
+
+2007-07-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-history.c: (history_add_entry), (moko_history_init):
 	Fixed bug where history entries were not showing.
 

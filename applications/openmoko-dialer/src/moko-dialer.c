@@ -222,7 +222,46 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  /* If not in call, dial */
   g_print ("on_keypad_dial_clicked: %s\n", number);
+}
+
+static void
+on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
+{
+  /* if incoming, accept */
+  g_print ("Accepted call\n");
+}
+
+static void
+on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
+{
+  /* if incoming, reject */
+  g_print ("Rejected call\n");
+}
+
+static void
+on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
+{
+  /* If outgoing or talking, hangup */
+  g_print ("Cancel call\n");
+}
+
+static void
+on_talking_speaker_toggle (MokoTalking *talking, 
+                           gboolean     speaker_phone,
+                           MokoDialer  *dialer)
+{
+  /* Toggle speaker phone */
+  g_print ("Speaker toggled\n");
+}
+
+static void
+on_keypad_digit_pressed (MokoKeypad *keypad,
+                         const gchar digit,
+                         MokoDialer *dialer)
+{
+  /* If in call, dtmf it, otherwise ignore */
 }
 
 static void
@@ -460,17 +499,21 @@ moko_dialer_init (MokoDialer *dialer)
    */
   priv->talking = moko_talking_new (priv->journal);
   g_object_ref (G_OBJECT (priv->talking));
-  moko_talking_outgoing_call (MOKO_TALKING (priv->talking), "01923820124");
-  gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
-                            gtk_image_new_from_file (PKGDATADIR"/phone.png"));
-  gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->talking,
-                           "tab-expand", TRUE,
-                           NULL);
+  g_signal_connect (G_OBJECT (priv->history), "accept_call",
+                    G_CALLBACK (on_talking_accept_call), (gpointer)dialer);
+  g_signal_connect (G_OBJECT (priv->history), "reject_call",
+                    G_CALLBACK (on_talking_reject_call), (gpointer)dialer);
+  g_signal_connect (G_OBJECT (priv->history), "cancel_call",
+                    G_CALLBACK (on_talking_cancel_call), (gpointer)dialer);
+  g_signal_connect (G_OBJECT (priv->history), "speaker_toggle",
+                    G_CALLBACK (on_talking_speaker_toggle), (gpointer)dialer);
 
   /* Keypad */
   priv->keypad = moko_keypad_new ();
   g_signal_connect (G_OBJECT (priv->keypad), "dial_number",
                     G_CALLBACK (on_keypad_dial_clicked), (gpointer)dialer);
+  g_signal_connect (G_OBJECT (priv->keypad), "digit_pressed",
+                    G_CALLBACK (on_keypad_digit_pressed), (gpointer)dialer);
   gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->keypad,
                             gtk_image_new_from_file (PKGDATADIR"/dtmf.png"));
   gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->keypad,

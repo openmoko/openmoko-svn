@@ -61,6 +61,7 @@ struct _MokoKeypadClass
   
   /* signals */
   void (*dial_number) (MokoKeypad *keypad, const gchar *number);
+  void (*digit_pressed) (MokoKeypad *keypad, const gchar digit);
 
   /* future padding */
   void (*_moko_keypad_1) (void);

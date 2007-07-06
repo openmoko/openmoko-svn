@@ -43,6 +43,7 @@ struct _MokoKeypadPrivate
 enum
 {
   DIAL_NUMBER,
+  DIGIT_PRESSED,
 
   LAST_SIGNAL
 };
@@ -137,6 +138,16 @@ moko_keypad_class_init (MokoKeypadClass *klass)
                   g_cclosure_marshal_VOID__STRING,
                   G_TYPE_NONE, 
                   1, G_TYPE_STRING);
+
+  keypad_signals[DIGIT_PRESSED] =
+    g_signal_new ("digit_pressed", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoKeypadClass, digit_pressed),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__CHAR,
+                  G_TYPE_NONE, 
+                  1, G_TYPE_CHAR);
 
   g_type_class_add_private (obj_class, sizeof (MokoKeypadPrivate)); 
 }
