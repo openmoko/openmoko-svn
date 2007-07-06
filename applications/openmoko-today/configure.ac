@@ -31,6 +31,16 @@ PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $LIBGTK_VERSION)
 PKG_CHECK_MODULES(ECAL, libecal-1.2 >= $LIBECAL_VERSION)
 PKG_CHECK_MODULES(EBOOK, libebook-1.2 >= $LIBEBOOK_VERSION)
 
+AC_ARG_ENABLE(startup_notification,
+        AC_HELP_STRING([--enable-startup-notification], [enable startup notification support]),
+        enable_startup_notification=$enableval, enable_startup_notification=yes)
+
+if test x$enable_startup_notification != xno; then
+  PKG_CHECK_MODULES(SN, libstartup-notification-1.0, ,
+    AC_MSG_ERROR([*** Required Startup Notification library not installed ***]))
+  AC_DEFINE(USE_LIBSN, [1], [Has Startup Notification Support])
+fi
+
 if test x$TODAY_DEVEL != x ; then
     CFLAGS="-Wall -Wextra -Wshadow -Wpointer-arith -g"
 fi
@@ -53,6 +63,7 @@ AC_OUTPUT([
 Makefile
 po/Makefile.in
 libkoto/Makefile
+libtaku/Makefile
 src/Makefile
 ])
 

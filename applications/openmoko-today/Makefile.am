@@ -1,4 +1,4 @@
-SUBDIRS = libkoto src po
+SUBDIRS = libkoto libtaku src po
 
 INTLTOOL_BUILT = \
         intltool-extract \

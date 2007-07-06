@@ -1,5 +1,30 @@
 2007-07-06  Chris Lord  <chris@openedhand.com>
 
+	* Makefile.am:
+	* configure.ac:
+	* libtaku/Makefile.am:
+	* libtaku/eggsequence.c:
+	* libtaku/eggsequence.h:
+	* libtaku/launcher-util.c:
+	* libtaku/launcher-util.h:
+	* libtaku/taku-icon-tile.c:
+	* libtaku/taku-icon-tile.h:
+	* libtaku/taku-launcher-tile.c:
+	* libtaku/taku-launcher-tile.h:
+	* libtaku/taku-table.c:
+	* libtaku/taku-table.h:
+	* libtaku/taku-tile.c:
+	* libtaku/taku-tile.h:
+	* libtaku/xutil.c:
+	* libtaku/xutil.h:
+	Add matchbox-desktop-2 code
+
+	* src/today-main.c: (today_notebook_add_page_with_icon),
+	(today_create_homepage), (main):
+	Re-organise slightly
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (today_notebook_add_page_with_icon), (main):
 	Don't call gtk_widget_show_all on the main window
 
