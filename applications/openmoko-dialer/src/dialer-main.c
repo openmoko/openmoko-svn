@@ -147,7 +147,17 @@ main (int argc, char **argv)
     gdk_notify_startup_complete ();
     return 1;
   }
-  
+
+  /* So we are creating a new dialer, one of the first things we sould do is
+   * resart gsmd, as we cannot guarentee it is running. This also solves the
+   * problem of when it hangs.
+   * FIXME: This shouldn't be left up to the dialer, and we cannot guarentee
+   * to always have root access, but it'll work for most embedded devices.
+   */
+  g_debug ("(re)starting gsmd\n");
+  g_spawn_command_line_sync ("/etc/init.d/gsmd restart",
+                             NULL, NULL, NULL, NULL);
+
   /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();
 

@@ -1,5 +1,11 @@
 2007-07-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/dialer-main.c: (main):
+	Issue a "/etc/init.d/gsmd restart" before starting the dialer, to make sure
+	we have a running gsmd. Yes its hacky, but its the only way gsmd will learn.
+
+2007-07-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (moko_dialer_outgoing_call),
 	(moko_dialer_hung_up), (moko_dialer_rejected),
 	(on_keypad_dial_clicked), (on_talking_accept_call),
