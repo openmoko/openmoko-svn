@@ -180,7 +180,7 @@ main (int argc, char **argv)
 static void
 search_toggle_cb (GtkWidget * button, ApplicationData * data)
 {
-  gboolean search;
+/*  gboolean search;
 
   search = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
 
@@ -193,5 +193,10 @@ search_toggle_cb (GtkWidget * button, ApplicationData * data)
     {
       gtk_widget_show (data->filter_combo);
       gtk_widget_hide (data->search_entry);
-    }
+    }*/
+  g_object_set (G_OBJECT (data->search_entry), "visible",
+    !GTK_WIDGET_VISIBLE (data->search_entry), NULL);
+  g_object_set (G_OBJECT (data->filter_combo), "visible",
+    !GTK_WIDGET_VISIBLE (data->filter_combo), NULL);
 }
+
