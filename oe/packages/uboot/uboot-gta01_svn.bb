@@ -17,6 +17,7 @@ SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""
 UBOOT_MACHINES = "gta01bv2 gta01bv3 gta01bv4 smdk2440 hxd8 qt2410 gta02v1"
+UBOOT_FAMILIES = ". neo1973"
 
 do_quilt() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
@@ -49,9 +50,13 @@ do_compile () {
 		else
 			mv u-boot.bin u-boot_${mach}.bin
 		fi
-		if [ -f board/${mach}/lowlevel_foo.bin ]; then
-			mv board/${mach}/lowlevel_foo.bin lowlevel_foo_${mach}.bin
-		fi
+		for family in ${UBOOT_FAMILIES}; do
+			if [ -f board/${family}/${mach}/lowlevel_foo.bin ]; then
+				mv board/${family}/${mach}/lowlevel_foo.bin \
+				    lowlevel_foo_${mach}.bin
+				break
+			fi
+		done
 	done
 }
 
