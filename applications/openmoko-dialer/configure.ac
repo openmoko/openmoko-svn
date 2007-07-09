@@ -11,7 +11,7 @@ AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 # base deps
-PKG_CHECK_MODULES(DIALER, openmoko-libs >= 0.0.1 alsa libebook-1.2 dbus-glib-1)
+PKG_CHECK_MODULES(DIALER, dbus-glib-1 gtk+-2.0 libmokojournal libmokogsmd libmokoui)
 
 old_cflags=$CFLAGS
 CFLAGS=$DIALER_CFLAGS

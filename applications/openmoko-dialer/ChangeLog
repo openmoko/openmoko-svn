@@ -1,6 +1,11 @@
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 
 	* configure.ac:
+	Update to use the new split-out openmoko-libs
+
+2007-07-09  Neil J. Patel  <njp@o-hand.com>
+
+	* configure.ac:
 	Added an option to sepcify the location of the dbus tools, using
 	--with-dbusbindir=DIR.
 
