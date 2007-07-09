@@ -4,7 +4,7 @@ LICENSE = "GPL"
 SECTION = "bootloader"
 PRIORITY = "optional"
 PV = "1.2.0+svn${SRCDATE}"
-PR = "r10"
+PR = "r11"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
@@ -17,7 +17,6 @@ SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""
 UBOOT_MACHINES = "gta01bv2 gta01bv3 gta01bv4 smdk2440 hxd8 qt2410 gta02v1"
-UBOOT_FAMILIES = ". neo1973"
 
 do_quilt() {
         mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
@@ -43,6 +42,7 @@ do_compile () {
 	do
 		oe_runmake ${mach}_config
 		oe_runmake clean
+		find board -name lowlevel_foo.bin -exec rm '{}' \;
 		oe_runmake all
 		oe_runmake u-boot.udfu
 		if [ -f u-boot.udfu ]; then
@@ -50,13 +50,13 @@ do_compile () {
 		else
 			mv u-boot.bin u-boot_${mach}.bin
 		fi
-		for family in ${UBOOT_FAMILIES}; do
-			if [ -f board/${family}/${mach}/lowlevel_foo.bin ]; then
-				mv board/${family}/${mach}/lowlevel_foo.bin \
-				    lowlevel_foo_${mach}.bin
-				break
-			fi
-		done
+		if [ -f board/${mach}/lowlevel_foo.bin ]; then
+			mv board/${mach}/lowlevel_foo.bin \
+			    lowlevel_foo_${mach}.bin
+		else
+			find board -name lowlevel_foo.bin \
+			    -exec mv '{}' lowlevel_foo_${mach}.bin \;
+		fi
 	done
 }
 
