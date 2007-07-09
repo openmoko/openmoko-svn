@@ -1,0 +1,18 @@
+2007-07-09  Neil J. Patel  <njp@o-hand.com>
+
+	* COPYING:
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* mokojournal.pc.in:
+	* mokojournal/Makefile.am:
+	* mokojournal/moko-journal.c: 
+	* mokojournal/moko-journal.h:
+	* mokojournal/moko-time-priv.h:
+	* mokojournal/moko-time.c:
+	* mokojournal/moko-time.h:
+	* tests/Makefile.am:
+	* tests/test-create.c: (main):
+	* tests/test-delete-uid.c: (main):
+	* tests/test-delete.c: (main):
+	Initial Import from splitting openmoko-libs.
