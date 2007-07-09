@@ -1,0 +1,11 @@
+2007-07-09  Neil J. Patel  <njp@o-hand.com>
+
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* libmokogsmd.pc.in:
+	* libmokogsmd/Makefile.am:
+	* libmokogsmd/moko-gsmd-connection.c:
+	* libmokogsmd/moko-gsmd-connection.h:
+	* libmokogsmd/moko-gsmd-marshal.list:
+	Initial import of libmokogsmd from openmoko-libs split

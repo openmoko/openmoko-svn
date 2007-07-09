@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/libmokoui
+
+Name: libmokogsmd
+Description: OpenMoko Gsmd Development Library
+Version: @VERSION
+Cflags: -I${includedir}
+Libs: -L${libdir} -lmokogsmd
+Requires: libgsmd glib-2.0
