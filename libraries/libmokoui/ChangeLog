@@ -1,0 +1,12 @@
+2007-07-09  Neil J. Patel  <njp@o-hand.com>
+
+	* COPYING:
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* libmokoui.pc.in:
+	* libmokoui/Makefile.am:
+	* libmokoui/moko-stock.c:
+	* libmokoui/moko-stock.h:
+	* po/Makefile.in.in:
+	Initial import from the spilt of openmoko-libs

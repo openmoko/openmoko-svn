@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/libmokoui
+
+Name: libmokoui
+Description: OpenMoko User Interface Development Library
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lmokoui
+Requires: gtk+-2.0
