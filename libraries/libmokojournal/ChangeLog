@@ -1,5 +1,16 @@
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 
+	* Makefile.am:
+	* configure.ac:
+	* libmokojournal.pc.in:
+	* mokojournal.pc.in:
+	Change name of pc file to libmokojournal. Update to reflect changes.
+
+	* mokojournal/Makefile.am:
+	Install headers to */include/libmokojournal
+
+2007-07-09  Neil J. Patel  <njp@o-hand.com>
+
 	* COPYING:
 	* Makefile.am:
 	* autogen.sh:

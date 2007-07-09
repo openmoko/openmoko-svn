@@ -28,7 +28,7 @@ AC_SUBST(LIBS)
 # output stuff
 AC_OUTPUT([
 Makefile
-mokojournal.pc
+libmokojournal.pc
 mokojournal/Makefile
 tests/Makefile
 ])

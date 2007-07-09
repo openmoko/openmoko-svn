@@ -8,6 +8,6 @@ libmokojournal_la_LIBADD=
 libmokojournal_la_LDFLAGS= -version-info 0:0:0
 AM_CFLAGS = -Wall -pedantic -std=c99
 
-libmokojournalheadersdir=$(includedir)/mokojournal
+libmokojournalheadersdir=$(includedir)/libmokojournal
 libmokojournalheaders_DATA=$(public_headers)
 
