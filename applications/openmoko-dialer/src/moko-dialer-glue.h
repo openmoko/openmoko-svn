@@ -53,7 +53,7 @@ G_BEGIN_DECLS
 #endif /* !G_ENABLE_DEBUG */
 
 
-/* BOOLEAN:POINTER,POINTER (/tmp/dbus-binding-tool-c-marshallers.PXOJUT:1) */
+/* BOOLEAN:POINTER,POINTER (/tmp/dbus-binding-tool-c-marshallers.ZYAPVT:1) */
 extern void dbus_glib_marshal_moko_dialer_BOOLEAN__POINTER_POINTER (GClosure     *closure,
                                                                     GValue       *return_value,
                                                                     guint         n_param_values,
@@ -100,7 +100,7 @@ dbus_glib_marshal_moko_dialer_BOOLEAN__POINTER_POINTER (GClosure     *closure,
   g_value_set_boolean (return_value, v_return);
 }
 
-/* BOOLEAN:STRING,POINTER (/tmp/dbus-binding-tool-c-marshallers.PXOJUT:2) */
+/* BOOLEAN:STRING,POINTER (/tmp/dbus-binding-tool-c-marshallers.ZYAPVT:2) */
 extern void dbus_glib_marshal_moko_dialer_BOOLEAN__STRING_POINTER (GClosure     *closure,
                                                                    GValue       *return_value,
                                                                    guint         n_param_values,
@@ -147,7 +147,7 @@ dbus_glib_marshal_moko_dialer_BOOLEAN__STRING_POINTER (GClosure     *closure,
   g_value_set_boolean (return_value, v_return);
 }
 
-/* BOOLEAN:POINTER (/tmp/dbus-binding-tool-c-marshallers.PXOJUT:3) */
+/* BOOLEAN:POINTER (/tmp/dbus-binding-tool-c-marshallers.ZYAPVT:3) */
 extern void dbus_glib_marshal_moko_dialer_BOOLEAN__POINTER (GClosure     *closure,
                                                             GValue       *return_value,
                                                             guint         n_param_values,
