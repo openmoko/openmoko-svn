@@ -7,16 +7,26 @@ G_DEFINE_TYPE (MokoFingerScroll, moko_finger_scroll, GTK_TYPE_SCROLLED_WINDOW)
 typedef struct _MokoFingerScrollPrivate MokoFingerScrollPrivate;
 
 struct _MokoFingerScrollPrivate {
-	gint x;
-	gint y;
+	MokoFingerScrollMode mode;
+	gdouble x;
+	gdouble y;
+	gboolean enabled;
 	gboolean clicked;
 	gboolean moved;
 	GTimeVal click_start;
+	gdouble vmin;
+	gdouble vmax;
+	guint sps;
+	gdouble vel_x;
+	gdouble vel_y;
 };
 
 enum {
 	PROP_ENABLED = 1,
 	PROP_MODE,
+	PROP_VELOCITY_MIN,
+	PROP_VELOCITY_MAX,
+	PROP_SPS,
 };
 
 static gboolean
@@ -25,15 +35,45 @@ moko_finger_scroll_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 
-	if (priv->clicked) return FALSE;
-
-	if (event->button != 1) return TRUE;
+	if ((!priv->enabled) || (priv->clicked) || (event->button != 1))
+		return FALSE;
 
 	g_get_current_time (&priv->click_start);
-	priv->x = (gint)event->x_root;
-	priv->y = (gint)event->y_root;
+	priv->x = (gint)event->x;
+	priv->y = (gint)event->y;
 	priv->moved = FALSE;
 	priv->clicked = TRUE;
+	
+	return TRUE;
+}
+
+static void
+moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y)
+{
+	gdouble h, v;
+	GtkAdjustment *hadjust = gtk_scrolled_window_get_hadjustment (
+		GTK_SCROLLED_WINDOW (scroll));
+	GtkAdjustment *vadjust = gtk_scrolled_window_get_vadjustment (
+		GTK_SCROLLED_WINDOW (scroll));
+	
+	h = MIN (hadjust->upper - hadjust->page_size,
+		MAX (hadjust->lower, gtk_adjustment_get_value (hadjust) - x));
+	v = MIN (vadjust->upper - vadjust->page_size,
+		MAX (vadjust->lower, gtk_adjustment_get_value (vadjust) - y));
+
+	gtk_adjustment_set_value (hadjust, h);
+	gtk_adjustment_set_value (vadjust, v);
+}
+
+static gboolean
+moko_finger_scroll_timeout (MokoFingerScroll *scroll)
+{
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
+	
+	if ((!priv->clicked) || (!priv->enabled) ||
+	    (priv->mode != MOKO_FINGER_SCROLL_MODE_ACCEL)) return FALSE;
+	
+	moko_finger_scroll_scroll (scroll, priv->vel_x, priv->vel_y);
 	
 	return TRUE;
 }
@@ -44,35 +84,45 @@ moko_finger_scroll_motion_notify_cb (GtkWidget *widget, GdkEventMotion *event,
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	gint dnd_threshold;
+	gdouble x, y;
 
-	if (!priv->clicked) return FALSE;
+	if ((!priv->enabled) || (!priv->clicked)) return FALSE;
 
 	g_object_get (G_OBJECT (gtk_settings_get_default ()),
 		"gtk-dnd-drag-threshold", &dnd_threshold, 0);
+	x = event->x - priv->x;
+	y = event->y - priv->y;
 	
-	if ((abs ((gint)event->x_root - priv->x) > dnd_threshold) ||
-	    (abs ((gint)event->y_root - priv->y) > dnd_threshold)) {
+	if ((!priv->moved) && (
+	     (ABS (x) > dnd_threshold) || (ABS (y) > dnd_threshold))) {
 		priv->moved = TRUE;
+		if (priv->mode == MOKO_FINGER_SCROLL_MODE_ACCEL) {
+			g_timeout_add (priv->sps,
+				(GSourceFunc)moko_finger_scroll_timeout,
+				scroll);
+		}
 	}
 	
 	if (priv->moved) {
-		gdouble h, v;
-		GtkAdjustment *hadjust = gtk_scrolled_window_get_hadjustment (
-			GTK_SCROLLED_WINDOW (scroll));
-		GtkAdjustment *vadjust = gtk_scrolled_window_get_vadjustment (
-			GTK_SCROLLED_WINDOW (scroll));
-		h = gtk_adjustment_get_value (hadjust) -
-			((event->x_root - priv->x));
-		v = gtk_adjustment_get_value (vadjust) -
-			((event->y_root - priv->y));
-		priv->x = event->x_root;
-		priv->y = event->y_root;
-		if ((h >= hadjust->lower) &&
-		    (h <= (hadjust->upper - hadjust->page_size)))
-			gtk_adjustment_set_value (hadjust, h);
-		if ((v >= vadjust->lower) &&
-		    (v <= (vadjust->upper - vadjust->page_size)))
-			gtk_adjustment_set_value (vadjust, v);
+		switch (priv->mode) {
+		    case MOKO_FINGER_SCROLL_MODE_PUSH :
+			moko_finger_scroll_scroll (scroll, x, y);
+			priv->x = event->x;
+			priv->y = event->y;
+			break;
+		    case MOKO_FINGER_SCROLL_MODE_ACCEL :
+			priv->vel_x = (((x > 0) ? -1 : 1) *
+				(ABS (x) /
+				 (gdouble)widget->allocation.width) *
+				(priv->vmax-priv->vmin));
+			priv->vel_y = (((y > 0) ? -1 : 1) *
+				(ABS (y) /
+				 (gdouble)widget->allocation.height) *
+				(priv->vmax-priv->vmin));
+			break;
+		    default :
+			break;
+		}
 	}
 	
 	return TRUE;
@@ -85,8 +135,8 @@ moko_finger_scroll_button_release_cb (GtkWidget *widget, GdkEventButton *event,
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	GTimeVal current;
 		
-	if (!priv->clicked) return FALSE;
-	if (event->button != 1) return TRUE;
+	if ((!priv->enabled) || (event->button != 1))
+		return FALSE;
 
 	g_get_current_time (&current);
 
@@ -99,7 +149,7 @@ moko_finger_scroll_button_release_cb (GtkWidget *widget, GdkEventButton *event,
 		priv->clicked = FALSE;
 		event->type = GDK_BUTTON_RELEASE;
 		gtk_widget_event (widget, (GdkEvent *)event);
-	}	
+	}
 	priv->clicked = FALSE;
 
 	return TRUE;
@@ -139,7 +189,24 @@ static void
 moko_finger_scroll_get_property (GObject * object, guint property_id,
 				 GValue * value, GParamSpec * pspec)
 {
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);
+
 	switch (property_id) {
+	    case PROP_ENABLED :
+		g_value_set_boolean (value, priv->enabled);
+		break;
+	    case PROP_MODE :
+		g_value_set_int (value, priv->mode);
+		break;
+	    case PROP_VELOCITY_MIN :
+		g_value_set_double (value, priv->vmin);
+		break;
+	    case PROP_VELOCITY_MAX :
+		g_value_set_double (value, priv->vmax);
+		break;
+	    case PROP_SPS :
+		g_value_set_uint (value, priv->sps);
+		break;
 	    default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -149,7 +216,24 @@ static void
 moko_finger_scroll_set_property (GObject * object, guint property_id,
 				 const GValue * value, GParamSpec * pspec)
 {
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);
+
 	switch (property_id) {
+	    case PROP_ENABLED :
+		priv->enabled = g_value_get_boolean (value);
+		break;
+	    case PROP_MODE :
+		priv->mode = g_value_get_int (value);
+		break;
+	    case PROP_VELOCITY_MIN :
+		priv->vmin = g_value_get_double (value);
+		break;
+	    case PROP_VELOCITY_MAX :
+		priv->vmax = g_value_get_double (value);
+		break;
+	    case PROP_SPS :
+		priv->sps = g_value_get_uint (value);
+		break;
 	    default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -184,6 +268,59 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 	
 	container_class->add = moko_finger_scroll_add;
 	container_class->remove = moko_finger_scroll_remove;
+
+	g_object_class_install_property (
+		object_class,
+		PROP_ENABLED,
+		g_param_spec_boolean (
+			"enabled",
+			"Enabled",
+			"Enable or disable finger-scroll.",
+			TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	g_object_class_install_property (
+		object_class,
+		PROP_MODE,
+		g_param_spec_int (
+			"mode",
+			"Scroll mode",
+			"Change the finger-scrolling mode.",
+			MOKO_FINGER_SCROLL_MODE_PUSH,
+			MOKO_FINGER_SCROLL_MODE_ACCEL,
+			MOKO_FINGER_SCROLL_MODE_ACCEL,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	g_object_class_install_property (
+		object_class,
+		PROP_VELOCITY_MIN,
+		g_param_spec_double (
+			"velocity_min",
+			"Minimum scroll velocity",
+			"Minimum distance the child widget should scroll "
+				"per 'frame', in pixels.",
+			0, G_MAXDOUBLE, 1,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	g_object_class_install_property (
+		object_class,
+		PROP_VELOCITY_MAX,
+		g_param_spec_double (
+			"velocity_max",
+			"Maximum scroll velocity",
+			"Minimum distance the child widget should scroll "
+				"per 'frame', in pixels.",
+			0, G_MAXDOUBLE, 10,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+	g_object_class_install_property (
+		object_class,
+		PROP_SPS,
+		g_param_spec_uint (
+			"sps",
+			"Scrolls per second",
+			"Amount of scroll events to generate per second.",
+			0, G_MAXUINT, 15,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 }
 
 static void
