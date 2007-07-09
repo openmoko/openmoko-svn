@@ -17,7 +17,7 @@
  */
 
 #include <gtk/gtk.h>
-#include "moko-scrolled-window.h"
+#include "moko-finger-scroll.h"
 
 /* type definitions */
 
@@ -112,15 +112,8 @@ main (int argc, char **argv)
 
   /* list */
   
-  w = scroll = moko_scrolled_window_new ();
+  w = scroll = moko_finger_scroll_new ();
   gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, 0);
-
-  w = gtk_scrolled_window_new (NULL, NULL);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (w),
-                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
- 
-  gtk_container_add (GTK_CONTAINER (scroll), w);
-
 
   liststore = gtk_list_store_new (1, G_TYPE_STRING);
   for (i = 0; i < 100; i++)
