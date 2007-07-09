@@ -12,8 +12,6 @@ bin_PROGRAMS = openmoko-today
 openmoko_today_SOURCES =		\
 	today-main.c 			\
 	today.h				\
-	today-header-box.h		\
-	today-header-box.c		\
 	today-pim-summary.c		\
 	today-pim-summary.h		\
 	today-utils.c			\
@@ -21,7 +19,9 @@ openmoko_today_SOURCES =		\
 	today-events-store.h		\
 	today-events-store.c		\
 	today-tasks-store.c		\
-	today-tasks-store.h
+	today-tasks-store.h		\
+	moko-finger-scroll.c		\
+	moko-finger-scroll.h
 
 openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
 			$(top_builddir)/libtaku/libtaku.a	\

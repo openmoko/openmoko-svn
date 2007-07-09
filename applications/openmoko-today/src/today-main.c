@@ -6,8 +6,8 @@
 #include <gtk/gtk.h>
 #include <libtaku/taku-table.h>
 #include <libtaku/taku-launcher-tile.h>
+#include "moko-finger-scroll.h"
 #include "today.h"
-#include "today-header-box.h"
 #include "today-pim-summary.h"
 
 static GtkToolItem *
@@ -98,7 +98,7 @@ load_data_dir (const char *datadir, TakuTable *table)
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
-	GtkWidget *main_vbox, *vbox, *align, *viewport;
+	GtkWidget *main_vbox, *vbox, *align, *viewport, *scroll;
 	
 	/* Add home page */
 	main_vbox = gtk_vbox_new (FALSE, 0);
@@ -128,10 +128,12 @@ today_create_home_page (TodayData *data)
 	gtk_widget_show_all (data->home_toolbar);
 
 	viewport = gtk_viewport_new (NULL, NULL);
-	gtk_box_pack_start (GTK_BOX (main_vbox), viewport, TRUE, TRUE, 0);
+	scroll = moko_finger_scroll_new ();
+	gtk_container_add (GTK_CONTAINER (scroll), viewport);
+	gtk_box_pack_start (GTK_BOX (main_vbox), scroll, TRUE, TRUE, 0);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
 				      GTK_SHADOW_NONE);
-	gtk_widget_show (viewport);
+	gtk_widget_show_all (scroll);
 	align = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
 	gtk_container_add (GTK_CONTAINER (viewport), align);
@@ -162,7 +164,7 @@ today_tasks_search_toggle_cb (GtkWidget *button, TodayData *data)
 static GtkWidget *
 today_create_tasks_page (TodayData *data)
 {
-	GtkWidget *main_vbox, *hbox, *toggle, *viewport, *task_list;
+	GtkWidget *main_vbox, *hbox, *toggle, *viewport, *task_list, *scroll;
 	const char * const *dirs;
 
 	main_vbox = gtk_vbox_new (FALSE, 0);
@@ -210,8 +212,12 @@ today_create_tasks_page (TodayData *data)
 	load_data_dir (g_get_user_data_dir (), TAKU_TABLE (task_list));
 
 	gtk_container_add (GTK_CONTAINER (viewport), task_list);
-	gtk_box_pack_start (GTK_BOX (main_vbox), viewport, TRUE, TRUE, 0);
-	gtk_widget_show_all (viewport);
+	
+	scroll = moko_finger_scroll_new ();
+	gtk_container_add (GTK_CONTAINER (scroll), viewport);
+	
+	gtk_box_pack_start (GTK_BOX (main_vbox), scroll, TRUE, TRUE, 0);
+	gtk_widget_show_all (scroll);
 	
 	return main_vbox;
 }

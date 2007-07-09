@@ -1,3 +1,21 @@
+2007-07-09  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	* src/moko-finger-scroll.c: (moko_finger_scroll_scroll),
+	(moko_finger_scroll_timeout),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_get_topmost),
+	(moko_finger_scroll_button_release_cb), (moko_finger_scroll_add),
+	(moko_finger_scroll_remove), (moko_finger_scroll_class_init),
+	(moko_finger_scroll_init):
+	* src/moko-finger-scroll.h:
+	* src/today-header-box.c:
+	* src/today-header-box.h:
+	* src/today-main.c: (today_create_home_page),
+	(today_tasks_search_toggle_cb), (today_create_tasks_page):
+	* src/today-pim-summary.c:
+	Add and use MokoFingerScroll widget, remove old header widget
+
 2007-07-06  Chris Lord  <chris@openedhand.com>
 
 	* libtaku/Makefile.am:

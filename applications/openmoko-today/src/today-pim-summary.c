@@ -4,7 +4,6 @@
 #include <libkoto/koto-task.h>
 #include <libkoto/koto-task-view.h>
 #include "today-pim-summary.h"
-#include "today-header-box.h"
 #include "today-events-store.h"
 #include "today-tasks-store.h"
 
