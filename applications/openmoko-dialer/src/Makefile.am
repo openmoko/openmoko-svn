@@ -6,6 +6,8 @@ bin_PROGRAMS = openmoko-dialer
 
 openmoko_dialer_SOURCES = \
 	dialer-main.c			\
+	moko-contacts.c			\
+	moko-contacts.h			\
 	moko-dialer.c			\
 	moko-dialer.h			\
 	moko-dialer-glue.h		\

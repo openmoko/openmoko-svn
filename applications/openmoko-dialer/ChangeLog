@@ -1,6 +1,16 @@
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 
 	* configure.ac:
+	* src/Makefile.am:
+	* src/moko-contacts.c: (moko_contacts_dispose),
+	(moko_contacts_finalize), (moko_contacts_class_init),
+	(moko_contacts_init), (moko_contacts_get_default):
+	* src/moko-contacts.h:
+	Added stubs for a contacts backend (for number matching and autocomplete)
+
+2007-07-09  Neil J. Patel  <njp@o-hand.com>
+
+	* configure.ac:
 	Update to use the new split-out openmoko-libs
 
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
