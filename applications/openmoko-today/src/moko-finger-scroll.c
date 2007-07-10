@@ -147,7 +147,7 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	     (ABS (x) > dnd_threshold) || (ABS (y) > dnd_threshold))) {
 		priv->moved = TRUE;
 		if (priv->mode == MOKO_FINGER_SCROLL_MODE_ACCEL) {
-			g_timeout_add (priv->sps,
+			g_timeout_add ((gint)(1000.0/(gdouble)priv->sps),
 				(GSourceFunc)moko_finger_scroll_timeout,
 				scroll);
 		}
@@ -423,7 +423,7 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 			"Maximum scroll velocity",
 			"Minimum distance the child widget should scroll "
 				"per 'frame', in pixels.",
-			0, G_MAXDOUBLE, 24,
+			0, G_MAXDOUBLE, 48,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	g_object_class_install_property (
@@ -434,7 +434,7 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 			"Deceleration multiplier",
 			"The multiplier used when decelerating when in "
 				"acceleration scrolling mode.",
-			0, 1.0, 0.9,
+			0, 1.0, 0.95,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 	
 	g_object_class_install_property (

@@ -159,6 +159,11 @@ today_tasks_search_toggle_cb (GtkWidget *button, TodayData *data)
 		!GTK_WIDGET_VISIBLE (data->search_entry), NULL);
 	g_object_set (G_OBJECT (data->filter_combo), "visible",
 		!GTK_WIDGET_VISIBLE (data->filter_combo), NULL);
+
+	if (GTK_WIDGET_VISIBLE (data->search_entry)) {
+		
+	} else {
+	}
 }
 
 static GtkWidget *
@@ -277,7 +282,7 @@ main (int argc, char **argv)
 	g_signal_connect (G_OBJECT (data.window), "delete-event",
 		G_CALLBACK (gtk_main_quit), NULL);
 
-#if 1
+#if 0
 	/* Force theme settings */
 	g_object_set (gtk_settings_get_default (),
 		"gtk-theme-name", "openmoko-standard-2", 

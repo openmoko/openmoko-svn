@@ -1,5 +1,14 @@
 2007-07-10  Chris Lord  <chris@openedhand.com>
 
+	* src/moko-finger-scroll.c: (moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_class_init):
+	Fix SPS option, actually animate at given frame-count
+
+	* src/today-main.c: (today_tasks_search_toggle_cb), (main):
+	Don't force theme/icon settings by default
+
+2007-07-10  Chris Lord  <chris@openedhand.com>
+
 	* src/moko-finger-scroll.c: (moko_finger_scroll_scroll),
 	(moko_finger_scroll_button_release_cb),
 	(moko_finger_scroll_class_init):
