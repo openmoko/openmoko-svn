@@ -69,10 +69,7 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 	
 	g_object_get (G_OBJECT (GTK_BIN (scroll)->child), "hadjustment",
 		&hadjust, "vadjustment", &vadjust, NULL);
-	
-	if (sx) *sx = TRUE;
-	if (sy) *sy = TRUE;
-	
+		
 	if (hadjust) {
 		h = gtk_adjustment_get_value (hadjust) - x;
 		if (h > hadjust->upper - hadjust->page_size) {
@@ -81,7 +78,8 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 		} else if (h < hadjust->lower) {
 			if (sx) *sx = FALSE;
 			h = hadjust->lower;
-		}
+		} else if (sx)
+			*sx = TRUE;
 		gtk_adjustment_set_value (hadjust, h);
 	}
 	
@@ -93,7 +91,8 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 		} else if (v < vadjust->lower) {
 			if (sy) *sy = FALSE;
 			v = vadjust->lower;
-		}
+		} else if (sy)
+			*sy = TRUE;
 		gtk_adjustment_set_value (vadjust, v);
 	}
 }
@@ -229,11 +228,12 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	GTimeVal current;
 		
-	if ((!priv->enabled) || (event->button != 1))
+	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1))
 		return FALSE;
 
 	g_get_current_time (&current);
 
+	priv->clicked = FALSE;
 	if ((!priv->moved) &&
 	    ((current.tv_sec > priv->click_start.tv_sec) ||
 	    (current.tv_usec - priv->click_start.tv_usec > 500))) {
@@ -248,8 +248,8 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 			GTK_BIN (scroll)->child->window,
 			event->x, event->y, &x, &y);
 
-		event->x -= x;
-		event->y -= y;
+		event->x = x;
+		event->y = y;
 		
 		/* Send synthetic click event */
 		((GdkEvent *)event)->any.window = g_object_ref (child);
@@ -259,7 +259,6 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		((GdkEvent *)event)->type = GDK_BUTTON_RELEASE;
 		gdk_event_put ((GdkEvent *)event);
 	}
-	priv->clicked = FALSE;
 
 	return TRUE;
 }
@@ -355,9 +354,21 @@ moko_finger_scroll_finalize (GObject * object)
 }
 
 static void
+moko_finger_scroll_size_request (GtkWidget      *widget,
+				 GtkRequisition *requisition)
+{
+	/* Request zero size, seeing as we have no decoration of our own.
+	 * TODO: Decide on a minimum size to initiate a thumb/click event.
+	 */
+	requisition->width = 0;
+	requisition->height = 0;
+}
+
+static void
 moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 	GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
 	g_type_class_add_private (klass, sizeof (MokoFingerScrollPrivate));
@@ -366,6 +377,8 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 	object_class->set_property = moko_finger_scroll_set_property;
 	object_class->dispose = moko_finger_scroll_dispose;
 	object_class->finalize = moko_finger_scroll_finalize;
+	
+	widget_class->size_request = moko_finger_scroll_size_request;
 	
 	container_class->add = moko_finger_scroll_add;
 	container_class->remove = moko_finger_scroll_remove;

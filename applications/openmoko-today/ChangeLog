@@ -1,5 +1,12 @@
 2007-07-10  Chris Lord  <chris@openedhand.com>
 
+	* src/moko-finger-scroll.c: (moko_finger_scroll_scroll),
+	(moko_finger_scroll_button_release_cb),
+	(moko_finger_scroll_class_init):
+	Fix size-request and possible infinite loop in MokoFingerScroll
+
+2007-07-10  Chris Lord  <chris@openedhand.com>
+
 	* src/moko-finger-scroll.c: (moko_finger_scroll_button_press_cb),
 	(moko_finger_scroll_scroll), (moko_finger_scroll_timeout),
 	(moko_finger_scroll_motion_notify_cb),
