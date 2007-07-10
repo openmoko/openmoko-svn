@@ -10,12 +10,15 @@ struct _MokoFingerScrollPrivate {
 	MokoFingerScrollMode mode;
 	gdouble x;
 	gdouble y;
+	gdouble ex;
+	gdouble ey;
 	gboolean enabled;
 	gboolean clicked;
 	gboolean moved;
 	GTimeVal click_start;
 	gdouble vmin;
 	gdouble vmax;
+	gdouble decel;
 	guint sps;
 	gdouble vel_x;
 	gdouble vel_y;
@@ -26,6 +29,7 @@ enum {
 	PROP_MODE,
 	PROP_VELOCITY_MIN,
 	PROP_VELOCITY_MAX,
+	PROP_DECELERATION,
 	PROP_SPS,
 };
 
@@ -40,17 +44,24 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 		return FALSE;
 
 	g_get_current_time (&priv->click_start);
-	priv->x = (gint)event->x;
-	priv->y = (gint)event->y;
+	priv->x = event->x;
+	priv->y = event->y;
 	priv->moved = FALSE;
 	priv->clicked = TRUE;
+	/* Set velocity to zero so as to stop possible scrolling in progress */
+	priv->vel_x = 0;
+	priv->vel_y = 0;
 	
 	return TRUE;
 }
 
 static void
-moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y)
+moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
+			   gboolean *sx, gboolean *sy)
 {
+	/* Scroll by a particular amount (in pixels). Optionally, return if
+	 * the scroll on a particular axis was successful.
+	 */
 	gdouble h, v;
 	GtkAdjustment *hadjust, *vadjust;
 	
@@ -59,17 +70,30 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y)
 	g_object_get (G_OBJECT (GTK_BIN (scroll)->child), "hadjustment",
 		&hadjust, "vadjustment", &vadjust, NULL);
 	
+	if (sx) *sx = TRUE;
+	if (sy) *sy = TRUE;
+	
 	if (hadjust) {
-		h = MIN (hadjust->upper - hadjust->page_size,
-			MAX (hadjust->lower,
-			     gtk_adjustment_get_value (hadjust) - x));
+		h = gtk_adjustment_get_value (hadjust) - x;
+		if (h > hadjust->upper - hadjust->page_size) {
+			if (sx) *sx = FALSE;
+			h = hadjust->upper - hadjust->page_size;
+		} else if (h < hadjust->lower) {
+			if (sx) *sx = FALSE;
+			h = hadjust->lower;
+		}
 		gtk_adjustment_set_value (hadjust, h);
 	}
 	
 	if (vadjust) {
-		v = MIN (vadjust->upper - vadjust->page_size,
-			MAX (vadjust->lower,
-			     gtk_adjustment_get_value (vadjust) - y));
+		v = gtk_adjustment_get_value (vadjust) - y;
+		if (v > vadjust->upper - vadjust->page_size) {
+			if (sy) *sy = FALSE;
+			v = vadjust->upper - vadjust->page_size;
+		} else if (v < vadjust->lower) {
+			if (sy) *sy = FALSE;
+			v = vadjust->lower;
+		}
 		gtk_adjustment_set_value (vadjust, v);
 	}
 }
@@ -77,12 +101,26 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y)
 static gboolean
 moko_finger_scroll_timeout (MokoFingerScroll *scroll)
 {
+	gboolean sx, sy;
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	
-	if ((!priv->clicked) || (!priv->enabled) ||
+	if ((!priv->enabled) ||
 	    (priv->mode != MOKO_FINGER_SCROLL_MODE_ACCEL)) return FALSE;
+	if (!priv->clicked) {
+		/* Decelerate gradually when pointer is raised */
+		priv->vel_x *= priv->decel;
+		priv->vel_y *= priv->decel;
+		if ((ABS (priv->vel_x) < 1.0) && (ABS (priv->vel_y) < 1.0))
+			return FALSE;
+	}
 	
-	moko_finger_scroll_scroll (scroll, priv->vel_x, priv->vel_y);
+	moko_finger_scroll_scroll (scroll, priv->vel_x, priv->vel_y, &sx, &sy);
+	/* If the scroll on a particular axis wasn't succesful, reset the
+	 * initial scroll position to the new mouse co-ordinate. This means
+	 * when you get to the top of the page, dragging down won't do nothing.
+	 */
+	if (!sx) priv->x = priv->ex;
+	if (!sy) priv->y = priv->ey;
 	
 	return TRUE;
 }
@@ -98,6 +136,9 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 
 	if ((!priv->enabled) || (!priv->clicked)) return FALSE;
 
+	/* Only start the scroll if the mouse cursor passes beyond the
+	 * DnD threshold for dragging.
+	 */
 	g_object_get (G_OBJECT (gtk_settings_get_default ()),
 		"gtk-dnd-drag-threshold", &dnd_threshold, NULL);
 	x = event->x - priv->x;
@@ -116,21 +157,27 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	if (priv->moved) {
 		switch (priv->mode) {
 		    case MOKO_FINGER_SCROLL_MODE_PUSH :
-			moko_finger_scroll_scroll (scroll, x, y);
+			/* Scroll by the amount of pixels the cursor has moved
+			 * since the last motion event.
+			 */
+			moko_finger_scroll_scroll (scroll, x, y, NULL, NULL);
 			priv->x = event->x;
 			priv->y = event->y;
 			break;
 		    case MOKO_FINGER_SCROLL_MODE_ACCEL :
-			priv->vel_x = (((x > 0) ? -1 : 1) *
-				(ABS (x) /
+			/* Set acceleration relative to the initial click */
+			priv->ex = event->x;
+			priv->ey = event->y;
+			priv->vel_x = ((x > 0) ? 1 : -1) *
+				(((ABS (x) /
 				 (gdouble)GTK_WIDGET (scroll)->
 				 allocation.width) *
-				(priv->vmax-priv->vmin));
-			priv->vel_y = (((y > 0) ? -1 : 1) *
-				(ABS (y) /
+				(priv->vmax-priv->vmin)) + priv->vmin);
+			priv->vel_y = ((y > 0) ? 1 : -1) *
+				(((ABS (y) /
 				 (gdouble)GTK_WIDGET (scroll)->
 				 allocation.height) *
-				(priv->vmax-priv->vmin));
+				(priv->vmax-priv->vmin)) + priv->vmin);
 			break;
 		    default :
 			break;
@@ -144,9 +191,10 @@ static GdkWindow *
 moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 				gint *x2, gint *y2)
 {
-	if (x2) *x2 = 0;
-	if (y2) *y2 = 0;
-	
+	/* Find the GdkWindow at the given point, by recursing from a given
+	 * parent GdkWindow. Optionally return the co-ordinates transformed
+	 * relative to the child window.
+	 */
 	while (window) {
 		GList *c, *children = gdk_window_peek_children (window);
 		GdkWindow *old_window = window;
@@ -159,8 +207,6 @@ moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 			
 			if ((x >= wx) && (x < (wx + width)) &&
 			    (y >= wy) && (y < (wy + height))) {
-				if (x2) *x2 += wx;
-				if (y2) *y2 += wy;
 				x -= wx; y -= wy;
 				window = child;
 				break;
@@ -169,6 +215,9 @@ moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 		if (window == old_window) break;
 	}
 	
+	if (x2) *x2 = x;
+	if (y2) *y2 = y;
+
 	return window;
 }
 
@@ -250,6 +299,9 @@ moko_finger_scroll_get_property (GObject * object, guint property_id,
 	    case PROP_VELOCITY_MAX :
 		g_value_set_double (value, priv->vmax);
 		break;
+	    case PROP_DECELERATION :
+		g_value_set_double (value, priv->decel);
+		break;
 	    case PROP_SPS :
 		g_value_set_uint (value, priv->sps);
 		break;
@@ -276,6 +328,9 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 		break;
 	    case PROP_VELOCITY_MAX :
 		priv->vmax = g_value_get_double (value);
+		break;
+	    case PROP_DECELERATION :
+		priv->decel = g_value_get_double (value);
 		break;
 	    case PROP_SPS :
 		priv->sps = g_value_get_uint (value);
@@ -344,7 +399,7 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 			"Minimum scroll velocity",
 			"Minimum distance the child widget should scroll "
 				"per 'frame', in pixels.",
-			0, G_MAXDOUBLE, 1,
+			0, G_MAXDOUBLE, 0,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	g_object_class_install_property (
@@ -355,9 +410,20 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 			"Maximum scroll velocity",
 			"Minimum distance the child widget should scroll "
 				"per 'frame', in pixels.",
-			0, G_MAXDOUBLE, 10,
+			0, G_MAXDOUBLE, 24,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
+	g_object_class_install_property (
+		object_class,
+		PROP_DECELERATION,
+		g_param_spec_double (
+			"deceleration",
+			"Deceleration multiplier",
+			"The multiplier used when decelerating when in "
+				"acceleration scrolling mode.",
+			0, 1.0, 0.9,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+	
 	g_object_class_install_property (
 		object_class,
 		PROP_SPS,
