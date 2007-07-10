@@ -48,7 +48,7 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	priv->y = event->y;
 	priv->moved = FALSE;
 	priv->clicked = TRUE;
-	/* Set velocity to zero so as to stop possible scrolling in progress */
+	/* Stop scrolling on mouse-down (so you can flick, then hold to stop) */
 	priv->vel_x = 0;
 	priv->vel_y = 0;
 	
@@ -251,6 +251,12 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		event->x = x;
 		event->y = y;
 		
+		/* Set velocity to zero, most widgets don't expect to be
+		 * moving while being clicked.
+		 */
+		priv->vel_x = 0;
+		priv->vel_y = 0;
+
 		/* Send synthetic click event */
 		((GdkEvent *)event)->any.window = g_object_ref (child);
 		((GdkEvent *)event)->type = GDK_BUTTON_PRESS;
@@ -357,11 +363,10 @@ static void
 moko_finger_scroll_size_request (GtkWidget      *widget,
 				 GtkRequisition *requisition)
 {
-	/* Request zero size, seeing as we have no decoration of our own.
-	 * TODO: Decide on a minimum size to initiate a thumb/click event.
+	/* Request tiny size, seeing as we have no decoration of our own.
 	 */
-	requisition->width = 0;
-	requisition->height = 0;
+	requisition->width = 16;
+	requisition->height = 16;
 }
 
 static void
@@ -453,8 +458,6 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (self);
 	
-	priv->x = 0;
-	priv->y = 0;
 	priv->moved = FALSE;
 	priv->clicked = FALSE;	
 
