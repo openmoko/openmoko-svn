@@ -1,3 +1,12 @@
+2007-07-10  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-contacts.c: (moko_contacts_add_contact),
+	(on_ebook_contact_added), (moko_contacts_init),
+	(moko_contacts_get_default):
+	* src/moko-contacts.h:
+	Create the EBook and populate the contacts and entries list.
+	Connect to the 'contacts-added' signal and add new contacts to the list.
+
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 
 	* configure.ac:

@@ -1,5 +1,6 @@
 /*
- *  moko-contacts; The contactss contacts.
+ *  moko-contacts; A rework of the dialers contact list, some e-book code taken
+ *  from the orignal dialer contacts.c (written by tonyguan@fic-sh.com.cn)
  *
  *  Authored by OpenedHand Ltd <info@openedhand.com>
  *
@@ -21,6 +22,7 @@
 #define _HAVE_MOKO_CONTACTS_H
 
 #include <glib.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -44,6 +46,8 @@ G_BEGIN_DECLS
 typedef struct _MokoContacts MokoContacts;
 typedef struct _MokoContactsClass MokoContactsClass;
 typedef struct _MokoContactsPrivate MokoContactsPrivate;
+typedef struct _MokoContact MokoContact;
+typedef struct _MokoContactEntry MokoContactEntry;
 
 struct _MokoContacts
 {
@@ -63,12 +67,29 @@ struct _MokoContactsClass
   void (*_moko_contacts_2) (void);
   void (*_moko_contacts_3) (void);
   void (*_moko_contacts_4) (void);
-}; 
+};
+
+struct _MokoContact
+{
+  gchar       *uid;
+  gchar       *name;
+  GdkPixbuf   *photo;
+};
+
+struct _MokoContactEntry
+{
+  gchar       *desc;
+  gchar       *number;
+  MokoContact *contact;
+};
 
 GType moko_contacts_get_type (void) G_GNUC_CONST;
 
 MokoContacts*
 moko_contacts_get_default (void);
+
+MokoContactEntry*
+moko_contacts_lookup (MokoContacts *contacts, const gchar *number);
 
 G_END_DECLS
 
