@@ -1318,7 +1318,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -167,7 +167,7 @@
+@@ -164,7 +164,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
  #ifdef CONFIG_USE_IRQ
@@ -1327,7 +1327,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CONFIG_STACKSIZE_FIQ	(4*1024)	/* FIQ stack */
  #endif
  
-@@ -184,6 +184,10 @@
+@@ -181,6 +181,10 @@
  #define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
  #define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
  #define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
@@ -1624,16 +1624,16 @@ Index: u-boot/tools/Makefile
  # MA 02111-1307 USA
  #
  
--BIN_FILES	= img2srec$(SFX) mkimage$(SFX) envcrc$(SFX) gen_eth_addr$(SFX) bmp_logo$(SFX)
-+BIN_FILES	= img2srec$(SFX) mkimage$(SFX) envcrc$(SFX) gen_eth_addr$(SFX) bmp_logo$(SFX) mkudfu$(SFX)
+-BIN_FILES	= img2srec$(SFX) mkimage$(SFX) envcrc$(SFX) ubsha1$(SFX) gen_eth_addr$(SFX) bmp_logo$(SFX)
++BIN_FILES	= img2srec$(SFX) mkimage$(SFX) envcrc$(SFX) ubsha1$(SFX) gen_eth_addr$(SFX) bmp_logo$(SFX) mkudfu$(SFX)
  
- OBJ_LINKS	= environment.o crc32.o
--OBJ_FILES	= img2srec.o mkimage.o envcrc.o gen_eth_addr.o bmp_logo.o
-+OBJ_FILES	= img2srec.o mkimage.o envcrc.o gen_eth_addr.o bmp_logo.o mkudfu.o
+ OBJ_LINKS	= environment.o crc32.o sha1.o
+-OBJ_FILES	= img2srec.o mkimage.o envcrc.o ubsha1.o gen_eth_addr.o bmp_logo.o
++OBJ_FILES	= img2srec.o mkimage.o envcrc.o ubsha1.o gen_eth_addr.o bmp_logo.o mkudfu.o
  
  ifeq ($(ARCH),mips)
  BIN_FILES	+= inca-swap-bytes$(SFX)
-@@ -137,6 +137,10 @@
+@@ -140,6 +140,10 @@
  		$(CC) $(CFLAGS) $(HOST_LDFLAGS) -o $@ $^
  		$(STRIP) $@
  
@@ -2003,7 +2003,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -261,6 +261,12 @@
+@@ -260,6 +260,12 @@
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
  
