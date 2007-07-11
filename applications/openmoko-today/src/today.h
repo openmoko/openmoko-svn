@@ -3,6 +3,7 @@
 #define TODAY_H
 
 #include <gtk/gtk.h>
+#include <libtaku/taku-launcher-tile.h>
 
 typedef struct {
 	GtkWidget *window;
@@ -15,7 +16,9 @@ typedef struct {
 	GtkToolItem *dial_button;
 	GtkToolItem *contacts_button;
 	GtkToolItem *messages_button;
-	GtkToolItem *dates_button;	
+	GtkToolItem *dates_button;
+	GList *categories;
+	GtkWidget *launcher_table;
 } TodayData;
 #endif
 

@@ -4,11 +4,10 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <libtaku/taku-table.h>
-#include <libtaku/taku-launcher-tile.h>
 #include "moko-finger-scroll.h"
 #include "today.h"
 #include "today-pim-summary.h"
+#include "today-launcher.h"
 
 static GtkToolItem *
 today_toolbutton_new (const gchar *icon_name)
@@ -35,64 +34,6 @@ today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 	gtk_notebook_append_page (GTK_NOTEBOOK (notebook), child, align);
 	gtk_container_child_set (GTK_CONTAINER (notebook), child,
 		"tab-expand", TRUE, NULL);
-}
-
-/* NOTE: Following (as well as libtaku) taken from matchbox-desktop-2 */
-/*
- * Load all .desktop files in @datadir/applications/, and add them to @table.
- */
-static void
-load_data_dir (const char *datadir, TakuTable *table)
-{
-  GError *error = NULL;
-  GDir *dir;
-  char *directory;
-  const char *name;
-
-  g_assert (datadir);
-
-  directory = g_build_filename (datadir, "applications", NULL);
-
-  /* Check if the directory exists */
-  if (! g_file_test (directory, G_FILE_TEST_IS_DIR)) {
-    g_free (directory);
-    return;
-  }
-
-  dir = g_dir_open (directory, 0, &error);
-  if (error) {
-    g_warning ("Cannot read %s: %s", directory, error->message);
-    g_error_free (error);
-    g_free (directory);
-    return;
-  }
-
-  while ((name = g_dir_read_name (dir)) != NULL) {
-    char *filename;
-    GtkWidget *tile;
-  
-    if (! g_str_has_suffix (name, ".desktop"))
-      continue;
-
-    filename = g_build_filename (directory, name, NULL);
-
-    /* TODO: load launcher data, probe that, and then create a tile */
-
-    tile = taku_launcher_tile_for_desktop_file (filename);
-    if (!tile)
-      goto done;
-
-    /*set_groups (TAKU_LAUNCHER_TILE (tile));*/
-
-    gtk_container_add (GTK_CONTAINER (table), tile);
-    gtk_widget_show (tile);
-
-  done:
-    g_free (filename);
-  }
-
-  g_free (directory);
-  g_dir_close (dir);
 }
 
 static GtkWidget *
@@ -152,81 +93,6 @@ today_create_home_page (TodayData *data)
 	return main_vbox;
 }
 
-static void
-today_tasks_search_toggle_cb (GtkWidget *button, TodayData *data)
-{
-	g_object_set (G_OBJECT (data->search_entry), "visible",
-		!GTK_WIDGET_VISIBLE (data->search_entry), NULL);
-	g_object_set (G_OBJECT (data->filter_combo), "visible",
-		!GTK_WIDGET_VISIBLE (data->filter_combo), NULL);
-
-	if (GTK_WIDGET_VISIBLE (data->search_entry)) {
-		
-	} else {
-	}
-}
-
-static GtkWidget *
-today_create_tasks_page (TodayData *data)
-{
-	GtkWidget *main_vbox, *hbox, *toggle, *viewport, *task_list, *scroll;
-	const char * const *dirs;
-
-	main_vbox = gtk_vbox_new (FALSE, 0);
-	
-	/* search/filter bar */
-	hbox = gtk_hbox_new (FALSE, 0);
-
-	toggle = gtk_toggle_button_new ();
-	gtk_widget_set_name (toggle, "mokosearchbutton");
-	g_signal_connect (G_OBJECT (toggle), "toggled",
-		G_CALLBACK (today_tasks_search_toggle_cb), data);
-	gtk_button_set_image (GTK_BUTTON (toggle),
-		gtk_image_new_from_stock (GTK_STOCK_FIND,
-			GTK_ICON_SIZE_SMALL_TOOLBAR));
-	
-	gtk_box_pack_start (GTK_BOX (hbox), toggle, FALSE, FALSE, 0);
-	gtk_widget_show_all (toggle);
-
-	data->search_entry = gtk_entry_new ();
-	gtk_widget_set_name (data->search_entry, "mokosearchentry");
-	g_object_set (G_OBJECT (data->search_entry), "no-show-all", TRUE, NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), data->search_entry, TRUE, TRUE, 0);
-
-	data->filter_combo = gtk_combo_box_new_text ();
-	gtk_combo_box_append_text (GTK_COMBO_BOX (data->filter_combo), "All");
-	gtk_combo_box_set_active (GTK_COMBO_BOX (data->filter_combo), 0);
-	gtk_box_pack_start (GTK_BOX (hbox), data->filter_combo, TRUE, TRUE, 0);
-	gtk_widget_show (data->filter_combo);
-	
-	gtk_box_pack_start (GTK_BOX (main_vbox), hbox, FALSE, TRUE, 0);
-	gtk_widget_show (hbox);
-	
-	viewport = gtk_viewport_new (NULL, NULL);
-	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
-				      GTK_SHADOW_NONE);
-	task_list = taku_table_new ();
-
-	/* Populate the task list */
-	/* TODO: Do this incrementally during idle time to increase
-	 * start-up speed.
-	 */
-	for (dirs = g_get_system_data_dirs (); *dirs; dirs++) {
-		load_data_dir (*dirs, TAKU_TABLE (task_list));
-	}
-	load_data_dir (g_get_user_data_dir (), TAKU_TABLE (task_list));
-
-	gtk_container_add (GTK_CONTAINER (viewport), task_list);
-	
-	scroll = moko_finger_scroll_new ();
-	gtk_container_add (GTK_CONTAINER (scroll), viewport);
-	
-	gtk_box_pack_start (GTK_BOX (main_vbox), scroll, TRUE, TRUE, 0);
-	gtk_widget_show_all (scroll);
-	
-	return main_vbox;
-}
-
 int
 main (int argc, char **argv)
 {
@@ -266,8 +132,8 @@ main (int argc, char **argv)
 		GTK_STOCK_HOME, 6);
 	gtk_widget_show (widget);
 
-	/* Add new tasks page */
-	widget = today_create_tasks_page (&data);
+	/* Add new launcher page */
+	widget = today_launcher_page_create (&data);
 	today_notebook_add_page_with_icon (data.notebook, widget,
 		GTK_STOCK_ADD, 6);
 	gtk_widget_show (widget);

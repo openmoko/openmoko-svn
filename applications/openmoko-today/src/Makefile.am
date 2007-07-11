@@ -21,7 +21,9 @@ openmoko_today_SOURCES =		\
 	today-tasks-store.c		\
 	today-tasks-store.h		\
 	moko-finger-scroll.c		\
-	moko-finger-scroll.h
+	moko-finger-scroll.h		\
+	today-launcher.c		\
+	today-launcher.h
 
 openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
 			$(top_builddir)/libtaku/libtaku.a	\
