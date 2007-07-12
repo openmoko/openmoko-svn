@@ -1,6 +1,12 @@
 2007-07-12  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c:
+	(moko_finger_scroll_motion_notify_cb), (moko_finger_scroll_init):
+	Stop motion events from queueing
+
+2007-07-12  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c:
 	(moko_finger_scroll_button_press_cb), (moko_finger_scroll_init),
 	(moko_finger_scroll_new), (moko_finger_scroll_new_full):
 	* libmokoui/moko-finger-scroll.h:

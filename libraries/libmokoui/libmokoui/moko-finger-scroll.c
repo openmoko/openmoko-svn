@@ -215,6 +215,8 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 		}
 	}
 	
+	gdk_window_get_pointer (GTK_WIDGET (scroll)->window, NULL, NULL, 0);
+	
 	return TRUE;
 }
 
@@ -603,6 +605,8 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 		GTK_CONTAINER (self), priv->align);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0, 6, 0, 6);
 	gtk_widget_show (priv->align);
+	
+	gtk_widget_add_events (GTK_WIDGET (self), GDK_POINTER_MOTION_HINT_MASK);
 	
 	g_signal_connect (G_OBJECT (self), "button-press-event",
 		G_CALLBACK (moko_finger_scroll_button_press_cb), NULL);
