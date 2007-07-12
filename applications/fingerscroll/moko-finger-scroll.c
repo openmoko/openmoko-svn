@@ -22,6 +22,10 @@ struct _MokoFingerScrollPrivate {
 	guint sps;
 	gdouble vel_x;
 	gdouble vel_y;
+	
+	GtkWidget *align;
+	gboolean hscroll;
+	gboolean vscroll;
 };
 
 enum {
@@ -64,10 +68,11 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 	 */
 	gdouble h, v;
 	GtkAdjustment *hadjust, *vadjust;
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	
-	if (!GTK_BIN (scroll)->child) return;
+	if (!GTK_BIN (priv->align)->child) return;
 	
-	g_object_get (G_OBJECT (GTK_BIN (scroll)->child), "hadjustment",
+	g_object_get (G_OBJECT (GTK_BIN (priv->align)->child), "hadjustment",
 		&hadjust, "vadjustment", &vadjust, NULL);
 		
 	if (hadjust) {
@@ -95,6 +100,9 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 			*sy = TRUE;
 		gtk_adjustment_set_value (vadjust, v);
 	}
+
+	/* Redraw 'scroll-bars' */
+	gtk_widget_queue_draw (GTK_WIDGET (scroll));
 }
 
 static gboolean
@@ -116,7 +124,7 @@ moko_finger_scroll_timeout (MokoFingerScroll *scroll)
 	moko_finger_scroll_scroll (scroll, priv->vel_x, priv->vel_y, &sx, &sy);
 	/* If the scroll on a particular axis wasn't succesful, reset the
 	 * initial scroll position to the new mouse co-ordinate. This means
-	 * when you get to the top of the page, dragging down won't do nothing.
+	 * when you get to the top of the page, dragging down works immediately.
 	 */
 	if (!sx) priv->x = priv->ex;
 	if (!sy) priv->y = priv->ey;
@@ -241,11 +249,11 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		gint x, y;
 		GdkWindow *child;
 		
-		g_object_get (G_OBJECT (GTK_BIN (scroll)->child), "hadjustment",
+		g_object_get (G_OBJECT (GTK_BIN (priv->align)->child), "hadjustment",
 			&hadjust, "vadjustment", &vadjust, NULL);
 
 		child = moko_finger_scroll_get_topmost (
-			GTK_BIN (scroll)->child->window,
+			GTK_BIN (priv->align)->child->window,
 			event->x, event->y, &x, &y);
 
 		event->x = x;
@@ -270,19 +278,118 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 }
 
 static void
+moko_finger_scroll_size_allocate_cb (GtkWidget *widget,
+				     GtkAllocation *allocation,
+				     MokoFingerScroll *scroll)
+{
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
+	GtkRequisition req;
+	gboolean vscroll, hscroll;
+	
+	/* Decide if we need 'scroll-bars' */	
+	gtk_widget_size_request (widget, &req);
+	if (req.width > allocation->width) hscroll = TRUE;
+	else hscroll = FALSE;
+	if (req.height > allocation->height) vscroll = TRUE;
+	else vscroll = FALSE;
+	
+	/* TODO: Read ltr settings to decide which corner gets scroll-bars? */
+	if ((priv->vscroll != vscroll) || (priv->hscroll != hscroll)) {
+		gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0,
+			hscroll ? 6 : 0, 0, vscroll ? 6 : 0);
+	}
+	
+	priv->vscroll = vscroll;
+	priv->hscroll = hscroll;
+}
+
+static gboolean
+moko_finger_scroll_expose_event (GtkWidget *widget, GdkEventExpose *event)
+{
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (widget);
+	
+	if (GTK_BIN (priv->align)->child) {
+		if (priv->vscroll) {
+			gint x, y, width, height;
+			GtkAdjustment *vadjust;
+			g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
+				"vadjustment", &vadjust, NULL);
+
+			x = widget->allocation.x +
+					widget->allocation.width - 6;
+			width = 6;
+
+			gdk_draw_rectangle (widget->window,
+				widget->style->fg_gc[GTK_STATE_INSENSITIVE],
+				TRUE,
+				x, widget->allocation.y,
+				width, widget->allocation.height - 6);
+			
+			y = widget->allocation.y +
+				((vadjust->value/vadjust->upper)*
+				 (widget->allocation.height - 6));
+			height = (widget->allocation.y +
+				(((vadjust->value + vadjust->page_size)/
+				  vadjust->upper)*
+				 (widget->allocation.height - 6))) - y;
+			
+			gdk_draw_rectangle (widget->window,
+				widget->style->base_gc[GTK_STATE_SELECTED], TRUE,
+				x, y, width, height);
+		}
+		
+		if (priv->hscroll) {
+			gint x, y, width, height;
+			GtkAdjustment *hadjust;
+			g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
+				"hadjustment", &hadjust, NULL);
+
+			y = widget->allocation.y +
+					widget->allocation.height - 6;
+			height = 6;
+
+			gdk_draw_rectangle (widget->window,
+				widget->style->fg_gc[GTK_STATE_INSENSITIVE],
+				TRUE,
+				widget->allocation.x,
+				y, widget->allocation.width - 6, height);
+
+			x = widget->allocation.x +
+				((hadjust->value/hadjust->upper)*
+				 (widget->allocation.width - 6));
+			width = (widget->allocation.x +
+				(((hadjust->value + hadjust->page_size)/
+				  hadjust->upper)*
+				 (widget->allocation.width - 6))) - x;
+
+			gdk_draw_rectangle (widget->window,
+				widget->style->base_gc[GTK_STATE_SELECTED], TRUE,
+				x, y, width, height);
+		}
+	}
+	
+	return GTK_WIDGET_CLASS (
+		moko_finger_scroll_parent_class)->expose_event (widget, event);
+}
+
+static void
 moko_finger_scroll_add (GtkContainer *container,
 			GtkWidget    *child)
 {
-	GTK_CONTAINER_CLASS (moko_finger_scroll_parent_class)->add (
-		container, child);
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (container);
+	gtk_container_add (GTK_CONTAINER (priv->align), child);
+	g_signal_connect (G_OBJECT (child), "size-allocate",
+		G_CALLBACK (moko_finger_scroll_size_allocate_cb), container);
 }
 
 static void
 moko_finger_scroll_remove (GtkContainer *container,
 			   GtkWidget    *child)
 {
-	GTK_CONTAINER_CLASS (moko_finger_scroll_parent_class)->remove (
-		container, child);
+	GTK_CONTAINER_CLASS (moko_finger_scroll_parent_class)->
+		remove (container, child);
+	g_signal_handlers_disconnect_by_func (child,
+		moko_finger_scroll_size_allocate_cb, container);
 }
 
 static void
@@ -365,8 +472,8 @@ moko_finger_scroll_size_request (GtkWidget      *widget,
 {
 	/* Request tiny size, seeing as we have no decoration of our own.
 	 */
-	requisition->width = 16;
-	requisition->height = 16;
+	requisition->width = 32;
+	requisition->height = 32;
 }
 
 static void
@@ -384,6 +491,7 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 	object_class->finalize = moko_finger_scroll_finalize;
 	
 	widget_class->size_request = moko_finger_scroll_size_request;
+	widget_class->expose_event = moko_finger_scroll_expose_event;
 	
 	container_class->add = moko_finger_scroll_add;
 	container_class->remove = moko_finger_scroll_remove;
@@ -459,10 +567,18 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (self);
 	
 	priv->moved = FALSE;
-	priv->clicked = FALSE;	
+	priv->clicked = FALSE;
+	priv->vscroll = TRUE;
+	priv->hscroll = TRUE;
 
 	gtk_event_box_set_above_child (GTK_EVENT_BOX (self), TRUE);
 	gtk_event_box_set_visible_window (GTK_EVENT_BOX (self), FALSE);
+	
+	priv->align = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
+	GTK_CONTAINER_CLASS (moko_finger_scroll_parent_class)->add (
+		GTK_CONTAINER (self), priv->align);
+	gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0, 6, 0, 6);
+	gtk_widget_show (priv->align);
 	
 	g_signal_connect (G_OBJECT (self), "button-press-event",
 		G_CALLBACK (moko_finger_scroll_button_press_cb), NULL);
@@ -476,4 +592,18 @@ GtkWidget *
 moko_finger_scroll_new (void)
 {
 	return g_object_new (MOKO_TYPE_FINGER_SCROLL, NULL);
+}
+
+GtkWidget *
+moko_finger_scroll_new_full (gint mode, gboolean enabled,
+			     gdouble vel_min, gdouble vel_max,
+			     gdouble decel, guint sps)
+{
+	return g_object_new (MOKO_TYPE_FINGER_SCROLL,
+			     "enabled", enabled,
+			     "velocity_min", vel_min,
+			     "velocity_max", vel_max,
+			     "deceleration", decel,
+			     "sps", sps,
+			     NULL);
 }

@@ -44,6 +44,9 @@ typedef enum {
 GType moko_finger_scroll_get_type (void);
 
 GtkWidget* moko_finger_scroll_new (void);
+GtkWidget* moko_finger_scroll_new_full (gint mode, gboolean enabled,
+					gdouble vel_min, gdouble vel_max,
+					gdouble decel, guint sps);
 
 G_END_DECLS
 
