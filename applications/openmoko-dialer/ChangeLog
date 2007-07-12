@@ -1,5 +1,23 @@
 2007-07-12  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (moko_dialer_show_missed_calls),
+	(on_keypad_dial_clicked), (on_talking_accept_call),
+	(on_incoming_call):
+	If there is a match from mokocontacts, pass that match into the outgoing
+	call.
+	
+	* src/moko-talking.c: (incoming_timeout),
+	(moko_talking_incoming_call), (outgoing_timeout),
+	(moko_talking_outgoing_call), (talking_timeout),
+	(moko_talking_accepted_call), (on_reject_clicked),
+	(on_cancel_clicked), (moko_talking_init):
+	* src/moko-talking.h:
+	Add a MokoContactEntry variable into each function, allowing for contact 
+	data to be displayed.
+	Load the animation icons and display (animate) them for each status.
+
+2007-07-12  Neil J. Patel  <njp@o-hand.com>
+
 	* src/dialer-main.c: (main):
 	Don't crash when dbus isn't present. Just return after printing the error.
 

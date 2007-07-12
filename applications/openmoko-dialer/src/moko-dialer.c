@@ -99,7 +99,6 @@ gboolean
 moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error)
 {
   MokoDialerPrivate *priv;
-  GtkWidget *window;
 
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
   priv = dialer->priv;
@@ -214,6 +213,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
                         MokoDialer  *dialer)
 {
   MokoDialerPrivate *priv;
+  MokoContactEntry *entry = NULL;
   
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
@@ -225,7 +225,8 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   }
   priv->status = DIALER_STATUS_DIALING;
 
-  moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number);
+  entry = moko_contacts_lookup (moko_contacts_get_default (), number);
+  moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
 
   gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
                             gtk_image_new_from_file (PKGDATADIR"/phone.png"),
@@ -239,12 +240,6 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   gtk_window_present (GTK_WINDOW (priv->window));
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[OUTGOING_CALL], 0, number);
-
-  MokoContactEntry *entry = NULL;
-  entry = moko_contacts_lookup (moko_contacts_get_default (),
-                                number);
-  if (entry)
-    g_print ("Name : %s", entry->contact->name);
 }
 
 static void
@@ -260,7 +255,7 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   
   priv->status = DIALER_STATUS_TALKING;
 
-  moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL);
+  moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
   moko_gsmd_connection_voice_accept (priv->connection);
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[TALKING], 0);
@@ -352,7 +347,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
 
   priv->status = DIALER_STATUS_INCOMING;
 
-  moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL);
+  moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL, NULL);
 
   gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
                             gtk_image_new_from_file (PKGDATADIR"/phone.png"),

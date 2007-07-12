@@ -24,6 +24,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#include "moko-contacts.h"
+
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_TALKING (moko_talking_get_type ())
@@ -73,13 +75,19 @@ GtkWidget*
 moko_talking_new (MokoJournal *journal);
 
 void
-moko_talking_incoming_call (MokoTalking *talking, const gchar *number);
+moko_talking_incoming_call (MokoTalking      *talking, 
+                            const gchar      *number,
+                            MokoContactEntry *entry);
 
 void
-moko_talking_outgoing_call (MokoTalking *talking, const gchar *number);
+moko_talking_outgoing_call (MokoTalking      *talking, 
+                            const gchar      *number,
+                            MokoContactEntry *entry);
 
 void
-moko_talking_accepted_call (MokoTalking *talking, const gchar *number);
+moko_talking_accepted_call (MokoTalking      *talking, 
+                            const gchar      *number,
+                            MokoContactEntry *entry);
 
 G_END_DECLS
 

@@ -28,6 +28,8 @@ G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_VBOX)
 #define MOKO_TALKING_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_TALKING, MokoTalkingPrivate))
 
+#define N_PICS 5
+
 struct _MokoTalkingPrivate
 {
   MokoJournal        *journal;
@@ -40,6 +42,12 @@ struct _MokoTalkingPrivate
 
   GtkWidget          *person;
   GtkWidget          *status;
+
+  GdkPixbuf          *talking[N_PICS];
+  GdkPixbuf          *incoming[4];
+  GdkPixbuf          *outgoing[4];
+
+  guint               timeout;
 };
 
 enum
@@ -54,9 +62,29 @@ enum
 
 static guint talking_signals[LAST_SIGNAL] = {0, };
 
+static gboolean
+incoming_timeout (MokoTalking *talking)
+{
+  MokoTalkingPrivate *priv;
+  static gint i = 0;
+
+  g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
+  priv = talking->priv;
+
+  gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
+                             priv->incoming[i]);
+  
+  i++;
+  if (i == 4)
+    i = 0;
+  
+  return TRUE;
+}
 
 void
-moko_talking_incoming_call (MokoTalking *talking, const gchar *number)
+moko_talking_incoming_call (MokoTalking      *talking, 
+                            const gchar      *number,
+                            MokoContactEntry *entry)
 {
   MokoTalkingPrivate *priv;
 
@@ -73,38 +101,101 @@ moko_talking_incoming_call (MokoTalking *talking, const gchar *number)
   gtk_label_set_text (GTK_LABEL (priv->status), number);
   gtk_image_set_from_file (GTK_IMAGE (priv->person),
                            PKGDATADIR"/unkown.png");
+  g_source_remove (priv->timeout);
+  priv->timeout = g_timeout_add (1000, 
+                                 (GSourceFunc)incoming_timeout,
+                                 (gpointer)talking);
+}
+
+static gboolean
+outgoing_timeout (MokoTalking *talking)
+{
+  MokoTalkingPrivate *priv;
+  static gint i = 0;
+
+  g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
+  priv = talking->priv;
+
+  gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
+                             priv->outgoing[i]);
+  
+  i++;
+  if (i == 4)
+    i = 0;
+  
+  return TRUE;
 }
 
 void
-moko_talking_outgoing_call (MokoTalking *talking, const gchar *number)
+moko_talking_outgoing_call (MokoTalking      *talking, 
+                            const gchar      *number,
+                            MokoContactEntry *entry)
 {
   MokoTalkingPrivate *priv;
+  gchar *markup = NULL;
 
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
 
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show (priv->main_bar);
+
+  if (entry)
+    markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
+  else
+    markup = g_strdup (number);
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Outgoing Call");
-  gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
-                           PKGDATADIR"/outgoing_1.png");
 
-  gtk_label_set_text (GTK_LABEL (priv->status), number);
+  gtk_label_set_markup (GTK_LABEL (priv->status), markup);
   gtk_image_set_from_file (GTK_IMAGE (priv->person),
                            PKGDATADIR"/unkown.png");
+
+  g_source_remove (priv->timeout);
+  priv->timeout = g_timeout_add (1000, 
+                                 (GSourceFunc)outgoing_timeout,
+                                 (gpointer)talking);
+
+  g_free (markup);
 }
 
-void
-moko_talking_accepted_call (MokoTalking *talking, const gchar *number)
+static gboolean
+talking_timeout (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
+  static gint i = 0;
+
+  g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
+  priv = talking->priv;
+
+  gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
+                             priv->talking[i]);
+  
+  i++;
+  if (i == 5)
+    i = 0;
+  
+  return TRUE;
+}
+  
+void
+moko_talking_accepted_call (MokoTalking      *talking, 
+                            const gchar      *number,
+                            MokoContactEntry *entry)
+{
+  MokoTalkingPrivate *priv;
+  gchar *markup = NULL;
 
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
 
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show (priv->main_bar);
+
+  if (entry)
+    markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
+  else
+    markup = g_strdup (number);
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Talking");
   gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
@@ -113,6 +204,13 @@ moko_talking_accepted_call (MokoTalking *talking, const gchar *number)
   gtk_label_set_text (GTK_LABEL (priv->status), number);
   gtk_image_set_from_file (GTK_IMAGE (priv->person),
                            PKGDATADIR"/unkown.png");
+  
+  g_source_remove (priv->timeout);
+  priv->timeout = g_timeout_add (1000, 
+                                 (GSourceFunc)talking_timeout,
+                                 (gpointer)talking);
+
+  g_free (markup);
 }
 
 
@@ -126,12 +224,14 @@ on_answer_clicked (GtkToolButton *button, MokoTalking *talking)
 static void
 on_reject_clicked (GtkToolButton *button, MokoTalking *talking)
 {
+  g_source_remove (talking->priv->timeout);
   g_signal_emit (G_OBJECT (talking), talking_signals[REJECT_CALL], 0);
 }
 
 static void
 on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
 {
+  g_source_remove (talking->priv->timeout);
   g_signal_emit (G_OBJECT (talking), talking_signals[CANCEL_CALL], 0);
 }
 
@@ -210,6 +310,7 @@ moko_talking_init (MokoTalking *talking)
   GtkWidget *toolbar, *image, *vbox, *hbox, *label, *align, *frame;
   GtkToolItem *item;
   GdkPixbuf *icon;
+  gint i;
 
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
   
@@ -296,7 +397,37 @@ moko_talking_init (MokoTalking *talking)
 
   priv->status = label = gtk_label_new ("01923 820 124");
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
-  
+
+  /* Load the pixbufs */
+  for (i = 0; i < N_PICS; i++)
+  {
+    if (i == 0)
+      priv->talking[i] = gdk_pixbuf_new_from_file (PKGDATADIR"/talking.png",
+                                                   NULL);
+    else
+    {
+      gchar *name = g_strdup_printf ("%s/talking_%d.png", PKGDATADIR, i-1);
+      priv->talking[i] = gdk_pixbuf_new_from_file (name, NULL);
+      g_free (name);
+    }
+    g_object_ref (priv->talking[i]);
+  }
+  for (i = 0; i < N_PICS; i++)
+  {
+    gchar *name = g_strdup_printf ("%s/outgoing_%d.png", PKGDATADIR, i);
+    priv->outgoing[i] = gdk_pixbuf_new_from_file (name, NULL);
+    g_free (name);
+    g_object_ref (priv->outgoing[i]);
+  }
+  for (i = 0; i < N_PICS; i++)
+  {
+    gchar *name = g_strdup_printf ("%s/incoming_%d.png", PKGDATADIR, i);
+    priv->incoming[i] = gdk_pixbuf_new_from_file (name, NULL);
+    g_free (name);
+    g_object_ref (priv->incoming[i]);
+
+  }
+
 }
 
 GtkWidget*
