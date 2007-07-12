@@ -1,3 +1,18 @@
+2007-07-12  Neil J. Patel  <njp@o-hand.com>
+
+	* src/Makefile.am:
+	* src/moko-contacts.c: (moko_contacts_lookup),
+	(moko_contacts_fuzzy_lookup), (normalize),
+	(moko_contacts_add_contact), (on_ebook_contacts_added),
+	(on_ebook_contacts_changed), (on_ebook_contacts_removed),
+	(moko_contacts_init):
+	* src/moko-contacts.h:
+	Added simple contacts hashtable for looking up contacts.
+
+	* src/moko-dialer.c: (moko_dialer_show_missed_calls),
+	(on_keypad_dial_clicked), (moko_dialer_init):
+	Added a test case for looking up contacts.
+
 2007-07-10  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-contacts.c: (moko_contacts_add_contact),

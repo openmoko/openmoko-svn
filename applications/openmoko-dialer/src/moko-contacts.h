@@ -91,6 +91,9 @@ moko_contacts_get_default (void);
 MokoContactEntry*
 moko_contacts_lookup (MokoContacts *contacts, const gchar *number);
 
+GList*
+moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number);
+
 G_END_DECLS
 
 #endif /* _HAVE_MOKO_CONTACTS_H */

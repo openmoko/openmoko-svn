@@ -20,9 +20,13 @@
 
 #include <glib.h>
 
+#include <stdio.h>
+#include <string.h>
 #include <libebook/e-book.h>
 
 #include "moko-contacts.h"
+
+#include "dialer-defines.h"
 
 G_DEFINE_TYPE (MokoContacts, moko_contacts, G_TYPE_OBJECT)
 
@@ -31,10 +35,57 @@ G_DEFINE_TYPE (MokoContacts, moko_contacts, G_TYPE_OBJECT)
 
 struct _MokoContactsPrivate
 {
-  GList *contacts;
-  GList *entries;
+  GList      *contacts;
+  GList      *entries;
+  GHashTable *prefixes;
 };
 
+
+MokoContactEntry*
+moko_contacts_lookup (MokoContacts *contacts, const gchar *number)
+{
+  MokoContactsPrivate *priv;
+
+  g_return_val_if_fail (MOKO_IS_CONTACTS (contacts), NULL);
+  priv = contacts->priv;
+  
+  return g_hash_table_lookup (priv->prefixes, number);
+}
+
+GList*
+moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number)
+{
+  return NULL;
+}
+
+/* This takes the raw number from econtact, and spits out a 'normalised' 
+ * version which does not contain any ' ' or '-' charecters. The reason for
+ * this is that when inputing numbers into the dialer, you cannot add these
+ * characters, but you can in contacts, which means the strings will not match
+ * and autocomplete will not work
+ */
+static gchar*
+normalize (const gchar *string)
+{
+  gint len = strlen (string);
+  gchar buf[len];
+  gint i;
+  gint j = 0;
+
+  for (i = 0; i < len; i++)
+  {
+    gchar c = string[i];
+    if (c != ' ' && c != '-')
+    {
+      buf[j] = c;
+      j++;
+    }
+  }
+  buf[j] = '\0';
+  return g_strdup (buf);
+}
+
+/* Calbacks */
 static void
 moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
 {
@@ -70,16 +121,21 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
     {
       entry = g_new0 (MokoContactEntry, 1);
       entry->desc = g_strdup (e_contact_field_name (i));
-      entry->number = g_strdup (phone);
+      entry->number = normalize (phone);
       entry->contact = m_contact;
 
+      g_print ("%s %s\n", m_contact->name, entry->number);
+
       priv->entries = g_list_append (priv->entries, (gpointer)entry);
+      g_hash_table_insert (priv->prefixes, 
+                           g_strdup (entry->number), 
+                           (gpointer)entry);
     }
   }
 }
 
 static void
-on_ebook_contact_added (EBookView    *view, 
+on_ebook_contacts_added (EBookView    *view, 
                         GList        *c_list, 
                         MokoContacts *contacts)
 {
@@ -91,6 +147,22 @@ on_ebook_contact_added (EBookView    *view,
 
   for (c = c_list; c != NULL; c = c->next)
     moko_contacts_add_contact (contacts, E_CONTACT (c->data));
+}
+
+static void
+on_ebook_contacts_changed (EBookView    *view,
+                           GList        *c_list,
+                           MokoContacts *contacts)
+{
+  g_print ("Contacts changed\n");
+}
+
+static void
+on_ebook_contacts_removed (EBookView    *view,
+                           GList        *c_list,
+                           MokoContacts *contacts)
+{
+  g_print ("Contacts removed\n");
 }
 
 /* GObject functions */
@@ -118,7 +190,6 @@ moko_contacts_class_init (MokoContactsClass *klass)
   g_type_class_add_private (obj_class, sizeof (MokoContactsPrivate)); 
 }
 
-
 static void
 moko_contacts_init (MokoContacts *contacts)
 {
@@ -126,12 +197,14 @@ moko_contacts_init (MokoContacts *contacts)
   EBook *book;
   EBookView *view;
   EBookQuery *query;
-  GList *contact, *c;
+  GList *contact, *c, *e;
 
   priv = contacts->priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
 
   priv->contacts = priv->entries = NULL;
-
+  priv->prefixes = g_hash_table_new ((GHashFunc)g_str_hash,
+                                     (GEqualFunc)g_str_equal);
+  
   query = e_book_query_any_field_contains ("");
 
   /* Open the system book and check that it is valid */
@@ -158,11 +231,39 @@ moko_contacts_init (MokoContacts *contacts)
     moko_contacts_add_contact (contacts, E_CONTACT (c->data));
   }
 
-  /* Connect to contact added signals */
+    /* We now have a list of entries that we can organise by the first 
+   * AUTOCOMPLETE_N_CHARS digits 
+   */
+  /*for (e = priv->entries; e != NULL; e = e->next)
+  {
+    MokoContactEntry *entry = (MokoContactEntry*)e->data;
+    gchar buf[AUTOCOMPLETE_N_CHARS+1];
+    gint i;
+    gint len = strlen (entry->number);
+    GList *list = NULL;
+  
+    if (len > AUTOCOMPLETE_N_CHARS)
+      len = AUTOCOMPLETE_N_CHARS;
+    
+    for (i =0; i < len; i++)
+      buf[i] = entry->number[i];
+    buf[len+1] = '\0';
+
+    list = g_hash_table_lookup (priv->prefixes, buf);
+    list = g_list_append (list, entry);
+    
+    g_hash_table_insert (priv->prefixes, g_strdup (buf), (gpointer)list);
+  }
+*/
+  /* Connect to the ebookviews signals */
   if (e_book_get_book_view (book, query, NULL, 0, &view, NULL))
   {
     g_signal_connect (G_OBJECT (view), "contacts-added",
-                      G_CALLBACK (on_ebook_contact_added), (gpointer)contacts);
+                      G_CALLBACK (on_ebook_contacts_added), (gpointer)contacts);
+    g_signal_connect (G_OBJECT (view), "contacts-changed",
+                    G_CALLBACK (on_ebook_contacts_changed), (gpointer)contacts);
+    g_signal_connect (G_OBJECT (view), "contacts-removed",
+                    G_CALLBACK (on_ebook_contacts_removed), (gpointer)contacts);
   }
 }
 

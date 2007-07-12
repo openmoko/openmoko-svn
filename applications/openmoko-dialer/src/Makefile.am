@@ -5,6 +5,7 @@ AM_CFLAGS = -Wall -pedantic @CFLAGS@
 bin_PROGRAMS = openmoko-dialer
 
 openmoko_dialer_SOURCES = \
+	dialer-defines.h		\
 	dialer-main.c			\
 	moko-contacts.c			\
 	moko-contacts.h			\

@@ -28,23 +28,11 @@
 
 #include "moko-dialer.h"
 
+#include "moko-contacts.h"
 #include "moko-keypad.h"
 #include "moko-talking.h"
 #include "moko-history.h"
 
-/*
-#include "contacts.h"
-#include "moko-dialer.h"
-#include "dialer-main.h"
-#include "dialer-window-dialer.h"
-#include "dialer-window-talking.h"
-#include "dialer-window-outgoing.h"
-#include "dialer-window-incoming.h"
-#include "dialer-window-pin.h"
-#include "dialer-window-history.h"
-
-#include "dialer-callbacks-connection.h"
-*/
 G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
 #define MOKO_DIALER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
@@ -68,6 +56,7 @@ struct _MokoDialerPrivate
   /* Special objects */
   MokoGsmdConnection *connection;
   MokoJournal        *journal;
+  MokoContacts       *contacts;
 
   /* Registration variables */
   gboolean            reg_request;
@@ -107,7 +96,6 @@ moko_dialer_show_dialer (MokoDialer *dialer, GError *error)
 
 
 gboolean
-
 moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error)
 {
   MokoDialerPrivate *priv;
@@ -116,7 +104,7 @@ moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error)
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
   priv = dialer->priv;
   
-  //Filter history on missed calls
+  /* Filter history on missed calls */
   
   moko_history_set_filter (MOKO_HISTORY (priv->history), HISTORY_FILTER_MISSED);
 
@@ -252,6 +240,11 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[OUTGOING_CALL], 0, number);
 
+  MokoContactEntry *entry = NULL;
+  entry = moko_contacts_lookup (moko_contacts_get_default (),
+                                number);
+  if (entry)
+    g_print ("Name : %s", entry->contact->name);
 }
 
 static void
@@ -580,6 +573,9 @@ moko_dialer_init (MokoDialer *dialer)
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
   moko_journal_load_from_storage (priv->journal);
+
+  /* Load the contacts store */
+  priv->contacts = moko_contacts_get_default ();
 
   /* Create the window */
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
