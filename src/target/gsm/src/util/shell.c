@@ -303,5 +303,6 @@ int shell_main(struct lgsm_handle *lgsmh)
 				printf("Unknown command `%s'\n", buf);
 			}
 		}
+		fflush(stdout);
 	}
 }
