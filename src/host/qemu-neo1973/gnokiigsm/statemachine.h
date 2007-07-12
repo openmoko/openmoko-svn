@@ -74,7 +74,7 @@ struct gn_statemachine {
 	gn_link link;
 	gn_driver driver;
 	char *lockfile;
-	
+
 	/* Store last message for resend purposes */
 	unsigned char last_msg_type;
 	unsigned int last_msg_size;
