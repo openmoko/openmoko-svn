@@ -24,6 +24,8 @@ G_DEFINE_TYPE (MokoFingerScroll, moko_finger_scroll, GTK_TYPE_EVENT_BOX)
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollPrivate))
 typedef struct _MokoFingerScrollPrivate MokoFingerScrollPrivate;
 
+#define SCROLL_WIDTH 6
+
 struct _MokoFingerScrollPrivate {
 	MokoFingerScrollMode mode;
 	gdouble x;
@@ -44,6 +46,8 @@ struct _MokoFingerScrollPrivate {
 	GtkWidget *align;
 	gboolean hscroll;
 	gboolean vscroll;
+	GdkRectangle hscroll_rect;
+	GdkRectangle vscroll_rect;
 };
 
 enum {
@@ -125,8 +129,15 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 		gtk_adjustment_set_value (vadjust, v);
 	}
 
-	/* Redraw 'scroll-bars' */
-	gtk_widget_queue_draw (GTK_WIDGET (scroll));
+	/* Redraw scroll indicators */
+	if (priv->hscroll) {
+		gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
+			&priv->hscroll_rect, FALSE);
+	}
+	if (priv->vscroll) {
+		gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
+			&priv->vscroll_rect, FALSE);
+	}
 }
 
 static gboolean
@@ -312,17 +323,40 @@ moko_finger_scroll_size_allocate_cb (GtkWidget *widget,
 	GtkRequisition req;
 	gboolean vscroll, hscroll;
 	
-	/* Decide if we need 'scroll-bars' */	
+	/* Decide if we need scroll indicators */	
 	gtk_widget_size_request (widget, &req);
 	if (req.width > allocation->width) hscroll = TRUE;
 	else hscroll = FALSE;
 	if (req.height > allocation->height) vscroll = TRUE;
 	else vscroll = FALSE;
 	
-	/* TODO: Read ltr settings to decide which corner gets scroll-bars? */
+	/* TODO: Read ltr settings to decide which corner gets scroll
+	 * indicators?
+	 */
 	if ((priv->vscroll != vscroll) || (priv->hscroll != hscroll)) {
 		gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0,
-			hscroll ? 6 : 0, 0, vscroll ? 6 : 0);
+			hscroll ? SCROLL_WIDTH : 0, 0,
+			vscroll ? SCROLL_WIDTH : 0);
+	}
+	
+	/* Store the vscroll/hscroll areas for redrawing */
+	if (vscroll) {
+		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
+		priv->vscroll_rect.x = allocation->x + allocation->width -
+			SCROLL_WIDTH;
+		priv->vscroll_rect.y = allocation->y;
+		priv->vscroll_rect.width = SCROLL_WIDTH;
+		priv->vscroll_rect.height = allocation->height -
+			(hscroll ? SCROLL_WIDTH : 0);
+	}
+	if (hscroll) {
+		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
+		priv->hscroll_rect.y = allocation->y + allocation->height -
+			SCROLL_WIDTH;
+		priv->hscroll_rect.x = allocation->x;
+		priv->hscroll_rect.height = SCROLL_WIDTH;
+		priv->hscroll_rect.width = allocation->width -
+			(vscroll ? SCROLL_WIDTH : 0);
 	}
 	
 	priv->vscroll = vscroll;
@@ -336,61 +370,61 @@ moko_finger_scroll_expose_event (GtkWidget *widget, GdkEventExpose *event)
 	
 	if (GTK_BIN (priv->align)->child) {
 		if (priv->vscroll) {
-			gint x, y, width, height;
+			gint y, height;
 			GtkAdjustment *vadjust;
 			g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
 				"vadjustment", &vadjust, NULL);
 
-			x = widget->allocation.x +
-					widget->allocation.width - 6;
-			width = 6;
-
 			gdk_draw_rectangle (widget->window,
 				widget->style->fg_gc[GTK_STATE_INSENSITIVE],
 				TRUE,
-				x, widget->allocation.y,
-				width, widget->allocation.height - 6);
+				priv->vscroll_rect.x, priv->vscroll_rect.y,
+				priv->vscroll_rect.width,
+				priv->vscroll_rect.height);
 			
 			y = widget->allocation.y +
 				((vadjust->value/vadjust->upper)*
-				 (widget->allocation.height - 6));
+				 (widget->allocation.height -
+				  (priv->hscroll ? SCROLL_WIDTH : 0)));
 			height = (widget->allocation.y +
 				(((vadjust->value + vadjust->page_size)/
 				  vadjust->upper)*
-				 (widget->allocation.height - 6))) - y;
+				 (widget->allocation.height -
+				  (priv->hscroll ? SCROLL_WIDTH : 0)))) - y;
 			
 			gdk_draw_rectangle (widget->window,
-				widget->style->base_gc[GTK_STATE_SELECTED], TRUE,
-				x, y, width, height);
+				widget->style->base_gc[GTK_STATE_SELECTED],
+				TRUE, priv->vscroll_rect.x, y,
+				priv->vscroll_rect.width, height);
 		}
 		
 		if (priv->hscroll) {
-			gint x, y, width, height;
+			gint x, width;
 			GtkAdjustment *hadjust;
 			g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
 				"hadjustment", &hadjust, NULL);
 
-			y = widget->allocation.y +
-					widget->allocation.height - 6;
-			height = 6;
-
 			gdk_draw_rectangle (widget->window,
 				widget->style->fg_gc[GTK_STATE_INSENSITIVE],
 				TRUE,
-				widget->allocation.x,
-				y, widget->allocation.width - 6, height);
+				priv->hscroll_rect.x, priv->hscroll_rect.y,
+				priv->hscroll_rect.width,
+				priv->hscroll_rect.height);
 
 			x = widget->allocation.x +
 				((hadjust->value/hadjust->upper)*
-				 (widget->allocation.width - 6));
+				 (widget->allocation.width  -
+				  (priv->vscroll ? SCROLL_WIDTH : 0)));
 			width = (widget->allocation.x +
 				(((hadjust->value + hadjust->page_size)/
 				  hadjust->upper)*
-				 (widget->allocation.width - 6))) - x;
+				 (widget->allocation.width -
+				  (priv->vscroll ? SCROLL_WIDTH : 0)))) - x;
 
 			gdk_draw_rectangle (widget->window,
-				widget->style->base_gc[GTK_STATE_SELECTED], TRUE,
-				x, y, width, height);
+				widget->style->base_gc[GTK_STATE_SELECTED],
+				TRUE, x, priv->hscroll_rect.y, width,
+				priv->hscroll_rect.height);
 		}
 	}
 	
@@ -603,7 +637,8 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 	priv->align = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);
 	GTK_CONTAINER_CLASS (moko_finger_scroll_parent_class)->add (
 		GTK_CONTAINER (self), priv->align);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0, 6, 0, 6);
+	gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align),
+		0, SCROLL_WIDTH, 0, SCROLL_WIDTH);
 	gtk_widget_show (priv->align);
 	
 	gtk_widget_add_events (GTK_WIDGET (self), GDK_POINTER_MOTION_HINT_MASK);
