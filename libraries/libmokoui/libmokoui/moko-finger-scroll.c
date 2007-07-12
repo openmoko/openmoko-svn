@@ -1,3 +1,21 @@
+/*
+ *  libmokoui -- OpenMoko Application Framework UI Library
+ *
+ *  Authored by Chris Lord <chris@openedhand.com>
+ *
+ *  Copyright (C) 2006-2007 OpenMoko Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
+ */
 
 #include "moko-finger-scroll.h"
 
@@ -50,7 +68,13 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	g_get_current_time (&priv->click_start);
 	priv->x = event->x;
 	priv->y = event->y;
-	priv->moved = FALSE;
+	/* Don't allow a click if we're still moving fast, where fast is
+	 * defined as a quarter of our top possible speed.
+	 * TODO: Make 'fast' configurable?
+	 */
+	if ((ABS (priv->vel_x) < (priv->vmax * 0.25)) &&
+	    (ABS (priv->vel_y) < (priv->vmax * 0.25)))
+		priv->moved = FALSE;
 	priv->clicked = TRUE;
 	/* Stop scrolling on mouse-down (so you can flick, then hold to stop) */
 	priv->vel_x = 0;
@@ -607,3 +631,4 @@ moko_finger_scroll_new_full (gint mode, gboolean enabled,
 			     "sps", sps,
 			     NULL);
 }
+
