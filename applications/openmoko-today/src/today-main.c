@@ -5,6 +5,8 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <libmokoui/moko-finger-scroll.h>
+#include <libtaku/launcher-util.h>
+#include <unistd.h>
 #include "today.h"
 #include "today-pim-summary.h"
 #include "today-launcher.h"
@@ -36,6 +38,49 @@ today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 		"tab-expand", TRUE, NULL);
 }
 
+/* TODO: Make this less nasty */
+static LauncherData launcher_data;
+static void
+today_fill_launcher (const gchar *exec, gboolean use_sn, gboolean single)
+{
+	if (launcher_data.argv) g_free (launcher_data.argv);
+	launcher_data.argv = exec_to_argv (exec);
+	launcher_data.name = (gchar *)exec;
+	launcher_data.description = "";
+	launcher_data.icon = NULL;
+	launcher_data.categories = (char *[]){ "" };
+	launcher_data.use_sn = use_sn;
+	launcher_data.single_instance = single;
+}
+
+static void
+today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
+{
+	today_fill_launcher ("openmoko-dialer", TRUE, TRUE);
+	launcher_start (data->window, &launcher_data);
+}
+
+static void
+today_contacts_button_clicked_cb (GtkToolButton *button, TodayData *data)
+{
+	today_fill_launcher ("contacts", TRUE, TRUE);
+	launcher_start (data->window, &launcher_data);
+}
+
+static void
+today_messages_button_clicked_cb (GtkToolButton *button, TodayData *data)
+{
+	today_fill_launcher ("openmoko-messages", TRUE, TRUE);
+	launcher_start (data->window, &launcher_data);
+}
+
+static void
+today_dates_button_clicked_cb (GtkToolButton *button, TodayData *data)
+{
+	today_fill_launcher ("dates", TRUE, TRUE);
+	launcher_start (data->window, &launcher_data);
+}
+
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
@@ -53,20 +98,31 @@ today_create_home_page (TodayData *data)
 		data->dates_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		gtk_separator_tool_item_new (), 0);
+	g_signal_connect (G_OBJECT (data->dates_button), "clicked",
+		G_CALLBACK (today_dates_button_clicked_cb), data);
+
 	data->messages_button = today_toolbutton_new ("openmoko-messages");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		data->messages_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		gtk_separator_tool_item_new (), 0);
+	g_signal_connect (G_OBJECT (data->messages_button), "clicked",
+		G_CALLBACK (today_messages_button_clicked_cb), data);
+
 	data->contacts_button = today_toolbutton_new ("contacts");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		data->contacts_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		gtk_separator_tool_item_new (), 0);
+	g_signal_connect (G_OBJECT (data->contacts_button), "clicked",
+		G_CALLBACK (today_contacts_button_clicked_cb), data);
+
 	data->dial_button = today_toolbutton_new ("openmoko-dialer");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		data->dial_button, 0);
 	gtk_widget_show_all (data->home_toolbar);
+	g_signal_connect (G_OBJECT (data->dial_button), "clicked",
+		G_CALLBACK (today_dial_button_clicked_cb), data);
 
 	viewport = gtk_viewport_new (NULL, NULL);
 	scroll = moko_finger_scroll_new ();
@@ -156,6 +212,7 @@ main (int argc, char **argv)
 		NULL);
 #endif
 
+	launcher_data.argv = NULL;
 	
 	/* Show and start */
 	gtk_widget_show (data.window);

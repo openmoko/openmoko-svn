@@ -36,7 +36,7 @@
 
 #define DESKTOP "Desktop Entry"
 
-static char **
+char **
 exec_to_argv (const char *exec)
 {
   const char *p;

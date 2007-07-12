@@ -85,7 +85,7 @@ taku_tile_expose (GtkWidget      *widget,
     state = GTK_WIDGET_STATE (widget);
     /* If this isn't isn't being drawn active and it's focused, highlight it */
     if (state != GTK_STATE_ACTIVE && GTK_WIDGET_HAS_FOCUS (widget)) {
-      state = GTK_STATE_PRELIGHT;
+      state = GTK_STATE_SELECTED;
     }
 
     gtk_paint_flat_box (widget->style, widget->window,

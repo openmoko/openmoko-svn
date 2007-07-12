@@ -1,5 +1,21 @@
 2007-07-12  Chris Lord  <chris@openedhand.com>
 
+	* libtaku/launcher-util.c:
+	* libtaku/launcher-util.h:
+	Make exec_to_argv public
+
+	* libtaku/taku-tile.c: (taku_tile_expose):
+	Use GTK_STATE_SELECTED instead of PRELIGHT
+
+	* src/today-main.c: (today_notebook_add_page_with_icon),
+	(today_fill_launcher), (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb), (today_create_home_page), (main):
+	Make the launcher buttons work
+
+2007-07-12  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	* src/Makefile.am:
 	* src/moko-finger-scroll.c:
