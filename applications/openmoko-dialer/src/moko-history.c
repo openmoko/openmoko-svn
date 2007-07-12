@@ -24,6 +24,7 @@
 #include <libmokogsmd/moko-gsmd-connection.h>
 #include <libmokojournal/moko-journal.h>
 #include <libmokoui/moko-stock.h>
+#include <libmokoui/moko-finger-scroll.h>
 
 #include "moko-history.h"
 
@@ -637,10 +638,7 @@ moko_history_init (MokoHistory *history)
   gtk_box_pack_start (GTK_BOX (history), combo, FALSE, FALSE, 0);
 
   /* Treeview */
-  scroll = gtk_scrolled_window_new (NULL, NULL);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
-                                  GTK_POLICY_AUTOMATIC,
-                                  GTK_POLICY_AUTOMATIC);
+  scroll = moko_finger_scroll_new ();
   gtk_box_pack_start (GTK_BOX (history), scroll, TRUE, TRUE, 0);
 
   treeview = priv->treeview = gtk_tree_view_new ();

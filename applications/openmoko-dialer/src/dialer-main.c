@@ -13,6 +13,8 @@
  *  GNU Lesser Public License for more details.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <gtk/gtk.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
@@ -113,6 +115,7 @@ main (int argc, char **argv)
     g_warning ("Failed to make a connection to the session bus: %s", 
                error->message);
     g_error_free (error);
+    return EXIT_FAILURE;
   }
   proxy = dbus_g_proxy_new_for_name (connection, 
                                      DBUS_SERVICE_DBUS,
@@ -129,7 +132,7 @@ main (int argc, char **argv)
     gdk_init(&argc, &argv);
     gdk_notify_startup_complete ();
 
-    return 1;
+    return EXIT_FAILURE;
   }
   if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
   {
@@ -146,7 +149,7 @@ main (int argc, char **argv)
 
     gdk_init(&argc, &argv);
     gdk_notify_startup_complete ();
-    return 1;
+    return EXIT_SUCCESS;
   }
 
   /* So we are creating a new dialer, one of the first things we sould do is
@@ -178,5 +181,5 @@ main (int argc, char **argv)
 
   gtk_main ();
   
-  return 0;
+  return EXIT_SUCCESS;
 }

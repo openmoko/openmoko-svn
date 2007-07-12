@@ -1,5 +1,13 @@
 2007-07-12  Neil J. Patel  <njp@o-hand.com>
 
+	* src/dialer-main.c: (main):
+	Don't crash when dbus isn't present. Just return after printing the error.
+
+	* src/moko-history.c: (moko_history_init):
+	Use the blingy new moko-finger-scroll
+
+2007-07-12  Neil J. Patel  <njp@o-hand.com>
+
 	* src/Makefile.am:
 	* src/moko-contacts.c: (moko_contacts_lookup),
 	(moko_contacts_fuzzy_lookup), (normalize),
