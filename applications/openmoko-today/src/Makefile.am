@@ -5,7 +5,7 @@ AM_CPPFLAGS  = -DPKGDATADIR=\"$(pkgdatadir)\" 				\
 	       -DDATADIR=\""$(datadir)"\" -D_GNU_SOURCE
 
 AM_CFLAGS    = -Wall -pedantic -std=c99 @GTK_CFLAGS@ @ECAL_CFLAGS@ \
-		@EBOOK_CFLAGS@
+		@EBOOK_CFLAGS@ @MOKOUI_CFLAGS@
 
 bin_PROGRAMS = openmoko-today
 
@@ -20,15 +20,13 @@ openmoko_today_SOURCES =		\
 	today-events-store.c		\
 	today-tasks-store.c		\
 	today-tasks-store.h		\
-	moko-finger-scroll.c		\
-	moko-finger-scroll.h		\
 	today-launcher.c		\
 	today-launcher.h
 
 openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
 			$(top_builddir)/libtaku/libtaku.a	\
 			@GTK_LIBS@ @ECAL_LIBS@ @EBOOK_LIBS@ @SEXY_LIBS@ \
-			@SN_LIBS@
+			@SN_LIBS@ @MOKOUI_LIBS@
 
 MAINTAINERCLEANFILES  = config.h.in Makefile.in
 

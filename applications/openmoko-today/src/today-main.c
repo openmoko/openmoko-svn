@@ -4,7 +4,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include "moko-finger-scroll.h"
+#include <libmokoui/moko-finger-scroll.h>
 #include "today.h"
 #include "today-pim-summary.h"
 #include "today-launcher.h"

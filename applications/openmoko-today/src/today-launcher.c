@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <libtaku/taku-table.h>
 #include <libtaku/taku-launcher-tile.h>
-#include "moko-finger-scroll.h"
+#include <libmokoui/moko-finger-scroll.h>
 #include "today.h"
 
 /* NOTE: Following 4 functions (as well as libtaku) taken from
@@ -253,6 +253,7 @@ today_launcher_page_create (TodayData *data)
 	viewport = gtk_viewport_new (NULL, NULL);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
 				      GTK_SHADOW_NONE);
+	gtk_icon_size_register ("TakuIcon", 64, 64);
 	data->launcher_table = taku_table_new ();
 
 	/* Load app categories */

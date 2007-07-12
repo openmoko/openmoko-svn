@@ -1,3 +1,15 @@
+2007-07-12  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/moko-finger-scroll.c:
+	* src/moko-finger-scroll.h:
+	* src/today-main.c:
+	Remove MokoFingerScroll, use libmokoui
+
+	* src/today-launcher.c: (today_launcher_page_create):
+	Define TakuIcon size, fixes critical warnings
+
 2007-07-11  Chris Lord  <chris@openedhand.com>
 
 	* src/Makefile.am:
