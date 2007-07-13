@@ -1,3 +1,8 @@
+2007-07-13  Neil J. Patel  <njp@o-hand.com>
+
+	* src/dialer-defines.h:
+	Some global dialer variables.
+
 2007-07-12  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (moko_dialer_show_missed_calls),
