@@ -1,5 +1,13 @@
 2007-07-13  Chris Lord  <chris@openedhand.com>
 
+	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_class_init):
+	Sync with matchbox-desktop
+
+	* src/today-task-manager.c: (today_task_manager_page_create):
+	Use TakuTable instead of GtkTreeView
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
 	* src/Makefile.am:
 	* src/today-launcher.h:
 	* src/today-main.c: (main):
