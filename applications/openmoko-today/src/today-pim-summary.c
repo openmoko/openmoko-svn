@@ -17,7 +17,7 @@ typedef struct {
  *
  * Update the specified GtkTreeViewColumn with the current date
  */
-static void
+static gboolean
 today_pim_summary_update_date (GtkTreeViewColumn *column)
 {
 	time_t t;
@@ -25,11 +25,13 @@ today_pim_summary_update_date (GtkTreeViewColumn *column)
 	gchar date_str[64];
 
 	time (&t);
-	if (!(tmp = localtime (&t))) return;
+	if (!(tmp = localtime (&t))) return TRUE;
 
 	strftime (date_str, sizeof (date_str),
 		"%I:%M%p %x", tmp);
 	gtk_tree_view_column_set_title (column, date_str);
+	
+	return TRUE;
 }
 
 static gboolean
@@ -132,7 +134,7 @@ today_pim_summary_box_new ()
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (events_tree), TRUE);
 
 	today_pim_summary_update_date (column);
-	g_timeout_add (60 * 60 * 1000, (GSourceFunc)
+	g_timeout_add (60 * 1000, (GSourceFunc)
 		today_pim_summary_update_date, column);
 	
 	label = gtk_label_new (_("No pending events or tasks"));

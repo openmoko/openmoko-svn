@@ -1,5 +1,11 @@
 2007-07-13  Chris Lord  <chris@openedhand.com>
 
+	* src/today-pim-summary.c: (today_pim_summary_update_date),
+	(today_pim_summary_box_new):
+	Fix time display
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c:
 	Change launcher from 'contacts' to 'openmoko-contacts'
 
