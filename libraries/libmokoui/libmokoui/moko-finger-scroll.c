@@ -363,6 +363,16 @@ moko_finger_scroll_size_allocate_cb (GtkWidget *widget,
 	priv->hscroll = hscroll;
 }
 
+static void
+moko_finger_scroll_size_request_cb (GtkWidget      *widget,
+				    GtkRequisition *requisition,
+				    MokoFingerScroll *scroll)
+{
+	/* Child has resized, sort out scroll-bars */
+	moko_finger_scroll_size_allocate_cb (widget,
+		&GTK_WIDGET (scroll)->allocation, scroll);
+}
+
 static gboolean
 moko_finger_scroll_expose_event (GtkWidget *widget, GdkEventExpose *event)
 {
@@ -440,6 +450,8 @@ moko_finger_scroll_add (GtkContainer *container,
 	gtk_container_add (GTK_CONTAINER (priv->align), child);
 	g_signal_connect (G_OBJECT (child), "size-allocate",
 		G_CALLBACK (moko_finger_scroll_size_allocate_cb), container);
+	g_signal_connect (G_OBJECT (child), "size-request",
+		G_CALLBACK (moko_finger_scroll_size_request_cb), container);
 }
 
 static void
@@ -450,6 +462,8 @@ moko_finger_scroll_remove (GtkContainer *container,
 		remove (container, child);
 	g_signal_handlers_disconnect_by_func (child,
 		moko_finger_scroll_size_allocate_cb, container);
+	g_signal_handlers_disconnect_by_func (child,
+		moko_finger_scroll_size_request_cb, container);
 }
 
 static void
