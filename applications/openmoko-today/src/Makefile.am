@@ -21,7 +21,9 @@ openmoko_today_SOURCES =		\
 	today-tasks-store.c		\
 	today-tasks-store.h		\
 	today-launcher.c		\
-	today-launcher.h
+	today-launcher.h		\
+	today-task-manager.c		\
+	today-task-manager.h
 
 openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
 			$(top_builddir)/libtaku/libtaku.a	\

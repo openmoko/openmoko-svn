@@ -1,4 +1,3 @@
-/* vi: set sw=2: */
 /*
  *  Today - At a glance view of date, time, calender events, todo items and
  *  other images.
@@ -238,4 +237,14 @@ icalcomponent_has_alarm (icalcomponent *a_icalcomp)
     return TRUE ;
   }
   return FALSE ;
+}
+
+GtkToolItem *
+today_toolbutton_new (const gchar *icon_name)
+{
+	GtkWidget *icon = gtk_image_new_from_icon_name (icon_name,
+		GTK_ICON_SIZE_DIALOG);
+	GtkToolItem *button = gtk_tool_button_new (icon, NULL);
+	gtk_tool_item_set_expand (button, TRUE);
+	return button;
 }

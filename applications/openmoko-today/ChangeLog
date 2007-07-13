@@ -1,5 +1,16 @@
 2007-07-13  Chris Lord  <chris@openedhand.com>
 
+	* src/Makefile.am:
+	* src/today-launcher.h:
+	* src/today-main.c: (main):
+	* src/today-utils.c: (icalcomponent_has_alarm):
+	* src/today-utils.h:
+	* src/today-task-manager.c:
+	* src/today-task-manager.h:
+	Add UI code for task-manager tab
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
 	* src/today-pim-summary.c: (today_pim_summary_update_date),
 	(today_pim_summary_box_new):
 	Fix time display

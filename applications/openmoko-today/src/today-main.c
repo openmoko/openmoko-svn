@@ -8,18 +8,10 @@
 #include <libtaku/launcher-util.h>
 #include <unistd.h>
 #include "today.h"
+#include "today-utils.h"
 #include "today-pim-summary.h"
 #include "today-launcher.h"
-
-static GtkToolItem *
-today_toolbutton_new (const gchar *icon_name)
-{
-	GtkWidget *icon = gtk_image_new_from_icon_name (icon_name,
-		GTK_ICON_SIZE_DIALOG);
-	GtkToolItem *button = gtk_tool_button_new (icon, NULL);
-	gtk_tool_item_set_expand (button, TRUE);
-	return button;
-}
+#include "today-task-manager.h"
 
 static void
 today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
@@ -155,7 +147,6 @@ main (int argc, char **argv)
 	TodayData data;
 	GOptionContext *context;
 	GtkWidget *widget;
-	GtkWidget *placeholder;
 	
 	static GOptionEntry entries[] = {
 		{ NULL }
@@ -195,10 +186,10 @@ main (int argc, char **argv)
 	gtk_widget_show (widget);
 
 	/* Add running tasks page */
-	placeholder = gtk_label_new ("Running tasks");
-	today_notebook_add_page_with_icon (data.notebook, placeholder,
+	widget = today_task_manager_page_create (&data);
+	today_notebook_add_page_with_icon (data.notebook, widget,
 		GTK_STOCK_EXECUTE, 6);
-	gtk_widget_show (placeholder);
+	gtk_widget_show (widget);
 	
 	/* Connect up signals */
 	g_signal_connect (G_OBJECT (data.window), "delete-event",

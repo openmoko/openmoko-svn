@@ -5,7 +5,6 @@
 #include <gtk/gtk.h>
 #include "today.h"
 
-GtkWidget *
-today_launcher_page_create (TodayData *data);
+GtkWidget *today_launcher_page_create (TodayData *data);
 
 #endif
