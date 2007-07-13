@@ -1,3 +1,8 @@
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* src/today-main.c:
+	Change launcher from 'contacts' to 'openmoko-contacts'
+
 2007-07-12  Chris Lord  <chris@openedhand.com>
 
 	* libtaku/launcher-util.c:

@@ -63,7 +63,7 @@ today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
 static void
 today_contacts_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	today_fill_launcher ("contacts", TRUE, TRUE);
+	today_fill_launcher ("openmoko-contacts", TRUE, TRUE);
 	launcher_start (data->window, &launcher_data);
 }
 
