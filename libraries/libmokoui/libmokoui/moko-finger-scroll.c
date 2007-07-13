@@ -88,6 +88,79 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 }
 
 static void
+moko_finger_scroll_redraw (MokoFingerScroll *scroll)
+{
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
+
+	/* Redraw scroll indicators */
+	if (priv->hscroll) {
+		if (GTK_WIDGET (scroll)->window) {
+			gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
+				&priv->hscroll_rect, FALSE);
+		}
+	}
+	if (priv->vscroll) {
+		if (GTK_WIDGET (scroll)->window) {
+			gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
+				&priv->vscroll_rect, FALSE);
+		}
+	}
+}
+
+static void
+moko_finger_scroll_refresh (MokoFingerScroll *scroll)
+{
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
+	GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
+	GtkWidget *widget = GTK_BIN (priv->align)->child;
+	gboolean vscroll, hscroll;
+	GtkRequisition req;
+	
+	if (!widget) return;
+	
+	/* Calculate if we need scroll indicators */	
+	gtk_widget_size_request (widget, &req);
+	if (req.width > allocation->width) hscroll = TRUE;
+	else hscroll = FALSE;
+	if (req.height > allocation->height) vscroll = TRUE;
+	else vscroll = FALSE;
+	
+	/* TODO: Read ltr settings to decide which corner gets scroll
+	 * indicators?
+	 */
+	if ((priv->vscroll != vscroll) || (priv->hscroll != hscroll)) {
+		gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0,
+			hscroll ? SCROLL_WIDTH : 0, 0,
+			vscroll ? SCROLL_WIDTH : 0);
+	}
+	
+	/* Store the vscroll/hscroll areas for redrawing */
+	if (vscroll) {
+		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
+		priv->vscroll_rect.x = allocation->x + allocation->width -
+			SCROLL_WIDTH;
+		priv->vscroll_rect.y = allocation->y;
+		priv->vscroll_rect.width = SCROLL_WIDTH;
+		priv->vscroll_rect.height = allocation->height -
+			(hscroll ? SCROLL_WIDTH : 0);
+	}
+	if (hscroll) {
+		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
+		priv->hscroll_rect.y = allocation->y + allocation->height -
+			SCROLL_WIDTH;
+		priv->hscroll_rect.x = allocation->x;
+		priv->hscroll_rect.height = SCROLL_WIDTH;
+		priv->hscroll_rect.width = allocation->width -
+			(vscroll ? SCROLL_WIDTH : 0);
+	}
+	
+	priv->vscroll = vscroll;
+	priv->hscroll = hscroll;
+	
+	moko_finger_scroll_redraw (scroll);
+}
+
+static void
 moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 			   gboolean *sx, gboolean *sy)
 {
@@ -129,15 +202,7 @@ moko_finger_scroll_scroll (MokoFingerScroll *scroll, gdouble x, gdouble y,
 		gtk_adjustment_set_value (vadjust, v);
 	}
 
-	/* Redraw scroll indicators */
-	if (priv->hscroll) {
-		gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
-			&priv->hscroll_rect, FALSE);
-	}
-	if (priv->vscroll) {
-		gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
-			&priv->vscroll_rect, FALSE);
-	}
+	moko_finger_scroll_redraw (scroll);
 }
 
 static gboolean
@@ -286,8 +351,8 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		gint x, y;
 		GdkWindow *child;
 		
-		g_object_get (G_OBJECT (GTK_BIN (priv->align)->child), "hadjustment",
-			&hadjust, "vadjustment", &vadjust, NULL);
+		g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
+			"hadjustment", &hadjust, "vadjustment", &vadjust, NULL);
 
 		child = moko_finger_scroll_get_topmost (
 			GTK_BIN (priv->align)->child->window,
@@ -312,70 +377,6 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	}
 
 	return TRUE;
-}
-
-static void
-moko_finger_scroll_size_allocate_cb (GtkWidget *widget,
-				     GtkAllocation *allocation,
-				     MokoFingerScroll *scroll)
-{
-	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
-	GtkRequisition req;
-	gboolean vscroll, hscroll;
-	
-	/* Decide if we need scroll indicators */	
-	gtk_widget_size_request (widget, &req);
-	if (req.width > allocation->width) hscroll = TRUE;
-	else hscroll = FALSE;
-	if (req.height > allocation->height) vscroll = TRUE;
-	else vscroll = FALSE;
-	
-	/* TODO: Read ltr settings to decide which corner gets scroll
-	 * indicators?
-	 */
-	if ((priv->vscroll != vscroll) || (priv->hscroll != hscroll)) {
-		gtk_alignment_set_padding (GTK_ALIGNMENT (priv->align), 0,
-			hscroll ? SCROLL_WIDTH : 0, 0,
-			vscroll ? SCROLL_WIDTH : 0);
-	}
-	
-	/* Store the vscroll/hscroll areas for redrawing */
-	if (vscroll) {
-		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
-		priv->vscroll_rect.x = allocation->x + allocation->width -
-			SCROLL_WIDTH;
-		priv->vscroll_rect.y = allocation->y;
-		priv->vscroll_rect.width = SCROLL_WIDTH;
-		priv->vscroll_rect.height = allocation->height -
-			(hscroll ? SCROLL_WIDTH : 0);
-		if (!GTK_WIDGET_NO_WINDOW (scroll))
-			gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
-				&priv->vscroll_rect, FALSE);
-	}
-	if (hscroll) {
-		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
-		priv->hscroll_rect.y = allocation->y + allocation->height -
-			SCROLL_WIDTH;
-		priv->hscroll_rect.x = allocation->x;
-		priv->hscroll_rect.height = SCROLL_WIDTH;
-		priv->hscroll_rect.width = allocation->width -
-			(vscroll ? SCROLL_WIDTH : 0);
-		if (!GTK_WIDGET_NO_WINDOW (scroll))
-			gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
-				&priv->hscroll_rect, FALSE);
-	}
-	
-	priv->vscroll = vscroll;
-	priv->hscroll = hscroll;
-}
-
-static void
-moko_finger_scroll_size_request_cb (GtkWidget      *widget,
-				    GtkRequisition *requisition,
-				    MokoFingerScroll *scroll)
-{
-	/* Child has resized, sort out scroll-bars */
-	gtk_widget_queue_resize (GTK_WIDGET (scroll));
 }
 
 static gboolean
@@ -448,27 +449,52 @@ moko_finger_scroll_expose_event (GtkWidget *widget, GdkEventExpose *event)
 }
 
 static void
+moko_finger_scroll_remove_cb (GtkContainer *container,
+			      GtkWidget    *child,
+			      MokoFingerScroll *scroll)
+{
+	GtkAdjustment *hadjust, *vadjust;
+
+	g_signal_handlers_disconnect_by_func (child,
+		moko_finger_scroll_refresh, scroll);
+	g_signal_handlers_disconnect_by_func (child,
+		gtk_widget_queue_resize, scroll);
+
+	g_object_get (G_OBJECT (child),
+		"vadjustment", &vadjust, "hadjustment", &hadjust, NULL);
+	g_signal_handlers_disconnect_by_func (hadjust,
+		moko_finger_scroll_refresh, scroll);
+	g_signal_handlers_disconnect_by_func (vadjust,
+		moko_finger_scroll_refresh, scroll);
+	g_signal_handlers_disconnect_by_func (hadjust,
+		moko_finger_scroll_redraw, scroll);
+	g_signal_handlers_disconnect_by_func (vadjust,
+		moko_finger_scroll_redraw, scroll);
+}
+
+static void
 moko_finger_scroll_add (GtkContainer *container,
 			GtkWidget    *child)
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (container);
+	GtkAdjustment *hadjust, *vadjust;
+	
 	gtk_container_add (GTK_CONTAINER (priv->align), child);
-	g_signal_connect (G_OBJECT (child), "size-allocate",
-		G_CALLBACK (moko_finger_scroll_size_allocate_cb), container);
-	g_signal_connect (G_OBJECT (child), "size-request",
-		G_CALLBACK (moko_finger_scroll_size_request_cb), container);
-}
+	g_signal_connect_swapped (G_OBJECT (child), "size-allocate",
+		G_CALLBACK (moko_finger_scroll_refresh), container);
+	g_signal_connect_swapped (G_OBJECT (child), "size-request",
+		G_CALLBACK (gtk_widget_queue_resize), container);
 
-static void
-moko_finger_scroll_remove (GtkContainer *container,
-			   GtkWidget    *child)
-{
-	GTK_CONTAINER_CLASS (moko_finger_scroll_parent_class)->
-		remove (container, child);
-	g_signal_handlers_disconnect_by_func (child,
-		moko_finger_scroll_size_allocate_cb, container);
-	g_signal_handlers_disconnect_by_func (child,
-		moko_finger_scroll_size_request_cb, container);
+	g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
+		"vadjustment", &vadjust, "hadjustment", &hadjust, NULL);
+	g_signal_connect_swapped (G_OBJECT (hadjust), "changed",
+		G_CALLBACK (moko_finger_scroll_refresh), container);
+	g_signal_connect_swapped (G_OBJECT (vadjust), "changed",
+		G_CALLBACK (moko_finger_scroll_refresh), container);
+	g_signal_connect_swapped (G_OBJECT (hadjust), "value-changed",
+		G_CALLBACK (moko_finger_scroll_redraw), container);
+	g_signal_connect_swapped (G_OBJECT (vadjust), "value-changed",
+		G_CALLBACK (moko_finger_scroll_redraw), container);
 }
 
 static void
@@ -573,7 +599,6 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 	widget_class->expose_event = moko_finger_scroll_expose_event;
 	
 	container_class->add = moko_finger_scroll_add;
-	container_class->remove = moko_finger_scroll_remove;
 
 	g_object_class_install_property (
 		object_class,
@@ -668,6 +693,8 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 		G_CALLBACK (moko_finger_scroll_button_release_cb), NULL);
 	g_signal_connect (G_OBJECT (self), "motion-notify-event",
 		G_CALLBACK (moko_finger_scroll_motion_notify_cb), NULL);
+	g_signal_connect (G_OBJECT (priv->align), "remove",
+		G_CALLBACK (moko_finger_scroll_remove_cb), self);
 }
 
 GtkWidget *

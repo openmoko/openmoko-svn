@@ -1,6 +1,20 @@
 2007-07-13  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c:
+	(moko_finger_scroll_button_press_cb), (moko_finger_scroll_refresh),
+	(moko_finger_scroll_scroll), (moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_get_topmost),
+	(moko_finger_scroll_button_release_cb),
+	(moko_finger_scroll_expose_event),
+	(moko_finger_scroll_size_request), (moko_finger_scroll_class_init),
+	(moko_finger_scroll_init):
+	Modularise things slightly, make sure to recalculate/redraw the scroll
+	indicators when the child adjustments change, disconnect signals
+	properly on remove
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c:
 	(moko_finger_scroll_size_allocate_cb):
 	Check that the widget window exists before invalidating it
 
