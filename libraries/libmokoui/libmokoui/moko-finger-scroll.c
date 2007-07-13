@@ -348,8 +348,9 @@ moko_finger_scroll_size_allocate_cb (GtkWidget *widget,
 		priv->vscroll_rect.width = SCROLL_WIDTH;
 		priv->vscroll_rect.height = allocation->height -
 			(hscroll ? SCROLL_WIDTH : 0);
-		gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
-			&priv->vscroll_rect, FALSE);
+		if (!GTK_WIDGET_NO_WINDOW (scroll))
+			gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
+				&priv->vscroll_rect, FALSE);
 	}
 	if (hscroll) {
 		GtkAllocation *allocation = &GTK_WIDGET (scroll)->allocation;
@@ -359,8 +360,9 @@ moko_finger_scroll_size_allocate_cb (GtkWidget *widget,
 		priv->hscroll_rect.height = SCROLL_WIDTH;
 		priv->hscroll_rect.width = allocation->width -
 			(vscroll ? SCROLL_WIDTH : 0);
-		gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
-			&priv->hscroll_rect, FALSE);
+		if (!GTK_WIDGET_NO_WINDOW (scroll))
+			gdk_window_invalidate_rect (GTK_WIDGET (scroll)->window,
+				&priv->hscroll_rect, FALSE);
 	}
 	
 	priv->vscroll = vscroll;

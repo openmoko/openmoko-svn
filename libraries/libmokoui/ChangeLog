@@ -1,6 +1,12 @@
 2007-07-13  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c:
+	(moko_finger_scroll_size_allocate_cb):
+	Check that the widget window exists before invalidating it
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c:
 	(moko_finger_scroll_size_allocate_cb),
 	(moko_finger_scroll_size_request_cb):
 	Recalculate size correctly when child resizes, and redraw
