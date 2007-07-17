@@ -7,5 +7,5 @@ Encoding=UTF-8
 [X-GNOME-Metatheme]
 GtkTheme=OpenMoko-Standard-2
 #MetacityTheme=OpenMoko-Standard
-#IconTheme=OpenMoko-Standard
+IconTheme=openmoko-standard
 
