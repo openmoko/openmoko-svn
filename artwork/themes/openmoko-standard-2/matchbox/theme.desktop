@@ -11,7 +11,7 @@ MenuBdColor=#ff7f00
 MenuHlColor=#2c2c2c
 
 PanelFgColor=#ffffff
-PanelBgColor=#000000
+PanelBgColor=#00000000
 DesktopBgSpec=col-solid:#000000
 DesktopHlCol=#2c2c2c
 

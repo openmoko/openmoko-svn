@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <theme name="OpenMoko-Standard-2" author="Chris Lord - chris@openedhand.com"
-       desc="" version="1.0" engine_version="1" >
+       desc="The default OpenMoko theme" version="1.0" engine_version="1" >
 
 <color id="white" def="#ffffff" />
 <color id="black" def="#000000ff" />
@@ -23,46 +23,38 @@
   <layer x="0" y="0" w="100%"  h="37" 
    type="plain" color="orange" />
 
-  <layer x="0" y="0" w="100%"  h="37" 
+  <layer x="0" y="0" w="100%-200"  h="37" 
    type="gradient-horiz" startcol="transparent" endcol="black" />
  
   <layer x="0" y="37" w="100%" h="3"
    type = "plain" color="orange" />
-
-  <!-- Only use half of the width to leave space for a panel -->
-  <layer x="36" y="4" w="50%" h="32" 
-   type="label" color="white" justify="left" font="titlefont" />
 
   <button x="0" y="0" w="32" h="40" action="close" >
    <active pixmap="closebutton" blend="-150"/>
    <inactive pixmap="closebutton" />
   </button>
 
+  <layer x="36" y="4" w="50%" h="32" 
+   type="label" color="white" justify="left" font="titlefont" />
+
   <button x="36" y="0" w="50%-32" h="36" action="menu" options="inputonly" />
-<!--
+
   <button x="50%-32" y="0" w="32" h="40" action="custom">
    <active pixmap="menubutton" blend="-150"/>
    <inactive pixmap="menubutton" />
   </button>
--->
+
+   <panel x="100%-200" y="0" w="200" h="37" />
+
 </frame>
 
-<frame id="dialog" height="40" >
+<frame id="dialog" height="40">
 
   <layer x="0" y="0" w="100%"  h="20" 
    type="gradient-vert" startcol="light" endcol="lightmid" />
 
   <layer x="0" y="20" w="100%"  h="20" 
    type="gradient-vert" startcol="darkmid" endcol="dark" />
-
-  <layer x="0" y="0" w="1"  h="100%" 
-   type="plain" color="dark" />
-
-  <layer x="100%-1" y="0" w="1"  h="100%" 
-   type="plain" color="dark" />
-
-  <layer x="0" y="100%" w="100%"  h="1" 
-   type="plain" color="dark" />
 
   <layer x="36" y="4" w="100%" h="36" 
    type="label" color="white" justify="left" font="titlefont" />
@@ -74,16 +66,30 @@
 
 </frame>
 
-<frame id="menu" 
-        border_north="0" 
-	border_south="4" 
-	border_west="4" 
-        border_east="4"
-        fixed_width="320"
-        font="menufont" 
-	highlight="lightmid"
-        color="white"
-        options="shaped">
+<frame id="dialog-north" height="0"/>
+
+<frame id="dialog-south" height="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="dialog-east" width="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="dialog-west" width="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="menu"
+    border_north="0"
+    border_south="4"
+    border_west="4"
+    border_east="4"
+    fixed_width="320"
+    font="menufont" highlight="lightmid" color="white" options="shaped">
 
   <layer x="0" y="0" w="100%" h="100%"
    type="plain" color="orange" />
@@ -96,49 +102,8 @@
 
 </frame>
 
-<!-- below frames are likely not needed, legacy stuff -->
-<!--
-<frame id="utility-max" width="20">
-
-  <layer x="0" y="0" w="100%"  h="100%" 
-   type="plain" color="borderdark" />
-
-  <layer x="1" y="1" w="100%-2"  h="1" 
-   type="plain" color="borderlight" />
-
-  <layer x="1" y="2" w="100%-2"  h="100%-2" 
-   type="gradient-vert" startcol="grad1" endcol="grad2"/>
-
-  <button x="0" y="0" w="100%" h="100%" action="minimize" options="inputonly"/>
-
-</frame>
-
-<frame id="utility-min" height="20">
-
-  <layer x="0" y="0" w="100%"  h="100%" 
-   type="plain" color="borderdark" />
-
-  <layer x="1" y="1" w="100%-2"  h="1" 
-   type="plain" color="borderlight" />
-
-  <layer x="1" y="2" w="100%-2"  h="100%-2" 
-   type="gradient-vert" startcol="grad1" endcol="grad2"/>
-
-  <layer x="5" y="3" w="100%-60" h="20" 
-   type="label" color="black" justify="left" font="titlefont" />
-
-  <button x="0" y="0" w="100%-20" h="100%" 
-  action="maximize" options="inputonly"/>
-
-  <button x="-20" y="0" w="16" h="20" action="close" >
-   <active pixmap="closebutton" blend="-150"/>
-   <inactive pixmap="closebutton" />
-  </button>
-
-</frame>
--->
-
 <lowlight color="black" /> 
 <shadow style="gaussian" />
 
 </theme>
+
