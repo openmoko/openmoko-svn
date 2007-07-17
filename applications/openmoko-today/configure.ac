@@ -43,6 +43,13 @@ if test x$enable_startup_notification != xno; then
   AC_DEFINE(USE_LIBSN, [1], [Has Startup Notification Support])
 fi
 
+AC_ARG_ENABLE(standalone,
+        AC_HELP_STRING([--enable-standalone], [run in a window, not as the desktop]),
+        enable_standalone=$enableval, enable_standalone=no)
+if test x$enable_standalone != xno; then
+  AC_DEFINE(STANDALONE, [1], [Run in a window])
+fi
+
 if test x$TODAY_DEVEL != x ; then
     CFLAGS="-Wall -Wextra -Wshadow -Wpointer-arith -g"
 fi

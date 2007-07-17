@@ -6,6 +6,7 @@
 #include <gtk/gtk.h>
 #include <libmokoui/moko-finger-scroll.h>
 #include <libtaku/launcher-util.h>
+#include <libtaku/xutil.h>
 #include <unistd.h>
 #include "today.h"
 #include "today-utils.h"
@@ -147,6 +148,9 @@ main (int argc, char **argv)
 	TodayData data;
 	GOptionContext *context;
 	GtkWidget *widget;
+#ifndef STANDALONE
+	gint x, y, w, h;
+#endif
 	
 	static GOptionEntry entries[] = {
 		{ NULL }
@@ -195,7 +199,7 @@ main (int argc, char **argv)
 	g_signal_connect (G_OBJECT (data.window), "delete-event",
 		G_CALLBACK (gtk_main_quit), NULL);
 
-#if 0
+#if 1
 	/* Force theme settings */
 	g_object_set (gtk_settings_get_default (),
 		"gtk-theme-name", "openmoko-standard-2", 
@@ -203,6 +207,17 @@ main (int argc, char **argv)
 		NULL);
 #endif
 
+#ifndef STANDALONE
+	x = 0; y = 0; w = 480; h = 640;
+	gtk_window_set_type_hint (GTK_WINDOW (data.window),
+		GDK_WINDOW_TYPE_HINT_DESKTOP);
+	gtk_window_set_skip_taskbar_hint (GTK_WINDOW (data.window), TRUE);
+	if (x_get_workarea (&x, &y, &w, &h)) {
+		gtk_window_set_default_size (GTK_WINDOW (data.window), w, h);
+		gtk_window_move (GTK_WINDOW (data.window), x, y);
+	}
+#endif
+	
 	launcher_data.argv = NULL;
 	
 	/* Show and start */

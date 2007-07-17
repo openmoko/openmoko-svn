@@ -1,3 +1,9 @@
+2007-07-17  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/today-main.c: (main):
+	Set desktop window hint (disable with --enable-standalone)
+
 2007-07-13  Chris Lord  <chris@openedhand.com>
 
 	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_class_init):
