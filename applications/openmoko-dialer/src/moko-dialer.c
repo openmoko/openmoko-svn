@@ -186,6 +186,7 @@ moko_dialer_hung_up (MokoDialer *dialer)
   
   moko_gsmd_connection_voice_hangup (priv->connection);   
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
+  
 }
 
 void
@@ -239,6 +240,8 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
 
   gtk_window_present (GTK_WINDOW (priv->window));
 
+  moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
+
   g_signal_emit (G_OBJECT (dialer), dialer_signals[OUTGOING_CALL], 0, number);
 }
 
@@ -259,7 +262,6 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   moko_gsmd_connection_voice_accept (priv->connection);
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[TALKING], 0);
-
 }
 
 static void
@@ -277,6 +279,7 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   moko_gsmd_connection_voice_hangup (priv->connection);
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
+  moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
 }
 
 static void
@@ -293,7 +296,7 @@ on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
   moko_gsmd_connection_voice_hangup (priv->connection);
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
-
+  moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
 }
 
 static void
@@ -380,7 +383,6 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   priv = dialer->priv;
 
   g_debug ("Incoming pin request for type %d", type);
-  //gtk_widget_show_all (priv->data->window_pin);
 }
 
 

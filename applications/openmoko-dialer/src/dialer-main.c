@@ -159,9 +159,10 @@ main (int argc, char **argv)
    * to always have root access, but it'll work for most embedded devices.
    */
   g_debug ("(re)starting gsmd\n");
-  g_spawn_command_line_sync ("/etc/init.d/gsmd restart",
+  g_spawn_command_line_sync ("/etc/init.d/gsmd stop",
                              &out, &err, NULL, NULL);
-  g_print ("%s\n%s\n", out, err);
+  g_spawn_command_line_sync ("/etc/init.d/gsmd start",
+                             &out, &err, NULL, NULL);
 
   /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();

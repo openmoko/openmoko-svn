@@ -1,3 +1,16 @@
+2007-07-23  Neil J. Patel  <njp@o-hand.com>
+	
+	* src/dialer-main.c: (main):
+	Instead of calling /etc/init.d/gpsd restart, do stop and then start, as 
+	gpsd startup script calls killall gpsd (Duh!).
+
+	* src/moko-dialer.c: (moko_dialer_hung_up),
+	(on_keypad_dial_clicked), (on_talking_accept_call),
+	(on_talking_reject_call), (on_talking_cancel_call),
+	(on_pin_requested):
+	* src/moko-talking.c: (moko_talking_init):
+	Hide the delete/dial buttons when in a call.
+
 2007-07-13  Neil J. Patel  <njp@o-hand.com>
 
 	* src/dialer-defines.h:
