@@ -1,3 +1,16 @@
+2007-07-23  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Switch to the newly created WebKit/Gtk API
+
+        * configure.ac:
+        * src/Makefile.am:
+        * src/application-data.h:
+        * src/callbacks.c:
+        (cb_treeview_selection_changed):
+        * src/main.c:
+        (create_details_area):
+        (main):
+
 2007-05-19  Holger Freyther  <zecke@selfish.org>
 
         Improve caching. org.openembedded.dev has a patch to libmrss

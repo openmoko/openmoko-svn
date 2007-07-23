@@ -297,9 +297,9 @@ void cb_treeview_selection_changed( GtkTreeSelection *selection, struct RSSReade
         gchar *message;
         gtk_tree_model_get( model, &iter, RSS_READER_COLUMN_TEXT, &message, -1 );
         if ( message )
-            gtk_text_buffer_set_text( data->textBuffer, message, -1 );
+            webkit_gtk_page_load_html_string (data->textPage, message, "");
         else
-            gtk_text_buffer_set_text( data->textBuffer, g_strdup( _("Failed to read the text") ), -1 );
+            webkit_gtk_page_load_html_string (data->textPage, _("Failed to read the text."), "");
     }
 }
 

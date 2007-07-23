@@ -33,6 +33,9 @@
 
 #include <libmokoui/moko-scrolled-pane.h>
 
+#include <webkitgtkpage.h>
+#include <webkitgtkglobal.h>
+
 #include <string.h>
 #include <assert.h>
 
@@ -217,19 +220,10 @@ static void create_navigaton_area( struct RSSReaderData *data ) {
 }
 
 static void create_details_area( struct RSSReaderData* data ) {
-    data->tagTable   = GTK_TEXT_TAG_TABLE(gtk_text_tag_table_new());
-    data->textBuffer = GTK_TEXT_BUFFER(gtk_text_buffer_new(data->tagTable));
-    data->textView   = GTK_TEXT_VIEW(gtk_text_view_new_with_buffer(GTK_TEXT_BUFFER(data->textBuffer)));
-
-    GValue value = { 0, };
-    g_value_init( &value, G_TYPE_BOOLEAN );
-    g_value_set_boolean( &value, FALSE );
-    g_object_set_property( G_OBJECT(data->textView), "editable",       &value );
-    g_object_set_property( G_OBJECT(data->textView), "cursor-visible", &value );
-    gtk_text_view_set_wrap_mode( data->textView, GTK_WRAP_WORD_CHAR );
+    data->textPage = WEBKIT_GTK_PAGE(webkit_gtk_page_new ());
 
     GtkWidget *scrollWindow = GTK_WIDGET(moko_scrolled_pane_new());
-    moko_scrolled_pane_pack_with_viewport (MOKO_SCROLLED_PANE(scrollWindow), GTK_WIDGET (data->textView));
+    moko_scrolled_pane_pack (MOKO_SCROLLED_PANE(scrollWindow), GTK_WIDGET (data->textPage));
     moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(data->window), scrollWindow ) ;
 }
 
@@ -286,6 +280,7 @@ int main( int argc, char** argv )
     gdk_threads_init();
     gdk_threads_enter();
     gtk_init( &argc, &argv );
+    webkit_gtk_init ();
 
     struct RSSReaderData *data = g_new0( struct RSSReaderData, 1 );
 

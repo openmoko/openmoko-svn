@@ -1,5 +1,5 @@
 AC_PREREQ([2.59])
-AC_INIT([openmoko-rssreader], [0.0.4], [http://openmoko.org])
+AC_INIT([openmoko-rssreader], [0.0.5], [http://openmoko.org])
 AM_INIT_AUTOMAKE([1.9 foreign dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR(src/main.c)
 AM_CONFIG_HEADER(config.h)
@@ -41,6 +41,7 @@ AM_CONDITIONAL(ENABLE_TESTING, test "x${ENABLE_TESTING}" = "xyes")
 PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1)
 PKG_CHECK_MODULES(MRSS,     mrss          >= 0.17 )
 PKG_CHECK_MODULES(GTHREAD,  gthread-2.0           )
+PKG_CHECK_MODULES(WEBKITGTK, WebKitGdk)
 
 # output stuff
 AC_OUTPUT([

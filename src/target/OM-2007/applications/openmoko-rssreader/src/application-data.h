@@ -33,6 +33,8 @@
 #include <libmokoui/moko-tree-view.h>
 #include <libmokoui/moko-tool-box.h>
 
+#include <webkitgtkpage.h>
+
 #include "moko_cache.h"
 
 #include <gtk/gtk.h>
@@ -52,10 +54,7 @@ struct RSSReaderData {
     GtkTreeModelFilter *filter_model;
     GtkTreeModelSort  *sort_model;
 
-
-    GtkTextTagTable   *tagTable;
-    GtkTextBuffer     *textBuffer;
-    GtkTextView       *textView;
+    WebKitGtkPage     *textPage;
 
     gchar             *current_filter;
     int                is_all_filter;
