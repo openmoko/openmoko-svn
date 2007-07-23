@@ -29,7 +29,7 @@ Index: linux-2.6.21.3-moko/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.21.3-moko/drivers/spi/jbt6k74.c
-@@ -0,0 +1,543 @@
+@@ -0,0 +1,544 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -536,6 +536,7 @@ Index: linux-2.6.21.3-moko/drivers/spi/jbt6k74.c
 +	DEBUGP("entering\n");
 +
 +	jbt6k74_enter_state(jbt, JBT_STATE_NORMAL);
++	jbt6k74_display_onoff(jbt, 1);
 +
 +	return 0;
 +}
