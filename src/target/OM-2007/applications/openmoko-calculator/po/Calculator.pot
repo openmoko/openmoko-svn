@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-03-24 13:52+0100\n"
+"POT-Creation-Date: 2007-07-25 22:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,24 +16,24 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/calc-main.c:87
+#: src/calc-main.c:82
 msgid "Clear All"
 msgstr ""
 
-#: src/calc-main.c:87
+#: src/calc-main.c:82
 msgid "Clear"
 msgstr ""
 
-#: src/calc-main.c:91
+#: src/calc-main.c:86
 msgid "<big><b>.</b></big>"
 msgstr ""
 
 #. application object
 #. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-#: src/calc-main.c:349
+#: src/calc-main.c:350
 msgid "Calculator"
 msgstr ""
 
-#: src/calc-main.c:356
+#: src/calc-main.c:357
 msgid "Close"
 msgstr ""

@@ -215,8 +215,14 @@ void calc_button_pressed( GtkButton* button, enum operation *k)
     update_state_for_digit(9);
     break;
   case minus:
-    the_state.current_operand *= -1;
-    update_display(the_state.current_operand);
+    if (the_state.current_operand != 0.0) {
+      the_state.current_operand *= -1;
+      update_display(the_state.current_operand);
+    } else if (the_state.last_operand != 0.0) {
+      the_state.last_operand *= -1;
+      update_display(the_state.last_operand);	
+    }
+    /* else: no-op */
     break;
   case point:
     the_state.decimal_point = TRUE;

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openmoko-calculator 0.0.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-03-24 13:52+0100\n"
+"POT-Creation-Date: 2007-07-25 22:19+0200\n"
 "PO-Revision-Date: 2007-04-03 17:33+0300\n"
 "Last-Translator:  Evgeny Ginzburg <Nad.Oby@gmail.com>\n"
 "Language-Team: \n"
@@ -15,24 +15,24 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/calc-main.c:87
+#: src/calc-main.c:82
 msgid "Clear All"
 msgstr "Очистить всё"
 
-#: src/calc-main.c:87
+#: src/calc-main.c:82
 msgid "Clear"
 msgstr "Очистить"
 
-#: src/calc-main.c:91
+#: src/calc-main.c:86
 msgid "<big><b>.</b></big>"
 msgstr "<big><b>.</b></big>"
 
 #. application object
 #. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-#: src/calc-main.c:349
+#: src/calc-main.c:350
 msgid "Calculator"
 msgstr "Калькулятор"
 
-#: src/calc-main.c:356
+#: src/calc-main.c:357
 msgid "Close"
 msgstr "Закрыть"
