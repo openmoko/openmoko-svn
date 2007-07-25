@@ -1,0 +1,32 @@
+style "mokocontactsadddetail" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            file            = "mokocontacts/add-detail-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = PRELIGHT
+            file            = "mokocontacts/add-detail-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = ACTIVE
+            file            = "mokocontacts/add-detail-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 0
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+}
+
+
+widget "*moko-contacts-add-detail-button" style "mokocontactsadddetail"
+
