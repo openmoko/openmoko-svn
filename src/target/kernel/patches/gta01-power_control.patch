@@ -521,7 +521,7 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gps.c
 +	case GTA01v3_SYSTEM_REV:
 +	case GTA01v4_SYSTEM_REV:
 +	case GTA01Bv2_SYSTEM_REV:
-+		gta01_gps_sysfs_entries[ARRAY_SIZE(gta01_gps_sysfs_entries)-2] =
++		gta01_gps_sysfs_entries[ARRAY_SIZE(gta01_gps_sysfs_entries)-3] =
 +							&dev_attr_power_tcxo_2v8.attr;
 +		break;
 +	case GTA01Bv3_SYSTEM_REV:
