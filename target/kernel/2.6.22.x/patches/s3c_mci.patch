@@ -1,80 +1,9 @@
 This is the latest S3C MMC/SD driver by Thomas Kleffel
 
---- /dev/null
-+++ linux-2.6.22.1/drivers/mmc/mmc_debug.c
-@@ -0,0 +1,60 @@
-+/*
-+ *  linux/drivers/mmc/mmc_debug.c
-+ *
-+ *  Copyright (C) 2003 maintech GmbH, Thomas Kleffel <tk@maintech.de>
-+ *
-+ * This file contains debug helper functions for the MMC/SD stack
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/mmc/core.h>
-+#include <linux/mmc/mmc.h>
-+#include "mmc_debug.h"
-+
-+char *mmc_cmd2str(int cmd)
-+{
-+	switch(cmd) {
-+		case  0: return "GO_IDLE_STATE";
-+		case  1: return "ALL_SEND_OCR";
-+		case  2: return "ALL_SEND_CID";
-+		case  3: return "ALL_SEND_RELATIVE_ADD";
-+		case  6: return "ACMD: SD_SET_BUSWIDTH";
-+		case  7: return "SEL_DESEL_CARD";
-+		case  9: return "SEND_CSD";
-+		case 10: return "SEND_CID";
-+		case 11: return "READ_UNTIL_STOP";
-+		case 12: return "STOP_TRANSMISSION";
-+		case 13: return "SEND_STATUS";
-+		case 15: return "GO_INACTIVE_STATE";
-+		case 16: return "SET_BLOCKLEN";
-+		case 17: return "READ_SINGLE_BLOCK";
-+		case 18: return "READ_MULTIPLE_BLOCK";
-+		case 24: return "WRITE_SINGLE_BLOCK";
-+		case 25: return "WRITE_MULTIPLE_BLOCK";
-+		case 41: return "ACMD: SD_APP_OP_COND";
-+		case 55: return "APP_CMD";
-+		default: return "UNKNOWN";
-+	}
-+}
-+EXPORT_SYMBOL(mmc_cmd2str);
-+
-+char *mmc_err2str(int err)
-+{
-+	switch(err) {
-+		case MMC_ERR_NONE:	return "OK";
-+		case MMC_ERR_TIMEOUT:	return "TIMEOUT";
-+		case MMC_ERR_BADCRC: 	return "BADCRC";
-+		case MMC_ERR_FIFO: 	return "FIFO";
-+		case MMC_ERR_FAILED: 	return "FAILED";
-+		case MMC_ERR_INVALID: 	return "INVALID";
-+		case MMC_ERR_BUSY:	return "BUSY";
-+		case MMC_ERR_DMA:	return "DMA";
-+		case MMC_ERR_CANCELED:	return "CANCELED";
-+		default: return "UNKNOWN";
-+	}
-+}
-+EXPORT_SYMBOL(mmc_err2str);
---- /dev/null
-+++ linux-2.6.22.1/drivers/mmc/mmc_debug.h
-@@ -0,0 +1,7 @@
-+#ifndef MMC_DEBUG_H
-+#define MMC_DEBUG_H
-+
-+char *mmc_cmd2str(int err);
-+char *mmc_err2str(int err);
-+
-+#endif /* MMC_DEBUG_H */
---- linux-2.6.22.1.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
-+++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h
+Index: linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h
+===================================================================
+--- linux-2.6.22.1.orig/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-07-19 01:10:32.537282965 +0200
++++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-07-19 01:10:38.565626502 +0200
 @@ -28,9 +28,15 @@
  #define S3C2410_SDIDCNT               (0x30)
  #define S3C2410_SDIDSTA               (0x34)
@@ -142,51 +71,89 @@ This is the latest S3C MMC/SD driver by Thomas Kleffel
  #define S3C2410_SDIFSTA_RFLAST         (1<<9)
  #define S3C2410_SDIFSTA_RFFULL         (1<<8)
  #define S3C2410_SDIFSTA_RFHALF         (1<<7)
---- linux-2.6.22.1.orig/drivers/mmc/Makefile
-+++ linux-2.6.22.1/drivers/mmc/Makefile
-@@ -4,6 +4,7 @@
- 
- ifeq ($(CONFIG_MMC_DEBUG),y)
- 	EXTRA_CFLAGS		+= -DDEBUG
-+	obj-$(CONFIG_MMC)	+= mmc_debug.o
- endif
- 
- obj-$(CONFIG_MMC)		+= core/
---- linux-2.6.22.1.orig/drivers/mmc/host/Makefile
-+++ linux-2.6.22.1/drivers/mmc/host/Makefile
-@@ -15,4 +15,5 @@
- obj-$(CONFIG_MMC_OMAP)		+= omap.o
- obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
- obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
-+obj-$(CONFIG_MMC_S3C)		+= s3cmci.o
- 
---- linux-2.6.22.1.orig/include/linux/mmc/core.h
-+++ linux-2.6.22.1/include/linux/mmc/core.h
-@@ -54,12 +54,15 @@
- 	unsigned int		retries;	/* max number of retries */
- 	unsigned int		error;		/* command error */
- 
--#define MMC_ERR_NONE	0
--#define MMC_ERR_TIMEOUT	1
--#define MMC_ERR_BADCRC	2
--#define MMC_ERR_FIFO	3
--#define MMC_ERR_FAILED	4
--#define MMC_ERR_INVALID	5
-+#define MMC_ERR_NONE        0
-+#define MMC_ERR_TIMEOUT     1
-+#define MMC_ERR_BADCRC      2
-+#define MMC_ERR_FIFO        3
-+#define MMC_ERR_DMA         4
-+#define MMC_ERR_BUSY        5
-+#define MMC_ERR_FAILED      6
-+#define MMC_ERR_INVALID     7
-+#define MMC_ERR_CANCELED    8
- 
- 	struct mmc_data		*data;		/* data segment associated with cmd */
- 	struct mmc_request	*mrq;		/* associated request */
---- /dev/null
-+++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c
-@@ -0,0 +1,1340 @@
+Index: linux-2.6.22.1/drivers/mmc/host/mmc_debug.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22.1/drivers/mmc/host/mmc_debug.c	2007-07-19 01:15:25.233962797 +0200
+@@ -0,0 +1,61 @@
++/*
++ *  linux/drivers/mmc/mmc_debug.c
++ *
++ *  Copyright (C) 2003 maintech GmbH, Thomas Kleffel <tk@maintech.de>
++ *
++ * This file contains debug helper functions for the MMC/SD stack
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/mmc/core.h>
++#include <linux/mmc/mmc.h>
++#include "mmc_debug.h"
++
++char *mmc_cmd2str(int cmd)
++{
++	switch(cmd) {
++		case  0: return "GO_IDLE_STATE";
++		case  1: return "ALL_SEND_OCR";
++		case  2: return "ALL_SEND_CID";
++		case  3: return "ALL_SEND_RELATIVE_ADD";
++		case  6: return "ACMD: SD_SET_BUSWIDTH";
++		case  7: return "SEL_DESEL_CARD";
++		case  9: return "SEND_CSD";
++		case 10: return "SEND_CID";
++		case 11: return "READ_UNTIL_STOP";
++		case 12: return "STOP_TRANSMISSION";
++		case 13: return "SEND_STATUS";
++		case 15: return "GO_INACTIVE_STATE";
++		case 16: return "SET_BLOCKLEN";
++		case 17: return "READ_SINGLE_BLOCK";
++		case 18: return "READ_MULTIPLE_BLOCK";
++		case 24: return "WRITE_SINGLE_BLOCK";
++		case 25: return "WRITE_MULTIPLE_BLOCK";
++		case 41: return "ACMD: SD_APP_OP_COND";
++		case 55: return "APP_CMD";
++		default: return "UNKNOWN";
++	}
++}
++EXPORT_SYMBOL(mmc_cmd2str);
++
++char *mmc_err2str(int err)
++{
++	switch(err) {
++		case MMC_ERR_NONE:	return "OK";
++		case MMC_ERR_TIMEOUT:	return "TIMEOUT";
++		case MMC_ERR_BADCRC: 	return "BADCRC";
++		case MMC_ERR_FIFO: 	return "FIFO";
++		case MMC_ERR_FAILED: 	return "FAILED";
++		case MMC_ERR_INVALID: 	return "INVALID";
++		case MMC_ERR_BUSY:	return "BUSY";
++		case MMC_ERR_DMA:	return "DMA";
++		case MMC_ERR_CANCELED:	return "CANCELED";
++		default: return "UNKNOWN";
++	}
++}
++EXPORT_SYMBOL(mmc_err2str);
+Index: linux-2.6.22.1/drivers/mmc/host/mmc_debug.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22.1/drivers/mmc/host/mmc_debug.h	2007-07-19 01:10:38.597628323 +0200
+@@ -0,0 +1,7 @@
++#ifndef MMC_DEBUG_H
++#define MMC_DEBUG_H
++
++char *mmc_cmd2str(int err);
++char *mmc_err2str(int err);
++
++#endif /* MMC_DEBUG_H */
+Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c	2007-07-19 01:13:22.862989265 +0200
+@@ -0,0 +1,1341 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
@@ -200,6 +167,7 @@ This is the latest S3C MMC/SD driver by Thomas Kleffel
 +#include <linux/module.h>
 +#include <linux/dma-mapping.h>
 +#include <linux/clk.h>
++#include <linux/mmc/mmc.h>
 +#include <linux/mmc/host.h>
 +#include <linux/platform_device.h>
 +#include <linux/irq.h>
@@ -211,7 +179,7 @@ This is the latest S3C MMC/SD driver by Thomas Kleffel
 +#include <asm/arch/regs-sdi.h>
 +#include <asm/arch/regs-gpio.h>
 +
-+#include "../mmc_debug.h"
++#include "mmc_debug.h"
 +#include "s3cmci.h"
 +
 +#define DRIVER_NAME "s3c-mci"
@@ -1527,8 +1495,10 @@ This is the latest S3C MMC/SD driver by Thomas Kleffel
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
 +
---- /dev/null
-+++ linux-2.6.22.1/drivers/mmc/host/s3cmci.h
+Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.h	2007-07-19 01:13:22.334959182 +0200
 @@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1601,3 +1571,33 @@ This is the latest S3C MMC/SD driver by Thomas Kleffel
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
 +};
+Index: linux-2.6.22.1/drivers/mmc/host/Kconfig
+===================================================================
+--- linux-2.6.22.1.orig/drivers/mmc/host/Kconfig	2007-07-19 01:10:43.497907574 +0200
++++ linux-2.6.22.1/drivers/mmc/host/Kconfig	2007-07-19 01:11:57.214108422 +0200
+@@ -100,3 +100,14 @@
+           To compile this driver as a module, choose M here: the
+ 	  module will be called tifm_sd.
+ 
++config MMC_S3C
++	tristate "Samsung S3C SD/MMC Card Interface support"
++	depends on ARCH_S3C2410 && MMC
++	help
++	  This selects a driver for the MCI interface found in
++          Samsung's S3C2410, S3C2412, S3C2440, S3C2442 CPUs.
++	  If you have a board based on one of those and a MMC/SD
++	  slot, say Y or M here.
++
++	  If unsure, say N.
++
+Index: linux-2.6.22.1/drivers/mmc/host/Makefile
+===================================================================
+--- linux-2.6.22.1.orig/drivers/mmc/host/Makefile	2007-07-19 01:10:43.517908714 +0200
++++ linux-2.6.22.1/drivers/mmc/host/Makefile	2007-07-19 01:11:07.043249347 +0200
+@@ -15,4 +15,6 @@
+ obj-$(CONFIG_MMC_OMAP)		+= omap.o
+ obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
+ obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
++obj-$(CONFIG_MMC_S3C)   	+= s3cmci.o
++obj-$(CONFIG_MMC)			+= mmc_debug.o
+ 

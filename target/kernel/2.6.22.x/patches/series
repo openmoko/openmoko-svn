@@ -42,3 +42,4 @@ asoc-kconfig-fix.patch
 pcf50606_fix.patch
 pcf50633_fix.patch
 hxd8-tsl256x_fix.patch
+missing_defs.patch
