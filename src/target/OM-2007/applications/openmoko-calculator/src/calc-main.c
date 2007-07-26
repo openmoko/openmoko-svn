@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include <libmokoui/moko-application.h>
 #include <libmokoui/moko-finger-tool-box.h>
@@ -122,16 +123,39 @@ static void update_display(const double v)
 {
   if (the_state.n_digits == 0) {
     /* We are certainly displaying a computation result */
-    /* Manually build the display string ala %g */
-    double value = v;
-    int expof10;
+    if (!isfinite(v)) {
+      /* first gets rid of very special cases... */
+      if (isnan(v)) {
+	static int toomany = 0;
+	if ((the_state.func != &noop_func) || (++toomany % 7))
+	  gtk_label_set_markup(GTK_LABEL(displayed_label),
+			       _("<big>Not a Number</big><span font_desc=\"48\" > <b>NaN</b></span>"));
+	else
+	  /* ok, let's have some fun too... */
+	  gtk_label_set_markup(GTK_LABEL(displayed_label),
+			       _("<big>Not a Number</big> <span font_desc=\"48\" ><b>NaN</b></span>\n"
+				 "<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
+				 "<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</span>"));
+      } else if (isinf(v)>0) {
+	/* positive infinity */
+	gtk_label_set_markup(GTK_LABEL(displayed_label),"<span font_desc=\"48\" >&#x221E;</span>");
+      } else {
+	/* only negative infinity remains... */
+	gtk_label_set_markup(GTK_LABEL(displayed_label),"<span font_desc=\"48\" >-&#x221E;</span>");
+      }
+      return; /* short-cut out */
+    } else {
+      /* Manually build the display string ala %g */
+      double value = v;
+      int expof10;
 
-    expof10 = (int) log10((value>=0.)?(value):(-value));
-    value *= pow(10,-expof10);
-    if (expof10 >= MAX_DISPLAY_CHARS)
-      snprintf(dispstring,MAX_DISPLAY_MARKUP,"<span font_desc=\"48\" >%.*g <small>e</small><sup><big>%d</big></sup></span>",(MAX_DISPLAY_CHARS-2),value,expof10);
-    else
-      snprintf(dispstring,MAX_DISPLAY_MARKUP,"<span font_desc=\"48\" >%.*g</span>",MAX_DISPLAY_CHARS,v);
+      expof10 = (int) log10(fabs(value));
+      value *= pow(10,-expof10);
+      if (expof10 >= MAX_DISPLAY_CHARS)
+	snprintf(dispstring,MAX_DISPLAY_MARKUP,"<span font_desc=\"48\" >%.*g <small>e</small><sup><big>%d</big></sup></span>",(MAX_DISPLAY_CHARS-2),value,expof10);
+      else
+	snprintf(dispstring,MAX_DISPLAY_MARKUP,"<span font_desc=\"48\" >%.*g</span>",MAX_DISPLAY_CHARS,v);
+    }
   } else {
     /* We display entered value including trailing 0s */
     if (the_state.decimal_point == TRUE)
@@ -144,7 +168,7 @@ static void update_display(const double v)
   calc_debug("n_digits = %i  n_fractional = %i  dec_point = %i", the_state.n_digits, the_state.n_fractional, the_state.decimal_point);
   calc_debug(dispstring);
 #endif
-	  
+
   gtk_label_set_markup(GTK_LABEL(displayed_label), dispstring);
 }
 

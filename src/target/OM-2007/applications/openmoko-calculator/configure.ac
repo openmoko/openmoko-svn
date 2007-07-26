@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(openmoko-calculator, 0.0.4, rodolphe.ortalo@free.fr)
+AC_INIT(openmoko-calculator, 0.0.5, rodolphe.ortalo@free.fr)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(src/calc-main.c)
 AM_CONFIG_HEADER(config.h)

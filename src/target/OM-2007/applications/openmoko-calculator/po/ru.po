@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openmoko-calculator 0.0.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-25 22:19+0200\n"
+"POT-Creation-Date: 2007-07-26 22:34+0200\n"
 "PO-Revision-Date: 2007-04-03 17:33+0300\n"
 "Last-Translator:  Evgeny Ginzburg <Nad.Oby@gmail.com>\n"
 "Language-Team: \n"
@@ -15,24 +15,36 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/calc-main.c:82
+#: src/calc-main.c:83
 msgid "Clear All"
 msgstr "Очистить всё"
 
-#: src/calc-main.c:82
+#: src/calc-main.c:83
 msgid "Clear"
 msgstr "Очистить"
 
-#: src/calc-main.c:86
+#: src/calc-main.c:87
 msgid "<big><b>.</b></big>"
 msgstr "<big><b>.</b></big>"
 
+#: src/calc-main.c:132
+msgid "<big>Not a Number</big><span font_desc=\"48\" > <b>NaN</b></span>"
+msgstr ""
+
+#: src/calc-main.c:136
+msgid ""
+"<big>Not a Number</big> <span font_desc=\"48\" ><b>NaN</b></span>\n"
+"<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
+"<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</"
+"span>"
+msgstr ""
+
 #. application object
 #. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-#: src/calc-main.c:350
+#: src/calc-main.c:374
 msgid "Calculator"
 msgstr "Калькулятор"
 
-#: src/calc-main.c:357
+#: src/calc-main.c:381
 msgid "Close"
 msgstr "Закрыть"
