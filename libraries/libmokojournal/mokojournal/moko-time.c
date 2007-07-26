@@ -86,3 +86,21 @@ moko_time_as_timet (const MokoTime *time)
   g_return_val_if_fail (time, 0) ;
   return icaltime_as_timet (time->t) ;
 }
+
+GType
+moko_time_get_type (void)
+{
+  static GType our_type = 0;
+  if (our_type == 0)
+    our_type = g_boxed_type_register_static ("MokoTime",
+                                             (GBoxedCopyFunc) moko_time_copy,
+                                             (GBoxedFreeFunc) moko_time_free);
+
+  return our_type;
+}
+
+MokoTime*
+moko_time_copy (const MokoTime* src)
+{
+  return moko_time_new_from_icaltimetype (src->t);
+}

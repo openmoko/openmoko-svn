@@ -27,8 +27,6 @@ main ()
 {
     MokoJournal *journal=NULL ;
     MokoJournalEntry *entry=NULL ;
-    MokoJournalEmailInfo *email_info=NULL ;
-    MokoJournalVoiceInfo *voice_info=NULL ;
     MokoLocation loc ;
     MokoGSMLocation gsm_loc ;
     int result = 1 ;
@@ -37,7 +35,7 @@ main ()
 
     /*open the journal*/
     journal = moko_journal_open_default () ;
-    g_return_val_if_fail (journal, 1) ;
+    g_return_val_if_fail (MOKO_IS_JOURNAL (journal),1) ;
 
     /*load all journal entries from the journal on storage*/
     if (!moko_journal_load_from_storage (journal))
@@ -70,7 +68,7 @@ main ()
     gsm_loc.lac = 68 ;
     gsm_loc.cid = 100 ;
     moko_journal_entry_set_gsm_location (entry, &gsm_loc) ;
-    if (!moko_journal_entry_get_email_info (entry, &email_info) || !email_info)
+    if (!moko_journal_entry_has_email_info (entry))
     {
         g_warning ("failed to get email extra info from journal entry\n") ;
         goto out ;
@@ -112,7 +110,7 @@ main ()
     gsm_loc.lac = 67 ;
     gsm_loc.cid = 200 ;
     moko_journal_entry_set_gsm_location (entry, &gsm_loc) ;
-    if (!moko_journal_entry_get_voice_info (entry, &voice_info) || !voice_info)
+    if (!moko_journal_entry_has_voice_info (entry))
     {
         g_warning ("failed to get voice extra info from journal entry\n") ;
         goto out ;
@@ -170,7 +168,7 @@ out:
     if (journal)
         moko_journal_close (journal) ;
     if (entry)
-        moko_journal_entry_free (entry) ;
+        moko_journal_entry_unref (entry) ;
 
     return result ;
 }

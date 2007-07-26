@@ -22,6 +22,7 @@
 #define  __MOKO_TIME_H__
 
 #include <time.h>
+#include <glib-object.h>
 
 typedef struct _MokoTime MokoTime ;
 
@@ -32,4 +33,10 @@ void moko_time_free (MokoTime *time) ;
 time_t moko_time_as_timet (const MokoTime *time) ;
 
 const gchar* moko_time_as_ical_string (MokoTime *t) ;
+
+/* code to help bindings */
+#define MOKO_TYPE_TIME moko_time_get_type ()
+GType moko_time_get_type (void);
+MokoTime *moko_time_copy(const MokoTime *src );
+
 #endif /*__MOKO_TIME_H__*/

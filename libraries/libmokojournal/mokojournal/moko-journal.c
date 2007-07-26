@@ -27,21 +27,26 @@
 #include "moko-journal.h"
 #include "moko-time-priv.h"
 
+typedef struct _MokoJournalPrivate MokoJournalPrivate ;
+typedef struct _MokoJournalVoiceInfo MokoJournalVoiceInfo ;
+typedef struct _MokoJournalDataInfo MokoJournalDataInfo ;
+typedef struct _MokoJournalFaxInfo MokoJournalFaxInfo ;
+typedef struct _MokoJournalSMSInfo MokoJournalSMSInfo ;
+typedef struct _MokoJournalEmailInfo MokoJournalEmailInfo ;
+
 #define WIFI_AP_MAC_ADDR_LEN 48
 
-struct _MokoJournal
+G_DEFINE_TYPE (MokoJournal, moko_journal, G_TYPE_OBJECT)
+
+#define MOKO_JOURNAL_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MOKO_TYPE_JOURNAL, MokoJournalPrivate))
+
+struct _MokoJournalPrivate
 {
   ECal *ecal ;
   ECalView *ecal_view ;
   GList *entries_to_delete ;
   GArray *entries ;
-  
-  /* Callbacks */
-  MokoJournalEntryAddedFunc added_func ;
-  gpointer added_data ;
 
-  MokoJournalEntryRemovedFunc removed_func ;
-  gpointer removed_data ;  
 };
 
 struct _MokoJournalVoiceInfo
@@ -86,6 +91,7 @@ struct _MokoJournalEntry
   MokoGSMLocation gsm_loc ;
   guchar *wifi_ap_mac ;
   guchar *bluetooth_ap_mac ;
+  gint ref_count ;
   union
   {
     MokoJournalEmailInfo *email_info ;
@@ -113,18 +119,29 @@ static const MokoJournalEntryInfo entries_info[] =
   {0}
 } ;
 
-static MokoJournal* moko_journal_alloc () ;
-static MokoJournalEmailInfo* moko_journal_email_info_new () ;
+/* add your signals here */
+enum {
+    ENTRY_ADDED,
+    ENTRY_REMOVED,
+    LAST_SIGNAL,
+};
+
+static guint moko_journal_signals[LAST_SIGNAL] = { 0 };
+
+static void moko_journal_finalize (GObject *self) ;
 static MokoJournalVoiceInfo* moko_journal_voice_info_new () ;
 static MokoJournalFaxInfo* moko_journal_fax_info_new () ;
+static MokoJournalDataInfo* moko_journal_data_info_new () ;
+static MokoJournalEmailInfo* moko_journal_email_info_new () ;
 static MokoJournalSMSInfo* moko_journal_sms_info_new () ;
+static gboolean moko_journal_entry_get_voice_info (MokoJournalEntry *a_entry,
+                                                   MokoJournalVoiceInfo **a_info);
 static void moko_journal_voice_info_free (MokoJournalVoiceInfo *a_info) ;
 static void moko_journal_fax_info_free (MokoJournalFaxInfo *a_info) ;
 static void moko_journal_data_info_free (MokoJournalDataInfo *a_info) ;
 static void moko_journal_email_info_free (MokoJournalEmailInfo *a_info) ;
 static void moko_journal_sms_info_free (MokoJournalSMSInfo *a_info) ;
-static MokoJournalDataInfo* moko_journal_data_info_new () ;
-static gboolean moko_journal_find_entry_from_uid (MokoJournal *a_journal,
+static gboolean moko_journal_find_entry_from_uid (MokoJournalPrivate *a_journal,
                                                   const gchar *a_uid,
                                                   MokoJournalEntry **a_entry,
                                                   int *a_offset) ;
@@ -151,23 +168,85 @@ static void on_entries_removed_cb (ECalView *a_view,
                                    GList *uids,
                                    MokoJournal *a_journal) ;
 
+static void
+moko_journal_class_init (MokoJournalClass *klass)
+{
+  g_type_class_add_private (klass, sizeof(MokoJournalPrivate)) ;
+
+  moko_journal_signals[ENTRY_ADDED] = g_signal_new ("entry_added",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+        G_STRUCT_OFFSET (MokoJournalClass, entry_added),
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__OBJECT,
+        G_TYPE_NONE, 0) ;
+  moko_journal_signals[ENTRY_REMOVED] = g_signal_new ("entry_removed",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+        G_STRUCT_OFFSET (MokoJournalClass, entry_removed),
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__OBJECT,
+        G_TYPE_NONE, 0) ;
+
+  G_OBJECT_CLASS(klass)->finalize = moko_journal_finalize;
+}
+
+static void
+moko_journal_init (MokoJournal* self)
+{
+  MokoJournalPrivate* priv = MOKO_JOURNAL_GET_PRIVATE (self) ;
+  priv->entries = g_array_new (TRUE, TRUE, sizeof (MokoJournalEntry*)) ;
+}
+
+static void
+moko_journal_finalize (GObject *self)
+{
+  MokoJournal* journal = MOKO_JOURNAL (self) ;
+  MokoJournalPrivate *private = MOKO_JOURNAL_GET_PRIVATE (journal) ;
+
+  if (private->ecal)
+  {
+    g_object_unref (G_OBJECT (private->ecal)) ;
+    private->ecal = NULL ;
+  }
+  if (private->entries_to_delete)
+  {
+    g_list_free (private->entries_to_delete) ;
+    private->entries_to_delete = NULL ;
+  }
+  if (private->entries)
+  {
+    int i ;
+    for (i=0 ; i < private->entries->len ; ++i)
+    {
+      if (g_array_index (private->entries, MokoJournalEntry*, i))
+      {
+        moko_journal_entry_unref (g_array_index (private->entries,
+                                                 MokoJournalEntry*, i));
+        g_array_index (private->entries, MokoJournalEntry*, i) = NULL;
+      }
+    }
+    g_array_free (private->entries, TRUE) ;
+    private->entries = NULL ;
+  }
+
+  if (G_OBJECT_CLASS(moko_journal_parent_class)->finalize)
+    G_OBJECT_CLASS(moko_journal_parent_class)->finalize (self) ;
+}
+
 
 static void
 notify_entry_added (MokoJournal *a_journal, MokoJournalEntry *entry)
 {
-  if (a_journal->added_func == NULL)
-    return;
-  
-  a_journal->added_func (a_journal, entry, a_journal->added_data);
+  g_signal_emit (G_OBJECT (a_journal), moko_journal_signals[ENTRY_ADDED], 0, entry, NULL) ;
 }
 
 static void
 notify_entry_removed (MokoJournal *a_journal, MokoJournalEntry *entry)
 {
-  if (a_journal->removed_func == NULL)
-    return;
-  
-  a_journal->removed_func (a_journal, entry, a_journal->removed_data);
+  g_signal_emit (G_OBJECT (a_journal), moko_journal_signals[ENTRY_REMOVED], 0, entry, NULL) ;
 }
 
 static const gchar*
@@ -199,17 +278,8 @@ entry_type_from_string (const gchar* a_str)
 }
 
 /*<private funcs>*/
-static MokoJournal*
-moko_journal_alloc ()
-{
-  MokoJournal *result ;
-  result = g_new0 (MokoJournal, 1) ;
-  result->entries = g_array_new (TRUE, TRUE, sizeof (MokoJournalEntry*)) ;
-  return result ;
-}
-
 static gboolean
-moko_journal_find_entry_from_uid (MokoJournal *a_journal,
+moko_journal_find_entry_from_uid (MokoJournalPrivate *a_journal,
                                   const gchar *a_uid,
                                   MokoJournalEntry **a_entry,
                                   int *a_offset)
@@ -241,73 +311,21 @@ moko_journal_find_entry_from_uid (MokoJournal *a_journal,
   return FALSE ;
 }
 
-static void
-moko_journal_free (MokoJournal *a_journal)
+static gboolean
+moko_journal_entry_get_voice_info (MokoJournalEntry *a_entry,
+                                   MokoJournalVoiceInfo **a_info)
 {
-  g_return_if_fail (a_journal) ;
-  if (a_journal->ecal)
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == VOICE_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (!a_entry->extra.voice_info)
   {
-    g_object_unref (G_OBJECT (a_journal->ecal)) ;
-    a_journal->ecal = NULL ;
+    a_entry->extra.voice_info = moko_journal_voice_info_new ();
   }
-  if (a_journal->entries_to_delete)
-  {
-    g_list_free (a_journal->entries_to_delete) ;
-    a_journal->entries_to_delete = NULL ;
-  }
-  if (a_journal->entries)
-  {
-    int i ;
-    for (i=0 ; i < a_journal->entries->len ; ++i)
-    {
-      if (g_array_index (a_journal->entries, MokoJournalEntry*, i))
-      {
-        moko_journal_entry_free (g_array_index (a_journal->entries,
-                                                MokoJournalEntry*, i));
-        g_array_index (a_journal->entries, MokoJournalEntry*, i) = NULL;
-      }
-    }
-    g_array_free (a_journal->entries, TRUE) ;
-    a_journal->entries = NULL ;
-  }
-  g_free (a_journal) ;
-}
-
-static MokoJournalEmailInfo*
-moko_journal_email_info_new ()
-{
-  return g_new0 (MokoJournalEmailInfo, 1) ;
-}
-
-static MokoJournalVoiceInfo*
-moko_journal_voice_info_new ()
-{
-  return g_new0 (MokoJournalVoiceInfo, 1) ;
-}
-
-static MokoJournalFaxInfo*
-moko_journal_fax_info_new ()
-{
-  return g_new0 (MokoJournalFaxInfo, 1) ;
-}
-
-static MokoJournalDataInfo*
-moko_journal_data_info_new ()
-{
-  return g_new0 (MokoJournalDataInfo, 1) ;
-}
-
-static MokoJournalSMSInfo*
-moko_journal_sms_info_new ()
-{
-  return g_new0 (MokoJournalSMSInfo, 1) ;
-}
-
-static void
-moko_journal_email_info_free (MokoJournalEmailInfo *a_info)
-{
-  g_return_if_fail (a_info) ;
-  g_free (a_info) ;
+  g_return_val_if_fail (a_entry->extra.voice_info, FALSE) ;
+  *a_info = a_entry->extra.voice_info ;
+  return TRUE ;
 }
 
 static void
@@ -332,6 +350,13 @@ moko_journal_voice_info_free (MokoJournalVoiceInfo *a_info)
 }
 
 static void
+moko_journal_email_info_free (MokoJournalEmailInfo *a_info)
+{
+  g_return_if_fail (a_info) ;
+  g_free (a_info) ;
+}
+
+static void
 moko_journal_fax_info_free (MokoJournalFaxInfo *a_info)
 {
   g_return_if_fail (a_info) ;
@@ -352,13 +377,112 @@ moko_journal_sms_info_free (MokoJournalSMSInfo *a_info)
   g_free (a_info) ;
 }
 
+static gboolean
+moko_journal_entry_get_fax_info (MokoJournalEntry *a_entry,
+                                 MokoJournalFaxInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == FAX_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (!a_entry->extra.fax_info)
+  {
+    a_entry->extra.fax_info = moko_journal_fax_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.fax_info, FALSE) ;
+  *a_info = a_entry->extra.fax_info ;
+  return FALSE ;
+}
+
+static gboolean
+moko_journal_entry_get_data_info (MokoJournalEntry *a_entry,
+                                  MokoJournalDataInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == DATA_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (!a_entry->extra.data_info)
+  {
+    a_entry->extra.data_info = moko_journal_data_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.data_info, FALSE) ;
+  *a_info = a_entry->extra.data_info ;
+  return TRUE ;
+}
+
+static gboolean
+moko_journal_entry_get_sms_info (MokoJournalEntry *a_entry,
+                                 MokoJournalSMSInfo **a_info)
+{
+  g_return_val_if_fail (a_entry, FALSE) ;
+  g_return_val_if_fail (a_entry->type == SMS_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (a_info, FALSE) ;
+
+  if (a_entry->extra.sms_info)
+  {
+    a_entry->extra.sms_info = moko_journal_sms_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.sms_info, FALSE) ;
+  *a_info = a_entry->extra.sms_info ;
+  return TRUE ;
+}
+
+static gboolean
+moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
+                                   MokoJournalEmailInfo **a_info)
+{
+  g_return_val_if_fail (a_entry->type == EMAIL_JOURNAL_ENTRY, FALSE) ;
+
+  if (!a_entry->extra.email_info)
+  {
+    a_entry->extra.email_info = moko_journal_email_info_new () ;
+  }
+  g_return_val_if_fail (a_entry->extra.email_info, FALSE) ;
+
+  *a_info = a_entry->extra.email_info ;
+  return TRUE ;
+}
+
+static MokoJournalVoiceInfo*
+moko_journal_voice_info_new ()
+{
+  return g_new0 (MokoJournalVoiceInfo, 1) ;
+}
+
+static MokoJournalEmailInfo*
+moko_journal_email_info_new ()
+{
+  return g_new0 (MokoJournalEmailInfo, 1) ;
+}
+
+static MokoJournalFaxInfo*
+moko_journal_fax_info_new ()
+{
+  return g_new0 (MokoJournalFaxInfo, 1) ;
+}
+
+static MokoJournalDataInfo*
+moko_journal_data_info_new ()
+{
+  return g_new0 (MokoJournalDataInfo, 1) ;
+}
+
+static MokoJournalSMSInfo*
+moko_journal_sms_info_new ()
+{
+  return g_new0 (MokoJournalSMSInfo, 1) ;
+}
+
+
 static MokoJournalEntry*
 moko_journal_entry_alloc ()
 {
   MokoJournalEntry *result ;
 
   result = g_new0 (MokoJournalEntry, 1) ;
-  return result ;
+  result->ref_count = 1;
+  return moko_journal_entry_ref (result) ;
 }
 
 static void
@@ -518,7 +642,7 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
 
   /*add location start*/
   struct icalgeotype geo;
-  if (moko_journal_entry_get_start_location (a_entry, (MokoLocation*)&geo))
+  if (moko_journal_entry_get_start_location (a_entry, (MokoLocation*)(void*)&geo))
   {
     prop = icalproperty_new_geo (geo) ;
     icalcomponent_add_property (comp, prop) ;
@@ -549,11 +673,11 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
   icalcomponent_add_property (comp, prop) ;
   /*add entry type*/
   prop = icalproperty_new_x
-                (entry_type_to_string (moko_journal_entry_get_type (a_entry))) ;
+                (entry_type_to_string (moko_journal_entry_get_entry_type (a_entry))) ;
   icalproperty_set_x_name (prop, "X-OPENMOKO-ENTRY-TYPE") ;
   icalcomponent_add_property (comp, prop) ;
 
-  switch (moko_journal_entry_get_type (a_entry))
+  switch (moko_journal_entry_get_entry_type (a_entry))
   {
     case UNDEF_ENTRY:
       g_warning ("entry is of undefined type\n") ;
@@ -562,20 +686,17 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
       break ;
     case VOICE_JOURNAL_ENTRY:
       {
-        MokoJournalVoiceInfo *info = NULL ;
         gchar *number="NULL" ;
         gchar *missed=NULL ;
 
-        if (!moko_journal_entry_get_voice_info (a_entry, &info))
-          break ;
-        if (!info)
+        if (!moko_journal_entry_has_voice_info (a_entry))
           break ;
 
         /*
          * serialize caller number
          */
-        if (moko_journal_voice_info_get_distant_number (info))
-          number = (gchar*)moko_journal_voice_info_get_distant_number (info) ;
+        if (moko_journal_voice_info_get_distant_number (a_entry))
+          number = (gchar*)moko_journal_voice_info_get_distant_number (a_entry) ;
         prop = icalproperty_new_x (number) ;
         icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLER-NUMBER") ;
         icalcomponent_add_property (comp, prop) ;
@@ -583,8 +704,8 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
         /*
          * serialize the local_number property
          */
-        if (moko_journal_voice_info_get_local_number (info))
-          number = (gchar*)moko_journal_voice_info_get_distant_number (info) ;
+        if (moko_journal_voice_info_get_local_number (a_entry))
+          number = (gchar*)moko_journal_voice_info_get_distant_number (a_entry) ;
         prop = icalproperty_new_x (number) ;
         icalproperty_set_x_name (prop, "X-OPENMOKO-VOICE-CALLEE-NUMBER") ;
         icalcomponent_add_property (comp, prop) ;
@@ -592,7 +713,7 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
         /*
          * serialize the "was-missed" property
          */
-        if (moko_journal_voice_info_get_was_missed (info))
+        if (moko_journal_voice_info_get_was_missed (a_entry))
           missed = "YES" ;
         else
           missed = "NO" ;
@@ -738,7 +859,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
     else if (icalproperty_isa (prop) == ICAL_GEO_PROPERTY)
     {
       struct icalgeotype geo = icalproperty_get_geo (prop);
-      moko_journal_entry_set_start_location (entry, (MokoLocation*)&geo) ;
+      moko_journal_entry_set_start_location (entry, (MokoLocation*)(void*)&geo) ;
     }
   }
 
@@ -747,12 +868,10 @@ icalcomponent_to_entry (icalcomponent *a_comp,
   {
     case VOICE_JOURNAL_ENTRY:
       {
-        MokoJournalVoiceInfo *info = NULL ;
         prop = NULL ;
         prop_value = NULL ;
 
-        moko_journal_entry_get_voice_info (entry, &info) ;
-        g_return_val_if_fail (info, FALSE) ;
+        g_return_val_if_fail (moko_journal_entry_has_voice_info (entry), FALSE) ;
 
         /*
          * deserialize caller number
@@ -764,7 +883,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
         {
           if (prop_value)
           {
-            moko_journal_voice_info_set_distant_number (info, prop_value) ;
+            moko_journal_voice_info_set_distant_number (entry, prop_value) ;
           }
         }
 
@@ -778,7 +897,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
         {
           if (prop_value)
           {
-            moko_journal_voice_info_set_local_number (info, prop_value) ;
+            moko_journal_voice_info_set_local_number (entry, prop_value) ;
           }
         }
         prop_value = NULL ;
@@ -792,7 +911,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
             gboolean was_missed = FALSE ;
             if (!strcmp ("YES", prop_value))
               was_missed = TRUE ;
-            moko_journal_voice_info_set_was_missed (info, was_missed) ;
+            moko_journal_voice_info_set_was_missed (entry, was_missed) ;
           }
         }
       }
@@ -814,7 +933,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
 
 out:
   if (entry)
-    moko_journal_entry_free (entry) ;
+    moko_journal_entry_unref (entry) ;
   return TRUE ;
 }
 
@@ -902,8 +1021,8 @@ moko_journal_open_default ()
     g_warning ("got error: %s\n", error->message) ;
     goto out ;
   }
-  journal = moko_journal_alloc () ;
-  journal->ecal = ecal ;
+  journal = g_object_new (MOKO_TYPE_JOURNAL, NULL);
+  MOKO_JOURNAL_GET_PRIVATE(journal)->ecal = ecal ;
   ecal = NULL ;
 
   result = journal ;
@@ -916,7 +1035,7 @@ out:
     g_object_unref (G_OBJECT (ecal)) ;
 
   if (journal)
-    moko_journal_free (journal) ;
+    g_object_unref (journal) ;
 
   if (error)
     g_error_free (error) ;
@@ -935,51 +1054,9 @@ void
 moko_journal_close (MokoJournal *a_journal)
 {
   g_return_if_fail (a_journal) ;
-
-  moko_journal_free (a_journal) ;
+  g_object_unref (a_journal) ;
 }
 
-/**
- * moko_journal_set_entry_added_callback:
- * @journal: the current instance of journal
- * @func: the function that will be called when an entry is added or NULL.
- * @data: the data you would like to pass to the callback or NULL.
- * This will replace the current callback.
- *
- * Add a callback to the journal to ne notified when an entry is added.
- *
- * Return value: 
- */
-void moko_journal_set_entry_added_callback (MokoJournal *a_journal,  
-                                            MokoJournalEntryAddedFunc func,
-                                            gpointer data)
-{
-  g_return_if_fail (a_journal) ;
-  
-  a_journal->added_func = func;
-  a_journal->added_data = data;
-}
-
-/**
- * moko_journal_set_entry_removed_callback:
- * @journal: the current instance of journal
- * @func: the function that will be called when an entry is removed or NULL.
- * @data: the data you would like to pass to the callback or NULL. 
- * This will replace the current callback.
- *
- * Add a callback to the journal to ne notified when an entry is removed.
- *
- * Return value: 
- */
-void moko_journal_set_entry_removed_callback (MokoJournal *a_journal,  
-                                              MokoJournalEntryRemovedFunc func,
-                                              gpointer data)
-{
-  g_return_if_fail (a_journal) ;
-  
-  a_journal->removed_func = func;
-  a_journal->removed_data = data;
-}
 
 /**
  * moko_journal_add_entry:
@@ -993,13 +1070,14 @@ void moko_journal_set_entry_removed_callback (MokoJournal *a_journal,
  * FALSE otherwise
  */
 gboolean
-moko_journal_add_entry (MokoJournal *a_journal, MokoJournalEntry *a_entry)
+moko_journal_add_entry (MokoJournal *_a_journal, MokoJournalEntry *a_entry)
 {
-  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (_a_journal, FALSE) ;
   g_return_val_if_fail (a_entry, FALSE) ;
 
+  MokoJournalPrivate *a_journal = MOKO_JOURNAL_GET_PRIVATE(_a_journal);
   g_array_append_val (a_journal->entries, a_entry) ;
-  
+
   return TRUE ;
 }
 
@@ -1011,9 +1089,11 @@ moko_journal_add_entry (MokoJournal *a_journal, MokoJournalEntry *a_entry)
  * in case of error.
  */
 int
-moko_journal_get_nb_entries (MokoJournal *a_journal)
+moko_journal_get_nb_entries (MokoJournal *_a_journal)
 {
-  g_return_val_if_fail (a_journal, -1) ;
+  g_return_val_if_fail (_a_journal, -1) ;
+
+  MokoJournalPrivate *a_journal = MOKO_JOURNAL_GET_PRIVATE (_a_journal);
   if (!a_journal->entries)
     return 0 ;
   return a_journal->entries->len ;
@@ -1030,12 +1110,14 @@ moko_journal_get_nb_entries (MokoJournal *a_journal)
  * Return value: TRUE in case of success, FALSE otherwise.
  */
 gboolean
-moko_journal_get_entry_at (MokoJournal *a_journal,
+moko_journal_get_entry_at (MokoJournal *_a_journal,
                            guint a_index,
                            MokoJournalEntry **a_entry)
 {
-  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (_a_journal, FALSE) ;
   g_return_val_if_fail (a_entry, FALSE) ;
+
+  MokoJournalPrivate *a_journal = MOKO_JOURNAL_GET_PRIVATE(_a_journal);
   g_return_val_if_fail (a_journal->entries, FALSE) ;
   g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
 
@@ -1051,15 +1133,16 @@ moko_journal_get_entry_at (MokoJournal *a_journal,
  * Remove a journal entry from index #index
  */
 gboolean
-moko_journal_remove_entry_at (MokoJournal *a_journal,
+moko_journal_remove_entry_at (MokoJournal *_a_journal,
                               guint a_index)
 {
-  MokoJournalEntry *entry = NULL ;
+  g_return_val_if_fail (_a_journal, FALSE) ;
 
-  g_return_val_if_fail (a_journal, FALSE) ;
+  MokoJournalPrivate *a_journal = MOKO_JOURNAL_GET_PRIVATE(_a_journal) ;
   g_return_val_if_fail (a_journal->entries, FALSE) ;
   g_return_val_if_fail (a_index < a_journal->entries->len, FALSE) ;
 
+  MokoJournalEntry *entry = NULL ;
   entry = g_array_index (a_journal->entries, MokoJournalEntry*, a_index) ;
   if (entry)
   {
@@ -1083,7 +1166,7 @@ moko_journal_remove_entry_at (MokoJournal *a_journal,
      */
     if (!entry->uid)
     {
-      moko_journal_entry_free (entry) ;
+      moko_journal_entry_unref (entry) ;
     }
     return TRUE ;
   }
@@ -1100,23 +1183,24 @@ moko_journal_remove_entry_at (MokoJournal *a_journal,
  * Return value: TRUE in case of success, FALSE otherwise
  */
 gboolean
-moko_journal_remove_entry_by_uid (MokoJournal *a_journal,
+moko_journal_remove_entry_by_uid (MokoJournal *_a_journal,
                                   const gchar* a_uid)
 {
-  int i=0 ;
-  MokoJournalEntry *entry=NULL ;
+  g_return_val_if_fail (_a_journal, FALSE) ;
 
-  g_return_val_if_fail (a_journal, FALSE) ;
+  MokoJournalPrivate *a_journal = MOKO_JOURNAL_GET_PRIVATE(_a_journal);
   g_return_val_if_fail (a_journal->entries, FALSE) ;
   g_return_val_if_fail (a_uid, FALSE) ;
 
+  int i=0 ;
+  MokoJournalEntry *entry=NULL ;
   for (i=0 ; i < a_journal->entries->len ; ++i)
   {
     entry = g_array_index (a_journal->entries, MokoJournalEntry*, i) ;
     if (entry && entry->uid && !strcmp (entry->uid, a_uid))
     {
-      notify_entry_removed (a_journal, entry);
-      return moko_journal_remove_entry_at (a_journal, i) ;
+      notify_entry_removed (_a_journal, entry);
+      return moko_journal_remove_entry_at (_a_journal, i) ;
     }
   }
   return FALSE ;
@@ -1132,8 +1216,13 @@ moko_journal_remove_entry_by_uid (MokoJournal *a_journal,
  * Return value: TRUE in case of success, FALSE otherwise
  */
 gboolean
-moko_journal_write_to_storage (MokoJournal *a_journal)
+moko_journal_write_to_storage (MokoJournal *_a_journal)
 {
+  g_return_val_if_fail (_a_journal, FALSE) ;
+
+  MokoJournalPrivate *a_journal = MOKO_JOURNAL_GET_PRIVATE(_a_journal);
+  g_return_val_if_fail (a_journal->ecal, FALSE) ;
+
   MokoJournalEntry *cur_entry=NULL ;
   int i=0 ;
   GList *ecal_comps=NULL, *cur_elem=NULL ;
@@ -1143,8 +1232,6 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
   gboolean wrote = FALSE;
   gboolean result = TRUE;
 
-  g_return_val_if_fail (a_journal, FALSE) ;
-  g_return_val_if_fail (a_journal->ecal, FALSE) ;
 
   /*create ECalComponent objects out of the list of MokoJournalEntry* we have*/
   for (i=0; a_journal->entries && i<a_journal->entries->len; ++i)
@@ -1260,7 +1347,7 @@ moko_journal_write_to_storage (MokoJournal *a_journal)
         error = NULL ;
       }
     }
-    moko_journal_entry_free ((MokoJournalEntry*)cur_elem->data) ;
+    moko_journal_entry_unref ((MokoJournalEntry*)cur_elem->data) ;
     cur_elem->data = NULL ;
   }
 
@@ -1309,7 +1396,7 @@ on_entries_added_cb (ECalView *a_view,
       continue ;
     }
     if (moko_journal_find_entry_from_uid
-                                    (a_journal,
+                                    (MOKO_JOURNAL_GET_PRIVATE(a_journal),
                                      icalcomponent_get_uid (cur_entry->data),
                                      &entry,
                                      &offset))
@@ -1332,7 +1419,7 @@ on_entries_added_cb (ECalView *a_view,
     {
       if (entry)
       {
-        moko_journal_entry_free (entry) ;
+        moko_journal_entry_unref (entry) ;
         entry = NULL ;
       }
       continue ;
@@ -1380,12 +1467,14 @@ on_entries_removed_cb (ECalView *a_view,
  * Return value: TRUE in case of success, FALSE otherwise
  */
 gboolean
-moko_journal_load_from_storage (MokoJournal *a_journal)
+moko_journal_load_from_storage (MokoJournal *_a_journal)
 {
   GError *error = NULL ;
   GList *objs = NULL ;
 
-  g_return_val_if_fail (a_journal, FALSE) ;
+  g_return_val_if_fail (_a_journal, FALSE) ;
+
+  MokoJournalPrivate* a_journal = MOKO_JOURNAL_GET_PRIVATE (_a_journal);
   g_return_val_if_fail (a_journal->ecal, FALSE) ;
 
   if (!a_journal->ecal_view)
@@ -1414,11 +1503,11 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
     g_signal_connect (G_OBJECT (a_journal->ecal_view),
                       "objects-added",
                       G_CALLBACK (on_entries_added_cb),
-                      a_journal) ;
+                      _a_journal) ;
     g_signal_connect (G_OBJECT (a_journal->ecal_view),
                       "objects-removed",
                       G_CALLBACK (on_entries_removed_cb),
-                      a_journal) ;
+                      _a_journal) ;
 
     e_cal_view_start (a_journal->ecal_view) ;
   }
@@ -1447,13 +1536,13 @@ moko_journal_load_from_storage (MokoJournal *a_journal)
         continue ;
       if (icalcomponent_to_entry (cur->data, &entry) && entry)
       {
-        moko_journal_add_entry (a_journal, entry) ;
+        moko_journal_add_entry (_a_journal, entry) ;
         entry = NULL ;
       }
       if (entry)
       {
         g_warning ("entry should be NULL here") ;
-        moko_journal_entry_free (entry) ;
+        moko_journal_entry_unref (entry) ;
         entry = NULL ;
       }
     }
@@ -1488,21 +1577,7 @@ moko_journal_entry_new (enum MokoJournalEntryType a_type)
 }
 
 /**
- * moko_journal_entry_free:
- * @entry: the entry to free
- *
- * Deallocate the memory of the journal entry object
- */
-void
-moko_journal_entry_free (MokoJournalEntry *a_entry)
-{
-  g_return_if_fail (a_entry) ;
-
-  moko_journal_entry_free_real (a_entry) ;
-}
-
-/**
- * moko_journal_entry_get_type:
+ * moko_journal_entry_get_entry_type:
  * @entry: the current journal entry
  *
  * get the primary type of the journal entry
@@ -1510,7 +1585,7 @@ moko_journal_entry_free (MokoJournalEntry *a_entry)
  * Return value: the type of the journal entry
  */
 enum MokoJournalEntryType
-moko_journal_entry_get_type (MokoJournalEntry *a_entry)
+moko_journal_entry_get_entry_type (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, UNDEF_ENTRY) ;
 
@@ -1878,38 +1953,12 @@ moko_journal_entry_get_wifi_ap_mac_address (MokoJournalEntry *a_entry)
   return a_entry->wifi_ap_mac ;
 }
 
-/**
- * moko_journal_entry_get_voice_info:
- * @a_entry: the current instance of journal entry
- * @a_info: the extra property set or NULL if info is not of type
- * VOICE_JOURNAL_ENTRY
- *
- * Returns the specific property set associated to instance of MokoJournalEntry
- * of type VOICE_JOURNAL_ENTRY.
- *
- * Returns: TRUE upon successful completion, FALSE otherwise.
- */
-gboolean
-moko_journal_entry_get_voice_info (MokoJournalEntry *a_entry,
-                                   MokoJournalVoiceInfo **a_info)
-{
-  g_return_val_if_fail (a_entry, FALSE) ;
-  g_return_val_if_fail (a_entry->type == VOICE_JOURNAL_ENTRY, FALSE) ;
-  g_return_val_if_fail (a_info, FALSE) ;
-
-  if (!a_entry->extra.voice_info)
-  {
-    a_entry->extra.voice_info = moko_journal_voice_info_new ();
-  }
-  g_return_val_if_fail (a_entry->extra.voice_info, FALSE) ;
-  *a_info = a_entry->extra.voice_info ;
-  return TRUE ;
-}
-
 void
-moko_journal_voice_info_set_distant_number (MokoJournalVoiceInfo *a_info,
+moko_journal_voice_info_set_distant_number (MokoJournalEntry *journal_entry,
                                             gchar *a_number)
 {
+  MokoJournalVoiceInfo *a_info = NULL;
+  moko_journal_entry_get_voice_info (journal_entry, &a_info) ;
   g_return_if_fail (a_info) ;
 
   if (a_info->distant_number)
@@ -1922,17 +1971,21 @@ moko_journal_voice_info_set_distant_number (MokoJournalVoiceInfo *a_info,
 }
 
 const gchar*
-moko_journal_voice_info_get_distant_number (MokoJournalVoiceInfo *a_info)
+moko_journal_voice_info_get_distant_number (MokoJournalEntry *journal_entry)
 {
+  MokoJournalVoiceInfo *a_info = NULL ;
+  moko_journal_entry_get_voice_info (journal_entry, &a_info) ;
   g_return_val_if_fail (a_info, NULL) ;
 
   return a_info->distant_number ;
 }
 
 void
-moko_journal_voice_info_set_local_number (MokoJournalVoiceInfo *a_info,
+moko_journal_voice_info_set_local_number (MokoJournalEntry *journal_entry,
                                            const gchar *a_number)
 {
+  MokoJournalVoiceInfo *a_info = NULL ;
+  moko_journal_entry_get_voice_info (journal_entry, &a_info) ;
   g_return_if_fail (a_info);
   g_return_if_fail (a_number) ;
 
@@ -1946,131 +1999,160 @@ moko_journal_voice_info_set_local_number (MokoJournalVoiceInfo *a_info,
 }
 
 const gchar*
-moko_journal_voice_info_get_local_number (MokoJournalVoiceInfo *a_info)
+moko_journal_voice_info_get_local_number (MokoJournalEntry *journal_entry)
 {
+  MokoJournalVoiceInfo *a_info = NULL ;
+  moko_journal_entry_get_voice_info (journal_entry, &a_info) ;
   g_return_val_if_fail (a_info, NULL) ;
   return a_info->local_number ;
 }
 
 void
-moko_journal_voice_info_set_was_missed (MokoJournalVoiceInfo *a_info,
+moko_journal_voice_info_set_was_missed (MokoJournalEntry *journal_entry,
                                         gboolean a_flag)
 {
+  MokoJournalVoiceInfo *a_info = NULL ;
+  moko_journal_entry_get_voice_info (journal_entry, &a_info) ;
   g_return_if_fail (a_info) ;
 
   a_info->was_missed = a_flag ;
 }
 
 gboolean
-moko_journal_voice_info_get_was_missed (MokoJournalVoiceInfo *a_info)
+moko_journal_voice_info_get_was_missed (MokoJournalEntry *journal_entry)
 {
+  MokoJournalVoiceInfo *a_info = NULL ;
+  moko_journal_entry_get_voice_info (journal_entry, &a_info) ;
   g_return_val_if_fail (a_info, FALSE) ;
 
   return a_info->was_missed ;
 }
 
-/**
- * moko_journal_entry_get_fax_info:
- * @entry: the current instance of journal entry
- * @info: the fax info properties set
- *
- * get the extra properties set associated to journal entries of
- * type FAX_JOURNAL_ENTRY
- *
- * Returns: TRUE in case of success, FALSE otherwise.
- */
 gboolean
-moko_journal_entry_get_fax_info (MokoJournalEntry *a_entry,
-                                 MokoJournalFaxInfo **a_info)
+moko_journal_entry_has_voice_info (MokoJournalEntry *entry)
 {
-  g_return_val_if_fail (a_entry, FALSE) ;
-  g_return_val_if_fail (a_entry->type == FAX_JOURNAL_ENTRY, FALSE) ;
-  g_return_val_if_fail (a_info, FALSE) ;
+  g_return_val_if_fail (entry, FALSE);
 
-  if (!a_entry->extra.fax_info)
-  {
-    a_entry->extra.fax_info = moko_journal_fax_info_new () ;
-  }
-  g_return_val_if_fail (a_entry->extra.fax_info, FALSE) ;
-  *a_info = a_entry->extra.fax_info ;
-  return FALSE ;
+  MokoJournalVoiceInfo *info = NULL;
+  return moko_journal_entry_get_voice_info (entry, &info) && info;
 }
 
-/**
- * moko_journal_entry_get_data_info:
- * @a_entry: the current instance of journal entry
- * @a_info: the resulting properties set
- *
- * Get the extra properties set associated to journal entries of type
- * DATA_JOURNAL_ENTRY
- *
- * Returns: TRUE in case of success, FALSE otherwise.
- */
-gboolean moko_journal_entry_get_data_info (MokoJournalEntry *a_entry,
-                                           MokoJournalDataInfo **a_info)
+gboolean
+moko_journal_entry_has_fax_info (MokoJournalEntry *entry)
 {
-  g_return_val_if_fail (a_entry, FALSE) ;
-  g_return_val_if_fail (a_entry->type == DATA_JOURNAL_ENTRY, FALSE) ;
-  g_return_val_if_fail (a_info, FALSE) ;
+  g_return_val_if_fail (entry, FALSE);
 
-  if (!a_entry->extra.data_info)
-  {
-    a_entry->extra.data_info = moko_journal_data_info_new () ;
-  }
-  g_return_val_if_fail (a_entry->extra.data_info, FALSE) ;
-  *a_info = a_entry->extra.data_info ;
-  return TRUE ;
+  MokoJournalFaxInfo *info = NULL;
+  return moko_journal_entry_get_fax_info (entry, &info) && info;
 }
 
-/**
- * moko_journal_entry_get_sms_info:
- * @a_entry: the current instance of journal entry
- * @a_info: the resulting properties set
- *
- * Get the extra properties set associated to journal entries of type
- * SMS_JOURNAL_ENTRY
- */
 gboolean
-moko_journal_entry_get_sms_info (MokoJournalEntry *a_entry,
-                                 MokoJournalSMSInfo **a_info)
+moko_journal_entry_has_data_info (MokoJournalEntry *entry)
 {
-  g_return_val_if_fail (a_entry, FALSE) ;
-  g_return_val_if_fail (a_entry->type == SMS_JOURNAL_ENTRY, FALSE) ;
-  g_return_val_if_fail (a_info, FALSE) ;
+  g_return_val_if_fail (entry, FALSE);
 
-  if (a_entry->extra.sms_info)
-  {
-    a_entry->extra.sms_info = moko_journal_sms_info_new () ;
-  }
-  g_return_val_if_fail (a_entry->extra.sms_info, FALSE) ;
-  *a_info = a_entry->extra.sms_info ;
-  return TRUE ;
+  MokoJournalDataInfo *info = NULL;
+  return moko_journal_entry_get_data_info (entry, &info) && info;
 }
 
-/**
- * moko_journal_entry_get_email_info:
- * @entry: the current instance of journal entry
- * @info: extra information attached to the email info, or NULL.
- * Client code must *NOT* of deallocate the returned info.
- * It is the duty of the MokoJournalEntry code to deallocate it when
- * necessary
- *
- * Return value: TRUE if the call succeeded, FALSE otherwise.
- */
 gboolean
-moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
-                                   MokoJournalEmailInfo **a_info)
+moko_journal_entry_has_sms_info (MokoJournalEntry *entry)
 {
-  g_return_val_if_fail (a_entry->type == EMAIL_JOURNAL_ENTRY, FALSE) ;
+  g_return_val_if_fail (entry, FALSE);
 
-  if (!a_entry->extra.email_info)
-  {
-    a_entry->extra.email_info = moko_journal_email_info_new () ;
-  }
-  g_return_val_if_fail (a_entry->extra.email_info, FALSE) ;
+  MokoJournalSMSInfo *info = NULL;
+  return moko_journal_entry_get_sms_info (entry, &info) && info;
+}
 
-  *a_info = a_entry->extra.email_info ;
-  return TRUE ;
+gboolean
+moko_journal_entry_has_email_info (MokoJournalEntry *entry)
+{
+  g_return_val_if_fail (entry, FALSE);
+
+  MokoJournalEmailInfo *info = NULL;
+  return moko_journal_entry_get_email_info (entry, &info) && info;
+}
+
+#define MOKO_JOURNAL_BOXED_TYPE(name,copy,free) \
+  static GType this_type = 0; \
+  if (this_type == 0) \
+    this_type = g_boxed_type_register_static(name, (GBoxedCopyFunc)copy, (GBoxedFreeFunc)free );  \
+  return this_type;
+
+GType
+moko_location_get_type (void)
+{
+  MOKO_JOURNAL_BOXED_TYPE("MokoLocation", moko_location_copy, moko_location_free)
+}
+
+GType
+moko_gsm_location_get_type (void)
+{
+  MOKO_JOURNAL_BOXED_TYPE("MokoGSMLocation", moko_gsm_location_copy, moko_gsm_location_free)
+}
+
+GType
+moko_journal_entry_get_type (void)
+{
+  MOKO_JOURNAL_BOXED_TYPE("MokoJournalEntry", moko_journal_entry_ref, moko_journal_entry_unref)
+}
+
+MokoJournalEntry*
+moko_journal_entry_ref (MokoJournalEntry* entry)
+{
+  g_return_val_if_fail (entry, NULL) ;
+  g_return_val_if_fail (entry->ref_count > 0, NULL) ;
+
+  g_atomic_int_add (&entry->ref_count, 1);
+  return entry ;
+}
+
+void
+moko_journal_entry_unref (MokoJournalEntry *entry)
+{
+  g_return_if_fail (entry) ;
+  g_return_if_fail (entry->ref_count > 0) ;
+
+  g_atomic_int_add (&entry->ref_count, -1);
+
+  if (entry->ref_count == 0)
+    moko_journal_entry_free_real (entry);
+}
+
+MokoLocation*
+moko_location_copy (const MokoLocation *location)
+{
+  g_return_val_if_fail (location, NULL);
+
+  MokoLocation *result = g_new(MokoLocation, 1) ;
+  *result = *location ;
+  return result ;
+}
+
+void
+moko_location_free (MokoLocation *location)
+{
+  g_return_if_fail (location);
+
+  g_free (location) ;
+}
+
+MokoGSMLocation*
+moko_gsm_location_copy (const MokoGSMLocation *location)
+{
+  g_return_val_if_fail (location, NULL);
+
+  MokoGSMLocation *result = g_new(MokoGSMLocation, 1) ;
+  *result = *location ;
+  return result ;
+}
+
+void
+moko_gsm_location_free (MokoGSMLocation *location)
+{
+  g_return_if_fail (location);
+
+  g_free (location);
 }
 
 /*</public funcs>*/

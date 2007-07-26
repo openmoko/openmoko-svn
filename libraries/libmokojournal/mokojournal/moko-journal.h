@@ -22,7 +22,20 @@
 #define  __MOKO_JOURNAL_H__
 
 #include <glib.h>
-#include "moko-time.h" 
+#include <glib-object.h>
+#include "moko-time.h"
+
+G_BEGIN_DECLS
+
+#define MOKO_TYPE_JOURNAL             (moko_journal_get_type())
+#define MOKO_JOURNAL(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_JOURNAL, MokoJournal))
+#define MOKO_JOURNAL_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_JOURNAL, MokoJournalClass))
+#define MOKO_IS_JOURNAL(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_JOURNAL))
+#define MOKO_IS_JOURNAL_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_JOURNAL))
+
+#define MOKO_TYPE_LOCATION            (moko_location_get_type())
+#define MOKO_TYPE_GSM_LOCATION        (moko_gsm_location_get_type())
+#define MOKO_TYPE_JOURNAL_ENTRY       (moko_journal_entry_get_type())
 
 /************************************************************
  * this API abstracts the process of adding
@@ -33,12 +46,21 @@
  ***********************************************************/
 
 typedef struct _MokoJournal MokoJournal ;
+typedef struct _MokoJournalClass MokoJournalClass ;
 typedef struct _MokoJournalEntry MokoJournalEntry ;
-typedef struct _MokoJournalVoiceInfo MokoJournalVoiceInfo ;
-typedef struct _MokoJournalDataInfo MokoJournalDataInfo ;
-typedef struct _MokoJournalFaxInfo MokoJournalFaxInfo ;
-typedef struct _MokoJournalSMSInfo MokoJournalSMSInfo ;
-typedef struct _MokoJournalEmailInfo MokoJournalEmailInfo ;
+
+struct _MokoJournal
+{
+  GObject parent;
+} ;
+
+struct _MokoJournalClass
+{
+  GObjectClass parent_class;
+
+  void (*entry_added)   (MokoJournal *journal, const MokoJournalEntry *entry) ;
+  void (*entry_removed) (MokoJournal *journal, const MokoJournalEntry *entry) ;
+} ;
 
 /**
  * this represents the primary type of
@@ -65,8 +87,8 @@ enum MessageDirection {
 
 typedef struct
 {
-  float longitude ;
-  float latitude ;
+  gfloat longitude ;
+  gfloat latitude ;
 } MokoLocation ;
 
 typedef struct
@@ -78,14 +100,6 @@ typedef struct
 } MokoGSMLocation ;
 
 /* The 'entry added' callback function */
-typedef void (*MokoJournalEntryAddedFunc) (MokoJournal *journal, 
-                                           MokoJournalEntry *entry,
-                                           gpointer user_data);
-
-/* The 'entry added' callback function */
-typedef void (*MokoJournalEntryRemovedFunc) (MokoJournal *journal, 
-                                             const MokoJournalEntry *entry,
-                                             gpointer user_data);
 
 
 /*<journal management>*/
@@ -106,37 +120,6 @@ MokoJournal* moko_journal_open_default () ;
  * This function deallocates the memory of the Journal object.
  */
 void moko_journal_close (MokoJournal *journal) ;
-
-/**
- * moko_journal_set_entry_added_callback:
- * @journal: the current instance of journal
- * @func: the function that will be called when an entry is added or NULL.
- * @data: the data you would like to pass to the callback or NULL.
- * This will replace the current callback.
- *
- * Add a callback to the journal to ne notified when an entry is added.
- *
- * Return value: 
- */
-void moko_journal_set_entry_added_callback (MokoJournal *journal,  
-                                            MokoJournalEntryAddedFunc func,
-                                            gpointer data) ;
-
-/**
- * moko_journal_set_entry_removed_callback:
- * @journal: the current instance of journal
- * @func: the function that will be called when an entry is removed or NULL.
- * @data: the data you would like to pass to the callback or NULL. 
- * This will replace the current callback.
- *
- * Add a callback to the journal to ne notified when an entry is removed.
- *
- * Return value: 
- */
-void moko_journal_set_entry_removed_callback (MokoJournal *journal,  
-                                              MokoJournalEntryRemovedFunc func,
-                                              gpointer data) ;
-
 
 /**
  * moko_journal_add_entry:
@@ -241,22 +224,14 @@ gboolean moko_journal_load_from_storage (MokoJournal *journal) ;
 MokoJournalEntry* moko_journal_entry_new (enum MokoJournalEntryType type) ;
 
 /**
- * moko_journal_entry_free:
- * @entry: the entry to free
- *
- * Deallocate the memory of the journal entry object
- */
-void moko_journal_entry_free (MokoJournalEntry *entry) ;
-
-/**
- * moko_journal_entry_get_type:
+ * moko_journal_entry_get_entry_type:
  * @entry: the current journal entry
  *
  * get the primary type of the journal entry
  *
  * Return value: the type of the journal entry
  */
-enum MokoJournalEntryType moko_journal_entry_get_type (MokoJournalEntry *entry);
+enum MokoJournalEntryType moko_journal_entry_get_entry_type (MokoJournalEntry *entry);
 
 /**
  * moko_journal_entry_set_type:
@@ -458,18 +433,15 @@ const guchar *moko_journal_entry_get_wifi_ap_mac_address
 /*<voice call info>*/
 
 /**
- * moko_journal_entry_get_voice_info:
+ * moko_journal_entry_has_voice_info:
  * @entry: the current instance of journal entry
- * @info: the extra property set or NULL if info is not of type
- * VOICE_JOURNAL_ENTRY
  *
  * Returns the specific property set associated to instance of MokoJournalEntry
  * of type VOICE_JOURNAL_ENTRY.
  *
- * Returns: TRUE upon successful completion, FALSE otherwise.
+ * Returns: TRUE if the type is of VOICE_JOURNAL_ENTRY, FALSE otherwise.
  */
-gboolean moko_journal_entry_get_voice_info (MokoJournalEntry *entry,
-                                            MokoJournalVoiceInfo **info) ;
+gboolean moko_journal_entry_has_voice_info (MokoJournalEntry *entry);
 
 
 /**
@@ -477,42 +449,41 @@ gboolean moko_journal_entry_get_voice_info (MokoJournalEntry *entry,
  * @info: the current
  * @info: the extra property set attached to the voice call
  */
-void moko_journal_voice_info_set_distant_number (MokoJournalVoiceInfo *info,
+void moko_journal_voice_info_set_distant_number (MokoJournalEntry *info,
                                                 gchar *number) ;
 
 const gchar* moko_journal_voice_info_get_distant_number
-                                                (MokoJournalVoiceInfo *info) ;
+                                                (MokoJournalEntry *info) ;
 
-void moko_journal_voice_info_set_local_number (MokoJournalVoiceInfo *info,
+void moko_journal_voice_info_set_local_number (MokoJournalEntry *info,
                                                 const gchar *number) ;
 
 const gchar* moko_journal_voice_info_get_local_number
-                                                (MokoJournalVoiceInfo *info) ;
+                                                (MokoJournalEntry *info) ;
 
-void moko_journal_voice_info_set_was_missed (MokoJournalVoiceInfo *info,
+void moko_journal_voice_info_set_was_missed (MokoJournalEntry *info,
                                              gboolean a_flag) ;
 
-gboolean moko_journal_voice_info_get_was_missed (MokoJournalVoiceInfo *info) ;
+gboolean moko_journal_voice_info_get_was_missed (MokoJournalEntry *info) ;
 
 /*</voice call info>*/
 
 /*<fax call info>*/
 
 /**
- * moko_journal_entry_get_fax_info:
+ * moko_journal_entry_has_fax_info:
  * @entry: the current instance of journal entry
  * @info: the fax info properties set
  *
  * get the extra properties set associated to journal entries of
  * type FAX_JOURNAL_ENTRY
  *
- * Returns: TRUE in case of success, FALSE otherwise.
+ * Returns: TRUE i, FALSE otherwise.
  */
-gboolean moko_journal_entry_get_fax_info (MokoJournalEntry *entry,
-                                          MokoJournalFaxInfo **info) ;
+gboolean moko_journal_entry_has_fax_info (MokoJournalEntry *entry) ;
 
 /**
- * moko_journal_entry_get_data_info:
+ * moko_journal_entry_has_data_info:
  * @entry: the current instance of journal entry
  * @info: the resulting properties set
  *
@@ -521,8 +492,7 @@ gboolean moko_journal_entry_get_fax_info (MokoJournalEntry *entry,
  *
  * Returns: TRUE in case of success, FALSE otherwise.
  */
-gboolean moko_journal_entry_get_data_info (MokoJournalEntry *entry,
-                                           MokoJournalDataInfo **info) ;
+gboolean moko_journal_entry_has_data_info (MokoJournalEntry *entry) ;
 /*</fax call info>*/
 
 /*<sms info>*/
@@ -534,8 +504,7 @@ gboolean moko_journal_entry_get_data_info (MokoJournalEntry *entry,
  * Get the extra properties set associated to journal entries of type
  * SMS_JOURNAL_ENTRY
  */
-gboolean moko_journal_entry_get_sms_info (MokoJournalEntry *entry,
-                                          MokoJournalSMSInfo **info) ;
+gboolean moko_journal_entry_has_sms_info (MokoJournalEntry *entry) ;
 /*</sms info>*/
 
 /*<email info>*/
@@ -550,12 +519,30 @@ gboolean moko_journal_entry_get_sms_info (MokoJournalEntry *entry,
  *
  * Return value: TRUE if the call succeeded, FALSE otherwise.
  */
-gboolean moko_journal_entry_get_email_info (MokoJournalEntry *entry,
-                                            MokoJournalEmailInfo **info) ;
+gboolean moko_journal_entry_has_email_info (MokoJournalEntry *entry) ;
 
 /*</email info>*/
 
 
 /*</journal entries management>*/
+
+/*<helpers for bindings>*/
+GType moko_journal_get_type (void) ;
+GType moko_location_get_type (void) ;
+GType moko_gsm_location_get_type (void) ;
+GType moko_journal_entry_get_type (void) ;
+
+MokoLocation* moko_location_copy (const MokoLocation*) ;
+void          moko_location_free (MokoLocation*) ;
+
+MokoGSMLocation* moko_gsm_location_copy (const MokoGSMLocation*);
+void             moko_gsm_location_free (MokoGSMLocation*);
+
+MokoJournalEntry* moko_journal_entry_ref (MokoJournalEntry*);
+void              moko_journal_entry_unref (MokoJournalEntry*);
+
+/*</helpers for bindings>*/
+
+G_END_DECLS
 
 #endif /*__MOKO_JOURNAL_H__*/
