@@ -962,6 +962,57 @@ struct target_eabi_stat64 {
 } __attribute__ ((packed));
 #endif
 
+#elif defined(TARGET_SPARC64)
+struct target_stat {
+	unsigned int	st_dev;
+	target_ulong	st_ino;
+	unsigned int	st_mode;
+	unsigned int	st_nlink;
+	unsigned int	st_uid;
+	unsigned int	st_gid;
+	unsigned int	st_rdev;
+	target_long	st_size;
+	target_long	target_st_atime;
+	target_long	target_st_mtime;
+	target_long	target_st_ctime;
+	target_long	st_blksize;
+	target_long	st_blocks;
+	target_ulong	__unused4[2];
+};
+
+struct target_stat64 {
+	unsigned char	__pad0[6];
+	unsigned short	st_dev;
+
+	uint64_t	st_ino;
+	uint64_t	st_nlink;
+
+	unsigned int	st_mode;
+
+	unsigned int	st_uid;
+	unsigned int	st_gid;
+
+	unsigned char	__pad2[6];
+	unsigned short	st_rdev;
+
+        int64_t		st_size;
+	int64_t		st_blksize;
+
+	unsigned char	__pad4[4];
+	unsigned int	st_blocks;
+
+	target_ulong	target_st_atime;
+	target_ulong	__unused1;
+
+	target_ulong	target_st_mtime;
+	target_ulong	__unused2;
+
+	target_ulong	target_st_ctime;
+	target_ulong	__unused3;
+
+	target_ulong	__unused4[3];
+};
+
 #elif defined(TARGET_SPARC)
 
 struct target_stat {
@@ -1305,6 +1356,10 @@ struct target_stat64 {
 #error unsupported CPU
 #endif
 
+typedef struct {
+        int     val[2];
+} target_fsid_t;
+
 #ifdef TARGET_MIPS
 struct target_statfs {
 	target_long		f_type;
@@ -1317,7 +1372,7 @@ struct target_statfs {
 	target_long		f_bavail;
 
 	/* Linux specials */
-	int	f_fsid;
+	target_fsid_t		f_fsid;
 	target_long		f_namelen;
 	target_long		f_spare[6];
 };
@@ -1332,7 +1387,7 @@ struct target_statfs64 {
 	uint64_t	f_files;
 	uint64_t	f_ffree;
 	uint64_t	f_bavail;
-	int f_fsid;
+	target_fsid_t	f_fsid;
 	uint32_t	f_namelen;
 	uint32_t	f_spare[6];
 };
@@ -1345,7 +1400,7 @@ struct target_statfs {
 	uint32_t f_bavail;
 	uint32_t f_files;
 	uint32_t f_ffree;
-	int f_fsid;
+	target_fsid_t f_fsid;
 	uint32_t f_namelen;
 	uint32_t f_frsize;
 	uint32_t f_spare[5];
@@ -1359,7 +1414,7 @@ struct target_statfs64 {
 	uint64_t f_bavail;
 	uint64_t f_files;
 	uint64_t f_ffree;
-	int f_fsid;
+	target_fsid_t f_fsid;
         uint32_t f_namelen;
 	uint32_t f_frsize;
 	uint32_t f_spare[5];

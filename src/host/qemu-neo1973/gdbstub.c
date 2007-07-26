@@ -383,7 +383,10 @@ static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
     }
     registers[64] = tswapl(env->pc);
     registers[65] = tswapl(env->npc);
-    registers[66] = tswapl(env->tstate[env->tl]);
+    registers[66] = tswapl(((uint64_t)GET_CCR(env) << 32) |
+                           ((env->asi & 0xff) << 24) |
+                           ((env->pstate & 0xfff) << 8) |
+                           GET_CWP64(env));
     registers[67] = tswapl(env->fsr);
     registers[68] = tswapl(env->fprs);
     registers[69] = tswapl(env->y);
@@ -427,7 +430,14 @@ static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
     }
     env->pc = tswapl(registers[64]);
     env->npc = tswapl(registers[65]);
-    env->tstate[env->tl] = tswapl(registers[66]);
+    {
+        uint64_t tmp = tswapl(registers[66]);
+
+        PUT_CCR(env, tmp >> 32);
+        env->asi = (tmp >> 24) & 0xff;
+        env->pstate = (tmp >> 8) & 0xfff;
+        PUT_CWP64(env, tmp & 0xff);
+    }
     env->fsr = tswapl(registers[67]);
     env->fprs = tswapl(registers[68]);
     env->y = tswapl(registers[69]);
@@ -763,7 +773,9 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
 #elif defined (TARGET_ARM)
             env->regs[15] = addr;
 #elif defined (TARGET_SH4)
-	    env->pc = addr;
+            env->pc = addr;
+#elif defined (TARGET_MIPS)
+            env->PC = addr;
 #endif
         }
 #ifdef CONFIG_USER_ONLY
@@ -774,7 +786,7 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
 	return RS_IDLE;
     case 's':
         if (*p != '\0') {
-            addr = strtoul(p, (char **)&p, 16);
+            addr = strtoull(p, (char **)&p, 16);
 #if defined(TARGET_I386)
             env->eip = addr;
 #elif defined (TARGET_PPC)
@@ -785,7 +797,9 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
 #elif defined (TARGET_ARM)
             env->regs[15] = addr;
 #elif defined (TARGET_SH4)
-	    env->pc = addr;
+            env->pc = addr;
+#elif defined (TARGET_MIPS)
+            env->PC = addr;
 #endif
         }
         cpu_single_step(env, 1);
@@ -1238,12 +1252,12 @@ int gdbserver_start(int port)
     return 0;
 }
 #else
-static int gdb_chr_can_recieve(void *opaque)
+static int gdb_chr_can_receive(void *opaque)
 {
   return 1;
 }
 
-static void gdb_chr_recieve(void *opaque, const uint8_t *buf, int size)
+static void gdb_chr_receive(void *opaque, const uint8_t *buf, int size)
 {
     GDBState *s = opaque;
     int i;
@@ -1294,7 +1308,7 @@ int gdbserver_start(const char *port)
     }
     s->env = first_cpu; /* XXX: allow to change CPU */
     s->chr = chr;
-    qemu_chr_add_handlers(chr, gdb_chr_can_recieve, gdb_chr_recieve,
+    qemu_chr_add_handlers(chr, gdb_chr_can_receive, gdb_chr_receive,
                           gdb_chr_event, s);
     qemu_add_vm_stop_handler(gdb_vm_stopped, s);
     return 0;
