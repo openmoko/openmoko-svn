@@ -157,7 +157,7 @@ main ()
     {
         g_main_context_iteration (g_main_context_default (), FALSE) ;
     }
-    g_message ("number journal entries after one got added: %d\n",
+    g_message ("number journal entries after two got added: %d\n",
                 moko_journal_get_nb_entries (journal)) ;
 
     /*if we reached this point, the test has probably succeeded*/
