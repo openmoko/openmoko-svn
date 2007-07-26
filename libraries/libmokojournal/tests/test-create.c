@@ -23,13 +23,19 @@
 #include "moko-journal.h"
 
 int
-main ()
+main (int argc, gchar **argv)
 {
     MokoJournal *journal=NULL ;
     MokoJournalEntry *entry=NULL ;
     MokoLocation loc ;
     MokoGSMLocation gsm_loc ;
     int result = 1 ;
+    gchar *contact_uid;
+
+    if (argc == 2)
+      contact_uid = argv[1];
+    else
+      contact_uid = "foobarbazuid";
 
     g_type_init () ;
 
@@ -58,7 +64,7 @@ main ()
     /*****************************
      * <fill the entry with data>
      *****************************/
-    moko_journal_entry_set_contact_uid (entry, "foobarbazuid") ;
+    moko_journal_entry_set_contact_uid (entry, contact_uid) ;
     moko_journal_entry_set_summary (entry, "back from fostel") ;
     moko_journal_entry_set_dtstart (entry, moko_time_new_today ()) ;
     moko_journal_entry_set_direction (entry, DIRECTION_OUT) ;
@@ -100,7 +106,7 @@ main ()
     /*****************************
      * <fill the entry with data>
      *****************************/
-    moko_journal_entry_set_contact_uid (entry, "voicejournalentryuid") ;
+    moko_journal_entry_set_contact_uid (entry, contact_uid) ;
     moko_journal_entry_set_summary (entry, "this was a call") ;
     moko_journal_entry_set_dtstart (entry, moko_time_new_today ()) ;
     moko_journal_entry_set_direction (entry, DIRECTION_OUT) ;

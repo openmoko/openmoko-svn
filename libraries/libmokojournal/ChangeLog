@@ -1,3 +1,8 @@
+2007-07-26  Thomas Wood  <thomas@openedhand.com>
+
+	* tests/test-create.c: (main): Add optional command line parameter to specify
+	contact uid
+
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 
 	* Makefile.am:
