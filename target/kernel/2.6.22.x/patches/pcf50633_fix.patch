@@ -1,0 +1,21 @@
+Index: linux-2.6.21.5/drivers/i2c/chips/pcf50633.c
+===================================================================
+--- linux-2.6.21.5.orig/drivers/i2c/chips/pcf50633.c	2007-07-16 12:22:46.480817213 +0200
++++ linux-2.6.21.5/drivers/i2c/chips/pcf50633.c	2007-07-16 12:23:02.773745695 +0200
+@@ -1633,12 +1633,12 @@
+ static struct i2c_driver pcf50633_driver = {
+ 	.driver = {
+ 		.name	= "pcf50633",
+-		.suspend= &pcf50633_suspend,
+-		.resume	= &pcf50633_resume,
++		.suspend= pcf50633_suspend,
++		.resume	= pcf50633_resume,
+ 	},
+ 	.id		= I2C_DRIVERID_PCF50633,
+-	.attach_adapter	= &pcf50633_attach_adapter,
+-	.detach_client	= &pcf50633_detach_client,
++	.attach_adapter	= pcf50633_attach_adapter,
++	.detach_client	= pcf50633_detach_client,
+ };
+ 
+ /* platform driver, since i2c devices don't have platform_data */

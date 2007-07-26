@@ -39,3 +39,6 @@ gta02-core.patch
 alsa-2.6.23-rc1-commit.diff
 asoc-platform-hw_init-pcm_emulation-fix.patch
 asoc-kconfig-fix.patch
+pcf50606_fix.patch
+pcf50633_fix.patch
+hxd8-tsl256x_fix.patch
