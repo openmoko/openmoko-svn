@@ -1,7 +1,5 @@
-Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
 @@ -0,0 +1,625 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
@@ -628,10 +626,8 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	.init_machine	= gta02_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta02.h
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta02.h
++++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/gta02.h
 @@ -0,0 +1,24 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
@@ -657,10 +653,8 @@ Index: linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02_IRQ_PCF50633	IRQ_EINT9
 +
 +#endif /* _GTA02_H */
-Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Kconfig
-===================================================================
---- linux-2.6.21.3-moko.orig/arch/arm/mach-s3c2440/Kconfig
-+++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Kconfig
+--- linux-2.6.22.1.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.22.1/arch/arm/mach-s3c2440/Kconfig
 @@ -73,5 +73,12 @@
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
@@ -674,19 +668,15 @@ Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Kconfig
 +
  endmenu
  
-Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Makefile
-===================================================================
---- linux-2.6.21.3-moko.orig/arch/arm/mach-s3c2440/Makefile
-+++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Makefile
+--- linux-2.6.22.1.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.22.1/arch/arm/mach-s3c2440/Makefile
 @@ -22,3 +22,4 @@
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
 +obj-$(CONFIG_MACH_NEO1973_GTA02) += mach-gta02.o
-Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
-===================================================================
---- linux-2.6.21.3-moko.orig/arch/arm/common/gta01_pm_bt.c
-+++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
+--- linux-2.6.22.1.orig/arch/arm/common/gta01_pm_bt.c
++++ linux-2.6.22.1/arch/arm/common/gta01_pm_bt.c
 @@ -19,6 +19,7 @@
  #include <linux/pcf50606.h>
  
@@ -774,10 +764,8 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
  	/* we pull reset to low to make sure that the chip doesn't
  	 * drain power through the reset line */
  	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
-Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
-===================================================================
---- linux-2.6.21.3-moko.orig/arch/arm/common/gta01_pm_gsm.c
-+++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
+--- linux-2.6.22.1.orig/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6.22.1/arch/arm/common/gta01_pm_gsm.c
 @@ -19,7 +19,9 @@
  #include <linux/errno.h>
  
@@ -820,16 +808,16 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
  		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
-@@ -157,6 +161,9 @@
- 		case GTA01Bv4_SYSTEM_REV:
+@@ -158,6 +162,9 @@
  			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
-+			break;
+ 			break;
 +		case GTA02v1_SYSTEM_REV:
 +			gta01_gsm.gpio_ngsm_en = 0;
- 			break;
++			break;
  		default:
  			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
+ 				 "some PM features not available!!!\n",
 @@ -175,9 +182,13 @@
  		break;
  	}

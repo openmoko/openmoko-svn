@@ -1,19 +1,17 @@
 This patch adds platform data support to the s3mci driver.  This allows
 flexible board-specific configuration of set_power, card detect and read only
 pins.
-Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
-===================================================================
---- linux-2.6.20.4.orig/drivers/mmc/s3cmci.c	2007-04-02 20:37:47.000000000 +0200
-+++ linux-2.6.20.4/drivers/mmc/s3cmci.c	2007-04-02 20:55:02.000000000 +0200
-@@ -22,6 +22,7 @@
+--- linux-2.6.22.1.orig/drivers/mmc/host/s3cmci.c
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+@@ -21,6 +21,7 @@
  #include <asm/io.h>
  #include <asm/arch/regs-sdi.h>
  #include <asm/arch/regs-gpio.h>
 +#include <asm/arch/mci.h>
  
- #include "mmc_debug.h"
+ #include "../mmc_debug.h"
  #include "s3cmci.h"
-@@ -1012,6 +1013,9 @@
+@@ -1011,6 +1012,9 @@
  			s3c2410_gpio_cfgpin(S3C2410_GPE9, S3C2410_GPE9_SDDAT2);
  			s3c2410_gpio_cfgpin(S3C2410_GPE10, S3C2410_GPE10_SDDAT3);
  
@@ -23,7 +21,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  			if (!host->is2440)
  				mci_con|=S3C2410_SDICON_FIFORESET;
  
-@@ -1022,6 +1026,9 @@
+@@ -1021,6 +1025,9 @@
  			s3c2410_gpio_setpin(S3C2410_GPE5, 0);
  			s3c2410_gpio_cfgpin(S3C2410_GPE5, S3C2410_GPE5_OUTP);
  
@@ -33,7 +31,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  			if (host->is2440)
  				mci_con|=S3C2440_SDICON_SDRESET;
  
-@@ -1075,9 +1082,26 @@
+@@ -1074,9 +1081,26 @@
  	writel(con, host->base + S3C2410_SDICON);
  }
  
@@ -60,7 +58,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  };
  
  static int s3cmci_probe(struct platform_device *pdev, int is2440)
-@@ -1097,6 +1121,12 @@
+@@ -1096,6 +1120,12 @@
  	host->mmc 	= mmc;
  	host->pdev	= pdev;
  
@@ -73,7 +71,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  	spin_lock_init(&host->complete_lock);
  	tasklet_init(&host->pio_tasklet, pio_tasklet, (unsigned long) host);
  	if (is2440) {
-@@ -1115,7 +1145,8 @@
+@@ -1114,7 +1144,8 @@
  	host->pio_active 	= XFER_NONE;
  
  	host->dma		= S3CMCI_DMA;
@@ -83,7 +81,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  
  	host->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
  	if (!host->mem) {
-@@ -1157,7 +1188,7 @@
+@@ -1156,7 +1187,7 @@
  
  	disable_irq(host->irq);
  
@@ -92,7 +90,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  	set_irq_type(host->irq_cd, IRQT_BOTHEDGE);
  
  	if (request_irq(host->irq_cd, s3cmci_irq_cd, 0, DRIVER_NAME, host)) {
-@@ -1168,6 +1199,10 @@
+@@ -1167,6 +1198,10 @@
  		goto probe_free_irq;
  	}
  
@@ -103,7 +101,7 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  	if (s3c2410_dma_request(S3CMCI_DMA, &s3cmci_dma_client, NULL)) {
  		dev_err(&pdev->dev, "unable to get DMA channel.\n");
  		ret = -EBUSY;
-@@ -1190,7 +1225,7 @@
+@@ -1189,7 +1224,7 @@
  	host->clk_rate = clk_get_rate(host->clk);
  
  	mmc->ops 	= &s3cmci_ops;
@@ -112,10 +110,8 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.c
  	mmc->caps	= MMC_CAP_4_BIT_DATA;
  	mmc->f_min 	= host->clk_rate / (host->clk_div * 256);
  	mmc->f_max 	= host->clk_rate / host->clk_div;
-Index: linux-2.6.20.4/drivers/mmc/s3cmci.h
-===================================================================
---- linux-2.6.20.4.orig/drivers/mmc/s3cmci.h	2007-04-02 20:37:44.000000000 +0200
-+++ linux-2.6.20.4/drivers/mmc/s3cmci.h	2007-04-02 20:37:48.000000000 +0200
+--- linux-2.6.22.1.orig/drivers/mmc/host/s3cmci.h
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.h
 @@ -22,6 +22,7 @@
  
  struct s3cmci_host {
@@ -124,10 +120,8 @@ Index: linux-2.6.20.4/drivers/mmc/s3cmci.h
  	struct mmc_host		*mmc;
  	struct resource		*mem;
  	struct clk		*clk;
-Index: linux-2.6.20.4/include/asm-arm/arch-s3c2410/mci.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20.4/include/asm-arm/arch-s3c2410/mci.h	2007-04-02 20:54:16.000000000 +0200
+--- /dev/null
++++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/mci.h
 @@ -0,0 +1,12 @@
 +#ifndef _ARCH_MCI_H
 +#define _ARCH_MCI_H

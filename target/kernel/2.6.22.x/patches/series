@@ -1,17 +1,13 @@
-asoc.patch
-asoc-asm_hardware_h.patch
-asoc-platform-hw_init-pcm_emulation-fix.patch
 yaffs2-20070304.patch
 i2c-permit_invalid_addrs.patch
 pm-debug_less_verbose.patch
 g_ether-highpower.patch
 g_ether-vendor_product.patch
 s3c2410_serial-nodebug.patch
-s3c2410_udc.patch
+s3c2410_udc_from_upstream.patch
 s3c2410_touchscreen.patch
 s3c2410-bbt.patch
-udc-nomodule-misccr.patch
-s3c2410_udc-vbus_draw_pdata.patch
+#udc-nomodule-misccr.patch
 s3c_mci.patch
 s3cmci_dbg.patch
 s3cmci-dma-free.patch
@@ -40,3 +36,6 @@ pcf50633.patch
 smedia-glamo.patch
 s3c24xx-nand-largepage.patch
 gta02-core.patch
+alsa-2.6.23-rc1-commit.diff
+asoc-platform-hw_init-pcm_emulation-fix.patch
+asoc-kconfig-fix.patch

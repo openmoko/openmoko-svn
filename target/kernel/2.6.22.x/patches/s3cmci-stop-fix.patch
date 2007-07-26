@@ -3,11 +3,9 @@ SD/MMC instability problems.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c
-===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/mmc/s3cmci.c	2007-02-07 20:39:12.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c	2007-02-10 02:31:13.000000000 +0100
-@@ -667,7 +667,7 @@
+--- linux-2.6.22.1.orig/drivers/mmc/host/s3cmci.c
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+@@ -665,7 +665,7 @@
  #endif
  	//Cleanup controller
  	writel(0, host->base + S3C2410_SDICMDARG);
@@ -16,7 +14,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/mmc/s3cmci.c
  	writel(0, host->base + S3C2410_SDICMDCON);
  	writel(0, host->base + host->sdiimsk);
  
-@@ -794,7 +794,7 @@
+@@ -792,7 +792,7 @@
  		dbg(host, dbg_err,
  			"mci_setup_data() transfer stillin progress.\n");
  

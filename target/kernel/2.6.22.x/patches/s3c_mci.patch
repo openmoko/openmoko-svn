@@ -1,31 +1,8 @@
 This is the latest S3C MMC/SD driver by Thomas Kleffel
 
-Index: linux-2.6.21.3-moko/drivers/mmc/Kconfig
-===================================================================
---- linux-2.6.21.3-moko.orig/drivers/mmc/Kconfig
-+++ linux-2.6.21.3-moko/drivers/mmc/Kconfig
-@@ -125,4 +125,16 @@
-           To compile this driver as a module, choose M here: the
- 	  module will be called tifm_sd.
- 
-+config MMC_S3C
-+	tristate "Samsung S3C SD/MMC Card Interface support"
-+	depends on ARCH_S3C2410 && MMC
-+	help
-+	  This selects a driver for the MCI interface found in
-+          Samsung's S3C2410, S3C2412, S3C2440, S3C2442 CPUs.
-+	  If you have a board based on one of those and a MMC/SD
-+	  slot, say Y or M here.
-+
-+	  If unsure, say N.
-+
-+
- endmenu
-Index: linux-2.6.21.3-moko/drivers/mmc/mmc_debug.c
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/mmc/mmc_debug.c
-@@ -0,0 +1,59 @@
++++ linux-2.6.22.1/drivers/mmc/mmc_debug.c
+@@ -0,0 +1,60 @@
 +/*
 + *  linux/drivers/mmc/mmc_debug.c
 + *
@@ -39,6 +16,7 @@ Index: linux-2.6.21.3-moko/drivers/mmc/mmc_debug.c
 + *
 + */
 +
++#include <linux/mmc/core.h>
 +#include <linux/mmc/mmc.h>
 +#include "mmc_debug.h"
 +
@@ -85,10 +63,8 @@ Index: linux-2.6.21.3-moko/drivers/mmc/mmc_debug.c
 +	}
 +}
 +EXPORT_SYMBOL(mmc_err2str);
-Index: linux-2.6.21.3-moko/drivers/mmc/mmc_debug.h
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/mmc/mmc_debug.h
++++ linux-2.6.22.1/drivers/mmc/mmc_debug.h
 @@ -0,0 +1,7 @@
 +#ifndef MMC_DEBUG_H
 +#define MMC_DEBUG_H
@@ -97,11 +73,120 @@ Index: linux-2.6.21.3-moko/drivers/mmc/mmc_debug.h
 +char *mmc_err2str(int err);
 +
 +#endif /* MMC_DEBUG_H */
-Index: linux-2.6.21.3-moko/drivers/mmc/s3cmci.c
-===================================================================
+--- linux-2.6.22.1.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
++++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h
+@@ -28,9 +28,15 @@
+ #define S3C2410_SDIDCNT               (0x30)
+ #define S3C2410_SDIDSTA               (0x34)
+ #define S3C2410_SDIFSTA               (0x38)
++
+ #define S3C2410_SDIDATA               (0x3C)
+ #define S3C2410_SDIIMSK               (0x40)
+ 
++#define S3C2440_SDIDATA               (0x40)
++#define S3C2440_SDIIMSK               (0x3C)
++
++#define S3C2440_SDICON_SDRESET        (1<<8)
++#define S3C2440_SDICON_MMCCLOCK       (1<<5)
+ #define S3C2410_SDICON_BYTEORDER      (1<<4)
+ #define S3C2410_SDICON_SDIOIRQ        (1<<3)
+ #define S3C2410_SDICON_RWAITEN        (1<<2)
+@@ -42,7 +48,8 @@
+ #define S3C2410_SDICMDCON_LONGRSP     (1<<10)
+ #define S3C2410_SDICMDCON_WAITRSP     (1<<9)
+ #define S3C2410_SDICMDCON_CMDSTART    (1<<8)
+-#define S3C2410_SDICMDCON_INDEX       (0xff)
++#define S3C2410_SDICMDCON_SENDERHOST  (1<<6)
++#define S3C2410_SDICMDCON_INDEX       (0x3f)
+ 
+ #define S3C2410_SDICMDSTAT_CRCFAIL    (1<<12)
+ #define S3C2410_SDICMDSTAT_CMDSENT    (1<<11)
+@@ -51,6 +58,9 @@
+ #define S3C2410_SDICMDSTAT_XFERING    (1<<8)
+ #define S3C2410_SDICMDSTAT_INDEX      (0xff)
+ 
++#define S3C2440_SDIDCON_DS_BYTE       (0<<22)
++#define S3C2440_SDIDCON_DS_HALFWORD   (1<<22)
++#define S3C2440_SDIDCON_DS_WORD       (2<<22)
+ #define S3C2410_SDIDCON_IRQPERIOD     (1<<21)
+ #define S3C2410_SDIDCON_TXAFTERRESP   (1<<20)
+ #define S3C2410_SDIDCON_RXAFTERCMD    (1<<19)
+@@ -59,6 +69,7 @@
+ #define S3C2410_SDIDCON_WIDEBUS       (1<<16)
+ #define S3C2410_SDIDCON_DMAEN         (1<<15)
+ #define S3C2410_SDIDCON_STOP          (1<<14)
++#define S3C2440_SDIDCON_DATSTART      (1<<14)
+ #define S3C2410_SDIDCON_DATMODE	      (3<<12)
+ #define S3C2410_SDIDCON_BLKNUM        (0x7ff)
+ 
+@@ -68,6 +79,7 @@
+ #define S3C2410_SDIDCON_XFER_RXSTART  (2<<12)
+ #define S3C2410_SDIDCON_XFER_TXSTART  (3<<12)
+ 
++#define S3C2410_SDIDCON_BLKNUM_MASK   (0xFFF)
+ #define S3C2410_SDIDCNT_BLKNUM_SHIFT  (12)
+ 
+ #define S3C2410_SDIDSTA_RDYWAITREQ    (1<<10)
+@@ -82,10 +94,12 @@
+ #define S3C2410_SDIDSTA_TXDATAON      (1<<1)
+ #define S3C2410_SDIDSTA_RXDATAON      (1<<0)
+ 
++#define S3C2440_SDIFSTA_FIFORESET      (1<<16)
++#define S3C2440_SDIFSTA_FIFOFAIL       (3<<14)  /* 3 is correct (2 bits) */
+ #define S3C2410_SDIFSTA_TFDET          (1<<13)
+ #define S3C2410_SDIFSTA_RFDET          (1<<12)
+-#define S3C2410_SDIFSTA_TXHALF         (1<<11)
+-#define S3C2410_SDIFSTA_TXEMPTY        (1<<10)
++#define S3C2410_SDIFSTA_TFHALF         (1<<11)
++#define S3C2410_SDIFSTA_TFEMPTY        (1<<10)
+ #define S3C2410_SDIFSTA_RFLAST         (1<<9)
+ #define S3C2410_SDIFSTA_RFFULL         (1<<8)
+ #define S3C2410_SDIFSTA_RFHALF         (1<<7)
+--- linux-2.6.22.1.orig/drivers/mmc/Makefile
++++ linux-2.6.22.1/drivers/mmc/Makefile
+@@ -4,6 +4,7 @@
+ 
+ ifeq ($(CONFIG_MMC_DEBUG),y)
+ 	EXTRA_CFLAGS		+= -DDEBUG
++	obj-$(CONFIG_MMC)	+= mmc_debug.o
+ endif
+ 
+ obj-$(CONFIG_MMC)		+= core/
+--- linux-2.6.22.1.orig/drivers/mmc/host/Makefile
++++ linux-2.6.22.1/drivers/mmc/host/Makefile
+@@ -15,4 +15,5 @@
+ obj-$(CONFIG_MMC_OMAP)		+= omap.o
+ obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
+ obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
++obj-$(CONFIG_MMC_S3C)		+= s3cmci.o
+ 
+--- linux-2.6.22.1.orig/include/linux/mmc/core.h
++++ linux-2.6.22.1/include/linux/mmc/core.h
+@@ -54,12 +54,15 @@
+ 	unsigned int		retries;	/* max number of retries */
+ 	unsigned int		error;		/* command error */
+ 
+-#define MMC_ERR_NONE	0
+-#define MMC_ERR_TIMEOUT	1
+-#define MMC_ERR_BADCRC	2
+-#define MMC_ERR_FIFO	3
+-#define MMC_ERR_FAILED	4
+-#define MMC_ERR_INVALID	5
++#define MMC_ERR_NONE        0
++#define MMC_ERR_TIMEOUT     1
++#define MMC_ERR_BADCRC      2
++#define MMC_ERR_FIFO        3
++#define MMC_ERR_DMA         4
++#define MMC_ERR_BUSY        5
++#define MMC_ERR_FAILED      6
++#define MMC_ERR_INVALID     7
++#define MMC_ERR_CANCELED    8
+ 
+ 	struct mmc_data		*data;		/* data segment associated with cmd */
+ 	struct mmc_request	*mrq;		/* associated request */
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/mmc/s3cmci.c
-@@ -0,0 +1,1341 @@
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+@@ -0,0 +1,1340 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
 + *
@@ -116,7 +201,6 @@ Index: linux-2.6.21.3-moko/drivers/mmc/s3cmci.c
 +#include <linux/dma-mapping.h>
 +#include <linux/clk.h>
 +#include <linux/mmc/host.h>
-+#include <linux/mmc/protocol.h>
 +#include <linux/platform_device.h>
 +#include <linux/irq.h>
 +
@@ -127,7 +211,7 @@ Index: linux-2.6.21.3-moko/drivers/mmc/s3cmci.c
 +#include <asm/arch/regs-sdi.h>
 +#include <asm/arch/regs-gpio.h>
 +
-+#include "mmc_debug.h"
++#include "../mmc_debug.h"
 +#include "s3cmci.h"
 +
 +#define DRIVER_NAME "s3c-mci"
@@ -1443,10 +1527,8 @@ Index: linux-2.6.21.3-moko/drivers/mmc/s3cmci.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
 +
-Index: linux-2.6.21.3-moko/drivers/mmc/s3cmci.h
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/mmc/s3cmci.h
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.h
 @@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1519,117 +1601,3 @@ Index: linux-2.6.21.3-moko/drivers/mmc/s3cmci.h
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
 +};
-Index: linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/regs-sdi.h
-===================================================================
---- linux-2.6.21.3-moko.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
-+++ linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/regs-sdi.h
-@@ -28,9 +28,15 @@
- #define S3C2410_SDIDCNT               (0x30)
- #define S3C2410_SDIDSTA               (0x34)
- #define S3C2410_SDIFSTA               (0x38)
-+
- #define S3C2410_SDIDATA               (0x3C)
- #define S3C2410_SDIIMSK               (0x40)
- 
-+#define S3C2440_SDIDATA               (0x40)
-+#define S3C2440_SDIIMSK               (0x3C)
-+
-+#define S3C2440_SDICON_SDRESET        (1<<8)
-+#define S3C2440_SDICON_MMCCLOCK       (1<<5)
- #define S3C2410_SDICON_BYTEORDER      (1<<4)
- #define S3C2410_SDICON_SDIOIRQ        (1<<3)
- #define S3C2410_SDICON_RWAITEN        (1<<2)
-@@ -42,7 +48,8 @@
- #define S3C2410_SDICMDCON_LONGRSP     (1<<10)
- #define S3C2410_SDICMDCON_WAITRSP     (1<<9)
- #define S3C2410_SDICMDCON_CMDSTART    (1<<8)
--#define S3C2410_SDICMDCON_INDEX       (0xff)
-+#define S3C2410_SDICMDCON_SENDERHOST  (1<<6)
-+#define S3C2410_SDICMDCON_INDEX       (0x3f)
- 
- #define S3C2410_SDICMDSTAT_CRCFAIL    (1<<12)
- #define S3C2410_SDICMDSTAT_CMDSENT    (1<<11)
-@@ -51,6 +58,9 @@
- #define S3C2410_SDICMDSTAT_XFERING    (1<<8)
- #define S3C2410_SDICMDSTAT_INDEX      (0xff)
- 
-+#define S3C2440_SDIDCON_DS_BYTE       (0<<22)
-+#define S3C2440_SDIDCON_DS_HALFWORD   (1<<22)
-+#define S3C2440_SDIDCON_DS_WORD       (2<<22)
- #define S3C2410_SDIDCON_IRQPERIOD     (1<<21)
- #define S3C2410_SDIDCON_TXAFTERRESP   (1<<20)
- #define S3C2410_SDIDCON_RXAFTERCMD    (1<<19)
-@@ -59,6 +69,7 @@
- #define S3C2410_SDIDCON_WIDEBUS       (1<<16)
- #define S3C2410_SDIDCON_DMAEN         (1<<15)
- #define S3C2410_SDIDCON_STOP          (1<<14)
-+#define S3C2440_SDIDCON_DATSTART      (1<<14)
- #define S3C2410_SDIDCON_DATMODE	      (3<<12)
- #define S3C2410_SDIDCON_BLKNUM        (0x7ff)
- 
-@@ -68,6 +79,7 @@
- #define S3C2410_SDIDCON_XFER_RXSTART  (2<<12)
- #define S3C2410_SDIDCON_XFER_TXSTART  (3<<12)
- 
-+#define S3C2410_SDIDCON_BLKNUM_MASK   (0xFFF)
- #define S3C2410_SDIDCNT_BLKNUM_SHIFT  (12)
- 
- #define S3C2410_SDIDSTA_RDYWAITREQ    (1<<10)
-@@ -82,10 +94,12 @@
- #define S3C2410_SDIDSTA_TXDATAON      (1<<1)
- #define S3C2410_SDIDSTA_RXDATAON      (1<<0)
- 
-+#define S3C2440_SDIFSTA_FIFORESET      (1<<16)
-+#define S3C2440_SDIFSTA_FIFOFAIL       (3<<14)  /* 3 is correct (2 bits) */
- #define S3C2410_SDIFSTA_TFDET          (1<<13)
- #define S3C2410_SDIFSTA_RFDET          (1<<12)
--#define S3C2410_SDIFSTA_TXHALF         (1<<11)
--#define S3C2410_SDIFSTA_TXEMPTY        (1<<10)
-+#define S3C2410_SDIFSTA_TFHALF         (1<<11)
-+#define S3C2410_SDIFSTA_TFEMPTY        (1<<10)
- #define S3C2410_SDIFSTA_RFLAST         (1<<9)
- #define S3C2410_SDIFSTA_RFFULL         (1<<8)
- #define S3C2410_SDIFSTA_RFHALF         (1<<7)
-Index: linux-2.6.21.3-moko/include/linux/mmc/mmc.h
-===================================================================
---- linux-2.6.21.3-moko.orig/include/linux/mmc/mmc.h
-+++ linux-2.6.21.3-moko/include/linux/mmc/mmc.h
-@@ -55,12 +55,15 @@
- 	unsigned int		retries;	/* max number of retries */
- 	unsigned int		error;		/* command error */
- 
--#define MMC_ERR_NONE	0
--#define MMC_ERR_TIMEOUT	1
--#define MMC_ERR_BADCRC	2
--#define MMC_ERR_FIFO	3
--#define MMC_ERR_FAILED	4
--#define MMC_ERR_INVALID	5
-+#define MMC_ERR_NONE		0
-+#define MMC_ERR_TIMEOUT		1
-+#define MMC_ERR_BADCRC		2
-+#define MMC_ERR_FIFO		3
-+#define MMC_ERR_DMA		4
-+#define MMC_ERR_BUSY		5
-+#define MMC_ERR_FAILED		6
-+#define MMC_ERR_INVALID		7
-+#define MMC_ERR_CANCELED	8
- 
- 	struct mmc_data		*data;		/* data segment associated with cmd */
- 	struct mmc_request	*mrq;		/* associated request */
-Index: linux-2.6.21.3-moko/drivers/mmc/Makefile
-===================================================================
---- linux-2.6.21.3-moko.orig/drivers/mmc/Makefile
-+++ linux-2.6.21.3-moko/drivers/mmc/Makefile
-@@ -24,10 +24,12 @@
- obj-$(CONFIG_MMC_OMAP)		+= omap.o
- obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
- obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
-+obj-$(CONFIG_MMC_S3C)		+= s3cmci.o
- 
- mmc_core-y := mmc.o mmc_sysfs.o
- mmc_core-$(CONFIG_BLOCK) += mmc_queue.o
- 
- ifeq ($(CONFIG_MMC_DEBUG),y)
-+obj-$(CONFIG_MMC)		+= mmc_debug.o
- EXTRA_CFLAGS += -DDEBUG
- endif

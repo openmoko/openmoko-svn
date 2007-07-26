@@ -1,9 +1,7 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
++++ linux-2.6.22.1/drivers/i2c/chips/pcf50606.c
 @@ -0,0 +1,1929 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -608,7 +606,7 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
 +	if (int1 & PCF50606_INT1_SECOND) {
 +		DEBUGPC("SECOND ");
 +		if (pcf->flags & PCF50606_F_RTC_SECOND)
-+			rtc_update_irq(&pcf->rtc->class_dev, 1,
++			rtc_update_irq(pcf->rtc, 1,
 +				       RTC_PF | RTC_IRQF);
 +
 +		if (pcf->onkey_seconds >= 0 &&
@@ -628,7 +626,7 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
 +	if (int1 & PCF50606_INT1_ALARM) {
 +		DEBUGPC("ALARM ");
 +		if (pcf->pdata->used_features & PCF50606_FEAT_RTC)
-+			rtc_update_irq(&pcf->rtc->class_dev, 1,
++			rtc_update_irq(pcf->rtc, 1,
 +				       RTC_AF | RTC_IRQF);
 +	}
 +
@@ -1934,10 +1932,8 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.h
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.h
++++ linux-2.6.22.1/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2241,11 +2237,9 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.21.3-moko/drivers/i2c/chips/Kconfig
-===================================================================
---- linux-2.6.21.3-moko.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.21.3-moko/drivers/i2c/chips/Kconfig
-@@ -36,6 +36,17 @@
+--- linux-2.6.22.1.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.22.1/drivers/i2c/chips/Kconfig
+@@ -35,6 +35,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
  
@@ -2262,11 +2256,9 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/Kconfig
 +
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
- 	depends on I2C && EXPERIMENTAL
-Index: linux-2.6.21.3-moko/drivers/i2c/chips/Makefile
-===================================================================
---- linux-2.6.21.3-moko.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.21.3-moko/drivers/i2c/chips/Makefile
+ 	depends on EXPERIMENTAL
+--- linux-2.6.22.1.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.22.1/drivers/i2c/chips/Makefile
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2275,11 +2267,9 @@ Index: linux-2.6.21.3-moko/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.21.3-moko/include/linux/i2c-id.h
-===================================================================
---- linux-2.6.21.3-moko.orig/include/linux/i2c-id.h
-+++ linux-2.6.21.3-moko/include/linux/i2c-id.h
-@@ -159,6 +159,7 @@
+--- linux-2.6.22.1.orig/include/linux/i2c-id.h
++++ linux-2.6.22.1/include/linux/i2c-id.h
+@@ -160,6 +160,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
@@ -2287,10 +2277,8 @@ Index: linux-2.6.21.3-moko/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.21.3-moko/include/linux/pcf50606.h
-===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/include/linux/pcf50606.h
++++ linux-2.6.22.1/include/linux/pcf50606.h
 @@ -0,0 +1,104 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H

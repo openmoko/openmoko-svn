@@ -1,9 +1,7 @@
-Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
-===================================================================
---- linux-2.6.20.orig/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-15 16:28:11.000000000 +0100
-+++ linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c	2007-02-15 16:28:11.000000000 +0100
-@@ -186,40 +186,10 @@
- 	.devices_count = ARRAY_SIZE(gta01_devices)
+--- linux-2.6.22.1.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.22.1/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -336,40 +336,10 @@
+ 	&s3c_device_ts,
  };
  
 -static struct mtd_partition gta01_nand_part[] = {
@@ -44,11 +42,9 @@ Index: linux-2.6.20/arch/arm/mach-s3c2410/mach-gta01.c
  	},
  };
  
-Index: linux-2.6.20/drivers/mtd/nand/s3c2410.c
-===================================================================
---- linux-2.6.20.orig/drivers/mtd/nand/s3c2410.c	2007-02-15 16:28:11.000000000 +0100
-+++ linux-2.6.20/drivers/mtd/nand/s3c2410.c	2007-02-15 16:28:11.000000000 +0100
-@@ -471,17 +471,31 @@
+--- linux-2.6.22.1.orig/drivers/mtd/nand/s3c2410.c
++++ linux-2.6.22.1/drivers/mtd/nand/s3c2410.c
+@@ -547,17 +547,31 @@
  }
  
  #ifdef CONFIG_MTD_PARTITIONS
