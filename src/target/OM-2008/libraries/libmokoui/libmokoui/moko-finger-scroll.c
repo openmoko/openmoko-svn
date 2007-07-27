@@ -34,6 +34,7 @@ struct _MokoFingerScrollPrivate {
 	gdouble ey;
 	gboolean enabled;
 	gboolean clicked;
+	guint32 last_time;
 	gboolean moved;
 	GTimeVal click_start;
 	gdouble vmin;
@@ -66,10 +67,11 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 
-	if ((!priv->enabled) || (priv->clicked) || (event->button != 1))
-		return FALSE;
+	if ((!priv->enabled) || (priv->clicked) || (event->button != 1) ||
+	    (event->time == priv->last_time)) return FALSE;
 
 	g_get_current_time (&priv->click_start);
+	priv->last_time = event->time;
 	priv->x = event->x;
 	priv->y = event->y;
 	/* Don't allow a click if we're still moving fast, where fast is
@@ -298,34 +300,49 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 
 static GdkWindow *
 moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
-				gint *x2, gint *y2)
+				gint *tx, gint *ty)
 {
 	/* Find the GdkWindow at the given point, by recursing from a given
 	 * parent GdkWindow. Optionally return the co-ordinates transformed
 	 * relative to the child window.
 	 */
+	gint width, height;
+	
+	gdk_drawable_get_size (GDK_DRAWABLE (window), &width, &height);
+	if ((x < 0) || (x >= width) || (y < 0) || (y >= height)) return NULL;
+	
+	/*g_debug ("Finding window at (%d, %d) in %p", x, y, window);*/
+	
 	while (window) {
+		gint child_x, child_y;
 		GList *c, *children = gdk_window_peek_children (window);
 		GdkWindow *old_window = window;
 		for (c = children; c; c = c->next) {
 			GdkWindow *child = (GdkWindow *)c->data;
-			gint width, height, wx, wy;
+			gint wx, wy;
 			
-			gdk_drawable_get_size (child, &width, &height);
-			gdk_window_get_position (child, &wx, &wy);
+			gdk_window_get_geometry (child, &wx, &wy,
+				&width, &height, NULL);
+			/*g_debug ("Child: %p, (%dx%d+%d,%d)", child,
+				width, height, wx, wy);*/
 			
 			if ((x >= wx) && (x < (wx + width)) &&
 			    (y >= wy) && (y < (wy + height))) {
-				x -= wx; y -= wy;
+				child_x = x - wx; child_y = y - wy;
 				window = child;
-				break;
 			}
 		}
+		/*g_debug ("\\|/");*/
 		if (window == old_window) break;
+		
+		x = child_x;
+		y = child_y;
 	}
 	
-	if (x2) *x2 = x;
-	if (y2) *y2 = y;
+	if (tx) *tx = x;
+	if (ty) *ty = y;
+
+	/*g_debug ("Returning: %p", window);*/
 
 	return window;
 }
@@ -337,26 +354,28 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 {
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	GTimeVal current;
-		
-	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1))
+	
+	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1) ||
+	    (event->time == priv->last_time))
 		return FALSE;
 
+	priv->last_time = event->time;
 	g_get_current_time (&current);
 
 	priv->clicked = FALSE;
 	if ((!priv->moved) &&
-	    ((current.tv_sec > priv->click_start.tv_sec) ||
-	    (current.tv_usec - priv->click_start.tv_usec > 500))) {
-		GtkAdjustment *hadjust, *vadjust;
+	    (!(current.tv_sec > priv->click_start.tv_sec))/* &&
+	    (!(current.tv_usec - priv->click_start.tv_usec > 500000))*/) {
 		gint x, y;
+		GdkEventCrossing *crossing_event;
 		GdkWindow *child;
 		
-		g_object_get (G_OBJECT (GTK_BIN (priv->align)->child),
-			"hadjustment", &hadjust, "vadjustment", &vadjust, NULL);
-
 		child = moko_finger_scroll_get_topmost (
 			GTK_BIN (priv->align)->child->window,
 			event->x, event->y, &x, &y);
+
+		if ((!child) || (child == GTK_BIN (priv->align)->child->window))
+			return TRUE;
 
 		event->x = x;
 		event->y = y;
@@ -367,15 +386,42 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		priv->vel_x = 0;
 		priv->vel_y = 0;
 
-		/* Send synthetic click event */
-		((GdkEvent *)event)->any.window = g_object_ref (child);
-		((GdkEvent *)event)->type = GDK_BUTTON_PRESS;
+		/* Send synthetic enter event */
+		crossing_event = (GdkEventCrossing *)
+			gdk_event_new (GDK_ENTER_NOTIFY);
+		((GdkEventAny *)crossing_event)->type = GDK_ENTER_NOTIFY;
+		((GdkEventAny *)crossing_event)->window = g_object_ref (child);
+		((GdkEventAny *)crossing_event)->send_event = FALSE;
+		crossing_event->subwindow = g_object_ref (child);
+		crossing_event->time = event->time;
+		crossing_event->x = event->x;
+		crossing_event->y = event->y;
+		crossing_event->x_root = event->x_root;
+		crossing_event->y_root = event->y_root;
+		crossing_event->mode = GDK_CROSSING_NORMAL;
+		crossing_event->detail = GDK_NOTIFY_UNKNOWN;
+		crossing_event->focus = FALSE;
+		crossing_event->state = 0;
+		gdk_event_put ((GdkEvent *)crossing_event);
+		
+		/* Send synthetic click (button press/release) event */
+		((GdkEventAny *)event)->window = g_object_ref (child);
+		((GdkEventAny *)event)->type = GDK_BUTTON_PRESS;
 		gdk_event_put ((GdkEvent *)event);
-		((GdkEvent *)event)->any.window = g_object_ref (child);
-		((GdkEvent *)event)->type = GDK_BUTTON_RELEASE;
+		((GdkEventAny *)event)->window = g_object_ref (child);
+		((GdkEventAny *)event)->type = GDK_BUTTON_RELEASE;
 		gdk_event_put ((GdkEvent *)event);
+		
+		/* Send synthetic leave event */
+		((GdkEventAny *)crossing_event)->type = GDK_LEAVE_NOTIFY;
+		((GdkEventAny *)crossing_event)->window = g_object_ref (child);
+		crossing_event->subwindow = g_object_ref (child);
+		crossing_event->window = g_object_ref (child);
+		crossing_event->detail = GDK_NOTIFY_UNKNOWN;
+		gdk_event_put ((GdkEvent *)crossing_event);
+		gdk_event_free ((GdkEvent *)crossing_event);
 	}
-
+	
 	return TRUE;
 }
 
@@ -536,6 +582,8 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 	switch (property_id) {
 	    case PROP_ENABLED :
 		priv->enabled = g_value_get_boolean (value);
+		gtk_event_box_set_above_child (
+			GTK_EVENT_BOX (object), priv->enabled);
 		break;
 	    case PROP_MODE :
 		priv->mode = g_value_get_int (value);
@@ -672,6 +720,7 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 	
 	priv->moved = FALSE;
 	priv->clicked = FALSE;
+	priv->last_time = 0;
 	priv->vscroll = TRUE;
 	priv->hscroll = TRUE;
 
