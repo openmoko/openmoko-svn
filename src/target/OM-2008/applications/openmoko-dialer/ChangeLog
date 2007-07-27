@@ -1,3 +1,9 @@
+2007-07-27  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-history.c: (on_delete_clicked), (history_add_entry),
+	(on_entry_added_cb), (moko_history_load_entries):
+	Update to use the new mokojournal api.
+
 2007-07-23  Neil J. Patel  <njp@o-hand.com>
 	
 	* src/dialer-main.c: (main):

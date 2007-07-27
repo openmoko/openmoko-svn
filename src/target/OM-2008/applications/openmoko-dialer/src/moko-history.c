@@ -158,9 +158,9 @@ on_delete_clicked (GtkWidget *button, MokoHistory *history)
   selection = gtk_tree_view_get_selection (treeview);
 
   if (!gtk_tree_selection_get_selected (selection, &filtered, &iter0))
-    ;//return;
+    ;
 
-  //gtk_tree_model_get (filtered, &iter0, ENTRY_POINTER_COLUMN, &uid, -1);
+  /*gtk_tree_model_get (filtered, &iter0, ENTRY_POINTER_COLUMN, &uid, -1);*/
 
   /* Create a dialog */
   dialog = gtk_message_dialog_new (GTK_WINDOW (
@@ -169,8 +169,8 @@ on_delete_clicked (GtkWidget *button, MokoHistory *history)
                                    0,
                                    GTK_MESSAGE_QUESTION,
                                    GTK_BUTTONS_NONE,
-                      "Are you sure you want to permanantly delete this call?",
-                                   NULL);
+                      "Are you sure you want to permanantly delete this call?"
+                                   );
 
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                           "Don't Delete", GTK_RESPONSE_CANCEL,
@@ -234,7 +234,6 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   enum MessageDirection direction;
   gboolean was_missed;
   const MokoTime *time;
-  MokoJournalVoiceInfo *info = NULL;
   gint type;
 
   uid = moko_journal_entry_get_contact_uid (entry);
@@ -242,9 +241,8 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   time = moko_journal_entry_get_dtstart (entry);
   dstart = moko_time_as_timet (time);
   
-  moko_journal_entry_get_voice_info (entry, &info);
-  was_missed = moko_journal_voice_info_get_was_missed (info);
-  number = moko_journal_voice_info_get_distant_number (info);
+  was_missed = moko_journal_voice_info_get_was_missed (entry);
+  number = moko_journal_voice_info_get_distant_number (entry);
 
   /* Load the correct icon */
   if (direction == DIRECTION_OUT)
@@ -272,8 +270,8 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
 
   if ( number == NULL || display_text == NULL || uid == NULL)
   {
-    //g_print ("Not adding\n");
-    //return FALSE;
+    /*g_print ("Not adding\n");
+    return FALSE;*/
   }
   gtk_list_store_insert_with_values (store, &iter, 0,
     NUMBER_COLUMN, number,
@@ -297,7 +295,7 @@ on_entry_added_cb (MokoJournal *journal,
   g_return_if_fail (MOKO_IS_HISTORY (history));
   priv = history->priv;
 
-  if (moko_journal_entry_get_type (entry) != VOICE_JOURNAL_ENTRY)
+  if (moko_journal_entry_get_entry_type (entry) != VOICE_JOURNAL_ENTRY)
     return;
 
   history_add_entry (GTK_LIST_STORE (priv->main_model), entry);
@@ -410,9 +408,8 @@ moko_history_load_entries (MokoHistory *history)
                                           NULL);
   gtk_tree_view_set_model (GTK_TREE_VIEW (priv->treeview), filtered);
 
-  moko_journal_set_entry_added_callback (priv->journal,
-                                  (MokoJournalEntryAddedFunc)on_entry_added_cb,
-                                          (gpointer)history);
+  g_signal_connect (priv->journal, "entry_added",
+                    G_CALLBACK (on_entry_added_cb), (gpointer)history);
   
   n_entries = moko_journal_get_nb_entries (priv->journal);
   if (n_entries < 1)
@@ -427,7 +424,7 @@ moko_history_load_entries (MokoHistory *history)
     moko_journal_get_entry_at (priv->journal, i, &entry);
     
     /* We are not interested in anything other than voice entries */
-    if (moko_journal_entry_get_type (entry) != VOICE_JOURNAL_ENTRY)
+    if (moko_journal_entry_get_entry_type (entry) != VOICE_JOURNAL_ENTRY)
       continue;
 
     entries = g_list_insert_sorted (entries, 
