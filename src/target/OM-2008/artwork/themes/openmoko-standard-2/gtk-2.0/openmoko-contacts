@@ -32,7 +32,6 @@ widget "*moko-contacts-add-detail-button" style "mokocontactsadddetail"
 
 # History view
 style "mokohistorylabel" {
-	font_name = "Vera Sans 14"
 	fg[PRELIGHT] = "#666"
 }
 widget "*.mokohistorylabel" style "mokohistorylabel"
