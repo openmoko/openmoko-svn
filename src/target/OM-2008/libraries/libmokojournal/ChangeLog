@@ -1,7 +1,17 @@
+2007-07-27  Neil J. Patel  <njp@o-hand.com>
+
+	* mokojournal/moko-journal.c: (moko_journal_class_init):
+	Fixed signal marshalling problem.
+
 2007-07-26  Thomas Wood  <thomas@openedhand.com>
 
 	* tests/test-create.c: (main): Add optional command line parameter to specify
 	contact uid
+
+2007-07-26  Neil J. Patel  <njp@o-hand.com>
+
+	Merged patch by Holger Freyther, which makes the journal a GObject, and
+	simplfys bindings.
 
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 

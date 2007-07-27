@@ -179,16 +179,19 @@ moko_journal_class_init (MokoJournalClass *klass)
         G_STRUCT_OFFSET (MokoJournalClass, entry_added),
         NULL,
         NULL,
-        g_cclosure_marshal_VOID__OBJECT,
-        G_TYPE_NONE, 0) ;
+        g_cclosure_marshal_VOID__BOXED,
+        G_TYPE_NONE, 1,
+        MOKO_TYPE_JOURNAL_ENTRY | G_SIGNAL_TYPE_STATIC_SCOPE) ;
+  
   moko_journal_signals[ENTRY_REMOVED] = g_signal_new ("entry_removed",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
         G_STRUCT_OFFSET (MokoJournalClass, entry_removed),
         NULL,
         NULL,
-        g_cclosure_marshal_VOID__OBJECT,
-        G_TYPE_NONE, 0) ;
+        g_cclosure_marshal_VOID__BOXED,
+        G_TYPE_NONE, 1,
+        MOKO_TYPE_JOURNAL_ENTRY | G_SIGNAL_TYPE_STATIC_SCOPE) ;
 
   G_OBJECT_CLASS(klass)->finalize = moko_journal_finalize;
 }
