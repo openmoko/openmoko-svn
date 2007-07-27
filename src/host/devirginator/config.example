@@ -37,11 +37,10 @@
 # BOARD: the hardware version of the device we're flashing.
 # Valid names:
 #   bv2		Unreleased development version
-#   bv3		Phase 0 ?
-#   v3		Phase 0 ?
-#   v4		Phase 1 ?
+#   bv3		Phase 0
+#   bv4		Phase 0
 # Default:
-# BOARD=bv3
+# BOARD=bv4
 
 
 ###  DOWNLOAD LOCATION  #######################################################

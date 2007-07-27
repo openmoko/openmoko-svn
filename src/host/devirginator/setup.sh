@@ -90,7 +90,7 @@ DFU_UTIL=dfu-util
 
 # Target platform
 PLATFORM=gta01
-BOARD=bv3
+BOARD=bv4
 
 # Locations
 SPLASH=http://wiki.openmoko.org/images/c/c2/System_boot.png
