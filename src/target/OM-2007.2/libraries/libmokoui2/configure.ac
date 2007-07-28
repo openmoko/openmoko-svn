@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(libmokoui, 0.0.5, http://www.openmoko.org/)
+AC_INIT(libmokoui, 0.1.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(libmokoui/moko-stock.c)
 AM_CONFIG_HEADER(config.h)
@@ -34,7 +34,7 @@ AC_SUBST(LIBS)
 # output stuff
 AC_OUTPUT([
 Makefile
-libmokoui.pc
+libmokoui2.pc
 libmokoui/Makefile
 ])
 

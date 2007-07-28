@@ -1,6 +1,6 @@
 SUBDIRS = libmokoui
 
-pcdata_DATA= libmokoui.pc
+pcdata_DATA= libmokoui2.pc
 pcdatadir= $(libdir)/pkgconfig
 
 EXTRA_DIST= $(pcdata_DATA)

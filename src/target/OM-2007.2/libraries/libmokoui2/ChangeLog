@@ -1,3 +1,11 @@
+2007-07-28	Michael Lauer <mickey@openmoko.org>
+
+	* configure.ac:
+	* libmokoui.pc.in:
+	* libmokoui2.pc.in:
+	* libmokoui/Makefile.am:
+	Bump library name and version.
+
 2007-07-27  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c:

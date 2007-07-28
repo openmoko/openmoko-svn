@@ -13,10 +13,10 @@ AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
 
 AM_CFLAGS = -Wall -pedantic -std=c99
 
-lib_LTLIBRARIES      = libmokoui.la
-libmokoui_la_SOURCES     = $(source_c) $(source_h)
-libmokoui_la_LIBADD      =
-libmokoui_la_LDFLAGS = -version-info 0:2:0
+lib_LTLIBRARIES      = libmokoui2.la
+libmokoui2_la_SOURCES     = $(source_c) $(source_h)
+libmokoui2_la_LIBADD      =
+libmokoui2_la_LDFLAGS = -version-info 0:2:0
 
-libmokouiheadersdir = $(includedir)/libmokoui
+libmokouiheadersdir = $(includedir)/libmokoui2
 libmokouiheaders_DATA = $(source_h)
