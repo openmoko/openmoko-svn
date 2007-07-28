@@ -1,6 +1,6 @@
 SUBDIRS = libmokogsmd
 
-pcdata_DATA= libmokogsmd.pc
+pcdata_DATA= libmokogsmd2.pc
 pcdatadir= $(libdir)/pkgconfig
 
 EXTRA_DIST= $(pcdata_DATA)

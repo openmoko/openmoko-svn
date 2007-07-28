@@ -1,3 +1,11 @@
+2007-07-28	Michael Lauer <mickey@openmoko.org>
+
+	* configure.ac:
+	* libmokogsmd.pc.in:
+	* libmokogsmd2.pc.in:
+	* libmokogsmd/Makefile.am:
+	Change library name to libmokogsmd2
+
 2007-07-09  Neil J. Patel  <njp@o-hand.com>
 
 	* Makefile.am:

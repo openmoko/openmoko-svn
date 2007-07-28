@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(libmokogsmd, 0.0.4, http://www.openmoko.org/)
+AC_INIT(libmokogsmd2, 0.1.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(libmokogsmd/moko-gsmd-connection.c)
 AM_CONFIG_HEADER(config.h)
@@ -34,7 +34,7 @@ AC_SUBST(GLIB_GENMARSHAL)
 # output stuff
 AC_OUTPUT([
 Makefile
-libmokogsmd.pc
+libmokogsmd2.pc
 libmokogsmd/Makefile
 ])
 
