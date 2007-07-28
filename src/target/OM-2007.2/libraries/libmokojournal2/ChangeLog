@@ -1,3 +1,12 @@
+2007-07-28	Michael Lauer <mickey@openmoko.org>
+
+	* configure.ac:
+	* Makefile.am:
+	* libmokojournal2.pc.in:
+	* libmokojournal.pc.in:
+	* libmokojournal/Makefile.am:
+	Bump library name and version.
+
 2007-07-27  Neil J. Patel  <njp@o-hand.com>
 
 	* mokojournal/moko-journal.c: (moko_journal_class_init):

@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(libmokojournal, 0.0.4, http://www.openmoko.org/)
+AC_INIT(libmokojournal2, 0.1.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(mokojournal/moko-journal.c)
 AM_CONFIG_HEADER(config.h)
@@ -28,7 +28,7 @@ AC_SUBST(LIBS)
 # output stuff
 AC_OUTPUT([
 Makefile
-libmokojournal.pc
+libmokojournal2.pc
 mokojournal/Makefile
 tests/Makefile
 ])

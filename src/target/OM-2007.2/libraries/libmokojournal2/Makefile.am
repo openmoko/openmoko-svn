@@ -1,6 +1,6 @@
 SUBDIRS = mokojournal tests
 
-pcdata_DATA= libmokojournal.pc
+pcdata_DATA= libmokojournal2.pc
 pcdatadir= $(libdir)/pkgconfig
 
 EXTRA_DIST= $(pcdata_DATA)
