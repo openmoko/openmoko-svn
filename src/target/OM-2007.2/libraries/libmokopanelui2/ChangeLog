@@ -1,0 +1,15 @@
+2007-07-28  Michael Lauer  <mickey@openmoko.org>
+
+	* AUTHORS:
+	* COPYING:
+	* NEWS:
+	* README:
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* libmokopanelui2.pc.in:
+	* libmokopanelui/Makefile.am:
+	* libmokopanelui/moko-panel-applet.c:
+	* libmokopanelui/moko-panel-applet.h:
+	* po/Makefile.in.in:
+	Initial import of moko-panel-applet from old libmokoui
