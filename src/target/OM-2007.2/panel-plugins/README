@@ -1,0 +1,4 @@
+Matchbox-Panel-2 plugins that dock in the Top Panel go here.
+Need to be installed to ${libdir}/matchbox-panel/
+Naming Scheme: openmoko-panel-<name of plugin>
+
