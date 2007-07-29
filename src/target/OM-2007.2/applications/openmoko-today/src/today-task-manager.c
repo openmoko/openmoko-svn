@@ -1,6 +1,6 @@
 
-#include <libmokoui/moko-stock.h>
-#include <libmokoui/moko-finger-scroll.h>
+#include <moko-stock.h>
+#include <moko-finger-scroll.h>
 #include <libtaku/taku-table.h>
 #include "today-task-manager.h"
 #include "today-utils.h"

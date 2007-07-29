@@ -28,7 +28,7 @@ PKG_CHECK_MODULES(SEXY, libsexy,
                    AC_DEFINE(HAVE_SEXY, 1, [We are sexy enough])],
                    enable_sexy=false)
 
-PKG_CHECK_MODULES(MOKOUI, libmokoui >= $LIBMOKOUI_VERSION)
+PKG_CHECK_MODULES(MOKOUI, libmokoui2 >= $LIBMOKOUI_VERSION)
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $LIBGTK_VERSION)
 PKG_CHECK_MODULES(ECAL, libecal-1.2 >= $LIBECAL_VERSION)
 PKG_CHECK_MODULES(EBOOK, libebook-1.2 >= $LIBEBOOK_VERSION)

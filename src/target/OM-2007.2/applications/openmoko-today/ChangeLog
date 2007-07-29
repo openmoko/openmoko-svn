@@ -1,3 +1,14 @@
+2007-07-29  Holger Freyther  <zecke@selfish.org>
+
+        Use version two of the libraries. Make taku compile without libsn
+
+        * configure.ac:
+        * libtaku/launcher-util.c: Taco's don't need libsn.
+        (launcher_start):
+        * src/today-launcher.c:
+        * src/today-main.c:
+        * src/today-task-manager.c:
+
 2007-07-17  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:

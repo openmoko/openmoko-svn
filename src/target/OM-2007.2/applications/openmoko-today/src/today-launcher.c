@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <libtaku/taku-table.h>
 #include <libtaku/taku-launcher-tile.h>
-#include <libmokoui/moko-finger-scroll.h>
+#include <moko-finger-scroll.h>
 #include "today.h"
 
 /* NOTE: Following 4 functions (as well as libtaku) taken from

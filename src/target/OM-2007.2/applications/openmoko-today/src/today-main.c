@@ -4,7 +4,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <libmokoui/moko-finger-scroll.h>
+#include <moko-finger-scroll.h>
 #include <libtaku/launcher-util.h>
 #include <libtaku/xutil.h>
 #include <unistd.h>
