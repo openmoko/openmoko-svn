@@ -1,11 +1,11 @@
 prefix=@prefix@
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
-includedir=${prefix}/include/libmokojournal
+includedir=${prefix}/include/libmokojournal2
 
 Name: libmokojournal
 Description: OpenMoko Journal Development Library
 Version: @VERSION@
 Cflags: -I${includedir}
-Libs: -L${libdir} -lmokojournal
+Libs: -L${libdir} -lmokojournal2
 Requires: libecal-1.2 
