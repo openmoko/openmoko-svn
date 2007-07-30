@@ -1,5 +1,5 @@
 AC_PREREQ([2.59])
-AC_INIT([openmoko-rssreader], [0.0.5], [http://openmoko.org])
+AC_INIT([openmoko-feedreader2], [0.0.6], [http://openmoko.org])
 AM_INIT_AUTOMAKE([1.9 foreign dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR(src/main.c)
 AM_CONFIG_HEADER(config.h)
@@ -10,7 +10,7 @@ AC_PROG_LIBTOOL
 
 #i18n
 AC_PROG_INTLTOOL([0.23])
-GETTEXT_PACKAGE=openmoko-rssreader
+GETTEXT_PACKAGE=openmoko-feedreader2
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
@@ -38,9 +38,9 @@ AM_PATH_CHECK([0.9.2], [ENABLE_TESTING="yes"], [ENABLE_TESTING="no"])
 AM_CONDITIONAL(ENABLE_TESTING, test "x${ENABLE_TESTING}" = "xyes")
 
 # base deps
-PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.1)
-PKG_CHECK_MODULES(MRSS,     mrss          >= 0.17 )
-PKG_CHECK_MODULES(GTHREAD,  gthread-2.0           )
+PKG_CHECK_MODULES(OPENMOKO,  libmokoui2    >= 0.1.0)
+PKG_CHECK_MODULES(MRSS,      mrss          >= 0.17 )
+PKG_CHECK_MODULES(GTHREAD,   gthread-2.0           )
 PKG_CHECK_MODULES(WEBKITGTK, WebKitGdk)
 
 # output stuff

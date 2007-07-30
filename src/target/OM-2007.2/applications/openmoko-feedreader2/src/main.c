@@ -143,12 +143,12 @@ static void setup_toolbar( struct RSSReaderData *data ) {
 
 
     a = GTK_BUTTON(moko_tool_box_add_action_button( MOKO_TOOL_BOX(data->box) ));
-    anImage = gtk_image_new_from_file( PKGDATADIR "/rssreader_refresh_all.png" );
+    anImage = gtk_image_new_from_file( PKGDATADIR "/feedreader2_refresh_all.png" );
     moko_pixmap_button_set_center_image( MOKO_PIXMAP_BUTTON(a), anImage );
     g_signal_connect( G_OBJECT(a), "clicked", G_CALLBACK(cb_refresh_all_button_clicked), data );
 
     a = GTK_BUTTON(moko_tool_box_add_action_button( MOKO_TOOL_BOX(data->box) ));
-    anImage = gtk_image_new_from_file( PKGDATADIR "/rssreader_subscribe.png" );
+    anImage = gtk_image_new_from_file( PKGDATADIR "/feedreader2_subscribe.png" );
     moko_pixmap_button_set_center_image( MOKO_PIXMAP_BUTTON(a), anImage );
     g_signal_connect( G_OBJECT(a), "clicked", G_CALLBACK(cb_subscribe_button_clicked), data );
 
@@ -265,7 +265,7 @@ int main( int argc, char** argv )
     /*
      * boiler plate code
      */
-    g_debug( "openmoko-rssreader starting up" );
+    g_debug( "openmoko-feedreader2 starting up" );
 
     /* i18n boiler plate */
     bindtextdomain ( GETTEXT_PACKAGE, RSSREADER_LOCALE_DIR );
@@ -287,7 +287,7 @@ int main( int argc, char** argv )
 
     data->app = MOKO_APPLICATION( moko_application_get_instance() );
     g_set_application_name( _("FeedReader") );
-    data->cache = MOKO_CACHE(moko_cache_new ("rss-reader"));
+    data->cache = MOKO_CACHE(moko_cache_new ("feed-reader"));
 
     setup_ui( data );
 

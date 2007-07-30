@@ -4,7 +4,7 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 REQUIRED_AUTOMAKE_VERSION=1.8
-PKG_NAME=openmoko-rssreader
+PKG_NAME=openmoko-feedreader2
 ACLOCAL_FLAGS="-I m4"
 
 (test -f $srcdir/configure.ac \

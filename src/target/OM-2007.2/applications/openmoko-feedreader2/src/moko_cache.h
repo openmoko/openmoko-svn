@@ -76,7 +76,7 @@ gchar*        moko_cache_read_object  (MokoCache *self, gchar *object_name, gsiz
 
 /**
  * \fn moko_cache_new(gchar *cache_policy_name)
- * @param cache_policy_name Name of the policy, e.g. "openmoko-rssreader"
+ * @param cache_policy_name Name of the policy, e.g. "openmoko-feedreader2"
  * 
  * The policy defines the storage path and the amount of storage available
  */
