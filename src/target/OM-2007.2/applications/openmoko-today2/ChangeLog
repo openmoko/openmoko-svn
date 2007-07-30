@@ -1,5 +1,18 @@
 2007-07-30  Chris Lord,,,  <chris@openedhand.com>
 
+	* src/today-task-manager.c: (get_utf8_property),
+	(get_text_property), (window_get_name), (window_get_icon),
+	(today_task_manager_free_tasks),
+	(today_task_manager_populate_tasks),
+	(today_task_manager_notify_visible_cb),
+	(today_task_manager_visibility_notify_event_cb),
+	(today_task_manager_unmap_cb), (screen_changed_cb), (filter_func),
+	(today_task_manager_page_create):
+	* src/today.h:
+	Add a tasks list (mostly stolen from matchbox-panel-2)
+
+2007-07-30  Chris Lord,,,  <chris@openedhand.com>
+
 	* src/today-events-store.c: (today_events_store_comp_get_desc),
 	(today_events_store_objects_added),
 	(today_events_store_objects_modified),
