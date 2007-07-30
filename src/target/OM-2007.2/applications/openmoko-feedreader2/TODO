@@ -1,0 +1,9 @@
+Better selection handling!
+
+    Try to keep the item selected across updates. This means
+    before and after a search the same item should be selected.
+    The same applies to filters, etc.
+
+    Gtk+ is not making this easy. In Qt you would have a persistent
+    model index, with Gtk+ it looks like there is no way to find out
+    if a GtkTreeIter is still valid.

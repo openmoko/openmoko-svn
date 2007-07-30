@@ -1,0 +1,148 @@
+2007-07-23  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Switch to the newly created WebKit/Gtk API
+
+        * configure.ac:
+        * src/Makefile.am:
+        * src/application-data.h:
+        * src/callbacks.c:
+        (cb_treeview_selection_changed):
+        * src/main.c:
+        (create_details_area):
+        (main):
+
+2007-05-19  Holger Freyther  <zecke@selfish.org>
+
+        Improve caching. org.openembedded.dev has a patch to libmrss
+        0.17.2 to add a new method. Using this method we take over the
+        ownership of the buffer of the downloaded file. This avoid all
+        errors with mrss_write.
+        We are now caching the original file.
+
+        * src/callbacks.c:
+        (feed_update_thread):
+
+2007-05-19  Holger Freyther  <zecke@selfish.org>
+
+        Do not crash on non valid pubDates
+
+        * src/callbacks.c:
+        (add_mrss_item):
+
+2007-05-19  Holger Freyther  <zecke@selfish.org>
+
+        Load data from the cache. Currently libmrss has some issues
+        parsing the data it wrote.
+
+        * src/callbacks.c:
+        (load_data_from_cache): Implement loading from cache,
+        * src/main.c: Call loading.
+        (main):
+
+2007-05-18  Holger Freyther  <zecke@selfish.org>
+
+        Start caching data
+
+        * src/application-data.h: Hold a MokoCache object
+        * src/callbacks.c: Move the filling of the GtkListStore into a method
+        to be used by the method loading from a cache. 
+        (add_mrss_item): The refactored method
+        (feed_update_thread): Move the code to add_mrss_item and cache the
+        data.
+        (load_data_from_cache): Empty stub
+        * src/callbacks.h:
+        * src/main.c:
+        (main): Create the MokoCache
+
+2007-05-18  Holger Freyther  <zecke@selfish.org>
+
+        Test the cache implementation
+
+        * src/moko_cache.c:
+        (moko_cache_create_dirs): Fix the g_file_test logic
+        (object_name_to_file_name): replace the tile as well (~)
+        (moko_cache_write_object): use g_set_file_contents to gain atomic
+        writes
+        * src/moko_cache.h: Update write prototype to gain a GError**
+        * tests/Makefile.am:
+        * tests/cache_test.c: Added.
+
+2007-05-03  Holger Freyther  <zecke@selfish.org>
+
+        Start implementing the cache (untested)
+
+        * src/moko_cache.c:
+        (moko_cache_create_dirs): Make sure to create the dir. Somehow there
+        is no recursive mkdir in glib 
+        (moko_cache_create_path): Create/build a path for the cache
+        (object_name_to_file_name): sanitize the object name. e.g.
+        http://wwww.example.org/feed.xml and escape the ':', '/' and other
+        characthers
+        (moko_cache_write_object): Implement
+        (moko_cache_read_object): Implement
+        * src/moko_cache.h: switch from gint to gsize for the size
+
+2007-05-03  Holger Freyther  <zecke@selfish.org>
+
+        * src/callbacks.c:
+        (cb_treeview_keypress_event): Cursor keys are not forwarded to the
+        search bar but are left to the TreeView
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * src/rfcdate.h: s/obj/klass/ in the macro. (fixlet)
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Add a class to handle caching of feeds while making sure not consuming
+		too much space. This class is meant to be copied to mokocore once done
+
+        * src/Makefile.am: Add moko_cache.[h,c]
+        * src/moko_cache.c: Added.
+        (moko_cache_finalize): Clean the filename
+        (moko_cache_class_init): Make sure to clean the filename
+        (moko_cache_init): Initialize it
+        (moko_cache_new): Copy the profile name
+        (moko_cache_get_allowed_size): not implemented
+        (moko_cache_get_utilized_size): not implemtned
+        (moko_cache_write_object): not implemented
+        (moko_cache_read_object): not implemented
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * src/rfcdate.c: Handle wrong dates
+        (rss_rfc_date_set): If we can't parse set it to 26.01.1983
+        (rss_rfc_date_compare): Check if the dates we pass to g_date_compae
+are valid
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * src/callbacks.c: Update documentation, move it around
+        (feed_update_thread): Update documentation
+        (cb_treeview_selection_changed): make the string i18nable
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * src/rfcdate.h: Add a proper license header
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * src/rfcdate.c: Do not include malloc.h as this is not portable
+
+2007-04-29  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        * scripts/prepare-ChangeLog: Added.
+
+2007-03-20: Fix the size of the column headers
+	Combat the GtkTreeViewColumn sizing
+
+2007-03-20: Parse content of atom feeds manually
+	Parse content of ATOM feeds manually. Avoid setting NULL text inside the
+	GtkTextBuffer. Store content type and source inside the ListStore as well.
+
+2007-03-20: Fetch feeds inside a GThread
+	Fetching the feeds was implemented inside a GThread. gdk_threads_init et
+	alk is called and this works as long as AT-SPI is not enabled. If it is
+	enabled the application will eventuall crash.
+	Ekiga has the same trouble and it is documented as bug #329454 inside the
+	GNOME bug tracker.
