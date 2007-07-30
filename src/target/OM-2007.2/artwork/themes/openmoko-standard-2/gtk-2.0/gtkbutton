@@ -33,4 +33,4 @@ style "gtkbutton-label" {
     fg[PRELIGHT] = "#ffffff"
     fg[ACTIVE]   = "#ffffff"
 }
-widget "*.GtkButton.*" style "gtkbutton-label"
+widget_class "*.GtkButton.*" style "gtkbutton-label"
