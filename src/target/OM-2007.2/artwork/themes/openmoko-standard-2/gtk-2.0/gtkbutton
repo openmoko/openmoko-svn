@@ -25,6 +25,8 @@ style "gtkbutton" {
     xthickness = 22
     ythickness = 10
     GtkButton::focus-line-width = 0
+    fg[NORMAL] = "#ffffff"  
+    text[NORMAL] = "#ffffff"
 }
 class "GtkButton" style "gtkbutton"
 
@@ -33,4 +35,5 @@ style "gtkbutton-label" {
     fg[PRELIGHT] = "#ffffff"
     fg[ACTIVE]   = "#ffffff"
 }
-widget_class "*.GtkButton.*" style "gtkbutton-label"
+widget_class "*.GtkButton.*GtkLabel*" style "gtkbutton-label"
+
