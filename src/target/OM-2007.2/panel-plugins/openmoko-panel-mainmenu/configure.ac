@@ -11,8 +11,7 @@ AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 # base deps
-PKG_CHECK_MODULES(OPENMOKO, openmoko-libs >= 0.0.2,,
-                 AC_MSG_ERROR([*** Required OpenMoko Libraries >= 0.0.2 not installed ***]))
+PKG_CHECK_MODULES(OPENMOKO, libmokopanelui2)
 PKG_CHECK_MODULES(LIBMB, libmb,,
                  AC_MSG_ERROR([matchbox-lib required]))
 PKG_CHECK_MODULES(LIBSN, libstartup-notification-1.0, ,

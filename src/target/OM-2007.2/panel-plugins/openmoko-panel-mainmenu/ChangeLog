@@ -1,3 +1,8 @@
+2007-07-30  Michael Lauer <mickey@openmoko.org>
+
+        * configure.ac:
+        Import panel-plugin into 2007.2 and refer to libmokopanelui2.
+
 2007-06-24  Stefan Schmidt <stefan@openmoko.org>
 
         * src/buttonactions.c:
