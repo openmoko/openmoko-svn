@@ -1,5 +1,7 @@
 
 #include <config.h>
+#include <glib.h>
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <libecal/e-cal.h>
 #include <libecal/e-cal-view.h>
@@ -78,6 +80,34 @@ today_events_store_class_init (TodayEventsStoreClass *klass)
 	object_class->finalize = today_events_store_finalize;
 }
 
+static gchar *
+today_events_store_comp_get_desc (icalcomponent *comp)
+{
+	icaltimetype start;
+	struct tm start_tm;
+	time_t start_t, day_t;	
+	char time_string[64];
+	gchar *desc;
+
+	start = icalcomponent_get_dtstart (comp);
+	start_tm = icaltimetype_to_tm (&start);
+	day_t = time_day_begin (time (NULL));
+	start_t = time_day_begin (mktime (&start_tm));
+	
+	/* TODO: Read some setting to decide on 24hr/12hr time */
+	if (day_t == start_t)
+		strftime (time_string, sizeof (time_string), "%I:%M%p",
+			&start_tm);
+	else
+		strftime (time_string, sizeof (time_string), "%x",
+			&start_tm);
+	desc = (gchar *)icalcomponent_get_summary (comp);
+	desc = g_strdup_printf ("%s %s", time_string,
+		desc ? desc : _("New event"));
+	
+	return desc;
+}
+
 static void
 today_events_store_objects_added (ECalView *ecalview, GList *objects,
 				       TodayEventsStore *store)
@@ -85,43 +115,23 @@ today_events_store_objects_added (ECalView *ecalview, GList *objects,
 	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
 
 	for (; objects; objects = objects->next) {
-		icaltimetype start;
-		struct tm start_tm;
-		time_t start_t, day_t;
-		
-		char time_string[64];
-		gchar *string;
+		gchar *uid;
 		GtkTreeIter *iter;
+		icalcomponent *comp = 
+			(icalcomponent *)objects->data;
 		
-		icalcomponent *comp = icalcomponent_new_clone (
-			(icalcomponent *)objects->data);
-		gchar *uid = (gchar *)icalcomponent_get_uid (comp);
+		if (!icalcomponent_get_uid (comp)) continue;
+		uid = g_strdup (icalcomponent_get_uid (comp));
 		
-		if (!uid) continue;
-		uid = g_strdup (uid);
-		
-		start = icalcomponent_get_dtstart (comp);
-		start_tm = icaltimetype_to_tm (&start);
-		day_t = time_day_begin (time (NULL));
-		start_t = time_day_begin (mktime (&start_tm));
-		
-		/* TODO: Read some setting to decide on 24hr/12hr time */
-		if (day_t == start_t)
-			strftime (time_string, sizeof (time_string), "%I:%M%p",
-				&start_tm);
-		else
-			strftime (time_string, sizeof (time_string), "%x",
-				&start_tm);
-		string = (gchar *)icalcomponent_get_description (comp);
-		string = g_strdup_printf ("%s %s", time_string,
-			string ? string : "New event");
 		iter = g_new0 (GtkTreeIter, 1);
 		
 		gtk_list_store_insert_with_values (GTK_LIST_STORE (store),
 			iter, 0,
-			TODAY_EVENTS_STORE_COL_SUMMARY, string,
+			TODAY_EVENTS_STORE_COL_SUMMARY,
+			today_events_store_comp_get_desc (comp),
 			TODAY_EVENTS_STORE_COL_UID, uid,
-			TODAY_EVENTS_STORE_COL_COMP, comp,
+			TODAY_EVENTS_STORE_COL_COMP,
+			icalcomponent_new_clone (comp),
 			-1);
 		g_hash_table_insert (priv->hash_table, (gpointer)uid,
 			(gpointer)iter);
@@ -132,6 +142,34 @@ static void
 today_events_store_objects_modified (ECalView *ecalview, GList *objects,
 					  TodayEventsStore *store)
 {
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
+
+	for (; objects; objects = objects->next) {
+		GtkTreeIter *iter;
+		icalcomponent *comp =
+			(icalcomponent *)objects->data;
+		const gchar *uid = icalcomponent_get_uid (comp);
+		icalcomponent *old_comp;
+		gchar *old_desc;
+		
+		if (!(iter = g_hash_table_lookup (priv->hash_table,
+		     (gpointer)uid))) continue;
+		
+		gtk_tree_model_get (GTK_TREE_MODEL (store), iter,
+			TODAY_EVENTS_STORE_COL_SUMMARY, &old_desc,
+			TODAY_EVENTS_STORE_COL_COMP, &old_comp, -1);
+		
+		g_free (old_desc);
+		icalcomponent_free (old_comp);
+
+		gtk_list_store_set (GTK_LIST_STORE (store),
+			iter,
+			TODAY_EVENTS_STORE_COL_SUMMARY,
+			today_events_store_comp_get_desc (comp),
+			TODAY_EVENTS_STORE_COL_COMP,
+			icalcomponent_new_clone (comp),
+			-1);
+	}
 }
 
 static void
@@ -142,7 +180,7 @@ today_events_store_objects_removed (ECalView *ecalview, GList *uids,
 
 	for (; uids; uids = uids->next) {
 		const gchar *uid;
-		gchar *string;
+		gchar *desc;
 		GtkTreeIter *iter;
 		icalcomponent *comp;
 		
@@ -159,11 +197,11 @@ today_events_store_objects_removed (ECalView *ecalview, GList *uids,
 		if (!iter) continue;
 		
 		gtk_tree_model_get (GTK_TREE_MODEL (store), iter,
-			TODAY_EVENTS_STORE_COL_SUMMARY, &string,
+			TODAY_EVENTS_STORE_COL_SUMMARY, &desc,
 			TODAY_EVENTS_STORE_COL_COMP, &comp, -1);
 		gtk_list_store_remove (GTK_LIST_STORE (store), iter);
 		g_hash_table_remove (priv->hash_table, uid);
-		g_free (string);
+		g_free (desc);
 		icalcomponent_free (comp);
 	}
 }
