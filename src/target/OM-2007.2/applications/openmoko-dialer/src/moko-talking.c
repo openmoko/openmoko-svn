@@ -19,7 +19,7 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokojournal/moko-journal.h>
+#include <moko-journal.h>
 
 #include "moko-talking.h"
 

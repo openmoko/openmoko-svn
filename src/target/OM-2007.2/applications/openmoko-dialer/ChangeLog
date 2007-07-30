@@ -1,5 +1,16 @@
 2007-07-30  Thomas Wood  <thomas@openedhand.com>
 
+	* src/dialer-main.c:
+	* src/moko-dialer.c:
+	* src/moko-history.c:
+	* src/moko-history.h:
+	* src/moko-keypad.c:
+	* src/moko-talking.c:
+
+	Fix includes not to use directory names
+
+2007-07-30  Thomas Wood  <thomas@openedhand.com>
+
 	* configure.ac: Update for OM 2007.2 library names
 
 2007-07-27  Neil J. Patel  <njp@o-hand.com>

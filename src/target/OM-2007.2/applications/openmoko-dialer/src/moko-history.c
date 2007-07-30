@@ -21,10 +21,10 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokogsmd/moko-gsmd-connection.h>
-#include <libmokojournal/moko-journal.h>
-#include <libmokoui/moko-stock.h>
-#include <libmokoui/moko-finger-scroll.h>
+#include <moko-gsmd-connection.h>
+#include <moko-journal.h>
+#include <moko-stock.h>
+#include <moko-finger-scroll.h>
 
 #include "moko-history.h"
 

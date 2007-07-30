@@ -22,7 +22,7 @@
 #define _HAVE_MOKO_HISTORY_H
 
 #include <gtk/gtk.h>
-#include <libmokojournal/moko-journal.h>
+#include <moko-journal.h>
 
 G_BEGIN_DECLS
 

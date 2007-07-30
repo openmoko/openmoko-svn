@@ -22,9 +22,9 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 
-#include <libmokogsmd/moko-gsmd-connection.h>
-#include <libmokojournal/moko-journal.h>
-#include <libmokoui/moko-stock.h>
+#include <moko-gsmd-connection.h>
+#include <moko-journal.h>
+#include <moko-stock.h>
 
 #include "moko-dialer.h"
 

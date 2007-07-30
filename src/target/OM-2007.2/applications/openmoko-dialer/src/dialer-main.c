@@ -19,7 +19,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 
-#include <libmokoui/moko-stock.h>
+#include <moko-stock.h>
 
 #include "moko-dialer.h"
 

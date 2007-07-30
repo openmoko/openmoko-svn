@@ -20,7 +20,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtk.h>
 
-#include <libmokoui/moko-stock.h>
+#include <moko-stock.h>
 
 #include "moko-keypad.h"
 
