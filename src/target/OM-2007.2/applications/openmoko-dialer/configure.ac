@@ -15,9 +15,9 @@ PKG_CHECK_MODULES(DIALER,
                   dbus-glib-1 
                   gtk+-2.0 
                   libebook-1.2 
-                  libmokojournal 
-                  libmokogsmd 
-                  libmokoui)
+                  libmokojournal2
+                  libmokogsmd2 
+                  libmokoui2)
 
 old_cflags=$CFLAGS
 CFLAGS=$DIALER_CFLAGS

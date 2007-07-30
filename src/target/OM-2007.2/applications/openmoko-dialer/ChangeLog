@@ -1,3 +1,7 @@
+2007-07-30  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac: Update for OM 2007.2 library names
+
 2007-07-27  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-history.c: (on_delete_clicked), (history_add_entry),
