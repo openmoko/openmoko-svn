@@ -18,7 +18,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
 
-#include <libmokoui/moko-panel-applet.h>
+#include <libmokopanelui2/moko-panel-applet.h>
 
 #include <gtk/gtklabel.h>
 #include <time.h>

@@ -25,7 +25,7 @@
 #include "fingermenu.h"
 #include "dbus-conn.h"
 
-#include <libmokoui/moko-panel-applet.h>
+#include <libmokopanelui2/moko-panel-applet.h>
 #include <libmokoui/moko-window.h>
 
 #include <gtk/gtk.h>
