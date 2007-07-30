@@ -14,7 +14,7 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
-#include <libmokogsmd/moko-gsmd-connection.h>
+#include <libmokogsmd2/moko-gsmd-connection.h>
 #include <libmokopanelui2/moko-panel-applet.h>
 
 #include <gtk/gtkimage.h>

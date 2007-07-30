@@ -1,3 +1,8 @@
+2007-07-31	Michael Lauer <mickey@openmoko.org>
+
+		* src/openmoko-panel-gsm.c:
+		Catch up with libmokogsmd2
+
 2007-07-30  Michael Lauer <mickey@openmoko.org>
 
         * configure.ac:
