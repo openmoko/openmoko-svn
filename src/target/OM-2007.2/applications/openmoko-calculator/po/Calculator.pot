@@ -1,0 +1,51 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-07-26 22:34+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/calc-main.c:83
+msgid "Clear All"
+msgstr ""
+
+#: src/calc-main.c:83
+msgid "Clear"
+msgstr ""
+
+#: src/calc-main.c:87
+msgid "<big><b>.</b></big>"
+msgstr ""
+
+#: src/calc-main.c:132
+msgid "<big>Not a Number</big><span font_desc=\"48\" > <b>NaN</b></span>"
+msgstr ""
+
+#: src/calc-main.c:136
+msgid ""
+"<big>Not a Number</big> <span font_desc=\"48\" ><b>NaN</b></span>\n"
+"<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
+"<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</"
+"span>"
+msgstr ""
+
+#. application object
+#. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
+#: src/calc-main.c:374
+msgid "Calculator"
+msgstr ""
+
+#: src/calc-main.c:381
+msgid "Close"
+msgstr ""

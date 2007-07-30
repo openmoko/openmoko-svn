@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Calculator
+Comment=Perform simple calculations
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-calculator
+Icon=openmoko-calculator
+Terminal=false
+Categories=GTK;Application;PIM;Office
+SingleInstance=true
+StartupNotify=true

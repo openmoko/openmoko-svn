@@ -128,3 +128,4 @@ include "openmoko-contacts"
 #include "openmoko-footer"
 
 #include "mokomessagedialog"
+include "openmoko-calculator"
