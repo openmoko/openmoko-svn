@@ -1,3 +1,16 @@
+2007-08-01  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Janitor work and continue the renaming to feedreader2. Change README to document
+        what is in my mind in regard to implementing the new UI guidelines.
+
+        * README:
+        * data/Makefile.am:
+        * data/openmoko-feedreader2.desktop: Added.
+        * data/openmoko-rssreader.desktop: Removed.
+        * data/openmoko-rssreader.png: Removed.
+        * data/rssreader_subscribe.png: Removed.
+        * openmoko-rssreader.pro: Removed.
+
 2007-07-30  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Rename this application to feedreader2 to match the directory
