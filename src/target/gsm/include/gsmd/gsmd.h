@@ -41,7 +41,10 @@ enum llparse_state {
 };
 
 /* we can't take any _single_ response bigger than this: */
-#define LLPARSE_BUF_SIZE	256
+#define LLPARSE_BUF_SIZE	1024
+
+/* we can't pare a mutiline response biger than this: */
+#define MLPARSE_BUF_SIZE	65535
 
 struct llparser {
 	enum llparse_state state;

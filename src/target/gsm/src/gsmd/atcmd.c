@@ -175,7 +175,9 @@ static int ml_parse(const char *buf, int len, void *ctx)
 {
 	struct gsmd *g = ctx;
 	struct gsmd_atcmd *cmd = NULL;
+	static char mlbuf[MLPARSE_BUF_SIZE];
 	int rc = 0, final = 0;
+	int mlbuf_len;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
 
@@ -268,12 +270,22 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 			/* if we survive till here, it's a valid extd response
 			 * to an extended command and thus Case 'A' */
-	
-			/* FIXME: solve multi-line responses ! */
-			if (cmd->buflen < len)
-				len = cmd->buflen;
 
-			memcpy(cmd->buf, buf, len);
+			/* it might be a multiline response, so if there's a previous
+			   response, send out mlbuf and start afresh with an empty buffer */
+			if (mlbuf[0] != 0) {
+				if (!cmd->cb) {
+					gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
+				} else {
+					DEBUGP("Calling cmd->cb()\n");
+					cmd->resp = mlbuf;
+					rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
+					DEBUGP("Clearing mlbuf\n");
+					mlbuf[0] = 0;
+				}
+			}
+
+			/* the current buf will be appended to mlbuf below */
 		}
 	} else {
 		if (!strcmp(buf, "RING") ||
@@ -322,8 +334,25 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	/* we reach here, if we are at an information response that needs to be
 	 * passed on */
 
+	if (mlbuf[0] == 0) {
+		DEBUGP("Filling mlbuf\n");
+		strncat(mlbuf, buf, sizeof(mlbuf)-1);
+	} else {
+		DEBUGP("Appending buf to mlbuf\n");
+		mlbuf_len = strlen(mlbuf);
+		if (mlbuf_len+1 < sizeof(mlbuf)) {
+			mlbuf[mlbuf_len] = '\n';
+			mlbuf[mlbuf_len+1] = '\0';
+			strncat(mlbuf, buf, sizeof(mlbuf)-mlbuf_len-2);
+		} else {
+			DEBUGP("response too big for mlbuf!!!\n");
+			return -EFBIG;
+		}
+	}
+	return 0;
+
 final_cb:
-	/* if we reach here, the final result code of a command has been reached */
+	/* if reach here, the final result code of a command has been reached */
 
 	if (!cmd)
 		return rc;
@@ -334,24 +363,25 @@ final_cb:
 	if (!cmd->cb) {
 		gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 	} else {
-		if (!final || !cmd->resp) {
-			/* if we reach here, we didn't send any information responses yet */
-			DEBUGP("Calling cmd->cb()\n");
+		DEBUGP("Calling final cmd->cb()\n");
+		/* send final result code if there is no information response in mlbuf */
+		if (mlbuf[0] == 0)
 			cmd->resp = buf;
-			rc = cmd->cb(cmd, cmd->ctx, buf);
-		}
+		else
+			cmd->resp = mlbuf;
+		rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
+		DEBUGP("Clearing mlbuf\n");
+		mlbuf[0] = 0;
 	}
 
-	if (final) {
-		/* remove from list of currently executing cmds */
-		llist_del(&cmd->list);
-		talloc_free(cmd);
+	/* remove from list of currently executing cmds */
+	llist_del(&cmd->list);
+	talloc_free(cmd);
 
-		/* if we're finished with current commands, but still have pending
-		 * commands: we want to WRITE again */
-		if (llist_empty(&g->busy_atcmds) && !llist_empty(&g->pending_atcmds))
-			g->gfd_uart.when |= GSMD_FD_WRITE;
-	}
+	/* if we're finished with current commands, but still have pending
+	 * commands: we want to WRITE again */
+	if (llist_empty(&g->busy_atcmds) && !llist_empty(&g->pending_atcmds))
+		g->gfd_uart.when |= GSMD_FD_WRITE;
 
 	return rc;
 }	
