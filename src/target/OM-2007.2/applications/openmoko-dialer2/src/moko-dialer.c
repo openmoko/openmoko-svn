@@ -397,24 +397,44 @@ on_call_progress_changed (MokoGsmdConnection *conn,
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-
+  g_debug ("mokogsmd call progress changed");
   switch (type) 
   {
     case MOKO_GSMD_PROG_DISCONNECT:
     case MOKO_GSMD_PROG_RELEASE:
       moko_dialer_hung_up (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
+      g_debug ("mokogsmd disconnect");
       break;
     
     case MOKO_GSMD_PROG_REJECT:
       moko_dialer_rejected (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
+      g_debug ("mokogsmd reject");
       break;
     
     case MOKO_GSMD_PROG_CONNECTED:
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
+      g_debug ("mokogsmd connected");
       break;
+    case MOKO_GSMD_PROG_SETUP:
+      g_debug ("mokogsmd setup");
+      break;
+    case MOKO_GSMD_PROG_ALERT:
+      g_debug ("mokogsmd alert");
+      break;
+    case  MOKO_GSMD_PROG_CALL_PROCEED:
+      g_debug ("mokogsmd proceed");
+      break;
+    case MOKO_GSMD_PROG_SYNC:
+      g_debug ("mokogsmd sync");
+      break;
+    case  MOKO_GSMD_PROG_PROGRESS:
+      g_debug ("mokogsmd progress");
+      break;
+    case MOKO_GSMD_PROG_UNKNOWN:
     default:
+      g_debug ("mokogsmd unknown");
       break;
   }
 }

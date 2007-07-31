@@ -1,5 +1,10 @@
 2007-07-31  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_call_progress_changed):
+	Add a bunch of debug statements to find out what gsmd is doing.
+
+2007-07-31  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked):
 	Some fixes to dialing function.
 
