@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 10.0, SVG Export Plug-In . SVG Version: 3.0.0 Build 77)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"    "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+	<!ENTITY ns_svg "http://www.w3.org/2000/svg">
+	<!ENTITY ns_xlink "http://www.w3.org/1999/xlink">
+]>
+<svg 
+	 xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;" i:viewOrigin="0 32" i:rulerOrigin="0 0" i:pageBounds="0 32 32 0"
+	 xmlns="&ns_svg;" xmlns:xlink="&ns_xlink;" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" width="32" height="32"
+	 viewBox="0 0 32 32" overflow="visible" enable-background="new 0 0 32 32" xml:space="preserve">
+	<metadata>
+		<variableSets  xmlns="&ns_vars;">
+			<variableSet  varSetName="binding1" locked="none">
+				<variables></variables>
+				<v:sampleDataSets  xmlns="&ns_custom;" xmlns:v="&ns_vars;"></v:sampleDataSets>
+			</variableSet>
+		</variableSets>
+		<sfw  xmlns="&ns_sfw;">
+			<slices></slices>
+			<sliceSourceBounds  y="0" x="0" width="32" height="32" bottomLeftOrigin="true"></sliceSourceBounds>
+		</sfw>
+	</metadata>
+	<g id="圖層_1" i:layer="yes" i:dimmedPercent="50" i:rgbTrio="#4F008000FFFF">
+		<linearGradient id="XMLID_1_" gradientUnits="userSpaceOnUse" x1="16.0005" y1="3.3135" x2="16.0005" y2="28.686">
+			<stop  offset="0.0056" style="stop-color:#FF7800"/>
+			<stop  offset="1" style="stop-color:#9A2400"/>
+			<a:midPointStop  offset="0.0056" style="stop-color:#FF7800"/>
+			<a:midPointStop  offset="0.5" style="stop-color:#FF7800"/>
+			<a:midPointStop  offset="1" style="stop-color:#9A2400"/>
+		</linearGradient>
+		<path i:knockout="Off" fill-rule="evenodd" clip-rule="evenodd" fill="url(#XMLID_1_)" d="M30.487,22.731
+			c-1.902-0.858-7.947-3.394-11.173-4.741c2.061,2.887,5.74,8.026,6.975,9.654c-4.988,2.147-7.394,1.187-9.074-2.049
+			c-1.379-2.653-0.65-5.989,0.005-7.955c-4.408,1.872-8.433,1.436-10.521,0.439c-2.423-1.158-4.839-5.113-5.469-9.481l14.952,6.624
+			L5.734,3.313c4.356-0.702,8.854,0.422,10.682,2.39c1.574,1.694,3.204,5.393,2.74,10.153c1.816-1.031,4.649-2.211,7.318-1.517
+			C30.001,15.26,31.472,17.393,30.487,22.731z M23.096,26.373l-3.986-5.596C17,27.221,23.096,26.373,23.096,26.373z M22.195,17.258
+			l6.343,2.643C28.538,19.9,28.01,13.771,22.195,17.258z"/>
+		<path i:knockout="Off" fill="none" d="M32,32H0V0h32V32z"/>
+	</g>
+</svg>
