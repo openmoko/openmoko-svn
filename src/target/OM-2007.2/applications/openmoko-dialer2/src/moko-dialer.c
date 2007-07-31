@@ -242,6 +242,8 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
 
   moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
 
+  moko_gsmd_connection_voice_dial (priv->connection, number);
+
   g_signal_emit (G_OBJECT (dialer), dialer_signals[OUTGOING_CALL], 0, number);
 }
 

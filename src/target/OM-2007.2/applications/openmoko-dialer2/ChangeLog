@@ -1,5 +1,10 @@
 2007-07-31  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked):
+	Some fixes to dialing function.
+
+2007-07-31  Neil J. Patel  <njp@o-hand.com>
+
 	* src/dialer-main.c: (main):
 	* src/moko-digit-button.c: (moko_digit_button_new_with_labels):
 	Do not force gsmd restart (for debugging purposes).
