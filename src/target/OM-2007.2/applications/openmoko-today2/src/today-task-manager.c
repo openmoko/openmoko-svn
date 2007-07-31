@@ -11,18 +11,16 @@
 #define DEFAULT_WINDOW_ICON_NAME "gnome-fs-executable"
 
 /* NOTE: Lots of this code taken from windowselector applet in
- * 	 matchbox-panel-2. As such, this only works with matchbox as the
- *	 window-manager (due to custom window atoms).
+ * 	 matchbox-panel-2.
  */
 
 enum {
-        _MB_APP_WINDOW_LIST_STACKING,
-        _MB_CURRENT_APP_WINDOW,
+	_NET_CLIENT_LIST,
         UTF8_STRING,
         _NET_WM_VISIBLE_NAME,
         _NET_WM_NAME,
-        _NET_ACTIVE_WINDOW,
         _NET_WM_ICON,
+	_NET_WM_WINDOW_TYPE,
         N_ATOMS
 };
 
@@ -329,23 +327,26 @@ static void
 today_task_manager_populate_tasks (TodayData *data)
 {
         GdkDisplay *display;
+	GdkScreen *screen;
+	GdkWindow *current;
         Atom type;
         int format, result, i;
         gulong nitems, bytes_after;
         Window *windows;
 
-	/* Empty menu */
+	/* Empty list */
 	today_task_manager_free_tasks (data);
 	
         /* Retrieve list of app windows from root window */
-        display = gtk_widget_get_display (GTK_WIDGET (data->tasks_table));
+        display = gtk_widget_get_display (data->tasks_table);
+	screen = gtk_widget_get_screen (data->tasks_table);
 
         type = None;
 
         gdk_error_trap_push ();
         result = XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display),
                                      GDK_WINDOW_XWINDOW (data->root_window),
-                                     atoms[_MB_APP_WINDOW_LIST_STACKING],
+                                     atoms[_NET_CLIENT_LIST],
                                      0,
                                      G_MAXLONG,
                                      False,
@@ -365,17 +366,27 @@ today_task_manager_populate_tasks (TodayData *data)
         }
 
         /* Load into menu */
+	current = gdk_screen_get_active_window (screen);
         for (i = 0; i < nitems; i++) {
                 char *name;
 		GtkWidget *task_tile;
 		GdkPixbuf *icon;
+		GdkWindow *window;
 
+		if (GDK_WINDOW_XID (current) == windows[i]) continue;
+		
+		window = gdk_window_foreign_new_for_display (
+			display, windows[i]);
+		
+		if (gdk_window_get_type_hint (window) !=
+		    GDK_WINDOW_TYPE_HINT_NORMAL) continue;
+		
                 name = window_get_name (data, windows[i]);
                 task_tile = taku_icon_tile_new ();
 		taku_icon_tile_set_primary (TAKU_ICON_TILE (task_tile), name);
 		taku_icon_tile_set_secondary (TAKU_ICON_TILE (task_tile), "");
                 g_free (name);
-
+		
 		icon = window_get_icon (data, windows[i]);
 		if (icon) {
 			taku_icon_tile_set_pixbuf (
@@ -400,19 +411,22 @@ today_task_manager_populate_tasks (TodayData *data)
 			task_tile);
                 gtk_widget_show (task_tile);
         }
+	g_object_unref (current);
 
         /* If no windows were found, insert an insensitive "No tasks" item */
-        /*if (nitems == 0) {
-                GtkWidget *menu_item;
+        if (nitems == 0) {
+                GtkWidget *task_tile;
                 
-                menu_item = gtk_menu_item_new_with_label (_("No tasks"));
+                task_tile = taku_icon_tile_new ();
+		taku_icon_tile_set_primary (TAKU_ICON_TILE (task_tile),
+			_("No active tasks"));
+		
+                gtk_widget_set_sensitive (task_tile, FALSE);
 
-                gtk_widget_set_sensitive (menu_item, FALSE);
-
-                gtk_menu_shell_prepend (GTK_MENU_SHELL (applet->menu),
-                                        menu_item);
-                gtk_widget_show (menu_item);
-        }*/
+		gtk_container_add (GTK_CONTAINER (data->tasks_table),
+			task_tile);
+                gtk_widget_show (task_tile);
+        }
 
         /* Cleanup */
         XFree (windows);
@@ -473,12 +487,9 @@ screen_changed_cb (GtkWidget *button, GdkScreen *old_screen, TodayData *data)
         display = gdk_screen_get_display (screen);
 
         /* Get atoms */
-        atoms[_MB_APP_WINDOW_LIST_STACKING] =
+        atoms[_NET_CLIENT_LIST] =
                 gdk_x11_get_xatom_by_name_for_display
-                        (display, "_MB_APP_WINDOW_LIST_STACKING");
-        atoms[_MB_CURRENT_APP_WINDOW] =
-                gdk_x11_get_xatom_by_name_for_display
-                        (display, "_MB_CURRENT_APP_WINDOW");
+                        (display, "_NET_CLIENT_LIST");
         atoms[UTF8_STRING] =
                 gdk_x11_get_xatom_by_name_for_display
                         (display, "UTF8_STRING");
@@ -491,14 +502,14 @@ screen_changed_cb (GtkWidget *button, GdkScreen *old_screen, TodayData *data)
         atoms[_NET_WM_ICON] =
                 gdk_x11_get_xatom_by_name_for_display
                         (display, "_NET_WM_ICON");
-        atoms[_NET_ACTIVE_WINDOW] =
+	atoms[_NET_WM_WINDOW_TYPE] =
                 gdk_x11_get_xatom_by_name_for_display
-                        (display, "_NET_ACTIVE_WINDOW");
+                        (display, "_NET_WM_WINDOW_TYPE");
         
         /* Get root window */
         data->root_window = gdk_screen_get_root_window (screen);
 
-        /* Watch _MB_APP_WINDOW_LIST_STACKING */
+        /* Watch _NET_CLIENT_LIST */
         events = gdk_window_get_events (data->root_window);
         if ((events & GDK_PROPERTY_CHANGE_MASK) == 0) {
                 gdk_window_set_events (data->root_window,
@@ -523,8 +534,8 @@ filter_func (GdkXEvent *xevent, GdkEvent *event, TodayData *data)
 
         if (xev->type == PropertyNotify) {
                 if (xev->xproperty.atom ==
-                    atoms[_MB_APP_WINDOW_LIST_STACKING]) {
-                        /* _MB_APP_WINDOW_LIST_STACKING changed.
+                    atoms[_NET_CLIENT_LIST]) {
+                        /* _NET_CLIENT_LIST changed.
                          * Rebuild menu if around. */
                         if (!hidden)
                                 today_task_manager_populate_tasks (data);

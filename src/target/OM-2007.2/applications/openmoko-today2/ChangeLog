@@ -1,3 +1,10 @@
+2007-07-31  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_populate_tasks),
+	(screen_changed_cb), (filter_func):
+	Don't list Openmoko-Today in the tasks list, and work with any
+	NETWM-compliant window manager
+
 2007-07-30  Chris Lord,,,  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (get_utf8_property),
