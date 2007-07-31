@@ -178,8 +178,6 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 	rc |= gsmd_simplecmd(gsmd, "AT+CLIP=1");
 	/* use +COLP: to indicate COLP */
 	rc |= gsmd_simplecmd(gsmd, "AT+COLP=1");
-	/* power off the phone */
-	rc |= gsmd_simplecmd(gsmd, "AT+CFUN=0");
 	/* configure message format as PDU mode*/
 	/* FIXME: TEXT mode support!! */
 	rc |= gsmd_simplecmd(gsmd, "AT+CMGF=0");
