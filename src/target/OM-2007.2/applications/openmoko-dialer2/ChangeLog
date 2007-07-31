@@ -1,3 +1,9 @@
+2007-07-31  Neil J. Patel  <njp@o-hand.com>
+
+	* src/dialer-main.c: (main):
+	* src/moko-digit-button.c: (moko_digit_button_new_with_labels):
+	Do not force gsmd restart (for debugging purposes).
+
 2007-07-30  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer-main.c:

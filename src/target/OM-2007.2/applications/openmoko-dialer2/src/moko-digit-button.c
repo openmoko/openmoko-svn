@@ -80,7 +80,7 @@ moko_digit_button_new_with_labels (const gchar * string_digit,
   g_free (str);
   gtk_container_add (GTK_CONTAINER (hbox), labelAcrobat);
 
-  gtk_widget_set_name (GTK_WIDGET (digitbutton), "mokofingerbutton-dialer");
+  gtk_widget_set_name (GTK_WIDGET (digitbutton), "mokodialerdigitbutton");
 
   MokoDigitButtonPrivate *priv =
     (MokoDigitButtonPrivate *) MOKO_DIGIT_BUTTON_GET_PRIVATE (digitbutton);

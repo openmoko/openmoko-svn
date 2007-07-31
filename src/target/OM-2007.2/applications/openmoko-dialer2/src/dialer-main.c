@@ -89,7 +89,7 @@ main (int argc, char **argv)
   DBusGProxy *proxy;
   GError *error = NULL;
   guint32 ret;
-  gchar *out = NULL, *err = NULL;
+  /*gchar *out = NULL, *err = NULL;*/
 
   if (argc != 1)
   {
@@ -158,12 +158,13 @@ main (int argc, char **argv)
    * FIXME: This shouldn't be left up to the dialer, and we cannot guarentee
    * to always have root access, but it'll work for most embedded devices.
    */
+  /*
   g_debug ("(re)starting gsmd\n");
   g_spawn_command_line_sync ("/etc/init.d/gsmd stop",
                              &out, &err, NULL, NULL);
   g_spawn_command_line_sync ("/etc/init.d/gsmd start",
                              &out, &err, NULL, NULL);
-
+  */
   /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();
 
