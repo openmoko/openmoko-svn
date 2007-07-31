@@ -62,7 +62,8 @@ static int gsmd_alive_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_alive_priv *alp = ctx;
 
-	if (!strcmp(resp, "OK"))
+	if (!strcmp(resp, "OK") ||
+	    ((alp->gsmd->flags & GSMD_FLAG_V0) && resp[0] == '0'))
 		alp->alive_responded = 1;
 	return 0;
 }
@@ -199,7 +200,8 @@ static int firstcmd_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd *gsmd = ctx;
 
-	if (strcmp(resp, "OK")) {
+	if (strcmp(resp, "OK") &&
+	    (!(gsmd->flags & GSMD_FLAG_V0) || resp[0] != '0')) {
 		gsmd_log(GSMD_FATAL, "response '%s' to initial command invalid", resp);
 		exit(5);
 	}

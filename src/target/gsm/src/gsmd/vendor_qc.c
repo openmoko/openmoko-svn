@@ -81,6 +81,9 @@ static int qc_detect(struct gsmd *g)
 {
 	/* FIXME: do actual detection of vendor if we have multiple vendors */
 	/* open /proc/cpuinfo and check for HTC Universal? */
+
+	/* The Qualcomm chip switches to V0 mode in the strangest places */
+	g->flags |= GSMD_FLAG_V0;
 	return 1;
 }
 
