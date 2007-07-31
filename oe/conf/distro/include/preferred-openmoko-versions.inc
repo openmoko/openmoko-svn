@@ -49,7 +49,7 @@ SRCDATE_openmoko-dates = "now"
 SRCDATE_openmoko-tasks = "now"
 SRCDATE_openmoko-today = "now"
 SRCDATE_openmoko-messages = "now"
-SRCDATE_openmoko-rssreader = "20070722"
+SRCDATE_openmoko-rssreader = "20070626"
 
 #
 # Stylus Applications
