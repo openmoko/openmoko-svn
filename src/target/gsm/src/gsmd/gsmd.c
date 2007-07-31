@@ -128,7 +128,7 @@ static void alive_interval_tmr_cb(struct gsmd_timer *tmr, void *data)
 	gsmd_timer_register(tmr);
 }
 
-static int gmsd_alive_start(struct gsmd *gsmd)
+int gmsd_alive_start(struct gsmd *gsmd)
 {
 	struct timeval tv;
 
@@ -472,10 +472,11 @@ int main(int argc, char **argv)
 	/* select a vendor plugin */
 	gsmd_vendor_plugin_find(&g);
 
-	if (g.interpreter_ready)
+	if (g.interpreter_ready) {
 		gsmd_initsettings(&g);
 	
-	gmsd_alive_start(&g);
+		gmsd_alive_start(&g);
+	}
 
 	gsmd_opname_init(&g);
 

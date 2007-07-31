@@ -185,6 +185,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	    !strcmp(buf, "AT-Command Interpreter ready")) {
 		g->interpreter_ready = 1;
 		gsmd_initsettings(g);
+		gmsd_alive_start(g);
 		return 0;
 	}
 
