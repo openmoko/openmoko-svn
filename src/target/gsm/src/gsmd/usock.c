@@ -133,7 +133,8 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		/* FIXME: number type! */
 		break;
 	case GSMD_VOICECALL_HANGUP:
-		cmd = atcmd_fill("ATH0", 5, &usock_cmd_cb, gu, gph->id);
+		/* ATH0 is not supported by QC, we hope ATH is supported by everone */
+		cmd = atcmd_fill("ATH", 5, &usock_cmd_cb, gu, gph->id);
 		break;
 	case GSMD_VOICECALL_ANSWER:
 		cmd = atcmd_fill("ATA", 4, &usock_cmd_cb, gu, gph->id);
