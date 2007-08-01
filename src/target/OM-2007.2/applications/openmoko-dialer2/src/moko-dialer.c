@@ -579,7 +579,10 @@ moko_dialer_init (MokoDialer *dialer)
   conn = priv->connection = moko_gsmd_connection_new ();
   moko_gsmd_connection_set_antenna_power (conn, TRUE);
 
-  /* Handle network registration a few seconds after powering up the antenna*/ 
+  /* Handle network registration a few seconds after powering up the 
+   * antenna*/ 
+  priv->reg_request = TRUE;
+  priv->registered = FALSE;
   g_timeout_add (GSM_REGISTER_TIMEOUT, 
                  (GSourceFunc)register_network_cb, 
                  dialer);
