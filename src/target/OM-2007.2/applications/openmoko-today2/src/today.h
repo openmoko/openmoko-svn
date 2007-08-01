@@ -14,8 +14,6 @@ typedef struct {
 	GtkWidget *home_toolbar;
 	GtkWidget *message_box;
 	GtkWidget *summary_box;
-	GtkWidget *filter_combo;
-	GtkWidget *search_entry;
 	GtkToolItem *dial_button;
 	GtkToolItem *contacts_button;
 	GtkToolItem *messages_button;
@@ -26,6 +24,9 @@ typedef struct {
 	/* App launcher */
 	GList *categories;
 	GtkWidget *launcher_table;
+	GtkWidget *filter_combo;
+	GtkWidget *search_entry;
+	TakuLauncherCategory *search_cat;
 	
 	/* App manager */
 	GdkWindow *root_window;

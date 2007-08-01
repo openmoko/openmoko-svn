@@ -226,6 +226,21 @@ taku_launcher_tile_add_group (TakuLauncherTile *tile, TakuLauncherCategory *cate
   tile->priv->groups = g_list_prepend (tile->priv->groups, category);
 }
 
+void
+taku_launcher_tile_remove_group (TakuLauncherTile *tile, TakuLauncherCategory *category)
+{
+  g_return_if_fail (TAKU_IS_LAUNCHER_TILE (tile));
+
+  tile->priv->groups = g_list_remove (tile->priv->groups, category);
+}
+
+GList *
+taku_launcher_tile_get_groups (TakuLauncherTile *tile)
+{
+  g_return_val_if_fail (TAKU_IS_LAUNCHER_TILE (tile), NULL);
+
+  return g_list_copy (tile->priv->groups);
+}
 
 TakuLauncherCategory *
 taku_launcher_category_new (void)

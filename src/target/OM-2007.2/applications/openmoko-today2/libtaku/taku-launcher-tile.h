@@ -75,6 +75,10 @@ const char ** taku_launcher_tile_get_categories (TakuLauncherTile *tile);
 
 void taku_launcher_tile_add_group (TakuLauncherTile *tile, TakuLauncherCategory *category);
 
+void taku_launcher_tile_remove_group (TakuLauncherTile *tile, TakuLauncherCategory *category);
+
+GList * taku_launcher_tile_get_groups (TakuLauncherTile *tile);
+
 G_END_DECLS
 
 #endif /* _TAKU_LAUNCHER_TILE */

@@ -191,6 +191,50 @@ load_data_dir (const char *datadir, TakuTable *table, GList *categories,
 }
 
 static void
+today_launcher_update_search (TodayData *data, const gchar *search_string)
+{
+	GList *children, *c;
+
+	children = gtk_container_get_children (
+		GTK_CONTAINER (data->launcher_table));
+	for (c = children; c; c = c->next) {
+		gchar *name, *desc;
+		GtkWidget *tile = GTK_WIDGET (c->data);
+		
+		if (!TAKU_IS_LAUNCHER_TILE (tile)) continue;
+		
+		taku_launcher_tile_remove_group (TAKU_LAUNCHER_TILE (tile),
+			data->search_cat);
+		name = g_utf8_strup (taku_icon_tile_get_primary (
+			TAKU_ICON_TILE (tile)), -1);
+		desc = g_utf8_strup (taku_icon_tile_get_secondary (
+			TAKU_ICON_TILE (tile)), -1);
+		if (strstr (name, search_string) ||
+		    strstr (desc, search_string)) {
+			taku_launcher_tile_add_group (TAKU_LAUNCHER_TILE (tile),
+				data->search_cat);
+		}
+		g_free (name);
+		g_free (desc);
+	}
+}
+
+static void
+today_launcher_filter_changed_cb (GtkEditable *editable, TodayData *data)
+{
+	gchar *search_string;
+	
+	search_string = g_utf8_strup (gtk_entry_get_text (
+		GTK_ENTRY (editable)), -1);
+	today_launcher_update_search (data, search_string);
+	g_free (search_string);
+
+	/* Force the table to update */
+	taku_table_set_filter (TAKU_TABLE (data->launcher_table),
+		data->search_cat);
+}
+
+static void
 today_launcher_search_toggle_cb (GtkWidget *button, TodayData *data)
 {
 	g_object_set (G_OBJECT (data->search_entry), "visible",
@@ -200,10 +244,17 @@ today_launcher_search_toggle_cb (GtkWidget *button, TodayData *data)
 
 	if (GTK_WIDGET_VISIBLE (data->search_entry)) {
 		/* Set the category to the created search category */
+		taku_table_set_filter (TAKU_TABLE (data->launcher_table),
+			data->search_cat);
 	} else {
 		/* Set the category back to the one pointed to by the
 		 * drop-down.
 		 */
+		taku_table_set_filter (TAKU_TABLE (data->launcher_table),
+			(TakuLauncherCategory *)g_list_nth_data (
+				data->categories, gtk_combo_box_get_active (
+					GTK_COMBO_BOX (data->filter_combo))));
+		gtk_widget_grab_focus (data->search_entry);
 	}
 }
 
@@ -239,6 +290,8 @@ today_launcher_page_create (TodayData *data)
 	gtk_widget_show_all (toggle);
 
 	data->search_entry = gtk_entry_new ();
+	g_signal_connect (G_OBJECT (data->search_entry), "changed",
+		G_CALLBACK (today_launcher_filter_changed_cb), data);
 	gtk_widget_set_name (data->search_entry, "mokosearchentry");
 	g_object_set (G_OBJECT (data->search_entry), "no-show-all", TRUE, NULL);
 	gtk_box_pack_start (GTK_BOX (hbox), data->search_entry, TRUE, TRUE, 0);
@@ -256,6 +309,12 @@ today_launcher_page_create (TodayData *data)
 	gtk_icon_size_register ("TakuIcon", 64, 64);
 	data->launcher_table = taku_table_new ();
 
+	/* Create search category */
+	data->search_cat = g_new0 (TakuLauncherCategory, 1);
+	data->search_cat->name = g_strdup ("Search");
+	data->search_cat->matches = g_new0 (gchar *, 2);
+	data->search_cat->matches[0] = g_strdup ("meta-search");
+	
 	/* Load app categories */
 	vfolder_dir = g_build_filename (g_get_home_dir (),
 		".matchbox", "vfolders", NULL);
@@ -294,6 +353,9 @@ today_launcher_page_create (TodayData *data)
 	}
 	load_data_dir (g_get_user_data_dir (),
 		TAKU_TABLE (data->launcher_table), data->categories, NULL);
+	
+	/* Make sure initial search shows all items */
+	today_launcher_update_search (data, "");
 
 	gtk_container_add (GTK_CONTAINER (viewport), data->launcher_table);
 	
