@@ -1,3 +1,13 @@
+2007-08-01  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_populate_tasks),
+	(screen_changed_cb), (today_task_manager_kill),
+	(today_task_manager_kill_clicked_cb),
+	(today_task_manager_raise_clicked_cb),
+	(today_task_manager_killall_clicked_cb),
+	(today_task_manager_page_create):
+	Send a WM delete event instead of destroying windows, fix raise app
+
 2007-07-31  Chris Lord,,,  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (today_task_manager_populate_tasks),

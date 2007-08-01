@@ -1,4 +1,5 @@
 
+#include <string.h>
 #include <moko-stock.h>
 #include <moko-finger-scroll.h>
 #include <libtaku/taku-table.h>
@@ -21,6 +22,8 @@ enum {
         _NET_WM_NAME,
         _NET_WM_ICON,
 	_NET_WM_WINDOW_TYPE,
+	_NET_CLOSE_WINDOW,
+	_NET_ACTIVE_WINDOW,
         N_ATOMS
 };
 
@@ -374,9 +377,11 @@ today_task_manager_populate_tasks (TodayData *data)
 		GdkWindow *window;
 
 		if (GDK_WINDOW_XID (current) == windows[i]) continue;
+		if (GDK_WINDOW_XID (data->window->window) == windows[i])
+			continue;
 		
-		window = gdk_window_foreign_new_for_display (
-			display, windows[i]);
+		if (!(window = gdk_window_foreign_new_for_display (
+			display, windows[i]))) continue;
 		
 		if (gdk_window_get_type_hint (window) !=
 		    GDK_WINDOW_TYPE_HINT_NORMAL) continue;
@@ -505,6 +510,12 @@ screen_changed_cb (GtkWidget *button, GdkScreen *old_screen, TodayData *data)
 	atoms[_NET_WM_WINDOW_TYPE] =
                 gdk_x11_get_xatom_by_name_for_display
                         (display, "_NET_WM_WINDOW_TYPE");
+	atoms[_NET_CLOSE_WINDOW] =
+		gdk_x11_get_xatom_by_name_for_display
+			(display, "_NET_CLOSE_WINDOW");
+	atoms[_NET_ACTIVE_WINDOW] =
+		gdk_x11_get_xatom_by_name_for_display
+			(display, "_NET_ACTIVE_WINDOW");
         
         /* Get root window */
         data->root_window = gdk_screen_get_root_window (screen);
@@ -545,6 +556,146 @@ filter_func (GdkXEvent *xevent, GdkEvent *event, TodayData *data)
         return GDK_FILTER_CONTINUE;
 }
 
+static void
+today_task_manager_kill (TodayData *data, GdkWindow *window)
+{
+	/* NOTE: See
+	 * http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html#id2506711
+	 */
+	if (GDK_IS_WINDOW (window)) {
+		XEvent ev;
+		memset(&ev, 0, sizeof(ev));
+
+		ev.xclient.type         = ClientMessage;
+		ev.xclient.window       = GDK_WINDOW_XID (window);
+		ev.xclient.message_type = atoms[_NET_CLOSE_WINDOW];
+		ev.xclient.format       = 32;
+		ev.xclient.data.l[0]    = CurrentTime;
+		ev.xclient.data.l[1]    = GDK_WINDOW_XID (data->root_window);
+
+		gdk_error_trap_push();
+		XSendEvent (GDK_WINDOW_XDISPLAY (window),
+			GDK_WINDOW_XID (data->root_window), False,
+			SubstructureRedirectMask, &ev);
+
+		XSync(GDK_DISPLAY(),FALSE);
+		gdk_error_trap_pop();
+		
+		/* The following code looks equivalent to me, but isn't.. */
+		/*GdkEvent *event = gdk_event_new (GDK_CLIENT_EVENT);
+		((GdkEventAny *)event)->window = g_object_ref (window);
+		((GdkEventAny *)event)->send_event = TRUE;
+		((GdkEventClient *)event)->message_type =
+			gdk_x11_xatom_to_atom (atoms[_NET_CLOSE_WINDOW]);
+		((GdkEventClient *)event)->data_format = 32;
+		((GdkEventClient *)event)->data.l[0] = GDK_CURRENT_TIME;
+		((GdkEventClient *)event)->data.l[1] = GDK_WINDOW_XID (
+			data->root_window);
+		
+		gdk_event_send_client_message (event,
+			GDK_WINDOW_XID (data->root_window));
+		gdk_event_free (event);*/
+	}
+}
+
+static void
+today_task_manager_kill_clicked_cb (GtkToolButton *widget, TodayData *data)
+{
+	GdkWindow *window;
+	GdkDisplay *display;
+	Window xid;
+	GtkWidget *tile = gtk_window_get_focus (GTK_WINDOW (data->window));
+	
+	if (!TAKU_IS_ICON_TILE (tile)) return;
+	
+        display = gtk_widget_get_display (data->tasks_table);
+	xid = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (tile), "window"));
+	window = gdk_window_foreign_new_for_display (display, xid);
+
+	today_task_manager_kill (data, window);
+}
+
+static void
+today_task_manager_raise_clicked_cb (GtkToolButton *widget, TodayData *data)
+{
+	XEvent ev;
+	GdkWindow *window;
+	GdkDisplay *display;
+	Window xid;
+	GtkWidget *tile = gtk_window_get_focus (GTK_WINDOW (data->window));
+	
+	if (!TAKU_IS_ICON_TILE (tile)) return;
+	
+        display = gtk_widget_get_display (data->tasks_table);
+	xid = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (tile), "window"));
+	window = gdk_window_foreign_new_for_display (display, xid);
+	
+	g_debug ("Raising window");
+
+	/* NOTE: gdk_window_raise doesn't work? */
+	/*gdk_window_raise (window);*/
+
+	/* Send a _NET_ACTIVE_WINDOW message */
+	/* See
+	 * http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html#id2506353
+	 */
+	memset(&ev, 0, sizeof(ev));
+
+	ev.xclient.type         = ClientMessage;
+	ev.xclient.window       = GDK_WINDOW_XID (window);
+	ev.xclient.message_type = atoms[_NET_ACTIVE_WINDOW];
+	ev.xclient.format       = 32;
+	ev.xclient.data.l[0]	= 1;
+	ev.xclient.data.l[1]    = CurrentTime;
+	ev.xclient.data.l[2]    = GDK_WINDOW_XID (data->root_window);
+
+	gdk_error_trap_push();
+	XSendEvent (GDK_WINDOW_XDISPLAY (window),
+		GDK_WINDOW_XID (data->root_window), False,
+		SubstructureRedirectMask, &ev);
+
+	XSync(GDK_DISPLAY(),FALSE);
+	gdk_error_trap_pop();
+}
+
+static void
+today_task_manager_killall_clicked_cb (GtkToolButton *widget, TodayData *data)
+{
+	GList *c, *children;
+	GdkDisplay *display;
+	GtkWidget *dialog;
+	gint response;
+	
+	/* Confirmation dialog first */
+	dialog = gtk_message_dialog_new (GTK_WINDOW (data->window),
+		GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+		"Are you sure you want to close all applications?");
+	response = gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
+	
+	if (response != GTK_RESPONSE_YES) return;
+	
+        display = gtk_widget_get_display (data->tasks_table);
+
+	/* Kill all windows */
+	children = gtk_container_get_children (
+		GTK_CONTAINER (data->tasks_table));
+	
+	for (c = children; c; c = c->next) {
+		GdkWindow *window;
+		Window xid;
+		GtkWidget *child = GTK_WIDGET (c->data);
+
+		if (!TAKU_IS_ICON_TILE (child)) continue;
+
+		xid = GPOINTER_TO_UINT (g_object_get_data (
+			G_OBJECT (child), "window"));
+		window = gdk_window_foreign_new_for_display (display, xid);
+		
+		today_task_manager_kill (data, window);
+	}
+}
+
 GtkWidget *
 today_task_manager_page_create (TodayData *data)
 {
@@ -562,16 +713,22 @@ today_task_manager_page_create (TodayData *data)
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
+	g_signal_connect (G_OBJECT (button), "clicked",
+		G_CALLBACK (today_task_manager_killall_clicked_cb), data);
 
 	/* Kill app button */
 	button = today_toolbutton_new (GTK_STOCK_DELETE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
+	g_signal_connect (G_OBJECT (button), "clicked",
+		G_CALLBACK (today_task_manager_kill_clicked_cb), data);
 
 	/* Switch to app button */
 	button = today_toolbutton_new (GTK_STOCK_JUMP_TO);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
+	g_signal_connect (G_OBJECT (button), "clicked",
+		G_CALLBACK (today_task_manager_raise_clicked_cb), data);
 
 	/* Viewport / tasks table */
 	viewport = gtk_viewport_new (NULL, NULL);
