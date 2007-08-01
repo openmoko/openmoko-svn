@@ -450,6 +450,7 @@ register_network_cb (MokoDialer *dialer)
   {
     /* We have yet to request registration, so lets do it */
     /* FIXME: do the pin stuff */
+    g_debug ("Requesting registration");
     moko_gsmd_connection_network_register (priv->connection);
   }
   else 
@@ -458,9 +459,15 @@ register_network_cb (MokoDialer *dialer)
      * gsmd
      */
     if (priv->registered)
+    {
+      g_debug ("Netwok Registered");
       return FALSE;
+    }
     else
+    {
+      g_debug ("Requesting registration");
       moko_gsmd_connection_network_register (priv->connection);
+    }
   }
   
   return TRUE;

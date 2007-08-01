@@ -1,3 +1,8 @@
+2007-08-01  Neil J. Patel  <njp@o-hand.com>
+	
+	* src/moko-dialer.c: (register_network_cb):
+	Added some more debug statements.
+
 2007-07-31  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_call_progress_changed):
