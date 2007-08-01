@@ -1,5 +1,15 @@
 2007-08-01  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Sketch some ideas how Configuration, the Feed Data (GtkListStore),
+        sorting and filtering them and displaying items could work.
+
+        * src/feed-configuration.h: Added.
+        * src/feed-data.h: Added.
+        * src/feed-item-view.h: Added.
+        * src/moko_cache.h: Fix cast
+
+2007-08-01  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Janitor work and continue the renaming to feedreader2. Change README to document
         what is in my mind in regard to implementing the new UI guidelines.
 
