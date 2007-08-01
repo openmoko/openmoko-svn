@@ -1,5 +1,11 @@
 2007-08-01  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_pin_requested),
+	(on_call_progress_changed), (register_network_cb):
+	More debugging.
+
+2007-08-01  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (moko_dialer_init):
 	Init some variables properly.
 

@@ -384,7 +384,7 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
-  g_debug ("Incoming pin request for type %d", type);
+  g_print ("Incoming pin request for type %d", type);
 }
 
 
@@ -397,44 +397,44 @@ on_call_progress_changed (MokoGsmdConnection *conn,
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-  g_debug ("mokogsmd call progress changed");
+  g_print ("mokogsmd call progress changed");
   switch (type) 
   {
     case MOKO_GSMD_PROG_DISCONNECT:
     case MOKO_GSMD_PROG_RELEASE:
       moko_dialer_hung_up (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
-      g_debug ("mokogsmd disconnect");
+      g_print ("mokogsmd disconnect");
       break;
     
     case MOKO_GSMD_PROG_REJECT:
       moko_dialer_rejected (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
-      g_debug ("mokogsmd reject");
+      g_print ("mokogsmd reject");
       break;
     
     case MOKO_GSMD_PROG_CONNECTED:
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
-      g_debug ("mokogsmd connected");
+      g_print ("mokogsmd connected");
       break;
     case MOKO_GSMD_PROG_SETUP:
-      g_debug ("mokogsmd setup");
+      g_print ("mokogsmd setup");
       break;
     case MOKO_GSMD_PROG_ALERT:
-      g_debug ("mokogsmd alert");
+      g_print ("mokogsmd alert");
       break;
     case  MOKO_GSMD_PROG_CALL_PROCEED:
-      g_debug ("mokogsmd proceed");
+      g_print ("mokogsmd proceed");
       break;
     case MOKO_GSMD_PROG_SYNC:
-      g_debug ("mokogsmd sync");
+      g_print ("mokogsmd sync");
       break;
     case  MOKO_GSMD_PROG_PROGRESS:
-      g_debug ("mokogsmd progress");
+      g_print ("mokogsmd progress");
       break;
     case MOKO_GSMD_PROG_UNKNOWN:
     default:
-      g_debug ("mokogsmd unknown");
+      g_print ("mokogsmd unknown");
       break;
   }
 }
@@ -450,7 +450,7 @@ register_network_cb (MokoDialer *dialer)
   {
     /* We have yet to request registration, so lets do it */
     /* FIXME: do the pin stuff */
-    g_debug ("Requesting registration");
+    g_print ("Requesting registration");
     moko_gsmd_connection_network_register (priv->connection);
   }
   else 
@@ -460,12 +460,12 @@ register_network_cb (MokoDialer *dialer)
      */
     if (priv->registered)
     {
-      g_debug ("Netwok Registered");
+      g_print ("Netwok Registered");
       return FALSE;
     }
     else
     {
-      g_debug ("Requesting registration");
+      g_print ("Requesting registration");
       moko_gsmd_connection_network_register (priv->connection);
     }
   }
