@@ -351,12 +351,12 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   priv = dialer->priv;
 
   /* We sometimes get the signals multiple times */
-  if (priv->status == DIALER_STATUS_INCOMING 
-        || GTK_IS_WIDGET (priv->talking->parent))
+  if (priv->status == DIALER_STATUS_INCOMING)
   {
     g_print ("We are already showing the incoming page");
     return;
   }
+  g_print ("Status = %d\n", priv->status);
 
   priv->status = DIALER_STATUS_INCOMING;
 
@@ -392,7 +392,7 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
-  g_print ("Incoming pin request for type %d", type);
+  g_print ("Incoming pin request for type %d\n", type);
 }
 
 
@@ -405,44 +405,44 @@ on_call_progress_changed (MokoGsmdConnection *conn,
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-  g_print ("mokogsmd call progress changed");
+ 
   switch (type) 
   {
     case MOKO_GSMD_PROG_DISCONNECT:
     case MOKO_GSMD_PROG_RELEASE:
       moko_dialer_hung_up (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
-      g_print ("mokogsmd disconnect");
+      g_print ("mokogsmd disconnect\n");
       break;
     
     case MOKO_GSMD_PROG_REJECT:
       moko_dialer_rejected (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
-      g_print ("mokogsmd reject");
+      g_print ("mokogsmd reject\n");
       break;
     
     case MOKO_GSMD_PROG_CONNECTED:
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
-      g_print ("mokogsmd connected");
+      g_print ("mokogsmd connected\n");
       break;
     case MOKO_GSMD_PROG_SETUP:
-      g_print ("mokogsmd setup");
+      g_print ("mokogsmd setup\n");
       break;
     case MOKO_GSMD_PROG_ALERT:
-      g_print ("mokogsmd alert");
+      g_print ("mokogsmd alert\n");
       break;
     case  MOKO_GSMD_PROG_CALL_PROCEED:
-      g_print ("mokogsmd proceed");
+      g_print ("mokogsmd proceed\n");
       break;
     case MOKO_GSMD_PROG_SYNC:
-      g_print ("mokogsmd sync");
+      g_print ("mokogsmd sync\n");
       break;
     case  MOKO_GSMD_PROG_PROGRESS:
-      g_print ("mokogsmd progress");
+      g_print ("mokogsmd progress\n");
       break;
     case MOKO_GSMD_PROG_UNKNOWN:
     default:
-      g_print ("mokogsmd unknown");
+      g_print ("mokogsmd unknown\n");
       break;
   }
 }

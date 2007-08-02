@@ -1,5 +1,11 @@
 2007-08-02  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_incoming_call), (on_pin_requested),
+	(on_call_progress_changed):
+	Correct the debugging statements, add more to the incoming code path.
+
+2007-08-02  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_incoming_call):
 	Double check for incoming status as new tabs keep appearing.
 
