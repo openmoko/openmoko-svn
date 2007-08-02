@@ -9,7 +9,7 @@ style "calc-display-bg"
 {
   bg[NORMAL] = "black"
   fg[NORMAL] = "orange"
-  font_name = "Sans 40"
+  font_name = "Sans 20"
   xthickness = 10
   ythickness = 10
 }
