@@ -1,0 +1,18 @@
+
+UI:
+	Add repeat mode indicator (different button pixmaps)
+	
+Backend:
+	Use GConf
+	
+Issues:
+	How/where to store playlists? -> Single common path, omitting path chooser
+	How to adjust volume/panning?
+	Use EQ presets only or allow individual band adjustment?
+	How to adjust equalizer?
+
+Build process:
+	Add libspiff/libexpat/uriparser dependencies to Makefile.am
+
+Documentation:
+	Dependencies: libspiff->libexpat/uriparser
