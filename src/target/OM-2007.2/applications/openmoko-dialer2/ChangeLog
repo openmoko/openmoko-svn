@@ -1,3 +1,8 @@
+2007-08-02  Neil J. Patel  <njp@o-hand.com>
+
+	* data/openmoko-dialer.desktop:
+	Execute openmoko-dialer -s, so the dialer always shows.
+
 2007-08-02  Thomas Wood  <thomas@openedhand.com>
 
 	* src/Makefile.am: Stop being pedantic

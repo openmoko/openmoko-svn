@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=Dialer
 Comment=Telephone Calls
-Exec=openmoko-dialer
+Exec=openmoko-dialer -s
 Icon=Dialer
 Terminal=false
 Type=Application
