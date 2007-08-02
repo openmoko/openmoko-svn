@@ -350,6 +350,10 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  /* We sometimes get the signals multiple times */
+  if (priv->status == DIALER_STATUS_INCOMING)
+    return;
+
   priv->status = DIALER_STATUS_INCOMING;
 
   moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL, NULL);
