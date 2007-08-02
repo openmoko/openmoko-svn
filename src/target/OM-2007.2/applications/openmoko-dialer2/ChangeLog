@@ -1,5 +1,10 @@
 2007-08-02  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_incoming_call):
+	Double check for incoming status as new tabs keep appearing.
+
+2007-08-02  Neil J. Patel  <njp@o-hand.com>
+
 	* data/openmoko-dialer.desktop:
 	Execute openmoko-dialer -s, so the dialer always shows.
 

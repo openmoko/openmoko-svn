@@ -254,7 +254,7 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-
+  
   if (priv->status != DIALER_STATUS_INCOMING)
     return;
   
@@ -351,8 +351,12 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   priv = dialer->priv;
 
   /* We sometimes get the signals multiple times */
-  if (priv->status == DIALER_STATUS_INCOMING)
+  if (priv->status == DIALER_STATUS_INCOMING 
+        || GTK_IS_WIDGET (priv->talking->parent))
+  {
+    g_print ("We are already showing the incoming page");
     return;
+  }
 
   priv->status = DIALER_STATUS_INCOMING;
 
