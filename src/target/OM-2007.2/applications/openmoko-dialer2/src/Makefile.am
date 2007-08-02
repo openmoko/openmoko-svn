@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
               -DPKGDATADIR=\"$(pkgdatadir)\"
-AM_CFLAGS = -Wall -pedantic @CFLAGS@
+AM_CFLAGS = -Wall @CFLAGS@
 
 bin_PROGRAMS = openmoko-dialer
 

@@ -1,3 +1,16 @@
+2007-08-02  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am: Stop being pedantic
+	* src/moko-dialer-declares.h: Removed
+	* src/moko-dialer-textview.c: (moko_dialer_textview_class_init),
+	(moko_dialer_textview_init), (moko_dialer_textview_set_color),
+	(moko_dialer_textview_insert):
+	* src/moko-dialer-textview.h:
+
+	- Add style properties for small, medium and large font sizes
+	- Remove hardcoding of font sizes and colours
+
+
 2007-08-02  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_incoming_call):

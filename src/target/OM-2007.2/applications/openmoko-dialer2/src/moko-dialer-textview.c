@@ -1,6 +1,8 @@
 /*  moko-dialer-textview.c
  *
- *  Authored by Tony Guan<tonyguan@fic-sh.com.cn>
+ *  Authored by:
+ *    Tony Guan<tonyguan@fic-sh.com.cn>
+ *    OpenedHand Ltd. <info@openedhand.com>
  *
  *  Copyright (C) 2006 FIC Shanghai Lab
  *
@@ -18,7 +20,6 @@
  */
 
 #include "moko-dialer-textview.h"
-#include "moko-dialer-declares.h"
 #include "error.h"
 G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
      enum
@@ -28,19 +29,43 @@ G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
        LAST_SIGNAL
      };
 
-//forward definition
-//static void  moko_dialer_textview_pressed  (MokoDigitButton * button, GdkEventButton  *event,gpointer data);
-//static void moko_dialer_textview_pressed (MokoDigitButton * button, gpointer data);
-
-//static gint moko_dialer_textview_signals[LAST_SIGNAL] = { 0 };
-
-     static void
-       moko_dialer_textview_class_init (MokoDialerTextviewClass * class)
+static void
+moko_dialer_textview_class_init (MokoDialerTextviewClass * class)
 {
 
-  GtkObjectClass *object_class;
+  GtkWidgetClass *widget_class;
 
-  object_class = (GtkObjectClass *) class;
+  widget_class = GTK_WIDGET_CLASS (class);
+
+
+  gtk_widget_class_install_style_property (widget_class,
+      g_param_spec_int (
+        "small_font",
+        "Small Font",
+        "Smallest font size for the display",
+        0,
+        128,
+        10,
+        G_PARAM_READABLE | G_PARAM_WRITABLE));
+  gtk_widget_class_install_style_property (widget_class,
+      g_param_spec_int (
+        "medium_font",
+        "Medium Font",
+        "Medium font size for the display",
+        0,
+        128,
+        15,
+        G_PARAM_READABLE | G_PARAM_WRITABLE));
+  gtk_widget_class_install_style_property (widget_class,
+      g_param_spec_int (
+        "large_font",
+        "Large Font",
+        "Largest font size for the display",
+        0,
+        128,
+        20,
+        G_PARAM_READABLE | G_PARAM_WRITABLE));
+
 
 
 }
@@ -52,7 +77,7 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
 
   GtkTextView *textview = 0;
   GtkTextBuffer *buffer;
-  GdkColor color;
+  gint large;
 
   textview = &moko_dialer_textview->textview;
   buffer = gtk_text_view_get_buffer (textview);
@@ -61,14 +86,6 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
   moko_dialer_textview->tag_for_cursor = NULL;
   moko_dialer_textview->tag_for_autofilled = NULL;
 
-  /* TODO: use theme colours */
-  gdk_color_parse ("black", &color);
-  gtk_widget_modify_base (GTK_WIDGET (textview), GTK_STATE_NORMAL, &color);
-
-
-
-
-  gtk_widget_set_size_request (GTK_WIDGET (textview), 480, 92);
   GTK_WIDGET_UNSET_FLAGS (textview, GTK_CAN_FOCUS);
   gtk_text_view_set_editable (GTK_TEXT_VIEW (textview), FALSE);
   gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (textview), FALSE);
@@ -82,26 +99,21 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
   PangoFontDescription *font_desc_textview = NULL;
   font_desc_textview = pango_font_description_new ();
 
-  // set the default font for the textview.
-  pango_font_description_set_size (font_desc_textview, 32 * PANGO_SCALE);
+  /* get font sizes */
+  gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "large_font", &large, NULL);
+
+  /* set the default font for the textview. */
+  pango_font_description_set_size (font_desc_textview, large * PANGO_SCALE);
+  gtk_widget_modify_font (GTK_WIDGET (moko_dialer_textview), font_desc_textview);
 
   if (font_desc_textview)
   {
-    gtk_widget_modify_font (GTK_WIDGET (moko_dialer_textview),
-                            font_desc_textview);
-    // save it to the structure for later usage.
+    /* save it to the structure for later usage. */
     moko_dialer_textview->font_desc_textview = font_desc_textview;
   }
-  // create the formatting tag;
-  moko_dialer_textview->tag_for_inputed =
-    gtk_text_buffer_create_tag (buffer, "tag_input", "foreground", "#FF8000",
-                                NULL);
   moko_dialer_textview->tag_for_cursor =
     gtk_text_buffer_create_tag (buffer, "tag_cursor", "weight",
                                 "PANGO_WEIGHT_BOLD", NULL);
-  moko_dialer_textview->tag_for_autofilled =
-    gtk_text_buffer_create_tag (buffer, "tag_filled", "foreground", "#FFFF00",
-                                NULL);
   moko_dialer_textview->sensed = FALSE;
 
 }
@@ -136,8 +148,8 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
   gint len;
   GtkTextIter start, cursoriter_1, cursoriter;
   GtkTextIter end;
+  gint small = 10, medium = 10, large = 10;
 
-//text_view= lookup_widget (GTK_WIDGET(button), "textview");
   /* Obtaining the buffer associated with the widget. */
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 
@@ -155,22 +167,28 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
     gtk_text_buffer_remove_all_tags (buffer, &start, &end);
 
     gtk_text_buffer_get_iter_at_offset (buffer, &cursoriter_1, cur - 1);
-    gtk_text_buffer_apply_tag (buffer,
-                               moko_dialer_textview->tag_for_inputed,
-                               &start, &cursoriter);
-    gtk_text_buffer_apply_tag (buffer,
-                               moko_dialer_textview->tag_for_autofilled,
-                               &cursoriter, &end);
+//    gtk_text_buffer_apply_tag (buffer,
+//                               moko_dialer_textview->tag_for_inputed,
+//                               &start, &cursoriter);
+//    gtk_text_buffer_apply_tag (buffer,
+//                               moko_dialer_textview->tag_for_autofilled,
+//                               &cursoriter, &end);
     gtk_text_buffer_apply_tag (buffer, moko_dialer_textview->tag_for_cursor,
                                &cursoriter_1, &cursoriter);
 
   }
   else
   {                             // cur==0
-    gtk_text_buffer_apply_tag (buffer,
-                               moko_dialer_textview->tag_for_autofilled,
-                               &cursoriter, &end);
+//    gtk_text_buffer_apply_tag (buffer,
+//                               moko_dialer_textview->tag_for_autofilled,
+//                               &cursoriter, &end);
   }
+
+  /* get font sizes */
+  gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "small_font", &small, NULL);
+  gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "medium_font", &medium, NULL);
+  gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "large_font", &large, NULL);
+
 
 
   len = gtk_text_buffer_get_char_count (buffer);
@@ -178,19 +196,19 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
   {
     if (moko_dialer_textview->font_desc_textview)
       pango_font_description_set_size (moko_dialer_textview->
-                                       font_desc_textview, 32 * PANGO_SCALE);
+                                       font_desc_textview, small * PANGO_SCALE);
   }
   else if (len >= 9 && len < 12)
   {
     if (moko_dialer_textview->font_desc_textview)
       pango_font_description_set_size (moko_dialer_textview->
-                                       font_desc_textview, 48 * PANGO_SCALE);
+                                       font_desc_textview, medium * PANGO_SCALE);
   }
   else if (len >= 0 && len < 9)
   {
     if (moko_dialer_textview->font_desc_textview)
       pango_font_description_set_size (moko_dialer_textview->
-                                       font_desc_textview, 64 * PANGO_SCALE);
+                                       font_desc_textview, large * PANGO_SCALE);
   }
 
   gtk_widget_modify_font (GTK_WIDGET (moko_dialer_textview),
@@ -227,21 +245,21 @@ moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
   GtkTextIter selectioniter, insertiter;
   GtkTextMark *selectmark, *insertmark;
 
-//DBG_MESSAGE("number=%s",number);
-
   /* Obtaining the buffer associated with the widget. */
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 
   selectmark = gtk_text_buffer_get_selection_bound (buffer);
   insertmark = gtk_text_buffer_get_insert (buffer);
-//get current cursor iterator
+
+  /* get current cursor iterator */
   gtk_text_buffer_get_iter_at_mark (buffer, &insertiter, insertmark);
   gtk_text_buffer_get_iter_at_mark (buffer, &selectioniter, selectmark);
-  // to see whether there is a selection range.
+
+  /* to see whether there is a selection range. */
   if (gtk_text_iter_get_offset (&insertiter) !=
       gtk_text_iter_get_offset (&selectioniter))
   {
-    // yes, first delete the range.
+    /* first delete the range */
     gtk_text_buffer_delete (buffer, &selectioniter, &insertiter);
     insertmark = gtk_text_buffer_get_insert (buffer);
     gtk_text_buffer_get_iter_at_mark (buffer, &insertiter, insertmark);
@@ -252,35 +270,16 @@ moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
 
 
   len = gtk_text_buffer_get_char_count (buffer);
-  if (len >= 0 && len < MOKO_DIALER_MAX_NUMBER_LEN)
-  {
+  gtk_text_buffer_insert_at_cursor (buffer, number,
+                                    g_utf8_strlen (number, -1));
+  len = len + g_utf8_strlen (number, -1);
 
-    gtk_text_buffer_insert_at_cursor (buffer, number,
-                                      g_utf8_strlen (number, -1));
-    len = len + g_utf8_strlen (number, -1);
-  }
-  else
-  {
-    // DBG_WARN("INPUT EXCEEDS %d,reset to null!",MAXDIALNUMBERLEN);
-
-    /* FIXME: shouldn't this just leave the existing number? */
-    gtk_text_buffer_set_text (buffer, number, -1);
-    len = 1;
-  }
-  // reget the cursor iter.
+  /* reget the cursor iter. */
   insertmark = gtk_text_buffer_get_insert (buffer);
-//get current cursor iterator
+  /* get current cursor iterator */
   gtk_text_buffer_get_iter_at_mark (buffer, &insertiter, insertmark);
-  // get the inputed string lengh.
+  /* get the inputed string lengh. */
   len = gtk_text_iter_get_offset (&insertiter);
-//      DBG_MESSAGE("the current cursor offset is %d",len);
-
-/*
-	if(len>=MINSENSATIVELEN)
-	{//here we start to search the contacts.
-		rebuild_contact_view(text_view,1);		
-	}
-*/
 
   moko_dialer_textview_set_color (moko_dialer_textview);
   return len;
