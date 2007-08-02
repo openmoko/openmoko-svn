@@ -56,17 +56,8 @@ style "gtkcheckbutton" {
             overlay_file    = "checkbutton/checkbutton-checked.png"
             overlay_stretch = TRUE
         }
-#
-# check button flat box
-#
-        image {
-            function        = FLAT_BOX
-            file            = "transparency100.png"
-            border          = {10, 5, 5, 10}
-            stretch         = TRUE
-        }
     }
     GtkCheckButton::indicator-size = 35
     GtkCheckButton::indicator-spacing = 5
 }
-class "GtkCheckButton" style "gtkcheckbutton"
+class "GtkWidget" style "gtkcheckbutton"
