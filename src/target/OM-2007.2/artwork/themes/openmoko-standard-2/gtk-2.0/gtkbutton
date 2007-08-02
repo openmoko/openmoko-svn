@@ -35,5 +35,6 @@ style "gtkbutton-label" {
     fg[PRELIGHT] = "#ffffff"
     fg[ACTIVE]   = "#ffffff"
 }
-widget_class "*.GtkButton.*GtkLabel*" style "gtkbutton-label"
+widget_class "*.GtkButton.*" style "gtkbutton-label"
+widget_class "*.MokoDigitButton.*" style "gtkbutton-label"
 
