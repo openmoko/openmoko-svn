@@ -30,6 +30,7 @@ static GtkIconSize icon_size;
 
 struct _TakuLauncherTilePrivate
 {
+  char *filename;
   GList *groups;
   LauncherData *data;
 };
@@ -110,7 +111,20 @@ taku_launcher_tile_finalize (GObject *object)
     launcher_destroy (tile->priv->data);
   }
 
+  g_free (tile->priv->filename);
+
   G_OBJECT_CLASS (taku_launcher_tile_parent_class)->finalize (object);
+}
+
+/*
+ * Timeout callback to restore the state of the widget after the clicked state
+ * change.
+ */
+static gboolean
+reset_state (gpointer data)
+{
+  gtk_widget_set_state (GTK_WIDGET (data), GTK_STATE_NORMAL);
+  return FALSE;
 }
 
 static void
@@ -118,6 +132,10 @@ taku_launcher_tile_clicked (TakuTile *tile)
 {
   TakuLauncherTile *launcher = TAKU_LAUNCHER_TILE (tile);
 
+  gtk_widget_set_state (GTK_WIDGET (tile), GTK_STATE_ACTIVE);
+
+  g_timeout_add (500, reset_state, tile);
+  
   launcher_start (GTK_WIDGET (tile), launcher->priv->data);
 }
 
@@ -207,7 +225,16 @@ taku_launcher_tile_for_desktop_file (const char *filename)
 
   tile = (TakuLauncherTile*) taku_launcher_tile_new ();
   set_launcher_data (tile, data);
+  tile->priv->filename = g_strdup (filename);
   return (GtkWidget*) tile;
+}
+
+const char *
+taku_launcher_tile_get_filename (TakuLauncherTile *tile)
+{
+  g_return_val_if_fail (TAKU_IS_LAUNCHER_TILE (tile), NULL);
+  
+  return tile->priv->filename;
 }
 
 const char **

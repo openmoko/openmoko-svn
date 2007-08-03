@@ -4,11 +4,10 @@
 
 #include <gtk/gtk.h>
 #include <libtaku/taku-launcher-tile.h>
+#include <moko-journal.h>
 
 typedef struct {
-	/* UI vars */
-	
-	/* Main */
+	/* Home */
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkWidget *home_toolbar;
@@ -19,8 +18,19 @@ typedef struct {
 	GtkToolItem *messages_button;
 	GtkToolItem *dates_button;
 	
-	/* Misc. vars */
+	GtkTreeModel *events_model;
+	GtkTreeModel *tasks_model;
+	GtkTreeIter notice;
+	gboolean notice_visible;
+	int rows;
 	
+	MokoJournal *journal;
+	GtkListStore *journal_model;
+	GtkTreeIter missed_calls;
+	gint n_missed_calls;
+	GtkTreeIter unread_messages;
+	gint n_unread_messages;
+
 	/* App launcher */
 	GList *categories;
 	GtkWidget *launcher_table;

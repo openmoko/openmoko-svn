@@ -186,7 +186,6 @@ today_events_store_objects_removed (ECalView *ecalview, GList *uids,
 		
 #ifdef HAVE_ECALCOMPONENTID
 		ECalComponentId *id = uids->data;
-		/* FIXME: What happens with uid/rid here? */
 		uid = id->uid;
 #else
 		uid = uids->data;
@@ -278,10 +277,14 @@ today_events_store_compare (GtkTreeModel *model, GtkTreeIter *a,
 	gtk_tree_model_get (GTK_TREE_MODEL (store), b,
 		TODAY_EVENTS_STORE_COL_COMP, &comp2, -1);
 	
-	start1 = icalcomponent_get_dtstart (comp1);
-	start2 = icalcomponent_get_dtstart (comp2);
-	
-	return icaltime_compare (start1, start2);
+	/* Make sure inserted rows always sort before real rows */
+	if (comp1 && comp2) {
+		start1 = icalcomponent_get_dtstart (comp1);
+		start2 = icalcomponent_get_dtstart (comp2);
+		
+		return icaltime_compare (start1, start2);
+	} else if (comp1) return -1;
+	else return 1;
 }
 
 static void

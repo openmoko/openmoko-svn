@@ -11,6 +11,7 @@
 #include "today.h"
 #include "today-utils.h"
 #include "today-pim-summary.h"
+#include "today-pim-journal.h"
 #include "today-launcher.h"
 #include "today-task-manager.h"
 
@@ -131,12 +132,13 @@ today_create_home_page (TodayData *data)
 	vbox = gtk_vbox_new (FALSE, 6);
 	gtk_container_add (GTK_CONTAINER (align), vbox);
 	gtk_widget_show_all (align);
-	/*data->message_box = today_header_box_new_with_markup (
-		"<b>Provider goes here</b>");
-	gtk_box_pack_start (GTK_BOX (vbox), data->message_box, FALSE, TRUE, 0);*/
 
-	data->summary_box = today_pim_summary_box_new ();
-	gtk_box_pack_start (GTK_BOX (vbox), data->summary_box, FALSE, TRUE, 0);
+	data->message_box = today_pim_journal_box_new (data);
+	gtk_box_pack_start (GTK_BOX (vbox), data->message_box, FALSE, TRUE, 0);
+	gtk_widget_show (data->message_box);
+	
+	data->summary_box = today_pim_summary_box_new (data);
+	gtk_box_pack_start (GTK_BOX (vbox), data->summary_box, FALSE, TRUE, 6);
 	gtk_widget_show (data->summary_box);
 	
 	return main_vbox;

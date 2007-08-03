@@ -100,26 +100,12 @@ taku_tile_expose (GtkWidget      *widget,
 }
 
 /*
- * Timeout callback to restore the state of the widget after the clicked state
- * change.
- */
-static gboolean
-reset_state (gpointer data)
-{
-  gtk_widget_set_state (GTK_WIDGET (data), GTK_STATE_NORMAL);
-  return FALSE;
-}
-
-/*
  * The tile was clicked, so start the state animation and fire the signal.
  */
 static void
 taku_tile_clicked (TakuTile *tile)
 {
   g_return_if_fail (TAKU_IS_TILE (tile));
-
-  gtk_widget_set_state (GTK_WIDGET (tile), GTK_STATE_ACTIVE);
-  g_timeout_add (500, reset_state, tile);
 
   g_signal_emit (tile, signals[CLICKED], 0);
 }

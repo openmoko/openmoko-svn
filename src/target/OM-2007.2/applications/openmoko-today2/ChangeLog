@@ -1,3 +1,35 @@
+2007-08-03  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_finalize),
+	(reset_state), (taku_launcher_tile_clicked),
+	(taku_launcher_tile_for_desktop_file),
+	(taku_launcher_tile_get_filename):
+	* libtaku/taku-launcher-tile.h:
+	* libtaku/taku-tile.c: (taku_tile_clicked):
+	Synchronise with matchbox-desktop-2
+
+	* src/today-events-store.c: (today_events_store_objects_removed),
+	(today_events_store_compare):
+	Sort rows with NULL components to the top
+
+	* src/today-main.c: (today_create_home_page):
+	Create the journal box
+
+	* src/today-pim-summary.c: (today_pim_summary_show_notice),
+	(today_pim_summary_row_inserted_cb),
+	(today_pim_summary_row_deleted_cb), (today_pim_summary_box_new):
+	* src/today-pim-summary.h:
+	Put the 'no events/tasks' message in the treeview for a consistent look
+
+	* configure.ac:
+	Add libmokojournal to dependencies
+
+	* src/Makefile.am:
+	* src/today.h:
+	* src/today-pim-journal.h:
+	* src/today-pim-journal.c:
+	Implement mokojournal summary box (missed calls/unread messages)
+
 2007-08-01  Chris Lord,,,  <chris@openedhand.com>
 
 	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_remove_group),
