@@ -39,7 +39,6 @@ typedef struct {
 typedef enum {
 	MOKO_FINGER_SCROLL_MODE_PUSH,
 	MOKO_FINGER_SCROLL_MODE_ACCEL,
-	MOKO_FINGER_SCROLL_MODE_PHYSICAL,
 } MokoFingerScrollMode;
 
 GType moko_finger_scroll_get_type (void);

@@ -1,5 +1,4 @@
 
-#include <glib.h>
 #include "moko-finger-scroll.h"
 
 G_DEFINE_TYPE (MokoFingerScroll, moko_finger_scroll, GTK_TYPE_EVENT_BOX)
@@ -7,21 +6,12 @@ G_DEFINE_TYPE (MokoFingerScroll, moko_finger_scroll, GTK_TYPE_EVENT_BOX)
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollPrivate))
 typedef struct _MokoFingerScrollPrivate MokoFingerScrollPrivate;
 
-typedef struct _point point;
-struct _point
-{
-	gdouble x;
-	gdouble y;
-	gint32 time;
-};
-
 struct _MokoFingerScrollPrivate {
 	MokoFingerScrollMode mode;
 	gdouble x;
 	gdouble y;
 	gdouble ex;
 	gdouble ey;
-	point prev_values[3];
 	gboolean enabled;
 	gboolean clicked;
 	gboolean moved;
@@ -32,8 +22,7 @@ struct _MokoFingerScrollPrivate {
 	guint sps;
 	gdouble vel_x;
 	gdouble vel_y;
-;
-
+	
 	GtkWidget *align;
 	gboolean hscroll;
 	gboolean vscroll;
@@ -48,27 +37,6 @@ enum {
 	PROP_SPS,
 };
 
-#define PHYSICAL_MOVE_PERIOD 300
-
-static gint32
-time_diff (gint32 t1, gint32 t2)
-{
-	if (t2 > t1)
-		return t2-t1;
-	else
-		return ((gint64)t2 + 1<<32) - (gint64)t1;
-}
-
-static void
-rough_linear (point p0, point p1, point p2, gdouble *xm, gdouble *ym)
-{
-	/* just calulate two slopes and avarage */
-	*xm = (((p0.x-p1.x) / time_diff(p1.time,p0.time))
-		+ ((p0.x-p1.x) / time_diff(p2.time,p0.time))) / 2;
-	*ym = (((p0.y-p1.y) / time_diff(p1.time,p0.time))
-		+ ((p0.y-p2.y) / time_diff(p2.time,p0.time))) / 2;
-}
-
 static gboolean
 moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 				    GdkEventButton *event,
@@ -82,20 +50,12 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	g_get_current_time (&priv->click_start);
 	priv->x = event->x;
 	priv->y = event->y;
-	priv->ex = event->x;
-	priv->ey = event->y;
 	priv->moved = FALSE;
 	priv->clicked = TRUE;
 	/* Stop scrolling on mouse-down (so you can flick, then hold to stop) */
 	priv->vel_x = 0;
 	priv->vel_y = 0;
-
-	priv->prev_values[0].x = event->x;
-	priv->prev_values[0].y = event->y;
-	priv->prev_values[0].time = event->time;
-	priv->prev_values[1].x = event->x;
-	priv->prev_values[1].y = event->y;
-	priv->prev_values[1].time = event->time;
+	
 	return TRUE;
 }
 
@@ -151,10 +111,8 @@ moko_finger_scroll_timeout (MokoFingerScroll *scroll)
 	gboolean sx, sy;
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	
-	g_debug ("vel_x=%f, vel_y=%fr",priv->vel_x,priv->vel_y);
-
 	if ((!priv->enabled) ||
-	    (priv->mode == MOKO_FINGER_SCROLL_MODE_PUSH)) return FALSE;
+	    (priv->mode != MOKO_FINGER_SCROLL_MODE_ACCEL)) return FALSE;
 	if (!priv->clicked) {
 		/* Decelerate gradually when pointer is raised */
 		priv->vel_x *= priv->decel;
@@ -228,22 +186,6 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 				 allocation.height) *
 				(priv->vmax-priv->vmin)) + priv->vmin);
 			break;
-		    case MOKO_FINGER_SCROLL_MODE_PHYSICAL:
-			/* Scroll by the amount of pixels the cursor has moved
-			 * since the last motion event.
-			 */
-			moko_finger_scroll_scroll (scroll, x, y, NULL, NULL);
-			priv->prev_values[1].x = priv->prev_values[0].x;
-			priv->prev_values[1].y = priv->prev_values[0].y;
-			priv->prev_values[1].time = priv->prev_values[0].time;
-			priv->prev_values[0].x = event->x;
-			priv->prev_values[0].y = event->y;
-			priv->prev_values[0].time = event->time;
-			priv->x = event->x;
-			priv->y = event->y;
-			    
-			break;
-	
 		    default :
 			break;
 		}
@@ -330,22 +272,6 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		((GdkEvent *)event)->any.window = g_object_ref (child);
 		((GdkEvent *)event)->type = GDK_BUTTON_RELEASE;
 		gdk_event_put ((GdkEvent *)event);
-	}
-	if (priv->moved && priv->mode == MOKO_FINGER_SCROLL_MODE_PHYSICAL) {
-		point p0;
-		gdouble velx, vely;
-		p0.x = event->x;
-		p0.y = event->y;
-		p0.time = event->time;
-		g_debug ("doing physical");
-		/*velx and vely are in pixels/ms..*/
-		rough_linear (p0, priv->prev_values[0], priv->prev_values[1], &velx, &vely);
-		
-		priv->vel_x = (velx * 1000.0) / priv->sps;
-		priv->vel_y = (vely * 1000.0) / priv->sps;
-		g_timeout_add ((gint)(1000.0/(gdouble)priv->sps),
-			(GSourceFunc)moko_finger_scroll_timeout,
-			scroll);
 	}
 
 	return TRUE;
@@ -587,8 +513,8 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 			"Scroll mode",
 			"Change the finger-scrolling mode.",
 			MOKO_FINGER_SCROLL_MODE_PUSH,
-			MOKO_FINGER_SCROLL_MODE_PHYSICAL,
-			MOKO_FINGER_SCROLL_MODE_PHYSICAL,
+			MOKO_FINGER_SCROLL_MODE_ACCEL,
+			MOKO_FINGER_SCROLL_MODE_ACCEL,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
 	g_object_class_install_property (
