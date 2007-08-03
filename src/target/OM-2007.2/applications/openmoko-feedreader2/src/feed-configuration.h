@@ -36,7 +36,6 @@
 
 G_BEGIN_DECLS
 
-#define RSS_TYPE_FEED                           feed_get_type()
 #define RSS_TYPE_FEED_CONFIGURATION             feed_configuration_get_type()
 #define RSS_FEED_CONFIGURATION(obj)             (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_FEED_CONFIGURATION, FeedConfiguration))
 #define RSS_FEED_CONFIGURATION_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_FEED_CONFIGURATION, FeedConfigurationClass))
@@ -44,19 +43,17 @@ G_BEGIN_DECLS
 #define RSS_IS_FEED_CONFIGURATION_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_FEED_CONFIGURATION))
 #define RSS_FEED_CONFIGURATION_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_FEED_CONFIGURATION, FeedConfigurationClass))
 
-typedef struct _Feed Feed;
-
 typedef struct _FeedConfiguration FeedConfiguration;
 typedef struct _FeedConfigurationClass FeedConfigurationClass;
 
-struct _Feed {
-    gchar* name;
-    gchar* url;
-    gchar* user_name;
-    gchar* password;
-    gint   number_of_items_to_cache;
+enum {
+    FEED_NAME,
+    FEED_URL,
+    FEED_USER_NAME,
+    FEED_PASSWORD,
+    FEED_NUMBER_OF_ITEMS_TO_CACHE,
+    FEED_NUMBER_OF_COLUMNS
 };
-
 
 struct _FeedConfiguration {
     GtkListStore parent;
@@ -67,17 +64,12 @@ struct _FeedConfigurationClass {
 };
 
 
-GType feed_get_type (void);
-Feed* feed_copy (const Feed*);
-void  feed_free (Feed*);
-
-
-GType feed_configuration_get_type (void);
+GType       feed_configuration_get_type             (void);
 
 /*
  * singleton
  */
-GObject* feed_configuration_get_configuration (void),
+GObject*    feed_configuration_get_configuration    (void);
 
 G_END_DECLS
 

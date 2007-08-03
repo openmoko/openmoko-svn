@@ -27,38 +27,13 @@
 #ifndef APPLICATION_DATA_H
 #define APPLICATION_DATA_H
 
-
-#include <libmokoui/moko-application.h>
-#include <libmokoui/moko-paned-window.h>
-#include <libmokoui/moko-tree-view.h>
-#include <libmokoui/moko-tool-box.h>
-
-#include <webkitgtkpage.h>
-
 #include "moko_cache.h"
-
 #include <gtk/gtk.h>
 
-struct RSSReaderData {
-    MokoApplication   *app;
+struct ApplicationData {
+    GtkWindow         *window;
     MokoCache         *cache;
-    GtkMenu           *menu;
-    GtkMenu           *filter;
-    MokoPanedWindow   *window;
-    MokoToolBox       *box;
-    MokoMenuBox       *menubox;
-
-
-    MokoTreeView      *treeView;
-    GtkListStore      *feed_data;
-    GtkTreeModelFilter *filter_model;
-    GtkTreeModelSort  *sort_model;
-
-    WebKitGtkPage     *textPage;
-
-    gchar             *current_filter;
-    int                is_all_filter;
-    gchar             *current_search_text;
+    GtkNotebook       *notebook;
 };
 
 /*

@@ -33,29 +33,79 @@
 #ifndef RSS_READER_FEED_DATA_H
 #define RSS_READER_FEED_DATA_H
 
-#include "feed-configuration.h"
+#include <gtk/gtk.h>
+#include "moko_cache.h"
 
 G_BEGIN_DECLS
 
-#define RSS_TYPE_FEED_DATA              feed_data_get_type()
-#define RSS_FEED_DATA(obj)              (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_FEED_DATA, FeedData))
-#define RSS_FEED_DATA_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_FEED_DATA, FeedDataClass))
-#define RSS_IS_FEED_DATA(obj)           (G_TYPE_CHECK_INSTANCE_TYPE((obj), RSS_TYPE_FEED_DATA))
-#define RSS_IS_FEED_DATA_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_FEED_DATA))
-#define RSS_FEED_DATA_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_FEED_DATA, FeedDataClass))
+#define RSS_TYPE_FEED_DATA                  feed_data_get_type()
+#define RSS_FEED_DATA(obj)                  (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_FEED_DATA, FeedData))
+#define RSS_FEED_DATA_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_FEED_DATA, FeedDataClass))
+#define RSS_IS_FEED_DATA(obj)               (G_TYPE_CHECK_INSTANCE_TYPE((obj), RSS_TYPE_FEED_DATA))
+#define RSS_IS_FEED_DATA_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_FEED_DATA))
+#define RSS_FEED_DATA_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_FEED_DATA, FeedDataClass))
 
-#define RSS_TYPE_FEED_FILTER            feed_filter_get_type()
-#define RSS_TYPE_FEED_SORTER            feed_sorter_get_type()
+#define RSS_TYPE_FEED_FILTER                feed_filter_get_type()
+#define RSS_FEED_FILTER(obj)                (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_FEED_FILTER, FeedFilter))
+#define RSS_FEED_FILTER_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_FEED_FILTER, FeedFilterClass))
+#define RSS_IS_FEED_FILTER(obj)             (G_TYPE_CHECK_INSTANCE_TYPE((obj), RSS_TYPE_FEED_FILTER))
+#define RSS_IS_FEED_FILTER_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_FEED_FILTER))
+#define RSS_FEED_FILTER_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_FEED_FILTER, FeedFilterClass))
+
+
+
+#define RSS_TYPE_FEED_SORT                feed_sort_get_type()
+#define RSS_FEED_SORT(obj)                (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_FEED_SORT, FeedSort))
+#define RSS_FEED_SORT_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_FEED_SORT, FeedSortClass))
+#define RSS_IS_FEED_SORT(obj)             (G_TYPE_CHECK_INSTANCE_TYPE((obj), RSS_TYPE_FEED_SORT))
+#define RSS_IS_FEED_SORT_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_FEED_SORT))
+#define RSS_FEED_SORT_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_FEED_SORT, FeedSortClass))
 
 typedef struct _FeedData FeedData;
 typedef struct _FeedDataClass FeedDataClass;
+typedef struct _FeedFilter FeedFilter;
+typedef struct _FeedFilterClass FeedFilterClass;
+typedef struct _FeedSort FeedSort;
+typedef struct _FeedSortClass FeedSortClass;
 
 struct _FeedData {
     GtkListStore parent;
+    MokoCache    *cache;
 };
 
 struct _FeedDataClass {
     GtkListStoreClass parent;
+};
+
+struct _FeedFilter {
+    GtkTreeModelFilter parent;
+
+    /*
+     * Do we have a filter set at all?
+     */
+    gboolean all_filter;
+
+    /*
+     * The category to filter. Coming from the feed-configuration
+     */
+    gchar   *category;
+
+    /*
+     * The filter string.
+     */
+    gchar  *filter_string;
+};
+
+struct _FeedFilterClass {
+    GtkTreeModelFilterClass parent;
+};
+
+struct _FeedSort {
+    GtkTreeModelSort parent;
+};
+
+struct  _FeedSortClass {
+    GtkTreeModelSortClass parent;
 };
 
 
@@ -63,16 +113,18 @@ GType       feed_data_get_type          (void);
 GObject*    feed_data_get_instance      (void);
 
 void        feed_data_update_all        (FeedData*);
-void        feed_data_update            (FeedData*, Feed*);
+void        feed_data_set_cache         (FeedData*, MokoCache*);
+void        feed_data_load_from_cache   (FeedData*);
 
 
 GType       feed_filter_get_type        (void);
-GObject*    feed_filter_new             (const FeedFilter*);
-void        feed_filter_reset           (const FeedFilter*);
-void        feed_filter_filter          (const FeedFilter*, const Feed*);
+GObject*    feed_filter_new             (const FeedData*);
+void        feed_filter_reset           (FeedFilter*);
+void        feed_filter_filter_category (FeedFilter*, GtkTreeIter*);
+void        feed_filter_filter_text     (FeedFilter*, const gchar*);
 
-GType       feed_sorter_get_type        (void);
-GObject*    feed_sorter_new             (const FeedFilter*);
+GType       feed_sort_get_type        (void);
+GObject*    feed_sort_new             (const FeedFilter*);
 
 G_END_DECLS
 

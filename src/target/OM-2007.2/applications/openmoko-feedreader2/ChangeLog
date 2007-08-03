@@ -1,3 +1,52 @@
+2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Start creating the feedreader2, as with every second version
+        there might be some over-engineering but as I'm aware of this
+        phenomena I try to avoid the bad things.
+
+        Start with creating a Configuration model and the actual FeedData
+        model. The implementation will be copied and pasted from main.c
+        and callback.c
+
+        Make main.c start to follow the new styleguide and use GtkNotebook
+        as well. For icons I would like to use but are not available in
+        GtkStock (like configuration) I'm going to use MISSING_IMAGE as well.
+
+        
+
+        * src/Makefile.am:
+        * src/application-data.h:
+        * src/feed-configuration.c: Added.
+        (feed_configuration_class_init):
+        (feed_configuration_init):
+        (feed_configuration_get_configuration):
+        * src/feed-configuration.h:
+        * src/feed-data.c: Added.
+        (feed_data_init):
+        (feed_data_class_init):
+        (feed_filter_init):
+        (feed_filter_class_init):
+        (feed_sort_init):
+        (feed_sort_class_init):
+        (feed_data_get_instance):
+        (feed_data_update_all):
+        (feed_data_set_cache):
+        (feed_data_load_from_cache):
+        (feed_filter_new):
+        (feed_filter_reset):
+        (feed_filter_filter_category):
+        (feed_filter_filter_text):
+        (feed_sort_new):
+        * src/feed-data.h:
+        * src/feed-selection-view.h: Added.
+        * src/main.c:
+        (window_delete_event):
+        (config_new_clicked_closure):
+        (config_delete_clicked_closure):
+        (create_configuration_ui):
+        (create_ui):
+        (main):
+
 2007-08-01  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Sketch some ideas how Configuration, the Feed Data (GtkListStore),

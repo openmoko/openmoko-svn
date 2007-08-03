@@ -23,288 +23,158 @@
  *
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
-#define _GNU_SOURCE
-#include "config.h"
+
+#include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
-#include "application-data.h"
-#include "callbacks.h"
-#include "rfcdate.h"
-
-#include <libmokoui/moko-scrolled-pane.h>
-
-#include <webkitgtkpage.h>
 #include <webkitgtkglobal.h>
 
-#include <string.h>
-#include <assert.h>
+#include <moko-finger-scroll.h>
 
-#define ASSERT_X(x, error) assert(x)
+#include "application-data.h"
+#include "feed-data.h"
+#include "feed-configuration.h"
+#include "config.h"
 
-/*
- * filter categories and such terms
- */
-static gboolean
-rss_filter_entries (GtkTreeModel *model, GtkTreeIter *iter, struct RSSReaderData *data)
+static void
+window_delete_event (GtkWidget* widget, GdkEvent* event, struct ApplicationData* data)
 {
-    /*
-     * filter the category
-     */
-    if ( !data->is_all_filter ) {
-        gchar *category;
-        gtk_tree_model_get (model, iter,  RSS_READER_COLUMN_CATEGORY, &category,  -1);
-
-        /*
-         * how does this happen?
-         */
-        if ( !category )
-            return FALSE;
-
-        if ( strcmp(category, data->current_filter) != 0 )
-            return FALSE;
-
-        g_free (category);
-    }
-
-
-    /*
-     * filter the text according to the search now
-     */
-    if ( data->current_search_text ) {
-        gchar *text;
-
-        #define FILTER_SEARCH(column)                                      \
-        gtk_tree_model_get (model, iter, column, &text, -1);               \
-        if ( text && strcasestr (text, data->current_search_text) != NULL ) { \
-            g_free (text);                                                 \
-            return TRUE;                                                   \
-        }
-
-        FILTER_SEARCH(RSS_READER_COLUMN_AUTHOR)
-        FILTER_SEARCH(RSS_READER_COLUMN_SUBJECT)
-        FILTER_SEARCH(RSS_READER_COLUMN_SOURCE)
-        FILTER_SEARCH(RSS_READER_COLUMN_LINK)
-        FILTER_SEARCH(RSS_READER_COLUMN_TEXT)
-
-        #undef FILTER_SEARCH
-        return FALSE;
-    }
-
-    return TRUE;
+    gtk_main_quit ();
 }
 
+
 /*
- * sort the dates according to zsort. Ideally they should sort ascending
+ * Config related functions
  */
-static gint
-rss_sort_dates (GtkTreeModel *model, GtkTreeIter *_left, GtkTreeIter *_right, gpointer that)
+static void
+config_new_clicked_closure(GtkWidget* button, struct ApplicationData* data)
 {
-    RSSRFCDate *left, *right;
-    gtk_tree_model_get (model, _left,  RSS_READER_COLUMN_DATE, &left,  -1);
-    gtk_tree_model_get (model, _right, RSS_READER_COLUMN_DATE, &right, -1);
-
-    int result;
-    if ( left == NULL )
-        result = -1;
-    else if ( right == NULL )
-        result = 1;
-    else
-        result = rss_rfc_date_compare (left, right);
-
-    if ( left )
-        g_object_unref (left);
-    if ( right )
-        g_object_unref (right);
-
-    return result;
 }
 
 static void
-rss_cell_data_func (GtkTreeViewColumn *tree_column, GtkCellRenderer *renderer, GtkTreeModel *tree_model, GtkTreeIter *iter, gpointer data)
+config_delete_clicked_closure(GtkWidget* button, struct ApplicationData* data)
 {
-    RSSRFCDate *date;
-    gtk_tree_model_get (tree_model, iter, RSS_READER_COLUMN_DATE, &date, -1);
+}
 
-    g_assert (date);
-    g_object_set ( G_OBJECT(renderer), "text", rss_rfc_date_as_string(date), NULL);
-    g_object_unref (G_OBJECT(date));
+static void
+create_configuration_ui (struct ApplicationData* data, GtkCellRenderer* text_renderer)
+{
+    /*
+     * toolbar
+     */
+    GtkWidget* box = gtk_vbox_new (FALSE, 0);
+    gtk_notebook_append_page (data->notebook, box, gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_LARGE_TOOLBAR));
+    gtk_container_child_set (GTK_CONTAINER(data->notebook), box, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+
+    GtkWidget* toolbar = gtk_toolbar_new ();
+    gtk_box_pack_start (GTK_BOX(box), toolbar, FALSE, FALSE, 0);
+
+    GtkToolItem* toolitem = gtk_tool_button_new_from_stock (GTK_STOCK_NEW);
+    gtk_tool_item_set_expand (GTK_TOOL_ITEM(toolitem), TRUE);
+    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), toolitem, 0);
+    g_signal_connect (toolitem, "clicked", G_CALLBACK(config_new_clicked_closure), data);
+
+    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new (), 1);
+
+    toolitem = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
+    gtk_tool_item_set_expand (GTK_TOOL_ITEM(toolitem), TRUE);
+    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), toolitem, 2);
+    g_signal_connect (toolitem, "clicked", G_CALLBACK(config_delete_clicked_closure), data);
+    
+    /* main view */
+    GtkWidget* scrolled = moko_finger_scroll_new ();
+    gtk_box_pack_start (GTK_BOX(box), scrolled, TRUE, TRUE, 0);
+    GtkWidget* treeview = gtk_tree_view_new_with_model (GTK_TREE_MODEL(feed_configuration_get_configuration ()));
+    GtkTreeViewColumn* column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Name"),
+                                                                                              text_renderer,
+                                                                                              "text", FEED_NAME, NULL));
+    gtk_tree_view_column_set_expand (column, TRUE);
+    gtk_tree_view_column_set_sizing (column, GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_sort_column_id (column, FEED_NAME);
+    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+
+    column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Url"),
+                                                                            text_renderer,
+                                                                            "text", FEED_URL, NULL));
+    gtk_tree_view_column_set_expand (column, TRUE);
+    gtk_tree_view_column_set_sizing (column, GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_sort_column_id (column, FEED_URL);
+    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+
+    
+    gtk_container_add (GTK_CONTAINER (scrolled), treeview);
 }
 
 /*
- * setup the toolbar
+ *  ToolBar with add and remove
+ *  And a view with available feeds. No filtering for them
+ *
+ *  TODO:
+ *      How to do the actual configuration?
+ *        Name, URL are easy and fit on screen
+ *        What about username, password, number of items to cache?
  */
-static void setup_toolbar( struct RSSReaderData *data ) {
-    GtkButton *a;
-    GtkWidget *anImage;
-    data->box = MOKO_TOOL_BOX(moko_tool_box_new_with_search());
-    gtk_widget_grab_focus( GTK_WIDGET(data->box) );
-    g_signal_connect( G_OBJECT(data->box), "searchbox_visible",   G_CALLBACK(cb_searchbox_visible), data );
-    g_signal_connect( G_OBJECT(data->box), "searchbox_invisible", G_CALLBACK(cb_searchbox_invisible), data );
-
-
-    a = GTK_BUTTON(moko_tool_box_add_action_button( MOKO_TOOL_BOX(data->box) ));
-    anImage = gtk_image_new_from_file( PKGDATADIR "/feedreader2_refresh_all.png" );
-    moko_pixmap_button_set_center_image( MOKO_PIXMAP_BUTTON(a), anImage );
-    g_signal_connect( G_OBJECT(a), "clicked", G_CALLBACK(cb_refresh_all_button_clicked), data );
-
-    a = GTK_BUTTON(moko_tool_box_add_action_button( MOKO_TOOL_BOX(data->box) ));
-    anImage = gtk_image_new_from_file( PKGDATADIR "/feedreader2_subscribe.png" );
-    moko_pixmap_button_set_center_image( MOKO_PIXMAP_BUTTON(a), anImage );
-    g_signal_connect( G_OBJECT(a), "clicked", G_CALLBACK(cb_subscribe_button_clicked), data );
-
-    a = GTK_BUTTON(moko_tool_box_add_action_button( MOKO_TOOL_BOX(data->box)) );
-    gtk_button_set_label( GTK_BUTTON(a), _("Up for rent") );
-    a = GTK_BUTTON(moko_tool_box_add_action_button( MOKO_TOOL_BOX(data->box)) );
-    gtk_button_set_label( GTK_BUTTON(a), _("Buy more Mate") );
-
-    moko_paned_window_add_toolbox( MOKO_PANED_WINDOW(data->window), MOKO_TOOL_BOX(data->box) );
-}
-
-static void create_navigaton_area( struct RSSReaderData *data ) {
-    data->feed_data = gtk_list_store_new( RSS_READER_NUM_COLS,
-                                          G_TYPE_STRING /* Author    */,
-                                          G_TYPE_STRING /* Subject   */,
-                                          RSS_TYPE_RFC_DATE /* Date  */,
-                                          G_TYPE_STRING /* Link      */,
-                                          G_TYPE_STRING /* Text      */,
-                                          G_TYPE_INT    /* Text_Type */,
-                                          G_TYPE_STRING /* Category  */,
-                                          G_TYPE_STRING /* Source    */ );
-
-    /*
-     * allow to filter for a search string
-     */
-    data->filter_model = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(data->feed_data),NULL));
-    gtk_tree_model_filter_set_visible_func (data->filter_model, (GtkTreeModelFilterVisibleFunc)rss_filter_entries, data, NULL);
-
-    /*
-     * Allow sorting of the base model
-     */
-    data->sort_model = GTK_TREE_MODEL_SORT(gtk_tree_model_sort_new_with_model( GTK_TREE_MODEL(data->filter_model) ));
-    gtk_tree_sortable_set_sort_column_id( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE,    GTK_SORT_DESCENDING );
-    gtk_tree_sortable_set_sort_func ( GTK_TREE_SORTABLE(data->sort_model), RSS_READER_COLUMN_DATE, rss_sort_dates, NULL, NULL);
-
-    data->treeView = MOKO_TREE_VIEW(moko_tree_view_new_with_model(GTK_TREE_MODEL(data->sort_model)));
-    moko_paned_window_set_navigation_pane( MOKO_PANED_WINDOW(data->window), GTK_WIDGET(moko_tree_view_put_into_scrolled_window(data->treeView)) );
-
-    /*
-     * Only show the SUBJECT and DATE header
-     */
-    GtkCellRenderer *ren;
-    GtkTreeViewColumn *column;
-    ren = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
-    column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Subject"), ren, "text", RSS_READER_COLUMN_SUBJECT, NULL));
-    gtk_tree_view_column_set_expand( column, TRUE );
-    gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
-    gtk_tree_view_column_set_sort_column_id( column, RSS_READER_COLUMN_SUBJECT );
-    moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
-
-    ren = GTK_CELL_RENDERER(gtk_cell_renderer_text_new());
-    column = GTK_TREE_VIEW_COLUMN(gtk_tree_view_column_new_with_attributes( _("Date"), ren, NULL));
-
-    gtk_tree_view_column_set_cell_data_func (column, ren, rss_cell_data_func, NULL, NULL);
-    gtk_tree_view_column_set_expand( column, TRUE );
-    gtk_tree_view_column_set_sizing( column, GTK_TREE_VIEW_COLUMN_FIXED );
-    gtk_tree_view_column_set_sort_column_id( column, RSS_READER_COLUMN_DATE );
-    moko_tree_view_append_column( MOKO_TREE_VIEW(data->treeView), column );
-
-    /*
-     * auto completion and selection updates
-     */
-    GtkTreeSelection *selection = GTK_TREE_SELECTION(gtk_tree_view_get_selection( GTK_TREE_VIEW(data->treeView) ));
-    g_signal_connect( G_OBJECT(selection), "changed", G_CALLBACK(cb_treeview_selection_changed), data );
-
-    GtkWidget *search_entry = GTK_WIDGET(moko_tool_box_get_entry(MOKO_TOOL_BOX(data->box)));
-    g_signal_connect( G_OBJECT(data->treeView), "key_press_event", G_CALLBACK(cb_treeview_keypress_event), data );
-    g_signal_connect( G_OBJECT(search_entry),   "changed", G_CALLBACK(cb_search_entry_changed), data );
-}
-
-static void create_details_area( struct RSSReaderData* data ) {
-    data->textPage = WEBKIT_GTK_PAGE(webkit_gtk_page_new ());
-
-    GtkWidget *scrollWindow = GTK_WIDGET(moko_scrolled_pane_new());
-    moko_scrolled_pane_pack (MOKO_SCROLLED_PANE(scrollWindow), GTK_WIDGET (data->textPage));
-    moko_paned_window_set_details_pane( MOKO_PANED_WINDOW(data->window), scrollWindow ) ;
-}
-
-/*
- * create the mainwindow
- */
-static void setup_ui( struct RSSReaderData* data ) {
-    data->window = MOKO_PANED_WINDOW(moko_paned_window_new());
-    g_signal_connect( G_OBJECT(data->window), "delete_event", G_CALLBACK( gtk_main_quit ), NULL );
-
-    /*
-     * menu
-     */
-    data->menu = GTK_MENU(gtk_menu_new());
-    GtkMenuItem *closeitem = GTK_MENU_ITEM(gtk_menu_item_new_with_label( _("Close")));
-    g_signal_connect( G_OBJECT(closeitem), "activate", G_CALLBACK(gtk_main_quit), NULL );
-    gtk_menu_shell_append( GTK_MENU_SHELL(data->menu), GTK_WIDGET(closeitem) );
-    moko_paned_window_set_application_menu( MOKO_PANED_WINDOW(data->window), GTK_MENU(data->menu) );
-
-    /*
-     * filter
-     */
-    data->filter = GTK_MENU(gtk_menu_new());
-    moko_paned_window_set_filter_menu( MOKO_PANED_WINDOW(data->window), GTK_MENU(data->filter) );
-    data->menubox = MOKO_MENU_BOX(moko_paned_window_get_menubox( MOKO_PANED_WINDOW(data->window) ) );
-    g_signal_connect( G_OBJECT(data->menubox), "filter_changed", G_CALLBACK(cb_filter_changed), data );
-
-
-    /*
-     * tool bar
-     */
-    setup_toolbar( data );
-    create_navigaton_area( data );
-    create_details_area( data );
-}
-
-int main( int argc, char** argv )
+static void
+create_ui (struct ApplicationData* data)
 {
+    data->window = GTK_WINDOW(gtk_window_new (GTK_WINDOW_TOPLEVEL));
+    g_signal_connect(data->window, "delete-event", G_CALLBACK(window_delete_event), data);
+
+    data->notebook = GTK_NOTEBOOK(gtk_notebook_new ());
+    gtk_notebook_set_tab_pos (GTK_NOTEBOOK (data->notebook), GTK_POS_BOTTOM);
+    gtk_container_add (GTK_CONTAINER(data->window), GTK_WIDGET(data->notebook));
+
     /*
-     * boiler plate code
+     * Create the pages of interest
+     *
+     * 1.) Feed Overview Subject/Date
+     * 2.) Text View
+     * 3.) Configuration
      */
+    GtkCellRenderer *text_renderer = GTK_CELL_RENDERER(gtk_cell_renderer_text_new ());
+
+    /*
+     * 3. Configuration
+     */
+    create_configuration_ui (data, text_renderer);
+
+
+    gtk_widget_show_all (GTK_WIDGET(data->window));
+}
+
+
+int main (int argc, char** argv)
+{
     g_debug( "openmoko-feedreader2 starting up" );
 
     /* i18n boiler plate */
-    bindtextdomain ( GETTEXT_PACKAGE, RSSREADER_LOCALE_DIR );
-    bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
-    textdomain ( GETTEXT_PACKAGE );
+    bindtextdomain (GETTEXT_PACKAGE, RSSREADER_LOCALE_DIR);
+    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+    textdomain (GETTEXT_PACKAGE);
 
 
     /*
      * initialize threads for fetching the RSS in the background
      */
-    g_thread_init( NULL );
-    gdk_threads_init();
-    gdk_threads_enter();
-    gtk_init( &argc, &argv );
+    g_thread_init (NULL);
+    gdk_threads_init ();
+    gdk_threads_enter ();
+    gtk_init (&argc, &argv);
     webkit_gtk_init ();
-
-    struct RSSReaderData *data = g_new0( struct RSSReaderData, 1 );
-
-
-    data->app = MOKO_APPLICATION( moko_application_get_instance() );
     g_set_application_name( _("FeedReader") );
+
+    struct ApplicationData* data = g_new (struct ApplicationData, 1);
     data->cache = MOKO_CACHE(moko_cache_new ("feed-reader"));
+    feed_data_set_cache (RSS_FEED_DATA(feed_data_get_instance ()), data->cache);
 
-    setup_ui( data );
+    create_ui (data);
+    feed_data_load_from_cache (RSS_FEED_DATA(feed_data_get_instance ()));
 
-    /*
-     * load data
-     */
-    data->is_all_filter = TRUE;
-    refresh_categories( data );
-    load_data_from_cache (data);
-    moko_menu_box_set_active_filter( data->menubox, _("All") );
-
-    gtk_widget_show_all( GTK_WIDGET(data->window) );
-    gtk_widget_grab_focus (GTK_WIDGET(data->treeView));
     gtk_main();
     gdk_threads_leave();
 
+    g_object_unref (data->cache);
+    g_free (data);
+    
     return 0;
 }
-
-
