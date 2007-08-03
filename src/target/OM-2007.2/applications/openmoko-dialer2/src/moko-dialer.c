@@ -448,7 +448,7 @@ on_incoming_clip (MokoGsmdConnection *conn,
   last = g_strdup (number);
   timestamp = GDK_CURRENT_TIME;
   
-  entry = moko_contacts_lookup (priv->contacts, number);
+  entry = moko_contacts_lookup (moko_contacts_get_default (), number);
   moko_talking_set_clip (MOKO_TALKING (priv->talking), number, entry);
 
   /* Add the info to the journal entry */
@@ -581,6 +581,7 @@ moko_dialer_dispose (GObject *object)
   priv = dialer->priv;
 
   /* Close journal */
+  moko_journal_write_to_storage (priv->journal);
   moko_journal_close (priv->journal);
 
   /* Free contacts list */

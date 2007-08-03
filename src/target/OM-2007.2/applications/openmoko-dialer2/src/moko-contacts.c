@@ -89,7 +89,7 @@ moko_contacts_lookup (MokoContacts *contacts, const gchar *number)
   
   entry =  g_hash_table_lookup (priv->prefixes, number);
 
-  if (!GDK_IS_PIXBUF (entry->contact->photo))
+  if (entry && !GDK_IS_PIXBUF (entry->contact->photo))
     moko_contacts_get_photo (contacts, entry->contact);
 
   return entry;

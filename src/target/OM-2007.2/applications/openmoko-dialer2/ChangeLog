@@ -1,5 +1,13 @@
 2007-08-03  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-contacts.c: (moko_contacts_lookup):
+	Check entry is valid before performing operations on it.
+
+	* src/moko-dialer.c: (on_incoming_clip), (moko_dialer_dispose):
+	Make sure to write to the journal on dispose.
+
+2007-08-03  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked),
 	(on_talking_accept_call), (on_talking_reject_call),
 	(on_incoming_call), (on_incoming_clip), (on_call_progress_changed):
