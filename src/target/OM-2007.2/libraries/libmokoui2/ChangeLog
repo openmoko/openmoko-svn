@@ -1,3 +1,23 @@
+2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Change GtkAdjustment handling to be the Gtk+ way. There is
+        gtk_widget_set_scroll_adjustments which widgets that support
+        scrolling indirectly implement (GtkTreeView, GtkViewport, GtkLayout).
+
+        This allows to embed WebKitGtkPage which only implements the Gtk+ way
+        of scrolling but does not export the GtkAdjustment via properties.
+
+        This change was tested with the feedreader and the today app.
+
+        * libmokoui/moko-finger-scroll.c:
+        (moko_finger_scroll_scroll): Simplify
+        (moko_finger_scroll_expose_event): Simplify
+        (moko_finger_scroll_destroy): Unref our GtkAdjustment
+        (moko_finger_scroll_remove_cb): Simplify
+        (moko_finger_scroll_add): Use gtk_widget_set_scroll_adjustments
+        (moko_finger_scroll_class_init): Register destroy of GtkObject
+        (moko_finger_scroll_init): Create our GtkAjdustment, use g_object_ref_sink at one point.
+
 2007-07-29  Holger Freyther  <zecke@selfish.org>
 
         Refer to version two of the library
