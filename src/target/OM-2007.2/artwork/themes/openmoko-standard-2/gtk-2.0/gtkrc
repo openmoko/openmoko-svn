@@ -1,5 +1,8 @@
 gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
+gtk_button_images = 0
+gtk_menu_images = 0
+
 style "moko-window-default" {
 
     bg[NORMAL]        = "#e5e5e5" #
