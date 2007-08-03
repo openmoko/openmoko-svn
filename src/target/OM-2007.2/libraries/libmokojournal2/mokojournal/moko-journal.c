@@ -24,6 +24,9 @@
 #include <libical/icaltypes.h>
 #include <libecal/e-cal.h>
 #include <libecal/e-cal-component.h>
+#ifdef HAVE_CONFIG
+#  include <config.h>
+#endif
 #include "moko-journal.h"
 #include "moko-time-priv.h"
 
@@ -1449,13 +1452,18 @@ on_entries_removed_cb (ECalView *a_view,
    */
   for (cur = a_uids ; cur ; cur = cur->next)
   {
-    if (cur->data)
+    const gchar *uid;
+	  
+#ifdef HAVE_ECALCOMPONENTID
+    ECalComponentId *id = cur->data;
+    uid = id->uid;
+#else
+    uid = cur->data;
+#endif
+
+    if (!moko_journal_remove_entry_by_uid (a_journal, uid))
     {
-      if (!moko_journal_remove_entry_by_uid (a_journal, cur->data))
-      {
-        g_message ("failed to remove entry of uid %s\n",
-                   (const char*)cur->data) ;
-      }
+      g_message ("failed to remove entry of uid %s\n", uid) ;
     }
   }
 }

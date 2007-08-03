@@ -15,6 +15,16 @@ LIBECAL_VERSION=1.4.2
 # base deps
 PKG_CHECK_MODULES(DEPS, libecal-1.2 >= $LIBECAL_VERSION)
 
+# Check for existence of ECalComponentId
+old_cflags=$CFLAGS
+CFLAGS=$DEPS_CFLAGS
+AC_CHECK_TYPE(ECalComponentId, [], [], [#include <libecal/e-cal.h>])
+
+if test $ac_cv_type_ECalComponentId = yes; then
+        AC_DEFINE(HAVE_ECALCOMPONENTID, 1, [Defined if ECalComponentId exists])
+fi
+CFLAGS=$old_cflags
+
 if test x$MOKO_DEVEL = xon ; then
     AC_MSG_NOTICE([removing -O2 from CFLAGS])
     CFLAGS="-g -Wall"

@@ -1,3 +1,9 @@
+2007-08-03  Chris Lord,,,  <chris@openedhand.com>
+
+	* configure.ac:
+	* mokojournal/moko-journal.c: (on_entries_removed_cb):
+	Check for existence of ECalComponentId
+
 2007-07-29  Holger Freyther  <zecke@selfish.org>
 
         Refer to version two of this library
