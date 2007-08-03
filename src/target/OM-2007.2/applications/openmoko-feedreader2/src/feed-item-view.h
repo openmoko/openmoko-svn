@@ -39,6 +39,34 @@
 #define RSS_FEED_ITEM_VIEW_H
 
 #include <gtk/gtk.h>
+#include <webkitgtkpage.h>
+
+G_BEGIN_DECLS
+
+typedef struct _FeedItemView      FeedItemView;
+typedef struct _FeedItemViewClass FeedItemViewClass;
+
+#define RSS_TYPE_FEED_ITEM_VIEW             feed_item_view_get_type ()
+#define RSS_FEED_ITEM_VIEW(obj)             (G_TYPE_CHECK_INSTANCE_CAST((obj), RSS_TYPE_FEED_ITEM_VIEW, FeedItemView))
+#define RSS_FEED_ITEM_VIEW_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST((klass),  RSS_TYPE_FEED_ITEM_VIEW, FeeditemViewClass))
+#define RSS_IS_FEED_ITEM_VIEW(obj)          (G_TYPE_CHECK_INSTANCE_TYPE((obj), RSS_TYPE_FEED_ITEM_VIEW))
+#define RSS_IS_FEED_ITEM_VIEW_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE((klass),  RSS_TYPE_FEED_ITEM_VIEW))
+#define RSS_FEED_ITEM_VIEW_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS((obj),  RSS_TYPE_FEED_ITEM_VIEW, FeedItemViewClass))
+
+struct _FeedItemView {
+    GtkVBox parent;
+
+    WebKitGtkPage  *page;
+    GtkToolItem    *back;
+    GtkToolItem    *forward;
+    GtkToolItem    *mail;
+
+    gchar          *current_highlight;
+};
+
+struct _FeedItemViewClass {
+    GtkVBoxClass parent;
+};
 
 
 GType           feed_item_view_get_type             (void);
@@ -50,12 +78,12 @@ void            feed_item_view_set_can_go_forward   (FeedItemView*, gboolean);
 /*
  * display the text
  */
-void            feed_item_view_display              (FeedItemView*, gchar*);
+void            feed_item_view_display              (FeedItemView*, const gchar*);
 
 /*
  * highlight words from a search or such
  */
-void            feed_item_view_highlight            (FeedItemView*, gchar*);
+void            feed_item_view_highlight            (FeedItemView*, const gchar*);
 
 /*
  *  The following signals are emitted:
@@ -63,5 +91,7 @@ void            feed_item_view_highlight            (FeedItemView*, gchar*);
  *      prev
  *      visit_url   G_TYPE_STRING
  */
+
+G_END_DECLS
 
 #endif

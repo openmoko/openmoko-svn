@@ -1,7 +1,7 @@
-EXTRA_DIST = feedreader2_refresh_all.png  rssreader_subscribe.png
+EXTRA_DIST = feedreader2_refresh_all.png  feedreader2_subscribe.png
 
 resourcedir = $(pkgdatadir)
-resource_DATA = feedreader2_refresh_all.png  rssreader_subscribe.png
+resource_DATA = feedreader2_refresh_all.png  feedreader2_subscribe.png
 
 #
 # desktop integration: .desktop file

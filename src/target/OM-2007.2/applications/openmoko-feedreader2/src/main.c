@@ -30,6 +30,7 @@
 #include <webkitgtkglobal.h>
 
 #include <moko-finger-scroll.h>
+#include <moko-stock.h>
 
 #include "application-data.h"
 #include "feed-data.h"
@@ -40,6 +41,18 @@ static void
 window_delete_event (GtkWidget* widget, GdkEvent* event, struct ApplicationData* data)
 {
     gtk_main_quit ();
+}
+
+
+/*
+ * Text View
+ */
+static void
+create_text_view (struct ApplicationData* data)
+{
+    data->view = RSS_FEED_ITEM_VIEW(feed_item_view_new ());
+    gtk_notebook_append_page (data->notebook, GTK_WIDGET(data->view), gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_LARGE_TOOLBAR));
+    gtk_container_child_set (GTK_CONTAINER(data->notebook), GTK_WIDGET(data->view), "tab-expand", TRUE, "tab-fill", TRUE, NULL);
 }
 
 
@@ -80,6 +93,7 @@ create_configuration_ui (struct ApplicationData* data, GtkCellRenderer* text_ren
     gtk_tool_item_set_expand (GTK_TOOL_ITEM(toolitem), TRUE);
     gtk_toolbar_insert (GTK_TOOLBAR(toolbar), toolitem, 2);
     g_signal_connect (toolitem, "clicked", G_CALLBACK(config_delete_clicked_closure), data);
+    gtk_widget_set_sensitive (GTK_WIDGET(toolitem), FALSE);
     
     /* main view */
     GtkWidget* scrolled = moko_finger_scroll_new ();
@@ -134,6 +148,12 @@ create_ui (struct ApplicationData* data)
     GtkCellRenderer *text_renderer = GTK_CELL_RENDERER(gtk_cell_renderer_text_new ());
 
     /*
+     * 2. Text View
+     * (initialized before 1. so it can be used by them)
+     */
+    create_text_view (data);
+
+    /*
      * 3. Configuration
      */
     create_configuration_ui (data, text_renderer);
@@ -161,6 +181,7 @@ int main (int argc, char** argv)
     gdk_threads_enter ();
     gtk_init (&argc, &argv);
     webkit_gtk_init ();
+    moko_stock_register ();
     g_set_application_name( _("FeedReader") );
 
     struct ApplicationData* data = g_new (struct ApplicationData, 1);

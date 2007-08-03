@@ -28,12 +28,13 @@
 #define APPLICATION_DATA_H
 
 #include "moko_cache.h"
-#include <gtk/gtk.h>
+#include "feed-item-view.h"
 
 struct ApplicationData {
     GtkWindow         *window;
     MokoCache         *cache;
     GtkNotebook       *notebook;
+    FeedItemView      *view;
 };
 
 /*

@@ -1,5 +1,34 @@
 2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Implement the feed_item_view which will be used to show
+        one feed entry to the user.
+
+        Fix Makefile.am and the naming of the (unused) images.
+
+        * data/Makefile.am:
+        * data/rssreader_refresh_all.png: Removed.
+        * src/Makefile.am:
+        * src/application-data.h:
+        * src/feed-item-view.c: Added.
+        (prev_clicked):
+        (next_clicked):
+        (mail_clicked):
+        (feed_item_view_init):
+        (feed_item_view_class_init):
+        (feed_item_view_new):
+        (feed_item_view_set_can_go_back):
+        (feed_item_view_set_can_go_forward):
+        (feed_item_view_display):
+        (feed_item_view_highlight):
+        * src/feed-item-view.h:
+        * src/main.c:
+        (create_text_view):
+        (create_configuration_ui):
+        (create_ui): Disable the remove button
+        (main):
+
+2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Start creating the feedreader2, as with every second version
         there might be some over-engineering but as I'm aware of this
         phenomena I try to avoid the bad things.
