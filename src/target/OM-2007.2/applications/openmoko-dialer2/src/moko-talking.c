@@ -62,6 +62,34 @@ enum
 
 static guint talking_signals[LAST_SIGNAL] = {0, };
 
+
+void
+moko_talking_set_clip (MokoTalking      *talking, 
+                       const gchar      *number,
+                       MokoContactEntry *entry)
+{
+  MokoTalkingPrivate *priv;
+  gchar *markup;
+  
+  g_return_if_fail (MOKO_IS_TALKING (talking));
+  priv = talking->priv;
+
+  if (entry)
+    markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
+  else
+    markup = g_strdup (number);
+
+  gtk_label_set_markup (GTK_LABEL (priv->status), markup);
+  
+  if (entry && GDK_IS_PIXBUF (entry->contact->photo))
+    gtk_image_set_from_pixbuf (GTK_IMAGE (priv->person), entry->contact->photo);
+  else
+    gtk_image_set_from_file (GTK_IMAGE (priv->person),
+                             PKGDATADIR"/unkown.png");
+
+  g_free (markup);
+}
+
 static gboolean
 incoming_timeout (MokoTalking *talking)
 {
@@ -148,8 +176,12 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   gtk_label_set_text (GTK_LABEL (priv->title), "Outgoing Call");
 
   gtk_label_set_markup (GTK_LABEL (priv->status), markup);
-  gtk_image_set_from_file (GTK_IMAGE (priv->person),
-                           PKGDATADIR"/unkown.png");
+  
+  if (entry && GDK_IS_PIXBUF (entry->contact->photo))
+    gtk_image_set_from_pixbuf (GTK_IMAGE (priv->person), entry->contact->photo);
+  else
+    gtk_image_set_from_file (GTK_IMAGE (priv->person),
+                             PKGDATADIR"/unkown.png");
 
   g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
@@ -201,10 +233,9 @@ moko_talking_accepted_call (MokoTalking      *talking,
   gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
                            PKGDATADIR"/talking_3.png");
 
-  gtk_label_set_text (GTK_LABEL (priv->status), number);
-  gtk_image_set_from_file (GTK_IMAGE (priv->person),
-                           PKGDATADIR"/unkown.png");
-  
+  /* We don't change the status or person widgets, as incoming call has already
+   * set them for us.
+   */
   g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
                                  (GSourceFunc)talking_timeout,

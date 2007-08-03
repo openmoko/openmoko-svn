@@ -1,6 +1,5 @@
 /*
- *  moko-talking; a GObject wrapper for the talking which exports method and
- *  signals over dbus
+ *  moko-talking; a GObject wrapper for the talking/incoming/outgoing page
  *
  *  Authored by OpenedHand Ltd <info@openedhand.com>
  *
@@ -88,6 +87,11 @@ void
 moko_talking_accepted_call (MokoTalking      *talking, 
                             const gchar      *number,
                             MokoContactEntry *entry);
+
+void
+moko_talking_set_clip (MokoTalking      *talking, 
+                       const gchar      *number,
+                       MokoContactEntry *entry);
 
 G_END_DECLS
 

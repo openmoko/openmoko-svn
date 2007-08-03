@@ -353,7 +353,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   /* We sometimes get the signals multiple times */
   if (priv->status == DIALER_STATUS_INCOMING)
   {
-    g_print ("We are already showing the incoming page");
+    g_print ("We are already showing the incoming page\n");
     return;
   }
   g_print ("Status = %d\n", priv->status);
@@ -381,7 +381,16 @@ on_incoming_clip (MokoGsmdConnection *conn,
                   const gchar        *number,
                   MokoDialer         *dialer)
 {
-  g_print ("Number = %s\n", number);
+  MokoDialerPrivate *priv;
+  MokoContactEntry *entry;
+
+  g_return_if_fail (MOKO_IS_DIALER (dialer));
+  priv = dialer->priv;
+  
+  entry = moko_contacts_lookup (priv->contacts, number);
+  moko_talking_set_clip (MOKO_TALKING (priv->talking), number, entry);
+
+  g_print ("Incoming Number = %s\n", number);
 }
 
 static void
@@ -458,7 +467,7 @@ register_network_cb (MokoDialer *dialer)
   {
     /* We have yet to request registration, so lets do it */
     /* FIXME: do the pin stuff */
-    g_print ("Requesting registration");
+    g_print ("Requesting registration\n");
     moko_gsmd_connection_network_register (priv->connection);
   }
   else 
@@ -468,12 +477,12 @@ register_network_cb (MokoDialer *dialer)
      */
     if (priv->registered)
     {
-      g_print ("Netwok Registered");
+      g_print ("Netwok Registered\n");
       return FALSE;
     }
     else
     {
-      g_print ("Requesting registration");
+      g_print ("Requesting registration\n");
       moko_gsmd_connection_network_register (priv->connection);
     }
   }

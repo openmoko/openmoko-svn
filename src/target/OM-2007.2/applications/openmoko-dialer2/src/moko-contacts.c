@@ -35,21 +35,64 @@ G_DEFINE_TYPE (MokoContacts, moko_contacts, G_TYPE_OBJECT)
 
 struct _MokoContactsPrivate
 {
+  EBook      *book;
+
   GList      *contacts;
   GList      *entries;
   GHashTable *prefixes;
 };
 
+static void
+moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
+{
+  MokoContactsPrivate *priv;
+  EContact *e_contact;
+  EContactPhoto *photo;
+  GError *err = NULL;
+  GdkPixbufLoader *loader;
+  
+  g_return_if_fail (MOKO_IS_CONTACTS (contacts));
+  priv = contacts->priv;
+  
+  if (!e_book_get_contact (priv->book, m_contact->uid, &e_contact, &err))
+  {
+    g_warning ("%s\n", err->message);
+    m_contact->photo = gdk_pixbuf_new_from_file (PKGDATADIR"/person.png", NULL);
+    g_object_ref (m_contact->photo);
+    return;
+  }
+
+  photo = e_contact_get (e_contact, E_CONTACT_PHOTO);
+
+  loader = gdk_pixbuf_loader_new ();
+  gdk_pixbuf_loader_write (loader, 
+                           photo->data.inlined.data,
+                           photo->data.inlined.length,
+                           NULL);
+  gdk_pixbuf_loader_close (loader, NULL);
+
+  m_contact->photo = gdk_pixbuf_loader_get_pixbuf (loader);
+  if (GDK_IS_PIXBUF (m_contact->photo))
+    g_object_ref (m_contact->photo);
+
+  g_object_unref (loader);
+}
 
 MokoContactEntry*
 moko_contacts_lookup (MokoContacts *contacts, const gchar *number)
 {
   MokoContactsPrivate *priv;
+  MokoContactEntry *entry;
 
   g_return_val_if_fail (MOKO_IS_CONTACTS (contacts), NULL);
   priv = contacts->priv;
   
-  return g_hash_table_lookup (priv->prefixes, number);
+  entry =  g_hash_table_lookup (priv->prefixes, number);
+
+  if (!GDK_IS_PIXBUF (entry->contact->photo))
+    moko_contacts_get_photo (contacts, entry->contact);
+
+  return entry;
 }
 
 GList*
@@ -100,7 +143,7 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
 
   name = e_contact_get_const (e_contact, E_CONTACT_NAME_OR_ORG);
   if (!name || (g_utf8_strlen (name, -1) <= 0))
-    name = "Unnamed";
+    name = "Unknown";
     
   /* Create the contact & append to the list */
   m_contact = g_new0 (MokoContact, 1);
@@ -197,7 +240,7 @@ moko_contacts_init (MokoContacts *contacts)
   EBook *book;
   EBookView *view;
   EBookQuery *query;
-  GList *contact, *c, *e;
+  GList *contact, *c;
 
   priv = contacts->priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
 
@@ -208,7 +251,7 @@ moko_contacts_init (MokoContacts *contacts)
   query = e_book_query_any_field_contains ("");
 
   /* Open the system book and check that it is valid */
-  book = e_book_new_system_addressbook (NULL);
+  book = priv->book = e_book_new_system_addressbook (NULL);
   if (!book)
   {
     g_warning ("Failed to create system book\n");

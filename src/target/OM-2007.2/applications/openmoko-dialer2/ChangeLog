@@ -1,3 +1,19 @@
+2007-08-03  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-contacts.c: (moko_contacts_get_photo),
+	(moko_contacts_lookup), (moko_contacts_add_contact),
+	(moko_contacts_init):
+	When searching for a contact, it it doesn't have a photo, look for it.
+	
+	* src/moko-dialer.c: (on_incoming_call), (on_incoming_clip),
+	(register_network_cb):
+	Set the incoming clip on the 'talking' widget.
+
+	* src/moko-talking.c: (moko_talking_set_clip),
+	(moko_talking_outgoing_call), (moko_talking_accepted_call):
+	* src/moko-talking.h:
+	Add a method to update the UI with an incomig clip.
+
 2007-08-02  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_incoming_call), (on_pin_requested),
