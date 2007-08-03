@@ -218,6 +218,39 @@ moko_contacts_dispose (GObject *object)
 static void
 moko_contacts_finalize (GObject *contacts)
 {
+  MokoContactsPrivate *priv;
+  GList *l;
+  
+  g_return_if_fail (MOKO_IS_CONTACTS (contacts));
+  priv = MOKO_CONTACTS (contacts)->priv;
+
+  g_hash_table_destroy (priv->prefixes);
+
+  for (l = priv->contacts; l != NULL; l = l->next)
+  {
+    MokoContact *contact = (MokoContact*)l->data;
+    if (contact)
+    {
+      g_free (contact->uid);
+      g_free (contact->name);
+      if (G_IS_OBJECT (contact->photo))
+        g_object_unref (contact->photo);
+    }
+  }
+  g_list_free (priv->contacts);
+  
+  for (l = priv->entries; l != NULL; l = l->next)
+  {
+    MokoContactEntry *entry = (MokoContactEntry*)l->data;
+    if (entry)
+    {
+      g_free (entry->desc);
+      g_free (entry->number);
+      entry->contact = NULL;
+    }
+  }
+  g_list_free (priv->entries);
+
   G_OBJECT_CLASS (moko_contacts_parent_class)->finalize (contacts);
 }
 
