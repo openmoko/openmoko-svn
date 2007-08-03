@@ -1,4 +1,3 @@
-/* vi: set sw=2: */
 /*
  *  Today - At a glance view of date, time, calender events, todo items and
  *  other images.
@@ -25,18 +24,11 @@
 #define  __TODAY_UTILS_H__
 
 #include <glib.h>
-#include <libical/icalcomponent.h>
-#include <libecal/e-cal.h>
-#include <libecal/e-cal-time-util.h>
 #include <gtk/gtk.h>
-
-GList* today_get_today_events () ;
-void e_cal_component_list_free (GList * list) ;
-gchar* icaltime_to_pretty_string (const icaltimetype *timetype) ;
-gboolean icalcomponent_has_alarm (icalcomponent *a_icalcomp) ;
-GList* today_clone_icalcomponent_list (const GList *a_list) ;
+#include <libtaku/launcher-util.h>
 
 GtkToolItem *today_toolbutton_new (const gchar *icon_name);
+const LauncherData *today_get_launcher (const gchar *exec, gboolean use_sn,
+					gboolean single);
 
 #endif /*__TODAY_UTILS_H__*/
-

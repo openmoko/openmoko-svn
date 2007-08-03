@@ -1,5 +1,28 @@
 2007-08-03  Chris Lord,,,  <chris@openedhand.com>
 
+	* libtaku/launcher-util.c: (launcher_start):
+	* libtaku/launcher-util.h:
+	Make the LauncherData const, it isn't changed
+
+	* src/today-main.c: (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb), (main):
+	* src/today-pim-journal.c: (today_pim_journal_header_clicked_cb),
+	(today_pim_journal_selection_changed_cb),
+	(today_pim_journal_box_new):
+	* src/today-pim-summary.c: (today_pim_summary_header_clicked_cb),
+	(today_pim_summary_events_selection_changed_cb),
+	(today_pim_summary_tasks_selection_changed_cb),
+	(today_pim_summary_box_new):
+	Launch the appropriate apps when clicking the summaries on the home page
+
+	* src/today-utils.c: (today_get_launcher):
+	* src/today-utils.h:
+	Make a global LauncherData filling convenience function
+
+2007-08-03  Chris Lord,,,  <chris@openedhand.com>
+
 	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_finalize),
 	(reset_state), (taku_launcher_tile_clicked),
 	(taku_launcher_tile_for_desktop_file),

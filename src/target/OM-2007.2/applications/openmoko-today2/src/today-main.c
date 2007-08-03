@@ -32,47 +32,32 @@ today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 		"tab-expand", TRUE, NULL);
 }
 
-/* TODO: Make this less nasty */
-static LauncherData launcher_data;
-static void
-today_fill_launcher (const gchar *exec, gboolean use_sn, gboolean single)
-{
-	if (launcher_data.argv) g_free (launcher_data.argv);
-	launcher_data.argv = exec_to_argv (exec);
-	launcher_data.name = (gchar *)exec;
-	launcher_data.description = "";
-	launcher_data.icon = NULL;
-	launcher_data.categories = (char *[]){ "" };
-	launcher_data.use_sn = use_sn;
-	launcher_data.single_instance = single;
-}
-
 static void
 today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	today_fill_launcher ("openmoko-dialer", TRUE, TRUE);
-	launcher_start (data->window, &launcher_data);
+	launcher_start (data->window, today_get_launcher (
+		"openmoko-dialer -s", TRUE, TRUE));
 }
 
 static void
 today_contacts_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	today_fill_launcher ("openmoko-contacts", TRUE, TRUE);
-	launcher_start (data->window, &launcher_data);
+	launcher_start (data->window, today_get_launcher (
+		"openmoko-contacts", TRUE, TRUE));
 }
 
 static void
 today_messages_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	today_fill_launcher ("openmoko-messages", TRUE, TRUE);
-	launcher_start (data->window, &launcher_data);
+	launcher_start (data->window, today_get_launcher (
+		"openmoko-messages", TRUE, TRUE));
 }
 
 static void
 today_dates_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	today_fill_launcher ("dates", TRUE, TRUE);
-	launcher_start (data->window, &launcher_data);
+	launcher_start (data->window, today_get_launcher (
+		"dates", TRUE, TRUE));
 }
 
 static GtkWidget *
@@ -219,8 +204,6 @@ main (int argc, char **argv)
 		gtk_window_move (GTK_WINDOW (data.window), x, y);
 	}
 #endif
-	
-	launcher_data.argv = NULL;
 	
 	/* Show and start */
 	gtk_widget_show (data.window);

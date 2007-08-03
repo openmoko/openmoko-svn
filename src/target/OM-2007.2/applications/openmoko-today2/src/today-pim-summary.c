@@ -3,6 +3,8 @@
 #include <gtk/gtk.h>
 #include <libkoto/koto-task.h>
 #include <libkoto/koto-task-view.h>
+#include <libtaku/launcher-util.h>
+#include "today-utils.h"
 #include "today-pim-summary.h"
 #include "today-events-store.h"
 #include "today-tasks-store.h"
@@ -104,6 +106,34 @@ today_pim_summary_cell_data_cb (GtkTreeViewColumn *tree_column,
 		"strikethrough", done, NULL);
 }
 
+static void
+today_pim_summary_header_clicked_cb (GtkTreeViewColumn *column, TodayData *data)
+{
+	g_debug ("TODO: App to set time/date");
+}
+
+static void
+today_pim_summary_events_selection_changed_cb (GtkTreeSelection *selection,
+					       TodayData *data)
+{
+	if (gtk_tree_selection_count_selected_rows (selection)) {
+		gtk_tree_selection_unselect_all (selection);
+		launcher_start (data->window, today_get_launcher (
+			"openmoko-contacts", TRUE, TRUE));
+	}
+}
+
+static void
+today_pim_summary_tasks_selection_changed_cb (GtkTreeSelection *selection,
+					       TodayData *data)
+{
+	if (gtk_tree_selection_count_selected_rows (selection)) {
+		gtk_tree_selection_unselect_all (selection);
+		launcher_start (data->window, today_get_launcher (
+			"openmoko-tasks", TRUE, TRUE));
+	}
+}
+
 GtkWidget *
 today_pim_summary_box_new (TodayData *data)
 {
@@ -147,6 +177,7 @@ today_pim_summary_box_new (TodayData *data)
 		renderer, "text", TODAY_EVENTS_STORE_COL_SUMMARY, NULL);
 	gtk_tree_view_insert_column (GTK_TREE_VIEW (events_tree), column, 0);	
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (events_tree), TRUE);
+	gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (events_tree), TRUE);
 
 	today_pim_summary_update_date (column);
 	g_timeout_add (60 * 1000, (GSourceFunc)
@@ -165,6 +196,15 @@ today_pim_summary_box_new (TodayData *data)
 	g_signal_connect (G_OBJECT (tasks_model), "row-deleted",
 		G_CALLBACK (today_pim_summary_row_deleted_cb), data);
 	
+	g_signal_connect (G_OBJECT (column), "clicked",
+		G_CALLBACK (today_pim_summary_header_clicked_cb), data);
+	g_signal_connect (G_OBJECT (gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (events_tree))), "changed", G_CALLBACK (
+			today_pim_summary_events_selection_changed_cb), data);
+	g_signal_connect (G_OBJECT (gtk_tree_view_get_selection (
+		GTK_TREE_VIEW (tasks_tree))), "changed", G_CALLBACK (
+			today_pim_summary_tasks_selection_changed_cb), data);
+
 	today_pim_summary_show_notice (data);
 
 	return vbox;

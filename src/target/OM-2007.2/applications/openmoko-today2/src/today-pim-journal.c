@@ -1,7 +1,9 @@
 
-#include "today-pim-journal.h"
 #include <glib/gi18n.h>
 #include <moko-stock.h>
+#include <libtaku/launcher-util.h>
+#include "today-utils.h"
+#include "today-pim-journal.h"
 
 enum {
 	COLUMN_ICON,
@@ -76,6 +78,25 @@ today_pim_journal_entry_removed_cb (MokoJournal *journal,
 	}
 }
 
+static void
+today_pim_journal_header_clicked_cb (GtkTreeViewColumn *column, TodayData *data)
+{
+	/* TODO: Maybe just launch dialer normally here? */
+	launcher_start (data->window, today_get_launcher (
+		"openmoko-dialer -m", TRUE, TRUE));
+}
+
+static void
+today_pim_journal_selection_changed_cb (GtkTreeSelection *selection,
+					TodayData *data)
+{
+	if (gtk_tree_selection_count_selected_rows (selection)) {
+		gtk_tree_selection_unselect_all (selection);
+		launcher_start (data->window, today_get_launcher (
+			"openmoko-dialer -m", TRUE, TRUE));
+	}
+}
+
 GtkWidget *
 today_pim_journal_box_new (TodayData *data)
 {
@@ -119,6 +140,13 @@ today_pim_journal_box_new (TodayData *data)
 	gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
 
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), TRUE);
+	gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (treeview), TRUE);
+	
+	g_signal_connect (G_OBJECT (column), "clicked",
+		G_CALLBACK (today_pim_journal_header_clicked_cb), data);
+	g_signal_connect (G_OBJECT (gtk_tree_view_get_selection (treeview)),
+		"changed", G_CALLBACK (today_pim_journal_selection_changed_cb),
+		data);
 	
 	/* Open up journal and connect to signals to find out about missed
 	 * calls and new messages.
