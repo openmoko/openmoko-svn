@@ -113,6 +113,7 @@ main (int argc, char **argv)
   /* list */
   
   w = scroll = moko_finger_scroll_new ();
+  g_object_set( G_OBJECT(scroll), "mode", MOKO_FINGER_SCROLL_MODE_PHYSICAL, NULL ); 
   gtk_box_pack_start (GTK_BOX (box), w, TRUE, TRUE, 0);
 
   liststore = gtk_list_store_new (1, G_TYPE_STRING);
