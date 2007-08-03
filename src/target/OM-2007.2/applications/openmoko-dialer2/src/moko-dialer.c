@@ -19,6 +19,9 @@
 
 #include <gtk/gtk.h>
 
+#include <stdio.h>
+#include <string.h>
+
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 
@@ -57,6 +60,10 @@ struct _MokoDialerPrivate
   MokoGsmdConnection *connection;
   MokoJournal        *journal;
   MokoContacts       *contacts;
+
+  /* The shared MokoJournalEntry which is constantly created */
+  MokoJournalEntry   *entry; 
+  MokoTime           *time;
 
   /* Registration variables */
   gboolean            reg_request;
@@ -227,6 +234,21 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   priv->status = DIALER_STATUS_DIALING;
 
   entry = moko_contacts_lookup (moko_contacts_get_default (), number);
+
+  /* Prepare a voice journal entry */
+  priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
+  priv->time = moko_time_new_today ();
+  moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
+  moko_journal_entry_set_dtstart (priv->entry, priv->time);
+  moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
+  moko_journal_voice_info_set_distant_number (priv->entry, number);
+  if (entry)
+    moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
+  moko_journal_add_entry (priv->journal, priv->entry);
+  moko_time_free (priv->time);
+  priv->entry = NULL;
+  priv->time = NULL;
+
   moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
 
   gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
@@ -260,6 +282,16 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   
   priv->status = DIALER_STATUS_TALKING;
 
+  /* Finalise and add the journal entry */
+  if (priv->entry)
+  {
+    moko_journal_add_entry (priv->journal, priv->entry);
+    if (priv->time) 
+      moko_time_free (priv->time);
+    priv->entry = NULL;
+    priv->time = NULL;
+  }  
+  
   moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
   moko_gsmd_connection_voice_accept (priv->connection);
 
@@ -276,6 +308,16 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   priv = dialer->priv;
 
   priv->status = DIALER_STATUS_NORMAL;
+
+  /* Finalise and add the journal entry */
+  if (priv->entry)
+  {
+    moko_journal_add_entry (priv->journal, priv->entry);
+    if (priv->time) 
+      moko_time_free (priv->time);
+    priv->entry = NULL;
+    priv->time = NULL;
+  }
 
   gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
   moko_gsmd_connection_voice_hangup (priv->connection);
@@ -353,13 +395,19 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   /* We sometimes get the signals multiple times */
   if (priv->status == DIALER_STATUS_INCOMING)
   {
-    g_print ("We are already showing the incoming page\n");
+    /*g_print ("We are already showing the incoming page\n");*/
     return;
   }
-  g_print ("Status = %d\n", priv->status);
-
   priv->status = DIALER_STATUS_INCOMING;
 
+  /* Prepare a voice journal entry */
+  priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
+  priv->time = moko_time_new_today ();
+  moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
+  moko_journal_entry_set_dtstart (priv->entry, priv->time);
+  moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
+
+  /* Set up the user interface */
   moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL, NULL);
 
   gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
@@ -368,9 +416,8 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->talking,
                            "tab-expand", TRUE,
                            NULL); 
-  
   gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
-
+  
   gtk_window_present (GTK_WINDOW (priv->window));
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 0, NULL);
@@ -383,13 +430,33 @@ on_incoming_clip (MokoGsmdConnection *conn,
 {
   MokoDialerPrivate *priv;
   MokoContactEntry *entry;
+  static gint timestamp = 0;
+  static gchar *last = NULL;
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
+
+  if (last 
+      && (strcmp (number, last) == 0) 
+      && ((GDK_CURRENT_TIME - timestamp) < 1500))
+  {
+    timestamp = GDK_CURRENT_TIME;
+    return;
+  }
+  if (last)
+    g_free (last);
+  last = g_strdup (number);
+  timestamp = GDK_CURRENT_TIME;
   
   entry = moko_contacts_lookup (priv->contacts, number);
   moko_talking_set_clip (MOKO_TALKING (priv->talking), number, entry);
 
+  /* Add the info to the journal entry */
+  moko_journal_voice_info_set_distant_number (priv->entry, number);
+  if (entry)
+    moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
+
+  g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 0, number);
   g_print ("Incoming Number = %s\n", number);
 }
 
@@ -404,13 +471,13 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_print ("Incoming pin request for type %d\n", type);
 }
 
-
 static void
 on_call_progress_changed (MokoGsmdConnection *conn, 
                           int type, 
                           MokoDialer *dialer)
 {
   MokoDialerPrivate *priv;
+  enum MessageDirection dir;
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
@@ -421,6 +488,19 @@ on_call_progress_changed (MokoGsmdConnection *conn,
     case MOKO_GSMD_PROG_RELEASE:
       moko_dialer_hung_up (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
+      if (priv->entry)
+      {
+        moko_journal_entry_get_direction (priv->entry, &dir);
+        if (dir == DIRECTION_IN)
+          moko_journal_voice_info_set_was_missed (priv->entry, TRUE);
+
+        moko_journal_add_entry (priv->journal, priv->entry);
+        if (priv->time)
+          moko_time_free (priv->time);
+        priv->entry = NULL;
+        priv->time = NULL;
+      }
+      moko_journal_write_to_storage (priv->journal);
       g_print ("mokogsmd disconnect\n");
       break;
     
