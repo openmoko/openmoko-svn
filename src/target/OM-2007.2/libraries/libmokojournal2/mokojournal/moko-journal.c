@@ -1966,7 +1966,7 @@ moko_journal_entry_get_wifi_ap_mac_address (MokoJournalEntry *a_entry)
 
 void
 moko_journal_voice_info_set_distant_number (MokoJournalEntry *journal_entry,
-                                            gchar *a_number)
+                                            const gchar *a_number)
 {
   MokoJournalVoiceInfo *a_info = NULL;
   moko_journal_entry_get_voice_info (journal_entry, &a_info) ;

@@ -450,7 +450,7 @@ gboolean moko_journal_entry_has_voice_info (MokoJournalEntry *entry);
  * @info: the extra property set attached to the voice call
  */
 void moko_journal_voice_info_set_distant_number (MokoJournalEntry *info,
-                                                gchar *number) ;
+                                                const gchar *number) ;
 
 const gchar* moko_journal_voice_info_get_distant_number
                                                 (MokoJournalEntry *info) ;
