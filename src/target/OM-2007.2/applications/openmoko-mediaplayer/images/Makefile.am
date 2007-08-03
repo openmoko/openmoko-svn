@@ -6,12 +6,6 @@ images_DATA = \
 	btn-white-p.png \
 	ico-track.png \
 	ico-time.png \
-	ico-pause.png \
-	ico-play.png \
-	ico-ffwd.png \
-	ico-rwd.png \
-	ico-nexttrack.png \
-	ico-prevtrack.png \
 	ico-repeat.png \
 	ico-shuffle.png \
 	ico-list.png \

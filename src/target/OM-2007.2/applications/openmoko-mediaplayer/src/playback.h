@@ -31,12 +31,19 @@
 
 #define OMP_EVENT_PLAYBACK_EOS "playback_end_of_stream"
 
+// Player states masking the gstreamer states so we can be more abstract
+#define OMP_PLAYBACK_STATE_READY GST_STATE_READY
+#define OMP_PLAYBACK_STATE_PAUSED GST_STATE_PAUSED
+#define OMP_PLAYBACK_STATE_PLAYING GST_STATE_PLAYING
+
+
 void omp_playback_init();
 void omp_playback_free();
 
 gboolean omp_playback_load_track_from_uri(gchar *uri);
 
 void omp_playback_play();
+gint omp_playback_get_state();
 
 static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
 static gboolean omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data);

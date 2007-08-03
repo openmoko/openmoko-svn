@@ -94,8 +94,8 @@ omp_playback_load_track_from_uri(gchar *uri)
 	// DEBUG
 	g_printf("Loading %s\n", uri);
 
+	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 	g_object_set(G_OBJECT(omp_gst_playbin), "uri", uri, NULL);
-
 	gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
 }
 
@@ -112,6 +112,29 @@ omp_playback_play()
 }
 
 /**
+ * Returns the current state the playback engine is in
+ */
+gint
+omp_playback_get_state()
+{
+	GstState state;
+	GstSystemClock *system_clock;
+
+	// Poll state with an immediate timeout
+	system_clock = gst_system_clock_obtain();
+	gst_element_get_state(GST_OBJECT(omp_gst_playbin), &state, NULL, gst_clock_get_time(system_clock));
+	gst_object_unref(system_clock);
+
+	// The NULL element state is no different from READY for more abstract layers
+	if (state == GST_STATE_NULL)
+	{
+		state = GST_STATE_READY;
+	}
+
+	return (gint)state;
+}
+
+/**
  * Handles gstreamer's end-of-stream notification
  */
 static gboolean
@@ -120,6 +143,7 @@ omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data)
 	// DEBUG
 	g_printf("End of stream reached.\n");
 
+	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_EOS);
 
 	return TRUE;

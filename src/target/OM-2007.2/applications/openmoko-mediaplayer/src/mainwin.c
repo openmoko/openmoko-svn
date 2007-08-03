@@ -265,12 +265,12 @@ omp_toggle_button_create(gchar *image_name, gint pad_left, GCallback callback, G
 
 /**
  * Creates a button and returns it
+ * @param image_name The name of the image resource to use, not a file name
  */
 GtkWidget*
 omp_button_create(gchar *image_name, GCallback callback)
 {
 	GtkWidget *image, *button;
-	gchar *image_file_name;
 
 	button = gtk_button_new();
 	gtk_widget_set_size_request(GTK_WIDGET(button), 66, 66);
@@ -280,10 +280,9 @@ omp_button_create(gchar *image_name, GCallback callback)
 
 	g_object_set(G_OBJECT(button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
 
-	image_file_name = g_build_path("/", ui_image_path, image_name, NULL);
-	image = gtk_image_new_from_file(image_file_name);
-	g_free(image_file_name);
+	image = gtk_image_new_from_icon_name(image_name, 36);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
+	g_object_unref(image);
 
 	return button;
 }
@@ -479,27 +478,27 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_box_set_homogeneous(GTK_BOX(controls_hbox), TRUE);
 
 	// Previous Track button
-	button = omp_button_create("ico-prevtrack.png", G_CALLBACK(omp_playlist_set_prev_track));
+	button = omp_button_create("gtk-media-previous-ltr", G_CALLBACK(omp_playlist_set_prev_track));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Rewind button
-	button = omp_button_create("ico-rwd.png", G_CALLBACK(omp_shuffle_button_callback));
+	button = omp_button_create("gtk-media-rewind-ltr", NULL);
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Play/Pause button
-	button = omp_button_create("ico-play.png", G_CALLBACK(omp_main_button_play_pause_callback));
+	button = omp_button_create("gtk-media-play-ltr", G_CALLBACK(omp_main_button_play_pause_callback));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Fast Forward button
-	button = omp_button_create("ico-ffwd.png", G_CALLBACK(omp_shuffle_button_callback));
+	button = omp_button_create("gtk-media-forward-ltr", NULL);
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Next Track button
-	button = omp_button_create("ico-nexttrack.png", G_CALLBACK(omp_playlist_set_next_track));
+	button = omp_button_create("gtk-media-next-ltr", G_CALLBACK(omp_playlist_set_next_track));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 }
@@ -542,7 +541,8 @@ omp_main_window_create()
 
 /**
  * Attaches the event handlers to the appropriate signals
- * @note Can't be done in omp_main_window_create() because the signals need to be created first by the subsystems
+ * @note Can't be done in omp_main_window_create() because the signals need to be created
+ * @note first by the subsystems which in turn need the main window handle for creating them
  */
 void
 omp_main_connect_signals()

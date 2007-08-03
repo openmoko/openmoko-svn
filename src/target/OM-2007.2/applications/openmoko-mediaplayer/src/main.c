@@ -81,16 +81,6 @@ struct _omp_config *omp_config = NULL;			///< Global and persistent configuratio
 
 
 /*
-static void
-OMP_set_default_icon(void)
-{
-    //GdkPixbuf *icon;
-
-    //icon = gdk_pixbuf_new_from_xpm_data((const gchar **) OMP_player_icon);
-    //gtk_window_set_default_icon(icon);
-    //g_object_unref(icon);
-}
-
 void
 init_dbus()
 {
@@ -366,7 +356,7 @@ main(int argc, char *argv[])
 	ui_image_path = g_build_filename(DATA_DIR, RELATIVE_UI_IMAGE_PATH, NULL);
 
 	g_set_application_name(_("Media Player"));
-	gtk_window_set_default_icon_name("openmoko-mediaplayer");
+	gtk_window_set_default_icon_name("openmoko-soundandvideo");
 
 	// Set up signal handlers
 	signal(SIGSEGV, handler_sigsegfault);

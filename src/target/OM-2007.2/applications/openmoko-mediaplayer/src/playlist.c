@@ -127,6 +127,11 @@ omp_playlist_set_current_track(gint playlist_pos)
 	// DEBUG
 	g_printf("Setting current track to #%d\n", playlist_pos);
 
+	if (!omp_playlist)
+	{
+		return FALSE;
+	}
+
 	// Walk through the playlist and see if the new position is valid
 	for (track=omp_playlist->tracks; track!=NULL; track=track->next, track_num++)
 	{
@@ -211,17 +216,24 @@ omp_playlist_set_prev_track()
  * Moves one track forward in playlist
  * @return TRUE if a new track is to be played, FALSE if current track didn't change
  * @todo Shuffle mode, repeat
+ * @todo Will cause an infinite loop if playlist only consists of tracks that can't be played and player is in shuffle mode
  */
 gboolean
 omp_playlist_set_next_track()
 {
 	struct omp_track_history_entry *history_entry;
+	gboolean was_playing;
 	gboolean is_new_track = FALSE;
 
 	if (!omp_playlist_current_track)
 	{
 		return;
 	}
+
+	// Get player state so we can continue playback if necessary
+	was_playing = (omp_playback_get_state() == OMP_PLAYBACK_STATE_PLAYING);
+
+try_again:
 
 	// Prepare the history entry - if we don't need it we'll just free it again
 	history_entry = g_new(struct omp_track_history_entry, 1);
@@ -246,6 +258,18 @@ omp_playlist_set_next_track()
 		// Emit signal to update UI and the like
 		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_NEXT_TRACK);
 
+		// Load track and start playing if needed
+		if (omp_playlist_load_current_track())
+		{
+			if (was_playing) omp_playback_play();
+
+		} else {
+
+			// Uh-oh, track failed to load - let's find another one, shall we?
+			is_new_track = FALSE;
+			goto try_again;
+		}
+
 	} else {
 
 		// We're not making use of the history entry as the track didn't change
@@ -262,10 +286,8 @@ void omp_playlist_process_eos_event()
 {
 	if (omp_playlist_set_next_track())
 	{
-		if (omp_playlist_load_current_track())
-		{
-//			omp_playback_play();
-		}
+		// If we received an eos event we were obviously playing so let's continue doing so
+		omp_playback_play();
 	}
 }
 
@@ -295,8 +317,7 @@ omp_playlist_resolve_track(struct spiff_track *track)
 
 /**
  * Tries to resolve the current track and feed it to gstreamer
- * @return FALSE if current track and all remaining tracks in playlist failed to load, TRUE otherwise
- * @todo Will cause an infinite loop/stack overflow if playlist only consists of tracks that can't be played and player is in shuffle mode
+ * @return FALSE if current track failed to load, TRUE otherwise
  */
 gboolean
 omp_playlist_load_current_track()
@@ -307,7 +328,7 @@ omp_playlist_load_current_track()
 	// Make sure we got something to handle
 	if (!omp_playlist_current_track)
 	{
-		return;
+		return FALSE;
 	}
 
 	// Resolve playlist entry to make it available for playback
@@ -318,24 +339,7 @@ omp_playlist_load_current_track()
 	{
 		track_loaded = omp_playback_load_track_from_uri(track_uri);
 		g_free(track_uri);
-		return TRUE;
-
-	} else {
-
-		track_loaded = FALSE;
-	}
-
-	if (!track_loaded)
-	{
-		// Track not available for playback - move on if possible by trying to
-		// play the next track until we succeed or reach the end of the playlist
-		while (omp_playlist_set_next_track())
-		{
-			if (omp_playlist_load_current_track())
-			{
-				return TRUE;
-			}
-		}
+		return track_loaded;
 	}
 
 	return FALSE;
