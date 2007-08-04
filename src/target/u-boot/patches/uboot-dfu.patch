@@ -340,19 +340,19 @@ Index: u-boot/drivers/usbdfu.c
 +	int rc;
 +
 +	ds->erase_opts.offset = ds->off;
-+	ds->erase_opts.length = ds->part->size-ds->off;
-+	debug("Erasing 0x%x bytes @ offset 0x%x (jffs=%u)\n",
++	ds->erase_opts.length = ds->part->size - (ds->off - ds->part->offset);
++	debug("Erasing tail of 0x%x bytes @ offset 0x%x (jffs=%u)\n",
 +		ds->erase_opts.length, ds->erase_opts.offset,
 +		ds->erase_opts.jffs2);
 +	rc = nand_erase_opts(ds->nand, &ds->erase_opts);
 +	if (rc) {
-+		debug("Error erasing\n");
++		printf("Error erasing tail\n");
 +	    	dev->dfu_state = DFU_STATE_dfuERROR;
 +		dev->dfu_status = DFU_STATUS_errERASE;
 +		return RET_STALL;
 +	}
 +
-+	ds->off += ds->part->size; /* for consistency */
++	ds->off += ds->erase_opts.length; /* for consistency */
 +
 +	return RET_NOTHING;
 +}
@@ -452,7 +452,7 @@ Index: u-boot/drivers/usbdfu.c
 +							ds->nand->erasesize,
 +							ds->nand->erasesize);
 +			/* rootfs partition */
-+			if (!rc && dev->alternate == 5)
++			if (!rc && !strcmp(ds->part->name, "rootfs"))
 +				rc = erase_tail_clean_nand(urb, ds);
 +
 +			ds->nand = NULL;
