@@ -9,6 +9,6 @@ bin_PROGRAMS = openmoko-feedreader2
 
 EXTRA_DIST = rfcdate.h moko_cache.h feed-configuration.h feed-data.h feed-item-view.h feed-selection-view.h application-data.h
 
-openmoko_feedreader2_SOURCES = feed-configuration.c feed-item-view.c feed-data.c rfcdate.c moko_cache.c main.c
+openmoko_feedreader2_SOURCES = feed-configuration.c feed-item-view.c feed-selection-view.c feed-data.c rfcdate.c moko_cache.c main.c
 openmoko_feedreader2_LDADD = @OPENMOKO_LIBS@ @MRSS_LIBS@ @GTHREAD_LIBS@ @WEBKITGTK_LIBS@
 

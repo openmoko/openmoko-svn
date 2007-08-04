@@ -61,7 +61,9 @@ struct _FeedItemView {
     GtkToolItem    *forward;
     GtkToolItem    *mail;
 
-    gchar          *current_highlight;
+
+    GtkEntry       *search_entry;
+    GtkWidget      *search_button;
 };
 
 struct _FeedItemViewClass {

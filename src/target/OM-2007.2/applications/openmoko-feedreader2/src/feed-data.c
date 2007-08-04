@@ -300,8 +300,6 @@ feed_filter_class_init (FeedFilterClass *filter_class)
 static void
 feed_sort_init (FeedSort* sort)
 {
-    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (sort), RSS_READER_COLUMN_DATE, GTK_SORT_DESCENDING);
-    gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (sort), RSS_READER_COLUMN_DATE, rss_sort_dates, NULL, NULL);
 }
 
 static void
@@ -355,14 +353,15 @@ feed_data_load_from_cache (FeedData* data)
     gsize size;
     GtkTreeIter iter;
 
-    gboolean valid = gtk_tree_model_get_iter_first ( GTK_TREE_MODEL (data), &iter);
+    GtkTreeModel *store = GTK_TREE_MODEL (feed_configuration_get_configuration ());
+    gboolean valid = gtk_tree_model_get_iter_first ( GTK_TREE_MODEL (store), &iter);
 
     while (valid) {
         mrss_t *rss_data;
         gchar *url;
         gchar *category;
 
-        gtk_tree_model_get ( GTK_TREE_MODEL (data), &iter, FEED_URL, &url, FEED_NAME, &category, -1);
+        gtk_tree_model_get ( GTK_TREE_MODEL (store), &iter, FEED_URL, &url, FEED_NAME, &category, -1);
         g_debug ("Reading cached object '%s'\n", url);
         gchar *content = moko_cache_read_object (data->cache, url, &size);
         if ( !content || size == -1 ) {
@@ -389,7 +388,7 @@ feed_data_load_from_cache (FeedData* data)
     next:
         g_free (url);
         g_free (category);
-        valid = gtk_tree_model_iter_next ( GTK_TREE_MODEL (data), &iter);
+        valid = gtk_tree_model_iter_next ( GTK_TREE_MODEL (store), &iter);
     }
 
     g_debug ("Done loading from cache\n");
@@ -401,7 +400,7 @@ feed_filter_new (const FeedData* data)
 {
     GObject* obj = g_object_new(RSS_TYPE_FEED_FILTER,
                                 "child-model", data,
-                                "root", NULL,
+                                "virtual-root", NULL,
                                 NULL);
 
     return obj;
@@ -428,6 +427,9 @@ feed_sort_new (const FeedFilter* filter)
     GObject* obj = g_object_new (RSS_TYPE_FEED_SORT,
                                  "model", filter,
                                  NULL);
+
+    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (obj), RSS_READER_COLUMN_DATE, GTK_SORT_DESCENDING);
+    gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (obj), RSS_READER_COLUMN_DATE, rss_sort_dates, NULL, NULL);
 
     return obj;
 }

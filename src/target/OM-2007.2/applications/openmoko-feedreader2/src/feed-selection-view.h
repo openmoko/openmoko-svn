@@ -47,17 +47,21 @@ typedef struct _FeedSelectionView FeedSelectionView;
 typedef struct _FeedSelectionViewClass FeedSelectionViewClass;
 
 struct _FeedSelectionView {
-    GtkTreeView parent;
+    GtkVBox parent;
+
+    FeedFilter      *filter;
+    FeedSort        *sort;   
+    GtkTreeView     *view;
 };
 
 struct _FeedSelectionViewClass {
-    GtkTreeViewClass parent;
+    GtkVBoxClass parent;
 };
 
-GType feed_selection_view_get_type      (void);
-GObject* feed_selection_new_new         (const FeedData*);
-void feed_selection_set_first_column    (const FeedData*, int);
-void feed_selection_set_second_column   (const FeedData*, int);
+GType       feed_selection_view_get_type                (void);
+GtkWidget*  feed_selection_view_new                     (void);
+void        feed_selection_view_add_column              (const FeedSelectionView*, int column_type, const gchar* txt);
+gchar*      feed_selection_view_get_search_string       (const FeedSelectionView*);
 
 G_END_DECLS
 

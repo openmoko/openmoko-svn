@@ -1,5 +1,44 @@
 2007-08-04  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        First version that can fetch feeds again and display some part of the
+        message to the user.
+
+        Some how scrolling with MokoFingerScrollView and WebKitGtkPage does not
+        work.
+
+        The application is still very raw, beginning with missing icons, to missing
+        configuration possibilities to missing features.
+
+        * src/Makefile.am:
+        * src/feed-data.c:
+        (feed_sort_init):
+        (feed_data_load_from_cache):
+        (feed_filter_new):
+        (feed_sort_new):
+        * src/feed-item-view.c:
+        (do_highlight):
+        (search_entry_changed_closure):
+        (feed_item_view_init):
+        (feed_item_view_highlight):
+        * src/feed-item-view.h:
+        * src/feed-selection-view.c: Added.
+        (treeview_selection_changed):
+        (treeview_keypress_event):
+        (refresh_feeds_closure):
+        (feed_selection_view_init):
+        (feed_selection_view_class_init):
+        (feed_selection_view_new):
+        (feed_selection_view_add_column):
+        (feed_selection_view_get_search_string):
+        * src/feed-selection-view.h:
+        * src/main.c:
+        (feed_selection_changed):
+        (create_feed_view):
+        (create_configuration_ui):
+        (create_ui):
+
+2007-08-04  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Move code around and we end up with an almost complete feed-data
         implementation. The main page to select feeds is still missing.
 

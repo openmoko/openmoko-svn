@@ -35,6 +35,7 @@
 #include "application-data.h"
 #include "feed-data.h"
 #include "feed-configuration.h"
+#include "feed-selection-view.h"
 #include "config.h"
 
 static void
@@ -43,6 +44,29 @@ window_delete_event (GtkWidget* widget, GdkEvent* event, struct ApplicationData*
     gtk_main_quit ();
 }
 
+static void
+feed_selection_changed (FeedSelectionView* view, const gchar* text, struct ApplicationData* data)
+{
+    feed_item_view_display (data->view, text ?  text : _("Failed to read the text."));
+    if (feed_selection_view_get_search_string (view))
+        feed_item_view_highlight (data->view, feed_selection_view_get_search_string (view));
+}
+
+/*
+ * Feed View
+ */
+static void
+create_feed_view (struct ApplicationData* data)
+{
+    GtkWidget *box = feed_selection_view_new ();
+    gtk_notebook_prepend_page (data->notebook, box, gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_LARGE_TOOLBAR));
+    gtk_container_child_set (GTK_CONTAINER(data->notebook), box, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+
+    feed_selection_view_add_column (RSS_FEED_SELECTION_VIEW (box), RSS_READER_COLUMN_SUBJECT, _("Subject"));
+    feed_selection_view_add_column (RSS_FEED_SELECTION_VIEW (box), RSS_READER_COLUMN_DATE, _("Date"));
+
+    g_signal_connect (G_OBJECT(box), "item-changed", G_CALLBACK(feed_selection_changed), data);
+}
 
 /*
  * Text View
@@ -76,7 +100,7 @@ create_configuration_ui (struct ApplicationData* data, GtkCellRenderer* text_ren
      * toolbar
      */
     GtkWidget* box = gtk_vbox_new (FALSE, 0);
-    gtk_notebook_append_page (data->notebook, box, gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_LARGE_TOOLBAR));
+    gtk_notebook_append_page (data->notebook, box, gtk_image_new_from_stock (GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_LARGE_TOOLBAR));
     gtk_container_child_set (GTK_CONTAINER(data->notebook), box, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
 
     GtkWidget* toolbar = gtk_toolbar_new ();
@@ -148,8 +172,12 @@ create_ui (struct ApplicationData* data)
     GtkCellRenderer *text_renderer = GTK_CELL_RENDERER(gtk_cell_renderer_text_new ());
 
     /*
+     * 1. The default feed view
+     */
+    create_feed_view (data);
+    
+    /*
      * 2. Text View
-     * (initialized before 1. so it can be used by them)
      */
     create_text_view (data);
 

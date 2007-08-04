@@ -56,6 +56,18 @@ mail_clicked (GtkWidget* wid, FeedItemView* view)
     g_signal_emit (view, feed_item_view_signals[MAIL], 0);
 }
 
+static void
+do_highlight (FeedItemView* view, const gchar* search_string)
+{
+    /* webkit_gtk_page_search (view->page, search_string); */
+}
+
+static void
+search_entry_changed_closure (GtkEntry* entry, FeedItemView* view)
+{
+    do_highlight (view, gtk_entry_get_text (entry));
+}
+
 
 G_DEFINE_TYPE(FeedItemView, feed_item_view, GTK_TYPE_VBOX)
 
@@ -68,21 +80,44 @@ feed_item_view_init (FeedItemView* view)
     GtkWidget* toolbar = gtk_toolbar_new ();
     gtk_box_pack_start (GTK_BOX(view), toolbar, FALSE, FALSE, 0);
 
-    view->back = gtk_tool_button_new_from_stock (GTK_STOCK_MEDIA_PREVIOUS);
+    view->back = gtk_tool_button_new_from_stock (GTK_STOCK_GO_FORWARD);
     gtk_tool_item_set_expand (GTK_TOOL_ITEM(view->back), TRUE);
     gtk_toolbar_insert (GTK_TOOLBAR(toolbar), view->back, 0);
     g_signal_connect (view->back, "clicked", G_CALLBACK(prev_clicked), view);
+
+    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
     
     view->mail = gtk_tool_button_new_from_stock (MOKO_STOCK_MAIL_SEND);
     gtk_tool_item_set_expand (GTK_TOOL_ITEM(view->mail), TRUE);
-    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), view->mail, 1);
+    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), view->mail, 2);
     g_signal_connect (view->mail, "clicked", G_CALLBACK(mail_clicked), view);
 
-    view->forward = gtk_tool_button_new_from_stock (GTK_STOCK_MEDIA_NEXT);
+    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
+
+    view->forward = gtk_tool_button_new_from_stock (GTK_STOCK_GO_FORWARD);
     gtk_tool_item_set_expand (GTK_TOOL_ITEM(view->forward), TRUE);
-    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), view->forward, 2);
+    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), view->forward, 4);
     g_signal_connect (view->forward, "clicked", G_CALLBACK(next_clicked), view);
 
+    /*
+     * Search Entry
+     */
+    GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (view), hbox, FALSE, FALSE, 0);
+
+    view->search_button = gtk_button_new ();
+    gtk_widget_set_name (GTK_WIDGET (view->search_button), "mokosearchbutton");
+    gtk_button_set_image (GTK_BUTTON (view->search_button), gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_SMALL_TOOLBAR));
+    gtk_box_pack_start (GTK_BOX (hbox), view->search_button, FALSE, FALSE, 0);
+
+    view->search_entry = GTK_ENTRY (gtk_entry_new ());
+    gtk_widget_set_name (GTK_WIDGET (view->search_entry), "mokosearchentry");
+    g_signal_connect (G_OBJECT (view->search_entry), "changed", G_CALLBACK (search_entry_changed_closure), view);
+    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (view->search_entry), TRUE, TRUE, 0);
+
+    /*
+     * Details 'pane'
+     */
     GtkWidget* scrolled = moko_finger_scroll_new ();
     gtk_box_pack_start (GTK_BOX(view), scrolled, TRUE, TRUE, 0);
 
@@ -157,5 +192,5 @@ feed_item_view_display (FeedItemView* view, const gchar* text)
 void
 feed_item_view_highlight (FeedItemView* view, const gchar* search_string)
 {
-    /* webkit_gtk_page_search (view->page, search_string); */
+    do_highlight (view, search_string);
 }
