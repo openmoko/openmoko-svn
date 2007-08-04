@@ -1,3 +1,26 @@
+2007-08-04  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Move code around and we end up with an almost complete feed-data
+        implementation. The main page to select feeds is still missing.
+
+        * src/application-data.h:
+        * src/callbacks.c:
+        * src/feed-data.c:
+        (rss_filter_entries):
+        (rss_sort_dates):
+        (add_mrss_item):
+        (feed_update_thread):
+        (feed_data_finalize):
+        (feed_data_init):
+        (feed_data_class_init):
+        (feed_filter_init):
+        (feed_sort_init):
+        (feed_data_update_all):
+        (feed_data_set_cache):
+        (feed_data_load_from_cache):
+        (feed_date_cell_data_func):
+        * src/feed-data.h:
+
 2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Implement the feed_item_view which will be used to show

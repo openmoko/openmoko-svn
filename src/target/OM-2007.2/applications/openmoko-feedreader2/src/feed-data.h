@@ -83,7 +83,7 @@ struct _FeedFilter {
     /*
      * Do we have a filter set at all?
      */
-    gboolean all_filter;
+    gboolean is_all_filter;
 
     /*
      * The category to filter. Coming from the feed-configuration
@@ -108,6 +108,31 @@ struct  _FeedSortClass {
     GtkTreeModelSortClass parent;
 };
 
+/**
+ * Column's of the FeedData model
+ */
+enum {
+    RSS_READER_COLUMN_AUTHOR,
+    RSS_READER_COLUMN_SUBJECT,
+    RSS_READER_COLUMN_DATE,
+    RSS_READER_COLUMN_LINK,     /* Is this something like spiegel.de and only has a link */
+    RSS_READER_COLUMN_TEXT,     /* Either link is NULL, or this contains the article     */
+    RSS_READER_COLUMN_TEXT_TYPE,/* The Text Type of Atom feeds HTML, plain...            */
+    RSS_READER_COLUMN_CATEGORY, /* The category as shown in the filter box               */
+    RSS_READER_COLUMN_SOURCE,   /* the source of this entry, the URL of the feed, not the atom <source> */
+    RSS_READER_NUM_COLS,
+};
+
+/**
+ * text type for atom feeds, default is none
+ */
+enum {
+    RSS_READER_TEXT_TYPE_NONE,
+    RSS_READER_TEXT_TYPE_PLAIN,
+    RSS_READER_TEXT_TYPE_HTML,
+    RSS_READER_TEXT_TYPE_UNKNOWN
+};
+
 
 GType       feed_data_get_type          (void);
 GObject*    feed_data_get_instance      (void);
@@ -123,8 +148,13 @@ void        feed_filter_reset           (FeedFilter*);
 void        feed_filter_filter_category (FeedFilter*, GtkTreeIter*);
 void        feed_filter_filter_text     (FeedFilter*, const gchar*);
 
-GType       feed_sort_get_type        (void);
-GObject*    feed_sort_new             (const FeedFilter*);
+GType       feed_sort_get_type          (void);
+GObject*    feed_sort_new               (const FeedFilter*);
+
+/*
+ * helper for the GtkTreeView CellRenderer
+ */
+void        feed_date_cell_data_func    (GtkTreeViewColumn *tree_column, GtkCellRenderer *renderer, GtkTreeModel *tree_model, GtkTreeIter *iter, gpointer data);
 
 G_END_DECLS
 

@@ -37,33 +37,4 @@ struct ApplicationData {
     FeedItemView      *view;
 };
 
-/*
- * Instead of having a real model we have this... as our feed
- * model
- * Either there is a link or text is included. And we contain
- * the sourcename of the feed. This will be used by the ModelFilter
- * to implement the FilterMenu
- */
-enum {
-    RSS_READER_COLUMN_AUTHOR,
-    RSS_READER_COLUMN_SUBJECT,
-    RSS_READER_COLUMN_DATE,
-    RSS_READER_COLUMN_LINK,     /* Is this something like spiegel.de and only has a link */
-    RSS_READER_COLUMN_TEXT,     /* Either link is NULL, or this contains the article     */
-    RSS_READER_COLUMN_TEXT_TYPE,/* The Text Type of Atom feeds HTML, plain...            */
-    RSS_READER_COLUMN_CATEGORY, /* The category as shown in the filter box               */
-    RSS_READER_COLUMN_SOURCE,   /* the source of this entry, the URL of the feed, not the atom <source> */
-    RSS_READER_NUM_COLS,
-};
-
-/**
- * text type for atom feeds, default is none
- */
-enum {
-    RSS_READER_TEXT_TYPE_NONE,
-    RSS_READER_TEXT_TYPE_PLAIN,
-    RSS_READER_TEXT_TYPE_HTML,
-    RSS_READER_TEXT_TYPE_UNKNOWN
-};
-
 #endif
