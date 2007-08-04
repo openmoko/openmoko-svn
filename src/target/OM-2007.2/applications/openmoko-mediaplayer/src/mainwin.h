@@ -33,6 +33,9 @@
 #define WIDGET_CAPTION_TRACK_NUM "%.3d / %.3d"
 #define WIDGET_CAPTION_VOLUME "%d%%"
 
+// Determines how many seconds the engine will seek if the FFWD/REW buttons are clicked
+#define BUTTON_SEEK_DISTANCE 10
+
 extern GtkWidget *omp_main_window;
 
 void omp_application_terminate();
@@ -42,6 +45,7 @@ void omp_main_window_hide();
 void omp_main_window_create();
 void omp_main_connect_signals();
 
-void omp_main_update_track_info();
+void omp_main_update_track_change();
+void omp_main_update_track_position();
 
 #endif

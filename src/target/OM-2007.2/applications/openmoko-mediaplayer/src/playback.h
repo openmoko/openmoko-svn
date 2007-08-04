@@ -30,12 +30,15 @@
 #include <gst/gst.h>
 
 #define OMP_EVENT_PLAYBACK_EOS "playback_end_of_stream"
+#define OMP_EVENT_PLAYBACK_STATUS_CHANGED "playback_status_change"
+#define OMP_EVENT_PLAYBACK_POSITION_CHANGED "playback_position_change"
 
 // Player states masking the gstreamer states so we can be more abstract
-#define OMP_PLAYBACK_STATE_READY GST_STATE_READY
 #define OMP_PLAYBACK_STATE_PAUSED GST_STATE_PAUSED
 #define OMP_PLAYBACK_STATE_PLAYING GST_STATE_PLAYING
 
+// The UI will be updated at this interval when a track is playing (in ms)
+#define PLAYBACK_UI_UPDATE_INTERVAL 1000
 
 void omp_playback_init();
 void omp_playback_free();
@@ -43,7 +46,11 @@ void omp_playback_free();
 gboolean omp_playback_load_track_from_uri(gchar *uri);
 
 void omp_playback_play();
+void omp_playback_pause();
 gint omp_playback_get_state();
+gulong omp_playback_get_track_position();
+void omp_playback_set_track_position(glong position);
+gulong omp_playback_get_track_length();
 
 static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
 static gboolean omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data);

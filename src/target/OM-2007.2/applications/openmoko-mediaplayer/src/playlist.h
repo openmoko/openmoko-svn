@@ -29,12 +29,7 @@
 
 #include <spiff/spiff_c.h>
 
-#define OMP_EVENT_PREV_TRACK "prev_track"
-#define OMP_EVENT_NEXT_TRACK "next_track"
-
-
-extern struct _omp_playlist_events omp_playlist_events;
-
+#define OMP_EVENT_PLAYLIST_TRACK_CHANGED "playlist_track_changed"
 
 extern struct spiff_list *omp_playlist;
 extern guint omp_playlist_track_count;

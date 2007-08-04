@@ -52,7 +52,7 @@ struct _omp_config
 //	gchar *playlist_path;						///< Last path used for the playlist selection dialog
 	gchar playlist_file[256];				///< Path and file name of current (=last used) playlist
 	gint playlist_position;					///< Position within the playlist
-	gint track_position;						///< Position to resume playback from within the last played track
+	glong track_position;						///< Position to resume playback from within the last played track
 };
 
 extern struct _omp_config *omp_config;

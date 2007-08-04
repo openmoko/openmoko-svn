@@ -140,6 +140,10 @@ handler_sigusr1(int value)
 void
 omp_config_restore_state()
 {
+	#ifdef DEBUG
+		g_print("Loading playlist and restoring playback state\n");
+	#endif
+
 	// This mustn't be called more than once
 	g_assert(omp_config == NULL);
 
@@ -158,10 +162,11 @@ omp_config_restore_state()
 	// Check whether playlist_position is valid
 	if (!omp_playlist_set_current_track(omp_config->playlist_position))
 	{
-		// Reset playlist state as it must have been modified since it was last loaded
+		// Reset playlist state as playlist must have been modified since it was last loaded
 		omp_config->playlist_position = 0;
 		omp_config->track_position = 0;
-	} 
+		omp_playlist_set_current_track(0);
+	}
 
 	// Feed the track entity to the playback engine to obtain track information
 	omp_playlist_load_current_track();
@@ -362,15 +367,12 @@ main(int argc, char *argv[])
 	signal(SIGSEGV, handler_sigsegfault);
 	signal(SIGUSR1, handler_sigusr1);
 
-	// Load config and restore playback state
-	omp_config_restore_state();
-
 	// Initialize playback, playlist and UI handling
 	omp_main_window_create();
 	omp_playback_init();
 	omp_playlist_init();
 	omp_main_connect_signals();
-	omp_main_update_track_info();
+	omp_config_restore_state();
 	omp_main_window_show();
 
 	gtk_main();
@@ -384,6 +386,7 @@ main(int argc, char *argv[])
 	omp_playback_free();
 	omp_playlist_free();
 	gst_deinit();
+	g_free(ui_image_path);
 
 #ifdef DEBUG_MEM_PROFILE
 	g_mem_profile();

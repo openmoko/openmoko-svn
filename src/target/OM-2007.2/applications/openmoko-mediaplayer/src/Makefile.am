@@ -17,7 +17,8 @@ openmoko_mediaplayer_CFLAGS = \
         $(OPENMOKO_CFLAGS) \
 	$(OMP_DEFINES) \
         -I$(top_srcdir) \
-        -I$(top_srcdir)/intl
+        -I$(top_srcdir)/intl\
+	-g -DDEBUG
 
 INCLUDES = $(openmoko_mediaplayer_CFLAGS)
 

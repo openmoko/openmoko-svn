@@ -62,8 +62,7 @@ omp_playlist_init()
 	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_EOS, G_CALLBACK(omp_playlist_process_eos_event), NULL);
 
 	// Create the signals we emit: no params, no return value
-	g_signal_new(OMP_EVENT_PREV_TRACK, G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-	g_signal_new(OMP_EVENT_NEXT_TRACK, G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+	g_signal_new(OMP_EVENT_PLAYLIST_TRACK_CHANGED, G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
 /**
@@ -93,6 +92,14 @@ omp_playlist_free()
 void
 omp_playlist_load(gchar *playlist_file)
 {
+	// Free the track history's memory by deleting the first element until the list is empty
+	while (omp_track_history)
+	{
+		g_free(omp_track_history->data);
+		omp_track_history = g_slist_delete_link(omp_track_history, omp_track_history);
+	}
+
+	// Let XSPF clean up, too
 	if (omp_playlist)
 	{
 		spiff_free(omp_playlist);
@@ -124,8 +131,9 @@ omp_playlist_set_current_track(gint playlist_pos)
 	struct spiff_track *track;
 	gint track_num = 0;
 
-	// DEBUG
-	g_printf("Setting current track to #%d\n", playlist_pos);
+	#ifdef DEBUG
+		g_printf("Setting current track to #%d\n", playlist_pos);
+	#endif
 
 	if (!omp_playlist)
 	{
@@ -146,6 +154,9 @@ omp_playlist_set_current_track(gint playlist_pos)
 	if (position_valid)
 	{
 		omp_playlist_track_count = track_num;
+
+		// Emit signal to update UI and the like
+		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
 	}
 
 	return position_valid;
@@ -161,12 +172,41 @@ omp_playlist_set_prev_track()
 {
 	struct omp_track_history_entry *history_entry;
 	struct spiff_track *track;
+	gboolean was_playing;
 	gboolean is_new_track = FALSE;
 
 	if (!omp_playlist_current_track)
 	{
 		return;
 	}
+
+	// If track playing time is >= 10 seconds we just jump back to the beginning of the track
+	if (omp_playback_get_track_position() >= 10)
+	{
+		omp_playback_set_track_position(0);
+		return TRUE;
+	}
+
+	// Get player state so we can continue playback if necessary
+	was_playing = (omp_playback_get_state() == OMP_PLAYBACK_STATE_PLAYING);
+
+try_again:
+
+	#ifdef DEBUG
+		if (omp_track_history)
+		{
+			GSList *list;
+			g_printf("--- Track History:\n");
+			list = omp_track_history;
+			while (list)
+			{
+				history_entry = list->data;
+				g_printf("- %s\n", history_entry->track->locations->value);
+				list = g_slist_next(list);
+			}
+			g_printf("---\n");
+		}
+	#endif
 
 	// Do we have tracks in the history to go back to?
 	if (omp_track_history)
@@ -197,7 +237,7 @@ omp_playlist_set_prev_track()
 			// We only found the previous track if we're not at the end of the list
 			if (track->next)
 			{
-				omp_playlist_current_track		= track;
+				omp_playlist_current_track = track;
 				omp_playlist_current_track_id--;
 			}
 		}
@@ -206,7 +246,19 @@ omp_playlist_set_prev_track()
 	if (is_new_track)
 	{
 		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PREV_TRACK);
+		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
+
+		// Load track and start playing if needed
+		if (omp_playlist_load_current_track())
+		{
+			if (was_playing) omp_playback_play();
+
+		} else {
+
+			// Uh-oh, track failed to load - let's find another one, shall we?
+			is_new_track = FALSE;
+			goto try_again;
+		}
 	}
 
 	return is_new_track;
@@ -237,8 +289,8 @@ try_again:
 
 	// Prepare the history entry - if we don't need it we'll just free it again
 	history_entry = g_new(struct omp_track_history_entry, 1);
-	history_entry->track = omp_playlist_current_track;
-	history_entry->track_id = omp_playlist_current_track_id;
+	history_entry->track		= omp_playlist_current_track;
+	history_entry->track_id	= omp_playlist_current_track_id;
 
 	// Do we have a track to play?
 	if (omp_playlist_current_track->next)
@@ -256,7 +308,7 @@ try_again:
 		omp_track_history = g_slist_prepend(omp_track_history, (gpointer)history_entry);
 
 		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_NEXT_TRACK);
+		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
 
 		// Load track and start playing if needed
 		if (omp_playlist_load_current_track())

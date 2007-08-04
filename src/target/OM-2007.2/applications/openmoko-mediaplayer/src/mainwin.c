@@ -59,6 +59,8 @@ struct _main_widgets
 
 GtkWidget *omp_main_window = NULL;
 
+gboolean omp_main_time_slider_can_update = TRUE;
+gboolean omp_main_time_slider_was_dragged = FALSE;
 
 
 /**
@@ -67,9 +69,6 @@ GtkWidget *omp_main_window = NULL;
 void
 omp_application_terminate()
 {
-	// Free resources
-	g_free(ui_image_path);
-
 	// Tell GTK to leave the message loop
 	gtk_main_quit();
 }
@@ -190,6 +189,51 @@ omp_set_title(const gchar *title)
 	gtk_label_set_text(GTK_LABEL(main_widgets.title_label), title);
 }
 
+/**
+ * Gets called when the time slider's value got changed (yes, that means it gets called every second, too)
+ */
+void
+omp_main_time_slider_changed(GtkRange *range, gpointer data)
+{
+	if (omp_main_time_slider_was_dragged)
+	{
+		omp_main_time_slider_was_dragged = FALSE;
+
+		// Set new position and resume playback that was paused when dragging started
+		omp_playback_set_track_position(gtk_range_get_value(GTK_RANGE(range)));
+
+		// Update UI right away
+		gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), omp_playback_get_track_position());
+	}
+}
+
+/**
+ * Gets called when the user starts dragging the time slider
+ */
+gboolean
+omp_main_time_slider_drag_start(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+	while (gtk_events_pending()) gtk_main_iteration();
+
+	// Prevent UI callbacks from messing with the slider position
+	omp_main_time_slider_can_update = FALSE;
+}
+
+/**
+ * Gets called when the user stops dragging the time slider
+ */
+gboolean
+omp_main_time_slider_drag_stop(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+	while (gtk_events_pending()) gtk_main_iteration();
+
+	// Allow UI callbacks to alter the the slider position again
+	omp_main_time_slider_can_update = TRUE;
+
+	// Notify the slider change callback that this time we indeed want to change position
+	omp_main_time_slider_was_dragged = TRUE;
+}
+
 void
 omp_shuffle_button_callback(GtkWidget* widget, gpointer data)
 {
@@ -225,13 +269,46 @@ omp_playlist_button_callback(GtkWidget *sender, gpointer data)
 }
 
 /**
+ * Event handler for the Fast Forward button
+ */
+void
+omp_main_button_fast_forward_callback()
+{
+	// Set new position and resume playback that was paused when dragging started
+	omp_playback_set_track_position(omp_playback_get_track_position()+BUTTON_SEEK_DISTANCE);
+
+	// Update UI right away
+	gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), omp_playback_get_track_position());
+}
+
+/**
+ * Event handler for the Rewind button
+ */
+void
+omp_main_button_rewind_callback()
+{
+	// Set new position and resume playback that was paused when dragging started
+	omp_playback_set_track_position(omp_playback_get_track_position()-BUTTON_SEEK_DISTANCE);
+
+	// Update UI right away
+	gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), omp_playback_get_track_position());
+}
+
+/**
  * Event handler for the Play/Pause button
- * @todo State change, etc
+ * @todo Pixmap change
  */
 void
 omp_main_button_play_pause_callback()
 {
-	omp_playback_play();
+	if (omp_playback_get_state() != OMP_PLAYBACK_STATE_PLAYING)
+	{
+		omp_playback_play();
+
+	} else {
+
+		omp_playback_pause();
+	}
 }
 
 /**
@@ -282,7 +359,6 @@ omp_button_create(gchar *image_name, GCallback callback)
 
 	image = gtk_image_new_from_icon_name(image_name, 36);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
-	g_object_unref(image);
 
 	return button;
 }
@@ -388,9 +464,11 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_scale_set_draw_value(GTK_SCALE(main_widgets.time_hscale), FALSE);
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(main_widgets.time_hscale), GTK_CAN_FOCUS);
 	gtk_widget_set_size_request(GTK_WIDGET(main_widgets.time_hscale), 338, 35);
+	gtk_range_set_update_policy(GTK_RANGE(main_widgets.time_hscale), GTK_UPDATE_DISCONTINUOUS);
 	gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), 0.0);
-//    g_signal_connect(G_OBJECT(time_hscale), "change_value",
-//		    G_CALLBACK(omp_main_set_time), NULL);
+	g_signal_connect(G_OBJECT(main_widgets.time_hscale), "value_changed",					G_CALLBACK(omp_main_time_slider_changed), NULL);
+	g_signal_connect(G_OBJECT(main_widgets.time_hscale), "button-press-event",		G_CALLBACK(omp_main_time_slider_drag_start), NULL);
+	g_signal_connect(G_OBJECT(main_widgets.time_hscale), "button-release-event",	G_CALLBACK(omp_main_time_slider_drag_stop), NULL);
 	gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(main_widgets.time_hscale));
 
 	// --- --- --- --- --- Middle hbox --- --- --- --- ---
@@ -483,7 +561,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Rewind button
-	button = omp_button_create("gtk-media-rewind-ltr", NULL);
+	button = omp_button_create("gtk-media-rewind-ltr", G_CALLBACK(omp_main_button_rewind_callback));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
@@ -493,7 +571,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Fast Forward button
-	button = omp_button_create("gtk-media-forward-ltr", NULL);
+	button = omp_button_create("gtk-media-forward-ltr", G_CALLBACK(omp_main_button_fast_forward_callback));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
@@ -536,6 +614,7 @@ omp_main_window_create()
 	// Show everything but the window itself
 	gtk_widget_show_all(GTK_WIDGET(bg_muxer));
 
+
 	return;
 }
 
@@ -547,20 +626,23 @@ omp_main_window_create()
 void
 omp_main_connect_signals()
 {
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PREV_TRACK, G_CALLBACK(omp_main_update_track_info), NULL);
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_NEXT_TRACK, G_CALLBACK(omp_main_update_track_info), NULL);
+	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,			G_CALLBACK(omp_main_update_track_change), NULL);
+	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,		G_CALLBACK(omp_main_update_track_change), NULL);
+	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED,	G_CALLBACK(omp_main_update_track_position), NULL);
 }
-
 
 /**
  * Evaluates current track information and updates the config/UI if necessary
+ * @note This function only checks elements that don't change too often - for the rest we have specialized functions below
  */
 void
-omp_main_update_track_info()
+omp_main_update_track_change()
 {
 	static gint old_track_count = 0;
 	static gint old_track_id = 0;
+	static gulong old_track_length = 0;
 
+	gulong track_length, track_position;
 	gchar *text;
 
 	// Track id/track count changed?
@@ -572,12 +654,68 @@ omp_main_update_track_info()
 		// Update config
 		omp_config_update();
 
-		// Update UI
+		// Update label
 		text = g_strdup_printf(WIDGET_CAPTION_TRACK_NUM, omp_playlist_current_track_id+1, omp_playlist_track_count);
 		gtk_label_set_text(GTK_LABEL(main_widgets.track_number_label), text);
 		g_free(text);
 	}
 
+	// Got a track length change?
+	track_length = omp_playback_get_track_length();
+
+	if (track_length != old_track_length)
+	{
+		old_track_length = track_length;
+		track_position = omp_playback_get_track_position();
+
+		// Set new time slider increments
+		gtk_range_set_increments(GTK_RANGE(main_widgets.time_hscale), track_length/10, track_length/10);
+
+		// Update label and slider
+		text = g_strdup_printf(WIDGET_CAPTION_TRACK_TIME,
+			track_position / 60, track_position % 60,
+			track_length / 60, track_length % 60);
+		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
+		g_free(text);
+
+		if (omp_main_time_slider_can_update)
+		{
+			gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, track_length ? track_length : 1);
+			gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), track_position);
+		}
+	}
+}
+
+/**
+ * Updates the UI if the playback position changed
+ */
+void
+omp_main_update_track_position()
+{
+	static gulong old_track_position = 0;
+
+	gulong track_position, track_length;
+	gchar *text;
+
+	// Got a track length change?
+	track_position = omp_playback_get_track_position();
+	{
+		old_track_position = track_position;
+		track_length = omp_playback_get_track_length();
+
+		// Update UI
+		text = g_strdup_printf(WIDGET_CAPTION_TRACK_TIME,
+			track_position / 60, track_position % 60,
+			track_length / 60, track_length % 60);
+		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
+		g_free(text);
+
+		if (omp_main_time_slider_can_update)
+		{
+			gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, track_length ? track_length : 1);
+			gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), track_position);
+		}
+	}
 
 }
 
