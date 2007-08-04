@@ -24,7 +24,7 @@ Index: u-boot/board/neo1973/common/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/bootmenu.c
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,122 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -135,6 +135,8 @@ Index: u-boot/board/neo1973/common/bootmenu.c
 +	.enter_key = on_key,
 +	.seconds = seconds,
 +	.idle_action = poweroff_if_idle,
++	.next_key_action = "Press [AUX]",
++	.enter_key_name = "[POWER]",
 +};
 +
 +
@@ -366,7 +368,7 @@ Index: u-boot/common/bootmenu.c
 ===================================================================
 --- /dev/null
 +++ u-boot/common/bootmenu.c
-@@ -0,0 +1,311 @@
+@@ -0,0 +1,312 @@
 +/*
 + * bootmenu.c - Boot menu
 + *
@@ -498,7 +500,8 @@ Index: u-boot/common/bootmenu.c
 +	for (option = options; option != options+num_options; option++)
 +		print_option(option, option == options);
 +
-+	bm_printf("\n\nPress [AUX] to select, [POWER] to execute.\n");
++	bm_printf("\n\n%s to select, %s to execute.\n",
++	    setup->next_key_action, setup->enter_key_name);
 +}
 +
 +
@@ -527,7 +530,7 @@ Index: u-boot/common/bootmenu.c
 +
 +static void do_option(const struct option *option)
 +{
-+	int seconds, aux;
++	int seconds, next;
 +
 +	bm_printf(ANSI_CLEAR ANSI_GOTOYX, 1, 1);
 +	redirect_console(1);
@@ -541,16 +544,16 @@ Index: u-boot/common/bootmenu.c
 +	seconds = get_var_positive_int("after_command_wait",
 +	    AFTER_COMMAND_WAIT);
 +	if (seconds)
-+		bm_printf("\nPress [AUX] to %s.",
++		bm_printf("\n%s to %s.", setup->next_key_action,
 +		    option ? "return to boot menu" : "power off");
-+	aux = 1; /* require up-down transition */
++	next = 1; /* require up-down transition */
 +	while (seconds) {
 +		int tmp;
 +
 +		tmp = setup->next_key(setup->user);
-+		if (tmp && !aux)
++		if (tmp && !next)
 +			break;
-+		aux = tmp;
++		next = tmp;
 +		if (setup->seconds(setup->user))
 +			seconds--;
 +	}
@@ -562,7 +565,7 @@ Index: u-boot/common/bootmenu.c
 +
 +static void bootmenu_hook(int activity)
 +{
-+	static int aux = 1, on = 1;
++	static int next = 1, on = 1;
 +	static const struct option *option = options;
 +	static int seconds = 0;
 +	int tmp;
@@ -570,7 +573,7 @@ Index: u-boot/common/bootmenu.c
 +	if (activity)
 +		seconds = 0;
 +	tmp = setup->next_key(setup->user);
-+	if (tmp && !aux) {
++	if (tmp && !next) {
 +		print_option(option, 0);
 +		option++;
 +		if (option == options+num_options)
@@ -578,7 +581,7 @@ Index: u-boot/common/bootmenu.c
 +		print_option(option, 1);
 +		seconds = 0;
 +	}
-+	aux = tmp;
++	next = tmp;
 +	tmp = setup->enter_key(setup->user);
 +	if (tmp && !on) {
 +		do_option(option);
@@ -682,7 +685,7 @@ Index: u-boot/include/bootmenu.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/bootmenu.h
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,79 @@
 +/*
 + * bootmenu.h - Boot menu
 + *
@@ -728,8 +731,16 @@ Index: u-boot/include/bootmenu.h
 +	/* action to take if the boot menu times out */
 +	void (*idle_action)(void *user);
 +
-+	/* user-specific data, passes "as is" to the functions above */
++	/* user-specific data, passed "as is" to the functions above */
 +	void *user;
++
++	/* Action to invoke the "next" function. Begins in upper case. E.g.,
++ 	   "Press [AUX]". */
++	const char *next_key_action;
++
++	/* Name of the "enter" key, optionally with an action (in lower case).
++	   E.g., "[POWER]" or "tap the screen". */
++	const char *enter_key_name;
 +};
 +
 +
@@ -758,7 +769,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -160,6 +160,8 @@
+@@ -155,6 +155,8 @@
  /* valid baudrates */
  #define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
  
