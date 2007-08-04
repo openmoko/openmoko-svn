@@ -1,0 +1,7 @@
+Minimal Button and powermanagement handling daemon
+
+NOTE: Merely throwaway code, since it may be a better idea to base on
+ * HAL / OHM, or
+ * devmand, or
+ * zaurusd ?
+
