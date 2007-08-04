@@ -21,8 +21,12 @@ int main( int argc, char** argv )
 {
     //FIXME add daemonizing
     gtk_init( &argc, &argv );
-
-    gtk_main();
-    return 1;
+    if ( neod_buttonactions_install_watcher() )
+    {
+        gtk_main();
+        return 0;
+    }
+    else
+        return -1;
 }
 
