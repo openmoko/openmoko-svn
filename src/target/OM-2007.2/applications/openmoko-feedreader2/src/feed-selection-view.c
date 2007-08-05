@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "feed-selection-view.h"
+#include "feed-configuration.h"
 
 #include <moko-finger-scroll.h>
 #include <glib/gi18n.h>
@@ -108,27 +109,21 @@ category_combo_update (FeedSelectionView* view, ...)
     while (valid) {
         gchar *category;
         gtk_tree_model_get (store, &iter, FEED_NAME, &category, -1);
-
-        /*
-         * create the new item(s)
-         */
-        add_mrss_item (data, rss_data, url, category);
-
-        /*
-         * now cache the feed, a bit inefficient as we do not write to a file directly
-         */
-        if (buffer) {
-            moko_cache_write_object (data->cache, url, buffer, size, NULL);
-            free (buffer);
-        }
-
-        mrss_free( rss_data );
-
-next:
-        g_free (url);
+        gtk_combo_box_append_text (GTK_COMBO_BOX (view->category_combo), category);
         g_free (category);
         valid = gtk_tree_model_iter_next (store, &iter);
     }
+
+    /*
+     * Make All active
+     */
+    gtk_combo_box_set_active (GTK_COMBO_BOX (view->category_combo), 0);
+}
+
+static void
+category_selection_changed (GtkComboBox* box, FeedSelectionView* view)
+{
+    feed_filter_filter_category (view->filter, gtk_combo_box_get_active_text (box));
 }
 
 G_DEFINE_TYPE(FeedSelectionView, feed_selection_view, GTK_TYPE_VBOX)
@@ -171,7 +166,7 @@ feed_selection_view_init (FeedSelectionView* view)
     g_signal_connect (G_OBJECT (view->search_entry), "changed", G_CALLBACK (search_entry_changed), view);
     g_object_set (G_OBJECT (view->search_entry), "no-show-all", TRUE, NULL);
 
-    view->category_combo = GTK_WIDGET (gtk_combo_box_new ());
+    view->category_combo = GTK_WIDGET (gtk_combo_box_new_text ());
     gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (view->category_combo), TRUE, TRUE, 0);
     category_combo_update (view);
     g_signal_connect (G_OBJECT (view->category_combo), "changed", G_CALLBACK(category_selection_changed), view);

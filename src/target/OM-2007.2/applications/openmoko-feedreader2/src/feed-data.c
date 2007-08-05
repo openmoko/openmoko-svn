@@ -51,7 +51,7 @@ rss_filter_entries (GtkTreeModel *model, GtkTreeIter *iter, FeedFilter *data)
         if (!category)
             return FALSE;
 
-        if (strcmp(category, data->filter_string) != 0)
+        if (strcmp(category, data->category) != 0)
             return FALSE;
 
         g_free (category);

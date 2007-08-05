@@ -1,5 +1,17 @@
 2007-08-05  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Implement category filtering (and made sure it compiles). Feature wise
+        it is 'enpar' with the old application again.
+
+        * src/feed-data.c:
+        (rss_filter_entries): Use FeedFilter::category for filtering categories
+        * src/feed-selection-view.c:
+        (category_combo_update): Fill the combobox with data
+        (category_selection_changed): Get the current text and pass it to the FeedFilter
+        (feed_selection_view_init): Create a ComboBox with the text model.
+
+2007-08-05  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Implement filtering of feeds again. Switch the position
         of Prev/Next and use the right stock items in feed_item_view_init.
 
