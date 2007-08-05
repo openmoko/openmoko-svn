@@ -49,6 +49,10 @@ typedef struct _FeedSelectionViewClass FeedSelectionViewClass;
 struct _FeedSelectionView {
     GtkVBox parent;
 
+    GtkEntry        *search_entry;
+    GtkWidget       *search_toggle;
+    GtkWidget       *category_combo;
+
     FeedFilter      *filter;
     FeedSort        *sort;   
     GtkTreeView     *view;

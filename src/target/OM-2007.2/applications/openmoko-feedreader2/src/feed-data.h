@@ -145,7 +145,7 @@ void        feed_data_load_from_cache   (FeedData*);
 GType       feed_filter_get_type        (void);
 GObject*    feed_filter_new             (const FeedData*);
 void        feed_filter_reset           (FeedFilter*);
-void        feed_filter_filter_category (FeedFilter*, GtkTreeIter*);
+void        feed_filter_filter_category (FeedFilter*, const gchar*);
 void        feed_filter_filter_text     (FeedFilter*, const gchar*);
 
 GType       feed_sort_get_type          (void);

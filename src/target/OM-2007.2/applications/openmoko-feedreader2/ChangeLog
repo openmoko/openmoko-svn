@@ -1,3 +1,22 @@
+2007-08-05  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Implement filtering of feeds again. Switch the position
+        of Prev/Next and use the right stock items in feed_item_view_init.
+
+        * src/feed-data.c:
+        (feed_filter_filter_category): Implement
+        (feed_filter_filter_text): Implement (similiar to _category)
+        * src/feed-data.h:
+        * src/feed-item-view.c:
+        (feed_item_view_init):
+        * src/feed-selection-view.c:
+        (treeview_keypress_event): Filter key presses in the treeview and forward to the search entry
+        (search_toggled):
+        (search_entry_changed):
+        (category_combo_update):
+        (feed_selection_view_init):
+        * src/feed-selection-view.h:
+
 2007-08-04  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         First version that can fetch feeds again and display some part of the

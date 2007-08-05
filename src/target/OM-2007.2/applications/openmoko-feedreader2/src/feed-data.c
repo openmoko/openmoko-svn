@@ -27,11 +27,13 @@
 #include "feed-data.h"
 #include "feed-configuration.h"
 #include "rfcdate.h"
+#include "config.h"
 
 #include <mrss.h>
 #include <string.h>
 #include <stdlib.h>
 
+#include <glib/gi18n.h>
     
 static gboolean
 rss_filter_entries (GtkTreeModel *model, GtkTreeIter *iter, FeedFilter *data)
@@ -412,13 +414,24 @@ feed_filter_reset (FeedFilter* filter)
 }
 
 void
-feed_filter_filter_category (FeedFilter* filter, GtkTreeIter* iter)
+feed_filter_filter_category (FeedFilter* filter, const gchar* text)
 {
+    if (filter->category)
+        g_free (filter->category);
+
+    filter->category = g_strdup (text);
+    filter->is_all_filter = strcmp (_("All"), text) == 0;
+    gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
 }
 
 void
 feed_filter_filter_text (FeedFilter* filter, const gchar* text)
 {
+    if (filter->filter_string)
+        g_free (filter->filter_string);
+
+    filter->filter_string = g_strdup (text);
+    gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
 }
 
 GObject*

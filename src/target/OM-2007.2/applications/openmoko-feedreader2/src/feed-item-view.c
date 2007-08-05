@@ -80,7 +80,7 @@ feed_item_view_init (FeedItemView* view)
     GtkWidget* toolbar = gtk_toolbar_new ();
     gtk_box_pack_start (GTK_BOX(view), toolbar, FALSE, FALSE, 0);
 
-    view->back = gtk_tool_button_new_from_stock (GTK_STOCK_GO_FORWARD);
+    view->back = gtk_tool_button_new_from_stock (GTK_STOCK_GO_BACK);
     gtk_tool_item_set_expand (GTK_TOOL_ITEM(view->back), TRUE);
     gtk_toolbar_insert (GTK_TOOLBAR(toolbar), view->back, 0);
     g_signal_connect (view->back, "clicked", G_CALLBACK(prev_clicked), view);

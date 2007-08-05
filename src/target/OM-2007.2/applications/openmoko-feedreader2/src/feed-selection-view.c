@@ -57,28 +57,78 @@ treeview_selection_changed (GtkTreeSelection *selection, FeedSelectionView *view
     g_free (message);
 }
 
-gboolean treeview_keypress_event( GtkWidget *tree_view, GdkEventKey *key, FeedSelectionView *data) {
+gboolean treeview_keypress_event( GtkWidget *tree_view, GdkEventKey *key, FeedSelectionView *view) {
     if (key->keyval == GDK_Left || key->keyval == GDK_Right || key->keyval == GDK_Up || key->keyval == GDK_Down)
         return FALSE;
     
-#if 0
-    moko_tool_box_set_search_visible (data->box, TRUE);
-    gtk_entry_set_text (GTK_ENTRY(moko_tool_box_get_entry(data->box)), "");
-
-    /*
-     * forward the key event
-     */
-    GtkEntry *entry = GTK_ENTRY(moko_tool_box_get_entry(data->box));
-    GTK_WIDGET_CLASS(GTK_ENTRY_GET_CLASS(entry))->key_press_event (GTK_WIDGET(entry), key);
-#endif
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (view->search_toggle), TRUE);
+    gtk_entry_set_text (GTK_ENTRY(view->search_entry), "");
+    GTK_WIDGET_CLASS(GTK_ENTRY_GET_CLASS(view->search_entry))->key_press_event (GTK_WIDGET(view->search_entry), key);
 
     return TRUE;
+}
+
+static void
+search_toggled (GtkWidget* button, FeedSelectionView* view)
+{
+    gboolean search_active = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
+
+    if (search_active) {
+        gtk_widget_show (GTK_WIDGET (view->search_entry));
+        gtk_widget_hide (GTK_WIDGET (view->category_combo));
+        gtk_widget_grab_focus (GTK_WIDGET (view->search_entry));
+    } else {
+        gtk_widget_hide (GTK_WIDGET (view->search_entry));
+        gtk_widget_show (GTK_WIDGET (view->category_combo));
+    }
+}
+
+static void
+search_entry_changed (GtkEntry* entry, FeedSelectionView* view)
+{
+    feed_filter_filter_text (view->filter, gtk_entry_get_text (entry)); 
 }
 
 static void
 refresh_feeds_closure (GtkWidget* button, FeedSelectionView* view)
 {
     feed_data_update_all (RSS_FEED_DATA (feed_data_get_instance ()));
+}
+
+static void
+category_combo_update (FeedSelectionView* view, ...)
+{
+    gtk_list_store_clear (GTK_LIST_STORE (gtk_combo_box_get_model (GTK_COMBO_BOX (view->category_combo))));
+    gtk_combo_box_append_text (GTK_COMBO_BOX (view->category_combo), _("All"));
+
+    GtkTreeModel *store = GTK_TREE_MODEL (feed_configuration_get_configuration ());
+    GtkTreeIter iter;
+
+    gboolean valid = gtk_tree_model_get_iter_first (store, &iter);
+    while (valid) {
+        gchar *category;
+        gtk_tree_model_get (store, &iter, FEED_NAME, &category, -1);
+
+        /*
+         * create the new item(s)
+         */
+        add_mrss_item (data, rss_data, url, category);
+
+        /*
+         * now cache the feed, a bit inefficient as we do not write to a file directly
+         */
+        if (buffer) {
+            moko_cache_write_object (data->cache, url, buffer, size, NULL);
+            free (buffer);
+        }
+
+        mrss_free( rss_data );
+
+next:
+        g_free (url);
+        g_free (category);
+        valid = gtk_tree_model_iter_next (store, &iter);
+    }
 }
 
 G_DEFINE_TYPE(FeedSelectionView, feed_selection_view, GTK_TYPE_VBOX)
@@ -106,6 +156,28 @@ feed_selection_view_init (FeedSelectionView* view)
     /*
      * search/filter
      */
+    GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (view), hbox, FALSE, FALSE, 0);
+
+    view->search_toggle = gtk_toggle_button_new ();
+    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (view->search_toggle), FALSE, FALSE, 0);
+    gtk_widget_set_name (GTK_WIDGET (view->search_toggle), "mokosearchbutton");
+    gtk_button_set_image (GTK_BUTTON (view->search_toggle), gtk_image_new_from_stock (GTK_STOCK_FIND, GTK_ICON_SIZE_SMALL_TOOLBAR));
+    g_signal_connect (G_OBJECT (view->search_toggle), "toggled", G_CALLBACK (search_toggled), view);
+
+    view->search_entry = GTK_ENTRY (gtk_entry_new ());
+    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (view->search_entry), TRUE, TRUE, 0);
+    gtk_widget_set_name (GTK_WIDGET (view->search_entry), "mokosearchentry");
+    g_signal_connect (G_OBJECT (view->search_entry), "changed", G_CALLBACK (search_entry_changed), view);
+    g_object_set (G_OBJECT (view->search_entry), "no-show-all", TRUE, NULL);
+
+    view->category_combo = GTK_WIDGET (gtk_combo_box_new ());
+    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (view->category_combo), TRUE, TRUE, 0);
+    category_combo_update (view);
+    g_signal_connect (G_OBJECT (view->category_combo), "changed", G_CALLBACK(category_selection_changed), view);
+    g_signal_connect_swapped (feed_configuration_get_configuration (), "row-changed",  G_CALLBACK(category_combo_update), view);
+    g_signal_connect_swapped (feed_configuration_get_configuration (), "row-inserted", G_CALLBACK(category_combo_update), view);
+    g_signal_connect_swapped (feed_configuration_get_configuration (), "row-deleted",  G_CALLBACK(category_combo_update), view);
 
     /*
      * selection view
