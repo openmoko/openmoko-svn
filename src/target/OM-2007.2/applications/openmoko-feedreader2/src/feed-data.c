@@ -111,6 +111,28 @@ rss_sort_dates (GtkTreeModel *model, GtkTreeIter *_left, GtkTreeIter *_right, gp
 }
 
 /*
+ * remove all entries with this category
+ */
+static void
+remove_old_items (FeedData *data, const gchar* delete_category)
+{
+    gdk_threads_enter();
+
+    GtkTreeIter iter;
+    gboolean valid = gtk_tree_model_get_iter_first (GTK_TREE_MODEL (data), &iter);
+    while (valid) {
+        gchar *category;
+        gtk_tree_model_get (GTK_TREE_MODEL (data), &iter, RSS_READER_COLUMN_CATEGORY, &category, -1);
+        if (category && strcmp(category, delete_category) == 0)
+            valid = gtk_list_store_remove (GTK_LIST_STORE (data), &iter);
+        else
+            valid = gtk_tree_model_iter_next (GTK_TREE_MODEL (data), &iter);
+    }
+
+    gdk_threads_leave();
+}
+
+/*
  * Add items from rss_data to the GtkListStore/FeedData
  */
 static void
@@ -223,6 +245,7 @@ feed_update_thread (FeedData *data) {
         /*
          * create the new item(s)
          */
+        remove_old_items (data, category);
         add_mrss_item (data, rss_data, url, category);
 
         /*
@@ -322,8 +345,6 @@ feed_data_get_instance (void)
 void
 feed_data_update_all (FeedData* data)
 {
-    gtk_list_store_clear (GTK_LIST_STORE (data));
-
     GError *error = NULL;
     (void)g_thread_create( (GThreadFunc)feed_update_thread, data, FALSE, &error );
 

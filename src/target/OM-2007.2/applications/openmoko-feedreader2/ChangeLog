@@ -1,3 +1,13 @@
+2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Remove old feed posts from the model only once the new posts
+        were fetched and parsed.
+
+        * src/feed-data.c:
+        (remove_old_items):
+        (feed_update_thread):
+        (feed_data_update_all):
+
 2007-08-05  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Implement category filtering (and made sure it compiles). Feature wise
