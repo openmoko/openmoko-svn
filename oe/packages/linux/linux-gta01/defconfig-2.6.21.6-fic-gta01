@@ -267,8 +267,8 @@ CONFIG_KEXEC=y
 #
 # At least one emulation must be selected
 #
-# CONFIG_FPE_NWFPE is not set
-CONFIG_FPE_FASTFPE=y
+CONFIG_FPE_NWFPE=y
+# CONFIG_FPE_FASTFPE is not set
 
 #
 # Userspace binary formats
