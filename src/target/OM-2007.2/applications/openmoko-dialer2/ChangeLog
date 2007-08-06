@@ -1,5 +1,12 @@
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_call_progress_changed):
+	* src/moko-notify.c: (moko_notify_start), (moko_notify_stop),
+	(moko_notify_init):
+	Added state support for notify object.
+
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-contacts.c:
 	Fix typo.
 

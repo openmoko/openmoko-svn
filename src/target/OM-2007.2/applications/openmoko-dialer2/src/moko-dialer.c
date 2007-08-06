@@ -511,6 +511,7 @@ on_call_progress_changed (MokoGsmdConnection *conn,
         priv->time = NULL;
       }
       moko_journal_write_to_storage (priv->journal);
+      moko_notify_stop (priv->notify);
       g_print ("mokogsmd disconnect\n");
       break;
     

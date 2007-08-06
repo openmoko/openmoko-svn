@@ -42,7 +42,7 @@ G_DEFINE_TYPE (MokoNotify, moko_notify, G_TYPE_OBJECT)
 
 struct _MokoNotifyPrivate
 {
-  gint i;
+  gboolean started;
 };
 /*
 enum
@@ -123,6 +123,15 @@ moko_notify_stop_vibrate (void)
 void
 moko_notify_start (MokoNotify *notify)
 {
+  MokoNotifyPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_NOTIFY (notify));
+  priv = notify->priv;
+
+  if (priv->started)
+    return;
+  priv->started = TRUE;
+
   moko_notify_start_vibrate (); 
 }
 
@@ -130,6 +139,15 @@ moko_notify_start (MokoNotify *notify)
 void
 moko_notify_stop (MokoNotify *notify)
 {
+  MokoNotifyPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_NOTIFY (notify));
+  priv = notify->priv;
+
+  if (!priv->started)
+    return;
+  priv->started = FALSE;
+ 
   moko_notify_stop_vibrate ();
 }
 
@@ -163,6 +181,8 @@ moko_notify_init (MokoNotify *notify)
   MokoNotifyPrivate *priv;
   
   priv = notify->priv = MOKO_NOTIFY_GET_PRIVATE (notify);
+
+  priv->started = FALSE;
 }
 
 MokoNotify*
