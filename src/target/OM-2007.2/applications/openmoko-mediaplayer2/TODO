@@ -1,6 +1,7 @@
 
 UI:
 	Add repeat mode indicator (different button pixmaps)
+	Make FFWD/REW buttons trigger repeatedly
 	
 Backend:
 	Use GConf
@@ -12,7 +13,7 @@ Issues:
 	How to adjust equalizer?
 
 Build process:
-	Add libspiff/libexpat/uriparser dependencies to Makefile.am
+	Bitbake recipe and its integration into OE
 
 Documentation:
-	Dependencies: libspiff->libexpat/uriparser
+	-/-

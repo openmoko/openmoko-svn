@@ -38,10 +38,11 @@
 #define OMP_PLAYBACK_STATE_PLAYING GST_STATE_PLAYING
 
 // The UI will be updated at this interval when a track is playing (in ms)
-#define PLAYBACK_UI_UPDATE_INTERVAL 1000
+#define OMP_PLAYBACK_UI_UPDATE_INTERVAL 1000
 
 void omp_playback_init();
 void omp_playback_free();
+void omp_playback_save_state();
 
 gboolean omp_playback_load_track_from_uri(gchar *uri);
 
@@ -53,6 +54,7 @@ void omp_playback_set_track_position(glong position);
 gulong omp_playback_get_track_length();
 
 static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
+static gboolean omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data);
 static gboolean omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data);
 static gboolean omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data);
 

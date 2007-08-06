@@ -34,7 +34,6 @@
 #include <gdk/gdk.h>
 
 #include <stdlib.h>
-#include <string.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -45,39 +44,18 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <spiff/spiff_c.h>
-
 #include "main.h"
+#include "mainwin.h"
 #include "guitools.h"
 #include "playlist.h"
+#include "playback.h"
+#include "persistent.h"
 
 /// Determines how the segfault handler terminates the program
 //define HANDLE_SIGSEGV
 
 /// Enables GLib memory profiling when defined
 //define DEBUG_MEM_PROFILE
-
-
-/// The default configuration
-struct _omp_config omp_default_config =
-{
-	FALSE,
-	TRUE,
-	OMP_REPEAT_OFF,
-//	FALSE,
-	FALSE,
-	"%f",
-	0.0,
-	{0,0,0,0,0,0,0,0,0,0,0},
-	TRUE,
-	"",
-	"../../test.xspf",
-	0,
-	0
-};
-
-struct _omp_config *omp_config = NULL;			///< Global and persistent configuration data
-
 
 
 /*
@@ -135,81 +113,6 @@ handler_sigusr1(int value)
 }
 
 /**
- * Load configuration and restore player state from last session
- */
-void
-omp_config_restore_state()
-{
-	#ifdef DEBUG
-		g_print("Loading playlist and restoring playback state\n");
-	#endif
-
-	// This mustn't be called more than once
-	g_assert(omp_config == NULL);
-
-	// Set default config
-	omp_config = g_new(struct _omp_config, 1);
-	g_memmove(omp_config, &omp_default_config, sizeof(struct _omp_config));
-
-	// Load config and last used playlist if set
-	omp_config_load();
-
-	if (omp_config->playlist_file[0])
-	{
-		omp_playlist_load(omp_config->playlist_file);
-	}
-
-	// Check whether playlist_position is valid
-	if (!omp_playlist_set_current_track(omp_config->playlist_position))
-	{
-		// Reset playlist state as playlist must have been modified since it was last loaded
-		omp_config->playlist_position = 0;
-		omp_config->track_position = 0;
-		omp_playlist_set_current_track(0);
-	}
-
-	// Feed the track entity to the playback engine to obtain track information
-	omp_playlist_load_current_track();
-}
-
-/**
- * Releases resources allocated for configuration data
- */
-void
-omp_config_free()
-{
-	g_free(omp_config);
-}
-
-/**
- * Saves the current configuration data to persistent storate
- */
-void
-omp_config_save()
-{
-}
-
-/**
- * Reads the configuration data from persistent storage
- */
-void
-omp_config_load()
-{
-}
-
-/**
- * Updates config with current player data and saves it to disk 
- */
-void
-omp_config_update()
-{
-	omp_config->playlist_position = omp_playlist_current_track_id;
-
-	omp_config_save();
-}
-
-
-/**
  * Tests for a lock file and returns the pid of any process already running
  */
 pid_t
@@ -256,7 +159,7 @@ set_lock(gchar *file_name)
 	gint fd;
 	struct flock fl;
 
-	fd = open(file_name, O_WRONLY|O_CREAT,  S_IWUSR);
+	fd = open(file_name, O_WRONLY|O_CREAT, S_IWUSR);
 	if (fd < 0)
 	{
 		g_printerr("Failed opening lock file\n");
@@ -302,6 +205,8 @@ handle_locking()
 gint
 main(int argc, char *argv[])
 {
+	GError *error;
+
 #ifdef DEBUG_MEM_PROFILE
 	g_mem_set_vtable(glib_mem_profiler_table);
 #endif
@@ -348,12 +253,10 @@ main(int argc, char *argv[])
 	handle_locking();
 
 	// Initialize gstreamer, must be last in the chain of command line parameter processors
-
-	if (!gst_init_check(&argc, &argv))
+	if (!gst_init_check(&argc, &argv, &error))
 	{
-		g_printerr(_("Unable to initialize gstreamer, exiting.\n"
-			"As gstreamer also fails to initialize when encountering unknown "
-			"command line parameters you should check those as well.\n"));
+		g_printerr(_("Exiting due to gstreamer error: %s\n"), error->message);
+		g_error_free(error);
 		exit(EXIT_FAILURE);
 	}
 
@@ -368,25 +271,26 @@ main(int argc, char *argv[])
 	signal(SIGUSR1, handler_sigusr1);
 
 	// Initialize playback, playlist and UI handling
+	omp_config_init();
 	omp_main_window_create();
 	omp_playback_init();
 	omp_playlist_init();
 	omp_main_connect_signals();
-	omp_config_restore_state();
+	omp_session_restore_state();
 	omp_main_window_show();
 
 	gtk_main();
 	gdk_threads_leave();
 
-	// Store and free configuration resources
-	omp_config_save();
-	omp_config_free();
-
-	// Free remaining resources
+	// Clean up
+	omp_playback_save_state();
 	omp_playback_free();
 	omp_playlist_free();
 	gst_deinit();
 	g_free(ui_image_path);
+
+	omp_session_free();
+	omp_config_free();
 
 #ifdef DEBUG_MEM_PROFILE
 	g_mem_profile();

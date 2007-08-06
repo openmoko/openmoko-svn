@@ -27,4 +27,5 @@ openmoko_mediaplayer_SOURCES = \
 	mainwin.c mainwin.h \
 	playlist.c playlist.h \
 	playback.c playback.h \
-	guitools.c guitools.h
+	guitools.c guitools.h \
+	persistent.c persistent.h

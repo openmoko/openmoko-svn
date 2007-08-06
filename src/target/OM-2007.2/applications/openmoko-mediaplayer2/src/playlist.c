@@ -30,9 +30,9 @@
 #include <spiff/spiff_c.h>
 
 #include "playlist.h"
-#include "main.h"
 #include "mainwin.h"
 #include "playback.h"
+#include "persistent.h"
 
 struct spiff_list *omp_playlist = NULL;										///< Loaded playlist
 guint omp_playlist_track_count = 0;												///< Number of tracks stored within the current playlist
@@ -66,7 +66,7 @@ omp_playlist_init()
 }
 
 /**
- * Frees resouces allocated for playlist handling
+ * Frees resources allocated for playlist handling
  */
 void
 omp_playlist_free()
@@ -105,10 +105,10 @@ omp_playlist_load(gchar *playlist_file)
 		spiff_free(omp_playlist);
 	}
 
-	// Update config unless target and source are the same
-	if (omp_config->playlist_file != playlist_file)
+	// Update session unless target and source are the same
+	if (omp_session->playlist_file != playlist_file)
 	{
-		g_snprintf(omp_config->playlist_file, sizeof(omp_config->playlist_file), "%s", playlist_file);
+		omp_session_set_playlist(playlist_file);
 	}
 
 	// Load playlist
@@ -239,6 +239,7 @@ try_again:
 			{
 				omp_playlist_current_track = track;
 				omp_playlist_current_track_id--;
+				is_new_track = TRUE;
 			}
 		}
 	}

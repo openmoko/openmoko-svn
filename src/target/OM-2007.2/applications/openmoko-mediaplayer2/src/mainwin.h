@@ -36,6 +36,7 @@
 // Determines how many seconds the engine will seek if the FFWD/REW buttons are clicked
 #define BUTTON_SEEK_DISTANCE 10
 
+
 extern GtkWidget *omp_main_window;
 
 void omp_application_terminate();
@@ -46,6 +47,7 @@ void omp_main_window_create();
 void omp_main_connect_signals();
 
 void omp_main_update_track_change();
+void omp_main_update_status_change();
 void omp_main_update_track_position();
 
 #endif

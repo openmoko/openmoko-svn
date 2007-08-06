@@ -29,9 +29,11 @@
 #include "playback.h"
 #include "mainwin.h"
 
-GstElement *omp_gst_playbin = NULL;
-guint omp_playback_ui_timeout = 0;
-gboolean omp_playback_ui_timeout_halted;
+GstElement *omp_gst_playbin = NULL;						///< Our ticket to the gstreamer world
+guint omp_playback_ui_timeout = 0;						///< Handle of the UI-updating timeout
+gboolean omp_playback_ui_timeout_halted;			///< Flag that tells the UI-updating timeout to exit if set
+gulong omp_playback_pending_position = 0;			///< Since we can't set a new position if element is not paused or playing we store the position here and set it when it reached either state
+
 
 /**
  * Initializes gstreamer by setting up pipe, message hooks and bins
@@ -59,9 +61,10 @@ omp_playback_init()
 	bus = gst_pipeline_get_bus(GST_PIPELINE(omp_gst_playbin));
 
 	gst_bus_add_signal_watch(bus);
-	g_signal_connect(bus, "message::eos", 		G_CALLBACK(omp_gst_message_eos), NULL);
-	g_signal_connect(bus, "message::error", 	G_CALLBACK(omp_gst_message_error), NULL);
-	g_signal_connect(bus, "message::warning", G_CALLBACK(omp_gst_message_warning), NULL); 
+	g_signal_connect(bus, "message::eos", 					G_CALLBACK(omp_gst_message_eos), NULL);
+	g_signal_connect(bus, "message::error", 				G_CALLBACK(omp_gst_message_error), NULL);
+	g_signal_connect(bus, "message::warning", 			G_CALLBACK(omp_gst_message_warning), NULL);
+	g_signal_connect(bus, "message::state-changed",	G_CALLBACK(omp_gst_message_state_changed), NULL);
 
 	gst_object_unref(bus);
 }
@@ -72,13 +75,30 @@ omp_playback_init()
 void
 omp_playback_free()
 {
+	GstBus *bus;
+
 	if (!omp_gst_playbin)
 	{
 		return;
 	}
 
+	bus = gst_pipeline_get_bus(GST_PIPELINE(omp_gst_playbin));
+	gst_bus_remove_signal_watch(bus);
+	gst_object_unref(bus);
+
 	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 	gst_object_unref(GST_OBJECT(omp_gst_playbin));
+}
+
+/**
+ * Saves current state to session data
+ */
+void
+omp_playback_save_state()
+{
+	omp_session_set_playback_state(
+		omp_playback_get_track_position(),
+		(omp_playback_get_state() == OMP_PLAYBACK_STATE_PLAYING) );
 }
 
 /**
@@ -129,13 +149,24 @@ omp_playback_ui_timeout_callback(gpointer data)
 void
 omp_playback_play()
 {
+	gchar *track_uri;
+
 	#ifdef DEBUG
 		g_print("Starting playback\n");
 	#endif
 
+	g_object_get(G_OBJECT(omp_gst_playbin), "uri", &track_uri, NULL);
+	if (!track_uri)
+	{
+		#ifdef DEBUG
+			g_print("No track to play.\n");
+		#endif
+		return;
+	}
+	g_free(track_uri);
+
 	// Set state
 	gst_element_set_state(omp_gst_playbin, GST_STATE_PLAYING);
-	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED);
 
 	// Add timer to update UI if necessary
 	// If the halt flag was set but the callback didn't run yet then we
@@ -144,7 +175,7 @@ omp_playback_play()
 
 	if (!omp_playback_ui_timeout)
 	{
-		omp_playback_ui_timeout = g_timeout_add(PLAYBACK_UI_UPDATE_INTERVAL, omp_playback_ui_timeout_callback, NULL);
+		omp_playback_ui_timeout = g_timeout_add(OMP_PLAYBACK_UI_UPDATE_INTERVAL, omp_playback_ui_timeout_callback, NULL);
 	}
 }
 
@@ -160,26 +191,21 @@ omp_playback_pause()
 
 	// Set state
 	gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
-	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED);
 
 	// Stop timer
 	omp_playback_ui_timeout_halted = TRUE;
 }
 
 /**
- * Returns the current state the playback engine is in
- * @todo Don't use system clock, might be out-of-sync with playbin clock?
+ * Returns the current state the playback engine is in, simplifying it a bit to hide internal states
  */
 gint
 omp_playback_get_state()
 {
 	GstState state;
-	GstClock *clock;
 
 	// Poll state with an immediate timeout
-	clock = gst_system_clock_obtain();
-	gst_element_get_state(GST_ELEMENT(omp_gst_playbin), &state, NULL, gst_clock_get_time(clock));
-	gst_object_unref(clock);
+	state = GST_STATE(omp_gst_playbin);
 
 	// The NULL and READY element states are no different from PAUSED for more abstract layers
 	if ( (state == GST_STATE_NULL) || (state == GST_STATE_READY) )
@@ -214,15 +240,39 @@ omp_playback_get_track_position()
 void
 omp_playback_set_track_position(glong position)
 {
+	GstState pipe_state;
+
 	if (!omp_gst_playbin)
 	{
 		return;
 	}
 
-	gst_element_seek_simple(GST_ELEMENT(omp_gst_playbin),
-		GST_FORMAT_TIME,
-		GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE,
-		position*GST_SECOND);
+	// If we don't clamp it to values >= 0 we trigger EOS messages which make the playlist mess up
+	if (position < 0) position = 0;
+
+	// Check if the pipe is even ready to seek
+	pipe_state = GST_STATE(omp_gst_playbin);
+
+	if ( (pipe_state != GST_STATE_PAUSED) && (pipe_state != GST_STATE_PLAYING) )
+	{
+		// It's not, so make the position change pending
+		omp_playback_pending_position = position;
+
+		#ifdef DEBUG
+			g_printf("Pended track position change to %d:%.2ds\n", position / 60, position % 60);
+		#endif
+		return;
+	}
+	omp_playback_pending_position = 0;
+
+	#ifdef DEBUG
+		g_printf("Setting track position to %d:%.2ds\n", position / 60, position % 60);
+	#endif
+
+	gst_element_seek(GST_ELEMENT(omp_gst_playbin), 1.0,
+		GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+		GST_SEEK_TYPE_SET, position*GST_SECOND,
+		GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
 
 	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
 }
@@ -265,6 +315,31 @@ omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data)
 }
 
 /**
+ * Handles gstreamer's state change notification
+ */
+static gboolean
+omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data)
+{
+	static gint previous_state = GST_STATE_VOID_PENDING;
+	gint new_state;
+
+	// Do we have a pending playback position change that we can apply?
+	if ( ( (GST_STATE(omp_gst_playbin) == GST_STATE_PLAYING) || (GST_STATE(omp_gst_playbin) == GST_STATE_PAUSED) )
+ 		&& omp_playback_pending_position)
+	{
+		omp_playback_set_track_position(omp_playback_pending_position);
+	}
+
+	// Only propagate this event if it's of interest for higher-level routines
+	new_state = omp_playback_get_state();
+	if (new_state != previous_state)
+	{
+		previous_state = new_state;
+		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED);
+	}
+}
+
+/**
  * Handles gstreamer's error messages
  */
 static gboolean
@@ -275,7 +350,6 @@ omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data)
 	#ifdef DEBUG
 		gst_message_parse_error(message, &error, NULL);
 		g_printerr("gstreamer error: %s\n", error->message);
-		gst_message_unref(error);
 		g_error_free(error);
 	#endif
 
@@ -293,7 +367,6 @@ omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data)
 	#ifdef DEBUG
 		gst_message_parse_warning(message, &error, NULL);
 		g_printerr("gstreamer warning: %s\n", error->message);
-		gst_message_unref(error);
 		g_error_free(error);
 	#endif
 

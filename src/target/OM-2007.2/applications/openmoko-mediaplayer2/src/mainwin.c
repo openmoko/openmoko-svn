@@ -39,6 +39,8 @@
 #include "playlist.h"
 #include "playback.h"
 
+#define OMP_BUTTON_PIXMAP_SIZE 36
+
 /// Contains all main window widgets that need to be changeable
 struct _main_widgets
 {
@@ -51,7 +53,7 @@ struct _main_widgets
 	GtkWidget *volume_image;
 	GtkWidget *volume_label;
 	GtkWidget *balance_image;
-	GtkWidget *play_pause_button;
+	GtkWidget *play_pause_button_image;
 	GtkWidget *shuffle_button;
 	GtkWidget *repeat_button;
 	GtkWidget *playlist_button;
@@ -92,6 +94,9 @@ omp_change_vol_img(gint vol)
 	// Sanity checks
 	if ( (vol < 0) || (vol > 100) )
 		g_printerr("Warning: volume passed to omp_change_vol_img() out of bounds\n");
+
+	if (vol < 0) vol = 0;
+	if (vol > 100) vol = 100;
 
 	gchar *image_file_name = g_strdup_printf("%s/ind-music-volume-%02d.png", ui_image_path, vol/10);
 	gtk_image_set_from_file(GTK_IMAGE(main_widgets.volume_image), image_file_name);
@@ -313,6 +318,8 @@ omp_main_button_play_pause_callback()
 
 /**
  * Creates a toggle button framed by a GtkAlignment
+ * @param image_name Path and file name of the image to use as pixmap
+ * @return A GtkAlignment containing the button
  */
 GtkWidget*
 omp_toggle_button_create(gchar *image_name, gint pad_left, GCallback callback, GtkWidget **button)
@@ -325,7 +332,6 @@ omp_toggle_button_create(gchar *image_name, gint pad_left, GCallback callback, G
 
 	*button = gtk_toggle_button_new();
 	gtk_widget_set_size_request(GTK_WIDGET(*button), 66, 66);
-	gtk_widget_set_name(GTK_WIDGET(*button), "mokofingerbutton-white");
 	g_signal_connect(G_OBJECT(*button), "clicked", G_CALLBACK(callback), NULL);
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(*button), GTK_CAN_FOCUS);
 	gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(*button));
@@ -341,24 +347,24 @@ omp_toggle_button_create(gchar *image_name, gint pad_left, GCallback callback, G
 }
 
 /**
- * Creates a button and returns it
+ * Creates a button with a stock pixmap and returns it
  * @param image_name The name of the image resource to use, not a file name
+ * @return The button
  */
 GtkWidget*
-omp_button_create(gchar *image_name, GCallback callback)
+omp_stock_button_create(gchar *image_name, GtkWidget **image, GCallback callback)
 {
-	GtkWidget *image, *button;
+	GtkWidget *button;
 
 	button = gtk_button_new();
 	gtk_widget_set_size_request(GTK_WIDGET(button), 66, 66);
-	gtk_widget_set_name(GTK_WIDGET(button), "mokofingerbutton-white");
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), NULL);
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(button), GTK_CAN_FOCUS);
 
 	g_object_set(G_OBJECT(button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
 
-	image = gtk_image_new_from_icon_name(image_name, 36);
-	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
+	*image = gtk_image_new_from_icon_name(image_name, OMP_BUTTON_PIXMAP_SIZE);
+	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(*image));
 
 	return button;
 }
@@ -556,27 +562,27 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_box_set_homogeneous(GTK_BOX(controls_hbox), TRUE);
 
 	// Previous Track button
-	button = omp_button_create("gtk-media-previous-ltr", G_CALLBACK(omp_playlist_set_prev_track));
+	button = omp_stock_button_create("gtk-media-previous-ltr", &image, G_CALLBACK(omp_playlist_set_prev_track));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Rewind button
-	button = omp_button_create("gtk-media-rewind-ltr", G_CALLBACK(omp_main_button_rewind_callback));
+	button = omp_stock_button_create("gtk-media-rewind-ltr", &image, G_CALLBACK(omp_main_button_rewind_callback));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Play/Pause button
-	button = omp_button_create("gtk-media-play-ltr", G_CALLBACK(omp_main_button_play_pause_callback));
+	button = omp_stock_button_create("gtk-media-play-ltr", &main_widgets.play_pause_button_image, G_CALLBACK(omp_main_button_play_pause_callback));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Fast Forward button
-	button = omp_button_create("gtk-media-forward-ltr", G_CALLBACK(omp_main_button_fast_forward_callback));
+	button = omp_stock_button_create("gtk-media-forward-ltr", &image, G_CALLBACK(omp_main_button_fast_forward_callback));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 
 	// Next Track button
-	button = omp_button_create("gtk-media-next-ltr", G_CALLBACK(omp_playlist_set_next_track));
+	button = omp_stock_button_create("gtk-media-next-ltr", &image, G_CALLBACK(omp_playlist_set_next_track));
 	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
 	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
 }
@@ -614,7 +620,6 @@ omp_main_window_create()
 	// Show everything but the window itself
 	gtk_widget_show_all(GTK_WIDGET(bg_muxer));
 
-
 	return;
 }
 
@@ -627,7 +632,7 @@ void
 omp_main_connect_signals()
 {
 	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,			G_CALLBACK(omp_main_update_track_change), NULL);
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,		G_CALLBACK(omp_main_update_track_change), NULL);
+	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,		G_CALLBACK(omp_main_update_status_change), NULL);
 	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED,	G_CALLBACK(omp_main_update_track_position), NULL);
 }
 
@@ -651,8 +656,8 @@ omp_main_update_track_change()
 		old_track_count = omp_playlist_track_count;
 		old_track_id = omp_playlist_current_track_id;
 
-		// Update config
-		omp_config_update();
+		// Update session
+		omp_session_set_track_id(omp_playlist_current_track_id);
 
 		// Update label
 		text = g_strdup_printf(WIDGET_CAPTION_TRACK_NUM, omp_playlist_current_track_id+1, omp_playlist_track_count);
@@ -668,7 +673,7 @@ omp_main_update_track_change()
 		old_track_length = track_length;
 		track_position = omp_playback_get_track_position();
 
-		// Set new time slider increments
+		// Set new time slider increments: one tap is 10% of the track's playing time
 		gtk_range_set_increments(GTK_RANGE(main_widgets.time_hscale), track_length/10, track_length/10);
 
 		// Update label and slider
@@ -680,9 +685,25 @@ omp_main_update_track_change()
 
 		if (omp_main_time_slider_can_update)
 		{
+			// We don't want to set both min/max to 0 as this triggers a critial GTK warning, so we set 0/1 instead in that case
 			gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, track_length ? track_length : 1);
 			gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), track_position);
 		}
+	}
+}
+
+/**
+ * Updates the UI if playback engine switched between paused and playing modes
+ */
+void
+omp_main_update_status_change()
+{
+	// Update Play/Pause button pixmap
+	if (omp_playback_get_state() == OMP_PLAYBACK_STATE_PAUSED)
+	{
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-play-ltr", OMP_BUTTON_PIXMAP_SIZE);
+	} else {
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-pause", OMP_BUTTON_PIXMAP_SIZE);
 	}
 }
 
@@ -712,6 +733,7 @@ omp_main_update_track_position()
 
 		if (omp_main_time_slider_can_update)
 		{
+			// We don't want to set both min/max to 0 as this triggers a critial GTK warning, so we set 0/1 instead in that case
 			gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, track_length ? track_length : 1);
 			gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), track_position);
 		}
