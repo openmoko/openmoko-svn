@@ -67,6 +67,9 @@ GtkWidget*  feed_selection_view_new                     (void);
 void        feed_selection_view_add_column              (const FeedSelectionView*, int column_type, const gchar* txt);
 gchar*      feed_selection_view_get_search_string       (const FeedSelectionView*);
 
+void        feed_selection_view_next_item               (const FeedSelectionView*);
+void        feed_selection_view_prev_item               (const FeedSelectionView*);
+
 G_END_DECLS
 
 #endif

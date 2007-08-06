@@ -29,12 +29,14 @@
 
 #include "moko_cache.h"
 #include "feed-item-view.h"
+#include "feed-selection-view.h"
 
 struct ApplicationData {
     GtkWindow         *window;
     MokoCache         *cache;
     GtkNotebook       *notebook;
     FeedItemView      *view;
+    FeedSelectionView *selection_view;
 };
 
 #endif

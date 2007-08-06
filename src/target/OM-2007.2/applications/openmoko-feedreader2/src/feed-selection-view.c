@@ -244,4 +244,30 @@ feed_selection_view_get_search_string (const FeedSelectionView* view)
     return view->filter->filter_string;
 }
 
+void
+feed_selection_view_next_item (const FeedSelectionView* view)
+{
+    GtkTreeSelection* selection = gtk_tree_view_get_selection (view->view);
+    GtkTreeIter iter;
+    GtkTreeModel* model;
+    gboolean has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
 
+    if (has_selection &&  gtk_tree_model_iter_next (model, &iter))
+        gtk_tree_selection_select_iter (selection, &iter);
+}
+
+void
+feed_selection_view_prev_item (const FeedSelectionView* view)
+{
+    GtkTreeSelection* selection = gtk_tree_view_get_selection (view->view);
+    GtkTreeIter iter;
+    GtkTreeModel* model;
+    gboolean has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
+
+    if (has_selection) {
+        GtkTreePath* path = gtk_tree_model_get_path (model, &iter);
+        if (gtk_tree_path_prev (path))
+            gtk_tree_selection_select_path (selection, path);
+        gtk_tree_path_free (path);
+    }
+}

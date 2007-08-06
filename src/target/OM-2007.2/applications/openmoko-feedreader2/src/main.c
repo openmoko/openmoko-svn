@@ -69,6 +69,8 @@ create_feed_view (struct ApplicationData* data)
     feed_selection_view_add_column (RSS_FEED_SELECTION_VIEW (box), RSS_READER_COLUMN_DATE, _("Date"));
 
     g_signal_connect (G_OBJECT(box), "item-changed", G_CALLBACK(feed_selection_changed), data);
+
+    data->selection_view = RSS_FEED_SELECTION_VIEW (box);
 }
 
 /*
@@ -80,6 +82,9 @@ create_text_view (struct ApplicationData* data)
     data->view = RSS_FEED_ITEM_VIEW(feed_item_view_new ());
     gtk_notebook_append_page (data->notebook, GTK_WIDGET(data->view), gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_LARGE_TOOLBAR));
     gtk_container_child_set (GTK_CONTAINER(data->notebook), GTK_WIDGET(data->view), "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+
+    g_signal_connect_swapped (G_OBJECT (data->view), "next", G_CALLBACK(feed_selection_view_next_item), data->selection_view);
+    g_signal_connect_swapped (G_OBJECT (data->view), "previous", G_CALLBACK(feed_selection_view_prev_item), data->selection_view);
 }
 
 

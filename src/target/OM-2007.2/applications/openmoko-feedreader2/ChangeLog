@@ -1,5 +1,22 @@
 2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Implement going forward and backward in the selection view. We have to
+        remember the FeedSelectionView in the ApplicationData to be able to connect the
+        next/previous signal of FeedItemView.
+        Is g_signal_connect_swapped considered evil? And is it normal that the code is different
+        to get the next/previous item in a GtkListStore?
+
+        * src/application-data.h:
+        * src/feed-selection-view.c:
+        (feed_selection_view_next_item):
+        (feed_selection_view_prev_item):
+        * src/feed-selection-view.h:
+        * src/main.c:
+        (create_feed_view):
+        (create_text_view):
+
+2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Make the Backward and Forward button sensitive/unsensitive depending on if
         one can go backward/forward.
         The backward/forward signals are not yet connected.
