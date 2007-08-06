@@ -58,17 +58,19 @@ static guint notify_signals[LAST_SIGNAL] = {0, };
 */
 
 
-static void
+static gboolean
 on_bus_message (GstBus *bus, GstMessage *message, MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
   
-  g_return_if_fail (MOKO_IS_NOTIFY (notify));
-  g_return_if_fail (GST_IS_ELEMENT (notify->priv->bin));
+  g_return_val_if_fail (MOKO_IS_NOTIFY (notify), TRUE);
+  g_return_val_if_fail (GST_IS_ELEMENT (notify->priv->bin), TRUE);
   priv = notify->priv;
 
+  g_print (".");
+
   if (GST_MESSAGE_TYPE (message) != GST_MESSAGE_EOS)
-    return;
+    return TRUE;
    
   /* Rewind and play again */
   gst_element_set_state (priv->bin, GST_STATE_PAUSED);
@@ -76,7 +78,7 @@ on_bus_message (GstBus *bus, GstMessage *message, MokoNotify *notify)
   /* Seek to 0 */
   if (!gst_element_seek_simple (priv->bin, GST_FORMAT_TIME, 0, 0))
     g_error ("Seek error\n");
-    return;
+    return TRUE;
 
   gst_element_set_state (priv->bin, GST_STATE_PLAYING);
  
