@@ -59,9 +59,24 @@ static guint notify_signals[LAST_SIGNAL] = {0, };
 
 
 static void
-on_filesrc_eos (GstElement *element, MokoNotify *notify)
+on_bin_eos (GstElement *element, MokoNotify *notify)
 {
+  MokoNotifyPrivate *priv;
+  
+  g_return_if_fail (MOKO_IS_NOTIFY (notify));
+  g_return_if_fail (GST_IS_ELEMENT (notify->priv->bin));
+  priv = notify->priv;
+  
   /* Rewind and play again */
+  gst_element_set_state (priv->bin, GST_STATE_PAUSED);
+
+  /* Seek to 0 */
+  if (!gst_element_seek_simple (priv->bin, GST_FORMAT_TIME, 0, 0))
+    g_error ("Seek error\n");
+    return;
+
+  gst_element_set_state (priv->bin, GST_STATE_PLAYING);
+ 
   g_print ("Audio finished\n");
 }
 
@@ -69,15 +84,20 @@ static void
 moko_notify_start_ringtone (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
-  GstElement *bin, *filesrc, *decoder, *aconvert, *aresample, *asink;
+  GstElement *bin;
   gchar *pipeline;
   GError *err = NULL;
 
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
-
-  pipeline = g_strdup_printf ("filesrc location=%s ! decodebin ! audioconvert !audioresample ! alsasink", PKGDATADIR DEFAULT_RINGTONE);
+  
+  /* Create the pipeline */
+  pipeline = g_strdup_printf (
+    "filesrc location=%s ! decodebin ! audioconvert !audioresample ! alsasink",
+    PKGDATADIR DEFAULT_RINGTONE);
   g_print ("%s\n", PKGDATADIR DEFAULT_RINGTONE);
+  
+  /* Try and gstreamer to parse it */
   bin = gst_parse_launch (pipeline, &err);
   if (err)
   {
@@ -89,66 +109,11 @@ moko_notify_start_ringtone (MokoNotify *notify)
   priv->bin = bin;
 
   /* Start playing */
-  gst_element_set_state (bin, GST_STATE_PLAYING);
-  g_free (pipeline);
-  return;
-
-  /* Create a bin to hold elements */
-  bin = gst_pipeline_new ("pipeline");
-  g_assert (bin);
-
-  /* Disk reader */
-  filesrc = gst_element_factory_make ("filesrc", "source");
-  g_assert (filesrc);
-  g_object_set (G_OBJECT (filesrc), 
-                "location", PKGDATADIR DEFAULT_RINGTONE, 
-                NULL);
   g_signal_connect (G_OBJECT (bin), "eos",
-                    G_CALLBACK (on_filesrc_eos), (gpointer)notify);
-
-  /* Decoder */
-  decoder = gst_element_factory_make ("decodebin", "decode");
-  if (!decoder)
-  {
-    g_warning ("Could not load 'decodebin'");
-    return;
-  }
-  
-  /* Audio convert */
-  aconvert = gst_element_factory_make ("audioconvert", NULL);
-  if (!aconvert)
-  {
-    g_warning ("Could not load 'audioconvert'");
-    return;
-  }
-
-  /* Audio resample */
-  aresample = gst_element_factory_make ("audioresample", NULL);
-  if (!aresample)
-  {
-    g_warning ("Could not load 'audioresample'");
-    return;
-  }
-
-  /* Audio sink */
-  asink = gst_element_factory_make ("alsasink", "play_audio");
-  if (!asink)
-  {
-    g_warning ("Could not load 'alsasink'");
-    return;
-  }
-
-  /* Add objects to the bin */
-  gst_bin_add_many (GST_BIN (bin), filesrc, decoder, 
-                    aconvert, aresample, asink, NULL);
-
-  /* Link the elements */
-  gst_element_link_many (filesrc, decoder, aconvert, aresample, asink, NULL);
-
-  priv->bin = bin;
-
-  /* Start playing */
+                    G_CALLBACK (on_bin_eos), (gpointer)notify);
   gst_element_set_state (bin, GST_STATE_PLAYING);
+
+  g_free (pipeline);
 }
 
 static void

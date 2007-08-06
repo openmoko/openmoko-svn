@@ -1,5 +1,10 @@
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-notify.c: (on_bin_eos), (moko_notify_start_ringtone):
+	Added intial support for looping the ringtone.
+
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-notify.c: (moko_notify_start_ringtone):
 	Try and use the simple commandline gst parser.
 
