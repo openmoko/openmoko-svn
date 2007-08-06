@@ -1,5 +1,11 @@
 2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Blind compile fix for GNU libc.
+
+        * src/feed-data.c:
+
+2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Remove old feed posts from the model only once the new posts
         were fetched and parsed.
 

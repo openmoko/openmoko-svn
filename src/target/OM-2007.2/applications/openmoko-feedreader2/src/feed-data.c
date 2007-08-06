@@ -24,6 +24,8 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+#define _GNU_SOURCE
+
 #include "feed-data.h"
 #include "feed-configuration.h"
 #include "rfcdate.h"
