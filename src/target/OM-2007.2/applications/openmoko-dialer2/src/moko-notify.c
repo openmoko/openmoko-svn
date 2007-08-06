@@ -59,14 +59,17 @@ static guint notify_signals[LAST_SIGNAL] = {0, };
 
 
 static void
-on_bin_eos (GstElement *element, MokoNotify *notify)
+on_bus_message (GstBus *bus, GstMessage *message, MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
   
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   g_return_if_fail (GST_IS_ELEMENT (notify->priv->bin));
   priv = notify->priv;
-  
+
+  if (GST_MESSAGE_TYPE (message) != GST_MESSAGE_EOS)
+    return;
+   
   /* Rewind and play again */
   gst_element_set_state (priv->bin, GST_STATE_PAUSED);
 
@@ -108,9 +111,11 @@ moko_notify_start_ringtone (MokoNotify *notify)
   }
   priv->bin = bin;
 
+  /* Connect to eos signal to repeat the ringtone */
+  gst_bus_add_watch (gst_element_get_bus (bin), 
+                     (GstBusFunc)on_bus_message, (gpointer)notify);
+
   /* Start playing */
-  g_signal_connect (G_OBJECT (bin), "eos",
-                    G_CALLBACK (on_bin_eos), (gpointer)notify);
   gst_element_set_state (bin, GST_STATE_PLAYING);
 
   g_free (pipeline);
