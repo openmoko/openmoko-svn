@@ -70,9 +70,28 @@ moko_notify_start_ringtone (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
   GstElement *bin, *filesrc, *decoder, *aconvert, *aresample, *asink;
+  gchar *pipeline;
+  GError *err = NULL;
 
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
+
+  pipeline = g_strdup_printf ("filesrc location=%s ! decodebin ! audioconvert !audioresample ! alsasink", PKGDATADIR DEFAULT_RINGTONE);
+  g_print ("%s\n", PKGDATADIR DEFAULT_RINGTONE);
+  bin = gst_parse_launch (pipeline, &err);
+  if (err)
+  {
+    g_error ("err->message");
+    priv->bin = NULL;
+    g_free (pipeline);
+    return;
+  }
+  priv->bin = bin;
+
+  /* Start playing */
+  gst_element_set_state (bin, GST_STATE_PLAYING);
+  g_free (pipeline);
+  return;
 
   /* Create a bin to hold elements */
   bin = gst_pipeline_new ("pipeline");
@@ -84,7 +103,7 @@ moko_notify_start_ringtone (MokoNotify *notify)
   g_object_set (G_OBJECT (filesrc), 
                 "location", PKGDATADIR DEFAULT_RINGTONE, 
                 NULL);
-  g_signal_connect (G_OBJECT (filesrc), "eos",
+  g_signal_connect (G_OBJECT (bin), "eos",
                     G_CALLBACK (on_filesrc_eos), (gpointer)notify);
 
   /* Decoder */

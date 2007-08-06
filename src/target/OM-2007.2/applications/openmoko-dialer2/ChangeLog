@@ -1,5 +1,10 @@
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-notify.c: (moko_notify_start_ringtone):
+	Try and use the simple commandline gst parser.
+
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
 	* data/Makefile.am:
 	Added a default ringtone (until sound themes are finished).
 
