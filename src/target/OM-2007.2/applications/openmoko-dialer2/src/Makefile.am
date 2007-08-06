@@ -22,6 +22,8 @@ openmoko_dialer_SOURCES = \
 	moko-history.h			\
 	moko-keypad.c			\
 	moko-keypad.h			\
+	moko-notify.c			\
+	moko-notify.h			\
 	moko-talking.c			\
 	moko-talking.h
 

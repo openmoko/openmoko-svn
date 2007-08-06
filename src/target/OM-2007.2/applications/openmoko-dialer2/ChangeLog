@@ -1,3 +1,21 @@
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/dialer-main.c: (main):
+	* src/moko-contacts.c: (moko_contacts_lookup):
+	* src/moko-dialer.c: (moko_dialer_rejected),
+	(on_talking_accept_call), (on_incoming_call), (on_incoming_clip),
+	(register_network_cb), (moko_dialer_init):
+	* src/moko-notify.c: (moko_notify_start_vibrate),
+	(moko_notify_stop_vibrate), (moko_notify_start),
+	(moko_notify_stop), (moko_notify_dispose), (moko_notify_finalize),
+	(moko_notify_class_init), (moko_notify_init), (moko_notify_new):
+	* src/moko-notify.h:
+	Added a MokoNotify object, which will deal with user notification of 
+	incoming calls.
+	Implemented a simple vibration notifcation for incoming calls.
+
 2007-08-03  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-contacts.c: (moko_contacts_lookup):

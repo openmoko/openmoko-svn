@@ -32,9 +32,10 @@
 #include "moko-dialer.h"
 
 #include "moko-contacts.h"
-#include "moko-keypad.h"
-#include "moko-talking.h"
 #include "moko-history.h"
+#include "moko-keypad.h"
+#include "moko-notify.h"
+#include "moko-talking.h"
 
 G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
@@ -60,6 +61,7 @@ struct _MokoDialerPrivate
   MokoGsmdConnection *connection;
   MokoJournal        *journal;
   MokoContacts       *contacts;
+  MokoNotify         *notify;
 
   /* The shared MokoJournalEntry which is constantly created */
   MokoJournalEntry   *entry; 
@@ -206,6 +208,9 @@ moko_dialer_rejected (MokoDialer *dialer)
   
   priv->status = DIALER_STATUS_NORMAL;
 
+  /* Stop the notification */
+  moko_notify_stop (priv->notify);  
+
   if (gtk_notebook_get_n_pages (GTK_NOTEBOOK (priv->notebook)) == 3)
     gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
   
@@ -282,6 +287,9 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   
   priv->status = DIALER_STATUS_TALKING;
 
+  /* Stop the notification */
+  moko_notify_stop (priv->notify);  
+  
   /* Finalise and add the journal entry */
   if (priv->entry)
   {
@@ -420,6 +428,9 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   
   gtk_window_present (GTK_WINDOW (priv->window));
 
+  /* Start the notification */
+  moko_notify_start (priv->notify);
+
   g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 0, NULL);
 }
 
@@ -440,7 +451,6 @@ on_incoming_clip (MokoGsmdConnection *conn,
       && (strcmp (number, last) == 0) 
       && ((GDK_CURRENT_TIME - timestamp) < 1500))
   {
-    timestamp = GDK_CURRENT_TIME;
     return;
   }
   if (last)
@@ -557,7 +567,7 @@ register_network_cb (MokoDialer *dialer)
      */
     if (priv->registered)
     {
-      g_print ("Netwok Registered\n");
+      g_print ("Network Registered\n");
       return FALSE;
     }
     else
@@ -703,6 +713,9 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* Load the contacts store */
   priv->contacts = moko_contacts_get_default ();
+
+  /* Load the notification object */
+  priv->notify = moko_notify_new ();
 
   /* Create the window */
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);

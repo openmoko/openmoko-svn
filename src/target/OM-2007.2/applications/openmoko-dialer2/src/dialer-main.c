@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <gst/gst.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 
@@ -106,6 +107,7 @@ main (int argc, char **argv)
 
   /* Initialize Threading & GTK+ */
   gtk_init (&argc, &argv);
+  gst_init (&argc, &argv);
   moko_stock_register ();
 
   /* Try and setup our DBus service */
