@@ -1,5 +1,10 @@
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-notify.c: (on_bus_eos), (moko_notify_start_ringtone):
+	More loop deugging.
+
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-notify.c: (on_bus_message):
 	Connect to the right signals!
 
