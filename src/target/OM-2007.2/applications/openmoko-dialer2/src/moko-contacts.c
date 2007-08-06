@@ -37,7 +37,7 @@ struct _MokoContactsPrivate
 {
   EBook      *book;
 
-  List      *contacts;
+  GList      *contacts;
   GList      *entries;
   GHashTable *prefixes;
 };

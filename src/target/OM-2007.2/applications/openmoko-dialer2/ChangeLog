@@ -1,5 +1,10 @@
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-contacts.c:
+	Fix typo.
+
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-contacts.c: (moko_contacts_lookup):
 	Check entry is valid before performing operations on it.
 
