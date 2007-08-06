@@ -155,7 +155,7 @@ feed_selection_view_init (FeedSelectionView* view)
     GtkWidget* toolbar = gtk_toolbar_new ();
     gtk_box_pack_start (GTK_BOX(view), toolbar, FALSE, FALSE, 0);
 
-    GtkToolItem* toolitem = gtk_tool_button_new_from_stock (GTK_STOCK_MISSING_IMAGE);
+    GtkToolItem* toolitem = gtk_tool_button_new (gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON), _("Update"));
     gtk_tool_item_set_expand (GTK_TOOL_ITEM(toolitem), TRUE);
     gtk_toolbar_insert (GTK_TOOLBAR(toolbar), toolitem, 0);
     g_signal_connect (toolitem, "clicked", G_CALLBACK(refresh_feeds_closure), view);

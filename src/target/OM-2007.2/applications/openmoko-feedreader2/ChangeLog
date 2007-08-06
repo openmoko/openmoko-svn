@@ -1,5 +1,12 @@
 2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        At least give some 'label' to the button without a meaningful icon.
+
+        * src/feed-selection-view.c:
+        (feed_selection_view_init):
+
+2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Implement going forward and backward in the selection view. We have to
         remember the FeedSelectionView in the ApplicationData to be able to connect the
         next/previous signal of FeedItemView.
