@@ -27,6 +27,7 @@
 #include "config.h"
 #include "feed-selection-view.h"
 #include "feed-configuration.h"
+#include "feed-marshal.h"
 
 #include <moko-finger-scroll.h>
 #include <glib/gi18n.h>
@@ -46,15 +47,26 @@ treeview_selection_changed (GtkTreeSelection *selection, FeedSelectionView *view
     GtkTreeIter iter;
     gboolean has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
     gchar* message = 0;
+    gboolean backward, forward;
+    backward = forward = FALSE;
 
     if (has_selection) {
         gtk_tree_model_get (model, &iter, RSS_READER_COLUMN_TEXT, &message, -1 );
         if (!message)
             message = g_strdup (_("Failed to read the text."));
+
+        /*
+         * check if we can go backward/forward in the model
+         */
+        GtkTreePath *previous = gtk_tree_model_get_path (model, &iter);
+        backward = gtk_tree_path_prev (previous);
+        forward = gtk_tree_model_iter_next (model, &iter);
+        gtk_tree_path_free (previous);
     } else
         message = g_strdup (_("Please select a feed."));
 
-    g_signal_emit (view, feed_selection_view_signals[ITEM_CHANGED], 0, message);
+
+    g_signal_emit (view, feed_selection_view_signals[ITEM_CHANGED], 0, message, backward, forward);
     g_free (message);
 }
 
@@ -197,8 +209,8 @@ feed_selection_view_class_init (FeedSelectionViewClass* class)
             0,
             NULL,
             NULL,
-            g_cclosure_marshal_VOID__STRING,
-            G_TYPE_NONE, 1, G_TYPE_STRING);
+            feed_marshal_VOID__STRING_BOOLEAN_BOOLEAN,
+            G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN);
 }
 
 

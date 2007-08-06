@@ -192,5 +192,6 @@ feed_item_view_display (FeedItemView* view, const gchar* text)
 void
 feed_item_view_highlight (FeedItemView* view, const gchar* search_string)
 {
+    gtk_entry_set_text (GTK_ENTRY(view->search_entry), search_string);
     do_highlight (view, search_string);
 }

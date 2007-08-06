@@ -45,9 +45,12 @@ window_delete_event (GtkWidget* widget, GdkEvent* event, struct ApplicationData*
 }
 
 static void
-feed_selection_changed (FeedSelectionView* view, const gchar* text, struct ApplicationData* data)
+feed_selection_changed (FeedSelectionView* view, const gchar* text, const gboolean backward, const gboolean forward, struct ApplicationData* data)
 {
     feed_item_view_display (data->view, text ?  text : _("Failed to read the text."));
+    feed_item_view_set_can_go_back (data->view, backward);
+    feed_item_view_set_can_go_forward (data->view, forward);
+
     if (feed_selection_view_get_search_string (view))
         feed_item_view_highlight (data->view, feed_selection_view_get_search_string (view));
 }

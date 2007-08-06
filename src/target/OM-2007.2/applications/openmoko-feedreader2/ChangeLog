@@ -1,5 +1,22 @@
 2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Make the Backward and Forward button sensitive/unsensitive depending on if
+        one can go backward/forward.
+        The backward/forward signals are not yet connected.
+
+        * configure.ac: Search for genmarshal
+        * src/Makefile.am: build the custom marshaler
+        * src/feed-item-view.c: when asked to highlight text, change the entry as well
+        (feed_item_view_highlight):
+        * src/feed-marshal.list: Added.
+        * src/feed-selection-view.c: Emit the new signal with can_go_backward/_forward
+        (treeview_selection_changed):
+        (feed_selection_view_class_init):
+        * src/main.c:
+        (feed_selection_changed): Use the two booleans and pass it on to item-view
+
+2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Blind compile fix for GNU libc.
 
         * src/feed-data.c:
