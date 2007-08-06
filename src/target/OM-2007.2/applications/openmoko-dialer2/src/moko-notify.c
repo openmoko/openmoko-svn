@@ -42,7 +42,9 @@ G_DEFINE_TYPE (MokoNotify, moko_notify, G_TYPE_OBJECT)
 
 struct _MokoNotifyPrivate
 {
-  gboolean started;
+  gboolean    started;
+
+  GstElement *bin;
 };
 /*
 enum
@@ -54,6 +56,95 @@ enum
 
 static guint notify_signals[LAST_SIGNAL] = {0, };
 */
+
+
+static void
+on_filesrc_eos (GstElement *element, MokoNotify *notify)
+{
+  /* Rewind and play again */
+  g_print ("Audio finished\n");
+}
+
+static void
+moko_notify_start_ringtone (MokoNotify *notify)
+{
+  MokoNotifyPrivate *priv;
+  GstElement *bin, *filesrc, *decoder, *aconvert, *aresample, *asink;
+
+  g_return_if_fail (MOKO_IS_NOTIFY (notify));
+  priv = notify->priv;
+
+  /* Create a bin to hold elements */
+  bin = gst_pipeline_new ("pipeline");
+  g_assert (bin);
+
+  /* Disk reader */
+  filesrc = gst_element_factory_make ("filesrc", "source");
+  g_assert (filesrc);
+  g_object_set (G_OBJECT (filesrc), 
+                "location", PKGDATADIR DEFAULT_RINGTONE, 
+                NULL);
+  g_signal_connect (G_OBJECT (filesrc), "eos",
+                    G_CALLBACK (on_filesrc_eos), (gpointer)notify);
+
+  /* Decoder */
+  decoder = gst_element_factory_make ("decodebin", "decode");
+  if (!decoder)
+  {
+    g_warning ("Could not load 'decodebin'");
+    return;
+  }
+  
+  /* Audio convert */
+  aconvert = gst_element_factory_make ("audioconvert", NULL);
+  if (!aconvert)
+  {
+    g_warning ("Could not load 'audioconvert'");
+    return;
+  }
+
+  /* Audio resample */
+  aresample = gst_element_factory_make ("audioresample", NULL);
+  if (!aresample)
+  {
+    g_warning ("Could not load 'audioresample'");
+    return;
+  }
+
+  /* Audio sink */
+  asink = gst_element_factory_make ("alsasink", "play_audio");
+  if (!asink)
+  {
+    g_warning ("Could not load 'alsasink'");
+    return;
+  }
+
+  /* Add objects to the bin */
+  gst_bin_add_many (GST_BIN (bin), filesrc, decoder, 
+                    aconvert, aresample, asink, NULL);
+
+  /* Link the elements */
+  gst_element_link_many (filesrc, decoder, aconvert, aresample, asink, NULL);
+
+  priv->bin = bin;
+
+  /* Start playing */
+  gst_element_set_state (bin, GST_STATE_PLAYING);
+}
+
+static void
+moko_notify_stop_ringtone (MokoNotify *notify)
+{
+  MokoNotifyPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_NOTIFY (notify));
+  priv = notify->priv;
+
+  if  (GST_IS_ELEMENT (priv->bin))
+  {
+    gst_element_set_state (priv->bin, GST_STATE_NULL);
+  }
+}
 
 static void
 moko_notify_start_vibrate (void)
@@ -132,7 +223,8 @@ moko_notify_start (MokoNotify *notify)
     return;
   priv->started = TRUE;
 
-  moko_notify_start_vibrate (); 
+  moko_notify_start_vibrate ();
+  moko_notify_start_ringtone (notify);
 }
 
 /* Stop the ringtone and the vibration alert */
@@ -149,6 +241,7 @@ moko_notify_stop (MokoNotify *notify)
   priv->started = FALSE;
  
   moko_notify_stop_vibrate ();
+  moko_notify_stop_ringtone (notify);
 }
 
 /* GObject functions */

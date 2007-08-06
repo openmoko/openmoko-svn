@@ -1,5 +1,16 @@
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
+	* data/Makefile.am:
+	Added a default ringtone (until sound themes are finished).
+
+	* src/moko-notify.c: (on_filesrc_eos),
+	(moko_notify_start_ringtone), (moko_notify_stop_ringtone),
+	(moko_notify_start), (moko_notify_stop):
+	Added some basic support for playing the default ringtone when there is an
+	incoming call.
+
+2007-08-06  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_call_progress_changed):
 	* src/moko-notify.c: (moko_notify_start), (moko_notify_stop),
 	(moko_notify_init):
