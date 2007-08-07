@@ -4,12 +4,12 @@ LICENSE = "GPL"
 SECTION = "bootloader"
 PRIORITY = "optional"
 PV = "1.2.0+svn${SRCDATE}"
-PR = "r12"
+PR = "r13"
 
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
 
-SRC_URI = "http://downloads.openmoko.org/sources/git_www.denx.de.git.u-boot.git._8993e54b6f397973794f3d6f47d3b3c0c98dd4f6.tar.gz \
+SRC_URI = "http://buildhost.openmoko.org/sources/git_www.denx.de.git.u-boot.git._8993e54b6f397973794f3d6f47d3b3c0c98dd4f6.tar.gz \
            svn://svn.openmoko.org/trunk/src/target/u-boot;module=patches;proto=http \
            file://uboot-20070311-tools_makefile_ln_sf.patch;patch=1 \
 "
