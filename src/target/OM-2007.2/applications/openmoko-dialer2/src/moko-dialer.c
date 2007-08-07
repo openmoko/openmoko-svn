@@ -505,12 +505,12 @@ on_call_progress_changed (MokoGsmdConnection *conn,
           moko_journal_voice_info_set_was_missed (priv->entry, TRUE);
 
         moko_journal_add_entry (priv->journal, priv->entry);
+        moko_journal_write_to_storage (priv->journal);
         if (priv->time)
           moko_time_free (priv->time);
         priv->entry = NULL;
         priv->time = NULL;
       }
-      moko_journal_write_to_storage (priv->journal);
       moko_notify_stop (priv->notify);
       g_print ("mokogsmd disconnect\n");
       break;
@@ -721,7 +721,7 @@ moko_dialer_init (MokoDialer *dialer)
   /* Create the window */
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (G_OBJECT (priv->window), "delete-event",
-                    (GCallback) gtk_main_quit, NULL);
+                    (GCallback) gtk_widget_hide_on_delete, NULL);
   gtk_window_set_title (GTK_WINDOW (priv->window), "Dialer");
 
   /* Notebook */

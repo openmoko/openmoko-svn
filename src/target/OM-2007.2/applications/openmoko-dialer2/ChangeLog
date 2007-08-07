@@ -1,3 +1,15 @@
+2007-08-07  Neil J. Patel  <njp@o-hand.com>
+
+	* src/dialer-main.c: (main):
+	* src/moko-dialer.c: (on_call_progress_changed),
+	(moko_dialer_init):
+	Make sure the dialer window hides on delete, instead of calling
+	gtk_main_quit ().
+
+	* src/moko-talking.c: (moko_talking_init):
+	Fix the loading of the incmong and outgoing call images, so there is not a
+	gap between them during animation.
+
 2007-08-06  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-notify.c: (on_bus_eos), (moko_notify_start_ringtone):

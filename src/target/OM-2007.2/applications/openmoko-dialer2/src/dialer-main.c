@@ -117,7 +117,7 @@ main (int argc, char **argv)
     g_warning ("Failed to make a connection to the session bus: %s", 
                error->message);
     g_error_free (error);
-    return EXIT_FAILURE;
+    return 1;
   }
   proxy = dbus_g_proxy_new_for_name (connection, 
                                      DBUS_SERVICE_DBUS,
@@ -134,7 +134,7 @@ main (int argc, char **argv)
     gdk_init(&argc, &argv);
     gdk_notify_startup_complete ();
 
-    return EXIT_FAILURE;
+    return 1;
   }
   if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
   {
@@ -151,7 +151,7 @@ main (int argc, char **argv)
 
     gdk_init(&argc, &argv);
     gdk_notify_startup_complete ();
-    return EXIT_SUCCESS;
+    return 0;
   }
 
   /* So we are creating a new dialer, one of the first things we sould do is
@@ -185,5 +185,5 @@ main (int argc, char **argv)
 
   gtk_main ();
   
-  return EXIT_SUCCESS;
+  return 0;
 }

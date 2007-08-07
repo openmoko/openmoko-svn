@@ -444,7 +444,7 @@ moko_talking_init (MokoTalking *talking)
     if (G_IS_OBJECT (priv->talking[i]))
       g_object_ref (priv->talking[i]);
   }
-  for (i = 0; i < N_PICS; i++)
+  for (i = 0; i < N_PICS-1; i++)
   {
     gchar *name = g_strdup_printf ("%s/outgoing_%d.png", PKGDATADIR, i);
     priv->outgoing[i] = gdk_pixbuf_new_from_file (name, NULL);
@@ -452,7 +452,7 @@ moko_talking_init (MokoTalking *talking)
     if (G_IS_OBJECT (priv->outgoing[i]))
       g_object_ref (priv->outgoing[i]);
   }
-  for (i = 0; i < N_PICS; i++)
+  for (i = 0; i < N_PICS-1; i++)
   {
     gchar *name = g_strdup_printf ("%s/incoming_%d.png", PKGDATADIR, i);
     priv->incoming[i] = gdk_pixbuf_new_from_file (name, NULL);
