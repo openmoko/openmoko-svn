@@ -121,6 +121,44 @@ static Window get_window_property( Window xwindow, Atom atom )
     return retval;
 }
 
+/* Retrieves the text property @atom from @window */
+static char* get_text_property( Window window, Atom atom )
+{
+    XTextProperty text;
+    char *ret, **list;
+    int result, count;
+
+    gdk_error_trap_push ();
+    result = XGetTextProperty (gdk_display,
+                               window,
+                               &text,
+                               atom);
+    if (gdk_error_trap_pop () || result == 0)
+        return NULL;
+
+    count = gdk_text_property_to_utf8_list
+            (gdk_x11_xatom_to_atom (text.encoding),
+             text.format,
+             text.value,
+             text.nitems,
+             &list);
+    if (count > 0) {
+        int i;
+
+        ret = list[0];
+
+        for (i = 1; i < count; i++)
+            g_free (list[i]);
+        g_free (list);
+    } else
+        ret = NULL;
+
+        if (text.value)
+            XFree (text.value);
+
+        return ret;
+}
+
 gboolean neod_buttonactions_install_watcher()
 {
     int auxfd = open( AUX_BUTTON_EVENT_PATH, O_RDONLY );
@@ -252,15 +290,33 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
     aux_timer = -1;
     if ( timeout < 1 )
     {
-        // make dialer interface show up
-        // NOTE: temporary hack, will use dbus interface once dialer has it :)
-        system( "openmoko-dialer &" );
+        // show desktop
+        Screen *screen = GDK_SCREEN_XSCREEN(gdk_screen_get_default());
+        XEvent xev;
+
+        xev.xclient.type = ClientMessage;
+        xev.xclient.serial = 0;
+        xev.xclient.send_event = True;
+        xev.xclient.display = DisplayOfScreen(screen);
+        xev.xclient.window = RootWindowOfScreen(screen);
+        xev.xclient.message_type =
+                gdk_x11_get_xatom_by_name("_NET_SHOWING_DESKTOP");
+        xev.xclient.format = 32;
+        //TODO add support for toggle!?
+        xev.xclient.data.l[0] = TRUE;
+        xev.xclient.data.l[1] = 0;
+        xev.xclient.data.l[2] = 0;
+        xev.xclient.data.l[3] = 0;
+        xev.xclient.data.l[4] = 0;
+
+        XSendEvent(DisplayOfScreen(screen), RootWindowOfScreen(screen), False,
+                   SubstructureRedirectMask | SubstructureNotifyMask, &xev);
     }
     else
     {
-        // make main menu show up
+        // make dialer interface show up
         // NOTE: temporary hack, will use dbus interface once main menu has it :)
-        system( "openmoko-mainmenu &" );
+        system( "openmoko-dialer &" );
     }
     return FALSE;
 }
@@ -331,11 +387,16 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
     if ( timeout < 1 )
     {
         Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
-        g_debug( "active Window = %d", (int) xwindow );
+        const char* title = get_text_property( xwindow, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
+        g_debug( "active Window = %d ('%s')", (int) xwindow, title );
+
+        if ( strcmp( "Today", title ) == 0 )
+        {
+            g_debug( "sorry, i'm not going to close the today window" );
+            return;
+        }
 
         Display* display = XOpenDisplay( NULL );
-
-        //xwindow = gdk_x11_drawable_get_xid (window);
 
         XEvent xev;
         xev.xclient.type = ClientMessage;
@@ -352,11 +413,11 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         xev.xclient.data.l[4] = 0;
 
         //TODO: add timeout checking for response
-
+#if 1
         XSendEvent (display, gdk_x11_get_default_root_xwindow (), False,
                     SubstructureRedirectMask | SubstructureNotifyMask, &xev);
         XCloseDisplay( display );
-
+#endif
     }
     else
     {

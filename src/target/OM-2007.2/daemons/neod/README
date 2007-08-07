@@ -1,7 +1,8 @@
 Minimal Button and powermanagement handling daemon
 
 NOTE: Merely throwaway code, since it may be a better idea to base on
- * HAL / OHM, or
- * devmand, or
- * zaurusd ?
+ * freedesktop's HAL / OHM, or
+ * G[PE]2's machined, or
+ * Florian Boor's devmand, or
+ * Richard Purdie's zaurusd ?
 
