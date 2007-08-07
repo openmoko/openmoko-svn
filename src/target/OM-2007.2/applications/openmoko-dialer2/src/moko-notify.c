@@ -57,6 +57,36 @@ enum
 static guint notify_signals[LAST_SIGNAL] = {0, };
 */
 
+static void
+moko_notify_check_brightness (void)
+{
+  gint fd;
+  gchar buf[50];
+  gint brightness, len;
+
+  fd = g_open (SYS_BRIGHTNESS"/brightness", O_WRONLY, 0);
+  if (fd == -1)
+  {
+    g_warning ("Unable to open brightness device");
+    return;
+  }
+  if (read (fd, buf, sizeof (buf)) == -1)
+  {
+    close (fd);
+    return;
+  }
+  brightness = atoi (buf);
+
+  if (brightness >= 5000)
+  {
+    close (fd);
+    return;
+  }
+  
+  len = g_sprintf (buf, "%d", 5000);
+  write (fd, buf, len);
+  close (fd);
+}
 
 static void
 on_bus_eos (GstBus *bus, GstMessage *message, MokoNotify *notify)
@@ -213,6 +243,7 @@ moko_notify_start (MokoNotify *notify)
     return;
   priv->started = TRUE;
 
+  moko_notify_check_brightness ();
   moko_notify_start_vibrate ();
   moko_notify_start_ringtone (notify);
 }

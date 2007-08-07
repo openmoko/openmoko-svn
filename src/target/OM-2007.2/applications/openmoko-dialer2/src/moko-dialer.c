@@ -250,6 +250,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   if (entry)
     moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
   moko_journal_add_entry (priv->journal, priv->entry);
+  moko_journal_write_to_storage (priv->journal);
   moko_time_free (priv->time);
   priv->entry = NULL;
   priv->time = NULL;

@@ -1,5 +1,14 @@
 2007-08-07  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked):
+	Make sure new entry's are written to the journal.
+
+	* src/moko-notify.c: (moko_notify_check_brightness),
+	(moko_notify_start):
+	Check the LCD brightness, if it is under 5000, set it to 5000.
+
+2007-08-07  Neil J. Patel  <njp@o-hand.com>
+
 	* src/dialer-main.c: (main):
 	* src/moko-dialer.c: (on_call_progress_changed),
 	(moko_dialer_init):
