@@ -42,22 +42,18 @@
 //FIXME load this from sysfs
 static const int MAX_BRIGHTNESS = 5000;
 
-//FIXME find out through sysfs
 #ifndef DEBUG_THIS_FILE
-    #define AUX_BUTTON_EVENT_PATH "/dev/input/event1"
     #define AUX_BUTTON_KEYCODE 169
-    #define POWER_BUTTON_EVENT_PATH "/dev/input/event2"
     #define POWER_BUTTON_KEYCODE 116
-    #define TOUCHSCREEN_EVENT_PATH "/dev/input/touchscreen0"
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #else
-    #define AUX_BUTTON_EVENT_PATH "/dev/input/event1"
     #define AUX_BUTTON_KEYCODE 0x25
-    #define POWER_BUTTON_EVENT_PATH "/dev/input/event0"
     #define POWER_BUTTON_KEYCODE 0x25
-    #define TOUCHSCREEN_EVENT_PATH "/dev/input/event2"
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
+
+GPollFD input_fd[10];
+int max_input_fd = 0;
 
 GPollFD aux_fd;
 GPollFD power_fd;
@@ -161,16 +157,23 @@ static char* get_text_property( Window window, Atom atom )
 
 gboolean neod_buttonactions_install_watcher()
 {
-    int auxfd = open( AUX_BUTTON_EVENT_PATH, O_RDONLY );
-    if ( auxfd < 0 )
+
+    int i = 0;
+    for ( ; i < 10; ++i )
     {
-        g_debug( "can't open " AUX_BUTTON_EVENT_PATH " (%s)", strerror( errno ) );
-        return FALSE;
+        char* filename = g_strdup_printf( "/dev/input/event%d", i );
+        input_fd[i].fd = open( filename, O_RDONLY );
+        if ( input_fd[i].fd < 0 )
+            break;
+        else
+            g_debug( "'%s' open OK, fd = '%d'", filename, input_fd[i].fd );
     }
-    int powerfd = open( POWER_BUTTON_EVENT_PATH, O_RDONLY );
-    if ( powerfd < 0 )
+
+    max_input_fd = i - 1;
+    g_debug( "opened %d input nodes.", max_input_fd + 1 );
+    if ( max_input_fd <= 0 )
     {
-        g_debug( "can't open " POWER_BUTTON_EVENT_PATH " (%s)", strerror( errno ) );
+        g_debug( "can't open ANY input node. no watcher installed." );
         return FALSE;
     }
     static GSourceFuncs funcs = {
@@ -180,34 +183,15 @@ gboolean neod_buttonactions_install_watcher()
     NULL,
     };
     GSource* button_watcher = g_source_new( &funcs, sizeof (GSource) );
-    aux_fd.fd = auxfd;
-    aux_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
-    aux_fd.revents = 0;
-    g_source_add_poll( button_watcher, &aux_fd );
-    power_fd.fd = powerfd;
-    power_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
-    power_fd.revents = 0;
-    g_source_add_poll( button_watcher, &power_fd );
-    g_source_attach( button_watcher, NULL );
 
-    if ( getenv( "MOKO_POWERSAVE" ) != NULL )
+    for ( i = 0; i <= max_input_fd; ++i )
     {
-
-        int tsfd = open( TOUCHSCREEN_EVENT_PATH, O_RDONLY );
-        if ( tsfd < 0 )
-        {
-            g_debug( "can't open " TOUCHSCREEN_EVENT_PATH " (%s)", strerror( errno ) );
-            return FALSE;
-        }
-        touchscreen_io = g_io_channel_unix_new( tsfd );
-        g_io_add_watch( touchscreen_io, G_IO_IN, neod_buttonactions_touchscreen_cb, NULL );
-
-        neod_buttonactions_powersave_reset();
-        neod_buttonactions_set_display( 100 );
-        neod_buttonactions_sound_init();
+        input_fd[i].events = G_IO_IN | G_IO_HUP | G_IO_ERR;
+        input_fd[i].revents = 0;
+        g_source_add_poll( button_watcher, &input_fd[i] );
+        g_debug( "added fd %d to list of watchers", input_fd[i].fd );
     }
-    else
-        g_debug( "MOKO_POWERSAVE=yes not set. Not enabling power management." );
+    g_source_attach( button_watcher, NULL );
 
     return TRUE;
 }
@@ -221,59 +205,78 @@ gboolean neod_buttonactions_input_prepare( GSource* source, gint* timeout )
 
 gboolean neod_buttonactions_input_check( GSource* source )
 {
-    return ( ( aux_fd.revents & G_IO_IN ) || ( power_fd.revents & G_IO_IN ) );
+    for ( int i = 0; i < max_input_fd; ++i )
+        if ( input_fd[i].revents & G_IO_IN )
+            return TRUE;
+    return FALSE;
 }
 
 
 gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callback, gpointer data )
 {
-    if ( aux_fd.revents & G_IO_IN )
+    for ( int i = 0; i < max_input_fd; ++i )
     {
-        struct input_event event;
-        int size = read( aux_fd.fd, &event, sizeof( struct input_event ) );
-        //g_debug( "read %d bytes from aux_fd %d", size, aux_fd.fd );
-        //g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
-        if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
+        if ( input_fd[i].revents & G_IO_IN )
         {
-            if ( event.value == 1 ) /* pressed */
+            struct input_event event;
+            int size = read( input_fd[i].fd, &event, sizeof( struct input_event ) );
+            //g_debug( "read %d bytes from aux_fd %d", size, aux_fd.fd );
+            //g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+            if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
             {
-                g_debug( "triggering aux timer" );
-                aux_timer = g_timeout_add( 1 * 1000, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
-            }
-            else if ( event.value == 0 ) /* released */
-            {
-                g_debug( "resetting aux timer" );
-                if ( aux_timer != -1 )
+                if ( event.value == 1 ) /* pressed */
                 {
-                    g_source_remove( aux_timer );
-                    neod_buttonactions_aux_timeout( 0 );
+                    g_debug( "triggering aux timer" );
+                    aux_timer = g_timeout_add( 1 * 1000, (GSourceFunc) neod_buttonactions_aux_timeout, (gpointer)1 );
                 }
-                aux_timer = -1;
-            }
-        }
-    }
-    if ( power_fd.revents & G_IO_IN )
-    {
-        struct input_event event;
-        int size = read( power_fd.fd, &event, sizeof( struct input_event ) );
-        //g_debug( "read %d bytes from power_fd %d", size, power_fd.fd );
-        //g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
-        if ( event.type == 1 && event.code == POWER_BUTTON_KEYCODE )
-        {
-            if ( event.value == 1 ) /* pressed */
-            {
-                g_debug( "triggering power timer" );
-                power_timer = g_timeout_add( 1 * 1000, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
-            }
-            else if ( event.value == 0 ) /* released */
-            {
-                g_debug( "resetting power timer" );
-                if ( power_timer != -1 )
+                else if ( event.value == 0 ) /* released */
                 {
-                    g_source_remove( power_timer );
-                    neod_buttonactions_power_timeout( 0 );
+                    g_debug( "resetting aux timer" );
+                    if ( aux_timer != -1 )
+                    {
+                        g_source_remove( aux_timer );
+                        neod_buttonactions_aux_timeout( 0 );
+                    }
+                    aux_timer = -1;
                 }
-                power_timer = -1;
+            }
+            else
+            if ( event.type == 1 && event.code == POWER_BUTTON_KEYCODE )
+            {
+                if ( event.value == 1 ) /* pressed */
+                {
+                    g_debug( "triggering power timer" );
+                    power_timer = g_timeout_add( 1 * 1000, (GSourceFunc) neod_buttonactions_power_timeout, (gpointer)1 );
+                }
+                else if ( event.value == 0 ) /* released */
+                {
+                    g_debug( "resetting power timer" );
+                    if ( power_timer != -1 )
+                    {
+                        g_source_remove( power_timer );
+                        neod_buttonactions_power_timeout( 0 );
+                    }
+                    power_timer = -1;
+                }
+            }
+            else
+            if ( event.type == 1 && event.code == TOUCHSCREEN_BUTTON_KEYCODE )
+            {
+                if ( event.value == 1 ) /* pressed */
+                {
+                    g_debug( "stylus pressed" );
+                    neod_buttonactions_sound_play( "touchscreen" );
+                }
+                else if ( event.value == 0 ) /* released */
+                {
+                    g_debug( "stylus released" );
+                }
+                neod_buttonactions_powersave_reset();
+                if ( power_state != NORMAL )
+                {
+                    neod_buttonactions_set_display( 100 );
+                    power_state = NORMAL;
+                }
             }
         }
     }
@@ -444,35 +447,6 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         gtk_menu_popup( GTK_MENU(power_menu), NULL, NULL, neod_buttonactions_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
     }
     return FALSE;
-}
-
-gboolean neod_buttonactions_touchscreen_cb( GIOChannel *source, GIOCondition condition, gpointer data )
-{
-    g_debug( "mainmenu touchscreen event" );
-
-    struct input_event event;
-    int size = read( g_io_channel_unix_get_fd( source ), &event, sizeof( struct input_event ) );
-
-    if ( event.type == 1 && event.code == TOUCHSCREEN_BUTTON_KEYCODE )
-    {
-        if ( event.value == 1 ) /* pressed */
-        {
-            g_debug( "stylus pressed" );
-            neod_buttonactions_sound_play( "touchscreen" );
-        }
-        else if ( event.value == 0 ) /* released */
-        {
-            g_debug( "stylus released" );
-        }
-
-        neod_buttonactions_powersave_reset();
-        if ( power_state != NORMAL )
-        {
-            neod_buttonactions_set_display( 100 );
-            power_state = NORMAL;
-        }
-    }
-    return TRUE;
 }
 
 void neod_buttonactions_powersave_reset()

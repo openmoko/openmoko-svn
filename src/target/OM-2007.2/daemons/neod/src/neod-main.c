@@ -23,6 +23,9 @@ int main( int argc, char** argv )
     gtk_init( &argc, &argv );
     if ( neod_buttonactions_install_watcher() )
     {
+        neod_buttonactions_powersave_reset();
+        neod_buttonactions_set_display( 100 );
+        neod_buttonactions_sound_init();
         gtk_main();
         return 0;
     }
