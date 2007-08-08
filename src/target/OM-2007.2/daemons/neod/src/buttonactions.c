@@ -47,16 +47,14 @@ static const int MAX_BRIGHTNESS = 5000;
     #define POWER_BUTTON_KEYCODE 116
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #else
-    #define AUX_BUTTON_KEYCODE 0x25
-    #define POWER_BUTTON_KEYCODE 0x25
+    #define AUX_BUTTON_KEYCODE 0x22
+    #define POWER_BUTTON_KEYCODE 0x23
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
 GPollFD input_fd[10];
 int max_input_fd = 0;
 
-GPollFD aux_fd;
-GPollFD power_fd;
 GIOChannel* touchscreen_io;
 
 int aux_timer = -1;
@@ -220,8 +218,10 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
         {
             struct input_event event;
             int size = read( input_fd[i].fd, &event, sizeof( struct input_event ) );
-            //g_debug( "read %d bytes from aux_fd %d", size, aux_fd.fd );
-            //g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+#ifdef DEBUG_THIS_FILE
+            g_debug( "read %d bytes from fd %d", size, input_fd[i].fd );
+            g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+#endif
             if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
             {
                 if ( event.value == 1 ) /* pressed */
@@ -346,9 +346,23 @@ void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, g
         g_assert( FALSE ); // fail here if called for unknown menu
 }
 
+void neod_buttonactions_popup_selected_fullPM( GtkMenuItem* menu, gpointer user_data )
+{
+    //FIXME set PM to full
+}
+
+void neod_buttonactions_popup_selected_dimOnly( GtkMenuItem* menu, gpointer user_data )
+{
+    //FIXME set PM to dim-only
+}
+
+void neod_buttonactions_popup_selected_noPM( GtkMenuItem* menu, gpointer user_data )
+{
+    //FIXME set PM to none
+}
+
 void neod_buttonactions_popup_selected_lock( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME talk to neod
     int fd = open( "/sys/power/state", O_WRONLY );
     if ( fd != -1 )
     {
@@ -360,21 +374,18 @@ void neod_buttonactions_popup_selected_lock( GtkMenuItem* menu, gpointer user_da
 
 void neod_buttonactions_popup_selected_restartUI( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME talk to neod
     //FIXME notify user
     system( "/etc/init.d/xserver-nodm restart");
 }
 
 void neod_buttonactions_popup_selected_reboot( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME talk to neod
     //moko_ui_banner_show_text( 4, "Rebooting System..." );
     system( "/sbin/reboot");
 }
 
 void neod_buttonactions_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME talk to neod
     //moko_ui_banner_show_text( 4, "Shutting down System..." );
     system( "/sbin/poweroff");
 }
@@ -428,17 +439,35 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         if ( !power_menu )
         {
             power_menu = gtk_menu_new();
+
+            // add profiles
+            // TODO build profile list dynamically from database
+            GtkWidget* profile = 0;
+            profile = gtk_check_menu_item_new_with_label( "Full PM" );
+            g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullPM), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+            profile = gtk_check_menu_item_new_with_label( "Dim Only" );
+            g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_dimOnly), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+            profile = gtk_check_menu_item_new_with_label( "No PM" );
+            g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_noPM), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
+
             GtkWidget* lock = gtk_menu_item_new_with_label( "Lock" );
             g_signal_connect( G_OBJECT(lock), "activate", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), lock );
-            GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
-            GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
+            //GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
+            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
+            //GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
+            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
             GtkWidget* restartUI = gtk_menu_item_new_with_label( "Restart UI" );
             g_signal_connect( G_OBJECT(restartUI), "activate", G_CALLBACK(neod_buttonactions_popup_selected_restartUI), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), restartUI );
             GtkWidget* reboot = gtk_menu_item_new_with_label( "Reboot" );
             g_signal_connect( G_OBJECT(reboot), "activate", G_CALLBACK(neod_buttonactions_popup_selected_reboot), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), reboot );
             GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
             g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), poweroff );
