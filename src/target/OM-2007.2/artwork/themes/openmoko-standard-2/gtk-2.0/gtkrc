@@ -127,6 +127,7 @@ include "mokosearchbar"
 #include "mokoicons"
 
 include "openmoko-contacts"
+include "openmoko-dialer"
 #include "openmoko-today"
 #include "openmoko-footer"
 
