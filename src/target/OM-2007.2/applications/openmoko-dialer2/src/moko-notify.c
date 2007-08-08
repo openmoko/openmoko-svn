@@ -57,6 +57,10 @@ enum
 static guint notify_signals[LAST_SIGNAL] = {0, };
 */
 
+
+/*
+ * Check the current screen brightness, raise it if necessary 
+ */
 static void
 moko_notify_check_brightness (void)
 {

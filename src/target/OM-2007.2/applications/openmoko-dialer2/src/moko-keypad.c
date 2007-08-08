@@ -83,17 +83,38 @@ on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
 }
 
 static void
-on_delete_clicked (GtkWidget *button, MokoKeypad *keypad)
+on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
 {
+#define TAP_HOLD_TIME 800
   MokoKeypadPrivate *priv;
   MokoDialerTextview *textview;
-
+  static guint32 last_event = 0;
+  
   g_return_if_fail (MOKO_IS_KEYPAD (keypad));
   priv = keypad->priv;
   
   textview = MOKO_DIALER_TEXTVIEW (priv->textview);
 
-  moko_dialer_textview_delete (textview);
+  if (event->type == GDK_BUTTON_PRESS)
+  {
+    last_event = event->time;
+  }
+  else if (event->type == GDK_BUTTON_RELEASE)
+  {
+    guint32 diff = event->time - last_event;
+
+    if (diff < TAP_HOLD_TIME)
+    {
+      /* Normal 'clicked' event */
+      moko_dialer_textview_delete (textview);
+    }
+    else
+    {
+      /* Tap-and-hold event */
+      moko_dialer_textview_empty (textview);
+   }
+  }
+  return FALSE;
 }
 
 static void
@@ -198,8 +219,11 @@ moko_keypad_init (MokoKeypad *keypad)
   
   /* Delete button */
   priv->delete = gtk_button_new ();
-  g_signal_connect (G_OBJECT (priv->delete), "clicked",
-                    G_CALLBACK (on_delete_clicked), (gpointer)keypad); 
+  g_signal_connect (priv->delete, "button-press-event",
+                    G_CALLBACK (on_delete_event), (gpointer)keypad);
+  g_signal_connect (priv->delete, "button-release-event",
+                    G_CALLBACK (on_delete_event), (gpointer)keypad);  
+  
   bvbox = gtk_vbox_new (FALSE, 0);
   
   icon = gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON);

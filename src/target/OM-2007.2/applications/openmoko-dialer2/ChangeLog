@@ -1,3 +1,16 @@
+2007-08-08  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer-panel.c: (moko_dialer_panel_init),
+	(moko_dialer_panel_pressed):
+	Implement tap-and-hold events for the keys, so you can enter w, + and p.
+
+	* src/moko-keypad.c: (on_delete_event), (moko_keypad_init):
+	Implement tap-and-hold for the delete button, so the holf event will cause
+	the texview to 'empty'.
+
+	* src/moko-notify.c:
+	Some spacing fixes.
+
 2007-08-07  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_keypad_dial_clicked):
