@@ -4,8 +4,8 @@ style "mokodialertextview" {
   bg[NORMAL] = "#000000"
   base[NORMAL] = "#000000"
 
-  MokoDialerTextview::small_font = 40
-  MokoDialerTextview::medium_font = 50
-  MokoDialerTextview::large_font = 60
+  MokoDialerTextview::small_font = 10
+  MokoDialerTextview::medium_font = 15
+  MokoDialerTextview::large_font = 20
 }
 widget "*.MokoDialerTextview" style "mokodialertextview"
