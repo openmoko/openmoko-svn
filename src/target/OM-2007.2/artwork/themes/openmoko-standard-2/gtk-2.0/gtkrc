@@ -6,12 +6,12 @@ gtk_menu_images = 0
 style "moko-window-default" {
 
     bg[NORMAL]        = "#e5e5e5" #
-    bg[PRELIGHT]      = "#ff0000" # light beige
-    bg[ACTIVE]        = "#ff0000" # dark beige
-    bg[SELECTED]      = "#ff0000" # olive
-    bg[INSENSITIVE]   = "#ff0000" # beige
+    bg[PRELIGHT]      = "#ff7800" #
+    bg[ACTIVE]        = "#ff7800" #
+    bg[SELECTED]      = "#ff7800" #
+    bg[INSENSITIVE]   = "#e5e5e5" #
 
-    base[NORMAL]      = "#e5e5e5" # light cherry
+    base[NORMAL]      = "#e5e5e5" #
     base[PRELIGHT]    = "#ff7800" #
     base[ACTIVE]      = "#e5e5e5" #
     base[SELECTED]    = "#ff7800" #
