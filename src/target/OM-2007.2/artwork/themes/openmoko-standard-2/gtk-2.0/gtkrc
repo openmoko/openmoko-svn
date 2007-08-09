@@ -133,3 +133,5 @@ include "openmoko-dialer"
 
 #include "mokomessagedialog"
 include "openmoko-calculator"
+
+include "openmoko-panel-plugins"
