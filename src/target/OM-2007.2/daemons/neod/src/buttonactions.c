@@ -528,9 +528,6 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
 
 void neod_buttonactions_powersave_reset()
 {
-    if ( pm_value == NONE )
-        return;
-
     g_debug( "mainmenu powersave reset" );
     if ( powersave_timer1 != -1 )
         g_source_remove( powersave_timer1 );
@@ -538,6 +535,9 @@ void neod_buttonactions_powersave_reset()
         g_source_remove( powersave_timer2 );
     if ( powersave_timer3 != -1 )
         g_source_remove( powersave_timer3 );
+
+    if ( pm_value == NONE )
+        return;
 
     //TODO load this from preferences
     powersave_timer1 = g_timeout_add( 10 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout1, (gpointer)1 );
