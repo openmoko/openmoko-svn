@@ -24,14 +24,11 @@
  * Manages application configuration and session data
  */
 
-#ifndef _PERSISTENT_H
-#define _PERSISTENT_H
+#ifndef PERSISTENT_H
+#define PERSISTENT_H
 
 #include "playlist.h"
-
-// File name is relative to ~
-#define OMP_SESSION_FILE_NAME "/.openmoko-mediaplayer"
-
+#include "main.h"
 
 /// Application configuration data
 struct _omp_config

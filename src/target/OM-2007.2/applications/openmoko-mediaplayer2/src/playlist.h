@@ -24,8 +24,8 @@
  * Playlist handling
  */
 
-#ifndef _PLAYLIST_H
-#define _PLAYLIST_H
+#ifndef PLAYLIST_H
+#define PLAYLIST_H
 
 #include <spiff/spiff_c.h>
 

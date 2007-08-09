@@ -20,12 +20,12 @@
  */
 
 /**
- * @file mainwin.h
- * Main window handling
+ * @file main_page.h
+ * Main UI handling
  */
 
-#ifndef _MAINWIN_H
-#define _MAINWIN_H
+#ifndef MAIN_PAGE_H
+#define MAIN_PAGE_H
 
 #include <gtk/gtk.h>
 
@@ -37,14 +37,7 @@
 #define BUTTON_SEEK_DISTANCE 10
 
 
-extern GtkWidget *omp_main_window;
-
-void omp_application_terminate();
-
-void omp_main_window_show();
-void omp_main_window_hide();
-void omp_main_window_create();
-void omp_main_connect_signals();
+GtkWidget *omp_main_page_create(GtkWindow *window);
 
 void omp_main_update_track_change();
 void omp_main_update_status_change();

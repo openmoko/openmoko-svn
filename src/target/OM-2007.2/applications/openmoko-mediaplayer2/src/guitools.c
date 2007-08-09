@@ -26,6 +26,10 @@
 
 #include "guitools.h"
 
+/// Absolute path to the UI pixmaps
+extern gchar *ui_image_path = NULL;
+
+
 
 
 /**
@@ -115,3 +119,24 @@ container_add_image(GtkContainer *container, gchar *image_name)
 	GtkWidget *image;
 	container_add_image_with_ref(container, image_name, &image);
 }
+
+
+/**
+ * Adds a child to a GtkNotebook, filling the page handle with a stock icon
+ */
+void
+omp_notebook_add_page_with_icon(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding)
+{
+	GtkWidget *icon, *alignment;
+
+	icon = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_LARGE_TOOLBAR);
+
+	alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), padding, padding, padding, padding);
+	gtk_container_add(GTK_CONTAINER(alignment), icon);
+	gtk_widget_show_all(GTK_WIDGET(alignment));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), child, alignment);
+	gtk_container_child_set(GTK_CONTAINER(notebook), child, "tab-expand", TRUE, NULL);
+}
+

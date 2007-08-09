@@ -51,6 +51,7 @@ struct _omp_config *omp_config = NULL;			///< Global and persistent configuratio
 struct _omp_session *omp_session = NULL;		///< Global and persistent session data
 
 
+
 /**
  * Load application configuration data
  */
@@ -150,8 +151,8 @@ omp_session_save()
 	gint session_file, result;
 	gchar *file_name;
 
-	// OMP_SESSION_FILE_NAME is relative to user's home dir
-	file_name = g_build_filename(g_get_home_dir(), OMP_SESSION_FILE_NAME, NULL);
+	// SESSION_FILE_NAME is relative to user's home dir
+	file_name = g_build_filename(g_get_home_dir(), SESSION_FILE_NAME, NULL);
 
 	// Permissions for created session file are 0600
 	session_file = creat(file_name, S_IRUSR | S_IWUSR);
@@ -184,8 +185,8 @@ omp_session_load()
 	gint session_file, result;
 	gchar *file_name;
 
-	// OMP_SESSION_FILE_NAME is relative to user's home dir
-	file_name = g_build_filename(g_get_home_dir(), OMP_SESSION_FILE_NAME, NULL);
+	// SESSION_FILE_NAME is relative to user's home dir
+	file_name = g_build_filename(g_get_home_dir(), SESSION_FILE_NAME, NULL);
 
 	session_file = open(file_name, O_RDONLY);
 	if (session_file == -1) goto io_error;

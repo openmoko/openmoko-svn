@@ -37,6 +37,9 @@ AC_CHECK_LIB(uriparser, uriParseUriW, [], [echo "Error: liburiparser not found";
 LIBS="-lspiff $LIBS"
 AC_CHECK_LIB(spiff, spiff_parse, [], [echo "Error: XSPF library (libspiff) not found"; exit -1])
 
+LIBS="-lmokoui2 $LIBS"
+AC_CHECK_LIB(mokoui2, moko_stock_register, [], [echo "Error: libmokoui2 not found"; exit -1])
+
 
 
 LIBS="$GTK_LIBS $OPENMOKO_LIBS $GSTREAMER_LIBS $LIBS"

@@ -24,8 +24,8 @@
  * Playback engine interface
  */
 
-#ifndef _PLAYBACK_H
-#define _PLAYBACK_H
+#ifndef PLAYBACK_H
+#define PLAYBACK_H
 
 #include <gst/gst.h>
 
@@ -38,7 +38,7 @@
 #define OMP_PLAYBACK_STATE_PLAYING GST_STATE_PLAYING
 
 // The UI will be updated at this interval when a track is playing (in ms)
-#define OMP_PLAYBACK_UI_UPDATE_INTERVAL 1000
+#define PLAYBACK_UI_UPDATE_INTERVAL 1000
 
 void omp_playback_init();
 void omp_playback_free();

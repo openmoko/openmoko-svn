@@ -20,8 +20,8 @@
  */
 
 /**
- * @file mainwin.c
- * Main window handling
+ * @file main_page.c
+ * Main UI handling
  */
 
 #ifdef HAVE_CONFIG_H
@@ -33,13 +33,11 @@
 
 #include <gtk/gtk.h>
 
-#include "mainwin.h"
+#include "main_page.h"
 #include "main.h"
 #include "guitools.h"
 #include "playlist.h"
 #include "playback.h"
-
-#define OMP_BUTTON_PIXMAP_SIZE 36
 
 /// Contains all main window widgets that need to be changeable
 struct _main_widgets
@@ -61,28 +59,10 @@ struct _main_widgets
 
 GtkWidget *omp_main_window = NULL;
 
-gboolean omp_main_time_slider_can_update = TRUE;
-gboolean omp_main_time_slider_was_dragged = FALSE;
+gboolean omp_main_time_slider_can_update = TRUE;				///< Determines whether the time slider can be updated or not
+gboolean omp_main_time_slider_was_dragged = FALSE;			///< Is toggled after the user finished dragging the time slider's button
 
 
-/**
- * Terminate the entire program
- */
-void
-omp_application_terminate()
-{
-	// Tell GTK to leave the message loop
-	gtk_main_quit();
-}
-
-/**
- * Program termination event triggered by main window
- */
-void
-omp_main_quit(GtkWidget* widget, gpointer data)
-{
-	omp_application_terminate();
-}
 
 /**
  * Updates the UI volume display
@@ -159,7 +139,6 @@ omp_update_band(gint pos, gint level)
 	image_file_name = g_strdup_printf("%s/ind-music-eq-%02d.png", ui_image_path, value);
 
 	gtk_image_set_from_file(GTK_IMAGE(main_widgets.band_image[pos]), image_file_name);
-//	gtk_widget_show(GTK_IMAGE(main_widgets.band_image[pos]));
 
 	g_free(image_file_name);
 }
@@ -168,7 +147,7 @@ omp_update_band(gint pos, gint level)
  * Set artist label [Mockup arrow #1 - upper line]
  */
 void
-omp_set_artist(const gchar* artist)
+omp_set_artist(const gchar *artist)
 {
 	if (!artist)
 	{
@@ -195,7 +174,7 @@ omp_set_title(const gchar *title)
 }
 
 /**
- * Gets called when the time slider's value got changed (yes, that means it gets called every second, too)
+ * Gets called when the time slider's value got changed (yes, that means it gets called at least once per second)
  */
 void
 omp_main_time_slider_changed(GtkRange *range, gpointer data)
@@ -239,36 +218,29 @@ omp_main_time_slider_drag_stop(GtkWidget *widget, GdkEventButton *event, gpointe
 	omp_main_time_slider_was_dragged = TRUE;
 }
 
+/**
+ * Event handler for the Shuffle button
+ */
 void
-omp_shuffle_button_callback(GtkWidget* widget, gpointer data)
+omp_shuffle_button_callback(GtkWidget *widget, gpointer data)
 {
-/*    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-    {
-	cfg.shuffle = TRUE;	    
-//	playlist_set_shuffle(TRUE);
-    }
-    else
-    {
-	cfg.shuffle= FALSE;
-//	playlist_set_shuffle(FALSE);
-    } */
+	// ...
 }
 
+/**
+ * Event handler for the Repeat button
+ */
 void
-omp_repeat_button_callback(GtkWidget* widget, gpointer data)
+omp_repeat_button_callback(GtkWidget *widget, gpointer data)
 {
-    /*if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-    {
-	cfg.repeat = TRUE;
-    }
-    else
-    {
-	cfg.repeat = FALSE;
-    }*/
+	// ...
 }
 
+/**
+ * Event handler for the Playlist button
+ */
 void
-omp_playlist_button_callback(GtkWidget *sender, gpointer data)
+omp_playlist_button_callback(GtkWidget *widget, gpointer data)
 {
 	// ...
 }
@@ -301,7 +273,6 @@ omp_main_button_rewind_callback()
 
 /**
  * Event handler for the Play/Pause button
- * @todo Pixmap change
  */
 void
 omp_main_button_play_pause_callback()
@@ -317,12 +288,12 @@ omp_main_button_play_pause_callback()
 }
 
 /**
- * Creates a toggle button framed by a GtkAlignment
+ * Creates a button framed by a GtkAlignment
  * @param image_name Path and file name of the image to use as pixmap
  * @return A GtkAlignment containing the button
  */
 GtkWidget*
-omp_toggle_button_create(gchar *image_name, gint pad_left, GCallback callback, GtkWidget **button)
+omp_button_create(gchar *image_name, gint pad_left, GCallback callback, GtkWidget **button)
 {
 	GtkWidget *image;
 	gchar *image_file_name;
@@ -363,37 +334,14 @@ omp_stock_button_create(gchar *image_name, GtkWidget **image, GCallback callback
 
 	g_object_set(G_OBJECT(button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
 
-	*image = gtk_image_new_from_icon_name(image_name, OMP_BUTTON_PIXMAP_SIZE);
+	*image = gtk_image_new_from_icon_name(image_name, BUTTON_PIXMAP_SIZE);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(*image));
 
 	return button;
 }
 
 /**
- * Show the main window, create it first if necessary
- */
-void
-omp_main_window_show()
-{
-	if (!omp_main_window)
-	{
-		omp_main_window_create();
-	}
-
-	gtk_widget_show(GTK_WIDGET(omp_main_window));
-}
-
-/**
- * Hide the main window
- */
-void
-omp_main_window_hide()
-{
-	gtk_widget_hide(GTK_WIDGET(omp_main_window));
-}
-
-/**
- * Creates the main window's UI
+ * Creates the main UI
  */
 void
 omp_main_widgets_create(GtkContainer *destination)
@@ -539,15 +487,15 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_container_add(GTK_CONTAINER(alignment), lower_hbox);
 
 	// Shuffle toggle button
-	alignment = omp_toggle_button_create("ico-shuffle.png", 108, G_CALLBACK(omp_shuffle_button_callback), &main_widgets.shuffle_button);
+	alignment = omp_button_create("ico-shuffle.png", 108, G_CALLBACK(omp_shuffle_button_callback), &main_widgets.shuffle_button);
 	gtk_box_pack_start(GTK_BOX(lower_hbox), alignment, TRUE, TRUE, 0);
 
 	// Repeat toggle button
-	alignment = omp_toggle_button_create("ico-repeat.png", 10, G_CALLBACK(omp_repeat_button_callback), &main_widgets.repeat_button);
+	alignment = omp_button_create("ico-repeat.png", 10, G_CALLBACK(omp_repeat_button_callback), &main_widgets.repeat_button);
 	gtk_box_pack_start(GTK_BOX(lower_hbox), alignment, TRUE, TRUE, 0);
 
 	// Playlist button
-	alignment = omp_toggle_button_create("ico-list.png", 10, G_CALLBACK(omp_playlist_button_callback), &main_widgets.playlist_button);
+	alignment = omp_button_create("ico-list.png", 10, G_CALLBACK(omp_playlist_button_callback), &main_widgets.playlist_button);
 	gtk_box_pack_start(GTK_BOX(lower_hbox), alignment, TRUE, TRUE, 0);
 
 	// --- --- --- --- --- Player controls --- --- --- --- --- ---
@@ -588,24 +536,14 @@ omp_main_widgets_create(GtkContainer *destination)
 }
 
 /**
- * Create the main window and all its UI elements
- * @todo Make all widget positions and aligments relative
+ * Create the main UI page and all its elements
  */
-void
-omp_main_window_create()
+GtkWidget *
+omp_main_page_create(GtkWindow *window)
 {
 	GtkWidget *alignment, *bg_muxer;
 
-	// Sanity check
-	g_assert(omp_main_window == NULL);
-
 	bg_muxer = gtk_fixed_new();
-
-	// Create the main window
-	omp_main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(omp_main_window), _("Media Player"));
-	gtk_container_add(GTK_CONTAINER(omp_main_window), GTK_WIDGET(bg_muxer));
-	g_signal_connect(G_OBJECT(omp_main_window), "destroy", G_CALLBACK(omp_main_quit), NULL);
 
 	// Background image
 	alignment = gtk_alignment_new(0, 0, 0, 0);
@@ -617,23 +555,12 @@ omp_main_window_create()
 	omp_main_widgets_create(GTK_CONTAINER(alignment));
 	gtk_fixed_put(GTK_FIXED(bg_muxer), GTK_WIDGET(alignment), 20, 47);
 
-	// Show everything but the window itself
-	gtk_widget_show_all(GTK_WIDGET(bg_muxer));
+	// Set up signal handlers
+	g_signal_connect(G_OBJECT(window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,		G_CALLBACK(omp_main_update_track_change), NULL);
+	g_signal_connect(G_OBJECT(window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,		G_CALLBACK(omp_main_update_status_change), NULL);
+	g_signal_connect(G_OBJECT(window), OMP_EVENT_PLAYBACK_POSITION_CHANGED,	G_CALLBACK(omp_main_update_track_position), NULL);
 
-	return;
-}
-
-/**
- * Attaches the event handlers to the appropriate signals
- * @note Can't be done in omp_main_window_create() because the signals need to be created
- * @note first by the subsystems which in turn need the main window handle for creating them
- */
-void
-omp_main_connect_signals()
-{
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,			G_CALLBACK(omp_main_update_track_change), NULL);
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,		G_CALLBACK(omp_main_update_status_change), NULL);
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED,	G_CALLBACK(omp_main_update_track_position), NULL);
+	return bg_muxer;
 }
 
 /**
@@ -701,9 +628,9 @@ omp_main_update_status_change()
 	// Update Play/Pause button pixmap
 	if (omp_playback_get_state() == OMP_PLAYBACK_STATE_PAUSED)
 	{
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-play-ltr", OMP_BUTTON_PIXMAP_SIZE);
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-play-ltr", BUTTON_PIXMAP_SIZE);
 	} else {
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-pause", OMP_BUTTON_PIXMAP_SIZE);
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-pause", BUTTON_PIXMAP_SIZE);
 	}
 }
 

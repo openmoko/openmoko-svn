@@ -2,9 +2,13 @@
 UI:
 	Add repeat mode indicator (different button pixmaps)
 	Make FFWD/REW buttons trigger repeatedly
+	Make Prev/Next buttons sensitive depending on playlist state
 	
 Backend:
 	Use GConf
+	Use GST_MESSAGE_DURATION and use saved value
+	Use GST_MESSAGE_TAG
+	Use GST_MESSAGE_BUFFERING
 	
 Issues:
 	How/where to store playlists? -> Single common path, omitting path chooser

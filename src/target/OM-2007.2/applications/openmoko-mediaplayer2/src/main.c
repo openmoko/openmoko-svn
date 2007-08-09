@@ -44,18 +44,28 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "libmokoui2/moko-stock.h"
+
 #include "main.h"
-#include "mainwin.h"
+#include "main_page.h"
 #include "guitools.h"
 #include "playlist.h"
 #include "playback.h"
 #include "persistent.h"
 
-/// Determines how the segfault handler terminates the program
+// Determines how the segfault handler terminates the program
 //define HANDLE_SIGSEGV
 
-/// Enables GLib memory profiling when defined
+// Enables GLib memory profiling when defined
 //define DEBUG_MEM_PROFILE
+
+// The padding applied to the page handle's contents
+#define NOTEBOOK_PAGE_PADDING 6
+
+GtkWidget *omp_window = NULL;
+GtkWidget *omp_notebook = NULL;
+struct _omp_notebook_tabs *omp_notebook_tabs = NULL;
+
 
 
 /*
@@ -83,13 +93,22 @@ init_dbus()
 */
 
 /**
+ * Terminate the entire program normally
+ */
+void
+omp_application_terminate()
+{
+	gtk_main_quit();
+}
+
+/**
  * SIGSEGV signal handler
  */
 static void
 handler_sigsegfault(int value)
 {
 	g_printerr(_("Received SIGSEGV\n"
-		"This could be a bug in the OpenMoko Media Player.\n\n"));
+		"This might be a bug in the OpenMoko Media Player.\n\n"));
 
 #ifdef HANDLE_SIGSEGV
 	exit(EXIT_FAILURE);
@@ -99,14 +118,13 @@ handler_sigsegfault(int value)
 }
 
 /**
- * SIGUSR1 signal handler
- * @todo Should bring currently active window to front - which isn't necessarily the main window
+ * SIGUSR1 signal handler, restores already running application
  */
 static void
 handler_sigusr1(int value)
 {
 	// Bring main window to front
-	omp_main_window_show();
+	gtk_window_present(GTK_WINDOW(omp_window));
 
 	// Re-install handler
 	signal(SIGUSR1, handler_sigusr1);
@@ -200,6 +218,73 @@ handle_locking()
 }
 
 /**
+ * Program termination event triggered by main window
+ */
+void
+omp_close(GtkWidget *widget, gpointer data)
+{
+	omp_application_terminate();
+}
+
+/**
+ * Creates the application's main window
+ */
+void
+omp_window_create()
+{
+	g_return_if_fail(omp_window == NULL);
+
+	// Create window
+	omp_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(omp_window), _("Media Player"));
+	g_signal_connect(G_OBJECT(omp_window), "destroy", G_CALLBACK(omp_close), NULL);
+}
+
+/**
+ * Create the individual pages that make up the UI
+ * @note Must be called after the backends have been initialized so the signals exist that the UIs hook to
+ */
+void
+omp_window_create_pages()
+{
+	// Create and set up the notebook that contains the individual UI pages
+	omp_notebook = gtk_notebook_new();
+	g_object_set(G_OBJECT(omp_notebook), "can-focus", FALSE, "homogeneous", TRUE, NULL);
+	gtk_notebook_set_tab_pos(GTK_NOTEBOOK(omp_notebook), GTK_POS_BOTTOM);
+	gtk_container_add(GTK_CONTAINER(omp_window), GTK_WIDGET(omp_notebook));
+
+	omp_notebook_tabs = g_new0(struct _omp_notebook_tabs, 1);
+
+	// Add main page
+	omp_notebook_tabs->main = omp_main_page_create(GTK_WINDOW(omp_window));
+	omp_notebook_add_page_with_icon(omp_notebook, omp_notebook_tabs->main,
+		MOKO_STOCK_SPEAKER, NOTEBOOK_PAGE_PADDING);
+
+	// Add playlist page
+	omp_notebook_tabs->playlists = omp_playlist_page_create(GTK_WINDOW(omp_window));
+	omp_notebook_add_page_with_icon(omp_notebook, omp_notebook_tabs->playlists,
+		MOKO_STOCK_VIEW, NOTEBOOK_PAGE_PADDING);
+}
+
+/**
+ * Frees all resources used by the main window
+ */
+void
+omp_window_free()
+{
+	g_free(omp_notebook_tabs);
+}
+
+/**
+ * Displays the main window and all widgets it contains
+ */
+void
+omp_window_show()
+{
+	gtk_widget_show_all(omp_window);
+}
+
+/**
  * If only I knew what this is
  */
 gint
@@ -228,7 +313,6 @@ main(int argc, char *argv[])
 	}
 
 	gdk_threads_init();
-	gdk_threads_enter();
 
 	// Initialize miscellaneous things needed for the remote control interface
 	g_random_set_seed(time(NULL));
@@ -261,6 +345,7 @@ main(int argc, char *argv[])
 	}
 
 	// Initialize various things necessary for the full player UI
+	moko_stock_register();
 	ui_image_path = g_build_filename(DATA_DIR, RELATIVE_UI_IMAGE_PATH, NULL);
 
 	g_set_application_name(_("Media Player"));
@@ -272,20 +357,20 @@ main(int argc, char *argv[])
 
 	// Initialize playback, playlist and UI handling
 	omp_config_init();
-	omp_main_window_create();
+	omp_window_create();
 	omp_playback_init();
 	omp_playlist_init();
-	omp_main_connect_signals();
+	omp_window_create_pages();
 	omp_session_restore_state();
-	omp_main_window_show();
+	omp_window_show();
 
 	gtk_main();
-	gdk_threads_leave();
 
 	// Clean up
 	omp_playback_save_state();
 	omp_playback_free();
 	omp_playlist_free();
+	omp_window_free();
 	gst_deinit();
 	g_free(ui_image_path);
 

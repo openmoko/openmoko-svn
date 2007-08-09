@@ -24,8 +24,10 @@ INCLUDES = $(openmoko_mediaplayer_CFLAGS)
 
 openmoko_mediaplayer_SOURCES = \
         main.c main.h \
-	mainwin.c mainwin.h \
 	playlist.c playlist.h \
 	playback.c playback.h \
 	guitools.c guitools.h \
-	persistent.c persistent.h
+	persistent.c persistent.h \
+	main_page.c main_page.h \
+	playlist_page.c playlist_page.h \
+	files_page.c files_page.h

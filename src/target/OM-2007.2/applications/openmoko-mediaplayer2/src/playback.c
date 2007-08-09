@@ -27,12 +27,13 @@
 #include <gst/gst.h>
 
 #include "playback.h"
-#include "mainwin.h"
+#include "main.h"
 
 GstElement *omp_gst_playbin = NULL;						///< Our ticket to the gstreamer world
 guint omp_playback_ui_timeout = 0;						///< Handle of the UI-updating timeout
 gboolean omp_playback_ui_timeout_halted;			///< Flag that tells the UI-updating timeout to exit if set
 gulong omp_playback_pending_position = 0;			///< Since we can't set a new position if element is not paused or playing we store the position here and set it when it reached either state
+
 
 
 /**
@@ -131,7 +132,7 @@ omp_playback_load_track_from_uri(gchar *uri)
 static gboolean
 omp_playback_ui_timeout_callback(gpointer data)
 {
-	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
 	
 	if (omp_playback_ui_timeout_halted)
 	{
@@ -168,14 +169,12 @@ omp_playback_play()
 	// Set state
 	gst_element_set_state(omp_gst_playbin, GST_STATE_PLAYING);
 
-	// Add timer to update UI if necessary
-	// If the halt flag was set but the callback didn't run yet then we
-	// don't want to add another callback since we would have two then
+	// Add timer to update UI if it isn't already there
 	omp_playback_ui_timeout_halted = FALSE;
 
 	if (!omp_playback_ui_timeout)
 	{
-		omp_playback_ui_timeout = g_timeout_add(OMP_PLAYBACK_UI_UPDATE_INTERVAL, omp_playback_ui_timeout_callback, NULL);
+		omp_playback_ui_timeout = g_timeout_add(PLAYBACK_UI_UPDATE_INTERVAL, omp_playback_ui_timeout_callback, NULL);
 	}
 }
 
@@ -274,7 +273,7 @@ omp_playback_set_track_position(glong position)
 		GST_SEEK_TYPE_SET, position*GST_SECOND,
 		GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
 
-	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
 }
 
 /**
@@ -309,7 +308,7 @@ omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data)
 	gst_element_set_state(omp_gst_playbin, GST_STATE_READY);
 	omp_playback_set_track_position(0);
 
-	g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_EOS);
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_EOS);
 
 	return TRUE;
 }
@@ -335,7 +334,7 @@ omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data)
 	if (new_state != previous_state)
 	{
 		previous_state = new_state;
-		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED);
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED);
 	}
 }
 

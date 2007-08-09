@@ -30,7 +30,7 @@
 #include <spiff/spiff_c.h>
 
 #include "playlist.h"
-#include "mainwin.h"
+#include "main.h"
 #include "playback.h"
 #include "persistent.h"
 
@@ -59,7 +59,7 @@ void
 omp_playlist_init()
 {
 	// Hook up event handlers to the playback routines
-	g_signal_connect(G_OBJECT(omp_main_window), OMP_EVENT_PLAYBACK_EOS, G_CALLBACK(omp_playlist_process_eos_event), NULL);
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_EOS, G_CALLBACK(omp_playlist_process_eos_event), NULL);
 
 	// Create the signals we emit: no params, no return value
 	g_signal_new(OMP_EVENT_PLAYLIST_TRACK_CHANGED, G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
@@ -156,7 +156,7 @@ omp_playlist_set_current_track(gint playlist_pos)
 		omp_playlist_track_count = track_num;
 
 		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
 	}
 
 	return position_valid;
@@ -247,7 +247,7 @@ try_again:
 	if (is_new_track)
 	{
 		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
 
 		// Load track and start playing if needed
 		if (omp_playlist_load_current_track())
@@ -309,7 +309,7 @@ try_again:
 		omp_track_history = g_slist_prepend(omp_track_history, (gpointer)history_entry);
 
 		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_main_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
 
 		// Load track and start playing if needed
 		if (omp_playlist_load_current_track())
