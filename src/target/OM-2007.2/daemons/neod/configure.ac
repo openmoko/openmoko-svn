@@ -5,8 +5,6 @@ AC_CONFIG_SRCDIR(src/neod-main.c)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
-LIBGTK_VERSION=2.6.0
-
 AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CC_STDC
@@ -20,14 +18,9 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
 
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= $LIBGTK_VERSION)
-PKG_CHECK_MODULES(PULSE, libpulse)
+PKG_CHECK_MODULES(NEOD, gtk+-2.0 gconf-2.0 libpulse)
 
-CFLAGS=$GTK_CFLAGS
-AC_CHECK_DECLS([g_date_set_time_t],
-               [have_date=yes], [have_date=no], [#include <glib.h>])
-AM_CONDITIONAL(HAVE_GDATE_TIME_T, test "x$have_date" = "xyes")
-CFLAGS=$old_cflags
+CFLAGS=$NEOD_CFLAGS
 
 AC_OUTPUT([
 Makefile

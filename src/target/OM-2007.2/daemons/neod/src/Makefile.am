@@ -4,7 +4,7 @@ AM_CPPFLAGS  = -DPKGDATADIR=\"$(pkgdatadir)\" \
                -DNEOD_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
                -DDATADIR=\""$(datadir)"\" -D_GNU_SOURCE
 
-AM_CFLAGS    = -Wall -pedantic -std=c99 @GTK_CFLAGS@ @PULSE_CFLAGS@
+AM_CFLAGS    = -Wall -pedantic -std=c99 @NEOD_CFLAGS@
 
 bin_PROGRAMS = neod
 
@@ -12,7 +12,7 @@ neod_SOURCES = \
   buttonactions.c \
   neod-main.c
 
-neod_LDADD = @GTK_LIBS@ @PULSE_LIBS@
+neod_LDADD = @NEOD_LIBS@
 
 MAINTAINERCLEANFILES  = config.h.in Makefile.in
 

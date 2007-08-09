@@ -16,13 +16,14 @@
 #define BUTTONACTIONS_H
 
 #include <glib.h>
+#include <gconf/gconf-client.h>
 #include <gdk/gdk.h>
 
 gboolean neod_buttonactions_input_prepare( GSource* source, gint* timeout );
 gboolean neod_buttonactions_input_check( GSource* source );
 gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callback, gpointer data );
 
-gboolean neod_buttonactions_touchscreen_cb( GIOChannel *source, GIOCondition condition, gpointer data );
+void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry *entry, gpointer data );
 
 gboolean neod_buttonactions_aux_timeout( guint timeout );
 gboolean neod_buttonactions_power_timeout( guint timeout );

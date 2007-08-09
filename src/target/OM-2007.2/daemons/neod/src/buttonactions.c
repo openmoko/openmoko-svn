@@ -14,9 +14,12 @@
  */
 #include "buttonactions.h"
 
+#include <gconf/gconf-client.h>
+
 #include <gtk/gtklabel.h>
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkmenuitem.h>
+#include <gtk/gtkcheckmenuitem.h>
 
 #include <gdk/gdkx.h>
 
@@ -65,6 +68,17 @@ int powersave_timer3 = -1;
 
 GtkWidget* aux_menu = 0;
 GtkWidget* power_menu = 0;
+
+GConfClient* gconfc = 0;
+
+enum PowerManagementMode
+{
+    FULL = 0,
+    DIM_ONLY = 1,
+    NONE = 2,
+};
+
+int pm_value = 0;
 
 typedef enum _PowerState
 {
@@ -191,9 +205,24 @@ gboolean neod_buttonactions_install_watcher()
     }
     g_source_attach( button_watcher, NULL );
 
+    // get PM profile setting from gconf and listen for changes
+    gconfc = gconf_client_get_default();
+    if (!gconfc)
+    {
+        g_error( "can't get connection to gconfd" );
+        return FALSE;
+    }
+    GError* error = 0;
+    pm_value = gconf_client_get_int( gconfc, "/desktop/openmoko/neod/power_management", &error );
+    if ( error ) g_debug( "gconf error: %s", error->message );
+    gconf_client_add_dir( gconfc, "/desktop/openmoko/neod", GCONF_CLIENT_PRELOAD_NONE, &error );
+    if ( error ) g_debug( "gconf error: %s", error->message );
+    gconf_client_notify_add( gconfc, "/desktop/openmoko/neod/power_management", (GConfClientNotifyFunc) neod_buttonactions_gconf_cb, NULL, NULL, &error );
+    if ( error ) g_debug( "gconf error: %s", error->message );
+
+    neod_buttonactions_powersave_reset();
     return TRUE;
 }
-
 
 gboolean neod_buttonactions_input_prepare( GSource* source, gint* timeout )
 {
@@ -348,17 +377,17 @@ void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, g
 
 void neod_buttonactions_popup_selected_fullPM( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME set PM to full
+    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", FULL, NULL );
 }
 
 void neod_buttonactions_popup_selected_dimOnly( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME set PM to dim-only
+    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", DIM_ONLY, NULL );
 }
 
 void neod_buttonactions_popup_selected_noPM( GtkMenuItem* menu, gpointer user_data )
 {
-    //FIXME set PM to none
+    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", NONE, NULL );
 }
 
 void neod_buttonactions_popup_selected_lock( GtkMenuItem* menu, gpointer user_data )
@@ -388,6 +417,18 @@ void neod_buttonactions_popup_selected_poweroff( GtkMenuItem* menu, gpointer use
 {
     //moko_ui_banner_show_text( 4, "Shutting down System..." );
     system( "/sbin/poweroff");
+}
+
+void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry *entry, gpointer data )
+{
+    g_debug( "gconf callback" );
+    pm_value = gconf_client_get_int( client, "/desktop/openmoko/neod/power_management", NULL );
+    if ( pm_value < 0 || pm_value > 2 ) pm_value = 0;
+    neod_buttonactions_powersave_reset();
+    neod_buttonactions_set_display( 100 );
+    gtk_widget_destroy( power_menu );
+    //gtk_widget_unref( power_menu );
+    power_menu = 0;
 }
 
 gboolean neod_buttonactions_power_timeout( guint timeout )
@@ -444,12 +485,18 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
             // TODO build profile list dynamically from database
             GtkWidget* profile = 0;
             profile = gtk_check_menu_item_new_with_label( "Full PM" );
+            gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
+            gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == FULL );
             g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullPM), NULL );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
             profile = gtk_check_menu_item_new_with_label( "Dim Only" );
+            gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
+            gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == DIM_ONLY );
             g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_dimOnly), NULL );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
             profile = gtk_check_menu_item_new_with_label( "No PM" );
+            gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
+            gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == NONE );
             g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_noPM), NULL );
             gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
 
@@ -480,6 +527,9 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
 
 void neod_buttonactions_powersave_reset()
 {
+    if ( pm_value == NONE )
+        return;
+
     g_debug( "mainmenu powersave reset" );
     if ( powersave_timer1 != -1 )
         g_source_remove( powersave_timer1 );
@@ -529,6 +579,8 @@ gboolean neod_buttonactions_powersave_timeout2( guint timeout )
 
 gboolean neod_buttonactions_powersave_timeout3( guint timeout )
 {
+    if ( pm_value != FULL )
+        return;
     g_debug( "mainmenu powersave timeout 3" );
     //FIXME talk to neod
     power_state = SUSPEND;
@@ -587,3 +639,4 @@ void neod_buttonactions_sound_play( const gchar* samplename )
                            );
 
 }
+
