@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Utilities
+Name[de]=Einstellungen
+Comment=Various utilities
+Comment[de]=Verschiedene Hilfsprogramme
+Icon=mbfolder.png
+Type=Directory
+Match=Utility;System;Development;
