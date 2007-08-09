@@ -247,10 +247,11 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
         {
             struct input_event event;
             int size = read( input_fd[i].fd, &event, sizeof( struct input_event ) );
-#ifdef DEBUG_THIS_FILE
-            g_debug( "read %d bytes from fd %d", size, input_fd[i].fd );
-            g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
-#endif
+            if ( getenv( "MOKO_DEBUG" ) )
+            {
+                g_debug( "read %d bytes from fd %d", size, input_fd[i].fd );
+                g_debug( "input event = ( %0x, %0x, %0x )", event.type, event.code, event.value );
+            }
             if ( event.type == 1 && event.code == AUX_BUTTON_KEYCODE )
             {
                 if ( event.value == 1 ) /* pressed */
