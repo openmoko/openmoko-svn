@@ -232,7 +232,7 @@ gboolean neod_buttonactions_input_prepare( GSource* source, gint* timeout )
 
 gboolean neod_buttonactions_input_check( GSource* source )
 {
-    for ( int i = 0; i < max_input_fd; ++i )
+    for ( int i = 0; i <= max_input_fd; ++i )
         if ( input_fd[i].revents & G_IO_IN )
             return TRUE;
     return FALSE;
@@ -241,7 +241,7 @@ gboolean neod_buttonactions_input_check( GSource* source )
 
 gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callback, gpointer data )
 {
-    for ( int i = 0; i < max_input_fd; ++i )
+    for ( int i = 0; i <= max_input_fd; ++i )
     {
         if ( input_fd[i].revents & G_IO_IN )
         {
