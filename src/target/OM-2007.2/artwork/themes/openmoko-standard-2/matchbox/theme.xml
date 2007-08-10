@@ -35,22 +35,17 @@
   <layer x="0" y="47" w="100%" h="3"
    type = "plain" color="lightmid" />
 
-  <button x="0" y="0" w="32" h="50" action="close" >
-   <active pixmap="closebutton" blend="-150"/>
-   <inactive pixmap="closebutton" />
-  </button>
-
-  <layer x="36" y="9" w="33%-36" h="37" 
+  <layer x="5" y="9" w="33%" h="37" 
    type="label" color="white" justify="left" font="titlefont" />
 
-  <button x="36" y="0" w="33%-68" h="46" action="menu" options="inputonly" />
+  <button x="5" y="0" w="33%" h="47" action="menu" options="inputonly" />
 
-  <button x="33%-68" y="0" w="32" h="50" action="custom">
+  <button x="33%+5" y="0" w="32" h="50" action="custom">
    <active pixmap="menubutton" blend="-150"/>
    <inactive pixmap="menubutton" />
   </button>
 
-   <panel x="33%" y="5" w="67%" h="37" />
+   <panel x="33%+37" y="5" w="67%-37" h="37" />
 
 </frame>
 
