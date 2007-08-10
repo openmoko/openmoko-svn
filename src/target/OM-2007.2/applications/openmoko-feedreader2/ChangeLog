@@ -1,3 +1,14 @@
+2007-08-10  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Untested change to save some space in the initial view. Move the
+        update feed button from a GtkToolbar to the GtkHBox in the 'second'
+        row.
+        This saves a lot of real estate on the screen but the button has no
+        label violating 'Fitts Law'. Others have to decide...
+
+        * src/feed-selection-view.c:
+        (feed_selection_view_init):
+
 2007-08-06  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         At least give some 'label' to the button without a meaningful icon.

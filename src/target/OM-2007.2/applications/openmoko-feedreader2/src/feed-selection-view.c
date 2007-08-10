@@ -149,22 +149,16 @@ feed_selection_view_init (FeedSelectionView* view)
     view->filter = RSS_FEED_FILTER (feed_filter_new (RSS_FEED_DATA (feed_data_get_instance ())));
     view->sort = RSS_FEED_SORT (feed_sort_new (view->filter));
 
-    /*
-     * toolbar
-     */
-    GtkWidget* toolbar = gtk_toolbar_new ();
-    gtk_box_pack_start (GTK_BOX(view), toolbar, FALSE, FALSE, 0);
-
-    GtkToolItem* toolitem = gtk_tool_button_new (gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON), _("Update"));
-    gtk_tool_item_set_expand (GTK_TOOL_ITEM(toolitem), TRUE);
-    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), toolitem, 0);
-    g_signal_connect (toolitem, "clicked", G_CALLBACK(refresh_feeds_closure), view);
 
     /*
      * search/filter
      */
     GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
     gtk_box_pack_start (GTK_BOX (view), hbox, FALSE, FALSE, 0);
+
+    GtkToolItem* toolitem = gtk_tool_button_new (gtk_image_new_from_stock (GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON), _("Update"));
+    gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (toolitem), FALSE, FALSE, 0);
+    g_signal_connect (toolitem, "clicked", G_CALLBACK(refresh_feeds_closure), view);
 
     view->search_toggle = gtk_toggle_button_new ();
     gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET (view->search_toggle), FALSE, FALSE, 0);
