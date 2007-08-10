@@ -1,6 +1,6 @@
 style "mokodialertextview" {
-	fg[NORMAL] = "#D05400"
-  text[NORMAL] = "#D05400"
+  fg[NORMAL] = "#ff7800"
+  text[NORMAL] = "#ff7800"
   bg[NORMAL] = "#000000"
   base[NORMAL] = "#000000"
 
