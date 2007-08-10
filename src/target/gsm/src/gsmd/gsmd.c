@@ -462,6 +462,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "can't initialize UART device\n");
 		exit(1);
 	}
+
+  write(fd, "\r");
+  sleep(1);
 	atcmd_drain(fd);
 
 	if (usock_init(&g) < 0) {
