@@ -34,10 +34,13 @@ G_DEFINE_TYPE (MokoKeypad, moko_keypad, GTK_TYPE_VBOX)
 
 struct _MokoKeypadPrivate
 {
+  gboolean      pin_mode;
+
   GtkWidget     *textview;
   GtkWidget     *panel;
   GtkWidget     *delete;
   GtkWidget     *dial;
+  GtkWidget     *dial_label;
 
   GtkWidget     *dialbox;
 };
@@ -45,12 +48,61 @@ struct _MokoKeypadPrivate
 enum
 {
   DIAL_NUMBER,
+  PIN_ENTRY,
   DIGIT_PRESSED,
 
   LAST_SIGNAL
 };
 
 static guint keypad_signals[LAST_SIGNAL] = {0, };
+
+static GtkWidget*
+_get_window (GtkWidget *widget)
+{
+  GtkWidget *parent = NULL;
+
+  while ((parent = widget->parent))
+  {
+    if (GTK_IS_WINDOW (parent))
+      break;
+    widget = parent;
+  }
+  if (GTK_IS_WINDOW (parent))
+    return parent;
+  else
+    return NULL;
+}
+
+void
+moko_keypad_set_pin_mode (MokoKeypad *keypad, gboolean pin_mode)
+{
+  MokoKeypadPrivate *priv;
+  GtkWidget *window;
+
+  g_return_if_fail (MOKO_IS_KEYPAD (keypad));
+  priv = keypad->priv;
+
+  if (priv->pin_mode == pin_mode)
+    return;
+
+  priv->pin_mode = pin_mode;
+  
+  if (pin_mode)
+  {
+    window = _get_window (GTK_WIDGET (keypad));
+    if (GTK_IS_WINDOW (window))
+      gtk_window_set_title (GTK_WINDOW (window), "Enter Pin");
+    gtk_label_set_markup (GTK_LABEL (priv->dial_label), "Send\nPin");
+  }
+  else
+  {
+    window = _get_window (GTK_WIDGET (keypad));
+    if (GTK_IS_WINDOW (window))
+      gtk_window_set_title (GTK_WINDOW (window), "Dialer");
+    gtk_label_set_markup (GTK_LABEL (priv->dial_label), "Dial");
+  }
+
+}
 
 void
 moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking)
@@ -79,10 +131,13 @@ on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
   number = moko_dialer_textview_get_input (
                                         MOKO_DIALER_TEXTVIEW (priv->textview), 
                                         TRUE);
-  g_signal_emit (G_OBJECT (keypad), keypad_signals[DIAL_NUMBER], 0, number);
+ if (priv->pin_mode)
+   g_signal_emit (G_OBJECT (keypad), keypad_signals[PIN_ENTRY], 0, number);
+ else
+   g_signal_emit (G_OBJECT (keypad), keypad_signals[DIAL_NUMBER], 0, number);
 }
 
-static void
+static gboolean
 on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
 {
 #define TAP_HOLD_TIME 800
@@ -90,7 +145,7 @@ on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
   MokoDialerTextview *textview;
   static guint32 last_event = 0;
   
-  g_return_if_fail (MOKO_IS_KEYPAD (keypad));
+  g_return_val_if_fail (MOKO_IS_KEYPAD (keypad), FALSE);
   priv = keypad->priv;
   
   textview = MOKO_DIALER_TEXTVIEW (priv->textview);
@@ -175,6 +230,16 @@ moko_keypad_class_init (MokoKeypadClass *klass)
                   G_TYPE_NONE, 
                   1, G_TYPE_STRING);
 
+ keypad_signals[PIN_ENTRY] =
+    g_signal_new ("pin_entry", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoKeypadClass, pin_entry),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__STRING,
+                  G_TYPE_NONE, 
+                  1, G_TYPE_STRING);
+
   keypad_signals[DIGIT_PRESSED] =
     g_signal_new ("digit_pressed", 
                   G_TYPE_FROM_CLASS (obj_class),
@@ -248,6 +313,7 @@ moko_keypad_init (MokoKeypad *keypad)
   
   gtk_stock_lookup (MOKO_STOCK_CALL_DIAL, &stock_item);
   label = gtk_label_new (stock_item.label);
+  priv->dial_label = label;
   gtk_box_pack_start (GTK_BOX (bvbox), label, FALSE, FALSE, 0);
   
   gtk_container_add (GTK_CONTAINER (align), bvbox);

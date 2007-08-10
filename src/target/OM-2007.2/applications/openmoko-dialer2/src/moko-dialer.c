@@ -276,6 +276,22 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
 }
 
 static void
+on_keypad_pin_entry (MokoKeypad  *keypad,
+                     const gchar *pin,
+                     MokoDialer  *dialer)
+{
+  MokoDialerPrivate *priv;
+  
+  g_return_if_fail (MOKO_IS_DIALER (dialer));
+  priv = dialer->priv;
+
+  moko_gsmd_connection_send_pin (priv->connection, pin);
+
+  moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
+}
+
+
+static void
 on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
 {
   MokoDialerPrivate *priv;
@@ -367,6 +383,7 @@ on_keypad_digit_pressed (MokoKeypad *keypad,
                          MokoDialer *dialer)
 {
   /* If in call, dtmf it, otherwise ignore */
+  /* FIXME: When libgsmd implements it, we should */
 }
 
 static void
@@ -478,8 +495,8 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-
-  g_print ("Incoming pin request for type %d\n", type);
+  
+  moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
 }
 
 static void
@@ -750,6 +767,8 @@ moko_dialer_init (MokoDialer *dialer)
   priv->keypad = moko_keypad_new ();
   g_signal_connect (G_OBJECT (priv->keypad), "dial_number",
                     G_CALLBACK (on_keypad_dial_clicked), (gpointer)dialer);
+  g_signal_connect (G_OBJECT (priv->keypad), "pin_entry",
+                    G_CALLBACK (on_keypad_pin_entry), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->keypad), "digit_pressed",
                     G_CALLBACK (on_keypad_digit_pressed), (gpointer)dialer);
   gtk_notebook_append_page (GTK_NOTEBOOK (priv->notebook), priv->keypad,

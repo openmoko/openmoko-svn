@@ -1,3 +1,15 @@
+2007-08-10  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer.c: (on_keypad_pin_entry),
+	(on_keypad_digit_pressed), (on_pin_requested), (moko_dialer_init):
+	Set the keypad to 'pin mode' when a pin is requested.
+
+	* src/moko-keypad.c: (_get_window), (moko_keypad_set_pin_mode),
+	(on_dial_clicked), (on_delete_event), (moko_keypad_class_init),
+	(moko_keypad_init):
+	* src/moko-keypad.h:
+	Implement a 'pin mode' for entering a pin.
+
 2007-08-08  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer-panel.c: (moko_dialer_panel_init),

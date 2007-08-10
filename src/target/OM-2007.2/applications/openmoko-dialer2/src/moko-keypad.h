@@ -61,6 +61,7 @@ struct _MokoKeypadClass
   
   /* signals */
   void (*dial_number) (MokoKeypad *keypad, const gchar *number);
+  void (*pin_entry) (MokoKeypad *keypad, const gchar *number);
   void (*digit_pressed) (MokoKeypad *keypad, const gchar digit);
 
   /* future padding */
@@ -74,6 +75,9 @@ GType moko_keypad_get_type (void) G_GNUC_CONST;
 
 GtkWidget*        
 moko_keypad_new (void);
+
+void
+moko_keypad_set_pin_mode (MokoKeypad *keypad, gboolean pin_mode);
 
 void
 moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking);
