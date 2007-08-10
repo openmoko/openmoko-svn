@@ -44,3 +44,4 @@ pcf50633_fix.patch
 hxd8-tsl256x_fix.patch
 missing_defs.patch
 tune-touchscreen.patch
+openmoko-logo.patch
