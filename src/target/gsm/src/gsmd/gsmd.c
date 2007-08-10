@@ -463,7 +463,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-  write(fd, "\r");
+  write(fd, "\r", 1);
   sleep(1);
 	atcmd_drain(fd);
 
