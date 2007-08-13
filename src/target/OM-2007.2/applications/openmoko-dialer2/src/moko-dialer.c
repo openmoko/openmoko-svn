@@ -241,20 +241,22 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   entry = moko_contacts_lookup (moko_contacts_get_default (), number);
 
   /* Prepare a voice journal entry */
-  priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
-  priv->time = moko_time_new_today ();
-  moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
-  moko_journal_entry_set_dtstart (priv->entry, priv->time);
-  moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
-  moko_journal_voice_info_set_distant_number (priv->entry, number);
-  if (entry)
-    moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
-  moko_journal_add_entry (priv->journal, priv->entry);
-  moko_journal_write_to_storage (priv->journal);
-  moko_time_free (priv->time);
-  priv->entry = NULL;
-  priv->time = NULL;
-
+  if (priv->journal)
+  {
+    priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
+    priv->time = moko_time_new_today ();
+    moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
+    moko_journal_entry_set_dtstart (priv->entry, priv->time);
+    moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
+    moko_journal_voice_info_set_distant_number (priv->entry, number);
+    if (entry)
+      moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
+    moko_journal_add_entry (priv->journal, priv->entry);
+    moko_journal_write_to_storage (priv->journal);
+    moko_time_free (priv->time);
+    priv->entry = NULL;
+    priv->time = NULL;
+  }
   moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
 
   gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
@@ -308,7 +310,7 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   moko_notify_stop (priv->notify);  
   
   /* Finalise and add the journal entry */
-  if (priv->entry)
+  if (priv->journal && priv->entry)
   {
     moko_journal_add_entry (priv->journal, priv->entry);
     if (priv->time) 
@@ -427,12 +429,14 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   priv->status = DIALER_STATUS_INCOMING;
 
   /* Prepare a voice journal entry */
-  priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
-  priv->time = moko_time_new_today ();
-  moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
-  moko_journal_entry_set_dtstart (priv->entry, priv->time);
-  moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
-
+  if (priv->journal)
+  {
+    priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
+    priv->time = moko_time_new_today ();
+    moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
+    moko_journal_entry_set_dtstart (priv->entry, priv->time);
+    moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
+  }
   /* Set up the user interface */
   moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL, NULL);
 
@@ -480,10 +484,12 @@ on_incoming_clip (MokoGsmdConnection *conn,
   moko_talking_set_clip (MOKO_TALKING (priv->talking), number, entry);
 
   /* Add the info to the journal entry */
-  moko_journal_voice_info_set_distant_number (priv->entry, number);
-  if (entry)
-    moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
-
+  if (priv->journal && priv->entry)
+  {
+    moko_journal_voice_info_set_distant_number (priv->entry, number);
+    if (entry)
+      moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
+  }
   g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 0, number);
   g_print ("Incoming Number = %s\n", number);
 }
@@ -516,7 +522,7 @@ on_call_progress_changed (MokoGsmdConnection *conn,
     case MOKO_GSMD_PROG_RELEASE:
       moko_dialer_hung_up (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
-      if (priv->entry)
+      if (priv->journal && priv->entry)
       {
         moko_journal_entry_get_direction (priv->entry, &dir);
         if (dir == DIRECTION_IN)
@@ -610,8 +616,11 @@ moko_dialer_dispose (GObject *object)
   priv = dialer->priv;
 
   /* Close journal */
-  moko_journal_write_to_storage (priv->journal);
-  moko_journal_close (priv->journal);
+  if (priv->journal)
+  {
+    moko_journal_write_to_storage (priv->journal);
+    moko_journal_close (priv->journal);
+  }
 
   /* Free contacts list */
   //contact_release_contact_list (&(priv->data->g_contactlist));
@@ -728,7 +737,8 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
-  moko_journal_load_from_storage (priv->journal);
+  if (!moko_journal_load_from_storage (priv->journal))
+    priv->journal = NULL;
 
   /* Load the contacts store */
   priv->contacts = moko_contacts_get_default ();

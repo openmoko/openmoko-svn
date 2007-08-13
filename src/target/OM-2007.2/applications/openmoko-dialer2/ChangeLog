@@ -1,3 +1,12 @@
+2007-08-13  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer.c: (on_keypad_dial_clicked),
+	(on_talking_accept_call), (on_incoming_call), (on_incoming_clip),
+	(on_call_progress_changed), (moko_dialer_dispose),
+	(moko_dialer_init):
+	Check if moko_journal_load_from_storage () worked, otherwise don't create
+	journal objects.
+
 2007-08-10  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_keypad_pin_entry),
