@@ -1,4 +1,4 @@
-SUBDIRS = mokojournal tests
+SUBDIRS = mokojournal mokojournal-tool tests
 
 pcdata_DATA= libmokojournal2.pc
 pcdatadir= $(libdir)/pkgconfig

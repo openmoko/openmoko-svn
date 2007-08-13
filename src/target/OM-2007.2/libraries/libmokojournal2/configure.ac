@@ -40,6 +40,7 @@ AC_OUTPUT([
 Makefile
 libmokojournal2.pc
 mokojournal/Makefile
+mokojournal-tool/Makefile
 tests/Makefile
 ])
 

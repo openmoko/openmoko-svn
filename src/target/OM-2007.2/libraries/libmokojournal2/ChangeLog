@@ -1,3 +1,17 @@
+2007-08-13  Neil J. Patel  <njp@o-hand.com>
+
+	* Makefile.am:
+	* configure.ac:
+	* mokojournal-tool/Makefile.am:
+	* mokojournal-tool/mokojournal-tool.c: (main), (_add), (_list):
+	Add a simple tool to query and manipulate the journal from the shell. It
+	will help with debugging. List method implemented so far.
+
+	* mokojournal/moko-journal.c: (moko_journal_load_from_storage),
+	If an error is detected, return FALSE.
+	(moko_journal_entry_has_voice_info):
+	Keep the type check inline, to avoid unnecessary throwing of warnings.
+
 2007-08-03  Neil J. Patel  <njp@o-hand.com>
 
 	* mokojournal/moko-journal.c:

@@ -1536,6 +1536,7 @@ moko_journal_load_from_storage (MokoJournal *_a_journal)
     g_warning ("got error %s\n", error->message) ;
     g_error_free (error) ;
     error = NULL ;
+    return FALSE;
   }
   if (objs)
   {
@@ -2043,9 +2044,11 @@ gboolean
 moko_journal_entry_has_voice_info (MokoJournalEntry *entry)
 {
   g_return_val_if_fail (entry, FALSE);
-
-  MokoJournalVoiceInfo *info = NULL;
-  return moko_journal_entry_get_voice_info (entry, &info) && info;
+  
+  if (entry->type == VOICE_JOURNAL_ENTRY)
+    return TRUE;
+  else
+    return FALSE;
 }
 
 gboolean
