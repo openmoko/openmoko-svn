@@ -738,7 +738,12 @@ moko_dialer_init (MokoDialer *dialer)
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
   if (!moko_journal_load_from_storage (priv->journal))
+  {
+    g_warning ("Cannot load journal");
     priv->journal = NULL;
+  }
+  else
+    g_print ("Journal Loaded\n");
 
   /* Load the contacts store */
   priv->contacts = moko_contacts_get_default ();
