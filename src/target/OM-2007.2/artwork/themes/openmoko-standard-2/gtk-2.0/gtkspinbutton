@@ -1,50 +1,6 @@
-#FIXME looks ugly, needs styling
-
 style "gtkspinbutton" 
 {
   GtkSpinButton::shadow_type = GTK_SHADOW_NONE
-    
-  engine "pixmap" 
-  {
-    image 
-    {
-      function        = BOX
-#     detail          = "spinbutton/spinbutton_up"
-      state           = NORMAL
-      file            = "spinbutton/spinbutton.png"
-      stretch         = TRUE
-    }
-    image 
-    {
-      function        = BOX
-      state           = PRELIGHT
-      file            = "spinbutton/spinbutton-pressed.png"
-      stretch         = TRUE
-    }
-     image 
-    {
-      function        = BOX
-      state           = INSENSITIVE
-      file            = "spinbutton/spinbutton-pressed.png"
-      stretch         = TRUE
-     }
-     image   
-     {
-       function        = ARROW 
-       overlay_file    = "spinbutton/spinbutton-plus.png"
-       overlay_border  = { 0, 0, 0, 0 }
-       overlay_stretch = FALSE 
-       arrow_direction = UP
-     }
-     image   
-     {
-       function        = ARROW 
-       overlay_file    = "spinbutton/spinbutton-minus.png"
-       overlay_border  = { 0, 0, 0, 0 }
-       overlay_stretch = FALSE 
-       arrow_direction = DOWN
-     }
-   }
 }
 class "GtkSpinButton" style "gtkspinbutton"
 widget_class "*.GtkSpinButton" style "gtkspinbutton"
