@@ -686,7 +686,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *j_entry)
   number = moko_journal_voice_info_get_distant_number (info);
     
   /* If the number is null, the number may have been stored in the summary*/
-  if (strcmp (number, "NULL") == 0) 
+  if (number == NULL || strcmp (number, "NULL") == 0) 
     number = moko_journal_entry_get_summary (j_entry);
   
   /* Load the correct icon */
