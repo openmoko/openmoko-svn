@@ -1,5 +1,11 @@
 2007-08-14  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_pin_entry):
+	Set the reg_request and registered variables as FALSE before requesting
+	reg again.
+
+2007-08-14  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_keypad_pin_entry), (on_pin_requested):
 	Set the correct UI options when the pin is requested.
 	After sending the pin out, re-request registration.

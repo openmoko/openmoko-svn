@@ -292,7 +292,9 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
 
   g_print ("Sending pin %s\n", pin);
-
+  
+  priv->reg_request = FALSE;
+  priv->registered = FALSE;
   g_timeout_add (GSM_REGISTER_TIMEOUT, 
                  (GSourceFunc)register_network_cb, 
                  dialer);
