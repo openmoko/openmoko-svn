@@ -1,5 +1,11 @@
 2007-08-14  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_pin_entry), (moko_dialer_dispose):
+	Reset variables for registration.
+	Remove some old code.
+
+2007-08-14  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_keypad_pin_entry):
 	Set the reg_request and registered variables as FALSE before requesting
 	reg again.

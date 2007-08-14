@@ -293,7 +293,7 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
 
   g_print ("Sending pin %s\n", pin);
   
-  priv->reg_request = FALSE;
+  priv->reg_request = TRUE;
   priv->registered = FALSE;
   g_timeout_add (GSM_REGISTER_TIMEOUT, 
                  (GSourceFunc)register_network_cb, 
@@ -631,10 +631,6 @@ moko_dialer_dispose (GObject *object)
     moko_journal_write_to_storage (priv->journal);
     moko_journal_close (priv->journal);
   }
-
-  /* Free contacts list */
-  //contact_release_contact_list (&(priv->data->g_contactlist));
-
   G_OBJECT_CLASS (moko_dialer_parent_class)->dispose (object);
 }
 
