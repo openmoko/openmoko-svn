@@ -74,13 +74,15 @@ moko_notify_check_brightness (void)
     g_warning ("Unable to open brightness device");
     return;
   }
+  /*
   if (read (fd, buf, sizeof (buf)) == -1)
   {
     close (fd);
     return;
   }
   brightness = atoi (buf);
-
+  */
+  brightness = 0;
   if (brightness >= 5000)
   {
     close (fd);

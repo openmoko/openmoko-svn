@@ -1,3 +1,8 @@
+2007-08-14  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-notify.c: (moko_notify_check_brightness):
+	Set the brightness to highest when receiving a call.
+
 2007-08-13  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (moko_dialer_init):
