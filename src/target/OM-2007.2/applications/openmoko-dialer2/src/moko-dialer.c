@@ -88,7 +88,7 @@ static guint dialer_signals[LAST_SIGNAL] = {0, };
 static void  on_keypad_dial_clicked (MokoKeypad  *keypad,
                                      const gchar *number,
                                      MokoDialer  *dialer);
-
+static gboolean register_network_cb (MokoDialer *dialer);
 
 /* DBus functions */
 gboolean
@@ -290,6 +290,12 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
   moko_gsmd_connection_send_pin (priv->connection, pin);
 
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
+
+  g_print ("Sending pin %s\n", pin);
+
+  g_timeout_add (GSM_REGISTER_TIMEOUT, 
+                 (GSourceFunc)register_network_cb, 
+                 dialer);
 }
 
 
@@ -502,7 +508,9 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
   
-  moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
+  moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
+  g_print ("Pin Requested\n");
+
 }
 
 static void
