@@ -418,6 +418,8 @@ on_network_registered (MokoGsmdConnection *conn,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  g_print ("Register type %d\n", type);
+
   switch (type)
   {
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
@@ -432,6 +434,8 @@ on_network_registered (MokoGsmdConnection *conn,
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
+      g_print ("Network registered\n")
+        g_source_remove (priv->reg_timeout);
       priv->registered = TRUE;
       break;
     default:
