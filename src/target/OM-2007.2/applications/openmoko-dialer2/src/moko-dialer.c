@@ -68,6 +68,7 @@ struct _MokoDialerPrivate
   MokoTime           *time;
 
   /* Registration variables */
+  guint               reg_timeout;
   gboolean            reg_request;
   gboolean            registered;
 };
@@ -295,9 +296,9 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
   
   priv->reg_request = TRUE;
   priv->registered = FALSE;
-  g_timeout_add (GSM_REGISTER_TIMEOUT, 
-                 (GSourceFunc)register_network_cb, 
-                 dialer);
+  priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT, 
+                                     (GSourceFunc)register_network_cb, 
+                                     dialer);
 }
 
 
@@ -417,9 +418,25 @@ on_network_registered (MokoGsmdConnection *conn,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
-  g_print ("Register type = %d\n");
-
-  priv->registered = TRUE;
+  switch (type)
+  {
+    case MOKO_GSMD_CONNECTION_NETREG_NONE:
+    case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
+      /* Do nothing */
+      break;
+    case MOKO_GSMD_CONNECTION_NETREG_DENIED:
+      /* This may be a pin issue*/
+      g_print ("Registration denied, the SIM pin may need to be entered\n");
+      moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
+      g_source_remove (priv->reg_timeout);
+      break;
+    case MOKO_GSMD_CONNECTION_NETREG_HOME:
+    case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
+      priv->registered = TRUE;
+      break;
+    default:
+      g_warning ("Unhandled register event type = %d\n", type);
+   };
 }
 
 static void
@@ -727,9 +744,9 @@ moko_dialer_init (MokoDialer *dialer)
    * antenna*/ 
   priv->reg_request = TRUE;
   priv->registered = FALSE;
-  g_timeout_add (GSM_REGISTER_TIMEOUT, 
-                 (GSourceFunc)register_network_cb, 
-                 dialer);
+  priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT, 
+                                     (GSourceFunc)register_network_cb, 
+                                     dialer);
   
   /* Connect to the gsmd signals */
   g_signal_connect (G_OBJECT (conn), "network-registration", 

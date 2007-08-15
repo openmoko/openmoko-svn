@@ -1,5 +1,11 @@
 2007-08-15  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_pin_entry),
+	(on_network_registered), (moko_dialer_init):
+	Check for registration type, and take the right action.
+
+2007-08-15  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_network_registered):
 	Print the type of registration information.
 
