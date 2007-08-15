@@ -1,3 +1,28 @@
+2007-08-15  Neil J. Patel  <njp@o-hand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
+	(moko_gsmd_connection_dispose), (moko_gsmd_connection_class_init),
+	(_moko_gsmd_connection_source_prepare),
+	(_moko_gsmd_connection_source_check),
+	(_moko_gsmd_connection_source_dispatch),
+	(_moko_gsmd_connection_eventhandler), (pt_msghandler),
+	(moko_gsmd_connection_init),
+	(moko_gsmd_connection_set_antenna_power),
+	(moko_gsmd_connection_send_pin),
+	(moko_gsmd_connection_network_register),
+	(moko_gsmd_connection_voice_accept),
+	(moko_gsmd_connection_voice_hangup),
+	(moko_gsmd_connection_voice_dial),
+	(moko_gsmd_connection_voice_dtmf),
+	(moko_gsmd_connection_trigger_signal_strength_event):
+	* libmokogsmd/moko-gsmd-connection.h:
+	Fix many warnings.
+	Re-structure code to make it a bit cleaner.
+	Bring signal functions into the MokoGsdmConnectionClass, add some future
+	padding.
+	If libgsmd cannot connect to gsmd, try and start it manually.
+	Make the appropriete functions static.
+
 2007-07-28	Michael Lauer <mickey@openmoko.org>
 
 	* configure.ac:

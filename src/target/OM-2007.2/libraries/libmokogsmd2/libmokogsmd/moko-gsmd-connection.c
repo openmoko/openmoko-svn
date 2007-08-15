@@ -23,6 +23,9 @@
 #include <libgsmd/voicecall.h>
 
 #include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #define DEBUG_THIS_FILE
@@ -31,16 +34,18 @@
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #else
-#define moko_debug(fmt,...)
+#define moko_debug(fmt,...) 
 #endif
 
 G_DEFINE_TYPE (MokoGsmdConnection, moko_gsmd_connection, G_TYPE_OBJECT)
 
-#define GSMD_CONNECTION_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionPrivate))
+#define GSMD_CONNECTION_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
+        MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionPrivate))
 
 /* ugly temp. hack until libgsmd features a user_data pointer for its callbacks
-   Note that this effectively means you can only have one MokoGsmdConnection object
-   per process (which should be ok anyway...) :M: */
+ * Note that this effectively means you can only have one MokoGsmdConnection 
+ * object per process (which should be ok anyway...) :M: 
+ */
 static MokoGsmdConnection* moko_gsmd_connection_instance = 0;
 
 typedef struct _MokoGsmdConnectionSource
@@ -48,29 +53,31 @@ typedef struct _MokoGsmdConnectionSource
     GSource source;
     GPollFD pollfd;
     struct lgsm_handle* handle;
+
 } MokoGsmdConnectionSource;
 
 typedef struct _MokoGsmdConnectionPrivate
 {
     struct lgsm_handle* handle;
     MokoGsmdConnectionSource* source;
+
 } MokoGsmdConnectionPrivate;
 
 /* signals */
 enum {
-    SIGNAL_GSMD_EVT_IN_CALL        = 1,    /* Incoming call */
-    SIGNAL_GSMD_EVT_IN_SMS         = 2,    /* Incoming SMS */
-    SIGNAL_GSMD_EVT_IN_GPRS        = 3,    /* Network initiated GPRS */
-    SIGNAL_GSMD_EVT_IN_CLIP        = 4,    /* Incoming CLIP */
-    SIGNAL_GSMD_EVT_NETREG         = 5,    /* Network (un)registration event */
-    SIGNAL_GSMD_EVT_SIGNAL         = 6,    /* Signal quality event */
-    SIGNAL_GSMD_EVT_PIN            = 7,    /* Modem is waiting for some PIN/PUK */
-    SIGNAL_GSMD_EVT_OUT_STATUS     = 8,    /* Outgoing call status */
-    SIGNAL_GSMD_EVT_OUT_COLP       = 9,    /* Outgoing COLP */
-    SIGNAL_GSMD_EVT_CALL_WAIT      = 10,   /* Call Waiting */
-    SIGNAL_GSMD_EVT_TIMEZONE       = 11,   /* Timezone change */
-    SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12,   /* To which events are we subscribed to */
-    SIGNAL_GSMD_EVT_CIPHER         = 13,   /* Chiphering Information */
+    SIGNAL_GSMD_EVT_IN_CALL        = 1,  /* Incoming call */
+    SIGNAL_GSMD_EVT_IN_SMS         = 2,  /* Incoming SMS */
+    SIGNAL_GSMD_EVT_IN_GPRS        = 3,  /* Network initiated GPRS */
+    SIGNAL_GSMD_EVT_IN_CLIP        = 4,  /* Incoming CLIP */
+    SIGNAL_GSMD_EVT_NETREG         = 5,  /* Network (un)registration event */
+    SIGNAL_GSMD_EVT_SIGNAL         = 6,  /* Signal quality event */
+    SIGNAL_GSMD_EVT_PIN            = 7,  /* Modem is waiting for some PIN/PUK */
+    SIGNAL_GSMD_EVT_OUT_STATUS     = 8,  /* Outgoing call status */
+    SIGNAL_GSMD_EVT_OUT_COLP       = 9,  /* Outgoing COLP */
+    SIGNAL_GSMD_EVT_CALL_WAIT      = 10, /* Call Waiting */
+    SIGNAL_GSMD_EVT_TIMEZONE       = 11, /* Timezone change */
+    SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12, /* To which events are we subscribed */
+    SIGNAL_GSMD_EVT_CIPHER         = 13, /* Chiphering Information */
     LAST_SIGNAL,
 };
 static guint moko_gsmd_connection_signals[LAST_SIGNAL] = { 0 };
@@ -79,10 +86,10 @@ static guint moko_gsmd_connection_signals[LAST_SIGNAL] = { 0 };
 GObjectClass* parent_class = NULL;
 
 /* forward declarations */
-static gboolean _moko_gsmd_connection_source_prepare( MokoGsmdConnectionSource* self, gint* timeout );
-static gboolean _moko_gsmd_connection_source_check( MokoGsmdConnectionSource* self );
-static gboolean _moko_gsmd_connection_source_check( MokoGsmdConnectionSource* self );
-static int _moko_gsmd_connection_eventhandler(struct lgsm_handle *lh, int evt_type, struct gsmd_evt_auxdata *aux);
+static int 
+_moko_gsmd_connection_eventhandler(struct lgsm_handle *lh, 
+                                   int evt_type, 
+                                   struct gsmd_evt_auxdata *aux);
 
 /* class definition */
 
@@ -90,10 +97,14 @@ static void
 moko_gsmd_connection_dispose(GObject* object)
 {
     moko_debug( "dispose" );
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE( MOKO_GSMD_CONNECTION( object ) );
+    MokoGsmdConnectionPrivate* priv;
+    
+    priv = GSMD_CONNECTION_GET_PRIVATE( MOKO_GSMD_CONNECTION( object ) );
+
     g_source_destroy( (GSource*) priv->source );
     lgsm_exit( priv->handle );
-    // call parent destructor
+    
+    /* call parent destructor */
     if (G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose)
         G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose (object);
 }
@@ -124,7 +135,7 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         ("incoming-call",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-        NULL,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, incoming_call),
         NULL,
         NULL,
         g_cclosure_marshal_VOID__INT,
@@ -133,14 +144,14 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         G_TYPE_INT,
         NULL );
 
-    //TODO add SIGNAL_GSMD_EVT_IN_SMS once libgsmd has it
-    //TODO add SIGNAL_GSMD_EVT_IN_GPRS once libgsmd has it
+    /* TODO add SIGNAL_GSMD_EVT_IN_SMS once libgsmd has it */
+    /* TODO add SIGNAL_GSMD_EVT_IN_GPRS once libgsmd has it */
 
     moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CLIP] = g_signal_new
         ("incoming-clip",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-        NULL,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, incoming_clip),
         NULL,
         NULL,
         g_cclosure_marshal_VOID__STRING,
@@ -153,7 +164,7 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         ("network-registration",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-        NULL,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, network_registration),
         NULL,
         NULL,
         moko_gsmd_marshal_VOID__INT_INT_INT,
@@ -168,7 +179,7 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         ("signal-strength-changed",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-        NULL,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, signal_strength_changed),
         NULL,
         NULL,
         g_cclosure_marshal_VOID__INT,
@@ -181,7 +192,7 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         ("pin-requested",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-        NULL,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, pin_requested),
         NULL,
         NULL,
         g_cclosure_marshal_VOID__INT,
@@ -194,7 +205,7 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         ("call-progress",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
-        NULL,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, call_status_progress),
         NULL,
         NULL,
         g_cclosure_marshal_VOID__INT,
@@ -202,13 +213,14 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         1,
         G_TYPE_INT,
         NULL );
-
-    //TODO add SIGNAL_GSMD_EVT_OUT_COLP       = 9,    /* Outgoing COLP */
-    //TODO add SIGNAL_GSMD_EVT_CALL_WAIT      = 10,   /* Call Waiting */
-    //TODO add SIGNAL_GSMD_EVT_TIMEZONE       = 11,   /* Timezone change */
-    //TODO add SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12,   /* To which events are we subscribed to */
-    //TODO add SIGNAL_GSMD_EVT_CIPHER         = 13,   /* Chiphering Information */
-
+#if 0
+    // TODO add SIGNAL_GSMD_EVT_OUT_COLP       = 9, /* Outgoing COLP */
+    //TODO add SIGNAL_GSMD_EVT_CALL_WAIT      = 10, /* Call Waiting */
+    //TODO add SIGNAL_GSMD_EVT_TIMEZONE       = 11, /* Timezone change */
+    //TODO add SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12, /* To which events are 
+                                                       we subscribed to */
+    //TODO add SIGNAL_GSMD_EVT_CIPHER         = 13, /* Chiphering Information */
+#endif
     /* virtual methods */
 
     /* install properties */
@@ -220,25 +232,43 @@ moko_gsmd_connection_new(void)
     return g_object_new(MOKO_TYPE_GSMD_CONNECTION, NULL);
 }
 
-gboolean _moko_gsmd_connection_source_prepare( MokoGsmdConnectionSource* self, gint* timeout )
+static gboolean 
+_moko_gsmd_connection_source_prepare( GSource* self, 
+                                      gint* timeout )
 {
     moko_debug( "moko_gsmd_connection_source_prepare" );
     return FALSE;
 }
 
-gboolean _moko_gsmd_connection_source_check( MokoGsmdConnectionSource* self )
+static gboolean 
+_moko_gsmd_connection_source_check( GSource* source )
 {
     moko_debug( "moko_gsmd_connection_source_check" );
+    MokoGsmdConnectionSource *self;
+
+    self = (MokoGsmdConnectionSource*)source;
     return self->pollfd.revents & G_IO_IN;
 }
 
-gboolean _moko_gsmd_connection_source_dispatch( MokoGsmdConnectionSource* self, GSourceFunc callback, gpointer data )
+static gboolean 
+_moko_gsmd_connection_source_dispatch( GSource *source, 
+                                       GSourceFunc callback, 
+                                       gpointer data )
 {
     moko_debug( "moko_gsmd_connection_source_dispatch" );
     char buf[1025];
-    int size = read( self->pollfd.fd, &buf, sizeof( buf ) );
+    int size;
+    MokoGsmdConnectionSource *self;
+
+    self = (MokoGsmdConnectionSource*)source;
+   
+    size = read( self->pollfd.fd, &buf, sizeof( buf ) );
     if ( size < 0 )
-        g_warning( "moko_gsmd_connection_source_dispatch: read error from libgsmd: %s", strerror( errno ) );
+    {
+        g_warning( "moko_gsmd_connection_source_dispatch:%s %s",
+                   "read error from libgsmd:", 
+                   strerror( errno ) );
+    }
     else
     {
         if ( size == 0 ) /* EOF */
@@ -249,48 +279,93 @@ gboolean _moko_gsmd_connection_source_dispatch( MokoGsmdConnectionSource* self, 
     return TRUE;
 }
 
-int _moko_gsmd_connection_eventhandler(struct lgsm_handle *lh, int evt_type, struct gsmd_evt_auxdata *aux)
+int 
+_moko_gsmd_connection_eventhandler (struct lgsm_handle *lh, 
+                                    int evt_type, 
+                                    struct gsmd_evt_auxdata *aux)
 {
     moko_debug( "moko_gsmd_connection_eventhandler type = %d", evt_type );
-    MokoGsmdConnection* self = moko_gsmd_connection_instance; // temporary (see note above)
+    MokoGsmdConnection* self = moko_gsmd_connection_instance;
+
     switch(evt_type)
     {
         case GSMD_EVT_IN_CALL:
-            g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CALL], 0, aux->u.call.type ); break;
+            g_signal_emit( G_OBJECT(self), 
+                          moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CALL],
+                          0, 
+                          aux->u.call.type ); 
+            break;
         case GSMD_EVT_IN_SMS:
-            moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_SMS]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_SMS];*/
+            break;
         case GSMD_EVT_IN_GPRS:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_GPRS]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_GPRS]; */ 
+            break;
         case GSMD_EVT_IN_CLIP:
-            g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CLIP], 0, aux->u.clip.addr.number ); break;
+            g_signal_emit( G_OBJECT(self), 
+                          moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CLIP],
+                          0, 
+                          aux->u.clip.addr.number ); 
+            break;
         case GSMD_EVT_NETREG:
-            // work around bugzilla.openmoko.org #454
-            if ( aux->u.netreg.state == MOKO_GSMD_CONNECTION_NETREG_HOME ||
-                 aux->u.netreg.state == MOKO_GSMD_CONNECTION_NETREG_ROAMING )
-                g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_NETREG], 0,
-                               aux->u.netreg.state, aux->u.netreg.lac, aux->u.netreg.ci );
+            /* work around bugzilla.openmoko.org #454 */
+            if ( aux->u.netreg.state == MOKO_GSMD_CONNECTION_NETREG_HOME 
+                 || aux->u.netreg.state == MOKO_GSMD_CONNECTION_NETREG_ROAMING )
+            {
+                g_signal_emit( G_OBJECT(self), 
+                          moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_NETREG],
+                               0,
+                               aux->u.netreg.state, 
+                               aux->u.netreg.lac, 
+                               aux->u.netreg.ci );
+            }
             else
-                g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_NETREG], 0,
-                               aux->u.netreg.state, 0, 0 );
+            {
+                g_signal_emit( G_OBJECT(self), 
+                          moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_NETREG],
+                               0,
+                               aux->u.netreg.state, 
+                               0, 
+                               0 );
+            }
             break;
         case GSMD_EVT_SIGNAL:
-            g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SIGNAL], 0, aux->u.signal.sigq.rssi ); break;
+            g_signal_emit( G_OBJECT(self), 
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SIGNAL],
+                           0,
+                           aux->u.signal.sigq.rssi ); 
+            break;
         case GSMD_EVT_PIN:
-            g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_PIN], 0, aux->u.pin.type ); break;
+            g_signal_emit( G_OBJECT(self), 
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_PIN], 
+                           0, 
+                           aux->u.pin.type ); 
+            break;
         case GSMD_EVT_OUT_STATUS:
-            g_signal_emit( G_OBJECT(self), moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS], 0, aux->u.call_status.prog ); break;
+            g_signal_emit( G_OBJECT(self), 
+                moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS], 
+                0, 
+                aux->u.call_status.prog ); 
+            break;
         case GSMD_EVT_OUT_COLP:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_COLP]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_COLP]; */
+            break;
         case GSMD_EVT_CALL_WAIT:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CALL_WAIT]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CALL_WAIT]; */
+            break;
         case GSMD_EVT_TIMEZONE:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_TIMEZONE]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_TIMEZONE]; */
+            break;
         case GSMD_EVT_SUBSCRIPTIONS:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SUBSCRIPTIONS]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SUBSCRIPTIONS]; */
+            break;
         case GSMD_EVT_CIPHER:
-            //moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER]; break;
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER];*/
+            break;
         default:
-            g_critical( "_moko_gsmd_connection_eventhandler: unhandled event type = %d", evt_type );
+            g_critical( "_moko_gsmd_connection_eventhandler: %s %d",
+                        "unhandled event type =", 
+                        evt_type );
     }
     return 0;
 }
@@ -301,13 +376,16 @@ pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
     char *payload = (char *)gmh + sizeof(*gmh);
     g_debug("PASSTHROUGH RESPONSE = '%s'", payload);
+    return 0;
 }
 
 static void
 moko_gsmd_connection_init(MokoGsmdConnection* self)
 {
     moko_debug( "moko_gsmd_connection_init" );
-    g_assert( !moko_gsmd_connection_instance); // fail here on more than one MokoGsmdConnection object per process
+    /* fail here on more than one MokoGsmdConnection object per process */
+    g_assert( !moko_gsmd_connection_instance);
+    
     moko_gsmd_connection_instance = self;
 
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
@@ -315,12 +393,27 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
     priv->handle = lgsm_init( LGSMD_DEVICE_GSMD );
     if ( !priv->handle )
     {
-        g_warning( "libgsmd: can't connect to gsmd. You won't receive any events." );
-        return;
+        /* We didn't connect to gsmd, so let's try and start it manually */
+        g_print ( "libmokogsmd: "
+                  "Unable to connect to gsmd, trying to start it\n" );
+        g_spawn_command_line_sync( "/etc/init.d/gsmd stop", 
+                                   NULL, NULL, NULL, NULL );
+        g_spawn_command_line_sync( "/etc/init.d/gsmd start", 
+                                   NULL, NULL, NULL, NULL );
+        priv->handle = lgsm_init( LGSMD_DEVICE_GSMD );
+
+        if ( !priv->handle )
+        {
+            g_warning( "libgsmd: %s",
+                       "can't connect to gsmd. You won't receive any events." );
+        
+            return;
+        }
     }
     else
     {
-        moko_debug( "-- connected to gsmd (socketfd = %d)", lgsm_fd( priv->handle ) );
+        moko_debug( "-- connected to gsmd (socketfd = %d)",
+                    lgsm_fd( priv->handle ) );
     }
 
     static GSourceFuncs funcs = {
@@ -330,7 +423,8 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
         NULL,
     };
 
-    priv->source = (MokoGsmdConnectionSource*) g_source_new( &funcs, sizeof( MokoGsmdConnectionSource) );
+    priv->source = (MokoGsmdConnectionSource*) g_source_new( &funcs, 
+                                            sizeof( MokoGsmdConnectionSource) );
     priv->source->handle = priv->handle;
     priv->source->pollfd.fd = lgsm_fd( priv->handle );
     priv->source->pollfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
@@ -341,7 +435,8 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
     int rc = 0;
     for ( int i = GSMD_EVT_IN_CALL; i < __NUM_GSMD_EVT; ++i )
     {
-        rc |= lgsm_evt_handler_register( priv->handle, i, _moko_gsmd_connection_eventhandler );
+        rc |= lgsm_evt_handler_register( priv->handle, i, 
+                                         _moko_gsmd_connection_eventhandler );
         moko_debug( "-- registered for event %d, return code %d", i, rc );
     }
 
@@ -349,7 +444,8 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
 }
 
 /* public API */
-void moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on)
+void 
+moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
@@ -357,58 +453,68 @@ void moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean o
     g_debug( "lgsm_phone_power returned %d", result );
 }
 
-void moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
+void 
+moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     g_return_if_fail( pin );
     g_return_if_fail( strlen( pin ) >= 4 );
-    //FIXME lgsm_pin_auth is not yet implemented, so we call lgsm_pin directly...
-    //lgsm_pin_auth( priv->handle, pin );
+    /*
+     * FIXME lgsm_pin_auth is not yet implemented, so we call lgsm_pin 
+     * directly...
+     */
+    /*lgsm_pin_auth( priv->handle, pin );*/
     lgsm_pin( priv->handle, 1, pin, NULL);
 }
 
-void moko_gsmd_connection_network_register(MokoGsmdConnection* self)
+void 
+moko_gsmd_connection_network_register(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     lgsm_netreg_register( priv->handle, 0 );
 }
 
-void moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
+void 
+moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     lgsm_voice_in_accept( priv->handle );
 }
 
-void moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self)
+void 
+moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     lgsm_voice_hangup( priv->handle );
 }
 
-void moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
+void 
+moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     g_return_if_fail( number );
     g_return_if_fail( strlen( number ) > 2 );
     struct lgsm_addr addr;
-    addr.type = 129; //???
+    addr.type = 129; /* ??? */
     g_stpcpy( &addr.addr[0], number );
     lgsm_voice_out_init( priv->handle, &addr );
 }
 
-void moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number)
+void 
+moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
     lgsm_voice_dtmf( priv->handle, number );
 }
 
-void moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self)
+void 
+moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
     g_return_if_fail( priv->handle );
