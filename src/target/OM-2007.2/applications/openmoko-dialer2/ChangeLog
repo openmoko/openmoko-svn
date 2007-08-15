@@ -1,6 +1,11 @@
 2007-08-15  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_network_registered):
+	Fix a typo.
+
+2007-08-15  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer.c: (on_network_registered):
 	Remove the registration timeout out on registration.
 
 2007-08-15  Neil J. Patel  <njp@o-hand.com>

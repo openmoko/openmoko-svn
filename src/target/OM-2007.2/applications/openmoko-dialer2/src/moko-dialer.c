@@ -434,8 +434,8 @@ on_network_registered (MokoGsmdConnection *conn,
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
-      g_print ("Network registered\n")
-        g_source_remove (priv->reg_timeout);
+      g_print ("Network registered\n");
+      g_source_remove (priv->reg_timeout);
       priv->registered = TRUE;
       break;
     default:
