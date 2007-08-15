@@ -1,3 +1,8 @@
+2007-08-15  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Add a hack to make sure we
+	at least have a version of the icons available at each possible GtkIconSize
+
 2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Change GtkAdjustment handling to be the Gtk+ way. There is

@@ -69,37 +69,49 @@ static void
 _moko_stock_add_icon (GtkIconFactory *factory, const GtkStockItem *item)
 {
   static GtkIconTheme *theme = NULL;
-  GtkIconSource       *source = NULL;
+  GtkIconSource       *source;
   GtkIconSet          *set = NULL;
   GdkPixbuf           *pixbuf = NULL;
+  int i;
 
   if (theme == NULL)
     theme = gtk_icon_theme_get_default ();
 
-  source = gtk_icon_source_new ();
-
-  gtk_icon_source_set_size (source, GTK_ICON_SIZE_BUTTON);
-  gtk_icon_source_set_size_wildcarded (source, FALSE);
-
   pixbuf = gtk_icon_theme_load_icon (theme, item->stock_id,
                                      32, 0, NULL);
+
   if (pixbuf == NULL)
   {
     g_print ("Cannot load stock icon from theme : %s\n", item->stock_id);
     return;
   }
 
-  gtk_icon_source_set_pixbuf (source, pixbuf);
-
-  g_object_unref (G_OBJECT (pixbuf));
-
   set = gtk_icon_set_new ();
 
-  gtk_icon_set_add_source (set, source);
-  gtk_icon_source_free (source);
+  /*
+   * This is temporary hack to make sure we have all the sizes available.
+   * Ideally we should try loading the pixbuf at the correct size from the theme
+   * for each possible size in GtkIconSize, rather than re-using the same pixbuf
+   */
+  for (i = GTK_ICON_SIZE_MENU; i <= GTK_ICON_SIZE_DIALOG; i++)
+  {
+    source = gtk_icon_source_new ();
+    gtk_icon_source_set_size (source, i);
+    gtk_icon_source_set_size_wildcarded (source, FALSE);
+    gtk_icon_source_set_pixbuf (source, pixbuf);
+    gtk_icon_set_add_source (set, source);
+    gtk_icon_source_free (source);
+  }
+
+
+
 
   gtk_icon_factory_add (factory, item->stock_id, set);
   gtk_icon_set_unref (set);
+
+
+
+  g_object_unref (G_OBJECT (pixbuf));
 }
 
 void
