@@ -417,6 +417,8 @@ on_network_registered (MokoGsmdConnection *conn,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  g_print ("Register type = %d\n");
+
   priv->registered = TRUE;
 }
 

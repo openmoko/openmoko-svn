@@ -1,3 +1,8 @@
+2007-08-15  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer.c: (on_network_registered):
+	Print the type of registration information.
+
 2007-08-14  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_keypad_pin_entry), (moko_dialer_dispose):
