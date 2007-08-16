@@ -87,6 +87,23 @@ enum gsmd_msg_sms_fmt {
 	GSMD_SMS_FMT_TEXT	= 1,
 };
 
+/* Data Coding Scheme, refer to GSM 03.38 Clause 4 */
+#define B5_COMPRESSED	(1<<5)
+#define B4_CLASSMEANING	(1<<4)
+enum {
+	MESSAGE_CLASS_CLASS0		= 0x00,
+	MESSAGE_CLASS_CLASS1		= 0x01,
+	MESSAGE_CLASS_CLASS2		= 0x10,
+	MESSAGE_CLASS_CLASS3		= 0x11,
+};
+
+enum gsmd_sms_alphabet {
+	ALPHABET_DEFAULT		= (0x00<<2),
+	ALPHABET_8BIT			= (0x01<<2),
+	ALPHABET_UCS2			= (0x10<<2),
+	ALPHABET_RESERVED		= (0x11<<2),
+};
+
 /* Refer to GSM 03.40 subclause 9.2.3.1 */
 enum gsmd_sms_tp_mti {
 	GSMD_SMS_TP_MTI_DELIVER		= 0,
@@ -139,7 +156,7 @@ enum gsmd_sms_tp_rp {
 /* for SMS-SUBMIT, SMS-DELIVER */
 enum gsmd_sms_tp_udhi {
 	GSMD_SMS_TP_UDHI_NO_HEADER	= (0<<6),
-	GSMD_SMS_TP_UDHI_WTIH_HEADER	= (1<<6),
+	GSMD_SMS_TP_UDHI_WITH_HEADER	= (1<<6),
 };
 
 /* SMS delflg from 3GPP TS 07.05, Clause 3.5.4 */
@@ -158,6 +175,35 @@ enum gsmd_msg_phonebook {
 	GSMD_PHONEBOOK_WRITE		= 4,
 	GSMD_PHONEBOOK_DELETE		= 5,	
 	GSMD_PHONEBOOK_GET_SUPPORT	= 6,
+};
+
+/* Type-of-Address, Numbering-Plan-Identification field, GSM 03.40, 9.1.2.5 */
+enum gsmd_toa_npi {
+	GSMD_TOA_NPI_UNKNOWN		= 0x0,
+	GSMD_TOA_NPI_ISDN		= 0x1,
+	GSMD_TOA_NPI_DATA		= 0x3,
+	GSMD_TOA_NPI_TELEX		= 0x4,
+	GSMD_TOA_NPI_NATIONAL		= 0x8,
+	GSMD_TOA_NPI_PRIVATE		= 0x9,
+	GSMD_TOA_NPI_ERMES		= 0xa,
+	GSMD_TOA_NPI_RESERVED		= 0xf,
+};
+
+/* Type-of-Address, Type-of-Number field, GSM 03.40, Subclause 9.1.2.5 */
+enum gsmd_toa_ton {
+	GSMD_TOA_TON_UNKNOWN		= (0<<4),
+	GSMD_TOA_TON_INTERNATIONAL	= (1<<4),
+	GSMD_TOA_TON_NATIONAL		= (2<<4),
+	GSMD_TOA_TON_NETWORK		= (3<<4),
+	GSMD_TOA_TON_SUBSCRIBER		= (4<<4),
+	GSMD_TOA_TON_ALPHANUMERIC	= (5<<4),
+	GSMD_TOA_TON_ABBREVIATED	= (6<<4),
+	__GSMD_TOA_TON_MASK		= (7<<4),
+};
+
+/* Type-of-Address, bit 7 always 1 */
+enum gsmd_toa_reserved {
+	GSMD_TOA_RESERVED		= (1<<7),
 };
 
 /* Length from 3GPP TS 04.08, Clause 10.5.4.7 */
@@ -244,30 +290,33 @@ struct gsmd_sms_delete {
 #define GSMD_SMS_DATA_MAXLEN	164 
 struct gsmd_sms {
 	u_int8_t length;	
+	u_int8_t coding_scheme;
+	int has_header;
 	char data[GSMD_SMS_DATA_MAXLEN+1];	
-} __attribute__ ((packed));
-
-/* Refer to GSM 07.05 subclause 4.4 */
-struct gsmd_sms_write {
-	u_int8_t stat;
-	struct gsmd_sms sms;
 } __attribute__ ((packed));
 
 /* Refer to GSM 03.40 subclause 9.2.2.2 */
 struct gsmd_sms_submit {
-	u_int8_t length;	
-	char data[GSMD_SMS_DATA_MAXLEN+1];	
+	struct gsmd_addr addr;
+	struct gsmd_sms payload;
+};
+
+/* Refer to GSM 07.05 subclause 4.4 */
+struct gsmd_sms_write {
+	u_int8_t stat;
+	struct gsmd_sms_submit sms;
 } __attribute__ ((packed));
 
 /* Refer to GSM 03.40 subclause 9.2.2.1 */
-struct gsmd_sms_deliver {
-	u_int8_t length;	
-	char origl_addr[12];
-	u_int8_t proto_ident;
-	u_int8_t coding_scheme;
+struct gsmd_sms_list {
+	/* FIXME Defined as in range of location numbers supported by memory */
+	u_int8_t index;
+	enum gsmd_msg_sms_type stat;
 	char time_stamp[7];	
-	char user_data[140];
-} __attribute__ ((packed));
+	struct gsmd_addr addr;
+	struct gsmd_sms payload;
+	int is_last;
+};
 
 /* Refer to GSM 07.07 subclause 8.12 */
 struct gsmd_phonebook_readrg {

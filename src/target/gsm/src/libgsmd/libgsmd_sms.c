@@ -83,19 +83,53 @@ int lgsmd_sms_delete(struct lgsm_handle *lh,
 	return 0;
 }
 
-int lgsmd_sms_send(struct lgsm_handle *lh, 
-		const struct lgsm_sms *sms)   
+int lgsmd_number2addr(struct gsmd_addr *dst, const char *src)
+{
+	char *ch;
+
+	if (strlen(src) + 1 > sizeof(dst->number))
+		return 1;
+	if (src[0] == '+') {
+		dst->type =
+			GSMD_TOA_NPI_ISDN |
+			GSMD_TOA_TON_INTERNATIONAL |
+			GSMD_TOA_RESERVED;
+		strcpy(dst->number, src + 1);
+	} else {
+		dst->type =
+			GSMD_TOA_NPI_ISDN |
+			GSMD_TOA_TON_UNKNOWN |
+			GSMD_TOA_RESERVED;
+		strcpy(dst->number, src);
+	}
+
+	for (ch = dst->number; *ch; ch ++)
+		if (*ch < '0' || *ch > '9')
+			return 1;
+	return 0;
+}
+
+int lgsmd_sms_send(struct lgsm_handle *lh,
+		const struct lgsm_sms *sms)
 {
 	/* FIXME: only support PDU mode */
 	struct gsmd_msg_hdr *gmh;
-	struct gsmd_sms *gs;
-	int rc;
+	struct gsmd_sms_submit *gss;
+	int i, rc;
 
 	gmh = lgsm_gmh_fill(GSMD_MSG_SMS,
-			GSMD_SMS_SEND, sizeof(*gs));
+			GSMD_SMS_SEND, sizeof(*gss));
 	if (!gmh)
 		return -ENOMEM;
-	gs = (struct gsmd_sms *) gmh->data;
+	gss = (struct gsmd_sms_submit *) gmh->data;
+
+	if (lgsmd_number2addr(&gss->addr, sms->addr))
+		return -EINVAL;
+
+	gss->payload.has_header = 0;
+	gss->payload.length = sms->length;
+	gss->payload.coding_scheme = sms->alpha;
+	memcpy(gss->payload.data, sms->data, LGSM_SMS_DATA_MAXLEN);
 
 	rc = lgsm_send(lh, gmh);
 	if (rc < gmh->len + sizeof(*gmh)) {
@@ -108,7 +142,7 @@ int lgsmd_sms_send(struct lgsm_handle *lh,
 	return 0;
 }
 
-int lgsmd_sms_write(struct lgsm_handle *lh, 
+int lgsmd_sms_write(struct lgsm_handle *lh,
 		const struct lgsm_sms_write *sms_write)
 {
 	/* FIXME: only support PDU mode */
@@ -122,6 +156,17 @@ int lgsmd_sms_write(struct lgsm_handle *lh,
 		return -ENOMEM;
 	gsw = (struct gsmd_sms_write *) gmh->data;
 
+	gsw->stat = sms_write->stat;
+
+	if (lgsmd_number2addr(&gsw->sms.addr, sms_write->sms.addr))
+		return -EINVAL;
+
+	gsw->sms.payload.has_header = 0;
+	gsw->sms.payload.length = sms_write->sms.length;
+	gsw->sms.payload.coding_scheme = sms_write->sms.alpha;
+	memcpy(gsw->sms.payload.data, sms_write->sms.data,
+			LGSM_SMS_DATA_MAXLEN);
+
 	rc = lgsm_send(lh, gmh);
 	if (rc < gmh->len + sizeof(*gmh)) {
 		lgsm_gmh_free(gmh);
@@ -133,65 +178,55 @@ int lgsmd_sms_write(struct lgsm_handle *lh,
 	return 0;
 }
 
-int packing_7bit_character(char *src, char *dest)
+int packing_7bit_character(const char *src, struct lgsm_sms *dest)
 {
 	int i,j = 0;
 	unsigned char ch1, ch2;
 	char tmp[2];
 	int shift = 0;
-	
-	*dest = '\0';
+
+	dest->alpha = ALPHABET_DEFAULT;
 
 	for ( i=0; i<strlen(src); i++ ) {
 		
 		ch1 = src[i] & 0x7F;
 		ch1 = ch1 >> shift;
 		ch2 = src[(i+1)] & 0x7F;
-		ch2 = ch2 << (7-shift); 
+		ch2 = ch2 << (7-shift);
 
 		ch1 = ch1 | ch2;
-		
-		j = strlen(dest);
- 		sprintf(tmp, "%x", (ch1 >> 4));	
-		dest[j++] = tmp[0];
-		sprintf(tmp, "%x", (ch1 & 0x0F));
-		dest[j++] = tmp[0];		
-		dest[j++] = '\0';		
-			
+
+		if (j > sizeof(dest->data))
+			break;
+		dest->data[j++] = ch1;
+
 		shift++;
-		
+
 		if ( 7 == shift ) {
 			shift = 0;
 			i++;
 		}
-	}			
-	
-	return 0;
+	}
+
+	dest->length = i;
+	return j;
 }
 
-int unpacking_7bit_character(char *src, char *dest)
+int unpacking_7bit_character(const struct gsmd_sms *src, char *dest)
 {
-        unsigned char ch1, ch2 = '\0';
-        int i, j;
-        char buf[8];
-        int shift = 0;
+	int i = 0;
 
-        *dest = '\0';
+	if (src->has_header)
+		i += ((src->data[0] << 3) + 14) / 7;
+	for (; i < src->length; i ++)
+		*(dest ++) =
+			((src->data[(i * 7 + 7) >> 3] <<
+			  (7 - ((i * 7 + 7) & 7))) |
+			 (src->data[(i * 7) >> 3] >>
+			  ((i * 7) & 7))) & 0x7f;
+	*dest = '\0';
 
-        for ( i=0; i<strlen(src); i+=2 ) {
-                sprintf(buf, "%c%c", src[i], src[i+1]);
-                ch1 = strtol(buf, NULL, 16);
-
-                j = strlen(dest);
-                dest[j++] = ((ch1 & (0x7F >> shift)) << shift) | ch2;
-                dest[j++] = '\0';
-
-                ch2 = ch1 >> (7-shift);
-
-                shift++;
-        }
-
-        return 0;
+	return i;
 }
 
 /* Refer to 3GPP TS 11.11 Annex B */

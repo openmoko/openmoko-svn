@@ -32,6 +32,7 @@
 #include <libgsmd/phonebook.h>
 #include <libgsmd/sms.h>
 #include <gsmd/usock.h>
+#include <gsmd/ts0705.h>
 
 #define STDIN_BUF_SIZE	1024
 
@@ -76,22 +77,98 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 
 /* this is the handler for receiving sms responses */
 static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
-{	
-	char *payload;
+{
+	char payload[GSMD_SMS_DATA_MAXLEN];
+	int *result;
+	struct gsmd_sms_list *sms;
+	static const char *type[] = { "Unread", "Received", "Unsent", "Sent" };
 
 	switch (gmh->msg_subtype) {
 	case GSMD_SMS_LIST:
-		break;	
-	case GSMD_SMS_READ:		
-	case GSMD_SMS_SEND:		
-	case GSMD_SMS_WRITE:			
+	case GSMD_SMS_READ:
+		sms = (struct gsmd_sms_list *) ((void *) gmh + sizeof(*gmh));
+		printf("%s message %i from/to %s%s, at %i%i-%i%i-%i%i "
+				"%i%i:%i%i:%i%i, GMT%c%i\n", type[sms->stat],
+				sms->index,
+				((sms->addr.type & __GSMD_TOA_TON_MASK) ==
+				 GSMD_TOA_TON_INTERNATIONAL) ? "+" : "",
+				sms->addr.number,
+				sms->time_stamp[0] & 0xf,
+				sms->time_stamp[0] >> 4,
+				sms->time_stamp[1] & 0xf,
+				sms->time_stamp[1] >> 4,
+				sms->time_stamp[2] & 0xf,
+				sms->time_stamp[2] >> 4,
+				sms->time_stamp[3] & 0xf,
+				sms->time_stamp[3] >> 4,
+				sms->time_stamp[4] & 0xf,
+				sms->time_stamp[4] >> 4,
+				sms->time_stamp[5] & 0xf,
+				sms->time_stamp[5] >> 4,
+				(sms->time_stamp[6] & 8) ? '-' : '+',
+				(((sms->time_stamp[6] << 4) |
+				  (sms->time_stamp[6] >> 4)) & 0x3f) >> 2);
+		if (sms->payload.coding_scheme == ALPHABET_DEFAULT) {
+			unpacking_7bit_character(&sms->payload, payload);
+			printf("\"%s\"\n", payload);
+		} else if (sms->payload.coding_scheme == ALPHABET_8BIT)
+			printf("8-bit encoded data\n");
+		else if (sms->payload.coding_scheme == ALPHABET_UCS2)
+			printf("Unicode-16 encoded text\n");
+		break;
+	case GSMD_SMS_SEND:
+		result = (int *) ((void *) gmh + sizeof(*gmh));
+		if (*result >= 0) {
+			printf("Send: message sent as ref %i\n", *result);
+			break;
+		}
+
+		switch (-*result) {
+		case 42:
+			printf("Store: congestion\n");
+			break;
+		default:
+			printf("Store: error %i\n", *result);
+			break;
+		}
+		break;
+	case GSMD_SMS_WRITE:
+		result = (int *) ((void *) gmh + sizeof(*gmh));
+		if (*result >= 0) {
+			printf("Store: message stored with index %i\n",
+					*result);
+			break;
+		}
+
+		switch (-*result) {
+		case GSM0705_CMS_SIM_NOT_INSERTED:
+			printf("Store: SIM not inserted\n");
+			break;
+		default:
+			printf("Store: error %i\n", *result);
+			break;
+		}
+		break;
 	case GSMD_SMS_DELETE:
-		payload = (char *)gmh + sizeof(*gmh);
-		printf("%s\n", payload);		
-		break;	
+		result = (int *) ((void *) gmh + sizeof(*gmh));
+		switch (*result) {
+		case 0:
+			printf("Delete: success\n");
+			break;
+		case GSM0705_CMS_SIM_NOT_INSERTED:
+			printf("Delete: SIM not inserted\n");
+			break;
+		case GSM0705_CMS_INVALID_MEMORY_INDEX:
+			printf("Delete: invalid memory index\n");
+			break;
+		default:
+			printf("Delete: error %i\n", *result);
+			break;
+		}
+		break;
 	default:
 		return -EINVAL;
-	}	
+	}
 }
 
 static int shell_help(void)
@@ -101,7 +178,8 @@ static int shell_help(void)
 		"\tH\tHangup call\n"
 		"\tO\tPower On\n"
 		"\to\tPower Off\n"
-		"\tR\tRegister Netowrk\n"
+		"\tR\tRegister Network\n"
+		"\tU\tUnregister from netowrk\n"
 		"\tT\tSend DTMF Tone\n"
 		"\tpd\tPB Delete (pb=index)\n"
 		"\tpr\tPB Read (pr=index)\n"
@@ -197,6 +275,9 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if (!strcmp(buf, "R")) {
 				printf("Register\n");
 				lgsm_netreg_register(lgsmh, 0);
+			} else if (!strcmp(buf, "U")) {
+				printf("Unregister\n");
+				lgsm_netreg_register(lgsmh, 2);
 			} else if (!strcmp(buf, "q")) {
 				exit(0);
 			} else if (buf[0] == 'T') {
@@ -239,7 +320,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				pb.index = atoi(ptr+1);
 
 				fcomma = strchr(buf, ',');
-				lcomma = strrchr(buf, ',');
+				lcomma = strchr(fcomma+1, ',');
 				strncpy(pb.numb, fcomma+1, (lcomma-fcomma-1));
 				pb.numb[(lcomma-fcomma-1)] = '\0';				
 				if ( '+' == pb.numb[0] )
@@ -279,25 +360,25 @@ int shell_main(struct lgsm_handle *lgsmh)
 
 				ptr = strchr(buf, '=');
 				fcomma = strchr(buf, ',');
-				strncpy(sms.addr, ptr+1, (fcomma-ptr-1));
+				strncpy(sms.addr, ptr+1, fcomma-ptr-1);
 				sms.addr[fcomma-ptr-1] = '\0';
-				strncpy(sms.data, fcomma+1, strlen(fcomma+1));
-				sms.data[strlen(fcomma+1)] = '\0';
-						
-				lgsmd_sms_send(lgsmh, &sms);			
+				packing_7bit_character(fcomma+1, &sms);
+
+				lgsmd_sms_send(lgsmh, &sms);
 			} else if ( !strncmp(buf, "sw", 2)) {	
 				printf("Write SMS\n");				
 				struct lgsm_sms_write sms_write;
 
 				ptr = strchr(buf, '=');
-				sms_write.stat = atoi(ptr+1);				
+				sms_write.stat = atoi(ptr+1);
 				fcomma = strchr(buf, ',');
-				lcomma = strrchr(buf, ',');
-				strncpy(sms_write.sms.addr, fcomma+1, (lcomma-fcomma-1));
+				lcomma = strchr(fcomma+1, ',');
+				strncpy(sms_write.sms.addr,
+						fcomma+1, lcomma-fcomma-1);
 				sms_write.sms.addr[lcomma-fcomma-1] = '\0';
-				strncpy(sms_write.sms.data, lcomma+1, strlen(lcomma+1));
-				sms_write.sms.data[strlen(lcomma+1)] = '\0';	
-				
+				packing_7bit_character(
+						lcomma+1, &sms_write.sms);
+
 				lgsmd_sms_write(lgsmh, &sms_write);
 			} else {
 				printf("Unknown command `%s'\n", buf);

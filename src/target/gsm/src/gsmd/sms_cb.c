@@ -184,18 +184,29 @@ static const struct gsmd_unsolocit gsm0705_unsolicit[] = {
 	{ "+CDS",	&cds_parse },	/* SMS Status Index (stored in ME/TA) */
 };
 
-
 int sms_cb_init(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *atcmd;
+	char buffer[10];
 
 	atcmd = atcmd_fill("AT+CSMS=0", NULL, gu, 0);
 	if (!atcmd)
 		return -ENOMEM;
 	atcmd_submit(gsmd, atcmd);
 
-	/* Switch into "text mode" (Section 3.2.3) */
-	atcdm = atcmd_fill("AT+CMGF=1", 9, &sms_cb_init_cb, gu, 0);
+	/* If text mode, set the encoding */
+	if (gu->gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) {
+		atcmd = atcmd_fill("AT+CSCS=\"IRA\"", 13, NULL, gu, 0);
+		if (!atcmd)
+			return -ENOMEM;
+		atcmd_submit(gsmd, atcmd);
+	}
+
+	/* Switch into desired mode (Section 3.2.3) */
+	snprintf(buffer, sizeof(buffer), "AT+CMGF=%i",
+			(gu->gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) ?
+			GSMD_SMS_FMT_TEXT : GSMD_SMS_FMT_PDU);
+	atcmd = atcmd_fill(buffer, strlen(buffer) + 1, NULL, gu, 0);
 	if (!atcmd)
 		return -ENOMEM;
 

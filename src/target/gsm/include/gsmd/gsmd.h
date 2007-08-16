@@ -63,6 +63,7 @@ struct llparser {
 struct gsmd;
 
 #define GSMD_FLAG_V0		0x0001	/* V0 responses to be expected from TA */
+#define GSMD_FLAG_SMS_FMT_TEXT	0x0002	/* TODO Use TEXT rather than PDU mode */
 
 struct gsmd {
 	unsigned int flags;
