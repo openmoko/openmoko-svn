@@ -55,6 +55,11 @@ enum gsmd_msg_phone {
 	GSMD_PHONE_POWERDOWN	= 2,
 };
 
+enum gsmd_msg_cb {
+	GSMD_CB_SUBSCRIBE	= 1,
+	GSMD_CB_UNSUBSCRIBE	= 2,
+};
+
 enum gsmd_msg_network {
 	GSMD_NETWORK_REGISTER	= 1,
 	GSMD_NETWORK_SIGQ_GET	= 2,
@@ -65,11 +70,15 @@ enum gsmd_msg_network {
 };
 
 enum gsmd_msg_sms {
-	GSMD_SMS_LIST		= 1,
-	GSMD_SMS_READ		= 2,
-	GSMD_SMS_SEND		= 3,
-	GSMD_SMS_WRITE		= 4,
-	GSMD_SMS_DELETE		= 5,	
+	GSMD_SMS_LIST			= 1,
+	GSMD_SMS_READ			= 2,
+	GSMD_SMS_SEND			= 3,
+	GSMD_SMS_WRITE			= 4,
+	GSMD_SMS_DELETE			= 5,
+	GSMD_SMS_GET_MSG_STORAGE	= 6,
+	GSMD_SMS_SET_MSG_STORAGE	= 7,
+	GSMD_SMS_GET_SERVICE_CENTRE	= 8,
+	GSMD_SMS_SET_SERVICE_CENTRE	= 9,
 };
 
 /* SMS stat from 3GPP TS 07.05, Clause 3.1 */
@@ -248,8 +257,8 @@ struct gsmd_evt_auxdata {
 			struct gsmd_addr addr;
 		} colp;
 		struct {
-			/* TBD */
-			struct gsmd_addr addr;
+			u_int8_t memtype;
+			int index;
 		} sms;
 		struct {
 			enum gsmd_pin_type type;

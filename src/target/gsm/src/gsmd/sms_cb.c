@@ -36,10 +36,10 @@
 #include <gsmd/select.h>
 #include <gsmd/atcmd.h>
 #include <gsmd/usock.h>
+#include <gsmd/unsolicited.h>
 
 enum ts0705_mem_type {
 	GSM0705_MEMTYPE_NONE,
-	GSM0705_MEMTYPE_BROADCAST,
 	GSM0705_MEMTYPE_BROADCAST,
 	GSM0705_MEMTYPE_ME_MESSAGE,
 	GSM0705_MEMTYPE_MT,
@@ -48,7 +48,7 @@ enum ts0705_mem_type {
 	GSM0705_MEMTYPE_SR,
 };
 
-static const char *ts0705_memtype_name = {
+static const char *ts0705_memtype_name[] = {
 	[GSM0705_MEMTYPE_NONE]		= "NONE",
 	[GSM0705_MEMTYPE_BROADCAST]	= "BM",
 	[GSM0705_MEMTYPE_ME_MESSAGE]	= "ME",
@@ -70,9 +70,10 @@ static inline int parse_memtype(char *memtype)
 	return GSM0705_MEMTYPE_NONE;
 }
 
+/* TODO: move to headers */
 struct __gsmd_sms_storage {
-	u_int8 memtype;
-	u_int8_t pad[3]
+	u_int8_t memtype;
+	u_int8_t pad[3];
 	u_int16_t used;
 	u_int16_t total;
 } __attribute__ ((packed));
@@ -85,21 +86,34 @@ static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 	struct gsmd_ucmd *ucmd = ucmd_alloc(sizeof(struct gsmd_sms_storage));
+	struct gsmd_sms_storage *gss = (typeof(gss)) ucmd->buf;
+	char buf[3][3];
 
 	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
 
 	if (!ucmd)
 		return -ENOMEM;
 
-
-	
-	
 	ucmd->hdr.version = GSMD_PROTO_VERSION;
 	ucmd->hdr.msg_type = GSMD_MSG_SMS;
-	ucmd->hdr.msg_subtype = GSMD_SMS_GETMSG_STORAGE;
-	ucmd->hdr.len = ...;
+	ucmd->hdr.msg_subtype = GSMD_SMS_GET_MSG_STORAGE;
+	ucmd->hdr.len = sizeof(struct gsmd_sms_storage);
 	ucmd->hdr.id = cmd->id;
-	
+
+	if (sscanf(resp, "+CPMS: \"%2[A-Z]\",%hi,%hi,"
+				"\"%2[A-Z]\",%hi,%hi,\"%2[A-Z]\",%hi,%hi",
+				buf[0], &gss->mem[0].used, &gss->mem[0].total,
+				buf[1], &gss->mem[1].used, &gss->mem[1].total,
+				buf[2], &gss->mem[2].used, &gss->mem[2].total)
+			< 9) {
+		talloc_free(ucmd);
+		return -EINVAL;
+	}
+
+	gss->mem[0].memtype = parse_memtype(buf[0]);
+	gss->mem[1].memtype = parse_memtype(buf[1]);
+	gss->mem[2].memtype = parse_memtype(buf[2]);
+
 	usock_cmd_enqueue(ucmd, gu);
 
 	return 0;
@@ -113,14 +127,13 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 	switch (gph->msg_subtype) {
 	case GSMD_SMS_GET_SERVICE_CENTRE:
-		
-		break;
+		return;
 	case GSMD_SMS_SET_SERVICE_CENTRE:
-		break;
+		return;
 	case GSMD_SMS_SET_MSG_STORAGE:
-		break;
+		return;
 	case GSMD_SMS_GET_MSG_STORAGE:
-		cmd = atcmd_fill("AT+CPMS?", 8, ...);
+		cmd = atcmd_fill("AT+CPMS?", 8 + 1, usock_cpms_cb, gu, 0);
 		break;
 	}
 
@@ -131,7 +144,6 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 static int usock_rcv_cb(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 			int len)
 {
-
 	switch (gph->msg_subtype) {
 	case GSMD_CB_SUBSCRIBE:
 		break;
@@ -139,44 +151,158 @@ static int usock_rcv_cb(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	}
 
-	return 
+	return -ENOSYS;
 }
-
 
 /* Unsolicited messages related to SMS / CB */
 static int cmti_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
+	char memstr[3];
+	struct gsmd_ucmd *ucmd = ucmd_alloc(sizeof(struct gsmd_evt_auxdata));
+	struct gsmd_evt_auxdata *aux = (struct gsmd_evt_auxdata *) ucmd->buf;
+
+	if (!ucmd)
+		return -ENOMEM;
+
+	ucmd->hdr.version = GSMD_PROTO_VERSION;
+	ucmd->hdr.msg_type = GSMD_MSG_EVENT;
+	ucmd->hdr.msg_subtype = GSMD_EVT_IN_SMS;
+	ucmd->hdr.len = sizeof(*aux);
+
+	if (sscanf(param, "\"%2[A-Z]\",%i", memstr, &aux->u.sms.index) < 2) {
+		talloc_free(ucmd);
+		return -EINVAL;
+	}
+
+	aux->u.sms.memtype = parse_memtype(memstr);
+
+	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_SMS);
 }
 
 static int cmt_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
+	/* TODO: TEXT mode */
+	u_int8_t pdu[180];
+	const char *comma = strchr(param, ',');
+	char *cr;
+	int i;
+	struct gsmd_sms_list msg;
+
+	if (!comma)
+		return -EINVAL;
+	len = strtoul(comma + 1, &cr, 10);
+	if (cr[0] != '\n')
+		return -EINVAL;
+
+	cr ++;
+	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < 180; i ++) {
+		if (sscanf(cr, "%2hhX", &pdu[i]) < 1) {
+			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
+			return -EINVAL;
+		}
+		cr += 2;
+	}
+	if (sms_pdu_to_msg(&msg, pdu, len, i)) {
+		gsmd_log(GSMD_DEBUG, "malformed PDU\n");
+		return -EINVAL;
+	}
+
+	/* FIXME: generate some kind of event */
+	return -ENOSYS;
 }
 
 static int cbmi_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
+	char memstr[3];
+	int memtype, index;
+
+	if (sscanf(param, "\"%2[A-Z]\",%i", memstr, &index) < 2)
+		return -EINVAL;
+
+	memtype = parse_memtype(memstr);
+	/* FIXME: generate some kind of event */
+	return -ENOSYS;
 }
 
 static int cbm_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
+	/* TODO: TEXT mode */
+	u_int8_t pdu[180];
+	char *cr;
+	int i;
+	struct gsmd_sms_list msg;
+
+	len = strtoul(param, &cr, 10);
+	if (cr[0] != '\n')
+		return -EINVAL;
+
+	cr ++;
+	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < 180; i ++) {
+		if (sscanf(cr, "%2hhX", &pdu[i]) < 1) {
+			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
+			return -EINVAL;
+		}
+		cr += 2;
+	}
+	if (sms_pdu_to_msg(&msg, pdu, len, i)) {
+		gsmd_log(GSMD_DEBUG, "malformed PDU\n");
+		return -EINVAL;
+	}
+
+	/* FIXME: generate some kind of event */
+	return -ENOSYS;
 }
 
 static int cdsi_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
+	char memstr[3];
+	int memtype, index;
+
+	if (sscanf(param, "\"%2[A-Z]\",%i", memstr, &index) < 2)
+		return -EINVAL;
+
+	memtype = parse_memtype(memstr);
+	/* FIXME: generate some kind of event */
+	return -ENOSYS;
 }
 
 static int cds_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
+	/* TODO: TEXT mode */
+	u_int8_t pdu[180];
+	char *cr;
+	int i;
+	struct gsmd_sms_list msg;
+
+	len = strtoul(param, &cr, 10);
+	if (cr[0] != '\n')
+		return -EINVAL;
+
+	cr ++;
+	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < 180; i ++) {
+		if (sscanf(cr, "%2hhX", &pdu[i]) < 1) {
+			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
+			return -EINVAL;
+		}
+		cr += 2;
+	}
+	if (sms_pdu_to_msg(&msg, pdu, len, i)) {
+		gsmd_log(GSMD_DEBUG, "malformed PDU\n");
+		return -EINVAL;
+	}
+
+	/* FIXME: generate some kind of event */
+	return -ENOSYS;
 }
 
-
-static const struct gsmd_unsolocit gsm0705_unsolicit[] = {
-	{ "+CMTI",	&cmti_parse },	/* SMS Deliver Index (stored in ME/TA) */
+static const struct gsmd_unsolicit gsm0705_unsolicit[] = {
+	{ "+CMTI",	&cmti_parse },	/* SMS Deliver Index (stored in ME/TA)*/
 	{ "+CMT",	&cmt_parse },	/* SMS Deliver to TE */
 	{ "+CBMI",	&cbmi_parse },	/* Cell Broadcast Message Index */
 	{ "+CBM",	&cbm_parse },	/* Cell Broadcast Message */
@@ -189,24 +315,43 @@ int sms_cb_init(struct gsmd *gsmd)
 	struct gsmd_atcmd *atcmd;
 	char buffer[10];
 
-	atcmd = atcmd_fill("AT+CSMS=0", NULL, gu, 0);
+	atcmd = atcmd_fill("AT+CSMS=0", 9 + 1, NULL, gsmd, 0);
+	if (!atcmd)
+		return -ENOMEM;
+	atcmd_submit(gsmd, atcmd);
+
+	/* Store and notify */
+	atcmd = atcmd_fill("AT+CNMI=1,1,1", 13 + 1, NULL, gsmd, 0);
+	if (!atcmd)
+		return -ENOMEM;
+	atcmd_submit(gsmd, atcmd);
+
+	/* Store into ME/TA and notify */
+	atcmd = atcmd_fill("AT+CSBS=1", 9 + 1, NULL, gsmd, 0);
+	if (!atcmd)
+		return -ENOMEM;
+	atcmd_submit(gsmd, atcmd);
+
+	/* Store into ME/TA and notify */
+	atcmd = atcmd_fill("AT+CSDS=2", 9 + 1, NULL, gsmd, 0);
 	if (!atcmd)
 		return -ENOMEM;
 	atcmd_submit(gsmd, atcmd);
 
 	/* If text mode, set the encoding */
-	if (gu->gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) {
-		atcmd = atcmd_fill("AT+CSCS=\"IRA\"", 13, NULL, gu, 0);
+	if (gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) {
+		atcmd = atcmd_fill("AT+CSCS=\"IRA\"", 13 + 1, NULL, gsmd, 0);
 		if (!atcmd)
 			return -ENOMEM;
 		atcmd_submit(gsmd, atcmd);
 	}
 
 	/* Switch into desired mode (Section 3.2.3) */
-	snprintf(buffer, sizeof(buffer), "AT+CMGF=%i",
-			(gu->gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) ?
-			GSMD_SMS_FMT_TEXT : GSMD_SMS_FMT_PDU);
-	atcmd = atcmd_fill(buffer, strlen(buffer) + 1, NULL, gu, 0);
+	atcmd = atcmd_fill(buffer, snprintf(buffer, sizeof(buffer),
+				"AT+CMGF=%i",
+				(gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) ?
+				GSMD_SMS_FMT_TEXT : GSMD_SMS_FMT_PDU) + 1,
+			NULL, gsmd, 0);
 	if (!atcmd)
 		return -ENOMEM;
 

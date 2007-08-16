@@ -532,7 +532,7 @@ static int sms_send_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_ucmd *ucmd;
 	int msgref;
 
-	if (cmd->ret == 0) {
+	if (cmd->ret == 0 || cmd->ret == -255) {
 		if (sscanf(resp, "+CMGS: %i", &msgref) < 1)
 			return -EINVAL;
 	} else

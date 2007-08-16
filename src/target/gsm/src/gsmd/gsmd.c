@@ -185,7 +185,9 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 #if 0
 	/* Select TE character set */		
 	rc |= gsmd_simplecmd(gsmd, "AT+CSCS=\"UCS2\"");
-#endif	
+#endif
+
+	sms_cb_init(gsmd);
 
 	if (gsmd->vendorpl && gsmd->vendorpl->initsettings)
 		return gsmd->vendorpl->initsettings(gsmd);

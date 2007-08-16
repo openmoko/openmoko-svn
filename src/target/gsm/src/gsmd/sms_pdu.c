@@ -179,6 +179,8 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 
 		memset(dst->time_stamp, 0, 7);
 		break;
+	case GSMD_SMS_TP_MTI_STATUS_REPORT:
+		/* TODO */
 	default:
 		/* Unknown PDU type */
 		return 1;

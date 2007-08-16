@@ -34,6 +34,13 @@ static int incall_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxda
 	return 0;
 }
 
+static int insms_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+	printf("EVENT: Incoming SMS stored at location %i\n", aux->u.sms.index);
+
+	return 0;
+}
+
 static int clip_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
 	printf("EVENT: Incoming call clip = %s\n", aux->u.clip.addr.number);
@@ -131,6 +138,7 @@ int event_init(struct lgsm_handle *lh)
 
 	rc  = lgsm_evt_handler_register(lh, GSMD_EVT_IN_CALL, &incall_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_CLIP, &clip_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_SMS, &insms_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_COLP, &colp_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_NETREG, &netreg_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);
