@@ -1,3 +1,8 @@
+2007-08-16  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-dialer.c: (on_network_registered), (on_pin_requested):
+	Be smarter when searching for a network, don't keep pinging gsmd.
+
 2007-08-15  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_network_registered):

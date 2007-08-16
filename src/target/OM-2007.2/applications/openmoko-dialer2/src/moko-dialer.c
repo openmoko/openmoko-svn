@@ -425,16 +425,20 @@ on_network_registered (MokoGsmdConnection *conn,
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
     case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
       /* Do nothing */
+      g_print ("NetReg: Seraching for network\n");
+      g_source_remove (priv->reg_timeout);
+      priv->registered = TRUE;
       break;
     case MOKO_GSMD_CONNECTION_NETREG_DENIED:
       /* This may be a pin issue*/
-      g_print ("Registration denied, the SIM pin may need to be entered\n");
+      g_print ("NetReg: Registration denied, the SIM pin may be needed\n");
       moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
       g_source_remove (priv->reg_timeout);
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
-      g_print ("Network registered\n");
+      g_print ("NetReg: Network registered\n");
+      g_print("\tLocationAreaCode = %x\n\tCellID = %x", lac, cell);
       g_source_remove (priv->reg_timeout);
       priv->registered = TRUE;
       break;
@@ -533,6 +537,7 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
   
+  g_source_remove (priv->reg_timeout);
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
   g_print ("Pin Requested\n");
 
