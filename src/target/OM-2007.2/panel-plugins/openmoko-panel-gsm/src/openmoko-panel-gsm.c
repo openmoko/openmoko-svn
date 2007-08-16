@@ -22,61 +22,84 @@
 #include <gtk/gtk.h>
 #include <time.h>
 
+/* Just change this is gsmd changes */
+#define _MAX_SIGNAL 30.0
+
 typedef struct {
-    GtkImage* image;
+    GtkWidget* image;
     gboolean gprs_mode;
     MokoGsmdConnection* gsm;
 } GsmApplet;
 
-static void gsm_applet_free(GsmApplet *applet)
+static void 
+gsm_applet_free(GsmApplet *applet)
 {
     g_slice_free( GsmApplet, applet );
 }
 
-static void gsm_applet_update_signal_strength(MokoGsmdConnection* connection, int strength, GsmApplet* applet)
+static void 
+gsm_applet_update_signal_strength(MokoGsmdConnection* connection, 
+                                  int strength, 
+                                  GsmApplet* applet)
 {
-    g_debug( "gsm_applet_update_signal_strength: signal strength = %d", strength );
-    //TODO calibrate
-    int pixmap = 0;
-    if ( strength > 30 )
-        pixmap = 5;
-    else if ( strength > 20 )
-        pixmap = 4;
-    else if ( strength > 17 )
-        pixmap = 3;
-    else if ( strength > 13 )
-        pixmap = 2;
-    else if ( strength > 10 )
-        pixmap = 1;
+    gfloat percent;
+    gint pixmap = 0;
+    gchar *image = NULL;
 
-    const char* imagestring = g_strdup_printf( "%s/SignalStrength%s%02d.png", PKGDATADIR, applet->gprs_mode ? "25g_" : "_", pixmap );
-    gtk_image_set_from_file( GTK_IMAGE(applet->image), imagestring );
+    g_debug( "gsm_applet_update_signal_strength: signal strength = %d", 
+              strength );
+
+    percent = (strength / _MAX_SIGNAL) * 100;
+
+    if ( percent == 0 )
+      pixmap = 0;
+    else if ( percent < 20 )
+      pixmap = 1;
+    else if ( percent < 40 )
+      pixmap = 2;
+    else if ( percent < 60 )
+      pixmap = 3;
+    else if ( percent < 80 )
+      pixmap = 4;
+    else
+      pixmap = 5;
+
+    image = g_strdup_printf( "%s/SignalStrength%s%02d.png", 
+                             PKGDATADIR, 
+                             applet->gprs_mode ? "25g_" : "_", pixmap );
+    gtk_image_set_from_file( GTK_IMAGE(applet->image), image );
+
+    g_free (image);
 }
 
-static void gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
+static void 
+gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
     moko_gsmd_connection_set_antenna_power( applet->gsm, TRUE );
 }
 
-static void gsm_applet_autoregister_network(GtkWidget* menu, GsmApplet* applet)
+static void 
+gsm_applet_autoregister_network(GtkWidget* menu, GsmApplet* applet)
 {
     moko_gsmd_connection_network_register( applet->gsm );
 }
 
-static void gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
+static void 
+gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
     moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE );
 }
 
-G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation orientation)
+G_MODULE_EXPORT GtkWidget* 
+mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
     GsmApplet* applet;
     applet = g_slice_new(GsmApplet);
-    applet->image = GTK_IMAGE(gtk_image_new_from_file( PKGDATADIR "/SignalStrength_NR.png" ) );
+    applet->image = gtk_image_new_from_file( PKGDATADIR "/SignalStrength_NR.png" );
     applet->gprs_mode = FALSE;
     gtk_widget_set_name( GTK_WIDGET(applet->image), "openmoko-gsm-applet" );
     g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) gsm_applet_free, applet );
@@ -87,7 +110,7 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
 
     // tap-with-hold menu (NOTE: temporary: left button atm.)
-    GtkMenu* menu = gtk_menu_new();
+    GtkMenu* menu = GTK_MENU (gtk_menu_new());
     GtkWidget* item1 = gtk_menu_item_new_with_label( "Power-Up GSM Antenna" );
     g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_power_up_antenna), applet );
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), item1 );
@@ -99,6 +122,6 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), item3 );
     gtk_widget_show_all( GTK_WIDGET(menu) );
 
-    moko_panel_applet_set_popup( mokoapplet, menu, MOKO_PANEL_APPLET_CLICK_POPUP );
+    moko_panel_applet_set_popup( mokoapplet, GTK_WIDGET (menu), MOKO_PANEL_APPLET_CLICK_POPUP );
     return GTK_WIDGET(mokoapplet);
-};
+}
