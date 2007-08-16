@@ -280,25 +280,28 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
 
 static void
 on_keypad_pin_entry (MokoKeypad  *keypad,
-                     const gchar *pin,
+                     const gchar *in_pin,
                      MokoDialer  *dialer)
 {
   MokoDialerPrivate *priv;
+  gchar *pin;
   
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  pin = g_strdup (in_pin);
+
+  g_print ("Sending pin %s\n", pin);
   moko_gsmd_connection_send_pin (priv->connection, pin);
 
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
-
-  g_print ("Sending pin %s\n", pin);
-  
+    
   priv->reg_request = TRUE;
   priv->registered = FALSE;
   priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT, 
                                      (GSourceFunc)register_network_cb, 
                                      dialer);
+  g_free (pin);
 }
 
 
@@ -417,8 +420,6 @@ on_network_registered (MokoGsmdConnection *conn,
   
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-
-  g_print ("Register type %d\n", type);
 
   switch (type)
   {

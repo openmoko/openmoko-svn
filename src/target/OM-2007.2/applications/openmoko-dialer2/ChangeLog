@@ -1,5 +1,15 @@
 2007-08-16  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_pin_entry),
+	(on_network_registered):
+	Remove some unused printf's, keep copy of PIN while interfacing with
+	libgsmd.
+
+	* src/moko-keypad.c: (on_dial_clicked):
+	Clear the PIN once 'OK' is pressed.
+
+2007-08-16  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_network_registered):
 	Fix a typo.
 
