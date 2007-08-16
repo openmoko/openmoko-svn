@@ -10,21 +10,6 @@
 
 extern int lgsm_phone_power(struct lgsm_handle *lh, int power);
 
-enum lgsm_netreg_state {
-	LGSM_NETREG_ST_NOTREG		= 0,
-	LGSM_NETREG_ST_REG_HOME		= 1,
-	LGSM_NETREG_ST_NOTREG_SEARCH	= 2,
-	LGSM_NETREG_ST_DENIED		= 3,
-	LGSM_NETREG_ST_UNKNOWN		= 4,
-	LGSM_NETREG_ST_REG_ROAMING	= 5,
-};
-
-/* Get the current network registration status */
-extern int lgsm_get_netreg_state(struct lgsm_handle *lh,
-				 enum lgsm_netreg_state *state);
-
-extern int lgsm_netreg_register(struct lgsm_handle *lh, int oper);
-
 enum lgsm_info_type {
 	LGSM_INFO_TYPE_NONE		= 0,
 	LGSM_INFO_TYPE_MANUF		= 1,
@@ -58,8 +43,24 @@ extern int lgsm_voicemail_get(struct lgsm_handle *lh,
 			      struct lgsm_addr *addr);
 
 /* Operator Selection, Network Registration */
-/* TBD */
+extern int lgsm_oper_get(struct lgsm_handle *lh);
+extern int lgsm_opers_get(struct lgsm_handle *lh);
+extern int lgsm_netreg_register(struct lgsm_handle *lh,
+		gsmd_oper_numeric oper);
+extern int lgsm_netreg_deregister(struct lgsm_handle *lh);
 
+enum lgsm_netreg_state {
+	LGSM_NETREG_ST_NOTREG		= 0,
+	LGSM_NETREG_ST_REG_HOME		= 1,
+	LGSM_NETREG_ST_NOTREG_SEARCH	= 2,
+	LGSM_NETREG_ST_DENIED		= 3,
+	LGSM_NETREG_ST_UNKNOWN		= 4,
+	LGSM_NETREG_ST_REG_ROAMING	= 5,
+};
+
+/* Get the current network registration status */
+extern int lgsm_get_netreg_state(struct lgsm_handle *lh,
+				 enum lgsm_netreg_state *state);
 
 /* CLIP, CLIR, COLP, Call Forwarding, Call Waiting, Call Deflecting */
 /* TBD */

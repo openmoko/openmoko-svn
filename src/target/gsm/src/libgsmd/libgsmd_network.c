@@ -32,18 +32,49 @@
 
 #include "lgsm_internals.h"
 
-int lgsm_netreg_register(struct lgsm_handle *lh, int oper)
+/* Get the current network registration status */
+int lgsm_get_netreg_state(struct lgsm_handle *lh,
+		enum lgsm_netreg_state *state)
 {
-	/* FIXME: implement oper selection */
-	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_REGISTER);
+	*state = lh->netreg_state;
+}
+
+int lgsm_oper_get(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_GET);
+}
+
+int lgsm_opers_get(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_LIST);
+}
+
+int lgsm_netreg_register(struct lgsm_handle *lh, gsmd_oper_numeric oper)
+{
+	struct gsmd_msg_hdr *gmh;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_NETWORK, GSMD_NETWORK_REGISTER,
+			sizeof(gsmd_oper_numeric));
+	if (!gmh)
+		return -ENOMEM;
+
+	memcpy(gmh->data, oper, sizeof(gsmd_oper_numeric));
+
+	if (lgsm_send(lh, gmh) < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+	return 0;
+}
+
+int lgsm_netreg_deregister(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_DEREGISTER);
 }
 
 int lgsm_signal_quality(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_SIGQ_GET);
-}
-
-int lgsmd_operator_name(struct lgsm_handle *lh)
-{
-	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_GET);
 }

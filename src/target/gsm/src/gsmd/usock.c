@@ -349,7 +349,7 @@ static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		return -ENOMEM;
 	
 	gsq = (struct gsmd_signal_quality *) ucmd->buf;
-	gsq->rssi = atoi(resp);
+	gsq->rssi = atoi(resp + 6);
 	comma = strchr(resp, ',');
 	if (!comma) {
 		talloc_free(ucmd);
@@ -362,42 +362,104 @@ static int network_sigq_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
-#define GSMD_OPER_MAXLEN	16
 static int network_oper_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 	struct gsmd_ucmd *ucmd;
-	char *comma, *opname;
-	
-	ucmd = gsmd_ucmd_fill(GSMD_OPER_MAXLEN+1, GSMD_MSG_NETWORK,
-			      GSMD_NETWORK_OPER_GET, 0);
+	const char *end, *opname;
+	int format, s;
+
+	/* Format: <mode>[,<format>,<oper>] */
+	/* In case we're not registered, return an empty string.  */
+	if (sscanf(resp, "+COPS: %*i,%i,\"%n", &format, &s) <= 0)
+		end = opname = resp;
+	else {
+		/* If the phone returned the opname in a short or numeric
+		 * format, then it probably doesn't know the operator's full
+		 * name or doesn't support it.  Return any information we
+		 * have in this case.  */
+		if (format != 0)
+			gsmd_log(GSMD_NOTICE, "+COPS response in a format "
+					" different than long alphanumeric - "
+					" returning as is!\n");
+		opname = resp + s;
+		end = strchr(opname, '"');
+		if (!end)
+			return -EINVAL;
+	}
+
+	ucmd = gsmd_ucmd_fill(end - opname + 1, GSMD_MSG_NETWORK,
+			GSMD_NETWORK_OPER_GET, 0);
 	if (!ucmd)
 		return -ENOMEM;
 
-	/* Format: <mode>[, <format>, <oper>] */
-	comma = strchr(resp, ',');
-	if (!comma)
-		goto out_err;
-
-	if (atoi(comma+1) != 0) {
-		gsmd_log(GSMD_NOTICE, "COPS format !=0 not supported yet!\n");
-		goto out_err;
-	}
-	comma = strchr(resp, ',');
-	if (!comma || *(comma+1) != '"')
-		goto out_err;
-	opname = comma+2;
-
-	memcpy(ucmd->buf, opname, strlen(opname-1));
-	ucmd->buf[strlen(opname)] = '\0';
+	memcpy(ucmd->buf, opname, end - opname);
+	ucmd->buf[end - opname] = '\0';
 
 	usock_cmd_enqueue(ucmd, gu);
 
 	return 0;
+}
 
-out_err:
-	talloc_free(ucmd);
-	return -EIO;
+static int network_opers_parse(const char *str, struct gsmd_msg_oper out[])
+{
+	int len = 0;
+	int stat, n;
+	if (strncmp(str, "+COPS: ", 7))
+		goto final;
+	str += 7;
+
+	while (*str == '(') {
+		if (out) {
+			out->is_last = 0;
+			if (sscanf(str,
+						"(%i,\"%16[^\"]\","
+						"\"%8[^\"]\",\"%6[0-9]\")%n",
+						&stat,
+						out->opname_longalpha,
+						out->opname_shortalpha,
+						out->opname_num,
+						&n) < 4)
+				goto final;
+			out->stat = stat;
+		} else
+			if (sscanf(str,
+						"(%*i,\"%*[^\"]\","
+						"\"%*[^\"]\",\"%*[0-9]\")%n",
+						&n) < 0)
+				goto final;
+		if (n < 10 || str[n - 1] != ')')
+			goto final;
+		if (str[n] == ',')
+			n ++;
+		str += n;
+		len ++;
+		if (out)
+			out ++;
+	}
+final:
+	if (out)
+		out->is_last = 1;
+	return len;
+}
+
+static int network_opers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd;
+	int len;
+
+	len = network_opers_parse(resp, 0);
+
+	ucmd = gsmd_ucmd_fill(sizeof(struct gsmd_msg_oper) * (len + 1),
+			GSMD_MSG_NETWORK, GSMD_NETWORK_OPER_LIST, 0);
+	if (!ucmd)
+		return -ENOMEM;
+
+	network_opers_parse(resp, (struct gsmd_msg_oper *) ucmd->buf);
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
 }
 
 static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
@@ -405,11 +467,21 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 {
 	struct gsmd_atcmd *cmd;
 	struct gsmd_voicemail *vmail = (struct gsmd_voicemail *) gph->data;
+	gsmd_oper_numeric *oper = (gsmd_oper_numeric *) gph->data;
+	char buffer[15 + sizeof(gsmd_oper_numeric)];
+	int cmdlen;
 
 	switch (gph->msg_subtype) {
 	case GSMD_NETWORK_REGISTER:
-		cmd = atcmd_fill("AT+COPS=0", 9+1,
-				 &null_cmd_cb, gu, 0);
+		if ((*oper)[0])
+			cmdlen = sprintf(buffer, "AT+COPS=1,2,\"%.*s\"",
+					sizeof(gsmd_oper_numeric), oper);
+		else
+			cmdlen = sprintf(buffer, "AT+COPS=0");
+		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_DEREGISTER:
+		cmd = atcmd_fill("AT+COPS=2", 9+1, &null_cmd_cb, gu, 0);
 		break;
 	case GSMD_NETWORK_VMAIL_GET:
 		cmd = atcmd_fill("AT+CSVM?", 8+1, &network_vmail_cb, gu, 0);
@@ -421,7 +493,13 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		cmd = atcmd_fill("AT+CSQ", 6+1, &network_sigq_cb, gu, 0);
 		break;
 	case GSMD_NETWORK_OPER_GET:
+		/* Set long alphanumeric format */
+		atcmd_submit(gu->gsmd, atcmd_fill("AT+COPS=3,0", 11+1,
+					&null_cmd_cb, gu, 0));
 		cmd = atcmd_fill("AT+COPS?", 8+1, &network_oper_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_OPER_LIST:
+		cmd = atcmd_fill("AT+COPS=?", 9+1, &network_opers_cb, gu, 0);
 		break;
 	default:
 		return -EINVAL;

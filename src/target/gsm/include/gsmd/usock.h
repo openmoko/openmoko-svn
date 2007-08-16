@@ -66,7 +66,9 @@ enum gsmd_msg_network {
 	GSMD_NETWORK_VMAIL_GET	= 3,
 	GSMD_NETWORK_VMAIL_SET	= 4,
 	GSMD_NETWORK_OPER_GET	= 5,
-	GSMD_NETWORK_CIND_GET	= 6,
+	GSMD_NETWORK_OPER_LIST	= 6,
+	GSMD_NETWORK_CIND_GET	= 7,
+	GSMD_NETWORK_DEREGISTER	= 8,
 };
 
 enum gsmd_msg_sms {
@@ -357,6 +359,26 @@ struct gsmd_phonebook_support {
 	u_int8_t nlength;
 	u_int8_t tlength;
 } __attribute__ ((packed));
+
+/* Operator status from 3GPP TS 07.07, Clause 7.3 */
+enum gsmd_oper_status {
+	GSMD_OPER_UNKNOWN,
+	GSMD_OPER_AVAILABLE,
+	GSMD_OPER_CURRENT,
+	GSMD_OPER_FORBIDDEN,
+};
+
+/* Theoretically numeric operator code is five digits long but some
+ * operators apparently use six digit codes.  */
+typedef char gsmd_oper_numeric[6];
+
+struct gsmd_msg_oper {
+	enum gsmd_oper_status stat;
+	int is_last;
+	char opname_longalpha[16];
+	char opname_shortalpha[8];
+	gsmd_oper_numeric opname_num;
+};
 
 struct gsmd_msg_hdr {
 	u_int8_t version;

@@ -171,6 +171,54 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	}
 }
 
+/* this is the handler for responses to network/operator commands */
+static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	const struct gsmd_signal_quality *sq = (struct gsmd_signal_quality *)
+		((void *) gmh + sizeof(*gmh));
+	const char *oper = (char *) gmh + sizeof(*gmh);
+	const struct gsmd_msg_oper *opers = (struct gsmd_msg_oper *)
+		((void *) gmh + sizeof(*gmh));
+	static const char *oper_stat[] = {
+		[GSMD_OPER_UNKNOWN] = "of unknown status",
+		[GSMD_OPER_AVAILABLE] = "available",
+		[GSMD_OPER_CURRENT] = "our current operator",
+		[GSMD_OPER_FORBIDDEN] = "forbidden",
+	};
+
+	switch (gmh->msg_subtype) {
+	case GSMD_NETWORK_SIGQ_GET:
+		if (sq->rssi == 99)
+			printf("Signal undetectable\n");
+		else
+			printf("Signal quality %i dBm\n", -113 + sq->rssi * 2);
+		if (sq->ber == 99)
+			printf("Error rate undetectable\n");
+		else
+			printf("Bit error rate %i\n", sq->ber);
+		break;
+	case GSMD_NETWORK_OPER_GET:
+		if (oper[0])
+			printf("Our current operator is %s\n", oper);
+		else
+			printf("No current operator\n");
+		break;
+	case GSMD_NETWORK_OPER_LIST:
+		for (; !opers->is_last; opers ++)
+			printf("%8.*s   %16.*s,   %.*s for short, is %s\n",
+					sizeof(opers->opname_num),
+					opers->opname_num,
+					sizeof(opers->opname_longalpha),
+					opers->opname_longalpha,
+					sizeof(opers->opname_shortalpha),
+					opers->opname_shortalpha,
+					oper_stat[opers->stat]);
+		break;
+	default:
+		return -EINVAL;
+	}
+}
+
 static int shell_help(void)
 {
 	printf( "\tA\tAnswer incoming call\n"
@@ -178,8 +226,12 @@ static int shell_help(void)
 		"\tH\tHangup call\n"
 		"\tO\tPower On\n"
 		"\to\tPower Off\n"
-		"\tR\tRegister Network\n"
+		"\tr\tRegister to network\n"
+		"\tR\tRegister to given operator (R=number)\n"
 		"\tU\tUnregister from netowrk\n"
+		"\tP\tPrint current operator\n"
+		"\tL\tDetect available operators\n"
+		"\tQ\tRead signal quality\n"
 		"\tT\tSend DTMF Tone\n"
 		"\tpd\tPB Delete (pb=index)\n"
 		"\tpr\tPB Read (pr=index)\n"
@@ -208,6 +260,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
 	lgsm_register_handler(lgsmh, GSMD_MSG_PHONEBOOK, &pb_msghandler);
 	lgsm_register_handler(lgsmh, GSMD_MSG_SMS, &sms_msghandler);
+	lgsm_register_handler(lgsmh, GSMD_MSG_NETWORK, &net_msghandler);
 
 	fcntl(0, F_SETFD, O_NONBLOCK);
 	fcntl(lgsm_fd(lgsmh), F_SETFD, O_NONBLOCK);
@@ -272,12 +325,28 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if (!strcmp(buf, "o")) {
 				printf("Power-Off\n");
 				lgsm_phone_power(lgsmh, 0);
-			} else if (!strcmp(buf, "R")) {
+			} else if (!strcmp(buf, "r")) {
 				printf("Register\n");
-				lgsm_netreg_register(lgsmh, 0);
+				lgsm_netreg_register(lgsmh, "\0     ");
+			} else if (buf[0] == 'R') {
+				printf("Register to operator\n");
+				ptr = strchr(buf, '=');
+				if (!ptr || strlen(ptr) < 6)
+					printf("No.\n");
+				else
+					lgsm_netreg_register(lgsmh, ptr + 1);
 			} else if (!strcmp(buf, "U")) {
 				printf("Unregister\n");
-				lgsm_netreg_register(lgsmh, 2);
+				lgsm_netreg_deregister(lgsmh);
+			} else if (!strcmp(buf, "P")) {
+				printf("Read current opername\n");
+				lgsm_oper_get(lgsmh);
+			} else if (!strcmp(buf, "L")) {
+				printf("List operators\n");
+				lgsm_opers_get(lgsmh);
+			} else if (!strcmp(buf, "Q")) {
+				printf("Signal strength\n");
+				lgsm_signal_quality(lgsmh);
 			} else if (!strcmp(buf, "q")) {
 				exit(0);
 			} else if (buf[0] == 'T') {

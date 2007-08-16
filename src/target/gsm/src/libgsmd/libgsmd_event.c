@@ -63,6 +63,12 @@ static int evt_demux_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh
 	    gmh->msg_subtype >= __NUM_GSMD_EVT)
 		return -EINVAL;
 
+	switch (gmh->msg_subtype) {
+	case GSMD_EVT_NETREG:
+		lh->netreg_state = aux->u.netreg.state;
+		break;
+	}
+
 	if (evt_handlers[gmh->msg_subtype])
 		return evt_handlers[gmh->msg_subtype](lh, gmh->msg_subtype, aux);
 	else
@@ -71,6 +77,7 @@ static int evt_demux_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh
 
 int lgsm_evt_init(struct lgsm_handle *lh)
 {
+	lh->netreg_state = LGSM_NETREG_ST_NOTREG;
 	return lgsm_register_handler(lh, GSMD_MSG_EVENT, &evt_demux_msghandler);
 }
 
