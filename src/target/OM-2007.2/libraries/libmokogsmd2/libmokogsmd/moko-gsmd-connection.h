@@ -56,6 +56,8 @@ typedef struct
     /* SMS signals */
 
     /* GPRS signals */
+    
+    /* Misc signals */
     void (*incoming_clip) (MokoGsmdConnection *self, const gchar *number);
     void (*network_registration) (MokoGsmdConnection *self,
                                   int type,

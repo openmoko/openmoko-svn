@@ -447,19 +447,29 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
 void 
 moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    MokoGsmdConnectionPrivate* priv;
+    gint result;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+
     g_return_if_fail( priv->handle );
-    int result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
+    
+    result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
     g_debug( "lgsm_phone_power returned %d", result );
 }
 
 void 
 moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
-    g_return_if_fail( priv->handle );
+    MokoGsmdConnectionPrivate* priv;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
     g_return_if_fail( pin );
     g_return_if_fail( strlen( pin ) >= 4 );
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+
+    g_return_if_fail( priv->handle );
     /*
      * FIXME lgsm_pin_auth is not yet implemented, so we call lgsm_pin 
      * directly...
@@ -471,35 +481,57 @@ moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
 void 
 moko_gsmd_connection_network_register(MokoGsmdConnection* self)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    MokoGsmdConnectionPrivate* priv;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
     g_return_if_fail( priv->handle );
+    
     lgsm_netreg_register( priv->handle, 0 );
 }
 
 void 
 moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    MokoGsmdConnectionPrivate* priv;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
     g_return_if_fail( priv->handle );
+
     lgsm_voice_in_accept( priv->handle );
 }
 
 void 
 moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    MokoGsmdConnectionPrivate* priv;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
     g_return_if_fail( priv->handle );
+    
     lgsm_voice_hangup( priv->handle );
 }
 
 void 
 moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
-    g_return_if_fail( priv->handle );
+    MokoGsmdConnectionPrivate* priv;
+    struct lgsm_addr addr;   
+
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
     g_return_if_fail( number );
     g_return_if_fail( strlen( number ) > 2 );
-    struct lgsm_addr addr;
+
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
+    g_return_if_fail( priv->handle );
+    
+
     addr.type = 129; /* ??? */
     g_stpcpy( &addr.addr[0], number );
     lgsm_voice_out_init( priv->handle, &addr );
@@ -508,15 +540,27 @@ moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
 void 
 moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    MokoGsmdConnectionPrivate* priv;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
+    
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
     g_return_if_fail( priv->handle );
+    
     lgsm_voice_dtmf( priv->handle, number );
 }
 
 void 
 moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self)
 {
-    MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
+    MokoGsmdConnectionPrivate* priv;
+    
+    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
+    
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
     g_return_if_fail( priv->handle );
+    
     lgsm_signal_quality( priv->handle );
 }

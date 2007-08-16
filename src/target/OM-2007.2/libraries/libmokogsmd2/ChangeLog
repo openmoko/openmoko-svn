@@ -1,3 +1,20 @@
+2007-08-16  Neil J. Patel  <njp@o-hand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
+	(moko_gsmd_connection_set_antenna_power),
+	(moko_gsmd_connection_send_pin),
+	(moko_gsmd_connection_network_register),
+	(moko_gsmd_connection_voice_accept),
+	(moko_gsmd_connection_voice_hangup),
+	(moko_gsmd_connection_voice_dial),
+	(moko_gsmd_connection_voice_dtmf),
+	(moko_gsmd_connection_trigger_signal_strength_event):
+	Add g_return_if_fail's to all public api so we are safe if the functions are
+	called without the corrent arguments, or if the *self is not valid.
+
+	* libmokogsmd/moko-gsmd-connection.h:
+	Add comments to separate the different type's of signals.
+
 2007-08-15  Neil J. Patel  <njp@o-hand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
