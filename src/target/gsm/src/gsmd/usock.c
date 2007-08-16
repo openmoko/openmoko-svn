@@ -75,7 +75,7 @@ static int usock_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	ucmd->hdr.version = GSMD_PROTO_VERSION;
 	ucmd->hdr.msg_type = GSMD_MSG_PASSTHROUGH;
 	ucmd->hdr.msg_subtype = GSMD_PASSTHROUGH_RESP;
-	ucmd->hdr.len = strlen(resp)+1;
+	ucmd->hdr.len = rlen;
 	ucmd->hdr.id = cmd->id;
 	memcpy(ucmd->buf, resp, ucmd->hdr.len);
 
@@ -100,7 +100,7 @@ static int usock_rcv_passthrough(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 static int usock_rcv_event(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 {
-	u_int32_t *evtmask = (u_int32_t *) ((char *)gph + sizeof(*gph), gph->id);
+	u_int32_t *evtmask = (u_int32_t *) ((char *)gph + sizeof(*gph));
 
 	if (len < sizeof(*gph) + sizeof(u_int32_t))
 		return -EINVAL;

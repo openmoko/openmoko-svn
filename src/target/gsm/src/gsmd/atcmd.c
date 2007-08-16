@@ -82,9 +82,12 @@ static int llparse_byte(struct llparser *llp, char byte)
 
 	switch (llp->state) {
 	case LLPARSE_STATE_IDLE:
+	case LLPARSE_STATE_PROMPT_SPC:
 		if (llp->flags & LGSM_ATCMD_F_EXTENDED) {
 			if (byte == '\r')
 				llp->state = LLPARSE_STATE_IDLE_CR;
+			else if (byte == '>')
+				llp->state = LLPARSE_STATE_PROMPT;
 			else {
 #ifdef STRICT
 				llp->state = LLPARSE_STATE_ERROR;
@@ -108,6 +111,8 @@ static int llparse_byte(struct llparser *llp, char byte)
 		/* can we really go directly into result_cr ? */
 		if (byte == '\r')
 			llp->state = LLPARSE_STATE_RESULT_CR;
+		else if (byte == '>')
+			llp->state = LLPARSE_STATE_PROMPT;
 		else {
 			llp->state = LLPARSE_STATE_RESULT;
 			ret = llparse_append(llp, byte);
@@ -125,6 +130,16 @@ static int llparse_byte(struct llparser *llp, char byte)
 			llp->cur = llp->buf;
 			llp->state = LLPARSE_STATE_IDLE;
 			memset(llp->buf, 0, LLPARSE_BUF_SIZE);
+		}
+		break;
+	case LLPARSE_STATE_PROMPT:
+		if (byte == ' ')
+			llp->state = LLPARSE_STATE_PROMPT_SPC;
+		else {
+			/* this was not a real "> " prompt */
+			llparse_append(llp, '>');
+			ret = llparse_append(llp, byte);
+			llp->state = LLPARSE_STATE_RESULT;
 		}
 		break;
 	case LLPARSE_STATE_ERROR:
@@ -147,6 +162,10 @@ static int llparse_string(struct llparser *llp, char *buf, unsigned int len)
 			/* FIXME: what to do with return value ? */
 			llp->cb(llp->buf, llp->cur - llp->buf, llp->ctx);
 		}
+
+		/* if a full SMS-style prompt was received, poke the select */
+		if (llp->state == LLPARSE_STATE_PROMPT_SPC)
+			llp->prompt_cb(llp->ctx);
 	}
 
 	return 0;
@@ -176,8 +195,9 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	struct gsmd *g = ctx;
 	struct gsmd_atcmd *cmd = NULL;
 	static char mlbuf[MLPARSE_BUF_SIZE];
-	int rc = 0, final = 0;
-	int mlbuf_len;
+	int rc = 0;
+	static int mlbuf_len;
+	int cme_error = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
 
@@ -231,7 +251,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			DEBUGP("error number %lu\n", err_nr);
 			if (cmd)
 				cmd->ret = err_nr;
-			final = 1;
+			cme_error = 1;
 			goto final_cb;
 		}
 		if (!strncmp(buf+1, "CMS ERROR", 9)) {
@@ -241,7 +261,6 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			DEBUGP("error number %lu\n", err_nr);
 			if (cmd)
 				cmd->ret = err_nr;
-			final = 1;
 			goto final_cb;
 		}
 
@@ -273,7 +292,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 			/* it might be a multiline response, so if there's a previous
 			   response, send out mlbuf and start afresh with an empty buffer */
-			if (mlbuf[0] != 0) {
+			if (mlbuf_len) {
 				if (!cmd->cb) {
 					gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 				} else {
@@ -281,8 +300,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 					cmd->resp = mlbuf;
 					rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
 					DEBUGP("Clearing mlbuf\n");
-					mlbuf[0] = 0;
 				}
+				mlbuf_len = 0;
 			}
 
 			/* the current buf will be appended to mlbuf below */
@@ -301,7 +320,6 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			DEBUGP("unspecified error\n");
 			if (cmd)
 				cmd->ret = 4;
-			final = 1;
 			goto final_cb;
 		}
 
@@ -310,7 +328,6 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			/* Part of Case 'C' */
 			if (cmd)
 				cmd->ret = 0;
-			final = 1;
 			goto final_cb;
 		}
 
@@ -319,14 +336,12 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		if (!strncmp(buf, "NO CARRIER", 11) ||
 		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '3')) {
 			/* Part of Case 'D' */
-			final = 1;
 			goto final_cb;
 		}
 
 		if (!strncmp(buf, "BUSY", 4) ||
 		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '7')) {
 			/* Part of Case 'D' */
-			final = 1;
 			goto final_cb;
 		}
 	}
@@ -334,21 +349,13 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	/* we reach here, if we are at an information response that needs to be
 	 * passed on */
 
-	if (mlbuf[0] == 0) {
-		DEBUGP("Filling mlbuf\n");
-		strncat(mlbuf, buf, sizeof(mlbuf)-1);
-	} else {
-		DEBUGP("Appending buf to mlbuf\n");
-		mlbuf_len = strlen(mlbuf);
-		if (mlbuf_len+1 < sizeof(mlbuf)) {
-			mlbuf[mlbuf_len] = '\n';
-			mlbuf[mlbuf_len+1] = '\0';
-			strncat(mlbuf, buf, sizeof(mlbuf)-mlbuf_len-2);
-		} else {
-			DEBUGP("response too big for mlbuf!!!\n");
-			return -EFBIG;
-		}
-	}
+	if (mlbuf_len)
+		mlbuf[mlbuf_len ++] = '\n';
+	DEBUGP("Appending buf to mlbuf\n");
+	if (len > sizeof(mlbuf) - mlbuf_len)
+		len = sizeof(mlbuf) - mlbuf_len;
+	memcpy(mlbuf + mlbuf_len, buf, len);
+	mlbuf_len += len;
 	return 0;
 
 final_cb:
@@ -357,7 +364,7 @@ final_cb:
 	if (!cmd)
 		return rc;
 
-	if (cmd && cmd->ret != 0)
+	if (cmd && cme_error)
 		generate_event_from_cme(g, cmd->ret);
 
 	if (!cmd->cb) {
@@ -365,13 +372,14 @@ final_cb:
 	} else {
 		DEBUGP("Calling final cmd->cb()\n");
 		/* send final result code if there is no information response in mlbuf */
-		if (mlbuf[0] == 0)
-			cmd->resp = buf;
-		else
+		if (mlbuf_len) {
 			cmd->resp = mlbuf;
+			mlbuf[mlbuf_len] = 0;
+		} else
+			cmd->resp = buf;
 		rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
 		DEBUGP("Clearing mlbuf\n");
-		mlbuf[0] = 0;
+		mlbuf_len = 0;
 	}
 
 	/* remove from list of currently executing cmds */
@@ -384,7 +392,15 @@ final_cb:
 		g->gfd_uart.when |= GSMD_FD_WRITE;
 
 	return rc;
-}	
+}
+
+/* called when the modem asked for a new line of a multiline atcmd */
+static int atcmd_prompt(void *data)
+{
+	struct gsmd *g = data;
+
+	g->gfd_uart.when |= GSMD_FD_WRITE;
+}
 
 /* callback to be called if [virtual] UART has some data for us */
 static int atcmd_select_cb(int fd, unsigned int what, void *data)
@@ -392,6 +408,7 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 	int len, rc;
 	static char rxbuf[1024];
 	struct gsmd *g = data;
+	char *cr;
 
 	if (what & GSMD_FD_READ) {
 		memset(rxbuf, 0, sizeof(rxbuf));
@@ -415,8 +432,12 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 	if ((what & GSMD_FD_WRITE) && g->interpreter_ready) {
 		struct gsmd_atcmd *pos, *pos2;
 		llist_for_each_entry_safe(pos, pos2, &g->pending_atcmds, list) {
-			len = strlen(pos->buf);
-			rc = write(fd, pos->buf, strlen(pos->buf));
+			cr = strchr(pos->cur, '\n');
+			if (cr)
+				len = cr - pos->cur;
+			else
+				len = pos->buflen;
+			rc = write(fd, pos->cur, len);
 			if (rc == 0) {
 				gsmd_log(GSMD_ERROR, "write returns 0, aborting\n");
 				break;
@@ -425,27 +446,33 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 					fd, rc);
 				return rc;
 			}
-			if (rc < len) {
-				gsmd_log(GSMD_FATAL, "short write!!! FIXME!\n");
-				exit(3);
-			}
+			if (cr && rc == len)
+				rc ++;	/* Skip the \n */
+			pos->buflen -= rc;
+			pos->cur += rc;
 			write(fd, "\r", 1);
-			/* success: remove from global list of to-be-sent atcmds */
-			llist_del(&pos->list);
-			/* append to global list of executing atcmds */
-			llist_add_tail(&pos->list, &g->busy_atcmds);
+
+			if (!pos->buflen) {
+				/* success: remove from global list of
+				 * to-be-sent atcmds */
+				llist_del(&pos->list);
+				/* append to global list of executing atcmds */
+				llist_add_tail(&pos->list, &g->busy_atcmds);
 
 				/* we only send one cmd at the moment */
-				g->gfd_uart.when &= ~GSMD_FD_WRITE;
 				break;
+			} else {
+				/* The write was short or the atcmd has more
+				 * lines to send after a "> ".  */
+				if (rc < len)
+					return 0;
+				break;
+			}
 		}
-	}
 
-#if 0
-	if (llist_empty(&g->pending_atcmds))
+		/* Either pending_atcmds is empty or a command has to wait */
 		g->gfd_uart.when &= ~GSMD_FD_WRITE;
-#endif
-		
+	}
 
 	return 0;
 }
@@ -456,10 +483,10 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 {
 	int buflen = strlen(cmd);
 	struct gsmd_atcmd *atcmd;
-	
+
 	if (rlen > buflen)
 		buflen = rlen;
-	
+
 	atcmd = talloc_size(__atcmd_ctx, sizeof(*atcmd)+ buflen);
 	if (!atcmd)
 		return NULL;
@@ -470,6 +497,7 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 	atcmd->ret = -255;
 	atcmd->buflen = buflen;
 	atcmd->buf[buflen-1] = '\0';
+	atcmd->cur = atcmd->buf;
 	atcmd->cb = cb;
 	atcmd->resp = NULL;
 	strncpy(atcmd->buf, cmd, buflen-1);
@@ -482,8 +510,9 @@ int atcmd_submit(struct gsmd *g, struct gsmd_atcmd *cmd)
 {
 	DEBUGP("submitting command `%s'\n", cmd->buf);
 
+	if (llist_empty(&g->pending_atcmds))
+		g->gfd_uart.when |= GSMD_FD_WRITE;
 	llist_add_tail(&cmd->list, &g->pending_atcmds);
-	g->gfd_uart.when |= GSMD_FD_WRITE;
 
 	return 0;
 }
@@ -519,9 +548,9 @@ int atcmd_init(struct gsmd *g, int sockfd)
 	g->llp.cur = g->llp.buf;
 	g->llp.len = sizeof(g->llp.buf);
 	g->llp.cb = &ml_parse;
+	g->llp.prompt_cb = &atcmd_prompt;
 	g->llp.ctx = g;
 	g->llp.flags = LGSM_ATCMD_F_EXTENDED;
 
 	return gsmd_register_fd(&g->gfd_uart);
-}	
-
+}

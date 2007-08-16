@@ -91,9 +91,11 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 				continue;
 			}
 			printf("STR=`%s'\n", buf);
+
+			/* this is a synchronous call for a passthrough
+			 * command */
+			lgsm_passthrough(lgsmh, buf, rbuf, &rlen);
+			printf("RSTR=`%s'\n", rbuf);
 		}
-		/* this is a synchronous call for a passthrough command */
-		lgsm_passthrough(lgsmh, buf, rbuf, &rlen);
-		printf("RSTR=`%s'\n", rbuf);
 	}
 }

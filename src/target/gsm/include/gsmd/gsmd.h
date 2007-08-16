@@ -27,6 +27,7 @@ struct gsmd_atcmd {
 	u_int32_t buflen;
 	u_int16_t id;
 	u_int8_t flags;
+	char *cur;
 	char buf[];
 };
 
@@ -36,6 +37,8 @@ enum llparse_state {
 	LLPARSE_STATE_IDLE_LF,		/* LF before response (V1) */
 	LLPARSE_STATE_RESULT,		/* within result payload */
 	LLPARSE_STATE_RESULT_CR,	/* CR after result */
+	LLPARSE_STATE_PROMPT,		/* within a "> " prompt */
+	LLPARSE_STATE_PROMPT_SPC,	/* a complete "> " prompt */
 	LLPARSE_STATE_ERROR,		/* something went wrong */
 					/* ... idle again */
 };
@@ -52,6 +55,7 @@ struct llparser {
 	unsigned int flags;
 	void *ctx;
 	int (*cb)(const char *buf, int len, void *ctx);
+	int (*prompt_cb)(void *ctx);
 	char *cur;
 	char buf[LLPARSE_BUF_SIZE];
 };
@@ -92,7 +96,8 @@ struct gsmd_user {
 
 extern int gsmdlog_init(const char *path);
 /* write a message to the daemons' logfile */
-void __gsmd_log(int level, const char *file, int line, const char *function, const char *message, ...);
+void __gsmd_log(int level, const char *file, int line, const char *function, const char *message, ...)
+	__attribute__ ((__format__ (__printf__, 5, 6)));
 /* macro for logging including filename and line number */
 #define gsmd_log(level, format, args ...) \
 	__gsmd_log(level, __FILE__, __LINE__, __FUNCTION__, format, ## args)

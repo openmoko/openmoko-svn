@@ -518,9 +518,11 @@ int generate_event_from_cme(struct gsmd *g, unsigned int cme_error)
 	case GSM0707_CME_PHONE_ADAPT_RESERVED:
 	case GSM0707_CME_SIM_NOT_INSERTED:
 		/* FIXME */
+		talloc_free(gu);
 		return 0;
 		break;
 	default:
+		talloc_free(gu);
 		return 0;
 		break;
 	}

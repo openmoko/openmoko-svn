@@ -277,7 +277,7 @@ static int ticalypso_detect(struct gsmd *g)
 
 static int ticalypso_initsettings(struct gsmd *g)
 {
-	int rc;
+	int rc = 0;
 	struct gsmd_atcmd *cmd;
 
 	/* use +CTZR: to report time zone changes */
