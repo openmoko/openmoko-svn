@@ -477,6 +477,8 @@ int main(int argc, char **argv)
 	/* select a vendor plugin */
 	gsmd_vendor_plugin_find(&g);
 
+	unsolicited_init(&g);
+
 	if (g.interpreter_ready) {
 		gsmd_initsettings(&g);
 	

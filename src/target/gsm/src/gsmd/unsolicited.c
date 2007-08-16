@@ -358,54 +358,69 @@ static const struct gsmd_unsolicit gsm0707_unsolicit[] = {
 	*/
 };
 
+static struct gsmd_unsolicit unsolicit[256] = {{ 0, 0 }};
+
 /* called by midlevel parser if a response seems unsolicited */
 int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 {
-	int i, rc;
+	struct gsmd_unsolicit *i;
+	int rc;
 	struct gsmd_vendor_plugin *vpl = g->vendorpl;
 
-	/* call vendor-specific unsolicited code parser */
-	if (vpl && vpl->num_unsolicit) {
-		for (i = 0; i < vpl->num_unsolicit; i++) {
-			const char *colon;
-			if (strncmp(buf, vpl->unsolicit[i].prefix,
-				     strlen(vpl->unsolicit[i].prefix)))
-				continue;
-
-			colon = strchr(buf, ':') + 2;
-			if (colon > buf+len)
-				colon = NULL;
-
-			rc = vpl->unsolicit[i].parse(buf, len, colon, g);
-			if (rc < 0) 
-				gsmd_log(GSMD_ERROR, "error %d during parse of "
-					 "vendor unsolicied response `%s'\n",
-					 rc, buf);
-			return rc;
-		}
-	}
-
-	/* call generic unsolicited code parser */
-	for (i = 0; i < ARRAY_SIZE(gsm0707_unsolicit); i++) {
+	/* call unsolicited code parser */
+	for (i = unsolicit; i->prefix; i ++) {
 		const char *colon;
-		if (strncmp(buf, gsm0707_unsolicit[i].prefix,
-			     strlen(gsm0707_unsolicit[i].prefix)))
+		if (strncmp(buf, i->prefix, strlen(i->prefix)))
 			continue;
-		
+
 		colon = strchr(buf, ':') + 2;
 		if (colon > buf+len)
 			colon = NULL;
 
-		rc = gsm0707_unsolicit[i].parse(buf, len, colon, g);
+		rc = i->parse(buf, len, colon, g);
 		if (rc < 0) 
-			gsmd_log(GSMD_ERROR, "error %d during parse of "
-				 "unsolicied response `%s'\n", rc, buf);
-		return rc;
+			gsmd_log(GSMD_ERROR, "error %d during parsing of "
+				 "an unsolicied response `%s'\n",
+				 rc, buf);
+			return rc;
 	}
 
 	gsmd_log(GSMD_NOTICE, "no parser for unsolicited response `%s'\n", buf);
 
 	return -ENOENT;
+}
+
+int unsolicited_register_array(const struct gsmd_unsolicit *arr, int len)
+{
+	int curlen = 0;
+
+	while (unsolicit[curlen ++].prefix);
+	if (len + curlen > ARRAY_SIZE(unsolicit))
+		return -ENOMEM;
+
+	/* Add at the beginning for overriding to be possible */
+	memmove(&unsolicit[len], unsolicit,
+			sizeof(struct gsmd_unsolicit) * curlen);
+	memcpy(unsolicit, arr,
+			sizeof(struct gsmd_unsolicit) * len);
+
+	return 0;
+}
+
+void unsolicited_init(struct gsmd *g)
+{
+	struct gsmd_vendor_plugin *vpl = g->vendorpl;
+
+	/* register generic unsolicited code parser */
+	unsolicited_register_array(gsm0707_unsolicit,
+			ARRAY_SIZE(gsm0707_unsolicit));
+
+	/* register vendor-specific unsolicited code parser */
+	if (vpl && vpl->num_unsolicit)
+		if (unsolicited_register_array(vpl->unsolicit,
+					vpl->num_unsolicit))
+			gsmd_log(GSMD_ERROR, "registering vendor-specific "
+					"unsolicited responses failed\n");
 }
 
 static unsigned int errors_creating_events[] = {

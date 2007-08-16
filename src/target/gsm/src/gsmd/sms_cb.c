@@ -315,6 +315,9 @@ int sms_cb_init(struct gsmd *gsmd)
 	struct gsmd_atcmd *atcmd;
 	char buffer[10];
 
+	unsolicited_register_array(gsm0705_unsolicit,
+			ARRAY_SIZE(gsm0705_unsolicit));
+
 	atcmd = atcmd_fill("AT+CSMS=0", 9 + 1, NULL, gsmd, 0);
 	if (!atcmd)
 		return -ENOMEM;
