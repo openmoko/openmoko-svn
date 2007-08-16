@@ -425,7 +425,7 @@ on_network_registered (MokoGsmdConnection *conn,
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
     case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
       /* Do nothing */
-      g_print ("NetReg: Seraching for network\n");
+      g_print ("NetReg: Searching for network\n");
       g_source_remove (priv->reg_timeout);
       priv->registered = TRUE;
       break;

@@ -1,5 +1,13 @@
 2007-08-16  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_network_registered):
+	Fix a typo.
+
+	* src/moko-keypad.c: (on_panel_user_input):
+	Make '#' the same as 'OK' when inputting a PIN (Bug #708)
+
+2007-08-16  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_network_registered), (on_pin_requested):
 	Be smarter when searching for a network, don't keep pinging gsmd.
 

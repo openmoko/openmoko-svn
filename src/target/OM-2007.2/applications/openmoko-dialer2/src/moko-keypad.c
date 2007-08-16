@@ -183,6 +183,13 @@ on_panel_user_input (MokoDialerPanel *panel,
   g_return_if_fail (MOKO_IS_KEYPAD (keypad));
   priv = keypad->priv;
 
+  /* Phones use '#' for PIN 'entered' signal */
+  if (priv->pin_mode && digit == '#')
+  { 
+    on_dial_clicked (NULL, keypad);
+    return;
+  }   
+
   /* Create a string to insert into the textview */
   buf[0] = digit;
   buf[1] = '\0';
