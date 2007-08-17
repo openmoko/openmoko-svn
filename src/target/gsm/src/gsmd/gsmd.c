@@ -36,6 +36,7 @@
 #include <sys/stat.h>
 
 #include "gsmd.h"
+#include "gsmd-version.h"
 
 #include <gsmd/gsmd.h>
 #include <gsmd/atcmd.h>
@@ -325,6 +326,11 @@ static void print_header(void)
 	       "This program is FREE SOFTWARE under the terms of GNU GPL\n\n");
 }
 
+static void print_version(void)
+{
+	printf("gsmd, version %s\n",GSMD_VERSION);
+}
+
 static void print_usage(void)
 {
 	printf("Usage:\n"
@@ -382,7 +388,8 @@ int main(int argc, char **argv)
 	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:v:m:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
-			/* FIXME */
+			print_version();
+			exit(0);
 			break;
 		case 'L':
 			talloc_enable_leak_report_full();

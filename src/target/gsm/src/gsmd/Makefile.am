@@ -2,6 +2,12 @@ INCLUDES = $(all_includes) -I$(top_srcdir)/include
 AM_CFLAGS = -std=gnu99
 plugindir = $(libdir)/gsmd
 
+gsmd-version.h:
+	echo -e '#ifndef GSMD_VERSION' \
+	'\n#define GSMD_VERSION "'`svnversion`'"' \
+	'\n#endif' > gsmd-version.h
+
+BUILT_SOURCES = gsmd-version.h
 sbin_PROGRAMS = gsmd
 
 gsmd_CFLAGS = -D PLUGINDIR=\"$(plugindir)\"
