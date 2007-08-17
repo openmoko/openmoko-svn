@@ -78,3 +78,53 @@ int lgsm_signal_quality(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_SIGQ_GET);
 }
+
+int lgsm_prefoper_list(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_PREF_LIST);
+}
+
+int lgsm_prefoper_delete(struct lgsm_handle *lh, int index)
+{
+	struct gsmd_msg_hdr *gmh;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_NETWORK, GSMD_NETWORK_PREF_DEL,
+			sizeof(int));
+	if (!gmh)
+		return -ENOMEM;
+
+	memcpy(gmh->data, &index, sizeof(int));
+
+	if (lgsm_send(lh, gmh) < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+	return 0;
+}
+
+int lgsm_prefoper_add(struct lgsm_handle *lh, gsmd_oper_numeric oper)
+{
+	struct gsmd_msg_hdr *gmh;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_NETWORK, GSMD_NETWORK_PREF_ADD,
+			sizeof(gsmd_oper_numeric));
+	if (!gmh)
+		return -ENOMEM;
+
+	memcpy(gmh->data, oper, sizeof(gsmd_oper_numeric));
+
+	if (lgsm_send(lh, gmh) < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+	return 0;
+}
+
+int lgsm_prefoper_get_space(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_PREF_SPACE);
+}

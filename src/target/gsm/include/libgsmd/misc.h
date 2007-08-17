@@ -62,6 +62,12 @@ enum lgsm_netreg_state {
 extern int lgsm_get_netreg_state(struct lgsm_handle *lh,
 				 enum lgsm_netreg_state *state);
 
+/* Preferred operator list management */
+extern int lgsm_prefoper_list(struct lgsm_handle *lh);
+extern int lgsm_prefoper_delete(struct lgsm_handle *lh, int index);
+extern int lgsm_prefoper_add(struct lgsm_handle *lh, gsmd_oper_numeric oper);
+extern int lgsm_prefoper_get_space(struct lgsm_handle *lh);
+
 /* CLIP, CLIR, COLP, Call Forwarding, Call Waiting, Call Deflecting */
 /* TBD */
 

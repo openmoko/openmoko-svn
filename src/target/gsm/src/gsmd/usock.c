@@ -423,6 +423,10 @@ static int network_opers_parse(const char *str, struct gsmd_msg_oper out[])
 {
 	int len = 0;
 	int stat, n;
+	char opname_longalpha[16 + 1];
+	char opname_shortalpha[8 + 1];
+	char opname_num[6 + 1];
+
 	if (strncmp(str, "+COPS: ", 7))
 		goto final;
 	str += 7;
@@ -434,12 +438,18 @@ static int network_opers_parse(const char *str, struct gsmd_msg_oper out[])
 						"(%i,\"%16[^\"]\","
 						"\"%8[^\"]\",\"%6[0-9]\")%n",
 						&stat,
-						out->opname_longalpha,
-						out->opname_shortalpha,
-						out->opname_num,
+						opname_longalpha,
+						opname_shortalpha,
+						opname_num,
 						&n) < 4)
 				goto final;
 			out->stat = stat;
+			memcpy(out->opname_longalpha, opname_longalpha,
+					sizeof(out->opname_longalpha));
+			memcpy(out->opname_shortalpha, opname_shortalpha,
+					sizeof(out->opname_shortalpha));
+			memcpy(out->opname_num, opname_num,
+					sizeof(out->opname_num));
 		} else
 			if (sscanf(str,
 						"(%*i,\"%*[^\"]\","
@@ -475,6 +485,64 @@ static int network_opers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		return -ENOMEM;
 
 	network_opers_parse(resp, (struct gsmd_msg_oper *) ucmd->buf);
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int network_pref_opers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = (struct gsmd_user *) ctx;
+	struct gsmd_ucmd *ucmd;
+	struct gsmd_msg_prefoper *entry;
+	int index;
+	char opname[17];
+
+	if (cmd->ret && cmd->ret != -255)
+		return 0;
+
+	if (sscanf(resp, "+CPOL: %i,0,\"%16[^\"]\"", &index, opname) < 2)
+		return -EINVAL;
+
+	ucmd = gsmd_ucmd_fill(sizeof(*entry), GSMD_MSG_NETWORK,
+			GSMD_NETWORK_PREF_LIST, cmd->id);
+	if (!ucmd)
+		return -ENOMEM;
+
+	entry = (struct gsmd_msg_prefoper *) ucmd->buf;
+	entry->index = index;
+	entry->is_last = (cmd->ret == 0);
+	memcpy(entry->opname_longalpha, opname,
+			sizeof(entry->opname_longalpha));
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int network_pref_num_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = (struct gsmd_user *) ctx;
+	struct gsmd_ucmd *ucmd;
+	int min_index, max_index, size;
+
+	if (cmd->ret)
+		return 0;
+
+	/* This is not a full general case, theoretically the range string
+	 * can include commas and more dashes, but we have no full parser for
+	 * ranges yet.  */
+	if (sscanf(resp, "+CPOL: (%i-%i)", &min_index, &max_index) < 2)
+		return -EINVAL;
+
+	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_NETWORK,
+			GSMD_NETWORK_PREF_SPACE, cmd->id);
+	if (!ucmd)
+		return -ENOMEM;
+
+	size = max_index - min_index + 1;
+	memcpy(ucmd->buf, &size, sizeof(int));
+
 	usock_cmd_enqueue(ucmd, gu);
 
 	return 0;
@@ -518,6 +586,26 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_NETWORK_OPER_LIST:
 		cmd = atcmd_fill("AT+COPS=?", 9+1, &network_opers_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_PREF_LIST:
+		/* Set long alphanumeric format */
+		atcmd_submit(gu->gsmd, atcmd_fill("AT+CPOL=,0", 10 + 1,
+					&null_cmd_cb, gu, 0));
+		cmd = atcmd_fill("AT+CPOL?", 8 + 1,
+				&network_pref_opers_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_PREF_DEL:
+		cmdlen = sprintf(buffer, "AT+CPOL=%i", *(int *) gph->data);
+		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_PREF_ADD:
+		cmdlen = sprintf(buffer, "AT+CPOL=,2,\"%.*s\"",
+				sizeof(gsmd_oper_numeric), oper);
+		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_PREF_SPACE:
+		cmd = atcmd_fill("AT+CPOL=?", 9 + 1,
+				&network_pref_num_cb, gu, 0);
 		break;
 	default:
 		return -EINVAL;

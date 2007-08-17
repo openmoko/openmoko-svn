@@ -70,6 +70,11 @@ enum gsmd_msg_network {
 	GSMD_NETWORK_OPER_LIST	= 6,
 	GSMD_NETWORK_CIND_GET	= 7,
 	GSMD_NETWORK_DEREGISTER	= 8,
+	GSMD_NETWORK_GET_NUMBER = 9,
+	GSMD_NETWORK_PREF_LIST  = 10,
+	GSMD_NETWORK_PREF_DEL   = 11,
+	GSMD_NETWORK_PREF_ADD   = 12,
+	GSMD_NETWORK_PREF_SPACE = 13,
 };
 
 enum gsmd_msg_sms {
@@ -456,6 +461,12 @@ struct gsmd_msg_oper {
 	char opname_longalpha[16];
 	char opname_shortalpha[8];
 	gsmd_oper_numeric opname_num;
+};
+
+struct gsmd_msg_prefoper {
+	int index;
+	int is_last;
+	char opname_longalpha[16];
 };
 
 struct gsmd_msg_hdr {
