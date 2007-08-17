@@ -76,6 +76,14 @@ static inline int llparse_append(struct llparser *llp, char byte)
 	}
 }
 
+static inline void llparse_endline(struct llparser *llp)
+{
+	/* re-set cursor to start of buffer */
+	llp->cur = llp->buf;
+	llp->state = LLPARSE_STATE_IDLE;
+	memset(llp->buf, 0, LLPARSE_BUF_SIZE);
+}
+
 static int llparse_byte(struct llparser *llp, char byte)
 {
 	int ret = 0;
@@ -121,16 +129,18 @@ static int llparse_byte(struct llparser *llp, char byte)
 	case LLPARSE_STATE_RESULT:
 		if (byte == '\r')
 			llp->state = LLPARSE_STATE_RESULT_CR;
+		else if ((llp->flags & LGSM_ATCMD_F_LFCR) && byte == '\n')
+			llp->state = LLPARSE_STATE_RESULT_LF;
 		else
 			ret = llparse_append(llp, byte);
 		break;
 	case LLPARSE_STATE_RESULT_CR:
-		if (byte == '\n') {
-			/* re-set cursor to start of buffer */
-			llp->cur = llp->buf;
-			llp->state = LLPARSE_STATE_IDLE;
-			memset(llp->buf, 0, LLPARSE_BUF_SIZE);
-		}
+		if (byte == '\n')
+			llparse_endline(llp);
+		break;
+	case LLPARSE_STATE_RESULT_LF:
+		if (byte == '\r')
+			llparse_endline(llp);
 		break;
 	case LLPARSE_STATE_PROMPT:
 		if (byte == ' ')

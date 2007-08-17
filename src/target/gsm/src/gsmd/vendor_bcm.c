@@ -98,6 +98,9 @@ static int bcm_initsettings(struct gsmd *g)
 	int rc;
 	struct gsmd_atcmd *cmd;
 
+	/* bcm sometimes sends LFCR instead of CRLF (eg *MTSMENU message) */
+	g->llp.flags |= LGSM_ATCMD_F_LFCR;
+
 	/* TODO */
 	return rc;
 }

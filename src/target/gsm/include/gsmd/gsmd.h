@@ -17,6 +17,7 @@ void *gsmd_tallocs;
 /* Refer to 3GPP TS 07.07 v 7.8.0, Chapter 4.1 */
 #define LGSM_ATCMD_F_EXTENDED	0x01	/* as opposed to basic */
 #define LGSM_ATCMD_F_PARAM	0x02	/* as opposed to action */
+#define LGSM_ATCMD_F_LFCR	0x04	/* accept LFCR as a line terminator */
 
 struct gsmd_atcmd {
 	struct llist_head list;
@@ -37,6 +38,7 @@ enum llparse_state {
 	LLPARSE_STATE_IDLE_LF,		/* LF before response (V1) */
 	LLPARSE_STATE_RESULT,		/* within result payload */
 	LLPARSE_STATE_RESULT_CR,	/* CR after result */
+	LLPARSE_STATE_RESULT_LF,	/* LF after result */
 	LLPARSE_STATE_PROMPT,		/* within a "> " prompt */
 	LLPARSE_STATE_PROMPT_SPC,	/* a complete "> " prompt */
 	LLPARSE_STATE_ERROR,		/* something went wrong */
