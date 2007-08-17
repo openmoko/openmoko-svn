@@ -478,6 +478,24 @@ struct gsmd_phonebook_storage {
 	char storage[3];
 } __attribute__ ((packed));
 
+/* Subscriber number information from 3GPP TS 07.07, Clause 7.1 */
+enum gsmd_subscriber_service {
+	GSMD_SERVICE_UNKNOWN		= -1,
+	GSMD_SERVICE_ASYNC_MODEM	= 0,
+	GSMD_SERVICE_SYNC_MODEM,
+	GSMD_SERVICE_PAD_ACCESS,
+	GSMD_SERVICE_PACKET_ACCESS,
+	GSMD_SERVICE_VOICE,
+	GSMD_SERVICE_FAX,
+};
+
+struct gsmd_own_number {
+	int is_last;
+	enum gsmd_subscriber_service service;
+	struct gsmd_addr addr;
+	char name[0];
+};
+
 struct gsmd_msg_hdr {
 	u_int8_t version;
 	u_int8_t msg_type;

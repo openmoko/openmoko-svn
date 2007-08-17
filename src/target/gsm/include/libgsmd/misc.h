@@ -68,6 +68,9 @@ extern int lgsm_prefoper_delete(struct lgsm_handle *lh, int index);
 extern int lgsm_prefoper_add(struct lgsm_handle *lh, gsmd_oper_numeric oper);
 extern int lgsm_prefoper_get_space(struct lgsm_handle *lh);
 
+/* Get subscriber's own phone number */
+extern int lgsm_get_subscriber_num(struct lgsm_handle *lh);
+
 /* CLIP, CLIR, COLP, Call Forwarding, Call Waiting, Call Deflecting */
 /* TBD */
 

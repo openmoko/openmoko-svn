@@ -298,11 +298,21 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	const char *oper = (char *) gmh + sizeof(*gmh);
 	const struct gsmd_msg_oper *opers = (struct gsmd_msg_oper *)
 		((void *) gmh + sizeof(*gmh));
+	const struct gsmd_own_number *num = (struct gsmd_own_number *)
+		((void *) gmh + sizeof(*gmh));
 	static const char *oper_stat[] = {
 		[GSMD_OPER_UNKNOWN] = "of unknown status",
 		[GSMD_OPER_AVAILABLE] = "available",
 		[GSMD_OPER_CURRENT] = "our current operator",
 		[GSMD_OPER_FORBIDDEN] = "forbidden",
+	};
+	static const char *srvname[] = {
+		[GSMD_SERVICE_ASYNC_MODEM] = "asynchronous modem",
+		[GSMD_SERVICE_SYNC_MODEM] = "synchronous modem",
+		[GSMD_SERVICE_PAD_ACCESS] = "PAD Access (asynchronous)",
+		[GSMD_SERVICE_PACKET_ACCESS] = "Packet Access (synchronous)",
+		[GSMD_SERVICE_VOICE] = "voice",
+		[GSMD_SERVICE_FAX] = "fax",
 	};
 
 	switch (gmh->msg_subtype) {
@@ -333,6 +343,15 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 					opers->opname_shortalpha,
 					oper_stat[opers->stat]);
 		break;
+	case GSMD_NETWORK_GET_NUMBER:
+		printf("\t%s\t%10s%s%s%s\n", num->addr.number, num->name,
+				(num->service == GSMD_SERVICE_UNKNOWN) ?
+				"" : " related to ",
+				(num->service == GSMD_SERVICE_UNKNOWN) ?
+				"" : srvname[num->service],
+				(num->service == GSMD_SERVICE_UNKNOWN) ?
+				"" : " services");
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -352,6 +371,7 @@ static int shell_help(void)
 		"\tL\tDetect available operators\n"
 		"\tQ\tRead signal quality\n"
 		"\tT\tSend DTMF Tone\n"
+		"\tn\tPrint subscriber numbers\n"
 		"\tpd\tPB Delete (pb=index)\n"
 		"\tpr\tPB Read (pr=index)\n"
 		"\tprr\tPB Read Range (prr=index1,index2)\n"
@@ -630,6 +650,8 @@ int shell_main(struct lgsm_handle *lgsmh)
 					printf("No.\n");
 				else
 					lgsm_sms_set_smsc(lgsmh, ptr + 1);
+			} else if (!strcmp(buf, "n")) {
+				lgsm_get_subscriber_num(lgsmh);
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}

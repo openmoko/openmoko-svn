@@ -128,3 +128,8 @@ int lgsm_prefoper_get_space(struct lgsm_handle *lh)
 {
 	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_PREF_SPACE);
 }
+
+int lgsm_get_subscriber_num(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_NETWORK, GSMD_NETWORK_GET_NUMBER);
+}

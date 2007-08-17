@@ -548,6 +548,51 @@ static int network_pref_num_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+static int network_ownnumbers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = (struct gsmd_user *) ctx;
+	struct gsmd_ucmd *ucmd;
+	struct gsmd_own_number *num;
+	int len, ret, type;
+	char dummy;
+
+	if (cmd->ret && cmd->ret != -255)
+		return 0;
+
+	if (sscanf(resp, "+CNUM: \"%*[^\"]\"%c%n", &dummy, &len) > 0)
+		len -= strlen("+CNUM: \"\",");
+	else
+		len = 0;
+
+	ucmd = gsmd_ucmd_fill(sizeof(*num) + len + 1,
+			GSMD_MSG_NETWORK, GSMD_NETWORK_GET_NUMBER, cmd->id);
+	if (!ucmd)
+		return -ENOMEM;
+
+	num = (struct gsmd_own_number *) ucmd->buf;
+	if (len)
+		ret = sscanf(resp, "+CNUM: \"%[^\"]\",\"%32[^\"]\",%i,%*i,%i,",
+				num->name, num->addr.number,
+				&type, &num->service) - 1;
+	else
+		ret = sscanf(resp, "+CNUM: ,\"%32[^\"]\",%i,%*i,%i,",
+				num->addr.number,
+				&type, &num->service);
+	if (ret < 2) {
+		talloc_free(ucmd);
+		return -EINVAL;
+	}
+	if (ret < 3)
+		num->service = GSMD_SERVICE_UNKNOWN;
+	num->name[len] = 0;
+	num->addr.type = type;
+	num->is_last = (cmd->ret == 0);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
 static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			     int len)
 {
@@ -606,6 +651,10 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	case GSMD_NETWORK_PREF_SPACE:
 		cmd = atcmd_fill("AT+CPOL=?", 9 + 1,
 				&network_pref_num_cb, gu, 0);
+		break;
+	case GSMD_NETWORK_GET_NUMBER:
+		cmd = atcmd_fill("AT+CNUM", 7 + 1,
+				&network_ownnumbers_cb, gu, 0);
 		break;
 	default:
 		return -EINVAL;

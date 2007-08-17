@@ -26,6 +26,7 @@
 #include <common/linux_list.h>
 #include <libgsmd/libgsmd.h>
 #include <libgsmd/event.h>
+#include <libgsmd/sms.h>
 
 static int incall_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
 {
