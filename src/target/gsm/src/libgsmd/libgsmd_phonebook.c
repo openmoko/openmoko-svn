@@ -11,6 +11,38 @@
 
 #include "lgsm_internals.h"
 
+
+int lgsm_pb_list_storage(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONEBOOK,
+			GSMD_PHONEBOOK_LIST_STORAGE);
+}
+
+int lgsm_pb_set_storage(struct lgsm_handle *lh, char *storage)
+{
+	struct gsmd_msg_hdr *gmh;
+	int rc;
+
+	gmh = lgsm_gmh_fill(GSMD_MSG_PHONEBOOK,
+			GSMD_PHONEBOOK_SET_STORAGE, 3);
+
+	if (!gmh)
+		return -ENOMEM;
+
+	strncpy((char*)gmh->data, storage, 2);
+	gmh->data[2] = '\0';
+
+	rc = lgsm_send(lh, gmh);
+	if (rc < gmh->len + 3) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+
+	return 0;
+}
+
 int lgsm_pb_find_entry(struct lgsm_handle *lh, 
 		const struct lgsm_phonebook_find *pb_find)
 {
@@ -37,6 +69,7 @@ int lgsm_pb_find_entry(struct lgsm_handle *lh,
 	return 0;
 }
 
+
 int lgsm_pb_read_entry(struct lgsm_handle *lh, int index)
 {
 	struct gsmd_msg_hdr *gmh;
@@ -46,6 +79,7 @@ int lgsm_pb_read_entry(struct lgsm_handle *lh, int index)
 			GSMD_PHONEBOOK_READ, sizeof(int));
 	if (!gmh)
 		return -ENOMEM;
+
 	*(int *) gmh->data = index;
 
 	rc = lgsm_send(lh, gmh);
@@ -59,7 +93,7 @@ int lgsm_pb_read_entry(struct lgsm_handle *lh, int index)
 	return 0;
 }
 
-int lgsm_pb_read_entryies(struct lgsm_handle *lh, 
+int lgsm_pb_read_entries(struct lgsm_handle *lh,
 		const struct lgsm_phonebook_readrg *pb_readrg)
 {
 	struct gsmd_msg_hdr *gmh;
@@ -85,7 +119,7 @@ int lgsm_pb_read_entryies(struct lgsm_handle *lh,
 	return 0;
 }
 
-int lgsmd_pb_del_entry(struct lgsm_handle *lh, int index)
+int lgsm_pb_del_entry(struct lgsm_handle *lh, int index)
 {
 	struct gsmd_msg_hdr *gmh;
 	int rc;
@@ -108,7 +142,7 @@ int lgsmd_pb_del_entry(struct lgsm_handle *lh, int index)
 	return 0;
 }
 
-int lgsmd_pb_write_entry(struct lgsm_handle *lh, 
+int lgsm_pb_write_entry(struct lgsm_handle *lh,
 		const struct lgsm_phonebook *pb)
 {
 	/* FIXME: only support alphabet now */
@@ -138,7 +172,6 @@ int lgsmd_pb_write_entry(struct lgsm_handle *lh,
 
 	return 0;
 }
-
 
 int lgsm_pb_get_support(struct lgsm_handle *lh)
 {

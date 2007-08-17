@@ -2,6 +2,7 @@
 #define _GSMD_USOCK_H
 
 #include <gsmd/event.h>
+#include <common/linux_list.h>
 
 #define GSMD_UNIX_SOCKET "\0gsmd"
 //#define GSMD_UNIX_SOCKET_TYPE SOCK_SEQPACKET
@@ -192,6 +193,8 @@ enum gsmd_msg_phonebook {
 	GSMD_PHONEBOOK_WRITE		= 4,
 	GSMD_PHONEBOOK_DELETE		= 5,	
 	GSMD_PHONEBOOK_GET_SUPPORT	= 6,
+	GSMD_PHONEBOOK_LIST_STORAGE	= 7,
+	GSMD_PHONEBOOK_SET_STORAGE	= 8,
 };
 
 /* Type-of-Address, Numbering-Plan-Identification field, GSM 03.40, 9.1.2.5 */
@@ -423,6 +426,7 @@ struct gsmd_phonebook_readrg {
 #define	GSMD_PB_NUMB_MAXLEN	44
 #define GSMD_PB_TEXT_MAXLEN	14
 struct gsmd_phonebook {
+	struct llist_head list;
 	u_int8_t index;
 	char numb[GSMD_PB_NUMB_MAXLEN+1];
 	u_int8_t type;
@@ -469,6 +473,11 @@ struct gsmd_msg_prefoper {
 	char opname_longalpha[16];
 };
 
+struct gsmd_phonebook_storage {
+	struct llist_head list;
+	char storage[3];
+} __attribute__ ((packed));
+
 struct gsmd_msg_hdr {
 	u_int8_t version;
 	u_int8_t msg_type;
@@ -480,8 +489,6 @@ struct gsmd_msg_hdr {
 } __attribute__((packed));
 
 #ifdef __GSMD__
-
-#include <common/linux_list.h>
 
 #include <gsmd/usock.h>
 #include <gsmd/gsmd.h>

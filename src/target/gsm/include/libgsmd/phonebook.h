@@ -78,6 +78,12 @@ extern int lgsm_pb_get_entry(struct lgsm_handle *lh,
 extern int lgsm_pb_set_entry(struct lgsm_handle *lh,
 			     struct lgsm_pb_entry *pb);
 
+/* List of supported phonebook memory storage */
+extern int lgsm_pb_list_storage(struct lgsm_handle *lh);
+
+/* Select phonebook memory storage */
+extern int lgsm_pb_set_storage(struct lgsm_handle *lh, char *storage);
+
 /* Find phonebook entires which alphanumeric filed start 
  * with string <findtext> */
 extern int lgsm_pb_find_entry(struct lgsm_handle *lh, 
@@ -87,14 +93,14 @@ extern int lgsm_pb_find_entry(struct lgsm_handle *lh,
 extern int lgsm_pb_read_entry(struct lgsm_handle *lh, int index);
 
 /* Read phonebook entries in location number range */
-extern int lgsm_pb_read_entryies(struct lgsm_handle *lh, 
+extern int lgsm_pb_read_entries(struct lgsm_handle *lh,
 		const struct lgsm_phonebook_readrg *pb_readrg);
 
 /* Delete phonebook entry in location index */
-extern int lgsmd_pb_del_entry(struct lgsm_handle *lh, int index);
+extern int lgsm_pb_del_entry(struct lgsm_handle *lh, int index);
 
 /* Write phonebook entry in location */
-extern int lgsmd_pb_write_entry(struct lgsm_handle *lh, 
+extern int lgsm_pb_write_entry(struct lgsm_handle *lh,
 		const struct lgsm_phonebook *pb);
 
 /* Get the location range/nlength/tlength supported */

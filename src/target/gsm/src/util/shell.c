@@ -34,7 +34,16 @@
 #include <gsmd/usock.h>
 #include <gsmd/ts0705.h>
 
+#ifndef __GSMD__
+#define __GSMD__
+#include <gsmd/talloc.h>
+#undef __GSMD__
+#endif
+
 #define STDIN_BUF_SIZE	1024
+
+static LLIST_HEAD(storage_list);
+static LLIST_HEAD(phonebook_list);
 
 /* this is the handler for receiving passthrough responses */
 static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
@@ -48,27 +57,106 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	struct gsmd_phonebook *gp;
 	struct gsmd_phonebook_support *gps;
+	struct gsmd_phonebook_storage *gpst;
 	char *payload;
+	char *fcomma, *lcomma, *ptr = NULL;
+	char buf[128];
 
 	switch (gmh->msg_subtype) {
 	case GSMD_PHONEBOOK_FIND:		
-		break;
 	case GSMD_PHONEBOOK_READRG:
 		payload = (char *)gmh + sizeof(*gmh);
-		printf("%s\n", payload);	
+
+		if (!strncmp(payload, "+CPBR", 5) ||
+				!strncmp(payload, "+CPBF", 5)) {
+			gp = (struct gsmd_phonebook *) malloc(sizeof(struct gsmd_phonebook));
+			ptr = strchr(payload, ' ');
+	                gp->index = atoi(ptr+1);
+
+	                fcomma = strchr(payload, '"');
+	                lcomma = strchr(fcomma+1, '"');
+	                strncpy(gp->numb, fcomma + 1, (lcomma-fcomma-1));
+	                gp->numb[(lcomma - fcomma) - 1] = '\0';
+
+	                gp->type = atoi(lcomma + 2);
+
+	                ptr = strrchr(payload, ',');
+	                fcomma = ptr + 1;
+	                lcomma = strchr(fcomma + 1, '"');
+	                strncpy(gp->text, fcomma + 1, (lcomma - fcomma - 1));
+	                gp->text[(lcomma - fcomma) - 1] = '\0';
+
+			llist_add_tail(&gp->list, &phonebook_list);
+
+#if 0
+			llist_for_each_entry(gp, &phonebook_list, list) {
+				printf("%d, %s, %d, %s\n", gp->index, gp->numb, gp->type, gp->text);
+			}
+#endif
+			printf("%d, %s, %d, %s\n", gp->index, gp->numb, gp->type, gp->text);
+		}
+		else
+			printf("%s\n", payload);
 		break;
 	case GSMD_PHONEBOOK_READ:
 		gp = (struct gsmd_phonebook *) ((char *)gmh + sizeof(*gmh));
-		printf("%d, %s, %d, %s\n", gp->index, gp->numb, gp->type, gp->text);
-		break;
-	case GSMD_PHONEBOOK_WRITE:			
-	case GSMD_PHONEBOOK_DELETE:
-		payload = (char *)gmh + sizeof(*gmh);
-		printf("%s\n", payload);		
+		if (gp->index)
+			printf("%d, %s, %d, %s\n",
+					gp->index, gp->numb,
+					gp->type, gp->text);
+		else
+			printf("Empty\n");
 		break;
 	case GSMD_PHONEBOOK_GET_SUPPORT:
 		gps = (struct gsmd_phonebook_support *) ((char *)gmh + sizeof(*gmh));
 		printf("(1-%d), %d, %d\n", gps->index, gps->nlength, gps->tlength);
+		break;
+	case GSMD_PHONEBOOK_LIST_STORAGE:
+		payload = (char *)gmh + sizeof(*gmh);
+
+		if (!strncmp(payload, "+CPBS", 5)) {
+			char* delim = "(,";
+			struct gsmd_phonebook_storage *cur, *cur2;
+
+			/* Remove previous record */
+			if (!llist_empty(&storage_list)) {
+				llist_for_each_entry_safe(cur, cur2,
+						&storage_list, list) {
+					llist_del(&cur->list);
+					talloc_free(cur);
+				}
+			}
+
+			ptr = strpbrk(payload, delim);
+
+			while ( ptr ) {
+				gpst = (struct gsmd_phonebook_storage *) malloc(sizeof(struct gsmd_phonebook_storage));
+				strncpy(gpst->storage, ptr+2, 2);
+				gpst->storage[2] = '\0';
+
+				ptr = strpbrk(ptr+2, delim);
+
+				llist_add_tail(&gpst->list, &storage_list);
+			}
+
+			if (llist_empty(&storage_list))
+				return 0;
+
+			llist_for_each_entry(cur, &storage_list, list) {
+				printf("\n%s",cur->storage);
+			}
+
+			printf("\n");
+		}
+		else
+			printf("%s\n", payload);
+		break;
+	case GSMD_PHONEBOOK_WRITE:
+	case GSMD_PHONEBOOK_DELETE:
+	case GSMD_PHONEBOOK_SET_STORAGE:
+		/* TODO: Need to handle error */
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("%s\n", payload);
 		break;
 	default:
 		return -EINVAL;
@@ -270,6 +358,8 @@ static int shell_help(void)
 		"\tpf\tPB Find (pff=indtext)\n"
 		"\tpw\tPB Write (pw=index,number,text)\n"
 		"\tps\tPB Support\n"
+		"\tpm\tPB Memory\n"
+		"\tpp\tPB Set Memory (pp=storage)\n"
 		"\tsd\tSMS Delete (sd=index,delflg)\n"
 		"\tsl\tSMS List (sl=stat)\n"
 		"\tsr\tSMS Read (sr=index)\n"
@@ -392,27 +482,51 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if ( !strncmp(buf, "pd", 2)) {
 				printf("Delete Phonebook Entry\n");				
 				ptr = strchr(buf, '=');
-				lgsmd_pb_del_entry(lgsmh, atoi(ptr+1));
+				lgsm_pb_del_entry(lgsmh, atoi(ptr+1));
 			} else if ( !strncmp(buf, "prr", 3)) {	
 				printf("Read Phonebook Entries\n");
 				struct lgsm_phonebook_readrg pb_readrg;
+				struct gsmd_phonebook *gp_cur, *gp_cur2;
+
+				/* Remove records */
+				if (!llist_empty(&phonebook_list)) {
+					llist_for_each_entry_safe(gp_cur,
+							gp_cur2,
+							&phonebook_list,
+							list) {
+						llist_del(&gp_cur->list);
+						talloc_free(gp_cur);
+					}
+				}
 
 				ptr = strchr(buf, '=');
 				pb_readrg.index1 = atoi(ptr+1);				
 				ptr = strchr(buf, ',');
-				pb_readrg.index2 = atoi(ptr+1);	
-
-				lgsm_pb_read_entryies(lgsmh, &pb_readrg);
-			} else if ( !strncmp(buf, "pr", 2)) {	
-				printf("Read Phonebook Entry\n");
-				ptr = strchr(buf, '=');				
+				pb_readrg.index2 = atoi(ptr+1);
+				lgsm_pb_read_entries(lgsmh, &pb_readrg);
+			} else if ( !strncmp(buf, "pr", 2)) {
+				ptr = strchr(buf, '=');
 				lgsm_pb_read_entry(lgsmh, atoi(ptr+1));
 			} else if ( !strncmp(buf, "pf", 2)) {
 				printf("Find Phonebook Entry\n");
 				struct lgsm_phonebook_find pb_find;
+				struct gsmd_phonebook *gp_cur, *gp_cur2;
+
+				/* Remove records */
+				if (!llist_empty(&phonebook_list)) {
+					llist_for_each_entry_safe(gp_cur,
+							gp_cur2,
+							&phonebook_list,
+							list) {
+						llist_del(&gp_cur->list);
+						talloc_free(gp_cur);
+					}
+				}
 
 				ptr = strchr(buf, '=');
-				strncpy(pb_find.findtext, ptr+1, sizeof(pb_find.findtext)-1);
+				strncpy(pb_find.findtext,
+						ptr + 1,
+						sizeof(pb_find.findtext) - 1);
 				pb_find.findtext[strlen(ptr+1)] = '\0';	
 			
 				lgsm_pb_find_entry(lgsmh, &pb_find);
@@ -425,16 +539,25 @@ int shell_main(struct lgsm_handle *lgsmh)
 
 				fcomma = strchr(buf, ',');
 				lcomma = strchr(fcomma+1, ',');
-				strncpy(pb.numb, fcomma+1, (lcomma-fcomma-1));
-				pb.numb[(lcomma-fcomma-1)] = '\0';				
-				if ( '+' == pb.numb[0] )
+				strncpy(pb.numb, fcomma + 1, (lcomma - fcomma - 1));
+				pb.numb[(lcomma - fcomma - 1)] = '\0';
+				if ('+' == pb.numb[0])
 					pb.type = LGSM_PB_ATYPE_INTL;
 				else 
 					pb.type = LGSM_PB_ATYPE_OTHE;				
-				strncpy(pb.text, lcomma+1, strlen(lcomma+1));
-				pb.text[strlen(lcomma+1)] = '\0';
-				
-				lgsmd_pb_write_entry(lgsmh, &pb);
+				strncpy(pb.text, lcomma + 1, strlen(lcomma + 1));
+				pb.text[strlen(lcomma + 1)] = '\0';
+
+				lgsm_pb_write_entry(lgsmh, &pb);
+			} else if ( !strncmp(buf, "pm", 2)) {
+				lgsm_pb_list_storage(lgsmh);
+			} else if ( !strncmp(buf, "pp", 2)) {
+				char storage[3];
+
+				ptr = strchr(buf, '=');
+				strncpy(storage, (ptr+1), 2);
+
+				lgsm_pb_set_storage(lgsmh, storage);
 			} else if ( !strncmp(buf, "ps", 2)) {	
 				printf("Get Phonebook Support\n");
 				lgsm_pb_get_support(lgsmh);
