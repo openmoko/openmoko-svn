@@ -194,10 +194,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 {
 	struct gsmd *g = ctx;
 	struct gsmd_atcmd *cmd = NULL;
-	static char mlbuf[MLPARSE_BUF_SIZE];
 	int rc = 0;
-	static int mlbuf_len;
-	static int mlunsolicited = 0;
 	int cme_error = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
@@ -278,9 +275,9 @@ static int ml_parse(const char *buf, int len, void *ctx)
 				 * input.  Wait for the next line, concatenate
 				 * and resumbit to unsolicited_parse().  */
 				DEBUGP("Multiline unsolicited code\n");
-				mlbuf_len = len;
-				memcpy(mlbuf, buf, len);
-				mlunsolicited = 1;
+				g->mlbuf_len = len;
+				memcpy(g->mlbuf, buf, len);
+				g->mlunsolicited = 1;
 				return 0;
 			}
 			/* if unsolicited parser didn't handle this 'reply', then we 
@@ -303,16 +300,16 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 			/* it might be a multiline response, so if there's a previous
 			   response, send out mlbuf and start afresh with an empty buffer */
-			if (mlbuf_len) {
+			if (g->mlbuf_len) {
 				if (!cmd->cb) {
 					gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 				} else {
 					DEBUGP("Calling cmd->cb()\n");
-					cmd->resp = mlbuf;
+					cmd->resp = g->mlbuf;
 					rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
 					DEBUGP("Clearing mlbuf\n");
 				}
-				mlbuf_len = 0;
+				g->mlbuf_len = 0;
 			}
 
 			/* the current buf will be appended to mlbuf below */
@@ -360,17 +357,17 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	/* we reach here, if we are at an information response that needs to be
 	 * passed on */
 
-	if (mlbuf_len)
-		mlbuf[mlbuf_len ++] = '\n';
+	if (g->mlbuf_len)
+		g->mlbuf[g->mlbuf_len ++] = '\n';
 	DEBUGP("Appending buf to mlbuf\n");
-	if (len > sizeof(mlbuf) - mlbuf_len)
-		len = sizeof(mlbuf) - mlbuf_len;
-	memcpy(mlbuf + mlbuf_len, buf, len);
-	mlbuf_len += len;
+	if (len > sizeof(g->mlbuf) - g->mlbuf_len)
+		len = sizeof(g->mlbuf) - g->mlbuf_len;
+	memcpy(g->mlbuf + g->mlbuf_len, buf, len);
+	g->mlbuf_len += len;
 
-	if (mlunsolicited) {
-		rc = unsolicited_parse(g, mlbuf, mlbuf_len,
-				strchr(mlbuf, ':') + 1);
+	if (g->mlunsolicited) {
+		rc = unsolicited_parse(g, g->mlbuf, g->mlbuf_len,
+				strchr(g->mlbuf, ':') + 1);
 		if (rc == -EAGAIN) {
 			/* The parser wants one more line of
 			 * input.  Wait for the next line, concatenate
@@ -378,8 +375,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			DEBUGP("Multiline unsolicited code\n");
 			return 0;
 		}
-		mlunsolicited = 0;
-		mlbuf_len = 0;
+		g->mlunsolicited = 0;
+		g->mlbuf_len = 0;
 		return rc;
 	}
 	return 0;
@@ -397,15 +394,16 @@ final_cb:
 		gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 	} else {
 		DEBUGP("Calling final cmd->cb()\n");
-		/* send final result code if there is no information response in mlbuf */
-		if (mlbuf_len) {
-			cmd->resp = mlbuf;
-			mlbuf[mlbuf_len] = 0;
+		/* send final result code if there is no information
+		 * response in mlbuf */
+		if (g->mlbuf_len) {
+			cmd->resp = g->mlbuf;
+			g->mlbuf[g->mlbuf_len] = 0;
 		} else
 			cmd->resp = buf;
 		rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
 		DEBUGP("Clearing mlbuf\n");
-		mlbuf_len = 0;
+		g->mlbuf_len = 0;
 	}
 
 	/* remove from list of currently executing cmds */
@@ -570,6 +568,9 @@ int atcmd_init(struct gsmd *g, int sockfd)
 	INIT_LLIST_HEAD(&g->busy_atcmds);
 
 	llparse_init (&g->llp);
+
+	g->mlbuf_len = 0;
+	g->mlunsolicited = 0;
 
 	g->llp.cur = g->llp.buf;
 	g->llp.len = sizeof(g->llp.buf);

@@ -79,6 +79,9 @@ struct gsmd {
 	struct gsmd_device_state dev_state;
 
 	struct llist_head operators;		/* cached list of operator names */
+	unsigned char *mlbuf;		/* ml_parse buffer */
+	unsigned int mlbuf_len;
+	int mlunsolicited;
 };
 
 struct gsmd_user {
