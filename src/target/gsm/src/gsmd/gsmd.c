@@ -317,6 +317,7 @@ static struct option opts[] = {
 	{ "leak-report", 0, NULL, 'L' },
 	{ "vendor", 1, NULL, 'v' },
 	{ "machine", 1, NULL, 'm' },
+	{ "wait", 1, NULL, 'w' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -344,6 +345,7 @@ static void print_usage(void)
 	       "\t-l file\t--logfile file\tSpecify a logfile to log to\n"
 	       "\t-v\t--vendor v\tSpecify GSM modem vendor plugin\n"
 	       "\t-m\t--machine m\tSpecify GSM modem machine plugin\n"
+	       "\t-w\t--wait m\tWait for the AT Interpreter Ready message\n"
 	       );
 }
 
@@ -373,6 +375,7 @@ int main(int argc, char **argv)
 	char *logfile = "syslog";
 	char *vendor_name = NULL;
 	char *machine_name = NULL;
+	int wait = -1;
 
 	signal(SIGTERM, sig_handler);
 	signal(SIGINT, sig_handler);
@@ -385,7 +388,7 @@ int main(int argc, char **argv)
 	print_header();
 
 	/*FIXME: parse commandline, set daemonize, device, ... */
-	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:v:m:", opts, NULL)) != -1) {
+	while ((argch = getopt_long(argc, argv, "FVLdhp:s:l:v:m:w:", opts, NULL)) != -1) {
 		switch (argch) {
 		case 'V':
 			print_version();
@@ -422,6 +425,9 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			machine_name = optarg;
+			break;
+		case 'w':
+			wait = atoi(optarg);
 			break;
 		}
 	}
@@ -466,6 +472,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "couldn't initialize machine plugin\n");
 		exit(1);
 	}
+
+	if (wait >= 0)
+		g.interpreter_ready = !wait;
 
 	if (atcmd_init(&g, fd) < 0) {
 		fprintf(stderr, "can't initialize UART device\n");
