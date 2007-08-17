@@ -88,26 +88,32 @@ static int lgsm_open_backend(struct lgsm_handle *lh, const char *device)
 /* handle a packet that was received on the gsmd socket */
 int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len)
 {
-	struct gsmd_msg_hdr *gmh = (struct gsmd_msg_hdr *)buf;
+	struct gsmd_msg_hdr *gmh;
 	lgsm_msg_handler *handler; 
-	
-	if (len < sizeof(*gmh))
-		return -EINVAL;
-	
-	if (len - sizeof(*gmh) < gmh->len)
-		return -EINVAL;
-	
-	if (gmh->msg_type >= __NUM_GSMD_MSGS)
-		return -EINVAL;
-	
-	handler = lh->handler[gmh->msg_type];
-	
-	if (handler)
-		return handler(lh, gmh);
-	else {
-		fprintf(stderr, "unable to handle packet type=%u\n", gmh->msg_type);
-		return 0;
+	int rc = 0;
+
+	while (len) {
+		if (len < sizeof(*gmh))
+			return -EINVAL;
+		gmh = (struct gsmd_msg_hdr *) buf;
+
+		if (len - sizeof(*gmh) < gmh->len)
+			return -EINVAL;
+		len -= sizeof(*gmh) + gmh->len;
+		buf += sizeof(*gmh) + gmh->len;
+
+		if (gmh->msg_type >= __NUM_GSMD_MSGS)
+			return -EINVAL;
+
+		handler = lh->handler[gmh->msg_type];
+
+		if (handler)
+			rc |= handler(lh, gmh);
+		else
+			fprintf(stderr, "unable to handle packet type=%u\n",
+					gmh->msg_type);
 	}
+	return rc;
 }
 
 int lgsm_register_handler(struct lgsm_handle *lh, int type, lgsm_msg_handler *handler)
