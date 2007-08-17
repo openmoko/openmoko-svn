@@ -6,6 +6,7 @@
 #include <gsmd/gsmd.h>
 
 int sms_cb_init(struct gsmd *gsmd);
+int sms_cb_network_init(struct gsmd *gsmd);
 
 #define MAX_PDU_SIZE	180
 int sms_pdu_make_smssubmit(char *dest, const struct gsmd_sms_submit *src);

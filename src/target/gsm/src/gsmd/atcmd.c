@@ -197,6 +197,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	static char mlbuf[MLPARSE_BUF_SIZE];
 	int rc = 0;
 	static int mlbuf_len;
+	static int mlunsolicited = 0;
 	int cme_error = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
@@ -272,6 +273,16 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			if (colon > buf+len)
 				colon = NULL;
 			rc = unsolicited_parse(g, buf, len, colon);
+			if (rc == -EAGAIN) {
+				/* The parser wants one more line of
+				 * input.  Wait for the next line, concatenate
+				 * and resumbit to unsolicited_parse().  */
+				DEBUGP("Multiline unsolicited code\n");
+				mlbuf_len = len;
+				memcpy(mlbuf, buf, len);
+				mlunsolicited = 1;
+				return 0;
+			}
 			/* if unsolicited parser didn't handle this 'reply', then we 
 			 * need to continue and try harder and see what it is */
 			if (rc != -ENOENT) {
@@ -356,6 +367,21 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		len = sizeof(mlbuf) - mlbuf_len;
 	memcpy(mlbuf + mlbuf_len, buf, len);
 	mlbuf_len += len;
+
+	if (mlunsolicited) {
+		rc = unsolicited_parse(g, mlbuf, mlbuf_len,
+				strchr(mlbuf, ':') + 1);
+		if (rc == -EAGAIN) {
+			/* The parser wants one more line of
+			 * input.  Wait for the next line, concatenate
+			 * and resumbit to unsolicited_parse().  */
+			DEBUGP("Multiline unsolicited code\n");
+			return 0;
+		}
+		mlunsolicited = 0;
+		mlbuf_len = 0;
+		return rc;
+	}
 	return 0;
 
 final_cb:

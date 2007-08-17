@@ -60,19 +60,19 @@ static int netreg_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxda
 	printf("EVENT: Netreg ");
 
 	switch (aux->u.netreg.state) {
-	case 0:
+	case GSMD_NETREG_UNREG:
 		printf("not searching for network ");
 		break;
-	case 1:
+	case GSMD_NETREG_REG_HOME:
 		printf("registered (home network) ");
 		break;
-	case 2:
+	case GSMD_NETREG_UNREG_BUSY:
 		printf("searching for network ");
 		break;
-	case 3:
+	case GSMD_NETREG_DENIED:
 		printf("registration denied ");
 		break;
-	case 5:
+	case GSMD_NETREG_REG_ROAMING:
 		printf("registered (roaming) ");
 		break;
 	}

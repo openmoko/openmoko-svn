@@ -239,6 +239,24 @@ static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
+static int phone_powerup_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+
+	/* We need to verify if there is some error */
+	switch (cmd->ret) {
+	case 0:
+		gsmd_log(GSMD_DEBUG, "Radio powered-up\n");
+		gu->gsmd->dev_state.on = 1;
+		break;
+	default:
+		/* something went wrong */
+		gsmd_log(GSMD_DEBUG, "Radio power-up failed\n");
+		break;
+	}
+	return 0;
+}
+
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -247,8 +265,7 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	switch (gph->msg_subtype) {
 	case GSMD_PHONE_POWERUP:
 		cmd = atcmd_fill("AT+CFUN=1", 9+1,
-				 &null_cmd_cb, gu, 0);
-		gu->gsmd->dev_state.on = 1;
+				 &phone_powerup_cb, gu, 0);
 		break;
 
 	case GSMD_PHONE_POWERDOWN:

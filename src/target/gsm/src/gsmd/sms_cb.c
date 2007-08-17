@@ -498,7 +498,7 @@ static int cmt_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	len = strtoul(comma + 1, &cr, 10);
 	if (cr[0] != '\n') {
 		talloc_free(ucmd);
-		return -EINVAL;
+		return -EAGAIN;
 	}
 
 	cr ++;
@@ -567,8 +567,10 @@ static int cbm_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	msg = (struct gsmd_sms_list *) aux->data;
 
 	len = strtoul(param, &cr, 10);
-	if (cr[0] != '\n')
-		return -EINVAL;
+	if (cr[0] != '\n') {
+		talloc_free(ucmd);
+		return -EAGAIN;
+	}
 
 	cr ++;
 	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < MAX_PDU_SIZE; i ++) {
@@ -631,8 +633,10 @@ static int cds_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	msg = (struct gsmd_sms_list *) aux->data;
 
 	len = strtoul(param, &cr, 10);
-	if (cr[0] != '\n')
-		return -EINVAL;
+	if (cr[0] != '\n') {
+		talloc_free(ucmd);
+		return -EAGAIN;
+	}
 
 	cr ++;
 	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < MAX_PDU_SIZE; i ++) {
@@ -671,37 +675,6 @@ int sms_cb_init(struct gsmd *gsmd)
 	unsolicited_register_array(gsm0705_unsolicit,
 			ARRAY_SIZE(gsm0705_unsolicit));
 
-	atcmd = atcmd_fill("AT+CSMS=0", 9 + 1, NULL, gsmd, 0);
-	if (!atcmd)
-		return -ENOMEM;
-	atcmd_submit(gsmd, atcmd);
-
-	/*
-	 * Set the New Message Indications properties to values that are
-	 * likely supported.  We will get a:
-	 * +CMTI on a new incoming SMS,
-	 * +CBM on a new incoming CB,
-	 * +CDS on an SMS status report.
-	 *
-	 * FIXME: ask for supported +CNMI values first.
-	 */
-	atcmd = atcmd_fill("AT+CNMI=2,1,2,1,0", 17 + 1, NULL, gsmd, 0);
-	if (!atcmd)
-		return -ENOMEM;
-	atcmd_submit(gsmd, atcmd);
-
-	/* Store into ME/TA and notify */
-	atcmd = atcmd_fill("AT+CSBS=1", 9 + 1, NULL, gsmd, 0);
-	if (!atcmd)
-		return -ENOMEM;
-	atcmd_submit(gsmd, atcmd);
-
-	/* Store into ME/TA and notify */
-	atcmd = atcmd_fill("AT+CSDS=2", 9 + 1, NULL, gsmd, 0);
-	if (!atcmd)
-		return -ENOMEM;
-	atcmd_submit(gsmd, atcmd);
-
 	/* If text mode, set the encoding */
 	if (gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) {
 		atcmd = atcmd_fill("AT+CSCS=\"IRA\"", 13 + 1, NULL, gsmd, 0);
@@ -720,4 +693,32 @@ int sms_cb_init(struct gsmd *gsmd)
 		return -ENOMEM;
 
 	return atcmd_submit(gsmd, atcmd);
+}
+
+/* Called everytime the phone registers to the network and we want to start
+ * receiving messages.  */
+int sms_cb_network_init(struct gsmd *gsmd)
+{
+	int ret = 0;
+
+	ret |= gsmd_simplecmd(gsmd, "AT+CSMS=0");
+
+	/*
+	 * Set the New Message Indications properties to values that are
+	 * likely supported.  We will get a:
+	 * +CMTI on a new incoming SMS,
+	 * +CBM on a new incoming CB,
+	 * +CDS on an SMS status report.
+	 *
+	 * FIXME: ask for supported +CNMI values first.
+	 */
+	ret |= gsmd_simplecmd(gsmd, "AT+CNMI=2,1,2,1,0");
+
+	/* Store into ME/TA and notify */
+	ret |= gsmd_simplecmd(gsmd, "AT+CSBS=1");
+
+	/* Store into ME/TA and notify */
+	ret |= gsmd_simplecmd(gsmd, "AT+CSDS=2");
+
+	return ret;
 }

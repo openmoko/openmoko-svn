@@ -163,6 +163,12 @@ static int creg_parse(char *buf, int len, const char *param,
 	} else
 		aux->u.netreg.lac = aux->u.netreg.ci = 0;
 
+	/* Intialise things that depend on network registration */
+	if (aux->u.netreg.state == GSMD_NETREG_REG_HOME ||
+			aux->u.netreg.state == GSMD_NETREG_REG_ROAMING) {
+		sms_cb_network_init(gsmd);
+	}
+
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_NETREG);
 }
 
@@ -378,6 +384,8 @@ int unsolicited_parse(struct gsmd *g, char *buf, int len, const char *param)
 			colon = NULL;
 
 		rc = i->parse(buf, len, colon, g);
+		if (rc == -EAGAIN)
+			return rc;
 		if (rc < 0) 
 			gsmd_log(GSMD_ERROR, "error %d during parsing of "
 				 "an unsolicied response `%s'\n",
