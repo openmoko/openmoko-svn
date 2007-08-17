@@ -100,6 +100,7 @@ struct machines {
 	{ "HTC Himalaya",	"tihtc",	"tihtc" },
 	{ "HTC Magician",	"tihtc",	"tihtc" },
 	{ "HTC Universal",	"generic",	"qc" },
+	{ "Palm Treo 650",	"generic",	"bcm" },
 	{ NULL, NULL, NULL },
 };
 
@@ -157,6 +158,7 @@ int gsmd_machine_plugin_init(struct gsmd *g, char *machine_name, char *vendor_na
 		gsmd_vendor_plugin_load("ti");
 		gsmd_vendor_plugin_load("tihtc");
 		gsmd_vendor_plugin_load("qc");
+		gsmd_vendor_plugin_load("bcm");
 	}
 
 	return rc;
