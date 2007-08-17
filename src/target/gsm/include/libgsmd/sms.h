@@ -61,15 +61,29 @@ extern int lgsm_sms_list(struct lgsm_handle *lh, enum gsmd_msg_sms_type stat);
 extern int lgsm_sms_read(struct lgsm_handle *lh, int index);
 
 /* Delete Message */
-extern int lgsmd_sms_delete(struct lgsm_handle *lh, 
+extern int lgsm_sms_delete(struct lgsm_handle *lh,
 		const struct lgsm_sms_delete *sms_del);
 
 /* Send Message */
-extern int lgsmd_sms_send(struct lgsm_handle *lh, const struct lgsm_sms *sms);
+extern int lgsm_sms_send(struct lgsm_handle *lh, const struct lgsm_sms *sms);
 
 /* Write Message to Memory */
-extern int lgsmd_sms_write(struct lgsm_handle *lh, 
+extern int lgsm_sms_write(struct lgsm_handle *lh,
 		const struct lgsm_sms_write *sms_write);
+
+/* Retrieve SMS storage information */
+extern int lgsm_sms_get_storage(struct lgsm_handle *lh);
+
+/* Set preferred SMS storage */
+extern int lgsm_sms_set_storage(struct lgsm_handle *lh,
+		enum ts0705_mem_type mem1, enum ts0705_mem_type mem2,
+		enum ts0705_mem_type mem3);
+
+/* Retrieve current default service centre address */
+extern int lgsm_sms_get_smsc(struct lgsm_handle *lh);
+
+/* Set new default service centre address */
+extern int lgsm_sms_set_smsc(struct lgsm_handle *lh, const char *number);
 
 /* Packing of 7-bit characters, refer to GSM 03.38 subclause 6.1.2.1.1 */
 extern int packing_7bit_character(const char *src, struct lgsm_sms *dest);

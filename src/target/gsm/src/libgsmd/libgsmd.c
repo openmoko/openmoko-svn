@@ -207,3 +207,20 @@ struct gsmd_msg_hdr *lgsm_gmh_fill(int type, int subtype, int payload_len)
 	return gmh;
 }
 
+int lgsm_send_simple(struct lgsm_handle *lh, int type, int sub_type)
+{
+	struct gsmd_msg_hdr *gmh;
+	int rc;
+
+	gmh = lgsm_gmh_fill(type, sub_type, 0);
+	if (!gmh)
+		return -ENOMEM;
+	rc = lgsm_send(lh, gmh);
+	if (rc < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+	lgsm_gmh_free(gmh);
+
+	return 0;
+}

@@ -329,6 +329,29 @@ struct gsmd_sms_list {
 	int is_last;
 };
 
+/* Refer to GSM 07.05 subclause 3.1 */
+enum ts0705_mem_type {
+	GSM0705_MEMTYPE_NONE,
+	GSM0705_MEMTYPE_BROADCAST,
+	GSM0705_MEMTYPE_ME_MESSAGE,
+	GSM0705_MEMTYPE_MT,
+	GSM0705_MEMTYPE_SIM,
+	GSM0705_MEMTYPE_TA,
+	GSM0705_MEMTYPE_SR,
+};
+
+/* Refer to GSM 07.05 subclause 3.2.2 */
+struct __gsmd_sms_storage {
+	u_int8_t memtype;
+	u_int8_t pad[3];
+	u_int16_t used;
+	u_int16_t total;
+} __attribute__ ((packed));
+
+struct gsmd_sms_storage {
+	struct __gsmd_sms_storage mem[3];
+} __attribute__ ((packed));
+
 /* Refer to GSM 07.07 subclause 8.12 */
 struct gsmd_phonebook_readrg {
 	u_int8_t index1;

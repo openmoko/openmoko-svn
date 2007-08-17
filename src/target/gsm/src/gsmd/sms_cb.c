@@ -38,17 +38,7 @@
 #include <gsmd/usock.h>
 #include <gsmd/unsolicited.h>
 
-enum ts0705_mem_type {
-	GSM0705_MEMTYPE_NONE,
-	GSM0705_MEMTYPE_BROADCAST,
-	GSM0705_MEMTYPE_ME_MESSAGE,
-	GSM0705_MEMTYPE_MT,
-	GSM0705_MEMTYPE_SIM,
-	GSM0705_MEMTYPE_TA,
-	GSM0705_MEMTYPE_SR,
-};
-
-static const char *ts0705_memtype_name[] = {
+const char *ts0705_memtype_name[] = {
 	[GSM0705_MEMTYPE_NONE]		= "NONE",
 	[GSM0705_MEMTYPE_BROADCAST]	= "BM",
 	[GSM0705_MEMTYPE_ME_MESSAGE]	= "ME",
@@ -58,7 +48,7 @@ static const char *ts0705_memtype_name[] = {
 	[GSM0705_MEMTYPE_SR]		= "SR",
 };
 
-static inline int parse_memtype(char *memtype)
+inline int parse_memtype(char *memtype)
 {
 	int i;
 
@@ -68,76 +58,6 @@ static inline int parse_memtype(char *memtype)
 	}
 
 	return GSM0705_MEMTYPE_NONE;
-}
-
-/* TODO: move to headers */
-struct __gsmd_sms_storage {
-	u_int8_t memtype;
-	u_int8_t pad[3];
-	u_int16_t used;
-	u_int16_t total;
-} __attribute__ ((packed));
-
-struct gsmd_sms_storage {
-	struct __gsmd_sms_storage mem[3];
-} __attribute__ ((packed));
-
-static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
-{
-	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd = ucmd_alloc(sizeof(struct gsmd_sms_storage));
-	struct gsmd_sms_storage *gss = (typeof(gss)) ucmd->buf;
-	char buf[3][3];
-
-	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
-
-	if (!ucmd)
-		return -ENOMEM;
-
-	ucmd->hdr.version = GSMD_PROTO_VERSION;
-	ucmd->hdr.msg_type = GSMD_MSG_SMS;
-	ucmd->hdr.msg_subtype = GSMD_SMS_GET_MSG_STORAGE;
-	ucmd->hdr.len = sizeof(struct gsmd_sms_storage);
-	ucmd->hdr.id = cmd->id;
-
-	if (sscanf(resp, "+CPMS: \"%2[A-Z]\",%hi,%hi,"
-				"\"%2[A-Z]\",%hi,%hi,\"%2[A-Z]\",%hi,%hi",
-				buf[0], &gss->mem[0].used, &gss->mem[0].total,
-				buf[1], &gss->mem[1].used, &gss->mem[1].total,
-				buf[2], &gss->mem[2].used, &gss->mem[2].total)
-			< 9) {
-		talloc_free(ucmd);
-		return -EINVAL;
-	}
-
-	gss->mem[0].memtype = parse_memtype(buf[0]);
-	gss->mem[1].memtype = parse_memtype(buf[1]);
-	gss->mem[2].memtype = parse_memtype(buf[2]);
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
-}
-
-/* main unix socket SMS receiver */
-static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
-			 int len)
-{
-	struct gsmd_atcmd *cmd;
-
-	switch (gph->msg_subtype) {
-	case GSMD_SMS_GET_SERVICE_CENTRE:
-		return;
-	case GSMD_SMS_SET_SERVICE_CENTRE:
-		return;
-	case GSMD_SMS_SET_MSG_STORAGE:
-		return;
-	case GSMD_SMS_GET_MSG_STORAGE:
-		cmd = atcmd_fill("AT+CPMS?", 8 + 1, usock_cpms_cb, gu, 0);
-		break;
-	}
-
-	return atcmd_submit(gu->gsmd, cmd);
 }
 
 /* main unix socket Cell Broadcast receiver */

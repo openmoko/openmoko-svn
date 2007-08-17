@@ -39,6 +39,7 @@
 #include <gsmd/usock.h>
 #include <gsmd/talloc.h>
 #include <gsmd/ts0707.h>
+#include <gsmd/sms.h>
 
 static void *__ucmd_ctx, *__gu_ctx;
 
@@ -525,7 +526,7 @@ static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	if (
 			sscanf(resp, "+CMGL: %i,%i,,%i\n%n",
 				&idx, &stat, &len, &cr) < 3 &&
-			sscanf(resp, "+CMGL: %i,%i,%*i,%i\n%n",
+			sscanf(resp, "+CMGL: %i,%i,\"%*[^\"]\",%i\n%n",
 				&idx, &stat, &len, &cr) < 3)
 		return -EINVAL;
 	if (len > 164)
@@ -669,6 +670,65 @@ static int sms_delete_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd = ucmd_alloc(sizeof(struct gsmd_sms_storage));
+	struct gsmd_sms_storage *gss = (typeof(gss)) ucmd->buf;
+	char buf[3][3];
+
+	DEBUGP("entering(cmd=%p, gu=%p)\n", cmd, gu);
+
+	if (!ucmd)
+		return -ENOMEM;
+
+	ucmd->hdr.version = GSMD_PROTO_VERSION;
+	ucmd->hdr.msg_type = GSMD_MSG_SMS;
+	ucmd->hdr.msg_subtype = GSMD_SMS_GET_MSG_STORAGE;
+	ucmd->hdr.len = sizeof(struct gsmd_sms_storage);
+	ucmd->hdr.id = cmd->id;
+
+	if (sscanf(resp, "+CPMS: \"%2[A-Z]\",%hi,%hi,"
+				"\"%2[A-Z]\",%hi,%hi,\"%2[A-Z]\",%hi,%hi",
+				buf[0], &gss->mem[0].used, &gss->mem[0].total,
+				buf[1], &gss->mem[1].used, &gss->mem[1].total,
+				buf[2], &gss->mem[2].used, &gss->mem[2].total)
+			< 9) {
+		talloc_free(ucmd);
+		return -EINVAL;
+	}
+
+	gss->mem[0].memtype = parse_memtype(buf[0]);
+	gss->mem[1].memtype = parse_memtype(buf[1]);
+	gss->mem[2].memtype = parse_memtype(buf[2]);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
+static int usock_get_smsc_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd;
+	struct gsmd_addr *ga;
+
+	ucmd = gsmd_ucmd_fill(sizeof(struct gsmd_addr), GSMD_MSG_SMS,
+			GSMD_SMS_GET_SERVICE_CENTRE, cmd->id);
+	if (!ucmd)
+		return -ENOMEM;
+
+	ga = (struct gsmd_addr *) ucmd->buf;
+	if (sscanf(resp, "+CSCA: \"%31[^\"]\",%hhi",
+				ga->number, &ga->type) < 2) {
+		talloc_free(ucmd);
+		return -EINVAL;
+	}
+
+	usock_cmd_enqueue(ucmd, gu);
+	return 0;
+}
+
 static const char *gsmd_cmgl_stat[] = {
 	"REC UNREAD", "REC READ", "STO UNSENT", "STO SENT", "ALL",
 };
@@ -681,6 +741,8 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	struct gsmd_sms_delete *gsd;
 	struct gsmd_sms_submit *gss;
 	struct gsmd_sms_write *gsw;
+	struct gsmd_addr *ga;
+	enum ts0705_mem_type *storage;
 	int *stat, *index;
 	int atcmd_len;
 	char buf[1024];
@@ -693,7 +755,6 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		if (*stat < 0 || *stat > 4)
 			return -EINVAL;
 
-		/* FIXME: should we set <mem1> to "SM"/"ME" before that? */
 		if (gu->gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT)
 			atcmd_len = sprintf(buf, "AT+CMGL=\"%s\"",
 					gsmd_cmgl_stat[*stat]);
@@ -702,8 +763,6 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 		cmd = atcmd_fill(buf, atcmd_len + 1,
 				&sms_list_cb, gu, gph->id);
-		if (!cmd)
-			return -ENOMEM;
 		break;
 
 	case GSMD_SMS_READ:
@@ -711,13 +770,10 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 			return -EINVAL;
 		index = (int *) ((void *)gph + sizeof(*gph));
 
-		/* FIXME: should we set <mem1> to "SM"/"ME" before that? */
 		atcmd_len = sprintf(buf, "AT+CMGR=%i", *index);
 
 		cmd = atcmd_fill(buf, atcmd_len + 1,
 				 &sms_read_cb, gu, gph->id);
-		if (!cmd)
-			return -ENOMEM;
 		break;
 
 	case GSMD_SMS_SEND:
@@ -740,8 +796,6 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		buf[atcmd_len ++] = 0;
 
 		cmd = atcmd_fill(buf, atcmd_len, &sms_send_cb, gu, gph->id);
-		if (!cmd)
-			return -ENOMEM;
 		break;
 
 	case GSMD_SMS_WRITE:
@@ -751,7 +805,6 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		if (gsw->stat > 4)
 			return -EINVAL;
 
-		/* FIXME: should we set <mem2> to "SM"/"ME" before that? */
 		if (gu->gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) {
 			atcmd_len = sprintf(buf, "AT+CMGW=\"%s\"\n%.*s",
 					gsw->sms.addr.number,
@@ -768,8 +821,6 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		buf[atcmd_len ++] = 0;
 
 		cmd = atcmd_fill(buf, atcmd_len, &sms_write_cb, gu, gph->id);
-		if (!cmd)
-			return -ENOMEM;
 		break;
 
 	case GSMD_SMS_DELETE:
@@ -781,19 +832,49 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 				gsd->index, gsd->delflg);
 
 		cmd = atcmd_fill(buf, atcmd_len + 1,
-				 &sms_delete_cb, gu, gph->id);
-		if (!cmd)
-			return -ENOMEM;
+				&sms_delete_cb, gu, gph->id);
+		break;
+
+	case GSMD_SMS_GET_MSG_STORAGE:
+		cmd = atcmd_fill("AT+CPMS?", 8 + 1, usock_cpms_cb, gu, 0);
+		break;
+
+	case GSMD_SMS_SET_MSG_STORAGE:
+		if (len < sizeof(*gph) + 3 * sizeof(enum ts0705_mem_type))
+			return -EINVAL;
+		storage = (enum ts0705_mem_type *)
+			((void *) gph + sizeof(*gph));
+		atcmd_len = sprintf(buf, "AT+CPMS=\"%s\",\"%s\",\"%s\"",
+				ts0705_memtype_name[storage[0]],
+				ts0705_memtype_name[storage[1]],
+				ts0705_memtype_name[storage[2]]);
+		cmd = atcmd_fill(buf, atcmd_len + 1,
+				&null_cmd_cb, gu, gph->id);
 		break;	
+
+	case GSMD_SMS_GET_SERVICE_CENTRE:
+		cmd = atcmd_fill("AT+CSCA?", 8 + 1, &usock_get_smsc_cb, gu, 0);
+		break;
+
+	case GSMD_SMS_SET_SERVICE_CENTRE:
+		if (len < sizeof(*gph) + sizeof(struct gsmd_addr))
+			return -EINVAL;
+		ga = (struct gsmd_addr *) ((void *) gph + sizeof(*gph));
+		atcmd_len = sprintf(buf, "AT+CSCA=\"%s\",%i",
+				ga->number, ga->type);
+		cmd = atcmd_fill(buf, atcmd_len + 1,
+				&null_cmd_cb, gu, gph->id);
+		break;
+
 	default:
 		return -EINVAL;
 	}
 
+	if (!cmd)
+		return -ENOMEM;
+
 	gsmd_log(GSMD_DEBUG, "%s\n", cmd ? cmd->buf : 0);
-	if (cmd)
-		return atcmd_submit(gu->gsmd, cmd);
-	else
-		return 0;
+	return atcmd_submit(gu->gsmd, cmd);
 }
 
 #if 0

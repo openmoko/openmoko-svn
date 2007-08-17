@@ -81,15 +81,22 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	char payload[GSMD_SMS_DATA_MAXLEN];
 	int *result;
 	struct gsmd_sms_list *sms;
-	static const char *type[] = { "Unread", "Received", "Unsent", "Sent" };
+	struct gsmd_addr *addr;
+	struct gsmd_sms_storage *mem;
+	static const char *msgtype[] = {
+		"Unread", "Received", "Unsent", "Sent"
+	};
+	static const char *memtype[] = {
+		"Unknown", "Broadcast", "Me message", "MT", "SIM", "TA", "SR"
+	};
 
 	switch (gmh->msg_subtype) {
 	case GSMD_SMS_LIST:
 	case GSMD_SMS_READ:
 		sms = (struct gsmd_sms_list *) ((void *) gmh + sizeof(*gmh));
 		printf("%s message %i from/to %s%s, at %i%i-%i%i-%i%i "
-				"%i%i:%i%i:%i%i, GMT%c%i\n", type[sms->stat],
-				sms->index,
+				"%i%i:%i%i:%i%i, GMT%c%i\n",
+				msgtype[sms->stat], sms->index,
 				((sms->addr.type & __GSMD_TOA_TON_MASK) ==
 				 GSMD_TOA_TON_INTERNATIONAL) ? "+" : "",
 				sms->addr.number,
@@ -165,6 +172,30 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 			printf("Delete: error %i\n", *result);
 			break;
 		}
+		break;
+	case GSMD_SMS_GET_MSG_STORAGE:
+		mem = (struct gsmd_sms_storage *)
+			((void *) gmh + sizeof(*gmh));
+		printf("mem1: %s (%i)       Occupied: %i / %i\n",
+				memtype[mem->mem[0].memtype],
+				mem->mem[0].memtype,
+				mem->mem[0].used,
+				mem->mem[0].total);
+		printf("mem2: %s (%i)       Occupied: %i / %i\n",
+				memtype[mem->mem[1].memtype],
+				mem->mem[1].memtype,
+				mem->mem[1].used,
+				mem->mem[1].total);
+		printf("mem3: %s (%i)       Occupied: %i / %i\n",
+				memtype[mem->mem[2].memtype],
+				mem->mem[2].memtype,
+				mem->mem[2].used,
+				mem->mem[2].total);
+		break;
+	case GSMD_SMS_GET_SERVICE_CENTRE:
+		addr = (struct gsmd_addr *) ((void *) gmh + sizeof(*gmh));
+		printf("Number of the default Service Centre is %s\n",
+				addr->number);
 		break;
 	default:
 		return -EINVAL;
@@ -244,6 +275,10 @@ static int shell_help(void)
 		"\tsr\tSMS Read (sr=index)\n"
 		"\tss\tSMS Send (ss=number,text)\n"
 		"\tsw\tSMS Write (sw=stat,number,text)\n"
+		"\tsm\tSMS Storage stats\n"
+		"\tsM\tSMS Set preferred storage (sM=mem1,mem2,mem3)\n"
+		"\tsc\tSMS Show Service Centre\n"
+		"\tsC\tSMS Set Service Centre (sC=number)\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -357,7 +392,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if ( !strncmp(buf, "pd", 2)) {
 				printf("Delete Phonebook Entry\n");				
 				ptr = strchr(buf, '=');
-				lgsmd_pb_del_entry(lgsmh, atoi(ptr+1));				
+				lgsmd_pb_del_entry(lgsmh, atoi(ptr+1));
 			} else if ( !strncmp(buf, "prr", 3)) {	
 				printf("Read Phonebook Entries\n");
 				struct lgsm_phonebook_readrg pb_readrg;
@@ -371,7 +406,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if ( !strncmp(buf, "pr", 2)) {	
 				printf("Read Phonebook Entry\n");
 				ptr = strchr(buf, '=');				
-				lgsm_pb_read_entry(lgsmh, atoi(ptr+1));	
+				lgsm_pb_read_entry(lgsmh, atoi(ptr+1));
 			} else if ( !strncmp(buf, "pf", 2)) {
 				printf("Find Phonebook Entry\n");
 				struct lgsm_phonebook_find pb_find;
@@ -402,7 +437,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				lgsmd_pb_write_entry(lgsmh, &pb);
 			} else if ( !strncmp(buf, "ps", 2)) {	
 				printf("Get Phonebook Support\n");
-				lgsm_pb_get_support(lgsmh);				
+				lgsm_pb_get_support(lgsmh);
 			} else if ( !strncmp(buf, "sd", 2)) {		
 				printf("Delete SMS\n");			
 				struct lgsm_sms_delete sms_del;
@@ -412,7 +447,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				ptr = strchr(buf, ',');
 				sms_del.delflg = atoi(ptr+1);	
 			
-				lgsmd_sms_delete(lgsmh, &sms_del);				
+				lgsm_sms_delete(lgsmh, &sms_del);
 			} else if ( !strncmp(buf, "sl", 2)) {		
 				printf("List SMS\n");	
 				ptr = strchr(buf, '=');	
@@ -433,7 +468,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				sms.addr[fcomma-ptr-1] = '\0';
 				packing_7bit_character(fcomma+1, &sms);
 
-				lgsmd_sms_send(lgsmh, &sms);
+				lgsm_sms_send(lgsmh, &sms);
 			} else if ( !strncmp(buf, "sw", 2)) {	
 				printf("Write SMS\n");				
 				struct lgsm_sms_write sms_write;
@@ -448,7 +483,30 @@ int shell_main(struct lgsm_handle *lgsmh)
 				packing_7bit_character(
 						lcomma+1, &sms_write.sms);
 
-				lgsmd_sms_write(lgsmh, &sms_write);
+				lgsm_sms_write(lgsmh, &sms_write);
+			} else if (!strncmp(buf, "sm", 2)) {
+				printf("Get SMS storage preferences\n");
+				lgsm_sms_get_storage(lgsmh);
+			} else if (!strncmp(buf, "sM", 2)) {
+				int mem[3];
+
+				printf("Set SMS storage preferences\n");
+				if (sscanf(buf, "sM=%i,%i,%i", mem, mem + 1,
+							mem + 2) < 3)
+					printf("No.\n");
+				else
+					lgsm_sms_set_storage(lgsmh, mem[0],
+							mem[1], mem[2]);
+			} else if (!strncmp(buf, "sc", 2)) {
+				printf("Get the default SMSC\n");
+				lgsm_sms_get_smsc(lgsmh);
+			} else if (!strncmp(buf, "sC", 2)) {
+				printf("Set the default SMSC\n");
+				ptr = strchr(buf, '=');
+				if (!ptr || strlen(ptr) < 6)
+					printf("No.\n");
+				else
+					lgsm_sms_set_smsc(lgsmh, ptr + 1);
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}

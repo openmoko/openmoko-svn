@@ -11,6 +11,9 @@ int sms_pdu_make_smssubmit(char *dest, const struct gsmd_sms_submit *src);
 int sms_pdu_to_msg(struct gsmd_sms_list *dst, const u_int8_t *src,
 		int pdulen, int len);
 
+extern const char *ts0705_memtype_name[];
+int parse_memtype(char *memtype);
+
 #endif /* __GSMD__ */
 
 #endif

@@ -65,11 +65,6 @@ extern int lgsm_get_netreg_state(struct lgsm_handle *lh,
 /* CLIP, CLIR, COLP, Call Forwarding, Call Waiting, Call Deflecting */
 /* TBD */
 
-
-/* SMS related functions */
-/* TBD */
-
-
 /* GPRS related functions */
 /* TBD */
 

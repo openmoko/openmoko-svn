@@ -57,7 +57,7 @@ int lgsm_sms_read(struct lgsm_handle *lh, int index)
 	return 0;
 }
 
-int lgsmd_sms_delete(struct lgsm_handle *lh, 
+int lgsm_sms_delete(struct lgsm_handle *lh,
 		const struct lgsm_sms_delete *sms_del)
 {
 	struct gsmd_msg_hdr *gmh;
@@ -83,7 +83,7 @@ int lgsmd_sms_delete(struct lgsm_handle *lh,
 	return 0;
 }
 
-int lgsmd_number2addr(struct gsmd_addr *dst, const char *src)
+int lgsm_number2addr(struct gsmd_addr *dst, const char *src, int skipplus)
 {
 	char *ch;
 
@@ -94,7 +94,7 @@ int lgsmd_number2addr(struct gsmd_addr *dst, const char *src)
 			GSMD_TOA_NPI_ISDN |
 			GSMD_TOA_TON_INTERNATIONAL |
 			GSMD_TOA_RESERVED;
-		strcpy(dst->number, src + 1);
+		strcpy(dst->number, src + skipplus);
 	} else {
 		dst->type =
 			GSMD_TOA_NPI_ISDN |
@@ -109,7 +109,7 @@ int lgsmd_number2addr(struct gsmd_addr *dst, const char *src)
 	return 0;
 }
 
-int lgsmd_sms_send(struct lgsm_handle *lh,
+int lgsm_sms_send(struct lgsm_handle *lh,
 		const struct lgsm_sms *sms)
 {
 	/* FIXME: only support PDU mode */
@@ -123,7 +123,7 @@ int lgsmd_sms_send(struct lgsm_handle *lh,
 		return -ENOMEM;
 	gss = (struct gsmd_sms_submit *) gmh->data;
 
-	if (lgsmd_number2addr(&gss->addr, sms->addr))
+	if (lgsm_number2addr(&gss->addr, sms->addr, 1))
 		return -EINVAL;
 
 	gss->payload.has_header = 0;
@@ -142,7 +142,7 @@ int lgsmd_sms_send(struct lgsm_handle *lh,
 	return 0;
 }
 
-int lgsmd_sms_write(struct lgsm_handle *lh,
+int lgsm_sms_write(struct lgsm_handle *lh,
 		const struct lgsm_sms_write *sms_write)
 {
 	/* FIXME: only support PDU mode */
@@ -158,7 +158,7 @@ int lgsmd_sms_write(struct lgsm_handle *lh,
 
 	gsw->stat = sms_write->stat;
 
-	if (lgsmd_number2addr(&gsw->sms.addr, sms_write->sms.addr))
+	if (lgsm_number2addr(&gsw->sms.addr, sms_write->sms.addr, 1))
 		return -EINVAL;
 
 	gsw->sms.payload.has_header = 0;
@@ -175,6 +175,60 @@ int lgsmd_sms_write(struct lgsm_handle *lh,
 
 	lgsm_gmh_free(gmh);
 
+	return 0;
+}
+
+int lgsm_sms_get_storage(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_SMS, GSMD_SMS_GET_MSG_STORAGE);
+}
+
+int lgsm_sms_set_storage(struct lgsm_handle *lh, enum ts0705_mem_type mem1,
+		enum ts0705_mem_type mem2, enum ts0705_mem_type mem3)
+{
+	struct gsmd_msg_hdr *gmh =
+		lgsm_gmh_fill(GSMD_MSG_SMS, GSMD_SMS_SET_MSG_STORAGE,
+				3 * sizeof(enum ts0705_mem_type));
+	if (!gmh)
+		return -ENOMEM;
+
+	((enum ts0705_mem_type *) gmh->data)[0] = mem1;
+	((enum ts0705_mem_type *) gmh->data)[1] = mem2;
+	((enum ts0705_mem_type *) gmh->data)[2] = mem3;
+
+	if (lgsm_send(lh, gmh) < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
+	return 0;
+}
+
+int lgsm_sms_get_smsc(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_SMS, GSMD_SMS_GET_SERVICE_CENTRE);
+}
+
+int lgsm_sms_set_smsc(struct lgsm_handle *lh, const char *number)
+{
+	struct gsmd_msg_hdr *gmh =
+		lgsm_gmh_fill(GSMD_MSG_SMS, GSMD_SMS_SET_SERVICE_CENTRE,
+				sizeof(struct gsmd_addr));
+	if (!gmh)
+		return -ENOMEM;
+
+	if (lgsm_number2addr((struct gsmd_addr *) gmh->data, number, 0)) {
+		lgsm_gmh_free(gmh);
+		return -EINVAL;
+	}
+
+	if (lgsm_send(lh, gmh) < gmh->len + sizeof(*gmh)) {
+		lgsm_gmh_free(gmh);
+		return -EIO;
+	}
+
+	lgsm_gmh_free(gmh);
 	return 0;
 }
 
