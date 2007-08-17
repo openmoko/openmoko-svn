@@ -323,7 +323,7 @@ static struct option opts[] = {
 
 static void print_header(void)
 {
-	printf("gsmd - (C) 2006-2007 by Harald Welte <laforge@gnumonks.org>\n"
+	printf("gsmd - (C) 2006-2007 by OpenMoko, Inc. and contributors\n"
 	       "This program is FREE SOFTWARE under the terms of GNU GPL\n\n");
 }
 
