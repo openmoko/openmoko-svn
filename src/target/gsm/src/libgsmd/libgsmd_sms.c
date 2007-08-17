@@ -283,6 +283,20 @@ int unpacking_7bit_character(const struct gsmd_sms *src, char *dest)
 	return i;
 }
 
+int cbm_unpacking_7bit_character(const char *src, char *dest)
+{
+	int i;
+	u_int8_t ch = 1;
+
+	for (i = 0; i < 93 && ch; i ++)
+		*(dest ++) = ch =
+			((src[(i * 7 + 7) >> 3] << (7 - ((i * 7 + 7) & 7))) |
+			 (src[(i * 7) >> 3] >> ((i * 7) & 7))) & 0x7f;
+	*dest = '\0';
+
+	return i;
+}
+
 /* Refer to 3GPP TS 11.11 Annex B */
 int packing_UCS2_80(char *src, char *dest)
 {

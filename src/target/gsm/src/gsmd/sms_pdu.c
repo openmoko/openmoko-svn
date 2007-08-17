@@ -26,6 +26,7 @@
 
 #include <gsmd/gsmd.h>
 #include <gsmd/usock.h>
+#include <gsmd/sms.h>
 
 static int sms_number_bytelen(u_int8_t type, u_int8_t len)
 {
@@ -50,7 +51,7 @@ static int sms_data_bytelen(u_int8_t data_coding_scheme, u_int8_t len)
 	return 0;
 }
 
-static int sms_address2ascii(struct gsmd_addr *dst, u_int8_t *src)
+static int sms_address2ascii(struct gsmd_addr *dst, const u_int8_t *src)
 {
 	int i;
 
@@ -80,7 +81,7 @@ static int sms_address2ascii(struct gsmd_addr *dst, u_int8_t *src)
 }
 
 int sms_pdu_to_msg(struct gsmd_sms_list *dst,
-		u_int8_t *src, int pdulen, int len)
+		const u_int8_t *src, int pdulen, int len)
 {
 	int i, vpf;
 	if (len < 1 || len < 1 + src[0] + pdulen || pdulen < 1)
@@ -200,7 +201,7 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 }
 
 /* Refer to GSM 03.40 subclause 9.2.3.3, for SMS-SUBMIT */
-int sms_pdu_make_smssubmit(char *dest, struct gsmd_sms_submit *src)
+int sms_pdu_make_smssubmit(char *dest, const struct gsmd_sms_submit *src)
 {
 	/* FIXME: ALPHANUMERIC encoded addresses can be longer than 13B */
 	u_int8_t header[15 + GSMD_ADDR_MAXLEN];
@@ -258,4 +259,26 @@ int sms_pdu_make_smssubmit(char *dest, struct gsmd_sms_submit *src)
 	}
 
 	return pos + len;
+}
+
+/* Refer to GSM 03.41 subclause 9.3 */
+int cbs_pdu_to_msg(struct gsmd_cbm *dst, u_int8_t *src, int pdulen, int len)
+{
+	if (len != pdulen || len != CBM_MAX_PDU_SIZE)
+		return 1;
+
+	dst->serial.scope = (src[0] >> 6) & 3;
+	dst->serial.msg_code = ((src[0] << 4) | (src[1] >> 4)) & 0x3ff;
+	dst->serial.update_num = src[1] & 0xf;
+
+	dst->msg_id = (src[2] << 8) | src[3];
+
+	dst->language = src[4] & 0xf;
+	dst->coding_scheme = ((src[4] >> 4) & 3) << 2;
+
+	dst->pages = src[5] & 0xf;
+	dst->page = src[5] >> 4;
+
+	memcpy(dst->data, src + 6, len - 6);
+	return 0;
 }

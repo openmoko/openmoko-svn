@@ -365,6 +365,48 @@ struct gsmd_sms_storage {
 	struct __gsmd_sms_storage mem[3];
 } __attribute__ ((packed));
 
+/* Refer to GSM 03.41 subclause 9.3.1 - note: this indicates display mode too */
+enum gsmd_geographical_scope {
+	GSMD_SCOPE_CELL_WIDE_OPER	= 0,
+	GSMD_SCOPE_PLMN_WIDE,
+	GSMD_SCOPE_LOC_AREA_WIDE,
+	GSMD_SCOPE_CELL_WIDE,
+};
+
+enum gsmd_language {
+	GSMD_LANG_GERMAN	= 0,
+	GSMD_LANG_ENGLISH,
+	GSMD_LANG_ITALIAN,
+	GSMD_LANG_FRENCH,
+	GSMD_LANG_SPANISH,
+	GSMD_LANG_DUTCH,
+	GSMD_LANG_SWEDISH,
+	GSMD_LANG_DANISH,
+	GSMD_LANG_PORTUGUESE,
+	GSMD_LANG_FINNISH,
+	GSMD_LANG_NORWEGIAN,
+	GSMD_LANG_GREEK,
+	GSMD_LANG_TURKISH,
+	GSMD_LANG_HUNGARIAN,
+	GSMD_LANG_POLISH,
+	GSMD_LANG_UNSPECIFIED,
+};
+
+/* Refer to GSM 03.41 subclause 9.3 */
+struct gsmd_cbm {
+	struct {
+		enum gsmd_geographical_scope scope;
+		int msg_code;
+		int update_num;
+	} serial;
+	u_int16_t msg_id;
+	enum gsmd_language language;
+	u_int8_t coding_scheme;
+	int pages;
+	int page;
+	u_int8_t data[82];
+};
+
 /* Refer to GSM 07.07 subclause 8.12 */
 struct gsmd_phonebook_readrg {
 	u_int8_t index1;

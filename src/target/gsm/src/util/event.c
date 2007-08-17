@@ -34,10 +34,104 @@ static int incall_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxda
 	return 0;
 }
 
-static int insms_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+static int insms_handler(struct lgsm_handle *lh, int evt,
+		struct gsmd_evt_auxdata *aux)
 {
-	printf("EVENT: Incoming SMS stored at location %i\n", aux->u.sms.index);
+	struct gsmd_sms_list *sms;
+	char payload[GSMD_SMS_DATA_MAXLEN];
+	if (aux->u.sms.inlined) {
+		sms = (struct gsmd_sms_list *) aux->data;
+		printf("EVENT: Incoming SMS from/to %s%s, at %i%i-%i%i-%i%i "
+				"%i%i:%i%i:%i%i, GMT%c%i\n",
+				((sms->addr.type & __GSMD_TOA_TON_MASK) ==
+				 GSMD_TOA_TON_INTERNATIONAL) ? "+" : "",
+				sms->addr.number,
+				sms->time_stamp[0] & 0xf,
+				sms->time_stamp[0] >> 4,
+				sms->time_stamp[1] & 0xf,
+				sms->time_stamp[1] >> 4,
+				sms->time_stamp[2] & 0xf,
+				sms->time_stamp[2] >> 4,
+				sms->time_stamp[3] & 0xf,
+				sms->time_stamp[3] >> 4,
+				sms->time_stamp[4] & 0xf,
+				sms->time_stamp[4] >> 4,
+				sms->time_stamp[5] & 0xf,
+				sms->time_stamp[5] >> 4,
+				(sms->time_stamp[6] & 8) ? '-' : '+',
+				(((sms->time_stamp[6] << 4) |
+				  (sms->time_stamp[6] >> 4)) & 0x3f) >> 2);
+		if (sms->payload.coding_scheme == ALPHABET_DEFAULT) {
+			unpacking_7bit_character(&sms->payload, payload);
+			printf("\"%s\"\n", payload);
+		} else if (sms->payload.coding_scheme == ALPHABET_8BIT)
+			printf("8-bit encoded data\n");
+		else if (sms->payload.coding_scheme == ALPHABET_UCS2)
+			printf("Unicode-16 encoded text\n");
+	} else
+		printf("EVENT: Incoming SMS stored at location %i\n",
+				aux->u.sms.index);
+	return 0;
+}
 
+static int incbm_handler(struct lgsm_handle *lh, int evt,
+		struct gsmd_evt_auxdata *aux)
+{
+	struct gsmd_cbm *msg;
+	char payload[95];
+	static const char *scope_name[] = {
+		[GSMD_SCOPE_CELL_WIDE_OPER] = "immediate-display cell",
+		[GSMD_SCOPE_PLMN_WIDE] = "PLMN",
+		[GSMD_SCOPE_LOC_AREA_WIDE] = "Location Area",
+		[GSMD_SCOPE_CELL_WIDE] = "cell",
+	};
+	static const char *lang_name[] = {
+		[GSMD_LANG_GERMAN] = "German",
+		[GSMD_LANG_ENGLISH] = "English",
+		[GSMD_LANG_ITALIAN] = "Italian",
+		[GSMD_LANG_FRENCH] = "French",
+		[GSMD_LANG_SPANISH] = "Spanish",
+		[GSMD_LANG_DUTCH] = "Dutch",
+		[GSMD_LANG_SWEDISH] = "Swedish",
+		[GSMD_LANG_DANISH] = "Danish",
+		[GSMD_LANG_PORTUGUESE] = "Portuguese",
+		[GSMD_LANG_FINNISH] = "Finnish",
+		[GSMD_LANG_NORWEGIAN] = "Norwegian",
+		[GSMD_LANG_GREEK] = "Greek",
+		[GSMD_LANG_TURKISH] = "Turkish",
+		[GSMD_LANG_HUNGARIAN] = "Hungarian",
+		[GSMD_LANG_POLISH] = "Polish",
+		[GSMD_LANG_UNSPECIFIED] = "an unspecified language",
+	};
+	if (aux->u.cbm.inlined) {
+		msg = (struct gsmd_cbm *) aux->data;
+		printf("EVENT: Incoming %s-wide Cell Broadcast message in "
+				"%s (page %i of %i)\n",
+				scope_name[msg->serial.scope],
+				lang_name[msg->language],
+				msg->page, msg->pages);
+
+		if (msg->coding_scheme == ALPHABET_DEFAULT) {
+			cbm_unpacking_7bit_character(msg->data, payload);
+			printf("\"%s\"\n", payload);
+		} else if (msg->coding_scheme == ALPHABET_8BIT)
+			printf("8-bit encoded data\n");
+		else if (msg->coding_scheme == ALPHABET_UCS2)
+			printf("Unicode-16 encoded text\n");
+	} else
+		printf("EVENT: Incoming Cell Broadcast message stored at "
+				"location %i\n", aux->u.cbm.index);
+	return 0;
+}
+
+static int inds_handler(struct lgsm_handle *lh, int evt,
+		struct gsmd_evt_auxdata *aux)
+{
+	if (aux->u.ds.inlined)
+		printf("EVENT: Incoming Status Report\n");
+	else
+		printf("EVENT: Incoming Status Report stored at location %i\n",
+				aux->u.ds.index);
 	return 0;
 }
 
@@ -139,6 +233,8 @@ int event_init(struct lgsm_handle *lh)
 	rc  = lgsm_evt_handler_register(lh, GSMD_EVT_IN_CALL, &incall_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_CLIP, &clip_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_SMS, &insms_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_CBM, &incbm_handler);
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_DS, &inds_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_COLP, &colp_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_NETREG, &netreg_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);

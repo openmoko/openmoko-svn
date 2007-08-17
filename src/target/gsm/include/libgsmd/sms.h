@@ -90,6 +90,7 @@ extern int packing_7bit_character(const char *src, struct lgsm_sms *dest);
 
 /* Packing of 7-bit characters, refer to GSM 03.38 subclause 6.1.2.1.1 */
 extern int unpacking_7bit_character(const struct gsmd_sms *src, char *dest);
+extern int cbm_unpacking_7bit_character(const char *src, char *dest);
 
 /* Refer to 3GPP TS 11.11 Annex B */
 extern int packing_UCS2_80(char *src, char *dest);

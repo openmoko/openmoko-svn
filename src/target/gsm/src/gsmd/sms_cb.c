@@ -67,7 +67,7 @@ static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_ucmd *ucmd;
 	struct gsmd_sms_list msg;
 	int i, idx, stat, len, cr;
-	u_int8_t pdu[MAX_PDU_SIZE];
+	u_int8_t pdu[SMS_MAX_PDU_SIZE];
 
 	if (cmd->ret && cmd->ret != -255)
 		return 0;
@@ -86,7 +86,7 @@ static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	msg.stat = stat;
 	msg.is_last = (cmd->ret == 0);
 	for (i = 0; resp[cr] >= '0' && resp[cr + 1] >= '0' &&
-			i < MAX_PDU_SIZE; i ++) {
+			i < SMS_MAX_PDU_SIZE; i ++) {
 		if (sscanf(resp + cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
 			return -EINVAL;
@@ -115,7 +115,7 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_ucmd *ucmd;
 	struct gsmd_sms_list msg;
 	int i, stat, len, cr;
-	u_int8_t pdu[MAX_PDU_SIZE];
+	u_int8_t pdu[SMS_MAX_PDU_SIZE];
 
 	if (cmd->ret)
 		return 0;
@@ -134,7 +134,7 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	msg.stat = stat;
 	msg.is_last = 1;
 	for (i = 0; resp[cr] >= '0' && resp[cr + 1] >= '0' &&
-			i < MAX_PDU_SIZE; i ++) {
+			i < SMS_MAX_PDU_SIZE; i ++) {
 		if (sscanf(resp + cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
 			return -EINVAL;
@@ -475,7 +475,7 @@ static int cmti_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 static int cmt_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	/* TODO: TEXT mode */
-	u_int8_t pdu[MAX_PDU_SIZE];
+	u_int8_t pdu[SMS_MAX_PDU_SIZE];
 	const char *comma = strchr(param, ',');
 	char *cr;
 	int i;
@@ -502,7 +502,8 @@ static int cmt_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	}
 
 	cr ++;
-	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < MAX_PDU_SIZE; i ++) {
+	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < SMS_MAX_PDU_SIZE;
+			i ++) {
 		if (sscanf(cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
 			talloc_free(ucmd);
@@ -531,11 +532,6 @@ static int cbmi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	if (!ucmd)
 		return -ENOMEM;
 
-	ucmd->hdr.version = GSMD_PROTO_VERSION;
-	ucmd->hdr.msg_type = GSMD_MSG_EVENT;
-	ucmd->hdr.msg_subtype = GSMD_EVT_IN_CBM;
-	ucmd->hdr.len = sizeof(*aux);
-
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 	if (sscanf(param, "\"%2[A-Z]\",%i", memstr, &aux->u.cbm.index) < 2) {
 		talloc_free(ucmd);
@@ -551,20 +547,20 @@ static int cbmi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 static int cbm_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	/* TODO: TEXT mode */
-	u_int8_t pdu[MAX_PDU_SIZE];
+	u_int8_t pdu[CBM_MAX_PDU_SIZE];
 	char *cr;
 	int i;
 	struct gsmd_evt_auxdata *aux;
-	struct gsmd_sms_list *msg;
+	struct gsmd_cbm *msg;
 	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
 			GSMD_EVT_IN_CBM, sizeof(struct gsmd_evt_auxdata) +
-			sizeof(struct gsmd_sms_list));
+			sizeof(struct gsmd_cbm));
 
 	if (!ucmd)
 		return -ENOMEM;
 
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
-	msg = (struct gsmd_sms_list *) aux->data;
+	msg = (struct gsmd_cbm *) aux->data;
 
 	len = strtoul(param, &cr, 10);
 	if (cr[0] != '\n') {
@@ -573,7 +569,8 @@ static int cbm_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	}
 
 	cr ++;
-	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < MAX_PDU_SIZE; i ++) {
+	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < CBM_MAX_PDU_SIZE;
+			i ++) {
 		if (sscanf(cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
 			talloc_free(ucmd);
@@ -583,7 +580,7 @@ static int cbm_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	}
 
 	aux->u.cbm.inlined = 1;
-	if (sms_pdu_to_msg(msg, pdu, len, i)) {
+	if (cbs_pdu_to_msg(msg, pdu, len, i)) {
 		gsmd_log(GSMD_DEBUG, "malformed PDU\n");
 		talloc_free(ucmd);
 		return -EINVAL;
@@ -617,7 +614,7 @@ static int cdsi_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 static int cds_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 {
 	/* TODO: TEXT mode */
-	u_int8_t pdu[MAX_PDU_SIZE];
+	u_int8_t pdu[SMS_MAX_PDU_SIZE];
 	char *cr;
 	int i;
 	struct gsmd_evt_auxdata *aux;
@@ -639,7 +636,8 @@ static int cds_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 	}
 
 	cr ++;
-	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < MAX_PDU_SIZE; i ++) {
+	for (i = 0; cr[0] >= '0' && cr[1] >= '0' && i < SMS_MAX_PDU_SIZE;
+			i ++) {
 		if (sscanf(cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
 			talloc_free(ucmd);
@@ -713,12 +711,6 @@ int sms_cb_network_init(struct gsmd *gsmd)
 	 * FIXME: ask for supported +CNMI values first.
 	 */
 	ret |= gsmd_simplecmd(gsmd, "AT+CNMI=2,1,2,1,0");
-
-	/* Store into ME/TA and notify */
-	ret |= gsmd_simplecmd(gsmd, "AT+CSBS=1");
-
-	/* Store into ME/TA and notify */
-	ret |= gsmd_simplecmd(gsmd, "AT+CSDS=2");
 
 	return ret;
 }
