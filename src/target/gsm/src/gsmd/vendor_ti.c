@@ -303,6 +303,7 @@ static int ticalypso_initsettings(struct gsmd *g)
 
 struct gsmd_vendor_plugin gsmd_vendor_plugin = {
 	.name = "TI Calypso",
+	.ext_chars = "%@",
 	.num_unsolicit = ARRAY_SIZE(ticalypso_unsolicit),
 	.unsolicit = ticalypso_unsolicit,
 	.detect = &ticalypso_detect,

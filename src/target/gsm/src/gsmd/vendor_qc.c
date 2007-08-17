@@ -100,6 +100,7 @@ static int qc_initsettings(struct gsmd *g)
 
 struct gsmd_vendor_plugin gsmd_vendor_plugin = {
 	.name = "Qualcomm msm6250",
+	.ext_chars = "@",
 	.num_unsolicit = ARRAY_SIZE(qc_unsolicit),
 	.unsolicit = qc_unsolicit,
 	.detect = &qc_detect,

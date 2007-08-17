@@ -237,7 +237,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	 *    TBD
 	 */
 
-	if (buf[0] == '+' || buf[0] == '%') {
+	if (buf[0] == '+' || strchr(g->vendorpl->ext_chars, buf[0])) {
 		/* an extended response */
 		const char *colon = strchr(buf, ':');
 		if (!colon) {
@@ -293,7 +293,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		}
 
 		if (cmd) {
-			if (cmd->buf[2] != '+' && cmd->buf[2] != '%') {
+			if (cmd->buf[2] != '+' && strchr(g->vendorpl->ext_chars, cmd->buf[2]) == NULL) {
 				gsmd_log(GSMD_ERROR, "extd reply to non-extd command?\n");
 				return -EINVAL;
 			}

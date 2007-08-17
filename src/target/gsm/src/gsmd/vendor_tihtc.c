@@ -298,6 +298,7 @@ static int tihtc_initsettings(struct gsmd *g)
 
 struct gsmd_vendor_plugin gsmd_vendor_plugin = {
 	.name = "TI Calypso / HTC firmware",
+	.ext_chars = "%",
 	.num_unsolicit = ARRAY_SIZE(tihtc_unsolicit),
 	.unsolicit = tihtc_unsolicit,
 	.detect = &tihtc_detect,

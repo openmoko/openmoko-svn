@@ -12,6 +12,7 @@ struct gsmd_unsolicit;
 struct gsmd_vendor_plugin {
 	struct llist_head list;
 	unsigned char *name;
+	unsigned char *ext_chars;
 	unsigned int num_unsolicit;
 	const struct gsmd_unsolicit *unsolicit;
 	int (*detect)(struct gsmd *g);
