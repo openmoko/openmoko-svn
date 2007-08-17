@@ -7,12 +7,13 @@
 
 int sms_cb_init(struct gsmd *gsmd);
 
+#define MAX_PDU_SIZE	180
 int sms_pdu_make_smssubmit(char *dest, const struct gsmd_sms_submit *src);
 int sms_pdu_to_msg(struct gsmd_sms_list *dst, const u_int8_t *src,
 		int pdulen, int len);
 
-extern const char *ts0705_memtype_name[];
-int parse_memtype(char *memtype);
+int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len);
+int usock_rcv_cb(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len);
 
 #endif /* __GSMD__ */
 

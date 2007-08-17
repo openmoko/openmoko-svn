@@ -318,3 +318,13 @@ int unpacking_UCS2_82(char *src, char *dest)
 {
 	return 0;
 }
+
+int lgsm_cb_subscribe(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_CB, GSMD_CB_SUBSCRIBE);
+}
+
+int lgsm_cb_unsubscribe(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_CB, GSMD_CB_UNSUBSCRIBE);
+}

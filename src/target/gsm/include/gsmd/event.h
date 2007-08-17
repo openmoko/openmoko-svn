@@ -16,6 +16,8 @@ enum gsmd_events {
 	GSMD_EVT_TIMEZONE	= 11,	/* Timezone change */
 	GSMD_EVT_SUBSCRIPTIONS	= 12,	/* To which events are we subscribed to */
 	GSMD_EVT_CIPHER		= 13,	/* Chiphering Information */
+	GSMD_EVT_IN_CBM		= 14,	/* Incoming Cell Broadcat message */
+	GSMD_EVT_IN_DS		= 15,	/* SMS Status Report */
 	__NUM_GSMD_EVT
 };
 

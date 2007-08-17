@@ -22,6 +22,7 @@ enum gsmd_msg_type {
 	GSMD_MSG_PHONE		= 7,
 	GSMD_MSG_PIN		= 8,
 	GSMD_MSG_SMS		= 9,
+	GSMD_MSG_CB		= 10,
 	__NUM_GSMD_MSGS
 };
 
@@ -259,9 +260,20 @@ struct gsmd_evt_auxdata {
 			struct gsmd_addr addr;
 		} colp;
 		struct {
+			int inlined;
 			u_int8_t memtype;
 			int index;
 		} sms;
+		struct {
+			int inlined;
+			u_int8_t memtype;
+			int index;
+		} cbm;
+		struct {
+			int inlined;
+			u_int8_t memtype;
+			int index;
+		} ds;
 		struct {
 			enum gsmd_pin_type type;
 		} pin;
@@ -289,7 +301,8 @@ struct gsmd_evt_auxdata {
 			u_int16_t net_state_gprs;
 		} cipher;
 	} u;
-} __attribute__((packed));
+	u_int8_t data[0];
+} __attribute__ ((packed));
 
 /* Refer to GSM 07.05 subclause 3.5.4 */
 struct gsmd_sms_delete {
@@ -431,8 +444,10 @@ struct gsmd_ucmd {
 extern struct gsmd_ucmd *ucmd_alloc(int extra_size);
 extern int usock_init(struct gsmd *g);
 extern void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu);
-extern struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t len);
+extern struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int16_t len);
 extern int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt);
+extern struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type,
+		u_int8_t msg_subtype, u_int16_t id);
 
 #endif /* __GSMD__ */
 

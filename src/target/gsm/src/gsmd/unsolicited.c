@@ -36,7 +36,7 @@
 #include <gsmd/unsolicited.h>
 #include <gsmd/talloc.h>
 
-struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int8_t len)
+struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int16_t len)
 {
 	struct gsmd_ucmd *ucmd = ucmd_alloc(len);
 

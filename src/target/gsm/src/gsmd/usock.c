@@ -319,8 +319,8 @@ out_free_einval:
 	return -EINVAL;
 }
 
-static struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type, u_int8_t msg_subtype,
-					u_int16_t id)
+struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type,
+		u_int8_t msg_subtype, u_int16_t id)
 {
 	struct gsmd_ucmd *ucmd;
 
@@ -511,6 +511,7 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
+#if 0
 static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
@@ -876,6 +877,7 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	gsmd_log(GSMD_DEBUG, "%s\n", cmd ? cmd->buf : 0);
 	return atcmd_submit(gu->gsmd, cmd);
 }
+#endif
 
 #if 0
 static int phonebook_find_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -1127,6 +1129,7 @@ static usock_msg_handler *pcmd_type_handlers[__NUM_GSMD_MSGS] = {
 	[GSMD_MSG_PHONE]	= &usock_rcv_phone,
 	[GSMD_MSG_NETWORK]	= &usock_rcv_network,
 	[GSMD_MSG_SMS]		= &usock_rcv_sms,
+	[GSMD_MSG_CB]		= &usock_rcv_cb,
 	//[GSMD_MSG_PHONEBOOK]	= &usock_rcv_phonebook,
 };
 

@@ -109,5 +109,10 @@ extern int packing_UCS2_82(char *src, char *dest);
 /* Refer to 3GPP TS 11.11 Annex B */
 extern int unpacking_UCS2_82(char *src, char *dest);
 
-#endif
+/* This phone wants to receive Cell Broadcast Messages */
+extern int lgsm_cb_subscribe(struct lgsm_handle *lh);
 
+/* This phone wants no more Cell Broadcast Messages */
+extern int lgsm_cb_unsubscribe(struct lgsm_handle *lh);
+
+#endif
