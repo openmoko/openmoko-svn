@@ -69,8 +69,15 @@ out_free_io:
 	return -EIO;
 }
 
+static int wcdma_parse(char *buf, int len, const char *param,
+		     struct gsmd *gsmd)
+{
+	return 0;
+}
+
 static const struct gsmd_unsolicit qc_unsolicit[] = {
 	{ "@HTCCSQ",	&htccsq_parse },	/* Signal Quality */
+	{ "[WCDMA]",	&wcdma_parse },		/* ignore [WCDMA] messages */
 
 	/* FIXME: parse the below and generate the respective events */
 
@@ -100,7 +107,7 @@ static int qc_initsettings(struct gsmd *g)
 
 struct gsmd_vendor_plugin gsmd_vendor_plugin = {
 	.name = "Qualcomm msm6250",
-	.ext_chars = "@",
+	.ext_chars = "@[",
 	.num_unsolicit = ARRAY_SIZE(qc_unsolicit),
 	.unsolicit = qc_unsolicit,
 	.detect = &qc_detect,
