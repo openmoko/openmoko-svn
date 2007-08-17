@@ -45,7 +45,7 @@
 #include <gsmd/vendorplugin.h>
 #include <gsmd/talloc.h>
 
-#define GSMD_ALIVECMD		"ATE0"
+#define GSMD_ALIVECMD		"AT"
 #define GSMD_ALIVE_INTERVAL	5*60
 #define GSMD_ALIVE_TIMEOUT	30
 
@@ -238,7 +238,7 @@ int gsmd_initsettings(struct gsmd *gsmd)
 	struct gsmd_atcmd *cmd;
 	struct timeval tv;
 
-	cmd = atcmd_fill("ATE0V1", strlen("ATE0V1")+1, &firstcmd_atcb, gsmd, 0);
+	cmd = atcmd_fill("AT", strlen("AT")+1, &firstcmd_atcb, gsmd, 0);
 	if (!cmd)
 		return -ENOMEM;
 	
