@@ -40,7 +40,7 @@
 #include <linux/input.h>
 
 #undef DEBUG_THIS_FILE
-//#define DEBUG_THIS_FILE
+#define DEBUG_THIS_FILE
 
 //FIXME load this from sysfs
 static const int MAX_BRIGHTNESS = 5000;
@@ -376,6 +376,12 @@ void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, g
         g_assert( FALSE ); // fail here if called for unknown menu
 }
 
+void neod_buttonactions_popup_selected_screenshot( GtkMenuItem* menu, gpointer user_data )
+{
+    gtk_widget_hide( power_menu );
+    g_spawn_command_line_async( "gpe-scap", NULL );
+}
+
 void neod_buttonactions_popup_selected_fullPM( GtkMenuItem* menu, gpointer user_data )
 {
     gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", FULL, NULL );
@@ -481,6 +487,9 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         if ( !power_menu )
         {
             power_menu = gtk_menu_new();
+            GtkWidget* scap = gtk_menu_item_new_with_label( "Screenshot" );
+            g_signal_connect( G_OBJECT(scap), "activate", G_CALLBACK(neod_buttonactions_popup_selected_screenshot), NULL );
+            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
 
             // add profiles
             // TODO build profile list dynamically from database
