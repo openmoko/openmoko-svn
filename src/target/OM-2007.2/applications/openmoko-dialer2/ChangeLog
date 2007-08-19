@@ -1,3 +1,8 @@
+2007-08-19  Daniel Willmann  <daniel@totalueberwachung.de>
+	* src/moko-sound.{c,h}: Created functions to switch the audio profiles
+	* src/Makefile.am, src/moko-talking.c: Switch audio profiles when
+	accepting/initiating or cancelling a call
+
 2007-08-16  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_keypad_pin_entry),

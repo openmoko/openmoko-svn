@@ -25,7 +25,9 @@ openmoko_dialer_SOURCES = \
 	moko-notify.c			\
 	moko-notify.h			\
 	moko-talking.c			\
-	moko-talking.h
+	moko-talking.h			\
+	moko-sound.c			\
+	moko-sound.h
 
 
 openmoko_dialer_LDADD = @LIBS@

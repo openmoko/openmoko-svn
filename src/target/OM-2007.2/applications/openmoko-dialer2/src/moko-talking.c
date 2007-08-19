@@ -21,6 +21,7 @@
 
 #include <moko-journal.h>
 
+#include "moko-sound.h"
 #include "moko-talking.h"
 
 G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_VBOX)
@@ -168,6 +169,8 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show (priv->main_bar);
 
+  moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+
   if (entry)
     markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
   else
@@ -224,6 +227,8 @@ moko_talking_accepted_call (MokoTalking      *talking,
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show (priv->main_bar);
 
+  moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+
   if (entry)
     markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
   else
@@ -263,6 +268,7 @@ static void
 on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
 {
   g_source_remove (talking->priv->timeout);
+  moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
   g_signal_emit (G_OBJECT (talking), talking_signals[CANCEL_CALL], 0);
 }
 
