@@ -19,7 +19,7 @@ splash_addr=0x36000000
 splash_size=0x5000
 
 kernel_wildcard="uImage-2.6.*-fic-gta01.bin"
-rootfs_wildcard="openmoko-*.rootfs.jffs2"
+rootfs_wildcard="OpenMoko*.rootfs.jffs2"
 uboot_wildcard="u-boot-gta01b*.bin"
 
-download_dir="http://buildhost.openmoko.org/tmp/deploy/images/"
+download_dir="http://buildhost.openmoko.org/snapshots/2007.08/images/"
