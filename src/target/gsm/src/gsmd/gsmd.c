@@ -143,8 +143,6 @@ int gmsd_alive_start(struct gsmd *gsmd)
 	if (!gsmd_timer_create(&tv, &alive_interval_tmr_cb, gsmd))
 		return -1;
 
-	gsmd_modem_alive(gsmd);
-
 	return 0;
 }
 
@@ -208,8 +206,9 @@ static int firstcmd_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 
 	if (strcmp(resp, "OK") &&
 	    (!(gsmd->flags & GSMD_FLAG_V0) || resp[0] != '0')) {
-		gsmd_log(GSMD_FATAL, "response '%s' to initial command invalid", resp);
-		exit(5);
+		// temporarily changed to GSMD_ERROR instead of GSMD_FATAL + commented out exit(4) :M:
+		gsmd_log(GSMD_ERROR, "response '%s' to initial command invalid", resp);
+		//exit(4);
 	}
 
 	firstcmd_response = 1;
@@ -241,13 +240,9 @@ int gsmd_initsettings(struct gsmd *gsmd)
 	struct gsmd_atcmd *cmd;
 	struct timeval tv;
 
-	cmd = atcmd_fill("AT", strlen("AT")+1, &firstcmd_atcb, gsmd, 0);
+	cmd = atcmd_fill("ATZ", strlen("ATZ")+1, &firstcmd_atcb, gsmd, 0);
 	if (!cmd)
 		return -ENOMEM;
-	
-	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
-	tv.tv_usec = 0;
-	gsmd_timer_create(&tv, &firstcmd_tmr_cb, NULL);
 
 	return atcmd_submit(gsmd, cmd);
 }
