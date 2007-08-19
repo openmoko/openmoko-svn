@@ -52,7 +52,10 @@
 static struct gsmd g;
 static int daemonize = 0;
 
-/* alive checking */
+/* alive checking
+ * either OK or ERROR is allowed since, both mean the modem still responds
+ */
+
 
 struct gsmd_alive_priv {
 	struct gsmd *gsmd;
@@ -63,7 +66,7 @@ static int gsmd_alive_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_alive_priv *alp = ctx;
 
-	if (!strcmp(resp, "OK") ||
+	if (!strcmp(resp, "OK") || !strcmp(resp, "ERROR") ||
 	    ((alp->gsmd->flags & GSMD_FLAG_V0) && resp[0] == '0'))
 		alp->alive_responded = 1;
 	return 0;
