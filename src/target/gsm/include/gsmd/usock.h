@@ -2,7 +2,6 @@
 #define _GSMD_USOCK_H
 
 #include <gsmd/event.h>
-#include <common/linux_list.h>
 
 #define GSMD_UNIX_SOCKET "\0gsmd"
 //#define GSMD_UNIX_SOCKET_TYPE SOCK_SEQPACKET
@@ -426,7 +425,6 @@ struct gsmd_phonebook_readrg {
 #define	GSMD_PB_NUMB_MAXLEN	44
 #define GSMD_PB_TEXT_MAXLEN	14
 struct gsmd_phonebook {
-	struct llist_head list;
 	u_int8_t index;
 	char numb[GSMD_PB_NUMB_MAXLEN+1];
 	u_int8_t type;
@@ -474,7 +472,6 @@ struct gsmd_msg_prefoper {
 };
 
 struct gsmd_phonebook_storage {
-	struct llist_head list;
 	char storage[3];
 } __attribute__ ((packed));
 
@@ -510,6 +507,7 @@ struct gsmd_msg_hdr {
 
 #include <gsmd/usock.h>
 #include <gsmd/gsmd.h>
+#include <common/linux_list.h>
 
 struct gsmd_user;
 

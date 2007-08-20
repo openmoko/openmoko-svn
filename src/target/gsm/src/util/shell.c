@@ -34,6 +34,8 @@
 #include <gsmd/usock.h>
 #include <gsmd/ts0705.h>
 
+#include <common/linux_list.h>
+
 #ifndef __GSMD__
 #define __GSMD__
 #include <gsmd/talloc.h>
@@ -63,6 +65,7 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	char buf[128];
 
 	switch (gmh->msg_subtype) {
+#if 0
 	case GSMD_PHONEBOOK_FIND:		
 	case GSMD_PHONEBOOK_READRG:
 		payload = (char *)gmh + sizeof(*gmh);
@@ -98,6 +101,7 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		else
 			printf("%s\n", payload);
 		break;
+#endif
 	case GSMD_PHONEBOOK_READ:
 		gp = (struct gsmd_phonebook *) ((char *)gmh + sizeof(*gmh));
 		if (gp->index)
@@ -111,6 +115,7 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		gps = (struct gsmd_phonebook_support *) ((char *)gmh + sizeof(*gmh));
 		printf("(1-%d), %d, %d\n", gps->index, gps->nlength, gps->tlength);
 		break;
+#if 0
 	case GSMD_PHONEBOOK_LIST_STORAGE:
 		payload = (char *)gmh + sizeof(*gmh);
 
@@ -151,6 +156,7 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		else
 			printf("%s\n", payload);
 		break;
+#endif
 	case GSMD_PHONEBOOK_WRITE:
 	case GSMD_PHONEBOOK_DELETE:
 	case GSMD_PHONEBOOK_SET_STORAGE:
@@ -503,6 +509,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				printf("Delete Phonebook Entry\n");				
 				ptr = strchr(buf, '=');
 				lgsm_pb_del_entry(lgsmh, atoi(ptr+1));
+#if 0
 			} else if ( !strncmp(buf, "prr", 3)) {	
 				printf("Read Phonebook Entries\n");
 				struct lgsm_phonebook_readrg pb_readrg;
@@ -524,9 +531,11 @@ int shell_main(struct lgsm_handle *lgsmh)
 				ptr = strchr(buf, ',');
 				pb_readrg.index2 = atoi(ptr+1);
 				lgsm_pb_read_entries(lgsmh, &pb_readrg);
+#endif
 			} else if ( !strncmp(buf, "pr", 2)) {
 				ptr = strchr(buf, '=');
 				lgsm_pb_read_entry(lgsmh, atoi(ptr+1));
+#if 0
 			} else if ( !strncmp(buf, "pf", 2)) {
 				printf("Find Phonebook Entry\n");
 				struct lgsm_phonebook_find pb_find;
@@ -550,6 +559,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				pb_find.findtext[strlen(ptr+1)] = '\0';	
 			
 				lgsm_pb_find_entry(lgsmh, &pb_find);
+#endif
 			} else if ( !strncmp(buf, "pw", 2)) {
 				printf("Write Phonebook Entry\n");
 				struct lgsm_phonebook pb;
