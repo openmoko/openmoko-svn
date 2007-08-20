@@ -320,6 +320,7 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
 
     neod_buttonactions_sound_play( "touchscreen" );
     neod_buttonactions_powersave_reset();
+    neod_buttonactions_set_display( 100 );
 
     aux_timer = -1;
     if ( timeout < 1 )
@@ -455,6 +456,7 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
 
     neod_buttonactions_sound_play( "touchscreen" );
     neod_buttonactions_powersave_reset();
+    neod_buttonactions_set_display( 100 );
 
     power_timer = -1;
     if ( timeout < 1 )
