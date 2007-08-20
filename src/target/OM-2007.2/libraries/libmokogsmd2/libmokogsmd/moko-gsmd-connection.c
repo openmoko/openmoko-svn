@@ -488,7 +488,7 @@ moko_gsmd_connection_network_register(MokoGsmdConnection* self)
     
     g_return_if_fail( priv->handle );
     
-    lgsm_netreg_register( priv->handle, 0 );
+    lgsm_netreg_register( priv->handle, "" );
 }
 
 void 
