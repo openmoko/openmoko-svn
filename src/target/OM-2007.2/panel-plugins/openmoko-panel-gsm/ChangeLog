@@ -1,3 +1,9 @@
+2007-08-20  Stefan Schmidt <stefan@openmoko.org>
+
+        * src/openmoko-panel-gsm.c:
+        (mb_panel_applet_create):
+		Use the right items for the signals.
+
 2007-07-31	Michael Lauer <mickey@openmoko.org>
 
 		* src/openmoko-panel-gsm.c:

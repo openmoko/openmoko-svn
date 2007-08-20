@@ -115,10 +115,10 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_power_up_antenna), applet );
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), item1 );
     GtkWidget* item2 = gtk_menu_item_new_with_label( "Autoregister with Network" );
-    g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_autoregister_network), applet );
+    g_signal_connect( G_OBJECT(item2), "activate", G_CALLBACK(gsm_applet_autoregister_network), applet );
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), item2 );
     GtkWidget* item3 = gtk_menu_item_new_with_label( "Power-Down GSM Antenna" );
-    g_signal_connect( G_OBJECT(item1), "activate", G_CALLBACK(gsm_applet_power_down_antenna), applet );
+    g_signal_connect( G_OBJECT(item3), "activate", G_CALLBACK(gsm_applet_power_down_antenna), applet );
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), item3 );
     gtk_widget_show_all( GTK_WIDGET(menu) );
 
