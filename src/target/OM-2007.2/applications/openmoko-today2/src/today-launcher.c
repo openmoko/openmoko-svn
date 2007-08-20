@@ -246,6 +246,7 @@ today_launcher_search_toggle_cb (GtkWidget *button, TodayData *data)
 		/* Set the category to the created search category */
 		taku_table_set_filter (TAKU_TABLE (data->launcher_table),
 			data->search_cat);
+		gtk_widget_grab_focus (data->search_entry);
 	} else {
 		/* Set the category back to the one pointed to by the
 		 * drop-down.
@@ -254,7 +255,6 @@ today_launcher_search_toggle_cb (GtkWidget *button, TodayData *data)
 			(TakuLauncherCategory *)g_list_nth_data (
 				data->categories, gtk_combo_box_get_active (
 					GTK_COMBO_BOX (data->filter_combo))));
-		gtk_widget_grab_focus (data->search_entry);
 	}
 }
 
