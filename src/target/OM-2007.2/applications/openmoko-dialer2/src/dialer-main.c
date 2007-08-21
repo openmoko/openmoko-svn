@@ -27,6 +27,24 @@
 #define DIALER_NAMESPACE "org.openmoko.Dialer"
 #define DIALER_OBJECT "/org/openmoko/Dialer"
 
+static gboolean show_dialer;
+static gboolean show_missed;
+static gchar *number = NULL;
+
+static GOptionEntry entries[] = {
+  {"show-dialer", 's', 0, G_OPTION_ARG_NONE, &show_dialer,
+   "Show the dialer at startup", "N"},
+
+  {"show-missed", 'm', 0, G_OPTION_ARG_NONE, &show_missed,
+   "Show the history window filtered by the missed, none.", "N"},
+  
+  {"dial", 'd', 0, G_OPTION_ARG_STRING, &number,
+   "Dial the specified number.", "N"},
+
+  {NULL}
+};
+
+
 static void
 _show_dialer (DBusGConnection *conn)
 {
@@ -69,19 +87,27 @@ _show_missed (DBusGConnection *conn)
 
 }
 
-static gboolean show_dialer;
-static gboolean show_missed;
+static void
+_dial_number (DBusGConnection *conn)
+{
+  DBusGProxy *proxy = NULL;
+  GError *error = NULL;
 
-static GOptionEntry entries[] = {
-  {"show-dialer", 's', 0, G_OPTION_ARG_NONE, &show_dialer,
-   "Show the dialer at startup", "N"},
+  proxy = dbus_g_proxy_new_for_name (conn,
+                                      DIALER_NAMESPACE,
+                                      DIALER_OBJECT,
+                                      DIALER_NAMESPACE);
 
-  {"show-missed", 'm', 0, G_OPTION_ARG_NONE, &show_missed,
-   "Show the history window filtered by the missed, none.", "N"},
+  if (!proxy)
+    return;
+  
+  dbus_g_proxy_call (proxy, "Dial", &error,
+                     G_TYPE_STRING, number,
+                     G_TYPE_INVALID, G_TYPE_INVALID);
+  if (error)
+    g_warning (error->message);
 
-  {NULL}
-};
-
+}
 int
 main (int argc, char **argv)
 {
@@ -143,6 +169,8 @@ main (int argc, char **argv)
 
     if (show_missed)
       _show_missed (connection);
+    else if (number)
+      _dial_number (connection);
     else
       _show_dialer (connection);
     
@@ -178,10 +206,12 @@ main (int argc, char **argv)
   /* application object */
   g_set_application_name ("OpenMoko Dialer");
  
-  if (show_dialer)
-    moko_dialer_show_dialer (dialer, NULL);
+  if (number)
+    moko_dialer_dial (dialer, number, NULL);
   else if (show_missed)
     moko_dialer_show_missed_calls (dialer, NULL);
+  else if (show_dialer)
+    moko_dialer_show_dialer (dialer, NULL);
 
   gtk_main ();
   

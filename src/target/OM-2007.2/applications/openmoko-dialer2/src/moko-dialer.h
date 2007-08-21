@@ -102,6 +102,9 @@ moko_dialer_show_dialer (MokoDialer *dialer, GError *error);
 gboolean
 moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error);
 
+gboolean
+moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error);
+
 void
 moko_dialer_outgoing_call (MokoDialer *dialer, const gchar *number);
 
@@ -113,7 +116,6 @@ moko_dialer_hung_up (MokoDialer *dialer);
 
 void
 moko_dialer_rejected (MokoDialer *dialer);
-
 
 G_END_DECLS
 

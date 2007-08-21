@@ -138,7 +138,7 @@ moko_dialer_get_status (MokoDialer *dialer, gint *OUT_status, GError *error)
   return TRUE;
 }
 
-static gboolean
+gboolean
 moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
 {
   MokoDialerPrivate *priv;
@@ -148,6 +148,7 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
   g_return_val_if_fail (moko_dialer_show_dialer (dialer, NULL), FALSE);
   priv = dialer->priv;
 
+  moko_dialer_show_dialer (dialer, NULL);
   on_keypad_dial_clicked (NULL, number, dialer);
   return TRUE;
 }
@@ -432,9 +433,6 @@ on_network_registered (MokoGsmdConnection *conn,
       break;
     case MOKO_GSMD_CONNECTION_NETREG_DENIED:
       /* This may be a pin issue*/
-      g_print ("NetReg: Registration denied, the SIM pin may be needed\n");
-      moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
-      g_source_remove (priv->reg_timeout);
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
@@ -540,6 +538,7 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   
   g_source_remove (priv->reg_timeout);
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
+  moko_dialer_show_dialer (dialer, NULL);
   g_print ("Pin Requested\n");
 
 }

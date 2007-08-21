@@ -1,5 +1,13 @@
 2007-08-21  Neil J. Patel  <njp@o-hand.com>
 
+	* src/dialer-main.c: (_dial_number), (main):
+	* src/moko-dialer.c: (moko_dialer_dial):
+	* src/moko-dialer.h:
+	Fix bugs #649 (commandline option to dial)
+	#456 (popup when pin requested).
+
+2007-08-21  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-talking.c: (moko_talking_init):
 	Fixed bug #730 (panel menu and 'hang up' are too close).
 
