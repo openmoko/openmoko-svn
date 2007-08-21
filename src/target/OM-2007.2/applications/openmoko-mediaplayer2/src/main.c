@@ -48,6 +48,8 @@
 
 #include "main.h"
 #include "main_page.h"
+#include "playlist_page.h"
+#include "editor_page.h"
 #include "guitools.h"
 #include "playlist.h"
 #include "playback.h"
@@ -59,38 +61,18 @@
 // Enables GLib memory profiling when defined
 //define DEBUG_MEM_PROFILE
 
+// Forces the window to the native size of the Neo1973's screen area if enabled
+//define EMULATE_SIZE
+
 // The padding applied to the page handle's contents
 #define NOTEBOOK_PAGE_PADDING 6
 
-GtkWidget *omp_window = NULL;
-GtkWidget *omp_notebook = NULL;
-struct _omp_notebook_tabs *omp_notebook_tabs = NULL;
+GtkWidget *omp_window = NULL;													///< Application's main window
+GtkWidget *omp_notebook = NULL;												///< GtkNotebook containing the pages making up the UI
+struct _omp_notebook_tab_ids *omp_notebook_tab_ids = NULL;	///< Holds numerical IDs of the notebook tabs, used for gtk_notebook_set_current_page()
+struct _omp_notebook_tabs *omp_notebook_tabs = NULL;	///< Holds the GtkWidget handles of the notebook tabs so they can be hidden/shown
 
 
-
-/*
-void
-init_dbus()
-{
-    //added by lijiang
-    DBusConnection *bus;
-    DBusError error;
-
-    dbus_error_init(&error);
-    bus = dbus_bus_get(DBUS_BUS_SESSION, &error);
-    if(!bus)
-    {
-        g_print("Failed to connect to the D-Bus daemon: %s", error.message);
-	dbus_error_free(&error);
-	return;
-    }
-    dbus_connection_setup_with_g_main(bus, NULL);
-    dbus_bus_add_match(bus, "type='signal',interface='com.burtonini.dbus.Signal'", &error);
-    dbus_connection_add_filter(bus, signal_filter, mainwindow, NULL);
-    //added end
-
-}
-*/
 
 /**
  * Terminate the entire program normally
@@ -238,32 +220,52 @@ omp_window_create()
 	omp_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(omp_window), _("Media Player"));
 	g_signal_connect(G_OBJECT(omp_window), "destroy", G_CALLBACK(omp_close), NULL);
+
+	#ifdef EMULATE_SIZE
+		gtk_widget_set_size_request(GTK_WIDGET(omp_window), 480, 620);
+	#endif
 }
 
 /**
- * Create the individual pages that make up the UI
+ * Creates the individual pages that make up the UI
  * @note Must be called after the backends have been initialized so the signals exist that the UIs hook to
  */
 void
 omp_window_create_pages()
 {
+	GtkWidget *page;
+	guint page_id = 0;
+
 	// Create and set up the notebook that contains the individual UI pages
 	omp_notebook = gtk_notebook_new();
 	g_object_set(G_OBJECT(omp_notebook), "can-focus", FALSE, "homogeneous", TRUE, NULL);
 	gtk_notebook_set_tab_pos(GTK_NOTEBOOK(omp_notebook), GTK_POS_BOTTOM);
 	gtk_container_add(GTK_CONTAINER(omp_window), GTK_WIDGET(omp_notebook));
+	gtk_widget_show(omp_notebook);
 
+	omp_notebook_tab_ids = g_new0(struct _omp_notebook_tab_ids, 1);
 	omp_notebook_tabs = g_new0(struct _omp_notebook_tabs, 1);
 
 	// Add main page
-	omp_notebook_tabs->main = omp_main_page_create(GTK_WINDOW(omp_window));
-	omp_notebook_add_page_with_icon(omp_notebook, omp_notebook_tabs->main,
+	page = omp_main_page_create();
+	omp_notebook_add_page_with_icon(omp_notebook, page,
 		MOKO_STOCK_SPEAKER, NOTEBOOK_PAGE_PADDING);
+	omp_notebook_tab_ids->main = page_id++;
+	omp_notebook_tabs->main = page;
 
 	// Add playlist page
-	omp_notebook_tabs->playlists = omp_playlist_page_create(GTK_WINDOW(omp_window));
-	omp_notebook_add_page_with_icon(omp_notebook, omp_notebook_tabs->playlists,
+	page = omp_playlist_page_create();
+	omp_notebook_add_page_with_icon(omp_notebook, page,
 		MOKO_STOCK_VIEW, NOTEBOOK_PAGE_PADDING);
+	omp_notebook_tab_ids->playlists = page_id++;
+	omp_notebook_tabs->playlists = page;
+
+	// Add playlist editor page
+/*	page = omp_editor_page_create();
+	omp_notebook_add_page_with_icon(omp_notebook, page,
+		"gtk-index", NOTEBOOK_PAGE_PADDING);
+	omp_notebook_tab_ids->editor = page_id++;
+	omp_notebook_tabs->editor = page; */
 }
 
 /**
@@ -272,7 +274,7 @@ omp_window_create_pages()
 void
 omp_window_free()
 {
-	g_free(omp_notebook_tabs);
+	g_free(omp_notebook_tab_ids);
 }
 
 /**
@@ -281,7 +283,7 @@ omp_window_free()
 void
 omp_window_show()
 {
-	gtk_widget_show_all(omp_window);
+	gtk_widget_show(omp_window);
 }
 
 /**
@@ -361,6 +363,10 @@ main(int argc, char *argv[])
 	omp_playback_init();
 	omp_playlist_init();
 	omp_window_create_pages();
+
+	// Let the UI catch up
+	while (gtk_events_pending()) gtk_main_iteration();
+
 	omp_session_restore_state();
 	omp_window_show();
 

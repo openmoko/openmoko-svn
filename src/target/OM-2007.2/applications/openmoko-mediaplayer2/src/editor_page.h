@@ -20,13 +20,19 @@
  */
 
 /**
- * @file files_page.h
- * Playlist editor, part 2: file adding window
+ * @file editor_page.h
+ * Playlist editor, part 1: main editor
  */
 
-#ifndef FILES_PAGE_H
-#define FILES_PAGE_H
+#ifndef EDITOR_PAGE_H
+#define EDITOR_PAGE_H
 
+#include <gtk/gtk.h>
+
+#define OMP_WIDGET_CAPTION_EDITOR "Tracks in playlist '%s':"
+#define OMP_WIDGET_CAPTION_EDITOR_TRACK_TIME "%d:%.2d"
+
+GtkWidget *omp_editor_page_create();
 
 #endif
 

@@ -30,4 +30,5 @@ openmoko_mediaplayer_SOURCES = \
 	persistent.c persistent.h \
 	main_page.c main_page.h \
 	playlist_page.c playlist_page.h \
+	editor_page.c editor_page.h \
 	files_page.c files_page.h

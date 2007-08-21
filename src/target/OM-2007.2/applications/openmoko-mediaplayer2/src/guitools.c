@@ -27,8 +27,7 @@
 #include "guitools.h"
 
 /// Absolute path to the UI pixmaps
-extern gchar *ui_image_path = NULL;
-
+gchar *ui_image_path = NULL;
 
 
 
@@ -36,11 +35,11 @@ extern gchar *ui_image_path = NULL;
  * Loads an image from a file into a pixel buffer
  */
 GdkPixbuf*
-pixbuf_new_from_file(const gchar* file_name)
+pixbuf_new_from_file(const gchar *file_name)
 {
-	gchar* image_file_name;
-	GdkPixbuf* pixbuf = NULL;
-	GError* error = NULL;
+	gchar *image_file_name;
+	GdkPixbuf *pixbuf = NULL;
+	GError *error = NULL;
 
 	image_file_name = g_strdup_printf("%s/%s", ui_image_path, file_name);
 
@@ -49,11 +48,11 @@ pixbuf_new_from_file(const gchar* file_name)
 		pixbuf = gdk_pixbuf_new_from_file(image_file_name, &error);
 		if(!pixbuf)
 		{
-			g_print("File found but failed to load: %s\n", image_file_name);
+			g_printerr("File found but failed to load: %s\n", image_file_name);
 			g_error_free(error);
 		}
 	} else {
-		g_debug("Can't find %s\n", image_file_name);
+		g_printerr("Can't find %s\n", image_file_name);
 	}
 
 	g_free(image_file_name);
@@ -84,9 +83,13 @@ create_label(GtkWidget **label, gchar *font_info, gchar *color_desc,
 	font_desc = pango_font_description_from_string(font_info);
 	gtk_widget_modify_font(*label, font_desc);
 	pango_font_description_free(font_desc);
-	gtk_label_set_width_chars(GTK_LABEL(*label), max_char_count);
 	gtk_misc_set_alignment(GTK_MISC(*label), 0, 0.5);
-	gtk_label_set_ellipsize(GTK_LABEL(*label), PANGO_ELLIPSIZE_END);
+
+	if (max_char_count)
+	{
+		gtk_label_set_width_chars(GTK_LABEL(*label), max_char_count);
+		gtk_label_set_ellipsize(GTK_LABEL(*label), PANGO_ELLIPSIZE_END);
+	}
 
 	gdk_color_parse(color_desc, &color);
 	gtk_widget_modify_fg(GTK_WIDGET(*label), GTK_STATE_NORMAL, &color);

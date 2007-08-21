@@ -21,7 +21,7 @@
 
 /**
  * @file files_page.c
- * Playlist editor
+ * Playlist editor, part 2: file adding window
  */
 
 #include "files_page.h"

@@ -55,12 +55,21 @@ struct _main_widgets
 	GtkWidget *shuffle_button;
 	GtkWidget *repeat_button;
 	GtkWidget *playlist_button;
+	GtkWidget *volume_hscale;
 } main_widgets;
 
 GtkWidget *omp_main_window = NULL;
 
 gboolean omp_main_time_slider_can_update = TRUE;				///< Determines whether the time slider can be updated or not
 gboolean omp_main_time_slider_was_dragged = FALSE;			///< Is toggled after the user finished dragging the time slider's button
+
+// Forward declarations for internal use
+void omp_main_update_track_change(gpointer instance, gpointer user_data);
+void omp_main_update_status_change(gpointer instance, gpointer user_data);
+void omp_main_update_track_position(gpointer instance, gpointer user_data);
+void omp_main_update_volume(gpointer instance, gpointer user_data);
+void omp_main_update_tag_artist(gpointer instance, const gchar *artist, gpointer user_data);
+void omp_main_update_tag_title(gpointer instance, const gchar *title, gpointer user_data);
 
 
 
@@ -237,19 +246,10 @@ omp_repeat_button_callback(GtkWidget *widget, gpointer data)
 }
 
 /**
- * Event handler for the Playlist button
- */
-void
-omp_playlist_button_callback(GtkWidget *widget, gpointer data)
-{
-	// ...
-}
-
-/**
  * Event handler for the Fast Forward button
  */
 void
-omp_main_button_fast_forward_callback()
+omp_main_button_fast_forward_callback(GtkWidget *widget, gpointer data)
 {
 	// Set new position and resume playback that was paused when dragging started
 	omp_playback_set_track_position(omp_playback_get_track_position()+BUTTON_SEEK_DISTANCE);
@@ -262,7 +262,7 @@ omp_main_button_fast_forward_callback()
  * Event handler for the Rewind button
  */
 void
-omp_main_button_rewind_callback()
+omp_main_button_rewind_callback(GtkWidget *widget, gpointer data)
 {
 	// Set new position and resume playback that was paused when dragging started
 	omp_playback_set_track_position(omp_playback_get_track_position()-BUTTON_SEEK_DISTANCE);
@@ -275,7 +275,7 @@ omp_main_button_rewind_callback()
  * Event handler for the Play/Pause button
  */
 void
-omp_main_button_play_pause_callback()
+omp_main_button_play_pause_callback(GtkWidget *widget, gpointer data)
 {
 	if (omp_playback_get_state() != OMP_PLAYBACK_STATE_PLAYING)
 	{
@@ -288,11 +288,43 @@ omp_main_button_play_pause_callback()
 }
 
 /**
+ * Gets called when the volume slider's value got changed
+ */
+void
+omp_main_volume_slider_changed(GtkRange *range, gpointer data)
+{
+	omp_playback_set_volume(gtk_range_get_value(GTK_RANGE(range)));
+}
+
+/**
+ * Resets the UI to a "no track loaded" state
+ */
+void
+omp_main_reset_ui(gpointer instance, gpointer user_data)
+{
+	gchar *caption;
+
+	gtk_label_set_text(GTK_LABEL(main_widgets.title_label), "No track info available");
+	gtk_label_set_text(GTK_LABEL(main_widgets.artist_label), "");
+
+	caption = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_NUM, 0, 0);
+	gtk_label_set_text(GTK_LABEL(main_widgets.track_number_label), caption);
+	g_free(caption);
+
+	caption = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME, 0, 0, 0, 0);
+	gtk_label_set_text(GTK_LABEL(main_widgets.time_label), caption);
+	g_free(caption);
+
+	gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, 1);
+	gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), 0.0);
+}
+
+/**
  * Creates a button framed by a GtkAlignment
  * @param image_name Path and file name of the image to use as pixmap
  * @return A GtkAlignment containing the button
  */
-GtkWidget*
+GtkWidget *
 omp_button_create(gchar *image_name, gint pad_left, GCallback callback, GtkWidget **button)
 {
 	GtkWidget *image;
@@ -322,7 +354,7 @@ omp_button_create(gchar *image_name, gint pad_left, GCallback callback, GtkWidge
  * @param image_name The name of the image resource to use, not a file name
  * @return The button
  */
-GtkWidget*
+GtkWidget *
 omp_stock_button_create(gchar *image_name, GtkWidget **image, GCallback callback)
 {
 	GtkWidget *button;
@@ -348,8 +380,7 @@ omp_main_widgets_create(GtkContainer *destination)
 {
 	GtkWidget *alignment;
 	GtkWidget *mainvbox;
-	GtkWidget *background_vbox;
-	GtkWidget *upper_hbox, *middle_hbox, *lower_hbox, *controls_hbox;
+	GtkWidget *upper_hbox, *middle_hbox, *lower_hbox;
 	GtkWidget *middle_right_vbox;
 	GtkWidget *image, *button;
 
@@ -362,14 +393,12 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	// Title label
 	alignment = create_label(&main_widgets.title_label, "Bitstream Vera Sans 24", "black", 0, 0, 1, 0, 18);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 18, 0, 50, 30);
-	gtk_label_set_text(GTK_LABEL(main_widgets.title_label), "No track available");
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 18, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// Artist label
 	alignment = create_label(&main_widgets.artist_label, "Bitstream Vera Sans 14", "black", 0, 0, 1, 0, 30);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 50, 30);
-	gtk_label_set_text(GTK_LABEL(main_widgets.artist_label), "");
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// --- --- --- --- --- Upper hbox --- --- --- --- ---
@@ -383,28 +412,22 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	// Track number icon
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 2, 0, 0, 15);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 2, 0, 14, 15);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	container_add_image(GTK_CONTAINER(alignment), "ico-track.png");
 
 	// Track number
-	alignment = create_label(&main_widgets.track_number_label, "Bitstream Vera Sans 14", "black", 0, 0, 0, 0, 12);
-	caption = g_strdup_printf(WIDGET_CAPTION_TRACK_NUM, 0, 0);
-	gtk_label_set_text(GTK_LABEL(main_widgets.track_number_label), caption);
-	g_free(caption);
+	alignment = create_label(&main_widgets.track_number_label, "Bitstream Vera Sans 14", "black", 0, 0, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// Time icon
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 2, 0, 48, 15);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 2, 0, 86, 15);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	container_add_image(GTK_CONTAINER(alignment), "ico-time.png");
 
 	// Time
-	alignment = create_label(&main_widgets.time_label, "Bitstream Vera Sans 14", "black", 0, 0, 0, 0, 12);
-	caption = g_strdup_printf(WIDGET_CAPTION_TRACK_TIME, 0, 0, 0, 0);
-	gtk_label_set_text(GTK_LABEL(main_widgets.time_label), caption);
-	g_free(caption);
+	alignment = create_label(&main_widgets.time_label, "Bitstream Vera Sans 14", "black", 0, 0, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// --- --- --- --- --- Slider --- --- --- --- ---
@@ -419,7 +442,6 @@ omp_main_widgets_create(GtkContainer *destination)
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(main_widgets.time_hscale), GTK_CAN_FOCUS);
 	gtk_widget_set_size_request(GTK_WIDGET(main_widgets.time_hscale), 338, 35);
 	gtk_range_set_update_policy(GTK_RANGE(main_widgets.time_hscale), GTK_UPDATE_DISCONTINUOUS);
-	gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), 0.0);
 	g_signal_connect(G_OBJECT(main_widgets.time_hscale), "value_changed",					G_CALLBACK(omp_main_time_slider_changed), NULL);
 	g_signal_connect(G_OBJECT(main_widgets.time_hscale), "button-press-event",		G_CALLBACK(omp_main_time_slider_drag_start), NULL);
 	g_signal_connect(G_OBJECT(main_widgets.time_hscale), "button-release-event",	G_CALLBACK(omp_main_time_slider_drag_stop), NULL);
@@ -464,10 +486,10 @@ omp_main_widgets_create(GtkContainer *destination)
 	container_add_image_with_ref(GTK_CONTAINER(alignment), "ind-music-volume-00.png", &main_widgets.volume_image);
 
 	// Volume label
-	alignment = create_label(&main_widgets.volume_label, "Sans 14", "darkorange", 0, 0, 1, 0, 4);
+	alignment = create_label(&main_widgets.volume_label, "Sans 14", "darkorange", 0, 0, 1, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 6, 0, 10, 0);
 	gtk_box_pack_start(GTK_BOX(volume_box), GTK_WIDGET(alignment), TRUE, TRUE, 0);
-	caption = g_strdup_printf(WIDGET_CAPTION_VOLUME, 0);
+	caption = g_strdup_printf(OMP_WIDGET_CAPTION_VOLUME, 0);
 	gtk_label_set_text(GTK_LABEL(main_widgets.volume_label), caption);
 	g_free(caption);
 
@@ -483,7 +505,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	alignment = gtk_alignment_new(0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 25, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(mainvbox), alignment, TRUE, TRUE, 0);
-	lower_hbox = gtk_hbox_new(FALSE, 0);
+	lower_hbox = gtk_hbutton_box_new();
 	gtk_container_add(GTK_CONTAINER(alignment), lower_hbox);
 
 	// Shuffle toggle button
@@ -493,53 +515,80 @@ omp_main_widgets_create(GtkContainer *destination)
 	// Repeat toggle button
 	alignment = omp_button_create("ico-repeat.png", 10, G_CALLBACK(omp_repeat_button_callback), &main_widgets.repeat_button);
 	gtk_box_pack_start(GTK_BOX(lower_hbox), alignment, TRUE, TRUE, 0);
+}
 
-	// Playlist button
-	alignment = omp_button_create("ico-list.png", 10, G_CALLBACK(omp_playlist_button_callback), &main_widgets.playlist_button);
-	gtk_box_pack_start(GTK_BOX(lower_hbox), alignment, TRUE, TRUE, 0);
+/**
+ * Creates the widgets that didn't originally belong to the main UI
+ */
+void
+omp_main_secondary_widgets_create(GtkContainer *destination)
+{
+	GtkWidget *alignment;
+	GtkWidget *mainvbox;
+	GtkWidget *vbox, *hbox, *vol_vbox, *bal_hbox;
+	GtkWidget *image, *button, *vol_scale;
+
+	// Add mainvbox to destination container
+	mainvbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(destination), GTK_WIDGET(mainvbox));
+	gtk_widget_set_size_request(GTK_WIDGET(mainvbox), 480, -1);
 
 	// --- --- --- --- --- Player controls --- --- --- --- --- ---
 
 	alignment = gtk_alignment_new(0, 0, 1, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 40, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(mainvbox), alignment, TRUE, TRUE, 0);
 
-	controls_hbox = gtk_hbox_new(FALSE, 0);
-	gtk_container_add(GTK_CONTAINER(alignment), controls_hbox);
-
-	gtk_box_set_homogeneous(GTK_BOX(controls_hbox), TRUE);
+	hbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_SPREAD);
+	gtk_container_add(GTK_CONTAINER(alignment), hbox);
 
 	// Previous Track button
-	button = omp_stock_button_create("gtk-media-previous-ltr", &image, G_CALLBACK(omp_playlist_set_prev_track));
-	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
-	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
+	button = omp_stock_button_create("gtk-media-previous-ltr", &image,
+		G_CALLBACK(omp_playlist_set_prev_track));
+	gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
 	// Rewind button
-	button = omp_stock_button_create("gtk-media-rewind-ltr", &image, G_CALLBACK(omp_main_button_rewind_callback));
-	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
-	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
+	button = omp_stock_button_create("gtk-media-rewind-ltr", &image,
+		G_CALLBACK(omp_main_button_rewind_callback));
+	gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
 	// Play/Pause button
-	button = omp_stock_button_create("gtk-media-play-ltr", &main_widgets.play_pause_button_image, G_CALLBACK(omp_main_button_play_pause_callback));
-	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
-	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
+	button = omp_stock_button_create("gtk-media-play-ltr", &main_widgets.play_pause_button_image,
+		G_CALLBACK(omp_main_button_play_pause_callback));
+	gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
 	// Fast Forward button
-	button = omp_stock_button_create("gtk-media-forward-ltr", &image, G_CALLBACK(omp_main_button_fast_forward_callback));
-	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
-	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
+	button = omp_stock_button_create("gtk-media-forward-ltr", &image,
+		G_CALLBACK(omp_main_button_fast_forward_callback));
+	gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
 	// Next Track button
-	button = omp_stock_button_create("gtk-media-next-ltr", &image, G_CALLBACK(omp_playlist_set_next_track));
-	gtk_box_pack_start(GTK_BOX(controls_hbox), button, TRUE, TRUE, 0);
-	gtk_box_set_child_packing(GTK_BOX(controls_hbox), GTK_WIDGET(button), FALSE, FALSE, 0, GTK_PACK_START);
+	button = omp_stock_button_create("gtk-media-next-ltr", &image,
+		G_CALLBACK(omp_playlist_set_next_track));
+	gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+	// --- --- --- --- --- Volume control --- --- --- --- --- ---
+	
+	alignment = gtk_alignment_new(0, 0, 0, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 15, 0, 71, 0);
+	gtk_box_pack_start(GTK_BOX(mainvbox), alignment, TRUE, TRUE, 0);
+
+	// Volume hscale
+	vol_scale = gtk_hscale_new_with_range(0.0, 100.0, 1.0);
+	gtk_scale_set_draw_value(GTK_SCALE(vol_scale), FALSE);
+	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(vol_scale), GTK_CAN_FOCUS);
+	gtk_widget_set_size_request(GTK_WIDGET(vol_scale), 338, 35);
+	gtk_range_set_update_policy(GTK_RANGE(vol_scale), GTK_UPDATE_DISCONTINUOUS);
+	g_signal_connect(G_OBJECT(vol_scale), "value_changed", G_CALLBACK(omp_main_volume_slider_changed), NULL);
+	gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(vol_scale));
+	main_widgets.volume_hscale = vol_scale;
 }
 
 /**
- * Create the main UI page and all its elements
+ * Creates the main UI page and all its elements
  */
 GtkWidget *
-omp_main_page_create(GtkWindow *window)
+omp_main_page_create()
 {
 	GtkWidget *alignment, *bg_muxer;
 
@@ -548,17 +597,46 @@ omp_main_page_create(GtkWindow *window)
 	// Background image
 	alignment = gtk_alignment_new(0, 0, 0, 0);
 	container_add_image(GTK_CONTAINER(alignment), "background.png");
-	gtk_fixed_put(GTK_FIXED(bg_muxer), GTK_WIDGET(alignment), 15, 30);
+	gtk_fixed_put(GTK_FIXED(bg_muxer), GTK_WIDGET(alignment), 15, 10);
 	
 	// Create all widgets
 	alignment = gtk_alignment_new(0, 0, 0, 0);
 	omp_main_widgets_create(GTK_CONTAINER(alignment));
-	gtk_fixed_put(GTK_FIXED(bg_muxer), GTK_WIDGET(alignment), 20, 47);
+	gtk_fixed_put(GTK_FIXED(bg_muxer), GTK_WIDGET(alignment), 20, 26);
+
+	alignment = gtk_alignment_new(0, 0, 0, 0);
+	omp_main_secondary_widgets_create(GTK_CONTAINER(alignment));
+	gtk_fixed_put(GTK_FIXED(bg_muxer), GTK_WIDGET(alignment), 0, 420);
+
+	omp_main_reset_ui(NULL, NULL);
 
 	// Set up signal handlers
-	g_signal_connect(G_OBJECT(window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,		G_CALLBACK(omp_main_update_track_change), NULL);
-	g_signal_connect(G_OBJECT(window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,		G_CALLBACK(omp_main_update_status_change), NULL);
-	g_signal_connect(G_OBJECT(window), OMP_EVENT_PLAYBACK_POSITION_CHANGED,	G_CALLBACK(omp_main_update_track_position), NULL);
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,
+		G_CALLBACK(omp_main_update_track_change), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED,
+		G_CALLBACK(omp_main_update_track_change), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_RESET,
+		G_CALLBACK(omp_main_reset_ui), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED,
+		G_CALLBACK(omp_main_update_status_change), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED,
+		G_CALLBACK(omp_main_update_track_position), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED,
+		G_CALLBACK(omp_main_update_volume), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_META_ARTIST_CHANGED,
+		G_CALLBACK(omp_main_update_tag_artist), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_META_TITLE_CHANGED,
+		G_CALLBACK(omp_main_update_tag_title), NULL);
+
+	// Make all widgets visible
+	gtk_widget_show_all(bg_muxer);
 
 	return bg_muxer;
 }
@@ -568,7 +646,7 @@ omp_main_page_create(GtkWindow *window)
  * @note This function only checks elements that don't change too often - for the rest we have specialized functions below
  */
 void
-omp_main_update_track_change()
+omp_main_update_track_change(gpointer instance, gpointer user_data)
 {
 	static gint old_track_count = 0;
 	static gint old_track_id = 0;
@@ -576,6 +654,7 @@ omp_main_update_track_change()
 
 	gulong track_length, track_position;
 	gchar *text;
+	gint track_id;
 
 	// Track id/track count changed?
 	if ( (omp_playlist_track_count != old_track_count) || (omp_playlist_current_track_id != old_track_id) )
@@ -583,11 +662,9 @@ omp_main_update_track_change()
 		old_track_count = omp_playlist_track_count;
 		old_track_id = omp_playlist_current_track_id;
 
-		// Update session
-		omp_session_set_track_id(omp_playlist_current_track_id);
-
 		// Update label
-		text = g_strdup_printf(WIDGET_CAPTION_TRACK_NUM, omp_playlist_current_track_id+1, omp_playlist_track_count);
+		track_id = (omp_playlist_track_count) ? omp_playlist_current_track_id+1 : 0;
+		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_NUM, track_id, omp_playlist_track_count);
 		gtk_label_set_text(GTK_LABEL(main_widgets.track_number_label), text);
 		g_free(text);
 	}
@@ -604,9 +681,9 @@ omp_main_update_track_change()
 		gtk_range_set_increments(GTK_RANGE(main_widgets.time_hscale), track_length/10, track_length/10);
 
 		// Update label and slider
-		text = g_strdup_printf(WIDGET_CAPTION_TRACK_TIME,
-			track_position / 60, track_position % 60,
-			track_length / 60, track_length % 60);
+		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
+			track_position / 60000, (track_position/1000) % 60,
+			track_length / 60000, (track_length/1000) % 60);
 		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
 		g_free(text);
 
@@ -623,14 +700,18 @@ omp_main_update_track_change()
  * Updates the UI if playback engine switched between paused and playing modes
  */
 void
-omp_main_update_status_change()
+omp_main_update_status_change(gpointer instance, gpointer user_data)
 {
 	// Update Play/Pause button pixmap
 	if (omp_playback_get_state() == OMP_PLAYBACK_STATE_PAUSED)
 	{
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-play-ltr", BUTTON_PIXMAP_SIZE);
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image),
+			"gtk-media-play-ltr", BUTTON_PIXMAP_SIZE);
+
 	} else {
-		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image), "gtk-media-pause", BUTTON_PIXMAP_SIZE);
+
+		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image),
+			"gtk-media-pause", BUTTON_PIXMAP_SIZE);
 	}
 }
 
@@ -638,7 +719,7 @@ omp_main_update_status_change()
  * Updates the UI if the playback position changed
  */
 void
-omp_main_update_track_position()
+omp_main_update_track_position(gpointer instance, gpointer user_data)
 {
 	static gulong old_track_position = 0;
 
@@ -652,9 +733,9 @@ omp_main_update_track_position()
 		track_length = omp_playback_get_track_length();
 
 		// Update UI
-		text = g_strdup_printf(WIDGET_CAPTION_TRACK_TIME,
-			track_position / 60, track_position % 60,
-			track_length / 60, track_length % 60);
+		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
+			track_position / 60000, (track_position/1000) % 60,
+			track_length / 60000, (track_length/1000) % 60);
 		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
 		g_free(text);
 
@@ -666,5 +747,41 @@ omp_main_update_track_position()
 		}
 	}
 
+}
+
+/**
+ * Updates the UI if the playback volume changed
+ */
+void
+omp_main_update_volume(gpointer instance, gpointer user_data)
+{
+	gchar *text;
+	guint volume;
+
+	volume = omp_playback_get_volume();
+
+	text = g_strdup_printf(OMP_WIDGET_CAPTION_VOLUME, volume);
+	gtk_label_set_text(GTK_LABEL(main_widgets.volume_label), text);
+	g_free(text);
+
+	gtk_range_set_value(GTK_RANGE(main_widgets.volume_hscale), volume);
+}
+
+/**
+ * Updates the UI if the track's artist changed
+ */
+void
+omp_main_update_tag_artist(gpointer instance, const gchar *artist, gpointer user_data)
+{
+	gtk_label_set_text(GTK_LABEL(main_widgets.artist_label), artist);
+}
+
+/**
+ * Updates the UI if the track's title changed
+ */
+void
+omp_main_update_tag_title(gpointer instance, const gchar *title, gpointer user_data)
+{
+	gtk_label_set_text(GTK_LABEL(main_widgets.title_label), title);
 }
 

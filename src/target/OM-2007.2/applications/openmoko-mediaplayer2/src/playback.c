@@ -34,6 +34,13 @@ guint omp_playback_ui_timeout = 0;						///< Handle of the UI-updating timeout
 gboolean omp_playback_ui_timeout_halted;			///< Flag that tells the UI-updating timeout to exit if set
 gulong omp_playback_pending_position = 0;			///< Since we can't set a new position if element is not paused or playing we store the position here and set it when it reached either state
 
+// Some private forward declarations
+static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
+static gboolean omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data);
+static gboolean omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data);
+static gboolean omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data);
+static gboolean omp_gst_message_tag(GstBus *bus, GstMessage *message, gpointer data);
+
 
 
 /**
@@ -51,9 +58,33 @@ omp_playback_init()
 	}
 
 	// Create the signals we'll emit
-	g_signal_new(OMP_EVENT_PLAYBACK_EOS,								G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-	g_signal_new(OMP_EVENT_PLAYBACK_STATUS_CHANGED,			G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-	g_signal_new(OMP_EVENT_PLAYBACK_POSITION_CHANGED,		G_TYPE_OBJECT, 0, 0, 0, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+	g_signal_new(OMP_EVENT_PLAYBACK_RESET, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__VOID,
+		G_TYPE_NONE, 0);
+
+	g_signal_new(OMP_EVENT_PLAYBACK_EOS, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__VOID,
+		G_TYPE_NONE, 0);
+
+	g_signal_new(OMP_EVENT_PLAYBACK_STATUS_CHANGED, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__VOID,
+		G_TYPE_NONE, 0);
+
+	g_signal_new(OMP_EVENT_PLAYBACK_POSITION_CHANGED, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__VOID,
+		G_TYPE_NONE, 0);
+
+	g_signal_new(OMP_EVENT_PLAYBACK_VOLUME_CHANGED, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__VOID,
+		G_TYPE_NONE, 0);
+
+	g_signal_new(OMP_EVENT_PLAYBACK_META_ARTIST_CHANGED, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__STRING,
+		G_TYPE_NONE, 1, G_TYPE_STRING);
+
+	g_signal_new(OMP_EVENT_PLAYBACK_META_TITLE_CHANGED, G_TYPE_OBJECT,
+		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__STRING,
+		G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	// Set up gstreamer pipe and bins
 	omp_gst_playbin = gst_element_factory_make("playbin", "play");
@@ -66,6 +97,7 @@ omp_playback_init()
 	g_signal_connect(bus, "message::error", 				G_CALLBACK(omp_gst_message_error), NULL);
 	g_signal_connect(bus, "message::warning", 			G_CALLBACK(omp_gst_message_warning), NULL);
 	g_signal_connect(bus, "message::state-changed",	G_CALLBACK(omp_gst_message_state_changed), NULL);
+	g_signal_connect(bus, "message::tag",						G_CALLBACK(omp_gst_message_tag), NULL);
 
 	gst_object_unref(bus);
 }
@@ -100,6 +132,17 @@ omp_playback_save_state()
 	omp_session_set_playback_state(
 		omp_playback_get_track_position(),
 		(omp_playback_get_state() == OMP_PLAYBACK_STATE_PLAYING) );
+}
+
+/**
+ * Stops playback and unloads the current track
+ */
+void
+omp_playback_reset()
+{
+	gst_element_set_state(omp_gst_playbin, GST_STATE_READY);
+
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_RESET);
 }
 
 /**
@@ -216,7 +259,7 @@ omp_playback_get_state()
 }
 
 /**
- * Returns the number of seconds that the track has been playing so far
+ * Returns the number of milliseconds that the track has been playing so far
  */
 gulong
 omp_playback_get_track_position()
@@ -230,16 +273,18 @@ omp_playback_get_track_position()
 	}
 
 	// Return 0 if function returns FALSE, position otherwise
-	return (gst_element_query_position(omp_gst_playbin, &format, &position)) ? (position/GST_SECOND) : 0;
+	return (gst_element_query_position(omp_gst_playbin, &format, &position)) ? (position/1000000) : 0;
 }
 
 /**
  * Sets the playback position of the currently loaded track
+ * @param position Track position in milliseconds
  */
 void
-omp_playback_set_track_position(glong position)
+omp_playback_set_track_position(gulong position)
 {
 	GstState pipe_state;
+	gint64 pos;
 
 	if (!omp_gst_playbin)
 	{
@@ -258,20 +303,27 @@ omp_playback_set_track_position(glong position)
 		omp_playback_pending_position = position;
 
 		#ifdef DEBUG
-			g_printf("Pended track position change to %d:%.2ds\n", position / 60, position % 60);
+			g_printf("Pended track position change to %d:%.2ds\n", position / 60000, (position/1000) % 60);
 		#endif
 		return;
 	}
 	omp_playback_pending_position = 0;
 
 	#ifdef DEBUG
-		g_printf("Setting track position to %d:%.2ds\n", position / 60, position % 60);
+		g_printf("Setting track position to %d:%.2ds\n", position / 60000, (position/1000) % 60);
 	#endif
+
+	// Overflow workaround
+	pos = position;
+	pos = pos*1000000;
 
 	gst_element_seek(GST_ELEMENT(omp_gst_playbin), 1.0,
 		GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
-		GST_SEEK_TYPE_SET, position*GST_SECOND,
+		GST_SEEK_TYPE_SET, pos,
 		GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
+
+	// Save session data
+	omp_playback_save_state();
 
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
 }
@@ -290,8 +342,51 @@ omp_playback_get_track_length()
 		return 0;
 	}
 
-	// Return 0 if function returns FALSE, track length otherwise
-	return (gst_element_query_duration(omp_gst_playbin, &format, &length)) ? (length/GST_SECOND) : 0;
+	gst_element_query_duration(omp_gst_playbin, &format, &length);
+	return (length > 0) ? (length/1000000) : 0;
+}
+
+/**
+ * Sets the playback volume
+ * @param volume Volume in percent (0..100)
+ */
+void
+omp_playback_set_volume(guint volume)
+{
+	// Sanity check and failure recovery
+	if (volume > 100)
+	{
+		g_warning("Attempted to set invalid volume!");
+		volume = 100;
+	}
+
+	// Set playbin volume which ranges from 0.0 to 1.0
+	g_object_set(G_OBJECT(omp_gst_playbin), "volume", volume/100.0, NULL);
+
+	omp_session_set_volume(volume);
+
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED);
+}
+
+/**
+ * Returns the playback volume
+ * @return Volume in percent (0..100)
+ */
+guint
+omp_playback_get_volume()
+{
+	gdouble volume;
+	g_object_get(G_OBJECT(omp_gst_playbin), "volume", &volume, NULL);
+
+	return volume*100;
+}
+
+/**
+ * Sets up the fade-in timer
+ */
+void
+omp_playback_fade_volume()
+{
 }
 
 /**
@@ -336,6 +431,8 @@ omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data)
 		previous_state = new_state;
 		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_STATUS_CHANGED);
 	}
+
+	return TRUE;
 }
 
 /**
@@ -368,6 +465,39 @@ omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data)
 		g_printerr("gstreamer warning: %s\n", error->message);
 		g_error_free(error);
 	#endif
+
+	return TRUE;
+}
+
+/**
+ * Handles gstreamer's tag data notification
+ * @note We can not assume that all meta data will be sent in one go so we use one signal per entry
+ */
+static gboolean
+omp_gst_message_tag(GstBus *bus, GstMessage *message, gpointer data)
+{
+	GstTagList *tag_list;
+	gchar *s;
+
+	#ifdef DEBUG
+		g_printf("gstreamer discovered tag info\n");
+	#endif
+
+	gst_message_parse_tag(message, &tag_list);
+
+	// Read artist
+	if (gst_tag_list_get_string(tag_list, GST_TAG_ARTIST, &s))
+	{
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_META_ARTIST_CHANGED, s);
+		g_free(s);
+	}
+
+	// Read title
+	if (gst_tag_list_get_string(tag_list, GST_TAG_TITLE, &s))
+	{
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_META_TITLE_CHANGED, s);
+		g_free(s);
+	}
 
 	return TRUE;
 }

@@ -42,12 +42,19 @@
 #define SESSION_FILE_NAME "/.openmoko-mediaplayer"
 
 
-struct _omp_notebook_tabs
+struct _omp_notebook_tab_ids
 {
-	GtkWidget *main, *playlists, *files;
+	guint main, playlists, editor, files;
 };
 
+struct _omp_notebook_tabs
+{
+	GtkWidget *main, *playlists, *editor, *files;
+};
+
+extern struct _omp_notebook_tab_ids *omp_notebook_tab_ids;
 extern struct _omp_notebook_tabs *omp_notebook_tabs;
+extern GtkWidget *omp_notebook;
 extern GtkWidget *omp_window;
 
 void omp_application_terminate();

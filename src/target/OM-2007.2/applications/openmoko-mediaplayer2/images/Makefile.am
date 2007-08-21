@@ -9,6 +9,7 @@ images_DATA = \
 	ico-repeat.png \
 	ico-shuffle.png \
 	ico-list.png \
+	ico-tracktype-general.png \
 	ind-music-eq-01.png \
 	ind-music-eq-02.png \
 	ind-music-eq-03.png \
@@ -38,6 +39,6 @@ images_DATA = \
 	ind-music-volume-07.png \
 	ind-music-volume-08.png \
 	ind-music-volume-09.png \
-	ind-music-volume-10.png  
+	ind-music-volume-10.png
 
 EXTRA_DIST = $(images_DATA)

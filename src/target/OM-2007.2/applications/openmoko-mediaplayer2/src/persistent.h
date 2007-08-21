@@ -45,11 +45,13 @@ struct _omp_config
 };
 
 /// Session-persistent data
-/// @note Default values should be 0/FALSE as session data will be zeroed on error
+/// @note Default values are set in omp_session_reset()
 struct _omp_session
 {
+	guint volume;											///< Playback volume in percent (0..100)
+	guint fade_speed;									///< Volume fading speed in milliseconds
 	guint playlist_position;					///< Position within the playlist
-	glong track_position;							///< Position to resume playback from within the last played track
+	gulong track_position;						///< Position to resume playback from within the last played track
 	gboolean was_playing;							///< Set to TRUE of track was being played as the player was closed
 	gchar filesel_path[256];					///< Last path used in the file selection dialog
 	gchar playlist_file[256];					///< Path and file name of current (=last used) playlist

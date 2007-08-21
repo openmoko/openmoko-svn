@@ -90,6 +90,18 @@ omp_config_save()
 }
 
 /**
+ * Fills the session data with sane default values
+ */
+void
+omp_session_reset()
+{
+	memset(omp_session, 0, sizeof(struct _omp_session));
+
+	omp_session->volume = 100;
+	omp_session->fade_speed = 5000;
+}
+
+/**
  * Restores program state from last session
  */
 void
@@ -104,12 +116,16 @@ omp_session_restore_state()
 
 	omp_session = g_new0(struct _omp_session, 1);
 
-	// Load config and last used playlist if set
+	// Load config
 	omp_session_load();
+
+	omp_playback_set_volume(omp_session->volume);
 
 	if (omp_session->playlist_file[0])
 	{
-		omp_playlist_load(omp_session->playlist_file);
+		// Don't reset playlist state on load or else we'll alter the session
+		// data in unwanted ways since the new session state would be saved
+		omp_playlist_load(omp_session->playlist_file, FALSE);
 	}
 
 	// Check whether playlist_position is valid
@@ -126,6 +142,7 @@ omp_session_restore_state()
 	{
 		if (omp_session->was_playing)
 		{
+			omp_playback_fade_volume();
 			omp_playback_play();
 		}
 
@@ -204,12 +221,13 @@ omp_session_load()
 io_error:
 	#ifdef DEBUG
 		g_printerr("Failed trying to load session data from %s: %s\n", file_name, strerror(errno));
+		g_printerr("Resetting session data\n");
 	#endif
 
 	g_free(file_name);
 
-	// Clear session data on error - just to be safe
-	memset(omp_session, 0, sizeof(struct _omp_session));
+	// Reset session data on error - just to be safe
+	omp_session_reset();
 }
 
 /**
@@ -244,3 +262,12 @@ omp_session_set_track_id(guint track_id)
 	omp_session_save();
 }
 
+/**
+ * Set volume to be set next session
+ */
+void
+omp_session_set_volume(guint volume)
+{
+	omp_session->volume = volume;
+	omp_session_save();
+}

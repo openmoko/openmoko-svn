@@ -30,6 +30,5 @@
 #include <gtk/gtk.h>
 
 GtkWidget *omp_playlist_page_create();
-void omp_playlist_connect_signals();
 
 #endif

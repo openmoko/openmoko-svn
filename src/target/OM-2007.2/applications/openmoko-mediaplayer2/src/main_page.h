@@ -29,18 +29,13 @@
 
 #include <gtk/gtk.h>
 
-#define WIDGET_CAPTION_TRACK_TIME "%d:%.2d / %d:%.2d"
-#define WIDGET_CAPTION_TRACK_NUM "%.3d / %.3d"
-#define WIDGET_CAPTION_VOLUME "%d%%"
+#define OMP_WIDGET_CAPTION_TRACK_TIME "%d:%.2d / %d:%.2d"
+#define OMP_WIDGET_CAPTION_TRACK_NUM "%.3d / %.3d"
+#define OMP_WIDGET_CAPTION_VOLUME "%d%%"
 
-// Determines how many seconds the engine will seek if the FFWD/REW buttons are clicked
-#define BUTTON_SEEK_DISTANCE 10
+// Determines how many milliseconds the engine will seek if the FFWD/REW buttons are clicked
+#define BUTTON_SEEK_DISTANCE 10000
 
-
-GtkWidget *omp_main_page_create(GtkWindow *window);
-
-void omp_main_update_track_change();
-void omp_main_update_status_change();
-void omp_main_update_track_position();
+GtkWidget *omp_main_page_create();
 
 #endif

@@ -29,9 +29,13 @@
 
 #include <gst/gst.h>
 
+#define OMP_EVENT_PLAYBACK_RESET "playback_reset"
 #define OMP_EVENT_PLAYBACK_EOS "playback_end_of_stream"
 #define OMP_EVENT_PLAYBACK_STATUS_CHANGED "playback_status_change"
 #define OMP_EVENT_PLAYBACK_POSITION_CHANGED "playback_position_change"
+#define OMP_EVENT_PLAYBACK_VOLUME_CHANGED "playback_volume_change"
+#define OMP_EVENT_PLAYBACK_META_ARTIST_CHANGED "playback_tag_artist_change"
+#define OMP_EVENT_PLAYBACK_META_TITLE_CHANGED "playback_tag_title_change"
 
 // Player states masking the gstreamer states so we can be more abstract
 #define OMP_PLAYBACK_STATE_PAUSED GST_STATE_PAUSED
@@ -43,6 +47,7 @@
 void omp_playback_init();
 void omp_playback_free();
 void omp_playback_save_state();
+void omp_playback_reset();
 
 gboolean omp_playback_load_track_from_uri(gchar *uri);
 
@@ -50,12 +55,11 @@ void omp_playback_play();
 void omp_playback_pause();
 gint omp_playback_get_state();
 gulong omp_playback_get_track_position();
-void omp_playback_set_track_position(glong position);
+void omp_playback_set_track_position(gulong position);
 gulong omp_playback_get_track_length();
 
-static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
-static gboolean omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data);
-static gboolean omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data);
-static gboolean omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data);
+void omp_playback_set_volume(guint volume);
+guint omp_playback_get_volume();
+void omp_playback_fade_volume();
 
 #endif
