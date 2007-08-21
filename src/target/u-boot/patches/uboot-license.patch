@@ -41,7 +41,7 @@ Index: u-boot/common/cmd_license.c
 +
 +#include <common.h>
 +
-+#if (CONFIG_COMMANDS & CFG_CMD_LICENSE)
++#if defined(CONFIG_CMD_LICENSE)
 +
 +#define LICENSE_MAX	20480
 +#include <command.h>
@@ -72,24 +72,12 @@ Index: u-boot/common/cmd_license.c
 +	   "license - print GPL license text\n",
 +	   NULL);
 +
-+#endif /* CFG_CMD_LICENSE */
-Index: u-boot/include/cmd_confdefs.h
-===================================================================
---- u-boot.orig/include/cmd_confdefs.h
-+++ u-boot/include/cmd_confdefs.h
-@@ -75,6 +75,7 @@
- #define CFG_CMD_FPGA	0x0000010000000000ULL	/* FPGA configuration Support	*/
- #define CFG_CMD_HWFLOW	0x0000020000000000ULL	/* RTS/CTS hw flow control	*/
- #define CFG_CMD_SAVES	0x0000040000000000ULL	/* save S record dump		*/
-+#define CFG_CMD_LICENSE	0x0000080000000000ULL	/* Display GPL License		*/
- #define CFG_CMD_SPI	0x0000100000000000ULL	/* SPI utility			*/
- #define CFG_CMD_FDOS	0x0000200000000000ULL	/* Floppy DOS support		*/
- #define CFG_CMD_VFD	0x0000400000000000ULL	/* VFD support (TRAB)		*/
++#endif /* CONFIG_CMD_LICENSE */
 Index: u-boot/include/license.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/license.h
-@@ -0,0 +1,584 @@
+@@ -0,0 +1,583 @@
 +/* bin2header converting 'gpl.gz' */
 +unsigned char gpl_gz[] = {
 +	0x1f, 0x8b, 0x08, 0x08, 0xb2, 0x10, 0x0d, 0x46, 0x00, 0x03,
@@ -672,41 +660,52 @@ Index: u-boot/include/license.h
 +	0xb1, 0x30, 0x9f, 0x78, 0x9d, 0xdc, 0x7b, 0x0a, 0x5e, 0x8f,
 +	0xed, 0x4e, 0x3f, 0xa2, 0x44, 0x9f, 0x3f, 0xb3, 0xbd, 0x6f,
 +	0xfe, 0x17, 0x84, 0xf3, 0x1b, 0xef, 0x12, 0x3b, 0x00, 0x00,
-+	
 +};
 Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -110,6 +110,7 @@
- 			CFG_CMD_MMC	 | \
- 			CFG_CMD_FAT	 | \
- 			CFG_CMD_EXT2	 | \
-+			CFG_CMD_LICENSE	 | \
- 			0)
- /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
- #include <cmd_confdefs.h>
+@@ -101,6 +101,7 @@
+ #define CONFIG_CMD_MMC
+ #define CONFIG_CMD_FAT
+ #define CONFIG_CMD_EXT2
++#define CONFIG_CMD_LICENSE
+ 
+ #define CONFIG_BOOTDELAY	3
+ #define CONFIG_BOOTARGS    	""
 Index: u-boot/include/configs/hxd8.h
 ===================================================================
 --- u-boot.orig/include/configs/hxd8.h
 +++ u-boot/include/configs/hxd8.h
-@@ -110,6 +110,7 @@
- 			CFG_CMD_MMC	 | \
- 			CFG_CMD_FAT	 | \
- 			CFG_CMD_EXT2	 | \
-+			CFG_CMD_LICENSE	 | \
- 			0)
- /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
- #include <cmd_confdefs.h>
+@@ -111,6 +111,7 @@
+ #define CONFIG_CMD_MMC
+ #define CONFIG_CMD_FAT
+ #define CONFIG_CMD_EXT2
++#define CONFIG_CMD_LICENSE
+ 
+ #define CONFIG_BOOTDELAY	3
+ #define CONFIG_BOOTARGS    	""
 Index: u-boot/include/configs/smdk2440.h
 ===================================================================
 --- u-boot.orig/include/configs/smdk2440.h
 +++ u-boot/include/configs/smdk2440.h
-@@ -110,6 +110,7 @@
- 			CFG_CMD_PORTIO	 | \
- 			CFG_CMD_REGINFO  | \
- 			CFG_CMD_SAVES	 | \
-+			CFG_CMD_LICENSE	 | \
- 			CFG_CMD_USB)
+@@ -106,6 +106,7 @@
+ #define CONFIG_CMD_REGINFO
+ #define CONFIG_CMD_SAVES
+ #define CONFIG_CMD_USB
++#define CONFIG_CMD_LICENSE
  
- /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
+ #define CONFIG_BOOTDELAY	3
+ #define CONFIG_BOOTARGS    	"root=/dev/mtdblock4 rootfstype=jffs2 console=ttySAC2,115200 loglevel=8"
+Index: u-boot/include/config_cmd_all.h
+===================================================================
+--- u-boot.orig/include/config_cmd_all.h
++++ u-boot/include/config_cmd_all.h
+@@ -49,6 +49,7 @@
+ #define CONFIG_CMD_ITEST	/* Integer (and string) test	*/
+ #define CONFIG_CMD_JFFS2	/* JFFS2 Support		*/
+ #define CONFIG_CMD_KGDB		/* kgdb				*/
++#define CONFIG_CMD_LICENSE	/* console license display	*/
+ #define CONFIG_CMD_LOADB	/* loadb			*/
+ #define CONFIG_CMD_LOADS	/* loads			*/
+ #define CONFIG_CMD_MEMORY	/* md mm nm mw cp cmp crc base loop mtest */

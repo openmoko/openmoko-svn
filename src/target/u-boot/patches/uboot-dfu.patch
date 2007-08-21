@@ -2,7 +2,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore_ep0.c
 +++ u-boot/drivers/usbdcore_ep0.c
-@@ -42,10 +42,15 @@
+@@ -51,10 +51,15 @@
   */
  
  #include <common.h>
@@ -18,18 +18,9 @@ Index: u-boot/drivers/usbdcore_ep0.c
  #if 0
  #define dbg_ep0(lvl,fmt,args...) serial_printf("[%s] %s:%d: "fmt"\n",__FILE__,__FUNCTION__,__LINE__,##args)
  #else
-@@ -213,7 +218,7 @@
- 			urb->buffer = device_descriptor;
- 			urb->actual_length = MIN(sizeof(*device_descriptor), max);
- 		}
--		/*dbg_ep0(3, "copied device configuration, actual_length: %x", urb->actual_length); */
-+		dbg_ep0(3, "using device configuration, actual_length: %x", urb->actual_length);
- 		break;
- 
- 	case USB_DESCRIPTOR_TYPE_CONFIGURATION:
-@@ -267,7 +272,24 @@
- 		return -1;
+@@ -273,7 +278,24 @@
  	case USB_DESCRIPTOR_TYPE_ENDPOINT:
+ 		serial_printf("USB_DESCRIPTOR_TYPE_ENDPOINT - error not implemented\n");
  		return -1;
 +	/* This really means "Class Specific Descriptor #1 == USB_DT_DFU */
  	case USB_DESCRIPTOR_TYPE_HID:
@@ -50,9 +41,9 @@ Index: u-boot/drivers/usbdcore_ep0.c
 +		}
 +#else /* CONFIG_USBD_DFU */
  		{
+ 			serial_printf("USB_DESCRIPTOR_TYPE_HID - error not implemented\n");
  			return -1;	/* unsupported at this time */
- #if 0
-@@ -294,6 +316,7 @@
+@@ -301,6 +323,7 @@
  				     max);
  #endif
  		}
@@ -60,7 +51,7 @@ Index: u-boot/drivers/usbdcore_ep0.c
  		break;
  	case USB_DESCRIPTOR_TYPE_REPORT:
  		{
-@@ -388,6 +411,24 @@
+@@ -403,6 +426,24 @@
  		 le16_to_cpu (request->wLength),
  		 USBD_DEVICE_REQUESTS (request->bRequest));
  
@@ -84,8 +75,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
 +
  	/* handle USB Standard Request (c.f. USB Spec table 9-2) */
  	if ((request->bmRequestType & USB_REQ_TYPE_MASK) != 0) {
- 		if (device->device_state <= STATE_CONFIGURED)
-@@ -570,7 +611,8 @@
+ 		if(device->device_state <= STATE_CONFIGURED){
+@@ -590,7 +631,8 @@
  			device->interface = le16_to_cpu (request->wIndex);
  			device->alternate = le16_to_cpu (request->wValue);
  			/*dbg_ep0(2, "set interface: %d alternate: %d", device->interface, device->alternate); */
@@ -1173,15 +1164,15 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -47,7 +47,7 @@
- 	  status_led.o sym53c8xx.o systemace.o ahci.o \
+@@ -48,7 +48,7 @@
  	  ti_pci1410a.o tigon3.o tsec.o \
  	  tsi108_eth.o tsi108_i2c.o tsi108_pci.o \
--	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
-+	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_omap1510.o usbdcore_s3c2410.o usbtty.o \
+ 	  usb_ohci.o \
+-	  usbdcore.o usbdcore_ep0.o usbdcore_mpc8xx.o usbdcore_omap1510.o usbdcore_s3c2410.o \
++	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_mpc8xx.o usbdcore_omap1510.o usbdcore_s3c2410.o \
+ 	  usbtty.o \
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
- 	  pcf50606.o \
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore.c
@@ -1242,7 +1233,7 @@ Index: u-boot/drivers/usbtty.c
 ===================================================================
 --- u-boot.orig/drivers/usbtty.c
 +++ u-boot/drivers/usbtty.c
-@@ -31,6 +31,8 @@
+@@ -30,6 +30,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
  #include "usbdescriptors.h"
@@ -1251,7 +1242,7 @@ Index: u-boot/drivers/usbtty.c
  #include <config.h>		/* If defined, override Linux identifiers with
  			   	 * vendor specific ones */
  
-@@ -118,7 +120,7 @@
+@@ -105,7 +107,7 @@
  static unsigned short rx_endpoint = 0;
  static unsigned short tx_endpoint = 0;
  static unsigned short interface_count = 0;
@@ -1260,9 +1251,9 @@ Index: u-boot/drivers/usbtty.c
  
  /* USB Descriptor Strings */
  static u8 wstrLang[4] = {4,USB_DT_STRING,0x9,0x4};
-@@ -169,6 +171,10 @@
+@@ -156,6 +158,10 @@
  	struct usb_interface_descriptor data_class_interface;
- 	struct usb_endpoint_descriptor 
+ 	struct usb_endpoint_descriptor
  		data_endpoints[NUM_ENDPOINTS-1] __attribute__((packed));
 +#ifdef CONFIG_USBD_DFU
 +	struct usb_interface_descriptor uif_dfu;
@@ -1271,9 +1262,9 @@ Index: u-boot/drivers/usbtty.c
  } __attribute__((packed));
  
  static struct acm_config_desc acm_configuration_descriptors[NUM_CONFIGS] = {
-@@ -179,7 +185,11 @@
+@@ -166,7 +172,11 @@
      			.bDescriptorType = USB_DT_CONFIG,
- 			.wTotalLength =	 
+ 			.wTotalLength =
  				cpu_to_le16(sizeof(struct acm_config_desc)),
 +#ifdef CONFIG_USBD_DFU
 +	    		.bNumInterfaces = NUM_ACM_INTERFACES +1,
@@ -1282,8 +1273,8 @@ Index: u-boot/drivers/usbtty.c
 +#endif
      			.bConfigurationValue = 1,
  			.iConfiguration = STR_CONFIG,
- 			.bmAttributes = 
-@@ -278,6 +288,11 @@
+ 			.bmAttributes =
+@@ -265,6 +275,11 @@
  				.bInterval		= 0xFF,
  			},
  		},
@@ -1293,9 +1284,9 @@ Index: u-boot/drivers/usbtty.c
 +		.func_dfu = DFU_FUNC_DESC,
 +#endif
  	},
- };	
+ };
  
-@@ -390,7 +405,7 @@
+@@ -377,7 +392,7 @@
  void usbtty_poll (void);
  
  /* utility function for converting char* to wide string used by USB */
@@ -1304,7 +1295,7 @@ Index: u-boot/drivers/usbtty.c
  {
  	int i;
  	for (i = 0; i < strlen (str) && str[i]; i++){
-@@ -652,6 +667,9 @@
+@@ -647,6 +662,9 @@
  	device_instance->bus = bus_instance;
  	device_instance->configurations = NUM_CONFIGS;
  	device_instance->configuration_instance_array = config_instance;
@@ -1318,7 +1309,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -164,7 +164,7 @@
+@@ -157,7 +157,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
  #ifdef CONFIG_USE_IRQ
@@ -1327,7 +1318,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CONFIG_STACKSIZE_FIQ	(4*1024)	/* FIQ stack */
  #endif
  
-@@ -181,6 +181,10 @@
+@@ -174,6 +174,10 @@
  #define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
  #define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
  #define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
@@ -1591,7 +1582,7 @@ Index: u-boot/drivers/usbtty.h
 ===================================================================
 --- u-boot.orig/drivers/usbtty.h
 +++ u-boot/drivers/usbtty.h
-@@ -71,4 +71,10 @@
+@@ -69,4 +69,10 @@
  #define STR_CTRL_INTERFACE	0x06
  #define STR_COUNT		0x07
  
@@ -1606,7 +1597,7 @@ Index: u-boot/include/configs/qt2410.h
 ===================================================================
 --- u-boot.orig/include/configs/qt2410.h
 +++ u-boot/include/configs/qt2410.h
-@@ -199,7 +199,8 @@
+@@ -191,7 +191,8 @@
  #define CONFIG_USBD_PRODUCT_NAME	"QT2410 Bootloader " U_BOOT_VERSION
  #define CONFIG_EXTRA_ENV_SETTINGS	"usbtty=cdc_acm\0"
  #define CONFIG_USBD_DFU			1
@@ -2003,7 +1994,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -260,6 +260,12 @@
+@@ -262,6 +262,12 @@
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
  

@@ -10,8 +10,8 @@ Index: u-boot/fs/cramfs/cramfs.c
  #include <common.h>
  #include <malloc.h>
  
--#if (CONFIG_COMMANDS & CFG_CMD_JFFS2)
-+#if (CONFIG_COMMANDS & CFG_CMD_CRAMFS)
+-#if defined(CONFIG_CMD_JFFS2)
++#if defined(CONFIG_CMD_CRAMFS)
  
  #include <asm/byteorder.h>
  #include <linux/stat.h>
@@ -23,7 +23,7 @@ Index: u-boot/common/cmd_jffs2.c
  static struct mtd_device *current_dev = NULL;
  static u8 current_partnum = 0;
  
-+#ifdef CFG_CMD_CRAMFS
++#if defined(CONFIG_CMD_CRAMFS)
  extern int cramfs_check (struct part_info *info);
  extern int cramfs_load (char *loadoffset, struct part_info *info, char *filename);
  extern int cramfs_ls (struct part_info *info, char *filename);

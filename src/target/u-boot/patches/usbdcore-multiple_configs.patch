@@ -13,9 +13,9 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c	2007-03-14 20:29:05.000000000 +0100
-+++ u-boot/drivers/usbdcore_ep0.c	2007-03-14 20:29:06.000000000 +0100
-@@ -233,8 +233,8 @@
+--- u-boot.orig/drivers/usbdcore_ep0.c
++++ u-boot/drivers/usbdcore_ep0.c
+@@ -237,8 +237,8 @@
  				return -1;
  			}
  			/*dbg_ep0(2, "%d %d", index, device_descriptor->bNumConfigurations); */
@@ -26,15 +26,16 @@ Index: u-boot/drivers/usbdcore_ep0.c
  					 device_descriptor->
  					 bNumConfigurations);
  				return -1;
-@@ -593,13 +593,8 @@
+@@ -612,14 +612,8 @@
  
  		case USB_REQ_SET_CONFIGURATION:
  			/* c.f. 9.4.7 - the top half of wValue is reserved */
 -			/* */
 -			if ((device->configuration =
--			     le16_to_cpu (request->wValue) & 0x7f) != 0) {
+-				le16_to_cpu (request->wValue) & 0xFF80) != 0) {
 -				/* c.f. 9.4.7 - zero is the default or addressed state, in our case this */
 -				/* is the same is configuration zero */
+-				serial_printf("error setting dev->config to zero!\n");
 -				device->configuration = 0;	/* TBR - ?????? */
 -			}
 +			device->configuration = le16_to_cpu(request->wValue) & 0xff;
@@ -44,8 +45,8 @@ Index: u-boot/drivers/usbdcore_ep0.c
  
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c	2007-03-14 20:29:05.000000000 +0100
-+++ u-boot/drivers/usbdcore.c	2007-03-14 20:37:37.000000000 +0100
+--- u-boot.orig/drivers/usbdcore.c
++++ u-boot/drivers/usbdcore.c
 @@ -147,12 +147,9 @@
  static struct usb_configuration_instance *usbd_device_configuration_instance (struct usb_device_instance *device,
  		unsigned int port, unsigned int configuration)

@@ -6,8 +6,8 @@ Index: u-boot/drivers/Makefile
  	  ks8695eth.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
  	  rpx_pcmcia.o \
--	  fsl_i2c.o
-+	  fsl_i2c.o s3c2410_fb.o
+-	  fsl_i2c.o fsl_pci_init.o ati_radeon_fb.o
++	  fsl_i2c.o fsl_pci_init.o ati_radeon_fb.o s3c2410_fb.o
  
  SRCS	:= $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(COBJS))

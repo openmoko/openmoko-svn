@@ -7,7 +7,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2009,6 +2009,9 @@
+@@ -2056,6 +2056,9 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -943,7 +943,7 @@ Index: u-boot/include/configs/qt2410.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/qt2410.h
-@@ -0,0 +1,287 @@
+@@ -0,0 +1,279 @@
 +/*
 + * (C) Copyright 2002
 + * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
@@ -1036,40 +1036,35 @@ Index: u-boot/include/configs/qt2410.h
 +/***********************************************************
 + * Command definition
 + ***********************************************************/
-+#define CONFIG_COMMANDS (\
-+			CFG_CMD_BDI	 | \
-+			CFG_CMD_LOADS	 | \
-+			CFG_CMD_LOADB	 | \
-+			CFG_CMD_IMI	 | \
-+			CFG_CMD_CACHE	 | \
-+			CFG_CMD_MEMORY	 | \
-+			CFG_CMD_ENV	 | \
-+			/* CFG_CMD_IRQ	 | */ \
-+			CFG_CMD_BOOTD	 | \
-+			CFG_CMD_CONSOLE	 | \
-+			CFG_CMD_BMP	 | \
-+			CFG_CMD_ASKENV	 | \
-+			CFG_CMD_RUN	 | \
-+			CFG_CMD_ECHO 	 | \
-+			CFG_CMD_I2C 	 | \
-+			CFG_CMD_REGINFO	 | \
-+			CFG_CMD_IMMAP	 | \
-+			CFG_CMD_DATE	 | \
-+			CFG_CMD_AUTOSCRIPT | \
-+			CFG_CMD_BSP	 | \
-+			CFG_CMD_ELF	 | \
-+			CFG_CMD_MISC	 | \
-+			/* CFG_CMD_USB	 | */ \
-+			CFG_CMD_JFFS2	 | \
-+			CFG_CMD_DIAG	 | \
-+			CFG_CMD_HWFLOW	 | \
-+			CFG_CMD_SAVES	 | \
-+			CFG_CMD_NAND	 | \
-+			CFG_CMD_PORTIO	 | \
-+			CFG_CMD_MMC	 | \
-+			CFG_CMD_FAT	 | \
-+			CFG_CMD_EXT2	 | \
-+			0)
++#define CONFIG_CMD_BDI
++#define CONFIG_CMD_LOADS
++#define CONFIG_CMD_LOADB
++#define CONFIG_CMD_IMI
++#define CONFIG_CMD_CACHE
++#define CONFIG_CMD_ENV
++#define CONFIG_CMD_BOOTD
++#define CONFIG_CMD_CONSOLE
++#define CONFIG_CMD_BPM
++#define CONFIG_CMD_ASKENV
++#define CONFIG_CMD_RUN
++#define CONFIG_CMD_ECHO
++#define CONFIG_CMD_I2C
++#define CONFIG_CMD_REGINFO
++#define CONFIG_CMD_IMMAP
++#define CONFIG_CMD_DATE
++#define CONFIG_CMD_AUTOSCRIPT
++#define CONFIG_CMD_BSP
++#define CONFIG_CMD_ELF
++#define CONFIG_CMD_MISC
++#define CONFIG_CMD_JFFS2
++#define CONFIG_CMD_DIAG
++#define CONFIG_CMD_HWFLOW
++#define CONFIG_CMD_SAVES
++#define CONFIG_CMD_NAND
++#define CONFIG_CMD_PORTIO
++#define CONFIG_CMD_MMC
++#define CONFIG_CMD_FAT
++#define CONFIG_CMD_EXT2
 +
 +#if 0
 +			CFG_CMD_DHCP	 | \
@@ -1077,9 +1072,6 @@ Index: u-boot/include/configs/qt2410.h
 +			CFG_CMD_NET	 | \
 +
 +#endif
-+
-+/* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
-+#include <cmd_confdefs.h>
 +
 +#define CONFIG_BOOTDELAY	3
 +#define CONFIG_BOOTARGS    	"rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC0,115200 console=tty0 loglevel=8"
@@ -1092,7 +1084,7 @@ Index: u-boot/include/configs/qt2410.h
 +
 +#define CONFIG_DOS_PARTITION	1
 +
-+#if (CONFIG_COMMANDS & CFG_CMD_KGDB)
++#if defined(CONFIG_CMD_KGDB)
 +#define CONFIG_KGDB_BAUDRATE	115200		/* speed to run kgdb serial port */
 +/* what's this ? it's not used anywhere */
 +#define CONFIG_KGDB_SER_INDEX	1		/* which serial port to use */

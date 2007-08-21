@@ -11,8 +11,8 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
  
  
-@@ -164,9 +166,15 @@
- # define UPLLCON_val	((0x3c << 12) + (0x4 << 4) + 0x2)
+@@ -169,9 +171,15 @@
+ #endif
  # define CLKDIVN_val	7 /* FCLK:HCLK:PCLK = 1:3:6 */
  # define CAMDIVN	0x4C000018
 +#elif defined(CONFIG_S3C2443)
@@ -28,7 +28,7 @@ Index: u-boot/cpu/arm920t/start.S
  	ldr     r0, =pWTCON
  	mov     r1, #0x0
  	str     r1, [r0]
-@@ -177,7 +185,7 @@
+@@ -182,7 +190,7 @@
  	mov	r1, #0xffffffff
  	ldr	r0, =INTMSK
  	str	r1, [r0]
@@ -37,7 +37,7 @@ Index: u-boot/cpu/arm920t/start.S
  	ldr	r1, =INTSUBMSK_val
  	ldr	r0, =INTSUBMSK
  	str	r1, [r0]
-@@ -196,6 +204,43 @@
+@@ -201,6 +209,43 @@
  	mcr	p15, 0, r1, c1, c0, 0
  
  
@@ -81,7 +81,7 @@ Index: u-boot/cpu/arm920t/start.S
  #define LOCKTIME	0x4c000000
  #define UPLLCON		0x4c000008
  
-@@ -223,6 +268,7 @@
+@@ -228,6 +273,7 @@
  	ldr	r0, =CLKDIVN
  	mov	r1, #CLKDIVN_val
  	str	r1, [r0]
@@ -89,7 +89,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  #if 1
  	/* enable uart */
-@@ -249,7 +295,7 @@
+@@ -254,7 +300,7 @@
  	str	r1, [r0, #0x28]
  #endif
  
@@ -147,7 +147,7 @@ Index: u-boot/include/s3c2443.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/s3c2443.h
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,130 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -173,6 +173,30 @@ Index: u-boot/include/s3c2443.h
 +
 +#ifndef __S3C2443_H
 +#define __S3C2443_H
++
++/* S3C2443 device base addresses */
++#define S3C24X0_MEMCTL_BASE		0x48000000
++#define S3C24X0_USB_HOST_BASE		0x49000000
++#define S3C24X0_INTERRUPT_BASE		0x4A000000
++#define S3C24X0_DMA_BASE		0x4B000000
++#define S3C24X0_CLOCK_POWER_BASE	0x4C000000
++#define S3C24X0_LCD_BASE		0x4D000000
++#define S3C2440_NAND_BASE		0x4E000000
++#define S3C24X0_UART_BASE		0x50000000
++#define S3C24X0_TIMER_BASE		0x51000000
++#define S3C24X0_USB_DEVICE_BASE		0x49800000
++//#define USB_DEVICE_PHYS_ADR		0x49800000
++#define S3C24X3_HSMMC_BASE		0x4A800000
++#define S3C24X3_HSSPI_BASE		0x52000000
++#define S3C24X0_WATCHDOG_BASE		0x53000000
++#define S3C24X0_I2C_BASE		0x54000000
++#define S3C24X0_I2S_BASE		0x55000000
++#define S3C24X0_GPIO_BASE		0x56000000
++#define S3C24X0_RTC_BASE		0x57000000
++#define S3C2440_ADC_BASE		0x58000000
++#define S3C24X0_SPI_BASE		0x59000000
++#define S3C2440_SDI_BASE		0x5A000000
++#define S3C2443_AC97_BASE		0x5A000000
 +
 +#include <s3c24x0.h>
 +

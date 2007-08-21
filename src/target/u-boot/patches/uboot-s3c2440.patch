@@ -483,7 +483,7 @@ Index: u-boot/include/common.h
 ===================================================================
 --- u-boot.orig/include/common.h
 +++ u-boot/include/common.h
-@@ -454,7 +454,7 @@
+@@ -469,7 +469,7 @@
  ulong	get_OPB_freq (void);
  ulong	get_PCI_freq (void);
  #endif
@@ -1299,3 +1299,42 @@ Index: u-boot/cpu/arm920t/s3c24x0/mmc.c
  	udelay(125000); /* FIXME: 74 SDCLK cycles */
  
  	mmc_csd.c_size = 0;
+Index: u-boot/cpu/arm920t/s3c24x0/usb.c
+===================================================================
+--- u-boot.orig/cpu/arm920t/s3c24x0/usb.c
++++ u-boot/cpu/arm920t/s3c24x0/usb.c
+@@ -24,12 +24,14 @@
+ #include <common.h>
+ 
+ #if defined(CONFIG_USB_OHCI_NEW) && defined(CFG_USB_OHCI_CPU_INIT)
+-# if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410)
++# if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ 
+ #if defined(CONFIG_S3C2400)
+ # include <s3c2400.h>
+ #elif defined(CONFIG_S3C2410)
+ # include <s3c2410.h>
++#elif defined(CONFIG_S3C2440)
++# include <s3c2440.h>
+ #endif
+ 
+ int usb_cpu_init (void)
+@@ -68,5 +70,5 @@
+ 	return 0;
+ }
+ 
+-# endif /* defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) */
++# endif /* defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) */
+ #endif /* defined(CONFIG_USB_OHCI) && defined(CFG_USB_OHCI_CPU_INIT) */
+Index: u-boot/drivers/usb_ohci.c
+===================================================================
+--- u-boot.orig/drivers/usb_ohci.c
++++ u-boot/drivers/usb_ohci.c
+@@ -62,6 +62,7 @@
+ #if defined(CONFIG_ARM920T) || \
+     defined(CONFIG_S3C2400) || \
+     defined(CONFIG_S3C2410) || \
++    defined(CONFIG_S3C2440) || \
+     defined(CONFIG_440EP) || \
+     defined(CONFIG_PCI_OHCI) || \
+     defined(CONFIG_MPC5200)

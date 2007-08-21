@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2032,6 +2032,14 @@
+@@ -2056,6 +2056,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -27,7 +27,7 @@ Index: u-boot/common/main.c
 ===================================================================
 --- u-boot.orig/common/main.c
 +++ u-boot/common/main.c
-@@ -61,6 +61,7 @@
+@@ -67,6 +67,7 @@
  #undef DEBUG_PARSER
  
  char        console_buffer[CFG_CBSIZE];		/* console I/O buffer	*/
@@ -35,7 +35,7 @@ Index: u-boot/common/main.c
  
  #ifndef CONFIG_CMDLINE_EDITING
  static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen);
-@@ -376,7 +377,7 @@
+@@ -382,7 +383,7 @@
  
  	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
  
@@ -55,7 +55,7 @@ Index: u-boot/drivers/Makefile
 +	  pcf50606.o \
  	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
  	  rpx_pcmcia.o \
- 	  fsl_i2c.o s3c2410_fb.o
+ 	  fsl_i2c.o fsl_pci_init.o ati_radeon_fb.o s3c2410_fb.o
 Index: u-boot/drivers/pcf50606.c
 ===================================================================
 --- /dev/null
@@ -172,7 +172,7 @@ Index: u-boot/drivers/pcf50606.c
 +	}
 +}
 +
-+#if defined(CONFIG_RTC_PCF50606) && (CONFIG_COMMANDS & CFG_CMD_DATE)
++#if defined(CONFIG_RTC_PCF50606) && defined(CONFIG_CMD_DATE)
 +
 +#include <rtc.h>
 +
@@ -219,7 +219,7 @@ Index: u-boot/drivers/pcf50606.c
 +{
 +	/* FIXME */
 +}
-+#endif /* CONFIG_RTC_PCF50606 && CFG_CMD_DATE */
++#endif /* CONFIG_RTC_PCF50606 && CONFIG_CMD_DATE */
 +
 +#endif /* CONFIG DRIVER_PCF50606 */
 Index: u-boot/include/pcf50606.h
@@ -540,7 +540,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +
 +DECLARE_GLOBAL_DATA_PTR;
 +
-+#if (CONFIG_COMMANDS & CFG_CMD_BDI)
++#if defined(CONFIG_CMD_BDI)
 +
 +int do_neo1973 ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 +{
@@ -603,7 +603,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +	"neo1973 backlight (on|off) - switch backlight on or off\n"
 +	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
 +);
-+#endif	/* CFG_CMD_BDI */
++#endif	/* CONFIG_CMD_BDI */
 Index: u-boot/board/neo1973/common/jbt6k74.c
 ===================================================================
 --- /dev/null
@@ -1992,7 +1992,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,253 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2071,41 +2071,33 @@ Index: u-boot/include/configs/neo1973_gta01.h
 +/***********************************************************
 + * Command definition
 + ***********************************************************/
-+#define CONFIG_COMMANDS (\
-+			CFG_CMD_BDI	 | \
-+			CFG_CMD_LOADS	 | \
-+			CFG_CMD_LAODB	 | \
-+			CFG_CMD_IMI	 | \
-+			CFG_CMD_CACHE	 | \
-+			CFG_CMD_MEMORY	 | \
-+			CFG_CMD_ENV	 | \
-+			/* CFG_CMD_IRQ	 | */  \
-+			CFG_CMD_BOOTD	 | \
-+			CFG_CMD_CONSOLE	 | \
-+			CFG_CMD_ASKENV	 | \
-+			CFG_CMD_RUN	 | \
-+			CFG_CMD_ECHO	 | \
-+			CFG_CMD_I2C	 | \
-+			CFG_CMD_REGINFO	 | \
-+			CFG_CMD_IMMAP	 | \
-+			CFG_CMD_DATE	 | \
-+			CFG_CMD_AUTOSCRIPT | \
-+			CFG_CMD_BSP	 | \
-+			CFG_CMD_ELF	 | \
-+			CFG_CMD_MISC	 | \
-+			/* CFG_CMD_USB	 | */ \
-+			/* CFG_CMD_JFFS2	 | */ \
-+			CFG_CMD_DIAG	 | \
-+			/* CFG_CMD_HWFLOW	 | */ \
-+			CFG_CMD_SAVES	 | \
-+			CFG_CMD_NAND	 | \
-+			CFG_CMD_PORTIO	 | \
-+			CFG_CMD_MMC	 | \
-+			CFG_CMD_FAT	 | \
-+			CFG_CMD_EXT2	 | \
-+			0)
-+/* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
-+#include <cmd_confdefs.h>
++#define CONFIG_CMD_BDI
++#define CONFIG_CMD_LOADS
++#define CONFIG_CMD_LOADB
++#define CONFIG_CMD_IMI
++#define CONFIG_CMD_CACHE
++#define CONFIG_CMD_MEMORY
++#define CONFIG_CMD_ENV
++#define CONFIG_CMD_BOOTD
++#define CONFIG_CMD_CONSOLE
++#define CONFIG_CMD_ASKENV
++#define CONFIG_CMD_RUN
++#define CONFIG_CMD_ECHO
++#define CONFIG_CMD_I2C
++#define CONFIG_CMD_REGINFO
++#define CONFIG_CMD_IMMAP
++#define CONFIG_CMD_DATE
++#define CONFIG_CMD_AUTOSCRIPT
++#define CONFIG_CMD_BSP
++#define CONFIG_CMD_ELF
++#define CONFIG_CMD_MISC
++#define CONFIG_CMD_DIAG
++#define CONFIG_CMD_SAVES
++#define CONFIG_CMD_NAND
++#define CONFIG_CMD_PORTIO
++#define CONFIG_CMD_MMC
++#define CONFIG_CMD_FAT
++#define CONFIG_CMD_EXT2
 +
 +#define CONFIG_BOOTDELAY	3
 +#define CONFIG_BOOTARGS    	"rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC0,115200 console=tty0 loglevel=8"
@@ -2113,7 +2105,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 +
 +#define CONFIG_DOS_PARTITION	1
 +
-+#if (CONFIG_COMMANDS & CFG_CMD_KGDB)
++#if defined(CONFIG_CMD_KGDB)
 +#define CONFIG_KGDB_BAUDRATE	115200		/* speed to run kgdb serial port */
 +/* what's this ? it's not used anywhere */
 +#define CONFIG_KGDB_SER_INDEX	1		/* which serial port to use */

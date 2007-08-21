@@ -110,16 +110,15 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -99,7 +99,7 @@
- 			CFG_CMD_ELF	 | \
- 			CFG_CMD_MISC	 | \
- 			/* CFG_CMD_USB	 | */ \
--			/* CFG_CMD_JFFS2	 | */ \
-+			CFG_CMD_JFFS2	 | \
- 			CFG_CMD_DIAG	 | \
- 			/* CFG_CMD_HWFLOW	 | */ \
- 			CFG_CMD_SAVES	 | \
-@@ -212,13 +212,13 @@
+@@ -91,6 +91,7 @@
+ #define CONFIG_CMD_BSP
+ #define CONFIG_CMD_ELF
+ #define CONFIG_CMD_MISC
++#define CONFIG_CMD_JFFS2
+ #define CONFIG_CMD_DIAG
+ #define CONFIG_CMD_SAVES
+ #define CONFIG_CMD_NAND
+@@ -202,13 +203,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT
  
@@ -136,9 +135,9 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #endif
  
  /* ATAG configuration */
-@@ -257,4 +257,9 @@
- 
+@@ -248,4 +249,9 @@
  #define CONFIG_DRIVER_PCF50606		1
+ #define CONFIG_RTC_PCF50606		1
  
 +#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
 +#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),16k(u-boot_env),2M(kernel),640k(splash),-(jffs2)"
@@ -225,7 +224,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -101,7 +101,7 @@
+@@ -93,7 +93,7 @@
  }
  
  int
@@ -233,8 +232,8 @@ Index: u-boot/common/cmd_nand.c
 +arg_off_size(int argc, char *argv[], nand_info_t *nand, ulong *off, ulong *size, int net)
  {
  	int idx = nand_curr_device;
- #if (CONFIG_COMMANDS & CFG_CMD_JFFS2) && defined(CONFIG_JFFS2_CMDLINE)
-@@ -122,10 +122,17 @@
+ #if defined(CONFIG_CMD_JFFS2) && defined(CONFIG_JFFS2_CMDLINE)
+@@ -114,10 +114,17 @@
  					printf("'%s' is not a number\n", argv[1]);
  					return -1;
  				}
@@ -255,7 +254,7 @@ Index: u-boot/common/cmd_nand.c
  			}
  			idx = dev->id->num;
  			*nand = nand_info[idx];
-@@ -261,7 +268,7 @@
+@@ -253,7 +260,7 @@
  
  		printf("\nNAND %s: ", scrub ? "scrub" : "erase");
  		/* skip first two or three arguments, look for offset and size */
@@ -264,7 +263,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		memset(&opts, 0, sizeof(opts));
-@@ -323,7 +330,7 @@
+@@ -315,7 +322,7 @@
  
  		read = strncmp(cmd, "read", 4) == 0; /* 1 = read, 0 = write */
  		printf("\nNAND %s: ", read ? "read" : "write");
@@ -273,7 +272,7 @@ Index: u-boot/common/cmd_nand.c
  			return 1;
  
  		s = strchr(cmd, '.');
-@@ -445,7 +452,7 @@
+@@ -437,7 +444,7 @@
  	}
  
  	if (strcmp(cmd, "unlock") == 0) {
@@ -311,7 +310,7 @@ Index: u-boot/board/qt2410/qt2410.c
 ===================================================================
 --- u-boot.orig/board/qt2410/qt2410.c
 +++ u-boot/board/qt2410/qt2410.c
-@@ -126,3 +126,9 @@
+@@ -150,3 +150,9 @@
  
  	return 0;
  }
@@ -325,7 +324,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/gta01.c
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -429,3 +434,14 @@
+@@ -425,3 +425,14 @@
  	return 0;
  }
  
@@ -344,7 +343,7 @@ Index: u-boot/include/configs/qt2410.h
 ===================================================================
 --- u-boot.orig/include/configs/qt2410.h
 +++ u-boot/include/configs/qt2410.h
-@@ -283,5 +283,7 @@
+@@ -278,5 +278,7 @@
  
  #define MTDIDS_DEFAULT		"nand0=qt2410-nand"
  #define MTPARTS_DEFAULT		"qt2410-nand:192k(u-boot),8k(u-boot_env),2M(kernel),2M(splash),-(jffs2)"

@@ -1,5 +1,5 @@
 common/cmd_mem.c: new command "unzip srcaddr dstaddr [dstsize]" to unzip from
-  memory to memory, and option CONFIG_UNZIP to enable it
+  memory to memory, and option CONFIG_CMD_UNZIP to enable it
 
 - Werner Almesberger <werner@openmoko.org>
 
@@ -12,7 +12,7 @@ Index: u-boot/common/cmd_mem.c
  #endif	/* CONFIG_CRC32_VERIFY */
  
 +
-+#ifdef CONFIG_UNZIP
++#ifdef CONFIG_CMD_UNZIP
 +int  gunzip (void *, int, unsigned char *, unsigned long *);
 +
 +int do_unzip ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
@@ -36,23 +36,23 @@ Index: u-boot/common/cmd_mem.c
 +
 +	return !!gunzip((void *) dst, dst_len, (void *) src, &src_len);
 +}
-+#endif /* CONFIG_UNZIP */
++#endif /* CONFIG_CMD_UNZIP */
 +
 +
  /**************************************************/
- #if (CONFIG_COMMANDS & CFG_CMD_MEMORY)
+ #if defined(CONFIG_CMD_MEMORY)
  U_BOOT_CMD(
 @@ -1251,5 +1279,13 @@ U_BOOT_CMD(
  );
  #endif /* CONFIG_MX_CYCLIC */
  
-+#ifdef CONFIG_UNZIP
++#ifdef CONFIG_CMD_UNZIP
 +U_BOOT_CMD(
 +	unzip,	4,	1,	do_unzip,
 +	"unzip - unzip a memory region\n",
 +	"srcaddr dstaddr [dstsize]\n"
 +);
-+#endif /* CONFIG_UNZIP */
++#endif /* CONFIG_CMD_UNZIP */
 +
  #endif
- #endif	/* CFG_CMD_MEMORY */
+ #endif
