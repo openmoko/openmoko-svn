@@ -74,6 +74,11 @@ moko_tips_set_matches (MokoTips *tips, GList *list)
           moko_contacts_get_photo (moko_contacts_get_default (), 
                                    entry->contact);
         
+        if (!entry->contact->photo)
+        {
+          gtk_image_clear (GTK_IMAGE (priv->image));
+          continue;
+        }
         scaled = gdk_pixbuf_scale_simple (entry->contact->photo,
                                           36, 36,
                                           GDK_INTERP_BILINEAR);

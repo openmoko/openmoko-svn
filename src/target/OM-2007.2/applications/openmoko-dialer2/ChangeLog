@@ -1,5 +1,13 @@
 2007-08-21  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-talking.c: (moko_talking_init):
+	Fixed bug #730 (panel menu and 'hang up' are too close).
+
+	* src/moko-tips.c: (moko_tips_set_matches):
+	Check gdkpixbuf is valid before using it.
+
+2007-08-21  Neil J. Patel  <njp@o-hand.com>
+
 	* src/Makefile.am:
 	* src/moko-contacts.c: (new_digit), (add_number),
 	(moko_contacts_fuzzy_lookup), (moko_contacts_get_photo),

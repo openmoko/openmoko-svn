@@ -381,17 +381,6 @@ moko_talking_init (MokoTalking *talking)
   gtk_widget_set_no_show_all (priv->main_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
-  image = gtk_image_new_from_pixbuf (icon);
-  item = gtk_tool_button_new (image, "Cancel");
-  gtk_widget_show_all (GTK_WIDGET (item)); 
-  gtk_tool_item_set_expand (item, TRUE);
-  g_signal_connect (G_OBJECT (item), "clicked", 
-                    G_CALLBACK (on_cancel_clicked), (gpointer)talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
-
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
-  
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/speaker.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_toggle_tool_button_new ();
@@ -401,8 +390,19 @@ moko_talking_init (MokoTalking *talking)
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "toggled", 
                     G_CALLBACK (on_speaker_toggled), (gpointer)talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
-  
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
+
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
+
+  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
+  image = gtk_image_new_from_pixbuf (icon);
+  item = gtk_tool_button_new (image, "Cancel");
+  gtk_widget_show_all (GTK_WIDGET (item)); 
+  gtk_tool_item_set_expand (item, TRUE);
+  g_signal_connect (G_OBJECT (item), "clicked", 
+                    G_CALLBACK (on_cancel_clicked), (gpointer)talking);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);  
+
   /* The title label and image */
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
