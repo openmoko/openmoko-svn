@@ -1,3 +1,15 @@
+2007-08-21  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-events-store.c: (today_events_store_cal_opened_cb),
+	(today_events_store_start):
+	* src/today-tasks-store.c: (today_tasks_store_cal_opened_cb),
+	(today_tasks_store_start):
+	Load calendars asynchronously
+
+	* src/today-pim-summary.c:
+	(today_pim_summary_events_selection_changed_cb):
+	Load dates instead of openmoko-contacts when clicking on events
+
 2007-08-20  Chris Lord,,,  <chris@openedhand.com>
 
 	* src/today-launcher.c: (today_launcher_search_toggle_cb):

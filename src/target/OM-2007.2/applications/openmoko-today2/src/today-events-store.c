@@ -205,6 +205,46 @@ today_events_store_objects_removed (ECalView *ecalview, GList *uids,
 	}
 }
 
+static void
+today_events_store_cal_opened_cb (ECal *ecal, gint arg1, gpointer user_data)
+{
+	TodayEventsStore *store = TODAY_EVENTS_STORE (user_data);
+	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
+	GError *error = NULL;
+	gchar *isodate;
+	gchar *query;
+	time_t t;
+
+	time (&t);
+	isodate = isodate_from_time_t (t);
+	query = g_strdup_printf (
+		"(occur-in-time-range? (time-day-begin (make-time \"%s\")) "
+		"(time-add-day (time-day-begin (make-time \"%s\")) 7))",
+		isodate, isodate);
+	if (e_cal_get_query (priv->events_ecal,
+	     query, &priv->events_view, &error)) {
+		g_signal_connect (G_OBJECT (priv->events_view),
+			"objects-added",
+			G_CALLBACK (today_events_store_objects_added),
+			store);
+		g_signal_connect (G_OBJECT (priv->events_view),
+			"objects-modified",
+			G_CALLBACK (today_events_store_objects_modified),
+			store);
+		g_signal_connect (G_OBJECT (priv->events_view),
+			"objects-removed",
+			G_CALLBACK (today_events_store_objects_removed),
+			store);
+		e_cal_view_start (priv->events_view);
+	} else {
+		g_warning ("Unable to get calendar query: %s", error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+	g_free (query);
+	g_free (isodate);
+}
+
 static gboolean
 today_events_store_start (gpointer data)
 {
@@ -212,51 +252,9 @@ today_events_store_start (gpointer data)
 	TodayEventsStorePrivate *priv = EVENTS_STORE_PRIVATE (store);
 	
 	if ((priv->events_ecal = e_cal_new_system_calendar ())) {
-		GError *error = NULL;
-		if (e_cal_open (priv->events_ecal, FALSE, &error)) {
-			time_t t;
-			time (&t);
-			gchar *isodate = isodate_from_time_t (t);
-			gchar *query = g_strdup_printf (
-				"(occur-in-time-range? (time-day-begin "
-					"(make-time \"%s\")) "
-				"(time-add-day (time-day-begin "
-					"(make-time \"%s\")) 7))",
-				isodate, isodate);
-			if (e_cal_get_query (priv->events_ecal,
-			     query, &priv->events_view, &error)) {
-				g_signal_connect (G_OBJECT (priv->events_view),
-					"objects-added",
-					G_CALLBACK (
-					today_events_store_objects_added),
-					store);
-				g_signal_connect (G_OBJECT (priv->events_view),
-					"objects-modified",
-					G_CALLBACK (
-					today_events_store_objects_modified
-					),
-					store);
-				g_signal_connect (G_OBJECT (priv->events_view),
-					"objects-removed",
-					G_CALLBACK (
-					today_events_store_objects_removed
-					),
-					store);
-				e_cal_view_start (priv->events_view);
-			} else {
-				g_warning ("Unable to get calendar query: %s",
-					error->message);
-				g_error_free (error);
-				error = NULL;
-			}
-			g_free (query);
-			g_free (isodate);
-		} else {
-			g_warning ("Unable to open system calendar: %s",
-				error->message);
-			g_error_free (error);
-			error = NULL;
-		}
+		g_signal_connect (G_OBJECT (priv->events_ecal), "cal-opened",
+			G_CALLBACK (today_events_store_cal_opened_cb), data);
+		e_cal_open_async (priv->events_ecal, FALSE);
 	} else {
 		g_warning ("Unable to retrieve system calendar");
 	}

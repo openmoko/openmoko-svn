@@ -119,7 +119,7 @@ today_pim_summary_events_selection_changed_cb (GtkTreeSelection *selection,
 	if (gtk_tree_selection_count_selected_rows (selection)) {
 		gtk_tree_selection_unselect_all (selection);
 		launcher_start (data->window, today_get_launcher (
-			"openmoko-contacts", TRUE, TRUE));
+			"dates", TRUE, TRUE));
 	}
 }
 

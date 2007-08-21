@@ -20,6 +20,29 @@ struct _TodayTasksStorePrivate
 	ECal *tasks_ecal;
 };
 
+static void
+today_tasks_store_cal_opened_cb (ECal *ecal, gint arg1, gpointer user_data)
+{
+	TodayTasksStore *store = TODAY_TASKS_STORE (user_data);
+	TodayTasksStorePrivate *priv = TASKS_STORE_PRIVATE (store);
+	const gchar *query = "#t";
+	GError *error = NULL;
+	
+	if (e_cal_get_query (priv->tasks_ecal,
+	     query, &priv->tasks_view, &error)) {
+		koto_task_store_set_view (
+			KOTO_TASK_STORE (store),
+			priv->tasks_view);
+		e_cal_view_start (priv->tasks_view);
+	} else {
+		g_warning ("Unable to get tasks query\n"
+			"\"%s\"\nError: %s",
+			query, error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+}
+
 static gboolean
 today_tasks_store_start (gpointer data)
 {
@@ -27,29 +50,9 @@ today_tasks_store_start (gpointer data)
 	TodayTasksStorePrivate *priv = TASKS_STORE_PRIVATE (store);
 	
 	if ((priv->tasks_ecal = e_cal_new_system_tasks ())) {
-		GError *error = NULL;
-		if (e_cal_open (priv->tasks_ecal, FALSE, &error)) {
-			gchar *query = g_strdup_printf ("#t");
-			if (e_cal_get_query (priv->tasks_ecal,
-			     query, &priv->tasks_view, &error)) {
-				koto_task_store_set_view (
-					KOTO_TASK_STORE (store),
-					priv->tasks_view);
-				e_cal_view_start (priv->tasks_view);
-			} else {
-				g_warning ("Unable to get tasks query\n"
-					"\"%s\"\nError: %s",
-					query, error->message);
-				g_error_free (error);
-				error = NULL;
-			}
-			g_free (query);
-		} else {
-			g_warning ("Unable to open system tasks: %s",
-				error->message);
-			g_error_free (error);
-			error = NULL;
-		}
+		g_signal_connect (G_OBJECT (priv->tasks_ecal), "cal-opened",
+			G_CALLBACK (today_tasks_store_cal_opened_cb), data);
+		e_cal_open_async (priv->tasks_ecal, FALSE);
 	} else {
 		g_warning ("Unable to retrieve system tasks");
 	}
