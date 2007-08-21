@@ -24,8 +24,10 @@
 
 #include "moko-keypad.h"
 
+#include "moko-contacts.h"
 #include "moko-dialer-textview.h"
 #include "moko-dialer-panel.h"
+#include "moko-tips.h"
 
 G_DEFINE_TYPE (MokoKeypad, moko_keypad, GTK_TYPE_VBOX)
 
@@ -36,6 +38,7 @@ struct _MokoKeypadPrivate
 {
   gboolean      pin_mode;
 
+  GtkWidget     *tips;
   GtkWidget     *textview;
   GtkWidget     *panel;
   GtkWidget     *delete;
@@ -120,6 +123,24 @@ moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking)
 
 /* Callbacks */
 static void
+on_tip_selected (MokoTips *tips, MokoContactEntry *entry, MokoKeypad *keypad)
+{
+  MokoKeypadPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_KEYPAD (keypad));
+  g_return_if_fail (entry);
+  priv = keypad->priv;
+
+  moko_dialer_textview_empty (MOKO_DIALER_TEXTVIEW (priv->textview));
+  moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->textview),
+                               entry->number);
+
+  g_print ("%s\n", entry->number);
+  g_signal_emit (G_OBJECT (keypad), keypad_signals[DIAL_NUMBER], 
+                 0, entry->number);
+}
+
+static void
 on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
 {
   MokoKeypadPrivate *priv;
@@ -146,6 +167,7 @@ on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
   MokoKeypadPrivate *priv;
   MokoDialerTextview *textview;
   static guint32 last_event = 0;
+  GList *matches;
   
   g_return_val_if_fail (MOKO_IS_KEYPAD (keypad), FALSE);
   priv = keypad->priv;
@@ -155,6 +177,7 @@ on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
   if (event->type == GDK_BUTTON_PRESS)
   {
     last_event = event->time;
+    return FALSE;
   }
   else if (event->type == GDK_BUTTON_RELEASE)
   {
@@ -171,6 +194,17 @@ on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
       moko_dialer_textview_empty (textview);
    }
   }
+  
+  if (!priv->pin_mode)
+  {
+    /* Some autocomplete stuff */
+    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
+                                          moko_dialer_textview_get_input (
+                                          MOKO_DIALER_TEXTVIEW (priv->textview),
+                                          TRUE));
+    moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
+  }
+  
   return FALSE;
 }
 
@@ -181,6 +215,7 @@ on_panel_user_input (MokoDialerPanel *panel,
 {
   MokoKeypadPrivate *priv;
   gchar buf[2];
+  GList *matches = NULL;
 
   g_return_if_fail (MOKO_IS_KEYPAD (keypad));
   priv = keypad->priv;
@@ -197,6 +232,13 @@ on_panel_user_input (MokoDialerPanel *panel,
   buf[1] = '\0';
 
   moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->textview), buf);
+
+  /* Some autocomplete stuff */
+  matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
+                                        moko_dialer_textview_get_input (
+                                        MOKO_DIALER_TEXTVIEW (priv->textview), 
+                                        TRUE));
+  moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
 }
 
 static void
@@ -272,6 +314,12 @@ moko_keypad_init (MokoKeypad *keypad)
 
   priv = keypad->priv = MOKO_KEYPAD_GET_PRIVATE (keypad);
 
+  /* The autocomplete tips */
+  priv->tips = moko_tips_new ();
+  g_signal_connect (priv->tips, "selected", 
+                    G_CALLBACK (on_tip_selected), (gpointer)keypad);
+  gtk_box_pack_start (GTK_BOX (keypad), priv->tips, FALSE, FALSE, 0);
+
   /* The textview */
   priv->textview = moko_dialer_textview_new ();
   gtk_box_pack_start (GTK_BOX (keypad), priv->textview, FALSE, FALSE, 0);
@@ -338,7 +386,7 @@ moko_keypad_new (void)
   
   keypad = g_object_new (MOKO_TYPE_KEYPAD, 
                          "homogeneous", FALSE,
-                         "spacing", 12,
+                         "spacing", 0,
                          NULL);
 
   return GTK_WIDGET (keypad);

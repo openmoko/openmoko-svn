@@ -1,3 +1,20 @@
+2007-08-21  Neil J. Patel  <njp@o-hand.com>
+
+	* src/Makefile.am:
+	* src/moko-contacts.c: (new_digit), (add_number),
+	(moko_contacts_fuzzy_lookup), (moko_contacts_get_photo),
+	(moko_contacts_add_contact), (free_digit),
+	(moko_contacts_finalize), (moko_contacts_init):
+	* src/moko-contacts.h:
+	* src/moko-keypad.c: (on_tip_selected), (on_delete_event),
+	(on_panel_user_input), (moko_keypad_init), (moko_keypad_new):
+	* src/moko-tips.c: (moko_tips_set_matches), (on_tip_selected),
+	(moko_tips_dispose), (moko_tips_finalize), (moko_tips_class_init),
+	(moko_tips_init), (moko_tips_new):
+	* src/moko-tips.h:
+	Merge autocompletion work.
+	Fix segfault while loading photo for contact.
+
 2007-08-19  Daniel Willmann  <daniel@totalueberwachung.de>
 	* src/moko-sound.{c,h}: Created functions to switch the audio profiles
 	* src/Makefile.am, src/moko-talking.c: Switch audio profiles when

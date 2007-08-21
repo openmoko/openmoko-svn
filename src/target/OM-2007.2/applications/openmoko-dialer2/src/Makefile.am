@@ -26,6 +26,8 @@ openmoko_dialer_SOURCES = \
 	moko-notify.h			\
 	moko-talking.c			\
 	moko-talking.h			\
+	moko-tips.c			\
+	moko-tips.h			\
 	moko-sound.c			\
 	moko-sound.h
 

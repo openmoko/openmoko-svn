@@ -32,6 +32,15 @@ G_DEFINE_TYPE (MokoContacts, moko_contacts, G_TYPE_OBJECT)
 
 #define MOKO_CONTACTS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_CONTACTS, MokoContactsPrivate))
+typedef struct _Digit Digit;
+
+struct _Digit
+{
+  Digit *digits[11];
+  Digit *parent;
+  GList *results;
+
+};
 
 struct _MokoContactsPrivate
 {
@@ -40,9 +49,101 @@ struct _MokoContactsPrivate
   GList      *contacts;
   GList      *entries;
   GHashTable *prefixes;
+
+  Digit *start;
 };
 
+static Digit*
+new_digit (Digit *parent)
+{
+  Digit *ret;
+  gint i;
+  
+  ret = g_slice_new0 (Digit);
+  ret->parent = parent;
+  ret->results = NULL;
+
+  for (i = 0; i <11; i++)
+    ret->digits[i] = NULL;
+  
+  return ret;
+}
+
+/* Auto-complete data type */
 static void
+add_number (Digit **start, MokoContactEntry *entry)
+{
+  gint len, i;
+  Digit *cur;
+
+  if (*start == NULL)
+    *start = new_digit (NULL);
+
+  cur = *start;
+
+  len = strlen  (entry->number);
+  for (i = 0; i < len; i++)
+  {
+    gchar c = entry->number[i];
+    gint n = c - '0';
+
+    if (n < 0 || n > 9)
+      n = 11;
+
+    if (cur->digits[n])
+    {
+      cur = cur->digits[n];
+      if (g_list_length (cur->results) < 3)
+        cur->results = g_list_append (cur->results, entry);
+      continue;
+    }
+    else
+    {
+      cur->digits[n] = new_digit (cur);
+      cur = cur->digits[n];
+      cur->results = g_list_append (cur->results, entry);
+    }
+  }
+}
+
+GList*
+moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number)
+{
+  MokoContactsPrivate *priv;
+  gint len, i;
+  Digit *cur;
+  
+  g_return_val_if_fail (MOKO_IS_CONTACTS (contacts), NULL);
+  priv = contacts->priv;
+
+  cur = priv->start;
+
+  if (!cur)
+    g_print ("error\n");
+
+  if (!number)
+    return NULL;
+
+  len = strlen (number);
+
+  for (i = 0; i < len; i++)
+  {
+    gchar c = number[i];
+    gint n = c - '0';
+
+    if (!cur->digits[n])
+      return NULL;
+
+    cur = cur->digits[n];
+    if ((i+1) == len)
+      return cur->results;
+  }
+
+  return NULL;
+}
+
+
+void
 moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
 {
   MokoContactsPrivate *priv;
@@ -52,6 +153,7 @@ moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
   GdkPixbufLoader *loader;
   
   g_return_if_fail (MOKO_IS_CONTACTS (contacts));
+  g_return_if_fail (m_contact);
   priv = contacts->priv;
   
   if (!e_book_get_contact (priv->book, m_contact->uid, &e_contact, &err))
@@ -61,20 +163,32 @@ moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
     g_object_ref (m_contact->photo);
     return;
   }
-
+  
   photo = e_contact_get (e_contact, E_CONTACT_PHOTO);
-
+  if (!photo)
+  {
+    m_contact->photo = gdk_pixbuf_new_from_file (PKGDATADIR"/person.png", NULL);
+    g_object_ref (m_contact->photo);
+    return;
+ 
+  }
+  
   loader = gdk_pixbuf_loader_new ();
   gdk_pixbuf_loader_write (loader, 
                            photo->data.inlined.data,
                            photo->data.inlined.length,
                            NULL);
   gdk_pixbuf_loader_close (loader, NULL);
-
   m_contact->photo = gdk_pixbuf_loader_get_pixbuf (loader);
+
   if (GDK_IS_PIXBUF (m_contact->photo))
     g_object_ref (m_contact->photo);
-
+  else 
+  {
+    m_contact->photo = gdk_pixbuf_new_from_file (PKGDATADIR"/person.png", NULL);
+    g_object_ref (m_contact->photo); 
+  }  
+  
   g_object_unref (loader);
 }
 
@@ -95,11 +209,7 @@ moko_contacts_lookup (MokoContacts *contacts, const gchar *number)
   return entry;
 }
 
-GList*
-moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number)
-{
-  return NULL;
-}
+
 
 /* This takes the raw number from econtact, and spits out a 'normalised' 
  * version which does not contain any ' ' or '-' charecters. The reason for
@@ -173,6 +283,7 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
       g_hash_table_insert (priv->prefixes, 
                            g_strdup (entry->number), 
                            (gpointer)entry);
+      add_number (&priv->start, entry);
     }
   }
 }
@@ -216,6 +327,20 @@ moko_contacts_dispose (GObject *object)
 }
 
 static void
+free_digit (Digit *digit)
+{
+  gint i;
+
+  for (i = 0; i < 11; i++)
+  {
+    if (digit->digits[i])
+      free_digit (digit->digits[i]);
+  }
+  g_list_free (digit->results);
+  g_slice_free (Digit, digit);
+}
+
+static void
 moko_contacts_finalize (GObject *contacts)
 {
   MokoContactsPrivate *priv;
@@ -250,6 +375,11 @@ moko_contacts_finalize (GObject *contacts)
     }
   }
   g_list_free (priv->entries);
+
+  if (priv->start)
+  {
+    free_digit (priv->start);
+  } 
 
   G_OBJECT_CLASS (moko_contacts_parent_class)->finalize (contacts);
 }
@@ -307,30 +437,6 @@ moko_contacts_init (MokoContacts *contacts)
     moko_contacts_add_contact (contacts, E_CONTACT (c->data));
   }
 
-    /* We now have a list of entries that we can organise by the first 
-   * AUTOCOMPLETE_N_CHARS digits 
-   */
-  /*for (e = priv->entries; e != NULL; e = e->next)
-  {
-    MokoContactEntry *entry = (MokoContactEntry*)e->data;
-    gchar buf[AUTOCOMPLETE_N_CHARS+1];
-    gint i;
-    gint len = strlen (entry->number);
-    GList *list = NULL;
-  
-    if (len > AUTOCOMPLETE_N_CHARS)
-      len = AUTOCOMPLETE_N_CHARS;
-    
-    for (i =0; i < len; i++)
-      buf[i] = entry->number[i];
-    buf[len+1] = '\0';
-
-    list = g_hash_table_lookup (priv->prefixes, buf);
-    list = g_list_append (list, entry);
-    
-    g_hash_table_insert (priv->prefixes, g_strdup (buf), (gpointer)list);
-  }
-*/
   /* Connect to the ebookviews signals */
   if (e_book_get_book_view (book, query, NULL, 0, &view, NULL))
   {

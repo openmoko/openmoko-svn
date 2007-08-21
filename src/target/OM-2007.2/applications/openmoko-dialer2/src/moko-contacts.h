@@ -94,6 +94,9 @@ moko_contacts_lookup (MokoContacts *contacts, const gchar *number);
 GList*
 moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number);
 
+void
+moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact);
+
 G_END_DECLS
 
 #endif /* _HAVE_MOKO_CONTACTS_H */
