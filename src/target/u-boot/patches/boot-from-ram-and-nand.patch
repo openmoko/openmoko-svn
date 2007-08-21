@@ -14,7 +14,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -157,18 +157,26 @@
+@@ -222,13 +222,11 @@
  	str	r1, [r0]
  #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
  
@@ -28,6 +28,11 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
 +#endif
  
+ #ifdef	CONFIG_AT91RM9200
+ #ifdef CONFIG_BOOTBINFUNC
+@@ -251,9 +249,19 @@
+ #endif /* CONFIG_BOOTBINFUNC */
+ #else
  #ifndef CONFIG_SKIP_RELOCATE_UBOOT
 -#ifndef CONFIG_S3C2410_NAND_BOOT
 -relocate:				/* relocate U-Boot to RAM	    */
@@ -46,8 +51,8 @@ Index: u-boot/cpu/arm920t/start.S
 +relocate:				/* relocate U-Boot to RAM	    */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
- 	beq     done_relocate
-@@ -188,10 +196,13 @@
+ 	beq     stack_setup
+@@ -273,10 +281,13 @@
  	ldr	pc, _done_relocate	/* jump to relocated code */
  _done_relocate:
  	.word	done_relocate
@@ -65,7 +70,7 @@ Index: u-boot/cpu/arm920t/start.S
  	/* mov	r10, lr */
  
  	@ reset NAND
-@@ -275,7 +286,8 @@
+@@ -360,7 +371,8 @@
  #endif
  1:	b	1b
  done_nand_read:
@@ -73,7 +78,7 @@ Index: u-boot/cpu/arm920t/start.S
 +#endif /* CONFIG_S3C2410_NAND_BOOT */
 +done_relocate:
  #endif /* CONFIG_SKIP_RELOCATE_UBOOT */
- 
+ #endif
  	/* Set up the stack						    */
 Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================

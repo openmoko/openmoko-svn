@@ -5,11 +5,10 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -332,7 +332,23 @@ done_nand_read:
+@@ -458,6 +458,22 @@
  	strb	r1, [r0]
  #endif /* CONFIG_S3C2410_NAND_BOOT */
  done_relocate:
--#endif /* CONFIG_SKIP_RELOCATE_UBOOT */
 +
 +#if defined(CONFIG_USE_IRQ) && defined(CONFIG_S3C2410)
 +	/* In the case of the S3C2410, if we've somehow magically (JTAG, ...)
@@ -26,7 +25,6 @@ Index: u-boot/cpu/arm920t/start.S
 +	bne	irqvec_cpy_next
 +#endif /* CONFIG_USE_IRQ */
 +
-+#endif /* !CONFIG_SKIP_RELOCATE_UBOOT */
- 
+ #endif /* CONFIG_SKIP_RELOCATE_UBOOT */
+ #endif
  	/* Set up the stack						    */
- stack_setup:

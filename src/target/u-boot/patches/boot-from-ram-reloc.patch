@@ -14,7 +14,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -171,7 +171,7 @@ relocate:				/* relocate U-Boot to RAM	 
+@@ -236,7 +236,7 @@
  	adr	r0, _start		/* r0 <- current position of code   */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
@@ -23,7 +23,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  	ldr	r2, _armboot_start
  	ldr	r3, _bss_start
-@@ -181,8 +181,14 @@ relocate:				/* relocate U-Boot to RAM	 
+@@ -266,8 +266,14 @@
  copy_loop:
  	ldmia	r0!, {r3-r10}		/* copy from source address [r0]    */
  	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
@@ -39,13 +39,13 @@ Index: u-boot/cpu/arm920t/start.S
  #else /* NAND_BOOT */
  relocate:
  copy_myself:
-@@ -270,7 +276,7 @@ notmatch:
+@@ -355,7 +361,7 @@
  1:	b	1b
  done_nand_read:
  #endif /* NAND_BOOT */
 -#endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
 +#endif /* CONFIG_SKIP_RELOCATE_UBOOT */
- 
+ #endif
  	/* Set up the stack						    */
  stack_setup:
 Index: u-boot/include/configs/neo1973_gta01.h
