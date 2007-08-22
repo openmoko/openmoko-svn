@@ -1,4 +1,9 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
+	
+	* src/moko-notify.c: (moko_notify_check_brightness):
+	Some fixes to the brightness manipulation.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_incoming_clip):
 	* src/moko-notify.c: (moko_notify_check_brightness):

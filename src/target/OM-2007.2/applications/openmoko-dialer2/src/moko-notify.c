@@ -66,7 +66,9 @@ moko_notify_check_brightness (void)
 {
   gint fd;
   gchar buf[50];
-  gint brightness, len;
+  GIOChannel *dev;
+  gsize bytes = 0;
+  GError *err = NULL;
 
   fd = g_open (SYS_BRIGHTNESS"/brightness", O_WRONLY, 0);
   if (fd == -1)
@@ -74,26 +76,28 @@ moko_notify_check_brightness (void)
     g_warning ("Unable to open brightness device");
     return;
   }
-
   
-  if (read (fd, buf, sizeof (buf)) == -1)
+  dev = g_io_channel_unix_new (fd);
+
+  if (g_io_channel_read_chars (dev, buf, 50, &bytes, &err) 
+        == G_IO_STATUS_NORMAL)
   {
-    close (fd);
-    g_warning ("Unable to read from brightness device");
-    return;
+    buf[bytes] = '\0';
+    g_print ("%s\n", buf);
   }
-  brightness = atoi (buf);
-  g_print ("Brightness = %d\n", brightness);
-  /*
-  brightness = 0;
-  if (brightness >= 5000)
+  else
   {
-    close (fd);
-    return;
+    g_warning (err->message);
+    g_error_free (err);
   }
-  */
-  len = g_sprintf (buf, "%d", 5000);
-  write (fd, buf, len);
+  err = NULL;
+  if (g_io_channel_write_chars (dev, "5000", -1, &bytes, &err)
+        != G_IO_STATUS_NORMAL)
+  {
+    g_warning (err->message);
+    g_error_free (err);
+  }
+  g_io_channel_shutdown (dev, TRUE, NULL);
   close (fd);
 }
 
