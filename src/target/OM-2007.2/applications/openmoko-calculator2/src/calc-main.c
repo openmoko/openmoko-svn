@@ -98,11 +98,11 @@ static void update_display(const double v)
 	static int toomany = 0;
 	if ((the_state.func != &noop_func) || (++toomany % 7))
 	  gtk_label_set_markup(GTK_LABEL(displayed_label),
-			       _("<big>Not a Number</big>"));
+			       _("Error"));
 	else
 	  /* ok, let's have some fun too... */
 	  gtk_label_set_markup(GTK_LABEL(displayed_label),
-			       _("<big>Not a Number</big>\n"
+			       _("Error\n"
 				 "<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
 				 "<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</span>"));
       }
