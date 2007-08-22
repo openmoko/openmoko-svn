@@ -163,8 +163,7 @@ moko_tips_init (MokoTips *tips)
   
   priv = tips->priv = MOKO_TIPS_GET_PRIVATE (tips);
 
-  priv->image = gtk_image_new_from_stock (GTK_STOCK_ADD, 
-                                          GTK_ICON_SIZE_LARGE_TOOLBAR);
+  priv->image = gtk_image_new ();
   gtk_box_pack_start (GTK_BOX (tips), priv->image, FALSE, FALSE, 0);
 
   hbox = gtk_hbox_new (TRUE, 0);

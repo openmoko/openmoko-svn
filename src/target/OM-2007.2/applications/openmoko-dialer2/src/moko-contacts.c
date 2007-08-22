@@ -119,8 +119,10 @@ moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number)
   cur = priv->start;
 
   if (!cur)
-    g_print ("error\n");
-
+  {
+    g_print ("Invalid contacts data start point\n");
+    return NULL;
+  }
   if (!number)
     return NULL;
 
@@ -407,7 +409,7 @@ moko_contacts_init (MokoContacts *contacts)
 
   priv = contacts->priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
 
-  priv->contacts = priv->entries = NULL;
+  priv->contacts = priv->entries = priv->start = NULL;
   priv->prefixes = g_hash_table_new ((GHashFunc)g_str_hash,
                                      (GEqualFunc)g_str_equal);
   
