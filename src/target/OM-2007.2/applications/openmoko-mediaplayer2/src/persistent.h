@@ -30,12 +30,17 @@
 #include "playlist.h"
 #include "main.h"
 
+#define OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED "config_shuffle_state_changed"
+#define OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED "config_repeat_mode_changed"
+
 /// Application configuration data
+/// @note Default values are taken from omp_default_config
+/// @note Update that struct as well if you make changes here!
 struct _omp_config
 {
 	gboolean shuffle;									///< Shuffle on/off
+	guint repeat_mode;								///< Repeat mode @see omp_repeat_modes
 	gboolean resume_playback;					///< Resume playback on startup where it left off?
-	gint repeat_mode;									///< Repeat mode @see omp_repeat_modes
 //	gboolean auto_scroll;						///< Scroll title if it's too long?
 	gboolean convert_underscore;			///< Convert '_' to ' '?
 	gchar title_format[32];						///< Format string used for title display
@@ -63,6 +68,12 @@ extern struct _omp_session *omp_session;
 void omp_config_init();
 void omp_config_free();
 void omp_config_save();
+
+void omp_config_set_shuffle_state(gboolean state);
+gboolean omp_config_get_shuffle_state();
+
+void omp_config_set_repeat_mode(guint mode);
+guint omp_config_get_repeat_mode();
 
 void omp_session_restore_state();
 void omp_session_free();

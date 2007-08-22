@@ -231,7 +231,7 @@ omp_editor_page_create()
 	main_vbox = gtk_vbox_new(FALSE, 0);
 
 	// Caption
-	alignment = create_label(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	omp_editor_title_label = label;
@@ -256,7 +256,7 @@ omp_editor_page_create()
 	image = gtk_image_new_from_icon_name("gtk-file", BUTTON_PIXMAP_SIZE);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(image), TRUE, TRUE, 0);
 
-	alignment = create_label(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Add Tracks"));
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 

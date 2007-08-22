@@ -319,7 +319,7 @@ omp_playlist_page_create()
 	main_vbox = gtk_vbox_new(FALSE, 0);
 
 	// Caption #1
-	alignment = create_label(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Select Playlist to load:"));
@@ -332,7 +332,7 @@ omp_playlist_page_create()
 	omp_playlist_page_list_create(GTK_CONTAINER(scroll_box));
 
 	// Caption #2
-	alignment = create_label(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Enter name to create a new playlist:"));

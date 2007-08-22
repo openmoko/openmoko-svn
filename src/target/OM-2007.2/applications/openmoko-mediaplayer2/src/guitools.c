@@ -69,8 +69,8 @@ pixbuf_new_from_file(const gchar *file_name)
  * @param yscale Vertical expansion (0..1)
  * @note See gtk_alignment_new() for further info
  */
-GtkWidget*
-create_label(GtkWidget **label, gchar *font_info, gchar *color_desc,
+GtkWidget *
+label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
 	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale,
 	gint max_char_count)
 {
@@ -100,6 +100,35 @@ create_label(GtkWidget **label, gchar *font_info, gchar *color_desc,
 }
 
 /**
+ * Creates a button containing an image
+ * @param image_name Path and file name of the image to use
+ * @param image Destination for the image's handle (can be NULL)
+ * @param callback Callback to set
+ * @return The button
+ */
+GtkWidget *
+button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callback)
+{
+	GtkWidget *btn_image, *button;
+	gchar *image_file_name;
+
+	button = gtk_button_new();
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), NULL);
+	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(button), GTK_CAN_FOCUS);
+
+//	g_object_set(G_OBJECT(*button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
+
+	image_file_name = g_build_path("/", ui_image_path, image_name, NULL);
+	btn_image = gtk_image_new_from_file(image_file_name);
+	g_free(image_file_name);
+	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(btn_image));
+
+	if (image) *image = btn_image;
+
+	return button;
+}
+
+/**
  * Loads an image from disk and adds it to a given container, returning a reference to the image as well
  */
 void
@@ -123,12 +152,11 @@ container_add_image(GtkContainer *container, gchar *image_name)
 	container_add_image_with_ref(container, image_name, &image);
 }
 
-
 /**
  * Adds a child to a GtkNotebook, filling the page handle with a stock icon
  */
 void
-omp_notebook_add_page_with_icon(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding)
+notebook_add_page_with_icon(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding)
 {
 	GtkWidget *icon, *alignment;
 

@@ -62,7 +62,7 @@
 //define DEBUG_MEM_PROFILE
 
 // Forces the window to the native size of the Neo1973's screen area if enabled
-//define EMULATE_SIZE
+#define EMULATE_SIZE
 
 // The padding applied to the page handle's contents
 #define NOTEBOOK_PAGE_PADDING 6
@@ -248,24 +248,24 @@ omp_window_create_pages()
 
 	// Add main page
 	page = omp_main_page_create();
-	omp_notebook_add_page_with_icon(omp_notebook, page,
+	notebook_add_page_with_icon(omp_notebook, page,
 		MOKO_STOCK_SPEAKER, NOTEBOOK_PAGE_PADDING);
 	omp_notebook_tab_ids->main = page_id++;
 	omp_notebook_tabs->main = page;
 
 	// Add playlist page
 	page = omp_playlist_page_create();
-	omp_notebook_add_page_with_icon(omp_notebook, page,
+	notebook_add_page_with_icon(omp_notebook, page,
 		MOKO_STOCK_VIEW, NOTEBOOK_PAGE_PADDING);
 	omp_notebook_tab_ids->playlists = page_id++;
 	omp_notebook_tabs->playlists = page;
 
 	// Add playlist editor page
-/*	page = omp_editor_page_create();
-	omp_notebook_add_page_with_icon(omp_notebook, page,
+	page = omp_editor_page_create();
+	notebook_add_page_with_icon(omp_notebook, page,
 		"gtk-index", NOTEBOOK_PAGE_PADDING);
 	omp_notebook_tab_ids->editor = page_id++;
-	omp_notebook_tabs->editor = page; */
+	omp_notebook_tabs->editor = page;
 }
 
 /**

@@ -32,13 +32,14 @@
 #include <fcntl.h>
 
 #include "persistent.h"
+#include "main.h"
 
 /// The default configuration
 struct _omp_config omp_default_config =
 {
 	FALSE,
-	TRUE,
 	OMP_REPEAT_OFF,
+	TRUE,
 //	FALSE,
 	FALSE,
 	"%f",
@@ -63,13 +64,22 @@ omp_config_init()
 	#endif
 
 	// This mustn't be called more than once
-	g_assert(omp_config == NULL);
+	g_assert(!omp_config);
 
 	// Set default config
 	omp_config = g_new(struct _omp_config, 1);
 	g_memmove(omp_config, &omp_default_config, sizeof(struct _omp_config));
 
-	/// @todo GConf
+	// Create the signals we emit
+	g_signal_new(OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+	g_signal_new(OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+	/// @todo GConf implementation
 }
 
 /**
@@ -82,11 +92,57 @@ omp_config_free()
 }
 
 /**
- * Saves the current application configuration data to persistent storate
+ * Saves the current application configuration data to persistent storage
  */
 void
 omp_config_save()
 {
+}
+
+/**
+ * Sets state of shuffle flag
+ */
+void
+omp_config_set_shuffle_state(gboolean state)
+{
+	omp_config->shuffle = state;
+	omp_config_save();
+
+	// Submit new state to the UI
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED,
+		state);
+}
+
+/**
+ * Returns state of shuffle flag
+ */
+gboolean
+omp_config_get_shuffle_state()
+{
+	return omp_config->shuffle;
+}
+
+/**
+ * Sets repeat mode in config data
+ */
+void
+omp_config_set_repeat_mode(guint mode)
+{
+	omp_config->repeat_mode = mode;
+	omp_config_save();
+
+	// Submit new state to the UI
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED,
+		mode);
+}
+
+/**
+ * Returns repeat mode
+ */
+guint
+omp_config_get_repeat_mode()
+{
+	return omp_config->repeat_mode;
 }
 
 /**
@@ -140,7 +196,7 @@ omp_session_restore_state()
 	// Try to load the track, set the playback position and resume playback if needed
 	if (omp_playlist_load_current_track())
 	{
-		if (omp_session->was_playing)
+		if (omp_session->was_playing && omp_config->resume_playback)
 		{
 			omp_playback_fade_volume();
 			omp_playback_play();

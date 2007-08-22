@@ -62,6 +62,9 @@ struct omp_track_history_entry
 	guint track_id;
 };
 
+/// Flag that indicates whether the current track has already been repeated once or not
+gboolean omp_playlist_track_repeated_once = FALSE;
+
 // Forward declarations for internal use
 void omp_playlist_process_eos_event(gpointer instance, gpointer user_data);
 void omp_playlist_process_tag_artist_change(gpointer instance, gchar *artist, gpointer user_data);
@@ -305,7 +308,7 @@ omp_playlist_set_prev_track()
 	struct omp_track_history_entry *history_entry;
 	struct spiff_track *track;
 	gboolean was_playing;
-	gboolean is_new_track = FALSE;
+	gboolean track_determined = FALSE;
 
 	if (!omp_playlist_current_track)
 	{
@@ -351,7 +354,7 @@ try_again:
 		g_free(history_entry);
 		omp_track_history = g_slist_delete_link(omp_track_history, omp_track_history);
 
-		is_new_track = TRUE;
+		track_determined = TRUE;
 
 	} else {
 
@@ -371,12 +374,12 @@ try_again:
 			{
 				omp_playlist_current_track = track;
 				omp_playlist_current_track_id--;
-				is_new_track = TRUE;
+				track_determined = TRUE;
 			}
 		}
 	}
 
-	if (is_new_track)
+	if (track_determined)
 	{
 		// Update session
 		omp_session_set_track_id(omp_playlist_current_track_id);
@@ -392,12 +395,12 @@ try_again:
 		} else {
 
 			// Uh-oh, track failed to load - let's find another one, shall we?
-			is_new_track = FALSE;
+			track_determined = FALSE;
 			goto try_again;
 		}
 	}
 
-	return is_new_track;
+	return track_determined;
 }
 
 /**
@@ -411,7 +414,9 @@ omp_playlist_set_next_track()
 {
 	struct omp_track_history_entry *history_entry;
 	gboolean was_playing;
-	gboolean is_new_track = FALSE;
+	guint repeat_mode;
+	gboolean track_determined = FALSE;
+	guint i, n;
 
 	if (!omp_playlist_current_track)
 	{
@@ -421,6 +426,23 @@ omp_playlist_set_next_track()
 	// Get player state so we can continue playback if necessary
 	was_playing = (omp_playback_get_state() == OMP_PLAYBACK_STATE_PLAYING);
 
+	repeat_mode = omp_config_get_repeat_mode();
+
+	// Repeat once
+	if (repeat_mode == OMP_REPEAT_ONCE)
+	{
+		// Play same track again and turn repeat off
+		omp_config_set_repeat_mode(OMP_REPEAT_OFF);
+		track_determined = TRUE;
+	}
+
+	// Repeat current
+	if (repeat_mode == OMP_REPEAT_CURRENT)
+	{
+		// Play same track again
+		track_determined = TRUE;
+	}
+
 try_again:
 
 	// Prepare the history entry - if we don't need it we'll just free it again
@@ -428,17 +450,42 @@ try_again:
 	history_entry->track		= omp_playlist_current_track;
 	history_entry->track_id	= omp_playlist_current_track_id;
 
-	// Do we have a track to play?
-	if (omp_playlist_current_track->next)
+	// Repeat all: we forward 1 track
+	// Shuffle on: we forward 0 < n < omp_playlist_track_count tracks
+	if ( (repeat_mode == OMP_REPEAT_ALL) || (omp_config_get_shuffle_state()) )
+	{
+		n = (omp_config_get_shuffle_state()) ?
+			g_random_int_range(1, omp_playlist_track_count) :
+			1;
+
+		for (i=0; i<n; i++)
+		{
+			if (omp_playlist_current_track->next)
+			{
+				omp_playlist_current_track = omp_playlist_current_track->next;
+				omp_playlist_current_track_id++;
+			} else {
+				omp_playlist_current_track = omp_playlist->tracks;
+				omp_playlist_current_track_id = 0;
+			}
+		}
+
+		track_determined = TRUE;
+	}
+
+	// Repeat off and shuffle off: Do we have a track to play?
+	if ( (repeat_mode == OMP_REPEAT_OFF) &&
+		   (!omp_config_get_shuffle_state()) &&
+		   omp_playlist_current_track->next
+		 )
 	{
 		omp_playlist_current_track = omp_playlist_current_track->next;
 		omp_playlist_current_track_id++;
 
-		// Yes, we were able to find a new track to play
-		is_new_track = TRUE;
+		track_determined = TRUE;
 	}
 
-	if (is_new_track)
+	if (track_determined)
 	{
 		// Add track to track history
 		omp_track_history = g_slist_prepend(omp_track_history, (gpointer)history_entry);
@@ -457,17 +504,17 @@ try_again:
 		} else {
 
 			// Uh-oh, track failed to load - let's find another one, shall we?
-			is_new_track = FALSE;
+			track_determined = FALSE;
 			goto try_again;
 		}
 
 	} else {
 
-		// We're not making use of the history entry as the track didn't change
+		// We're not making use of the history entry as we didn't find a new track to play
 		g_free(history_entry);
 	}
 
-	return is_new_track;
+	return track_determined;
 }
 
 /**

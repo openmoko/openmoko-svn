@@ -140,7 +140,7 @@ omp_playback_save_state()
 void
 omp_playback_reset()
 {
-	gst_element_set_state(omp_gst_playbin, GST_STATE_READY);
+	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_RESET);
 }

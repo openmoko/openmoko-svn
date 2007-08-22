@@ -6,10 +6,16 @@ images_DATA = \
 	btn-white-p.png \
 	ico-track.png \
 	ico-time.png \
-	ico-repeat.png \
-	ico-shuffle.png \
-	ico-list.png \
+	ico-repeat-off.png \
+	ico-repeat-once.png \
+	ico-repeat-current.png \
+	ico-repeat-all.png \
+	ico-shuffle-on.png \
+	ico-shuffle-off.png \
+	ico-balance-left.png \
+	ico-balance-right.png \
 	ico-tracktype-general.png \
+	ind-music-eq-00.png \
 	ind-music-eq-01.png \
 	ind-music-eq-02.png \
 	ind-music-eq-03.png \
