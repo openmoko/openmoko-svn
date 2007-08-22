@@ -317,7 +317,6 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   if (priv->status != DIALER_STATUS_INCOMING)
     return;
 
-  moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
   moko_gsmd_connection_voice_accept (priv->connection);
   
   priv->status = DIALER_STATUS_TALKING;
@@ -596,6 +595,7 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       break;
     
     case MOKO_GSMD_PROG_CONNECTED:
+      moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
       g_print ("mokogsmd connected\n");
       break;

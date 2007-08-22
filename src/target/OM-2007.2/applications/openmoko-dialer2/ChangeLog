@@ -1,5 +1,11 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_talking_accept_call),
+	(on_call_progress_changed):
+	Set the 'talking' page when connected.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-notify.c: (moko_notify_start), (moko_notify_stop):
 	Disable ringtone, as gstreamer seems to be taking an age doing anything
 	useful, and at the same time, blocking the UI.
