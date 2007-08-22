@@ -560,7 +560,7 @@ on_call_progress_changed (MokoGsmdConnection *conn,
                           MokoDialer *dialer)
 {
   MokoDialerPrivate *priv;
-  enum MessageDirection dir;
+  MessageDirection dir;
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;

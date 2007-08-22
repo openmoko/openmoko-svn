@@ -1,5 +1,11 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_call_progress_changed):
+	* src/moko-history.c: (history_add_entry):
+	Update for new Journal types.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_talking_accept_call),
 	(on_call_progress_changed):
 	Set the 'talking' page when connected.

@@ -231,7 +231,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   GdkPixbuf *icon = NULL;
   const gchar *display_text;
   time_t dstart;
-  enum MessageDirection direction;
+  MessageDirection direction;
   gboolean was_missed;
   const MokoTime *time;
   gint type;
