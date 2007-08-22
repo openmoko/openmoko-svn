@@ -37,7 +37,7 @@ G_DEFINE_TYPE (MokoNotify, moko_notify, G_TYPE_OBJECT)
         MOKO_TYPE_NOTIFY, MokoNotifyPrivate))
 
 #define DEFAULT_RINGTONE "/default_ringtone.ogg"
-#define SYS_BRIGHTNESS "/sys/class/backlight/gta01-bl/brightness"
+#define SYS_BRIGHTNESS "/sys/class/backlight/gta01-bl"
 #define SYS_VIBRATE "/sys/class/leds/gta01:vibrator"
 
 struct _MokoNotifyPrivate
@@ -74,21 +74,24 @@ moko_notify_check_brightness (void)
     g_warning ("Unable to open brightness device");
     return;
   }
-  /*
+
+  
   if (read (fd, buf, sizeof (buf)) == -1)
   {
     close (fd);
+    g_warning ("Unable to read from brightness device");
     return;
   }
   brightness = atoi (buf);
-  */
+  g_print ("Brightness = %d\n", brightness);
+  /*
   brightness = 0;
   if (brightness >= 5000)
   {
     close (fd);
     return;
   }
-  
+  */
   len = g_sprintf (buf, "%d", 5000);
   write (fd, buf, len);
   close (fd);

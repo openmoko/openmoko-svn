@@ -524,7 +524,8 @@ on_incoming_clip (MokoGsmdConnection *conn,
     if (entry)
       moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
   }
-  g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 0, number);
+  g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 
+                 0, number);
   g_print ("Incoming Number = %s\n", number);
 }
 

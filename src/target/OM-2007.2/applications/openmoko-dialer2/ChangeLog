@@ -1,5 +1,11 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_incoming_clip):
+	* src/moko-notify.c: (moko_notify_check_brightness):
+	Use the right device to set brightness.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-contacts.c: (moko_contacts_fuzzy_lookup),
 	(moko_contacts_init):
 	Properly initialise private variables.
