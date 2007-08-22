@@ -1,5 +1,11 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_talking_reject_call),
+	(on_talking_cancel_call), (on_talking_silence):
+	Make sure function ordering is correct so multiple tabs do not open.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_network_registered):
 	Correctly format output.
 

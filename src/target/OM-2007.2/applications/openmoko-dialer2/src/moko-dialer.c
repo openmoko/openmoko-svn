@@ -347,8 +347,11 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  moko_gsmd_connection_voice_hangup (priv->connection);
   priv->status = DIALER_STATUS_NORMAL;
-
+  
+  gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
+ 
   /* Finalise and add the journal entry */
   if (priv->entry)
   {
@@ -358,9 +361,6 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
     priv->entry = NULL;
     priv->time = NULL;
   }
-
-  gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
-  moko_gsmd_connection_voice_hangup (priv->connection);
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
   moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
@@ -373,12 +373,12 @@ on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-
-  priv->status = DIALER_STATUS_NORMAL;
-
-  gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
+  
   moko_gsmd_connection_voice_hangup (priv->connection);
-
+  
+  priv->status = DIALER_STATUS_NORMAL;
+  gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
+  
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
   moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
 }
@@ -390,8 +390,6 @@ on_talking_silence (MokoTalking *talking, MokoDialer *dialer)
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-
-  priv->status = DIALER_STATUS_NORMAL;
 
   moko_notify_stop (priv->notify);
 }
