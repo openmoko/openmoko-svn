@@ -258,7 +258,7 @@ moko_notify_start (MokoNotify *notify)
 
   moko_notify_check_brightness ();
   moko_notify_start_vibrate ();
-  moko_notify_start_ringtone (notify);
+  //moko_notify_start_ringtone (notify);
 }
 
 /* Stop the ringtone and the vibration alert */
@@ -275,7 +275,7 @@ moko_notify_stop (MokoNotify *notify)
   priv->started = FALSE;
  
   moko_notify_stop_vibrate ();
-  moko_notify_stop_ringtone (notify);
+  //moko_notify_stop_ringtone (notify);
 }
 
 /* GObject functions */
