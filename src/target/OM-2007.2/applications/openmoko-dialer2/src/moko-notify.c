@@ -70,7 +70,7 @@ moko_notify_check_brightness (void)
   gsize bytes = 0;
   GError *err = NULL;
 
-  fd = g_open (SYS_BRIGHTNESS"/brightness", O_WRONLY, 0);
+  fd = g_open (SYS_BRIGHTNESS"/brightness", O_RDWR, 0);
   if (fd == -1)
   {
     g_warning ("Unable to open brightness device");
