@@ -14,7 +14,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -236,7 +236,7 @@
+@@ -256,7 +256,7 @@
  	adr	r0, _start		/* r0 <- current position of code   */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
