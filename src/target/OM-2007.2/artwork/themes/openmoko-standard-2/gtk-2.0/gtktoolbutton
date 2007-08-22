@@ -16,10 +16,11 @@ style "toolbutton"
     {
       function    = BOX
       state       = PRELIGHT
-      file        = "toolbar/toolbutton-active.png"
+      file        = "toolbar/toolbar.png"
       border      = {0, 0, 0, 0}
       stretch     = TRUE
-    }  }
+    }
+  }
 }
 widget_class "*Tool*GtkToggleButton" style "toolbutton"
 widget_class "*Tool*GtkButton" style "toolbutton"
