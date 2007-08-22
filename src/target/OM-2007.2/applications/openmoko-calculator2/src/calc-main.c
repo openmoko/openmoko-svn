@@ -68,7 +68,7 @@ static GtkWidget* displayed_label;
 #define CALC_ROWS 5
 #define CALC_COLS 4
 static const gchar *label[CALC_ROWS][CALC_COLS] = {
-    {N_("Clear All"), N_("Clear"), "/", "*" },
+    {N_("CE"), N_("C"), "/", "*" },
     {"7", "8", "9", "+"},
     {"4", "5", "6", "-"},
     {"1", "2", "3", "="},
@@ -81,25 +81,6 @@ static enum operation ops[CALC_ROWS][CALC_COLS] = {
     { one, two, three, equal},
     { zero, point, minus, notimplemented},
   };
-#if 1
-gchar *wnames[CALC_ROWS][CALC_COLS] = {
-  {"mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-dialer", "mokofingerbutton-dialer"},
-  {"mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-dialer"},
-  {"mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-dialer"},
-  {"mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-big"},
-  {"mokofingerbutton-dialer", "mokofingerbutton-dialer", "mokofingerbutton-dialer", "none"},
-};
-#else
-/* Alternative styling - more flashy */
-gchar *wnames[CALC_ROWS][CALC_COLS] = {
-  {"mokofingerbutton-black", "mokofingerbutton-black", "mokofingerbutton-orange", "mokofingerbutton-orange"},
-  {"mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-orange"},
-  {"mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-orange"},
-  {"mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-black"},
-  {"mokofingerbutton-orange", "mokofingerbutton-orange", "mokofingerbutton-orange", "none"},
-};
-#endif
-
 /*
  * Signal function and static helpers
  */
@@ -236,7 +217,7 @@ void calc_button_pressed( GtkButton* button, enum operation *k)
       update_display(the_state.current_operand);
     } else if (the_state.last_operand != 0.0) {
       the_state.last_operand *= -1;
-      update_display(the_state.last_operand);	
+      update_display(the_state.last_operand);
     }
     /* else: no-op */
     break;
@@ -294,36 +275,35 @@ calc_panel_init (void)
   int i, j;
 
   table = gtk_table_new (CALC_ROWS, CALC_COLS, TRUE);
+  gtk_widget_set_name (table, "calculator-table" );
 
   for (j = 0; j < CALC_COLS; j++)
     for (i = 0; i < CALC_ROWS; i++)
     {
-      GtkWidget* button = gtk_button_new();
-      GtkWidget* blabel = gtk_label_new(NULL);
-      gtk_label_set_markup(GTK_LABEL(blabel),gettext(label[i][j]));
-      gtk_container_add(GTK_CONTAINER(button),blabel);
+      GtkWidget* button = gtk_button_new_with_label( gettext(label[i][j]) );
+      //GtkWidget* blabel = gtk_label_new(NULL);
+      //gtk_label_set_markup(GTK_LABEL(blabel),gettext(label[i][j]));
+      //gtk_container_add(GTK_CONTAINER(button),blabel);
 
       g_signal_connect (G_OBJECT(button), "clicked", G_CALLBACK(calc_button_pressed),&(ops[i][j]));
-      /* TODO: Check if this changes the aspect */
-      gtk_widget_set_name(button, wnames[i][j]);
 
-      if ((j == (CALC_COLS-1)) && (i == (CALC_ROWS-2))) {
-	/* Last button spans two cells vertically */
-	gtk_table_attach_defaults (GTK_TABLE (table), button,
-				   j, j + 1, i, i + 2);
-	i++;
-      } else {
-	gtk_table_attach_defaults (GTK_TABLE (table), button,
-				   j, j + 1, i, i + 1);	
-      }
-    }
+        if ((j == (CALC_COLS-1)) && (i == (CALC_ROWS-2))) {
+        /* Last button spans two cells vertically */
+        gtk_table_attach_defaults (GTK_TABLE (table), button,
+                        j, j + 1, i, i + 2);
+        i++;
+            } else {
+        gtk_table_attach_defaults (GTK_TABLE (table), button,
+                        j, j + 1, i, i + 1);
+            }
+        }
   return table;
 }
 
 /*
  * Command line options definition
  */
-static GOptionEntry entries[] = 
+static GOptionEntry entries[] =
 {
   /* No options right now except the default ones from GTK */
   { NULL }
@@ -343,17 +323,17 @@ int main( int argc, char** argv )
     gtk_init( &argc, &argv );
     if (argc != 1)
       {
-	/* Add init code. */
-	GError *error = NULL;
-	GOptionContext *context = g_option_context_new ("");
-	
-	g_option_context_add_main_entries (context, entries, NULL);
-	g_option_context_add_group (context, gtk_get_option_group (TRUE));
-	g_option_context_parse (context, &argc, &argv, &error);
-	
-	g_option_context_free (context);
-      }
-	
+    /* Add init code. */
+    GError *error = NULL;
+    GOptionContext *context = g_option_context_new ("");
+
+    g_option_context_add_main_entries (context, entries, NULL);
+    g_option_context_add_group (context, gtk_get_option_group (TRUE));
+    g_option_context_parse (context, &argc, &argv, &error);
+
+    g_option_context_free (context);
+        }
+
     setlocale (LC_ALL, "");
     bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
     textdomain (GETTEXT_PACKAGE);
@@ -392,7 +372,7 @@ int main( int argc, char** argv )
     gtk_widget_set_name (main_frame, "calculator-frame");
     gtk_container_add (GTK_CONTAINER (main_frame), vbox);
     gtk_container_add (GTK_CONTAINER (window), main_frame);
-    
+
     /* show everything and run main loop */
     gtk_widget_show_all( GTK_WIDGET(window) );
     calc_debug( "calculator entering main loop" );

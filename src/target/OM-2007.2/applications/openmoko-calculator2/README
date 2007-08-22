@@ -3,8 +3,8 @@ example and the OpenMoko regular dialer UI, in the hope that it would
 be useful.
 
 Notes:
- * Pango markup is used currently to manage font size for the display
-of for button labels, maybe styles would be more appropriate.
+ * Pango markup is used currently to manage font size for the display,
+   maybe styles would be more appropriate.
 
 Thank you for your attention,
 
