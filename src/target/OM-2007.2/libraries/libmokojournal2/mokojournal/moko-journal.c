@@ -81,11 +81,11 @@ struct _MokoJournalSMSInfo
 
 struct _MokoJournalEntry
 {
-  enum MokoJournalEntryType type;
+  MokoJournalEntryType type;
   gchar *uid ;
   gchar *contact_uid ;
   gchar *summary ;
-  enum MessageDirection direction ;
+  MessageDirection direction ;
   MokoTime *dtstart ;
   MokoTime *dtend ;
   float start_longitude ;
@@ -107,7 +107,7 @@ struct _MokoJournalEntry
 
 struct _MokoJournalEntryInfo
 {
-  enum MokoJournalEntryType type;
+  MokoJournalEntryType type;
   const gchar *type_as_string ;
 };
 typedef struct _MokoJournalEntryInfo MokoJournalEntryInfo ;
@@ -148,10 +148,10 @@ static gboolean moko_journal_find_entry_from_uid (MokoJournalPrivate *a_journal,
                                                   const gchar *a_uid,
                                                   MokoJournalEntry **a_entry,
                                                   int *a_offset) ;
-static const gchar* entry_type_to_string (enum MokoJournalEntryType a_type) ;
-static enum MokoJournalEntryType entry_type_from_string (const gchar* a_str) ;
+static const gchar* entry_type_to_string (MokoJournalEntryType a_type) ;
+static MokoJournalEntryType entry_type_from_string (const gchar* a_str) ;
 static gboolean moko_journal_entry_type_is_valid
-                                          (enum MokoJournalEntryType a_type) ;
+                                          (MokoJournalEntryType a_type) ;
 static gboolean moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
                                                      icalcomponent **a_comp) ;
 static gboolean icalcomponent_to_entry (icalcomponent *a_comp,
@@ -256,7 +256,7 @@ notify_entry_removed (MokoJournal *a_journal, MokoJournalEntry *entry)
 }
 
 static const gchar*
-entry_type_to_string (enum MokoJournalEntryType a_type)
+entry_type_to_string (MokoJournalEntryType a_type)
 {
   MokoJournalEntryInfo *cur ;
 
@@ -268,7 +268,7 @@ entry_type_to_string (enum MokoJournalEntryType a_type)
   return NULL ;
 }
 
-static enum MokoJournalEntryType
+static MokoJournalEntryType
 entry_type_from_string (const gchar* a_str)
 {
   MokoJournalEntryInfo *cur ;
@@ -582,7 +582,7 @@ moko_journal_entry_free_real (MokoJournalEntry *a_entry)
 }
 
 static gboolean
-moko_journal_entry_type_is_valid (enum MokoJournalEntryType a_type)
+moko_journal_entry_type_is_valid (MokoJournalEntryType a_type)
 {
   if (a_type > 0 && a_type < NB_OF_ENTRY_TYPES)
     return TRUE ;
@@ -597,7 +597,7 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
   icalproperty *prop = NULL ;
   gboolean result = FALSE ;
   gchar *str=NULL ;
-  enum MessageDirection dir = DIRECTION_IN ;
+  MessageDirection dir = DIRECTION_IN ;
 
   g_return_val_if_fail (a_entry, FALSE) ;
   g_return_val_if_fail (a_comp, FALSE) ;
@@ -770,7 +770,7 @@ icalcomponent_to_entry (icalcomponent *a_comp,
   if (icalcomponent_find_property_as_string (a_comp, "X-OPENMOKO-ENTRY-TYPE",
                                              &prop_value))
   {
-    enum MokoJournalEntryType entry_type = UNDEF_ENTRY ;
+    MokoJournalEntryType entry_type = UNDEF_ENTRY ;
     if (!prop_value)
     {
       g_warning ("could not get entry type") ;
@@ -1580,7 +1580,7 @@ moko_journal_load_from_storage (MokoJournal *_a_journal)
  * Return value: the newly created journal entry object
  */
 MokoJournalEntry*
-moko_journal_entry_new (enum MokoJournalEntryType a_type)
+moko_journal_entry_new (MokoJournalEntryType a_type)
 {
   MokoJournalEntry *result ;
   result = moko_journal_entry_alloc () ;
@@ -1596,7 +1596,7 @@ moko_journal_entry_new (enum MokoJournalEntryType a_type)
  *
  * Return value: the type of the journal entry
  */
-enum MokoJournalEntryType
+MokoJournalEntryType
 moko_journal_entry_get_entry_type (MokoJournalEntry *a_entry)
 {
   g_return_val_if_fail (a_entry, UNDEF_ENTRY) ;
@@ -1614,7 +1614,7 @@ moko_journal_entry_get_entry_type (MokoJournalEntry *a_entry)
  */
 void
 moko_journal_entry_set_type (MokoJournalEntry *a_entry,
-                             enum MokoJournalEntryType a_type)
+                             MokoJournalEntryType a_type)
 {
   g_return_if_fail (a_entry) ;
   g_return_if_fail (a_type != UNDEF_ENTRY) ;
@@ -1794,7 +1794,7 @@ moko_journal_entry_set_start_location (MokoJournalEntry *a_entry,
  */
 gboolean
 moko_journal_entry_get_direction (MokoJournalEntry *a_entry,
-                                  enum MessageDirection *a_direction)
+                                  MessageDirection *a_direction)
 {
   g_return_val_if_fail (a_entry, FALSE) ;
   g_return_val_if_fail (a_direction, FALSE) ;
@@ -1812,7 +1812,7 @@ moko_journal_entry_get_direction (MokoJournalEntry *a_entry,
  *
  */
 void moko_journal_entry_set_direction (MokoJournalEntry *a_entry,
-                                       enum MessageDirection direction)
+                                       MessageDirection direction)
 {
   g_return_if_fail (a_entry) ;
 

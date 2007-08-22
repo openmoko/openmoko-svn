@@ -1,3 +1,23 @@
+2007-08-22  Holger Freyther  <zecke@selfish.org>
+
+        Rubberstamped by Mickey.
+
+        Change the hethat way.ader to help h2def.py find GObjects. Please keep
+        this that way.
+
+        Use a typedef for the enum's just like Gtk+ and Pango.
+
+        * mokojournal/moko-journal.c:
+        (entry_type_to_string):
+        (moko_journal_entry_type_is_valid):
+        (moko_journal_entry_to_icalcomponent):
+        (icalcomponent_to_entry):
+        (moko_journal_entry_new):
+        (moko_journal_entry_set_type):
+        (moko_journal_entry_get_direction):
+        (moko_journal_entry_set_direction):
+        * mokojournal/moko-journal.h:
+
 2007-08-13  Neil J. Patel  <njp@o-hand.com>
 
 	* Makefile.am:

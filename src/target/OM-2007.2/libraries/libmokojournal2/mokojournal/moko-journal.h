@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #ifndef __MOKO_JOURNAL_H__
-#define  __MOKO_JOURNAL_H__
+#define __MOKO_JOURNAL_H__
 
 #include <glib.h>
 #include <glib-object.h>
@@ -66,7 +66,7 @@ struct _MokoJournalClass
  * this represents the primary type of
  * a journal entry.
  */
-enum MokoJournalEntryType {
+typedef enum {
   UNDEF_ENTRY=0,
   EMAIL_JOURNAL_ENTRY,
   /*sms calls*/
@@ -78,12 +78,12 @@ enum MokoJournalEntryType {
   /*data calls (like modems)*/
   DATA_JOURNAL_ENTRY,
   NB_OF_ENTRY_TYPES /*must always be the last*/
-} ;
+} MokoJournalEntryType ;
 
-enum MessageDirection {
+typedef enum {
   DIRECTION_IN=0,
   DIRECTION_OUT
-};
+} MessageDirection ;
 
 typedef struct
 {
@@ -221,7 +221,7 @@ gboolean moko_journal_load_from_storage (MokoJournal *journal) ;
  *
  * Return value: the newly created journal entry object
  */
-MokoJournalEntry* moko_journal_entry_new (enum MokoJournalEntryType type) ;
+MokoJournalEntry* moko_journal_entry_new (MokoJournalEntryType type) ;
 
 /**
  * moko_journal_entry_get_entry_type:
@@ -231,7 +231,7 @@ MokoJournalEntry* moko_journal_entry_new (enum MokoJournalEntryType type) ;
  *
  * Return value: the type of the journal entry
  */
-enum MokoJournalEntryType moko_journal_entry_get_entry_type (MokoJournalEntry *entry);
+MokoJournalEntryType moko_journal_entry_get_entry_type (MokoJournalEntry *entry);
 
 /**
  * moko_journal_entry_set_type:
@@ -241,7 +241,7 @@ enum MokoJournalEntryType moko_journal_entry_get_entry_type (MokoJournalEntry *e
  * Set the type of the journal entry
  */
 void moko_journal_entry_set_type (MokoJournalEntry *entry,
-                                  enum MokoJournalEntryType type) ;
+                                  MokoJournalEntryType type) ;
 
 /**
  * moko_journal_entry_get_uid:
@@ -338,7 +338,7 @@ gboolean moko_journal_entry_set_start_location (MokoJournalEntry *entry,
  * Returns: TRUE in case of success, FALSE otherwise.
  */
 gboolean moko_journal_entry_get_direction (MokoJournalEntry *entry,
-                                           enum MessageDirection *direction) ;
+                                           MessageDirection *direction) ;
 
 /**
  * moko_journal_entry_set_direction:
@@ -349,7 +349,7 @@ gboolean moko_journal_entry_get_direction (MokoJournalEntry *entry,
  *
  */
 void moko_journal_entry_set_direction (MokoJournalEntry *entry,
-                                       enum MessageDirection direction) ;
+                                       MessageDirection direction) ;
 
 /**
  * moko_journal_entry_get_dtdstart:

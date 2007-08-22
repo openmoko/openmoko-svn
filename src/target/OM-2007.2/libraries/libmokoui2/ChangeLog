@@ -1,3 +1,12 @@
+2007-08-22  Holger Freyther  <zecke@selfish.org>
+
+        Rubberstamped by Mickey.
+
+        Change the hethat way.ader to help h2def.py find GObjects. Please keep
+        this that way.
+
+        * libmokoui/moko-finger-scroll.h:
+
 2007-08-15  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Add a hack to make sure we

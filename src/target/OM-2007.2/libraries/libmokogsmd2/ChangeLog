@@ -1,3 +1,12 @@
+2007-08-22  Holger Freyther  <zecke@selfish.org>
+
+        Rubberstamped by Mickey.
+
+        Change the hethat way.ader to help h2def.py find GObjects. Please keep
+        this that way.
+
+        * libmokogsmd/moko-gsmd-connection.h:
+
 2007-08-20  Daniel Willmann  <daniel@totalueberwachung.de>
 
 	* libmokogsmd/moko-gsmd-connection.c:

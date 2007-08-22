@@ -26,34 +26,22 @@
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_FINGER_SCROLL moko_finger_scroll_get_type()
+#define MOKO_FINGER_SCROLL(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_FINGER_SCROLL, MokoFingerScroll))
+#define MOKO_FINGER_SCROLL_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollClass))
+#define MOKO_IS_FINGER_SCROLL(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_FINGER_SCROLL))
+#define MOKO_IS_FINGER_SCROLL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_FINGER_SCROLL))
+#define MOKO_FINGER_SCROLL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollClass))
 
-#define MOKO_FINGER_SCROLL(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MOKO_TYPE_FINGER_SCROLL, MokoFingerScroll))
+typedef struct _MokoFingerScroll MokoFingerScroll;
+typedef struct _MokoFingerScrollClass MokoFingerScrollClass;
 
-#define MOKO_FINGER_SCROLL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollClass))
-
-#define MOKO_IS_FINGER_SCROLL(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MOKO_TYPE_FINGER_SCROLL))
-
-#define MOKO_IS_FINGER_SCROLL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MOKO_TYPE_FINGER_SCROLL))
-
-#define MOKO_FINGER_SCROLL_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollClass))
-
-typedef struct {
+struct _MokoFingerScroll {
   GtkEventBox parent;
-} MokoFingerScroll;
+};
 
-typedef struct {
+struct _MokoFingerScrollClass {
   GtkEventBoxClass parent_class;
-} MokoFingerScrollClass;
+};
 
 typedef enum {
 	MOKO_FINGER_SCROLL_MODE_PUSH,

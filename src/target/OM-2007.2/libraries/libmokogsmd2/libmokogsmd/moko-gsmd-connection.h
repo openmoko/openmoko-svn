@@ -23,29 +23,20 @@
 G_BEGIN_DECLS
 
 #define MOKO_TYPE_GSMD_CONNECTION moko_gsmd_connection_get_type()
-
-#define MOKO_GSMD_CONNECTION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-        MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnection))
-
-#define MOKO_GSMD_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), \
-        MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionClass))
-
-#define MOKO_IS_GSMD_CONNECTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-        MOKO_TYPE_GSMD_CONNECTION))
-
-#define MOKO_IS_GSMD_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),\
-        MOKO_TYPE_GSMD_CONNECTION))
-
+#define MOKO_GSMD_CONNECTION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnection))
+#define MOKO_GSMD_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionClass))
+#define MOKO_IS_GSMD_CONNECTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_GSMD_CONNECTION))
+#define MOKO_IS_GSMD_CONNECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_GSMD_CONNECTION))
 #define MOKO_GSMD_CONNECTION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionClass))
 
-typedef struct 
-{
+typedef struct _MokoGsmdConnection MokoGsmdConnection;
+typedef struct _MokoGsmdConnectionClass MokoGsmdConnectionClass;
+
+struct _MokoGsmdConnection {
     GObject parent;
+};
 
-} MokoGsmdConnection;
-
-typedef struct 
-{
+struct _MokoGsmdConnectionClass {
     GObjectClass parent_class;
 
     /* Voice signals */
@@ -72,9 +63,9 @@ typedef struct
     void (*_moko_gsmdconn_3) (void);
     void (*_moko_gsmdconn_4) (void);
 
-} MokoGsmdConnectionClass;
+};
 
-enum 
+typedef enum 
 {
     MOKO_GSMD_CONNECTION_NETREG_NONE = 0,
     MOKO_GSMD_CONNECTION_NETREG_HOME = 1,
@@ -85,7 +76,7 @@ enum
 } MokoGsmdConnectionNetregType;
 
 
-enum 
+typedef enum 
 {
   MOKO_GSMD_PROG_SETUP = 0,
   MOKO_GSMD_PROG_DISCONNECT = 1,
