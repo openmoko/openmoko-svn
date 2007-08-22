@@ -450,7 +450,7 @@ on_network_registered (MokoGsmdConnection *conn,
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
       g_print ("NetReg: Network registered\n");
-      g_print("\tLocationAreaCode = %x\n\tCellID = %x", lac, cell);
+      g_print("\tLocationAreaCode = %x\n\tCellID = %x\n", lac, cell);
       g_source_remove (priv->reg_timeout);
       priv->registered = TRUE;
       break;

@@ -1,5 +1,10 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_network_registered):
+	Correctly format output.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_talking_silence), (moko_dialer_init):
 	* src/moko-talking.c: (on_silence_clicked),
 	(moko_talking_class_init), (moko_talking_init):
