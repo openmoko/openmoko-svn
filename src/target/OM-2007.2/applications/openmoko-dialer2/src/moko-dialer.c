@@ -316,6 +316,9 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   
   if (priv->status != DIALER_STATUS_INCOMING)
     return;
+
+  moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
+  moko_gsmd_connection_voice_accept (priv->connection);
   
   priv->status = DIALER_STATUS_TALKING;
 
@@ -332,9 +335,6 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
     priv->time = NULL;
   }  
   
-  moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
-  moko_gsmd_connection_voice_accept (priv->connection);
-
   g_signal_emit (G_OBJECT (dialer), dialer_signals[TALKING], 0);
 }
 
