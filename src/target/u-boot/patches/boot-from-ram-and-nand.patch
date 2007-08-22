@@ -51,7 +51,7 @@ Index: u-boot/cpu/arm920t/start.S
 +relocate:				/* relocate U-Boot to RAM	    */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
  	cmp     r0, r1                  /* don't reloc during debug         */
- 	beq     stack_setup
+ 	beq     done_relocate
 @@ -273,10 +281,13 @@
  	ldr	pc, _done_relocate	/* jump to relocated code */
  _done_relocate:

@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2075,6 +2075,9 @@
+@@ -2189,6 +2189,9 @@
  qt2410_config	:	unconfig
  	@./mkconfig $(@:_config=) arm arm920t qt2410 NULL s3c24x0
  

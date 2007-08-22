@@ -4,9 +4,9 @@ Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: u-boot/cpu/arm920t/start.S
 ===================================================================
---- u-boot.orig/cpu/arm920t/start.S	2007-02-28 03:51:24.000000000 +0100
-+++ u-boot/cpu/arm920t/start.S	2007-03-01 02:43:47.000000000 +0100
-@@ -158,18 +158,68 @@
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -223,18 +223,68 @@
  	str	r1, [r0]
  # endif
  
@@ -75,9 +75,9 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
 -#endif
  
- #ifndef CONFIG_SKIP_RELOCATE_UBOOT
- 	adr	r0, _start		/* r0 <- current position of code   */
-@@ -202,9 +252,33 @@
+ #ifdef	CONFIG_AT91RM9200
+ #ifdef CONFIG_BOOTBINFUNC
+@@ -292,9 +342,33 @@
  
  #ifdef CONFIG_S3C2410_NAND_BOOT
  nand_load:

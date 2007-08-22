@@ -13,7 +13,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -100,7 +100,7 @@ static inline int str2long(char *p, ulon
+@@ -92,7 +92,7 @@
  	return (*p != '\0' && *endptr == '\0') ? 1 : 0;
  }
  
@@ -72,7 +72,7 @@ Index: u-boot/common/cmd_dynenv.c
  #include <asm/errno.h>
  
  #if defined(CFG_ENV_OFFSET_OOB)
-@@ -39,8 +40,8 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -39,8 +40,8 @@
  	if (!buf)
  		return -ENOMEM;
  
@@ -82,7 +82,7 @@ Index: u-boot/common/cmd_dynenv.c
  
  		if (buf[0] == 'E' && buf[1] == 'N' &&
  		    buf[2] == 'V' && buf[3] == '0')
-@@ -49,7 +50,8 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -49,7 +50,8 @@
  			printf("No dynamic environment marker in OOB block 0\n");
  
  	} else if (!strcmp(cmd, "set")) {
@@ -92,7 +92,7 @@ Index: u-boot/common/cmd_dynenv.c
  		if (argc < 3)
  			goto usage;
  
-@@ -57,7 +59,23 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -57,7 +59,23 @@
  		buf[1] = 'N';
  		buf[2] = 'V';
  		buf[3] = '0';
@@ -117,7 +117,7 @@ Index: u-boot/common/cmd_dynenv.c
  		memcpy(buf+4, &addr, 4);
  
  		printf("%02x %02x %02x %02x - %02x %02x %02x %02x\n",
-@@ -65,6 +83,8 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -65,6 +83,8 @@
  			buf[4], buf[5], buf[6], buf[7]);
  
  		ret = mtd->write_oob(mtd, 8, size, (size_t *) &size, (u_char *) buf);
@@ -126,7 +126,7 @@ Index: u-boot/common/cmd_dynenv.c
  	} else
  		goto usage;
  
-@@ -72,8 +92,9 @@ int do_dynenv(cmd_tbl_t *cmdtp, int flag
+@@ -72,8 +92,9 @@
  	return ret;
  
  usage:

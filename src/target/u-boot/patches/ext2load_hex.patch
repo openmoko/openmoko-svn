@@ -2,11 +2,11 @@ This patch adds the hex-printing of the file size read by 'ext2load'
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot.git/common/cmd_ext2.c
+Index: u-boot/common/cmd_ext2.c
 ===================================================================
---- u-boot.git.orig/common/cmd_ext2.c	2007-01-02 18:26:17.000000000 +0100
-+++ u-boot.git/common/cmd_ext2.c	2007-01-02 18:26:27.000000000 +0100
-@@ -279,7 +279,7 @@
+--- u-boot.orig/common/cmd_ext2.c
++++ u-boot/common/cmd_ext2.c
+@@ -245,7 +245,7 @@
  	/* Loading ok, update default load address */
  	load_addr = addr;
  

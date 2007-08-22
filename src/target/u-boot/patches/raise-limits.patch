@@ -10,7 +10,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -54,7 +54,8 @@
+@@ -51,7 +51,8 @@
  /*
   * Size of malloc() pool
   */
@@ -20,7 +20,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CFG_GBL_DATA_SIZE	128	/* size in bytes reserved for initial data */
  
  /*
-@@ -142,7 +143,7 @@
+@@ -129,7 +130,7 @@
  #endif
  #define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
  #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */

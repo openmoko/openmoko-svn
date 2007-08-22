@@ -10,7 +10,7 @@ Index: u-boot/common/env_common.c
 ===================================================================
 --- u-boot.orig/common/env_common.c
 +++ u-boot/common/env_common.c
-@@ -202,6 +202,25 @@ uchar *env_get_addr (int index)
+@@ -195,6 +195,25 @@
  	}
  }
  
@@ -36,7 +36,7 @@ Index: u-boot/common/env_common.c
  void env_relocate (void)
  {
  	DEBUGF ("%s[%d] offset = 0x%lx\n", __FUNCTION__,__LINE__,
-@@ -245,23 +264,8 @@ void env_relocate (void)
+@@ -238,23 +257,8 @@
  		gd->env_valid = 0;
  #endif
  
@@ -66,7 +66,7 @@ Index: u-boot/common/env_nand.c
 ===================================================================
 --- u-boot.orig/common/env_nand.c
 +++ u-boot/common/env_nand.c
-@@ -313,19 +313,7 @@ void env_relocate_spec (void)
+@@ -313,19 +313,7 @@
  static void use_default()
  {
  	puts ("*** Warning - bad CRC or NAND, using default environment\n\n");
@@ -91,7 +91,7 @@ Index: u-boot/include/environment.h
 ===================================================================
 --- u-boot.orig/include/environment.h
 +++ u-boot/include/environment.h
-@@ -107,4 +107,7 @@ typedef	struct environment_s {
+@@ -107,4 +107,7 @@
  	unsigned char	data[ENV_SIZE]; /* Environment data		*/
  } env_t;
  

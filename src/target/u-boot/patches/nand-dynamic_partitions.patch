@@ -118,7 +118,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CONFIG_CMD_DIAG
  #define CONFIG_CMD_SAVES
  #define CONFIG_CMD_NAND
-@@ -202,13 +203,13 @@
+@@ -199,13 +200,13 @@
  #define CONFIG_FAT		1
  #define CONFIG_SUPPORT_VFAT
  
@@ -135,7 +135,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #endif
  
  /* ATAG configuration */
-@@ -248,4 +249,9 @@
+@@ -245,4 +246,9 @@
  #define CONFIG_DRIVER_PCF50606		1
  #define CONFIG_RTC_PCF50606		1
  
@@ -343,7 +343,7 @@ Index: u-boot/include/configs/qt2410.h
 ===================================================================
 --- u-boot.orig/include/configs/qt2410.h
 +++ u-boot/include/configs/qt2410.h
-@@ -278,5 +278,7 @@
+@@ -275,5 +275,7 @@
  
  #define MTDIDS_DEFAULT		"nand0=qt2410-nand"
  #define MTPARTS_DEFAULT		"qt2410-nand:192k(u-boot),8k(u-boot_env),2M(kernel),2M(splash),-(jffs2)"

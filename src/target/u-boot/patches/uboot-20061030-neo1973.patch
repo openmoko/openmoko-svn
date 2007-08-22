@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2056,6 +2056,14 @@
+@@ -2172,6 +2172,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -48,8 +48,8 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -50,6 +50,7 @@
- 	  usbdcore.o usbdcore_ep0.o usbdcore_omap1510.o usbtty.o \
+@@ -52,6 +52,7 @@
+ 	  usbtty.o \
  	  videomodes.o w83c553f.o \
  	  ks8695eth.o \
 +	  pcf50606.o \

@@ -17,7 +17,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -77,6 +77,14 @@ _fiq:			.word fiq
+@@ -79,6 +79,14 @@
   *************************************************************************
   */
  
@@ -36,7 +36,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -207,6 +207,7 @@
+@@ -198,6 +198,7 @@
  #define	CFG_ENV_IS_IN_NAND	1
  #define CFG_ENV_SIZE		0x4000		/* 16k Total Size of Environment Sector */
  #define CFG_ENV_OFFSET_OOB    1               /* Location of ENV stored in block 0 OOB */
@@ -48,7 +48,7 @@ Index: u-boot/common/main.c
 ===================================================================
 --- u-boot.orig/common/main.c
 +++ u-boot/common/main.c
-@@ -85,6 +85,11 @@ int do_mdm_init = 0;
+@@ -91,6 +91,11 @@
  extern void mdm_init(void); /* defined in board.c */
  #endif
  
@@ -60,7 +60,7 @@ Index: u-boot/common/main.c
  /***************************************************************************
   * Watch for 'delay' seconds for autoboot stop or autoboot delay string.
   * returns: 0 -  no key string, allow autoboot
-@@ -306,8 +311,8 @@ void main_loop (void)
+@@ -284,8 +289,8 @@
  	char *s;
  	int bootdelay;
  #endif
@@ -71,7 +71,7 @@ Index: u-boot/common/main.c
  #endif
  #ifdef CONFIG_BOOTCOUNT_LIMIT
  	unsigned long bootcount = 0;
-@@ -364,8 +369,23 @@ void main_loop (void)
+@@ -342,8 +347,23 @@
  	install_auto_complete();
  #endif
  
@@ -96,7 +96,7 @@ Index: u-boot/common/main.c
  # ifdef CONFIG_AUTOBOOT_KEYED
  		int prev = disable_ctrlc(1);	/* disable Control C checking */
  # endif
-@@ -381,7 +401,7 @@ void main_loop (void)
+@@ -359,7 +379,7 @@
  		disable_ctrlc(prev);	/* restore Control C checking */
  # endif
  	}
@@ -109,9 +109,9 @@ Index: u-boot/common/env_common.c
 ===================================================================
 --- u-boot.orig/common/env_common.c
 +++ u-boot/common/env_common.c
-@@ -37,6 +37,10 @@
- # define SHOW_BOOT_PROGRESS(arg)
- #endif
+@@ -30,6 +30,10 @@
+ #include <linux/stddef.h>
+ #include <malloc.h>
  
 +#ifdef CFG_PREBOOT_OVERRIDE
 +extern char *preboot_override;
@@ -120,9 +120,9 @@ Index: u-boot/common/env_common.c
  DECLARE_GLOBAL_DATA_PTR;
  
  #ifdef CONFIG_AMIGAONEG3SE
-@@ -234,7 +238,14 @@ void env_relocate (void)
+@@ -227,7 +231,14 @@
  		puts ("*** Warning - bad CRC, using default environment\n\n");
- 		SHOW_BOOT_PROGRESS (-1);
+ 		show_boot_progress (-60);
  #endif
 +	}
 +

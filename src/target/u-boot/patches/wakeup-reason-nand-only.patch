@@ -41,7 +41,7 @@ Index: u-boot/cpu/arm920t/start.S
 ===================================================================
 --- u-boot.orig/cpu/arm920t/start.S
 +++ u-boot/cpu/arm920t/start.S
-@@ -77,6 +77,14 @@
+@@ -79,6 +79,14 @@
   *************************************************************************
   */
  
@@ -56,7 +56,7 @@ Index: u-boot/cpu/arm920t/start.S
  _TEXT_BASE:
  	.word	TEXT_BASE
  
-@@ -281,6 +289,9 @@
+@@ -371,6 +379,9 @@
  #endif
  1:	b	1b
  done_nand_read:

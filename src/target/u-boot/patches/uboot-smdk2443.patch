@@ -2,7 +2,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2094,6 +2094,9 @@
+@@ -2208,6 +2208,9 @@
  smdk2440_config :	unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t smdk2440 NULL s3c24x0
  

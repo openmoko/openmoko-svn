@@ -10,7 +10,7 @@ Index: u-boot/drivers/cfb_console.c
 ===================================================================
 --- u-boot.orig/drivers/cfb_console.c
 +++ u-boot/drivers/cfb_console.c
-@@ -191,6 +191,7 @@ CONFIG_VIDEO_HW_CURSOR:	     - Uses the 
+@@ -191,6 +191,7 @@
  #if defined(CONFIG_CMD_BMP) || defined(CONFIG_SPLASH_SCREEN)
  #include <watchdog.h>
  #include <bmp_layout.h>
@@ -22,15 +22,15 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -86,6 +86,7 @@
- #define CONFIG_CMD_IRQ
+@@ -81,6 +81,7 @@
+ #define CONFIG_CMD_ENV
  #define CONFIG_CMD_BOOTD
  #define CONFIG_CMD_CONSOLE
 +#define CONFIG_CMD_BMP
  #define CONFIG_CMD_ASKENV
  #define CONFIG_CMD_RUN
  #define CONFIG_CMD_ECHO
-@@ -244,19 +245,21 @@
+@@ -237,19 +238,21 @@
  /* we have a board_late_init() function */
  #define BOARD_LATE_INIT			1
  
@@ -53,4 +53,4 @@ Index: u-boot/include/configs/neo1973_gta01.h
 -#endif
  
  #define CONFIG_S3C2410_NAND_BBT                1
- 
+ #define CONFIG_S3C2410_NAND_HWECC              1

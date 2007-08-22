@@ -7,7 +7,7 @@ Index: u-boot/common/cmd_mem.c
 ===================================================================
 --- u-boot.orig/common/cmd_mem.c
 +++ u-boot/common/cmd_mem.c
-@@ -1148,6 +1148,34 @@ int do_mem_crc (cmd_tbl_t *cmdtp, int fl
+@@ -1149,6 +1149,34 @@
  }
  #endif	/* CONFIG_CRC32_VERIFY */
  
@@ -42,7 +42,7 @@ Index: u-boot/common/cmd_mem.c
  /**************************************************/
  #if defined(CONFIG_CMD_MEMORY)
  U_BOOT_CMD(
-@@ -1251,5 +1279,13 @@ U_BOOT_CMD(
+@@ -1252,5 +1280,13 @@
  );
  #endif /* CONFIG_MX_CYCLIC */
  

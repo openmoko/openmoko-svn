@@ -1233,7 +1233,7 @@ Index: u-boot/drivers/usbtty.c
 ===================================================================
 --- u-boot.orig/drivers/usbtty.c
 +++ u-boot/drivers/usbtty.c
-@@ -30,6 +30,8 @@
+@@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
  #include "usbdescriptors.h"
@@ -1242,7 +1242,7 @@ Index: u-boot/drivers/usbtty.c
  #include <config.h>		/* If defined, override Linux identifiers with
  			   	 * vendor specific ones */
  
-@@ -105,7 +107,7 @@
+@@ -106,7 +108,7 @@
  static unsigned short rx_endpoint = 0;
  static unsigned short tx_endpoint = 0;
  static unsigned short interface_count = 0;
@@ -1251,7 +1251,7 @@ Index: u-boot/drivers/usbtty.c
  
  /* USB Descriptor Strings */
  static u8 wstrLang[4] = {4,USB_DT_STRING,0x9,0x4};
-@@ -156,6 +158,10 @@
+@@ -157,6 +159,10 @@
  	struct usb_interface_descriptor data_class_interface;
  	struct usb_endpoint_descriptor
  		data_endpoints[NUM_ENDPOINTS-1] __attribute__((packed));
@@ -1262,7 +1262,7 @@ Index: u-boot/drivers/usbtty.c
  } __attribute__((packed));
  
  static struct acm_config_desc acm_configuration_descriptors[NUM_CONFIGS] = {
-@@ -166,7 +172,11 @@
+@@ -167,7 +173,11 @@
      			.bDescriptorType = USB_DT_CONFIG,
  			.wTotalLength =
  				cpu_to_le16(sizeof(struct acm_config_desc)),
@@ -1274,7 +1274,7 @@ Index: u-boot/drivers/usbtty.c
      			.bConfigurationValue = 1,
  			.iConfiguration = STR_CONFIG,
  			.bmAttributes =
-@@ -265,6 +275,11 @@
+@@ -266,6 +276,11 @@
  				.bInterval		= 0xFF,
  			},
  		},
@@ -1286,7 +1286,7 @@ Index: u-boot/drivers/usbtty.c
  	},
  };
  
-@@ -377,7 +392,7 @@
+@@ -378,7 +393,7 @@
  void usbtty_poll (void);
  
  /* utility function for converting char* to wide string used by USB */
@@ -1295,7 +1295,7 @@ Index: u-boot/drivers/usbtty.c
  {
  	int i;
  	for (i = 0; i < strlen (str) && str[i]; i++){
-@@ -647,6 +662,9 @@
+@@ -648,6 +663,9 @@
  	device_instance->bus = bus_instance;
  	device_instance->configurations = NUM_CONFIGS;
  	device_instance->configuration_instance_array = config_instance;
@@ -1582,7 +1582,7 @@ Index: u-boot/drivers/usbtty.h
 ===================================================================
 --- u-boot.orig/drivers/usbtty.h
 +++ u-boot/drivers/usbtty.h
-@@ -69,4 +69,10 @@
+@@ -70,4 +70,10 @@
  #define STR_CTRL_INTERFACE	0x06
  #define STR_COUNT		0x07
  
@@ -1994,7 +1994,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -262,6 +262,12 @@
+@@ -267,6 +267,12 @@
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
  
