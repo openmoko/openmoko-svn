@@ -77,13 +77,13 @@ moko_notify_check_brightness (void)
     return;
   }
   
+  /* The reading is for a 'smooth' brightness from current to max */
   dev = g_io_channel_unix_new (fd);
-
   if (g_io_channel_read_chars (dev, buf, 50, &bytes, &err) 
         == G_IO_STATUS_NORMAL)
   {
     buf[bytes] = '\0';
-    g_print ("%s\n", buf);
+    /*g_print ("Current brightness = %s\n", buf); */
   }
   else
   {

@@ -119,10 +119,8 @@ moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number)
   cur = priv->start;
 
   if (!cur)
-  {
-    g_print ("Invalid contacts data start point\n");
     return NULL;
-  }
+  
   if (!number)
     return NULL;
 
