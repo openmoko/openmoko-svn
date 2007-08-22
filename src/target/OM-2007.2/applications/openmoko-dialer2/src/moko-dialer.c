@@ -251,7 +251,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
     moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
     moko_journal_voice_info_set_distant_number (priv->entry, number);
-    if (entry)
+    if (entry && entry->contact->uid)
       moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
     moko_journal_add_entry (priv->journal, priv->entry);
     moko_journal_write_to_storage (priv->journal);

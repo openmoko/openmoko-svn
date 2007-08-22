@@ -1,5 +1,10 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked):
+	Check  uid is valid before adding to the journal object.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-dialer.c: (on_call_progress_changed):
 	* src/moko-history.c: (history_add_entry):
 	Update for new Journal types.
