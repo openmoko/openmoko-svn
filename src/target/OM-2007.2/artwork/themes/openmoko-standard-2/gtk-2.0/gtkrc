@@ -13,7 +13,7 @@ style "moko-window-default" {
 
     base[NORMAL]      = "#e5e5e5" #
     base[PRELIGHT]    = "#ff7800" #
-    base[ACTIVE]      = "#e5e5e5" #
+    base[ACTIVE]      = "#ff7800" #
     base[SELECTED]    = "#ff7800" #
     base[INSENSITIVE] = "#e5e5e5" #
 
@@ -25,7 +25,7 @@ style "moko-window-default" {
 
     text[NORMAL]      = "#000000" # mid grey
     text[PRELIGHT]    = "#999999" # white
-    text[ACTIVE]      = "#000000" # light grey
+    text[ACTIVE]      = "#ffffff" # light grey
     text[SELECTED]    = "#ffffff" # white
     text[INSENSITIVE] = "#cccccc" # dark grey
 
