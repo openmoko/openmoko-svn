@@ -1,5 +1,14 @@
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_talking_silence), (moko_dialer_init):
+	* src/moko-talking.c: (on_silence_clicked),
+	(moko_talking_class_init), (moko_talking_init):
+	* src/moko-talking.h:
+	Add 'silence/ignore' capability to incoming calls i.e. stop the ringing and
+	vibration, but don't hangup.
+
+2007-08-22  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-contacts.c: (moko_contacts_fuzzy_lookup):
 	* src/moko-notify.c: (moko_notify_check_brightness):
 	Remove some unnecessary printf's.

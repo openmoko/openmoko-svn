@@ -56,6 +56,7 @@ enum
   ACCEPT_CALL = 0,
   REJECT_CALL,
   CANCEL_CALL,
+  SILENCE,
   SPEAKER_TOGGLE,
 
   LAST_SIGNAL
@@ -265,6 +266,13 @@ on_reject_clicked (GtkToolButton *button, MokoTalking *talking)
 }
 
 static void
+on_silence_clicked (GtkToolButton *button, MokoTalking *talking)
+{
+  g_source_remove (talking->priv->timeout);
+  g_signal_emit (G_OBJECT (talking), talking_signals[SILENCE], 0);
+}
+
+static void
 on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
 {
   g_source_remove (talking->priv->timeout);
@@ -327,6 +335,14 @@ moko_talking_class_init (MokoTalkingClass *klass)
                   NULL, NULL,
                   g_cclosure_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
+   talking_signals[SILENCE] =
+    g_signal_new ("silence", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoTalkingClass,  silence),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 
    talking_signals[SPEAKER_TOGGLE] =
     g_signal_new ("speaker_toggle", 
@@ -366,6 +382,18 @@ moko_talking_init (MokoTalking *talking)
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
   
+  image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PAUSE, 
+                                    GTK_ICON_SIZE_LARGE_TOOLBAR);
+  item = gtk_tool_button_new (image, "Reject");
+  gtk_widget_show_all (GTK_WIDGET (item)); 
+  gtk_tool_item_set_expand (item, TRUE);
+  g_signal_connect (G_OBJECT (item), "clicked", 
+                    G_CALLBACK (on_silence_clicked), (gpointer)talking);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
+
+
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
+  
   icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
   image = gtk_image_new_from_pixbuf (icon);
   item = gtk_tool_button_new (image, "Reject");
@@ -373,8 +401,7 @@ moko_talking_init (MokoTalking *talking)
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (G_OBJECT (item), "clicked", 
                     G_CALLBACK (on_reject_clicked), (gpointer)talking);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
-
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
     
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();

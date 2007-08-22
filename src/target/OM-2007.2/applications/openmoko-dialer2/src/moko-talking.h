@@ -65,6 +65,7 @@ struct _MokoTalkingClass
   void (*accept_call) (MokoTalking *talking);
   void (*reject_call) (MokoTalking *talking);
   void (*cancel_call) (MokoTalking *talking);
+  void (*silence) (MokoTalking *talking);
   void (*speaker_toggle) (MokoTalking *talking, gboolean speaker_phone);
 }; 
 

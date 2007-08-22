@@ -384,6 +384,19 @@ on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
 }
 
 static void
+on_talking_silence (MokoTalking *talking, MokoDialer *dialer)
+{
+  MokoDialerPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_DIALER (dialer));
+  priv = dialer->priv;
+
+  priv->status = DIALER_STATUS_NORMAL;
+
+  moko_notify_stop (priv->notify);
+}
+
+static void
 on_talking_speaker_toggle (MokoTalking *talking, 
                            gboolean     speaker_phone,
                            MokoDialer  *dialer)
@@ -810,6 +823,8 @@ moko_dialer_init (MokoDialer *dialer)
                     G_CALLBACK (on_talking_reject_call), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->talking), "cancel_call",
                     G_CALLBACK (on_talking_cancel_call), (gpointer)dialer);
+  g_signal_connect (G_OBJECT (priv->talking), "silence",
+                    G_CALLBACK (on_talking_silence), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->talking), "speaker_toggle",
                     G_CALLBACK (on_talking_speaker_toggle), (gpointer)dialer);
 
