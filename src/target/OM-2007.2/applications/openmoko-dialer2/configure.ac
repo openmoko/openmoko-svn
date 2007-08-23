@@ -18,7 +18,7 @@ PKG_CHECK_MODULES(DIALER,
                   libmokojournal2
                   libmokogsmd2 
                   libmokoui2
-                  gstreamer-0.10)
+                  libpulse)
 
 old_cflags=$CFLAGS
 CFLAGS=$DIALER_CFLAGS

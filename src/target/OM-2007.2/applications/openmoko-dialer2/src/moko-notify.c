@@ -29,7 +29,7 @@
 
 #include "moko-notify.h"
 
-#include <gst/gst.h>
+#include <pulse/pulseaudio.h>
 
 G_DEFINE_TYPE (MokoNotify, moko_notify, G_TYPE_OBJECT)
 
@@ -44,7 +44,8 @@ struct _MokoNotifyPrivate
 {
   gboolean    started;
 
-  GstElement *bin;
+  /* Sound stuff */
+  pa_context *pac;
 };
 /*
 enum
@@ -56,7 +57,7 @@ enum
 
 static guint notify_signals[LAST_SIGNAL] = {0, };
 */
-
+static void moko_notify_start_ringtone (MokoNotify *notify);
 
 /*
  * Check the current screen brightness, raise it if necessary 
@@ -101,68 +102,46 @@ moko_notify_check_brightness (void)
   close (fd);
 }
 
+static gboolean
+play_timeout (MokoNotify *notify)
+{
+  moko_notify_start_ringtone (notify);
+  return FALSE;
+}
+
 static void
-on_bus_eos (GstBus *bus, GstMessage *message, MokoNotify *notify)
+on_sound_finished (pa_context *pa, gint success, MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
   
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
-  g_return_if_fail (GST_IS_ELEMENT (notify->priv->bin));
   priv = notify->priv;
 
-  g_print (".");
-  /* Rewind and play again */
-  gst_element_set_state (priv->bin, GST_STATE_PAUSED);
-
-  /* Seek to 0 */
-  if (!gst_element_seek_simple (priv->bin, GST_FORMAT_TIME, 0, 0))
-    g_error ("Seek error\n");
-  return ;
-
-  gst_element_set_state (priv->bin, GST_STATE_PLAYING);
- 
-  g_print ("Audio finished\n");
- }
+  if (!priv->pac)
+    return;
+  
+  if (priv->started)
+    g_timeout_add (1000, (GSourceFunc)play_timeout, (gpointer)notify);
+}
 
 static void
 moko_notify_start_ringtone (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
-  GstElement *bin;
-  gchar *pipeline;
-  GError *err = NULL;
-
+  
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
-  
-  /* Create the pipeline */
-  pipeline = g_strdup_printf (
-    "filesrc location=%s ! decodebin ! audioconvert !audioresample ! alsasink",
-    PKGDATADIR DEFAULT_RINGTONE);
-  g_print ("%s\n", PKGDATADIR DEFAULT_RINGTONE);
-  
-  /* Try and gstreamer to parse it */
-  bin = gst_parse_launch (pipeline, &err);
-  if (err)
-  {
-    g_error ("err->message");
-    priv->bin = NULL;
-    g_free (pipeline);
+
+  if (!priv->pac)
     return;
-  }
-  priv->bin = bin;
 
-  g_signal_connect (gst_element_get_bus (bin), "message::eos",
-                    G_CALLBACK (on_bus_eos), (gpointer)notify);
+  pa_context_play_sample (priv->pac,
+                          "x11-bell",
+                          NULL,
+                          PA_VOLUME_NORM,
+                          (gpointer)on_sound_finished,
+                          (gpointer)notify);
 
-  /* Connect to eos signal to repeat the ringtone 
-  gst_bus_add_watch (gst_element_get_bus (bin), 
-                     (GstBusFunc)on_bus_message, (gpointer)notify);
-  */
-  /* Start playing */
-  gst_element_set_state (bin, GST_STATE_PLAYING);
-
-  g_free (pipeline);
 }
 
 static void
@@ -172,11 +151,6 @@ moko_notify_stop_ringtone (MokoNotify *notify)
 
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
-
-  if  (GST_IS_ELEMENT (priv->bin))
-  {
-    gst_element_set_state (priv->bin, GST_STATE_NULL);
-  }
 }
 
 static void
@@ -258,7 +232,7 @@ moko_notify_start (MokoNotify *notify)
 
   moko_notify_check_brightness ();
   moko_notify_start_vibrate ();
-  //moko_notify_start_ringtone (notify);
+  moko_notify_start_ringtone (notify);
 }
 
 /* Stop the ringtone and the vibration alert */
@@ -275,7 +249,7 @@ moko_notify_stop (MokoNotify *notify)
   priv->started = FALSE;
  
   moko_notify_stop_vibrate ();
-  //moko_notify_stop_ringtone (notify);
+  moko_notify_stop_ringtone (notify);
 }
 
 /* GObject functions */
@@ -306,10 +280,30 @@ static void
 moko_notify_init (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
+  pa_threaded_mainloop *mainloop = NULL;
+  pa_mainloop_api *mapi = NULL;
   
   priv = notify->priv = MOKO_NOTIFY_GET_PRIVATE (notify);
 
   priv->started = FALSE;
+  priv->pac = NULL;
+
+  /* Start up pulse audio */
+  mainloop = pa_threaded_mainloop_new ();
+  if (!mainloop)
+  {
+    g_warning ("Unable to create PulseAudio mainloop.");
+    return;
+  }
+  mapi = pa_threaded_mainloop_get_api (mainloop);
+  priv->pac = pa_context_new (mapi, "Openmoko Dialer");
+  if (!priv->pac)
+  {
+    g_warning ("Could create the PulseAudio context");
+    return;
+  }
+  pa_context_connect (priv->pac, NULL, 0, NULL);
+  pa_threaded_mainloop_start (mainloop);
 }
 
 MokoNotify*
@@ -321,3 +315,4 @@ moko_notify_new (void)
 
   return notify;
 }
+

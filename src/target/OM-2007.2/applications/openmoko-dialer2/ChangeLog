@@ -1,3 +1,13 @@
+2007-08-23  Neil J. Patel  <njp@o-hand.com>
+
+	* configure.ac:
+	* src/dialer-main.c: (main):
+	* src/moko-notify.c: (play_timeout), (on_sound_finished),
+	(moko_notify_start_ringtone), (moko_notify_stop_ringtone),
+	(moko_notify_start), (moko_notify_stop), (moko_notify_init):
+	Switch ringtone backend to a simple PulseAudio set-up, as the gstreamer
+	backend was causing lock-ups and messed up the timing of functions.
+
 2007-08-22  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_keypad_dial_clicked):
