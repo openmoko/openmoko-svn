@@ -301,6 +301,10 @@ static int gsmd_initialize(struct gsmd *g)
 {
 	INIT_LLIST_HEAD(&g->users);
 
+	g->mlbuf = talloc_array(gsmd_tallocs, unsigned char, MLPARSE_BUF_SIZE);
+	if (!g->mlbuf)
+		return -ENOMEM;
+
 	return 0;
 }
 

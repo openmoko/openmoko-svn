@@ -370,8 +370,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	if (g->mlbuf_len)
 		g->mlbuf[g->mlbuf_len ++] = '\n';
 	DEBUGP("Appending buf to mlbuf\n");
-	if (len > sizeof(g->mlbuf) - g->mlbuf_len)
-		len = sizeof(g->mlbuf) - g->mlbuf_len;
+	if (len > MLPARSE_BUF_SIZE - g->mlbuf_len)
+		len = MLPARSE_BUF_SIZE - g->mlbuf_len;
 	memcpy(g->mlbuf + g->mlbuf_len, buf, len);
 	g->mlbuf_len += len;
 
@@ -470,7 +470,7 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 			if (cr)
 				len = cr - pos->cur;
 			else
-				len = pos->buflen;
+				len = pos->buflen - 1;  /* assuming zero-terminated strings */
 			rc = write(fd, pos->cur, len);
 			if (rc == 0) {
 				gsmd_log(GSMD_ERROR, "write returns 0, aborting\n");
@@ -480,8 +480,8 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 					fd, rc);
 				return rc;
 			}
-			if (cr && rc == len)
-				rc ++;	/* Skip the \n */
+			if (!cr || rc == len)
+				rc ++;	/* Skip the \n or \0 */
 			pos->buflen -= rc;
 			pos->cur += rc;
 			write(fd, "\r", 1);
