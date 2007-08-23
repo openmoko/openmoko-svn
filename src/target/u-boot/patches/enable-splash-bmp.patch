@@ -43,7 +43,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 +#define CFG_VIDEO_LOGO_MAX_SIZE	(640*480+1024+100) /* 100 = slack */
 +#define CONFIG_VIDEO_BMP_GZIP
  #define CONFIG_VGA_AS_SINGLE_DEVICE
-+#define CONFIG_UNZIP
++#define CONFIG_CMD_UNZIP
  
  #define VIDEO_KBD_INIT_FCT	0
  #define VIDEO_TSTC_FCT		serial_tstc
