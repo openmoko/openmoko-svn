@@ -721,7 +721,7 @@ Index: u-boot/drivers/usbdfu.c
 +		.wTotalLength		= USB_DT_CONFIG_SIZE +
 +					  DFU_NUM_ALTERNATES * USB_DT_INTERFACE_SIZE +
 +					  USB_DT_DFU_SIZE,
-+		.bNumInterfaces		= 5,
++		.bNumInterfaces		= 1,
 +		.bConfigurationValue	= 1,
 +		.iConfiguration		= DFU_STR_CONFIG,
 +		.bmAttributes		= BMATTRIBUTE_RESERVED,
