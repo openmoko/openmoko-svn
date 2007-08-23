@@ -1,0 +1,47 @@
+Introduce a platform_device (machine) specific callback function
+which gets called when the amount of power we can draw from Vbus
+has changed.
+
+Index: linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
+===================================================================
+--- linux-2.6.21-moko.orig/drivers/usb/gadget/s3c2410_udc.c
++++ linux-2.6.21-moko/drivers/usb/gadget/s3c2410_udc.c
+@@ -1404,12 +1404,25 @@
+ 	return IRQ_HANDLED;
+ }
+ 
++static int s3c2410_vbus_draw(struct usb_gadget *_gadget, unsigned int ma)
++{
++	struct s3c2410_udc  *udc;
++
++	dprintk(DEBUG_NORMAL, "s3c2410_vbus_draw()\n");
++
++	if (udc_info && udc_info->vbus_draw)
++		return udc_info->vbus_draw(ma);
++	else
++		return 0;
++}
++
+ static const struct usb_gadget_ops s3c2410_ops = {
+ 	.get_frame          = s3c2410_g_get_frame,
+ 	.wakeup             = s3c2410_wakeup,
+ 	.set_selfpowered    = s3c2410_set_selfpowered,
+         .pullup             = s3c2410_pullup,
+ 	.vbus_session	    = s3c2410_udc_vbus_session,
++	.vbus_draw	    = s3c2410_vbus_draw,
+ };
+ 
+ /*------------------------- gadget driver handling---------------------------*/
+Index: linux-2.6.21-moko/include/asm-arm/arch-s3c2410/udc.h
+===================================================================
+--- linux-2.6.21-moko.orig/include/asm-arm/arch-s3c2410/udc.h
++++ linux-2.6.21-moko/include/asm-arm/arch-s3c2410/udc.h
+@@ -26,7 +26,7 @@
+ 
+ struct s3c2410_udc_mach_info {
+ 	void	(*udc_command)(enum s3c2410_udc_cmd_e);
+- 	void	(*vbus_draw)(unsigned int ma);
++ 	int	(*vbus_draw)(unsigned int ma);
+ 	unsigned int vbus_pin;
+ 	unsigned char vbus_pin_inverted;
+ };

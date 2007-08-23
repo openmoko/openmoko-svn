@@ -1,0 +1,849 @@
+Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
+===================================================================
+--- /dev/null
++++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -0,0 +1,625 @@
++/*
++ * linux/arch/arm/mach-s3c2440/mach-gta02.c
++ *
++ * S3C2440 Machine Support for the FIC GTA02 (Neo1973)
++ *
++ * Copyright (C) 2006-2007 by OpenMoko, Inc.
++ * Author: Harald Welte <laforge@openmoko.org>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/interrupt.h>
++#include <linux/list.h>
++#include <linux/timer.h>
++#include <linux/init.h>
++#include <linux/workqueue.h>
++#include <linux/platform_device.h>
++#include <linux/serial_core.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/glamo.h>
++#include <linux/spi/spi_bitbang.h>
++#include <linux/mmc/protocol.h>
++#include <linux/mmc/host.h>
++
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/nand_ecc.h>
++#include <linux/mtd/partitions.h>
++
++#include <linux/pcf50633.h>
++
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++#include <asm/mach/irq.h>
++
++#include <asm/hardware.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/mach-types.h>
++
++#include <asm/arch/regs-serial.h>
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/regs-gpioj.h>
++#include <asm/arch/fb.h>
++#include <asm/arch/udc.h>
++#include <asm/arch/nand.h>
++#include <asm/arch/mci.h>
++#include <asm/arch/ts.h>
++#include <asm/arch/spi.h>
++#include <asm/arch/spi-gpio.h>
++#include <asm/arch/usb-control.h>
++
++#include <asm/arch/gta01.h>
++#include <asm/arch/gta02.h>
++
++#include <asm/plat-s3c24xx/devs.h>
++#include <asm/plat-s3c24xx/cpu.h>
++#include <asm/plat-s3c24xx/pm.h>
++
++#include <linux/glamofb.h>
++
++static struct map_desc gta02_iodesc[] __initdata = {
++	{
++		.virtual	= 0xe0000000,
++		.pfn		= __phys_to_pfn(S3C2410_CS3+0x01000000),
++		.length		= SZ_1M,
++		.type		= MT_DEVICE
++	},
++};
++
++#define UCON S3C2410_UCON_DEFAULT
++#define ULCON S3C2410_LCON_CS8 | S3C2410_LCON_PNONE | S3C2410_LCON_STOPB
++#define UFCON S3C2410_UFCON_RXTRIG8 | S3C2410_UFCON_FIFOMODE
++
++static struct s3c2410_uartcfg gta02_uartcfgs[] = {
++	[0] = {
++		.hwport	     = 0,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++	[1] = {
++		.hwport	     = 1,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++	[2] = {
++		.hwport	     = 2,
++		.flags	     = 0,
++		.ucon	     = UCON,
++		.ulcon	     = ULCON,
++		.ufcon	     = UFCON,
++	},
++
++};
++
++/* PMU driver info */
++
++static int pmu_callback(struct device *dev, unsigned int feature,
++			enum pmu_event event)
++{
++	switch (feature) {
++	case PCF50633_FEAT_MBC:
++		switch (event) {
++		case PMU_EVT_INSERT:
++		case PMU_EVT_USB_INSERT:
++			pcf50633_charge_fast(pcf50633_global, 1);
++			break;
++		case PMU_EVT_REMOVE:
++		case PMU_EVT_USB_REMOVE:
++			pcf50633_charge_fast(pcf50633_global, 0);
++			break;
++		default:
++			break;
++		}
++		break;
++	default:
++		break;
++	}
++
++	return 0;
++}
++
++static struct pcf50633_platform_data gta02_pcf_pdata = {
++	.used_features	= PCF50633_FEAT_MBC |
++			  PCF50633_FEAT_BBC |
++			  PCF50633_FEAT_RTC |
++			  PCF50633_FEAT_CHGCUR |
++			  PCF50633_FEAT_BATVOLT |
++			  PCF50633_FEAT_BATTEMP,
++	.onkey_seconds_required = 3,
++	.cb		= &pmu_callback,
++	.r_fix_batt	= 10000,
++	.r_fix_batt_par	= 10000,
++	.r_sense_milli	= 220,
++	.rails	= {
++		[PCF50633_REGULATOR_AUTO] = {
++			.name		= "io_3v3",
++			.flags		= PMU_VRAIL_F_SUSPEND_ON,
++			.voltage	= {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		},
++		[PCF50633_REGULATOR_DOWN1] = {
++			.name		= "core_1v3",
++			.voltage	= {
++				.init	= 1300,
++				.max	= 1600,
++			},
++		},
++		[PCF50633_REGULATOR_DOWN2] = {
++			.name		= "core_1v8",
++			.voltage	= {
++				.init	= 1800,
++				.max	= 1800,
++			},
++		},
++		[PCF50633_REGULATOR_HCLDO] = {
++			.name		= "sd_3v3",
++			.voltage	= {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		},
++		[PCF50633_REGULATOR_LDO1] = {
++			.name		= "stby_1v3",
++			.flags		= PMU_VRAIL_F_SUSPEND_ON,
++			.voltage	= {
++				.init	= 1300,
++				.max	= 1330,
++			},
++		},
++		[PCF50633_REGULATOR_LDO2] = {
++			.name		= "codec_3v3",
++			.voltage	= {
++				.init	= 3300,
++				.max	= 3300,
++			},
++		},
++		[PCF50633_REGULATOR_LDO3] = {
++			.name		= "lcm_3v",
++			.voltage	= {
++				.init	= 3000,
++				.max	= 3000,
++			},
++		},
++		[PCF50633_REGULATOR_LDO4] = {
++			.name		= "gl_2v5",
++			.voltage	= {
++				.init	= 2500,
++				.max	= 2500,
++			},
++		},
++		[PCF50633_REGULATOR_LDO5] = {
++			.name		= "gl_1v5",
++			.voltage	= {
++				.init	= 1500,
++				.max	= 1500,
++			},
++		},
++		[PCF50633_REGULATOR_LDO6] = {
++			.name		= "user1",
++			.voltage	= {
++				.init	= 0,
++				.max	= 3300,
++			},
++		},
++	},
++};
++
++static void cfg_pmu_vrail(struct pmu_voltage_rail *vrail, char *name,
++			  unsigned int flags, unsigned int init,
++			  unsigned int max)
++{
++	vrail->name = name;
++	vrail->flags = flags;
++	vrail->voltage.init = init;
++	vrail->voltage.max = max;
++}
++
++static void mangle_pmu_pdata_by_system_rev(void)
++{
++	switch (system_rev) {
++	case GTA02v1_SYSTEM_REV:
++		/* FIXME: this is only in v1 due to wrong PMU variant */
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_DOWN2].flags =
++							PMU_VRAIL_F_SUSPEND_ON;
++		break;
++	default:
++		break;
++	}
++}
++
++static struct resource gta02_pmu_resources[] = {
++	[0] = {
++		.flags	= IORESOURCE_IRQ,
++		.start	= GTA02_IRQ_PCF50633,
++		.end	= GTA02_IRQ_PCF50633,
++	},
++};
++
++struct platform_device gta02_pmu_dev = {
++	.name 		= "pcf50633",
++	.num_resources	= ARRAY_SIZE(gta02_pmu_resources),
++	.resource	= gta02_pmu_resources,
++	.dev		= {
++		.platform_data = &gta02_pcf_pdata,
++	},
++};
++
++static struct platform_device *gta02_devices[] __initdata = {
++	&s3c_device_usb,
++	&s3c_device_wdt,
++	&s3c_device_i2c,
++	&s3c_device_iis,
++	// &s3c_device_sdi, /* FIXME: temporary disable to avoid s3cmci bind */
++	&s3c_device_usbgadget,
++	&s3c_device_nand,
++	&s3c_device_ts,
++};
++
++static struct s3c24xx_board gta02_board __initdata = {
++	.devices       = gta02_devices,
++	.devices_count = ARRAY_SIZE(gta02_devices)
++};
++
++static struct s3c2410_nand_set gta02_nand_sets[] = {
++	[0] = {
++		.name		= "neo1973-nand",
++		.nr_chips	= 1,
++	},
++};
++
++/* choose a set of timings which should suit most 512Mbit
++ * chips and beyond.
++ */
++
++static struct s3c2410_platform_nand gta02_nand_info = {
++	.tacls		= 20,
++	.twrph0		= 60,
++	.twrph1		= 20,
++	.nr_sets	= ARRAY_SIZE(gta02_nand_sets),
++	.sets		= gta02_nand_sets,
++};
++
++static void gta02_mmc_set_power(unsigned char power_mode, unsigned short vdd)
++{
++	printk(KERN_DEBUG "mmc_set_power(power_mode=%u, vdd=%u\n",
++	       power_mode, vdd);
++
++	switch (system_rev) {
++	case GTA02v1_SYSTEM_REV:
++		/* FIXME */
++		break;
++	}
++}
++
++static struct s3c24xx_mci_pdata gta02_mmc_cfg = {
++	.gpio_detect	= GTA02_GPIO_nSD_DETECT,
++	.set_power	= &gta02_mmc_set_power,
++	.ocr_avail	= MMC_VDD_32_33,
++};
++
++static void gta02_udc_command(enum s3c2410_udc_cmd_e cmd)
++{
++	printk(KERN_DEBUG "%s(%d)\n", __func__, cmd);
++
++	switch (cmd) {
++	case S3C2410_UDC_P_ENABLE:
++		s3c2410_gpio_setpin(GTA02_GPIO_USB_PULLUP, 1);
++		break;
++	case S3C2410_UDC_P_DISABLE:
++		s3c2410_gpio_setpin(GTA02_GPIO_USB_PULLUP, 0);
++		break;
++	case S3C2410_UDC_P_RESET:
++		/* FIXME! */
++		break;
++	default:
++		break;
++	}
++}
++
++/* use a work queue, since I2C API inherently schedules
++ * and we get called in hardirq context from UDC driver */
++
++struct vbus_draw {
++	struct work_struct work;
++	int ma;
++};
++static struct vbus_draw gta02_udc_vbus_drawer;
++
++static void __gta02_udc_vbus_draw(struct work_struct *work)
++{
++	if (gta02_udc_vbus_drawer.ma >= 500) {
++		/* enable fast charge */
++		printk(KERN_DEBUG "udc: enabling fast charge\n");
++		pcf50633_charge_fast(pcf50633_global, 1);
++	} else {
++		/* disable fast charge */
++		printk(KERN_DEBUG "udc: disabling fast charge\n");
++		pcf50633_charge_fast(pcf50633_global, 0);
++	}
++}
++
++static int gta02_udc_vbus_draw(unsigned int ma)
++{
++	gta02_udc_vbus_drawer.ma = ma;
++	schedule_work(&gta02_udc_vbus_drawer.work);
++
++	return 0;
++}
++
++static struct s3c2410_udc_mach_info gta02_udc_cfg = {
++	.vbus_draw	= gta02_udc_vbus_draw,
++	.udc_command	= gta02_udc_command,
++
++};
++
++static struct s3c2410_ts_mach_info gta02_ts_cfg = {
++	.delay = 10000,
++	.presc = 49,
++	.oversampling_shift = 2,
++};
++
++/* SPI */
++
++static struct spi_board_info gta02_spi_board_info[] __initdata = {
++	{
++		.modalias	= "jbt6k74",
++		/* platform_data */
++		/* controller_data */
++		/* irq */
++		.max_speed_hz	= 10 * 1000 * 1000,
++		.bus_num	= 1,
++		/* chip_select */
++	},
++};
++
++static struct glamo_spi_info glamo_spi_cfg = {
++	.board_size	= ARRAY_SIZE(gta02_spi_board_info),
++	.board_info	= gta02_spi_board_info,
++};
++
++static struct glamo_spigpio_info glamo_spigpio_cfg = {
++	.pin_clk	= GLAMO_GPIO10_OUTPUT,
++	.pin_mosi	= GLAMO_GPIO11_OUTPUT,
++	.pin_cs		= GLAMO_GPIO12_OUTPUT,
++	.pin_miso	= 0,
++	.board_size	= ARRAY_SIZE(gta02_spi_board_info),
++	.board_info	= gta02_spi_board_info,
++};
++
++#if 0
++#ifdef SPI_HARD
++static struct s3c2410_spi_info spi_cfg = {
++	.pin_cs		= S3C2410_GPG3,
++	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
++	.board_info	= gta01_spi_board_info,
++};
++#else
++static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
++{
++	switch (cs) {
++	case BITBANG_CS_ACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPG3, 0);
++		break;
++	case BITBANG_CS_INACTIVE:
++		s3c2410_gpio_setpin(S3C2410_GPG3, 1);
++		break;
++	}
++}
++
++static struct s3c2410_spigpio_info spi_gpio_cfg = {
++	.pin_clk	= S3C2410_GPG7,
++	.pin_mosi	= S3C2410_GPG6,
++	.pin_miso	= S3C2410_GPG5,
++	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
++	.board_info	= gta01_spi_board_info,
++	.chip_select	= &spi_gpio_cs,
++};
++
++static struct resource s3c_spi_lcm_resource[] = {
++	[0] = {
++		.start = S3C2410_GPG3,
++		.end   = S3C2410_GPG3,
++	},
++	[1] = {
++		.start = S3C2410_GPG5,
++		.end   = S3C2410_GPG5,
++	},
++	[2] = {
++		.start = S3C2410_GPG6,
++		.end   = S3C2410_GPG6,
++	},
++	[3] = {
++		.start = S3C2410_GPG7,
++		.end   = S3C2410_GPG7,
++	},
++};
++
++struct platform_device s3c_device_spi_lcm = {
++	.name		  = "s3c24xx-spi-gpio",
++	.id		  = 1,
++	.num_resources	  = ARRAY_SIZE(s3c_spi_lcm_resource),
++	.resource	  = s3c_spi_lcm_resource,
++	.dev = {
++		.platform_data = &spi_gpio_cfg,
++	},
++};
++#endif
++#endif
++
++static struct resource gta02_led_resources[] = {
++	[0] = {
++		.start	= GTA02_GPIO_VIBRATOR_ON,
++		.end	= GTA02_GPIO_VIBRATOR_ON,
++	},
++	/* FIXME */
++};
++
++struct platform_device gta02_led_dev = {
++	.name		= "gta01-led",
++	.num_resources	= ARRAY_SIZE(gta02_led_resources),
++	.resource	= gta02_led_resources,
++};
++
++static struct resource gta01_button_resources[] = {
++	[0] = {
++		.start = GTA02_GPIO_AUX_KEY,
++		.end   = GTA02_GPIO_AUX_KEY,
++	},
++	[1] = {
++		.start = GTA02_GPIO_HOLD_KEY,
++		.end   = GTA02_GPIO_HOLD_KEY,
++	},
++	[2] = {
++		.start = GTA02_GPIO_JACK_INSERT,
++		.end   = GTA02_GPIO_JACK_INSERT,
++	},
++};
++
++static struct platform_device gta01_button_dev = {
++	.name		= "gta01-button",
++	.num_resources	= ARRAY_SIZE(gta01_button_resources),
++	.resource	= gta01_button_resources,
++};
++
++static struct platform_device gta01_pm_gsm_dev = {
++	.name		= "gta01-pm-gsm",
++};
++
++/* USB */
++static struct s3c2410_hcd_info gta02_usb_info = {
++	.port[0]	= {
++		.flags	= S3C_HCDFLG_USED,
++	},
++	.port[1]	= {
++		.flags	= 0,
++	},
++};
++
++/* Smedia Glamo 3362 */
++
++static struct glamofb_platform_data gta02_glamo_pdata = {
++	.width		= 480,
++	.height		= 640,
++	.xres		= {
++		.min	= 240,
++		.max	= 480,
++		.defval	= 480,
++	},
++	.yres		= {
++		.min	= 320,
++		.max	= 640,
++		.defval	= 640,
++	},
++	.bpp		= {
++		.min	= 16,
++		.max	= 16,
++		.defval	= 16,
++	},
++	//.spi_info	= &glamo_spi_cfg,
++	.spigpio_info	= &glamo_spigpio_cfg,
++};
++
++static struct resource gta02_glamo_resources[] = {
++	[0] = {
++		.start	= S3C2410_CS1,
++		.end	= S3C2410_CS1 + 0x1000000,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= GTA02_IRQ_3D,
++		.end	= GTA02_IRQ_3D,
++		.flags	= IORESOURCE_IRQ,
++	},
++	[2] = {
++		.start = GTA02_GPIO_3D_RESET,
++		.end   = GTA02_GPIO_3D_RESET,
++	},
++};
++
++static struct platform_device gta02_glamo_dev = {
++	.name		= "glamo3362",
++	.num_resources	= ARRAY_SIZE(gta02_glamo_resources),
++	.resource	= gta02_glamo_resources,
++	.dev		= {
++		.platform_data	= &gta02_glamo_pdata,
++	},
++};
++
++static void __init gta02_map_io(void)
++{
++	s3c24xx_init_io(gta02_iodesc, ARRAY_SIZE(gta02_iodesc));
++	s3c24xx_init_clocks(12000000);
++	s3c24xx_init_uarts(gta02_uartcfgs, ARRAY_SIZE(gta02_uartcfgs));
++	s3c24xx_set_board(&gta02_board);
++}
++
++static irqreturn_t gta02_modem_irq(int irq, void *param)
++{
++	printk(KERN_DEBUG "modem wakeup interrupt\n");
++	return IRQ_HANDLED;
++}
++
++static void __init gta02_machine_init(void)
++{
++	s3c_device_usb.dev.platform_data = &gta02_usb_info;
++	s3c_device_nand.dev.platform_data = &gta02_nand_info;
++	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
++
++	INIT_WORK(&gta02_udc_vbus_drawer.work, __gta02_udc_vbus_draw);
++	s3c24xx_udc_set_platdata(&gta02_udc_cfg);
++	set_s3c2410ts_info(&gta02_ts_cfg);
++
++	platform_device_register(&gta01_button_dev);
++	platform_device_register(&gta01_pm_gsm_dev);
++
++	mangle_pmu_pdata_by_system_rev();
++	platform_device_register(&gta02_pmu_dev);
++	platform_device_register(&gta02_led_dev);
++	platform_device_register(&gta02_glamo_dev);
++
++	s3c2410_pm_init();
++
++	/* Set LCD_RESET / XRES to high */
++	s3c2410_gpio_cfgpin(GTA01_GPIO_LCD_RESET, S3C2410_GPIO_OUTPUT);
++	s3c2410_gpio_setpin(GTA01_GPIO_LCD_RESET, 1);
++
++	set_irq_type(GTA02_IRQ_MODEM, IRQT_RISING);
++	request_irq(GTA02_IRQ_MODEM, gta02_modem_irq,
++		    SA_INTERRUPT, "modem", NULL);
++	enable_irq_wake(GTA02_IRQ_MODEM);
++}
++
++MACHINE_START(NEO1973_GTA02, "GTA02")
++	.phys_io	= S3C2410_PA_UART,
++	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
++	.boot_params	= S3C2410_SDRAM_PA + 0x100,
++	.map_io		= gta02_map_io,
++	.init_irq	= s3c24xx_init_irq,
++	.init_machine	= gta02_machine_init,
++	.timer		= &s3c24xx_timer,
++MACHINE_END
+Index: linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta02.h
+===================================================================
+--- /dev/null
++++ linux-2.6.21.3-moko/include/asm-arm/arch-s3c2410/gta02.h
+@@ -0,0 +1,24 @@
++#ifndef _GTA02_H
++#define _GTA02_H
++
++#include <asm/arch/regs-gpio.h>
++#include <asm/arch/irqs.h>
++
++/* Different hardware revisions, passed in ATAG_REVISION by u-boot */
++#define GTA02v1_SYSTEM_REV	0x00000310
++#define GTA02v2_SYSTEM_REV	0x00000320
++
++#define GTA02_GPIO_3D_IRQ	S3C2410_GPG4
++#define GTA02_GPIO_3D_RESET	S3C2440_GPJ0
++#define GTA02_GPIO_nSD_DETECT	S3C2410_GPF5
++#define GTA02_GPIO_USB_PULLUP	S3C2410_GPB9
++#define GTA02_GPIO_VIBRATOR_ON	S3C2410_GPB3
++#define GTA02_GPIO_HOLD_KEY	S3C2410_GPF7
++#define GTA02_GPIO_AUX_KEY	S3C2410_GPF6
++#define GTA02_GPIO_JACK_INSERT	S3C2410_GPF4
++
++#define GTA02_IRQ_MODEM		IRQ_EINT1
++#define GTA02_IRQ_3D		IRQ_EINT12
++#define GTA02_IRQ_PCF50633	IRQ_EINT9
++
++#endif /* _GTA02_H */
+Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Kconfig
+===================================================================
+--- linux-2.6.21.3-moko.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Kconfig
+@@ -73,5 +73,12 @@
+ 	help
+ 	   Say Y here if you are using the FIC Neo1973 GSM Phone
+ 
++config MACH_NEO1973_GTA02
++	bool "FIC Neo1973 GSM Phone (GTA02 Hardware)"
++	select CPU_S3C2440
++	select SENSORS_PCF50633
++	help
++	   Say Y here if you are using the FIC Neo1973 GSM Phone
++
+ endmenu
+ 
+Index: linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Makefile
+===================================================================
+--- linux-2.6.21.3-moko.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.21.3-moko/arch/arm/mach-s3c2440/Makefile
+@@ -22,3 +22,4 @@
+ obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
+ obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
+ obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
++obj-$(CONFIG_MACH_NEO1973_GTA02) += mach-gta02.o
+Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
+===================================================================
+--- linux-2.6.21.3-moko.orig/arch/arm/common/gta01_pm_bt.c
++++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
+@@ -19,6 +19,7 @@
+ #include <linux/pcf50606.h>
+ 
+ #include <asm/hardware.h>
++#include <asm/mach-types.h>
+ #include <asm/arch/gta01.h>
+ 
+ #define DRVMSG "FIC GTA01 (Neo1973) Bluetooth Power Management"
+@@ -27,11 +28,18 @@
+ 		       char *buf)
+ {
+ 	if (!strcmp(attr->attr.name, "power_on")) {
+-		if (pcf50606_onoff_get(pcf50606_global,
+-					PCF50606_REGULATOR_D1REG) &&
+-		    pcf50606_voltage_get(pcf50606_global,
+-					 PCF50606_REGULATOR_D1REG) == 3100)
+-			goto out_1;
++		switch (machine_arch_type) {
++		case MACH_TYPE_NEO1973_GTA01:
++			if (pcf50606_onoff_get(pcf50606_global,
++						PCF50606_REGULATOR_D1REG) &&
++			    pcf50606_voltage_get(pcf50606_global,
++						 PCF50606_REGULATOR_D1REG) == 3100)
++				goto out_1;
++			break;
++		case MACH_TYPE_NEO1973_GTA02:
++			/* FIXME: implementation using PCF50633 */
++			break;
++		}
+ 	} else if (!strcmp(attr->attr.name, "reset")) {
+ 		if (s3c2410_gpio_getpin(GTA01_GPIO_BT_EN) == 0)
+ 			goto out_1;
+@@ -48,17 +56,24 @@
+ 	unsigned long on = simple_strtoul(buf, NULL, 10);
+ 
+ 	if (!strcmp(attr->attr.name, "power_on")) {
+-		/* if we are powering up, assert reset, then power, then
+-		 * release reset */
+-		if (on) {
+-			s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
+-			pcf50606_voltage_set(pcf50606_global,
+-					     PCF50606_REGULATOR_D1REG,
+-					     3100);
++		switch (machine_arch_type) {
++		case MACH_TYPE_NEO1973_GTA01:
++			/* if we are powering up, assert reset, then power, then
++			 * release reset */
++			if (on) {
++				s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
++				pcf50606_voltage_set(pcf50606_global,
++						     PCF50606_REGULATOR_D1REG,
++						     3100);
++			}
++			pcf50606_onoff_set(pcf50606_global,
++					   PCF50606_REGULATOR_D1REG, on);
++			s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on);
++			break;
++		case MACH_TYPE_NEO1973_GTA02:
++			/* FIXME: implementation */
++			break;
+ 		}
+-		pcf50606_onoff_set(pcf50606_global,
+-				   PCF50606_REGULATOR_D1REG, on);
+-		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on);
+ 	} else if (!strcmp(attr->attr.name, "reset")) {
+ 		/* reset is low-active, so we need to invert */
+ 		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1 );
+@@ -107,9 +122,16 @@
+ {
+ 	dev_info(&pdev->dev, DRVMSG ": starting\n");
+ 
+-	/* we make sure that the voltage is off */
+-	pcf50606_onoff_set(pcf50606_global,
+-			   PCF50606_REGULATOR_D1REG, 0);
++	switch (machine_arch_type) {
++	case MACH_TYPE_NEO1973_GTA01:
++		/* we make sure that the voltage is off */
++		pcf50606_onoff_set(pcf50606_global,
++				   PCF50606_REGULATOR_D1REG, 0);
++		break;
++	case MACH_TYPE_NEO1973_GTA02:
++		/* FIXME: implementation */
++		break;
++	}
+ 	/* we pull reset to low to make sure that the chip doesn't
+ 	 * drain power through the reset line */
+ 	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
+Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
+===================================================================
+--- linux-2.6.21.3-moko.orig/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
+@@ -19,7 +19,9 @@
+ #include <linux/errno.h>
+ 
+ #include <asm/hardware.h>
++#include <asm/mach-types.h>
+ #include <asm/arch/gta01.h>
++#include <asm/arch/gta02.h>
+ 
+ struct gta01pm_priv {
+ 	int gpio_ngsm_en;
+@@ -70,11 +72,12 @@
+ 
+ 	if (!strcmp(attr->attr.name, "power_on")) {
+ 		if (on) {
+-			dev_info(dev, "powering up GSM, thus disconnecting "
+-				 "serial console\n");
++			if (gta01_gsm.con) {
++				dev_info(dev, "powering up GSM, thus "
++					 "disconnecting serial console\n");
+ 
+-			if (gta01_gsm.con)
+ 				console_stop(gta01_gsm.con);
++			}
+ 
+ 			if (gta01_gsm.gpio_ngsm_en)
+ 				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 0);
+@@ -86,11 +89,12 @@
+ 			if (gta01_gsm.gpio_ngsm_en)
+ 				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 1);
+ 
+-			if (gta01_gsm.con)
++			if (gta01_gsm.con) {
+ 				console_start(gta01_gsm.con);
+ 
+-			dev_info(dev, "powered down GSM, thus enabling "
+-				 "serial console\n");
++				dev_info(dev, "powered down GSM, thus enabling "
++					 "serial console\n");
++			}
+ 		}
+ 	} else if (!strcmp(attr->attr.name, "reset")) {
+ 		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
+@@ -157,6 +161,9 @@
+ 		case GTA01Bv4_SYSTEM_REV:
+ 			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
+ 			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
++			break;
++		case GTA02v1_SYSTEM_REV:
++			gta01_gsm.gpio_ngsm_en = 0;
+ 			break;
+ 		default:
+ 			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
+@@ -175,9 +182,13 @@
+ 		break;
+ 	}
+ 
+-	gta01_gsm.con = find_s3c24xx_console();
+-	if (!gta01_gsm.con)
+-		dev_warn(&pdev->dev, "cannot find S3C24xx console driver\n");
++	if (machine_is_neo1973_gta01()) {
++		gta01_gsm.con = find_s3c24xx_console();
++		if (!gta01_gsm.con)
++			dev_warn(&pdev->dev,
++				 "cannot find S3C24xx console driver\n");
++	} else
++		gta01_gsm.con = NULL;
+ 
+ 	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
+ }
