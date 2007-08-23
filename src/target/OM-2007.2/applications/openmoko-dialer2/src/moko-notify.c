@@ -46,6 +46,7 @@ struct _MokoNotifyPrivate
 
   /* Sound stuff */
   pa_context *pac;
+  pa_operation *operation;
 };
 /*
 enum
@@ -103,25 +104,33 @@ moko_notify_check_brightness (void)
 }
 
 static gboolean
-play_timeout (MokoNotify *notify)
+play (MokoNotify *notify)
 {
   moko_notify_start_ringtone (notify);
   return FALSE;
 }
 
-static void
-on_sound_finished (pa_context *pa, gint success, MokoNotify *notify)
+static gboolean
+play_timeout (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
   
-  g_return_if_fail (MOKO_IS_NOTIFY (notify));
+  g_return_val_if_fail (MOKO_IS_NOTIFY (notify), FALSE);
   priv = notify->priv;
 
   if (!priv->pac)
-    return;
-  
-  if (priv->started)
-    g_timeout_add (1500, (GSourceFunc)play_timeout, (gpointer)notify);
+    return FALSE;
+
+  if (!priv->operation)
+    return FALSE;
+
+  if (pa_operation_get_state (priv->operation) == PA_OPERATION_DONE)
+  {
+    g_timeout_add (1500, (GSourceFunc)play, (gpointer)notify);
+    return FALSE;
+  }
+
+  return TRUE;  
 }
 
 static void
@@ -135,13 +144,13 @@ moko_notify_start_ringtone (MokoNotify *notify)
   if (!priv->pac)
     return;
 
-  pa_context_play_sample (priv->pac,
-                          "x11-bell",
-                          NULL,
-                          PA_VOLUME_NORM,
-                          (gpointer)on_sound_finished,
-                          (gpointer)notify);
-
+  priv->operation = pa_context_play_sample (priv->pac,
+                                            "x11-bell",
+                                            NULL,
+                                            PA_VOLUME_NORM,
+                                            NULL, 
+                                            NULL);
+  g_timeout_add (500, (GSourceFunc)play_timeout, (gpointer)notify);
 }
 
 static void
@@ -151,6 +160,11 @@ moko_notify_stop_ringtone (MokoNotify *notify)
 
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
+
+  if (priv->operation)
+    pa_operation_cancel (priv->operation);
+
+  priv->operation = NULL;
 }
 
 static void
