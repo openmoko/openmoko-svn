@@ -1,5 +1,11 @@
 2007-08-23  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_talking_accept_call), (on_incoming_call):
+	Make sure we don't do anything on an incmong call if we have already
+	accepted it.
+
+2007-08-23  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-notify.c: (on_sound_finished),
 	(moko_notify_start_ringtone):
 	Remove debugging printf's as everything works!

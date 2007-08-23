@@ -318,7 +318,6 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
     return;
 
   moko_gsmd_connection_voice_accept (priv->connection);
-  
   priv->status = DIALER_STATUS_TALKING;
 
   /* Stop the notification */
@@ -465,7 +464,8 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   priv = dialer->priv;
 
   /* We sometimes get the signals multiple times */
-  if (priv->status == DIALER_STATUS_INCOMING)
+  if (priv->status == DIALER_STATUS_INCOMING  
+        || priv->status == DIALER_STATUS_TALKING)
   {
     /*g_print ("We are already showing the incoming page\n");*/
     return;
