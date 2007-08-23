@@ -323,8 +323,6 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   {
     moko_journal_add_entry (priv->journal, priv->entry);
     moko_journal_write_to_storage (priv->journal);
-    if (priv->time) 
-      moko_time_free (priv->time);
     priv->entry = NULL;
     priv->time = NULL;
   }  
@@ -349,9 +347,8 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   /* Finalise and add the journal entry */
   if (priv->entry)
   {
+    moko_journal_voice_info_set_was_missed (priv->entry, TRUE);
     moko_journal_add_entry (priv->journal, priv->entry);
-    if (priv->time) 
-      moko_time_free (priv->time);
     priv->entry = NULL;
     priv->time = NULL;
   }
@@ -575,8 +572,6 @@ on_call_progress_changed (MokoGsmdConnection *conn,
 
         moko_journal_add_entry (priv->journal, priv->entry);
         moko_journal_write_to_storage (priv->journal);
-        if (priv->time)
-          moko_time_free (priv->time);
         priv->entry = NULL;
         priv->time = NULL;
       }
