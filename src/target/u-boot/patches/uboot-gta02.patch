@@ -1342,7 +1342,7 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/pcf50633.c
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,116 @@
 +
 +#include <common.h>
 +#include <pcf50633.h>
@@ -1393,7 +1393,11 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +	[PCF50633_REG_DOWN1MXC]	= 0x22,	/* limit to 510mA at startup */
 +
 +	[PCF50633_REG_DOWN2OUT]	= 0x2f, /* 1.8V (0x2f * .025V + 0.625V) */
++#ifdef CONFIG_ARCH_GTA02_v1
 +	[PCF50633_REG_DOWN2ENA]	= 0x02, /* enabled if GPIO1 = HIGH */
++#else
++	[PCF50633_REG_DOWN2ENA]	= 0x01, /* always enabled */
++#endif
 +	[PCF50633_REG_DOWN2CTL]	= 0x00,	/* no DVM */
 +	[PCF50633_REG_DOWN2MXC]	= 0x22, /* limit to 510mA at startup */
 +
@@ -1405,18 +1409,39 @@ Index: u-boot/board/neo1973/gta02/pcf50633.c
 +	[PCF50633_REG_LEDCTL]	= 0x05, /* ovp enabled, ocp 500mA */
 +	[PCF50633_REG_LEDDIM]	= 0x20,	/* dimming curve */
 +
-+	[PCF50633_REG_LDO1OUT]	= 0x04,	/* 1.3V (4 * 0.1V + 0.9V) */
++	[PCF50633_REG_LDO1OUT]	= 0x18,	/* 3.3V (24 * 0.1V + 0.9V) */
++#ifdef CONFIG_ARCH_GTA02_v1
 +	[PCF50633_REG_LDO1ENA]	= 0x01,	/* always on */
++#else
++	[PCF50633_REG_LDO1ENA]	= 0x02, /* enabled if GPIO1 = HIGH */
++#endif
 +
 +	[PCF50633_REG_LDO2OUT]	= 0x18,	/* 3.3V (24 * 0.1V + 0.9V) */
 +	[PCF50633_REG_LDO2ENA]	= 0x02, /* enabled if GPIO1 = HIGH */
 +
++#ifdef CONFIG_ARCH_GTA02_v1
 +	[PCF50633_REG_LDO3OUT]	= 0x15,	/* 3.0V (21 * 0.1V + 0.9V) */
 +	[PCF50633_REG_LDO3ENA]	= 0x02, /* enabled if GPIO1 = HIGH */
++#else
++	[PCF50633_REG_LDO3OUT]	= 0x00,
++	[PCF50633_REG_LDO3ENA]	= 0x00,
++#endif
 +
 +	[PCF50633_REG_LDO4ENA]	= 0x00,
++
++#ifdef CONFIG_ARCH_GTA02_v1
 +	[PCF50633_REG_LDO5ENA]	= 0x00,
++#else
++	[PCF50633_REG_LDO5OUT]	= 0x15, /* 3.0V (21 * 0.1V + 0.9V) */
++	[PCF50633_REG_LDO5ENA]	= 0x01, /* always on */
++#endif
++
++#ifdef CONFIG_ARCH_GTA02_v1
 +	[PCF50633_REG_LDO6ENA]	= 0x00,
++#else
++	[PCF50633_REG_LDO6OUT]	= 0x15,	/* 3.0V (21 * 0.1V + 0.9V) */
++	[PCF50633_REG_LDO6ENA]	= 0x01,	/* always on */
++#endif
 +
 +	[PCF50633_REG_HCLDOOUT]	= 0x18,	/* 3.3V (24 * 0.1V + 0.9V) */
 +	[PCF50633_REG_HCLDOENA]	= 0x00, /* off by default*/
