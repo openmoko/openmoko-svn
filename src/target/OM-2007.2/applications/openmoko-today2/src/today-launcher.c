@@ -132,6 +132,45 @@ set_groups (TakuLauncherTile *tile, GList *categories,
     taku_launcher_tile_add_group (tile, fallback_category);
 }
 
+typedef struct {
+	gchar *name;
+	gchar *directory;
+	TakuTable *table;
+	GList *categories;
+	TakuLauncherCategory *fallback_category;
+} LoadDesktopData;
+
+static gboolean
+load_desktop_cb (LoadDesktopData *data)
+{
+	gchar *filename;
+	GtkWidget *tile;
+
+	if (!g_str_has_suffix (data->name, ".desktop")) goto not_desktop;
+
+	filename = g_build_filename (data->directory, data->name, NULL);
+
+	/* TODO: load launcher data, probe that, and then create a tile */
+
+	tile = taku_launcher_tile_for_desktop_file (filename);
+	if (!tile) goto done;
+
+	set_groups (TAKU_LAUNCHER_TILE (tile), data->categories,
+		data->fallback_category);
+
+	gtk_container_add (GTK_CONTAINER (data->table), tile);
+	gtk_widget_show (tile);
+
+done:
+	g_free (filename);
+not_desktop:
+	g_free (data->name);
+	g_free (data->directory);
+	g_free (data);
+	
+	return FALSE;
+}
+
 /*
  * Load all .desktop files in @datadir/applications/, and add them to @table.
  */
@@ -163,27 +202,13 @@ load_data_dir (const char *datadir, TakuTable *table, GList *categories,
   }
 
   while ((name = g_dir_read_name (dir)) != NULL) {
-    char *filename;
-    GtkWidget *tile;
-  
-    if (! g_str_has_suffix (name, ".desktop"))
-      continue;
-
-    filename = g_build_filename (directory, name, NULL);
-
-    /* TODO: load launcher data, probe that, and then create a tile */
-
-    tile = taku_launcher_tile_for_desktop_file (filename);
-    if (!tile)
-      goto done;
-
-    set_groups (TAKU_LAUNCHER_TILE (tile), categories, fallback_category);
-
-    gtk_container_add (GTK_CONTAINER (table), tile);
-    gtk_widget_show (tile);
-
-  done:
-    g_free (filename);
+	LoadDesktopData *data = g_new (LoadDesktopData, 1);
+	data->name = g_strdup (name);
+	data->directory = g_strdup (directory);
+	data->table = table;
+	data->categories = categories;
+	data->fallback_category = fallback_category;
+	g_idle_add ((GSourceFunc)load_desktop_cb, data);
   }
 
   g_free (directory);

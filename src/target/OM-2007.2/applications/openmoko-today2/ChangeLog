@@ -1,3 +1,8 @@
+2007-08-23  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-launcher.c: (load_desktop_cb), (load_data_dir):
+	Load .desktop files asynchronously (sort of)
+
 2007-08-21  Chris Lord,,,  <chris@openedhand.com>
 
 	* src/today-events-store.c: (today_events_store_cal_opened_cb),
