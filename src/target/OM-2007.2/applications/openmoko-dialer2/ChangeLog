@@ -1,5 +1,10 @@
 2007-08-23  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-notify.c: (moko_notify_start_ringtone):
+	Check playing status before starting playback.
+
+2007-08-23  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-notify.c: (play), (play_timeout),
 	(moko_notify_start_ringtone), (moko_notify_stop_ringtone):
 	Add some debugging stuff.

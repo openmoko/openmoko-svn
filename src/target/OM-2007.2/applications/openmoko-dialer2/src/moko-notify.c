@@ -151,7 +151,7 @@ moko_notify_start_ringtone (MokoNotify *notify)
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
 
-  if (!priv->pac)
+  if (!priv->pac || !priv->started)
     return;
 
   priv->operation = pa_context_play_sample (priv->pac,
