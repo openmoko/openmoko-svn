@@ -1,5 +1,12 @@
 2007-08-23  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked),
+	(on_talking_accept_call):
+	Stop crashing on second outgoing call.
+	Log incoming calls properly with the journal.
+
+2007-08-23  Neil J. Patel  <njp@o-hand.com>
+
 	* src/moko-notify.c: (moko_notify_start_ringtone):
 	Check playing status before starting playback.
 

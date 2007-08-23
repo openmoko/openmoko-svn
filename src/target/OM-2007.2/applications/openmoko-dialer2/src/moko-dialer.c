@@ -253,11 +253,6 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
     moko_journal_voice_info_set_distant_number (priv->entry, number);
     if (entry && entry->contact->uid)
       moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
-    moko_journal_add_entry (priv->journal, priv->entry);
-    moko_journal_write_to_storage (priv->journal);
-    moko_time_free (priv->time);
-    priv->entry = NULL;
-    priv->time = NULL;
   }
   moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
 
@@ -327,6 +322,7 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   if (priv->journal && priv->entry)
   {
     moko_journal_add_entry (priv->journal, priv->entry);
+    moko_journal_write_to_storage (priv->journal);
     if (priv->time) 
       moko_time_free (priv->time);
     priv->entry = NULL;
