@@ -1,0 +1,20 @@
+--- linux-2.6.22.1.orig/drivers/i2c/chips/tsl256x.c
++++ linux-2.6.22.1/drivers/i2c/chips/tsl256x.c
+@@ -283,13 +283,13 @@
+ 		.name		= "tsl256x",
+ 		.owner		= THIS_MODULE,
+ #ifdef CONFIG_PM
+-		.suspend	= &tsl256x_suspend,
+-		.resume		= &tsl256x_resume,
++		.suspend	= tsl256x_suspend,
++		.resume		= tsl256x_resume,
+ #endif
+ 	},
+ 	.id				= I2C_DRIVERID_TSL256X,
+-	.attach_adapter	= &tsl256x_attach_adapter,
+-	.detach_client	= &tsl256x_detach_client,
++	.attach_adapter	= tsl256x_attach_adapter,
++	.detach_client	= tsl256x_detach_client,
+ };
+ 
+ static int __init tsl256x_init(void)
