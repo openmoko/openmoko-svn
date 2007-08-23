@@ -2,6 +2,12 @@
 
 	* src/moko-notify.c: (play), (play_timeout),
 	(moko_notify_start_ringtone), (moko_notify_stop_ringtone):
+	Add some debugging stuff.
+
+2007-08-23  Neil J. Patel  <njp@o-hand.com>
+
+	* src/moko-notify.c: (play), (play_timeout),
+	(moko_notify_start_ringtone), (moko_notify_stop_ringtone):
 	Some ringtone fixes, so there is a gap between playback.
 
 2007-08-23  Neil J. Patel  <njp@o-hand.com>
