@@ -41,6 +41,60 @@ moko_get_app_data ()
   return p_dialer_data;
 }
 
+
+static DBusGConnection *
+dbus_setup(gboolean *p_already_running)
+{
+  DBusGConnection *connection;
+  DBusGProxy *proxy;
+  GError *error = NULL;
+  guint32 ret;
+
+  if (p_already_running)
+    *p_already_running = FALSE;
+
+  connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+  if (connection == NULL)
+  {
+    g_warning ("Failed to make a connection to the session bus: %s", 
+               error->message);
+    g_error_free (error);
+    return NULL;
+  }
+
+  proxy = dbus_g_proxy_new_for_name (connection, 
+                                     DBUS_SERVICE_DBUS,
+                                     DBUS_PATH_DBUS, 
+                                     DBUS_INTERFACE_DBUS);
+  if (proxy == NULL)
+  {
+    g_warning ("Error getting a DBus Proxy\n");
+    dbus_g_connection_unref (connection);
+    return NULL;
+  }
+
+  if (!org_freedesktop_DBus_request_name (proxy,
+                                          DIALER_NAMESPACE,
+                                          0, &ret, &error))
+  {
+    /* Error requesting the name */
+    g_warning ("There was an error requesting the name: %s\n",error->message);
+    g_error_free (error);
+
+    dbus_g_connection_unref (connection);
+    
+    return NULL;
+  }
+  if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
+  {
+    if (p_already_running)
+      *p_already_running = TRUE;
+  }
+
+  return connection;
+}
+
+
 static void
 _show_dialer (DBusGConnection *conn)
 {
@@ -99,9 +153,7 @@ main (int argc, char **argv)
 {
   MokoDialer *dialer;
   DBusGConnection *connection;
-  DBusGProxy *proxy;
-  GError *error = NULL;
-  guint32 ret;
+  gboolean already_running;
 
   if (argc != 1)
   {
@@ -121,31 +173,17 @@ main (int argc, char **argv)
   moko_stock_register ();
 
   /* Try and setup our DBus service */
-  connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+  connection = dbus_setup(&already_running);
   if (connection == NULL)
   {
-    g_warning ("Failed to make a connection to the session bus: %s", 
-               error->message);
-    g_error_free (error);
+    /*
+     * If no dbus, we can't get a remote signal to show
+     * the dialer, so just show it immediately
+     */
+    show_dialer = TRUE;
   }
-  proxy = dbus_g_proxy_new_for_name (connection, 
-                                     DBUS_SERVICE_DBUS,
-                                     DBUS_PATH_DBUS, 
-                                     DBUS_INTERFACE_DBUS);
-  if (!org_freedesktop_DBus_request_name (proxy,
-                                          DIALER_NAMESPACE,
-                                          0, &ret, &error))
-  {
-    /* Error requesting the name */
-    g_warning ("There was an error requesting the name: %s\n",error->message);
-    g_error_free (error);
-    
-    gdk_init(&argc, &argv);
-    gdk_notify_startup_complete ();
 
-    return 1;
-  }
-  if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
+  if (already_running)
   {
     /* Someone else hase registere dthe object */
     g_warning ("Another instance is running\n");
