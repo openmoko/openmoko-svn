@@ -1,3 +1,7 @@
+2007-08-23  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (main): Don't force theme settings
+
 2007-08-23  Chris Lord,,,  <chris@openedhand.com>
 
 	* src/today-launcher.c: (load_desktop_cb), (load_data_dir):
