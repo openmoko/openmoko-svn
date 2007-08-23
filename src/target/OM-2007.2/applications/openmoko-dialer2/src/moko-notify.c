@@ -119,7 +119,8 @@ on_sound_finished (pa_context *pa, gint success, MokoNotify *notify)
 
   if (!priv->pac)
     return;
-  
+  g_print ("Tone finished");
+ 
   if (priv->started)
     g_timeout_add (1000, (GSourceFunc)play_timeout, (gpointer)notify);
 }
@@ -134,9 +135,10 @@ moko_notify_start_ringtone (MokoNotify *notify)
 
   if (!priv->pac)
     return;
-
+  
+  g_print ("Playing tone");
   pa_context_play_sample (priv->pac,
-                          "x11-bell",
+                          "touchscreen",
                           NULL,
                           PA_VOLUME_NORM,
                           (gpointer)on_sound_finished,

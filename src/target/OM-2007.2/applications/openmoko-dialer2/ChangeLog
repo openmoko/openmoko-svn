@@ -1,5 +1,11 @@
 2007-08-23  Neil J. Patel  <njp@o-hand.com>
 
+	* src/moko-notify.c: (on_sound_finished),
+	(moko_notify_start_ringtone):
+	Add some printf's. Change the sample name to one we know is working.
+
+2007-08-23  Neil J. Patel  <njp@o-hand.com>
+
 	* configure.ac:
 	* src/dialer-main.c: (main):
 	* src/moko-notify.c: (play_timeout), (on_sound_finished),
