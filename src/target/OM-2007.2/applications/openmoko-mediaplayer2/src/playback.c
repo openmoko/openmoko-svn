@@ -26,7 +26,10 @@
 
 #include <gst/gst.h>
 
+#include <uriparser/Uri.h>
+
 #include "playback.h"
+#include "persistent.h"
 #include "main.h"
 
 GstElement *omp_gst_playbin = NULL;						///< Our ticket to the gstreamer world
@@ -162,6 +165,7 @@ omp_playback_load_track_from_uri(gchar *uri)
 		g_printf("Loading track: %s\n", uri);
 	#endif
 
+	// Update gstreamer pipe
 	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 	g_object_set(G_OBJECT(omp_gst_playbin), "uri", uri, NULL);
 	gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
@@ -419,7 +423,7 @@ omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data)
 
 	// Do we have a pending playback position change that we can apply?
 	if ( ( (GST_STATE(omp_gst_playbin) == GST_STATE_PLAYING) || (GST_STATE(omp_gst_playbin) == GST_STATE_PAUSED) )
- 		&& omp_playback_pending_position)
+		&& omp_playback_pending_position)
 	{
 		omp_playback_set_track_position(omp_playback_pending_position);
 	}
@@ -441,9 +445,8 @@ omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data)
 static gboolean
 omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data)
 {
-	GError *error;
-
 	#ifdef DEBUG
+		GError *error;
 		gst_message_parse_error(message, &error, NULL);
 		g_printerr("gstreamer error: %s\n", error->message);
 		g_error_free(error);
@@ -458,9 +461,8 @@ omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data)
 static gboolean
 omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data)
 {
-	GError *error;
-
 	#ifdef DEBUG
+		GError *error;
 		gst_message_parse_warning(message, &error, NULL);
 		g_printerr("gstreamer warning: %s\n", error->message);
 		g_error_free(error);

@@ -29,9 +29,9 @@
 
 #include <gtk/gtk.h>
 
-#define OMP_WIDGET_CAPTION_TRACK_TIME "%d:%.2d / %d:%.2d"
-#define OMP_WIDGET_CAPTION_TRACK_NUM "%.3d / %.3d"
-#define OMP_WIDGET_CAPTION_VOLUME "%d%%"
+#define OMP_WIDGET_CAPTION_TRACK_TIME "%u:%.2u / %u:%.2u"
+#define OMP_WIDGET_CAPTION_TRACK_NUM "%.3u / %.3u"
+#define OMP_WIDGET_CAPTION_VOLUME "%u%%"
 
 // Determines how many milliseconds the engine will seek if the FFWD/REW buttons are clicked
 #define BUTTON_SEEK_DISTANCE 10000

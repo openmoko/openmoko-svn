@@ -28,7 +28,8 @@
 #define PLAYLIST_H
 
 #include <glib.h>
-#include <spiff/spiff_c.h>
+
+#include "omp_spiff_c.h"
 
 #define OMP_PLAYLIST_FILE_EXTENSION "xspf"
 
@@ -36,6 +37,14 @@
 #define OMP_EVENT_PLAYLIST_TRACK_CHANGED "playlist_track_changed"
 #define OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED "playlist_track_info_changed"
 #define OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED "playlist_track_count_changed"
+
+/// Track info data used with the OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED signal
+typedef struct _omp_track_info
+{
+	guint id;
+	gchar *artist, *title;
+	gulong duration;
+} omp_track_info;
 
 /// Modes available for repetitive track playback
 enum omp_repeat_modes
@@ -47,19 +56,19 @@ enum omp_repeat_modes
 	OMP_REPEAT_COUNT								///< End-of-list marker for mode iteration
 };
 
-extern struct spiff_list *omp_playlist;
+extern omp_spiff_list *omp_playlist;
 extern guint omp_playlist_track_count;
 extern gchar *omp_playlist_title;
 
-extern struct spiff_track *omp_playlist_current_track;
+extern omp_spiff_track *omp_playlist_current_track;
 extern guint omp_playlist_current_track_id;
 
 /// Playlist iterator
-typedef struct playlist_iter
+typedef struct _omp_playlist_iter
 {
-	struct spiff_track *track;
+	omp_spiff_track *track;
 	guint track_num;
-} playlist_iter;
+} omp_playlist_iter;
 
 void omp_playlist_init();
 void omp_playlist_free();
@@ -72,16 +81,16 @@ gboolean omp_playlist_set_current_track(gint playlist_pos);
 gboolean omp_playlist_set_prev_track();
 gboolean omp_playlist_set_next_track();
 
-gchar *omp_playlist_resolve_track(struct spiff_track *track);
+gchar *omp_playlist_resolve_track(omp_spiff_track *track);
 gboolean omp_playlist_load_current_track();
 void omp_playlist_get_track_info(guint track_id, gchar **title, guint *duration);
 void omp_playlist_update_track_count();
 
-playlist_iter *omp_playlist_init_iterator();
-void omp_playlist_get_track_info_from_iter(playlist_iter *iter, guint *track_num,
+omp_playlist_iter *omp_playlist_init_iterator();
+void omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num,
 	gchar **track_title, guint *duration);
-void omp_playlist_advance_iter(playlist_iter *iter);
-gboolean omp_playlist_iter_finished(playlist_iter *iter);
+void omp_playlist_advance_iter(omp_playlist_iter *iter);
+gboolean omp_playlist_iter_finished(omp_playlist_iter *iter);
 
 gchar *get_playlist_title(gchar *playlist_file);
 

@@ -72,32 +72,32 @@ omp_editor_page_playlist_loaded(gpointer instance, gchar *title, gpointer user_d
  * Updates a track's title and duration upon arrival of metadata
  */
 void
-omp_editor_page_update_track_info(gpointer instance, guint track_id, gpointer user_data)
+omp_editor_page_update_track_info(gpointer instance, gpointer track_infos, gpointer user_data)
 {
-	guint duration;
+/*	omp_track_infos *infos;
 	gchar *track_title, *track_duration, *path;
 	GtkTreeIter tree_iter;
 
-	omp_playlist_get_track_info(track_id, &track_title, &duration);
+	infos = (omp_track_infos*)track_infos;
 
-	if (duration > 0)
+	if (infos->duration > 0)
 	{
 		track_duration = g_strdup_printf(OMP_WIDGET_CAPTION_EDITOR_TRACK_TIME,
-			duration / 60000, (duration/1000) % 60);
+			infos->duration / 60000, (infos->duration/1000) % 60);
 	} else {
 		track_duration = NULL;
 	}
 
-	path = g_strdup_printf("%d", track_id);
+	path = g_strdup_printf("%d", infos->id);
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(omp_editor_page_list_store),
 		&tree_iter, path);
-
+	
 	gtk_list_store_set(omp_editor_page_list_store, &tree_iter,
-		TITLE_COLUMN, track_title,
+		TITLE_COLUMN, infos->title,
 		DURATION_COLUMN, track_duration, -1);
 
 	g_free(path);
-	g_free(track_duration);
+	g_free(track_duration); */
 }
 
 /**
@@ -115,7 +115,7 @@ omp_editor_page_add_clicked(gpointer instance, gpointer user_data)
 gboolean
 omp_editor_page_list_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-	
+ return TRUE;
 }
 
 /**
@@ -127,7 +127,7 @@ omp_editor_page_list_populate()
 	GtkTreeIter tree_iter;
 	guint track_num, duration;
 	gchar *track_title, *track_duration;
-	struct playlist_iter *pl_iter;
+	omp_playlist_iter *pl_iter;
 
 	gtk_list_store_clear(omp_editor_page_list_store);
 

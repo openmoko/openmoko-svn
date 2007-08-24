@@ -7,11 +7,18 @@ AM_MAINTAINER_MODE
 
 AC_ISC_POSIX
 AC_PROG_CC
+AC_PROG_CXX
 AC_STDC_HEADERS
 AC_PROG_LIBTOOL
 
 AM_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION([0.12.1])
+
+
+CFLAGS="-I${prefix}/include $CFLAGS"
+AC_SUBST(CFLAGS)
+CPPFLAGS="-I${prefix}/include $CPPFLAGS"
+AC_SUBST(CPPFLAGS)
 
 # Check for GTK/GLib/GThread/Pango, dbus, OpenMoko libs, gstreamer, expat, uriparser and XSPF
 
@@ -28,7 +35,6 @@ PKG_CHECK_MODULES(GSTREAMER, [gstreamer-0.10 >= 0.10],,
 	AC_MSG_ERROR([*** Cannot find gstreamer ***]))
 
 LIBS="-lexpat -L${prefix}/lib $LIBS"
-CFLAGS="-I${prefix}/include"
 AC_CHECK_LIB(expat, XML_Parse, [], [echo "Error: libexpat not found"; exit -1])
 
 LIBS="-luriparser $LIBS"
@@ -50,7 +56,6 @@ AC_SUBST(localedir)
 
 OMP_DEFINES="-DDATA_DIR=\\\"$datadir/openmoko-mediaplayer\\\" -DLOCALEDIR=\\\"$localedir\\\""
 AC_SUBST(OMP_DEFINES)
-
 
 AC_CONFIG_FILES([
     Makefile

@@ -80,7 +80,9 @@ void omp_session_free();
 void omp_session_save();
 void omp_session_load();
 
+void omp_session_set_playback_state(glong track_position, gboolean is_playing);
 void omp_session_set_playlist(gchar *playlist_file);
 void omp_session_set_track_id(guint track_id);
+void omp_session_set_volume(guint volume);
 
 #endif

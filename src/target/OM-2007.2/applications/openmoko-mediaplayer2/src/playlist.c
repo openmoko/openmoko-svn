@@ -28,17 +28,18 @@
 #include <glib/gprintf.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
-#include <spiff/spiff_c.h>
+#include <glib/gstdio.h>
 
 #include <string.h>
 
 #include "playlist.h"
+#include "omp_spiff_c.h"
 #include "main.h"
 #include "playback.h"
 #include "persistent.h"
 
 /// Loaded playlist
-struct spiff_list *omp_playlist = NULL;
+omp_spiff_list *omp_playlist = NULL;
 
 /// File name of currently loaded playlist
 gchar *omp_playlist_file = NULL;
@@ -47,7 +48,7 @@ gchar *omp_playlist_file = NULL;
 guint omp_playlist_track_count = 0;
 
 /// Current track's data
-struct spiff_track *omp_playlist_current_track = NULL;
+omp_spiff_track *omp_playlist_current_track = NULL;
 
 /// Numerical id of the current track within the playlist
 guint omp_playlist_current_track_id = -1;
@@ -56,11 +57,11 @@ guint omp_playlist_current_track_id = -1;
 GSList *omp_track_history = NULL;
 
 /// Single element for the track history
-struct omp_track_history_entry
+typedef struct _omp_track_history_entry
 {
-	struct spiff_track *track;
+	omp_spiff_track *track;
 	guint track_id;
-};
+} omp_track_history_entry;
 
 /// Flag that indicates whether the current track has already been repeated once or not
 gboolean omp_playlist_track_repeated_once = FALSE;
@@ -69,7 +70,7 @@ gboolean omp_playlist_track_repeated_once = FALSE;
 void omp_playlist_process_eos_event(gpointer instance, gpointer user_data);
 void omp_playlist_process_tag_artist_change(gpointer instance, gchar *artist, gpointer user_data);
 void omp_playlist_process_tag_title_change(gpointer instance, gchar *title, gpointer user_data);
-void omp_playlist_check_track_duration();
+void omp_playlist_update_track_duration();
 
 
 
@@ -123,7 +124,7 @@ omp_playlist_free()
 	// Let XSPF clean up, too
 	if (omp_playlist)
 	{
-		spiff_free(omp_playlist);
+		omp_spiff_free(omp_playlist);
 		g_free(omp_playlist_file);
 	}
 }
@@ -137,8 +138,6 @@ omp_playlist_free()
 gboolean
 omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 {
-	struct spiff_track *track;
-	guint track_num;
 	GtkWidget *dialog;
 	gchar *title;
 
@@ -152,7 +151,7 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 	// Let XSPF clean up, too
 	if (omp_playlist)
 	{
-		spiff_free(omp_playlist);
+		omp_spiff_free(omp_playlist);
 		g_free(omp_playlist_file);
 	}
 
@@ -163,7 +162,7 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 	}
 
 	// Load playlist
-	omp_playlist = spiff_parse(playlist_file);
+	omp_playlist = omp_spiff_parse(playlist_file);
 
 	if (omp_playlist)
 	{
@@ -218,12 +217,12 @@ omp_playlist_create(gchar *playlist_file)
 {
 	if (omp_playlist)
 	{
-		spiff_free(omp_playlist);
+		omp_spiff_free(omp_playlist);
 		g_free(omp_playlist_file);
 	}
 
 	// Create new playlist, save and load it
-	omp_playlist = spiff_new();
+	omp_playlist = omp_spiff_new();
 	omp_playlist_file = g_strdup(playlist_file);
 	omp_playlist_save();
 	omp_playlist_load(playlist_file, TRUE);
@@ -237,7 +236,7 @@ omp_playlist_save()
 {
 	if (omp_playlist && omp_playlist_file)
 	{
-		spiff_write(omp_playlist, omp_playlist_file);
+		omp_spiff_write(omp_playlist, omp_playlist_file);
 	}
 }
 
@@ -250,7 +249,7 @@ omp_playlist_delete(gchar *playlist_file)
 {
 	if (strcmp(omp_playlist_file, playlist_file) == 0)
 	{
-		spiff_free(omp_playlist);
+		omp_spiff_free(omp_playlist);
 		g_free(omp_playlist_file);
 		omp_playback_reset();
 	}
@@ -266,7 +265,7 @@ gboolean
 omp_playlist_set_current_track(gint playlist_pos)
 {
 	gboolean position_valid = FALSE;
-	struct spiff_track *track;
+	omp_spiff_track *track;
 	gint track_num = 0;
 
 	if (!omp_playlist)
@@ -305,14 +304,14 @@ omp_playlist_set_current_track(gint playlist_pos)
 gboolean
 omp_playlist_set_prev_track()
 {
-	struct omp_track_history_entry *history_entry;
-	struct spiff_track *track;
+	omp_track_history_entry *history_entry;
+	omp_spiff_track *track;
 	gboolean was_playing;
 	gboolean track_determined = FALSE;
 
 	if (!omp_playlist_current_track)
 	{
-		return;
+		return FALSE;
 	}
 
 	// If track playing time is >= 10 seconds we just jump back to the beginning of the track
@@ -346,7 +345,7 @@ try_again:
 	// Do we have tracks in the history to go back to?
 	if (omp_track_history)
 	{
-		history_entry = (struct omp_track_history_entry*)(omp_track_history->data);
+		history_entry = (omp_track_history_entry*)(omp_track_history->data);
 		omp_playlist_current_track		= history_entry->track;
 		omp_playlist_current_track_id	= history_entry->track_id;
 		
@@ -412,7 +411,7 @@ try_again:
 gboolean
 omp_playlist_set_next_track()
 {
-	struct omp_track_history_entry *history_entry;
+	omp_track_history_entry *history_entry;
 	gboolean was_playing;
 	guint repeat_mode;
 	gboolean track_determined = FALSE;
@@ -420,7 +419,7 @@ omp_playlist_set_next_track()
 
 	if (!omp_playlist_current_track)
 	{
-		return;
+		return FALSE;
 	}
 
 	// Get player state so we can continue playback if necessary
@@ -446,7 +445,7 @@ omp_playlist_set_next_track()
 try_again:
 
 	// Prepare the history entry - if we don't need it we'll just free it again
-	history_entry = g_new(struct omp_track_history_entry, 1);
+	history_entry = g_new(omp_track_history_entry, 1);
 	history_entry->track		= omp_playlist_current_track;
 	history_entry->track_id	= omp_playlist_current_track_id;
 
@@ -543,7 +542,7 @@ omp_playlist_process_tag_artist_change(gpointer instance, gchar *artist, gpointe
 	gchar **tokens;
 
 	// Now that we have received metadata information we might also have the track duration ready
-	omp_playlist_check_track_duration();
+	omp_playlist_update_track_duration();
 
 	if (!omp_playlist_current_track) return;
 
@@ -590,7 +589,7 @@ omp_playlist_process_tag_title_change(gpointer instance, gchar *title, gpointer 
 	gchar **tokens;
 
 	// Now that we have received metadata information we might also have the track duration ready
-	omp_playlist_check_track_duration();
+	omp_playlist_update_track_duration();
 
 	if (!omp_playlist_current_track) return;
 
@@ -628,7 +627,7 @@ omp_playlist_process_tag_title_change(gpointer instance, gchar *title, gpointer 
  * Checks to see if we can get track duration information from the playback interface
  */
 void
-omp_playlist_check_track_duration()
+omp_playlist_update_track_duration()
 {
 	gulong duration;
 
@@ -654,7 +653,7 @@ omp_playlist_check_track_duration()
  * @todo Actually make this function do what it's supposed to do :)
  */
 gchar *
-omp_playlist_resolve_track(struct spiff_track *track)
+omp_playlist_resolve_track(omp_spiff_track *track)
 {
 	if (!track)
 	{
@@ -704,7 +703,7 @@ omp_playlist_load_current_track()
 		track_loaded = omp_playback_load_track_from_uri(track_uri);
 		g_free(track_uri);
 
-		omp_playlist_check_track_duration();
+		omp_playlist_update_track_duration();
 
 		return track_loaded;
 	}
@@ -744,7 +743,7 @@ omp_playlist_get_track_info(guint track_id, gchar **title, guint *duration)
 void
 omp_playlist_update_track_count()
 {
-	struct spiff_track *track;
+	omp_spiff_track *track;
 	gint tracks = 0;
 
 	if (!omp_playlist) return;
@@ -760,15 +759,15 @@ omp_playlist_update_track_count()
  * Creates an iterator for iterating over the playlist
  * @return Returns a new iterator which is deallocated by omp_playlist_advance_iter() - or yourself
  */
-playlist_iter *
+omp_playlist_iter *
 omp_playlist_init_iterator()
 {
-	playlist_iter *iter;
+	omp_playlist_iter *iter;
 
 	if (!omp_playlist) return NULL;
 	if (!omp_playlist->tracks) return NULL;
 
-	iter = g_new(playlist_iter, 1);
+	iter = g_new(omp_playlist_iter, 1);
 
 	iter->track = omp_playlist->tracks;
 	iter->track_num = 0;
@@ -783,7 +782,7 @@ omp_playlist_init_iterator()
  * @param track_title Destination for the track title (can be NULL), must be freed after use
  */
 void
-omp_playlist_get_track_from_iter(playlist_iter *iter, guint *track_num, gchar **track_title,
+omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num, gchar **track_title,
 	guint *duration)
 {
 	// Sanity checks - one silent, one not
@@ -817,7 +816,7 @@ omp_playlist_get_track_from_iter(playlist_iter *iter, guint *track_num, gchar **
  * Advances a playlist iterator by one track
  */
 void
-omp_playlist_advance_iter(playlist_iter *iter)
+omp_playlist_advance_iter(omp_playlist_iter *iter)
 {
 	if (iter)
 	{
@@ -833,7 +832,7 @@ omp_playlist_advance_iter(playlist_iter *iter)
  * Determines whether an iterator has reached the end of the playlist
  */
 gboolean
-omp_playlist_iter_finished(struct playlist_iter *iter)
+omp_playlist_iter_finished(omp_playlist_iter *iter)
 {
 	if (!iter) return TRUE;
 

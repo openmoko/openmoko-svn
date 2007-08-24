@@ -34,9 +34,9 @@
 #include <gdk/gdk.h>
 
 #include <stdlib.h>
-
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <signal.h>
 
 #define DBUS_API_SUBJECT_TO_CHANGE
@@ -62,7 +62,7 @@
 //define DEBUG_MEM_PROFILE
 
 // Forces the window to the native size of the Neo1973's screen area if enabled
-#define EMULATE_SIZE
+//define EMULATE_SIZE
 
 // The padding applied to the page handle's contents
 #define NOTEBOOK_PAGE_PADDING 6

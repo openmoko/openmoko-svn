@@ -25,14 +25,19 @@
  */
 
 #include <glib.h>
+
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "persistent.h"
 #include "main.h"
+#include "playlist.h"
+#include "playback.h"
 
 /// The default configuration
 struct _omp_config omp_default_config =

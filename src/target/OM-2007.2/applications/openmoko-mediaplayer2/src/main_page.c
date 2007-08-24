@@ -184,6 +184,8 @@ omp_main_time_slider_drag_start(GtkWidget *widget, GdkEventButton *event, gpoint
 
 	// Prevent UI callbacks from messing with the slider position
 	omp_main_time_slider_can_update = FALSE;
+
+	return TRUE;
 }
 
 /**
@@ -199,6 +201,8 @@ omp_main_time_slider_drag_stop(GtkWidget *widget, GdkEventButton *event, gpointe
 
 	// Notify the slider change callback that this time we indeed want to change position
 	omp_main_time_slider_was_dragged = TRUE;
+
+	return TRUE;
 }
 
 /**
@@ -333,7 +337,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	GtkWidget *mainvbox;
 	GtkWidget *upper_hbox, *middle_hbox, *lower_hbox;
 	GtkWidget *middle_right_vbox;
-	GtkWidget *image, *button;
+	GtkWidget *button;
 
 	gchar *image_file_name, *caption;
 	gint i;
@@ -496,7 +500,7 @@ omp_main_secondary_widgets_create(GtkContainer *destination)
 {
 	GtkWidget *alignment;
 	GtkWidget *mainvbox;
-	GtkWidget *vbox, *hbox, *vol_vbox, *bal_hbox;
+	GtkWidget *hbox;
 	GtkWidget *image, *button, *vol_scale;
 
 	// Add mainvbox to destination container
@@ -666,8 +670,8 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 
 		// Update label and slider
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
-			track_position / 60000, (track_position/1000) % 60,
-			track_length / 60000, (track_length/1000) % 60);
+			(guint)(track_position / 60000), (guint)(track_position/1000) % 60,
+			(guint)(track_length / 60000), (guint)(track_length/1000) % 60);
 		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
 		g_free(text);
 
@@ -706,7 +710,7 @@ omp_main_update_shuffle_state(gpointer instance, gboolean state, gpointer user_d
 void
 omp_main_update_repeat_mode(gpointer instance, guint mode, gpointer user_data)
 {
-	gchar *image_file_name;
+	gchar *image_file_name = NULL;
 
 	switch (mode)
 	{
@@ -770,8 +774,8 @@ omp_main_update_track_position(gpointer instance, gpointer user_data)
 
 		// Update UI
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
-			track_position / 60000, (track_position/1000) % 60,
-			track_length / 60000, (track_length/1000) % 60);
+			(guint)(track_position / 60000), (guint)(track_position/1000) % 60,
+			(guint)track_length / 60000, (guint)(track_length/1000) % 60);
 		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
 		g_free(text);
 

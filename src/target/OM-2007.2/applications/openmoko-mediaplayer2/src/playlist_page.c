@@ -133,12 +133,12 @@ omp_playlist_page_list_clicked(GtkWidget *widget, GdkEventButton *event, gpointe
 	gint column_id;
 	gchar *playlist_name, *playlist_file, *playlist_file_abs;
 
-	g_return_if_fail(GTK_IS_TREE_VIEW(widget));
+	g_return_val_if_fail(GTK_IS_TREE_VIEW(widget), TRUE);
 
 	// Find colum that was hit
 	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(widget), event->x, event->y,
 		&tree_path, &tree_column, NULL, NULL);
-	if (!tree_path) return;
+	if (!tree_path) return TRUE;
 
 	columns = gtk_tree_view_get_columns(GTK_TREE_VIEW(widget));
 	column_id = g_list_index(columns, (gpointer)tree_column);

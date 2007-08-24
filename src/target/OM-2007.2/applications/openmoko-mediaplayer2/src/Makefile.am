@@ -1,8 +1,3 @@
-AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
-              -DPKGDATADIR=\"$(pkgdatadir)\"
-
-#AM_CFLAGS = -Wall -pedantic -std=c99 @OPENMOKO_CFLAGS@
-AM_CFLAGS = -Wall -pedantic -std=c99
 
 bin_PROGRAMS = openmoko-mediaplayer
 
@@ -16,11 +11,10 @@ openmoko_mediaplayer_CFLAGS = \
         $(DBUS_CFLAGS) \
         $(OPENMOKO_CFLAGS) \
 	$(OMP_DEFINES) \
-        -I$(top_srcdir) \
-        -I$(top_srcdir)/intl\
-	-g -DDEBUG
+	-I${top_srcdir}/intl -Wall -pedantic -std=c99
 
-INCLUDES = $(openmoko_mediaplayer_CFLAGS)
+openmoko_mediaplayer_CPPFLAGS = \
+	-Wall -pedantic
 
 openmoko_mediaplayer_SOURCES = \
         main.c main.h \
@@ -31,4 +25,6 @@ openmoko_mediaplayer_SOURCES = \
 	main_page.c main_page.h \
 	playlist_page.c playlist_page.h \
 	editor_page.c editor_page.h \
-	files_page.c files_page.h
+	files_page.c files_page.h \
+	\
+	omp_spiff_c.cpp omp_spiff_c.h
