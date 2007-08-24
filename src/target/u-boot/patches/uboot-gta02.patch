@@ -91,7 +91,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,356 @@
+@@ -0,0 +1,370 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -138,6 +138,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +/* That many seconds the power key needs to be pressed to power up */
 +#define POWER_KEY_SECONDS	2
 +
++#if defined(CONFIG_ARCH_GTA02_v1)
 +//#define M_MDIV	0x7f		/* Fout = 405.00MHz */
 +#define M_MDIV	0x7d		/* Fout = 399.00MHz */
 +#define M_PDIV	0x2
@@ -146,6 +147,15 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +#define U_M_MDIV	0x38
 +#define U_M_PDIV	0x2
 +#define U_M_SDIV	0x2
++#else
++/* configure GTA02v2 to low speed until we've increased the voltage */
++#define M_MDIV 80
++#define M_PDIV 8
++#define M_SDIV 0
++#define U_M_MDIV 80
++#define U_M_PDIV 8
++#define U_M_SDIV 1
++#endif
 +
 +unsigned int neo1973_wakeup_cause;
 +extern int nobootdelay;
@@ -212,28 +222,30 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	gpio->GPACON = 0x007E1FFF;
 +	gpio->GPADAT |= (1 << 16);      /* Set GPA16 to high (nNAND_WP) */
 +
-+	gpio->GPBCON = 0x001555AA;
-+	//gpio->GPBUP = 0x000007FF;
++	gpio->GPBCON = 0x00155555;
++	gpio->GPBUP = 0x000007FF;
 +
 +	gpio->GPCCON = 0x55415155;
-+	//gpio->GPCUP = 0x0000FFFF;
++	gpio->GPCUP = 0x0000FFFF;
 +
 +	gpio->GPDCON = 0x55555555;
-+	//gpio->GPDUP = 0x0000FFFF;
++	gpio->GPDUP = 0x0000FFFF;
 +
 +	gpio->GPECON = 0xAAAAAAAA;
-+	//gpio->GPEUP = 0x0000FFFF;
++	gpio->GPEUP = 0x0000FFFF;
 +
 +	gpio->GPFCON = 0x0000AAAA;
-+	//gpio->GPFUP = 0x000000FF;
++	gpio->GPFUP = 0x000000FF;
 +
 +	gpio->GPGCON = 0x0156FE7A;
-+	//gpio->GPGUP = 0x0000FFFF;
++	gpio->GPGUP = 0x0000FFFF;
 +
 +	gpio->GPHCON = 0x001AAAAA;
-+	//gpio->GPHUP = 0x000007FF;
++	gpio->GPHUP = 0x000007FF;
 +
 +	gpio->GPJCON = 0x1551544;
++	gpio->GPJUP = 0x1ffff;
++	gpio->GPJDAT |= (1 << 4);	/* Set GPJ4 to high (nGSM_EN) */
 +#else
 +#error Please define GTA02 version
 +#endif
@@ -262,12 +274,14 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	/* Initialize the Power Management Unit with a safe register set */
 +	pcf50633_init();
 +
++#if defined(CONFIG_ARCH_GTA02_v1)
 +	/* Glamo3362 reset and power cycle */
 +	gpio->GPJDAT &= ~0x000000001;
 +	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0);
 +	udelay(50*1000);
 +	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0x2);
 +	gpio->GPJDAT |= 0x000000001;
++#endif
 +
 +#if 0
 +	/* if there's no other reason, must be regular reset */
@@ -1300,17 +1314,29 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  #define B1_Tah		 	0x0	/*  0clk */
  #define B1_Tacp		 	0x0
  #define B1_PMC		 	0x0
-@@ -112,7 +112,8 @@
- #if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
+@@ -109,16 +109,18 @@
+ 
+ #define B6_MT		 	0x3	/* SDRAM */
+ #define B6_Trcd	 	 	0x1	/* 3clk */
+-#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
++#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++    defined(CONFIG_ARCH_GTA02_v2)
  #define B6_SCAN		 	0x1	/* 9bit */
++#define B7_SCAN		 	0x1	/* 9bit */
  #elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
 -      defined(CONFIG_ARCH_GTA01B_v4)
 +      defined(CONFIG_ARCH_GTA01B_v4) || defined(CONFIG_ARCH_GTA02_v1) || \
-+      defined(CONFIG_ARCH_GTA02_v2)
  #define B6_SCAN		 	0x2	/* 10bit */
++#define B7_SCAN		 	0x2	/* 10bit */
  #endif
  
-@@ -165,6 +166,27 @@
+ #define B7_MT		 	0x3	/* SDRAM */
+ #define B7_Trcd		 	0x1	/* 3clk */
+-#define B7_SCAN		 	0x2	/* 10bit */
+ 
+ /* REFRESH parameter */
+ #define REFEN		 	0x1	/* Refresh enable */
+@@ -165,6 +167,27 @@
  	str	r1, [r0]
  #endif
  
@@ -1338,6 +1364,17 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
+@@ -182,6 +205,10 @@
+     .word ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))
+     .word ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))
+     .word ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)
++#if defined(CONFIG_ARCH_GTA02_v2)
++    .word 0xb1
++#else
+     .word 0xb2
++#endif
+     .word 0x30
+     .word 0x30
 Index: u-boot/board/neo1973/gta02/pcf50633.c
 ===================================================================
 --- /dev/null
