@@ -45,3 +45,4 @@ hxd8-tsl256x_fix.patch
 missing_defs.patch
 tune-touchscreen.patch
 openmoko-logo.patch
+s3cmci-unfinished-write-fix.patch
