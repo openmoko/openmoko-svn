@@ -1,0 +1,43 @@
+style "gtkscrollbar" {
+
+    GtkScrollbar::slider_width = 30
+    GtkScrollbar::stepper_size = 26
+    GtkScrollbar::stepper_spacing = 0
+
+    GtkScrollbar::has_backward_stepper = 1
+    GtkScrollbar::has_secondary_forward_stepper = 1
+
+    GtkScrollbar::has_forward_stepper = 1
+    GtkScrollbar::has_secondary_backward_stepper = 1
+
+    engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            detail          = "slider"
+            file            = "button/button-normal.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = PRELIGHT
+            detail          = "slider"
+            file            = "button/button-active.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = ACTIVE
+            detail          = "slider"
+            file            = "button/button-active.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+    }
+}
+
+class "GtkScrollbar" style "gtkscrollbar"
+widget_class "*.GtkScrollbar" style "gtkscrollbar"
+
