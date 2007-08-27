@@ -9,14 +9,14 @@ PR = "r14"
 PROVIDES = "virtual/bootloader"
 S = "${WORKDIR}/git"
 
-SRC_URI = "http://buildhost.openmoko.org/sources/git_www.denx.de.git.u-boot.git._8993e54b6f397973794f3d6f47d3b3c0c98dd4f6.tar.gz \
-           svn://svn.openmoko.org/branches/u-boot/pre-20070822;module=patches;proto=http \
+SRC_URI = "git://www.denx.de/git/u-boot.git/;protocol=git \
+           svn://svn.openmoko.org/trunk/src/target/u-boot;module=patches;proto=http \
            file://uboot-20070311-tools_makefile_ln_sf.patch;patch=1 \
 "
 
 EXTRA_OEMAKE = "CROSS_COMPILE=${TARGET_PREFIX}"
 TARGET_LDFLAGS = ""
-UBOOT_MACHINES = "gta01bv2 gta01bv3 gta01bv4 smdk2440 hxd8 qt2410 gta02v1"
+UBOOT_MACHINES = "gta01bv2 gta01bv3 gta01bv4 smdk2440 hxd8 qt2410 gta02v1 gta02v2"
 
 do_quilt() {
   mv ${WORKDIR}/patches ${S}/patches && cd ${S} && quilt push -av
