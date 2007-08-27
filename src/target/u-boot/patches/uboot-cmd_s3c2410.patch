@@ -12,15 +12,15 @@ Index: u-boot/cpu/arm920t/s3c24x0/Makefile
  
  COBJS	= i2c.o interrupts.o serial.o speed.o \
 -	  usb.o nand_read.o nand.o
-+	  usb.o nand_read.o nand.o cmd_s3c2410.o
++	  usb.o nand_read.o nand.o cmd_s3c24xx.o
  
  SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
-Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
+Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c24xx.c
 ===================================================================
 --- /dev/null
-+++ u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
-@@ -0,0 +1,152 @@
++++ u-boot/cpu/arm920t/s3c24x0/cmd_s3c24xx.c
+@@ -0,0 +1,157 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -61,11 +61,11 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
 +
 +static void print_cpu_speed(void)
 +{
-+	printf("FCLK = %u MHz, HCLK = %u MHz, PCLK = %u MHz\n",
-+		get_FCLK()/MHZ, get_HCLK()/MHZ, get_PCLK()/MHZ);
++	printf("FCLK = %u MHz, HCLK = %u MHz, PCLK = %u MHz, UCLK = %u MHz\n",
++		get_FCLK()/MHZ, get_HCLK()/MHZ, get_PCLK()/MHZ, get_UCLK()/MHZ);
 +}
 +
-+struct s3c2410_pll_speed {
++struct s3c24x0_pll_speed {
 +	u_int16_t	mhz;
 +	u_int32_t	mpllcon;
 +	u_int32_t	clkdivn;
@@ -76,7 +76,9 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
 +#define CLKDIVN_1_2_4	0x03
 +#define CLKDIVN_1_4_4	0x04
 +
-+static const struct s3c2410_pll_speed pll_configs[] = {
++#if defined(CONFIG_S3C2410)
++static const u_int32_t upllcon = ((0x78 << 12) + (0x2 << 4) + 0x3);
++static const struct s3c24x0_pll_speed pll_configs[] = {
 +	{
 +		.mhz = 50,
 +		.mpllcon = ((0x5c << 12) + (0x4 << 4) + 0x2),
@@ -98,6 +100,9 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
 +		.clkdivn = CLKDIVN_1_2_4,
 +	},
 +};
++#else
++#error "please define valid pll configurations for your cpu type"
++#endif
 +
 +static void list_cpu_speeds(void)
 +{
@@ -118,7 +123,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
 +
 +			/* configure MPLL */
 +			clk_power->MPLLCON = pll_configs[i].mpllcon;
-+			clk_power->UPLLCON = ((0x78 << 12) + (0x2 << 4) + 0x3),
++			clk_power->UPLLCON = upllcon;
 +			clk_power->CLKDIVN = pll_configs[i].clkdivn;
 +
 +			/* If we changed the speed, we need to re-configure
@@ -130,7 +135,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
 +	return -1;
 +}
 +
-+int do_s3c2410 ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
++int do_s3c24xx ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 +{
 +	if (!strcmp(argv[1], "speed")) {
 +		if (argc < 2)
@@ -165,11 +170,11 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c2410.c
 +
 +
 +U_BOOT_CMD(
-+	s3c2410,	4,	1,	do_s3c2410,
-+	"s3c2410 - SoC  specific commands\n",
++	s3c24xx,	4,	1,	do_s3c24xx,
++	"s3c24x0 - SoC  specific commands\n",
 +	"speed get - display current PLL speed config\n"
-+	"s3c2410 speed list - display supporte PLL speed configs\n"
-+	"s3c2410 speed set - set PLL speed\n"
++	"s3c24x0 speed list - display supporte PLL speed configs\n"
++	"s3c24x0 speed set - set PLL speed\n"
 +);
 +
 +#endif

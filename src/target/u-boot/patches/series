@@ -66,6 +66,7 @@ uboot-s3c2440.patch
 uboot-smdk2440.patch
 uboot-hxd8.patch
 
+uboot-s3c2442.patch
 uboot-license.patch
 
 uboot-gta02.patch

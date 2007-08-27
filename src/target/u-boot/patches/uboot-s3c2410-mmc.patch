@@ -11,8 +11,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/Makefile
  LIB	= $(obj)lib$(SOC).a
  
  COBJS	= i2c.o interrupts.o serial.o speed.o \
--	  usb.o nand_read.o nand.o cmd_s3c2410.o
-+	  usb.o nand_read.o nand.o mmc.o cmd_s3c2410.o
+-	  usb.o nand_read.o nand.o cmd_s3c24xx.o
++	  usb.o nand_read.o nand.o mmc.o cmd_s3c24xx.o
  
  SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
  OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))

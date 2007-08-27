@@ -152,9 +152,9 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +#define M_MDIV 80
 +#define M_PDIV 8
 +#define M_SDIV 0
-+#define U_M_MDIV 80
-+#define U_M_PDIV 8
-+#define U_M_SDIV 1
++#define U_M_MDIV 88
++#define U_M_PDIV 4
++#define U_M_SDIV 2
 +#endif
 +
 +unsigned int neo1973_wakeup_cause;
@@ -529,7 +529,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,274 @@
+@@ -0,0 +1,275 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -570,7 +570,6 @@ Index: u-boot/include/configs/neo1973_gta02.h
 + * (easy to change)
 + */
 +#define CONFIG_ARM920T		1	/* This is an ARM920T Core	*/
-+#define	CONFIG_S3C2440		1	/* in a SAMSUNG S3C2410 SoC     */
 +#define CONFIG_SMDK2440		1	/* on a SAMSUNG SMDK2410 Board  */
 +
 +/* input clock of PLL */
@@ -655,8 +654,10 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define	CFG_LONGHELP				/* undef to save memory		*/
 +#if defined(CONFIG_ARCH_GTA02_v1)
 +#define	CFG_PROMPT		"GTA02v1 # "	/* Monitor Command Prompt	*/
++#define	CONFIG_S3C2440		1		/* SAMSUNG S3C2440 SoC		*/
 +#elif defined(CONFIG_ARCH_GTA02_v2)
 +#define	CFG_PROMPT		"GTA02v2 # "	/* Monitor Command Prompt	*/
++#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
 +#endif
 +#define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
 +#define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16) /* Print Buffer Size */
