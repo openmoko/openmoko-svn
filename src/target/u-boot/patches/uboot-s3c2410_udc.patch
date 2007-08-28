@@ -1166,14 +1166,14 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/common/cmd_neo1973.c
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -72,6 +72,18 @@
- 			neo1973_vibrator(1);
+@@ -86,6 +86,18 @@
+ 			neo1973_gps(1);
  		else
- 			neo1973_vibrator(0);
+ 			neo1973_gps(0);
 +	} else if (!strcmp(argv[1], "udc")) {
 +		if (argc < 3)
 +			goto out_help;
-+		if (!strcmp(argv[2], "udc")) {
++		if (!strcmp(argv[2], "pullup")) {
 +			if (argc < 4)
 +				goto out_help;
 +			if (!strcmp(argv[3], "on"))
@@ -1185,11 +1185,11 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
  	} else {
  out_help:
  		printf("Usage:\n%s\n", cmdtp->usage);
-@@ -95,5 +107,6 @@
- 	"neo1973 charger off - disable charging\n"
- 	"neo1973 backlight (on|off) - switch backlight on or off\n"
+@@ -111,5 +123,6 @@
  	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
-+	"neo1973 udc pullup (on|off) - switch pull-up on or off\n"
+ 	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
+ 	"neo1973 gps (on|off) - switch GPS system on or off\n"
++	"neo1973 udc pullup (on|off) - switch USB device controller pull-up on or off\n"
  );
  #endif	/* CONFIG_CMD_BDI */
 Index: u-boot/board/neo1973/gta01/Makefile
@@ -1248,3 +1248,15 @@ Index: u-boot/include/usbdcore.h
 +void udc_ctrl(enum usbd_event event, int param);
 +#endif
  #endif
+Index: u-boot/board/neo1973/gta01/gta01.c
+===================================================================
+--- u-boot.orig/board/neo1973/gta01/gta01.c
++++ u-boot/board/neo1973/gta01/gta01.c
+@@ -333,6 +333,7 @@
+ void neo1973_poweroff(void)
+ {
+ 	serial_printf("poweroff\n");
++	udc_disconnect();
+ 	pcf50606_reg_write(PCF50606_REG_OOCC1, PCF50606_OOCC1_GOSTDBY);
+ 	/* don't return to caller */
+ 	while (1) ;

@@ -504,7 +504,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,115 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -579,6 +579,20 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +			neo1973_vibrator(1);
 +		else
 +			neo1973_vibrator(0);
++	} else if (!strcmp(argv[1], "gsm")) {
++		if (argc < 3)
++			goto out_help;
++		if (!strcmp(argv[2], "on"))
++			neo1973_gsm(1);
++		else
++			neo1973_gsm(0);
++	} else if (!strcmp(argv[1], "gps")) {
++		if (argc < 3)
++			goto out_help;
++		if (!strcmp(argv[2], "on"))
++			neo1973_gps(1);
++		else
++			neo1973_gps(0);
 +	} else {
 +out_help:
 +		printf("Usage:\n%s\n", cmdtp->usage);
@@ -602,6 +616,8 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +	"neo1973 charger off - disable charging\n"
 +	"neo1973 backlight (on|off) - switch backlight on or off\n"
 +	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
++	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
++	"neo1973 gps (on|off) - switch GPS system on or off\n"
 +);
 +#endif	/* CONFIG_CMD_BDI */
 Index: u-boot/board/neo1973/common/jbt6k74.c
@@ -1335,7 +1351,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -0,0 +1,422 @@
+@@ -0,0 +1,431 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -1666,7 +1682,6 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 +void neo1973_poweroff(void)
 +{
 +	serial_printf("poweroff\n");
-+	udc_disconnect();
 +	pcf50606_reg_write(PCF50606_REG_OOCC1, PCF50606_OOCC1_GOSTDBY);
 +	/* don't return to caller */
 +	while (1) ;
@@ -1700,6 +1715,16 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 +#elif defined(CONFIG_ARCH_GTA01B_v4)
 +		gpio->GPBDAT &= ~(1 << 3);	/* GPB3 */
 +#endif
++}
++
++void neo1973_gsm(int on)
++{
++	printf("not implemented yet!\n");
++}
++
++void neo1973_gps(int on)
++{
++	printf("not implemented yet!\n");
 +}
 +
 +int neo1973_911_key_pressed(void)
@@ -2250,7 +2275,7 @@ Index: u-boot/board/neo1973/common/neo1973.h
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/neo1973.h
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,34 @@
 +#ifndef _NEO1973_H
 +#define _NEO1973_H
 +
@@ -2276,6 +2301,8 @@ Index: u-boot/board/neo1973/common/neo1973.h
 +void neo1973_poweroff(void);
 +void neo1973_backlight(int on);
 +void neo1973_vibrator(int on);
++void neo1973_gsm(int on);
++void neo1973_gps(int on);
 +
 +int neo1973_911_key_pressed(void);
 +
