@@ -1,5 +1,5 @@
 themedir = $(datadir)/icons/openmoko-standard
-size = 32x32
+size = 48x48
 context = stock
 iconsdir = $(themedir)/$(size)/$(context)
 icons_DATA = gtk-about.png \
@@ -102,14 +102,7 @@ icons_DATA = gtk-about.png \
 	gtk-zoom-100.png \
 	gtk-zoom-fit.png \
 	gtk-zoom-in.png \
-	gtk-zoom-out.png \
-	moko-call-dial.png \
-	moko-call-history.png \
-	moko-history-call-in.png \
-	moko-history-call-missed.png \
-	moko-history-call-out.png \
-	moko-history-im.png \
-	moko-history-mail.png
+	gtk-zoom-out.png
 
 EXTRA_DIST = $(icons_DATA)
 MAINTAINERCLEANFILES = Makefile.in

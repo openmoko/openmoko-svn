@@ -1,2 +1,2 @@
-SUBDIRS=actions apps categories places
+SUBDIRS=actions apps categories places stock
 MAINTAINERCLEANFILES = Makefile.in
