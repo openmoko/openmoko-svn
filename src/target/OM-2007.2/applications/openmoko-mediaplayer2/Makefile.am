@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = src images intl
-# po
+SUBDIRS = images src po
+#intl
 
 
 EXTRA_DIST = openmoko-mediaplayer.desktop openmoko-mediaplayer.png

@@ -11,7 +11,7 @@ openmoko_mediaplayer_CFLAGS = \
         $(DBUS_CFLAGS) \
         $(OPENMOKO_CFLAGS) \
 	$(OMP_DEFINES) \
-	-I${top_srcdir}/intl -Wall -pedantic -std=c99
+	-I../intl -I${top_srcdir}/intl -Wall -pedantic -std=c99
 
 openmoko_mediaplayer_CPPFLAGS = \
 	-Wall -pedantic
