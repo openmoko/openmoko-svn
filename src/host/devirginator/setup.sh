@@ -45,8 +45,8 @@ download()
     index=tmp/index-${SNAPSHOT}.html
     rm -f $index
     wget -O $index "`dirname \"$2\"`/"
-    n="`basename \"$2\" | sed 's/*/[-a-zA-Z0-9_.]*/g'`"
-    sed '/^.*[^-a-zA-Z0-9_.]\('"$n"'\)[^-a-zA-Z0-9_.].*$/s//\1/p;d' \
+    n="`basename \"$2\" | sed 's/*/[-a-zA-Z0-9_.+]*/g'`"
+    sed '/^.*[^-a-zA-Z0-9_.+]\('"$n"'\)[^-a-zA-Z0-9_.+].*$/s//\1/p;d' \
       <$index >tmp/files
     case `grep -c '' tmp/files`  in
 	0)	echo "not found: $2" 1>&2
