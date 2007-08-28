@@ -1,3 +1,9 @@
+2007-08-29  Stefan Schmidt <stefan@openmoko.org>
+
+        * src/openmoko-panel-bt.c:
+        Allow applet to turn the bt radio on and off. Patch from Alexandre
+		d'Alton <alex@alexdalton.org> (Closes #639)
+
 2007-07-30  Michael Lauer <mickey@openmoko.org>
 
         * configure.ac:
