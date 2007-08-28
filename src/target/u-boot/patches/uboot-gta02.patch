@@ -1326,7 +1326,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
 +#define B7_SCAN		 	0x1	/* 9bit */
  #elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
 -      defined(CONFIG_ARCH_GTA01B_v4)
-+      defined(CONFIG_ARCH_GTA01B_v4) || defined(CONFIG_ARCH_GTA02_v1) || \
++      defined(CONFIG_ARCH_GTA01B_v4) || defined(CONFIG_ARCH_GTA02_v1)
  #define B6_SCAN		 	0x2	/* 10bit */
 +#define B7_SCAN		 	0x2	/* 10bit */
  #endif
