@@ -1,3 +1,13 @@
+2007-08-28  Neil Jagdish Patel  <njp@o-hand.com>
+
+	Patch by: Rod Whitby <rod@whitby.id.au>
+	* src/moko-dialer.c: (on_keypad_pin_entry),
+	(on_network_registered), (register_network_cb), (moko_dialer_init):
+	Ammend registering functions to respond correctly to the gsmd searching
+	event.
+	Change the initial timeout to connect to gsmd to 10 seconds, as gsmd takes
+	longer than the orignal 5 seconds to start up.
+
 2007-08-23  Neil J. Patel  <njp@o-hand.com>
 
 	* src/moko-dialer.c: (on_talking_accept_call),

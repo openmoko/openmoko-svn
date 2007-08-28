@@ -42,7 +42,7 @@ G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 #define MOKO_DIALER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_DIALER, MokoDialerPrivate))
 
-#define GSM_REGISTER_TIMEOUT 5000 /* Five seconds after powering up */
+#define GSM_REGISTER_TIMEOUT 10000 /* Ten seconds after powering up */
 
 struct _MokoDialerPrivate
 {
@@ -69,8 +69,7 @@ struct _MokoDialerPrivate
 
   /* Registration variables */
   guint               reg_timeout;
-  gboolean            reg_request;
-  gboolean            registered;
+  MokoGsmdConnectionNetregType registered;
 };
 
 enum
@@ -292,8 +291,7 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
 
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
     
-  priv->reg_request = TRUE;
-  priv->registered = FALSE;
+  priv->registered = MOKO_GSMD_CONNECTION_NETREG_NONE;
   priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT, 
                                      (GSourceFunc)register_network_cb, 
                                      dialer);
@@ -424,14 +422,14 @@ on_network_registered (MokoGsmdConnection *conn,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  g_warning ("on_network_registered: type is %d\n", type);
+
   switch (type)
   {
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
     case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
       /* Do nothing */
       g_print ("NetReg: Searching for network\n");
-      g_source_remove (priv->reg_timeout);
-      priv->registered = TRUE;
       break;
     case MOKO_GSMD_CONNECTION_NETREG_DENIED:
       /* This may be a pin issue*/
@@ -441,11 +439,12 @@ on_network_registered (MokoGsmdConnection *conn,
       g_print ("NetReg: Network registered\n");
       g_print("\tLocationAreaCode = %x\n\tCellID = %x\n", lac, cell);
       g_source_remove (priv->reg_timeout);
-      priv->registered = TRUE;
       break;
     default:
       g_warning ("Unhandled register event type = %d\n", type);
    };
+
+  priv->registered = type;
 }
 
 static void
@@ -619,28 +618,32 @@ register_network_cb (MokoDialer *dialer)
   g_return_val_if_fail (MOKO_DIALER (dialer), TRUE);
   priv = MOKO_DIALER_GET_PRIVATE (dialer);
 
-  if (!priv->reg_request)
+  /* We check whether we've been registered yet, otherwise keep poking 
+   * gsmd
+   */
+  switch (priv->registered)
   {
-    /* We have yet to request registration, so lets do it */
-    /* FIXME: do the pin stuff */
-    g_print ("Requesting registration\n");
-    moko_gsmd_connection_network_register (priv->connection);
-  }
-  else 
-  {
-    /* We check whether we've been registered yet, otherwise keep poking 
-     * gsmd
-     */
-    if (priv->registered)
-    {
-      g_print ("Network Registered\n");
-      return FALSE;
-    }
-    else
-    {
+    case MOKO_GSMD_CONNECTION_NETREG_NONE:
+      /* We have yet to request registration, so lets do it */
+      /* FIXME: do the pin stuff */
       g_print ("Requesting registration\n");
       moko_gsmd_connection_network_register (priv->connection);
-    }
+      priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
+      break;
+    case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
+      g_print ("Waiting for registration\n");
+      break;
+    case MOKO_GSMD_CONNECTION_NETREG_DENIED:
+      g_print ("Registration denied, retrying\n");
+      moko_gsmd_connection_network_register (priv->connection);
+      priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
+      break;
+    case MOKO_GSMD_CONNECTION_NETREG_HOME:
+    case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
+      g_print ("Network Registered\n");
+	    return FALSE;
+    default:
+      g_warning ("Unhandled register event type = %d\n", priv->registered);
   }
   
   return TRUE;
@@ -754,9 +757,8 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* Handle network registration a few seconds after powering up the 
    * antenna*/ 
-  priv->reg_request = TRUE;
-  priv->registered = FALSE;
-  priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT, 
+  priv->registered = MOKO_GSMD_CONNECTION_NETREG_NONE;
+  priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT * 2, 
                                      (GSourceFunc)register_network_cb, 
                                      dialer);
   
