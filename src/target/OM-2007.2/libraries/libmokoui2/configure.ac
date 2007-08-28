@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(libmokoui2, 0.1.0, http://www.openmoko.org/)
+AC_INIT(libmokoui2, 0.2.0, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
 AC_CONFIG_SRCDIR(libmokoui/moko-stock.c)
 AM_CONFIG_HEADER(config.h)

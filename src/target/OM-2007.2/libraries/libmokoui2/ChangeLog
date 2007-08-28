@@ -1,3 +1,10 @@
+2007-08-28  Chris Lord,,,  <chris@openedhand.com>
+
+	* configure.ac:
+	* libmokoui/Makefile.am:
+	* libmokoui/moko-search-bar.[ch]:
+	Add new widget MokoSearchBar
+
 2007-08-22  Holger Freyther  <zecke@selfish.org>
 
         Rubberstamped by Mickey.
@@ -9,8 +16,9 @@
 
 2007-08-15  Thomas Wood  <thomas@openedhand.com>
 
-	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Add a hack to make sure we
-	at least have a version of the icons available at each possible GtkIconSize
+	* libmokoui/moko-stock.c: (_moko_stock_add_icon):
+	Add a hack to make sure we at least have a version of the icons
+	available at each possible GtkIconSize
 
 2007-08-03  Holger Hans Peter Freyther  <zecke@selfish.org>
 

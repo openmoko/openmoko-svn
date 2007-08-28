@@ -1,10 +1,12 @@
 source_h = \
 	moko-stock.h \
-	moko-finger-scroll.h
+	moko-finger-scroll.h \
+	moko-search-bar.h
 
 source_c = \
 	moko-stock.c \
-	moko-finger-scroll.c
+	moko-finger-scroll.c \
+	moko-search-bar.c
 
 DATADIR=$(datadir)
 
