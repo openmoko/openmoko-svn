@@ -1,0 +1,9 @@
+style "gtktextview" 
+{
+  text[NORMAL] = "#000000"
+  base[NORMAL] = "#ffffff"
+  fg[NORMAL] = "#000000"
+  text[INSENSITIVE] = "#999999" # dark grey
+}
+class "GtkTextView" style "gtktextview"
+widget_class "*.GtkTextView*" style "gtktextview"
