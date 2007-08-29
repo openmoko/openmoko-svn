@@ -12,7 +12,7 @@
 <color id="light" def="#858585" />
 <color id="lightmid" def="#2c2c2c" />
 
-<font id="titlefont" def="Sans bold 32px" />
+<font id="titlefont" def="Sans bold 30px" />
 <font id="menufont" def="Sans bold 32px" />
 
 <pixmap id="closebutton" filename="closebutton.xpm" />  
@@ -35,7 +35,7 @@
   <layer x="0" y="47" w="100%" h="3"
    type = "plain" color="lightmid" />
 
-  <layer x="5" y="9" w="33%" h="37" 
+  <layer x="5" y="10" w="33%" h="37" 
    type="label" color="white" justify="left" font="titlefont" />
 
   <button x="5" y="0" w="33%" h="47" action="menu" options="inputonly" />
