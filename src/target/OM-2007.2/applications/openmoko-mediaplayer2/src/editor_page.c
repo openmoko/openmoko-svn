@@ -198,21 +198,20 @@ omp_editor_page_list_create(GtkContainer *container)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes(_("#"), renderer,
+	column = gtk_tree_view_column_new_with_attributes("#", renderer,
 		"text", NUMBER_COLUMN, NULL);
-	gtk_tree_view_column_set_fixed_width(column, BUTTON_PIXMAP_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();
+	g_object_set(G_OBJECT(renderer), "ellipsize", PANGO_ELLIPSIZE_END, "ellipsize-set", 1, NULL);
 	column = gtk_tree_view_column_new_with_attributes(_("Track Title"), renderer,
 		"text", TITLE_COLUMN, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes(_("Duration"), renderer,
+	column = gtk_tree_view_column_new_with_attributes(_("Time"), renderer,
 		"text", DURATION_COLUMN, NULL);
-	gtk_tree_view_column_set_fixed_width(column, 2*BUTTON_PIXMAP_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	// Add playlist view to container
@@ -231,7 +230,7 @@ omp_editor_page_create()
 	main_vbox = gtk_vbox_new(FALSE, 0);
 
 	// Caption
-	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	omp_editor_title_label = label;
@@ -256,7 +255,7 @@ omp_editor_page_create()
 	image = gtk_image_new_from_icon_name("gtk-file", BUTTON_PIXMAP_SIZE);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(image), TRUE, TRUE, 0);
 
-	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Add Tracks"));
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 

@@ -637,8 +637,9 @@ omp_playlist_update_track_duration()
 	duration = omp_playback_get_track_length();
 	if ( (duration > 0) && (duration != omp_playlist_current_track->duration) )
 	{
-		omp_playlist_current_track->duration = duration;
-		omp_playlist_save();
+// @note BUGGY
+//		omp_playlist_current_track->duration = duration;
+//		omp_playlist_save();
 
 		// Notify UI of the change
 		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,

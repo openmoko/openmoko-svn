@@ -347,12 +347,12 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_container_add(GTK_CONTAINER(destination), GTK_WIDGET(mainvbox));
 
 	// Title label
-	alignment = label_create(&main_widgets.title_label, "Sans 24", "black", 0, 0, 1, 0, 18);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 18, 0, 35, 30);
+	alignment = label_create(&main_widgets.title_label, "Sans 8", "black", 0, 0, 1, 0, 18);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 10, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// Artist label
-	alignment = label_create(&main_widgets.artist_label, "Sans 14", "black", 0, 0, 1, 0, 30);
+	alignment = label_create(&main_widgets.artist_label, "Sans 6", "black", 0, 0, 1, 0, 30);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
@@ -360,7 +360,7 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	// Add upper_hbox to mainvbox for track number and time display
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 20, 0, 50, 30);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 10, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	upper_hbox = gtk_hbox_new(FALSE, 0);
@@ -368,22 +368,22 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	// Track number icon
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 2, 0, 14, 15);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 14, 15);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	container_add_image(GTK_CONTAINER(alignment), "ico-track.png");
 
 	// Track number
-	alignment = label_create(&main_widgets.track_number_label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&main_widgets.track_number_label, "Sans 5", "black", 0, 0, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// Time icon
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 2, 0, 86, 15);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 86, 15);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	container_add_image(GTK_CONTAINER(alignment), "ico-time.png");
 
 	// Time
-	alignment = label_create(&main_widgets.time_label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&main_widgets.time_label, "Sans 5", "black", 0, 0, 0, 0, 0);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// --- --- --- --- --- Slider --- --- --- --- ---
@@ -412,14 +412,14 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	// Add middle_hbox to mainvbox for the EQ/volume/balance widgets
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 41, 0, 70, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 42, 0, 65, 0);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	middle_hbox = gtk_hbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(middle_hbox));
 
 	// EQ/Visualization bands
-	image_file_name = g_build_path("/", ui_image_path, "ind-music-eq-06.png", NULL);
+	image_file_name = g_build_path("/", ui_image_path, "ind-music-eq-12.png", NULL);
 
 	for (i=0; i<12; i++)
 	{
@@ -442,12 +442,12 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	// Volume image
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 4, 0, 25, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 7, 0, 20, 0);
 	gtk_box_pack_start(GTK_BOX(volume_box), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	container_add_image_with_ref(GTK_CONTAINER(alignment), "ind-music-volume-00.png", &main_widgets.volume_image);
 
 	// Volume label
-	alignment = label_create(&main_widgets.volume_label, "Sans 14", "darkorange", 0, 0, 1, 0, 0);
+	alignment = label_create(&main_widgets.volume_label, "Sans 5", "darkorange", 0, 0, 1, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 6, 0, 10, 0);
 	gtk_box_pack_start(GTK_BOX(volume_box), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	caption = g_strdup_printf(OMP_WIDGET_CAPTION_VOLUME, 0);
@@ -456,19 +456,19 @@ omp_main_widgets_create(GtkContainer *destination)
 
 	//  Balance image
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 10, 0, 35, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0, 35, 0);
 	gtk_box_pack_start(GTK_BOX(middle_right_vbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	container_add_image_with_ref(GTK_CONTAINER(alignment), "ind-music-pan-0.png", &main_widgets.balance_image);
 
 	// --- --- --- --- --- Lower hbox --- --- --- --- ---
 
 	// Add lower hbox containing the shuffle/repeat/balance buttons
-	alignment = gtk_alignment_new(0, 0, 1, 0);
+	alignment = gtk_alignment_new(0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 25, 0, 25, 0);
 	gtk_box_pack_start(GTK_BOX(mainvbox), alignment, TRUE, TRUE, 0);
 
 	lower_hbox = gtk_hbutton_box_new();
-	gtk_button_box_set_layout(GTK_BUTTON_BOX(lower_hbox), GTK_BUTTONBOX_SPREAD);
+	gtk_box_set_spacing(GTK_BOX(lower_hbox), 4);
 	gtk_container_add(GTK_CONTAINER(alignment), lower_hbox);
 
 	// "balance left" button
@@ -477,12 +477,12 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_box_pack_start(GTK_BOX(lower_hbox), button, TRUE, TRUE, 0);
 
 	// Shuffle toggle button
-	button = button_create_with_image("ico-shuffle.png",
+	button = button_create_with_image("ico-shuffle-off.png",
 		&main_widgets.shuffle_button_image, G_CALLBACK(omp_main_shuffle_clicked));
 	gtk_box_pack_start(GTK_BOX(lower_hbox), button, TRUE, TRUE, 0);
 
 	// Repeat toggle button
-	button = button_create_with_image("ico-repeat.png",
+	button = button_create_with_image("ico-repeat-off.png",
 		&main_widgets.repeat_button_image, G_CALLBACK(omp_main_repeat_clicked));
 	gtk_box_pack_start(GTK_BOX(lower_hbox), button, TRUE, TRUE, 0);
 
@@ -545,11 +545,11 @@ omp_main_secondary_widgets_create(GtkContainer *destination)
 	// --- --- --- --- --- Volume control --- --- --- --- --- ---
 	
 	alignment = gtk_alignment_new(0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 15, 0, 71, 0);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 10, 0, 71, 0);
 	gtk_box_pack_start(GTK_BOX(mainvbox), alignment, TRUE, TRUE, 0);
 
 	// Volume hscale
-	vol_scale = gtk_hscale_new_with_range(0.0, 100.0, 1.0);
+	vol_scale = gtk_hscale_new_with_range(0.0, 100.1, 1.0);
 	gtk_scale_set_draw_value(GTK_SCALE(vol_scale), FALSE);
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(vol_scale), GTK_CAN_FOCUS);
 	gtk_widget_set_size_request(GTK_WIDGET(vol_scale), 338, 35);

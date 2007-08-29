@@ -69,7 +69,7 @@ omp_playlist_page_list_entry_select(gchar *playlist_name, gchar *playlist_file_a
 	// Get user confirmation
 	dialog = gtk_message_dialog_new(0,
 		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-		_("\nLoad playlist '%s'?"), playlist_name);
+		_("Load playlist '%s'?"), playlist_name);
 
 	dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -102,7 +102,7 @@ omp_playlist_page_list_entry_delete(gchar *playlist_name, gchar *playlist_file)
 	// Get user confirmation
 	dialog = gtk_message_dialog_new(0,
 		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-		_("\nDelete playlist '%s'?"), playlist_name);
+		_("Delete playlist '%s'?"), playlist_name);
 
 	dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -290,6 +290,7 @@ omp_playlist_page_list_create(GtkContainer *container)
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();
+	g_object_set(G_OBJECT(renderer), "ellipsize", PANGO_ELLIPSIZE_END, "ellipsize-set", 1, NULL);
 	column = gtk_tree_view_column_new_with_attributes(_("Playlist Name"), renderer,
 		"text", NAME_COLUMN, NULL);
 	gtk_tree_view_column_set_expand(column, TRUE);
@@ -298,9 +299,9 @@ omp_playlist_page_list_create(GtkContainer *container)
 	// Column with "delete" icon
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(G_OBJECT(renderer), "stock-id", "gtk-delete", NULL);
-	column = gtk_tree_view_column_new_with_attributes(_("Del?"), renderer, NULL);
+	column = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
 	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(column, 2*BUTTON_PIXMAP_SIZE);
+	gtk_tree_view_column_set_fixed_width(column, 1*BUTTON_PIXMAP_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	// Add playlist view to container
@@ -319,7 +320,7 @@ omp_playlist_page_create()
 	main_vbox = gtk_vbox_new(FALSE, 0);
 
 	// Caption #1
-	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Select Playlist to load:"));
@@ -332,7 +333,7 @@ omp_playlist_page_create()
 	omp_playlist_page_list_create(GTK_CONTAINER(scroll_box));
 
 	// Caption #2
-	alignment = label_create(&label, "Sans 14", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Enter name to create a new playlist:"));
