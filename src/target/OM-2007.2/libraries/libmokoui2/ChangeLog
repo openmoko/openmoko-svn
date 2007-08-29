@@ -1,3 +1,11 @@
+2007-08-29  Chris Lord,,,  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_refresh),
+	(moko_finger_scroll_expose_event), (moko_finger_scroll_style_set),
+	(moko_finger_scroll_class_init), (moko_finger_scroll_init):
+	Add a style property 'indicator-width' to set the width of the scroll
+	indicators.
+
 2007-08-28  Chris Lord,,,  <chris@openedhand.com>
 
 	* configure.ac:
