@@ -26,6 +26,7 @@ style "gtktreeviewheader" {
             border          = { 20, 20, 10, 10 }
             stretch         = TRUE
         }
+        }
     xthickness = 22
     ythickness = 10
     GtkButton::focus-line-width = 0
