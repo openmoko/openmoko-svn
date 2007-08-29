@@ -91,7 +91,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,387 @@
+@@ -0,0 +1,391 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -281,6 +281,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	udelay(50*1000);
 +	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0x2);
 +	gpio->GPJDAT |= 0x000000001;
++#elif defined(CONFIG_ARCH_GTA02_v2)
++	gpio->GPJDAT &= ~(1 << 5);
++	udelay(50*1000);
++	gpio->GPJDAT |= (1 << 5);
 +#endif
 +
 +#if 0
