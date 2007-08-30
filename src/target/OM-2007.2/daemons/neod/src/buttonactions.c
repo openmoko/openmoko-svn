@@ -317,12 +317,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 if ( event.value == 0 ) /* inserted */
                 {
                     g_debug( "headphones IN" );
-                    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Headphones\", NULL );
+                    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Headphones\"", NULL );
                 }
                 else if ( event.value == 1 ) /* released */
                 {
                     g_debug( "headphones OUT" );
-                    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Stereo Speakers\", NULL );
+                    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Stereo Speakers\"", NULL );
                 }
                 neod_buttonactions_powersave_reset();
 #if 0
