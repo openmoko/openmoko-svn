@@ -1,5 +1,7 @@
---- linux-2.6.22.1.orig/drivers/video/Kconfig
-+++ linux-2.6.22.1/drivers/video/Kconfig
+Index: linux-2.6.22.5-moko/drivers/video/Kconfig
+===================================================================
+--- linux-2.6.22.5-moko.orig/drivers/video/Kconfig
++++ linux-2.6.22.5-moko/drivers/video/Kconfig
 @@ -1820,6 +1820,38 @@
  	  framebuffer. ML300 carries a 640*480 LCD display on the board,
  	  ML403 uses a standard DB15 VGA connector.
@@ -39,8 +41,10 @@
  config FB_VIRTUAL
  	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
  	depends on FB
---- linux-2.6.22.1.orig/drivers/video/Makefile
-+++ linux-2.6.22.1/drivers/video/Makefile
+Index: linux-2.6.22.5-moko/drivers/video/Makefile
+===================================================================
+--- linux-2.6.22.5-moko.orig/drivers/video/Makefile
++++ linux-2.6.22.5-moko/drivers/video/Makefile
 @@ -113,6 +113,7 @@
  obj-$(CONFIG_FB_PS3)		  += ps3fb.o
  obj-$(CONFIG_FB_SM501)            += sm501fb.o
@@ -49,8 +53,10 @@
  
  # Platform or fallback drivers go here
  obj-$(CONFIG_FB_VESA)             += vesafb.o
+Index: linux-2.6.22.5-moko/drivers/video/glamo/Makefile
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/Makefile
++++ linux-2.6.22.5-moko/drivers/video/glamo/Makefile
 @@ -0,0 +1,11 @@
 +#
 +# Makefile for the Smedia Glamo framebuffer driver
@@ -63,8 +69,10 @@
 +obj-$(CONFIG_FB_GLAMO)		+= glamo-fb.o
 +obj-$(CONFIG_FB_GLAMO_SPI)	+= glamo-lcm-spi.o
 +
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-regs.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-regs.h
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-regs.h
 @@ -0,0 +1,466 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
@@ -532,9 +540,11 @@
 +};
 +
 +#endif /* _GLAMO_REGS_H */
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-core.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-core.c
-@@ -0,0 +1,1017 @@
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-core.c
+@@ -0,0 +1,1020 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1467,16 +1477,19 @@
 +		 glamo_pll_rate(glamo, GLAMO_PLL1),
 +		 glamo_pll_rate(glamo, GLAMO_PLL2));
 +
-+	printk("interrupts\n");
-+
 +	/* FIXME: do we need to request_irq() it ? */
++	printk("interrupts\n");
 +	for (irq = IRQ_GLAMO(0); irq <= IRQ_GLAMO(8); irq++) {
 +		set_irq_chip(irq, &glamo_irq_chip);
 +		set_irq_handler(irq, handle_level_irq);
 +		set_irq_flags(irq, IRQF_VALID);
 +	}
++#if 0 /* temporarily disabled since it creates endless loop on GTA02v2 */
++	printk("chained\n");
 +	set_irq_chained_handler(glamo->irq, glamo_irq_demux_handler);
++	printk("type\n");
 +	set_irq_type(glamo->irq, IRQT_FALLING);
++#endif
 +
 +	return 0;
 +
@@ -1552,8 +1565,10 @@
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x core/resource driver");
 +MODULE_LICENSE("GPL");
---- linux-2.6.22.1.orig/include/asm-arm/arch-s3c2410/irqs.h
-+++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/irqs.h
+Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/irqs.h
+===================================================================
+--- linux-2.6.22.5-moko.orig/include/asm-arm/arch-s3c2410/irqs.h
++++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/irqs.h
 @@ -148,9 +148,37 @@
  #define IRQ_S3C2443_AC97	S3C2410_IRQSUB(28)
  
@@ -1594,9 +1609,11 @@
 +#define IRQ_GLAMO_RISC		IRQ_GLAMO(8)
 +
  #endif /* __ASM_ARCH_IRQ_H */
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-fb.c
-@@ -0,0 +1,547 @@
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
+@@ -0,0 +1,629 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1662,7 +1679,7 @@
 +	struct resource *fb_res;
 +	char __iomem *base;
 +	struct glamofb_platform_data *mach_info;
-+	struct glamo_core *glamo;
++	char __iomem *cursor_addr;
 +	u_int32_t pseudo_pal[16];
 +};
 +
@@ -1797,6 +1814,7 @@
 +	case 32:
 +	default:
 +		/* The Smedia Glamo doesn't support anything but 16bit color */
++		printk("Smedia driver doens't [yet?] support 24/32bpp\n");
 +		return -EINVAL;
 +		break;
 +	}
@@ -1815,10 +1833,12 @@
 +	case 16:
 +		glamo->fb->fix.visual = FB_VISUAL_DIRECTCOLOR;
 +		break;
++	case 24:
 +	case 32:
 +		glamo->fb->fix.visual = FB_VISUAL_TRUECOLOR;
 +		break;
 +	default:
++		printk("Smedia driver doens't [yet?] support <16bpp\n");
 +		return -EINVAL;
 +	}
 +
@@ -1868,6 +1888,78 @@
 +	}
 +
 +	return 0;
++}
++
++static int glamofb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	struct glamofb_handle *glamo = info->par;
++	u_int16_t reg;
++
++	if (cursor->image.depth > 2)
++		return -EINVAL;
++
++	reg = reg_read(glamo, GLAMO_REG_LCD_MODE1);
++
++	if (cursor->enable)
++		reg_write(glamo, GLAMO_REG_LCD_MODE1,
++			  reg | GLAMO_LCD_MODE1_CURSOR_EN);
++	else
++		reg_write(glamo, GLAMO_REG_LCD_MODE1,
++			  reg & ~GLAMO_LCD_MODE1_CURSOR_EN);
++
++	if (cursor->set & FB_CUR_SETPOS) {
++		reg_write(glamo, GLAMO_REG_LCD_CURSOR_X_POS,
++			  cursor->image.dx);
++		reg_write(glamo, GLAMO_REG_LCD_CURSOR_Y_POS,
++			  cursor->image.dy);
++	}
++
++	if (cursor->set & FB_CUR_SETCMAP) {
++		/* FIXME */
++	}
++
++	if (cursor->set & FB_CUR_SETSIZE ||
++	    cursor->set & (FB_CUR_SETIMAGE | FB_CUR_SETSHAPE)) {
++		int x, y, op;
++		const unsigned char *pcol = cursor->image.data;
++		const unsigned char *pmsk = cursor->mask;
++		void __iomem *dst = glamo->cursor_addr;
++		unsigned char dcol = 0;
++		unsigned char dmsk = 0;
++
++		reg_write(glamo, GLAMO_REG_LCD_CURSOR_X_SIZE,
++			  cursor->image.width);
++		reg_write(glamo, GLAMO_REG_LCD_CURSOR_PITCH,
++			  cursor->image.width * 2);
++		reg_write(glamo, GLAMO_REG_LCD_CURSOR_Y_SIZE,
++			  cursor->image.height);
++
++		for (op = 0; op < (cursor->image.width *
++				   cursor->image.height * 2)/8; op += 4)
++			writel(0x0, dst + op);
++
++		for (y = 0; y < cursor->image.height; y++) {
++			for (x = 0; x < cursor->image.width; x++) {
++				if ((x % 8) == 0) {
++					dcol = *pcol++;
++					dmsk = *pmsk++;
++				} else {
++					dcol >>= 1;
++					dmsk >>= 1;
++				}
++
++				if (dmsk & 1) {
++					unsigned int op;
++
++					op = (dcol & 1) ? 1 : 3;
++					op <<= ((x % 4) * 2);
++
++					op |= readb(dst + (x / 4));
++					writeb(op, dst + (x / 4));
++				}
++			}
++		}
++	}
 +}
 +
 +static inline int glamofb_cmdq_empty(struct glamofb_handle *gfb)
@@ -1930,6 +2022,7 @@
 +	.fb_set_par	= glamofb_set_par,
 +	.fb_blank	= glamofb_blank,
 +	.fb_setcolreg	= glamofb_setcolreg,
++	//.fb_cursor	= glamofb_cursor,
 +	.fb_fillrect	= cfb_fillrect,
 +	.fb_copyarea	= cfb_copyarea,
 +	.fb_imageblit	= cfb_imageblit,
@@ -2064,6 +2157,12 @@
 +		goto out_unmap_fb;
 +	}
 +
++	/* pull LCM out of reset (bootloader should have done this before!!) */
++	/* FIXME: make this part of platform info */
++	glamo_gpio_cfgpin(mach_info->glamo, GLAMO_GPIO4_OUTPUT);
++	glamo_gpio_setpin(mach_info->glamo, GLAMO_GPIO4, 1);
++	msleep(90);
++
 +	if (mach_info->spi_info) {
 +		/* register the sibling spi device */
 +		mach_info->spi_info->glamofb_handle = glamofb;
@@ -2144,8 +2243,10 @@
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x framebuffer driver");
 +MODULE_LICENSE("GPL");
+Index: linux-2.6.22.5-moko/include/linux/glamofb.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/linux/glamofb.h
++++ linux-2.6.22.5-moko/include/linux/glamofb.h
 @@ -0,0 +1,29 @@
 +#ifndef _LINUX_GLAMOFB_H
 +#define _LINUX_GLAMOFB_H
@@ -2176,8 +2277,10 @@
 +int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val);
 +
 +#endif
+Index: linux-2.6.22.5-moko/include/linux/spi/glamo.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/linux/spi/glamo.h
++++ linux-2.6.22.5-moko/include/linux/spi/glamo.h
 @@ -0,0 +1,28 @@
 +#ifndef __GLAMO_SPI_H
 +#define __GLAMO_SPI_H
@@ -2207,8 +2310,10 @@
 +
 +
 +#endif
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-core.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-core.h
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-core.h
 @@ -0,0 +1,51 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
@@ -2261,8 +2366,10 @@
 +void glamo_engine_reset(struct glamo_core *glamo, enum glamo_engine engine);
 +
 +#endif /* __GLAMO_CORE_H */
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-gpio.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-gpio.c
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-gpio.c
 @@ -0,0 +1,62 @@
 +
 +#include <linux/kernel.h>
@@ -2326,8 +2433,10 @@
 +}
 +EXPORT_SYMBOL(glamo_gpio_cfgpin);
 +
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-lcm-spi.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-lcm-spi.c
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-lcm-spi.c
 @@ -0,0 +1,241 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
@@ -2570,8 +2679,10 @@
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
+Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-spi-gpio.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/glamo/glamo-spi-gpio.c
++++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-spi-gpio.c
 @@ -0,0 +1,250 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
@@ -2823,9 +2934,11 @@
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
+Index: linux-2.6.22.5-moko/include/linux/glamo-gpio.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/linux/glamo-gpio.h
-@@ -0,0 +1,99 @@
++++ linux-2.6.22.5-moko/include/linux/glamo-gpio.h
+@@ -0,0 +1,98 @@
 +#ifndef __GLAMO_GPIO_H
 +#define __GLAMO_GPIO_H
 +
@@ -2908,8 +3021,7 @@
 +#define GLAMO_GPIO12_LSA0	(GLAMO_GPIO12 | GLAMO_GPIO_F_FUNC)
 +
 +
-+/* shift by 11 is implicit of shift by 12, multiplied by 2 */
-+#define REG_OF_GPIO(gpio)	(((gpio & 0xf000) >> 11) + GLAMO_REG_GPIO_GEN1)
++#define REG_OF_GPIO(gpio)	(((gpio & 0xf000) >> 12)*2 + GLAMO_REG_GPIO_GEN1)
 +#define NUM_OF_GPIO(gpio)	((gpio & 0x0f00) >> 8)
 +#define GPIO_OUT_BIT(gpio)	(1 << (NUM_OF_GPIO(gpio) + 0))
 +#define OUTPUT_BIT(gpio)	(1 << (NUM_OF_GPIO(gpio) + 4))
