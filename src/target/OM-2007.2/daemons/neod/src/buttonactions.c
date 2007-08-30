@@ -55,6 +55,8 @@ static const int MAX_BRIGHTNESS = 5000;
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
+#define HEADPHONE_INSERTION_SWITCHCODE 0x02
+
 GPollFD input_fd[10];
 int max_input_fd = 0;
 
@@ -301,6 +303,25 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 else if ( event.value == 0 ) /* released */
                 {
                     g_debug( "stylus released" );
+                }
+                neod_buttonactions_powersave_reset();
+                if ( power_state != NORMAL )
+                {
+                    neod_buttonactions_set_display( 100 );
+                    power_state = NORMAL;
+                }
+            }
+            else
+            if ( event.type == 5 && event.code == HEADPHONE_INSERTION_SWITCHCODE )
+            {
+                if ( event.value == 1 ) /* inserted */
+                {
+                    g_debug( "headphones IN" );
+                    neod_buttonactions_sound_play( "touchscreen" );
+                }
+                else if ( event.value == 0 ) /* released */
+                {
+                    g_debug( "headphones OUT" );
                 }
                 neod_buttonactions_powersave_reset();
                 if ( power_state != NORMAL )
