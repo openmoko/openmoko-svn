@@ -317,18 +317,21 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 if ( event.value == 0 ) /* inserted */
                 {
                     g_debug( "headphones IN" );
-                    neod_buttonactions_sound_play( "touchscreen" );
+                    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Headphones\", NULL );
                 }
                 else if ( event.value == 1 ) /* released */
                 {
                     g_debug( "headphones OUT" );
+                    g_spawn_command_line_async( "amixer sset \"Amp Mode\" \"Stereo Speakers\", NULL );
                 }
                 neod_buttonactions_powersave_reset();
+#if 0
                 if ( power_state != NORMAL )
                 {
                     neod_buttonactions_set_display( 100 );
                     power_state = NORMAL;
                 }
+#endif
             }
         }
     }
