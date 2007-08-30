@@ -314,12 +314,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
             else
             if ( event.type == 5 && event.code == HEADPHONE_INSERTION_SWITCHCODE )
             {
-                if ( event.value == 1 ) /* inserted */
+                if ( event.value == 0 ) /* inserted */
                 {
                     g_debug( "headphones IN" );
                     neod_buttonactions_sound_play( "touchscreen" );
                 }
-                else if ( event.value == 0 ) /* released */
+                else if ( event.value == 1 ) /* released */
                 {
                     g_debug( "headphones OUT" );
                 }
