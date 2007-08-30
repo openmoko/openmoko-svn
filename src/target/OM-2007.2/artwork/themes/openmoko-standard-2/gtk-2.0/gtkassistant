@@ -1,0 +1,6 @@
+style "gtkassistant" {
+    fg[SELECTED] = "#ff7800"
+    bg[SELECTED] = "#000000"
+}
+class "GtkAssistant" style "gtkassistant"
+widget_class "*.GtkAssistant.*" style "gtkassistant"

@@ -90,6 +90,7 @@ class "GtkWidget" style "moko-window-default"
 include "transparent"
 include "matchboxpanel"
 
+include "gtkassistant"
 include "gtkbutton"
 include "gtkcheckbutton"
 include "gtkcombobox"
