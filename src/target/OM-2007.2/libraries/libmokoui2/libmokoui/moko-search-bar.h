@@ -67,6 +67,9 @@ void	moko_search_bar_prepend_category	(MokoSearchBar *self,
 						 const gchar *text);
 void	moko_search_bar_remove_category		(MokoSearchBar *self,
 						 gint position);
+gint	moko_search_bar_count_categories	(MokoSearchBar *self);
+void	moko_search_bar_clear_categories	(MokoSearchBar *self);
+
 gint	moko_search_bar_get_active		(MokoSearchBar *self);
 gchar *	moko_search_bar_get_active_category	(MokoSearchBar *self);
 void	moko_search_bar_set_active		(MokoSearchBar *self,

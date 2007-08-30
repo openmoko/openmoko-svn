@@ -236,6 +236,32 @@ moko_search_bar_remove_category (MokoSearchBar *self, gint position)
 }
 
 gint
+moko_search_bar_count_categories (MokoSearchBar *self)
+{
+	gint rows = 0;
+	GtkTreeIter iter;
+	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
+
+	GtkTreeModel *model = gtk_combo_box_get_model (
+		GTK_COMBO_BOX (priv->combo));
+	
+	if (gtk_tree_model_get_iter_first (model, &iter))
+		do { rows ++; } while (gtk_tree_model_iter_next (model, &iter));
+	
+	return rows;
+}
+
+void
+moko_search_bar_clear_categories (MokoSearchBar *self)
+{
+	gint i;
+	
+	for (i = moko_search_bar_count_categories (self); i > 0; i--) {
+		moko_search_bar_remove_category (self, 0);
+	}
+}
+
+gint
 moko_search_bar_get_active (MokoSearchBar *self)
 {
 	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
