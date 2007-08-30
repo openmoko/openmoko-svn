@@ -92,7 +92,7 @@ omp_stock_button_create(gchar *image_name, GtkWidget **image, GCallback callback
 
 	g_object_set(G_OBJECT(button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
 
-	*image = gtk_image_new_from_icon_name(image_name, BUTTON_PIXMAP_SIZE);
+	*image = gtk_image_new_from_icon_name(image_name, GTK_ICON_SIZE_BUTTON);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(*image));
 
 	return button;
@@ -744,12 +744,12 @@ omp_main_update_status_change(gpointer instance, gpointer user_data)
 	if (omp_playback_get_state() == OMP_PLAYBACK_STATE_PAUSED)
 	{
 		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image),
-			"gtk-media-play-ltr", BUTTON_PIXMAP_SIZE);
+			"gtk-media-play-ltr", GTK_ICON_SIZE_BUTTON);
 
 	} else {
 
 		gtk_image_set_from_icon_name(GTK_IMAGE(main_widgets.play_pause_button_image),
-			"gtk-media-pause", BUTTON_PIXMAP_SIZE);
+			"gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	}
 }
 

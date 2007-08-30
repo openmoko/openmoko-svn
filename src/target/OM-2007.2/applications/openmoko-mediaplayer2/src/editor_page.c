@@ -193,8 +193,6 @@ omp_editor_page_list_create(GtkContainer *container)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(G_OBJECT(renderer), "pixbuf", track_icon, NULL);
 	column = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(column, BUTTON_PIXMAP_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();
@@ -252,7 +250,7 @@ omp_editor_page_create()
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(hbox));
 
-	image = gtk_image_new_from_icon_name("gtk-file", BUTTON_PIXMAP_SIZE);
+	image = gtk_image_new_from_icon_name("gtk-file", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(image), TRUE, TRUE, 0);
 
 	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);

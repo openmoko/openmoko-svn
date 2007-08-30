@@ -24,18 +24,33 @@
  * Playback engine interface
  */
 
+#include <glib/gi18n.h>
 #include <gst/gst.h>
-
 #include <uriparser/Uri.h>
 
 #include "playback.h"
-#include "persistent.h"
+#include "guitools.h"
 #include "main.h"
+#include "persistent.h"
 
-GstElement *omp_gst_playbin = NULL;						///< Our ticket to the gstreamer world
-guint omp_playback_ui_timeout = 0;						///< Handle of the UI-updating timeout
-gboolean omp_playback_ui_timeout_halted;			///< Flag that tells the UI-updating timeout to exit if set
-gulong omp_playback_pending_position = 0;			///< Since we can't set a new position if element is not paused or playing we store the position here and set it when it reached either state
+/// Our ticket to the gstreamer world
+GstElement *omp_gst_playbin = NULL;
+
+/// Handle of the UI-updating timeout
+guint omp_playback_ui_timeout = 0;
+
+/// Flag that tells the UI-updating timer to exit if set
+gboolean omp_playback_ui_timeout_halted;
+
+/// Since we can't set a new position if element is not paused or playing we
+/// store the position here and set it when it reached either state
+gulong omp_playback_pending_position = 0;
+
+/// Contains the final volume when fading (-1 means "not fading")
+guint omp_playback_fade_final_vol = -1;
+
+/// Holds the volume increment per UI-update timer call
+guint omp_playback_fade_increment = 0;
 
 // Some private forward declarations
 static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
@@ -48,8 +63,9 @@ static gboolean omp_gst_message_tag(GstBus *bus, GstMessage *message, gpointer d
 
 /**
  * Initializes gstreamer by setting up pipe, message hooks and bins
+ * @return TRUE on success, FAIL if an error occured
  */
-void
+gboolean
 omp_playback_init()
 {
 	GstBus *bus;
@@ -57,7 +73,7 @@ omp_playback_init()
 	// Bail if everything is already set up
 	if (omp_gst_playbin)
 	{
-		return;
+		return TRUE;
 	}
 
 	// Create the signals we'll emit
@@ -92,6 +108,13 @@ omp_playback_init()
 	// Set up gstreamer pipe and bins
 	omp_gst_playbin = gst_element_factory_make("playbin", "play");
 
+	if (!omp_gst_playbin)
+	{
+		error_dialog(_("Error: gstreamer failed to initialize.\nPlease make sure gstreamer and its modules are properly installed."));
+
+		return FALSE;
+	}
+
 	// Set up message hooks
 	bus = gst_pipeline_get_bus(GST_PIPELINE(omp_gst_playbin));
 
@@ -103,6 +126,8 @@ omp_playback_init()
 	g_signal_connect(bus, "message::tag",						G_CALLBACK(omp_gst_message_tag), NULL);
 
 	gst_object_unref(bus);
+
+	return TRUE;
 }
 
 /**
@@ -179,6 +204,24 @@ omp_playback_load_track_from_uri(gchar *uri)
 static gboolean
 omp_playback_ui_timeout_callback(gpointer data)
 {
+	guint volume;
+
+	// Fade in if needed
+	if (omp_playback_fade_final_vol != -1)
+	{
+		volume = omp_playback_get_volume()+omp_playback_fade_increment;
+
+		if (volume > omp_playback_fade_final_vol)
+		{
+			omp_playback_set_volume(omp_playback_fade_final_vol);
+			omp_playback_fade_final_vol = -1;
+
+		} else {
+
+			omp_playback_set_volume(volume);
+		}
+	}
+
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
 	
 	if (omp_playback_ui_timeout_halted)
@@ -367,9 +410,13 @@ omp_playback_set_volume(guint volume)
 	// Set playbin volume which ranges from 0.0 to 1.0
 	g_object_set(G_OBJECT(omp_gst_playbin), "volume", volume/100.0, NULL);
 
-	omp_session_set_volume(volume);
+	// Volume fading shouldn't be visible to the user
+	if (omp_playback_fade_final_vol == -1)
+	{
+		omp_session_set_volume(volume);
 
-	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED);
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED);
+	}
 }
 
 /**
@@ -391,6 +438,14 @@ omp_playback_get_volume()
 void
 omp_playback_fade_volume()
 {
+	omp_playback_fade_final_vol = omp_playback_get_volume();
+	omp_playback_set_volume(0);
+
+	omp_playback_fade_increment =
+		omp_playback_fade_final_vol / (omp_session_get_fade_speed()/PLAYBACK_UI_UPDATE_INTERVAL);
+
+	if (omp_playback_fade_increment == 0)
+		omp_playback_fade_increment = 1;
 }
 
 /**
@@ -445,12 +500,17 @@ omp_gst_message_state_changed(GstBus *bus, GstMessage *message, gpointer data)
 static gboolean
 omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data)
 {
-	#ifdef DEBUG
-		GError *error;
-		gst_message_parse_error(message, &error, NULL);
-		g_printerr("gstreamer error: %s\n", error->message);
-		g_error_free(error);
-	#endif
+	GError *error;
+	gchar *text;
+
+	gst_message_parse_error(message, &error, NULL);
+	g_printerr("gstreamer error: %s\n", error->message);
+
+	text = g_strdup_printf("gstreamer error:\n%s", error->message);
+	error_dialog(text);
+	g_free(text);
+
+	g_error_free(error);
 
 	return TRUE;
 }
@@ -461,12 +521,17 @@ omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data)
 static gboolean
 omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data)
 {
-	#ifdef DEBUG
-		GError *error;
-		gst_message_parse_warning(message, &error, NULL);
-		g_printerr("gstreamer warning: %s\n", error->message);
-		g_error_free(error);
-	#endif
+	GError *error;
+	gchar *text;
+
+	gst_message_parse_warning(message, &error, NULL);
+	g_printerr("gstreamer warning: %s\n", error->message);
+
+	text = g_strdup_printf("gstreamer warning:\n%s", error->message);
+	error_dialog(text);
+	g_free(text);
+
+	g_error_free(error);
 
 	return TRUE;
 }

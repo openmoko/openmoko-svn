@@ -64,10 +64,14 @@
 // Forces the window to the native size of the Neo1973's screen area if enabled
 //define EMULATE_SIZE
 
-GtkWidget *omp_window = NULL;													///< Application's main window
-GtkWidget *omp_notebook = NULL;												///< GtkNotebook containing the pages making up the UI
-struct _omp_notebook_tab_ids *omp_notebook_tab_ids = NULL;	///< Holds numerical IDs of the notebook tabs, used for gtk_notebook_set_current_page()
-struct _omp_notebook_tabs *omp_notebook_tabs = NULL;	///< Holds the GtkWidget handles of the notebook tabs so they can be hidden/shown
+/// Application's main window
+GtkWidget *omp_window = NULL;
+
+/// GtkNotebook containing the pages making up the UI
+GtkWidget *omp_notebook = NULL;
+
+/// Holds the tab widgets of the GtkNotebook
+GtkWidget *omp_notebook_tabs[OMP_TABS];
 
 
 
@@ -177,10 +181,11 @@ set_lock(gchar *file_name)
 
 /**
  * Makes sure only one instance of the media player is running at a time
+ * @return TRUE if lock is in place, FALSE if it wasn't
  * @todo Single-instance mechanism needs to be improved
  */
-void
-handle_locking()
+gboolean
+check_lock()
 {
 	gchar *lock_file = "/tmp/mediaplayer.lock";
 	pid_t pid;
@@ -190,10 +195,11 @@ handle_locking()
 	{
 		g_printf(_("Already running an instance of the Media Player, bringing that to the front instead.\n"));
 		kill(pid, SIGUSR1);
-		return;
+		return TRUE;
 	}
 
 	set_lock(lock_file);
+	return FALSE;
 }
 
 /**
@@ -219,7 +225,7 @@ omp_window_create()
 	g_signal_connect(G_OBJECT(omp_window), "destroy", G_CALLBACK(omp_close), NULL);
 
 	#ifdef EMULATE_SIZE
-		gtk_widget_set_size_request(GTK_WIDGET(omp_window), 480, 620);
+		gtk_widget_set_size_request(GTK_WIDGET(omp_window), 480, 600);
 	#endif
 }
 
@@ -231,7 +237,6 @@ void
 omp_window_create_pages()
 {
 	GtkWidget *page;
-	guint page_id = 0;
 
 	// Create and set up the notebook that contains the individual UI pages
 	omp_notebook = gtk_notebook_new();
@@ -240,35 +245,21 @@ omp_window_create_pages()
 	gtk_container_add(GTK_CONTAINER(omp_window), GTK_WIDGET(omp_notebook));
 	gtk_widget_show(omp_notebook);
 
-	omp_notebook_tab_ids = g_new0(struct _omp_notebook_tab_ids, 1);
-	omp_notebook_tabs = g_new0(struct _omp_notebook_tabs, 1);
-
 	// Add main page
 	page = omp_main_page_create();
 	notebook_add_page_with_icon(omp_notebook, page, MOKO_STOCK_SPEAKER, 0);
-	omp_notebook_tab_ids->main = page_id++;
-	omp_notebook_tabs->main = page;
+	omp_notebook_tabs[OMP_TAB_MAIN] = page;
 
 	// Add playlist page
 	page = omp_playlist_page_create();
 	notebook_add_page_with_icon(omp_notebook, page, MOKO_STOCK_VIEW, 0);
-	omp_notebook_tab_ids->playlists = page_id++;
-	omp_notebook_tabs->playlists = page;
+	omp_notebook_tabs[OMP_TAB_PLAYLISTS] = page;
 
 	// Add playlist editor page
 	page = omp_editor_page_create();
 	notebook_add_page_with_icon(omp_notebook, page, "gtk-index", 0);
-	omp_notebook_tab_ids->editor = page_id++;
-	omp_notebook_tabs->editor = page;
-}
-
-/**
- * Frees all resources used by the main window
- */
-void
-omp_window_free()
-{
-	g_free(omp_notebook_tab_ids);
+	omp_notebook_tabs[OMP_TAB_PLAYLIST_EDITOR] = page;
+	gtk_widget_hide(page);	// We show the page once a playlist was loaded
 }
 
 /**
@@ -278,6 +269,32 @@ void
 omp_window_show()
 {
 	gtk_widget_show(omp_window);
+}
+
+/**
+ * Makes one of the UI tabs visible on the notebook
+ * @param tab_id An ID taken from the omp_notebook_tabs enum
+ * @see omp_notebook_tabs
+ */
+void
+omp_show_tab(guint tab_id)
+{
+	g_return_if_fail(tab_id < OMP_TABS);
+
+	gtk_widget_show(GTK_WIDGET(omp_notebook_tabs[tab_id]));
+}
+
+/**
+ * Hides one of the UI tabs from the notebook
+ * @param tab_id An ID taken from the omp_notebook_tabs enum
+ * @see omp_notebook_tabs
+ */
+void
+omp_hide_tab(guint tab_id)
+{
+	g_return_if_fail(tab_id < OMP_TABS);
+
+	gtk_widget_hide(GTK_WIDGET(omp_notebook_tabs[tab_id]));
 }
 
 /**
@@ -330,7 +347,7 @@ main(int argc, char *argv[])
 	}
 
 	// Make sure we have only one instance running
-	handle_locking();
+	if (check_lock()) return EXIT_SUCCESS;
 
 	// Initialize gstreamer, must be last in the chain of command line parameter processors
 	if (!gst_init_check(&argc, &argv, &error))
@@ -354,7 +371,7 @@ main(int argc, char *argv[])
 	// Initialize playback, playlist and UI handling
 	omp_config_init();
 	omp_window_create();
-	omp_playback_init();
+	if (!omp_playback_init()) return EXIT_FAILURE;
 	omp_playlist_init();
 	omp_window_create_pages();
 
@@ -370,7 +387,6 @@ main(int argc, char *argv[])
 	omp_playback_save_state();
 	omp_playback_free();
 	omp_playlist_free();
-	omp_window_free();
 	gst_deinit();
 	g_free(ui_image_path);
 

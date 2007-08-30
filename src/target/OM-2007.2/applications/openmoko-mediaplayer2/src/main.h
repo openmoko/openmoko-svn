@@ -29,9 +29,6 @@
 
 #include <gtk/gtk.h>
 
-// This size is valid for the entire application and determines the size of the button's icons
-#define BUTTON_PIXMAP_SIZE 36
-
 // Where to find application-specific images relative to $DATA_DIR (/usr/share/openmoko-mediaplayer)?
 #define RELATIVE_UI_IMAGE_PATH "/images"
 
@@ -41,22 +38,20 @@
 // What file to save/load session data to/from? File name is relative to user's home directory
 #define SESSION_FILE_NAME "/.openmoko-mediaplayer"
 
-
-struct _omp_notebook_tab_ids
+enum omp_notebook_tabs
 {
-	guint main, playlists, editor, files;
+	OMP_TAB_MAIN = 0,
+	OMP_TAB_PLAYLISTS,
+	OMP_TAB_PLAYLIST_EDITOR,
+	OMP_TABS
 };
 
-struct _omp_notebook_tabs
-{
-	GtkWidget *main, *playlists, *editor, *files;
-};
-
-extern struct _omp_notebook_tab_ids *omp_notebook_tab_ids;
-extern struct _omp_notebook_tabs *omp_notebook_tabs;
 extern GtkWidget *omp_notebook;
 extern GtkWidget *omp_window;
 
 void omp_application_terminate();
+
+void omp_show_tab(guint tab_id);
+void omp_hide_tab(guint tab_id);
 
 #endif

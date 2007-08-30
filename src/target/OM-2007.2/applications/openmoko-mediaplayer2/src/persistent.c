@@ -332,3 +332,12 @@ omp_session_set_volume(guint volume)
 	omp_session->volume = volume;
 	omp_session_save();
 }
+
+/**
+ * Returns the number of milliseconds defining the duration of a volume fade
+ */
+guint
+omp_session_get_fade_speed()
+{
+	return omp_session->fade_speed;
+}

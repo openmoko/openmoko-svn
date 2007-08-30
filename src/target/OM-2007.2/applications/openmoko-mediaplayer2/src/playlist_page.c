@@ -29,6 +29,8 @@
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-stock.h>
 
+#include <string.h>
+
 #include "playlist_page.h"
 #include "main.h"
 #include "guitools.h"
@@ -71,17 +73,15 @@ omp_playlist_page_list_entry_select(gchar *playlist_name, gchar *playlist_file_a
 		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
 		_("Load playlist '%s'?"), playlist_name);
 
+	// We don't want a title of "<unnamed>"
+	gtk_window_set_title(GTK_WINDOW(dialog), " ");
+
 	dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
 
 	if (dialog_result == GTK_RESPONSE_YES)
 	{
 		// Load playlist with state reset to have sane playlist values
-		if (omp_playlist_load(playlist_file_abs, TRUE))
-		{
-			// Switch back to main UI page
-/*			gtk_notebook_set_current_page(GTK_NOTEBOOK(omp_notebook),
-				omp_notebook_tab_ids->main); */
-		}
+		omp_playlist_load(playlist_file_abs, TRUE);
 	}
 
 	// Clean up
@@ -103,6 +103,9 @@ omp_playlist_page_list_entry_delete(gchar *playlist_name, gchar *playlist_file)
 	dialog = gtk_message_dialog_new(0,
 		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
 		_("Delete playlist '%s'?"), playlist_name);
+
+	// We don't want a title of "<unnamed>"
+	gtk_window_set_title(GTK_WINDOW(dialog), " ");
 
 	dialog_result = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -191,7 +194,7 @@ omp_playlist_page_add_list(GtkButton *button, gpointer user_data)
 	gchar *path, *file_name;
 	const gchar *name = gtk_entry_get_text(GTK_ENTRY(omp_playlist_page_entry));
 
-	g_return_if_fail(name);
+	g_return_if_fail(strcmp(name, "") != 0);
 
 	// Playlist path is relative to user's home dir
 	path = g_build_path("/", g_get_home_dir(), RELATIVE_PLAYLIST_PATH, NULL);
@@ -285,8 +288,6 @@ omp_playlist_page_list_create(GtkContainer *container)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(G_OBJECT(renderer), "stock-id", MOKO_STOCK_VIEW, NULL);
 	column = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(column, BUTTON_PIXMAP_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();
@@ -300,8 +301,6 @@ omp_playlist_page_list_create(GtkContainer *container)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(G_OBJECT(renderer), "stock-id", "gtk-delete", NULL);
 	column = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
-	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
-	gtk_tree_view_column_set_fixed_width(column, 1*BUTTON_PIXMAP_SIZE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	// Add playlist view to container
@@ -342,7 +341,7 @@ omp_playlist_page_create()
 	input_box = gtk_hbox_new(FALSE, 0);
 	omp_playlist_page_entry = gtk_entry_new();
 	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name("gtk-add", BUTTON_PIXMAP_SIZE);
+	image = gtk_image_new_from_icon_name("gtk-add", GTK_ICON_SIZE_BUTTON);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
 
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(omp_playlist_page_add_list), NULL);

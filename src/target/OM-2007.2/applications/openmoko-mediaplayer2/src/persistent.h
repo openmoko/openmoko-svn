@@ -85,4 +85,6 @@ void omp_session_set_playlist(gchar *playlist_file);
 void omp_session_set_track_id(guint track_id);
 void omp_session_set_volume(guint volume);
 
+guint omp_session_get_fade_speed();
+
 #endif

@@ -24,6 +24,8 @@
  * Various helper functions to aid with GUI creation and handling
  */
 
+#include <gtk/gtk.h>
+
 #include "guitools.h"
 
 /// Absolute path to the UI pixmaps
@@ -126,6 +128,25 @@ button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callbac
 	if (image) *image = btn_image;
 
 	return button;
+}
+
+/**
+ * Presents a simple modal error dialog to the user
+ */
+void
+error_dialog(gchar *message)
+{
+	GtkWidget *dialog;
+
+	dialog = gtk_message_dialog_new(0,
+		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+		"%s", message);
+
+	// We don't want a title of "<unnamed>"
+	gtk_window_set_title(GTK_WINDOW(dialog), " ");
+
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
 /**

@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "playlist.h"
+#include "guitools.h"
 #include "omp_spiff_c.h"
 #include "main.h"
 #include "playback.h"
@@ -138,8 +139,7 @@ omp_playlist_free()
 gboolean
 omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 {
-	GtkWidget *dialog;
-	gchar *title;
+	gchar *title, *text;
 
 	// Free the track history's memory by deleting the first element until the list is empty
 	while (omp_track_history)
@@ -188,6 +188,9 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_LOADED, title);
 		g_free(title);
 
+		// Show playlist editor
+		omp_show_tab(OMP_TAB_PLAYLIST_EDITOR);
+
 	} else {
 
 		omp_playlist_current_track_id	= -1;
@@ -198,12 +201,9 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 		#endif
 
 		// Notify user
-		dialog = gtk_message_dialog_new(0,
-			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-			_("\nCould not load playlist '%s'"), playlist_file);
-
-		gtk_dialog_run(GTK_DIALOG(dialog));
-		gtk_widget_destroy(dialog);
+		text = g_strdup_printf(_("\nCould not load playlist '%s'"), playlist_file);
+		error_dialog(text);
+		g_free(text);
 	}
 
 	return omp_playlist ? TRUE : FALSE;

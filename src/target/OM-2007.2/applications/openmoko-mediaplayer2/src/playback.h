@@ -44,7 +44,7 @@
 // The UI will be updated at this interval when a track is playing (in ms)
 #define PLAYBACK_UI_UPDATE_INTERVAL 1000
 
-void omp_playback_init();
+gboolean omp_playback_init();
 void omp_playback_free();
 void omp_playback_save_state();
 void omp_playback_reset();
