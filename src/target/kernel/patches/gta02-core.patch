@@ -1,8 +1,8 @@
-Index: linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
+Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,620 @@
++++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -0,0 +1,667 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -251,6 +251,38 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
 +		gta02_pcf_pdata.rails[PCF50633_REGULATOR_DOWN2].flags =
 +							PMU_VRAIL_F_SUSPEND_ON;
 +		break;
++	case GTA02v2_SYSTEM_REV:
++		/* we need to keep the 1.8V going since this is the SDRAM
++		 * self-refresh voltage */
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_DOWN2].flags =
++							PMU_VRAIL_F_SUSPEND_ON;
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_DOWN2].name =
++							"io_1v8",
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO1].name =
++							"gsensor_3v3",
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO1].voltage.init =
++							3300;
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO1].voltage.max =
++							3300;
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO1].flags &=
++							~PMU_VRAIL_F_SUSPEND_ON;
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO3].flags =
++							PMU_VRAIL_F_UNUSED;
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO5] = ((struct pmu_voltage_rail) {
++							.name = "rf_3v",
++							.voltage = {
++								.init = 0,
++								.max = 3000,
++							}
++						});
++		gta02_pcf_pdata.rails[PCF50633_REGULATOR_LDO6] = ((struct pmu_voltage_rail) {
++							.name = "lcm_3v",
++							.voltage = {
++								.init = 3000,
++								.max = 3000,
++							}
++						});
++		break;
 +	default:
 +		break;
 +	}
@@ -310,6 +342,7 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +	switch (system_rev) {
 +	case GTA02v1_SYSTEM_REV:
++	case GTA02v2_SYSTEM_REV:
 +		/* FIXME */
 +		break;
 +	}
@@ -569,6 +602,18 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +};
 +
++static void mangle_glamo_res_by_system_rev(void)
++{
++	switch (system_rev) {
++	case GTA02v1_SYSTEM_REV:
++		break;
++	case GTA02v2_SYSTEM_REV:
++		gta02_glamo_resources[2].start = GTA02v2_GPIO_3D_RESET;
++		gta02_glamo_resources[2].end = GTA02v2_GPIO_3D_RESET;
++		break;
++	}
++}
++
 +static void __init gta02_map_io(void)
 +{
 +	s3c24xx_init_io(gta02_iodesc, ARRAY_SIZE(gta02_iodesc));
@@ -598,6 +643,8 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
 +	mangle_pmu_pdata_by_system_rev();
 +	platform_device_register(&gta02_pmu_dev);
 +	platform_device_register(&gta02_led_dev);
++
++	mangle_glamo_res_by_system_rev();
 +	platform_device_register(&gta02_glamo_dev);
 +
 +	platform_add_devices(gta02_devices, ARRAY_SIZE(gta02_devices));
@@ -623,11 +670,11 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2440/mach-gta02.c
 +	.init_machine	= gta02_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6.22.1/include/asm-arm/arch-s3c2410/gta02.h
+Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/gta02.h
-@@ -0,0 +1,24 @@
++++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
+@@ -0,0 +1,27 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
 +
@@ -651,11 +698,14 @@ Index: linux-2.6.22.1/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02_IRQ_3D		IRQ_EINT12
 +#define GTA02_IRQ_PCF50633	IRQ_EINT9
 +
++/* Changes in GTA02v2 */
++#define GTA02v2_GPIO_3D_RESET	S3C2440_GPJ4
++
 +#endif /* _GTA02_H */
-Index: linux-2.6.22.1/arch/arm/mach-s3c2440/Kconfig
+Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Kconfig
 ===================================================================
---- linux-2.6.22.1.orig/arch/arm/mach-s3c2440/Kconfig
-+++ linux-2.6.22.1/arch/arm/mach-s3c2440/Kconfig
+--- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Kconfig
 @@ -73,5 +73,12 @@
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
@@ -669,19 +719,19 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2440/Kconfig
 +
  endmenu
  
-Index: linux-2.6.22.1/arch/arm/mach-s3c2440/Makefile
+Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Makefile
 ===================================================================
---- linux-2.6.22.1.orig/arch/arm/mach-s3c2440/Makefile
-+++ linux-2.6.22.1/arch/arm/mach-s3c2440/Makefile
+--- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Makefile
 @@ -22,3 +22,4 @@
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
 +obj-$(CONFIG_MACH_NEO1973_GTA02) += mach-gta02.o
-Index: linux-2.6.22.1/arch/arm/common/gta01_pm_bt.c
+Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
 ===================================================================
---- linux-2.6.22.1.orig/arch/arm/common/gta01_pm_bt.c
-+++ linux-2.6.22.1/arch/arm/common/gta01_pm_bt.c
+--- linux-2.6.22.5-moko.orig/arch/arm/common/gta01_pm_bt.c
++++ linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
 @@ -19,6 +19,7 @@
  #include <linux/pcf50606.h>
  
@@ -769,10 +819,10 @@ Index: linux-2.6.22.1/arch/arm/common/gta01_pm_bt.c
  	/* we pull reset to low to make sure that the chip doesn't
  	 * drain power through the reset line */
  	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
-Index: linux-2.6.22.1/arch/arm/common/gta01_pm_gsm.c
+Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
---- linux-2.6.22.1.orig/arch/arm/common/gta01_pm_gsm.c
-+++ linux-2.6.22.1/arch/arm/common/gta01_pm_gsm.c
+--- linux-2.6.22.5-moko.orig/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6.22.5-moko/arch/arm/common/gta01_pm_gsm.c
 @@ -19,7 +19,9 @@
  #include <linux/errno.h>
  
@@ -815,17 +865,18 @@ Index: linux-2.6.22.1/arch/arm/common/gta01_pm_gsm.c
  		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
-@@ -158,6 +162,9 @@
+@@ -158,6 +162,10 @@
  			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  			break;
 +		case GTA02v1_SYSTEM_REV:
++		case GTA02v2_SYSTEM_REV:
 +			gta01_gsm.gpio_ngsm_en = 0;
 +			break;
  		default:
  			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
  				 "some PM features not available!!!\n",
-@@ -175,9 +182,13 @@
+@@ -175,9 +183,13 @@
  		break;
  	}
  

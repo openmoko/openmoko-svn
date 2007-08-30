@@ -35,6 +35,7 @@ hxd8-tsl256x.patch
 pcf50633.patch
 smedia-glamo.patch
 s3c24xx-nand-largepage.patch
+s3c2442b-cpuid.patch
 gta02-core.patch
 alsa-2.6.23-rc1-commit.diff
 asoc-platform-hw_init-pcm_emulation-fix.patch
