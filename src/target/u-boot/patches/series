@@ -4,7 +4,6 @@ ext2load_hex.patch
 uboot-mokoversion.patch
 
 # those we want to get mainline
-uboot-s3c2410-warnings-fix.patch
 uboot-strtoul.patch
 uboot-cramfs_but_no_jffs2.patch
 nand-read_write_oob.patch
