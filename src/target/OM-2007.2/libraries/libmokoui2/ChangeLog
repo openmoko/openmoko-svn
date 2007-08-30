@@ -1,3 +1,10 @@
+2007-08-30  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Change the header file to be parsable by h2def.py, which will
+        reduce the manual work needed to create bindings.
+
+        * libmokoui/moko-search-bar.h:
+
 2007-08-29  Chris Lord,,,  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_refresh),
