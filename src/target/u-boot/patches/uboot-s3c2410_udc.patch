@@ -17,7 +17,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/usbdcore_s3c2410.c
-@@ -0,0 +1,730 @@
+@@ -0,0 +1,751 @@
 +/* S3C2410 USB Device Controller Driver for u-boot
 + *
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -66,6 +66,27 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +#include "usbdcore_s3c2410.h"
 +#include "usbdcore_ep0.h"
 +#include <usb_cdc_acm.h>
++
++static void debug_urb_buffer(char *prefix, struct usb_endpoint_instance *ep)
++{
++#ifdef DEBUG
++	int num;
++	static char buf[128];
++
++	if (!ep->tx_urb) {
++		serial_printf("no tx_urb\n");
++		return;
++	}
++
++	num = MIN(ep->tx_urb->actual_length - ep->sent, ep->tx_packetSize);
++
++	memset(buf, 0, sizeof(buf));
++	strncpy(buf, ep->tx_urb->buffer + ep->sent, num);
++
++	serial_printf("%s(%d:%s)\n", prefix, num, buf);
++#endif
++}
++
 +
 +enum ep0_state {
 +        EP0_IDLE,
@@ -390,7 +411,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +				outl(ep_csr1|S3C2410_UDC_ICSR1_PKTRDY, S3C2410_UDC_IN_CSR1_REG);
 +			} else {
 +				/* write actual data to fifo */
-+				debug("TX_DATA ");
++				debug_urb_buffer("TX_DATA", endpoint);
 +				s3c2410_write_noniso_tx_fifo(endpoint);
 +				outl(ep_csr1|S3C2410_UDC_ICSR1_PKTRDY, S3C2410_UDC_IN_CSR1_REG);
 +			}
@@ -523,7 +544,7 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
 +
 +	if (endpoint->tx_urb) {
 +		u32 ep_csr1;
-+		debug("We have an URB, transmitting\n");
++		debug_urb_buffer("We have an URB, transmitting", endpoint);
 +
 +		s3c2410_write_noniso_tx_fifo(endpoint);
 +
