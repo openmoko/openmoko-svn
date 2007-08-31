@@ -124,6 +124,8 @@ moko_terminal_init(MokoTerminal* self)
     vte_terminal_set_mouse_autohide( vte, TRUE );
     vte_terminal_set_cursor_blinks( vte, TRUE );
 
+    vte_terminal_set_backspace_binding( vte, VTE_ERASE_ASCII_DELETE);
+
     vte_terminal_fork_command( vte,
                                NULL,
                                NULL,
