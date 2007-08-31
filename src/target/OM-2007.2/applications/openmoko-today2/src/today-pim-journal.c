@@ -40,7 +40,7 @@ today_pim_journal_update_messages (TodayData *data)
 
 static void
 today_pim_journal_entry_added_cb (MokoJournal *journal,
-				  const MokoJournalEntry *entry,
+				  MokoJournalEntry *entry,
 				  TodayData *data)
 {
 	switch (moko_journal_entry_get_entry_type (entry)) {
@@ -60,7 +60,7 @@ today_pim_journal_entry_added_cb (MokoJournal *journal,
 
 static void
 today_pim_journal_entry_removed_cb (MokoJournal *journal,
-				    const MokoJournalEntry *entry,
+				    MokoJournalEntry *entry,
 				    TodayData *data)
 {
 	switch (moko_journal_entry_get_entry_type (entry)) {
@@ -144,7 +144,7 @@ today_pim_journal_box_new (TodayData *data)
 	
 	g_signal_connect (G_OBJECT (column), "clicked",
 		G_CALLBACK (today_pim_journal_header_clicked_cb), data);
-	g_signal_connect (G_OBJECT (gtk_tree_view_get_selection (treeview)),
+	g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
 		"changed", G_CALLBACK (today_pim_journal_selection_changed_cb),
 		data);
 	
