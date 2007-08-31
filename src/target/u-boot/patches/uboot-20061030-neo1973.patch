@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2172,6 +2172,14 @@
+@@ -2174,6 +2174,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -211,7 +211,7 @@ Index: u-boot/drivers/pcf50606.c
 +	pcf50606_reg_write(PCF50606_REG_RTCHR, bin2bcd(tmp->tm_hour));
 +	pcf50606_reg_write(PCF50606_REG_RTCWD, bin2bcd(tmp->tm_wday));
 +	pcf50606_reg_write(PCF50606_REG_RTCDT, bin2bcd(tmp->tm_mday));
-+	pcf50606_reg_write(PCF50606_REG_RTCMN, bin2bcd(tmp->tm_mon));
++	pcf50606_reg_write(PCF50606_REG_RTCMT, bin2bcd(tmp->tm_mon));
 +	pcf50606_reg_write(PCF50606_REG_RTCYR, bin2bcd(tmp->tm_year % 100));
 +}
 +
