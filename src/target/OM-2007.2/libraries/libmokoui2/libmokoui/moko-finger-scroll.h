@@ -54,6 +54,8 @@ GtkWidget* moko_finger_scroll_new (void);
 GtkWidget* moko_finger_scroll_new_full (gint mode, gboolean enabled,
 					gdouble vel_min, gdouble vel_max,
 					gdouble decel, guint sps);
+void moko_finger_scroll_add_with_viewport (MokoFingerScroll *scroll,
+					   GtkWidget *child);
 
 G_END_DECLS
 

@@ -47,37 +47,19 @@ struct _MokoSearchBarClass {
 					 gboolean search_visible);
 	void	(*text_changed)		(MokoSearchBar *self,
 					 GtkEditable *editable);
-	void	(*category_changed)	(MokoSearchBar *self,
+	void	(*combo_changed)	(MokoSearchBar *self,
 					 GtkComboBox *combo_box);
 };
 
 GType moko_search_bar_get_type (void);
 
-GtkWidget *	moko_search_bar_new		(void);
+GtkWidget *	moko_search_bar_new		();
+GtkWidget *	moko_search_bar_new_with_combo	(GtkComboBox *combo);
+GtkComboBox *	moko_search_bar_get_combo_box	(MokoSearchBar *self);
+GtkEntry *	moko_search_bar_get_entry	(MokoSearchBar *self);
 
-gboolean 	moko_search_bar_search_visible	(MokoSearchBar *self);
+gboolean	moko_search_bar_search_visible	(MokoSearchBar *self);
 void		moko_search_bar_toggle		(MokoSearchBar *self);
-
-void	moko_search_bar_append_category		(MokoSearchBar *self,
-						 const gchar *text);
-void	moko_search_bar_insert_category		(MokoSearchBar *self,
-						 gint position,
-						 const gchar *text);
-void	moko_search_bar_prepend_category	(MokoSearchBar *self,
-						 const gchar *text);
-void	moko_search_bar_remove_category		(MokoSearchBar *self,
-						 gint position);
-gint	moko_search_bar_count_categories	(MokoSearchBar *self);
-void	moko_search_bar_clear_categories	(MokoSearchBar *self);
-
-gint	moko_search_bar_get_active		(MokoSearchBar *self);
-gchar *	moko_search_bar_get_active_category	(MokoSearchBar *self);
-void	moko_search_bar_set_active		(MokoSearchBar *self,
-						 gint position);
-
-const gchar *	moko_search_bar_get_text	(MokoSearchBar *self);
-void		moko_search_bar_set_text	(MokoSearchBar *self,
-						 const gchar *text);
 
 G_END_DECLS
 

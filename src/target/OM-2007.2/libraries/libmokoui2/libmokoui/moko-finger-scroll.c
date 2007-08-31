@@ -799,3 +799,13 @@ moko_finger_scroll_new_full (gint mode, gboolean enabled,
 			     NULL);
 }
 
+void
+moko_finger_scroll_add_with_viewport (MokoFingerScroll *self, GtkWidget *child)
+{
+	GtkWidget *viewport = gtk_viewport_new (NULL, NULL);
+	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport), GTK_SHADOW_NONE);
+	gtk_container_add (GTK_CONTAINER (viewport), child);
+	gtk_widget_show (viewport);
+	gtk_container_add (GTK_CONTAINER (self), viewport);
+}
+

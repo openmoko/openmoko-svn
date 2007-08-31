@@ -35,19 +35,39 @@ struct _MokoSearchBarPrivate
 };
 
 enum {
+	PROP_COMBO = 1,
+	PROP_ENTRY,
+};
+
+enum {
 	TOGGLED,
 	TEXT_CHANGED,
-	CATEGORY_CHANGED,
+	COMBO_CHANGED,
 	LAST_SIGNAL
 };
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
+
+static void
+combo_changed_cb (GtkComboBox *combo, MokoSearchBar *self)
+{
+	g_signal_emit (self, signals[COMBO_CHANGED], 0, combo);
+}
+
 static void
 moko_search_bar_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
+	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (object);
+
 	switch (property_id) {
+	    case PROP_COMBO :
+		g_value_set_object (value, priv->combo);
+		break;
+	    case PROP_ENTRY :
+		g_value_set_object (value, priv->entry);
+		break;
 	    default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -57,7 +77,18 @@ static void
 moko_search_bar_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
+	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (object);
+
 	switch (property_id) {
+	    case PROP_COMBO :
+		priv->combo = g_value_get_object (value);
+		gtk_box_pack_start (GTK_BOX (object), priv->combo,
+			TRUE, TRUE, 0);
+		gtk_widget_show (priv->combo);
+
+		g_signal_connect (G_OBJECT (priv->combo), "changed",
+			G_CALLBACK (combo_changed_cb), object);
+		break;
 	    default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
 	}
@@ -88,6 +119,26 @@ moko_search_bar_class_init (MokoSearchBarClass *klass)
 	object_class->dispose = moko_search_bar_dispose;
 	object_class->finalize = moko_search_bar_finalize;
 
+	g_object_class_install_property (
+		object_class,
+		PROP_COMBO,
+		g_param_spec_object (
+			"combo",
+			"GtkComboBox *",
+			"The GtkComboBox to place inside the widget.",
+			GTK_TYPE_COMBO_BOX,
+			G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+	g_object_class_install_property (
+		object_class,
+		PROP_ENTRY,
+		g_param_spec_object (
+			"entry",
+			"GtkEntry *",
+			"The GtkEntry created for this widget.",
+			GTK_TYPE_ENTRY,
+			G_PARAM_READABLE));
+
 	signals[TOGGLED] =
 		g_signal_new ("toggled",
 			G_OBJECT_CLASS_TYPE (object_class),
@@ -106,11 +157,11 @@ moko_search_bar_class_init (MokoSearchBarClass *klass)
 			g_cclosure_marshal_VOID__POINTER,
 			G_TYPE_NONE, 1, G_TYPE_POINTER);
 
-	signals[CATEGORY_CHANGED] =
-		g_signal_new ("category-changed",
+	signals[COMBO_CHANGED] =
+		g_signal_new ("combo-changed",
 			G_OBJECT_CLASS_TYPE (object_class),
 			G_SIGNAL_RUN_LAST,
-			G_STRUCT_OFFSET (MokoSearchBarClass, category_changed),
+			G_STRUCT_OFFSET (MokoSearchBarClass, combo_changed),
 			NULL, NULL,
 			g_cclosure_marshal_VOID__OBJECT,
 			G_TYPE_NONE, 1, GTK_TYPE_COMBO_BOX);
@@ -140,12 +191,6 @@ entry_changed_cb (GtkEditable *editable, MokoSearchBar *self)
 }
 
 static void
-combo_changed_cb (GtkComboBox *combo, MokoSearchBar *self)
-{
-	g_signal_emit (self, signals[CATEGORY_CHANGED], 0, combo);
-}
-
-static void
 moko_search_bar_init (MokoSearchBar *self)
 {
 	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
@@ -165,23 +210,41 @@ moko_search_bar_init (MokoSearchBar *self)
 	g_object_set (G_OBJECT (priv->entry), "no-show-all", TRUE, NULL);
 	gtk_box_pack_start (GTK_BOX (self), priv->entry, TRUE, TRUE, 0);
 
-	priv->combo = gtk_combo_box_new_text ();
-	gtk_box_pack_start (GTK_BOX (self), priv->combo, TRUE, TRUE, 0);
-	gtk_widget_show (priv->combo);
-
 	/* Connect up signals */
 	g_signal_connect (G_OBJECT (priv->toggle), "toggled",
 		G_CALLBACK (toggled_cb), self);
 	g_signal_connect (G_OBJECT (priv->entry), "changed",
 		G_CALLBACK (entry_changed_cb), self);
-	g_signal_connect (G_OBJECT (priv->combo), "changed",
-		G_CALLBACK (combo_changed_cb), self);
 }
 
 GtkWidget *
 moko_search_bar_new (void)
 {
-	return GTK_WIDGET (g_object_new (MOKO_TYPE_SEARCH_BAR, NULL));
+	return GTK_WIDGET (g_object_new (MOKO_TYPE_SEARCH_BAR,
+		"combo", gtk_combo_box_new (), NULL));
+}
+
+GtkWidget *
+moko_search_bar_new_with_combo (GtkComboBox *combo)
+{
+	return GTK_WIDGET (g_object_new (MOKO_TYPE_SEARCH_BAR,
+		"combo", combo, NULL));
+}
+
+GtkComboBox *
+moko_search_bar_get_combo_box (MokoSearchBar *self)
+{
+	GtkComboBox *combo;
+	g_object_get (G_OBJECT (self), "combo", &combo, NULL);
+	return combo;
+}
+
+GtkEntry *
+moko_search_bar_get_entry (MokoSearchBar *self)
+{
+	GtkEntry *entry;
+	g_object_get (G_OBJECT (self), "entry", &entry, NULL);
+	return entry;
 }
 
 gboolean
@@ -202,102 +265,4 @@ moko_search_bar_toggle (MokoSearchBar *self)
 			GTK_TOGGLE_BUTTON (priv->toggle)));
 }
 
-void
-moko_search_bar_append_category (MokoSearchBar *self, const gchar *text)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	gtk_combo_box_append_text (GTK_COMBO_BOX (priv->combo), text);
-}
-
-void
-moko_search_bar_insert_category (MokoSearchBar *self, gint position,
-				 const gchar *text)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	gtk_combo_box_insert_text (GTK_COMBO_BOX (priv->combo), position, text);
-}
-
-void
-moko_search_bar_prepend_category (MokoSearchBar *self, const gchar *text)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	gtk_combo_box_prepend_text (GTK_COMBO_BOX (priv->combo), text);
-}
-
-void
-moko_search_bar_remove_category (MokoSearchBar *self, gint position)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	gtk_combo_box_remove_text (GTK_COMBO_BOX (priv->combo), position);
-}
-
-gint
-moko_search_bar_count_categories (MokoSearchBar *self)
-{
-	gint rows = 0;
-	GtkTreeIter iter;
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	GtkTreeModel *model = gtk_combo_box_get_model (
-		GTK_COMBO_BOX (priv->combo));
-	
-	if (gtk_tree_model_get_iter_first (model, &iter))
-		do { rows ++; } while (gtk_tree_model_iter_next (model, &iter));
-	
-	return rows;
-}
-
-void
-moko_search_bar_clear_categories (MokoSearchBar *self)
-{
-	gint i;
-	
-	for (i = moko_search_bar_count_categories (self); i > 0; i--) {
-		moko_search_bar_remove_category (self, 0);
-	}
-}
-
-gint
-moko_search_bar_get_active (MokoSearchBar *self)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	return gtk_combo_box_get_active (GTK_COMBO_BOX (priv->combo));
-}
-
-gchar *
-moko_search_bar_get_active_category (MokoSearchBar *self)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	return gtk_combo_box_get_active_text (GTK_COMBO_BOX (priv->combo));
-}
-
-void
-moko_search_bar_set_active (MokoSearchBar *self, gint position)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	gtk_combo_box_set_active (GTK_COMBO_BOX (priv->combo), position);
-}
-
-const gchar *
-moko_search_bar_get_text (MokoSearchBar *self)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	return gtk_entry_get_text (GTK_ENTRY (priv->entry));
-}
-
-void
-moko_search_bar_set_text (MokoSearchBar *self, const gchar *text)
-{
-	MokoSearchBarPrivate *priv = SEARCH_BAR_PRIVATE (self);
-
-	gtk_entry_set_text (GTK_ENTRY (priv->entry), text);
-}
 
