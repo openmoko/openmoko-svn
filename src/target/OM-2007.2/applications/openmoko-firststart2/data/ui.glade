@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.2.0 on Thu Aug 30 14:23:55 2007 by mickey@harry-->
+<!--Generated with glade3 3.2.0 on Fri Aug 31 15:53:07 2007 by mickey@harrypotter-->
 <glade-interface>
   <widget class="GtkWindow" id="window1">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -14,10 +14,11 @@
         <child>
           <widget class="GtkTextView" id="textview2">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="editable">False</property>
             <property name="wrap_mode">GTK_WRAP_WORD</property>
+            <property name="cursor_visible">False</property>
+            <property name="accepts_tab">False</property>
             <property name="text" translatable="yes">We have already calibrated the display for you. If you want to launch recalibration, please click the AUX button now.</property>
           </widget>
           <packing>
@@ -53,7 +54,7 @@
             <child>
               <widget class="GtkSpinButton" id="hour">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="adjustment">1 0 23 1 10 10</property>
               </widget>
@@ -73,7 +74,7 @@
             <child>
               <widget class="GtkSpinButton" id="minute">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="adjustment">0 0 59 1 10 10</property>
               </widget>
@@ -84,7 +85,7 @@
             <child>
               <widget class="GtkSpinButton" id="second">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="adjustment">0 0 59 1 10 10</property>
               </widget>
@@ -156,10 +157,11 @@
         <child>
           <widget class="GtkTextView" id="textview1">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="editable">False</property>
             <property name="wrap_mode">GTK_WRAP_WORD</property>
+            <property name="cursor_visible">False</property>
+            <property name="accepts_tab">False</property>
             <property name="text" translatable="yes">You have completed the first-usage wizard. If you ever want to run it again, please do so from the today application.</property>
           </widget>
           <packing>
