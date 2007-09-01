@@ -29,6 +29,7 @@
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
+#include <uriparser/Uri.h>
 
 #include <string.h>
 
@@ -201,7 +202,7 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 		#endif
 
 		// Notify user
-		text = g_strdup_printf(_("\nCould not load playlist '%s'"), playlist_file);
+		text = g_strdup_printf(_("Could not load playlist '%s'"), playlist_file);
 		error_dialog(text);
 		g_free(text);
 	}
@@ -314,8 +315,8 @@ omp_playlist_set_prev_track()
 		return FALSE;
 	}
 
-	// If track playing time is >= 10 seconds we just jump back to the beginning of the track
-	if (omp_playback_get_track_position() >= 10)
+	// If track playing time is >= n seconds we just jump back to the beginning of the track
+	if (omp_playback_get_track_position() >= omp_config_get_prev_track_treshold())
 	{
 		omp_playback_set_track_position(0);
 		return TRUE;
@@ -383,12 +384,12 @@ try_again:
 		// Update session
 		omp_session_set_track_id(omp_playlist_current_track_id);
 
-		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
-
 		// Load track and start playing if needed
 		if (omp_playlist_load_current_track())
 		{
+			// Emit signal to update UI and the like
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
+
 			if (was_playing) omp_playback_play();
 
 		} else {
@@ -405,7 +406,6 @@ try_again:
 /**
  * Moves one track forward in playlist
  * @return TRUE if a new track is to be played, FALSE if current track didn't change
- * @todo Shuffle mode, repeat
  * @todo Will cause an infinite loop if playlist only consists of tracks that can't be played and player is in shuffle mode
  */
 gboolean
@@ -492,12 +492,12 @@ try_again:
 		// Update session
 		omp_session_set_track_id(omp_playlist_current_track_id);
 
-		// Emit signal to update UI and the like
-		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
-
 		// Load track and start playing if needed
 		if (omp_playlist_load_current_track())
 		{
+			// Emit signal to update UI and the like
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED);
+
 			if (was_playing) omp_playback_play();
 
 		} else {
@@ -531,7 +531,7 @@ omp_playlist_process_eos_event(gpointer instance, gpointer user_data)
 
 /**
  * Updates the track's artist information in the playlist on incoming tag data
- * @note This is our way of caching metadata information so we can display it in the playlist editor
+ * @note This is also our way of caching metadata information so we can display it in the playlist editor
  * @param instance Ignored
  * @param title Artist of currently played track
  * @param user_data Ignored
@@ -539,46 +539,27 @@ omp_playlist_process_eos_event(gpointer instance, gpointer user_data)
 void
 omp_playlist_process_tag_artist_change(gpointer instance, gchar *artist, gpointer user_data)
 {
-	gchar **tokens;
-
 	// Now that we have received metadata information we might also have the track duration ready
 	omp_playlist_update_track_duration();
 
 	if (!omp_playlist_current_track) return;
 
-	// Set preliminary title if nothing was set at all
-	if (!omp_playlist_current_track->title)
+	if (!omp_playlist_current_track->creator)
 	{
-		omp_playlist_current_track->title = g_strdup_printf(_("%s - [unknown title]"), artist);
-		return;
+		omp_playlist_current_track->creator = g_strdup(artist);
+
+		// Save changes to disk
+		omp_playlist_save();
+
+		// Notify UI of the change
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
+			omp_playlist_current_track_id);
 	}
-
-	// Split title into artist/title to see if we need to replace the artist part
-	/// @todo Make unicode safe
-	tokens = g_strsplit(omp_playlist_current_track->title, " - ", 2);
-	if (!tokens) return;
-
-	if (strcmp(tokens[0], _("[unknown artist]")) == 0)
-	{
-		// Yep, track artist was our placeholder, so we replace it
-		g_free(omp_playlist_current_track->title);
-		omp_playlist_current_track->title =
-			g_strdup_printf("%s - %s", artist, tokens[1]);
-	}
-
-	g_strfreev(tokens);
-
-	// Save changes to disk
-	omp_playlist_save();
-
-	// Notify UI of the change
-	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
-		omp_playlist_current_track_id);
 }
 
 /**
  * Updates the track's artist information in the playlist on incoming tag data
- * @note This is our way of caching metadata information so we can display it in the playlist editor
+ * @note This is also our way of caching metadata information so we can display it in the playlist editor
  * @param instance Ignored
  * @param title Song title of currently played track
  * @param user_data Ignored
@@ -586,41 +567,30 @@ omp_playlist_process_tag_artist_change(gpointer instance, gchar *artist, gpointe
 void
 omp_playlist_process_tag_title_change(gpointer instance, gchar *title, gpointer user_data)
 {
-	gchar **tokens;
-
 	// Now that we have received metadata information we might also have the track duration ready
 	omp_playlist_update_track_duration();
 
 	if (!omp_playlist_current_track) return;
 
-	// Set preliminary title if nothing was set at all
-	if (!omp_playlist_current_track->title)
+	if (
+			(!omp_playlist_current_track->title) ||
+			(omp_playlist_current_track->title_is_preliminary)
+		 )
 	{
-		omp_playlist_current_track->title = g_strdup_printf("[unknown artist] - %s", title);
-		return;
+		if (omp_playlist_current_track->title)
+			g_free(omp_playlist_current_track->title);
+
+		omp_playlist_current_track->title_is_preliminary = FALSE;
+
+		omp_playlist_current_track->title = g_strdup(title);
+
+		// Save changes to disk
+		omp_playlist_save();
+
+		// Notify UI of the change
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
+			omp_playlist_current_track_id);
 	}
-
-	// Split title into artist/title to see if we need to replace the title part
-	/// @todo Make unicode safe
-	tokens = g_strsplit(omp_playlist_current_track->title, " - ", 2);
-	if (!tokens) return;
-
-	if (strcmp(tokens[1], _("[unknown title]")) == 0)
-	{
-		// Yep, track title was our placeholder, so we replace it
-		g_free(omp_playlist_current_track->title);
-		omp_playlist_current_track->title =
-			g_strdup_printf("%s - %s", tokens[0], title);
-	}
-
-	g_strfreev(tokens);
-
-	// Save changes to disk
-	omp_playlist_save();
-
-	// Notify UI of the change
-	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
-		omp_playlist_current_track_id);
 }
 
 /**
@@ -637,14 +607,59 @@ omp_playlist_update_track_duration()
 	duration = omp_playback_get_track_length();
 	if ( (duration > 0) && (duration != omp_playlist_current_track->duration) )
 	{
-// @note BUGGY
-//		omp_playlist_current_track->duration = duration;
-//		omp_playlist_save();
+		omp_playlist_current_track->duration = duration;
+		omp_playlist_save();
 
 		// Notify UI of the change
 		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
 			omp_playlist_current_track_id);
 	}
+}
+
+/**
+ * Sets current track's meta data from the URI unless the playlist already has meta data available
+ * @todo Unicode support
+ */
+void
+omp_playlist_set_preliminary_metadata(gchar *track_uri)
+{
+	UriParserStateA state;
+	UriUriA uri;
+	UriPathSegmentA *segment;
+	gchar *title = NULL;
+
+	state.uri = &uri;
+
+	g_return_if_fail(omp_playlist_current_track);
+
+	if (uriParseUriA(&state, track_uri) != 0)
+	{
+		#ifdef DEBUG
+			g_printerr("UriParser could not parse URI %s\n", track_uri);
+		#endif
+		return;
+	}
+
+	// The last part of the URI path is the file name of the request - which we want
+	segment = uri.pathTail;
+	title = get_base_file_name((gchar*)segment->text.first);
+	uriUnescapeInPlaceA(title);
+
+	// Set preliminary metadata if necessary
+	if (!omp_playlist_current_track->title)
+	{
+		omp_playlist_current_track->title = g_strdup(title);
+		omp_playlist_current_track->title_is_preliminary = TRUE;
+		omp_playlist_save();
+
+		// Notify UI of the change
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
+			omp_playlist_current_track_id);
+	}
+
+	g_free(title);
+
+	uriFreeUriMembersA(&uri);
 }
 
 /**
@@ -702,9 +717,14 @@ omp_playlist_load_current_track()
 	if (track_uri)
 	{
 		track_loaded = omp_playback_load_track_from_uri(track_uri);
-		g_free(track_uri);
 
+		// Maybe we already know the new track duration
 		omp_playlist_update_track_duration();
+
+		// Obtain preliminary track title from URI if needed
+		omp_playlist_set_preliminary_metadata(track_uri);
+
+		g_free(track_uri);
 
 		return track_loaded;
 	}
@@ -715,19 +735,23 @@ omp_playlist_load_current_track()
 /**
  * Retrieves a track's meta data if possible
  * @param track_id Track ID to get meta data of, starting at 0
+ * @param artist Destination for the artist string, can be NULL; must be freed after use
  * @param title Destination for the title string, can be NULL; must be freed after use
  * @param duration Destination for the track duration (in milliseconds), can be NULL
  * @todo List walking
  */
 void
-omp_playlist_get_track_info(guint track_id, gchar **title, guint *duration)
+omp_playlist_get_track_info(guint track_id, gchar **artist, gchar **title, gulong *duration)
 {
 	if (track_id == omp_playlist_current_track_id)
 	{
+		if (!omp_playlist_current_track) return;
+
+		if (artist) *artist = g_strdup(omp_playlist_current_track->creator);
 		if (title) *title = g_strdup(omp_playlist_current_track->title);
 
-		// Again, spiff's internal duration is given in milliseconds
-		if (duration) *duration = omp_playlist_current_track->duration;
+		if (duration) *duration =
+			(omp_playlist_current_track->duration > 0) ? omp_playlist_current_track->duration : 0;
 
 	} else {
 
@@ -841,36 +865,47 @@ omp_playlist_iter_finished(omp_playlist_iter *iter)
 }
 
 /**
- * Utility function that extracts a playlist's name from its file name
- * @param playlist_file File name to extract title from, can contain a path
+ * Utility function that removes the path and extension of a file name
+ * @param file_name File name to extract title from, can contain a path
  * @return String holding the title, must be freed after use
  * @todo Make unicode safe
  * @note Yes, this is quick'n'dirty. It will be replaced.
  */
 gchar *
-get_playlist_title(gchar *playlist_file)
+get_base_file_name(gchar *file_name)
 {
-	gchar title[256];
+	gchar base[256];
 	guint i, j, last_delim, extension_pos;
 
 	// Find last directory delimiter
 	last_delim = 0;
-	for (i=0; playlist_file[i]; i++)
+	for (i=0; file_name[i]; i++)
 	{
-		if (playlist_file[i] == '/') last_delim = i+1;
+		if (file_name[i] == '/') last_delim = i+1;
 	}
 
 	// Find file extension
-	for(extension_pos = strlen(playlist_file);
-		(extension_pos) && (playlist_file[extension_pos] != '.');
+	for(extension_pos = strlen(file_name);
+		(extension_pos) && (file_name[extension_pos] != '.');
 		extension_pos--);
 
 	// Extract title
 	for (j=0, i=last_delim; i<extension_pos; i++)
 	{
-		title[j++] = playlist_file[i];
+		base[j++] = file_name[i];
 	}
-	title[j] = 0;
+	base[j] = 0;
 	
-	return g_strdup((gchar *)&title);
+	return g_strdup((gchar *)&base);
+}
+
+/**
+ * Utility function that extracts a playlist's name from its file name
+ * @param playlist_file File name to extract title from, can contain a path
+ * @return String holding the title, must be freed after use
+ */
+gchar *
+get_playlist_title(gchar *playlist_file)
+{
+	return get_base_file_name(playlist_file);
 }

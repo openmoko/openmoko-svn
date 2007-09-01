@@ -83,7 +83,7 @@ gboolean omp_playlist_set_next_track();
 
 gchar *omp_playlist_resolve_track(omp_spiff_track *track);
 gboolean omp_playlist_load_current_track();
-void omp_playlist_get_track_info(guint track_id, gchar **title, guint *duration);
+void omp_playlist_get_track_info(guint track_id, gchar **artist, gchar **title, gulong *duration);
 void omp_playlist_update_track_count();
 
 omp_playlist_iter *omp_playlist_init_iterator();
@@ -92,6 +92,7 @@ void omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num,
 void omp_playlist_advance_iter(omp_playlist_iter *iter);
 gboolean omp_playlist_iter_finished(omp_playlist_iter *iter);
 
+gchar *get_base_file_name(gchar *file_name);
 gchar *get_playlist_title(gchar *playlist_file);
 
 #endif

@@ -42,15 +42,15 @@
 /// The default configuration
 struct _omp_config omp_default_config =
 {
-	FALSE,
-	OMP_REPEAT_OFF,
-	TRUE,
-//	FALSE,
-	FALSE,
-	"%f",
-	0.0,
-	{0,0,0,0,0,0,0,0,0,0,0},
-	TRUE
+	FALSE,											// shuffle
+	OMP_REPEAT_OFF,							// repeat_mode
+	TRUE,												// resume_playback
+	10000,											// prev_track_treshold
+//	FALSE,											// auto_scroll
+	0.0,												// equalizer_gain
+	{0,0,0,0,0,0,0,0,0,0,0},		// EQ bands
+
+TRUE												// show_numbers_in_pl
 };
 
 struct _omp_config *omp_config = NULL;			///< Global and persistent configuration data
@@ -148,6 +148,15 @@ guint
 omp_config_get_repeat_mode()
 {
 	return omp_config->repeat_mode;
+}
+
+/**
+ * Returns amount of milliseconds that determine behavior of the "prev track" event
+ */
+guint
+omp_config_get_prev_track_treshold()
+{
+	return omp_config->prev_track_treshold;
 }
 
 /**

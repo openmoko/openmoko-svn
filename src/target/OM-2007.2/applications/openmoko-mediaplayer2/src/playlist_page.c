@@ -341,7 +341,7 @@ omp_playlist_page_create()
 	input_box = gtk_hbox_new(FALSE, 0);
 	omp_playlist_page_entry = gtk_entry_new();
 	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name("gtk-add", GTK_ICON_SIZE_BUTTON);
+	image = gtk_image_new_from_icon_name("gtk-add", GTK_ICON_SIZE_MENU);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
 
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(omp_playlist_page_add_list), NULL);

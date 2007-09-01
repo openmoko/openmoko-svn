@@ -33,11 +33,9 @@
 #include <glib/gprintf.h>
 #include <gdk/gdk.h>
 
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <signal.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #define DBUS_API_SUBJECT_TO_CHANGE
 #include <dbus/dbus.h>
@@ -47,13 +45,14 @@
 #include "libmokoui2/moko-stock.h"
 
 #include "main.h"
-#include "main_page.h"
-#include "playlist_page.h"
 #include "editor_page.h"
+#include "files_page.h"
 #include "guitools.h"
+#include "main_page.h"
+#include "persistent.h"
+#include "playlist_page.h"
 #include "playlist.h"
 #include "playback.h"
-#include "persistent.h"
 
 // Determines how the segfault handler terminates the program
 //define HANDLE_SIGSEGV
@@ -194,8 +193,14 @@ check_lock()
 	if (pid > 0)
 	{
 		g_printf(_("Already running an instance of the Media Player, bringing that to the front instead.\n"));
-		kill(pid, SIGUSR1);
-		return TRUE;
+
+		// Was signaling the other process successful?
+		if (kill(pid, SIGUSR1) == 0)
+		{
+			return TRUE;
+		} else {
+			g_printf(_("Previous instance invalid, proceeding with regular startup.\n"));
+		}
 	}
 
 	set_lock(lock_file);
@@ -260,6 +265,12 @@ omp_window_create_pages()
 	notebook_add_page_with_icon(omp_notebook, page, "gtk-index", 0);
 	omp_notebook_tabs[OMP_TAB_PLAYLIST_EDITOR] = page;
 	gtk_widget_hide(page);	// We show the page once a playlist was loaded
+
+	// Add file chooser page
+	page = omp_files_page_create();
+	notebook_add_page_with_icon(omp_notebook, page, "gtk-index", 0);
+	omp_notebook_tabs[OMP_TAB_FILE_CHOOSER] = page;
+	gtk_widget_hide(page);	// We show the page once user wants to add files
 }
 
 /**

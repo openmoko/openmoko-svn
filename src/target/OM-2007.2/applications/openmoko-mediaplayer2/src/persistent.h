@@ -41,9 +41,8 @@ struct _omp_config
 	gboolean shuffle;									///< Shuffle on/off
 	guint repeat_mode;								///< Repeat mode @see omp_repeat_modes
 	gboolean resume_playback;					///< Resume playback on startup where it left off?
+	guint prev_track_treshold;				///< Amount of milliseconds a track must have been playing to jump back to track beginning on "prev track" event
 //	gboolean auto_scroll;						///< Scroll title if it's too long?
-	gboolean convert_underscore;			///< Convert '_' to ' '?
-	gchar title_format[32];						///< Format string used for title display
 	gdouble equalizer_gain;						///< Pre-amplification value before audio stream is fed to equalizer [0.0..1.0]
 	gdouble equalizer_bands[11];			///< The gains for each of the equalizer bands [-1.0..1.0]
 	gboolean show_numbers_in_pl;			///< Show numbers in playlist?
@@ -74,6 +73,8 @@ gboolean omp_config_get_shuffle_state();
 
 void omp_config_set_repeat_mode(guint mode);
 guint omp_config_get_repeat_mode();
+
+guint omp_config_get_prev_track_treshold();
 
 void omp_session_restore_state();
 void omp_session_free();

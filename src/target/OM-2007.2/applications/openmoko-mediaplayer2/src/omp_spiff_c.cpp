@@ -86,7 +86,7 @@ class SpiffCReaderCallback : public SpiffReaderCallback
 		/// Creates the callback interface for filling an omp_spiff_list
 		SpiffCReaderCallback(omp_spiff_list *list);
 
-		/// Finalize the list
+		/// Finalizes the list
 		virtual ~SpiffCReaderCallback();
 };
 
@@ -111,6 +111,7 @@ SpiffCReaderCallback::addTrack(SpiffTrack *track)
 	// Append new item to the track list
 	*newtrack = new omp_spiff_track;
 
+	(*newtrack)->creator = track->stealCreator();
 	(*newtrack)->title = track->stealTitle();
 	(*newtrack)->album = track->stealAlbum();
 	(*newtrack)->duration = track->getDuration();
@@ -133,12 +134,12 @@ SpiffCReaderCallback::addTrack(SpiffTrack *track)
 		*newmv = new omp_spiff_mvalue;
 		(*newmv)->value = str;
 
-		// On to the next location
+		// On to the next identifier
 		newmv = &(*newmv)->next;
 	}
 	*newmv = NULL;
 
-	// Clean up and move to the next track
+	// Clean up and move on to the next track
 	delete track;
 	newtrack = &(*newtrack)->next;
 }
@@ -238,6 +239,7 @@ omp_spiff_free(omp_spiff_list *list)
 		// Back-up pointer
 		ntr = tr->next;
 
+		delete tr->creator;
 		delete tr->title;
 		delete tr->album;
 
@@ -266,6 +268,7 @@ omp_spiff_write(omp_spiff_list *list, const char *filename)
 	props.lendLicense(list->license);
 	props.lendLocation(list->location);
 	props.lendIdentifier(list->identifier);
+
 	SpiffPropsWriter pwriter(&props);
 	SpiffTrackWriter twriter;
 	SpiffWriter writer(1, formatter, pwriter);
@@ -274,6 +277,8 @@ omp_spiff_write(omp_spiff_list *list, const char *filename)
 	{
 		// Tracks
 		SpiffTrack track;
+
+		track.lendCreator(strack->creator);
 		track.lendTitle(strack->title);
 		track.lendAlbum(strack->album);
 		track.setDuration(strack->duration);
@@ -349,12 +354,14 @@ omp_spiff_new_track_before(omp_spiff_track **track)
 	omp_spiff_track *ret;
 
 	ret = new omp_spiff_track;
+	ret->creator = NULL;
 	ret->title = NULL;
 	ret->album = NULL;
 	ret->duration = -1;
 	ret->tracknum = -1;
 	ret->locations = NULL;
 	ret->identifiers = NULL;
+	ret->title_is_preliminary = 0;
 	ret->next = *track;
 	*track = ret;
 

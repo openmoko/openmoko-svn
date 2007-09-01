@@ -26,3 +26,16 @@
 
 #include "files_page.h"
 
+/**
+ * Creates the file chooser UI page and all its elements
+ */
+GtkWidget *
+omp_files_page_create()
+{
+	GtkWidget *main_vbox;
+
+	// Create main container
+	main_vbox = gtk_vbox_new(FALSE, 0);
+
+	return main_vbox;
+}

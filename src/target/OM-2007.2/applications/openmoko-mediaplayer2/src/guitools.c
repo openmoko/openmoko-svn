@@ -145,8 +145,8 @@ error_dialog(gchar *message)
 	// We don't want a title of "<unnamed>"
 	gtk_window_set_title(GTK_WINDOW(dialog), " ");
 
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
+	g_signal_connect_swapped(dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
+	gtk_widget_show_all(dialog);
 }
 
 /**

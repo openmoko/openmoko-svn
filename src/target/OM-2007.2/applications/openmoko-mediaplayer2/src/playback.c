@@ -382,7 +382,7 @@ gulong
 omp_playback_get_track_length()
 {
 	GstFormat format = GST_FORMAT_TIME;
-	gint64 length;
+	gint64 length = 0;
 
 	if (!omp_gst_playbin)
 	{
@@ -522,14 +522,9 @@ static gboolean
 omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data)
 {
 	GError *error;
-	gchar *text;
 
 	gst_message_parse_warning(message, &error, NULL);
 	g_printerr("gstreamer warning: %s\n", error->message);
-
-	text = g_strdup_printf("gstreamer warning:\n%s", error->message);
-	error_dialog(text);
-	g_free(text);
 
 	g_error_free(error);
 

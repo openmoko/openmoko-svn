@@ -64,6 +64,9 @@ typedef struct _omp_spiff_mvalue
 /// Single track in an XSPF list
 typedef struct _omp_spiff_track
 {
+	/// Track's creator (= artist)
+	char *creator;
+
 	/// Track's display name
 	char *title;
 
@@ -81,6 +84,9 @@ typedef struct _omp_spiff_track
 
 	/// Unique track identifiers
 	omp_spiff_mvalue *identifiers;
+
+	/// Preliminary title flag, title will be overwritten on incoming tag data (non-XSPF feature)
+	int title_is_preliminary;
 
 	/// Pointer to next track
 	struct _omp_spiff_track *next;

@@ -27,6 +27,9 @@
 #ifndef FILES_PAGE_H
 #define FILES_PAGE_H
 
+#include <gtk/gtk.h>
+
+GtkWidget *omp_files_page_create();
 
 #endif
 

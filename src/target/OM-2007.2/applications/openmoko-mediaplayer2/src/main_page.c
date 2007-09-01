@@ -65,13 +65,12 @@ gboolean omp_main_time_slider_was_dragged = FALSE;			///< Is toggled after the u
 
 // Forward declarations for internal use
 void omp_main_update_track_change(gpointer instance, gpointer user_data);
+void omp_main_update_track_info_changed(gpointer instance, guint track_id, gpointer user_data);
 void omp_main_update_shuffle_state(gpointer instance, gboolean state, gpointer user_data);
 void omp_main_update_repeat_mode(gpointer instance, guint mode, gpointer user_data);
 void omp_main_update_status_change(gpointer instance, gpointer user_data);
 void omp_main_update_track_position(gpointer instance, gpointer user_data);
 void omp_main_update_volume(gpointer instance, gpointer user_data);
-void omp_main_update_tag_artist(gpointer instance, const gchar *artist, gpointer user_data);
-void omp_main_update_tag_title(gpointer instance, const gchar *title, gpointer user_data);
 
 
 
@@ -185,7 +184,7 @@ omp_main_time_slider_drag_start(GtkWidget *widget, GdkEventButton *event, gpoint
 	// Prevent UI callbacks from messing with the slider position
 	omp_main_time_slider_can_update = FALSE;
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -202,7 +201,7 @@ omp_main_time_slider_drag_stop(GtkWidget *widget, GdkEventButton *event, gpointe
 	// Notify the slider change callback that this time we indeed want to change position
 	omp_main_time_slider_was_dragged = TRUE;
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -553,7 +552,7 @@ omp_main_secondary_widgets_create(GtkContainer *destination)
 	gtk_scale_set_draw_value(GTK_SCALE(vol_scale), FALSE);
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(vol_scale), GTK_CAN_FOCUS);
 	gtk_widget_set_size_request(GTK_WIDGET(vol_scale), 338, 35);
-	gtk_range_set_update_policy(GTK_RANGE(vol_scale), GTK_UPDATE_DISCONTINUOUS);
+	gtk_range_set_update_policy(GTK_RANGE(vol_scale), GTK_UPDATE_CONTINUOUS);
 	g_signal_connect(G_OBJECT(vol_scale), "value_changed", G_CALLBACK(omp_main_volume_slider_changed), NULL);
 	gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(vol_scale));
 	main_widgets.volume_hscale = vol_scale;
@@ -590,6 +589,9 @@ omp_main_page_create()
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,
 		G_CALLBACK(omp_main_update_track_change), NULL);
 
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
+		G_CALLBACK(omp_main_update_track_info_changed), NULL);
+
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED,
 		G_CALLBACK(omp_main_update_track_change), NULL);
 
@@ -613,12 +615,6 @@ omp_main_page_create()
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED,
 		G_CALLBACK(omp_main_update_volume), NULL);
 
-	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_META_ARTIST_CHANGED,
-		G_CALLBACK(omp_main_update_tag_artist), NULL);
-
-	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_META_TITLE_CHANGED,
-		G_CALLBACK(omp_main_update_tag_title), NULL);
-
 	// Make all widgets visible
 	gtk_widget_show_all(bg_muxer);
 
@@ -638,8 +634,17 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 	static gulong old_track_length = 0;
 
 	gulong track_length, track_position;
+	gchar *artist = NULL;
+	gchar *title = NULL;
 	gchar *text;
 	gint track_id;
+
+	// Set preliminary artist/title strings (updated on incoming metadata)
+	omp_playlist_get_track_info(omp_playlist_current_track_id, &artist, &title, &track_length);
+	gtk_label_set_text(GTK_LABEL(main_widgets.artist_label), artist);
+	gtk_label_set_text(GTK_LABEL(main_widgets.title_label), title);
+	if (artist) g_free(artist);
+	if (title) g_free(title);
 
 	// Track id/track count changed?
 	if (
@@ -658,15 +663,10 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 	}
 
 	// Got a track length change?
-	track_length = omp_playback_get_track_length();
-
-	if (track_length != old_track_length)
+	if ( (track_length) && (track_length != old_track_length) )
 	{
 		old_track_length = track_length;
 		track_position = omp_playback_get_track_position();
-
-		// Set new time slider increments: one tap is 10% of the track's playing time
-		gtk_range_set_increments(GTK_RANGE(main_widgets.time_hscale), track_length/10, track_length/10);
 
 		// Update label and slider
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
@@ -681,8 +681,20 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 			// critial GTK warning, so we set 0/1 instead in that case
 			gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, track_length ? track_length : 1);
 			gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), track_position);
+
+			// Set new time slider increments: one tap is 10% of the track's playing time
+			gtk_range_set_increments(GTK_RANGE(main_widgets.time_hscale), track_length/10, track_length/10);
 		}
 	}
+}
+
+/**
+ * Updates the UI when the track's meta data changed
+ */
+void
+omp_main_update_track_info_changed(gpointer instance, guint track_id, gpointer user_data)
+{
+	omp_main_update_track_change(NULL, NULL);
 }
 
 /**
@@ -775,7 +787,7 @@ omp_main_update_track_position(gpointer instance, gpointer user_data)
 		// Update UI
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
 			(guint)(track_position / 60000), (guint)(track_position/1000) % 60,
-			(guint)track_length / 60000, (guint)(track_length/1000) % 60);
+			(guint)(track_length / 60000), (guint)(track_length/1000) % 60);
 		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
 		g_free(text);
 
@@ -785,6 +797,9 @@ omp_main_update_track_position(gpointer instance, gpointer user_data)
 			// critial GTK warning, so we set 0/1 instead in that case
 			gtk_range_set_range(GTK_RANGE(main_widgets.time_hscale), 0, track_length ? track_length : 1);
 			gtk_range_set_value(GTK_RANGE(main_widgets.time_hscale), track_position);
+
+			// Set new time slider increments: one tap is 10% of the track's playing time
+			gtk_range_set_increments(GTK_RANGE(main_widgets.time_hscale), track_length/10, track_length/10);
 		}
 	}
 
@@ -810,22 +825,4 @@ omp_main_update_volume(gpointer instance, gpointer user_data)
 	g_free(text);
 
 	gtk_range_set_value(GTK_RANGE(main_widgets.volume_hscale), volume);
-}
-
-/**
- * Updates the UI's track artist label
- */
-void
-omp_main_update_tag_artist(gpointer instance, const gchar *artist, gpointer user_data)
-{
-	gtk_label_set_text(GTK_LABEL(main_widgets.artist_label), artist);
-}
-
-/**
- * Updates the UI's track title label
- */
-void
-omp_main_update_tag_title(gpointer instance, const gchar *title, gpointer user_data)
-{
-	gtk_label_set_text(GTK_LABEL(main_widgets.title_label), title);
 }

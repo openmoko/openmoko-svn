@@ -27,6 +27,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <libmokoui2/moko-finger-scroll.h>
+#include <string.h>
 
 #include "editor_page.h"
 #include "playlist.h"
@@ -72,32 +73,52 @@ omp_editor_page_playlist_loaded(gpointer instance, gchar *title, gpointer user_d
  * Updates a track's title and duration upon arrival of metadata
  */
 void
-omp_editor_page_update_track_info(gpointer instance, gpointer track_infos, gpointer user_data)
+omp_editor_page_update_track_info(gpointer instance, guint track_id, gpointer user_data)
 {
-/*	omp_track_infos *infos;
-	gchar *track_title, *track_duration, *path;
+	gchar *artist, *title, *caption, *duration, *path;
+	gulong int_duration = 0;
 	GtkTreeIter tree_iter;
 
-	infos = (omp_track_infos*)track_infos;
+	omp_playlist_get_track_info(track_id, &artist, &title, &int_duration);
 
-	if (infos->duration > 0)
+	// Prepare values for display
+	if (int_duration > 0)
 	{
-		track_duration = g_strdup_printf(OMP_WIDGET_CAPTION_EDITOR_TRACK_TIME,
-			infos->duration / 60000, (infos->duration/1000) % 60);
+		duration = g_strdup_printf(OMP_WIDGET_CAPTION_EDITOR_TRACK_TIME,
+			(gint)(int_duration / 60000), (gint)(int_duration/1000) % 60);
 	} else {
-		track_duration = NULL;
+		duration = NULL;
 	}
 
-	path = g_strdup_printf("%d", infos->id);
+	if (artist)
+	{
+		if (strcmp(artist, "") != 0)
+		{
+			caption = g_strdup_printf(_("%1$s - %2$s"), artist, title);
+		} else {
+			caption = g_strdup(title);
+		}
+
+	} else {
+		caption = g_strdup(title);
+	}
+
+	// Find column to edit
+	path = g_strdup_printf("%d", track_id);
 	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(omp_editor_page_list_store),
 		&tree_iter, path);
-	
-	gtk_list_store_set(omp_editor_page_list_store, &tree_iter,
-		TITLE_COLUMN, infos->title,
-		DURATION_COLUMN, track_duration, -1);
 
+	// Update values
+	gtk_list_store_set(omp_editor_page_list_store, &tree_iter,
+		TITLE_COLUMN, caption,
+		DURATION_COLUMN, duration, -1);
+
+	// Clean up
 	g_free(path);
-	g_free(track_duration); */
+	g_free(caption);
+	g_free(duration);
+	g_free(title);
+	g_free(artist);
 }
 
 /**
@@ -106,7 +127,8 @@ omp_editor_page_update_track_info(gpointer instance, gpointer track_infos, gpoin
 void
 omp_editor_page_add_clicked(gpointer instance, gpointer user_data)
 {
-	
+	// Show file chooser
+	omp_show_tab(OMP_TAB_FILE_CHOOSER);
 }
 
 /**
