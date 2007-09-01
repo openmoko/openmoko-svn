@@ -150,7 +150,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/serial.c
 -	serial_setbrg ();
 -
 -	return (0);
-+	return _serial_init_dev(UART_NR);
++	return serial_init_dev(UART_NR);
  }
 +#endif
  
