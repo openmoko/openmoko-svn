@@ -665,14 +665,14 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -101,6 +101,7 @@
+@@ -102,6 +102,7 @@
  #define CONFIG_CMD_MMC
  #define CONFIG_CMD_FAT
  #define CONFIG_CMD_EXT2
 +#define CONFIG_CMD_LICENSE
+ #define CONFIG_CMD_TERMINAL
  
  #define CONFIG_BOOTDELAY	3
- #define CONFIG_BOOTARGS    	""
 Index: u-boot/include/configs/hxd8.h
 ===================================================================
 --- u-boot.orig/include/configs/hxd8.h

@@ -7,6 +7,7 @@ uboot-mokoversion.patch
 uboot-strtoul.patch
 uboot-cramfs_but_no_jffs2.patch
 nand-read_write_oob.patch
+uboot-serial_terminal.patch
 uboot-arm920t-gd_in_irq.patch
 uboot-arm920_s3c2410_irq_demux.patch
 uboot-s3c2410-nand.patch
@@ -76,4 +77,3 @@ uboot-smdk2443.patch
 # for review, merge soon
 unbusy-i2c.patch 
 usbtty-irq-racecondition-fix.patch
-uboot-serial_terminal.patch

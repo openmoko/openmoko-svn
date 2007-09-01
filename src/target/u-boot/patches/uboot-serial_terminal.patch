@@ -1,18 +1,6 @@
 This patch adds a 'cu' like serial terminal command to u-boot
 using which you can access other serial ports from the system console.
 
-Index: u-boot/include/configs/neo1973_gta02.h
-===================================================================
---- u-boot.orig/include/configs/neo1973_gta02.h
-+++ u-boot/include/configs/neo1973_gta02.h
-@@ -105,6 +105,7 @@
- #define CONFIG_CMD_FAT
- #define CONFIG_CMD_EXT2
- #define CONFIG_CMD_LICENSE
-+#define CONFIG_CMD_TERMINAL
- 
- #define CONFIG_BOOTDELAY	3
- #define CONFIG_BOOTARGS    	""
 Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
@@ -133,15 +121,3 @@ Index: u-boot/common/cmd_terminal.c
 +);
 +
 +#endif /* CONFIG_CMD_TERMINAL */
-Index: u-boot/include/configs/neo1973_gta01.h
-===================================================================
---- u-boot.orig/include/configs/neo1973_gta01.h
-+++ u-boot/include/configs/neo1973_gta01.h
-@@ -103,6 +103,7 @@
- #define CONFIG_CMD_FAT
- #define CONFIG_CMD_EXT2
- #define CONFIG_CMD_LICENSE
-+#define CONFIG_CMD_TERMINAL
- 
- #define CONFIG_BOOTDELAY	3
- #define CONFIG_BOOTARGS    	""

@@ -1351,7 +1351,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -0,0 +1,431 @@
+@@ -0,0 +1,485 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -1385,6 +1385,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 + */
 +
 +#include <common.h>
++#include <devices.h>
 +#include <s3c2410.h>
 +#include <i2c.h>
 +
@@ -1717,11 +1718,64 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 +#endif
 +}
 +
-+void neo1973_gsm(int on)
++/* switch serial port 0 multiplexer */
++void neo1973_gta01_serial0_gsm(int on)
 +{
-+	printf("not implemented yet!\n");
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++	S3C24X0_UART * const uart = S3C24X0_GetBase_UART(0);
++	int i;
++
++	if (on) {
++		for (i = 0; i < 3; i++) {
++			if (!strcmp(stdio_devices[i]->name, "serial") ||
++			    !strcmp(stdio_devices[i]->name, "s3ser0")) {
++				puts("ERROR: serial port busy, can't enable GSM!\n");
++				return;
++			}
++		}
++		puts("switching s3ser0 from console into GSM mode\n");
++		uart->UMCON |= 0x10;		/* Hardware flow control */
++		gpio->GPFDAT &= ~(1 << 2);	/* GPF2: nGSM_EN */
++	} else {
++		gpio->GPFDAT |= (1 << 2);	/* GPF2: nGSM_EN */
++		uart->UMCON &= ~0x10;		/* No Hardware flow control */
++		puts("switched s3ser0 from GSM mode back into console mode\n");
++	}
 +}
 +
++/* switch gsm power on/off */
++void neo1973_gsm(int on)
++{
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++	device_t *dev = search_device(DEV_FLAGS_INPUT, "s3ser0");
++	if (!dev) {
++		puts("can't find s3ser0 device ?!?\n");
++		return;
++	}
++
++	if (on) {
++		gpio->GPBDAT &= ~(1 << 6);	/* GPB6: MODEM_RST */
++		gpio->GPBDAT |= (1 << 7);	/* GPB7: MODEM_ON */
++	} else {
++		/* unfortunately switching the modem off is not that easy.
++		 * Ti's firmware is insisting on not switching off... */
++		gpio->GPBDAT &= ~(1 << 7);	/* GPB7: MODEM_ON */
++		//gpio->GPBDAT |= (1 << 6);	/* GPB6: MODEM_RST */
++		if (!(gpio->GPFDAT & (1 << 2)))
++			puts("Can't power modem off while serial console "
++			     "in use!\n");
++		else {
++			S3C24X0_UART * const uart = S3C24X0_GetBase_UART(0);
++			uart->UMCON |= 0x10;		/* Hardware flow control */
++			gpio->GPFDAT &= ~(1 << 2);	/* GPF2: nGSM_EN */
++			dev->puts("AT@POFF\r\n");
++			gpio->GPFDAT |= (1 << 2);	/* GPF2: nGSM_EN */
++			uart->UMCON &= ~0x10;		/* No Hardware flow control */
++		}
++	}
++}
++
++/* switch gps power on/off */
 +void neo1973_gps(int on)
 +{
 +	printf("not implemented yet!\n");
@@ -2017,7 +2071,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,255 @@
 +/*
 + * (C) Copyright 2006 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2124,6 +2178,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 +#define CONFIG_CMD_MMC
 +#define CONFIG_CMD_FAT
 +#define CONFIG_CMD_EXT2
++#define CONFIG_CMD_TERMINAL
 +
 +#define CONFIG_BOOTDELAY	3
 +#define CONFIG_BOOTARGS    	"rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC0,115200 console=tty0 loglevel=8"
@@ -2311,3 +2366,39 @@ Index: u-boot/board/neo1973/common/neo1973.h
 +int neo1973_set_charge_mode(enum neo1973_charger_cmd cmd);
 +
 +#endif
+Index: u-boot/common/cmd_terminal.c
+===================================================================
+--- u-boot.orig/common/cmd_terminal.c
++++ u-boot/common/cmd_terminal.c
+@@ -50,7 +50,15 @@
+ 	if (!dev)
+ 		return -1;
+ 
+-	serial_reinit_all();
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++    defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
++    defined(CONFIG_ARCH_GTA01B_v4)
++	if (!strcmp(dev->name, "serial") ||
++	    !strcmp(dev->name, "s3ser0"))
++		neo1973_gta01_serial0_gsm(1);
++#endif
++
++	//serial_reinit_all();
+ 	printf("Entering terminal mode for port %s\n", dev->name);
+ 	puts("Use '~.' to leave the terminal and get back to u-boot\n");
+ 
+@@ -87,6 +95,14 @@
+ 			putc(c);
+ 		}
+ 	}
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++    defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
++    defined(CONFIG_ARCH_GTA01B_v4)
++	if (!strcmp(dev->name, "serial") ||
++	    !strcmp(dev->name, "s3ser0"))
++		neo1973_gta01_serial0_gsm(0);
++#endif
++
+ 	return 0;
+ }
+ 
