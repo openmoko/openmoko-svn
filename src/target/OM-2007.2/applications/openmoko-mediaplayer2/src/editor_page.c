@@ -147,8 +147,9 @@ void
 omp_editor_page_list_populate()
 {
 	GtkTreeIter tree_iter;
-	guint track_num, duration;
-	gchar *track_title, *track_duration;
+	guint track_num;
+	gulong int_duration;
+	gchar *artist, *title, *duration, *caption;
 	omp_playlist_iter *pl_iter;
 
 	gtk_list_store_clear(omp_editor_page_list_store);
@@ -158,26 +159,41 @@ omp_editor_page_list_populate()
 	// Iterate over the playlist and gather track infos to fill the list with
 	while (!omp_playlist_iter_finished(pl_iter))
 	{
-		omp_playlist_get_track_from_iter(pl_iter, &track_num, &track_title, &duration);
+		omp_playlist_get_track_from_iter(pl_iter, &track_num, &artist, &title, &int_duration);
 
-		if (duration > 0)
+		if (int_duration > 0)
 		{
-			track_duration = g_strdup_printf(OMP_WIDGET_CAPTION_EDITOR_TRACK_TIME,
-				duration / 60000, (duration/1000) % 60);
+			duration = g_strdup_printf(OMP_WIDGET_CAPTION_EDITOR_TRACK_TIME,
+				(gint)(int_duration / 60000), (gint)(int_duration/1000) % 60);
 		} else {
-			track_duration = g_strdup("");
+			duration = g_strdup("");
+		}
+
+		if (artist)
+		{
+			if (strcmp(artist, "") != 0)
+			{
+				caption = g_strdup_printf(_("%1$s - %2$s"), artist, title);
+			} else {
+				caption = g_strdup(title);
+			}
+
+		} else {
+			caption = g_strdup(title);
 		}
 
 		gtk_list_store_append(omp_editor_page_list_store, &tree_iter);
 		gtk_list_store_set(omp_editor_page_list_store, &tree_iter,
 			NUMBER_COLUMN, track_num+1,
-			TITLE_COLUMN, track_title,
-			DURATION_COLUMN, track_duration, -1);
-
-		g_free(track_duration);
-		g_free(track_title);
+			TITLE_COLUMN, caption,
+			DURATION_COLUMN, duration, -1);
 
 		omp_playlist_advance_iter(pl_iter);
+
+		g_free(title);
+		g_free(artist);
+		g_free(caption);
+		g_free(duration);
 	}
 }
 

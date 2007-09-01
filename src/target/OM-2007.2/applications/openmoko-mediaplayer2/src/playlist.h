@@ -88,7 +88,7 @@ void omp_playlist_update_track_count();
 
 omp_playlist_iter *omp_playlist_init_iterator();
 void omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num,
-	gchar **track_title, guint *duration);
+	gchar **track_artist, gchar **track_title, gulong *duration);
 void omp_playlist_advance_iter(omp_playlist_iter *iter);
 gboolean omp_playlist_iter_finished(omp_playlist_iter *iter);
 

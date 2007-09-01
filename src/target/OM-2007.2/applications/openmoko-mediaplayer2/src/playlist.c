@@ -807,8 +807,8 @@ omp_playlist_init_iterator()
  * @param track_title Destination for the track title (can be NULL), must be freed after use
  */
 void
-omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num, gchar **track_title,
-	guint *duration)
+omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num, gchar **track_artist,
+ gchar **track_title, gulong *duration)
 {
 	// Sanity checks - one silent, one not
 	if (!iter) return;
@@ -818,6 +818,16 @@ omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num, gcha
 	if (track_num)
 	{
 		*track_num = iter->track_num;
+	}
+
+	if (track_artist)
+	{
+		if (iter->track)
+		{
+			*track_artist = g_strdup(iter->track->creator);
+		} else {
+			*track_artist = NULL;
+		}
 	}
 
 	if (track_title)
