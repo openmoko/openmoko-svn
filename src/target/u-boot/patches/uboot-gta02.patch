@@ -91,7 +91,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,391 @@
+@@ -0,0 +1,401 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -427,11 +427,21 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +void neo1973_gsm(int on)
 +{
-+	/* GPIO2 of PMU */
-+	if (on)
++	S3C24X0_GPIO * const gpio = S3C24X0_GetBase_GPIO();
++
++	/* GPIO2 of PMU, GPB7(MODEM_ON)=1 and GPB5(MODEM_RST)=0 */
++	if (on) {
++#if !defined(CONFIG_ARCH_GTA02_v1)
 +		pcf50633_reg_write(PCF50633_REG_GPIO2CFG, 0x07);
-+	else
++#endif
++		gpio->GPBDAT &= ~(1 << 5);
++		gpio->GPBDAT |= (1 << 7);
++	} else {
++		gpio->GPBDAT &= ~(1 << 7);
++#if !defined(CONFIG_ARCH_GTA02_v1)
 +		pcf50633_reg_write(PCF50633_REG_GPIO2CFG, 0x00);
++#endif
++	}
 +}
 +
 +void neo1973_gps(int on)
