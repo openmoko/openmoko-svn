@@ -652,9 +652,9 @@ Index: u-boot/cpu/arm920t/s3c24x0/serial.c
  #endif
  
  DECLARE_GLOBAL_DATA_PTR;
-@@ -180,4 +183,5 @@
- 	}
- }
+@@ -302,4 +305,5 @@
+ 
+ #endif /* CONFIG_SERIAL_MULTI */
  
 -#endif /* defined(CONFIG_S3C2400) || defined (CONFIG_S3C2410) || defined (CONFIG_TRAB) */
 +#endif /* defined(CONFIG_S3C2400) || defined (CONFIG_S3C2410) ||
@@ -1454,3 +1454,38 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c24xx.c
  			/* to reduce PLL lock time, adjust the LOCKTIME register */
  			clk_power->LOCKTIME = 0xFFFFFF;
  
+Index: u-boot/common/serial.c
+===================================================================
+--- u-boot.orig/common/serial.c
++++ u-boot/common/serial.c
+@@ -59,7 +59,7 @@
+ #else
+ 		return &serial0_device;
+ #endif
+-#elif defined(CONFIG_S3C2410)
++#elif defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ #if defined(CONFIG_SERIAL1)
+ 	return &s3c24xx_serial0_device;
+ #elif defined(CONFIG_SERIAL2)
+@@ -121,7 +121,7 @@
+ #endif
+ #endif /* CFG_NS16550_SERIAL */
+ 
+-#if defined(CONFIG_S3C2410)
++#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ 	serial_register(&s3c24xx_serial0_device);
+ 	serial_register(&s3c24xx_serial1_device);
+ 	serial_register(&s3c24xx_serial2_device);
+Index: u-boot/include/serial.h
+===================================================================
+--- u-boot.orig/include/serial.h
++++ u-boot/include/serial.h
+@@ -35,7 +35,7 @@
+ 
+ #endif
+ 
+-#if defined(CONFIG_S3C2410)
++#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ extern struct serial_device s3c24xx_serial0_device;
+ extern struct serial_device s3c24xx_serial1_device;
+ extern struct serial_device s3c24xx_serial2_device;

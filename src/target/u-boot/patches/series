@@ -12,6 +12,7 @@ uboot-arm920_s3c2410_irq_demux.patch
 uboot-s3c2410-nand.patch
 uboot-cmd_s3c2410.patch
 uboot-s3c2410-mmc.patch
+uboot-s3c24xx_multi_serial.patch
 env_nand_oob.patch
 dynenv-harden.patch
 uboot-s3c2410_fb.patch

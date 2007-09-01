@@ -560,7 +560,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,277 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -625,6 +625,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 + * select serial console configuration
 + */
 +#define CONFIG_SERIAL3          1	/* we use SERIAL 1 on GTA01 */
++#define CONFIG_SERIAL_MULTI
 +
 +/* allow to overwrite serial and ethaddr */
 +#define CONFIG_ENV_OVERWRITE

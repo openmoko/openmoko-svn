@@ -285,8 +285,8 @@ Index: u-boot/cpu/arm920t/s3c24x0/serial.c
  #include <s3c2440.h>
  #endif
  
-@@ -184,4 +185,5 @@
- }
+@@ -306,4 +307,5 @@
+ #endif /* CONFIG_SERIAL_MULTI */
  
  #endif /* defined(CONFIG_S3C2400) || defined (CONFIG_S3C2410) ||
 -	  defined(CONFIG_S3C2440) || defined (CONFIG_TRAB) */
@@ -628,3 +628,41 @@ Index: u-boot/rtc/s3c24x0_rtc.c
  #include <s3c2440.h>
  #endif
  
+Index: u-boot/common/serial.c
+===================================================================
+--- u-boot.orig/common/serial.c
++++ u-boot/common/serial.c
+@@ -59,7 +59,8 @@
+ #else
+ 		return &serial0_device;
+ #endif
+-#elif defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
++#elif defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
++      defined(CONFIG_S3C2442)
+ #if defined(CONFIG_SERIAL1)
+ 	return &s3c24xx_serial0_device;
+ #elif defined(CONFIG_SERIAL2)
+@@ -121,7 +122,8 @@
+ #endif
+ #endif /* CFG_NS16550_SERIAL */
+ 
+-#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
++#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
++    defined(CONFIG_S3C2442)
+ 	serial_register(&s3c24xx_serial0_device);
+ 	serial_register(&s3c24xx_serial1_device);
+ 	serial_register(&s3c24xx_serial2_device);
+Index: u-boot/include/serial.h
+===================================================================
+--- u-boot.orig/include/serial.h
++++ u-boot/include/serial.h
+@@ -35,7 +35,8 @@
+ 
+ #endif
+ 
+-#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
++#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
++    defined(CONFIG_S3C2442)
+ extern struct serial_device s3c24xx_serial0_device;
+ extern struct serial_device s3c24xx_serial1_device;
+ extern struct serial_device s3c24xx_serial2_device;
