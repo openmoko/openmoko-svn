@@ -132,7 +132,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/serial.c
 +	if (dev_index == 0 || dev_index == 1)
 +		uart->UMCON = 0x10;
 +#endif
-+	serial_setbrg_dev(dev_index);
++	_serial_setbrg(dev_index);
 +
 +	return (0);
  }
