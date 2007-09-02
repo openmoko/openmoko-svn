@@ -20,7 +20,7 @@
 #include <time.h>
 
 typedef struct {
-    GtkImage *image;
+    int dummy;
 } UsbApplet;
 
 static void
@@ -29,7 +29,7 @@ usb_applet_free (UsbApplet *applet)
     g_slice_free (UsbApplet, applet);
 }
 
-G_MODULE_EXPORT GtkWidget* 
+G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     MokoPanelApplet* mokoapplet = moko_panel_applet_new();
@@ -40,11 +40,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 
     applet = g_slice_new (UsbApplet);
 
-    applet->image = GTK_IMAGE(gtk_image_new_from_file ( PKGDATADIR "/Usb.png"));
-    gtk_widget_set_name( applet->image, "openmoko-usb-applet" );
-    g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) usb_applet_free, applet );
+    moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/Usb.png" );
 
-    moko_panel_applet_set_widget( GTK_CONTAINER(mokoapplet), applet->image );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);
 };

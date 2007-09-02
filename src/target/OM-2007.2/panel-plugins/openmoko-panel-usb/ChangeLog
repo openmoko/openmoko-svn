@@ -1,5 +1,9 @@
-2007-07-30  Michael Lauer <mickey@openmoko.org>
+2007-09-02	Michael Lauer <mickey@openmoko.org>
 
-        * configure.ac:
-        Import panel-plugin into 2007.2 and refer to libmokopanelui2.
+	* src/openmoko-panel-gps:
+	Use moko_panel_applet_set_icon to set the icon.
 
+2007-07-30	Michael Lauer <mickey@openmoko.org>
+
+	* configure.ac:
+	Import panel-plugin into 2007.2 and refer to libmokopanelui2.

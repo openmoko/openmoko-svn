@@ -1,6 +1,6 @@
 /*  openmoko-panel-gps.c
  *
- *  Authored by
+ *  Authored by Michael 'Mickey' Lauer <mickey@openmoko.org>
  *  Copyright (C) 2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #include <time.h>
 
 typedef struct {
-    GtkImage *image;
+    int dummy;
 } GpsApplet;
 
 static void
@@ -29,7 +29,7 @@ gps_applet_free (GpsApplet *applet)
     g_slice_free (GpsApplet, applet);
 }
 
-G_MODULE_EXPORT GtkWidget* 
+G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     MokoPanelApplet* mokoapplet = moko_panel_applet_new();
@@ -40,11 +40,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 
     applet = g_slice_new (GpsApplet);
 
-    applet->image = GTK_IMAGE(gtk_image_new_from_file ( PKGDATADIR "/GPS.png"));
-    gtk_widget_set_name( applet->image, "openmoko-gps-applet" );
-    g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) gps_applet_free, applet );
-
-    moko_panel_applet_set_widget( GTK_CONTAINER(mokoapplet), applet->image );
+    moko_panel_applet_set_icon( GTK_CONTAINER(mokoapplet), PKGDATADIR "/GPS.png" );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);
 };
