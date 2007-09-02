@@ -110,7 +110,6 @@ bt_applet_power_off(GtkWidget* menu, BtApplet* applet)
     quick_message("  Bluetooth turned off  \n\n");
 }
 
-
 static void
 bt_applet_status(GtkWidget* menu, BtApplet* applet)
 {
@@ -133,17 +132,10 @@ bt_applet_free (BtApplet *applet)
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    MokoPanelApplet* mokoapplet = moko_panel_applet_new();
+    BtApplet *applet = g_slice_new (BtApplet);
+    MokoPanelApplet* mokoapplet = applet->mokoapplet = moko_panel_applet_new();
 
-    BtApplet *applet;
-    time_t t;
-    struct tm *local_time;
-
-    applet = g_slice_new (BtApplet);
-
-    applet->state = -1;
-    applet->mokoapplet = mokoapplet;
-
+    applet->state = 42;
     mb_panel_update( applet, read_bt_power() );
     gtk_widget_show_all( GTK_WIDGET(applet->mokoapplet) );
 
