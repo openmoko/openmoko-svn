@@ -1,3 +1,8 @@
+2007-09-02	Michael Lauer <mickey@openmoko.org>
+
+	* src/today-pim-summary.c: (today_pim_summary_update_date):
+	Set textual display of date, don't show time (it's in the panel anyways)
+
 2007-08-31  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-pim-journal.c: (today_pim_journal_box_new): Fix some compiler

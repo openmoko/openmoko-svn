@@ -25,8 +25,7 @@ today_pim_summary_update_date (GtkTreeViewColumn *column)
 	time (&t);
 	if (!(tmp = localtime (&t))) return TRUE;
 
-	strftime (date_str, sizeof (date_str),
-		"%I:%M%p %x", tmp);
+	strftime (date_str, sizeof (date_str), "%A, %d. %B %Y", tmp);
 	gtk_tree_view_column_set_title (column, date_str);
 	
 	return TRUE;
