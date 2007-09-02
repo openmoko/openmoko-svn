@@ -1,0 +1,8 @@
+style "gtkpaned"
+{
+  GtkPaned::handle-size = 8
+}
+class "GtkPaned" style "gtkpaned"
+widget_class "*.GtkPaned" style "gtkpaned"
+
+
