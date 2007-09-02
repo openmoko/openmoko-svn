@@ -1,11 +1,18 @@
+2007-09-02	Michael Lauer <mickey@openmoko.org>
+
+	* src/openmoko-battery-plugin.c:
+	* data/Makefile.am:
+	* data/Battery*.png:
+	Precalculate images to make them scalable. Catch up with libmokopanelui2.
+
 2007-07-30  Michael Lauer <mickey@openmoko.org>
 
-        * configure.ac:
-        Import panel-plugin into 2007.2 and refer to libmokopanelui2.
+	* configure.ac:
+	Import panel-plugin into 2007.2 and refer to libmokopanelui2.
 
 2007-06-22  Stefan Schmidt <stefan@openmoko.org>
 
-        * configure.ac:
-        * data/Makefile.am:
+	* configure.ac:
+	* data/Makefile.am:
 
-        Fix make distcheck. Patch from Rodolphe Ortalo. Closes #541
+	Fix make distcheck. Patch from Rodolphe Ortalo. Closes #541

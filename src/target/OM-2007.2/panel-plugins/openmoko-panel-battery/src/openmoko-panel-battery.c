@@ -32,11 +32,7 @@
 #define DEBUG_THIS_FILE
 
 typedef struct {
-    GdkPixbuf* enclosing;
-    GdkPixbuf* plug;
-    GdkPixbuf* juice[JUICE_PIXMAPS];
-    GdkPixbuf* indicator;
-    GtkImage *image;
+    MokoPanelApplet* mokoapplet;
     guint timeout_id;
 } BatteryApplet;
 
@@ -58,14 +54,7 @@ timeout (BatteryApplet *applet)
     memset (&info, 0, sizeof (apm_info));
     apm_read (&info);
 
-    /* compose new pixmap and set label */
-
-    guint w = gdk_pixbuf_get_width( applet->indicator );
-    guint h = gdk_pixbuf_get_height( applet->indicator );
-
-    gdk_pixbuf_copy_area( applet->enclosing, 0, 0, w, h, applet->indicator, 0, 0 );
-
-    GdkPixbuf* icon;
+    char* icon;
 
     //FIXME Can we actually find out, when the battery is full?
 
@@ -75,65 +64,37 @@ timeout (BatteryApplet *applet)
     if ( info.battery_status == BATTERY_STATUS_ABSENT ||
          info.battery_status == BATTERY_STATUS_CHARGING )
     {
-         icon = applet->plug;
+         icon = PKGDATADIR "/Battery_AC.png";
     }
     else
     {
         if (info.battery_percentage < 10)
-            icon = applet->juice[0];
+            icon = PKGDATADIR "/Battery_00.png";
         else if (info.battery_percentage < 30)
-            icon = applet->juice[1];
+            icon = PKGDATADIR "/Battery_01.png";
         else if (info.battery_percentage < 50)
-            icon = applet->juice[2];
+            icon = PKGDATADIR "/Battery_02.png";
         else if (info.battery_percentage < 70)
-            icon = applet->juice[3];
+            icon = PKGDATADIR "/Battery_03.png";
         else if (info.battery_percentage < 90)
-            icon = applet->juice[4];
+            icon = PKGDATADIR "/Battery_04.png";
         else
-            icon = applet->juice[5];
+            icon = PKGDATADIR "/Battery_05.png";
     }
 
     //FIXME Check whether we actually need to update
 
-    gdk_pixbuf_composite( icon, applet->indicator, 0, 0, w, h, 0, 0, 1, 1, GDK_INTERP_NEAREST, 255 );
-    gtk_image_set_from_pixbuf( applet->image, applet->indicator );
-
+    moko_panel_applet_set_icon( applet->mokoapplet, icon );
     return TRUE;
 }
 
 G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
+    BatteryApplet *applet = g_slice_new (BatteryApplet);
+    MokoPanelApplet* mokoapplet = applet->mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
-    BatteryApplet *applet;
     time_t t;
     struct tm *local_time;
-
-    applet = g_slice_new (BatteryApplet);
-
-    applet->image = GTK_IMAGE(gtk_image_new());
-    gtk_widget_set_name( GTK_WIDGET(applet->image), "MatchboxPanelBattery" );
-    g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) battery_applet_free, applet );
-
-    /* preload pixbufs */
-    guint i = 0;
-    applet->juice[i++] = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_00.png", NULL );
-    applet->juice[i++] = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_01.png", NULL );
-    applet->juice[i++] = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_02.png", NULL );
-    applet->juice[i++] = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_03.png", NULL );
-    applet->juice[i++] = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_04.png", NULL );
-    applet->juice[i++] = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_05.png", NULL );
-    applet->enclosing = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery.png", NULL );
-    applet->plug = gdk_pixbuf_new_from_file( PKGDATADIR "/Battery_Plug.png", NULL );
-
-    applet->indicator = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
-                                      gdk_pixbuf_get_width( applet->enclosing ),
-                                      gdk_pixbuf_get_height( applet->enclosing ) );
-
-    gtk_widget_set_size_request( GTK_WIDGET(applet->image),
-                                 gdk_pixbuf_get_width( applet->indicator ),
-                                 gdk_pixbuf_get_height( applet->indicator ) );
-
     t = time( NULL );
     local_time = localtime(&t);
 #ifndef DEBUG_THIS_FILE
@@ -143,7 +104,7 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
 #else
     applet->timeout_id = g_timeout_add( 10 * 1000, (GSourceFunc) timeout, applet);
 #endif
-    moko_panel_applet_set_widget( MOKO_PANEL_APPLET(mokoapplet), GTK_WIDGET(applet->image) );
+    moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/Battery_00.png" );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);
-};
+}
