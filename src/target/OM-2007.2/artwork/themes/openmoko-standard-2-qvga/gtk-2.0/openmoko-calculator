@@ -14,3 +14,8 @@ style "calc-display-bg"
   ythickness = 5
 }
 widget "*calculator-display-background*" style "calc-display-bg"
+
+style "calculator-button-label" {
+    font_name = "Sans 12"
+}
+widget "*calculator-table.GtkButton.*" style "calculator-button-label"

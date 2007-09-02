@@ -1,8 +1,7 @@
-#FIXME sizing is totally off, probably needs patching Gtk to honor style properties as in GtkScrollBar
 #FIXME add missing vertical progress bar styling
 
 style "gtkprogressbar" {
-    
+    ythickness = 6    
     engine "pixmap" {
         image {
             function                  = BOX
