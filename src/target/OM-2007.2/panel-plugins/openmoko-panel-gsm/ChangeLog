@@ -1,17 +1,23 @@
+2007-09-02	Michael Lauer <mickey@openmoko.org>
+
+	* src/openmoko-panel-gsm.c:
+	(mb_panel_applet_create):
+	Catch up with libmokopanelui2, use simple way to set icon
+
 2007-08-20  Stefan Schmidt <stefan@openmoko.org>
 
-        * src/openmoko-panel-gsm.c:
-        (mb_panel_applet_create):
-		Use the right items for the signals.
+	* src/openmoko-panel-gsm.c:
+	(mb_panel_applet_create):
+	Use the right items for the signals.
 
 2007-07-31	Michael Lauer <mickey@openmoko.org>
 
-		* src/openmoko-panel-gsm.c:
-		* configure.ac:
-		Catch up with libmokogsmd2
+	* src/openmoko-panel-gsm.c:
+	* configure.ac:
+	Catch up with libmokogsmd2
 
 2007-07-30  Michael Lauer <mickey@openmoko.org>
 
-        * configure.ac:
-        Import panel-plugin into 2007.2 and refer to libmokopanelui2.
+	* configure.ac:
+	Import panel-plugin into 2007.2 and refer to libmokopanelui2.
 

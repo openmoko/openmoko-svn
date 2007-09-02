@@ -26,27 +26,27 @@
 #define _MAX_SIGNAL 30.0
 
 typedef struct {
-    GtkWidget* image;
+    MokoPanelApplet* mokoapplet;
     gboolean gprs_mode;
     MokoGsmdConnection* gsm;
 } GsmApplet;
 
-static void 
+static void
 gsm_applet_free(GsmApplet *applet)
 {
     g_slice_free( GsmApplet, applet );
 }
 
-static void 
-gsm_applet_update_signal_strength(MokoGsmdConnection* connection, 
-                                  int strength, 
+static void
+gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
+                                  int strength,
                                   GsmApplet* applet)
 {
     gfloat percent;
     gint pixmap = 0;
     gchar *image = NULL;
 
-    g_debug( "gsm_applet_update_signal_strength: signal strength = %d", 
+    g_debug( "gsm_applet_update_signal_strength: signal strength = %d",
               strength );
 
     percent = (strength / _MAX_SIGNAL) * 100;
@@ -64,46 +64,44 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
     else
       pixmap = 5;
 
-    image = g_strdup_printf( "%s/SignalStrength%s%02d.png", 
-                             PKGDATADIR, 
+    image = g_strdup_printf( "%s/SignalStrength%s%02d.png",
+                             PKGDATADIR,
                              applet->gprs_mode ? "25g_" : "_", pixmap );
-    gtk_image_set_from_file( GTK_IMAGE(applet->image), image );
+
+    moko_panel_applet_set_icon( applet->mokoapplet, image );
 
     g_free (image);
 }
 
-static void 
+static void
 gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
     moko_gsmd_connection_set_antenna_power( applet->gsm, TRUE );
 }
 
-static void 
+static void
 gsm_applet_autoregister_network(GtkWidget* menu, GsmApplet* applet)
 {
     moko_gsmd_connection_network_register( applet->gsm );
 }
 
-static void 
+static void
 gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
     moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE );
 }
 
-G_MODULE_EXPORT GtkWidget* 
+G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
+    GsmApplet* applet = g_slice_new(GsmApplet);
+    MokoPanelApplet* mokoapplet = applet->mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
-    GsmApplet* applet;
-    applet = g_slice_new(GsmApplet);
-    applet->image = gtk_image_new_from_file( PKGDATADIR "/SignalStrength_NR.png" );
+    moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/SignalStrength_NR.png" );
+
     applet->gprs_mode = FALSE;
-    gtk_widget_set_name( GTK_WIDGET(applet->image), "openmoko-gsm-applet" );
-    g_object_weak_ref( G_OBJECT(applet->image), (GWeakNotify) gsm_applet_free, applet );
-    moko_panel_applet_set_widget( mokoapplet, GTK_WIDGET(applet->image) );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
 
     applet->gsm = moko_gsmd_connection_new();
