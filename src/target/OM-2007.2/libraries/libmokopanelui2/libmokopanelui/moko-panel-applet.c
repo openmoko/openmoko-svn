@@ -18,9 +18,12 @@
 
 #include "moko-panel-applet.h"
 
+#include <matchbox-panel/mb-panel-scaling-image.h>
 #include <gtk/gtkmenu.h>
 
 #undef DEBUG_THIS_FILE
+#define DEBUG_THIS_FILE
+
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
 #define moko_debug_minder(predicate) moko_debug( __FUNCTION__ ); g_return_if_fail(predicate)
@@ -37,7 +40,6 @@ typedef struct _MokoPanelAppletPrivate
 {
     gboolean is_initialized;
     gboolean hold_timeout_triggered;
-    gboolean scaling_requested;
 } MokoPanelAppletPrivate;
 
 enum {
@@ -197,17 +199,16 @@ void moko_panel_applet_signal_tap_hold(MokoPanelApplet* self)
 ////////////////
 // PUBLIC API //
 ////////////////
-void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gboolean request_scaling)
+void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
 {
     if ( !self->icon )
     {
-        self->icon = gtk_image_new_from_file( filename );
-        g_return_if_fail( self->icon );
+        self->icon = mb_panel_scaling_image_new( GTK_ORIENTATION_HORIZONTAL, NULL );
+        mb_panel_scaling_image_set_caching( MB_PANEL_SCALING_IMAGE(self->icon), TRUE );
         gtk_container_add( GTK_CONTAINER(self->eventbox), self->icon );
         gtk_widget_show( self->icon );
     }
-    else
-        gtk_image_set_from_file( GTK_IMAGE (self->icon), filename );
+    mb_panel_scaling_image_set_icon( MB_PANEL_SCALING_IMAGE(self->icon), filename );
 }
 
 void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)

@@ -48,7 +48,7 @@ typedef enum {
 
 typedef struct {
     GtkAlignment parent;
-    GtkWidget* icon;           /* GtkImage */
+    GtkWidget* icon;           /* MBPanelScalingImage */
     GtkWidget* popup[LAST_POPUP_TYPE];
     GtkWidget* toplevelwindow; /* GtkWindow */
     GtkWidget* eventbox;       /* GtkEventBox */
@@ -68,7 +68,7 @@ GtkWidget* moko_panel_applet_new();
 void moko_panel_system_init( int* argc, char*** argv );
 
 /* simple interface */
-void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename, gboolean scaling);
+void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename);
 void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf);
 void moko_panel_applet_set_widget(MokoPanelApplet* self, GtkWidget* widget);
 void moko_panel_applet_get_positioning_hint(MokoPanelApplet* self, GtkWidget* popup, int* x, int* y);
