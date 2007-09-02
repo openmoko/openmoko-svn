@@ -1,0 +1,21 @@
+style "gtkentry" 
+{
+  xthickness = 4
+  ythickness = 4
+  engine "pixmap" 
+  {
+    image 
+    {
+      function        = SHADOW
+      shadow          = IN
+      file            = "entry/entry-normal.png"
+      border          = {3, 3, 3, 3}
+    }
+  }
+  text[NORMAL] = "#000000"
+  base[NORMAL] = "#ffffff"
+  fg[NORMAL] = "#000000"
+  text[INSENSITIVE] = "#999999" # dark grey
+}
+class "GtkEntry" style "gtkentry"
+widget_class "*.GtkEntry*" style "gtkentry"

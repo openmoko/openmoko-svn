@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenMoko-Standard-QVGA 2
+Type=X-GNOME-Metatheme
+Comment=Standard Look and Feel for the OpenMoko Platform, QVGA version
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=OpenMoko-Standard-QVGA-2
+#MetacityTheme=OpenMoko-Standard
+IconTheme=openmoko-standard
+

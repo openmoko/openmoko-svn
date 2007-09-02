@@ -1,0 +1,10 @@
+style "openmoko-panel-clock" {
+    fg[NORMAL]   = "#e2e2e2"
+    fg[PRELIGHT] = "#e2e2e2"
+    fg[ACTIVE]   = "#e2e2e2"
+}
+widget "*.MatchboxPanelClock" style "openmoko-panel-clock"
+
+# add styling for other panel plugins here...
+
+

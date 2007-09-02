@@ -1,0 +1,42 @@
+#FIXME sizing is totally off, probably needs patching Gtk to honor style properties as in GtkScrollBar
+#FIXME add missing vertical progress bar styling
+
+style "gtkprogressbar" {
+    
+    engine "pixmap" {
+        image {
+            function                  = BOX
+            detail                    = "trough"
+            file                      = "progress/progressbar-trough.png"
+            border                    = { 10, 10, 7, 7 }
+            stretch                   = TRUE
+            orientation               = HORIZONTAL
+        }
+        image {
+            function                  = BOX
+            detail                    = "bar"
+            file                      = "progress/progressbar-bar.png"
+            border                    = { 6, 6, 5, 7 }
+            stretch                   = TRUE
+            orientation               = HORIZONTAL
+        }
+#        image {
+#            function                  = BOX
+#            detail                    = "trough"
+#            file                      = "trough2.png"
+#            border                    = { 2, 2, 1, 1 }
+#            stretch                   = TRUE
+#            orientation               = VERTICAL
+#        }
+#        image {
+#            function                  = BOX
+#            detail                    = "bar"
+#            file                      = "progressbar.png"
+#            border                    = { 2, 2, 2, 1 }
+#            stretch                   = TRUE
+#            orientation               = VERTICAL
+#        }
+    }
+}
+class "GtkProgressBar" style "gtkprogressbar"
+widget_class "*.GtkProgressBar" style "gtkprogressbar"

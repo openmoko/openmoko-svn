@@ -1,0 +1,16 @@
+style "toolbar"
+{
+  xthickness = 0
+  ythickness = 0
+  engine "pixmap"
+  {
+    image
+    {
+      function      = BOX
+      file          = "toolbar/toolbar.png"
+      stretch       = TRUE
+    }
+  }
+}
+widget_class "*Toolbar" style "toolbar"
+class "*Toolbar" style "toolbar"

@@ -1,0 +1,20 @@
+[Desktop Entry]
+Type=MBTheme
+Name=OpenMoko-Standard-QVGA-2
+Preview=XXX
+Comment=OpenMoko theme
+ThemePath=@prefix@/themes/openmoko-standard-qvga-2
+
+MenuBgColor=#000000
+MenuFgColor=#ffffff
+MenuBdColor=#ff7f00
+MenuHlColor=#2c2c2c
+
+PanelFgColor=#ffffff
+PanelBgColor=#00000000
+DesktopBgSpec=col-solid:#000000
+DesktopHlCol=#2c2c2c
+
+PanelMsgBgCol=#000000 
+PanelMsgBgUrgentCol=#2c2c2c
+PanelMsgFgCol=#ffffff

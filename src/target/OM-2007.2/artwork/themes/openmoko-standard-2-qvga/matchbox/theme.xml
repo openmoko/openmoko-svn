@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<theme name="OpenMoko-Standard-QVGA-2" author="Chris Lord - chris@openedhand.com"
+       desc="The default OpenMoko theme, QVGA version" version="1.0" engine_version="1" >
+
+<color id="white" def="#ffffff" />
+<color id="black" def="#000000ff" />
+<color id="orange" def="#ff7f00ff" />
+<color id="transparent" def="#00000000" />
+
+<color id="dark" def="#000000" />
+<color id="darkmid" def="#161616" />
+<color id="light" def="#858585" />
+<color id="lightmid" def="#2c2c2c" />
+
+<font id="titlefont" def="Sans bold 16px" />
+<font id="menufont" def="Sans bold 16px" />
+
+<pixmap id="closebutton" filename="closebutton.xpm" />  
+<pixmap id="menubutton"  filename="menubutton.xpm" />  
+
+<frame id="main" height="25">
+
+  <layer x="0" y="0" w="100%"  h="23" 
+   type="plain" color="orange" />
+
+  <layer x="0" y="0" w="33%"  h="23" 
+   type="gradient-horiz" startcol="transparent" endcol="black" />
+
+  <layer x="33%" y="0" w="67%"  h="23" 
+   type="plain" color="black" />
+
+  <layer x="100%-10" y="0" w="10"  h="23" 
+   type="plain" color="black" />
+
+  <layer x="0" y="23" w="100%" h="2"
+   type = "plain" color="lightmid" />
+
+  <layer x="2" y="4" w="33%" h="18" 
+   type="label" color="white" justify="left" font="titlefont" />
+
+  <button x="2" y="0" w="33%" h="23" action="menu" options="inputonly" />
+
+  <button x="33%+2" y="0" w="16" h="25" action="custom">
+   <active pixmap="menubutton" blend="-150"/>
+   <inactive pixmap="menubutton" />
+  </button>
+
+   <panel x="33%+18" y="2" w="67%-18" h="18" />
+
+</frame>
+
+<frame id="dialog" height="25">
+
+  <layer x="0" y="0" w="100%"  h="12" 
+   type="gradient-vert" startcol="light" endcol="lightmid" />
+
+  <layer x="0" y="10" w="100%"  h="12" 
+   type="gradient-vert" startcol="darkmid" endcol="dark" />
+
+  <layer x="18" y="4" w="100%" h="18" 
+   type="label" color="white" justify="left" font="titlefont" />
+
+  <button x="0" y="0" w="16" h="25" action="close" >
+   <active pixmap="closebutton" blend="-150"/>
+   <inactive pixmap="closebutton" />
+  </button>
+
+</frame>
+
+<frame id="dialog-north" height="0"/>
+
+<frame id="dialog-south" height="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="dialog-east" width="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="dialog-west" width="1">
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="dark" />
+</frame>
+
+<frame id="menu"
+    border_north="0"
+    border_south="2"
+    border_west="2"
+    border_east="2"
+    fixed_width="160"
+    font="menufont" highlight="lightmid" color="white" options="shaped">
+
+  <layer x="0" y="0" w="100%" h="100%"
+   type="plain" color="orange" />
+
+  <layer x="2" y="0" w="100%-3"  h="50%" 
+   type="gradient-vert" startcol="light" endcol="lightmid" />
+
+  <layer x="2" y="50%" w="100%-3"  h="50%-2" 
+   type="gradient-vert" startcol="darkmid" endcol="dark" />
+
+</frame>
+
+<lowlight color="black" /> 
+<shadow style="gaussian" />
+
+</theme>
+
