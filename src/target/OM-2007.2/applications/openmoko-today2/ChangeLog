@@ -5,8 +5,8 @@
 
 2007-08-31  Thomas Wood  <thomas@openedhand.com>
 
-	* src/today-pim-journal.c: (today_pim_journal_box_new): Fix some compiler
-	warnings
+	* src/today-pim-journal.c: (today_pim_journal_box_new):
+	Fix some compiler warnings
 
 2007-08-23  Thomas Wood  <thomas@openedhand.com>
 
