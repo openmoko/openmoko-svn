@@ -172,7 +172,6 @@ static char* get_text_property( Window window, Atom atom )
 
 gboolean neod_buttonactions_install_watcher()
 {
-
     int i = 0;
     for ( ; i < 10; ++i )
     {
@@ -373,9 +372,7 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
     }
     else
     {
-        // make dialer interface show up
-        // NOTE: temporary hack, will use dbus interface once main menu has it :)
-        system( "openmoko-dialer &" );
+        neod_buttonactions_show_aux_menu();
     }
     return FALSE;
 }
@@ -474,6 +471,89 @@ void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry
     power_menu = 0;
 }
 
+void neod_buttonactions_show_aux_menu()
+{
+    // show popup menu requesting for actions
+    if ( !aux_menu )
+    {
+        aux_menu = gtk_menu_new();
+
+        GtkWidget* orientation = gtk_menu_item_new_with_label( "Swap Orientation" );
+        g_signal_connect( G_OBJECT(orientation), "activate", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), orientation );
+
+        GtkWidget* scap = gtk_menu_item_new_with_label( "Screenshot" );
+        g_signal_connect( G_OBJECT(scap), "activate", G_CALLBACK(neod_buttonactions_popup_selected_screenshot), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), scap );
+
+        gtk_widget_show_all( GTK_WIDGET(aux_menu) );
+    }
+    gtk_menu_popup( GTK_MENU(aux_menu), NULL, NULL, neod_buttonactions_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+}
+
+void neod_buttonactions_show_power_menu()
+{
+    // show popup menu requesting for actions
+    if ( !power_menu )
+    {
+        power_menu = gtk_menu_new();
+
+        GtkWidget* bluetooth = gtk_check_menu_item_new_with_label( "Bluetooth Power" );
+        gtk_widget_set_state( bluetooth, GTK_STATE_INSENSITIVE );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), bluetooth );
+
+        GtkWidget* gps = gtk_check_menu_item_new_with_label( "GPS Power" );
+        gtk_widget_set_state( gps, GTK_STATE_INSENSITIVE );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gps );
+
+        GtkWidget* gsm = gtk_check_menu_item_new_with_label( "GSM Power" );
+        gtk_widget_set_state( gsm, GTK_STATE_INSENSITIVE );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gsm );
+
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
+
+        // add profiles
+        // TODO build profile list dynamically from database
+        GtkWidget* profile = 0;
+        profile = gtk_check_menu_item_new_with_label( "Profile: Full PM" );
+        gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
+        gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == FULL );
+        g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullPM), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+        profile = gtk_check_menu_item_new_with_label( "Profile: Dim Only" );
+        gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
+        gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == DIM_ONLY );
+        g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_dimOnly), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+        profile = gtk_check_menu_item_new_with_label( "Profile: No PM" );
+        gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
+        gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == NONE );
+        g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_noPM), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
+
+        GtkWidget* lock = gtk_menu_item_new_with_label( "Lock Phone" );
+        g_signal_connect( G_OBJECT(lock), "activate", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), lock );
+            //GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
+            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
+            //GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
+            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
+            //GtkWidget* restartUI = gtk_menu_item_new_with_label( "Restart UI" );
+            //g_signal_connect( G_OBJECT(restartUI), "activate", G_CALLBACK(neod_buttonactions_popup_selected_restartUI), NULL );
+            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), restartUI );
+        GtkWidget* reboot = gtk_menu_item_new_with_label( "Reboot Phone" );
+        g_signal_connect( G_OBJECT(reboot), "activate", G_CALLBACK(neod_buttonactions_popup_selected_reboot), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), reboot );
+        GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
+        g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), poweroff );
+        gtk_widget_show_all( GTK_WIDGET(power_menu) );
+    }
+    gtk_menu_popup( GTK_MENU(power_menu), NULL, NULL, neod_buttonactions_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+}
+
 gboolean neod_buttonactions_power_timeout( guint timeout )
 {
     g_debug( "power pressed for %d", timeout );
@@ -520,60 +600,7 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
     }
     else
     {
-        // show popup menu requesting for actions
-        if ( !power_menu )
-        {
-            power_menu = gtk_menu_new();
-
-            GtkWidget* orientation = gtk_menu_item_new_with_label( "Swap Orientation" );
-            g_signal_connect( G_OBJECT(orientation), "activate", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), orientation );
-
-            GtkWidget* scap = gtk_menu_item_new_with_label( "Screenshot" );
-            g_signal_connect( G_OBJECT(scap), "activate", G_CALLBACK(neod_buttonactions_popup_selected_screenshot), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), scap );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
-
-            // add profiles
-            // TODO build profile list dynamically from database
-            GtkWidget* profile = 0;
-            profile = gtk_check_menu_item_new_with_label( "Profile: Full PM" );
-            gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
-            gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == FULL );
-            g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullPM), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
-            profile = gtk_check_menu_item_new_with_label( "Profile: Dim Only" );
-            gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
-            gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == DIM_ONLY );
-            g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_dimOnly), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
-            profile = gtk_check_menu_item_new_with_label( "Profile: No PM" );
-            gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
-            gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == NONE );
-            g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_noPM), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
-
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
-
-            GtkWidget* lock = gtk_menu_item_new_with_label( "Lock Phone" );
-            g_signal_connect( G_OBJECT(lock), "activate", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), lock );
-            //GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
-            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
-            //GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
-            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
-            //GtkWidget* restartUI = gtk_menu_item_new_with_label( "Restart UI" );
-            //g_signal_connect( G_OBJECT(restartUI), "activate", G_CALLBACK(neod_buttonactions_popup_selected_restartUI), NULL );
-            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), restartUI );
-            GtkWidget* reboot = gtk_menu_item_new_with_label( "Reboot Phone" );
-            g_signal_connect( G_OBJECT(reboot), "activate", G_CALLBACK(neod_buttonactions_popup_selected_reboot), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), reboot );
-            GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
-            g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
-            gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), poweroff );
-            gtk_widget_show_all( GTK_WIDGET(power_menu) );
-        }
-        gtk_menu_popup( GTK_MENU(power_menu), NULL, NULL, neod_buttonactions_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+        neod_buttonactions_show_power_menu();
     }
     return FALSE;
 }

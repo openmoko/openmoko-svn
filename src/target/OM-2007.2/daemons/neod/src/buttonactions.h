@@ -28,6 +28,9 @@ void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry
 gboolean neod_buttonactions_aux_timeout( guint timeout );
 gboolean neod_buttonactions_power_timeout( guint timeout );
 
+void neod_buttonactions_show_aux_menu();
+void neod_buttonactions_show_power_menu();
+
 void neod_buttonactions_powersave_reset();
 
 gboolean neod_buttonactions_powersave_timeout1( guint timeout );
