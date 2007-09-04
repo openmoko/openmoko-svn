@@ -1810,6 +1810,7 @@ Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
 +			var->blue.length	= 4;
 +			break;
 +		}
++		break;
 +	case 24:
 +	case 32:
 +	default:
@@ -1831,12 +1832,10 @@ Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
 +
 +	switch (var->bits_per_pixel) {
 +	case 16:
-+	case 24:
-+	case 32:
 +		glamo->fb->fix.visual = FB_VISUAL_TRUECOLOR;
 +		break;
 +	default:
-+		printk("Smedia driver doens't [yet?] support <16bpp\n");
++		printk("Smedia driver doens't support != 16bpp\n");
 +		return -EINVAL;
 +	}
 +
@@ -2096,6 +2095,7 @@ Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
 +
 +	glamofb->mach_info = pdev->dev.platform_data;
 +
++	fbinfo->fix.visual = FB_VISUAL_TRUECOLOR;
 +	fbinfo->fix.type = FB_TYPE_PACKED_PIXELS;
 +	fbinfo->fix.type_aux = 0;
 +	fbinfo->fix.xpanstep = 0;
