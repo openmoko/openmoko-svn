@@ -34,7 +34,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1692 @@
+@@ -0,0 +1,1698 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1418,6 +1418,22 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +	/* register power off handler with core power management */
 +	pm_power_off = &pcf50633_go_standby;
 +
++	data->input_dev = input_allocate_device();
++	if (!data->input_dev)
++		goto exit_sysfs;
++
++	data->input_dev->name = "FIC Neo1973 PMU events";
++	data->input_dev->phys = "FIXME";
++	data->input_dev->id.bustype = BUS_I2C;
++	data->input_dev->cdev.dev = &new_client->dev;
++
++	data->input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_PWR);
++	set_bit(KEY_POWER, data->input_dev->keybit);
++	set_bit(KEY_POWER2, data->input_dev->keybit);
++	set_bit(KEY_BATTERY, data->input_dev->keybit);
++
++	input_register_device(data->input_dev);
++
 +	/* configure interrupt mask */
 +	reg_write(data, PCF50633_REG_INT1M, PCF50633_INT1_SECOND);
 +	reg_write(data, PCF50633_REG_INT2M, 0x00);
@@ -1428,7 +1444,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +	err = request_irq(irq, pcf50633_irq, SA_INTERRUPT,
 +			  "pcf50633", data);
 +	if (err < 0)
-+		goto exit_sysfs;
++		goto exit_input;
 +
 +	set_irq_type(irq, IRQT_FALLING);
 +
@@ -1460,33 +1476,13 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +		backlight_update_status(data->backlight);
 +	}
 +
-+	data->input_dev = input_allocate_device();
-+	if (!data->input_dev)
-+		goto exit_pwm;
-+
-+	data->input_dev->name = "FIC Neo1973 PMU events";
-+	data->input_dev->phys = "FIXME";
-+	data->input_dev->id.bustype = BUS_I2C;
-+	data->input_dev->cdev.dev = &new_client->dev;
-+
-+	data->input_dev->evbit[0] = BIT(EV_KEY) | BIT(EV_PWR);
-+	set_bit(KEY_POWER, data->input_dev->keybit);
-+	set_bit(KEY_POWER2, data->input_dev->keybit);
-+	set_bit(KEY_BATTERY, data->input_dev->keybit);
-+
-+	input_register_device(data->input_dev);
-+
 +	apm_get_power_status = pcf50633_get_power_status;
 +
 +#ifdef CONFIG_MACH_NEO1973_GTA02
 +	if (machine_is_neo1973_gta02()) {
 +		gta01_pm_gps_dev.dev.parent = &new_client->dev;
-+		switch (system_rev) {
-+		case GTA02v1_SYSTEM_REV:
-+			gta01_pm_bt_dev.dev.parent = &new_client->dev;
-+			platform_device_register(&gta01_pm_bt_dev);
-+			break;
-+		}
++		gta01_pm_bt_dev.dev.parent = &new_client->dev;
++		platform_device_register(&gta01_pm_bt_dev);
 +		platform_device_register(&gta01_pm_gps_dev);
 +	}
 +#endif
@@ -1500,6 +1496,8 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +		rtc_device_unregister(pcf50633_global->rtc);
 +exit_irq:
 +	free_irq(pcf50633_global->irq, pcf50633_global);
++exit_input:
++	input_unregister_device(data->input_dev);
 +exit_sysfs:
 +	pm_power_off = NULL;
 +	sysfs_remove_group(&new_client->dev.kobj, &pcf_attr_group);
@@ -1524,6 +1522,9 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +	DEBUGP("entering\n");
 +
 +	apm_get_power_status = NULL;
++
++	free_irq(pcf->irq, pcf);
++
 +	input_unregister_device(pcf->input_dev);
 +
 +	if (pcf->pdata->used_features & PCF50633_FEAT_PWM_BL)
@@ -1532,7 +1533,12 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +	if (pcf->pdata->used_features & PCF50633_FEAT_RTC)
 +		rtc_device_unregister(pcf->rtc);
 +
-+	free_irq(pcf->irq, pcf);
++#ifdef CONFIG_MACH_NEO1973_GTA02
++	if (machine_is_neo1973_gta02()) {
++		platform_device_unregister(&gta01_pm_bt_dev);
++		platform_device_unregister(&gta01_pm_gps_dev);
++	}
++#endif
 +
 +	sysfs_remove_group(&client->dev.kobj, &pcf_attr_group);
 +
