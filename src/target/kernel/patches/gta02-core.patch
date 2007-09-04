@@ -2,7 +2,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,667 @@
+@@ -0,0 +1,668 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -151,7 +151,8 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +			  PCF50633_FEAT_RTC |
 +			  PCF50633_FEAT_CHGCUR |
 +			  PCF50633_FEAT_BATVOLT |
-+			  PCF50633_FEAT_BATTEMP,
++			  PCF50633_FEAT_BATTEMP |
++			  PCF50633_FEAT_PWM_BL,
 +	.onkey_seconds_required = 3,
 +	.cb		= &pmu_callback,
 +	.r_fix_batt	= 10000,
@@ -893,3 +894,16 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_gsm.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
  }
+Index: linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
+===================================================================
+--- linux-2.6.22.5-moko.orig/drivers/leds/leds-gta01.c
++++ linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
+@@ -71,7 +71,7 @@
+ 	struct gta01_vib_priv *vp;
+ 	struct resource *r;
+ 
+-	if (!machine_is_neo1973_gta01())
++	if (!machine_is_neo1973_gta01() && !machine_is_neo1973_gta02())
+ 		return -EIO;
+ 
+ 	r = platform_get_resource(pdev, 0, 0);
