@@ -1,7 +1,9 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/i2c/chips/pcf50606.c
++++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
 @@ -0,0 +1,1929 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -1876,12 +1878,12 @@ This is the PCF50606 power management unit driver for FIC GTA01
 +static struct i2c_driver pcf50606_driver = {
 +	.driver = {
 +		.name	= "pcf50606",
-+		.suspend= &pcf50606_suspend,
-+		.resume	= &pcf50606_resume,
++		.suspend= pcf50606_suspend,
++		.resume	= pcf50606_resume,
 +	},
 +	.id		= I2C_DRIVERID_PCF50606,
-+	.attach_adapter	= &pcf50606_attach_adapter,
-+	.detach_client	= &pcf50606_detach_client,
++	.attach_adapter	= pcf50606_attach_adapter,
++	.detach_client	= pcf50606_detach_client,
 +};
 +
 +/* platform driver, since i2c devices don't have platform_data */
@@ -1932,8 +1934,10 @@ This is the PCF50606 power management unit driver for FIC GTA01
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/i2c/chips/pcf50606.h
++++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2237,8 +2241,10 @@ This is the PCF50606 power management unit driver for FIC GTA01
 +
 +#endif /* _PCF50606_H */
 +
---- linux-2.6.22.1.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.22.1/drivers/i2c/chips/Kconfig
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
+===================================================================
+--- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
 @@ -35,6 +35,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -2257,8 +2263,10 @@ This is the PCF50606 power management unit driver for FIC GTA01
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on EXPERIMENTAL
---- linux-2.6.22.1.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.22.1/drivers/i2c/chips/Makefile
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
+===================================================================
+--- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
 @@ -8,6 +8,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2267,9 +2275,11 @@ This is the PCF50606 power management unit driver for FIC GTA01
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
---- linux-2.6.22.1.orig/include/linux/i2c-id.h
-+++ linux-2.6.22.1/include/linux/i2c-id.h
-@@ -160,6 +160,7 @@
+Index: linux-2.6.22.5-moko/include/linux/i2c-id.h
+===================================================================
+--- linux-2.6.22.5-moko.orig/include/linux/i2c-id.h
++++ linux-2.6.22.5-moko/include/linux/i2c-id.h
+@@ -161,6 +161,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
@@ -2277,8 +2287,10 @@ This is the PCF50606 power management unit driver for FIC GTA01
  
  /*
   * ---- Adapter types ----------------------------------------------------
+Index: linux-2.6.22.5-moko/include/linux/pcf50606.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/linux/pcf50606.h
++++ linux-2.6.22.5-moko/include/linux/pcf50606.h
 @@ -0,0 +1,104 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H

@@ -1,10 +1,10 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.22.1/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.22.1.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.22.1/arch/arm/mach-s3c2410/Kconfig
+--- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.22.5-moko/arch/arm/mach-s3c2410/Kconfig
 @@ -109,5 +109,12 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
@@ -18,19 +18,19 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2410/Kconfig
 +
  endmenu
  
-Index: linux-2.6.22.1/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.22.1.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6.22.1/arch/arm/mach-s3c2410/Makefile
+--- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.22.5-moko/arch/arm/mach-s3c2410/Makefile
 @@ -29,3 +29,4 @@
  obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
  obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
 +obj-$(CONFIG_MACH_NEO1973_GTA01)+= mach-gta01.o
-Index: linux-2.6.22.1/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.22.5-moko/arch/arm/mach-s3c2410/mach-gta01.c
 @@ -0,0 +1,755 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
@@ -550,8 +550,8 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +static struct s3c2410_ts_mach_info gta01_ts_cfg = {
 +	.delay = 10000,
-+	.presc = 49,
-+	.oversampling_shift = 2,
++	.presc = 65,
++	.oversampling_shift = 5,
 +};
 +
 +/* SPI */
@@ -787,10 +787,10 @@ Index: linux-2.6.22.1/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.22.1/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/gta01.h
++++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,70 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H

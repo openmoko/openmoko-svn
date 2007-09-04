@@ -1671,12 +1671,12 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +static struct i2c_driver pcf50633_driver = {
 +	.driver = {
 +		.name	= "pcf50633",
-+		.suspend= &pcf50633_suspend,
-+		.resume	= &pcf50633_resume,
++		.suspend= pcf50633_suspend,
++		.resume	= pcf50633_resume,
 +	},
 +	.id		= I2C_DRIVERID_PCF50633,
-+	.attach_adapter	= &pcf50633_attach_adapter,
-+	.detach_client	= &pcf50633_detach_client,
++	.attach_adapter	= pcf50633_attach_adapter,
++	.detach_client	= pcf50633_detach_client,
 +};
 +
 +/* platform driver, since i2c devices don't have platform_data */
@@ -1839,7 +1839,7 @@ Index: linux-2.6.22.5-moko/include/linux/i2c-id.h
 ===================================================================
 --- linux-2.6.22.5-moko.orig/include/linux/i2c-id.h
 +++ linux-2.6.22.5-moko/include/linux/i2c-id.h
-@@ -162,6 +162,7 @@
+@@ -163,6 +163,7 @@
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
  #define I2C_DRIVERID_PCF50606 1049
  #define I2C_DRIVERID_TSL256X 1050

@@ -1,7 +1,7 @@
-Index: linux-2.6.21-moko/drivers/i2c/chips/tsl256x.c
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/tsl256x.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/drivers/i2c/chips/tsl256x.c
++++ linux-2.6.22.5-moko/drivers/i2c/chips/tsl256x.c
 @@ -0,0 +1,310 @@
 +/*
 + * tsl256x.c  --  TSL256x Light Sensor driver
@@ -288,13 +288,13 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/tsl256x.c
 +		.name		= "tsl256x",
 +		.owner		= THIS_MODULE,
 +#ifdef CONFIG_PM
-+		.suspend	= &tsl256x_suspend,
-+		.resume		= &tsl256x_resume,
++		.suspend	= tsl256x_suspend,
++		.resume		= tsl256x_resume,
 +#endif
 +	},
 +	.id				= I2C_DRIVERID_TSL256X,
-+	.attach_adapter	= &tsl256x_attach_adapter,
-+	.detach_client	= &tsl256x_detach_client,
++	.attach_adapter	= tsl256x_attach_adapter,
++	.detach_client	= tsl256x_detach_client,
 +};
 +
 +static int __init tsl256x_init(void)
@@ -313,10 +313,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/tsl256x.c
 +module_init(tsl256x_init);
 +module_exit(tsl256x_exit);
 +
-Index: linux-2.6.21-moko/drivers/i2c/chips/tsl256x.h
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/tsl256x.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/drivers/i2c/chips/tsl256x.h
++++ linux-2.6.22.5-moko/drivers/i2c/chips/tsl256x.h
 @@ -0,0 +1,154 @@
 +/*
 + * tsl256x.h  --  TSL256x Light Sensor driver
@@ -472,11 +472,11 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/tsl256x.h
 +
 +#endif /* _TSL256X_H */
 +
-Index: linux-2.6.21-moko/drivers/i2c/chips/Kconfig
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.21-moko/drivers/i2c/chips/Kconfig
-@@ -136,4 +136,14 @@
+--- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
+@@ -135,4 +135,14 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called max6875.
  
@@ -491,10 +491,10 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/Kconfig
 +	  will be called tsl256x.
 +
  endmenu
-Index: linux-2.6.21-moko/drivers/i2c/chips/Makefile
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.21-moko/drivers/i2c/chips/Makefile
+--- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
 @@ -13,6 +13,7 @@
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
@@ -503,11 +503,11 @@ Index: linux-2.6.21-moko/drivers/i2c/chips/Makefile
  
  ifeq ($(CONFIG_I2C_DEBUG_CHIP),y)
  EXTRA_CFLAGS += -DDEBUG
-Index: linux-2.6.21-moko/include/linux/i2c-id.h
+Index: linux-2.6.22.5-moko/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.21-moko.orig/include/linux/i2c-id.h
-+++ linux-2.6.21-moko/include/linux/i2c-id.h
-@@ -160,6 +160,7 @@
+--- linux-2.6.22.5-moko.orig/include/linux/i2c-id.h
++++ linux-2.6.22.5-moko/include/linux/i2c-id.h
+@@ -162,6 +162,7 @@
  #define I2C_DRIVERID_W83L785TS 1047
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
  #define I2C_DRIVERID_PCF50606 1049
