@@ -399,9 +399,49 @@ void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, g
         g_assert( FALSE ); // fail here if called for unknown menu
 }
 
+void neod_buttonactions_popup_selected_fullscreen( GtkMenuItem* menu, gpointer user_data )
+{
+    static is_fullscreen = 0;
+
+    gtk_widget_hide( aux_menu );
+    Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
+    const char* title = get_text_property( xwindow, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
+    g_debug( "active Window = %d ('%s')", (int) xwindow, title );
+
+    if ( strcmp( "Today", title ) == 0 )
+    {
+        g_debug( "sorry, i'm not going to fullscreen the today window" );
+        return;
+    }
+
+    Display* display = XOpenDisplay( NULL );
+
+    XEvent xev;
+    xev.xclient.type = ClientMessage;
+    xev.xclient.serial = 0;
+    xev.xclient.send_event = True;
+    xev.xclient.display = display;
+    xev.xclient.window = xwindow;
+    xev.xclient.message_type = gdk_x11_get_xatom_by_name( "_NET_WM_STATE" );
+    xev.xclient.format = 32;
+    xev.xclient.data.l[0] = 1 - is_fullscreen; // ADD = 1, REMOVE = 0
+
+    xev.xclient.data.l[1] = gdk_x11_get_xatom_by_name("_NET_WM_STATE_FULLSCREEN");
+    xev.xclient.data.l[2] = 0;
+    xev.xclient.data.l[3] = 0;
+    xev.xclient.data.l[4] = 0;
+
+    //TODO: add timeout checking for response
+    XSendEvent (display, gdk_x11_get_default_root_xwindow (), False,
+                SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+    XCloseDisplay( display );
+
+    is_fullscreen = 1 - is_fullscreen;
+}
+
 void neod_buttonactions_popup_selected_orientation( GtkMenuItem* menu, gpointer user_data )
 {
-    gtk_widget_hide( power_menu );
+    gtk_widget_hide( aux_menu );
     if ( orientation )
         g_spawn_command_line_async( "xrandr -o 1", NULL );
     else
@@ -411,7 +451,7 @@ void neod_buttonactions_popup_selected_orientation( GtkMenuItem* menu, gpointer 
 
 void neod_buttonactions_popup_selected_screenshot( GtkMenuItem* menu, gpointer user_data )
 {
-    gtk_widget_hide( power_menu );
+    gtk_widget_hide( aux_menu );
     g_spawn_command_line_async( "gpe-scap", NULL );
 }
 
@@ -477,6 +517,10 @@ void neod_buttonactions_show_aux_menu()
     if ( !aux_menu )
     {
         aux_menu = gtk_menu_new();
+
+        GtkWidget* fullscreen = gtk_menu_item_new_with_label( "Toggle Fullscreen" );
+        g_signal_connect( G_OBJECT(fullscreen), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullscreen), NULL );
+        gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), fullscreen );
 
         GtkWidget* orientation = gtk_menu_item_new_with_label( "Swap Orientation" );
         g_signal_connect( G_OBJECT(orientation), "activate", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
