@@ -916,7 +916,7 @@ Index: linux-2.6.22.5-moko/sound/soc/s3c24xx/neo1973_wm8753.c
  	int ret;
  
 +	if (!machine_is_neo1973_gta01()) {
-+		printf(KERN_INFO
++		printk(KERN_INFO
 +		       "Only GTA01 hardware supported by ASoc driver\n");
 +		return -ENODEV;
 +	}
