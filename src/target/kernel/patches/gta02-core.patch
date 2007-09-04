@@ -907,3 +907,27 @@ Index: linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
  		return -EIO;
  
  	r = platform_get_resource(pdev, 0, 0);
+Index: linux-2.6.22.5-moko/sound/soc/s3c24xx/neo1973_wm8753.c
+===================================================================
+--- linux-2.6.22.5-moko.orig/sound/soc/s3c24xx/neo1973_wm8753.c
++++ linux-2.6.22.5-moko/sound/soc/s3c24xx/neo1973_wm8753.c
+@@ -638,6 +638,12 @@
+ {
+ 	int ret;
+ 
++	if (!machine_is_neo1973_gta01()) {
++		printf(KERN_INFO
++		       "Only GTA01 hardware supported by ASoc driver\n");
++		return -ENODEV;
++	}
++
+ 	neo1973_snd_device = platform_device_alloc("soc-audio", -1);
+ 	if (!neo1973_snd_device)
+ 		return -ENOMEM;
+@@ -666,5 +672,5 @@
+ 
+ /* Module information */
+ MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");
+-MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973");
++MODULE_DESCRIPTION("ALSA SoC WM8753 Neo1973 GTA01");
+ MODULE_LICENSE("GPL");
