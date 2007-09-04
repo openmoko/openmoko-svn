@@ -40,7 +40,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 
     applet = g_slice_new (GpsApplet);
 
-    moko_panel_applet_set_icon( GTK_CONTAINER(mokoapplet), PKGDATADIR "/GPS.png" );
+    moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/GPS.png" );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);
 };
