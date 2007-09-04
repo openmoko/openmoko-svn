@@ -1,7 +1,7 @@
-Index: linux-2.6.22.1/drivers/i2c/chips/Kconfig
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.22.1.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.22.1/drivers/i2c/chips/Kconfig
+--- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
 @@ -45,6 +45,15 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called pcf50606.
@@ -18,10 +18,10 @@ Index: linux-2.6.22.1/drivers/i2c/chips/Kconfig
  
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
-Index: linux-2.6.22.1/drivers/i2c/chips/Makefile
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.22.1.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.22.1/drivers/i2c/chips/Makefile
+--- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
 @@ -9,6 +9,7 @@
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
@@ -30,11 +30,11 @@ Index: linux-2.6.22.1/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.22.1/drivers/i2c/chips/pcf50633.c
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1691 @@
++++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
+@@ -0,0 +1,1692 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1453,9 +1453,10 @@ Index: linux-2.6.22.1/drivers/i2c/chips/pcf50633.c
 +		if (!data->backlight)
 +			goto exit_rtc;
 +		/* FIXME: are we sure we want default == off? */
-+		data->backlight->props.max_brightness = 16;
++		data->backlight->props.max_brightness = 0x3f;
 +		data->backlight->props.power = FB_BLANK_UNBLANK;
-+		data->backlight->props.brightness = 0;
++		data->backlight->props.fb_blank = FB_BLANK_UNBLANK;
++		data->backlight->props.brightness = 0x20;
 +		backlight_update_status(data->backlight);
 +	}
 +
@@ -1726,10 +1727,10 @@ Index: linux-2.6.22.1/drivers/i2c/chips/pcf50633.c
 +
 +module_init(pcf50633_init);
 +module_exit(pcf50633_exit);
-Index: linux-2.6.22.1/include/linux/pcf50633.h
+Index: linux-2.6.22.5-moko/include/linux/pcf50633.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/linux/pcf50633.h
++++ linux-2.6.22.5-moko/include/linux/pcf50633.h
 @@ -0,0 +1,103 @@
 +#ifndef _LINUX_PCF50633_H
 +#define _LINUX_PCF50633_H
@@ -1834,10 +1835,10 @@ Index: linux-2.6.22.1/include/linux/pcf50633.h
 +};
 +
 +#endif /* _PCF50633_H */
-Index: linux-2.6.22.1/include/linux/i2c-id.h
+Index: linux-2.6.22.5-moko/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.22.1.orig/include/linux/i2c-id.h
-+++ linux-2.6.22.1/include/linux/i2c-id.h
+--- linux-2.6.22.5-moko.orig/include/linux/i2c-id.h
++++ linux-2.6.22.5-moko/include/linux/i2c-id.h
 @@ -162,6 +162,7 @@
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
  #define I2C_DRIVERID_PCF50606 1049
@@ -1846,10 +1847,10 @@ Index: linux-2.6.22.1/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.22.1/drivers/i2c/chips/pcf50633.h
+Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/i2c/chips/pcf50633.h
++++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.h
 @@ -0,0 +1,402 @@
 +#ifndef _PCF50633_H
 +#define _PCF50633_H
