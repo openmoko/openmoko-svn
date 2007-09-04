@@ -1613,7 +1613,7 @@ Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
-@@ -0,0 +1,629 @@
+@@ -0,0 +1,627 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1831,8 +1831,6 @@ Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-fb.c
 +
 +	switch (var->bits_per_pixel) {
 +	case 16:
-+		glamo->fb->fix.visual = FB_VISUAL_DIRECTCOLOR;
-+		break;
 +	case 24:
 +	case 32:
 +		glamo->fb->fix.visual = FB_VISUAL_TRUECOLOR;
