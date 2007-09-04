@@ -1,3 +1,11 @@
+2007-09-04  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Show the blog entry when selecting a item. This will switch
+        the page of the GtkNotebook.
+
+        * src/main.c:
+        (feed_selection_changed):
+
 2007-08-10  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Untested change to save some space in the initial view. Move the

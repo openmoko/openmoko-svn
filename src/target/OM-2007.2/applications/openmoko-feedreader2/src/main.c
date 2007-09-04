@@ -53,6 +53,8 @@ feed_selection_changed (FeedSelectionView* view, const gchar* text, const gboole
 
     if (feed_selection_view_get_search_string (view))
         feed_item_view_highlight (data->view, feed_selection_view_get_search_string (view));
+
+    gtk_notebook_set_current_page (GTK_NOTEBOOK (data->notebook), 1);
 }
 
 /*
