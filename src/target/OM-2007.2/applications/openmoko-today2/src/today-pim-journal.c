@@ -82,8 +82,8 @@ static void
 today_pim_journal_header_clicked_cb (GtkTreeViewColumn *column, TodayData *data)
 {
 	/* TODO: Maybe just launch dialer normally here? */
-	launcher_start (data->window, today_get_launcher (
-		"openmoko-dialer -m", TRUE, TRUE));
+	launcher_start (data->window, today_get_launcher ((const gchar *[])
+		{ "openmoko-dialer", "-m", NULL }, TRUE, TRUE));
 }
 
 static void
@@ -93,7 +93,8 @@ today_pim_journal_selection_changed_cb (GtkTreeSelection *selection,
 	if (gtk_tree_selection_count_selected_rows (selection)) {
 		gtk_tree_selection_unselect_all (selection);
 		launcher_start (data->window, today_get_launcher (
-			"openmoko-dialer -m", TRUE, TRUE));
+			(const gchar *[]){ "openmoko-dialer", "-m", NULL },
+			TRUE, TRUE));
 	}
 }
 

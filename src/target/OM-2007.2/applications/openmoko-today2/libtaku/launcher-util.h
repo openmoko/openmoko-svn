@@ -35,8 +35,6 @@ typedef struct {
   gboolean single_instance;
 } LauncherData;
 
-char **exec_to_argv (const char *exec);
-
 LauncherData *launcher_parse_desktop_file (const char *filename, GError **error);
 
 void launcher_start (GtkWidget *widget, const LauncherData *data);

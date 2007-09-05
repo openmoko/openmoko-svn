@@ -118,7 +118,8 @@ today_pim_summary_events_selection_changed_cb (GtkTreeSelection *selection,
 	if (gtk_tree_selection_count_selected_rows (selection)) {
 		gtk_tree_selection_unselect_all (selection);
 		launcher_start (data->window, today_get_launcher (
-			"openmoko-dates", TRUE, TRUE));
+			(const gchar *[]){ "openmoko-dates", NULL },
+			TRUE, TRUE));
 	}
 }
 
@@ -129,7 +130,8 @@ today_pim_summary_tasks_selection_changed_cb (GtkTreeSelection *selection,
 	if (gtk_tree_selection_count_selected_rows (selection)) {
 		gtk_tree_selection_unselect_all (selection);
 		launcher_start (data->window, today_get_launcher (
-			"openmoko-tasks", TRUE, TRUE));
+			(const gchar *[]){ "openmoko-tasks", NULL },
+			TRUE, TRUE));
 	}
 }
 

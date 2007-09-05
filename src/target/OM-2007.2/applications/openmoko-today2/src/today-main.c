@@ -35,29 +35,29 @@ today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 static void
 today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		"openmoko-dialer -s", TRUE, TRUE));
+	launcher_start (data->window, today_get_launcher ((const gchar *[])
+		{"openmoko-dialer", "-s", NULL }, TRUE, TRUE));
 }
 
 static void
 today_contacts_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		"openmoko-contacts", TRUE, TRUE));
+	launcher_start (data->window, today_get_launcher ((const gchar *[])
+		{ "openmoko-contacts", NULL }, TRUE, TRUE));
 }
 
 static void
 today_messages_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		"openmoko-messages", TRUE, TRUE));
+	launcher_start (data->window, today_get_launcher ((const gchar *[])
+		{ "openmoko-messages", NULL }, TRUE, TRUE));
 }
 
 static void
 today_dates_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		"openmoko-dates", TRUE, TRUE));
+	launcher_start (data->window, today_get_launcher ((const gchar *[])
+		{ "openmoko-dates", NULL }, TRUE, TRUE));
 }
 
 static GtkWidget *

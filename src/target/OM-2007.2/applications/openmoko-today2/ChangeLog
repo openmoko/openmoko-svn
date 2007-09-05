@@ -1,3 +1,21 @@
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c:
+	* libtaku/launcher-util.h:
+	* src/today-main.c: (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb):
+	* src/today-pim-journal.c: (today_pim_journal_header_clicked_cb),
+	(today_pim_journal_selection_changed_cb):
+	* src/today-pim-summary.c:
+	(today_pim_summary_events_selection_changed_cb),
+	(today_pim_summary_tasks_selection_changed_cb):
+	* src/today-utils.c: (today_get_launcher):
+	* src/today-utils.h:
+	Change the way launching apps work so as to not require changes to
+	upstream matchbox-desktop-2.
+
 2007-09-05  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-pim-summary.c: (today_pim_summary_visible_cb): Sync to

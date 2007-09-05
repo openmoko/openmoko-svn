@@ -37,19 +37,12 @@ today_toolbutton_new (const gchar *icon_name)
 }
 
 const LauncherData *
-today_get_launcher (const gchar *exec, gboolean use_sn, gboolean single)
+today_get_launcher (const gchar **argv, gboolean use_sn, gboolean single)
 {
 	static LauncherData launcher_data;
-	static gboolean first = TRUE;
 	
-	if (first) {
-		launcher_data.argv = NULL;
-		first = FALSE;
-	}
-	
-	if (launcher_data.argv) g_free (launcher_data.argv);
-	launcher_data.argv = exec_to_argv (exec);
-	launcher_data.name = (gchar *)exec;
+	launcher_data.argv = argv;
+	launcher_data.name = argv[0];
 	launcher_data.description = "";
 	launcher_data.icon = NULL;
 	launcher_data.categories = (char *[]){ "" };
