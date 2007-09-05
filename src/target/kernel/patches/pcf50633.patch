@@ -34,7 +34,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1698 @@
+@@ -0,0 +1,1715 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1275,14 +1275,31 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +{
 +	struct pcf50633_data *pcf = class_get_devdata(&bd->class_dev);
 +	int intensity = bd->props.brightness;
++	int old_intensity = reg_read(pcf, PCF50633_REG_LEDOUT);
++	u_int8_t ledena;
++	int ret;
 +
 +	if (bd->props.power != FB_BLANK_UNBLANK)
 +		intensity = 0;
 +	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
 +		intensity = 0;
 +
-+	return reg_set_bit_mask(pcf, PCF50633_REG_LEDOUT, 0x3f,
-+				intensity);
++	/* The PCF50633 seems to have some kind of oddity (bug?) when
++	 * the intensity was 0, you need to completely switch it off
++	 * and re-enable it, before it produces any output voltage again */
++
++	if (intensity != 0 && old_intensity == 0) {
++		ledena = reg_read(pcf, PCF50633_REG_LEDENA);
++		reg_write(pcf, PCF50633_REG_LEDENA, 0x00);
++	}
++
++	ret = reg_set_bit_mask(pcf, PCF50633_REG_LEDOUT, 0x3f,
++			       intensity);
++
++	if (intensity != 0 && old_intensity == 0)
++		reg_write(pcf, PCF50633_REG_LEDENA, ledena);
++
++	return ret;
 +}
 +
 +static struct backlight_ops pcf50633bl_ops = {
