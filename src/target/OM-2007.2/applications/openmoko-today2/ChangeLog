@@ -1,5 +1,13 @@
 2007-09-05  Chris Lord,,,  <chris@openedhand.com>
 
+	* src/today-main.c: (today_dates_button_clicked_cb),
+	(today_create_home_page):
+	* src/today-pim-summary.c:
+	(today_pim_summary_events_selection_changed_cb):
+	Launch "openmoko-dates" instead of "dates"
+
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
 	* libtaku/launcher-util.c: (launcher_start):
 	Fix function to match prototype in header
 

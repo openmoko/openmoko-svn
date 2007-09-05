@@ -57,7 +57,7 @@ static void
 today_dates_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
 	launcher_start (data->window, today_get_launcher (
-		"dates", TRUE, TRUE));
+		"openmoko-dates", TRUE, TRUE));
 }
 
 static GtkWidget *
@@ -72,7 +72,7 @@ today_create_home_page (TodayData *data)
 	data->home_toolbar = gtk_toolbar_new ();
 	gtk_box_pack_start (GTK_BOX (main_vbox), data->home_toolbar, FALSE, TRUE, 0);
 
-	data->dates_button = today_toolbutton_new ("dates");
+	data->dates_button = today_toolbutton_new ("openmoko-dates");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
 		data->dates_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
