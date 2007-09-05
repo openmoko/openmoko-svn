@@ -1221,7 +1221,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
  		break;
  	}
  	return;
-@@ -180,16 +218,21 @@
+@@ -180,15 +218,21 @@
  	/* initialize hardware */
  	twrph0 = 3; twrph1 = 0; tacls = 0;
  
@@ -1232,7 +1232,6 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
  	cfg |= S3C2410_NFCONF_TWRPH1(twrph1 - 1);
  
  	NFCONF = cfg;
--	//NFCONF = 0xf842;
 +#elif defined(CONFIG_S3C2440)
 +	twrph0 = 7; twrph1 = 7; tacls = 7;
 +	NFCONF = (tacls<<12)|(twrph0<<8)|(twrph1<<4)|(0<<0);
@@ -1245,7 +1244,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/nand.c
  
  	/* read_buf and write_buf are default */
  	/* read_byte and write_byte are default */
-@@ -214,12 +257,23 @@
+@@ -213,12 +257,23 @@
  	nand->options = 0;
  #endif
  
