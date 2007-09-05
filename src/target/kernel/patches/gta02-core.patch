@@ -675,7 +675,7 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,28 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
 +
@@ -694,6 +694,7 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02_GPIO_HOLD_KEY	S3C2410_GPF7
 +#define GTA02_GPIO_AUX_KEY	S3C2410_GPF6
 +#define GTA02_GPIO_JACK_INSERT	S3C2410_GPF4
++#define GTA02_GPIO_BT_EN	S3C2410_GPB6
 +
 +#define GTA02_IRQ_MODEM		IRQ_EINT1
 +#define GTA02_IRQ_3D		IRQ_EINT12
@@ -733,15 +734,18 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
 ===================================================================
 --- linux-2.6.22.5-moko.orig/arch/arm/common/gta01_pm_bt.c
 +++ linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
-@@ -19,6 +19,7 @@
+@@ -19,22 +19,40 @@
  #include <linux/pcf50606.h>
  
  #include <asm/hardware.h>
 +#include <asm/mach-types.h>
  #include <asm/arch/gta01.h>
++#include <asm/arch/gta02.h>
  
- #define DRVMSG "FIC GTA01 (Neo1973) Bluetooth Power Management"
-@@ -27,11 +28,18 @@
+-#define DRVMSG "FIC GTA01 (Neo1973) Bluetooth Power Management"
++#define DRVMSG "FIC Neo1973 Bluetooth Power Management"
+ 
+ static ssize_t bt_read(struct device *dev, struct device_attribute *attr,
  		       char *buf)
  {
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -759,13 +763,27 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
 +				goto out_1;
 +			break;
 +		case MACH_TYPE_NEO1973_GTA02:
-+			/* FIXME: implementation using PCF50633 */
++			if (s3c2410_gpio_getpin(GTA02_GPIO_BT_EN))
++				goto out_1;
 +			break;
 +		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
- 		if (s3c2410_gpio_getpin(GTA01_GPIO_BT_EN) == 0)
- 			goto out_1;
-@@ -48,17 +56,24 @@
+-		if (s3c2410_gpio_getpin(GTA01_GPIO_BT_EN) == 0)
+-			goto out_1;
++		switch (machine_arch_type) {
++		case MACH_TYPE_NEO1973_GTA01:
++			if (s3c2410_gpio_getpin(GTA01_GPIO_BT_EN) == 0)
++				goto out_1;
++			break;
++		case MACH_TYPE_NEO1973_GTA02:
++			if (s3c2410_gpio_getpin(GTA02_GPIO_BT_EN) == 0)
++				goto out_1;
++			break;
++		}
+ 	}
+ 
+ 	return strlcpy(buf, "0\n", 3);
+@@ -48,20 +66,37 @@
  	unsigned long on = simple_strtoul(buf, NULL, 10);
  
  	if (!strcmp(attr->attr.name, "power_on")) {
@@ -791,7 +809,10 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
 +			s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on);
 +			break;
 +		case MACH_TYPE_NEO1973_GTA02:
-+			/* FIXME: implementation */
++			if (on)
++				s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, 0);
++			else
++				s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, 1);
 +			break;
  		}
 -		pcf50606_onoff_set(pcf50606_global,
@@ -799,8 +820,19 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
 -		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on);
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		/* reset is low-active, so we need to invert */
- 		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1 );
-@@ -107,9 +122,16 @@
+-		s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1 );
++		switch (machine_arch_type) {
++		case MACH_TYPE_NEO1973_GTA01:
++			s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, on ? 0 : 1 );
++			break;
++		case MACH_TYPE_NEO1973_GTA02:
++			s3c2410_gpio_setpin(GTA02_GPIO_BT_EN, on ? 0 : 1 );
++			break;
++		}
+ 	}
+ 
+ 	return count;
+@@ -107,9 +142,16 @@
  {
  	dev_info(&pdev->dev, DRVMSG ": starting\n");
  
