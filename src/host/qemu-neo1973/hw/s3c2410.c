@@ -1643,6 +1643,7 @@ struct s3c_adc_state_s {
     int input[8];
     int in_idx;
     int noise;
+    int scale[6];
 
     uint16_t control;
     uint16_t ts;
@@ -1680,12 +1681,16 @@ static void s3c_adc_done(void *opaque)
 static void s3c_adc_tick(void *opaque)
 {
     struct s3c_adc_state_s *s = (struct s3c_adc_state_s *) opaque;
+    int sx, sy;
+
     if (s->down) {
         if ((s->ts & 3) == 3 && s->enable)
             qemu_irq_raise(s->tcirq);
         else if (s->enable && ((s->ts & (1 << 2)) || (s->ts & 3))) {
-            s->xdata = (s->x >> 5) | (1 << 14) | ((s->ts & 3) << 12);
-            s->ydata = (s->y >> 5) | (1 << 14) | ((s->ts & 3) << 12);
+            sx = s->x * s->scale[0] + s->y * s->scale[1] + s->scale[2];
+            sy = s->x * s->scale[3] + s->y * s->scale[4] + s->scale[5];
+            s->xdata = ((sx >> 13) & 0xfff) | (1 << 14) | ((s->ts & 3) << 12);
+            s->ydata = ((sy >> 13) & 0xfff) | (1 << 14) | ((s->ts & 3) << 12);
             s->xdata ^= s->noise >> 1;
             s->ydata ^= s->noise >> 2;
             qemu_irq_raise(s->irq);
@@ -1844,6 +1849,11 @@ struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
     register_savevm("s3c24xx_adc", 0, 0, s3c_adc_save, s3c_adc_load, s);
 
     return s;
+}
+
+void s3c_adc_setscale(struct s3c_adc_state_s *adc, const int m[])
+{
+    memcpy(adc->scale, m, 6 * sizeof(int));
 }
 
 /* IIC-bus serial interface */

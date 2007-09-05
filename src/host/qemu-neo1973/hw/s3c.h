@@ -124,6 +124,7 @@ void s3c_uart_attach(struct s3c_uart_state_s *s, CharDriverState *chr);
 struct s3c_adc_state_s;
 struct s3c_adc_state_s *s3c_adc_init(target_phys_addr_t base, qemu_irq irq,
                 qemu_irq tcirq);
+void s3c_adc_setscale(struct s3c_adc_state_s *adc, const int m[]);
 
 struct s3c_i2c_state_s;
 struct s3c_i2c_state_s *s3c_i2c_init(target_phys_addr_t base, qemu_irq irq);

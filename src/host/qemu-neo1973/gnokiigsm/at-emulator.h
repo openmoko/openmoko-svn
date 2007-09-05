@@ -84,15 +84,14 @@ extern gn_data		data;
 	/* Definition of modem result codes - these are returned to "terminal"
        numerically or as a string depending on the setting of S12 */
 
-	/* FIX ME - Numeric values for everything except OK and ERROR
-	   are guesses as I've not got an AT reference handy.   HAB */
-
 #define 	MR_OK			(0)
+#define		MR_CONNECT		(1)
 #define         MR_RING                 (2)
 #define		MR_NOCARRIER		(3)
 #define		MR_ERROR		(4)
-#define		MR_CARRIER		(5)	/* guess */
-#define		MR_CONNECT		(6)	/* guess */
+#define		MR_CARRIER		(5)
+#define		MR_NODIALTONE		(6)
 #define		MR_BUSY			(7)
+#define		MR_NOANSWER		(8)
 
 #endif	/* _gnokii_data_at_emulator_h */

@@ -404,6 +404,12 @@ static void neo_reset(void *opaque)
     pcf_exton_set(s->pmu, 1);
 }
 
+/* Typical touchscreen calibration values */
+static const int gta01_ts_scale[6] = {
+    0, (90 - 960) * 256 / 1021, -90 * 256 * 32,
+    (940 - 75) * 256 / 1021, 0, 75 * 256 * 32,
+};
+
 /* Board init.  */
 static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                 DisplayState *ds, const char **fd_filename, int snapshot,
@@ -442,6 +448,8 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
 
     if (usb_enabled)
         usb_device_attach(usb_bt_init(local_piconet));
+
+    s3c_adc_setscale(s->cpu->adc, gta01_ts_scale);
 
     /* Setup initial (reset) machine state */
     qemu_register_reset(neo_reset, s);
