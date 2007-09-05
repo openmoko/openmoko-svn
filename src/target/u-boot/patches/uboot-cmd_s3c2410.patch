@@ -171,10 +171,10 @@ Index: u-boot/cpu/arm920t/s3c24x0/cmd_s3c24xx.c
 +
 +U_BOOT_CMD(
 +	s3c24xx,	4,	1,	do_s3c24xx,
-+	"s3c24x0 - SoC  specific commands\n",
++	"s3c24xx - SoC  specific commands\n",
 +	"speed get - display current PLL speed config\n"
-+	"s3c24x0 speed list - display supporte PLL speed configs\n"
-+	"s3c24x0 speed set - set PLL speed\n"
++	"s3c24xx speed list - display supporte PLL speed configs\n"
++	"s3c24xx speed set - set PLL speed\n"
 +);
 +
 +#endif
