@@ -289,7 +289,7 @@ child_setup (gpointer user_data)
 
 /* TODO: optionally link to GtkUnique and directly handle that? */
 void
-launcher_start (GtkWidget *widget, LauncherData *data)
+launcher_start (GtkWidget *widget, const LauncherData *data)
 {
   GError *error = NULL;
 #ifdef USE_LIBSN

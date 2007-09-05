@@ -1,6 +1,11 @@
 2007-09-05  Chris Lord,,,  <chris@openedhand.com>
 
 	* libtaku/launcher-util.c: (launcher_start):
+	Fix function to match prototype in header
+
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c: (launcher_start):
 	* libtaku/taku-icon-tile.c: (make_bold), (taku_icon_tile_init),
 	(taku_icon_tile_set_icon_name), (taku_icon_tile_set_primary):
 	* libtaku/taku-table.c: (calculate_columns),
