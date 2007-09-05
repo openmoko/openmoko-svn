@@ -76,3 +76,4 @@ uboot-smdk2443.patch
 # for review, merge soon
 unbusy-i2c.patch 
 usbtty-irq-racecondition-fix.patch
+neo1973-gsmver.patch

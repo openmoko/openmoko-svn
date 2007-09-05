@@ -1,0 +1,147 @@
+[PATCH] Print GSM firmware version.
+
+---
+ common/cmd_neo1973.c |    6 ++-
+ common/gsmver.c      |   83 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ gta01/Makefile       |    2 -
+ gta02/Makefile       |    2 -
+
+Index: u-boot/board/neo1973/common/cmd_neo1973.c
+===================================================================
+--- u-boot.orig/board/neo1973/common/cmd_neo1973.c	2007-09-05 00:27:05.000000000 +0800
++++ u-boot/board/neo1973/common/cmd_neo1973.c	2007-09-05 00:45:45.000000000 +0800
+@@ -77,8 +77,10 @@
+ 			goto out_help;
+ 		if (!strcmp(argv[2], "on"))
+ 			neo1973_gsm(1);
+-		else
++		else if (!strcmp(argv[2], "off"))
+ 			neo1973_gsm(0);
++		else if (!strcmp(argv[2], "version"))
++			neo1973_gsmver();
+ 	} else if (!strcmp(argv[1], "gps")) {
+ 		if (argc < 3)
+ 			goto out_help;
+@@ -121,7 +123,7 @@
+ 	"neo1973 charger off - disable charging\n"
+ 	"neo1973 backlight (on|off) - switch backlight on or off\n"
+ 	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
+-	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
++	"neo1973 gsm (on|off|version) - switch GSM Modem on/off or print firmware version\n"
+ 	"neo1973 gps (on|off) - switch GPS system on or off\n"
+ 	"neo1973 udc pullup (on|off) - switch USB device controller pull-up on or off\n"
+ );
+Index: u-boot/board/neo1973/common/gsmver.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot/board/neo1973/common/gsmver.c	2007-09-05 00:49:46.000000000 +0800
+@@ -0,0 +1,83 @@
++/*
++ * (C) Copyright 2007 OpenMoko, Inc.
++ * Written by Jim Huang <jserv@openmoko.org>
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++/*
++ * Boot support
++ */
++#include <common.h>
++#include <devices.h>
++
++#define GSM_UART_DEVICE  "s3ser0"
++
++int neo1973_gsmver()
++{
++	int i;
++	device_t *dev = NULL;
++	int string_end_count = 0;
++
++	/* Scan for selected output/input device */
++	for (i = 1; i <= ListNumItems (devlist); i++) {
++		device_t *tmp = ListGetPtrToItem (devlist, i);
++		if (!strcmp(tmp->name, GSM_UART_DEVICE)) {
++			dev = tmp;
++			break;
++		}
++	}
++	if (!dev)
++		return -1;
++
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++	defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
++	defined(CONFIG_ARCH_GTA01B_v4)
++	neo1973_gta01_serial0_gsm(1);
++#endif
++
++	/* Query GSM firmware information by AT command */
++	dev->puts("AT+CGMR\r\n");
++	puts("GSM firmware version: ");
++
++	/* read from serial and display version information */
++	while (string_end_count < 2) {
++		if (dev->tstc()) {
++			i = dev->getc();
++			/* FIXME: should we just dump straightforward
++			 * version string such as "moko1" or "moko4"?
++			 */
++			if (i == '"') {
++				string_end_count++;
++				continue;
++			}
++			if (string_end_count)
++				putc(i);
++		}
++	}
++	putc('\n');
++
++#if defined(CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
++    defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
++    defined(CONFIG_ARCH_GTA01B_v4)
++	neo1973_gta01_serial0_gsm(0);
++#endif
++
++	return 0;
++}
+Index: u-boot/board/neo1973/gta01/Makefile
+===================================================================
+--- u-boot.orig/board/neo1973/gta01/Makefile	2007-09-05 00:42:18.000000000 +0800
++++ u-boot/board/neo1973/gta01/Makefile	2007-09-05 00:42:34.000000000 +0800
+@@ -25,7 +25,7 @@
+ 
+ LIB	= lib$(BOARD).a
+ 
+-OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
++OBJS	:= gta01.o pcf50606.o ../common/cmd_neo1973.o ../common/gsmver.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
+ SOBJS	:= ../common/lowlevel_init.o
+ 
+ .PHONY:	all
+Index: u-boot/board/neo1973/gta02/Makefile
+===================================================================
+--- u-boot.orig/board/neo1973/gta02/Makefile	2007-09-05 00:42:37.000000000 +0800
++++ u-boot/board/neo1973/gta02/Makefile	2007-09-05 00:42:44.000000000 +0800
+@@ -25,7 +25,7 @@
+ 
+ LIB	= lib$(BOARD).a
+ 
+-OBJS	:= gta02.o pcf50633.o ../common/cmd_neo1973.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
++OBJS	:= gta02.o pcf50633.o ../common/cmd_neo1973.o ../common/gsmver.o ../common/jbt6k74.o ../common/udc.o ../common/bootmenu.o
+ SOBJS	:= ../common/lowlevel_init.o
+ 
+ .PHONY:	all
