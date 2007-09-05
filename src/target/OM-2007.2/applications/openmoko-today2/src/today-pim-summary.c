@@ -38,7 +38,7 @@ today_pim_summary_visible_cb (GtkTreeModel *model, GtkTreeIter *iter,
 	KotoTask *task;
 	gboolean done;
 	
-	gtk_tree_model_get (model, iter, COLUMN_ICAL, &task,
+	gtk_tree_model_get (model, iter, COLUMN_TASK, &task,
 		COLUMN_DONE, &done, -1);
 	
 	if (!done) return TRUE;
