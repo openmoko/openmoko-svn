@@ -2511,6 +2511,14 @@ static void monitor_start_input(void)
     readline_start("(qemu) ", 0, monitor_handle_command1, NULL);
 }
 
+static void monitor_init_input(void)
+{
+    readline_history_restore();
+    atexit(readline_history_save);
+
+    monitor_start_input();
+}
+
 static void term_event(void *opaque, int event)
 {
     if (event != CHR_EVENT_RESET)
@@ -2519,7 +2527,7 @@ static void term_event(void *opaque, int event)
     if (!hide_banner)
 	    term_printf("QEMU %s monitor - type 'help' for more information\n",
 			QEMU_VERSION);
-    monitor_start_input();
+    monitor_init_input();
 }
 
 static int is_first_init = 1;

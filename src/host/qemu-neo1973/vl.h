@@ -1681,6 +1681,8 @@ void readline_find_completion(const char *cmdline);
 const char *readline_get_history(unsigned int index);
 void readline_start(const char *prompt, int is_password,
                     ReadLineFunc *readline_func, void *opaque);
+void readline_history_save(void);
+void readline_history_restore(void);
 
 void kqemu_record_dump(void);
 

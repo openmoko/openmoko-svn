@@ -26,6 +26,7 @@
 #define TERM_CMD_BUF_SIZE 4095
 #define TERM_MAX_CMDS 64
 #define NB_COMPLETIONS_MAX 256
+#define HISTORY_FILENAME ".qemu_history"
 
 #define IS_NORM 0
 #define IS_ESC  1
@@ -465,4 +466,65 @@ const char *readline_get_history(unsigned int index)
     return term_history[index];
 }
 
+static FILE *readline_open_historyfile(char *modes)
+{
+    char *filename, *home;
+    FILE *ret;
 
+    home = getenv("HOME");
+    if (!home)
+        return 0;
+
+    filename = qemu_malloc(strlen(home) + 1 + strlen(HISTORY_FILENAME) + 1);
+    if (!filename)
+        return 0;
+
+    sprintf(filename, "%s/" HISTORY_FILENAME, home);
+    ret = fopen(filename, modes);
+    qemu_free(filename);
+
+    return ret;
+}
+
+void readline_history_save(void)
+{
+    int idx;
+    FILE *fd;
+    const char *line;
+
+    fd = readline_open_historyfile("w");
+    if (!fd)
+        return;
+
+    idx = 0;
+    while ((line = readline_get_history(idx ++)))
+        fprintf(fd, "%s\n", line);
+
+    fclose(fd);
+}
+
+void readline_history_restore(void)
+{
+    int idx;
+    FILE *fd;
+    char line[TERM_CMD_BUF_SIZE + 1], *ret;
+
+    fd = readline_open_historyfile("r");
+    if (!fd)
+        return;
+
+    for (idx = 0; idx < TERM_MAX_CMDS; idx ++) {
+        ret = fgets(line, TERM_CMD_BUF_SIZE + 1, fd);
+        if (!ret || *line == 0 || *line == '\n')
+            break;
+
+        ret = strchr(line, '\n');
+        if (ret)
+            *ret = 0;
+
+        term_history[idx] = qemu_strdup(line);
+    }
+
+    fclose(fd);
+}
+/* vim: set ai ts=4 sw=4 et: */
