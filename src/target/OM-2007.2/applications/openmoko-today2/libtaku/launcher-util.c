@@ -289,7 +289,7 @@ child_setup (gpointer user_data)
 
 /* TODO: optionally link to GtkUnique and directly handle that? */
 void
-launcher_start (GtkWidget *widget, const LauncherData *data)
+launcher_start (GtkWidget *widget, LauncherData *data)
 {
   GError *error = NULL;
 #ifdef USE_LIBSN
@@ -344,17 +344,20 @@ launcher_start (GtkWidget *widget, const LauncherData *data)
   if (!g_spawn_async (
 #endif
                             NULL, data->argv, NULL,
-                            G_SPAWN_SEARCH_PATH, child_setup,
+                            G_SPAWN_SEARCH_PATH,
+                            child_setup,
 #ifdef USE_LIBSN
-                            data->use_sn ? context : NULL, 
+                            data->use_sn ? context : NULL,
 #else
                             NULL,
 #endif
-                            NULL, &error)) {
+                            NULL,
+                            &error)) {
     g_warning ("Cannot launch %s: %s", data->argv[0], error->message);
     g_error_free (error);
 #ifdef USE_LIBSN
-    sn_launcher_context_complete (context);
+    if (context)
+      sn_launcher_context_complete (context);
 #endif
   }
   

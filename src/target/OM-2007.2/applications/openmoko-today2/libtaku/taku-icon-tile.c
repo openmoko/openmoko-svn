@@ -90,11 +90,32 @@ taku_icon_tile_class_init (TakuIconTileClass *klass)
 }
 
 static void
+make_bold (GtkLabel *label)
+{
+  PangoAttribute *attr;
+  PangoAttrList *list;
+
+  list = pango_attr_list_new ();
+
+  attr = pango_attr_weight_new (PANGO_WEIGHT_BOLD);
+  attr->start_index = 0;
+  attr->end_index = G_MAXUINT;
+  pango_attr_list_insert (list, attr);
+
+  attr = pango_attr_scale_new (1.2);
+  attr->start_index = 0;
+  attr->end_index = G_MAXUINT;
+  pango_attr_list_insert (list, attr);
+
+  gtk_label_set_attributes (label, list);
+  
+  pango_attr_list_unref (list);
+}
+
+static void
 taku_icon_tile_init (TakuIconTile *self)
 {
   GtkWidget *vbox, *hbox;
-  PangoAttribute *attr;
-  PangoAttrList *list;
 
   self->priv = GET_PRIVATE (self);
 
@@ -110,22 +131,11 @@ taku_icon_tile_init (TakuIconTile *self)
 
   self->priv->primary = gtk_label_new (NULL);
   gtk_label_set_ellipsize (GTK_LABEL (self->priv->primary), PANGO_ELLIPSIZE_END);
+  make_bold (GTK_LABEL (self->priv->primary));
   gtk_widget_show (self->priv->primary);
   gtk_misc_set_alignment (GTK_MISC (self->priv->primary), 0.0, 0.5);
   gtk_box_pack_start (GTK_BOX (vbox), self->priv->primary, TRUE, TRUE, 0);
-  
-  list = pango_attr_list_new ();
-  attr = pango_attr_weight_new (PANGO_WEIGHT_BOLD);
-  attr->start_index = 0;
-  attr->end_index = G_MAXUINT;
-  pango_attr_list_insert (list, attr);
-  attr = pango_attr_scale_new (1.2);
-  attr->start_index = 0;
-  attr->end_index = G_MAXUINT;
-  pango_attr_list_insert (list, attr);
-  gtk_label_set_attributes (GTK_LABEL (self->priv->primary), list);
-  pango_attr_list_unref (list);
-  
+
   self->priv->secondary = gtk_label_new (NULL);
   gtk_label_set_ellipsize (GTK_LABEL (self->priv->secondary), PANGO_ELLIPSIZE_END);
   gtk_widget_show (self->priv->secondary);
@@ -157,7 +167,7 @@ taku_icon_tile_set_icon_name (TakuIconTile *tile, const char *name)
   g_return_if_fail (TAKU_IS_ICON_TILE (tile));
 
   gtk_image_set_from_icon_name (GTK_IMAGE (tile->priv->icon),
-                                name, gtk_icon_size_from_name ("TakuIcon"));
+                                name, gtk_icon_size_from_name ("taku-icon"));
 }
 
 void
@@ -166,6 +176,8 @@ taku_icon_tile_set_primary (TakuIconTile *tile, const char *text)
   g_return_if_fail (TAKU_IS_ICON_TILE (tile));
 
   gtk_label_set_text (GTK_LABEL (tile->priv->primary), text);
+
+  atk_object_set_name (gtk_widget_get_accessible (GTK_WIDGET (tile)), text);
 }
 
 const char *

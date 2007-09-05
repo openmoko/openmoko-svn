@@ -16,6 +16,7 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <config.h>
 #include <gtk/gtk.h>
 #include <string.h>
 #include "eggsequence.h"
@@ -25,6 +26,8 @@ G_DEFINE_TYPE (TakuTable, taku_table, GTK_TYPE_TABLE);
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), TAKU_TYPE_TABLE, TakuTablePrivate))
+
+#define DEFAULT_WIDTH 30
 
 struct _TakuTablePrivate
 {
@@ -311,6 +314,7 @@ calculate_columns (GtkWidget *widget)
   PangoContext *context;
   PangoFontMetrics *metrics;
   int width, new_cols;
+  guint cell_text_width = DEFAULT_WIDTH;
 
   /* If we are currently reflowing the tiles, or the final allocation hasn't
      been decided yet, return */
@@ -321,8 +325,10 @@ calculate_columns (GtkWidget *widget)
   context = gtk_widget_get_pango_context (widget);
   metrics = pango_context_get_metrics (context, widget->style->font_desc, NULL);
 
+  gtk_widget_style_get (widget, "cell-text-width", &cell_text_width, NULL);
+
   width = PANGO_PIXELS
-          (30 * pango_font_metrics_get_approximate_char_width (metrics));
+          (cell_text_width * pango_font_metrics_get_approximate_char_width (metrics));
   new_cols = MAX (1, widget->allocation.width / width);
 
   if (table->priv->columns != new_cols) {
@@ -495,6 +501,13 @@ taku_table_class_init (TakuTableClass *klass)
   
   container_class->add    = container_add;
   container_class->remove = container_remove;
+
+  gtk_widget_class_install_style_property (widget_class, g_param_spec_uint
+                                           ("cell-text-width", "cell text width",
+                                            "Width of the tiles in characters",
+                                            0, G_MAXUINT, DEFAULT_WIDTH,
+                                            G_PARAM_READABLE));
+
 }
 
 static void
