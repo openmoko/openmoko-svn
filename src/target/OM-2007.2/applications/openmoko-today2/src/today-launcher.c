@@ -331,7 +331,7 @@ today_launcher_page_create (TodayData *data)
 	viewport = gtk_viewport_new (NULL, NULL);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
 				      GTK_SHADOW_NONE);
-	gtk_icon_size_register ("TakuIcon", 64, 64);
+	gtk_icon_size_register ("taku-icon", 64, 64);
 	data->launcher_table = taku_table_new ();
 
 	/* Create search category */

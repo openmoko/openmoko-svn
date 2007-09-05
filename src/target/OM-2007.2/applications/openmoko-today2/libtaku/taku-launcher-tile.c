@@ -165,10 +165,10 @@ taku_launcher_tile_class_init (TakuLauncherTileClass *klass)
   object_class->finalize = taku_launcher_tile_finalize;
   
   /* Lookup the icon size from the theme. */
-  icon_size = gtk_icon_size_from_name ("TakuIcon");
+  icon_size = gtk_icon_size_from_name ("taku-icon");
   /* If the icon name isn't registered, use button sized icons as a fallback. */
   if (icon_size == GTK_ICON_SIZE_INVALID) {
-    g_warning ("TakuIcon size not registered, falling back");
+    g_warning ("taku-icon size not registered, falling back");
     icon_size = GTK_ICON_SIZE_BUTTON;
   }
 }
