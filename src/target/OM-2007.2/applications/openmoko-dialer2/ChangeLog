@@ -1,5 +1,24 @@
 2007-09-06  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-contacts.c: (moko_contacts_add_contact),
+	(on_ebook_contacts_changed), (on_ebook_contacts_removed):
+	* src/moko-dialer-panel.c: (moko_dialer_panel_class_init):
+	* src/moko-dialer.c: (on_keypad_pin_entry),
+	(on_talking_speaker_toggle), (on_network_registered),
+	(on_incoming_call), (on_incoming_clip), (on_pin_requested),
+	(on_call_progress_changed), (register_network_cb),
+	(moko_dialer_init):
+	* src/moko-history.c: (history_add_entry),
+	(moko_history_load_entries):
+	* src/moko-keypad.c: (on_tip_selected), (on_panel_user_hold):
+	* src/moko-notify.c: (moko_notify_check_brightness), (play),
+	(play_timeout), (moko_notify_start_ringtone),
+	(moko_notify_stop_ringtone):
+
+	Use g_debug() rather than g_print()
+
+2007-09-06  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked): Inform user if dialer is busy
 	or network is not registered when attempting to dial
 

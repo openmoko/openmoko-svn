@@ -131,7 +131,7 @@ on_dial_clicked (GtkWidget *button, MokoHistory *history)
 static void
 on_sms_clicked (GtkWidget *button, MokoHistory *history)
 {
-  g_print ("sms clicked\n");
+  g_debug ("sms clicked");
 }
 
 static void
@@ -270,7 +270,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
 
   if ( number == NULL || display_text == NULL || uid == NULL)
   {
-    /*g_print ("Not adding\n");
+    /*g_debug ("Not adding");
     return FALSE;*/
   }
   gtk_list_store_insert_with_values (store, &iter, 0,
@@ -414,7 +414,7 @@ moko_history_load_entries (MokoHistory *history)
   n_entries = moko_journal_get_nb_entries (priv->journal);
   if (n_entries < 1)
   {
-    g_print ("The Journal is empty\n");
+    g_debug ("The Journal is empty");
     return;
   }
 

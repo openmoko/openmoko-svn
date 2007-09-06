@@ -324,7 +324,7 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
 
   pin = g_strdup (in_pin);
 
-  g_print ("Sending pin %s\n", pin);
+  g_debug ("Sending pin %s", pin);
   moko_gsmd_connection_send_pin (priv->connection, pin);
 
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
@@ -427,7 +427,7 @@ on_talking_speaker_toggle (MokoTalking *talking,
                            MokoDialer  *dialer)
 {
   /* Toggle speaker phone */
-  g_print ("Speaker toggled\n");
+  g_debug ("Speaker toggled");
 }
 
 static void
@@ -467,15 +467,15 @@ on_network_registered (MokoGsmdConnection *conn,
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
     case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
       /* Do nothing */
-      g_print ("NetReg: Searching for network\n");
+      g_debug ("NetReg: Searching for network");
       break;
     case MOKO_GSMD_CONNECTION_NETREG_DENIED:
       /* This may be a pin issue*/
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
-      g_print ("NetReg: Network registered\n");
-      g_print("\tLocationAreaCode = %x\n\tCellID = %x\n", lac, cell);
+      g_debug ("NetReg: Network registered");
+      g_debug ("\tLocationAreaCode = %x\n\tCellID = %x", lac, cell);
       g_source_remove (priv->reg_timeout);
       break;
     default:
@@ -497,7 +497,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   if (priv->status == DIALER_STATUS_INCOMING  
         || priv->status == DIALER_STATUS_TALKING)
   {
-    /*g_print ("We are already showing the incoming page\n");*/
+    /*g_debug ("We are already showing the incoming page");*/
     return;
   }
   priv->status = DIALER_STATUS_INCOMING;
@@ -566,7 +566,7 @@ on_incoming_clip (MokoGsmdConnection *conn,
   }
   g_signal_emit (G_OBJECT (dialer), dialer_signals[INCOMING_CALL], 
                  0, number);
-  g_print ("Incoming Number = %s\n", number);
+  g_debug ("Incoming Number = %s", number);
 }
 
 static void
@@ -580,7 +580,7 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_source_remove (priv->reg_timeout);
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
   moko_dialer_show_dialer (dialer, NULL);
-  g_print ("Pin Requested\n");
+  g_debug ("Pin Requested");
 
 }
 
@@ -613,38 +613,38 @@ on_call_progress_changed (MokoGsmdConnection *conn,
         priv->time = NULL;
       }
       moko_notify_stop (priv->notify);
-      g_print ("mokogsmd disconnect\n");
+      g_debug ("mokogsmd disconnect");
       break;
     
     case MOKO_GSMD_PROG_REJECT:
       moko_dialer_rejected (dialer);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
-      g_print ("mokogsmd reject\n");
+      g_debug ("mokogsmd reject");
       break;
     
     case MOKO_GSMD_PROG_CONNECTED:
       moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
-      g_print ("mokogsmd connected\n");
+      g_debug ("mokogsmd connected");
       break;
     case MOKO_GSMD_PROG_SETUP:
-      g_print ("mokogsmd setup\n");
+      g_debug ("mokogsmd setup");
       break;
     case MOKO_GSMD_PROG_ALERT:
-      g_print ("mokogsmd alert\n");
+      g_debug ("mokogsmd alert");
       break;
     case  MOKO_GSMD_PROG_CALL_PROCEED:
-      g_print ("mokogsmd proceed\n");
+      g_debug ("mokogsmd proceed");
       break;
     case MOKO_GSMD_PROG_SYNC:
-      g_print ("mokogsmd sync\n");
+      g_debug ("mokogsmd sync");
       break;
     case  MOKO_GSMD_PROG_PROGRESS:
-      g_print ("mokogsmd progress\n");
+      g_debug ("mokogsmd progress");
       break;
     case MOKO_GSMD_PROG_UNKNOWN:
     default:
-      g_print ("mokogsmd unknown\n");
+      g_debug ("mokogsmd unknown");
       break;
   }
 }
@@ -664,21 +664,21 @@ register_network_cb (MokoDialer *dialer)
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
       /* We have yet to request registration, so lets do it */
       /* FIXME: do the pin stuff */
-      g_print ("Requesting registration\n");
+      g_debug ("Requesting registration");
       moko_gsmd_connection_network_register (priv->connection);
       priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
       break;
     case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
-      g_print ("Waiting for registration\n");
+      g_debug ("Waiting for registration");
       break;
     case MOKO_GSMD_CONNECTION_NETREG_DENIED:
-      g_print ("Registration denied, retrying\n");
+      g_debug ("Registration denied, retrying");
       moko_gsmd_connection_network_register (priv->connection);
       priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
-      g_print ("Network Registered\n");
+      g_debug ("Network Registered");
 	    return FALSE;
     default:
       g_warning ("Unhandled register event type = %d\n", priv->registered);
@@ -836,7 +836,7 @@ moko_dialer_init (MokoDialer *dialer)
     priv->journal = NULL;
   }
   else
-    g_print ("Journal Loaded\n");
+    g_debug ("Journal Loaded");
 
   /* Load the contacts store */
   priv->contacts = moko_contacts_get_default ();

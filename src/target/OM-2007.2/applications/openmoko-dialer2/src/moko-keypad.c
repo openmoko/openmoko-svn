@@ -135,7 +135,7 @@ on_tip_selected (MokoTips *tips, MokoContactEntry *entry, MokoKeypad *keypad)
   moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->textview),
                                entry->number);
 
-  g_print ("%s\n", entry->number);
+  g_debug ("%s", entry->number);
   g_signal_emit (G_OBJECT (keypad), keypad_signals[DIAL_NUMBER], 
                  0, entry->number);
 }
@@ -246,7 +246,7 @@ on_panel_user_hold (MokoDialerPanel *panel,
                      const gchar      digit, 
                      MokoKeypad      *keypad)
 {
-  g_print ("on_panel_user_hold: %c\n", digit);
+  g_debug ("on_panel_user_hold: %c", digit);
 }
 
 /* GObject functions */

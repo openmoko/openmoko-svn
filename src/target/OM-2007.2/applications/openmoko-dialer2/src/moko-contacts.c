@@ -280,7 +280,7 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
       entry->number = normalize (phone);
       entry->contact = m_contact;
 
-      g_print ("%s %s\n", m_contact->name, entry->number);
+      g_debug ("%s %s", m_contact->name, entry->number);
 
       priv->entries = g_list_append (priv->entries, (gpointer)entry);
       g_hash_table_insert (priv->prefixes, 
@@ -311,7 +311,7 @@ on_ebook_contacts_changed (EBookView    *view,
                            GList        *c_list,
                            MokoContacts *contacts)
 {
-  g_print ("Contacts changed\n");
+  g_debug ("Contacts changed");
 }
 
 static void
@@ -319,7 +319,7 @@ on_ebook_contacts_removed (EBookView    *view,
                            GList        *c_list,
                            MokoContacts *contacts)
 {
-  g_print ("Contacts removed\n");
+  g_debug ("Contacts removed");
 }
 
 /* GObject functions */

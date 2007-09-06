@@ -85,7 +85,7 @@ moko_notify_check_brightness (void)
         == G_IO_STATUS_NORMAL)
   {
     buf[bytes] = '\0';
-    /*g_print ("Current brightness = %s\n", buf); */
+    /*g_debug ("Current brightness = %s", buf); */
   }
   else
   {
@@ -107,7 +107,7 @@ static gboolean
 play (MokoNotify *notify)
 {
   moko_notify_start_ringtone (notify);
-  g_print ("1500 timeout\n");
+  g_debug ("1500 timeout");
   return FALSE;
 }
 
@@ -124,22 +124,22 @@ play_timeout (MokoNotify *notify)
 
   if (!priv->operation)
   {
-    g_print ("No operation\n");
+    g_debug ("No operation");
     return FALSE;
   }
   if (!priv->started)
   {
     pa_operation_cancel (priv->operation);
-    g_print ("Cancelling early\n");
+    g_debug ("Cancelling early");
     return FALSE;
   }
   if (pa_operation_get_state (priv->operation) == PA_OPERATION_DONE)
   {
     g_timeout_add (1500, (GSourceFunc)play, (gpointer)notify);
-    g_print ("Playing done\n");
+    g_debug ("Playing done");
     return FALSE;
   }
-  g_print ("Not finsihed yet\n");
+  g_debug ("Not finsihed yet");
   return TRUE;  
 }
 
@@ -161,7 +161,7 @@ moko_notify_start_ringtone (MokoNotify *notify)
                                             NULL, 
                                             NULL);
   g_timeout_add (500, (GSourceFunc)play_timeout, (gpointer)notify);
-  g_print ("Playing\n");
+  g_debug ("Playing");
 }
 
 static void
@@ -175,7 +175,7 @@ moko_notify_stop_ringtone (MokoNotify *notify)
   if (priv->operation)
   {
     pa_operation_cancel (priv->operation);
-    g_print ("Cancelling\n");
+    g_debug ("Cancelling");
   }
 
   priv->operation = NULL;
