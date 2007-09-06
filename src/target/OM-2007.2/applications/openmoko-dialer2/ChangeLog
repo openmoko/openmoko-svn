@@ -1,5 +1,10 @@
 2007-09-06  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked): Inform user if dialer is busy
+	or network is not registered when attempting to dial
+
+2007-09-06  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer.c: (moko_dialer_class_init), (moko_dialer_init):
 	- Add support for displaying GError messages
 	- Handle new GError in moko_gsmd_connection_set_antenna_power ()

@@ -226,18 +226,56 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
                         const gchar *number,
                         MokoDialer  *dialer)
 {
+  GtkWidget *dlg;
   MokoDialerPrivate *priv;
   MokoContactEntry *entry = NULL;
   
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+
+  /* check current dialer state */
   if (0 || priv->status != DIALER_STATUS_NORMAL)
   {
+    gchar *strings[] = {
+      "Normal",
+      "Incoming Call",
+      "Dialing",
+      "Outgoing Call"
+    };
+    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+        "Cannot dial when dialer is busy.\nCurrent status = %s", strings[priv->status]);
+    gtk_dialog_run (GTK_DIALOG (dlg));
+    gtk_widget_destroy (dlg);
+
     g_warning ("Cannot dial when dialer is busy: %d\n", priv->status);
+
     return;
   }
   priv->status = DIALER_STATUS_DIALING;
+
+  /* check for network connection */
+  if (priv->registered != MOKO_GSMD_CONNECTION_NETREG_HOME
+      || priv->registered != MOKO_GSMD_CONNECTION_NETREG_ROAMING)
+  {
+    gchar *strings[] = {
+      "No Status",
+      "Home network registered",
+      "Waiting for network registration",
+      "Network registration denied",
+      "",
+      "Roaming network reigstered"
+    };
+
+    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+        "Not connected to network.\nCurrent status = %s ", strings[priv->registered]);
+    gtk_dialog_run (GTK_DIALOG (dlg));
+    gtk_widget_destroy (dlg);
+
+    /* no point continuing if we're not connected to a network! */
+    priv->status = DIALER_STATUS_NORMAL;
+    return;
+  }
 
   entry = moko_contacts_lookup (moko_contacts_get_default (), number);
 
