@@ -1,3 +1,10 @@
+2007-09-06  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
+	* libmokogsmd/moko-gsmd-connection.h:
+
+	Add GError to moko_gsmd_connection_set_antenna_power
+
 2007-08-22  Holger Freyther  <zecke@selfish.org>
 
         Rubberstamped by Mickey.

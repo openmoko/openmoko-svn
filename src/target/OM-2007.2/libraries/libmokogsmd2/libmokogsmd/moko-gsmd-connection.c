@@ -42,6 +42,18 @@ G_DEFINE_TYPE (MokoGsmdConnection, moko_gsmd_connection, G_TYPE_OBJECT)
 #define GSMD_CONNECTION_GET_PRIVATE(o)   (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
         MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionPrivate))
 
+
+GQuark
+moko_gsmd_error_quark ()
+{
+  static GQuark quark = 0;
+
+  if (quark == 0)
+    quark = g_quark_from_static_string ("moko-gsmd-error");
+  return quark;
+}
+#define MOKO_GSMD_ERROR moko_gsmd_error_quark ()
+
 /* ugly temp. hack until libgsmd features a user_data pointer for its callbacks
  * Note that this effectively means you can only have one MokoGsmdConnection 
  * object per process (which should be ok anyway...) :M: 
@@ -445,7 +457,7 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
 
 /* public API */
 void 
-moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on)
+moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on, GError **error)
 {
     MokoGsmdConnectionPrivate* priv;
     gint result;
@@ -453,10 +465,18 @@ moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on)
     g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
 
-    g_return_if_fail( priv->handle );
+    if (!priv->handle)
+    {
+      g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_CONNECT, "Error connecting to gsmd");
+      return;
+    }
     
     result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
-    g_debug( "lgsm_phone_power returned %d", result );
+
+    if (result != 0)
+    {
+      g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_POWER, "Error setting antenna power");
+    }
 }
 
 void 

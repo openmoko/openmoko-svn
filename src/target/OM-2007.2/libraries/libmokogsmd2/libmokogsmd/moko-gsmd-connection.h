@@ -91,13 +91,19 @@ typedef enum
 
 } MokoGsmdConnectionProgress;
 
+typedef enum
+{
+  MOKO_GSMD_ERROR_CONNECT, /* could not connect to gsmd */
+  MOKO_GSMD_ERROR_POWER /* attenna power did not set correctly */
+} MokoGsmdConnectionError;
+
 GType moko_gsmd_connection_get_type ();
 
 MokoGsmdConnection* moko_gsmd_connection_new ();
 
 /* power */
 void moko_gsmd_connection_set_antenna_power (MokoGsmdConnection *self, 
-                                             gboolean on);
+                                             gboolean on, GError **error);
 /* pin */
 void moko_gsmd_connection_send_pin (MokoGsmdConnection *self, const gchar *pin);
 
