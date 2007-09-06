@@ -77,7 +77,7 @@ static void
 gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
-    moko_gsmd_connection_set_antenna_power( applet->gsm, TRUE );
+    moko_gsmd_connection_set_antenna_power( applet->gsm, TRUE, NULL );
 }
 
 static void
@@ -90,7 +90,7 @@ static void
 gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
-    moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE );
+    moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE, NULL );
 }
 
 G_MODULE_EXPORT GtkWidget*
