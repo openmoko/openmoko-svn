@@ -1,3 +1,9 @@
+2007-09-06  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-dialer.c: (moko_dialer_class_init), (moko_dialer_init):
+	- Add support for displaying GError messages
+	- Handle new GError in moko_gsmd_connection_set_antenna_power ()
+
 2007-08-31  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-contacts.c: (moko_contacts_get_photo): Check photo before

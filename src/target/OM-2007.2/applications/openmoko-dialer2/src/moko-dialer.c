@@ -738,10 +738,24 @@ moko_dialer_class_init (MokoDialerClass *klass)
 }
 
 static void
+dialer_display_error (GError *err)
+{
+  GtkWidget *dlg;
+
+  if (!err)
+    return;
+
+  dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Dialer: %s", err->message);
+  gtk_dialog_run (GTK_DIALOG (dlg));
+  gtk_widget_destroy (dlg);
+}
+
+static void
 moko_dialer_init (MokoDialer *dialer)
 {
   MokoDialerPrivate *priv;
   MokoGsmdConnection *conn;
+  GError *err = NULL;
 
   priv = dialer->priv = MOKO_DIALER_GET_PRIVATE (dialer);
 
@@ -753,7 +767,9 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* Init the gsmd connection, and power it up */
   conn = priv->connection = moko_gsmd_connection_new ();
-  moko_gsmd_connection_set_antenna_power (conn, TRUE);
+  moko_gsmd_connection_set_antenna_power (conn, TRUE, &err);
+
+  dialer_display_error (err);
 
   /* Handle network registration a few seconds after powering up the 
    * antenna*/ 
