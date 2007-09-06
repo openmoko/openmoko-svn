@@ -72,6 +72,19 @@ moko_dialer_textview_class_init (MokoDialerTextviewClass * class)
 
 
 static void
+moko_dialer_textview_realize (MokoDialerTextview *moko_dialer_textview, gpointer user_data)
+{
+  /* Get the initial size of the textview and make sure it does not become
+   * smaller. This will prevent the widget resizing if the font size
+   * is reduced later on
+   */
+  GtkRequisition r;
+  gtk_widget_size_request (GTK_WIDGET (moko_dialer_textview), &r);
+  gtk_widget_set_size_request (GTK_WIDGET (moko_dialer_textview), r.width, r.height);
+
+}
+
+static void
 moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
 {
 
@@ -116,6 +129,8 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
                                 "PANGO_WEIGHT_BOLD", NULL);
   moko_dialer_textview->sensed = FALSE;
 
+
+  g_signal_connect (moko_dialer_textview, "realize", G_CALLBACK (moko_dialer_textview_realize), NULL);
 }
 
 

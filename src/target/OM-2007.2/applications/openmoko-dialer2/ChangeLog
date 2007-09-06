@@ -1,5 +1,10 @@
 2007-09-06  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-dialer-textview.c: (moko_dialer_textview_init): Prevent the display
+	from resizing when the font size is reduced
+
+2007-09-06  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-contacts.c: (moko_contacts_add_contact),
 	(on_ebook_contacts_changed), (on_ebook_contacts_removed):
 	* src/moko-dialer-panel.c: (moko_dialer_panel_class_init):
