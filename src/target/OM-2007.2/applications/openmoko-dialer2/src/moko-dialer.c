@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
@@ -808,6 +809,8 @@ moko_dialer_init (MokoDialer *dialer)
   moko_gsmd_connection_set_antenna_power (conn, TRUE, &err);
 
   dialer_display_error (err);
+  if (err && err->code == MOKO_GSMD_ERROR_CONNECT)
+    exit (1); /* no point continuing if we can't connect to gsmd? */
 
   /* Handle network registration a few seconds after powering up the 
    * antenna*/ 
@@ -830,7 +833,7 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
-  if (!moko_journal_load_from_storage (priv->journal))
+  if (!priv->journal || moko_journal_load_from_storage (priv->journal))
   {
     g_warning ("Cannot load journal");
     priv->journal = NULL;

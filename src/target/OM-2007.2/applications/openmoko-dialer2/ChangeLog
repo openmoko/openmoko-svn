@@ -1,3 +1,9 @@
+2007-09-07  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-dialer.c: (moko_dialer_init):#
+	 - Prevent critical warnings if the journal cannot be loaded.
+	 - Exit if we cannot connect to gsmd
+
 2007-09-06  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-dialer-textview.c: (moko_dialer_textview_init): Prevent the display
