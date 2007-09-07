@@ -642,10 +642,10 @@ Index: u-boot/common/serial.c
  #if defined(CONFIG_SERIAL1)
  	return &s3c24xx_serial0_device;
  #elif defined(CONFIG_SERIAL2)
-@@ -121,7 +122,8 @@
+@@ -129,7 +130,8 @@
+ #if defined (CONFIG_STUART)
+ 	serial_register(&serial_stuart_device);
  #endif
- #endif /* CFG_NS16550_SERIAL */
- 
 -#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 +#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
 +    defined(CONFIG_S3C2442)

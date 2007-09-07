@@ -19,17 +19,15 @@ Index: u-boot/common/serial.c
  #else
  #error No default console
  #endif
-@@ -110,6 +120,13 @@
- 	serial_register(&eserial4_device);
+@@ -119,6 +129,11 @@
+ #if defined (CONFIG_STUART)
+ 	serial_register(&serial_stuart_device);
  #endif
- #endif /* CFG_NS16550_SERIAL */
-+
 +#if defined(CONFIG_S3C2410)
 +	serial_register(&s3c24xx_serial0_device);
 +	serial_register(&s3c24xx_serial1_device);
 +	serial_register(&s3c24xx_serial2_device);
 +#endif
-+
  	serial_assign (default_serial_console ()->name);
  }
  
@@ -288,13 +286,13 @@ Index: u-boot/include/serial.h
 +extern struct serial_device s3c24xx_serial2_device;
 +#endif
  
- extern void serial_initialize(void);
- extern void serial_devices_init(void);
+ extern struct serial_device serial_ffuart_device;
+ extern struct serial_device serial_btuart_device;
 Index: u-boot/lib_arm/board.c
 ===================================================================
 --- u-boot.orig/lib_arm/board.c
 +++ u-boot/lib_arm/board.c
-@@ -345,6 +345,10 @@
+@@ -349,6 +349,10 @@
  #endif
  	}
  
