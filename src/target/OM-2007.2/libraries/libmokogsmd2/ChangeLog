@@ -1,5 +1,11 @@
 2007-09-07  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokogsmd/moko-gsmd-connection.c:
+	(_moko_gsmd_connection_eventhandler): Remove work around for bug 454 as it has
+	now been fixed.
+
+2007-09-07  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokogsmd/moko-gsmd-connection.h: Add missing Netreg type
 
 2007-09-06  Thomas Wood  <thomas@openedhand.com>

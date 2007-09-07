@@ -320,26 +320,12 @@ _moko_gsmd_connection_eventhandler (struct lgsm_handle *lh,
                           aux->u.clip.addr.number ); 
             break;
         case GSMD_EVT_NETREG:
-            /* work around bugzilla.openmoko.org #454 */
-            if ( aux->u.netreg.state == MOKO_GSMD_CONNECTION_NETREG_HOME 
-                 || aux->u.netreg.state == MOKO_GSMD_CONNECTION_NETREG_ROAMING )
-            {
-                g_signal_emit( G_OBJECT(self), 
+            g_signal_emit( G_OBJECT(self), 
                           moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_NETREG],
-                               0,
-                               aux->u.netreg.state, 
-                               aux->u.netreg.lac, 
-                               aux->u.netreg.ci );
-            }
-            else
-            {
-                g_signal_emit( G_OBJECT(self), 
-                          moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_NETREG],
-                               0,
-                               aux->u.netreg.state, 
-                               0, 
-                               0 );
-            }
+                          0,
+                          aux->u.netreg.state, 
+                          aux->u.netreg.lac, 
+                          aux->u.netreg.ci );
             break;
         case GSMD_EVT_SIGNAL:
             g_signal_emit( G_OBJECT(self), 
