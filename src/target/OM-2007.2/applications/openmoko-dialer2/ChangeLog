@@ -1,5 +1,10 @@
 2007-09-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-contacts.c: (moko_contacts_add_contact): Use fullname for
+	contact display name
+
+2007-09-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer.c: (moko_dialer_init):#
 	 - Prevent critical warnings if the journal cannot be loaded.
 	 - Exit if we cannot connect to gsmd

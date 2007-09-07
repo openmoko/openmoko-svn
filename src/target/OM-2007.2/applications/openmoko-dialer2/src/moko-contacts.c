@@ -19,7 +19,6 @@
  */
 
 #include <glib.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <libebook/e-book.h>
@@ -254,7 +253,7 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
   g_return_if_fail (E_IS_CONTACT (e_contact));
   priv = contacts->priv;
 
-  name = e_contact_get_const (e_contact, E_CONTACT_NAME_OR_ORG);
+  name = e_contact_get_const (e_contact, E_CONTACT_FULL_NAME);
   if (!name || (g_utf8_strlen (name, -1) <= 0))
     name = "Unknown";
     
@@ -279,8 +278,6 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
       entry->desc = g_strdup (e_contact_field_name (i));
       entry->number = normalize (phone);
       entry->contact = m_contact;
-
-      g_debug ("%s %s", m_contact->name, entry->number);
 
       priv->entries = g_list_append (priv->entries, (gpointer)entry);
       g_hash_table_insert (priv->prefixes, 
