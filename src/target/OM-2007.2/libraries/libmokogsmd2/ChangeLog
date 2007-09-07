@@ -1,3 +1,7 @@
+2007-09-07  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.h: Add missing Netreg type
+
 2007-09-06  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
