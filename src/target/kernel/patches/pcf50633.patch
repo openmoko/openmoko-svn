@@ -34,7 +34,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1715 @@
+@@ -0,0 +1,1716 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -1489,7 +1489,8 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50633.c
 +		data->backlight->props.max_brightness = 0x3f;
 +		data->backlight->props.power = FB_BLANK_UNBLANK;
 +		data->backlight->props.fb_blank = FB_BLANK_UNBLANK;
-+		data->backlight->props.brightness = 0x20;
++		data->backlight->props.brightness =
++					data->backlight->props.max_brightness;
 +		backlight_update_status(data->backlight);
 +	}
 +
