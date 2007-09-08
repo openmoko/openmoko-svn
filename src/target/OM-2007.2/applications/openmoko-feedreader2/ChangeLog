@@ -1,3 +1,10 @@
+2007-09-08  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Check if translation works by setting up a dummy language
+
+        * po/LINGUAS:
+        * po/de.po: Added.
+
 2007-09-04  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Show the blog entry when selecting a item. This will switch
