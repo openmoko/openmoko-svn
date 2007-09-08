@@ -288,18 +288,3 @@ Index: u-boot/include/serial.h
  
  extern struct serial_device serial_ffuart_device;
  extern struct serial_device serial_btuart_device;
-Index: u-boot/lib_arm/board.c
-===================================================================
---- u-boot.orig/lib_arm/board.c
-+++ u-boot/lib_arm/board.c
-@@ -349,6 +349,10 @@
- #endif
- 	}
- 
-+#ifdef CONFIG_SERIAL_MULTI
-+	serial_initialize();
-+#endif
-+
- 	devices_init ();	/* get the devices list going. */
- 
- #ifdef CONFIG_CMC_PU2
