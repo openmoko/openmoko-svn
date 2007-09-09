@@ -257,7 +257,8 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
 
   /* check for network connection */
   if (priv->registered != MOKO_GSMD_CONNECTION_NETREG_HOME
-      || priv->registered != MOKO_GSMD_CONNECTION_NETREG_ROAMING)
+      && priv->registered != MOKO_GSMD_CONNECTION_NETREG_ROAMING
+      && priv->registered != MOKO_GSMD_CONNECTION_NETREG_DENIED)
   {
     gchar *strings[] = {
       "No Status",
@@ -265,7 +266,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
       "Waiting for network registration",
       "Network registration denied",
       "",
-      "Roaming network reigstered"
+      "Roaming network registered"
     };
 
     dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,

@@ -1,3 +1,8 @@
+2007-09-09	Michael Lauer <mickey@openmoko.org>
+
+	* src/moko-dialer.c: Fix typo and prevent dialing when
+	registration has been denied by the network.
+
 2007-09-07  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-contacts.c: (moko_contacts_add_contact): Use fullname for
@@ -5,7 +10,7 @@
 
 2007-09-07  Thomas Wood  <thomas@openedhand.com>
 
-	* src/moko-dialer.c: (moko_dialer_init):#
+	* src/moko-dialer.c: (moko_dialer_init):
 	 - Prevent critical warnings if the journal cannot be loaded.
 	 - Exit if we cannot connect to gsmd
 
