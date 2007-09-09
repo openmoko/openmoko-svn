@@ -1,7 +1,7 @@
 2007-09-09	Michael Lauer <mickey@openmoko.org>
 
-	* src/moko-dialer.c: Fix typo and prevent dialing when
-	registration has been denied by the network.
+	* src/moko-dialer.c: Fix typo and allow dialing when
+	registration has been denied by the network (emergency calls)
 
 2007-09-07  Thomas Wood  <thomas@openedhand.com>
 
