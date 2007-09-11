@@ -1,6 +1,8 @@
-Minimal Button and powermanagement handling daemon
+Minimal Button and powermanagement handling daemon for
+ * FIC Neo1973
+ * Motorola EZX Platform
 
-NOTE: Merely throwaway code, since it may be a better idea to base on
+NOTE: Merely throwaway code -- might be a better idea to base on
  * freedesktop's HAL / OHM, or
  * G[PE]2's machined, or
  * Florian Boor's devmand, or

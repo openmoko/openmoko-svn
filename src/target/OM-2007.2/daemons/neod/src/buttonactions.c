@@ -45,13 +45,19 @@
 //FIXME load this from sysfs
 static const int MAX_BRIGHTNESS = 5000;
 
-#ifndef DEBUG_THIS_FILE
-    #define AUX_BUTTON_KEYCODE 169
-    #define POWER_BUTTON_KEYCODE 116
+#define AUX_BUTTON_KEYCODE 0x22
+#define POWER_BUTTON_KEYCODE 0x23
+#define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
+
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+    #define AUX_BUTTON_KEYCODE 169    /* aux */
+    #define POWER_BUTTON_KEYCODE 116  /* power */
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
-#else
-    #define AUX_BUTTON_KEYCODE 0x22
-    #define POWER_BUTTON_KEYCODE 0x23
+#endif
+
+#ifdef NEOD_PLATFORM_MOTOROLA_EZX
+    #define AUX_BUTTON_KEYCODE 0xa7   /* voice */
+    #define POWER_BUTTON_KEYCODE 0xd4 /* camera */
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
