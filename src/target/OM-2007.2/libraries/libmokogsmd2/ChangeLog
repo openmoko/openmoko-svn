@@ -1,3 +1,11 @@
+2007-09-11  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
+	(moko_gsmd_connection_network_register):
+	* libmokogsmd/moko-gsmd-connection.h:
+
+	Add moko_gsmd_connection_get_network_status()
+
 2007-09-07  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:

@@ -109,7 +109,8 @@ void moko_gsmd_connection_set_antenna_power (MokoGsmdConnection *self,
 void moko_gsmd_connection_send_pin (MokoGsmdConnection *self, const gchar *pin);
 
 /* network */
-void moko_gsmd_connection_network_register (MokoGsmdConnection *self); 
+void moko_gsmd_connection_network_register (MokoGsmdConnection *self);
+int moko_gsmd_connection_get_network_status (MokoGsmdConnection *self);
 
 /* TODO add type, i.e. MOKO_GSMD_CONNECTION_NETREG_AUTO */
 /* voice calls */

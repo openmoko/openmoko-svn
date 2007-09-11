@@ -503,6 +503,22 @@ moko_gsmd_connection_network_register(MokoGsmdConnection* self)
     lgsm_netreg_register( priv->handle, "" );
 }
 
+int
+moko_gsmd_connection_get_network_status (MokoGsmdConnection* self)
+{
+    MokoGsmdConnectionPrivate* priv;
+    enum lgsm_netreg_state state;
+
+    g_return_val_if_fail (MOKO_IS_GSMD_CONNECTION ( self ), -1);
+    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
+    
+    g_return_val_if_fail (priv->handle, -1);
+    
+    lgsm_get_netreg_state (priv->handle, &state);
+
+    return state;
+}
+
 void 
 moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
 {
