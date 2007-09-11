@@ -171,7 +171,7 @@ omp_session_reset()
 	omp_session->volume = 100;
 	omp_session->fade_speed = 5000;
 	g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
-		"%s", "/home/abraxa/local_nas/audio/mp3s/");
+		"%s", "/media/card/");
 }
 
 /**
