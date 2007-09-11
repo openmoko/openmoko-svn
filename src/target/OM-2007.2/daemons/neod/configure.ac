@@ -20,6 +20,18 @@ AM_GLIB_GNU_GETTEXT
 
 PKG_CHECK_MODULES(NEOD, gtk+-2.0 gconf-2.0 libpulse)
 
+AC_ARG_WITH([platform],
+            AC_HELP_STRING([--with-platform], [Which platform to use [[default=vanilla]]]),
+            [neod_platform=$with_platform])
+
+if test x"$neod_platform" = x"neo1973"; then
+        NEOD_CFLAGS="$NEOD_CFLAGS -DNEOD_PLATFORM_FIC_NEO1973"
+fi
+
+if test x"$neod_platform" = x"ezx"; then
+        NEOD_CFLAGS="$NEOD_CFLAGS -DNEOD_PLATFORM_MOTOROLA_EZX"
+fi
+
 CFLAGS=$NEOD_CFLAGS
 
 AC_OUTPUT([
