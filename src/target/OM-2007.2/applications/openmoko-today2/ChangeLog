@@ -1,3 +1,8 @@
+2007-09-11  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (main): Remove disabling of focus on the notebook tabs to
+	try and fix bugs 723 and 724
+
 2007-09-05  Chris Lord,,,  <chris@openedhand.com>
 
 	* libtaku/launcher-util.c:

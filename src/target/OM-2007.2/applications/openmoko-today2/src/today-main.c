@@ -159,7 +159,6 @@ main (int argc, char **argv)
 	
 	/* Notebook */
 	data.notebook = gtk_notebook_new ();
-	g_object_set (G_OBJECT (data.notebook), "can-focus", FALSE, NULL);
 	gtk_notebook_set_tab_pos (GTK_NOTEBOOK (data.notebook), GTK_POS_BOTTOM);
 	gtk_container_add (GTK_CONTAINER (data.window), data.notebook);
 	gtk_widget_show (data.notebook);
