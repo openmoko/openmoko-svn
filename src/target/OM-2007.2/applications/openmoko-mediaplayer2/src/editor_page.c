@@ -33,7 +33,7 @@
 #include "playlist.h"
 #include "guitools.h"
 
-/// Enumeration for the track list columns
+/// Enumeration of the track list columns
 enum
 {
 	TYPE_COLUMN,
@@ -92,7 +92,7 @@ omp_editor_page_update_track_info(gpointer instance, guint track_id, gpointer us
 
 	if (artist)
 	{
-		if (strcmp(artist, "") != 0)
+		if (artist[0] != 0)
 		{
 			caption = g_strdup_printf(_("%1$s - %2$s"), artist, title);
 		} else {
@@ -122,13 +122,23 @@ omp_editor_page_update_track_info(gpointer instance, guint track_id, gpointer us
 }
 
 /**
+ * Updates the track list if the track count changed
+ */
+void
+omp_editor_page_update_track_count(gpointer instance, gpointer user_data)
+{
+	omp_editor_page_list_populate();
+}
+
+/**
  * Callback for the "add track" button
  */
 void
 omp_editor_page_add_clicked(gpointer instance, gpointer user_data)
 {
 	// Show file chooser
-	omp_show_tab(OMP_TAB_FILE_CHOOSER);
+	omp_tab_show(OMP_TAB_FILE_CHOOSER);
+	omp_tab_focus(OMP_TAB_FILE_CHOOSER);
 }
 
 /**
@@ -137,7 +147,7 @@ omp_editor_page_add_clicked(gpointer instance, gpointer user_data)
 gboolean
 omp_editor_page_list_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
- return TRUE;
+	return FALSE;
 }
 
 /**
@@ -171,7 +181,7 @@ omp_editor_page_list_populate()
 
 		if (artist)
 		{
-			if (strcmp(artist, "") != 0)
+			if (artist[0] != 0)
 			{
 				caption = g_strdup_printf(_("%1$s - %2$s"), artist, title);
 			} else {
@@ -306,6 +316,9 @@ omp_editor_page_create()
 
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
 		G_CALLBACK(omp_editor_page_update_track_info), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED,
+		G_CALLBACK(omp_editor_page_update_track_count), NULL);
 
 	return main_vbox;
 }

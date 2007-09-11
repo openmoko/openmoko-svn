@@ -30,6 +30,9 @@
 #include <gtk/gtk.h>
 
 GtkWidget *omp_files_page_create();
+void omp_files_page_free();
+
+void omp_files_page_update_path();
 
 #endif
 

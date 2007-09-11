@@ -33,6 +33,8 @@
 #define OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED "config_shuffle_state_changed"
 #define OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED "config_repeat_mode_changed"
 
+#define OMP_EVENT_SESSION_FILE_CHOOSER_PATH_CHANGED "session_file_chooser_path_changed"
+
 /// Application configuration data
 /// @note Default values are taken from omp_default_config
 /// @note Update that struct as well if you make changes here!
@@ -57,7 +59,7 @@ struct _omp_session
 	guint playlist_position;					///< Position within the playlist
 	gulong track_position;						///< Position to resume playback from within the last played track
 	gboolean was_playing;							///< Set to TRUE of track was being played as the player was closed
-	gchar filesel_path[256];					///< Last path used in the file selection dialog
+	gchar file_chooser_path[256];			///< Last path used in the file selection dialog
 	gchar playlist_file[256];					///< Path and file name of current (=last used) playlist
 };
 
@@ -76,8 +78,9 @@ guint omp_config_get_repeat_mode();
 
 guint omp_config_get_prev_track_treshold();
 
-void omp_session_restore_state();
+void omp_session_init();
 void omp_session_free();
+void omp_session_restore_state();
 void omp_session_save();
 void omp_session_load();
 
@@ -85,7 +88,9 @@ void omp_session_set_playback_state(glong track_position, gboolean is_playing);
 void omp_session_set_playlist(gchar *playlist_file);
 void omp_session_set_track_id(guint track_id);
 void omp_session_set_volume(guint volume);
+void omp_session_set_file_chooser_path(gchar *path);
 
 guint omp_session_get_fade_speed();
+gchar *omp_session_get_file_chooser_path();
 
 #endif

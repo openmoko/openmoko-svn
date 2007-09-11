@@ -2,8 +2,6 @@ imagesdir = $(datadir)/openmoko-mediaplayer/images
 
 images_DATA = \
 	background.png \
-	btn-white.png \
-	btn-white-p.png \
 	ico-track.png \
 	ico-time.png \
 	ico-repeat-off.png \
@@ -14,7 +12,14 @@ images_DATA = \
 	ico-shuffle-off.png \
 	ico-balance-left.png \
 	ico-balance-right.png \
-	ico-tracktype-general.png \
+	ico-filetype-unplayable.png \
+	ico-filetype-generic.png \
+	ico-filetype-mp3.png \
+	ico-filetype-ogg.png \
+	ico-playlists.png \
+	ico-playlist-new.png \
+	ico-playlist-editor.png \
+	ico-file-chooser.png \
 	ind-music-eq-00.png \
 	ind-music-eq-01.png \
 	ind-music-eq-02.png \

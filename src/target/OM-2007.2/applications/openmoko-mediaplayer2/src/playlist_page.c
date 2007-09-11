@@ -24,6 +24,7 @@
  * Playlist UI handling
  */
 
+#include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <libmokoui2/moko-finger-scroll.h>
@@ -31,12 +32,12 @@
 
 #include <string.h>
 
-#include "playlist_page.h"
-#include "main.h"
 #include "guitools.h"
+#include "main.h"
 #include "playlist.h"
+#include "playlist_page.h"
 
-/// Enumeration for the playlist list columns
+/// Enumeration of the playlist list columns
 enum
 {
 	TYPE_COLUMN,
@@ -180,6 +181,8 @@ omp_playlist_page_list_clicked(GtkWidget *widget, GdkEventButton *event, gpointe
 
 	// Clean up
 	g_free(playlist_file_abs);
+	g_free(playlist_file);
+	g_free(playlist_name);
 	gtk_tree_path_free(tree_path);
 
 	return TRUE;
@@ -194,7 +197,7 @@ omp_playlist_page_add_list(GtkButton *button, gpointer user_data)
 	gchar *path, *file_name;
 	const gchar *name = gtk_entry_get_text(GTK_ENTRY(omp_playlist_page_entry));
 
-	g_return_if_fail(strcmp(name, "") != 0);
+	g_return_if_fail(name[0] != 0);
 
 	// Playlist path is relative to user's home dir
 	path = g_build_path("/", g_get_home_dir(), RELATIVE_PLAYLIST_PATH, NULL);
@@ -314,6 +317,7 @@ GtkWidget *
 omp_playlist_page_create()
 {
 	GtkWidget *main_vbox, *scroll_box, *input_box, *button, *image, *alignment, *label;
+	gchar *image_file_name;
 
 	// Create main container
 	main_vbox = gtk_vbox_new(FALSE, 0);
@@ -341,7 +345,10 @@ omp_playlist_page_create()
 	input_box = gtk_hbox_new(FALSE, 0);
 	omp_playlist_page_entry = gtk_entry_new();
 	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name("gtk-add", GTK_ICON_SIZE_MENU);
+
+	image_file_name = g_build_filename(ui_image_path, "ico-playlist-new.png", NULL);
+	image = gtk_image_new_from_file(image_file_name);
+	g_free(image_file_name);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
 
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(omp_playlist_page_add_list), NULL);

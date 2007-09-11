@@ -52,7 +52,8 @@ extern GtkWidget *omp_window;
 
 void omp_application_terminate();
 
-void omp_show_tab(guint tab_id);
-void omp_hide_tab(guint tab_id);
+void omp_tab_show(guint tab_id);
+void omp_tab_hide(guint tab_id);
+void omp_tab_focus(guint tab_id);
 
 #endif

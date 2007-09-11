@@ -31,6 +31,7 @@
 #include <glib/gstdio.h>
 #include <uriparser/Uri.h>
 
+#include <stdarg.h>
 #include <string.h>
 
 #include "playlist.h"
@@ -51,6 +52,9 @@ guint omp_playlist_track_count = 0;
 
 /// Current track's data
 omp_spiff_track *omp_playlist_current_track = NULL;
+
+/// Pointer to the last track of the playlist (saves time when appending tracks)
+omp_spiff_track *omp_playlist_last_track = NULL;
 
 /// Numerical id of the current track within the playlist
 guint omp_playlist_current_track_id = -1;
@@ -175,6 +179,7 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 			omp_playback_reset();
 			omp_playlist_current_track_id	= 0;
 			omp_playlist_current_track		= omp_playlist->tracks;
+			omp_playlist_last_track = NULL;
 
 			if (omp_playlist_current_track)
 			{
@@ -189,13 +194,11 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_LOADED, title);
 		g_free(title);
 
-		// Show playlist editor
-		omp_show_tab(OMP_TAB_PLAYLIST_EDITOR);
-
 	} else {
 
 		omp_playlist_current_track_id	= -1;
 		omp_playlist_current_track		= NULL;
+		omp_playlist_last_track = NULL;
 
 		#ifdef DEBUG
 			g_printerr("Could not load playlist: %s\n", playlist_file);
@@ -621,7 +624,7 @@ omp_playlist_update_track_duration()
  * @todo Unicode support
  */
 void
-omp_playlist_set_preliminary_metadata(gchar *track_uri)
+omp_playlist_set_preliminary_metadata(omp_spiff_track *track, gchar *track_uri)
 {
 	UriParserStateA state;
 	UriUriA uri;
@@ -630,7 +633,7 @@ omp_playlist_set_preliminary_metadata(gchar *track_uri)
 
 	state.uri = &uri;
 
-	g_return_if_fail(omp_playlist_current_track);
+	g_return_if_fail(track);
 
 	if (uriParseUriA(&state, track_uri) != 0)
 	{
@@ -642,19 +645,33 @@ omp_playlist_set_preliminary_metadata(gchar *track_uri)
 
 	// The last part of the URI path is the file name of the request - which we want
 	segment = uri.pathTail;
+
+	if (!segment)
+	{
+		uriFreeUriMembersA(&uri);
+		#ifdef DEBUG
+			g_printerr("UriParser did not deliver path tail for %s\n", track_uri);
+		#endif
+		return;
+	}
+
+	if (!segment->text.first)
+	{
+		uriFreeUriMembersA(&uri);
+		#ifdef DEBUG
+			g_printerr("UriParser did not deliver first text element for %s\n", track_uri);
+		#endif
+		return;
+	}
+
 	title = get_base_file_name((gchar*)segment->text.first);
 	uriUnescapeInPlaceA(title);
 
 	// Set preliminary metadata if necessary
-	if (!omp_playlist_current_track->title)
+	if (!track->title)
 	{
-		omp_playlist_current_track->title = g_strdup(title);
-		omp_playlist_current_track->title_is_preliminary = TRUE;
-		omp_playlist_save();
-
-		// Notify UI of the change
-		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
-			omp_playlist_current_track_id);
+		track->title = g_strdup(title);
+		track->title_is_preliminary = TRUE;
 	}
 
 	g_free(title);
@@ -722,7 +739,11 @@ omp_playlist_load_current_track()
 		omp_playlist_update_track_duration();
 
 		// Obtain preliminary track title from URI if needed
-		omp_playlist_set_preliminary_metadata(track_uri);
+		omp_playlist_set_preliminary_metadata(omp_playlist_current_track, track_uri);
+
+		// Notify UI of the metadata change
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
+			omp_playlist_current_track_id);
 
 		g_free(track_uri);
 
@@ -768,16 +789,24 @@ omp_playlist_get_track_info(guint track_id, gchar **artist, gchar **title, gulon
 void
 omp_playlist_update_track_count()
 {
-	omp_spiff_track *track;
-	gint tracks = 0;
+	omp_spiff_track *track, *last_track = NULL;
+	gint old_count, count = 0;
 
 	if (!omp_playlist) return;
 
-	for (track=omp_playlist->tracks; track!=NULL; track=track->next, tracks++);
+	old_count = omp_playlist_track_count;
 
-	omp_playlist_track_count = tracks;
+	// Walk through the entire list to count number of tracks and find last track pointer
+	for (track=omp_playlist->tracks; track!=NULL; last_track=track, track=track->next, count++);
 
-	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED);
+	omp_playlist_track_count = count;
+	omp_playlist_last_track  = last_track;
+
+	// Notify UI only if track count actually changed
+	if (old_count != count)
+	{
+		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED);
+	}
 }
 
 /**
@@ -872,6 +901,136 @@ omp_playlist_iter_finished(omp_playlist_iter *iter)
 	if (!iter) return TRUE;
 
 	return (iter->track) ? FALSE : TRUE;
+}
+
+/**
+ * Appends a track to the end of the playlist
+ * @todo Make unicode-safe
+ */
+void
+omp_playlist_track_append_file(gchar *file_name)
+{
+	omp_spiff_track *new_track;
+	omp_spiff_mvalue *location;
+	gchar *uri, name_char;
+	guint name_pos, uri_pos, name_len;
+
+	if (!omp_playlist) return;
+	if (!file_name) return;
+
+	// Try to make the "last track" pointer valid - if it stays NULL then the list is empty
+	if (!omp_playlist_last_track)
+	{
+		omp_playlist_update_track_count();
+	}
+
+	// Append track
+	if (omp_playlist_last_track)
+	{
+		new_track = omp_spiff_new_track_before(&omp_playlist_last_track->next);
+		omp_playlist_last_track = omp_playlist_last_track->next;
+	} else {
+		new_track = omp_spiff_new_track_before(&omp_playlist->tracks);
+		omp_playlist_last_track = omp_playlist->tracks;
+	}
+
+	location = omp_spiff_new_mvalue_before(&new_track->locations);
+	omp_playlist_track_count++;
+
+	// Build URI for the file location
+	name_len = strlen(file_name);
+	uri = g_malloc(7+3*name_len);  // Enough for worst case: every char becomes %xx character sequence
+
+	g_sprintf(uri, "file://");
+	uri_pos = 7;
+
+	// We could use uriEscapeA() here but that will also transform '/' to %2F, which we do not want
+	for (name_pos=0; name_pos < name_len; name_pos++)
+	{
+		name_char = file_name[name_pos];
+		if (  ((name_char >= 'a') && (name_char <= 'z'))
+		   || ((name_char >= 'A') && (name_char <= 'Z'))
+		   || ((name_char >= '0') && (name_char <= '9'))
+		   || (name_char == '-') || (name_char == '.')
+		   || (name_char == '_') || (name_char == '~')
+		   || (name_char == '/') )
+		{
+			uri[uri_pos++] = name_char;
+
+		} else {
+
+			uri[uri_pos+0] = '%';
+			uri[uri_pos+1] = uriHexToLetterA(name_char >> 4);
+			uri[uri_pos+2] = uriHexToLetterA(name_char & 0x0F);
+			uri_pos += 3;
+		}
+	}
+	uri[uri_pos] = 0;
+
+	location->value = g_strdup(uri);
+	g_free(uri);
+
+	// Give the track list something to show
+	omp_playlist_last_track->title = get_base_file_name(file_name);
+	omp_playlist_last_track->title_is_preliminary = TRUE;
+
+	// Notify UI of the change
+	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED);
+}
+
+/**
+ * Recursively adds all files from a directory and its subdirectories
+ * @param dir_name Directory to add
+ * @return Number of files added
+ */
+guint
+omp_playlist_track_append_directory(gchar *dir_name)
+{
+	gchar *dir_entry, *dir_entry_abs, *temp;
+	GDir *dir;
+	GError *error;
+	guint file_count = 0;
+
+	g_return_val_if_fail(dir_name, 0);
+
+	dir = g_dir_open(dir_name, 0, &error);
+
+	if (!dir)
+	{
+		g_printerr("Could not read directory %s: %s\n", dir_name, error->message);
+		temp = g_strdup_printf(_("Could not read directory: %s"), error->message);
+		error_dialog(temp);
+		g_free(temp);
+
+		g_error_free(error);
+		return 0;
+	}
+
+	do
+	{
+		dir_entry = (gchar*)g_dir_read_name(dir);
+
+		if (!dir_entry) break;
+
+		// Skip hidden entries
+		if (dir_entry[0] == '.') continue;
+
+		// Do we need to dive into a subdirectory?
+		dir_entry_abs = g_build_path("/", dir_name, dir_entry, NULL);
+		if (g_file_test(dir_entry_abs, G_FILE_TEST_IS_DIR))
+		{
+			file_count += omp_playlist_track_append_directory(dir_entry_abs);
+		} else {
+			omp_playlist_track_append_file(dir_entry_abs);
+			file_count++;
+		}
+		g_free(dir_entry_abs);
+
+	} while (TRUE);
+
+	g_dir_close(dir);
+
+	return file_count;
 }
 
 /**

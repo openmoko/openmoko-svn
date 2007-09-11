@@ -1,0 +1,8 @@
+This is the OpenMoko media player for OM2007.2, enabling you to playback audio
+(and eventually video) on your smartphone.
+
+It stores XSPF playlists in ~/playlists and uses the SD card as media storage
+by default. Please be aware that there are issues still - especially when it
+comes to the user interface. They'll be fixed however, so bear with me :)
+
+ -Soeren

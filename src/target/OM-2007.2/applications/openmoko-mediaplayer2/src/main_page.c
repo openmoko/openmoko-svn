@@ -60,10 +60,14 @@ struct _main_widgets
 
 GtkWidget *omp_main_window = NULL;
 
-gboolean omp_main_time_slider_can_update = TRUE;				///< Determines whether the time slider can be updated or not
-gboolean omp_main_time_slider_was_dragged = FALSE;			///< Is toggled after the user finished dragging the time slider's button
+/// Determines whether the time slider can be updated or not
+gboolean omp_main_time_slider_can_update = TRUE;
+
+/// Is toggled after the user finished dragging the time slider's button
+gboolean omp_main_time_slider_was_dragged = FALSE;
 
 // Forward declarations for internal use
+void omp_main_playlist_loaded(gpointer instance, gchar *title, gpointer user_data);
 void omp_main_update_track_change(gpointer instance, gpointer user_data);
 void omp_main_update_track_info_changed(gpointer instance, guint track_id, gpointer user_data);
 void omp_main_update_shuffle_state(gpointer instance, gboolean state, gpointer user_data);
@@ -586,6 +590,9 @@ omp_main_page_create()
 
 
 	// Set up playlist signal handlers
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_LOADED,
+		G_CALLBACK(omp_main_playlist_loaded), NULL);
+
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,
 		G_CALLBACK(omp_main_update_track_change), NULL);
 
@@ -619,6 +626,16 @@ omp_main_page_create()
 	gtk_widget_show_all(bg_muxer);
 
 	return bg_muxer;
+}
+
+/**
+ * Callback for the "playlist loaded" event
+ */
+void
+omp_main_playlist_loaded(gpointer instance, gchar *list_title, gpointer user_data)
+{
+	// Playlist editor can now be used
+	omp_tab_show(OMP_TAB_PLAYLIST_EDITOR);
 }
 
 /**

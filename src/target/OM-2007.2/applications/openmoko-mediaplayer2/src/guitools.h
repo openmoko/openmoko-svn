@@ -44,6 +44,7 @@ void error_dialog(gchar *message);
 void container_add_image_with_ref(GtkContainer *container, gchar *image_name, GtkWidget **image);
 void container_add_image(GtkContainer *container, gchar *image_name);
 
-void notebook_add_page_with_icon(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding);
+void notebook_add_page_with_stock(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding);
+void notebook_add_page_with_image(GtkWidget *notebook, GtkWidget *child, const gchar *image_name, int padding);
 
 #endif

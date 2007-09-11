@@ -35,6 +35,7 @@ gchar *ui_image_path = NULL;
 
 /**
  * Loads an image from a file into a pixel buffer
+ * @return Pixbuf with the image, must be unref'd after use
  */
 GdkPixbuf*
 pixbuf_new_from_file(const gchar *file_name)
@@ -177,7 +178,7 @@ container_add_image(GtkContainer *container, gchar *image_name)
  * Adds a child to a GtkNotebook, filling the page handle with a stock icon
  */
 void
-notebook_add_page_with_icon(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding)
+notebook_add_page_with_stock(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding)
 {
 	GtkWidget *icon, *alignment;
 
@@ -192,3 +193,24 @@ notebook_add_page_with_icon(GtkWidget *notebook, GtkWidget *child, const gchar *
 	gtk_container_child_set(GTK_CONTAINER(notebook), child, "tab-expand", TRUE, NULL);
 }
 
+/**
+ * Adds a child to a GtkNotebook, filling the page handle with an application-specific image
+ */
+void
+notebook_add_page_with_image(GtkWidget *notebook, GtkWidget *child, const gchar *image_name, int padding)
+{
+	gchar *image_file_name;
+	GtkWidget *icon, *alignment;
+
+	image_file_name = g_build_path("/", ui_image_path, image_name, NULL);
+	icon = gtk_image_new_from_file(image_file_name);
+	g_free(image_file_name);
+
+	alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
+	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), padding, padding, padding, padding);
+	gtk_container_add(GTK_CONTAINER(alignment), icon);
+	gtk_widget_show_all(GTK_WIDGET(alignment));
+
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), child, alignment);
+	gtk_container_child_set(GTK_CONTAINER(notebook), child, "tab-expand", TRUE, NULL);
+}

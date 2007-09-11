@@ -252,25 +252,34 @@ omp_window_create_pages()
 
 	// Add main page
 	page = omp_main_page_create();
-	notebook_add_page_with_icon(omp_notebook, page, MOKO_STOCK_SPEAKER, 0);
+	notebook_add_page_with_stock(omp_notebook, page, MOKO_STOCK_SPEAKER, 0);
 	omp_notebook_tabs[OMP_TAB_MAIN] = page;
 
 	// Add playlist page
 	page = omp_playlist_page_create();
-	notebook_add_page_with_icon(omp_notebook, page, MOKO_STOCK_VIEW, 0);
+	notebook_add_page_with_image(omp_notebook, page, "ico-playlists.png", 0);
 	omp_notebook_tabs[OMP_TAB_PLAYLISTS] = page;
 
 	// Add playlist editor page
 	page = omp_editor_page_create();
-	notebook_add_page_with_icon(omp_notebook, page, "gtk-index", 0);
+	notebook_add_page_with_image(omp_notebook, page, "ico-playlist-editor.png", 0);
 	omp_notebook_tabs[OMP_TAB_PLAYLIST_EDITOR] = page;
 	gtk_widget_hide(page);	// We show the page once a playlist was loaded
 
 	// Add file chooser page
 	page = omp_files_page_create();
-	notebook_add_page_with_icon(omp_notebook, page, "gtk-index", 0);
+	notebook_add_page_with_image(omp_notebook, page, "ico-file-chooser.png", 0);
 	omp_notebook_tabs[OMP_TAB_FILE_CHOOSER] = page;
 	gtk_widget_hide(page);	// We show the page once user wants to add files
+}
+
+/**
+ * Lets all UI pages clean up
+ */
+void
+omp_window_free_pages()
+{
+	omp_files_page_free();
 }
 
 /**
@@ -288,7 +297,7 @@ omp_window_show()
  * @see omp_notebook_tabs
  */
 void
-omp_show_tab(guint tab_id)
+omp_tab_show(guint tab_id)
 {
 	g_return_if_fail(tab_id < OMP_TABS);
 
@@ -301,11 +310,22 @@ omp_show_tab(guint tab_id)
  * @see omp_notebook_tabs
  */
 void
-omp_hide_tab(guint tab_id)
+omp_tab_hide(guint tab_id)
 {
 	g_return_if_fail(tab_id < OMP_TABS);
 
 	gtk_widget_hide(GTK_WIDGET(omp_notebook_tabs[tab_id]));
+}
+
+/**
+ *
+ */
+void
+omp_tab_focus(guint tab_id)
+{
+	g_return_if_fail(tab_id < OMP_TABS);
+
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(omp_notebook), tab_id);
 }
 
 /**
@@ -379,7 +399,8 @@ main(int argc, char *argv[])
 	signal(SIGSEGV, handler_sigsegfault);
 	signal(SIGUSR1, handler_sigusr1);
 
-	// Initialize playback, playlist and UI handling
+	// Initialize backends and user interfaces
+	omp_session_init();
 	omp_config_init();
 	omp_window_create();
 	if (!omp_playback_init()) return EXIT_FAILURE;
@@ -395,6 +416,7 @@ main(int argc, char *argv[])
 	gtk_main();
 
 	// Clean up
+	omp_window_free_pages();
 	omp_playback_save_state();
 	omp_playback_free();
 	omp_playlist_free();

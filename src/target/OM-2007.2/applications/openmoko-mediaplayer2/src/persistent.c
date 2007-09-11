@@ -34,8 +34,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "persistent.h"
+#include "files_page.h"
 #include "main.h"
+#include "persistent.h"
 #include "playlist.h"
 #include "playback.h"
 
@@ -59,7 +60,7 @@ struct _omp_session *omp_session = NULL;		///< Global and persistent session dat
 
 
 /**
- * Load application configuration data
+ * Initalize and load application configuration data
  */
 void
 omp_config_init()
@@ -169,6 +170,30 @@ omp_session_reset()
 
 	omp_session->volume = 100;
 	omp_session->fade_speed = 5000;
+	g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
+		"%s", "/home/abraxa/local_nas/audio/mp3s/");
+}
+
+/**
+ * Initialize the session handling mechanism
+ */
+void
+omp_session_init()
+{
+	// This mustn't be called more than once
+	g_return_if_fail(omp_session == NULL);
+
+	omp_session = g_new0(struct _omp_session, 1);
+	omp_session_reset();
+}
+
+/**
+ * Frees the resources used for session data
+ */
+void
+omp_session_free()
+{
+	g_free(omp_session);
 }
 
 /**
@@ -180,11 +205,6 @@ omp_session_restore_state()
 	#ifdef DEBUG
 		g_print("Loading session data\n");
 	#endif
-
-	// This mustn't be called more than once
-	g_assert(omp_session == NULL);
-
-	omp_session = g_new0(struct _omp_session, 1);
 
 	// Load config
 	omp_session_load();
@@ -218,15 +238,9 @@ omp_session_restore_state()
 
 		omp_playback_set_track_position(omp_session->track_position);
 	}
-}
 
-/**
- * Free resources used for session data
- */
-void
-omp_session_free()
-{
-	g_free(omp_session);
+	// Restore various states
+	omp_files_page_update_path();
 }
 
 /**
@@ -237,6 +251,8 @@ omp_session_save()
 {
 	gint session_file, result;
 	gchar *file_name;
+
+	g_return_if_fail(omp_session);
 
 	// SESSION_FILE_NAME is relative to user's home dir
 	file_name = g_build_filename(g_get_home_dir(), SESSION_FILE_NAME, NULL);
@@ -272,6 +288,8 @@ omp_session_load()
 	gint session_file, result;
 	gchar *file_name;
 
+	g_return_if_fail(omp_session);
+
 	// SESSION_FILE_NAME is relative to user's home dir
 	file_name = g_build_filename(g_get_home_dir(), SESSION_FILE_NAME, NULL);
 
@@ -306,6 +324,8 @@ io_error:
 void
 omp_session_set_playback_state(glong track_position, gboolean is_playing)
 {
+	g_return_if_fail(omp_session);
+
 	omp_session->track_position = track_position;
 	omp_session->was_playing = is_playing;
 
@@ -318,6 +338,8 @@ omp_session_set_playback_state(glong track_position, gboolean is_playing)
 void
 omp_session_set_playlist(gchar *playlist_file)
 {
+	g_return_if_fail(omp_session);
+
 	g_snprintf(omp_session->playlist_file, sizeof(omp_session->playlist_file), "%s", playlist_file);
 	omp_session_save();
 }
@@ -328,6 +350,8 @@ omp_session_set_playlist(gchar *playlist_file)
 void
 omp_session_set_track_id(guint track_id)
 {
+	g_return_if_fail(omp_session);
+
 	omp_session->playlist_position = track_id;
 	omp_session_save();
 }
@@ -338,8 +362,24 @@ omp_session_set_track_id(guint track_id)
 void
 omp_session_set_volume(guint volume)
 {
+	g_return_if_fail(omp_session);
+
 	omp_session->volume = volume;
 	omp_session_save();
+}
+
+/**
+ * Set path to be used for the file chooser UI
+ */
+void
+omp_session_set_file_chooser_path(gchar *path)
+{
+	g_return_if_fail(omp_session);
+
+	g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
+		"%s", path);
+
+	// We don't save the session immediately - saving at app termination is good enough
 }
 
 /**
@@ -348,5 +388,18 @@ omp_session_set_volume(guint volume)
 guint
 omp_session_get_fade_speed()
 {
+	g_return_val_if_fail(omp_session, 0);
+
 	return omp_session->fade_speed;
+}
+
+/**
+ * Returns the path used for the file chooser UI; must be freed after use
+ */
+gchar *
+omp_session_get_file_chooser_path()
+{
+	g_return_val_if_fail(omp_session, NULL);
+
+	return g_strdup((gchar *)&omp_session->file_chooser_path);
 }

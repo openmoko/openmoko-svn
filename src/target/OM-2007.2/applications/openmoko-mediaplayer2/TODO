@@ -1,9 +1,9 @@
 
 UI:
-	Add repeat mode indicator (different button pixmaps)
 	Make FFWD/REW buttons trigger repeatedly
 	Make Prev/Next buttons sensitive depending on playlist state
 	m3u import
+	QVGA support through external style definitions
 	
 Backend:
 	Use GConf
@@ -12,13 +12,9 @@ Backend:
 	Check for unicode compliance
 	
 Issues:
-	How/where to store playlists? -> Single common path, omitting path chooser
 	Use EQ presets only or allow individual band adjustment?
 	How to adjust equalizer?
 	Reduce call frequency of omp_playback_get_track_length()
 
-Build process:
-	Bitbake recipe and its integration into OE
-
 Documentation:
-	-/-
+	Update wiki
