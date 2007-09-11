@@ -360,6 +360,12 @@ _moko_gsmd_connection_eventhandler (struct lgsm_handle *lh,
         case GSMD_EVT_CIPHER:
             /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER];*/
             break;
+        case GSMD_EVT_IN_CBM:
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_IN_CBM];*/
+            break;
+        case GSMD_EVT_IN_DS:
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_IN_DS];*/
+            break;
         default:
             g_critical( "_moko_gsmd_connection_eventhandler: %s %d",
                         "unhandled event type =", 
