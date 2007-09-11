@@ -157,8 +157,6 @@ omp_playback_free()
 
 	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 	gst_object_unref(GST_OBJECT(omp_gst_playbin));
-
-	gst_object_unref(GST_OBJECT(omp_gst_audiosink));
 }
 
 /**

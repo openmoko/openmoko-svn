@@ -171,7 +171,7 @@ omp_session_reset()
 	omp_session->volume = 100;
 	omp_session->fade_speed = 5000;
 	g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
-		"%s", "/media/card/");
+		"%s", OMP_DEFAULT_FILE_CHOOSER_PATH);
 }
 
 /**
@@ -400,6 +400,12 @@ gchar *
 omp_session_get_file_chooser_path()
 {
 	g_return_val_if_fail(omp_session, NULL);
+
+	if (omp_session->file_chooser_path[0] == 0)
+	{
+		g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
+			"%s", OMP_DEFAULT_FILE_CHOOSER_PATH);
+	}
 
 	return g_strdup((gchar *)&omp_session->file_chooser_path);
 }

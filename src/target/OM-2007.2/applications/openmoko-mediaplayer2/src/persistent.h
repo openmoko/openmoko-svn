@@ -35,6 +35,8 @@
 
 #define OMP_EVENT_SESSION_FILE_CHOOSER_PATH_CHANGED "session_file_chooser_path_changed"
 
+#define OMP_DEFAULT_FILE_CHOOSER_PATH "/media/card/"
+
 /// Application configuration data
 /// @note Default values are taken from omp_default_config
 /// @note Update that struct as well if you make changes here!

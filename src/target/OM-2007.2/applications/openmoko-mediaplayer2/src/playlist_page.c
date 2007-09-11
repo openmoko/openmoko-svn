@@ -269,6 +269,7 @@ omp_playlist_page_list_create(GtkContainer *container)
 	GtkTreeSelection *select;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
+	GdkPixbuf *list_icon;
 
 	// Create and populate data model
 	omp_playlist_page_list_store = gtk_list_store_new(COLUMN_COUNT,
@@ -288,8 +289,9 @@ omp_playlist_page_list_create(GtkContainer *container)
 	gtk_tree_selection_set_mode(GTK_TREE_SELECTION(select), GTK_SELECTION_SINGLE);
 
 	// Set up columns
+	list_icon = pixbuf_new_from_file("ico-playlists.png");
 	renderer = gtk_cell_renderer_pixbuf_new();
-	g_object_set(G_OBJECT(renderer), "stock-id", MOKO_STOCK_VIEW, NULL);
+	g_object_set(G_OBJECT(renderer), "pixbuf", list_icon, NULL);
 	column = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 

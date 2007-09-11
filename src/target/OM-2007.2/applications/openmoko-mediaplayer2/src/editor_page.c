@@ -220,7 +220,7 @@ omp_editor_page_list_create(GtkContainer *container)
 	GtkTreeViewColumn *column;
 	GdkPixbuf *track_icon;
 
-	track_icon = pixbuf_new_from_file("ico-tracktype-general.png");
+	track_icon = pixbuf_new_from_file("ico-tracktype-generic.png");
 
 	// Create data model
 	omp_editor_page_list_store = gtk_list_store_new(COLUMN_COUNT,
