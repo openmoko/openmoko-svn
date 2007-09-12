@@ -96,6 +96,8 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 			 * command */
 			lgsm_passthrough(lgsmh, buf, rbuf, &rlen);
 			printf("RSTR=`%s'\n", rbuf);
+
+			fflush(stdout);
 		}
 	}
 }
