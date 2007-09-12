@@ -42,8 +42,10 @@
 #undef DEBUG_THIS_FILE
 //#define DEBUG_THIS_FILE
 
-//FIXME load this from sysfs
-static const int MAX_BRIGHTNESS = 5000;
+#define SYS_CLASS_BACKLIGHT "/sys/class/backlight/"
+
+static gchar* backlight_node = NULL;
+static int backlight_max_brightness = 1;
 
 #define AUX_BUTTON_KEYCODE 0x22
 #define POWER_BUTTON_KEYCODE 0x23
@@ -676,14 +678,49 @@ void neod_buttonactions_powersave_reset()
 
 void neod_buttonactions_set_display( int brightness )
 {
-    g_debug( "mainmenu set display %d", brightness );
-    int fd = g_open( "/sys/class/backlight/gta01-bl/brightness", O_WRONLY, 0 );
+    g_debug( "requested to set display brightness %d", brightness );
+
+    if ( !backlight_node )
+    {
+        GDir* backlight_class_dir = g_dir_open( SYS_CLASS_BACKLIGHT, 0, NULL );
+        if ( backlight_class_dir )
+        {
+            const gchar* backlight_node_dir = g_dir_read_name( backlight_class_dir );
+            if ( backlight_node_dir )
+            {
+                g_debug( "backlight_node_dir = %s", backlight_node_dir );
+                backlight_node = g_strdup_printf( SYS_CLASS_BACKLIGHT "%s/brightness", backlight_node_dir );
+                g_debug( "detected backlight in sysfs as '%s'", backlight_node );
+                const gchar* backlight_node_max_brightness = g_strdup_printf( SYS_CLASS_BACKLIGHT "%s/max_brightness", backlight_node_dir );
+
+                FILE* f = fopen( backlight_node_max_brightness, "r" );
+                if ( f == NULL )
+                {
+                    g_debug( "can't open max brightness '%s': (%s), aborting.", backlight_node_max_brightness, strerror( errno ) );
+                    g_dir_close( backlight_class_dir );
+                    return;
+                }
+                fscanf( f, "%d", &backlight_max_brightness );
+                fclose( f );
+                g_debug( "scanned maximum brightness for '%s' = '%d'", backlight_node, backlight_max_brightness );
+                g_dir_close( backlight_class_dir );
+            }
+        }
+        else
+        {
+            g_debug( "can't open '%s': (%s), aborting.", SYS_CLASS_BACKLIGHT, strerror( errno ) );
+            return;
+        }
+    }
+
+    int fd = g_open( backlight_node, O_WRONLY, 0 );
     if ( fd == -1 )
-        g_debug( "can't open backlight device: %s", strerror( errno ) );
+        g_debug( "can't open backlight device '%s'(%s)", backlight_node, strerror( errno ) );
     else
     {
         char buf[10];
-        int numbytes = g_sprintf( buf, "%d\0", MAX_BRIGHTNESS / 100 * (brightness+1 ) );
+        int numbytes = g_sprintf( buf, "%d\0", backlight_max_brightness * brightness / 100 );
+        g_debug( "writing '%s' to '%s'", buf, backlight_node );
         write( fd, buf, numbytes );
         close( fd );
     }
