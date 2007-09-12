@@ -206,7 +206,8 @@ void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
         self->icon = mb_panel_scaling_image_new( GTK_ORIENTATION_HORIZONTAL, NULL );
         mb_panel_scaling_image_set_caching( MB_PANEL_SCALING_IMAGE(self->icon), TRUE );
         gtk_container_add( GTK_CONTAINER(self->eventbox), self->icon );
-        gtk_widget_show( self->icon );
+        gtk_event_box_set_visible_window( GTK_EVENT_BOX(self->eventbox), FALSE );
+        gtk_widget_show_all( self->eventbox );
     }
     mb_panel_scaling_image_set_icon( MB_PANEL_SCALING_IMAGE(self->icon), filename );
 }
@@ -218,7 +219,8 @@ void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)
         self->icon = gtk_image_new_from_pixbuf( pixbuf );
         g_return_if_fail( self->icon );
         gtk_container_add( GTK_CONTAINER(self->eventbox), self->icon );
-        gtk_widget_show( self->icon );
+        gtk_event_box_set_visible_window( GTK_EVENT_BOX(self->eventbox), FALSE );
+        gtk_widget_show_all( self->eventbox );
     }
     else
         gtk_image_set_from_pixbuf( GTK_IMAGE (self->icon), pixbuf );
