@@ -92,16 +92,24 @@ get_file_extension(gchar *file_name)
 /**
  * Confirms to the user that the files have been added successfully
  * @param track_count Number of tracks that were added
- * @note We only use this when adding directories as it would be annoying otherwise
  */
 void
 omp_files_page_success_report(guint track_count)
 {
 	GtkWidget *dialog;
 
-	dialog = gtk_message_dialog_new(0,
-		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-		_("Successfully added %d files"), track_count);
+	if (!track_count) return;
+
+	if (track_count == 1)
+	{
+		dialog = gtk_message_dialog_new(0,
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			_("File added successfully"));
+	} else {
+		dialog = gtk_message_dialog_new(0,
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+			_("Successfully added %d files"), track_count);
+	}
 
 	// We don't want a title of "<unnamed>"
 	gtk_window_set_title(GTK_WINDOW(dialog), " ");
@@ -281,7 +289,8 @@ omp_files_page_list_clicked(GtkWidget *widget, GdkEventButton *event, gpointer u
 
 			} else {
 
-				omp_playlist_track_append_file(entry_name_abs);
+				if (omp_playlist_track_append_file(entry_name_abs))
+					omp_files_page_success_report(1);
 			}
 
 			// Save playlist
@@ -459,9 +468,8 @@ omp_files_page_create()
 
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(omp_files_page_set_prev_dir), NULL);
 
-	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
-	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0.05, 0.5, 1, 0, PANGO_ELLIPSIZE_START);
+	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	omp_files_path_label = label;
 
 	// File list viewport

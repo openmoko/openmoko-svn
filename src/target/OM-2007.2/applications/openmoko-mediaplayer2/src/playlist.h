@@ -92,7 +92,7 @@ void omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num,
 void omp_playlist_advance_iter(omp_playlist_iter *iter);
 gboolean omp_playlist_iter_finished(omp_playlist_iter *iter);
 
-void omp_playlist_track_append_file(gchar *file_name);
+gboolean omp_playlist_track_append_file(gchar *file_name);
 guint omp_playlist_track_append_directory(gchar *dir_name);
 
 gchar *get_base_file_name(gchar *file_name);

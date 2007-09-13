@@ -29,7 +29,7 @@
 #include "guitools.h"
 
 /// Absolute path to the UI pixmaps
-gchar *ui_image_path = NULL;
+gchar *omp_ui_image_path = NULL;
 
 
 
@@ -44,7 +44,7 @@ pixbuf_new_from_file(const gchar *file_name)
 	GdkPixbuf *pixbuf = NULL;
 	GError *error = NULL;
 
-	image_file_name = g_strdup_printf("%s/%s", ui_image_path, file_name);
+	image_file_name = g_strdup_printf("%s/%s", omp_ui_image_path, file_name);
 
 	if(g_file_test(image_file_name, G_FILE_TEST_EXISTS))
 	{
@@ -66,16 +66,18 @@ pixbuf_new_from_file(const gchar *file_name)
  * Creates a label with default properties, wraps it up in a GtkAlignment and returns the latter for direct use
  * @param label Will be filled with a GtkLabel
  * @param font_info The desired font to be used (e.g. "Times 10")
+ * @param color_desc A string containing the name of the desired color (e.g. "black")
  * @param xalign Horizontal alignment (0..1)
  * @param yalign Vertical alignment (0..1)
  * @param xscale Horizontal expansion (0..1)
  * @param yscale Vertical expansion (0..1)
+ * @param ellipsize_mode Pango ellipsization mode to set for this label
  * @note See gtk_alignment_new() for further info
  */
 GtkWidget *
 label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
 	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale,
-	gint max_char_count)
+	PangoEllipsizeMode ellipsize_mode)
 {
 	GdkColor color;
 	PangoFontDescription *font_desc;
@@ -88,10 +90,9 @@ label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
 	pango_font_description_free(font_desc);
 	gtk_misc_set_alignment(GTK_MISC(*label), 0, 0.5);
 
-	if (max_char_count)
+	if (ellipsize_mode != PANGO_ELLIPSIZE_NONE)
 	{
-		gtk_label_set_width_chars(GTK_LABEL(*label), max_char_count);
-		gtk_label_set_ellipsize(GTK_LABEL(*label), PANGO_ELLIPSIZE_END);
+		gtk_label_set_ellipsize(GTK_LABEL(*label), ellipsize_mode);
 	}
 
 	gdk_color_parse(color_desc, &color);
@@ -121,7 +122,7 @@ button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callbac
 
 //	g_object_set(G_OBJECT(*button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
 
-	image_file_name = g_build_path("/", ui_image_path, image_name, NULL);
+	image_file_name = g_build_path("/", omp_ui_image_path, image_name, NULL);
 	btn_image = gtk_image_new_from_file(image_file_name);
 	g_free(image_file_name);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(btn_image));
@@ -158,7 +159,7 @@ container_add_image_with_ref(GtkContainer *container, gchar *image_name, GtkWidg
 {
 	gchar *image_file_name;
 
-	image_file_name = g_build_path("/", ui_image_path, image_name, NULL);
+	image_file_name = g_build_path("/", omp_ui_image_path, image_name, NULL);
 	*image = gtk_image_new_from_file(image_file_name);
 	g_free(image_file_name);
 	gtk_container_add(GTK_CONTAINER(container), GTK_WIDGET(*image));
@@ -202,7 +203,7 @@ notebook_add_page_with_image(GtkWidget *notebook, GtkWidget *child, const gchar 
 	gchar *image_file_name;
 	GtkWidget *icon, *alignment;
 
-	image_file_name = g_build_path("/", ui_image_path, image_name, NULL);
+	image_file_name = g_build_path("/", omp_ui_image_path, image_name, NULL);
 	icon = gtk_image_new_from_file(image_file_name);
 	g_free(image_file_name);
 

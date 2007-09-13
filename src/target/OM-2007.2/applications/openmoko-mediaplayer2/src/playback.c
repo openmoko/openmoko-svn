@@ -320,7 +320,7 @@ gulong
 omp_playback_get_track_position()
 {
 	GstFormat format = GST_FORMAT_TIME;
-	gint64 position;
+	gint64 position = 0;
 
 	if (!omp_gst_playbin)
 	{
@@ -341,10 +341,7 @@ omp_playback_set_track_position(gulong position)
 	GstState pipe_state;
 	gint64 pos;
 
-	if (!omp_gst_playbin)
-	{
-		return;
-	}
+	if (!omp_gst_playbin) return;
 
 	// If we don't clamp it to values >= 0 we trigger EOS messages which make the playlist mess up
 	if (position < 0) position = 0;

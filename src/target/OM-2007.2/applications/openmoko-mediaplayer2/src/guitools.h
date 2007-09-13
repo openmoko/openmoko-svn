@@ -31,12 +31,12 @@
 
 #include "main.h"
 
-extern gchar *ui_image_path;
+extern gchar *omp_ui_image_path;
 
 GdkPixbuf *pixbuf_new_from_file(const gchar* file_name);
 
 GtkWidget *label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
-	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale, gint max_char_count);
+	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale, PangoEllipsizeMode ellipsize_mode);
 GtkWidget *button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callback);
 
 void error_dialog(gchar *message);

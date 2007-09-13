@@ -25,6 +25,7 @@
  */
 
 #include <glib.h>
+#include <glib/gstdio.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -180,11 +181,18 @@ omp_session_reset()
 void
 omp_session_init()
 {
+	gchar *path_name;
+
 	// This mustn't be called more than once
 	g_return_if_fail(omp_session == NULL);
 
 	omp_session = g_new0(struct _omp_session, 1);
 	omp_session_reset();
+
+	// Make sure the playlist directory exists
+	path_name = g_build_path("/", g_get_home_dir(), OMP_RELATIVE_PLAYLIST_PATH, NULL);
+	g_mkdir(path_name, S_IRUSR | S_IWUSR | S_IXUSR);  // rwx for the user, nothing for anyone else
+	g_free(path_name);
 }
 
 /**
@@ -254,8 +262,8 @@ omp_session_save()
 
 	g_return_if_fail(omp_session);
 
-	// SESSION_FILE_NAME is relative to user's home dir
-	file_name = g_build_filename(g_get_home_dir(), SESSION_FILE_NAME, NULL);
+	// OMP_SESSION_FILE_NAME is relative to user's home dir
+	file_name = g_build_filename(g_get_home_dir(), OMP_SESSION_FILE_NAME, NULL);
 
 	// Permissions for created session file are 0600
 	session_file = creat(file_name, S_IRUSR | S_IWUSR);
@@ -290,8 +298,8 @@ omp_session_load()
 
 	g_return_if_fail(omp_session);
 
-	// SESSION_FILE_NAME is relative to user's home dir
-	file_name = g_build_filename(g_get_home_dir(), SESSION_FILE_NAME, NULL);
+	// OMP_SESSION_FILE_NAME is relative to user's home dir
+	file_name = g_build_filename(g_get_home_dir(), OMP_SESSION_FILE_NAME, NULL);
 
 	session_file = open(file_name, O_RDONLY);
 	if (session_file == -1) goto io_error;

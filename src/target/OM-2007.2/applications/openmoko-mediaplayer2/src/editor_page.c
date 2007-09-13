@@ -220,7 +220,7 @@ omp_editor_page_list_create(GtkContainer *container)
 	GtkTreeViewColumn *column;
 	GdkPixbuf *track_icon;
 
-	track_icon = pixbuf_new_from_file("ico-tracktype-generic.png");
+	track_icon = pixbuf_new_from_file("ico-filetype-generic.png");
 
 	// Create data model
 	omp_editor_page_list_store = gtk_list_store_new(COLUMN_COUNT,
@@ -276,7 +276,7 @@ omp_editor_page_create()
 	main_vbox = gtk_vbox_new(FALSE, 0);
 
 	// Caption
-	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	omp_editor_title_label = label;
@@ -301,7 +301,7 @@ omp_editor_page_create()
 	image = gtk_image_new_from_icon_name("gtk-file", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(image), TRUE, TRUE, 0);
 
-	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_label_set_text(GTK_LABEL(label), _("Add Tracks"));
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 

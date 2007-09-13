@@ -390,7 +390,7 @@ main(int argc, char *argv[])
 
 	// Initialize various things necessary for the full player UI
 	moko_stock_register();
-	ui_image_path = g_build_filename(DATA_DIR, RELATIVE_UI_IMAGE_PATH, NULL);
+	omp_ui_image_path = g_build_path("/", DATA_DIR, OMP_RELATIVE_UI_IMAGE_PATH, NULL);
 
 	g_set_application_name(_("Media Player"));
 	gtk_window_set_default_icon_name("openmoko-soundandvideo");
@@ -421,7 +421,7 @@ main(int argc, char *argv[])
 	omp_playback_free();
 	omp_playlist_free();
 	gst_deinit();
-	g_free(ui_image_path);
+	g_free(omp_ui_image_path);
 
 	omp_session_free();
 	omp_config_free();

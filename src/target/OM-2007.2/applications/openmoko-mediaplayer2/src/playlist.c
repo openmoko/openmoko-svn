@@ -905,9 +905,10 @@ omp_playlist_iter_finished(omp_playlist_iter *iter)
 
 /**
  * Appends a track to the end of the playlist
+ * @return TRUE on success, FALSE on failure
  * @todo Make unicode-safe
  */
-void
+gboolean
 omp_playlist_track_append_file(gchar *file_name)
 {
 	omp_spiff_track *new_track;
@@ -915,8 +916,8 @@ omp_playlist_track_append_file(gchar *file_name)
 	gchar *uri, name_char;
 	guint name_pos, uri_pos, name_len;
 
-	if (!omp_playlist) return;
-	if (!file_name) return;
+	if (!omp_playlist) return FALSE;
+	if (!file_name) return FALSE;
 
 	// Try to make the "last track" pointer valid - if it stays NULL then the list is empty
 	if (!omp_playlist_last_track)
@@ -927,9 +928,13 @@ omp_playlist_track_append_file(gchar *file_name)
 	// Append track
 	if (omp_playlist_last_track)
 	{
+		// List already has entries - we append
 		new_track = omp_spiff_new_track_before(&omp_playlist_last_track->next);
 		omp_playlist_last_track = omp_playlist_last_track->next;
+
 	} else {
+
+		// List is empty - we start it
 		new_track = omp_spiff_new_track_before(&omp_playlist->tracks);
 		omp_playlist_last_track = omp_playlist->tracks;
 	}
@@ -976,6 +981,8 @@ omp_playlist_track_append_file(gchar *file_name)
 
 	// Notify UI of the change
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED);
+
+	return TRUE;
 }
 
 /**

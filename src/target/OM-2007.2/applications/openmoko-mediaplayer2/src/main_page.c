@@ -102,64 +102,6 @@ omp_stock_button_create(gchar *image_name, GtkWidget **image, GCallback callback
 }
 
 /**
- * Sets a desired EQ/visualization band to a new level
- * @param pos Band to change (0..11)
- * @param level Level to set (0..15, anything higher gets capped)
- */
-void
-omp_main_band_set(guint pos, guint level)
-{
-	gchar *image_file_name;
-
-	// Sanity checks
-	g_return_if_fail(pos < 12);
-
-	// Pseudo-logarithmize the value
-	guint value = 0;
-
-	switch (level)
-	{
-		case 0:
-		case 1:
-		case 2:
-			value = 1;
-			break;
-
-		case 3:
-		case 4:
-			value = 2;
-			break;
-
-		case 5:
-		case 6:
-			value = 3;
-			break;
-
-		case 7:
-		case 8:
-		case 9:
-		case 10:
-		case 11:
-		case 12:
-		case 13:
-		case 14:
-		case 15:
-			value = level-3;
-			break;
-
-		default:
-			value = 12;
-	}
-
-	// Determine file name of the new image to use and apply it
-	image_file_name = g_strdup_printf("%s/ind-music-eq-%02d.png", ui_image_path, value);
-
-	gtk_image_set_from_file(GTK_IMAGE(main_widgets.band_image[pos]), image_file_name);
-
-	g_free(image_file_name);
-}
-
-/**
  * Gets called when the time slider's value got changed (yes, that means it gets called at least once per second)
  */
 void
@@ -350,12 +292,12 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_container_add(GTK_CONTAINER(destination), GTK_WIDGET(mainvbox));
 
 	// Title label
-	alignment = label_create(&main_widgets.title_label, "Sans 8", "black", 0, 0, 1, 0, 18);
+	alignment = label_create(&main_widgets.title_label, "Sans 8", "black", 0, 0, 1, 0, PANGO_ELLIPSIZE_END);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 10, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// Artist label
-	alignment = label_create(&main_widgets.artist_label, "Sans 6", "black", 0, 0, 1, 0, 30);
+	alignment = label_create(&main_widgets.artist_label, "Sans 6", "black", 0, 0, 1, 0, PANGO_ELLIPSIZE_END);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 0, 35, 30);
 	gtk_box_pack_start(GTK_BOX(mainvbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
@@ -376,7 +318,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	container_add_image(GTK_CONTAINER(alignment), "ico-track.png");
 
 	// Track number
-	alignment = label_create(&main_widgets.track_number_label, "Sans 5", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&main_widgets.track_number_label, "Sans 5", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// Time icon
@@ -386,7 +328,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	container_add_image(GTK_CONTAINER(alignment), "ico-time.png");
 
 	// Time
-	alignment = label_create(&main_widgets.time_label, "Sans 5", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&main_widgets.time_label, "Sans 5", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_box_pack_start(GTK_BOX(upper_hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
 	// --- --- --- --- --- Slider --- --- --- --- ---
@@ -422,7 +364,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	gtk_container_add(GTK_CONTAINER(alignment), GTK_WIDGET(middle_hbox));
 
 	// EQ/Visualization bands
-	image_file_name = g_build_path("/", ui_image_path, "ind-music-eq-12.png", NULL);
+	image_file_name = g_build_path("/", omp_ui_image_path, "ind-music-eq-12.png", NULL);
 
 	for (i=0; i<12; i++)
 	{
@@ -450,7 +392,7 @@ omp_main_widgets_create(GtkContainer *destination)
 	container_add_image_with_ref(GTK_CONTAINER(alignment), "ind-music-volume-00.png", &main_widgets.volume_image);
 
 	// Volume label
-	alignment = label_create(&main_widgets.volume_label, "Sans 5", "darkorange", 0, 0, 1, 0, 0);
+	alignment = label_create(&main_widgets.volume_label, "Sans 5", "darkorange", 0, 0, 1, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 6, 0, 10, 0);
 	gtk_box_pack_start(GTK_BOX(volume_box), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 	caption = g_strdup_printf(OMP_WIDGET_CAPTION_VOLUME, 0);
@@ -724,9 +666,9 @@ omp_main_update_shuffle_state(gpointer instance, gboolean state, gpointer user_d
 
 	if (state)
 	{
-		image_file_name = g_build_filename(ui_image_path, "ico-shuffle-on.png", NULL);
+		image_file_name = g_build_filename(omp_ui_image_path, "ico-shuffle-on.png", NULL);
 	} else {
-		image_file_name = g_build_filename(ui_image_path, "ico-shuffle-off.png", NULL);
+		image_file_name = g_build_filename(omp_ui_image_path, "ico-shuffle-off.png", NULL);
 	}
 
 	gtk_image_set_from_file(GTK_IMAGE(main_widgets.shuffle_button_image), image_file_name);
@@ -744,19 +686,19 @@ omp_main_update_repeat_mode(gpointer instance, guint mode, gpointer user_data)
 	switch (mode)
 	{
 		case OMP_REPEAT_OFF:
-			image_file_name = g_build_filename(ui_image_path, "ico-repeat-off.png", NULL);
+			image_file_name = g_build_filename(omp_ui_image_path, "ico-repeat-off.png", NULL);
 			break;
 
 		case OMP_REPEAT_ONCE:
-			image_file_name = g_build_filename(ui_image_path, "ico-repeat-once.png", NULL);
+			image_file_name = g_build_filename(omp_ui_image_path, "ico-repeat-once.png", NULL);
 			break;
 
 		case OMP_REPEAT_CURRENT:
-			image_file_name = g_build_filename(ui_image_path, "ico-repeat-current.png", NULL);
+			image_file_name = g_build_filename(omp_ui_image_path, "ico-repeat-current.png", NULL);
 			break;
 
 		case OMP_REPEAT_ALL:
-			image_file_name = g_build_filename(ui_image_path, "ico-repeat-all.png", NULL);
+			image_file_name = g_build_filename(omp_ui_image_path, "ico-repeat-all.png", NULL);
 	}
 
 	gtk_image_set_from_file(GTK_IMAGE(main_widgets.repeat_button_image), image_file_name);
@@ -833,7 +775,7 @@ omp_main_update_volume(gpointer instance, gpointer user_data)
 
 	volume = omp_playback_get_volume();
 
-	image_file_name = g_strdup_printf("%s/ind-music-volume-%02d.png", ui_image_path, volume/10);
+	image_file_name = g_strdup_printf("%s/ind-music-volume-%02d.png", omp_ui_image_path, volume/10);
 	gtk_image_set_from_file(GTK_IMAGE(main_widgets.volume_image), image_file_name);
 	g_free(image_file_name);
 

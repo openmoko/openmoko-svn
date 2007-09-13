@@ -29,15 +29,6 @@
 
 #include <gtk/gtk.h>
 
-// Where to find application-specific images relative to $DATA_DIR (/usr/share/openmoko-mediaplayer)?
-#define RELATIVE_UI_IMAGE_PATH "/images"
-
-// Where to find the playlist files relative to the user's home directory?
-#define RELATIVE_PLAYLIST_PATH "/playlists"
-
-// What file to save/load session data to/from? File name is relative to user's home directory
-#define SESSION_FILE_NAME "/.openmoko-mediaplayer"
-
 enum omp_notebook_tabs
 {
 	OMP_TAB_MAIN = 0,

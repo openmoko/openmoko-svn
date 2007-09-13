@@ -35,7 +35,19 @@
 
 #define OMP_EVENT_SESSION_FILE_CHOOSER_PATH_CHANGED "session_file_chooser_path_changed"
 
+// Default path to open in the file chooser
 #define OMP_DEFAULT_FILE_CHOOSER_PATH "/media/card/"
+
+// What file to save/load session data to/from? File name is relative to user's home directory
+#define OMP_SESSION_FILE_NAME "/.openmoko-mediaplayer"
+
+// Where to find application-specific images relative to $DATA_DIR (/usr/share/openmoko-mediaplayer)?
+#define OMP_RELATIVE_UI_IMAGE_PATH "/images"
+
+// Where to find the playlist files relative to the user's home directory?
+#define OMP_RELATIVE_PLAYLIST_PATH "/playlists"
+
+
 
 /// Application configuration data
 /// @note Default values are taken from omp_default_config

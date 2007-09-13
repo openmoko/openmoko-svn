@@ -34,6 +34,7 @@
 
 #include "guitools.h"
 #include "main.h"
+#include "persistent.h"
 #include "playlist.h"
 #include "playlist_page.h"
 
@@ -161,7 +162,7 @@ omp_playlist_page_list_clicked(GtkWidget *widget, GdkEventButton *event, gpointe
 		FILE_NAME_COLUMN, &playlist_file, -1);
 
 	playlist_file_abs =
-		g_build_filename(g_get_home_dir(), RELATIVE_PLAYLIST_PATH, playlist_file, NULL);
+		g_build_filename(g_get_home_dir(), OMP_RELATIVE_PLAYLIST_PATH, playlist_file, NULL);
 
 	// Determine what to do
 	switch (column_id)
@@ -200,7 +201,7 @@ omp_playlist_page_add_list(GtkButton *button, gpointer user_data)
 	g_return_if_fail(name[0] != 0);
 
 	// Playlist path is relative to user's home dir
-	path = g_build_path("/", g_get_home_dir(), RELATIVE_PLAYLIST_PATH, NULL);
+	path = g_build_path("/", g_get_home_dir(), OMP_RELATIVE_PLAYLIST_PATH, NULL);
 	file_name = g_strdup_printf("%s/%s.%s", path, name, OMP_PLAYLIST_FILE_EXTENSION);
 
 	omp_playlist_create(file_name);
@@ -225,7 +226,7 @@ omp_playlist_page_list_populate()
 	gtk_list_store_clear(omp_playlist_page_list_store);
 
 	// Playlist path is relative to user's home dir
-	path = g_build_path("/", g_get_home_dir(), RELATIVE_PLAYLIST_PATH, NULL);
+	path = g_build_path("/", g_get_home_dir(), OMP_RELATIVE_PLAYLIST_PATH, NULL);
 
 	playlist_dir = g_dir_open(path, 0, &error);
 
@@ -325,7 +326,7 @@ omp_playlist_page_create()
 	main_vbox = gtk_vbox_new(FALSE, 0);
 
 	// Caption #1
-	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Select Playlist to load:"));
@@ -338,7 +339,7 @@ omp_playlist_page_create()
 	omp_playlist_page_list_create(GTK_CONTAINER(scroll_box));
 
 	// Caption #2
-	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, 0);
+	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 5, 5, 5, 5);
 	gtk_box_pack_start(GTK_BOX(main_vbox), GTK_WIDGET(alignment), FALSE, FALSE, 0);
 	gtk_label_set_text(GTK_LABEL(label), _("Enter name to create a new playlist:"));
@@ -348,7 +349,7 @@ omp_playlist_page_create()
 	omp_playlist_page_entry = gtk_entry_new();
 	button = gtk_button_new();
 
-	image_file_name = g_build_filename(ui_image_path, "ico-playlist-new.png", NULL);
+	image_file_name = g_build_filename(omp_ui_image_path, "ico-playlist-new.png", NULL);
 	image = gtk_image_new_from_file(image_file_name);
 	g_free(image_file_name);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(image));
