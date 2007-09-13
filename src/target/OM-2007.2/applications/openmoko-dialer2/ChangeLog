@@ -1,7 +1,13 @@
 2007-09-13  Thomas Wood  <thomas@openedhand.com>
 
-	* src/moko-contacts.c: (moko_contacts_lookup): Protect against empty number
-	value. Should fix bug 819.
+	* src/moko-dialer.c: (on_keypad_dial_clicked): Update status string
+	* src/moko-keypad.c: (on_dial_clicked): Close bug 814 - Number is
+	cleared when unable to dial
+
+2007-09-13  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-contacts.c: (moko_contacts_lookup): Protect against empty
+	number value. Should fix bug 819.
 
 2007-09-09	Michael Lauer <mickey@openmoko.org>
 
@@ -858,3 +864,4 @@
 	(moko_dialer_get_default):
 	* src/moko-dialer.h:
 	Intial Import
+

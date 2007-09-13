@@ -261,7 +261,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
       && priv->registered != MOKO_GSMD_CONNECTION_NETREG_DENIED)
   {
     gchar *strings[] = {
-      "No Status",
+      "None",
       "Home network registered",
       "Waiting for network registration",
       "Network registration denied",

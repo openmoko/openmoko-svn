@@ -157,7 +157,6 @@ on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
  else
    g_signal_emit (G_OBJECT (keypad), keypad_signals[DIAL_NUMBER], 0, number);
  
- moko_dialer_textview_empty (MOKO_DIALER_TEXTVIEW (priv->textview));
 }
 
 static gboolean
