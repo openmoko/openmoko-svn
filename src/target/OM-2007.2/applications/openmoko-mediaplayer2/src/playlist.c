@@ -157,7 +157,10 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 	if (omp_playlist)
 	{
 		omp_spiff_free(omp_playlist);
+		omp_playlist = NULL;
+
 		g_free(omp_playlist_file);
+		omp_playlist_file = NULL;
 	}
 
 	// Update session unless no change happened
@@ -222,7 +225,10 @@ omp_playlist_create(gchar *playlist_file)
 	if (omp_playlist)
 	{
 		omp_spiff_free(omp_playlist);
+		omp_playlist = NULL;
+
 		g_free(omp_playlist_file);
+		omp_playlist_file = NULL;
 	}
 
 	// Create new playlist, save and load it
@@ -251,11 +257,18 @@ omp_playlist_save()
 void
 omp_playlist_delete(gchar *playlist_file)
 {
-	if (strcmp(omp_playlist_file, playlist_file) == 0)
+	if (omp_playlist)
 	{
-		omp_spiff_free(omp_playlist);
-		g_free(omp_playlist_file);
-		omp_playback_reset();
+		if (strcmp(omp_playlist_file, playlist_file) == 0)
+		{
+			omp_spiff_free(omp_playlist);
+			omp_playlist = NULL;
+
+			g_free(omp_playlist_file);
+			omp_playlist_file = NULL;
+
+			omp_playback_reset();
+		}
 	}
 
 	g_unlink(playlist_file);
@@ -672,6 +685,14 @@ omp_playlist_set_preliminary_metadata(omp_spiff_track *track, gchar *track_uri)
 	{
 		track->title = g_strdup(title);
 		track->title_is_preliminary = TRUE;
+
+	} else {
+
+		// If there already is a title and it's the same title we *would* set, mark it
+		if (strcmp(track->title, title) == 0)
+		{
+			track->title_is_preliminary = TRUE;
+		}
 	}
 
 	g_free(title);
