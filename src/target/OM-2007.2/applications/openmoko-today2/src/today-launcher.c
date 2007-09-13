@@ -8,6 +8,7 @@
 #include <libtaku/taku-table.h>
 #include <libtaku/taku-launcher-tile.h>
 #include <moko-finger-scroll.h>
+#include <moko-search-bar.h>
 #include "today.h"
 
 /* NOTE: Following 4 functions (as well as libtaku) taken from
@@ -234,7 +235,7 @@ today_launcher_update_search (TodayData *data, const gchar *search_string)
 			TAKU_ICON_TILE (tile)), -1);
 		desc = g_utf8_strup (taku_icon_tile_get_secondary (
 			TAKU_ICON_TILE (tile)), -1);
-		if (strstr (name, search_string) ||
+		if ((!search_string) || strstr (name, search_string) ||
 		    strstr (desc, search_string)) {
 			taku_launcher_tile_add_group (TAKU_LAUNCHER_TILE (tile),
 				data->search_cat);
@@ -245,7 +246,8 @@ today_launcher_update_search (TodayData *data, const gchar *search_string)
 }
 
 static void
-today_launcher_filter_changed_cb (GtkEditable *editable, TodayData *data)
+today_launcher_filter_changed_cb (MokoSearchBar *bar, GtkEditable *editable,
+				  TodayData *data)
 {
 	gchar *search_string;
 	
@@ -260,35 +262,29 @@ today_launcher_filter_changed_cb (GtkEditable *editable, TodayData *data)
 }
 
 static void
-today_launcher_search_toggle_cb (GtkWidget *button, TodayData *data)
-{
-	g_object_set (G_OBJECT (data->search_entry), "visible",
-		!GTK_WIDGET_VISIBLE (data->search_entry), NULL);
-	g_object_set (G_OBJECT (data->filter_combo), "visible",
-		!GTK_WIDGET_VISIBLE (data->filter_combo), NULL);
-
-	if (GTK_WIDGET_VISIBLE (data->search_entry)) {
-		/* Set the category to the created search category */
-		taku_table_set_filter (TAKU_TABLE (data->launcher_table),
-			data->search_cat);
-		gtk_widget_grab_focus (data->search_entry);
-	} else {
-		/* Set the category back to the one pointed to by the
-		 * drop-down.
-		 */
-		taku_table_set_filter (TAKU_TABLE (data->launcher_table),
-			(TakuLauncherCategory *)g_list_nth_data (
-				data->categories, gtk_combo_box_get_active (
-					GTK_COMBO_BOX (data->filter_combo))));
-	}
-}
-
-static void
-today_launcher_combo_changed_cb (GtkComboBox *widget, TodayData *data)
+today_launcher_combo_changed_cb (MokoSearchBar *bar, GtkComboBox *widget,
+				 TodayData *data)
 {
 	taku_table_set_filter (TAKU_TABLE (data->launcher_table),
 		(TakuLauncherCategory *)g_list_nth_data (data->categories,
 			gtk_combo_box_get_active (widget)));
+}
+
+static void
+today_launcher_search_toggle_cb (MokoSearchBar *bar, gboolean search_visible,
+				 TodayData *data)
+{
+	if (search_visible) {
+		/* Set the category to the created search category */
+		today_launcher_filter_changed_cb (bar, GTK_EDITABLE (
+			moko_search_bar_get_entry (bar)), data);
+	} else {
+		/* Set the category back to the one pointed to by the
+		 * drop-down.
+		 */
+		 today_launcher_combo_changed_cb (bar,
+		 	moko_search_bar_get_combo_box (bar), data);
+	}
 }
 
 GtkWidget *
@@ -314,19 +310,12 @@ today_launcher_page_create (TodayData *data)
 	gtk_box_pack_start (GTK_BOX (hbox), toggle, FALSE, FALSE, 0);
 	gtk_widget_show_all (toggle);
 
-	data->search_entry = gtk_entry_new ();
-	g_signal_connect (G_OBJECT (data->search_entry), "changed",
-		G_CALLBACK (today_launcher_filter_changed_cb), data);
-	gtk_widget_set_name (data->search_entry, "mokosearchentry");
-	g_object_set (G_OBJECT (data->search_entry), "no-show-all", TRUE, NULL);
-	gtk_box_pack_start (GTK_BOX (hbox), data->search_entry, TRUE, TRUE, 0);
-
 	data->filter_combo = gtk_combo_box_new_text ();
-	gtk_box_pack_start (GTK_BOX (hbox), data->filter_combo, TRUE, TRUE, 0);
-	gtk_widget_show (data->filter_combo);
-	
-	gtk_box_pack_start (GTK_BOX (main_vbox), hbox, FALSE, TRUE, 0);
-	gtk_widget_show (hbox);
+	data->search_bar = moko_search_bar_new_with_combo (
+		GTK_COMBO_BOX (data->filter_combo));
+	gtk_box_pack_start (GTK_BOX (main_vbox), data->search_bar,
+		FALSE, TRUE, 0);
+	gtk_widget_show (data->search_bar);
 	
 	viewport = gtk_viewport_new (NULL, NULL);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
@@ -365,9 +354,14 @@ today_launcher_page_create (TodayData *data)
 			GTK_COMBO_BOX (data->filter_combo), _("All"));
 	}
 	gtk_combo_box_set_active (GTK_COMBO_BOX (data->filter_combo), 0);
-	g_signal_connect (G_OBJECT (data->filter_combo), "changed",
-		G_CALLBACK (today_launcher_combo_changed_cb), data);
 
+	g_signal_connect (G_OBJECT (data->search_bar), "text_changed",
+		G_CALLBACK (today_launcher_filter_changed_cb), data);
+	g_signal_connect (G_OBJECT (data->search_bar), "combo_changed",
+		G_CALLBACK (today_launcher_combo_changed_cb), data);
+	g_signal_connect (G_OBJECT (data->search_bar), "toggled",
+		G_CALLBACK (today_launcher_search_toggle_cb), data);
+	
 	/* Populate the task list */
 	/* TODO: Do this incrementally during idle time to increase
 	 * start-up speed.

@@ -1,7 +1,17 @@
+2007-09-13  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-launcher.c: (today_launcher_update_search),
+	(today_launcher_filter_changed_cb),
+	(today_launcher_combo_changed_cb),
+	(today_launcher_search_toggle_cb), (today_launcher_page_create):
+	* src/today.h:
+	Fix bug with empty search and use MokoSearchBar
+
 2007-09-11  Thomas Wood  <thomas@openedhand.com>
 
-	* src/today-main.c: (main): Remove disabling of focus on the notebook tabs to
-	try and fix bugs 723 and 724
+	* src/today-main.c: (main):
+	Remove disabling of focus on the notebook tabs to try and fix bugs
+	723 and 724
 
 2007-09-05  Chris Lord,,,  <chris@openedhand.com>
 
