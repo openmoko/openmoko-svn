@@ -49,8 +49,6 @@ moko_dialer_panel_class_init (MokoDialerPanelClass * class)
   class->moko_dialer_panel_input = NULL;
   class->moko_dialer_panel_hold = NULL;
 
-  g_debug ("moko_dialer_panel:start signal register");
-
   moko_dialer_panel_signals[CLICKED_SIGNAL] =
     g_signal_new ("user_input",
                   G_OBJECT_CLASS_TYPE (object_class),
@@ -60,9 +58,6 @@ moko_dialer_panel_class_init (MokoDialerPanelClass * class)
                   g_cclosure_marshal_VOID__CHAR, G_TYPE_NONE, 1,
                   g_type_from_name ("gchar"));
 
-  g_debug ("moko_dialer_panel:signal register end,got the id :%d",
-           moko_dialer_panel_signals[CLICKED_SIGNAL]);
-
   moko_dialer_panel_signals[HOLD_SIGNAL] =
     g_signal_new ("user_hold",
                   G_OBJECT_CLASS_TYPE (object_class),
@@ -71,9 +66,6 @@ moko_dialer_panel_class_init (MokoDialerPanelClass * class)
                                    moko_dialer_panel_hold), NULL, NULL,
                   g_cclosure_marshal_VOID__CHAR, G_TYPE_NONE, 1,
                   g_type_from_name ("gchar"));
-
-  g_debug ("moko_dialer_panel:signal register end,got the id :%d",
-           moko_dialer_panel_signals[HOLD_SIGNAL]);
 
 }
 

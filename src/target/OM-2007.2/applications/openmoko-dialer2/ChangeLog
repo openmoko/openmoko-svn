@@ -1,5 +1,12 @@
 2007-09-13  Thomas Wood  <thomas@openedhand.com>
 
+	* src/dialer-main.c: (main): Delay gtk+/mokostock initialisation unless
+	really required
+	* src/moko-dialer-panel.c: (moko_dialer_panel_class_init): Remove some
+	extra debug messages
+
+2007-09-13  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked): Update status string
 	* src/moko-keypad.c: (on_dial_clicked): Close bug 814 - Number is
 	cleared when unable to dial

@@ -130,9 +130,8 @@ main (int argc, char **argv)
     g_option_context_free (context);
   }
 
-  /* Initialize Threading & GTK+ */
-  gtk_init (&argc, &argv);
-  moko_stock_register ();
+  /* initialise type system */
+  g_type_init ();
 
   /* Try and setup our DBus service */
   connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
@@ -154,16 +153,15 @@ main (int argc, char **argv)
     /* Error requesting the name */
     g_warning ("There was an error requesting the name: %s\n",error->message);
     g_error_free (error);
-    
-    gdk_init(&argc, &argv);
+
+    gdk_init (&argc, &argv);
     gdk_notify_startup_complete ();
 
     return 1;
   }
   if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
   {
-    /* Someone else hase registere dthe object */
-    g_warning ("Another instance is running\n");
+    /* Someone else hase registered the object */
 
     if (show_missed)
       _show_missed (connection);
@@ -171,29 +169,20 @@ main (int argc, char **argv)
       _dial_number (connection);
     else
       _show_dialer (connection);
-    
-    dbus_g_connection_unref (connection);
-    
 
-    gdk_init(&argc, &argv);
+    dbus_g_connection_unref (connection);
+
+    gdk_init (&argc, &argv);
     gdk_notify_startup_complete ();
     return 0;
   }
 
-  /* So we are creating a new dialer, one of the first things we sould do is
-   * resart gsmd, as we cannot guarentee it is running. This also solves the
-   * problem of when it hangs.
-   * FIXME: This shouldn't be left up to the dialer, and we cannot guarentee
-   * to always have root access, but it'll work for most embedded devices.
-   */
-  /*
-  g_debug ("(re)starting gsmd\n");
-  g_spawn_command_line_sync ("/etc/init.d/gsmd stop",
-                             &out, &err, NULL, NULL);
-  g_spawn_command_line_sync ("/etc/init.d/gsmd start",
-                             &out, &err, NULL, NULL);
-  */
-  /* Create the MokoDialer object */
+
+  /* Initialize Threading & GTK+ */
+  gtk_init (&argc, &argv);
+  moko_stock_register ();
+
+   /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();
 
   /* Add the object onto the bus */
