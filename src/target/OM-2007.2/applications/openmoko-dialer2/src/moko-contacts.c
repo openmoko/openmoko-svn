@@ -201,6 +201,7 @@ moko_contacts_lookup (MokoContacts *contacts, const gchar *number)
   MokoContactEntry *entry;
 
   g_return_val_if_fail (MOKO_IS_CONTACTS (contacts), NULL);
+  g_return_val_if_fail (number, NULL);
   priv = contacts->priv;
   
   entry =  g_hash_table_lookup (priv->prefixes, number);
