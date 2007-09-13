@@ -513,3 +513,4 @@
 	Just use a GtkTreeView instead of the custom widget. Display events
 	within the next week from the main calendar. General UI shuffling.
 
+/* ex: set tabstop=8 expandtab: */
