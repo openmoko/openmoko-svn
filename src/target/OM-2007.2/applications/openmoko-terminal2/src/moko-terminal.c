@@ -120,7 +120,7 @@ moko_terminal_init(MokoTerminal* self)
 
     //vte_terminal_set_size( vte, 30, 30);
     vte_terminal_set_scrollback_lines( vte, 1000 );
-    vte_terminal_set_font_from_string_full( vte, "Vera Sans Mono 5", 1 );
+    vte_terminal_set_font_from_string_full( vte, "LiberationMono 5", 1 );
     vte_terminal_set_mouse_autohide( vte, TRUE );
     vte_terminal_set_cursor_blinks( vte, TRUE );
 
