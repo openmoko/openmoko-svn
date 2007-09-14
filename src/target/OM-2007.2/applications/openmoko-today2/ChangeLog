@@ -1,5 +1,11 @@
 2007-09-14  Thomas Wood  <thomas@openedhand.com>
 
+        * src/today-pim-journal.c: (today_pim_journal_box_new): Don't try to
+        load the journal if opening it failed. Prevents segfault if d-bus is
+        not available.
+
+2007-09-14  Thomas Wood  <thomas@openedhand.com>
+
 	* src/today-main.c: (today_create_home_page): Fix Dates icon (bug 830)
 
 2007-09-13  Chris Lord,,,  <chris@openedhand.com>

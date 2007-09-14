@@ -157,11 +157,19 @@ today_pim_journal_box_new (TodayData *data)
 	data->n_missed_calls = 0;
 	data->n_unread_messages = 0;
 	data->journal = moko_journal_open_default ();
-	g_signal_connect (G_OBJECT (data->journal), "entry_added",
-		G_CALLBACK (today_pim_journal_entry_added_cb), data);
-	g_signal_connect (G_OBJECT (data->journal), "entry_removed",
-		G_CALLBACK (today_pim_journal_entry_removed_cb), data);
-	moko_journal_load_from_storage (data->journal);
-	
+
+  if (data->journal)
+  {
+  	g_signal_connect (G_OBJECT (data->journal), "entry_added",
+  		G_CALLBACK (today_pim_journal_entry_added_cb), data);
+  	g_signal_connect (G_OBJECT (data->journal), "entry_removed",
+  		G_CALLBACK (today_pim_journal_entry_removed_cb), data);
+  	moko_journal_load_from_storage (data->journal);
+  }
+  else
+  {
+    g_warning ("Could not load journal");
+	}
+
 	return treeview;
 }
