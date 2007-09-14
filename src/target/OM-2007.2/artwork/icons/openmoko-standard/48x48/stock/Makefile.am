@@ -2,7 +2,9 @@ themedir = $(datadir)/icons/openmoko-standard
 size = 48x48
 context = stock
 iconsdir = $(themedir)/$(size)/$(context)
-icons_DATA = gtk-about.png \
+icons_DATA = contact-new.png \
+	folder-new.png \
+	gtk-about.png \
 	gtk-add.png \
 	gtk-apply.png \
 	gtk-bold.png \
@@ -102,7 +104,26 @@ icons_DATA = gtk-about.png \
 	gtk-zoom-100.png \
 	gtk-zoom-fit.png \
 	gtk-zoom-in.png \
-	gtk-zoom-out.png
+	gtk-zoom-out.png \
+	mail-forward.png \
+	mail-message-new.png \
+	mail-read.png \
+	mail-receive.png \
+	mail-reply.png \
+	mail-send.png \
+	moko-call-dial.png \
+	moko-call-history.png \
+	moko-call-hold.png \
+	moko-call-redial.png \
+	moko-contact-delete.png \
+	moko-contact-groups.png \
+	moko-folder-delete.png \
+	moko-history.png \
+	moko-mail-delete.png \
+	moko-phone-book.png \
+	moko-sms-new.png \
+	moko-speaker.png \
+	moko-view.png
 
 EXTRA_DIST = $(icons_DATA)
 MAINTAINERCLEANFILES = Makefile.in

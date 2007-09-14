@@ -105,11 +105,14 @@ icons_DATA = gtk-about.png \
 	gtk-zoom-out.png \
 	moko-call-dial.png \
 	moko-call-history.png \
+	moko-contact-delete.png \
 	moko-history-call-in.png \
 	moko-history-call-missed.png \
 	moko-history-call-out.png \
 	moko-history-im.png \
-	moko-history-mail.png
+	moko-history-mail.png \
+	moko-view.png
+
 
 EXTRA_DIST = $(icons_DATA)
 MAINTAINERCLEANFILES = Makefile.in
