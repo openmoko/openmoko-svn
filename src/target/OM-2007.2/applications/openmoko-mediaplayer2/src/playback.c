@@ -36,9 +36,6 @@
 /// Our ticket to the gstreamer world
 GstElement *omp_gst_playbin = NULL;
 
-/// gstreamer audio output element
-GstElement *omp_gst_audiosink = NULL;
-
 /// Handle of the UI-updating timeout
 guint omp_playback_ui_timeout = 0;
 
@@ -108,20 +105,15 @@ omp_playback_init()
 		G_SIGNAL_RUN_FIRST, 0, 0, NULL, g_cclosure_marshal_VOID__STRING,
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 
-	// Create gstreamer audio sink
-	omp_gst_audiosink = gst_element_factory_make("alsasink", NULL);
-
 	// Set up gstreamer pipe and bins
 	omp_gst_playbin = gst_element_factory_make("playbin", NULL);
 
-	if ( (!omp_gst_audiosink) || (!omp_gst_playbin) )
+	if (!omp_gst_playbin)
 	{
 		error_dialog(_("Error: gstreamer failed to initialize.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-meta-audio)."));
 
 		return FALSE;
 	}
-
-	g_object_set(G_OBJECT(omp_gst_playbin), "audio-sink", omp_gst_audiosink, NULL);
 
 	// Set up message hooks
 	bus = gst_pipeline_get_bus(GST_PIPELINE(omp_gst_playbin));
