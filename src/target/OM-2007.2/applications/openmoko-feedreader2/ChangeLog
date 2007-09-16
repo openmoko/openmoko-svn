@@ -1,3 +1,11 @@
+2007-09-16  Evgeny Gizburg  <Nad.Oby@gmail.com>
+
+        Add a hebrew and russian translation.
+
+        * po/LINGUAS:
+        * po/he.po: Added.
+        * po/ru.po: Added.
+
 2007-09-14  Thomas Wood  <thomas@openedhand.com>
 
 	* data/openmoko-feedreader2.desktop: Enable single instance

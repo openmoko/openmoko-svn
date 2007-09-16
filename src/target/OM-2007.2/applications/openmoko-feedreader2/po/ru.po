@@ -1,0 +1,57 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Evgeny Gizburg  <Nad.Oby@gmail.com>, 2007.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-09-13 11:24+0400\n"
+"PO-Revision-Date: Evgeny Gizburg  <Nad.Oby@gmail.com>\n"
+"Last-Translator: Evgeny Gizburg  <Nad.Oby@gmail.com>\n"
+"Language-Team: LANGUAGE <ru@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#.
+#. * shortcut for the later filter function
+#.
+#: ../src/callbacks.c:65 ../src/callbacks.c:76
+msgid "All"
+msgstr "Всё"
+
+#: ../src/callbacks.c:101 ../src/main.c:50
+msgid "Failed to read the text."
+msgstr "Не удалось прочитать текст"
+
+#: ../src/main.c:70
+msgid "Subject"
+msgstr "Тема"
+
+#: ../src/main.c:71
+msgid "Date"
+msgstr "Дата"
+
+#: ../src/main.c:136
+msgid "Name"
+msgstr "Название"
+
+#: ../src/main.c:144
+msgid "Url"
+msgstr "Линк"
+
+#: ../src/main.c:223
+msgid "FeedReader"
+msgstr ""
+
+#: ../src/rfcdate.c:243
+msgid "Today,"
+msgstr "Сегодня"
+
+#: ../src/rfcdate.c:249
+msgid "Yesterday,"
+msgstr "Вчера"
+
