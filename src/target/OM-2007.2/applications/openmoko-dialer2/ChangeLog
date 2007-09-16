@@ -1,3 +1,7 @@
+2007-09-16	Michael Lauer <mickey@openmoko.org>
+
+	* src/moko-notify.c: (moko_notify_start_ringtone): Play 'ringtone' sample.
+
 2007-09-13  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer-main.c: (main): Delay gtk+/mokostock initialisation unless

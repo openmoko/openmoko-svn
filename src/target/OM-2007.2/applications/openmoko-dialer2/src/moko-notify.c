@@ -1,7 +1,7 @@
 /*
  *  moko-notify; a Notification object. This deals with notifying the user
  *  of an incoming call.
- *  
+ *
  *  Authored by OpenedHand Ltd <info@openedhand.com>
  *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
@@ -61,7 +61,7 @@ static guint notify_signals[LAST_SIGNAL] = {0, };
 static void moko_notify_start_ringtone (MokoNotify *notify);
 
 /*
- * Check the current screen brightness, raise it if necessary 
+ * Check the current screen brightness, raise it if necessary
  */
 static void
 moko_notify_check_brightness (void)
@@ -78,10 +78,10 @@ moko_notify_check_brightness (void)
     g_warning ("Unable to open brightness device");
     return;
   }
-  
+
   /* The reading is for a 'smooth' brightness from current to max */
   dev = g_io_channel_unix_new (fd);
-  if (g_io_channel_read_chars (dev, buf, 50, &bytes, &err) 
+  if (g_io_channel_read_chars (dev, buf, 50, &bytes, &err)
         == G_IO_STATUS_NORMAL)
   {
     buf[bytes] = '\0';
@@ -115,7 +115,7 @@ static gboolean
 play_timeout (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
-  
+
   g_return_val_if_fail (MOKO_IS_NOTIFY (notify), FALSE);
   priv = notify->priv;
 
@@ -139,15 +139,15 @@ play_timeout (MokoNotify *notify)
     g_debug ("Playing done");
     return FALSE;
   }
-  g_debug ("Not finsihed yet");
-  return TRUE;  
+  g_debug ("Not finshed yet");
+  return TRUE;
 }
 
 static void
 moko_notify_start_ringtone (MokoNotify *notify)
 {
   MokoNotifyPrivate *priv;
-  
+
   g_return_if_fail (MOKO_IS_NOTIFY (notify));
   priv = notify->priv;
 
@@ -155,10 +155,10 @@ moko_notify_start_ringtone (MokoNotify *notify)
     return;
 
   priv->operation = pa_context_play_sample (priv->pac,
-                                            "x11-bell",
+                                            "ringtone",
                                             NULL,
                                             PA_VOLUME_NORM,
-                                            NULL, 
+                                            NULL,
                                             NULL);
   g_timeout_add (500, (GSourceFunc)play_timeout, (gpointer)notify);
   g_debug ("Playing");
@@ -275,7 +275,7 @@ moko_notify_stop (MokoNotify *notify)
   if (!priv->started)
     return;
   priv->started = FALSE;
- 
+
   moko_notify_stop_vibrate ();
   moko_notify_stop_ringtone (notify);
 }
@@ -301,7 +301,7 @@ moko_notify_class_init (MokoNotifyClass *klass)
   obj_class->finalize = moko_notify_finalize;
   obj_class->dispose = moko_notify_dispose;
 
-  g_type_class_add_private (obj_class, sizeof (MokoNotifyPrivate)); 
+  g_type_class_add_private (obj_class, sizeof (MokoNotifyPrivate));
 }
 
 static void
@@ -310,7 +310,7 @@ moko_notify_init (MokoNotify *notify)
   MokoNotifyPrivate *priv;
   pa_threaded_mainloop *mainloop = NULL;
   pa_mainloop_api *mapi = NULL;
-  
+
   priv = notify->priv = MOKO_NOTIFY_GET_PRIVATE (notify);
 
   priv->started = FALSE;
@@ -338,7 +338,7 @@ MokoNotify*
 moko_notify_new (void)
 {
   MokoNotify *notify = NULL;
-    
+
   notify = g_object_new (MOKO_TYPE_NOTIFY, NULL);
 
   return notify;
