@@ -1,3 +1,12 @@
+2007-09-17  Thomas Wood <thomas@openedhand.com>
+
+	* configure.ac:
+	* libmokoui/Makefile.am:
+	* libmokoui/moko-hint-entry.c:
+	* libmokoui/moko-hint-entry.h:
+
+   Add MokoHintEntry based on KotoHintEntry
+
 2007-08-31  Chris Lord,,,  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c:
