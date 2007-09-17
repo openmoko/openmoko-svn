@@ -209,7 +209,7 @@ extern int printf(const char *, ...);
 /* the symbols are considered non exported so a br immediate is generated */
 #define __hidden __attribute__((visibility("hidden")))
 #else
-#define __hidden 
+#define __hidden
 #endif
 
 #if defined(__alpha__)
@@ -254,7 +254,7 @@ extern int __op_jmp0, __op_jmp1, __op_jmp2, __op_jmp3;
 #define GOTO_LABEL_PARAM(n) asm volatile ("b " ASM_NAME(__op_gen_label) #n)
 #elif defined(__s390__)
 #define EXIT_TB() asm volatile ("br %r14")
-#define GOTO_LABEL_PARAM(n) asm volatile ("b " ASM_NAME(__op_gen_label) #n)
+#define GOTO_LABEL_PARAM(n) asm volatile ("bras %r7,8; .long " ASM_NAME(__op_gen_label) #n "; l %r7, 0(%r7); br %r7")
 #elif defined(__alpha__)
 #define EXIT_TB() asm volatile ("ret")
 #elif defined(__ia64__)

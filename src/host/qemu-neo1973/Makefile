@@ -33,7 +33,7 @@ subdir-%: dyngen$(EXESUF)
 
 recurse-all: $(patsubst %,subdir-%, $(TARGET_DIRS))
 
-qemu-img$(EXESUF): qemu-img.c cutils.c block.c block-raw.c block-cow.c block-qcow.c aes.c block-vmdk.c block-cloop.c block-dmg.c block-bochs.c block-vpc.c block-vvfat.c block-qcow2.c
+qemu-img$(EXESUF): qemu-img.c cutils.c block.c block-raw.c block-cow.c block-qcow.c aes.c block-vmdk.c block-cloop.c block-dmg.c block-bochs.c block-vpc.c block-vvfat.c block-qcow2.c block-parallels.c
 	$(CC) -DQEMU_TOOL $(CFLAGS) $(CPPFLAGS) $(BASE_CFLAGS) $(LDFLAGS) $(BASE_LDFLAGS) -o $@ $^ -lz $(LIBS)
 
 dyngen$(EXESUF): dyngen.c
@@ -48,7 +48,7 @@ raw2flash$(EXESUF) flash2raw$(EXESUF): raw2flash.c
 
 clean:
 # avoid old build problems by removing potentially incorrect old files
-	rm -f config.mak config.h op-i386.h opc-i386.h gen-op-i386.h op-arm.h opc-arm.h gen-op-arm.h 
+	rm -f config.mak config.h op-i386.h opc-i386.h gen-op-i386.h op-arm.h opc-arm.h gen-op-arm.h
 	rm -f *.o *.a $(TOOLS) dyngen$(EXESUF) TAGS cscope.* *.pod *~ */*~
 	$(MAKE) -C tests clean
 	for d in $(TARGET_DIRS); do \
@@ -102,7 +102,7 @@ endif
 test speed test2: all
 	$(MAKE) -C tests $@
 
-TAGS: 
+TAGS:
 	etags *.[ch] tests/*.[ch]
 
 cscope:

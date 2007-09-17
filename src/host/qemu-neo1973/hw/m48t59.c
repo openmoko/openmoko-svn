@@ -1,8 +1,8 @@
 /*
  * QEMU M48T59 and M48T08 NVRAM emulation for PPC PREP and Sparc platforms
- * 
+ *
  * Copyright (c) 2003-2005, 2007 Jocelyn Mayer
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -80,14 +80,17 @@ static void get_time (m48t59_t *NVRAM, struct tm *tm)
 #ifdef _WIN32
     memcpy(tm,localtime(&t),sizeof(*tm));
 #else
-    localtime_r (&t, tm) ;
+    if (rtc_utc)
+        gmtime_r (&t, tm);
+    else
+        localtime_r (&t, tm) ;
 #endif
 }
 
 static void set_time (m48t59_t *NVRAM, struct tm *tm)
 {
     time_t now, new_time;
-    
+
     new_time = mktime(tm);
     now = time(NULL);
     NVRAM->time_offset = new_time - now;
@@ -101,7 +104,7 @@ static void alarm_cb (void *opaque)
     m48t59_t *NVRAM = opaque;
 
     qemu_set_irq(NVRAM->IRQ, 1);
-    if ((NVRAM->buffer[0x1FF5] & 0x80) == 0 && 
+    if ((NVRAM->buffer[0x1FF5] & 0x80) == 0 &&
 	(NVRAM->buffer[0x1FF4] & 0x80) == 0 &&
 	(NVRAM->buffer[0x1FF3] & 0x80) == 0 &&
 	(NVRAM->buffer[0x1FF2] & 0x80) == 0) {
@@ -146,7 +149,10 @@ static void get_alarm (m48t59_t *NVRAM, struct tm *tm)
 #ifdef _WIN32
     memcpy(tm,localtime(&NVRAM->alarm),sizeof(*tm));
 #else
-    localtime_r (&NVRAM->alarm, tm);
+    if (rtc_utc)
+        gmtime_r (&NVRAM->alarm, tm);
+    else
+        localtime_r (&NVRAM->alarm, tm);
 #endif
 }
 
@@ -202,7 +208,7 @@ void m48t59_write (m48t59_t *NVRAM, uint32_t addr, uint32_t val)
 
     if (addr > 0x1FF8 && addr < 0x2000)
 	NVRAM_PRINTF("%s: 0x%08x => 0x%08x\n", __func__, addr, val);
-    if (NVRAM->type == 8 && 
+    if (NVRAM->type == 8 &&
         (addr >= 0x1ff0 && addr <= 0x1ff7))
         goto do_write;
     switch (addr) {
@@ -358,7 +364,7 @@ uint32_t m48t59_read (m48t59_t *NVRAM, uint32_t addr)
     struct tm tm;
     uint32_t retval = 0xFF;
 
-    if (NVRAM->type == 8 && 
+    if (NVRAM->type == 8 &&
         (addr >= 0x1ff0 && addr <= 0x1ff7))
         goto do_read;
     switch (addr) {
@@ -424,7 +430,7 @@ uint32_t m48t59_read (m48t59_t *NVRAM, uint32_t addr)
     case 0x1FFF:
         /* year */
         get_time(NVRAM, &tm);
-        if (NVRAM->type == 8) 
+        if (NVRAM->type == 8)
             retval = toBCD(tm.tm_year - 68); // Base year is 1968
         else
             retval = toBCD(tm.tm_year);
@@ -504,7 +510,7 @@ static uint32_t NVRAM_readb (void *opaque, uint32_t addr)
 static void nvram_writeb (void *opaque, target_phys_addr_t addr, uint32_t value)
 {
     m48t59_t *NVRAM = opaque;
-    
+
     addr -= NVRAM->mem_base;
     m48t59_write(NVRAM, addr, value & 0xff);
 }
@@ -512,7 +518,7 @@ static void nvram_writeb (void *opaque, target_phys_addr_t addr, uint32_t value)
 static void nvram_writew (void *opaque, target_phys_addr_t addr, uint32_t value)
 {
     m48t59_t *NVRAM = opaque;
-    
+
     addr -= NVRAM->mem_base;
     m48t59_write(NVRAM, addr, (value >> 8) & 0xff);
     m48t59_write(NVRAM, addr + 1, value & 0xff);
@@ -521,7 +527,7 @@ static void nvram_writew (void *opaque, target_phys_addr_t addr, uint32_t value)
 static void nvram_writel (void *opaque, target_phys_addr_t addr, uint32_t value)
 {
     m48t59_t *NVRAM = opaque;
-    
+
     addr -= NVRAM->mem_base;
     m48t59_write(NVRAM, addr, (value >> 24) & 0xff);
     m48t59_write(NVRAM, addr + 1, (value >> 16) & 0xff);
@@ -533,7 +539,7 @@ static uint32_t nvram_readb (void *opaque, target_phys_addr_t addr)
 {
     m48t59_t *NVRAM = opaque;
     uint32_t retval;
-    
+
     addr -= NVRAM->mem_base;
     retval = m48t59_read(NVRAM, addr);
     return retval;
@@ -543,7 +549,7 @@ static uint32_t nvram_readw (void *opaque, target_phys_addr_t addr)
 {
     m48t59_t *NVRAM = opaque;
     uint32_t retval;
-    
+
     addr -= NVRAM->mem_base;
     retval = m48t59_read(NVRAM, addr) << 8;
     retval |= m48t59_read(NVRAM, addr + 1);

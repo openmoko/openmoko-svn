@@ -1,6 +1,6 @@
 /*
  *  SH4 translation
- * 
+ *
  *  Copyright (c) 2005 Samuel Tardieu
  *
  * This library is free software; you can redistribute it and/or
@@ -879,10 +879,10 @@ void decode_opc(DisasContext * ctx)
 	gen_op_stw_T0_T1(ctx);
 	return;
     case 0x8400:		/* mov.b @(disp,Rn),R0 */
-	gen_op_movl_rN_T0(REG(0));
-	gen_op_movl_rN_T1(REG(B7_4));
-	gen_op_addl_imm_T1(B3_0);
-	gen_op_stb_T0_T1(ctx);
+	gen_op_movl_rN_T0(REG(B7_4));
+	gen_op_addl_imm_T0(B3_0);
+	gen_op_ldb_T0_T0(ctx);
+	gen_op_movl_T0_rN(REG(0));
 	return;
     case 0x8500:		/* mov.w @(disp,Rn),R0 */
 	gen_op_movl_rN_T0(REG(B7_4));
@@ -1242,7 +1242,6 @@ gen_intermediate_code_internal(CPUState * env, TranslationBlock * tb,
         ii++;
         while (ii <= i)
             gen_opc_instr_start[ii++] = 0;
-        tb->size = 0;
     } else {
         tb->size = ctx.pc - pc_start;
     }

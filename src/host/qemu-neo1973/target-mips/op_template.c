@@ -1,6 +1,6 @@
 /*
  *  MIPS emulation micro-operations templates for reg load & store for qemu.
- * 
+ *
  *  Copyright (c) 2004-2005 Jocelyn Mayer
  *
  * This library is free software; you can redistribute it and/or
@@ -21,31 +21,44 @@
 #if defined(REG)
 void glue(op_load_gpr_T0_gpr, REG) (void)
 {
-    T0 = env->gpr[REG];
+    T0 = env->gpr[REG][env->current_tc];
     RETURN();
 }
 
 void glue(op_store_T0_gpr_gpr, REG) (void)
 {
-    env->gpr[REG] = T0;
+    env->gpr[REG][env->current_tc] = T0;
     RETURN();
 }
 
 void glue(op_load_gpr_T1_gpr, REG) (void)
 {
-    T1 = env->gpr[REG];
+    T1 = env->gpr[REG][env->current_tc];
     RETURN();
 }
 
 void glue(op_store_T1_gpr_gpr, REG) (void)
 {
-    env->gpr[REG] = T1;
+    env->gpr[REG][env->current_tc] = T1;
     RETURN();
 }
 
 void glue(op_load_gpr_T2_gpr, REG) (void)
 {
-    T2 = env->gpr[REG];
+    T2 = env->gpr[REG][env->current_tc];
+    RETURN();
+}
+
+
+void glue(op_load_srsgpr_T0_gpr, REG) (void)
+{
+    T0 = env->gpr[REG][(env->CP0_SRSCtl >> CP0SRSCtl_PSS) & 0xf];
+    RETURN();
+}
+
+void glue(op_store_T0_srsgpr_gpr, REG) (void)
+{
+    env->gpr[REG][(env->CP0_SRSCtl >> CP0SRSCtl_PSS) & 0xf] = T0;
     RETURN();
 }
 #endif

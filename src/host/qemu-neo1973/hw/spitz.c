@@ -78,6 +78,18 @@ static uint32_t sl_readb(void *opaque, target_phys_addr_t addr)
     return 0;
 }
 
+static uint32_t sl_readl(void *opaque, target_phys_addr_t addr)
+{
+    struct sl_nand_s *s = (struct sl_nand_s *) opaque;
+    addr -= s->target_base;
+
+    if (addr == FLASH_FLASHIO)
+        return ecc_digest(&s->ecc, nand_getio(s->nand)) |
+                (ecc_digest(&s->ecc, nand_getio(s->nand)) << 16);
+
+    return sl_readb(opaque, addr);
+}
+
 static void sl_writeb(void *opaque, target_phys_addr_t addr,
                 uint32_t value)
 {
@@ -139,7 +151,7 @@ static void sl_flash_register(struct pxa2xx_state_s *cpu, int size)
     CPUReadMemoryFunc *sl_readfn[] = {
         sl_readb,
         sl_readb,
-        sl_readb,
+        sl_readl,
     };
     CPUWriteMemoryFunc *sl_writefn[] = {
         sl_writeb,
@@ -912,7 +924,7 @@ static void spitz_microdrive_attach(struct pxa2xx_state_s *cpu)
 
     if (bs && bdrv_is_inserted(bs) && !bdrv_is_removable(bs)) {
         md = dscm1xxxx_init(bs);
-        pxa2xx_pcmcia_attach(cpu->pcmcia[0], md);
+        pxa2xx_pcmcia_attach(cpu->pcmcia[1], md);
     }
 }
 
@@ -1198,10 +1210,10 @@ static void spitz_common_init(int ram_size, int vga_ram_size,
         spitz_akita_i2c_setup(cpu);
 
     if (model == terrier)
-        /* A 6.0 GB microdrive is permanently sitting in CF slot 0.  */
+        /* A 6.0 GB microdrive is permanently sitting in CF slot 1.  */
         spitz_microdrive_attach(cpu);
     else if (model != akita)
-        /* A 4.0 GB microdrive is permanently sitting in CF slot 0.  */
+        /* A 4.0 GB microdrive is permanently sitting in CF slot 1.  */
         spitz_microdrive_attach(cpu);
 
     /* Setup initial (reset) machine state */

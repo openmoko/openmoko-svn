@@ -1,4 +1,4 @@
-/* 
+/*
  * SD Memory Card emulation.  Mostly correct for MMC too.
  *
  * Copyright (c) 2006 Andrzej Zaborowski  <balrog@zabor.org>
@@ -56,8 +56,8 @@
 typedef enum {
     sd_none = -1,
     sd_bc = 0,	/* broadcast -- no response */
-    sd_bcr,		/* broadcast with response */
-    sd_ac,		/* addressed -- no data transfer */
+    sd_bcr,	/* broadcast with response */
+    sd_ac,	/* addressed -- no data transfer */
     sd_adtc,	/* addressed with data transfer */
 } sd_cmd_type_t;
 

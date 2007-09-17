@@ -97,6 +97,7 @@ OP_CFLAGS+=$(call cc-option, -fno-crossjumping, "")
 OP_CFLAGS+=$(call cc-option, -fno-align-labels, "")
 OP_CFLAGS+=$(call cc-option, -fno-align-jumps, "")
 OP_CFLAGS+=$(call cc-option, -fno-align-functions, $(call cc-option, -malign-functions=0, ""))
+OP_CFLAGS+=$(call cc-option, -fno-section-anchors, "")
 
 ifeq ($(ARCH),i386)
 HELPER_CFLAGS+=-fomit-frame-pointer
@@ -268,7 +269,7 @@ OBJS+= libqemu.a
 
 # cpu emulator library
 LIBOBJS=exec.o kqemu.o translate-op.o translate-all.o cpu-exec.o\
-        translate.o op.o 
+        translate.o op.o
 ifdef CONFIG_SOFTFLOAT
 LIBOBJS+=fpu/softfloat.o
 else
@@ -316,7 +317,7 @@ LIBOBJS+= op_helper.o helper.o alpha_palcode.o
 endif
 
 # NOTE: the disassembler code is only needed for debugging
-LIBOBJS+=disas.o 
+LIBOBJS+=disas.o
 ifeq ($(findstring i386, $(TARGET_ARCH) $(ARCH)),i386)
 USE_I386_DIS=y
 endif
@@ -347,6 +348,9 @@ endif
 ifeq ($(findstring sh4, $(TARGET_ARCH) $(ARCH)),sh4)
 LIBOBJS+=sh4-dis.o
 endif
+ifeq ($(findstring s390, $(TARGET_ARCH) $(ARCH)),s390)
+LIBOBJS+=s390-dis.o
+endif
 
 ifdef CONFIG_GDBSTUB
 OBJS+=gdbstub.o
@@ -367,7 +371,7 @@ VL_OBJS=vl.o osdep.o readline.o monitor.o pci.o console.o loader.o isa_mmio.o
 VL_OBJS+=cutils.o
 VL_OBJS+=host-utils.o
 VL_OBJS+=block.o block-raw.o
-VL_OBJS+=block-cow.o block-qcow.o aes.o block-vmdk.o block-cloop.o block-dmg.o block-bochs.o block-vpc.o block-vvfat.o block-qcow2.o
+VL_OBJS+=block-cow.o block-qcow.o aes.o block-vmdk.o block-cloop.o block-dmg.o block-bochs.o block-vpc.o block-vvfat.o block-qcow2.o block-parallels.o
 VL_OBJS+=irq.o
 ifdef CONFIG_WIN32
 VL_OBJS+=tap-win32.o
@@ -402,6 +406,11 @@ SOUND_HW += fmopl.o adlib.o
 endif
 AUDIODRV+= wavcapture.o
 
+ifdef CONFIG_VNC_TLS
+CPPFLAGS += $(CONFIG_VNC_TLS_CFLAGS)
+LIBS += $(CONFIG_VNC_TLS_LIBS)
+endif
+
 VL_OBJS += i2c.o smbus.o
 
 # SCSI layer
@@ -433,7 +442,7 @@ ifeq ($(TARGET_BASE_ARCH), i386)
 VL_OBJS+= ide.o pckbd.o ps2.o vga.o $(SOUND_HW) dma.o $(AUDIODRV)
 VL_OBJS+= fdc.o mc146818rtc.o serial.o i8259.o i8254.o pcspk.o pc.o
 VL_OBJS+= cirrus_vga.o apic.o parallel.o acpi.o piix_pci.o
-VL_OBJS+= usb-uhci.o smbus_eeprom.o vmmouse.o vmware_vga.o
+VL_OBJS+= usb-uhci.o smbus_eeprom.o vmmouse.o vmport.o vmware_vga.o
 CPPFLAGS += -DHAS_AUDIO -DHAS_AUDIO_CHOICE
 endif
 ifeq ($(TARGET_BASE_ARCH), ppc)
@@ -474,6 +483,7 @@ VL_OBJS+= spitz.o ads7846.o ide.o serial.o nand.o $(AUDIODRV) wm8750.o wm8753.o
 VL_OBJS+= s3c2410.o s3c24xx_gpio.o s3c24xx_lcd.o s3c24xx_mmci.o s3c24xx_rtc.o
 VL_OBJS+= s3c24xx_udc.o neo1973.o pcf5060x.o jbt6k74.o
 VL_OBJS+= $(GSM_OBJS) modem.o
+VL_OBJS+= omap.o omap_lcdc.o omap1_clk.o omap_mmc.o palm.o
 CPPFLAGS+= -DHAS_AUDIO $(GSM_CPPFLAGS)
 endif
 ifeq ($(TARGET_BASE_ARCH), sh4)
@@ -484,12 +494,12 @@ VL_OBJS+= an5206.o mcf5206.o ptimer.o mcf_uart.o mcf_intc.o mcf5208.o mcf_fec.o
 VL_OBJS+= m68k-semi.o
 endif
 ifdef CONFIG_GDBSTUB
-VL_OBJS+=gdbstub.o 
+VL_OBJS+=gdbstub.o
 endif
 ifdef CONFIG_SDL
 VL_OBJS+=sdl.o x_keymap.o
 endif
-VL_OBJS+=vnc.o
+VL_OBJS+=vnc.o d3des.o
 ifdef CONFIG_COCOA
 VL_OBJS+=cocoa.o
 COCOA_LIBS=-F/System/Library/Frameworks -framework Cocoa -framework IOKit
@@ -512,7 +522,7 @@ ifdef CONFIG_STATIC
 VL_LDFLAGS+=-static
 endif
 ifndef CONFIG_SOFTMMU
-VL_LDFLAGS+=-Wl,-T,$(SRC_PATH)/i386-vl.ld 
+VL_LDFLAGS+=-Wl,-T,$(SRC_PATH)/i386-vl.ld
 endif
 ifndef CONFIG_DARWIN
 ifndef CONFIG_WIN32
@@ -550,7 +560,7 @@ cocoa.o: cocoa.m
 sdl.o: sdl.c keymaps.c sdl_keysym.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(SDL_CFLAGS) $(BASE_CFLAGS) -c -o $@ $<
 
-vnc.o: vnc.c keymaps.c sdl_keysym.h vnchextile.h
+vnc.o: vnc.c keymaps.c sdl_keysym.h vnchextile.h d3des.c d3des.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(BASE_CFLAGS) -c -o $@ $<
 
 sdlaudio.o: sdlaudio.c
@@ -562,7 +572,7 @@ depend: $(SRCS)
 vldepend: $(VL_OBJS:.o=.c)
 	$(CC) -MM $(CFLAGS) $(CPPFLAGS) $(BASE_CFLAGS) $^ 1>.depend
 
-# libqemu 
+# libqemu
 
 libqemu.a: $(LIBOBJS)
 	rm -f $@
@@ -666,7 +676,7 @@ $(OBJS) $(LIBOBJS) $(VL_OBJS): config.h ../config-host.h
 clean:
 	rm -f *.o  *.a *~ $(PROGS) gen-op.h opc.h op.h nwfpe/*.o slirp/*.o fpu/*.o
 
-install: all 
+install: all
 ifneq ($(PROGS),)
 	$(INSTALL) -m 755 -s $(PROGS) "$(DESTDIR)$(bindir)"
 endif

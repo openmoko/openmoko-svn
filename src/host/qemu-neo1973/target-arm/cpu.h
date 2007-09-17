@@ -1,6 +1,6 @@
 /*
  * ARM virtual CPU header
- * 
+ *
  *  Copyright (c) 2003 Fabrice Bellard
  *
  * This library is free software; you can redistribute it and/or
@@ -64,11 +64,11 @@ typedef struct CPUARMState {
     uint32_t banked_spsr[6];
     uint32_t banked_r13[6];
     uint32_t banked_r14[6];
-    
+
     /* These hold r8-r12.  */
     uint32_t usr_regs[5];
     uint32_t fiq_regs[5];
-    
+
     /* cpsr flag cache for faster execution */
     uint32_t CF; /* 0 or 1 */
     uint32_t VF; /* V is the bit 31. All other bits are undefined */
@@ -99,6 +99,10 @@ typedef struct CPUARMState {
         uint32_t c13_fcse; /* FCSE PID.  */
         uint32_t c13_context; /* Context ID.  */
         uint32_t c15_cpar; /* XScale Coprocessor Access Register */
+        uint32_t c15_ticonfig; /* TI925T configuration byte.  */
+        uint32_t c15_i_max; /* Maximum D-cache dirty line index.  */
+        uint32_t c15_i_min; /* Minimum D-cache dirty line index.  */
+        uint32_t c15_threadid; /* TI debugger thread-ID.  */
     } cp15;
 
     /* Coprocessor IO used by peripherals */
@@ -130,7 +134,7 @@ typedef struct CPUARMState {
         /* Temporary variables if we don't have spare fp regs.  */
         float32 tmp0s, tmp1s;
         float64 tmp0d, tmp1d;
-        
+
         float_status fp_status;
     } vfp;
 
@@ -167,7 +171,7 @@ void switch_mode(CPUARMState *, int);
 /* you can call this signal handler from your SIGBUS and SIGSEGV
    signal handlers to inform the virtual CPU of exceptions. non zero
    is returned if the signal was handled by the virtual CPU.  */
-int cpu_arm_signal_handler(int host_signum, void *pinfo, 
+int cpu_arm_signal_handler(int host_signum, void *pinfo,
                            void *puc);
 
 #define CPSR_M (0x1f)
@@ -189,7 +193,7 @@ static inline uint32_t cpsr_read(CPUARMState *env)
 {
     int ZF;
     ZF = (env->NZF == 0);
-    return env->uncached_cpsr | (env->NZF & 0x80000000) | (ZF << 30) | 
+    return env->uncached_cpsr | (env->NZF & 0x80000000) | (ZF << 30) |
         (env->CF << 29) | ((env->VF & 0x80000000) >> 3) | (env->QF << 27)
         | (env->thumb << 5);
 }
@@ -247,8 +251,9 @@ enum arm_features {
     ARM_FEATURE_AUXCR,  /* ARM1026 Auxiliary control register.  */
     ARM_FEATURE_XSCALE, /* Intel XScale extensions.  */
     ARM_FEATURE_IWMMXT, /* Intel iwMMXt extension.  */
-    ARM_FEATURE_S3C,    /* S3C specific bits.  */
-    ARM_FEATURE_MPU     /* Only has Memory Protection Unit, not full MMU.  */
+    ARM_FEATURE_S3C,    /* S3C specific bits.  TODO: replace with id==ARM920 */
+    ARM_FEATURE_MPU,    /* Only has Memory Protection Unit, not full MMU.  */
+    ARM_FEATURE_OMAPCP  /* OMAP specific CP15 ops handling.  */
 };
 
 static inline int arm_feature(CPUARMState *env, int feature)
@@ -267,6 +272,8 @@ void cpu_arm_set_cp_io(CPUARMState *env, int cpnum,
 #define ARM_CPUID_ARM926    0x41069265
 #define ARM_CPUID_ARM946    0x41059461
 #define ARM_CPUID_ARM920T   0x41129200
+#define ARM_CPUID_TI915T    0x54029152
+#define ARM_CPUID_TI925T    0x54029252
 #define ARM_CPUID_PXA250    0x69052100
 #define ARM_CPUID_PXA255    0x69052d00
 #define ARM_CPUID_PXA260    0x69052903

@@ -140,6 +140,7 @@ enum speedo_offsets {
     SCBflash = 12, SCBeeprom = 14,      /* EEPROM and flash memory control. */
     SCBCtrlMDI = 16,            /* MDI interface control. */
     SCBEarlyRx = 20,            /* Early receive byte count. */
+    SCBFlow = 24,
 };
 
 /* A speedo3 transmit buffer descriptor with two buffers... */
@@ -1256,6 +1257,10 @@ static void eepro100_write1(EEPRO100State * s, uint32_t addr, uint8_t val)
         eepro100_interrupt(s, 0);
         break;
     case SCBPort + 3:
+    case SCBFlow:
+    case SCBFlow + 1:
+    case SCBFlow + 2:
+    case SCBFlow + 3:
         logout("addr=%s val=0x%02x\n", regname(addr), val);
         break;
     case SCBeeprom:
@@ -1613,7 +1618,7 @@ static int nic_load(QEMUFile * f, void *opaque, int version_id)
     for (i = 0; i < 3; i++)
         qemu_get_be32s(f, &s->region[i]);
     qemu_get_buffer(f, s->macaddr, 6);
-    for (i = 0; i < 19; i++) 
+    for (i = 0; i < 19; i++)
         qemu_get_be32s(f, &s->statcounter[i]);
     for (i = 0; i < 32; i++)
         qemu_get_be16s(f, &s->mdimem[i]);
@@ -1692,7 +1697,7 @@ static void nic_save(QEMUFile * f, void *opaque)
     for (i = 0; i < 3; i++)
         qemu_put_be32s(f, &s->region[i]);
     qemu_put_buffer(f, s->macaddr, 6);
-    for (i = 0; i < 19; i++) 
+    for (i = 0; i < 19; i++)
         qemu_put_be32s(f, &s->statcounter[i]);
     for (i = 0; i < 32; i++)
         qemu_put_be16s(f, &s->mdimem[i]);

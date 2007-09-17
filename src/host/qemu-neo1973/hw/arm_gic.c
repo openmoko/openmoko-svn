@@ -1,4 +1,4 @@
-/* 
+/*
  * ARM AMBA Generic/Distributed Interrupt Controller
  *
  * Copyright (c) 2006 CodeSourcery.
@@ -115,7 +115,7 @@ static void gic_set_irq(void *opaque, int irq, int level)
     gic_state *s = (gic_state *)opaque;
     /* The first external input line is internal interrupt 32.  */
     irq += 32;
-    if (level == GIC_TEST_LEVEL(irq)) 
+    if (level == GIC_TEST_LEVEL(irq))
         return;
 
     if (level) {
@@ -460,7 +460,7 @@ static uint32_t gic_cpu_read(void *opaque, target_phys_addr_t offset)
     case 0x18: /* Highest Pending Interrupt */
         return s->current_pending;
     default:
-        cpu_abort (cpu_single_env, "gic_cpu_writeb: Bad offset %x\n", offset);
+        cpu_abort (cpu_single_env, "gic_cpu_read: Bad offset %x\n", offset);
         return 0;
     }
 }
@@ -484,7 +484,7 @@ static void gic_cpu_write(void *opaque, target_phys_addr_t offset,
     case 0x10: /* End Of Interrupt */
         return gic_complete_irq(s, value & 0x3ff);
     default:
-        cpu_abort (cpu_single_env, "gic_cpu_writeb: Bad offset %x\n", offset);
+        cpu_abort (cpu_single_env, "gic_cpu_write: Bad offset %x\n", offset);
         return;
     }
     gic_update(s);

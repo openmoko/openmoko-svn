@@ -1,8 +1,8 @@
 /**
  * QEMU RTL8139 emulation
- * 
+ *
  * Copyright (c) 2006 Igor Kovalenko
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -20,13 +20,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- 
+
  * Modifications:
  *  2006-Jan-28  Mark Malakanov :   TSAD and CSCR implementation (for Windows driver)
- * 
+ *
  *  2006-Apr-28  Juergen Lock   :   EEPROM emulation changes for FreeBSD driver
  *                                  HW revision ID changes for FreeBSD driver
- * 
+ *
  *  2006-Jul-01  Igor Kovalenko :   Implemented loopback mode for FreeBSD driver
  *                                  Corrected packet transfer reassembly routine for 8139C+ mode
  *                                  Rearranged debugging print statements
@@ -53,9 +53,8 @@
 /* debug RTL8139 card C+ mode only */
 //#define DEBUG_RTL8139CP 1
 
-/* RTL8139 provides frame CRC with received packet, this feature seems to be
-   ignored by most drivers, disabled by default */
-//#define RTL8139_CALCULATE_RXCRC 1
+/* Calculate CRCs properly on Rx packets */
+#define RTL8139_CALCULATE_RXCRC 1
 
 /* Uncomment to enable on-board timer interrupts */
 //#define RTL8139_ONBOARD_TIMER 1
@@ -306,11 +305,11 @@ enum CSCRBits {
     CSCR_LinkDownCmd = 0x0f3c0,
 */
 enum CSCRBits {
-    CSCR_Testfun = 1<<15, /* 1 = Auto-neg speeds up internal timer, WO, def 0 */ 
+    CSCR_Testfun = 1<<15, /* 1 = Auto-neg speeds up internal timer, WO, def 0 */
     CSCR_LD  = 1<<9,  /* Active low TPI link disable signal. When low, TPI still transmits link pulses and TPI stays in good link state. def 1*/
     CSCR_HEART_BIT = 1<<8,  /* 1 = HEART BEAT enable, 0 = HEART BEAT disable. HEART BEAT function is only valid in 10Mbps mode. def 1*/
     CSCR_JBEN = 1<<7,  /* 1 = enable jabber function. 0 = disable jabber function, def 1*/
-    CSCR_F_LINK_100 = 1<<6, /* Used to login force good link in 100Mbps for diagnostic purposes. 1 = DISABLE, 0 = ENABLE. def 1*/ 
+    CSCR_F_LINK_100 = 1<<6, /* Used to login force good link in 100Mbps for diagnostic purposes. 1 = DISABLE, 0 = ENABLE. def 1*/
     CSCR_F_Connect  = 1<<5,  /* Assertion of this bit forces the disconnect function to be bypassed. def 0*/
     CSCR_Con_status = 1<<3, /* This bit indicates the status of the connection. 1 = valid connected link detected; 0 = disconnected link detected. RO def 0*/
     CSCR_Con_status_En = 1<<2, /* Assertion of this bit configures LED1 pin to indicate connection status. def 0*/
@@ -747,7 +746,7 @@ static void rtl8139_write_buffer(RTL8139State *s, const void *buf, int size)
         int wrapped = MOD2(s->RxBufAddr + size, s->RxBufferSize);
 
         /* write packet data */
-        if (wrapped && s->RxBufferSize < 65536 && !rtl8139_RxWrap(s))
+        if (wrapped && !(s->RxBufferSize < 65536 && rtl8139_RxWrap(s)))
         {
             DEBUG_PRINT((">>> RTL8139: rx packet wrapped in buffer at %d\n", size-wrapped));
 
@@ -814,7 +813,7 @@ static void rtl8139_do_receive(void *opaque, const uint8_t *buf, int size, int d
     uint32_t packet_header = 0;
 
     uint8_t buf1[60];
-    static const uint8_t broadcast_macaddr[6] = 
+    static const uint8_t broadcast_macaddr[6] =
         { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
     DEBUG_PRINT((">>> RTL8139: received len=%d\n", size));
@@ -891,10 +890,10 @@ static void rtl8139_do_receive(void *opaque, const uint8_t *buf, int size, int d
             ++s->tally_counters.RxOkMul;
 
         } else if (s->phys[0] == buf[0] &&
-                   s->phys[1] == buf[1] &&                   
-                   s->phys[2] == buf[2] &&            
-                   s->phys[3] == buf[3] &&            
-                   s->phys[4] == buf[4] &&            
+                   s->phys[1] == buf[1] &&
+                   s->phys[2] == buf[2] &&
+                   s->phys[3] == buf[3] &&
+                   s->phys[4] == buf[4] &&
                    s->phys[5] == buf[5]) {
             /* match */
             if (!(s->RxConfig & AcceptMyPhys))
@@ -1023,7 +1022,7 @@ static void rtl8139_do_receive(void *opaque, const uint8_t *buf, int size, int d
 
         /* write checksum */
 #if defined (RTL8139_CALCULATE_RXCRC)
-        val = cpu_to_le32(crc32(~0, buf, size));
+        val = cpu_to_le32(crc32(0, buf, size));
 #else
         val = 0;
 #endif
@@ -1129,7 +1128,7 @@ static void rtl8139_do_receive(void *opaque, const uint8_t *buf, int size, int d
 
         /* write checksum */
 #if defined (RTL8139_CALCULATE_RXCRC)
-        val = cpu_to_le32(crc32(~0, buf, size));
+        val = cpu_to_le32(crc32(0, buf, size));
 #else
         val = 0;
 #endif
@@ -1226,7 +1225,7 @@ static void rtl8139_reset(RTL8139State *s)
     s->Config3 = 0x1; /* fast back-to-back compatible */
     s->Config5 = 0x0;
 
-    s->CSCR = CSCR_F_LINK_100 | CSCR_HEART_BIT | CSCR_LD; 
+    s->CSCR = CSCR_F_LINK_100 | CSCR_HEART_BIT | CSCR_LD;
 
     s->CpCmd   = 0x0; /* reset C+ mode */
 
@@ -2421,17 +2420,17 @@ static uint16_t rtl8139_TSAD_read(RTL8139State *s)
          |((s->TxStatus[2] & TxUnderrun)?TSAD_TUN2:0)
          |((s->TxStatus[1] & TxUnderrun)?TSAD_TUN1:0)
          |((s->TxStatus[0] & TxUnderrun)?TSAD_TUN0:0)
-         
+
          |((s->TxStatus[3] & TxAborted )?TSAD_TABT3:0)
          |((s->TxStatus[2] & TxAborted )?TSAD_TABT2:0)
          |((s->TxStatus[1] & TxAborted )?TSAD_TABT1:0)
          |((s->TxStatus[0] & TxAborted )?TSAD_TABT0:0)
-         
+
          |((s->TxStatus[3] & TxHostOwns )?TSAD_OWN3:0)
          |((s->TxStatus[2] & TxHostOwns )?TSAD_OWN2:0)
          |((s->TxStatus[1] & TxHostOwns )?TSAD_OWN1:0)
          |((s->TxStatus[0] & TxHostOwns )?TSAD_OWN0:0) ;
-       
+
 
     DEBUG_PRINT(("RTL8139: TSAD read val=0x%04x\n", ret));
 
@@ -3316,7 +3315,7 @@ typedef struct PCIRTL8139State {
     RTL8139State rtl8139;
 } PCIRTL8139State;
 
-static void rtl8139_mmio_map(PCIDevice *pci_dev, int region_num, 
+static void rtl8139_mmio_map(PCIDevice *pci_dev, int region_num,
                        uint32_t addr, uint32_t size, int type)
 {
     PCIRTL8139State *d = (PCIRTL8139State *)pci_dev;
@@ -3325,7 +3324,7 @@ static void rtl8139_mmio_map(PCIDevice *pci_dev, int region_num,
     cpu_register_physical_memory(addr + 0, 0x100, s->rtl8139_mmio_io_addr);
 }
 
-static void rtl8139_ioport_map(PCIDevice *pci_dev, int region_num, 
+static void rtl8139_ioport_map(PCIDevice *pci_dev, int region_num,
                        uint32_t addr, uint32_t size, int type)
 {
     PCIRTL8139State *d = (PCIRTL8139State *)pci_dev;
@@ -3355,7 +3354,7 @@ static CPUWriteMemoryFunc *rtl8139_mmio_write[3] = {
 
 static inline int64_t rtl8139_get_next_tctr_time(RTL8139State *s, int64_t current_time)
 {
-    int64_t next_time = current_time + 
+    int64_t next_time = current_time +
         muldiv64(1, ticks_per_sec, PCI_FREQUENCY);
     if (next_time <= current_time)
         next_time = current_time + 1;
@@ -3401,7 +3400,7 @@ static void rtl8139_timer(void *opaque)
         rtl8139_update_irq(s);
     }
 
-    qemu_mod_timer(s->timer, 
+    qemu_mod_timer(s->timer,
         rtl8139_get_next_tctr_time(s,curr_time));
 }
 #endif /* RTL8139_ONBOARD_TIMER */
@@ -3411,10 +3410,10 @@ void pci_rtl8139_init(PCIBus *bus, NICInfo *nd, int devfn)
     PCIRTL8139State *d;
     RTL8139State *s;
     uint8_t *pci_conf;
-    
+
     d = (PCIRTL8139State *)pci_register_device(bus,
                                               "RTL8139", sizeof(PCIRTL8139State),
-                                              devfn, 
+                                              devfn,
                                               NULL, NULL);
     pci_conf = d->dev.config;
     pci_conf[0x00] = 0xec; /* Realtek 8139 */
@@ -3435,10 +3434,10 @@ void pci_rtl8139_init(PCIBus *bus, NICInfo *nd, int devfn)
     s->rtl8139_mmio_io_addr =
     cpu_register_io_memory(0, rtl8139_mmio_read, rtl8139_mmio_write, s);
 
-    pci_register_io_region(&d->dev, 0, 0x100, 
+    pci_register_io_region(&d->dev, 0, 0x100,
                            PCI_ADDRESS_SPACE_IO,  rtl8139_ioport_map);
 
-    pci_register_io_region(&d->dev, 1, 0x100, 
+    pci_register_io_region(&d->dev, 1, 0x100,
                            PCI_ADDRESS_SPACE_MEM, rtl8139_mmio_map);
 
     s->pci_dev = (PCIDevice *)d;
@@ -3459,14 +3458,14 @@ void pci_rtl8139_init(PCIBus *bus, NICInfo *nd, int devfn)
     s->cplus_txbuffer = NULL;
     s->cplus_txbuffer_len = 0;
     s->cplus_txbuffer_offset = 0;
-             
+
     /* XXX: instance number ? */
     register_savevm("rtl8139", 0, 3, rtl8139_save, rtl8139_load, s);
 
 #if RTL8139_ONBOARD_TIMER
     s->timer = qemu_new_timer(vm_clock, rtl8139_timer, s);
 
-    qemu_mod_timer(s->timer, 
+    qemu_mod_timer(s->timer,
         rtl8139_get_next_tctr_time(s,qemu_get_clock(vm_clock)));
 #endif /* RTL8139_ONBOARD_TIMER */
 }

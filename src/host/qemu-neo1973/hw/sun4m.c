@@ -1,8 +1,8 @@
 /*
  * QEMU Sun4m System Emulator
- * 
+ *
  * Copyright (c) 2003-2005 Fabrice Bellard
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -240,26 +240,41 @@ void irq_info()
     slavio_irq_info(slavio_intctl);
 }
 
+void cpu_check_irqs(CPUState *env)
+{
+    if (env->pil_in && (env->interrupt_index == 0 ||
+                        (env->interrupt_index & ~15) == TT_EXTINT)) {
+        unsigned int i;
+
+        for (i = 15; i > 0; i--) {
+            if (env->pil_in & (1 << i)) {
+                int old_interrupt = env->interrupt_index;
+
+                env->interrupt_index = TT_EXTINT | i;
+                if (old_interrupt != env->interrupt_index)
+                    cpu_interrupt(env, CPU_INTERRUPT_HARD);
+                break;
+            }
+        }
+    } else if (!env->pil_in && (env->interrupt_index & ~15) == TT_EXTINT) {
+        env->interrupt_index = 0;
+        cpu_reset_interrupt(env, CPU_INTERRUPT_HARD);
+    }
+}
+
 static void cpu_set_irq(void *opaque, int irq, int level)
 {
     CPUState *env = opaque;
 
     if (level) {
         DPRINTF("Raise CPU IRQ %d\n", irq);
-
         env->halted = 0;
-
-        if (env->interrupt_index == 0 ||
-            ((env->interrupt_index & ~15) == TT_EXTINT &&
-             (env->interrupt_index & 15) < irq)) {
-            env->interrupt_index = TT_EXTINT | irq;
-            cpu_interrupt(env, CPU_INTERRUPT_HARD);
-        } else {
-            DPRINTF("Not triggered, pending exception %d\n",
-                    env->interrupt_index);
-        }
+        env->pil_in |= 1 << irq;
+        cpu_check_irqs(env);
     } else {
         DPRINTF("Lower CPU IRQ %d\n", irq);
+        env->pil_in &= ~(1 << irq);
+        cpu_check_irqs(env);
     }
 }
 
@@ -300,6 +315,7 @@ static void *sun4m_hw_init(const struct hwdef *hwdef, int RAM_size,
     const sparc_def_t *def;
     qemu_irq *cpu_irqs[MAX_CPUS], *slavio_irq, *slavio_cpu_irq,
         *espdma_irq, *ledma_irq;
+    qemu_irq *esp_reset, *le_reset;
 
     /* init CPUs */
     sparc_find_by_name(cpu_model, &def);
@@ -337,9 +353,11 @@ static void *sun4m_hw_init(const struct hwdef *hwdef, int RAM_size,
                                        hwdef->clock_irq);
 
     espdma = sparc32_dma_init(hwdef->dma_base, slavio_irq[hwdef->esp_irq],
-                              iommu, &espdma_irq);
+                              iommu, &espdma_irq, &esp_reset);
+
     ledma = sparc32_dma_init(hwdef->dma_base + 16ULL,
-                             slavio_irq[hwdef->le_irq], iommu, &ledma_irq);
+                             slavio_irq[hwdef->le_irq], iommu, &ledma_irq,
+                             &le_reset);
 
     if (graphic_depth != 8 && graphic_depth != 24) {
         fprintf(stderr, "qemu: Unsupported depth: %d\n", graphic_depth);
@@ -350,7 +368,7 @@ static void *sun4m_hw_init(const struct hwdef *hwdef, int RAM_size,
 
     if (nd_table[0].model == NULL
         || strcmp(nd_table[0].model, "lance") == 0) {
-        lance_init(&nd_table[0], hwdef->le_base, ledma, *ledma_irq);
+        lance_init(&nd_table[0], hwdef->le_base, ledma, *ledma_irq, le_reset);
     } else if (strcmp(nd_table[0].model, "?") == 0) {
         fprintf(stderr, "qemu: Supported NICs: lance\n");
         exit (1);
@@ -374,7 +392,9 @@ static void *sun4m_hw_init(const struct hwdef *hwdef, int RAM_size,
     slavio_serial_init(hwdef->serial_base, slavio_irq[hwdef->ser_irq],
                        serial_hds[1], serial_hds[0]);
     fdctrl_init(slavio_irq[hwdef->fd_irq], 0, 1, hwdef->fd_base, fd_table);
-    main_esp = esp_init(bs_table, hwdef->esp_base, espdma, *espdma_irq);
+
+    main_esp = esp_init(bs_table, hwdef->esp_base, espdma, *espdma_irq,
+                        esp_reset);
 
     for (i = 0; i < MAX_DISKS; i++) {
         if (bs_table[i]) {
@@ -405,14 +425,14 @@ static void sun4m_load_kernel(long vram_size, int RAM_size, int boot_device,
     linux_boot = (kernel_filename != NULL);
 
     prom_offset = RAM_size + vram_size;
-    cpu_register_physical_memory(PROM_ADDR, 
-                                 (PROM_SIZE_MAX + TARGET_PAGE_SIZE - 1) & TARGET_PAGE_MASK, 
+    cpu_register_physical_memory(PROM_ADDR,
+                                 (PROM_SIZE_MAX + TARGET_PAGE_SIZE - 1) & TARGET_PAGE_MASK,
                                  prom_offset | IO_MEM_ROM);
 
     snprintf(buf, sizeof(buf), "%s/%s", bios_dir, PROM_FILENAME);
     ret = load_elf(buf, 0, NULL, NULL, NULL);
     if (ret < 0) {
-	fprintf(stderr, "qemu: could not load prom '%s'\n", 
+	fprintf(stderr, "qemu: could not load prom '%s'\n",
 		buf);
 	exit(1);
     }
@@ -425,7 +445,7 @@ static void sun4m_load_kernel(long vram_size, int RAM_size, int boot_device,
 	if (kernel_size < 0)
 	    kernel_size = load_image(kernel_filename, phys_ram_base + KERNEL_LOAD_ADDR);
         if (kernel_size < 0) {
-            fprintf(stderr, "qemu: could not load kernel '%s'\n", 
+            fprintf(stderr, "qemu: could not load kernel '%s'\n",
                     kernel_filename);
 	    exit(1);
         }
@@ -435,7 +455,7 @@ static void sun4m_load_kernel(long vram_size, int RAM_size, int boot_device,
         if (initrd_filename) {
             initrd_size = load_image(initrd_filename, phys_ram_base + INITRD_LOAD_ADDR);
             if (initrd_size < 0) {
-                fprintf(stderr, "qemu: could not load initial ram disk '%s'\n", 
+                fprintf(stderr, "qemu: could not load initial ram disk '%s'\n",
                         initrd_filename);
                 exit(1);
             }
