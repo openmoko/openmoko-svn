@@ -1172,6 +1172,9 @@ void	gn_atem_at_parse(char *cmd_buffer)
 			}
 			break;
 
+		case '\0':
+			break;
+
 		default:
 			gn_atem_modem_result(MR_ERROR);
 			return;

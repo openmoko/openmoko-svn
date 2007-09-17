@@ -133,14 +133,6 @@ static gn_error modem_gsm_ops(gn_operation op, gn_data *data,
     return GN_ERR_NONE;
 }
 
-static void modem_reset(struct modem_s *s)
-{
-    s->out_len = 0;
-    s->baud_delay = ticks_per_sec;
-    qemu_del_timer(s->reg_tm);
-    qemu_del_timer(s->csq_tm);
-}
-
 static void modem_csq_report(void *opaque)
 {
     struct modem_s *s = (struct modem_s *) opaque;
@@ -223,10 +215,6 @@ static int modem_ioctl(struct CharDriverState *chr, int cmd, void *arg)
     case CHR_IOCTL_MODEM_HANDSHAKE:
         if (!s->enable)
             return -ENOTSUP;
-#if 0
-        if (*(int *) arg)
-            modem_resp(s, "AT-Command Interpreter Ready\r\nOK\r\n");
-#endif
         break;
 
     default:
@@ -235,12 +223,21 @@ static int modem_ioctl(struct CharDriverState *chr, int cmd, void *arg)
     return 0;
 }
 
+static void modem_reset(struct modem_s *s)
+{
+    s->out_len = 0;
+    s->baud_delay = ticks_per_sec;
+    qemu_del_timer(s->reg_tm);
+    qemu_del_timer(s->csq_tm);
+    modem_resp(s, "AT-Command Interpreter ready\r\nOK\r\n");
+}
+
 void modem_enable(CharDriverState *chr, int enable)
 {
     struct modem_s *s = (struct modem_s *) chr->opaque;
+    s->enable = enable;
     if (enable)
         modem_reset(s);
-    s->enable = enable;
 }
 
 static void modem_out_tick(void *opaque)
