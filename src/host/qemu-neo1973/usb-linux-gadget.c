@@ -211,7 +211,7 @@ static void gadget_ep_read(void *opaque)
         return;
 #endif
 
-    /* write() is supposed to not block here */
+    /* write() is supposed to not block here (but it does :-/ ) */
     if (write(ep->fd, ep->buffer, 0))
         return;
 

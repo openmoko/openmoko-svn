@@ -905,7 +905,7 @@ static void configure_alarms(char const *opt)
     while (name) {
         struct qemu_alarm_timer tmp;
 
-        for (i = 0; i < count; i++) {
+        for (i = 0; i < count && alarm_timers[i].name; i++) {
             if (!strcmp(alarm_timers[i].name, name))
                 break;
         }
@@ -8243,6 +8243,17 @@ int main(int argc, char **argv)
                 break;
             case QEMU_OPTION_usbgadget:
                 usbgadget_enabled = 1;
+                /* XXX: Force the "unix" alarm to be used because usbgadget
+                 * needs SIGALARM to interrupt the blocking read()s and
+                 * write()s until it is rewritten to use AIO - there's no
+                 * other way to get non-blocking IO on gadgetfs.  */
+                memset(alarm_timers, 0, sizeof(alarm_timers));
+                alarm_timers->name = "unix";
+                alarm_timers->flags = 0;
+                alarm_timers->start = unix_start_timer;
+                alarm_timers->stop = unix_stop_timer;
+                alarm_timers->rearm = 0;
+                alarm_timers->priv = 0;
                 break;
             case QEMU_OPTION_smp:
                 smp_cpus = atoi(optarg);
