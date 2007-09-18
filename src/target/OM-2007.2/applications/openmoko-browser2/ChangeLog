@@ -1,5 +1,15 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Work around another Gtk+ crash. If we remove a WebKitGtkPage
+        and add another one (gtk_container_{add,remove}) without accesing
+        the event loop we will get a crash.
+        The work around is to switch to the selection page to select a webpage
+
+        * src/current-page.c:
+        (current_close_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Change the button label depending on if we are going
         to search or to navigate to a url directly.
 

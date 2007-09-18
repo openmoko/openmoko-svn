@@ -73,8 +73,8 @@ static void current_close_page(GtkWidget* button, struct BrowserData* data)
     /* To destroy the WebKitGtkPage we will g_object_unref it */
     struct BrowserPage* oldCurrent = data->currentPage;
     data->browserPages = g_list_remove (data->browserPages, oldCurrent);
-    struct BrowserPage* newPage = g_list_first(data->browserPages) ? g_list_first(data->browserPages)->data : NULL;
-    set_current_page (newPage, data);
+    set_current_page (NULL, data);
+    gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 2);
 
 
     g_object_unref (oldCurrent->webKitPage);
