@@ -1,5 +1,25 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Implement to switch pages. Currently Gtk+ is broken and
+        insists in changing the GtkTreeSelection and there is no
+        working way to unselect the selection.
+        This is responsible for the bug where you have to click twice
+        on the "Open Pages"-Page to be able to switch the tab. 
+
+        * src/Makefile.am:
+        * src/browser-data.h:
+        * src/main.c:
+        (setup_ui):
+        * src/open-pages-page.c: Added.
+        (find_browser_page):
+        (selection_changed):
+        (pages_add_to_list_store):
+        (switched_notebook_tab):
+        (setup_open_pages_page):
+        * src/open-pages-page.h: Added.
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Always show the WebKitGtkPage.
 
         * src/current-page.c:
