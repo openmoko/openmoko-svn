@@ -24,49 +24,23 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#include "config.h"
-#include "browser-data.h"
+#ifndef OPENMOKO_BROWSER_DATA_H
+#define OPENMOKO_BROWSER_DATA_H
 
-#include <gtk/gtk.h>
-#include <glib/gi18n.h>
+#include "webkitgtkpage.h"
 
-#include <webkitgtkglobal.h>
+/*
+ * representation of one page
+ */
+struct BrowserPage {
+    WebKitGtkPage* webKitPage;
+};
 
-#include <moko-finger-scroll.h>
-#include <moko-stock.h>
+/*
+ * The state of the Browser
+ */
+struct BrowserData {
+    GList* browserPages;
+};
 
-#include <stdlib.h>
-
-
-static void setup_ui (struct BrowserData*);
-
-int main (int argc, char** argv)
-{
-    g_debug ("openmoko-browser starting up");
-
-    bindtextdomain (GETTEXT_PACKAGE, BROWSER_LOCALE_DIR);
-    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-    textdomain (GETTEXT_PACKAGE);
-
-    g_thread_init (NULL);
-    gdk_threads_init ();
-    gdk_threads_enter ();
-    gtk_init (&argc, &argv);
-    webkit_gtk_init ();
-    moko_stock_register ();
-    g_set_application_name (_("Browser"));
-
-    struct BrowserData* data = g_new (struct BrowserData, 1);
-    setup_ui (data);
-
-    gtk_main ();
-    gdk_threads_leave ();
-    g_free (data);
-
-    return EXIT_SUCCESS;
-}
-
-
-static void setup_ui (struct BrowserData* data)
-{
-}
+#endif
