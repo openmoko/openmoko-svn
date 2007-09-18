@@ -7,8 +7,8 @@ AM_CFLAGS  = -Wall -Werror -std=c99 @OPENMOKO_CFLAGS@ @WEBKITGTK_CFLAGS@ @GTHREA
 
 bin_PROGRAMS = openmoko-browser
 
-EXTRA_DIST = browser-data.h current-page.h
-openmoko_browser_SOURCES = main.c current-page.c
+EXTRA_DIST = browser-data.h current-page.h go-page.h
+openmoko_browser_SOURCES = main.c current-page.c go-page.c
 openmoko_browser_LDADD = @OPENMOKO_LIBS@ @WEBKITGTK_LIBS@ @GTHREAD_LIBS@
 
 CLEANFILES = $(stamp_files)

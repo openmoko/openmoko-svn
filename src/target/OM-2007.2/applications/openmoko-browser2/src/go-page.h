@@ -24,59 +24,12 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#ifndef OPENMOKO_BROWSER_DATA_H
-#define OPENMOKO_BROWSER_DATA_H
+#ifndef OPENMOKO_BROWSER_GO_PAGE_H
+#define OPENMOKO_BROWSER_GO_PAGE_H
 
-#include "webkitgtkpage.h"
+#include "browser-data.h"
 
-#include <glib.h>
-#include <gtk/gtk.h>
+void setup_go_page(GtkBox* box, struct BrowserData* data);
 
-/*
- * representation of one page
- */
-struct BrowserPage {
-    WebKitGtkPage* webKitPage;
-};
-
-/*
- * The state of the Browser
- */
-struct BrowserData {
-    GtkWidget *mainWindow;
-    GtkWidget *mainNotebook;
-    GtkWidget *currentFingerScroll;
-
-    GList* browserPages;
-    struct BrowserPage* currentPage;
-
-    /**
-     * Two special views for the Browser. The Overview
-     * and Bookmark page are meant to be partly implemented
-     * using HTML and JavaScript and binding the GObject(s) to
-     * JavaScript.
-     */
-    WebKitGtkPage* pagesOverviewPage;
-    WebKitGtkPage* bookmarkPage;
-
-
-    /*
-     * Current
-     */
-    GtkToolItem* currentBack;
-    GtkToolItem* currentForward;
-    GtkToolItem* currentStop;
-    GtkToolItem* currentAdd;
-    GtkToolItem* currentClose;
-
-    /*
-     * Go-Page
-     */
-    GtkWidget* goBox;
-    GtkEntry* goUrlEntry;
-    GtkEntry* goSearchEntry;
-    GtkWidget* goButton;
-    GtkWidget* goButtonNewPage;
-};
 
 #endif

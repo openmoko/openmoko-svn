@@ -1,5 +1,24 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Add the skeleton of the Go-Page to be able to create
+        new pages.
+
+        * src/Makefile.am:
+        * src/browser-data.h:
+        * src/go-page.c: Added.
+        (entry_focus_in):
+        (entry_focus_out):
+        (search_url_entry_changed):
+        (go_clicked):
+        (create_new_page_clicked):
+        (switched_notebook_tab):
+        (setup_go_page):
+        * src/go-page.h: Added.
+        * src/main.c:
+        (setup_ui):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Add the "Close Current Page" button, document how the
         ownership and destroying of the WebKitGtkPage is planned. When
         the "Go"-Page will create a Page, we will additionally add a 

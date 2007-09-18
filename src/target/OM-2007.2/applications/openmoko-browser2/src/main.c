@@ -25,7 +25,9 @@
  */
 
 #include "config.h"
+
 #include "current-page.h"
+#include "go-page.h"
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
@@ -86,7 +88,12 @@ static void setup_ui (struct BrowserData* data)
     GtkWidget* box = gtk_vbox_new (FALSE, 0);
     gtk_notebook_append_page (GTK_NOTEBOOK (data->mainNotebook), box, gtk_image_new_from_stock (GTK_STOCK_NETWORK, GTK_ICON_SIZE_LARGE_TOOLBAR));
     gtk_container_child_set (GTK_CONTAINER (data->mainNotebook), box, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
-    setup_current_page(GTK_BOX (box), data);
+    setup_current_page (GTK_BOX (box), data);
+
+    box = gtk_vbox_new (FALSE, 0);
+    gtk_notebook_append_page (GTK_NOTEBOOK (data->mainNotebook), box, gtk_image_new_from_icon_name("browser-go", GTK_ICON_SIZE_LARGE_TOOLBAR));
+    gtk_container_child_set (GTK_CONTAINER (data->mainNotebook), box, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+    setup_go_page (GTK_BOX(box), data);
 
 
 
