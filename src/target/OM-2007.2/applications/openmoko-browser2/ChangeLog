@@ -1,5 +1,13 @@
 2007-09-16  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Document some of the bits that were discussed with
+        Ellen last Monday.
+
+        * documentation/design/GuiDesign: Added.
+        * documentation/design/MainTasks:
+
+2007-09-16  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Create the browser skeleton. It compiles but is not
         doing anything useful.
 

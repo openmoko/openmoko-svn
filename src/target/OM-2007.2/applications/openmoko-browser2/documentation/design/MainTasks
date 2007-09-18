@@ -1,0 +1,83 @@
+= Main Tasks for an Embedded/Mobile Browser to be used with your thumb =
+
+-) Open a URL
+-) Visit a bookmarked site, add bookmarks
+-) Easily navigate and get an overview of the page
+-) Have more than one page open at a time
+-) Fullscreen browsing
+-) Gestures
+
+
+
+Tasks in depth:
+
+== Open a URL ==
+
+It should be easy to navigate to a new URL. The new URL could be opened
+in a new window/tab/XYZ or replace a current page.
+Ideally the OpenURL dialog/window is fullscreen, features auto completion
+for the entered URL and will show a list of bookmarks below the entry. When
+clicking on a bookmark it should show up in the URL entry and can be edited further.
+
+
+== Visit a bookmarked site, add bookmarks ==
+Bookmarks:
+    We will allow to keep a hierachy of Bookmarked sites. The bookmark consists out of a icon
+    (by default the favorite icon of the site), a URL to be navigated to and a small
+    text to be shown to the user.
+
+Adding a bookmark:
+    Adding a bookmark should be possible with a thumb press. By default the current
+    favorite icon, the URL should be used. The entering of a text is optional. In case
+    of adding an already existing bookmark we will use the already existing icon+name
+    and allow to edit.
+    The add dialog will allow to create new folders as well. The hierachy can be chosen
+    using a ComboBox with the subdirectories being indented in the display.
+
+Ordering of bookmarsk:
+    It should be possible to change the order/rang of a bookmark by drag and drop. This
+    should be able to be triggered from the Bookmark tab as well.
+    Having a hierachy makes it more tough to move bookmars around in the hierachy. There
+    are two modes to do so. Using the editing menu which will be shown on "Right-On-Hold"
+    or by dragging and dropping along the hierachy of the bookmark view.
+
+Visiting Bookmarked sites:
+    On one click a grid/icon-view of bookmarks should be presented on the screen. The
+    grid should be of a fixed size and it should be possible to go to the next, previous
+    site.
+    The grid will be reachable using the GtkNotebook of the MainWindow. There will be one
+    GtkNotebook page for the bookmarks. And instead of having a start site the 
+    bookmark page will be shown.
+
+== Easily navigate and get an overview of the page ==
+
+One click should trigger a whole page view, and having a rect in the size of the viewport to
+control which area should be seen.
+
+== Have more than one page open at a time ==
+
+Some form of tab browsing. Probably similiar to the bookmark screen to show a list of open
+windows in a small, but not too small preview.
+
+== FullScreen browsing ==
+
+With one click it should be possible to use the fullscreen for browsing. The question is how
+to toggle back without having to use a keyboard. One option would be to have a fixed point on the screen,
+another would be to have gestures. But they must not conflict with MokoFingerScroll window.
+(Implementation is postponed)
+
+== Gestures ==
+
+The gestures should not conflict with MokoFingerScroll, should probably be similiar to the simple XStroke
+implementation and should be used for the following options.
+We will allow to define the corners (my screen has eight corners) and their actions, by default they will
+not conflict with the MokoFingerScroll.
+
+Zoom-In
+Zoom-Out
+Go Back
+Go Forward
+Add Bookmark
+Enter Fullscreen
+Leave Fullscreen
+

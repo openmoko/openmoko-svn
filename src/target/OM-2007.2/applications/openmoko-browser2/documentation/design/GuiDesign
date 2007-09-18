@@ -1,0 +1,73 @@
+= General Interface (MainWindow) =
+To follow the OpenMoko style guidelines we will be using a GtkNotebook
+with the following pages "Current Page", "Bookmark Page", "Go Page", 
+"Select Page" and "Settings Page".
+When the application will be launched the default page to show is the "Bookmark
+Page".
+
+== Current Page ==
+The current page will be viewed in this "GtkNotebook page". To select
+another of the already opened pages visit "Select Page".
+
+The toolbar will have five entries and up to 8 gestures.
+
+Toolbar:
+    Forward
+    Backward
+    Stop/Reload
+    Adding a bookmark
+    Close
+
+Gestures:
+    Page-Overview. Zoom out to give a full page overview
+    Zoom-in
+    Zoom-out
+    
+
+
+== Go Page ==
+It should be possible to replace the content of a page and be able
+to create new pages. This is why we will have a very simple input
+dialog to enter a URL/Search (hopefully assisted by the input method)
+and the option to open it in a new page or replace the current. E.g. this
+currently means that bookmarks are either opened in a new page or replace
+the current one. If it would replace the current page there must be an
+easy way to create a new blank page, so currently bookmarks will open in
+new pages.
+
+Discussion:
+    Entry Completion:
+        The proposal is to not remember every page but only the
+        pages that are in the bookmark-list and the pages that
+        got directly entered. The order should be to show the domain names
+        first and then after showing each domain other entries with the
+        path will be shown.
+
+    Bookmark and Go:
+        
+
+
+== Select Page ==
+Show all opened pages in a grid and allow to switch the current tab.
+
+
+== Bookmark Page ==
+Allow to open a bookmarked page. This page will be opened and made current. It is
+also possible to manage the bookmark page by removing, reordering and renaming
+entries.
+
+We will have a MokoSearchBar but currently have not discussed if we want to have
+a search for the bookmarks. The combobox will be used to navigate the bookmark
+hierachy.
+Below a grid with bookmarks will be shown. This grid will have an "up" button on the
+left when we are inside a hierachy. You can also navigate upwards or to remembered
+places using the Combobox of the Bookmark Page.
+
+
+== Settings Page ==
+To be discussed
+
+
+
+= Closing Dialogs/Widgets =
+Using the close hardware button will be used to close the widget.
