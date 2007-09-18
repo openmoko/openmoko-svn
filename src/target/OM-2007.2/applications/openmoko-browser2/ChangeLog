@@ -1,5 +1,19 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Add the "Close Current Page" button, document how the
+        ownership and destroying of the WebKitGtkPage is planned. When
+        the "Go"-Page will create a Page, we will additionally add a 
+        reference, so that gtk_container_{add,remove} will not destroy
+        it.
+
+        * src/browser-data.h:
+        * src/current-page.c:
+        (current_close_page):
+        (setup_current_page):
+        (set_current_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Start implementing set_current_page to allow switching
         the page. Stop/Reload is currently not implementable as
         WebKit/Gtk+ has no way to signalize if the load is done.

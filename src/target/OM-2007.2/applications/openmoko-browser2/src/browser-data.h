@@ -67,6 +67,7 @@ struct BrowserData {
     GtkToolItem* currentForward;
     GtkToolItem* currentStop;
     GtkToolItem* currentAdd;
+    GtkToolItem* currentClose;
 };
 
 #endif

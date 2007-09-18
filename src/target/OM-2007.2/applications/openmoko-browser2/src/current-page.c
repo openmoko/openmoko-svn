@@ -31,6 +31,14 @@
 #include <webkitgtkframe.h>
 #include <webkitgtkpage.h>
 
+/*
+ * From a list of BrowserPage's in BrowserData::currentPage show
+ * one as the current one. This means we will GtkContainer::{add,remove}
+ * the WebKitGtkPage. To make that work, e.g. not destroying the WebKitGtkPage
+ * when we remove it from the container, we will keep a self added reference
+ * on all WebKitGtkPages we have created.
+ */
+
 static void current_back_clicked_closure(GtkWidget* button, struct BrowserData* data)
 {
     g_return_if_fail (data->currentPage);
@@ -55,6 +63,23 @@ static void current_add_bookmark_clicked_closure(GtkWidget* button, struct Brows
 
 static void current_progress_changed(WebKitGtkPage* page, int prog, struct BrowserData* data)
 {
+}
+
+static void current_close_page(GtkWidget* button, struct BrowserData* data)
+{
+    g_return_if_fail (data->currentPage);
+
+    /* XXX FIXME TODO Select a better page, currently the first one is used */
+    /* To destroy the WebKitGtkPage we will g_object_unref it */
+    struct BrowserPage* oldCurrent = data->currentPage;
+    data->browserPages = g_list_remove (data->browserPages, oldCurrent);
+    struct BrowserPage* newPage = g_list_first(data->browserPages) ? g_list_first(data->browserPages)->data : NULL;
+    set_current_page (newPage, data);
+
+
+    g_object_unref (oldCurrent->webKitPage);
+    g_free (oldCurrent);
+
 }
 
 void setup_current_page(GtkBox* box, struct BrowserData* data)
@@ -89,6 +114,14 @@ void setup_current_page(GtkBox* box, struct BrowserData* data)
     g_signal_connect (data->currentAdd, "clicked", G_CALLBACK(current_add_bookmark_clicked_closure), data);
     gtk_widget_set_sensitive (GTK_WIDGET(data->currentAdd), FALSE);
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->currentAdd, 6);
+    gtk_toolbar_insert (GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new (), 7);
+
+    data->currentClose = gtk_tool_button_new_from_stock (GTK_STOCK_CLOSE);
+    gtk_tool_item_set_expand (GTK_TOOL_ITEM (data->currentClose), TRUE);
+    g_signal_connect (data->currentClose, "clicked", G_CALLBACK(current_close_page), data);
+    gtk_widget_set_sensitive (GTK_WIDGET(data->currentClose), FALSE);
+    gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->currentClose, 8);
+
 
     data->currentFingerScroll = moko_finger_scroll_new ();
     gtk_box_pack_start (box, data->currentFingerScroll, TRUE, TRUE, 0);
@@ -102,21 +135,30 @@ void set_current_page(struct BrowserPage* page, struct BrowserData* data)
     if (page == data->currentPage)
         return;
 
-    if (data->currentPage)
+    if (data->currentPage) {
+        gtk_container_remove (GTK_CONTAINER (data->currentFingerScroll), GTK_WIDGET (data->currentPage->webKitPage));
         g_signal_handlers_disconnect_by_func(data->currentPage->webKitPage, (gpointer)current_progress_changed, data);
+    }
 
     if (!page) {
         data->currentPage = NULL;
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), FALSE);
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), FALSE);
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentStop), FALSE);
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), FALSE);
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), FALSE);
     } else {
         data->currentPage = page;
         g_signal_connect(data->currentPage->webKitPage, "load-progress-changed", G_CALLBACK(current_progress_changed), data);
+        gtk_container_add (GTK_CONTAINER (data->currentFingerScroll), GTK_WIDGET (data->currentPage->webKitPage));
 
         /*
          * Update the GtkToolItems
          */
+        /* XXX ### FIXME TODO check if we should show stop/reload */
         gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_gtk_page_can_go_backward (data->currentPage->webKitPage));
         gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_gtk_page_can_go_forward (data->currentPage->webKitPage));
         gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (data->currentPage->webKitPage)) != NULL);
-        /* XXX ### FIXME TODO check if we should show stop/reload */
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), TRUE);
     }
 }
