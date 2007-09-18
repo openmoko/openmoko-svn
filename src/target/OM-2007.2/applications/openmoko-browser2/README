@@ -1,0 +1,38 @@
+==== New Design (Plan) ====
+
+    * Feed Handling is a Model
+        * We provide a renderer
+        * And the sort and filter model on top of it.
+    * Generic View to show any two of the available types
+        * So that searching and filtering is easy.
+        * The searched string gets highlighted when switching to the text view
+    * TextView is going to use WebKit
+        * We need a nice HTML header for the text
+        * And use CSS to use max-width for the images of the feeds
+        * Changing next/previous, should be easy...
+    * Configuration
+        * Inline editing of account settings, similiar to contact
+            * URL, Name, Poll Interval, Authentication, Number of items to Cache
+
+
+    TODO:
+        * How to do unread/read handling?
+
+
+==== History =====
+
+First try to get a Gtk+ GUI for libmrss
+
+
+Known design flaws:
+    -No real model for the feed
+    -No proxy model that makes use of the filter
+    -No caching of images
+    -Storage size is not limited
+    -There is no way to merge feed entries from two planets... instead two entries will be presented
+     (this is another reason for a better model)
+    -Separate MRSS, Model and CellRender allocation into a model manager class which
+     knows the secret of the used types, the to be used cell renderer and the sort
+
+Main objective:
+    -Get familiar with the joy/pain of Gtk+
