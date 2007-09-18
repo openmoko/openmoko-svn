@@ -151,6 +151,7 @@ void set_current_page(struct BrowserPage* page, struct BrowserData* data)
         data->currentPage = page;
         g_signal_connect(data->currentPage->webKitPage, "load-progress-changed", G_CALLBACK(current_progress_changed), data);
         gtk_container_add (GTK_CONTAINER (data->currentFingerScroll), GTK_WIDGET (data->currentPage->webKitPage));
+        gtk_widget_show (GTK_WIDGET (data->currentPage->webKitPage));
 
         /*
          * Update the GtkToolItems

@@ -1,5 +1,12 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Always show the WebKitGtkPage.
+
+        * src/current-page.c:
+        (set_current_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Temporarily use GtkScrolledWindow due bugs in MokoFingerScroll
 
         * src/current-page.c:
