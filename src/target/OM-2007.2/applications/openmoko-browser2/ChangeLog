@@ -1,5 +1,15 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Change the button label depending on if we are going
+        to search or to navigate to a url directly.
+
+        * src/go-page.c:
+        (url_entry_changed):
+        (search_entry_changed):
+        (setup_go_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Due the Gtk+ bug disable automatically switching pages. This
         will be reenabled once GtkTreeView, GtkTreeSelection is battled
         again.

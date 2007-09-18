@@ -96,10 +96,20 @@ static gboolean entry_focus_out(GtkEntry* entry, GdkEventFocus* event, gchar* fi
     return FALSE;
 }
 
-static void search_url_entry_changed(GtkEntry* entry, GtkWidget* complementary_entry)
+static void url_entry_changed(GtkEntry* entry, struct BrowserData* data)
 {
     const gchar* text = gtk_entry_get_text (entry);
-    gtk_widget_set_sensitive(complementary_entry, !strcmp(text, search_names[SearchEntry]) || !strcmp(text, search_names[UrlEntry]) || strlen(text) == 0);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->goSearchEntry), !strcmp(text, search_names[UrlEntry]) || strlen(text) == 0);
+    gtk_button_set_label (GTK_BUTTON(data->goButton), _(search_names[GoUrl]));
+    gtk_button_set_label (GTK_BUTTON(data->goButtonNewPage), _(search_names[GoNewPageUrl]));
+}
+
+static void search_entry_changed(GtkEntry* entry, struct BrowserData* data)
+{
+    const gchar* text = gtk_entry_get_text (entry);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->goUrlEntry), !strcmp(text, search_names[SearchEntry]) || strlen(text) == 0);
+    gtk_button_set_label (GTK_BUTTON(data->goButton), _(search_names[GoSearch]));
+    gtk_button_set_label (GTK_BUTTON(data->goButtonNewPage), _(search_names[GoNewPageSearch]));
 }
 
 static void go_clicked(GtkButton* btn, struct BrowserData* data)
@@ -164,12 +174,12 @@ void setup_go_page(GtkBox* box, struct BrowserData* data)
     data->goUrlEntry = GTK_ENTRY (gtk_entry_new ());
     data->goSearchEntry = GTK_ENTRY (gtk_entry_new ());
     gtk_box_pack_start (box, GTK_WIDGET (data->goUrlEntry), FALSE, TRUE, 0);
-    g_signal_connect(data->goUrlEntry, "changed", G_CALLBACK(search_url_entry_changed), data->goSearchEntry);
+    g_signal_connect(data->goUrlEntry, "changed", G_CALLBACK(url_entry_changed), data);
     g_signal_connect(data->goUrlEntry, "focus-in-event", G_CALLBACK(entry_focus_in), (gpointer)search_names[UrlEntry]);
     g_signal_connect(data->goUrlEntry, "focus-out-event", G_CALLBACK(entry_focus_out), (gpointer)search_names[UrlEntry]); 
 
     gtk_box_pack_start (box, GTK_WIDGET (data->goSearchEntry), FALSE, TRUE, 0);
-    g_signal_connect(data->goSearchEntry, "changed", G_CALLBACK(search_url_entry_changed), data->goUrlEntry);
+    g_signal_connect(data->goSearchEntry, "changed", G_CALLBACK(search_entry_changed), data);
     g_signal_connect(data->goSearchEntry, "focus-in-event", G_CALLBACK(entry_focus_in), (gpointer)search_names[SearchEntry]);
     g_signal_connect(data->goSearchEntry, "focus-out-event", G_CALLBACK(entry_focus_out), (gpointer)search_names[SearchEntry]); 
 
