@@ -1,5 +1,12 @@
 2007-09-18  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Readd the prepare-ChangeLog scripts.
+
+        * scripts/VCSUtils.pm: Added.
+        * scripts/prepare-ChangeLog: Added.
+
+2007-09-18  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Add a .desktop file for the browser and append the '2'
         to the binary and at other places.
 
