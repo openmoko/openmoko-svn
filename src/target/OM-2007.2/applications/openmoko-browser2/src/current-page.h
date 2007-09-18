@@ -1,5 +1,5 @@
 /*
- * A simple WebBrowser
+ * A simple WebBrowser - Definitions for the "Current Page"
  *
  *  Copyright (C) 2007 Holger Hans Peter Freyther
  *
@@ -24,40 +24,11 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#ifndef OPENMOKO_BROWSER_DATA_H
-#define OPENMOKO_BROWSER_DATA_H
+#ifndef OPENMOKO_BROWSER_CURRENT_PAGE_H
+#define OPENMOKO_BROWSER_CURRENT_PAGE_H
 
-#include "webkitgtkpage.h"
+#include "browser-data.h"
 
-#include <glib.h>
-#include <gtk/gtk.h>
-
-/*
- * representation of one page
- */
-struct BrowserPage {
-    WebKitGtkPage* webKitPage;
-};
-
-/*
- * The state of the Browser
- */
-struct BrowserData {
-    GtkWidget *mainWindow;
-    GtkWidget *mainNotebook;
-    GtkWidget *currentFingerScroll;
-
-    GList* browserPages;
-    struct BrowserPage* currentPage;
-
-    /**
-     * Two special views for the Browser. The Overview
-     * and Bookmark page are meant to be partly implemented
-     * using HTML and JavaScript and binding the GObject(s) to
-     * JavaScript.
-     */
-    WebKitGtkPage* pagesOverviewPage;
-    WebKitGtkPage* bookmarkPage;
-};
+void setup_current_page(GtkBox* box, struct BrowserData* data);
 
 #endif

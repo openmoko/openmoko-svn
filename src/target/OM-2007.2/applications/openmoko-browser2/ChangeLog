@@ -1,5 +1,23 @@
 2007-09-16  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Start implementing the "Current Page". We start with
+        providing the default actions for navigation.
+
+        * src/Makefile.am:
+        * src/browser-data.h:
+        * src/current-page.c: Added.
+        (current_back_clicked_closure):
+        (current_forward_clicked_closure):
+        (current_stop_reload_clicked_closure):
+        (current_add_bookmark_clicked_closure):
+        (setup_current_page):
+        * src/current-page.h: Added.
+        * src/main.c:
+        (window_delete_event):
+        (setup_ui):
+
+2007-09-16  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Document some of the bits that were discussed with
         Ellen last Monday.
 

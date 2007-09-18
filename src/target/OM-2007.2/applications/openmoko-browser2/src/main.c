@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "browser-data.h"
+#include "current-page.h"
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
@@ -66,7 +66,29 @@ int main (int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
+static void window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer _data)
+{
+    gtk_main_quit ();
+}
 
 static void setup_ui (struct BrowserData* data)
 {
+    data->mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    g_signal_connect (data->mainWindow, "delete-event", G_CALLBACK(window_delete_event), NULL);
+
+    data->mainNotebook = gtk_notebook_new ();
+    gtk_notebook_set_tab_pos (GTK_NOTEBOOK (data->mainNotebook), GTK_POS_BOTTOM);
+    gtk_container_add (GTK_CONTAINER (data->mainWindow), GTK_WIDGET (data->mainNotebook));
+
+    /*
+     * Current Page
+     */
+    GtkWidget* box = gtk_vbox_new (FALSE, 0);
+    gtk_notebook_append_page (GTK_NOTEBOOK (data->mainNotebook), box, gtk_image_new_from_stock (GTK_STOCK_NETWORK, GTK_ICON_SIZE_LARGE_TOOLBAR));
+    gtk_container_child_set (GTK_CONTAINER (data->mainNotebook), box, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+    setup_current_page(GTK_BOX (box), data);
+
+
+
+    gtk_widget_show_all (GTK_WIDGET (data->mainWindow));
 }
