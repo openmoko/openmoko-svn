@@ -25,6 +25,7 @@
  */
 
 #include "config.h"
+#include "current-page.h"
 #include "go-page.h"
 
 #include <glib/gi18n.h>
@@ -48,6 +49,30 @@ static const char* search_names[] = {
     N_("Search in a new page")
 };
 
+/*
+ * From the GdkLauncher of WebKit
+ */
+static gchar* autocorrect_url(const gchar* url)
+{
+    if (strncmp ("http://", url, 7) != 0 && strncmp ("https://", url, 8) != 0 && strncmp ("file://", url, 7) != 0 && strncmp ("ftp://", url, 6) != 0) {
+        GString* string = g_string_new ("http://");
+        g_string_append (string, url);
+        return g_string_free (string, FALSE);
+    }
+
+    return g_strdup (url);
+}
+
+static gchar* prepare_search(const gchar* search_text)
+{
+    GString* string = g_string_new ("http://www.google.com/search?q=");
+    g_string_append (string, search_text);
+    return g_string_free (string, FALSE);
+}
+
+/*
+ * Heavily inspired by openmoko-contacts
+ */
 static gboolean entry_focus_in(GtkEntry* entry, GdkEventFocus* even, gchar* field_name)
 {
     if (!strcmp (gtk_entry_get_text (entry), field_name)) {
@@ -58,6 +83,9 @@ static gboolean entry_focus_in(GtkEntry* entry, GdkEventFocus* even, gchar* fiel
     return FALSE;
 }
 
+/*
+ * Heavily inspired by openmoko-contacts
+ */
 static gboolean entry_focus_out(GtkEntry* entry, GdkEventFocus* event, gchar* field_name)
 {
     if (gtk_entry_get_has_frame (entry) && strlen (gtk_entry_get_text (entry)) == 0) {
@@ -76,10 +104,38 @@ static void search_url_entry_changed(GtkEntry* entry, GtkWidget* complementary_e
 
 static void go_clicked(GtkButton* btn, struct BrowserData* data)
 {
+    g_return_if_fail (data->currentPage);
+
+    gchar *url;
+    if (strlen(gtk_entry_get_text (data->goSearchEntry)) != 0 && strcmp (gtk_entry_get_text (data->goSearchEntry), _(search_names[SearchEntry])) != 0)
+        url = prepare_search (gtk_entry_get_text (data->goSearchEntry));
+    else
+        url = autocorrect_url (gtk_entry_get_text (data->goUrlEntry));
+
+    webkit_gtk_page_open (data->currentPage->webKitPage, url);
+    gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 0);
 }
 
+/*
+ * Create a list
+ */
 static void create_new_page_clicked(GtkButton* btn, struct BrowserData* data)
 {
+    const gchar* url;
+    if (strlen(gtk_entry_get_text (data->goSearchEntry)) != 0 && strcmp (gtk_entry_get_text (data->goSearchEntry), _(search_names[SearchEntry])) != 0)
+        url = prepare_search (gtk_entry_get_text (data->goSearchEntry));
+    else
+        url = autocorrect_url (gtk_entry_get_text (data->goUrlEntry));
+
+    struct BrowserPage* page = g_new(struct BrowserPage, 1);
+    page->webKitPage = WEBKIT_GTK_PAGE (webkit_gtk_page_new ());
+
+    data->browserPages = g_list_append (data->browserPages, page);
+    webkit_gtk_page_open (page->webKitPage, url);
+    set_current_page (page, data);
+    g_object_ref (page->webKitPage);
+
+    gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 0);
 }
 
 /*
@@ -124,5 +180,4 @@ void setup_go_page(GtkBox* box, struct BrowserData* data)
     data->goButtonNewPage = gtk_button_new_with_label (search_names[GoNewPageUrl]);
     gtk_box_pack_start (box, GTK_WIDGET (data->goButtonNewPage), FALSE, TRUE, 0);
     g_signal_connect(data->goButtonNewPage, "clicked", G_CALLBACK(create_new_page_clicked), data);
-
 }

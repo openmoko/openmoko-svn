@@ -1,5 +1,17 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Open a new page/replace the current page and implement searching
+        the internet and visiting sites directly.
+
+        * src/go-page.c:
+        (autocorrect_url):
+        (prepare_search):
+        (go_clicked):
+        (create_new_page_clicked):
+        (setup_go_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Add the skeleton of the Go-Page to be able to create
         new pages.
 
