@@ -59,10 +59,8 @@ static void selection_changed(GtkTreeSelection* selection, struct BrowserData* d
      * now find a page a BrowserPage
      */
     GList* element = g_list_find_custom(data->browserPages, page, (GCompareFunc)find_browser_page);
-    if (element) {
+    if (element)
         set_current_page ((struct BrowserPage*)element->data, data);
-        gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 0);
-    }
     
     g_object_unref (page);
 }

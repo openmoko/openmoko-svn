@@ -1,5 +1,14 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Due the Gtk+ bug disable automatically switching pages. This
+        will be reenabled once GtkTreeView, GtkTreeSelection is battled
+        again.
+
+        * src/open-pages-page.c:
+        (selection_changed):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Implement to switch pages. Currently Gtk+ is broken and
         insists in changing the GtkTreeSelection and there is no
         working way to unselect the selection.
