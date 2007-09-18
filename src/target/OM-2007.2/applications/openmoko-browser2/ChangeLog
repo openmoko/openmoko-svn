@@ -1,3 +1,10 @@
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Use g_new0 to initialize the BrowserData.
+
+        * src/main.c:
+        (main):
+
 2007-09-16  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Start implementing the "Current Page". We start with

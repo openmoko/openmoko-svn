@@ -56,7 +56,7 @@ int main (int argc, char** argv)
     moko_stock_register ();
     g_set_application_name (_("Browser"));
 
-    struct BrowserData* data = g_new (struct BrowserData, 1);
+    struct BrowserData* data = g_new0 (struct BrowserData, 1);
     setup_ui (data);
 
     gtk_main ();
