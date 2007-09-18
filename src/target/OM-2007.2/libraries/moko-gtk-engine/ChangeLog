@@ -1,0 +1,295 @@
+2007-07-30  Thomas Wood  <thomas@openedhand.com>
+
+	* COPYING: Added LGPL version
+	* README: Add README content
+	* configure.ac: Update for 0.1 release
+
+	* src/sato-draw.c:
+	* src/sato-draw.h:
+	* src/sato-main.c:
+	* src/sato-style.c:
+	* src/sato-style.h:
+	* src/sato-utils.c:
+	* src/sato-utils.h:
+
+	Updated with LGPL copyright information
+
+
+2007-07-26  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Change the colour for the desktop buttons from black to dark grey,
+	and also set labels so that the groups combo is readable.
+
+2007-07-24  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Set the check/radio indicator size for menu items and add a new
+	style for checkbuttons. Fix non-prelight toolbuttons by using the checkbox
+	style.
+	* src/sato-draw.c: (sato_draw_focus): Start drawing focus rings more often
+	(sato_draw_check), (sato_draw_option): Clear the background before drawing
+	indicator. Don't draw border colour depending on focus as this doesn't work
+	well for check/radio boxes in treeviews.
+
+2007-07-13  Rob Bradford <rob@o-hand.com>
+
+	* data/gtkrc: Add style for matchbox-desktop-2 arrows, setting them to
+	black.
+
+2007-07-13  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Switch to using widget_class to match menu items
+
+2007-07-11  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Fix scrollbar troughs and menu items
+
+2007-07-11  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sato-draw.c: (sato_draw_box): Use text[] colours for box borders
+
+2007-07-11  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Even darker green colour, and use white for button text
+
+2007-06-22  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Use a darker green. Lighten fg insensitive colour.
+
+2007-06-20  Ross Burton  <ross@openedhan.com>
+
+	* data/index.theme:
+	Set the icon theme too.
+
+2007-06-19  Ross Burton  <ross@openedhan.com>
+
+	* configure.ac:
+	Remove AM_MAINTAINER_MODE.
+
+2007-06-19  Ross Burton  <ross@openedhan.com>
+
+	* Makefile.am:
+	* data/index.theme:
+	Install a metatheme file.
+
+2007-06-14  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Fix scrollbar/progressbar theming. Add treeview header style
+	* src/sato-draw.c: (sato_draw_box): Add special case for treeview headers
+
+2007-06-14  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Make GtkScale sliders larger
+	* src/sato-draw.c: (sato_draw_box): Fix trough styles
+
+2007-06-14  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sato-draw.c: (sato_gradient): Make gradients slightly more subtle
+
+2007-06-13  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sato-draw.c: (sato_draw_box), (sato_draw_shadow): Add "combined" style
+	combo boxes and spin buttons.
+
+2007-06-13  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sato-draw.c: (sato_gradient), (sato_draw_box),
+	(sato_draw_shadow), (sato_draw_focus), (sato_draw_check),
+	(sato_draw_option), (sato_draw_box_gap), (sato_draw_extension),
+	(sato_draw_vline), (sato_draw_hline), (sato_draw_style_class_init):
+
+	Copy and alter the style each time to add 2px line width. Using realize was
+	unreliable.
+
+2007-06-06  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Theme the system tray applet background.
+
+2007-04-16  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Remove the special theming for the window list applet, its not
+	required anymore.
+
+2007-04-16  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Add GtkFontButton and GtkColorButton.
+
+2007-04-13  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Add explicit colours for the desktop.
+
+2007-04-12  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am: Add data/titlebar-panel-applet-background.png to the build
+
+2007-04-12  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Fix menu border spacing
+
+2007-04-12  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am:
+	* data/gtkrc:
+	* src/sato-draw.c: (sato_gradient), (sato_draw_box),
+	(sato_draw_check), (sato_realise):
+
+	- Add shading routine from gtk+
+	- Remove hard coded engine colours
+
+2007-04-12  Jorn Baayen  <jorn@openedhand.com>
+
+	A data/titlebar-panel-applet-background.png:
+	* data/gtkrc:
+	Theme the window selector applet to have the same background as the
+	panel itself.
+
+2007-04-12  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Remove desktop style.
+
+2007-04-11  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sato-draw.c: (sato_draw_shadow), (sato_draw_box_gap): Don't draw any
+	lines when shadow_type is GTK_SHADOW_NONE.
+
+2007-04-11  Jorn Baayen  <jorn@openedhand.com>
+
+	* data/gtkrc: Set xthickness and ythickness on panel frames.
+
+2007-04-10  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Remove icons from menus and buttons
+
+2007-04-03  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Make check and radio button indicators bigger
+	* src/sato-draw.c: (sato_draw_box), (sato_draw_shadow),
+	(sato_draw_focus), (sato_draw_check), (sato_draw_option):
+
+	- Chance outline colour to green to indicate focus
+	- Add spacing between check and radio indicators and border
+
+2007-04-02  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Make menubars darker
+	* src/sato-draw.c: (sato_draw_box): Don't draw borders or gradients on
+	paned, menu or trough widget.
+	(sato_draw_shadow): Fix for shadows passed in with -1 as width and height
+
+2007-04-02  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Don't draw has_default borders for the moment
+	* src/sato-draw.c: (sato_corner), (sato_draw_box): Improve corners for
+	filled rectangles. Draw borders on troughs and don't fill.
+
+2007-02-02  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Increase scrollbar size, Apply button style properly, fix
+	some other gtk style properties.
+	* src/sato-draw.c: (sato_draw_box), (sato_draw_shadow),
+	(sato_draw_focus), (sato_draw_extension), (sato_draw_vline),
+	(sato_draw_hline), (sato_realise):
+
+	- Simplify draw_box style
+	- Temporarily use text[] colour as border colour
+	- Use a rounded rectangle for focus indicator
+
+
+2007-02-01  Ross Burton  <ross@openedhand.com>
+
+	* data/gtkrc:
+	Add basic theme for matchbox-desktop-2.
+
+2007-01-04  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Don't set font here
+
+2006-12-23  Matthew Allum  <mallum@openedhand.com>
+
+	* data/titlebar-panel-background.png
+	Fix mystery cursor on image
+
+2006-12-22  Matthew Allum  <mallum@openedhand.com>
+
+	* Makefile.am:
+	* data/gtkrc:
+	Add image and setting for matchbox-panel-2 background.
+
+2006-12-20  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Fix colour of buttons on GtkToolbar
+	* src/sato-draw.c: (sato_draw_box):
+	- Don't draw gradients on menus 
+	- Don't draw boders on troughs
+	- Use SANITIZE_SIZE to fix drawing menu borders
+
+	* src/sato-draw.h: Add SANITIZE_SIZE macro
+	* src/sato-style.c: Restore from poky-style.c and rename functions
+
+2006-10-30  Thomas Wood  <thomas@openedhand.com>
+
+	* src/sato-draw.c: Fix a possible crasher
+
+2006-10-30  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Use correct engine. Add focus line options.
+
+	* src/sato-draw.c: (sato_gradient), (sato_draw_box),
+	(sato_draw_shadow), (sato_draw_option),
+	(sato_draw_style_class_init):
+	
+	- Draw some fairly ugly focus and has_default markings
+	- Draw hline and vlines
+	- Don't draw gradient on menu and toolbars
+
+2006-10-20  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am:
+	* configure.ac:
+	* src/poky-draw.c:
+	* src/poky-draw.h:
+	* src/poky-main.c:
+	* src/poky-style.c:
+	* src/poky-style.h:
+	* src/sato-draw.c: (sato_corner), (sato_gradient), (sato_draw_box),
+	(sato_draw_shadow), (sato_draw_check), (sato_draw_option),
+	(sato_draw_box_gap), (sato_draw_extension):
+	* src/sato-draw.h:
+	* src/sato-main.c:
+	* src/sato-style.h:
+
+	Rename Poky to Sato
+
+2006-10-20  Thomas Wood  <thomas@openedhand.com>
+
+	* src/poky-draw.c: (poky_corner), (poky_draw_box),
+	(poky_draw_shadow), (poky_draw_check), (poky_draw_box_gap),
+	(poky_draw_extension):
+	
+	- Move drawing corners into their own function
+	- Simplify the rounded recatngle function
+	- Add some special cases to the draw_box_gap function
+
+2006-10-19  Thomas Wood  <thomas@openedhand.com>
+
+	* src/poky-draw.c: Fix some compiler warnings
+
+2006-10-16  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* data/gtkrc:
+	* src/poky-corners.h:
+	* src/poky-draw.c:
+	* src/poky-draw.h:
+	* src/poky-main.c:
+	* src/poky-style.c:
+	* src/poky-style.h:
+
+	Initial import into svn

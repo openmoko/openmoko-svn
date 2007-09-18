@@ -1,0 +1,124 @@
+# Moko GTK+ theme
+#
+# Copyright 2007 OpenedHand Ltd <info@openedhand.com>
+# Taken from OpenedHand's Sato GTK+ Theme
+
+gtk_button_images = 0
+gtk_menu_images = 0
+
+style "default"
+{
+
+	xthickness = 2
+	ythickness = 2
+
+  GtkWidget::focus_line_width = 2
+  GtkWidget::focus_padding = 0
+
+  GtkButton::default_border = {0, 0, 0, 0}
+
+  GtkCheckButton::indicator_size = 18
+  GtkCheckMenuItem::indicator_size = 18
+
+  GtkButton::focus-line-width = 0
+  GtkCheckButton::indicator-size = 35
+  GtkCheckButton::indicator-spacing = 5
+  GtkPaned::handle-size = 16
+  GtkCheckButton::indicator-size = 35
+  GtkCheckButton::indicator-spacing = 5
+  GtkFrame::shadow_type = GTK_SHADOW_NONE
+  GtkRange::trough_border = 0
+  GtkRange::slider-width = 28
+  GtkScale::slider-length = 56
+  GtkScrollbar::slider_width = 30
+  GtkScrollbar::stepper_size = 26
+  GtkScrollbar::stepper_spacing = 0
+  GtkScrollbar::has_backward_stepper = 1
+  GtkScrollbar::has_secondary_forward_stepper = 1
+  GtkScrollbar::has_forward_stepper = 1
+  GtkScrollbar::has_secondary_backward_stepper = 1
+  GtkSpinButton::shadow_type = GTK_SHADOW_NONE
+  GtkTreeView::allow_rules = 1
+  GtkTreeView::vertical_separator = 6
+  GtkTreeView::even_row_color = "#f7f7f7"
+  GtkTreeView::odd_row_color = "#e7e7e7"
+  GtkButton::focus-line-width = 0
+  GtkButton::focus-line-width = 0
+  GtkButton::focus-line-width = 0
+  GtkEntry::inner_border = {10, 10, 2, 2}
+  GtkButton::focus-line-width = 0
+  MokoDialerTextview::small_font = 10
+  MokoDialerTextview::medium_font = 15
+  MokoDialerTextview::large_font = 20
+  MokoDialerTextview::medium_font = 15
+
+
+
+	fg [NORMAL] = "black"
+	fg [PRELIGHT] = "black"
+	fg [ACTIVE] = "black"
+	fg [INSENSITIVE] = "#eeeeec"
+	fg [SELECTED] = "white"
+
+	bg [NORMAL] = "#e7e7e7"
+	bg [PRELIGHT] = "#e7e7e7"
+	bg [ACTIVE] = "#ff7d00"
+	bg [INSENSITIVE] = "#eeeeec"
+	bg [SELECTED] = "#ff7d00"
+
+	text [NORMAL] = "black"
+	text [PRELIGHT] = "black"
+	text [SELECTED] = "black"
+	text [ACTIVE] = "black"
+
+	base [NORMAL] = "white"
+	base [SELECTED] = "#ff7d00"
+	base [ACTIVE] = "#ff7d00"
+
+	engine "moko-engine" {}
+}
+
+class "GtkWidget" style "default"
+
+style "combo-fix" {
+  text[NORMAL] = "white"
+  text[PRELIGHT] = "white"
+}
+class "GtkComboBox" style "combo-fix"
+
+style "toolbar"
+{
+	GtkToolbar::internal_padding = 0
+  xthickness = 0
+  ythickness = 0
+
+  bg[NORMAL] = "black"
+}
+class "GtkToolbar" style "toolbar"
+
+style "toolitem"
+{
+  xthickness = 12
+  ythickness = 12
+
+  bg[NORMAL] = "#ff7d00"
+  bg[PRELIGHT] = "black"
+}
+widget_class "*Tool*GtkToggleButton" style "toolitem"
+widget_class "*Tool*GtkButton" style "toolitem"
+
+style "notebook"
+{
+  xthickness = 0
+  ythickness = 0
+  bg[NORMAL] = "#ff7d00"
+  bg[ACTIVE] = "black"
+}
+class "GtkNotebook" style "notebook"
+
+style "separator"
+{
+  fg[NORMAL] = "white"
+}
+class "GtkSeparatorToolItem" style "separator"
+

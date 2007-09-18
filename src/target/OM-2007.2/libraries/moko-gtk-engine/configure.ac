@@ -1,0 +1,31 @@
+AC_INIT([moko-engine], [0.1])
+AC_CONFIG_SRCDIR([README])
+
+AM_INIT_AUTOMAKE
+
+AC_PROG_CC
+AM_PROG_CC_STDC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
+dnl Initialize libtool
+AM_DISABLE_STATIC
+AC_LIBTOOL_WIN32_DLL
+AM_PROG_LIBTOOL
+
+
+PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6.0,,
+                  AC_MSG_ERROR([GTK+-2.6 is required to compile moko-engine]))
+
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
+
+GTK_VERSION=`$PKG_CONFIG --variable=gtk_binary_version gtk+-2.0`
+AC_SUBST(GTK_VERSION)
+
+AC_CONFIG_FILES([
+Makefile
+]) 
+
+
+AC_OUTPUT
