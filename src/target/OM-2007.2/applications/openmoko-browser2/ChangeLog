@@ -1,5 +1,11 @@
 2007-09-18  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        GNU/libc build fix.
+
+        * src/go-page.c:
+
+2007-09-18  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Readd the prepare-ChangeLog scripts.
 
         * scripts/VCSUtils.pm: Added.

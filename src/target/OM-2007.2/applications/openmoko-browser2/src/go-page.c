@@ -29,6 +29,7 @@
 #include "go-page.h"
 
 #include <glib/gi18n.h>
+#include <string.h>
 #include <strings.h>
 
 enum {
