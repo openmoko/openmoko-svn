@@ -1,5 +1,12 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Temporarily use GtkScrolledWindow due bugs in MokoFingerScroll
+
+        * src/current-page.c:
+        (setup_current_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Open a new page/replace the current page and implement searching
         the internet and visiting sites directly.
 

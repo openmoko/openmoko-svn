@@ -123,7 +123,7 @@ void setup_current_page(GtkBox* box, struct BrowserData* data)
     gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->currentClose, 8);
 
 
-    data->currentFingerScroll = moko_finger_scroll_new ();
+    data->currentFingerScroll = gtk_scrolled_window_new (NULL, NULL); //moko_finger_scroll_new ();
     gtk_box_pack_start (box, data->currentFingerScroll, TRUE, TRUE, 0);
 }
 
