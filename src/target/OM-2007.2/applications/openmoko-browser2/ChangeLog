@@ -1,5 +1,12 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Go to the "Go"-Page if we have no other open BrowserPage
+
+        * src/current-page.c:
+        (current_close_page):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Work around another Gtk+ crash. If we remove a WebKitGtkPage
         and add another one (gtk_container_{add,remove}) without accesing
         the event loop we will get a crash.
