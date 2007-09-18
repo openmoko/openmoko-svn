@@ -1,0 +1,16 @@
+stamp*
+Makefile*
+intl*
+config.*
+configure
+*.swp
+aclocal.m4
+autom4te.cache
+*.*~
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+mkinstalldirs
+POTFILES
