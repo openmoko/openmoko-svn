@@ -63,6 +63,13 @@ static void current_add_bookmark_clicked_closure(GtkWidget* button, struct Brows
 
 static void current_progress_changed(WebKitGtkPage* page, int prog, struct BrowserData* data)
 {
+    g_assert (page == data->currentPage->webKitPage);
+
+    if (prog == 100) {
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_gtk_page_can_go_backward (page));
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_gtk_page_can_go_forward (page));
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (page)) != NULL);
+    }
 }
 
 static void current_close_page(GtkWidget* button, struct BrowserData* data)

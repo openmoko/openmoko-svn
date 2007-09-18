@@ -1,5 +1,13 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Abuse the progress signal to update the Back, Go
+        and Favorite/Bookmark button.
+
+        * src/current-page.c:
+        (current_progress_changed):
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Go to the "Go"-Page if we have no other open BrowserPage
 
         * src/current-page.c:
