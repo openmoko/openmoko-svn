@@ -58,6 +58,15 @@ struct BrowserData {
      */
     WebKitGtkPage* pagesOverviewPage;
     WebKitGtkPage* bookmarkPage;
+
+
+    /*
+     * Current
+     */
+    GtkToolItem* currentBack;
+    GtkToolItem* currentForward;
+    GtkToolItem* currentStop;
+    GtkToolItem* currentAdd;
 };
 
 #endif

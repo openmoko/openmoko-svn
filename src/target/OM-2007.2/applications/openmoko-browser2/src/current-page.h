@@ -30,5 +30,6 @@
 #include "browser-data.h"
 
 void setup_current_page(GtkBox* box, struct BrowserData* data);
+void set_current_page(struct BrowserPage* page, struct BrowserData* data);
 
 #endif

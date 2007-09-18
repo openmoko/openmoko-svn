@@ -1,5 +1,20 @@
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
+        Start implementing set_current_page to allow switching
+        the page. Stop/Reload is currently not implementable as
+        WebKit/Gtk+ has no way to signalize if the load is done.
+
+        * src/browser-data.h:
+        * src/current-page.c:
+        (current_back_clicked_closure):
+        (current_forward_clicked_closure):
+        (current_add_bookmark_clicked_closure):
+        (setup_current_page):
+        (set_current_page):
+        * src/current-page.h:
+
+2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
+
         Use g_new0 to initialize the BrowserData.
 
         * src/main.c:
