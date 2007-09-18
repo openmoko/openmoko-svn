@@ -1,3 +1,16 @@
+2007-09-18  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Add a .desktop file for the browser and append the '2'
+        to the binary and at other places.
+
+        * Makefile.am:
+        * configure.ac:
+        * data/.gitignore: Added.
+        * data/Makefile.am: Added.
+        * data/openmoko-browser2.desktop: Added.
+        * src/.gitignore:
+        * src/Makefile.am:
+
 2007-09-17  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Abuse the progress signal to update the Back, Go

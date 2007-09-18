@@ -1,5 +1,4 @@
 stamp*
-Makefile*
 intl*
 config.*
 configure
@@ -13,7 +12,3 @@ libtool
 ltmain.sh
 missing
 mkinstalldirs
-.deps
-*.o
-.libs
-openmoko-browser2
