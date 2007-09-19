@@ -1,5 +1,12 @@
 2007-09-19  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-hint-entry.c:
+	* libmokoui/moko-hint-entry.h:
+
+  Relicense under LGPL
+
+2007-09-19  Thomas Wood  <thomas@openedhand.com>
+
 	* Makefile.am:
 	* autogen.sh:
 	* configure.ac:
