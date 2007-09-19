@@ -1,4 +1,4 @@
-SUBDIRS = libmokoui
+SUBDIRS = libmokoui doc
 
 pcdata_DATA= libmokoui2.pc
 pcdatadir= $(libdir)/pkgconfig

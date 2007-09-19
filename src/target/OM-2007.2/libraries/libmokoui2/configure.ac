@@ -31,11 +31,16 @@ CFLAGS="$CFLAGS $DEPS_CFLAGS"
 
 AC_SUBST(LIBS)
 
+GTK_DOC_CHECK([1.4])
+
 # output stuff
 AC_OUTPUT([
 Makefile
 libmokoui2.pc
 libmokoui/Makefile
+doc/Makefile
+doc/reference/Makefile
+doc/reference/version.xml
 ])
 
 echo "CFLAGS = $CFLAGS"

@@ -1,3 +1,18 @@
+2007-09-19  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* doc/reference/Makefile.am:
+  * doc/reference/version.xml.in
+
+  Add gtk-doc support
+
+	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_init),
+	(moko_finger_scroll_new_full):
+
+  Add documentation for MokoFingerScroll
+
 2007-09-19  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-hint-entry.c: (update):
