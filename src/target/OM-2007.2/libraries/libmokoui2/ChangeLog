@@ -1,5 +1,9 @@
 2007-09-19  Thomas Wood  <thomas@openedhand.com>
 
+	* doc/reference/Makefile.am: Fix incorrect use of '+='
+
+2007-09-19  Thomas Wood  <thomas@openedhand.com>
+
 	* autogen.sh: Run gtkdocize first
 
 2007-09-19  Thomas Wood  <thomas@openedhand.com>
