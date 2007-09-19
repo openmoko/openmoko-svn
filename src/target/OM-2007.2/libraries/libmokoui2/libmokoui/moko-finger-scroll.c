@@ -119,14 +119,16 @@ moko_finger_scroll_refresh (MokoFingerScroll *scroll)
 	GtkWidget *widget = GTK_BIN (priv->align)->child;
 	gboolean vscroll, hscroll;
 	GtkRequisition req;
+	guint border;
 	
 	if (!widget) return;
 	
-	/* Calculate if we need scroll indicators */	
+	/* Calculate if we need scroll indicators */
+	border = gtk_container_get_border_width (GTK_CONTAINER (scroll));
 	gtk_widget_size_request (widget, &req);
-	if (req.width > allocation->width) hscroll = TRUE;
+	if (req.width + (border * 2) > allocation->width) hscroll = TRUE;
 	else hscroll = FALSE;
-	if (req.height > allocation->height) vscroll = TRUE;
+	if (req.height + (border * 2) > allocation->height) vscroll = TRUE;
 	else vscroll = FALSE;
 	
 	/* TODO: Read ltr settings to decide which corner gets scroll
