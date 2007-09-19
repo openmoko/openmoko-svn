@@ -24,7 +24,7 @@
 #include <gtk/gtk.h>
 #include "moko-hint-entry.h"
 
-G_DEFINE_TYPE (MokoHintEntry, moko_hint_entry, GTK_TYPE_ENTRY);
+G_DEFINE_TYPE (MokoHintEntry, moko_hint_entry, GTK_TYPE_ENTRY)
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_HINT_ENTRY, MokoHintEntryPrivate))
@@ -58,9 +58,9 @@ update (MokoHintEntry *entry)
   text = gtk_entry_get_text (GTK_ENTRY (entry));
 
   if (GTK_WIDGET_HAS_FOCUS (entry)) {
-    priv->state = STATE_ENTRY;
-    gtk_widget_modify_text (widget, GTK_STATE_NORMAL, NULL);
-    if (strcmp (text, priv->hint) == 0) {
+    if (priv->state == STATE_HINTING) {
+      priv->state = STATE_ENTRY;
+      gtk_widget_modify_text (widget, GTK_STATE_NORMAL, NULL);
       gtk_entry_set_text (GTK_ENTRY (entry), "");
     }
   } else {
