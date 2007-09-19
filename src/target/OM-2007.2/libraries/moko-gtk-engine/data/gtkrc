@@ -3,14 +3,18 @@
 # Copyright 2007 OpenedHand Ltd <info@openedhand.com>
 # Taken from OpenedHand's Sato GTK+ Theme
 
+
+# black: #333333
+# orange: #ff7d00
+
 gtk_button_images = 0
 gtk_menu_images = 0
 
 style "default"
 {
 
-	xthickness = 2
-	ythickness = 2
+  xthickness = 2
+  ythickness = 2
 
   GtkWidget::focus_line_width = 2
   GtkWidget::focus_padding = 0
@@ -54,9 +58,9 @@ style "default"
 
 
 
-	fg [NORMAL] = "black"
-	fg [PRELIGHT] = "black"
-	fg [ACTIVE] = "black"
+	fg [NORMAL] = "#333333"
+	fg [PRELIGHT] = "#333333"
+	fg [ACTIVE] = "#333333"
 	fg [INSENSITIVE] = "#eeeeec"
 	fg [SELECTED] = "white"
 
@@ -66,10 +70,10 @@ style "default"
 	bg [INSENSITIVE] = "#eeeeec"
 	bg [SELECTED] = "#ff7d00"
 
-	text [NORMAL] = "black"
-	text [PRELIGHT] = "black"
-	text [SELECTED] = "black"
-	text [ACTIVE] = "black"
+	text [NORMAL] = "#333333"
+	text [PRELIGHT] = "#333333"
+	text [SELECTED] = "#333333"
+	text [ACTIVE] = "#333333"
 
 	base [NORMAL] = "white"
 	base [SELECTED] = "#ff7d00"
@@ -92,7 +96,7 @@ style "toolbar"
   xthickness = 0
   ythickness = 0
 
-  bg[NORMAL] = "black"
+  bg[NORMAL] = "#333333"
 }
 class "GtkToolbar" style "toolbar"
 
@@ -102,7 +106,7 @@ style "toolitem"
   ythickness = 12
 
   bg[NORMAL] = "#ff7d00"
-  bg[PRELIGHT] = "black"
+  bg[PRELIGHT] = "#333333"
 }
 widget_class "*Tool*GtkToggleButton" style "toolitem"
 widget_class "*Tool*GtkButton" style "toolitem"
@@ -112,13 +116,14 @@ style "notebook"
   xthickness = 0
   ythickness = 0
   bg[NORMAL] = "#ff7d00"
-  bg[ACTIVE] = "black"
+  bg[ACTIVE] = "#333333"
 }
 class "GtkNotebook" style "notebook"
 
-style "separator"
-{
-  fg[NORMAL] = "white"
-}
-class "GtkSeparatorToolItem" style "separator"
+include "matchboxpanel"
+include "openmoko-calculator"
+include "openmoko-contacts"
+include "openmoko-dialer"
+include "openmoko-panel-plugins"
+
 

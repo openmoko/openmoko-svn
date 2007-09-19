@@ -58,10 +58,10 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
   gc = gdk_gc_new (window);
 
   /* get the start and end colours */
-  moko_shade_colour (&style->bg[state_type], &c1, 1.2);
-  moko_shade_colour (&style->bg[state_type], &c2, 1.0);
-  moko_shade_colour (&style->bg[state_type], &c3, 1.0);
-  moko_shade_colour (&style->bg[state_type], &c4, 0.9);
+  moko_shade_colour (&style->bg[state_type], &c1, 1.6);
+  moko_shade_colour (&style->bg[state_type], &c2, 1.4);
+  moko_shade_colour (&style->bg[state_type], &c3, 1.2);
+  moko_shade_colour (&style->bg[state_type], &c4, 1.0);
 
   /* set line for 1px */
   gdk_gc_set_line_attributes (gc, 1, GDK_LINE_SOLID, GDK_CAP_BUTT,
@@ -377,10 +377,7 @@ moko_draw_extension (GtkStyle * style, GdkWindow * window,
   GdkGC *gc;
   gc = moko_gc_new (style->fg_gc[state_type], window);
   
-  if (state_type == GTK_STATE_NORMAL)
-    moko_gradient (style, window, state_type, x, y, width, height);
-  else
-    gtk_paint_flat_box (style, window, state_type, shadow_type, area, widget, detail, x, y, width, height);
+  moko_gradient (style, window, state_type, x, y, width, height);
 
   gdk_draw_rectangle (window, gc, FALSE, x, y, width - 1, height - 1);
   g_object_unref (gc);

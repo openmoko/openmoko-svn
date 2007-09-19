@@ -17,4 +17,10 @@ libmoko_engine_la_LDFLAGS = -module -avoid-version -no-undefined
 libmoko_engine_la_LIBADD = $(GTK_LIBS)
 
 gtkthemedir = $(datadir)/themes/Moko/gtk-2.0
-dist_gtktheme_DATA = data/gtkrc
+dist_gtktheme_DATA = \
+  data/gtkrc \
+  data/matchboxpanel \
+  data/openmoko-calculator \
+  data/openmoko-contacts \
+  data/openmoko-dialer \
+  data/openmoko-panel-plugins

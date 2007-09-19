@@ -1,0 +1,5 @@
+style "matchboxpanel" {
+     bg[NORMAL] = "#000000"
+}
+widget "MatchboxPanel" style "matchboxpanel"
+

@@ -1,0 +1,21 @@
+style "calc-window"
+{
+  xthickness = 10
+  ythickness = 10
+}
+widget "*calculator-frame" style "calc-window"
+
+style "calc-display-bg"
+{
+  bg[NORMAL] = "black"
+  fg[NORMAL] = "orange"
+  font_name = "Sans 20"
+  xthickness = 10
+  ythickness = 10
+}
+widget "*calculator-display-background*" style "calc-display-bg"
+
+style "calculator-button-label" {
+    font_name = "Sans 12"
+}
+widget "*calculator-table.GtkButton.*" style "calculator-button-label"

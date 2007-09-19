@@ -1,0 +1,22 @@
+style "mokodialertextview" {
+  fg[NORMAL] = "#ff7800"
+  text[NORMAL] = "#ff7800"
+  bg[NORMAL] = "#000000"
+  base[NORMAL] = "#000000"
+
+  MokoDialerTextview::small_font = 10
+  MokoDialerTextview::medium_font = 15
+  MokoDialerTextview::large_font = 20
+}
+widget "*.MokoDialerTextview" style "mokodialertextview"
+
+style "mokotips" {
+  fg[NORMAL] = "#ff7800"
+  text[NORMAL] = "#ff7800"
+  bg[NORMAL] = "#000000"
+  base[NORMAL] = "#000000" 
+
+  MokoDialerTextview::medium_font = 15
+}
+widget "*.MokoTips*" style "mokotips"
+
