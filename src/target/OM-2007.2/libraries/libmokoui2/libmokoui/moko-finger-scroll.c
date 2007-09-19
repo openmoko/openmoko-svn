@@ -781,6 +781,13 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 		G_CALLBACK (moko_finger_scroll_redraw), self);
 }
 
+/** moko_finger_scroll_new:
+ * 
+ * Create a new finger scroll widget
+ *
+ * Returns: the newly created widget
+ */
+
 GtkWidget *
 moko_finger_scroll_new (void)
 {
@@ -800,6 +807,15 @@ moko_finger_scroll_new_full (gint mode, gboolean enabled,
 			     "sps", sps,
 			     NULL);
 }
+
+/** moko_finger_scroll_add_with_viewport:
+ *
+ * @self: A MokoFingerScroll widget
+ * @child: widget you want to add
+ *
+ * Convenience function used to add a child to a GtkViewport, and add the
+ * viewport to the scrolled window.
+ */
 
 void
 moko_finger_scroll_add_with_viewport (MokoFingerScroll *self, GtkWidget *child)
