@@ -23,36 +23,45 @@
 #include "config.h"
 #include <inttypes.h>
 
-#if !defined(TARGET_PPCEMB)
-#if defined(TARGET_PPC64) || (HOST_LONG_BITS >= 64)
-/* When using 64 bits temporary registers,
- * we can use 64 bits GPR with no extra cost
- */
-#define TARGET_PPCEMB
-#endif
-#endif
-
 #if defined (TARGET_PPC64)
 typedef uint64_t ppc_gpr_t;
-#define TARGET_LONG_BITS 64
 #define TARGET_GPR_BITS  64
+#define TARGET_LONG_BITS 64
 #define REGX "%016" PRIx64
 #define TARGET_PAGE_BITS 12
 #elif defined(TARGET_PPCEMB)
-/* e500v2 have 36 bits physical address space */
+/* BookE have 36 bits physical address space */
 #define TARGET_PHYS_ADDR_BITS 64
 /* GPR are 64 bits: used by vector extension */
 typedef uint64_t ppc_gpr_t;
-#define TARGET_LONG_BITS 32
 #define TARGET_GPR_BITS  64
+#define TARGET_LONG_BITS 32
 #define REGX "%016" PRIx64
+#if defined(CONFIG_USER_ONLY)
+/* It looks like a lot of Linux programs assume page size
+ * is 4kB long. This is evil, but we have to deal with it...
+ */
+#define TARGET_PAGE_BITS 12
+#else
 /* Pages can be 1 kB small */
 #define TARGET_PAGE_BITS 10
+#endif
+#else
+#if (HOST_LONG_BITS >= 64)
+/* When using 64 bits temporary registers,
+ * we can use 64 bits GPR with no extra cost
+ * It's even an optimization as it will prevent
+ * the compiler to do unuseful masking in the micro-ops.
+ */
+typedef uint64_t ppc_gpr_t;
+#define TARGET_GPR_BITS  64
+#define REGX "%08" PRIx64
 #else
 typedef uint32_t ppc_gpr_t;
-#define TARGET_LONG_BITS 32
 #define TARGET_GPR_BITS  32
 #define REGX "%08" PRIx32
+#endif
+#define TARGET_LONG_BITS 32
 #define TARGET_PAGE_BITS 12
 #endif
 
@@ -78,10 +87,6 @@ typedef uint32_t ppc_gpr_t;
  */
 #define ICACHE_LINE_SIZE 32
 #define DCACHE_LINE_SIZE 32
-
-/* XXX: put this in a common place */
-#define likely(x)   __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
 
 /*****************************************************************************/
 /* PVR definitions for most known PowerPC */
@@ -380,19 +385,19 @@ enum {
     PPC_64_BRIDGE   = 0x0000000004000000ULL,
     /* BookE (embedded) PowerPC specification      */
     PPC_BOOKE       = 0x0000000008000000ULL,
-    /* eieio */
+    /* eieio                                       */
     PPC_MEM_EIEIO   = 0x0000000010000000ULL,
-    /* e500 vector instructions */
+    /* e500 vector instructions                    */
     PPC_E500_VECTOR = 0x0000000020000000ULL,
-    /* PowerPC 4xx dedicated instructions     */
+    /* PowerPC 4xx dedicated instructions          */
     PPC_4xx_COMMON  = 0x0000000040000000ULL,
-    /* PowerPC 2.03 specification extensions */
+    /* PowerPC 2.03 specification extensions       */
     PPC_203         = 0x0000000080000000ULL,
-    /* PowerPC 2.03 SPE extension */
+    /* PowerPC 2.03 SPE extension                  */
     PPC_SPE         = 0x0000000100000000ULL,
-    /* PowerPC 2.03 SPE floating-point extension */
+    /* PowerPC 2.03 SPE floating-point extension   */
     PPC_SPEFPU      = 0x0000000200000000ULL,
-    /* SLB management */
+    /* SLB management                              */
     PPC_SLBI        = 0x0000000400000000ULL,
 };
 
@@ -909,8 +914,6 @@ int ppc_dcr_write (ppc_dcr_t *dcr_env, int dcrn, target_ulong val);
 
 /*****************************************************************************/
 /* Registers definitions */
-#define ugpr(n) (env->gpr[n])
-
 #define XER_SO 31
 #define XER_OV 30
 #define XER_CA 29
@@ -1307,7 +1310,6 @@ enum {
                                    /* may change privilege level             */
 #define EXCP_BRANCH        0x11001 /* branch instruction                     */
 #define EXCP_SYSCALL_USER  0x12000 /* System call in user mode only          */
-#define EXCP_INTERRUPT_CRITICAL 0x13000 /* critical IRQ                      */
 
 /* Error codes */
 enum {
@@ -1342,8 +1344,8 @@ enum {
     EXCP_INVAL_FP      = 0x04,  /* Unimplemented mandatory fp instr */
     /* Privileged instruction */
     EXCP_PRIV          = 0x30,
-    EXCP_PRIV_OPC      = 0x01,
-    EXCP_PRIV_REG      = 0x02,
+    EXCP_PRIV_OPC      = 0x01,  /* Privileged operation exception   */
+    EXCP_PRIV_REG      = 0x02,  /* Privileged register exception    */
     /* Trap */
     EXCP_TRAP          = 0x40,
 };
