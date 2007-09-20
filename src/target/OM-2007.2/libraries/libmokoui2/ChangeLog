@@ -1,5 +1,14 @@
 2007-09-20  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-search-bar.c: (moko_search_bar_init),
+	(moko_search_bar_new), (moko_search_bar_new_with_combo),
+	(moko_search_bar_get_combo_box), (moko_search_bar_get_entry),
+	(moko_search_bar_search_visible):
+
+	Add documentation for MokoSearchBar
+
+2007-09-20  Thomas Wood  <thomas@openedhand.com>
+
 	* doc/reference/libmokoui2-docs.sgml: Add title and section name
 
 2007-09-19  Thomas Wood  <thomas@openedhand.com>

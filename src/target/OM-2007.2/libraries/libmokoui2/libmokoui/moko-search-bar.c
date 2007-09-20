@@ -217,12 +217,29 @@ moko_search_bar_init (MokoSearchBar *self)
 		G_CALLBACK (entry_changed_cb), self);
 }
 
+/**
+ * moko_search_bar_new:
+ *
+ * Create a new MokoSearBar widget
+ *
+ * returns: The newly created MokoSearchBar
+ */
+
 GtkWidget *
 moko_search_bar_new (void)
 {
 	return GTK_WIDGET (g_object_new (MOKO_TYPE_SEARCH_BAR,
 		"combo", gtk_combo_box_new (), NULL));
 }
+
+/**
+ * moko_search_bar_new_with_combo:
+ * @comno: a GtkComboBox to use as the combobox
+ *
+ * Creates a MokoSearchBar with the specified combo box
+ *
+ * returns: the newly created MokoSearchBar
+ */
 
 GtkWidget *
 moko_search_bar_new_with_combo (GtkComboBox *combo)
@@ -231,6 +248,14 @@ moko_search_bar_new_with_combo (GtkComboBox *combo)
 		"combo", combo, NULL));
 }
 
+/**
+ * moko_search_bar_get_combo_box:
+ * @self: a MokoSearchBar
+ *
+ * Get a pointer to the GtkComboBox being used in the MokoSearchBar
+ *
+ * returns: the GtkComboBox
+ */
 GtkComboBox *
 moko_search_bar_get_combo_box (MokoSearchBar *self)
 {
@@ -239,6 +264,15 @@ moko_search_bar_get_combo_box (MokoSearchBar *self)
 	return combo;
 }
 
+
+/**
+ * moko_search_bar_get_entry:
+ * @self: a MokoSearchBar
+ *
+ * Retrieve the GtkEntry widget being used in the MokoSearchBar
+ *
+ * returns: the GtkEntry
+ */
 GtkEntry *
 moko_search_bar_get_entry (MokoSearchBar *self)
 {
@@ -247,6 +281,14 @@ moko_search_bar_get_entry (MokoSearchBar *self)
 	return entry;
 }
 
+/**
+ * moko_search_bar_search_visible:
+ * @self: a MokoSaerchBar
+ *
+ * Determine the visibility of the search entry.
+ *
+ * returns: TRUE if the search entry is visible
+ */
 gboolean
 moko_search_bar_search_visible (MokoSearchBar *self)
 {
@@ -255,6 +297,14 @@ moko_search_bar_search_visible (MokoSearchBar *self)
 	return GTK_WIDGET_VISIBLE (priv->entry);
 }
 
+
+/**
+ * moko_search_bar_toggle:
+ * @self: a MokoSearchBar
+ *
+ * Toggle the search button on the MokoSearchBar.
+ * This toggles the visibility of the combo box and entry widgets.
+ */
 void
 moko_search_bar_toggle (MokoSearchBar *self)
 {
