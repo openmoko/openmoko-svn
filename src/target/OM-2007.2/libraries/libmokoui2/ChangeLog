@@ -1,3 +1,7 @@
+2007-09-20  Thomas Wood  <thomas@openedhand.com>
+
+	* doc/reference/libmokoui2-docs.sgml: Add title and section name
+
 2007-09-19  Thomas Wood  <thomas@openedhand.com>
 
 	* doc/reference/Makefile.am: Fix incorrect use of '+='
