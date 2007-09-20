@@ -1,3 +1,38 @@
+2007-09-20  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc:
+	* src/moko-draw.c: (moko_gradient), (moko_draw_box):
+	* src/moko-style.c: (moko_style_class_init):
+	* src/moko-style.h:
+
+	Add initial support for "border" and "gradient" boolean engine options
+
+2007-09-20  Thomas Wood  <thomas@openedhand.com>
+
+	* moko-gtk-engine/src/moko-draw.c:
+
+	  - Adjust gradient stops to give glossed appearance.
+	  - Add gradient to "inactive" tabs
+
+	* moko-gtk-engine/src/moko-utils.h: rename from sato-utils.h
+
+	* moko-gtk-engine/data/openmoko-contacts
+	* moko-gtk-engine/data/openmoko-panel-plugins
+	* moko-gtk-engine/data/matchboxpanel
+	* moko-gtk-engine/data/openmoko-dialer
+	* moko-gtk-engine/data/gtkrc
+	* moko-gtk-engine/data/openmoko-calculator
+	* moko-gtk-engine/Makefile.am
+
+	  - Add application specific rc files
+	  - Tweak colours
+
+
+2007-09-18  Thomas Wood  <thomas@openedhand.com>
+
+	* Rename Sato to Moko
+	* Adjust gradients and remove rounded corners
+
 2007-07-30  Thomas Wood  <thomas@openedhand.com>
 
 	* COPYING: Added LGPL version

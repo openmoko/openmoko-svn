@@ -84,11 +84,20 @@ style "default"
 
 class "GtkWidget" style "default"
 
+style "button"
+{
+  engine "moko-engine" {
+    border = TRUE
+  }
+}
+class "GtkButton" style "button"
+
 style "combo-fix" {
+  bg[NORMAL] = "#ff7d00"
   text[NORMAL] = "white"
   text[PRELIGHT] = "white"
 }
-class "GtkComboBox" style "combo-fix"
+class "*Combo*" style "combo-fix"
 
 style "toolbar"
 {

@@ -38,11 +38,11 @@ G_BEGIN_DECLS
 extern GType moko_type_style;
 
 #define MOKO_TYPE_STYLE              moko_type_style
-#define MOKO_STYLE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), POKY_TYPE_STYLE, MokoStyle))
-#define MOKO_STYLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), POKY_TYPE_STYLE, MokoStyleClass))
-#define MOKO_IS_STYLE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), POKY_TYPE_STYLE))
-#define MOKO_IS_STYLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), POKY_TYPE_STYLE))
-#define MOKO_STYLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), POKY_TYPE_STYLE, MokoStyleClass))
+#define MOKO_STYLE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOKO_TYPE_STYLE, MokoStyle))
+#define MOKO_STYLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_STYLE, MokoStyleClass))
+#define MOKO_IS_STYLE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOKO_TYPE_STYLE))
+#define MOKO_IS_STYLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_STYLE))
+#define MOKO_STYLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_STYLE, MokoStyleClass))
 
 typedef struct _MokoStyle MokoStyle;
 typedef struct _MokoStyleClass MokoStyleClass;
@@ -66,11 +66,11 @@ void moko_style_register_type (GTypeModule *module);
 extern GType moko_type_rc_style;
 
 #define MOKO_TYPE_RC_STYLE              moko_type_rc_style
-#define MOKO_RC_STYLE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), POKY_TYPE_RC_STYLE, MokoRcStyle))
-#define MOKO_RC_STYLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), POKY_TYPE_RC_STYLE, MokoRcStyleClass))
-#define MOKO_IS_RC_STYLE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), POKY_TYPE_RC_STYLE))
-#define MOKO_IS_RC_STYLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), POKY_TYPE_RC_STYLE))
-#define MOKO_RC_STYLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), POKY_TYPE_RC_STYLE, MokoRcStyleClass))
+#define MOKO_RC_STYLE(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOKO_TYPE_RC_STYLE, MokoRcStyle))
+#define MOKO_RC_STYLE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_RC_STYLE, MokoRcStyleClass))
+#define MOKO_IS_RC_STYLE(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOKO_TYPE_RC_STYLE))
+#define MOKO_IS_RC_STYLE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_RC_STYLE))
+#define MOKO_RC_STYLE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_RC_STYLE, MokoRcStyleClass))
 
 typedef struct _MokoRcStyle MokoRcStyle;
 typedef struct _MokoRcStyleClass MokoRcStyleClass;
@@ -78,14 +78,27 @@ typedef struct _MokoRcStyleClass MokoRcStyleClass;
 struct _MokoRcStyle
 {
   GtkRcStyle parent_instance;
+
+  gboolean has_border;
+  gboolean has_gradient;
 };
 
 struct _MokoRcStyleClass
 {
   GtkRcStyleClass parent_class;
+
 };
 
 void moko_rc_style_register_type (GTypeModule *engine);
+
+enum
+{
+  TOKEN_HAS_BORDER = G_TOKEN_LAST + 1,
+  TOKEN_HAS_GRADIENT,
+
+  TOKEN_TRUE,
+  TOKEN_FALSE
+};
 
 /******************************************************************************/
 

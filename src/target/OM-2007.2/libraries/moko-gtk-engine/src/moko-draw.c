@@ -58,9 +58,9 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
   gc = gdk_gc_new (window);
 
   /* get the start and end colours */
-  moko_shade_colour (&style->bg[state_type], &c1, 1.6);
+  moko_shade_colour (&style->bg[state_type], &c1, 1.8);
   moko_shade_colour (&style->bg[state_type], &c2, 1.4);
-  moko_shade_colour (&style->bg[state_type], &c3, 1.2);
+  moko_shade_colour (&style->bg[state_type], &c3, 1.3);
   moko_shade_colour (&style->bg[state_type], &c4, 1.0);
 
   /* set line for 1px */
@@ -158,14 +158,6 @@ moko_draw_box (DRAW_ARGS)
    moko_gradient (style, window, state_type, x+1, y+1, width-2, height-2);
 
 
-
-   /*** treeview headers ***/
-  if (widget && GTK_IS_TREE_VIEW (widget->parent))
-  {
-    goto exit;
-  }
-
-
   if (DETAIL ("trough"))
   {
     if (widget && GTK_IS_HSCALE (widget))
@@ -184,7 +176,7 @@ moko_draw_box (DRAW_ARGS)
   }
 
   /*** draw the border ***/
-  if (!DETAIL ("bar"))
+  if (MOKO_RC_STYLE (style->rc_style)->has_border)
   {
     gdk_draw_rectangle (window, gc, FALSE, x + 1, y + 1, width - 2, height - 2);
   }
