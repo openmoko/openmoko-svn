@@ -1,3 +1,8 @@
+2007-09-21  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-stock.c: (_moko_stock_add_icon):
+	Correctly load all the available sizes for additional stock icons
+
 2007-09-20  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-search-bar.c: (moko_search_bar_init),

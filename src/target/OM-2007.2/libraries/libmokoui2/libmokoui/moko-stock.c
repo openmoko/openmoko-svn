@@ -77,24 +77,15 @@ _moko_stock_add_icon (GtkIconFactory *factory, const GtkStockItem *item)
   if (theme == NULL)
     theme = gtk_icon_theme_get_default ();
 
-  pixbuf = gtk_icon_theme_load_icon (theme, item->stock_id,
-                                     32, 0, NULL);
-
-  if (pixbuf == NULL)
-  {
-    g_print ("Cannot load stock icon from theme : %s\n", item->stock_id);
-    return;
-  }
-
   set = gtk_icon_set_new ();
 
-  /*
-   * This is temporary hack to make sure we have all the sizes available.
-   * Ideally we should try loading the pixbuf at the correct size from the theme
-   * for each possible size in GtkIconSize, rather than re-using the same pixbuf
-   */
   for (i = GTK_ICON_SIZE_MENU; i <= GTK_ICON_SIZE_DIALOG; i++)
   {
+    gint width, height;
+
+    gtk_icon_size_lookup (i, &width, &height);
+    pixbuf = gtk_icon_theme_load_icon (theme, item->stock_id, width, 0, NULL);
+
     source = gtk_icon_source_new ();
     gtk_icon_source_set_size (source, i);
     gtk_icon_source_set_size_wildcarded (source, FALSE);
