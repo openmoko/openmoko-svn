@@ -197,9 +197,9 @@ moko_hint_entry_new (const char *hint)
                        NULL);
 }
 
-/*
+/**
  * moko_hint_entry_clear:
- * @entry: a @MokoHintEntry
+ * @entry: a #MokoHintEntry
  *
  * Clear the text in the entry and if the widget is not focused, display the
  * hint text.
@@ -214,6 +214,15 @@ moko_hint_entry_clear (MokoHintEntry *entry)
   update (entry);
 }
 
+/**
+ * moko_hint_entry_is_empty:
+ * @entry: a #MokoHintyEntry
+ *
+ * Check if the entry has a user entered value. 
+ *
+ * returns: TRUE if the hint is currently displayed. FALSE if the user has
+ * entered a value
+ */
 gboolean
 moko_hint_entry_is_empty (MokoHintEntry *entry)
 {

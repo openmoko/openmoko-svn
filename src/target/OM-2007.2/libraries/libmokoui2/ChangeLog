@@ -1,5 +1,11 @@
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-hint-entry.c: (moko_hint_entry_new),
+	(moko_hint_entry_clear): Correct and complete documentation for
+	 MokoHintEntry
+
+2007-09-21  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_init),
 	(moko_finger_scroll_new), (moko_finger_scroll_new_full):
 	Complete the documentation for MokoFingerScroll
