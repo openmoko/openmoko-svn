@@ -1,5 +1,10 @@
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtkrc: Add some gradient and border options to styles
+	* src/moko-draw.c: (moko_draw_box): Implement gradient option
+
+2007-09-21  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-style.c: (moko_rc_style_merge), (moko_rc_style_parse):
 	* src/moko-style.h:
 

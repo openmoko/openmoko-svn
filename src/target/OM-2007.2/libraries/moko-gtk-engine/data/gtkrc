@@ -89,6 +89,7 @@ style "button"
 {
   engine "moko-engine" {
     border = TRUE
+    gradient = TRUE
   }
 }
 class "GtkButton" style "button"
@@ -102,11 +103,15 @@ class "*Combo*" style "combo-fix"
 
 style "toolbar"
 {
-	GtkToolbar::internal_padding = 0
+  GtkToolbar::internal_padding = 0
   xthickness = 0
   ythickness = 0
 
   bg[NORMAL] = "#333333"
+  engine "moko-engine" {
+    gradient = TRUE
+    border = FALSE
+  }
 }
 class "GtkToolbar" style "toolbar"
 
@@ -117,6 +122,11 @@ style "toolitem"
 
   bg[NORMAL] = "#ff7d00"
   bg[PRELIGHT] = "#333333"
+
+  engine "moko-engine" {
+    gradient = TRUE
+    border = FALSE
+  }
 }
 widget_class "*Tool*GtkToggleButton" style "toolitem"
 widget_class "*Tool*GtkButton" style "toolitem"
@@ -129,6 +139,30 @@ style "notebook"
   bg[ACTIVE] = "#333333"
 }
 class "GtkNotebook" style "notebook"
+
+style "menu"
+{
+  GtkMenu::vertical-padding = 8
+  GtkMenu::horizontal-padding = 8
+  engine "moko-engine" {
+    gradient = FALSE
+    border = TRUE
+  }
+}
+class "GtkMenu" style "menu"
+
+style "menuitem"
+{
+  xthickness = 8
+  ythickness = 8
+
+  bg[PRELIGHT] = "#ff7d00"
+
+  engine "moko-engine" {
+    gradient = TRUE
+  }
+}
+widget_class "*MenuItem*" style "menuitem"
 
 include "matchboxpanel"
 include "openmoko-calculator"

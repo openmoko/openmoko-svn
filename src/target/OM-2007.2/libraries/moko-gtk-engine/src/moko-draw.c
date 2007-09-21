@@ -154,9 +154,14 @@ moko_draw_box (DRAW_ARGS)
   }
 
   /*** draw the gradient ***/
-  if (!DETAIL ("menu") && !DETAIL ("trough"))
-   moko_gradient (style, window, state_type, x+1, y+1, width-2, height-2);
-
+  if (MOKO_RC_STYLE (style->rc_style)->has_gradient)
+  {
+    moko_gradient (style, window, state_type, x, y, width, height);
+  }
+  else
+  {
+    gtk_paint_flat_box (style, window, state_type, shadow_type, area, widget, detail, x, y, width, height);
+  }
 
   if (DETAIL ("trough"))
   {
