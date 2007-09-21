@@ -105,6 +105,12 @@ _moko_stock_add_icon (GtkIconFactory *factory, const GtkStockItem *item)
   g_object_unref (G_OBJECT (pixbuf));
 }
 
+/**
+ * moko_stock_register:
+ *
+ * Register the OpenMoko stock icons for use with stock icon functions.
+ *
+ */
 void
 moko_stock_register ()
 {

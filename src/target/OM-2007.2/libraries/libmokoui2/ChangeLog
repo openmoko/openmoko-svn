@@ -1,5 +1,10 @@
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Start documentation
+	  for moko-stock
+
+2007-09-21  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-hint-entry.c: (moko_hint_entry_new),
 	(moko_hint_entry_clear): Correct and complete documentation for
 	 MokoHintEntry
