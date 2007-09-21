@@ -77,17 +77,15 @@ static void current_close_page(GtkWidget* button, struct BrowserData* data)
     g_return_if_fail (data->currentPage);
 
     /* XXX FIXME TODO Select a better page, currently the first one is used */
-    /* To destroy the WebKitGtkPage we will g_object_unref it */
-    struct BrowserPage* oldCurrent = data->currentPage;
-    data->browserPages = g_list_remove (data->browserPages, oldCurrent);
-    set_current_page (NULL, data);
+    /*
+     * Remove the current page and switch to the Go page or to select another tab
+     */
+    gtk_list_store_remove (data->browserPages, &data->currentPageIter);
+    clear_current_page (data);
+
+    GtkTreeIter iter;
     gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook),
-                                   g_list_first(data->browserPages) ? 2 : 1);
-
-
-    g_object_unref (oldCurrent->webKitPage);
-    g_free (oldCurrent);
-
+                                   gtk_tree_model_get_iter_first (GTK_TREE_MODEL (data->browserPages), &iter) ? 2 : 1);
 }
 
 void setup_current_page(GtkBox* box, struct BrowserData* data)
@@ -135,11 +133,32 @@ void setup_current_page(GtkBox* box, struct BrowserData* data)
     gtk_box_pack_start (box, data->currentFingerScroll, TRUE, TRUE, 0);
 }
 
+void clear_current_page (struct BrowserData* data)
+{
+    if (data->currentPage) {
+        gtk_container_remove (GTK_CONTAINER (data->currentFingerScroll), GTK_WIDGET (data->currentPage->webKitPage));
+        g_signal_handlers_disconnect_by_func(data->currentPage->webKitPage, (gpointer)current_progress_changed, data);
+    }
+
+    data->currentPage = NULL;
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentStop), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), FALSE);
+}
+
 /*
  * The current page changed
  */
-void set_current_page(struct BrowserPage* page, struct BrowserData* data)
+void update_current_page_from_iter(struct BrowserData* data)
 {
+    g_assert (gtk_list_store_iter_is_valid (data->browserPages, &data->currentPageIter));
+
+    BrowserPage* page;
+    gtk_tree_model_get (GTK_TREE_MODEL (data->browserPages), &data->currentPageIter, 0, &page, -1);
+    g_object_unref (page);
+
     if (page == data->currentPage)
         return;
 
@@ -148,26 +167,17 @@ void set_current_page(struct BrowserPage* page, struct BrowserData* data)
         g_signal_handlers_disconnect_by_func(data->currentPage->webKitPage, (gpointer)current_progress_changed, data);
     }
 
-    if (!page) {
-        data->currentPage = NULL;
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), FALSE);
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), FALSE);
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentStop), FALSE);
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), FALSE);
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), FALSE);
-    } else {
-        data->currentPage = page;
-        g_signal_connect(data->currentPage->webKitPage, "load-progress-changed", G_CALLBACK(current_progress_changed), data);
-        gtk_container_add (GTK_CONTAINER (data->currentFingerScroll), GTK_WIDGET (data->currentPage->webKitPage));
-        gtk_widget_show (GTK_WIDGET (data->currentPage->webKitPage));
+    data->currentPage = page;
+    g_signal_connect(data->currentPage->webKitPage, "load-progress-changed", G_CALLBACK(current_progress_changed), data);
+    gtk_container_add (GTK_CONTAINER (data->currentFingerScroll), GTK_WIDGET (data->currentPage->webKitPage));
+    gtk_widget_show (GTK_WIDGET (data->currentPage->webKitPage));
 
-        /*
-         * Update the GtkToolItems
-         */
-        /* XXX ### FIXME TODO check if we should show stop/reload */
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_gtk_page_can_go_backward (data->currentPage->webKitPage));
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_gtk_page_can_go_forward (data->currentPage->webKitPage));
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (data->currentPage->webKitPage)) != NULL);
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), TRUE);
-    }
+    /*
+     * Update the GtkToolItems
+     */
+    /* XXX ### FIXME TODO check if we should show stop/reload */
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_gtk_page_can_go_backward (data->currentPage->webKitPage));
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_gtk_page_can_go_forward (data->currentPage->webKitPage));
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (data->currentPage->webKitPage)) != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), TRUE);
 }

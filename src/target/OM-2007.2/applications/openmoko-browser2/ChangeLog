@@ -1,5 +1,33 @@
 2007-09-21  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
 
+        Make the "GO"-Page, "Open-Pages"-Page and the "Current"-Page
+        share a GtkListStore. This avoids to recreate it in Open-Page on every
+        activation, will keep the GtkTreeSelection and will help us to
+        bind that to JavaScript.
+
+        * src/Makefile.am:
+        * src/browser-data.c: Copied from src/go-page.h.
+        (browser_page_finalize):
+        (browser_page_init):
+        (browser_page_class_init):
+        (browser_page_new):
+        * src/browser-data.h:
+        * src/current-page.c:
+        (current_close_page):
+        (clear_current_page):
+        (update_current_page_from_iter):
+        * src/current-page.h:
+        * src/go-page.c:
+        (create_new_page_clicked):
+        * src/main.c:
+        (main):
+        * src/open-pages-page.c:
+        (open_pages_page_cell_data_func):
+        (selection_changed):
+        (setup_open_pages_page):
+
+2007-09-21  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
+
         Place the asterisk right.
 
         * src/browser-data.h:

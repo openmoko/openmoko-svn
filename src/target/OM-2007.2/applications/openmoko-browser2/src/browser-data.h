@@ -35,9 +35,26 @@
 /*
  * representation of one page
  */
-struct BrowserPage {
+#define BROWSER_TYPE_PAGE               (browser_page_get_type ())
+#define BROWSER_PAGE(obj)               (G_TYPE_CHECK_INSTANCE_CAST((obj), BROWSER_TYPE_PAGE, BrowserPage))
+#define BROWSER_PAGE_CLASS(klass)       (G_TYPE_CHECK_CLASS_CASS((klass),  BROWSER_TYPE_PAGE, BrowserPageClass))
+#define BROWSER_IS_PAGE(obj)            (G_TYPE_CHECK_INSTANCE_TYPE((obj), BROWSER_TYPE_PAGE))
+#define BROWSER_IS_PAGE_CLASS(klass)    (G_TYPE_CHECK_CLASS_TYPE((klass),  BROWSER_TYPE_PAGE))
+#define BROWSER_PAGE_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS((obj),  BROWSER_TYPE_PAGE, BrowserPageClass))
+typedef struct _BrowserPage BrowserPage;
+typedef struct _BrowserPageClass BrowserPageClass;
+
+struct _BrowserPage {
+    GObject parent;
     WebKitGtkPage* webKitPage;
 };
+
+struct _BrowserPageClass {
+    GObjectClass parent_class;
+};
+
+GType browser_page_get_type (void);
+BrowserPage* browser_page_new (WebKitGtkPage* page);
 
 /*
  * The state of the Browser
@@ -47,8 +64,9 @@ struct BrowserData {
     GtkWidget* mainNotebook;
     GtkWidget* currentFingerScroll;
 
-    GList* browserPages;
-    struct BrowserPage* currentPage;
+    GtkListStore* browserPages;
+    BrowserPage* currentPage;
+    GtkTreeIter currentPageIter;
 
     /**
      * Two special views for the Browser. The Overview
@@ -82,7 +100,6 @@ struct BrowserData {
      * Open-Pages-Page
      */
     GtkWidget* pagesBox;
-    GtkListStore* pagesStore;
     GtkTreeView* pagesView;
 };
 

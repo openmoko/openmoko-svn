@@ -64,6 +64,7 @@ int main (int argc, char** argv)
 
     gtk_main ();
     gdk_threads_leave ();
+    g_object_unref (data->browserPages);
     g_free (data);
 
     return EXIT_SUCCESS;
@@ -76,6 +77,7 @@ static void window_delete_event(GtkWidget* widget, GdkEvent* event, gpointer _da
 
 static void setup_ui (struct BrowserData* data)
 {
+    data->browserPages = GTK_LIST_STORE (gtk_list_store_new (1, BROWSER_TYPE_PAGE));
     data->mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (data->mainWindow, "delete-event", G_CALLBACK(window_delete_event), NULL);
 

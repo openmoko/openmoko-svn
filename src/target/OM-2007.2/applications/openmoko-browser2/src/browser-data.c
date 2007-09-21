@@ -1,5 +1,5 @@
 /*
- * A simple WebBrowser - Definitions for the "Current Page"
+ * A simple WebBrowser
  *
  *  Copyright (C) 2007 Holger Hans Peter Freyther
  *
@@ -24,13 +24,37 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#ifndef OPENMOKO_BROWSER_CURRENT_PAGE_H
-#define OPENMOKO_BROWSER_CURRENT_PAGE_H
-
+#include "config.h"
 #include "browser-data.h"
 
-void setup_current_page(GtkBox* box, struct BrowserData* data);
-void update_current_page_from_iter(struct BrowserData* data);
-void clear_current_page(struct BrowserData* data);
+G_DEFINE_TYPE(BrowserPage, browser_page, G_TYPE_OBJECT)
 
-#endif
+static void
+browser_page_finalize (GObject* object)
+{
+    BrowserPage* page = BROWSER_PAGE (object);
+    g_object_unref (page->webKitPage);
+    page->webKitPage = 0;
+}
+
+static void
+browser_page_init (BrowserPage* self)
+{
+    self->webKitPage = NULL;
+}
+
+static void
+browser_page_class_init (BrowserPageClass *klass)
+{
+    G_OBJECT_CLASS(klass)->finalize = browser_page_finalize;
+}
+
+BrowserPage*
+browser_page_new (WebKitGtkPage* webKitPage)
+{
+    BrowserPage* page = BROWSER_PAGE (g_object_new (BROWSER_TYPE_PAGE, 0));
+    page->webKitPage = webKitPage;
+    g_object_ref (page->webKitPage);
+
+    return page;
+}

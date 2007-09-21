@@ -138,13 +138,11 @@ static void create_new_page_clicked(GtkButton* btn, struct BrowserData* data)
     else
         url = autocorrect_url (gtk_entry_get_text (data->goUrlEntry));
 
-    struct BrowserPage* page = g_new(struct BrowserPage, 1);
-    page->webKitPage = WEBKIT_GTK_PAGE (webkit_gtk_page_new ());
-
-    data->browserPages = g_list_append (data->browserPages, page);
+    BrowserPage* page = browser_page_new (WEBKIT_GTK_PAGE (webkit_gtk_page_new ()));
+    gtk_list_store_append (data->browserPages, &data->currentPageIter);
+    gtk_list_store_set (data->browserPages, &data->currentPageIter, 0, page, -1);
     webkit_gtk_page_open (page->webKitPage, url);
-    set_current_page (page, data);
-    g_object_ref (page->webKitPage);
+    update_current_page_from_iter (data);
 
     gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 0);
 }

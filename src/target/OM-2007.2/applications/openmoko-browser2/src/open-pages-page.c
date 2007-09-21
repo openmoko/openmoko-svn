@@ -34,9 +34,15 @@
 
 #include <glib/gi18n.h>
 
-static gint find_browser_page (struct BrowserPage* page, WebKitGtkPage* webKitPage)
+static void open_pages_page_cell_data_func(GtkTreeViewColumn* tree_column, GtkCellRenderer* ren, GtkTreeModel* tree_model, GtkTreeIter* iter, gpointer data)
 {
-    return !(page->webKitPage == webKitPage);
+    BrowserPage* page;
+    gtk_tree_model_get (tree_model, iter, 0, &page, -1);
+    g_assert (page);
+
+    /* XXX, FIXME, TODO check that we don't have any race conditions here. We might get a new title inside WebKit while using that string? */
+    g_object_set (G_OBJECT (ren), "text", webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (page->webKitPage)), NULL);
+    g_object_unref (page);
 }
 
 /*
@@ -51,61 +57,24 @@ static void selection_changed(GtkTreeSelection* selection, struct BrowserData* d
     if (!has_selection)
         return;
 
-    WebKitGtkPage* page = 0;
-    gtk_tree_model_get (model, &iter, 1, &page, -1);
-    g_assert (page);
-
-    /*
-     * now find a page a BrowserPage
-     */
-    GList* element = g_list_find_custom(data->browserPages, page, (GCompareFunc)find_browser_page);
-    if (element)
-        set_current_page ((struct BrowserPage*)element->data, data);
-    
-    g_object_unref (page);
+    data->currentPageIter = iter;
+    update_current_page_from_iter (data);
 }
 
-
-static void pages_add_to_list_store(struct BrowserPage* page, GtkListStore* store)
-{
-    GtkTreeIter iter;
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter,
-                        0, g_strdup (webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (page->webKitPage))),
-                        1, page->webKitPage,
-                        -1);
-}
-
-/*
- * For now rebuild the GtkListStore
- *
- * XXX FIXME TODO Make Current, Go and Pages use the same GtkListStore
- * and share the code with the bookmarks.
- */
-static void switched_notebook_tab(GtkNotebook* notebook, GtkNotebookPage* page, guint page_num, struct BrowserData* data)
-{
-    if (gtk_notebook_get_nth_page (notebook, page_num) == data->pagesBox) {
-        gtk_list_store_clear (data->pagesStore);
-        g_list_foreach (data->browserPages, (GFunc)pages_add_to_list_store, data->pagesStore);
-    }
-}
 
 void setup_open_pages_page(GtkBox* box, struct BrowserData* data)
 {
     data->pagesBox = GTK_WIDGET (box);
-    g_signal_connect (data->mainNotebook, "switch-page", G_CALLBACK(switched_notebook_tab), data);
-
-    /* URL/title and WebKitGtkPage, as it is a GObject */
-    data->pagesStore = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_OBJECT);
 
     GtkContainer* scrolled = GTK_CONTAINER (moko_finger_scroll_new ());
     gtk_box_pack_start (box, GTK_WIDGET(scrolled), TRUE, TRUE, 0);
-    data->pagesView = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL (data->pagesStore)));
+    data->pagesView = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL (data->browserPages)));
     gtk_container_add (scrolled, GTK_WIDGET (data->pagesView));
     g_signal_connect (gtk_tree_view_get_selection (data->pagesView), "changed", G_CALLBACK(selection_changed), data);
 
     GtkCellRenderer* ren = GTK_CELL_RENDERER (gtk_cell_renderer_text_new ());
-    GtkTreeViewColumn* column = gtk_tree_view_column_new_with_attributes (_("Title"), ren, "text", 0, NULL);
+    GtkTreeViewColumn* column = gtk_tree_view_column_new_with_attributes (_("Title"), ren, NULL);
+    gtk_tree_view_column_set_cell_data_func (column, ren, open_pages_page_cell_data_func, NULL, NULL);
     gtk_tree_view_column_set_expand (column, TRUE);
     gtk_tree_view_append_column (data->pagesView, column);
 }
