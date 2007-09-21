@@ -1,3 +1,9 @@
+2007-09-21  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_init),
+	(moko_finger_scroll_new), (moko_finger_scroll_new_full):
+	Complete the documentation for MokoFingerScroll
+
 2007-09-21  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_class_init),
