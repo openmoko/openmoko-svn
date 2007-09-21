@@ -75,10 +75,17 @@ extern GType moko_type_rc_style;
 typedef struct _MokoRcStyle MokoRcStyle;
 typedef struct _MokoRcStyleClass MokoRcStyleClass;
 
+/* which properties have been set? */
+enum {
+  BORDER_SET = 1,
+  GRADIENT_SET = 2
+};
+
 struct _MokoRcStyle
 {
   GtkRcStyle parent_instance;
 
+  guint flags;
   gboolean has_border;
   gboolean has_gradient;
 };

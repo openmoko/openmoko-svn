@@ -1,5 +1,13 @@
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-style.c: (moko_rc_style_merge), (moko_rc_style_parse):
+	* src/moko-style.h:
+
+	Use bit flag to indicate which engine options have been set (fixes any
+	options not set in the first matched style)
+
+2007-09-21  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtkrc: Define some standard icon sizes
 
 2007-09-20  Thomas Wood  <thomas@openedhand.com>

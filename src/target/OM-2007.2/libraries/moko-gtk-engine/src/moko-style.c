@@ -107,11 +107,19 @@ moko_rc_style_merge (GtkRcStyle *dest, GtkRcStyle *src)
 {
   if (MOKO_IS_RC_STYLE (src))
   {
+    guint flags;
     MokoRcStyle *src_data = MOKO_RC_STYLE (src);
     MokoRcStyle *dest_data = MOKO_RC_STYLE (dest);
 
-    dest_data->has_border = src_data->has_border;
-    dest_data->has_gradient = src_data->has_gradient;
+    flags = (~dest_data->flags) & src_data->flags;
+
+    if (flags & BORDER_SET)
+      dest_data->has_border = src_data->has_border;
+
+    if (flags & GRADIENT_SET)
+      dest_data->has_gradient = src_data->has_gradient;
+
+    dest_data->flags = dest_data->flags | src_data->flags;
   }
 
   moko_parent_rc_style_class->merge (dest, src);
@@ -182,12 +190,14 @@ moko_rc_style_parse (GtkRcStyle *rc_style, GtkSettings *settings, GScanner *scan
         if (token != G_TOKEN_NONE)
           break;
         theme_data->has_border = i;
+	theme_data->flags = theme_data->flags | BORDER_SET;
         break;
       case TOKEN_HAS_GRADIENT:
         token = moko_rc_parse_boolean (scanner, TOKEN_HAS_GRADIENT, &i);
         if (token != G_TOKEN_NONE)
           break;
         theme_data->has_gradient = i;
+	theme_data->flags = theme_data->flags | GRADIENT_SET;
         break;
 
       default:
