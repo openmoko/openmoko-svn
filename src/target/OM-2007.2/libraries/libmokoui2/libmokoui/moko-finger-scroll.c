@@ -694,7 +694,7 @@ moko_finger_scroll_class_init (MokoFingerScrollClass * klass)
 		g_param_spec_double (
 			"velocity_max",
 			"Maximum scroll velocity",
-			"Minimum distance the child widget should scroll "
+			"Maximum distance the child widget should scroll "
 				"per 'frame', in pixels.",
 			0, G_MAXDOUBLE, 48,
 			G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
@@ -754,8 +754,10 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 	
 	gtk_widget_add_events (GTK_WIDGET (self), GDK_POINTER_MOTION_HINT_MASK);
 
-	priv->hadjust = GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
-	priv->vadjust = GTK_ADJUSTMENT (gtk_adjustment_new (0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+	priv->hadjust = GTK_ADJUSTMENT (
+		gtk_adjustment_new (0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+	priv->vadjust = GTK_ADJUSTMENT (
+		gtk_adjustment_new (0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
 
 	g_object_ref (G_OBJECT (priv->hadjust));
 	g_object_ref (G_OBJECT (priv->vadjust));
@@ -800,6 +802,7 @@ moko_finger_scroll_new_full (gint mode, gboolean enabled,
 			     gdouble decel, guint sps)
 {
 	return g_object_new (MOKO_TYPE_FINGER_SCROLL,
+			     "mode", mode,
 			     "enabled", enabled,
 			     "velocity_min", vel_min,
 			     "velocity_max", vel_max,

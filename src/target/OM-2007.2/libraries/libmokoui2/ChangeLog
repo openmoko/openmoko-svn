@@ -1,3 +1,10 @@
+2007-09-21  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_class_init),
+	(moko_finger_scroll_init), (moko_finger_scroll_new_full):
+	Don't ignore 'mode' in moko_finger_scroll_new_full, fix documentation
+	for "velocity_max" property
+
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-stock.c: (_moko_stock_add_icon):
