@@ -1,3 +1,11 @@
+2007-09-21  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
+
+        As Thomas pointed out, don't use the deprecated gtk_object_sink
+        but use the g_object_ref_sink method instead.
+
+        * libmokoui/moko-finger-scroll.c:
+        (moko_finger_scroll_init):
+
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Start documentation

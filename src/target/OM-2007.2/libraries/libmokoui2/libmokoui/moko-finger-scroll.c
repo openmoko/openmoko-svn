@@ -759,10 +759,8 @@ moko_finger_scroll_init (MokoFingerScroll * self)
 	priv->vadjust = GTK_ADJUSTMENT (
 		gtk_adjustment_new (0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
 
-	g_object_ref (G_OBJECT (priv->hadjust));
-	g_object_ref (G_OBJECT (priv->vadjust));
-	gtk_object_sink (GTK_OBJECT (priv->hadjust));
-	gtk_object_sink (GTK_OBJECT (priv->vadjust));
+	g_object_ref_sink (G_OBJECT (priv->hadjust));
+	g_object_ref_sink (G_OBJECT (priv->vadjust));
 	
 	g_signal_connect (G_OBJECT (self), "button-press-event",
 		G_CALLBACK (moko_finger_scroll_button_press_cb), NULL);
