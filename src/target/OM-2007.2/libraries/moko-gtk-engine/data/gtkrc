@@ -7,8 +7,9 @@
 # black: #333333
 # orange: #ff7d00
 
-gtk_button_images = 0
-gtk_menu_images = 0
+gtk-button-images = 0
+gtk-menu-images = 0
+gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
 style "default"
 {
