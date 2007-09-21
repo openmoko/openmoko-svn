@@ -1,3 +1,9 @@
+2007-09-21  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
+
+        Place the asterisk right.
+
+        * src/browser-data.h:
+
 2007-09-18  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         GNU/libc build fix.

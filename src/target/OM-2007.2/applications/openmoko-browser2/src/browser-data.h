@@ -43,9 +43,9 @@ struct BrowserPage {
  * The state of the Browser
  */
 struct BrowserData {
-    GtkWidget *mainWindow;
-    GtkWidget *mainNotebook;
-    GtkWidget *currentFingerScroll;
+    GtkWidget* mainWindow;
+    GtkWidget* mainNotebook;
+    GtkWidget* currentFingerScroll;
 
     GList* browserPages;
     struct BrowserPage* currentPage;
