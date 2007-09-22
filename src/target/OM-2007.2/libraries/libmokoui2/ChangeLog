@@ -1,3 +1,10 @@
+2007-09-22  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Change the header file to be parsable by h2def.py, which will
+        reduce the manual work needed to create bindings.
+
+        * libmokoui/moko-hint-entry.h:
+
 2007-09-21  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
 
         As Thomas pointed out, don't use the deprecated gtk_object_sink

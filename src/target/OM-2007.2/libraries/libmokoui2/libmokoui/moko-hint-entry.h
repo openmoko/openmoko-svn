@@ -29,35 +29,23 @@
 
 G_BEGIN_DECLS
 
-#define MOKO_TYPE_HINT_ENTRY moko_hint_entry_get_type()
+#define MOKO_TYPE_HINT_ENTRY                moko_hint_entry_get_type()
+#define MOKO_HINT_ENTRY(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOKO_TYPE_HINT_ENTRY, MokoHintEntry))
+#define MOKO_HINT_ENTRY_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_HINT_ENTRY, MokoHintEntryClass))
+#define MOKO_IS_HINT_ENTRY(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_HINT_ENTRY))
+#define MOKO_IS_HINT_ENTRY_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_HINT_ENTRY))
+#define MOKO_HINT_ENTRY_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_HINT_ENTRY, MokoGroupComboClass))
 
-#define MOKO_HINT_ENTRY(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MOKO_TYPE_HINT_ENTRY, MokoHintEntry))
+typedef struct _MokoHintEntry MokoHintEntry;
+typedef struct _MokoHintEntryClass MokoHintEntryClass;
 
-#define MOKO_HINT_ENTRY_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MOKO_TYPE_HINT_ENTRY, MokoHintEntryClass))
-
-#define MOKO_IS_HINT_ENTRY(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MOKO_TYPE_HINT_ENTRY))
-
-#define MOKO_IS_HINT_ENTRY_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MOKO_TYPE_HINT_ENTRY))
-
-#define MOKO_HINT_ENTRY_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MOKO_TYPE_HINT_ENTRY, MokoGroupComboClass))
-
-typedef struct {
+struct _MokoHintEntry {
   GtkEntry parent;
-} MokoHintEntry;
+};
 
-typedef struct {
+struct _MokoHintEntryClass {
   GtkEntryClass parent_class;
-} MokoHintEntryClass;
+};
 
 GType moko_hint_entry_get_type (void);
 
