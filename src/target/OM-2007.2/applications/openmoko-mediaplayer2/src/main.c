@@ -403,7 +403,7 @@ main(int argc, char *argv[])
 	omp_session_init();
 	omp_config_init();
 	omp_window_create();
-	if (!omp_playback_init()) return EXIT_FAILURE;
+	omp_playback_init();
 	omp_playlist_init();
 	omp_window_create_pages();
 

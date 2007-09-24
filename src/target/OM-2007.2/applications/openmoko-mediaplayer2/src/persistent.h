@@ -36,7 +36,7 @@
 #define OMP_EVENT_SESSION_FILE_CHOOSER_PATH_CHANGED "session_file_chooser_path_changed"
 
 // Default path to open in the file chooser
-#define OMP_DEFAULT_FILE_CHOOSER_PATH "/media/card/"
+#define OMP_DEFAULT_FILE_CHOOSER_PATH "/media/card"
 
 // What file to save/load session data to/from? File name is relative to user's home directory
 #define OMP_SESSION_FILE_NAME "/.openmoko-mediaplayer"
@@ -62,6 +62,8 @@ struct _omp_config
 	gdouble equalizer_gain;						///< Pre-amplification value before audio stream is fed to equalizer [0.0..1.0]
 	gdouble equalizer_bands[11];			///< The gains for each of the equalizer bands [-1.0..1.0]
 	gboolean show_numbers_in_pl;			///< Show numbers in playlist?
+	gulong pulsesink_buffer_time;			///< Value to set pulsesink's buffer-time property to
+	gulong pulsesink_latency_time;		///< Value to set pulsesink's latency-time property to
 };
 
 /// Session-persistent data
@@ -91,6 +93,8 @@ void omp_config_set_repeat_mode(guint mode);
 guint omp_config_get_repeat_mode();
 
 guint omp_config_get_prev_track_treshold();
+gulong omp_config_get_pulsesink_buffer_time();
+gulong omp_config_get_pulsesink_latency_time();
 
 void omp_session_init();
 void omp_session_free();

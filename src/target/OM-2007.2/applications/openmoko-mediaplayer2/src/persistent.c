@@ -51,8 +51,9 @@ struct _omp_config omp_default_config =
 //	FALSE,											// auto_scroll
 	0.0,												// equalizer_gain
 	{0,0,0,0,0,0,0,0,0,0,0},		// EQ bands
-
-TRUE												// show_numbers_in_pl
+	TRUE,												// show_numbers_in_pl
+	500000,											// pulsesink_buffer_time
+	100000											// pulsesink_latency_time
 };
 
 struct _omp_config *omp_config = NULL;			///< Global and persistent configuration data
@@ -159,6 +160,24 @@ guint
 omp_config_get_prev_track_treshold()
 {
 	return omp_config->prev_track_treshold;
+}
+
+/**
+ * Returns the value pulsesink's "buffer-time" property should be set to
+ */
+gulong
+omp_config_get_pulsesink_buffer_time()
+{
+	return omp_config->pulsesink_buffer_time;
+}
+
+/**
+ * Returns the value pulsesink's "latency-time" property should be set to
+ */
+gulong
+omp_config_get_pulsesink_latency_time()
+{
+	return omp_config->pulsesink_latency_time;
 }
 
 /**
