@@ -1,0 +1,61 @@
+style "mokodatesvborderbutton" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            file            = "mokodates/vborder-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = PRELIGHT
+            file            = "mokodates/vborder-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = ACTIVE
+            file            = "mokodates/vborder-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 0
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+}
+
+style "mokodateshborderbutton" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            file            = "mokodates/hborder-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = PRELIGHT
+            file            = "mokodates/hborder-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+        image {
+            function        = BOX
+            state           = ACTIVE
+            file            = "mokodates/hborder-button.png"
+            border          = { 20, 20, 10, 10 }
+            stretch         = TRUE
+        }
+    }
+    xthickness = 0
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+}
+
+widget "*moko-dates-vborder-button" style "mokodatesvborderbutton"
+widget "*moko-dates-hborder-button" style "mokodateshborderbutton"
+

@@ -35,4 +35,5 @@ style "gtktreeviewheader" {
  
 }
 widget "*.GtkTreeView.GtkButton" style "gtktreeviewheader"
+widget "*.JanaGtkEventList.GtkButton" style "gtktreeviewheader"
 
