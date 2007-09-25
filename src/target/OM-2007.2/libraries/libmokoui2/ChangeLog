@@ -1,5 +1,15 @@
 2007-09-25  Thomas Wood  <thomas@openedhand.com>
 
+	* doc/reference/tmpl/moko-stock.sgml: Add stock item documentation
+
+	* libmokoui/moko-finger-scroll.c:
+	* libmokoui/moko-hint-entry.c:
+	* libmokoui/moko-search-bar.c:
+	* libmokoui/moko-stock.c:
+	Add section documentation
+
+2007-09-25  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-finger-scroll.h: Remove redunent comment
 	* libmokoui/moko-hint-entry.c: (moko_hint_entry_class_init): Add missing
 	documentation

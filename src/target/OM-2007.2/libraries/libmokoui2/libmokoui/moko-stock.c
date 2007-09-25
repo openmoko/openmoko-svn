@@ -18,6 +18,13 @@
  */
 
 
+/**
+ * SECTION: moko-stock
+ * @short_description: Stock items for OpenMoko
+ *
+ * Stock items for use with OpenMoko
+ */
+
 #include <gtk/gtk.h>
 #include <moko-stock.h>
 #include <glib/gi18n.h>

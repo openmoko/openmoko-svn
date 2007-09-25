@@ -17,6 +17,19 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+
+/**
+ * SECTION: moko-search-bar
+ * @short_description: An implementation of the OpenMoko "Search Bar"
+ * user interface
+ * @see_also: #GtkEntry, #GtkComboBox
+ *
+ * The #MokoSearchBar is a composite widget that implements the "Search Bar"
+ * user interface from OpenMoko. It comprises of a #GtkEntry, a #GtkComboBox
+ * and a #GtkToggleButton that toggles the visibility of the entry and combo box.
+ *
+ */
+
 #include "moko-search-bar.h"
 
 G_DEFINE_TYPE (MokoSearchBar, moko_search_bar, GTK_TYPE_HBOX)

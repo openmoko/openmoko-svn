@@ -1,5 +1,5 @@
 /*
- * moko-hint-history.c - taken from koto-hint-history.c
+ * moko-hint-entry.c - taken from koto-hint-entry.c
  *   <http://svn.o-hand.com/repos/tasks/trunk/libkoto/koto-hint-entry.c>
  *
  * Copyright (C) 2007 OpenedHand Ltd
@@ -20,6 +20,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+/**
+ * SECTION: moko-hint-entry
+ * @short_description: An entry widget with an additional "hint" when no value
+ * is entered.
+ * @see_also: #GtkEntry
+ *
+ * #MokoHintEntry is a simple #GtkEntry subclass that displays "hint" text if
+ * the user has not entered a value. This is useful when there is not enough
+ * space in the user interface to add a label next to the entry. However, it
+ * should only be used where the meaning and context of the user entered value
+ * is obvious without a label.
+ */
+
 
 #include <config.h>
 #include <string.h>

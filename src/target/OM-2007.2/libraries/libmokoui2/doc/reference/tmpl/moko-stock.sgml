@@ -1,0 +1,271 @@
+<!-- ##### SECTION Title ##### -->
+moko-stock
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_ANSWER ##### -->
+<para>
+The "Answer" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_DIAL ##### -->
+<para>
+The "Dial" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_DIALED ##### -->
+<para>
+The "Dialed History" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_HANGUP ##### -->
+<para>
+The "Hangup" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_HISTORY ##### -->
+<para>
+The "Call History" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_HOLD ##### -->
+<para>
+The "Hold" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_IN ##### -->
+<para>
+The "Incoming Call" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_MISSED ##### -->
+<para>
+The "Call Missed" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_REDIAL ##### -->
+<para>
+The "Redial" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CALL_REJECT ##### -->
+<para>
+The "Reject Call" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_ADDRESS ##### -->
+<para>
+The "Contact Address" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_DELETE ##### -->
+<para>
+The "Delete Contact" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_EMAIL ##### -->
+<para>
+The "Contact E-Mail" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_GROUPS ##### -->
+<para>
+The "Contact Groups" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_MODE ##### -->
+<para>
+The "Contact Mode" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_NEW ##### -->
+<para>
+The "New Contact" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_CONTACT_PHONE ##### -->
+<para>
+The "Contact Phone Number" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_FOLDER_DELETE ##### -->
+<para>
+The "Delete Folder" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_FOLDER_NEW ##### -->
+<para>
+The "New Folder" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_HISTORY ##### -->
+<para>
+The "History" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_DELETE ##### -->
+<para>
+The "Delete Mail" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_FORWARD ##### -->
+<para>
+The "Forward Mail" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_MARK_READ ##### -->
+<para>
+The "Mark Read" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_NEW ##### -->
+<para>
+The "New Mail" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_READ ##### -->
+<para>
+The "Read Mail" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_REPLY_ALL ##### -->
+<para>
+The "Reply to All" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_REPLY_SENDER ##### -->
+<para>
+The "Reply to Sender" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_SEND ##### -->
+<para>
+The "Send Mail" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_MAIL_SEND_RECEIVE ##### -->
+<para>
+The "Send and Receive" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_PHONE_BOOK ##### -->
+<para>
+The "Phone Book" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_SEARCH ##### -->
+<para>
+The "Search" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_SMS_NEW ##### -->
+<para>
+The "New SMS" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_SPEAKER ##### -->
+<para>
+The "Speaker" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_HANDSET ##### -->
+<para>
+The "Handset" item
+</para>
+
+
+
+<!-- ##### MACRO MOKO_STOCK_VIEW ##### -->
+<para>
+The "View" item
+</para>
+
+
+
+<!-- ##### FUNCTION moko_stock_register ##### -->
+<para>
+
+</para>
+
+
+

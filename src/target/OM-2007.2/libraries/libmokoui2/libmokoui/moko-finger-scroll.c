@@ -17,6 +17,18 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
+/**
+ * SECTION: moko-finger-scroll
+ * @short_description: A scrolling widget designed for touch screens
+ * @see_also: #GtkScrolledWindow
+ *
+ * #MokoFingerScroll implements a scrolled window designed to be used with a
+ * touch screen interface. The user scrolls the child widget by activating the
+ * pointing device and dragging it over the widget.
+ *
+ */
+
+
 #include "moko-finger-scroll.h"
 
 G_DEFINE_TYPE (MokoFingerScroll, moko_finger_scroll, GTK_TYPE_EVENT_BOX)
