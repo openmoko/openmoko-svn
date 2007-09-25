@@ -168,7 +168,7 @@ moko_hint_entry_class_init (MokoHintEntryClass *klass)
   widget_class->focus_out_event = focus_out_event;
   
   g_object_class_install_property (object_class, PROP_HINT, g_param_spec_string
-                                   ("hint", "hint", NULL, "",
+                                   ("hint", "hint", "Text to display when the entry is empty", "",
                                     G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
                                     G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB));
 }
@@ -188,6 +188,8 @@ moko_hint_entry_init (MokoHintEntry *self)
  * @hint: The hint to display when the widget is not focused
  *
  * Create a new #MokoHintEntry widget with the specified hint.
+ *
+ * Returns: a newly created #MokoHintEntry
  */
 GtkWidget *
 moko_hint_entry_new (const char *hint)

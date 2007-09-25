@@ -55,11 +55,6 @@ struct _MokoFingerScrollClass {
  *
  * Used to change the behaviour of the finger scrolling
  */
-
-/**
- */
-/**
- */
 typedef enum {
 	MOKO_FINGER_SCROLL_MODE_PUSH,
 	MOKO_FINGER_SCROLL_MODE_ACCEL,
