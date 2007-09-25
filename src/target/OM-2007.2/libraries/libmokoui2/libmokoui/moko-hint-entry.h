@@ -36,6 +36,11 @@ G_BEGIN_DECLS
 #define MOKO_IS_HINT_ENTRY_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_HINT_ENTRY))
 #define MOKO_HINT_ENTRY_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_HINT_ENTRY, MokoGroupComboClass))
 
+/**
+ * MokoHintEntry:
+ *
+ * MokoHintEntry has no publicly accessible fields
+ */
 typedef struct _MokoHintEntry MokoHintEntry;
 typedef struct _MokoHintEntryClass MokoHintEntryClass;
 

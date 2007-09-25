@@ -1,5 +1,13 @@
 2007-09-25  Thomas Wood  <thomas@openedhand.com>
 
+	* libmokoui/moko-finger-scroll.h:
+	* libmokoui/moko-hint-entry.h:
+	* libmokoui/moko-search-bar.h:
+
+	Document enums and structs
+
+2007-09-25  Thomas Wood  <thomas@openedhand.com>
+
 	* libmokoui/moko-finger-scroll.c:
 	* libmokoui/moko-search-bar.c:
 

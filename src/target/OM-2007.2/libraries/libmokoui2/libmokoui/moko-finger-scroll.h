@@ -32,6 +32,11 @@ G_BEGIN_DECLS
 #define MOKO_IS_FINGER_SCROLL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_FINGER_SCROLL))
 #define MOKO_FINGER_SCROLL_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_FINGER_SCROLL, MokoFingerScrollClass))
 
+/**
+ * MokoFingerScroll:
+ *
+ * MokoFingerScroll has no publicly accessible fields
+ */
 typedef struct _MokoFingerScroll MokoFingerScroll;
 typedef struct _MokoFingerScrollClass MokoFingerScrollClass;
 
@@ -43,6 +48,18 @@ struct _MokoFingerScrollClass {
   GtkEventBoxClass parent_class;
 };
 
+/**
+ * MokoFingerScrollMode:
+ * @MOKO_FINGER_SCROLL_MODE_PUSH: Scrolling follows pointer
+ * @MOKO_FINGER_SCROLL_MODE_ACCEL: Scrolling uses physics to "spin" the widget
+ *
+ * Used to change the behaviour of the finger scrolling
+ */
+
+/**
+ */
+/**
+ */
 typedef enum {
 	MOKO_FINGER_SCROLL_MODE_PUSH,
 	MOKO_FINGER_SCROLL_MODE_ACCEL,

@@ -32,6 +32,11 @@ G_BEGIN_DECLS
 #define MOKO_IS_SEARCH_BAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  MOKO_TYPE_SEARCH_BAR))
 #define MOKO_SEARCH_BAR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  MOKO_TYPE_SEARCH_BAR, MokoSearchBarClass))
 
+/**
+ * MokoSearchBar:
+ *
+ * MokoSearchBar has no publicly accessible fields
+ */
 typedef struct _MokoSearchBar MokoSearchBar;
 typedef struct _MokoSearchBarClass MokoSearchBarClass;
 
