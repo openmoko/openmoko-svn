@@ -826,7 +826,7 @@ moko_finger_scroll_new_full (gint mode, gboolean enabled,
 
 /**
  * moko_finger_scroll_add_with_viewport:
- * @self: A #MokoFingerScroll
+ * @scroll: A #MokoFingerScroll
  * @child: Child widget to add to the viewport
  *
  * Convenience function used to add a child to a #GtkViewport, and add the
@@ -834,12 +834,12 @@ moko_finger_scroll_new_full (gint mode, gboolean enabled,
  */
 
 void
-moko_finger_scroll_add_with_viewport (MokoFingerScroll *self, GtkWidget *child)
+moko_finger_scroll_add_with_viewport (MokoFingerScroll *scroll, GtkWidget *child)
 {
 	GtkWidget *viewport = gtk_viewport_new (NULL, NULL);
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport), GTK_SHADOW_NONE);
 	gtk_container_add (GTK_CONTAINER (viewport), child);
 	gtk_widget_show (viewport);
-	gtk_container_add (GTK_CONTAINER (self), viewport);
+	gtk_container_add (GTK_CONTAINER (scroll), viewport);
 }
 

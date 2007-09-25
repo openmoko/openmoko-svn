@@ -234,7 +234,7 @@ moko_search_bar_new (void)
 
 /**
  * moko_search_bar_new_with_combo:
- * @comno: a GtkComboBox to use as the combobox
+ * @combo: a GtkComboBox to use as the combobox
  *
  * Creates a MokoSearchBar with the specified combo box
  *

@@ -1,3 +1,10 @@
+2007-09-25  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c:
+	* libmokoui/moko-search-bar.c:
+
+	Fix some typos in the documentation
+
 2007-09-22  Holger Hans Peter Freyther  <zecke@selfish.org>
 
         Change the header file to be parsable by h2def.py, which will
