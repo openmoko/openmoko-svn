@@ -139,6 +139,16 @@ moko_search_bar_class_init (MokoSearchBarClass *klass)
 			GTK_TYPE_ENTRY,
 			G_PARAM_READABLE));
 
+	/**
+	 * MokoSearchBar::toggled:
+	 * @searchbar: The #MokoSearchBar that received the signal
+	 * @search_visible: %TRUE if the search entry is visible, %FALSE
+	 * otherwise
+	 * @user_data: User data set when the signal handler was connected.
+	 *
+	 * The ::toggled signal is emitted each time the search button is
+	 * pressed.
+	 */
 	signals[TOGGLED] =
 		g_signal_new ("toggled",
 			G_OBJECT_CLASS_TYPE (object_class),
@@ -147,7 +157,17 @@ moko_search_bar_class_init (MokoSearchBarClass *klass)
 			NULL, NULL,
 			g_cclosure_marshal_VOID__BOOLEAN,
 			G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-
+	
+	/**
+	 * MokoSearchBar::text-changed:
+	 * @searchbar: The #MokoSearchBar that received the signal
+	 * @editable: The underlying #GtkEditable that received the ::changed 
+	 * signal.
+	 * @user_data: User data set when the signal handler was connected.
+	 *
+	 * The ::text-changed signal is emitted each time the underlying 
+	 * #GtkEditable receives its ::changed signal.
+	 */
 	signals[TEXT_CHANGED] =
 		g_signal_new ("text-changed",
 			G_OBJECT_CLASS_TYPE (object_class),
@@ -157,6 +177,16 @@ moko_search_bar_class_init (MokoSearchBarClass *klass)
 			g_cclosure_marshal_VOID__POINTER,
 			G_TYPE_NONE, 1, G_TYPE_POINTER);
 
+	/**
+	 * MokoSearchBar::combo-changed:
+	 * @searchbar: The #MokoSearchBar that received the signal
+	 * @combo: The underlying #GtkComboBox that received the ::changed 
+	 * signal.
+	 * @user_data: User data set when the signal handler was connected.
+	 *
+	 * The ::combo-changed signal is emitted each time the underlying 
+	 * #GtkComboBox receives its ::changed signal.
+	 */
 	signals[COMBO_CHANGED] =
 		g_signal_new ("combo-changed",
 			G_OBJECT_CLASS_TYPE (object_class),
