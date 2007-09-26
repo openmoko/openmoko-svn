@@ -1,0 +1,10 @@
+--- linux-2.6.22.1.orig/drivers/mmc/host/s3cmci.c
++++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+@@ -1248,6 +1248,7 @@
+ 	mmc_remove_host(mmc);
+ 	clk_disable(host->clk);
+ 	clk_put(host->clk);
++	s3c2410_dma_free(S3CMCI_DMA, &s3cmci_dma_client);
+  	free_irq(host->irq_cd, host);
+  	free_irq(host->irq, host);
+ 	iounmap(host->base);
