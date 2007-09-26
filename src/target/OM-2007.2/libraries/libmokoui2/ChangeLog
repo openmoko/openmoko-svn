@@ -1,3 +1,8 @@
+2007-09-26  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Attempt to fix a
+	segfault in moko_stock_register()
+
 2007-09-25  Thomas Wood  <thomas@openedhand.com>
 
 	* doc/reference/tmpl/moko-stock.sgml: Add stock item documentation

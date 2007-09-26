@@ -99,17 +99,13 @@ _moko_stock_add_icon (GtkIconFactory *factory, const GtkStockItem *item)
     gtk_icon_source_set_pixbuf (source, pixbuf);
     gtk_icon_set_add_source (set, source);
     gtk_icon_source_free (source);
+
+    g_object_unref (G_OBJECT (pixbuf));
   }
-
-
-
 
   gtk_icon_factory_add (factory, item->stock_id, set);
   gtk_icon_set_unref (set);
 
-
-
-  g_object_unref (G_OBJECT (pixbuf));
 }
 
 /**
