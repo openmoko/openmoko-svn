@@ -93,6 +93,9 @@ _moko_stock_add_icon (GtkIconFactory *factory, const GtkStockItem *item)
     gtk_icon_size_lookup (i, &width, &height);
     pixbuf = gtk_icon_theme_load_icon (theme, item->stock_id, width, 0, NULL);
 
+    if (!pixbuf)
+      continue;
+
     source = gtk_icon_source_new ();
     gtk_icon_source_set_size (source, i);
     gtk_icon_source_set_size_wildcarded (source, FALSE);
