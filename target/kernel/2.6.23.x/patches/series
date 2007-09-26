@@ -44,3 +44,4 @@ gta02-core.patch
 s3c2410-nand-include-fix.patch
 s3c2410-udc-include-fix.patch
 neo1973-soc-include-fix.patch
+explicitly-link-notes-section.patch
