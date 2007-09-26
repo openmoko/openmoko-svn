@@ -3,11 +3,11 @@ Use FIC's own USB Vendor ID rather than NetChip's
 Yes, we could solve this by some modprobe.conf parameters, but I'd like to
 rather not rely on this.
 
-Index: linux-2.6.20.1/drivers/usb/gadget/ether.c
+Index: linux-2.6.23-rc8/drivers/usb/gadget/ether.c
 ===================================================================
---- linux-2.6.20.1.orig/drivers/usb/gadget/ether.c	2007-03-12 21:57:28.000000000 +0100
-+++ linux-2.6.20.1/drivers/usb/gadget/ether.c	2007-03-12 22:01:28.000000000 +0100
-@@ -149,11 +149,8 @@
+--- linux-2.6.23-rc8.orig/drivers/usb/gadget/ether.c
++++ linux-2.6.23-rc8/drivers/usb/gadget/ether.c
+@@ -156,11 +156,8 @@
   * Instead:  allocate your own, using normal USB-IF procedures.
   */
  
@@ -21,7 +21,7 @@ Index: linux-2.6.20.1/drivers/usb/gadget/ether.c
  
  /* For hardware that can't talk CDC, we use the same vendor ID that
   * ARM Linux has used for ethernet-over-usb, both with sa1100 and
-@@ -174,8 +171,8 @@
+@@ -181,8 +178,8 @@
   * used with CDC Ethernet, Linux 2.4 hosts will need updates to choose
   * the non-RNDIS configuration.
   */

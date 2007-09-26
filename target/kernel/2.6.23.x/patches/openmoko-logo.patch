@@ -1,7 +1,7 @@
-Index: linux-2.6.22.1/drivers/video/logo/logo_openmoko_clut224.ppm
+Index: linux-2.6.23-rc8/drivers/video/logo/logo_openmoko_clut224.ppm
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/drivers/video/logo/logo_openmoko_clut224.ppm
++++ linux-2.6.23-rc8/drivers/video/logo/logo_openmoko_clut224.ppm
 @@ -0,0 +1,40003 @@
 +P3
 +480 500
@@ -40006,11 +40006,11 @@ Index: linux-2.6.22.1/drivers/video/logo/logo_openmoko_clut224.ppm
 +0 0 0  0 0 0  0 0 0  0 0 0  0 0 0  0 0 0
 +0 0 0  0 0 0  0 0 0  0 0 0  0 0 0  0 0 0
 +0 0 0  0 0 0  0 0 0  0 0 0  0 0 0  0 0 0
-Index: linux-2.6.22.1/drivers/video/logo/Kconfig
+Index: linux-2.6.23-rc8/drivers/video/logo/Kconfig
 ===================================================================
---- linux-2.6.22.1.orig/drivers/video/logo/Kconfig
-+++ linux-2.6.22.1/drivers/video/logo/Kconfig
-@@ -62,6 +62,11 @@
+--- linux-2.6.23-rc8.orig/drivers/video/logo/Kconfig
++++ linux-2.6.23-rc8/drivers/video/logo/Kconfig
+@@ -67,6 +67,11 @@
  	depends on SUPERH
  	default y
  
@@ -40022,31 +40022,31 @@ Index: linux-2.6.22.1/drivers/video/logo/Kconfig
  config LOGO_M32R_CLUT224
  	bool "224-color M32R Linux logo"
  	depends on M32R
-Index: linux-2.6.22.1/drivers/video/logo/Makefile
+Index: linux-2.6.23-rc8/drivers/video/logo/Makefile
 ===================================================================
---- linux-2.6.22.1.orig/drivers/video/logo/Makefile
-+++ linux-2.6.22.1/drivers/video/logo/Makefile
+--- linux-2.6.23-rc8.orig/drivers/video/logo/Makefile
++++ linux-2.6.23-rc8/drivers/video/logo/Makefile
 @@ -13,6 +13,7 @@
  obj-$(CONFIG_LOGO_SUPERH_VGA16)		+= logo_superh_vga16.o
  obj-$(CONFIG_LOGO_SUPERH_CLUT224)	+= logo_superh_clut224.o
  obj-$(CONFIG_LOGO_M32R_CLUT224)		+= logo_m32r_clut224.o
 +obj-$(CONFIG_LOGO_OPENMOKO_CLUT224)	+= logo_openmoko_clut224.o
  
- # How to generate logo's
+ obj-$(CONFIG_SPU_BASE)			+= logo_spe_clut224.o
  
-Index: linux-2.6.22.1/drivers/video/logo/logo.c
+Index: linux-2.6.23-rc8/drivers/video/logo/logo.c
 ===================================================================
---- linux-2.6.22.1.orig/drivers/video/logo/logo.c
-+++ linux-2.6.22.1/drivers/video/logo/logo.c
+--- linux-2.6.23-rc8.orig/drivers/video/logo/logo.c
++++ linux-2.6.23-rc8/drivers/video/logo/logo.c
 @@ -33,6 +33,7 @@
  extern const struct linux_logo logo_superh_vga16;
  extern const struct linux_logo logo_superh_clut224;
  extern const struct linux_logo logo_m32r_clut224;
 +extern const struct linux_logo logo_openmoko_clut224;
  
- 
- const struct linux_logo *fb_find_logo(int depth)
-@@ -101,6 +102,10 @@
+ /* logo's are marked __initdata. Use __init_refok to tell
+  * modpost that it is intended that this function uses data
+@@ -104,6 +105,10 @@
  		/* M32R Linux logo */
  		logo = &logo_m32r_clut224;
  #endif

@@ -1,8 +1,8 @@
-Index: linux-2.6.22.1/include/linux/mmc/core.h
+Index: linux-2.6.23-rc8/include/linux/mmc/core.h
 ===================================================================
---- linux-2.6.22.1.orig/include/linux/mmc/core.h	2007-07-19 00:30:53.705721081 +0200
-+++ linux-2.6.22.1/include/linux/mmc/core.h	2007-07-19 00:30:57.097914392 +0200
-@@ -56,12 +56,15 @@
+--- linux-2.6.23-rc8.orig/include/linux/mmc/core.h
++++ linux-2.6.23-rc8/include/linux/mmc/core.h
+@@ -54,12 +54,15 @@
  	unsigned int		retries;	/* max number of retries */
  	unsigned int		error;		/* command error */
  
@@ -24,10 +24,10 @@ Index: linux-2.6.22.1/include/linux/mmc/core.h
  
  	struct mmc_data		*data;		/* data segment associated with cmd */
  	struct mmc_request	*mrq;		/* associated request */
-Index: linux-2.6.22.1/include/linux/mmc/mmc.h
+Index: linux-2.6.23-rc8/include/linux/mmc/mmc.h
 ===================================================================
---- linux-2.6.22.1.orig/include/linux/mmc/mmc.h	2007-07-19 00:30:50.197521158 +0200
-+++ linux-2.6.22.1/include/linux/mmc/mmc.h	2007-07-19 00:30:57.133916442 +0200
+--- linux-2.6.23-rc8.orig/include/linux/mmc/mmc.h
++++ linux-2.6.23-rc8/include/linux/mmc/mmc.h
 @@ -78,6 +78,21 @@
  #define MMC_APP_CMD              55   /* ac   [31:16] RCA        R1  */
  #define MMC_GEN_CMD              56   /* adtc [0] RD/WR          R1  */

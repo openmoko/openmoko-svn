@@ -1,17 +1,17 @@
-Index: linux-2.6.17.14-fic3/drivers/net/Kconfig
+Index: linux-2.6.23-rc8/drivers/net/Kconfig
 ===================================================================
---- linux-2.6.17.14-fic3.orig/drivers/net/Kconfig	2006-12-07 16:16:46.000000000 +0100
-+++ linux-2.6.17.14-fic3/drivers/net/Kconfig	2006-12-07 16:17:50.000000000 +0100
-@@ -1246,7 +1246,7 @@
+--- linux-2.6.23-rc8.orig/drivers/net/Kconfig
++++ linux-2.6.23-rc8/drivers/net/Kconfig
+@@ -1322,7 +1322,7 @@
  
  config NET_PCI
  	bool "EISA, VLB, PCI and on board controllers"
--	depends on NET_ETHERNET && (ISA || EISA || PCI)
-+	depends on NET_ETHERNET && (ISA || EISA || PCI || MACH_QT2410)
+-	depends on ISA || EISA || PCI
++	depends on ISA || EISA || PCI || MACH_QT2410
  	help
  	  This is another class of network cards which attach directly to the
  	  bus. If you have one of those, say Y and read the Ethernet-HOWTO,
-@@ -1386,7 +1386,7 @@
+@@ -1496,7 +1496,7 @@
  
  config CS89x0
  	tristate "CS89x0 support"
@@ -20,11 +20,11 @@ Index: linux-2.6.17.14-fic3/drivers/net/Kconfig
  	---help---
  	  Support for CS89x0 chipset based Ethernet cards. If you have a
  	  network (Ethernet) card of this type, say Y and read the
-Index: linux-2.6.17.14-fic3/drivers/net/cs89x0.c
+Index: linux-2.6.23-rc8/drivers/net/cs89x0.c
 ===================================================================
---- linux-2.6.17.14-fic3.orig/drivers/net/cs89x0.c	2006-12-07 16:16:46.000000000 +0100
-+++ linux-2.6.17.14-fic3/drivers/net/cs89x0.c	2006-12-07 16:17:50.000000000 +0100
-@@ -195,6 +195,10 @@
+--- linux-2.6.23-rc8.orig/drivers/net/cs89x0.c
++++ linux-2.6.23-rc8/drivers/net/cs89x0.c
+@@ -194,6 +194,10 @@
  #define CIRRUS_DEFAULT_IRQ	VH_INTC_INT_NUM_CASCADED_INTERRUPT_1 /* Event inputs bank 1 - ID 35/bit 3 */
  static unsigned int netcard_portlist[] __initdata = {CIRRUS_DEFAULT_BASE, 0};
  static unsigned int cs8900_irq_map[] = {CIRRUS_DEFAULT_IRQ, 0, 0, 0};
@@ -35,7 +35,7 @@ Index: linux-2.6.17.14-fic3/drivers/net/cs89x0.c
  #else
  static unsigned int netcard_portlist[] __initdata =
     { 0x300, 0x320, 0x340, 0x360, 0x200, 0x220, 0x240, 0x260, 0x280, 0x2a0, 0x2c0, 0x2e0, 0};
-@@ -830,6 +834,14 @@
+@@ -829,6 +833,14 @@
  
  	printk(" IRQ %d", dev->irq);
  
@@ -50,7 +50,7 @@ Index: linux-2.6.17.14-fic3/drivers/net/cs89x0.c
  #if ALLOW_DMA
  	if (lp->use_dma) {
  		get_dma_channel(dev);
-@@ -1310,7 +1322,7 @@
+@@ -1308,7 +1320,7 @@
  	else
  #endif
  	{

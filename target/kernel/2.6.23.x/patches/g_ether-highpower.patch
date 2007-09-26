@@ -1,8 +1,8 @@
-Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/ether.c
+Index: linux-2.6.23-rc8/drivers/usb/gadget/ether.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/usb/gadget/ether.c	2007-01-21 21:31:48.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/usb/gadget/ether.c	2007-01-21 21:34:31.000000000 +0100
-@@ -462,7 +462,7 @@
+--- linux-2.6.23-rc8.orig/drivers/usb/gadget/ether.c
++++ linux-2.6.23-rc8/drivers/usb/gadget/ether.c
+@@ -486,7 +486,7 @@
  	.bConfigurationValue =	DEV_CONFIG_VALUE,
  	.iConfiguration =	STRING_CDC,
  	.bmAttributes =		USB_CONFIG_ATT_ONE | USB_CONFIG_ATT_SELFPOWER,
@@ -11,7 +11,7 @@ Index: linux-2.6.17.14-fic4.test/drivers/usb/gadget/ether.c
  };
  
  #ifdef	CONFIG_USB_ETH_RNDIS
-@@ -476,7 +476,7 @@
+@@ -500,7 +500,7 @@
  	.bConfigurationValue =  DEV_RNDIS_CONFIG_VALUE,
  	.iConfiguration =       STRING_RNDIS,
  	.bmAttributes =		USB_CONFIG_ATT_ONE | USB_CONFIG_ATT_SELFPOWER,

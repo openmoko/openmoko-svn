@@ -1,7 +1,8 @@
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/Kconfig linux-2.6.22.5-yaffs2/fs/Kconfig
---- linux-2.6.22.5/fs/Kconfig	2007-09-05 14:34:08.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/Kconfig	2007-09-05 14:36:21.000000000 +0800
-@@ -1185,6 +1185,10 @@
+Index: linux-2.6.23-rc8/fs/Kconfig
+===================================================================
+--- linux-2.6.23-rc8.orig/fs/Kconfig
++++ linux-2.6.23-rc8/fs/Kconfig
+@@ -1182,6 +1182,10 @@
  	  To compile the EFS file system support as a module, choose M here: the
  	  module will be called efs.
  
@@ -12,9 +13,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/Kconfig linux-2.6.22.5-yaffs
  config JFFS2_FS
  	tristate "Journalling Flash File System v2 (JFFS2) support"
  	select CRC32
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/devextras.h linux-2.6.22.5-yaffs2/fs/yaffs2/devextras.h
---- linux-2.6.22.5/fs/yaffs2/devextras.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/devextras.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/devextras.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/devextras.h
 @@ -0,0 +1,264 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -280,9 +282,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/devextras.h linux-2.6
 +#endif
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/Kconfig linux-2.6.22.5-yaffs2/fs/yaffs2/Kconfig
---- linux-2.6.22.5/fs/yaffs2/Kconfig	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/Kconfig	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/Kconfig
 @@ -0,0 +1,176 @@
 +#
 +# YAFFS file system configurations
@@ -460,9 +463,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/Kconfig linux-2.6.22.
 +	  but makes look-ups faster.
 +
 +	  If unsure, say Y.
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/Makefile linux-2.6.22.5-yaffs2/fs/yaffs2/Makefile
---- linux-2.6.22.5/fs/yaffs2/Makefile	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/Makefile	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/Makefile
 @@ -0,0 +1,10 @@
 +#
 +# Makefile for the linux YAFFS filesystem routines.
@@ -474,9 +478,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/Makefile linux-2.6.22
 +yaffs-y += yaffs_packedtags1.o yaffs_packedtags2.o yaffs_nand.o yaffs_qsort.o
 +yaffs-y += yaffs_tagscompat.o yaffs_tagsvalidity.o
 +yaffs-y += yaffs_mtdif.o yaffs_mtdif1.o yaffs_mtdif2.o
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/moduleconfig.h linux-2.6.22.5-yaffs2/fs/yaffs2/moduleconfig.h
---- linux-2.6.22.5/fs/yaffs2/moduleconfig.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/moduleconfig.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/moduleconfig.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/moduleconfig.h
 @@ -0,0 +1,65 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -543,9 +548,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/moduleconfig.h linux-
 +#endif /* YAFFS_OUT_OF_TREE */
 +
 +#endif /* __YAFFS_CONFIG_H__ */
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_checkptrw.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_checkptrw.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_checkptrw.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_checkptrw.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_checkptrw.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_checkptrw.c
 @@ -0,0 +1,404 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -951,9 +957,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_checkptrw.c lin
 +
 +
 +
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_checkptrw.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_checkptrw.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_checkptrw.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_checkptrw.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_checkptrw.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_checkptrw.h
 @@ -0,0 +1,35 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -990,9 +997,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_checkptrw.h lin
 +
 +#endif
 +
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_ecc.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_ecc.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_ecc.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_ecc.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_ecc.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_ecc.c
 @@ -0,0 +1,331 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -1325,9 +1333,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_ecc.c linux-2.6
 +
 +}
 +
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_ecc.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_ecc.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_ecc.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_ecc.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_ecc.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_ecc.h
 @@ -0,0 +1,44 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -1373,9 +1382,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_ecc.h linux-2.6
 +			  yaffs_ECCOther * read_ecc,
 +			  const yaffs_ECCOther * test_ecc);
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_fs.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_fs.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_fs.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_fs.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_fs.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_fs.c
 @@ -0,0 +1,2276 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -3653,9 +3663,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_fs.c linux-2.6.
 +MODULE_DESCRIPTION("YAFFS2 - a NAND specific flash file system");
 +MODULE_AUTHOR("Charles Manning, Aleph One Ltd., 2002-2006");
 +MODULE_LICENSE("GPL");
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_guts.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_guts.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_guts.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_guts.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_guts.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_guts.c
 @@ -0,0 +1,7474 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -11131,9 +11142,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_guts.c linux-2.
 +
 +	    return YAFFS_OK;
 +}
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_guts.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_guts.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_guts.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_guts.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_guts.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_guts.h
 @@ -0,0 +1,902 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12037,9 +12049,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_guts.h linux-2.
 +void yaffs_HandleChunkError(yaffs_Device *dev, yaffs_BlockInfo *bi);
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffsinterface.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffsinterface.h
---- linux-2.6.22.5/fs/yaffs2/yaffsinterface.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffsinterface.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffsinterface.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffsinterface.h
 @@ -0,0 +1,21 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12062,9 +12075,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffsinterface.h linu
 +int yaffs_Initialise(unsigned nBlocks);
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif1.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif1.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_mtdif1.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif1.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif1.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif1.c
 @@ -0,0 +1,363 @@
 +/*
 + * YAFFS: Yet another FFS. A NAND-flash specific file system.
@@ -12429,9 +12443,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif1.c linux-
 +}
 +
 +#endif /*KERNEL_VERSION*/
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif1.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif1.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_mtdif1.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif1.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif1.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif1.h
 @@ -0,0 +1,28 @@
 +/*
 + * YAFFS: Yet another Flash File System. A NAND-flash specific file system.
@@ -12461,9 +12476,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif1.h linux-
 +	yaffs_BlockState * state, int *sequenceNumber);
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif2.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif2.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_mtdif2.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif2.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif2.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif2.c
 @@ -0,0 +1,232 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -12697,9 +12713,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif2.c linux-
 +		return YAFFS_FAIL;
 +}
 +
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif2.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif2.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_mtdif2.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif2.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif2.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif2.h
 @@ -0,0 +1,29 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -12730,9 +12747,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif2.h linux-
 +			    yaffs_BlockState * state, int *sequenceNumber);
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_mtdif.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif.c
 @@ -0,0 +1,241 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -12975,9 +12993,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif.c linux-2
 +	return YAFFS_OK;
 +}
 +
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_mtdif.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_mtdif.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_mtdif.h
 @@ -0,0 +1,27 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13006,9 +13025,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_mtdif.h linux-2
 +int nandmtd_EraseBlockInNAND(yaffs_Device * dev, int blockNumber);
 +int nandmtd_InitialiseNAND(yaffs_Device * dev);
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_nand.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_nand.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_nand.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_nand.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_nand.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_nand.c
 @@ -0,0 +1,134 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -13144,9 +13164,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_nand.c linux-2.
 +
 +
 + 
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_nandemul2k.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_nandemul2k.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_nandemul2k.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_nandemul2k.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_nandemul2k.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_nandemul2k.h
 @@ -0,0 +1,39 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13187,9 +13208,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_nandemul2k.h li
 +int nandemul2k_GetNumberOfBlocks(void);
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_nand.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_nand.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_nand.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_nand.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_nand.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_nand.h
 @@ -0,0 +1,44 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13235,9 +13257,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_nand.h linux-2.
 +
 +#endif
 +
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags1.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags1.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_packedtags1.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags1.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags1.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags1.c
 @@ -0,0 +1,52 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -13291,9 +13314,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags1.c l
 +
 +	}
 +}
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags1.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags1.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_packedtags1.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags1.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags1.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags1.h
 @@ -0,0 +1,37 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13332,9 +13356,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags1.h l
 +void yaffs_PackTags1(yaffs_PackedTags1 * pt, const yaffs_ExtendedTags * t);
 +void yaffs_UnpackTags1(yaffs_ExtendedTags * t, const yaffs_PackedTags1 * pt);
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags2.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags2.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_packedtags2.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags2.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags2.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags2.c
 @@ -0,0 +1,182 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -13518,9 +13543,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags2.c l
 +	yaffs_DumpTags2(t);
 +
 +}
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags2.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags2.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_packedtags2.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_packedtags2.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags2.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_packedtags2.h
 @@ -0,0 +1,38 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13560,9 +13586,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_packedtags2.h l
 +void yaffs_PackTags2(yaffs_PackedTags2 * pt, const yaffs_ExtendedTags * t);
 +void yaffs_UnpackTags2(yaffs_ExtendedTags * t, yaffs_PackedTags2 * pt);
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_qsort.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_qsort.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_qsort.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_qsort.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_qsort.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_qsort.c
 @@ -0,0 +1,160 @@
 +/*
 + * Copyright (c) 1992, 1993
@@ -13724,9 +13751,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_qsort.c linux-2
 +	}
 +/*		yaffs_qsort(pn - r, r / es, es, cmp);*/
 +}
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_qsort.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_qsort.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_qsort.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_qsort.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_qsort.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_qsort.h
 @@ -0,0 +1,23 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -13751,9 +13779,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_qsort.h linux-2
 +                   int (*cmp)(const void *, const void *));
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagscompat.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagscompat.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_tagscompat.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagscompat.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_tagscompat.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_tagscompat.c
 @@ -0,0 +1,530 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -14285,9 +14314,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagscompat.c li
 +
 +	return YAFFS_OK;
 +}
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagscompat.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagscompat.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_tagscompat.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagscompat.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_tagscompat.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_tagscompat.h
 @@ -0,0 +1,40 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -14329,9 +14359,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagscompat.h li
 +int yaffs_CountBits(__u8 byte);
 +
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagsvalidity.c linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagsvalidity.c
---- linux-2.6.22.5/fs/yaffs2/yaffs_tagsvalidity.c	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagsvalidity.c	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_tagsvalidity.c
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_tagsvalidity.c
 @@ -0,0 +1,28 @@
 +/*
 + * YAFFS: Yet Another Flash File System. A NAND-flash specific file system.
@@ -14361,9 +14392,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagsvalidity.c 
 +		tags->validMarker1 == 0x55555555);
 +
 +}
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagsvalidity.h linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagsvalidity.h
---- linux-2.6.22.5/fs/yaffs2/yaffs_tagsvalidity.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yaffs_tagsvalidity.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yaffs_tagsvalidity.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yaffs_tagsvalidity.h
 @@ -0,0 +1,24 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 
@@ -14389,9 +14421,10 @@ diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yaffs_tagsvalidity.h 
 +void yaffs_InitialiseTags(yaffs_ExtendedTags * tags);
 +int yaffs_ValidateTags(yaffs_ExtendedTags * tags);
 +#endif
-diff -Nru --exclude '*.pre.yaffs' linux-2.6.22.5/fs/yaffs2/yportenv.h linux-2.6.22.5-yaffs2/fs/yaffs2/yportenv.h
---- linux-2.6.22.5/fs/yaffs2/yportenv.h	1970-01-01 08:00:00.000000000 +0800
-+++ linux-2.6.22.5-yaffs2/fs/yaffs2/yportenv.h	2007-09-05 14:36:21.000000000 +0800
+Index: linux-2.6.23-rc8/fs/yaffs2/yportenv.h
+===================================================================
+--- /dev/null
++++ linux-2.6.23-rc8/fs/yaffs2/yportenv.h
 @@ -0,0 +1,186 @@
 +/*
 + * YAFFS: Yet another Flash File System . A NAND-flash specific file system. 

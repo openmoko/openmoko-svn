@@ -1,8 +1,8 @@
-Index: linux-2.6.17.7-new/drivers/serial/s3c2410.c
+Index: linux-2.6.23-rc8/drivers/serial/s3c2410.c
 ===================================================================
---- linux-2.6.17.7-new.orig/drivers/serial/s3c2410.c	2006-08-12 01:43:50.000000000 +0530
-+++ linux-2.6.17.7-new/drivers/serial/s3c2410.c	2006-08-12 01:44:30.000000000 +0530
-@@ -710,10 +710,6 @@
+--- linux-2.6.23-rc8.orig/drivers/serial/s3c2410.c
++++ linux-2.6.23-rc8/drivers/serial/s3c2410.c
+@@ -708,10 +708,6 @@
  		int calc_deviation;
  
  		for (sptr = res; sptr < resptr; sptr++) {
@@ -13,7 +13,7 @@ Index: linux-2.6.17.7-new/drivers/serial/s3c2410.c
  
  			calc_deviation = baud - sptr->calc;
  			if (calc_deviation < 0)
-@@ -725,12 +721,8 @@
+@@ -723,12 +719,8 @@
  			}
  		}
  

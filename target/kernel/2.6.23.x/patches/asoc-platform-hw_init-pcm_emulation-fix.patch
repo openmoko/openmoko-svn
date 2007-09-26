@@ -4,11 +4,11 @@ this gracefully.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.20/sound/soc/s3c24xx/s3c24xx-pcm.c
+Index: linux-2.6.23-rc8/sound/soc/s3c24xx/s3c24xx-pcm.c
 ===================================================================
---- linux-2.6.20.orig/sound/soc/s3c24xx/s3c24xx-pcm.c	2007-02-15 21:50:25.000000000 +0100
-+++ linux-2.6.20/sound/soc/s3c24xx/s3c24xx-pcm.c	2007-02-15 22:25:10.000000000 +0100
-@@ -155,18 +155,22 @@
+--- linux-2.6.23-rc8.orig/sound/soc/s3c24xx/s3c24xx-pcm.c
++++ linux-2.6.23-rc8/sound/soc/s3c24xx/s3c24xx-pcm.c
+@@ -158,18 +158,22 @@
  	if (!dma)
  		return 0;
  

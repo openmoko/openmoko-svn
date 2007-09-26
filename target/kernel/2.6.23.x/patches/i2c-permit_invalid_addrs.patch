@@ -3,11 +3,11 @@ address
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.20/drivers/i2c/i2c-core.c
+Index: linux-2.6.23-rc8/drivers/i2c/i2c-core.c
 ===================================================================
---- linux-2.6.20.orig/drivers/i2c/i2c-core.c	2007-02-15 20:30:14.000000000 +0100
-+++ linux-2.6.20/drivers/i2c/i2c-core.c	2007-02-15 20:30:22.000000000 +0100
-@@ -701,11 +701,11 @@
+--- linux-2.6.23-rc8.orig/drivers/i2c/i2c-core.c
++++ linux-2.6.23-rc8/drivers/i2c/i2c-core.c
+@@ -967,11 +967,11 @@
  	int err;
  
  	/* Make sure the address is valid */
