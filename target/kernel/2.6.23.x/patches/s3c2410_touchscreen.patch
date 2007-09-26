@@ -1,7 +1,7 @@
-Index: linux-2.6.23-rc8/arch/arm/plat-s3c24xx/devs.c
+Index: linux-2.6.22/arch/arm/plat-s3c24xx/devs.c
 ===================================================================
---- linux-2.6.23-rc8.orig/arch/arm/plat-s3c24xx/devs.c
-+++ linux-2.6.23-rc8/arch/arm/plat-s3c24xx/devs.c
+--- linux-2.6.22.orig/arch/arm/plat-s3c24xx/devs.c
++++ linux-2.6.22/arch/arm/plat-s3c24xx/devs.c
 @@ -24,6 +24,7 @@
  #include <asm/mach/map.h>
  #include <asm/mach/irq.h>
@@ -34,10 +34,10 @@ Index: linux-2.6.23-rc8/arch/arm/plat-s3c24xx/devs.c
  /* USB Device (Gadget)*/
  
  static struct resource s3c_usbgadget_resource[] = {
-Index: linux-2.6.23-rc8/include/asm-arm/plat-s3c24xx/devs.h
+Index: linux-2.6.22/include/asm-arm/plat-s3c24xx/devs.h
 ===================================================================
---- linux-2.6.23-rc8.orig/include/asm-arm/plat-s3c24xx/devs.h
-+++ linux-2.6.23-rc8/include/asm-arm/plat-s3c24xx/devs.h
+--- linux-2.6.22.orig/include/asm-arm/plat-s3c24xx/devs.h
++++ linux-2.6.22/include/asm-arm/plat-s3c24xx/devs.h
 @@ -42,6 +42,7 @@
  extern struct platform_device s3c_device_timer3;
  
@@ -46,10 +46,10 @@ Index: linux-2.6.23-rc8/include/asm-arm/plat-s3c24xx/devs.h
  
  /* s3c2440 specific devices */
  
-Index: linux-2.6.23-rc8/arch/arm/mach-s3c2410/mach-h1940.c
+Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-h1940.c
 ===================================================================
---- linux-2.6.23-rc8.orig/arch/arm/mach-s3c2410/mach-h1940.c
-+++ linux-2.6.23-rc8/arch/arm/mach-s3c2410/mach-h1940.c
+--- linux-2.6.22.orig/arch/arm/mach-s3c2410/mach-h1940.c
++++ linux-2.6.22/arch/arm/mach-s3c2410/mach-h1940.c
 @@ -38,6 +38,7 @@
  #include <asm/arch/h1940.h>
  #include <asm/arch/h1940-latch.h>
@@ -86,10 +86,10 @@ Index: linux-2.6.23-rc8/arch/arm/mach-s3c2410/mach-h1940.c
   	s3c24xx_udc_set_platdata(&h1940_udc_cfg);
  
  	/* Turn off suspend on both USB ports, and switch the
-Index: linux-2.6.23-rc8/drivers/input/touchscreen/Kconfig
+Index: linux-2.6.22/drivers/input/touchscreen/Kconfig
 ===================================================================
---- linux-2.6.23-rc8.orig/drivers/input/touchscreen/Kconfig
-+++ linux-2.6.23-rc8/drivers/input/touchscreen/Kconfig
+--- linux-2.6.22.orig/drivers/input/touchscreen/Kconfig
++++ linux-2.6.22/drivers/input/touchscreen/Kconfig
 @@ -67,6 +67,24 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called fujitsu-ts.
@@ -115,20 +115,20 @@ Index: linux-2.6.23-rc8/drivers/input/touchscreen/Kconfig
  config TOUCHSCREEN_GUNZE
  	tristate "Gunze AHL-51S touchscreen"
  	select SERIO
-Index: linux-2.6.23-rc8/drivers/input/touchscreen/Makefile
+Index: linux-2.6.22/drivers/input/touchscreen/Makefile
 ===================================================================
---- linux-2.6.23-rc8.orig/drivers/input/touchscreen/Makefile
-+++ linux-2.6.23-rc8/drivers/input/touchscreen/Makefile
+--- linux-2.6.22.orig/drivers/input/touchscreen/Makefile
++++ linux-2.6.22/drivers/input/touchscreen/Makefile
 @@ -18,3 +18,4 @@
  obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
  obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
  obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
 +obj-$(CONFIG_TOUCHSCREEN_S3C2410)	+= s3c2410_ts.o
-Index: linux-2.6.23-rc8/drivers/input/touchscreen/s3c2410_ts.c
+Index: linux-2.6.22/drivers/input/touchscreen/s3c2410_ts.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/input/touchscreen/s3c2410_ts.c
-@@ -0,0 +1,426 @@
++++ linux-2.6.22/drivers/input/touchscreen/s3c2410_ts.c
+@@ -0,0 +1,427 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -182,9 +182,10 @@ Index: linux-2.6.23-rc8/drivers/input/touchscreen/s3c2410_ts.c
 +#include <asm/io.h>
 +#include <asm/irq.h>
 +
-+#include <asm/arch/regs-adc.h>
 +#include <asm/arch/regs-gpio.h>
 +#include <asm/arch/ts.h>
++
++#include <asm/plat-s3c/regs-adc.h>
 +
 +/* For ts.dev.id.version */
 +#define S3C2410TSVERSION	0x0101
@@ -555,10 +556,10 @@ Index: linux-2.6.23-rc8/drivers/input/touchscreen/s3c2410_ts.c
 +        c-basic-offset: 8
 +    End:
 +*/
-Index: linux-2.6.23-rc8/include/asm-arm/arch-s3c2410/ts.h
+Index: linux-2.6.22/include/asm-arm/arch-s3c2410/ts.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/include/asm-arm/arch-s3c2410/ts.h
++++ linux-2.6.22/include/asm-arm/arch-s3c2410/ts.h
 @@ -0,0 +1,28 @@
 +/* linux/include/asm/arch-s3c2410/ts.h
 + *
@@ -588,10 +589,10 @@ Index: linux-2.6.23-rc8/include/asm-arm/arch-s3c2410/ts.h
 +
 +#endif /* __ASM_ARM_TS_H */
 +
-Index: linux-2.6.23-rc8/arch/arm/plat-s3c24xx/s3c244x.c
+Index: linux-2.6.22/arch/arm/plat-s3c24xx/s3c244x.c
 ===================================================================
---- linux-2.6.23-rc8.orig/arch/arm/plat-s3c24xx/s3c244x.c
-+++ linux-2.6.23-rc8/arch/arm/plat-s3c24xx/s3c244x.c
+--- linux-2.6.22.orig/arch/arm/plat-s3c24xx/s3c244x.c
++++ linux-2.6.22/arch/arm/plat-s3c24xx/s3c244x.c
 @@ -67,6 +67,7 @@
  
  	s3c_device_i2c.name  = "s3c2440-i2c";

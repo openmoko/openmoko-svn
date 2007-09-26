@@ -1,7 +1,9 @@
 This patch adds another machine, the FIC HXD8
---- linux-2.6.22.1.orig/arch/arm/mach-s3c2440/Kconfig
-+++ linux-2.6.22.1/arch/arm/mach-s3c2440/Kconfig
-@@ -66,6 +66,12 @@
+Index: linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
+===================================================================
+--- linux-2.6.22.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
+@@ -67,6 +67,12 @@
  	default y if ARCH_S3C2440
  	select CPU_S3C2440
  
@@ -14,15 +16,19 @@ This patch adds another machine, the FIC HXD8
  
  endmenu
  
---- linux-2.6.22.1.orig/arch/arm/mach-s3c2440/Makefile
-+++ linux-2.6.22.1/arch/arm/mach-s3c2440/Makefile
+Index: linux-2.6.22/arch/arm/mach-s3c2440/Makefile
+===================================================================
+--- linux-2.6.22.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.22/arch/arm/mach-s3c2440/Makefile
 @@ -21,3 +21,4 @@
  obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715.o
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
 +obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
+Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-hxd8.c
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/arch/arm/mach-s3c2440/mach-hxd8.c
++++ linux-2.6.22/arch/arm/mach-s3c2440/mach-hxd8.c
 @@ -0,0 +1,399 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
@@ -78,13 +84,10 @@ This patch adds another machine, the FIC HXD8
 +#include <asm/mach-types.h>
 +
 +//#include <asm/debug-ll.h>
-+#include <asm/arch/regs-serial.h>
 +#include <asm/arch/regs-gpio.h>
 +#include <asm/arch/regs-lcd.h>
 +#include <asm/arch/idle.h>
 +#include <asm/arch/fb.h>
-+#include <asm/arch/udc.h>
-+#include <asm/arch/nand.h>
 +#include <asm/arch/mci.h>
 +#include <asm/arch/ts.h>
 +#include <asm/arch/spi.h>
@@ -97,9 +100,12 @@ This patch adds another machine, the FIC HXD8
 +//#include "s3c2410.h"
 +//#include "s3c2440.h"
 +//#include "clock.h"
++#include <asm/plat-s3c/regs-serial.h>
++#include <asm/plat-s3c/nand.h>
 +#include <asm/plat-s3c24xx/devs.h>
 +#include <asm/plat-s3c24xx/cpu.h>
 +#include <asm/plat-s3c24xx/pm.h>
++#include <asm/plat-s3c24xx/udc.h>
 +
 +static struct map_desc hxd8_iodesc[] __initdata = {
 +	/* ISA IO Space map (memory space selected by A24) */
@@ -423,8 +429,10 @@ This patch adds another machine, the FIC HXD8
 +	.init_machine	= hxd8_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
+Index: linux-2.6.22/include/asm-arm/arch-s3c2440/hxd8.h
+===================================================================
 --- /dev/null
-+++ linux-2.6.22.1/include/asm-arm/arch-s3c2440/hxd8.h
++++ linux-2.6.22/include/asm-arm/arch-s3c2440/hxd8.h
 @@ -0,0 +1,16 @@
 +#ifndef _HXD8_H
 +#define _HXD8_H

@@ -2,10 +2,10 @@ This patch adds driver support for the FIC GTA01 vibrator device.  The driver
 uses the existing LED class driver framework, since there's a lot of
 similarity between the LED and the vibrator function.
 
-Index: linux-2.6.23-rc8/drivers/leds/leds-gta01.c
+Index: linux-2.6.22/drivers/leds/leds-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/leds/leds-gta01.c
++++ linux-2.6.22/drivers/leds/leds-gta01.c
 @@ -0,0 +1,133 @@
 +/*
 + * LED driver for the FIC GTA01 (Neo1973) GSM Phone Vibrator
@@ -43,7 +43,7 @@ Index: linux-2.6.23-rc8/drivers/leds/leds-gta01.c
 +
 +static inline struct gta01_vib_priv *to_vpriv(struct led_classdev *led_cdev)
 +{
-+	return dev_get_drvdata(led_cdev->class_dev->dev);
++	return dev_get_drvdata(led_cdev->dev);
 +}
 +
 +static void gta01vib_vib_set(struct led_classdev *led_cdev, enum led_brightness value)
@@ -140,10 +140,10 @@ Index: linux-2.6.23-rc8/drivers/leds/leds-gta01.c
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC GTA01 Vibrator driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.23-rc8/drivers/leds/Kconfig
+Index: linux-2.6.22/drivers/leds/Kconfig
 ===================================================================
---- linux-2.6.23-rc8.orig/drivers/leds/Kconfig
-+++ linux-2.6.23-rc8/drivers/leds/Kconfig
+--- linux-2.6.22.orig/drivers/leds/Kconfig
++++ linux-2.6.22/drivers/leds/Kconfig
 @@ -101,6 +101,12 @@
  	  outputs. To be useful the particular board must have LEDs
  	  and they must be connected to the GPIO lines.
@@ -157,10 +157,10 @@ Index: linux-2.6.23-rc8/drivers/leds/Kconfig
  comment "LED Triggers"
  
  config LEDS_TRIGGERS
-Index: linux-2.6.23-rc8/drivers/leds/Makefile
+Index: linux-2.6.22/drivers/leds/Makefile
 ===================================================================
---- linux-2.6.23-rc8.orig/drivers/leds/Makefile
-+++ linux-2.6.23-rc8/drivers/leds/Makefile
+--- linux-2.6.22.orig/drivers/leds/Makefile
++++ linux-2.6.22/drivers/leds/Makefile
 @@ -17,6 +17,7 @@
  obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
  obj-$(CONFIG_LEDS_COBALT)		+= leds-cobalt.o

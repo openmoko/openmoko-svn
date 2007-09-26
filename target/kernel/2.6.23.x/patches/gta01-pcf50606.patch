@@ -1,9 +1,9 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6.22/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
++++ linux-2.6.22/drivers/i2c/chips/pcf50606.c
 @@ -0,0 +1,1929 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -1468,7 +1468,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
 +
 +static int pcf50606bl_get_intensity(struct backlight_device *bd)
 +{
-+	struct pcf50606_data *pcf = class_get_devdata(&bd->class_dev);
++	struct pcf50606_data *pcf = bl_get_data(bd);
 +	int intensity = reg_read(pcf, PCF50606_REG_PWMC1);
 +	intensity = (intensity >> PCF50606_PWMC1_DC_SHIFT);
 +
@@ -1477,7 +1477,7 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
 +
 +static int pcf50606bl_set_intensity(struct backlight_device *bd)
 +{
-+	struct pcf50606_data *pcf = class_get_devdata(&bd->class_dev);
++	struct pcf50606_data *pcf = bl_get_data(bd);
 +	int intensity = bd->props.brightness;
 +
 +	if (bd->props.power != FB_BLANK_UNBLANK)
@@ -1934,10 +1934,10 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6.22/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.h
++++ linux-2.6.22/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2241,11 +2241,11 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
+Index: linux-2.6.22/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
-@@ -35,6 +35,17 @@
+--- linux-2.6.22.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6.22/drivers/i2c/chips/Kconfig
+@@ -51,6 +51,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
  
@@ -2263,11 +2263,11 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on EXPERIMENTAL
-Index: linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
+Index: linux-2.6.22/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.22.5-moko.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
-@@ -8,6 +8,7 @@
+--- linux-2.6.22.orig/drivers/i2c/chips/Makefile
++++ linux-2.6.22/drivers/i2c/chips/Makefile
+@@ -9,6 +9,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
@@ -2275,10 +2275,10 @@ Index: linux-2.6.22.5-moko/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.22.5-moko/include/linux/i2c-id.h
+Index: linux-2.6.22/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.22.5-moko.orig/include/linux/i2c-id.h
-+++ linux-2.6.22.5-moko/include/linux/i2c-id.h
+--- linux-2.6.22.orig/include/linux/i2c-id.h
++++ linux-2.6.22/include/linux/i2c-id.h
 @@ -161,6 +161,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
@@ -2287,10 +2287,10 @@ Index: linux-2.6.22.5-moko/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.22.5-moko/include/linux/pcf50606.h
+Index: linux-2.6.22/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/include/linux/pcf50606.h
++++ linux-2.6.22/include/linux/pcf50606.h
 @@ -0,0 +1,104 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H

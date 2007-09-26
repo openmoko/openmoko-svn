@@ -1,7 +1,7 @@
-Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
+Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 @@ -0,0 +1,668 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
@@ -59,12 +59,9 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +#include <asm/irq.h>
 +#include <asm/mach-types.h>
 +
-+#include <asm/arch/regs-serial.h>
 +#include <asm/arch/regs-gpio.h>
 +#include <asm/arch/regs-gpioj.h>
 +#include <asm/arch/fb.h>
-+#include <asm/arch/udc.h>
-+#include <asm/arch/nand.h>
 +#include <asm/arch/mci.h>
 +#include <asm/arch/ts.h>
 +#include <asm/arch/spi.h>
@@ -74,9 +71,12 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +#include <asm/arch/gta01.h>
 +#include <asm/arch/gta02.h>
 +
++#include <asm/plat-s3c/regs-serial.h>
++#include <asm/plat-s3c/nand.h>
 +#include <asm/plat-s3c24xx/devs.h>
 +#include <asm/plat-s3c24xx/cpu.h>
 +#include <asm/plat-s3c24xx/pm.h>
++#include <asm/plat-s3c24xx/udc.h>
 +
 +#include <linux/glamofb.h>
 +
@@ -671,10 +671,10 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	.init_machine	= gta02_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
+Index: linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
++++ linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
 @@ -0,0 +1,28 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
@@ -704,11 +704,11 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02v2_GPIO_3D_RESET	S3C2440_GPJ4
 +
 +#endif /* _GTA02_H */
-Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Kconfig
+Index: linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
 ===================================================================
---- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2440/Kconfig
-+++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Kconfig
-@@ -73,5 +73,12 @@
+--- linux-2.6.22.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
+@@ -74,5 +74,12 @@
  	help
  	   Say Y here if you are using the FIC Neo1973 GSM Phone
  
@@ -721,19 +721,19 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Kconfig
 +
  endmenu
  
-Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Makefile
+Index: linux-2.6.22/arch/arm/mach-s3c2440/Makefile
 ===================================================================
---- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2440/Makefile
-+++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/Makefile
+--- linux-2.6.22.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6.22/arch/arm/mach-s3c2440/Makefile
 @@ -22,3 +22,4 @@
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
  obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
 +obj-$(CONFIG_MACH_NEO1973_GTA02) += mach-gta02.o
-Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
+Index: linux-2.6.22/arch/arm/common/gta01_pm_bt.c
 ===================================================================
---- linux-2.6.22.5-moko.orig/arch/arm/common/gta01_pm_bt.c
-+++ linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
+--- linux-2.6.22.orig/arch/arm/common/gta01_pm_bt.c
++++ linux-2.6.22/arch/arm/common/gta01_pm_bt.c
 @@ -19,22 +19,40 @@
  #include <linux/pcf50606.h>
  
@@ -852,10 +852,10 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_bt.c
  	/* we pull reset to low to make sure that the chip doesn't
  	 * drain power through the reset line */
  	s3c2410_gpio_setpin(GTA01_GPIO_BT_EN, 0);
-Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_gsm.c
+Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
---- linux-2.6.22.5-moko.orig/arch/arm/common/gta01_pm_gsm.c
-+++ linux-2.6.22.5-moko/arch/arm/common/gta01_pm_gsm.c
+--- linux-2.6.22.orig/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
 @@ -19,7 +19,9 @@
  #include <linux/errno.h>
  
@@ -926,10 +926,10 @@ Index: linux-2.6.22.5-moko/arch/arm/common/gta01_pm_gsm.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
  }
-Index: linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
+Index: linux-2.6.22/drivers/leds/leds-gta01.c
 ===================================================================
---- linux-2.6.22.5-moko.orig/drivers/leds/leds-gta01.c
-+++ linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
+--- linux-2.6.22.orig/drivers/leds/leds-gta01.c
++++ linux-2.6.22/drivers/leds/leds-gta01.c
 @@ -71,7 +71,7 @@
  	struct gta01_vib_priv *vp;
  	struct resource *r;
@@ -939,10 +939,10 @@ Index: linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
  		return -EIO;
  
  	r = platform_get_resource(pdev, 0, 0);
-Index: linux-2.6.22.5-moko/sound/soc/s3c24xx/neo1973_wm8753.c
+Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
---- linux-2.6.22.5-moko.orig/sound/soc/s3c24xx/neo1973_wm8753.c
-+++ linux-2.6.22.5-moko/sound/soc/s3c24xx/neo1973_wm8753.c
+--- linux-2.6.22.orig/sound/soc/s3c24xx/neo1973_wm8753.c
++++ linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 @@ -638,6 +638,12 @@
  {
  	int ret;

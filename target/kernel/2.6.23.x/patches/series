@@ -41,3 +41,6 @@ smedia-glamo.patch
 s3c24xx-nand-largepage.patch
 s3c2442b-cpuid.patch
 gta02-core.patch
+s3c2410-nand-include-fix.patch
+s3c2410-udc-include-fix.patch
+neo1973-soc-include-fix.patch
