@@ -1,3 +1,8 @@
+2007-09-27  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-hint-entry.c: (moko_hint_entry_set_text):
+	Make sure to reset the hinting status before setting text
+
 2007-09-27  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-hint-entry.c:

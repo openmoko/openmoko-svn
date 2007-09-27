@@ -224,10 +224,18 @@ moko_hint_entry_new (const char *hint)
 void
 moko_hint_entry_set_text (MokoHintEntry *entry, const gchar *text)
 {
+  MokoHintEntryPrivate *priv;
+
   g_return_if_fail (MOKO_IS_HINT_ENTRY (entry));
   
-  gtk_entry_set_text (GTK_ENTRY (entry), text);
+  priv = GET_PRIVATE (entry);
+  if (priv->state == STATE_HINTING) {
+    priv->state = STATE_ENTRY;
+    gtk_widget_modify_text (GTK_WIDGET (entry), GTK_STATE_NORMAL, NULL);
+  }
 
+  gtk_entry_set_text (GTK_ENTRY (entry), text);
+  
   update (entry);
 }
 
