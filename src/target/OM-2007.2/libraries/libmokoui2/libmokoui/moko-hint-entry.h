@@ -56,7 +56,7 @@ GType moko_hint_entry_get_type (void);
 
 GtkWidget* moko_hint_entry_new (const char *hint);
 
-void moko_hint_entry_clear (MokoHintEntry *entry);
+void moko_hint_entry_set_text (MokoHintEntry *entry, const gchar* text);
 
 gboolean moko_hint_entry_is_empty (MokoHintEntry *entry);
 

@@ -214,18 +214,19 @@ moko_hint_entry_new (const char *hint)
 }
 
 /**
- * moko_hint_entry_clear:
+ * moko_hint_entry_set_text:
  * @entry: a #MokoHintEntry
+ * @text: the next text
  *
  * Clear the text in the entry and if the widget is not focused, display the
  * hint text.
  */
 void
-moko_hint_entry_clear (MokoHintEntry *entry)
+moko_hint_entry_set_text (MokoHintEntry *entry, const gchar *text)
 {
   g_return_if_fail (MOKO_IS_HINT_ENTRY (entry));
   
-  gtk_entry_set_text (GTK_ENTRY (entry), "");
+  gtk_entry_set_text (GTK_ENTRY (entry), text);
 
   update (entry);
 }

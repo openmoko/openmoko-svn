@@ -1,3 +1,10 @@
+2007-09-27  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokoui/moko-hint-entry.c:
+	* libmokoui/moko-hint-entry.h:
+
+	Replace moko_hint_entry_clear() with moko_hint_entry_set_text()
+
 2007-09-26  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokoui/moko-stock.c: (_moko_stock_add_icon): Don't create empty
