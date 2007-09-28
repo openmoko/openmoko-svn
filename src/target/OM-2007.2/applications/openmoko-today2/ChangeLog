@@ -1,5 +1,15 @@
 2007-09-28  Chris Lord  <chris@openedhand.com>
 
+	* src/today-task-manager.c: (get_utf8_property),
+	(get_text_property), (window_get_icon),
+	(today_task_manager_populate_tasks), (today_task_manager_kill),
+	(today_task_manager_kill_clicked_cb),
+	(today_task_manager_raise_clicked_cb):
+	Trap around gdk_window_foreign_new_for_display() and flush before every
+	gdk_error_trap_pop().
+
+2007-09-28  Chris Lord  <chris@openedhand.com>
+
 	* src/today-task-manager.c: (today_task_manager_kill):
 	Call gdk_flush() before gdk_error_trap_pop() - Hopefully fix crashes
 	when closing other apps

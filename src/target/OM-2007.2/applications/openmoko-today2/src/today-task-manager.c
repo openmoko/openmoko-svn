@@ -62,6 +62,7 @@ get_utf8_property (TodayData *data, Window window, Atom atom)
                                      &nitems,
                                      &bytes_after,
                                      (gpointer) &val);  
+	gdk_flush ();
         if (gdk_error_trap_pop () || result != Success)
                 return NULL;
   
@@ -103,6 +104,7 @@ get_text_property (TodayData *data, Window window, Atom atom)
                                    window,
                                    &text,
                                    atom);
+	gdk_flush ();
         if (gdk_error_trap_pop () || result == 0)
                 return NULL;
 
@@ -186,6 +188,7 @@ window_get_icon (TodayData *tdata, Window window)
                                      &nitems,
                                      &bytes_after,
                                      (gpointer) &data);
+	gdk_flush ();
         if (gdk_error_trap_pop () || result != Success)
                 return NULL;
 
@@ -359,6 +362,7 @@ today_task_manager_populate_tasks (TodayData *data)
                                      &nitems,
                                      &bytes_after,
                                      (gpointer) &windows);
+	gdk_flush ();
         if (gdk_error_trap_pop () || result != Success)
                 return;
 
@@ -563,7 +567,6 @@ today_task_manager_kill (TodayData *data, GdkWindow *window)
 	 * http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html#id2506711
 	 */
 	if (GDK_IS_WINDOW (window)) {
-		gint error;
 		XEvent ev;
 		memset(&ev, 0, sizeof(ev));
 
@@ -581,8 +584,7 @@ today_task_manager_kill (TodayData *data, GdkWindow *window)
 
 		XSync(GDK_DISPLAY(),FALSE);
 		gdk_flush ();
-		if ((error = gdk_error_trap_pop ()))
-			g_warning ("Trapped X11 error %d", error);
+		gdk_error_trap_pop ();
 		
 		/* The following code looks equivalent to me, but isn't.. */
 		/*GdkEvent *event = gdk_event_new (GDK_CLIENT_EVENT);
@@ -613,9 +615,13 @@ today_task_manager_kill_clicked_cb (GtkToolButton *widget, TodayData *data)
 	
         display = gtk_widget_get_display (data->tasks_table);
 	xid = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (tile), "window"));
+	
+	gdk_error_trap_push ();
 	window = gdk_window_foreign_new_for_display (display, xid);
+	gdk_flush ();
+	gdk_error_trap_pop ();
 
-	today_task_manager_kill (data, window);
+	if (window) today_task_manager_kill (data, window);
 }
 
 static void
@@ -658,6 +664,7 @@ today_task_manager_raise_clicked_cb (GtkToolButton *widget, TodayData *data)
 		SubstructureRedirectMask, &ev);
 
 	XSync(GDK_DISPLAY(),FALSE);
+	gdk_flush ();
 	gdk_error_trap_pop();
 }
 
