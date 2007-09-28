@@ -190,8 +190,16 @@ omp_session_reset()
 
 	omp_session->volume = 100;
 	omp_session->fade_speed = 5000;
-	g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
-		"%s", OMP_DEFAULT_FILE_CHOOSER_PATH);
+
+	// Set file chooser path to default - or home if that doesn't exist
+	if (g_file_test(OMP_DEFAULT_FILE_CHOOSER_PATH, G_FILE_TEST_IS_DIR))
+	{
+		g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
+			"%s", OMP_DEFAULT_FILE_CHOOSER_PATH);
+	} else {
+		g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
+			"%s", g_get_home_dir());
+	}
 }
 
 /**
