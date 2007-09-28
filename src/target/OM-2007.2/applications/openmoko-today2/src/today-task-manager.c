@@ -563,6 +563,7 @@ today_task_manager_kill (TodayData *data, GdkWindow *window)
 	 * http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html#id2506711
 	 */
 	if (GDK_IS_WINDOW (window)) {
+		gint error;
 		XEvent ev;
 		memset(&ev, 0, sizeof(ev));
 
@@ -579,7 +580,9 @@ today_task_manager_kill (TodayData *data, GdkWindow *window)
 			SubstructureRedirectMask, &ev);
 
 		XSync(GDK_DISPLAY(),FALSE);
-		gdk_error_trap_pop();
+		gdk_flush ();
+		if ((error = gdk_error_trap_pop ()))
+			g_warning ("Trapped X11 error %d", error);
 		
 		/* The following code looks equivalent to me, but isn't.. */
 		/*GdkEvent *event = gdk_event_new (GDK_CLIENT_EVENT);

@@ -1,3 +1,9 @@
+2007-09-28  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_kill):
+	Call gdk_flush() before gdk_error_trap_pop() - Hopefully fix crashes
+	when closing other apps
+
 2007-09-14  Thomas Wood  <thomas@openedhand.com>
 
         * src/today-pim-journal.c: (today_pim_journal_box_new): Don't try to
