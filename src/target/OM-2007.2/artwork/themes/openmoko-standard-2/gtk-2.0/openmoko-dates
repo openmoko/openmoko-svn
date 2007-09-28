@@ -56,6 +56,26 @@ style "mokodateshborderbutton" {
     GtkButton::focus-line-width = 0
 }
 
+style "calendar" {
+	base[NORMAL] = "#ffffff"
+}
+
+style "calendar-events" {
+	bg[NORMAL] = "#ff7800"
+}
+
+style "year-view" {
+	bg[NORMAL] = "#333333"
+	fg[NORMAL] = "#ffffff"
+}
+
 widget "*moko-dates-vborder-button" style "mokodatesvborderbutton"
 widget "*moko-dates-hborder-button" style "mokodateshborderbutton"
+
+widget "*.JanaGtkDayView.*JanaGtkTreeLayout" style "calendar"
+class "JanaGtkMonthView" style "calendar"
+widget "*.JanaGtkDayView.*JanaGtkTreeLayout" style "calendar-events"
+widget "*.JanaGtkMonthView.*JanaGtkTreeLayout" style "calendar-events"
+
+widget "*.JanaGtkYearView.*" style "year-view"
 
