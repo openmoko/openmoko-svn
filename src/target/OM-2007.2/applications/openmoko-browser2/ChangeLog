@@ -1,3 +1,10 @@
+2007-09-30  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
+
+        Link to WebKitGtk as upstream changed the name from Gdk
+        to Gtk. Thanks to pH5 for reminding me.
+
+        * configure.ac:
+
 2007-09-21  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
 
         Make the "GO"-Page, "Open-Pages"-Page and the "Current"-Page
