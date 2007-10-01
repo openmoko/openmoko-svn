@@ -1,3 +1,13 @@
+2007-10-01  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_get_topmost),
+	(synth_crossing), (moko_finger_scroll_button_press_cb),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_button_release_cb), (moko_finger_scroll_add),
+	(moko_finger_scroll_add_with_viewport):
+	Change the way events are synthesised to enable dragging (and thus 
+	text selection) in a scroll widget
+
 2007-09-27  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-hint-entry.c: (moko_hint_entry_set_text):
