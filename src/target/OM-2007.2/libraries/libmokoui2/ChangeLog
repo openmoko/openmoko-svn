@@ -1,5 +1,12 @@
 2007-10-01  Chris Lord  <chris@openedhand.com>
 
+	* libmokoui/moko-finger-scroll.c:
+	(moko_finger_scroll_button_press_cb),
+	(moko_finger_scroll_button_release_cb):
+	Remove active debug statements
+
+2007-10-01  Chris Lord  <chris@openedhand.com>
+
 	* libmokoui/moko-finger-scroll.c: (moko_finger_scroll_get_topmost),
 	(synth_crossing), (moko_finger_scroll_button_press_cb),
 	(moko_finger_scroll_motion_notify_cb),

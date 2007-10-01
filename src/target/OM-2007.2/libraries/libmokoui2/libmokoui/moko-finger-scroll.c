@@ -202,7 +202,6 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 		event->y = y;
 		priv->cx = x;
 		priv->cy = y;
-		if (event->type == GDK_2BUTTON_PRESS) g_debug ("Double click");
 
 		synth_crossing (priv->child, x, y, event->x_root,
 			event->y_root, event->time, TRUE);
@@ -465,7 +464,6 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	if (!priv->child) return TRUE;
 	
 	if (child != priv->child) {
-		g_debug ("Crossing/clicking out");
 		/* Send synthetic leave event */
 		synth_crossing (priv->child, x, y, event->x_root,
 			event->y_root, event->time, FALSE);
@@ -473,7 +471,6 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		((GdkEventAny *)event)->window = g_object_ref (priv->child);
 		gdk_event_put ((GdkEvent *)event);
 	} else {
-		g_debug ("Clicking in");
 		/* Send synthetic button release event */
 		((GdkEventAny *)event)->window = g_object_ref (child);
 		gdk_event_put ((GdkEvent *)event);
