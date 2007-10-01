@@ -111,9 +111,12 @@ icons_DATA = contact-new.png \
 	mail-receive.png \
 	mail-reply.png \
 	mail-send.png \
+	moko-call-answer.png \
 	moko-call-dial.png \
+	moko-call-hangup.png \
 	moko-call-history.png \
 	moko-call-hold.png \
+	moko-call-ignore.png \
 	moko-call-redial.png \
 	moko-contact-delete.png \
 	moko-contact-groups.png \
@@ -123,7 +126,13 @@ icons_DATA = contact-new.png \
 	moko-phone-book.png \
 	moko-sms-new.png \
 	moko-speaker.png \
-	moko-view.png
-
+	moko-view.png \
+	moko-volume-down.png \
+	moko-volume-up.png \
+	stock_calendar-view-day.png \
+	stock_calendar-view-list.png \
+	stock_calendar-view-month.png \
+	stock_calendar-view-work-week.png \
+	stock_calendar-view-year.png
 EXTRA_DIST = $(icons_DATA)
 MAINTAINERCLEANFILES = Makefile.in
