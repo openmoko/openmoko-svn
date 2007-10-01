@@ -51,7 +51,8 @@ struct _MokoFingerScrollPrivate {
 	gdouble ey;	/* motion event in acceleration mode */
 	gboolean enabled;
 	gboolean clicked;
-	guint32 last_time;	/* Last event time, to stop infinite loops */
+	GdkEventType last_type;	/* Last event type and time, to stop */
+	guint32 last_time;	/* infinite loops */
 	gboolean moved;
 	GTimeVal click_start;
 	gdouble vmin;
@@ -102,7 +103,7 @@ moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 	/*g_debug ("Finding window at (%d, %d) in %p", x, y, window);*/
 	
 	while (window) {
-		gint child_x, child_y;
+		gint child_x = 0, child_y = 0;
 		GList *c, *children = gdk_window_peek_children (window);
 		GdkWindow *old_window = window;
 		for (c = children; c; c = c->next) {
@@ -171,9 +172,11 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 
 	if ((!priv->enabled) || (priv->clicked) || (event->button != 1) ||
-	    (event->time == priv->last_time)) return FALSE;
+	    ((event->time == priv->last_time) &&
+	     (event->type == priv->last_type))) return FALSE;
 
 	g_get_current_time (&priv->click_start);
+	priv->last_type = event->type;
 	priv->last_time = event->time;
 	priv->x = event->x;
 	priv->y = event->y;
@@ -198,6 +201,10 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 	
 	if ((priv->child) && (priv->child != GTK_BIN (
 	     priv->align)->child->window)) {
+		
+		g_object_add_weak_pointer ((GObject *)priv->child,
+			&priv->child);
+		
 		event->x = x;
 		event->y = y;
 		priv->cx = x;
@@ -368,7 +375,8 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	gdouble x, y;
 
 	if ((!priv->enabled) || (!priv->clicked) ||
-	    (event->time == priv->last_time)) return FALSE;
+	    ((event->time == priv->last_time) &&
+	     (event->type == priv->last_type))) return FALSE;
 	
 	/* Only start the scroll if the mouse cursor passes beyond the
 	 * DnD threshold for dragging.
@@ -420,9 +428,8 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	
 	if (priv->child) {
 		/* Send motion notify to child */
-		gint wx, wy;
+		priv->last_type = event->type;
 		priv->last_time = event->time;
-		gdk_window_get_position (priv->child, &wx, &wy);
 		event->x = priv->cx + (event->x - priv->ix);
 		event->y = priv->cy + (event->y - priv->iy);
 		event->window = g_object_ref (priv->child);
@@ -445,9 +452,11 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	GdkWindow *child;
 	
 	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1) ||
-	    (event->time == priv->last_time))
+	    ((event->time == priv->last_time) &&
+	     (event->type == priv->last_type)))
 		return FALSE;
 
+	priv->last_type = event->type;
 	priv->last_time = event->time;
 	g_get_current_time (&current);
 
@@ -463,7 +472,10 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 
 	if (!priv->child) return TRUE;
 	
-	if (child != priv->child) {
+	/* Leave the widget if we've moved - This doesn't break selection,
+	 * but stops buttons from being clicked.
+	 */
+	if ((child != priv->child) || (priv->moved)) {
 		/* Send synthetic leave event */
 		synth_crossing (priv->child, x, y, event->x_root,
 			event->y_root, event->time, FALSE);
@@ -478,6 +490,9 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		synth_crossing (priv->child, x, y, event->x_root,
 			event->y_root, event->time, FALSE);
 	}
+	if (priv->child)
+		g_object_remove_weak_pointer ((GObject *)priv->child,
+			&priv->child);
 	
 	return TRUE;
 }
