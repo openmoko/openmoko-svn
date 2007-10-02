@@ -73,14 +73,11 @@ struct _MokoKeypadClass
 
 GType moko_keypad_get_type (void) G_GNUC_CONST;
 
-GtkWidget*        
-moko_keypad_new (void);
+GtkWidget* moko_keypad_new (void);
 
-void
-moko_keypad_set_pin_mode (MokoKeypad *keypad, gboolean pin_mode);
-
-void
-moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking);
+void moko_keypad_set_pin_mode (MokoKeypad *keypad, gboolean pin_mode);
+void moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking);
+void moko_keypad_set_display_text (MokoKeypad *keypad, const gchar *text);
 
 G_END_DECLS
 

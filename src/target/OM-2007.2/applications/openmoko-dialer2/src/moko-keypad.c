@@ -108,6 +108,18 @@ moko_keypad_set_pin_mode (MokoKeypad *keypad, gboolean pin_mode)
 }
 
 void
+moko_keypad_set_display_text (MokoKeypad *keypad, const gchar *text)
+{
+  MokoKeypadPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_KEYPAD (keypad));
+  priv = keypad->priv;
+
+  moko_dialer_textview_empty (priv->textview);
+  moko_dialer_textview_insert (priv->textview, text);
+}
+
+void
 moko_keypad_set_talking (MokoKeypad *keypad, gboolean talking)
 {
   MokoKeypadPrivate *priv;

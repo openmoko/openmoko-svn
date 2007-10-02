@@ -1,3 +1,8 @@
+2007-10-02  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-keypad.c:
+	* src/moko-keypad.h: Add moko_keypad_set_display_text()
+
 2007-09-16	Michael Lauer <mickey@openmoko.org>
 
 	* src/moko-notify.c: (moko_notify_start_ringtone): Play 'ringtone' sample.
