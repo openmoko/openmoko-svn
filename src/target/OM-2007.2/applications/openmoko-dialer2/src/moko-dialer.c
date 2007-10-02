@@ -71,6 +71,7 @@ struct _MokoDialerPrivate
   /* Registration variables */
   guint               reg_timeout;
   MokoGsmdConnectionNetregType registered;
+  MokoGSMLocation     gsm_location;
 };
 
 enum
@@ -289,6 +290,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
     moko_journal_entry_set_direction (priv->entry, DIRECTION_OUT);
     moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
+    moko_journal_entry_set_gsm_location (priv->entry, &priv->gsm_location);
     moko_journal_voice_info_set_distant_number (priv->entry, number);
     if (entry && entry->contact->uid)
       moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
@@ -479,6 +481,8 @@ on_network_registered (MokoGsmdConnection *conn,
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
       g_debug ("NetReg: Network registered");
       g_debug ("\tLocationAreaCode = %x\n\tCellID = %x", lac, cell);
+      priv->gsm_location.lac = lac;
+      priv->gsm_location.cid = cell;
       g_source_remove (priv->reg_timeout);
       break;
     default:
@@ -513,6 +517,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
     moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
     moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
+    moko_journal_entry_set_gsm_location (priv->entry, &priv->gsm_location);
   }
   /* Set up the user interface */
   moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL, NULL);

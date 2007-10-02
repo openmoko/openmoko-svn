@@ -2,6 +2,14 @@
 
 	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
 
+	* src/moko-dialer.c: (on_keypad_dial_clicked), (on_incoming_call),
+	  (on_network_registered): Store network information (LocationAreaCode,
+	  CellID) in moko journal.
+
+2007-10-02  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
 	* src/moko-dialer.c: (moko_dialer_init):
 	  Fix the loading of moko journal
 	(on_talking_reject_call):
