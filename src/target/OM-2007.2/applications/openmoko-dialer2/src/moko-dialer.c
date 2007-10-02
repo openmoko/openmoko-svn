@@ -286,7 +286,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   {
     priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
     priv->time = moko_time_new_today ();
-    moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
+    moko_journal_entry_set_direction (priv->entry, DIRECTION_OUT);
     moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
     moko_journal_voice_info_set_distant_number (priv->entry, number);
@@ -387,6 +387,7 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   {
     moko_journal_voice_info_set_was_missed (priv->entry, TRUE);
     moko_journal_add_entry (priv->journal, priv->entry);
+    moko_journal_write_to_storage (priv->journal);
     priv->entry = NULL;
     priv->time = NULL;
   }
@@ -834,7 +835,7 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
-  if (!priv->journal || moko_journal_load_from_storage (priv->journal))
+  if (!priv->journal || !moko_journal_load_from_storage (priv->journal))
   {
     g_warning ("Cannot load journal");
     priv->journal = NULL;

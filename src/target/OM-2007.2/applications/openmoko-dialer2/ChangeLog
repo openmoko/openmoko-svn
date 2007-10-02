@@ -1,5 +1,16 @@
 2007-10-02  Thomas Wood  <thomas@openedhand.com>
 
+	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
+	* src/moko-dialer.c: (moko_dialer_init):
+	  Fix the loading of moko journal
+	(on_talking_reject_call):
+	  Write journal to storage after call is rejected
+	(on_keypad_dial_clicked): Outgoing call had set wrong journal
+	direction.
+
+2007-10-02  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-keypad.c:
 	* src/moko-keypad.h: Add moko_keypad_set_display_text()
 
