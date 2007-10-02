@@ -248,7 +248,7 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
   MokoContactsPrivate *priv;
   MokoContact *m_contact = NULL;
   const gchar *name;
-  gint         i;
+  GList *attributes, *params, *numbers;
 
   g_return_if_fail (MOKO_IS_CONTACTS (contacts));
   g_return_if_fail (E_IS_CONTACT (e_contact));
@@ -267,24 +267,37 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
   priv->contacts = g_list_append (priv->contacts, m_contact);
    
   /* Now go through the numbers,creating MokoNumber for them */
-  for (i = E_CONTACT_FIRST_PHONE_ID; i < E_CONTACT_LAST_PHONE_ID; i++)
+  for (attributes = e_vcard_get_attributes (E_VCARD(e_contact)); attributes; attributes = attributes->next)
   {
     MokoContactEntry  *entry;
     const gchar *phone;
+    const char *attr;
 
-    phone = e_contact_get_const (e_contact, i);
-    if (phone)
+    attr = e_vcard_attribute_get_name (attributes->data);
+    if (!strcmp (attr, EVC_TEL))
     {
-      entry = g_new0 (MokoContactEntry, 1);
-      entry->desc = g_strdup (e_contact_field_name (i));
-      entry->number = normalize (phone);
-      entry->contact = m_contact;
+      for (numbers = e_vcard_attribute_get_values (attributes->data); numbers; numbers = numbers->next)
+      {
+        phone = g_strdup (numbers->data);
+	 if (phone)
+        {
+          entry = g_new0 (MokoContactEntry, 1);
 
-      priv->entries = g_list_append (priv->entries, (gpointer)entry);
-      g_hash_table_insert (priv->prefixes, 
-                           g_strdup (entry->number), 
-                           (gpointer)entry);
-      add_number (&priv->start, entry);
+          params = e_vcard_attribute_get_param (attributes->data, "TYPE");
+          if (params)
+            entry->desc = g_strdup (params->data);
+
+          entry->desc = g_strdup (params->data);
+          entry->number = normalize (phone);
+          entry->contact = m_contact;
+
+          priv->entries = g_list_append (priv->entries, (gpointer)entry);
+          g_hash_table_insert (priv->prefixes, 
+                               g_strdup (entry->number), 
+                               (gpointer)entry);
+          add_number (&priv->start, entry);
+        }
+      }
     }
   }
 }
