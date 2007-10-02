@@ -1,3 +1,8 @@
+2007-10-02  Chris Lord  <chris@openedhand.com>
+
+	* src/moko-draw.c: (moko_dither16), (moko_gradient):
+	Add 16-bit dithering for gradients
+
 2007-09-21  Thomas Wood  <thomas@openedhand.com>
 
 	* data/gtkrc: Add some gradient and border options to styles

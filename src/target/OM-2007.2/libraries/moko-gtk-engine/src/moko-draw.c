@@ -48,13 +48,57 @@ moko_gc_new (GdkGC* old_gc, GdkDrawable *d)
   return new_gc;
 }
 
+/*
+ * moko_dither16:
+ * @dither: An 18x1, 1-bit pixmap
+ * @gc: The gc that needs to be dithered
+ * @gcd: A gc for @dither
+ * @c1: The intended colour
+ * @i: Any random number
+ *
+ * Calculates and sets the dither colour and pattern for a 16-bit drawable,
+ * given a 32-bit colour.
+ */
+static void
+moko_dither16 (GdkPixmap *dither, GdkGC *gc, GdkGC *gcd, GdkColor *c1, gint i)
+{
+  gint sum, x;
+  GdkColor c1d;
+  /* Assuming 565, so see how much of the colour is ignored and use that
+  * to decide on the dithering colour/pattern.
+  */
+  c1d.red = c1->red & 0x700;
+  c1d.green = c1->green & 0x300;
+  c1d.blue = c1->blue & 0x700;
+
+  sum = (c1d.red + c1d.green + c1d.blue) >> 8;
+  gdk_gc_set_function (gcd, GDK_SET);
+  gdk_draw_rectangle (dither, gcd, TRUE, 0, 0, 17, 1);
+  gdk_gc_set_function (gcd, GDK_CLEAR);
+  for (x = 0; x < sum; x ++) {
+    gdk_draw_point (dither, gcd, ((x+i) * 11) % 18, 0);
+  }
+
+  c1d.red = c1->red + 0x800;
+  c1d.green = c1->green + 0x400;
+  c1d.blue = c1->blue + 0x800;
+  if (c1d.red < c1->red) c1d.red = 0xFF00;
+  if (c1d.green < c1->green) c1d.green = 0xFF00;
+  if (c1d.blue < c1->blue) c1d.blue = 0xFF00;
+  gdk_gc_set_rgb_bg_color (gc, &c1d);
+
+  gdk_gc_set_fill (gc, GDK_OPAQUE_STIPPLED);
+  gdk_gc_set_stipple (gc, dither);
+}
+
 static void
 moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
 	       gint x, gint y, gint width, gint height)
 {
-  gint i, rd, gd, bd;		/* rd, gd, bd - change in r g and b for gradient */
-  GdkColor c1, c2, c3, c4;
-  GdkGC *gc;
+  gint i, rd, gd, bd, depth;		/* rd, gd, bd - change in r g and b for gradient */
+  GdkColor c1, c2, c3, c4, c1d, c3d;
+  GdkPixmap *dither;
+  GdkGC *gc, *gcd;
   gc = gdk_gc_new (window);
 
   /* get the start and end colours */
@@ -67,6 +111,12 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
   gdk_gc_set_line_attributes (gc, 1, GDK_LINE_SOLID, GDK_CAP_BUTT,
 			      GDK_JOIN_MITER);
 
+  /* Get the drawable pixel depth, for dithering */
+  depth = gdk_drawable_get_depth (window);
+  if (depth == 16) {
+	  dither = gdk_pixmap_new (NULL, 18, 1, 1);
+	  gcd = gdk_gc_new (dither);
+  }
 
   /*** First Gradient ***/
   /* calculate the delta values */
@@ -79,6 +129,10 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
   while (i < height / 2)
   {
     gdk_gc_set_rgb_fg_color (gc, &c1);
+    /* TODO: Handle 15-bit colour */
+    if (depth == 16) {
+      moko_dither16 (dither, gc, gcd, &c1, i);
+    }
     gdk_draw_line (window, gc, x, y + i, x + width, y + i);
     c1.red -= rd;
     c1.blue -= bd;
@@ -95,6 +149,9 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
   i = height / 2;
   while (i < height)
   {
+    if (depth == 16) {
+      moko_dither16 (dither, gc, gcd, &c3, i);
+    }
     gdk_gc_set_rgb_fg_color (gc, &c3);
     gdk_draw_line (window, gc, x, y + i, x + width, y + i);
     c3.red -= rd;
@@ -103,6 +160,12 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
     i++;
   }
 
+  g_object_unref (gc);
+
+  if (depth == 16) {
+    g_object_unref (gcd);
+    g_object_unref (dither);
+  }
 
 }
 
