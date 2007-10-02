@@ -17,6 +17,8 @@
 #include <libmokogsmd2/moko-gsmd-connection.h>
 #include <libmokopanelui2/moko-panel-applet.h>
 
+#include <libnotify/notify.h>
+
 #include <gtk/gtkimage.h>
 #include <gtk/gtkbox.h>
 #include <gtk/gtk.h>
@@ -74,6 +76,19 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
 }
 
 static void
+gsm_applet_network_registration_cb (MokoGsmdConnection *self,
+                                  int type,
+                                  int lac,
+                                  int cell)
+{
+  NotifyNotification* nn;
+
+  nn = notify_notification_new ("Connected to Network", NULL, NULL, NULL);
+  notify_notification_show (nn, NULL);
+}
+
+
+static void
 gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
 {
     //TODO notify user
@@ -99,6 +114,8 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     GsmApplet* applet = g_slice_new(GsmApplet);
     MokoPanelApplet* mokoapplet = applet->mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
+    notify_init ("GSM Applet");
+
     moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/SignalStrength_NR.png" );
 
     applet->gprs_mode = FALSE;
@@ -106,6 +123,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
 
     applet->gsm = moko_gsmd_connection_new();
     g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
+    g_signal_connect( G_OBJECT(applet->gsm), "network-registration", G_CALLBACK(gsm_applet_network_registration_cb), applet );
 
     // tap-with-hold menu (NOTE: temporary: left button atm.)
     GtkMenu* menu = GTK_MENU (gtk_menu_new());

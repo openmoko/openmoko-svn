@@ -1,3 +1,12 @@
+2007-10-02  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/openmoko-panel-gsm.c: (gsm_applet_update_signal_strength),
+	(gsm_applet_autoregister_network), (gsm_applet_power_down_antenna),
+	(mb_panel_applet_create):
+
+	Add libnotify support
+
 2007-09-02	Michael Lauer <mickey@openmoko.org>
 
 	* src/openmoko-panel-gsm.c:
