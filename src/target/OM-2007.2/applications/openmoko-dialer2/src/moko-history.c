@@ -21,11 +21,14 @@
 
 #include <gtk/gtk.h>
 
+#include <string.h>
+
 #include <moko-gsmd-connection.h>
 #include <moko-journal.h>
 #include <moko-stock.h>
 #include <moko-finger-scroll.h>
 
+#include "moko-contacts.h"
 #include "moko-history.h"
 
 G_DEFINE_TYPE (MokoHistory, moko_history, GTK_TYPE_VBOX)
@@ -158,9 +161,9 @@ on_delete_clicked (GtkWidget *button, MokoHistory *history)
   selection = gtk_tree_view_get_selection (treeview);
 
   if (!gtk_tree_selection_get_selected (selection, &filtered, &iter0))
-    ;
+    return;
 
-  /*gtk_tree_model_get (filtered, &iter0, ENTRY_POINTER_COLUMN, &uid, -1);*/
+  gtk_tree_model_get (filtered, &iter0, ENTRY_POINTER_COLUMN, &uid, -1);
 
   /* Create a dialog */
   dialog = gtk_message_dialog_new (GTK_WINDOW (
@@ -228,6 +231,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
 {
   GtkTreeIter iter;
   const gchar *uid, *number;
+  MokoContactEntry *contacts;
   GdkPixbuf *icon = NULL;
   const gchar *display_text;
   time_t dstart;
@@ -236,7 +240,7 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   const MokoTime *time;
   gint type;
 
-  uid = moko_journal_entry_get_contact_uid (entry);
+  uid = moko_journal_entry_get_uid (entry);
   moko_journal_entry_get_direction (entry, &direction);
   time = moko_journal_entry_get_dtstart (entry);
   dstart = moko_time_as_timet (time);
@@ -265,10 +269,18 @@ history_add_entry (GtkListStore *store, MokoJournalEntry *entry)
   }
 
   /* display text should be the contact name or the number dialed */
-  /* FIXME: look up contact uid if stored */
-  display_text = number;
+  contacts = moko_contacts_lookup (moko_contacts_get_default (), number);   
+  if (contacts)
+    display_text = contacts->contact->name;
+  else
+  {
+    if (number == NULL || !strcmp(number, "") || !strcmp(number, "NULL"))
+      display_text = "Unknown number";
+    else
+      display_text = number;
+  }
 
-  if ( number == NULL || display_text == NULL || uid == NULL)
+  if (display_text == NULL || uid == NULL)
   {
     /*g_debug ("Not adding");
     return FALSE;*/
@@ -434,7 +446,7 @@ moko_history_load_entries (MokoHistory *history)
 
   for (e = entries; e != NULL; e = e->next)
   {
-    if (history_add_entry (store, entry))
+    if (history_add_entry (store, e->data))
       j++;
   }
 }

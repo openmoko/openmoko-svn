@@ -2,6 +2,18 @@
 
 	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
 
+	* src/moko-history.c: (moko_history_load_entries): History list wasn't
+	corectly filled with moko journal entries,
+	(on_delete_clicked), (history_add_entry): Function
+	 moko_journal_remove_entry_by_uid need uid value instead of contact_uid,
+	(history_add_entry): Replace phone number with name of contact if there 
+	is a entry in addressbook. Display "Unknown number" if phone number is
+	NULL.
+
+2007-10-02  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked), (on_incoming_call),
 	  (on_network_registered): Store network information (LocationAreaCode,
 	  CellID) in moko journal.
