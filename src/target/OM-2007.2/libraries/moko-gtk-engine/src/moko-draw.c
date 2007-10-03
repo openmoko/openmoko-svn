@@ -73,10 +73,10 @@ moko_dither16 (GdkPixmap *dither, GdkGC *gc, GdkGC *gcd, GdkColor *c1, gint i)
 
   sum = (c1d.red + c1d.green + c1d.blue) >> 8;
   gdk_gc_set_function (gcd, GDK_SET);
-  gdk_draw_rectangle (dither, gcd, TRUE, 0, 0, 17, 1);
+  gdk_draw_line (dither, gcd, 0, 0, 17, 0);
   gdk_gc_set_function (gcd, GDK_CLEAR);
   for (x = 0; x < sum; x ++) {
-    gdk_draw_point (dither, gcd, ((x+i) * 11) % 18, 0);
+    gdk_draw_point (dither, gcd, ((x+(i<<3)) * 11) % 18, 0);
   }
 
   c1d.red = c1->red + 0x800;
