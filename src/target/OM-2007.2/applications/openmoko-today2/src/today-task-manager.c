@@ -387,8 +387,15 @@ today_task_manager_populate_tasks (TodayData *data)
 		if (!(window = gdk_window_foreign_new_for_display (
 			display, windows[i]))) continue;
 		
+		gdk_error_trap_push ();
 		if (gdk_window_get_type_hint (window) !=
-		    GDK_WINDOW_TYPE_HINT_NORMAL) continue;
+		    GDK_WINDOW_TYPE_HINT_NORMAL) {
+			gdk_flush ();
+			gdk_error_trap_pop ();
+			continue;
+		}
+		gdk_flush ();
+		if (gdk_error_trap_pop ()) continue;
 		
                 name = window_get_name (data, windows[i]);
                 task_tile = taku_icon_tile_new ();
