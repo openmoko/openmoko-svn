@@ -335,7 +335,7 @@ moko_keypad_init (MokoKeypad *keypad)
   priv->textview = moko_dialer_textview_new ();
   gtk_box_pack_start (GTK_BOX (keypad), priv->textview, FALSE, FALSE, 0);
 
-  hbox = gtk_hbox_new (FALSE, 12);
+  hbox = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (keypad), hbox, TRUE, TRUE, 0);
 
   /* Dialing pad */
@@ -347,7 +347,7 @@ moko_keypad_init (MokoKeypad *keypad)
 
   gtk_box_pack_start (GTK_BOX (hbox), priv->panel, TRUE, TRUE, 0);
 
-  priv->dialbox = vbox = gtk_vbox_new (FALSE, 12);
+  priv->dialbox = vbox = gtk_vbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), vbox, FALSE, FALSE, 0);
   
   /* Delete button */

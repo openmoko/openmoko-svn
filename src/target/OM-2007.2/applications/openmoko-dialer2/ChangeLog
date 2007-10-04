@@ -1,5 +1,10 @@
 2007-10-04  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-keypad.c: (moko_keypad_init): Remove hard coded padding from
+	keypad display
+
+2007-10-04  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-contacts.c: (moko_contacts_add_contact): Fix a possible
 	crasher
 
