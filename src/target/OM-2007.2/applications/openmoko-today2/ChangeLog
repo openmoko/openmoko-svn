@@ -1,3 +1,9 @@
+2007-10-04  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-pim-summary.c:
+	(today_pim_summary_tasks_selection_changed_cb): Update binary name for
+	openmoko-tasks
+
 2007-09-28  Chris Lord  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (get_utf8_property),
