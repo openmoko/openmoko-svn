@@ -417,6 +417,14 @@ moko_journal_entry_get_data_info (MokoJournalEntry *a_entry,
   return TRUE ;
 }
 
+/**
+ * moko_journal_entry_get_sms_info:
+ * @entry: the current instance of journal entry
+ * @info: the resulting properties set
+ *
+ * Get the extra properties set associated to journal entries of type
+ * SMS_JOURNAL_ENTRY
+ */
 static gboolean
 moko_journal_entry_get_sms_info (MokoJournalEntry *a_entry,
                                  MokoJournalSMSInfo **a_info)
@@ -434,6 +442,16 @@ moko_journal_entry_get_sms_info (MokoJournalEntry *a_entry,
   return TRUE ;
 }
 
+/**
+ * moko_journal_entry_get_email_info:
+ * @entry: the current instance of journal entry
+ * @info: extra information attached to the email info, or NULL.
+ * Client code must *NOT* of deallocate the returned info.
+ * It is the duty of the MokoJournalEntry code to deallocate it when
+ * necessary
+ *
+ * Return value: TRUE if the call succeeded, FALSE otherwise.
+ */
 static gboolean
 moko_journal_entry_get_email_info (MokoJournalEntry *a_entry,
                                    MokoJournalEmailInfo **a_info)
@@ -1900,7 +1918,7 @@ moko_journal_entry_set_gsm_location (MokoJournalEntry *a_entry,
  * @a_entry: the current instance of voice call extra properties set
  * @a_location: the gsm location
  *
- * Returns TRUE upon completion, FALSE otherwise
+ * Returns: TRUE upon completion, FALSE otherwise
  */
 gboolean
 moko_journal_entry_get_gsm_location (MokoJournalEntry *a_info,
@@ -1965,6 +1983,11 @@ moko_journal_entry_get_wifi_ap_mac_address (MokoJournalEntry *a_entry)
   return a_entry->wifi_ap_mac ;
 }
 
+/**
+ * moko_journal_voice_info_set_distant_number:
+ * @info: the current
+ * @info: the extra property set attached to the voice call
+ */
 void
 moko_journal_voice_info_set_distant_number (MokoJournalEntry *journal_entry,
                                             const gchar *a_number)
@@ -2040,6 +2063,15 @@ moko_journal_voice_info_get_was_missed (MokoJournalEntry *journal_entry)
   return a_info->was_missed ;
 }
 
+/**
+ * moko_journal_entry_has_voice_info:
+ * @entry: the current instance of journal entry
+ *
+ * Returns the specific property set associated to instance of MokoJournalEntry
+ * of type VOICE_JOURNAL_ENTRY.
+ *
+ * Returns: TRUE if the type is of VOICE_JOURNAL_ENTRY, FALSE otherwise.
+ */
 gboolean
 moko_journal_entry_has_voice_info (MokoJournalEntry *entry)
 {
@@ -2051,6 +2083,16 @@ moko_journal_entry_has_voice_info (MokoJournalEntry *entry)
     return FALSE;
 }
 
+/**
+ * moko_journal_entry_has_fax_info:
+ * @entry: the current instance of journal entry
+ * @info: the fax info properties set
+ *
+ * get the extra properties set associated to journal entries of
+ * type FAX_JOURNAL_ENTRY
+ *
+ * Returns: TRUE i, FALSE otherwise.
+ */
 gboolean
 moko_journal_entry_has_fax_info (MokoJournalEntry *entry)
 {
@@ -2060,6 +2102,16 @@ moko_journal_entry_has_fax_info (MokoJournalEntry *entry)
   return moko_journal_entry_get_fax_info (entry, &info) && info;
 }
 
+/**
+ * moko_journal_entry_has_data_info:
+ * @entry: the current instance of journal entry
+ * @info: the resulting properties set
+ *
+ * Get the extra properties set associated to journal entries of type
+ * DATA_JOURNAL_ENTRY
+ *
+ * Returns: TRUE in case of success, FALSE otherwise.
+ */
 gboolean
 moko_journal_entry_has_data_info (MokoJournalEntry *entry)
 {

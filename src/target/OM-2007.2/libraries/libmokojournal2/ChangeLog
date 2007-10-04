@@ -1,5 +1,12 @@
 2007-10-04  Thomas Wood  <thomas@openedhand.com>
 
+	* mokojournal/moko-journal.c:
+	* mokojournal/moko-journal.h:
+
+	Move documentation in C file
+
+2007-10-04  Thomas Wood  <thomas@openedhand.com>
+
 	* Makefile.am:
 	* autogen.sh:
 	* configure.ac:
