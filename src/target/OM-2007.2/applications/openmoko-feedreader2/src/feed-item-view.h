@@ -27,7 +27,7 @@
 /*
  * Display one Feed Item/Entry.
  *
- *  WebKitGtk will be used to display the entry. This is the whole view including
+ *  WebKit will be used to display the entry. This is the whole view including
  *  a button for the next and previous item to allow fast switching of items.
  *  
  *  The views representing the filtered and sorted FeedData are expected to follow
@@ -56,7 +56,7 @@ typedef struct _FeedItemViewClass FeedItemViewClass;
 struct _FeedItemView {
     GtkVBox parent;
 
-    WebKitGtkPage  *page;
+    WebKitPage  *page;
     GtkToolItem    *back;
     GtkToolItem    *forward;
     GtkToolItem    *mail;

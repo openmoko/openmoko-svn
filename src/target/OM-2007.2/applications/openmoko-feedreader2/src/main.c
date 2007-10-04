@@ -218,7 +218,7 @@ int main (int argc, char** argv)
     gdk_threads_init ();
     gdk_threads_enter ();
     gtk_init (&argc, &argv);
-    webkit_gtk_init ();
+    webkit_init ();
     moko_stock_register ();
     g_set_application_name( _("FeedReader") );
 

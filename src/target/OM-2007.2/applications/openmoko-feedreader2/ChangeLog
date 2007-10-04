@@ -1,3 +1,20 @@
+2007-10-04  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
+
+        s/WebKitGtk/WebKit/g
+        s/webkit_gtk_/webkit_/g
+        s/WEBKIT_GTK_/WEBKIT_/g
+
+        * src/Makefile.am:
+        * src/callbacks.c:
+        (cb_treeview_selection_changed):
+        * src/feed-item-view.c:
+        (do_highlight):
+        (feed_item_view_init):
+        (feed_item_view_display):
+        * src/feed-item-view.h:
+        * src/main.c:
+        (main):
+
 2007-09-30  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
 
         Link to WebKitGtk as upstream changed the name from Gdk
