@@ -1,3 +1,13 @@
+2007-10-04  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* doc/reference/Makefile.am:
+	* doc/reference/libmokojournal-docs.sgml:
+
+	Add gtk-doc support
+
 2007-08-22  Holger Freyther  <zecke@selfish.org>
 
         Rubberstamped by Mickey.

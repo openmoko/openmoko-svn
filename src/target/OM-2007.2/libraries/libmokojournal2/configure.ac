@@ -35,6 +35,8 @@ CFLAGS="$CFLAGS $DEPS_CFLAGS"
 
 AC_SUBST(LIBS)
 
+GTK_DOC_CHECK([1.4])
+
 # output stuff
 AC_OUTPUT([
 Makefile
@@ -42,6 +44,9 @@ libmokojournal2.pc
 mokojournal/Makefile
 mokojournal-tool/Makefile
 tests/Makefile
+doc/Makefile
+doc/reference/Makefile
+doc/reference/version.xml
 ])
 
 echo "CFLAGS = $CFLAGS"
