@@ -421,7 +421,9 @@ moko_contacts_init (MokoContacts *contacts)
 
   priv = contacts->priv = MOKO_CONTACTS_GET_PRIVATE (contacts);
 
-  priv->contacts = priv->entries = priv->start = NULL;
+  priv->contacts = NULL;
+  priv->entries = NULL;
+  priv->start = NULL;
   priv->prefixes = g_hash_table_new ((GHashFunc)g_str_hash,
                                      (GEqualFunc)g_str_equal);
   

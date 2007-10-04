@@ -1,3 +1,10 @@
+2007-10-04  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-contacts.c: (moko_contacts_init):
+	* src/moko-keypad.c: (moko_keypad_set_display_text):
+
+	Fix compiler warnings
+
 2007-10-02  Thomas Wood  <thomas@openedhand.com>
 
 	Patch by: Roman Moravcik <roman.moravcik@gmail.com>

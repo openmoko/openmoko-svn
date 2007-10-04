@@ -115,8 +115,8 @@ moko_keypad_set_display_text (MokoKeypad *keypad, const gchar *text)
   g_return_if_fail (MOKO_IS_KEYPAD (keypad));
   priv = keypad->priv;
 
-  moko_dialer_textview_empty (priv->textview);
-  moko_dialer_textview_insert (priv->textview, text);
+  moko_dialer_textview_empty (MOKO_DIALER_TEXTVIEW (priv->textview));
+  moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->textview), text);
 }
 
 void
