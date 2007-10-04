@@ -40,6 +40,7 @@ GtkWidget *label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
 GtkWidget *button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callback);
 
 void error_dialog(gchar *message);
+void error_dialog_modal(gchar *message);
 
 void container_add_image_with_ref(GtkContainer *container, gchar *image_name, GtkWidget **image);
 void container_add_image(GtkContainer *container, gchar *image_name);

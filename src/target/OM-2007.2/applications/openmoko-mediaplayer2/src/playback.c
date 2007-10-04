@@ -110,7 +110,7 @@ omp_playback_init()
 
 	if (!omp_gst_audiosink)
 	{
-		error_dialog(_("Error: gstreamer failed to create the PulseAudio sink.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-plugin-pulse)."));
+		error_dialog_modal(_("Error: gstreamer failed to create the PulseAudio sink.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-plugin-pulse)."));
 
 		return FALSE;
 	}
@@ -120,7 +120,7 @@ omp_playback_init()
 
 	if (!omp_gst_playbin)
 	{
-		error_dialog(_("Error: gstreamer failed to initialize.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-meta-audio)."));
+		error_dialog_modal(_("Error: gstreamer failed to initialize.\nPlease make sure gstreamer and its modules are properly installed (esp. gst-meta-audio)."));
 
 		return FALSE;
 	}

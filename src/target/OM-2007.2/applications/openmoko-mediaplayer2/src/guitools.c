@@ -133,7 +133,7 @@ button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callbac
 }
 
 /**
- * Presents a simple modal error dialog to the user
+ * Presents a simple non-modal error dialog to the user
  */
 void
 error_dialog(gchar *message)
@@ -149,6 +149,25 @@ error_dialog(gchar *message)
 
 	g_signal_connect_swapped(dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
 	gtk_widget_show_all(dialog);
+}
+
+/**
+ * Presents a simple modal error dialog to the user
+ */
+void
+error_dialog_modal(gchar *message)
+{
+	GtkWidget *dialog;
+
+	dialog = gtk_message_dialog_new(0,
+		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+		"%s", message);
+
+	// We don't want a title of "<unnamed>"
+	gtk_window_set_title(GTK_WINDOW(dialog), " ");
+
+	gtk_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
 }
 
 /**
