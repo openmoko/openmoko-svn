@@ -87,7 +87,7 @@ add_number (Digit **start, MokoContactEntry *entry)
     gint n = c - '0';
 
     if (n < 0 || n > 9)
-      n = 11;
+      n = 10;
 
     if (cur->digits[n])
     {
@@ -129,6 +129,9 @@ moko_contacts_fuzzy_lookup (MokoContacts *contacts, const gchar *number)
   {
     gchar c = number[i];
     gint n = c - '0';
+
+    if (n < 0 || n > 9)
+      n = 10;
 
     if (!cur->digits[n])
       return NULL;
