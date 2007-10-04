@@ -41,7 +41,7 @@ static void open_pages_page_cell_data_func(GtkTreeViewColumn* tree_column, GtkCe
     g_assert (page);
 
     /* XXX, FIXME, TODO check that we don't have any race conditions here. We might get a new title inside WebKit while using that string? */
-    g_object_set (G_OBJECT (ren), "text", webkit_gtk_frame_get_title (webkit_gtk_page_get_main_frame (page->webKitPage)), NULL);
+    g_object_set (G_OBJECT (ren), "text", webkit_frame_get_title (webkit_page_get_main_frame (page->webKitPage)), NULL);
     g_object_unref (page);
 }
 

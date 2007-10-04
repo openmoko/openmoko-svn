@@ -50,7 +50,7 @@ browser_page_class_init (BrowserPageClass *klass)
 }
 
 BrowserPage*
-browser_page_new (WebKitGtkPage* webKitPage)
+browser_page_new (WebKitPage* webKitPage)
 {
     BrowserPage* page = BROWSER_PAGE (g_object_new (BROWSER_TYPE_PAGE, 0));
     page->webKitPage = webKitPage;

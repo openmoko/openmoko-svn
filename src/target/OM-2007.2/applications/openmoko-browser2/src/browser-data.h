@@ -46,7 +46,7 @@ typedef struct _BrowserPageClass BrowserPageClass;
 
 struct _BrowserPage {
     GObject parent;
-    WebKitGtkPage* webKitPage;
+    WebKitPage* webKitPage;
 };
 
 struct _BrowserPageClass {
@@ -54,7 +54,7 @@ struct _BrowserPageClass {
 };
 
 GType browser_page_get_type (void);
-BrowserPage* browser_page_new (WebKitGtkPage* page);
+BrowserPage* browser_page_new (WebKitPage* page);
 
 /*
  * The state of the Browser
@@ -74,8 +74,8 @@ struct BrowserData {
      * using HTML and JavaScript and binding the GObject(s) to
      * JavaScript.
      */
-    WebKitGtkPage* pagesOverviewPage;
-    WebKitGtkPage* bookmarkPage;
+    WebKitPage* pagesOverviewPage;
+    WebKitPage* bookmarkPage;
 
 
     /*
