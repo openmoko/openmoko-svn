@@ -66,6 +66,7 @@ struct _MokoFingerScrollPrivate {
 	gint iy;
 	gint cx;	/* Initial click child window mouse co-ordinates */
 	gint cy;
+	guint idle_id;
 	
 	GtkWidget *align;
 	gboolean hscroll;
@@ -345,13 +346,18 @@ moko_finger_scroll_timeout (MokoFingerScroll *scroll)
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 	
 	if ((!priv->enabled) ||
-	    (priv->mode != MOKO_FINGER_SCROLL_MODE_ACCEL)) return FALSE;
+	    (priv->mode != MOKO_FINGER_SCROLL_MODE_ACCEL)) {
+		priv->idle_id = 0;
+		return FALSE;
+	}
 	if (!priv->clicked) {
 		/* Decelerate gradually when pointer is raised */
 		priv->vel_x *= priv->decel;
 		priv->vel_y *= priv->decel;
-		if ((ABS (priv->vel_x) < 1.0) && (ABS (priv->vel_y) < 1.0))
+		if ((ABS (priv->vel_x) < 1.0) && (ABS (priv->vel_y) < 1.0)) {
+			priv->idle_id = 0;
 			return FALSE;
+		}
 	}
 	
 	moko_finger_scroll_scroll (scroll, priv->vel_x, priv->vel_y, &sx, &sy);
@@ -390,7 +396,8 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	     (ABS (x) > dnd_threshold) || (ABS (y) > dnd_threshold))) {
 		priv->moved = TRUE;
 		if (priv->mode == MOKO_FINGER_SCROLL_MODE_ACCEL) {
-			g_timeout_add ((gint)(1000.0/(gdouble)priv->sps),
+			priv->idle_id = g_timeout_add (
+				(gint)(1000.0/(gdouble)priv->sps),
 				(GSourceFunc)moko_finger_scroll_timeout,
 				scroll);
 		}
@@ -461,7 +468,6 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	g_get_current_time (&current);
 
 	priv->clicked = FALSE;
-	priv->moved = FALSE;
 		
 	child = moko_finger_scroll_get_topmost (
 		GTK_BIN (priv->align)->child->window,
@@ -470,7 +476,10 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	event->x = x;
 	event->y = y;
 
-	if (!priv->child) return TRUE;
+	if (!priv->child) {
+		priv->moved = FALSE;
+		return TRUE;
+	}
 	
 	/* Leave the widget if we've moved - This doesn't break selection,
 	 * but stops buttons from being clicked.
@@ -493,6 +502,8 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	if (priv->child)
 		g_object_remove_weak_pointer ((GObject *)priv->child,
 			&priv->child);
+
+	priv->moved = FALSE;
 	
 	return TRUE;
 }
@@ -674,6 +685,13 @@ moko_finger_scroll_set_property (GObject * object, guint property_id,
 static void
 moko_finger_scroll_dispose (GObject * object)
 {
+	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (object);
+	
+	if (priv->idle_id) {
+		g_source_remove (priv->idle_id);
+		priv->idle_id = 0;
+	}
+	
 	if (G_OBJECT_CLASS (moko_finger_scroll_parent_class)->dispose)
 		G_OBJECT_CLASS (moko_finger_scroll_parent_class)->
 			dispose (object);
