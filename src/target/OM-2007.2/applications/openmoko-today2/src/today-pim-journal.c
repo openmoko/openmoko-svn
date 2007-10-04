@@ -39,19 +39,27 @@ today_pim_journal_update_messages (TodayData *data)
 }
 
 static void
-today_pim_journal_entry_added_cb (MokoJournal *journal,
-				  MokoJournalEntry *entry,
-				  TodayData *data)
+today_pim_journal_entry_changed (MokoJournal *journal,
+				 MokoJournalEntry *entry,
+				 TodayData *data,
+				 gint added)
 {
+	MessageDirection dir;
+	
 	switch (moko_journal_entry_get_entry_type (entry)) {
 	    case SMS_JOURNAL_ENTRY :
 	    case EMAIL_JOURNAL_ENTRY :
-		data->n_unread_messages ++;
+		data->n_unread_messages += added;
 		today_pim_journal_update_messages (data);
 		break;
 	    case VOICE_JOURNAL_ENTRY :
-		data->n_missed_calls ++;
-		today_pim_journal_update_messages (data);
+		moko_journal_entry_get_direction (entry, &dir);
+		if (dir == DIRECTION_IN) {
+			if (moko_journal_voice_info_get_was_missed (entry)) {
+				data->n_missed_calls += added;
+				today_pim_journal_update_messages (data);
+			}
+		}
 		break;
 	    default :
 		break;
@@ -59,23 +67,19 @@ today_pim_journal_entry_added_cb (MokoJournal *journal,
 }
 
 static void
+today_pim_journal_entry_added_cb (MokoJournal *journal,
+				  MokoJournalEntry *entry,
+				  TodayData *data)
+{
+	today_pim_journal_entry_changed (journal, entry, data, 1);
+}
+
+static void
 today_pim_journal_entry_removed_cb (MokoJournal *journal,
 				    MokoJournalEntry *entry,
 				    TodayData *data)
 {
-	switch (moko_journal_entry_get_entry_type (entry)) {
-	    case SMS_JOURNAL_ENTRY :
-	    case EMAIL_JOURNAL_ENTRY :
-		data->n_unread_messages --;
-		today_pim_journal_update_messages (data);
-		break;
-	    case VOICE_JOURNAL_ENTRY :
-		data->n_missed_calls --;
-		today_pim_journal_update_messages (data);
-		break;
-	    default :
-		break;
-	}
+	today_pim_journal_entry_changed (journal, entry, data, -1);
 }
 
 static void

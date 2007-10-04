@@ -1,3 +1,10 @@
+2007-10-04  Chris Lord  <chris@openedhand.com>
+
+	* src/today-pim-journal.c: (today_pim_journal_entry_changed),
+	(today_pim_journal_entry_added_cb),
+	(today_pim_journal_entry_removed_cb):
+	Fix bug #901, thanks to Roman Moravcik
+
 2007-10-04  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-pim-summary.c:
