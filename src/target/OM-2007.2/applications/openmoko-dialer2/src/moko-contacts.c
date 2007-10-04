@@ -290,7 +290,6 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
           if (params)
             entry->desc = g_strdup (params->data);
 
-          entry->desc = g_strdup (params->data);
           entry->number = normalize (phone);
           entry->contact = m_contact;
 
