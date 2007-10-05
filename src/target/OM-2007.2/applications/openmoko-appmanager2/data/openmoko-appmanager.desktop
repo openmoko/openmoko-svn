@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Applications
+Comment=Install or Remove additional applications
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Exec=openmoko-appmanager
+Icon=application-manager
+Categories=GTK;Application;PIM;Office
+Terminal=false
+SingleInstance=false
+StartupNotify=true

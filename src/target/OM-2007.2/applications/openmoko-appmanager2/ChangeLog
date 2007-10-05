@@ -1,0 +1,65 @@
+2007-03-29 Chaowei Song <songcw@fic-sh.com.cn>
+	* src/application-menu.c: (on_install_single_application_activate)
+	Remove unnecessory set a default size to the file chooser dialog.
+	It makes the file chooser dialog too ugly.
+	After installing single package successfully, refresh the navigation
+	area, and show the installed packages list.
+	* src/application-menu.c: (application_menu_new)
+	Use the "Exit" menuitem instead of the "Quit" menuitem.
+
+2007-03-26 Chaowei Song <songcw@fic-sh.com.cn>
+	* data/:
+	Add action buttons:
+		Apply.png
+		Summary.png
+		Upgrades.png
+	* src/tool-box.c: (tool_box_new)
+	Using pixtures instead of the texts for the buttons on the tool box.
+
+2007-03-26 Chaowei Song <songcw@fic-sh.com.cn> (r1494)
+	* data/:
+	Remove old status picture:
+		package-available.png
+		package-installed-outdated.png
+		package-installed.png
+		package-mark-install.png
+		package-remove.png
+		package-upgrade.png
+	Add new status picture:
+		Available.png
+		Installed.png
+		Upgradeable.png
+		Mark_for_install.png
+		Mark_for_remove.png
+		Mark_for_upgrade.png
+	* src/appmanager-data.c: (init_pixbuf_list)
+	Change the file name of the status pictures.
+	* src/navigation-area.c: (navigation_area_new)
+	Set resizable attribute to the first column of the navigation list.
+	Set the size of the second column from 240 to 280.
+
+2007-03-20 Chaowei Song <songcw@fic-sh.com.cn>
+	* src/ipkgapi.c:
+	Add #define __USE_XOPEN_EXTENDED before include string.h, removing the
+	warning of "strdup" undecleration.
+	* src/tool-box.c:
+	Including the filter-menu.h now.
+	* src/application-menu.c: (on_install_single_application_activate)
+	Using an errcode to idetify the install result.
+	Show infomation after installing single ipk file.
+
+2007-03-19 Chaowei Song <songcw@fic-sh.com.cn>
+	* src/package-list.c: (package_list_execute_change):
+	Set a changed flag when install, remove or upgrade a package success.
+	Remove unnecessary print message
+	* src/appmanager-data: 
+	Add menubox(and set/get function) to the appmanager-data struct.
+	* src/appmanager-window.c: (main)
+	Save the menubox to appmanager-data after initialization.
+	Show installed package list after initialization.
+	* src/filter-menu.c filter-menu.h:
+	Add filter_menu_show_install_list.
+	* src/tool-box.c: (on_apply_clicked)
+	Show installed package list after install, remove or upgrade packages.
+	* src/detail-area.c: (detail_area_new)
+	Set unable writing attribute to the detail area
