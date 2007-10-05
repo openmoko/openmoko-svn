@@ -77,3 +77,4 @@ uboot-smdk2443.patch
 unbusy-i2c.patch 
 usbtty-irq-racecondition-fix.patch
 neo1973-gsmver.patch
+uboot-nand_write_yaffs.patch
