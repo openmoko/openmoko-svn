@@ -17,7 +17,6 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#include <libmokoui/moko-scrolled-pane.h>
 #include <string.h>
 
 #include "detail-area.h"
@@ -35,7 +34,7 @@ detail_area_new (ApplicationManagerData *appdata)
   GtkWidget    *text;
   GtkWidget    *detail;
 
-  detail = moko_scrolled_pane_new ();
+  detail = gtk_scrolled_window_new (NULL, NULL);
 
   text = gtk_text_view_new ();
   gtk_widget_show (text);
@@ -43,7 +42,7 @@ detail_area_new (ApplicationManagerData *appdata)
   gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (text), FALSE);
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text), GTK_WRAP_WORD);
 
-  moko_scrolled_pane_pack (MOKO_SCROLLED_PANE (detail), text);
+  gtk_container_add (GTK_CONTAINER (detail), text);
   application_manager_data_set_tvdetail (appdata, text);
 
   return GTK_WIDGET (detail);

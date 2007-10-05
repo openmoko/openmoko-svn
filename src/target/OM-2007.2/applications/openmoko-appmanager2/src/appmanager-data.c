@@ -78,11 +78,11 @@ application_manager_data_new (void)
  */
 void 
 application_manager_data_set_main_window (ApplicationManagerData *appdata, 
-                                          MokoPanedWindow *window)
+                                          GtkWindow *window)
 {
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
-
-  appdata->mwindow = window;
+  g_return_if_fail (GTK_IS_WINDOW (window));
+  appdata->mwindow = GTK_WIDGET (window);
 }
 
 /*
@@ -379,7 +379,7 @@ init_pixbuf_list (ApplicationManagerData *appdata)
  * @param appdata The application manager data
  * @return The main window
  */
-MokoPanedWindow *
+GtkWidget *
 application_manager_get_main_window (ApplicationManagerData *appdata)
 {
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);

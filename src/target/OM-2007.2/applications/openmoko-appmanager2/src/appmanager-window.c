@@ -17,9 +17,6 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#include <libmokoui/moko-application.h>
-#include <libmokoui/moko-paned-window.h>
-#include <libmokoui/moko-tool-box.h>
 
 #include <gtk/gtk.h>
 
@@ -41,15 +38,18 @@ int
 main (int argc, char* argv[])
 {
   ApplicationManagerData *appdata;
-  MokoPanedWindow *window;
-  GtkMenu         *appmenu;
-  GtkMenu         *filtermenu;
-  GtkMenu         *selectmenu;
+  GtkWidget       *window;
+  GtkWidget       *menubox;
+  GtkWidget       *menuitem;
+  GtkWidget       *appmenu;
+  GtkWidget       *filtermenu;
+  GtkWidget       *selectmenu;
   GtkWidget       *navigation;
-  MokoToolBox     *toolbox;
+  GtkWidget       *toolbox;
   GtkWidget       *detail;
 
-  GtkWidget       *menubox;
+  //GtkWidget       *menubox;
+  GtkWidget *vbox;
 
   gint             ret;
 
@@ -72,34 +72,54 @@ main (int argc, char* argv[])
 
   init_pixbuf_list (appdata);
 
-  window = MOKO_PANED_WINDOW (moko_paned_window_new ());
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (G_OBJECT (window), "delete_event",
                     G_CALLBACK (gtk_main_quit), NULL);
-  application_manager_data_set_main_window (appdata, window);
+  application_manager_data_set_main_window (appdata, GTK_WINDOW (window));
+
+  /* main vbox */
+  vbox = gtk_vbox_new (FALSE, 0);
 
   appmenu = application_menu_new (appdata);
-  moko_paned_window_set_application_menu (window, appmenu);
 
   filtermenu = filter_menu_new (appdata);
-  moko_paned_window_set_filter_menu (window, filtermenu);
-  application_manager_data_set_filter_menu (appdata, filtermenu);
+  application_manager_data_set_filter_menu (appdata, GTK_MENU (filtermenu));
 
-  selectmenu = GTK_MENU (moko_select_menu_new (appdata));
-  gtk_widget_show (GTK_WIDGET (selectmenu));
-  application_manager_data_set_select_menu (appdata, selectmenu);
+  selectmenu = moko_select_menu_new (appdata);
+  application_manager_data_set_select_menu (appdata, GTK_MENU (selectmenu));
+
 
   /* Save the menubox to the application manager data */
-  menubox = moko_paned_window_get_menubox (window);
+  menubox = gtk_menu_bar_new ();
+  gtk_box_pack_start (GTK_BOX (vbox), menubox, FALSE, FALSE, 0);
+
   application_manager_data_set_menubox (appdata, menubox);
 
-  navigation = navigation_area_new (appdata);
-  moko_paned_window_set_navigation_pane (window, navigation);
+
+  menuitem = gtk_menu_item_new_with_label ("Package");
+  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), appmenu);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label ("Filter");
+  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), filtermenu);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label ("Select");
+  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), selectmenu);
+  gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
 
   toolbox = tool_box_new (appdata);
-  moko_paned_window_add_toolbox (window, toolbox);
+  gtk_box_pack_start (GTK_BOX (vbox), toolbox, FALSE, FALSE, 0);
+  //moko_paned_window_add_toolbox (window, toolbox);
+
+  navigation = navigation_area_new (appdata);
+  gtk_box_pack_start (GTK_BOX (vbox), navigation, TRUE, TRUE, 0);
+  //moko_paned_window_set_navigation_pane (window, navigation);
 
   detail = detail_area_new (appdata);
-  moko_paned_window_set_details_pane (window, detail);
+  gtk_box_pack_start (GTK_BOX (vbox), detail, TRUE, TRUE, 0);
+  //moko_paned_window_set_details_pane (window, detail);
+  gtk_container_add (GTK_CONTAINER (appdata->mwindow), vbox);
 
   /* Load the list of all package in the memory */
   ret = init_package_list (appdata);

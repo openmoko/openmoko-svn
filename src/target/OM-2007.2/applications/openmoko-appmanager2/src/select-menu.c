@@ -17,8 +17,6 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#include <libmokoui/moko-tree-view.h>
-
 #include "select-menu.h"
 #include "appmanager-window.h"
 #include "pixbuf-list.h"
@@ -61,7 +59,7 @@ on_unmark_activate (GtkMenuItem *unmark, gpointer data)
   appdata = MOKO_APPLICATION_MANAGER_DATA (data);
 
   treeview = application_manager_get_tvpkglist (appdata);
-  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
@@ -123,7 +121,7 @@ on_mark_install_activate (GtkMenuItem *markinstall, gpointer data)
   appdata = MOKO_APPLICATION_MANAGER_DATA (data);
 
   treeview = application_manager_get_tvpkglist (appdata);
-  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
@@ -176,7 +174,7 @@ on_mark_upgrade_activate (GtkMenuItem *markupgrade, gpointer data)
   appdata = MOKO_APPLICATION_MANAGER_DATA (data);
 
   treeview = application_manager_get_tvpkglist (appdata);
-  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
@@ -231,7 +229,7 @@ on_mark_remove_activate (GtkMenuItem *markremove, gpointer data)
   appdata = MOKO_APPLICATION_MANAGER_DATA (data);
 
   treeview = application_manager_get_tvpkglist (appdata);
-  g_return_if_fail (MOKO_IS_TREE_VIEW (treeview));
+  g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
   if (!gtk_tree_selection_get_selected (selection, &model, &iter))
@@ -284,7 +282,7 @@ moko_select_menu_init (MokoSelectMenu *data)
  * @param appdata The application manager data
  * @return The MokoSelectMenu
  */
-MokoSelectMenu *
+GtkWidget *
 moko_select_menu_new (ApplicationManagerData *appdata)
 {
   MokoSelectMenu *self = MOKO_SELECT_MENU (g_object_new (MOKO_TYPE_SELECT_MENU, NULL));
@@ -314,7 +312,7 @@ moko_select_menu_new (ApplicationManagerData *appdata)
   g_signal_connect ((gpointer) priv->markremove, "activate",
                     G_CALLBACK (on_mark_remove_activate), appdata);
 
-  return self;
+  return GTK_WIDGET (self);
 }
 
 /*

@@ -46,7 +46,7 @@ struct _MokoSelectMenuClass {
 
 GType moko_select_menu_get_type (void);
 
-MokoSelectMenu *moko_select_menu_new (ApplicationManagerData *appdata);
+GtkWidget *moko_select_menu_new (ApplicationManagerData *appdata);
 
 void moko_select_menu_popup (MokoSelectMenu *menu, 
                              GdkEventButton *event,

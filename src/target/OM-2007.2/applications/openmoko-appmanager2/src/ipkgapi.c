@@ -874,7 +874,7 @@ int ipkg_remove_cmd(char *pkg_name) {
             DBG("Package seems to be %s not installed (STATUS = NOT_INSTALLED).\n", pkg->name);
             continue;
         }
-        pkg_to_remove->is_processing = 1;
+        // pkg_to_remove->is_processing = 1;
         ipkg_remove_pkg(&global_conf, pkg_to_remove, 0);
         done = 1;
     }

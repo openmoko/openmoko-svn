@@ -24,7 +24,7 @@
 
 #include "appmanager-data.h"
 
-GtkMenu *application_menu_new (ApplicationManagerData *appdata);
+GtkWidget *application_menu_new (ApplicationManagerData *appdata);
 
 #endif
 

@@ -18,8 +18,6 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#include <libmokoui/moko-tree-view.h>
-
 #include "apply-dialog.h"
 #include "appmanager-window.h"
 #include "package-list.h"
@@ -67,12 +65,13 @@ apply_dialog_new (ApplicationManagerData *appdata)
   gtk_widget_show (applymsg);
   gtk_box_pack_start (GTK_BOX (dialogvbox), applymsg, FALSE, FALSE, 0);
 
-  applylist = moko_tree_view_new ();
+  applylist = gtk_tree_view_new ();
   gtk_widget_show (applylist);
   gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (applylist), FALSE);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (applylist), FALSE);
 
-  listwindow = GTK_WIDGET (moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (applylist)));
+  listwindow = gtk_scrolled_window_new (NULL, NULL);
+  gtk_container_add (GTK_CONTAINER (listwindow),applylist);
   gtk_widget_show (listwindow);
   gtk_box_pack_start (GTK_BOX (dialogvbox), listwindow, TRUE, TRUE, 0);
 
@@ -99,7 +98,7 @@ apply_dialog_new (ApplicationManagerData *appdata)
   gtk_tree_view_column_set_attributes (col, renderer,
                                        "text", MARK_COL_NAME,
                                        NULL);
-  moko_tree_view_append_column (MOKO_TREE_VIEW (applylist), col);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (applylist), col);
 
   store = gtk_tree_store_new (MARK_NUM_COL, G_TYPE_STRING);
 

@@ -1,3 +1,28 @@
+2007-10-05  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/application-menu.c: (application_menu_new):
+	* src/application-menu.h:
+	* src/apply-dialog.c: (apply_dialog_new):
+	* src/appmanager-data.c:
+	* src/appmanager-data.h:
+	* src/appmanager-window.c: (main):
+	* src/detail-area.c: (detail_area_new):
+	* src/filter-menu.c: (filter_menu_new),
+	(filter_menu_show_install_list):
+	* src/filter-menu.h:
+	* src/install-dialog.c:
+	* src/ipkgapi.c: (ipkg_remove_cmd):
+	* src/navigation-area.c: (navigation_area_new):
+	* src/select-menu.c: (on_unmark_activate),
+	(on_mark_install_activate), (on_mark_upgrade_activate),
+	(on_mark_remove_activate), (moko_select_menu_new):
+	* src/select-menu.h:
+	* src/tool-box.c:
+	* src/tool-box.h:
+
+	Update to be compatible with OM-2007.2
+
 2007-03-29 Chaowei Song <songcw@fic-sh.com.cn>
 	* src/application-menu.c: (on_install_single_application_activate)
 	Remove unnecessory set a default size to the file chooser dialog.

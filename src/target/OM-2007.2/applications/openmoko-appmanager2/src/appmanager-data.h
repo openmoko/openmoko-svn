@@ -22,7 +22,6 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokoui/moko-paned-window.h>
 #include "pixbuf-list.h"
 
 G_BEGIN_DECLS
@@ -54,7 +53,7 @@ G_BEGIN_DECLS
 typedef struct _ApplicationManagerData {
   GObject          parent;             /* The parent of the struct */
 
-  MokoPanedWindow  *mwindow;           /* The main window */
+  GtkWidget        *mwindow;           /* The main window */
   GtkMenu          *filtermenu;        /* The filter menu */
   GtkWidget        *menubox;           /* The menubox */
   GtkMenu          *selectmenu;        /* The select menu */
@@ -86,7 +85,7 @@ GType application_manager_data_get_type (void);
 ApplicationManagerData *application_manager_data_new (void);
 
 void application_manager_data_set_main_window (ApplicationManagerData *appdata, 
-                                               MokoPanedWindow *window);
+                                               GtkWindow *window);
 
 void application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
                                                GtkMenu *filtermenu);
@@ -135,7 +134,7 @@ void application_manager_data_set_search_history (ApplicationManagerData *appdat
 void application_manager_data_set_install_dialog (ApplicationManagerData *appdata,
                                                   GtkWidget *installdialog);
 
-MokoPanedWindow *
+GtkWidget *
      application_manager_get_main_window (ApplicationManagerData *appdata);
 
 GtkMenu *

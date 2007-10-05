@@ -165,38 +165,35 @@ on_search_entry_changed (GtkEditable *entryedit, gpointer data)
  * @param appdata The application manager data
  * @return The toplevel widget of the tool box
  */
-MokoToolBox *
+GtkWidget *
 tool_box_new (ApplicationManagerData *appdata)
 {
-  MokoToolBox *toolbox;
-  GtkWidget   *bapply;
-  GtkWidget   *bupgrade;
-  GtkWidget   *searchentry;
+  GtkWidget   *toolbox;
+  GtkToolItem *bapply;
+  GtkToolItem *bupgrade;
   GtkWidget   *anImage;
 
-  toolbox = MOKO_TOOL_BOX (moko_tool_box_new_with_search ());
+  toolbox = gtk_toolbar_new ();
 
-  bupgrade = moko_tool_box_add_action_button (toolbox);
   anImage = gtk_image_new_from_file (PKGDATADIR "/Upgrades.png");
-  moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON (bupgrade), anImage);
+  bupgrade = gtk_tool_button_new (anImage, "Upgrades");
   g_signal_connect ((gpointer)bupgrade, "clicked",
                     G_CALLBACK (on_upgrade_clicked), 
                     appdata);
 
-  bapply = moko_tool_box_add_action_button (toolbox);
   anImage = gtk_image_new_from_file (PKGDATADIR "/Apply.png");
-  moko_pixmap_button_set_center_image (MOKO_PIXMAP_BUTTON (bapply), anImage);
+  bapply = gtk_tool_button_new (anImage, "Apply");
   g_signal_connect ((gpointer)bapply, "clicked",
                     G_CALLBACK (on_apply_clicked), 
                     appdata);
-
+#if 0
   searchentry = moko_tool_box_get_entry (toolbox);
   application_manager_data_set_search_entry (appdata, GTK_ENTRY (searchentry));
   gtk_entry_set_max_length (GTK_ENTRY (searchentry), MAX_SEARCH_ENTRY_TEXT_LENGTH);
   g_signal_connect ((gpointer) searchentry, "changed",
                     G_CALLBACK (on_search_entry_changed),
                     appdata);
-
+#endif
   return toolbox;
 }
 

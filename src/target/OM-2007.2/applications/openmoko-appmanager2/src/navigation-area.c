@@ -17,7 +17,6 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#include <libmokoui/moko-tree-view.h>
 #include <string.h>
 
 #include "appmanager-window.h"
@@ -152,7 +151,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   GtkTreeViewColumn  *col;
   GtkCellRenderer    *renderer;
 
-  treeview = moko_tree_view_new ();
+  treeview = gtk_tree_view_new ();
   gtk_widget_show (treeview);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeview), FALSE);
 
@@ -167,7 +166,7 @@ navigation_area_new (ApplicationManagerData *appdata)
                                        "pixbuf", COL_STATUS,
                                        NULL);
 
-  moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
 
   /* Add the name as the second column. */
   col = gtk_tree_view_column_new ();
@@ -180,7 +179,7 @@ navigation_area_new (ApplicationManagerData *appdata)
                                        "text", COL_NAME,
                                        NULL);
 
-  moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
 
   /* For some reason, there must set the column length to fixed */
   gtk_tree_view_column_set_resizable (col, FALSE);
@@ -198,7 +197,7 @@ navigation_area_new (ApplicationManagerData *appdata)
                                        "text", COL_SIZE,
                                        NULL);
 
-  moko_tree_view_append_column (MOKO_TREE_VIEW (treeview), col);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
 
   model = GTK_TREE_MODEL (create_package_list_store ());
   gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), model);
@@ -208,7 +207,8 @@ navigation_area_new (ApplicationManagerData *appdata)
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
                                GTK_SELECTION_SINGLE);
 
-  scrollwindow = GTK_WIDGET (moko_tree_view_put_into_scrolled_window (MOKO_TREE_VIEW (treeview)));
+  scrollwindow = gtk_scrolled_window_new (NULL, NULL);
+  gtk_container_add (GTK_CONTAINER (scrollwindow), treeview);
   application_manager_data_set_tvpkglist (appdata, treeview);
 
   /* Connect signal to the treeview */

@@ -140,10 +140,10 @@ on_dynamic_menu_item_activate (GtkMenuItem *menuitem, gpointer userdata)
  * @param appdata The application manager data
  * @return The filter menu.
  */
-GtkMenu *
+GtkWidget *
 filter_menu_new (ApplicationManagerData *appdata)
 {
-  GtkMenu   *filtermenu;
+  GtkWidget *filtermenu;
   GtkWidget *searchresult;
   GtkWidget *installed;
   GtkWidget *upgradeable;
@@ -152,7 +152,7 @@ filter_menu_new (ApplicationManagerData *appdata)
   g_debug ("Init the filter filtermenu");
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
-  filtermenu = GTK_MENU (gtk_menu_new ());
+  filtermenu = gtk_menu_new ();
 
   searchresult = gtk_menu_item_new_with_label (_("Search Results"));
   gtk_widget_show (searchresult);
@@ -213,7 +213,7 @@ void
 filter_menu_show_install_list (ApplicationManagerData *appdata)
 {
   gpointer     pkglist;
-  MokoMenuBox *menubox;
+  GtkWidget   *menubox;
 
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
@@ -224,8 +224,8 @@ filter_menu_show_install_list (ApplicationManagerData *appdata)
           MOKO_APPLICATION_MANAGER_DATA (appdata),
           pkglist);
 
-  menubox = MOKO_MENU_BOX (application_manager_get_menubox (appdata));
+  menubox = application_manager_get_menubox (appdata);
 
-  g_return_if_fail (IS_MOKO_MENU_BOX (menubox));
-  moko_menu_box_set_active_filter (menubox, _("Installed"));
+  //g_return_if_fail (IS_MOKO_MENU_BOX (menubox));
+  //moko_menu_box_set_active_filter (menubox, _("Installed"));
 }

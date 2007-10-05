@@ -18,7 +18,6 @@
  *
  *  @author Chaowei Song (songcw@fic-sh.com.cn)
  */
-#include <libmokoui/moko-tree-view.h>
 #include <string.h>
 
 #include "install-dialog.h"

@@ -22,10 +22,9 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokoui/moko-paned-window.h>
 #include "appmanager-data.h"
 
-GtkMenu *filter_menu_new (ApplicationManagerData *appdata);
+GtkWidget *filter_menu_new (ApplicationManagerData *appdata);
 
 void filter_menu_add_item (GtkMenu *filtermenu, const gchar *name,
                            ApplicationManagerData *appdata);

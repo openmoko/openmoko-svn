@@ -22,13 +22,11 @@
 
 #include <gtk/gtk.h>
 
-#include <libmokoui/moko-paned-window.h>
-#include <libmokoui/moko-tool-box.h>
 #include "appmanager-data.h"
 
 #define MAX_SEARCH_ENTRY_TEXT_LENGTH   50
 
-MokoToolBox *tool_box_new (ApplicationManagerData *appdata);
+GtkWidget *tool_box_new (ApplicationManagerData *appdata);
 
 #endif
 

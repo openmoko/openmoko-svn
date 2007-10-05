@@ -223,10 +223,10 @@ on_quit_activate (GtkMenuItem *menuitem, gpointer user_data)
  * @return The GtkMenu widget. If there is error,
  * it will return NULL.
  */
-GtkMenu *
+GtkWidget *
 application_menu_new (ApplicationManagerData *appdata)
 {
-  GtkMenu     *appmenu;
+  GtkWidget   *appmenu;
   GtkWidget   *showstatus;
   GtkWidget   *showsource;
   GtkWidget   *installsingleapp;
@@ -236,7 +236,7 @@ application_menu_new (ApplicationManagerData *appdata)
   g_debug ("Init the application appmenu");
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
-  appmenu = GTK_MENU (gtk_menu_new ());
+  appmenu = gtk_menu_new ();
 
   showstatus = gtk_menu_item_new_with_mnemonic (_("Show Status"));
   gtk_widget_show (showstatus);
