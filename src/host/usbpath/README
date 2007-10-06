@@ -1,0 +1,28 @@
+usbpath - Convert the physical locations of a USB device to/from its number
+===========================================================================
+
+A device number is represented by the following syntax:
+
+bus/devnum
+
+where "bus" is the number of the USB bus, using the numbering scheme
+employed by lsusb et al., and "devnum" is the number of the device on
+that bus.
+
+The physical location of a USB device is represented by the following
+syntax:
+
+bus+port+...+port
+
+where "bus" is again the number of the USB bus, and "port" is the number
+of the port on the respective next hub, counting from zero.
+
+
+usbport converts between the two representations.
+
+Example:
+usbport 1/19
+1+1+2
+
+usbport 1+1+2
+1/19
