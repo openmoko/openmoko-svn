@@ -1,3 +1,12 @@
+2007-10-06  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+	openmoko-dialer display isn't cleared after pin is sent
+	 -http://bugzilla.openmoko.org/cgi-bin/bugzilla/show_bug.cgi?id=902
+
+        * src/moko-keypad.c:
+        (on_dial_clicked):
+        (on_panel_user_input):
+
 2007-10-04  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-keypad.c: (moko_keypad_init): Remove hard coded padding from

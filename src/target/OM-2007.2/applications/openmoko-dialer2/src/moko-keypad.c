@@ -164,9 +164,10 @@ on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
   number = moko_dialer_textview_get_input (
                                         MOKO_DIALER_TEXTVIEW (priv->textview), 
                                         TRUE);
- if (priv->pin_mode)
+ if (priv->pin_mode) {
    g_signal_emit (G_OBJECT (keypad), keypad_signals[PIN_ENTRY], 0, number);
- else
+   moko_dialer_textview_empty (MOKO_DIALER_TEXTVIEW (priv->textview));
+ } else
    g_signal_emit (G_OBJECT (keypad), keypad_signals[DIAL_NUMBER], 0, number);
  
 }
@@ -244,12 +245,15 @@ on_panel_user_input (MokoDialerPanel *panel,
 
   moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->textview), buf);
 
-  /* Some autocomplete stuff */
-  matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
-                                        moko_dialer_textview_get_input (
-                                        MOKO_DIALER_TEXTVIEW (priv->textview), 
-                                        TRUE));
-  moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
+  if (!priv->pin_mode)
+  {
+    /* Some autocomplete stuff */
+    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
+                                          moko_dialer_textview_get_input (
+                                          MOKO_DIALER_TEXTVIEW (priv->textview), 
+                                          TRUE));
+    moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
+ }
 }
 
 static void
