@@ -45,3 +45,4 @@ s3c2410-udc-include-fix.patch
 neo1973-soc-include-fix.patch
 explicitly-link-notes-section.patch
 fix-s3c2410fb-register-access.patch
+gta-vibrator.patch

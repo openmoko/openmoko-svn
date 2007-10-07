@@ -1,0 +1,98 @@
+Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
+===================================================================
+--- linux-2.6.22.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -55,6 +55,7 @@
+ #include <asm/mach-types.h>
+ 
+ #include <asm/arch/regs-gpio.h>
++#include <asm/arch/leds-gpio.h>
+ #include <asm/arch/fb.h>
+ #include <asm/arch/mci.h>
+ #include <asm/arch/ts.h>
+@@ -585,17 +586,18 @@
+ 	},
+ };
+ 
+-static struct resource gta01_led_resources[] = {
+-	[0] = {
+-		.start	= GTA01_GPIO_VIBRATOR_ON,
+-		.end	= GTA01_GPIO_VIBRATOR_ON,
+-	},
++static struct s3c24xx_led_platdata gta01_led_pdata = {
++    .name       = "gta01-vib",
++    .gpio       = GTA01_GPIO_VIBRATOR_ON,
++    .def_trigger    = "",
+ };
+ 
+-struct platform_device gta01_led_dev = {
+-	.name		= "gta01-led",
+-	.num_resources	= ARRAY_SIZE(gta01_led_resources),
+-	.resource	= gta01_led_resources,
++static struct platform_device gta01_led_dev = {
++    .name       = "s3c24xx_led",
++    .id     = 1,
++    .dev        = {
++        .platform_data  = &gta01_led_pdata,
++    },
+ };
+ 
+ static struct resource gta01_button_resources[] = {
+@@ -688,14 +690,12 @@
+ 	case GTA01Bv2_SYSTEM_REV:
+ 	case GTA01Bv3_SYSTEM_REV:
+ 		/* just use the default (GTA01_IRQ_PCF50606) */
+-		gta01_led_resources[0].start =
+-			gta01_led_resources[0].end = GTA01Bv2_GPIO_VIBRATOR_ON;
++		gta01_led_pdata.gpio = GTA01Bv2_GPIO_VIBRATOR_ON;
+ 		break;
+ 	case GTA01Bv4_SYSTEM_REV:
+ 		gta01_pmu_resources[0].start =
+ 			gta01_pmu_resources[0].end = GTA01Bv4_IRQ_PCF50606;
+-		gta01_led_resources[0].start =
+-			gta01_led_resources[0].end = GTA01Bv4_GPIO_VIBRATOR_ON;
++		gta01_led_pdata.gpio = GTA01Bv4_GPIO_VIBRATOR_ON;
+ 		break;
+ 	}
+ 	mangle_pmu_pdata_by_system_rev();
+Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
+===================================================================
+--- linux-2.6.22.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -56,6 +56,7 @@
+ 
+ #include <asm/arch/regs-gpio.h>
+ #include <asm/arch/regs-gpioj.h>
++#include <asm/arch/leds-gpio.h>
+ #include <asm/arch/fb.h>
+ #include <asm/arch/mci.h>
+ #include <asm/arch/ts.h>
+@@ -499,18 +500,18 @@
+ #endif
+ #endif
+ 
+-static struct resource gta02_led_resources[] = {
+-	[0] = {
+-		.start	= GTA02_GPIO_VIBRATOR_ON,
+-		.end	= GTA02_GPIO_VIBRATOR_ON,
+-	},
+-	/* FIXME */
++static struct s3c24xx_led_platdata gta02_led_pdata = {
++    .name       = "gta02-vib",
++    .gpio       = GTA02_GPIO_VIBRATOR_ON,
++    .def_trigger    = "",
+ };
+ 
+-struct platform_device gta02_led_dev = {
+-	.name		= "gta01-led",
+-	.num_resources	= ARRAY_SIZE(gta02_led_resources),
+-	.resource	= gta02_led_resources,
++static struct platform_device gta02_led_dev = {
++    .name       = "s3c24xx_led",
++    .id     = 1,
++    .dev        = {
++        .platform_data  = &gta02_led_pdata,
++    },
+ };
+ 
+ static struct resource gta01_button_resources[] = {
