@@ -24,7 +24,6 @@ gta01-pcf50606.patch
 gta01-core.patch
 gta01-jbt6k74.patch
 gta01-backlight.patch
-gta01-vibrator.patch
 gta01-inputdevice.patch
 gta01-power_control.patch
 gta01-no_nand_partitions.patch

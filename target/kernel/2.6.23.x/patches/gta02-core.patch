@@ -926,19 +926,6 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
  }
-Index: linux-2.6.22/drivers/leds/leds-gta01.c
-===================================================================
---- linux-2.6.22.orig/drivers/leds/leds-gta01.c
-+++ linux-2.6.22/drivers/leds/leds-gta01.c
-@@ -71,7 +71,7 @@
- 	struct gta01_vib_priv *vp;
- 	struct resource *r;
- 
--	if (!machine_is_neo1973_gta01())
-+	if (!machine_is_neo1973_gta01() && !machine_is_neo1973_gta02())
- 		return -EIO;
- 
- 	r = platform_get_resource(pdev, 0, 0);
 Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.22.orig/sound/soc/s3c24xx/neo1973_wm8753.c
