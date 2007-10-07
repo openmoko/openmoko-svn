@@ -26,3 +26,12 @@ usbport 1/19
 
 usbport 1+1+2
 1/19
+
+
+Compilation and installation
+----------------------------
+
+./autogen.sh
+./confgure
+make
+make install
