@@ -1,0 +1,13 @@
+AC_INIT([usbpath],[0.1])
+AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+
+AC_PROG_CC
+AC_PROG_RANLIB
+
+PKG_CHECK_MODULES(USB, libusb,,
+  AC_MSG_ERROR([*** Required libusb not installed ***]))
+
+LIBS="$LIBS $USB_LIBS"
+
+AC_CONFIG_FILES(Makefile)
+AC_OUTPUT
