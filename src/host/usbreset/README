@@ -1,0 +1,24 @@
+usbreset - Reset one or all USB devices
+=======================================
+
+"usbreset" performs a USB bus reset for one or all devices.
+
+If invoked without arguments, all devices on all USB busses are reset.
+
+If a bus/devnum pair is specified, only that device is reset. The bus
+and device number can be obtained with lsusb. E.g.,
+
+# lsusb
+Bus 001 Device 005: ID 047d:101f Kensington PocketMouse Pro
+# usbreset 1/5
+
+would reset the mouse in this example.
+
+
+Compilation and installation
+----------------------------
+
+./autogen.sh
+./confgure
+make
+make install
