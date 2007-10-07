@@ -36,6 +36,8 @@ void usb_get_portinfo(const struct usb_device *hub,
 /* path2devnum.c */
 
 /*
+ * Note that the port numbers in ports[] are 0-based.
+ *
  * Return codes:
  * 0  device not found
  * N  device number
@@ -45,6 +47,8 @@ int usb_portlist2devnum(const struct usb_bus *bus, const int *ports,
     int num_ports);
 
 /*
+ * Note that the port numbers in the string are 1-based.
+ *
  * Return codes:
  * -1  invalid path specification
  * 0   device not found
@@ -57,16 +61,20 @@ int usb_path2devnum(const char *path);
 /* devnum2path.c */
 
 /*
+ * Note that the port numbers in ports[] are 0-based.
+ *
  * Return codes:
  * -1  buffer overflow
  * 0   device not found
- * N   N-1 ports placed into "ports"
+ * N   N-1 ports placed into "ports".
  */
 
 int usb_devnum2portlist(const struct usb_bus *bus, int devnum, int *ports,
     int num_ports);
 
 /*
+ * Note that the port numbers in the string are 1-based.
+ *
  * Return codes:
  * -1  buffer overflow
  * 0   device not found

@@ -33,7 +33,7 @@
 
 static void usage(const char *name)
 {
-	fprintf(stderr, "usage: %s bus+port+...\n", name);
+	fprintf(stderr, "usage: %s bus-port. ... .port\n", name);
 	fprintf(stderr, "       %s bus/dev\n", name);
 	exit(1);
 }

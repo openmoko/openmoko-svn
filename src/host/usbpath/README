@@ -12,19 +12,19 @@ that bus.
 The physical location of a USB device is represented by the following
 syntax:
 
-bus+port+...+port
+bus-port. ... .port
 
 where "bus" is again the number of the USB bus, and "port" is the number
-of the port on the respective next hub, counting from zero.
+of the port on the respective next hub, counting from one.
 
 
 usbport converts between the two representations.
 
 Example:
 usbport 1/19
-1+1+2
+1-1.2
 
-usbport 1+1+2
+usbport 1-1.2
 1/19
 
 

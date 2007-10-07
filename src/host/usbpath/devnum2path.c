@@ -123,8 +123,8 @@ int usb_devnum2path(int busnum, int devnum, char *path, int path_size)
 	for (i = 0; i != n-1; i++) {
 		if (!path_size--)
 			return -1;
-		*path++ = '+';
-		res = add_int(&path, &path_size, ports[i]);
+		*path++ = i ? '.' : '-';
+		res = add_int(&path, &path_size, ports[i]+1);
 		if (res < 0)
 			return -1;
 		len += res+1;

@@ -116,7 +116,7 @@ int usb_path2devnum(const char *path)
 	if (!*path)
 		return -1;
 	for (p = path; *p; p++)
-		if (*p == '+')
+		if (*p == '-' || *p == '.')
 			nums++;
 	num = malloc(sizeof(int)*nums);
 	if (!num) {
@@ -126,10 +126,17 @@ int usb_path2devnum(const char *path)
 	while (1) {
 		char *end;
 
-		num[n++] = strtoul(path, &end, 10);
+		num[n] = strtoul(path, &end, 10);
+		if (!num[n]) {
+			free(num);
+			return -1;
+		}
+		if (n)
+			num[n]--;
+		n++;
 		if (!*end && n == nums)
 			break;
-		if (*end != '+') {
+		if (*end != (n == 1 ? '-' : '.')) {
 			free(num);
 			return -1;
 		}
