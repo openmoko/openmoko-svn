@@ -2,7 +2,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,668 @@
+@@ -0,0 +1,666 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -396,12 +396,10 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	}
 +}
 +
-+static int gta02_udc_vbus_draw(unsigned int ma)
++static void gta02_udc_vbus_draw(unsigned int ma)
 +{
 +	gta02_udc_vbus_drawer.ma = ma;
 +	schedule_work(&gta02_udc_vbus_drawer.work);
-+
-+	return 0;
 +}
 +
 +static struct s3c2410_udc_mach_info gta02_udc_cfg = {
@@ -675,7 +673,7 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,32 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
 +
@@ -695,10 +693,14 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/gta02.h
 +#define GTA02_GPIO_AUX_KEY	S3C2410_GPF6
 +#define GTA02_GPIO_JACK_INSERT	S3C2410_GPF4
 +#define GTA02_GPIO_BT_EN	S3C2410_GPB6
++#define GTA02_GPIO_GSENSOR1_CS	S3C2410_GPD12
++#define GTA02_GPIO_GSENSOR2_CS	S3C2410_GPD13
 +
 +#define GTA02_IRQ_MODEM		IRQ_EINT1
 +#define GTA02_IRQ_3D		IRQ_EINT12
 +#define GTA02_IRQ_PCF50633	IRQ_EINT9
++#define GTA02_IRQ_GSENSOR_1	IRQ_EINT0
++#define GTA02_IRQ_GSENSOR_2	IRQ_EINT16
 +
 +/* Changes in GTA02v2 */
 +#define GTA02v2_GPIO_3D_RESET	S3C2440_GPJ4
@@ -930,7 +932,7 @@ Index: linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
 ===================================================================
 --- linux-2.6.22.5-moko.orig/drivers/leds/leds-gta01.c
 +++ linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
-@@ -71,7 +71,7 @@
+@@ -107,7 +107,7 @@
  	struct gta01_vib_priv *vp;
  	struct resource *r;
  
