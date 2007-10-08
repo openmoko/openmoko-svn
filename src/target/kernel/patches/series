@@ -20,6 +20,7 @@ s3cmci-dma-free.patch
 s3cmci-stop-fix.patch
 s3cmci-unfinished-write-fix.patch
 s3c_mci_platform.patch
+s3c2410-pwm.patch
 qt2410-base.patch
 qt2410-cs8900.patch
 qt2410-s3c_mci-pdata.patch
