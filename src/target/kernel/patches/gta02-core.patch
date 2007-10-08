@@ -580,7 +580,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +static struct resource gta02_glamo_resources[] = {
 +	[0] = {
 +		.start	= S3C2410_CS1,
-+		.end	= S3C2410_CS1 + 0x1000000,
++		.end	= S3C2410_CS1 + 0x1000000 - 1,
 +		.flags	= IORESOURCE_MEM,
 +	},
 +	[1] = {
