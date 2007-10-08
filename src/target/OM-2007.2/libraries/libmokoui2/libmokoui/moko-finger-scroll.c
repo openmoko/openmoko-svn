@@ -35,6 +35,7 @@
  * - 'Physical' mode for acceleration scrolling
  */
 
+#include <gdk/gdkx.h>
 #include "moko-finger-scroll.h"
 
 G_DEFINE_TYPE (MokoFingerScroll, moko_finger_scroll, GTK_TYPE_EVENT_BOX)
@@ -88,6 +89,30 @@ enum {
 	PROP_SPS,
 };
 
+/* Following function inherited from libhildondesktop */
+static GList *
+get_ordered_children (GdkWindow *window)
+{
+	Window      *children, root, parent;
+	guint        i, n_children = 0;
+	GList        *ret = NULL;
+
+	gdk_error_trap_push ();
+	XQueryTree (GDK_DISPLAY (), GDK_WINDOW_XID (window), &root,
+		&parent, &children, &n_children);
+
+	if (gdk_error_trap_pop ()) return NULL;
+
+	for (i = 0; i < n_children; i++) {
+		GdkWindow *window = gdk_window_lookup (children[i]);
+		if (window) ret = g_list_prepend (ret, window);
+	}
+
+	XFree (children);
+
+	return ret;
+}
+
 static GdkWindow *
 moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 				gint *tx, gint *ty)
@@ -105,8 +130,9 @@ moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 	
 	while (window) {
 		gint child_x = 0, child_y = 0;
-		GList *c, *children = gdk_window_peek_children (window);
+		GList *c, *children = get_ordered_children (window);
 		GdkWindow *old_window = window;
+		
 		for (c = children; c; c = c->next) {
 			GdkWindow *child = (GdkWindow *)c->data;
 			gint wx, wy;
@@ -122,6 +148,9 @@ moko_finger_scroll_get_topmost (GdkWindow *window, gint x, gint y,
 				window = child;
 			}
 		}
+		
+		g_list_free (children);
+		
 		/*g_debug ("\\|/");*/
 		if (window == old_window) break;
 		
@@ -174,7 +203,7 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 
 	if ((!priv->enabled) || (priv->clicked) || (event->button != 1) ||
 	    ((event->time == priv->last_time) &&
-	     (event->type == priv->last_type))) return FALSE;
+	     (event->type == priv->last_type))) return TRUE;
 
 	g_get_current_time (&priv->click_start);
 	priv->last_type = event->type;
@@ -382,7 +411,7 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 
 	if ((!priv->enabled) || (!priv->clicked) ||
 	    ((event->time == priv->last_time) &&
-	     (event->type == priv->last_type))) return FALSE;
+	     (event->type == priv->last_type))) return TRUE;
 	
 	/* Only start the scroll if the mouse cursor passes beyond the
 	 * DnD threshold for dragging.
@@ -461,7 +490,7 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 	if ((!priv->clicked) || (!priv->enabled) || (event->button != 1) ||
 	    ((event->time == priv->last_time) &&
 	     (event->type == priv->last_type)))
-		return FALSE;
+		return TRUE;
 
 	priv->last_type = event->type;
 	priv->last_time = event->time;
@@ -499,9 +528,8 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		synth_crossing (priv->child, x, y, event->x_root,
 			event->y_root, event->time, FALSE);
 	}
-	if (priv->child)
-		g_object_remove_weak_pointer ((GObject *)priv->child,
-			&priv->child);
+	g_object_remove_weak_pointer ((GObject *)priv->child,
+		&priv->child);
 
 	priv->moved = FALSE;
 	
