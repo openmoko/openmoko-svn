@@ -9,5 +9,6 @@ style "gtkmenu" {
     }
     xthickness = 10
     ythickness = 8
+    GtkMenu::scroll-arrow-vlength = 64
 }
 class "GtkMenu" style "gtkmenu"
