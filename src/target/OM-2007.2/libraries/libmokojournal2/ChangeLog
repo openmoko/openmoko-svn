@@ -1,5 +1,9 @@
 2007-10-08  Thomas Wood  <thomas@openedhand.com>
 
+	* doc/reference/Makefile.am: Fix spurious += to single =
+
+2007-10-08  Thomas Wood  <thomas@openedhand.com>
+
 	Patch by: Emmanuele Bassi <ebassi@o-hand.com>
 
 	* doc/reference/Makefile.am:
