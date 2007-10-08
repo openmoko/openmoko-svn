@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 #include <usb.h>
 
 
@@ -58,8 +59,6 @@ int main(int argc, const char **argv)
 		for (dev = usb_bus->devices; dev; dev = dev->next) {
 			struct usb_dev_handle *handle;
 
-			if (dev->descriptor.bDeviceClass == USB_CLASS_HUB)
-				continue;
 			if (!all &&
 			    (atoi(usb_bus->dirname) != bus_num ||
 			    dev->devnum != dev_num))
@@ -71,7 +70,9 @@ int main(int argc, const char **argv)
 				    usb_strerror());
 				continue;
 			}
-			if (usb_reset(handle) < 0) {
+			if (usb_reset(handle) < 0 && 
+			    (dev->descriptor.bDeviceClass != USB_CLASS_HUB ||
+			    errno != EISDIR)) {
 				fprintf(stderr, "usb_reset: %s\n",
 				    usb_strerror());
 				continue;
