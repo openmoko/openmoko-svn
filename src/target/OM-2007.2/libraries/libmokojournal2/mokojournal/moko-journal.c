@@ -1624,15 +1624,15 @@ moko_journal_entry_get_entry_type (MokoJournalEntry *a_entry)
 
 
 /**
- * moko_journal_entry_set_type:
+ * moko_journal_entry_set_entry_type:
  * @entry: the current instance of journal entry
  * @type: the new type
  *
  * Set the type of the journal entry
  */
 void
-moko_journal_entry_set_type (MokoJournalEntry *a_entry,
-                             MokoJournalEntryType a_type)
+moko_journal_entry_set_entry_type (MokoJournalEntry *a_entry,
+                                   MokoJournalEntryType a_type)
 {
   g_return_if_fail (a_entry) ;
   g_return_if_fail (a_type != UNDEF_ENTRY) ;

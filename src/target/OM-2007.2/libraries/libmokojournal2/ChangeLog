@@ -1,3 +1,18 @@
+2007-10-08  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Emmanuele Bassi <ebassi@o-hand.com>
+
+	* doc/reference/Makefile.am:
+	* doc/reference/libmokojournal-docs.sgml:
+	* doc/reference/libmokojournal.types
+	* doc/reference/libmokojournal-sections.txt
+	* mokojournal/moko-journal.c:
+	* mokojournal/moko-journal.h:
+
+	Generate a correct sections.txt file.
+
+	Fixed a couple of inconsistencies in the API.
+
 2007-10-04  Thomas Wood  <thomas@openedhand.com>
 
 	* mokojournal/moko-journal.c:

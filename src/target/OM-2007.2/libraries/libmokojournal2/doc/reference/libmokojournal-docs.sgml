@@ -16,7 +16,6 @@
   <chapter>
     <title>libmokojournal2</title>
     <xi:include href="xml/moko-journal.xml"/>
-    <xi:include href="xml/moko-time-priv.xml"/>
     <xi:include href="xml/moko-time.xml"/>
   </chapter>
 </book>
