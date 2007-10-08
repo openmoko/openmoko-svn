@@ -1103,7 +1103,7 @@ Index: linux-2.6.22.5-moko/drivers/video/glamo/glamo-core.c
 +		{ 0xfffe, 300 },
 +	{ GLAMO_REG_IRQ_ENABLE,		0xffff },
 +	{ GLAMO_REG_CLOCK_GEN6,		0x2000 },
-+	{ GLAMO_REG_CLOCK_GEN7,		0x0102 },
++	{ GLAMO_REG_CLOCK_GEN7,		0x0101 },
 +	{ GLAMO_REG_CLOCK_GEN8,		0x0100 },
 +	{ GLAMO_REG_CLOCK_HOST,		0x000d },
 +	{ 0x200,	0x0ef0 },
