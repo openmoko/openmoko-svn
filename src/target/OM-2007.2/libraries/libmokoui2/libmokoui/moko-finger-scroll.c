@@ -105,7 +105,7 @@ get_ordered_children (GdkWindow *window)
 
 	for (i = 0; i < n_children; i++) {
 		GdkWindow *window = gdk_window_lookup (children[i]);
-		if (window) ret = g_list_prepend (ret, window);
+		if (window) ret = g_list_append (ret, window);
 	}
 
 	XFree (children);
