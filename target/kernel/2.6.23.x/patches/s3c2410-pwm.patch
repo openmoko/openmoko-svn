@@ -1,7 +1,7 @@
-Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6.22/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.23-rc9.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.23-rc9/arch/arm/mach-s3c2410/Kconfig
+--- linux-2.6.22.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6.22/arch/arm/mach-s3c2410/Kconfig
 @@ -9,6 +9,7 @@
  	depends on ARCH_S3C2410
  	select S3C2410_CLOCK
@@ -22,10 +22,10 @@ Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/Kconfig
  
  menu "S3C2410 Machines"
  
-Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6.22/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.23-rc9.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6.23-rc9/arch/arm/mach-s3c2410/Makefile
+--- linux-2.6.22.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6.22/arch/arm/mach-s3c2410/Makefile
 @@ -16,6 +16,7 @@
  obj-$(CONFIG_S3C2410_PM)	+= pm.o sleep.o
  obj-$(CONFIG_S3C2410_GPIO)	+= gpio.o
@@ -34,10 +34,10 @@ Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/Makefile
  
  # Machine support
  
-Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/pwm.c
+Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc9/arch/arm/mach-s3c2410/pwm.c
++++ linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 @@ -0,0 +1,222 @@
 +/*
 + * arch/arm/mach-s3c2410/3c2410-pwm.c
@@ -62,7 +62,7 @@ Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/pwm.c
 +#include <linux/init.h>
 +#include <linux/clk.h>
 +#include <asm/hardware.h>
-+#include <asm/arch/regs-timer.h>
++#include <asm/plat-s3c/regs-timer.h>
 +#include <asm/arch/pwm.h>
 +
 +struct s3c2410_pwm_t *s3c2410_pwm_alloc(void)
@@ -261,11 +261,11 @@ Index: linux-2.6.23-rc9/arch/arm/mach-s3c2410/pwm.c
 +
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_dumpregs);
 +
-Index: linux-2.6.23-rc9/include/asm-arm/arch-s3c2410/pwm.h
+Index: linux-2.6.22/include/asm-arm/arch-s3c2410/pwm.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc9/include/asm-arm/arch-s3c2410/pwm.h
-@@ -0,0 +1,40 @@
++++ linux-2.6.22/include/asm-arm/arch-s3c2410/pwm.h
+@@ -0,0 +1,39 @@
 +#ifndef __S3C2410_PWM_H
 +#define __S3C2410_PWM_H
 +
@@ -276,7 +276,6 @@ Index: linux-2.6.23-rc9/include/asm-arm/arch-s3c2410/pwm.h
 +#include <asm-arm/io.h>
 +#include <asm/arch/hardware.h>
 +#include <asm/mach-types.h>
-+#include <asm/arch/regs-timer.h>
 +#include <asm/arch/gta01.h>
 +
 +enum pwm_timer {
