@@ -1,9 +1,9 @@
 This is a backlight driver for FIC's Neo1973 Phone (codename GTA01)
 
-Index: linux-2.6.21.3-moko/drivers/video/backlight/Kconfig
+Index: linux-2.6.22.5-moko/drivers/video/backlight/Kconfig
 ===================================================================
---- linux-2.6.21.3-moko.orig/drivers/video/backlight/Kconfig
-+++ linux-2.6.21.3-moko/drivers/video/backlight/Kconfig
+--- linux-2.6.22.5-moko.orig/drivers/video/backlight/Kconfig
++++ linux-2.6.22.5-moko/drivers/video/backlight/Kconfig
 @@ -48,6 +48,14 @@
  	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
  	  enable the LCD/backlight driver.
@@ -19,10 +19,10 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/Kconfig
  config BACKLIGHT_HP680
  	tristate "HP Jornada 680 Backlight Driver"
  	depends on BACKLIGHT_CLASS_DEVICE && SH_HP6XX
-Index: linux-2.6.21.3-moko/drivers/video/backlight/Makefile
+Index: linux-2.6.22.5-moko/drivers/video/backlight/Makefile
 ===================================================================
---- linux-2.6.21.3-moko.orig/drivers/video/backlight/Makefile
-+++ linux-2.6.21.3-moko/drivers/video/backlight/Makefile
+--- linux-2.6.22.5-moko.orig/drivers/video/backlight/Makefile
++++ linux-2.6.22.5-moko/drivers/video/backlight/Makefile
 @@ -3,6 +3,7 @@
  obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
  obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
@@ -31,11 +31,11 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/Makefile
  obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
  obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
  obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
-Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
+Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
-@@ -0,0 +1,288 @@
++++ linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
+@@ -0,0 +1,249 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -59,7 +59,8 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 + * MA 02111-1307 USA
 + *
-+ * TODO: implement PWM, instead of simple on/off switching
++ * Javi Roman <javiroman@kernel-labs.org>:
++ * 	implement PWM, instead of simple on/off switching
 + *
 + */
 +
@@ -75,6 +76,7 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
 +#include <asm/arch/hardware.h>
 +#include <asm/arch/regs-timer.h>
 +#include <asm/arch/gta01.h>
++#include <asm/arch/pwm.h>
 +
 +static struct backlight_properties gta01bl_prop;
 +static struct backlight_device *gta01_backlight_device;
@@ -86,6 +88,7 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
 +	int intensity;
 +	struct mutex mutex;
 +	struct clk *clk;
++	struct s3c2410_pwm_t *pwm;
 +};
 +
 +static struct gta01bl_data gta01bl;
@@ -126,61 +129,28 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
 +		s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
 +	} else  {
-+		__raw_writel(intensity & 0xffff, S3C2410_TCMPB(0));
++		s3c2410_pwm_duty_cycle(intensity & 0xffff, gta01bl.pwm);
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPB0_TOUT0);
 +	}
 +#endif
 +	mutex_unlock(&gta01bl.mutex);
 +
 +	gta01bl.intensity = intensity;
-+
 +	return 0;
 +}
 +
 +static void gta01bl_init_hw(void)
 +{
-+	unsigned long tcon, tcfg0, tcfg1, tcnt, pclk;
++	gta01bl.pwm->timerid = PWM0;
++	gta01bl.pwm->prescaler = (4 - 1);
++	gta01bl.pwm->divider = S3C2410_TCFG1_MUX0_DIV8;
++	gta01bl.pwm->counter = (((gta01bl.pwm->pclk_rate) / 32) / GTA01BL_FREQ) -1;
++	gta01bl.pwm->comparer = gta01bl.pwm->counter;
 +
-+	pclk = clk_get_rate(gta01bl.clk);
++	s3c2410_pwm_enable(gta01bl.pwm);
++	s3c2410_pwm_start(gta01bl.pwm);
 +
-+	tcon = __raw_readl(S3C2410_TCON);
-+	tcfg1 = __raw_readl(S3C2410_TCFG1);
-+	tcfg0 = __raw_readl(S3C2410_TCFG0);
-+
-+	tcfg1 &= ~S3C2410_TCFG1_MUX0_MASK;
-+	tcfg1 |= S3C2410_TCFG1_MUX0_DIV8;
-+
-+	tcfg0 &= ~S3C2410_TCFG_PRESCALER0_MASK;
-+	tcfg0 |= (4 - 1);
-+
-+	tcnt = (pclk / 32) / GTA01BL_FREQ;
-+	tcnt--;
-+
-+	__raw_writel(tcfg1, S3C2410_TCFG1);
-+	__raw_writel(tcfg0, S3C2410_TCFG0);
-+
-+#if 0
-+	__raw_writel(tcnt, S3C2410_TCNTB(0));
-+	__raw_writel(tcon, S3C2410_TCON);
-+	__raw_writel(tcnt, S3C2410_TCNTB(0));
-+#endif
-+
-+	/* ensure timer is stopped */
-+
-+	tcon &= 0xffffff00;
-+	tcon |= S3C2410_TCON_T0RELOAD;
-+	tcon |= S3C2410_TCON_T0MANUALUPD;
-+
-+	__raw_writel(tcnt, S3C2410_TCNTB(0));
-+	__raw_writel(tcnt, S3C2410_TCMPB(0));
-+	__raw_writel(tcon, S3C2410_TCON);
-+
-+	/* start the timer */
-+	tcon |= S3C2410_TCON_T0START;
-+	tcon &= ~S3C2410_TCON_T0MANUALUPD;
-+	__raw_writel(tcon, S3C2410_TCON);
-+
-+	gta01bl_prop.max_brightness = tcnt;
++	gta01bl_prop.max_brightness = gta01bl.pwm->counter;
 +}
 +
 +#ifdef CONFIG_PM
@@ -246,11 +216,8 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
 +	gta01bl_prop.max_brightness = 1;
 +#else
 +	/* use s3c_device_timer0 for PWM */
-+	gta01bl.clk = clk_get(NULL, "timers");
-+	if (IS_ERR(gta01bl.clk))
-+		return PTR_ERR(gta01bl.clk);
-+
-+	clk_enable(gta01bl.clk);
++	if (!(gta01bl.pwm = s3c2410_pwm_alloc()))
++		return -ENOMEM;
 +
 +	gta01bl_init_hw();
 +#endif
@@ -278,15 +245,9 @@ Index: linux-2.6.21.3-moko/drivers/video/backlight/gta01_bl.c
 +static int gta01bl_remove(struct platform_device *dev)
 +{
 +#ifndef GTA01_BACKLIGHT_ONOFF_ONLY
-+	unsigned long tcon;
 +
-+	/* stop this timer */
-+	tcon = __raw_readl(S3C2410_TCON);
-+	tcon &= 0xffffff00;
-+	__raw_writel(tcon, S3C2410_TCON);
++	s3c2410_pwm_disable(gta01bl.pwm);
 +
-+	clk_disable(gta01bl.clk);
-+	clk_put(gta01bl.clk);
 +#endif
 +	backlight_device_unregister(gta01_backlight_device);
 +	mutex_destroy(&gta01bl.mutex);
