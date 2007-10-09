@@ -1,3 +1,11 @@
+2007-10-09  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_page_create):
+	Change button order (bug #818)
+
+	* src/today-utils.c: (today_get_launcher):
+	Fix compiler warning
+
 2007-10-04  Chris Lord  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (today_task_manager_populate_tasks):

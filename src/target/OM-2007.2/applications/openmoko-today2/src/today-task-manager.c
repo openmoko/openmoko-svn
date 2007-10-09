@@ -733,19 +733,19 @@ today_task_manager_page_create (TodayData *data)
 	g_signal_connect (G_OBJECT (button), "clicked",
 		G_CALLBACK (today_task_manager_killall_clicked_cb), data);
 
-	/* Kill app button */
-	button = today_toolbutton_new (GTK_STOCK_DELETE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
-		gtk_separator_tool_item_new (), 0);
-	g_signal_connect (G_OBJECT (button), "clicked",
-		G_CALLBACK (today_task_manager_kill_clicked_cb), data);
-
 	/* Switch to app button */
 	button = today_toolbutton_new (GTK_STOCK_JUMP_TO);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
+		gtk_separator_tool_item_new (), 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	g_signal_connect (G_OBJECT (button), "clicked",
 		G_CALLBACK (today_task_manager_raise_clicked_cb), data);
+
+	/* Kill app button */
+	button = today_toolbutton_new (GTK_STOCK_DELETE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
+	g_signal_connect (G_OBJECT (button), "clicked",
+		G_CALLBACK (today_task_manager_kill_clicked_cb), data);
 
 	/* Viewport / tasks table */
 	viewport = gtk_viewport_new (NULL, NULL);

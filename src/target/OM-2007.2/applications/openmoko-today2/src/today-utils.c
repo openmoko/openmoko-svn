@@ -41,8 +41,8 @@ today_get_launcher (const gchar **argv, gboolean use_sn, gboolean single)
 {
 	static LauncherData launcher_data;
 	
-	launcher_data.argv = argv;
-	launcher_data.name = argv[0];
+	launcher_data.argv = (char **)argv;
+	launcher_data.name = (char *)argv[0];
 	launcher_data.description = "";
 	launcher_data.icon = NULL;
 	launcher_data.categories = (char *[]){ "" };
