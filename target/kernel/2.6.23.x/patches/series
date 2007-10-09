@@ -9,6 +9,7 @@ g_ether-highpower.patch
 g_ether-vendor_product.patch
 s3c2410_serial-nodebug.patch
 #s3c2410_udc_from_upstream.p (merged upstream)
+s3c2410_udc-2440_dual_packet-workaround.patch
 s3c2410_touchscreen.patch
 s3c2410-bbt.patch
 s3c_mci.patch
