@@ -73,7 +73,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-regs.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.23-rc8/drivers/video/glamo/glamo-regs.h
-@@ -0,0 +1,466 @@
+@@ -0,0 +1,467 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
 +
@@ -115,6 +115,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-regs.h
 +	GLAMO_REGOFS_RISC	= 0x1680,
 +	GLAMO_REGOFS_2D		= 0x1700,
 +	GLAMO_REGOFS_3D		= 0x1b00,
++	GLAMO_REGOFS_END	= 0x2400,
 +};
 +
 +
@@ -697,7 +698,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +	{
 +		/* FIXME: those need to be incremented by parent base */
 +		.start	= GLAMO_REGOFS_MMC,
-+		.end	= GLAMO_REGOFS_MMC + 0x100,
++		.end	= GLAMO_REGOFS_MPROC0 - 1,
 +		.flags	= IORESOURCE_MEM
 +	}, {
 +		.start	= IRQ_GLAMO_MMC,
@@ -715,7 +716,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +static struct resource glamo_jpeg_resources[] = {
 +	{
 +		.start	= GLAMO_REGOFS_JPEG,
-+		.end	= GLAMO_REGOFS_MPEG,
++		.end	= GLAMO_REGOFS_MPEG - 1,
 +		.flags	= IORESOURCE_MEM,
 +	}, {
 +		.start	= IRQ_GLAMO_JPEG,
@@ -733,7 +734,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +static struct resource glamo_mpeg_resources[] = {
 +	{
 +		.start	= GLAMO_REGOFS_MPEG,
-+		.end	= GLAMO_REGOFS_LCD,
++		.end	= GLAMO_REGOFS_LCD - 1,
 +		.flags	= IORESOURCE_MEM,
 +	}, {
 +		.start	= IRQ_GLAMO_MPEG,
@@ -751,7 +752,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +static struct resource glamo_2d_resources[] = {
 +	{
 +		.start	= GLAMO_REGOFS_2D,
-+		.end	= GLAMO_REGOFS_3D,
++		.end	= GLAMO_REGOFS_3D - 1,
 +		.flags	= IORESOURCE_MEM,
 +	}, {
 +		.start	= IRQ_GLAMO_2D,
@@ -769,15 +770,15 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +static struct resource glamo_3d_resources[] = {
 +	{
 +		.start	= GLAMO_REGOFS_3D,
-+		.end	= GLAMO_REGOFS_3D + 0x600,
++		.end	= GLAMO_REGOFS_END - 1,
 +		.flags	= IORESOURCE_MEM,
 +	},
 +};
 +
 +static struct platform_device glamo_3d_dev = {
 +	.name		= "glamo-3d",
-+	.resource	= glamo_2d_resources,
-+	.num_resources	= ARRAY_SIZE(glamo_2d_resources),
++	.resource	= glamo_3d_resources,
++	.num_resources	= ARRAY_SIZE(glamo_3d_resources),
 +};
 +
 +static struct platform_device glamo_spigpio_dev = {
@@ -800,12 +801,12 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +	{
 +		.name	= "glamo-fb-regs",
 +		.start	= GLAMO_REGOFS_LCD,
-+		.end	= GLAMO_REGOFS_LCD + 0x100,
++		.end	= GLAMO_REGOFS_MMC - 1,
 +		.flags	= IORESOURCE_MEM,
 +	}, {
 +		.name	= "glamo-fb-mem",
 +		.start	= GLAMO_OFFSET_FB,
-+		.end	= GLAMO_OFFSET_FB + GLAMO_FB_SIZE,
++		.end	= GLAMO_OFFSET_FB + GLAMO_FB_SIZE - 1,
 +		.flags	= IORESOURCE_MEM,
 +	},
 +};
