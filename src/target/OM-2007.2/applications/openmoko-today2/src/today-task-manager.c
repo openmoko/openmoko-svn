@@ -735,9 +735,9 @@ today_task_manager_page_create (TodayData *data)
 
 	/* Switch to app button */
 	button = today_toolbutton_new (GTK_STOCK_JUMP_TO);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	g_signal_connect (G_OBJECT (button), "clicked",
 		G_CALLBACK (today_task_manager_raise_clicked_cb), data);
 
