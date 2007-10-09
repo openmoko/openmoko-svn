@@ -6,7 +6,15 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- linux-2.6.22.5-moko.orig/arch/arm/mach-s3c2440/mach-gta02.c
 +++ linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -310,6 +310,7 @@
+@@ -44,6 +44,7 @@
+ #include <linux/mtd/partitions.h>
+ 
+ #include <linux/pcf50633.h>
++#include <linux/lis302dl.h>
+ 
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+@@ -310,6 +311,7 @@
  	&s3c_device_usbgadget,
  	&s3c_device_nand,
  	&s3c_device_ts,
@@ -14,7 +22,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
  };
  
  static struct s3c2410_nand_set gta02_nand_sets[] = {
-@@ -439,6 +440,47 @@
+@@ -437,6 +439,47 @@
  	.board_info	= gta02_spi_board_info,
  };
  
@@ -23,7 +31,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	s3c2410_gpio_setpin(cs, pol);
 +}
 +
-+static struct lis302dl_platform_data lis302_pdata[] = {
++static const struct lis302dl_platform_data lis302_pdata[] = {
 +	{
 +		.name		= "lis302-1 (top)"
 +	}, {
@@ -34,8 +42,8 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +static struct spi_board_info gta02_spi_acc_bdinfo[] = {
 +	{
 +		.modalias	= "lis302dl",
-+		.platform_data	= lis302_pdata[0],
-+		.irq		= S3C2410_EINT0,
++		.platform_data	= &lis302_pdata[0],
++		.irq		= GTA02_IRQ_GSENSOR_1,
 +		.max_speed_hz	= 400 * 1000,
 +		.bus_num	= 1,
 +		.chip_select	= S3C2410_GPD12,
@@ -43,8 +51,8 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
 +	},
 +	{
 +		.modalias	= "lis302dl",
-+		.platform_data	= lis302_pdata[1],
-+		.irq		= S3C2410_EINT16,
++		.platform_data	= &lis302_pdata[1],
++		.irq		= GTA02_IRQ_GSENSOR_2,
 +		.max_speed_hz	= 400 * 1000,
 +		.bus_num	= 1,
 +		.chip_select	= S3C2410_GPD13,
@@ -62,7 +70,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
  #if 0
  #ifdef SPI_HARD
  static struct s3c2410_spi_info spi_cfg = {
-@@ -628,6 +670,7 @@
+@@ -626,6 +669,7 @@
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
