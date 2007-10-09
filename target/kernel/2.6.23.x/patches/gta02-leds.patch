@@ -1,0 +1,97 @@
+Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
+===================================================================
+--- linux-2.6.22.orig/arch/arm/mach-s3c2440/mach-gta02.c
++++ linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
+@@ -541,17 +541,57 @@
+ #endif
+ #endif
+ 
+-static struct s3c24xx_led_platdata gta02_led_pdata = {
+-    .name       = "gta02-vib",
+-    .gpio       = GTA02_GPIO_VIBRATOR_ON,
+-    .def_trigger    = "",
++static struct s3c24xx_led_platdata gta02_led_pdata[] = {
++    [0] = {
++        .name        = "gta02-led-pwr1",
++        .gpio        = GTA02_GPIO_LED_PWR1_ON,
++        .def_trigger = "",
++    },
++    [1] = {
++        .name        = "gta02-led-pwr2",
++        .gpio        = GTA02_GPIO_LED_PWR2_ON,
++        .def_trigger = "",
++    },
++    [2] = {
++        .name        = "gta02-led-aux",
++        .gpio        = GTA02_GPIO_LED_AUX_ON,
++        .def_trigger = "",
++    },
++    [3] = {
++        .name        = "gta02-vib",
++        .gpio        = GTA02_GPIO_VIBRATOR_ON,
++        .def_trigger = "",
++    },
+ };
+ 
+-static struct platform_device gta02_led_dev = {
+-    .name       = "s3c24xx_led",
+-    .id     = 1,
+-    .dev        = {
+-        .platform_data  = &gta02_led_pdata,
++static struct platform_device gta02_led_dev[] = {
++    [0] = {
++        .name = "s3c24xx_led",
++        .id   = 0,
++        .dev  = {
++            .platform_data = &gta02_led_pdata[0],
++        },
++    },
++    [1] = {
++        .name = "s3c24xx_led",
++        .id   = 1,
++        .dev  = {
++            .platform_data = &gta02_led_pdata[1],
++        },
++    },
++    [2] = {
++        .name = "s3c24xx_led",
++        .id   = 2,
++        .dev  = {
++            .platform_data = &gta02_led_pdata[2],
++        },
++    },
++    [3] = {
++        .name = "s3c24xx_led",
++        .id   = 3,
++        .dev  = {
++            .platform_data = &gta02_led_pdata[3],
++        },
+     },
+ };
+ 
+@@ -681,7 +721,10 @@
+ 
+ 	mangle_pmu_pdata_by_system_rev();
+ 	platform_device_register(&gta02_pmu_dev);
+-	platform_device_register(&gta02_led_dev);
++	platform_device_register(&gta02_led_dev[0]);
++	platform_device_register(&gta02_led_dev[1]);
++	platform_device_register(&gta02_led_dev[2]);
++	platform_device_register(&gta02_led_dev[3]);
+ 
+ 	mangle_glamo_res_by_system_rev();
+ 	platform_device_register(&gta02_glamo_dev);
+Index: linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
+===================================================================
+--- linux-2.6.22.orig/include/asm-arm/arch-s3c2410/gta02.h
++++ linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
+@@ -12,6 +12,9 @@
+ #define GTA02_GPIO_3D_RESET	S3C2440_GPJ0
+ #define GTA02_GPIO_nSD_DETECT	S3C2410_GPF5
+ #define GTA02_GPIO_USB_PULLUP	S3C2410_GPB9
++#define GTA02_GPIO_LED_PWR1_ON  S3C2410_GPB0
++#define GTA02_GPIO_LED_PWR2_ON  S3C2410_GPB1
++#define GTA02_GPIO_LED_AUX_ON   S3C2410_GPB2
+ #define GTA02_GPIO_VIBRATOR_ON	S3C2410_GPB3
+ #define GTA02_GPIO_HOLD_KEY	S3C2410_GPF7
+ #define GTA02_GPIO_AUX_KEY	S3C2410_GPF6
