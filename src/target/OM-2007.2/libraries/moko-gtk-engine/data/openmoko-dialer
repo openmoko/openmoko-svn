@@ -20,3 +20,11 @@ style "mokotips" {
 }
 widget "*.MokoTips*" style "mokotips"
 
+style "keypad" {
+  fg[NORMAL] = "#fff"
+  bg[NORMAL] = "#333"
+ 
+  fg[PRELIGHT] = "#fff"
+  bg[PRELIGHT] = "#333"
+}
+widget_class "*.MokoKeypad.*" style "keypad"

@@ -1,3 +1,8 @@
+2007-10-10  Thomas Wood  <thomas@openedhand.com>
+
+	* data/openmoko-dialer: Add keypad style
+	* ltmain.sh: Remove from SVN
+
 2007-10-03  Chris Lord  <chris@openedhand.com>
 
 	* src/moko-draw.c: (moko_dither16):
