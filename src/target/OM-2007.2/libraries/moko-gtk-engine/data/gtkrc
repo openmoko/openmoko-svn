@@ -96,10 +96,12 @@ class "GtkButton" style "button"
 
 style "combo-fix" {
   bg[NORMAL] = "#ff7d00"
-  text[NORMAL] = "white"
-  text[PRELIGHT] = "white"
+  text[NORMAL] = "#000"
+
+  bg[PRELIGHT] = "#ff7d00"
+  text[PRELIGHT] = "#000"
 }
-class "*Combo*" style "combo-fix"
+widget_class "*Combo*" style "combo-fix"
 
 style "toolbar"
 {

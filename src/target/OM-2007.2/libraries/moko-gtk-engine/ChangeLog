@@ -1,5 +1,9 @@
 2007-10-10  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtkrc: Correct ComboBox style
+
+2007-10-10  Thomas Wood  <thomas@openedhand.com>
+
 	* data/openmoko-dialer: Add keypad style
 	* ltmain.sh: Remove from SVN
 
