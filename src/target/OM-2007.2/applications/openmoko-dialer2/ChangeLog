@@ -1,3 +1,15 @@
+2007-10-10  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
+	* moko-keypad.c: (on_panel_user_input): Emit signal DIGIT_PRESSED
+	  when keypad digit was pressed,
+
+	* moko-dialer.c: (on_call_progress_changed): Check if status was
+	  changed to TALKING when dialer received MOKO_GSMD_PROG_CONNECTED,
+	  (on_keypad_digit_pressed): Implemented sending of DTMF tones
+	  during active call. Fixes bug 53.
+
 2007-10-06  Holger Hans Peter Freyther  <zecke@selfish.org>
 
 	openmoko-dialer display isn't cleared after pin is sent

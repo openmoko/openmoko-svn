@@ -253,6 +253,7 @@ on_panel_user_input (MokoDialerPanel *panel,
                                           MOKO_DIALER_TEXTVIEW (priv->textview), 
                                           TRUE));
     moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
+    g_signal_emit (G_OBJECT (keypad), keypad_signals[DIGIT_PRESSED], 0, digit);
  }
 }
 

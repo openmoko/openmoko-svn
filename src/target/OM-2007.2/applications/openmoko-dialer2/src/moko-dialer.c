@@ -440,8 +440,16 @@ on_keypad_digit_pressed (MokoKeypad *keypad,
                          const gchar digit,
                          MokoDialer *dialer)
 {
-  /* If in call, dtmf it, otherwise ignore */
-  /* FIXME: When libgsmd implements it, we should */
+  MokoDialerPrivate *priv;
+
+  g_return_if_fail (MOKO_IS_DIALER (dialer));
+  priv = dialer->priv;
+
+  if ((digit == '+') || (digit == 'w') || (digit == 'p'))
+    return;
+
+  if (priv->status == DIALER_STATUS_TALKING)
+    moko_gsmd_connection_voice_dtmf (priv->connection, digit);
 }
 
 static void
@@ -631,6 +639,8 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       break;
     
     case MOKO_GSMD_PROG_CONNECTED:
+      if (priv->status != DIALER_STATUS_TALKING)
+        moko_dialer_talking (dialer);
       moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
       g_debug ("mokogsmd connected");
