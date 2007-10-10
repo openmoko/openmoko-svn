@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+open(PIPE, "-|", "lsusb", @ARGV) || die "popen $ARGV[0]: $!";
+while (<PIPE>) {
+    if (/Bus (\d+) Device (\d+):/) {
+	$path = `usbpath "$1/$2"`;
+	chop $path;
+	print "Path $path $_";
+    }
+    else {
+	print;
+    }
+}

@@ -28,6 +28,10 @@ usbport 1-1.2
 1/19
 
 
+lsusbpath is a wrapper for lsusb that converts bus and device numbers in
+lsusb output to paths, and prints them in addition to the numbers.
+
+
 Compilation and installation
 ----------------------------
 
