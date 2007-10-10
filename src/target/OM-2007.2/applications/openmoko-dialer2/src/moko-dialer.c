@@ -48,6 +48,7 @@ G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 struct _MokoDialerPrivate
 {
   gint                status;
+  gchar               *incoming_clip;
 
   /* Main Widgets */
   GtkWidget          *window;
@@ -517,6 +518,10 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   }
   priv->status = DIALER_STATUS_INCOMING;
 
+  if (priv->incoming_clip)
+    g_free (priv->incoming_clip);
+  priv->incoming_clip = NULL;
+
   /* Prepare a voice journal entry */
   if (priv->journal)
   {
@@ -553,22 +558,16 @@ on_incoming_clip (MokoGsmdConnection *conn,
 {
   MokoDialerPrivate *priv;
   MokoContactEntry *entry;
-  static gint timestamp = 0;
-  static gchar *last = NULL;
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
-  if (last 
-      && (strcmp (number, last) == 0) 
-      && ((GDK_CURRENT_TIME - timestamp) < 1500))
+  if (priv->incoming_clip && (strcmp (number, priv->incoming_clip) == 0))
   {
     return;
   }
-  if (last)
-    g_free (last);
-  last = g_strdup (number);
-  timestamp = GDK_CURRENT_TIME;
+
+  priv->incoming_clip = g_strdup (number);
   
   entry = moko_contacts_lookup (moko_contacts_get_default (), number);
   moko_talking_set_clip (MOKO_TALKING (priv->talking), number, entry);
@@ -628,6 +627,11 @@ on_call_progress_changed (MokoGsmdConnection *conn,
         priv->entry = NULL;
         priv->time = NULL;
       }
+
+      if (priv->incoming_clip)
+        g_free (priv->incoming_clip);
+      priv->incoming_clip = NULL;
+
       moko_notify_stop (priv->notify);
       g_debug ("mokogsmd disconnect");
       break;
@@ -817,6 +821,9 @@ moko_dialer_init (MokoDialer *dialer)
 
   /* create the dialer_data struct */
   priv->status = DIALER_STATUS_NORMAL;
+  
+  /* clear incoming clip */
+  priv->incoming_clip = NULL;
 
   /* Initialise the contacts list */
   //contact_init_contact_data (&(priv->data->g_contactlist));

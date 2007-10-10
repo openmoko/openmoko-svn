@@ -76,6 +76,9 @@ moko_talking_set_clip (MokoTalking      *talking,
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
 
+  if (number == NULL)
+    number = "Unknown number";
+
   if (entry)
     markup = g_strdup_printf ("<b>%s</b>\n%s", entry->contact->name, number);
   else

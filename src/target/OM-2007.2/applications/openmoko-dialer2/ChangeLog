@@ -1,5 +1,16 @@
 2007-10-10  Thomas Wood  <thomas@openedhand.com>
 
+	Based on patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
+	* src/moko-dialer.c: (on_incoming_call), (on_incoming_clip),
+	  (on_call_progress_changed), (moko_dialer_init): Fix problem
+	  with displaying CLIP on incoming call.
+
+	* src/moko-talking.c: (moko_talking_set_clip): Display
+	  "Unknown number" if number is NULL (CLIR).
+
+2007-10-10  Thomas Wood  <thomas@openedhand.com>
+
 	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
 
 	* moko-keypad.c: (on_panel_user_input): Emit signal DIGIT_PRESSED
