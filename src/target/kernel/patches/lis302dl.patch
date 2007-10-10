@@ -14,15 +14,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
  
  #include <asm/mach/arch.h>
  #include <asm/mach/map.h>
-@@ -310,6 +311,7 @@
- 	&s3c_device_usbgadget,
- 	&s3c_device_nand,
- 	&s3c_device_ts,
-+	&s3c_device_spi1,
- };
- 
- static struct s3c2410_nand_set gta02_nand_sets[] = {
-@@ -437,6 +439,47 @@
+@@ -429,6 +430,47 @@
  	.board_info	= gta02_spi_board_info,
  };
  
@@ -70,7 +62,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2440/mach-gta02.c
  #if 0
  #ifdef SPI_HARD
  static struct s3c2410_spi_info spi_cfg = {
-@@ -626,6 +669,7 @@
+@@ -618,6 +660,7 @@
  	s3c_device_usb.dev.platform_data = &gta02_usb_info;
  	s3c_device_nand.dev.platform_data = &gta02_nand_info;
  	s3c_device_sdi.dev.platform_data = &gta02_mmc_cfg;
