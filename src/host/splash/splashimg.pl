@@ -21,12 +21,30 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+
+%bpp = 16;
+
+
 sub usage
 {
-    print STDERR "usage: $0 [System_boot.png]\n";
+    print STDERR "usage: $0 [-32] [-pnm] [System_boot.png]\n";
     exit(1);
 }
 
+
+while ($ARGV[0] =~ /^-[^-]/) {
+    if ($ARGV[0] eq "-32") {
+	$bpp = 32;
+	shift @ARGV;
+    }
+    elsif ($ARGV[0] eq "-pnm") {
+	$pnm = 1;
+	shift @ARGV;
+    }
+    else {
+	die "unrecognized option: \"$ARGV[0]\"";
+    }
+}
 
 &usage unless $#ARGV < 2;
 if ($ARGV[0] eq "") {
@@ -36,7 +54,12 @@ else {
     $file = @ARGV[0];
 }
 
-$cmd = "pngtopnm '$file' | ppmtorgb3";
+if ($pnm) {
+    $cmd = "cat '$file' | ppmtorgb3";
+}
+else {
+    $cmd = "pngtopnm '$file' | ppmtorgb3";
+}
 
 system($cmd) && die "system \"$cmd\": $?";
 
@@ -56,6 +79,12 @@ for ($i = 0; $i != $w*$h; $i++) {
     $r = unpack("C",substr($p{"red"},$i,1));
     $g = unpack("C",substr($p{"grn"},$i,1));
     $b = unpack("C",substr($p{"blu"},$i,1));
-    $v = ($r >> 3) << 11 | ($g >> 2) << 5 | ($b >> 3);
-    print pack("v",$v) || die "print: $!";
+    if ($bpp == 16) {
+	$v = ($r >> 3) << 11 | ($g >> 2) << 5 | ($b >> 3);
+	print pack("v",$v) || die "print: $!";
+    }
+    else {
+	$v = ($r) << 16 | ($g) << 8 | $b;
+	print pack("V",$v) || die "print: $!";
+    }
 }
