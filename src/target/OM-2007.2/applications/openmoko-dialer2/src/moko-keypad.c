@@ -262,7 +262,37 @@ on_panel_user_hold (MokoDialerPanel *panel,
                      const gchar      digit, 
                      MokoKeypad      *keypad)
 {
-  g_debug ("on_panel_user_hold: %c", digit);
+  MokoKeypadPrivate *priv;
+  gchar buf[3];
+  GList *matches = NULL;
+
+  g_return_if_fail (MOKO_IS_KEYPAD (keypad));
+  priv = keypad->priv;
+
+  /* Phones use '#' for PIN 'entered' signal */
+  if (priv->pin_mode && digit == '#')
+  { 
+    on_dial_clicked (NULL, keypad);
+    return;
+  }   
+
+  /* Create a string to insert into the textview */
+  buf[0] = digit;
+  buf[1] = '\0';
+
+  moko_dialer_textview_delete (MOKO_DIALER_TEXTVIEW (priv->textview));
+  moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->textview), buf);
+
+  if (!priv->pin_mode)
+  {
+    /* Some autocomplete stuff */
+    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
+                                          moko_dialer_textview_get_input (
+                                          MOKO_DIALER_TEXTVIEW (priv->textview), 
+                                          TRUE));
+    moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
+    g_signal_emit (G_OBJECT (keypad), keypad_signals[DIGIT_PRESSED], 0, digit);
+  }
 }
 
 /* GObject functions */

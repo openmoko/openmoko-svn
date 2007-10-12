@@ -1,3 +1,12 @@
+2007-10-12  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-dialer-panel.c: (moko_dialer_panel_init):
+	* src/moko-keypad.c: (on_panel_user_hold):
+
+	- Insert digits on "button down"
+	- Replace primary digit with secondary digit when tap-and-hold occurs
+
+
 2007-10-10  Thomas Wood  <thomas@openedhand.com>
 
 	Based on patch by: Roman Moravcik <roman.moravcik@gmail.com>

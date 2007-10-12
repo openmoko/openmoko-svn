@@ -34,6 +34,13 @@ G_DEFINE_TYPE (MokoDialerPanel, moko_dialer_panel, GTK_TYPE_VBOX)
 
      static gint moko_dialer_panel_signals[LAST_SIGNAL] = { 0 };
 
+
+typedef struct
+{
+  gchar value;
+  MokoDialerPanel *panel;
+} HoldTimeoutData;
+
 static void
 moko_dialer_panel_class_init (MokoDialerPanelClass * class)
 {
@@ -140,96 +147,52 @@ moko_dialer_panel_init (MokoDialerPanel * moko_dialer_panel)
 }
 
 static gboolean
+moko_dialer_panel_hold_timeout (HoldTimeoutData *data)
+{
+  g_signal_emit (data->panel, moko_dialer_panel_signals[HOLD_SIGNAL], 0, data->value);
+
+  g_free (data);
+  return FALSE;
+}
+
+static gboolean
 moko_dialer_panel_pressed (MokoDigitButton *button, 
                            GdkEventButton *event,
                            MokoDialerPanel *panel)
 {
-#define TAP_HOLD_TIME 800
-  static guint32 last_event = 0;
-  gchar value = -1;
+  static gint hold_timeout_source = 0;
 
   if (event->type == GDK_BUTTON_PRESS)
   {
-    last_event = event->time;
+    HoldTimeoutData *timeout_data;
+    gchar value = -1;
+
+    /* Normal 'clicked' event */
+    value = moko_digit_button_get_left (button);
+    g_signal_emit (panel, moko_dialer_panel_signals[CLICKED_SIGNAL], 0, value);
+
+    /* Set up for a tap-and-hold event */
+    value = moko_digit_button_get_right (button);
+
+    /* this button doesn't have a "hold" value */
+    if (value == -1)
+      return FALSE;
+
+    timeout_data = g_new0 (HoldTimeoutData, 1);
+
+    timeout_data->panel = panel;
+    timeout_data->value = value;
+
+    hold_timeout_source = g_timeout_add (800, (GSourceFunc) moko_dialer_panel_hold_timeout, timeout_data);
+
   }
   else if (event->type == GDK_BUTTON_RELEASE)
   {
-    guint32 diff = event->time - last_event;
-
-    if (diff < TAP_HOLD_TIME)
-    {
-      /* Normal 'clicked' event */
-      value = moko_digit_button_get_left (button);
-      g_signal_emit (panel,
-                     moko_dialer_panel_signals[CLICKED_SIGNAL], 0, value);
-    }
-    else
-    {
-      /* Tap-and-hold event */
-      value = moko_digit_button_get_right (button);
-      
-      if (value == -1)
-        value = moko_digit_button_get_left (button);
-      
-      g_signal_emit (panel,
-                     moko_dialer_panel_signals[CLICKED_SIGNAL], 0, value);
-    }
+    if (hold_timeout_source != 0)
+      g_source_remove (hold_timeout_source);
   }
   return FALSE;
 }
-
-/* 
- * Leave this for when tap-and-hold is implemented at the Gtk-level 
- */
-#if 0
-static gboolean
-moko_dialer_panel_pressed (MokoDigitButton * button, GdkEventButton * event,
-                           gpointer data)
-{
-
-  MokoDialerPanel *moko_dialer_panel;
-
-//here! check it tomorrow!
-  moko_dialer_panel = (MokoDialerPanel *) data;
-
-  gchar value = -1;
-
-  if (event->button == 3)
-  {                             //right button
-    value = moko_digit_button_get_right (button);
-    if (value == -1)
-    {                           //button 1-9 pressed with hold , we emit another signal: HOLD_SIGNAL, with the para of the number
-      value = moko_digit_button_get_left (button);
-      if (value != -1)
-      {
-        g_signal_emit (moko_dialer_panel,
-                       moko_dialer_panel_signals[HOLD_SIGNAL], 0, value);
-      }
-    }
-    else
-    {                           //*, 0, # buttons are right clicked or pressed with hold
-      if (value != -1)
-        g_signal_emit (moko_dialer_panel,
-                       moko_dialer_panel_signals[CLICKED_SIGNAL], 0, value);
-
-    }
-
-  }
-  else if (event->button == 1)
-  {                             //left button
-    value = moko_digit_button_get_left (button);
-    if (value != -1)
-      g_signal_emit (moko_dialer_panel,
-                     moko_dialer_panel_signals[CLICKED_SIGNAL], 0, value);
-
-  }
-
-  /* allow the signal to propagate the event further */
-  return FALSE;
-}
-#endif
-
-
 
 GtkWidget *
 moko_dialer_panel_new ()
