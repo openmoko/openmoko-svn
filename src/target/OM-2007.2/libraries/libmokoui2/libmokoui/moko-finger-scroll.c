@@ -201,10 +201,16 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 
 	MokoFingerScrollPrivate *priv = FINGER_SCROLL_PRIVATE (scroll);
 
-	if ((!priv->enabled) || (priv->clicked) || (event->button != 1) ||
+	if ((!priv->enabled) || (event->button != 1) ||
 	    ((event->time == priv->last_time) &&
 	     (event->type == priv->last_type))) return TRUE;
 
+	if (priv->clicked && priv->child) {
+		/* Widget stole focus on last click, send crossing-out event */
+		synth_crossing (priv->child, 0, 0, event->x_root, event->y_root,
+			event->time, FALSE);
+	}
+	
 	g_get_current_time (&priv->click_start);
 	priv->last_type = event->type;
 	priv->last_time = event->time;
