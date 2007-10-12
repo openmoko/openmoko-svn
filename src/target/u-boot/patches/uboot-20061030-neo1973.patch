@@ -1920,7 +1920,7 @@ Index: u-boot/board/neo1973/gta01/pcf50606.c
 +
 +	[PCF50606_REG_MBCC1]	= 0x01, /* CHGAPE */
 +	[PCF50606_REG_MBCC2]	= 0x00,	/* unlimited charging */
-+	[PCF50606_REG_MBCC3]	= 0x1a, /* 0.2*Ifast, 4.20V */
++	[PCF50606_REG_MBCC3]	= 0x2a, /* 0.2*Ifast, 4.20V */
 +	[PCF50606_REG_BBCC]	= 0x1f, /* 400uA */
 +	[PCF50606_REG_ADCC1]	= 0x00,
 +	[PCF50606_REG_ADCC2]	= 0x00,
