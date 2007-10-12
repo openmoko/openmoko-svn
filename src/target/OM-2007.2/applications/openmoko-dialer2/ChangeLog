@@ -1,5 +1,10 @@
 2007-10-12  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-keypad.c: Clear dialer display when delete button held down,
+	rather than only when held and released
+
+2007-10-12  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer-panel.c: (moko_dialer_panel_init):
 	* src/moko-keypad.c: (on_panel_user_hold):
 

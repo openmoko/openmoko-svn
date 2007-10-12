@@ -173,40 +173,36 @@ on_dial_clicked (GtkWidget *button, MokoKeypad *keypad)
 }
 
 static gboolean
+moko_keypad_hold_timeout (MokoDialerTextview *textview)
+{
+  moko_dialer_textview_empty (textview);
+  return FALSE;
+}
+
+static gboolean
 on_delete_event (GtkWidget *button, GdkEventButton *event, MokoKeypad *keypad)
 {
-#define TAP_HOLD_TIME 800
   MokoKeypadPrivate *priv;
   MokoDialerTextview *textview;
-  static guint32 last_event = 0;
   GList *matches;
-  
+  static gint hold_timeout_source = 0;
+
   g_return_val_if_fail (MOKO_IS_KEYPAD (keypad), FALSE);
   priv = keypad->priv;
-  
+
   textview = MOKO_DIALER_TEXTVIEW (priv->textview);
 
   if (event->type == GDK_BUTTON_PRESS)
   {
-    last_event = event->time;
+    moko_dialer_textview_delete (textview);
+    hold_timeout_source = g_timeout_add (800, (GSourceFunc) moko_keypad_hold_timeout, textview);
     return FALSE;
   }
   else if (event->type == GDK_BUTTON_RELEASE)
   {
-    guint32 diff = event->time - last_event;
-
-    if (diff < TAP_HOLD_TIME)
-    {
-      /* Normal 'clicked' event */
-      moko_dialer_textview_delete (textview);
-    }
-    else
-    {
-      /* Tap-and-hold event */
-      moko_dialer_textview_empty (textview);
-   }
+    g_source_remove (hold_timeout_source);
   }
-  
+
   if (!priv->pin_mode)
   {
     /* Some autocomplete stuff */
