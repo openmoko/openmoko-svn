@@ -387,6 +387,9 @@ moko_dialer_textview_delete (MokoDialerTextview * moko_dialer_textview)
   gtk_text_buffer_get_iter_at_mark (buffer, &insertiter, insertmark);
   len = gtk_text_iter_get_offset (&insertiter);
 
+  /* update colours */
+  moko_dialer_textview_set_color (moko_dialer_textview);
+
   return 1;
 
 }

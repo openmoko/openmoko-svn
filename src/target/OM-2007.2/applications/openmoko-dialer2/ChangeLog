@@ -1,5 +1,10 @@
 2007-10-12  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-dialer-textview.c: (moko_dialer_textview_delete): Make sure
+	the last character is still bold after deleting
+
+2007-10-12  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-keypad.c: Clear dialer display when delete button held down,
 	rather than only when held and released
 
