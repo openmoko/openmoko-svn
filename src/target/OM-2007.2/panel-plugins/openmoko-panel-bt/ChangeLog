@@ -1,3 +1,10 @@
+2007-10-12  Stefan Schmidt <stefan@openmoko.org>
+
+	* src/openmoko-panel-bt.c:
+	* configure.ac:
+	Use libnotify dor showing changes instead of dialog boxes. Patch by
+	Alexandre d'Alton <alex@alexdalton.org>
+
 2007-09-02	Michael Lauer <mickey@openmoko.org>
 
 	* src/openmoko-panel-bt.c:

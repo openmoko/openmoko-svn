@@ -14,7 +14,7 @@
  *
  */
 #include <libmokopanelui2/moko-panel-applet.h>
-
+#include <libnotify/notify.h>
 #include <gtk/gtkimage.h>
 #include <gtk/gtkbox.h>
 #include <gtk/gtk.h>
@@ -28,32 +28,6 @@ typedef struct {
   MokoPanelApplet *mokoapplet;
   int state;
 } BtApplet;
-
-void quick_message(gchar *message) {
-
-   GtkWidget *dialog, *label, *okay_button;
-
-   /* Create the widgets */
-
-   dialog = gtk_dialog_new();
-   label = gtk_label_new (message);
-   okay_button = gtk_button_new_with_label("Okay");
-
-   /* Ensure that the dialog box is destroyed when the user clicks ok. */
-
-   gtk_signal_connect_object (GTK_OBJECT (okay_button), "clicked",
-                              GTK_SIGNAL_FUNC (gtk_widget_destroy), dialog);
-   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->action_area),
-                      okay_button);
-
-   gtk_window_set_title(GTK_WINDOW(dialog), "Bt Status");
-
-   /* Add the label, and show everything we've added to the dialog. */
-
-   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
-                      label);
-   gtk_widget_show_all (dialog);
-}
 
 static int
 read_bt_power(void)
@@ -96,18 +70,24 @@ static void
 bt_applet_power_on(GtkWidget* menu, BtApplet* applet)
 {
     int ret;
+    NotifyNotification * nn;
+
     ret = set_bt_power(1);
     mb_panel_update(applet, 1);
-    quick_message("  Bluetooth turned on  \n\n");
+    nn = notify_notification_new ("Bluetooh turned on", NULL, NULL, NULL);
+    notify_notification_show (nn, NULL);
 }
 
 static void
 bt_applet_power_off(GtkWidget* menu, BtApplet* applet)
 {
     int ret;
+    NotifyNotification * nn;
+
     ret = set_bt_power(0);
     mb_panel_update(applet, 0);
-    quick_message("  Bluetooth turned off  \n\n");
+    nn = notify_notification_new ("Bluetooh turned off", NULL, NULL, NULL);
+    notify_notification_show (nn, NULL);
 }
 
 static void
@@ -115,12 +95,14 @@ bt_applet_status(GtkWidget* menu, BtApplet* applet)
 {
     int ret;
     char tmp_string[256];
+    NotifyNotification * nn;
 
     ret = read_bt_power();
 
     sprintf(tmp_string, "  Bluetooth is %s  \n\n", ret ? "on" : "off");
 
-    quick_message(tmp_string);
+    nn = notify_notification_new (tmp_string, NULL, NULL, NULL);
+    notify_notification_show (nn, NULL);
 }
 
 static void
