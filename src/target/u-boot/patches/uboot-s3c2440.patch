@@ -756,22 +756,29 @@ Index: u-boot/cpu/arm920t/start.S
 +#elif defined(CONFIG_S3C2440)
 +#include <s3c2440.h>
 +#endif
- #if	defined(CONFIG_AT91RM9200DK) || defined(CONFIG_AT91RM9200EK) || defined(CONFIG_AT91RM9200DF)
- #include	<led.h>
- #endif
-@@ -207,14 +211,32 @@
- # define pWTCON		0x15300000
- # define INTMSK		0x14400008	/* Interupt-Controller base addresses */
- # define CLKDIVN	0x14800014	/* clock divisor register */
--#elif defined(CONFIG_S3C2410)
-+#elif defined(CONFIG_S3C2410) || defined (CONFIG_S3C2440)
- # define pWTCON		0x53000000
- # define INTMSK		0x4A000008	/* Interupt-Controller base addresses */
- # define INTSUBMSK	0x4A00001C
- # define CLKDIVN	0x4C000014	/* clock divisor register */
+ #include <status_led.h>
+ 
+ /*
+@@ -154,20 +158,38 @@
+ 	bne	copyex
  #endif
  
 -#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410)
++#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ 	/* turn off the watchdog */
+ 
+ # if defined(CONFIG_S3C2400)
+ #  define pWTCON		0x15300000
+ #  define INTMSK		0x14400008	/* Interupt-Controller base addresses */
+ #  define CLKDIVN	0x14800014	/* clock divisor register */
+-#else
++#elif defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+ #  define pWTCON		0x53000000
+ #  define INTMSK		0x4A000008	/* Interupt-Controller base addresses */
+ #  define INTSUBMSK	0x4A00001C
+ #  define CLKDIVN	0x4C000014	/* clock divisor register */
+ # endif
+ 
 +#if defined(CONFIG_S3C2410)
 +# define INTSUBMSK_val	0x7ff
 +# define MPLLCON_val	((0x90 << 12) + (0x7 << 4) + 0x0)	/* 202 MHz */
@@ -790,11 +797,10 @@ Index: u-boot/cpu/arm920t/start.S
 +# define CAMDIVN	0x4C000018
 +#endif
 +
-+#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
  	ldr     r0, =pWTCON
  	mov     r1, #0x0
  	str     r1, [r0]
-@@ -225,24 +247,34 @@
+@@ -178,24 +200,34 @@
  	mov	r1, #0xffffffff
  	ldr	r0, =INTMSK
  	str	r1, [r0]
@@ -836,7 +842,7 @@ Index: u-boot/cpu/arm920t/start.S
  	str	r1, [r0]
  
  	/* Page 7-19, seven nops between UPLL and MPLL */
-@@ -254,12 +286,12 @@
+@@ -207,12 +239,12 @@
  	nop
  	nop
  
@@ -851,7 +857,7 @@ Index: u-boot/cpu/arm920t/start.S
  	str	r1, [r0]
  
  #if 1
-@@ -287,7 +319,7 @@
+@@ -240,7 +272,7 @@
  	str	r1, [r0, #0x28]
  #endif
  
@@ -860,7 +866,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
  #ifndef CONFIG_LL_INIT_NAND_ONLY
-@@ -364,7 +396,7 @@
+@@ -299,7 +331,7 @@
  #if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
  	bl	cpu_init_crit
  #endif
@@ -869,7 +875,7 @@ Index: u-boot/cpu/arm920t/start.S
  	/* ensure some refresh has happened */
  	ldr	r1, =0xfffff
  1:	subs	r1, r1, #1
-@@ -375,11 +407,12 @@
+@@ -310,11 +342,12 @@
  	ldr	r0, [ r1 ]
  	tst	r0, #0x02		/* is this resume from power down */
  	ldrne	pc, [r1, #4]		/* gstatus3 */
@@ -883,7 +889,7 @@ Index: u-boot/cpu/arm920t/start.S
  	@ reset NAND
  	mov	r1, #S3C2410_NAND_BASE
  	ldr	r2, =0xf842		@ initial value enable tacls=3,rph0=6,rph1=0
-@@ -399,6 +432,17 @@
+@@ -334,6 +367,17 @@
  	ldr	r2, [r1, #oNFCONF]
  	orr	r2, r2, #0x800		@ disable chip
  	str	r2, [r1, #oNFCONF]
@@ -901,7 +907,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  #if 0
  	@ get ready to call C functions (for nand_read())
-@@ -467,7 +511,7 @@
+@@ -402,7 +446,7 @@
  #endif /* CONFIG_S3C2410_NAND_BOOT */
  done_relocate:
  

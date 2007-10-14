@@ -368,18 +368,18 @@ Index: u-boot/cpu/arm920t/start.S
  #include <config.h>
  #include <version.h>
 +#include <s3c2410.h>
- #if	defined(CONFIG_AT91RM9200DK) || defined(CONFIG_AT91RM9200EK) || defined(CONFIG_AT91RM9200DF)
- #include	<led.h>
- #endif
-@@ -246,6 +251,7 @@
- #endif /* CONFIG_BOOTBINFUNC */
- #else
+ #include <status_led.h>
+ 
+ /*
+@@ -181,6 +186,7 @@
+ #ifdef	CONFIG_AT91RM9200
+ 
  #ifndef CONFIG_SKIP_RELOCATE_UBOOT
 +#ifndef CONFIG_S3C2410_NAND_BOOT
  relocate:				/* relocate U-Boot to RAM	    */
  	adr	r0, _start		/* r0 <- current position of code   */
  	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
-@@ -262,6 +268,93 @@
+@@ -197,6 +203,93 @@
  	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
  	cmp	r0, r2			/* until source end addreee [r2]    */
  	ble	copy_loop
