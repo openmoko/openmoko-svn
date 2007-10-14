@@ -9,10 +9,10 @@ Index: u-boot/Makefile
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
 +gta02_config \
-+gta02v1_config :	unconfig
-+	@sh board/neo1973/gta02/split_by_variant.sh $@
-+
-+gta02v2_config :	unconfig
++gta02v1_config \
++gta02v2_config \
++gta02v3_config \
++gta02v4_config:	unconfig
 +	@sh board/neo1973/gta02/split_by_variant.sh $@
 +
  gta01_config \
@@ -91,7 +91,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,431 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -246,6 +246,34 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	gpio->GPJCON = 0x1551544;
 +	gpio->GPJUP = 0x1ffff;
 +	gpio->GPJDAT |= (1 << 4);	/* Set GPJ4 to high (nGSM_EN) */
++#elif defined(CONFIG_ARCH_GTA02_v3) || defined(CONFIG_ARCH_GTA02_v4)
++	gpio->GPACON = 0x007E5FFF;
++	gpio->GPADAT |= (1 << 16);      /* Set GPA16 to high (nNAND_WP) */
++
++	gpio->GPBCON = 0x00155555;
++	gpio->GPBUP = 0x000007FF;
++
++	gpio->GPCCON = 0x55555155;
++	gpio->GPCUP = 0x0000FFFF;
++
++	gpio->GPDCON = 0x55555555;
++	gpio->GPDUP = 0x0000FFFF;
++
++	gpio->GPECON = 0xAAAAAAAA;
++	gpio->GPEUP = 0x0000FFFF;
++
++	gpio->GPFCON = 0x0000AAAA;
++	gpio->GPFUP = 0x000000FF;
++
++	gpio->GPGCON = 0x01AAFE79;
++	gpio->GPGUP = 0x0000FFFF;
++
++	gpio->GPHCON = 0x001AAAAA;
++	gpio->GPHUP = 0x000007FF;
++
++	gpio->GPJCON = 0x1551544;
++	gpio->GPJUP = 0x1ffff;
++	gpio->GPJDAT |= (1 << 4);	/* Set GPJ4 to high (nGSM_EN) */
 +#else
 +#error Please define GTA02 version
 +#endif
@@ -276,15 +304,15 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +
 +#if defined(CONFIG_ARCH_GTA02_v1)
 +	/* Glamo3362 reset and power cycle */
-+	gpio->GPJDAT &= ~0x000000001;
++	gpio->GPJDAT &= ~0x000000001;	/* GTA02v1_GPIO_3D_RESET */
 +	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0);
 +	udelay(50*1000);
 +	pcf50633_reg_write(PCF50633_REG_DOWN2ENA, 0x2);
-+	gpio->GPJDAT |= 0x000000001;
-+#elif defined(CONFIG_ARCH_GTA02_v2)
-+	gpio->GPJDAT &= ~(1 << 5);
++	gpio->GPJDAT |= 0x000000001;	/* GTA02v1_GPIO_3D_RESET */
++#else
++	gpio->GPJDAT &= ~(1 << 5);	/* GTA02_GPIO_3D_RESET */
 +	udelay(50*1000);
-+	gpio->GPJDAT |= (1 << 5);
++	gpio->GPJDAT |= (1 << 5);	/* GTA02_GPIO_3D_RESET */
 +#endif
 +
 +#if 0
@@ -381,6 +409,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +	return 0x00000310;
 +#elif defined(CONFIG_ARCH_GTA02_v2)
 +	return 0x00000320;
++#elif defined(CONFIG_ARCH_GTA02_v3)
++	return 0x00000330;
++#elif defined(CONFIG_ARCH_GTA02_v4)
++	return 0x00000340;
 +#endif
 +}
 +
@@ -410,8 +442,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +		gpio->GPGDAT |= (1 << 11);	/* GPG11 */
 +#elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
 +		gpio->GPBDAT |= (1 << 10);	/* GPB10 */
-+#elif defined(CONFIG_ARCH_GTA01B_v4) || defined(CONFIG_ARCH_GTA02_v1) || \
-+      defined(CONFIG_ARCH_GTA02_v2)
++#else
 +		gpio->GPBDAT |= (1 << 3);	/* GPB3 */
 +#endif
 +	else
@@ -419,8 +450,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +		gpio->GPGDAT &= ~(1 << 11);	/* GPG11 */
 +#elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3)
 +		gpio->GPBDAT &= ~(1 << 10);	/* GPB10 */
-+#elif defined(CONFIG_ARCH_GTA01B_v4) || defined(CONFIG_ARCH_GTA02_v1) || \
-+      defined(CONFIG_ARCH_GTA02_v2)
++#else
 +		gpio->GPBDAT &= ~(1 << 3);	/* GPB3 */
 +#endif
 +}
@@ -434,10 +464,10 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +#if !defined(CONFIG_ARCH_GTA02_v1)
 +		pcf50633_reg_write(PCF50633_REG_GPIO2CFG, 0x07);
 +#endif
-+		gpio->GPBDAT &= ~(1 << 5);
-+		gpio->GPBDAT |= (1 << 7);
++		gpio->GPBDAT &= ~(1 << 5);	/* GTA02_GPIO_MODEM_RST */
++		gpio->GPBDAT |= (1 << 7);	/* GTA02_GPIO_MODEM_ON */
 +	} else {
-+		gpio->GPBDAT &= ~(1 << 7);
++		gpio->GPBDAT &= ~(1 << 7);	/* GTA02_GPIO_MODEM_ON */
 +#if !defined(CONFIG_ARCH_GTA02_v1)
 +		pcf50633_reg_write(PCF50633_REG_GPIO2CFG, 0x00);
 +#endif
@@ -560,7 +590,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/neo1973_gta02.h
-@@ -0,0 +1,278 @@
+@@ -0,0 +1,284 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -691,6 +721,12 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define	CONFIG_S3C2440		1		/* SAMSUNG S3C2440 SoC		*/
 +#elif defined(CONFIG_ARCH_GTA02_v2)
 +#define	CFG_PROMPT		"GTA02v2 # "	/* Monitor Command Prompt	*/
++#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
++#elif defined(CONFIG_ARCH_GTA02_v3)
++#define	CFG_PROMPT		"GTA02v3 # "	/* Monitor Command Prompt	*/
++#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
++#elif defined(CONFIG_ARCH_GTA02_v4)
++#define	CFG_PROMPT		"GTA02v4 # "	/* Monitor Command Prompt	*/
 +#define	CONFIG_S3C2442		1		/* SAMSUNG S3C2442 SoC		*/
 +#endif
 +#define	CFG_CBSIZE		256		/* Console I/O Buffer Size	*/
@@ -834,7 +870,7 @@ Index: u-boot/include/configs/neo1973_gta02.h
 +#define	CONFIG_RTC_PCF50633		1
 +
 +#define MTDIDS_DEFAULT	"nand0=neo1973-nand"
-+#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),128k(u-boot_env),2M(kernel),640k(splash),-(jffs2)"
++#define MTPARTS_DEFAULT	"neo1973-nand:256k(u-boot),128k(u-boot_env),2M(kernel),640k(splash),-(rootfs)"
 +#define CFG_NAND_DYNPART_MTD_KERNEL_NAME "neo1973-nand"
 +#define CONFIG_NAND_DYNPART
 +
@@ -843,13 +879,13 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/split_by_variant.sh
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,53 @@
 +#!/bin/sh
 +# ---------------------------------------------------------
 +#  Set the core module defines according to Core Module
 +# ---------------------------------------------------------
 +# ---------------------------------------------------------
-+# Set up the GTA01 type define
++# Set up the GTA03 type define
 +# ---------------------------------------------------------
 +
 +CFGINC=${obj}include/config.h
@@ -873,10 +909,21 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 +	echo "CONFIG_USB_DFU_REVISION=0x0320" > $CFGTMP
 +	;;
 +
++	gta02v3_config)
++	echo "#define CONFIG_ARCH_GTA02_v3" > $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0330" > $CFGTMP
++	;;
++
++	gta02v4_config)
++	echo "#define CONFIG_ARCH_GTA02_v4" > $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0340" > $CFGTMP
++	;;
++
++
 +	*)
-+	echo "$0:: Unrecognised config - using GTA02v1 config"
-+	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
-+	echo "CONFIG_USB_DFU_REVISION=0x0310" > $CFGTMP
++	echo "$0:: Unrecognised config - using GTA02v3 config"
++	echo "#define CONFIG_ARCH_GTA02_v3" > $CFGINC
++	echo "CONFIG_USB_DFU_REVISION=0x0330" > $CFGTMP
 +	;;
 +
 +	esac
@@ -1349,13 +1396,14 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  #define B1_Tah		 	0x0	/*  0clk */
  #define B1_Tacp		 	0x0
  #define B1_PMC		 	0x0
-@@ -109,16 +109,18 @@
+@@ -109,16 +109,19 @@
  
  #define B6_MT		 	0x3	/* SDRAM */
  #define B6_Trcd	 	 	0x1	/* 3clk */
 -#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4)
 +#if defined (CONFIG_ARCH_GTA01_v3) || defined(CONFIG_ARCH_GTA01_v4) || \
-+    defined(CONFIG_ARCH_GTA02_v2)
++    defined(CONFIG_ARCH_GTA02_v2)  || defined(CONFIG_ARCH_GTA02_v3) || \
++    defined(CONFIG_ARCH_GTA02_v4)
  #define B6_SCAN		 	0x1	/* 9bit */
 +#define B7_SCAN		 	0x1	/* 9bit */
  #elif defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
@@ -1371,7 +1419,7 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  
  /* REFRESH parameter */
  #define REFEN		 	0x1	/* Refresh enable */
-@@ -165,6 +167,27 @@
+@@ -165,6 +168,28 @@
  	str	r1, [r0]
  #endif
  
@@ -1385,7 +1433,8 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
 +	ldr	r1, [r0, #0xd4]	/* GPJDAT */
 +	orr	r1, r1, #(1 << 3)
 +	str	r1, [r0, #0xd4]
-+#elif defined(CONFIG_ARCH_GTA02_v2)
++#elif defined(CONFIG_ARCH_GTA02_v2) || defined(CONFIG_ARCH_GTA02_v3) || \
++      defined(CONFIG_ARCH_GTA02_v4)
 +	/* enable KEEPACT(GPJ8) to make sure PMU keeps us alive */
 +	ldr	r0, =0x56000000	/* GPJ base */
 +	ldr	r1, [r0, #0xd0]	/* GPJCON */
@@ -1399,11 +1448,12 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  	/* everything is fine now */
  	mov	pc, lr
  
-@@ -182,6 +205,10 @@
+@@ -182,6 +207,11 @@
      .word ((B6_MT<<15)+(B6_Trcd<<2)+(B6_SCAN))
      .word ((B7_MT<<15)+(B7_Trcd<<2)+(B7_SCAN))
      .word ((REFEN<<23)+(TREFMD<<22)+(Trp<<20)+(Trc<<18)+(Tchr<<16)+REFCNT)
-+#if defined(CONFIG_ARCH_GTA02_v2)
++#if defined(CONFIG_ARCH_GTA02_v2) || defined(CONFIG_ARCH_GTA02_v3) || \
++    defined(CONFIG_ARCH_GTA02_v4)
 +    .word 0xb1
 +#else
      .word 0xb2
@@ -1782,7 +1832,7 @@ Index: u-boot/common/cmd_nand.c
 ===================================================================
 --- u-boot.orig/common/cmd_nand.c
 +++ u-boot/common/cmd_nand.c
-@@ -200,8 +200,10 @@
+@@ -204,8 +204,10 @@
  		putc('\n');
  		for (i = 0; i < CFG_MAX_NAND_DEVICE; i++) {
  			if (nand_info[i].name)
@@ -1819,21 +1869,23 @@ Index: u-boot/board/neo1973/common/udc.c
  
  void udc_ctrl(enum usbd_event event, int param)
  {
-@@ -11,7 +12,8 @@
+@@ -11,7 +12,9 @@
  	switch (event) {
  	case UDC_CTRL_PULLUP_ENABLE:
  #if defined(CONFIG_ARCH_GTA01_v4) || defined(CONFIG_ARCH_GTA01B_v2) || \
 -    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4)
 +    defined(CONFIG_ARCH_GTA01B_v3) || defined(CONFIG_ARCH_GTA01B_v4) || \
-+    defined(CONFIG_ARCH_GTA02_v1) || defined(CONFIG_ARCH_GTA02_v2)
++    defined(CONFIG_ARCH_GTA02_v1) || defined(CONFIG_ARCH_GTA02_v2) || \
++    defined(CONFIG_ARCH_GTA02_v3) || defined(CONFIG_ARCH_GTA02_v4)
  		if (param)
  			gpio->GPBDAT |= (1 << 9);
  		else
-@@ -23,6 +25,11 @@
+@@ -23,6 +26,12 @@
      defined(CONFIG_ARCH_GTA01B_v2) || defined(CONFIG_ARCH_GTA01B_v3) || \
      defined(CONFIG_ARCH_GTA01B_v4)
  		pcf50606_charge_autofast(param);
-+#elif defined(CONFIG_ARCH_GTA02_v1) || defined(CONFIG_ARCH_GTA02_v2)
++#elif defined(CONFIG_ARCH_GTA02_v1) || defined(CONFIG_ARCH_GTA02_v2) || \
++      defined(CONFIG_ARCH_GTA02_v3) || defined(CONFIG_ARCH_GTA02_v4)
 +		if (param)
 +			pcf50633_usb_maxcurrent(500);
 +		else
