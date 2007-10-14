@@ -42,6 +42,9 @@ int main (int argc, char **argv)
     GladeXML* ui4 = glade_xml_new( PKGDATADIR "/ui.glade", "page4", NULL );
     GtkWidget* page4 = glade_xml_get_widget( ui4, "page4" );
 
+    GladeXML* ui5 = glade_xml_new( PKGDATADIR "/ui.glade", "page5", NULL );
+    GtkWidget* page5 = glade_xml_get_widget( ui5, "page5" );
+
     gtk_assistant_append_page( GTK_ASSISTANT(assistant), page1 );
     gtk_assistant_set_page_type( GTK_ASSISTANT(assistant), page1, GTK_ASSISTANT_PAGE_CONTENT );
     gtk_assistant_set_page_title( GTK_ASSISTANT(assistant), page1, "Welcome to OpenMoko" );
@@ -56,6 +59,11 @@ int main (int argc, char **argv)
     gtk_assistant_set_page_type( GTK_ASSISTANT(assistant), page3, GTK_ASSISTANT_PAGE_CONTENT );
     gtk_assistant_set_page_title( GTK_ASSISTANT(assistant), page3, "Sound Settings" );
     gtk_assistant_set_page_complete( GTK_ASSISTANT(assistant), page3, TRUE );
+
+    gtk_assistant_append_page( GTK_ASSISTANT(assistant), page5 );
+    gtk_assistant_set_page_type( GTK_ASSISTANT(assistant), page5, GTK_ASSISTANT_PAGE_CONTENT );
+    gtk_assistant_set_page_title( GTK_ASSISTANT(assistant), page5, "Security Settings" );
+    gtk_assistant_set_page_complete( GTK_ASSISTANT(assistant), page5, TRUE );
 
     gtk_assistant_append_page( GTK_ASSISTANT(assistant), page4 );
     gtk_assistant_set_page_type( GTK_ASSISTANT(assistant), page4, GTK_ASSISTANT_PAGE_SUMMARY );
