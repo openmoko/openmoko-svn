@@ -22,23 +22,35 @@
 #
 
 
-do 'crc32.pl';
-
-
 $ENV_SIZE = 0x4000;
 
 
 sub usage
 {
     print STDERR
-"usage: $0 [-i file] [-o file|-p] [-f env_file] [var=[value] ...]\n".
+"usage: $0 [-I dir] [-s size] [-i file] [-o file|-p] [-f env_file]\n".
+"                  [var=[value] ...]\n".
 "  -i file      read environment from file (default: use empty environment)\n".
 "  -o file      write environment to file (default: write to stdout)\n".
 "  -p           print environment in human-readable form to stdout\n".
+"  -s bytes     environment size in bytes (default: 16384)\n".
 "  -f env_file  read changes from env_file\n".
+"  -I dir       add directory to INC path (to find crc32.pl)\n".
 "  var=         remove the specified variable\n".
-"  var=value    set the specified variable\n";
+"  var=value    set the specified variable\n".
+"The options -I and -s, if present, must precede all other options.\n";
     exit(1);
+}
+
+
+
+sub do_crc32
+{
+    if (!defined $have_crc) {
+	do 'crc32.pl';
+	$have_crc = 1;
+    }
+    return &crc32(@_);
 }
 
 
@@ -62,7 +74,7 @@ sub readenv
 	$env .= '\000' x ($ENV_SIZE-length $env);
     }
     ($crc, $env) = unpack("Va*", $env);
-    $want = &crc32($env);
+    $want = &do_crc32($env);
     if ($crc != $want) {
 	print STDERR sprintf("CRC error: expected 0x%08x, got 0x%08x\n",
 	  $want, $crc);
@@ -113,6 +125,10 @@ sub set_err
 }
 
 
+if ($0 =~ m#/[^/]*$#) {
+    push(@INC, $`);
+}
+
 while (@ARGV) {
     if ($ARGV[0] eq "-i") {
 	&usage unless defined $ARGV[1];
@@ -130,6 +146,18 @@ while (@ARGV) {
 	&usage if defined $outfile;
 	$printenv = 1;
 	shift(@ARGV);
+    }
+    elsif ($ARGV[0] eq "-s") {
+	&usage if $have_crc;
+	&usage unless defined $ARGV[1];
+	shift(@ARGV);
+	$ENV_SIZE = eval shift(@ARGV);
+    }
+    elsif ($ARGV[0] eq "-I") {
+	&usage if $have_crc;
+	&usage unless defined $ARGV[1];
+	shift(@ARGV);
+	push(@INC, shift @ARGV);
     }
     elsif ($ARGV[0] eq "-f") {
 	&usage unless defined $ARGV[1];
@@ -182,7 +210,7 @@ else {
 	exit(1);
     }
     $env .= "\000" x ($ENV_SIZE-4-length $env);
-    $crc = &crc32($env);
+    $crc = &do_crc32($env);
     $env = pack("V", $crc).$env;
     if (defined $outfile) {
 	open(FILE, ">$outfile") || die "$outfile: $!";
