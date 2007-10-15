@@ -38,7 +38,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
-@@ -0,0 +1,234 @@
+@@ -0,0 +1,210 @@
 +/*
 + * arch/arm/mach-s3c2410/3c2410-pwm.c
 + *
@@ -65,33 +65,7 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 +#include <asm/arch/regs-timer.h>
 +#include <asm/arch/pwm.h>
 +
-+struct s3c2410_pwm_t *s3c2410_pwm_alloc(void)
-+{
-+	struct s3c2410_pwm_t *s3c2410_pwm;
-+
-+        s3c2410_pwm = kzalloc(sizeof(*s3c2410_pwm), GFP_KERNEL);
-+        if (!s3c2410_pwm)
-+                /*return -ENOMEM;*/
-+		return NULL;
-+
-+	s3c2410_pwm->pclk = clk_get(NULL, "timers");
-+
-+	if (IS_ERR(s3c2410_pwm->pclk)) {
-+		/*return PTR_ERR(clk);*/
-+		kfree(s3c2410_pwm);
-+		return NULL;
-+	}
-+
-+	clk_enable(s3c2410_pwm->pclk);
-+
-+	s3c2410_pwm->pclk_rate = clk_get_rate(s3c2410_pwm->pclk);
-+
-+	return s3c2410_pwm;
-+}
-+
-+EXPORT_SYMBOL_GPL(s3c2410_pwm_alloc);
-+
-+int s3c2410_pwm_disable(struct s3c2410_pwm_t *s3c2410_pwm)
++int s3c2410_pwm_disable(struct s3c2410_pwm *pwm)
 +{
 +	unsigned long tcon;
 +
@@ -100,25 +74,31 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 +        tcon &= 0xffffff00;
 +        __raw_writel(tcon, S3C2410_TCON);
 +
-+	clk_disable(s3c2410_pwm->pclk);
-+	clk_put(s3c2410_pwm->pclk);
++	clk_disable(pwm->pclk);
++	clk_put(pwm->pclk);
 +
-+	kfree(s3c2410_pwm);
++	kfree(pwm);
 +	return 0;
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_disable);
 +
-+int s3c2410_pwm_enable(struct s3c2410_pwm_t *s3c2410_pwm)
++int s3c2410_pwm_enable(struct s3c2410_pwm *pwm)
 +{
 +	unsigned long tcfg0, tcfg1, tcnt, tcmp;
++
++	pwm->pclk = clk_get(NULL, "timers");
++	if (IS_ERR(pwm->pclk))
++		return PTR_ERR(pwm->pclk);
++
++	clk_enable(pwm->pclk);
++	pwm->pclk_rate = clk_get_rate(pwm->pclk);
 +
 +	/* control registers bits */
 +	tcfg1 = __raw_readl(S3C2410_TCFG1);
 +	tcfg0 = __raw_readl(S3C2410_TCFG0);
 +
 +	/* divider & scaler slection */
-+	switch (s3c2410_pwm->timerid) {
++	switch (pwm->timerid) {
 +	case PWM0:
 +		tcfg1 &= ~S3C2410_TCFG1_MUX0_MASK;
 +		tcfg0 &= ~S3C2410_TCFG_PRESCALER0_MASK;
@@ -139,50 +119,51 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 +		/* timer four is not capable of doing PWM */
 +		break;
 +	default:
++		clk_disable(pwm->pclk);
++		clk_put(pwm->pclk);
 +		return -1;
 +	}
 +
 +	/* divider & scaler values */
-+	tcfg1 |= s3c2410_pwm->divider;
++	tcfg1 |= pwm->divider;
 +	__raw_writel(tcfg1, S3C2410_TCFG1);
 +
-+	switch (s3c2410_pwm->timerid) {
++	switch (pwm->timerid) {
 +	case PWM0:
 +	case PWM1:
-+		tcfg0 |= s3c2410_pwm->prescaler;
++		tcfg0 |= pwm->prescaler;
 +		__raw_writel(tcfg0, S3C2410_TCFG0);
 +		break;
 +	default:
-+		if ((tcfg0 | s3c2410_pwm->prescaler) != tcfg0) {
++		if ((tcfg0 | pwm->prescaler) != tcfg0) {
 +			printk(KERN_WARNING "not changing prescaler of PWM %u,"
 +			       " since it's shared with timer4 (clock tick)\n",
-+			       s3c2410_pwm->timerid);
++			       pwm->timerid);
 +		}
 +		break;
 +	}
 +
 +	/* timer count and compare buffer initial values */
-+	tcnt = s3c2410_pwm->counter;
-+	tcmp = s3c2410_pwm->comparer;
++	tcnt = pwm->counter;
++	tcmp = pwm->comparer;
 +
-+	__raw_writel(tcnt, S3C2410_TCNTB(s3c2410_pwm->timerid));
-+	__raw_writel(tcmp, S3C2410_TCMPB(s3c2410_pwm->timerid));
++	__raw_writel(tcnt, S3C2410_TCNTB(pwm->timerid));
++	__raw_writel(tcmp, S3C2410_TCMPB(pwm->timerid));
 +
 +	/* ensure timer is stopped */
-+	s3c2410_pwm_stop(s3c2410_pwm);
++	s3c2410_pwm_stop(pwm);
 +
 +	return 0;
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_enable);
 +
-+int s3c2410_pwm_start(struct s3c2410_pwm_t *s3c2410_pwm)
++int s3c2410_pwm_start(struct s3c2410_pwm *pwm)
 +{
 +	unsigned long tcon;
 +
 +	tcon = __raw_readl(S3C2410_TCON);
 +
-+	switch (s3c2410_pwm->timerid) {
++	switch (pwm->timerid) {
 +	case PWM0:
 +		tcon |= S3C2410_TCON_T0START;
 +		tcon &= ~S3C2410_TCON_T0MANUALUPD;
@@ -202,23 +183,22 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 +	case PWM4:
 +		/* timer four is not capable of doing PWM */
 +	default:
-+		return -1;
++		return -ENODEV;
 +	}
 +
 +	__raw_writel(tcon, S3C2410_TCON);
 +
 +	return 0;
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_start);
 +
-+int s3c2410_pwm_stop(struct s3c2410_pwm_t *s3c2410_pwm)
++int s3c2410_pwm_stop(struct s3c2410_pwm *pwm)
 +{
 +	unsigned long tcon;
 +
 +	tcon = __raw_readl(S3C2410_TCON);
 +
-+	switch (s3c2410_pwm->timerid) {
++	switch (pwm->timerid) {
 +	case PWM0:
 +		tcon &= ~0x00000000;
 +		tcon |= S3C2410_TCON_T0RELOAD;
@@ -242,23 +222,21 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 +	case PWM4:
 +		/* timer four is not capable of doing PWM */
 +	default:
-+		return -1;
++		return -ENODEV;
 +	}
 +
 +	__raw_writel(tcon, S3C2410_TCON);
 +
 +	return 0;
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_stop);
 +
-+int s3c2410_pwm_duty_cycle(int reg_value, struct s3c2410_pwm_t *s3c2410_pwm)
++int s3c2410_pwm_duty_cycle(int reg_value, struct s3c2410_pwm *pwm)
 +{
-+	__raw_writel(reg_value, S3C2410_TCMPB(s3c2410_pwm->timerid));
++	__raw_writel(reg_value, S3C2410_TCMPB(pwm->timerid));
 +
 +	return 0;
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_duty_cycle);
 +
 +int s3c2410_pwm_dumpregs(void)
@@ -270,14 +248,12 @@ Index: linux-2.6.22.5-moko/arch/arm/mach-s3c2410/pwm.c
 +
 +	return 0;
 +}
-+
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_dumpregs);
-+
 Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/pwm.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/pwm.h
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,39 @@
 +#ifndef __S3C2410_PWM_H
 +#define __S3C2410_PWM_H
 +
@@ -299,7 +275,7 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/pwm.h
 +	PWM4
 +};
 +
-+struct s3c2410_pwm_t {
++struct s3c2410_pwm {
 +	enum pwm_timer timerid;
 +	struct clk *pclk;
 +	unsigned long pclk_rate;
@@ -309,12 +285,11 @@ Index: linux-2.6.22.5-moko/include/asm-arm/arch-s3c2410/pwm.h
 +	unsigned long comparer;
 +};
 +
-+struct s3c2410_pwm_t *s3c2410_pwm_alloc(void);
-+int s3c2410_pwm_enable(struct s3c2410_pwm_t *s3c2410_pwm);
-+int s3c2410_pwm_disable(struct s3c2410_pwm_t *s3c2410_pwm);
-+int s3c2410_pwm_start(struct s3c2410_pwm_t *s3c2410_pwm);
-+int s3c2410_pwm_stop(struct s3c2410_pwm_t *s3c2410_pwm);
-+int s3c2410_pwm_duty_cycle(int reg_value, struct s3c2410_pwm_t *s3c2410_pwm);
++int s3c2410_pwm_enable(struct s3c2410_pwm *s3c2410_pwm);
++int s3c2410_pwm_disable(struct s3c2410_pwm *s3c2410_pwm);
++int s3c2410_pwm_start(struct s3c2410_pwm *s3c2410_pwm);
++int s3c2410_pwm_stop(struct s3c2410_pwm *s3c2410_pwm);
++int s3c2410_pwm_duty_cycle(int reg_value, struct s3c2410_pwm *s3c2410_pwm);
 +int s3c2410_pwm_dumpregs(void);
 +
 +#endif /* __S3C2410_PWM_H */
