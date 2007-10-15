@@ -1,0 +1,33 @@
+This patch ensures that even if no environment partition is present on a Neo1973
+device, the USB serial emulation will be the default console, not the serial port.
+
+This enables people with no debug board to always access the u-boot console, even
+if their environment partition is gone.
+
+The only remaining case of bootloader lock-out is now when the environment
+contains stdin/stdout/stderr=serial settings.
+
+Index: u-boot/include/configs/neo1973_gta01.h
+===================================================================
+--- u-boot.orig/include/configs/neo1973_gta01.h
++++ u-boot/include/configs/neo1973_gta01.h
+@@ -182,6 +182,7 @@
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS 					\
+ 	"usbtty=cdc_acm\0"						\
++	"stderr=usbtty\0stdout=usbtty\0stdin=usbtty\0"			\
+ 	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC0,115200 console=tty0 loglevel=8\0" \
+ 	""
+ 
+Index: u-boot/include/configs/neo1973_gta02.h
+===================================================================
+--- u-boot.orig/include/configs/neo1973_gta02.h
++++ u-boot/include/configs/neo1973_gta02.h
+@@ -190,6 +190,7 @@
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS 					\
+ 	"usbtty=cdc_acm\0"						\
++	"stderr=usbtty\0stdout=usbtty\0stdin=usbtty\0"			\
+ 	"bootargs_base=rootfstype=jffs2 root=/dev/mtdblock4 console=ttySAC2,115200 console=tty0 loglevel=8\0" \
+ 	""
+ 
