@@ -1,6 +1,7 @@
 alsa-2.6.23-rc1-commit.diff
 asoc-platform-hw_init-pcm_emulation-fix.patch
 asoc-kconfig-fix.patch
+asoc-neo1973_wm8753-power.patch
 missing_defs.patch
 openmoko-logo.patch
 yaffs2-20070905.patch
