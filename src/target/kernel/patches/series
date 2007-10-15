@@ -48,3 +48,4 @@ s3c24xx-nand-largepage.patch
 s3c2442b-cpuid.patch
 gta02-core.patch
 lis302dl.patch
+gta02-leds.patch
