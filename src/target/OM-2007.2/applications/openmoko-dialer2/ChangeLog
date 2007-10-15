@@ -1,3 +1,10 @@
+2007-10-15  Thomas Wood  <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+
+	Prevent CFLAGS from being obliterated
+
 2007-10-12  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-dialer-textview.c: (moko_dialer_textview_delete): Make sure

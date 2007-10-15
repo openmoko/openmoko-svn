@@ -1,7 +1,3 @@
-AM_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
-              -DPKGDATADIR=\"$(pkgdatadir)\"
-AM_CFLAGS = -Wall @CFLAGS@
-
 bin_PROGRAMS = openmoko-dialer
 
 openmoko_dialer_SOURCES = \
@@ -31,8 +27,11 @@ openmoko_dialer_SOURCES = \
 	moko-sound.c			\
 	moko-sound.h
 
+openmoko_dialer_CPPFLAGS = -DDATADIR=\"$(datadir)\" \
+              -DPKGDATADIR=\"$(pkgdatadir)\"
+openmoko_dialer_CFLAGS = -Wall @DIALER_CFLAGS@
 
-openmoko_dialer_LDADD = @LIBS@
+openmoko_dialer_LDADD = @DIALER_LIBS@
 
 moko-dialer-glue.h: moko-dialer-dbus.xml
 	$(LIBTOOL) --mode=execute $(DBUS_GLIB_BIN)/dbus-binding-tool --prefix=moko_dialer --mode=glib-server --output=$@ $<

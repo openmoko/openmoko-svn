@@ -29,10 +29,8 @@ if test $ac_cv_type_EContactPhotoType = yes; then
 	AC_DEFINE(HAVE_ECONTACT_PHOTO_TYPE, 1, [Defined if EContactPhotoType exists])
 fi
 
-
-LIBS="$DIALER_LIBS  -lm -ldl"
-
-CFLAGS="$DIALER_CFLAGS"
+AC_SUBST(DIALER_CFLAGS)
+AC_SUBST(DIALER_LIBS)
 
 dnl ==============================================
 dnl DBUS
