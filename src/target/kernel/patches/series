@@ -1,3 +1,4 @@
+arm-atag-kexec.patch
 alsa-2.6.23-rc1-commit.diff
 asoc-platform-hw_init-pcm_emulation-fix.patch
 asoc-kconfig-fix.patch
