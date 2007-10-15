@@ -20,12 +20,15 @@
 #include "moko-digit-button.h"
 
 G_DEFINE_TYPE (MokoDialerPanel, moko_dialer_panel, GTK_TYPE_VBOX)
-     enum
-     {
-       CLICKED_SIGNAL,
-       HOLD_SIGNAL,
-       LAST_SIGNAL
-     };
+
+#define NOVALUE '\0'
+
+enum
+{
+  CLICKED_SIGNAL,
+  HOLD_SIGNAL,
+  LAST_SIGNAL
+};
 
 //forward definition
      static gboolean moko_dialer_panel_pressed (MokoDigitButton * button,
@@ -102,9 +105,9 @@ moko_dialer_panel_init (MokoDialerPanel * moko_dialer_panel)
   };
 
   gchar rightchar[4][3] = {
-    {-1, -1, -1},
-    {-1, -1, -1},
-    {-1, -1, -1},
+    {NOVALUE, NOVALUE, NOVALUE},
+    {NOVALUE, NOVALUE, NOVALUE},
+    {NOVALUE, NOVALUE, NOVALUE},
     {'+', 'p', 'w'}
   };
 
@@ -165,7 +168,7 @@ moko_dialer_panel_pressed (MokoDigitButton *button,
   if (event->type == GDK_BUTTON_PRESS)
   {
     HoldTimeoutData *timeout_data;
-    gchar value = -1;
+    gchar value = NOVALUE;
 
     /* Normal 'clicked' event */
     value = moko_digit_button_get_left (button);
@@ -175,7 +178,7 @@ moko_dialer_panel_pressed (MokoDigitButton *button,
     value = moko_digit_button_get_right (button);
 
     /* this button doesn't have a "hold" value */
-    if (value == -1)
+    if (value == NOVALUE)
       return FALSE;
 
     timeout_data = g_new0 (HoldTimeoutData, 1);
