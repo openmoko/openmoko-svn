@@ -236,6 +236,11 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
+  if (!number) {
+    gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 1);
+    moko_history_set_filter (MOKO_HISTORY (priv->history), HISTORY_FILTER_DIALED);
+    return;
+  }
 
   /* check current dialer state */
   if (0 || priv->status != DIALER_STATUS_NORMAL)

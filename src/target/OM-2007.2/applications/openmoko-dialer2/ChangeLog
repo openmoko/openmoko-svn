@@ -1,5 +1,14 @@
 2007-10-15  Thomas Wood  <thomas@openedhand.com>
 
+	Based on patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
+	* src/moko-dialer.c: (on_keypad_dial_clicked):Show dialed history when
+	dialing empty number.
+	* src/moko-history.c: (on_filter_changed): Select first item in history
+	list after filter was changed.
+
+2007-10-15  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer-panel.c: (moko_dialer_panel_init),
 	(moko_dialer_panel_pressed):
 

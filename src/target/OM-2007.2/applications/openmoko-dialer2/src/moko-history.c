@@ -342,11 +342,26 @@ static void
 on_filter_changed (GtkWidget *combo, MokoHistory *history)
 {
   MokoHistoryPrivate *priv;
+  GtkTreeView *treeview;
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  GtkTreePath *path;
 
   g_return_if_fail (MOKO_IS_HISTORY (history));
   priv = history->priv;
 
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (priv->filter_model));
+
+
+  treeview = GTK_TREE_VIEW (priv->treeview);
+  model = gtk_tree_view_get_model (treeview);
+
+  if (!gtk_tree_model_get_iter_first (model, &iter))
+    return;
+  path = gtk_tree_model_get_path (model, &iter);
+  gtk_tree_view_set_cursor (treeview, path, NULL, FALSE);
+  gtk_tree_path_free (path);
+
 }
 
 static gint
