@@ -36,7 +36,7 @@ static void
 today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
 	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{"openmoko-dialer", "-s", NULL }, TRUE, TRUE));
+		{"openmoko-dialer", NULL }, TRUE, TRUE));
 }
 
 static void

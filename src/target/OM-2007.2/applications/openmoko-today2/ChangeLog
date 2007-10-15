@@ -1,3 +1,8 @@
+2007-10-15  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (today_dial_button_clicked_cb): Don't use -s
+	 argument for the dialer shortcut button
+
 2007-10-09  Chris Lord  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (today_task_manager_page_create):
