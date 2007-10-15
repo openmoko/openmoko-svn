@@ -241,6 +241,7 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 		g_object_add_weak_pointer ((GObject *)priv->child,
 			&priv->child);
 		
+		event = (GdkEventButton *)gdk_event_copy ((GdkEvent *)event);
 		event->x = x;
 		event->y = y;
 		priv->cx = x;
@@ -252,6 +253,7 @@ moko_finger_scroll_button_press_cb (MokoFingerScroll *scroll,
 		/* Send synthetic click (button press/release) event */
 		((GdkEventAny *)event)->window = g_object_ref (priv->child);
 		gdk_event_put ((GdkEvent *)event);
+		gdk_event_free ((GdkEvent *)event);
 	} else
 		priv->child = NULL;
 
@@ -472,10 +474,12 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 		/* Send motion notify to child */
 		priv->last_type = event->type;
 		priv->last_time = event->time;
+		event = (GdkEventMotion *)gdk_event_copy ((GdkEvent *)event);
 		event->x = priv->cx + (event->x - priv->ix);
 		event->y = priv->cy + (event->y - priv->iy);
 		event->window = g_object_ref (priv->child);
 		gdk_event_put ((GdkEvent *)event);
+		gdk_event_free ((GdkEvent *)event);
 	}
 
 	gdk_window_get_pointer (GTK_WIDGET (scroll)->window, NULL, NULL, 0);
@@ -508,14 +512,15 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		GTK_BIN (priv->align)->child->window,
 		event->x, event->y, &x, &y);
 
-	event->x = x;
-	event->y = y;
-
 	if (!priv->child) {
 		priv->moved = FALSE;
 		return TRUE;
 	}
 	
+	event = (GdkEventButton *)gdk_event_copy ((GdkEvent *)event);
+	event->x = x;
+	event->y = y;
+
 	/* Leave the widget if we've moved - This doesn't break selection,
 	 * but stops buttons from being clicked.
 	 */
@@ -538,6 +543,7 @@ moko_finger_scroll_button_release_cb (MokoFingerScroll *scroll,
 		&priv->child);
 
 	priv->moved = FALSE;
+	gdk_event_free ((GdkEvent *)event);
 	
 	return TRUE;
 }
