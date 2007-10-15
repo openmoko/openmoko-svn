@@ -892,7 +892,7 @@ Index: u-boot/board/neo1973/gta02/split_by_variant.sh
 +CFGTMP=${obj}board/neo1973/gta02/config.tmp
 +
 +mkdir -p ${obj}include
-+if [ "$1" == "" ]
++if [ "$1" = "" ]
 +then
 +	echo "$0:: No parameters - using GTA02Bv1 config"
 +	echo "#define CONFIG_ARCH_GTA02_v1" > $CFGINC
