@@ -15,8 +15,8 @@ Index: u-boot/cpu/arm920t/start.S
  #endif
  
  #if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
--    defined(CONFOG_S3C2442)
-+    defined(CONFOG_S3C2442) || defined(CONFIG_S3C2443)
+-    defined(CONFIG_S3C2442)
++    defined(CONFIG_S3C2442) || defined(CONFIG_S3C2443)
  	/* turn off the watchdog */
  
  # if defined(CONFIG_S3C2400)

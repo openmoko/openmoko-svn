@@ -323,7 +323,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/speed.c
      	return ( 2 * m * (CONFIG_SYS_CLK_FREQ / (p << s )) );
 @@ -95,7 +95,7 @@
  
- #if defined(CONFOG_S3C2400) || defined(CONFIG_S3C2410)
+ #if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410)
      return((clk_power->CLKDIVN & 0x2) ? get_FCLK()/2 : get_FCLK());
 -#elif defined(CONFIG_S3C2440)
 +#elif defined(CONFIG_S3C2440) || defined(CONFIG_S3C2442)
@@ -398,7 +398,7 @@ Index: u-boot/cpu/arm920t/start.S
  
 -#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 +#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) || \
-+    defined(CONFOG_S3C2442)
++    defined(CONFIG_S3C2442)
  	/* turn off the watchdog */
  
  # if defined(CONFIG_S3C2400)

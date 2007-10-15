@@ -549,7 +549,7 @@ Index: u-boot/cpu/arm920t/s3c24x0/speed.c
  {
      S3C24X0_CLOCK_POWER * const clk_power = S3C24X0_GetBase_CLOCK_POWER();
  
-+#if defined(CONFOG_S3C2400) || defined(CONFIG_S3C2410)
++#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410)
      return((clk_power->CLKDIVN & 0x2) ? get_FCLK()/2 : get_FCLK());
 +#elif defined(CONFIG_S3C2440)
 +    switch (clk_power->CLKDIVN & 0x6) {
