@@ -453,7 +453,16 @@ Index: u-boot/cpu/arm920t/start.S
  
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
  #ifndef CONFIG_LL_INIT_NAND_ONLY
-@@ -331,7 +343,7 @@
+@@ -280,7 +292,7 @@
+ #endif
+ 
+ #if defined(CONFIG_AT91RM9200) || defined(CONFIG_S3C2410) || \
+-    defined(CONFIG_S3C2440)
++    defined(CONFIG_S3C2440) || defined(CONFIG_S3C2442)
+ 
+ #ifndef CONFIG_SKIP_RELOCATE_UBOOT
+ 	adr	r0, _start		/* r0 <- current position of code   */
+@@ -332,7 +344,7 @@
  #if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
  	bl	cpu_init_crit
  #endif
@@ -462,7 +471,7 @@ Index: u-boot/cpu/arm920t/start.S
  	/* ensure some refresh has happened */
  	ldr	r1, =0xfffff
  1:	subs	r1, r1, #1
-@@ -342,7 +354,7 @@
+@@ -343,7 +355,7 @@
  	ldr	r0, [ r1 ]
  	tst	r0, #0x02		/* is this resume from power down */
  	ldrne	pc, [r1, #4]		/* gstatus3 */
@@ -471,7 +480,7 @@ Index: u-boot/cpu/arm920t/start.S
  #endif /* CONFIG_SKIP_LOWLEVEL_INIT */
  
  	/* mov	r10, lr */
-@@ -367,7 +379,7 @@
+@@ -368,7 +380,7 @@
  	ldr	r2, [r1, #oNFCONF]
  	orr	r2, r2, #0x800		@ disable chip
  	str	r2, [r1, #oNFCONF]
@@ -480,7 +489,7 @@ Index: u-boot/cpu/arm920t/start.S
  	mov	r1, #S3C2440_NAND_BASE
  	ldr	r2, =0xfff0		@ initial value tacls=3,rph0=7,rph1=7
  	ldr	r3, [r1, #oNFCONF]
-@@ -446,7 +458,8 @@
+@@ -447,7 +459,8 @@
  #endif /* CONFIG_S3C2410_NAND_BOOT */
  done_relocate:
  

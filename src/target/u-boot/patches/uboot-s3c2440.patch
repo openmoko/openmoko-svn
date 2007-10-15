@@ -857,7 +857,7 @@ Index: u-boot/cpu/arm920t/start.S
  	str	r1, [r0]
  
  #if 1
-@@ -240,7 +272,7 @@
+@@ -240,14 +272,15 @@
  	str	r1, [r0, #0x28]
  #endif
  
@@ -866,7 +866,16 @@ Index: u-boot/cpu/arm920t/start.S
  
  #ifndef CONFIG_SKIP_LOWLEVEL_INIT
  #ifndef CONFIG_LL_INIT_NAND_ONLY
-@@ -299,7 +331,7 @@
+ 	bl	cpu_init_crit
+ #endif
+ 
+-#if defined(CONFIG_AT91RM9200) || defined(CONFIG_S3C2410)
++#if defined(CONFIG_AT91RM9200) || defined(CONFIG_S3C2410) || \
++    defined(CONFIG_S3C2440)
+ 
+ #ifndef CONFIG_SKIP_RELOCATE_UBOOT
+ 	adr	r0, _start		/* r0 <- current position of code   */
+@@ -299,7 +332,7 @@
  #if !defined(CONFIG_SKIP_LOWLEVEL_INIT) && defined(CONFIG_LL_INIT_NAND_ONLY)
  	bl	cpu_init_crit
  #endif
@@ -875,7 +884,7 @@ Index: u-boot/cpu/arm920t/start.S
  	/* ensure some refresh has happened */
  	ldr	r1, =0xfffff
  1:	subs	r1, r1, #1
-@@ -310,11 +342,12 @@
+@@ -310,11 +343,12 @@
  	ldr	r0, [ r1 ]
  	tst	r0, #0x02		/* is this resume from power down */
  	ldrne	pc, [r1, #4]		/* gstatus3 */
@@ -889,7 +898,7 @@ Index: u-boot/cpu/arm920t/start.S
  	@ reset NAND
  	mov	r1, #S3C2410_NAND_BASE
  	ldr	r2, =0xf842		@ initial value enable tacls=3,rph0=6,rph1=0
-@@ -334,6 +367,17 @@
+@@ -334,6 +368,17 @@
  	ldr	r2, [r1, #oNFCONF]
  	orr	r2, r2, #0x800		@ disable chip
  	str	r2, [r1, #oNFCONF]
@@ -907,7 +916,7 @@ Index: u-boot/cpu/arm920t/start.S
  
  #if 0
  	@ get ready to call C functions (for nand_read())
-@@ -402,7 +446,7 @@
+@@ -402,7 +447,7 @@
  #endif /* CONFIG_S3C2410_NAND_BOOT */
  done_relocate:
  

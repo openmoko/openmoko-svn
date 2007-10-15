@@ -1,0 +1,23 @@
+If we boot from the S3C24xx NAND, then we only have access to the
+first 4kByte of memory.  Thus, te coloured_LED_init and red_LED_on
+functions defined in lib_arm/board.o cannot be referenced at this
+point.
+
+Index: u-boot/cpu/arm920t/start.S
+===================================================================
+--- u-boot.orig/cpu/arm920t/start.S
++++ u-boot/cpu/arm920t/start.S
+@@ -141,8 +141,13 @@
+ 	orr	r0,r0,#0xd3
+ 	msr	cpsr,r0
+ 
++	/* in case we run from the s3c24xx NAND stepping stone, the symbols
++	 * for LED support are in lib_arm/board.o, i.e. outside of the
++	 * steppingstone */
++#ifndef CONFIG_S3C2410_NAND_BOOT
+ 	bl coloured_LED_init
+ 	bl red_LED_on
++#endif
+ 
+ #if	defined(CONFIG_AT91RM9200DK) || defined(CONFIG_AT91RM9200EK) || defined(CONFIG_AT91RM9200DF)
+ 	/*

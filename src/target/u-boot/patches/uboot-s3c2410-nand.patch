@@ -371,8 +371,12 @@ Index: u-boot/cpu/arm920t/start.S
  #include <status_led.h>
  
  /*
-@@ -181,6 +186,7 @@
- #ifdef	CONFIG_AT91RM9200
+@@ -178,9 +183,10 @@
+ 	bl	cpu_init_crit
+ #endif
+ 
+-#ifdef	CONFIG_AT91RM9200
++#if defined(CONFIG_AT91RM9200) || defined(CONFIG_S3C2410)
  
  #ifndef CONFIG_SKIP_RELOCATE_UBOOT
 +#ifndef CONFIG_S3C2410_NAND_BOOT
