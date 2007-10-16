@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2180,6 +2180,13 @@
+@@ -2181,6 +2181,13 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -91,7 +91,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta02/gta02.c
-@@ -0,0 +1,431 @@
+@@ -0,0 +1,432 @@
 +/*
 + * (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -515,13 +515,14 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +const char *neo1973_get_charge_status(void)
 +{
 +	/* FIXME */
-+	return "unknown";
++	return pcf50633_charger_state(void);
 +}
 +
 +int neo1973_set_charge_mode(enum neo1973_charger_cmd cmd)
 +{
 +	/* FIXME */
-+	return 0;
++	puts("not implemented yet\n");
++	return -1;
 +}
 Index: u-boot/board/neo1973/gta02/u-boot.lds
 ===================================================================
@@ -937,7 +938,7 @@ Index: u-boot/include/pcf50633.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/pcf50633.h
-@@ -0,0 +1,235 @@
+@@ -0,0 +1,237 @@
 +#ifndef _PCF50633_H
 +#define _PCF50633_H
 +
@@ -1171,13 +1172,15 @@ Index: u-boot/include/pcf50633.h
 +void pcf50633_init(void);
 +void pcf50633_usb_maxcurrent(unsigned int ma);
 +
++const char *pcf50633_charger_state(void);
++
 +#endif /* _PCF50633_H */
 +
 Index: u-boot/drivers/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ u-boot/drivers/pcf50633.c
-@@ -0,0 +1,192 @@
+@@ -0,0 +1,218 @@
 +#include <common.h>
 +
 +#ifdef CONFIG_DRIVER_PCF50633
@@ -1317,6 +1320,32 @@ Index: u-boot/drivers/pcf50633.c
 +		val = 0x02;
 +
 +	return pcf50633_reg_set_bit_mask(PCF50633_REG_MBCC7, 0x03, val);
++}
++
++static const char *charger_states = {
++	[0]	= "play_only",
++	[1]	= "usb_precharge",
++	[2]	= "usb_precharge_wait",
++	[3]	= "usb_fast_charge",
++	[4]	= "usb_fast_charge_wait",
++	[5]	= "usb_suspend",
++	[6]	= "adapter_precharge",
++	[7]	= "adapter_precharge_wait",
++	[8]	= "adapter_fast_charge",
++	[9]	= "adapter_fast_charge_wait",
++	[10]	= "battery_full",
++	[11]	= "halt",
++};
++
++const char *pcf50633_charger_state(void)
++{
++	u_int8_t val = pcf50633_reg_read(PCF50633_REG_MBCS2);
++
++	val &= 0x0f;
++	if (val > 11)
++		return "error";
++
++	return charger_states[val];
 +}
 +
 +#if defined(CONFIG_RTC_PCF50633) && defined(CONFIG_CMD_DATE)
