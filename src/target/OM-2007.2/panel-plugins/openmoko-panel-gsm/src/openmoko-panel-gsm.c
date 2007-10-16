@@ -82,9 +82,15 @@ gsm_applet_network_registration_cb (MokoGsmdConnection *self,
                                   int cell)
 {
   NotifyNotification* nn;
+  static MokoGsmdConnectionNetregType prev_type = MOKO_GSMD_CONNECTION_NETREG_NONE;
 
-  nn = notify_notification_new ("Connected to Network", NULL, NULL, NULL);
-  notify_notification_show (nn, NULL);
+  if ((type == MOKO_GSMD_CONNECTION_NETREG_HOME) || (type == MOKO_GSMD_CONNECTION_NETREG_ROAMING) &&
+      ((prev_type != MOKO_GSMD_CONNECTION_NETREG_HOME)&&(prev_type != MOKO_GSMD_CONNECTION_NETREG_ROAMING)))
+  {
+    nn = notify_notification_new ("Connected to Network", NULL, NULL, NULL);
+    notify_notification_show (nn, NULL);
+  }
+  prev_type = type;
 }
 
 

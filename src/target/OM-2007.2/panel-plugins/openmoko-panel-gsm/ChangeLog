@@ -1,3 +1,9 @@
+2007-10-16  Daniel Willmann <alphaone@openmoko.org>
+
+	* src/openmoko-panel-gsm.c: (gsm_applet_network_registration_cb):
+	Only show the "Connected to network" notification if the phone was not
+	previously connected to the network
+
 2007-10-02  Thomas Wood  <thomas@openedhand.com>
 
 	* configure.ac:
