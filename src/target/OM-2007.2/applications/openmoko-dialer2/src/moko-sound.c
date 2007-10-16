@@ -24,7 +24,8 @@
 
 char *sound_profile_filenames[] = { "/etc/gsmhandset.state",
   "/etc/gsmheadset.state",
-  "/etc/stereoout.state" };
+  "/etc/gsmspeakerout.state",
+  "/etc/stereoout.state"};
 
 void moko_sound_profile_set(int profile) {
   char command[100];

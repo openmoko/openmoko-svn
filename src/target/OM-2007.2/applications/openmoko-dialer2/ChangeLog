@@ -1,3 +1,12 @@
+2007-10-16  Daniel Willmann <alphaone@openmoko.org>
+
+        * src/moko-sound.{c,h}: Add GSM speaker out sound profile
+
+				* src/moko-dialer.c: (on_talking_speaker_toggle):
+        * src/moko-talking.c: (on_speaker_toggled):
+				Speaker button now toggles the GSM speaker out profile
+				(requires recent alsa-state package)
+
 2007-10-15  Thomas Wood  <thomas@openedhand.com>
 
 	Based on patch by: Roman Moravcik <roman.moravcik@gmail.com>

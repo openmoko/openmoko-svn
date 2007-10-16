@@ -286,8 +286,8 @@ on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
 static void
 on_speaker_toggled (GtkToggleToolButton *toggle, MokoTalking *talking)
 {
- /*g_signal_emit (G_OBJECT (talking), talking_signals[CANCEL_CALL], 
-                0, gtk_toggle_tool_button_get_active (toggle));*/
+  g_signal_emit (G_OBJECT (talking), talking_signals[SPEAKER_TOGGLE],
+                0, gtk_toggle_tool_button_get_active (toggle));
 }
 
 /* GObject functions */

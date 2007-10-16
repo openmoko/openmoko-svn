@@ -37,6 +37,7 @@
 #include "moko-keypad.h"
 #include "moko-notify.h"
 #include "moko-talking.h"
+#include "moko-sound.h"
 
 G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
@@ -438,6 +439,15 @@ on_talking_speaker_toggle (MokoTalking *talking,
                            MokoDialer  *dialer)
 {
   /* Toggle speaker phone */
+  static int on_speaker = FALSE;
+
+  if (on_speaker)
+    moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
+  else
+    moko_sound_profile_set(SOUND_PROFILE_GSM_SPEAKER_OUT);
+
+  on_speaker = !on_speaker;
+
   g_debug ("Speaker toggled");
 }
 
