@@ -2,7 +2,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,666 @@
+@@ -0,0 +1,658 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -128,11 +128,11 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +		switch (event) {
 +		case PMU_EVT_INSERT:
 +		case PMU_EVT_USB_INSERT:
-+			pcf50633_charge_fast(pcf50633_global, 1);
++			pcf50633_charge_enable(pcf50633_global, 1);
 +			break;
 +		case PMU_EVT_REMOVE:
 +		case PMU_EVT_USB_REMOVE:
-+			pcf50633_charge_fast(pcf50633_global, 0);
++			pcf50633_charge_enable(pcf50633_global, 0);
 +			break;
 +		default:
 +			break;
@@ -385,15 +385,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +static void __gta02_udc_vbus_draw(struct work_struct *work)
 +{
-+	if (gta02_udc_vbus_drawer.ma >= 500) {
-+		/* enable fast charge */
-+		printk(KERN_DEBUG "udc: enabling fast charge\n");
-+		pcf50633_charge_fast(pcf50633_global, 1);
-+	} else {
-+		/* disable fast charge */
-+		printk(KERN_DEBUG "udc: disabling fast charge\n");
-+		pcf50633_charge_fast(pcf50633_global, 0);
-+	}
++	pcf50633_usb_curlim_set(pcf50633_global, gta02_udc_vbus_drawer.ma);
 +}
 +
 +static void gta02_udc_vbus_draw(unsigned int ma)

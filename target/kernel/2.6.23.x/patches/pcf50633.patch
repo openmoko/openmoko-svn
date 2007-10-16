@@ -34,7 +34,7 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/drivers/i2c/chips/pcf50633.c
-@@ -0,0 +1,1716 @@
+@@ -0,0 +1,1736 @@
 +/* Philips PCF50633 Power Management Unit (PMU) driver
 + *
 + * (C) 2006-2007 by OpenMoko, Inc.
@@ -105,9 +105,8 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +
 +I2C_CLIENT_INSMOD_1(pcf50633);
 +
-+#define PCF50633_F_CHG_FAST	0x00000001	/* Charger Fast allowed */
++#define PCF50633_F_CHG_ENABLED	0x00000001	/* Charger enabled */
 +#define PCF50633_F_CHG_PRESENT	0x00000002	/* Charger present */
-+#define PCF50633_F_CHG_FOK	0x00000004	/* Fast OK for battery */
 +#define PCF50633_F_CHG_ERR	0x00000008	/* Charger Error */
 +#define PCF50633_F_CHG_PROT	0x00000010	/* Charger Protection */
 +#define PCF50633_F_CHG_READY	0x00000020	/* Charging completed */
@@ -632,10 +631,12 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +	}
 +	if (int3 & PCF50633_INT3_THLIMON) {
 +		DEBUGPC("THLIMON ");
++		pcf->flags |= PCF50633_F_CHG_PROT;
 +		/* FIXME: signal this to userspace */
 +	}
 +	if (int3 & PCF50633_INT3_THLIMOFF) {
 +		DEBUGPC("THLIMOFF ");
++		pcf->flags &= ~PCF50633_F_CHG_PROT;
 +		/* FIXME: signal this to userspace */
 +	}
 +	if (int3 & PCF50633_INT3_USBLIMON) {
@@ -857,34 +858,66 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 + * Charger Control
 + ***********************************************************************/
 +
-+/* Enable/disable fast charging (500mA in the GTA02) */
-+void pcf50633_charge_fast(struct pcf50633_data *pcf, int on)
++/* Set maximum USB current limit */
++void pcf50633_usb_curlim_set(struct pcf50633_data *pcf, int ma)
 +{
-+#if 0
-+	if (!(pcf->pdata->used_features & PCF50606_FEAT_MBC))
++	u_int8_t bits;
++
++	dev_dbg(&pcf->client.dev, "setting usb current limit to %d ma", ma);
++
++	if (ma >= 1000)
++		bits = PCF50633_MBCC7_USB_1000mA;
++	else if (ma >= 500)
++		bits = PCF50633_MBCC7_USB_500mA;
++	else if (ma >= 100)
++		bits = PCF50633_MBCC7_USB_100mA;
++	else
++		bits = PCF50633_MBCC7_USB_SUSPEND;
++
++	reg_set_bit_mask(pcf, PCF50633_REG_MBCC7, PCF56033_MBCC7_USB_MASK,
++			 bits);
++}
++EXPORT_SYMBOL_GPL(pcf50633_usb_curlim_set);
++
++static ssize_t show_usblim(struct device *dev, struct device_attribute *attr,
++			   char *buf)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct pcf50633_data *pcf = i2c_get_clientdata(client);
++	u_int8_t usblim = reg_read(pcf, PCF50633_REG_MBCC7) &
++						PCF56033_MBCC7_USB_MASK;
++	unsigned int ma;
++
++	if (usblim == PCF50633_MBCC7_USB_1000mA)
++		ma = 1000;
++	else if (usblim == PCF50633_MBCC7_USB_500mA)
++		ma = 500;
++	else if (usblim == PCF50633_MBCC7_USB_100mA)
++		ma = 100;
++	else
++		ma = 0;
++
++	return sprintf(buf, "%u\n", ma);
++}
++static DEVICE_ATTR(usb_curlim, S_IRUGO | S_IWUSR, show_usblim, NULL);
++
++/* Enable/disable charging */
++void pcf50633_charge_enable(struct pcf50633_data *pcf, int on)
++{
++	u_int8_t bits;
++
++	if (!(pcf->pdata->used_features & PCF50633_FEAT_MBC))
 +		return;
 +
 +	if (on) {
-+		/* We can allow PCF to automatically charge
-+		 * using Ifast */
-+		pcf->flags |= PCF50606_F_CHG_FAST;
-+		reg_set_bit_mask(pcf, PCF50606_REG_MBCC1,
-+				 PCF50606_MBCC1_AUTOFST,
-+				 PCF50606_MBCC1_AUTOFST);
++		pcf->flags |= PCF50633_F_CHG_ENABLED;
++		bits = PCF50633_MBCC1_CHGENA;
 +	} else {
-+		pcf->flags &= ~PCF50606_F_CHG_FAST;
-+		/* disable automatic fast-charge */
-+		reg_clear_bits(pcf, PCF50606_REG_MBCC1,
-+				PCF50606_MBCC1_AUTOFST);
-+		/* switch to idle mode to abort existing charge
-+		 * process */
-+		reg_set_bit_mask(pcf, PCF50606_REG_MBCC1,
-+				 PCF50606_MBCC1_CHGMOD_MASK,
-+				 PCF50606_MBCC1_CHGMOD_IDLE);
++		pcf->flags &= ~PCF50633_F_CHG_ENABLED;
++		bits = 0;
 +	}
-+#endif
 +}
-+EXPORT_SYMBOL_GPL(pcf50633_charge_fast);
++EXPORT_SYMBOL_GPL(pcf50633_charge_enable);
 +
 +#define ONE			1000000
 +static inline u_int16_t adc_to_rntc(struct pcf50633_data *pcf, u_int16_t adc)
@@ -981,36 +1014,24 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +{
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50633_data *pcf = i2c_get_clientdata(client);
-+#if 0
-+	u_int8_t mbcc1 = reg_read(pcf, PCF50606_REG_MBCC1);
 +
-+	mbcc1 &= ~PCF50606_MBCC1_CHGMOD_MASK;
++	/* As opposed to the PCF50606, we can only enable or disable
++	 * charging and not directly jump into a certain mode! */
 +
-+	if (!strcmp(buf, "qualification"))
-+		mbcc1 |= PCF50606_MBCC1_CHGMOD_QUAL;
-+	else if (!strcmp(buf, "pre"))
-+		mbcc1 |= PCF50606_MBCC1_CHGMOD_PRE;
-+	else if (!strcmp(buf, "trickle"))
-+		mbcc1 |= PCF50606_MBCC1_CHGMOD_TRICKLE;
-+	else if (!strcmp(buf, "fast_cccv"))
-+		mbcc1 |= PCF50606_MBCC1_CHGMOD_FAST_CCCV;
-+	/* We don't allow the other fast modes for security reasons */
-+	else if (!strcmp(buf, "idle"))
-+		mbcc1 |= PCF50606_MBCC1_CHGMOD_IDLE;
++	if (!strcmp(buf, "0\n"))
++		pcf50633_charge_enable(pcf, 0);
 +	else
-+		return -EINVAL;
++		pcf50633_charge_enable(pcf, 1);
 +
-+	reg_write(pcf, PCF50606_REG_MBCC1, mbcc1);
-+#endif
 +	return count;
 +}
 +
 +static DEVICE_ATTR(chgmode, S_IRUGO | S_IWUSR, show_chgmode, set_chgmode);
 +
 +static const char *chgstate_names[] = {
-+	[PCF50633_F_CHG_FAST]			= "fast_enabled",
-+	[PCF50633_F_CHG_PRESENT] 		= "present",
-+	[PCF50633_F_CHG_FOK]			= "fast_ok",
++	[PCF50633_F_CHG_ENABLED]		= "enabled",
++	[PCF50633_F_CHG_PRESENT] 		= "charger_present",
++	[PCF50633_F_USB_PRESENT] 		= "usb_present",
 +	[PCF50633_F_CHG_ERR]			= "error",
 +	[PCF50633_F_CHG_PROT]			= "protection",
 +	[PCF50633_F_CHG_READY]			= "ready",
@@ -1021,7 +1042,7 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +{
 +	struct i2c_client *client = to_i2c_client(dev);
 +	struct pcf50633_data *pcf = i2c_get_clientdata(client);
-+#if 0
++
 +	char *b = buf;
 +	int i;
 +
@@ -1033,8 +1054,6 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +		b += sprintf(b, "\n");
 +
 +	return b - buf;
-+#endif
-+	return 0;
 +}
 +static DEVICE_ATTR(chgstate, S_IRUGO | S_IWUSR, show_chgstate, NULL);
 +
@@ -1323,7 +1342,7 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +};
 +#endif
 +
-+static struct attribute *pcf_sysfs_entries[17] = {
++static struct attribute *pcf_sysfs_entries[18] = {
 +	&dev_attr_voltage_auto.attr,
 +	&dev_attr_voltage_down1.attr,
 +	&dev_attr_voltage_down2.attr,
@@ -1354,6 +1373,7 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50633.c
 +	if (pcf->pdata->used_features & PCF50633_FEAT_MBC) {
 +		pcf_sysfs_entries[i++] = &dev_attr_chgstate.attr;
 +		pcf_sysfs_entries[i++] = &dev_attr_chgmode.attr;
++		pcf_sysfs_entries[i++] = &dev_attr_usb_curlim.attr;
 +	}
 +
 +	if (pcf->pdata->used_features & PCF50633_FEAT_CHGCUR)
@@ -1755,7 +1775,7 @@ Index: linux-2.6.22/include/linux/pcf50633.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/include/linux/pcf50633.h
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,113 @@
 +#ifndef _LINUX_PCF50633_H
 +#define _LINUX_PCF50633_H
 +
@@ -1810,7 +1830,10 @@ Index: linux-2.6.22/include/linux/pcf50633.h
 +		   enum pcf50633_regulator_id reg, int on);
 +
 +extern void
-+pcf50633_charge_fast(struct pcf50633_data *pcf, int on);
++pcf50633_usb_curlim_set(struct pcf50633_data *pcf, int ma);
++
++extern void
++pcf50633_charge_enable(struct pcf50633_data *pcf, int on);
 +
 +/* FIXME: sharded with pcf50606 */
 +#define PMU_VRAIL_F_SUSPEND_ON	0x00000001	/* Remains on during suspend */
