@@ -2682,7 +2682,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-spi-gpio.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.23-rc8/drivers/video/glamo/glamo-spi-gpio.c
-@@ -0,0 +1,250 @@
+@@ -0,0 +1,251 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -2837,6 +2837,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-spi-gpio.c
 +
 +
 +	//memset(sp, 0, sizeof(struct glamo_spigpio));
++	master->bus_num = 2; /* FIXME: use dynamic number */
 +
 +	sp->master = spi_master_get(master);
 +	sp->glamo = sp->info->glamo;
