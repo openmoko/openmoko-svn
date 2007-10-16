@@ -38,7 +38,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,234 @@
 +/*
 + * arch/arm/mach-s3c2410/3c2410-pwm.c
 + *
@@ -118,7 +118,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 +	tcfg0 = __raw_readl(S3C2410_TCFG0);
 +
 +	/* divider & scaler slection */
-+	switch(s3c2410_pwm->timerid) {
++	switch (s3c2410_pwm->timerid) {
 +	case PWM0:
 +		tcfg1 &= ~S3C2410_TCFG1_MUX0_MASK;
 +		tcfg0 &= ~S3C2410_TCFG_PRESCALER0_MASK;
@@ -136,8 +136,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 +		tcfg0 &= ~S3C2410_TCFG_PRESCALER1_MASK;
 +		break;
 +	case PWM4:
-+		tcfg1 &= ~S3C2410_TCFG1_MUX4_MASK;
-+		tcfg0 &= ~S3C2410_TCFG_PRESCALER1_MASK;
++		/* timer four is not capable of doing PWM */
 +		break;
 +	default:
 +		return -1;
@@ -145,10 +144,22 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 +
 +	/* divider & scaler values */
 +	tcfg1 |= s3c2410_pwm->divider;
-+	tcfg0 |= s3c2410_pwm->prescaler;
-+
 +	__raw_writel(tcfg1, S3C2410_TCFG1);
-+	__raw_writel(tcfg0, S3C2410_TCFG0);
++
++	switch (s3c2410_pwm->timerid) {
++	case PWM0:
++	case PWM1:
++		tcfg0 |= s3c2410_pwm->prescaler;
++		__raw_writel(tcfg0, S3C2410_TCFG0);
++		break;
++	default:
++		if ((tcfg0 | s3c2410_pwm->prescaler) != tcfg0) {
++			printk(KERN_WARNING "not changing prescaler of PWM %u,"
++			       " since it's shared with timer4 (clock tick)\n",
++			       s3c2410_pwm->timerid);
++		}
++		break;
++	}
 +
 +	/* timer count and compare buffer initial values */
 +	tcnt = s3c2410_pwm->counter;
@@ -189,8 +200,9 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 +		tcon &= ~S3C2410_TCON_T3MANUALUPD;
 +		break;
 +	case PWM4:
-+		tcon |= S3C2410_TCON_T4START;
-+		tcon &= ~S3C2410_TCON_T4MANUALUPD;
++		/* timer four is not capable of doing PWM */
++	default:
++		return -1;
 +	}
 +
 +	__raw_writel(tcon, S3C2410_TCON);
@@ -228,9 +240,9 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/pwm.c
 +		tcon |= S3C2410_TCON_T3MANUALUPD;
 +		break;
 +	case PWM4:
-+		tcon &= ~0x00080000;
-+		tcon |= S3C2410_TCON_T4RELOAD;
-+		tcon |= S3C2410_TCON_T3MANUALUPD;
++		/* timer four is not capable of doing PWM */
++	default:
++		return -1;
 +	}
 +
 +	__raw_writel(tcon, S3C2410_TCON);
