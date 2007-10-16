@@ -1,3 +1,4 @@
+arm-atag-kexec.patch
 asoc-platform-hw_init-pcm_emulation-fix.patch
 asoc-kconfig-fix.patch
 asoc-neo1973_wm8753-power.patch
