@@ -858,17 +858,22 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
 --- linux-2.6.22.orig/arch/arm/common/gta01_pm_gsm.c
 +++ linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
-@@ -19,7 +19,9 @@
+@@ -19,8 +19,14 @@
  #include <linux/errno.h>
  
  #include <asm/hardware.h>
 +#include <asm/mach-types.h>
  #include <asm/arch/gta01.h>
-+#include <asm/arch/gta02.h>
  
++#ifdef CONFIG_MACH_NEO1973_GTA02
++#include <asm/arch/gta02.h>
++#include <linux/pcf50633.h>
++#endif
++
  struct gta01pm_priv {
  	int gpio_ngsm_en;
-@@ -70,11 +72,12 @@
+ 	struct console *con;
+@@ -70,27 +76,47 @@
  
  	if (!strcmp(attr->attr.name, "power_on")) {
  		if (on) {
@@ -884,7 +889,29 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
  
  			if (gta01_gsm.gpio_ngsm_en)
  				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 0);
-@@ -86,11 +89,12 @@
+ 
++			switch (system_rev) {
++#ifdef CONFIG_MACH_NEO1973_GTA02
++			case GTA02v2_SYSTEM_REV:
++				pcf50633_gpio_set(pcf50633_global,
++						  PCF50633_GPIO2, 1);
++				break;
++#endif
++			}
++
+ 			s3c2410_gpio_setpin(GTA01_GPIO_MODEM_ON, 1);
+ 		} else {
+ 			s3c2410_gpio_setpin(GTA01_GPIO_MODEM_ON, 0);
+ 
++			switch (system_rev) {
++#ifdef CONFIG_MACH_NEO1973_GTA02
++			case GTA02v2_SYSTEM_REV:
++				pcf50633_gpio_set(pcf50633_global,
++						  PCF50633_GPIO2, 0);
++				break;
++#endif
++			}
++
  			if (gta01_gsm.gpio_ngsm_en)
  				s3c2410_gpio_setpin(gta01_gsm.gpio_ngsm_en, 1);
  
@@ -900,18 +927,23 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
  		}
  	} else if (!strcmp(attr->attr.name, "reset")) {
  		s3c2410_gpio_setpin(GTA01_GPIO_MODEM_RST, on);
-@@ -158,6 +162,10 @@
+@@ -158,8 +184,14 @@
  			gta01_gsm.gpio_ngsm_en = GTA01Bv2_GPIO_nGSM_EN;
  			s3c2410_gpio_setpin(GTA01v3_GPIO_nGSM_EN, 0);
  			break;
++#ifdef CONFIG_MACH_NEO1973_GTA02
 +		case GTA02v1_SYSTEM_REV:
 +		case GTA02v2_SYSTEM_REV:
 +			gta01_gsm.gpio_ngsm_en = 0;
 +			break;
++#endif
  		default:
- 			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
+-			dev_warn(&pdev->dev, "Unknown GTA01 Revision 0x%x, "
++			dev_warn(&pdev->dev, "Unknown Neo1973 Revision 0x%x, "
  				 "some PM features not available!!!\n",
-@@ -175,9 +183,13 @@
+ 				 system_rev);
+ 			break;
+@@ -175,9 +207,13 @@
  		break;
  	}
  
@@ -928,6 +960,12 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
  
  	return sysfs_create_group(&pdev->dev.kobj, &gta01_gsm_attr_group);
  }
+@@ -214,4 +250,4 @@
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
+-MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GSM Management");
++MODULE_DESCRIPTION("FIC Neo1973 GSM Power Management");
 Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.22.orig/sound/soc/s3c24xx/neo1973_wm8753.c
