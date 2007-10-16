@@ -8,8 +8,8 @@
 
 Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
---- u-boot.orig/board/neo1973/common/cmd_neo1973.c	2007-09-05 00:27:05.000000000 +0800
-+++ u-boot/board/neo1973/common/cmd_neo1973.c	2007-09-05 00:45:45.000000000 +0800
+--- u-boot.orig/board/neo1973/common/cmd_neo1973.c
++++ u-boot/board/neo1973/common/cmd_neo1973.c
 @@ -77,8 +77,10 @@
  			goto out_help;
  		if (!strcmp(argv[2], "on"))
@@ -33,9 +33,9 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
  );
 Index: u-boot/board/neo1973/common/gsmver.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ u-boot/board/neo1973/common/gsmver.c	2007-09-05 00:49:46.000000000 +0800
-@@ -0,0 +1,83 @@
+--- /dev/null
++++ u-boot/board/neo1973/common/gsmver.c
+@@ -0,0 +1,80 @@
 +/*
 + * (C) Copyright 2007 OpenMoko, Inc.
 + * Written by Jim Huang <jserv@openmoko.org>
@@ -95,18 +95,15 @@ Index: u-boot/board/neo1973/common/gsmver.c
 +	puts("GSM firmware version: ");
 +
 +	/* read from serial and display version information */
-+	while (string_end_count < 2) {
++	while (1) {
 +		if (dev->tstc()) {
 +			i = dev->getc();
++			putc(i);
 +			/* FIXME: should we just dump straightforward
 +			 * version string such as "moko1" or "moko4"?
 +			 */
-+			if (i == '"') {
-+				string_end_count++;
++			if (i == '\n' || i == '\r')
 +				continue;
-+			}
-+			if (string_end_count)
-+				putc(i);
 +		}
 +	}
 +	putc('\n');
@@ -121,8 +118,8 @@ Index: u-boot/board/neo1973/common/gsmver.c
 +}
 Index: u-boot/board/neo1973/gta01/Makefile
 ===================================================================
---- u-boot.orig/board/neo1973/gta01/Makefile	2007-09-05 00:42:18.000000000 +0800
-+++ u-boot/board/neo1973/gta01/Makefile	2007-09-05 00:42:34.000000000 +0800
+--- u-boot.orig/board/neo1973/gta01/Makefile
++++ u-boot/board/neo1973/gta01/Makefile
 @@ -25,7 +25,7 @@
  
  LIB	= lib$(BOARD).a
@@ -134,8 +131,8 @@ Index: u-boot/board/neo1973/gta01/Makefile
  .PHONY:	all
 Index: u-boot/board/neo1973/gta02/Makefile
 ===================================================================
---- u-boot.orig/board/neo1973/gta02/Makefile	2007-09-05 00:42:37.000000000 +0800
-+++ u-boot/board/neo1973/gta02/Makefile	2007-09-05 00:42:44.000000000 +0800
+--- u-boot.orig/board/neo1973/gta02/Makefile
++++ u-boot/board/neo1973/gta02/Makefile
 @@ -25,7 +25,7 @@
  
  LIB	= lib$(BOARD).a
