@@ -35,7 +35,7 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
-@@ -0,0 +1,249 @@
+@@ -0,0 +1,253 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -89,7 +89,7 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +	int intensity;
 +	struct mutex mutex;
 +	struct clk *clk;
-+	struct s3c2410_pwm_t *pwm;
++	struct s3c2410_pwm pwm;
 +};
 +
 +static struct gta01bl_data gta01bl;
@@ -130,7 +130,7 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +		s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
 +	} else  {
-+		s3c2410_pwm_duty_cycle(intensity & 0xffff, gta01bl.pwm);
++		s3c2410_pwm_duty_cycle(intensity & 0xffff, &gta01bl.pwm);
 +		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPB0_TOUT0);
 +	}
 +#endif
@@ -140,18 +140,25 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +	return 0;
 +}
 +
-+static void gta01bl_init_hw(void)
++static int gta01bl_init_hw(void)
 +{
-+	gta01bl.pwm->timerid = PWM0;
-+	gta01bl.pwm->prescaler = (4 - 1);
-+	gta01bl.pwm->divider = S3C2410_TCFG1_MUX0_DIV8;
-+	gta01bl.pwm->counter = (((gta01bl.pwm->pclk_rate) / 32) / GTA01BL_FREQ) -1;
-+	gta01bl.pwm->comparer = gta01bl.pwm->counter;
++	int rc;
 +
-+	s3c2410_pwm_enable(gta01bl.pwm);
-+	s3c2410_pwm_start(gta01bl.pwm);
++	gta01bl.pwm.timerid = PWM0;
++	gta01bl.pwm.prescaler = (4 - 1);
++	gta01bl.pwm.divider = S3C2410_TCFG1_MUX0_DIV8;
++	gta01bl.pwm.counter = (((gta01bl.pwm.pclk_rate) / 32) / GTA01BL_FREQ) -1;
++	gta01bl.pwm.comparer = gta01bl.pwm.counter;
 +
-+	gta01bl_prop.max_brightness = gta01bl.pwm->counter;
++	rc = s3c2410_pwm_enable(&gta01bl.pwm);
++	if (rc)
++		return rc;
++
++	s3c2410_pwm_start(&gta01bl.pwm);
++
++	gta01bl_prop.max_brightness = gta01bl.pwm.counter;
++
++	return 0;
 +}
 +
 +#ifdef CONFIG_PM
@@ -211,16 +218,15 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +static int __init gta01bl_probe(struct platform_device *pdev)
 +{
 +	struct gta01bl_machinfo *machinfo = pdev->dev.platform_data;
++	int rc;
 +
 +#ifdef GTA01_BACKLIGHT_ONOFF_ONLY
 +	s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
 +	gta01bl_prop.max_brightness = 1;
 +#else
-+	/* use s3c_device_timer0 for PWM */
-+	if (!(gta01bl.pwm = s3c2410_pwm_alloc()))
-+		return -ENOMEM;
-+
-+	gta01bl_init_hw();
++	rc = gta01bl_init_hw();
++	if (rc < 0)
++		return rc;
 +#endif
 +	mutex_init(&gta01bl.mutex);
 +
@@ -246,9 +252,7 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +static int gta01bl_remove(struct platform_device *dev)
 +{
 +#ifndef GTA01_BACKLIGHT_ONOFF_ONLY
-+
-+	s3c2410_pwm_disable(gta01bl.pwm);
-+
++	s3c2410_pwm_disable(&gta01bl.pwm);
 +#endif
 +	backlight_device_unregister(gta01_backlight_device);
 +	mutex_destroy(&gta01bl.mutex);

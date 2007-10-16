@@ -6,7 +6,7 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
-@@ -0,0 +1,188 @@
+@@ -0,0 +1,189 @@
 +/*
 + * LED driver for the FIC GTA01 (Neo1973) GSM Phone Vibrator
 + *
@@ -40,7 +40,7 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 +	unsigned int gpio;
 +	struct mutex mutex;
 +	unsigned int has_pwm;
-+	struct s3c2410_pwm_t *pwm;
++	struct s3c2410_pwm pwm;
 +};
 +
 +static inline struct gta01_vib_priv *pdev_to_vpriv(struct platform_device *dev)
@@ -65,8 +65,7 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 + 	 */
 + 	mutex_lock(&vp->mutex);
 +	if (vp->has_pwm) {
-+			s3c2410_pwm_duty_cycle(value/4, vp->pwm);
-+			s3c2410_gpio_cfgpin(vp->gpio, S3C2410_GPB3_TOUT3);
++		s3c2410_pwm_duty_cycle(value/4, &vp->pwm);
 +	} else {
 +		if (value)
 +			s3c2410_gpio_setpin(vp->gpio, 1);
@@ -96,21 +95,24 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 +}
 +#endif
 +
-+static void gta01vib_init_hw(struct platform_device *pdev)
++static int gta01vib_init_hw(struct gta01_vib_priv *vp)
 +{
-+	struct gta01_vib_priv *vp = pdev_to_vpriv(pdev);
++	int rc;
 +
-+	vp->pwm->timerid= PWM3;
++	vp->pwm.timerid= PWM3;
 +	/* use same prescaler as arch/arm/plat-s3c24xx/time.c */
-+	vp->pwm->prescaler = (6 - 1) / 2;
-+	vp->pwm->divider = S3C2410_TCFG1_MUX3_DIV2;
-+	vp->pwm->counter = COUNTER;
-+	vp->pwm->comparer = COUNTER;
++	vp->pwm.prescaler = (6 - 1) / 2;
++	vp->pwm.divider = S3C2410_TCFG1_MUX3_DIV2;
++	vp->pwm.counter = COUNTER;
++	vp->pwm.comparer = COUNTER;
 +
-+	s3c2410_pwm_enable(vp->pwm);
-+	s3c2410_pwm_start(vp->pwm);
++	rc = s3c2410_pwm_enable(&vp->pwm);
++	if (rc)
++		return rc;
 +
-+	return;
++	s3c2410_pwm_start(&vp->pwm);
++
++	return 0;
 +}
 +
 +static int __init gta01vib_probe(struct platform_device *pdev)
@@ -129,25 +131,24 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 +	if (!vp)
 +		return -ENOMEM;
 +
-+	platform_set_drvdata(pdev, vp);
-+
 +	vp->gpio = r->start;
 +
 +	/* TOUT3 */
 +	if (vp->gpio == S3C2410_GPB3) {
-+		vp->has_pwm = 1;
++		int rc;
 +
-+		vp->pwm = s3c2410_pwm_alloc();
-+		if (!vp->pwm) {
-+			dev_err(&pdev->dev, "PWM allocation failed\n");
++		rc = gta01vib_init_hw(vp);
++		if (rc) {
 +			kfree(vp);
-+			return -ENOMEM;
++			return rc;
 +		}
 +
-+		gta01vib_init_hw(pdev);
++		s3c2410_gpio_cfgpin(vp->gpio, S3C2410_GPB3_TOUT3);
++		vp->has_pwm = 1;
 +	}
 +
 +	mutex_init(&vp->mutex);
++	platform_set_drvdata(pdev, vp);
 +
 +	return led_classdev_register(&pdev->dev, &gta01_vib_led);
 +}
@@ -157,7 +158,7 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 +	struct gta01_vib_priv *vp = pdev_to_vpriv(pdev);
 +
 +	if (vp->has_pwm)
-+		s3c2410_pwm_disable(vp->pwm);
++		s3c2410_pwm_disable(&vp->pwm);
 +
 +	led_classdev_unregister(&gta01_vib_led);
 +	platform_set_drvdata(pdev, NULL);
