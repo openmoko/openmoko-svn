@@ -958,6 +958,19 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
  MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 -MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GSM Management");
 +MODULE_DESCRIPTION("FIC Neo1973 GSM Power Management");
+Index: linux-2.6.22/drivers/leds/leds-gta01.c
+===================================================================
+--- linux-2.6.22.orig/drivers/leds/leds-gta01.c
++++ linux-2.6.22/drivers/leds/leds-gta01.c
+@@ -71,7 +71,7 @@
+ 	struct gta01_vib_priv *vp;
+ 	struct resource *r;
+ 
+-	if (!machine_is_neo1973_gta01())
++	if (!machine_is_neo1973_gta01() && !machine_is_neo1973_gta02())
+ 		return -EIO;
+ 
+ 	r = platform_get_resource(pdev, 0, 0);
 Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.22.orig/sound/soc/s3c24xx/neo1973_wm8753.c
