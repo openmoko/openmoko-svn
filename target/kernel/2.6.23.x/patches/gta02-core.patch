@@ -2,7 +2,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,614 @@
+@@ -0,0 +1,636 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -440,16 +440,37 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +	.board_info	= gta02_spi_board_info,
 +};
 +
-+static struct resource gta02_led_resources[] = {
++static struct resource gta01_led_resources[] = {
 +	[0] = {
 +		.start	= GTA02_GPIO_VIBRATOR_ON,
 +		.end	= GTA02_GPIO_VIBRATOR_ON,
 +	},
-+	/* FIXME */
++};
++
++static struct platform_device gta01_led_dev = {
++	.name		= "gta01-led",
++	.num_resources	= ARRAY_SIZE(gta01_led_resources),
++	.resource	= gta01_led_resources,
++};
++
++static struct resource gta02_led_resources[] = {
++	{
++		.name	= "gta02-power:color",
++		.start	= GTA02_GPIO_PWR_LED,
++		.end	= GTA02_GPIO_PWR_LED,
++	}, {
++		.name	= "gta02-aux:foo",
++		.start	= GTA02_GPIO_AUX_LED1,
++		.end	= GTA02_GPIO_AUX_LED1,
++	}, {
++		.name	= "gta02-aux:bar",
++		.start	= GTA02_GPIO_AUX_LED2,
++		.end	= GTA02_GPIO_AUX_LED2,
++	},
 +};
 +
 +struct platform_device gta02_led_dev = {
-+	.name		= "gta01-led",
++	.name		= "gta02-led",
 +	.num_resources	= ARRAY_SIZE(gta02_led_resources),
 +	.resource	= gta02_led_resources,
 +};
@@ -589,6 +610,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +	mangle_pmu_pdata_by_system_rev();
 +	platform_device_register(&gta02_pmu_dev);
++	platform_device_register(&gta01_led_dev);
 +	platform_device_register(&gta02_led_dev);
 +
 +	mangle_glamo_res_by_system_rev();
@@ -621,7 +643,7 @@ Index: linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,97 @@
 +#ifndef _GTA02_H
 +#define _GTA02_H
 +
@@ -636,6 +658,9 @@ Index: linux-2.6.22/include/asm-arm/arch-s3c2410/gta02.h
 +
 +#define GTA02_GPIO_n3DL_GSM	S3C2410_GPA13	/* v1 + v2 + v3 only */
 +
++#define GTA02_GPIO_AUX_LED1	S3C2410_GPB0
++#define GTA02_GPIO_AUX_LED2	S3C2410_GPB1
++#define GTA02_GPIO_PWR_LED	S3C2410_GPB2
 +#define GTA02_GPIO_VIBRATOR_ON	S3C2410_GPB3
 +#define GTA02v1_GPIO_GPS_PWRON	S3C2410_GPB4	/* v1 only */
 +#define GTA02_GPIO_MODEM_RST	S3C2410_GPB5
@@ -978,9 +1003,9 @@ Index: linux-2.6.22/arch/arm/common/gta01_pm_gsm.c
 +MODULE_DESCRIPTION("FIC Neo1973 GSM Power Management");
 Index: linux-2.6.22/drivers/leds/leds-gta01.c
 ===================================================================
---- linux-2.6.22.orig/drivers/leds/leds-gta01.c
-+++ linux-2.6.22/drivers/leds/leds-gta01.c
-@@ -71,7 +71,7 @@
+--- linux-2.6.22.5-moko.orig/drivers/leds/leds-gta01.c
++++ linux-2.6.22.5-moko/drivers/leds/leds-gta01.c
+@@ -111,7 +110,7 @@
  	struct gta01_vib_priv *vp;
  	struct resource *r;
  
@@ -993,7 +1018,7 @@ Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
 ===================================================================
 --- linux-2.6.22.orig/sound/soc/s3c24xx/neo1973_wm8753.c
 +++ linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
-@@ -638,6 +638,12 @@
+@@ -670,6 +670,12 @@
  {
  	int ret;
  
@@ -1006,7 +1031,7 @@ Index: linux-2.6.22/sound/soc/s3c24xx/neo1973_wm8753.c
  	neo1973_snd_device = platform_device_alloc("soc-audio", -1);
  	if (!neo1973_snd_device)
  		return -ENOMEM;
-@@ -666,5 +672,5 @@
+@@ -698,5 +704,5 @@
  
  /* Module information */
  MODULE_AUTHOR("Graeme Gregory, graeme.gregory@wolfsonmicro.com, www.wolfsonmicro.com");

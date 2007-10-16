@@ -51,4 +51,4 @@ neo1973-soc-include-fix.patch
 explicitly-link-notes-section.patch
 fix-s3c2410fb-register-access.patch
 lis302dl.patch
-#gta02-leds.patch
+gta02-leds.patch
