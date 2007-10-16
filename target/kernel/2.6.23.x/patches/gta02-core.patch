@@ -2,7 +2,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,658 @@
+@@ -0,0 +1,600 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -315,6 +315,8 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +	&s3c_device_usbgadget,
 +	&s3c_device_nand,
 +	&s3c_device_ts,
++	&s3c_device_spi0,
++	&s3c_device_spi1,
 +};
 +
 +static struct s3c2410_nand_set gta02_nand_sets[] = {
@@ -415,7 +417,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +		/* controller_data */
 +		/* irq */
 +		.max_speed_hz	= 10 * 1000 * 1000,
-+		.bus_num	= 1,
++		.bus_num	= 2,
 +		/* chip_select */
 +	},
 +};
@@ -433,66 +435,6 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-gta02.c
 +	.board_size	= ARRAY_SIZE(gta02_spi_board_info),
 +	.board_info	= gta02_spi_board_info,
 +};
-+
-+#if 0
-+#ifdef SPI_HARD
-+static struct s3c2410_spi_info spi_cfg = {
-+	.pin_cs		= S3C2410_GPG3,
-+	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
-+	.board_info	= gta01_spi_board_info,
-+};
-+#else
-+static void spi_gpio_cs(struct s3c2410_spigpio_info *spi, int cs)
-+{
-+	switch (cs) {
-+	case BITBANG_CS_ACTIVE:
-+		s3c2410_gpio_setpin(S3C2410_GPG3, 0);
-+		break;
-+	case BITBANG_CS_INACTIVE:
-+		s3c2410_gpio_setpin(S3C2410_GPG3, 1);
-+		break;
-+	}
-+}
-+
-+static struct s3c2410_spigpio_info spi_gpio_cfg = {
-+	.pin_clk	= S3C2410_GPG7,
-+	.pin_mosi	= S3C2410_GPG6,
-+	.pin_miso	= S3C2410_GPG5,
-+	.board_size	= ARRAY_SIZE(gta01_spi_board_info),
-+	.board_info	= gta01_spi_board_info,
-+	.chip_select	= &spi_gpio_cs,
-+};
-+
-+static struct resource s3c_spi_lcm_resource[] = {
-+	[0] = {
-+		.start = S3C2410_GPG3,
-+		.end   = S3C2410_GPG3,
-+	},
-+	[1] = {
-+		.start = S3C2410_GPG5,
-+		.end   = S3C2410_GPG5,
-+	},
-+	[2] = {
-+		.start = S3C2410_GPG6,
-+		.end   = S3C2410_GPG6,
-+	},
-+	[3] = {
-+		.start = S3C2410_GPG7,
-+		.end   = S3C2410_GPG7,
-+	},
-+};
-+
-+struct platform_device s3c_device_spi_lcm = {
-+	.name		  = "s3c24xx-spi-gpio",
-+	.id		  = 1,
-+	.num_resources	  = ARRAY_SIZE(s3c_spi_lcm_resource),
-+	.resource	  = s3c_spi_lcm_resource,
-+	.dev = {
-+		.platform_data = &spi_gpio_cfg,
-+	},
-+};
-+#endif
-+#endif
 +
 +static struct resource gta02_led_resources[] = {
 +	[0] = {
