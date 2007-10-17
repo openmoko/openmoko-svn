@@ -38,7 +38,7 @@ Index: linux-2.6.23/arch/arm/mach-s3c2410/pwm.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.23/arch/arm/mach-s3c2410/pwm.c
-@@ -0,0 +1,210 @@
+@@ -0,0 +1,214 @@
 +/*
 + * arch/arm/mach-s3c2410/3c2410-pwm.c
 + *
@@ -70,28 +70,32 @@ Index: linux-2.6.23/arch/arm/mach-s3c2410/pwm.c
 +	unsigned long tcon;
 +
 +	/* stop timer */
-+        tcon = __raw_readl(S3C2410_TCON);
-+        tcon &= 0xffffff00;
-+        __raw_writel(tcon, S3C2410_TCON);
++	tcon = __raw_readl(S3C2410_TCON);
++	tcon &= 0xffffff00;
++	__raw_writel(tcon, S3C2410_TCON);
 +
 +	clk_disable(pwm->pclk);
 +	clk_put(pwm->pclk);
 +
-+	kfree(pwm);
 +	return 0;
 +}
 +EXPORT_SYMBOL_GPL(s3c2410_pwm_disable);
 +
-+int s3c2410_pwm_enable(struct s3c2410_pwm *pwm)
++int s3c2410_pwm_init(struct s3c2410_pwm *pwm)
 +{
-+	unsigned long tcfg0, tcfg1, tcnt, tcmp;
-+
 +	pwm->pclk = clk_get(NULL, "timers");
 +	if (IS_ERR(pwm->pclk))
 +		return PTR_ERR(pwm->pclk);
 +
 +	clk_enable(pwm->pclk);
 +	pwm->pclk_rate = clk_get_rate(pwm->pclk);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(s3c2410_pwm_init);
++
++int s3c2410_pwm_enable(struct s3c2410_pwm *pwm)
++{
++	unsigned long tcfg0, tcfg1, tcnt, tcmp;
 +
 +	/* control registers bits */
 +	tcfg1 = __raw_readl(S3C2410_TCFG1);
@@ -253,7 +257,7 @@ Index: linux-2.6.23/include/asm-arm/arch-s3c2410/pwm.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6.23/include/asm-arm/arch-s3c2410/pwm.h
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,40 @@
 +#ifndef __S3C2410_PWM_H
 +#define __S3C2410_PWM_H
 +
@@ -264,6 +268,7 @@ Index: linux-2.6.23/include/asm-arm/arch-s3c2410/pwm.h
 +#include <asm-arm/io.h>
 +#include <asm/arch/hardware.h>
 +#include <asm/mach-types.h>
++#include <asm/plat-s3c/regs-timer.h>
 +#include <asm/arch/gta01.h>
 +
 +enum pwm_timer {
@@ -284,6 +289,7 @@ Index: linux-2.6.23/include/asm-arm/arch-s3c2410/pwm.h
 +	unsigned long comparer;
 +};
 +
++int s3c2410_pwm_init(struct s3c2410_pwm *s3c2410_pwm);
 +int s3c2410_pwm_enable(struct s3c2410_pwm *s3c2410_pwm);
 +int s3c2410_pwm_disable(struct s3c2410_pwm *s3c2410_pwm);
 +int s3c2410_pwm_start(struct s3c2410_pwm *s3c2410_pwm);
