@@ -41,7 +41,7 @@
 #include <gsmd/ts0707.h>
 #include <gsmd/sms.h>
 
-static void *__ucmd_ctx, *__gu_ctx;
+static void *__ucmd_ctx, *__gu_ctx, *__pb_ctx;
 
 struct gsmd_ucmd *ucmd_alloc(int extra_size)
 {
@@ -1035,21 +1035,56 @@ static int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 static int phonebook_find_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	struct gsmd_user *gu = ctx;	
-	struct gsmd_ucmd *ucmd;			
-	
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd;
+	struct gsmd_phonebooks *gps;
+	char *fcomma, *lcomma, *ptr1, *ptr2 = NULL;
+	int *num;
+
 	DEBUGP("resp: %s\n", resp);
 
-	/* FIXME: using link list, also we need to handle the case of
-	 * no query result */
-	ucmd = gsmd_ucmd_fill(strlen(resp) + 1, GSMD_MSG_PHONEBOOK,
+	/*
+	 * [+CPBF: <index1>,<number>,<type>,<text>[[...]
+	 * <CR><LF>+CPBF: <index2>,<unmber>,<type>,<text>]]
+	 */
+	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_PHONEBOOK,
 			      GSMD_PHONEBOOK_FIND, 0);
 	if (!ucmd)
 		return -ENOMEM;	
 
-	strcpy(ucmd->buf, resp);
+	num = (int*) ucmd->buf;
+
+	*num = 0;
+
+	ptr1 = strtok(resp, "\n");
+
+	while (ptr1) {
+		gps = talloc(__pb_ctx, struct gsmd_phonebooks);
+		ptr2 = strchr(ptr1, ' ');
+		gps->pb.index = atoi(ptr2+1);
+
+		fcomma = strchr(ptr1, '"');
+		lcomma = strchr(fcomma+1, '"');
+		strncpy(gps->pb.numb, fcomma + 1, (lcomma-fcomma-1));
+		gps->pb.numb[(lcomma - fcomma) - 1] = '\0';
+
+		gps->pb.type = atoi(lcomma + 2);
+
+		ptr2 = strrchr(ptr1, ',');
+		fcomma = ptr2 + 1;
+		lcomma = strchr(fcomma + 1, '"');
+		strncpy(gps->pb.text, fcomma + 1, (lcomma - fcomma - 1));
+		gps->pb.text[(lcomma - fcomma) - 1] = '\0';
+
+		llist_add_tail(&gps->list, &gu->pb_find_list);
+
+		(*num)++;
+
+		ptr1 = strtok(NULL, "\n");
+	}
 
 	usock_cmd_enqueue(ucmd, gu);
+	talloc_free(__pb_ctx);
 	return 0;
 }
 
@@ -1102,25 +1137,54 @@ static int phonebook_readrg_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
 	struct gsmd_ucmd *ucmd;
+	struct gsmd_phonebooks *gps;
+	char *fcomma, *lcomma, *ptr1, *ptr2 = NULL;
+	int *num;
 
 	DEBUGP("resp: %s\n", resp);
 
 	/*
-	 * +CPBR: 4,"1234",129,"6C5F745E7965"
-	 * +CPBR: 5,"5678",129,"800062115BB6"
-	 * +CPBR: 6,"7890",129,"810280AA591A"
-	 * +CPBR: 8,"36874",129,"005300650061006E"
-	 *
+	 * [+CPBR: <index1>,<number>,<type>,<text>[[...]
+	 * <CR><LF>+CPBR: <index2>,<unmber>,<type>,<text>]]
 	 */
-	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONEBOOK,
+	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_PHONEBOOK,
 			      GSMD_PHONEBOOK_READRG, 0);
 	if (!ucmd)
 		return -ENOMEM;	
 
-	strcpy(ucmd->buf, resp);
+	num = (int*) ucmd->buf;
+
+	*num = 0;
+
+	ptr1 = strtok(resp, "\n");
+
+	while (ptr1) {
+		gps = talloc(__pb_ctx, struct gsmd_phonebooks);
+		ptr2 = strchr(ptr1, ' ');
+		gps->pb.index = atoi(ptr2+1);
+
+		fcomma = strchr(ptr1, '"');
+		lcomma = strchr(fcomma+1, '"');
+		strncpy(gps->pb.numb, fcomma + 1, (lcomma-fcomma-1));
+		gps->pb.numb[(lcomma - fcomma) - 1] = '\0';
+
+		gps->pb.type = atoi(lcomma + 2);
+
+		ptr2 = strrchr(ptr1, ',');
+		fcomma = ptr2 + 1;
+		lcomma = strchr(fcomma + 1, '"');
+		strncpy(gps->pb.text, fcomma + 1, (lcomma - fcomma - 1));
+		gps->pb.text[(lcomma - fcomma) - 1] = '\0';
+
+		llist_add_tail(&gps->list, &gu->pb_readrg_list);
+
+		(*num)++;
+
+		ptr1 = strtok(NULL, "\n");
+	}
 
 	usock_cmd_enqueue(ucmd, gu);
-
+	talloc_free(__pb_ctx);
 	return 0;
 }
 
@@ -1209,22 +1273,38 @@ static int phonebook_get_support_cb(struct gsmd_atcmd *cmd, void *ctx, char *res
 static int phonebook_list_storage_cb(struct gsmd_atcmd *cmd,
 		void *ctx, char *resp)
 {
-	/* +CPBS: ("EN","BD","FD","DC","LD","RC","LR","MT","AD",
-	 *         "SM","SD","MC","LM","AF","ON","UD") */
 	/* TODO; using link list ; need to handle command error */
 	struct gsmd_user *gu = ctx;
 	struct gsmd_ucmd *ucmd;
+	struct gsmd_phonebook_storage *gps;
+	char *ptr;
 
 	DEBUGP("resp: %s\n", resp);
 
-	ucmd = gsmd_ucmd_fill(strlen(resp) + 1,
+	/*
+	 * +CPBS: (<storage>s)
+	 */
+
+	ucmd = gsmd_ucmd_fill(sizeof(*gps),
 			GSMD_MSG_PHONEBOOK,
 			GSMD_PHONEBOOK_LIST_STORAGE, 0);
 
         if (!ucmd)
 		return -ENOMEM;
 
-	strcpy(ucmd->buf, resp);
+	gps = (struct gsmd_phonebook_storage *) ucmd->buf;
+	gps->num = 0;
+
+	if (!strncmp(resp, "+CPBS", 5)) {
+		char* delim = "(,";
+		ptr = strpbrk(resp, delim);
+		while ( ptr ) {
+			strncpy(gps->mem[gps->num].type, ptr+2, 2);
+			gps->mem[gps->num].type[2] = '\0';
+			ptr = strpbrk(ptr+2, delim);
+			gps->num++;
+		}
+	}
 
 	usock_cmd_enqueue(ucmd, gu);
 
@@ -1235,11 +1315,13 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		struct gsmd_msg_hdr *gph,int len)
 {	
 	struct gsmd_atcmd *cmd = NULL;
+	struct gsmd_ucmd *ucmd = NULL;
 	struct gsmd_phonebook_readrg *gpr;
 	struct gsmd_phonebook *gp;
 	struct gsmd_phonebook_find *gpf;
-	int *index;
-	int atcmd_len;
+	struct gsmd_phonebooks *cur, *cur2;
+	int *index, *num;
+	int atcmd_len, i;
 	char *storage;
 	char buf[1024];
 
@@ -1342,6 +1424,66 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 	case GSMD_PHONEBOOK_GET_SUPPORT:
 		cmd = atcmd_fill("AT+CPBR=?", 9+1,
 				 &phonebook_get_support_cb, gu, gph->id);
+		break;
+	case GSMD_PHONEBOOK_RETRIEVE_READRG:
+		if (len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+
+		num = (int *) ((void *)gph + sizeof(*gph));
+
+		ucmd = gsmd_ucmd_fill(sizeof(struct gsmd_phonebook)*(*num),
+				GSMD_MSG_PHONEBOOK,
+				GSMD_PHONEBOOK_RETRIEVE_READRG, 0);
+		if (!ucmd)
+			return -ENOMEM;
+
+		gp = (struct gsmd_phonebook*) ucmd->buf;
+
+		if (!llist_empty(&gu->pb_readrg_list)) {
+
+			llist_for_each_entry_safe(cur, cur2,
+					&gu->pb_readrg_list, list) {
+				gp->index = cur->pb.index;
+				strcpy(gp->numb, cur->pb.numb);
+				gp->type = cur->pb.type;
+				strcpy(gp->text, cur->pb.text);
+				gp++;
+
+				llist_del(&cur->list);
+				free(cur);
+			}
+		}
+
+		usock_cmd_enqueue(ucmd, gu);
+
+		break;
+	case GSMD_PHONEBOOK_RETRIEVE_FIND:
+		if (len < sizeof(*gph) + sizeof(int))
+			return -EINVAL;
+
+		num = (int *) ((void *)gph + sizeof(*gph));
+
+		ucmd = gsmd_ucmd_fill(sizeof(struct gsmd_phonebook)*(*num), GSMD_MSG_PHONEBOOK,
+				      GSMD_PHONEBOOK_RETRIEVE_FIND, 0);
+		if (!ucmd)
+			return -ENOMEM;
+
+		gp = (struct gsmd_phonebook*) ucmd->buf;
+
+		if (!llist_empty(&gu->pb_find_list)) {
+			llist_for_each_entry_safe(cur, cur2, &gu->pb_find_list, list) {
+				gp->index = cur->pb.index;
+				strcpy(gp->numb, cur->pb.numb);
+				gp->type = cur->pb.type;
+				strcpy(gp->text, cur->pb.text);
+				gp++;
+
+				llist_del(&cur->list);
+				free(cur);
+			}
+		}
+
+		usock_cmd_enqueue(ucmd, gu);
 		break;
 	default:
 		return -EINVAL;
@@ -1468,6 +1610,8 @@ static int gsmd_usock_cb(int fd, unsigned int what, void *data)
 		newuser->gsmd = g;
 		newuser->subscriptions = 0xffffffff;
 		INIT_LLIST_HEAD(&newuser->finished_ucmds);
+		INIT_LLIST_HEAD(&newuser->pb_readrg_list);
+		INIT_LLIST_HEAD(&newuser->pb_find_list);
 
 		llist_add(&newuser->list, &g->users);
 		gsmd_register_fd(&newuser->gfd);

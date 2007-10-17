@@ -194,6 +194,8 @@ enum gsmd_msg_phonebook {
 	GSMD_PHONEBOOK_GET_SUPPORT	= 6,
 	GSMD_PHONEBOOK_LIST_STORAGE	= 7,
 	GSMD_PHONEBOOK_SET_STORAGE	= 8,
+	GSMD_PHONEBOOK_RETRIEVE_READRG	= 9,
+	GSMD_PHONEBOOK_RETRIEVE_FIND	= 10,
 };
 
 /* Type-of-Address, Numbering-Plan-Identification field, GSM 03.40, 9.1.2.5 */
@@ -432,7 +434,6 @@ struct gsmd_phonebook {
 	char text[GSMD_PB_TEXT_MAXLEN+1];
 } __attribute__ ((packed));
 
-
 /* Refer to GSM 07.07 subclause 8.13 */
 /* FIXME: the tlength depends on SIM, use +CPBR=? to get */ 
 struct gsmd_phonebook_find {	
@@ -472,8 +473,18 @@ struct gsmd_msg_prefoper {
 	char opname_longalpha[16];
 };
 
+/* Refer to GSM 07.07 subclause 8.11 */
+struct gsmd_phonebook_mem {
+	u_int8_t type[3];
+	u_int8_t pad;
+	u_int16_t used;
+	u_int16_t total;
+} __attribute__ ((packed));
+
 struct gsmd_phonebook_storage {
-	char storage[3];
+	/* FIXME the amount of phonebook storage should be dynamic */
+	u_int8_t num;
+	struct gsmd_phonebook_mem mem[20];
 } __attribute__ ((packed));
 
 /* Subscriber number information from 3GPP TS 07.07, Clause 7.1 */
@@ -516,6 +527,11 @@ struct gsmd_ucmd {
 	struct llist_head list;
 	struct gsmd_msg_hdr hdr;
 	char buf[];
+} __attribute__ ((packed));
+
+struct gsmd_phonebooks {
+	struct llist_head list;
+	struct gsmd_phonebook pb;
 } __attribute__ ((packed));
 
 extern struct gsmd_ucmd *ucmd_alloc(int extra_size);

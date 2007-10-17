@@ -92,6 +92,9 @@ struct gsmd_user {
 	struct gsmd *gsmd;
 	struct gsmd_fd gfd;				/* the socket */
 	u_int32_t subscriptions;		/* bitmaks of subscribed event groups */
+
+	struct llist_head pb_readrg_list;	/* our READRG phonebook list */
+	struct llist_head pb_find_list;		/* our FIND phonebook list */
 };
 
 #define GSMD_DEBUG	1	/* debugging information */

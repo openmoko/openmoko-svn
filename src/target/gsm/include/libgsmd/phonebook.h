@@ -106,4 +106,10 @@ extern int lgsm_pb_write_entry(struct lgsm_handle *lh,
 /* Get the location range/nlength/tlength supported */
 extern int lgsm_pb_get_support(struct lgsm_handle *lh);
 
+/* Retrieve the records of READRG request */
+extern int lgsm_pb_retrieve_readrg(struct lgsm_handle *lh, int num);
+
+/* Retrieve the records of FIND request */
+extern int lgsm_pb_retrieve_find(struct lgsm_handle *lh, int num);
+
 #endif
