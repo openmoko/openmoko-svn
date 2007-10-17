@@ -168,8 +168,6 @@ class "GtkNotebook" style "notebook"
 
 style "menu"
 {
-  GtkMenu::vertical-padding = 8
-  GtkMenu::horizontal-padding = 8
   engine "moko-engine" {
     gradient = FALSE
     border = TRUE
@@ -177,10 +175,22 @@ style "menu"
 }
 class "GtkMenu" style "menu"
 
+style "menubar"
+{
+  engine "moko-engine" {
+    gradient = TRUE
+  }
+}
+class "GtkMenuBar" style "menubar"
+widget_class "*GtkMenuBar*" style "reversed"
+
 style "menuitem"
 {
   xthickness = 8
   ythickness = 8
+
+  bg[PRELIGHT] = @selected_bg_color
+  fg[PRELIGHT] = @selected_fg_color
 
   engine "moko-engine" {
     gradient = TRUE
