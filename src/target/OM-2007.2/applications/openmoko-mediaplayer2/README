@@ -1,8 +1,36 @@
+-- General
+
 This is the OpenMoko media player for OM2007.2, enabling you to playback audio
 (and eventually video) on your smartphone.
 
 It stores XSPF playlists in ~/playlists and uses the SD card as media storage
 by default. Please be aware that there are issues still - especially when it
 comes to the user interface. They'll be fixed however, so bear with me :)
+
+-- Theming
+
+I tried to keep things as flexible as possible while not making structures
+too nested to keep performance up. As GTK's theming abilities however are
+crude at best, the following should be noted:
+
+Button pixmap overlays are the size of the button background with one or
+two pixel(s) shaved off on all four sides. I don't know why GTK requires it
+but if both pixmaps have the same size it scales the background.
+
+Also, the white button backgrounds are not symmetrical which means that the
+pixmaps they contain must not be centered - which however is what GTK+ would
+do. To remedy this I could either have used the button's xalign/yalign proper-
+ties (which would be hard-coded in the app) or used customized pixmaps that
+align with the button neatly.
+I decided to use the latter option, even if it means that this prevents me
+from using the stock icons from the openmoko-standard theme. I think being
+more flexible is the higher good compared to having all app icons in a common
+place.
+
+
+If you happen to run into a bug, please use the OpenMoko bugtracker to notify
+me: http://bugzilla.openmoko.org - I'll get back to you as soon as I can.
+
+Enjoy! :)
 
  -Soeren

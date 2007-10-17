@@ -58,12 +58,13 @@ struct _omp_config
 	guint repeat_mode;								///< Repeat mode @see omp_repeat_modes
 	gboolean resume_playback;					///< Resume playback on startup where it left off?
 	guint prev_track_treshold;				///< Amount of milliseconds a track must have been playing to jump back to track beginning on "prev track" event
-//	gboolean auto_scroll;						///< Scroll title if it's too long?
-	gdouble equalizer_gain;						///< Pre-amplification value before audio stream is fed to equalizer [0.0..1.0]
-	gdouble equalizer_bands[11];			///< The gains for each of the equalizer bands [-1.0..1.0]
 	gboolean show_numbers_in_pl;			///< Show numbers in playlist?
 	gulong pulsesink_buffer_time;			///< Value to set pulsesink's buffer-time property to
 	gulong pulsesink_latency_time;		///< Value to set pulsesink's latency-time property to
+	gboolean main_ui_show_cover;			///< Flag determining whether cover is shown or not
+	guint main_ui_label1;							///< Contents of main UI's label #1
+	guint main_ui_label2;							///< Contents of main UI's label #2
+	guint main_ui_label3;							///< Contents of main UI's label #3
 };
 
 /// Session-persistent data
@@ -95,6 +96,10 @@ guint omp_config_get_repeat_mode();
 guint omp_config_get_prev_track_treshold();
 gulong omp_config_get_pulsesink_buffer_time();
 gulong omp_config_get_pulsesink_latency_time();
+gboolean omp_config_get_main_ui_show_cover();
+guint omp_config_get_main_ui_label1();
+guint omp_config_get_main_ui_label2();
+guint omp_config_get_main_ui_label3();
 
 void omp_session_init();
 void omp_session_free();

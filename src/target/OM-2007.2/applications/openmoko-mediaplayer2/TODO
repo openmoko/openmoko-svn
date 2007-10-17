@@ -3,17 +3,18 @@ UI:
 	Make FFWD/REW buttons trigger repeatedly
 	Make Prev/Next buttons sensitive depending on playlist state
 	m3u import
-	QVGA support through external style definitions
+	QVGA theme
+	Screen aspect ratio awareness to re-adjust UI on rotation
+	Preferences page
 	
 Backend:
 	Use GConf
 	Use GST_MESSAGE_DURATION and use saved value
 	Use GST_MESSAGE_BUFFERING
 	Check for unicode compliance
+	Cover art fetching/caching
 	
 Issues:
-	Use EQ presets only or allow individual band adjustment?
-	How to adjust equalizer?
 	Reduce call frequency of omp_playback_get_track_length()
 
 Documentation:

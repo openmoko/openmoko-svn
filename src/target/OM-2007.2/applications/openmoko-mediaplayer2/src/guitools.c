@@ -34,35 +34,6 @@ gchar *omp_ui_image_path = NULL;
 
 
 /**
- * Loads an image from a file into a pixel buffer
- * @return Pixbuf with the image, must be unref'd after use
- */
-GdkPixbuf*
-pixbuf_new_from_file(const gchar *file_name)
-{
-	gchar *image_file_name;
-	GdkPixbuf *pixbuf = NULL;
-	GError *error = NULL;
-
-	image_file_name = g_strdup_printf("%s/%s", omp_ui_image_path, file_name);
-
-	if(g_file_test(image_file_name, G_FILE_TEST_EXISTS))
-	{
-		pixbuf = gdk_pixbuf_new_from_file(image_file_name, &error);
-		if(!pixbuf)
-		{
-			g_printerr("File found but failed to load: %s\n", image_file_name);
-			g_error_free(error);
-		}
-	} else {
-		g_printerr("Can't find %s\n", image_file_name);
-	}
-
-	g_free(image_file_name);
-	return pixbuf;
-}
-
-/**
  * Creates a label with default properties, wraps it up in a GtkAlignment and returns the latter for direct use
  * @param label Will be filled with a GtkLabel
  * @param font_info The desired font to be used (e.g. "Times 10")
@@ -104,32 +75,79 @@ label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
 }
 
 /**
- * Creates a button containing an image
- * @param image_name Path and file name of the image to use
+ * Loads an image from a file into a pixel buffer
+ * @return Pixbuf with the image, must be unref'd after use
+ */
+GdkPixbuf*
+pixbuf_new_from_file(const gchar *file_name)
+{
+	gchar *image_file_name;
+	GdkPixbuf *pixbuf = NULL;
+	GError *error = NULL;
+
+	image_file_name = g_strdup_printf("%s/%s", omp_ui_image_path, file_name);
+
+	if(g_file_test(image_file_name, G_FILE_TEST_EXISTS))
+	{
+		pixbuf = gdk_pixbuf_new_from_file(image_file_name, &error);
+		if(!pixbuf)
+		{
+			g_printerr("File found but failed to load: %s\n", image_file_name);
+			g_error_free(error);
+		}
+	} else {
+		g_printerr("Can't find %s\n", image_file_name);
+	}
+
+	g_free(image_file_name);
+	return pixbuf;
+}
+
+/**
+ * Creates a button containing a stock image
+ * @param widget_name Name to set for the button and image widgets
+ * @param image_name Name of the stock image to use
  * @param image Destination for the image's handle (can be NULL)
  * @param callback Callback to set
  * @return The button
  */
 GtkWidget *
-button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callback)
+button_create_with_image(gchar *widget_name, gchar *image_name, GtkWidget **image, GCallback callback)
 {
 	GtkWidget *btn_image, *button;
-	gchar *image_file_name;
 
 	button = gtk_button_new();
+	gtk_widget_set_name(GTK_WIDGET(button), widget_name);
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), NULL);
 	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(button), GTK_CAN_FOCUS);
 
-//	g_object_set(G_OBJECT(*button), "xalign", (gfloat)0.37, "yalign", (gfloat)0.37, NULL);
-
-	image_file_name = g_build_path("/", omp_ui_image_path, image_name, NULL);
-	btn_image = gtk_image_new_from_file(image_file_name);
-	g_free(image_file_name);
+	btn_image = gtk_image_new();
+	gtk_widget_set_name(GTK_WIDGET(btn_image), widget_name);
+	gtk_image_set_from_stock(GTK_IMAGE(btn_image), image_name, -1);
 	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(btn_image));
 
 	if (image) *image = btn_image;
 
 	return button;
+}
+
+/**
+ * Wraps a widget in an invisible GtkFrame so the widget can be padded using x/ythickness in the frame's style
+ * @param widget Widget to be put inside the frame
+ * @param name Name to assign to the frame, uses the widget's name if NULL
+ * @return Frame containing the widget
+ */
+GtkWidget *
+widget_wrap(GtkWidget *widget, gchar *name)
+{
+	GtkWidget *frame;
+
+	frame = gtk_frame_new(NULL);
+	gtk_widget_set_name(GTK_WIDGET(frame), (name) ? name : gtk_widget_get_name(widget));
+	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
+	gtk_container_add(GTK_CONTAINER(frame), GTK_WIDGET(widget));
+
+	return frame;
 }
 
 /**
@@ -166,7 +184,7 @@ error_dialog_modal(gchar *message)
 	// We don't want a title of "<unnamed>"
 	gtk_window_set_title(GTK_WINDOW(dialog), " ");
 
-	gtk_dialog_run(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 }
 

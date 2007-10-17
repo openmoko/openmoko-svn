@@ -37,7 +37,10 @@ GdkPixbuf *pixbuf_new_from_file(const gchar* file_name);
 
 GtkWidget *label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
 	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale, PangoEllipsizeMode ellipsize_mode);
-GtkWidget *button_create_with_image(gchar *image_name, GtkWidget **image, GCallback callback);
+
+GtkWidget *button_create_with_image(gchar *widget_name, gchar *image_name, GtkWidget **image, GCallback callback);
+
+GtkWidget *widget_wrap(GtkWidget *widget, gchar *name);
 
 void error_dialog(gchar *message);
 void error_dialog_modal(gchar *message);

@@ -37,6 +37,7 @@
 
 #include "files_page.h"
 #include "main.h"
+#include "main_page.h"
 #include "persistent.h"
 #include "playlist.h"
 #include "playback.h"
@@ -48,12 +49,13 @@ struct _omp_config omp_default_config =
 	OMP_REPEAT_OFF,							// repeat_mode
 	TRUE,												// resume_playback
 	10000,											// prev_track_treshold
-//	FALSE,											// auto_scroll
-	0.0,												// equalizer_gain
-	{0,0,0,0,0,0,0,0,0,0,0},		// EQ bands
 	TRUE,												// show_numbers_in_pl
 	500000,											// pulsesink_buffer_time
-	100000											// pulsesink_latency_time
+	100000,											// pulsesink_latency_time
+	TRUE,												// main_ui_show_cover
+	OMP_MAIN_LABEL_HIDDEN,			// main_ui_label1
+	OMP_MAIN_LABEL_ARTIST,			// main_ui_label2
+	OMP_MAIN_LABEL_TITLE				// main_ui_label3
 };
 
 struct _omp_config *omp_config = NULL;			///< Global and persistent configuration data
@@ -178,6 +180,42 @@ gulong
 omp_config_get_pulsesink_latency_time()
 {
 	return omp_config->pulsesink_latency_time;
+}
+
+/**
+ * Returns the flag that determines whether the album cover is shown on the main UI
+ */
+gboolean
+omp_config_get_main_ui_show_cover()
+{
+	return omp_config->main_ui_show_cover;
+}
+
+/**
+ * Returns the content type to be used for main UI's label #1
+ */
+guint
+omp_config_get_main_ui_label1()
+{
+	return omp_config->main_ui_label1;
+}
+
+/**
+ * Returns the content type to be used for main UI's label #2
+ */
+guint
+omp_config_get_main_ui_label2()
+{
+	return omp_config->main_ui_label2;
+}
+
+/**
+ * Returns the content type to be used for main UI's label #3
+ */
+guint
+omp_config_get_main_ui_label3()
+{
+	return omp_config->main_ui_label3;
 }
 
 /**
@@ -429,18 +467,19 @@ omp_session_get_fade_speed()
 }
 
 /**
- * Returns the path used for the file chooser UI; must be freed after use
+ * Returns the path used for the file chooser UI; must not be freed
  */
 gchar *
 omp_session_get_file_chooser_path()
 {
 	g_return_val_if_fail(omp_session, NULL);
 
+	// Set the default value if not set
 	if (omp_session->file_chooser_path[0] == 0)
 	{
 		g_snprintf(omp_session->file_chooser_path, sizeof(omp_session->file_chooser_path),
 			"%s", OMP_DEFAULT_FILE_CHOOSER_PATH);
 	}
 
-	return g_strdup((gchar *)&omp_session->file_chooser_path);
+	return (gchar *)&omp_session->file_chooser_path;
 }

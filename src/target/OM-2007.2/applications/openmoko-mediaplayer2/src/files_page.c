@@ -178,7 +178,6 @@ omp_files_page_update_path()
 		g_free(temp);
 
 		g_error_free(error);
-		g_free(path);
 		return;
 	}
 
@@ -220,7 +219,6 @@ omp_files_page_update_path()
 	} while (TRUE);
 
 	g_dir_close(dir);
-	g_free(path);
 }
 
 /**

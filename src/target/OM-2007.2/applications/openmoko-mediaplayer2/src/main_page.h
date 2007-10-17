@@ -36,6 +36,18 @@
 // Determines how many milliseconds the engine will seek if the FFWD/REW buttons are clicked
 #define BUTTON_SEEK_DISTANCE 10000
 
+
+
+/// Content types that can be assigned to the labels
+typedef enum
+{
+	OMP_MAIN_LABEL_HIDDEN,
+	OMP_MAIN_LABEL_EMPTY,				// Visible but empty - only makes sense for label #1 as it affects UI layout
+	OMP_MAIN_LABEL_ARTIST,
+	OMP_MAIN_LABEL_TITLE,
+	OMP_MAIN_LABEL_ALBUM
+} omp_main_label_type;
+
 GtkWidget *omp_main_page_create();
 
 #endif

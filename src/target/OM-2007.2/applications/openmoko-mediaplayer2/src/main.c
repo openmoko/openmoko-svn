@@ -208,6 +208,31 @@ check_lock()
 }
 
 /**
+ * Determines theme to be used, uses this app's theme file and sets up related UI properties
+ */
+void
+omp_init_theme()
+{
+	gchar *theme_dir, *theme_name, *theme_rc;
+
+	moko_stock_register();
+	omp_ui_image_path = g_build_path("/", DATA_DIR, OMP_RELATIVE_UI_IMAGE_PATH, NULL);
+
+	g_set_application_name(_("Media Player"));
+	gtk_window_set_default_icon_name("openmoko-soundandvideo");
+
+	theme_dir = gtk_rc_get_theme_dir();
+	g_object_get(G_OBJECT(gtk_settings_get_default()), "gtk-theme-name", &theme_name, NULL);
+	theme_rc = g_build_filename(theme_dir, "/", theme_name, "/gtk-2.0/openmoko-mediaplayer", NULL);
+
+	gtk_rc_parse(theme_rc);
+
+	g_free(theme_rc);
+	g_free(theme_name);
+	g_free(theme_dir);
+}
+
+/**
  * Program termination event triggered by main window
  */
 void
@@ -388,13 +413,9 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	// Initialize various things necessary for the full player UI
-	moko_stock_register();
-	omp_ui_image_path = g_build_path("/", DATA_DIR, OMP_RELATIVE_UI_IMAGE_PATH, NULL);
-
-	g_set_application_name(_("Media Player"));
-	gtk_window_set_default_icon_name("openmoko-soundandvideo");
-
+	// Initialize UI theme
+	omp_init_theme();
+	
 	// Set up signal handlers
 	signal(SIGSEGV, handler_sigsegfault);
 	signal(SIGUSR1, handler_sigusr1);
