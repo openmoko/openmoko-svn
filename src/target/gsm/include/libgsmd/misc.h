@@ -31,8 +31,7 @@ extern int lgsm_pin_auth(struct lgsm_handle *lh, const char *pin);
 /* General Commands */
 
 /* Get Signal Strehngth (Chapter 8.5) */
-extern int lgsm_get_signal_quality(struct lgsm_handle *h,
-				   unsigned int *rssi);
+extern int lgsm_signal_quality(struct lgsm_handle *h);
 
 /* Set voice mail number */
 extern int lgsm_voicemail_set(struct lgsm_handle *lh,
