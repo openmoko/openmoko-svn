@@ -188,6 +188,17 @@ style "menuitem"
 }
 widget_class "*MenuItem*" style "menuitem"
 
+style "scrollbar"
+{
+  bg[NORMAL] = @selected_bg_color
+  bg[PRELIGHT] = @selected_bg_color
+
+  engine "moko-engine" {
+    border = TRUE
+  }
+}
+class "GtkScrollbar" style "scrollbar"
+
 include "matchboxpanel"
 include "openmoko-calculator"
 include "openmoko-contacts"
