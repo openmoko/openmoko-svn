@@ -1,30 +1,22 @@
 style "mokodialertextview" {
-  fg[NORMAL] = "#ff7800"
-  text[NORMAL] = "#ff7800"
-  bg[NORMAL] = "#000000"
-  base[NORMAL] = "#000000"
+  # display works in reverse colours
+  fg[NORMAL] = @selected_bg_color
+  text[NORMAL] = @selected_bg_color
+  bg[NORMAL] = @selected_fg_color
+  base[NORMAL] = @selected_fg_color
 
   MokoDialerTextview::small_font = 10
   MokoDialerTextview::medium_font = 15
   MokoDialerTextview::large_font = 20
 }
 widget "*.MokoDialerTextview" style "mokodialertextview"
-
-style "mokotips" {
-  fg[NORMAL] = "#ff7800"
-  text[NORMAL] = "#ff7800"
-  bg[NORMAL] = "#000000"
-  base[NORMAL] = "#000000" 
-
-  MokoDialerTextview::medium_font = 15
-}
-widget "*.MokoTips*" style "mokotips"
+widget "*.MokoTips*" style "mokodialertextview"
 
 style "keypad" {
-  fg[NORMAL] = "#fff"
-  bg[NORMAL] = "#333"
+  fg[NORMAL] = @fg_color
+  bg[NORMAL] = @bg_color
  
-  fg[PRELIGHT] = "#fff"
-  bg[PRELIGHT] = "#333"
+  fg[PRELIGHT] = @selected_bg_color
+  bg[PRELIGHT] = @selected_fg_color
 }
 widget_class "*.MokoKeypad.*" style "keypad"

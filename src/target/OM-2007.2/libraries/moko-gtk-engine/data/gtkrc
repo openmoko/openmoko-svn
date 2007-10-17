@@ -11,6 +11,9 @@ gtk-button-images = 0
 gtk-menu-images = 0
 gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
+# Set the default gtk-color-scheme property
+gtk_color_scheme = "fg_color:#333;bg_color:#ccc;base_color:#ccc;text_color:#000;selected_bg_color:#ff7d00;selected_fg_color:#000"
+
 style "default"
 {
 
@@ -59,31 +62,41 @@ style "default"
 
 
 
-	fg [NORMAL] = "#333333"
-	fg [PRELIGHT] = "#333333"
-	fg [ACTIVE] = "#333333"
-	fg [INSENSITIVE] = "#eeeeec"
-	fg [SELECTED] = "white"
+	fg [NORMAL] = @fg_color
+	fg [PRELIGHT] = @fg_color
+	fg [ACTIVE] = @selected_fg_color
+	fg [INSENSITIVE] = @fg_color
+	fg [SELECTED] = @selected_fg_color
 
-	bg [NORMAL] = "#e7e7e7"
-	bg [PRELIGHT] = "#e7e7e7"
-	bg [ACTIVE] = "#ff7d00"
-	bg [INSENSITIVE] = "#eeeeec"
-	bg [SELECTED] = "#ff7d00"
+	bg [NORMAL] = @bg_color
+	bg [PRELIGHT] = @bg_color
+	bg [ACTIVE] = @selected_bg_color
+	bg [INSENSITIVE] = lighter (@bg_color)
+	bg [SELECTED] = @selected_bg_color
 
-	text [NORMAL] = "#333333"
-	text [PRELIGHT] = "#333333"
-	text [SELECTED] = "#333333"
-	text [ACTIVE] = "#333333"
+	text [NORMAL] = @text_color
+	text [PRELIGHT] = @text_color
+	text [SELECTED] = @text_color
+	text [ACTIVE] = @text_color
 
-	base [NORMAL] = "white"
-	base [SELECTED] = "#ff7d00"
-	base [ACTIVE] = "#ff7d00"
+	base [NORMAL] = @base_color
+	base [SELECTED] = @selected_bg_color
+	base [ACTIVE] = @base_color
 
 	engine "moko-engine" {}
 }
 
 class "GtkWidget" style "default"
+
+style "reversed"
+{
+  bg[NORMAL] = @fg_color
+  fg[NORMAL] = @bg_color
+
+  bg[PRELIGHT] = @fg_color
+  fg[PRELIGHT] = @bg_color
+}
+widget_class "*GtkButton*" style "reversed"
 
 style "button"
 {
@@ -95,11 +108,11 @@ style "button"
 class "GtkButton" style "button"
 
 style "combo-fix" {
-  bg[NORMAL] = "#ff7d00"
-  text[NORMAL] = "#000"
+  bg[NORMAL] = @selected_bg_color
+  text[NORMAL] = @selected_fg_color
 
-  bg[PRELIGHT] = "#ff7d00"
-  text[PRELIGHT] = "#000"
+  bg[PRELIGHT] = @selected_bg_color
+  text[PRELIGHT] = @selected_fg_color
 }
 widget_class "*Combo*" style "combo-fix"
 
@@ -109,21 +122,25 @@ style "toolbar"
   xthickness = 0
   ythickness = 0
 
-  bg[NORMAL] = "#333333"
   engine "moko-engine" {
     gradient = TRUE
     border = FALSE
   }
 }
 class "GtkToolbar" style "toolbar"
+class "GtkToolbar" style "reversed"
 
 style "toolitem"
 {
   xthickness = 12
   ythickness = 12
 
-  bg[NORMAL] = "#ff7d00"
-  bg[PRELIGHT] = "#333333"
+  bg[NORMAL] = @selected_bg_color
+  fg[NORMAL] = @selected_fg_color
+
+  # toolbar colours are reversed
+  bg[PRELIGHT] = @fg_color
+  fg[PRELIGHT] = @bg_color
 
   engine "moko-engine" {
     gradient = TRUE
@@ -137,8 +154,15 @@ style "notebook"
 {
   xthickness = 0
   ythickness = 0
-  bg[NORMAL] = "#ff7d00"
-  bg[ACTIVE] = "#333333"
+
+  # For notebookes, NORMAL is used for the active tab and ACTIVE is used for
+  # ther other tabs
+
+  # inactive tabs are in "reversed" colours
+  bg[ACTIVE] = @fg_color
+
+  bg[NORMAL] = @selected_bg_color
+  fg[NORMAL] = @selected_fg_color
 }
 class "GtkNotebook" style "notebook"
 
@@ -157,8 +181,6 @@ style "menuitem"
 {
   xthickness = 8
   ythickness = 8
-
-  bg[PRELIGHT] = "#ff7d00"
 
   engine "moko-engine" {
     gradient = TRUE

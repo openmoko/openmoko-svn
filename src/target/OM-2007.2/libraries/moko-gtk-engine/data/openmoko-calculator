@@ -7,8 +7,9 @@ widget "*calculator-frame" style "calc-window"
 
 style "calc-display-bg"
 {
-  bg[NORMAL] = "black"
-  fg[NORMAL] = "orange"
+  # display works in reverse colours
+  bg[NORMAL] = @selected_fg_color
+  fg[NORMAL] = @selected_bg_color
   font_name = "Sans 20"
   xthickness = 10
   ythickness = 10
