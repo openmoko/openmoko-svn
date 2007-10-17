@@ -515,7 +515,7 @@ Index: u-boot/board/neo1973/gta02/gta02.c
 +const char *neo1973_get_charge_status(void)
 +{
 +	/* FIXME */
-+	return pcf50633_charger_state(void);
++	return pcf50633_charger_state();
 +}
 +
 +int neo1973_set_charge_mode(enum neo1973_charger_cmd cmd)
@@ -1322,7 +1322,7 @@ Index: u-boot/drivers/pcf50633.c
 +	return pcf50633_reg_set_bit_mask(PCF50633_REG_MBCC7, 0x03, val);
 +}
 +
-+static const char *charger_states = {
++static const char *charger_states[] = {
 +	[0]	= "play_only",
 +	[1]	= "usb_precharge",
 +	[2]	= "usb_precharge_wait",
