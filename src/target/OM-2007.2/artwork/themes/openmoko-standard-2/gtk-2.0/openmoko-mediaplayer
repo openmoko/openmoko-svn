@@ -90,25 +90,43 @@ widget "*omp-main-btm-info-bar" style "omp-main-btm-info-bar"
 
 style "omp-main-btm-progressbar"
 {
-	bg[NORMAL]   = "#181818"
-	bg[PRELIGHT] = "#d66900"
+	# This color must be the same as pgbar_bar.png
+	# The first couple pixels will be drawn with it
+	# Why, you ask? It's GTK...
+	bg[PRELIGHT] = "#b15400"
 
-	xthickness = 5
-	ythickness = 5
-#	GtkProgressBar::xspacing = 1
-#	GtkProgressBar::yspacing = 1
+	xthickness = 6
+	ythickness = 6
 
 	engine "pixmap"
 	{
-        	image
+		image
+		{
+			function	= BOX
+			detail		= "trough"
+			file		= "mokomediaplayer/pgbar_background.png"
+			border		= { 0, 0, 0, 0 }
+			stretch		= TRUE
+			orientation	= HORIZONTAL
+	        }
+		image
+		{
+			function	= BOX
+			detail		= "bar"
+			file		= "mokomediaplayer/pgbar_bar.png"
+			border		= { 0, 0, 0, 0 }
+			stretch		= TRUE
+			orientation	= HORIZONTAL
+	        }
+		image
 		{
 			function	= SHADOW
 			shadow		= IN
 			file		= "mokomediaplayer/frame.png"
-			border		= { 2, 2, 2, 2 }
+			border		= { 0, 0, 0, 0 }
 			stretch		= TRUE
 		}
-        	image
+		image
 		{
 			function	= SHADOW
 			shadow		= OUT
@@ -118,7 +136,7 @@ style "omp-main-btm-progressbar"
 		}
 	}
 }
-widget "*omp-main-btm-progressbar" style "omp-main-btm-progressbar"
+widget "*omp-main-btm-progressbar" style : highest "omp-main-btm-progressbar"
 
 
 style "omp-main-btm-button-box"
