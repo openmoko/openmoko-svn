@@ -330,6 +330,7 @@ struct gsmd_sms {
 struct gsmd_sms_submit {
 	struct gsmd_addr addr;
 	struct gsmd_sms payload;
+	int ask_ds;
 };
 
 /* Refer to GSM 07.05 subclause 4.4 */

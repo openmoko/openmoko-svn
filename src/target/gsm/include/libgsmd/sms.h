@@ -46,6 +46,7 @@ struct lgsm_sms {
 	enum gsmd_sms_alphabet alpha;
 	u_int8_t data[LGSM_SMS_DATA_MAXLEN+1];
 	int length;
+	int ask_ds;
 };
 
 /* GSM 03.40 subclause 9.2.2.2 and GSM 07.05 subclause 4.4 and subclause 3.1 */

@@ -126,6 +126,7 @@ int lgsm_sms_send(struct lgsm_handle *lh,
 	if (lgsm_number2addr(&gss->addr, sms->addr, 1))
 		return -EINVAL;
 
+	gss->ask_ds = sms->ask_ds;
 	gss->payload.has_header = 0;
 	gss->payload.length = sms->length;
 	gss->payload.coding_scheme = sms->alpha;
@@ -161,6 +162,7 @@ int lgsm_sms_write(struct lgsm_handle *lh,
 	if (lgsm_number2addr(&gsw->sms.addr, sms_write->sms.addr, 1))
 		return -EINVAL;
 
+	gsw->sms.ask_ds = sms_write->sms.ask_ds;
 	gsw->sms.payload.has_header = 0;
 	gsw->sms.payload.length = sms_write->sms.length;
 	gsw->sms.payload.coding_scheme = sms_write->sms.alpha;

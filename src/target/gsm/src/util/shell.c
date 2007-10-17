@@ -389,7 +389,7 @@ static int shell_help(void)
 		"\tsd\tSMS Delete (sd=index,delflg)\n"
 		"\tsl\tSMS List (sl=stat)\n"
 		"\tsr\tSMS Read (sr=index)\n"
-		"\tss\tSMS Send (ss=number,text|[\"text\"])\n"
+		"\tss\tSMS Send (ss=ask_ds,number,text|[\"text\"])\n"
 		"\tsw\tSMS Write (sw=stat,number,text)\n"
 		"\tsm\tSMS Storage stats\n"
 		"\tsM\tSMS Set preferred storage (sM=mem1,mem2,mem3)\n"
@@ -615,33 +615,29 @@ int shell_main(struct lgsm_handle *lgsmh)
 				struct lgsm_sms sms;
 
 				ptr = strchr(buf, '=');
+				sms.ask_ds = atoi(ptr+1);
 				fcomma = strchr(buf, ',');
-				if (!ptr || !fcomma) {
-					printf("Wrong command format\n");
-				} else {
-					strncpy(sms.addr, ptr+1, fcomma-ptr-1);
-					sms.addr[fcomma-ptr-1] = '\0';
-
-					/* todo define \" to allow " in text */
-					if (fcomma[1] == '"' &&
-						!strchr(fcomma+2, '"')) {
+				lcomma = strchr(fcomma+1, ',');
+				strncpy(sms.addr, fcomma+1, lcomma-fcomma-1);
+				sms.addr[lcomma-fcomma-1] = '\0';
+				/* todo define \" to allow " in text */
+				if (lcomma[1]=='"' &&
+						!strchr(lcomma+2, '"')) {
 						/* read until closing '"' */
 						rc = fscanf(stdin, "%[^\"]\"",
-							fcomma+strlen(fcomma));
+							lcomma+strlen(lcomma));
 						if (rc == EOF) {
 							printf("EOF\n");
 							return -1;
 						}
 						/* remove brackets */
-						fcomma++;
-						fcomma[strlen(fcomma)] = '\0';
-					}
-
-					printf("Send SMS\n");
-					packing_7bit_character(fcomma+1, &sms);
-
-					lgsm_sms_send(lgsmh, &sms);
+						lcomma++;
+						lcomma[strlen(lcomma)] = '\0';
 				}
+				printf("Send SMS\n");
+				packing_7bit_character(lcomma+1, &sms);
+
+				lgsm_sms_send(lgsmh, &sms);
 			} else if ( !strncmp(buf, "sw", 2)) {	
 				printf("Write SMS\n");				
 				struct lgsm_sms_write sms_write;
@@ -655,6 +651,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				sms_write.sms.addr[lcomma-fcomma-1] = '\0';
 				packing_7bit_character(
 						lcomma+1, &sms_write.sms);
+				sms_write.sms.ask_ds = 0;
 
 				lgsm_sms_write(lgsmh, &sms_write);
 			} else if (!strncmp(buf, "sm", 2)) {

@@ -247,7 +247,8 @@ int sms_pdu_make_smssubmit(char *dest, const struct gsmd_sms_submit *src)
 		GSMD_SMS_TP_MTI_SUBMIT |
 		(0 << 2) |		/* Reject Duplicates: 0 */
 		GSMD_SMS_TP_VPF_NOT_PRESENT |
-		GSMD_SMS_TP_SRR_STATUS_REQUEST |
+		(src->ask_ds ? GSMD_SMS_TP_SRR_STATUS_REQUEST :
+		 GSMD_SMS_TP_SRR_NOT_REQUEST) |
 		(src->payload.has_header ? GSMD_SMS_TP_UDHI_WITH_HEADER :
 		 GSMD_SMS_TP_UDHI_NO_HEADER) |
 		GSMD_SMS_TP_RP_NOT_SET;
