@@ -139,6 +139,17 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 		/* Skip TP-PID */
 		len -= 9;
 		src += 9;
+
+		/* TP-UDL */
+		dst->payload.length = src[0];
+		i = sms_data_bytelen(dst->payload.coding_scheme, src[0]);
+
+		/* TP-UD */
+		if (len < 1 + i || i > GSMD_SMS_DATA_MAXLEN)
+			return 1;
+		memcpy(dst->payload.data, src + 1, i);
+		dst->payload.data[i] = 0;
+
 		break;
 	case GSMD_SMS_TP_MTI_SUBMIT:
 		if (len < 4)
@@ -179,23 +190,44 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 		src += vpf ? 3 : 2;
 
 		memset(dst->time_stamp, 0, 7);
+
+		/* TP-UDL */
+		dst->payload.length = src[0];
+		i = sms_data_bytelen(dst->payload.coding_scheme, src[0]);
+
+		/* TP-UD */
+		if (len < 1 + i || i > GSMD_SMS_DATA_MAXLEN)
+			return 1;
+		memcpy(dst->payload.data, src + 1, i);
+		dst->payload.data[i] = 0;
 		break;
 	case GSMD_SMS_TP_MTI_STATUS_REPORT:
-		/* TODO */
+		if (len < 3)
+			return 1;
+
+		/* TP-MR set it gsmd_sms_list.index*/
+		dst->index = (int) src[1];
+		/* TP-STATUS set it to coding_scheme */
+		dst->payload.coding_scheme = (int) src[len-1];
+		/* TP-RA */
+		i = sms_number_bytelen(src[3], src[2]);
+		if (len < 13 + i)
+			return 1;
+		if (sms_address2ascii(&dst->addr, src + 2))
+			return 1;
+		len -= 4 + i;
+		src += 4 + i;
+		/* TP-SCTS */
+		memcpy(dst->time_stamp, src, 7);
+		/* TP-UD  */
+		dst->payload.length = 0;
+		dst->payload.data[0] = 0;
+		break;
 	default:
 		/* Unknown PDU type */
 		return 1;
 	}
 
-	/* TP-UDL */
-	dst->payload.length = src[0];
-	i = sms_data_bytelen(dst->payload.coding_scheme, src[0]);
-
-	/* TP-UD */
-	if (len < 1 + i || i > GSMD_SMS_DATA_MAXLEN)
-		return 1;
-	memcpy(dst->payload.data, src + 1, i);
-	dst->payload.data[i] = 0;
 
 	return 0;
 }
@@ -215,7 +247,7 @@ int sms_pdu_make_smssubmit(char *dest, const struct gsmd_sms_submit *src)
 		GSMD_SMS_TP_MTI_SUBMIT |
 		(0 << 2) |		/* Reject Duplicates: 0 */
 		GSMD_SMS_TP_VPF_NOT_PRESENT |
-		GSMD_SMS_TP_SRR_NOT_REQUEST |
+		GSMD_SMS_TP_SRR_STATUS_REQUEST |
 		(src->payload.has_header ? GSMD_SMS_TP_UDHI_WITH_HEADER :
 		 GSMD_SMS_TP_UDHI_NO_HEADER) |
 		GSMD_SMS_TP_RP_NOT_SET;

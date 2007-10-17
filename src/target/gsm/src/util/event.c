@@ -128,8 +128,12 @@ static int incbm_handler(struct lgsm_handle *lh, int evt,
 static int inds_handler(struct lgsm_handle *lh, int evt,
 		struct gsmd_evt_auxdata *aux)
 {
-	if (aux->u.ds.inlined)
+	if (aux->u.ds.inlined) {
+		struct gsmd_sms_list *sms;
+		sms = (struct gsmd_sms_list *) aux->data;
 		printf("EVENT: Incoming Status Report\n");
+		printf("message ref = %d, status = %d\n", sms->index,sms->payload.coding_scheme);
+	}
 	else
 		printf("EVENT: Incoming Status Report stored at location %i\n",
 				aux->u.ds.index);
