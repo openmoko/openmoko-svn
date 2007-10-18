@@ -1,3 +1,22 @@
+2007-10-18  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
+	* src/moko-dialer.c: (on_keypad_dial_clicked),
+	  (on_talking_accepted_call), (on_talking_reject_call),
+	  (on_incoming_call), (on_call_progress_changed):
+	  Set value of MokoJournal properties dtstart and dtend
+	  to indicate begin and end of call. When call was rejected
+	  or missed dtstart will has the same value as dtend.
+
+	* src/moko-talking.c: (moko_talking_incoming_call),
+	 (moko_talking_outgoing_call), (talking_timeout),
+	 (moko_talking_accepted_call), (on_cancel_clicked),
+	 (moko_init_tlking): Implemented displaying of call
+	 duration.
+
+	Closes bug 936 - Dialer doesn't display duration of call during call
+
 2007-10-16  Daniel Willmann <alphaone@openmoko.org>
 
         * src/moko-sound.{c,h}: Add GSM speaker out sound profile
@@ -1026,3 +1045,4 @@
 	* src/moko-dialer.h:
 	Intial Import
 
+/* vi: set noexpandtab sw=8 sts=8 ts=8: */

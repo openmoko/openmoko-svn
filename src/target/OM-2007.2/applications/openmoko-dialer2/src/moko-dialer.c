@@ -293,9 +293,7 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
   if (priv->journal)
   {
     priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
-    priv->time = moko_time_new_today ();
     moko_journal_entry_set_direction (priv->entry, DIRECTION_OUT);
-    moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
     moko_journal_entry_set_gsm_location (priv->entry, &priv->gsm_location);
     moko_journal_voice_info_set_distant_number (priv->entry, number);
@@ -365,15 +363,6 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   /* Stop the notification */
   moko_notify_stop (priv->notify);  
   
-  /* Finalise and add the journal entry */
-  if (priv->journal && priv->entry)
-  {
-    moko_journal_add_entry (priv->journal, priv->entry);
-    moko_journal_write_to_storage (priv->journal);
-    priv->entry = NULL;
-    priv->time = NULL;
-  }  
-  
   g_signal_emit (G_OBJECT (dialer), dialer_signals[TALKING], 0);
 }
 
@@ -392,8 +381,11 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
  
   /* Finalise and add the journal entry */
-  if (priv->entry)
+  if (priv->journal && priv->entry)
   {
+    priv->time = moko_time_new_today ();
+    moko_journal_entry_set_dtstart (priv->entry, priv->time);
+    moko_journal_entry_set_dtend (priv->entry, priv->time);
     moko_journal_voice_info_set_was_missed (priv->entry, TRUE);
     moko_journal_add_entry (priv->journal, priv->entry);
     moko_journal_write_to_storage (priv->journal);
@@ -541,9 +533,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   if (priv->journal)
   {
     priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
-    priv->time = moko_time_new_today ();
     moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
-    moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
     moko_journal_entry_set_gsm_location (priv->entry, &priv->gsm_location);
   }
@@ -620,7 +610,6 @@ on_call_progress_changed (MokoGsmdConnection *conn,
                           MokoDialer *dialer)
 {
   MokoDialerPrivate *priv;
-  MessageDirection dir;
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
@@ -629,19 +618,26 @@ on_call_progress_changed (MokoGsmdConnection *conn,
   {
     case MOKO_GSMD_PROG_DISCONNECT:
     case MOKO_GSMD_PROG_RELEASE:
-      moko_dialer_hung_up (dialer);
-      moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
+      /* Finalise and add the journal entry */
       if (priv->journal && priv->entry)
       {
-        moko_journal_entry_get_direction (priv->entry, &dir);
-        if (dir == DIRECTION_IN)
+        priv->time = moko_time_new_today ();
+        moko_journal_entry_set_dtend (priv->entry, priv->time);
+
+        if (priv->status == DIALER_STATUS_INCOMING)
+        {
+          moko_journal_entry_set_dtstart (priv->entry, priv->time);
           moko_journal_voice_info_set_was_missed (priv->entry, TRUE);
+        }
 
         moko_journal_add_entry (priv->journal, priv->entry);
         moko_journal_write_to_storage (priv->journal);
         priv->entry = NULL;
         priv->time = NULL;
       }
+
+      moko_dialer_hung_up (dialer);
+      moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
 
       if (priv->incoming_clip)
         g_free (priv->incoming_clip);
@@ -662,6 +658,13 @@ on_call_progress_changed (MokoGsmdConnection *conn,
         moko_dialer_talking (dialer);
       moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
       moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
+
+      /* Update a journal entry */
+      if (priv->journal && priv->entry)
+      {
+        priv->time = moko_time_new_today ();
+        moko_journal_entry_set_dtstart (priv->entry, priv->time);
+      }
       g_debug ("mokogsmd connected");
       break;
     case MOKO_GSMD_PROG_SETUP:

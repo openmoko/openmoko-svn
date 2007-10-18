@@ -39,6 +39,7 @@ struct _MokoTalkingPrivate
   GtkWidget          *main_bar;
 
   GtkWidget          *title;
+  GtkWidget          *duration;
   GtkWidget          *icon;
 
   GtkWidget          *person;
@@ -48,6 +49,7 @@ struct _MokoTalkingPrivate
   GdkPixbuf          *incoming[4];
   GdkPixbuf          *outgoing[4];
 
+  GTimer             *dtimer;
   guint               timeout;
 };
 
@@ -128,6 +130,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
   gtk_widget_show (priv->incoming_bar);
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Incoming Call");
+  gtk_label_set_text (GTK_LABEL (priv->duration), "");
   gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
                            PKGDATADIR"/incoming_3.png");
 
@@ -181,6 +184,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
     markup = g_strdup (number);
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Outgoing Call");
+  gtk_label_set_text (GTK_LABEL (priv->duration), "");
 
   gtk_label_set_markup (GTK_LABEL (priv->status), markup);
   
@@ -202,10 +206,25 @@ static gboolean
 talking_timeout (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
+  gdouble elapsed;
+  gint hour, min, sec;
+  gchar *markup = NULL;
   static gint i = 0;
 
   g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
   priv = talking->priv;
+
+  if (priv->dtimer)
+  {
+    elapsed = g_timer_elapsed(priv->dtimer, NULL);
+
+    hour = (gint) (elapsed / 3600);
+    min = (gint) ((elapsed - 3600 * hour) / 60);
+    sec = (gint) (elapsed - 3600 * hour - 60 * min);
+
+    markup = g_strdup_printf ("%02d:%02d:%02d", hour, min, sec);
+    gtk_label_set_markup (GTK_LABEL (priv->duration), markup);
+  }
 
   gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
                              priv->talking[i]);
@@ -214,6 +233,7 @@ talking_timeout (MokoTalking *talking)
   if (i == 5)
     i = 0;
   
+  g_free(markup);
   return TRUE;
 }
   
@@ -239,8 +259,14 @@ moko_talking_accepted_call (MokoTalking      *talking,
     markup = g_strdup (number);
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Talking");
+  gtk_label_set_text (GTK_LABEL (priv->duration), "00:00:00");
   gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
                            PKGDATADIR"/talking_3.png");
+
+  /* start call duration timer */
+  if (priv->dtimer)
+    g_timer_destroy(priv->dtimer);
+  priv->dtimer = g_timer_new();
 
   /* We don't change the status or person widgets, as incoming call has already
    * set them for us.
@@ -278,6 +304,10 @@ on_silence_clicked (GtkToolButton *button, MokoTalking *talking)
 static void
 on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
 {
+  /* stop call duration timer */
+  if (talking->priv->dtimer)
+    g_timer_destroy(talking->priv->dtimer);
+
   g_source_remove (talking->priv->timeout);
   moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
   g_signal_emit (G_OBJECT (talking), talking_signals[CANCEL_CALL], 0);
@@ -364,6 +394,7 @@ moko_talking_init (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
   GtkWidget *toolbar, *image, *vbox, *hbox, *label, *align, *frame;
+  GtkWidget *duration;
   GtkToolItem *item;
   GdkPixbuf *icon;
   gint i;
@@ -447,6 +478,10 @@ moko_talking_init (MokoTalking *talking)
 
   priv->icon = image = gtk_image_new ();
   gtk_container_add (GTK_CONTAINER (align), image);
+
+  priv->duration = duration = gtk_label_new ("00:00:00");
+  gtk_misc_set_alignment (GTK_MISC (duration), 0.5, 0.5);
+  gtk_box_pack_start (GTK_BOX (vbox), duration, FALSE, FALSE, 0);
 
   /* The status area */
   align = gtk_alignment_new (0.5, 0.5, 1, 0 );
