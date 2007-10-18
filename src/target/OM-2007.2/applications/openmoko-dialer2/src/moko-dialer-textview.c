@@ -19,8 +19,11 @@
  
  */
 
+#include <string.h>
+
 #include "moko-dialer-textview.h"
 #include "error.h"
+
 G_DEFINE_TYPE (MokoDialerTextview, moko_dialer_textview, GTK_TYPE_TEXT_VIEW)
      enum
      {
@@ -164,6 +167,12 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
   GtkTextIter end;
   gint small = 10, medium = 10, large = 10;
 
+  PangoLayout *pl;
+  gchar *text;
+  int pl_w, pl_h, textview_w, textview_h;
+  GdkWindow *textview_window;
+  gboolean centre_v = TRUE;
+
   /* Obtaining the buffer associated with the widget. */
   buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moko_dialer_textview));
 
@@ -173,6 +182,14 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
 
   gtk_text_buffer_get_start_iter (buffer, &start);
   gtk_text_buffer_get_end_iter (buffer, &end);
+
+  text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+
+  /* no need to continue if we don't have any text */
+  if (!text)
+    return;
+  if (text && (strlen (text) < 1))
+    return;
 
   gint cur = gtk_text_iter_get_offset (&cursoriter);
 
@@ -202,14 +219,6 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
   gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "small_font", &small, NULL);
   gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "medium_font", &medium, NULL);
   gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "large_font", &large, NULL);
-
-  PangoLayout *pl;
-  gchar *text;
-  int pl_w, pl_h, textview_w, textview_h;
-  GdkWindow *textview_window;
-  gboolean centre_v = TRUE;
-
-  g_object_get (G_OBJECT (buffer), "text", &text, NULL);
 
   /* create a pango layout to try different text sizes on */
   pl = pango_layout_new (gtk_widget_get_pango_context (GTK_WIDGET (moko_dialer_textview)));

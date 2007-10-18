@@ -1,5 +1,10 @@
 2007-10-18  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-dialer-textview.c: (moko_dialer_textview_set_color): Don't
+	try to format a blank string
+
+2007-10-18  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-talking.c: (moko_talking_init): Use stock items for
 	talking/incoming/outgoing page toolbars
 
