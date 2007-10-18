@@ -41,6 +41,7 @@
 #define MOKO_STOCK_CALL_HANGUP "moko-call-hangup"
 #define MOKO_STOCK_CALL_HISTORY "moko-call-history"
 #define MOKO_STOCK_CALL_HOLD "moko-call-hold"
+#define MOKO_STOCK_CALL_IGNORE "moko-call-ignore"
 #define MOKO_STOCK_CALL_IN "moko-history-call-in"
 #define MOKO_STOCK_CALL_MISSED "moko-history-call-missed"
 #define MOKO_STOCK_CALL_REDIAL "moko-call-redial"

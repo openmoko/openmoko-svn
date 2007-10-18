@@ -34,7 +34,7 @@ G_BEGIN_DECLS
 #define MOKO_HINT_ENTRY_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOKO_TYPE_HINT_ENTRY, MokoHintEntryClass))
 #define MOKO_IS_HINT_ENTRY(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOKO_TYPE_HINT_ENTRY))
 #define MOKO_IS_HINT_ENTRY_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOKO_TYPE_HINT_ENTRY))
-#define MOKO_HINT_ENTRY_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_HINT_ENTRY, MokoGroupComboClass))
+#define MOKO_HINT_ENTRY_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOKO_TYPE_HINT_ENTRY, MokoHintEntryClass))
 
 /**
  * MokoHintEntry:

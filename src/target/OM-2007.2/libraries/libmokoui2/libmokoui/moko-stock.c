@@ -39,6 +39,7 @@ static const GtkStockItem moko_items [] =
   { MOKO_STOCK_CALL_HANGUP, N_("Hang Up"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_CALL_HISTORY, N_("History"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_CALL_HOLD, N_("Hold"), 0, 0, GETTEXT_PACKAGE },
+  { MOKO_STOCK_CALL_IGNORE, N_("Ignore"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_CALL_IN, N_("Received Calls"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_CALL_MISSED, N_("Missed Calls"), 0, 0, GETTEXT_PACKAGE },
   { MOKO_STOCK_CALL_REDIAL, N_("Redial"), 0, 0, GETTEXT_PACKAGE },
