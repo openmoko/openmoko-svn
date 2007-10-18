@@ -1,3 +1,10 @@
+2007-10-18  Chris Lord  <chris@openedhand.com>
+
+	* libmokoui/moko-finger-scroll.c:
+	(moko_finger_scroll_motion_notify_cb):
+	Call gtk_widget_get_pointer in the correct place to avoid missing
+	motion events, as spotted by Frank Li
+
 2007-10-15  Chris Lord  <chris@openedhand.com>
 
 	* libmokoui/moko-finger-scroll.c:

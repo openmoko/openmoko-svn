@@ -417,6 +417,8 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 	gint dnd_threshold;
 	gdouble x, y;
 
+	gdk_window_get_pointer (GTK_WIDGET (scroll)->window, NULL, NULL, 0);
+	
 	if ((!priv->enabled) || (!priv->clicked) ||
 	    ((event->time == priv->last_time) &&
 	     (event->type == priv->last_type))) return TRUE;
@@ -482,8 +484,6 @@ moko_finger_scroll_motion_notify_cb (MokoFingerScroll *scroll,
 		gdk_event_free ((GdkEvent *)event);
 	}
 
-	gdk_window_get_pointer (GTK_WIDGET (scroll)->window, NULL, NULL, 0);
-	
 	return TRUE;
 }
 
