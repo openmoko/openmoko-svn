@@ -1,5 +1,12 @@
 2007-10-18  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-dialer-textview.c: (moko_dialer_textview_set_color): Use the
+	pixel size of the text to calculate font level in the number display.
+
+	Fixes bug 868 - Resizing of number display is wrong
+
+2007-10-18  Thomas Wood  <thomas@openedhand.com>
+
 	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
 
 	* src/moko-dialer.c: (on_keypad_dial_clicked),

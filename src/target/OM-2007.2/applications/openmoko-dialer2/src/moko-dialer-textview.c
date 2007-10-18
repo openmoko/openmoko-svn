@@ -160,7 +160,6 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
 {
 
   GtkTextBuffer *buffer;
-  gint len;
   GtkTextIter start, cursoriter_1, cursoriter;
   GtkTextIter end;
   gint small = 10, medium = 10, large = 10;
@@ -204,26 +203,54 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
   gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "medium_font", &medium, NULL);
   gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "large_font", &large, NULL);
 
+  PangoLayout *pl;
+  gchar *text;
+  int pl_w, pl_h, textview_w, textview_h;
+  GdkWindow *textview_window;
+  gboolean centre_v = TRUE;
 
+  g_object_get (G_OBJECT (buffer), "text", &text, NULL);
 
-  len = gtk_text_buffer_get_char_count (buffer);
-  if (len >= 12 && len <= 64)
+  /* create a pango layout to try different text sizes on */
+  pl = pango_layout_new (gtk_widget_get_pango_context (GTK_WIDGET (moko_dialer_textview)));
+  pango_layout_set_text (pl, text, -1);
+
+  /* get the textview width */
+  textview_window = gtk_text_view_get_window (GTK_TEXT_VIEW (moko_dialer_textview), GTK_TEXT_WINDOW_WIDGET);
+  gdk_drawable_get_size (textview_window, &textview_w, &textview_h);
+
+  /* try large size */
+  pango_font_description_set_size (moko_dialer_textview->font_desc_textview, large * PANGO_SCALE);
+  pango_layout_set_font_description (pl, moko_dialer_textview->font_desc_textview);
+  pango_layout_get_pixel_size (pl, &pl_w, &pl_h);
+
+  if (pl_w >= textview_w)
   {
-    if (moko_dialer_textview->font_desc_textview)
-      pango_font_description_set_size (moko_dialer_textview->
-                                       font_desc_textview, small * PANGO_SCALE);
+    /* try medium size */
+    pango_font_description_set_size (moko_dialer_textview->font_desc_textview, medium * PANGO_SCALE);
+    pango_layout_set_font_description (pl, moko_dialer_textview->font_desc_textview);
+    pango_layout_get_pixel_size (pl, &pl_w, &pl_h);
+
+    /* set size to small if medium does not fit */
+    if (pl_w >= textview_w)
+    {
+      pango_font_description_set_size (moko_dialer_textview->font_desc_textview, small * PANGO_SCALE);
+      centre_v = FALSE;
+    }
   }
-  else if (len >= 9 && len < 12)
+
+  /* we only want to centre the text vertically for large and medium fonts */
+  if (centre_v)
   {
-    if (moko_dialer_textview->font_desc_textview)
-      pango_font_description_set_size (moko_dialer_textview->
-                                       font_desc_textview, medium * PANGO_SCALE);
+    int padding = 0;
+    padding = MAX(0, (textview_h - pl_h) / 2);
+    gtk_text_view_set_pixels_above_lines (GTK_TEXT_VIEW (moko_dialer_textview), padding);
+    gtk_text_view_set_pixels_below_lines (GTK_TEXT_VIEW (moko_dialer_textview), padding);
   }
-  else if (len >= 0 && len < 9)
+  else
   {
-    if (moko_dialer_textview->font_desc_textview)
-      pango_font_description_set_size (moko_dialer_textview->
-                                       font_desc_textview, large * PANGO_SCALE);
+    gtk_text_view_set_pixels_above_lines (GTK_TEXT_VIEW (moko_dialer_textview), 0);
+    gtk_text_view_set_pixels_below_lines (GTK_TEXT_VIEW (moko_dialer_textview), 0);
   }
 
   gtk_widget_modify_font (GTK_WIDGET (moko_dialer_textview),
