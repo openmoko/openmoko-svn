@@ -35,7 +35,7 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
-@@ -0,0 +1,253 @@
+@@ -0,0 +1,252 @@
 +/*
 + *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
@@ -96,14 +96,13 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +#define GTA01BL_SUSPENDED     0x01
 +#define GTA01BL_BATTLOW       0x02
 +
-+#define GTA01BL_FREQ	400
-+
 +/* On the GTA01 / Neo1973, we use a 50 or 66MHz PCLK, which gives
 + * us a 6.25..8.25MHz DIV8 clock, which is further divided by a
 + * prescaler of 4, resulting in a 1.56..2.06MHz tick.  This results in a
 + * minimum frequency of 24..31Hz.  At 400Hz, we need to set the count
 + * to something like 3906..5156, providing us a way sufficient resolution
 + * for display brightness adjustment. */
++#define GTA01BL_COUNTER 5156
 +
 +static int gta01bl_send_intensity(struct backlight_device *bd)
 +{
@@ -146,7 +145,7 @@ Index: linux-2.6.22.5-moko/drivers/video/backlight/gta01_bl.c
 +	gta01bl.pwm.timerid = PWM0;
 +	gta01bl.pwm.prescaler = (4 - 1);
 +	gta01bl.pwm.divider = S3C2410_TCFG1_MUX0_DIV8;
-+	gta01bl.pwm.counter = (((gta01bl.pwm.pclk_rate) / 32) / GTA01BL_FREQ) -1;
++	gta01bl.pwm.counter = GTA01BL_COUNTER;
 +	gta01bl.pwm.comparer = gta01bl.pwm.counter;
 +
 +	rc = s3c2410_pwm_enable(&gta01bl.pwm);
