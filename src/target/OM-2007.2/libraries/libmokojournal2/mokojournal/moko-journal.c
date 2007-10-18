@@ -664,6 +664,13 @@ moko_journal_entry_to_icalcomponent (MokoJournalEntry *a_entry,
   prop = icalproperty_new_dtstart (date->t) ;
   icalcomponent_add_property (comp, prop) ;
 
+  /*add dtend*/
+  date = moko_journal_entry_get_dtend (a_entry) ;
+  if (!date)
+    goto out ;
+  prop = icalproperty_new_dtend (date->t) ;
+  icalcomponent_add_property (comp, prop) ;
+
   /*add location start*/
   struct icalgeotype geo;
   if (moko_journal_entry_get_start_location (a_entry, (MokoLocation*)(void*)&geo))
@@ -879,6 +886,12 @@ icalcomponent_to_entry (icalcomponent *a_comp,
       moko_journal_entry_set_dtstart
         (entry,
          moko_time_new_from_icaltimetype (icalproperty_get_dtstart (prop)));
+    }
+    else if (icalproperty_isa (prop) == ICAL_DTEND_PROPERTY)
+    {
+      moko_journal_entry_set_dtend
+        (entry,
+         moko_time_new_from_icaltimetype (icalproperty_get_dtend (prop)));
     }
     else if (icalproperty_isa (prop) == ICAL_GEO_PROPERTY)
     {
@@ -1756,6 +1769,26 @@ moko_journal_entry_get_dtstart (MokoJournalEntry *a_entry)
 }
 
 /**
+ * moko_journal_entry_get_dtend:
+ * @entry: the current instance of journal entry
+ *
+ * get the ending date associated to the journal entry
+ *
+ * Return value: an icaltimetype representing the ending date expected.
+ * It can be NULL. Client code must not deallocate it.
+ */
+const MokoTime*
+moko_journal_entry_get_dtend (MokoJournalEntry *a_entry)
+{
+  g_return_val_if_fail (a_entry, NULL) ;
+
+  if (!a_entry->dtend)
+    a_entry->dtend = moko_time_new_today () ;
+
+  return a_entry->dtend ;
+}
+
+/**
  * moko_journal_entry_get_start_location:
  * @a_entry: the current instance of journal entry
  * @a_location: the requested location
@@ -1855,6 +1888,26 @@ moko_journal_entry_set_dtstart (MokoJournalEntry *a_entry, MokoTime* a_dtstart)
 
   if (a_dtstart)
     a_entry->dtstart = a_dtstart ;
+}
+
+/**
+ * moko_journal_entry_set_dtend:
+ * @entry: the current instance of journal entry
+ * @dtstart: the new ending date associated to the journal entry.
+ */
+void
+moko_journal_entry_set_dtend (MokoJournalEntry *a_entry, MokoTime* a_dtend)
+{
+  g_return_if_fail (a_entry) ;
+
+  if (a_entry->dtend)
+  {
+    moko_time_free (a_entry->dtend) ;
+    a_entry->dtend = NULL ;
+  }
+
+  if (a_dtend)
+    a_entry->dtend = a_dtend ;
 }
 
 /**

@@ -1,3 +1,11 @@
+2007-10-18  Thomas Wood  <thomas@openedhand.com>
+
+	Patch by: Roman Moravcik <roman.moravcik@gmail.com>
+
+	* mokojournal/moko-journal.{c,h}: (moko_journal_entry_get_dtend),
+	(moko_journal_entry_set_dtend): Added new MokoJournal property
+	dtend.
+
 2007-10-08  Thomas Wood  <thomas@openedhand.com>
 
 	* doc/reference/Makefile.am: Fix spurious += to single =
@@ -140,3 +148,5 @@
 	* tests/test-delete-uid.c: (main):
 	* tests/test-delete.c: (main):
 	Initial Import from splitting openmoko-libs.
+
+/* vim: set noexpandtab sw=8 sts=8 ts=8: */

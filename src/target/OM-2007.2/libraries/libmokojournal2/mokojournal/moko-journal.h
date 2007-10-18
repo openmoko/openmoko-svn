@@ -162,6 +162,9 @@ void                  moko_journal_entry_set_direction           (MokoJournalEnt
 const MokoTime *      moko_journal_entry_get_dtstart             (MokoJournalEntry     *entry);
 void                  moko_journal_entry_set_dtstart             (MokoJournalEntry     *entry,
                                                                   MokoTime             *dtstart);
+const MokoTime *      moko_journal_entry_get_dtend               (MokoJournalEntry     *entry);
+void                  moko_journal_entry_set_dtend               (MokoJournalEntry     *entry,
+                                                                  MokoTime             *dtend);
 G_CONST_RETURN gchar *moko_journal_entry_get_source              (MokoJournalEntry     *entry);
 void                  moko_journal_entry_set_source              (MokoJournalEntry     *entry,
                                                                   const gchar          *source);
