@@ -20,6 +20,7 @@
 #include <gtk/gtk.h>
 
 #include <moko-journal.h>
+#include <moko-stock.h>
 
 #include "moko-sound.h"
 #include "moko-talking.h"
@@ -396,7 +397,6 @@ moko_talking_init (MokoTalking *talking)
   GtkWidget *toolbar, *image, *vbox, *hbox, *label, *align, *frame;
   GtkWidget *duration;
   GtkToolItem *item;
-  GdkPixbuf *icon;
   gint i;
 
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
@@ -405,63 +405,40 @@ moko_talking_init (MokoTalking *talking)
   gtk_widget_set_no_show_all (priv->incoming_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/answer.png", NULL);
-  image = gtk_image_new_from_pixbuf (icon);
-  item = gtk_tool_button_new (image, "Answer");
-  gtk_widget_show_all (GTK_WIDGET (item));
+  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_ANSWER);
   gtk_tool_item_set_expand (item, TRUE);
-  g_signal_connect (G_OBJECT (item), "clicked", 
-                    G_CALLBACK (on_answer_clicked), (gpointer)talking);
+  g_signal_connect (item, "clicked", G_CALLBACK (on_answer_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
-  
-  image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PAUSE, 
-                                    GTK_ICON_SIZE_LARGE_TOOLBAR);
-  item = gtk_tool_button_new (image, "Reject");
-  gtk_widget_show_all (GTK_WIDGET (item)); 
+
+  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_IGNORE);
   gtk_tool_item_set_expand (item, TRUE);
-  g_signal_connect (G_OBJECT (item), "clicked", 
-                    G_CALLBACK (on_silence_clicked), (gpointer)talking);
+  g_signal_connect (item, "clicked", G_CALLBACK (on_silence_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
 
-
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
-  
-  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
-  image = gtk_image_new_from_pixbuf (icon);
-  item = gtk_tool_button_new (image, "Reject");
-  gtk_widget_show_all (GTK_WIDGET (item)); 
+
+  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_REJECT);
   gtk_tool_item_set_expand (item, TRUE);
-  g_signal_connect (G_OBJECT (item), "clicked", 
-                    G_CALLBACK (on_reject_clicked), (gpointer)talking);
+  g_signal_connect (item, "clicked", G_CALLBACK (on_reject_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
-    
+
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();
   gtk_widget_set_no_show_all (priv->main_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
-  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/speaker.png", NULL);
-  image = gtk_image_new_from_pixbuf (icon);
-  item = gtk_toggle_tool_button_new ();
-  gtk_tool_button_set_icon_widget (GTK_TOOL_BUTTON (item), image);
-  gtk_tool_button_set_label (GTK_TOOL_BUTTON (item), "Speaker Phone");
-  gtk_widget_show_all (GTK_WIDGET (item)); 
+  item = gtk_toggle_tool_button_new_from_stock (MOKO_STOCK_SPEAKER);
   gtk_tool_item_set_expand (item, TRUE);
-  g_signal_connect (G_OBJECT (item), "toggled", 
-                    G_CALLBACK (on_speaker_toggled), (gpointer)talking);
+  g_signal_connect (item, "toggled", G_CALLBACK (on_speaker_toggled), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
 
-  icon = gdk_pixbuf_new_from_file (PKGDATADIR"/cancel.png", NULL);
-  image = gtk_image_new_from_pixbuf (icon);
-  item = gtk_tool_button_new (image, "Cancel");
-  gtk_widget_show_all (GTK_WIDGET (item)); 
+  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_HANGUP);
   gtk_tool_item_set_expand (item, TRUE);
-  g_signal_connect (G_OBJECT (item), "clicked", 
-                    G_CALLBACK (on_cancel_clicked), (gpointer)talking);
+  g_signal_connect (item, "clicked", G_CALLBACK (on_cancel_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);  
 
   /* The title label and image */
