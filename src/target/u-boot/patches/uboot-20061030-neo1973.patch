@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2174,6 +2174,14 @@
+@@ -2175,6 +2175,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -504,7 +504,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,124 @@
 +/*
 + * (C) Copyright 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -572,6 +572,14 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +			neo1973_backlight(1);
 +		else
 +			neo1973_backlight(0);
++	} else if (!strcmp(argv[1], "led")) {
++		long led = simple_strtol(argv[2], NULL, 10);
++		if (argc < 4)
++			goto out_help;
++		if (!strcmp(argv[3], "on"))
++			neo1973_led(led, 1);
++		else
++			neo1973_led(led, 0);
 +	} else if (!strcmp(argv[1], "vibrator")) {
 +		if (argc < 3)
 +			goto out_help;
@@ -615,6 +623,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 +	"neo1973 charger fast - enable fast (500mA) charging\n"
 +	"neo1973 charger off - disable charging\n"
 +	"neo1973 backlight (on|off) - switch backlight on or off\n"
++	"neo1973 led num (on|off) - switch LED number 'num' on or off\n"
 +	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
 +	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
 +	"neo1973 gps (on|off) - switch GPS system on or off\n"
@@ -1351,7 +1360,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -0,0 +1,485 @@
+@@ -0,0 +1,491 @@
 +/*
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -1836,6 +1845,12 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 +	}
 +	return 0;
 +}
++
++void neo1973_led(int led, int on)
++{
++	printf("No LED's in this Neo1973 hardware revision\n");
++}
++
 +
 Index: u-boot/board/neo1973/gta01/pcf50606.c
 ===================================================================
@@ -2331,7 +2346,7 @@ Index: u-boot/board/neo1973/common/neo1973.h
 ===================================================================
 --- /dev/null
 +++ u-boot/board/neo1973/common/neo1973.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,35 @@
 +#ifndef _NEO1973_H
 +#define _NEO1973_H
 +
@@ -2359,6 +2374,7 @@ Index: u-boot/board/neo1973/common/neo1973.h
 +void neo1973_vibrator(int on);
 +void neo1973_gsm(int on);
 +void neo1973_gps(int on);
++void neo1973_led(int led, int on);
 +
 +int neo1973_911_key_pressed(void);
 +
