@@ -1,3 +1,11 @@
+2007-10-19	Michael Lauer  <mickey@openmoko.org>
+
+	* libmokopanelui/moko-panel-appet.c:
+	Try to workaround size-calculation bug in MBScaledPanelImage by
+	setting the actual icon @ mainloop idle time (and hopefully
+	after the enclosing widget has already been realized and we have
+	a valid size)
+
 2007-07-28  Michael Lauer  <mickey@openmoko.org>
 
 	* AUTHORS:

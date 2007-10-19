@@ -40,6 +40,7 @@ typedef struct _MokoPanelAppletPrivate
 {
     gboolean is_initialized;
     gboolean hold_timeout_triggered;
+    const char* filename_for_icon;
 } MokoPanelAppletPrivate;
 
 enum {
@@ -196,11 +197,24 @@ void moko_panel_applet_signal_tap_hold(MokoPanelApplet* self)
     moko_panel_applet_open_popup( self, MOKO_PANEL_APPLET_TAP_HOLD_POPUP );
 }
 
+gboolean moko_panel_applet_iconadd_cb(MokoPanelApplet* self)
+{
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
+
+    if ( priv->filename_for_icon )
+    {
+        mb_panel_scaling_image_set_icon( MB_PANEL_SCALING_IMAGE(self->icon), priv->filename_for_icon );
+        priv->filename_for_icon = 0;
+    }
+    return FALSE;
+}
+
 ////////////////
 // PUBLIC API //
 ////////////////
 void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
 {
+    MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
     if ( !self->icon )
     {
         self->icon = mb_panel_scaling_image_new( GTK_ORIENTATION_HORIZONTAL, NULL );
@@ -209,7 +223,8 @@ void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
         gtk_event_box_set_visible_window( GTK_EVENT_BOX(self->eventbox), FALSE );
         gtk_widget_show_all( self->eventbox );
     }
-    mb_panel_scaling_image_set_icon( MB_PANEL_SCALING_IMAGE(self->icon), filename );
+    priv->filename_for_icon = filename;
+    g_idle_add( G_CALLBACK(moko_panel_applet_iconadd_cb), self );
 }
 
 void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)
