@@ -1,3 +1,9 @@
+2007-10-19  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-talking.c: (moko_talking_incoming_call),
+	(moko_talking_outgoing_call), (moko_talking_accepted_call): Use
+	show_all when showing the toolbars
+
 2007-10-18  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-dialer-textview.c: (moko_dialer_textview_set_color): Don't

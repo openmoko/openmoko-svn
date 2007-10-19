@@ -128,7 +128,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
   priv = talking->priv;
 
   gtk_widget_hide (priv->main_bar);
-  gtk_widget_show (priv->incoming_bar);
+  gtk_widget_show_all (priv->incoming_bar);
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Incoming Call");
   gtk_label_set_text (GTK_LABEL (priv->duration), "");
@@ -175,7 +175,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   priv = talking->priv;
 
   gtk_widget_hide (priv->incoming_bar);
-  gtk_widget_show (priv->main_bar);
+  gtk_widget_show_all (priv->main_bar);
 
   moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
 
@@ -250,7 +250,7 @@ moko_talking_accepted_call (MokoTalking      *talking,
   priv = talking->priv;
 
   gtk_widget_hide (priv->incoming_bar);
-  gtk_widget_show (priv->main_bar);
+  gtk_widget_show_all (priv->main_bar);
 
   moko_sound_profile_set(SOUND_PROFILE_GSM_HANDSET);
 
