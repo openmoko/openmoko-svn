@@ -1,0 +1,579 @@
+2007-10-15  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (today_dial_button_clicked_cb): Don't use -s
+	 argument for the dialer shortcut button
+
+2007-10-09  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_page_create):
+	Add the separator in the correct place...
+
+2007-10-09  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_page_create):
+	Change button order (bug #818)
+
+	* src/today-utils.c: (today_get_launcher):
+	Fix compiler warning
+
+2007-10-04  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_populate_tasks):
+	Fix crashing on closing applications from task manager (hopefully),
+	thanks to patch from Soeren Apel
+
+2007-10-04  Chris Lord  <chris@openedhand.com>
+
+	* src/today-pim-journal.c: (today_pim_journal_entry_changed),
+	(today_pim_journal_entry_added_cb),
+	(today_pim_journal_entry_removed_cb):
+	Fix bug #901, thanks to Roman Moravcik
+
+2007-10-04  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-pim-summary.c:
+	(today_pim_summary_tasks_selection_changed_cb): Update binary name for
+	openmoko-tasks
+
+2007-09-28  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (get_utf8_property),
+	(get_text_property), (window_get_icon),
+	(today_task_manager_populate_tasks), (today_task_manager_kill),
+	(today_task_manager_kill_clicked_cb),
+	(today_task_manager_raise_clicked_cb):
+	Trap around gdk_window_foreign_new_for_display() and flush before every
+	gdk_error_trap_pop().
+
+2007-09-28  Chris Lord  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_kill):
+	Call gdk_flush() before gdk_error_trap_pop() - Hopefully fix crashes
+	when closing other apps
+
+2007-09-14  Thomas Wood  <thomas@openedhand.com>
+
+        * src/today-pim-journal.c: (today_pim_journal_box_new): Don't try to
+        load the journal if opening it failed. Prevents segfault if d-bus is
+        not available.
+
+2007-09-14  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (today_create_home_page): Fix Dates icon (bug 830)
+
+2007-09-13  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-launcher.c: (today_launcher_update_search),
+	(today_launcher_filter_changed_cb),
+	(today_launcher_combo_changed_cb),
+	(today_launcher_search_toggle_cb), (today_launcher_page_create):
+	* src/today.h:
+	Fix bug with empty search and use MokoSearchBar
+
+2007-09-11  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (main):
+	Remove disabling of focus on the notebook tabs to try and fix bugs
+	723 and 724
+
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c:
+	* libtaku/launcher-util.h:
+	* src/today-main.c: (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb):
+	* src/today-pim-journal.c: (today_pim_journal_header_clicked_cb),
+	(today_pim_journal_selection_changed_cb):
+	* src/today-pim-summary.c:
+	(today_pim_summary_events_selection_changed_cb),
+	(today_pim_summary_tasks_selection_changed_cb):
+	* src/today-utils.c: (today_get_launcher):
+	* src/today-utils.h:
+	Change the way launching apps work so as to not require changes to
+	upstream matchbox-desktop-2.
+
+2007-09-05  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-pim-summary.c: (today_pim_summary_visible_cb): Sync to
+	upstream libkoto
+
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-main.c: (today_dates_button_clicked_cb),
+	(today_create_home_page):
+	* src/today-pim-summary.c:
+	(today_pim_summary_events_selection_changed_cb):
+	Launch "openmoko-dates" instead of "dates"
+
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c: (launcher_start):
+	Fix function to match prototype in header
+
+2007-09-05  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c: (launcher_start):
+	* libtaku/taku-icon-tile.c: (make_bold), (taku_icon_tile_init),
+	(taku_icon_tile_set_icon_name), (taku_icon_tile_set_primary):
+	* libtaku/taku-table.c: (calculate_columns),
+	(taku_table_class_init):
+	Synchronise with upstream matchbox-desktop-2
+
+2007-09-05  Thomas Wood  <thomas@openedhand.com>
+
+	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_class_init):
+	Update with changes in r1644 of upstream (matchbox-desktop-2:
+	Rename TakuIcon icon size to taku-icon, to match GTK+.)
+
+	* src/today-launcher.c: (today_launcher_page_create):
+	Update for above changes
+
+2007-09-02	Michael Lauer <mickey@openmoko.org>
+
+	* src/today-pim-summary.c: (today_pim_summary_update_date):
+	Set textual display of date, don't show time (it's in the panel anyways)
+
+2007-08-31  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-pim-journal.c: (today_pim_journal_box_new):
+	Fix some compiler warnings
+
+2007-08-23  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (main): Don't force theme settings
+
+2007-08-23  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-launcher.c: (load_desktop_cb), (load_data_dir):
+	Load .desktop files asynchronously (sort of)
+
+2007-08-21  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-events-store.c: (today_events_store_cal_opened_cb),
+	(today_events_store_start):
+	* src/today-tasks-store.c: (today_tasks_store_cal_opened_cb),
+	(today_tasks_store_start):
+	Load calendars asynchronously
+
+	* src/today-pim-summary.c:
+	(today_pim_summary_events_selection_changed_cb):
+	Load dates instead of openmoko-contacts when clicking on events
+
+2007-08-20  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-launcher.c: (today_launcher_search_toggle_cb):
+	Focus the search entry on show instead of hide
+
+2007-08-03  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c: (launcher_start):
+	* libtaku/launcher-util.h:
+	Make the LauncherData const, it isn't changed
+
+	* src/today-main.c: (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb), (main):
+	* src/today-pim-journal.c: (today_pim_journal_header_clicked_cb),
+	(today_pim_journal_selection_changed_cb),
+	(today_pim_journal_box_new):
+	* src/today-pim-summary.c: (today_pim_summary_header_clicked_cb),
+	(today_pim_summary_events_selection_changed_cb),
+	(today_pim_summary_tasks_selection_changed_cb),
+	(today_pim_summary_box_new):
+	Launch the appropriate apps when clicking the summaries on the home page
+
+	* src/today-utils.c: (today_get_launcher):
+	* src/today-utils.h:
+	Make a global LauncherData filling convenience function
+
+2007-08-03  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_finalize),
+	(reset_state), (taku_launcher_tile_clicked),
+	(taku_launcher_tile_for_desktop_file),
+	(taku_launcher_tile_get_filename):
+	* libtaku/taku-launcher-tile.h:
+	* libtaku/taku-tile.c: (taku_tile_clicked):
+	Synchronise with matchbox-desktop-2
+
+	* src/today-events-store.c: (today_events_store_objects_removed),
+	(today_events_store_compare):
+	Sort rows with NULL components to the top
+
+	* src/today-main.c: (today_create_home_page):
+	Create the journal box
+
+	* src/today-pim-summary.c: (today_pim_summary_show_notice),
+	(today_pim_summary_row_inserted_cb),
+	(today_pim_summary_row_deleted_cb), (today_pim_summary_box_new):
+	* src/today-pim-summary.h:
+	Put the 'no events/tasks' message in the treeview for a consistent look
+
+	* configure.ac:
+	Add libmokojournal to dependencies
+
+	* src/Makefile.am:
+	* src/today.h:
+	* src/today-pim-journal.h:
+	* src/today-pim-journal.c:
+	Implement mokojournal summary box (missed calls/unread messages)
+
+2007-08-01  Chris Lord,,,  <chris@openedhand.com>
+
+	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_remove_group),
+	(taku_launcher_tile_get_groups):
+	* libtaku/taku-launcher-tile.h:
+	* src/today-launcher.c: (today_launcher_update_search),
+	(today_launcher_filter_changed_cb),
+	(today_launcher_search_toggle_cb), (today_launcher_page_create):
+	* src/today.h:
+	Implement application searching in the launcher
+
+2007-08-01  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_populate_tasks),
+	(screen_changed_cb), (today_task_manager_kill),
+	(today_task_manager_kill_clicked_cb),
+	(today_task_manager_raise_clicked_cb),
+	(today_task_manager_killall_clicked_cb),
+	(today_task_manager_page_create):
+	Send a WM delete event instead of destroying windows, fix raise app
+
+2007-07-31  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (today_task_manager_populate_tasks),
+	(screen_changed_cb), (filter_func):
+	Don't list Openmoko-Today in the tasks list, and work with any
+	NETWM-compliant window manager
+
+2007-07-30  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-task-manager.c: (get_utf8_property),
+	(get_text_property), (window_get_name), (window_get_icon),
+	(today_task_manager_free_tasks),
+	(today_task_manager_populate_tasks),
+	(today_task_manager_notify_visible_cb),
+	(today_task_manager_visibility_notify_event_cb),
+	(today_task_manager_unmap_cb), (screen_changed_cb), (filter_func),
+	(today_task_manager_page_create):
+	* src/today.h:
+	Add a tasks list (mostly stolen from matchbox-panel-2)
+
+2007-07-30  Chris Lord,,,  <chris@openedhand.com>
+
+	* src/today-events-store.c: (today_events_store_comp_get_desc),
+	(today_events_store_objects_added),
+	(today_events_store_objects_modified),
+	(today_events_store_objects_removed):
+	Make TodayEventsStore make the description correctly and update on
+	changes
+
+2007-07-29  Holger Freyther  <zecke@selfish.org>
+
+        Use version two of the libraries. Make taku compile without libsn
+
+        * configure.ac:
+        * libtaku/launcher-util.c: Taco's don't need libsn.
+        (launcher_start):
+        * src/today-launcher.c:
+        * src/today-main.c:
+        * src/today-task-manager.c:
+
+2007-07-17  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/today-main.c: (main):
+	Set desktop window hint (disable with --enable-standalone)
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* libtaku/taku-launcher-tile.c: (taku_launcher_tile_class_init):
+	Sync with matchbox-desktop
+
+	* src/today-task-manager.c: (today_task_manager_page_create):
+	Use TakuTable instead of GtkTreeView
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	* src/today-launcher.h:
+	* src/today-main.c: (main):
+	* src/today-utils.c: (icalcomponent_has_alarm):
+	* src/today-utils.h:
+	* src/today-task-manager.c:
+	* src/today-task-manager.h:
+	Add UI code for task-manager tab
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* src/today-pim-summary.c: (today_pim_summary_update_date),
+	(today_pim_summary_box_new):
+	Fix time display
+
+2007-07-13  Chris Lord  <chris@openedhand.com>
+
+	* src/today-main.c:
+	Change launcher from 'contacts' to 'openmoko-contacts'
+
+2007-07-12  Chris Lord  <chris@openedhand.com>
+
+	* libtaku/launcher-util.c:
+	* libtaku/launcher-util.h:
+	Make exec_to_argv public
+
+	* libtaku/taku-tile.c: (taku_tile_expose):
+	Use GTK_STATE_SELECTED instead of PRELIGHT
+
+	* src/today-main.c: (today_notebook_add_page_with_icon),
+	(today_fill_launcher), (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb), (today_create_home_page), (main):
+	Make the launcher buttons work
+
+2007-07-12  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/moko-finger-scroll.c:
+	* src/moko-finger-scroll.h:
+	* src/today-main.c:
+	Remove MokoFingerScroll, use libmokoui
+
+	* src/today-launcher.c: (today_launcher_page_create):
+	Define TakuIcon size, fixes critical warnings
+
+2007-07-11  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	* src/today-launcher.c:
+	* src/today-launcher.h:
+	* src/today-main.c: (today_notebook_add_page_with_icon):
+	* src/today.h:
+	Split out application launcher, support vfolders for categories
+
+2007-07-10  Chris Lord  <chris@openedhand.com>
+
+	* src/moko-finger-scroll.c: (moko_finger_scroll_button_press_cb),
+	(moko_finger_scroll_button_release_cb),
+	(moko_finger_scroll_finalize), (moko_finger_scroll_size_request),
+	(moko_finger_scroll_init):
+	Small tweaks to MokoFingerScroll (nothing of note)
+
+2007-07-10  Chris Lord  <chris@openedhand.com>
+
+	* src/moko-finger-scroll.c: (moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_class_init):
+	Fix SPS option, actually animate at given frame-count
+
+	* src/today-main.c: (today_tasks_search_toggle_cb), (main):
+	Don't force theme/icon settings by default
+
+2007-07-10  Chris Lord  <chris@openedhand.com>
+
+	* src/moko-finger-scroll.c: (moko_finger_scroll_scroll),
+	(moko_finger_scroll_button_release_cb),
+	(moko_finger_scroll_class_init):
+	Fix size-request and possible infinite loop in MokoFingerScroll
+
+2007-07-10  Chris Lord  <chris@openedhand.com>
+
+	* src/moko-finger-scroll.c: (moko_finger_scroll_button_press_cb),
+	(moko_finger_scroll_scroll), (moko_finger_scroll_timeout),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_get_topmost),
+	(moko_finger_scroll_button_release_cb), (moko_finger_scroll_add),
+	(moko_finger_scroll_remove), (moko_finger_scroll_get_property),
+	(moko_finger_scroll_set_property), (moko_finger_scroll_dispose),
+	(moko_finger_scroll_finalize), (moko_finger_scroll_class_init):
+	Correct scrolling direction in acceleration mode, add deceleration,
+	tweak default property values.
+
+2007-07-09  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	* src/moko-finger-scroll.c: (moko_finger_scroll_scroll),
+	(moko_finger_scroll_timeout),
+	(moko_finger_scroll_motion_notify_cb),
+	(moko_finger_scroll_get_topmost),
+	(moko_finger_scroll_button_release_cb), (moko_finger_scroll_add),
+	(moko_finger_scroll_remove), (moko_finger_scroll_class_init),
+	(moko_finger_scroll_init):
+	* src/moko-finger-scroll.h:
+	* src/today-header-box.c:
+	* src/today-header-box.h:
+	* src/today-main.c: (today_create_home_page),
+	(today_tasks_search_toggle_cb), (today_create_tasks_page):
+	* src/today-pim-summary.c:
+	Add and use MokoFingerScroll widget, remove old header widget
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
+	* libtaku/Makefile.am:
+	* src/Makefile.am:
+	Fix library flags
+
+	* src/today-main.c: (today_notebook_add_page_with_icon),
+	(load_data_dir), (today_create_home_page),
+	(today_tasks_search_toggle_cb), (today_create_tasks_page), (main):
+	* src/today.h:
+	Add preliminary task launcher
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
+	* Makefile.am:
+	* configure.ac:
+	* libtaku/Makefile.am:
+	* libtaku/eggsequence.c:
+	* libtaku/eggsequence.h:
+	* libtaku/launcher-util.c:
+	* libtaku/launcher-util.h:
+	* libtaku/taku-icon-tile.c:
+	* libtaku/taku-icon-tile.h:
+	* libtaku/taku-launcher-tile.c:
+	* libtaku/taku-launcher-tile.h:
+	* libtaku/taku-table.c:
+	* libtaku/taku-table.h:
+	* libtaku/taku-tile.c:
+	* libtaku/taku-tile.h:
+	* libtaku/xutil.c:
+	* libtaku/xutil.h:
+	Add matchbox-desktop-2 code
+
+	* src/today-main.c: (today_notebook_add_page_with_icon),
+	(today_create_homepage), (main):
+	Re-organise slightly
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
+	* src/today-main.c: (today_notebook_add_page_with_icon), (main):
+	Don't call gtk_widget_show_all on the main window
+
+	* src/today-pim-summary.c: (today_pim_summary_update_date):
+	- Filter the tasks view. Only show tasks that are uncompleted or
+	  recently created
+	- Completed tasks are drawn with a strikethrough
+	- If there are no events/tasks, show a notice saying so
+
+2007-07-06  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* libkoto/Makefile.am:
+	Move config.h to top directory and define HAVE_ECALCOMPONENTID instead
+	of HAVE_CID for libkoto
+
+	* src/today-events-store.c: (today_events_store_objects_added),
+	(today_events_store_objects_removed), (today_events_store_start),
+	(today_events_store_compare), (today_events_store_init):
+	* src/today-events-store.h:
+	Sort TodayEventsStore
+
+	* src/Makefile.am:
+	* src/today-events.c:
+	* src/today-events.h:
+	* src/today-main.c: (main):
+	* src/today.h:
+	* src/today-pim-summary.c: (today_pim_summary_update_date),
+	(today_pim_summary_box_new):
+	* src/today-pim-summary.h:
+	Rename today-events.[ch] -> today-pim-summary.[ch]
+
+	* src/today-tasks-store.c: (today_tasks_store_start):
+	Use simple query, will filter manually
+
+2007-07-05  Chris Lord  <chris@openedhand.com>
+
+	* src/today-events-store.c: (today_events_store_objects_added),
+	(today_events_store_objects_removed):
+	* src/today-events-store.h:
+	* src/today-events.c:
+	Show date instead of time for events not occuring today
+
+	* src/Makefile.am:
+	* src/today-tasks-store.c:
+	* src/today-tasks-store.h:
+	Add new TodayTasksStore using libkoto
+
+2007-07-05  Chris Lord  <chris@openedhand.com>
+
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* libkoto/Makefile.am:
+	* libkoto/ical-util.c:
+	* libkoto/ical-util.h:
+	* libkoto/koto-all-group.c:
+	* libkoto/koto-all-group.h:
+	* libkoto/koto-category-group.c:
+	* libkoto/koto-category-group.h:
+	* libkoto/koto-cell-renderer-pixbuf.c:
+	* libkoto/koto-cell-renderer-pixbuf.h:
+	* libkoto/koto-date-combo.c:
+	* libkoto/koto-date-combo.h:
+	* libkoto/koto-field-editor-factory.c:
+	* libkoto/koto-field-editor-factory.h:
+	* libkoto/koto-group-combo.c:
+	* libkoto/koto-group-combo.h:
+	* libkoto/koto-group-filter-model.c:
+	* libkoto/koto-group-filter-model.h:
+	* libkoto/koto-group-store.c:
+	* libkoto/koto-group-store.h:
+	* libkoto/koto-group.c:
+	* libkoto/koto-group.h:
+	* libkoto/koto-hint-entry.c:
+	* libkoto/koto-hint-entry.h:
+	* libkoto/koto-meta-group.c:
+	* libkoto/koto-meta-group.h:
+	* libkoto/koto-no-category-group.c:
+	* libkoto/koto-no-category-group.h:
+	* libkoto/koto-platform.h:
+	* libkoto/koto-priority-combo.c:
+	* libkoto/koto-priority-combo.h:
+	* libkoto/koto-task-editor-dialog.c:
+	* libkoto/koto-task-editor-dialog.h:
+	* libkoto/koto-task-editor.c:
+	* libkoto/koto-task-editor.h:
+	* libkoto/koto-task-store.c:
+	* libkoto/koto-task-store.h:
+	* libkoto/koto-task-summary.c:
+	* libkoto/koto-task-summary.h:
+	* libkoto/koto-task-view.c:
+	* libkoto/koto-task-view.h:
+	* libkoto/koto-task.c:
+	* libkoto/koto-task.h:
+	* libkoto/koto-utils.c:
+	* libkoto/koto-utils.h:
+	Add libkoto
+
+	* src/Makefile.am:
+	* src/today-events-list-store.c:
+	* src/today-events-list-store.h:
+	* src/today-events-store.c: (today_events_store_get_property),
+	(today_events_store_set_property), (today_events_store_finalize),
+	(today_events_store_objects_added),
+	(today_events_store_objects_removed), (today_events_store_start),
+	(today_events_store_init):
+	* src/today-events-store.h:
+	* src/today-events.c: (today_events_box_new):
+	Rename TodayEventsListStore->TodayEventsStore
+
+2007-07-05  Thomas Wood <thomas@openedhand.com>
+
+	* autogen.sh: Correct PKG_NAME
+
+2007-07-04  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	Check for ECalComponentId
+
+	* src/today-header-box.c: (today_header_box_expose_cb):
+	* src/today-main.c: (main):
+	* src/today.h:
+	Just use a GtkTreeView instead of the custom widget. Display events
+	within the next week from the main calendar. General UI shuffling.
+
+/* ex: set tabstop=8 expandtab: */
