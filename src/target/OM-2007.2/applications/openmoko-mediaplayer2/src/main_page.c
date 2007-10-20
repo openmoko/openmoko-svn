@@ -43,8 +43,10 @@
 
 
 
+#include <math.h>
+
 /// Contains all main window widgets that need to be changeable
-struct _main_widgets
+struct
 {
 	GtkWidget *cover_image;
 	GtkWidget *cover_frame;
@@ -63,6 +65,31 @@ struct _main_widgets
 
 GtkWidget *omp_main_window = NULL;
 
+/// Possible gestures
+typedef enum
+{
+	OMP_MAIN_GESTURE_NONE,
+	OMP_MAIN_GESTURE_LEFT,
+	OMP_MAIN_GESTURE_RIGHT,
+	OMP_MAIN_GESTURE_UP,
+	OMP_MAIN_GESTURE_DOWN
+} omp_main_gesture;
+
+/// Holds the necessary infos to record and identify the gestures
+struct
+{
+	gboolean pressed;
+	GTimeVal start_time;
+	guint x_origin, y_origin;
+	guint last_x, last_y;
+	gboolean cursor_idle;						// TRUE if cursor isn't moving
+
+	gint radius, angle;
+	omp_main_gesture gesture;
+	gboolean repeating;
+	guint repeat_timeout;
+} main_gesture_data;
+
 // Forward declarations for internal use
 void omp_main_set_label(omp_main_label_type label_type, gchar *caption);
 void omp_main_playlist_loaded(gpointer instance, gchar *title, gpointer user_data);
@@ -75,6 +102,22 @@ void omp_main_update_track_position(gpointer instance, gpointer user_data);
 void omp_main_update_volume(gpointer instance, gpointer user_data);
 
 
+
+/**
+ * Self-explanatory :)
+ */
+gint min(gint a, gint b)
+{
+	return (a > b) ? b : a;
+}
+
+/**
+ * Self-explanatory :)
+ */
+gint max(gint a, gint b)
+{
+	return (a > b) ? a : b;
+}
 
 /**
  * Event handler for the expand button
@@ -158,6 +201,222 @@ void
 omp_main_preferences_clicked(GtkWidget *widget, gpointer data)
 {
 	error_dialog("Not implemented yet, sorry :)");
+}
+
+/**
+ * Tries to determine which gesture the user has performed and fills the gesture data struct accordingly
+ * @param x X coordinate of current pressure point
+ * @param y Y coordinate of current pressure point
+ */
+void
+omp_main_gesture_identify(guint x, guint y)
+{
+	#define MIN_RADIUS 15
+
+	gint delta_x, delta_y, gamma;
+
+	// Perform rect->polar conversion of the differential cursor movement
+	delta_x = x - main_gesture_data.x_origin;
+	delta_y = y - main_gesture_data.y_origin;
+
+	main_gesture_data.radius = sqrt(delta_x * delta_x + delta_y * delta_y);
+
+	// angle = arccos(gamma) but arccos() is too slow to compute -> range comparison
+	// We shift the comma by 3 digits so we can use integer math
+	gamma = delta_x*1000 / main_gesture_data.radius;
+
+	if (main_gesture_data.radius > MIN_RADIUS)
+	{
+
+		// Determine direction of movement
+		if (gamma < -707)
+		{
+			main_gesture_data.gesture = OMP_MAIN_GESTURE_LEFT;
+
+		} else {
+
+			if (gamma > 707)
+			{
+				main_gesture_data.gesture = OMP_MAIN_GESTURE_RIGHT;
+			} else {
+				main_gesture_data.gesture = (delta_y < 0) ? OMP_MAIN_GESTURE_UP : OMP_MAIN_GESTURE_DOWN;
+			}
+
+		}
+
+	} else {
+
+		// Radius too small
+		main_gesture_data.gesture = OMP_MAIN_GESTURE_NONE;
+	}
+
+}
+
+/**
+ * Performs the action the current gesture commands
+ */
+void
+omp_main_gesture_trigger()
+{
+	if (main_gesture_data.gesture == OMP_MAIN_GESTURE_NONE) return;
+
+	switch (main_gesture_data.gesture)
+	{
+		case OMP_MAIN_GESTURE_LEFT:
+		{
+			omp_main_rewind_clicked(NULL, NULL);
+			break;
+		}
+
+		case OMP_MAIN_GESTURE_RIGHT:
+		{
+			omp_main_fast_forward_clicked(NULL, NULL);
+			break;
+		}
+
+		case OMP_MAIN_GESTURE_UP:
+		{
+			omp_playback_set_volume(min(100, omp_playback_get_volume()+10));
+			break;
+		}
+
+		case OMP_MAIN_GESTURE_DOWN:
+		{
+			omp_playback_set_volume(max(0, omp_playback_get_volume()-10));
+			break;
+		}
+
+		default: break;
+	}
+}
+
+/**
+ * This callback repeatedly performs the action the current gesture commands
+ */
+static gboolean
+omp_main_gesture_repeat_callback(gpointer data)
+{
+	if (!main_gesture_data.repeating) return FALSE;
+
+	omp_main_gesture_trigger();
+
+	return TRUE;
+}
+
+/**
+ * Sets up the repeat timeout if the touchscreen is being pressed for a certain amount of time
+ */
+void
+omp_main_gesture_check_repeat()
+{
+	#define REPEAT_TIME_TRESHOLD_USEC 0750000
+	#define REPEAT_INTERVAL_MSEC 1000
+
+	GTimeVal current_time, delta_t;
+
+	if (!main_gesture_data.repeating)
+	{
+		// Calculate duration of touchscreen press
+		g_get_current_time(&current_time);
+		delta_t.tv_sec  = current_time.tv_sec  - main_gesture_data.start_time.tv_sec;
+		delta_t.tv_usec = current_time.tv_usec - main_gesture_data.start_time.tv_usec;
+
+		if (delta_t.tv_usec >= REPEAT_TIME_TRESHOLD_USEC)
+		{
+			main_gesture_data.repeating = TRUE;
+			g_timeout_add(REPEAT_INTERVAL_MSEC, omp_main_gesture_repeat_callback, NULL);
+		}
+
+	}
+}
+
+/**
+ * Gets called whenever the cursor has been moved, handling gesture recognition and triggering
+ */
+gboolean
+omp_main_pointer_moved(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
+{
+	#define MAX_DELTA_LAST 3
+	gint delta_last_x, delta_last_y;
+
+//	g_printf("Pointer: X=%d /\t Y=%d /\t state=%d /\t is_hint=%d\n",
+//		(gint)event->x, (gint)event->y, event->state, event->is_hint);
+
+	if (main_gesture_data.pressed)
+	{
+		delta_last_x = abs((guint)event->x - main_gesture_data.last_x);
+		delta_last_y = abs((guint)event->y - main_gesture_data.last_y);
+
+		// Did the cursor move a substantial amount?
+		if ( (delta_last_x > MAX_DELTA_LAST) && (delta_last_y > MAX_DELTA_LAST) )
+		{
+			// Yes it did, so it's most likely being moved
+			main_gesture_data.cursor_idle = FALSE;
+			main_gesture_data.last_x = event->x;
+			main_gesture_data.last_y = event->y;
+
+			// Make sure we won't trigger anymore (if we were before, that is)
+			main_gesture_data.repeating = FALSE;
+//			g_printf("-- movement\n");
+
+		} else {
+//			g_printf("-- NO movement\n");
+
+			// Cursor is idle, so lets update the gesture data if it wasn't idle before
+			if (!main_gesture_data.cursor_idle)
+				omp_main_gesture_identify(event->x, event->y);
+
+			omp_main_gesture_check_repeat();
+
+			main_gesture_data.cursor_idle = TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+/**
+ * Gets called whenever the touchscreen has been pressed, handling gesture recognition and triggering
+ */
+gboolean
+omp_main_pointer_pressed(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+//	g_printf("- Pressed: X=%d /\t Y=%d /\t state=%d /\t button=%d\n",
+//		(gint)event->x, (gint)event->y, event->state, event->button);
+
+	main_gesture_data.pressed = TRUE;
+	g_get_current_time(&main_gesture_data.start_time);
+	main_gesture_data.x_origin = event->x;
+	main_gesture_data.y_origin = event->y;
+	main_gesture_data.last_x = event->x;
+	main_gesture_data.last_y = event->y;
+	main_gesture_data.cursor_idle = FALSE;
+	main_gesture_data.gesture = OMP_MAIN_GESTURE_NONE;
+	main_gesture_data.repeating = FALSE;
+
+	return FALSE;
+}
+
+/**
+ * Gets called whenever the touchscreen has been released, handling gesture recognition and triggering
+ */
+gboolean
+omp_main_pointer_released(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+//	g_printf("- Released: X=%d /\t Y=%d /\t state=%d /\t button=%d\n",
+//		(gint)event->x, (gint)event->y, event->state, event->button);
+
+	// Stop repeat trigger if necessary - or trigger action
+	if (main_gesture_data.repeating)
+	{
+		main_gesture_data.repeating = FALSE;
+	} else {
+		omp_main_gesture_trigger();
+	}
+
+	main_gesture_data.pressed = FALSE;
+
+	return FALSE;
 }
 
 /**
@@ -479,6 +738,17 @@ omp_main_page_create()
 
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED,
 		G_CALLBACK(omp_main_update_volume), NULL);
+
+	// Set up gesture recognition handlers
+	gtk_widget_add_events(eventbox,
+		GDK_POINTER_MOTION_MASK | 
+		GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+
+	main_gesture_data.pressed = FALSE;
+
+	g_signal_connect(G_OBJECT(eventbox), "motion-notify-event", G_CALLBACK(omp_main_pointer_moved), NULL);
+	g_signal_connect(G_OBJECT(eventbox), "button-press-event", G_CALLBACK(omp_main_pointer_pressed), NULL);
+	g_signal_connect(G_OBJECT(eventbox), "button-release-event", G_CALLBACK(omp_main_pointer_released), NULL);
 
 	// Make widgets visible - can't use gtk_widget_show_all() here as some widgets should stay hidden
 	gtk_widget_show(vbox);

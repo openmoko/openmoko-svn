@@ -301,7 +301,7 @@ omp_editor_page_create()
 	image = gtk_image_new_from_icon_name("gtk-file", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(image), TRUE, TRUE, 0);
 
-	alignment = label_create(&label, "Sans 6", "black", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
+	alignment = label_create(&label, "Sans 6", "white", 0, 0, 0, 0, PANGO_ELLIPSIZE_NONE);
 	gtk_label_set_text(GTK_LABEL(label), _("Add Tracks"));
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(alignment), TRUE, TRUE, 0);
 
