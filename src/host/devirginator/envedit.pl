@@ -113,6 +113,7 @@ sub set
     print STDERR
       "warning: variable name \"$var\" contains invalid characters\n"
       unless $var =~ /^\w+$/;
+    return 1;
 }
 
 
@@ -185,7 +186,7 @@ while (@ARGV) {
 	close FILE;
 	&set_err($line) if defined $line;
     }
-    elsif (&set($_)) {
+    elsif (&set($ARGV[0])) {
 	shift(@ARGV);
     }
     else {
