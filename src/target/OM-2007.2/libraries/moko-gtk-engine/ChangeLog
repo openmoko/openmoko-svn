@@ -1,3 +1,7 @@
+2007-10-22  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtkrc: Button style tweaks
+
 2007-10-10  Thomas Wood  <thomas@openedhand.com>
 
 	* data/gtkrc: Correct ComboBox style

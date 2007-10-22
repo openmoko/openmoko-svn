@@ -100,6 +100,8 @@ widget_class "*GtkButton*" style "reversed"
 
 style "button"
 {
+  # inner-border was added in GTK+ 2.10
+  GtkButton::inner_border = {15, 15, 10, 10}
   engine "moko-engine" {
     border = TRUE
     gradient = TRUE
@@ -107,14 +109,45 @@ style "button"
 }
 class "GtkButton" style "button"
 
-style "combo-fix" {
+style "button-colors" {
+  bg[NORMAL] = "#333"
+  fg[NORMAL] = "#fff"
+
+  bg[PRELIGHT] = "#333"
+  fg[PRELIGHT] = "#fff"
+}
+widget_class "GtkButton*" style "button-colors"
+
+style "treeview-header" {
+
+  # inner-border was added in GTK+ 2.10
+  GtkButton::inner_border = {0, 0, 0, 0}
+
+  bg[NORMAL] = "#eee"
+  fg[NORMAL] = "#000"
+
+  bg[PRELIGHT] = "#eee"
+  fg[PRELIGHT] = "#000"
+
+  engine "moko-engine" {
+    border = FALSE
+    gradient = TRUE
+  }
+}
+widget_class "*GtkTreeView.GtkButton*" style "treeview-header"
+
+style "combo" {
   bg[NORMAL] = @selected_bg_color
   text[NORMAL] = @selected_fg_color
 
   bg[PRELIGHT] = @selected_bg_color
   text[PRELIGHT] = @selected_fg_color
+
+  engine "moko-engine" {
+    gradient = TRUE
+  }
 }
-widget_class "*Combo*" style "combo-fix"
+widget_class "*Combo*" style "combo"
 
 style "toolbar"
 {
