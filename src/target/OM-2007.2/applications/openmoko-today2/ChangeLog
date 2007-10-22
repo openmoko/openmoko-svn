@@ -1,5 +1,11 @@
 2007-10-22  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (bg_size_allocate_cb):
+	Check the size against the last allocated size, or we can get into
+	semi-infinite loops
+
+2007-10-22  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (today_create_home_page):
 	No need to connect_after on event box signals
 

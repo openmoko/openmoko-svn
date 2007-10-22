@@ -75,9 +75,15 @@ static void
 bg_size_allocate_cb (GtkWidget *widget, GtkAllocation *allocation,
 		     TodayData *data)
 {
+	static gint width = 0, height = 0;
+	
 	/* Re-scale wallpaper */
-	gconf_client_notify (gconf_client_get_default (),
-		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
+	if ((width != allocation->width) || (height != allocation->height)) {
+		width = allocation->width;
+		height = allocation->height;
+		gconf_client_notify (gconf_client_get_default (),
+			GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
+	}
 }
 
 static GtkWidget *
