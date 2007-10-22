@@ -50,4 +50,6 @@ typedef enum
 
 GtkWidget *omp_main_page_create();
 
+gulong omp_main_get_video_window();
+
 #endif

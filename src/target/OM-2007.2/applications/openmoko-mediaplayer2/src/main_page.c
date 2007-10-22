@@ -31,7 +31,7 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <glib/gi18n.h>
-
+#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
 #include "main_page.h"
@@ -49,6 +49,7 @@
 struct
 {
 	GtkWidget *cover_image;
+	GtkWidget *cover_eventbox;
 	GtkWidget *cover_frame;
 	GtkWidget *label1;
 	GtkWidget *label2;
@@ -339,9 +340,6 @@ omp_main_pointer_moved(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 	#define MAX_DELTA_LAST 3
 	gint delta_last_x, delta_last_y;
 
-//	g_printf("Pointer: X=%d /\t Y=%d /\t state=%d /\t is_hint=%d\n",
-//		(gint)event->x, (gint)event->y, event->state, event->is_hint);
-
 	if (main_gesture_data.pressed)
 	{
 		delta_last_x = abs((guint)event->x - main_gesture_data.last_x);
@@ -357,10 +355,8 @@ omp_main_pointer_moved(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 
 			// Make sure we won't trigger anymore (if we were before, that is)
 			main_gesture_data.repeating = FALSE;
-//			g_printf("-- movement\n");
 
 		} else {
-//			g_printf("-- NO movement\n");
 
 			// Cursor is idle, so lets update the gesture data if it wasn't idle before
 			if (!main_gesture_data.cursor_idle)
@@ -381,9 +377,6 @@ omp_main_pointer_moved(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 gboolean
 omp_main_pointer_pressed(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-//	g_printf("- Pressed: X=%d /\t Y=%d /\t state=%d /\t button=%d\n",
-//		(gint)event->x, (gint)event->y, event->state, event->button);
-
 	main_gesture_data.pressed = TRUE;
 	g_get_current_time(&main_gesture_data.start_time);
 	main_gesture_data.x_origin = event->x;
@@ -403,9 +396,6 @@ omp_main_pointer_pressed(GtkWidget *widget, GdkEventButton *event, gpointer user
 gboolean
 omp_main_pointer_released(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-//	g_printf("- Released: X=%d /\t Y=%d /\t state=%d /\t button=%d\n",
-//		(gint)event->x, (gint)event->y, event->state, event->button);
-
 	// Stop repeat trigger if necessary - or trigger action
 	if (main_gesture_data.repeating)
 	{
@@ -428,7 +418,10 @@ omp_main_reset_ui(gpointer instance, gpointer user_data)
 	gchar *caption;
 
 	if (omp_config_get_main_ui_show_cover())
+	{
 		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.cover_image), "no_cover", -1);
+		gtk_widget_queue_draw(main_widgets.cover_image);	// Re-draw the default cover
+	}
 
 	// Determine which label we can use for showing the "No track information" line
 	// #2 is preferred, followed by #1 and #3
@@ -484,10 +477,14 @@ omp_main_top_widgets_create(GtkBox *parent)
 	hbox = gtk_hbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 
-	// Pack the image itself into another frame to give it a black border
+	// Pack the image into an eventbox (for video playback) and that into another frame to give it a black border
+	main_widgets.cover_eventbox = gtk_event_box_new();
+
 	main_widgets.cover_image = gtk_image_new();
 	gtk_widget_set_name(GTK_WIDGET(main_widgets.cover_image), "omp-main-top-cover");
-	main_widgets.cover_frame = widget_wrap(main_widgets.cover_image, NULL);
+	gtk_container_add(GTK_CONTAINER(main_widgets.cover_eventbox), main_widgets.cover_image);
+
+	main_widgets.cover_frame = widget_wrap(main_widgets.cover_eventbox, "omp-main-top-cover");
 	gtk_frame_set_shadow_type(GTK_FRAME(main_widgets.cover_frame), GTK_SHADOW_IN);
 	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(main_widgets.cover_frame), FALSE, FALSE, 0);
 
@@ -776,6 +773,18 @@ omp_main_set_label(omp_main_label_type label_type, gchar *caption)
 }
 
 /**
+ * Helper function that returns the X window handle to use for video playback and prepares the UI for video playback
+ */
+gulong
+omp_main_get_video_window()
+{
+	if (GTK_WIDGET_NO_WINDOW(main_widgets.cover_eventbox))
+		g_error(_("Video display widget has no window!\n"));
+
+	return GDK_WINDOW_XWINDOW(main_widgets.cover_eventbox->window);
+}
+
+/**
  * Callback for the "playlist loaded" event
  */
 void
@@ -802,6 +811,13 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 	gchar *title = NULL;
 	gchar *text;
 	gint track_id;
+
+	// Restore and invalidate default cover
+	if (omp_config_get_main_ui_show_cover())
+	{
+		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.cover_image), "no_cover", -1);
+		gtk_widget_queue_draw(main_widgets.cover_image);	// Re-draw the default cover
+	}
 
 	// Set preliminary artist/title strings (updated on incoming metadata)
 	omp_playlist_get_track_info(omp_playlist_current_track_id, &artist, &title, &track_length);

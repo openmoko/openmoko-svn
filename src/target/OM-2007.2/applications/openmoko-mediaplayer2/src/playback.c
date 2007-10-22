@@ -26,11 +26,13 @@
 
 #include <glib/gi18n.h>
 #include <gst/gst.h>
+#include <gst/interfaces/xoverlay.h>
 #include <uriparser/Uri.h>
 
 #include "playback.h"
 #include "guitools.h"
 #include "main.h"
+#include "main_page.h"
 #include "persistent.h"
 
 /// Our ticket to the gstreamer world
@@ -61,6 +63,7 @@ static gboolean omp_gst_message_state_changed(GstBus *bus, GstMessage *message, 
 static gboolean omp_gst_message_error(GstBus *bus, GstMessage *message, gpointer data);
 static gboolean omp_gst_message_warning(GstBus *bus, GstMessage *message, gpointer data);
 static gboolean omp_gst_message_tag(GstBus *bus, GstMessage *message, gpointer data);
+static gboolean omp_gst_message_element(GstBus *bus, GstMessage *message, gpointer data);
 
 
 
@@ -141,6 +144,7 @@ omp_playback_init()
 	g_signal_connect(bus, "message::warning", 			G_CALLBACK(omp_gst_message_warning), NULL);
 	g_signal_connect(bus, "message::state-changed",	G_CALLBACK(omp_gst_message_state_changed), NULL);
 	g_signal_connect(bus, "message::tag",						G_CALLBACK(omp_gst_message_tag), NULL);
+	g_signal_connect(bus, "message::element",				G_CALLBACK(omp_gst_message_element), NULL);
 
 	gst_object_unref(bus);
 
@@ -574,3 +578,18 @@ omp_gst_message_tag(GstBus *bus, GstMessage *message, gpointer data)
 
 	return TRUE;
 }
+
+/**
+ * Handles gstreamer's "we need a window for video playback" notification
+ */
+static gboolean
+omp_gst_message_element(GstBus *bus, GstMessage *message, gpointer data)
+{
+	if (gst_structure_has_name(message->structure, "prepare-xwindow-id"))
+	{
+		gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(GST_MESSAGE_SRC(message)), omp_main_get_video_window());
+	}
+
+	return TRUE;
+}
+
