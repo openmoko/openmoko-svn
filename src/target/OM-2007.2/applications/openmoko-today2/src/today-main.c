@@ -144,9 +144,9 @@ today_create_home_page (TodayData *data)
 	/* Create event box with background */
 	data->bg_ebox = gtk_event_box_new ();
 	gtk_widget_set_app_paintable (data->bg_ebox, TRUE);
-	g_signal_connect_after (data->bg_ebox, "expose-event",
+	g_signal_connect (data->bg_ebox, "expose-event",
 		G_CALLBACK (bg_expose_cb), data);
-	g_signal_connect_after (data->bg_ebox, "size-allocate",
+	g_signal_connect (data->bg_ebox, "size-allocate",
 		G_CALLBACK (bg_size_allocate_cb), data);
 
 	align = gtk_alignment_new (0.5, 0.5, 1, 1);

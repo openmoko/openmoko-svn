@@ -1,5 +1,10 @@
 2007-10-22  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (today_create_home_page):
+	No need to connect_after on event box signals
+
+2007-10-22  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	* src/Makefile.am:
 	* src/today-main.c: (bg_expose_cb), (bg_size_allocate_cb),
