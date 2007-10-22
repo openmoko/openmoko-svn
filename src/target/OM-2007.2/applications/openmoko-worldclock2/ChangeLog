@@ -1,0 +1,10 @@
+2007-10-22  Chris Lord  <chris@openedhand.com>
+
+	* AUTHORS:
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* src/Makefile.am:
+	* src/worldclock-main.c:
+	Initial check-in
+
