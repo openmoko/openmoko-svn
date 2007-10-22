@@ -20,24 +20,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef APPEARANCE_H
-#define APPEARANCE_H
+#ifndef APPEARANCE_BACKGROUND_H
+#define APPEARANCE_BACKGROUND_H
 
-#define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
-#define GCONF_POKY_WALLPAPER "/wallpaper"
+#include <gtk/gtk.h>
+#include "appearance.h"
 
-typedef struct
-{
-  GtkWidget *window;
+GtkWidget * background_page_new (AppearanceData *data);
 
-  /* colours page */
-  GtkWidget *colors_combo;
-
-  /* background page */
-  GtkWidget *bg_ebox;
-  GtkWidget *bg_chooser;
-  GdkPixmap *wallpaper;
-
-} AppearanceData;
-
-#endif
+#endif /* APPEARANCE_BACKGROUND_H */

@@ -1,3 +1,11 @@
+2007-10-22  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	* src/appearance-background.[ch]:
+	* src/appearance-main.c: (main):
+	* src/appearance.h:
+	Add background chooser
+
 2007-10-22  Thomas Wood  <thomas@openedhand.com>
 
 	* Makefile.am:

@@ -10,7 +10,9 @@ openmoko_appearance_SOURCES = \
 	appearance.h \
 	appearance-main.c \
 	appearance-colors.c \
-	appearance-colors.h
+	appearance-colors.h \
+	appearance-background.c \
+	appearance-background.h
 
 openmoko_appearance_LDADD  = @MOKOUI_LIBS@
 

@@ -21,14 +21,16 @@
  */
 
 #include <gtk/gtk.h>
+#include <gconf/gconf-client.h>
 #include "appearance.h"
 #include "appearance-colors.h"
+#include "appearance-background.h"
 
 int
 main (int argc, char *argv[])
 {
   AppearanceData *data;
-  GtkWidget *window, *notebook, *label, *colors_page, *background_page;
+  GtkWidget *notebook, *icon, *colors_page, *background_page;
 
   /* initialise gtk+ */
   gtk_init (&argc, &argv);
@@ -38,12 +40,12 @@ main (int argc, char *argv[])
   data = g_new0 (AppearanceData, 1);
 
   /* create our main window */
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title (GTK_WINDOW (window), "Appearance");
+  data->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (data->window), "Appearance");
   /* connect the "delete" event of the window to the main quit function
    * this causes the program to quit (main loop to exit) when the window is
    * closed */
-  g_signal_connect (window, "delete-event", G_CALLBACK (gtk_main_quit), NULL);
+  g_signal_connect (data->window, "delete-event", G_CALLBACK (gtk_main_quit), NULL);
 
   /* create a notebook and set the tab position to the bottom of the window */
   notebook = gtk_notebook_new ();
@@ -52,27 +54,33 @@ main (int argc, char *argv[])
   /* Add the notebook to the window
    * GtkWindow inherits from GtkContainer, so we can case it as a GtkContainer
    * (here using the inbuilt macro) and then use it in gtk_container_* functions */
-  gtk_container_add (GTK_CONTAINER (window), notebook);
+  gtk_container_add (GTK_CONTAINER (data->window), notebook);
 
   /* create our "pages" */
   colors_page = colors_page_new (data);
-  background_page = gtk_label_new ("No background options yet");
+  background_page = background_page_new (data);
 
   /* add the pages to the notebook */
   /* colors page */
-  label = gtk_label_new ("Colors");
-  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), colors_page, label);
+  icon = gtk_image_new_from_stock (GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_LARGE_TOOLBAR);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), colors_page, icon);
   /* OpenMoko style means we make the tabs as big as possible by setting
    * tab-fill to true */
   gtk_container_child_set (GTK_CONTAINER (notebook), colors_page, "tab-expand", TRUE, NULL);
 
   /* background page */
-  label = gtk_label_new ("Background");
-  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), background_page, label);
+  icon = gtk_image_new_from_stock (GTK_STOCK_ORIENTATION_PORTRAIT, GTK_ICON_SIZE_LARGE_TOOLBAR);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), background_page, icon);
   gtk_container_child_set (GTK_CONTAINER (notebook), background_page, "tab-expand", TRUE, NULL);
 
   /* display the window and all the widgets inside it */
-  gtk_widget_show_all (window);
+  gtk_widget_show_all (data->window);
+
+  /* select the first notebook page */
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (notebook), 0);
+
+  gconf_client_notify (gconf_client_get_default (),
+    GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
 
   /* start the main loop */
   gtk_main ();
