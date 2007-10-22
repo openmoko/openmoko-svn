@@ -18,5 +18,6 @@ AC_SUBST(MOKOUI)
 AC_OUTPUT([
 Makefile
 src/Makefile
+data/Makefile
 ])
 

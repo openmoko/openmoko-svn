@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Appearance
+Comment=Change various appearance settings
+Encoding=UTF-8
+Version=0.1
+Type=Application
+Exec=openmoko-appearance
+Terminal=false
+Categories=GTK;Utilities
+X-MB-SingleInstance=true
+
