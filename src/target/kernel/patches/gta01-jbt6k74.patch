@@ -652,7 +652,7 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +		.owner	= THIS_MODULE,
 +	},
 +
-+	.probe 	 = jbt_probe,
++	.probe	 = jbt_probe,
 +	.remove	 = __devexit_p(jbt_remove),
 +	.suspend = jbt_suspend,
 +	.resume	 = jbt_resume,
