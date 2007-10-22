@@ -1,5 +1,10 @@
 2007-10-22  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (wallpaper_notify):
+	Check if value is NULL when reading wallpaper setting
+
+2007-10-22  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (bg_size_allocate_cb):
 	Check the size against the last allocated size, or we can get into
 	semi-infinite loops

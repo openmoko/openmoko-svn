@@ -172,7 +172,7 @@ wallpaper_notify (GConfClient *client, guint cnxn_id,
 	gint width, height, pwidth, pheight;
 	GdkPixbuf *pixbuf, *pixbuf_scaled;
 	GConfValue *value;
-	const gchar *path;
+	const gchar *path = NULL;
 	gfloat scale;
 
 	if (!GTK_WIDGET_REALIZED (data->bg_ebox))
@@ -186,7 +186,7 @@ wallpaper_notify (GConfClient *client, guint cnxn_id,
 	if ((width <= 0) || (height <= 0)) return;
 	
 	value = gconf_entry_get_value (entry);
-	path = gconf_value_get_string (value);
+	if (value) path = gconf_value_get_string (value);
 	if (!path || (!(pixbuf = gdk_pixbuf_new_from_file (path, NULL)))) {
 		if (data->wallpaper) {
 			g_object_unref (data->wallpaper);
