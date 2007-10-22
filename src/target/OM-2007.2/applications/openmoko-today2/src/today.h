@@ -6,6 +6,9 @@
 #include <libtaku/taku-launcher-tile.h>
 #include <moko-journal.h>
 
+#define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
+#define GCONF_POKY_WALLPAPER "/wallpaper"
+
 typedef struct {
 	/* Home */
 	GtkWidget *window;
@@ -17,6 +20,8 @@ typedef struct {
 	GtkToolItem *contacts_button;
 	GtkToolItem *messages_button;
 	GtkToolItem *dates_button;
+	GtkWidget *bg_ebox;
+	GdkPixmap *wallpaper;
 	
 	GtkTreeModel *events_model;
 	GtkTreeModel *tasks_model;

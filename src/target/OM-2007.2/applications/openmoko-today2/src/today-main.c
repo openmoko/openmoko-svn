@@ -4,6 +4,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <gconf/gconf-client.h>
 #include <moko-finger-scroll.h>
 #include <libtaku/launcher-util.h>
 #include <libtaku/xutil.h>
@@ -60,6 +61,25 @@ today_dates_button_clicked_cb (GtkToolButton *button, TodayData *data)
 		{ "openmoko-dates", NULL }, TRUE, TRUE));
 }
 
+static gboolean
+bg_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
+{
+	if (data->wallpaper)
+		gdk_draw_drawable (widget->window, widget->style->black_gc,
+			data->wallpaper, 0, 0, 0, 0, -1, -1);
+	
+	return FALSE;
+}
+
+static void
+bg_size_allocate_cb (GtkWidget *widget, GtkAllocation *allocation,
+		     TodayData *data)
+{
+	/* Re-scale wallpaper */
+	gconf_client_notify (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
+}
+
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
@@ -110,13 +130,8 @@ today_create_home_page (TodayData *data)
 	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
 				      GTK_SHADOW_NONE);
 	gtk_widget_show_all (scroll);
-	align = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
-	gtk_container_add (GTK_CONTAINER (viewport), align);
 
 	vbox = gtk_vbox_new (FALSE, 6);
-	gtk_container_add (GTK_CONTAINER (align), vbox);
-	gtk_widget_show_all (align);
 
 	data->message_box = today_pim_journal_box_new (data);
 	gtk_box_pack_start (GTK_BOX (vbox), data->message_box, FALSE, TRUE, 0);
@@ -126,7 +141,81 @@ today_create_home_page (TodayData *data)
 	gtk_box_pack_start (GTK_BOX (vbox), data->summary_box, FALSE, TRUE, 6);
 	gtk_widget_show (data->summary_box);
 	
+	/* Create event box with background */
+	data->bg_ebox = gtk_event_box_new ();
+	gtk_widget_set_app_paintable (data->bg_ebox, TRUE);
+	g_signal_connect_after (data->bg_ebox, "expose-event",
+		G_CALLBACK (bg_expose_cb), data);
+	g_signal_connect_after (data->bg_ebox, "size-allocate",
+		G_CALLBACK (bg_size_allocate_cb), data);
+
+	align = gtk_alignment_new (0.5, 0.5, 1, 1);
+	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
+	gtk_container_add (GTK_CONTAINER (viewport), data->bg_ebox);
+	gtk_container_add (GTK_CONTAINER (data->bg_ebox), align);
+	gtk_container_add (GTK_CONTAINER (align), vbox);
+	gtk_widget_show_all (data->bg_ebox);
+	
 	return main_vbox;
+}
+
+static void
+wallpaper_notify (GConfClient *client, guint cnxn_id,
+		  GConfEntry *entry, TodayData *data)
+{
+	gint width, height, pwidth, pheight;
+	GdkPixbuf *pixbuf, *pixbuf_scaled;
+	GConfValue *value;
+	const gchar *path;
+	gfloat scale;
+
+	if (!GTK_WIDGET_REALIZED (data->bg_ebox))
+		gtk_widget_realize (data->bg_ebox);
+
+	/* Return if the background is tiny, we'll get called again when it 
+	 * resizes anyway.
+	 */
+	width = data->bg_ebox->allocation.width;
+	height = data->bg_ebox->allocation.height;
+	if ((width <= 0) || (height <= 0)) return;
+	
+	value = gconf_entry_get_value (entry);
+	path = gconf_value_get_string (value);
+	if (!path || (!(pixbuf = gdk_pixbuf_new_from_file (path, NULL)))) {
+		if (data->wallpaper) {
+			g_object_unref (data->wallpaper);
+			data->wallpaper = NULL;
+			gtk_widget_queue_draw (data->bg_ebox);
+		}
+		return;
+	}
+	
+	/* Create background pixmap */
+	if (data->wallpaper) g_object_unref (data->wallpaper);
+	data->wallpaper = gdk_pixmap_new (data->bg_ebox->window,
+		width, height, -1);
+	
+	/* Scale and draw pixbuf */
+	pwidth = gdk_pixbuf_get_width (pixbuf);
+	pheight = gdk_pixbuf_get_height (pixbuf);
+	if (((gfloat)pwidth / (gfloat)pheight) >
+	    ((gfloat)width / (gfloat)height))
+		scale = (gfloat)height/(gfloat)pheight;
+	else
+		scale = (gfloat)width/(gfloat)pwidth;
+	pwidth *= scale;
+	pheight *= scale;
+	pixbuf_scaled = gdk_pixbuf_scale_simple (pixbuf, pwidth, pheight,
+		GDK_INTERP_BILINEAR);
+	if (pixbuf_scaled) {
+		gdk_draw_pixbuf (data->wallpaper, NULL, pixbuf_scaled,
+			0, 0, 0, 0, -1, -1, GDK_RGB_DITHER_MAX, 0, 0);
+		g_object_unref (pixbuf_scaled);
+	}
+	g_object_unref (pixbuf);
+	
+	/* Redraw */
+	gtk_widget_queue_draw (data->bg_ebox);
 }
 
 int
@@ -142,6 +231,8 @@ main (int argc, char **argv)
 	static GOptionEntry entries[] = {
 		{ NULL }
 	};
+	
+	data.wallpaper = NULL;
 
 	/* Initialise */
 	bindtextdomain (GETTEXT_PACKAGE, TODAY_LOCALE_DIR);;
@@ -184,7 +275,7 @@ main (int argc, char **argv)
 	/* Connect up signals */
 	g_signal_connect (G_OBJECT (data.window), "delete-event",
 		G_CALLBACK (gtk_main_quit), NULL);
-
+	
 #if 0
 	/* Force theme settings */
 	g_object_set (gtk_settings_get_default (),
@@ -206,6 +297,17 @@ main (int argc, char **argv)
 	
 	/* Show and start */
 	gtk_widget_show (data.window);
+
+	/* Listen to wallpaper setting */
+	gconf_client_add_dir (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX, GCONF_CLIENT_PRELOAD_NONE, NULL);
+	gconf_client_notify_add (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER,
+		(GConfClientNotifyFunc)wallpaper_notify,
+		&data, NULL, NULL);
+	gconf_client_notify (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
+
 	gtk_main ();
 
 	return 0;
