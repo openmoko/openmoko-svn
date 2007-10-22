@@ -10,8 +10,3 @@
 desktopdir = $(datadir)/applications
 dist_desktop_DATA = openmoko-calculator.desktop
 
-#
-# desktop integration: application icon
-#
-appicondir = $(datadir)/pixmaps
-dist_appicon_DATA = openmoko-calculator.png
