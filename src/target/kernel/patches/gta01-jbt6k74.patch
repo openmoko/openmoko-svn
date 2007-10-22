@@ -29,11 +29,12 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
-@@ -0,0 +1,548 @@
+@@ -0,0 +1,653 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
-+ * Author: Harald Welte <laforge@openmoko.org>
++ * Author: Harald Welte <laforge@openmoko.org>,
++ *	   Stefan Schmidt <stefan@openmoko.org>
 + * All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -101,6 +102,7 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +	JBT_REG_GAMMA1_INCLINATION	= 0xc9,
 +	JBT_REG_GAMMA1_BLUE_OFFSET	= 0xca,
 +
++	/* VGA */
 +	JBT_REG_BLANK_CONTROL		= 0xcf,
 +	JBT_REG_BLANK_TH_TV		= 0xd0,
 +	JBT_REG_CKV_ON_OFF		= 0xd1,
@@ -108,6 +110,15 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +	JBT_REG_OEV_TIMING		= 0xd3,
 +	JBT_REG_ASW_TIMING_1		= 0xd4,
 +	JBT_REG_ASW_TIMING_2		= 0xd5,
++
++	/* QVGA */
++	JBT_REG_BLANK_CONTROL_QVGA	= 0xd6,
++	JBT_REG_BLANK_TH_TV_QVGA	= 0xd7,
++	JBT_REG_CKV_ON_OFF_QVGA		= 0xd8,
++	JBT_REG_CKV_1_2_QVGA		= 0xd9,
++	JBT_REG_OEV_TIMING_QVGA		= 0xde,
++	JBT_REG_ASW_TIMING_1_QVGA	= 0xdf,
++	JBT_REG_ASW_TIMING_2_QVGA	= 0xe0,
 +
 +	JBT_REG_HCLOCK_VGA		= 0xec,
 +	JBT_REG_HCLOCK_QVGA		= 0xed,
@@ -118,12 +129,14 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +	JBT_STATE_DEEP_STANDBY,
 +	JBT_STATE_SLEEP,
 +	JBT_STATE_NORMAL,
++	JBT_STATE_QVGA_NORMAL,
 +};
 +
 +static const char *jbt_state_names[] = {
 +	[JBT_STATE_DEEP_STANDBY]	= "deep-standby",
 +	[JBT_STATE_SLEEP]		= "sleep",
 +	[JBT_STATE_NORMAL]		= "normal",
++	[JBT_STATE_QVGA_NORMAL]		= "qvga-normal",
 +};
 +
 +#if 1
@@ -187,7 +200,7 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +	return rc;
 +}
 +
-+static int jbt_init_regs(struct jbt_info *jbt)
++static int jbt_init_regs(struct jbt_info *jbt, int qvga)
 +{
 +	int rc;
 +
@@ -223,17 +236,33 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_BLUE_OFFSET, 0x00);
 +	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_BLUE_OFFSET, 0x00);
 +
-+	rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_VGA, 0x1f0);
-+	rc |= jbt_reg_write(jbt, JBT_REG_BLANK_CONTROL, 0x02);
-+	rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
-+	rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
++	if (!qvga) {
++		DEBUGP("entering VGA mode\n");
++		rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_VGA, 0x1f0);
++		rc |= jbt_reg_write(jbt, JBT_REG_BLANK_CONTROL, 0x02);
++		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
++		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
 +
-+	rc |= jbt_reg_write(jbt, JBT_REG_CKV_ON_OFF, 0x01);
-+	rc |= jbt_reg_write16(jbt, JBT_REG_CKV_1_2, 0x0000);
++		rc |= jbt_reg_write(jbt, JBT_REG_CKV_ON_OFF, 0x01);
++		rc |= jbt_reg_write16(jbt, JBT_REG_CKV_1_2, 0x0000);
 +
-+	rc |= jbt_reg_write16(jbt, JBT_REG_OEV_TIMING, 0x0d0e);
-+	rc |= jbt_reg_write16(jbt, JBT_REG_ASW_TIMING_1, 0x11a4);
-+	rc |= jbt_reg_write(jbt, JBT_REG_ASW_TIMING_2, 0x0e);
++		rc |= jbt_reg_write16(jbt, JBT_REG_OEV_TIMING, 0x0d0e);
++		rc |= jbt_reg_write16(jbt, JBT_REG_ASW_TIMING_1, 0x11a4);
++		rc |= jbt_reg_write(jbt, JBT_REG_ASW_TIMING_2, 0x0e);
++	}
++	else {
++		DEBUGP("entering QVGA mode\n");
++		rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_QVGA, 0x00ff);
++		rc |= jbt_reg_write(jbt, JBT_REG_BLANK_CONTROL_QVGA, 0x02);
++		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV_QVGA, 0x0804);
++
++		rc |= jbt_reg_write(jbt, JBT_REG_CKV_ON_OFF_QVGA, 0x01);
++		rc |= jbt_reg_write16(jbt, JBT_REG_CKV_1_2_QVGA, 0x0008);
++
++		rc |= jbt_reg_write16(jbt, JBT_REG_OEV_TIMING_QVGA, 0x050a);
++		rc |= jbt_reg_write16(jbt, JBT_REG_ASW_TIMING_1_QVGA, 0x0a19);
++		rc |= jbt_reg_write(jbt, JBT_REG_ASW_TIMING_2_QVGA, 0x0a);
++	}
 +
 +#if 0
 +	rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_QVGA, 0x00ff);
@@ -284,7 +313,32 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +	rc |= jbt_reg_write_nodata(jbt, JBT_REG_SLEEP_OUT);
 +
 +	/* initialize register set */
-+	rc |= jbt_init_regs(jbt);
++	rc |= jbt_init_regs(jbt, 0);
++	return rc;
++}
++
++static int sleep_to_qvga_normal(struct jbt_info *jbt)
++{
++	int rc;
++	DEBUGP("entering\n");
++
++	/* RGB I/F on, RAM wirte off, QVGA through, SIGCON enable */
++	rc = jbt_reg_write(jbt, JBT_REG_DISPLAY_MODE, 0x81);
++
++	/* Quad mode on */
++	rc |= jbt_reg_write(jbt, JBT_REG_QUAD_RATE, 0x22);
++
++	/* AVDD on, XVDD on */
++	rc |= jbt_reg_write(jbt, JBT_REG_POWER_ON_OFF, 0x16);
++
++	/* Output control */
++	rc |= jbt_reg_write16(jbt, JBT_REG_OUTPUT_CONTROL, 0xfff9);
++
++	/* Sleep mode off */
++	rc |= jbt_reg_write_nodata(jbt, JBT_REG_SLEEP_OUT);
++
++	/* initialize register set for qvga*/
++	rc |= jbt_init_regs(jbt, 1);
 +	return rc;
 +}
 +
@@ -328,6 +382,12 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +			/* then transition into normal */
 +			rc |= sleep_to_normal(jbt);
 +			break;
++		case JBT_STATE_QVGA_NORMAL:
++			/* first transition into sleep */
++			rc = standby_to_sleep(jbt);
++			/* then transition into normal */
++			rc |= sleep_to_qvga_normal(jbt);
++			break;
 +		}
 +		break;
 +	case JBT_STATE_SLEEP:
@@ -340,6 +400,9 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +			break;
 +		case JBT_STATE_NORMAL:
 +			rc = sleep_to_normal(jbt);
++			break;
++		case JBT_STATE_QVGA_NORMAL:
++			rc = sleep_to_qvga_normal(jbt);
 +			break;
 +		}
 +		break;
@@ -356,6 +419,42 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +			break;
 +		case JBT_STATE_SLEEP:
 +			rc = normal_to_sleep(jbt);
++			break;
++		case JBT_STATE_QVGA_NORMAL:
++			/* first transition into sleep */
++			rc = normal_to_sleep(jbt);
++			/* second transition into deep standby */
++			rc |= sleep_to_standby(jbt);
++			/* third transition into sleep */
++			rc |= standby_to_sleep(jbt);
++			/* fourth transition into normal */
++			rc |= sleep_to_qvga_normal(jbt);
++			break;
++		}
++		break;
++	case JBT_STATE_QVGA_NORMAL:
++		switch (new_state) {
++		case JBT_STATE_QVGA_NORMAL:
++			rc = 0;
++			break;
++		case JBT_STATE_DEEP_STANDBY:
++			/* first transition into sleep */
++			rc = normal_to_sleep(jbt);
++			/* then transition into deep standby */
++			rc |= sleep_to_standby(jbt);
++			break;
++		case JBT_STATE_SLEEP:
++			rc = normal_to_sleep(jbt);
++			break;
++		case JBT_STATE_NORMAL:
++			/* first transition into sleep */
++			rc = normal_to_sleep(jbt);
++			/* second transition into deep standby */
++			rc |= sleep_to_standby(jbt);
++			/* third transition into sleep */
++			rc |= standby_to_sleep(jbt);
++			/* fourth transition into normal */
++			rc |= sleep_to_normal(jbt);
 +			break;
 +		}
 +		break;
@@ -399,9 +498,15 @@ Index: linux-2.6.22.5-moko/drivers/spi/jbt6k74.c
 +			     strlen(jbt_state_names[i]))) {
 +			DEBUGP("Switch to state: %i\n", i);
 +			jbt6k74_enter_state(jbt, i);
-+			if (i == JBT_STATE_NORMAL)
++			switch (i) {
++			case JBT_STATE_NORMAL:
++			case JBT_STATE_QVGA_NORMAL:
 +				/* Enable display again after deep-standby */
 +				jbt6k74_display_onoff(jbt, 1);
++				break;
++			default:
++				break;
++			}
 +			return count;
 +		}
 +	}
