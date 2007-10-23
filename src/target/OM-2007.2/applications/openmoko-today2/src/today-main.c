@@ -261,6 +261,17 @@ wallpaper_notify (GConfClient *client, guint cnxn_id,
 	gtk_widget_queue_draw (data->bg_ebox);
 }
 
+static void
+digital_clock_notify (GConfClient *client, guint cnxn_id,
+		      GConfEntry *entry, TodayData *data)
+{
+	GConfValue *value;
+
+	value = gconf_entry_get_value (entry);
+	if (value) jana_gtk_clock_set_digital (JANA_GTK_CLOCK (data->clock),
+		gconf_value_get_bool (value));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -352,8 +363,14 @@ main (int argc, char **argv)
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER,
 		(GConfClientNotifyFunc)wallpaper_notify,
 		&data, NULL, NULL);
+	gconf_client_notify_add (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL,
+		(GConfClientNotifyFunc)digital_clock_notify,
+		&data, NULL, NULL);
 	gconf_client_notify (gconf_client_get_default (),
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
+	gconf_client_notify (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL);
 
 	gtk_main ();
 

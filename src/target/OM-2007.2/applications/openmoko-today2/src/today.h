@@ -8,6 +8,7 @@
 
 #define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
 #define GCONF_POKY_WALLPAPER "/wallpaper"
+#define GCONF_POKY_DIGITAL "/digital_clock"
 
 typedef struct {
 	/* Home */

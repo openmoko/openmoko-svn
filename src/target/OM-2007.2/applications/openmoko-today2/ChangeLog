@@ -1,5 +1,12 @@
 2007-10-23  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (digital_clock_notify), (main):
+	* src/today.h:
+	Listen to /desktop/poky/interface/digital_clock to determine whether 
+	to display a digital or analogue clock
+
+2007-10-23  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (set_time_idle):
 	Return FALSE instead of TRUE so the callback doesn't get added more
 	and more over time
