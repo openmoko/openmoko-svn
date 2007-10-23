@@ -14,6 +14,7 @@ typedef struct {
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkWidget *home_toolbar;
+	GtkWidget *clock;
 	GtkWidget *message_box;
 	GtkWidget *summary_box;
 	GtkToolItem *dial_button;
@@ -22,6 +23,7 @@ typedef struct {
 	GtkToolItem *dates_button;
 	GtkWidget *bg_ebox;
 	GdkPixmap *wallpaper;
+	gchar *location;
 	
 	GtkTreeModel *events_model;
 	GtkTreeModel *tasks_model;

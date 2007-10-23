@@ -9,6 +9,9 @@
 #include <libtaku/launcher-util.h>
 #include <libtaku/xutil.h>
 #include <unistd.h>
+#include <libjana/jana.h>
+#include <libjana-ecal/jana-ecal.h>
+#include <libjana-gtk/jana-gtk.h>
 #include "today.h"
 #include "today-utils.h"
 #include "today-pim-summary.h"
@@ -86,6 +89,27 @@ bg_size_allocate_cb (GtkWidget *widget, GtkAllocation *allocation,
 	}
 }
 
+static gboolean
+set_time_idle (TodayData *data)
+{
+	JanaTime *time;
+	
+	time = jana_ecal_utils_time_now (data->location);
+	jana_gtk_clock_set_time (JANA_GTK_CLOCK (data->clock), time);
+	
+#if GLIB_CHECK_VERSION(2,14,0)
+	g_timeout_add_seconds (60 - jana_time_get_seconds (time),
+		(GSourceFunc)set_time_idle, data);
+#else
+	g_timeout_add ((60 - jana_time_get_seconds (time)) * 1000,
+		(GSourceFunc)set_time_idle, data);
+#endif
+
+	g_object_unref (time);
+	
+	return TRUE;
+}
+
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
@@ -129,6 +153,20 @@ today_create_home_page (TodayData *data)
 	g_signal_connect (G_OBJECT (data->dial_button), "clicked",
 		G_CALLBACK (today_dial_button_clicked_cb), data);
 
+	/* Create event box with background */
+	data->bg_ebox = gtk_event_box_new ();
+	gtk_widget_set_app_paintable (data->bg_ebox, TRUE);
+	g_signal_connect (data->bg_ebox, "expose-event",
+		G_CALLBACK (bg_expose_cb), data);
+	g_signal_connect (data->bg_ebox, "size-allocate",
+		G_CALLBACK (bg_size_allocate_cb), data);
+	
+	/* Get location and create clock widget */
+	data->location = jana_ecal_utils_guess_location ();
+	data->clock = jana_gtk_clock_new ();
+	jana_gtk_clock_set_draw_shadow (JANA_GTK_CLOCK (data->clock), TRUE);
+
+	/* Create viewport for clock/journal/PIM summary widgets */
 	viewport = gtk_viewport_new (NULL, NULL);
 	scroll = moko_finger_scroll_new ();
 	gtk_container_add (GTK_CONTAINER (scroll), viewport);
@@ -137,8 +175,12 @@ today_create_home_page (TodayData *data)
 				      GTK_SHADOW_NONE);
 	gtk_widget_show_all (scroll);
 
+	/* Pack widgets */
 	vbox = gtk_vbox_new (FALSE, 6);
 
+	gtk_box_pack_start (GTK_BOX (vbox), data->clock, TRUE, TRUE, 0);
+	gtk_widget_show_all (data->clock);
+	
 	data->message_box = today_pim_journal_box_new (data);
 	gtk_box_pack_start (GTK_BOX (vbox), data->message_box, FALSE, TRUE, 0);
 	gtk_widget_show (data->message_box);
@@ -147,20 +189,15 @@ today_create_home_page (TodayData *data)
 	gtk_box_pack_start (GTK_BOX (vbox), data->summary_box, FALSE, TRUE, 6);
 	gtk_widget_show (data->summary_box);
 	
-	/* Create event box with background */
-	data->bg_ebox = gtk_event_box_new ();
-	gtk_widget_set_app_paintable (data->bg_ebox, TRUE);
-	g_signal_connect (data->bg_ebox, "expose-event",
-		G_CALLBACK (bg_expose_cb), data);
-	g_signal_connect (data->bg_ebox, "size-allocate",
-		G_CALLBACK (bg_size_allocate_cb), data);
-
 	align = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
 	gtk_container_add (GTK_CONTAINER (viewport), data->bg_ebox);
 	gtk_container_add (GTK_CONTAINER (data->bg_ebox), align);
 	gtk_container_add (GTK_CONTAINER (align), vbox);
 	gtk_widget_show_all (data->bg_ebox);
+	
+	/* Set the time on the clock */
+	set_time_idle (data);
 	
 	return main_vbox;
 }
@@ -285,8 +322,10 @@ main (int argc, char **argv)
 #if 0
 	/* Force theme settings */
 	g_object_set (gtk_settings_get_default (),
-		"gtk-theme-name", "openmoko-standard-2", 
+		"gtk-theme-name", "openmoko-standard-2", /* Moko */
 		"gtk-icon-theme-name", "openmoko-standard",
+		"gtk-xft-dpi", 285 * 1024,
+		"gtk-font-name", "Sans 6",
 		NULL);
 #endif
 
@@ -299,6 +338,8 @@ main (int argc, char **argv)
 		gtk_window_set_default_size (GTK_WINDOW (data.window), w, h);
 		gtk_window_move (GTK_WINDOW (data.window), x, y);
 	}
+#else
+	gtk_window_set_default_size (GTK_WINDOW (data.window), 480, 600);
 #endif
 	
 	/* Show and start */

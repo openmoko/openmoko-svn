@@ -1,5 +1,14 @@
 2007-10-23  Chris Lord  <chris@openedhand.com>
 
+	* configure.ac:
+	* src/Makefile.am:
+	* src/today-main.c: (set_time_idle), (today_create_home_page),
+	(main):
+	* src/today.h:
+	Use libjana-gtk/libjana-ecal and put an analog clock on the main screen
+
+2007-10-23  Chris Lord  <chris@openedhand.com>
+
 	* src/Makefile.am:
 	Revert change that I didn't mean to commit
 
