@@ -107,7 +107,7 @@ set_time_idle (TodayData *data)
 
 	g_object_unref (time);
 	
-	return TRUE;
+	return FALSE;
 }
 
 static GtkWidget *
