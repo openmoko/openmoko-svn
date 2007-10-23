@@ -203,6 +203,7 @@ gboolean moko_panel_applet_iconadd_cb(MokoPanelApplet* self)
 
     if ( priv->filename_for_icon )
     {
+        g_debug( "moko_panel_applet_iconadd_cb:'%s' (%p)", priv->filename_for_icon, priv->filename_for_icon );
         mb_panel_scaling_image_set_icon( MB_PANEL_SCALING_IMAGE(self->icon), priv->filename_for_icon );
         priv->filename_for_icon = 0;
     }
@@ -214,6 +215,7 @@ gboolean moko_panel_applet_iconadd_cb(MokoPanelApplet* self)
 ////////////////
 void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
 {
+    g_debug( "moko_panel_applet_set_icon:'%s' (%p)", filename, filename );
     MokoPanelAppletPrivate* priv = MOKO_PANEL_APPLET_GET_PRIVATE( self );
     if ( !self->icon )
     {
