@@ -40,7 +40,7 @@ typedef struct _MokoPanelAppletPrivate
 {
     gboolean is_initialized;
     gboolean hold_timeout_triggered;
-    const char* filename_for_icon;
+    char* filename_for_icon;
 } MokoPanelAppletPrivate;
 
 enum {
@@ -205,6 +205,7 @@ gboolean moko_panel_applet_iconadd_cb(MokoPanelApplet* self)
     {
         g_debug( "moko_panel_applet_iconadd_cb:'%s' (%p)", priv->filename_for_icon, priv->filename_for_icon );
         mb_panel_scaling_image_set_icon( MB_PANEL_SCALING_IMAGE(self->icon), priv->filename_for_icon );
+        g_free( priv->filename_for_icon );
         priv->filename_for_icon = 0;
     }
     return FALSE;
@@ -225,8 +226,8 @@ void moko_panel_applet_set_icon(MokoPanelApplet* self, const gchar* filename)
         gtk_event_box_set_visible_window( GTK_EVENT_BOX(self->eventbox), FALSE );
         gtk_widget_show_all( self->eventbox );
     }
-    priv->filename_for_icon = filename;
-    g_idle_add( G_CALLBACK(moko_panel_applet_iconadd_cb), self );
+    priv->filename_for_icon = g_strdup( filename );
+    g_idle_add( (GSourceFunc) moko_panel_applet_iconadd_cb, self );
 }
 
 void moko_panel_applet_set_pixbuf(MokoPanelApplet* self, GdkPixbuf* pixbuf)

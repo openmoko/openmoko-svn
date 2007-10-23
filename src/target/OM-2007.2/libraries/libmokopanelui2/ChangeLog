@@ -1,6 +1,12 @@
+2007-10-23	Michael Lauer  <mickey@openmoko.org>
+
+	* libmokopanelui/moko-panel-applet.c:
+	Strdup the string that will be passed from outside the
+	mainloop to inside it. Fixes recent breakage of gsm panel icons.
+
 2007-10-19	Michael Lauer  <mickey@openmoko.org>
 
-	* libmokopanelui/moko-panel-appet.c:
+	* libmokopanelui/moko-panel-applet.c:
 	Try to workaround size-calculation bug in MBScaledPanelImage by
 	setting the actual icon @ mainloop idle time (and hopefully
 	after the enclosing widget has already been realized and we have
