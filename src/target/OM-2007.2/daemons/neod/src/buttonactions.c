@@ -39,9 +39,6 @@
 #include <sys/stat.h>
 #include <linux/input.h>
 
-#undef DEBUG_THIS_FILE
-//#define DEBUG_THIS_FILE
-
 #define SYS_CLASS_BACKLIGHT "/sys/class/backlight/"
 
 static gchar* backlight_node = NULL;
@@ -356,8 +353,37 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
     aux_timer = -1;
     if ( timeout < 1 )
     {
-        // show desktop
+        // get status of desktop visibility
         Screen *screen = GDK_SCREEN_XSCREEN(gdk_screen_get_default());
+
+        Atom type = 0;
+        int format;
+        gulong nitems, bytes_after, *num;
+        int status = TRUE;
+
+        gdk_error_trap_push ();
+        int result = XGetWindowProperty (DisplayOfScreen(screen),
+                                     RootWindowOfScreen(screen),
+                                     gdk_x11_get_xatom_by_name("_NET_SHOWING_DESKTOP"),
+                                     0,
+                                     G_MAXLONG,
+                                     False,
+                                     XA_CARDINAL,
+                                     &type,
+                                     &format,
+                                     &nitems,
+                                     &bytes_after,
+                                     (gpointer) &num);
+        if (!gdk_error_trap_pop () && result == Success)
+        {
+            if (type == XA_CARDINAL && nitems > 0)
+            {
+                status = *num ? TRUE : FALSE;
+            }
+        }
+        XFree (num);
+
+        // toggle desktop visibility
         XEvent xev;
 
         xev.xclient.type = ClientMessage;
@@ -365,11 +391,9 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
         xev.xclient.send_event = True;
         xev.xclient.display = DisplayOfScreen(screen);
         xev.xclient.window = RootWindowOfScreen(screen);
-        xev.xclient.message_type =
-                gdk_x11_get_xatom_by_name("_NET_SHOWING_DESKTOP");
+        xev.xclient.message_type = gdk_x11_get_xatom_by_name("_NET_SHOWING_DESKTOP");
         xev.xclient.format = 32;
-        //TODO add support for toggle!?
-        xev.xclient.data.l[0] = TRUE;
+        xev.xclient.data.l[0] = !status;
         xev.xclient.data.l[1] = 0;
         xev.xclient.data.l[2] = 0;
         xev.xclient.data.l[3] = 0;
