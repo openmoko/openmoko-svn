@@ -26,9 +26,7 @@ openmoko_today_SOURCES =		\
 	today-task-manager.c		\
 	today-task-manager.h           \
 	today-pim-journal.c           \
-	today-pim-journal.h           \
-	today-clock.c           \
-	today-clock.h
+	today-pim-journal.h
 
 openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
 			$(top_builddir)/libtaku/libtaku.a	\
