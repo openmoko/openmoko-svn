@@ -16,3 +16,23 @@ style "gtktreeview" {
     #text[INSENSITIVE] = "#223344" # dark grey
 }
 widget "*.GtkTreeView" style "gtktreeview"
+
+style "gtktreeviewheader" {
+   engine "pixmap" {
+        image {
+            function        = BOX
+            state           = NORMAL
+            file            = "treeview/header.png"
+            border          = { 10, 10, 5, 5 }
+            stretch         = TRUE
+        }
+        }
+    xthickness = 11
+    ythickness = 5
+    GtkButton::focus-line-width = 0
+    fg[NORMAL] = "#ffffff"
+    text[NORMAL] = "#ffffff"
+
+}
+widget "*.GtkTreeView.GtkButton" style "gtktreeviewheader"
+widget "*.JanaGtkEventList.GtkButton" style "gtktreeviewheader"
