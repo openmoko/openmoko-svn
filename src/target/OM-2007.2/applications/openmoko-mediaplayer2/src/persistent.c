@@ -26,6 +26,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gconf/gconf-client.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -42,7 +43,7 @@
 #include "playlist.h"
 #include "playback.h"
 
-/// The default configuration
+/// The literal de-fault configuration, will only be used if gconf is unavailable or schema file wasn't installed
 struct _omp_config omp_default_config =
 {
 	FALSE,											// shuffle
@@ -55,11 +56,17 @@ struct _omp_config omp_default_config =
 	TRUE,												// main_ui_show_cover
 	OMP_MAIN_LABEL_HIDDEN,			// main_ui_label1
 	OMP_MAIN_LABEL_ARTIST,			// main_ui_label2
-	OMP_MAIN_LABEL_TITLE				// main_ui_label3
+	OMP_MAIN_LABEL_TITLE,				// main_ui_label3
+	15,													// main_min_gesture_radius
+	750,												// main_gesture_repeat_tresh
+	1000,												// main_gesture_repeat_intv
 };
 
 struct _omp_config *omp_config = NULL;			///< Global and persistent configuration data
 struct _omp_session *omp_session = NULL;		///< Global and persistent session data
+
+/// The GConf instance we'll use
+GConfClient *omp_gconf_client;
 
 
 
@@ -69,6 +76,8 @@ struct _omp_session *omp_session = NULL;		///< Global and persistent session dat
 void
 omp_config_init()
 {
+	GError *error = NULL;
+
 	#ifdef DEBUG
 		g_print("Loading application configuration\n");
 	#endif
@@ -76,7 +85,7 @@ omp_config_init()
 	// This mustn't be called more than once
 	g_assert(!omp_config);
 
-	// Set default config
+	// Set de-fault config
 	omp_config = g_new(struct _omp_config, 1);
 	g_memmove(omp_config, &omp_default_config, sizeof(struct _omp_config));
 
@@ -89,7 +98,53 @@ omp_config_init()
 		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
 		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 
-	/// @todo GConf implementation
+	// Fetch values from GConf
+	omp_gconf_client = gconf_client_get_default();
+	gconf_client_preload(omp_gconf_client, OMP_GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
+
+	omp_config->shuffle =
+		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/shuffle", &error);
+
+	if (error)
+	{
+		g_printerr("GConf error: %s\nWill continue execution, though program might behave abnormal.\n", error->message);
+		g_error_free(error);
+
+		return;
+	}
+
+	omp_config->repeat_mode =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/repeat_mode", NULL);
+
+	omp_config->resume_playback =
+		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/resume_playback", NULL);
+
+	omp_config->prev_track_treshold =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/prev_track_treshold", NULL);
+
+	omp_config->show_numbers_in_pl =
+		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/show_numbers_in_playlist", NULL);
+
+	omp_config->main_ui_show_cover =
+		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/show_cover_art", NULL);
+
+	omp_config->main_ui_label1 =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/main_label1_type", NULL);
+
+	omp_config->main_ui_label2 =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/main_label2_type", NULL);
+
+	omp_config->main_ui_label3 =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/main_label3_type", NULL);
+
+	omp_config->main_min_gesture_radius =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/min_gesture_radius", NULL);
+
+	omp_config->main_gesture_repeat_tresh =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/gesture_repeat_tresh", NULL);
+
+	omp_config->main_gesture_repeat_intv =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/gesture_repeat_intv", NULL);
 }
 
 /**
@@ -98,6 +153,7 @@ omp_config_init()
 void
 omp_config_free()
 {
+	g_object_unref(G_OBJECT(omp_gconf_client));
 	g_free(omp_config);
 }
 

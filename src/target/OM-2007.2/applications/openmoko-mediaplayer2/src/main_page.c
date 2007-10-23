@@ -52,6 +52,7 @@ struct
 	GtkWidget *cover_eventbox;
 	GtkWidget *cover_frame;
 	GtkWidget *label1;
+	GtkWidget *label1_frame;
 	GtkWidget *label2;
 	GtkWidget *label3;
 	GtkWidget *track_number_label;
@@ -420,7 +421,7 @@ omp_main_reset_ui(gpointer instance, gpointer user_data)
 	if (omp_config_get_main_ui_show_cover())
 	{
 		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.cover_image), "no_cover", -1);
-		gtk_widget_queue_draw(main_widgets.cover_image);	// Re-draw the default cover
+		gtk_widget_queue_draw(main_widgets.cover_image);	// Re-draw the cover as it might have been used as video display before
 	}
 
 	// Determine which label we can use for showing the "No track information" line
@@ -508,8 +509,8 @@ omp_main_top_widgets_create(GtkBox *parent)
 	gtk_widget_set_name(GTK_WIDGET(main_widgets.label1), "omp-main-top-label1");
 	gtk_label_set_ellipsize(GTK_LABEL(main_widgets.label1), PANGO_ELLIPSIZE_END);
 	gtk_misc_set_alignment(GTK_MISC(main_widgets.label1), 0, 0);
-	label = widget_wrap(main_widgets.label1, NULL);
-	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+	main_widgets.label1_frame = widget_wrap(main_widgets.label1, NULL);
+	gtk_box_pack_start(GTK_BOX(vbox), main_widgets.label1_frame, FALSE, FALSE, 0);
 
 	main_widgets.label2 = gtk_label_new(NULL);
 	gtk_widget_set_name(GTK_WIDGET(main_widgets.label2), "omp-main-top-label2");
@@ -533,7 +534,7 @@ omp_main_top_widgets_create(GtkBox *parent)
 	// Show all widgets, then hide the ones we don't want visible
 	gtk_widget_show_all(GTK_WIDGET(frame));
 
-	if (omp_config_get_main_ui_label1() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(main_widgets.label1);
+	if (omp_config_get_main_ui_label1() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(main_widgets.label1_frame);
 	if (omp_config_get_main_ui_label2() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(main_widgets.label2);
 
 	if (omp_config_get_main_ui_label3() != OMP_MAIN_LABEL_HIDDEN) gtk_widget_show_all(label3);

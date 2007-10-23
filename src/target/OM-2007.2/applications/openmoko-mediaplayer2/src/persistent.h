@@ -47,6 +47,9 @@
 // Where to find the playlist files relative to the user's home directory?
 #define OMP_RELATIVE_PLAYLIST_PATH "/playlists"
 
+// GConf path in which we will store our configuration settings
+#define OMP_GCONF_PATH "/apps/openmoko/mediaplayer"
+
 
 
 /// Application configuration data
@@ -65,6 +68,9 @@ struct _omp_config
 	guint main_ui_label1;							///< Contents of main UI's label #1
 	guint main_ui_label2;							///< Contents of main UI's label #2
 	guint main_ui_label3;							///< Contents of main UI's label #3
+	guint main_min_gesture_radius;		///< If a gesture stroke's length is shorter than this the gesture is dismissed
+	guint main_gesture_repeat_tresh;	///< If a gesture was made its action will be repeated if the finger is still down after this time (msec)
+	guint main_gesture_repeat_intv;		///< Gesture will be repeated every X milliseconds
 };
 
 /// Session-persistent data

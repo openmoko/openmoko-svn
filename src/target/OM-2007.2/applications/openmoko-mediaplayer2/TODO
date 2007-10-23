@@ -16,6 +16,7 @@ Backend:
 	
 Issues:
 	Reduce call frequency of omp_playback_get_track_length()
+	Investigate on occasional segfault when terminating after video playback with gstreamer
 
 Documentation:
 	Update wiki
