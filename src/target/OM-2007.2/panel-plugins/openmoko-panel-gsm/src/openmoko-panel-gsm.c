@@ -33,6 +33,8 @@ typedef struct {
     MokoGsmdConnection* gsm;
 } GsmApplet;
 
+static GsmApplet* theApplet = NULL;
+
 static void
 gsm_applet_free(GsmApplet *applet)
 {
@@ -72,7 +74,7 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
 
     moko_panel_applet_set_icon( applet->mokoapplet, image );
 
-    g_free (image);
+    g_free( image );
 }
 
 static void
@@ -81,16 +83,17 @@ gsm_applet_network_registration_cb (MokoGsmdConnection *self,
                                   int lac,
                                   int cell)
 {
-  NotifyNotification* nn;
-  static MokoGsmdConnectionNetregType prev_type = MOKO_GSMD_CONNECTION_NETREG_NONE;
+    NotifyNotification* nn;
+    static MokoGsmdConnectionNetregType prev_type = MOKO_GSMD_CONNECTION_NETREG_NONE;
 
-  if ((type == MOKO_GSMD_CONNECTION_NETREG_HOME) || (type == MOKO_GSMD_CONNECTION_NETREG_ROAMING) &&
-      ((prev_type != MOKO_GSMD_CONNECTION_NETREG_HOME)&&(prev_type != MOKO_GSMD_CONNECTION_NETREG_ROAMING)))
-  {
-    nn = notify_notification_new ("Connected to Network", NULL, NULL, NULL);
-    notify_notification_show (nn, NULL);
-  }
-  prev_type = type;
+    if ( (type == MOKO_GSMD_CONNECTION_NETREG_HOME) || (type == MOKO_GSMD_CONNECTION_NETREG_ROAMING) &&
+       ( (prev_type != MOKO_GSMD_CONNECTION_NETREG_HOME) && (prev_type != MOKO_GSMD_CONNECTION_NETREG_ROAMING) ) )
+    {
+        gsm_applet_update_signal_strength( self, 0, theApplet );
+        nn = notify_notification_new ("Connected to GSM Network", NULL, NULL, NULL);
+        notify_notification_show (nn, NULL);
+    }
+    prev_type = type;
 }
 
 
@@ -118,6 +121,7 @@ G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
     GsmApplet* applet = g_slice_new(GsmApplet);
+    theApplet = applet; // nasty global variable
     MokoPanelApplet* mokoapplet = applet->mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
     notify_init ("GSM Applet");

@@ -1,3 +1,8 @@
+2007-10-23	Michael Lauer <mickey@openmoko.org>
+
+	* src/openmoko-panel-gsm.c: (gsm_applet_network_registration_cb):
+	Update the icon as well, once we receive a connection event.
+
 2007-10-16  Daniel Willmann <alphaone@openmoko.org>
 
 	* src/openmoko-panel-gsm.c: (gsm_applet_network_registration_cb):
