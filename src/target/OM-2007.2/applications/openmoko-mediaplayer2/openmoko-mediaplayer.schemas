@@ -1,0 +1,149 @@
+<gconfschemafile>
+  <schemalist>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/shuffle</key>
+      <applyto>/apps/openmoko/mediaplayer/shuffle</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>bool</type>
+      <default>FALSE</default>
+      <locale name="C">
+        <short>Shuffle on/off</short>
+        <long>Play tracks in random order on/off</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/repeat_mode</key>
+      <applyto>/apps/openmoko/mediaplayer/repeat_mode</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>0</default>
+      <locale name="C">
+        <short>Repat mode (0..3)</short>
+        <long>0 = repeat off; 1 = repeat current track once; 2 = repeat current track; 3 = repeat playlist</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/resume_playback</key>
+      <applyto>/apps/openmoko/mediaplayer/resume_playback</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <locale name="C">
+        <short>Resume playback on startup on/off</short>
+        <long>Should the media player resume playback where it left off the last time it ran?</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/prev_track_treshold</key>
+      <applyto>/apps/openmoko/mediaplayer/prev_track_treshold</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>10000</default>
+      <locale name="C">
+        <short>Amount of milliseconds a track must have been playing to jump back to beginning when "prev track" is pressed</short>
+        <long>Amount of milliseconds a track must have been playing to jump back to beginning when "prev track" is pressed</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/show_numbers_in_playlist</key>
+      <applyto>/apps/openmoko/mediaplayer/show_numbers_in_playlist</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <locale name="C">
+        <short>Show track numbers in playlist?</short>
+        <long>Show track numbers in playlist?</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/show_cover_art</key>
+      <applyto>/apps/openmoko/mediaplayer/show_cover_art</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>bool</type>
+      <default>TRUE</default>
+      <locale name="C">
+        <short>Should the cover art be shown or not?</short>
+        <long><Should the cover art be shown or not?/long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/main_label1_type</key>
+      <applyto>/apps/openmoko/mediaplayer/main_label1_type</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>0</default>
+      <locale name="C">
+        <short>Content type of main screen's dynamic label #1</short>
+        <long>Content type of main screen's dynamic label #1</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/main_label2_type</key>
+      <applyto>/apps/openmoko/mediaplayer/main_label2_type</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>2</default>
+      <locale name="C">
+        <short>Content type of main screen's dynamic label #2</short>
+        <long>Content type of main screen's dynamic label #2</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/main_label3_type</key>
+      <applyto>/apps/openmoko/mediaplayer/main_label3_type</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>3</default>
+      <locale name="C">
+        <short>Content type of main screen's dynamic label #3</short>
+        <long>Content type of main screen's dynamic label #3</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/min_gesture_radius</key>
+      <applyto>/apps/openmoko/mediaplayer/min_gesture_radius</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>15</default>
+      <locale name="C">
+        <short>If a gesture stroke's length is shorter than this the gesture is dismissed (in pixels)</short>
+        <long>If a gesture stroke's length is shorter than this the gesture is dismissed (in pixels)</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/gesture_repeat_tresh</key>
+      <applyto>/apps/openmoko/mediaplayer/gesture_repeat_tresh</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>750</default>
+      <locale name="C">
+        <short>If a gesture was made its action will be repeated if the finger is still down after this time (in msec)</short>
+        <long>If a gesture was made its action will be repeated if the finger is still down after this time (in msec)</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/gesture_repeat_intv</key>
+      <applyto>/apps/openmoko/mediaplayer/gesture_repeat_intv</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>1000</default>
+      <locale name="C">
+        <short>Gesture will be repeated every X milliseconds for as long as the finger is pressed</short>
+        <long>Gesture will be repeated every X milliseconds for as long as the finger is pressed</long>
+      </locale>
+    </schema>
+
+  </schemalist>
+</gconfschemafile>
