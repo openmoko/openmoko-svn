@@ -1,3 +1,8 @@
+2007-10-24  Thomas Wood  <thomas@openedhand.com>
+
+	* src/appearance-background.c: Fix indentation to match existing project
+	style
+
 2007-10-22  Chris Lord  <chris@openedhand.com>
 
 	* src/Makefile.am:
