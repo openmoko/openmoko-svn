@@ -46,29 +46,120 @@
 /// The literal de-fault configuration, will only be used if gconf is unavailable or schema file wasn't installed
 struct _omp_config omp_default_config =
 {
-	FALSE,											// shuffle
-	OMP_REPEAT_OFF,							// repeat_mode
-	TRUE,												// resume_playback
-	10000,											// prev_track_treshold
-	TRUE,												// show_numbers_in_pl
-	500000,											// pulsesink_buffer_time
-	100000,											// pulsesink_latency_time
-	TRUE,												// main_ui_show_cover
-	OMP_MAIN_LABEL_HIDDEN,			// main_ui_label1
-	OMP_MAIN_LABEL_ARTIST,			// main_ui_label2
-	OMP_MAIN_LABEL_TITLE,				// main_ui_label3
-	15,													// main_min_gesture_radius
-	750,												// main_gesture_repeat_tresh
-	1000,												// main_gesture_repeat_intv
+	FALSE,                      // shuffle
+	OMP_REPEAT_OFF,             // repeat_mode
+	TRUE,                       // resume_playback
+	10000,                      // prev_track_treshold
+	TRUE,                       // show_numbers_in_pl
+	500000,                     // pulsesink_buffer_time
+	100000,                     // pulsesink_latency_time
+	TRUE,                       // main_ui_show_cover
+	OMP_MAIN_LABEL_HIDDEN,      // main_ui_label1
+	OMP_MAIN_LABEL_ARTIST,      // main_ui_label2
+	OMP_MAIN_LABEL_TITLE,       // main_ui_label3
+	15,                         // min_gesture_radius
+	750,                        // gesture_repeat_tresh
+	1000,                       // gesture_repeat_intv
 };
 
-struct _omp_config *omp_config = NULL;			///< Global and persistent configuration data
-struct _omp_session *omp_session = NULL;		///< Global and persistent session data
+struct _omp_config *omp_config = NULL;    ///< Global and persistent configuration data
+struct _omp_session *omp_session = NULL;  ///< Global and persistent session data
 
 /// The GConf instance we'll use
 GConfClient *omp_gconf_client;
 
 
+
+/**
+ * Handler for GConf change notifications
+ */
+static void
+omp_config_gconf_notification(GConfClient *client, guint cnxn_id, GConfEntry *entry, gpointer user_data)
+{
+	GConfValue *value;
+	gboolean v_bool;
+
+	value = gconf_entry_get_value(entry);
+
+	switch ((omp_config_options)user_data)
+	{
+		case OMP_CONFIG_SHUFFLE:
+		{
+			// Update value in config struct and submit new state to the UI
+			omp_config->shuffle = gconf_value_get_bool(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED, omp_config->shuffle);
+			break;
+		}
+
+		case OMP_CONFIG_REPEAT_MODE:
+		{
+			// Update value in config struct and submit new state to the UI
+			omp_config->repeat_mode = gconf_value_get_int(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED, omp_config->repeat_mode);
+			break;
+		}
+
+		case OMP_CONFIG_RESUME_PLAYBACK:
+		{
+			omp_config->resume_playback = gconf_value_get_bool(value);
+			break;
+		}
+
+		case OMP_CONFIG_PREV_TRACK_TRESHOLD:
+		{
+			omp_config->prev_track_treshold = gconf_value_get_int(value);
+			break;
+		}
+
+		case OMP_CONFIG_SHOW_NUMBERS_IN_PL:
+		{
+			omp_config->show_numbers_in_pl = gconf_value_get_bool(value);
+			break;
+		}
+
+		case OMP_CONFIG_MAIN_UI_SHOW_COVER:
+		{
+			omp_config->main_ui_show_cover = gconf_value_get_bool(value);
+			break;
+		}
+
+		case OMP_CONFIG_MAIN_UI_LABEL1:
+		{
+			omp_config->main_ui_label1 = gconf_value_get_int(value);
+			break;
+		}
+
+		case OMP_CONFIG_MAIN_UI_LABEL2:
+		{
+			omp_config->main_ui_label2 = gconf_value_get_int(value);
+			break;
+		}
+
+		case OMP_CONFIG_MAIN_UI_LABEL3:
+		{
+			omp_config->main_ui_label3 = gconf_value_get_int(value);
+			break;
+		}
+
+		case OMP_CONFIG_MIN_GESTURE_RADIUS:
+		{
+			omp_config->min_gesture_radius = gconf_value_get_int(value);
+			break;
+		}
+
+		case OMP_CONFIG_GESTURE_REPEAT_TRESH:
+		{
+			omp_config->gesture_repeat_tresh = gconf_value_get_int(value);
+			break;
+		}
+
+		case OMP_CONFIG_GESTURE_REPEAT_INTV:
+		{
+			omp_config->gesture_repeat_intv = gconf_value_get_int(value);
+			break;
+		}
+	}
+}
 
 /**
  * Initalize and load application configuration data
@@ -98,53 +189,78 @@ omp_config_init()
 		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
 		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 
-	// Fetch values from GConf
+	// Set up GConf, fetch default values and attach notification handler
 	omp_gconf_client = gconf_client_get_default();
-	gconf_client_preload(omp_gconf_client, OMP_GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
+	gconf_client_add_dir(omp_gconf_client, OMP_GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
 
 	omp_config->shuffle =
 		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/shuffle", &error);
 
 	if (error)
 	{
-		g_printerr("GConf error: %s\nWill continue execution, though program might behave abnormal.\n", error->message);
+		g_printerr("GConf error: %s\nWill continue execution, though program will have limited functionality.\n", error->message);
 		g_error_free(error);
 
 		return;
 	}
 
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/shuffle",
+		(GConfClientNotifyFunc)omp_config_gconf_notification, (gpointer)OMP_CONFIG_SHUFFLE, NULL, &error);
+
 	omp_config->repeat_mode =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/repeat_mode", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/repeat_mode",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_REPEAT_MODE, NULL, NULL);
 
 	omp_config->resume_playback =
 		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/resume_playback", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/resume_playback",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_RESUME_PLAYBACK, NULL, NULL);
 
 	omp_config->prev_track_treshold =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/prev_track_treshold", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/prev_track_treshold",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_PREV_TRACK_TRESHOLD, NULL, NULL);
 
 	omp_config->show_numbers_in_pl =
 		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/show_numbers_in_playlist", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/show_numbers_in_playlist",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_SHOW_NUMBERS_IN_PL, NULL, NULL);
 
 	omp_config->main_ui_show_cover =
 		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/show_cover_art", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/show_cover_art",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_MAIN_UI_SHOW_COVER, NULL, NULL);
 
 	omp_config->main_ui_label1 =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/main_label1_type", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/main_label1_type",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_MAIN_UI_LABEL1, NULL, NULL);
 
 	omp_config->main_ui_label2 =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/main_label2_type", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/main_label2_type",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_MAIN_UI_LABEL2, NULL, NULL);
 
 	omp_config->main_ui_label3 =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/main_label3_type", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/main_label3_type",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_MAIN_UI_LABEL3, NULL, NULL);
 
-	omp_config->main_min_gesture_radius =
+	omp_config->min_gesture_radius =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/min_gesture_radius", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/min_gesture_radius",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_MIN_GESTURE_RADIUS, NULL, NULL);
 
-	omp_config->main_gesture_repeat_tresh =
+	omp_config->gesture_repeat_tresh =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/gesture_repeat_tresh", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/gesture_repeat_tresh",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_GESTURE_REPEAT_TRESH, NULL, NULL);
 
-	omp_config->main_gesture_repeat_intv =
+	omp_config->gesture_repeat_intv =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/gesture_repeat_intv", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/gesture_repeat_intv",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_GESTURE_REPEAT_INTV, NULL, NULL);
 }
 
 /**
@@ -158,25 +274,13 @@ omp_config_free()
 }
 
 /**
- * Saves the current application configuration data to persistent storage
- */
-void
-omp_config_save()
-{
-}
-
-/**
  * Sets state of shuffle flag
  */
 void
 omp_config_set_shuffle_state(gboolean state)
 {
 	omp_config->shuffle = state;
-	omp_config_save();
-
-	// Submit new state to the UI
-	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED,
-		state);
+	gconf_client_set_bool(omp_gconf_client, OMP_GCONF_PATH "/shuffle", state, NULL);
 }
 
 /**
@@ -195,11 +299,7 @@ void
 omp_config_set_repeat_mode(guint mode)
 {
 	omp_config->repeat_mode = mode;
-	omp_config_save();
-
-	// Submit new state to the UI
-	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED,
-		mode);
+	gconf_client_set_int(omp_gconf_client, OMP_GCONF_PATH "/repeat_mode", mode, NULL);
 }
 
 /**

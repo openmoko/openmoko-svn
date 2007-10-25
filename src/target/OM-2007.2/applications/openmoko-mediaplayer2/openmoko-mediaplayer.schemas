@@ -8,8 +8,8 @@
       <type>bool</type>
       <default>FALSE</default>
       <locale name="C">
-        <short>Shuffle on/off</short>
-        <long>Play tracks in random order on/off</long>
+        <short>Shuffle</short>
+        <long>Play tracks in random order?</long>
       </locale>
     </schema>
 
@@ -32,7 +32,7 @@
       <type>bool</type>
       <default>TRUE</default>
       <locale name="C">
-        <short>Resume playback on startup on/off</short>
+        <short>Resume playback on startup?</short>
         <long>Should the media player resume playback where it left off the last time it ran?</long>
       </locale>
     </schema>
@@ -69,7 +69,7 @@
       <default>TRUE</default>
       <locale name="C">
         <short>Should the cover art be shown or not?</short>
-        <long><Should the cover art be shown or not?/long>
+        <long>Should the cover art be shown or not?</long>
       </locale>
     </schema>
 

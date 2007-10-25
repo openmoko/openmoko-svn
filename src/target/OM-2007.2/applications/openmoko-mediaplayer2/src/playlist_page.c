@@ -44,7 +44,7 @@ enum
 	TYPE_COLUMN,
 	NAME_COLUMN,
 	ACT_DELETE_COLUMN,
-	FILE_NAME_COLUMN,		// This one isn't shown, it's for internal storage only
+	FILE_NAME_COLUMN,    // This one isn't shown, it's for internal storage only
 	COLUMN_COUNT
 };
 

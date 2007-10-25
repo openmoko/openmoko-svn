@@ -42,7 +42,7 @@
 typedef enum
 {
 	OMP_MAIN_LABEL_HIDDEN,
-	OMP_MAIN_LABEL_EMPTY,				// Visible but empty - only makes sense for label #1 as it affects UI layout
+	OMP_MAIN_LABEL_EMPTY,     // Visible but empty - only makes sense for label #1 as it affects UI layout
 	OMP_MAIN_LABEL_ARTIST,
 	OMP_MAIN_LABEL_TITLE,
 	OMP_MAIN_LABEL_ALBUM

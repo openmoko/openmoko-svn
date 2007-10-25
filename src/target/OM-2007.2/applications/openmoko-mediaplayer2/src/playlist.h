@@ -49,11 +49,11 @@ typedef struct _omp_track_info
 /// Modes available for repetitive track playback
 enum omp_repeat_modes
 {
-	OMP_REPEAT_OFF = 0,							///< Repeat off
-	OMP_REPEAT_ONCE,								///< Repeat current track once, then proceed with next track
-	OMP_REPEAT_CURRENT,							///< Repeat current track forever
-	OMP_REPEAT_ALL,									///< Repeat entire playlist
-	OMP_REPEAT_COUNT								///< End-of-list marker for mode iteration
+	OMP_REPEAT_OFF = 0,     ///< Repeat off
+	OMP_REPEAT_ONCE,        ///< Repeat current track once, then proceed with next track
+	OMP_REPEAT_CURRENT,     ///< Repeat current track forever
+	OMP_REPEAT_ALL,         ///< Repeat entire playlist
+	OMP_REPEAT_COUNT        ///< End-of-list marker for mode iteration
 };
 
 extern omp_spiff_list *omp_playlist;

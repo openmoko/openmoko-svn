@@ -57,33 +57,50 @@
 /// @note Update that struct as well if you make changes here!
 struct _omp_config
 {
-	gboolean shuffle;									///< Shuffle on/off
-	guint repeat_mode;								///< Repeat mode @see omp_repeat_modes
-	gboolean resume_playback;					///< Resume playback on startup where it left off?
-	guint prev_track_treshold;				///< Amount of milliseconds a track must have been playing to jump back to track beginning on "prev track" event
-	gboolean show_numbers_in_pl;			///< Show numbers in playlist?
-	gulong pulsesink_buffer_time;			///< Value to set pulsesink's buffer-time property to
-	gulong pulsesink_latency_time;		///< Value to set pulsesink's latency-time property to
-	gboolean main_ui_show_cover;			///< Flag determining whether cover is shown or not
-	guint main_ui_label1;							///< Contents of main UI's label #1
-	guint main_ui_label2;							///< Contents of main UI's label #2
-	guint main_ui_label3;							///< Contents of main UI's label #3
-	guint main_min_gesture_radius;		///< If a gesture stroke's length is shorter than this the gesture is dismissed
-	guint main_gesture_repeat_tresh;	///< If a gesture was made its action will be repeated if the finger is still down after this time (msec)
-	guint main_gesture_repeat_intv;		///< Gesture will be repeated every X milliseconds
+	gboolean shuffle;                 ///< Shuffle on/off
+	guint repeat_mode;                ///< Repeat mode @see omp_repeat_modes
+	gboolean resume_playback;         ///< Resume playback on startup where it left off?
+	guint prev_track_treshold;        ///< Amount of milliseconds a track must have been playing to jump back to track beginning on "prev track" event
+	gboolean show_numbers_in_pl;      ///< Show numbers in playlist?
+	gulong pulsesink_buffer_time;     ///< Value to set pulsesink's buffer-time property to
+	gulong pulsesink_latency_time;    ///< Value to set pulsesink's latency-time property to
+	gboolean main_ui_show_cover;      ///< Flag determining whether cover is shown or not
+	guint main_ui_label1;             ///< Contents of main UI's label #1
+	guint main_ui_label2;             ///< Contents of main UI's label #2
+	guint main_ui_label3;             ///< Contents of main UI's label #3
+	guint min_gesture_radius;         ///< If a gesture stroke's length is shorter than this the gesture is dismissed
+	guint gesture_repeat_tresh;       ///< If a gesture was made its action will be repeated if the finger is still down after this time (msec)
+	guint gesture_repeat_intv;        ///< Gesture will be repeated every X milliseconds
 };
+
+/// Enumeration of all configuration options - we use it to distinguish fields on GConf change notifications
+typedef enum
+{
+	OMP_CONFIG_SHUFFLE,
+	OMP_CONFIG_REPEAT_MODE,
+	OMP_CONFIG_RESUME_PLAYBACK,
+	OMP_CONFIG_PREV_TRACK_TRESHOLD,
+	OMP_CONFIG_SHOW_NUMBERS_IN_PL,
+	OMP_CONFIG_MAIN_UI_SHOW_COVER,
+	OMP_CONFIG_MAIN_UI_LABEL1,
+	OMP_CONFIG_MAIN_UI_LABEL2,
+	OMP_CONFIG_MAIN_UI_LABEL3,
+	OMP_CONFIG_MIN_GESTURE_RADIUS,
+	OMP_CONFIG_GESTURE_REPEAT_TRESH,
+	OMP_CONFIG_GESTURE_REPEAT_INTV
+} omp_config_options;
 
 /// Session-persistent data
 /// @note Default values are set in omp_session_reset()
 struct _omp_session
 {
-	guint volume;											///< Playback volume in percent (0..100)
-	guint fade_speed;									///< Volume fading speed in milliseconds
-	guint playlist_position;					///< Position within the playlist
-	gulong track_position;						///< Position to resume playback from within the last played track
-	gboolean was_playing;							///< Set to TRUE of track was being played as the player was closed
-	gchar file_chooser_path[256];			///< Last path used in the file selection dialog
-	gchar playlist_file[256];					///< Path and file name of current (=last used) playlist
+	guint volume;                     ///< Playback volume in percent (0..100)
+	guint fade_speed;                 ///< Volume fading speed in milliseconds
+	guint playlist_position;          ///< Position within the playlist
+	gulong track_position;            ///< Position to resume playback from within the last played track
+	gboolean was_playing;             ///< Set to TRUE of track was being played as the player was closed
+	gchar file_chooser_path[256];     ///< Last path used in the file selection dialog
+	gchar playlist_file[256];         ///< Path and file name of current (=last used) playlist
 };
 
 extern struct _omp_config *omp_config;
@@ -91,7 +108,6 @@ extern struct _omp_session *omp_session;
 
 void omp_config_init();
 void omp_config_free();
-void omp_config_save();
 
 void omp_config_set_shuffle_state(gboolean state);
 gboolean omp_config_get_shuffle_state();

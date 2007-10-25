@@ -84,7 +84,7 @@ struct
 	GTimeVal start_time;
 	guint x_origin, y_origin;
 	guint last_x, last_y;
-	gboolean cursor_idle;						// TRUE if cursor isn't moving
+	gboolean cursor_idle;        // TRUE if cursor isn't moving
 
 	gint radius, angle;
 	omp_main_gesture gesture;
@@ -737,9 +737,13 @@ omp_main_page_create()
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED,
 		G_CALLBACK(omp_main_update_volume), NULL);
 
+	// Update UI with current configuration values
+	omp_main_update_shuffle_state(NULL, omp_config_get_shuffle_state(), NULL);
+	omp_main_update_repeat_mode(NULL, omp_config_get_repeat_mode(), NULL);
+
 	// Set up gesture recognition handlers
 	gtk_widget_add_events(eventbox,
-		GDK_POINTER_MOTION_MASK | 
+		GDK_POINTER_MOTION_MASK |
 		GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
 	main_gesture_data.pressed = FALSE;
