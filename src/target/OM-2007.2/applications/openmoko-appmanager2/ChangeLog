@@ -1,5 +1,11 @@
 2007-10-25  Thomas Wood  <thomas@openedhand.com>
 
+	* src/appmanager-window.c: (main): Add notebook for list/details
+	seperation as per OpenMoko 2007.2 style
+	* src/tool-box.c: (tool_box_new): Fix toolbar
+
+2007-10-25  Thomas Wood  <thomas@openedhand.com>
+
 	* src/detail-area.c: (detail_area_update_info): Check for NULL before
 	  unreferencing the pixbuf
 

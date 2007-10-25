@@ -47,6 +47,7 @@ main (int argc, char* argv[])
   GtkWidget       *navigation;
   GtkWidget       *toolbox;
   GtkWidget       *detail;
+  GtkWidget       *notebook;
 
   //GtkWidget       *menubox;
   GtkWidget *vbox;
@@ -79,6 +80,7 @@ main (int argc, char* argv[])
 
   /* main vbox */
   vbox = gtk_vbox_new (FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (appdata->mwindow), vbox);
 
   appmenu = application_menu_new (appdata);
 
@@ -110,16 +112,20 @@ main (int argc, char* argv[])
 
   toolbox = tool_box_new (appdata);
   gtk_box_pack_start (GTK_BOX (vbox), toolbox, FALSE, FALSE, 0);
-  //moko_paned_window_add_toolbox (window, toolbox);
+
+  notebook = gtk_notebook_new ();
+  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);
+  gtk_box_pack_start (GTK_BOX (vbox), notebook, TRUE, TRUE, 0);
 
   navigation = navigation_area_new (appdata);
-  gtk_box_pack_start (GTK_BOX (vbox), navigation, TRUE, TRUE, 0);
-  //moko_paned_window_set_navigation_pane (window, navigation);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), navigation,
+     gtk_image_new_from_stock (GTK_STOCK_INDEX, GTK_ICON_SIZE_LARGE_TOOLBAR));
+  gtk_container_child_set (GTK_CONTAINER (notebook), navigation, "tab-expand", TRUE, NULL);
 
   detail = detail_area_new (appdata);
-  gtk_box_pack_start (GTK_BOX (vbox), detail, TRUE, TRUE, 0);
-  //moko_paned_window_set_details_pane (window, detail);
-  gtk_container_add (GTK_CONTAINER (appdata->mwindow), vbox);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), detail,
+     gtk_image_new_from_stock (GTK_STOCK_FILE, GTK_ICON_SIZE_LARGE_TOOLBAR));
+  gtk_container_child_set (GTK_CONTAINER (notebook), detail, "tab-expand", TRUE, NULL);
 
   /* Load the list of all package in the memory */
   ret = init_package_list (appdata);
