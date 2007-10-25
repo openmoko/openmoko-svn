@@ -35,6 +35,8 @@ detail_area_new (ApplicationManagerData *appdata)
   GtkWidget    *detail;
 
   detail = gtk_scrolled_window_new (NULL, NULL);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (detail),
+     GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   text = gtk_text_view_new ();
   gtk_widget_show (text);
