@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 #include <libtaku/taku-launcher-tile.h>
 #include <moko-journal.h>
+#include <libjana/jana.h>
 
 #define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
 #define GCONF_POKY_WALLPAPER "/wallpaper"
@@ -26,18 +27,20 @@ typedef struct {
 	GdkPixmap *wallpaper;
 	gchar *location;
 	
-	GtkTreeModel *events_model;
-	GtkTreeModel *tasks_model;
-	GtkTreeIter notice;
-	gboolean notice_visible;
-	int rows;
-	
-	MokoJournal *journal;
-	GtkListStore *journal_model;
-	GtkTreeIter missed_calls;
+	GtkWidget *date_button;
+	GtkWidget *missed_calls_box;
+	GtkWidget *missed_calls_label;
 	gint n_missed_calls;
-	GtkTreeIter unread_messages;
+	GtkWidget *unread_messages_box;
+	GtkWidget *unread_messages_label;
 	gint n_unread_messages;
+	JanaStoreView *dates_view;
+	GtkTreeModel *dates_model;
+	GtkWidget *dates_box;
+	GtkWidget *dates_label;
+	GtkTreeModel *tasks_store;
+	GtkWidget *tasks_box;
+	GtkWidget *tasks_label;
 
 	/* App launcher */
 	GList *categories;

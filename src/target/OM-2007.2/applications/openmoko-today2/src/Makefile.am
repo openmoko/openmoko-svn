@@ -13,8 +13,6 @@ bin_PROGRAMS = openmoko-today
 openmoko_today_SOURCES =		\
 	today-main.c 			\
 	today.h				\
-	today-pim-summary.c		\
-	today-pim-summary.h		\
 	today-utils.c			\
 	today-utils.h			\
 	today-events-store.h		\

@@ -2,40 +2,94 @@
 #include <glib/gi18n.h>
 #include <moko-stock.h>
 #include <libtaku/launcher-util.h>
+#include <libjana/jana.h>
+#include <libjana-ecal/jana-ecal.h>
+#include <libjana-gtk/jana-gtk.h>
+#include "today-tasks-store.h"
 #include "today-utils.h"
 #include "today-pim-journal.h"
-
-enum {
-	COLUMN_ICON,
-	COLUMN_TEXT,
-	COLUMN_LAST
-};
 
 static void
 today_pim_journal_update_messages (TodayData *data)
 {
-	gchar *message;
+	gchar *message = NULL;
+	gint n_tasks = 0;
 
-	if (data->n_unread_messages > 0)
-		message = g_strdup_printf (_("%d new messages"),
-			data->n_unread_messages);
-	else
-		message = g_strdup_printf (_("No new messages"));
-
-	gtk_list_store_set (GTK_LIST_STORE (data->journal_model),
-		&data->unread_messages, COLUMN_TEXT,
-		message, -1);
-	g_free (message);
-
-	if (data->n_missed_calls > 0)
-		message = g_strdup_printf (_("%d missed calls"),
+	/* Missed calls */
+	if (data->n_missed_calls > 0) {
+		message = g_strdup_printf (_("%d missed call(s)"),
 			data->n_missed_calls);
-	else
-		message = g_strdup_printf (_("No missed calls"));
-	gtk_list_store_set (GTK_LIST_STORE (data->journal_model),
-		&data->missed_calls, COLUMN_TEXT,
-		message, -1);
-	g_free (message);
+	}
+
+	if (message) {
+		gtk_label_set_text (GTK_LABEL (
+			data->missed_calls_label), message);
+		gtk_widget_show (data->missed_calls_box);
+		g_free (message);
+		message = NULL;
+	} else
+		gtk_widget_hide (data->missed_calls_box);
+
+	/* Unread messages */
+	if (data->n_unread_messages > 0) {
+		message = g_strdup_printf (_("%d new message(s)"),
+			data->n_unread_messages);
+	}
+
+	if (message) {
+		gtk_label_set_text (GTK_LABEL (
+			data->unread_messages_label), message);
+		gtk_widget_show (data->unread_messages_box);
+		g_free (message);
+	} else {
+		gtk_widget_hide (data->unread_messages_box);
+	}
+	
+	/* Upcoming events */
+	if (data->dates_model &&
+	    gtk_tree_model_iter_n_children (data->dates_model, NULL) > 0) {
+		GtkTreeIter iter;
+		JanaTime *start;
+		gchar *summary;
+		
+		/* Set the label from the first event in the model */
+		gtk_tree_model_get_iter_first (data->dates_model, &iter);
+		gtk_tree_model_get (data->dates_model, &iter,
+			JANA_GTK_EVENT_STORE_COL_SUMMARY, &summary,
+			JANA_GTK_EVENT_STORE_COL_START, &start, -1);
+		
+		message = g_strdup_printf ("(%02d:%02d) %s",
+			jana_time_get_hours (start),
+			jana_time_get_minutes (start),
+			summary);
+		gtk_label_set_text (GTK_LABEL (data->dates_label), message);
+		gtk_widget_show (data->dates_box);
+
+		g_free (summary);
+		g_free (message);
+		g_object_unref (start);
+	} else
+		gtk_widget_hide (data->dates_box);
+	
+	/* Uncompleted tasks */
+	if (gtk_tree_model_iter_n_children (data->tasks_store, NULL) > 0) {
+		GtkTreeIter iter;
+		
+		gtk_tree_model_get_iter_first (data->tasks_store, &iter);
+		do {
+			gboolean complete;
+			gtk_tree_model_get (data->tasks_store, &iter,
+				COLUMN_DONE, &complete, -1);
+			if (!complete) n_tasks++;
+		} while (gtk_tree_model_iter_next (data->tasks_store, &iter));
+	}
+	if (n_tasks > 0) {
+		message = g_strdup_printf (_("%d incomplete task(s)"), n_tasks);
+		gtk_label_set_text (GTK_LABEL (data->tasks_label), message);
+		g_free (message);
+		gtk_widget_show (data->tasks_box);
+	} else
+		gtk_widget_hide (data->tasks_box);
 }
 
 static void
@@ -83,97 +137,235 @@ today_pim_journal_entry_removed_cb (MokoJournal *journal,
 }
 
 static void
-today_pim_journal_header_clicked_cb (GtkTreeViewColumn *column, TodayData *data)
+header_clicked_cb (GtkWidget *button, TodayData *data)
 {
-	/* TODO: Maybe just launch dialer normally here? */
-	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{ "openmoko-dialer", "-m", NULL }, TRUE, TRUE));
+	launcher_start (data->window, today_get_launcher (
+		(const gchar *[]){ "openmoko-worldclock", NULL, NULL },
+		TRUE, TRUE));
 }
 
-static void
+/*static void
 today_pim_journal_selection_changed_cb (GtkTreeSelection *selection,
 					TodayData *data)
 {
-	if (gtk_tree_selection_count_selected_rows (selection)) {
+	if ((data->n_missed_calls > 0) &&
+	    gtk_tree_selection_count_selected_rows (selection)) {
 		gtk_tree_selection_unselect_all (selection);
 		launcher_start (data->window, today_get_launcher (
 			(const gchar *[]){ "openmoko-dialer", "-m", NULL },
-			TRUE, TRUE));
+			TRUE, FALSE));
 	}
+}*/
+
+static gboolean
+missed_calls_button_press_cb (GtkWidget *widget, GdkEventButton *event,
+			      TodayData *data)
+{
+	launcher_start (data->window, today_get_launcher (
+		(const gchar *[]){ "openmoko-dialer", "-m", NULL },
+		TRUE, FALSE));
+
+	return FALSE;
+}
+
+static gboolean
+unread_messages_button_press_cb (GtkWidget *widget, GdkEventButton *event,
+				 TodayData *data)
+{
+	/*launcher_start (data->window, today_get_launcher (
+		(const gchar *[]){ "openmoko-dialer", "-m", NULL },
+		TRUE, FALSE));*/
+	g_debug ("TODO: Launch messages app");
+
+	return FALSE;
+}
+
+static gboolean
+tasks_button_press_cb (GtkWidget *widget, GdkEventButton *event,
+		       TodayData *data)
+{
+	launcher_start (data->window, today_get_launcher (
+		(const gchar *[]){ "tasks", NULL, NULL },
+		TRUE, FALSE));
+
+	return FALSE;
+}
+
+static gboolean
+dates_button_press_cb (GtkWidget *widget, GdkEventButton *event,
+		       TodayData *data)
+{
+	launcher_start (data->window, today_get_launcher (
+		(const gchar *[]){ "openmoko-dates", NULL, NULL },
+		TRUE, FALSE));
+
+	return FALSE;
+}
+
+static void
+store_opened_cb (JanaStore *store, TodayData *data)
+{
+	JanaTime *start, *end;
+	
+	start = jana_ecal_utils_time_now (data->location);
+	end = jana_time_duplicate (start);
+	jana_time_set_day (end, jana_time_get_day (end) + 1);
+	jana_time_set_isdate (end, TRUE);
+	
+	data->dates_view = jana_store_get_view (store);
+	jana_store_view_set_range (data->dates_view, start, end);
+	
+	data->dates_model = GTK_TREE_MODEL (
+		jana_gtk_event_store_new_full (data->dates_view,
+		jana_time_get_offset (start)));
+	
+	g_object_unref (start);
+	g_object_unref (end);
+	
+	g_signal_connect_swapped (data->dates_model, "row-inserted",
+		G_CALLBACK (today_pim_journal_update_messages), data);
+	g_signal_connect_swapped (data->dates_model, "row-changed",
+		G_CALLBACK (today_pim_journal_update_messages), data);
+	g_signal_connect_swapped (data->dates_model, "row-deleted",
+		G_CALLBACK (today_pim_journal_update_messages), data);
+	
+	jana_store_view_start (data->dates_view);
 }
 
 GtkWidget *
 today_pim_journal_box_new (TodayData *data)
 {
-	GtkWidget *treeview;
-	GtkCellRenderer *text_renderer, *pixbuf_renderer;
-	GtkTreeViewColumn *column;	
+	JanaStore *store;
+	MokoJournal *journal;
+	GtkWidget *vbox, *hbox, *image;
 	
-	data->journal_model = gtk_list_store_new (COLUMN_LAST,
-		G_TYPE_STRING, G_TYPE_STRING);
+	data->date_button = gtk_button_new_with_label ("");
+
+	/* Missed calls box */
+	data->missed_calls_box = gtk_event_box_new ();
+	gtk_event_box_set_visible_window (GTK_EVENT_BOX (
+		data->missed_calls_box), FALSE);
+	hbox = gtk_hbox_new (FALSE, 6);
+	image = gtk_image_new_from_stock (
+		MOKO_STOCK_CALL_MISSED, GTK_ICON_SIZE_LARGE_TOOLBAR);
+	data->missed_calls_label = gtk_label_new ("");
+	gtk_misc_set_alignment (GTK_MISC (data->missed_calls_label), 0, 0.5);
+	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (hbox),
+		data->missed_calls_label, TRUE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (data->missed_calls_box), hbox);
+	gtk_widget_add_events (data->missed_calls_box, GDK_BUTTON_PRESS_MASK);
+	g_signal_connect (data->missed_calls_box, "button-press-event",
+		G_CALLBACK (missed_calls_button_press_cb), data);
+
+	/* Unread messages box */
+	data->unread_messages_box = gtk_event_box_new ();
+	gtk_event_box_set_visible_window (GTK_EVENT_BOX (
+		data->unread_messages_box), FALSE);
+	hbox = gtk_hbox_new (FALSE, 6);
+	image = gtk_image_new_from_icon_name (
+		"openmoko-messages", GTK_ICON_SIZE_LARGE_TOOLBAR);
+	data->unread_messages_label = gtk_label_new ("");
+	gtk_misc_set_alignment (GTK_MISC (data->unread_messages_label), 0, 0.5);
+	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (hbox),
+		data->unread_messages_label, TRUE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (data->unread_messages_box), hbox);
+	gtk_widget_add_events (data->unread_messages_box,
+		GDK_BUTTON_PRESS_MASK);
+	g_signal_connect (data->missed_calls_box, "button-press-event",
+		G_CALLBACK (unread_messages_button_press_cb), data);
+
+	/* Events box */
+	data->dates_box = gtk_event_box_new ();
+	gtk_event_box_set_visible_window (GTK_EVENT_BOX (
+		data->dates_box), FALSE);
+	hbox = gtk_hbox_new (FALSE, 6);
+	image = gtk_image_new_from_icon_name (
+		"dates", GTK_ICON_SIZE_LARGE_TOOLBAR);
+	data->dates_label = gtk_label_new ("");
+	gtk_misc_set_alignment (GTK_MISC (data->dates_label), 0, 0.5);
+	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (hbox),
+		data->dates_label, TRUE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (data->dates_box), hbox);
+	gtk_widget_add_events (data->dates_box,
+		GDK_BUTTON_PRESS_MASK);
+	g_signal_connect (data->dates_box, "button-press-event",
+		G_CALLBACK (dates_button_press_cb), data);
+
+	/* Tasks box */
+	data->tasks_box = gtk_event_box_new ();
+	gtk_event_box_set_visible_window (GTK_EVENT_BOX (
+		data->tasks_box), FALSE);
+	hbox = gtk_hbox_new (FALSE, 6);
+	image = gtk_image_new_from_icon_name (
+		"tasks", GTK_ICON_SIZE_LARGE_TOOLBAR);
+	data->tasks_label = gtk_label_new ("");
+	gtk_misc_set_alignment (GTK_MISC (data->tasks_label), 0, 0.5);
+	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (hbox),
+		data->tasks_label, TRUE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (data->tasks_box), hbox);
+	gtk_widget_add_events (data->tasks_box,
+		GDK_BUTTON_PRESS_MASK);
+	g_signal_connect (data->tasks_box, "button-press-event",
+		G_CALLBACK (tasks_button_press_cb), data);
 	
-	gtk_list_store_insert_with_values (data->journal_model,
-		&data->missed_calls,
-		0, COLUMN_ICON, MOKO_STOCK_CALL_MISSED,
-		COLUMN_TEXT, _("No missed calls"), -1);
-
-	gtk_list_store_insert_with_values (data->journal_model,
-		&data->unread_messages,
-		1, COLUMN_ICON, "openmoko-messages",
-		COLUMN_TEXT, _("No new messages"), -1);
+	g_signal_connect (data->date_button, "clicked",
+		G_CALLBACK (header_clicked_cb), data);
 	
-	treeview = gtk_tree_view_new_with_model (
-		GTK_TREE_MODEL (data->journal_model));
-	gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (treeview), FALSE);
-
-	text_renderer = gtk_cell_renderer_text_new ();
-	pixbuf_renderer = gtk_cell_renderer_pixbuf_new ();
-
-	column = gtk_tree_view_column_new ();
-	gtk_tree_view_column_set_title (column, "OpenMoko");
-
-	gtk_tree_view_column_pack_start (column,
-		pixbuf_renderer, FALSE);
-	gtk_tree_view_column_pack_end (column,
-		text_renderer, TRUE);
-
-	gtk_tree_view_column_add_attribute (column, pixbuf_renderer,
-		"icon-name", COLUMN_ICON);
-	gtk_tree_view_column_add_attribute (column, text_renderer,
-		"text", COLUMN_TEXT);
-	
-	gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
-
-	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), TRUE);
-	gtk_tree_view_set_headers_clickable (GTK_TREE_VIEW (treeview), TRUE);
-	
-	g_signal_connect (G_OBJECT (column), "clicked",
-		G_CALLBACK (today_pim_journal_header_clicked_cb), data);
-	g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
-		"changed", G_CALLBACK (today_pim_journal_selection_changed_cb),
-		data);
+	/* Pack widgets */
+	vbox = gtk_vbox_new (FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (vbox), data->date_button, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox),
+		data->missed_calls_box, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox),
+		data->unread_messages_box, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox),
+		data->dates_box, FALSE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox),
+		data->tasks_box, FALSE, TRUE, 0);
+	gtk_widget_show_all (vbox);
 	
 	/* Open up journal and connect to signals to find out about missed
 	 * calls and new messages.
-	 * TODO: Revise this when libmokojournal has support for 'new' missed
-	 *       calls and changes.
 	 */
 	data->n_missed_calls = 0;
 	data->n_unread_messages = 0;
-	data->journal = moko_journal_open_default ();
+	data->dates_view = NULL;
+	data->dates_model = NULL;
+	journal = moko_journal_open_default ();
 
-  if (data->journal)
-  {
-  	g_signal_connect (G_OBJECT (data->journal), "entry_added",
-  		G_CALLBACK (today_pim_journal_entry_added_cb), data);
-  	g_signal_connect (G_OBJECT (data->journal), "entry_removed",
-  		G_CALLBACK (today_pim_journal_entry_removed_cb), data);
-  	moko_journal_load_from_storage (data->journal);
-  }
-  else
-  {
-    g_warning ("Could not load journal");
+	if (journal) {
+		g_signal_connect (G_OBJECT (journal), "entry_added",
+			G_CALLBACK (today_pim_journal_entry_added_cb), data);
+		g_signal_connect (G_OBJECT (journal), "entry_removed",
+			G_CALLBACK (today_pim_journal_entry_removed_cb), data);
+	} else {
+		g_warning ("Could not load journal");
 	}
+	
+	/* Open up calendar store */
+	store = jana_ecal_store_new (JANA_COMPONENT_EVENT);
+	g_signal_connect (store, "opened",
+		G_CALLBACK (store_opened_cb), data);
+	jana_store_open (store);
+	
+	/* Create tasks store */
+	data->tasks_store = GTK_TREE_MODEL (today_tasks_store_new ());
+	g_signal_connect_swapped (data->tasks_store, "row-inserted",
+		G_CALLBACK (today_pim_journal_update_messages), data);
+	g_signal_connect_swapped (data->tasks_store, "row-changed",
+		G_CALLBACK (today_pim_journal_update_messages), data);
+	g_signal_connect_swapped (data->tasks_store, "row-deleted",
+		G_CALLBACK (today_pim_journal_update_messages), data);
 
-	return treeview;
+	/* Start up journal */
+	if (journal) moko_journal_load_from_storage (journal);
+	
+	/* Update labels */
+	today_pim_journal_update_messages (data);
+	
+	return vbox;
 }

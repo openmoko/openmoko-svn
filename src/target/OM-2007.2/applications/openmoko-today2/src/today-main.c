@@ -14,7 +14,6 @@
 #include <libjana-gtk/jana-gtk.h>
 #include "today.h"
 #include "today-utils.h"
-#include "today-pim-summary.h"
 #include "today-pim-journal.h"
 #include "today-launcher.h"
 #include "today-task-manager.h"
@@ -40,7 +39,7 @@ static void
 today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
 	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{"openmoko-dialer", NULL }, TRUE, TRUE));
+		{"openmoko-dialer", "-s", NULL }, TRUE, FALSE));
 }
 
 static void
@@ -74,6 +73,50 @@ bg_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
 	return FALSE;
 }
 
+static gboolean
+bg_child_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
+{
+	cairo_t *cr;
+/*	GtkWidget *parent;
+	gint x = 0, y = 0;
+	
+	if (!data->wallpaper) return FALSE;
+	
+	parent = widget;
+	do {
+		if (!GTK_WIDGET_NO_WINDOW (parent)) {
+			x += parent->allocation.x;
+			y += parent->allocation.y;
+		}
+		parent = gtk_widget_get_parent (parent);
+	} while (parent && (parent != data->bg_ebox));
+	if (!parent) return FALSE;
+	
+	gdk_draw_drawable (widget->window, widget->style->black_gc,
+		data->wallpaper, x, y,
+		0, 0, -1, -1);*/
+	
+	/* Draw a semi-transparent rounded rectangle */
+	cr = gdk_cairo_create (widget->window);
+	cairo_translate (cr, widget->allocation.x, widget->allocation.y);
+	cairo_new_path (cr);
+	cairo_move_to (cr, 12, 6);
+	cairo_rel_line_to (cr, widget->allocation.width - 24, 0);
+	cairo_rel_curve_to (cr, 6, 0, 6, 6, 6, 6);
+	cairo_rel_line_to (cr, 0, widget->allocation.height - 24);
+	cairo_rel_curve_to (cr, 0, 6, -6, 6, -6, 6);
+	cairo_rel_line_to (cr, -(widget->allocation.width - 24), 0);
+	cairo_rel_curve_to (cr, -6, 0, -6, -6, -6, -6);
+	cairo_rel_line_to (cr, 0, -(widget->allocation.height - 24));
+	cairo_rel_curve_to (cr, 0, -6, 6, -6, 6, -6);
+	cairo_close_path (cr);
+	cairo_set_source_rgba (cr, 1, 1, 1, 0.5);
+	cairo_fill (cr);
+	cairo_destroy (cr);
+	
+	return FALSE;
+}
+
 static void
 bg_size_allocate_cb (GtkWidget *widget, GtkAllocation *allocation,
 		     TodayData *data)
@@ -93,9 +136,22 @@ static gboolean
 set_time_idle (TodayData *data)
 {
 	JanaTime *time;
+	gchar *date_str;
 	
 	time = jana_ecal_utils_time_now (data->location);
 	jana_gtk_clock_set_time (JANA_GTK_CLOCK (data->clock), time);
+	date_str = jana_utils_strftime (time, "%A, %d. %B %Y");
+	gtk_button_set_label (GTK_BUTTON (data->date_button), date_str);
+	g_free (date_str);
+	
+	/* Update query every half-hour */
+	if (data->dates_view && ((jana_time_get_minutes (time) % 30) == 0)) {
+		JanaTime *end = jana_time_duplicate (time);
+		jana_time_set_day (end, jana_time_get_day (end) + 1);
+		jana_time_set_isdate (end, TRUE);
+		jana_store_view_set_range (data->dates_view, time, end);
+		g_object_unref (end);
+	}
 	
 #if GLIB_CHECK_VERSION(2,14,0)
 	g_timeout_add_seconds (60 - jana_time_get_seconds (time),
@@ -113,7 +169,7 @@ set_time_idle (TodayData *data)
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
-	GtkWidget *main_vbox, *vbox, *align, *viewport, *scroll;
+	GtkWidget *main_vbox, *vbox, *align;
 	
 	/* Add home page */
 	main_vbox = gtk_vbox_new (FALSE, 0);
@@ -160,41 +216,31 @@ today_create_home_page (TodayData *data)
 		G_CALLBACK (bg_expose_cb), data);
 	g_signal_connect (data->bg_ebox, "size-allocate",
 		G_CALLBACK (bg_size_allocate_cb), data);
+	gtk_box_pack_start (GTK_BOX (main_vbox), data->bg_ebox, TRUE, TRUE, 0);
+	gtk_widget_show (data->bg_ebox);
 	
 	/* Get location and create clock widget */
 	data->location = jana_ecal_utils_guess_location ();
 	data->clock = jana_gtk_clock_new ();
 	jana_gtk_clock_set_draw_shadow (JANA_GTK_CLOCK (data->clock), TRUE);
-
-	/* Create viewport for clock/journal/PIM summary widgets */
-	viewport = gtk_viewport_new (NULL, NULL);
-	scroll = moko_finger_scroll_new ();
-	gtk_container_add (GTK_CONTAINER (scroll), viewport);
-	gtk_box_pack_start (GTK_BOX (main_vbox), scroll, TRUE, TRUE, 0);
-	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
-				      GTK_SHADOW_NONE);
-	gtk_widget_show_all (scroll);
+	gtk_widget_show (data->clock);
 
 	/* Pack widgets */
-	vbox = gtk_vbox_new (FALSE, 6);
-
-	gtk_box_pack_start (GTK_BOX (vbox), data->clock, TRUE, TRUE, 0);
-	gtk_widget_show_all (data->clock);
-	
+	align = gtk_alignment_new (0.5, 0, 1, 0);
 	data->message_box = today_pim_journal_box_new (data);
-	gtk_box_pack_start (GTK_BOX (vbox), data->message_box, FALSE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (align), data->message_box);
+	gtk_widget_set_app_paintable (align, TRUE);
+	g_signal_connect (align, "expose-event",
+		G_CALLBACK (bg_child_expose_cb), data);
 	gtk_widget_show (data->message_box);
+	gtk_widget_show (align);
 	
-	data->summary_box = today_pim_summary_box_new (data);
-	gtk_box_pack_start (GTK_BOX (vbox), data->summary_box, FALSE, TRUE, 6);
-	gtk_widget_show (data->summary_box);
-	
-	align = gtk_alignment_new (0.5, 0.5, 1, 1);
+	vbox = gtk_vbox_new (FALSE, 6);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
-	gtk_container_add (GTK_CONTAINER (viewport), data->bg_ebox);
-	gtk_container_add (GTK_CONTAINER (data->bg_ebox), align);
-	gtk_container_add (GTK_CONTAINER (align), vbox);
-	gtk_widget_show_all (data->bg_ebox);
+	gtk_box_pack_start (GTK_BOX (vbox), data->clock, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), align, FALSE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (data->bg_ebox), vbox);
+	gtk_widget_show (vbox);
 	
 	/* Set the time on the clock */
 	set_time_idle (data);
@@ -272,6 +318,22 @@ digital_clock_notify (GConfClient *client, guint cnxn_id,
 		gconf_value_get_bool (value));
 }
 
+static void
+location_notify (GConfClient *client, guint cnxn_id,
+		 GConfEntry *entry, TodayData *data)
+{
+	GConfValue *value;
+
+	value = gconf_entry_get_value (entry);
+	if (value) {
+		const gchar *location = gconf_value_get_string (value);
+		if (location) {
+			g_free (data->location);
+			data->location = g_strdup (location);
+		}
+	}
+}
+
 int
 main (int argc, char **argv)
 {
@@ -300,7 +362,7 @@ main (int argc, char **argv)
 
 	/* Create widgets */
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (data.window), _("Today"));
+	gtk_window_set_title (GTK_WINDOW (data.window), _("Home"));
 	
 	/* Notebook */
 	data.notebook = gtk_notebook_new ();
@@ -330,7 +392,7 @@ main (int argc, char **argv)
 	g_signal_connect (G_OBJECT (data.window), "delete-event",
 		G_CALLBACK (gtk_main_quit), NULL);
 	
-#if 0
+#if 1
 	/* Force theme settings */
 	g_object_set (gtk_settings_get_default (),
 		"gtk-theme-name", "openmoko-standard-2", /* Moko */
@@ -357,6 +419,12 @@ main (int argc, char **argv)
 	gtk_widget_show (data.window);
 
 	/* Listen to wallpaper setting */
+	gconf_client_add_dir (gconf_client_get_default (),
+		JANA_ECAL_LOCATION_KEY_DIR, GCONF_CLIENT_PRELOAD_NONE, NULL);
+	gconf_client_notify_add (gconf_client_get_default (),
+		JANA_ECAL_LOCATION_KEY,
+		(GConfClientNotifyFunc)location_notify,
+		&data, NULL, NULL);
 	gconf_client_add_dir (gconf_client_get_default (),
 		GCONF_POKY_INTERFACE_PREFIX, GCONF_CLIENT_PRELOAD_NONE, NULL);
 	gconf_client_notify_add (gconf_client_get_default (),
