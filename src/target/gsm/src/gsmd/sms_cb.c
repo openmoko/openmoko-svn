@@ -116,6 +116,7 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	struct gsmd_sms_list msg;
 	int i, stat, len, cr;
 	u_int8_t pdu[SMS_MAX_PDU_SIZE];
+	const char *colon;
 
 	if (cmd->ret)
 		return 0;
@@ -131,6 +132,11 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		return -EINVAL;
 
 	msg.index = 0;
+	colon = strchr(cmd->buf, '=');
+
+        /* get a correct message index value on reading a SMS */
+	if (!strncmp(cmd->buf, "AT+CMGR", 7) && colon) 
+		msg.index = atoi(colon+1);
 	msg.stat = stat;
 	msg.is_last = 1;
 	for (i = 0; resp[cr] >= '0' && resp[cr + 1] >= '0' &&
