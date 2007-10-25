@@ -95,6 +95,7 @@
 
     <!-- Calling line identification presentation flag -->
     <set name="LIP" value="0"/>
+    <set name="CLIP" value="\n+CLIP: &quot;313373&quot;,145,,,,1"/>
 
     <!-- Calling line identification restriction flag -->
     <set name="LIR" value="0"/>
@@ -173,6 +174,9 @@
 
     <!-- Call Progress Indication type -->
     <set name="CPI" value="0"/>
+
+    <!-- Format of cellular result codes -->
+    <set name="RING" value="RING"/>
 
 <!-- Broadcast a cell location -->
 
@@ -347,7 +351,7 @@
 --> 
 
 <state name="dialback">
-    <unsolicited switch="incoming">RING\n+CLIP: "1234567",129</unsolicited>
+    <unsolicited switch="incoming">${RING}${CLIP}</unsolicited>
 </state>
 
 <chat>
@@ -369,7 +373,7 @@
 </chat>
 
 <state name="199dialback">
-    <unsolicited delay="2000" switch="incoming">RING\n+CLIP: "1234567",129</unsolicited>
+    <unsolicited delay="2000" switch="incoming">${RING}${CLIP}</unsolicited>
 </state>
 
 <chat>
@@ -381,7 +385,7 @@
 </chat>
 
 <state name="1993dialback">
-    <unsolicited delay="30000" switch="incoming">RING\n+CLIP: "1234567",129</unsolicited>
+    <unsolicited delay="30000" switch="incoming">${RING}${CLIP}</unsolicited>
 </state>
 
 <state name="incoming">
@@ -405,7 +409,7 @@
     <!-- Keep ringing every 2 seconds until the call is answered,
          or until 4 rings have been delivered.  After 4 rings,
 	 indicate that the call has been missed -->
-    <unsolicited delay="2000" switch="incoming1">RING</unsolicited>
+    <unsolicited delay="2000" switch="incoming1">${RING}</unsolicited>
 </state>
 
 <state name="incoming1">
@@ -426,7 +430,7 @@
 	<peer hangup="true">HANGUP</peer>
     </chat>
 
-    <unsolicited delay="2000" switch="incoming2">RING</unsolicited>
+    <unsolicited delay="2000" switch="incoming2">${RING}</unsolicited>
 </state>
 
 <state name="incoming2">
@@ -447,7 +451,7 @@
 	<peer hangup="true">HANGUP</peer>
     </chat>
 
-    <unsolicited delay="2000" switch="incoming3">RING</unsolicited>
+    <unsolicited delay="2000" switch="incoming3">${RING}</unsolicited>
 </state>
 
 <state name="incoming3">
@@ -482,7 +486,7 @@
 </chat>
 
 <state name="177dialback">
-    <unsolicited delay="2000" switch="177incoming">RING\n+CLIP: "1234567",129</unsolicited>
+    <unsolicited delay="2000" switch="177incoming">${RING}${CLIP}</unsolicited>
 </state>
 
 <state name="177incoming">
@@ -505,7 +509,7 @@
     <!-- Keep ringing every 2 seconds until the call is answered,
          or until 4 rings have been delivered.  After 4 rings,
 	 indicate that the call has been missed -->
-    <unsolicited delay="2000" switch="177incoming1">RING</unsolicited>
+    <unsolicited delay="2000" switch="177incoming1">${RING}</unsolicited>
 </state>
 
 <state name="177incoming1">
@@ -525,7 +529,7 @@
 	<peer hangup="true">HANGUP</peer>
     </chat>
 
-    <unsolicited delay="2000" switch="177incoming2">RING</unsolicited>
+    <unsolicited delay="2000" switch="177incoming2">${RING}</unsolicited>
 </state>
 
 <state name="177incoming2">
@@ -545,7 +549,7 @@
 	<peer hangup="true">HANGUP</peer>
     </chat>
 
-    <unsolicited delay="2000" switch="177incoming3">RING</unsolicited>
+    <unsolicited delay="2000" switch="177incoming3">${RING}</unsolicited>
 </state>
 
 <state name="177incoming3">
@@ -728,6 +732,7 @@
     <command>AT+CRC=0</command>
     <response>OK</response>
     <set name="CRC" value="0"/>
+    <set name="RING" value="RING"/>
 </chat>
 
 <chat>
@@ -735,6 +740,7 @@
     <command>AT+CRC=1</command>
     <response>OK</response>
     <set name="CRC" value="1"/>
+    <set name="RING" value="+CRING: VOICE"/>
 </chat>
 
 <!-- GSM 07.07: Network service related commands -->
@@ -742,7 +748,7 @@
 <chat>
     <!-- Query subscriber number -->
     <command>AT+CNUM</command>
-    <response>+CNUM: "${NUM}",129,0,7\nOK</response>
+    <response>+CNUM: ,"${NUM}",129\nOK</response>
 </chat>
 
 <chat>
@@ -1389,7 +1395,7 @@
 <chat>
     <!-- Query supported phone functionality settings -->
     <command>AT+CFUN=?</command>
-    <response>+CFUN: (0-4)\nOK</response>
+    <response>+CFUN: (0,1,4),(0)\nOK</response>
 </chat>
 
 <chat>
@@ -1438,7 +1444,7 @@
 <chat>
     <!-- Query supported battery charge values -->
     <command>AT+CBC=?</command>
-    <response>+CBC: (0,1,2,3),(1-100)\nOK</response>
+    <response>+CBC: (0-3),(0-100)\nOK</response>
 </chat>
 
 <chat>
