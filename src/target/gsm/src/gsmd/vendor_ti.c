@@ -245,6 +245,38 @@ static const struct gsmd_unsolicit ticalypso_unsolicit[] = {
 	/* %CGEV: reports GPRS network events */
 };
 
+static int cpmb_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd *g = ctx;
+	struct gsm_extrsp *er;
+	int rc;
+	char atcmd_buf[20];
+
+	if (strncmp(resp, "%CPMB: ", 7))
+		return -EINVAL;
+	resp += 7;
+	
+	er = extrsp_parse(cmd, resp);
+	if (!er)
+		return -ENOMEM;
+
+	extrsp_dump(er);
+
+	if (er->num_tokens == 5 &&
+	    er->tokens[2].type == GSMD_ECMD_RTT_STRING &&
+		er->tokens[3].type == GSMD_ECMD_RTT_NUMERIC &&
+		er->tokens[4].type == GSMD_ECMD_RTT_STRING)
+		rc = sprintf(atcmd_buf, "AT+CSVM=1,\"%s\",%d", 
+			er->tokens[2].u.string, er->tokens[3].u.numeric);
+
+	if(rc)
+		return gsmd_simplecmd(g, atcmd_buf);
+
+	talloc_free(er);
+
+	return rc;
+}
+
 static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd *g = ctx;
@@ -257,7 +289,12 @@ static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	er = extrsp_parse(cmd, resp);
 	if (!er)
 		return -EINVAL;
-
+	
+	/* retrieve voicemail number */
+	cmd = atcmd_fill("AT%CPMB=1", 10, &cpmb_detect_cb, g, 0);
+	if (cmd)
+		atcmd_submit(g, cmd);
+	
 	if (extrsp_supports(er, 0, 3))
 		return gsmd_simplecmd(g, "AT%CPI=3");
 	else if (extrsp_supports(er, 0, 2))
@@ -292,7 +329,9 @@ static int ticalypso_initsettings(struct gsmd *g)
 	rc |= gsmd_simplecmd(g, "AT%CSQ=1");
 	/* send unsolicited commands at any time */
 	rc |= gsmd_simplecmd(g, "AT%CUNS=0");
-
+	/* enable %CPHS: Initialise CPHS Functionalities */
+	rc |= gsmd_simplecmd(g, "AT%CPHS=1");
+	
 	/* enable %CPI: call progress indication */
 	cmd = atcmd_fill("AT%CPI=?", 9, &cpi_detect_cb, g, 0);
 	if (cmd)
