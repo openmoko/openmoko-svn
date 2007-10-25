@@ -121,6 +121,58 @@ enum gsmd_sms_alphabet {
 	ALPHABET_RESERVED		= (0x11<<2),
 };
 
+/* bit 1 & bit0 */
+enum gsmd_sms_msg_class {
+	MSG_CLASS_CLASS0	= 0,
+	MSG_CLASS_CLASS1	= 1,
+	MSG_CLASS_CLASS2	= 2,
+	MSG_CLASS_CLASS3	= 3,
+	MSG_CLASS_NONE		= 4,
+};
+
+/* bit 3 & bit 2*/
+enum gsmd_sms_alphabet_type {
+	SMS_ALPHABET_7_BIT_DEFAULT 	= 0,
+	SMS_ALPHABET_8_BIT		= 1,
+	SMS_ALPHABET_UCS2		= 2,
+	SMS_ALPHABET_RESESRVED		= 3,
+};
+
+enum gsmd_sms_msg_compressed {
+	NOT_COMPRESSED	= 0,
+	COMPRESSED	= 1,
+};
+
+/* message waiting indication */
+enum gsmd_sms_msg_waiting_group {
+	MESSAGE_WAITING_NONE		= 0,
+	MESSAGE_WAITING_DISCARD	= 1,
+	MESSAGE_WAITING_STORE		= 2,
+	MESSAGE_WAITING_NONE_1111	= 3,
+};
+
+enum gsmd_sms_msg_waiting_type {
+	MESSAGE_WAITING_VOICEMAIL	= 0,
+	MESSAGE_WAITING_FAX 		= 1,
+	MESSAGE_WAITING_EMAIL 		= 2,
+	MESSAGE_WAITING_OTHER 		= 3,
+};
+
+enum gsmd_sms_msg_waiting_active {
+	NOT_ACTIVE	= 0,
+	ACTIVE		= 1,
+};
+
+struct gsmd_sms_datacodingscheme {
+	enum gsmd_sms_msg_class		        msg_class;
+	enum gsmd_sms_alphabet_type 		alphabet;
+	enum gsmd_sms_msg_compressed        	is_compressed;
+	enum gsmd_sms_msg_waiting_group 	mwi_group;
+	enum gsmd_sms_msg_waiting_active    	mwi_active;
+	enum gsmd_sms_msg_waiting_type    	mwi_kind;
+	u_int8_t                            	raw_dcs_data;
+} __attribute__ ((packed));
+
 /* Refer to GSM 03.40 subclause 9.2.3.1 */
 enum gsmd_sms_tp_mti {
 	GSMD_SMS_TP_MTI_DELIVER		= 0,
@@ -325,6 +377,8 @@ struct gsmd_sms {
 	u_int8_t length;	
 	u_int8_t coding_scheme;
 	int has_header;
+	int is_voicemail;
+	struct gsmd_sms_datacodingscheme dcs;
 	char data[GSMD_SMS_DATA_MAXLEN+1];	
 } __attribute__ ((packed));
 

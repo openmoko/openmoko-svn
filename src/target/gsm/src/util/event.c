@@ -42,6 +42,8 @@ static int insms_handler(struct lgsm_handle *lh, int evt,
 	char payload[GSMD_SMS_DATA_MAXLEN];
 	if (aux->u.sms.inlined) {
 		sms = (struct gsmd_sms_list *) aux->data;
+		if(sms->payload.is_voicemail)
+			printf("EVENT: You have a voice mail \n");
 		printf("EVENT: Incoming SMS from/to %s%s, at %i%i-%i%i-%i%i "
 				"%i%i:%i%i:%i%i, GMT%c%i\n",
 				((sms->addr.type & __GSMD_TOA_TON_MASK) ==

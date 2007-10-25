@@ -87,6 +87,9 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 	if (len < 1 || len < 1 + src[0] + pdulen || pdulen < 1)
 		return 1;
 
+	/* init voicemail is false */
+	dst->payload.is_voicemail = 0;
+	
 	/* Skip SMSC number and its Type-of-address */
 	len -= 1 + src[0];
 	src += 1 + src[0];
@@ -111,7 +114,19 @@ int sms_pdu_to_msg(struct gsmd_sms_list *dst,
 
 		len -= 3 + i;
 		src += 3 + i;
+		
+		/* check voicemail by TP-PID */
+		if(src[0] == 0x5f)  /* return call message */
+			dst->payload.is_voicemail = 1;
 
+		/* decode TP-DCS */
+		if(sms_pdu_decode_dcs(&dst->payload.dcs,src+1))
+			return 1;
+		/* check voicemail by MWI */
+		if(dst->payload.dcs.mwi_kind == MESSAGE_WAITING_VOICEMAIL &&
+			(dst->payload.dcs.mwi_group == MESSAGE_WAITING_DISCARD || 
+			dst->payload.dcs.mwi_group == MESSAGE_WAITING_STORE))
+			dst->payload.is_voicemail = 1;
 		/* TP-DCS */
 		switch (src[1] >> 4) {
 		case 0x0 ... 3:	/* General Data Coding indication */
@@ -313,5 +328,90 @@ int cbs_pdu_to_msg(struct gsmd_cbm *dst, u_int8_t *src, int pdulen, int len)
 	dst->page = src[5] >> 4;
 
 	memcpy(dst->data, src + 6, len - 6);
+	return 0;
+}
+
+/* Refer to GSM 03.38 Clause 4, for TP-DCS */  
+int sms_pdu_decode_dcs(struct gsmd_sms_datacodingscheme *dcs, 
+	const u_int8_t *data)
+{
+	int pos = 0, i;
+
+	/* init dcs value */
+	dcs->mwi_active		= NOT_ACTIVE;
+	dcs->mwi_kind		= MESSAGE_WAITING_OTHER;
+	
+	/* bits 7-6 */
+	i = ( data[pos] & 0xC0 ) >> 6;
+	switch( i )
+	{
+	case 0: /* pattern 00xx xxxx */
+		dcs->is_compressed = data[pos] & 0x20;
+		if( data[pos] & 0x10 )
+			dcs->msg_class = data[pos] & 0x03;
+		else
+			/* no class information */
+			dcs->msg_class = MSG_CLASS_NONE;
+		dcs->alphabet  = ( data[pos] & 0x0C ) >> 2;     
+		dcs->mwi_group 	= MESSAGE_WAITING_NONE;
+		break;
+	case 3: /* pattern 1111 xxxx */
+		/* bits 5-4 */
+		if( (data[pos] & 0x30) == 0x30 )
+		{
+			/* bit 3 is reserved */
+			/* bit 2 */
+			dcs->alphabet = (data[pos] & 0x04 ) ? SMS_ALPHABET_8_BIT:
+					   SMS_ALPHABET_7_BIT_DEFAULT;
+			/* bits 1-0 */
+			dcs->msg_class = data[pos] & 0x03;
+			/* set remaining fields */
+			dcs->is_compressed  = NOT_COMPRESSED;
+			dcs->mwi_group    = MESSAGE_WAITING_NONE_1111;
+		}
+		else
+		{
+			/* Message waiting groups */
+			dcs->is_compressed  = NOT_COMPRESSED;
+			dcs->msg_class      = MSG_CLASS_NONE;
+			/* bits 5-4 */
+			if( (data[pos] & 0x30) == 0x00 )
+			{
+				dcs->mwi_group  = MESSAGE_WAITING_DISCARD;
+				dcs->alphabet   = SMS_ALPHABET_7_BIT_DEFAULT;
+			}
+			else if( (data[pos] & 0x30) == 0x10 )
+			{
+				dcs->mwi_group  = MESSAGE_WAITING_STORE;
+				dcs->alphabet   = SMS_ALPHABET_7_BIT_DEFAULT;
+			}
+			else
+			{
+				dcs->mwi_group  = MESSAGE_WAITING_STORE;
+				dcs->alphabet   = SMS_ALPHABET_UCS2;
+			}
+			/* bit 3 */
+			dcs->mwi_active = ( data[pos] & 0x08 ) ? ACTIVE : 
+				NOT_ACTIVE;
+			/* bit 2 is reserved */
+			/* bits 1-0 */
+			dcs->mwi_kind = data[pos] & 0x03;
+		}
+		break;
+	default:
+		/* reserved values	*/
+		dcs->msg_class      	= MSG_CLASS_NONE;
+		dcs->alphabet       	= SMS_ALPHABET_7_BIT_DEFAULT;
+		dcs->is_compressed  	= NOT_COMPRESSED;
+		dcs->mwi_group    	= MESSAGE_WAITING_NONE;
+		dcs->mwi_active		= NOT_ACTIVE;
+		dcs->mwi_kind		= MESSAGE_WAITING_OTHER;
+		break;
+	}
+
+	if ( dcs->alphabet > SMS_ALPHABET_UCS2 )
+		dcs->alphabet = SMS_ALPHABET_7_BIT_DEFAULT;
+	/* keep raw dcs data*/
+	dcs->raw_dcs_data = data[pos];
 	return 0;
 }

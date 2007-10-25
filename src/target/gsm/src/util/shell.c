@@ -152,6 +152,8 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	case GSMD_SMS_LIST:
 	case GSMD_SMS_READ:
 		sms = (struct gsmd_sms_list *) ((void *) gmh + sizeof(*gmh));
+		if(sms->payload.is_voicemail)
+			printf("it's a voicemail \n");
 		printf("%s message %i from/to %s%s, at %i%i-%i%i-%i%i "
 				"%i%i:%i%i:%i%i, GMT%c%i\n",
 				msgtype[sms->stat], sms->index,
