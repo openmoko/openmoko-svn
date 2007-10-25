@@ -458,6 +458,8 @@ static void neo_init(int ram_size, int vga_ram_size, int boot_device,
                     initrd_filename, 0x49e, S3C_RAM_BASE);
 #endif
     neo_reset(s);
+
+    dpy_resize(ds, 480, 640);
 }
 
 QEMUMachine neo1973_machine = {
