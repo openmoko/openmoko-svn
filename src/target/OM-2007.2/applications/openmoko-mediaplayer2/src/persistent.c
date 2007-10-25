@@ -49,6 +49,7 @@ struct _omp_config omp_default_config =
 	FALSE,                      // shuffle
 	OMP_REPEAT_OFF,             // repeat_mode
 	TRUE,                       // resume_playback
+	10000,                      // seek_distance
 	10000,                      // prev_track_treshold
 	TRUE,                       // show_numbers_in_pl
 	500000,                     // pulsesink_buffer_time
@@ -66,7 +67,7 @@ struct _omp_config *omp_config = NULL;    ///< Global and persistent configurati
 struct _omp_session *omp_session = NULL;  ///< Global and persistent session data
 
 /// The GConf instance we'll use
-GConfClient *omp_gconf_client;
+GConfClient *omp_gconf_client = NULL;
 
 
 
@@ -77,7 +78,6 @@ static void
 omp_config_gconf_notification(GConfClient *client, guint cnxn_id, GConfEntry *entry, gpointer user_data)
 {
 	GConfValue *value;
-	gboolean v_bool;
 
 	value = gconf_entry_get_value(entry);
 
@@ -85,7 +85,6 @@ omp_config_gconf_notification(GConfClient *client, guint cnxn_id, GConfEntry *en
 	{
 		case OMP_CONFIG_SHUFFLE:
 		{
-			// Update value in config struct and submit new state to the UI
 			omp_config->shuffle = gconf_value_get_bool(value);
 			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED, omp_config->shuffle);
 			break;
@@ -93,7 +92,6 @@ omp_config_gconf_notification(GConfClient *client, guint cnxn_id, GConfEntry *en
 
 		case OMP_CONFIG_REPEAT_MODE:
 		{
-			// Update value in config struct and submit new state to the UI
 			omp_config->repeat_mode = gconf_value_get_int(value);
 			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED, omp_config->repeat_mode);
 			break;
@@ -102,60 +100,77 @@ omp_config_gconf_notification(GConfClient *client, guint cnxn_id, GConfEntry *en
 		case OMP_CONFIG_RESUME_PLAYBACK:
 		{
 			omp_config->resume_playback = gconf_value_get_bool(value);
+			// No notification needed, value is used on demand
+			break;
+		}
+
+		case OMP_CONFIG_SEEK_DISTANCE:
+		{
+			omp_config->seek_distance = gconf_value_get_int(value);
+			// No notification needed, value is used on demand
 			break;
 		}
 
 		case OMP_CONFIG_PREV_TRACK_TRESHOLD:
 		{
 			omp_config->prev_track_treshold = gconf_value_get_int(value);
+			// No notification needed, value is used on demand
 			break;
 		}
 
 		case OMP_CONFIG_SHOW_NUMBERS_IN_PL:
 		{
 			omp_config->show_numbers_in_pl = gconf_value_get_bool(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_SHOW_NUMBERS_IN_PL_CHANGED, omp_config->show_numbers_in_pl);
 			break;
 		}
 
 		case OMP_CONFIG_MAIN_UI_SHOW_COVER:
 		{
 			omp_config->main_ui_show_cover = gconf_value_get_bool(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_UI_SHOW_COVER_CHANGED, omp_config->main_ui_show_cover);
 			break;
 		}
 
 		case OMP_CONFIG_MAIN_UI_LABEL1:
 		{
 			omp_config->main_ui_label1 = gconf_value_get_int(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_LABEL1_TYPE_CHANGED, omp_config->main_ui_label1);
 			break;
 		}
 
 		case OMP_CONFIG_MAIN_UI_LABEL2:
 		{
 			omp_config->main_ui_label2 = gconf_value_get_int(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_LABEL2_TYPE_CHANGED, omp_config->main_ui_label2);
 			break;
 		}
 
 		case OMP_CONFIG_MAIN_UI_LABEL3:
 		{
 			omp_config->main_ui_label3 = gconf_value_get_int(value);
+			g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_LABEL3_TYPE_CHANGED, omp_config->main_ui_label3);
 			break;
 		}
 
 		case OMP_CONFIG_MIN_GESTURE_RADIUS:
 		{
 			omp_config->min_gesture_radius = gconf_value_get_int(value);
+			// No notification needed, value is used on demand
 			break;
 		}
 
 		case OMP_CONFIG_GESTURE_REPEAT_TRESH:
 		{
 			omp_config->gesture_repeat_tresh = gconf_value_get_int(value);
+			// No notification needed, value is used on demand
 			break;
 		}
 
 		case OMP_CONFIG_GESTURE_REPEAT_INTV:
 		{
 			omp_config->gesture_repeat_intv = gconf_value_get_int(value);
+			// No notification needed, value is used on demand
 			break;
 		}
 	}
@@ -189,6 +204,26 @@ omp_config_init()
 		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
 		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
 
+	g_signal_new(OMP_EVENT_CONFIG_MAIN_UI_SHOW_COVER_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+	g_signal_new(OMP_EVENT_CONFIG_SHOW_NUMBERS_IN_PL_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__BOOLEAN, G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+
+	g_signal_new(OMP_EVENT_CONFIG_MAIN_LABEL1_TYPE_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+	g_signal_new(OMP_EVENT_CONFIG_MAIN_LABEL2_TYPE_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
+	g_signal_new(OMP_EVENT_CONFIG_MAIN_LABEL3_TYPE_CHANGED,
+		G_TYPE_OBJECT, G_SIGNAL_RUN_FIRST, 0, 0, NULL,
+		g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT);
+
 	// Set up GConf, fetch default values and attach notification handler
 	omp_gconf_client = gconf_client_get_default();
 	gconf_client_add_dir(omp_gconf_client, OMP_GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
@@ -216,6 +251,11 @@ omp_config_init()
 		gconf_client_get_bool(omp_gconf_client, OMP_GCONF_PATH "/resume_playback", NULL);
 	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/resume_playback",
 		omp_config_gconf_notification, (gpointer)OMP_CONFIG_RESUME_PLAYBACK, NULL, NULL);
+
+	omp_config->prev_track_treshold =
+		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/seek_distance", NULL);
+	gconf_client_notify_add(omp_gconf_client, OMP_GCONF_PATH "/seek_distance",
+		omp_config_gconf_notification, (gpointer)OMP_CONFIG_SEEK_DISTANCE, NULL, NULL);
 
 	omp_config->prev_track_treshold =
 		gconf_client_get_int(omp_gconf_client, OMP_GCONF_PATH "/prev_track_treshold", NULL);
@@ -269,7 +309,7 @@ omp_config_init()
 void
 omp_config_free()
 {
-	g_object_unref(G_OBJECT(omp_gconf_client));
+	if (omp_gconf_client) g_object_unref(G_OBJECT(omp_gconf_client));
 	g_free(omp_config);
 }
 
@@ -309,6 +349,15 @@ guint
 omp_config_get_repeat_mode()
 {
 	return omp_config->repeat_mode;
+}
+
+/**
+ * Returns amount of milliseconds the playback engine should seek on FFWD/REW'ing
+ */
+guint
+omp_config_get_seek_distance()
+{
+	return omp_config->seek_distance;
 }
 
 /**
@@ -372,6 +421,33 @@ guint
 omp_config_get_main_ui_label3()
 {
 	return omp_config->main_ui_label3;
+}
+
+/**
+ * Returns the minimum length of a gesture stroke in order to consider it a valid gesture
+ */
+guint
+omp_config_get_min_gesture_radius()
+{
+	return omp_config->min_gesture_radius;
+}
+
+/**
+ * Returns the time after which a gesture's action will be repeated for as long as the finger is down
+ */
+guint
+omp_config_get_gesture_repeat_tresh()
+{
+	return omp_config->gesture_repeat_tresh;
+}
+
+/**
+ * Returns the interval at which a gesture's action will be repeated
+ */
+guint
+omp_config_get_gesture_repeat_intv()
+{
+	return omp_config->gesture_repeat_intv;
 }
 
 /**

@@ -418,7 +418,7 @@ omp_playback_set_volume(guint volume)
 	// Sanity check and failure recovery
 	if (volume > 100)
 	{
-		g_warning("Attempted to set invalid volume!");
+		g_warning("Attempted to set invalid volume!\n");
 		volume = 100;
 	}
 

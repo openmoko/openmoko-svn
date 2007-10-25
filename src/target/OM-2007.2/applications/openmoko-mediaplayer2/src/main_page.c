@@ -28,22 +28,26 @@
 #  include "config.h"
 #endif
 
+#include <math.h>
+
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <glib/gi18n.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
+#include "guitools.h"
 #include "main_page.h"
 #include "main.h"
-#include "guitools.h"
 #include "playlist.h"
 #include "playback.h"
 #include "persistent.h"
 
+// This is the amount the cursor must have moved in either direction to be considered moving
+// If we don't do this then it will constantly trigger gesture recognition due to jitter on the touchscreen
+#define OMP_MAIN_MIN_CURSOR_DELTA 3
 
 
-#include <math.h>
 
 /// Contains all main window widgets that need to be changeable
 struct
@@ -63,7 +67,7 @@ struct
 	GtkWidget *play_pause_button_image;
 	GtkWidget *shuffle_button_image;
 	GtkWidget *repeat_button_image;
-} main_widgets;
+} omp_main_widgets;
 
 GtkWidget *omp_main_window = NULL;
 
@@ -99,16 +103,19 @@ void omp_main_update_track_change(gpointer instance, gpointer user_data);
 void omp_main_update_track_info_changed(gpointer instance, guint track_id, gpointer user_data);
 void omp_main_update_shuffle_state(gpointer instance, gboolean state, gpointer user_data);
 void omp_main_update_repeat_mode(gpointer instance, guint mode, gpointer user_data);
+void omp_main_update_show_cover_art(gpointer instance, gboolean flag, gpointer user_data);
 void omp_main_update_status_change(gpointer instance, gpointer user_data);
 void omp_main_update_track_position(gpointer instance, gpointer user_data);
 void omp_main_update_volume(gpointer instance, gpointer user_data);
+void omp_main_update_label_type(gpointer instance, guint new_type, gpointer user_data);
 
 
 
 /**
  * Self-explanatory :)
  */
-gint min(gint a, gint b)
+gint
+min(gint a, gint b)
 {
 	return (a > b) ? b : a;
 }
@@ -116,9 +123,35 @@ gint min(gint a, gint b)
 /**
  * Self-explanatory :)
  */
-gint max(gint a, gint b)
+gint
+max(gint a, gint b)
 {
 	return (a > b) ? a : b;
+}
+
+/**
+ * Find length of vector a+ib using the alpha min + beta max approximation
+ * @param a X dimension of vector (real)
+ * @param b Y dimension of vector (imaginary)
+ * @return Length of vector a+ib
+ * @note We use this approximation because a) finger movement is never more precise than our approximation;
+ * @note b) we need speed and sqrt(a^2 + b^2) is too slow without an FPU while providing unnecessary precision
+ */
+guint
+approx_radius(gint a, gint b)
+{
+	guint a_abs, b_abs, a_max, b_min;
+
+	a_abs = abs(a);
+	b_abs = abs(b);
+
+	a_max = max(a_abs, b_abs);
+	b_min = min(a_abs, b_abs);
+
+	// Formula is |a+ib| = alpha*a_max + beta*b_min
+	// We use alpha=15/16 and beta=15/32
+
+	return ((a_max*15) >> 4) + ((b_min*15) >> 5);
 }
 
 /**
@@ -128,10 +161,10 @@ void
 omp_main_expand_clicked(GtkWidget *widget, gpointer data)
 {
 	// Toggle visibility of extended controls
-	if (GTK_WIDGET_VISIBLE(main_widgets.extended_controls))
-		gtk_widget_hide(main_widgets.extended_controls);
+	if (GTK_WIDGET_VISIBLE(omp_main_widgets.extended_controls))
+		gtk_widget_hide(omp_main_widgets.extended_controls);
 	else
-		gtk_widget_show(main_widgets.extended_controls);
+		gtk_widget_show(omp_main_widgets.extended_controls);
 }
 
 /**
@@ -140,7 +173,7 @@ omp_main_expand_clicked(GtkWidget *widget, gpointer data)
 void
 omp_main_fast_forward_clicked(GtkWidget *widget, gpointer data)
 {
-	omp_playback_set_track_position(omp_playback_get_track_position()+BUTTON_SEEK_DISTANCE);
+	omp_playback_set_track_position(omp_playback_get_track_position()+omp_config_get_seek_distance());
 }
 
 /**
@@ -149,7 +182,7 @@ omp_main_fast_forward_clicked(GtkWidget *widget, gpointer data)
 void
 omp_main_rewind_clicked(GtkWidget *widget, gpointer data)
 {
-	omp_playback_set_track_position(omp_playback_get_track_position()-BUTTON_SEEK_DISTANCE);
+	omp_playback_set_track_position(omp_playback_get_track_position()-omp_config_get_seek_distance());
 }
 
 /**
@@ -159,13 +192,9 @@ void
 omp_main_play_pause_clicked(GtkWidget *widget, gpointer data)
 {
 	if (omp_playback_get_state() != OMP_PLAYBACK_STATE_PLAYING)
-	{
 		omp_playback_play();
-
-	} else {
-
+	else
 		omp_playback_pause();
-	}
 }
 
 /**
@@ -188,10 +217,7 @@ omp_main_repeat_clicked(GtkWidget *widget, gpointer data)
 	// Cycle through all available modes
 	mode = omp_config_get_repeat_mode()+1;
 
-	if (mode == OMP_REPEAT_COUNT)
-	{
-		mode = 0;
-	}
+	if (mode >= OMP_REPEAT_COUNT) mode = 0;
 
 	omp_config_set_repeat_mode(mode);
 }
@@ -213,21 +239,19 @@ omp_main_preferences_clicked(GtkWidget *widget, gpointer data)
 void
 omp_main_gesture_identify(guint x, guint y)
 {
-	#define MIN_RADIUS 15
-
 	gint delta_x, delta_y, gamma;
 
 	// Perform rect->polar conversion of the differential cursor movement
 	delta_x = x - main_gesture_data.x_origin;
 	delta_y = y - main_gesture_data.y_origin;
 
-	main_gesture_data.radius = sqrt(delta_x * delta_x + delta_y * delta_y);
+	main_gesture_data.radius = approx_radius(delta_x, delta_y);
 
 	// angle = arccos(gamma) but arccos() is too slow to compute -> range comparison
 	// We shift the comma by 3 digits so we can use integer math
 	gamma = delta_x*1000 / main_gesture_data.radius;
 
-	if (main_gesture_data.radius > MIN_RADIUS)
+	if (main_gesture_data.radius > omp_config_get_min_gesture_radius())
 	{
 
 		// Determine direction of movement
@@ -311,9 +335,6 @@ omp_main_gesture_repeat_callback(gpointer data)
 void
 omp_main_gesture_check_repeat()
 {
-	#define REPEAT_TIME_TRESHOLD_USEC 0750000
-	#define REPEAT_INTERVAL_MSEC 1000
-
 	GTimeVal current_time, delta_t;
 
 	if (!main_gesture_data.repeating)
@@ -323,10 +344,10 @@ omp_main_gesture_check_repeat()
 		delta_t.tv_sec  = current_time.tv_sec  - main_gesture_data.start_time.tv_sec;
 		delta_t.tv_usec = current_time.tv_usec - main_gesture_data.start_time.tv_usec;
 
-		if (delta_t.tv_usec >= REPEAT_TIME_TRESHOLD_USEC)
+		if (delta_t.tv_usec >= omp_config_get_gesture_repeat_tresh()*1000)
 		{
 			main_gesture_data.repeating = TRUE;
-			g_timeout_add(REPEAT_INTERVAL_MSEC, omp_main_gesture_repeat_callback, NULL);
+			g_timeout_add(omp_config_get_gesture_repeat_intv(), omp_main_gesture_repeat_callback, NULL);
 		}
 
 	}
@@ -338,7 +359,6 @@ omp_main_gesture_check_repeat()
 gboolean
 omp_main_pointer_moved(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-	#define MAX_DELTA_LAST 3
 	gint delta_last_x, delta_last_y;
 
 	if (main_gesture_data.pressed)
@@ -347,7 +367,7 @@ omp_main_pointer_moved(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 		delta_last_y = abs((guint)event->y - main_gesture_data.last_y);
 
 		// Did the cursor move a substantial amount?
-		if ( (delta_last_x > MAX_DELTA_LAST) && (delta_last_y > MAX_DELTA_LAST) )
+		if ( (delta_last_x > OMP_MAIN_MIN_CURSOR_DELTA) && (delta_last_y > OMP_MAIN_MIN_CURSOR_DELTA) )
 		{
 			// Yes it did, so it's most likely being moved
 			main_gesture_data.cursor_idle = FALSE;
@@ -420,8 +440,8 @@ omp_main_reset_ui(gpointer instance, gpointer user_data)
 
 	if (omp_config_get_main_ui_show_cover())
 	{
-		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.cover_image), "no_cover", -1);
-		gtk_widget_queue_draw(main_widgets.cover_image);	// Re-draw the cover as it might have been used as video display before
+		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.cover_image), "no_cover", -1);
+		gtk_widget_queue_draw(omp_main_widgets.cover_image);	// Re-draw the cover as it might have been used as video display before
 	}
 
 	// Determine which label we can use for showing the "No track information" line
@@ -430,34 +450,34 @@ omp_main_reset_ui(gpointer instance, gpointer user_data)
 	// however not doing this saves us a couple cycles on the cost of readability :)
 	if (omp_config_get_main_ui_label2() != OMP_MAIN_LABEL_HIDDEN)
 	{
-		gtk_label_set_text(GTK_LABEL(main_widgets.label1), NULL);
-		gtk_label_set_text(GTK_LABEL(main_widgets.label2), _("No track information"));
-		gtk_label_set_text(GTK_LABEL(main_widgets.label3), NULL);
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.label1), NULL);
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.label2), _("No track information"));
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.label3), NULL);
 
 	} else {
 
 		if (omp_config_get_main_ui_label1() != OMP_MAIN_LABEL_HIDDEN)
 		{
-			gtk_label_set_text(GTK_LABEL(main_widgets.label1), NULL);
-			gtk_label_set_text(GTK_LABEL(main_widgets.label2), NULL);
-			gtk_label_set_text(GTK_LABEL(main_widgets.label3), _("No track information"));
+			gtk_label_set_text(GTK_LABEL(omp_main_widgets.label1), NULL);
+			gtk_label_set_text(GTK_LABEL(omp_main_widgets.label2), NULL);
+			gtk_label_set_text(GTK_LABEL(omp_main_widgets.label3), _("No track information"));
 		} else {
-			gtk_label_set_text(GTK_LABEL(main_widgets.label1), _("No track information"));
-			gtk_label_set_text(GTK_LABEL(main_widgets.label2), NULL);
-			gtk_label_set_text(GTK_LABEL(main_widgets.label3), NULL);
+			gtk_label_set_text(GTK_LABEL(omp_main_widgets.label1), _("No track information"));
+			gtk_label_set_text(GTK_LABEL(omp_main_widgets.label2), NULL);
+			gtk_label_set_text(GTK_LABEL(omp_main_widgets.label3), NULL);
 		}
 
 	}
 
 	caption = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_NUM, 0, 0);
-	gtk_label_set_text(GTK_LABEL(main_widgets.track_number_label), caption);
+	gtk_label_set_text(GTK_LABEL(omp_main_widgets.track_number_label), caption);
 	g_free(caption);
 
 	caption = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME, 0, 0, 0, 0);
-	gtk_label_set_text(GTK_LABEL(main_widgets.time_label), caption);
+	gtk_label_set_text(GTK_LABEL(omp_main_widgets.time_label), caption);
 	g_free(caption);
 
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(main_widgets.time_bar), 0);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(omp_main_widgets.time_bar), 0);
 }
 
 /**
@@ -479,17 +499,18 @@ omp_main_top_widgets_create(GtkBox *parent)
 	gtk_container_add(GTK_CONTAINER(frame), hbox);
 
 	// Pack the image into an eventbox (for video playback) and that into another frame to give it a black border
-	main_widgets.cover_eventbox = gtk_event_box_new();
+	omp_main_widgets.cover_eventbox = gtk_event_box_new();
 
-	main_widgets.cover_image = gtk_image_new();
-	gtk_widget_set_name(GTK_WIDGET(main_widgets.cover_image), "omp-main-top-cover");
-	gtk_container_add(GTK_CONTAINER(main_widgets.cover_eventbox), main_widgets.cover_image);
+	omp_main_widgets.cover_image = gtk_image_new();
+	gtk_widget_set_name(GTK_WIDGET(omp_main_widgets.cover_image), "omp-main-top-cover");
+	gtk_container_add(GTK_CONTAINER(omp_main_widgets.cover_eventbox), omp_main_widgets.cover_image);
 
-	main_widgets.cover_frame = widget_wrap(main_widgets.cover_eventbox, "omp-main-top-cover");
-	gtk_frame_set_shadow_type(GTK_FRAME(main_widgets.cover_frame), GTK_SHADOW_IN);
-	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(main_widgets.cover_frame), FALSE, FALSE, 0);
+	omp_main_widgets.cover_frame = widget_wrap(omp_main_widgets.cover_eventbox, "omp-main-top-cover");
+	gtk_frame_set_shadow_type(GTK_FRAME(omp_main_widgets.cover_frame), GTK_SHADOW_IN);
+	gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(omp_main_widgets.cover_frame), FALSE, FALSE, 0);
 
 	// Add the placeholder that makes sure the vbox retains its height even when the cover image is hidden
+	// We do this so the background image is still present and can be used for the labels
 	image = gtk_image_new();
 	gtk_widget_set_name(GTK_WIDGET(image), "omp-main-top-cover-placeholder");
 	gtk_image_set_from_stock(GTK_IMAGE(image), "image", -1);
@@ -505,18 +526,18 @@ omp_main_top_widgets_create(GtkBox *parent)
 	alignment = gtk_alignment_new(0, 0, 1, 1);
 	gtk_box_pack_start(GTK_BOX(vbox), alignment, FALSE, FALSE, 0);
 
-	main_widgets.label1 = gtk_label_new(NULL);
-	gtk_widget_set_name(GTK_WIDGET(main_widgets.label1), "omp-main-top-label1");
-	gtk_label_set_ellipsize(GTK_LABEL(main_widgets.label1), PANGO_ELLIPSIZE_END);
-	gtk_misc_set_alignment(GTK_MISC(main_widgets.label1), 0, 0);
-	main_widgets.label1_frame = widget_wrap(main_widgets.label1, NULL);
-	gtk_box_pack_start(GTK_BOX(vbox), main_widgets.label1_frame, FALSE, FALSE, 0);
+	omp_main_widgets.label1 = gtk_label_new(NULL);
+	gtk_widget_set_name(GTK_WIDGET(omp_main_widgets.label1), "omp-main-top-label1");
+	gtk_label_set_ellipsize(GTK_LABEL(omp_main_widgets.label1), PANGO_ELLIPSIZE_END);
+	gtk_misc_set_alignment(GTK_MISC(omp_main_widgets.label1), 0, 0);
+	omp_main_widgets.label1_frame = widget_wrap(omp_main_widgets.label1, NULL);
+	gtk_box_pack_start(GTK_BOX(vbox), omp_main_widgets.label1_frame, FALSE, FALSE, 0);
 
-	main_widgets.label2 = gtk_label_new(NULL);
-	gtk_widget_set_name(GTK_WIDGET(main_widgets.label2), "omp-main-top-label2");
-	gtk_label_set_ellipsize(GTK_LABEL(main_widgets.label2), PANGO_ELLIPSIZE_END);
-	gtk_misc_set_alignment(GTK_MISC(main_widgets.label2), 0, 0);
-	label = widget_wrap(main_widgets.label2, NULL);
+	omp_main_widgets.label2 = gtk_label_new(NULL);
+	gtk_widget_set_name(GTK_WIDGET(omp_main_widgets.label2), "omp-main-top-label2");
+	gtk_label_set_ellipsize(GTK_LABEL(omp_main_widgets.label2), PANGO_ELLIPSIZE_END);
+	gtk_misc_set_alignment(GTK_MISC(omp_main_widgets.label2), 0, 0);
+	label = widget_wrap(omp_main_widgets.label2, NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
 	alignment = gtk_alignment_new(0, 0, 1, 1);
@@ -524,23 +545,23 @@ omp_main_top_widgets_create(GtkBox *parent)
 
 
 	// Title label
-	main_widgets.label3 = gtk_label_new(NULL);
-	gtk_widget_set_name(GTK_WIDGET(main_widgets.label3), "omp-main-top-label3");
-	gtk_label_set_ellipsize(GTK_LABEL(main_widgets.label3), PANGO_ELLIPSIZE_END);
-	label3 = widget_wrap(main_widgets.label3, NULL);
+	omp_main_widgets.label3 = gtk_label_new(NULL);
+	gtk_widget_set_name(GTK_WIDGET(omp_main_widgets.label3), "omp-main-top-label3");
+	gtk_label_set_ellipsize(GTK_LABEL(omp_main_widgets.label3), PANGO_ELLIPSIZE_END);
+	label3 = widget_wrap(omp_main_widgets.label3, NULL);
 	gtk_box_pack_start(GTK_BOX(parent), label3, FALSE, FALSE, 0);
 
 
 	// Show all widgets, then hide the ones we don't want visible
 	gtk_widget_show_all(GTK_WIDGET(frame));
 
-	if (omp_config_get_main_ui_label1() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(main_widgets.label1_frame);
-	if (omp_config_get_main_ui_label2() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(main_widgets.label2);
+	if (omp_config_get_main_ui_label1() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(omp_main_widgets.label1_frame);
+	if (omp_config_get_main_ui_label2() == OMP_MAIN_LABEL_HIDDEN) gtk_widget_hide(omp_main_widgets.label2);
 
 	if (omp_config_get_main_ui_label3() != OMP_MAIN_LABEL_HIDDEN) gtk_widget_show_all(label3);
 
 	if (!omp_config_get_main_ui_show_cover())
-		gtk_widget_hide(main_widgets.cover_frame);
+		gtk_widget_hide(omp_main_widgets.cover_frame);
 }
 
 /**
@@ -565,15 +586,15 @@ omp_main_bottom_widgets_create(GtkBox *parent)
 	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
 
 	// Playlist counter label
-	main_widgets.track_number_label = gtk_label_new(NULL);
-	gtk_widget_set_name(main_widgets.track_number_label, "omp-main-btm-info-bar");
-	label = widget_wrap(main_widgets.track_number_label, NULL);
+	omp_main_widgets.track_number_label = gtk_label_new(NULL);
+	gtk_widget_set_name(omp_main_widgets.track_number_label, "omp-main-btm-info-bar");
+	label = widget_wrap(omp_main_widgets.track_number_label, NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
 	// Track time label
-	main_widgets.time_label = gtk_label_new(NULL);
-	gtk_widget_set_name(main_widgets.time_label, "omp-main-btm-info-bar");
-	label = widget_wrap(main_widgets.time_label, NULL);
+	omp_main_widgets.time_label = gtk_label_new(NULL);
+	gtk_widget_set_name(omp_main_widgets.time_label, "omp-main-btm-info-bar");
+	label = widget_wrap(omp_main_widgets.time_label, NULL);
 	gtk_box_pack_end(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
 	// Track time icon
@@ -585,9 +606,9 @@ omp_main_bottom_widgets_create(GtkBox *parent)
 
 
 	// Progress bar
-	main_widgets.time_bar = gtk_progress_bar_new();
-	gtk_widget_set_name(main_widgets.time_bar, "omp-main-btm-progressbar");
-	gtk_box_pack_start(GTK_BOX(main_vbox), main_widgets.time_bar, FALSE, FALSE, 0);
+	omp_main_widgets.time_bar = gtk_progress_bar_new();
+	gtk_widget_set_name(omp_main_widgets.time_bar, "omp-main-btm-progressbar");
+	gtk_box_pack_start(GTK_BOX(main_vbox), omp_main_widgets.time_bar, FALSE, FALSE, 0);
 
 
 	// Button container - the event box is only used to paint the background
@@ -615,7 +636,7 @@ omp_main_bottom_widgets_create(GtkBox *parent)
 
 	// Play/pause button
 	button = button_create_with_image("omp-main-btm-buttons", "play",
-		&main_widgets.play_pause_button_image,
+		&omp_main_widgets.play_pause_button_image,
 		G_CALLBACK(omp_main_play_pause_clicked));
 	button = widget_wrap(button, "omp-main-btm-button-padding-xy");
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -628,20 +649,20 @@ omp_main_bottom_widgets_create(GtkBox *parent)
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
 	// Volume indicator
-	main_widgets.volume_image = gtk_image_new();
-	gtk_widget_set_name(main_widgets.volume_image, "omp-main-btm-volume");
-	icon = widget_wrap(main_widgets.volume_image, NULL);
+	omp_main_widgets.volume_image = gtk_image_new();
+	gtk_widget_set_name(omp_main_widgets.volume_image, "omp-main-btm-volume");
+	icon = widget_wrap(omp_main_widgets.volume_image, NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
 
 
 	// Button container - second row
-	main_widgets.extended_controls = gtk_event_box_new();
-	gtk_widget_set_name(main_widgets.extended_controls, "omp-main-btm-button-box2");
-	gtk_box_pack_start(GTK_BOX(main_vbox), main_widgets.extended_controls, FALSE, FALSE, 0);
+	omp_main_widgets.extended_controls = gtk_event_box_new();
+	gtk_widget_set_name(omp_main_widgets.extended_controls, "omp-main-btm-button-box2");
+	gtk_box_pack_start(GTK_BOX(main_vbox), omp_main_widgets.extended_controls, FALSE, FALSE, 0);
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	btn_box = widget_wrap(hbox, "omp-main-btm-button-box2");
-	gtk_container_add(GTK_CONTAINER(main_widgets.extended_controls), btn_box);
+	gtk_container_add(GTK_CONTAINER(omp_main_widgets.extended_controls), btn_box);
 
 	// Expand button placeholder
 	image = gtk_image_new();
@@ -652,14 +673,14 @@ omp_main_bottom_widgets_create(GtkBox *parent)
 
 	// Shuffle button
 	button = button_create_with_image("omp-main-btm-buttons", "shuffle_off",
-		&main_widgets.shuffle_button_image,
+		&omp_main_widgets.shuffle_button_image,
 		G_CALLBACK(omp_main_shuffle_clicked));
 	button = widget_wrap(button, "omp-main-btm-button-padding-xy");
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
 	// Play/pause button
 	button = button_create_with_image("omp-main-btm-buttons", "repeat_off",
-		&main_widgets.repeat_button_image,
+		&omp_main_widgets.repeat_button_image,
 		G_CALLBACK(omp_main_repeat_clicked));
 	button = widget_wrap(button, "omp-main-btm-button-padding-xy");
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -681,7 +702,7 @@ omp_main_bottom_widgets_create(GtkBox *parent)
 
 	// Show all widgets except the extended controls
 	gtk_widget_show_all(main_vbox);
-	gtk_widget_hide(main_widgets.extended_controls);
+	gtk_widget_hide(omp_main_widgets.extended_controls);
 }
 
 /**
@@ -723,6 +744,18 @@ omp_main_page_create()
 
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED,
 		G_CALLBACK(omp_main_update_repeat_mode), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_UI_SHOW_COVER_CHANGED,
+		G_CALLBACK(omp_main_update_show_cover_art), NULL);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_LABEL1_TYPE_CHANGED,
+		G_CALLBACK(omp_main_update_label_type), (gpointer)1);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_LABEL2_TYPE_CHANGED,
+		G_CALLBACK(omp_main_update_label_type), (gpointer)2);
+
+	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_CONFIG_MAIN_LABEL3_TYPE_CHANGED,
+		G_CALLBACK(omp_main_update_label_type), (gpointer)3);
 
 	// Set up playback signal handlers
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_RESET,
@@ -768,13 +801,13 @@ void
 omp_main_set_label(omp_main_label_type label_type, gchar *caption)
 {
 	if (omp_config_get_main_ui_label1() == label_type)
-		gtk_label_set_text(GTK_LABEL(main_widgets.label1), caption);
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.label1), caption);
 
 	if (omp_config_get_main_ui_label2() == label_type)
-		gtk_label_set_text(GTK_LABEL(main_widgets.label2), caption);
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.label2), caption);
 
 	if (omp_config_get_main_ui_label3() == label_type)
-		gtk_label_set_text(GTK_LABEL(main_widgets.label3), caption);
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.label3), caption);
 }
 
 /**
@@ -783,10 +816,10 @@ omp_main_set_label(omp_main_label_type label_type, gchar *caption)
 gulong
 omp_main_get_video_window()
 {
-	if (GTK_WIDGET_NO_WINDOW(main_widgets.cover_eventbox))
+	if (GTK_WIDGET_NO_WINDOW(omp_main_widgets.cover_eventbox))
 		g_error(_("Video display widget has no window!\n"));
 
-	return GDK_WINDOW_XWINDOW(main_widgets.cover_eventbox->window);
+	return GDK_WINDOW_XWINDOW(omp_main_widgets.cover_eventbox->window);
 }
 
 /**
@@ -820,12 +853,12 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 	// Restore and invalidate default cover
 	if (omp_config_get_main_ui_show_cover())
 	{
-		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.cover_image), "no_cover", -1);
-		gtk_widget_queue_draw(main_widgets.cover_image);	// Re-draw the default cover
+		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.cover_image), "no_cover", -1);
+		gtk_widget_queue_draw(omp_main_widgets.cover_image);	// Re-draw the default cover
 	}
 
 	// Set preliminary artist/title strings (updated on incoming metadata)
-	omp_playlist_get_track_info(omp_playlist_current_track_id, &artist, &title, &track_length);
+	omp_playlist_get_track_info(-1, &artist, &title, &track_length);
 	omp_main_set_label(OMP_MAIN_LABEL_ARTIST, artist);
 	omp_main_set_label(OMP_MAIN_LABEL_TITLE, title);
 	if (artist) g_free(artist);
@@ -843,7 +876,7 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 		// Update label
 		track_id = (omp_playlist_track_count) ? omp_playlist_current_track_id+1 : 0;
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_NUM, track_id, omp_playlist_track_count);
-		gtk_label_set_text(GTK_LABEL(main_widgets.track_number_label), text);
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.track_number_label), text);
 		g_free(text);
 	}
 
@@ -857,10 +890,11 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
 			(guint)(track_position / 60000), (guint)(track_position/1000) % 60,
 			(guint)(track_length / 60000), (guint)(track_length/1000) % 60);
-		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
+
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.time_label), text);
 		g_free(text);
 
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(main_widgets.time_bar), (gdouble)track_position/(gdouble)track_length);
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(omp_main_widgets.time_bar), (gdouble)track_position/(gdouble)track_length);
 	}
 }
 
@@ -880,11 +914,9 @@ void
 omp_main_update_shuffle_state(gpointer instance, gboolean state, gpointer user_data)
 {
 	if (state)
-	{
-		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.shuffle_button_image), "shuffle_on", -1);
-	} else {
-		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.shuffle_button_image), "shuffle_off", -1);
-	}
+		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.shuffle_button_image), "shuffle_on", -1);
+	else
+		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.shuffle_button_image), "shuffle_off", -1);
 }
 
 /**
@@ -896,20 +928,32 @@ omp_main_update_repeat_mode(gpointer instance, guint mode, gpointer user_data)
 	switch (mode)
 	{
 		case OMP_REPEAT_OFF:
-			gtk_image_set_from_stock(GTK_IMAGE(main_widgets.repeat_button_image), "repeat_off", -1);
+			gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.repeat_button_image), "repeat_off", -1);
 			break;
 
 		case OMP_REPEAT_ONCE:
-			gtk_image_set_from_stock(GTK_IMAGE(main_widgets.repeat_button_image), "repeat_once", -1);
+			gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.repeat_button_image), "repeat_once", -1);
 			break;
 
 		case OMP_REPEAT_CURRENT:
-			gtk_image_set_from_stock(GTK_IMAGE(main_widgets.repeat_button_image), "repeat_current", -1);
+			gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.repeat_button_image), "repeat_current", -1);
 			break;
 
 		case OMP_REPEAT_ALL:
-			gtk_image_set_from_stock(GTK_IMAGE(main_widgets.repeat_button_image), "repeat_all", -1);
+			gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.repeat_button_image), "repeat_all", -1);
 	}
+}
+
+/**
+ * Updates the UI after the "show cover art" flag changed
+ */
+void
+omp_main_update_show_cover_art(gpointer instance, gboolean flag, gpointer user_data)
+{
+/*	if (flag)
+		gtk_widget_show(omp_main_widgets.cover_frame);
+	else
+		gtk_widget_hide(omp_main_widgets.cover_frame); */
 }
 
 /**
@@ -921,9 +965,9 @@ omp_main_update_status_change(gpointer instance, gpointer user_data)
 	// Update Play/Pause button pixmap
 	if (omp_playback_get_state() == OMP_PLAYBACK_STATE_PAUSED)
 	{
-		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.play_pause_button_image), "play", -1);
+		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.play_pause_button_image), "play", -1);
 	} else {
-		gtk_image_set_from_stock(GTK_IMAGE(main_widgets.play_pause_button_image), "pause", -1);
+		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.play_pause_button_image), "pause", -1);
 	}
 }
 
@@ -950,10 +994,11 @@ omp_main_update_track_position(gpointer instance, gpointer user_data)
 		text = g_strdup_printf(OMP_WIDGET_CAPTION_TRACK_TIME,
 			(guint)(track_position / 60000), (guint)(track_position/1000) % 60,
 			(guint)(track_length / 60000), (guint)(track_length/1000) % 60);
-		gtk_label_set_text(GTK_LABEL(main_widgets.time_label), text);
+
+		gtk_label_set_text(GTK_LABEL(omp_main_widgets.time_label), text);
 		g_free(text);
 
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(main_widgets.time_bar), (gdouble)track_position/(gdouble)track_length);
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(omp_main_widgets.time_bar), (gdouble)track_position/(gdouble)track_length);
 	}
 
 }
@@ -970,6 +1015,86 @@ omp_main_update_volume(gpointer instance, gpointer user_data)
 	volume = omp_playback_get_volume();
 
 	image = g_strdup_printf("volume%02d", volume/10);
-	gtk_image_set_from_stock(GTK_IMAGE(main_widgets.volume_image), image, -1);
+	gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.volume_image), image, -1);
 	g_free(image);
 }
+
+/**
+ * Updates the UI when the type of the first dynamic label changed
+ * @param instance Unused
+ * @param new_type The new type to set for the label
+ * @param user_data Contains the number of the label to update (1..3)
+ */
+void
+omp_main_update_label_type(gpointer instance, guint new_type, gpointer user_data)
+{
+	GtkWidget *label, *frame;
+	gchar *artist = NULL;
+	gchar *title = NULL;
+
+	g_return_if_fail( (user_data > 0) && (user_data < 4) );
+
+	switch ((gint)user_data)
+	{
+		case 1:
+		{
+			label = omp_main_widgets.label1;
+			frame = omp_main_widgets.label1_frame;
+			break;
+		}
+
+		case 2:
+		{
+			label = omp_main_widgets.label2;
+			frame = NULL;	// Can't be hidden
+			break;
+		}
+
+		case 3:
+		{
+			label = omp_main_widgets.label3;
+			frame = NULL;	// Can't be hidden
+			break;
+		}
+	}
+
+	// Fetch track information if needed
+	if ( (new_type != OMP_MAIN_LABEL_HIDDEN) && (new_type != OMP_MAIN_LABEL_EMPTY) )
+	 omp_playlist_get_track_info(-1, &artist, &title, NULL);
+
+	// Update label
+	switch ((omp_main_label_type)new_type)
+	{
+		case OMP_MAIN_LABEL_HIDDEN:
+		{
+			if (frame) gtk_widget_hide(frame);
+			break;
+		}
+
+		case OMP_MAIN_LABEL_EMPTY:
+		{
+			gtk_label_set_text(GTK_LABEL(label), NULL);
+			break;
+		}
+
+		case OMP_MAIN_LABEL_ARTIST:
+		{
+			gtk_label_set_text(GTK_LABEL(label), artist);
+			break;
+		}
+
+		case OMP_MAIN_LABEL_TITLE:
+		{
+			gtk_label_set_text(GTK_LABEL(label), title);
+			break;
+		}
+	}
+
+	if (artist) g_free(artist);
+	if (title) g_free(title);
+
+	// Make sure label is visible - it might have been hidden previously
+	if ( (frame) && (new_type != OMP_MAIN_LABEL_HIDDEN) )
+		gtk_widget_show(frame);
+}
+

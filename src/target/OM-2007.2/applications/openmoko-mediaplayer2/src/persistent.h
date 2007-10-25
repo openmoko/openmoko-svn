@@ -30,9 +30,16 @@
 #include "playlist.h"
 #include "main.h"
 
+// Configuratin data notification events
 #define OMP_EVENT_CONFIG_SHUFFLE_STATE_CHANGED "config_shuffle_state_changed"
 #define OMP_EVENT_CONFIG_REPEAT_MODE_CHANGED "config_repeat_mode_changed"
+#define OMP_EVENT_CONFIG_SHOW_NUMBERS_IN_PL_CHANGED "config_show_numbers_in_pl_changed"
+#define OMP_EVENT_CONFIG_MAIN_UI_SHOW_COVER_CHANGED "config_main_show_cover_changed"
+#define OMP_EVENT_CONFIG_MAIN_LABEL1_TYPE_CHANGED "config_main_label1_type_changed"
+#define OMP_EVENT_CONFIG_MAIN_LABEL2_TYPE_CHANGED "config_main_label2_type_changed"
+#define OMP_EVENT_CONFIG_MAIN_LABEL3_TYPE_CHANGED "config_main_label3_type_changed"
 
+// Session data notification events
 #define OMP_EVENT_SESSION_FILE_CHOOSER_PATH_CHANGED "session_file_chooser_path_changed"
 
 // Default path to open in the file chooser
@@ -60,6 +67,7 @@ struct _omp_config
 	gboolean shuffle;                 ///< Shuffle on/off
 	guint repeat_mode;                ///< Repeat mode @see omp_repeat_modes
 	gboolean resume_playback;         ///< Resume playback on startup where it left off?
+	gint seek_distance;               ///< Determines how many milliseconds the engine will seek when FFWD/REW'ing
 	guint prev_track_treshold;        ///< Amount of milliseconds a track must have been playing to jump back to track beginning on "prev track" event
 	gboolean show_numbers_in_pl;      ///< Show numbers in playlist?
 	gulong pulsesink_buffer_time;     ///< Value to set pulsesink's buffer-time property to
@@ -69,7 +77,7 @@ struct _omp_config
 	guint main_ui_label2;             ///< Contents of main UI's label #2
 	guint main_ui_label3;             ///< Contents of main UI's label #3
 	guint min_gesture_radius;         ///< If a gesture stroke's length is shorter than this the gesture is dismissed
-	guint gesture_repeat_tresh;       ///< If a gesture was made its action will be repeated if the finger is still down after this time (msec)
+	guint gesture_repeat_tresh;       ///< If a gesture was recognized its action will be repeated if the finger is still down after this time (msec)
 	guint gesture_repeat_intv;        ///< Gesture will be repeated every X milliseconds
 };
 
@@ -79,6 +87,7 @@ typedef enum
 	OMP_CONFIG_SHUFFLE,
 	OMP_CONFIG_REPEAT_MODE,
 	OMP_CONFIG_RESUME_PLAYBACK,
+	OMP_CONFIG_SEEK_DISTANCE,
 	OMP_CONFIG_PREV_TRACK_TRESHOLD,
 	OMP_CONFIG_SHOW_NUMBERS_IN_PL,
 	OMP_CONFIG_MAIN_UI_SHOW_COVER,
@@ -115,13 +124,19 @@ gboolean omp_config_get_shuffle_state();
 void omp_config_set_repeat_mode(guint mode);
 guint omp_config_get_repeat_mode();
 
+guint omp_config_get_seek_distance();
 guint omp_config_get_prev_track_treshold();
 gulong omp_config_get_pulsesink_buffer_time();
 gulong omp_config_get_pulsesink_latency_time();
+
 gboolean omp_config_get_main_ui_show_cover();
 guint omp_config_get_main_ui_label1();
 guint omp_config_get_main_ui_label2();
 guint omp_config_get_main_ui_label3();
+
+guint omp_config_get_min_gesture_radius();
+guint omp_config_get_gesture_repeat_tresh();
+guint omp_config_get_gesture_repeat_intv();
 
 void omp_session_init();
 void omp_session_free();

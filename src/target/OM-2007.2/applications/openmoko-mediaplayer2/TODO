@@ -24,3 +24,7 @@ Documentation:
 Playlist management features:
 	Search alphabetically
 	Jump to track
+	Sort music by BPM
+	Dynamic playlists:
+	  fetching songs from last.fm
+	  audioscrobbler recommendations

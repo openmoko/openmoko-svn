@@ -776,16 +776,16 @@ omp_playlist_load_current_track()
 
 /**
  * Retrieves a track's meta data if possible
- * @param track_id Track ID to get meta data of, starting at 0
+ * @param track_id Track ID to get meta data of, starting at 0; set to -1 to use current track
  * @param artist Destination for the artist string, can be NULL; must be freed after use
  * @param title Destination for the title string, can be NULL; must be freed after use
  * @param duration Destination for the track duration (in milliseconds), can be NULL
  * @todo List walking
  */
 void
-omp_playlist_get_track_info(guint track_id, gchar **artist, gchar **title, gulong *duration)
+omp_playlist_get_track_info(gint track_id, gchar **artist, gchar **title, gulong *duration)
 {
-	if (track_id == omp_playlist_current_track_id)
+	if ( (track_id == omp_playlist_current_track_id) || (track_id == -1) )
 	{
 		if (!omp_playlist_current_track) return;
 

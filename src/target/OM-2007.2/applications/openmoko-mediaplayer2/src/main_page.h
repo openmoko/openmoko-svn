@@ -33,9 +33,6 @@
 #define OMP_WIDGET_CAPTION_TRACK_NUM "%.3u / %.3u"
 #define OMP_WIDGET_CAPTION_VOLUME "%u%%"
 
-// Determines how many milliseconds the engine will seek if the FFWD/REW buttons are clicked
-#define BUTTON_SEEK_DISTANCE 10000
-
 
 
 /// Content types that can be assigned to the labels

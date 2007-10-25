@@ -38,6 +38,18 @@
     </schema>
 
     <schema>
+      <key>/schemas/apps/openmoko/mediaplayer/seek_distance</key>
+      <applyto>/apps/openmoko/mediaplayer/seek_distance</applyto>
+      <owner>openmoko-mediaplayer</owner>
+      <type>int</type>
+      <default>10000</default>
+      <locale name="C">
+        <short>Determines how many milliseconds the engine will seek when FFWD/REW'ing</short>
+        <long>Determines how many milliseconds the engine will seek when FFWD/REW'ing</long>
+      </locale>
+    </schema>
+
+    <schema>
       <key>/schemas/apps/openmoko/mediaplayer/prev_track_treshold</key>
       <applyto>/apps/openmoko/mediaplayer/prev_track_treshold</applyto>
       <owner>openmoko-mediaplayer</owner>
