@@ -4,8 +4,13 @@ plugindir = $(libdir)/gsmd
 
 gsmd-version.h:
 	echo -e '#ifndef GSMD_VERSION' \
-	'\n#define GSMD_VERSION "'`svnversion`'"' \
-	'\n#endif' > gsmd-version.h
+	'\n#define GSMD_VERSION "$(VERSION)" \\' > gsmd-version.h
+	if test -d .svn; then \
+	    echo -e '\t"+'`svnversion`'"' >> gsmd-version.h; \
+	else \
+	    echo -e '\t/* release version */' >> gsmd-version.h; \
+	fi
+	echo -e '#endif' >> gsmd-version.h
 
 BUILT_SOURCES = gsmd-version.h
 sbin_PROGRAMS = gsmd
