@@ -222,11 +222,7 @@ int lgsm_send_simple(struct lgsm_handle *lh, int type, int sub_type)
 	if (!gmh)
 		return -ENOMEM;
 	rc = lgsm_send(lh, gmh);
-	if (rc < gmh->len + sizeof(*gmh)) {
-		lgsm_gmh_free(gmh);
-		return -EIO;
-	}
-	lgsm_gmh_free(gmh);
 
-	return 0;
+	lgsm_gmh_free(gmh);
+	return rc;
 }
