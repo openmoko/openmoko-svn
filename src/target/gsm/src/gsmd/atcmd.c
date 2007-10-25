@@ -206,6 +206,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 	struct gsmd_atcmd *cmd = NULL;
 	int rc = 0;
 	int cme_error = 0;
+	int cms_error = 0;
 
 	DEBUGP("buf=`%s'(%d)\n", buf, len);
 
@@ -269,6 +270,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			DEBUGP("error number %lu\n", err_nr);
 			if (cmd)
 				cmd->ret = err_nr;
+			cms_error = 1;
 			goto final_cb;
 		}
 
@@ -399,6 +401,9 @@ final_cb:
 
 	if (cmd && cme_error)
 		generate_event_from_cme(g, cmd->ret);
+	
+	if (cmd && cms_error)
+		generate_event_from_cms(g, cmd->ret);
 
 	if (!cmd->cb) {
 		gsmd_log(GSMD_NOTICE, "command without cb!!!\n");

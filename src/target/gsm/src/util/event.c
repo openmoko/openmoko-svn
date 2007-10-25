@@ -233,6 +233,16 @@ static int cprog_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdat
 	return 0;
 }
 
+static int error_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+{
+	if(aux->u.cme_err.number)
+		printf("cme error: %u\n", aux->u.cme_err.number);
+	else if(aux->u.cms_err.number)
+		printf("cme error: %u\n", aux->u.cms_err.number);
+		
+	return 0;
+}
+
 int event_init(struct lgsm_handle *lh)
 {
 	int rc;
@@ -246,7 +256,7 @@ int event_init(struct lgsm_handle *lh)
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_NETREG, &netreg_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_SIGNAL, &sigq_handler);
 	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_OUT_STATUS, &cprog_handler);
-
+	rc |= lgsm_evt_handler_register(lh, GSMD_EVT_IN_ERROR, &error_handler);
 	return rc;
 }
 

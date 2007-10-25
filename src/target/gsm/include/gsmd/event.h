@@ -18,6 +18,7 @@ enum gsmd_events {
 	GSMD_EVT_CIPHER		= 13,	/* Chiphering Information */
 	GSMD_EVT_IN_CBM		= 14,	/* Incoming Cell Broadcat message */
 	GSMD_EVT_IN_DS		= 15,	/* SMS Status Report */
+	GSMD_EVT_IN_ERROR	= 16,	/* CME/CMS error */
 	__NUM_GSMD_EVT
 };
 

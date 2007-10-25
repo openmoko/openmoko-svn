@@ -2,7 +2,8 @@
 #define _GSMD_USOCK_H
 
 #include <gsmd/event.h>
-
+#include <gsmd/ts0707.h>
+#include <gsmd/ts0705.h>
 #define GSMD_UNIX_SOCKET "\0gsmd"
 //#define GSMD_UNIX_SOCKET_TYPE SOCK_SEQPACKET
 #define GSMD_UNIX_SOCKET_TYPE SOCK_STREAM
@@ -361,8 +362,14 @@ struct gsmd_evt_auxdata {
 			u_int16_t net_state_gsm;
 			u_int16_t net_state_gprs;
 		} cipher;
+		struct {
+			enum gsm0707_cme_error number;
+		} cme_err;
+		struct {
+			enum gsm0705_cms_error number;
+		} cms_err;
 	} u;
-	u_int8_t data[0];
+	u_int8_t data[0];        
 } __attribute__ ((packed));
 
 /* Refer to GSM 07.05 subclause 3.5.4 */

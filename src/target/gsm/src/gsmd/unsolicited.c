@@ -441,13 +441,13 @@ static unsigned int errors_creating_events[] = {
 	GSM0707_CME_SIM_NOT_INSERTED,
 	GSM0707_CME_SIM_PIN_REQUIRED,
 	GSM0707_CME_SIM_PUK_REQUIRED,
-	GSM0707_CME_SIM_FAILURE,
+/*	GSM0707_CME_SIM_FAILURE,
 	GSM0707_CME_SIM_BUSY,
-	GSM0707_CME_SIM_WRONG,
+	GSM0707_CME_SIM_WRONG,*/
 	GSM0707_CME_SIM_PIN2_REQUIRED,
 	GSM0707_CME_SIM_PUK2_REQUIRED,
-	GSM0707_CME_MEMORY_FULL,
-	GSM0707_CME_MEMORY_FAILURE,
+/*	GSM0707_CME_MEMORY_FULL,
+	GSM0707_CME_MEMORY_FAILURE,*/    
 	GSM0707_CME_NETPERS_PIN_REQUIRED,
 	GSM0707_CME_NETPERS_PUK_REQUIRED,
 	GSM0707_CME_NETSUBSET_PIN_REQUIRED,
@@ -470,84 +470,106 @@ static int is_in_array(unsigned int val, unsigned int *arr, unsigned int arr_len
 	return 0;
 }
 
-
 int generate_event_from_cme(struct gsmd *g, unsigned int cme_error)
 {
 	struct gsmd_ucmd *gu;
 	struct gsmd_evt_auxdata *eaux;
-	if (!is_in_array(cme_error, errors_creating_events,
-			 ARRAY_SIZE(errors_creating_events)))
-		return 0;
+
+ 	if (!is_in_array(cme_error, errors_creating_events,
+		ARRAY_SIZE(errors_creating_events))) {
+
+		gu = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_ERROR, sizeof(*eaux));
+		if (!gu)
+			return -1;
+		eaux = ((void *)gu) + sizeof(*gu);
+		eaux->u.cme_err.number = cme_error;
+		return usock_evt_send(g, gu, GSMD_EVT_IN_ERROR);
+ 	}
+	else {
+		gu = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_PIN, sizeof(*eaux));
+		if (!gu)
+			return -1;
+		eaux = ((void *)gu) + sizeof(*gu);
 	
-	gu = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_PIN, sizeof(*eaux));
+		switch (cme_error) {
+		case GSM0707_CME_PH_SIM_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_SIM_PIN;
+			break;
+		case GSM0707_CME_PH_FSIM_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_FSIM_PIN;
+			break;
+		case GSM0707_CME_PH_FSIM_PUK_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_FSIM_PUK;
+			break;
+		case GSM0707_CME_SIM_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_SIM_PIN;
+			break;
+		case GSM0707_CME_SIM_PUK_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_SIM_PUK;
+			break;
+		case GSM0707_CME_SIM_PIN2_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_SIM_PIN2;
+			break;
+		case GSM0707_CME_SIM_PUK2_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_SIM_PUK2;
+			break;
+		case GSM0707_CME_NETPERS_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_NET_PIN;
+			break;
+		case GSM0707_CME_NETPERS_PUK_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_NET_PUK;
+			break;
+		case GSM0707_CME_NETSUBSET_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_NETSUB_PIN;
+			break;
+		case GSM0707_CME_NETSUBSET_PUK_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_NETSUB_PUK;
+			break;
+		case GSM0707_CME_PROVIDER_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_SP_PIN;
+			break;
+		case GSM0707_CME_PROVIDER_PUK_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_SP_PUK;
+			break;
+		case GSM0707_CME_CORPORATE_PIN_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_CORP_PIN;
+			break;
+		case GSM0707_CME_CORPORATE_PUK_REQUIRED:
+			eaux->u.pin.type = GSMD_PIN_PH_CORP_PUK;
+			break;
+	
+		case GSM0707_CME_SIM_FAILURE:
+		case GSM0707_CME_SIM_BUSY:
+		case GSM0707_CME_SIM_WRONG:
+		case GSM0707_CME_MEMORY_FULL:
+		case GSM0707_CME_MEMORY_FAILURE:
+		case GSM0707_CME_PHONE_FAILURE:
+		case GSM0707_CME_PHONE_NOCONNECT:
+		case GSM0707_CME_PHONE_ADAPT_RESERVED:
+		case GSM0707_CME_SIM_NOT_INSERTED:
+			/* FIXME */
+			talloc_free(gu);
+			return 0;
+			break;
+		default:
+			talloc_free(gu);
+			return 0;
+			break;
+		}
+		return usock_evt_send(g, gu, GSMD_EVT_PIN);
+	}
+}
+
+int generate_event_from_cms(struct gsmd *g, unsigned int cms_error)
+{
+	struct gsmd_ucmd *gu;
+	struct gsmd_evt_auxdata *eaux;
+	
+	gu = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_ERROR, sizeof(*eaux));
 	if (!gu)
 		return -1;
 	eaux = ((void *)gu) + sizeof(*gu);
-
-	switch (cme_error) {
-	case GSM0707_CME_PH_SIM_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_SIM_PIN;
-		break;
-	case GSM0707_CME_PH_FSIM_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_FSIM_PIN;
-		break;
-	case GSM0707_CME_PH_FSIM_PUK_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_FSIM_PUK;
-		break;
-	case GSM0707_CME_SIM_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_SIM_PIN;
-		break;
-	case GSM0707_CME_SIM_PUK_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_SIM_PUK;
-		break;
-	case GSM0707_CME_SIM_PIN2_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_SIM_PIN2;
-		break;
-	case GSM0707_CME_SIM_PUK2_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_SIM_PUK2;
-		break;
-	case GSM0707_CME_NETPERS_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_NET_PIN;
-		break;
-	case GSM0707_CME_NETPERS_PUK_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_NET_PUK;
-		break;
-	case GSM0707_CME_NETSUBSET_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_NETSUB_PIN;
-		break;
-	case GSM0707_CME_NETSUBSET_PUK_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_NETSUB_PUK;
-		break;
-	case GSM0707_CME_PROVIDER_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_SP_PIN;
-		break;
-	case GSM0707_CME_PROVIDER_PUK_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_SP_PUK;
-		break;
-	case GSM0707_CME_CORPORATE_PIN_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_CORP_PIN;
-		break;
-	case GSM0707_CME_CORPORATE_PUK_REQUIRED:
-		eaux->u.pin.type = GSMD_PIN_PH_CORP_PUK;
-		break;
-
-	case GSM0707_CME_SIM_FAILURE:
-	case GSM0707_CME_SIM_BUSY:
-	case GSM0707_CME_SIM_WRONG:
-	case GSM0707_CME_MEMORY_FULL:
-	case GSM0707_CME_MEMORY_FAILURE:
-	case GSM0707_CME_PHONE_FAILURE:
-	case GSM0707_CME_PHONE_NOCONNECT:
-	case GSM0707_CME_PHONE_ADAPT_RESERVED:
-	case GSM0707_CME_SIM_NOT_INSERTED:
-		/* FIXME */
-		talloc_free(gu);
-		return 0;
-		break;
-	default:
-		talloc_free(gu);
-		return 0;
-		break;
-	}
-	return usock_evt_send(g, gu, GSMD_EVT_PIN);
+	eaux->u.cms_err.number = cms_error;
+	return usock_evt_send(g, gu, GSMD_EVT_IN_ERROR);
 }
+
