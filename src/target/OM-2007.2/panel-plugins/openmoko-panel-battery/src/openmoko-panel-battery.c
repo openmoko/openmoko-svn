@@ -1,3 +1,4 @@
+/* vim: set sts=4 sw=4 expandtab: */
 /*  openmoko-panel-battery.c
  *
  *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
@@ -19,6 +20,7 @@
  *  Current Version: $Rev$ ($Date$) [$Author: mickey $]
  */
 
+
 #include <libmokopanelui2/moko-panel-applet.h>
 
 #include <gtk/gtklabel.h>
@@ -29,37 +31,42 @@
 
 #define JUICE_PIXMAPS 6
 
-#define DEBUG_THIS_FILE
-
 typedef struct {
     MokoPanelApplet* mokoapplet;
     guint timeout_id;
 } BatteryApplet;
 
+/* applets cannot be unloaded yet */
+#if 0
 static void
 battery_applet_free (BatteryApplet *applet)
 {
     g_source_remove (applet->timeout_id);
     g_slice_free (BatteryApplet, applet);
 }
+#endif
 
 /* Called every 5 minutes */
 static gboolean
 timeout (BatteryApplet *applet)
 {
-    // g_debug( "openmoko-panel-battery::timeout" );
+    char* icon;
+    static int last_status = -255; /* the status last time we checked */
 
     apm_info info;
     // How about g_new0 here?
     memset (&info, 0, sizeof (apm_info));
     apm_read (&info);
 
-    char* icon;
+    /* don't do any update if status is the same as the last time */
+    if (last_status == info.battery_status)
+    {
+        return TRUE;
+    }
 
     //FIXME Can we actually find out, when the battery is full?
 
-    // g_debug( "-- info.battery_status = %0xd", info.battery_status );
-    // g_debug( "-- info.battery_percentage = %0xd", info.battery_percentage );
+    last_status = info.battery_status;
 
     if ( info.battery_status == BATTERY_STATUS_ABSENT ||
          info.battery_status == BATTERY_STATUS_CHARGING )
@@ -82,9 +89,8 @@ timeout (BatteryApplet *applet)
             icon = PKGDATADIR "/Battery_05.png";
     }
 
-    //FIXME Check whether we actually need to update
-
     moko_panel_applet_set_icon( applet->mokoapplet, icon );
+
     return TRUE;
 }
 
@@ -97,13 +103,15 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     struct tm *local_time;
     t = time( NULL );
     local_time = localtime(&t);
-#ifndef DEBUG_THIS_FILE
-    applet->timeout_id = g_timeout_add( 60 * 1000 * 5, (GSourceFunc) timeout, applet);
-    timeout(applet);
+
     //FIXME Add source watching for charger insertion event on /dev/input/event1
-#else
-    applet->timeout_id = g_timeout_add( 10 * 1000, (GSourceFunc) timeout, applet);
-#endif
+
+    /* should use g_timeout_add_seconds() here to save power, but it is only
+     * available in glib >= 2.14
+     */
+    applet->timeout_id = g_timeout_add ( 10 * 1000, (GSourceFunc) timeout, applet);
+    timeout(applet);
+
     moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/Battery_00.png" );
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);

@@ -1,4 +1,10 @@
-2007-09-02	Michael Lauer <mickey@openmoko.org>
+2007-10-25  Thomas Wood  <thomas@openedhand.com>
+
+	* src/openmoko-panel-battery.c: (timeout),
+	(mb_panel_applet_create): Only update the display if the battery status
+	 has changed
+
+2007-09-02 Michael Lauer <mickey@openmoko.org>
 
 	* src/openmoko-battery-plugin.c:
 	* data/Makefile.am:
