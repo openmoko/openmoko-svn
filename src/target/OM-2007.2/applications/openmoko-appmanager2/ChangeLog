@@ -1,3 +1,8 @@
+2007-10-25  Thomas Wood  <thomas@openedhand.com>
+
+	* src/detail-area.c: (detail_area_update_info): Check for NULL before
+	  unreferencing the pixbuf
+
 2007-10-05  Thomas Wood  <thomas@openedhand.com>
 
 	* configure.ac:

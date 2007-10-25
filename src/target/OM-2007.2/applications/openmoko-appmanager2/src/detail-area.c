@@ -199,7 +199,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
 
       g_free (dep);
     }
-
-  g_object_unref (pix);
+  if (pix)
+    g_object_unref (pix);
 }
 
