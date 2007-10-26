@@ -1,5 +1,10 @@
 2007-10-26  Chris Lord  <chris@openedhand.com>
 
+	* src/today-task-manager.c: (today_task_manager_raise_clicked_cb):
+        Remove debug comment that leaked in
+
+2007-10-26  Chris Lord  <chris@openedhand.com>
+
 	* src/today-launcher.c: (redraw_widget_now),
 	(viewport_set_scroll_adjustments_cb), (table_expose_cb),
 	(today_launcher_page_create):

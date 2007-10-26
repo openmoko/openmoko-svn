@@ -646,8 +646,6 @@ today_task_manager_raise_clicked_cb (GtkToolButton *widget, TodayData *data)
 	xid = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (tile), "window"));
 	window = gdk_window_foreign_new_for_display (display, xid);
 	
-	g_debug ("Raising window");
-
 	/* NOTE: gdk_window_raise doesn't work? */
 	/*gdk_window_raise (window);*/
 
