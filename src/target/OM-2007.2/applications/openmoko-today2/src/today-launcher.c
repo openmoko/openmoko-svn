@@ -385,6 +385,7 @@ tile_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
 	return FALSE;
 }*/
 
+#ifdef SLOW_BLING
 static void
 redraw_widget_now (GtkWidget *widget)
 {
@@ -430,6 +431,7 @@ table_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
 	
 	return FALSE;
 }
+#endif
 
 GtkWidget *
 today_launcher_page_create (TodayData *data)
