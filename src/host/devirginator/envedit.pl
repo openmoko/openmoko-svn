@@ -28,8 +28,9 @@ $ENV_SIZE = 0x4000;
 sub usage
 {
     print STDERR
-"usage: $0 [-I dir] [-s size] [-i file] [-o file|-p] [-f env_file]\n".
+"usage: $0 [-I dir] [-s size] [-c] [-i file] [-o file|-p] [-f env_file]\n".
 "                  [var=[value] ...]\n".
+"  -c           ignore CRC errors in input environment\n".
 "  -i file      read environment from file (default: use empty environment)\n".
 "  -o file      write environment to file (default: write to stdout)\n".
 "  -p           print environment in human-readable form to stdout\n".
@@ -38,7 +39,7 @@ sub usage
 "  -I dir       add directory to INC path (to find crc32.pl)\n".
 "  var=         remove the specified variable\n".
 "  var=value    set the specified variable\n".
-"The options -I and -s, if present, must precede all other options.\n";
+"The options -I, -c, and -s, if present, must precede all other options.\n";
     exit(1);
 }
 
@@ -78,7 +79,7 @@ sub readenv
     if ($crc != $want) {
 	print STDERR sprintf("CRC error: expected 0x%08x, got 0x%08x\n",
 	  $want, $crc);
-	exit(1);
+	exit(1) unless $warn_crc;
     }
     foreach (split(/\000/, $env)) {
 	last if $_ eq "";
@@ -153,6 +154,11 @@ while (@ARGV) {
 	&usage unless defined $ARGV[1];
 	shift(@ARGV);
 	$ENV_SIZE = eval shift(@ARGV);
+    }
+    elsif ($ARGV[0] eq "-c") {
+	&usage if $have_crc;
+	shift(@ARGV);
+	$warn_crc = 1;
     }
     elsif ($ARGV[0] eq "-I") {
 	&usage if $have_crc;
