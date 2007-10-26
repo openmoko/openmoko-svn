@@ -402,7 +402,6 @@ moko_talking_init (MokoTalking *talking)
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
   
   priv->incoming_bar = toolbar = gtk_toolbar_new ();
-  gtk_widget_set_no_show_all (priv->incoming_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
   item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_ANSWER);
@@ -426,7 +425,6 @@ moko_talking_init (MokoTalking *talking)
 
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();
-  gtk_widget_set_no_show_all (priv->main_bar, TRUE);
   gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
 
   item = gtk_toggle_tool_button_new_from_stock (MOKO_STOCK_SPEAKER);

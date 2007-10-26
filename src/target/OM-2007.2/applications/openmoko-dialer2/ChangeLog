@@ -1,3 +1,8 @@
+2007-10-26  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-talking.c: (moko_talking_init): Don't use
+	gtk_widget_set_no_show_all ()
+
 2007-10-19  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-talking.c: (moko_talking_incoming_call),
