@@ -24,6 +24,9 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT
 
+AC_CHECK_HEADERS([sys/inotify.h], inotify_support=yes, inotify_support=no)
+AM_CONDITIONAL(HAVE_INOTIFY, [test "$inotify_support" = "yes"])
+
 PKG_CHECK_MODULES(SEXY, libsexy,
                   [enable_sexy=yes
                    AC_DEFINE(HAVE_SEXY, 1, [We are sexy enough])],

@@ -1,5 +1,8 @@
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
 #include <string.h>
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -11,7 +14,16 @@
 #include <moko-search-bar.h>
 #include "today.h"
 
-/* NOTE: Following 4 functions (as well as libtaku) taken from
+/* inotify support derived/copied from code in matchbox-desktop-2 */
+#if WITH_INOTIFY
+#include "inotify/inotify-path.h"
+#include "inotify/local_inotify.h"
+
+static gboolean with_inotify;
+G_LOCK_DEFINE(inotify_lock);
+#endif
+
+/* NOTE: Following 6 functions (as well as libtaku) taken from
  * matchbox-desktop-2 and (slightly) modified where necessary
  */
 /*
@@ -172,6 +184,67 @@ not_desktop:
 	return FALSE;
 }
 
+#if WITH_INOTIFY
+/*
+ * Monitor @directory with inotify, if available.
+ */
+static void
+monitor (const char *directory)
+{
+  inotify_sub *sub;
+
+  if (!with_inotify)
+    return;
+  
+  sub = _ih_sub_new (directory, NULL, NULL);
+  _ip_start_watching (sub);
+}
+
+/*
+ * Used to delete tiles when they are removed from disk.  @a is the tile, @b is
+ * the desktop filename to look for.
+ */
+static void
+find_and_destroy (GtkWidget *widget, gpointer data)
+{
+  TakuLauncherTile *tile;
+  const char *removed, *filename;
+
+  tile = TAKU_LAUNCHER_TILE (widget);
+  if (!tile)
+    return;
+  
+  removed = data;
+  
+  filename = taku_launcher_tile_get_filename (tile);
+  if (strcmp (removed, filename) == 0)
+    gtk_widget_destroy (widget);
+}
+
+static TodayData *data_static;
+static void
+inotify_event (ik_event_t *event, inotify_sub *sub)
+{
+  char *path;
+
+  if (event->mask & IN_MOVED_TO || event->mask & IN_CREATE) {
+    if (g_str_has_suffix (event->name, ".desktop")) {
+      LoadDesktopData *data = g_new0 (LoadDesktopData, 1);
+      data->name = g_strdup (event->name);
+      data->directory = g_strdup (sub->dirname);
+      data->table = (TakuTable *)data_static->launcher_table;
+      data->categories = data_static->categories;
+      load_desktop_cb (data);
+    }
+  } else if (event->mask & IN_MOVED_FROM || event->mask & IN_DELETE) {
+    path = g_build_filename (sub->dirname, event->name, NULL);
+    gtk_container_foreach (GTK_CONTAINER (data_static->launcher_table),
+                           find_and_destroy, path);
+    g_free (path);
+  }
+}
+#endif
+
 /*
  * Load all .desktop files in @datadir/applications/, and add them to @table.
  */
@@ -193,6 +266,10 @@ load_data_dir (const char *datadir, TakuTable *table, GList *categories,
     g_free (directory);
     return;
   }
+
+#if WITH_INOTIFY
+  monitor (directory);
+#endif
 
   dir = g_dir_open (directory, 0, &error);
   if (error) {
@@ -294,6 +371,11 @@ today_launcher_page_create (TodayData *data)
 	const char * const *dirs;
 	gchar *vfolder_dir;
 
+#if WITH_INOTIFY
+	data_static = data;
+	with_inotify = _ip_startup (inotify_event);
+#endif
+
 	main_vbox = gtk_vbox_new (FALSE, 0);
 	
 	/* search/filter bar */
@@ -362,7 +444,7 @@ today_launcher_page_create (TodayData *data)
 	g_signal_connect (G_OBJECT (data->search_bar), "toggled",
 		G_CALLBACK (today_launcher_search_toggle_cb), data);
 	
-	/* Populate the task list */
+	/* Populate the app list */
 	/* TODO: Do this incrementally during idle time to increase
 	 * start-up speed.
 	 */

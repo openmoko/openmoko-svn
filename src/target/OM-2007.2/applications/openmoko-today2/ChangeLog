@@ -1,3 +1,11 @@
+2007-10-26  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/today-launcher.c: (monitor), (find_and_destroy),
+	(inotify_event), (load_data_dir), (today_launcher_page_create):
+        Add inotify for .desktop files, copied from mb-desktop-2
+
 2007-10-25  Chris Lord  <chris@openedhand.com>
 
 	* src/Makefile.am:
