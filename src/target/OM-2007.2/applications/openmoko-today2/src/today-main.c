@@ -392,6 +392,17 @@ main (int argc, char **argv)
 	g_signal_connect (G_OBJECT (data.window), "delete-event",
 		G_CALLBACK (gtk_main_quit), NULL);
 	
+#if 0
+	/* This block here to ease testing, please don't remove! */
+	/* Force theme settings */
+	g_object_set (gtk_settings_get_default (),
+		"gtk-theme-name", "openmoko-standard-2",
+		"gtk-icon-theme-name", "openmoko-standard",
+		"gtk-xft-dpi", 285 * 1024,
+		"gtk-font-name", "Sans 6",
+		NULL);
+#endif
+
 #ifndef STANDALONE
 	x = 0; y = 0; w = 480; h = 640;
 	gtk_window_set_type_hint (GTK_WINDOW (data.window),

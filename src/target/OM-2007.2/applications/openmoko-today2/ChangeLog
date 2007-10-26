@@ -1,3 +1,13 @@
+2007-10-26  Chris Lord  <chris@openedhand.com>
+
+	* src/today-launcher.c: (redraw_widget_now),
+	(viewport_set_scroll_adjustments_cb), (table_expose_cb),
+	(today_launcher_page_create):
+	* src/today-main.c: (main):
+	* src/today.h:
+        Add some disabled code to draw wallpaper in the background of the
+        launcher
+
 2007-10-26  Thomas Wood  <thomas@openedhand.com>
 
 	* src/today-main.c: (main): Do not hard code theme settings

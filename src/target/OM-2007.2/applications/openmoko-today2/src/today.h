@@ -45,6 +45,7 @@ typedef struct {
 	/* App launcher */
 	GList *categories;
 	GtkWidget *launcher_table;
+	GtkWidget *launcher_viewport;
 	GtkWidget *search_bar;
 	GtkWidget *filter_combo;
 	TakuLauncherCategory *search_cat;

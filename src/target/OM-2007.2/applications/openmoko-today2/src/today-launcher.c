@@ -364,10 +364,77 @@ today_launcher_search_toggle_cb (MokoSearchBar *bar, gboolean search_visible,
 	}
 }
 
+/* If there's zero padding around tiles and redraw is forced for every scroll,
+ * the following function also works to paint the wallpaper under the tiles.
+ */
+/*static gboolean
+tile_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
+{
+	GtkAdjustment *vadjustment;
+	
+	if (!data->wallpaper) return FALSE;
+
+	vadjustment = gtk_viewport_get_vadjustment (
+		(GtkViewport *)data->launcher_viewport);
+	gdk_draw_drawable (widget->window, widget->style->black_gc,
+		data->wallpaper, widget->allocation.x,
+		widget->allocation.y - vadjustment->value,
+		widget->allocation.x, widget->allocation.y,
+		widget->allocation.width, widget->allocation.height);
+	
+	return FALSE;
+}*/
+
+static void
+redraw_widget_now (GtkWidget *widget)
+{
+	GdkRectangle rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.width = widget->allocation.width;
+	rect.height = widget->allocation.height;
+	gdk_window_invalidate_rect (widget->window, &rect, TRUE);
+	gdk_window_process_updates (widget->window, TRUE);
+}
+
+static void
+viewport_set_scroll_adjustments_cb (GtkViewport *viewport,
+				    GtkAdjustment *hadjust,
+				    GtkAdjustment *vadjust,
+				    TodayData *data)
+{
+	static gpointer instance = NULL;
+	static gulong id = 0;
+	
+	if (instance) g_signal_handler_disconnect (instance, id);
+	if (vadjust) {
+		instance = vadjust;
+		id = g_signal_connect_swapped (vadjust, "value-changed",
+			G_CALLBACK (redraw_widget_now), viewport);
+	} else {
+		instance = NULL;
+	}
+}
+
+static gboolean
+table_expose_cb (GtkWidget *widget, GdkEventExpose *event, TodayData *data)
+{
+	GtkAdjustment *vadjustment;
+	
+	if (!data->wallpaper) return FALSE;
+
+	vadjustment = gtk_viewport_get_vadjustment (
+		(GtkViewport *)data->launcher_viewport);
+	gdk_draw_drawable (widget->window, widget->style->black_gc,
+		data->wallpaper, 0, 0, 0, vadjustment->value, -1, -1);
+	
+	return FALSE;
+}
+
 GtkWidget *
 today_launcher_page_create (TodayData *data)
 {
-	GtkWidget *main_vbox, *hbox, *toggle, *viewport, *scroll;
+	GtkWidget *main_vbox, *hbox, *toggle, *scroll;
 	const char * const *dirs;
 	gchar *vfolder_dir;
 
@@ -399,11 +466,19 @@ today_launcher_page_create (TodayData *data)
 		FALSE, TRUE, 0);
 	gtk_widget_show (data->search_bar);
 	
-	viewport = gtk_viewport_new (NULL, NULL);
-	gtk_viewport_set_shadow_type (GTK_VIEWPORT (viewport),
+	data->launcher_viewport = gtk_viewport_new (NULL, NULL);
+	gtk_viewport_set_shadow_type (GTK_VIEWPORT (data->launcher_viewport),
 				      GTK_SHADOW_NONE);
 	gtk_icon_size_register ("taku-icon", 64, 64);
 	data->launcher_table = taku_table_new ();
+
+#ifdef SLOW_BLING
+	/* Draw the wallpaper in the background of the table */
+	g_signal_connect (data->launcher_viewport, "set-scroll-adjustments",
+		G_CALLBACK (viewport_set_scroll_adjustments_cb), data);
+	g_signal_connect (data->launcher_table, "expose-event",
+		G_CALLBACK (table_expose_cb), data);
+#endif
 
 	/* Create search category */
 	data->search_cat = g_new0 (TakuLauncherCategory, 1);
@@ -458,10 +533,11 @@ today_launcher_page_create (TodayData *data)
 	/* Make sure initial search shows all items */
 	today_launcher_update_search (data, "");
 
-	gtk_container_add (GTK_CONTAINER (viewport), data->launcher_table);
+	gtk_container_add (GTK_CONTAINER (data->launcher_viewport),
+		data->launcher_table);
 	
 	scroll = moko_finger_scroll_new ();
-	gtk_container_add (GTK_CONTAINER (scroll), viewport);
+	gtk_container_add (GTK_CONTAINER (scroll), data->launcher_viewport);
 	
 	gtk_box_pack_start (GTK_BOX (main_vbox), scroll, TRUE, TRUE, 0);
 	gtk_widget_show_all (scroll);
