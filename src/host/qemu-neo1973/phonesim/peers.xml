@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<simulator>
+
+<!-- Numbers of the form 5550nnn can be used to dial another
+     phone simulator in "peer connect" mode. -->
+
+<peerinfo number="5550001" host="ice.trolltech.com.au"/>
+<peerinfo number="5550002" host="bippy.trolltech.com.au"/>
+<peerinfo number="5550003" host="billabong.trolltech.com.au"/>
+<peerinfo number="5550004" host="drumstick.trolltech.com.au"/>
+<peerinfo number="5550005" host="pebble.trolltech.com.au"/>
+<peerinfo number="5550006" host="katherine.trolltech.com.au"/>
+<peerinfo number="5550007" host="hail.trolltech.com.au"/>
+<peerinfo number="5550008" host="igloo.trolltech.com.au"/>
+<peerinfo number="5550009" host="snowflake.trolltech.com.au"/>
+<peerinfo number="5550010" host="esky.trolltech.com.au"/>
+<peerinfo number="5550011" host="rain.trolltech.com.au"/>
+<peerinfo number="5550012" host="osprey.trolltech.com.au"/>
+<peerinfo number="5550013" host="tundra.trolltech.com.au"/>
+<peerinfo number="5550014" host="glacier.trolltech.com.au"/>
+<peerinfo number="5550015" host="qnx4.trolltech.com.au"/>
+<peerinfo number="5550016" host="stumpy.trolltech.com.au"/>
+<peerinfo number="5550017" host="heather.trolltech.com.au"/>
+<peerinfo number="5550018" host="guildenstern.trolltech.com.au"/>
+<peerinfo number="5550019" host="mclite.trolltech.com.au"/>
+<peerinfo number="5550020" host="bakingsoda.trolltech.com.au"/>
+<peerinfo number="5550021" host="yeti.trolltech.com.au"/>
+<peerinfo number="5550022" host="sled.trolltech.com.au"/>
+<peerinfo number="5550023" host="tibet.trolltech.com.au"/>
+<peerinfo number="5550024" host="gusto.trolltech.com.au"/>
+<peerinfo number="5550026" host="penguin.trolltech.com.au"/>
+<peerinfo number="5550027" host="frost.trolltech.com.au"/>
+<peerinfo number="5550028" host="icecave.trolltech.com.au"/>
+<peerinfo number="5550029" host="igloo2000.trolltech.com.au"/>
+<peerinfo number="5550030" host="snowfall.trolltech.com.au"/>
+<peerinfo number="5550031" host="hercules.trolltech.com.au"/>
+<peerinfo number="5550032" host="avalanche.trolltech.com.au"/>
+<peerinfo number="5550033" host="sleet.trolltech.com.au"/>
+<peerinfo number="5550034" host="rosencrantz.trolltech.com.au"/>
+<peerinfo number="5550035" host="blizzard.trolltech.com.au"/>
+<peerinfo number="5550036" host="skidoo.trolltech.com.au"/>
+<peerinfo number="5550037" host="royaob.trolltech.com.au"/>
+<peerinfo number="5550038" host="slushy.trolltech.com.au"/>
+<peerinfo number="5550039" host="seal.trolltech.com.au"/>
+<peerinfo number="5550040" host="aurochs.trolltech.com.au"/>
+<peerinfo number="5550041" host="fracture.trolltech.com.au"/>
+<peerinfo number="5550042" host="sasquatch.trolltech.com.au"/>
+<peerinfo number="5550043" host="iceghost.trolltech.com.au"/>
+<peerinfo number="5550044" host="kryl.trolltech.com.au"/>
+<peerinfo number="5550045" host="everest.trolltech.com.au"/>
+<peerinfo number="5550046" host="snow.trolltech.com.au"/>
+<peerinfo number="5550047" host="zen.trolltech.com.au"/>
+<peerinfo number="5550048" host="polarbear.trolltech.com.au"/>
+<peerinfo number="5550099" host="nonexist.trolltech.com.au"/>
+<peerinfo number="5550100" host="willow.trolltech.com.au"/>
+
+</simulator>
