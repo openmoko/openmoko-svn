@@ -103,11 +103,13 @@ static void neo_modem_rst_switch(void *opaque, int line, int level)
         neo_printf("Modem reset.\n");
 }
 
+#ifdef INTERNAL_MODEM
 static void neo_modem_switch_tick(void *opaque)
 {
     struct neo_board_s *s = (struct neo_board_s *) opaque;
     modem_enable(s->modem, 1);
 }
+#endif
 
 static void neo_modem_switch(void *opaque, int line, int level)
 {
@@ -380,10 +382,12 @@ static void neo_spi_setup(struct neo_board_s *s)
 
 static void neo_gsm_setup(struct neo_board_s *s)
 {
+#ifdef INTERNAL_MODEM
     s->modem = modem_init();
     s->modem_timer = qemu_new_timer(vm_clock, neo_modem_switch_tick, s);
 
     s3c_uart_attach(s->cpu->uart[0], s->modem);
+#endif
 }
 
 static void neo_reset(void *opaque)

@@ -13,3 +13,4 @@ lib/Makefile: lib/lib.pro
 clean: Makefile.phonesim lib/Makefile
 	$(MAKE) -C lib clean
 	$(MAKE) -f Makefile.phonesim clean
+	rm -f phonesim

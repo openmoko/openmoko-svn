@@ -103,6 +103,7 @@ darwin_user="no"
 build_docs="no"
 gadgetfs="no"
 uname_release=""
+phonesim="no"
 
 # OS specific
 targetos=`uname -s`
@@ -303,6 +304,8 @@ for opt do
                  target_cpu="sparc64"; cpu="sparc64" ;;
         *)     echo "undefined SPARC architecture. Exiting";exit 1;;
       esac
+  ;;
+  --enable-phonesim) phonesim="yes"
   ;;
   esac
 done
@@ -954,6 +957,14 @@ echo "#define CONFIG_UNAME_RELEASE \"$uname_release\"" >> $config_h
 if test "$gadgetfs" = "yes" ; then
   echo "CONFIG_GADGETFS=yes" >> $config_mak
   echo "#define CONFIG_GADGETFS 1" >> $config_h
+fi
+
+if test "$phonesim" = "yes" ; then
+  echo "MODEM=phonesim" >> $config_mak
+  echo "#undef INTERNAL_MODEM" >> $config_h
+else
+  echo "MODEM=" >> $config_mak
+  echo "#define INTERNAL_MODEM \"gnokiigsm\"" >> $config_h
 fi
 
 test -f ${config_h}~ && cmp -s $config_h ${config_h}~ && mv ${config_h}~ $config_h

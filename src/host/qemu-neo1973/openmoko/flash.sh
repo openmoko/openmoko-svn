@@ -142,4 +142,11 @@ echo "    "Append \'-snapshot\' to make the flash image read-only so that every
 echo "    "time emulation starts in the original unmodified state.
 echo "    "Use [Enter] for AUX button, [Space] for POWER.
 echo "    "Append \'-usbdevice keyboard\' to attach a standard keyboard.
+echo "    "
+echo "    "If you\'ve configured qemu with --enable-phonesim \(requieres Qt4 and
+echo "    "a C++ toolchain\), use the following commandline to run phonesim:
+echo \ \$ \(cd phonesim\; LD_LIBRARY_PATH=lib ./phonesim -gui ../openmoko/neo1973.xml\)\&
+echo "    "The GUI is optional.  When phonesim is running, append
+echo "    "\'-serial tcp:localhost:12345\' to qemu invocation.  Security
+echo "    "note a la GLSA: phonesim listens on 0.0.0.0.
 echo

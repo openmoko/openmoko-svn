@@ -14,6 +14,7 @@
      and hangup after 5 seconds -->
 <!-- Note: dialing 166 will accept the incoming call and hanup up after 5
      seconds-->
+<!-- Note: dialing 155 will elicit a 'BUSY' response from the recipient-->
 
 <!-- Initialize state variables -->
 
@@ -22,16 +23,16 @@
 
     <!-- Battery Capacity
     first value
-	0-powerd by battery
+	0-powered by battery
 	1-battery connected, powered by charger
 	2-no battery.
 
     second value is percentage battery remaining.
-	0-exahsted
+	0-exhausted
 	1-99-partial charge
 	100-fully charged.
      -->
-    <set name="BC" value="1,100"/>
+    <set name="BC" value="1,88"/>
 
     <!-- Signal Quality -->
     <set name="SQ" value="32,99"/>
@@ -91,7 +92,7 @@
     <set name="OP" value="${OP1}"/>
 
     <!-- Phone operator list -->
-    <set name="OPLIST" value="(2,${OP1},OP1,111)(1,${OP2},OP2,222),(1,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 
     <!-- Calling line identification presentation flag -->
     <set name="LIP" value="0"/>
@@ -177,6 +178,11 @@
 
     <!-- Format of cellular result codes -->
     <set name="RING" value="RING"/>
+
+    <!-- Select Cell Broadcast Message Types -->
+    <set name="CBMODE" value="0"/>
+    <set name="CBMIDS" value="1,4,10"/>
+    <set name="CBDCSS" value="3,4"/>
 
 <!-- Broadcast a cell location -->
 
@@ -785,7 +791,7 @@
 <chat>
     <!-- Query supported operators, always reports -->
     <command>AT+COPS=?</command>
-    <response delay="2000">+COPS: ${OPLIST}(0,"Maybe Forbidden Net","MFN","3")(3,Competitor Net,COMNET,4)\nOK</response>
+    <response delay="2000">+COPS: ${OPLIST},(0,"Maybe Forbidden Net","MFN","34567"),(3,"Competitor Net","COMNET","44444")\nOK</response>
 </chat>
 
 <chat>
@@ -808,7 +814,7 @@
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP1}"/>
-    <set name="OPLIST" value="(2,${OP1},OP1,111)(1,${OP2},OP2,222),(1,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
@@ -818,6 +824,7 @@
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP2}"/>
     <set name="OPLIST" value="(1,${OP1},OP1,111)(2,${OP2},OP2,222),(1,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
@@ -826,7 +833,7 @@
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP3}"/>
-    <set name="OPLIST" value="(1,${OP1},OP1,111)(1,${OP2},OP2,222),(2,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
@@ -835,7 +842,7 @@
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP1}"/>
-    <set name="OPLIST" value="(2,${OP1},OP1,111)(1,${OP2},OP2,222),(1,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
@@ -844,7 +851,7 @@
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP2}"/>
-    <set name="OPLIST" value="(1,${OP1},OP1,111)(2,${OP2},OP2,222),(1,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
@@ -853,7 +860,7 @@
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP3}"/>
-    <set name="OPLIST" value="(1,${OP1},OP1,111)(1,${OP2},OP2,222),(2,${OP3},OP3,333)"/>
+    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
@@ -1930,20 +1937,47 @@
     <response>OK</response>
 </chat>
 
+<!-- Call Progress Indication format -->
 <chat>
     <command>AT%CPI=?</command>
     <response>%CPI: (0-3)\nOK</response>
 </chat>
-
 <chat>
     <command>AT%CPI?</command>
     <response>%CPI: ${CPI}\nOK</response>
 </chat>
-
 <chat>
     <command>AT%CPI=*</command>
     <response>OK</response>
     <set name="CPI" value="*"/>
+</chat>
+
+<!-- Select Cell Broadcast Message Types -->
+<chat>
+    <command>AT+CSCB?</command>
+    <response>+CSCB: ${CBMODE},"${CBMIDS}","${CBDCSS}"\nOK</response>
+</chat>
+<chat>
+    <command>AT+CSCB=?</command>
+    <response>+CSCB: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CSCB=${MODE},"${MIDS}","${DCSS}"</command>
+    <response>OK</response>
+    <set name="CBMODE" value="${MODE}"/>
+    <set name="CBMIDS" value="${MIDS}"/>
+    <set name="CBDCSS" value="${DCSS}"/>
+</chat>
+<chat>
+    <command>AT+CSCB=${MODE},"${MIDS}"</command>
+    <response>OK</response>
+    <set name="CBMODE" value="${MODE}"/>
+    <set name="CBMIDS" value="${MIDS}"/>
+</chat>
+<chat>
+    <command>AT+CSCB=${MODE}</command>
+    <response>OK</response>
+    <set name="CBMODE" value="${MODE}"/>
 </chat>
 
 <!-- List of all supported commands -->
