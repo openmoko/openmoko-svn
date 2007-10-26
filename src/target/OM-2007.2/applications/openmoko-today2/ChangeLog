@@ -1,3 +1,7 @@
+2007-10-26  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (main): Do not hard code theme settings
+
 2007-10-26  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:
