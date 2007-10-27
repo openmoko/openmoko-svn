@@ -35,7 +35,7 @@
     <set name="BC" value="1,88"/>
 
     <!-- Signal Quality -->
-    <set name="SQ" value="32,99"/>
+    <set name="SQ" value="31,99"/>
 
     <!-- Manufacturer -->
     <set name="GMI" value="FIC"/>
@@ -47,10 +47,10 @@
     <set name="GMR" value="GTA01Bv4"/>
 
     <!-- Serial number -->
-    <set name="GSN" value="1234567890"/>
+    <set name="GSN" value="354651010000000"/>
 
     <!-- SIM card id -->
-    <set name="IMI" value="354651010000000"/>
+    <set name="IMI" value="262074992516579"/>
 
     <!-- Identifier for ATI command -->
     <set name="ID" value="GTA01 Embedded GSM Modem"/>
@@ -144,7 +144,7 @@
 
     <!-- Calling line identification restriction flag -->
     <set name="LIR" value="0"/>
-    <set name="LIR_STATUS" value="3"/>
+    <set name="LIR_STATUS" value="2"/>
 
     <!-- Originating line identification presentation flag -->
     <set name="OLP" value="0"/>
@@ -207,6 +207,7 @@
 
     <!-- Name of the PIN that is required (eg. "PIN") -->
     <!-- For the moment DON'T set a pinname here. We don't want a PIN shipped with the release -->
+    <!-- Neo: SIM PIN -->
     <!-- READY: PIN/PUK not required; SIM PIN: PIN required; SIM PUK: PUK REQUIRED -->
     <set name="PINNAME" value="READY"/>
 
@@ -240,6 +241,9 @@
     <set name="CBMODE" value="0"/>
     <set name="CBMIDS" value="1,4,10"/>
     <set name="CBDCSS" value="3,4"/>
+
+    <!-- Sidetone Level -->
+    <set name="ST" value="-5"/>
 
 <!-- Broadcast a cell location -->
 
@@ -309,7 +313,7 @@
 <chat>
     <!-- Get serial number -->
     <command>AT+CGSN</command>
-    <response>${GSN}\nOK</response>
+    <response>IMEI: ${GSN}\nOK</response>
 </chat>
 
 <chat>
@@ -321,7 +325,7 @@
 <chat>
     <!-- Get serial number, V.25ter version -->
     <command>AT+GSN</command>
-    <response>${GSN}\nOK</response>
+    <response>IMEI: ${GSN}\nOK</response>
 </chat>
 
 <chat>
@@ -358,13 +362,13 @@
 <chat>
     <!-- Query current wireless network (GSM = 12) -->
     <command>AT+WS46?</command>
-    <response>12\nOK</response>
+    <response>+WS46: 12\nOK</response>
 </chat>
 
 <chat>
     <!-- Query all supported wireless network types -->
     <command>AT+WS46=?</command>
-    <response>(12)\nOK</response>
+    <response>+WS46: (12)\nOK</response>
 </chat>
 
 <chat>
@@ -378,13 +382,13 @@
 <chat>
     <!-- Query current type of address (local = 129, international = 145) -->
     <command>AT+CSTA?</command>
-    <response>${STA}\nOK</response>
+    <response>+CSTA: ${STA}\nOK</response>
 </chat>
 
 <chat>
     <!-- Query supported address types -->
     <command>AT+CSTA=?</command>
-    <response>(129, 145)\nOK</response>
+    <response>+CSTA: (129,145)\nOK</response>
 </chat>
 
 <chat>
@@ -844,16 +848,30 @@
     <command>AT+CGREG?</command>
     <response>+CGREG: ${GREG},0\nOK</response>
 </chat>
-
 <chat>
     <!-- Query GPRS network registration result code presentation types -->
     <command>AT+CGREG=?</command>
     <response>+CGREG: (0-2)\nOK</response>
 </chat>
-
 <chat>
     <!-- Set GPRS network registration result code presentation -->
     <command>AT+CGREG=*</command>
+    <response>OK</response>
+    <set name="GREG" value="*"/>
+</chat>
+<chat>
+    <!-- Query GPRS network registration result code presentation -->
+    <command>AT%CGREG?</command>
+    <response>%CGREG: ${GREG},0\nOK</response>
+</chat>
+<chat>
+    <!-- Query GPRS network registration result code presentation types -->
+    <command>AT%CGREG=?</command>
+    <response>%CGREG: (0-3)\nOK</response>
+</chat>
+<chat>
+    <!-- Set GPRS network registration result code presentation -->
+    <command>AT%CGREG=*</command>
     <response>OK</response>
     <set name="GREG" value="*"/>
 </chat>
@@ -1052,7 +1070,7 @@
 <chat>
     <!-- Query available facility locks -->
     <command>AT+CLCK=?</command>
-    <response>+CLCK: PS(8),SC(8)\nOK</response>
+    <response>+CLCK: ("SC","AO","OI","OX","AI","IR","AB","AG","AC","FD","PS","PN","PU","PP","PC","PF","AL")\nOK</response>
 </chat>
 
 <chat>
@@ -1579,7 +1597,7 @@
 <chat>
     <!-- Query supported unstructured supplementary presentation modes -->
     <command>AT+CUSD=?</command>
-    <response>+CUSD: (0,1)\nOK</response>
+    <response>+CUSD: (0,1,2)\nOK</response>
 </chat>
 
 <chat>
@@ -1771,15 +1789,24 @@
 </chat>
 
 <chat>
-    <!-- Query signal quality (default reported as "not detectable") -->
+    <!-- Query signal quality -->
     <command>AT+CSQ</command>
     <response>+CSQ: ${SQ}\nOK</response>
 </chat>
-
 <chat>
     <!-- Query supported signal quality values -->
     <command>AT+CSQ=?</command>
-    <response>+CSQ: (0-31,99),(0-7,99)\nOK</response>
+    <response>+CSQ: (2-31,99),(99),(99)\nOK</response>
+</chat>
+<chat>
+    <!-- Query signal quality -->
+    <command>AT%CSQ?</command>
+    <response>%CSQ: 31, 99, 0\nOK</response>
+</chat>
+<chat>
+    <!-- Query supported signal quality values -->
+    <command>AT%CSQ=?</command>
+    <response>%CSQ: (99), (99), 0-4\nOK</response>
 </chat>
 
 <chat>
@@ -1815,6 +1842,14 @@
 
 <chat>
     <!-- Indicator control (ignored in this version) -->
+    <command>AT+CIND?</command>
+    <response>+CIND: 0,0\nOK</response>
+</chat>
+<chat>
+    <command>AT+CIND=?</command>
+    <response>+CIND: ("signal", (0-5)), ("smsfull", (0-1))\nOK</response>
+</chat>
+<chat>
     <command>AT+CIND*</command>
     <response>OK</response>
 </chat>
@@ -1828,7 +1863,7 @@
 <chat>
     <!-- Query supported mobile equipment event reporting modes -->
     <command>AT+CMER=?</command>
-    <response>+CMER: (0-3),(0-2),(0-2),(0-2),(0-1)\nOK</response>
+    <response>+CMER: (0-2), (0), (0), (0-2), (0,1)\nOK</response>
 </chat>
 
 <chat>
@@ -2215,9 +2250,9 @@
 </chat>
 
 <chat>
-    <!-- Modem identifier -->
+    <!-- Modem identifier (not supported? o_0 ) -->
     <command>ATI</command>
-    <response>${ID}\nOK</response>
+    <response>ERROR</response>
 </chat>
 
 <chat>
@@ -2241,18 +2276,6 @@
 <chat>
     <!-- Set to factory defaults -->
     <command>AT&amp;F*</command>
-    <response>OK</response>
-</chat>
-
-<chat>
-    <!-- Country of installation -->
-    <command>AT+GCI</command>
-    <response>Warsaw\nOK</response>
-</chat>
-
-<chat>
-    <!-- Global object identification (ignored) -->
-    <command>AT+GOI</command>
     <response>OK</response>
 </chat>
 
@@ -2313,7 +2336,7 @@
 <!-- Call Progress Indication format -->
 <chat>
     <command>AT%CPI=?</command>
-    <response>%CPI: (0-3)\nOK</response>
+    <response>%CPI: (0-4)\nOK</response>
 </chat>
 <chat>
     <command>AT%CPI?</command>
@@ -2323,6 +2346,189 @@
     <command>AT%CPI=*</command>
     <response>OK</response>
     <set name="CPI" value="*"/>
+</chat>
+
+<chat>
+    <command>AT%CPINF=?</command>
+    <response>OK</response>
+</chat>
+
+<chat>
+    <command>AT%CGMM=?</command>
+    <response>%CGMM: (0,1),(0,1)\nOK</response>
+</chat>
+
+<chat>
+    <command>AT%ALS</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <command>AT%ALS?</command>
+    <response>%ALS: 0\nOK</response>
+</chat>
+<chat>
+    <command>AT%ALS=?</command>
+    <response>%ALS: (0)\nOK</response>
+</chat>
+<chat>
+    <command>AT%ALS=0</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT%ALS=*</command>
+    <response>ERROR</response>
+</chat>
+
+<chat>
+    <command>AT%ATR</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <command>AT%ATR?</command>
+    <response>%ATR: FFFF\nOK</response>
+</chat>
+<chat>
+    <command>AT%ATR=?</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT%ATR=*</command>
+    <response>ERROR</response>
+</chat>
+
+<chat>
+    <command>AT%A*</command>
+    <response>EXT: I
+ADC 0 = e19, ADC 1 = 0, ADC 2 = d, ADC 3 = 6ea, ADC 4 = a25, ADC 5 = 9fc, ADC 6 = 96d, ADC 7 = 0, ADC 8 = 6
+OK</response>
+</chat>
+
+<chat>
+    <command>AT%NRG?</command>
+    <response>%NRG: 0,0,,2\nOK</response>
+</chat>
+
+<!-- Engineering Mode -->
+<chat>
+    <command>AT%EM=?</command>
+    <response>%EM: (2-3),(1-13)\nOK</response>
+</chat>
+
+<chat>
+    <command>AT%STDR</command>
+    <response>%STDR: 6\nOK</response>
+</chat>
+<chat>
+    <command>AT%STDR=?</command>
+    <response>OK</response>
+</chat>
+
+<chat>
+    <command>AT%DATA?</command>
+    <response>%DATA: 0,,0,0,,,0,0,0\nOK</response>
+</chat>
+<chat>
+    <command>AT%DATA=?</command>
+    <response>%DATA: (0,1,2)\nOK</response>
+</chat>
+
+<chat>
+    <command>AT%DINF=0</command>
+    <response>%DINF:"UART",0,0,"CMD,SER","CMD",0\nOK</response>
+</chat>
+<chat>
+    <command>AT%DINF=1</command>
+    <response>%DINF:"UART",0,0,"CMD,SER","CMD",0\nOK</response>
+</chat>
+<chat>
+    <command>AT%DINF=?</command>
+    <response>%DINF: (0,1)\nOK</response>
+</chat>
+
+<chat>
+    <command>AT%PVRF?</command>
+    <response>%PVRF: -1, -1, -1, -1, -1, -1\nOK</response>
+</chat>
+<chat>
+    <command>AT%PVRF=?</command>
+    <response>%PVRF: (0-2)\nOK</response>
+</chat>
+
+<chat>
+    <command>AT%CSSD?</command>
+    <response>%CSSD: 255\nOK</response>
+</chat>
+<chat>
+    <command>AT%CSSD=?</command>
+    <response>\nOK</response>
+</chat>
+
+<chat>
+    <command>AT%EFRSLT=?</command>
+    <response>%EFRSLT: (0-1)\nOK</response>
+</chat>
+<chat>
+    <command>AT%EFRSLT=0</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT%EFRSLT=1</command>
+    <response>OK</response>
+</chat>
+
+<!-- Firmware component versions -->
+<chat>
+    <command>AT%VER*</command>
+    <response>%VER: aci sean non_clearcase   15:11:24 17/04/07
+%VER: cc a086 ** NONE **      10:16:39 28/03/07
+%VER: dl a086 ** NONE **      10:17:34 28/03/07
+%VER: mm a086 ** NONE **      10:23:09 28/03/07
+%VER: rr a086 ** NONE **      10:25:37 28/03/07
+%VER: sim a086 ** NONE **      10:26:45 28/03/07
+%VER: sms a086 ** NONE **      10:27:21 28/03/07
+%VER: ss a086 ** NONE **      10:28:52 28/03/07
+%VER: alr a086 ** NONE **      10:15:48 28/03/07
+%VER: l2r a086 ** NONE **      10:21:37 28/03/07
+%VER: ra a086 ** NONE **      10:25:01 28/03/07
+%VER: rlp a086 ** NONE **      10:25:12 28/03/07
+%VER: fad a086 ** NONE **      10:18:09 28/03/07
+%VER: t30 a086 ** NONE **      10:29:01 28/03/07
+OK</reponse>
+</chat>
+
+<!-- Sidetone Level -->
+<chat>
+    <command>AT@ST?</command>
+    <response>+ST: ${ST}\nOK</response>
+</chat>
+<chat>
+    <command>AT@ST=?</command>
+    <response>+ST: (-26,-23,-20,-17,-14,-11,-8,-5,-2,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT@ST="*"</command>
+    <response>OK</response>
+    <set name="ST" value="*"/>
+</chat>
+
+<!-- Audio Table Load -->
+<chat>
+    <command>AT@AUL?</command>
+    <response>@AUL:\nOK</response>
+</chat>
+<chat>
+    <command>AT@AUL=?</command>
+    <response>@AUL: (0)\nOK</response>
+</chat>
+<chat>
+    <command>AT@AUL="0"</command>
+    <response>OK</response>
+</chat>
+
+<!-- Power off -->
+<chat>
+    <command>AT@POFF</command>
+    <response>ERROR</response>
 </chat>
 
 <!-- Select Cell Broadcast Message Types -->
@@ -2666,7 +2872,6 @@ ATZ</response>
 +GMI
 +GMM
 +GMR
-+GOI
 +GSN
 +ICF
 +IFC
