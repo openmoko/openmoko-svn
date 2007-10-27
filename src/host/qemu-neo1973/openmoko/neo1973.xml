@@ -12,9 +12,9 @@
 <!-- Note: dialing 199 will cause a dialback to simulate an incoming call -->
 <!-- Note: dialing 177 will cause a dialback to simulate an incoming call,
      and hangup after 5 seconds -->
-<!-- Note: dialing 166 will accept the incoming call and hanup up after 5
+<!-- Note: dialing 166 will accept the incoming call and hangup up after 5
      seconds-->
-<!-- Note: dialing 155 will elicit a 'BUSY' response from the recipient-->
+<!-- Note: dialing 155 will elicit a 'BUSY' response from the recipient -->
 
 <!-- Initialize state variables -->
 
@@ -76,23 +76,67 @@
     <!-- Network registration presentation flag -->
     <set name="REG" value="1,0"/>
 
-    <!-- Mobile phone operator selection mode (0=auto, 1=manual) -->
+    <!-- GPRS network registration presentation flag -->
+    <set name="GREG" value="0"/>
+
+    <!-- Mobile phone operator selection mode (0=auto, 1=manual,
+         2=deregister, 3=set only <format>, 4=manual / automatic) -->
     <set name="OPMODE" value="0"/>
 
+    <!-- GCF Operator List, format <status(1:available,2:current,
+         3:forbidden)>,"<alphanum.operator name>","<short operator name>",
+         "<MCC/MNC num>"-->
     <!-- Name of mobile phone operator 1 -->
     <set name="OP1" value="QEMU Mobile"/>
+    <set name="OP1PLMN" value="26051"/>
+    <set name="OP1COPS" value="2,&quot;${OP1}&quot;,&quot;QEMU&quot;,&quot;${OP1PLMN}&quot;"/>
 
     <!-- Name of mobile phone operator 2 -->
-    <set name="OP2" value="OpenedHand Net"/>
+    <set name="OP2" value="Maybe Forbidden Net"/>
+    <set name="OP2PLMN" value="26052"/>
+    <set name="OP2COPS" value="3,&quot;${OP2}&quot;,&quot;MNT&quot;,&quot;${OP2PLMN}&quot;"/>
 
     <!-- Name of mobile phone operator 3 -->
-    <set name="OP3" value="OpenMoko Comm"/>
+    <set name="OP3" value="Competitor Net"/>
+    <set name="OP3PLMN" value="26053"/>
+    <set name="OP3COPS" value="3,&quot;${OP3}&quot;,&quot;CNT&quot;,&quot;${OP3PLMN}&quot;"/>
+
+    <set name="OP4" value="Blocked Net"/>
+    <set name="OP4PLMN" value="26054"/>
+    <set name="OP4COPS" value="3,&quot;${OP4}&quot;,&quot;BNT&quot;,&quot;${OP4PLMN}&quot;"/>
+
+    <set name="OP5" value="Inaccessible Net"/>
+    <set name="OP5PLMN" value="26055"/>
+    <set name="OP5COPS" value="3,&quot;${OP5}&quot;,&quot;INT&quot;,&quot;${OP5PLMN}&quot;"/>
+
+    <set name="OP6" value="OpenedHand GSM"/>
+    <set name="OP6PLMN" value="26056"/>
+    <set name="OP6COPS" value="1,&quot;${OP6}&quot;,&quot;PNT&quot;,&quot;${OP6PLMN}&quot;"/>
+
+    <set name="OP7" value="OpenMoko Telecomm"/>
+    <set name="OP7PLMN" value="26057"/>
+    <set name="OP7COPS" value="1,&quot;${OP7}&quot;,&quot;TNT&quot;,&quot;${OP7PLMN}&quot;"/>
+
+    <set name="OP8" value="HELLO MOKO"/>
+    <set name="OP8PLMN" value="26058"/>
+    <set name="OP8COPS" value="1,&quot;${OP8}&quot;,&quot;MBT&quot;,&quot;${OP8PLMN}&quot;"/>
+
+    <!-- Preferred Operators -->
+    <set name="PO1" value="1,2,26051"/>
+    <set name="PO2" value="2,2,26052"/>
+    <set name="PO3" value="3,2,26053"/>
+    <set name="PO4" value="4,2,26054"/>
+    <set name="PO5" value="5,2,26055"/>
+    <set name="PO6" value="6,2,26056"/>
+    <set name="PO7" value="7,2,26057"/>
+    <set name="PO8" value="8,2,26058"/>
 
     <!-- Name of current mobile phone operator -->
     <set name="OP" value="${OP1}"/>
 
     <!-- Phone operator list -->
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
+    <set name="OPLIST"
+         value="(${OP1COPS}),(${OP2COPS}),(${OP3COPS}),(${OP4COPS}),(${OP5COPS}),(${OP6COPS}),(${OP7COPS}),(${OP8COPS})"/>
 
     <!-- Calling line identification presentation flag -->
     <set name="LIP" value="0"/>
@@ -119,6 +163,9 @@
     <set name="CF1C2" value="0"/>
     <set name="CF1C4" value="0"/>
     <set name="CF1C8" value="0"/>
+
+    <!-- Fixed Dialling presentation mode -->
+    <set name="FD" value="0"/>
 
     <!-- Unstructured service presentation mode -->
     <set name="USD" value="0"/>
@@ -160,6 +207,7 @@
 
     <!-- Name of the PIN that is required (eg. "PIN") -->
     <!-- For the moment DON'T set a pinname here. We don't want a PIN shipped with the release -->
+    <!-- READY: PIN/PUK not required; SIM PIN: PIN required; SIM PUK: PUK REQUIRED -->
     <set name="PINNAME" value="READY"/>
 
     <!-- Value of the PIN that is required -->
@@ -168,7 +216,16 @@
     <!-- pin protection status -->
     <set name="SC" value="0"/>
 
-    <!-- Value of the PIN that is required -->
+    <!-- Value of the PIN2 that is required -->
+    <set name="PIN2VALUE" value="3579"/>
+
+    <!-- Value of the PUK that is required -->
+    <set name="PUKVALUE" value="13243546"/>
+
+    <!-- Value of the PUK2 that is required -->
+    <set name="PUK2VALUE" value="08978675"/>
+
+    <!-- Value of the PSPIN that is required -->
     <set name="PSPINVALUE" value="4321"/>
     <!-- phone to sim pin protection status -->
     <set name="PS" value="0"/>
@@ -783,6 +840,25 @@
 </chat>
 
 <chat>
+    <!-- Query GPRS network registration result code presentation -->
+    <command>AT+CGREG?</command>
+    <response>+CGREG: ${GREG},0\nOK</response>
+</chat>
+
+<chat>
+    <!-- Query GPRS network registration result code presentation types -->
+    <command>AT+CGREG=?</command>
+    <response>+CGREG: (0-2)\nOK</response>
+</chat>
+
+<chat>
+    <!-- Set GPRS network registration result code presentation -->
+    <command>AT+CGREG=*</command>
+    <response>OK</response>
+    <set name="GREG" value="*"/>
+</chat>
+
+<chat>
     <!-- Query current operator selection -->
     <command>AT+COPS?</command>
     <response delay="500">+COPS: ${OPMODE},0,"${OP}"\nOK</response>
@@ -791,13 +867,19 @@
 <chat>
     <!-- Query supported operators, always reports -->
     <command>AT+COPS=?</command>
-    <response delay="2000">+COPS: ${OPLIST},(0,"Maybe Forbidden Net","MFN","34567"),(3,"Competitor Net","COMNET","44444")\nOK</response>
+    <response delay="2000">+COPS: ${OPLIST}\nOK</response>
 </chat>
 
 <chat>
     <!-- Use long name for operators -->
     <command>AT+COPS=3,0</command>
     <response>OK</response>
+</chat>
+
+<chat>
+    <!-- Use MCC/MNC for operators -->
+    <command>AT+COPS=3,2</command>
+    <response delay="500">OK</response>
 </chat>
 
 <chat>
@@ -809,60 +891,164 @@
 </chat>
 
 <chat>
-    <!-- Set manual operator selection -->
+    <!-- Set manual operator selection OP1 (Alphanumeric) -->
     <command>AT+COPS=1,0,"${OP1}"</command>
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP1}"/>
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
-    <!-- Set manual operator selection -->
-    <command>AT+COPS=1,0,"${OP2}"</command>
-    <response>OK</response>
-    <set name="OPMODE" value="1"/>
-    <set name="OP" value="${OP2}"/>
-    <set name="OPLIST" value="(1,${OP1},OP1,111)(2,${OP2},OP2,222),(1,${OP3},OP3,333)"/>
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
-</chat>
-
-<chat>
-    <!-- Set manual operator selection -->
-    <command>AT+COPS=1,0,"${OP3}"</command>
-    <response>OK</response>
-    <set name="OPMODE" value="1"/>
-    <set name="OP" value="${OP3}"/>
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
-</chat>
-
-<chat>
-    <!-- Set manual operator selection -->
-    <command>AT+COPS=4,0,"${OP1}"</command>
+    <!-- Set manual operator selection OP1 (MCC/MNC) -->
+    <command>AT+COPS=1,2,"${OP1PLMN}"</command>
     <response>OK</response>
     <set name="OPMODE" value="1"/>
     <set name="OP" value="${OP1}"/>
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
 </chat>
 
 <chat>
-    <!-- Set manual operator selection -->
-    <command>AT+COPS=4,0,"${OP2}"</command>
-    <response>OK</response>
-    <set name="OPMODE" value="1"/>
-    <set name="OP" value="${OP2}"/>
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
+    <!-- Refuse access to OP2 (Alphanumeric) -->
+    <command>AT+COPS=1,0,"${OP2}"</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <!-- Refuse access to OP2 (MCC/MNC) -->
+    <command>AT+COPS=1,2,"${OP2PLMN}"</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <!-- Refuse access to OP3 (Alphanumeric) -->
+    <command>AT+COPS=1,0,"${OP3}"</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <!-- Refuse access to OP3 (MCC/MNC) -->
+    <command>AT+COPS=1,2,"${OP3PLMN}"</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <!-- Refuse access to OP4 (Alphanumeric) -->
+    <command>AT+COPS=1,0,"${OP4}"</command>
+    <response>ERROR</response>
+</chat>
+<chat>
+    <!-- Refuse access to OP4 (MCC/MNC) -->
+    <command>AT+COPS=1,2,"${OP4PLMN}"</command>
+    <response>ERROR</response>
 </chat>
 
 <chat>
-    <!-- Set manual operator selection -->
-    <command>AT+COPS=4,0,"${OP3}"</command>
-    <response>OK</response>
+    <!-- Set manual operator selection OP6 (Alphanumeric) -->
+    <command>AT+COPS=1,0,"${OP6}"</command>
+    <response delay="2000">OK</response>
     <set name="OPMODE" value="1"/>
-    <set name="OP" value="${OP3}"/>
-    <set name="OPLIST" value="(2,&quot;${OP1}&quot;,&quot;OP1&quot;,&quot;11111&quot;),(1,&quot;${OP2}&quot;,&quot;OP2&quot;,&quot;22222&quot;),(1,&quot;${OP3}&quot;,&quot;OP3&quot;,&quot;33333&quot;)"/>
+    <set name="OP" value="${OP6}"/>
 </chat>
 
+<chat>
+    <!-- Set manual operator selection OP6 (MCC/MNC) -->
+    <command>AT+COPS=1,2,"${OP6PLMN}"</command>
+    <response delay="2000">OK</response>
+    <set name="OPMODE" value="1"/>
+    <set name="OP" value="${OP6}"/>
+</chat>
+
+<chat>
+    <!-- Request preferred operators -->
+    <command>AT+CPOL?</command>
+    <response delay="2000">+CPOL: ${PO1}\n+CPOL: ${PO2}\n+CPOL: ${PO3}\n+CPOL: ${PO4}\n+CPOL: ${PO5}\n+CPOL: ${PO6}\n+CPOL: ${PO7}\n+CPOL: ${PO8}\nOK</response>
+</chat>
+
+<chat>
+    <!-- Request PLMNS descriptors -->
+    <command>AT+COPN</command>
+    <response delay="2000">+COPN: "${OP1PLMN}","${OP1}"\n+COPN: "${OP2PLMN}","${OP2}"\n+COPN: "${OP3PLMN}","${OP3}"\n+COPN: "${OP4PLMN}","${OP4}"\n+COPN: "${OP5PLMN}","${OP5}"\n+COPN: "${OP6PLMN}","${OP6}"\n+COPN: "${OP7PLMN}","${OP7}"\n+COPN: "${OP8PLMN}","${OP8}"\nOK</response>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 1 -->
+    <command>AT+CPOL=1,2,*</command>
+    <response>OK</response>
+    <set name="PO1" value="1,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 2 -->
+    <command>AT+CPOL=2,2,*</command>
+    <response>OK</response>
+    <set name="PO2" value="2,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 3 -->
+    <command>AT+CPOL=3,2,*</command>
+    <response>OK</response>
+    <set name="PO3" value="3,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 4 -->
+    <command>AT+CPOL=4,2,*</command>
+    <response>OK</response>
+    <set name="PO4" value="4,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 5 -->
+    <command>AT+CPOL=5,2,*</command>
+    <response>OK</response>
+    <set name="PO5" value="5,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 6 -->
+    <command>AT+CPOL=6,2,*</command>
+    <response>OK</response>
+    <set name="PO6" value="6,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 7 -->
+    <command>AT+CPOL=7,2,*</command>
+    <response>OK</response>
+    <set name="PO7" value="7,2,${*}"/>
+</chat>
+
+<chat>
+    <!-- Set preferred operator 8 -->
+    <command>AT+CPOL=8,2,*</command>
+    <response>OK</response>
+    <set name="PO8" value="8,2,${*}"/>
+</chat>
+
+<!-- FIXED DIALLING LOCKS -->
+<chat>
+    <!-- Query available facility lock -->
+    <command>AT+CLCK="FD",2</command>
+    <response>+CLCK: ${FD}\nOK</response>
+</chat>
+
+<chat>
+    <!-- Query available facility locks -->
+    <command>AT+CLCK="FD",0,"${PIN2VALUE}"</command>
+    <response>OK</response>
+    <set name="FD" value="0"/>
+</chat>
+
+<chat>
+    <!-- Query available facility locks -->
+    <command>AT+CLCK="FD",1,"${PIN2VALUE}"</command>
+    <response>OK</response>
+    <set name="FD" value="1"/>
+</chat>
+
+<chat>
+    <!-- Query available facility locks -->
+    <command>AT+CLCK="FD",*</command>
+    <response>ERROR</response>
+</chat>
+
+<!-- SIM CARD LOCKS -->
 <chat>
     <!-- Query available facility locks -->
     <command>AT+CLCK=?</command>
@@ -1035,6 +1221,20 @@
     <set name="CF0C1" value="1"/>
     <set name="CF0C1N" value="*"/>
 </chat>
+<chat>
+    <!-- Set call forwarding number international (voice, unconditional) -->
+    <command>AT+CCFC=0,3,*,145,1</command>
+    <response>OK</response>
+    <set name="CF0C1" value="1"/>
+    <set name="CF0C1N" value="*"/>
+</chat>
+<chat>
+    <!-- Set call forwarding number national (voice, unconditional) -->
+    <command>AT+CCFC=0,3,*,129,1</command>
+    <response>OK</response>
+    <set name="CF0C1" value="1"/>
+    <set name="CF0C1N" value="*"/>
+</chat>
 
 <chat>
     <!-- Set call forwarding number (voice, when busy) -->
@@ -1042,6 +1242,52 @@
     <response>OK</response>
     <set name="CF1C1" value="1"/>
     <set name="CF1C1N" value="*"/>
+</chat>
+<chat>
+    <!-- Set call forwarding number international (voice, when busy) -->
+    <command>AT+CCFC=1,3,*,145,1</command>
+    <response>OK</response>
+    <set name="CF1C1" value="1"/>
+    <set name="CF1C1N" value="*"/>
+</chat>
+<chat>
+    <!-- Set call forwarding number national (voice, when busy) -->
+    <command>AT+CCFC=1,3,*,129,1</command>
+    <response>OK</response>
+    <set name="CF1C1" value="1"/>
+    <set name="CF1C1N" value="*"/>
+</chat>
+
+<chat>
+    <!-- Set call forwarding number international (voice, no reply) -->
+    <command>AT+CCFC=2,3,*,145,1</command>
+    <response>OK</response>
+    <set name="CF2C1" value="1"/>
+    <set name="CF2C1N" value="*"/>
+</chat>
+
+<chat>
+    <!-- Set call forwarding number (voice, no reply) -->
+    <command>AT+CCFC=2,3,*,129,1</command>
+    <response>OK</response>
+    <set name="CF2C1" value="1"/>
+    <set name="CF2C1N" value="*"/>
+</chat>
+
+<chat>
+    <!-- Set call forwarding number international (voice, not reachable) -->
+    <command>AT+CCFC=3,3,*,145,1</command>
+    <response>OK</response>
+    <set name="CF3C1" value="1"/>
+    <set name="CF3C1N" value="*"/>
+</chat>
+
+<chat>
+    <!-- Set call forwarding number (voice, not reachable) -->
+    <command>AT+CCFC=3,3,*,129,1</command>
+    <response>OK</response>
+    <set name="CF3C1" value="1"/>
+    <set name="CF3C1N" value="*"/>
 </chat>
 
 <chat>
@@ -1221,7 +1467,7 @@
 <chat>
     <!-- Query call waiting -->
     <command>AT+CCWA=1,2</command>
-    <response>+CCWA: ${CWA_V},1\n+CCWA: ${CWA_D},2\n+CCWA: ${CWA_F},4\nOK</response>
+    <response delay="2000">+CCWA: ${CWA_V},1\n+CCWA: ${CWA_D},2\n+CCWA: ${CWA_F},4\nOK</response>
 </chat>
 
 <chat>
@@ -1237,55 +1483,55 @@
 </chat>
 
 <!-- Disable call waiting -->
-<chat><command>AT+CCWA=1,0,1</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,1</command><response delay="1000">OK</response>
     <set name="CWA_V" value="0"/>
 </chat>
-<chat><command>AT+CCWA=1,0,2</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,2</command><response delay="1000">OK</response>
     <set name="CWA_D" value="0"/>
 </chat>
-<chat><command>AT+CCWA=1,0,3</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,3</command><response delay="1000">OK</response>
     <set name="CWA_V" value="0"/>
     <set name="CWA_D" value="0"/>
 </chat>
-<chat><command>AT+CCWA=1,0,4</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,4</command><response delay="1000">OK</response>
     <set name="CWA_F" value="0"/>
 </chat>
-<chat><command>AT+CCWA=1,0,5</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,5</command><response delay="1000">OK</response>
     <set name="CWA_V" value="0"/>
     <set name="CWA_F" value="0"/>
 </chat>
-<chat><command>AT+CCWA=1,0,6</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,6</command><response delay="1000">OK</response>
     <set name="CWA_D" value="0"/>
     <set name="CWA_F" value="0"/>
 </chat>
-<chat><command>AT+CCWA=1,0,7</command><response>OK</response>
+<chat><command>AT+CCWA=1,0,7</command><response delay="1000">OK</response>
     <set name="CWA_V" value="0"/>
     <set name="CWA_D" value="0"/>
     <set name="CWA_F" value="0"/>
 </chat>
 <!-- Enable call waiting -->
-<chat><command>AT+CCWA=1,1,1</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,1</command><response delay="1000">OK</response>
     <set name="CWA_V" value="1"/>
 </chat>
-<chat><command>AT+CCWA=1,1,2</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,2</command><response delay="1000">OK</response>
     <set name="CWA_D" value="1"/>
 </chat>
-<chat><command>AT+CCWA=1,1,3</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,3</command><response delay="1000">OK</response>
     <set name="CWA_V" value="1"/>
     <set name="CWA_D" value="1"/>
 </chat>
-<chat><command>AT+CCWA=1,1,4</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,4</command><response delay="1000">OK</response>
     <set name="CWA_F" value="1"/>
 </chat>
-<chat><command>AT+CCWA=1,1,5</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,5</command><response delay="1000">OK</response>
     <set name="CWA_V" value="1"/>
     <set name="CWA_F" value="1"/>
 </chat>
-<chat><command>AT+CCWA=1,1,6</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,6</command><response delay="1000">OK</response>
     <set name="CWA_D" value="1"/>
     <set name="CWA_F" value="1"/>
 </chat>
-<chat><command>AT+CCWA=1,1,7</command><response>OK</response>
+<chat><command>AT+CCWA=1,1,7</command><response delay="1000">OK</response>
     <set name="CWA_V" value="1"/>
     <set name="CWA_D" value="1"/>
     <set name="CWA_F" value="1"/>
@@ -1415,7 +1661,7 @@
 <chat>
     <!-- Check for which PIN is required -->
     <command>AT+CPIN?</command>
-    <response>+CPIN: ${PINNAME}\nOK</response>
+    <response delay="3000">+CPIN: ${PINNAME}\nOK</response>
 </chat>
 
 <chat>
@@ -1426,21 +1672,86 @@
 </chat>
 
 <chat>
-    <!-- Change PIN (success) -->
+    <!-- Change PIN using PUK (success) -->
     <!-- Meaningless command... can't work out use in hardware, use CPWD instead -->
     <!-- first is puck instead. -->
-    <command>AT+CPIN="12345678","*"</command>
+    <command>AT+CPIN="${PUKVALUE}","*"</command>
     <response>+CPIN: READY\nOK</response>
     <set name="PINVALUE" value="${*}"/>
     <set name="PINNAME" value="READY"/>
 </chat>
 
 <chat>
-    <!-- Enter PIN (failure) -->
-    <command>AT+CPIN*</command>
+    <!-- Enter PIN (PUK failure when PINNAME was "SIM PUK" from start) -->
+    <command>AT+CPIN="*","*"</command>
     <response>+CPIN: SIM PUK\nERROR</response>
     <set name="PINNAME" value="SIM PUK"/>
 </chat>
+
+<chat>
+    <!-- Enter PIN (failure) -->
+    <command>AT+CPIN=*</command>
+    <response>+CPIN: SIM PIN\nERROR</response>
+    <set name="PINNAME" value="SIM PIN"/>
+    <switch name="pinretry1"/>
+</chat>
+
+<state name="pinretry1">
+
+    <chat>
+        <!-- Enter PIN (success) -->
+        <command>AT+CPIN="${PINVALUE}"</command>
+        <response>+CPIN: READY\nOK</response>
+        <set name="PINNAME" value="READY"/>
+        <switch name="default"/>
+    </chat>
+
+    <chat>
+        <!-- Change PIN using PUK (success) -->
+        <command>AT+CPIN="${PUKVALUE}","*"</command>
+        <response>+CPIN: READY\nOK</response>
+        <set name="PINVALUE" value="${*}"/>
+        <set name="PINNAME" value="READY"/>
+        <switch name="default"/>
+    </chat>
+
+    <chat>
+        <!-- Enter PIN (failure) -->
+        <command>AT+CPIN=*</command>
+        <response>+CPIN: SIM PIN\nERROR</response>
+        <set name="PINNAME" value="SIM PIN"/>
+        <switch name="pinretry2"/>
+    </chat>
+
+</state>
+
+<state name="pinretry2">
+
+    <chat>
+        <!-- Enter PIN (success) -->
+        <command>AT+CPIN="${PINVALUE}"</command>
+        <response>+CPIN: READY\nOK</response>
+        <set name="PINNAME" value="READY"/>
+        <switch name="default"/>
+    </chat>
+
+    <chat>
+        <!-- Change PIN using PUK (success) -->
+        <command>AT+CPIN="${PUKVALUE}","*"</command>
+        <response>+CPIN: READY\nOK</response>
+        <set name="PINVALUE" value="${*}"/>
+        <set name="PINNAME" value="READY"/>
+        <switch name="default"/>
+    </chat>
+
+    <chat>
+        <!-- Enter PIN (failure) -->
+        <command>AT+CPIN=*</command>
+        <response>+CPIN: SIM PUK\nERROR</response>
+        <set name="PINNAME" value="SIM PUK"/>
+    </chat>
+
+</state>
 
 <chat>
     <!-- Query battery charge -->
@@ -1653,6 +1964,62 @@
     <command>AT+CPBW=?</command>
     <response>+CPBW: (1-2),32,(129,145),16\nOK</response>
 </chat>
+
+<!-- Phonebook commands are implemented in the phone simulator source code -->
+<phonebook name="SM" size="150">
+    <entry index="1" number="123" name="ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF"/>
+    <entry index="2" number="24685" name="Adam Zucker/m"/>
+    <entry index="3" number="48759" name="Bradley Young"/>
+    <entry index="4" number="45575" name="Chuck Woodbury/w"/>
+    <entry index="5" number="57968" name="Chuck Woodbury/h"/>
+    <entry index="6" number="48959" name="Darren Umber"/>
+    <entry index="7" number="48759" name="Courtney Umber/h"/>
+    <entry index="8" number="42887" name="Courtney Umber/m"/>
+    <entry index="9" number="87683" name="Evan Ungar"/>
+    <entry index="10" number="15798" name="Frank Twedell"/>
+    <entry index="11" number="12497" name="Greg Smith/w"/>
+    <entry index="12" number="89765" name="Greg Smith/m"/>
+    <entry index="13" number="12498" name="Greg Smith/o"/>
+    <entry index="14" number="34967" name="Greg Smith/h"/>
+    <entry index="15" number="57682" name="Henry Ross/m"/>
+    <entry index="16" number="78952" name="Henry Ross/h"/>
+    <entry index="17" number="44585" name="Ivan Prischmann"/>
+    <entry index="19" number="13553" name="Jack Odegard/h"/>
+    <entry index="20" number="49755" name="Jack Odegard/m"/>
+    <entry index="21" number="57683" name="Rachel Odegard"/>
+    <entry index="22" number="14573" name="Kevin Norris"/>
+    <entry index="23" number="48468" name="Logan Minkoff"/>
+    <entry index="24" number="48468" name="Tracy Minkoff"/>
+    <entry index="25" number="89624" name="Matthew LeBlanc"/>
+    <entry index="26" number="57439" name="Nathan Kelly/m"/>
+    <entry index="27" number="13596" name="Nathan Kelly/w"/>
+    <entry index="28" number="18279" name="Paul Jacobs"/>
+    <entry index="29" number="62755" name="Robert Irving"/>
+    <entry index="30" number="13466" name="Sean Hunt/h"/>
+    <entry index="31" number="59786" name="Sean Hunt/m"/>
+    <entry index="32" number="13664" name="Thomas Grayson"/>
+    <entry index="33" number="77957" name="Victor Frey"/>
+    <entry index="34" number="14535" name="Wade Emerson"/>
+    <entry index="35" number="98735" name="Monica Emerson"/>
+    <entry index="36" number="65865" name="Dorathy Foster"/>
+    <entry index="37" number="66573" name="Gina Haylock/m"/>
+    <entry index="38" number="33846" name="Gina Haylock/w"/>
+    <entry index="39" number="35933" name="BuyIt"/>
+    <entry index="40" number="2468DD" name="Wildcard"/>
+    <entry index="101" number="10101" name="GSM Test"/>
+</phonebook>
+
+<phonebook name="FD" size="20">
+    <entry index="1" number="+1357924680" name="FDN111"/>
+    <entry index="2" number="24680" name="FDN222"/>
+    <entry index="3" number="+123465678901234567890" name="FDN333"/>
+    <entry index="4" number="112" name="Emergency"/>
+</phonebook>
+
+<phonebook name="SN" size="50">
+    <entry index="1" number="013" name="Directory Assistance"/>
+    <entry index="2" number="121" name="Call Minding"/>
+</phonebook>
 
 <!-- GSM 07.05: SMS related commands -->
 
@@ -1881,6 +2248,12 @@
     <!-- Country of installation -->
     <command>AT+GCI</command>
     <response>Warsaw\nOK</response>
+</chat>
+
+<chat>
+    <!-- Global object identification (ignored) -->
+    <command>AT+GOI</command>
+    <response>OK</response>
 </chat>
 
 <chat>
@@ -2300,19 +2673,7 @@ ATZ</response>
 +ILRR
 +IPR
 +FCLASS
-+VBT
-+VCID
-+VGR
-+VGT
-+VIP
-+VIT
-+VLS
-+VRX
-+VSM
-+VTS
-+VTD
-+VTX
-*ECAM
+%VTS
 A
 D
 E
@@ -2450,6 +2811,68 @@ the last stick.</displaytext>
 <getkey type="digit">Must be 1, 2, or 3.  How many sticks do
 you take?</getkey>
 <goto name="respond"/>
+
+</toolkit>
+
+<!-- SIM filesystem definition, based on standard test strings
+     presented in GSM 11.10-4.  This is primarily intended for
+     testing icon definitions within SIM toolkit applications -->
+
+<filesystem>
+
+<file name="EFphase">
+    03
+</file>
+
+<file name="EFimsi">
+    08 09 10 10 10 32 54 76 98
+</file>
+
+<file name="EFimg" recordsize="20">
+    01 2E 28 11 4F 01 00 00 00 E8 FF FF FF FF FF FF FF FF FF FF
+    01 08 08 21 4F 02 00 00 00 1F FF FF FF FF FF FF FF FF FF FF
+    01 18 10 11 4F 03 00 00 00 32 FF FF FF FF FF FF FF FF FF FF
+    01 08 08 11 4F 04 00 00 00 0A FF FF FF FF FF FF FF FF FF FF
+    01 05 05 11 4F 05 00 00 00 08 FF FF FF FF FF FF FF FF FF FF
+</file>
+
+<file name="EFimg1">
+    2E 28 00 00 00 00 00 00 00 01 FF 80 00 00 00 0F
+    FF 00 00 00 00 77 FE 00 00 00 01 BF F8 00 00 00
+    06 FF E0 00 00 00 1A 03 80 00 00 00 6B F6 BC 00
+    00 01 AF D8 38 00 00 06 BF 60 20 00 00 1A FD 80
+    40 00 00 6B F6 00 80 00 01 A0 1F 02 00 00 06 FF
+    E4 04 00 00 1B FF 90 10 00 00 6D EE 40 40 00 01
+    BF F9 01 00 00 6F FF E4 04 00 00 1B FF 90 10 00
+    00 6F FE 40 40 00 01 BF F9 01 00 00 06 FF E6 04
+    00 00 1B FF 88 10 00 00 6F FE 20 40 00 01 BF F8
+    66 00 00 06 FF E0 F0 00 00 1B FF 80 80 00 00 7F
+    FE 00 00 00 03 00 0C 00 00 00 1F FF F8 00 00 00
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    1C 21 08 44 EE 00 48 C4 31 92 20 01 25 11 45 50
+    80 07 14 45 15 43 80 12 71 1C 4D 08 00 4A 24 89
+    32 20 01 C8 9E 24 4E E0
+</file>
+
+<file name="EFimg2">
+    08 08 02 03 00 16 AA AA 80 02 85 42 81 42 81 42
+    81 52 80 02 AA AA FF 00 00 00 FF 00 00 00 FF
+</file>
+
+<file name="EFimg3">
+    18 10 FF FF FF 80 00 01 80 00 01 80 00 01 8F 3C
+    F1 89 20 81 89 20 81 89 20 F1 89 20 11 89 20 11
+    89 20 11 8F 3C F1 80 00 01 80 00 01 80 00 01 FF
+    FF FF
+</file>
+
+<file name="EFimg4">
+    08 08 FF 03 A5 99 99 A5 C3 FF
+</file>
+
+<file name="EFimg5">
+    05 05 FE EB BF FF FF FF
+</file>
 
 </toolkit>
 
