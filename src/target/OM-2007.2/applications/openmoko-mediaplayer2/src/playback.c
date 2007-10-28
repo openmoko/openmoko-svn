@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@
 #include <gst/interfaces/xoverlay.h>
 #include <uriparser/Uri.h>
 
-#include "playback.h"
 #include "guitools.h"
 #include "main.h"
 #include "main_page.h"
 #include "persistent.h"
+#include "playback.h"
 
 /// Our ticket to the gstreamer world
 GstElement *omp_gst_playbin = NULL;
@@ -56,6 +56,9 @@ guint omp_playback_fade_final_vol = -1;
 
 /// Holds the volume increment per UI-update timer call
 guint omp_playback_fade_increment = 0;
+
+/// Handle of the fade-in timeout
+guint omp_playback_fade_timeout = 0;
 
 // Some private forward declarations
 static gboolean omp_gst_message_eos(GstBus *bus, GstMessage *message, gpointer data);
@@ -159,10 +162,7 @@ omp_playback_free()
 {
 	GstBus *bus;
 
-	if (!omp_gst_playbin)
-	{
-		return;
-	}
+	if (!omp_gst_playbin) return;
 
 	bus = gst_pipeline_get_bus(GST_PIPELINE(omp_gst_playbin));
 	gst_bus_remove_signal_watch(bus);
@@ -203,9 +203,7 @@ omp_playback_load_track_from_uri(gchar *uri)
 {
 	// Make sure we are all set
 	if (!omp_gst_playbin)
-	{
 		omp_playback_init();
-	}
 
 	#ifdef DEBUG
 		g_printf("Loading track: %s\n", uri);
@@ -225,24 +223,6 @@ omp_playback_load_track_from_uri(gchar *uri)
 static gboolean
 omp_playback_ui_timeout_callback(gpointer data)
 {
-	guint volume;
-
-	// Fade in if needed
-	if (omp_playback_fade_final_vol != -1)
-	{
-		volume = omp_playback_get_volume()+omp_playback_fade_increment;
-
-		if (volume > omp_playback_fade_final_vol)
-		{
-			omp_playback_set_volume(omp_playback_fade_final_vol);
-			omp_playback_fade_final_vol = -1;
-
-		} else {
-
-			omp_playback_set_volume(volume);
-		}
-	}
-
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_POSITION_CHANGED);
 	
 	if (omp_playback_ui_timeout_halted)
@@ -253,6 +233,31 @@ omp_playback_ui_timeout_callback(gpointer data)
 	}
 
 	return TRUE;
+}
+
+/**
+ * This callback raises the volume little by little when we're fading in
+ */
+static gboolean
+omp_playback_fade_timeout_callback(gpointer data)
+{
+	guint volume;
+
+	// Fade in
+	volume = omp_playback_get_volume()+omp_playback_fade_increment;
+
+	if (volume >= omp_playback_fade_final_vol)
+	{
+		omp_playback_set_volume(omp_playback_fade_final_vol);
+		omp_playback_fade_final_vol = -1;
+		omp_playback_fade_timeout = 0;
+		return FALSE;
+
+	} else {
+
+		omp_playback_set_volume(volume);
+		return TRUE;
+	}
 }
 
 /**
@@ -284,9 +289,11 @@ omp_playback_play()
 	omp_playback_ui_timeout_halted = FALSE;
 
 	if (!omp_playback_ui_timeout)
-	{
 		omp_playback_ui_timeout = g_timeout_add(PLAYBACK_UI_UPDATE_INTERVAL, omp_playback_ui_timeout_callback, NULL);
-	}
+
+	// Do we need to add the fade-in timer as well?
+	if ( (omp_playback_fade_final_vol != -1) && (!omp_playback_fade_timeout) )
+		omp_playback_fade_timeout = g_timeout_add(PLAYBACK_FADE_INTERVAL, omp_playback_fade_timeout_callback, NULL);
 }
 
 /**
@@ -399,10 +406,7 @@ omp_playback_get_track_length()
 	GstFormat format = GST_FORMAT_TIME;
 	gint64 length = 0;
 
-	if (!omp_gst_playbin)
-	{
-		return 0;
-	}
+	if (!omp_gst_playbin) return 0;
 
 	gst_element_query_duration(omp_gst_playbin, &format, &length);
 	return (length > 0) ? (length/1000000) : 0;
@@ -413,19 +417,14 @@ omp_playback_get_track_length()
  * @param volume Volume in percent (0..100)
  */
 void
-omp_playback_set_volume(guint volume)
+omp_playback_set_volume(guint volume, gboolean update_session)
 {
-	// Sanity check and failure recovery
-	if (volume > 100)
-	{
-		g_warning("Attempted to set invalid volume!\n");
-		volume = 100;
-	}
+	if (volume > 100) volume = 100;
 
 	// Set playbin volume which ranges from 0.0 to 1.0
 	g_object_set(G_OBJECT(omp_gst_playbin), "volume", volume/100.0, NULL);
 
-	// Volume fading shouldn't be visible to the user
+	// Volume fading shouldn't be saved to session and be invisible to the user
 	if (omp_playback_fade_final_vol == -1)
 	{
 		omp_session_set_volume(volume);
@@ -457,8 +456,9 @@ omp_playback_fade_volume()
 	omp_playback_set_volume(0);
 
 	omp_playback_fade_increment =
-		omp_playback_fade_final_vol / (omp_session_get_fade_speed()/PLAYBACK_UI_UPDATE_INTERVAL);
+		omp_playback_fade_final_vol / (omp_session_get_fade_speed()/PLAYBACK_FADE_INTERVAL);
 
+	// Make sure the volume actually increases
 	if (omp_playback_fade_increment == 0)
 		omp_playback_fade_increment = 1;
 }

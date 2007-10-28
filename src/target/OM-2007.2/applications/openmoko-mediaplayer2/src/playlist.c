@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -68,9 +68,6 @@ typedef struct _omp_track_history_entry
 	omp_spiff_track *track;
 	guint track_id;
 } omp_track_history_entry;
-
-/// Flag that indicates whether the current track has already been repeated once or not
-gboolean omp_playlist_track_repeated_once = FALSE;
 
 // Forward declarations for internal use
 void omp_playlist_process_eos_event(gpointer instance, gpointer user_data);
@@ -180,8 +177,8 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 		{
 			// Reset playlist state and prepare playback
 			omp_playback_reset();
-			omp_playlist_current_track_id	= 0;
-			omp_playlist_current_track		= omp_playlist->tracks;
+			omp_playlist_current_track_id = 0;
+			omp_playlist_current_track    = omp_playlist->tracks;
 			omp_playlist_last_track = NULL;
 
 			if (omp_playlist_current_track)
@@ -199,8 +196,8 @@ omp_playlist_load(gchar *playlist_file, gboolean do_state_reset)
 
 	} else {
 
-		omp_playlist_current_track_id	= -1;
-		omp_playlist_current_track		= NULL;
+		omp_playlist_current_track_id = -1;
+		omp_playlist_current_track    = NULL;
 		omp_playlist_last_track = NULL;
 
 		#ifdef DEBUG
@@ -295,8 +292,8 @@ omp_playlist_set_current_track(gint playlist_pos)
 	{
 		if (track_num == playlist_pos)
 		{
-			omp_playlist_current_track		= track;
-			omp_playlist_current_track_id	= track_num;
+			omp_playlist_current_track    = track;
+			omp_playlist_current_track_id = track_num;
 			position_valid = TRUE;
 		}
 	}
@@ -363,8 +360,8 @@ try_again:
 	if (omp_track_history)
 	{
 		history_entry = (omp_track_history_entry*)(omp_track_history->data);
-		omp_playlist_current_track		= history_entry->track;
-		omp_playlist_current_track_id	= history_entry->track_id;
+		omp_playlist_current_track    = history_entry->track;
+		omp_playlist_current_track_id = history_entry->track_id;
 		
 		// Delete first entry from the list
 		g_free(history_entry);
@@ -462,8 +459,8 @@ try_again:
 
 	// Prepare the history entry - if we don't need it we'll just free it again
 	history_entry = g_new(omp_track_history_entry, 1);
-	history_entry->track		= omp_playlist_current_track;
-	history_entry->track_id	= omp_playlist_current_track_id;
+	history_entry->track    = omp_playlist_current_track;
+	history_entry->track_id = omp_playlist_current_track_id;
 
 	// Repeat all: we forward 1 track
 	// Shuffle on: we forward 0 < n < omp_playlist_track_count tracks
@@ -873,21 +870,17 @@ omp_playlist_get_track_from_iter(omp_playlist_iter *iter, guint *track_num, gcha
 	if (track_artist)
 	{
 		if (iter->track)
-		{
 			*track_artist = g_strdup(iter->track->creator);
-		} else {
+		else
 			*track_artist = NULL;
-		}
 	}
 
 	if (track_title)
 	{
 		if (iter->track)
-		{
 			*track_title = g_strdup(iter->track->title);
-		} else {
+		else
 			*track_title = NULL;
-		}
 	}
 
 	if (duration)

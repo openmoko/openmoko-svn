@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@
 #define OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED "playlist_track_info_changed"
 #define OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED "playlist_track_count_changed"
 
+
+
 /// Track info data used with the OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED signal
 typedef struct _omp_track_info
 {
@@ -47,14 +49,14 @@ typedef struct _omp_track_info
 } omp_track_info;
 
 /// Modes available for repetitive track playback
-enum omp_repeat_modes
+typedef enum
 {
 	OMP_REPEAT_OFF = 0,     ///< Repeat off
 	OMP_REPEAT_ONCE,        ///< Repeat current track once, then proceed with next track
 	OMP_REPEAT_CURRENT,     ///< Repeat current track forever
 	OMP_REPEAT_ALL,         ///< Repeat entire playlist
-	OMP_REPEAT_COUNT        ///< End-of-list marker for mode iteration
-};
+	OMP_REPEAT_COUNT        ///< End-of-list marker for mode enumeration
+} omp_repeat_mode;
 
 extern omp_spiff_list *omp_playlist;
 extern guint omp_playlist_track_count;
@@ -69,6 +71,8 @@ typedef struct _omp_playlist_iter
 	omp_spiff_track *track;
 	guint track_num;
 } omp_playlist_iter;
+
+
 
 void omp_playlist_init();
 void omp_playlist_free();

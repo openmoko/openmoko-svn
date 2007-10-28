@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,6 +43,9 @@
 
 // The UI will be updated at this interval when a track is playing (in ms)
 #define PLAYBACK_UI_UPDATE_INTERVAL 1000
+
+// Time interval at which the fade-in timer will raise the volume (in ms)
+#define PLAYBACK_FADE_INTERVAL 200
 
 
 

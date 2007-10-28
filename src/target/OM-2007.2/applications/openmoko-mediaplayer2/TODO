@@ -8,7 +8,6 @@ UI:
 	Preferences page
 	
 Backend:
-	Use GConf
 	Use GST_MESSAGE_DURATION and use saved value
 	Use GST_MESSAGE_BUFFERING
 	Check for unicode compliance

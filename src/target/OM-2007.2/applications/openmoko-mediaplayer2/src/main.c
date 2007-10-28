@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -322,11 +322,11 @@ omp_window_show()
  * @see omp_notebook_tabs
  */
 void
-omp_tab_show(guint tab_id)
+omp_tab_show(omp_notebook_tab tab)
 {
-	g_return_if_fail(tab_id < OMP_TABS);
+	g_return_if_fail(tab < OMP_TABS);
 
-	gtk_widget_show(GTK_WIDGET(omp_notebook_tabs[tab_id]));
+	gtk_widget_show(GTK_WIDGET(omp_notebook_tabs[tab]));
 }
 
 /**
@@ -335,22 +335,22 @@ omp_tab_show(guint tab_id)
  * @see omp_notebook_tabs
  */
 void
-omp_tab_hide(guint tab_id)
+omp_tab_hide(omp_notebook_tab tab)
 {
-	g_return_if_fail(tab_id < OMP_TABS);
+	g_return_if_fail(tab < OMP_TABS);
 
-	gtk_widget_hide(GTK_WIDGET(omp_notebook_tabs[tab_id]));
+	gtk_widget_hide(GTK_WIDGET(omp_notebook_tabs[tab]));
 }
 
 /**
  *
  */
 void
-omp_tab_focus(guint tab_id)
+omp_tab_focus(omp_notebook_tab tab)
 {
-	g_return_if_fail(tab_id < OMP_TABS);
+	g_return_if_fail(tab < OMP_TABS);
 
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(omp_notebook), tab_id);
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(omp_notebook), tab);
 }
 
 /**

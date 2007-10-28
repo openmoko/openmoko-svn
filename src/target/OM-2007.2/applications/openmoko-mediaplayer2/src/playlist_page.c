@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -205,11 +205,17 @@ omp_playlist_page_add_list(GtkButton *button, gpointer user_data)
 	file_name = g_strdup_printf("%s/%s.%s", path, name, OMP_PLAYLIST_FILE_EXTENSION);
 
 	omp_playlist_create(file_name);
+	omp_playlist_load(file_name, TRUE);
+
+	// Show playlist editor because a user obviously wants
+	// to edit a playlist that was just created
+	omp_tab_show(OMP_TAB_PLAYLIST_EDITOR);
+	omp_tab_focus(OMP_TAB_PLAYLIST_EDITOR);
 
 	// Rebuild the list
 	omp_playlist_page_list_populate();
 
-	gtk_entry_set_text(GTK_ENTRY(omp_playlist_page_entry), "");
+	gtk_entry_set_text(GTK_ENTRY(omp_playlist_page_entry), NULL);
 }
 
 /**
@@ -293,7 +299,7 @@ omp_playlist_page_list_create(GtkContainer *container)
 	list_icon = pixbuf_new_from_file("ico-playlists.png");
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(G_OBJECT(renderer), "pixbuf", list_icon, NULL);
-	column = gtk_tree_view_column_new_with_attributes("", renderer, NULL);
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
 
 	renderer = gtk_cell_renderer_text_new();

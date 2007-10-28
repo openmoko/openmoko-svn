@@ -2,7 +2,7 @@
  *  OpenMoko Media Player
  *   http://openmoko.org/
  *
- *  Copyright (C) 2007 by the OpenMoko team
+ *  Copyright (C) 2007 by Soeren Apel (abraxa@dar-clan.de)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,22 +29,22 @@
 
 #include <gtk/gtk.h>
 
-enum omp_notebook_tabs
+typedef enum
 {
 	OMP_TAB_MAIN = 0,
 	OMP_TAB_PLAYLISTS,
 	OMP_TAB_PLAYLIST_EDITOR,
 	OMP_TAB_FILE_CHOOSER,
 	OMP_TABS
-};
+} omp_notebook_tab;
 
 extern GtkWidget *omp_notebook;
 extern GtkWidget *omp_window;
 
 void omp_application_terminate();
 
-void omp_tab_show(guint tab_id);
-void omp_tab_hide(guint tab_id);
-void omp_tab_focus(guint tab_id);
+void omp_tab_show(omp_notebook_tab tab);
+void omp_tab_hide(omp_notebook_tab tab);
+void omp_tab_focus(omp_notebook_tab tab);
 
 #endif
