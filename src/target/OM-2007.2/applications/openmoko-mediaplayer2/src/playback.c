@@ -417,7 +417,7 @@ omp_playback_get_track_length()
  * @param volume Volume in percent (0..100)
  */
 void
-omp_playback_set_volume(guint volume, gboolean update_session)
+omp_playback_set_volume(guint volume)
 {
 	if (volume > 100) volume = 100;
 
