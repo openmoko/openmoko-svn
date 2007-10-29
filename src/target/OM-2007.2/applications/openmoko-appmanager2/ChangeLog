@@ -1,3 +1,8 @@
+2007-10-29	Michael Lauer <mickey@openmoko.org>
+
+	* data/openmoko-appmanager.desktop:
+	Set SingleInstance to True and improve purpose comment
+
 2007-10-25  Thomas Wood  <thomas@openedhand.com>
 
 	* src/detail-area.c: (detail_area_new):
