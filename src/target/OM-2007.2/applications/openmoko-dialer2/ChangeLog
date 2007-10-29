@@ -1,3 +1,9 @@
+2007-10-29	Michael Lauer <mickey@openmoko.org>
+
+	* data/default_ringtone.ogg: REMOVED
+	* data/Makefile.am: remove default_ringtone.ogg,
+      we use pulseaudio to trigger the ringtone sample.
+
 2007-10-26  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-talking.c: (moko_talking_init): Don't use

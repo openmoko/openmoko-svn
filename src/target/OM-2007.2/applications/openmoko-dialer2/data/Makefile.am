@@ -33,9 +33,8 @@ dist_pkgdata_DATA =unkown.png\
                 talking_2.png\
                 talking_3.png\
                 exit.png\
-		connecting.png\
-		incall.png\
-		default_ringtone.ogg
+                connecting.png\
+                incall.png
 #
 # desktop integration: .desktop file
 #
