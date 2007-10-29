@@ -56,7 +56,7 @@ register target_ulong T2 asm(AREG3);
 #include "softmmu_exec.h"
 #endif /* !defined(CONFIG_USER_ONLY) */
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 void do_dsll (void);
 void do_dsll32 (void);
@@ -70,6 +70,8 @@ void do_dsllv (void);
 void do_dsrav (void);
 void do_dsrlv (void);
 void do_drotrv (void);
+void do_dclo (void);
+void do_dclz (void);
 #endif
 #endif
 
@@ -84,7 +86,7 @@ void do_maddu (void);
 void do_msub (void);
 void do_msubu (void);
 #endif
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 void do_ddiv (void);
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 void do_ddivu (void);
@@ -100,42 +102,12 @@ void fpu_dump_state(CPUState *env, FILE *f,
                     int (*fpu_fprintf)(FILE *f, const char *fmt, ...),
                     int flags);
 void dump_sc (void);
-void do_lwl_raw (uint32_t);
-void do_lwr_raw (uint32_t);
-uint32_t do_swl_raw (uint32_t);
-uint32_t do_swr_raw (uint32_t);
-#ifdef TARGET_MIPS64
-void do_ldl_raw (uint64_t);
-void do_ldr_raw (uint64_t);
-uint64_t do_sdl_raw (uint64_t);
-uint64_t do_sdr_raw (uint64_t);
-#endif
-#if !defined(CONFIG_USER_ONLY)
-void do_lwl_user (uint32_t);
-void do_lwl_kernel (uint32_t);
-void do_lwr_user (uint32_t);
-void do_lwr_kernel (uint32_t);
-uint32_t do_swl_user (uint32_t);
-uint32_t do_swl_kernel (uint32_t);
-uint32_t do_swr_user (uint32_t);
-uint32_t do_swr_kernel (uint32_t);
-#ifdef TARGET_MIPS64
-void do_ldl_user (uint64_t);
-void do_ldl_kernel (uint64_t);
-void do_ldr_user (uint64_t);
-void do_ldr_kernel (uint64_t);
-uint64_t do_sdl_user (uint64_t);
-uint64_t do_sdl_kernel (uint64_t);
-uint64_t do_sdr_user (uint64_t);
-uint64_t do_sdr_kernel (uint64_t);
-#endif
-#endif
 void do_pmon (int function);
 
 void dump_sc (void);
 
 int cpu_mips_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
-                               int is_user, int is_softmmu);
+                               int mmu_idx, int is_softmmu);
 void do_interrupt (CPUState *env);
 void r4k_invalidate_tlb (CPUState *env, int idx, int use_extra);
 
@@ -153,6 +125,8 @@ uint32_t cpu_mips_get_random (CPUState *env);
 uint32_t cpu_mips_get_count (CPUState *env);
 void cpu_mips_store_count (CPUState *env, uint32_t value);
 void cpu_mips_store_compare (CPUState *env, uint32_t value);
+void cpu_mips_start_count(CPUState *env);
+void cpu_mips_stop_count(CPUState *env);
 void cpu_mips_update_irq (CPUState *env);
 void cpu_mips_clock_init (CPUState *env);
 void cpu_mips_tlb_flush (CPUState *env, int flush_global);
@@ -233,15 +207,16 @@ FOP_PROTO(le)
 FOP_PROTO(ngt)
 #undef FOP_PROTO
 
-static inline void env_to_regs(void)
+static always_inline void env_to_regs(void)
 {
 }
 
-static inline void regs_to_env(void)
+static always_inline void regs_to_env(void)
 {
 }
 
-static inline int cpu_halted(CPUState *env) {
+static always_inline int cpu_halted(CPUState *env)
+{
     if (!env->halted)
         return 0;
     if (env->interrupt_request &
@@ -250,6 +225,30 @@ static inline int cpu_halted(CPUState *env) {
         return 0;
     }
     return EXCP_HALTED;
+}
+
+static always_inline void compute_hflags(CPUState *env)
+{
+    env->hflags &= ~(MIPS_HFLAG_64 | MIPS_HFLAG_CP0 | MIPS_HFLAG_F64 |
+                     MIPS_HFLAG_FPU | MIPS_HFLAG_KSU);
+    if (!(env->CP0_Status & (1 << CP0St_EXL)) &&
+        !(env->CP0_Status & (1 << CP0St_ERL)) &&
+        !(env->hflags & MIPS_HFLAG_DM)) {
+        env->hflags |= (env->CP0_Status >> CP0St_KSU) & MIPS_HFLAG_KSU;
+    }
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
+    if (((env->hflags & MIPS_HFLAG_KSU) != MIPS_HFLAG_UM) ||
+        (env->CP0_Status & (1 << CP0St_PX)) ||
+        (env->CP0_Status & (1 << CP0St_UX)))
+        env->hflags |= MIPS_HFLAG_64;
+#endif
+    if ((env->CP0_Status & (1 << CP0St_CU0)) ||
+        !(env->hflags & MIPS_HFLAG_KSU))
+        env->hflags |= MIPS_HFLAG_CP0;
+    if (env->CP0_Status & (1 << CP0St_CU1))
+        env->hflags |= MIPS_HFLAG_FPU;
+    if (env->CP0_Status & (1 << CP0St_FR))
+        env->hflags |= MIPS_HFLAG_F64;
 }
 
 #endif /* !defined(__QEMU_MIPS_EXEC_H__) */

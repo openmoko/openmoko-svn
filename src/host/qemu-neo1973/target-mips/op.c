@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "exec.h"
+#include "host-utils.h"
 
 #ifndef CALL_FROM_TB0
 #define CALL_FROM_TB0(func) func()
@@ -285,6 +286,10 @@ void op_store_LO (void)
 #include "op_mem.c"
 #undef MEMSUFFIX
 
+#define MEMSUFFIX _super
+#include "op_mem.c"
+#undef MEMSUFFIX
+
 #define MEMSUFFIX _kernel
 #include "op_mem.c"
 #undef MEMSUFFIX
@@ -296,8 +301,8 @@ void op_addr_add (void)
 /* For compatibility with 32-bit code, data reference in user mode
    with Status_UX = 0 should be casted to 32-bit and sign extended.
    See the MIPS64 PRA manual, section 4.10. */
-#ifdef TARGET_MIPS64
-    if ((env->hflags & MIPS_HFLAG_UM) &&
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
+    if (((env->hflags & MIPS_HFLAG_KSU) == MIPS_HFLAG_UM) &&
         !(env->CP0_Status & (1 << CP0St_UX)))
         T0 = (int64_t)(int32_t)(T0 + T1);
     else
@@ -379,7 +384,7 @@ void op_divu (void)
     RETURN();
 }
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 /* Arithmetic */
 void op_dadd (void)
 {
@@ -448,7 +453,7 @@ void op_ddivu (void)
     RETURN();
 }
 #endif
-#endif /* TARGET_MIPS64 */
+#endif /* TARGET_MIPSN32 || TARGET_MIPS64 */
 
 /* Logical */
 void op_and (void)
@@ -537,39 +542,17 @@ void op_rotrv (void)
 
 void op_clo (void)
 {
-    int n;
-
-    if (T0 == ~((target_ulong)0)) {
-        T0 = 32;
-    } else {
-        for (n = 0; n < 32; n++) {
-            if (!(T0 & (1 << 31)))
-                break;
-            T0 = T0 << 1;
-        }
-        T0 = n;
-    }
+    T0 = clo32(T0);
     RETURN();
 }
 
 void op_clz (void)
 {
-    int n;
-
-    if (T0 == 0) {
-        T0 = 32;
-    } else {
-        for (n = 0; n < 32; n++) {
-            if (T0 & (1 << 31))
-                break;
-            T0 = T0 << 1;
-        }
-        T0 = n;
-    }
+    T0 = clz32(T0);
     RETURN();
 }
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 
 #if TARGET_LONG_BITS > HOST_LONG_BITS
 /* Those might call libgcc functions.  */
@@ -642,6 +625,18 @@ void op_dsrlv (void)
 void op_drotrv (void)
 {
     CALL_FROM_TB0(do_drotrv);
+    RETURN();
+}
+
+void op_dclo (void)
+{
+    CALL_FROM_TB0(do_dclo);
+    RETURN();
+}
+
+void op_dclz (void)
+{
+    CALL_FROM_TB0(do_dclz);
     RETURN();
 }
 
@@ -735,42 +730,20 @@ void op_drotrv (void)
        T0 = T1;
     RETURN();
 }
-#endif /* TARGET_LONG_BITS > HOST_LONG_BITS */
 
 void op_dclo (void)
 {
-    int n;
-
-    if (T0 == ~((target_ulong)0)) {
-        T0 = 64;
-    } else {
-        for (n = 0; n < 64; n++) {
-            if (!(T0 & (1ULL << 63)))
-                break;
-            T0 = T0 << 1;
-        }
-        T0 = n;
-    }
+    T0 = clo64(T0);
     RETURN();
 }
 
 void op_dclz (void)
 {
-    int n;
-
-    if (T0 == 0) {
-        T0 = 64;
-    } else {
-        for (n = 0; n < 64; n++) {
-            if (T0 & (1ULL << 63))
-                break;
-            T0 = T0 << 1;
-        }
-        T0 = n;
-    }
+    T0 = clz64(T0);
     RETURN();
 }
-#endif
+#endif /* TARGET_LONG_BITS > HOST_LONG_BITS */
+#endif /* TARGET_MIPSN32 || TARGET_MIPS64 */
 
 /* 64 bits arithmetic */
 #if TARGET_LONG_BITS > HOST_LONG_BITS
@@ -812,13 +785,13 @@ void op_msubu (void)
 
 #else /* TARGET_LONG_BITS > HOST_LONG_BITS */
 
-static inline uint64_t get_HILO (void)
+static always_inline uint64_t get_HILO (void)
 {
     return ((uint64_t)env->HI[0][env->current_tc] << 32) |
             ((uint64_t)(uint32_t)env->LO[0][env->current_tc]);
 }
 
-static inline void set_HILO (uint64_t HILO)
+static always_inline void set_HILO (uint64_t HILO)
 {
     env->LO[0][env->current_tc] = (int32_t)(HILO & 0xFFFFFFFF);
     env->HI[0][env->current_tc] = (int32_t)(HILO >> 32);
@@ -873,16 +846,16 @@ void op_msubu (void)
 }
 #endif /* TARGET_LONG_BITS > HOST_LONG_BITS */
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 void op_dmult (void)
 {
-    CALL_FROM_TB4(muls64, &(env->HI[0][env->current_tc]), &(env->LO[0][env->current_tc]), T0, T1);
+    CALL_FROM_TB4(muls64, &(env->LO[0][env->current_tc]), &(env->HI[0][env->current_tc]), T0, T1);
     RETURN();
 }
 
 void op_dmultu (void)
 {
-    CALL_FROM_TB4(mulu64, &(env->HI[0][env->current_tc]), &(env->LO[0][env->current_tc]), T0, T1);
+    CALL_FROM_TB4(mulu64, &(env->LO[0][env->current_tc]), &(env->HI[0][env->current_tc]), T0, T1);
     RETURN();
 }
 #endif
@@ -977,7 +950,7 @@ void op_save_btarget (void)
     RETURN();
 }
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 void op_save_btarget64 (void)
 {
     env->btarget = ((uint64_t)PARAM1 << 32) | (uint32_t)PARAM2;
@@ -1300,7 +1273,7 @@ void op_mftc0_status(void)
     T0 = env->CP0_Status & ~0xf1000018;
     T0 |= tcstatus & (0xf << CP0TCSt_TCU0);
     T0 |= (tcstatus & (1 << CP0TCSt_TMX)) >> (CP0TCSt_TMX - CP0St_MX);
-    T0 |= (tcstatus & (0x3 << CP0TCSt_TKSU)) >> (CP0TCSt_TKSU - CP0St_R0);
+    T0 |= (tcstatus & (0x3 << CP0TCSt_TKSU)) >> (CP0TCSt_TKSU - CP0St_KSU);
     RETURN();
 }
 
@@ -1481,7 +1454,14 @@ void op_mfc0_desave (void)
 
 void op_mtc0_index (void)
 {
-    env->CP0_Index = (env->CP0_Index & 0x80000000) | (T0 % env->tlb->nb_tlb);
+    int num = 1;
+    unsigned int tmp = env->tlb->nb_tlb;
+
+    do {
+        tmp >>= 1;
+        num <<= 1;
+    } while (tmp);
+    env->CP0_Index = (env->CP0_Index & 0x80000000) | (T0 & (num - 1));
     RETURN();
 }
 
@@ -1804,7 +1784,7 @@ void op_mtc0_entryhi (void)
 
     /* 1k pages not implemented */
     val = T0 & ((TARGET_PAGE_MASK << 1) | 0xFF);
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
     val &= env->SEGMask;
 #endif
     old = env->CP0_EntryHi;
@@ -1841,27 +1821,8 @@ void op_mtc0_status (void)
 
     val = T0 & mask;
     old = env->CP0_Status;
-    if (!(val & (1 << CP0St_EXL)) &&
-        !(val & (1 << CP0St_ERL)) &&
-        !(env->hflags & MIPS_HFLAG_DM) &&
-        (val & (1 << CP0St_UM)))
-        env->hflags |= MIPS_HFLAG_UM;
-#ifdef TARGET_MIPS64
-    if (!(env->CP0_Config0 & (0x3 << CP0C0_AT)) ||
-        ((env->hflags & MIPS_HFLAG_UM) &&
-        !(val & (1 << CP0St_PX)) &&
-        !(val & (1 << CP0St_UX))))
-        env->hflags &= ~MIPS_HFLAG_64;
-#endif
-    if (val & (1 << CP0St_CU1))
-        env->hflags |= MIPS_HFLAG_FPU;
-    else
-        env->hflags &= ~MIPS_HFLAG_FPU;
-    if (val & (1 << CP0St_FR))
-        env->hflags |= MIPS_HFLAG_F64;
-    else
-        env->hflags &= ~MIPS_HFLAG_F64;
     env->CP0_Status = (env->CP0_Status & ~mask) | val;
+    CALL_FROM_TB1(compute_hflags, env);
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB2(do_mtc0_status_debug, old, val);
     CALL_FROM_TB1(cpu_mips_update_irq, env);
@@ -1876,16 +1837,15 @@ void op_mttc0_status(void)
     env->CP0_Status = T0 & ~0xf1000018;
     tcstatus = (tcstatus & ~(0xf << CP0TCSt_TCU0)) | (T0 & (0xf << CP0St_CU0));
     tcstatus = (tcstatus & ~(1 << CP0TCSt_TMX)) | ((T0 & (1 << CP0St_MX)) << (CP0TCSt_TMX - CP0St_MX));
-    tcstatus = (tcstatus & ~(0x3 << CP0TCSt_TKSU)) | ((T0 & (0x3 << CP0St_R0)) << (CP0TCSt_TKSU - CP0St_R0));
+    tcstatus = (tcstatus & ~(0x3 << CP0TCSt_TKSU)) | ((T0 & (0x3 << CP0St_KSU)) << (CP0TCSt_TKSU - CP0St_KSU));
     env->CP0_TCStatus[other_tc] = tcstatus;
     RETURN();
 }
 
 void op_mtc0_intctl (void)
 {
-    /* vectored interrupts not implemented, timer on int 7,
-       no performance counters. */
-    env->CP0_IntCtl |= T0 & 0x000002e0;
+    /* vectored interrupts not implemented, no performance counters. */
+    env->CP0_IntCtl = (env->CP0_IntCtl & ~0x000002e0) | (T0 & 0x000002e0);
     RETURN();
 }
 
@@ -1905,11 +1865,19 @@ void op_mtc0_srsmap (void)
 void op_mtc0_cause (void)
 {
     uint32_t mask = 0x00C00300;
+    uint32_t old = env->CP0_Cause;
 
-    if ((env->CP0_Config0 & (0x7 << CP0C0_AR)) == (1 << CP0C0_AR))
+    if (env->insn_flags & ISA_MIPS32R2)
         mask |= 1 << CP0Ca_DC;
 
     env->CP0_Cause = (env->CP0_Cause & ~mask) | (T0 & mask);
+
+    if ((old ^ env->CP0_Cause) & (1 << CP0Ca_DC)) {
+        if (env->CP0_Cause & (1 << CP0Ca_DC))
+            CALL_FROM_TB1(cpu_mips_stop_count, env);
+        else
+            CALL_FROM_TB1(cpu_mips_start_count, env);
+    }
 
     /* Handle the software interrupt as an hardware one, as they
        are very similar */
@@ -2003,7 +1971,7 @@ void op_mtc0_depc (void)
 
 void op_mtc0_performance0 (void)
 {
-    env->CP0_Performance0 = T0; /* XXX */
+    env->CP0_Performance0 = T0 & 0x000007ff;
     RETURN();
 }
 
@@ -2043,7 +2011,7 @@ void op_mtc0_desave (void)
     RETURN();
 }
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 void op_dmfc0_yqmask (void)
 {
     T0 = env->CP0_YQMask;
@@ -2157,7 +2125,7 @@ void op_dmfc0_errorepc (void)
     T0 = env->CP0_ErrorEPC;
     RETURN();
 }
-#endif /* TARGET_MIPS64 */
+#endif /* TARGET_MIPSN32 || TARGET_MIPS64 */
 
 /* MIPS MT functions */
 void op_mftgpr(void)
@@ -2317,15 +2285,6 @@ void op_yield(void)
 # define DEBUG_FPU_STATE() do { } while(0)
 #endif
 
-void op_cp0_enabled(void)
-{
-    if (!(env->CP0_Status & (1 << CP0St_CU0)) &&
-        (env->hflags & MIPS_HFLAG_UM)) {
-        CALL_FROM_TB2(do_raise_exception_err, EXCP_CpU, 0);
-    }
-    RETURN();
-}
-
 void op_cfc1 (void)
 {
     CALL_FROM_TB1(do_cfc1, PARAM1);
@@ -2342,7 +2301,7 @@ void op_ctc1 (void)
 
 void op_mfc1 (void)
 {
-    T0 = WT0;
+    T0 = (int32_t)WT0;
     DEBUG_FPU_STATE();
     RETURN();
 }
@@ -2370,7 +2329,7 @@ void op_dmtc1 (void)
 
 void op_mfhc1 (void)
 {
-    T0 = WTH0;
+    T0 = (int32_t)WTH0;
     DEBUG_FPU_STATE();
     RETURN();
 }
@@ -3008,18 +2967,7 @@ void op_eret (void)
         env->PC[env->current_tc] = env->CP0_EPC;
         env->CP0_Status &= ~(1 << CP0St_EXL);
     }
-    if (!(env->CP0_Status & (1 << CP0St_EXL)) &&
-        !(env->CP0_Status & (1 << CP0St_ERL)) &&
-        !(env->hflags & MIPS_HFLAG_DM) &&
-        (env->CP0_Status & (1 << CP0St_UM)))
-        env->hflags |= MIPS_HFLAG_UM;
-#ifdef TARGET_MIPS64
-    if (!(env->CP0_Config0 & (0x3 << CP0C0_AT)) ||
-        ((env->hflags & MIPS_HFLAG_UM) &&
-        !(env->CP0_Status & (1 << CP0St_PX)) &&
-        !(env->CP0_Status & (1 << CP0St_UX))))
-        env->hflags &= ~MIPS_HFLAG_64;
-#endif
+    CALL_FROM_TB1(compute_hflags, env);
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB0(debug_post_eret);
     env->CP0_LLAddr = 1;
@@ -3031,19 +2979,8 @@ void op_deret (void)
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB0(debug_pre_eret);
     env->PC[env->current_tc] = env->CP0_DEPC;
-    env->hflags |= MIPS_HFLAG_DM;
-    if (!(env->CP0_Status & (1 << CP0St_EXL)) &&
-        !(env->CP0_Status & (1 << CP0St_ERL)) &&
-        !(env->hflags & MIPS_HFLAG_DM) &&
-        (env->CP0_Status & (1 << CP0St_UM)))
-        env->hflags |= MIPS_HFLAG_UM;
-#ifdef TARGET_MIPS64
-    if (!(env->CP0_Config0 & (0x3 << CP0C0_AT)) ||
-        ((env->hflags & MIPS_HFLAG_UM) &&
-        !(env->CP0_Status & (1 << CP0St_PX)) &&
-        !(env->CP0_Status & (1 << CP0St_UX))))
-        env->hflags &= ~MIPS_HFLAG_64;
-#endif
+    env->hflags &= MIPS_HFLAG_DM;
+    CALL_FROM_TB1(compute_hflags, env);
     if (loglevel & CPU_LOG_EXEC)
         CALL_FROM_TB0(debug_post_eret);
     env->CP0_LLAddr = 1;
@@ -3052,9 +2989,8 @@ void op_deret (void)
 
 void op_rdhwr_cpunum(void)
 {
-    if (!(env->hflags & MIPS_HFLAG_UM) ||
-        (env->CP0_HWREna & (1 << 0)) ||
-        (env->CP0_Status & (1 << CP0St_CU0)))
+    if ((env->hflags & MIPS_HFLAG_CP0) ||
+        (env->CP0_HWREna & (1 << 0)))
         T0 = env->CP0_EBase & 0x3ff;
     else
         CALL_FROM_TB1(do_raise_exception, EXCP_RI);
@@ -3063,9 +2999,8 @@ void op_rdhwr_cpunum(void)
 
 void op_rdhwr_synci_step(void)
 {
-    if (!(env->hflags & MIPS_HFLAG_UM) ||
-        (env->CP0_HWREna & (1 << 1)) ||
-        (env->CP0_Status & (1 << CP0St_CU0)))
+    if ((env->hflags & MIPS_HFLAG_CP0) ||
+        (env->CP0_HWREna & (1 << 1)))
         T0 = env->SYNCI_Step;
     else
         CALL_FROM_TB1(do_raise_exception, EXCP_RI);
@@ -3074,9 +3009,8 @@ void op_rdhwr_synci_step(void)
 
 void op_rdhwr_cc(void)
 {
-    if (!(env->hflags & MIPS_HFLAG_UM) ||
-        (env->CP0_HWREna & (1 << 2)) ||
-        (env->CP0_Status & (1 << CP0St_CU0)))
+    if ((env->hflags & MIPS_HFLAG_CP0) ||
+        (env->CP0_HWREna & (1 << 2)))
         T0 = env->CP0_Count;
     else
         CALL_FROM_TB1(do_raise_exception, EXCP_RI);
@@ -3085,9 +3019,8 @@ void op_rdhwr_cc(void)
 
 void op_rdhwr_ccres(void)
 {
-    if (!(env->hflags & MIPS_HFLAG_UM) ||
-        (env->CP0_HWREna & (1 << 3)) ||
-        (env->CP0_Status & (1 << CP0St_CU0)))
+    if ((env->hflags & MIPS_HFLAG_CP0) ||
+        (env->CP0_HWREna & (1 << 3)))
         T0 = env->CCRes;
     else
         CALL_FROM_TB1(do_raise_exception, EXCP_RI);
@@ -3106,7 +3039,7 @@ void op_save_pc (void)
     RETURN();
 }
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 void op_save_pc64 (void)
 {
     env->PC[env->current_tc] = ((uint64_t)PARAM1 << 32) | (uint32_t)PARAM2;
@@ -3178,7 +3111,7 @@ void op_wsbh(void)
     RETURN();
 }
 
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
 void op_dext(void)
 {
     unsigned int pos = PARAM1;

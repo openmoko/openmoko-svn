@@ -109,6 +109,14 @@ static inline char *realpath(const char *path, char *resolved_path)
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
+#ifndef always_inline
+#if (__GNUC__ < 3) || defined(__APPLE__)
+#define always_inline inline
+#else
+#define always_inline __attribute__ (( always_inline )) inline
+#endif
+#endif
+
 /* cutils.c */
 void pstrcpy(char *buf, int buf_size, const char *str);
 char *pstrcat(char *buf, int buf_size, const char *s);
@@ -121,6 +129,7 @@ uint64_t muldiv64(uint64_t a, uint32_t b, uint32_t c);
 void hw_error(const char *fmt, ...);
 
 extern const char *bios_dir;
+extern const char *bios_name;
 
 extern int vm_running;
 extern const char *qemu_name;
@@ -188,7 +197,9 @@ extern unsigned int nb_prom_envs;
 
 /* XXX: make it dynamic */
 #define MAX_BIOS_SIZE (4 * 1024 * 1024)
-#if defined (TARGET_PPC) || defined (TARGET_SPARC64)
+#if defined (TARGET_PPC)
+#define BIOS_SIZE (1024 * 1024)
+#elif defined (TARGET_SPARC64)
 #define BIOS_SIZE ((512 + 32) * 1024)
 #elif defined(TARGET_MIPS)
 #define BIOS_SIZE (4 * 1024 * 1024)
@@ -431,6 +442,9 @@ typedef struct NICInfo {
 
 extern int nb_nics;
 extern NICInfo nd_table[MAX_NICS];
+
+/* SLIRP */
+void do_info_slirp(void);
 
 /* timers */
 
@@ -734,14 +748,6 @@ int qemu_register_machine(QEMUMachine *m);
 
 typedef void SetIRQFunc(void *opaque, int irq_num, int level);
 
-#if defined(TARGET_PPC)
-void ppc_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
-#endif
-
-#if defined(TARGET_MIPS)
-void mips_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
-#endif
-
 #include "hw/irq.h"
 
 /* ISA bus */
@@ -857,12 +863,6 @@ PCIBus *pci_bridge_init(PCIBus *bus, int devfn, uint32_t id,
 /* prep_pci.c */
 PCIBus *pci_prep_init(qemu_irq *pic);
 
-/* grackle_pci.c */
-PCIBus *pci_grackle_init(uint32_t base, qemu_irq *pic);
-
-/* unin_pci.c */
-PCIBus *pci_pmac_init(qemu_irq *pic);
-
 /* apb_pci.c */
 PCIBus *pci_apb_init(target_phys_addr_t special_base, target_phys_addr_t mem_base,
                      qemu_irq *pic);
@@ -889,9 +889,6 @@ enum {
 };
 qemu_irq *openpic_init (PCIBus *bus, int *pmem_index, int nb_cpus,
                         qemu_irq **irqs, qemu_irq irq_out);
-
-/* heathrow_pic.c */
-qemu_irq *heathrow_pic_init(int *pmem_index);
 
 /* gt64xxx.c */
 PCIBus *pci_gt64120_init(qemu_irq *pic);
@@ -1002,7 +999,6 @@ void pci_piix3_ide_init(PCIBus *bus, BlockDriverState **hd_table, int devfn,
                         qemu_irq *pic);
 void pci_piix4_ide_init(PCIBus *bus, BlockDriverState **hd_table, int devfn,
                         qemu_irq *pic);
-int pmac_ide_init (BlockDriverState **hd_table, qemu_irq irq);
 
 /* cdrom.c */
 int cdrom_read_toc(int nb_sectors, uint8_t *buf, int msf, int start_track);
@@ -1069,6 +1065,9 @@ void pci_pcnet_init(PCIBus *bus, NICInfo *nd, int devfn);
 void lance_init(NICInfo *nd, target_phys_addr_t leaddr, void *dma_opaque,
                 qemu_irq irq, qemu_irq *reset);
 
+/* mipsnet.c */
+void mipsnet_init(int base, qemu_irq irq, NICInfo *nd);
+
 /* vmmouse.c */
 void *vmmouse_init(void *m);
 
@@ -1132,6 +1131,7 @@ void irq_info(void);
 typedef struct IOAPICState IOAPICState;
 
 int apic_init(CPUState *env);
+int apic_accept_pic_intr(CPUState *env);
 int apic_get_interrupt(CPUState *env);
 IOAPICState *ioapic_init(void);
 void ioapic_set_irq(void *opaque, int vector, int level);
@@ -1173,6 +1173,9 @@ i2c_bus *piix4_pm_init(PCIBus *bus, int devfn, uint32_t smb_io_base);
 void piix4_smbus_register_device(SMBusDevice *dev, uint8_t addr);
 void acpi_bios_init(void);
 
+/* Axis ETRAX.  */
+extern QEMUMachine bareetraxfs_machine;
+
 /* pc.c */
 extern QEMUMachine pc_machine;
 extern QEMUMachine isapc_machine;
@@ -1194,11 +1197,14 @@ extern QEMUMachine mips_machine;
 /* mips_malta.c */
 extern QEMUMachine mips_malta_machine;
 
-/* mips_int.c */
-extern void cpu_mips_irq_init_cpu(CPUState *env);
-
 /* mips_pica61.c */
 extern QEMUMachine mips_pica61_machine;
+
+/* mips_mipssim.c */
+extern QEMUMachine mips_mipssim_machine;
+
+/* mips_int.c */
+extern void cpu_mips_irq_init_cpu(CPUState *env);
 
 /* mips_timer.c */
 extern void cpu_mips_clock_init(CPUState *);
@@ -1206,6 +1212,9 @@ extern void cpu_mips_irqctrl_init (void);
 
 /* shix.c */
 extern QEMUMachine shix_machine;
+
+/* r2d.c */
+extern QEMUMachine r2d_machine;
 
 #ifdef TARGET_PPC
 /* PowerPC hardware exceptions management helpers */
@@ -1234,12 +1243,12 @@ clk_setup_cb ppc_emb_timers_init (CPUState *env, uint32_t freq);
 void ppc40x_core_reset (CPUState *env);
 void ppc40x_chip_reset (CPUState *env);
 void ppc40x_system_reset (CPUState *env);
-#endif
 void PREP_debug_write (void *opaque, uint32_t addr, uint32_t val);
 
 extern CPUWriteMemoryFunc *PPC_io_write[];
 extern CPUReadMemoryFunc *PPC_io_read[];
 void PPC_debug_write (void *opaque, uint32_t addr, uint32_t val);
+#endif
 
 /* sun4m.c */
 extern QEMUMachine ss5_machine, ss10_machine;
@@ -1284,7 +1293,8 @@ int load_aout(const char *filename, uint8_t *addr);
 int load_uboot(const char *filename, target_ulong *ep, int *is_linux);
 
 /* slavio_timer.c */
-void slavio_timer_init(target_phys_addr_t addr, qemu_irq irq, int mode);
+void slavio_timer_init_all(target_phys_addr_t base, qemu_irq master_irq,
+                           qemu_irq *cpu_irqs);
 
 /* slavio_serial.c */
 SerialState *slavio_serial_init(target_phys_addr_t base, qemu_irq irq,
@@ -1318,20 +1328,28 @@ void cs_init(target_phys_addr_t base, int irq, void *intctl);
 extern QEMUMachine sun4u_machine;
 
 /* NVRAM helpers */
+typedef uint32_t (*nvram_read_t)(void *private, uint32_t addr);
+typedef void (*nvram_write_t)(void *private, uint32_t addr, uint32_t val);
+typedef struct nvram_t {
+    void *opaque;
+    nvram_read_t read_fn;
+    nvram_write_t write_fn;
+} nvram_t;
+
 #include "hw/m48t59.h"
 
-void NVRAM_set_byte (m48t59_t *nvram, uint32_t addr, uint8_t value);
-uint8_t NVRAM_get_byte (m48t59_t *nvram, uint32_t addr);
-void NVRAM_set_word (m48t59_t *nvram, uint32_t addr, uint16_t value);
-uint16_t NVRAM_get_word (m48t59_t *nvram, uint32_t addr);
-void NVRAM_set_lword (m48t59_t *nvram, uint32_t addr, uint32_t value);
-uint32_t NVRAM_get_lword (m48t59_t *nvram, uint32_t addr);
-void NVRAM_set_string (m48t59_t *nvram, uint32_t addr,
+void NVRAM_set_byte (nvram_t *nvram, uint32_t addr, uint8_t value);
+uint8_t NVRAM_get_byte (nvram_t *nvram, uint32_t addr);
+void NVRAM_set_word (nvram_t *nvram, uint32_t addr, uint16_t value);
+uint16_t NVRAM_get_word (nvram_t *nvram, uint32_t addr);
+void NVRAM_set_lword (nvram_t *nvram, uint32_t addr, uint32_t value);
+uint32_t NVRAM_get_lword (nvram_t *nvram, uint32_t addr);
+void NVRAM_set_string (nvram_t *nvram, uint32_t addr,
                        const unsigned char *str, uint32_t max);
-int NVRAM_get_string (m48t59_t *nvram, uint8_t *dst, uint16_t addr, int max);
-void NVRAM_set_crc (m48t59_t *nvram, uint32_t addr,
+int NVRAM_get_string (nvram_t *nvram, uint8_t *dst, uint16_t addr, int max);
+void NVRAM_set_crc (nvram_t *nvram, uint32_t addr,
                     uint32_t start, uint32_t count);
-int PPC_NVRAM_set_params (m48t59_t *nvram, uint16_t NVRAM_size,
+int PPC_NVRAM_set_params (nvram_t *nvram, uint16_t NVRAM_size,
                           const unsigned char *arch,
                           uint32_t RAM_size, int boot_device,
                           uint32_t kernel_image, uint32_t kernel_size,
@@ -1379,10 +1397,7 @@ ADBDevice *adb_register_device(ADBBusState *s, int devaddr,
 void adb_kbd_init(ADBBusState *bus);
 void adb_mouse_init(ADBBusState *bus);
 
-/* cuda.c */
-
 extern ADBBusState adb_bus;
-int cuda_init(qemu_irq irq);
 
 #include "hw/usb.h"
 
@@ -1522,6 +1537,17 @@ typedef struct {
 
 int sh7750_register_io_device(struct SH7750State *s,
 			      sh7750_io_device * device);
+/* sh_timer.c */
+#define TMU012_FEAT_TOCR   (1 << 0)
+#define TMU012_FEAT_3CHAN  (1 << 1)
+#define TMU012_FEAT_EXTCLK (1 << 2)
+void tmu012_init(uint32_t base, int feat, uint32_t freq);
+
+/* sh_serial.c */
+#define SH_SERIAL_FEAT_SCIF (1 << 0)
+void sh_serial_init (target_phys_addr_t base, int feat,
+		     uint32_t freq, CharDriverState *chr);
+
 /* tc58128.c */
 int tc58128_init(struct SH7750State *s, char *zone1, char *zone2);
 
@@ -1555,7 +1581,17 @@ uint8_t nand_getio(struct nand_flash_s *s);
 #define NAND_MFR_HYNIX		0xad
 #define NAND_MFR_MICRON		0x2c
 
-#include "ecc.h"
+/* ecc.c */
+struct ecc_state_s {
+    uint8_t cp;		/* Column parity */
+    uint16_t lp[2];	/* Line parity */
+    uint16_t count;
+};
+
+uint8_t ecc_digest(struct ecc_state_s *s, uint8_t sample);
+void ecc_reset(struct ecc_state_s *s);
+void ecc_put(QEMUFile *f, struct ecc_state_s *s);
+void ecc_get(QEMUFile *f, struct ecc_state_s *s);
 
 /* ads7846.c */
 struct ads7846_state_s;
@@ -1653,6 +1689,9 @@ void qemu_get_ptimer(QEMUFile *f, ptimer_state *s);
 #include "hw/s3c.h"
 
 #include "hw/omap.h"
+
+/* tsc210x.c */
+struct uwire_slave_s *tsc2102_init(qemu_irq pint);
 
 /* mcf_uart.c */
 uint32_t mcf_uart_read(void *opaque, target_phys_addr_t addr);

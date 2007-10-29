@@ -57,6 +57,7 @@ void OPPROTO glue(op_store_T2_gpr_gpr, REG) (void)
 }
 #endif
 
+/* General purpose registers containing vector operands moves */
 #if defined(TARGET_PPCEMB)
 void OPPROTO glue(op_load_gpr64_T0_gpr, REG) (void)
 {
@@ -99,6 +100,45 @@ void OPPROTO glue(op_store_T2_gpr64_gpr, REG) (void)
 #endif
 #endif /* defined(TARGET_PPCEMB) */
 
+/* Altivec registers moves */
+void OPPROTO glue(op_load_avr_A0_avr, REG) (void)
+{
+    AVR0 = env->avr[REG];
+    RETURN();
+}
+
+void OPPROTO glue(op_load_avr_A1_avr, REG) (void)
+{
+    AVR1 = env->avr[REG];
+    RETURN();
+}
+
+void OPPROTO glue(op_load_avr_A2_avr, REG) (void)
+{
+    AVR2 = env->avr[REG];
+    RETURN();
+}
+
+void OPPROTO glue(op_store_A0_avr_avr, REG) (void)
+{
+    env->avr[REG] = AVR0;
+    RETURN();
+}
+
+void OPPROTO glue(op_store_A1_avr_avr, REG) (void)
+{
+    env->avr[REG] = AVR1;
+    RETURN();
+}
+
+#if 0 // unused
+void OPPROTO glue(op_store_A2_avr_avr, REG) (void)
+{
+    env->avr[REG] = AVR2;
+    RETURN();
+}
+#endif
+
 #if REG <= 7
 /* Condition register moves */
 void OPPROTO glue(op_load_crf_T0_crf, REG) (void)
@@ -124,39 +164,6 @@ void OPPROTO glue(op_store_T1_crf_crf, REG) (void)
     env->crf[REG] = T1;
     RETURN();
 }
-
-/* Floating point condition and status register moves */
-void OPPROTO glue(op_load_fpscr_T0_fpscr, REG) (void)
-{
-    T0 = env->fpscr[REG];
-    RETURN();
-}
-
-#if REG == 0
-void OPPROTO glue(op_store_T0_fpscr_fpscr, REG) (void)
-{
-    env->fpscr[REG] = (env->fpscr[REG] & 0x9) | (T0 & ~0x9);
-    RETURN();
-}
-
-void OPPROTO glue(op_clear_fpscr_fpscr, REG) (void)
-{
-    env->fpscr[REG] = (env->fpscr[REG] & 0x9);
-    RETURN();
-}
-#else
-void OPPROTO glue(op_store_T0_fpscr_fpscr, REG) (void)
-{
-    env->fpscr[REG] = T0;
-    RETURN();
-}
-
-void OPPROTO glue(op_clear_fpscr_fpscr, REG) (void)
-{
-    env->fpscr[REG] = 0x0;
-    RETURN();
-}
-#endif
 
 #endif /* REG <= 7 */
 

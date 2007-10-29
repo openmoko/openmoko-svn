@@ -31,7 +31,11 @@ void do_interrupt(int is_hw)
 extern int semihosting_enabled;
 
 #define MMUSUFFIX _mmu
-#define GETPC() (__builtin_return_address(0))
+#ifdef __s390__
+# define GETPC() ((void*)((unsigned long)__builtin_return_address(0) & 0x7fffffffUL))
+#else
+# define GETPC() (__builtin_return_address(0))
+#endif
 
 #define SHIFT 0
 #include "softmmu_template.h"
@@ -49,7 +53,7 @@ extern int semihosting_enabled;
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
 /* XXX: fix it to restore all registers */
-void tlb_fill (target_ulong addr, int is_write, int is_user, void *retaddr)
+void tlb_fill (target_ulong addr, int is_write, int mmu_idx, void *retaddr)
 {
     TranslationBlock *tb;
     CPUState *saved_env;
@@ -60,7 +64,7 @@ void tlb_fill (target_ulong addr, int is_write, int is_user, void *retaddr)
        generated code */
     saved_env = env;
     env = cpu_single_env;
-    ret = cpu_m68k_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    ret = cpu_m68k_handle_mmu_fault(env, addr, is_write, mmu_idx, 1);
     if (__builtin_expect(ret, 0)) {
         if (retaddr) {
             /* now we have a real cpu fault */

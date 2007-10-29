@@ -161,10 +161,9 @@ static void set_alarm (m48t59_t *NVRAM, struct tm *tm)
     NVRAM->alarm = mktime(tm);
     if (NVRAM->alrm_timer != NULL) {
         qemu_del_timer(NVRAM->alrm_timer);
-	NVRAM->alrm_timer = NULL;
+        if (NVRAM->alarm - time(NULL) > 0)
+            qemu_mod_timer(NVRAM->alrm_timer, NVRAM->alarm * 1000);
     }
-    if (NVRAM->alarm - time(NULL) > 0)
-	qemu_mod_timer(NVRAM->alrm_timer, NVRAM->alarm * 1000);
 }
 
 /* Watchdog management */
@@ -188,21 +187,21 @@ static void set_up_watchdog (m48t59_t *NVRAM, uint8_t value)
 {
     uint64_t interval; /* in 1/16 seconds */
 
+    NVRAM->buffer[0x1FF0] &= ~0x80;
     if (NVRAM->wd_timer != NULL) {
         qemu_del_timer(NVRAM->wd_timer);
-	NVRAM->wd_timer = NULL;
-    }
-    NVRAM->buffer[0x1FF0] &= ~0x80;
-    if (value != 0) {
-	interval = (1 << (2 * (value & 0x03))) * ((value >> 2) & 0x1F);
-	qemu_mod_timer(NVRAM->wd_timer, ((uint64_t)time(NULL) * 1000) +
-		       ((interval * 1000) >> 4));
+        if (value != 0) {
+            interval = (1 << (2 * (value & 0x03))) * ((value >> 2) & 0x1F);
+            qemu_mod_timer(NVRAM->wd_timer, ((uint64_t)time(NULL) * 1000) +
+                           ((interval * 1000) >> 4));
+        }
     }
 }
 
 /* Direct access to NVRAM */
-void m48t59_write (m48t59_t *NVRAM, uint32_t addr, uint32_t val)
+void m48t59_write (void *opaque, uint32_t addr, uint32_t val)
 {
+    m48t59_t *NVRAM = opaque;
     struct tm tm;
     int tmp;
 
@@ -359,8 +358,9 @@ void m48t59_write (m48t59_t *NVRAM, uint32_t addr, uint32_t val)
     }
 }
 
-uint32_t m48t59_read (m48t59_t *NVRAM, uint32_t addr)
+uint32_t m48t59_read (void *opaque, uint32_t addr)
 {
+    m48t59_t *NVRAM = opaque;
     struct tm tm;
     uint32_t retval = 0xFF;
 
@@ -453,13 +453,17 @@ uint32_t m48t59_read (m48t59_t *NVRAM, uint32_t addr)
     return retval;
 }
 
-void m48t59_set_addr (m48t59_t *NVRAM, uint32_t addr)
+void m48t59_set_addr (void *opaque, uint32_t addr)
 {
+    m48t59_t *NVRAM = opaque;
+
     NVRAM->addr = addr;
 }
 
-void m48t59_toggle_lock (m48t59_t *NVRAM, int lock)
+void m48t59_toggle_lock (void *opaque, int lock)
 {
+    m48t59_t *NVRAM = opaque;
+
     NVRAM->lock ^= 1 << lock;
 }
 

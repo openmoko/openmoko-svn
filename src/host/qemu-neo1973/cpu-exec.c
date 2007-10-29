@@ -77,7 +77,7 @@ void cpu_resume_from_signal(CPUState *env1, void *puc)
 
 static TranslationBlock *tb_find_slow(target_ulong pc,
                                       target_ulong cs_base,
-                                      unsigned int flags)
+                                      uint64_t flags)
 {
     TranslationBlock *tb, **ptb1;
     int code_gen_size;
@@ -155,7 +155,7 @@ static inline TranslationBlock *tb_find_fast(void)
 {
     TranslationBlock *tb;
     target_ulong cs_base, pc;
-    unsigned int flags;
+    uint64_t flags;
 
     /* we record a subset of the CPU state. It will
        always be the same before a given translated block
@@ -163,6 +163,7 @@ static inline TranslationBlock *tb_find_fast(void)
 #if defined(TARGET_I386)
     flags = env->hflags;
     flags |= (env->eflags & (IOPL_MASK | TF_MASK | VM_MASK));
+    flags |= env->intercept;
     cs_base = env->segs[R_CS].base;
     pc = cs_base + env->eip;
 #elif defined(TARGET_ARM)
@@ -180,8 +181,9 @@ static inline TranslationBlock *tb_find_fast(void)
     flags = (((env->pstate & PS_PEF) >> 1) | ((env->fprs & FPRS_FEF) << 2))
         | (env->pstate & PS_PRIV) | ((env->lsu & (DMMU_E | IMMU_E)) >> 2);
 #else
-    // FPU enable . MMU enabled . MMU no-fault . Supervisor
-    flags = (env->psref << 3) | ((env->mmuregs[0] & (MMU_E | MMU_NF)) << 1)
+    // FPU enable . MMU Boot . MMU enabled . MMU no-fault . Supervisor
+    flags = (env->psref << 4) | (((env->mmuregs[0] & MMU_BM) >> 14) << 3)
+        | ((env->mmuregs[0] & (MMU_E | MMU_NF)) << 1)
         | env->psrs;
 #endif
     cs_base = env->npc;
@@ -206,6 +208,10 @@ static inline TranslationBlock *tb_find_fast(void)
     pc = env->pc;
 #elif defined(TARGET_ALPHA)
     flags = env->ps;
+    cs_base = 0;
+    pc = env->pc;
+#elif defined(TARGET_CRIS)
+    flags = 0;
     cs_base = 0;
     pc = env->pc;
 #else
@@ -282,6 +288,7 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_PPC)
 #elif defined(TARGET_MIPS)
 #elif defined(TARGET_SH4)
+#elif defined(TARGET_CRIS)
     /* XXXXX */
 #else
 #error unsupported target CPU
@@ -333,6 +340,8 @@ int cpu_exec(CPUState *env1)
 		    do_interrupt(env);
 #elif defined(TARGET_ALPHA)
                     do_interrupt(env);
+#elif defined(TARGET_CRIS)
+                    do_interrupt(env);
 #elif defined(TARGET_M68K)
                     do_interrupt(0);
 #endif
@@ -372,14 +381,18 @@ int cpu_exec(CPUState *env1)
                 tmp_T0 = T0;
 #endif
                 interrupt_request = env->interrupt_request;
-                if (__builtin_expect(interrupt_request, 0)) {
+                if (__builtin_expect(interrupt_request, 0)
+#if defined(TARGET_I386)
+			&& env->hflags & HF_GIF_MASK
+#endif
+				) {
                     if (interrupt_request & CPU_INTERRUPT_DEBUG) {
                         env->interrupt_request &= ~CPU_INTERRUPT_DEBUG;
                         env->exception_index = EXCP_DEBUG;
                         cpu_loop_exit();
                     }
 #if defined(TARGET_ARM) || defined(TARGET_SPARC) || defined(TARGET_MIPS) || \
-    defined(TARGET_PPC) || defined(TARGET_ALPHA)
+    defined(TARGET_PPC) || defined(TARGET_ALPHA) || defined(TARGET_CRIS)
                     if (interrupt_request & CPU_INTERRUPT_HALT) {
                         env->interrupt_request &= ~CPU_INTERRUPT_HALT;
                         env->halted = 1;
@@ -390,6 +403,7 @@ int cpu_exec(CPUState *env1)
 #if defined(TARGET_I386)
                     if ((interrupt_request & CPU_INTERRUPT_SMI) &&
                         !(env->hflags & HF_SMM_MASK)) {
+                        svm_check_intercept(SVM_EXIT_SMI);
                         env->interrupt_request &= ~CPU_INTERRUPT_SMI;
                         do_smm_enter();
 #if defined(__sparc__) && !defined(HOST_SOLARIS)
@@ -398,10 +412,11 @@ int cpu_exec(CPUState *env1)
                         T0 = 0;
 #endif
                     } else if ((interrupt_request & CPU_INTERRUPT_HARD) &&
-                        (env->eflags & IF_MASK) &&
+                        (env->eflags & IF_MASK || env->hflags & HF_HIF_MASK) &&
                         !(env->hflags & HF_INHIBIT_IRQ_MASK)) {
                         int intno;
-                        env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+                        svm_check_intercept(SVM_EXIT_INTR);
+                        env->interrupt_request &= ~(CPU_INTERRUPT_HARD | CPU_INTERRUPT_VIRQ);
                         intno = cpu_get_pic_interrupt(env);
                         if (loglevel & CPU_LOG_TB_IN_ASM) {
                             fprintf(logfile, "Servicing hardware INT=0x%02x\n", intno);
@@ -413,6 +428,25 @@ int cpu_exec(CPUState *env1)
                         tmp_T0 = 0;
 #else
                         T0 = 0;
+#endif
+#if !defined(CONFIG_USER_ONLY)
+                    } else if ((interrupt_request & CPU_INTERRUPT_VIRQ) &&
+                        (env->eflags & IF_MASK) && !(env->hflags & HF_INHIBIT_IRQ_MASK)) {
+                         int intno;
+                         /* FIXME: this should respect TPR */
+                         env->interrupt_request &= ~CPU_INTERRUPT_VIRQ;
+                         svm_check_intercept(SVM_EXIT_VINTR);
+                         intno = ldl_phys(env->vm_vmcb + offsetof(struct vmcb, control.int_vector));
+                         if (loglevel & CPU_LOG_TB_IN_ASM)
+                             fprintf(logfile, "Servicing virtual hardware INT=0x%02x\n", intno);
+	                 do_interrupt(intno, 0, 0, -1, 1);
+                         stl_phys(env->vm_vmcb + offsetof(struct vmcb, control.int_ctl),
+                                  ldl_phys(env->vm_vmcb + offsetof(struct vmcb, control.int_ctl)) & ~V_IRQ_MASK);
+#if defined(__sparc__) && !defined(HOST_SOLARIS)
+                         tmp_T0 = 0;
+#else
+                         T0 = 0;
+#endif
 #endif
                     }
 #elif defined(TARGET_PPC)
@@ -490,6 +524,11 @@ int cpu_exec(CPUState *env1)
                     if (interrupt_request & CPU_INTERRUPT_HARD) {
                         do_interrupt(env);
                     }
+#elif defined(TARGET_CRIS)
+                    if (interrupt_request & CPU_INTERRUPT_HARD) {
+                        do_interrupt(env);
+			env->interrupt_request &= ~CPU_INTERRUPT_HARD;
+                    }
 #elif defined(TARGET_M68K)
                     if (interrupt_request & CPU_INTERRUPT_HARD
                         && ((env->sr & SR_I) >> SR_I_SHIFT)
@@ -548,6 +587,8 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_SH4)
 		    cpu_dump_state(env, logfile, fprintf, 0);
 #elif defined(TARGET_ALPHA)
+                    cpu_dump_state(env, logfile, fprintf, 0);
+#elif defined(TARGET_CRIS)
                     cpu_dump_state(env, logfile, fprintf, 0);
 #else
 #error unsupported target CPU
@@ -742,6 +783,7 @@ int cpu_exec(CPUState *env1)
 #elif defined(TARGET_MIPS)
 #elif defined(TARGET_SH4)
 #elif defined(TARGET_ALPHA)
+#elif defined(TARGET_CRIS)
     /* XXXXX */
 #else
 #error unsupported target CPU
@@ -842,8 +884,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     }
 
     /* see if it is an MMU fault */
-    ret = cpu_x86_handle_mmu_fault(env, address, is_write,
-                                   ((env->hflags & HF_CPL_MASK) == 3), 0);
+    ret = cpu_x86_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -892,7 +933,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
         return 1;
     }
     /* see if it is an MMU fault */
-    ret = cpu_arm_handle_mmu_fault(env, address, is_write, 1, 0);
+    ret = cpu_arm_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -928,7 +969,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
         return 1;
     }
     /* see if it is an MMU fault */
-    ret = cpu_sparc_handle_mmu_fault(env, address, is_write, 1, 0);
+    ret = cpu_sparc_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -965,7 +1006,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     }
 
     /* see if it is an MMU fault */
-    ret = cpu_ppc_handle_mmu_fault(env, address, is_write, msr_pr, 0);
+    ret = cpu_ppc_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -1014,7 +1055,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
         return 1;
     }
     /* see if it is an MMU fault */
-    ret = cpu_m68k_handle_mmu_fault(env, address, is_write, 1, 0);
+    ret = cpu_m68k_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -1054,7 +1095,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     }
 
     /* see if it is an MMU fault */
-    ret = cpu_mips_handle_mmu_fault(env, address, is_write, 1, 0);
+    ret = cpu_mips_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -1104,7 +1145,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     }
 
     /* see if it is an MMU fault */
-    ret = cpu_sh4_handle_mmu_fault(env, address, is_write, 1, 0);
+    ret = cpu_sh4_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -1149,7 +1190,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     }
 
     /* see if it is an MMU fault */
-    ret = cpu_alpha_handle_mmu_fault(env, address, is_write, 1, 0);
+    ret = cpu_alpha_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
     if (ret == 0)
@@ -1173,6 +1214,51 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     /* never comes here */
     return 1;
 }
+#elif defined (TARGET_CRIS)
+static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
+                                    int is_write, sigset_t *old_set,
+                                    void *puc)
+{
+    TranslationBlock *tb;
+    int ret;
+
+    if (cpu_single_env)
+        env = cpu_single_env; /* XXX: find a correct solution for multithread */
+#if defined(DEBUG_SIGNAL)
+    printf("qemu: SIGSEGV pc=0x%08lx address=%08lx w=%d oldset=0x%08lx\n",
+           pc, address, is_write, *(unsigned long *)old_set);
+#endif
+    /* XXX: locking issue */
+    if (is_write && page_unprotect(h2g(address), pc, puc)) {
+        return 1;
+    }
+
+    /* see if it is an MMU fault */
+    ret = cpu_cris_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
+    if (ret < 0)
+        return 0; /* not an MMU fault */
+    if (ret == 0)
+        return 1; /* the MMU fault was handled without causing real CPU fault */
+
+    /* now we have a real cpu fault */
+    tb = tb_find_pc(pc);
+    if (tb) {
+        /* the PC is inside the translated code. It means that we have
+           a virtual CPU fault */
+        cpu_restore_state(tb, env, pc, puc);
+    }
+#if 0
+        printf("PF exception: NIP=0x%08x error=0x%x %p\n",
+               env->nip, env->error_code, tb);
+#endif
+    /* we restore the process signal mask as the sigreturn should
+       do it (XXX: use sigsetjmp) */
+    sigprocmask(SIG_SETMASK, old_set, NULL);
+    cpu_loop_exit();
+    /* never comes here */
+    return 1;
+}
+
 #else
 #error unsupported target CPU
 #endif

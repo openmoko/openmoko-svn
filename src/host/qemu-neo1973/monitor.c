@@ -509,7 +509,7 @@ static void term_printc(int c)
 }
 
 static void memory_dump(int count, int format, int wsize,
-                        target_ulong addr, int is_physical)
+                        target_phys_addr_t addr, int is_physical)
 {
     CPUState *env;
     int nb_per_line, l, line_size, i, max_digits, len;
@@ -572,7 +572,10 @@ static void memory_dump(int count, int format, int wsize,
     }
 
     while (len > 0) {
-        term_printf(TARGET_FMT_lx ":", addr);
+        if (is_physical)
+            term_printf(TARGET_FMT_plx ":", addr);
+        else
+            term_printf(TARGET_FMT_lx ":", (target_ulong)addr);
         l = len;
         if (l > line_size)
             l = line_size;
@@ -640,18 +643,24 @@ static void do_memory_dump(int count, int format, int size,
     memory_dump(count, format, size, addr, 0);
 }
 
+#if TARGET_PHYS_ADDR_BITS > 32
+#define GET_TPHYSADDR(h, l) (((uint64_t)(h) << 32) | (l))
+#else
+#define GET_TPHYSADDR(h, l) (l)
+#endif
+
 static void do_physical_memory_dump(int count, int format, int size,
                                     uint32_t addrh, uint32_t addrl)
 
 {
-    target_long addr = GET_TLONG(addrh, addrl);
+    target_phys_addr_t addr = GET_TPHYSADDR(addrh, addrl);
     memory_dump(count, format, size, addr, 1);
 }
 
 static void do_print(int count, int format, int size, unsigned int valh, unsigned int vall)
 {
-    target_long val = GET_TLONG(valh, vall);
-#if TARGET_LONG_BITS == 32
+    target_phys_addr_t val = GET_TPHYSADDR(valh, vall);
+#if TARGET_PHYS_ADDR_BITS == 32
     switch(format) {
     case 'o':
         term_printf("%#o", val);
@@ -1386,6 +1395,10 @@ static term_cmd_t info_cmds[] = {
     { "cpustats", "", do_info_cpu_stats,
       "", "show CPU statistics", },
 #endif
+#if defined(CONFIG_SLIRP)
+    { "slirp", "", do_info_slirp,
+      "", "show SLIRP statistics", },
+#endif
     { NULL, NULL, },
 };
 
@@ -1442,7 +1455,7 @@ static target_long monitor_get_msr (struct MonitorDef *md, int val)
     CPUState *env = mon_get_cpu();
     if (!env)
         return 0;
-    return do_load_msr(env);
+    return env->msr;
 }
 
 static target_long monitor_get_xer (struct MonitorDef *md, int val)
@@ -1788,11 +1801,11 @@ static void next(void)
     }
 }
 
-static target_long expr_sum(void);
+static int64_t expr_sum(void);
 
-static target_long expr_unary(void)
+static int64_t expr_unary(void)
 {
-    target_long n;
+    int64_t n;
     char *p;
     int ret;
 
@@ -1830,6 +1843,7 @@ static target_long expr_unary(void)
     case '$':
         {
             char buf[128], *q;
+            target_long reg;
 
             pch++;
             q = buf;
@@ -1844,11 +1858,12 @@ static target_long expr_unary(void)
             while (isspace(*pch))
                 pch++;
             *q = 0;
-            ret = get_monitor_def(&n, buf);
+            ret = get_monitor_def(&reg, buf);
             if (ret == -1)
                 expr_error("unknown register");
             else if (ret == -2)
                 expr_error("no cpu defined");
+            n = reg;
         }
         break;
     case '\0':
@@ -1856,7 +1871,7 @@ static target_long expr_unary(void)
         n = 0;
         break;
     default:
-#if TARGET_LONG_BITS == 64
+#if TARGET_PHYS_ADDR_BITS > 32
         n = strtoull(pch, &p, 0);
 #else
         n = strtoul(pch, &p, 0);
@@ -1873,9 +1888,9 @@ static target_long expr_unary(void)
 }
 
 
-static target_long expr_prod(void)
+static int64_t expr_prod(void)
 {
-    target_long val, val2;
+    int64_t val, val2;
     int op;
 
     val = expr_unary();
@@ -1904,9 +1919,9 @@ static target_long expr_prod(void)
     return val;
 }
 
-static target_long expr_logic(void)
+static int64_t expr_logic(void)
 {
-    target_long val, val2;
+    int64_t val, val2;
     int op;
 
     val = expr_prod();
@@ -1932,9 +1947,9 @@ static target_long expr_logic(void)
     return val;
 }
 
-static target_long expr_sum(void)
+static int64_t expr_sum(void)
 {
-    target_long val, val2;
+    int64_t val, val2;
     int op;
 
     val = expr_logic();
@@ -1952,7 +1967,7 @@ static target_long expr_sum(void)
     return val;
 }
 
-static int get_expr(target_long *pval, const char **pp)
+static int get_expr(int64_t *pval, const char **pp)
 {
     pch = *pp;
     if (setjmp(expr_env)) {
@@ -2215,7 +2230,8 @@ static void monitor_handle_command(const char *cmdline)
         case 'i':
         case 'l':
             {
-                target_long val;
+                int64_t val;
+
                 while (isspace(*p))
                     p++;
                 if (*typestr == '?' || *typestr == '.') {
@@ -2255,7 +2271,7 @@ static void monitor_handle_command(const char *cmdline)
                 } else {
                     if ((nb_args + 1) >= MAX_ARGS)
                         goto error_args;
-#if TARGET_LONG_BITS == 64
+#if TARGET_PHYS_ADDR_BITS > 32
                     args[nb_args++] = (void *)(long)((val >> 32) & 0xffffffff);
 #else
                     args[nb_args++] = (void *)0;

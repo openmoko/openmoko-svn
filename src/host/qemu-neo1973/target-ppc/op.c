@@ -22,6 +22,8 @@
 
 #include "config.h"
 #include "exec.h"
+#include "host-utils.h"
+#include "helper_regs.h"
 #include "op_helper.h"
 
 #define REG 0
@@ -120,7 +122,6 @@
 #define REG 31
 #include "op_template.h"
 
-
 void OPPROTO op_print_mem_EA (void)
 {
     do_print_mem_EA(T0);
@@ -132,13 +133,6 @@ void OPPROTO op_print_mem_EA (void)
 void OPPROTO op_set_Rc0 (void)
 {
     env->crf[0] = T0 | xer_so;
-    RETURN();
-}
-
-/* Set Rc1 (for floating point arithmetic) */
-void OPPROTO op_set_Rc1 (void)
-{
-    env->crf[1] = env->fpscr[7];
     RETURN();
 }
 
@@ -180,7 +174,7 @@ void OPPROTO op_set_T1_64 (void)
 #if 0 // unused
 void OPPROTO op_set_T2 (void)
 {
-    T2 = PARAM1;
+    T2 = (uint32_t)PARAM1;
     RETURN();
 }
 #endif
@@ -285,15 +279,23 @@ void OPPROTO op_store_xer_bc (void)
 
 void OPPROTO op_load_xer (void)
 {
-    do_load_xer();
+    T0 = hreg_load_xer(env);
     RETURN();
 }
 
 void OPPROTO op_store_xer (void)
 {
-    do_store_xer();
+    hreg_store_xer(env, T0);
     RETURN();
 }
+
+#if defined(TARGET_PPC64)
+void OPPROTO op_store_pri (void)
+{
+    do_store_pri(PARAM1);
+    RETURN();
+}
+#endif
 
 #if !defined(CONFIG_USER_ONLY)
 /* Segment registers load and store */
@@ -308,6 +310,20 @@ void OPPROTO op_store_sr (void)
     do_store_sr(env, T1, T0);
     RETURN();
 }
+
+#if defined(TARGET_PPC64)
+void OPPROTO op_load_slb (void)
+{
+    T0 = ppc_load_slb(env, T1);
+    RETURN();
+}
+
+void OPPROTO op_store_slb (void)
+{
+    ppc_store_slb(env, T1, T0);
+    RETURN();
+}
+#endif /* defined(TARGET_PPC64) */
 
 void OPPROTO op_load_sdr1 (void)
 {
@@ -337,23 +353,35 @@ void OPPROTO op_store_asr (void)
 
 void OPPROTO op_load_msr (void)
 {
-    T0 = do_load_msr(env);
+    T0 = env->msr;
     RETURN();
 }
 
 void OPPROTO op_store_msr (void)
 {
-    do_store_msr(env, T0);
+    do_store_msr();
     RETURN();
 }
 
 #if defined (TARGET_PPC64)
 void OPPROTO op_store_msr_32 (void)
 {
-    ppc_store_msr_32(env, T0);
+    T0 = (env->msr & ~0xFFFFFFFFULL) | (T0 & 0xFFFFFFFF);
+    do_store_msr();
     RETURN();
 }
 #endif
+
+void OPPROTO op_update_riee (void)
+{
+    /* We don't call do_store_msr here as we won't trigger
+     * any special case nor change hflags
+     */
+    T0 &= (1 << MSR_RI) | (1 << MSR_EE);
+    env->msr &= ~(1 << MSR_RI) | (1 << MSR_EE);
+    env->msr |= T0;
+    RETURN();
+}
 #endif
 
 /* SPR */
@@ -423,6 +451,18 @@ void OPPROTO op_load_tbu (void)
     RETURN();
 }
 
+void OPPROTO op_load_atbl (void)
+{
+    T0 = cpu_ppc_load_atbl(env);
+    RETURN();
+}
+
+void OPPROTO op_load_atbu (void)
+{
+    T0 = cpu_ppc_load_atbu(env);
+    RETURN();
+}
+
 #if !defined(CONFIG_USER_ONLY)
 void OPPROTO op_store_tbl (void)
 {
@@ -433,6 +473,18 @@ void OPPROTO op_store_tbl (void)
 void OPPROTO op_store_tbu (void)
 {
     cpu_ppc_store_tbu(env, T0);
+    RETURN();
+}
+
+void OPPROTO op_store_atbl (void)
+{
+    cpu_ppc_store_atbl(env, T0);
+    RETURN();
+}
+
+void OPPROTO op_store_atbu (void)
+{
+    cpu_ppc_store_atbu(env, T0);
     RETURN();
 }
 
@@ -494,21 +546,108 @@ void OPPROTO op_store_dbatl (void)
 #endif /* !defined(CONFIG_USER_ONLY) */
 
 /* FPSCR */
-void OPPROTO op_load_fpscr (void)
+#ifdef CONFIG_SOFTFLOAT
+void OPPROTO op_reset_fpstatus (void)
 {
-    do_load_fpscr();
+    env->fp_status.float_exception_flags = 0;
+    RETURN();
+}
+#endif
+
+void OPPROTO op_compute_fprf (void)
+{
+    do_compute_fprf(PARAM1);
+    RETURN();
+}
+
+#ifdef CONFIG_SOFTFLOAT
+void OPPROTO op_float_check_status (void)
+{
+    do_float_check_status();
+    RETURN();
+}
+#else
+void OPPROTO op_float_check_status (void)
+{
+    if (env->exception_index == POWERPC_EXCP_PROGRAM &&
+        (env->error_code & POWERPC_EXCP_FP)) {
+        /* Differred floating-point exception after target FPR update */
+        if (msr_fe0 != 0 || msr_fe1 != 0)
+            do_raise_exception_err(env->exception_index, env->error_code);
+    }
+    RETURN();
+}
+#endif
+
+#if defined(WORDS_BIGENDIAN)
+#define WORD0 0
+#define WORD1 1
+#else
+#define WORD0 1
+#define WORD1 0
+#endif
+void OPPROTO op_load_fpscr_FT0 (void)
+{
+    /* The 32 MSB of the target fpr are undefined.
+     * They'll be zero...
+     */
+    union {
+        float64 d;
+        struct {
+            uint32_t u[2];
+        } s;
+    } u;
+
+    u.s.u[WORD0] = 0;
+    u.s.u[WORD1] = env->fpscr;
+    FT0 = u.d;
+    RETURN();
+}
+
+void OPPROTO op_set_FT0 (void)
+{
+    union {
+        float64 d;
+        struct {
+            uint32_t u[2];
+        } s;
+    } u;
+
+    u.s.u[WORD0] = 0;
+    u.s.u[WORD1] = PARAM1;
+    FT0 = u.d;
+    RETURN();
+}
+#undef WORD0
+#undef WORD1
+
+void OPPROTO op_load_fpscr_T0 (void)
+{
+    T0 = (env->fpscr >> PARAM1) & 0xF;
+    RETURN();
+}
+
+void OPPROTO op_load_fpcc (void)
+{
+    T0 = fpscr_fpcc;
+    RETURN();
+}
+
+void OPPROTO op_fpscr_resetbit (void)
+{
+    env->fpscr &= PARAM1;
+    RETURN();
+}
+
+void OPPROTO op_fpscr_setbit (void)
+{
+    do_fpscr_setbit(PARAM1);
     RETURN();
 }
 
 void OPPROTO op_store_fpscr (void)
 {
     do_store_fpscr(PARAM1);
-    RETURN();
-}
-
-void OPPROTO op_reset_scrfx (void)
-{
-    env->fpscr[7] &= ~0x8;
     RETURN();
 }
 
@@ -527,7 +666,7 @@ void OPPROTO op_getbit_T1 (void)
 
 void OPPROTO op_setcrfbit (void)
 {
-    T1 = (T1 & PARAM1) | (T0 << PARAM2);
+    T1 = (T1 & (uint32_t)PARAM1) | (T0 << PARAM2);
     RETURN();
 }
 
@@ -922,7 +1061,7 @@ void OPPROTO op_mulhd (void)
 {
     uint64_t tl, th;
 
-    do_imul64(&tl, &th);
+    muls64(&tl, &th, T0, T1);
     T0 = th;
     RETURN();
 }
@@ -940,7 +1079,7 @@ void OPPROTO op_mulhdu (void)
 {
     uint64_t tl, th;
 
-    do_mul64(&tl, &th);
+    mulu64(&tl, &th, T0, T1);
     T0 = th;
     RETURN();
 }
@@ -1101,7 +1240,7 @@ void OPPROTO op_subfic (void)
 #if defined(TARGET_PPC64)
 void OPPROTO op_subfic_64 (void)
 {
-    T0 = PARAM1 + ~T0 + 1;
+    T0 = (int64_t)PARAM1 + ~T0 + 1;
     if ((uint64_t)T0 <= (uint64_t)PARAM1) {
         xer_ca = 1;
     } else {
@@ -1343,27 +1482,41 @@ void OPPROTO op_andc (void)
 /* andi. */
 void OPPROTO op_andi_T0 (void)
 {
-    T0 &= PARAM1;
+    T0 &= (uint32_t)PARAM1;
     RETURN();
 }
 
 void OPPROTO op_andi_T1 (void)
 {
-    T1 &= PARAM1;
+    T1 &= (uint32_t)PARAM1;
     RETURN();
 }
+
+#if defined(TARGET_PPC64)
+void OPPROTO op_andi_T0_64 (void)
+{
+    T0 &= ((uint64_t)PARAM1 << 32) | (uint64_t)PARAM2;
+    RETURN();
+}
+
+void OPPROTO op_andi_T1_64 (void)
+{
+    T1 &= ((uint64_t)PARAM1 << 32) | (uint64_t)PARAM2;
+    RETURN();
+}
+#endif
 
 /* count leading zero */
 void OPPROTO op_cntlzw (void)
 {
-    T0 = _do_cntlzw(T0);
+    do_cntlzw();
     RETURN();
 }
 
 #if defined(TARGET_PPC64)
 void OPPROTO op_cntlzd (void)
 {
-    T0 = _do_cntlzd(T0);
+    do_cntlzd();
     RETURN();
 }
 #endif
@@ -1436,7 +1589,7 @@ void OPPROTO op_orc (void)
 /* ori */
 void OPPROTO op_ori (void)
 {
-    T0 |= PARAM1;
+    T0 |= (uint32_t)PARAM1;
     RETURN();
 }
 
@@ -1450,7 +1603,7 @@ void OPPROTO op_xor (void)
 /* xori */
 void OPPROTO op_xori (void)
 {
-    T0 ^= PARAM1;
+    T0 ^= (uint32_t)PARAM1;
     RETURN();
 }
 
@@ -1630,28 +1783,44 @@ void OPPROTO op_srli_T1_64 (void)
 /* fadd - fadd. */
 void OPPROTO op_fadd (void)
 {
+#if USE_PRECISE_EMULATION
+    do_fadd();
+#else
     FT0 = float64_add(FT0, FT1, &env->fp_status);
+#endif
     RETURN();
 }
 
 /* fsub - fsub. */
 void OPPROTO op_fsub (void)
 {
+#if USE_PRECISE_EMULATION
+    do_fsub();
+#else
     FT0 = float64_sub(FT0, FT1, &env->fp_status);
+#endif
     RETURN();
 }
 
 /* fmul - fmul. */
 void OPPROTO op_fmul (void)
 {
+#if USE_PRECISE_EMULATION
+    do_fmul();
+#else
     FT0 = float64_mul(FT0, FT1, &env->fp_status);
+#endif
     RETURN();
 }
 
 /* fdiv - fdiv. */
 void OPPROTO op_fdiv (void)
 {
+#if USE_PRECISE_EMULATION
+    do_fdiv();
+#else
     FT0 = float64_div(FT0, FT1, &env->fp_status);
+#endif
     RETURN();
 }
 
@@ -1659,6 +1828,13 @@ void OPPROTO op_fdiv (void)
 void OPPROTO op_fsqrt (void)
 {
     do_fsqrt();
+    RETURN();
+}
+
+/* fre - fre. */
+void OPPROTO op_fre (void)
+{
+    do_fre();
     RETURN();
 }
 
@@ -1726,7 +1902,11 @@ void OPPROTO op_fnmsub (void)
 /* frsp - frsp. */
 void OPPROTO op_frsp (void)
 {
+#if USE_PRECISE_EMULATION
+    do_frsp();
+#else
     FT0 = float64_to_float32(FT0, &env->fp_status);
+#endif
     RETURN();
 }
 
@@ -1766,6 +1946,30 @@ void OPPROTO op_fctidz (void)
     RETURN();
 }
 #endif
+
+void OPPROTO op_frin (void)
+{
+    do_frin();
+    RETURN();
+}
+
+void OPPROTO op_friz (void)
+{
+    do_friz();
+    RETURN();
+}
+
+void OPPROTO op_frip (void)
+{
+    do_frip();
+    RETURN();
+}
+
+void OPPROTO op_frim (void)
+{
+    do_frim();
+    RETURN();
+}
 
 /***                         Floating-Point compare                        ***/
 /* fcmpu */
@@ -1816,6 +2020,11 @@ void OPPROTO op_fneg (void)
 #define MEMSUFFIX _kernel
 #include "op_helper.h"
 #include "op_mem.h"
+#if defined(TARGET_PPC64H)
+#define MEMSUFFIX _hypv
+#include "op_helper.h"
+#include "op_mem.h"
+#endif
 #endif
 
 /* Special op to check and maybe clear reservation */
@@ -1835,6 +2044,12 @@ void OPPROTO op_check_reservation_64 (void)
 }
 #endif
 
+void OPPROTO op_wait (void)
+{
+    env->halted = 1;
+    RETURN();
+}
+
 /* Return from interrupt */
 #if !defined(CONFIG_USER_ONLY)
 void OPPROTO op_rfi (void)
@@ -1850,6 +2065,29 @@ void OPPROTO op_rfid (void)
     RETURN();
 }
 #endif
+
+#if defined(TARGET_PPC64H)
+void OPPROTO op_hrfid (void)
+{
+    do_hrfid();
+    RETURN();
+}
+#endif
+
+/* Exception vectors */
+void OPPROTO op_store_excp_prefix (void)
+{
+    T0 &= env->ivpr_mask;
+    env->excp_prefix = T0;
+    RETURN();
+}
+
+void OPPROTO op_store_excp_vector (void)
+{
+    T0 &= env->ivor_mask;
+    env->excp_vectors[PARAM1] = T0;
+    RETURN();
+}
 #endif
 
 /* Trap word */
@@ -1871,21 +2109,21 @@ void OPPROTO op_td (void)
 /* tlbia */
 void OPPROTO op_tlbia (void)
 {
-    do_tlbia();
+    ppc_tlb_invalidate_all(env);
     RETURN();
 }
 
 /* tlbie */
 void OPPROTO op_tlbie (void)
 {
-    do_tlbie();
+    ppc_tlb_invalidate_one(env, (uint32_t)T0);
     RETURN();
 }
 
 #if defined(TARGET_PPC64)
 void OPPROTO op_tlbie_64 (void)
 {
-    do_tlbie_64();
+    ppc_tlb_invalidate_one(env, T0);
     RETURN();
 }
 #endif
@@ -1893,20 +2131,26 @@ void OPPROTO op_tlbie_64 (void)
 #if defined(TARGET_PPC64)
 void OPPROTO op_slbia (void)
 {
-    do_slbia();
+    ppc_slb_invalidate_all(env);
     RETURN();
 }
 
 void OPPROTO op_slbie (void)
 {
-    do_slbie();
+    ppc_slb_invalidate_one(env, (uint32_t)T0);
+    RETURN();
+}
+
+void OPPROTO op_slbie_64 (void)
+{
+    ppc_slb_invalidate_one(env, T0);
     RETURN();
 }
 #endif
 #endif
 
-/* PowerPC 602/603/755 software TLB load instructions */
 #if !defined(CONFIG_USER_ONLY)
+/* PowerPC 602/603/755 software TLB load instructions */
 void OPPROTO op_6xx_tlbld (void)
 {
     do_load_6xx_tlb(0);
@@ -1916,6 +2160,19 @@ void OPPROTO op_6xx_tlbld (void)
 void OPPROTO op_6xx_tlbli (void)
 {
     do_load_6xx_tlb(1);
+    RETURN();
+}
+
+/* PowerPC 74xx software TLB load instructions */
+void OPPROTO op_74xx_tlbld (void)
+{
+    do_load_74xx_tlb(0);
+    RETURN();
+}
+
+void OPPROTO op_74xx_tlbli (void)
+{
+    do_load_74xx_tlb(1);
     RETURN();
 }
 #endif
@@ -2090,7 +2347,7 @@ void OPPROTO op_POWER_nabso (void)
 void OPPROTO op_POWER_rlmi (void)
 {
     T0 = rotl32(T0, T2) & PARAM1;
-    T0 |= T1 & PARAM2;
+    T0 |= T1 & (uint32_t)PARAM2;
     RETURN();
 }
 
@@ -2319,7 +2576,6 @@ void OPPROTO op_405_check_satu (void)
     RETURN();
 }
 
-#if !defined(CONFIG_USER_ONLY)
 void OPPROTO op_load_dcr (void)
 {
     do_load_dcr();
@@ -2332,6 +2588,7 @@ void OPPROTO op_store_dcr (void)
     RETURN();
 }
 
+#if !defined(CONFIG_USER_ONLY)
 /* Return from critical interrupt :
  * same as rfi, except nip & MSR are loaded from SRR2/3 instead of SRR0/1
  */
@@ -2361,55 +2618,41 @@ void OPPROTO op_rfmci (void)
 
 void OPPROTO op_wrte (void)
 {
-    msr_ee = T0 >> 16;
+    /* We don't call do_store_msr here as we won't trigger
+     * any special case nor change hflags
+     */
+    T0 &= 1 << MSR_EE;
+    env->msr &= ~(1 << MSR_EE);
+    env->msr |= T0;
     RETURN();
 }
 
-void OPPROTO op_booke_tlbre0 (void)
+void OPPROTO op_440_tlbre (void)
 {
-    do_booke_tlbre0();
+    do_440_tlbre(PARAM1);
     RETURN();
 }
 
-void OPPROTO op_booke_tlbre1 (void)
+void OPPROTO op_440_tlbsx (void)
 {
-    do_booke_tlbre1();
+    T0 = ppcemb_tlb_search(env, T0, env->spr[SPR_440_MMUCR] & 0xFF);
     RETURN();
 }
 
-void OPPROTO op_booke_tlbre2 (void)
+void OPPROTO op_4xx_tlbsx_check (void)
 {
-    do_booke_tlbre2();
+    int tmp;
+
+    tmp = xer_so;
+    if (T0 != -1)
+        tmp |= 0x02;
+    env->crf[0] = tmp;
     RETURN();
 }
 
-void OPPROTO op_booke_tlbsx (void)
+void OPPROTO op_440_tlbwe (void)
 {
-    do_booke_tlbsx();
-    RETURN();
-}
-
-void OPPROTO op_booke_tlbsx_ (void)
-{
-    do_booke_tlbsx_();
-    RETURN();
-}
-
-void OPPROTO op_booke_tlbwe0 (void)
-{
-    do_booke_tlbwe0();
-    RETURN();
-}
-
-void OPPROTO op_booke_tlbwe1 (void)
-{
-    do_booke_tlbwe1();
-    RETURN();
-}
-
-void OPPROTO op_booke_tlbwe2 (void)
-{
-    do_booke_tlbwe2();
+    do_440_tlbwe(PARAM1);
     RETURN();
 }
 
@@ -2427,13 +2670,7 @@ void OPPROTO op_4xx_tlbre_hi (void)
 
 void OPPROTO op_4xx_tlbsx (void)
 {
-    do_4xx_tlbsx();
-    RETURN();
-}
-
-void OPPROTO op_4xx_tlbsx_ (void)
-{
-    do_4xx_tlbsx_();
+    T0 = ppcemb_tlb_search(env, T0, env->spr[SPR_40x_PID]);
     RETURN();
 }
 
@@ -2503,6 +2740,7 @@ void OPPROTO op_store_40x_pit (void)
 void OPPROTO op_store_40x_dbcr0 (void)
 {
     store_40x_dbcr0(env, T0);
+    RETURN();
 }
 
 void OPPROTO op_store_40x_sler (void)
@@ -2522,7 +2760,6 @@ void OPPROTO op_store_booke_tsr (void)
     store_booke_tsr(env, T0);
     RETURN();
 }
-
 #endif /* !defined(CONFIG_USER_ONLY) */
 
 #if defined(TARGET_PPCEMB)

@@ -50,7 +50,9 @@ void cpu_unlock(void);
 void cpu_loop_exit(void);
 void helper_flush(target_ulong addr);
 void helper_ld_asi(int asi, int size, int sign);
-void helper_st_asi(int asi, int size, int sign);
+void helper_st_asi(int asi, int size);
+void helper_ldf_asi(int asi, int size, int rd);
+void helper_stf_asi(int asi, int size, int rd);
 void helper_rett(void);
 void helper_ldfsr(void);
 void set_cwp(int new_cwp);
@@ -113,7 +115,7 @@ static inline void regs_to_env(void)
 }
 
 int cpu_sparc_handle_mmu_fault(CPUState *env, target_ulong address, int rw,
-                               int is_user, int is_softmmu);
+                               int mmu_idx, int is_softmmu);
 
 static inline int cpu_halted(CPUState *env) {
     if (!env->halted)

@@ -300,7 +300,7 @@ static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
     }
     /* nip, msr, ccr, lnk, ctr, xer, mq */
     registers[96] = tswapl(env->nip);
-    registers[97] = tswapl(do_load_msr(env));
+    registers[97] = tswapl(env->msr);
     tmp = 0;
     for (i = 0; i < 8; i++)
         tmp |= env->crf[i] << (32 - ((i + 1) * 4));
@@ -329,7 +329,7 @@ static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
     }
     /* nip, msr, ccr, lnk, ctr, xer, mq */
     env->nip = tswapl(registers[96]);
-    do_store_msr(env, tswapl(registers[97]));
+    ppc_store_msr(env, tswapl(registers[97]));
     registers[98] = tswapl(registers[98]);
     for (i = 0; i < 8; i++)
         env->crf[i] = (registers[98] >> (32 - ((i + 1) * 4))) & 0xF;
@@ -563,7 +563,7 @@ static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
         ptr += sizeof(target_ulong);
       }
 
-    *(target_ulong *)ptr = tswapl(env->CP0_Status);
+    *(target_ulong *)ptr = (int32_t)tswap32(env->CP0_Status);
     ptr += sizeof(target_ulong);
 
     *(target_ulong *)ptr = tswapl(env->LO[0][env->current_tc]);
@@ -575,7 +575,7 @@ static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
     *(target_ulong *)ptr = tswapl(env->CP0_BadVAddr);
     ptr += sizeof(target_ulong);
 
-    *(target_ulong *)ptr = tswapl(env->CP0_Cause);
+    *(target_ulong *)ptr = (int32_t)tswap32(env->CP0_Cause);
     ptr += sizeof(target_ulong);
 
     *(target_ulong *)ptr = tswapl(env->PC[env->current_tc]);
@@ -585,19 +585,34 @@ static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
       {
         for (i = 0; i < 32; i++)
           {
-            *(target_ulong *)ptr = tswapl(env->fpu->fpr[i].fs[FP_ENDIAN_IDX]);
+            if (env->CP0_Status & (1 << CP0St_FR))
+              *(target_ulong *)ptr = tswapl(env->fpu->fpr[i].d);
+            else
+              *(target_ulong *)ptr = tswap32(env->fpu->fpr[i].w[FP_ENDIAN_IDX]);
             ptr += sizeof(target_ulong);
           }
 
-        *(target_ulong *)ptr = tswapl(env->fpu->fcr31);
+        *(target_ulong *)ptr = (int32_t)tswap32(env->fpu->fcr31);
         ptr += sizeof(target_ulong);
 
-        *(target_ulong *)ptr = tswapl(env->fpu->fcr0);
+        *(target_ulong *)ptr = (int32_t)tswap32(env->fpu->fcr0);
         ptr += sizeof(target_ulong);
       }
 
-    /* 32 FP registers, fsr, fir, fp.  Not yet implemented.  */
-    /* what's 'fp' mean here?  */
+    /* "fp", pseudo frame pointer. Not yet implemented in gdb. */
+    *(target_ulong *)ptr = 0;
+    ptr += sizeof(target_ulong);
+
+    /* Registers for embedded use, we just pad them. */
+    for (i = 0; i < 16; i++)
+      {
+        *(target_ulong *)ptr = 0;
+        ptr += sizeof(target_ulong);
+      }
+
+    /* Processor ID. */
+    *(target_ulong *)ptr = (int32_t)tswap32(env->CP0_PRid);
+    ptr += sizeof(target_ulong);
 
     return ptr - mem_buf;
 }
@@ -647,15 +662,17 @@ static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
       {
         for (i = 0; i < 32; i++)
           {
-            env->fpu->fpr[i].fs[FP_ENDIAN_IDX] = tswapl(*(target_ulong *)ptr);
+            if (env->CP0_Status & (1 << CP0St_FR))
+              env->fpu->fpr[i].d = tswapl(*(target_ulong *)ptr);
+            else
+              env->fpu->fpr[i].w[FP_ENDIAN_IDX] = tswapl(*(target_ulong *)ptr);
             ptr += sizeof(target_ulong);
           }
 
-        env->fpu->fcr31 = tswapl(*(target_ulong *)ptr) & 0x0183FFFF;
+        env->fpu->fcr31 = tswapl(*(target_ulong *)ptr) & 0xFF83FFFF;
         ptr += sizeof(target_ulong);
 
-        env->fpu->fcr0 = tswapl(*(target_ulong *)ptr);
-        ptr += sizeof(target_ulong);
+        /* The remaining registers are assumed to be read-only. */
 
         /* set rounding mode */
         RESTORE_ROUNDING_MODE;
@@ -728,6 +745,66 @@ static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
   for (i = 0; i < 8; i++) LOAD(env->gregs[i]);
   for (i = 0; i < 8; i++) LOAD(env->gregs[i + 16]);
 }
+#elif defined (TARGET_CRIS)
+
+static int cris_save_32 (unsigned char *d, uint32_t value)
+{
+	*d++ = (value);
+	*d++ = (value >>= 8);
+	*d++ = (value >>= 8);
+	*d++ = (value >>= 8);
+	return 4;
+}
+static int cris_save_16 (unsigned char *d, uint32_t value)
+{
+	*d++ = (value);
+	*d++ = (value >>= 8);
+	return 2;
+}
+static int cris_save_8 (unsigned char *d, uint32_t value)
+{
+	*d++ = (value);
+	return 1;
+}
+
+/* FIXME: this will bug on archs not supporting unaligned word accesses.  */
+static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
+{
+  uint8_t *ptr = mem_buf;
+  uint8_t srs;
+  int i;
+
+  for (i = 0; i < 16; i++)
+	  ptr += cris_save_32 (ptr, env->regs[i]);
+
+  srs = env->pregs[SR_SRS];
+
+  ptr += cris_save_8 (ptr, env->pregs[0]);
+  ptr += cris_save_8 (ptr, env->pregs[1]);
+  ptr += cris_save_32 (ptr, env->pregs[2]);
+  ptr += cris_save_8 (ptr, srs);
+  ptr += cris_save_16 (ptr, env->pregs[4]);
+
+  for (i = 5; i < 16; i++)
+	  ptr += cris_save_32 (ptr, env->pregs[i]);
+
+  ptr += cris_save_32 (ptr, env->pc);
+
+  for (i = 0; i < 16; i++)
+	  ptr += cris_save_32 (ptr, env->sregs[srs][i]);
+
+  return ((uint8_t *)ptr - mem_buf);
+}
+
+static void cpu_gdb_write_registers(CPUState *env, uint8_t *mem_buf, int size)
+{
+  uint32_t *ptr = (uint32_t *)mem_buf;
+  int i;
+
+#define LOAD(x) (x)=*ptr++;
+  for (i = 0; i < 16; i++) LOAD(env->regs[i]);
+  LOAD (env->pc);
+}
 #else
 static int cpu_gdb_read_registers(CPUState *env, uint8_t *mem_buf)
 {
@@ -745,7 +822,7 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
     const char *p;
     int ch, reg_size, type;
     char buf[4096];
-    uint8_t mem_buf[2000];
+    uint8_t mem_buf[4096];
     uint32_t *registers;
     target_ulong addr, len;
 
@@ -776,6 +853,8 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
             env->pc = addr;
 #elif defined (TARGET_MIPS)
             env->PC[env->current_tc] = addr;
+#elif defined (TARGET_CRIS)
+            env->pc = addr;
 #endif
         }
 #ifdef CONFIG_USER_ONLY
@@ -800,6 +879,8 @@ static int gdb_handle_packet(GDBState *s, CPUState *env, const char *line_buf)
             env->pc = addr;
 #elif defined (TARGET_MIPS)
             env->PC[env->current_tc] = addr;
+#elif defined (TARGET_CRIS)
+            env->pc = addr;
 #endif
         }
         cpu_single_step(env, 1);

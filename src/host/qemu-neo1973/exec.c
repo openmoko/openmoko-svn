@@ -1292,15 +1292,28 @@ void cpu_abort(CPUState *env, const char *fmt, ...)
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
 #ifdef TARGET_I386
+    if(env->intercept & INTERCEPT_SVM_MASK) {
+	/* most probably the virtual machine should not
+	   be shut down but rather caught by the VMM */
+        vmexit(SVM_EXIT_SHUTDOWN, 0);
+    }
     cpu_dump_state(env, stderr, fprintf, X86_DUMP_FPU | X86_DUMP_CCOP);
 #else
     cpu_dump_state(env, stderr, fprintf, 0);
 #endif
-    va_end(ap);
     if (logfile) {
+        fprintf(logfile, "qemu: fatal: ");
+        vfprintf(logfile, fmt, ap);
+        fprintf(logfile, "\n");
+#ifdef TARGET_I386
+        cpu_dump_state(env, logfile, fprintf, X86_DUMP_FPU | X86_DUMP_CCOP);
+#else
+        cpu_dump_state(env, logfile, fprintf, 0);
+#endif
         fflush(logfile);
         fclose(logfile);
     }
+    va_end(ap);
     abort();
 }
 
@@ -1595,7 +1608,7 @@ static inline void tlb_set_dirty(CPUState *env,
    conflicting with the host address space). */
 int tlb_set_page_exec(CPUState *env, target_ulong vaddr,
                       target_phys_addr_t paddr, int prot,
-                      int is_user, int is_softmmu)
+                      int mmu_idx, int is_softmmu)
 {
     PhysPageDesc *p;
     unsigned long pd;
@@ -1613,8 +1626,8 @@ int tlb_set_page_exec(CPUState *env, target_ulong vaddr,
         pd = p->phys_offset;
     }
 #if defined(DEBUG_TLB)
-    printf("tlb_set_page: vaddr=" TARGET_FMT_lx " paddr=0x%08x prot=%x u=%d smmu=%d pd=0x%08lx\n",
-           vaddr, (int)paddr, prot, is_user, is_softmmu, pd);
+    printf("tlb_set_page: vaddr=" TARGET_FMT_lx " paddr=0x%08x prot=%x idx=%d smmu=%d pd=0x%08lx\n",
+           vaddr, (int)paddr, prot, mmu_idx, is_softmmu, pd);
 #endif
 
     ret = 0;
@@ -1651,7 +1664,7 @@ int tlb_set_page_exec(CPUState *env, target_ulong vaddr,
 
         index = (vaddr >> TARGET_PAGE_BITS) & (CPU_TLB_SIZE - 1);
         addend -= vaddr;
-        te = &env->tlb_table[is_user][index];
+        te = &env->tlb_table[mmu_idx][index];
         te->addend = addend;
         if (prot & PAGE_READ) {
             te->addr_read = address;
@@ -1777,7 +1790,7 @@ void tlb_flush_page(CPUState *env, target_ulong addr)
 
 int tlb_set_page_exec(CPUState *env, target_ulong vaddr,
                       target_phys_addr_t paddr, int prot,
-                      int is_user, int is_softmmu)
+                      int mmu_idx, int is_softmmu)
 {
     return 0;
 }
@@ -2053,6 +2066,8 @@ static uint32_t unassigned_mem_readb(void *opaque, target_phys_addr_t addr)
 #endif
 #ifdef TARGET_SPARC
     do_unassigned_access(addr, 0, 0, 0);
+#elif TARGET_CRIS
+    do_unassigned_access(addr, 0, 0, 0);
 #endif
     return 0;
 }
@@ -2063,6 +2078,8 @@ static void unassigned_mem_writeb(void *opaque, target_phys_addr_t addr, uint32_
     printf("Unassigned mem write " TARGET_FMT_lx " = 0x%x\n", addr, val);
 #endif
 #ifdef TARGET_SPARC
+    do_unassigned_access(addr, 1, 0, 0);
+#elif TARGET_CRIS
     do_unassigned_access(addr, 1, 0, 0);
 #endif
 }

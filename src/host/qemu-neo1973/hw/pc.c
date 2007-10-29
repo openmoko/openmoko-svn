@@ -93,6 +93,9 @@ int cpu_get_pic_interrupt(CPUState *env)
         return intno;
     }
     /* read the irq from the PIC */
+    if (!apic_accept_pic_intr(env))
+        return -1;
+
     intno = pic_read_irq(isa_pic);
     return intno;
 }
@@ -100,10 +103,8 @@ int cpu_get_pic_interrupt(CPUState *env)
 static void pic_irq_request(void *opaque, int irq, int level)
 {
     CPUState *env = opaque;
-    if (level)
+    if (level && apic_accept_pic_intr(env))
         cpu_interrupt(env, CPU_INTERRUPT_HARD);
-    else
-        cpu_reset_interrupt(env, CPU_INTERRUPT_HARD);
 }
 
 /* PC cmos mappings */
@@ -706,7 +707,9 @@ static void pc_init1(int ram_size, int vga_ram_size, int boot_device,
     vga_ram_addr = qemu_ram_alloc(vga_ram_size);
 
     /* BIOS load */
-    snprintf(buf, sizeof(buf), "%s/%s", bios_dir, BIOS_FILENAME);
+    if (bios_name == NULL)
+        bios_name = BIOS_FILENAME;
+    snprintf(buf, sizeof(buf), "%s/%s", bios_dir, bios_name);
     bios_size = get_image_size(buf);
     if (bios_size <= 0 ||
         (bios_size % 65536) != 0) {

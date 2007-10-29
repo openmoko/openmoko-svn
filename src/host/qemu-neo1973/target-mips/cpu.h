@@ -107,6 +107,8 @@ struct CPUMIPSFPUContext {
 #define FP_UNIMPLEMENTED  32
 };
 
+#define NB_MMU_MODES 3
+
 typedef struct CPUMIPSMVPContext CPUMIPSMVPContext;
 struct CPUMIPSMVPContext {
     int32_t CP0_MVPControl;
@@ -283,8 +285,7 @@ struct CPUMIPSState {
 #define CP0St_KX    7
 #define CP0St_SX    6
 #define CP0St_UX    5
-#define CP0St_UM    4
-#define CP0St_R0    3
+#define CP0St_KSU   3
 #define CP0St_ERL   2
 #define CP0St_EXL   1
 #define CP0St_IE    0
@@ -414,24 +415,30 @@ struct CPUMIPSState {
     int user_mode_only; /* user mode only simulation */
     uint32_t hflags;    /* CPU State */
     /* TMASK defines different execution modes */
-#define MIPS_HFLAG_TMASK  0x007F
+#define MIPS_HFLAG_TMASK  0x00FF
 #define MIPS_HFLAG_MODE   0x0007 /* execution modes                    */
-#define MIPS_HFLAG_UM     0x0001 /* user mode                          */
-#define MIPS_HFLAG_DM     0x0002 /* Debug mode                         */
-#define MIPS_HFLAG_SM     0x0004 /* Supervisor mode                    */
+    /* The KSU flags must be the lowest bits in hflags. The flag order
+       must be the same as defined for CP0 Status. This allows to use
+       the bits as the value of mmu_idx. */
+#define MIPS_HFLAG_KSU    0x0003 /* kernel/supervisor/user mode mask   */
+#define MIPS_HFLAG_UM       0x0002 /* user mode flag */
+#define MIPS_HFLAG_SM       0x0001 /* supervisor mode flag */
+#define MIPS_HFLAG_KM       0x0000 /* kernel mode flag */
+#define MIPS_HFLAG_DM     0x0004 /* Debug mode                         */
 #define MIPS_HFLAG_64     0x0008 /* 64-bit instructions enabled        */
-#define MIPS_HFLAG_FPU    0x0010 /* FPU enabled                        */
-#define MIPS_HFLAG_F64    0x0020 /* 64-bit FPU enabled                 */
-#define MIPS_HFLAG_RE     0x0040 /* Reversed endianness                */
+#define MIPS_HFLAG_CP0    0x0010 /* CP0 enabled                        */
+#define MIPS_HFLAG_FPU    0x0020 /* FPU enabled                        */
+#define MIPS_HFLAG_F64    0x0040 /* 64-bit FPU enabled                 */
+#define MIPS_HFLAG_RE     0x0080 /* Reversed endianness                */
     /* If translation is interrupted between the branch instruction and
      * the delay slot, record what type of branch it is so that we can
      * resume translation properly.  It might be possible to reduce
      * this from three bits to two.  */
-#define MIPS_HFLAG_BMASK  0x0380
-#define MIPS_HFLAG_B      0x0080 /* Unconditional branch               */
-#define MIPS_HFLAG_BC     0x0100 /* Conditional branch                 */
-#define MIPS_HFLAG_BL     0x0180 /* Likely branch                      */
-#define MIPS_HFLAG_BR     0x0200 /* branch to register (can't link TB) */
+#define MIPS_HFLAG_BMASK  0x0700
+#define MIPS_HFLAG_B      0x0100 /* Unconditional branch               */
+#define MIPS_HFLAG_BC     0x0200 /* Conditional branch                 */
+#define MIPS_HFLAG_BL     0x0300 /* Likely branch                      */
+#define MIPS_HFLAG_BR     0x0400 /* branch to register (can't link TB) */
     target_ulong btarget;        /* Jump / branch target               */
     int bcond;                   /* Branch condition (if needed)       */
 
@@ -441,6 +448,7 @@ struct CPUMIPSState {
     int CCRes; /* Cycle count resolution/divisor */
     uint32_t CP0_Status_rw_bitmask; /* Read/write bits in CP0_Status */
     uint32_t CP0_TCStatus_rw_bitmask; /* Read/write bits in CP0_TCStatus */
+    int insn_flags; /* Supported instruction set */
 
 #ifdef CONFIG_USER_ONLY
     target_ulong tls_value;
@@ -475,11 +483,26 @@ int mips_find_by_name (const unsigned char *name, mips_def_t **def);
 void mips_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
 int cpu_mips_register (CPUMIPSState *env, mips_def_t *def);
 
+void do_unassigned_access(target_phys_addr_t addr, int is_write, int is_exec,
+                          int unused);
+
 #define CPUState CPUMIPSState
 #define cpu_init cpu_mips_init
 #define cpu_exec cpu_mips_exec
 #define cpu_gen_code cpu_mips_gen_code
 #define cpu_signal_handler cpu_mips_signal_handler
+#define cpu_list mips_cpu_list
+
+/* MMU modes definitions. We carefully match the indices with our
+   hflags layout. */
+#define MMU_MODE0_SUFFIX _kernel
+#define MMU_MODE1_SUFFIX _super
+#define MMU_MODE2_SUFFIX _user
+#define MMU_USER_IDX 2
+static inline int cpu_mmu_index (CPUState *env)
+{
+    return env->hflags & MIPS_HFLAG_KSU;
+}
 
 #include "cpu-all.h"
 

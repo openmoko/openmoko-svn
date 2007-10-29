@@ -80,6 +80,7 @@ struct mips_def_t {
     int32_t CP0_SRSConf3;
     int32_t CP0_SRSConf4_rw_bitmask;
     int32_t CP0_SRSConf4;
+    int insn_flags;
 };
 
 /*****************************************************************************/
@@ -98,6 +99,7 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 32,
         .CCRes = 2,
         .CP0_Status_rw_bitmask = 0x1278FF17,
+        .insn_flags = CPU_MIPS32 | ASE_MIPS16,
     },
     {
         .name = "4KEcR1",
@@ -111,6 +113,7 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 32,
         .CCRes = 2,
         .CP0_Status_rw_bitmask = 0x1278FF17,
+        .insn_flags = CPU_MIPS32 | ASE_MIPS16,
     },
     {
         .name = "4KEc",
@@ -124,6 +127,7 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 32,
         .CCRes = 2,
         .CP0_Status_rw_bitmask = 0x1278FF17,
+        .insn_flags = CPU_MIPS32R2 | ASE_MIPS16,
     },
     {
         .name = "24Kc",
@@ -137,7 +141,8 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 32,
         .CCRes = 2,
         /* No DSP implemented. */
-        .CP0_Status_rw_bitmask = 0x1278FF17,
+        .CP0_Status_rw_bitmask = 0x1278FF1F,
+        .insn_flags = CPU_MIPS32R2 | ASE_MIPS16 | ASE_DSP,
     },
     {
         .name = "24Kf",
@@ -151,9 +156,10 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 32,
         .CCRes = 2,
         /* No DSP implemented. */
-        .CP0_Status_rw_bitmask = 0x3678FF17,
+        .CP0_Status_rw_bitmask = 0x3678FF1F,
         .CP1_fcr0 = (1 << FCR0_F64) | (1 << FCR0_L) | (1 << FCR0_W) |
                     (1 << FCR0_D) | (1 << FCR0_S) | (0x93 << FCR0_PRID),
+        .insn_flags = CPU_MIPS32R2 | ASE_MIPS16 | ASE_DSP,
     },
     {
         .name = "34Kf",
@@ -167,7 +173,7 @@ static mips_def_t mips_defs[] =
         .SYNCI_Step = 32,
         .CCRes = 2,
         /* No DSP implemented. */
-        .CP0_Status_rw_bitmask = 0x3678FF17,
+        .CP0_Status_rw_bitmask = 0x3678FF1F,
         /* No DSP implemented. */
         .CP0_TCStatus_rw_bitmask = (0 << CP0TCSt_TCU3) | (0 << CP0TCSt_TCU2) |
                     (1 << CP0TCSt_TCU1) | (1 << CP0TCSt_TCU0) |
@@ -193,8 +199,9 @@ static mips_def_t mips_defs[] =
         .CP0_SRSConf4_rw_bitmask = 0x3fffffff,
         .CP0_SRSConf4 = (0x3fe << CP0SRSC4_SRS15) |
                     (0x3fe << CP0SRSC4_SRS14) | (0x3fe << CP0SRSC4_SRS13),
+        .insn_flags = CPU_MIPS32R2 | ASE_MIPS16 | ASE_DSP | ASE_MT,
     },
-#ifdef TARGET_MIPS64
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
     {
         .name = "R4000",
         .CP0_PRid = 0x00000400,
@@ -210,6 +217,7 @@ static mips_def_t mips_defs[] =
 	/* The R4000 has a full 64bit FPU doesn't use the fcr0 bits. */
         .CP1_fcr0 = (0x5 << FCR0_PRID) | (0x0 << FCR0_REV),
         .SEGBITS = 40,
+        .insn_flags = CPU_MIPS3,
     },
     {
         .name = "5Kc",
@@ -225,6 +233,7 @@ static mips_def_t mips_defs[] =
         .CCRes = 2,
         .CP0_Status_rw_bitmask = 0x32F8FFFF,
         .SEGBITS = 42,
+        .insn_flags = CPU_MIPS64,
     },
     {
         .name = "5Kf",
@@ -243,6 +252,7 @@ static mips_def_t mips_defs[] =
         .CP1_fcr0 = (1 << FCR0_D) | (1 << FCR0_S) |
                     (0x81 << FCR0_PRID) | (0x0 << FCR0_REV),
         .SEGBITS = 42,
+        .insn_flags = CPU_MIPS64,
     },
     {
         .name = "20Kc",
@@ -264,6 +274,28 @@ static mips_def_t mips_defs[] =
                     (1 << FCR0_D) | (1 << FCR0_S) |
                     (0x82 << FCR0_PRID) | (0x0 << FCR0_REV),
         .SEGBITS = 40,
+        .insn_flags = CPU_MIPS64 | ASE_MIPS3D,
+    },
+    {
+	/* A generic CPU providing MIPS64 Release 2 features.
+           FIXME: Eventually this should be replaced by a real CPU model. */
+        .name = "MIPS64R2-generic",
+        .CP0_PRid = 0x00000000,
+        .CP0_Config0 = MIPS_CONFIG0 | (0x2 << CP0C0_AT) | (0x1 << CP0C0_AR),
+        .CP0_Config1 = MIPS_CONFIG1 | (1 << CP0C1_FP) | (63 << CP0C1_MMU) |
+		    (2 << CP0C1_IS) | (4 << CP0C1_IL) | (3 << CP0C1_IA) |
+		    (2 << CP0C1_DS) | (4 << CP0C1_DL) | (3 << CP0C1_DA) |
+		    (1 << CP0C1_PC) | (1 << CP0C1_WR) | (1 << CP0C1_EP),
+        .CP0_Config2 = MIPS_CONFIG2,
+        .CP0_Config3 = MIPS_CONFIG3,
+        .SYNCI_Step = 32,
+        .CCRes = 2,
+        .CP0_Status_rw_bitmask = 0x36FBFFFF,
+        .CP1_fcr0 = (1 << FCR0_3D) | (1 << FCR0_PS) | (1 << FCR0_L) |
+                    (1 << FCR0_W) | (1 << FCR0_D) | (1 << FCR0_S) |
+                    (0x00 << FCR0_PRID) | (0x0 << FCR0_REV),
+        .SEGBITS = 40,
+        .insn_flags = CPU_MIPS64R2 | ASE_MIPS3D,
     },
 #endif
 };
@@ -367,7 +399,10 @@ static void mvp_init (CPUMIPSState *env, mips_def_t *def)
        implemented, 5 TCs implemented. */
     env->mvp->CP0_MVPConf0 = (1 << CP0MVPC0_M) | (1 << CP0MVPC0_TLBS) |
                              (0 << CP0MVPC0_GS) | (1 << CP0MVPC0_PCP) |
+#ifndef CONFIG_USER_ONLY
+                             /* Usermode has no TLB support */
                              (env->tlb->nb_tlb << CP0MVPC0_PTLBE) |
+#endif
 // TODO: actually do 2 VPEs.
 //                             (1 << CP0MVPC0_TCA) | (0x1 << CP0MVPC0_PVPE) |
 //                             (0x04 << CP0MVPC0_PTC);
@@ -402,8 +437,8 @@ int cpu_mips_register (CPUMIPSState *env, mips_def_t *def)
     env->CP0_Status_rw_bitmask = def->CP0_Status_rw_bitmask;
     env->CP0_TCStatus_rw_bitmask = def->CP0_TCStatus_rw_bitmask;
     env->CP0_SRSCtl = def->CP0_SRSCtl;
-#ifdef TARGET_MIPS64
-    if ((env->CP0_Config0 & (0x3 << CP0C0_AT)))
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
+    if (def->insn_flags & ISA_MIPS3)
     {
         env->hflags |= MIPS_HFLAG_64;
         env->SEGBITS = def->SEGBITS;
@@ -423,6 +458,7 @@ int cpu_mips_register (CPUMIPSState *env, mips_def_t *def)
     env->CP0_SRSConf3 = def->CP0_SRSConf3;
     env->CP0_SRSConf4_rw_bitmask = def->CP0_SRSConf4_rw_bitmask;
     env->CP0_SRSConf4 = def->CP0_SRSConf4;
+    env->insn_flags = def->insn_flags;
 
 #ifndef CONFIG_USER_ONLY
     mmu_init(env, def);

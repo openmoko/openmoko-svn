@@ -13,7 +13,6 @@ BASE_LDFLAGS += $(OS_LDFLAGS) $(ARCH_LDFLAGS)
 
 CPPFLAGS += -I. -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 LIBS=
-TOOLS=qemu-img$(EXESUF) raw2flash$(EXESUF) flash2raw$(EXESUF)
 ifdef CONFIG_STATIC
 BASE_LDFLAGS += -static
 endif
@@ -80,7 +79,9 @@ endif
 
 install: all $(if $(BUILD_DOCS),install-doc)
 	mkdir -p "$(DESTDIR)$(bindir)"
+ifneq ($(TOOLS),)
 	$(INSTALL) -m 755 -s $(TOOLS) "$(DESTDIR)$(bindir)"
+endif
 	mkdir -p "$(DESTDIR)$(datadir)"
 	for x in bios.bin vgabios.bin vgabios-cirrus.bin ppc_rom.bin \
 		video.x openbios-sparc32 pxe-ne2k_pci.bin \
@@ -150,7 +151,7 @@ tar:
 
 # generate a binary distribution
 tarbin:
-	( cd / ; tar zcvf ~/qemu-$(VERSION)-i386.tar.gz \
+	( cd / ; tar zcvf ~/qemu-$(VERSION)-$(ARCH).tar.gz \
 	$(bindir)/qemu \
 	$(bindir)/qemu-system-ppc \
 	$(bindir)/qemu-system-ppc64 \
@@ -162,6 +163,8 @@ tarbin:
 	$(bindir)/qemu-system-mips64 \
 	$(bindir)/qemu-system-mips64el \
 	$(bindir)/qemu-system-arm \
+	$(bindir)/qemu-system-m68k \
+	$(bindir)/qemu-system-sh4 \
 	$(bindir)/qemu-i386 \
         $(bindir)/qemu-arm \
         $(bindir)/qemu-armeb \
@@ -170,7 +173,13 @@ tarbin:
         $(bindir)/qemu-ppc64 \
         $(bindir)/qemu-mips \
         $(bindir)/qemu-mipsel \
+        $(bindir)/qemu-mipsn32 \
+        $(bindir)/qemu-mipsn32el \
+        $(bindir)/qemu-mips64 \
+        $(bindir)/qemu-mips64el \
         $(bindir)/qemu-alpha \
+        $(bindir)/qemu-m68k \
+        $(bindir)/qemu-sh4 \
         $(bindir)/qemu-img \
 	$(datadir)/bios.bin \
 	$(datadir)/vgabios.bin \

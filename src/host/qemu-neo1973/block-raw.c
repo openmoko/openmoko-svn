@@ -151,7 +151,8 @@ static int raw_pread(BlockDriverState *bs, int64_t offset,
     if (lseek(s->fd, offset, SEEK_SET) == (off_t)-1) {
         ++(s->lseek_err_cnt);
         if(s->lseek_err_cnt <= 10) {
-            DEBUG_BLOCK_PRINT("raw_pread(%d:%s, %lld, %p, %d) [%lld] lseek failed : %d = %s\n",
+            DEBUG_BLOCK_PRINT("raw_pread(%d:%s, %" PRId64 ", %p, %d) [%" PRId64
+                              "] lseek failed : %d = %s\n",
                               s->fd, bs->filename, offset, buf, count,
                               bs->total_sectors, errno, strerror(errno));
         }
@@ -163,7 +164,8 @@ static int raw_pread(BlockDriverState *bs, int64_t offset,
     if (ret == count)
         goto label__raw_read__success;
 
-    DEBUG_BLOCK_PRINT("raw_pread(%d:%s, %lld, %p, %d) [%lld] read failed %d : %d = %s\n",
+    DEBUG_BLOCK_PRINT("raw_pread(%d:%s, %" PRId64 ", %p, %d) [%" PRId64
+                      "] read failed %d : %d = %s\n",
                       s->fd, bs->filename, offset, buf, count,
                       bs->total_sectors, ret, errno, strerror(errno));
 
@@ -178,7 +180,8 @@ static int raw_pread(BlockDriverState *bs, int64_t offset,
         if (ret == count)
             goto label__raw_read__success;
 
-        DEBUG_BLOCK_PRINT("raw_pread(%d:%s, %lld, %p, %d) [%lld] retry read failed %d : %d = %s\n",
+        DEBUG_BLOCK_PRINT("raw_pread(%d:%s, %" PRId64 ", %p, %d) [%" PRId64
+                          "] retry read failed %d : %d = %s\n",
                           s->fd, bs->filename, offset, buf, count,
                           bs->total_sectors, ret, errno, strerror(errno));
     }
@@ -201,7 +204,8 @@ static int raw_pwrite(BlockDriverState *bs, int64_t offset,
     if (lseek(s->fd, offset, SEEK_SET) == (off_t)-1) {
         ++(s->lseek_err_cnt);
         if(s->lseek_err_cnt) {
-            DEBUG_BLOCK_PRINT("raw_pwrite(%d:%s, %lld, %p, %d) [%lld] lseek failed : %d = %s\n",
+            DEBUG_BLOCK_PRINT("raw_pwrite(%d:%s, %" PRId64 ", %p, %d) [%"
+                              PRId64 "] lseek failed : %d = %s\n",
                               s->fd, bs->filename, offset, buf, count,
                               bs->total_sectors, errno, strerror(errno));
         }
@@ -213,7 +217,8 @@ static int raw_pwrite(BlockDriverState *bs, int64_t offset,
     if (ret == count)
         goto label__raw_write__success;
 
-    DEBUG_BLOCK_PRINT("raw_pwrite(%d:%s, %lld, %p, %d) [%lld] write failed %d : %d = %s\n",
+    DEBUG_BLOCK_PRINT("raw_pwrite(%d:%s, %" PRId64 ", %p, %d) [%" PRId64
+                      "] write failed %d : %d = %s\n",
                       s->fd, bs->filename, offset, buf, count,
                       bs->total_sectors, ret, errno, strerror(errno));
 
@@ -1169,7 +1174,7 @@ static int64_t raw_getlength(BlockDriverState *bs)
     BDRVRawState *s = bs->opaque;
     LARGE_INTEGER l;
     ULARGE_INTEGER available, total, total_free;
-    DISK_GEOMETRY dg;
+    DISK_GEOMETRY_EX dg;
     DWORD count;
     BOOL status;
 
@@ -1185,11 +1190,10 @@ static int64_t raw_getlength(BlockDriverState *bs)
         l.QuadPart = total.QuadPart;
         break;
     case FTYPE_HARDDISK:
-        status = DeviceIoControl(s->hfile, IOCTL_DISK_GET_DRIVE_GEOMETRY,
+        status = DeviceIoControl(s->hfile, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
                                  NULL, 0, &dg, sizeof(dg), &count, NULL);
-        if (status != FALSE) {
-            l.QuadPart = dg.Cylinders.QuadPart * dg.TracksPerCylinder
-                * dg.SectorsPerTrack * dg.BytesPerSector;
+        if (status != 0) {
+            l = dg.DiskSize;
         }
         break;
     default:

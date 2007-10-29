@@ -18,7 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include "exec.h"
+#include "host-utils.h"
 
+#include "helper_regs.h"
 #include "op_helper.h"
 
 #define MEMSUFFIX _raw
@@ -31,12 +33,16 @@
 #define MEMSUFFIX _kernel
 #include "op_helper.h"
 #include "op_helper_mem.h"
+#if defined(TARGET_PPC64H)
+#define MEMSUFFIX _hypv
+#include "op_helper.h"
+#include "op_helper_mem.h"
+#endif
 #endif
 
 //#define DEBUG_OP
 //#define DEBUG_EXCEPTIONS
 //#define DEBUG_SOFTWARE_TLB
-//#define FLUSH_ALL_TLBS
 
 /*****************************************************************************/
 /* Exceptions processing helpers */
@@ -46,14 +52,6 @@ void do_raise_exception_err (uint32_t exception, int error_code)
 #if 0
     printf("Raise exception %3x code : %d\n", exception, error_code);
 #endif
-    switch (exception) {
-    case EXCP_PROGRAM:
-        if (error_code == EXCP_FP && msr_fe0 == 0 && msr_fe1 == 0)
-            return;
-        break;
-    default:
-        break;
-    }
     env->exception_index = exception;
     env->error_code = error_code;
     cpu_loop_exit();
@@ -94,94 +92,13 @@ void do_store_cr (uint32_t mask)
     }
 }
 
-void do_load_xer (void)
+#if defined(TARGET_PPC64)
+void do_store_pri (int prio)
 {
-    T0 = (xer_so << XER_SO) |
-        (xer_ov << XER_OV) |
-        (xer_ca << XER_CA) |
-        (xer_bc << XER_BC) |
-        (xer_cmp << XER_CMP);
+    env->spr[SPR_PPR] &= ~0x001C000000000000ULL;
+    env->spr[SPR_PPR] |= ((uint64_t)prio & 0x7) << 50;
 }
-
-void do_store_xer (void)
-{
-    xer_so = (T0 >> XER_SO) & 0x01;
-    xer_ov = (T0 >> XER_OV) & 0x01;
-    xer_ca = (T0 >> XER_CA) & 0x01;
-    xer_cmp = (T0 >> XER_CMP) & 0xFF;
-    xer_bc = (T0 >> XER_BC) & 0x7F;
-}
-
-void do_load_fpscr (void)
-{
-    /* The 32 MSB of the target fpr are undefined.
-     * They'll be zero...
-     */
-    union {
-        float64 d;
-        struct {
-            uint32_t u[2];
-        } s;
-    } u;
-    int i;
-
-#if defined(WORDS_BIGENDIAN)
-#define WORD0 0
-#define WORD1 1
-#else
-#define WORD0 1
-#define WORD1 0
 #endif
-    u.s.u[WORD0] = 0;
-    u.s.u[WORD1] = 0;
-    for (i = 0; i < 8; i++)
-        u.s.u[WORD1] |= env->fpscr[i] << (4 * i);
-    FT0 = u.d;
-}
-
-void do_store_fpscr (uint32_t mask)
-{
-    /*
-     * We use only the 32 LSB of the incoming fpr
-     */
-    union {
-        double d;
-        struct {
-            uint32_t u[2];
-        } s;
-    } u;
-    int i, rnd_type;
-
-    u.d = FT0;
-    if (mask & 0x80)
-        env->fpscr[0] = (env->fpscr[0] & 0x9) | ((u.s.u[WORD1] >> 28) & ~0x9);
-    for (i = 1; i < 7; i++) {
-        if (mask & (1 << (7 - i)))
-            env->fpscr[i] = (u.s.u[WORD1] >> (4 * (7 - i))) & 0xF;
-    }
-    /* TODO: update FEX & VX */
-    /* Set rounding mode */
-    switch (env->fpscr[0] & 0x3) {
-    case 0:
-        /* Best approximation (round to nearest) */
-        rnd_type = float_round_nearest_even;
-        break;
-    case 1:
-        /* Smaller magnitude (round toward zero) */
-        rnd_type = float_round_to_zero;
-        break;
-    case 2:
-        /* Round toward +infinite */
-        rnd_type = float_round_up;
-        break;
-    default:
-    case 3:
-        /* Round toward -infinite */
-        rnd_type = float_round_down;
-        break;
-    }
-    set_float_rounding_mode(rnd_type, &env->fp_status);
-}
 
 target_ulong ppc_load_dump_spr (int sprn)
 {
@@ -204,79 +121,6 @@ void ppc_store_dump_spr (int sprn, target_ulong val)
 
 /*****************************************************************************/
 /* Fixed point operations helpers */
-#if defined(TARGET_PPC64)
-static void add128 (uint64_t *plow, uint64_t *phigh, uint64_t a, uint64_t b)
-{
-    *plow += a;
-    /* carry test */
-    if (*plow < a)
-        (*phigh)++;
-    *phigh += b;
-}
-
-static void neg128 (uint64_t *plow, uint64_t *phigh)
-{
-    *plow = ~*plow;
-    *phigh = ~*phigh;
-    add128(plow, phigh, 1, 0);
-}
-
-static void mul64 (uint64_t *plow, uint64_t *phigh, uint64_t a, uint64_t b)
-{
-    uint32_t a0, a1, b0, b1;
-    uint64_t v;
-
-    a0 = a;
-    a1 = a >> 32;
-
-    b0 = b;
-    b1 = b >> 32;
-
-    v = (uint64_t)a0 * (uint64_t)b0;
-    *plow = v;
-    *phigh = 0;
-
-    v = (uint64_t)a0 * (uint64_t)b1;
-    add128(plow, phigh, v << 32, v >> 32);
-
-    v = (uint64_t)a1 * (uint64_t)b0;
-    add128(plow, phigh, v << 32, v >> 32);
-
-    v = (uint64_t)a1 * (uint64_t)b1;
-    *phigh += v;
-#if defined(DEBUG_MULDIV)
-    printf("mul: 0x%016llx * 0x%016llx = 0x%016llx%016llx\n",
-           a, b, *phigh, *plow);
-#endif
-}
-
-void do_mul64 (uint64_t *plow, uint64_t *phigh)
-{
-    mul64(plow, phigh, T0, T1);
-}
-
-static void imul64 (uint64_t *plow, uint64_t *phigh, int64_t a, int64_t b)
-{
-    int sa, sb;
-
-    sa = (a < 0);
-    if (sa)
-        a = -a;
-    sb = (b < 0);
-    if (sb)
-        b = -b;
-    mul64(plow, phigh, a, b);
-    if (sa ^ sb) {
-        neg128(plow, phigh);
-    }
-}
-
-void do_imul64 (uint64_t *plow, uint64_t *phigh)
-{
-    imul64(plow, phigh, T0, T1);
-}
-#endif
-
 void do_adde (void)
 {
     T2 = T0;
@@ -408,8 +252,9 @@ void do_mulldo (void)
     int64_t th;
     uint64_t tl;
 
-    do_imul64(&tl, &th);
-    if (likely(th == 0)) {
+    muls64(&tl, &th, T0, T1);
+    /* If th != 0 && th != -1, then we had an overflow */
+    if (likely((th + 1) <= 1)) {
         xer_ov = 0;
     } else {
         xer_ov = 1;
@@ -537,6 +382,18 @@ void do_subfzeo_64 (void)
 }
 #endif
 
+void do_cntlzw (void)
+{
+    T0 = clz32(T0);
+}
+
+#if defined(TARGET_PPC64)
+void do_cntlzd (void)
+{
+    T0 = clz64(T0);
+}
+#endif
+
 /* shift right arithmetic helper */
 void do_sraw (void)
 {
@@ -594,16 +451,6 @@ void do_srad (void)
 }
 #endif
 
-static inline int popcnt (uint32_t val)
-{
-    int i;
-
-    for (i = 0; val != 0;)
-        val = val ^ (val - 1);
-
-    return i;
-}
-
 void do_popcntb (void)
 {
     uint32_t ret;
@@ -611,7 +458,7 @@ void do_popcntb (void)
 
     ret = 0;
     for (i = 0; i < 32; i += 8)
-        ret |= popcnt((T0 >> i) & 0xFF) << i;
+        ret |= ctpop8((T0 >> i) & 0xFF) << i;
     T0 = ret;
 }
 
@@ -623,13 +470,544 @@ void do_popcntb_64 (void)
 
     ret = 0;
     for (i = 0; i < 64; i += 8)
-        ret |= popcnt((T0 >> i) & 0xFF) << i;
+        ret |= ctpop8((T0 >> i) & 0xFF) << i;
     T0 = ret;
 }
 #endif
 
 /*****************************************************************************/
 /* Floating point operations helpers */
+static always_inline int fpisneg (float64 f)
+{
+    union {
+        float64 f;
+        uint64_t u;
+    } u;
+
+    u.f = f;
+
+    return u.u >> 63 != 0;
+}
+
+static always_inline int isden (float f)
+{
+    union {
+        float64 f;
+        uint64_t u;
+    } u;
+
+    u.f = f;
+
+    return ((u.u >> 52) & 0x7FF) == 0;
+}
+
+static always_inline int iszero (float64 f)
+{
+    union {
+        float64 f;
+        uint64_t u;
+    } u;
+
+    u.f = f;
+
+    return (u.u & ~0x8000000000000000ULL) == 0;
+}
+
+static always_inline int isinfinity (float64 f)
+{
+    union {
+        float64 f;
+        uint64_t u;
+    } u;
+
+    u.f = f;
+
+    return ((u.u >> 52) & 0x3FF) == 0x3FF &&
+        (u.u & 0x000FFFFFFFFFFFFFULL) == 0;
+}
+
+void do_compute_fprf (int set_fprf)
+{
+    int isneg;
+
+    isneg = fpisneg(FT0);
+    if (unlikely(float64_is_nan(FT0))) {
+        if (float64_is_signaling_nan(FT0)) {
+            /* Signaling NaN: flags are undefined */
+            T0 = 0x00;
+        } else {
+            /* Quiet NaN */
+            T0 = 0x11;
+        }
+    } else if (unlikely(isinfinity(FT0))) {
+        /* +/- infinity */
+        if (isneg)
+            T0 = 0x09;
+        else
+            T0 = 0x05;
+    } else {
+        if (iszero(FT0)) {
+            /* +/- zero */
+            if (isneg)
+                T0 = 0x12;
+            else
+                T0 = 0x02;
+        } else {
+            if (isden(FT0)) {
+                /* Denormalized numbers */
+                T0 = 0x10;
+            } else {
+                /* Normalized numbers */
+                T0 = 0x00;
+            }
+            if (isneg) {
+                T0 |= 0x08;
+            } else {
+                T0 |= 0x04;
+            }
+        }
+    }
+    if (set_fprf) {
+        /* We update FPSCR_FPRF */
+        env->fpscr &= ~(0x1F << FPSCR_FPRF);
+        env->fpscr |= T0 << FPSCR_FPRF;
+    }
+    /* We just need fpcc to update Rc1 */
+    T0 &= 0xF;
+}
+
+/* Floating-point invalid operations exception */
+static always_inline void fload_invalid_op_excp (int op)
+{
+    int ve;
+
+    ve = fpscr_ve;
+    if (op & POWERPC_EXCP_FP_VXSNAN) {
+        /* Operation on signaling NaN */
+        env->fpscr |= 1 << FPSCR_VXSNAN;
+    }
+    if (op & POWERPC_EXCP_FP_VXSOFT) {
+        /* Software-defined condition */
+        env->fpscr |= 1 << FPSCR_VXSOFT;
+    }
+    switch (op & ~(POWERPC_EXCP_FP_VXSOFT | POWERPC_EXCP_FP_VXSNAN)) {
+    case POWERPC_EXCP_FP_VXISI:
+        /* Magnitude subtraction of infinities */
+        env->fpscr |= 1 << FPSCR_VXISI;
+        goto update_arith;
+    case POWERPC_EXCP_FP_VXIDI:
+        /* Division of infinity by infinity */
+        env->fpscr |= 1 << FPSCR_VXIDI;
+        goto update_arith;
+    case POWERPC_EXCP_FP_VXZDZ:
+        /* Division of zero by zero */
+        env->fpscr |= 1 << FPSCR_VXZDZ;
+        goto update_arith;
+    case POWERPC_EXCP_FP_VXIMZ:
+        /* Multiplication of zero by infinity */
+        env->fpscr |= 1 << FPSCR_VXIMZ;
+        goto update_arith;
+    case POWERPC_EXCP_FP_VXVC:
+        /* Ordered comparison of NaN */
+        env->fpscr |= 1 << FPSCR_VXVC;
+        env->fpscr &= ~(0xF << FPSCR_FPCC);
+        env->fpscr |= 0x11 << FPSCR_FPCC;
+        /* We must update the target FPR before raising the exception */
+        if (ve != 0) {
+            env->exception_index = POWERPC_EXCP_PROGRAM;
+            env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_VXVC;
+            /* Update the floating-point enabled exception summary */
+            env->fpscr |= 1 << FPSCR_FEX;
+            /* Exception is differed */
+            ve = 0;
+        }
+        break;
+    case POWERPC_EXCP_FP_VXSQRT:
+        /* Square root of a negative number */
+        env->fpscr |= 1 << FPSCR_VXSQRT;
+    update_arith:
+        env->fpscr &= ~((1 << FPSCR_FR) | (1 << FPSCR_FI));
+        if (ve == 0) {
+            /* Set the result to quiet NaN */
+            FT0 = (uint64_t)-1;
+            env->fpscr &= ~(0xF << FPSCR_FPCC);
+            env->fpscr |= 0x11 << FPSCR_FPCC;
+        }
+        break;
+    case POWERPC_EXCP_FP_VXCVI:
+        /* Invalid conversion */
+        env->fpscr |= 1 << FPSCR_VXCVI;
+        env->fpscr &= ~((1 << FPSCR_FR) | (1 << FPSCR_FI));
+        if (ve == 0) {
+            /* Set the result to quiet NaN */
+            FT0 = (uint64_t)-1;
+            env->fpscr &= ~(0xF << FPSCR_FPCC);
+            env->fpscr |= 0x11 << FPSCR_FPCC;
+        }
+        break;
+    }
+    /* Update the floating-point invalid operation summary */
+    env->fpscr |= 1 << FPSCR_VX;
+    /* Update the floating-point exception summary */
+    env->fpscr |= 1 << FPSCR_FX;
+    if (ve != 0) {
+        /* Update the floating-point enabled exception summary */
+        env->fpscr |= 1 << FPSCR_FEX;
+        if (msr_fe0 != 0 || msr_fe1 != 0)
+            do_raise_exception_err(POWERPC_EXCP_PROGRAM, POWERPC_EXCP_FP | op);
+    }
+}
+
+static always_inline void float_zero_divide_excp (void)
+{
+    union {
+        float64 f;
+        uint64_t u;
+    } u0, u1;
+
+    env->fpscr |= 1 << FPSCR_ZX;
+    env->fpscr &= ~((1 << FPSCR_FR) | (1 << FPSCR_FI));
+    /* Update the floating-point exception summary */
+    env->fpscr |= 1 << FPSCR_FX;
+    if (fpscr_ze != 0) {
+        /* Update the floating-point enabled exception summary */
+        env->fpscr |= 1 << FPSCR_FEX;
+        if (msr_fe0 != 0 || msr_fe1 != 0) {
+            do_raise_exception_err(POWERPC_EXCP_PROGRAM,
+                                   POWERPC_EXCP_FP | POWERPC_EXCP_FP_ZX);
+        }
+    } else {
+        /* Set the result to infinity */
+        u0.f = FT0;
+        u1.f = FT1;
+        u0.u = ((u0.u ^ u1.u) & 0x8000000000000000ULL);
+        u0.u |= 0x3FFULL << 52;
+        FT0 = u0.f;
+    }
+}
+
+static always_inline void float_overflow_excp (void)
+{
+    env->fpscr |= 1 << FPSCR_OX;
+    /* Update the floating-point exception summary */
+    env->fpscr |= 1 << FPSCR_FX;
+    if (fpscr_oe != 0) {
+        /* XXX: should adjust the result */
+        /* Update the floating-point enabled exception summary */
+        env->fpscr |= 1 << FPSCR_FEX;
+        /* We must update the target FPR before raising the exception */
+        env->exception_index = POWERPC_EXCP_PROGRAM;
+        env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_OX;
+    } else {
+        env->fpscr |= 1 << FPSCR_XX;
+        env->fpscr |= 1 << FPSCR_FI;
+    }
+}
+
+static always_inline void float_underflow_excp (void)
+{
+    env->fpscr |= 1 << FPSCR_UX;
+    /* Update the floating-point exception summary */
+    env->fpscr |= 1 << FPSCR_FX;
+    if (fpscr_ue != 0) {
+        /* XXX: should adjust the result */
+        /* Update the floating-point enabled exception summary */
+        env->fpscr |= 1 << FPSCR_FEX;
+        /* We must update the target FPR before raising the exception */
+        env->exception_index = POWERPC_EXCP_PROGRAM;
+        env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_UX;
+    }
+}
+
+static always_inline void float_inexact_excp (void)
+{
+    env->fpscr |= 1 << FPSCR_XX;
+    /* Update the floating-point exception summary */
+    env->fpscr |= 1 << FPSCR_FX;
+    if (fpscr_xe != 0) {
+        /* Update the floating-point enabled exception summary */
+        env->fpscr |= 1 << FPSCR_FEX;
+        /* We must update the target FPR before raising the exception */
+        env->exception_index = POWERPC_EXCP_PROGRAM;
+        env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_XX;
+    }
+}
+
+static always_inline void fpscr_set_rounding_mode (void)
+{
+    int rnd_type;
+
+    /* Set rounding mode */
+    switch (fpscr_rn) {
+    case 0:
+        /* Best approximation (round to nearest) */
+        rnd_type = float_round_nearest_even;
+        break;
+    case 1:
+        /* Smaller magnitude (round toward zero) */
+        rnd_type = float_round_to_zero;
+        break;
+    case 2:
+        /* Round toward +infinite */
+        rnd_type = float_round_up;
+        break;
+    default:
+    case 3:
+        /* Round toward -infinite */
+        rnd_type = float_round_down;
+        break;
+    }
+    set_float_rounding_mode(rnd_type, &env->fp_status);
+}
+
+void do_fpscr_setbit (int bit)
+{
+    int prev;
+
+    prev = (env->fpscr >> bit) & 1;
+    env->fpscr |= 1 << bit;
+    if (prev == 0) {
+        switch (bit) {
+        case FPSCR_VX:
+            env->fpscr |= 1 << FPSCR_FX;
+            if (fpscr_ve)
+                goto raise_ve;
+        case FPSCR_OX:
+            env->fpscr |= 1 << FPSCR_FX;
+            if (fpscr_oe)
+                goto raise_oe;
+            break;
+        case FPSCR_UX:
+            env->fpscr |= 1 << FPSCR_FX;
+            if (fpscr_ue)
+                goto raise_ue;
+            break;
+        case FPSCR_ZX:
+            env->fpscr |= 1 << FPSCR_FX;
+            if (fpscr_ze)
+                goto raise_ze;
+            break;
+        case FPSCR_XX:
+            env->fpscr |= 1 << FPSCR_FX;
+            if (fpscr_xe)
+                goto raise_xe;
+            break;
+        case FPSCR_VXSNAN:
+        case FPSCR_VXISI:
+        case FPSCR_VXIDI:
+        case FPSCR_VXZDZ:
+        case FPSCR_VXIMZ:
+        case FPSCR_VXVC:
+        case FPSCR_VXSOFT:
+        case FPSCR_VXSQRT:
+        case FPSCR_VXCVI:
+            env->fpscr |= 1 << FPSCR_VX;
+            env->fpscr |= 1 << FPSCR_FX;
+            if (fpscr_ve != 0)
+                goto raise_ve;
+            break;
+        case FPSCR_VE:
+            if (fpscr_vx != 0) {
+            raise_ve:
+                env->error_code = POWERPC_EXCP_FP;
+                if (fpscr_vxsnan)
+                    env->error_code |= POWERPC_EXCP_FP_VXSNAN;
+                if (fpscr_vxisi)
+                    env->error_code |= POWERPC_EXCP_FP_VXISI;
+                if (fpscr_vxidi)
+                    env->error_code |= POWERPC_EXCP_FP_VXIDI;
+                if (fpscr_vxzdz)
+                    env->error_code |= POWERPC_EXCP_FP_VXZDZ;
+                if (fpscr_vximz)
+                    env->error_code |= POWERPC_EXCP_FP_VXIMZ;
+                if (fpscr_vxvc)
+                    env->error_code |= POWERPC_EXCP_FP_VXVC;
+                if (fpscr_vxsoft)
+                    env->error_code |= POWERPC_EXCP_FP_VXSOFT;
+                if (fpscr_vxsqrt)
+                    env->error_code |= POWERPC_EXCP_FP_VXSQRT;
+                if (fpscr_vxcvi)
+                    env->error_code |= POWERPC_EXCP_FP_VXCVI;
+                goto raise_excp;
+            }
+            break;
+        case FPSCR_OE:
+            if (fpscr_ox != 0) {
+            raise_oe:
+                env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_OX;
+                goto raise_excp;
+            }
+            break;
+        case FPSCR_UE:
+            if (fpscr_ux != 0) {
+            raise_ue:
+                env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_UX;
+                goto raise_excp;
+            }
+            break;
+        case FPSCR_ZE:
+            if (fpscr_zx != 0) {
+            raise_ze:
+                env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_ZX;
+                goto raise_excp;
+            }
+            break;
+        case FPSCR_XE:
+            if (fpscr_xx != 0) {
+            raise_xe:
+                env->error_code = POWERPC_EXCP_FP | POWERPC_EXCP_FP_XX;
+                goto raise_excp;
+            }
+            break;
+        case FPSCR_RN1:
+        case FPSCR_RN:
+            fpscr_set_rounding_mode();
+            break;
+        default:
+            break;
+        raise_excp:
+            /* Update the floating-point enabled exception summary */
+            env->fpscr |= 1 << FPSCR_FEX;
+                /* We have to update Rc1 before raising the exception */
+            env->exception_index = POWERPC_EXCP_PROGRAM;
+            break;
+        }
+    }
+}
+
+#if defined(WORDS_BIGENDIAN)
+#define WORD0 0
+#define WORD1 1
+#else
+#define WORD0 1
+#define WORD1 0
+#endif
+void do_store_fpscr (uint32_t mask)
+{
+    /*
+     * We use only the 32 LSB of the incoming fpr
+     */
+    union {
+        double d;
+        struct {
+            uint32_t u[2];
+        } s;
+    } u;
+    uint32_t prev, new;
+    int i;
+
+    u.d = FT0;
+    prev = env->fpscr;
+    new = u.s.u[WORD1];
+    new &= ~0x90000000;
+    new |= prev & 0x90000000;
+    for (i = 0; i < 7; i++) {
+        if (mask & (1 << i)) {
+            env->fpscr &= ~(0xF << (4 * i));
+            env->fpscr |= new & (0xF << (4 * i));
+        }
+    }
+    /* Update VX and FEX */
+    if (fpscr_ix != 0)
+        env->fpscr |= 1 << FPSCR_VX;
+    if ((fpscr_ex & fpscr_eex) != 0) {
+        env->fpscr |= 1 << FPSCR_FEX;
+        env->exception_index = POWERPC_EXCP_PROGRAM;
+        /* XXX: we should compute it properly */
+        env->error_code = POWERPC_EXCP_FP;
+    }
+    fpscr_set_rounding_mode();
+}
+#undef WORD0
+#undef WORD1
+
+#ifdef CONFIG_SOFTFLOAT
+void do_float_check_status (void)
+{
+    if (env->exception_index == POWERPC_EXCP_PROGRAM &&
+        (env->error_code & POWERPC_EXCP_FP)) {
+        /* Differred floating-point exception after target FPR update */
+        if (msr_fe0 != 0 || msr_fe1 != 0)
+            do_raise_exception_err(env->exception_index, env->error_code);
+    } else if (env->fp_status.float_exception_flags & float_flag_overflow) {
+        float_overflow_excp();
+    } else if (env->fp_status.float_exception_flags & float_flag_underflow) {
+        float_underflow_excp();
+    } else if (env->fp_status.float_exception_flags & float_flag_inexact) {
+        float_inexact_excp();
+    }
+}
+#endif
+
+#if USE_PRECISE_EMULATION
+void do_fadd (void)
+{
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1))) {
+        /* sNaN addition */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (likely(isfinite(FT0) || isfinite(FT1) ||
+                      fpisneg(FT0) == fpisneg(FT1))) {
+        FT0 = float64_add(FT0, FT1, &env->fp_status);
+    } else {
+        /* Magnitude subtraction of infinities */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXISI);
+    }
+}
+
+void do_fsub (void)
+{
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1))) {
+        /* sNaN subtraction */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (likely(isfinite(FT0) || isfinite(FT1) ||
+                      fpisneg(FT0) != fpisneg(FT1))) {
+        FT0 = float64_sub(FT0, FT1, &env->fp_status);
+    } else {
+        /* Magnitude subtraction of infinities */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXISI);
+    }
+}
+
+void do_fmul (void)
+{
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1))) {
+        /* sNaN multiplication */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (unlikely((isinfinity(FT0) && iszero(FT1)) ||
+                        (iszero(FT0) && isinfinity(FT1)))) {
+        /* Multiplication of zero by infinity */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXIMZ);
+    } else {
+        FT0 = float64_mul(FT0, FT1, &env->fp_status);
+    }
+}
+
+void do_fdiv (void)
+{
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1))) {
+        /* sNaN division */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (unlikely(isinfinity(FT0) && isinfinity(FT1))) {
+        /* Division of infinity by infinity */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXIDI);
+    } else if (unlikely(iszero(FT1))) {
+        if (iszero(FT0)) {
+            /* Division of zero by zero */
+            fload_invalid_op_excp(POWERPC_EXCP_FP_VXZDZ);
+        } else {
+            /* Division by zero */
+            float_zero_divide_excp();
+        }
+    } else {
+        FT0 = float64_div(FT0, FT1, &env->fp_status);
+    }
+}
+#endif /* USE_PRECISE_EMULATION */
+
 void do_fctiw (void)
 {
     union {
@@ -637,14 +1015,22 @@ void do_fctiw (void)
         uint64_t i;
     } p;
 
-    p.i = float64_to_int32(FT0, &env->fp_status);
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN | POWERPC_EXCP_FP_VXCVI);
+    } else if (unlikely(float64_is_nan(FT0) || isinfinity(FT0))) {
+        /* qNan / infinity conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXCVI);
+    } else {
+        p.i = float64_to_int32(FT0, &env->fp_status);
 #if USE_PRECISE_EMULATION
-    /* XXX: higher bits are not supposed to be significant.
-     *     to make tests easier, return the same as a real PowerPC 750 (aka G3)
-     */
-    p.i |= 0xFFF80000ULL << 32;
+        /* XXX: higher bits are not supposed to be significant.
+         *     to make tests easier, return the same as a real PowerPC 750
+         */
+        p.i |= 0xFFF80000ULL << 32;
 #endif
-    FT0 = p.d;
+        FT0 = p.d;
+    }
 }
 
 void do_fctiwz (void)
@@ -654,14 +1040,22 @@ void do_fctiwz (void)
         uint64_t i;
     } p;
 
-    p.i = float64_to_int32_round_to_zero(FT0, &env->fp_status);
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN | POWERPC_EXCP_FP_VXCVI);
+    } else if (unlikely(float64_is_nan(FT0) || isinfinity(FT0))) {
+        /* qNan / infinity conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXCVI);
+    } else {
+        p.i = float64_to_int32_round_to_zero(FT0, &env->fp_status);
 #if USE_PRECISE_EMULATION
-    /* XXX: higher bits are not supposed to be significant.
-     *     to make tests easier, return the same as a real PowerPC 750 (aka G3)
-     */
-    p.i |= 0xFFF80000ULL << 32;
+        /* XXX: higher bits are not supposed to be significant.
+         *     to make tests easier, return the same as a real PowerPC 750
+         */
+        p.i |= 0xFFF80000ULL << 32;
 #endif
-    FT0 = p.d;
+        FT0 = p.d;
+    }
 }
 
 #if defined(TARGET_PPC64)
@@ -683,8 +1077,16 @@ void do_fctid (void)
         uint64_t i;
     } p;
 
-    p.i = float64_to_int64(FT0, &env->fp_status);
-    FT0 = p.d;
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN | POWERPC_EXCP_FP_VXCVI);
+    } else if (unlikely(float64_is_nan(FT0) || isinfinity(FT0))) {
+        /* qNan / infinity conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXCVI);
+    } else {
+        p.i = float64_to_int64(FT0, &env->fp_status);
+        FT0 = p.d;
+    }
 }
 
 void do_fctidz (void)
@@ -694,99 +1096,227 @@ void do_fctidz (void)
         uint64_t i;
     } p;
 
-    p.i = float64_to_int64_round_to_zero(FT0, &env->fp_status);
-    FT0 = p.d;
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN | POWERPC_EXCP_FP_VXCVI);
+    } else if (unlikely(float64_is_nan(FT0) || isinfinity(FT0))) {
+        /* qNan / infinity conversion */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXCVI);
+    } else {
+        p.i = float64_to_int64_round_to_zero(FT0, &env->fp_status);
+        FT0 = p.d;
+    }
 }
 
 #endif
+
+static always_inline void do_fri (int rounding_mode)
+{
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN round */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN | POWERPC_EXCP_FP_VXCVI);
+    } else if (unlikely(float64_is_nan(FT0) || isinfinity(FT0))) {
+        /* qNan / infinity round */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXCVI);
+    } else {
+        set_float_rounding_mode(rounding_mode, &env->fp_status);
+        FT0 = float64_round_to_int(FT0, &env->fp_status);
+        /* Restore rounding mode from FPSCR */
+        fpscr_set_rounding_mode();
+    }
+}
+
+void do_frin (void)
+{
+    do_fri(float_round_nearest_even);
+}
+
+void do_friz (void)
+{
+    do_fri(float_round_to_zero);
+}
+
+void do_frip (void)
+{
+    do_fri(float_round_up);
+}
+
+void do_frim (void)
+{
+    do_fri(float_round_down);
+}
 
 #if USE_PRECISE_EMULATION
 void do_fmadd (void)
 {
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1) ||
+                 float64_is_signaling_nan(FT2))) {
+        /* sNaN operation */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else {
 #ifdef FLOAT128
-    float128 ft0_128, ft1_128;
+        /* This is the way the PowerPC specification defines it */
+        float128 ft0_128, ft1_128;
 
-    ft0_128 = float64_to_float128(FT0, &env->fp_status);
-    ft1_128 = float64_to_float128(FT1, &env->fp_status);
-    ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
-    ft1_128 = float64_to_float128(FT2, &env->fp_status);
-    ft0_128 = float128_add(ft0_128, ft1_128, &env->fp_status);
-    FT0 = float128_to_float64(ft0_128, &env->fp_status);
+        ft0_128 = float64_to_float128(FT0, &env->fp_status);
+        ft1_128 = float64_to_float128(FT1, &env->fp_status);
+        ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
+        ft1_128 = float64_to_float128(FT2, &env->fp_status);
+        ft0_128 = float128_add(ft0_128, ft1_128, &env->fp_status);
+        FT0 = float128_to_float64(ft0_128, &env->fp_status);
 #else
-    /* This is OK on x86 hosts */
-    FT0 = (FT0 * FT1) + FT2;
+        /* This is OK on x86 hosts */
+        FT0 = (FT0 * FT1) + FT2;
 #endif
+    }
 }
 
 void do_fmsub (void)
 {
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1) ||
+                 float64_is_signaling_nan(FT2))) {
+        /* sNaN operation */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else {
 #ifdef FLOAT128
-    float128 ft0_128, ft1_128;
+        /* This is the way the PowerPC specification defines it */
+        float128 ft0_128, ft1_128;
 
-    ft0_128 = float64_to_float128(FT0, &env->fp_status);
-    ft1_128 = float64_to_float128(FT1, &env->fp_status);
-    ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
-    ft1_128 = float64_to_float128(FT2, &env->fp_status);
-    ft0_128 = float128_sub(ft0_128, ft1_128, &env->fp_status);
-    FT0 = float128_to_float64(ft0_128, &env->fp_status);
+        ft0_128 = float64_to_float128(FT0, &env->fp_status);
+        ft1_128 = float64_to_float128(FT1, &env->fp_status);
+        ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
+        ft1_128 = float64_to_float128(FT2, &env->fp_status);
+        ft0_128 = float128_sub(ft0_128, ft1_128, &env->fp_status);
+        FT0 = float128_to_float64(ft0_128, &env->fp_status);
 #else
-    /* This is OK on x86 hosts */
-    FT0 = (FT0 * FT1) - FT2;
+        /* This is OK on x86 hosts */
+        FT0 = (FT0 * FT1) - FT2;
 #endif
+    }
 }
 #endif /* USE_PRECISE_EMULATION */
 
 void do_fnmadd (void)
 {
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1) ||
+                 float64_is_signaling_nan(FT2))) {
+        /* sNaN operation */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else {
 #if USE_PRECISE_EMULATION
 #ifdef FLOAT128
-    float128 ft0_128, ft1_128;
+        /* This is the way the PowerPC specification defines it */
+        float128 ft0_128, ft1_128;
 
-    ft0_128 = float64_to_float128(FT0, &env->fp_status);
-    ft1_128 = float64_to_float128(FT1, &env->fp_status);
-    ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
-    ft1_128 = float64_to_float128(FT2, &env->fp_status);
-    ft0_128 = float128_add(ft0_128, ft1_128, &env->fp_status);
-    FT0 = float128_to_float64(ft0_128, &env->fp_status);
+        ft0_128 = float64_to_float128(FT0, &env->fp_status);
+        ft1_128 = float64_to_float128(FT1, &env->fp_status);
+        ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
+        ft1_128 = float64_to_float128(FT2, &env->fp_status);
+        ft0_128 = float128_add(ft0_128, ft1_128, &env->fp_status);
+        FT0 = float128_to_float64(ft0_128, &env->fp_status);
 #else
-    /* This is OK on x86 hosts */
-    FT0 = (FT0 * FT1) + FT2;
+        /* This is OK on x86 hosts */
+        FT0 = (FT0 * FT1) + FT2;
 #endif
 #else
-    FT0 = float64_mul(FT0, FT1, &env->fp_status);
-    FT0 = float64_add(FT0, FT2, &env->fp_status);
+        FT0 = float64_mul(FT0, FT1, &env->fp_status);
+        FT0 = float64_add(FT0, FT2, &env->fp_status);
 #endif
-    if (likely(!isnan(FT0)))
-        FT0 = float64_chs(FT0);
+        if (likely(!isnan(FT0)))
+            FT0 = float64_chs(FT0);
+    }
 }
 
 void do_fnmsub (void)
 {
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1) ||
+                 float64_is_signaling_nan(FT2))) {
+        /* sNaN operation */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else {
 #if USE_PRECISE_EMULATION
 #ifdef FLOAT128
-    float128 ft0_128, ft1_128;
+        /* This is the way the PowerPC specification defines it */
+        float128 ft0_128, ft1_128;
 
-    ft0_128 = float64_to_float128(FT0, &env->fp_status);
-    ft1_128 = float64_to_float128(FT1, &env->fp_status);
-    ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
-    ft1_128 = float64_to_float128(FT2, &env->fp_status);
-    ft0_128 = float128_sub(ft0_128, ft1_128, &env->fp_status);
-    FT0 = float128_to_float64(ft0_128, &env->fp_status);
+        ft0_128 = float64_to_float128(FT0, &env->fp_status);
+        ft1_128 = float64_to_float128(FT1, &env->fp_status);
+        ft0_128 = float128_mul(ft0_128, ft1_128, &env->fp_status);
+        ft1_128 = float64_to_float128(FT2, &env->fp_status);
+        ft0_128 = float128_sub(ft0_128, ft1_128, &env->fp_status);
+        FT0 = float128_to_float64(ft0_128, &env->fp_status);
 #else
-    /* This is OK on x86 hosts */
-    FT0 = (FT0 * FT1) - FT2;
+        /* This is OK on x86 hosts */
+        FT0 = (FT0 * FT1) - FT2;
 #endif
 #else
-    FT0 = float64_mul(FT0, FT1, &env->fp_status);
-    FT0 = float64_sub(FT0, FT2, &env->fp_status);
+        FT0 = float64_mul(FT0, FT1, &env->fp_status);
+        FT0 = float64_sub(FT0, FT2, &env->fp_status);
 #endif
-    if (likely(!isnan(FT0)))
-        FT0 = float64_chs(FT0);
+        if (likely(!isnan(FT0)))
+            FT0 = float64_chs(FT0);
+    }
 }
+
+#if USE_PRECISE_EMULATION
+void do_frsp (void)
+{
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN square root */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else {
+        FT0 = float64_to_float32(FT0, &env->fp_status);
+    }
+}
+#endif /* USE_PRECISE_EMULATION */
 
 void do_fsqrt (void)
 {
-    FT0 = float64_sqrt(FT0, &env->fp_status);
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN square root */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (unlikely(fpisneg(FT0) && !iszero(FT0))) {
+        /* Square root of a negative nonzero number */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSQRT);
+    } else {
+        FT0 = float64_sqrt(FT0, &env->fp_status);
+    }
+}
+
+void do_fre (void)
+{
+    union {
+        double d;
+        uint64_t i;
+    } p;
+
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN reciprocal */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (unlikely(iszero(FT0))) {
+        /* Zero reciprocal */
+        float_zero_divide_excp();
+    } else if (likely(isnormal(FT0))) {
+        FT0 = float64_div(1.0, FT0, &env->fp_status);
+    } else {
+        p.d = FT0;
+        if (p.i == 0x8000000000000000ULL) {
+            p.i = 0xFFF0000000000000ULL;
+        } else if (p.i == 0x0000000000000000ULL) {
+            p.i = 0x7FF0000000000000ULL;
+        } else if (isnan(FT0)) {
+            p.i = 0x7FF8000000000000ULL;
+        } else if (fpisneg(FT0)) {
+            p.i = 0x8000000000000000ULL;
+        } else {
+            p.i = 0x0000000000000000ULL;
+        }
+        FT0 = p.d;
+    }
 }
 
 void do_fres (void)
@@ -796,7 +1326,13 @@ void do_fres (void)
         uint64_t i;
     } p;
 
-    if (likely(isnormal(FT0))) {
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN reciprocal */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (unlikely(iszero(FT0))) {
+        /* Zero reciprocal */
+        float_zero_divide_excp();
+    } else if (likely(isnormal(FT0))) {
 #if USE_PRECISE_EMULATION
         FT0 = float64_div(1.0, FT0, &env->fp_status);
         FT0 = float64_to_float32(FT0, &env->fp_status);
@@ -811,7 +1347,7 @@ void do_fres (void)
             p.i = 0x7FF0000000000000ULL;
         } else if (isnan(FT0)) {
             p.i = 0x7FF8000000000000ULL;
-        } else if (FT0 < 0.0) {
+        } else if (fpisneg(FT0)) {
             p.i = 0x8000000000000000ULL;
         } else {
             p.i = 0x0000000000000000ULL;
@@ -827,7 +1363,13 @@ void do_frsqrte (void)
         uint64_t i;
     } p;
 
-    if (likely(isnormal(FT0) && FT0 > 0.0)) {
+    if (unlikely(float64_is_signaling_nan(FT0))) {
+        /* sNaN reciprocal square root */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else if (unlikely(fpisneg(FT0) && !iszero(FT0))) {
+        /* Reciprocal square root of a negative nonzero number */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSQRT);
+    } else if (likely(isnormal(FT0))) {
         FT0 = float64_sqrt(FT0, &env->fp_status);
         FT0 = float32_div(1.0, FT0, &env->fp_status);
     } else {
@@ -837,9 +1379,8 @@ void do_frsqrte (void)
         } else if (p.i == 0x0000000000000000ULL) {
             p.i = 0x7FF0000000000000ULL;
         } else if (isnan(FT0)) {
-            if (!(p.i & 0x0008000000000000ULL))
-                p.i |= 0x000FFFFFFFFFFFFFULL;
-        } else if (FT0 < 0) {
+            p.i |= 0x000FFFFFFFFFFFFFULL;
+        } else if (fpisneg(FT0)) {
             p.i = 0x7FF8000000000000ULL;
         } else {
             p.i = 0x0000000000000000ULL;
@@ -850,7 +1391,7 @@ void do_frsqrte (void)
 
 void do_fsel (void)
 {
-    if (FT0 >= 0)
+    if (!fpisneg(FT0) || iszero(FT0))
         FT0 = FT1;
     else
         FT0 = FT2;
@@ -858,7 +1399,11 @@ void do_fsel (void)
 
 void do_fcmpu (void)
 {
-    if (likely(!isnan(FT0) && !isnan(FT1))) {
+    if (unlikely(float64_is_signaling_nan(FT0) ||
+                 float64_is_signaling_nan(FT1))) {
+        /* sNaN comparison */
+        fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN);
+    } else {
         if (float64_lt(FT0, FT1, &env->fp_status)) {
             T0 = 0x08UL;
         } else if (!float64_le(FT0, FT1, &env->fp_status)) {
@@ -866,18 +1411,25 @@ void do_fcmpu (void)
         } else {
             T0 = 0x02UL;
         }
-    } else {
-        T0 = 0x01UL;
-        env->fpscr[4] |= 0x1;
-        env->fpscr[6] |= 0x1;
     }
-    env->fpscr[3] = T0;
+    env->fpscr &= ~(0x0F << FPSCR_FPRF);
+    env->fpscr |= T0 << FPSCR_FPRF;
 }
 
 void do_fcmpo (void)
 {
-    env->fpscr[4] &= ~0x1;
-    if (likely(!isnan(FT0) && !isnan(FT1))) {
+    if (unlikely(float64_is_nan(FT0) ||
+                 float64_is_nan(FT1))) {
+        if (float64_is_signaling_nan(FT0) ||
+            float64_is_signaling_nan(FT1)) {
+            /* sNaN comparison */
+            fload_invalid_op_excp(POWERPC_EXCP_FP_VXSNAN |
+                                  POWERPC_EXCP_FP_VXVC);
+        } else {
+            /* qNaN comparison */
+            fload_invalid_op_excp(POWERPC_EXCP_FP_VXVC);
+        }
+    } else {
         if (float64_lt(FT0, FT1, &env->fp_status)) {
             T0 = 0x08UL;
         } else if (!float64_le(FT0, FT1, &env->fp_status)) {
@@ -885,57 +1437,70 @@ void do_fcmpo (void)
         } else {
             T0 = 0x02UL;
         }
-    } else {
-        T0 = 0x01UL;
-        env->fpscr[4] |= 0x1;
-        if (!float64_is_signaling_nan(FT0) || !float64_is_signaling_nan(FT1)) {
-            /* Quiet NaN case */
-            env->fpscr[6] |= 0x1;
-            if (!(env->fpscr[1] & 0x8))
-                env->fpscr[4] |= 0x8;
-        } else {
-            env->fpscr[4] |= 0x8;
-        }
     }
-    env->fpscr[3] = T0;
+    env->fpscr &= ~(0x0F << FPSCR_FPRF);
+    env->fpscr |= T0 << FPSCR_FPRF;
 }
 
 #if !defined (CONFIG_USER_ONLY)
 void cpu_dump_rfi (target_ulong RA, target_ulong msr);
-void do_rfi (void)
+
+void do_store_msr (void)
+{
+    T0 = hreg_store_msr(env, T0);
+    if (T0 != 0) {
+        env->interrupt_request |= CPU_INTERRUPT_EXITTB;
+        do_raise_exception(T0);
+    }
+}
+
+static always_inline void __do_rfi (target_ulong nip, target_ulong msr,
+                                    target_ulong msrm, int keep_msrh)
 {
 #if defined(TARGET_PPC64)
-    if (env->spr[SPR_SRR1] & (1ULL << MSR_SF)) {
-        env->nip = (uint64_t)(env->spr[SPR_SRR0] & ~0x00000003);
-        do_store_msr(env, (uint64_t)(env->spr[SPR_SRR1] & ~0xFFFF0000UL));
+    if (msr & (1ULL << MSR_SF)) {
+        nip = (uint64_t)nip;
+        msr &= (uint64_t)msrm;
     } else {
-        env->nip = (uint32_t)(env->spr[SPR_SRR0] & ~0x00000003);
-        ppc_store_msr_32(env, (uint32_t)(env->spr[SPR_SRR1] & ~0xFFFF0000UL));
+        nip = (uint32_t)nip;
+        msr = (uint32_t)(msr & msrm);
+        if (keep_msrh)
+            msr |= env->msr & ~((uint64_t)0xFFFFFFFF);
     }
 #else
-    env->nip = (uint32_t)(env->spr[SPR_SRR0] & ~0x00000003);
-    do_store_msr(env, (uint32_t)(env->spr[SPR_SRR1] & ~0xFFFF0000UL));
+    nip = (uint32_t)nip;
+    msr &= (uint32_t)msrm;
 #endif
+    /* XXX: beware: this is false if VLE is supported */
+    env->nip = nip & ~((target_ulong)0x00000003);
+    hreg_store_msr(env, msr);
 #if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
+    cpu_dump_rfi(env->nip, env->msr);
 #endif
+    /* No need to raise an exception here,
+     * as rfi is always the last insn of a TB
+     */
     env->interrupt_request |= CPU_INTERRUPT_EXITTB;
+}
+
+void do_rfi (void)
+{
+    __do_rfi(env->spr[SPR_SRR0], env->spr[SPR_SRR1],
+             ~((target_ulong)0xFFFF0000), 1);
 }
 
 #if defined(TARGET_PPC64)
 void do_rfid (void)
 {
-    if (env->spr[SPR_SRR1] & (1ULL << MSR_SF)) {
-        env->nip = (uint64_t)(env->spr[SPR_SRR0] & ~0x00000003);
-        do_store_msr(env, (uint64_t)(env->spr[SPR_SRR1] & ~0xFFFF0000UL));
-    } else {
-        env->nip = (uint32_t)(env->spr[SPR_SRR0] & ~0x00000003);
-        do_store_msr(env, (uint32_t)(env->spr[SPR_SRR1] & ~0xFFFF0000UL));
-    }
-#if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
+    __do_rfi(env->spr[SPR_SRR0], env->spr[SPR_SRR1],
+             ~((target_ulong)0xFFFF0000), 0);
+}
 #endif
-    env->interrupt_request |= CPU_INTERRUPT_EXITTB;
+#if defined(TARGET_PPC64H)
+void do_hrfid (void)
+{
+    __do_rfi(env->spr[SPR_HSRR0], env->spr[SPR_HSRR1],
+             ~((target_ulong)0xFFFF0000), 0);
 }
 #endif
 #endif
@@ -947,7 +1512,7 @@ void do_tw (int flags)
                   ((int32_t)T0 == (int32_t)T1 && (flags & 0x04)) ||
                   ((uint32_t)T0 < (uint32_t)T1 && (flags & 0x02)) ||
                   ((uint32_t)T0 > (uint32_t)T1 && (flags & 0x01))))) {
-        do_raise_exception_err(EXCP_PROGRAM, EXCP_TRAP);
+        do_raise_exception_err(POWERPC_EXCP_PROGRAM, POWERPC_EXCP_TRAP);
     }
 }
 
@@ -959,7 +1524,7 @@ void do_td (int flags)
                   ((int64_t)T0 == (int64_t)T1 && (flags & 0x04)) ||
                   ((uint64_t)T0 < (uint64_t)T1 && (flags & 0x02)) ||
                   ((uint64_t)T0 > (uint64_t)T1 && (flags & 0x01)))))
-        do_raise_exception_err(EXCP_PROGRAM, EXCP_TRAP);
+        do_raise_exception_err(POWERPC_EXCP_PROGRAM, POWERPC_EXCP_TRAP);
 }
 #endif
 
@@ -982,21 +1547,21 @@ void do_POWER_clcs (void)
     switch (T0) {
     case 0x0CUL:
         /* Instruction cache line size */
-        T0 = ICACHE_LINE_SIZE;
+        T0 = env->icache_line_size;
         break;
     case 0x0DUL:
         /* Data cache line size */
-        T0 = DCACHE_LINE_SIZE;
+        T0 = env->dcache_line_size;
         break;
     case 0x0EUL:
         /* Minimum cache line size */
-        T0 = ICACHE_LINE_SIZE < DCACHE_LINE_SIZE ?
-            ICACHE_LINE_SIZE : DCACHE_LINE_SIZE;
+        T0 = env->icache_line_size < env->dcache_line_size ?
+            env->icache_line_size : env->dcache_line_size;
         break;
     case 0x0FUL:
         /* Maximum cache line size */
-        T0 = ICACHE_LINE_SIZE > DCACHE_LINE_SIZE ?
-            ICACHE_LINE_SIZE : DCACHE_LINE_SIZE;
+        T0 = env->icache_line_size > env->dcache_line_size ?
+            env->icache_line_size : env->dcache_line_size;
         break;
     default:
         /* Undefined */
@@ -1130,13 +1695,7 @@ void do_POWER_rac (void)
 
 void do_POWER_rfsvc (void)
 {
-    env->nip = env->lr & ~0x00000003UL;
-    T0 = env->ctr & 0x0000FFFFUL;
-    do_store_msr(env, T0);
-#if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
-#endif
-    env->interrupt_request |= CPU_INTERRUPT_EXITTB;
+    __do_rfi(env->lr, env->ctr, 0x0000FFFF, 0);
 }
 
 /* PowerPC 601 BAT management helper */
@@ -1206,68 +1765,7 @@ void do_405_check_sat (void)
     }
 }
 
-#if !defined(CONFIG_USER_ONLY)
-void do_40x_rfci (void)
-{
-    env->nip = env->spr[SPR_40x_SRR2];
-    do_store_msr(env, env->spr[SPR_40x_SRR3] & ~0xFFFF0000);
-#if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
-#endif
-    env->interrupt_request = CPU_INTERRUPT_EXITTB;
-}
-
-void do_rfci (void)
-{
-#if defined(TARGET_PPC64)
-    if (env->spr[SPR_BOOKE_CSRR1] & (1 << MSR_CM)) {
-        env->nip = (uint64_t)env->spr[SPR_BOOKE_CSRR0];
-    } else
-#endif
-    {
-        env->nip = (uint32_t)env->spr[SPR_BOOKE_CSRR0];
-    }
-    do_store_msr(env, (uint32_t)env->spr[SPR_BOOKE_CSRR1] & ~0x3FFF0000);
-#if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
-#endif
-    env->interrupt_request = CPU_INTERRUPT_EXITTB;
-}
-
-void do_rfdi (void)
-{
-#if defined(TARGET_PPC64)
-    if (env->spr[SPR_BOOKE_DSRR1] & (1 << MSR_CM)) {
-        env->nip = (uint64_t)env->spr[SPR_BOOKE_DSRR0];
-    } else
-#endif
-    {
-        env->nip = (uint32_t)env->spr[SPR_BOOKE_DSRR0];
-    }
-    do_store_msr(env, (uint32_t)env->spr[SPR_BOOKE_DSRR1] & ~0x3FFF0000);
-#if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
-#endif
-    env->interrupt_request = CPU_INTERRUPT_EXITTB;
-}
-
-void do_rfmci (void)
-{
-#if defined(TARGET_PPC64)
-    if (env->spr[SPR_BOOKE_MCSRR1] & (1 << MSR_CM)) {
-        env->nip = (uint64_t)env->spr[SPR_BOOKE_MCSRR0];
-    } else
-#endif
-    {
-        env->nip = (uint32_t)env->spr[SPR_BOOKE_MCSRR0];
-    }
-    do_store_msr(env, (uint32_t)env->spr[SPR_BOOKE_MCSRR1] & ~0x3FFF0000);
-#if defined (DEBUG_OP)
-    cpu_dump_rfi(env->nip, do_load_msr(env));
-#endif
-    env->interrupt_request = CPU_INTERRUPT_EXITTB;
-}
-
+/* XXX: to be improved to check access rights when in user-mode */
 void do_load_dcr (void)
 {
     target_ulong val;
@@ -1276,12 +1774,14 @@ void do_load_dcr (void)
         if (loglevel != 0) {
             fprintf(logfile, "No DCR environment\n");
         }
-        do_raise_exception_err(EXCP_PROGRAM, EXCP_INVAL | EXCP_INVAL_INVAL);
+        do_raise_exception_err(POWERPC_EXCP_PROGRAM,
+                               POWERPC_EXCP_INVAL | POWERPC_EXCP_INVAL_INVAL);
     } else if (unlikely(ppc_dcr_read(env->dcr_env, T0, &val) != 0)) {
         if (loglevel != 0) {
             fprintf(logfile, "DCR read error %d %03x\n", (int)T0, (int)T0);
         }
-        do_raise_exception_err(EXCP_PROGRAM, EXCP_INVAL | EXCP_PRIV_REG);
+        do_raise_exception_err(POWERPC_EXCP_PROGRAM,
+                               POWERPC_EXCP_INVAL | POWERPC_EXCP_PRIV_REG);
     } else {
         T0 = val;
     }
@@ -1293,13 +1793,40 @@ void do_store_dcr (void)
         if (loglevel != 0) {
             fprintf(logfile, "No DCR environment\n");
         }
-        do_raise_exception_err(EXCP_PROGRAM, EXCP_INVAL | EXCP_INVAL_INVAL);
+        do_raise_exception_err(POWERPC_EXCP_PROGRAM,
+                               POWERPC_EXCP_INVAL | POWERPC_EXCP_INVAL_INVAL);
     } else if (unlikely(ppc_dcr_write(env->dcr_env, T0, T1) != 0)) {
         if (loglevel != 0) {
             fprintf(logfile, "DCR write error %d %03x\n", (int)T0, (int)T0);
         }
-        do_raise_exception_err(EXCP_PROGRAM, EXCP_INVAL | EXCP_PRIV_REG);
+        do_raise_exception_err(POWERPC_EXCP_PROGRAM,
+                               POWERPC_EXCP_INVAL | POWERPC_EXCP_PRIV_REG);
     }
+}
+
+#if !defined(CONFIG_USER_ONLY)
+void do_40x_rfci (void)
+{
+    __do_rfi(env->spr[SPR_40x_SRR2], env->spr[SPR_40x_SRR3],
+             ~((target_ulong)0xFFFF0000), 0);
+}
+
+void do_rfci (void)
+{
+    __do_rfi(env->spr[SPR_BOOKE_CSRR0], SPR_BOOKE_CSRR1,
+             ~((target_ulong)0x3FFF0000), 0);
+}
+
+void do_rfdi (void)
+{
+    __do_rfi(env->spr[SPR_BOOKE_DSRR0], SPR_BOOKE_DSRR1,
+             ~((target_ulong)0x3FFF0000), 0);
+}
+
+void do_rfmci (void)
+{
+    __do_rfi(env->spr[SPR_BOOKE_MCSRR0], SPR_BOOKE_MCSRR1,
+             ~((target_ulong)0x3FFF0000), 0);
 }
 
 void do_load_403_pb (int num)
@@ -1346,12 +1873,12 @@ static uint8_t hbrev[16] = {
     0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF,
 };
 
-static inline uint8_t byte_reverse (uint8_t val)
+static always_inline uint8_t byte_reverse (uint8_t val)
 {
     return hbrev[val >> 4] | (hbrev[val & 0xF] << 4);
 }
 
-static inline uint32_t word_reverse (uint32_t val)
+static always_inline uint32_t word_reverse (uint32_t val)
 {
     return byte_reverse(val >> 24) | (byte_reverse(val >> 16) << 8) |
         (byte_reverse(val >> 8) << 16) | (byte_reverse(val) << 24);
@@ -1384,7 +1911,7 @@ void do_ev##name (void)                                                       \
 }
 
 /* Fixed-point vector arithmetic */
-static inline uint32_t _do_eabs (uint32_t val)
+static always_inline uint32_t _do_eabs (uint32_t val)
 {
     if (val != 0x80000000)
         val &= ~0x80000000;
@@ -1392,25 +1919,25 @@ static inline uint32_t _do_eabs (uint32_t val)
     return val;
 }
 
-static inline uint32_t _do_eaddw (uint32_t op1, uint32_t op2)
+static always_inline uint32_t _do_eaddw (uint32_t op1, uint32_t op2)
 {
     return op1 + op2;
 }
 
-static inline int _do_ecntlsw (uint32_t val)
+static always_inline int _do_ecntlsw (uint32_t val)
 {
     if (val & 0x80000000)
-        return _do_cntlzw(~val);
+        return clz32(~val);
     else
-        return _do_cntlzw(val);
+        return clz32(val);
 }
 
-static inline int _do_ecntlzw (uint32_t val)
+static always_inline int _do_ecntlzw (uint32_t val)
 {
-    return _do_cntlzw(val);
+    return clz32(val);
 }
 
-static inline uint32_t _do_eneg (uint32_t val)
+static always_inline uint32_t _do_eneg (uint32_t val)
 {
     if (val != 0x80000000)
         val ^= 0x80000000;
@@ -1418,35 +1945,35 @@ static inline uint32_t _do_eneg (uint32_t val)
     return val;
 }
 
-static inline uint32_t _do_erlw (uint32_t op1, uint32_t op2)
+static always_inline uint32_t _do_erlw (uint32_t op1, uint32_t op2)
 {
     return rotl32(op1, op2);
 }
 
-static inline uint32_t _do_erndw (uint32_t val)
+static always_inline uint32_t _do_erndw (uint32_t val)
 {
     return (val + 0x000080000000) & 0xFFFF0000;
 }
 
-static inline uint32_t _do_eslw (uint32_t op1, uint32_t op2)
+static always_inline uint32_t _do_eslw (uint32_t op1, uint32_t op2)
 {
     /* No error here: 6 bits are used */
     return op1 << (op2 & 0x3F);
 }
 
-static inline int32_t _do_esrws (int32_t op1, uint32_t op2)
+static always_inline int32_t _do_esrws (int32_t op1, uint32_t op2)
 {
     /* No error here: 6 bits are used */
     return op1 >> (op2 & 0x3F);
 }
 
-static inline uint32_t _do_esrwu (uint32_t op1, uint32_t op2)
+static always_inline uint32_t _do_esrwu (uint32_t op1, uint32_t op2)
 {
     /* No error here: 6 bits are used */
     return op1 >> (op2 & 0x3F);
 }
 
-static inline uint32_t _do_esubfw (uint32_t op1, uint32_t op2)
+static always_inline uint32_t _do_esubfw (uint32_t op1, uint32_t op2)
 {
     return op2 - op1;
 }
@@ -1475,7 +2002,7 @@ DO_SPE_OP2(srwu);
 DO_SPE_OP2(subfw);
 
 /* evsel is a little bit more complicated... */
-static inline uint32_t _do_esel (uint32_t op1, uint32_t op2, int n)
+static always_inline uint32_t _do_esel (uint32_t op1, uint32_t op2, int n)
 {
     if (n)
         return op1;
@@ -1498,31 +2025,31 @@ void do_ev##name (void)                                                       \
                          _do_e##name(T0_64, T1_64));                          \
 }
 
-static inline uint32_t _do_evcmp_merge (int t0, int t1)
+static always_inline uint32_t _do_evcmp_merge (int t0, int t1)
 {
     return (t0 << 3) | (t1 << 2) | ((t0 | t1) << 1) | (t0 & t1);
 }
-static inline int _do_ecmpeq (uint32_t op1, uint32_t op2)
+static always_inline int _do_ecmpeq (uint32_t op1, uint32_t op2)
 {
     return op1 == op2 ? 1 : 0;
 }
 
-static inline int _do_ecmpgts (int32_t op1, int32_t op2)
+static always_inline int _do_ecmpgts (int32_t op1, int32_t op2)
 {
     return op1 > op2 ? 1 : 0;
 }
 
-static inline int _do_ecmpgtu (uint32_t op1, uint32_t op2)
+static always_inline int _do_ecmpgtu (uint32_t op1, uint32_t op2)
 {
     return op1 > op2 ? 1 : 0;
 }
 
-static inline int _do_ecmplts (int32_t op1, int32_t op2)
+static always_inline int _do_ecmplts (int32_t op1, int32_t op2)
 {
     return op1 < op2 ? 1 : 0;
 }
 
-static inline int _do_ecmpltu (uint32_t op1, uint32_t op2)
+static always_inline int _do_ecmpltu (uint32_t op1, uint32_t op2)
 {
     return op1 < op2 ? 1 : 0;
 }
@@ -1539,7 +2066,7 @@ DO_SPE_CMP(cmplts);
 DO_SPE_CMP(cmpltu);
 
 /* Single precision floating-point conversions from/to integer */
-static inline uint32_t _do_efscfsi (int32_t val)
+static always_inline uint32_t _do_efscfsi (int32_t val)
 {
     union {
         uint32_t u;
@@ -1551,7 +2078,7 @@ static inline uint32_t _do_efscfsi (int32_t val)
     return u.u;
 }
 
-static inline uint32_t _do_efscfui (uint32_t val)
+static always_inline uint32_t _do_efscfui (uint32_t val)
 {
     union {
         uint32_t u;
@@ -1563,7 +2090,7 @@ static inline uint32_t _do_efscfui (uint32_t val)
     return u.u;
 }
 
-static inline int32_t _do_efsctsi (uint32_t val)
+static always_inline int32_t _do_efsctsi (uint32_t val)
 {
     union {
         int32_t u;
@@ -1578,7 +2105,7 @@ static inline int32_t _do_efsctsi (uint32_t val)
     return float32_to_int32(u.f, &env->spe_status);
 }
 
-static inline uint32_t _do_efsctui (uint32_t val)
+static always_inline uint32_t _do_efsctui (uint32_t val)
 {
     union {
         int32_t u;
@@ -1593,7 +2120,7 @@ static inline uint32_t _do_efsctui (uint32_t val)
     return float32_to_uint32(u.f, &env->spe_status);
 }
 
-static inline int32_t _do_efsctsiz (uint32_t val)
+static always_inline int32_t _do_efsctsiz (uint32_t val)
 {
     union {
         int32_t u;
@@ -1608,7 +2135,7 @@ static inline int32_t _do_efsctsiz (uint32_t val)
     return float32_to_int32_round_to_zero(u.f, &env->spe_status);
 }
 
-static inline uint32_t _do_efsctuiz (uint32_t val)
+static always_inline uint32_t _do_efsctuiz (uint32_t val)
 {
     union {
         int32_t u;
@@ -1654,7 +2181,7 @@ void do_efsctuiz (void)
 }
 
 /* Single precision floating-point conversion to/from fractional */
-static inline uint32_t _do_efscfsf (uint32_t val)
+static always_inline uint32_t _do_efscfsf (uint32_t val)
 {
     union {
         uint32_t u;
@@ -1669,7 +2196,7 @@ static inline uint32_t _do_efscfsf (uint32_t val)
     return u.u;
 }
 
-static inline uint32_t _do_efscfuf (uint32_t val)
+static always_inline uint32_t _do_efscfuf (uint32_t val)
 {
     union {
         uint32_t u;
@@ -1684,7 +2211,7 @@ static inline uint32_t _do_efscfuf (uint32_t val)
     return u.u;
 }
 
-static inline int32_t _do_efsctsf (uint32_t val)
+static always_inline int32_t _do_efsctsf (uint32_t val)
 {
     union {
         int32_t u;
@@ -1702,7 +2229,7 @@ static inline int32_t _do_efsctsf (uint32_t val)
     return float32_to_int32(u.f, &env->spe_status);
 }
 
-static inline uint32_t _do_efsctuf (uint32_t val)
+static always_inline uint32_t _do_efsctuf (uint32_t val)
 {
     union {
         int32_t u;
@@ -1720,7 +2247,7 @@ static inline uint32_t _do_efsctuf (uint32_t val)
     return float32_to_uint32(u.f, &env->spe_status);
 }
 
-static inline int32_t _do_efsctsfz (uint32_t val)
+static always_inline int32_t _do_efsctsfz (uint32_t val)
 {
     union {
         int32_t u;
@@ -1738,7 +2265,7 @@ static inline int32_t _do_efsctsfz (uint32_t val)
     return float32_to_int32_round_to_zero(u.f, &env->spe_status);
 }
 
-static inline uint32_t _do_efsctufz (uint32_t val)
+static always_inline uint32_t _do_efsctufz (uint32_t val)
 {
     union {
         int32_t u;
@@ -1787,19 +2314,19 @@ void do_efsctufz (void)
 }
 
 /* Double precision floating point helpers */
-static inline int _do_efdcmplt (uint64_t op1, uint64_t op2)
+static always_inline int _do_efdcmplt (uint64_t op1, uint64_t op2)
 {
     /* XXX: TODO: test special values (NaN, infinites, ...) */
     return _do_efdtstlt(op1, op2);
 }
 
-static inline int _do_efdcmpgt (uint64_t op1, uint64_t op2)
+static always_inline int _do_efdcmpgt (uint64_t op1, uint64_t op2)
 {
     /* XXX: TODO: test special values (NaN, infinites, ...) */
     return _do_efdtstgt(op1, op2);
 }
 
-static inline int _do_efdcmpeq (uint64_t op1, uint64_t op2)
+static always_inline int _do_efdcmpeq (uint64_t op1, uint64_t op2)
 {
     /* XXX: TODO: test special values (NaN, infinites, ...) */
     return _do_efdtsteq(op1, op2);
@@ -1821,7 +2348,7 @@ void do_efdcmpeq (void)
 }
 
 /* Double precision floating-point conversion to/from integer */
-static inline uint64_t _do_efdcfsi (int64_t val)
+static always_inline uint64_t _do_efdcfsi (int64_t val)
 {
     union {
         uint64_t u;
@@ -1833,7 +2360,7 @@ static inline uint64_t _do_efdcfsi (int64_t val)
     return u.u;
 }
 
-static inline uint64_t _do_efdcfui (uint64_t val)
+static always_inline uint64_t _do_efdcfui (uint64_t val)
 {
     union {
         uint64_t u;
@@ -1845,7 +2372,7 @@ static inline uint64_t _do_efdcfui (uint64_t val)
     return u.u;
 }
 
-static inline int64_t _do_efdctsi (uint64_t val)
+static always_inline int64_t _do_efdctsi (uint64_t val)
 {
     union {
         int64_t u;
@@ -1860,7 +2387,7 @@ static inline int64_t _do_efdctsi (uint64_t val)
     return float64_to_int64(u.f, &env->spe_status);
 }
 
-static inline uint64_t _do_efdctui (uint64_t val)
+static always_inline uint64_t _do_efdctui (uint64_t val)
 {
     union {
         int64_t u;
@@ -1875,7 +2402,7 @@ static inline uint64_t _do_efdctui (uint64_t val)
     return float64_to_uint64(u.f, &env->spe_status);
 }
 
-static inline int64_t _do_efdctsiz (uint64_t val)
+static always_inline int64_t _do_efdctsiz (uint64_t val)
 {
     union {
         int64_t u;
@@ -1890,7 +2417,7 @@ static inline int64_t _do_efdctsiz (uint64_t val)
     return float64_to_int64_round_to_zero(u.f, &env->spe_status);
 }
 
-static inline uint64_t _do_efdctuiz (uint64_t val)
+static always_inline uint64_t _do_efdctuiz (uint64_t val)
 {
     union {
         int64_t u;
@@ -1936,7 +2463,7 @@ void do_efdctuiz (void)
 }
 
 /* Double precision floating-point conversion to/from fractional */
-static inline uint64_t _do_efdcfsf (int64_t val)
+static always_inline uint64_t _do_efdcfsf (int64_t val)
 {
     union {
         uint64_t u;
@@ -1951,7 +2478,7 @@ static inline uint64_t _do_efdcfsf (int64_t val)
     return u.u;
 }
 
-static inline uint64_t _do_efdcfuf (uint64_t val)
+static always_inline uint64_t _do_efdcfuf (uint64_t val)
 {
     union {
         uint64_t u;
@@ -1966,7 +2493,7 @@ static inline uint64_t _do_efdcfuf (uint64_t val)
     return u.u;
 }
 
-static inline int64_t _do_efdctsf (uint64_t val)
+static always_inline int64_t _do_efdctsf (uint64_t val)
 {
     union {
         int64_t u;
@@ -1984,7 +2511,7 @@ static inline int64_t _do_efdctsf (uint64_t val)
     return float64_to_int32(u.f, &env->spe_status);
 }
 
-static inline uint64_t _do_efdctuf (uint64_t val)
+static always_inline uint64_t _do_efdctuf (uint64_t val)
 {
     union {
         int64_t u;
@@ -2002,7 +2529,7 @@ static inline uint64_t _do_efdctuf (uint64_t val)
     return float64_to_uint32(u.f, &env->spe_status);
 }
 
-static inline int64_t _do_efdctsfz (uint64_t val)
+static always_inline int64_t _do_efdctsfz (uint64_t val)
 {
     union {
         int64_t u;
@@ -2020,7 +2547,7 @@ static inline int64_t _do_efdctsfz (uint64_t val)
     return float64_to_int32_round_to_zero(u.f, &env->spe_status);
 }
 
-static inline uint64_t _do_efdctufz (uint64_t val)
+static always_inline uint64_t _do_efdctufz (uint64_t val)
 {
     union {
         int64_t u;
@@ -2069,7 +2596,7 @@ void do_efdctufz (void)
 }
 
 /* Floating point conversion between single and double precision */
-static inline uint32_t _do_efscfd (uint64_t val)
+static always_inline uint32_t _do_efscfd (uint64_t val)
 {
     union {
         uint64_t u;
@@ -2086,7 +2613,7 @@ static inline uint32_t _do_efscfd (uint64_t val)
     return u2.u;
 }
 
-static inline uint64_t _do_efdcfs (uint32_t val)
+static always_inline uint64_t _do_efdcfs (uint32_t val)
 {
     union {
         uint64_t u;
@@ -2130,19 +2657,19 @@ DO_SPE_OP2(fsmul);
 DO_SPE_OP2(fsdiv);
 
 /* Single-precision floating-point comparisons */
-static inline int _do_efscmplt (uint32_t op1, uint32_t op2)
+static always_inline int _do_efscmplt (uint32_t op1, uint32_t op2)
 {
     /* XXX: TODO: test special values (NaN, infinites, ...) */
     return _do_efststlt(op1, op2);
 }
 
-static inline int _do_efscmpgt (uint32_t op1, uint32_t op2)
+static always_inline int _do_efscmpgt (uint32_t op1, uint32_t op2)
 {
     /* XXX: TODO: test special values (NaN, infinites, ...) */
     return _do_efststgt(op1, op2);
 }
 
-static inline int _do_efscmpeq (uint32_t op1, uint32_t op2)
+static always_inline int _do_efscmpeq (uint32_t op1, uint32_t op2)
 {
     /* XXX: TODO: test special values (NaN, infinites, ...) */
     return _do_efststeq(op1, op2);
@@ -2205,7 +2732,11 @@ DO_SPE_OP1(fsctuf);
 #if !defined (CONFIG_USER_ONLY)
 
 #define MMUSUFFIX _mmu
-#define GETPC() (__builtin_return_address(0))
+#ifdef __s390__
+# define GETPC() ((void*)((unsigned long)__builtin_return_address(0) & 0x7fffffffUL))
+#else
+# define GETPC() (__builtin_return_address(0))
+#endif
 
 #define SHIFT 0
 #include "softmmu_template.h"
@@ -2223,7 +2754,7 @@ DO_SPE_OP1(fsctuf);
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
 /* XXX: fix it to restore all registers */
-void tlb_fill (target_ulong addr, int is_write, int is_user, void *retaddr)
+void tlb_fill (target_ulong addr, int is_write, int mmu_idx, void *retaddr)
 {
     TranslationBlock *tb;
     CPUState *saved_env;
@@ -2234,11 +2765,11 @@ void tlb_fill (target_ulong addr, int is_write, int is_user, void *retaddr)
        generated code */
     saved_env = env;
     env = cpu_single_env;
-    ret = cpu_ppc_handle_mmu_fault(env, addr, is_write, is_user, 1);
+    ret = cpu_ppc_handle_mmu_fault(env, addr, is_write, mmu_idx, 1);
     if (unlikely(ret != 0)) {
         if (likely(retaddr)) {
             /* now we have a real cpu fault */
-            pc = (target_phys_addr_t)retaddr;
+            pc = (target_phys_addr_t)(unsigned long)retaddr;
             tb = tb_find_pc(pc);
             if (likely(tb)) {
                 /* the PC is inside the translated code. It means that we have
@@ -2250,120 +2781,6 @@ void tlb_fill (target_ulong addr, int is_write, int is_user, void *retaddr)
     }
     env = saved_env;
 }
-
-/* TLB invalidation helpers */
-void do_tlbia (void)
-{
-    ppc_tlb_invalidate_all(env);
-}
-
-void do_tlbie (void)
-{
-    T0 = (uint32_t)T0;
-#if !defined(FLUSH_ALL_TLBS)
-    if (unlikely(PPC_MMU(env) == PPC_FLAGS_MMU_SOFT_6xx)) {
-        ppc6xx_tlb_invalidate_virt(env, T0 & TARGET_PAGE_MASK, 0);
-        if (env->id_tlbs == 1)
-            ppc6xx_tlb_invalidate_virt(env, T0 & TARGET_PAGE_MASK, 1);
-    } else if (unlikely(PPC_MMU(env) == PPC_FLAGS_MMU_SOFT_4xx)) {
-        /* XXX: TODO */
-#if 0
-        ppcbooke_tlb_invalidate_virt(env, T0 & TARGET_PAGE_MASK,
-                                     env->spr[SPR_BOOKE_PID]);
-#endif
-    } else {
-        /* tlbie invalidate TLBs for all segments */
-        T0 &= TARGET_PAGE_MASK;
-        T0 &= ~((target_ulong)-1 << 28);
-        /* XXX: this case should be optimized,
-         * giving a mask to tlb_flush_page
-         */
-        tlb_flush_page(env, T0 | (0x0 << 28));
-        tlb_flush_page(env, T0 | (0x1 << 28));
-        tlb_flush_page(env, T0 | (0x2 << 28));
-        tlb_flush_page(env, T0 | (0x3 << 28));
-        tlb_flush_page(env, T0 | (0x4 << 28));
-        tlb_flush_page(env, T0 | (0x5 << 28));
-        tlb_flush_page(env, T0 | (0x6 << 28));
-        tlb_flush_page(env, T0 | (0x7 << 28));
-        tlb_flush_page(env, T0 | (0x8 << 28));
-        tlb_flush_page(env, T0 | (0x9 << 28));
-        tlb_flush_page(env, T0 | (0xA << 28));
-        tlb_flush_page(env, T0 | (0xB << 28));
-        tlb_flush_page(env, T0 | (0xC << 28));
-        tlb_flush_page(env, T0 | (0xD << 28));
-        tlb_flush_page(env, T0 | (0xE << 28));
-        tlb_flush_page(env, T0 | (0xF << 28));
-    }
-#else
-    do_tlbia();
-#endif
-}
-
-#if defined(TARGET_PPC64)
-void do_tlbie_64 (void)
-{
-    T0 = (uint64_t)T0;
-#if !defined(FLUSH_ALL_TLBS)
-    if (unlikely(PPC_MMU(env) == PPC_FLAGS_MMU_SOFT_6xx)) {
-        ppc6xx_tlb_invalidate_virt(env, T0 & TARGET_PAGE_MASK, 0);
-        if (env->id_tlbs == 1)
-            ppc6xx_tlb_invalidate_virt(env, T0 & TARGET_PAGE_MASK, 1);
-    } else if (unlikely(PPC_MMU(env) == PPC_FLAGS_MMU_SOFT_4xx)) {
-        /* XXX: TODO */
-#if 0
-        ppcbooke_tlb_invalidate_virt(env, T0 & TARGET_PAGE_MASK,
-                                     env->spr[SPR_BOOKE_PID]);
-#endif
-    } else {
-        /* tlbie invalidate TLBs for all segments
-         * As we have 2^36 segments, invalidate all qemu TLBs
-         */
-#if 0
-        T0 &= TARGET_PAGE_MASK;
-        T0 &= ~((target_ulong)-1 << 28);
-        /* XXX: this case should be optimized,
-         * giving a mask to tlb_flush_page
-         */
-        tlb_flush_page(env, T0 | (0x0 << 28));
-        tlb_flush_page(env, T0 | (0x1 << 28));
-        tlb_flush_page(env, T0 | (0x2 << 28));
-        tlb_flush_page(env, T0 | (0x3 << 28));
-        tlb_flush_page(env, T0 | (0x4 << 28));
-        tlb_flush_page(env, T0 | (0x5 << 28));
-        tlb_flush_page(env, T0 | (0x6 << 28));
-        tlb_flush_page(env, T0 | (0x7 << 28));
-        tlb_flush_page(env, T0 | (0x8 << 28));
-        tlb_flush_page(env, T0 | (0x9 << 28));
-        tlb_flush_page(env, T0 | (0xA << 28));
-        tlb_flush_page(env, T0 | (0xB << 28));
-        tlb_flush_page(env, T0 | (0xC << 28));
-        tlb_flush_page(env, T0 | (0xD << 28));
-        tlb_flush_page(env, T0 | (0xE << 28));
-        tlb_flush_page(env, T0 | (0xF << 28));
-#else
-        tlb_flush(env, 1);
-#endif
-    }
-#else
-    do_tlbia();
-#endif
-}
-#endif
-
-#if defined(TARGET_PPC64)
-void do_slbia (void)
-{
-    /* XXX: TODO */
-    tlb_flush(env, 1);
-}
-
-void do_slbie (void)
-{
-    /* XXX: TODO */
-    tlb_flush(env, 1);
-}
-#endif
 
 /* Software driven TLBs management */
 /* PowerPC 602/603 software TLB load instructions helpers */
@@ -2393,12 +2810,33 @@ void do_load_6xx_tlb (int is_code)
                      way, is_code, CMP, RPN);
 }
 
-static target_ulong booke_tlb_to_page_size (int size)
+void do_load_74xx_tlb (int is_code)
+{
+    target_ulong RPN, CMP, EPN;
+    int way;
+
+    RPN = env->spr[SPR_PTELO];
+    CMP = env->spr[SPR_PTEHI];
+    EPN = env->spr[SPR_TLBMISS] & ~0x3;
+    way = env->spr[SPR_TLBMISS] & 0x3;
+#if defined (DEBUG_SOFTWARE_TLB)
+    if (loglevel != 0) {
+        fprintf(logfile, "%s: EPN %08lx %08lx PTE0 %08lx PTE1 %08lx way %d\n",
+                __func__, (unsigned long)T0, (unsigned long)EPN,
+                (unsigned long)CMP, (unsigned long)RPN, way);
+    }
+#endif
+    /* Store this TLB */
+    ppc6xx_tlb_store(env, (uint32_t)(T0 & TARGET_PAGE_MASK),
+                     way, is_code, CMP, RPN);
+}
+
+static always_inline target_ulong booke_tlb_to_page_size (int size)
 {
     return 1024 << (2 * size);
 }
 
-static int booke_page_size_to_tlb (target_ulong page_size)
+static always_inline int booke_page_size_to_tlb (target_ulong page_size)
 {
     int size;
 
@@ -2492,21 +2930,6 @@ void do_4xx_tlbre_hi (void)
         T0 |= 0x100;
 }
 
-void do_4xx_tlbsx (void)
-{
-    T0 = ppcemb_tlb_search(env, T0, env->spr[SPR_40x_PID]);
-}
-
-void do_4xx_tlbsx_ (void)
-{
-    int tmp = xer_so;
-
-    T0 = ppcemb_tlb_search(env, T0, env->spr[SPR_40x_PID]);
-    if (T0 != -1)
-        tmp |= 0x02;
-    env->crf[0] = tmp;
-}
-
 void do_4xx_tlbwe_hi (void)
 {
     ppcemb_tlb_t *tlb;
@@ -2541,7 +2964,7 @@ void do_4xx_tlbwe_hi (void)
                   "are not supported (%d)\n",
                   tlb->size, TARGET_PAGE_SIZE, (int)((T1 >> 7) & 0x7));
     }
-    tlb->EPN = (T1 & 0xFFFFFC00) & ~(tlb->size - 1);
+    tlb->EPN = T1 & ~(tlb->size - 1);
     if (T1 & 0x40)
         tlb->prot |= PAGE_VALID;
     else
@@ -2607,150 +3030,114 @@ void do_4xx_tlbwe_lo (void)
 #endif
 }
 
-/* BookE TLB management */
-void do_booke_tlbwe0 (void)
+/* PowerPC 440 TLB management */
+void do_440_tlbwe (int word)
 {
     ppcemb_tlb_t *tlb;
-    target_ulong EPN, size;
+    target_ulong EPN, RPN, size;
     int do_flush_tlbs;
 
 #if defined (DEBUG_SOFTWARE_TLB)
     if (loglevel != 0) {
-        fprintf(logfile, "%s T0 " REGX " T1 " REGX "\n", __func__, T0, T1);
+        fprintf(logfile, "%s word %d T0 " REGX " T1 " REGX "\n",
+                __func__, word, T0, T1);
     }
 #endif
     do_flush_tlbs = 0;
     T0 &= 0x3F;
     tlb = &env->tlb[T0].tlbe;
-    EPN = T1 & 0xFFFFFC00;
-    if ((tlb->prot & PAGE_VALID) && EPN != tlb->EPN)
-        do_flush_tlbs = 1;
-    tlb->EPN = EPN;
-    size = booke_tlb_to_page_size((T1 >> 4) & 0xF);
-    if ((tlb->prot & PAGE_VALID) && tlb->size < size)
-        do_flush_tlbs = 1;
-    tlb->size = size;
-    tlb->attr &= ~0x1;
-    tlb->attr |= (T1 >> 8) & 1;
-    if (T1 & 0x200) {
-        tlb->prot |= PAGE_VALID;
-    } else {
-        if (tlb->prot & PAGE_VALID) {
-            tlb->prot &= ~PAGE_VALID;
+    switch (word) {
+    default:
+        /* Just here to please gcc */
+    case 0:
+        EPN = T1 & 0xFFFFFC00;
+        if ((tlb->prot & PAGE_VALID) && EPN != tlb->EPN)
             do_flush_tlbs = 1;
+        tlb->EPN = EPN;
+        size = booke_tlb_to_page_size((T1 >> 4) & 0xF);
+        if ((tlb->prot & PAGE_VALID) && tlb->size < size)
+            do_flush_tlbs = 1;
+        tlb->size = size;
+        tlb->attr &= ~0x1;
+        tlb->attr |= (T1 >> 8) & 1;
+        if (T1 & 0x200) {
+            tlb->prot |= PAGE_VALID;
+        } else {
+            if (tlb->prot & PAGE_VALID) {
+                tlb->prot &= ~PAGE_VALID;
+                do_flush_tlbs = 1;
+            }
         }
+        tlb->PID = env->spr[SPR_440_MMUCR] & 0x000000FF;
+        if (do_flush_tlbs)
+            tlb_flush(env, 1);
+        break;
+    case 1:
+        RPN = T1 & 0xFFFFFC0F;
+        if ((tlb->prot & PAGE_VALID) && tlb->RPN != RPN)
+            tlb_flush(env, 1);
+        tlb->RPN = RPN;
+        break;
+    case 2:
+        tlb->attr = (tlb->attr & 0x1) | (T1 & 0x0000FF00);
+        tlb->prot = tlb->prot & PAGE_VALID;
+        if (T1 & 0x1)
+            tlb->prot |= PAGE_READ << 4;
+        if (T1 & 0x2)
+            tlb->prot |= PAGE_WRITE << 4;
+        if (T1 & 0x4)
+            tlb->prot |= PAGE_EXEC << 4;
+        if (T1 & 0x8)
+            tlb->prot |= PAGE_READ;
+        if (T1 & 0x10)
+            tlb->prot |= PAGE_WRITE;
+        if (T1 & 0x20)
+            tlb->prot |= PAGE_EXEC;
+        break;
     }
-    tlb->PID = env->spr[SPR_BOOKE_PID];
-    if (do_flush_tlbs)
-        tlb_flush(env, 1);
 }
 
-void do_booke_tlbwe1 (void)
-{
-    ppcemb_tlb_t *tlb;
-    target_phys_addr_t RPN;
-
-#if defined (DEBUG_SOFTWARE_TLB)
-    if (loglevel != 0) {
-        fprintf(logfile, "%s T0 " REGX " T1 " REGX "\n", __func__, T0, T1);
-    }
-#endif
-    T0 &= 0x3F;
-    tlb = &env->tlb[T0].tlbe;
-    RPN = T1 & 0xFFFFFC0F;
-    if ((tlb->prot & PAGE_VALID) && tlb->RPN != RPN)
-        tlb_flush(env, 1);
-    tlb->RPN = RPN;
-}
-
-void do_booke_tlbwe2 (void)
-{
-    ppcemb_tlb_t *tlb;
-
-#if defined (DEBUG_SOFTWARE_TLB)
-    if (loglevel != 0) {
-        fprintf(logfile, "%s T0 " REGX " T1 " REGX "\n", __func__, T0, T1);
-    }
-#endif
-    T0 &= 0x3F;
-    tlb = &env->tlb[T0].tlbe;
-    tlb->attr = (tlb->attr & 0x1) | (T1 & 0x0000FF00);
-    tlb->prot = tlb->prot & PAGE_VALID;
-    if (T1 & 0x1)
-        tlb->prot |= PAGE_READ << 4;
-    if (T1 & 0x2)
-        tlb->prot |= PAGE_WRITE << 4;
-    if (T1 & 0x4)
-        tlb->prot |= PAGE_EXEC << 4;
-    if (T1 & 0x8)
-        tlb->prot |= PAGE_READ;
-    if (T1 & 0x10)
-        tlb->prot |= PAGE_WRITE;
-    if (T1 & 0x20)
-        tlb->prot |= PAGE_EXEC;
-}
-
-void do_booke_tlbsx (void)
-{
-    T0 = ppcemb_tlb_search(env, T0, env->spr[SPR_440_MMUCR]);
-}
-
-void do_booke_tlbsx_ (void)
-{
-    int tmp = xer_so;
-
-    T0 = ppcemb_tlb_search(env, T0, env->spr[SPR_440_MMUCR]);
-    if (T0 != -1)
-        tmp |= 0x02;
-    env->crf[0] = tmp;
-}
-
-void do_booke_tlbre0 (void)
+void do_440_tlbre (int word)
 {
     ppcemb_tlb_t *tlb;
     int size;
 
     T0 &= 0x3F;
     tlb = &env->tlb[T0].tlbe;
-    T0 = tlb->EPN;
-    size = booke_page_size_to_tlb(tlb->size);
-    if (size < 0 || size > 0xF)
-        size = 1;
-    T0 |= size << 4;
-    if (tlb->attr & 0x1)
-        T0 |= 0x100;
-    if (tlb->prot & PAGE_VALID)
-        T0 |= 0x200;
-    env->spr[SPR_BOOKE_PID] = tlb->PID;
-}
-
-void do_booke_tlbre1 (void)
-{
-    ppcemb_tlb_t *tlb;
-
-    T0 &= 0x3F;
-    tlb = &env->tlb[T0].tlbe;
-    T0 = tlb->RPN;
-}
-
-void do_booke_tlbre2 (void)
-{
-    ppcemb_tlb_t *tlb;
-
-    T0 &= 0x3F;
-    tlb = &env->tlb[T0].tlbe;
-    T0 = tlb->attr & ~0x1;
-    if (tlb->prot & (PAGE_READ << 4))
-        T0 |= 0x1;
-    if (tlb->prot & (PAGE_WRITE << 4))
-        T0 |= 0x2;
-    if (tlb->prot & (PAGE_EXEC << 4))
-        T0 |= 0x4;
-    if (tlb->prot & PAGE_READ)
-        T0 |= 0x8;
-    if (tlb->prot & PAGE_WRITE)
-        T0 |= 0x10;
-    if (tlb->prot & PAGE_EXEC)
-        T0 |= 0x20;
+    switch (word) {
+    default:
+        /* Just here to please gcc */
+    case 0:
+        T0 = tlb->EPN;
+        size = booke_page_size_to_tlb(tlb->size);
+        if (size < 0 || size > 0xF)
+            size = 1;
+        T0 |= size << 4;
+        if (tlb->attr & 0x1)
+            T0 |= 0x100;
+        if (tlb->prot & PAGE_VALID)
+            T0 |= 0x200;
+        env->spr[SPR_440_MMUCR] &= ~0x000000FF;
+        env->spr[SPR_440_MMUCR] |= tlb->PID;
+        break;
+    case 1:
+        T0 = tlb->RPN;
+        break;
+    case 2:
+        T0 = tlb->attr & ~0x1;
+        if (tlb->prot & (PAGE_READ << 4))
+            T0 |= 0x1;
+        if (tlb->prot & (PAGE_WRITE << 4))
+            T0 |= 0x2;
+        if (tlb->prot & (PAGE_EXEC << 4))
+            T0 |= 0x4;
+        if (tlb->prot & PAGE_READ)
+            T0 |= 0x8;
+        if (tlb->prot & PAGE_WRITE)
+            T0 |= 0x10;
+        if (tlb->prot & PAGE_EXEC)
+            T0 |= 0x20;
+        break;
+    }
 }
 #endif /* !CONFIG_USER_ONLY */

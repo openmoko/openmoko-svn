@@ -168,7 +168,7 @@ static void set_idt(int n, unsigned int dpl)
 void cpu_loop(CPUX86State *env)
 {
     int trapnr;
-    target_ulong pc;
+    abi_ulong pc;
     target_siginfo_t info;
 
     for(;;) {
@@ -305,11 +305,11 @@ void cpu_loop(CPUX86State *env)
 #ifdef TARGET_ARM
 
 /* XXX: find a better solution */
-extern void tb_invalidate_page_range(target_ulong start, target_ulong end);
+extern void tb_invalidate_page_range(abi_ulong start, abi_ulong end);
 
-static void arm_cache_flush(target_ulong start, target_ulong last)
+static void arm_cache_flush(abi_ulong start, abi_ulong last)
 {
-    target_ulong addr, last1;
+    abi_ulong addr, last1;
 
     if (last < start)
         return;
@@ -474,7 +474,7 @@ static inline int get_reg_index(CPUSPARCState *env, int cwp, int index)
 static inline void save_window_offset(CPUSPARCState *env, int cwp1)
 {
     unsigned int i;
-    target_ulong sp_ptr;
+    abi_ulong sp_ptr;
 
     sp_ptr = env->regbase[get_reg_index(env, cwp1, 6)];
 #if defined(DEBUG_WIN)
@@ -483,7 +483,7 @@ static inline void save_window_offset(CPUSPARCState *env, int cwp1)
 #endif
     for(i = 0; i < 16; i++) {
         tputl(sp_ptr, env->regbase[get_reg_index(env, cwp1, 8 + i)]);
-        sp_ptr += sizeof(target_ulong);
+        sp_ptr += sizeof(abi_ulong);
     }
 }
 
@@ -505,7 +505,7 @@ static void save_window(CPUSPARCState *env)
 static void restore_window(CPUSPARCState *env)
 {
     unsigned int new_wim, i, cwp1;
-    target_ulong sp_ptr;
+    abi_ulong sp_ptr;
 
     new_wim = ((env->wim << 1) | (env->wim >> (NWINDOWS - 1))) &
         ((1LL << NWINDOWS) - 1);
@@ -519,7 +519,7 @@ static void restore_window(CPUSPARCState *env)
 #endif
     for(i = 0; i < 16; i++) {
         env->regbase[get_reg_index(env, cwp1, 8 + i)] = tgetl(sp_ptr);
-        sp_ptr += sizeof(target_ulong);
+        sp_ptr += sizeof(abi_ulong);
     }
     env->wim = new_wim;
 #ifdef TARGET_SPARC64
@@ -564,6 +564,7 @@ void cpu_loop (CPUSPARCState *env)
         case 0x88:
         case 0x90:
 #else
+        case 0x110:
         case 0x16d:
 #endif
             ret = do_syscall (env, env->gregs[1],
@@ -571,14 +572,14 @@ void cpu_loop (CPUSPARCState *env)
                               env->regwptr[2], env->regwptr[3],
                               env->regwptr[4], env->regwptr[5]);
             if ((unsigned int)ret >= (unsigned int)(-515)) {
-#ifdef TARGET_SPARC64
+#if defined(TARGET_SPARC64) && !defined(TARGET_ABI32)
                 env->xcc |= PSR_CARRY;
 #else
                 env->psr |= PSR_CARRY;
 #endif
                 ret = -ret;
             } else {
-#ifdef TARGET_SPARC64
+#if defined(TARGET_SPARC64) && !defined(TARGET_ABI32)
                 env->xcc &= ~PSR_CARRY;
 #else
                 env->psr &= ~PSR_CARRY;
@@ -590,6 +591,9 @@ void cpu_loop (CPUSPARCState *env)
             env->npc = env->npc + 4;
             break;
         case 0x83: /* flush windows */
+#ifdef TARGET_ABI32
+        case 0x103:
+#endif
             flush_windows(env);
             /* next instruction */
             env->pc = env->npc;
@@ -634,6 +638,14 @@ void cpu_loop (CPUSPARCState *env)
                 queue_signal(info.si_signo, &info);
             }
             break;
+        case 0x16e:
+            flush_windows(env);
+            sparc64_get_context(env);
+            break;
+        case 0x16f:
+            flush_windows(env);
+            sparc64_set_context(env);
+            break;
 #endif
         case EXCP_INTERRUPT:
             /* just indicate that signals should be handled asap */
@@ -664,7 +676,6 @@ void cpu_loop (CPUSPARCState *env)
 #endif
 
 #ifdef TARGET_PPC
-
 static inline uint64_t cpu_ppc_get_tb (CPUState *env)
 {
     /* TO FIX */
@@ -681,36 +692,44 @@ uint32_t cpu_ppc_load_tbu (CPUState *env)
     return cpu_ppc_get_tb(env) >> 32;
 }
 
-static void cpu_ppc_store_tb (CPUState *env, uint64_t value)
+uint32_t cpu_ppc_load_atbl (CPUState *env)
 {
-    /* TO FIX */
+    return cpu_ppc_get_tb(env) & 0xFFFFFFFF;
 }
 
-void cpu_ppc_store_tbu (CPUState *env, uint32_t value)
+uint32_t cpu_ppc_load_atbu (CPUState *env)
 {
-    cpu_ppc_store_tb(env, ((uint64_t)value << 32) | cpu_ppc_load_tbl(env));
+    return cpu_ppc_get_tb(env) >> 32;
 }
-
-void cpu_ppc_store_tbl (CPUState *env, uint32_t value)
-{
-    cpu_ppc_store_tb(env, ((uint64_t)cpu_ppc_load_tbl(env) << 32) | value);
-}
-
-void cpu_ppc601_store_rtcu (CPUState *env, uint32_t value)
-__attribute__ (( alias ("cpu_ppc_store_tbu") ));
 
 uint32_t cpu_ppc601_load_rtcu (CPUState *env)
 __attribute__ (( alias ("cpu_ppc_load_tbu") ));
-
-void cpu_ppc601_store_rtcl (CPUState *env, uint32_t value)
-{
-    cpu_ppc_store_tbl(env, value & 0x3FFFFF80);
-}
 
 uint32_t cpu_ppc601_load_rtcl (CPUState *env)
 {
     return cpu_ppc_load_tbl(env) & 0x3FFFFF80;
 }
+
+/* XXX: to be fixed */
+int ppc_dcr_read (ppc_dcr_t *dcr_env, int dcrn, target_ulong *valp)
+{
+    return -1;
+}
+
+int ppc_dcr_write (ppc_dcr_t *dcr_env, int dcrn, target_ulong val)
+{
+    return -1;
+}
+
+#define EXCP_DUMP(env, fmt, args...)                                         \
+do {                                                                          \
+    fprintf(stderr, fmt , ##args);                                            \
+    cpu_dump_state(env, stderr, fprintf, 0);                                  \
+    if (loglevel != 0) {                                                      \
+        fprintf(logfile, fmt , ##args);                                       \
+        cpu_dump_state(env, logfile, fprintf, 0);                             \
+    }                                                                         \
+} while (0)
 
 void cpu_loop(CPUPPCState *env)
 {
@@ -720,17 +739,381 @@ void cpu_loop(CPUPPCState *env)
 
     for(;;) {
         trapnr = cpu_ppc_exec(env);
-        if (trapnr != EXCP_SYSCALL_USER && trapnr != EXCP_BRANCH &&
-            trapnr != EXCP_TRACE) {
-            if (loglevel > 0) {
-                cpu_dump_state(env, logfile, fprintf, 0);
-            }
-        }
         switch(trapnr) {
-        case EXCP_NONE:
+        case POWERPC_EXCP_NONE:
+            /* Just go on */
             break;
-        case EXCP_SYSCALL_USER:
-            /* system call */
+        case POWERPC_EXCP_CRITICAL: /* Critical input                        */
+            cpu_abort(env, "Critical interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_MCHECK:   /* Machine check exception               */
+            cpu_abort(env, "Machine check exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_DSI:      /* Data storage exception                */
+            EXCP_DUMP(env, "Invalid data memory access: 0x" ADDRX "\n",
+                      env->spr[SPR_DAR]);
+            /* XXX: check this. Seems bugged */
+            switch (env->error_code & 0xFF000000) {
+            case 0x40000000:
+                info.si_signo = TARGET_SIGSEGV;
+                info.si_errno = 0;
+                info.si_code = TARGET_SEGV_MAPERR;
+                break;
+            case 0x04000000:
+                info.si_signo = TARGET_SIGILL;
+                info.si_errno = 0;
+                info.si_code = TARGET_ILL_ILLADR;
+                break;
+            case 0x08000000:
+                info.si_signo = TARGET_SIGSEGV;
+                info.si_errno = 0;
+                info.si_code = TARGET_SEGV_ACCERR;
+                break;
+            default:
+                /* Let's send a regular segfault... */
+                EXCP_DUMP(env, "Invalid segfault errno (%02x)\n",
+                          env->error_code);
+                info.si_signo = TARGET_SIGSEGV;
+                info.si_errno = 0;
+                info.si_code = TARGET_SEGV_MAPERR;
+                break;
+            }
+            info._sifields._sigfault._addr = env->nip;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_ISI:      /* Instruction storage exception         */
+            EXCP_DUMP(env, "Invalid instruction fetch: 0x\n" ADDRX "\n",
+                      env->spr[SPR_DAR]);
+            /* XXX: check this */
+            switch (env->error_code & 0xFF000000) {
+            case 0x40000000:
+                info.si_signo = TARGET_SIGSEGV;
+            info.si_errno = 0;
+                info.si_code = TARGET_SEGV_MAPERR;
+                break;
+            case 0x10000000:
+            case 0x08000000:
+                info.si_signo = TARGET_SIGSEGV;
+                info.si_errno = 0;
+                info.si_code = TARGET_SEGV_ACCERR;
+                break;
+            default:
+                /* Let's send a regular segfault... */
+                EXCP_DUMP(env, "Invalid segfault errno (%02x)\n",
+                          env->error_code);
+                info.si_signo = TARGET_SIGSEGV;
+                info.si_errno = 0;
+                info.si_code = TARGET_SEGV_MAPERR;
+                break;
+            }
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_EXTERNAL: /* External input                        */
+            cpu_abort(env, "External interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_ALIGN:    /* Alignment exception                   */
+            EXCP_DUMP(env, "Unaligned memory access\n");
+            /* XXX: check this */
+            info.si_signo = TARGET_SIGBUS;
+            info.si_errno = 0;
+            info.si_code = TARGET_BUS_ADRALN;
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_PROGRAM:  /* Program exception                     */
+            /* XXX: check this */
+            switch (env->error_code & ~0xF) {
+            case POWERPC_EXCP_FP:
+                EXCP_DUMP(env, "Floating point program exception\n");
+                info.si_signo = TARGET_SIGFPE;
+                info.si_errno = 0;
+                switch (env->error_code & 0xF) {
+                case POWERPC_EXCP_FP_OX:
+                    info.si_code = TARGET_FPE_FLTOVF;
+                    break;
+                case POWERPC_EXCP_FP_UX:
+                    info.si_code = TARGET_FPE_FLTUND;
+                    break;
+                case POWERPC_EXCP_FP_ZX:
+                case POWERPC_EXCP_FP_VXZDZ:
+                    info.si_code = TARGET_FPE_FLTDIV;
+                    break;
+                case POWERPC_EXCP_FP_XX:
+                    info.si_code = TARGET_FPE_FLTRES;
+                    break;
+                case POWERPC_EXCP_FP_VXSOFT:
+                    info.si_code = TARGET_FPE_FLTINV;
+                    break;
+                case POWERPC_EXCP_FP_VXSNAN:
+                case POWERPC_EXCP_FP_VXISI:
+                case POWERPC_EXCP_FP_VXIDI:
+                case POWERPC_EXCP_FP_VXIMZ:
+                case POWERPC_EXCP_FP_VXVC:
+                case POWERPC_EXCP_FP_VXSQRT:
+                case POWERPC_EXCP_FP_VXCVI:
+                    info.si_code = TARGET_FPE_FLTSUB;
+                    break;
+                default:
+                    EXCP_DUMP(env, "Unknown floating point exception (%02x)\n",
+                              env->error_code);
+                    break;
+                }
+                break;
+            case POWERPC_EXCP_INVAL:
+                EXCP_DUMP(env, "Invalid instruction\n");
+                info.si_signo = TARGET_SIGILL;
+                info.si_errno = 0;
+                switch (env->error_code & 0xF) {
+                case POWERPC_EXCP_INVAL_INVAL:
+                    info.si_code = TARGET_ILL_ILLOPC;
+                    break;
+                case POWERPC_EXCP_INVAL_LSWX:
+                    info.si_code = TARGET_ILL_ILLOPN;
+                    break;
+                case POWERPC_EXCP_INVAL_SPR:
+                    info.si_code = TARGET_ILL_PRVREG;
+                    break;
+                case POWERPC_EXCP_INVAL_FP:
+                    info.si_code = TARGET_ILL_COPROC;
+                    break;
+                default:
+                    EXCP_DUMP(env, "Unknown invalid operation (%02x)\n",
+                              env->error_code & 0xF);
+                    info.si_code = TARGET_ILL_ILLADR;
+                    break;
+                }
+                break;
+            case POWERPC_EXCP_PRIV:
+                EXCP_DUMP(env, "Privilege violation\n");
+                info.si_signo = TARGET_SIGILL;
+                info.si_errno = 0;
+                switch (env->error_code & 0xF) {
+                case POWERPC_EXCP_PRIV_OPC:
+                    info.si_code = TARGET_ILL_PRVOPC;
+                    break;
+                case POWERPC_EXCP_PRIV_REG:
+                    info.si_code = TARGET_ILL_PRVREG;
+                    break;
+                default:
+                    EXCP_DUMP(env, "Unknown privilege violation (%02x)\n",
+                              env->error_code & 0xF);
+                    info.si_code = TARGET_ILL_PRVOPC;
+                    break;
+                }
+                break;
+            case POWERPC_EXCP_TRAP:
+                cpu_abort(env, "Tried to call a TRAP\n");
+                break;
+            default:
+                /* Should not happen ! */
+                cpu_abort(env, "Unknown program exception (%02x)\n",
+                          env->error_code);
+                break;
+            }
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_FPU:      /* Floating-point unavailable exception  */
+            EXCP_DUMP(env, "No floating point allowed\n");
+            info.si_signo = TARGET_SIGILL;
+            info.si_errno = 0;
+            info.si_code = TARGET_ILL_COPROC;
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_SYSCALL:  /* System call exception                 */
+            cpu_abort(env, "Syscall exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_APU:      /* Auxiliary processor unavailable       */
+            EXCP_DUMP(env, "No APU instruction allowed\n");
+            info.si_signo = TARGET_SIGILL;
+            info.si_errno = 0;
+            info.si_code = TARGET_ILL_COPROC;
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_DECR:     /* Decrementer exception                 */
+            cpu_abort(env, "Decrementer interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_FIT:      /* Fixed-interval timer interrupt        */
+            cpu_abort(env, "Fix interval timer interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_WDT:      /* Watchdog timer interrupt              */
+            cpu_abort(env, "Watchdog timer interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_DTLB:     /* Data TLB error                        */
+            cpu_abort(env, "Data TLB exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_ITLB:     /* Instruction TLB error                 */
+            cpu_abort(env, "Instruction TLB exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_DEBUG:    /* Debug interrupt                       */
+            /* XXX: check this */
+            {
+                int sig;
+
+                sig = gdb_handlesig(env, TARGET_SIGTRAP);
+                if (sig) {
+                    info.si_signo = sig;
+                    info.si_errno = 0;
+                    info.si_code = TARGET_TRAP_BRKPT;
+                    queue_signal(info.si_signo, &info);
+                  }
+            }
+            break;
+#if defined(TARGET_PPCEMB)
+        case POWERPC_EXCP_SPEU:     /* SPE/embedded floating-point unavail.  */
+            EXCP_DUMP(env, "No SPE/floating-point instruction allowed\n");
+            info.si_signo = TARGET_SIGILL;
+            info.si_errno = 0;
+            info.si_code = TARGET_ILL_COPROC;
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_EFPDI:    /* Embedded floating-point data IRQ      */
+            cpu_abort(env, "Embedded floating-point data IRQ not handled\n");
+            break;
+        case POWERPC_EXCP_EFPRI:    /* Embedded floating-point round IRQ     */
+            cpu_abort(env, "Embedded floating-point round IRQ not handled\n");
+            break;
+        case POWERPC_EXCP_EPERFM:   /* Embedded performance monitor IRQ      */
+            cpu_abort(env, "Performance monitor exception not handled\n");
+            break;
+        case POWERPC_EXCP_DOORI:    /* Embedded doorbell interrupt           */
+            cpu_abort(env, "Doorbell interrupt while in user mode. "
+                       "Aborting\n");
+            break;
+        case POWERPC_EXCP_DOORCI:   /* Embedded doorbell critical interrupt  */
+            cpu_abort(env, "Doorbell critical interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_RESET:    /* System reset exception                */
+            cpu_abort(env, "Reset interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+#endif /* defined(TARGET_PPCEMB) */
+#if defined(TARGET_PPC64) && !defined(TARGET_ABI32) /* PowerPC 64 */
+        case POWERPC_EXCP_DSEG:     /* Data segment exception                */
+            cpu_abort(env, "Data segment exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_ISEG:     /* Instruction segment exception         */
+            cpu_abort(env, "Instruction segment exception "
+                      "while in user mode. Aborting\n");
+            break;
+#endif /* defined(TARGET_PPC64) && !defined(TARGET_ABI32) */
+#if defined(TARGET_PPC64H) && !defined(TARGET_ABI32)
+        /* PowerPC 64 with hypervisor mode support */
+        case POWERPC_EXCP_HDECR:    /* Hypervisor decrementer exception      */
+            cpu_abort(env, "Hypervisor decrementer interrupt "
+                      "while in user mode. Aborting\n");
+            break;
+#endif /* defined(TARGET_PPC64H) && !defined(TARGET_ABI32) */
+        case POWERPC_EXCP_TRACE:    /* Trace exception                       */
+            /* Nothing to do:
+             * we use this exception to emulate step-by-step execution mode.
+             */
+            break;
+#if defined(TARGET_PPC64H) && !defined(TARGET_ABI32)
+        /* PowerPC 64 with hypervisor mode support */
+        case POWERPC_EXCP_HDSI:     /* Hypervisor data storage exception     */
+            cpu_abort(env, "Hypervisor data storage exception "
+                      "while in user mode. Aborting\n");
+            break;
+        case POWERPC_EXCP_HISI:     /* Hypervisor instruction storage excp   */
+            cpu_abort(env, "Hypervisor instruction storage exception "
+                      "while in user mode. Aborting\n");
+            break;
+        case POWERPC_EXCP_HDSEG:    /* Hypervisor data segment exception     */
+            cpu_abort(env, "Hypervisor data segment exception "
+                      "while in user mode. Aborting\n");
+            break;
+        case POWERPC_EXCP_HISEG:    /* Hypervisor instruction segment excp   */
+            cpu_abort(env, "Hypervisor instruction segment exception "
+                      "while in user mode. Aborting\n");
+            break;
+#endif /* defined(TARGET_PPC64H) && !defined(TARGET_ABI32) */
+        case POWERPC_EXCP_VPU:      /* Vector unavailable exception          */
+            EXCP_DUMP(env, "No Altivec instructions allowed\n");
+            info.si_signo = TARGET_SIGILL;
+            info.si_errno = 0;
+            info.si_code = TARGET_ILL_COPROC;
+            info._sifields._sigfault._addr = env->nip - 4;
+            queue_signal(info.si_signo, &info);
+            break;
+        case POWERPC_EXCP_PIT:      /* Programmable interval timer IRQ       */
+            cpu_abort(env, "Programable interval timer interrupt "
+                      "while in user mode. Aborting\n");
+            break;
+        case POWERPC_EXCP_IO:       /* IO error exception                    */
+            cpu_abort(env, "IO error exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_RUNM:     /* Run mode exception                    */
+            cpu_abort(env, "Run mode exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_EMUL:     /* Emulation trap exception              */
+            cpu_abort(env, "Emulation trap exception not handled\n");
+            break;
+        case POWERPC_EXCP_IFTLB:    /* Instruction fetch TLB error           */
+            cpu_abort(env, "Instruction fetch TLB exception "
+                      "while in user-mode. Aborting");
+            break;
+        case POWERPC_EXCP_DLTLB:    /* Data load TLB miss                    */
+            cpu_abort(env, "Data load TLB exception while in user-mode. "
+                      "Aborting");
+            break;
+        case POWERPC_EXCP_DSTLB:    /* Data store TLB miss                   */
+            cpu_abort(env, "Data store TLB exception while in user-mode. "
+                      "Aborting");
+            break;
+        case POWERPC_EXCP_FPA:      /* Floating-point assist exception       */
+            cpu_abort(env, "Floating-point assist exception not handled\n");
+            break;
+        case POWERPC_EXCP_IABR:     /* Instruction address breakpoint        */
+            cpu_abort(env, "Instruction address breakpoint exception "
+                      "not handled\n");
+            break;
+        case POWERPC_EXCP_SMI:      /* System management interrupt           */
+            cpu_abort(env, "System management interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_THERM:    /* Thermal interrupt                     */
+            cpu_abort(env, "Thermal interrupt interrupt while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_PERFM:   /* Embedded performance monitor IRQ      */
+            cpu_abort(env, "Performance monitor exception not handled\n");
+            break;
+        case POWERPC_EXCP_VPUA:     /* Vector assist exception               */
+            cpu_abort(env, "Vector assist exception not handled\n");
+            break;
+        case POWERPC_EXCP_SOFTP:    /* Soft patch exception                  */
+            cpu_abort(env, "Soft patch exception not handled\n");
+            break;
+        case POWERPC_EXCP_MAINT:    /* Maintenance exception                 */
+            cpu_abort(env, "Maintenance exception while in user mode. "
+                      "Aborting\n");
+            break;
+        case POWERPC_EXCP_STOP:     /* stop translation                      */
+            /* We did invalidate the instruction cache. Go on */
+            break;
+        case POWERPC_EXCP_BRANCH:   /* branch instruction:                   */
+            /* We just stopped because of a branch. Go on */
+            break;
+        case POWERPC_EXCP_SYSCALL_USER:
+            /* system call in user-mode emulation */
             /* WARNING:
              * PPC ABI uses overflow flag in cr0 to signal an error
              * in syscalls.
@@ -752,287 +1135,12 @@ void cpu_loop(CPUPPCState *env)
             printf("syscall returned 0x%08x (%d)\n", ret, ret);
 #endif
             break;
-        case EXCP_RESET:
-            /* Should not happen ! */
-            fprintf(stderr, "RESET asked... Stop emulation\n");
-            if (loglevel)
-                fprintf(logfile, "RESET asked... Stop emulation\n");
-            abort();
-        case EXCP_MACHINE_CHECK:
-            fprintf(stderr, "Machine check exeption...  Stop emulation\n");
-            if (loglevel)
-                fprintf(logfile, "RESET asked... Stop emulation\n");
-            info.si_signo = TARGET_SIGBUS;
-            info.si_errno = 0;
-            info.si_code = TARGET_BUS_OBJERR;
-            info._sifields._sigfault._addr = env->nip - 4;
-            queue_signal(info.si_signo, &info);
-        case EXCP_DSI:
-            fprintf(stderr, "Invalid data memory access: 0x" ADDRX "\n",
-                    env->spr[SPR_DAR]);
-            if (loglevel) {
-                fprintf(logfile, "Invalid data memory access: 0x" ADDRX "\n",
-                        env->spr[SPR_DAR]);
-            }
-            switch (env->error_code & 0xFF000000) {
-            case 0x40000000:
-                info.si_signo = TARGET_SIGSEGV;
-                info.si_errno = 0;
-                info.si_code = TARGET_SEGV_MAPERR;
-                break;
-            case 0x04000000:
-                info.si_signo = TARGET_SIGILL;
-                info.si_errno = 0;
-                info.si_code = TARGET_ILL_ILLADR;
-                break;
-            case 0x08000000:
-                info.si_signo = TARGET_SIGSEGV;
-                info.si_errno = 0;
-                info.si_code = TARGET_SEGV_ACCERR;
-                break;
-            default:
-                /* Let's send a regular segfault... */
-                fprintf(stderr, "Invalid segfault errno (%02x)\n",
-                        env->error_code);
-                if (loglevel) {
-                    fprintf(logfile, "Invalid segfault errno (%02x)\n",
-                            env->error_code);
-                }
-                info.si_signo = TARGET_SIGSEGV;
-                info.si_errno = 0;
-                info.si_code = TARGET_SEGV_MAPERR;
-                break;
-            }
-            info._sifields._sigfault._addr = env->nip;
-            queue_signal(info.si_signo, &info);
-            break;
-        case EXCP_ISI:
-            fprintf(stderr, "Invalid instruction fetch\n");
-            if (loglevel)
-                fprintf(logfile, "Invalid instruction fetch\n");
-            switch (env->error_code & 0xFF000000) {
-            case 0x40000000:
-                info.si_signo = TARGET_SIGSEGV;
-            info.si_errno = 0;
-                info.si_code = TARGET_SEGV_MAPERR;
-                break;
-            case 0x10000000:
-            case 0x08000000:
-                info.si_signo = TARGET_SIGSEGV;
-                info.si_errno = 0;
-                info.si_code = TARGET_SEGV_ACCERR;
-                break;
-            default:
-                /* Let's send a regular segfault... */
-                fprintf(stderr, "Invalid segfault errno (%02x)\n",
-                        env->error_code);
-                if (loglevel) {
-                    fprintf(logfile, "Invalid segfault errno (%02x)\n",
-                            env->error_code);
-                }
-                info.si_signo = TARGET_SIGSEGV;
-                info.si_errno = 0;
-                info.si_code = TARGET_SEGV_MAPERR;
-                break;
-            }
-            info._sifields._sigfault._addr = env->nip - 4;
-            queue_signal(info.si_signo, &info);
-            break;
-        case EXCP_EXTERNAL:
-            /* Should not happen ! */
-            fprintf(stderr, "External interruption... Stop emulation\n");
-            if (loglevel)
-                fprintf(logfile, "External interruption... Stop emulation\n");
-            abort();
-        case EXCP_ALIGN:
-            fprintf(stderr, "Invalid unaligned memory access\n");
-            if (loglevel)
-                fprintf(logfile, "Invalid unaligned memory access\n");
-            info.si_signo = TARGET_SIGBUS;
-            info.si_errno = 0;
-            info.si_code = TARGET_BUS_ADRALN;
-            info._sifields._sigfault._addr = env->nip - 4;
-            queue_signal(info.si_signo, &info);
-            break;
-        case EXCP_PROGRAM:
-            switch (env->error_code & ~0xF) {
-            case EXCP_FP:
-            fprintf(stderr, "Program exception\n");
-                if (loglevel)
-                    fprintf(logfile, "Program exception\n");
-                /* Set FX */
-                env->fpscr[7] |= 0x8;
-                /* Finally, update FEX */
-                if ((((env->fpscr[7] & 0x3) << 3) | (env->fpscr[6] >> 1)) &
-                    ((env->fpscr[1] << 1) | (env->fpscr[0] >> 3)))
-                    env->fpscr[7] |= 0x4;
-                info.si_signo = TARGET_SIGFPE;
-                info.si_errno = 0;
-                switch (env->error_code & 0xF) {
-                case EXCP_FP_OX:
-                    info.si_code = TARGET_FPE_FLTOVF;
-                    break;
-                case EXCP_FP_UX:
-                    info.si_code = TARGET_FPE_FLTUND;
-                    break;
-                case EXCP_FP_ZX:
-                case EXCP_FP_VXZDZ:
-                    info.si_code = TARGET_FPE_FLTDIV;
-                    break;
-                case EXCP_FP_XX:
-                    info.si_code = TARGET_FPE_FLTRES;
-                    break;
-                case EXCP_FP_VXSOFT:
-                    info.si_code = TARGET_FPE_FLTINV;
-                    break;
-                case EXCP_FP_VXNAN:
-                case EXCP_FP_VXISI:
-                case EXCP_FP_VXIDI:
-                case EXCP_FP_VXIMZ:
-                case EXCP_FP_VXVC:
-                case EXCP_FP_VXSQRT:
-                case EXCP_FP_VXCVI:
-                    info.si_code = TARGET_FPE_FLTSUB;
-                    break;
-                default:
-                    fprintf(stderr, "Unknown floating point exception "
-                            "(%02x)\n", env->error_code);
-                    if (loglevel) {
-                        fprintf(logfile, "Unknown floating point exception "
-                                "(%02x)\n", env->error_code & 0xF);
-                    }
-                }
-            break;
-        case EXCP_INVAL:
-                fprintf(stderr, "Invalid instruction\n");
-                if (loglevel)
-                    fprintf(logfile, "Invalid instruction\n");
-                info.si_signo = TARGET_SIGILL;
-                info.si_errno = 0;
-                switch (env->error_code & 0xF) {
-                case EXCP_INVAL_INVAL:
-                    info.si_code = TARGET_ILL_ILLOPC;
-                    break;
-                case EXCP_INVAL_LSWX:
-            info.si_code = TARGET_ILL_ILLOPN;
-                    break;
-                case EXCP_INVAL_SPR:
-                    info.si_code = TARGET_ILL_PRVREG;
-                    break;
-                case EXCP_INVAL_FP:
-                    info.si_code = TARGET_ILL_COPROC;
-                    break;
-                default:
-                    fprintf(stderr, "Unknown invalid operation (%02x)\n",
-                            env->error_code & 0xF);
-                    if (loglevel) {
-                        fprintf(logfile, "Unknown invalid operation (%02x)\n",
-                                env->error_code & 0xF);
-                    }
-                    info.si_code = TARGET_ILL_ILLADR;
-                    break;
-                }
-                break;
-            case EXCP_PRIV:
-                fprintf(stderr, "Privilege violation\n");
-                if (loglevel)
-                    fprintf(logfile, "Privilege violation\n");
-                info.si_signo = TARGET_SIGILL;
-                info.si_errno = 0;
-                switch (env->error_code & 0xF) {
-                case EXCP_PRIV_OPC:
-                    info.si_code = TARGET_ILL_PRVOPC;
-                    break;
-                case EXCP_PRIV_REG:
-                    info.si_code = TARGET_ILL_PRVREG;
-                break;
-                default:
-                    fprintf(stderr, "Unknown privilege violation (%02x)\n",
-                            env->error_code & 0xF);
-                    info.si_code = TARGET_ILL_PRVOPC;
-                    break;
-                }
-                break;
-            case EXCP_TRAP:
-                fprintf(stderr, "Tried to call a TRAP\n");
-                if (loglevel)
-                    fprintf(logfile, "Tried to call a TRAP\n");
-                abort();
-            default:
-                /* Should not happen ! */
-                fprintf(stderr, "Unknown program exception (%02x)\n",
-                        env->error_code);
-                if (loglevel) {
-                    fprintf(logfile, "Unknwon program exception (%02x)\n",
-                            env->error_code);
-                }
-                abort();
-            }
-            info._sifields._sigfault._addr = env->nip - 4;
-            queue_signal(info.si_signo, &info);
-            break;
-        case EXCP_NO_FP:
-            fprintf(stderr, "No floating point allowed\n");
-            if (loglevel)
-                fprintf(logfile, "No floating point allowed\n");
-            info.si_signo = TARGET_SIGILL;
-            info.si_errno = 0;
-            info.si_code = TARGET_ILL_COPROC;
-            info._sifields._sigfault._addr = env->nip - 4;
-            queue_signal(info.si_signo, &info);
-            break;
-        case EXCP_DECR:
-            /* Should not happen ! */
-            fprintf(stderr, "Decrementer exception\n");
-            if (loglevel)
-                fprintf(logfile, "Decrementer exception\n");
-            abort();
-        case EXCP_TRACE:
-            /* Do nothing: we use this to trace execution */
-            break;
-        case EXCP_FP_ASSIST:
-            /* Should not happen ! */
-            fprintf(stderr, "Floating point assist exception\n");
-            if (loglevel)
-                fprintf(logfile, "Floating point assist exception\n");
-            abort();
-        case EXCP_MTMSR:
-            /* We reloaded the msr, just go on */
-            if (msr_pr == 0) {
-                fprintf(stderr, "Tried to go into supervisor mode !\n");
-                if (loglevel)
-                    fprintf(logfile, "Tried to go into supervisor mode !\n");
-                abort();
-        }
-            break;
-        case EXCP_BRANCH:
-            /* We stopped because of a jump... */
-            break;
         case EXCP_INTERRUPT:
-            /* Don't know why this should ever happen... */
-            break;
-        case EXCP_DEBUG:
-            {
-                int sig;
-
-                sig = gdb_handlesig (env, TARGET_SIGTRAP);
-                if (sig)
-                  {
-                    info.si_signo = sig;
-                    info.si_errno = 0;
-                    info.si_code = TARGET_TRAP_BRKPT;
-                    queue_signal(info.si_signo, &info);
-                  }
-            }
+            /* just indicate that signals should be handled asap */
             break;
         default:
-            fprintf(stderr, "qemu: unhandled CPU exception 0x%x - aborting\n",
-                    trapnr);
-            if (loglevel) {
-                fprintf(logfile, "qemu: unhandled CPU exception 0x%02x - "
-                        "0x%02x - aborting\n", trapnr, env->error_code);
-            }
-            abort();
+            cpu_abort(env, "Unknown exception 0x%d. Aborting\n", trapnr);
+            break;
         }
         process_pending_signals(env);
     }
@@ -1380,8 +1488,8 @@ void cpu_loop(CPUMIPSState *env)
                 ret = -ENOSYS;
             } else {
                 int nb_args;
-                target_ulong sp_reg;
-                target_ulong arg5 = 0, arg6 = 0, arg7 = 0, arg8 = 0;
+                abi_ulong sp_reg;
+                abi_ulong arg5 = 0, arg6 = 0, arg7 = 0, arg8 = 0;
 
                 nb_args = mips_syscall_args[syscall_num];
                 sp_reg = env->gpr[29][env->current_tc];
@@ -1467,6 +1575,61 @@ void cpu_loop (CPUState *env)
                              env->gregs[0],
                              0);
             env->gregs[0] = ret;
+            env->pc += 2;
+            break;
+        case EXCP_DEBUG:
+            {
+                int sig;
+
+                sig = gdb_handlesig (env, TARGET_SIGTRAP);
+                if (sig)
+                  {
+                    info.si_signo = sig;
+                    info.si_errno = 0;
+                    info.si_code = TARGET_TRAP_BRKPT;
+                    queue_signal(info.si_signo, &info);
+                  }
+            }
+            break;
+        default:
+            printf ("Unhandled trap: 0x%x\n", trapnr);
+            cpu_dump_state(env, stderr, fprintf, 0);
+            exit (1);
+        }
+        process_pending_signals (env);
+    }
+}
+#endif
+
+#ifdef TARGET_CRIS
+void cpu_loop (CPUState *env)
+{
+    int trapnr, ret;
+    target_siginfo_t info;
+    
+    while (1) {
+        trapnr = cpu_cris_exec (env);
+        switch (trapnr) {
+        case 0xaa:
+            {
+                info.si_signo = SIGSEGV;
+                info.si_errno = 0;
+                /* XXX: check env->error_code */
+                info.si_code = TARGET_SEGV_MAPERR;
+                info._sifields._sigfault._addr = env->debug1;
+                queue_signal(info.si_signo, &info);
+            }
+            break;
+        case EXCP_BREAK:
+            ret = do_syscall(env, 
+                             env->regs[9], 
+                             env->regs[10], 
+                             env->regs[11], 
+                             env->regs[12], 
+                             env->regs[13], 
+                             env->pregs[7], 
+                             env->pregs[11]);
+            env->regs[10] = ret;
             env->pc += 2;
             break;
         case EXCP_DEBUG:
@@ -1781,14 +1944,9 @@ int main(int argc, char **argv)
         } else if (!strcmp(r, "cpu")) {
             cpu_model = argv[optind++];
             if (strcmp(cpu_model, "?") == 0) {
-#if defined(TARGET_PPC)
-                ppc_cpu_list(stdout, &fprintf);
-#elif defined(TARGET_ARM)
-                arm_cpu_list();
-#elif defined(TARGET_MIPS)
-                mips_cpu_list(stdout, &fprintf);
-#elif defined(TARGET_SPARC)
-                sparc_cpu_list(stdout, &fprintf);
+/* XXX: implement xxx_cpu_list for targets that still miss it */
+#if defined(cpu_list)
+                    cpu_list(stdout, &fprintf);
 #endif
                 _exit(1);
             }
@@ -1850,14 +2008,17 @@ int main(int argc, char **argv)
     if (loglevel) {
         page_dump(logfile);
 
-        fprintf(logfile, "start_brk   0x%08lx\n" , info->start_brk);
-        fprintf(logfile, "end_code    0x%08lx\n" , info->end_code);
-        fprintf(logfile, "start_code  0x%08lx\n" , info->start_code);
-        fprintf(logfile, "start_data  0x%08lx\n" , info->start_data);
-        fprintf(logfile, "end_data    0x%08lx\n" , info->end_data);
-        fprintf(logfile, "start_stack 0x%08lx\n" , info->start_stack);
-        fprintf(logfile, "brk         0x%08lx\n" , info->brk);
-        fprintf(logfile, "entry       0x%08lx\n" , info->entry);
+        fprintf(logfile, "start_brk   0x" TARGET_FMT_lx "\n", info->start_brk);
+        fprintf(logfile, "end_code    0x" TARGET_FMT_lx "\n", info->end_code);
+        fprintf(logfile, "start_code  0x" TARGET_FMT_lx "\n",
+                info->start_code);
+        fprintf(logfile, "start_data  0x" TARGET_FMT_lx "\n",
+                info->start_data);
+        fprintf(logfile, "end_data    0x" TARGET_FMT_lx "\n", info->end_data);
+        fprintf(logfile, "start_stack 0x" TARGET_FMT_lx "\n",
+                info->start_stack);
+        fprintf(logfile, "brk         0x" TARGET_FMT_lx "\n", info->brk);
+        fprintf(logfile, "entry       0x" TARGET_FMT_lx "\n", info->entry);
     }
 
     target_set_brk(info->brk);
@@ -1977,7 +2138,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "Unable to find Sparc CPU definition\n");
             exit(1);
         }
-        cpu_sparc_register(env, def);
+        cpu_sparc_register(env, def, 0);
 	env->pc = regs->pc;
 	env->npc = regs->npc;
         env->y = regs->y;
@@ -2000,13 +2161,13 @@ int main(int argc, char **argv)
                       "Unable to find PowerPC CPU definition\n");
         }
         cpu_ppc_register(env, def);
-
-        for (i = 0; i < 32; i++) {
-            if (i != 12 && i != 6 && i != 13)
-                env->msr[i] = (regs->msr >> i) & 1;
-        }
+        cpu_ppc_reset(env);
 #if defined(TARGET_PPC64)
-        msr_sf = 1;
+#if defined(TARGET_ABI32)
+        env->msr &= ~((target_ulong)1 << MSR_SF);
+#else
+        env->msr |= (target_ulong)1 << MSR_SF;
+#endif
 #endif
         env->nip = regs->nip;
         for(i = 0; i < 32; i++) {
@@ -2048,7 +2209,11 @@ int main(int argc, char **argv)
 
         /* Choose and initialise CPU */
         if (cpu_model == NULL)
+#if defined(TARGET_MIPSN32) || defined(TARGET_MIPS64)
+            cpu_model = "20Kc";
+#else
             cpu_model = "24Kf";
+#endif
         mips_find_by_name(cpu_model, &def);
         if (def == NULL)
             cpu_abort(env, "Unable to find MIPS CPU definition\n");
@@ -2073,12 +2238,32 @@ int main(int argc, char **argv)
         int i;
 
         for(i = 0; i < 28; i++) {
-            env->ir[i] = ((target_ulong *)regs)[i];
+            env->ir[i] = ((abi_ulong *)regs)[i];
         }
         env->ipr[IPR_USP] = regs->usp;
         env->ir[30] = regs->usp;
         env->pc = regs->pc;
         env->unique = regs->unique;
+    }
+#elif defined(TARGET_CRIS)
+    {
+	    env->regs[0] = regs->r0;
+	    env->regs[1] = regs->r1;
+	    env->regs[2] = regs->r2;
+	    env->regs[3] = regs->r3;
+	    env->regs[4] = regs->r4;
+	    env->regs[5] = regs->r5;
+	    env->regs[6] = regs->r6;
+	    env->regs[7] = regs->r7;
+	    env->regs[8] = regs->r8;
+	    env->regs[9] = regs->r9;
+	    env->regs[10] = regs->r10;
+	    env->regs[11] = regs->r11;
+	    env->regs[12] = regs->r12;
+	    env->regs[13] = regs->r13;
+	    env->regs[14] = info->start_stack;
+	    env->regs[15] = regs->acr;	    
+	    env->pc = regs->erp;
     }
 #else
 #error unsupported target CPU

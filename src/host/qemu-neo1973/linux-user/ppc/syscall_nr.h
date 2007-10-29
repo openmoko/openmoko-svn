@@ -193,19 +193,23 @@
 #define TARGET_NR_vfork                  189
 #define TARGET_NR_ugetrlimit             190     /* SuS compliant getrlimit */
 #define TARGET_NR_readahead              191
+#if !defined(TARGET_PPC64) || defined(TARGET_ABI32)
 #define TARGET_NR_mmap2                  192
 #define TARGET_NR_truncate64             193
 #define TARGET_NR_ftruncate64            194
 #define TARGET_NR_stat64                 195
 #define TARGET_NR_lstat64                196
 #define TARGET_NR_fstat64                197
+#endif
 #define TARGET_NR_pciconfig_read         198
 #define TARGET_NR_pciconfig_write        199
 #define TARGET_NR_pciconfig_iobase       200
 #define TARGET_NR_multiplexer            201
 #define TARGET_NR_getdents64             202
 #define TARGET_NR_pivot_root             203
+#if !defined(TARGET_PPC64) || defined(TARGET_ABI32)
 #define TARGET_NR_fcntl64                204
+#endif
 #define TARGET_NR_madvise                205
 #define TARGET_NR_mincore                206
 #define TARGET_NR_gettid                 207
@@ -227,7 +231,9 @@
 #define TARGET_NR_sched_getaffinity      223
 /* 224 currently unused */
 #define TARGET_NR_tuxcall                225
+#if !defined(TARGET_PPC64) || defined(TARGET_ABI32)
 #define TARGET_NR_sendfile64             226
+#endif
 #define TARGET_NR_io_setup               227
 #define TARGET_NR_io_destroy             228
 #define TARGET_NR_io_getevents           229
@@ -255,4 +261,65 @@
 #define TARGET_NR_utimes                 251
 #define TARGET_NR_statfs64               252
 #define TARGET_NR_fstatfs64              253
+#if !defined(TARGET_PPC64) || defined(TARGET_ABI32)
 #define TARGET_NR_fadvise64_64           254
+#endif
+#define TARGET_NR_rtas		255
+#define TARGET_NR_sys_debug_setcontext 256
+/* Number 257 is reserved for vserver */
+#define TARGET_NR_migrate_pages	258
+#define TARGET_NR_mbind		259
+#define TARGET_NR_get_mempolicy	260
+#define TARGET_NR_set_mempolicy	261
+#define TARGET_NR_mq_open		262
+#define TARGET_NR_mq_unlink		263
+#define TARGET_NR_mq_timedsend	264
+#define TARGET_NR_mq_timedreceive	265
+#define TARGET_NR_mq_notify		266
+#define TARGET_NR_mq_getsetattr	267
+#define TARGET_NR_kexec_load		268
+#define TARGET_NR_add_key		269
+#define TARGET_NR_request_key	270
+#define TARGET_NR_keyctl		271
+#define TARGET_NR_waitid		272
+#define TARGET_NR_ioprio_set		273
+#define TARGET_NR_ioprio_get		274
+#define TARGET_NR_inotify_init	275
+#define TARGET_NR_inotify_add_watch	276
+#define TARGET_NR_inotify_rm_watch	277
+#define TARGET_NR_spu_run		278
+#define TARGET_NR_spu_create		279
+#define TARGET_NR_pselect6		280
+#define TARGET_NR_ppoll		281
+#define TARGET_NR_unshare		282
+#define TARGET_NR_splice		283
+#define TARGET_NR_tee		284
+#define TARGET_NR_vmsplice		285
+#define TARGET_NR_openat		286
+#define TARGET_NR_mkdirat		287
+#define TARGET_NR_mknodat		288
+#define TARGET_NR_fchownat		289
+#define TARGET_NR_futimesat		290
+#if defined(TARGET_PPC64) && !defined(TARGET_ABI32)
+#define TARGET_NR_newfstatat		291
+#else
+#define TARGET_NR_fstatat64		291
+#endif
+#define TARGET_NR_unlinkat		292
+#define TARGET_NR_renameat		293
+#define TARGET_NR_linkat		294
+#define TARGET_NR_symlinkat		295
+#define TARGET_NR_readlinkat		296
+#define TARGET_NR_fchmodat		297
+#define TARGET_NR_faccessat		298
+#define TARGET_NR_get_robust_list	299
+#define TARGET_NR_set_robust_list	300
+#define TARGET_NR_move_pages		301
+#define TARGET_NR_getcpu		302
+#define TARGET_NR_epoll_pwait	303
+#define TARGET_NR_utimensat		304
+#define TARGET_NR_signalfd		305
+#define TARGET_NR_timerfd		306
+#define TARGET_NR_eventfd		307
+#define TARGET_NR_sync_file_range2	308
+#define TARGET_NR_fallocate		309

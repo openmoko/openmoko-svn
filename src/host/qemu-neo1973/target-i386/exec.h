@@ -163,8 +163,8 @@ void cpu_x86_update_cr3(CPUX86State *env, target_ulong new_cr3);
 void cpu_x86_update_cr4(CPUX86State *env, uint32_t new_cr4);
 void cpu_x86_flush_tlb(CPUX86State *env, target_ulong addr);
 int cpu_x86_handle_mmu_fault(CPUX86State *env, target_ulong addr,
-                             int is_write, int is_user, int is_softmmu);
-void tlb_fill(target_ulong addr, int is_write, int is_user,
+                             int is_write, int mmu_idx, int is_softmmu);
+void tlb_fill(target_ulong addr, int is_write, int mmu_idx,
               void *retaddr);
 void __hidden cpu_lock(void);
 void __hidden cpu_unlock(void);
@@ -502,6 +502,15 @@ void update_fp_status(void);
 void helper_hlt(void);
 void helper_monitor(void);
 void helper_mwait(void);
+void helper_vmrun(target_ulong addr);
+void helper_vmmcall(void);
+void helper_vmload(target_ulong addr);
+void helper_vmsave(target_ulong addr);
+void helper_stgi(void);
+void helper_clgi(void);
+void helper_skinit(void);
+void helper_invlpga(void);
+void vmexit(uint64_t exit_code, uint64_t exit_info_1);
 
 extern const uint8_t parity_table[256];
 extern const uint8_t rclw_table[32];
@@ -589,3 +598,4 @@ static inline int cpu_halted(CPUState *env) {
     }
     return EXCP_HALTED;
 }
+
