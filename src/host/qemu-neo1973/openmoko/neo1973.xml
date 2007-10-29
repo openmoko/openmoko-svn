@@ -50,7 +50,7 @@
     <set name="GSN" value="354651010000000"/>
 
     <!-- SIM card id -->
-    <set name="IMI" value="262074992516579"/>
+    <set name="IMI" value="260039770683011"/>
 
     <!-- Identifier for ATI command -->
     <set name="ID" value="GTA01 Embedded GSM Modem"/>
@@ -860,17 +860,17 @@
     <set name="GREG" value="*"/>
 </chat>
 <chat>
-    <!-- Query GPRS network registration result code presentation -->
+    <!-- GPRS Extended Registration State -->
     <command>AT%CGREG?</command>
     <response>%CGREG: ${GREG},0\nOK</response>
 </chat>
 <chat>
-    <!-- Query GPRS network registration result code presentation types -->
+    <!-- GPRS Extended Registration State -->
     <command>AT%CGREG=?</command>
     <response>%CGREG: (0-3)\nOK</response>
 </chat>
 <chat>
-    <!-- Set GPRS network registration result code presentation -->
+    <!-- GPRS Extended Registration State -->
     <command>AT%CGREG=*</command>
     <response>OK</response>
     <set name="GREG" value="*"/>
@@ -1799,14 +1799,17 @@
     <response>+CSQ: (2-31,99),(99),(99)\nOK</response>
 </chat>
 <chat>
-    <!-- Query signal quality -->
+    <!-- Periodic Signal Quality Report -->
     <command>AT%CSQ?</command>
     <response>%CSQ: 31, 99, 0\nOK</response>
 </chat>
 <chat>
-    <!-- Query supported signal quality values -->
     <command>AT%CSQ=?</command>
     <response>%CSQ: (99), (99), 0-4\nOK</response>
+</chat>
+<chat>
+    <command>AT%CSQ=*</command>
+    <response>OK</response>
 </chat>
 
 <chat>
@@ -2180,7 +2183,7 @@
 
 <chat>
     <!-- Set mobile equipment error reporting mode (ignored) -->
-    <command>AT+CMEE=?</command>
+    <command>AT+CMEE=*</command>
     <response>OK</response>
     <set name="MEE" value="*"/>
 </chat>
@@ -2334,6 +2337,7 @@
 </chat>
 
 <!-- Call Progress Indication format -->
+<!-- documentation can be found in BENQ M23A AT commands reference -->
 <chat>
     <command>AT%CPI=?</command>
     <response>%CPI: (0-4)\nOK</response>
@@ -2358,6 +2362,7 @@
     <response>%CGMM: (0,1),(0,1)\nOK</response>
 </chat>
 
+<!-- Alternative Line Service -->
 <chat>
     <command>AT%ALS</command>
     <response>ERROR</response>
@@ -2403,15 +2408,28 @@ ADC 0 = e19, ADC 1 = 0, ADC 2 = d, ADC 3 = 6ea, ADC 4 = a25, ADC 5 = 9fc, ADC 6 
 OK</response>
 </chat>
 
+<!-- Netowrk Registration and Service Selection -->
 <chat>
     <command>AT%NRG?</command>
-    <response>%NRG: 0,0,,2\nOK</response>
+    <response>%NRG: 0,0,0,${OPMODE},${OP1}\nOK</response>
+</chat>
+<chat>
+    <command>AT%NRG=?</command>
+    <response>%NRG: (0,1,4),(0-3),(0-2)\nOK</response>
+</chat>
+<chat>
+    <command>AT%NRG=*</command>
+    <response>OK</response>
 </chat>
 
 <!-- Engineering Mode -->
 <chat>
     <command>AT%EM=?</command>
     <response>%EM: (2-3),(1-13)\nOK</response>
+</chat>
+<chat>
+    <command>AT%EM*</command>
+    <response>%EM: Engineering mode is not supported\nOK</response>
 </chat>
 
 <chat>
@@ -2445,6 +2463,7 @@ OK</response>
     <response>%DINF: (0,1)\nOK</response>
 </chat>
 
+<!-- Get PIN1, PIN2, PUK1, PUK2 remaining number -->
 <chat>
     <command>AT%PVRF?</command>
     <response>%PVRF: -1, -1, -1, -1, -1, -1\nOK</response>
@@ -2476,6 +2495,68 @@ OK</response>
     <response>OK</response>
 </chat>
 
+<!-- Automatic GPRS Attach/Detach Mode -->
+<!-- documentation can be found in BENQ M23A AT commands reference -->
+<chat>
+    <command>AT%CGAATT=${AMODE},${DMODE}</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT%CGAATT=${AMODE}</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT%CGAATT?</command>
+    <!-- automatic, automatic -->
+    <response>%CGAATT: 0,0\nOK</response>
+</chat>
+<chat>
+    <command>AT%CGAATT=?</command>
+    <response>%CGAATT: (0,1),(0,1)\nOK</response>
+</chat>
+
+<!-- Dynamic Multiband -->
+<!-- documentation can be found in BENQ M23A AT commands reference -->
+<chat>
+    <command>AT%BAND=${MODE},${BAND}</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT%BAND?</command>
+    <!-- automatic, GSM 900 and DCS 1800 -->
+    <response>%BAND: 0,3\nOK</response>
+</chat>
+<chat>
+    <command>AT%BAND=?</command>
+    <response>%BAND: (0,1),(0-3)\nOK</response>
+</chat>
+
+<chat>
+    <!-- Voicemail indication disabled -->
+    <command>AT%CPHS?</command>
+    <response>%CPHS: 1,0\nOK</response>
+</chat>
+<chat>
+    <!-- Deactivate voicemail indication -->
+    <command>AT%CPHS=0,1</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <!-- Activate voicemail indication -->
+    <command>AT%CPHS=1,1</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <!-- Request status of voicemail indicator functionality: no mail -->
+    <command>AT%CPHS=2,1</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <!-- Activate voicemail indication -->
+    <command>AT%CPHS=1</command>
+    <response>OK</response>
+</chat>
+
 <!-- Firmware component versions -->
 <chat>
     <command>AT%VER*</command>
@@ -2493,7 +2574,170 @@ OK</response>
 %VER: rlp a086 ** NONE **      10:25:12 28/03/07
 %VER: fad a086 ** NONE **      10:18:09 28/03/07
 %VER: t30 a086 ** NONE **      10:29:01 28/03/07
-OK</reponse>
+OK</response>
+</chat>
+
+<!-- Network time and date -->
+<chat>
+    <command>AT%CTZV=?</command>
+    <response>%CTZV: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT%CTZV?</command>
+    <response>%CTZV: 0\nOK</response>
+</chat>
+<chat>
+    <command>AT%CTZV=*</command>
+    <response>OK</response>
+</chat>
+
+<!-- Unsolicited responses -->
+<chat>
+    <command>AT%CUNS=?</command>
+    <response>%CUNS: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT%CUNS?</command>
+    <response>%CUNS: 0\nOK</response>
+</chat>
+<chat>
+    <command>AT%CUNS=*</command>
+    <response>OK</response>
+</chat>
+
+<!-- Request ciphering indications -->
+<chat>
+    <command>AT%CPRI=?</command>
+    <response>%CPRI: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT%CPRI?</command>
+    <response>%CPRI: 0\nOK</response>
+</chat>
+<chat>
+    <command>AT%CPRI=*</command>
+    <response>OK</response>
+</chat>
+
+<!-- Timezone change reporting -->
+<chat>
+    <command>AT+CTZR=?</command>
+    <response>+CTZR: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CTZR?</command>
+    <response>+CTZR: 0\nOK</response>
+</chat>
+<chat>
+    <command>AT+CTZR=*</command>
+    <response>OK</response>
+</chat>
+
+<!-- Select Message Service -->
+<chat>
+    <command>AT+CSMS=?</command>
+    <response>+CSMS: (0,1,127)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CSMS?</command>
+    <response>+CSMS: 0,1,1,1\nOK</response>
+</chat>
+<chat>
+    <command>AT+CSMS=*</command>
+    <response>OK</response>
+</chat>
+
+<!-- Service Centre Address -->
+<chat>
+    <command>AT+CSCA=?</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT+CSCA?</command>
+    <response>+CSCA: "123456",129\nOK</response>
+</chat>
+<chat>
+    <command>AT+CSCA=*</command>
+    <response>OK</response>
+</chat>
+
+<!-- GPRS stuff -->
+<chat>
+    <command>AT+CGATT=?</command>
+    <response>+CGATT: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGATT?</command>
+    <response>+CGATT: 0\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGATT=*</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT+CGACT=?</command>
+    <response>+CGACT: (0,1)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGACT?</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT+CGACT=*</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT+CGDATA=?</command>
+    <response>+CGDATA: "PPP"\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGDATA?</command>
+    <response>ERROR</response>
+    <!-- +CME ERROR: operation not allowed -->
+</chat>
+<chat>
+    <command>AT+CGPADDR=?</command>
+    <response>+CGPADDR: ()\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGAUTO=?</command>
+    <response>+CGAUTO: (0-3)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGAUTO?</command>
+    <response>+CGAUTO: 3\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGAUTO=*</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT+CGANS=?</command>
+    <response>+CGANS: (0,1),("PPP")\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGCLASS?</command>
+    <response>+CGCLASS: "B"\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGCLASS=?</command>
+    <response>+CGCLASS: ("B","CG","CC")\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGCLASS=*</command>
+    <response>OK</response>
+</chat>
+<chat>
+    <command>AT+CGSMS?</command>
+    <response>+CGSMS: 3\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGSMS=?</command>
+    <response>+CGSMS: (0-3)\nOK</response>
+</chat>
+<chat>
+    <command>AT+CGSMS=*</command>
+    <response>OK</response>
 </chat>
 
 <!-- Sidetone Level -->
@@ -3079,6 +3323,6 @@ you take?</getkey>
     05 05 FE EB BF FF FF FF
 </file>
 
-</toolkit>
+</filesystem>
 
 </simulator>
