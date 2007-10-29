@@ -1,9 +1,30 @@
+/*
+ *  openmoko-worldclock -- OpenMoko Clock Application
+ *
+ *  Authored by Chris Lord <chris@openedhand.com>
+ *
+ *  Copyright (C) 2007 OpenMoko Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser Public License as published by
+ *  the Free Software Foundation; version 2 of the license.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser Public License for more details.
+ *
+ *  Current Version: $Rev$ ($Date$) [$Author$]
+ */
 
 #include <gtk/gtk.h>
 #include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
 #include <libjana-gtk/jana-gtk.h>
 #include <libmokoui2/moko-finger-scroll.h>
+#include <time.h>
+#include <sys/time.h>
+#include "worldclock-data.h"
 
 static gchar *location;
 
@@ -14,6 +35,7 @@ typedef struct {
 	GtkWidget *load_bar;
 	
 	guint render_idle;
+	guint time_idle;
 	
 	gchar *location;
 	gdouble zoom_level;
@@ -57,6 +79,96 @@ zoom_out_clicked_cb (GtkToolButton *button, WorldClockData *data)
 	zoom_map (data);
 }
 
+static gboolean ignore_next = FALSE;
+
+static gboolean
+increment_time_timeout (JanaGtkDateTime *dt)
+{
+	JanaTime *time;
+
+	ignore_next = TRUE;
+
+	time = jana_gtk_date_time_get_time (dt);
+	jana_time_set_seconds (time, jana_time_get_seconds (time) + 1);
+	jana_gtk_date_time_set_time (dt, time);
+	g_object_unref (time);
+	
+	return TRUE;
+}
+
+static void
+date_time_changed_cb (JanaGtkDateTime *dt, WorldClockData *data)
+{
+	if (ignore_next) {
+		ignore_next = FALSE;
+		return;
+	}
+	if (data->time_idle) {
+		g_source_remove (data->time_idle);
+		data->time_idle = 0;
+	}
+}
+
+static void
+settings_clicked_cb (GtkToolButton *button, WorldClockData *data)
+{
+	GtkWidget *time_dialog, *datetime;
+	gchar *location;
+	JanaTime *time;
+	
+	time_dialog = gtk_dialog_new_with_buttons ("Set time",
+		GTK_WINDOW (data->window),
+		GTK_DIALOG_NO_SEPARATOR | GTK_DIALOG_MODAL,
+		GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+	
+	location = jana_ecal_utils_guess_location ();
+	time = jana_ecal_utils_time_now (location);
+	g_free (location);
+	datetime = jana_gtk_date_time_new (time);
+	jana_gtk_date_time_set_editable (JANA_GTK_DATE_TIME (datetime), TRUE);
+	g_object_unref (time);
+	
+	g_signal_connect (datetime, "changed",
+		G_CALLBACK (date_time_changed_cb), data);
+
+#if GLIB_CHECK_VERSION(2,14,0)
+	data->time_idle = g_timeout_add_seconds (1, (GSourceFunc)
+		increment_time_timeout, datetime);
+#else
+	data->time_idle = g_timeout_add (1000, (GSourceFunc)
+		increment_time_timeout, datetime);
+#endif
+	
+	gtk_container_add (GTK_CONTAINER (
+		GTK_DIALOG (time_dialog)->vbox), datetime);
+	gtk_widget_show (datetime);
+	
+	gtk_dialog_run (GTK_DIALOG (time_dialog));
+	
+	/* Set system time */
+	if (data->time_idle) {
+		/* Time hasn't changed, don't set */
+		g_source_remove (data->time_idle);
+	} else {
+		struct timeval time_tv;
+		struct tm time_tm;
+		
+		time = jana_gtk_date_time_get_time (
+			JANA_GTK_DATE_TIME (datetime));
+
+		/* TODO: Maybe this should convert to UTC before setting? */
+		time_tm = jana_utils_time_to_tm (time);
+		time_tv.tv_sec = timegm (&time_tm);
+		time_tv.tv_usec = 0;
+		
+		settimeofday (&time_tv, NULL);
+		
+		g_object_unref (time);
+	}
+	
+	gtk_widget_destroy (time_dialog);
+}
+
 static gboolean
 set_time (GtkWidget *map)
 {
@@ -92,6 +204,48 @@ render_stop_cb (JanaGtkWorldMap *map, WorldClockData *data)
 	gtk_widget_hide (data->load_window);
 }
 
+static void
+add_marks (WorldClockData *data)
+{
+	gint i, width, height;
+	
+	gtk_icon_size_lookup (GTK_ICON_SIZE_MENU, &width, &height);
+	
+	for (i = 0; i < G_N_ELEMENTS (world_clock_tzdata); i++) {
+		JanaGtkWorldMapMarker *mark;
+		gchar *path, *image_name;
+		GdkPixbuf *pixbuf;
+		
+		GError *error = NULL;
+
+		image_name = g_strdelimit (g_utf8_strdown (
+			world_clock_tzdata[i].country, -1), " '", '_');
+		path = g_strconcat (PKGDATADIR G_DIR_SEPARATOR_S,
+			image_name, ".svg", NULL);
+		g_free (image_name);
+
+		if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
+			pixbuf = NULL;
+		} else if (!(pixbuf = gdk_pixbuf_new_from_file_at_size (path,
+			     width, -1, &error))) {
+			g_warning ("Error loading '%s': %s",
+				path, error->message);
+			g_error_free (error);
+		}
+		if (pixbuf)
+			mark = jana_gtk_world_map_marker_pixbuf_new (pixbuf);
+		else
+			mark = jana_gtk_world_map_marker_new ();
+
+		g_object_set_data (G_OBJECT (mark), "zone",
+			(gpointer)(&world_clock_tzdata[i]));
+		jana_gtk_world_map_add_marker (JANA_GTK_WORLD_MAP (data->map),
+			mark, world_clock_tzdata[i].lat,
+			world_clock_tzdata[i].lon);
+		g_free (path);
+	}
+}
+
 int
 main (int argc, char **argv)
 {
@@ -110,6 +264,14 @@ main (int argc, char **argv)
 	/* Create toolbar */
 	toolbar = gtk_toolbar_new ();
 
+	/* Settings button */
+	button = worldclock_utils_toolbutton_new (GTK_STOCK_PREFERENCES);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
+		gtk_separator_tool_item_new (), 0);
+	g_signal_connect (button, "clicked",
+		G_CALLBACK (settings_clicked_cb), &data);
+	
 	/* Zoom in button */
 	button = worldclock_utils_toolbutton_new (GTK_STOCK_ZOOM_IN);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
@@ -128,6 +290,7 @@ main (int argc, char **argv)
 
 	/* Create scrolling map */
 	data.map = jana_gtk_world_map_new ();
+	add_marks (&data);
 	scroll = moko_finger_scroll_new ();
 	moko_finger_scroll_add_with_viewport (MOKO_FINGER_SCROLL (scroll),
 		data.map);
@@ -173,8 +336,8 @@ main (int argc, char **argv)
 		"gtk-xft-dpi", 285 * 1024,
 		"gtk-font-name", "Sans 6",
 		NULL);
-	gtk_window_set_default_size (GTK_WINDOW (data.window), 480, 600);
 #endif
+	gtk_window_set_default_size (GTK_WINDOW (data.window), 480, 600);
 
 	location = jana_ecal_utils_guess_location ();
 	id = g_timeout_add (1000 * 60 * 10, (GSourceFunc)set_time, data.map);

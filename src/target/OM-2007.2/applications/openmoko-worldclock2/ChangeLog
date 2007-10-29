@@ -1,3 +1,16 @@
+2007-10-29  Chris Lord  <chris@openedhand.com>
+
+	* Makefile.am:
+	* configure.ac:
+	* data/Makefile.am:
+	* src/Makefile.am:
+	* src/worldclock-data.c:
+	* src/worldclock-data.h:
+	* src/worldclock-main.c: (increment_time_timeout),
+	(date_time_changed_cb), (settings_clicked_cb), (add_marks), (main):
+	Add markers for time-zones on the map and add rudimentary system-clock
+	setting functionality
+
 2007-10-22  Chris Lord  <chris@openedhand.com>
 
 	* AUTHORS:

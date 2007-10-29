@@ -13,9 +13,11 @@ AC_PROG_LIBTOOL
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6.0)
 PKG_CHECK_MODULES(MOKOUI, libmokoui2 >= 0.3)
 PKG_CHECK_MODULES(JANA, libjana libjana-ecal libjana-gtk)
+PKG_CHECK_MODULES(NOTIFY, libnotify >= 0.4)
 
 AC_OUTPUT([
 Makefile
+data/Makefile
 src/Makefile
 ])
 
