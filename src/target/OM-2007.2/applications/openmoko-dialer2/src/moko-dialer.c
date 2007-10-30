@@ -71,7 +71,6 @@ struct _MokoDialerPrivate
   MokoTime           *time;
 
   /* Registration variables */
-  guint               reg_timeout;
   MokoGsmdConnectionNetregType registered;
   MokoGSMLocation     gsm_location;
 };
@@ -92,7 +91,6 @@ static guint dialer_signals[LAST_SIGNAL] = {0, };
 static void  on_keypad_dial_clicked (MokoKeypad  *keypad,
                                      const gchar *number,
                                      MokoDialer  *dialer);
-static gboolean register_network_cb (MokoDialer *dialer);
 
 /* DBus functions */
 gboolean
@@ -271,14 +269,14 @@ on_keypad_dial_clicked (MokoKeypad  *keypad,
     gchar *strings[] = {
       "None",
       "Home network registered",
-      "Waiting for network registration",
+      "Searching for network",
       "Network registration denied",
       "",
       "Roaming network registered"
     };
 
     dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-        "Not connected to network.\nCurrent status = %s ", strings[priv->registered]);
+        "Cannot dial number. %s", strings[priv->registered]);
     gtk_dialog_run (GTK_DIALOG (dlg));
     gtk_widget_destroy (dlg);
 
@@ -337,11 +335,6 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
   moko_gsmd_connection_send_pin (priv->connection, pin);
 
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
-    
-  priv->registered = MOKO_GSMD_CONNECTION_NETREG_NONE;
-  priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT, 
-                                     (GSourceFunc)register_network_cb, 
-                                     dialer);
   g_free (pin);
 }
 
@@ -481,25 +474,21 @@ on_network_registered (MokoGsmdConnection *conn,
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
-  g_warning ("on_network_registered: type is %d\n", type);
-
   switch (type)
   {
     case MOKO_GSMD_CONNECTION_NETREG_NONE:
     case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
       /* Do nothing */
-      g_debug ("NetReg: Searching for network");
+      g_debug ("Searching for network");
       break;
     case MOKO_GSMD_CONNECTION_NETREG_DENIED:
       /* This may be a pin issue*/
       break;
     case MOKO_GSMD_CONNECTION_NETREG_HOME:
     case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
-      g_debug ("NetReg: Network registered");
-      g_debug ("\tLocationAreaCode = %x\n\tCellID = %x", lac, cell);
+      g_debug ("Network registered: LocationAreaCode: %x. CellID: %x.", lac, cell);
       priv->gsm_location.lac = lac;
       priv->gsm_location.cid = cell;
-      g_source_remove (priv->reg_timeout);
       break;
     default:
       g_warning ("Unhandled register event type = %d\n", type);
@@ -597,7 +586,6 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
   
-  g_source_remove (priv->reg_timeout);
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
   moko_dialer_show_dialer (dialer, NULL);
   g_debug ("Pin Requested");
@@ -687,44 +675,6 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       g_debug ("mokogsmd unknown");
       break;
   }
-}
-static gboolean
-register_network_cb (MokoDialer *dialer)
-{
-  MokoDialerPrivate *priv;
-
-  g_return_val_if_fail (MOKO_DIALER (dialer), TRUE);
-  priv = MOKO_DIALER_GET_PRIVATE (dialer);
-
-  /* We check whether we've been registered yet, otherwise keep poking 
-   * gsmd
-   */
-  switch (priv->registered)
-  {
-    case MOKO_GSMD_CONNECTION_NETREG_NONE:
-      /* We have yet to request registration, so lets do it */
-      /* FIXME: do the pin stuff */
-      g_debug ("Requesting registration");
-      moko_gsmd_connection_network_register (priv->connection);
-      priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
-      break;
-    case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
-      g_debug ("Waiting for registration");
-      break;
-    case MOKO_GSMD_CONNECTION_NETREG_DENIED:
-      g_debug ("Registration denied, retrying");
-      moko_gsmd_connection_network_register (priv->connection);
-      priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
-      break;
-    case MOKO_GSMD_CONNECTION_NETREG_HOME:
-    case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
-      g_debug ("Network Registered");
-	    return FALSE;
-    default:
-      g_warning ("Unhandled register event type = %d\n", priv->registered);
-  }
-  
-  return TRUE;
 }
 
 /* GObject functions */
@@ -854,13 +804,7 @@ moko_dialer_init (MokoDialer *dialer)
   if (err && err->code == MOKO_GSMD_ERROR_CONNECT)
     exit (1); /* no point continuing if we can't connect to gsmd? */
 
-  /* Handle network registration a few seconds after powering up the 
-   * antenna*/ 
-  priv->registered = MOKO_GSMD_CONNECTION_NETREG_NONE;
-  priv->reg_timeout = g_timeout_add (GSM_REGISTER_TIMEOUT * 2, 
-                                     (GSourceFunc)register_network_cb, 
-                                     dialer);
-  
+ 
   /* Connect to the gsmd signals */
   g_signal_connect (G_OBJECT (conn), "network-registration", 
                     G_CALLBACK (on_network_registered), (gpointer)dialer);
@@ -873,6 +817,11 @@ moko_dialer_init (MokoDialer *dialer)
   g_signal_connect (G_OBJECT (conn), "call-progress", 
                     G_CALLBACK (on_call_progress_changed), (gpointer)dialer);
 
+  /* FIXME:
+   *  moko_gsmd_connection_get_network_status always seems to return 0 here */
+  priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
+  moko_gsmd_connection_network_register (conn);
+ 
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
   if (!priv->journal || !moko_journal_load_from_storage (priv->journal))

@@ -1,3 +1,9 @@
+2007-10-30  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-dialer.c: (on_keypad_dial_clicked),
+	(on_keypad_pin_entry), (on_network_registered), (moko_dialer_init):
+	Clean up registration code (don't assume gsmd is broken!)
+
 2007-10-29	Michael Lauer <mickey@openmoko.org>
 
 	* data/default_ringtone.ogg: REMOVED
