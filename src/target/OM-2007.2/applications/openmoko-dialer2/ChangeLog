@@ -1,5 +1,10 @@
 2007-10-30  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-dialer.c: (on_talking_reject_call): Stop ringing notification
+	 if we reject an incoming call
+
+2007-10-30  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-dialer.c: (on_keypad_dial_clicked),
 	(on_keypad_pin_entry), (on_network_registered), (moko_dialer_init):
 	Clean up registration code (don't assume gsmd is broken!)

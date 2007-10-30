@@ -388,6 +388,7 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
   moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
+  moko_notify_stop (priv->notify);
 }
 
 static void
