@@ -1,3 +1,15 @@
+2007-10-31  Thomas Wood  <thos@openedhand.com>
+
+	* src/phone-kit/moko-dialer.c: (moko_dialer_hung_up),
+	(moko_dialer_rejected), (on_talking_reject_call),
+	(moko_dialer_init):
+	* src/phone-kit/moko-talking.c: (moko_talking_incoming_call),
+	(moko_talking_outgoing_call), (moko_talking_accepted_call),
+	(on_answer_clicked), (on_reject_clicked),
+	(moko_talking_class_init), (moko_talking_init):
+
+	Present a window for incoming call notification
+
 2007-10-31  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/dialer-main.c: Added to repository

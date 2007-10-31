@@ -47,14 +47,8 @@ struct _MokoDialerPrivate
   gint                status;
   gchar               *incoming_clip;
 
-  /* Main Widgets */
-  GtkWidget          *window;
-  GtkWidget          *notebook;
-  
-  /* Pages of the notebook */
+  /* handles user interaction */
   GtkWidget          *talking;
-  GtkWidget          *keypad;
-  GtkWidget          *history;
 
   /* Special objects */
   MokoGsmdConnection *connection;
@@ -152,9 +146,6 @@ moko_dialer_hung_up (MokoDialer *dialer)
   
   priv->status = DIALER_STATUS_NORMAL;
 
-  if (gtk_notebook_get_n_pages (GTK_NOTEBOOK (priv->notebook)) == 3)
-    gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
-  
   moko_gsmd_connection_voice_hangup (priv->connection);   
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
   
@@ -167,17 +158,14 @@ moko_dialer_rejected (MokoDialer *dialer)
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
-  
+
   priv->status = DIALER_STATUS_NORMAL;
 
   /* Stop the notification */
-  moko_notify_stop (priv->notify);  
+  moko_notify_stop (priv->notify);
 
-  if (gtk_notebook_get_n_pages (GTK_NOTEBOOK (priv->notebook)) == 3)
-    gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
-  
-  moko_gsmd_connection_voice_hangup (priv->connection);  
-  
+  moko_gsmd_connection_voice_hangup (priv->connection);
+
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
 }
 
@@ -235,9 +223,7 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
 
   moko_gsmd_connection_voice_hangup (priv->connection);
   priv->status = DIALER_STATUS_NORMAL;
-  
-  gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
- 
+
   /* Finalise and add the journal entry */
   if (priv->journal && priv->entry)
   {
@@ -266,7 +252,6 @@ on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
   moko_gsmd_connection_voice_hangup (priv->connection);
   
   priv->status = DIALER_STATUS_NORMAL;
-  gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
   
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
 }
@@ -384,16 +369,6 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   }
   /* Set up the user interface */
   moko_talking_incoming_call (MOKO_TALKING (priv->talking), NULL, NULL);
-
-  gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
-                            gtk_image_new_from_file (PKGDATADIR"/phone.png"),
-                            0);
-  gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->talking,
-                           "tab-expand", TRUE,
-                           NULL); 
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
-  
-  gtk_window_present (GTK_WINDOW (priv->window));
 
   /* Start the notification */
   moko_notify_start (priv->notify);
@@ -688,21 +663,8 @@ moko_dialer_init (MokoDialer *dialer)
   /* Load the notification object */
   priv->notify = moko_notify_new ();
 
-  /* Create the window */
-  priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  g_signal_connect (G_OBJECT (priv->window), "delete-event",
-                    (GCallback) gtk_widget_hide_on_delete, NULL);
-  gtk_window_set_title (GTK_WINDOW (priv->window), "Dialer");
 
-  /* Notebook */
-  priv->notebook = gtk_notebook_new ();
-  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (priv->notebook), GTK_POS_BOTTOM);
-  gtk_container_add (GTK_CONTAINER (priv->window), priv->notebook);
-
-  /* Talking: We don't actually add it to the notebook yet, as it is only added
-   * as/when needed. Therefore we just create it, and ref it (so it will 
-   * survive reparenting.
-   */
+  /* Talking: This is the object that handles interaction with the user */
   priv->talking = moko_talking_new (priv->journal);
   g_object_ref (G_OBJECT (priv->talking));
   gtk_widget_show_all (priv->talking);
@@ -716,7 +678,20 @@ moko_dialer_init (MokoDialer *dialer)
                     G_CALLBACK (on_talking_silence), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->talking), "speaker_toggle",
                     G_CALLBACK (on_talking_speaker_toggle), (gpointer)dialer);
+
+  /* Create the window */
 #if 0
+  priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  g_signal_connect (G_OBJECT (priv->window), "delete-event",
+                    (GCallback) gtk_widget_hide_on_delete, NULL);
+  gtk_window_set_title (GTK_WINDOW (priv->window), "Dialer");
+
+  /* Notebook */
+  priv->notebook = gtk_notebook_new ();
+  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (priv->notebook), GTK_POS_BOTTOM);
+  gtk_container_add (GTK_CONTAINER (priv->window), priv->notebook);
+
+
   /* Keypad */
   priv->keypad = moko_keypad_new ();
   g_signal_connect (G_OBJECT (priv->keypad), "dial_number",

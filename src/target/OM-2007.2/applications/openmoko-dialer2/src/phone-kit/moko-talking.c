@@ -25,7 +25,7 @@
 #include "moko-sound.h"
 #include "moko-talking.h"
 
-G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_VBOX)
+G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_WIDGET)
 
 #define MOKO_TALKING_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_TALKING, MokoTalkingPrivate))
@@ -35,6 +35,8 @@ G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_VBOX)
 struct _MokoTalkingPrivate
 {
   MokoJournal        *journal;
+
+  GtkWidget          *window;
 
   GtkWidget          *incoming_bar;
   GtkWidget          *main_bar;
@@ -138,10 +140,12 @@ moko_talking_incoming_call (MokoTalking      *talking,
   gtk_label_set_text (GTK_LABEL (priv->status), number);
   gtk_image_set_from_file (GTK_IMAGE (priv->person),
                            PKGDATADIR"/unkown.png");
-  g_source_remove (priv->timeout);
+  if (priv->timeout)
+    g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
                                  (GSourceFunc)incoming_timeout,
                                  (gpointer)talking);
+  gtk_window_present (GTK_WINDOW (priv->window));
 }
 
 static gboolean
@@ -194,13 +198,14 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   else
     gtk_image_set_from_file (GTK_IMAGE (priv->person),
                              PKGDATADIR"/unkown.png");
-
-  g_source_remove (priv->timeout);
+  if (priv->timeout)
+    g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
                                  (GSourceFunc)outgoing_timeout,
                                  (gpointer)talking);
 
   g_free (markup);
+  gtk_window_present (GTK_WINDOW (priv->window));
 }
 
 static gboolean
@@ -272,7 +277,8 @@ moko_talking_accepted_call (MokoTalking      *talking,
   /* We don't change the status or person widgets, as incoming call has already
    * set them for us.
    */
-  g_source_remove (priv->timeout);
+  if (priv->timeout)
+    g_source_remove (priv->timeout);
   priv->timeout = g_timeout_add (1000, 
                                  (GSourceFunc)talking_timeout,
                                  (gpointer)talking);
@@ -292,6 +298,7 @@ static void
 on_reject_clicked (GtkToolButton *button, MokoTalking *talking)
 {
   g_source_remove (talking->priv->timeout);
+  gtk_widget_hide (talking->priv->window);
   g_signal_emit (G_OBJECT (talking), talking_signals[REJECT_CALL], 0);
 }
 
@@ -394,15 +401,17 @@ static void
 moko_talking_init (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
-  GtkWidget *toolbar, *image, *vbox, *hbox, *label, *align, *frame;
+  GtkWidget *toolbar, *image, *vbox, *hbox, *label, *align, *frame, *main_vbox;
   GtkWidget *duration;
   GtkToolItem *item;
   gint i;
 
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
+
+  main_vbox = gtk_vbox_new (FALSE, 0);
   
   priv->incoming_bar = toolbar = gtk_toolbar_new ();
-  gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (main_vbox), toolbar, FALSE, FALSE, 0);
 
   item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_ANSWER);
   gtk_tool_item_set_expand (item, TRUE);
@@ -425,7 +434,7 @@ moko_talking_init (MokoTalking *talking)
 
   /* Outgoing call and talking share the same toolbar */
   priv->main_bar = toolbar = gtk_toolbar_new ();
-  gtk_box_pack_start (GTK_BOX (talking), toolbar, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (main_vbox), toolbar, FALSE, FALSE, 0);
 
   item = gtk_toggle_tool_button_new_from_stock (MOKO_STOCK_SPEAKER);
   gtk_tool_item_set_expand (item, TRUE);
@@ -442,7 +451,7 @@ moko_talking_init (MokoTalking *talking)
   /* The title label and image */
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
-  gtk_box_pack_start (GTK_BOX (talking), vbox, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (main_vbox), vbox, FALSE, FALSE, 0);
   
   priv->title = label = gtk_label_new ("Incoming Call");
   gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
@@ -460,7 +469,7 @@ moko_talking_init (MokoTalking *talking)
 
   /* The status area */
   align = gtk_alignment_new (0.5, 0.5, 1, 0 );
-  gtk_box_pack_start (GTK_BOX (talking), align, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), align, TRUE, TRUE, 0);
 
   frame = gtk_frame_new (NULL);
   gtk_container_set_border_width (GTK_CONTAINER (frame), 10);
@@ -507,6 +516,10 @@ moko_talking_init (MokoTalking *talking)
       g_object_ref (priv->incoming[i]);
 
   }
+
+  priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_show_all (main_vbox);
+  gtk_container_add (GTK_CONTAINER (priv->window), main_vbox);
 
 }
 
