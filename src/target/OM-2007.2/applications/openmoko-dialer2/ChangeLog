@@ -1,3 +1,8 @@
+2007-10-31  Thomas Wood  <thomas@openedhand.com>
+
+	* src/phone-kit/moko-talking.c: Replace manual animation functions with
+	GdkPixbufSimpleAnim
+
 2007-10-31  Thomas Wood  <thos@openedhand.com>
 
 	* src/phone-kit/moko-dialer.c: (moko_dialer_hung_up),

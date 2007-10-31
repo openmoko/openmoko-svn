@@ -48,9 +48,9 @@ struct _MokoTalkingPrivate
   GtkWidget          *person;
   GtkWidget          *status;
 
-  GdkPixbuf          *talking[N_PICS];
-  GdkPixbuf          *incoming[4];
-  GdkPixbuf          *outgoing[4];
+  GdkPixbufSimpleAnim *talking_anim;
+  GdkPixbufSimpleAnim *incoming_anim;
+  GdkPixbufSimpleAnim *outgoing_anim;
 
   GTimer             *dtimer;
   guint               timeout;
@@ -100,25 +100,6 @@ moko_talking_set_clip (MokoTalking      *talking,
   g_free (markup);
 }
 
-static gboolean
-incoming_timeout (MokoTalking *talking)
-{
-  MokoTalkingPrivate *priv;
-  static gint i = 0;
-
-  g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
-  priv = talking->priv;
-
-  gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
-                             priv->incoming[i]);
-  
-  i++;
-  if (i == 4)
-    i = 0;
-  
-  return TRUE;
-}
-
 void
 moko_talking_incoming_call (MokoTalking      *talking, 
                             const gchar      *number,
@@ -134,37 +115,12 @@ moko_talking_incoming_call (MokoTalking      *talking,
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Incoming Call");
   gtk_label_set_text (GTK_LABEL (priv->duration), "");
-  gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
-                           PKGDATADIR"/incoming_3.png");
+  gtk_image_set_from_animation (GTK_IMAGE (priv->icon), priv->incoming_anim);
 
   gtk_label_set_text (GTK_LABEL (priv->status), number);
   gtk_image_set_from_file (GTK_IMAGE (priv->person),
                            PKGDATADIR"/unkown.png");
-  if (priv->timeout)
-    g_source_remove (priv->timeout);
-  priv->timeout = g_timeout_add (1000, 
-                                 (GSourceFunc)incoming_timeout,
-                                 (gpointer)talking);
   gtk_window_present (GTK_WINDOW (priv->window));
-}
-
-static gboolean
-outgoing_timeout (MokoTalking *talking)
-{
-  MokoTalkingPrivate *priv;
-  static gint i = 0;
-
-  g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
-  priv = talking->priv;
-
-  gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
-                             priv->outgoing[i]);
-  
-  i++;
-  if (i == 4)
-    i = 0;
-  
-  return TRUE;
 }
 
 void
@@ -190,6 +146,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Outgoing Call");
   gtk_label_set_text (GTK_LABEL (priv->duration), "");
+  gtk_image_set_from_animation (GTK_IMAGE (priv->icon), priv->outgoing_anim);
 
   gtk_label_set_markup (GTK_LABEL (priv->status), markup);
   
@@ -198,12 +155,6 @@ moko_talking_outgoing_call (MokoTalking      *talking,
   else
     gtk_image_set_from_file (GTK_IMAGE (priv->person),
                              PKGDATADIR"/unkown.png");
-  if (priv->timeout)
-    g_source_remove (priv->timeout);
-  priv->timeout = g_timeout_add (1000, 
-                                 (GSourceFunc)outgoing_timeout,
-                                 (gpointer)talking);
-
   g_free (markup);
   gtk_window_present (GTK_WINDOW (priv->window));
 }
@@ -214,8 +165,7 @@ talking_timeout (MokoTalking *talking)
   MokoTalkingPrivate *priv;
   gdouble elapsed;
   gint hour, min, sec;
-  gchar *markup = NULL;
-  static gint i = 0;
+  gchar *text = NULL;
 
   g_return_val_if_fail (MOKO_IS_TALKING (talking), FALSE);
   priv = talking->priv;
@@ -228,18 +178,11 @@ talking_timeout (MokoTalking *talking)
     min = (gint) ((elapsed - 3600 * hour) / 60);
     sec = (gint) (elapsed - 3600 * hour - 60 * min);
 
-    markup = g_strdup_printf ("%02d:%02d:%02d", hour, min, sec);
-    gtk_label_set_markup (GTK_LABEL (priv->duration), markup);
+    text = g_strdup_printf ("%02d:%02d:%02d", hour, min, sec);
+    gtk_label_set_text (GTK_LABEL (priv->duration), text);
+    g_free(text);
   }
 
-  gtk_image_set_from_pixbuf (GTK_IMAGE (priv->icon), 
-                             priv->talking[i]);
-  
-  i++;
-  if (i == 5)
-    i = 0;
-  
-  g_free(markup);
   return TRUE;
 }
   
@@ -266,8 +209,7 @@ moko_talking_accepted_call (MokoTalking      *talking,
 
   gtk_label_set_text (GTK_LABEL (priv->title), "Talking");
   gtk_label_set_text (GTK_LABEL (priv->duration), "00:00:00");
-  gtk_image_set_from_file (GTK_IMAGE (priv->icon), 
-                           PKGDATADIR"/talking_3.png");
+  gtk_image_set_from_animation (GTK_IMAGE (priv->icon), priv->talking_anim);
 
   /* start call duration timer */
   if (priv->dtimer)
@@ -485,37 +427,35 @@ moko_talking_init (MokoTalking *talking)
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
   /* Load the pixbufs */
-  for (i = 0; i < N_PICS; i++)
-  {
-    if (i == 0)
-      priv->talking[i] = gdk_pixbuf_new_from_file (PKGDATADIR"/talking.png",
-                                                   NULL);
-    else
-    {
-      gchar *name = g_strdup_printf ("%s/talking_%d.png", PKGDATADIR, i-1);
-      priv->talking[i] = gdk_pixbuf_new_from_file (name, NULL);
-      g_free (name);
-    }
-    if (G_IS_OBJECT (priv->talking[i]))
-      g_object_ref (priv->talking[i]);
-  }
-  for (i = 0; i < N_PICS-1; i++)
-  {
-    gchar *name = g_strdup_printf ("%s/outgoing_%d.png", PKGDATADIR, i);
-    priv->outgoing[i] = gdk_pixbuf_new_from_file (name, NULL);
-    g_free (name);
-    if (G_IS_OBJECT (priv->outgoing[i]))
-      g_object_ref (priv->outgoing[i]);
-  }
-  for (i = 0; i < N_PICS-1; i++)
-  {
-    gchar *name = g_strdup_printf ("%s/incoming_%d.png", PKGDATADIR, i);
-    priv->incoming[i] = gdk_pixbuf_new_from_file (name, NULL);
-    g_free (name);
-    if (G_IS_OBJECT (priv->incoming[i]))
-      g_object_ref (priv->incoming[i]);
+  priv->talking_anim = gdk_pixbuf_simple_anim_new (96, 96, 1);
+  gdk_pixbuf_simple_anim_add_frame (priv->talking_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/talking_0.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->talking_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/talking_1.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->talking_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/talking_2.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->talking_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/talking_3.png", NULL));
 
-  }
+  priv->incoming_anim = gdk_pixbuf_simple_anim_new (96, 96, 1);
+  gdk_pixbuf_simple_anim_add_frame (priv->incoming_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/incoming_0.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->incoming_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/incoming_1.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->incoming_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/incoming_2.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->incoming_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/incoming_3.png", NULL));
+
+  priv->outgoing_anim = gdk_pixbuf_simple_anim_new (96, 96, 1);
+  gdk_pixbuf_simple_anim_add_frame (priv->outgoing_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/outgoing_0.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->outgoing_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/outgoing_1.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->outgoing_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/outgoing_2.png", NULL));
+  gdk_pixbuf_simple_anim_add_frame (priv->outgoing_anim,
+    gdk_pixbuf_new_from_file (PKGDATADIR"/outgoing_3.png", NULL));
 
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_show_all (main_vbox);
