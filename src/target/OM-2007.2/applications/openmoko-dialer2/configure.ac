@@ -1,7 +1,7 @@
 AC_PREREQ(2.53)
 AC_INIT(openmoko-dialer, 0.1, http://www.openmoko.org/)
 AM_INIT_AUTOMAKE()
-AC_CONFIG_SRCDIR(src/dialer-main.c)
+AC_CONFIG_SRCDIR(src/phone-kit/dialer-main.c)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -52,5 +52,8 @@ AC_SUBST(DBUS_GLIB_BIN)
 AC_OUTPUT([
 Makefile
 src/Makefile
+src/common/Makefile
+src/dialer/Makefile
+src/phone-kit/Makefile
 data/Makefile
 ])

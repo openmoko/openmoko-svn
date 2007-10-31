@@ -2,13 +2,6 @@
 <node name="/org/openmoko/Dialer">
 <interface name="org.openmoko.Dialer">
 <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="moko_dialer"/>
-	
-	<method name="ShowDialer">
-	</method>
-	
-	<method name="ShowMissedCalls">
-	</method>
-	
   <method name="GetStatus">
     <arg type="i" name="status" direction="out" />
   </method>
@@ -21,21 +14,21 @@
     <arg type="s" name="message" direction="in" />
   </method>
 
-	<signal name="IncomingCall">
-		<arg type="s" name="number"/>
-	</signal>
-	<signal name="OutgoingCall">
-		<arg type="s" name="number" />
-	</signal>
+  <signal name="IncomingCall">
+    <arg type="s" name="number"/>
+  </signal>
+  <signal name="OutgoingCall">
+    <arg type="s" name="number" />
+  </signal>
 
-	<signal name="Talking">
-	</signal>
+  <signal name="Talking">
+  </signal>
 
-	<signal name="HungUp">
-	</signal>
+  <signal name="HungUp">
+  </signal>
 
-	<signal name="Rejected">
-	</signal>
+  <signal name="Rejected">
+  </signal>
 
 </interface>
 </node>

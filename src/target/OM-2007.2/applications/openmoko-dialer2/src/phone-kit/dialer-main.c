@@ -18,6 +18,7 @@
 #include <gtk/gtk.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
+#include <glib-object.h>
 
 #include <moko-stock.h>
 
@@ -26,65 +27,7 @@
 #define DIALER_NAMESPACE "org.openmoko.Dialer"
 #define DIALER_OBJECT "/org/openmoko/Dialer"
 
-static gboolean show_dialer;
-static gboolean show_missed;
 static gchar *number = NULL;
-
-static GOptionEntry entries[] = {
-  {"show-dialer", 's', 0, G_OPTION_ARG_NONE, &show_dialer,
-   "Show the dialer at startup", "N"},
-
-  {"show-missed", 'm', 0, G_OPTION_ARG_NONE, &show_missed,
-   "Show the history window filtered by the missed, none.", "N"},
-  
-  {"dial", 'd', 0, G_OPTION_ARG_STRING, &number,
-   "Dial the specified number.", "N"},
-
-  {NULL}
-};
-
-
-static void
-_show_dialer (DBusGConnection *conn)
-{
-  DBusGProxy *proxy = NULL;
-  GError *error = NULL;
-
-  proxy = dbus_g_proxy_new_for_name (conn,
-                                      DIALER_NAMESPACE,
-                                      DIALER_OBJECT,
-                                      DIALER_NAMESPACE);
-
-  if (!proxy)
-    return;
-  
-  dbus_g_proxy_call (proxy, "ShowDialer", &error,
-                     G_TYPE_INVALID, G_TYPE_INVALID);
-  if (error)
-    g_warning (error->message);
-
-}
-
-static void
-_show_missed (DBusGConnection *conn)
-{
-  DBusGProxy *proxy = NULL;
-  GError *error = NULL;
-
-  proxy = dbus_g_proxy_new_for_name (conn,
-                                      DIALER_NAMESPACE,
-                                      DIALER_OBJECT,
-                                      DIALER_NAMESPACE);
-
-  if (!proxy)
-    return;
-  
-  dbus_g_proxy_call (proxy, "ShowMissedCalls", &error,
-                     G_TYPE_INVALID, G_TYPE_INVALID);
-  if (error)
-    g_warning (error->message);
-
-}
 
 static void
 _dial_number (DBusGConnection *conn)
@@ -107,6 +50,7 @@ _dial_number (DBusGConnection *conn)
     g_warning (error->message);
 
 }
+
 int
 main (int argc, char **argv)
 {
@@ -115,20 +59,6 @@ main (int argc, char **argv)
   DBusGProxy *proxy;
   GError *error = NULL;
   guint32 ret;
-  /*gchar *out = NULL, *err = NULL;*/
-
-  if (argc != 1)
-  {
-    /* Add init code. */
-    GError *error = NULL;
-    GOptionContext *context = g_option_context_new ("");
-
-    g_option_context_add_main_entries (context, entries, NULL);
-    g_option_context_add_group (context, gtk_get_option_group (TRUE));
-    g_option_context_parse (context, &argc, &argv, &error);
-
-    g_option_context_free (context);
-  }
 
   /* initialise type system */
   g_type_init ();
@@ -161,14 +91,9 @@ main (int argc, char **argv)
   }
   if (ret != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
   {
-    /* Someone else hase registered the object */
-
-    if (show_missed)
-      _show_missed (connection);
-    else if (number)
+    /* Someone else has registered the object */
+    if (number)
       _dial_number (connection);
-    else
-      _show_dialer (connection);
 
     dbus_g_connection_unref (connection);
 
@@ -195,10 +120,6 @@ main (int argc, char **argv)
  
   if (number)
     moko_dialer_dial (dialer, number, NULL);
-  else if (show_missed)
-    moko_dialer_show_missed_calls (dialer, NULL);
-  else if (show_dialer)
-    moko_dialer_show_dialer (dialer, NULL);
 
   gtk_main ();
   

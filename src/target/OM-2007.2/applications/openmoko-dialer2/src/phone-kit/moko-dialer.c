@@ -33,8 +33,6 @@
 #include "moko-dialer.h"
 
 #include "moko-contacts.h"
-#include "moko-history.h"
-#include "moko-keypad.h"
 #include "moko-notify.h"
 #include "moko-talking.h"
 #include "moko-sound.h"
@@ -43,8 +41,6 @@ G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
 #define MOKO_DIALER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_DIALER, MokoDialerPrivate))
-
-#define GSM_REGISTER_TIMEOUT 10000 /* Ten seconds after powering up */
 
 struct _MokoDialerPrivate
 {
@@ -88,43 +84,7 @@ enum
 
 static guint dialer_signals[LAST_SIGNAL] = {0, };
 
-static void  on_keypad_dial_clicked (MokoKeypad  *keypad,
-                                     const gchar *number,
-                                     MokoDialer  *dialer);
-
 /* DBus functions */
-gboolean
-moko_dialer_show_dialer (MokoDialer *dialer, GError *error)
-{
-  MokoDialerPrivate *priv;
-  g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
-  priv = dialer->priv;
- 
-  gtk_widget_show (priv->window);
-  gtk_window_present (GTK_WINDOW (priv->window));
-  return TRUE;
-}
-
-
-gboolean
-moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error)
-{
-  MokoDialerPrivate *priv;
-
-  g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
-  priv = dialer->priv;
-  
-  /* Filter history on missed calls */
-  
-  moko_history_set_filter (MOKO_HISTORY (priv->history), HISTORY_FILTER_MISSED);
-
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), -1);
-  
-  gtk_widget_show (priv->window);
-  gtk_window_present (GTK_WINDOW (priv->window));
-
-  return TRUE;
-}
 
 static gboolean
 moko_dialer_get_status (MokoDialer *dialer, gint *OUT_status, GError *error)
@@ -146,11 +106,10 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
 
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
   g_return_val_if_fail (number != NULL, FALSE);
-  g_return_val_if_fail (moko_dialer_show_dialer (dialer, NULL), FALSE);
   priv = dialer->priv;
 
-  moko_dialer_show_dialer (dialer, NULL);
-  on_keypad_dial_clicked (NULL, number, dialer);
+  /* FIXME: Dial the number! */
+
   return TRUE;
 }
 
@@ -222,102 +181,8 @@ moko_dialer_rejected (MokoDialer *dialer)
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
 }
 
-/* Callbacks from widgets */
-static void
-on_keypad_dial_clicked (MokoKeypad  *keypad,
-                        const gchar *number,
-                        MokoDialer  *dialer)
-{
-  GtkWidget *dlg;
-  MokoDialerPrivate *priv;
-  MokoContactEntry *entry = NULL;
-  
-  g_return_if_fail (MOKO_IS_DIALER (dialer));
-  priv = dialer->priv;
 
-  if (!number) {
-    gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 1);
-    moko_history_set_filter (MOKO_HISTORY (priv->history), HISTORY_FILTER_DIALED);
-    return;
-  }
-
-  /* check current dialer state */
-  if (0 || priv->status != DIALER_STATUS_NORMAL)
-  {
-    gchar *strings[] = {
-      "Normal",
-      "Incoming Call",
-      "Dialing",
-      "Outgoing Call"
-    };
-    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-        "Cannot dial when dialer is busy.\nCurrent status = %s", strings[priv->status]);
-    gtk_dialog_run (GTK_DIALOG (dlg));
-    gtk_widget_destroy (dlg);
-
-    g_warning ("Cannot dial when dialer is busy: %d\n", priv->status);
-
-    return;
-  }
-  priv->status = DIALER_STATUS_DIALING;
-
-  /* check for network connection */
-  if (priv->registered != MOKO_GSMD_CONNECTION_NETREG_HOME
-      && priv->registered != MOKO_GSMD_CONNECTION_NETREG_ROAMING
-      && priv->registered != MOKO_GSMD_CONNECTION_NETREG_DENIED)
-  {
-    gchar *strings[] = {
-      "None",
-      "Home network registered",
-      "Searching for network",
-      "Network registration denied",
-      "",
-      "Roaming network registered"
-    };
-
-    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-        "Cannot dial number. %s", strings[priv->registered]);
-    gtk_dialog_run (GTK_DIALOG (dlg));
-    gtk_widget_destroy (dlg);
-
-    /* no point continuing if we're not connected to a network! */
-    priv->status = DIALER_STATUS_NORMAL;
-    return;
-  }
-
-  entry = moko_contacts_lookup (moko_contacts_get_default (), number);
-
-  /* Prepare a voice journal entry */
-  if (priv->journal)
-  {
-    priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
-    moko_journal_entry_set_direction (priv->entry, DIRECTION_OUT);
-    moko_journal_entry_set_source (priv->entry, "Openmoko Dialer");
-    moko_journal_entry_set_gsm_location (priv->entry, &priv->gsm_location);
-    moko_journal_voice_info_set_distant_number (priv->entry, number);
-    if (entry && entry->contact->uid)
-      moko_journal_entry_set_contact_uid (priv->entry, entry->contact->uid);
-  }
-  moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
-
-  gtk_notebook_insert_page (GTK_NOTEBOOK (priv->notebook), priv->talking,
-                            gtk_image_new_from_file (PKGDATADIR"/phone.png"),
-                            0);
-  gtk_container_child_set (GTK_CONTAINER (priv->notebook), priv->talking,
-                           "tab-expand", TRUE,
-                           NULL);
-  
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
-
-  gtk_window_present (GTK_WINDOW (priv->window));
-
-  moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
-
-  moko_gsmd_connection_voice_dial (priv->connection, number);
-
-  g_signal_emit (G_OBJECT (dialer), dialer_signals[OUTGOING_CALL], 0, number);
-}
-
+#if 0
 static void
 on_keypad_pin_entry (MokoKeypad  *keypad,
                      const gchar *in_pin,
@@ -337,7 +202,7 @@ on_keypad_pin_entry (MokoKeypad  *keypad,
   moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
   g_free (pin);
 }
-
+#endif
 
 static void
 on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
@@ -387,7 +252,6 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   }
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
-  moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
   moko_notify_stop (priv->notify);
 }
 
@@ -405,7 +269,6 @@ on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
   gtk_notebook_remove_page (GTK_NOTEBOOK (priv->notebook), 0);
   
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
-  moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
 }
 
 static void
@@ -436,7 +299,7 @@ on_talking_speaker_toggle (MokoTalking *talking,
 
   g_debug ("Speaker toggled");
 }
-
+#if 0
 static void
 on_keypad_digit_pressed (MokoKeypad *keypad,
                          const gchar digit,
@@ -453,15 +316,7 @@ on_keypad_digit_pressed (MokoKeypad *keypad,
   if (priv->status == DIALER_STATUS_TALKING)
     moko_gsmd_connection_voice_dtmf (priv->connection, digit);
 }
-
-static void
-on_history_dial_number (MokoHistory *history,
-                        const gchar *number,
-                        MokoDialer  *dialer)
-{
-  on_keypad_dial_clicked (NULL, number, dialer);
-}
-
+#endif
 /* Callbacks for MokoGsmdConnection */
 static void
 on_network_registered (MokoGsmdConnection *conn, 
@@ -587,10 +442,7 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
   
-  moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), TRUE);
-  moko_dialer_show_dialer (dialer, NULL);
   g_debug ("Pin Requested");
-
 }
 
 static void
@@ -626,7 +478,6 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       }
 
       moko_dialer_hung_up (dialer);
-      moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
 
       if (priv->incoming_clip)
         g_free (priv->incoming_clip);
@@ -638,7 +489,6 @@ on_call_progress_changed (MokoGsmdConnection *conn,
     
     case MOKO_GSMD_PROG_REJECT:
       moko_dialer_rejected (dialer);
-      moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), FALSE);
       g_debug ("mokogsmd reject");
       break;
     
@@ -646,7 +496,6 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       if (priv->status != DIALER_STATUS_TALKING)
         moko_dialer_talking (dialer);
       moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
-      moko_keypad_set_talking (MOKO_KEYPAD (priv->keypad), TRUE);
 
       /* Update a journal entry */
       if (priv->journal && priv->entry)
@@ -867,7 +716,7 @@ moko_dialer_init (MokoDialer *dialer)
                     G_CALLBACK (on_talking_silence), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->talking), "speaker_toggle",
                     G_CALLBACK (on_talking_speaker_toggle), (gpointer)dialer);
-
+#if 0
   /* Keypad */
   priv->keypad = moko_keypad_new ();
   g_signal_connect (G_OBJECT (priv->keypad), "dial_number",
@@ -895,6 +744,7 @@ moko_dialer_init (MokoDialer *dialer)
 
   gtk_widget_show_all (priv->notebook);
   gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
+#endif
 }
 
 MokoDialer*

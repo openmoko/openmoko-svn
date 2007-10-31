@@ -1,3 +1,10 @@
+2007-10-31  Thomas Wood <thomas@openedhand.com>
+
+	* configure.ac:
+	* src/*:
+
+	Begin seperation of dialer and phone management
+
 2007-10-30  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-dialer.c: (on_talking_reject_call): Stop ringing notification
