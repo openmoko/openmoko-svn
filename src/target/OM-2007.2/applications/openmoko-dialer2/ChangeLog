@@ -1,3 +1,10 @@
+2007-10-31  Thomas Wood  <thomas@openedhand.com>
+
+	* src/dialer/Makefile.am:
+	* src/phone-kit/Makefile.am:
+
+	Add missing Makefile.am files to repository
+
 2007-10-31  Thomas Wood <thomas@openedhand.com>
 
 	* configure.ac:
