@@ -128,6 +128,10 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 
 		nFIND = 0;
 		break;
+	case GSMD_PHONEBOOK_GET_IMSI:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("imsi <%s>\n", payload);
+		break;
 	default:
 		return -EINVAL;
 	}	
@@ -363,6 +367,7 @@ static int shell_help(void)
 		"\tsM\tSMS Set preferred storage (sM=mem1,mem2,mem3)\n"
 		"\tsc\tSMS Show Service Centre\n"
 		"\tsC\tSMS Set Service Centre (sC=number)\n"
+		"\tim\tGet imsi\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -629,6 +634,9 @@ int shell_main(struct lgsm_handle *lgsmh)
 					lgsm_sms_set_smsc(lgsmh, ptr + 1);
 			} else if (!strcmp(buf, "n")) {
 				lgsm_get_subscriber_num(lgsmh);
+			} else if (!strncmp(buf, "im", 2)) {
+				printf("Get imsi\n");
+				lgsm_get_imsi(lgsmh);
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}

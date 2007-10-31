@@ -112,4 +112,7 @@ extern int lgsm_pb_retrieve_readrg(struct lgsm_handle *lh, int num);
 /* Retrieve the records of FIND request */
 extern int lgsm_pb_retrieve_find(struct lgsm_handle *lh, int num);
 
+/* Retrieve IMSI information */
+extern int lgsm_get_imsi(struct lgsm_handle *lh); // TODO this needs to go into a SIM specific file
+
 #endif

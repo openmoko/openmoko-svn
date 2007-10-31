@@ -223,3 +223,9 @@ int lgsm_pb_retrieve_find(struct lgsm_handle *lh, int num)
 
 	return 0;
 }
+
+int lgsm_get_imsi(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_PHONEBOOK, GSMD_PHONEBOOK_GET_IMSI);
+}
+

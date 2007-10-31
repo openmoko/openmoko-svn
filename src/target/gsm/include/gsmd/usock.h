@@ -249,6 +249,7 @@ enum gsmd_msg_phonebook {
 	GSMD_PHONEBOOK_SET_STORAGE	= 8,
 	GSMD_PHONEBOOK_RETRIEVE_READRG	= 9,
 	GSMD_PHONEBOOK_RETRIEVE_FIND	= 10,
+	GSMD_PHONEBOOK_GET_IMSI         = 11,
 };
 
 /* Type-of-Address, Numbering-Plan-Identification field, GSM 03.40, 9.1.2.5 */
