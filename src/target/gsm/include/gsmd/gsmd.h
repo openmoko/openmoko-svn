@@ -67,6 +67,8 @@ struct gsmd;
 #define GSMD_FLAG_V0		0x0001	/* V0 responses to be expected from TA */
 #define GSMD_FLAG_SMS_FMT_TEXT	0x0002	/* TODO Use TEXT rather than PDU mode */
 
+#define GSMD_MODEM_WAKEUP_TIMEOUT     3
+
 struct gsmd {
 	unsigned int flags;
 	int interpreter_ready;
@@ -84,6 +86,7 @@ struct gsmd {
 	unsigned char *mlbuf;		/* ml_parse buffer */
 	unsigned int mlbuf_len;
 	int mlunsolicited;
+        struct gsmd_timer *wakeup_timer;
 };
 
 struct gsmd_user {

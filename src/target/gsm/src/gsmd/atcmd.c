@@ -564,10 +564,83 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 	return atcmd;
 }
 
+static int null_wakeup_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp) 
+{
+        struct gsmd *g = ctx;
+        if (g->wakeup_timer) {
+                DEBUGP("modem is awake, remove timer!\n");
+                gsmd_timer_unregister(g->wakeup_timer);
+                gsmd_timer_free(g->wakeup_timer);
+                g->wakeup_timer=NULL;
+        } else {
+                DEBUGP("ERROR!! The wake up response comes too late!!\n");
+        }
+        return 0;
+}
+
+static void wakeup_timeout(struct gsmd_timer *tmr, void *data) 
+{
+        struct gsmd *g=data;
+        struct gsmd_atcmd *cmd=NULL;
+        DEBUGP("Wakeup time out!!\n");
+        if (g->wakeup_timer != tmr) {
+                DEBUGP("ERROR!! g->wakeup_timer != tmr\n");
+                return;
+        }
+        g->wakeup_timer = NULL;
+        gsmd_timer_free(tmr);
+        if (!llist_empty(&g->busy_atcmds)) {
+                cmd = llist_entry(g->busy_atcmds.next,struct gsmd_atcmd, list);
+        }
+        if (!cmd) { 
+                DEBUGP("ERROR!! busy_atcmds is NULL\n");
+                return;
+        }
+        // It's a wakeup command
+        if ( cmd->buf[0]==' ') {
+                llist_del(&cmd->list);
+                talloc_free(cmd);
+                // discard the wakeup command, and pass the real command.
+                if (llist_empty(&g->busy_atcmds) && !llist_empty(&g->pending_atcmds)) {
+                        atcmd_wake_pending_queue(g);
+                }
+        } else {
+                DEBUGP("ERROR!! Wakeup timeout and cmd->buf is not wakeup command!! %s\n",cmd->buf);
+        }
+}
+
+void wakeup_timer (struct gsmd *g) 
+{
+        struct timeval tv;
+        struct gsmd_timer *timer;
+        tv.tv_sec = GSMD_MODEM_WAKEUP_TIMEOUT;
+        tv.tv_usec = 0;
+        timer=gsmd_timer_create(&tv,&wakeup_timeout,g);
+        g->wakeup_timer=timer;
+        
+}
+
+/// adding a null '\r' before real at command.
+struct gsmd_atcmd * atcmd_wakeup_modem(struct gsmd *g) 
+{
+        if (!g->wakeup_timer) {
+                DEBUGP("try to wake up\n");
+                struct gsmd_atcmd * cmd= atcmd_fill(" \r",2,null_wakeup_cb,g,0);
+                wakeup_timer(g);
+                if (llist_empty(&g->pending_atcmds)) {
+                        atcmd_wake_pending_queue(g);
+                }
+                llist_add_tail(&cmd->list, &g->pending_atcmds);
+        }
+}
+
+
+
 /* submit an atcmd in the global queue of pending atcmds */
 int atcmd_submit(struct gsmd *g, struct gsmd_atcmd *cmd)
 {
         int empty;
+        atcmd_wakeup_modem(g);
 	DEBUGP("submitting command `%s'\n", cmd->buf);
 
         empty = llist_empty(&g->pending_atcmds);
@@ -628,6 +701,7 @@ int atcmd_init(struct gsmd *g, int sockfd)
 
 	g->mlbuf_len = 0;
 	g->mlunsolicited = 0;
+        g->wakeup_timer=NULL;
 
 	g->llp.cur = g->llp.buf;
 	g->llp.len = sizeof(g->llp.buf);
