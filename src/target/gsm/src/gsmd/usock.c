@@ -135,7 +135,13 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_VOICECALL_HANGUP:
 		/* ATH0 is not supported by QC, we hope ATH is supported by everone */
-		cmd = atcmd_fill("ATH", 5, &usock_cmd_cb, gu, gph->id);
+		cmd = atcmd_fill("ATH", 4, &usock_cmd_cb, gu, gph->id);
+                
+                /* This command is special because it needs to be sent to
+                * the MS even if a command is currently executing.  */
+                if (cmd) {
+                        return cancel_atcmd(gu->gsmd, cmd);
+                }
 		break;
 	case GSMD_VOICECALL_ANSWER:
 		cmd = atcmd_fill("ATA", 4, &usock_cmd_cb, gu, gph->id);
@@ -167,7 +173,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	if (cmd)
 		return atcmd_submit(gu->gsmd, cmd);
 	else
-		return 0;
+		return -ENOMEM;
 }
 
 static int null_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)

@@ -200,6 +200,52 @@ static int parse_final_result(const char *res)
 	return -1;
 }
 
+static inline void atcmd_wake_pending_queue (struct gsmd *g) 
+{
+        g->gfd_uart.when |= GSMD_FD_WRITE;
+}
+
+static inline void atcmd_wait_pending_queue (struct gsmd *g) 
+{
+        g->gfd_uart.when &= ~GSMD_FD_WRITE;
+}
+
+
+static int atcmd_done(struct gsmd *g, struct gsmd_atcmd *cmd, const char *buf)
+{
+        int rc = 0;
+        if (!cmd->cb) {
+                gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
+        } else {
+                DEBUGP("Calling final cmd->cb()\n");
+                /* send final result code if there is no information
+                * response in mlbuf */
+                if (g->mlbuf_len) {
+                        cmd->resp = g->mlbuf;
+                        g->mlbuf[g->mlbuf_len] = 0;
+                } else {
+                        cmd->resp = buf;
+                }
+                rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
+                DEBUGP("Clearing mlbuf\n");
+                g->mlbuf_len = 0;
+        }
+        
+        /* remove from list of currently executing cmds */
+        llist_del(&cmd->list);
+        talloc_free(cmd);
+        
+        /* if we're finished with current commands, but still have pending
+        * commands: we want to WRITE again */
+        if (llist_empty(&g->busy_atcmds)) {
+                //g->clear_to_send = 1;
+                if (!llist_empty(&g->pending_atcmds)) {
+                        atcmd_wake_pending_queue(g);
+                }
+        }
+        return rc;
+}
+
 static int ml_parse(const char *buf, int len, void *ctx)
 {
 	struct gsmd *g = ctx;
@@ -389,9 +435,8 @@ static int ml_parse(const char *buf, int len, void *ctx)
 		}
 		g->mlunsolicited = 0;
 		g->mlbuf_len = 0;
-		return rc;
 	}
-	return 0;
+	return rc;
 
 final_cb:
 	/* if reach here, the final result code of a command has been reached */
@@ -405,32 +450,7 @@ final_cb:
 	if (cmd && cms_error)
 		generate_event_from_cms(g, cmd->ret);
 
-	if (!cmd->cb) {
-		gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
-	} else {
-		DEBUGP("Calling final cmd->cb()\n");
-		/* send final result code if there is no information
-		 * response in mlbuf */
-		if (g->mlbuf_len) {
-			cmd->resp = g->mlbuf;
-			g->mlbuf[g->mlbuf_len] = 0;
-		} else
-			cmd->resp = buf;
-		rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
-		DEBUGP("Clearing mlbuf\n");
-		g->mlbuf_len = 0;
-	}
-
-	/* remove from list of currently executing cmds */
-	llist_del(&cmd->list);
-	talloc_free(cmd);
-
-	/* if we're finished with current commands, but still have pending
-	 * commands: we want to WRITE again */
-	if (llist_empty(&g->busy_atcmds) && !llist_empty(&g->pending_atcmds))
-		g->gfd_uart.when |= GSMD_FD_WRITE;
-
-	return rc;
+	return atcmd_done(g, cmd, buf);
 }
 
 /* called when the modem asked for a new line of a multiline atcmd */
@@ -438,7 +458,7 @@ static int atcmd_prompt(void *data)
 {
 	struct gsmd *g = data;
 
-	g->gfd_uart.when |= GSMD_FD_WRITE;
+        atcmd_wake_pending_queue(g);
 }
 
 /* callback to be called if [virtual] UART has some data for us */
@@ -510,7 +530,7 @@ static int atcmd_select_cb(int fd, unsigned int what, void *data)
 		}
 
 		/* Either pending_atcmds is empty or a command has to wait */
-		g->gfd_uart.when &= ~GSMD_FD_WRITE;
+                atcmd_wait_pending_queue(g);
 	}
 
 	return 0;
@@ -547,13 +567,35 @@ struct gsmd_atcmd *atcmd_fill(const char *cmd, int rlen,
 /* submit an atcmd in the global queue of pending atcmds */
 int atcmd_submit(struct gsmd *g, struct gsmd_atcmd *cmd)
 {
+        int empty;
 	DEBUGP("submitting command `%s'\n", cmd->buf);
 
-	if (llist_empty(&g->pending_atcmds))
-		g->gfd_uart.when |= GSMD_FD_WRITE;
+        empty = llist_empty(&g->pending_atcmds);
 	llist_add_tail(&cmd->list, &g->pending_atcmds);
-
+        if (empty) {
+                atcmd_wake_pending_queue(g);
+        }
 	return 0;
+}
+
+/* cancel a currently executing atcmd by issuing the command given as
+ * parameter, usually AT ot ATH.  */
+int cancel_atcmd(struct gsmd *g, struct gsmd_atcmd *cmd)
+{
+        struct gsmd_atcmd *cur;
+        if (llist_empty(&g->busy_atcmds)) {
+                return atcmd_submit(g, cmd);
+        }
+        cur = llist_entry(g->busy_atcmds.next, struct gsmd_atcmd, list);
+        DEBUGP("cancelling command `%s' with an `%s'\n", cur->buf, cmd->buf);
+        
+        if (g->mlbuf_len) {
+                DEBUGP("Discarding mlbuf: %.*s\n", g->mlbuf_len, g->mlbuf);
+                g->mlbuf_len = 0;
+        }
+        
+        llist_add(&cmd->list, &g->pending_atcmds);
+        return atcmd_done(g, cur, "OK");
 }
 
 void atcmd_drain(int fd)
