@@ -1,3 +1,14 @@
+2007-10-31  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	Remove libnotify dependency
+
+	* src/worldclock-main.c: (zoom_map), (settings_clicked_cb),
+	(map_button_press_event_cb), (main):
+	Add a digital clock option to the settings dialog, put the world map in
+	an aspect frame, add a callback when the map is clicked
+
 2007-10-29  Chris Lord  <chris@openedhand.com>
 
 	* Makefile.am:

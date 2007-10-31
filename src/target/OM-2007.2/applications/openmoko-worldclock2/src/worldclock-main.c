@@ -26,11 +26,15 @@
 #include <sys/time.h>
 #include "worldclock-data.h"
 
+#define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
+#define GCONF_POKY_DIGITAL "/digital_clock"
+
 static gchar *location;
 
 typedef struct {
 	GtkWidget *window;
 	GtkWidget *map;
+	GtkWidget *map_aspect;
 	GtkWidget *load_window;
 	GtkWidget *load_bar;
 	
@@ -54,14 +58,14 @@ zoom_map (WorldClockData *data)
 {
 	if (data->zoom_level <= 0.95) {
 		data->zoom_level = 1;
-		gtk_widget_set_size_request (data->map, -1, -1);
+		gtk_widget_set_size_request (data->map_aspect, -1, -1);
 	} else {
 		gint width, height;
 		gtk_window_get_size (GTK_WINDOW (data->window),
 			&width, &height);
-		gtk_widget_set_size_request (data->map,
-			width * data->zoom_level,
-			height * data->zoom_level);
+		width *= data->zoom_level;
+		gtk_widget_set_size_request (data->map_aspect,
+			width, (height > (width/2)) ? -1 : width / 2);
 	}
 }
 
@@ -112,7 +116,7 @@ date_time_changed_cb (JanaGtkDateTime *dt, WorldClockData *data)
 static void
 settings_clicked_cb (GtkToolButton *button, WorldClockData *data)
 {
-	GtkWidget *time_dialog, *datetime;
+	GtkWidget *time_dialog, *datetime, *check;
 	gchar *location;
 	JanaTime *time;
 	
@@ -139,9 +143,19 @@ settings_clicked_cb (GtkToolButton *button, WorldClockData *data)
 		increment_time_timeout, datetime);
 #endif
 	
-	gtk_container_add (GTK_CONTAINER (
-		GTK_DIALOG (time_dialog)->vbox), datetime);
+	check = gtk_check_button_new_with_label ("Use a digital clock");
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check),
+		gconf_client_get_bool (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL, NULL));
+	
+	gtk_container_set_border_width (GTK_CONTAINER (time_dialog), 6);
+	gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (time_dialog)->vbox), 12);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (time_dialog)->vbox),
+		datetime, FALSE, TRUE, 0);
 	gtk_widget_show (datetime);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (time_dialog)->vbox),
+		check, FALSE, TRUE, 0);
+	gtk_widget_show (check);
 	
 	gtk_dialog_run (GTK_DIALOG (time_dialog));
 	
@@ -165,6 +179,10 @@ settings_clicked_cb (GtkToolButton *button, WorldClockData *data)
 		
 		g_object_unref (time);
 	}
+	
+	gconf_client_set_bool (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL,
+		gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check)), NULL);
 	
 	gtk_widget_destroy (time_dialog);
 }
@@ -246,6 +264,18 @@ add_marks (WorldClockData *data)
 	}
 }
 
+static gboolean
+map_button_press_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
+			   WorldClockData *data)
+{
+	gdouble lat, lon;
+	
+	jana_gtk_world_map_get_latlon (map, event->x, event->y, &lat, &lon);
+	g_message ("Map clicked at latitude, longitude: %lg, %lg", lat, lon);
+	
+	return FALSE;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -291,9 +321,18 @@ main (int argc, char **argv)
 	/* Create scrolling map */
 	data.map = jana_gtk_world_map_new ();
 	add_marks (&data);
+	gtk_widget_add_events (GTK_WIDGET (data.map), GDK_BUTTON_PRESS_MASK);
+	g_signal_connect (data.map, "button-press-event",
+		G_CALLBACK (map_button_press_event_cb), NULL);
+	
+	data.map_aspect = gtk_aspect_frame_new (NULL, 0.5, 0.5, 2.0, FALSE);
+	gtk_frame_set_shadow_type (GTK_FRAME (
+		data.map_aspect), GTK_SHADOW_NONE);
+	gtk_container_add (GTK_CONTAINER (data.map_aspect), data.map);
+	
 	scroll = moko_finger_scroll_new ();
 	moko_finger_scroll_add_with_viewport (MOKO_FINGER_SCROLL (scroll),
-		data.map);
+		data.map_aspect);
 	g_object_set (G_OBJECT (scroll), "mode", MOKO_FINGER_SCROLL_MODE_PUSH,
 		NULL);
 	gtk_widget_show_all (scroll);
