@@ -30,8 +30,6 @@
 #define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
 #define GCONF_POKY_DIGITAL "/digital_clock"
 
-static gchar *location;
-
 typedef struct {
 	GtkWidget *window;
 	GtkWidget *map;
@@ -44,6 +42,8 @@ typedef struct {
 	
 	gchar *location;
 	gdouble zoom_level;
+	
+	gboolean map_entered;
 } WorldClockData;
 
 static inline GtkToolItem *
@@ -191,11 +191,14 @@ settings_clicked_cb (GtkToolButton *button, WorldClockData *data)
 static gboolean
 set_time (GtkWidget *map)
 {
+	gchar *location;
 	JanaTime *time;
 
+	location = jana_ecal_utils_guess_location ();
 	time = jana_ecal_utils_time_now (location);
 	jana_gtk_world_map_set_time (JANA_GTK_WORLD_MAP (map), time);
 	g_object_unref (time);
+	g_free (location);
 
 	return TRUE;
 }
@@ -265,13 +268,64 @@ add_marks (WorldClockData *data)
 	}
 }
 
+static void
+close_clicked_cb (GtkButton *button)
+{
+	GtkWidget *window = gtk_widget_get_toplevel (GTK_WIDGET (button));
+	gtk_widget_destroy (window);
+}
+
+static void
+tzset_clicked_cb (GtkButton *button, WorldClockZoneData *data)
+{
+	gconf_client_set_string (gconf_client_get_default (),
+		JANA_ECAL_LOCATION_KEY, data->tzname, NULL);
+	close_clicked_cb (button);
+}
+
 static gboolean
-map_button_press_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
+clock_idle (JanaGtkClock *clock)
+{
+	JanaTime *time = jana_gtk_clock_get_time (clock);
+	
+	jana_time_set_seconds (time, jana_time_get_seconds (time) + 1);
+	jana_gtk_clock_set_time (clock, time);
+	g_object_unref (time);
+	
+	return TRUE;
+}
+
+static void
+remove_clock_idle_notify (gpointer data, GObject *clock)
+{
+	g_source_remove_by_user_data (clock);
+}
+
+static gboolean
+map_enter_notify_cb (GtkWidget *widget, GdkEventCrossing *event,
+		     WorldClockData *data)
+{
+	data->map_entered = TRUE;
+	return FALSE;
+}
+
+static gboolean
+map_leave_notify_cb (GtkWidget *widget, GdkEventCrossing *event,
+		     WorldClockData *data)
+{
+	data->map_entered = FALSE;
+	return FALSE;
+}
+
+static gboolean
+map_button_release_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
 			   WorldClockData *data)
 {
 	GList *markers, *m;
 	gdouble lat, lon, old_distance;
 	JanaGtkWorldMapMarker *marker;
+	
+	if (!data->map_entered) return FALSE;
 	
 	jana_gtk_world_map_get_latlon (map, event->x, event->y, &lat, &lon);
 	markers = jana_gtk_world_map_get_markers (map);
@@ -290,11 +344,152 @@ map_button_press_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
 			old_distance = distance;
 		}
 	}
-	
-	if (marker) {
+
+	/* FIXME: Seven is a completely arbitrary number.. */
+	if (marker && (old_distance < 7)) {
+		GtkWidget *window, *vbox, *hbox, *label, *clock, *button,
+			*frame;
+		gchar *string, *image_name, *path;
+		gdouble daylight_hours;
+		JanaTime *time;
+		
 		WorldClockZoneData *tzdata = (WorldClockZoneData *)
 			g_object_get_data (G_OBJECT (marker), "zone");
-		g_debug ("Nearest location: %s", tzdata->name);
+		
+		/* Create window, set parent and set undecorated */
+		window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_transient_for (GTK_WINDOW (window),
+			GTK_WINDOW (data->window));
+		gtk_window_set_decorated (GTK_WINDOW (window), FALSE);
+		gtk_window_set_modal (GTK_WINDOW (window), TRUE);
+		gtk_window_set_type_hint (GTK_WINDOW (window),
+			GDK_WINDOW_TYPE_HINT_DIALOG);
+		gtk_window_set_position (GTK_WINDOW (window),
+			GTK_WIN_POS_CENTER_ON_PARENT);
+		
+		/* Create border for undecorated window */
+		frame = gtk_frame_new (NULL);
+		gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
+
+		/* Create contents */
+		vbox = gtk_vbox_new (FALSE, 6);
+		gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
+		
+		/* Header label */
+		label = gtk_label_new (NULL);
+		gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+		string = g_strconcat ("<big><b>", tzdata->name,
+			"</b></big>", NULL);
+		gtk_label_set_markup (GTK_LABEL (label), string);
+		g_free (string);
+		gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, TRUE, 0);
+		
+		/* Possible image */
+		image_name = g_strdelimit (g_utf8_strdown (
+			tzdata->country, -1), " '", '_');
+		path = g_strconcat (PKGDATADIR G_DIR_SEPARATOR_S,
+			image_name, ".svg", NULL);
+		g_free (image_name);
+		if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+			GtkWidget *image = gtk_image_new_from_file (path);
+			gtk_box_pack_start (GTK_BOX (vbox),
+				image, FALSE, TRUE, 0);
+		}
+		g_free (path);
+		
+		/* Clock */
+		clock = jana_gtk_clock_new ();
+		/* Note, we use this time below, so don't unref here */
+		time = jana_ecal_utils_time_now (tzdata->tzname);
+		jana_gtk_clock_set_time (JANA_GTK_CLOCK (clock), time);
+		jana_gtk_clock_set_digital (JANA_GTK_CLOCK (clock),
+			gconf_client_get_bool (gconf_client_get_default (),
+			GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL, NULL));
+		jana_gtk_clock_set_show_seconds (JANA_GTK_CLOCK (clock), TRUE);
+#if GLIB_CHECK_VERSION(2,14,0)
+		g_timeout_add_seconds (1, (GSourceFunc)clock_idle, clock);
+#else
+		g_timeout_add (1000, (GSourceFunc)clock_idle, clock);
+#endif
+		g_object_weak_ref (G_OBJECT (clock), remove_clock_idle_notify,
+			NULL);
+		gtk_widget_set_size_request (clock,
+			(data->window->allocation.width * 2)/3,
+			(data->window->allocation.width * 2)/6);
+		gtk_box_pack_start (GTK_BOX (vbox), clock, FALSE, TRUE, 0);
+		
+		/* Country label */
+		hbox = gtk_hbox_new (FALSE, 6);
+		label = gtk_label_new (NULL);
+		gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+		gtk_label_set_markup (GTK_LABEL (label), "<b>Country:</b>");
+		gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
+		label = gtk_label_new (tzdata->country);
+		gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+		gtk_box_pack_end (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+		gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+		
+		daylight_hours = jana_utils_time_daylight_hours (
+			tzdata->lat, jana_utils_time_day_of_year (time));
+		
+		/* Sunrise label */
+		hbox = gtk_hbox_new (FALSE, 6);
+		label = gtk_label_new (NULL);
+		gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+		gtk_label_set_markup (GTK_LABEL (label), "<b>Sunrise:</b>");
+		gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
+		jana_time_set_hours (time, (gint)(12.0-daylight_hours/2.0));
+		jana_time_set_minutes (time, (gint)
+			((12.0-daylight_hours/2.0)*60.0)%60);
+		string = g_strdup_printf ("%d:%02d",
+			jana_time_get_hours (time),
+			jana_time_get_minutes (time));
+		label = gtk_label_new (string);
+		g_free (string);
+		gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+		gtk_box_pack_end (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+		gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+
+		/* Sunset label */
+		hbox = gtk_hbox_new (FALSE, 6);
+		label = gtk_label_new (NULL);
+		gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+		gtk_label_set_markup (GTK_LABEL (label), "<b>Sunset:</b>");
+		gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
+		jana_time_set_hours (time, (gint)(12.0+daylight_hours/2.0));
+		jana_time_set_minutes (time, (gint)
+			((12.0+daylight_hours/2.0)*60.0)%60);
+		string = g_strdup_printf ("%d:%02d",
+			jana_time_get_hours (time),
+			jana_time_get_minutes (time));
+		label = gtk_label_new (string);
+		g_free (string);
+		gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
+		gtk_box_pack_end (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+		gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+		
+		/* Unref the time created earlier */
+		g_object_unref (time);
+		
+		/* Set/close buttons */
+		hbox = gtk_hbox_new (FALSE, 0);
+		button = gtk_button_new_from_stock (GTK_STOCK_HOME);
+		g_signal_connect (button, "clicked",
+			G_CALLBACK (tzset_clicked_cb), tzdata);
+		gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+		button = gtk_button_new_from_stock (GTK_STOCK_CLOSE);
+		g_signal_connect (button, "clicked",
+			G_CALLBACK (close_clicked_cb), NULL);
+		gtk_box_pack_end (GTK_BOX (hbox), button, TRUE, TRUE, 0);
+		gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
+		
+		/* Pack and show widgets */
+		gtk_container_add (GTK_CONTAINER (window), frame);
+		gtk_container_add (GTK_CONTAINER (frame), vbox);
+		gtk_widget_show_all (window);
+		
+		/* Display window */
+		gtk_widget_show (window);
 	}
 	
 	g_list_free (markers);
@@ -350,9 +545,14 @@ main (int argc, char **argv)
 	jana_gtk_world_map_set_height (JANA_GTK_WORLD_MAP (data.map), 1024);
 	jana_gtk_world_map_set_static (JANA_GTK_WORLD_MAP (data.map), TRUE);
 	add_marks (&data);
-	gtk_widget_add_events (GTK_WIDGET (data.map), GDK_BUTTON_PRESS_MASK);
-	g_signal_connect (data.map, "button-press-event",
-		G_CALLBACK (map_button_press_event_cb), NULL);
+	gtk_widget_add_events (GTK_WIDGET (data.map),
+		GDK_BUTTON_RELEASE_MASK);
+	g_signal_connect (data.map, "enter-notify-event",
+		G_CALLBACK (map_enter_notify_cb), &data);
+	g_signal_connect (data.map, "leave-notify-event",
+		G_CALLBACK (map_leave_notify_cb), &data);
+	g_signal_connect (data.map, "button-release-event",
+		G_CALLBACK (map_button_release_event_cb), &data);
 	
 	data.map_aspect = gtk_aspect_frame_new (NULL, 0.5, 0.5, 2.0, FALSE);
 	gtk_frame_set_shadow_type (GTK_FRAME (
@@ -407,7 +607,6 @@ main (int argc, char **argv)
 #endif
 	gtk_window_set_default_size (GTK_WINDOW (data.window), 480, 600);
 
-	location = jana_ecal_utils_guess_location ();
 	id = g_timeout_add (1000 * 60 * 10, (GSourceFunc)set_time, data.map);
 	set_time (data.map);
 	
@@ -418,7 +617,6 @@ main (int argc, char **argv)
 	gtk_main ();
 	
 	g_source_remove (id);
-	g_free (location);
 
 	return 0;
 }

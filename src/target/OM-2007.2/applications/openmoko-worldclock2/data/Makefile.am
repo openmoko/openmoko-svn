@@ -1,3 +1,7 @@
+
+desktopdir = $(datadir)/applications
+desktop_DATA = openmoko-worldclock.desktop
+
 resdir = $(pkgdatadir)
 res_DATA = 
 

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=World Clock
+Comment=See the time across the world
+Exec=openmoko-worldclock
+Icon=openmoko-worldclock
+Terminal=false
+Type=Application
+Categories=GTK;Utility;
+SingleInstance=true
+StartupNotify=true

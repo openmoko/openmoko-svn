@@ -1,5 +1,14 @@
 2007-11-01  Chris Lord  <chris@openedhand.com>
 
+	* src/worldclock-main.c: (set_time), (close_clicked_cb),
+	(tzset_clicked_cb), (clock_idle), (remove_clock_idle_notify),
+	(map_enter_notify_cb), (map_leave_notify_cb),
+	(map_button_release_event_cb), (main):
+	Add setting of timezone, clicking on cities, showing sunrise/sunset
+	info, showing of times in other cities, etc.
+
+2007-11-01  Chris Lord  <chris@openedhand.com>
+
 	* src/worldclock-main.c: (map_button_press_event_cb), (main):
 	Use a static map and add code to find the nearest timezone to where the
 	user clicks
