@@ -26,6 +26,9 @@ AM_GLIB_GNU_GETTEXT
 
 AC_CHECK_HEADERS([sys/inotify.h], inotify_support=yes, inotify_support=no)
 AM_CONDITIONAL(HAVE_INOTIFY, [test "$inotify_support" = "yes"])
+if test x$inotify_support = xyes; then
+        AC_DEFINE(WITH_INOTIFY, [1], [If inotify is enabled])
+fi
 
 PKG_CHECK_MODULES(SEXY, libsexy,
                   [enable_sexy=yes

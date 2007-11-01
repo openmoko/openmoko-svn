@@ -1,3 +1,16 @@
+2007-11-01  Ross Burton  <ross@openedhand.com>
+
+	* .:
+	Update lock down svn:externals to revisions.
+
+	* src/:
+	Remove inotify externals, its in libtaku now.
+	
+	* configure.ac:
+	* src/Makefile.am:
+	* src/today-launcher.c:
+	Update for those changes.
+
 2007-10-26  Chris Lord  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (today_task_manager_raise_clicked_cb):

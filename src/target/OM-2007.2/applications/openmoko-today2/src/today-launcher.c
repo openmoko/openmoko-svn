@@ -16,8 +16,8 @@
 
 /* inotify support derived/copied from code in matchbox-desktop-2 */
 #if WITH_INOTIFY
-#include "inotify/inotify-path.h"
-#include "inotify/local_inotify.h"
+#include "libtaku/inotify/inotify-path.h"
+#include "libtaku/inotify/local_inotify.h"
 
 static gboolean with_inotify;
 G_LOCK_DEFINE(inotify_lock);
