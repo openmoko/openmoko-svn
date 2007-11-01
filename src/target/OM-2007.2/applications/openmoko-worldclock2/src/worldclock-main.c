@@ -24,6 +24,7 @@
 #include <libmokoui2/moko-finger-scroll.h>
 #include <time.h>
 #include <sys/time.h>
+#include <math.h>
 #include "worldclock-data.h"
 
 #define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
@@ -268,10 +269,35 @@ static gboolean
 map_button_press_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
 			   WorldClockData *data)
 {
-	gdouble lat, lon;
+	GList *markers, *m;
+	gdouble lat, lon, old_distance;
+	JanaGtkWorldMapMarker *marker;
 	
 	jana_gtk_world_map_get_latlon (map, event->x, event->y, &lat, &lon);
-	g_message ("Map clicked at latitude, longitude: %lg, %lg", lat, lon);
+	markers = jana_gtk_world_map_get_markers (map);
+	
+	marker = NULL;
+	old_distance = G_MAXDOUBLE;
+	for (m = markers; m; m = m->next) {
+		gdouble distance;
+		JanaGtkWorldMapMarker *marker2 =
+			(JanaGtkWorldMapMarker *)m->data;
+		
+		distance = sqrt (pow (marker2->lat - lat, 2) +
+			pow (marker2->lon - lon, 2));
+		if (distance < old_distance) {
+			marker = marker2;
+			old_distance = distance;
+		}
+	}
+	
+	if (marker) {
+		WorldClockZoneData *tzdata = (WorldClockZoneData *)
+			g_object_get_data (G_OBJECT (marker), "zone");
+		g_debug ("Nearest location: %s", tzdata->name);
+	}
+	
+	g_list_free (markers);
 	
 	return FALSE;
 }
@@ -320,6 +346,9 @@ main (int argc, char **argv)
 
 	/* Create scrolling map */
 	data.map = jana_gtk_world_map_new ();
+	jana_gtk_world_map_set_width (JANA_GTK_WORLD_MAP (data.map), 2048);
+	jana_gtk_world_map_set_height (JANA_GTK_WORLD_MAP (data.map), 1024);
+	jana_gtk_world_map_set_static (JANA_GTK_WORLD_MAP (data.map), TRUE);
 	add_marks (&data);
 	gtk_widget_add_events (GTK_WIDGET (data.map), GDK_BUTTON_PRESS_MASK);
 	g_signal_connect (data.map, "button-press-event",

@@ -1,3 +1,9 @@
+2007-11-01  Chris Lord  <chris@openedhand.com>
+
+	* src/worldclock-main.c: (map_button_press_event_cb), (main):
+	Use a static map and add code to find the nearest timezone to where the
+	user clicks
+
 2007-10-31  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:
