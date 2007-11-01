@@ -415,7 +415,7 @@ static const int gta01_ts_scale[6] = {
 };
 
 /* Board init.  */
-static void neo_init(int ram_size, int vga_ram_size, int boot_device,
+static void neo_init(int ram_size, int vga_ram_size, const char *boot_device,
                 DisplayState *ds, const char **fd_filename, int snapshot,
                 const char *kernel_filename, const char *kernel_cmdline,
                 const char *initrd_filename, const char *cpu_model)
