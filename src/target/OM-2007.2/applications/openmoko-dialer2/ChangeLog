@@ -1,5 +1,9 @@
 2007-11-01  Thomas Wood  <thomas@openedhand.com>
 
+	* src/dialer/dialer-main.c: Use dbus service to initiate calls
+
+2007-11-01  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-talking.c:
 	Revert use of GdkPixbufSimpleAnim as it does not support looping
 
