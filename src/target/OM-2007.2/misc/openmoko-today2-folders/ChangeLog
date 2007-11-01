@@ -1,3 +1,9 @@
+2007-11-01  Stefan Schmidt <stefan@openmoko.org>
+
+		Make sure PIM.directory gets installed. Thanks Ross Burton for spotting.
+
+        * Makefile.am:
+
 2007-08-10  Stefan Schmidt <stefan@openmoko.org>
 
 		Change order for the filter menu and add a PIM category.
