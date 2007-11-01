@@ -1,5 +1,10 @@
 2007-11-01  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-dialer.c: (moko_dialer_class_init),
+	(dialer_display_error), (moko_dialer_init): Reimplement dial out function
+
+2007-11-01  Thomas Wood  <thomas@openedhand.com>
+
 	* data/org.openmoko.Dialer.service.in: Update binary name
 
 2007-11-01  Thomas Wood  <thomas@openedhand.com>
