@@ -1,5 +1,12 @@
 2007-11-01  Thomas Wood  <thomas@openedhand.com>
 
+	* src/dialer/dialer-main.c: (dial_clicked_cb), (main):
+	 - Notify user if there was a problem connecting to dbus
+	 - Switch to history page if dial activated with no number entered
+	 - Clean up code
+
+2007-11-01  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-dialer.c: (moko_dialer_class_init),
 	(dialer_display_error), (moko_dialer_init): Reimplement dial out function
 
