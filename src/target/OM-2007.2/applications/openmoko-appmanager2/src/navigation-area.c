@@ -153,7 +153,7 @@ navigation_area_new (ApplicationManagerData *appdata)
 
   treeview = gtk_tree_view_new ();
   gtk_widget_show (treeview);
-  gtk_tree_view_set_headers_visible (treeview, FALSE);
+  gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeview), FALSE);
 
   /* Add the status as the first column. */

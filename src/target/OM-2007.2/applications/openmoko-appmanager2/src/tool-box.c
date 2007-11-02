@@ -181,7 +181,7 @@ tool_box_new (ApplicationManagerData *appdata)
                     G_CALLBACK (on_upgrade_clicked), 
                     appdata);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbox), bupgrade, -1);
-  gtk_container_child_set (GTK_CONTAINER (toolbox), bupgrade, "expand", TRUE, NULL);
+  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (bupgrade), "expand", TRUE, NULL);
 
   anImage = gtk_image_new_from_file (PKGDATADIR "/Apply.png");
   bapply = gtk_tool_button_new (anImage, "Apply");
@@ -189,7 +189,7 @@ tool_box_new (ApplicationManagerData *appdata)
                     G_CALLBACK (on_apply_clicked), 
                     appdata);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbox), bapply, -1);
-  gtk_container_child_set (GTK_CONTAINER (toolbox), bapply, "expand", TRUE, NULL);
+  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (bapply), "expand", TRUE, NULL);
 #if 0
   searchentry = moko_tool_box_get_entry (toolbox);
   application_manager_data_set_search_entry (appdata, GTK_ENTRY (searchentry));
