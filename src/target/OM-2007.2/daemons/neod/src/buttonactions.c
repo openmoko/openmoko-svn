@@ -61,6 +61,7 @@ static int backlight_max_brightness = 1;
 #endif
 
 #define HEADPHONE_INSERTION_SWITCHCODE 0x02
+#define CHARGER_INSERTION_BUTTON 0xa4
 
 GPollFD input_fd[10];
 int max_input_fd = 0;
@@ -316,6 +317,27 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 }
             }
             else
+            if ( event.type == 1 && event.code == CHARGER_INSERTION_BUTTON )
+            {
+                if ( event.value == 1 ) /* pressed */
+                {
+                    g_debug( "charger IN" );
+                    neod_buttonactions_sound_play( "touchscreen" );
+                    g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerConnected", NULL );
+                }
+                else if ( event.value == 0 ) /* released */
+                {
+                    g_debug( "charger OUT" );
+                    g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerDisconnected", NULL );
+                }
+                neod_buttonactions_powersave_reset();
+                if ( power_state != NORMAL )
+                {
+                    neod_buttonactions_set_display( 100 );
+                    power_state = NORMAL;
+                }
+            }
+            else
             if ( event.type == 5 && event.code == HEADPHONE_INSERTION_SWITCHCODE )
             {
                 if ( event.value == 0 ) /* inserted */
@@ -555,6 +577,7 @@ void neod_buttonactions_show_aux_menu()
         gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), fullscreen );
 
         GtkWidget* orientation = gtk_menu_item_new_with_label( "Swap Orientation" );
+        gtk_widget_set_size_request( orientation, 600, 600 );
         g_signal_connect( G_OBJECT(orientation), "activate", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
         gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), orientation );
 
