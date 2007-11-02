@@ -577,7 +577,6 @@ void neod_buttonactions_show_aux_menu()
         gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), fullscreen );
 
         GtkWidget* orientation = gtk_menu_item_new_with_label( "Swap Orientation" );
-        gtk_widget_set_size_request( orientation, 600, 600 );
         g_signal_connect( G_OBJECT(orientation), "activate", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
         gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), orientation );
 
