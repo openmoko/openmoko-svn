@@ -38,7 +38,7 @@ static void usb_applet_dbus_signal( void* data )
 
 #define USB_DBUS_SERVICE      "org.freedesktop.PowerManagement"
 #define USB_DBUS_PATH         "/org/freedesktop/PowerManagement"
-#define USB_DBUS_INTERFACE    "org.freesmartphone.powermanagement"
+#define USB_DBUS_INTERFACE    "org.freedesktop.PowerManagement"
 
 DBusHandlerResult signal_filter (DBusConnection *bus, DBusMessage *msg, void *user_data)
 {
