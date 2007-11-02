@@ -166,6 +166,13 @@ set_time_idle (TodayData *data)
 	return FALSE;
 }
 
+static void
+clock_clicked_cb (JanaGtkClock *clock, GdkEventButton *event, TodayData *data)
+{
+	launcher_start (data->window, today_get_launcher ((const gchar *[])
+		{ "openmoko-worldclock", NULL }, TRUE, TRUE));
+}
+
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
@@ -224,6 +231,8 @@ today_create_home_page (TodayData *data)
 	data->clock = jana_gtk_clock_new ();
 	jana_gtk_clock_set_draw_shadow (JANA_GTK_CLOCK (data->clock), TRUE);
 	gtk_widget_show (data->clock);
+	g_signal_connect (data->clock, "clicked",
+		G_CALLBACK (clock_clicked_cb), data);
 
 	/* Pack widgets */
 	align = gtk_alignment_new (0.5, 0, 1, 0);
