@@ -45,8 +45,6 @@ typedef struct {
 	gdouble zoom_level;
 	gdouble xpos;
 	gdouble ypos;
-	
-	gboolean map_entered;
 } WorldClockData;
 
 static inline GtkToolItem *
@@ -340,31 +338,13 @@ remove_clock_idle_notify (gpointer data, GObject *clock)
 	g_source_remove_by_user_data (clock);
 }
 
-static gboolean
-map_enter_notify_cb (GtkWidget *widget, GdkEventCrossing *event,
-		     WorldClockData *data)
-{
-	data->map_entered = TRUE;
-	return FALSE;
-}
-
-static gboolean
-map_leave_notify_cb (GtkWidget *widget, GdkEventCrossing *event,
-		     WorldClockData *data)
-{
-	data->map_entered = FALSE;
-	return FALSE;
-}
-
-static gboolean
-map_button_release_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
-			   WorldClockData *data)
+static void
+map_clicked_cb (JanaGtkWorldMap *map, GdkEventButton *event,
+		WorldClockData *data)
 {
 	GList *markers, *m;
 	gdouble lat, lon, old_distance;
 	JanaGtkWorldMapMarker *marker;
-	
-	if (!data->map_entered) return FALSE;
 	
 	jana_gtk_world_map_get_latlon (map, event->x, event->y, &lat, &lon);
 	markers = jana_gtk_world_map_get_markers (map);
@@ -532,8 +512,6 @@ map_button_release_event_cb (JanaGtkWorldMap *map, GdkEventButton *event,
 	}
 	
 	g_list_free (markers);
-	
-	return FALSE;
 }
 
 int
@@ -584,14 +562,8 @@ main (int argc, char **argv)
 	jana_gtk_world_map_set_height (JANA_GTK_WORLD_MAP (data.map), 1024);
 	jana_gtk_world_map_set_static (JANA_GTK_WORLD_MAP (data.map), TRUE);
 	add_marks (&data);
-	gtk_widget_add_events (GTK_WIDGET (data.map),
-		GDK_BUTTON_RELEASE_MASK);
-	g_signal_connect (data.map, "enter-notify-event",
-		G_CALLBACK (map_enter_notify_cb), &data);
-	g_signal_connect (data.map, "leave-notify-event",
-		G_CALLBACK (map_leave_notify_cb), &data);
-	g_signal_connect (data.map, "button-release-event",
-		G_CALLBACK (map_button_release_event_cb), &data);
+	g_signal_connect (data.map, "clicked",
+		G_CALLBACK (map_clicked_cb), &data);
 	
 	data.map_aspect = gtk_aspect_frame_new (NULL, 0.5, 0.5, 2.0, FALSE);
 	gtk_frame_set_shadow_type (GTK_FRAME (

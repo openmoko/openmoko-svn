@@ -1,5 +1,10 @@
 2007-11-02  Chris Lord  <chris@openedhand.com>
 
+	* src/worldclock-main.c: (map_clicked_cb), (main):
+	Use new JanaGtkWorldMap "clicked" signal
+
+2007-11-02  Chris Lord  <chris@openedhand.com>
+
 	* src/worldclock-main.c: (hadjust_changed_cb),
 	(vadjust_changed_cb), (zoom_map), (main):
 	Zoom into the centre of the map rather than the top-left
