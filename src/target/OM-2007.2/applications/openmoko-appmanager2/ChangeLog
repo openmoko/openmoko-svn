@@ -1,5 +1,12 @@
 2007-11-02  Thomas Wood  <thomas@openedhand.com>
 
+	* src/detail-area.c: (detail_area_new):
+	* src/navigation-area.c: (navigation_area_new):
+
+	Use MokoFingerScroll instead of GtkScrolledWindow. Fixes bug 960
+
+2007-11-02  Thomas Wood  <thomas@openedhand.com>
+
 	* src/navigation-area.c: (navigation_area_new):
 	* src/tool-box.c: (tool_box_new):
 

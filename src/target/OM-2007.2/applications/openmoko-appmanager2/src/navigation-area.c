@@ -13,11 +13,12 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date$) [$Author$]
- *
- *  @author Chaowei Song (songcw@fic-sh.com.cn)
+ *  Authors:
+ *    Chaowei Song <songcw@fic-sh.com.cn>
+ *    OpenedHand Ltd. <info@openedhand.com>
  */
 #include <string.h>
+#include <moko-finger-scroll.h>
 
 #include "appmanager-window.h"
 #include "navigation-area.h"
@@ -202,9 +203,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
                                GTK_SELECTION_SINGLE);
 
-  scrollwindow = gtk_scrolled_window_new (NULL, NULL);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwindow),
-     GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  scrollwindow = moko_finger_scroll_new ();
   gtk_container_add (GTK_CONTAINER (scrollwindow), treeview);
   application_manager_data_set_tvpkglist (appdata, treeview);
 

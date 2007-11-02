@@ -19,6 +19,8 @@
  */
 #include <string.h>
 
+#include <moko-finger-scroll.h>
+
 #include "detail-area.h"
 #include "navigation-area.h"
 #include "package-list.h"
@@ -34,11 +36,13 @@ detail_area_new (ApplicationManagerData *appdata)
   GtkWidget    *text;
   GtkWidget    *detail;
 
-  detail = gtk_scrolled_window_new (NULL, NULL);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (detail),
-     GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  detail = moko_finger_scroll_new_full (MOKO_FINGER_SCROLL_MODE_PUSH,
+      TRUE, 0, 0, 0, 15);
 
   text = gtk_text_view_new ();
+
+  g_object_set (G_OBJECT (text), "editable", FALSE, "cursor-visible", FALSE, NULL);
+
   gtk_widget_show (text);
   gtk_text_view_set_editable (GTK_TEXT_VIEW (text), FALSE);
   gtk_text_view_set_accepts_tab (GTK_TEXT_VIEW (text), FALSE);
