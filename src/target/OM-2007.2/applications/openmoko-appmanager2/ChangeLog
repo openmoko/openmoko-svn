@@ -1,6 +1,17 @@
 2007-11-02  Thomas Wood  <thomas@openedhand.com>
 
 	* src/Makefile.am:
+	* src/application-menu.c: (on_install_single_application_activate):
+	* src/tool-box.c: (on_apply_clicked):
+
+	Fix build after removal of filter-menu.
+
+	* src/appmanager-window.c: (main): Move toolbar and searchbar onto
+	navigation page rather than always being available.
+
+2007-11-02  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am:
 	* src/appmanager-data.c: (application_manager_data_init),
 	(application_manager_data_set_main_window):
 	* src/appmanager-data.h:

@@ -4,7 +4,6 @@ bin_PROGRAMS = openmoko-appmanager
 
 openmoko_appmanager_SOURCES = appmanager-window.c\
                               application-menu.c\
-                              filter-menu.c\
                               ipkgapi.c\
                               navigation-area.c\
                               tool-box.c\

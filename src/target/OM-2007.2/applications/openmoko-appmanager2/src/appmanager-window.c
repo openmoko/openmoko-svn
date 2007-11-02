@@ -48,7 +48,7 @@ main (int argc, char* argv[])
   GtkWidget       *detail;
   GtkWidget       *notebook;
   GtkWidget *searchbar;
-  GtkWidget *vbox;
+  GtkWidget *vbox, *nav_vbox;
 
   gint             ret;
 
@@ -101,20 +101,25 @@ main (int argc, char* argv[])
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), selectmenu);
   gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
 
-  toolbox = tool_box_new (appdata);
-  gtk_box_pack_start (GTK_BOX (vbox), toolbox, FALSE, FALSE, 0);
-  
-  searchbar = search_bar_new (appdata);
-  gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, FALSE, 0);
-
   notebook = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);
   gtk_box_pack_start (GTK_BOX (vbox), notebook, TRUE, TRUE, 0);
 
-  navigation = navigation_area_new (appdata);
-  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), navigation,
+  /* navigation page */
+  nav_vbox = gtk_vbox_new (FALSE, 0);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), nav_vbox,
      gtk_image_new_from_stock (GTK_STOCK_INDEX, GTK_ICON_SIZE_LARGE_TOOLBAR));
-  gtk_container_child_set (GTK_CONTAINER (notebook), navigation, "tab-expand", TRUE, NULL);
+  gtk_container_child_set (GTK_CONTAINER (notebook), nav_vbox, "tab-expand", TRUE, NULL);
+
+  toolbox = tool_box_new (appdata);
+  gtk_box_pack_start (GTK_BOX (nav_vbox), toolbox, FALSE, FALSE, 0);
+  
+  searchbar = search_bar_new (appdata);
+  gtk_box_pack_start (GTK_BOX (nav_vbox), searchbar, FALSE, FALSE, 0);
+  
+  navigation = navigation_area_new (appdata);
+  gtk_box_pack_start (GTK_BOX (nav_vbox), navigation, TRUE, TRUE, 0);
+  
 
   detail = detail_area_new (appdata);
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), detail,
@@ -137,7 +142,7 @@ main (int argc, char* argv[])
 
   /* Add section list to the filter menu */
   package_list_add_section_to_filter_menu (appdata);
-  search_bar_set_active_filter (searchbar, FILTER_INSTALLED);
+  search_bar_set_active_filter (MOKO_SEARCH_BAR (searchbar), FILTER_INSTALLED);
 
   gtk_widget_show_all (GTK_WIDGET (window));
   g_debug ("application manager enter main loop");

@@ -27,7 +27,6 @@
 #include "appmanager-window.h"
 #include "apply-dialog.h"
 #include "install-dialog.h"
-#include "filter-menu.h"
 
 /*
  * @brief The callback function of the button "upgrade"
@@ -100,8 +99,6 @@ on_apply_clicked (GtkButton *bapply, gpointer data)
       g_thread_create (package_list_execute_change, data, TRUE, NULL);
       gtk_dialog_run (GTK_DIALOG (installdialog));
       gtk_widget_destroy (GTK_WIDGET (installdialog));
-
-      filter_menu_show_install_list (MOKO_APPLICATION_MANAGER_DATA (data));
     }
 
   gtk_widget_destroy (dialog);

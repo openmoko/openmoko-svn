@@ -19,7 +19,6 @@
  */
 
 #include "application-menu.h"
-#include "filter-menu.h"
 #include "appmanager-window.h"
 #include "package-list.h"
 #include "ipkgapi.h"
@@ -163,7 +162,6 @@ install_quit:
                                              get_error_msg ());
         break;
       case INSTALL_SUCCESS:
-        filter_menu_show_install_list (appdata);
         infodialog = gtk_message_dialog_new (NULL,
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                              GTK_MESSAGE_INFO,
