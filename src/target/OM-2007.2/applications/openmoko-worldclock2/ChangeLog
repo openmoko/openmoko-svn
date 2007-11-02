@@ -1,3 +1,9 @@
+2007-11-02  Chris Lord  <chris@openedhand.com>
+
+	* src/worldclock-main.c: (hadjust_changed_cb),
+	(vadjust_changed_cb), (zoom_map), (main):
+	Zoom into the centre of the map rather than the top-left
+
 2007-11-01  Chris Lord  <chris@openedhand.com>
 
 	* src/worldclock-main.c: (set_time), (close_clicked_cb),

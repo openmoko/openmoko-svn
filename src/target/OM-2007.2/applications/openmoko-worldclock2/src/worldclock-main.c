@@ -34,6 +34,7 @@ typedef struct {
 	GtkWidget *window;
 	GtkWidget *map;
 	GtkWidget *map_aspect;
+	GtkWidget *map_viewport;
 	GtkWidget *load_window;
 	GtkWidget *load_bar;
 	
@@ -42,6 +43,8 @@ typedef struct {
 	
 	gchar *location;
 	gdouble zoom_level;
+	gdouble xpos;
+	gdouble ypos;
 	
 	gboolean map_entered;
 } WorldClockData;
@@ -55,16 +58,52 @@ worldclock_utils_toolbutton_new (const gchar *icon_name)
 }
 
 static void
+hadjust_changed_cb (GtkAdjustment *hadjust, WorldClockData *data)
+{
+	g_signal_handlers_disconnect_by_func (
+		hadjust, hadjust_changed_cb, data);
+	gtk_adjustment_set_value (hadjust,
+		(hadjust->upper * data->xpos) -
+		(data->map_viewport->allocation.width/2));
+}
+
+static void
+vadjust_changed_cb (GtkAdjustment *vadjust, WorldClockData *data)
+{
+	g_signal_handlers_disconnect_by_func (
+		vadjust, vadjust_changed_cb, data);
+	gtk_adjustment_set_value (vadjust,
+		(vadjust->upper * data->ypos) -
+		(data->map_viewport->allocation.height/2));
+}
+
+static void
 zoom_map (WorldClockData *data)
 {
 	if (data->zoom_level <= 0.95) {
 		data->zoom_level = 1;
 		gtk_widget_set_size_request (data->map_aspect, -1, -1);
 	} else {
+		GtkAdjustment *hadjust, *vadjust;
 		gint width, height;
-		gtk_window_get_size (GTK_WINDOW (data->window),
-			&width, &height);
+		
+		hadjust = gtk_viewport_get_hadjustment (
+			GTK_VIEWPORT (data->map_viewport));
+		vadjust = gtk_viewport_get_vadjustment (
+			GTK_VIEWPORT (data->map_viewport));
+		data->xpos = (hadjust->value + (data->map_viewport->
+			allocation.width/2.0)) / hadjust->upper;
+		data->ypos = (vadjust->value + (data->map_viewport->
+			allocation.height/2.0)) / vadjust->upper;
+		
+		width = data->map_viewport->allocation.width;
+		height = data->map_viewport->allocation.height;
 		width *= data->zoom_level;
+		g_signal_connect (hadjust, "changed",
+			G_CALLBACK (hadjust_changed_cb), data);
+		g_signal_connect (vadjust, "changed",
+			G_CALLBACK (vadjust_changed_cb), data);
+			
 		gtk_widget_set_size_request (data->map_aspect,
 			width, (height > (width/2)) ? -1 : width / 2);
 	}
@@ -559,9 +598,13 @@ main (int argc, char **argv)
 		data.map_aspect), GTK_SHADOW_NONE);
 	gtk_container_add (GTK_CONTAINER (data.map_aspect), data.map);
 	
+	data.map_viewport = gtk_viewport_new (NULL, NULL);
+	gtk_viewport_set_shadow_type (GTK_VIEWPORT (
+		data.map_viewport), GTK_SHADOW_NONE);
+	gtk_container_add (GTK_CONTAINER (data.map_viewport), data.map_aspect);
+	
 	scroll = moko_finger_scroll_new ();
-	moko_finger_scroll_add_with_viewport (MOKO_FINGER_SCROLL (scroll),
-		data.map_aspect);
+	gtk_container_add (GTK_CONTAINER (scroll), data.map_viewport);
 	g_object_set (G_OBJECT (scroll), "mode", MOKO_FINGER_SCROLL_MODE_PUSH,
 		NULL);
 	gtk_widget_show_all (scroll);
