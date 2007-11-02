@@ -139,31 +139,16 @@ today_pim_journal_entry_removed_cb (MokoJournal *journal,
 static void
 header_clicked_cb (GtkWidget *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		(const gchar *[]){ "openmoko-worldclock", NULL, NULL },
-		TRUE, TRUE));
+	if (data->clock_item) launcher_start (data->window, data->clock_item,
+		(gchar *[]){ "openmoko-worldclock", NULL }, TRUE, TRUE);
 }
-
-/*static void
-today_pim_journal_selection_changed_cb (GtkTreeSelection *selection,
-					TodayData *data)
-{
-	if ((data->n_missed_calls > 0) &&
-	    gtk_tree_selection_count_selected_rows (selection)) {
-		gtk_tree_selection_unselect_all (selection);
-		launcher_start (data->window, today_get_launcher (
-			(const gchar *[]){ "openmoko-dialer", "-m", NULL },
-			TRUE, FALSE));
-	}
-}*/
 
 static gboolean
 missed_calls_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 			      TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		(const gchar *[]){ "openmoko-dialer", "-m", NULL },
-		TRUE, FALSE));
+	if (data->dialer_item) launcher_start (data->window, data->dialer_item,
+		(gchar *[]){ "openmoko-dialer", "-m", NULL }, TRUE, TRUE);
 
 	return FALSE;
 }
@@ -172,9 +157,6 @@ static gboolean
 unread_messages_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 				 TodayData *data)
 {
-	/*launcher_start (data->window, today_get_launcher (
-		(const gchar *[]){ "openmoko-dialer", "-m", NULL },
-		TRUE, FALSE));*/
 	g_debug ("TODO: Launch messages app");
 
 	return FALSE;
@@ -184,9 +166,8 @@ static gboolean
 tasks_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 		       TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		(const gchar *[]){ "tasks", NULL, NULL },
-		TRUE, FALSE));
+	if (data->tasks_item) launcher_start (data->window, data->tasks_item,
+		(gchar *[]){ "tasks", NULL }, TRUE, TRUE);
 
 	return FALSE;
 }
@@ -195,9 +176,8 @@ static gboolean
 dates_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 		       TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher (
-		(const gchar *[]){ "openmoko-dates", NULL, NULL },
-		TRUE, FALSE));
+	if (data->dates_item) launcher_start (data->window, data->dates_item,
+		(gchar *[]){ "openmoko-dates", NULL }, TRUE, TRUE);
 
 	return FALSE;
 }

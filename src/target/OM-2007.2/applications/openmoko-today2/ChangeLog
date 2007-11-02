@@ -1,5 +1,22 @@
 2007-11-02  Chris Lord  <chris@openedhand.com>
 
+	* src/today-launcher.c: (item_added_cb), (item_removed_cb),
+	(add_item_idle), (load_items), (today_launcher_page_create):
+	* src/today-main.c: (today_dial_button_clicked_cb),
+	(today_contacts_button_clicked_cb),
+	(today_messages_button_clicked_cb),
+	(today_dates_button_clicked_cb), (clock_clicked_cb),
+	(today_create_home_page):
+	* src/today-pim-journal.c: (header_clicked_cb),
+	(missed_calls_button_press_cb), (unread_messages_button_press_cb),
+	(tasks_button_press_cb), (dates_button_press_cb):
+	* src/today-utils.c: (today_toolbutton_new):
+	* src/today-utils.h:
+	* src/today.h:
+        Update launcher code to match upstream changes to libtaku
+
+2007-11-02  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (clock_clicked_cb), (today_create_home_page):
         Launch openmoko-worldclock when clicking on clock
 

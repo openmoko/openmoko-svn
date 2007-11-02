@@ -35,19 +35,3 @@ today_toolbutton_new (const gchar *icon_name)
 	gtk_tool_item_set_expand (button, TRUE);
 	return button;
 }
-
-const LauncherData *
-today_get_launcher (const gchar **argv, gboolean use_sn, gboolean single)
-{
-	static LauncherData launcher_data;
-	
-	launcher_data.argv = (char **)argv;
-	launcher_data.name = (char *)argv[0];
-	launcher_data.description = "";
-	launcher_data.icon = NULL;
-	launcher_data.categories = (char *[]){ "" };
-	launcher_data.use_sn = use_sn;
-	launcher_data.single_instance = single;
-	
-	return &launcher_data;
-}

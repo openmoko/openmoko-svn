@@ -28,7 +28,5 @@
 #include <libtaku/launcher-util.h>
 
 GtkToolItem *today_toolbutton_new (const gchar *icon_name);
-const LauncherData *today_get_launcher (const gchar **argv, gboolean use_sn,
-					gboolean single);
 
 #endif /*__TODAY_UTILS_H__*/

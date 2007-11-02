@@ -38,29 +38,27 @@ today_notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 static void
 today_dial_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{"openmoko-dialer", "-s", NULL }, TRUE, FALSE));
+	if (data->dialer_item) launcher_start (data->window, data->dialer_item,
+		(gchar *[]){ "openmoko-dialer", NULL }, TRUE, TRUE);
 }
 
 static void
 today_contacts_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{ "openmoko-contacts", NULL }, TRUE, TRUE));
+	if (data->contacts_item) launcher_start (data->window, data->contacts_item,
+		(gchar *[]){ "openmoko-contacts", NULL }, TRUE, TRUE);
 }
 
 static void
 today_messages_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{ "openmoko-messages", NULL }, TRUE, TRUE));
 }
 
 static void
 today_dates_button_clicked_cb (GtkToolButton *button, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{ "openmoko-dates", NULL }, TRUE, TRUE));
+	if (data->dates_item) launcher_start (data->window, data->dates_item,
+		(gchar *[]){ "openmoko-dates", NULL }, TRUE, TRUE);
 }
 
 static gboolean
@@ -169,8 +167,8 @@ set_time_idle (TodayData *data)
 static void
 clock_clicked_cb (JanaGtkClock *clock, GdkEventButton *event, TodayData *data)
 {
-	launcher_start (data->window, today_get_launcher ((const gchar *[])
-		{ "openmoko-worldclock", NULL }, TRUE, TRUE));
+	if (data->clock_item) launcher_start (data->window, data->clock_item,
+		(gchar *[]){ "openmoko-worldclock", NULL }, TRUE, TRUE);
 }
 
 static GtkWidget *
@@ -192,6 +190,7 @@ today_create_home_page (TodayData *data)
 		gtk_separator_tool_item_new (), 0);
 	g_signal_connect (G_OBJECT (data->dates_button), "clicked",
 		G_CALLBACK (today_dates_button_clicked_cb), data);
+	gtk_widget_set_sensitive (data->dates_button, FALSE);
 
 	data->messages_button = today_toolbutton_new ("openmoko-messages");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
@@ -200,6 +199,7 @@ today_create_home_page (TodayData *data)
 		gtk_separator_tool_item_new (), 0);
 	g_signal_connect (G_OBJECT (data->messages_button), "clicked",
 		G_CALLBACK (today_messages_button_clicked_cb), data);
+	gtk_widget_set_sensitive (data->messages_button, FALSE);
 
 	data->contacts_button = today_toolbutton_new ("contacts");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
@@ -208,6 +208,7 @@ today_create_home_page (TodayData *data)
 		gtk_separator_tool_item_new (), 0);
 	g_signal_connect (G_OBJECT (data->contacts_button), "clicked",
 		G_CALLBACK (today_contacts_button_clicked_cb), data);
+	gtk_widget_set_sensitive (data->contacts_button, FALSE);
 
 	data->dial_button = today_toolbutton_new ("openmoko-dialer");
 	gtk_toolbar_insert (GTK_TOOLBAR (data->home_toolbar),
@@ -215,6 +216,7 @@ today_create_home_page (TodayData *data)
 	gtk_widget_show_all (data->home_toolbar);
 	g_signal_connect (G_OBJECT (data->dial_button), "clicked",
 		G_CALLBACK (today_dial_button_clicked_cb), data);
+	gtk_widget_set_sensitive (data->dial_button, FALSE);
 
 	/* Create event box with background */
 	data->bg_ebox = gtk_event_box_new ();

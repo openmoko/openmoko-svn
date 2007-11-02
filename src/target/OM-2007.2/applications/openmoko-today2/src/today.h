@@ -50,6 +50,12 @@ typedef struct {
 	GtkWidget *filter_combo;
 	TakuLauncherCategory *search_cat;
 	
+	TakuMenuItem *dialer_item;
+	TakuMenuItem *contacts_item;
+	TakuMenuItem *tasks_item;
+	TakuMenuItem *dates_item;
+	TakuMenuItem *clock_item;
+	
 	/* App manager */
 	GdkWindow *root_window;
 	GtkWidget *tasks_table;
