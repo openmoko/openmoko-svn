@@ -15,6 +15,7 @@
  */
 #include <libmokopanelui2/moko-panel-applet.h>
 
+#include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
 #include <gtk/gtkimage.h>
 #include <time.h>
@@ -35,30 +36,50 @@ static void usb_applet_dbus_signal( void* data )
     g_debug( "usb_applet_dbus_signal: received signal. data pointer = %p", data );
 }
 
-#define USB_DBUS_SERVICE      "com.burtonini"
-#define USB_DBUS_PATH         "/com/burtonini"
-#define USB_DBUS_INTERFACE    "com.burtonini"
+#define USB_DBUS_SERVICE      "org.freedesktop.PowerManagement"
+#define USB_DBUS_PATH         "/org/freedesktop/PowerManagement"
+#define USB_DBUS_INTERFACE    "org.freesmartphone.powermanagement"
+
+DBusHandlerResult signal_filter (DBusConnection *bus, DBusMessage *msg, void *user_data)
+{
+    g_debug( "signal_filter" );
+    if ( dbus_message_is_signal( msg, USB_DBUS_INTERFACE, "ChargerConnected" ) )
+    {
+        g_debug( "connected" );
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+    else if ( dbus_message_is_signal( msg, USB_DBUS_INTERFACE, "ChargerDisconnected" ) )
+    {
+        g_debug( "disconnected" );
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    g_debug( "(unknown dbus message, ignoring" );
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
 
 static void usb_applet_init_dbus( UsbApplet* applet )
 {
-    GError* error = NULL;
-    DBusGConnection* bus = dbus_g_bus_get( DBUS_BUS_SESSION, &error );
+    DBusError error;
+    dbus_error_init (&error);
 
-    if (error)
+    /* Get a connection to the session bus */
+    DBusConnection* bus = dbus_bus_get (DBUS_BUS_SESSION, &error);
+    if (!bus)
     {
-        g_warning( "%s: Error acquiring session bus: %s", G_STRLOC, error->message );
-        return;
+        gchar buffer[100];
+        sprintf (buffer, "Failed to connect to the D-BUS daemon: %s", error.message);
+        g_critical (buffer);
+        dbus_error_free (&error);
+        return ;
     }
+    g_debug("Connection to bus successfully made");
 
-    DBusGProxy* usb_control_interface = dbus_g_proxy_new_for_name( bus, USB_DBUS_SERVICE, USB_DBUS_PATH, USB_DBUS_INTERFACE );
-    if ( !usb_control_interface )
-    {
-        g_warning( "Could not connect to USB dbus service" );
-        return;
-    }
+    dbus_connection_setup_with_g_main (bus, NULL);
 
-    dbus_g_proxy_add_signal( usb_control_interface, "SignalTest", G_TYPE_INVALID );
-    dbus_g_proxy_connect_signal( usb_control_interface, "SignalTest", G_CALLBACK(usb_applet_dbus_signal), NULL, NULL );
+    dbus_bus_add_match (bus, "type='signal'", &error);
+    dbus_connection_add_filter (bus, signal_filter, NULL, NULL);
+
 }
 
 static void usb_applet_update_status( UsbApplet* applet )
