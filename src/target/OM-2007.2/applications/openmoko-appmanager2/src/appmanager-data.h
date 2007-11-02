@@ -54,7 +54,6 @@ typedef struct _ApplicationManagerData {
   GObject          parent;             /* The parent of the struct */
 
   GtkWidget        *mwindow;           /* The main window */
-  GtkMenu          *filtermenu;        /* The filter menu */
   GtkWidget        *menubox;           /* The menubox */
   GtkMenu          *selectmenu;        /* The select menu */
   GtkEntry         *searchentry;       /* The search entry */
@@ -70,6 +69,8 @@ typedef struct _ApplicationManagerData {
   GdkPixbuf        *statuspix[N_COUNT_PKG_STATUS];    /* The all pixbufs that need by the package list store */
   gchar            *searchhistory;     /* The search history */
   GtkWidget        *installdialog;     /* The install dialog */
+  
+  GtkTreeModel     *filter_store;      /* GtkListStore for filter menu */
 } ApplicationManagerData;
 
 /*

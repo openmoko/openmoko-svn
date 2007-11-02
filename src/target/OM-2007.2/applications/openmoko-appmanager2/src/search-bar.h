@@ -1,7 +1,4 @@
 /*
- *  @file filter-menu.h
- *  @brief The filter menu item
- *
  *  Copyright (C) 2006-2007 OpenMoko Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -13,24 +10,29 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date$) [$Author$]
- *
- *  @author Chaowei Song (songcw@fic-sh.com.cn)
+ *  Author: OpenedHand Ltd. <info@openedhand.com>
  */
-#ifndef _FIC_FILTER_MENU_H
-#define _FIC_FILTER_MENU_H
+
+#ifndef SEARCH_BAR_H
+#define SEARCH_BAR_H
 
 #include <gtk/gtk.h>
+#include <moko-search-bar.h>
 
 #include "appmanager-data.h"
 
-GtkWidget *filter_menu_new (ApplicationManagerData *appdata);
 
-void filter_menu_add_item (GtkMenu *filtermenu, const gchar *name,
-                           ApplicationManagerData *appdata);
+typedef enum
+{
+  FILTER_INSTALLED,
+  FILTER_UPGRADEABLE,
+  FILTER_SELECTED
+} SearchBarFilter;
 
-void
-filter_menu_show_install_list (ApplicationManagerData *appdata);
+GtkWidget* search_bar_new (ApplicationManagerData *appdata);
+void search_bar_add_filter_item (ApplicationManagerData *appdata, gchar *item);
+void search_bar_set_active_filter (MokoSearchBar *bar, SearchBarFilter filter);
 
-#endif
+
+#endif /* SEARCH_BAR_H */
 

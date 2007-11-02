@@ -22,7 +22,6 @@
 
 #include "appmanager-window.h"
 #include "application-menu.h"
-#include "filter-menu.h"
 #include "navigation-area.h"
 #include "tool-box.h"
 #include "detail-area.h"
@@ -30,6 +29,7 @@
 #include "errorcode.h"
 #include "package-list.h"
 #include "select-menu.h"
+#include "search-bar.h"
 
 /*
  * @brief The start function.
@@ -42,14 +42,12 @@ main (int argc, char* argv[])
   GtkWidget       *menubox;
   GtkWidget       *menuitem;
   GtkWidget       *appmenu;
-  GtkWidget       *filtermenu;
   GtkWidget       *selectmenu;
   GtkWidget       *navigation;
   GtkWidget       *toolbox;
   GtkWidget       *detail;
   GtkWidget       *notebook;
-
-  //GtkWidget       *menubox;
+  GtkWidget *searchbar;
   GtkWidget *vbox;
 
   gint             ret;
@@ -84,9 +82,6 @@ main (int argc, char* argv[])
 
   appmenu = application_menu_new (appdata);
 
-  filtermenu = filter_menu_new (appdata);
-  application_manager_data_set_filter_menu (appdata, GTK_MENU (filtermenu));
-
   selectmenu = moko_select_menu_new (appdata);
   application_manager_data_set_select_menu (appdata, GTK_MENU (selectmenu));
 
@@ -102,16 +97,15 @@ main (int argc, char* argv[])
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), appmenu);
   gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
 
-  menuitem = gtk_menu_item_new_with_label ("Filter");
-  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), filtermenu);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
-
   menuitem = gtk_menu_item_new_with_label ("Select");
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), selectmenu);
   gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
 
   toolbox = tool_box_new (appdata);
   gtk_box_pack_start (GTK_BOX (vbox), toolbox, FALSE, FALSE, 0);
+  
+  searchbar = search_bar_new (appdata);
+  gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, FALSE, 0);
 
   notebook = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);
@@ -143,13 +137,12 @@ main (int argc, char* argv[])
 
   /* Add section list to the filter menu */
   package_list_add_section_to_filter_menu (appdata);
-
-  /* Show the installed package list at initialization */
-  filter_menu_show_install_list (appdata);
+  search_bar_set_active_filter (searchbar, FILTER_INSTALLED);
 
   gtk_widget_show_all (GTK_WIDGET (window));
   g_debug ("application manager enter main loop");
   gtk_main ();
+  g_debug ("application finished");
 
   return 0;
 }

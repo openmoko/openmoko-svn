@@ -1,5 +1,20 @@
 2007-11-02  Thomas Wood  <thomas@openedhand.com>
 
+	* src/Makefile.am:
+	* src/appmanager-data.c: (application_manager_data_init),
+	(application_manager_data_set_main_window):
+	* src/appmanager-data.h:
+	* src/appmanager-window.c: (main):
+	* src/filter-menu.c:
+	* src/filter-menu.h:
+	* src/package-list.c: (package_list_add_section_to_filter_menu):
+	* src/search-bar.c:
+	* src/search-bar.h:
+
+	Replace filter menu with search bar combobox
+
+2007-11-02  Thomas Wood  <thomas@openedhand.com>
+
 	* src/detail-area.c: (detail_area_new):
 	* src/navigation-area.c: (navigation_area_new):
 

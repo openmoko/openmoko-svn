@@ -22,7 +22,7 @@
 #include "appmanager-data.h"
 #include "package-list.h"
 #include "ipkgapi.h"
-#include "filter-menu.h"
+#include "search-bar.h"
 #include "errorcode.h"
 #include "navigation-area.h"
 #include "install-dialog.h"
@@ -767,7 +767,6 @@ package_list_add_section_to_filter_menu (ApplicationManagerData *appdata)
 {
   SectionList  *seclist;
   SectionList  *tmpsec;
-  GtkMenu      *filtermenu;
   PackageList  *tmppkg;
 
   seclist = application_manager_data_get_sectionlist (appdata);
@@ -777,18 +776,11 @@ package_list_add_section_to_filter_menu (ApplicationManagerData *appdata)
       return;
     }
 
-  filtermenu = application_manager_get_filter_menu (appdata);
-  if (filtermenu == NULL)
-    {
-      g_debug ("Filter menu not init correctly");
-      return;
-    }
-
   tmpsec = seclist->next;
 
   while (tmpsec != NULL)
     {
-      filter_menu_add_item (filtermenu, tmpsec->name, appdata);
+      search_bar_add_filter_item (appdata, tmpsec->name);
       tmpsec = tmpsec->next;
     }
 
@@ -800,7 +792,7 @@ package_list_add_section_to_filter_menu (ApplicationManagerData *appdata)
 
   if (tmppkg->next != tmppkg)
     {
-      filter_menu_add_item (filtermenu, PACKAGE_LIST_NO_SECTION_STRING, appdata);
+      search_bar_add_filter_item (appdata, PACKAGE_LIST_NO_SECTION_STRING);
     }
 }
 

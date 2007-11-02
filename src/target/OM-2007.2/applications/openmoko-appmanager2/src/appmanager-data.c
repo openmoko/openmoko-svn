@@ -36,7 +36,6 @@ application_manager_data_init (ApplicationManagerData *data)
   gint  i;
 
   data->mwindow = NULL;
-  data->filtermenu = NULL;
   data->menubox = NULL;
   data->selectmenu = NULL;
   data->searchentry = NULL;
@@ -85,19 +84,6 @@ application_manager_data_set_main_window (ApplicationManagerData *appdata,
   appdata->mwindow = GTK_WIDGET (window);
 }
 
-/*
- * @brief Set the filter menu to the application manager data
- * @param appdata The application manager data struct
- * @param filtermenu The filter menu
- */
-void 
-application_manager_data_set_filter_menu (ApplicationManagerData *appdata,
-                                          GtkMenu *filtermenu)
-{
-  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
-
-  appdata->filtermenu = filtermenu;
-}
 
 /*
  * @brief Set the menubox to the application manager data
@@ -387,18 +373,6 @@ application_manager_get_main_window (ApplicationManagerData *appdata)
   return appdata->mwindow;
 }
 
-/*
- * @brief Get the filter menu from the application manager data
- * @param appdata The application manager data
- * @return The filter menu
- */
-GtkMenu *
-application_manager_get_filter_menu (ApplicationManagerData *appdata)
-{
-  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
-
-  return appdata->filtermenu;
-}
 
 /*
  * @brief Get the menubox from the application manager data
