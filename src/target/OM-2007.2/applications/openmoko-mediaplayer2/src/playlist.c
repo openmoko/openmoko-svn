@@ -929,6 +929,7 @@ omp_playlist_track_append_file(gchar *file_name)
 	omp_spiff_mvalue *location;
 	gchar *uri, name_char;
 	guint name_pos, uri_pos, name_len;
+	gboolean list_was_empty;
 
 	if (!omp_playlist) return FALSE;
 	if (!file_name) return FALSE;
@@ -945,12 +946,18 @@ omp_playlist_track_append_file(gchar *file_name)
 		// List already has entries - we append
 		new_track = omp_spiff_new_track_before(&omp_playlist_last_track->next);
 		omp_playlist_last_track = omp_playlist_last_track->next;
+		list_was_empty = FALSE;
 
 	} else {
 
-		// List is empty - we start it
+		// List is empty - we start filling it...
 		new_track = omp_spiff_new_track_before(&omp_playlist->tracks);
 		omp_playlist_last_track = omp_playlist->tracks;
+
+		// ...and set this as the current track as no track was loaded before
+		omp_playlist_current_track = omp_playlist->tracks;
+		omp_playlist_current_track_id = 0;
+		list_was_empty = TRUE;
 	}
 
 	location = omp_spiff_new_mvalue_before(&new_track->locations);
@@ -992,6 +999,9 @@ omp_playlist_track_append_file(gchar *file_name)
 	// Give the track list something to show
 	omp_playlist_last_track->title = get_base_file_name(file_name);
 	omp_playlist_last_track->title_is_preliminary = TRUE;
+
+	// If the playlist was empty we need to load the newly added track right away
+	if (list_was_empty) omp_playlist_load_current_track();
 
 	// Notify UI of the change
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED);

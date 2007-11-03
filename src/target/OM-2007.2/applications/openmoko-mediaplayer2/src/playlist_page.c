@@ -215,7 +215,7 @@ omp_playlist_page_add_list(GtkButton *button, gpointer user_data)
 	// Rebuild the list
 	omp_playlist_page_list_populate();
 
-	gtk_entry_set_text(GTK_ENTRY(omp_playlist_page_entry), NULL);
+	gtk_entry_set_text(GTK_ENTRY(omp_playlist_page_entry), "");
 }
 
 /**
