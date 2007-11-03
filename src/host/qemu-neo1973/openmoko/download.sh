@@ -26,12 +26,13 @@ cd $script_dir
 
 echo "    "Retrieving available builds list...
 files=`lynx -dump $download_dir | grep http | sed "s,[0-9 \t\.]*$download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
+dev_files=`lynx -dump $dev_download_dir | grep http | sed "s,[0-9 \t\.]*$dev_download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
 
 most_recent () {
 	${echo} > .list
-	for name in $files; do
+	f=$3files; for name in ${!f}; do
 		if [[ "$name" == $1 ]]; then
-			${echo} "$name" > .list
+			${echo} "$name" >> .list
 		fi
 	done
 	export $2=`sort -n .list | tail -n 1`
@@ -41,23 +42,23 @@ most_recent () {
 }
 
 ${echo} -n "    "Kernel is...\ 
-most_recent "$kernel_wildcard" kernel_image || exit -1
+most_recent "$kernel_wildcard" kernel_image "" || exit -1
 ${echo} -n "    "Root filesystem is...\ 
-most_recent "$rootfs_wildcard" rootfs_image || exit -1
+most_recent "$rootfs_wildcard" rootfs_image "" || exit -1
 ${echo} -n "    "U-boot is...\ 
-most_recent "$uboot_wildcard" uboot_image || exit -1
+most_recent "$uboot_wildcard" uboot_image dev_ || exit -1
 
 sleep 2
 
 download () {
 	[ -s "$1" ] && return
 	rm -rf "$1"
-	wget "$download_dir/$1"
+	dir=$2download_dir; wget "${!dir}$1"
 }
 
-download "$kernel_image" || exit -1
-download "$rootfs_image" || exit -1
-download "$uboot_image" || exit -1
+download "$kernel_image" "" || exit -1
+download "$rootfs_image" "" || exit -1
+download "$uboot_image" dev_ || exit -1
 
 echo
 echo "    "Now use openmoko/flash.sh to install OpenMoko to NAND Flash.
