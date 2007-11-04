@@ -366,12 +366,12 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
                 {
                     g_debug( "charger IN" );
                     neod_buttonactions_sound_play( "touchscreen" );
-                    g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerConnected", NULL );
+                    g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freedesktop.powermanagement.ChargerConnected", NULL );
                 }
                 else if ( event.value == 0 ) /* released */
                 {
                     g_debug( "charger OUT" );
-                    g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerDisconnected", NULL );
+                    g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freedesktop.powermanagement.ChargerDisconnected", NULL );
                 }
                 neod_buttonactions_powersave_reset();
                 if ( power_state != NORMAL )
@@ -911,6 +911,9 @@ gboolean neod_buttonactions_initial_update()
 
         g_debug( "input node %d corresponds to %s", i, name );
 
+        if ( strcmp( name, "FIC Neo1973 PMU events" ) != 0 )
+            continue;
+
         BIT_MASK( keys, KEY_MAX );
         if( ioctl( input_fd[i].fd, EVIOCGKEY(sizeof(keys)), keys ) < 0)
         {
@@ -921,12 +924,12 @@ gboolean neod_buttonactions_initial_update()
         if ( BIT_TEST( keys, CHARGER_INSERTION_BUTTON ) )
         {
             g_debug( "charger already inserted" );
-            g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerConnected", NULL );
+            g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freedesktop.powermanagement.ChargerConnected", NULL );
         }
         else
         {
             g_debug( "charger not yet inserted" );
-            g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerDisconnected", NULL );
+            g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freedesktop.powermanagement.ChargerDisconnected", NULL );
         }
     }
 
