@@ -60,6 +60,18 @@ static int backlight_max_brightness = 1;
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
+#ifdef NEOD_PLATFORM_HTC
+    #define AUX_BUTTON_KEYCODE 0xd4   /* camera */
+    #define POWER_BUTTON_KEYCODE 0x74 /* power */
+    #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
+#endif
+
+#ifdef NEOD_PLATFORM_IPAQ
+    #define AUX_BUTTON_KEYCODE 89   /* _KEY_RECORD */
+    #define POWER_BUTTON_KEYCODE 0x74 /* KEY_POWER */
+    #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
+#endif
+
 #define HEADPHONE_INSERTION_SWITCHCODE 0x02
 #define CHARGER_INSERTION_BUTTON 0xa4
 

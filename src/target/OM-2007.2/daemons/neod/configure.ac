@@ -32,6 +32,14 @@ if test x"$neod_platform" = x"ezx"; then
         NEOD_CFLAGS="$NEOD_CFLAGS -DNEOD_PLATFORM_MOTOROLA_EZX"
 fi
 
+if test x"$neod_platform" = x"htc"; then
+	NEOD_CFLAGS="$NEOD_CFLAGS -DNEOD_PLATFORM_HTC"
+fi
+
+if test x"$neod_platform" = x"ipaq"; then
+	NEOD_CFLAGS="$NEOD_CFLAGS -DNEOD_PLATFORM_IPAQ"
+fi
+
 CFLAGS=$NEOD_CFLAGS
 
 AC_OUTPUT([
