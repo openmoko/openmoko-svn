@@ -17,44 +17,47 @@
 
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
 #include <gtk/gtkimage.h>
 #include <time.h>
 
 typedef struct {
-    MokoPanelApplet* mpa;
+    MokoPanelApplet* mokopanelapplet;
     int dummy;
 } UsbApplet;
 
-static void
-usb_applet_free (UsbApplet *applet)
+static void usb_applet_update_status( UsbApplet* applet, gboolean connected );
+
+#if 0 // not supported yet by Matchbox-Panel-2
+static void usb_applet_free (UsbApplet *applet)
 {
     g_slice_free (UsbApplet, applet);
 }
+#endif
 
-static void usb_applet_dbus_signal( void* data )
-{
-    g_debug( "usb_applet_dbus_signal: received signal. data pointer = %p", data );
-}
-
-#define USB_DBUS_SERVICE      "org.freedesktop.PowerManagement"
-#define USB_DBUS_PATH         "/org/freedesktop/PowerManagement"
-#define USB_DBUS_INTERFACE    "org.freedesktop.PowerManagement"
+#define CHARGER_DBUS_SERVICE      "org.freedesktop.PowerManagement"
+#define CHARGER_DBUS_PATH         "/org/freedesktop/PowerManagement"
+#define CHARGER_DBUS_INTERFACE    "org.freedesktop.PowerManagement"
 
 DBusHandlerResult signal_filter (DBusConnection *bus, DBusMessage *msg, void *user_data)
 {
+    UsbApplet* applet = (UsbApplet*) user_data;
+
     g_debug( "signal_filter" );
-    if ( dbus_message_is_signal( msg, USB_DBUS_INTERFACE, "ChargerConnected" ) )
+    if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerConnected" ) )
     {
         g_debug( "connected" );
+        usb_applet_update_status( applet, TRUE );
         return DBUS_HANDLER_RESULT_HANDLED;
     }
-    else if ( dbus_message_is_signal( msg, USB_DBUS_INTERFACE, "ChargerDisconnected" ) )
+    else if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerDisconnected" ) )
     {
         g_debug( "disconnected" );
+        usb_applet_update_status( applet, FALSE );
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    g_debug( "(unknown dbus message, ignoring" );
+    g_debug( "(unknown dbus message, ignoring)" );
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
@@ -78,31 +81,37 @@ static void usb_applet_init_dbus( UsbApplet* applet )
     dbus_connection_setup_with_g_main (bus, NULL);
 
     dbus_bus_add_match (bus, "type='signal'", &error);
-    dbus_connection_add_filter (bus, signal_filter, NULL, NULL);
+    dbus_connection_add_filter (bus, signal_filter, applet, NULL);
 
 }
 
-static void usb_applet_update_status( UsbApplet* applet )
+static void usb_applet_update_status( UsbApplet* applet, gboolean connected )
 {
-    moko_panel_applet_set_icon( applet->mpa, PKGDATADIR "/Usb.png" );
+    g_debug( "usb_applet_update_status: connected = %d", connected );
+    if ( connected )
+        gtk_widget_show( GTK_WIDGET(applet->mokopanelapplet) );
+    else
+        gtk_widget_hide( GTK_WIDGET(applet->mokopanelapplet) );
+}
 
+gboolean usb_applet_initial_update_status_cb( UsbApplet* applet )
+{
+    usb_applet_update_status( applet, FALSE );
+    return FALSE;
 }
 
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    MokoPanelApplet* mokoapplet = moko_panel_applet_new();
+    MokoPanelApplet* mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
     UsbApplet *applet;
-    time_t t;
-    struct tm *local_time;
-
     applet = g_slice_new( UsbApplet );
-    applet->mpa = mokoapplet;
+    applet->mokopanelapplet = mokoapplet;
 
     usb_applet_init_dbus( applet );
-    usb_applet_update_status( applet );
-
-    gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
+    moko_panel_applet_set_icon( applet->mokopanelapplet, PKGDATADIR "/Usb.png" );
+    gtk_widget_show_all( mokoapplet );
+    g_idle_add( (GSourceFunc) usb_applet_initial_update_status_cb, applet );
     return GTK_WIDGET(mokoapplet);
 };

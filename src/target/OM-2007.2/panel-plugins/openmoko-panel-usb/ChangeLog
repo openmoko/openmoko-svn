@@ -1,13 +1,23 @@
+2007-11-04	Michael Lauer <mickey@openmoko.org>
+
+	* src/openmoko-panel-usb.c: hide USB applet initially
+
+2007-11-02	Michael Lauer <mickey@openmoko.org
+
+	* configure.ac:
+	Remove libusb dependency, add dbus(-glib)-1 dependency
+	* src/openmoko-panel-usb.c: Listen for USB insertion events from dbus
+
 2007-10-29	Michael Lauer <mickey@openmoko.org>
 
 	* configure.ac:
 	Depend on libusb
-	* src/openmoko-panel-usb:
+	* src/openmoko-panel-usb.c:
 	Add usb debug code.
 
 2007-09-02	Michael Lauer <mickey@openmoko.org>
 
-	* src/openmoko-panel-usb:
+	* src/openmoko-panel-usb.c:
 	Use moko_panel_applet_set_icon to set the icon.
 
 2007-07-30	Michael Lauer <mickey@openmoko.org>
