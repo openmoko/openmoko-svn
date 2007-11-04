@@ -24,6 +24,7 @@
 #include <libmokopanelui2/moko-panel-applet.h>
 
 #include <gtk/gtklabel.h>
+#include <dbus/dbus.h>
 
 #include <apm.h>
 #include <string.h>
@@ -36,6 +37,9 @@ typedef struct {
     guint timeout_id;
 } BatteryApplet;
 
+static gboolean
+timeout (BatteryApplet *applet);
+
 /* applets cannot be unloaded yet */
 #if 0
 static void
@@ -46,7 +50,55 @@ battery_applet_free (BatteryApplet *applet)
 }
 #endif
 
-/* Called every 5 minutes */
+#define CHARGER_DBUS_SERVICE      "org.freedesktop.PowerManagement"
+#define CHARGER_DBUS_PATH         "/org/freedesktop/PowerManagement"
+#define CHARGER_DBUS_INTERFACE    "org.freedesktop.PowerManagement"
+
+DBusHandlerResult signal_filter (DBusConnection *bus, DBusMessage *msg, void *user_data)
+{
+    g_debug( "signal_filter" );
+    if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerConnected" ) )
+    {
+        g_debug( "connected" );
+        timeout( user_data );
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+    else if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerDisconnected" ) )
+    {
+        g_debug( "disconnected" );
+        timeout( user_data );
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    g_debug( "(unknown dbus message, ignoring)" );
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+static void battery_applet_init_dbus( BatteryApplet* applet )
+{
+    DBusError error;
+    dbus_error_init (&error);
+
+    /* Get a connection to the system bus */
+    DBusConnection* bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
+    if (!bus)
+    {
+        gchar buffer[100];
+        sprintf (buffer, "Failed to connect to the D-BUS daemon: %s", error.message);
+        g_critical (buffer);
+        dbus_error_free (&error);
+        return ;
+    }
+    g_debug("Connection to bus successfully made");
+
+    dbus_connection_setup_with_g_main (bus, NULL);
+
+    dbus_bus_add_match (bus, "type='signal'", &error);
+    dbus_connection_add_filter (bus, signal_filter, applet, NULL);
+}
+
+
+/* Called frequently */
 static gboolean
 timeout (BatteryApplet *applet)
 {
@@ -104,15 +156,14 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     t = time( NULL );
     local_time = localtime(&t);
 
-    //FIXME Add source watching for charger insertion event on /dev/input/event1
+    battery_applet_init_dbus( applet );
 
     /* should use g_timeout_add_seconds() here to save power, but it is only
      * available in glib >= 2.14
      */
     applet->timeout_id = g_timeout_add ( 10 * 1000, (GSourceFunc) timeout, applet);
-    timeout(applet);
-
-    moko_panel_applet_set_icon( mokoapplet, PKGDATADIR "/Battery_00.png" );
+    moko_panel_applet_set_icon( applet->mokoapplet, icon ); // initial status = unknown
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);
 }
+22

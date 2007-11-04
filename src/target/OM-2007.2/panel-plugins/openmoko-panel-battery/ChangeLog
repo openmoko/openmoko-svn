@@ -1,3 +1,9 @@
+2007-11-02	Michael Lauer <mickey@openmoko.org>
+
+    * configure.ac: Add dbus(-glib)-1 dependency
+	* src/openmoko-panel-battery.c:
+	(battery_panel_dbus_init): Listen to dbus for charger insertion/removal events.
+
 2007-10-25  Thomas Wood  <thomas@openedhand.com>
 
 	* src/openmoko-panel-battery.c: (timeout),
