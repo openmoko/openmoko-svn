@@ -176,6 +176,30 @@ static char* get_text_property( Window window, Atom atom )
         return ret;
 }
 
+/* Checks if type property of @window is "desktop window" */
+gboolean is_desktop_window( Window window )
+{
+    unsigned long nitems, bytesafter;
+    Atom *window_type = NULL;
+    Atom actual_type;
+    int actual_format;
+
+    Display* display = XOpenDisplay( NULL );
+
+    /* not using gdk_property_get() here, due to note at
+     * http://www.gtk.org/api/2.6/gdk/gdk-Properties-and-Atoms.html#gdk-property-get
+     */
+    XGetWindowProperty(display, window,
+            gdk_x11_get_xatom_by_name("_NET_WM_WINDOW_TYPE"), 0, 1, False,
+            XA_ATOM, &actual_type, &actual_format, &nitems, &bytesafter,
+            (unsigned char **) &window_type);
+
+    if (strcmp(XGetAtomName(display, *window_type), "_NET_WM_WINDOW_TYPE_DESKTOP") == 0)
+        return TRUE;
+
+    return FALSE;
+}
+
 gboolean neod_buttonactions_install_watcher()
 {
     int i = 0;
@@ -438,15 +462,22 @@ void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, g
     gtk_widget_size_request( GTK_WIDGET(menu), &req );
     gint screen_width = gdk_screen_width();
     gint screen_height = gdk_screen_height();
+    gboolean landscape_mode = gdk_screen_width() >= gdk_screen_height();
 
     if ( GTK_WIDGET(menu) == aux_menu )
     {
-        *x = 0;
+        if (landscape_mode)
+            *x = screen_width - req.width;
+        else
+            *x = 0;
         *y = 0;
     }
     else if ( GTK_WIDGET(menu) == power_menu )
     {
-        *x = screen_width - req.width;
+        if (landscape_mode)
+            *x = 0;
+        else
+            *x = screen_width - req.width;
         *y = screen_height - req.height;
     }
     else
@@ -461,12 +492,6 @@ void neod_buttonactions_popup_selected_fullscreen( GtkMenuItem* menu, gpointer u
     Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
     const char* title = get_text_property( xwindow, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
     g_debug( "active Window = %d ('%s')", (int) xwindow, title );
-
-    if ( strcmp( "Today", title ) == 0 )
-    {
-        g_debug( "sorry, i'm not going to fullscreen the today window" );
-        return;
-    }
 
     Display* display = XOpenDisplay( NULL );
 
@@ -667,7 +692,7 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         const char* title = get_text_property( xwindow, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
         g_debug( "active Window = %d ('%s')", (int) xwindow, title );
 
-        if ( strcmp( "Today", title ) == 0 )
+        if ( is_desktop_window(xwindow) )
         {
             g_debug( "sorry, i'm not going to close the today window" );
             return;
