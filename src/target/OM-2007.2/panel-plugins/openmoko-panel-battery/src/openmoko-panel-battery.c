@@ -1,4 +1,3 @@
-/* vim: set sts=4 sw=4 expandtab: */
 /*  openmoko-panel-battery.c
  *
  *  Authored by Michael 'Mickey' Lauer <mlauer@vanille-media.de>
@@ -25,7 +24,7 @@
 
 #include <gtk/gtklabel.h>
 #include <dbus/dbus.h>
-
+#include <dbus/dbus-glib-lowlevel.h>
 #include <apm.h>
 #include <string.h>
 #include <time.h>
@@ -103,7 +102,7 @@ static gboolean
 timeout (BatteryApplet *applet)
 {
     char* icon;
-    static int last_status = -255; /* the status last time we checked */
+    static int last_status = -123; /* the status last time we checked */
 
     apm_info info;
     // How about g_new0 here?
@@ -156,14 +155,9 @@ G_MODULE_EXPORT GtkWidget* mb_panel_applet_create(const char* id, GtkOrientation
     t = time( NULL );
     local_time = localtime(&t);
 
+    timeout( applet );
     battery_applet_init_dbus( applet );
-
-    /* should use g_timeout_add_seconds() here to save power, but it is only
-     * available in glib >= 2.14
-     */
-    applet->timeout_id = g_timeout_add ( 10 * 1000, (GSourceFunc) timeout, applet);
-    moko_panel_applet_set_icon( applet->mokoapplet, icon ); // initial status = unknown
+    applet->timeout_id = g_timeout_add_seconds( 60, (GSourceFunc) timeout, applet);
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
     return GTK_WIDGET(mokoapplet);
 }
-22

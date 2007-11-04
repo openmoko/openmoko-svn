@@ -1,3 +1,8 @@
+2007-11-05	Michael Lauer <mickey@openmoko.org>
+
+	* src/openmoko-panel-battery.c: Use g_timeout_add_seconds.
+	Note that we now require glib >= 2.14
+
 2007-11-02	Michael Lauer <mickey@openmoko.org>
 
     * configure.ac: Add dbus(-glib)-1 dependency
