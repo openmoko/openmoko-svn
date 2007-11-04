@@ -20,6 +20,7 @@
 #include <gtk/gtkmenu.h>
 #include <gtk/gtkmenuitem.h>
 #include <gtk/gtkcheckmenuitem.h>
+#include <gtk/gtkseparatormenuitem.h>
 
 #include <gdk/gdkx.h>
 
@@ -74,6 +75,12 @@ static int backlight_max_brightness = 1;
 
 #define HEADPHONE_INSERTION_SWITCHCODE 0x02
 #define CHARGER_INSERTION_BUTTON 0xa4
+
+#define BIT_MASK( name, numbits )                                        \
+    unsigned short  name[ ((numbits) - 1) / (sizeof( short ) * 8) + 1 ];    \
+    memset( name, 0, sizeof( name ) )
+#define BIT_TEST( bitmask, bit )    \
+    ( bitmask[ (bit) / sizeof(short) / 8 ] & (1u << ( (bit) % (sizeof(short) * 8))) )
 
 GPollFD input_fd[10];
 int max_input_fd = 0;
@@ -498,7 +505,7 @@ void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, g
 
 void neod_buttonactions_popup_selected_fullscreen( GtkMenuItem* menu, gpointer user_data )
 {
-    static is_fullscreen = 0;
+    static int is_fullscreen = 0;
 
     gtk_widget_hide( aux_menu );
     Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
@@ -707,7 +714,7 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         if ( is_desktop_window(xwindow) )
         {
             g_debug( "sorry, i'm not going to close the today window" );
-            return;
+            return FALSE;
         }
 
         Display* display = XOpenDisplay( NULL );
@@ -830,7 +837,7 @@ gboolean neod_buttonactions_powersave_timeout2( guint timeout )
 gboolean neod_buttonactions_powersave_timeout3( guint timeout )
 {
     if ( pm_value != FULL )
-        return;
+        return FALSE;
     g_debug( "mainmenu powersave timeout 3" );
     //FIXME talk to neod
     power_state = SUSPEND;
@@ -890,3 +897,38 @@ void neod_buttonactions_sound_play( const gchar* samplename )
 
 }
 
+gboolean neod_buttonactions_initial_update()
+{
+    g_debug( "neod_buttonactions_initial_update" );
+    for ( int i = 0; i <= max_input_fd; ++i )
+    {
+        char name[256] = "Unknown";
+        if( ioctl( input_fd[i].fd, EVIOCGNAME(sizeof(name)), name ) < 0)
+        {
+            perror("evdev ioctl");
+            continue;
+        }
+
+        g_debug( "input node %d corresponds to %s", i, name );
+
+        BIT_MASK( keys, KEY_MAX );
+        if( ioctl( input_fd[i].fd, EVIOCGKEY(sizeof(keys)), keys ) < 0)
+        {
+            perror("evdev ioctl");
+            continue;
+        }
+
+        if ( BIT_TEST( keys, CHARGER_INSERTION_BUTTON ) )
+        {
+            g_debug( "charger already inserted" );
+            g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerConnected", NULL );
+        }
+        else
+        {
+            g_debug( "charger not yet inserted" );
+            g_spawn_command_line_async( "dbus-send /org/freedesktop/PowerManagement org.freesmartphone.powermanagement.ChargerDisconnected", NULL );
+        }
+    }
+
+    return FALSE;
+}

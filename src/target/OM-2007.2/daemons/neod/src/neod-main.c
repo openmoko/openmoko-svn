@@ -26,6 +26,7 @@ int main( int argc, char** argv )
         neod_buttonactions_powersave_reset();
         neod_buttonactions_set_display( 100 );
         neod_buttonactions_sound_init();
+        g_timeout_add_seconds( 10, (GSourceFunc) neod_buttonactions_initial_update, NULL );
         gtk_main();
         return 0;
     }
