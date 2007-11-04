@@ -66,8 +66,8 @@ static void usb_applet_init_dbus( UsbApplet* applet )
     DBusError error;
     dbus_error_init (&error);
 
-    /* Get a connection to the session bus */
-    DBusConnection* bus = dbus_bus_get (DBUS_BUS_SESSION, &error);
+    /* Get a connection to the system bus */
+    DBusConnection* bus = dbus_bus_get (DBUS_BUS_SYSTEM, &error);
     if (!bus)
     {
         gchar buffer[100];
