@@ -1,3 +1,17 @@
+2007-11-05  Thomas Wood  <thomas@openedhand.com>
+
+	* src/phone-kit/moko-dialer.c: (moko_dialer_dial),
+	(moko_dialer_init):
+	- Remove any GTK+ dependencies
+	- Actually dial the requested number
+
+	* src/phone-kit/moko-talking.c: (moko_talking_incoming_call),
+	(moko_talking_outgoing_call), (on_silence_clicked),
+	(on_cancel_clicked), (moko_talking_class_init),
+	(moko_talking_init):
+	- Cancel or reject call if the main window is closed.
+	- Hide the window when cancel and rejecting calls
+
 2007-11-01  Thomas Wood  <thomas@openedhand.com>
 
 	* src/dialer/dialer-main.c: (dial_clicked_cb), (main):

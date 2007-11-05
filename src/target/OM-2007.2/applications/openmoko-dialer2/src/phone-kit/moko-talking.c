@@ -32,6 +32,12 @@ G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_WIDGET)
 
 #define N_PICS 5
 
+enum
+{
+  CALL_DIRECTION_INCOMING,
+  CALL_DIRECTION_OUTGOING
+};
+
 struct _MokoTalkingPrivate
 {
   MokoJournal        *journal;
@@ -54,6 +60,8 @@ struct _MokoTalkingPrivate
 
   GTimer             *dtimer;
   guint               timeout;
+  
+  gint                call_direction;
 };
 
 enum
@@ -145,6 +153,7 @@ moko_talking_incoming_call (MokoTalking      *talking,
   priv->timeout = g_timeout_add (1000, 
                                  (GSourceFunc)incoming_timeout,
                                  (gpointer)talking);
+  priv->call_direction = CALL_DIRECTION_OUTGOING;
   gtk_window_present (GTK_WINDOW (priv->window));
 }
 
@@ -205,6 +214,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
                                  (gpointer)talking);
 
   g_free (markup);
+  priv->call_direction = CALL_DIRECTION_OUTGOING;
   gtk_window_present (GTK_WINDOW (priv->window));
 }
 
@@ -315,6 +325,8 @@ on_cancel_clicked (GtkToolButton *button, MokoTalking *talking)
   /* stop call duration timer */
   if (talking->priv->dtimer)
     g_timer_destroy(talking->priv->dtimer);
+  
+  gtk_widget_hide (talking->priv->window);
 
   g_source_remove (talking->priv->timeout);
   moko_sound_profile_set(SOUND_PROFILE_STEREO_OUT);
@@ -395,6 +407,18 @@ moko_talking_class_init (MokoTalkingClass *klass)
                   G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
   g_type_class_add_private (obj_class, sizeof (MokoTalkingPrivate)); 
+}
+
+static gboolean
+window_delete_event_cb (GtkWidget *widget, GdkEvent  *event, MokoTalking *talking)
+{
+  MokoTalkingPrivate *priv = MOKO_TALKING_GET_PRIVATE (talking);
+  if (priv->call_direction == CALL_DIRECTION_INCOMING)
+	on_reject_clicked (NULL, talking);
+  else
+	on_cancel_clicked (NULL, talking);
+  
+  return TRUE;
 }
 
 static void
@@ -518,8 +542,10 @@ moko_talking_init (MokoTalking *talking)
   }
 
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_show_all (main_vbox);
+  g_signal_connect (priv->window, "delete-event", G_CALLBACK (window_delete_event_cb), talking);
   gtk_container_add (GTK_CONTAINER (priv->window), main_vbox);
+  
+  gtk_widget_show_all (main_vbox);
 
 }
 
