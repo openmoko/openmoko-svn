@@ -397,13 +397,6 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
     priv->handle = lgsm_init( LGSMD_DEVICE_GSMD );
     if ( !priv->handle )
     {
-        /* We didn't connect to gsmd, so let's try and start it manually */
-        g_print ( "libmokogsmd: "
-                  "Unable to connect to gsmd, trying to start it\n" );
-        g_spawn_command_line_sync( "/etc/init.d/gsmd stop", 
-                                   NULL, NULL, NULL, NULL );
-        g_spawn_command_line_sync( "/etc/init.d/gsmd start", 
-                                   NULL, NULL, NULL, NULL );
         priv->handle = lgsm_init( LGSMD_DEVICE_GSMD );
 
         if ( !priv->handle )

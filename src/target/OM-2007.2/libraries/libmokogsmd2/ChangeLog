@@ -1,3 +1,8 @@
+2007-11-05  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c: (moko_gsmd_connection_init): Don't
+	   blindly try to restart gsmd when connecting to it fails
+
 2007-09-11  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
