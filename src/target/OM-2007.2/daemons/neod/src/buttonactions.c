@@ -76,7 +76,7 @@ static int backlight_max_brightness = 1;
 #endif
 
 #define HEADPHONE_INSERTION_SWITCHCODE 0x02
-#define CHARGER_INSERTION_BUTTON 0xa4
+#define CHARGER_INSERTION_BUTTON 0x164
 
 #define BIT_MASK( name, numbits )                                        \
     unsigned short  name[ ((numbits) - 1) / (sizeof( short ) * 8) + 1 ];    \
