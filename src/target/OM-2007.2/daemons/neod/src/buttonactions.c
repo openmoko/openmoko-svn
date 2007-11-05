@@ -40,6 +40,8 @@
 #include <sys/stat.h>
 #include <linux/input.h>
 
+#include <apm.h>
+
 #define SYS_CLASS_BACKLIGHT "/sys/class/backlight/"
 
 static gchar* backlight_node = NULL;
@@ -899,7 +901,10 @@ void neod_buttonactions_sound_play( const gchar* samplename )
 
 gboolean neod_buttonactions_initial_update()
 {
+    // need a workaround until OM bug #991 has been fixed
+    // http://bugzilla.openmoko.org/cgi-bin/bugzilla/show_bug.cgi?id=991
     g_debug( "neod_buttonactions_initial_update" );
+#ifdef BUG_991_FIXED
     for ( int i = 0; i <= max_input_fd; ++i )
     {
         char name[256] = "Unknown";
@@ -922,6 +927,12 @@ gboolean neod_buttonactions_initial_update()
         }
 
         if ( BIT_TEST( keys, CHARGER_INSERTION_BUTTON ) )
+#else
+        apm_info info;
+        memset (&info, 0, sizeof (apm_info));
+        apm_read (&info);
+        if ( info.battery_status == BATTERY_STATUS_CHARGING )
+#endif
         {
             g_debug( "charger already inserted" );
             g_spawn_command_line_async( "dbus-send --system /org/freedesktop/PowerManagement org.freedesktop.PowerManagement.ChargerConnected", NULL );
@@ -931,7 +942,9 @@ gboolean neod_buttonactions_initial_update()
             g_debug( "charger not yet inserted" );
             g_spawn_command_line_async( "dbus-send --system /org/freedesktop/PowerManagement org.freedesktop.PowerManagement.ChargerDisconnected", NULL );
         }
+#ifdef BUG_991_FIXED
     }
+#endif
 
     return FALSE;
 }

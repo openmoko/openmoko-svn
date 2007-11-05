@@ -12,7 +12,7 @@ neod_SOURCES = \
   buttonactions.c \
   neod-main.c
 
-neod_LDADD = @NEOD_LIBS@
+neod_LDADD = @NEOD_LIBS@ -lapm
 
 MAINTAINERCLEANFILES  = config.h.in Makefile.in
 
