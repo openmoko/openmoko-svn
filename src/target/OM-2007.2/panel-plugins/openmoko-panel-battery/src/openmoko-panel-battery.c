@@ -53,19 +53,27 @@ battery_applet_free (BatteryApplet *applet)
 #define CHARGER_DBUS_PATH         "/org/freedesktop/PowerManagement"
 #define CHARGER_DBUS_INTERFACE    "org.freedesktop.PowerManagement"
 
-DBusHandlerResult signal_filter (DBusConnection *bus, DBusMessage *msg, void *user_data)
+static gboolean battery_applet_usb_timeout( BatteryApplet* applet )
 {
-    g_debug( "signal_filter" );
+    timeout( applet );
+    return FALSE;
+}
+
+DBusHandlerResult signal_filter( DBusConnection *bus, DBusMessage *msg, BatteryApplet* applet )
+{
+    g_debug( "battery_applet: signal_filter" );
     if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerConnected" ) )
     {
-        g_debug( "connected" );
-        timeout( user_data );
+        g_debug( "charger connected" );
+        // NOTE Bus Enumeration and entering Charging Mode takes a while. If we immediately
+        // call timeout here, we will most likely not yet have entered charging mode
+        g_timeout_add_seconds( 3, (GSourceFunc) battery_applet_usb_timeout, applet );
         return DBUS_HANDLER_RESULT_HANDLED;
     }
     else if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerDisconnected" ) )
     {
-        g_debug( "disconnected" );
-        timeout( user_data );
+        g_debug( "charger disconnected" );
+        timeout( applet );
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
@@ -98,9 +106,9 @@ static void battery_applet_init_dbus( BatteryApplet* applet )
 
 
 /* Called frequently */
-static gboolean
-timeout (BatteryApplet *applet)
+static gboolean timeout( BatteryApplet *applet )
 {
+    g_debug( "battery_applet: timeout" );
     char* icon;
     static int last_status = -123; /* the status last time we checked */
 
