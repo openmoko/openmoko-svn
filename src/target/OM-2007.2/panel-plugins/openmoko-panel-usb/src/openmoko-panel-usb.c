@@ -48,13 +48,13 @@ DBusHandlerResult signal_filter (DBusConnection *bus, DBusMessage *msg, void *us
     {
         g_debug( "-- charger connected" );
         usb_applet_update_status( applet, TRUE );
-        return DBUS_HANDLER_RESULT_HANDLED;
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
     else if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerDisconnected" ) )
     {
         g_debug( "-- charger disconnected" );
         usb_applet_update_status( applet, FALSE );
-        return DBUS_HANDLER_RESULT_HANDLED;
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     g_debug( "(unknown dbus message, ignoring)" );

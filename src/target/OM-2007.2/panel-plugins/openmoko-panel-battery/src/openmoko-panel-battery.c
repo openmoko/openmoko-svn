@@ -67,14 +67,14 @@ DBusHandlerResult signal_filter( DBusConnection *bus, DBusMessage *msg, BatteryA
         g_debug( "charger connected" );
         // NOTE Bus Enumeration and entering Charging Mode takes a while. If we immediately
         // call timeout here, we will most likely not yet have entered charging mode
-        g_timeout_add_seconds( 3, (GSourceFunc) battery_applet_usb_timeout, applet );
-        return DBUS_HANDLER_RESULT_HANDLED;
+        g_timeout_add_seconds( 5, (GSourceFunc) battery_applet_usb_timeout, applet );
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
     else if ( dbus_message_is_signal( msg, CHARGER_DBUS_INTERFACE, "ChargerDisconnected" ) )
     {
         g_debug( "charger disconnected" );
         timeout( applet );
-        return DBUS_HANDLER_RESULT_HANDLED;
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     g_debug( "(unknown dbus message, ignoring)" );
