@@ -27,6 +27,7 @@
 #include "appmanager-window.h"
 #include "apply-dialog.h"
 #include "install-dialog.h"
+#include "ipkg-utils.h"
 
 /*
  * @brief The callback function of the button "upgrade"
@@ -51,58 +52,33 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
   g_debug ("destroy a dialog");
 }
 
-/*
- * @brief The callback function of the button "Apply"
- */
-void 
-on_apply_clicked (GtkButton *bapply, gpointer data)
+
+void
+on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
 {
-  GtkWidget *dialog;
-  InstallDialog *installdialog;
-  gint      res;
-  gint      number;
-
-  g_debug ("Clicked the button apply");
-
-  if (package_list_check_marked_list_empty (
-         MOKO_APPLICATION_MANAGER_DATA (data)))
-    {
-      dialog = gtk_message_dialog_new (NULL,
-                                       GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       GTK_MESSAGE_INFO,
-                                       GTK_BUTTONS_OK,
-                                       _("No package that has been selected"));
-      gtk_dialog_run (GTK_DIALOG (dialog));
-      gtk_widget_destroy (dialog);
-      return;
-    }
-
-  dialog = apply_dialog_new (MOKO_APPLICATION_MANAGER_DATA (data));
-  res = gtk_dialog_run (GTK_DIALOG (dialog));
-
-  /* FIXME Add code to install/remove/upgrade package */
-  if (res == GTK_RESPONSE_OK)
-    {
-      g_debug ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      g_debug ("Check the number of the selected list");
-      number = package_list_get_number_of_selected (MOKO_APPLICATION_MANAGER_DATA (data));
-      installdialog = install_dialog_new (MOKO_APPLICATION_MANAGER_DATA (data), number);
-      application_manager_data_set_install_dialog (MOKO_APPLICATION_MANAGER_DATA (data),
-                                                   GTK_WIDGET (installdialog));
-      g_debug ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      g_debug ("Begin to install/upgrade/remove packages");
-      if (!g_thread_supported ())
-        {
-          g_thread_init (NULL);
-        }
-
-      g_thread_create (package_list_execute_change, data, TRUE, NULL);
-      gtk_dialog_run (GTK_DIALOG (installdialog));
-      gtk_widget_destroy (GTK_WIDGET (installdialog));
-    }
-
-  gtk_widget_destroy (dialog);
+  GtkTreeSelection *sel;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  gchar *name;
+  
+  sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (data->tvpkglist));
+  
+  if (!gtk_tree_selection_get_selected (sel, &model, &iter))
+    return;
+  
+  gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
+  
+  install_package (data, name);
+  
 }
+
+void
+on_remove_clicked (GtkWidget *button, ApplicationManagerData *data)
+{
+  
+}
+
+
 
 /*
  * @brief The callback function of the search entry
@@ -166,7 +142,7 @@ GtkWidget *
 tool_box_new (ApplicationManagerData *appdata)
 {
   GtkWidget   *toolbox;
-  GtkToolItem *bapply;
+  GtkToolItem *tool_button;
   GtkToolItem *bupgrade;
   GtkWidget   *anImage;
 
@@ -180,21 +156,20 @@ tool_box_new (ApplicationManagerData *appdata)
   gtk_toolbar_insert (GTK_TOOLBAR (toolbox), bupgrade, -1);
   gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (bupgrade), "expand", TRUE, NULL);
 
-  anImage = gtk_image_new_from_file (PKGDATADIR "/Apply.png");
-  bapply = gtk_tool_button_new (anImage, "Apply");
-  g_signal_connect ((gpointer)bapply, "clicked",
-                    G_CALLBACK (on_apply_clicked), 
-                    appdata);
-  gtk_toolbar_insert (GTK_TOOLBAR (toolbox), bapply, -1);
-  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (bapply), "expand", TRUE, NULL);
-#if 0
-  searchentry = moko_tool_box_get_entry (toolbox);
-  application_manager_data_set_search_entry (appdata, GTK_ENTRY (searchentry));
-  gtk_entry_set_max_length (GTK_ENTRY (searchentry), MAX_SEARCH_ENTRY_TEXT_LENGTH);
-  g_signal_connect ((gpointer) searchentry, "changed",
-                    G_CALLBACK (on_search_entry_changed),
-                    appdata);
-#endif
+  /* install package */
+  tool_button = gtk_tool_button_new_from_stock (GTK_STOCK_ADD);
+  g_signal_connect (tool_button, "clicked", G_CALLBACK (on_install_clicked), appdata);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbox), tool_button, -1);
+  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (tool_button),
+                           "expand", TRUE, NULL);
+  
+  /* remove package */
+  tool_button = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
+  g_signal_connect (tool_button, "clicked", G_CALLBACK (on_remove_clicked), appdata);
+  gtk_toolbar_insert (GTK_TOOLBAR (toolbox), tool_button, -1);
+  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (tool_button),
+                           "expand", TRUE, NULL);
+
   return toolbox;
 }
 

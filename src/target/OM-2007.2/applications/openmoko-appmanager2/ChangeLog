@@ -1,3 +1,13 @@
+2007-11-06  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am:
+	* src/appmanager-window.c: (main):
+	* src/ipkg-utils.c:
+	* src/ipkg-utils.h:
+	* src/tool-box.c: (on_upgrade_clicked), (tool_box_new):
+
+	Implement installing packages from toolbar button
+
 2007-11-02  Thomas Wood  <thomas@openedhand.com>
 
 	* src/Makefile.am:

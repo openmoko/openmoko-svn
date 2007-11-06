@@ -54,6 +54,8 @@ main (int argc, char* argv[])
 
   g_debug ("application manager start up");
 
+  g_thread_init (NULL);
+  gdk_threads_init ();
   gtk_init (&argc, &argv);
   g_set_application_name( _("Application Manager") );
 
