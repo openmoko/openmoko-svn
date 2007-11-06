@@ -527,6 +527,7 @@ main (int argc, char **argv)
 	data.zoom_level = 1;
 	
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW (data.window), "World Clock");
 	vbox = gtk_vbox_new (FALSE, 0);
 	
 	/* Create toolbar */

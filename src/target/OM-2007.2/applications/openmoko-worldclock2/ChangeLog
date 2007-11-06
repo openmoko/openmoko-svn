@@ -1,3 +1,8 @@
+2007-11-06  Chris Lord  <chris@openedhand.com>
+
+	* src/worldclock-main.c: (main):
+	Set the window title
+
 2007-11-02  Chris Lord  <chris@openedhand.com>
 
 	* src/worldclock-main.c: (map_clicked_cb), (main):
