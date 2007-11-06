@@ -71,6 +71,9 @@ typedef struct _ApplicationManagerData {
   GtkWidget        *installdialog;     /* The install dialog */
   
   GtkTreeModel     *filter_store;      /* GtkListStore for filter menu */
+  
+  GtkToolItem      *install_btn; /* Install toolbar button */
+  GtkToolItem      *remove_btn;  /* Remove toolbar button */
 } ApplicationManagerData;
 
 /*

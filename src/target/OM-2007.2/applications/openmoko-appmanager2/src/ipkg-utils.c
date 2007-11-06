@@ -29,7 +29,8 @@ typedef struct
   GtkWidget *pbar;
   GtkWidget *details;
   GtkWidget *dlg;
-} InstallData;
+  int (*func)();
+} IpkgRunData;
 
 static void
 add_text_to_textview (GtkTextView *tv, gchar *text)
@@ -56,20 +57,20 @@ progress_bar_pulse (GtkProgressBar *pbar)
 }
 
 static gpointer
-install_thread_func (InstallData *data)
+install_thread_func (IpkgRunData *data)
 {
   int ret;
   gchar *real_name;
   
-  ret = ipkg_install_cmd (data->package_name, "root", &real_name);
+  ret = data->func (data->package_name, "root", &real_name);
   g_source_remove (data->pulse_source);
 
   if (ret == 0)
   {
     gdk_threads_enter ();
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (data->pbar), 1.0);
-    gtk_label_set_text (GTK_LABEL (data->label), "Install succeeded!");
-    add_text_to_textview (GTK_TEXT_VIEW (data->details), "Install succeeded\n");
+    gtk_label_set_text (GTK_LABEL (data->label), "Succeeded!");
+    add_text_to_textview (GTK_TEXT_VIEW (data->details), "Operation succeeded\n");
     gtk_widget_set_sensitive (GTK_WIDGET (GTK_DIALOG(data->dlg)->action_area), TRUE);
     gdk_threads_leave ();
   }
@@ -78,11 +79,11 @@ install_thread_func (InstallData *data)
     gchar *err, *message;
 
     err = get_error_msg ();
-    message = g_strdup_printf ("Install failed: %s", err);
+    message = g_strdup_printf ("Operation failed: %s", err);
 
     gdk_threads_enter ();
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (data->pbar), 1.0);
-    gtk_label_set_text (GTK_LABEL (data->label), "Install failed");
+    gtk_label_set_text (GTK_LABEL (data->label), "Failed");
     add_text_to_textview (GTK_TEXT_VIEW (data->details), message);
     gtk_widget_set_sensitive (GTK_WIDGET (GTK_DIALOG(data->dlg)->action_area), TRUE);
     gdk_threads_leave ();
@@ -95,15 +96,17 @@ install_thread_func (InstallData *data)
   return NULL;
 }
 
+
+
 void
-install_package (ApplicationManagerData *data, gchar *name)
+run_func_with_gui (ApplicationManagerData *data, gchar *name, int (*func)())
 {
   gchar *s;
   GtkWidget *dlg, *vbox, *label, *progress, *details, *w, *sw;
 
-  InstallData *install_data;
+  IpkgRunData *install_data;
   
-  dlg = gtk_dialog_new_with_buttons ("Install", GTK_WINDOW (data->mwindow),
+  dlg = gtk_dialog_new_with_buttons ("Update", GTK_WINDOW (data->mwindow),
                                      GTK_DIALOG_MODAL,
                                      GTK_STOCK_OK, GTK_RESPONSE_CANCEL,
                                      NULL);
@@ -114,7 +117,7 @@ install_package (ApplicationManagerData *data, gchar *name)
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 6);
   gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (dlg)->vbox), vbox);
   
-  s = g_strdup_printf ("Installing \"%s\"", name);
+  s = g_strdup_printf ("Updating status of \"%s\"", name);
   label = gtk_label_new (s);
   gtk_misc_set_alignment (GTK_MISC (label), 0, 0);
   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
@@ -132,13 +135,14 @@ install_package (ApplicationManagerData *data, gchar *name)
   details = gtk_text_view_new ();
   gtk_container_add (GTK_CONTAINER (sw), details);
 
-  install_data = g_new0 (InstallData, 1);
+  install_data = g_new0 (IpkgRunData, 1);
   install_data->package_name = name;
   install_data->pulse_source = g_timeout_add (250, (GSourceFunc) progress_bar_pulse, progress);
   install_data->label = label;
   install_data->pbar = progress;
   install_data->details = details;
   install_data->dlg = dlg;
+  install_data->func = func;
 
   g_thread_create ((GThreadFunc) install_thread_func, install_data, FALSE, NULL);
 
@@ -148,3 +152,14 @@ install_package (ApplicationManagerData *data, gchar *name)
   gtk_widget_destroy (dlg);
 }
 
+void
+install_package (ApplicationManagerData *data, gchar *name)
+{
+  run_func_with_gui (data, name, ipkg_install_cmd);
+}
+
+void
+remove_package (ApplicationManagerData *data, gchar *name)
+{
+  run_func_with_gui (data, name, ipkg_remove_cmd);
+}

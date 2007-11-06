@@ -69,13 +69,24 @@ on_install_clicked (GtkWidget *button, ApplicationManagerData *data)
   gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
   
   install_package (data, name);
-  
 }
 
 void
 on_remove_clicked (GtkWidget *button, ApplicationManagerData *data)
 {
+  GtkTreeSelection *sel;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  gchar *name;
   
+  sel = gtk_tree_view_get_selection (GTK_TREE_VIEW (data->tvpkglist));
+  
+  if (!gtk_tree_selection_get_selected (sel, &model, &iter))
+    return;
+  
+  gtk_tree_model_get (model, &iter, COL_NAME, &name, -1);
+  
+  remove_package (data, name);
 }
 
 
@@ -160,15 +171,15 @@ tool_box_new (ApplicationManagerData *appdata)
   tool_button = gtk_tool_button_new_from_stock (GTK_STOCK_ADD);
   g_signal_connect (tool_button, "clicked", G_CALLBACK (on_install_clicked), appdata);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbox), tool_button, -1);
-  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (tool_button),
-                           "expand", TRUE, NULL);
+  gtk_tool_item_set_expand (tool_button, TRUE);
+  appdata->install_btn = tool_button;
   
   /* remove package */
   tool_button = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
   g_signal_connect (tool_button, "clicked", G_CALLBACK (on_remove_clicked), appdata);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbox), tool_button, -1);
-  gtk_container_child_set (GTK_CONTAINER (toolbox), GTK_WIDGET (tool_button),
-                           "expand", TRUE, NULL);
+  gtk_tool_item_set_expand (tool_button, TRUE);
+  appdata->remove_btn = tool_button;
 
   return toolbox;
 }

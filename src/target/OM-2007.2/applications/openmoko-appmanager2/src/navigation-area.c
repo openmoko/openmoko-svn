@@ -27,38 +27,42 @@
 #include "package-list.h"
 #include "select-menu.h"
 
+#include "ipkgapi.h"
+
 /*
  * @brief The callback function of the signal "cursor-changed"
  */
 void 
-on_treeview_cursor_changed (GtkTreeView *treeview, 
-                            gpointer     user_data)
+on_selection_changed (GtkTreeSelection *selection, 
+                            ApplicationManagerData *data)
 {
   GtkTreeModel     *model;
   GtkTreeIter      iter;
-  GtkTreeSelection *selection;
-  gpointer         pkg;
+  IPK_PACKAGE      *pkg;
 
   g_debug ("Call the on_treeview_cursor_changed");
-  selection = gtk_tree_view_get_selection (treeview);
 
   if (gtk_tree_selection_get_selected (selection, &model, &iter))
+  {
+    gtk_tree_model_get (model, &iter, COL_POINTER, &pkg, -1);
+    detail_area_update_info (data, pkg);
+    
+    if (pkg->state_status == SS_INSTALLED)
     {
-      gtk_tree_model_get (model, &iter, COL_POINTER, &pkg, -1);
-      detail_area_update_info ((ApplicationManagerData *) user_data, pkg);
+      gtk_widget_set_sensitive (GTK_WIDGET (data->install_btn), FALSE);
+      gtk_widget_set_sensitive (GTK_WIDGET (data->remove_btn), TRUE);
     }
-}
-
-/*
- * @brief The callback function of the signal "unselect-all"
- */
-gboolean 
-on_treeview_unselect_all (GtkTreeView *treeview,
-                          gpointer     user_data)
-{
-  g_debug ("Call the on_treeview_unselect_all");
-
-  return FALSE;
+    else
+    {
+      gtk_widget_set_sensitive (GTK_WIDGET (data->install_btn), TRUE);
+      gtk_widget_set_sensitive (GTK_WIDGET (data->remove_btn), FALSE);
+    }
+  }
+  else
+  {
+    gtk_widget_set_sensitive (GTK_WIDGET (data->install_btn), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->remove_btn), FALSE);
+  }
 }
 
 /*
@@ -198,23 +202,17 @@ navigation_area_new (ApplicationManagerData *appdata)
   model = GTK_TREE_MODEL (create_package_list_store ());
   gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), model);
   g_object_unref (model);
-  /* FIXME Set the treeview as the single selection mode now.
-     Maybe it uses the multi selection mode in the feature. */
+
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
-                               GTK_SELECTION_SINGLE);
+                               GTK_SELECTION_BROWSE);
 
   scrollwindow = moko_finger_scroll_new ();
   gtk_container_add (GTK_CONTAINER (scrollwindow), treeview);
   application_manager_data_set_tvpkglist (appdata, treeview);
 
   /* Connect signal to the treeview */
-  g_signal_connect ((gpointer) treeview, "cursor_changed",
-                    G_CALLBACK (on_treeview_cursor_changed),
-                    appdata);
-
-  g_signal_connect ((gpointer) treeview, "unselect_all",
-                    G_CALLBACK (on_treeview_cursor_changed),
-                    appdata);
+  g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
+                    "changed", G_CALLBACK (on_selection_changed), appdata);
 
   g_signal_connect ((gpointer) treeview, "button_press_event",
                     G_CALLBACK (on_treeview_button_press_event),
@@ -335,6 +333,7 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   GtkWidget     *treeview;
   GtkTreeModel  *model;
   GtkListStore  *store;
+  GtkTreeIter    iter;
 
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
   g_return_if_fail (pkglist != NULL);
@@ -356,6 +355,11 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
 
   gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
   g_object_unref (model);
+  
+  /* ensure one item is selected */
+  if (gtk_tree_model_get_iter_first (model, &iter))
+    gtk_tree_selection_select_iter (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
+                                    &iter);
 }
 
 /*

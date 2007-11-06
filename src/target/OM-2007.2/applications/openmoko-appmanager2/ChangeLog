@@ -1,5 +1,18 @@
 2007-11-06  Thomas Wood  <thomas@openedhand.com>
 
+	* src/appmanager-data.h:
+	* src/ipkg-utils.c: (progress_bar_pulse), (install_thread_func),
+	(run_func_with_gui):
+	* src/ipkg-utils.h:
+	* src/navigation-area.c: (navigation_area_new),
+	(navigation_area_refresh_with_package_list):
+	* src/tool-box.c: (on_install_clicked), (tool_box_new):
+
+	- Implement removing packages from the toolbar button
+	- Update add/remove buttons depending on status of selectiong package
+
+2007-11-06  Thomas Wood  <thomas@openedhand.com>
+
 	* src/Makefile.am:
 	* src/appmanager-window.c: (main):
 	* src/ipkg-utils.c:

@@ -20,5 +20,6 @@
 #define IPKG_UTILS_H
 
 void install_package (ApplicationManagerData *data, gchar *name);
+void remove_package (ApplicationManagerData *data, gchar *name);
 
 #endif /* IPKG_UTILS_H */
