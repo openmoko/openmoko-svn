@@ -1,3 +1,11 @@
+2007-11-07  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am:
+	* src/am-progress-dialog.c:
+	* src/am-progress-dialog.h:
+
+	Add a generic progress dialog class
+
 2007-11-06  Thomas Wood  <thomas@openedhand.com>
 
 	* src/appmanager-data.h:

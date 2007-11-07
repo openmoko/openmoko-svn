@@ -15,6 +15,7 @@ openmoko_appmanager_SOURCES = appmanager-window.c\
                               apply-dialog.c\
                               install-dialog.c \
                               search-bar.c \
-                              ipkg-utils.c
+                              ipkg-utils.c \
+                              am-progress-dialog.c
 
 openmoko_appmanager_LDADD = @OPENMOKO_LIBS@
