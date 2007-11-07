@@ -44,6 +44,7 @@ GtkWidget* am_progress_dialog_new_full (gchar *title, gchar *message, gdouble fr
 
 void am_progress_dialog_append_details_text (AmProgressDialog *dialog, gchar *text);
 void am_progress_dialog_set_progress (AmProgressDialog *dialog, gdouble fraction);
+void am_progress_dialog_set_label_text (AmProgressDialog *dialog, gchar *text);
 
 G_END_DECLS
 

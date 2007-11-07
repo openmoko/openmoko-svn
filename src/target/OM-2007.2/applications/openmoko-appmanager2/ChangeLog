@@ -1,5 +1,12 @@
 2007-11-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/am-progress-dialog.h:
+	* src/ipkg-utils.c:
+
+	Fix compiler warnings
+
+2007-11-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/appmanager-window.c: (main): Request a package list update if the
 	package list could not be opened.
 

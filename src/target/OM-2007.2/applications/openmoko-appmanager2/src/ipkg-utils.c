@@ -34,7 +34,7 @@ install_thread_func (ThreadData *data)
 {
   int ret;
   gchar *real_name;
-  gchar *success_string, *failure_string;
+  gchar *success_string, *failure_string, *s;
 
   if (!data->remove)
   {
@@ -51,26 +51,22 @@ install_thread_func (ThreadData *data)
 
   if (ret == 0)
   {
-    gdk_threads_enter ();
-    am_progress_dialog_set_progress (data->progress_dialog, 1);
-    am_progress_dialog_append_details_text (data->progress_dialog, success_string);
-    am_progress_dialog_set_label_text (data->progress_dialog, success_string);
-    gdk_threads_leave ();
+    s = success_string;
   }
   else
   {
-    gchar *err;
-
-    err = get_error_msg ();
-
-    gdk_threads_enter ();
-    am_progress_dialog_set_progress (data->progress_dialog, 1);
-    am_progress_dialog_append_details_text (data->progress_dialog, failure_string);
-    am_progress_dialog_set_label_text (data->progress_dialog, failure_string);
-    am_progress_dialog_append_details_text (data->progress_dialog, err);
-    gdk_threads_leave ();
-  
+    s = failure_string;
   }
+  gchar *err;
+
+  err = get_error_msg ();  
+  
+  gdk_threads_enter ();
+  am_progress_dialog_set_progress (AM_PROGRESS_DIALOG (data->progress_dialog), 1);
+  am_progress_dialog_append_details_text (AM_PROGRESS_DIALOG (data->progress_dialog), s);
+  am_progress_dialog_set_label_text (AM_PROGRESS_DIALOG (data->progress_dialog), s);
+  am_progress_dialog_append_details_text (AM_PROGRESS_DIALOG (data->progress_dialog), err);
+  gdk_threads_leave ();
 
   g_free (data);
 
