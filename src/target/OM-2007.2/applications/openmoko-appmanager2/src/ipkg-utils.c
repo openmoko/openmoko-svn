@@ -20,75 +20,56 @@
  
 #include "appmanager-data.h"
 #include "ipkgapi.h"
+#include "am-progress-dialog.h"
 
 typedef struct
 {
   gchar *package_name;
-  int pulse_source;
-  GtkWidget *label;
-  GtkWidget *pbar;
-  GtkWidget *details;
-  GtkWidget *dlg;
-  int (*func)();
-} IpkgRunData;
-
-static void
-add_text_to_textview (GtkTextView *tv, gchar *text)
-{
-  GtkTextBuffer *buf;
-  GtkTextIter iter;
-  
-  buf = gtk_text_view_get_buffer (tv);
-  
-  gtk_text_buffer_get_end_iter (buf, &iter);
-  gtk_text_buffer_insert (buf, &iter, text, -1);
-}
-
-static gboolean
-progress_bar_pulse (GtkProgressBar *pbar)
-{
-  if (GTK_IS_PROGRESS_BAR (pbar))
-  {
-    gtk_progress_bar_pulse (pbar);
-    return TRUE;
-  }
-  
-  return FALSE;
-}
+  GtkWidget *progress_dialog;
+  gboolean remove; /* true if we want to remove the package */
+} ThreadData;
 
 static gpointer
-install_thread_func (IpkgRunData *data)
+install_thread_func (ThreadData *data)
 {
   int ret;
   gchar *real_name;
-  
-  ret = data->func (data->package_name, "root", &real_name);
-  g_source_remove (data->pulse_source);
+  gchar *success_string, *failure_string;
+
+  if (!data->remove)
+  {
+    ret = ipkg_install_cmd (data->package_name, "root", &real_name);
+    success_string = "Install succeeded\n";
+    failure_string = "Install failed\n";
+  }
+  else
+  {
+    ret = ipkg_remove_cmd (data->package_name);
+    success_string = "Removal succeeded\n";
+    failure_string = "Removal failed\n";
+  }
 
   if (ret == 0)
   {
     gdk_threads_enter ();
-    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (data->pbar), 1.0);
-    gtk_label_set_text (GTK_LABEL (data->label), "Succeeded!");
-    add_text_to_textview (GTK_TEXT_VIEW (data->details), "Operation succeeded\n");
-    gtk_widget_set_sensitive (GTK_WIDGET (GTK_DIALOG(data->dlg)->action_area), TRUE);
+    am_progress_dialog_set_progress (data->progress_dialog, 1);
+    am_progress_dialog_append_details_text (data->progress_dialog, success_string);
+    am_progress_dialog_set_label_text (data->progress_dialog, success_string);
     gdk_threads_leave ();
   }
   else
   {
-    gchar *err, *message;
+    gchar *err;
 
     err = get_error_msg ();
-    message = g_strdup_printf ("Operation failed: %s", err);
 
     gdk_threads_enter ();
-    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (data->pbar), 1.0);
-    gtk_label_set_text (GTK_LABEL (data->label), "Failed");
-    add_text_to_textview (GTK_TEXT_VIEW (data->details), message);
-    gtk_widget_set_sensitive (GTK_WIDGET (GTK_DIALOG(data->dlg)->action_area), TRUE);
+    am_progress_dialog_set_progress (data->progress_dialog, 1);
+    am_progress_dialog_append_details_text (data->progress_dialog, failure_string);
+    am_progress_dialog_set_label_text (data->progress_dialog, failure_string);
+    am_progress_dialog_append_details_text (data->progress_dialog, err);
     gdk_threads_leave ();
   
-    g_free (message);
   }
 
   g_free (data);
@@ -96,70 +77,98 @@ install_thread_func (IpkgRunData *data)
   return NULL;
 }
 
-
-
-void
-run_func_with_gui (ApplicationManagerData *data, gchar *name, int (*func)())
+static gpointer
+update_package_list_thread (AmProgressDialog *dlg)
 {
-  gchar *s;
-  GtkWidget *dlg, *vbox, *label, *progress, *details, *w, *sw;
+  int ret;
+  
+  ret = ipkg_update_cmd ();
+  
+  if (ret == 0)
+  {
+    gdk_threads_enter ();
+    am_progress_dialog_set_progress (AM_PROGRESS_DIALOG (dlg), 1);
+    am_progress_dialog_append_details_text (AM_PROGRESS_DIALOG (dlg),
+                                            "Updated\n");
+    am_progress_dialog_set_label_text (AM_PROGRESS_DIALOG (dlg),
+                                       "Package list updated");
+    gdk_threads_leave ();
+  }
+  else
+  {
+    gchar *err;
 
-  IpkgRunData *install_data;
-  
-  dlg = gtk_dialog_new_with_buttons ("Update", GTK_WINDOW (data->mwindow),
-                                     GTK_DIALOG_MODAL,
-                                     GTK_STOCK_OK, GTK_RESPONSE_CANCEL,
-                                     NULL);
-  gtk_dialog_set_has_separator (GTK_DIALOG (dlg), FALSE);
-  gtk_widget_set_sensitive (GTK_WIDGET (GTK_DIALOG (dlg)->action_area), FALSE);
-  
-  vbox = gtk_vbox_new (FALSE, 6);
-  gtk_container_set_border_width (GTK_CONTAINER (vbox), 6);
-  gtk_box_pack_start_defaults (GTK_BOX (GTK_DIALOG (dlg)->vbox), vbox);
-  
-  s = g_strdup_printf ("Updating status of \"%s\"", name);
-  label = gtk_label_new (s);
-  gtk_misc_set_alignment (GTK_MISC (label), 0, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
-  g_free (s);
-  
-  progress = gtk_progress_bar_new ();
-  gtk_box_pack_start (GTK_BOX (vbox), progress, FALSE, FALSE, 0);
-  
-  w = gtk_expander_new ("Details");
-  gtk_box_pack_start_defaults (GTK_BOX (vbox), w);
-  
-  sw = gtk_scrolled_window_new (NULL, NULL);
-  gtk_container_add (GTK_CONTAINER (w), sw);
-  
-  details = gtk_text_view_new ();
-  gtk_container_add (GTK_CONTAINER (sw), details);
+    err = get_error_msg ();
 
-  install_data = g_new0 (IpkgRunData, 1);
-  install_data->package_name = name;
-  install_data->pulse_source = g_timeout_add (250, (GSourceFunc) progress_bar_pulse, progress);
-  install_data->label = label;
-  install_data->pbar = progress;
-  install_data->details = details;
-  install_data->dlg = dlg;
-  install_data->func = func;
-
-  g_thread_create ((GThreadFunc) install_thread_func, install_data, FALSE, NULL);
-
-  gtk_widget_show_all (vbox);
-  gtk_dialog_run (GTK_DIALOG (dlg));
-
-  gtk_widget_destroy (dlg);
+    gdk_threads_enter ();
+    am_progress_dialog_set_progress (AM_PROGRESS_DIALOG (dlg), 1);
+    am_progress_dialog_set_label_text (AM_PROGRESS_DIALOG (dlg),
+                                       "Error updating package list");
+    am_progress_dialog_append_details_text (AM_PROGRESS_DIALOG (dlg),
+                                            "Error updating package list\n");
+    am_progress_dialog_append_details_text (AM_PROGRESS_DIALOG (dlg), err);
+    gdk_threads_leave ();
+  
+  }
+  
+  return NULL;
 }
 
 void
 install_package (ApplicationManagerData *data, gchar *name)
 {
-  run_func_with_gui (data, name, ipkg_install_cmd);
+  GtkWidget *dlg;
+  gchar *s;
+  ThreadData *td;
+
+  td = g_new0 (ThreadData, 1);
+
+  s = g_strdup_printf ("Installing \"%s\"", name);
+  dlg = am_progress_dialog_new_full ("Install", s, -1);
+  g_free (s);
+  
+  td->package_name = name;
+  td->progress_dialog = dlg;
+  td->remove = FALSE;
+  
+  g_thread_create ((GThreadFunc) install_thread_func, td, FALSE, NULL);
+
+  gtk_dialog_run (GTK_DIALOG (dlg));
+  gtk_widget_destroy (dlg);  
 }
 
 void
 remove_package (ApplicationManagerData *data, gchar *name)
 {
-  run_func_with_gui (data, name, ipkg_remove_cmd);
+  GtkWidget *dlg;
+  gchar *s;
+  ThreadData *td;
+  
+  td = g_new0 (ThreadData, 1);
+
+  s = g_strdup_printf ("Removing \"%s\"", name);
+  dlg = am_progress_dialog_new_full ("Install", s, -1);
+  g_free (s);
+  
+  td->package_name = name;
+  td->progress_dialog = dlg;
+  td->remove = TRUE;
+  
+  g_thread_create ((GThreadFunc) install_thread_func, td, FALSE, NULL);
+
+  gtk_dialog_run (GTK_DIALOG (dlg));
+  gtk_widget_destroy (dlg);  
+}
+
+void
+update_package_list (ApplicationManagerData *data)
+{
+  GtkWidget *dlg;
+
+  dlg = am_progress_dialog_new_full ("Update", "Updating package list", -1);
+  
+  g_thread_create ((GThreadFunc) update_package_list_thread, dlg, FALSE, NULL);
+
+  gtk_dialog_run (GTK_DIALOG (dlg));
+  gtk_widget_destroy (dlg);
 }

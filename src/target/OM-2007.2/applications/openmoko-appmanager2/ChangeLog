@@ -1,5 +1,13 @@
 2007-11-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/ipkg-utils.c:
+	* src/ipkg-utils.h:
+
+	- Use generic progress dialog to display progress of ipkg functions
+	- Add package list update functionality
+
+2007-11-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/ipkgapi.c:
 	* src/ipkgapi.h:
 
