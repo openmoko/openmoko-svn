@@ -31,6 +31,8 @@
 #include "select-menu.h"
 #include "search-bar.h"
 
+#include "ipkg-utils.h"
+
 /*
  * @brief The start function.
  */
@@ -131,16 +133,46 @@ main (int argc, char* argv[])
   /* Load the list of all package in the memory */
   ret = init_package_list (appdata);
   if (ret != OP_SUCCESS)
-    {
-      g_debug ("Can not initialize libipkg, result was %d, aborting.", ret);
-      return -1;
-    }
+  {
+    g_debug ("Can not initialize libipkg, result was %d, aborting.", ret);
+    return -1;
+  }
+
   ret = package_list_build_index (appdata);
   if (ret != OP_SUCCESS)
+  {
+    GtkWidget *dlg;
+      
+    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_QUESTION,
+                                  GTK_BUTTONS_YES_NO,
+                                  "Package list not available. "
+                                  "Would you like to update it now?");
+    if (gtk_dialog_run (GTK_DIALOG (dlg)) == GTK_RESPONSE_YES)
+    {
+      /* update the package list */
+      update_package_list (appdata);
+
+      /* try to reload the package list */
+      ret = reinit_package_list (appdata);
+      ret = package_list_build_index (appdata);
+
+      gtk_widget_destroy (dlg);
+
+      if (ret != OP_SUCCESS)
+      {
+        dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+                                "Could not update the package list");
+        gtk_dialog_run (GTK_DIALOG (dlg));
+        gtk_widget_destroy (dlg);
+        return -1;
+      }
+    }
+    else      
     {
       g_debug ("Can not build index for packages, aborting.");
       return -1;
     }
+  }
 
   /* Add section list to the filter menu */
   package_list_add_section_to_filter_menu (appdata);

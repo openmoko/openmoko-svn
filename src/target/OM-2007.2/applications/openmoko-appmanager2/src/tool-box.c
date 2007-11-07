@@ -35,6 +35,8 @@
 void 
 on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
 {
+  update_package_list (data);
+  /*
   GtkWidget *dialog;
 
   g_debug ("Clicked the button upgrade");
@@ -50,6 +52,7 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
   g_debug ("destroy a dialog");
+  */
 }
 
 

@@ -1,5 +1,13 @@
 2007-11-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/appmanager-window.c: (main): Request a package list update if the
+	package list could not be opened.
+
+	* src/tool-box.c: (on_upgrade_clicked): Use the upgrade button to
+	update the package list
+
+2007-11-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/ipkg-utils.c:
 	* src/ipkg-utils.h:
 
