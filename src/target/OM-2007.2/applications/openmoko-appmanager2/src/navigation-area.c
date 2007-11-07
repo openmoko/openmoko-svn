@@ -19,6 +19,7 @@
  */
 #include <string.h>
 #include <moko-finger-scroll.h>
+#include <moko-search-bar.h>
 
 #include "appmanager-window.h"
 #include "navigation-area.h"
@@ -65,68 +66,6 @@ on_selection_changed (GtkTreeSelection *selection,
   }
 }
 
-/*
- * @brief The callback function of the signal "button_press_event"
- */
-gboolean 
-on_treeview_button_press_event (GtkWidget *treeview, 
-                                GdkEventButton *event,
-                                gpointer data)
-{
-  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (data), FALSE);
-
-  if (event->type == GDK_BUTTON_PRESS)
-    {
-      GtkTreeSelection *selection;
-      GtkTreeIter iter;
-      GtkTreePath *path;
-      GtkTreeModel  *model;
-      GtkTreeViewColumn *column;
-      GtkTreeViewColumn *firstcol;
-      gpointer  pkg;
-
-      GtkMenu   *selectmenu;
-
-      if (!(event->window == gtk_tree_view_get_bin_window (GTK_TREE_VIEW (treeview))))
-        {
-          g_debug ("Not a package list view event");
-          return FALSE;
-        }
-
-      if (gtk_tree_view_get_path_at_pos (GTK_TREE_VIEW (treeview),
-                                         (int)event->x, (int)event->y,
-                                         &path, &column, NULL, NULL))
-        {
-          selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
-          firstcol = gtk_tree_view_get_column (GTK_TREE_VIEW (treeview), 0);
-          gtk_tree_selection_unselect_all (selection);
-          gtk_tree_view_set_cursor (GTK_TREE_VIEW (treeview), path, NULL, FALSE);
-
-          if (!((event->button == 1) && (strcmp(firstcol->title, column->title) == 0)))
-            {
-              return TRUE;
-            }
-
-          if (gtk_tree_selection_get_selected (selection, &model, &iter))
-            {
-              gtk_tree_model_get (model, &iter, COL_POINTER, &pkg, -1);
-              selectmenu = application_manager_get_select_menu (
-                              MOKO_APPLICATION_MANAGER_DATA (data));
-              g_return_val_if_fail (MOKO_IS_SELECT_MENU (selectmenu), TRUE);
-              g_debug ("popup menu");
-              moko_select_menu_popup (MOKO_SELECT_MENU (selectmenu), 
-                                      event, 
-                                      MOKO_APPLICATION_MANAGER_DATA (data),
-                                      pkg);
-            }
-          return TRUE;
-        }
-
-    }
-
-  return FALSE;
-}
-
 static GtkListStore *
 create_package_list_store (void)
 {
@@ -141,6 +80,34 @@ create_package_list_store (void)
 
 
 /*
+ * model_filter_func
+ */
+
+gboolean
+model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerData *appdata)
+{
+  gboolean result = TRUE;
+  
+  if (moko_search_bar_search_visible (MOKO_SEARCH_BAR (appdata->searchbar)))
+  {
+    gchar *haystack;
+    const gchar *needle;
+    GtkEntry *entry;
+    
+    gtk_tree_model_get (model, iter, COL_NAME, &haystack, -1);
+    
+    entry = moko_search_bar_get_entry (MOKO_SEARCH_BAR (appdata->searchbar));
+    needle = gtk_entry_get_text (entry);
+    
+    result = (strstr (haystack, needle) != NULL);
+    
+    g_free (haystack);
+    return result;
+  }
+  return result;
+}
+
+/*
  * @brief Create all widgets in the navigation area for the application manager data.
  *
  * @param appdata The application manager data
@@ -152,7 +119,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   GtkWidget          *scrollwindow;
   GtkWidget          *treeview;
 
-  GtkTreeModel       *model;
+  GtkTreeModel       *model, *filter;
   GtkTreeViewColumn  *col;
   GtkCellRenderer    *renderer;
 
@@ -185,23 +152,15 @@ navigation_area_new (ApplicationManagerData *appdata)
 
   gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
 
-#if 0
-  /* Add the size as the third column. */
-  col = gtk_tree_view_column_new ();
-  gtk_tree_view_column_set_title (col, _("Size"));
-
-  renderer = gtk_cell_renderer_text_new ();
-  gtk_tree_view_column_pack_start (col, renderer, FALSE);
-  gtk_tree_view_column_set_attributes (col, renderer,
-                                       "text", COL_SIZE,
-                                       NULL);
-
-  gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), col);
-#endif
-
   model = GTK_TREE_MODEL (create_package_list_store ());
-  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), model);
+  
+  filter = gtk_tree_model_filter_new (model, NULL);
+  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER (filter),
+                                          (GtkTreeModelFilterVisibleFunc) model_filter_func, appdata, NULL);
   g_object_unref (model);
+  
+  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), filter);
+  g_object_unref (filter);
 
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
                                GTK_SELECTION_BROWSE);
@@ -214,84 +173,7 @@ navigation_area_new (ApplicationManagerData *appdata)
   g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
                     "changed", G_CALLBACK (on_selection_changed), appdata);
 
-  g_signal_connect ((gpointer) treeview, "button_press_event",
-                    G_CALLBACK (on_treeview_button_press_event),
-                    appdata);
-
   return scrollwindow;
-}
-
-/*
- * @brief Insert test data
- */
-gint 
-navigation_area_insert_test_data (ApplicationManagerData *appdata)
-{
-  GtkWidget  *treeview;
-
-  GtkTreeModel  *model;
-  GtkListStore  *store;
-  GtkTreeIter   iter;
-  GdkPixbuf     *pix = NULL;
-
-  treeview = application_manager_get_tvpkglist (appdata);
-  if (treeview == NULL)
-    {
-      g_debug ("Treeview not init correctly");
-      return OP_ERROR;
-    }
-  model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
-  store = GTK_LIST_STORE (model);
-  if (store == NULL)
-    {
-      g_debug ("The store of package list not init correctly");
-      return OP_ERROR;
-    }
-
-  g_object_ref (model);
-  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
-  gtk_list_store_clear (store);
-
-  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_AVAILABLE);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter,
-                      COL_STATUS, pix,
-                      COL_NAME, "test-core",
-                      COL_SIZE, "11k",
-                      COL_POINTER, NULL,
-                      -1);
-
-  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_INSTALLED);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter,
-                      COL_STATUS, pix,
-                      COL_NAME, "test-vim",
-                      COL_SIZE, "21k",
-                      COL_POINTER, NULL,
-                      -1);
-
-  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_UPGRADEABLE);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter,
-                      COL_STATUS, pix,
-                      COL_NAME, "test-game",
-                      COL_SIZE, "188k",
-                      COL_POINTER, NULL,
-                      -1);
-
-  pix = application_manager_data_get_status_pixbuf (appdata, PKG_STATUS_AVAILABLE_MARK_FOR_INSTALL);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter,
-                      COL_STATUS, pix,
-                      COL_NAME, "test-dialer",
-                      COL_SIZE, "211k",
-                      COL_POINTER, NULL,
-                      -1);
-
-  gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
-  g_object_unref (model);
-
-  return OP_SUCCESS;
 }
 
 /*
@@ -331,7 +213,7 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
                                            gpointer pkglist)
 {
   GtkWidget     *treeview;
-  GtkTreeModel  *model;
+  GtkTreeModel  *model, *filter;
   GtkListStore  *store;
   GtkTreeIter    iter;
 
@@ -341,23 +223,20 @@ navigation_area_refresh_with_package_list (ApplicationManagerData *appdata,
   treeview = application_manager_get_tvpkglist (appdata);
   g_return_if_fail (GTK_IS_TREE_VIEW (treeview));
 
-  model = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+  filter = gtk_tree_view_get_model (GTK_TREE_VIEW (treeview));
+  model = gtk_tree_model_filter_get_model (GTK_TREE_MODEL_FILTER (filter));
+  
   g_return_if_fail (GTK_IS_TREE_MODEL (model));
   store = GTK_LIST_STORE (model);
 
-  g_object_ref (model);
-  gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), NULL);
   gtk_list_store_clear (store);
 
   translate_package_list_to_store (appdata, store, pkglist);
   /* Save current list to the application manager data */
   application_manager_data_set_current_list (appdata, pkglist);
-
-  gtk_tree_view_set_model (GTK_TREE_VIEW(treeview), model);
-  g_object_unref (model);
   
   /* ensure one item is selected */
-  if (gtk_tree_model_get_iter_first (model, &iter))
+  if (gtk_tree_model_get_iter_first (filter, &iter))
     gtk_tree_selection_select_iter (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),
                                     &iter);
 }

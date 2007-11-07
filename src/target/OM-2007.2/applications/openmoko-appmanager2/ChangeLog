@@ -1,5 +1,14 @@
 2007-11-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/appmanager-data.h:
+	* src/navigation-area.c: (on_selection_changed),
+	(navigation_area_new):
+	* src/search-bar.c: (search_bar_new):
+
+	Add package name text search support
+
+2007-11-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/am-progress-dialog.h:
 	* src/ipkg-utils.c:
 

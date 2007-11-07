@@ -34,6 +34,10 @@ combo_seperator_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 static void
 text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationManagerData *data)
 {
+  GtkTreeModel *filter;
+  
+  filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
+  gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
 }
 
 static void
@@ -126,6 +130,10 @@ search_bar_new (ApplicationManagerData *appdata)
   
   searchbar = moko_search_bar_new_with_combo (GTK_COMBO_BOX (combo));
   g_signal_connect (searchbar, "combo-changed", G_CALLBACK (combo_changed_cb), appdata);
+  g_signal_connect (searchbar, "text-changed", G_CALLBACK (text_changed_cb), appdata);
+  g_signal_connect (searchbar, "toggled", G_CALLBACK (searchbar_toggled_cb), appdata);
+
+  appdata->searchbar = searchbar;
   
   return searchbar;
 }

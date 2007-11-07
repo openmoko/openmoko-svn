@@ -74,6 +74,8 @@ typedef struct _ApplicationManagerData {
   
   GtkToolItem      *install_btn; /* Install toolbar button */
   GtkToolItem      *remove_btn;  /* Remove toolbar button */
+  
+  GtkWidget        *searchbar;
 } ApplicationManagerData;
 
 /*
