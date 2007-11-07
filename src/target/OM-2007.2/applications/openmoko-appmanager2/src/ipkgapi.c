@@ -1092,4 +1092,17 @@ int ipkg_upgrade_cmd(char *pkg_name)
     return -1;
 }
 
-
+/*
+ * @brief Update the package list
+ *
+ */
+int ipkg_update_cmd ()
+{
+  args_t args;
+  
+  memset (&args, 0, sizeof (args));
+  
+  args_init (&args);
+  
+  return ipkg_lists_update (&args);
+}

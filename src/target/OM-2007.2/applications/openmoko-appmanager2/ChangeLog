@@ -1,5 +1,12 @@
 2007-11-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/ipkgapi.c:
+	* src/ipkgapi.h:
+
+	Add ipkg_update_cmd() to update the package lists
+
+2007-11-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/Makefile.am:
 	* src/am-progress-dialog.c:
 	* src/am-progress-dialog.h:

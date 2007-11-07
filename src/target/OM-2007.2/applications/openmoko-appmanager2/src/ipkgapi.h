@@ -88,6 +88,8 @@ int ipkg_install_cmd(char *pkg_name, char *dest_name, char **pkg_real_name);
 int ipkg_remove_cmd(char *pkg_name);
 int ipkg_search_cmd(char *pkg_name, PKG_LIST_HEAD *pkg_list_head);
 
+int ipkg_update_cmd ();
+
 void free_pkg_list(PKG_LIST_HEAD *head);
 void free_pkg_detail_info(PACKAGE_DETAIL_INFO *info);
 
