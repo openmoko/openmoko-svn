@@ -47,7 +47,7 @@ struct _MokoGsmdConnectionClass {
     /* SMS signals */
 
     /* GPRS signals */
-    
+
     /* Misc signals */
     void (*incoming_clip) (MokoGsmdConnection *self, const gchar *number);
     void (*network_registration) (MokoGsmdConnection *self,
@@ -56,6 +56,7 @@ struct _MokoGsmdConnectionClass {
                                   int cell);
     void (*trigger_signal_strength_event) (MokoGsmdConnection *self);
     void (*signal_strength_changed) (MokoGsmdConnection *self, int strength);
+    void (*cme_cms_error) (MokoGsmdConnection *self, int code);
 
     /* Future padding */
     void (*_moko_gsmdconn_1) (void);
