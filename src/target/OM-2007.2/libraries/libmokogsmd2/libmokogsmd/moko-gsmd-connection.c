@@ -472,15 +472,15 @@ moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on, GE
 
     if (!priv->handle)
     {
-      g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_CONNECT, "Error connecting to gsmd");
-      return;
+        g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_CONNECT, "Error connecting to gsmd");
+        return;
     }
 
     result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
 
-    if (result != 0)
+    if (result == -1)
     {
-      g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_POWER, "Error setting antenna power");
+         g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_POWER, "Error setting antenna power");
     }
 }
 

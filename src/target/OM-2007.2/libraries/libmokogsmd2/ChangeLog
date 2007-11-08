@@ -1,5 +1,11 @@
 2007-11-08	Michael Lauer	<mickey@openmoko.org>
 
+	* libmokogsmd/moko-gsmd-connection.c: (moko_gsmd_connection_set_antenna_power):
+	Fix error check. The return code of lgsm_phone_power is the return code of
+	socket::send(), hence we better check for != -1.
+
+2007-11-08	Michael Lauer	<mickey@openmoko.org>
+
 	* libmokogsmd/moko-gsmd-connection.c: Add GSMD_EVT_IN_ERROR
 	* Add signal "cme-cms-error" and send it forth.
 
