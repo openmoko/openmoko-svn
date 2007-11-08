@@ -48,6 +48,10 @@ application_manager_data_init (ApplicationManagerData *data)
   data->currentlist = NULL;
   data->selectedlist = NULL;
   data->installdialog = NULL;
+  data->filter_store = NULL;
+  data->install_btn = NULL;
+  data->remove_btn = NULL;
+  data->searchbar = NULL;
 
   for (i = 0; i < N_COUNT_PKG_STATUS; i++)
     {

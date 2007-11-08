@@ -8,12 +8,11 @@ openmoko_appmanager_SOURCES = appmanager-window.c\
                               tool-box.c\
                               detail-area.c\
                               appmanager-data.c\
-                              package-list.c\
                               pixbuf-list.c\
-                              apply-dialog.c\
                               install-dialog.c \
                               search-bar.c \
                               ipkg-utils.c \
-                              am-progress-dialog.c
+                              am-progress-dialog.c \
+                              package-store.c 
 
 openmoko_appmanager_LDADD = @OPENMOKO_LIBS@

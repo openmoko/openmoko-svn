@@ -25,6 +25,8 @@
 #include "navigation-area.h"
 #include "package-list.h"
 
+#include "ipkgapi.h"
+
 /*
  * @brief Create a detail area to the application manager data
  * @param appdata The application manager data
@@ -90,7 +92,7 @@ format_depends_list (char *dest, char *depends, int size)
  */
 void 
 detail_area_update_info (ApplicationManagerData *appdata, 
-                         gpointer pkg)
+                         IPK_PACKAGE *pkg)
 {
   GtkWidget      *textview;
   GtkTextBuffer  *buffer;
@@ -132,7 +134,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_get_end_iter (buffer, &end);
   pstart = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
-                          package_list_get_package_name (pkg),
+                          pkg->name,
                           -1);
 
   /* Insert the "\n" */
@@ -143,7 +145,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_get_end_iter (buffer, &end);
   pend = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
-                          package_list_get_package_maintainer (pkg),
+                          pkg->name,
                           -1);
 
   /* Set bold to the first line */
@@ -159,7 +161,7 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_get_end_iter (buffer, &end);
   pend = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
-                          package_list_get_package_version (pkg),
+                          pkg->version,
                           -1);
   gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
   gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
@@ -173,14 +175,14 @@ detail_area_update_info (ApplicationManagerData *appdata,
   gtk_text_buffer_get_end_iter (buffer, &end);
   pend = gtk_text_iter_get_offset (&end);
   gtk_text_buffer_insert (buffer, &end, 
-                          package_list_get_package_description (pkg),
+                          pkg->description,
                           -1);
   gtk_text_buffer_get_iter_at_offset (buffer, &start, pstart);
   gtk_text_buffer_get_iter_at_offset (buffer, &end, pend);
   gtk_text_buffer_apply_tag_by_name (buffer, "bold", &start, &end);
 
   /* Set the depends */
-  depends = package_list_get_package_depends (pkg);
+  depends = pkg->depends;
   if (depends != NULL)
     {
       char *dep;

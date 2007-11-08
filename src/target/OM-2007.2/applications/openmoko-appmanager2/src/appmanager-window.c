@@ -46,8 +46,8 @@ main (int argc, char* argv[])
   GtkWidget       *notebook;
   GtkWidget *searchbar;
   GtkWidget *vbox, *nav_vbox;
-
-  gint             ret;
+  
+  GtkTreeModel *pkg_list;
 
   g_debug ("application manager start up");
 
@@ -70,6 +70,9 @@ main (int argc, char* argv[])
 
   init_pixbuf_list (appdata);
 
+  /* create the package list store */
+  pkg_list = package_store_new ();
+
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (G_OBJECT (window), "delete_event",
                     G_CALLBACK (gtk_main_quit), NULL);
@@ -91,11 +94,11 @@ main (int argc, char* argv[])
 
   toolbox = tool_box_new (appdata);
   gtk_box_pack_start (GTK_BOX (nav_vbox), toolbox, FALSE, FALSE, 0);
-  
-  searchbar = search_bar_new (appdata);
+
+  searchbar = search_bar_new (appdata, pkg_list);
   gtk_box_pack_start (GTK_BOX (nav_vbox), searchbar, FALSE, FALSE, 0);
   
-  navigation = navigation_area_new (appdata);
+  navigation = navigation_area_new (appdata, pkg_list);
   gtk_box_pack_start (GTK_BOX (nav_vbox), navigation, TRUE, TRUE, 0);
   
 
@@ -104,6 +107,7 @@ main (int argc, char* argv[])
      gtk_image_new_from_stock (GTK_STOCK_FILE, GTK_ICON_SIZE_LARGE_TOOLBAR));
   gtk_container_child_set (GTK_CONTAINER (notebook), detail, "tab-expand", TRUE, NULL);
 
+#if 0
   /* Load the list of all package in the memory */
   ret = init_package_list (appdata);
   if (ret != OP_SUCCESS)
@@ -147,9 +151,10 @@ main (int argc, char* argv[])
       return -1;
     }
   }
-
   /* Add section list to the filter menu */
   package_list_add_section_to_filter_menu (appdata);
+#endif
+
   search_bar_set_active_filter (MOKO_SEARCH_BAR (searchbar), FILTER_INSTALLED);
 
   gtk_widget_show_all (GTK_WIDGET (window));

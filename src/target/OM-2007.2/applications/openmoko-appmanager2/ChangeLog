@@ -1,6 +1,28 @@
 2007-11-08  Thomas Wood  <thomas@openedhand.com>
 
 	* src/Makefile.am:
+	* src/apply-dialog.c:
+	* src/apply-dialog.h:
+	* src/appmanager-data.c: (application_manager_data_init):
+	* src/appmanager-window.c: (main):
+	* src/detail-area.c: (detail_area_update_info):
+	* src/detail-area.h:
+	* src/navigation-area.c: (on_selection_changed),
+	(model_filter_func), (navigation_area_new),
+	(treeview_get_selected_name):
+	* src/navigation-area.h:
+	* src/package-list.c:
+	* src/package-list.h:
+	* src/search-bar.c: (search_bar_new):
+	* src/search-bar.h:
+	* src/tool-box.c: (on_remove_clicked):
+
+	Replace previous package list implementation with a package list store
+	and a filter.
+
+2007-11-08  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am:
 	* src/appmanager-data.c: (application_manager_data_init):
 	* src/appmanager-data.h:
 	* src/appmanager-window.c: (main):

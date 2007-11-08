@@ -29,7 +29,7 @@ typedef enum
   FILTER_SELECTED
 } SearchBarFilter;
 
-GtkWidget* search_bar_new (ApplicationManagerData *appdata);
+GtkWidget* search_bar_new (ApplicationManagerData *appdatam, GtkTreeModel *pkg_list);
 void search_bar_add_filter_item (ApplicationManagerData *appdata, gchar *item);
 void search_bar_set_active_filter (MokoSearchBar *bar, SearchBarFilter filter);
 

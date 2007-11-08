@@ -19,9 +19,9 @@
 
 #include "appmanager-data.h"
 #include "navigation-area.h"
-#include "package-list.h"
+#include "package-store.h"
 
-
+#include "ipkgapi.h"
 
 static gboolean
 combo_seperator_func (GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
@@ -43,61 +43,10 @@ text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationMan
 static void
 combo_changed_cb (MokoSearchBar *searchbar, GtkComboBox *combo, ApplicationManagerData *data)
 {
-  int ret;
-  gchar *secname;
-  GtkTreeIter iter;
-  gpointer pkglist;
+  GtkTreeModel *filter;
   
-  if ((ret = gtk_combo_box_get_active (combo)) < 5)
-  {
-    switch (ret)
-    {
-      case 0:
-        /* installed */
-        g_debug ("Clicked the installed menuitem");
-        pkglist = application_manager_data_get_installedlist (data);
-        navigation_area_refresh_with_package_list (data, pkglist);
-        return;
-      case 1:  
-        /* upgradeable */
-        g_debug ("Clicked the upgradeable menuitem");
-        pkglist = application_manager_data_get_upgradelist (data);
-        navigation_area_refresh_with_package_list (data, pkglist);
-        return;
-      case 2:
-        /* selected */
-        g_debug ("Click the selected menuitem");
-        pkglist = application_manager_data_get_selectedlist (data);
-        navigation_area_refresh_with_package_list (data, pkglist);
-        return;
-    }
-  }
-
-  gtk_combo_box_get_active_iter (combo, &iter);
-  gtk_tree_model_get (data->filter_store, &iter, 0, &secname, -1);
-  
-  ret = strcmp (secname, PACKAGE_LIST_NO_SECTION_STRING);
-  if (ret == 0)
-  {
-    pkglist = application_manager_data_get_nosecpkglist (
-                    MOKO_APPLICATION_MANAGER_DATA (data));
-    navigation_area_refresh_with_package_list (
-                    MOKO_APPLICATION_MANAGER_DATA (data), 
-                    pkglist);
-    return;
-  }
-
-  pkglist = package_list_get_with_name (
-          MOKO_APPLICATION_MANAGER_DATA (data),
-          secname);
-  if (pkglist == NULL)
-  {
-    g_debug ("Can not find the section that named:%s", secname);
-    return;
-  }
-  navigation_area_refresh_with_package_list (
-          MOKO_APPLICATION_MANAGER_DATA (data),
-          pkglist);
+  filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
+  gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
 }
 
 static void
@@ -105,13 +54,59 @@ searchbar_toggled_cb (MokoSearchBar *searchbar, gboolean search, ApplicationMana
 {
 }
 
+gboolean
+section_search_hash (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GHashTable *hash)
+{
+  IPK_PACKAGE *pkg;
+
+  gtk_tree_model_get (model, iter, COL_POINTER, &pkg, -1);
+
+  if (!g_hash_table_lookup (hash, pkg->section))
+  {
+    g_hash_table_insert (hash, pkg->section, pkg->section);
+    g_debug ("hash table insert %s", pkg->section);
+  }
+
+  return FALSE;
+}
+
+void
+section_hash_insert (gchar *key, gchar *value, GtkListStore *list)
+{
+  gtk_list_store_insert_with_values (list, NULL, -1, 0, key, -1);
+}
+
+gboolean
+section_search_slist (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GSList **head)
+{
+  IPK_PACKAGE *pkg;
+
+  gtk_tree_model_get (model, iter, COL_POINTER, &pkg, -1);
+
+  if (!g_slist_find_custom (*head, pkg->section, (GCompareFunc) strcmp))
+  {
+    *head = g_slist_prepend(*head, pkg->section);
+    g_debug ("slist table insert %s", pkg->section);
+  }
+
+  return FALSE;
+}
+
+void
+slist_insert (gchar *value, GtkListStore *list)
+{
+  gtk_list_store_insert_with_values (list, NULL, -1, 0, value, -1);
+}
+
 GtkWidget *
-search_bar_new (ApplicationManagerData *appdata)
+search_bar_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
 {
   GtkWidget *combo;
   GtkWidget *searchbar;
   GtkListStore *filter;
   GtkCellRenderer *renderer;
+  GHashTable *hash;
+  /* GSList *slist = NULL; */
 
   filter = gtk_list_store_new (1, G_TYPE_STRING);
   appdata->filter_store = GTK_TREE_MODEL (filter);
@@ -120,6 +115,18 @@ search_bar_new (ApplicationManagerData *appdata)
   gtk_list_store_insert_with_values (filter, NULL, FILTER_UPGRADEABLE, 0, "Upgradeable", -1);
   gtk_list_store_insert_with_values (filter, NULL, FILTER_SELECTED, 0, "Selected", -1);
   gtk_list_store_insert_with_values (filter, NULL, 3, 0, NULL, -1);
+
+  /* profile these two methods to see which is quicker */
+  hash = g_hash_table_new (g_str_hash, g_str_equal);
+  gtk_tree_model_foreach (pkg_list, (GtkTreeModelForeachFunc) section_search_hash, hash);
+  g_hash_table_foreach (hash, (GHFunc) section_hash_insert, filter);
+  g_hash_table_unref (hash);
+  
+#if 0
+  gtk_tree_model_foreach (pkg_list, (GtkTreeModelForeachFunc) section_search_slist, &slist);
+  g_slist_foreach (slist, slist_insert, filter);
+  g_slist_free (slist);
+#endif
   
   renderer = gtk_cell_renderer_text_new ();
   

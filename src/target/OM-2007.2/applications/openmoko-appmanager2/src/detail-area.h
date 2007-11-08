@@ -23,11 +23,12 @@
 #include <gtk/gtk.h>
 
 #include "appmanager-data.h"
+#include "ipkgapi.h"
 
 GtkWidget *detail_area_new (ApplicationManagerData *appdata);
 
 void detail_area_update_info (ApplicationManagerData *appdata, 
-                              gpointer pkg);
+                              IPK_PACKAGE *pkg);
 
 #endif
 
