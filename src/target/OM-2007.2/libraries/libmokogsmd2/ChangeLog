@@ -1,3 +1,7 @@
+2007-11-08	Michael Lauer	<mickey@openmoko.org>
+
+	* libmokogsmd/moko-gsmd-connection.c: Add GSMD_EVT_IN_ERROR
+
 2007-11-05  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c: (moko_gsmd_connection_init): Don't

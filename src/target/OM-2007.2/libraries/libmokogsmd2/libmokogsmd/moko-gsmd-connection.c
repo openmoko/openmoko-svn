@@ -12,7 +12,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/12/21 18:03:04 $) [$Author: mickey $]
  */
 
 #include "moko-gsmd-connection.h"
@@ -89,7 +88,10 @@ enum {
     SIGNAL_GSMD_EVT_CALL_WAIT      = 10, /* Call Waiting */
     SIGNAL_GSMD_EVT_TIMEZONE       = 11, /* Timezone change */
     SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12, /* To which events are we subscribed */
-    SIGNAL_GSMD_EVT_CIPHER         = 13, /* Chiphering Information */
+    SIGNAL_GSMD_EVT_CIPHER         = 13, /* Ciphering Information */
+    SIGNAL_GSMD_EVT_IN_CBM         = 14, /* Incoming Cell Broadcast message */
+    SIGNAL_GSMD_EVT_IN_DS          = 15, /* SMS Status Report */
+    SIGNAL_GSMD_EVT_IN_ERROR       = 16, /* CME/CMS error */
     LAST_SIGNAL,
 };
 static guint moko_gsmd_connection_signals[LAST_SIGNAL] = { 0 };
@@ -110,12 +112,12 @@ moko_gsmd_connection_dispose(GObject* object)
 {
     moko_debug( "dispose" );
     MokoGsmdConnectionPrivate* priv;
-    
+
     priv = GSMD_CONNECTION_GET_PRIVATE( MOKO_GSMD_CONNECTION( object ) );
 
     g_source_destroy( (GSource*) priv->source );
     lgsm_exit( priv->handle );
-    
+
     /* call parent destructor */
     if (G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose)
         G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose (object);
@@ -226,12 +228,16 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         G_TYPE_INT,
         NULL );
 #if 0
-    // TODO add SIGNAL_GSMD_EVT_OUT_COLP       = 9, /* Outgoing COLP */
+    //TODO add SIGNAL_GSMD_EVT_OUT_COLP       = 9, /* Outgoing COLP */
     //TODO add SIGNAL_GSMD_EVT_CALL_WAIT      = 10, /* Call Waiting */
     //TODO add SIGNAL_GSMD_EVT_TIMEZONE       = 11, /* Timezone change */
     //TODO add SIGNAL_GSMD_EVT_SUBSCRIPTIONS  = 12, /* To which events are 
                                                        we subscribed to */
     //TODO add SIGNAL_GSMD_EVT_CIPHER         = 13, /* Chiphering Information */
+    //TODO add SIGNAL_GSMD_EVT_IN_CBM         = 14, /* Incoming Cell Broadcast message */
+    //TODO add SIGNAL_GSMD_EVT_IN_DS          = 15, /* SMS Status Report */
+    //TODO add SIGNAL_GSMD_EVT_IN_ERROR       = 16, /* CME/CMS error */
+
 #endif
     /* virtual methods */
 
@@ -358,18 +364,20 @@ _moko_gsmd_connection_eventhandler (struct lgsm_handle *lh,
             /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SUBSCRIPTIONS]; */
             break;
         case GSMD_EVT_CIPHER:
-            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER];*/
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_CIPHER]; */
             break;
         case GSMD_EVT_IN_CBM:
-            /* moko_gsmd_connection_signals[SIGNAL_GSMD_IN_CBM];*/
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_IN_CBM]; */
             break;
         case GSMD_EVT_IN_DS:
-            /* moko_gsmd_connection_signals[SIGNAL_GSMD_IN_DS];*/
+            /* moko_gsmd_connection_signals[SIGNAL_GSMD_IN_DS]; */
+            break;
+        case GSMD_EVT_IN_ERROR:
+            /* moko_gsmd_connectioN_signals[SIGNAL_GSMD_IN_ERROR]; */
             break;
         default:
             g_critical( "_moko_gsmd_connection_eventhandler: %s %d",
-                        "unhandled event type =", 
-                        evt_type );
+                        "unhandled event type =", evt_type );
     }
     return 0;
 }
@@ -389,7 +397,7 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
     moko_debug( "moko_gsmd_connection_init" );
     /* fail here on more than one MokoGsmdConnection object per process */
     g_assert( !moko_gsmd_connection_instance);
-    
+
     moko_gsmd_connection_instance = self;
 
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
@@ -403,7 +411,7 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
         {
             g_warning( "libgsmd: %s",
                        "can't connect to gsmd. You won't receive any events." );
-        
+
             return;
         }
     }
@@ -446,7 +454,7 @@ moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on, GE
 {
     MokoGsmdConnectionPrivate* priv;
     gint result;
-    
+
     g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
 
@@ -455,7 +463,7 @@ moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on, GE
       g_set_error (error, MOKO_GSMD_ERROR, MOKO_GSMD_ERROR_CONNECT, "Error connecting to gsmd");
       return;
     }
-    
+
     result = lgsm_phone_power( priv->handle, on ? 1 : 0 );
 
     if (result != 0)
@@ -468,7 +476,7 @@ void
 moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
 {
     MokoGsmdConnectionPrivate* priv;
-    
+
     g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
     g_return_if_fail( pin );
     g_return_if_fail( strlen( pin ) >= 4 );
