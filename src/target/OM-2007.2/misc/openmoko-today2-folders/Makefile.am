@@ -1,4 +1,4 @@
-folderdir = $(datadir)/today/vfolders
+folderdir = $(datadir)/matchbox/vfolders
 dist_folder_DATA = \
 	Root.order \
 	All.directory \

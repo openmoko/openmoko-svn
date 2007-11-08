@@ -1,3 +1,7 @@
+2007-11-05	Michael Lauer	<mickey@openmoko.org>
+
+		* Makefile.am: Catch up with libtaku changes. #closes 985
+
 2007-11-01  Stefan Schmidt <stefan@openmoko.org>
 
 		Make sure PIM.directory gets installed. Thanks Ross Burton for spotting.
