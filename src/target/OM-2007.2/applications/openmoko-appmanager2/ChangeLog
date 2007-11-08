@@ -1,3 +1,12 @@
+2007-11-08  Thomas Wood  <thomas@openedhand.com>
+
+	* src/Makefile.am:
+	* src/appmanager-data.c: (application_manager_data_init):
+	* src/appmanager-data.h:
+	* src/appmanager-window.c: (main):
+
+	Remove menus from build
+
 2007-11-07  Thomas Wood  <thomas@openedhand.com>
 
 	* src/appmanager-data.h:

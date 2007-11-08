@@ -37,7 +37,6 @@ application_manager_data_init (ApplicationManagerData *data)
 
   data->mwindow = NULL;
   data->menubox = NULL;
-  data->selectmenu = NULL;
   data->searchentry = NULL;
   data->tvpkglist = NULL;
   data->tvdetail = NULL;
@@ -97,20 +96,6 @@ application_manager_data_set_menubox (ApplicationManagerData *appdata,
   g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
 
   appdata->menubox = menubox;
-}
-
-/*
- * @brief Set the select menu to the application manager data
- * @param appdata The application manager data struct
- * @param selectmenu The select menu
- */
-void 
-application_manager_data_set_select_menu (ApplicationManagerData *appdata,
-                                          GtkMenu *selectmenu)
-{
-  g_return_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata));
-
-  appdata->selectmenu = selectmenu;
 }
 
 /*
@@ -385,19 +370,6 @@ application_manager_get_menubox (ApplicationManagerData *appdata)
   g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
 
   return appdata->menubox;
-}
-
-/*
- * @brief Get the select menu from the application manager data
- * @param appdata The application manager data
- * @return The select menu
- */
-GtkMenu *
-application_manager_get_select_menu (ApplicationManagerData *appdata)
-{
-  g_return_val_if_fail (MOKO_IS_APPLICATION_MANAGER_DATA (appdata), NULL);
-
-  return appdata->selectmenu;
 }
 
 /*

@@ -55,7 +55,6 @@ typedef struct _ApplicationManagerData {
 
   GtkWidget        *mwindow;           /* The main window */
   GtkWidget        *menubox;           /* The menubox */
-  GtkMenu          *selectmenu;        /* The select menu */
   GtkEntry         *searchentry;       /* The search entry */
   GtkWidget        *tvpkglist;         /* The treeview of the package list */
   GtkWidget        *tvdetail;          /* The textview of the details info */

@@ -28,7 +28,6 @@
 #include "appmanager-data.h"
 #include "errorcode.h"
 #include "package-list.h"
-#include "select-menu.h"
 #include "search-bar.h"
 
 #include "ipkg-utils.h"
@@ -41,10 +40,6 @@ main (int argc, char* argv[])
 {
   ApplicationManagerData *appdata;
   GtkWidget       *window;
-  GtkWidget       *menubox;
-  GtkWidget       *menuitem;
-  GtkWidget       *appmenu;
-  GtkWidget       *selectmenu;
   GtkWidget       *navigation;
   GtkWidget       *toolbox;
   GtkWidget       *detail;
@@ -83,27 +78,6 @@ main (int argc, char* argv[])
   /* main vbox */
   vbox = gtk_vbox_new (FALSE, 0);
   gtk_container_add (GTK_CONTAINER (appdata->mwindow), vbox);
-
-  appmenu = application_menu_new (appdata);
-
-  selectmenu = moko_select_menu_new (appdata);
-  application_manager_data_set_select_menu (appdata, GTK_MENU (selectmenu));
-
-
-  /* Save the menubox to the application manager data */
-  menubox = gtk_menu_bar_new ();
-  gtk_box_pack_start (GTK_BOX (vbox), menubox, FALSE, FALSE, 0);
-
-  application_manager_data_set_menubox (appdata, menubox);
-
-
-  menuitem = gtk_menu_item_new_with_label ("Package");
-  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), appmenu);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
-
-  menuitem = gtk_menu_item_new_with_label ("Select");
-  gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), selectmenu);
-  gtk_menu_shell_append (GTK_MENU_SHELL (menubox), menuitem);
 
   notebook = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);
