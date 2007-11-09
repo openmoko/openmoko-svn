@@ -23,10 +23,7 @@
 
 #include "tool-box.h"
 #include "navigation-area.h"
-#include "package-list.h"
 #include "appmanager-window.h"
-#include "apply-dialog.h"
-#include "install-dialog.h"
 #include "ipkg-utils.h"
 
 /*

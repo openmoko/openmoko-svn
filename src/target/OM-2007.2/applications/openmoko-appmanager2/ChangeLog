@@ -1,5 +1,15 @@
 2007-11-09  Thomas Wood  <thomas@openedhand.com>
 
+	* src/appmanager-window.c:
+	* src/detail-area.c:
+	* src/install-dialog.c:
+	* src/tool-box.c:
+
+	Remove references to missing header files
+
+
+2007-11-09  Thomas Wood  <thomas@openedhand.com>
+
 	* src/package-store.c:
 	* src/package-store.h:
 

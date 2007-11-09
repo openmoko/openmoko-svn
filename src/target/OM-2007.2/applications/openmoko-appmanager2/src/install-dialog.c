@@ -22,7 +22,6 @@
 
 #include "install-dialog.h"
 #include "appmanager-window.h"
-#include "package-list.h"
 
 static void install_dialog_class_init (InstallDialogClass *klass);
 static void install_dialog_init (InstallDialog *self);

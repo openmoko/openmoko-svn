@@ -23,7 +23,6 @@
 
 #include "detail-area.h"
 #include "navigation-area.h"
-#include "package-list.h"
 
 #include "ipkgapi.h"
 
