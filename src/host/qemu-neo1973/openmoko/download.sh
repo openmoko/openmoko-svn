@@ -60,6 +60,17 @@ download "$kernel_image" "" || exit -1
 download "$rootfs_image" "" || exit -1
 download "$uboot_image" dev_ || exit -1
 
+# Get this computer's aproximated geographic latitude/longitude for
+# QEMU GPS emulation start position, taking advantage of a working
+# internet connection.  If this fails or isn't accurate, we don't
+# really care, QEMU will then use some defaults.
+#
+# If the "position" file contains no position data or wrong data,
+# please consider contributing to the hostip.info database by
+# correcting the information at http://www.hostip.info/correct.html
+echo Retrieving position
+lynx -dump http://api.hostip.info/rough.php?position=true > position
+
 echo
 echo "    "Now use openmoko/flash.sh to install OpenMoko to NAND Flash.
 echo

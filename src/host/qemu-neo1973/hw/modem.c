@@ -262,7 +262,7 @@ static void modem_ring(void *opaque)
     s->call_notification(GN_CALL_Incoming, &call_info, &s->state);
 }
 
-CharDriverState *modem_init()
+CharDriverState *modem_init(void)
 {
     struct modem_s *s = (struct modem_s *)
             qemu_mallocz(sizeof(struct modem_s));

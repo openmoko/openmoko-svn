@@ -1621,6 +1621,10 @@ extern struct modem_ops_s {
     void (*ring)(void *opaque);
 } modem_ops;
 
+/* gps.c */
+CharDriverState *gps_antaris_serial_init();
+void gps_enable(CharDriverState *chr, int enable);
+
 /* PCMCIA/Cardbus */
 
 struct pcmcia_socket_s {
