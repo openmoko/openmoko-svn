@@ -1,3 +1,10 @@
+2007-11-09  Thomas Wood  <thomas@openedhand.com>
+
+	* src/package-store.c:
+	* src/package-store.h:
+
+	Add package-store to the repository
+
 2007-11-08  Thomas Wood  <thomas@openedhand.com>
 
 	* src/Makefile.am:
