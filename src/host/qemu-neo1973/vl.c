@@ -174,6 +174,7 @@ int nb_nics;
 NICInfo nd_table[MAX_NICS];
 int vm_running;
 int rtc_utc = 1;
+int rtc_start_date = -1; /* -1 means now */
 int cirrus_vga_enabled = 1;
 int vmsvga_enabled = 0;
 #ifdef TARGET_SPARC
@@ -1223,9 +1224,6 @@ static void enable_sigio_timer(int fd)
     /* timer signal */
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
-#if defined (TARGET_I386) && defined(USE_CODE_COPY)
-    act.sa_flags |= SA_ONSTACK;
-#endif
     act.sa_handler = host_alarm_handler;
 
     sigaction(SIGIO, &act, NULL);
@@ -1323,9 +1321,6 @@ static int dynticks_start_timer(struct qemu_alarm_timer *t)
 
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
-#if defined(TARGET_I386) && defined(USE_CODE_COPY)
-    act.sa_flags |= SA_ONSTACK;
-#endif
     act.sa_handler = host_alarm_handler;
 
     sigaction(SIGALRM, &act, NULL);
@@ -1400,9 +1395,6 @@ static int unix_start_timer(struct qemu_alarm_timer *t)
     /* timer signal */
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
-#if defined(TARGET_I386) && defined(USE_CODE_COPY)
-    act.sa_flags |= SA_ONSTACK;
-#endif
     act.sa_handler = host_alarm_handler;
 
     sigaction(SIGALRM, &act, NULL);
@@ -7310,9 +7302,6 @@ static void help(int exitcode)
            "-kernel-kqemu   enable KQEMU full virtualization (default is user mode only)\n"
            "-no-kqemu       disable KQEMU kernel module usage\n"
 #endif
-#ifdef USE_CODE_COPY
-           "-no-code-copy   disable code copy acceleration\n"
-#endif
 #ifdef TARGET_I386
            "-std-vga        simulate a standard VGA card with VESA Bochs Extensions\n"
            "                (default is CL-GD5446 PCI VGA)\n"
@@ -7431,6 +7420,7 @@ enum {
     QEMU_OPTION_prom_env,
     QEMU_OPTION_old_param,
     QEMU_OPTION_clock,
+    QEMU_OPTION_startdate,
 };
 
 typedef struct QEMUOption {
@@ -7538,17 +7528,9 @@ const QEMUOption qemu_options[] = {
     { "old-param", 0, QEMU_OPTION_old_param },
 #endif
     { "clock", HAS_ARG, QEMU_OPTION_clock },
+    { "startdate", HAS_ARG, QEMU_OPTION_startdate },
     { NULL },
 };
-
-#if defined (TARGET_I386) && defined(USE_CODE_COPY)
-
-/* this stack is only used during signal handling */
-#define SIGNAL_STACK_SIZE 32768
-
-static uint8_t *signal_stack;
-
-#endif
 
 /* password input */
 
@@ -8342,6 +8324,42 @@ int main(int argc, char **argv)
 #endif
             case QEMU_OPTION_clock:
                 configure_alarms(optarg);
+                break;
+            case QEMU_OPTION_startdate:
+                {
+                    struct tm tm;
+                    if (!strcmp(optarg, "now")) {
+                        rtc_start_date = -1;
+                    } else {
+                        if (sscanf(optarg, "%d-%d-%dT%d:%d:%d",
+                               &tm.tm_year,
+                               &tm.tm_mon,
+                               &tm.tm_mday,
+                               &tm.tm_hour,
+                               &tm.tm_min,
+                               &tm.tm_sec) == 6) {
+                            /* OK */
+                        } else if (sscanf(optarg, "%d-%d-%d",
+                                          &tm.tm_year,
+                                          &tm.tm_mon,
+                                          &tm.tm_mday) == 3) {
+                            tm.tm_hour = 0;
+                            tm.tm_min = 0;
+                            tm.tm_sec = 0;
+                        } else {
+                            goto date_fail;
+                        }
+                        tm.tm_year -= 1900;
+                        tm.tm_mon--;
+                        rtc_start_date = timegm(&tm);
+                        if (rtc_start_date == -1) {
+                        date_fail:
+                            fprintf(stderr, "Invalid date format. Valid format are:\n"
+                                    "'now' or '2006-06-17T16:01:21' or '2006-06-17'\n");
+                            exit(1);
+                        }
+                    }
+                }
                 break;
             }
         }

@@ -339,10 +339,10 @@ void tb_flush(CPUState *env1)
 {
     CPUState *env;
 #if defined(DEBUG_FLUSH)
-    printf("qemu: flush code_size=%d nb_tbs=%d avg_tb_size=%d\n",
-           code_gen_ptr - code_gen_buffer,
-           nb_tbs,
-           nb_tbs > 0 ? (code_gen_ptr - code_gen_buffer) / nb_tbs : 0);
+    printf("qemu: flush code_size=%ld nb_tbs=%d avg_tb_size=%ld\n",
+           (unsigned long)(code_gen_ptr - code_gen_buffer),
+           nb_tbs, nb_tbs > 0 ?
+           ((unsigned long)(code_gen_ptr - code_gen_buffer)) / nb_tbs : 0);
 #endif
     nb_tbs = 0;
 
@@ -889,7 +889,7 @@ static inline void tb_alloc_page(TranslationBlock *tb,
         mprotect(g2h(page_addr), qemu_host_page_size,
                  (prot & PAGE_BITS) & ~PAGE_WRITE);
 #ifdef DEBUG_TB_INVALIDATE
-        printf("protecting code page: 0x%08lx\n",
+        printf("protecting code page: 0x" TARGET_FMT_lx "\n",
                page_addr);
 #endif
     }
@@ -944,11 +944,6 @@ void tb_link_phys(TranslationBlock *tb,
     tb->jmp_first = (TranslationBlock *)((long)tb | 2);
     tb->jmp_next[0] = NULL;
     tb->jmp_next[1] = NULL;
-#ifdef USE_CODE_COPY
-    tb->cflags &= ~CF_FP_USED;
-    if (tb->cflags & CF_TB_FP_USED)
-        tb->cflags |= CF_FP_USED;
-#endif
 
     /* init original jump addresses */
     if (tb->tb_next_offset[0] != 0xffff)
@@ -1875,6 +1870,33 @@ void page_set_flags(target_ulong start, target_ulong end, int flags)
     spin_unlock(&tb_lock);
 }
 
+int page_check_range(target_ulong start, target_ulong len, int flags)
+{
+    PageDesc *p;
+    target_ulong end;
+    target_ulong addr;
+
+    end = TARGET_PAGE_ALIGN(start+len); /* must do before we loose bits in the next step */
+    start = start & TARGET_PAGE_MASK;
+
+    if( end < start )
+        /* we've wrapped around */
+        return -1;
+    for(addr = start; addr < end; addr += TARGET_PAGE_SIZE) {
+        p = page_find(addr >> TARGET_PAGE_BITS);
+        if( !p )
+            return -1;
+        if( !(p->flags & PAGE_VALID) )
+            return -1;
+
+        if (!(p->flags & PAGE_READ) && (flags & PAGE_READ) )
+            return -1;
+        if (!(p->flags & PAGE_WRITE) && (flags & PAGE_WRITE) )
+            return -1;
+    }
+    return 0;
+}
+
 /* called from signal handler: invalidate the code and unprotect the
    page. Return TRUE if the fault was succesfully handled. */
 int page_unprotect(target_ulong address, unsigned long pc, void *puc)
@@ -2062,7 +2084,7 @@ void qemu_ram_free(ram_addr_t addr)
 static uint32_t unassigned_mem_readb(void *opaque, target_phys_addr_t addr)
 {
 #ifdef DEBUG_UNASSIGNED
-    printf("Unassigned mem read " TARGET_FMT_lx "\n", addr);
+    printf("Unassigned mem read " TARGET_FMT_plx "\n", addr);
 #endif
 #ifdef TARGET_SPARC
     do_unassigned_access(addr, 0, 0, 0);
@@ -2075,7 +2097,7 @@ static uint32_t unassigned_mem_readb(void *opaque, target_phys_addr_t addr)
 static void unassigned_mem_writeb(void *opaque, target_phys_addr_t addr, uint32_t val)
 {
 #ifdef DEBUG_UNASSIGNED
-    printf("Unassigned mem write " TARGET_FMT_lx " = 0x%x\n", addr, val);
+    printf("Unassigned mem write " TARGET_FMT_plx " = 0x%x\n", addr, val);
 #endif
 #ifdef TARGET_SPARC
     do_unassigned_access(addr, 1, 0, 0);

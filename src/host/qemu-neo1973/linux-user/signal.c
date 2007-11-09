@@ -415,11 +415,7 @@ static void host_signal_handler(int host_signum, siginfo_t *info,
 
     /* the CPU emulator uses some host signals to detect exceptions,
        we we forward to it some signals */
-    if (host_signum == SIGSEGV || host_signum == SIGBUS
-#if defined(TARGET_I386) && defined(USE_CODE_COPY)
-        || host_signum == SIGFPE
-#endif
-        ) {
+    if (host_signum == SIGSEGV || host_signum == SIGBUS) {
         if (cpu_signal_handler(host_signum, info, puc))
             return;
     }
@@ -1943,7 +1939,7 @@ void sparc64_get_context(CPUSPARCState *env)
     force_sig(SIGSEGV);
 }
 #endif
-#elif defined(TARGET_MIPS64)
+#elif defined(TARGET_ABI_MIPSN64)
 
 # warning signal handling not implemented
 
@@ -1972,7 +1968,7 @@ long do_rt_sigreturn(CPUState *env)
     return -ENOSYS;
 }
 
-#elif defined(TARGET_MIPSN32)
+#elif defined(TARGET_ABI_MIPSN32)
 
 # warning signal handling not implemented
 
@@ -2001,7 +1997,7 @@ long do_rt_sigreturn(CPUState *env)
     return -ENOSYS;
 }
 
-#elif defined(TARGET_MIPS)
+#elif defined(TARGET_ABI_MIPSO32)
 
 struct target_sigcontext {
     uint32_t   sc_regmask;     /* Unused */

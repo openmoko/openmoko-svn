@@ -83,6 +83,7 @@ For system emulation, the following hardware targets are supported:
 @item Spitz, Akita, Borzoi and Terrier PDAs (PXA270 processor)
 @item Freescale MCF5208EVB (ColdFire V2).
 @item Arnewsh MCF5206 evaluation board (ColdFire V2).
+@item Palm Tungsten|E PDA (OMAP310 processor)
 @end itemize
 
 For user emulation, x86, PowerPC, ARM, MIPS, Sparc32/64 and ColdFire(m68k) CPUs are supported.
@@ -266,6 +267,11 @@ qemu -soundhw ?
 Set the real time clock to local time (the default is to UTC
 time). This option is needed to have correct date in MS-DOS or
 Windows.
+
+@item -startdate date
+Set the initial date of the real time clock. Valid format for
+@var{date} are: @code{now} or @code{2006-06-17T16:01:21} or
+@code{2006-06-17}. The default value is @code{now}.
 
 @item -pidfile file
 Store the QEMU process PID in @var{file}. It is useful if you launch QEMU
@@ -2206,6 +2212,29 @@ Secure Digital card connected to PXA MMC/SD host
 Three on-chip UARTs
 @item
 WM8750 audio CODEC on I@math{^2}C and I@math{^2}S busses
+@end itemize
+
+The Palm Tungsten|E PDA (codename "Cheetah") emulation includes the
+following elements:
+
+@itemize @minus
+@item
+Texas Instruments OMAP310 System-on-chip (ARM 925T core)
+@item
+ROM and RAM memories (ROM firmware image can be loaded with -option-rom)
+@item
+On-chip LCD controller
+@item
+On-chip Real Time Clock
+@item
+TI TSC2102i touchscreen controller / analog-digital converter / Audio
+CODEC, connected through MicroWire and I@math{^2}S busses
+@item
+GPIO-connected matrix keypad
+@item
+Secure Digital card connected to OMAP MMC/SD host
+@item
+Three on-chip UARTs
 @end itemize
 
 A Linux 2.6 test image is available on the QEMU web site. More
