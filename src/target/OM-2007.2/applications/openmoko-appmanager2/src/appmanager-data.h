@@ -75,6 +75,9 @@ typedef struct _ApplicationManagerData {
   GtkToolItem      *remove_btn;  /* Remove toolbar button */
   
   GtkWidget        *searchbar;
+  /* these are used to optimise the filter function */
+  gboolean          searchbar_name_search;
+  const gchar      *searchbar_needle;
 } ApplicationManagerData;
 
 /*

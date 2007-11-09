@@ -71,55 +71,29 @@ on_selection_changed (GtkTreeSelection *selection,
  */
 
 gboolean
-model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerData *appdata)
+model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerData *data)
 {
-  gboolean result = TRUE;
+  IPK_PACKAGE *pkg;
   
-  if (!appdata->searchbar)
+  if (!data->searchbar_needle)
+    return TRUE;
+  
+  gtk_tree_model_get (model, iter, COL_POINTER, &pkg, -1);
+  
+  if (!pkg)
     return FALSE;
-    
-  
-  if (moko_search_bar_search_visible (MOKO_SEARCH_BAR (appdata->searchbar)))
+
+ 
+  if (data->searchbar_name_search)
   {
-    gchar *haystack;
-    const gchar *needle;
-    GtkEntry *entry;
-    
-    gtk_tree_model_get (model, iter, COL_NAME, &haystack, -1);
-    
-    entry = moko_search_bar_get_entry (MOKO_SEARCH_BAR (appdata->searchbar));
-    needle = gtk_entry_get_text (entry);
-    
-    result = (strstr (haystack, needle) != NULL);
-    
-    g_free (haystack);
-    return result;
+    return (strstr (pkg->name, data->searchbar_needle) != NULL);
   }
   else
   {
-    GtkComboBox *combo;
-    GtkTreeIter cb_iter;
-    GtkTreeModel *cb_model;
-    gchar *needle;
-    IPK_PACKAGE *pkg;
-    
-    combo = moko_search_bar_get_combo_box (MOKO_SEARCH_BAR (appdata->searchbar));
-    if (!gtk_combo_box_get_active_iter (combo, &cb_iter))
-      return FALSE;
-    cb_model = gtk_combo_box_get_model (combo);
-    if (!cb_model) return FALSE;
-    gtk_tree_model_get (cb_model, &cb_iter, 0, &needle, -1);
-
-    gtk_tree_model_get (model, iter, COL_POINTER, &pkg, -1);
-
-    if (pkg && pkg->section && needle && !strcmp (pkg->section, needle))
-      result = TRUE;
-    else
-      result = FALSE;
-
-    g_free (needle);
-    return result;
+    return (!strcmp (pkg->section, data->searchbar_needle));
   }
+  
+
 }
 
 /*

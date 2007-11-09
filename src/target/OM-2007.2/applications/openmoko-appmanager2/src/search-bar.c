@@ -35,7 +35,15 @@ static void
 text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationManagerData *data)
 {
   GtkTreeModel *filter;
+  GtkEntry *entry;
+  const gchar *needle;
   
+  entry = moko_search_bar_get_entry (MOKO_SEARCH_BAR (data->searchbar));
+  needle = gtk_entry_get_text (entry);
+ 
+  data->searchbar_name_search = TRUE;
+  data->searchbar_needle = needle;
+
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
 }
@@ -44,6 +52,22 @@ static void
 combo_changed_cb (MokoSearchBar *searchbar, GtkComboBox *combo, ApplicationManagerData *data)
 {
   GtkTreeModel *filter;
+  const gchar *needle;
+  GtkTreeIter cb_iter;
+  GtkTreeModel *cb_model;
+
+  if (!combo)
+    combo = moko_search_bar_get_combo_box (MOKO_SEARCH_BAR (data->searchbar));
+
+  if (!gtk_combo_box_get_active_iter (combo, &cb_iter))
+    return;
+
+  cb_model = gtk_combo_box_get_model (combo);
+  gtk_tree_model_get (cb_model, &cb_iter, 0, &needle, -1);
+  
+  data->searchbar_name_search = FALSE;
+  data->searchbar_needle = needle;
+
   
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
@@ -51,7 +75,11 @@ combo_changed_cb (MokoSearchBar *searchbar, GtkComboBox *combo, ApplicationManag
 
 static void
 searchbar_toggled_cb (MokoSearchBar *searchbar, gboolean search, ApplicationManagerData *data)
-{
+{  
+  if (search)
+    text_changed_cb (searchbar, NULL, data);
+  else
+    combo_changed_cb (searchbar, NULL, data);
 }
 
 gboolean
