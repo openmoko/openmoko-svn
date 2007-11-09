@@ -1,5 +1,10 @@
 2007-11-09  Thomas Wood  <thomas@openedhand.com>
 
+	* src/search-bar.c: (search_bar_new): Sort the categories before adding
+	 to the combobox
+
+2007-11-09  Thomas Wood  <thomas@openedhand.com>
+
 	* src/appmanager-window.c:
 	* src/detail-area.c:
 	* src/install-dialog.c:

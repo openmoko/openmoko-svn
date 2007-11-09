@@ -105,28 +105,29 @@ search_bar_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
   GtkWidget *searchbar;
   GtkListStore *filter;
   GtkCellRenderer *renderer;
-  GHashTable *hash;
-  /* GSList *slist = NULL; */
+  /* GHashTable *hash; */
+  GSList *slist = NULL;
 
   filter = gtk_list_store_new (1, G_TYPE_STRING);
   appdata->filter_store = GTK_TREE_MODEL (filter);
 
   gtk_list_store_insert_with_values (filter, NULL, FILTER_INSTALLED, 0, "Installed", -1);
   gtk_list_store_insert_with_values (filter, NULL, FILTER_UPGRADEABLE, 0, "Upgradeable", -1);
-  gtk_list_store_insert_with_values (filter, NULL, FILTER_SELECTED, 0, "Selected", -1);
   gtk_list_store_insert_with_values (filter, NULL, 3, 0, NULL, -1);
 
   /* profile these two methods to see which is quicker */
+#if 0
   hash = g_hash_table_new (g_str_hash, g_str_equal);
   gtk_tree_model_foreach (pkg_list, (GtkTreeModelForeachFunc) section_search_hash, hash);
   g_hash_table_foreach (hash, (GHFunc) section_hash_insert, filter);
   g_hash_table_unref (hash);
-  
-#if 0
-  gtk_tree_model_foreach (pkg_list, (GtkTreeModelForeachFunc) section_search_slist, &slist);
-  g_slist_foreach (slist, slist_insert, filter);
-  g_slist_free (slist);
 #endif
+  
+  gtk_tree_model_foreach (pkg_list, (GtkTreeModelForeachFunc) section_search_slist, &slist);
+  slist = g_slist_sort (slist, (GCompareFunc) strcmp);
+  g_slist_foreach (slist, (GFunc) slist_insert, filter);
+  g_slist_free (slist);
+
   
   renderer = gtk_cell_renderer_text_new ();
   
