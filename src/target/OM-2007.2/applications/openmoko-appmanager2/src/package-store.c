@@ -28,6 +28,7 @@ package_store_new ()
   IPK_PACKAGE *pkg;
   PKG_LIST_HEAD list;
   int ret;
+  GRegex *regex;
   
   ipkg_initialize (0);
   
@@ -40,15 +41,20 @@ package_store_new ()
   
   pkg = list.pkg_list;
   
+  regex = g_regex_new ("(-doc$|-dev$|-dbg$|-locale)", G_REGEX_OPTIMIZE, 0, NULL);
+  
   while (pkg)
   {
-    gtk_list_store_insert_with_values (store, NULL, -1,
+    if (!g_regex_match (regex, pkg->name, 0, NULL))
+      gtk_list_store_insert_with_values (store, NULL, -1,
                                        COL_STATUS, pkg->state_status,
                                        COL_NAME, pkg->name,
                                        COL_POINTER, pkg,
                                        -1);
     pkg = pkg->next;
   }
+  
+  g_regex_unref (regex);
 
   return GTK_TREE_MODEL (store);
 }
