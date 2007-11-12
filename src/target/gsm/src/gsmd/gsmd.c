@@ -277,23 +277,26 @@ static int set_baudrate(int fd, int baudrate, int hwflow)
 		return -EINVAL;
 	
 	i = tcgetattr(fd, &ti);
-	if (i < 0)
-		return i;
+	if (i < 0) {
+                return -errno;
+        }
 	
 	i = cfsetispeed(&ti, B0);
-	if (i < 0)
-		return i;
+	if (i < 0) {
+                return -errno;
+        }
 	
 	i = cfsetospeed(&ti, bd);
-	if (i < 0)
-		return i;
+	if (i < 0) {
+                return -errno;
+        }
 	
 	if (hwflow)
 		ti.c_cflag |= CRTSCTS;
 	else
 		ti.c_cflag &= ~CRTSCTS;
 
-	return tcsetattr(fd, 0, &ti);
+	return tcsetattr(fd, 0, &ti) ? -errno : 0;
 }
 
 static int gsmd_initialize(struct gsmd *g)
