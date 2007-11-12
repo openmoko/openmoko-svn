@@ -12,11 +12,5 @@ style "mokodialertextview" {
 widget "*.MokoDialerTextview" style "mokodialertextview"
 widget "*.MokoTips*" style "mokodialertextview"
 
-style "keypad" {
-  fg[NORMAL] = @fg_color
-  bg[NORMAL] = @bg_color
- 
-  fg[PRELIGHT] = @selected_bg_color
-  bg[PRELIGHT] = @selected_fg_color
-}
-widget_class "*.MokoKeypad.*" style "keypad"
+widget_class "*MokoDigitButton*" style "reversed" # defined in the main gtkrc
+

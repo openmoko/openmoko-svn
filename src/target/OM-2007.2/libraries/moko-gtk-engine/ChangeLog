@@ -1,5 +1,9 @@
 2007-11-12  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtk-2.0/openmoko-dialer: Fix dialer theme
+
+2007-11-12  Thomas Wood  <thomas@openedhand.com>
+
 	* Makefile.am:
 	* data/gtk-2.0/*:
 	* data/matchbox/*:
