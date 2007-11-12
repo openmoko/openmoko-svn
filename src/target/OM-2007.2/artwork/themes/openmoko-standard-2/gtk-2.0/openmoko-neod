@@ -1,0 +1,5 @@
+style "neod-button-label" {
+    font_name = "Sans 12"
+}
+widget "*neod-menu.GtkButton.*" style "neod-button-label"
+

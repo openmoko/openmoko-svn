@@ -138,3 +138,5 @@ include "openmoko-dialer"
 include "openmoko-calculator"
 
 include "openmoko-panel-plugins"
+include "openmoko-neod"
+
