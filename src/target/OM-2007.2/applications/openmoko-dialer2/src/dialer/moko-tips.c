@@ -84,6 +84,7 @@ moko_tips_set_matches (MokoTips *tips, GList *list)
                                           GDK_INTERP_BILINEAR);
         
         gtk_image_set_from_pixbuf (GTK_IMAGE (priv->image), scaled);
+        g_object_unref (scaled);
       }
       gtk_widget_show (label);
     }

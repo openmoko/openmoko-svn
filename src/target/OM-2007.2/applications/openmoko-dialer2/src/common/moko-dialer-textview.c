@@ -242,6 +242,8 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
   gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (moko_dialer_textview),
                                       gtk_text_buffer_get_insert (buffer));
 
+  g_free (text);
+  g_object_unref (pl);
 }
 
 

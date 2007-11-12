@@ -185,7 +185,10 @@ moko_dialer_panel_pressed (MokoDigitButton *button,
     timeout_data->panel = panel;
     timeout_data->value = value;
 
-    hold_timeout_source = g_timeout_add_full (G_PRIORITY_DEFAULT, 800, (GSourceFunc) moko_dialer_panel_hold_timeout, timeout_data, (GDestroyNotify) g_free);
+    hold_timeout_source = g_timeout_add_full (G_PRIORITY_DEFAULT, 800,
+                                  (GSourceFunc) moko_dialer_panel_hold_timeout,
+                                  timeout_data,
+                                  (GDestroyNotify) g_free);
 
   }
   else if (event->type == GDK_BUTTON_RELEASE)

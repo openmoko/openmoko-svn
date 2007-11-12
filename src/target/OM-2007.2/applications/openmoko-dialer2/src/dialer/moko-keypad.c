@@ -244,12 +244,14 @@ on_panel_user_input (MokoDialerPanel *panel,
   if (!priv->pin_mode)
   {
     /* Some autocomplete stuff */
-    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
-                                          moko_dialer_textview_get_input (
+    gchar *text = moko_dialer_textview_get_input (
                                           MOKO_DIALER_TEXTVIEW (priv->textview), 
-                                          TRUE));
+                                          TRUE);
+    
+    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (), text);
     moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
     g_signal_emit (G_OBJECT (keypad), keypad_signals[DIGIT_PRESSED], 0, digit);
+    g_free (text);
  }
 }
 
@@ -267,10 +269,10 @@ on_panel_user_hold (MokoDialerPanel *panel,
 
   /* Phones use '#' for PIN 'entered' signal */
   if (priv->pin_mode && digit == '#')
-  { 
+  {
     on_dial_clicked (NULL, keypad);
     return;
-  }   
+  }
 
   /* Create a string to insert into the textview */
   buf[0] = digit;
@@ -282,12 +284,14 @@ on_panel_user_hold (MokoDialerPanel *panel,
   if (!priv->pin_mode)
   {
     /* Some autocomplete stuff */
-    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
-                                          moko_dialer_textview_get_input (
+    gchar *text = moko_dialer_textview_get_input (
                                           MOKO_DIALER_TEXTVIEW (priv->textview), 
-                                          TRUE));
+                                          TRUE);
+    matches = moko_contacts_fuzzy_lookup (moko_contacts_get_default (),
+                                          text);
     moko_tips_set_matches (MOKO_TIPS (priv->tips), matches);
     g_signal_emit (G_OBJECT (keypad), keypad_signals[DIGIT_PRESSED], 0, digit);
+    g_free (text);
   }
 }
 

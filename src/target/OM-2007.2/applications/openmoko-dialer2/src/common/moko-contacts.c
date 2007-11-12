@@ -162,7 +162,7 @@ moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
   {
     g_warning ("%s\n", err->message);
     m_contact->photo = gdk_pixbuf_new_from_file (PKGDATADIR"/person.png", NULL);
-	if (m_contact->photo)
+    if (m_contact->photo)
       g_object_ref (m_contact->photo); 
     return;
   }
@@ -171,7 +171,7 @@ moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
   if (!photo)
   {
     m_contact->photo = gdk_pixbuf_new_from_file (PKGDATADIR"/person.png", NULL);
-	if (m_contact->photo)
+    if (m_contact->photo)
       g_object_ref (m_contact->photo);
     return;
  
@@ -190,11 +190,12 @@ moko_contacts_get_photo (MokoContacts *contacts, MokoContact *m_contact)
   else 
   {
     m_contact->photo = gdk_pixbuf_new_from_file (PKGDATADIR"/person.png", NULL);
-	if (m_contact->photo)
-    	g_object_ref (m_contact->photo); 
-  }  
-  
+    if (m_contact->photo)
+      g_object_ref (m_contact->photo); 
+  }
+
   g_object_unref (loader);
+  e_contact_photo_free (photo);
 }
 
 MokoContactEntry*
@@ -281,8 +282,8 @@ moko_contacts_add_contact (MokoContacts *contacts, EContact *e_contact)
     {
       for (numbers = e_vcard_attribute_get_values (attributes->data); numbers; numbers = numbers->next)
       {
-        phone = g_strdup (numbers->data);
-	 if (phone)
+        phone = numbers->data;
+        if (phone)
         {
           entry = g_new0 (MokoContactEntry, 1);
 

@@ -1,5 +1,18 @@
 2007-11-12  Thomas Wood  <thomas@openedhand.com>
 
+	* src/common/moko-contacts.c: (moko_contacts_get_photo),
+	(moko_contacts_add_contact):
+	* src/common/moko-dialer-panel.c: (moko_dialer_panel_pressed):
+	* src/common/moko-dialer-textview.c:
+	(moko_dialer_textview_set_color):
+	* src/dialer/moko-keypad.c: (on_panel_user_input),
+	(on_panel_user_hold):
+	* src/dialer/moko-tips.c: (moko_tips_set_matches):
+
+	Plug lots of memory leaks
+
+2007-11-12  Thomas Wood  <thomas@openedhand.com>
+
 	* src/common/moko-dialer-textview.c: (moko_dialer_textview_init),
 	(moko_dialer_textview_set_color):
 	* src/common/moko-dialer-textview.h:
