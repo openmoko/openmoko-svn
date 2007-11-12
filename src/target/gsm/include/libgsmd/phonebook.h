@@ -49,19 +49,6 @@ struct lgsm_phonebook_find {
 	char findtext[LGSM_PB_TEXT_MAXLEN+1];
 };
 
-#if 0
-/* Get a bitmask of supported phonebook types */
-extern int lgsm_pb_get_types(struct lgsm_handle *lh, u_int32 *typemask);
-
-/* Get a range of supported indexes in given phonebook type, Chapter 8.12 */
-extern int lgsm_pb_get_range(struct lgsm_handle *lh,
-			     enum lgsm_pbook_type type,
-			     u_int32_t *from, u_int32_t *to,
-			     u_int32_t *nlength, *u_int32_t tlength);
-
-#define LGSM_PB_TEXT_MAXLEN	31
-#endif
-
 struct lgsm_pb_entry {
 	struct lgsm_pb_entry	*next;
 	enum lgsm_pbook_type 	type;

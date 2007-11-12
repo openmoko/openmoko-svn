@@ -52,37 +52,6 @@ int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 	return atcmd_submit(gsmd, cmd);
 }
 
-
-#if 0
-#include "vendorplugin.h"
-
-static int
-ti_getopt(struct gsmd *gh, int optname, void *optval, int *optlen)
-{
- 	switch (optname) {
-	case GSMD_OPT_CIPHER_IND:
-		/* FIXME: send AT%CPRI=? */
-		break;
-	default:
-		return -EINVAL;
-	}
-}
-
-static int
-ti_setopt(struct gsmd *gh, int optname, const void *optval, int optlen)
-{
-	switch (optname) {
-	case GSMD_OPT_CIPHER_IND:
-		/* FIXME: send AT%CPRI= */
-		break;
-	default:
-		return -EINVAL;
-	}
-}
-
-#endif
-
-
 static int htccsq_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
