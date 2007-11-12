@@ -346,6 +346,7 @@ static int shell_help(void)
 		"\tP\tPrint current operator\n"
 		"\tL\tDetect available operators\n"
 		"\tQ\tRead signal quality\n"
+                "\tS\tSleep (S[=second], default 5)\n"
 		"\tT\tSend DTMF Tone\n"
 		"\tn\tPrint subscriber numbers\n"
 		"\tpd\tPB Delete (pb=index)\n"
@@ -473,6 +474,14 @@ int shell_main(struct lgsm_handle *lgsmh)
 				lgsm_signal_quality(lgsmh);
 			} else if (!strcmp(buf, "q")) {
 				exit(0);
+                        } else if (buf[0] == 'S' ) {
+                                if(!strchr(buf,'=') || atoi((strchr(buf,'=')+1)) < 0) {
+                                        printf("Sleep 5 secs\n");
+                                        sleep(5);
+                                }else {
+                                        printf("Sleep %d secs\n",atoi(strchr(buf,'=')+1));
+                                        sleep(atoi(strchr(buf,'=')+1));
+                                }
 			} else if (buf[0] == 'T') {
 				if (strlen(buf) < 2)
 					continue;
