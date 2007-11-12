@@ -45,8 +45,8 @@ struct _MokoDialerTextview
   GtkTextView textview;         /* the main widget */
   PangoFontDescription *font_desc_textview;     /* the font description of this textview */
   GtkTextTag *tag_for_inputed;  /* the formating tag for the digits user already inputed */
-  GtkTextTag *tag_for_cursor;   /* the formatting tag  for the right digit user just inputed. */
-  GtkTextTag *tag_for_autofilled; /* the formatting tag for the autofilled digits if any. */
+  // GtkTextTag *tag_for_cursor;   /* the formatting tag  for the right digit user just inputed. */
+  // GtkTextTag *tag_for_autofilled; /* the formatting tag for the autofilled digits if any. */
   gboolean sensed;
 };
 

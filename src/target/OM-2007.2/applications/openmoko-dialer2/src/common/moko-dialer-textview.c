@@ -99,8 +99,8 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
   buffer = gtk_text_view_get_buffer (textview);
   moko_dialer_textview->font_desc_textview = NULL;
   moko_dialer_textview->tag_for_inputed = NULL;
-  moko_dialer_textview->tag_for_cursor = NULL;
-  moko_dialer_textview->tag_for_autofilled = NULL;
+//  moko_dialer_textview->tag_for_cursor = NULL;
+//  moko_dialer_textview->tag_for_autofilled = NULL;
 
   GTK_WIDGET_UNSET_FLAGS (textview, GTK_CAN_FOCUS);
   gtk_text_view_set_editable (GTK_TEXT_VIEW (textview), FALSE);
@@ -127,9 +127,7 @@ moko_dialer_textview_init (MokoDialerTextview * moko_dialer_textview)
     /* save it to the structure for later usage. */
     moko_dialer_textview->font_desc_textview = font_desc_textview;
   }
-  moko_dialer_textview->tag_for_cursor =
-    gtk_text_buffer_create_tag (buffer, "tag_cursor", "weight",
-                                "PANGO_WEIGHT_BOLD", NULL);
+
   moko_dialer_textview->sensed = FALSE;
 
 
@@ -163,7 +161,7 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
 {
 
   GtkTextBuffer *buffer;
-  GtkTextIter start, cursoriter_1, cursoriter;
+  GtkTextIter start, cursoriter;
   GtkTextIter end;
   gint small = 10, medium = 10, large = 10;
 
@@ -190,30 +188,6 @@ moko_dialer_textview_set_color (MokoDialerTextview * moko_dialer_textview)
     return;
   if (text && (strlen (text) < 1))
     return;
-
-  gint cur = gtk_text_iter_get_offset (&cursoriter);
-
-  if (cur > 0)
-  {
-    gtk_text_buffer_remove_all_tags (buffer, &start, &end);
-
-    gtk_text_buffer_get_iter_at_offset (buffer, &cursoriter_1, cur - 1);
-//    gtk_text_buffer_apply_tag (buffer,
-//                               moko_dialer_textview->tag_for_inputed,
-//                               &start, &cursoriter);
-//    gtk_text_buffer_apply_tag (buffer,
-//                               moko_dialer_textview->tag_for_autofilled,
-//                               &cursoriter, &end);
-    gtk_text_buffer_apply_tag (buffer, moko_dialer_textview->tag_for_cursor,
-                               &cursoriter_1, &cursoriter);
-
-  }
-  else
-  {                             // cur==0
-//    gtk_text_buffer_apply_tag (buffer,
-//                               moko_dialer_textview->tag_for_autofilled,
-//                               &cursoriter, &end);
-  }
 
   /* get font sizes */
   gtk_widget_style_get (GTK_WIDGET (moko_dialer_textview), "small_font", &small, NULL);
@@ -321,8 +295,7 @@ moko_dialer_textview_insert (MokoDialerTextview * moko_dialer_textview,
 
 
   len = gtk_text_buffer_get_char_count (buffer);
-  gtk_text_buffer_insert_at_cursor (buffer, number,
-                                    g_utf8_strlen (number, -1));
+  gtk_text_buffer_insert (buffer, &end, number, -1);
   len = len + g_utf8_strlen (number, -1);
 
   /* reget the cursor iter. */
@@ -413,8 +386,11 @@ moko_dialer_textview_delete (MokoDialerTextview * moko_dialer_textview)
   }
   else
   {
-    // no selection, then just perform backspace.
-    gtk_text_buffer_backspace (buffer, &insertiter, TRUE, TRUE);
+    /* no selection, then just perform backspace. */
+    GtkTextIter enditer;
+
+    gtk_text_buffer_get_end_iter (buffer, &enditer);
+    gtk_text_buffer_backspace (buffer, &enditer, TRUE, TRUE);
   }
 
 //now we get the inputed string length. 

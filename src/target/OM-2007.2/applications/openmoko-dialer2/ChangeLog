@@ -1,11 +1,19 @@
 2007-11-12  Thomas Wood  <thomas@openedhand.com>
 
+	* src/common/moko-dialer-textview.c: (moko_dialer_textview_init),
+	(moko_dialer_textview_set_color):
+	* src/common/moko-dialer-textview.h:
+
+	Remove cursor indicator and always add/remove characters from the end of
+	the dialer display. Closes bug 940.
+
+2007-11-12  Thomas Wood  <thomas@openedhand.com>
+
 	Patch by: Milko Krachounov <exabyte@3mhz.net>
 
 	* src/common/moko-dialer-panel.c: (moko_dialer_panel_hold_timeout),
 	(moko_dialer_panel_pressed): Automatically free the allocated data
-	structure when the timeout source is
-	destroyed
+	structure when the timeout source is destroyed. Closes bug 1004.
 
 2007-11-05  Thomas Wood  <thomas@openedhand.com>
 
