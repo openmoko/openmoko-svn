@@ -668,7 +668,7 @@ int cancel_atcmd(struct gsmd *g, struct gsmd_atcmd *cmd)
         }
         
         llist_add(&cmd->list, &g->pending_atcmds);
-        return atcmd_done(g, cur, "OK");
+        return atcmd_done(g, cur, "ERROR");
 }
 
 void atcmd_drain(int fd)

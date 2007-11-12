@@ -145,9 +145,31 @@ static int creg_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
 	const char *comma = strchr(param, ',');
-	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_NETREG,
-					     sizeof(struct gsmd_evt_auxdata));
+	struct gsmd_ucmd *ucmd;
 	struct gsmd_evt_auxdata *aux;
+	int prev_registered = gsmd->dev_state.registered;
+	int state;
+	char *end;
+
+	state = strtol(param, &end, 10);
+	if (!(end > param)) {
+		gsmd_log(GSMD_ERROR, "Bad +CREG format, not updating state\n");
+		return -EINVAL;
+	}
+
+	/* Update our knowledge about our state */
+	gsmd->dev_state.registered =
+		(state == GSMD_NETREG_REG_HOME ||
+		 state == GSMD_NETREG_REG_ROAMING);
+
+	/* Intialise things that depend on network registration */
+	if (gsmd->dev_state.registered && !prev_registered) {
+		sms_cb_network_init(gsmd);
+	}
+
+	/* Notify clients */
+	ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_NETREG,
+			sizeof(struct gsmd_evt_auxdata));
 	if (!ucmd)
 		return -ENOMEM;
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
@@ -163,13 +185,8 @@ static int creg_parse(char *buf, int len, const char *param,
 	} else
 		aux->u.netreg.lac = aux->u.netreg.ci = 0;
 
-	/* Intialise things that depend on network registration */
-	if (aux->u.netreg.state == GSMD_NETREG_REG_HOME ||
-			aux->u.netreg.state == GSMD_NETREG_REG_ROAMING) {
-		sms_cb_network_init(gsmd);
-	}
-
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_NETREG);
+
 }
 
 /* Chapter 7.11, call waiting */
