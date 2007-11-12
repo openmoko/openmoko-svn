@@ -154,7 +154,6 @@ moko_dialer_panel_hold_timeout (HoldTimeoutData *data)
 {
   g_signal_emit (data->panel, moko_dialer_panel_signals[HOLD_SIGNAL], 0, data->value);
 
-  g_free (data);
   return FALSE;
 }
 
@@ -186,7 +185,7 @@ moko_dialer_panel_pressed (MokoDigitButton *button,
     timeout_data->panel = panel;
     timeout_data->value = value;
 
-    hold_timeout_source = g_timeout_add (800, (GSourceFunc) moko_dialer_panel_hold_timeout, timeout_data);
+    hold_timeout_source = g_timeout_add_full (G_PRIORITY_DEFAULT, 800, (GSourceFunc) moko_dialer_panel_hold_timeout, timeout_data, (GDestroyNotify) g_free);
 
   }
   else if (event->type == GDK_BUTTON_RELEASE)
