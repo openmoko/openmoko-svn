@@ -1,3 +1,12 @@
+2007-11-12  Thomas Wood  <thomas@openedhand.com>
+
+	* Makefile.am:
+	* data/gtk-2.0/*:
+	* data/matchbox/*:
+
+	- Move the GTK+ theme to it's own directory
+	- Include matchbox box theme via svn:externals
+
 2007-10-22  Thomas Wood  <thomas@openedhand.com>
 
 	* data/gtkrc: Button style tweaks

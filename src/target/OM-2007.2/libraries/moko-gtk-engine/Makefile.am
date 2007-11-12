@@ -18,9 +18,17 @@ libmoko_engine_la_LIBADD = $(GTK_LIBS)
 
 gtkthemedir = $(datadir)/themes/Moko/gtk-2.0
 dist_gtktheme_DATA = \
-  data/gtkrc \
-  data/matchboxpanel \
-  data/openmoko-calculator \
-  data/openmoko-contacts \
-  data/openmoko-dialer \
-  data/openmoko-panel-plugins
+  data/gtk-2.0/gtkrc \
+  data/gtk-2.0/matchboxpanel \
+  data/gtk-2.0/openmoko-calculator \
+  data/gtk-2.0/openmoko-contacts \
+  data/gtk-2.0/openmoko-dialer \
+  data/gtk-2.0/openmoko-panel-plugins
+
+matchboxthemedir = $(datadir)/themes/Moko/matchbox
+dist_matchboxtheme_DATA = \
+  data/matchbox/closebutton.xpm \
+  data/matchbox/menubutton.xpm \
+  data/matchbox/theme.desktop \
+  data/matchbox/theme.xml
+
