@@ -1,5 +1,9 @@
 2007-11-13  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-draw.c: (moko_draw_extension): Fix inactive tab fill
+
+2007-11-13  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Correct notebook style and remove border form menu
 	items
 	* src/moko-draw.c: (moko_draw_extension): Use correct colour for

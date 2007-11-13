@@ -441,7 +441,7 @@ moko_draw_extension (GtkStyle * style, GdkWindow * window,
   if (state_type == GTK_STATE_NORMAL)
     moko_gradient (style, window, state_type, x, y, width, height);
   else
-    gdk_draw_rectangle (window, gc, TRUE, x, y, width - 1, height - 1);
+    gdk_draw_rectangle (window, gc, TRUE, x, y, width, height);
 
 
   g_object_unref (gc);
