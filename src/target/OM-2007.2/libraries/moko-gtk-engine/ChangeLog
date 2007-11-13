@@ -1,5 +1,11 @@
 2007-11-13  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtk-2.0/gtkrc:
+	 - Ensure everything has a border by default
+	 - Equalise the padding around text entry widgets
+
+2007-11-13  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc: Clean up gtkrc and add arrow-vlength and
 	arrow-hlength values to improve size of menu scroll buttons
 

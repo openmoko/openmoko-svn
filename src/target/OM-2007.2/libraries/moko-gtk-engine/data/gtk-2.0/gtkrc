@@ -27,7 +27,7 @@ style "default"
   GtkCheckButton::indicator-size = 35
   GtkCheckButton::indicator-spacing = 5
   GtkCheckMenuItem::indicator_size = 18
-  GtkEntry::inner_border = {10, 10, 2, 2}
+  GtkEntry::inner_border = {10, 10, 10, 10}
   GtkFrame::shadow_type = GTK_SHADOW_NONE
   GtkPaned::handle-size = 16
   GtkRange::slider-width = 28
@@ -77,7 +77,9 @@ style "default"
   base [SELECTED] = @selected_bg_color
   base [ACTIVE] = @base_color
 
-  engine "moko-engine" {}
+  engine "moko-engine" {
+    border = TRUE
+  }
 }
 
 class "GtkWidget" style "default"
