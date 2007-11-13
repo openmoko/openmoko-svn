@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<node name="/org/openmoko/Dialer">
+<interface name="org.openmoko.Dialer.SMS">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="moko_dialer_sms"/>
+  <method name="Send">
+    <arg type="s" name="number" />
+    <arg type="s" name="message" />
+    <arg type="b" name="ascii" />
+  </method>
+
+  <signal name="Sending">
+  </signal>
+
+  <signal name="Sent">
+  </signal>
+
+  <signal name="Rejected">
+    <arg type="s" name="message" />
+  </signal>
+
+</interface>
+</node>
+

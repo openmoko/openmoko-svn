@@ -1,3 +1,17 @@
+2007-11-13  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/phone-kit/Makefile.am:
+	* src/phone-kit/moko-dialer-sms-dbus.xml:
+	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_get_property),
+	(moko_dialer_sms_set_property), (moko_dialer_sms_dispose),
+	(moko_dialer_sms_finalize), (moko_dialer_sms_class_init),
+	(gsmd_eventhandler), (moko_dialer_sms_init), (moko_dialer_sms_new),
+	(moko_dialer_sms_send), (moko_dialer_sms_sending),
+	(moko_dialer_sms_sent), (moko_dialer_sms_rejected):
+	* src/phone-kit/moko-dialer-sms.h:
+	Add beginnings of SMS part of phone-kit. May or may not work.
+
 2007-11-12  Thomas Wood  <thomas@openedhand.com>
 
 	* src/common/moko-contacts.c: (moko_contacts_get_photo),

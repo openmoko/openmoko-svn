@@ -20,6 +20,8 @@ PKG_CHECK_MODULES(DIALER,
                   libmokoui2
                   libpulse)
 
+PKG_CHECK_MODULES(JANA, libjana libjana-ecal)
+
 old_cflags=$CFLAGS
 CFLAGS=$DIALER_CFLAGS
 AC_CHECK_TYPE(EContactPhotoType, [], [], [#include <libebook/e-book.h>])
