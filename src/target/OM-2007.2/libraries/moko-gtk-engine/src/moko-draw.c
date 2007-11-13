@@ -435,11 +435,15 @@ moko_draw_extension (GtkStyle * style, GdkWindow * window,
 {
 
   GdkGC *gc;
-  gc = moko_gc_new (style->fg_gc[state_type], window);
-  
-  moko_gradient (style, window, state_type, x, y, width, height);
+  gc = moko_gc_new (style->bg_gc[state_type], window);
 
-  gdk_draw_rectangle (window, gc, FALSE, x, y, width - 1, height - 1);
+  /* NORMAL is used for "active" tabs */
+  if (state_type == GTK_STATE_NORMAL)
+    moko_gradient (style, window, state_type, x, y, width, height);
+  else
+    gdk_draw_rectangle (window, gc, TRUE, x, y, width - 1, height - 1);
+
+
   g_object_unref (gc);
 
 }

@@ -1,5 +1,13 @@
 2007-11-13  Thomas Wood  <thomas@openedhand.com>
 
+	* data/gtk-2.0/gtkrc: Correct notebook style and remove border form menu
+	items
+	* src/moko-draw.c: (moko_draw_extension): Use correct colour for
+	background. Don't draw borders on tabs and don't draw gradients on
+	inactive tabs.
+
+2007-11-13  Thomas Wood  <thomas@openedhand.com>
+
 	* data/gtk-2.0/gtkrc:
 	 - Ensure everything has a border by default
 	 - Equalise the padding around text entry widgets
