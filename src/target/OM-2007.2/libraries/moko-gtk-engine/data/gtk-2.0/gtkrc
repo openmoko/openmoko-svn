@@ -1,11 +1,13 @@
 # Moko GTK+ theme
 #
 # Copyright 2007 OpenedHand Ltd <info@openedhand.com>
-# Taken from OpenedHand's Sato GTK+ Theme
-
-
+# Based on OpenedHand's Sato GTK+ Theme
+#
+# This theme uses several style properties introduced in GTK+ 2.10
+#
 # black: #333333
 # orange: #ff7d00
+#
 
 gtk-button-images = 0
 gtk-menu-images = 0
@@ -20,70 +22,62 @@ style "default"
   xthickness = 2
   ythickness = 2
 
-  GtkWidget::focus_line_width = 2
-  GtkWidget::focus_padding = 0
-
   GtkButton::default_border = {0, 0, 0, 0}
-
-  GtkCheckButton::indicator_size = 18
-  GtkCheckMenuItem::indicator_size = 18
-
   GtkButton::focus-line-width = 0
   GtkCheckButton::indicator-size = 35
   GtkCheckButton::indicator-spacing = 5
-  GtkPaned::handle-size = 16
-  GtkCheckButton::indicator-size = 35
-  GtkCheckButton::indicator-spacing = 5
+  GtkCheckMenuItem::indicator_size = 18
+  GtkEntry::inner_border = {10, 10, 2, 2}
   GtkFrame::shadow_type = GTK_SHADOW_NONE
-  GtkRange::trough_border = 0
+  GtkPaned::handle-size = 16
   GtkRange::slider-width = 28
+  GtkRange::trough_border = 0
   GtkScale::slider-length = 56
+  GtkScrollbar::has_backward_stepper = 1
+  GtkScrollbar::has_forward_stepper = 1
+  GtkScrollbar::has_secondary_backward_stepper = 1
+  GtkScrollbar::has_secondary_forward_stepper = 1
   GtkScrollbar::slider_width = 30
   GtkScrollbar::stepper_size = 26
   GtkScrollbar::stepper_spacing = 0
-  GtkScrollbar::has_backward_stepper = 1
-  GtkScrollbar::has_secondary_forward_stepper = 1
-  GtkScrollbar::has_forward_stepper = 1
-  GtkScrollbar::has_secondary_backward_stepper = 1
   GtkSpinButton::shadow_type = GTK_SHADOW_NONE
   GtkTreeView::allow_rules = 1
-  GtkTreeView::vertical_separator = 6
   GtkTreeView::even_row_color = "#f7f7f7"
   GtkTreeView::odd_row_color = "#e7e7e7"
-  GtkButton::focus-line-width = 0
-  GtkButton::focus-line-width = 0
-  GtkButton::focus-line-width = 0
-  GtkEntry::inner_border = {10, 10, 2, 2}
-  GtkButton::focus-line-width = 0
-  MokoDialerTextview::small_font = 10
-  MokoDialerTextview::medium_font = 15
+  GtkTreeView::vertical_separator = 6
+  GtkWidget::focus_line_width = 2
+  GtkWidget::focus_padding = 0
+  GtkWidget::scroll-arrow-vlength = 48
+  GtkWidget::scroll-arrow-hlength = 48
+
   MokoDialerTextview::large_font = 20
   MokoDialerTextview::medium_font = 15
+  MokoDialerTextview::medium_font = 15
+  MokoDialerTextview::small_font = 10
 
 
+  fg [NORMAL] = @fg_color
+  fg [PRELIGHT] = @fg_color
+  fg [ACTIVE] = @selected_fg_color
+  fg [INSENSITIVE] = @fg_color
+  fg [SELECTED] = @selected_fg_color
 
-	fg [NORMAL] = @fg_color
-	fg [PRELIGHT] = @fg_color
-	fg [ACTIVE] = @selected_fg_color
-	fg [INSENSITIVE] = @fg_color
-	fg [SELECTED] = @selected_fg_color
+  bg [NORMAL] = @bg_color
+  bg [PRELIGHT] = @bg_color
+  bg [ACTIVE] = @selected_bg_color
+  bg [INSENSITIVE] = lighter (@bg_color)
+  bg [SELECTED] = @selected_bg_color
 
-	bg [NORMAL] = @bg_color
-	bg [PRELIGHT] = @bg_color
-	bg [ACTIVE] = @selected_bg_color
-	bg [INSENSITIVE] = lighter (@bg_color)
-	bg [SELECTED] = @selected_bg_color
+  text [NORMAL] = @text_color
+  text [PRELIGHT] = @text_color
+  text [SELECTED] = @text_color
+  text [ACTIVE] = @text_color
 
-	text [NORMAL] = @text_color
-	text [PRELIGHT] = @text_color
-	text [SELECTED] = @text_color
-	text [ACTIVE] = @text_color
+  base [NORMAL] = @base_color
+  base [SELECTED] = @selected_bg_color
+  base [ACTIVE] = @base_color
 
-	base [NORMAL] = @base_color
-	base [SELECTED] = @selected_bg_color
-	base [ACTIVE] = @base_color
-
-	engine "moko-engine" {}
+  engine "moko-engine" {}
 }
 
 class "GtkWidget" style "default"
@@ -100,7 +94,6 @@ widget_class "*GtkButton*" style "reversed"
 
 style "button"
 {
-  # inner-border was added in GTK+ 2.10
   GtkButton::inner_border = {15, 15, 10, 10}
   engine "moko-engine" {
     border = TRUE

@@ -1,3 +1,8 @@
+2007-11-13  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtk-2.0/gtkrc: Clean up gtkrc and add arrow-vlength and
+	arrow-hlength values to improve size of menu scroll buttons
+
 2007-11-12  Thomas Wood  <thomas@openedhand.com>
 
 	* data/gtk-2.0/openmoko-dialer: Fix dialer theme
