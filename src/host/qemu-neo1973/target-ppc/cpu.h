@@ -24,46 +24,51 @@
 #include <inttypes.h>
 
 #if defined (TARGET_PPC64)
+/* PowerPC 64 definitions */
 typedef uint64_t ppc_gpr_t;
 #define TARGET_GPR_BITS  64
 #define TARGET_LONG_BITS 64
 #define REGX "%016" PRIx64
 #define TARGET_PAGE_BITS 12
-#elif defined(TARGET_PPCEMB)
-/* BookE have 36 bits physical address space */
-#define TARGET_PHYS_ADDR_BITS 64
-/* GPR are 64 bits: used by vector extension */
-typedef uint64_t ppc_gpr_t;
-#define TARGET_GPR_BITS  64
-#define TARGET_LONG_BITS 32
-#define REGX "%016" PRIx64
-#if defined(CONFIG_USER_ONLY)
-/* It looks like a lot of Linux programs assume page size
- * is 4kB long. This is evil, but we have to deal with it...
- */
-#define TARGET_PAGE_BITS 12
-#else
-/* Pages can be 1 kB small */
-#define TARGET_PAGE_BITS 10
-#endif
-#else
+
+#else /* defined (TARGET_PPC64) */
+/* PowerPC 32 definitions */
 #if (HOST_LONG_BITS >= 64)
 /* When using 64 bits temporary registers,
  * we can use 64 bits GPR with no extra cost
- * It's even an optimization as it will prevent
+ * It's even an optimization as this will prevent
  * the compiler to do unuseful masking in the micro-ops.
  */
 typedef uint64_t ppc_gpr_t;
 #define TARGET_GPR_BITS  64
 #define REGX "%08" PRIx64
-#else
+#else /* (HOST_LONG_BITS >= 64) */
 typedef uint32_t ppc_gpr_t;
 #define TARGET_GPR_BITS  32
 #define REGX "%08" PRIx32
-#endif
+#endif /* (HOST_LONG_BITS >= 64) */
+
 #define TARGET_LONG_BITS 32
+
+#if defined(TARGET_PPCEMB)
+/* Specific definitions for PowerPC embedded */
+/* BookE have 36 bits physical address space */
+#define TARGET_PHYS_ADDR_BITS 64
+#if defined(CONFIG_USER_ONLY)
+/* It looks like a lot of Linux programs assume page size
+ * is 4kB long. This is evil, but we have to deal with it...
+ */
 #define TARGET_PAGE_BITS 12
-#endif
+#else /* defined(CONFIG_USER_ONLY) */
+/* Pages can be 1 kB small */
+#define TARGET_PAGE_BITS 10
+#endif /* defined(CONFIG_USER_ONLY) */
+#else /* defined(TARGET_PPCEMB) */
+/* "standard" PowerPC 32 definitions */
+#define TARGET_PAGE_BITS 12
+#endif /* defined(TARGET_PPCEMB) */
+
+#endif /* defined (TARGET_PPC64) */
 
 #include "cpu-defs.h"
 
@@ -166,14 +171,12 @@ enum {
     POWERPC_EXCP_ITLB     = 14, /* Instruction TLB error                     */
     POWERPC_EXCP_DEBUG    = 15, /* Debug interrupt                           */
     /* Vectors 16 to 31 are reserved                                         */
-#if defined(TARGET_PPCEMB)
     POWERPC_EXCP_SPEU     = 32, /* SPE/embedded floating-point unavailable   */
     POWERPC_EXCP_EFPDI    = 33, /* Embedded floating-point data interrupt    */
     POWERPC_EXCP_EFPRI    = 34, /* Embedded floating-point round interrupt   */
     POWERPC_EXCP_EPERFM   = 35, /* Embedded performance monitor interrupt    */
     POWERPC_EXCP_DOORI    = 36, /* Embedded doorbell interrupt               */
     POWERPC_EXCP_DOORCI   = 37, /* Embedded doorbell critical interrupt      */
-#endif /* defined(TARGET_PPCEMB) */
     /* Vectors 38 to 63 are reserved                                         */
     /* Exceptions defined in the PowerPC server specification                */
     POWERPC_EXCP_RESET    = 64, /* System reset exception                    */
@@ -527,6 +530,10 @@ struct CPUPPCState {
 
     /* general purpose registers */
     ppc_gpr_t gpr[32];
+#if !defined(TARGET_PPC64)
+    /* Storage for GPR MSB, used by the SPE extension */
+    ppc_gpr_t gprh[32];
+#endif
     /* LR */
     target_ulong lr;
     /* CTR */
@@ -597,12 +604,10 @@ struct CPUPPCState {
     /* Altivec registers */
     ppc_avr_t avr[32];
     uint32_t vscr;
-#if defined(TARGET_PPCEMB)
     /* SPE registers */
     ppc_gpr_t spe_acc;
     float_status spe_status;
     uint32_t spe_fscr;
-#endif
 
     /* Internal devices resources */
     /* Time base and decrementer */
@@ -675,7 +680,7 @@ struct mmu_ctx_t {
 };
 
 /*****************************************************************************/
-CPUPPCState *cpu_ppc_init (void);
+CPUPPCState *cpu_ppc_init (const char *cpu_model);
 int cpu_ppc_exec (CPUPPCState *s);
 void cpu_ppc_close (CPUPPCState *s);
 /* you can call this signal handler from your SIGBUS and SIGSEGV
@@ -719,13 +724,11 @@ void ppc_store_xer (CPUPPCState *env, target_ulong value);
 void ppc_store_msr (CPUPPCState *env, target_ulong value);
 
 void cpu_ppc_reset (void *opaque);
-CPUPPCState *cpu_ppc_init (void);
-void cpu_ppc_close(CPUPPCState *env);
 
-int ppc_find_by_name (const unsigned char *name, ppc_def_t **def);
-int ppc_find_by_pvr (uint32_t apvr, ppc_def_t **def);
 void ppc_cpu_list (FILE *f, int (*cpu_fprintf)(FILE *f, const char *fmt, ...));
-int cpu_ppc_register (CPUPPCState *env, ppc_def_t *def);
+
+const ppc_def_t *cpu_ppc_find_by_name (const unsigned char *name);
+int cpu_ppc_register_internal (CPUPPCState *env, const ppc_def_t *def);
 
 /* Time-base and decrementer management */
 #ifndef NO_CPU_IO_DEFS

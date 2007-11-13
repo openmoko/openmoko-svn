@@ -521,14 +521,15 @@ CPUReadMemoryFunc *PPC_prep_io_read[] = {
 #define NVRAM_SIZE        0x2000
 
 /* PowerPC PREP hardware initialisation */
-static void ppc_prep_init (int ram_size, int vga_ram_size, const char *boot_device,
+static void ppc_prep_init (int ram_size, int vga_ram_size,
+                           const char *boot_device,
                            DisplayState *ds, const char **fd_filename,
                            int snapshot, const char *kernel_filename,
                            const char *kernel_cmdline,
                            const char *initrd_filename,
                            const char *cpu_model)
 {
-    CPUState *env, *envs[MAX_CPUS];
+    CPUState *env = NULL, *envs[MAX_CPUS];
     char buf[1024];
     nvram_t nvram;
     m48t59_t *m48t59;
@@ -536,10 +537,9 @@ static void ppc_prep_init (int ram_size, int vga_ram_size, const char *boot_devi
     int linux_boot, i, nb_nics1, bios_size;
     unsigned long bios_offset;
     uint32_t kernel_base, kernel_size, initrd_base, initrd_size;
-    ppc_def_t *def;
     PCIBus *pci_bus;
     qemu_irq *i8259;
-    int ppc_boot_device = boot_device[0];
+    int ppc_boot_device;
 
     sysctrl = qemu_mallocz(sizeof(sysctrl_t));
     if (sysctrl == NULL)
@@ -548,16 +548,14 @@ static void ppc_prep_init (int ram_size, int vga_ram_size, const char *boot_devi
     linux_boot = (kernel_filename != NULL);
 
     /* init CPUs */
-    env = cpu_init();
     if (cpu_model == NULL)
         cpu_model = "default";
-    ppc_find_by_name(cpu_model, &def);
-    if (def == NULL) {
-        cpu_abort(env, "Unable to find PowerPC CPU definition\n");
-    }
     for (i = 0; i < smp_cpus; i++) {
-        cpu_ppc_register(env, def);
-        cpu_ppc_reset(env);
+        env = cpu_init(cpu_model);
+        if (!env) {
+            fprintf(stderr, "Unable to find PowerPC CPU definition\n");
+            exit(1);
+        }
         /* Set time-base frequency to 100 Mhz */
         cpu_ppc_tb_init(env, 100UL * 1000UL * 1000UL);
         qemu_register_reset(&cpu_ppc_reset, env);
@@ -614,6 +612,18 @@ static void ppc_prep_init (int ram_size, int vga_ram_size, const char *boot_devi
         kernel_size = 0;
         initrd_base = 0;
         initrd_size = 0;
+        ppc_boot_device = '\0';
+        /* For now, OHW cannot boot from the network. */
+        for (i = 0; boot_device[i] != '\0'; i++) {
+            if (boot_device[i] >= 'a' && boot_device[i] <= 'f') {
+                ppc_boot_device = boot_device[i];
+                break;
+            }
+        }
+        if (ppc_boot_device == '\0') {
+            fprintf(stderr, "No valid boot device for Mac99 machine\n");
+            exit(1);
+        }
     }
 
     isa_mem_base = 0xc0000000;

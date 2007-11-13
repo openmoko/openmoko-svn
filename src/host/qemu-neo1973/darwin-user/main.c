@@ -357,7 +357,6 @@ void cpu_loop(CPUPPCState *env)
         case POWERPC_EXCP_DEBUG:    /* Debug interrupt                       */
             gdb_handlesig (env, SIGTRAP);
             break;
-#if defined(TARGET_PPCEMB)
         case POWERPC_EXCP_SPEU:     /* SPE/embedded floating-point unavail.  */
             EXCP_DUMP(env, "No SPE/floating-point instruction allowed\n");
             info.si_signo = SIGILL;
@@ -383,7 +382,6 @@ void cpu_loop(CPUPPCState *env)
             cpu_abort(env, "Doorbell critical interrupt while in user mode. "
                       "Aborting\n");
             break;
-#endif /* defined(TARGET_PPCEMB) */
         case POWERPC_EXCP_RESET:    /* System reset exception                */
             cpu_abort(env, "Reset interrupt while in user mode. "
                       "Aborting\n");
@@ -785,6 +783,7 @@ int main(int argc, char **argv)
     int optind;
     short use_gdbstub = 0;
     const char *r;
+    const char *cpu_model;
 
     if (argc <= 1)
         usage();
@@ -855,7 +854,15 @@ int main(int argc, char **argv)
 
     /* NOTE: we need to init the CPU at this stage to get
        qemu_host_page_size */
-    env = cpu_init();
+#if defined(TARGET_I386)
+    cpu_model = "qemu32";
+#elif defined(TARGET_PPC)
+    cpu_model = "750";
+#else
+#error unsupported CPU
+#endif
+    
+    env = cpu_init(cpu_model);
 
     printf("Starting %s with qemu\n----------------\n", filename);
 

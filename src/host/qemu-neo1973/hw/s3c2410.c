@@ -2830,9 +2830,9 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
     int iomemtype, i;
     s = (struct s3c_state_s *) qemu_mallocz(sizeof(struct s3c_state_s));
 
-    s->env = cpu_init();
-    cpu_arm_set_model(s->env, "arm920t");
-    register_savevm("cpu", 0, 0, cpu_save, cpu_load, s->env);
+    s->env = cpu_init("arm920t");
+    register_savevm("cpu", 0, ARM_CPU_SAVE_VERSION,
+                    cpu_save, cpu_load, s->env);
 
     cpu_register_physical_memory(S3C_RAM_BASE, sdram_size,
                     qemu_ram_alloc(sdram_size) | IO_MEM_RAM);

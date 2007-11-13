@@ -167,10 +167,13 @@ static void versatile_init(int ram_size, int vga_ram_size,
     int n;
     int done_smc = 0;
 
-    env = cpu_init();
     if (!cpu_model)
         cpu_model = "arm926";
-    cpu_arm_set_model(env, cpu_model);
+    env = cpu_init(cpu_model);
+    if (!env) {
+        fprintf(stderr, "Unable to find CPU definition\n");
+        exit(1);
+    }
     /* ??? RAM shoud repeat to fill physical memory space.  */
     /* SDRAM at address zero.  */
     cpu_register_physical_memory(0, ram_size, IO_MEM_RAM);
@@ -205,10 +208,10 @@ static void versatile_init(int ram_size, int vga_ram_size,
         }
     }
 
-    pl011_init(0x101f1000, pic[12], serial_hds[0]);
-    pl011_init(0x101f2000, pic[13], serial_hds[1]);
-    pl011_init(0x101f3000, pic[14], serial_hds[2]);
-    pl011_init(0x10009000, sic[6], serial_hds[3]);
+    pl011_init(0x101f1000, pic[12], serial_hds[0], PL011_ARM);
+    pl011_init(0x101f2000, pic[13], serial_hds[1], PL011_ARM);
+    pl011_init(0x101f3000, pic[14], serial_hds[2], PL011_ARM);
+    pl011_init(0x10009000, sic[6], serial_hds[3], PL011_ARM);
 
     pl080_init(0x10130000, pic[17], 8);
     sp804_init(0x101e2000, pic[4]);

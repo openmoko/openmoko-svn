@@ -1314,6 +1314,8 @@ void cpu_abort(CPUState *env, const char *fmt, ...)
 
 CPUState *cpu_copy(CPUState *env)
 {
+#if 0
+    /* XXX: broken, must be handled by each CPU */
     CPUState *new_env = cpu_init();
     /* preserve chaining and index */
     CPUState *next_cpu = new_env->next_cpu;
@@ -1322,6 +1324,9 @@ CPUState *cpu_copy(CPUState *env)
     new_env->next_cpu = next_cpu;
     new_env->cpu_index = cpu_index;
     return new_env;
+#else
+    return NULL;
+#endif
 }
 
 #if !defined(CONFIG_USER_ONLY)
@@ -2505,13 +2510,19 @@ void cpu_physical_memory_rw(target_phys_addr_t addr, uint8_t *buf,
         if (is_write) {
             if (!(flags & PAGE_WRITE))
                 return;
-            p = lock_user(addr, len, 0);
+            /* XXX: this code should not depend on lock_user */
+            if (!(p = lock_user(VERIFY_WRITE, addr, len, 0)))
+                /* FIXME - should this return an error rather than just fail? */
+                return;
             memcpy(p, buf, len);
             unlock_user(p, addr, len);
         } else {
             if (!(flags & PAGE_READ))
                 return;
-            p = lock_user(addr, len, 1);
+            /* XXX: this code should not depend on lock_user */
+            if (!(p = lock_user(VERIFY_READ, addr, len, 1)))
+                /* FIXME - should this return an error rather than just fail? */
+                return;
             memcpy(buf, p, len);
             unlock_user(p, addr, 0);
         }

@@ -199,7 +199,7 @@ static always_inline int _pte_check (mmu_ctx_t *ctx, int is_64b,
             pp = pte1 & 0x00000003;
         }
         if (ptem == ctx->ptem) {
-            if (ctx->raddr != (target_ulong)-1) {
+            if (ctx->raddr != (target_phys_addr_t)-1ULL) {
                 /* all matches should have equal RPN, WIMG & PP */
                 if ((ctx->raddr & mmask) != (pte1 & mmask)) {
                     if (loglevel != 0)
@@ -900,7 +900,7 @@ static always_inline target_phys_addr_t get_pgaddr (target_phys_addr_t sdr1,
                                                     target_phys_addr_t hash,
                                                     target_phys_addr_t mask)
 {
-    return (sdr1 & ((target_ulong)(-1ULL) << sdr_sh)) | (hash & mask);
+    return (sdr1 & ((target_phys_addr_t)(-1ULL) << sdr_sh)) | (hash & mask);
 }
 
 static always_inline int get_segment (CPUState *env, mmu_ctx_t *ctx,
@@ -1011,7 +1011,7 @@ static always_inline int get_segment (CPUState *env, mmu_ctx_t *ctx,
                 ctx->ptem = (vsid << 7) | (pgidx >> 10);
             }
             /* Initialize real address with an invalid value */
-            ctx->raddr = (target_ulong)-1;
+            ctx->raddr = (target_phys_addr_t)-1ULL;
             if (unlikely(env->mmu_model == POWERPC_MMU_SOFT_6xx ||
                          env->mmu_model == POWERPC_MMU_SOFT_74xx)) {
                 /* Software TLB search */
@@ -1223,7 +1223,7 @@ int mmu40x_get_physical_address (CPUState *env, mmu_ctx_t *ctx,
     int i, ret, zsel, zpr, pr;
 
     ret = -1;
-    raddr = -1;
+    raddr = (target_phys_addr_t)-1ULL;
     pr = msr_pr;
     for (i = 0; i < env->nb_tlb; i++) {
         tlb = &env->tlb[i].tlbe;
@@ -1306,7 +1306,7 @@ int mmubooke_get_physical_address (CPUState *env, mmu_ctx_t *ctx,
     int i, prot, ret;
 
     ret = -1;
-    raddr = -1;
+    raddr = (target_phys_addr_t)-1ULL;
     for (i = 0; i < env->nb_tlb; i++) {
         tlb = &env->tlb[i].tlbe;
         if (ppcemb_tlb_check(env, tlb, &raddr, address,
@@ -1975,7 +1975,7 @@ void ppc_tlb_invalidate_one (CPUPPCState *env, target_ulong addr)
     case POWERPC_MMU_32B:
     case POWERPC_MMU_601:
         /* tlbie invalidate TLBs for all segments */
-        addr &= ~((target_ulong)-1 << 28);
+        addr &= ~((target_ulong)-1ULL << 28);
         /* XXX: this case should be optimized,
          * giving a mask to tlb_flush_page
          */
@@ -2395,7 +2395,6 @@ static always_inline void powerpc_excp (CPUState *env,
         /* XXX: TODO */
         cpu_abort(env, "Debug exception is not implemented yet !\n");
         goto store_next;
-#if defined(TARGET_PPCEMB)
     case POWERPC_EXCP_SPEU:      /* SPE/embedded floating-point unavailable  */
         new_msr &= ~((target_ulong)1 << MSR_RI); /* XXX: check this */
         goto store_current;
@@ -2433,7 +2432,6 @@ static always_inline void powerpc_excp (CPUState *env,
         cpu_abort(env, "Embedded doorbell critical interrupt "
                   "is not implemented yet !\n");
         goto store_next;
-#endif /* defined(TARGET_PPCEMB) */
     case POWERPC_EXCP_RESET:     /* System reset exception                   */
         new_msr &= ~((target_ulong)1 << MSR_RI);
 #if defined(TARGET_PPC64H)
@@ -2730,7 +2728,7 @@ static always_inline void powerpc_excp (CPUState *env,
         new_msr &= ~((target_ulong)1 << MSR_LE);
     /* Jump to handler */
     vector = env->excp_vectors[excp];
-    if (vector == (target_ulong)-1) {
+    if (vector == (target_ulong)-1ULL) {
         cpu_abort(env, "Raised an exception without defined vector %d\n",
                   excp);
     }
@@ -2833,26 +2831,11 @@ void ppc_hw_interrupt (CPUPPCState *env)
             powerpc_excp(env, env->excp_model, POWERPC_EXCP_WDT);
             return;
         }
-#if defined(TARGET_PPCEMB)
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_CDOORBELL)) {
             env->pending_interrupts &= ~(1 << PPC_INTERRUPT_CDOORBELL);
             powerpc_excp(env, env->excp_model, POWERPC_EXCP_DOORCI);
             return;
         }
-#endif
-#if defined(TARGET_PPCEMB)
-        /* External interrupt */
-        if (env->pending_interrupts & (1 << PPC_INTERRUPT_EXT)) {
-            /* Taking an external interrupt does not clear the external
-             * interrupt status
-             */
-#if 0
-            env->pending_interrupts &= ~(1 << PPC_INTERRUPT_EXT);
-#endif
-            powerpc_excp(env, env->excp_model, POWERPC_EXCP_EXTERNAL);
-            return;
-        }
-#endif
         /* Fixed interval timer on embedded PowerPC */
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_FIT)) {
             env->pending_interrupts &= ~(1 << PPC_INTERRUPT_FIT);
@@ -2871,7 +2854,6 @@ void ppc_hw_interrupt (CPUPPCState *env)
             powerpc_excp(env, env->excp_model, POWERPC_EXCP_DECR);
             return;
         }
-#if !defined(TARGET_PPCEMB)
         /* External interrupt */
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_EXT)) {
             /* Taking an external interrupt does not clear the external
@@ -2883,14 +2865,11 @@ void ppc_hw_interrupt (CPUPPCState *env)
             powerpc_excp(env, env->excp_model, POWERPC_EXCP_EXTERNAL);
             return;
         }
-#endif
-#if defined(TARGET_PPCEMB)
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_DOORBELL)) {
             env->pending_interrupts &= ~(1 << PPC_INTERRUPT_DOORBELL);
             powerpc_excp(env, env->excp_model, POWERPC_EXCP_DOORI);
             return;
         }
-#endif
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_PERFM)) {
             env->pending_interrupts &= ~(1 << PPC_INTERRUPT_PERFM);
             powerpc_excp(env, env->excp_model, POWERPC_EXCP_PERFM);
@@ -2961,7 +2940,7 @@ void cpu_ppc_reset (void *opaque)
 #endif
     env->msr = msr;
     hreg_compute_hflags(env);
-    env->reserve = -1;
+    env->reserve = (target_ulong)-1ULL;
     /* Be sure no exception or interrupt is pending */
     env->pending_interrupts = 0;
     env->exception_index = POWERPC_EXCP_NONE;
@@ -2970,20 +2949,26 @@ void cpu_ppc_reset (void *opaque)
     tlb_flush(env, 1);
 }
 
-CPUPPCState *cpu_ppc_init (void)
+CPUPPCState *cpu_ppc_init (const char *cpu_model)
 {
     CPUPPCState *env;
+    const ppc_def_t *def;
+
+    def = cpu_ppc_find_by_name(cpu_model);
+    if (!def)
+        return NULL;
 
     env = qemu_mallocz(sizeof(CPUPPCState));
     if (!env)
         return NULL;
     cpu_exec_init(env);
-
+    cpu_ppc_register_internal(env, def);
+    cpu_ppc_reset(env);
     return env;
 }
 
 void cpu_ppc_close (CPUPPCState *env)
 {
     /* Should also remove all opcode tables... */
-    free(env);
+    qemu_free(env);
 }

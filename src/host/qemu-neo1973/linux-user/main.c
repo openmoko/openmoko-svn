@@ -641,6 +641,7 @@ void cpu_loop (CPUSPARCState *env)
                 queue_signal(info.si_signo, &info);
             }
             break;
+#ifndef TARGET_ABI32
         case 0x16e:
             flush_windows(env);
             sparc64_get_context(env);
@@ -649,6 +650,7 @@ void cpu_loop (CPUSPARCState *env)
             flush_windows(env);
             sparc64_set_context(env);
             break;
+#endif
 #endif
         case EXCP_INTERRUPT:
             /* just indicate that signals should be handled asap */
@@ -974,7 +976,6 @@ void cpu_loop(CPUPPCState *env)
                   }
             }
             break;
-#if defined(TARGET_PPCEMB)
         case POWERPC_EXCP_SPEU:     /* SPE/embedded floating-point unavail.  */
             EXCP_DUMP(env, "No SPE/floating-point instruction allowed\n");
             info.si_signo = TARGET_SIGILL;
@@ -1004,7 +1005,6 @@ void cpu_loop(CPUPPCState *env)
             cpu_abort(env, "Reset interrupt while in user mode. "
                       "Aborting\n");
             break;
-#endif /* defined(TARGET_PPCEMB) */
 #if defined(TARGET_PPC64) && !defined(TARGET_ABI32) /* PowerPC 64 */
         case POWERPC_EXCP_DSEG:     /* Data segment exception                */
             cpu_abort(env, "Data segment exception while in user mode. "
@@ -1856,7 +1856,8 @@ void usage(void)
            "\n"
            "debug options:\n"
            "-d options   activate log (logfile=%s)\n"
-           "-p pagesize  set the host page size to 'pagesize'\n",
+           "-p pagesize  set the host page size to 'pagesize'\n"
+           "-strace      log system calls\n",
            TARGET_ARCH,
            interp_prefix,
            x86_stack_size,
@@ -1952,6 +1953,8 @@ int main(int argc, char **argv)
             }
         } else if (!strcmp(r, "drop-ld-preload")) {
             drop_ld_preload = 1;
+        } else if (!strcmp(r, "strace")) {
+            do_strace = 1;
         } else
         {
             usage();
@@ -1970,30 +1973,46 @@ int main(int argc, char **argv)
     /* Scan interp_prefix dir for replacement files. */
     init_paths(interp_prefix);
 
-#if defined(TARGET_I386)
-    /* must be done before cpu_init() for x86 XXX: suppress this hack
-       by adding a new parameter to cpu_init and by suppressing
-       cpu_xxx_register() */
     if (cpu_model == NULL) {
+#if defined(TARGET_I386)
 #ifdef TARGET_X86_64
         cpu_model = "qemu64";
 #else
         cpu_model = "qemu32";
 #endif
-    }
-    if (x86_find_cpu_by_name(cpu_model)) {
-        fprintf(stderr, "Unable to find x86 CPU definition\n");
-        exit(1);
-    }
+#elif defined(TARGET_ARM)
+        cpu_model = "arm926";
+#elif defined(TARGET_M68K)
+        cpu_model = "any";
+#elif defined(TARGET_SPARC)
+#ifdef TARGET_SPARC64
+        cpu_model = "TI UltraSparc II";
+#else
+        cpu_model = "Fujitsu MB86904";
 #endif
-
+#elif defined(TARGET_MIPS)
+#if defined(TARGET_ABI_MIPSN32) || defined(TARGET_ABI_MIPSN64)
+        cpu_model = "20Kc";
+#else
+        cpu_model = "24Kf";
+#endif
+#elif defined(TARGET_PPC)
+        cpu_model = "750";
+#else
+        cpu_model = "any";
+#endif
+    }
     /* NOTE: we need to init the CPU at this stage to get
        qemu_host_page_size */
-    env = cpu_init();
+    env = cpu_init(cpu_model);
+    if (!env) {
+        fprintf(stderr, "Unable to find CPU definition\n");
+        exit(1);
+    }
     global_env = env;
 
-    if(getenv("QEMU_STRACE") ){
-      do_strace=1;
+    if (getenv("QEMU_STRACE")) {
+        do_strace = 1;
     }
 
     wrk = environ;
@@ -2024,17 +2043,17 @@ int main(int argc, char **argv)
     if (loglevel) {
         page_dump(logfile);
 
-        fprintf(logfile, "start_brk   0x" TARGET_FMT_lx "\n", info->start_brk);
-        fprintf(logfile, "end_code    0x" TARGET_FMT_lx "\n", info->end_code);
-        fprintf(logfile, "start_code  0x" TARGET_FMT_lx "\n",
+        fprintf(logfile, "start_brk   0x" TARGET_ABI_FMT_lx "\n", info->start_brk);
+        fprintf(logfile, "end_code    0x" TARGET_ABI_FMT_lx "\n", info->end_code);
+        fprintf(logfile, "start_code  0x" TARGET_ABI_FMT_lx "\n",
                 info->start_code);
-        fprintf(logfile, "start_data  0x" TARGET_FMT_lx "\n",
+        fprintf(logfile, "start_data  0x" TARGET_ABI_FMT_lx "\n",
                 info->start_data);
-        fprintf(logfile, "end_data    0x" TARGET_FMT_lx "\n", info->end_data);
-        fprintf(logfile, "start_stack 0x" TARGET_FMT_lx "\n",
+        fprintf(logfile, "end_data    0x" TARGET_ABI_FMT_lx "\n", info->end_data);
+        fprintf(logfile, "start_stack 0x" TARGET_ABI_FMT_lx "\n",
                 info->start_stack);
-        fprintf(logfile, "brk         0x" TARGET_FMT_lx "\n", info->brk);
-        fprintf(logfile, "entry       0x" TARGET_FMT_lx "\n", info->entry);
+        fprintf(logfile, "brk         0x" TARGET_ABI_FMT_lx "\n", info->brk);
+        fprintf(logfile, "entry       0x" TARGET_ABI_FMT_lx "\n", info->entry);
     }
 
     target_set_brk(info->brk);
@@ -2130,9 +2149,6 @@ int main(int argc, char **argv)
 #elif defined(TARGET_ARM)
     {
         int i;
-        if (cpu_model == NULL)
-            cpu_model = "arm926";
-        cpu_arm_set_model(env, cpu_model);
         cpsr_write(env, regs->uregs[16], 0xffffffff);
         for(i = 0; i < 16; i++) {
             env->regs[i] = regs->uregs[i];
@@ -2141,20 +2157,6 @@ int main(int argc, char **argv)
 #elif defined(TARGET_SPARC)
     {
         int i;
-        const sparc_def_t *def;
-#ifdef TARGET_SPARC64
-        if (cpu_model == NULL)
-            cpu_model = "TI UltraSparc II";
-#else
-        if (cpu_model == NULL)
-            cpu_model = "Fujitsu MB86904";
-#endif
-        sparc_find_by_name(cpu_model, &def);
-        if (def == NULL) {
-            fprintf(stderr, "Unable to find Sparc CPU definition\n");
-            exit(1);
-        }
-        cpu_sparc_register(env, def, 0);
 	env->pc = regs->pc;
 	env->npc = regs->npc;
         env->y = regs->y;
@@ -2165,19 +2167,8 @@ int main(int argc, char **argv)
     }
 #elif defined(TARGET_PPC)
     {
-        ppc_def_t *def;
         int i;
 
-        /* Choose and initialise CPU */
-        if (cpu_model == NULL)
-            cpu_model = "750";
-        ppc_find_by_name(cpu_model, &def);
-        if (def == NULL) {
-            cpu_abort(env,
-                      "Unable to find PowerPC CPU definition\n");
-        }
-        cpu_ppc_register(env, def);
-        cpu_ppc_reset(env);
 #if defined(TARGET_PPC64)
 #if defined(TARGET_ABI32)
         env->msr &= ~((target_ulong)1 << MSR_SF);
@@ -2192,12 +2183,6 @@ int main(int argc, char **argv)
     }
 #elif defined(TARGET_M68K)
     {
-        if (cpu_model == NULL)
-            cpu_model = "any";
-        if (cpu_m68k_set_model(env, cpu_model)) {
-            cpu_abort(cpu_single_env,
-                      "Unable to find m68k CPU definition\n");
-        }
         env->pc = regs->pc;
         env->dregs[0] = regs->d0;
         env->dregs[1] = regs->d1;
@@ -2220,20 +2205,7 @@ int main(int argc, char **argv)
     }
 #elif defined(TARGET_MIPS)
     {
-        mips_def_t *def;
         int i;
-
-        /* Choose and initialise CPU */
-        if (cpu_model == NULL)
-#if defined(TARGET_ABI_MIPSN32) || defined(TARGET_ABI_MIPSN64)
-            cpu_model = "20Kc";
-#else
-            cpu_model = "24Kf";
-#endif
-        mips_find_by_name(cpu_model, &def);
-        if (def == NULL)
-            cpu_abort(env, "Unable to find MIPS CPU definition\n");
-        cpu_mips_register(env, def);
 
         for(i = 0; i < 32; i++) {
             env->gpr[i][env->current_tc] = regs->regs[i];

@@ -100,7 +100,7 @@ static void ppc_heathrow_init (int ram_size, int vga_ram_size,
                                const char *initrd_filename,
                                const char *cpu_model)
 {
-    CPUState *env, *envs[MAX_CPUS];
+    CPUState *env = NULL, *envs[MAX_CPUS];
     char buf[1024];
     qemu_irq *pic, **heathrow_irqs;
     nvram_t nvram;
@@ -108,27 +108,25 @@ static void ppc_heathrow_init (int ram_size, int vga_ram_size,
     int linux_boot, i;
     unsigned long bios_offset, vga_bios_offset;
     uint32_t kernel_base, kernel_size, initrd_base, initrd_size;
-    ppc_def_t *def;
     PCIBus *pci_bus;
     MacIONVRAMState *nvr;
     int vga_bios_size, bios_size;
     qemu_irq *dummy_irq;
     int pic_mem_index, nvram_mem_index, dbdma_mem_index, cuda_mem_index;
-    int ppc_boot_device = boot_device[0];
+    int ide_mem_index[2];
+    int ppc_boot_device;
 
     linux_boot = (kernel_filename != NULL);
 
     /* init CPUs */
-    env = cpu_init();
     if (cpu_model == NULL)
         cpu_model = "default";
-    ppc_find_by_name(cpu_model, &def);
-    if (def == NULL) {
-        cpu_abort(env, "Unable to find PowerPC CPU definition\n");
-    }
     for (i = 0; i < smp_cpus; i++) {
-        cpu_ppc_register(env, def);
-        cpu_ppc_reset(env);
+        env = cpu_init(cpu_model);
+        if (!env) {
+            fprintf(stderr, "Unable to find PowerPC CPU definition\n");
+            exit(1);
+        }
         /* Set time-base frequency to 100 Mhz */
         cpu_ppc_tb_init(env, 100UL * 1000UL * 1000UL);
         env->osi_call = vga_osi_call;
@@ -215,6 +213,28 @@ static void ppc_heathrow_init (int ram_size, int vga_ram_size,
         kernel_size = 0;
         initrd_base = 0;
         initrd_size = 0;
+        ppc_boot_device = '\0';
+        for (i = 0; boot_device[i] != '\0'; i++) {
+            /* TOFIX: for now, the second IDE channel is not properly
+             *        used by OHW. The Mac floppy disk are not emulated.
+             *        For now, OHW cannot boot from the network.
+             */
+#if 0
+            if (boot_device[i] >= 'a' && boot_device[i] <= 'f') {
+                ppc_boot_device = boot_device[i];
+                break;
+            }
+#else
+            if (boot_device[i] >= 'c' && boot_device[i] <= 'd') {
+                ppc_boot_device = boot_device[i];
+                break;
+            }
+#endif
+        }
+        if (ppc_boot_device == '\0') {
+            fprintf(stderr, "No valid boot device for Mac99 machine\n");
+            exit(1);
+        }
     }
 
     isa_mem_base = 0x80000000;
@@ -262,8 +282,12 @@ static void ppc_heathrow_init (int ram_size, int vga_ram_size,
             nd_table[i].model = "ne2k_pci";
         pci_nic_init(pci_bus, &nd_table[i], -1);
     }
-    
+
+    /* First IDE channel is a CMD646 on the PCI bus */
     pci_cmd646_ide_init(pci_bus, &bs_table[0], 0);
+    /* Second IDE channel is a MAC IDE on the MacIO bus */
+    ide_mem_index[0] = -1;
+    ide_mem_index[1] = pmac_ide_init(&bs_table[2], pic[0x0D]);
 
     /* cuda also initialize ADB */
     cuda_init(&cuda_mem_index, pic[0x12]);
@@ -275,9 +299,9 @@ static void ppc_heathrow_init (int ram_size, int vga_ram_size,
     pmac_format_nvram_partition(nvr, 0x2000);
 
     dbdma_init(&dbdma_mem_index);
-    
+
     macio_init(pci_bus, 0x0017, 1, pic_mem_index, dbdma_mem_index,
-               cuda_mem_index, nvr, 0, NULL);
+               cuda_mem_index, nvr, 2, ide_mem_index);
 
     if (usb_enabled) {
         usb_ohci_init_pci(pci_bus, 3, -1);
