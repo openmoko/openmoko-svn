@@ -10,6 +10,7 @@ bin_PROGRAMS = neod
 
 neod_SOURCES = \
   buttonactions.c \
+  moko-adaptive-box.c \
   neod-main.c
 
 neod_LDADD = @NEOD_LIBS@ -lapm

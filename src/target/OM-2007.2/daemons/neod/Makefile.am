@@ -1,4 +1,4 @@
-SUBDIRS = src po
+SUBDIRS = src data po
 
 INTLTOOL_BUILT = \
         intltool-extract \

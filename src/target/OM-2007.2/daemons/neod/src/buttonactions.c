@@ -16,15 +16,11 @@
 
 #include <gconf/gconf-client.h>
 
-#include <gtk/gtklabel.h>
-#include <gtk/gtkmenu.h>
-#include <gtk/gtkmenuitem.h>
-#include <gtk/gtkcheckmenuitem.h>
-#include <gtk/gtkseparatormenuitem.h>
-
+#include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
 #include <glib.h>
+#include <glib/gstdio.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -70,8 +66,8 @@ static int backlight_max_brightness = 1;
 #endif
 
 #ifdef NEOD_PLATFORM_IPAQ
-    #define AUX_BUTTON_KEYCODE 89   /* _KEY_RECORD */
-    #define POWER_BUTTON_KEYCODE 0x74 /* KEY_POWER */
+    #define AUX_BUTTON_KEYCODE 89     /* record */
+    #define POWER_BUTTON_KEYCODE 0x74 /* power */
     #define TOUCHSCREEN_BUTTON_KEYCODE 0x14a
 #endif
 
@@ -99,6 +95,13 @@ GtkWidget* aux_menu = 0;
 GtkWidget* power_menu = 0;
 
 GConfClient* gconfc = 0;
+
+enum PeripheralUnit
+{
+    GSM = 0,
+    BLUETOOTH = 1,
+    GPS = 2,
+};
 
 enum PowerManagementMode
 {
@@ -411,6 +414,8 @@ gboolean neod_buttonactions_input_dispatch( GSource* source, GSourceFunc callbac
 
 gboolean neod_buttonactions_aux_timeout( guint timeout )
 {
+    if ( aux_timer == -1 )
+        return FALSE;
     g_debug( "aux pressed for %d", timeout );
 
     neod_buttonactions_sound_play( "touchscreen" );
@@ -476,36 +481,7 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
     return FALSE;
 }
 
-// this is hardcoded to the Neo1973
-void neod_buttonactions_popup_positioning_cb( GtkMenu* menu, gint* x, gint* y, gboolean* push_in, gpointer user_data )
-{
-    GtkRequisition req;
-    gtk_widget_size_request( GTK_WIDGET(menu), &req );
-    gint screen_width = gdk_screen_width();
-    gint screen_height = gdk_screen_height();
-    gboolean landscape_mode = gdk_screen_width() >= gdk_screen_height();
-
-    if ( GTK_WIDGET(menu) == aux_menu )
-    {
-        if (landscape_mode)
-            *x = screen_width - req.width;
-        else
-            *x = 0;
-        *y = 0;
-    }
-    else if ( GTK_WIDGET(menu) == power_menu )
-    {
-        if (landscape_mode)
-            *x = 0;
-        else
-            *x = screen_width - req.width;
-        *y = screen_height - req.height;
-    }
-    else
-        g_assert( FALSE ); // fail here if called for unknown menu
-}
-
-void neod_buttonactions_popup_selected_fullscreen( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_fullscreen( GtkWidget* button, gpointer user_data )
 {
     static int is_fullscreen = 0;
 
@@ -539,7 +515,7 @@ void neod_buttonactions_popup_selected_fullscreen( GtkMenuItem* menu, gpointer u
     is_fullscreen = 1 - is_fullscreen;
 }
 
-void neod_buttonactions_popup_selected_orientation( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_orientation( GtkWidget* button, gpointer user_data )
 {
     gtk_widget_hide( aux_menu );
     if ( orientation )
@@ -549,28 +525,13 @@ void neod_buttonactions_popup_selected_orientation( GtkMenuItem* menu, gpointer 
     orientation = !orientation;
 }
 
-void neod_buttonactions_popup_selected_screenshot( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_screenshot( GtkWidget* button, gpointer user_data )
 {
     gtk_widget_hide( aux_menu );
     g_spawn_command_line_async( "gpe-scap", NULL );
 }
 
-void neod_buttonactions_popup_selected_fullPM( GtkMenuItem* menu, gpointer user_data )
-{
-    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", FULL, NULL );
-}
-
-void neod_buttonactions_popup_selected_dimOnly( GtkMenuItem* menu, gpointer user_data )
-{
-    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", DIM_ONLY, NULL );
-}
-
-void neod_buttonactions_popup_selected_noPM( GtkMenuItem* menu, gpointer user_data )
-{
-    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", NONE, NULL );
-}
-
-void neod_buttonactions_popup_selected_lock( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_lock( GtkWidget* button, gpointer user_data )
 {
     int fd = open( "/sys/power/state", O_WRONLY );
     if ( fd != -1 )
@@ -581,22 +542,117 @@ void neod_buttonactions_popup_selected_lock( GtkMenuItem* menu, gpointer user_da
     }
 }
 
-void neod_buttonactions_popup_selected_restartUI( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_restartUI( GtkWidget* button, gpointer user_data )
 {
+    gtk_widget_hide( power_menu );
     //FIXME notify user
     system( "/etc/init.d/xserver-nodm restart");
 }
 
-void neod_buttonactions_popup_selected_reboot( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_reboot( GtkWidget* button, gpointer user_data )
 {
+    gtk_widget_hide( power_menu );
     //moko_ui_banner_show_text( 4, "Rebooting System..." );
     system( "/sbin/reboot");
 }
 
-void neod_buttonactions_popup_selected_poweroff( GtkMenuItem* menu, gpointer user_data )
+void neod_buttonactions_popup_selected_poweroff( GtkWidget* button, gpointer user_data )
 {
+    gtk_widget_hide( power_menu );
     //moko_ui_banner_show_text( 4, "Shutting down System..." );
     system( "/sbin/poweroff");
+}
+
+void neod_buttonactions_popup_selected_pmprofile( GtkComboBox* combo, gpointer user_data )
+{
+    gtk_widget_hide( power_menu );
+    int new_pmprofile = gtk_combo_box_get_active( combo );
+    g_assert( FULL <= new_pmprofile && new_pmprofile <= NONE );
+    g_debug( "switch pm profile to %d", new_pmprofile );
+    gconf_client_set_int( gconfc, "/desktop/openmoko/neod/power_management", new_pmprofile, NULL );
+}
+
+static gboolean read_boolean_from_path( const gchar* path )
+{
+    int value;
+    FILE* f = fopen( path, "r" );
+    if ( f == NULL )
+    {
+        g_debug( "can't open file '%s': (%s), aborting.", path, strerror( errno ) );
+        return FALSE;
+    }
+    fscanf( f, "%d", &value );
+    fclose( f );
+    g_debug( "read value from '%s' = '%d'", path, value );
+    return value;
+}
+
+static void write_boolean_to_path( const gchar* path, gboolean b )
+{
+    FILE* f = fopen( path, "w" );
+    if ( f == NULL )
+    {
+        g_debug( "can't open file '%s': (%s), aborting.", path, strerror( errno ) );
+        return;
+    }
+    fprintf( f, b ? "1\n" : "0\n" );
+    fclose( f );
+}
+
+static gboolean is_turned_on( int unit )
+{
+    switch( unit )
+    {
+        case GSM:
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+            return read_boolean_from_path( "/sys/devices/platform/gta01-pm-gsm.0/power_on" );
+#endif
+            return FALSE;
+        case BLUETOOTH:
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+            return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-bt.0/power_on" );
+#endif
+            return FALSE;
+        case GPS:
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+            return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/power_on" );
+#endif
+            return FALSE;
+        default:
+            g_assert( FALSE ); // should never reach this
+    }
+}
+
+static void peripheral_set_power( int unit, gboolean on )
+{
+    switch( unit )
+    {
+        case GSM:
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+            write_boolean_to_path( "/sys/devices/platform/gta01-pm-gsm.0/power_on", on );
+#endif
+            break;
+        case BLUETOOTH:
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+            write_boolean_to_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-bt.0/power_on", on );
+#endif
+            break;
+        case GPS:
+#ifdef NEOD_PLATFORM_FIC_NEO1973
+            write_boolean_to_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/power_on", on );
+#endif
+            break;
+        default:
+            g_assert( FALSE ); // should never reach this
+    }
+}
+
+void neod_buttonactions_popup_selected_switch_power( GtkWidget* button, gpointer user_data )
+{
+    gtk_widget_hide( power_menu );
+    gboolean new_power_state = !is_turned_on( (int)user_data );
+    g_debug( "switch power of unit %d to %d", (int)user_data, (int)new_power_state );
+    //FIXME implement this and notify user
 }
 
 void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry *entry, gpointer data )
@@ -616,86 +672,171 @@ void neod_buttonactions_show_aux_menu()
     // show popup menu requesting for actions
     if ( !aux_menu )
     {
-        aux_menu = gtk_menu_new();
+        aux_menu = gtk_dialog_new_with_buttons( "AUX Menu",
+                                                NULL,
+                                                GTK_DIALOG_MODAL,
+                                                "Dismiss this menu", GTK_RESPONSE_OK,
+                                                NULL );
+        gtk_widget_set_name( GTK_WIDGET(aux_menu), "neod-dialog" );
+        gtk_button_box_set_layout( GTK_BUTTON_BOX(GTK_DIALOG(aux_menu)->action_area), GTK_BUTTONBOX_SPREAD );
+        GtkWidget* box = gtk_vbox_new( 0, 0 );
+        gtk_widget_set_name( box, "neod-menu" );
+//        GtkWidget* title = gtk_label_new( "AUX Button Menu" );
+//        gtk_box_pack_start_defaults( GTK_BOX(box), title );
 
-        GtkWidget* fullscreen = gtk_menu_item_new_with_label( "Toggle Fullscreen" );
-        g_signal_connect( G_OBJECT(fullscreen), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullscreen), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), fullscreen );
+        GtkWidget* fullscreen = gtk_button_new_with_label( "Toggle Fullscreen" );
+        g_signal_connect( G_OBJECT(fullscreen), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_fullscreen), NULL );
+        gtk_box_pack_start_defaults( GTK_BOX(box), fullscreen );
 
-        GtkWidget* orientation = gtk_menu_item_new_with_label( "Swap Orientation" );
-        g_signal_connect( G_OBJECT(orientation), "activate", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), orientation );
+        GtkWidget* orientation = gtk_button_new_with_label( "Swap Orientation" );
+        g_signal_connect( G_OBJECT(orientation), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_orientation), NULL );
+        gtk_box_pack_start_defaults( GTK_BOX(box), orientation );
 
-        GtkWidget* scap = gtk_menu_item_new_with_label( "Screenshot" );
-        g_signal_connect( G_OBJECT(scap), "activate", G_CALLBACK(neod_buttonactions_popup_selected_screenshot), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(aux_menu), scap );
+        GtkWidget* scap = gtk_button_new_with_label( "Screenshot" );
+        g_signal_connect( G_OBJECT(scap), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_screenshot), NULL );
+        gtk_box_pack_start_defaults( GTK_BOX(box), scap );
 
-        gtk_widget_show_all( GTK_WIDGET(aux_menu) );
+        gtk_widget_show_all( GTK_WIDGET(box) );
+
+        // override, otherwise matchbox won't show it fullscreen
+        gtk_window_set_type_hint( GTK_WINDOW(aux_menu), GDK_WINDOW_TYPE_HINT_NORMAL );
+        //gtk_window_fullscreen( GTK_WINDOW(aux_menu) );
+        g_signal_connect_swapped( aux_menu, "response", G_CALLBACK(gtk_widget_hide), aux_menu);
+        gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(aux_menu)->vbox), box );
     }
-    gtk_menu_popup( GTK_MENU(aux_menu), NULL, NULL, neod_buttonactions_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+    int response = gtk_dialog_run( GTK_DIALOG(aux_menu) );
+    g_debug( "gtk_dialog_run completed, response = %d", response );
 }
 
 void neod_buttonactions_show_power_menu()
 {
+    static GtkWidget* gsmpower = 0;
+    static GtkWidget* btpower = 0;
+    static GtkWidget* gpspower = 0;
+    static GtkWidget* pmprofile = 0;
+
     // show popup menu requesting for actions
     if ( !power_menu )
     {
-        power_menu = gtk_menu_new();
+        power_menu = gtk_dialog_new_with_buttons( "POWER Menu",
+                NULL,
+                GTK_DIALOG_MODAL,
+                "Dismiss this menu", GTK_RESPONSE_OK,
+                NULL );
+        gtk_widget_set_name( GTK_WIDGET(power_menu), "neod-dialog" );
+        gtk_button_box_set_layout( GTK_BUTTON_BOX(GTK_DIALOG(power_menu)->action_area), GTK_BUTTONBOX_SPREAD );
+        GtkWidget* box = gtk_vbox_new( 0, 0 );
+        gtk_widget_set_name( box, "neod-menu" );
+//        GtkWidget* title = gtk_label_new( "POWER Button Menu" );
+//        gtk_box_pack_start_defaults( GTK_BOX(box), title );
 
-        GtkWidget* bluetooth = gtk_check_menu_item_new_with_label( "Bluetooth Power" );
-        gtk_widget_set_state( bluetooth, GTK_STATE_INSENSITIVE );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), bluetooth );
+        gsmpower = gtk_button_new();
+        g_signal_connect( G_OBJECT(gsmpower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), (void*)GSM );
+        gtk_box_pack_start_defaults( GTK_BOX(box), gsmpower );
 
-        GtkWidget* gps = gtk_check_menu_item_new_with_label( "GPS Power" );
-        gtk_widget_set_state( gps, GTK_STATE_INSENSITIVE );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gps );
+        btpower = gtk_button_new();
+        g_signal_connect( G_OBJECT(btpower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), (void*)BLUETOOTH );
+        gtk_box_pack_start_defaults( GTK_BOX(box), btpower );
 
-        GtkWidget* gsm = gtk_check_menu_item_new_with_label( "GSM Power" );
-        gtk_widget_set_state( gsm, GTK_STATE_INSENSITIVE );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gsm );
+        gpspower = gtk_button_new();
+        g_signal_connect( G_OBJECT(gpspower), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_switch_power), (void*)GPS );
+        gtk_box_pack_start_defaults( GTK_BOX(box), gpspower );
 
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
+        gtk_box_pack_start_defaults( GTK_BOX(box), gtk_hseparator_new() );
 
-        // add profiles
-        // TODO build profile list dynamically from database
-        GtkWidget* profile = 0;
-        profile = gtk_check_menu_item_new_with_label( "Profile: Full PM" );
-        gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
-        gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == FULL );
-        g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_fullPM), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
-        profile = gtk_check_menu_item_new_with_label( "Profile: Dim Only" );
-        gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
-        gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == DIM_ONLY );
-        g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_dimOnly), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
-        profile = gtk_check_menu_item_new_with_label( "Profile: No PM" );
-        gtk_check_menu_item_set_draw_as_radio( GTK_CHECK_MENU_ITEM(profile), TRUE );
-        gtk_check_menu_item_set_active( GTK_CHECK_MENU_ITEM(profile), pm_value == NONE );
-        g_signal_connect( G_OBJECT(profile), "activate", G_CALLBACK(neod_buttonactions_popup_selected_noPM), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profile );
+        pmprofile = gtk_combo_box_new_text();
+        gtk_combo_box_append_text( GTK_COMBO_BOX(pmprofile), "Power Management:\nDim first, then lock" );
+        gtk_combo_box_append_text( GTK_COMBO_BOX(pmprofile), "Power Management:\nDim only, don't lock" );
+        gtk_combo_box_append_text( GTK_COMBO_BOX(pmprofile), "Power Management:\nDisabled" );
+        gtk_combo_box_set_active( GTK_COMBO_BOX(pmprofile), pm_value );
+        g_signal_connect( G_OBJECT(pmprofile), "changed", G_CALLBACK(neod_buttonactions_popup_selected_pmprofile), NULL );
+        gtk_box_pack_start_defaults( GTK_BOX(box), pmprofile );
 
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), gtk_separator_menu_item_new() );
+        gtk_box_pack_start_defaults( GTK_BOX(box), gtk_hseparator_new() );
 
-        GtkWidget* lock = gtk_menu_item_new_with_label( "Lock Phone" );
-        g_signal_connect( G_OBJECT(lock), "activate", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), lock );
-            //GtkWidget* flightmode = gtk_menu_item_new_with_label( "Flight Mode" );
-            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), flightmode );
-            //GtkWidget* profilelist = gtk_menu_item_new_with_label( "<Profile List>" );
-            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), profilelist );
-            //GtkWidget* restartUI = gtk_menu_item_new_with_label( "Restart UI" );
-            //g_signal_connect( G_OBJECT(restartUI), "activate", G_CALLBACK(neod_buttonactions_popup_selected_restartUI), NULL );
-            //gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), restartUI );
-        GtkWidget* reboot = gtk_menu_item_new_with_label( "Reboot Phone" );
-        g_signal_connect( G_OBJECT(reboot), "activate", G_CALLBACK(neod_buttonactions_popup_selected_reboot), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), reboot );
-        GtkWidget* poweroff = gtk_menu_item_new_with_label( "Power Off" );
-        g_signal_connect( G_OBJECT(poweroff), "activate", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
-        gtk_menu_shell_append( GTK_MENU_SHELL(power_menu), poweroff );
-        gtk_widget_show_all( GTK_WIDGET(power_menu) );
+        GtkWidget* lock = gtk_button_new_with_label( "Lock Now" );
+        g_signal_connect( G_OBJECT(lock), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
+        gtk_box_pack_start_defaults( GTK_BOX(box), lock );
+
+        GtkWidget* poweroff = gtk_button_new_with_label( "Shutdown Now" );
+        g_signal_connect( G_OBJECT(poweroff), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_poweroff), NULL );
+        gtk_box_pack_start_defaults( GTK_BOX(box), poweroff );
+
+        gtk_widget_show_all( GTK_WIDGET(box) );
+
+        // override, otherwise matchbox won't show it fullscreen
+        gtk_window_set_type_hint( GTK_WINDOW(power_menu), GDK_WINDOW_TYPE_HINT_NORMAL );
+        //gtk_window_fullscreen( GTK_WINDOW(power_menu) );
+        g_signal_connect_swapped( power_menu, "response", G_CALLBACK(gtk_widget_hide), power_menu);
+        gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(power_menu)->vbox), box );
     }
-    gtk_menu_popup( GTK_MENU(power_menu), NULL, NULL, neod_buttonactions_popup_positioning_cb, 0, 0, GDK_CURRENT_TIME );
+    gtk_button_set_label( gsmpower, g_strdup_printf( "Turn %s GSM", is_turned_on( GSM ) ? "off" : "on" ) );
+    gtk_button_set_label( btpower, g_strdup_printf( "Turn %s Bluetooth", is_turned_on( BLUETOOTH ) ? "off" : "on" ) );
+    gtk_button_set_label( gpspower, g_strdup_printf( "Turn %s GPS", is_turned_on( GPS ) ? "off" : "on" ) );
+    int response = gtk_dialog_run( GTK_DIALOG(power_menu) );
+    g_debug( "gtk_dialog_run completed, response = %d", response );
+}
+
+const gchar* authors[] = {
+    "OpenMoko has been brought to you by:",
+    " "
+    "Sean Moss-Pultz",
+    "Harald 'LaF0rge' Welte",
+    "Michael 'Mickey' Lauer",
+    "Werner Almesberger",
+    "Alice Tang",
+    "Allen Chang",
+    "Dave Wu",
+    "Wanda",
+    "Jelan Hsu",
+    "Miles Hsieh",
+    "Nod Huang",
+    "Paul Tian",
+    "Sean Chiang",
+    "Shawn Lin",
+    "Timmy Huang",
+    "Willie Chen",
+    "Olv",
+    "JServ",
+    "Jollen",
+    "Rasterman",
+    "Matt Hsu",
+    "John Lee",
+    "Tick",
+    "Roh",
+    "Erin Yueh",
+    "Jeremy",
+    "Holger 'Zecke' Freyther",
+    "Daniel 'Alphaone' Willmann",
+    "Stefan Schmidt",
+    "Jan 'Shoragan' Luebbe",
+    "Soeren 'Abraxa' Apel",
+    "Rod Whitby",
+    "Chris @ O-Hand",
+    "Ross @ O-Hand",
+    "Thomas @ O-Hand",
+    "Rob @ O-Hand",
+    "Dodji @ O-Hand",
+    "NJP @ O-Hand",
+    " ",
+    "@" __DATE__ ":" __TIME__,
+    "gcc " __VERSION__,
+};
+
+gboolean neod_buttonactions_power_while_aux()
+{
+    g_debug( "aux and power pressed together" );
+    if ( aux_menu )
+        gtk_widget_hide( aux_menu );
+    gtk_show_about_dialog( NULL,
+        "authors", authors,
+        "comments", "open. mobile. free.",
+        "copyright", "2006-2007 OpenMoko, Inc.",
+        "program-name", "OpenMoko 2007.2",
+        "website", "http://www.openmoko.org",
+        "logo", gdk_pixbuf_new_from_file( PKGDATADIR "/openmoko-logo.jpg", NULL ),
+        NULL );
+    return FALSE;
 }
 
 gboolean neod_buttonactions_power_timeout( guint timeout )
@@ -707,6 +848,11 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
     neod_buttonactions_set_display( 100 );
 
     power_timer = -1;
+
+    // special case for power button being pressed while aux is held
+    if ( aux_timer != -1 || ( aux_menu && GTK_WIDGET_MAPPED( aux_menu ) ) )
+        return neod_buttonactions_power_while_aux();
+
     if ( timeout < 1 )
     {
         Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
@@ -821,7 +967,7 @@ void neod_buttonactions_set_display( int brightness )
 gboolean neod_buttonactions_powersave_timeout1( guint timeout )
 {
     g_debug( "mainmenu powersave timeout 1" );
-    //FIXME talk to neod
+    //FIXME talk to peripheral device abstraction daemon
     power_state = DISPLAY_DIM;
     neod_buttonactions_set_display( 25 );
     return FALSE;
@@ -830,7 +976,7 @@ gboolean neod_buttonactions_powersave_timeout1( guint timeout )
 gboolean neod_buttonactions_powersave_timeout2( guint timeout )
 {
     g_debug( "mainmenu powersave timeout 2" );
-    //FIXME talk to neod
+    //FIXME talk to peripheral device abstraction daemon
     neod_buttonactions_set_display( 0 );
     power_state = DISPLAY_OFF;
     return FALSE;
@@ -841,7 +987,7 @@ gboolean neod_buttonactions_powersave_timeout3( guint timeout )
     if ( pm_value != FULL )
         return FALSE;
     g_debug( "mainmenu powersave timeout 3" );
-    //FIXME talk to neod
+    //FIXME talk to peripheral device abstraction daemon
     power_state = SUSPEND;
     system( "/usr/bin/apm -s");
     neod_buttonactions_powersave_reset();
