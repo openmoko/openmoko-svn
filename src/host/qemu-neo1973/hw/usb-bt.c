@@ -442,6 +442,11 @@ static int usb_bt_handle_data(USBDevice *dev, USBPacket *p)
             ret = usb_bt_event_dequeue(s, p);
             break;
 
+        case USB_ACL_EP:
+        case USB_SCO_EP:
+            /* FIXME */
+            break;
+
         default:
             goto fail;
         }
