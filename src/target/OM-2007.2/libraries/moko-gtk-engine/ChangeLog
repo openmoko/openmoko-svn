@@ -1,5 +1,12 @@
 2007-11-13  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-utils.c:
+	* src/moko-utils.h:
+
+	Convert colour shading routines to fixed point
+
+2007-11-13  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-draw.c: (moko_draw_extension): Fix inactive tab fill
 
 2007-11-13  Thomas Wood  <thomas@openedhand.com>

@@ -25,5 +25,5 @@
 
 #include <gtk/gtk.h>
 
-void moko_shade_colour (GdkColor *a, GdkColor *b, gdouble   k);
+void moko_shade_colour (GdkColor *a, GdkColor *b, gdouble k);
 

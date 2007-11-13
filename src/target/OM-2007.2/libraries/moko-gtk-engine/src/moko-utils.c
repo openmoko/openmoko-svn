@@ -24,196 +24,281 @@
 
 
 #include <gtk/gtk.h>
+#include <endian.h>
 
 /*
-  Shading routines taken from gtkstyle.c
-*/
+  Shading routines taken from clutter-color.c
+ */
 
-static void rgb_to_hls (gdouble *r, gdouble *g, gdouble *b);
-static void hls_to_rgb (gdouble *r, gdouble *g, gdouble *b);
+#define CFX_ONE    (1 << CFX_Q)	/* 1 */
+#define CFX_Q      16		/* Decimal part size in bits */
 
-void
-moko_shade_colour (GdkColor *a,
-                   GdkColor *b,
-                   gdouble   k)
+#define CFX_360 CLUTTER_INT_TO_FIXED (360)
+#define CFX_240 CLUTTER_INT_TO_FIXED (240)
+#define CFX_180 CLUTTER_INT_TO_FIXED (180)
+#define CFX_120 CLUTTER_INT_TO_FIXED (120)
+#define CFX_60  CLUTTER_INT_TO_FIXED (60)
+
+#define CLUTTER_FIXED_TO_INT(x)         ((x) >> CFX_Q)
+#define CLUTTER_INT_TO_FIXED(x)         ((x) << CFX_Q)
+#define CLUTTER_FIXED_DIV(x,y) ((((x) << 8)/(y)) << 8)
+#define CLUTTER_FIXED_MUL(x,y) ((x) >> 8) * ((y) >> 8)
+
+
+#define CFX_INT         CLUTTER_FIXED_TO_INT
+#define CFX_MUL         CLUTTER_FIXED_MUL
+#define CFX_DIV         CLUTTER_FIXED_DIV
+
+typedef gint32 Fixed;
+
+void color_to_hlsx (GdkColor *src, Fixed *hue, Fixed *luminance, Fixed *saturation);
+void color_from_hlsx (GdkColor *dest, Fixed hue, Fixed luminance, Fixed saturation);
+
+/* <private> */
+const double _magic = 68719476736.0*1.5;
+/* Where in the 64 bits of double is the mantisa */
+#if (__FLOAT_WORD_ORDER == 1234)
+#define _CFX_MAN			0
+#elif (__FLOAT_WORD_ORDER == 4321)
+#define _CFX_MAN			1
+#else
+#define CFX_NO_FAST_CONVERSIONS
+#endif
+
+/*
+ * double_to_fixed :
+ * @value: value to be converted
+ *
+ * A fast conversion from double precision floating to fixed point
+ *
+ * Return value: Fixed point representation of the value
+ *
+ * Since: 0.2
+ */
+
+Fixed
+double_to_fixed (double val)
 {
-  gdouble red;
-  gdouble green;
-  gdouble blue;
-  
-  red = (gdouble) a->red / 65535.0;
-  green = (gdouble) a->green / 65535.0;
-  blue = (gdouble) a->blue / 65535.0;
-  
-  rgb_to_hls (&red, &green, &blue);
-  
-  green *= k;
-  if (green > 1.0)
-    green = 1.0;
-  else if (green < 0.0)
-    green = 0.0;
-  
-  blue *= k;
-  if (blue > 1.0)
-    blue = 1.0;
-  else if (blue < 0.0)
-    blue = 0.0;
-  
-  hls_to_rgb (&red, &green, &blue);
-  
-  b->red = red * 65535.0;
-  b->green = green * 65535.0;
-  b->blue = blue * 65535.0;
+  union 
+  {
+    double d;
+    unsigned int i[2];
+  } dbl;
+
+  dbl.d = val;
+  dbl.d = dbl.d + _magic;
+  return dbl.i[_CFX_MAN];
 }
 
-static void
-rgb_to_hls (gdouble *r,
-            gdouble *g,
-            gdouble *b)
+/* k is a percentage */
+void
+moko_shade_colour (GdkColor *src,
+                   GdkColor *dest,
+                   gdouble      k)
 {
-  gdouble min;
-  gdouble max;
-  gdouble red;
-  gdouble green;
-  gdouble blue;
-  gdouble h, l, s;
-  gdouble delta;
+  Fixed h, l, s, shade;
+  GdkColor _src;
+
+  shade = double_to_fixed (k);
+
+  /* convert to 8 bit per channel */
+  _src = *src;
+  _src.red = _src.red / 257;
+  _src.blue = _src.blue / 257;
+  _src.green = _src.green / 257;
+
+
+  color_to_hlsx (&_src, &h, &l, &s);
+
+  l = CFX_MUL (l, shade);
+  if (l > CFX_ONE)
+    l = CFX_ONE;
+  else if (l < 0)
+    l = 0;
+
+  s = CFX_MUL (s, shade);
+  if (s > CFX_ONE)
+    s = CFX_ONE;
+  else if (s < 0)
+    s = 0;
   
-  red = *r;
-  green = *g;
-  blue = *b;
+  color_from_hlsx (dest, h, l, s);
+
+  /* convert back to 16 bit per channel */
+  dest->red = dest->red * 257;
+  dest->blue = dest->blue * 257;
+  dest->green = dest->green * 257;
+}
+
+/**
+ * color_to_hlsx:
+ * @src: a #GdkColor
+ * @hue: return location for the hue value or %NULL
+ * @luminance: return location for the luminance value or %NULL
+ * @saturation: return location for the saturation value or %NULL
+ *
+ * Converts @src to the HLS format. Returned hue is in degrees (0 .. 360),
+ * luminance and saturation from interval <0 .. 1>.
+ */
+void
+color_to_hlsx (GdkColor *src,
+	       Fixed       *hue,
+	       Fixed       *luminance,
+	       Fixed       *saturation)
+{
+  Fixed red, green, blue;
+  Fixed min, max, delta;
+  Fixed h, l, s;
   
+  g_return_if_fail (src != NULL);
+
+  red   = CLUTTER_INT_TO_FIXED (src->red)   / 255;
+  green = CLUTTER_INT_TO_FIXED (src->green) / 255;
+  blue  = CLUTTER_INT_TO_FIXED (src->blue)  / 255;
+
   if (red > green)
     {
       if (red > blue)
-        max = red;
+	max = red;
       else
-        max = blue;
-      
+	max = blue;
+
       if (green < blue)
-        min = green;
+	min = green;
       else
-        min = blue;
+	min = blue;
     }
   else
     {
       if (green > blue)
-        max = green;
+	max = green;
       else
-        max = blue;
-      
+	max = blue;
+
       if (red < blue)
-        min = red;
+	min = red;
       else
-        min = blue;
+	min = blue;
     }
-  
+
   l = (max + min) / 2;
   s = 0;
   h = 0;
-  
+
   if (max != min)
     {
-      if (l <= 0.5)
-        s = (max - min) / (max + min);
+      if (l <= CFX_ONE/2)
+	s = CFX_DIV ((max - min), (max + min));
       else
-        s = (max - min) / (2 - max - min);
-      
-      delta = max -min;
+	s = CFX_DIV ((max - min), (CLUTTER_INT_TO_FIXED (2) - max - min));
+
+      delta = max - min;
       if (red == max)
-        h = (green - blue) / delta;
+	h = CFX_DIV ((green - blue), delta);
       else if (green == max)
-        h = 2 + (blue - red) / delta;
+	h = CLUTTER_INT_TO_FIXED (2) + CFX_DIV ((blue - red), delta);
       else if (blue == max)
-        h = 4 + (red - green) / delta;
-      
+	h = CLUTTER_INT_TO_FIXED (4) + CFX_DIV ((red - green), delta);
+
       h *= 60;
-      if (h < 0.0)
-        h += 360;
+      if (h < 0)
+	h += CLUTTER_INT_TO_FIXED (360);
     }
-  
-  *r = h;
-  *g = l;
-  *b = s;
+
+  if (hue)
+    *hue = h;
+
+  if (luminance)
+    *luminance = l;
+
+  if (saturation)
+    *saturation = s;
 }
 
-static void
-hls_to_rgb (gdouble *h,
-            gdouble *l,
-            gdouble *s)
+/**
+ * color_from_hlsx:
+ * @dest: return location for a #GdkColor
+ * @hue: hue value (0 .. 360)
+ * @luminance: luminance value (0 .. 1)
+ * @saturation: saturation value (0 .. 1)
+ *
+ * Converts a color expressed in HLS (hue, luminance and saturation)
+ * values into a #GdkColor.
+ */
+
+void
+color_from_hlsx (GdkColor *dest,
+		 Fixed   hue,
+		 Fixed   luminance,
+		 Fixed   saturation)
 {
-  gdouble hue;
-  gdouble lightness;
-  gdouble saturation;
-  gdouble m1, m2;
-  gdouble r, g, b;
+  Fixed h, l, s;
+  Fixed m1, m2;
   
-  lightness = *l;
-  saturation = *s;
-  
-  if (lightness <= 0.5)
-    m2 = lightness * (1 + saturation);
+  g_return_if_fail (dest != NULL);
+
+  l = luminance;
+  s = saturation;
+
+  if (l <= CFX_ONE/2)
+    m2 = CFX_MUL (l, (CFX_ONE + s));
   else
-    m2 = lightness + saturation - lightness * saturation;
-  m1 = 2 * lightness - m2;
-  
-  if (saturation == 0)
+    m2 = l + s - CFX_MUL (l,s);
+
+  m1 = 2 * l - m2;
+
+  if (s == 0)
     {
-      *h = lightness;
-      *l = lightness;
-      *s = lightness;
+      dest->red   = (guint8) CFX_INT (l * 255);
+      dest->green = (guint8) CFX_INT (l * 255);
+      dest->blue  = (guint8) CFX_INT (l * 255);
     }
   else
     {
-      hue = *h + 120;
-      while (hue > 360)
-        hue -= 360;
-      while (hue < 0)
-        hue += 360;
-      
-      if (hue < 60)
-        r = m1 + (m2 - m1) * hue / 60;
-      else if (hue < 180)
-        r = m2;
-      else if (hue < 240)
-        r = m1 + (m2 - m1) * (240 - hue) / 60;
+      h = hue + CFX_120;
+      while (h > CFX_360)
+	h -= CFX_360;
+      while (h < 0)
+	h += CFX_360;
+
+      if (h < CFX_60)
+	dest->red = (guint8) CFX_INT((m1 + CFX_MUL((m2-m1), h) / 60) * 255);
+      else if (h < CFX_180)
+	dest->red = (guint8) CFX_INT (m2 * 255);
+      else if (h < CFX_240)
+	dest->red = (guint8)CFX_INT((m1+CFX_MUL((m2-m1),(CFX_240-h))/60)*255);
       else
-        r = m1;
-      
-      hue = *h;
-      while (hue > 360)
-        hue -= 360;
-      while (hue < 0)
-        hue += 360;
-      
-      if (hue < 60)
-        g = m1 + (m2 - m1) * hue / 60;
-      else if (hue < 180)
-        g = m2;
-      else if (hue < 240)
-        g = m1 + (m2 - m1) * (240 - hue) / 60;
+	dest->red = (guint8) CFX_INT (m1 * 255);
+
+      h = hue;
+      while (h > CFX_360)
+	h -= CFX_360;
+      while (h < 0)
+	h += CFX_360;
+
+      if (h < CFX_60)
+	dest->green = (guint8)CFX_INT((m1 + CFX_MUL((m2 - m1), h) / 60) * 255);
+      else if (h < CFX_180)
+        dest->green = (guint8) CFX_INT (m2 * 255);
+      else if (h < CFX_240)
+	dest->green =
+	    (guint8) CFX_INT((m1 + CFX_MUL ((m2-m1), (CFX_240-h)) / 60) * 255);
       else
-        g = m1;
-      
-      hue = *h - 120;
-      while (hue > 360)
-        hue -= 360;
-      while (hue < 0)
-        hue += 360;
-      
-      if (hue < 60)
-        b = m1 + (m2 - m1) * hue / 60;
-      else if (hue < 180)
-        b = m2;
-      else if (hue < 240)
-        b = m1 + (m2 - m1) * (240 - hue) / 60;
+	dest->green = (guint8) CFX_INT (m1 * 255);
+
+      h = hue - CFX_120;
+      while (h > CFX_360)
+	h -= CFX_360;
+      while (h < 0)
+	h += CFX_360;
+
+      if (h < CFX_60)
+	dest->blue = (guint8) CFX_INT ((m1 + CFX_MUL ((m2-m1), h) / 60) * 255);
+      else if (h < CFX_180)
+	dest->blue = (guint8) CFX_INT (m2 * 255);
+      else if (h < CFX_240)
+	dest->blue = (guint8)CFX_INT((m1+CFX_MUL((m2-m1),(CFX_240-h))/60)*255);
       else
-        b = m1;
-      
-      *h = r;
-      *l = g;
-      *s = b;
+	dest->blue = (guint8) CFX_INT(m1 * 255);
     }
 }
-
-
