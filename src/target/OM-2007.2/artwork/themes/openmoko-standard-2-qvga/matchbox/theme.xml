@@ -45,7 +45,7 @@
    <inactive pixmap="menubutton" />
   </button>
 
-   <panel x="33%+18" y="2" w="67%-18" h="18" />
+   <panel x="33%+18" y="0" w="67%-18" h="20" />
 
 </frame>
 

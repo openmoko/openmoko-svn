@@ -3,3 +3,8 @@ style "neod-button-label" {
 }
 widget "*neod-menu.GtkButton.*" style "neod-button-label"
 
+style "neod-dialog" {
+	GtkDialog::action-area-border = 0
+}
+widget "neod-dialog" style "neod-dialog"
+
