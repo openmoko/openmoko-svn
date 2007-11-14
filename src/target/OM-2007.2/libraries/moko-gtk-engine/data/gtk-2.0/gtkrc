@@ -14,7 +14,7 @@ gtk-menu-images = 0
 gtk-icon-sizes = "gtk-button=32,32:gtk-small-toolbar=48,48:gtk-large-toolbar=48,48"
 
 # Set the default gtk-color-scheme property
-gtk_color_scheme = "fg_color:#333;bg_color:#ccc;base_color:#ccc;text_color:#000;selected_bg_color:#ff7d00;selected_fg_color:#000"
+gtk_color_scheme = "fg_color:#333;bg_color:#f4f0f4;base_color:#fff;text_color:#000;selected_bg_color:#ff7d00;selected_fg_color:#000"
 
 style "default"
 {
@@ -42,7 +42,7 @@ style "default"
   GtkScrollbar::stepper_spacing = 0
   GtkSpinButton::shadow_type = GTK_SHADOW_NONE
   GtkTreeView::allow_rules = 1
-  GtkTreeView::even_row_color = "#f7f7f7"
+  GtkTreeView::even_row_color = "#fff"
   GtkTreeView::odd_row_color = "#e7e7e7"
   GtkTreeView::vertical_separator = 6
   GtkWidget::focus_line_width = 2

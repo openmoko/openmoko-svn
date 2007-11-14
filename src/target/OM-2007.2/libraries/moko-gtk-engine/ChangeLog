@@ -1,3 +1,8 @@
+2007-11-14  Thomas Wood  <thomas@openedhand.com>
+
+	* data/gtk-2.0/gtkrc: Minor colour tweaks. Lighten the normal background
+	colour slightly.
+
 2007-11-13  Thomas Wood  <thomas@openedhand.com>
 
 	* src/moko-utils.c:
