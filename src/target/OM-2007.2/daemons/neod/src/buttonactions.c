@@ -625,7 +625,7 @@ static gboolean is_turned_on( int unit )
             return FALSE;
         case GPS:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/power_on" );
+            return read_boolean_from_path( "/sys/devices/platform/s3c2410-i2c/i2c-adapter/i2c-0/0-0008/gta01-pm-gps.0/pwron" );
 #endif
             return FALSE;
         default:
@@ -639,7 +639,8 @@ static void peripheral_set_power( int unit, gboolean on )
     {
         case GSM:
 #ifdef NEOD_PLATFORM_FIC_NEO1973
-            write_boolean_to_path( "/sys/devices/platform/gta01-pm-gsm.0/power_on", on );
+            //write_boolean_to_path( "/sys/devices/platform/gta01-pm-gsm.0/power_on", on );
+            system( on ? "/etc/init.d/gsmd restart" : "/etc/init.d/gsmd stop" );
 #endif
             break;
         case BLUETOOTH:
