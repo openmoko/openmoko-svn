@@ -124,6 +124,8 @@ PowerState power_state = NORMAL;
 
 static pa_context* pac;
 
+static Window last_active_window = 0;
+
 /* Borrowed from libwnck */
 static Window get_window_property( Window xwindow, Atom atom )
 {
@@ -493,13 +495,9 @@ void neod_buttonactions_popup_selected_fullscreen( GtkWidget* button, gpointer u
     static int is_fullscreen = 0;
 
     gtk_widget_hide( aux_menu );
-    // wait until it's really closed
-    while ( GTK_WIDGET_MAPPED( aux_menu ) )
-        gtk_main_iteration();
 
-    Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
-    const char* title = get_text_property( xwindow, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
-    g_debug( "active Window = %d ('%s')", (int) xwindow, title );
+    const char* title = get_text_property( last_active_window, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
+    g_debug( "active Window = %d ('%s')", (int)last_active_window, title );
 
     Display* display = XOpenDisplay( NULL );
 
@@ -508,7 +506,7 @@ void neod_buttonactions_popup_selected_fullscreen( GtkWidget* button, gpointer u
     xev.xclient.serial = 0;
     xev.xclient.send_event = True;
     xev.xclient.display = display;
-    xev.xclient.window = xwindow;
+    xev.xclient.window = last_active_window;
     xev.xclient.message_type = gdk_x11_get_xatom_by_name( "_NET_WM_STATE" );
     xev.xclient.format = 32;
     xev.xclient.data.l[0] = 1 - is_fullscreen; // ADD = 1, REMOVE = 0
@@ -681,6 +679,9 @@ void neod_buttonactions_gconf_cb( GConfClient *client, guint cnxn_id, GConfEntry
 
 void neod_buttonactions_show_aux_menu()
 {
+    // remember last active window before showing popup menu
+    last_active_window = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
+
     // show popup menu requesting for actions
     if ( !aux_menu )
     {
@@ -711,13 +712,11 @@ void neod_buttonactions_show_aux_menu()
         gtk_widget_show_all( GTK_WIDGET(box) );
 
         // override, otherwise matchbox won't show it fullscreen
-        gtk_window_set_type_hint( GTK_WINDOW(aux_menu), GDK_WINDOW_TYPE_HINT_POPUP_MENU );
+        gtk_window_set_type_hint( GTK_WINDOW(aux_menu), GDK_WINDOW_TYPE_HINT_NORMAL );
         //gtk_window_fullscreen( GTK_WINDOW(aux_menu) );
-        //gtk_window_set_decorated( GTK_WINDOW(aux_menu), FALSE );
         g_signal_connect_swapped( aux_menu, "response", G_CALLBACK(gtk_widget_hide), aux_menu);
         gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(aux_menu)->vbox), box );
     }
-    gtk_window_resize( GTK_WINDOW(aux_menu), gdk_screen_width(), gdk_screen_height() );
     int response = gtk_dialog_run( GTK_DIALOG(aux_menu) );
     g_debug( "gtk_dialog_run completed, response = %d", response );
 }
@@ -728,6 +727,10 @@ void neod_buttonactions_show_power_menu()
     static GtkWidget* btpower = 0;
     static GtkWidget* gpspower = 0;
     static GtkWidget* pmprofile = 0;
+
+    // remember last active window before showing popup menu
+    last_active_window = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
+
 
     // show popup menu requesting for actions
     if ( !power_menu )
