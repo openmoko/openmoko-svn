@@ -707,11 +707,13 @@ void neod_buttonactions_show_aux_menu()
         gtk_widget_show_all( GTK_WIDGET(box) );
 
         // override, otherwise matchbox won't show it fullscreen
-        gtk_window_set_type_hint( GTK_WINDOW(aux_menu), GDK_WINDOW_TYPE_HINT_NORMAL );
+        gtk_window_set_type_hint( GTK_WINDOW(aux_menu), GDK_WINDOW_TYPE_HINT_POPUP_MENU );
         //gtk_window_fullscreen( GTK_WINDOW(aux_menu) );
+        //gtk_window_set_decorated( GTK_WINDOW(aux_menu), FALSE );
         g_signal_connect_swapped( aux_menu, "response", G_CALLBACK(gtk_widget_hide), aux_menu);
         gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(aux_menu)->vbox), box );
     }
+    gtk_window_resize( GTK_WINDOW(aux_menu), gdk_screen_width(), gdk_screen_height() );
     int response = gtk_dialog_run( GTK_DIALOG(aux_menu) );
     g_debug( "gtk_dialog_run completed, response = %d", response );
 }
