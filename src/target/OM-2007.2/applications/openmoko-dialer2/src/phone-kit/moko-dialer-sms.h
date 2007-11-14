@@ -27,6 +27,13 @@ G_BEGIN_DECLS
 	(G_TYPE_INSTANCE_GET_CLASS ((obj), \
 	MOKO_DIALER_TYPE_SMS, MokoDialerSMSClass))
 
+#define PHONE_KIT_SMS_ERROR g_quark_from_static_string("phone-kit-sms")
+
+typedef enum {
+	PK_SMS_ERROR_NO_TOOLONG,
+	PK_SMS_ERROR_MSG_TOOLONG
+} PhoneKitSMSError;
+
 typedef struct {
 	GObject parent;
 } MokoDialerSMS;
@@ -43,9 +50,10 @@ GType moko_dialer_sms_get_type (void);
 
 MokoDialerSMS * moko_dialer_sms_new (void);
 
+MokoDialerSMS * moko_dialer_sms_get_default (void);
+
 gboolean moko_dialer_sms_send (MokoDialerSMS *sms, const gchar *number,
-			       const gchar *message, gboolean ascii,
-			       GError **error);
+			       const gchar *message, GError **error);
 
 void moko_dialer_sms_sending (MokoDialerSMS *sms);
 void moko_dialer_sms_sent (MokoDialerSMS *sms);

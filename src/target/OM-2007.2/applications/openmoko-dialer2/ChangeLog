@@ -1,3 +1,17 @@
+2007-11-14  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/dialer-main.c: (main):
+	Register MokoDialerSMS object
+
+	* src/phone-kit/moko-dialer-sms-dbus.xml:
+	Remove 'ascii' parameter, autodetect instead
+
+	* src/phone-kit/moko-dialer-sms.c: (gsmd_eventhandler),
+	(moko_dialer_sms_init), (moko_dialer_sms_get_default),
+	(moko_dialer_sms_send):
+	* src/phone-kit/moko-dialer-sms.h:
+	Add SMS sending code
+
 2007-11-13  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:

@@ -3,10 +3,12 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <libgsmd/libgsmd.h>
+#include <libgsmd/event.h>
 #include <libgsmd/misc.h>
 #include <libgsmd/sms.h>
 #include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
+#include <string.h>
 
 #include "moko-dialer-sms-glue.h"
 
@@ -101,13 +103,12 @@ moko_dialer_sms_class_init (MokoDialerSMSClass *klass)
 		G_TYPE_NONE, 1, G_TYPE_STRING);
 }
 
-MokoDialerSMS *static_self;
-
 static int 
 gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 		   struct gsmd_evt_auxdata *aux)
 {
-	MokoDialerSMSPrivate *priv = SMS_PRIVATE (static_self);
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (
+		moko_dialer_sms_get_default ());
 	
 	switch (evt_type) {
 	    case GSMD_EVT_IN_SMS : /* Incoming SMS */
@@ -194,7 +195,6 @@ moko_dialer_sms_init (MokoDialerSMS *self)
 	if (!first_init)
 		g_error ("MokoDialerSMS already created in this process");
 	first_init = FALSE;
-	static_self = self;
 	
 	/* Get the note store */
 	priv->note_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
@@ -216,10 +216,70 @@ moko_dialer_sms_new (void)
 	return g_object_new (MOKO_DIALER_TYPE_SMS, NULL);
 }
 
-gboolean
-moko_dialer_sms_send (MokoDialerSMS *sms, const gchar *number,
-		      const gchar *message, gboolean ascii, GError **error)
+MokoDialerSMS*
+moko_dialer_sms_get_default (void)
 {
+	static MokoDialerSMS *sms = NULL;
+
+	if (sms) return sms;
+
+	sms = moko_dialer_sms_new ();
+
+	return sms;
+}
+
+gboolean
+moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
+		      const gchar *message, GError **error)
+{
+	MokoDialerSMSPrivate *priv;
+	struct lgsm_sms sms;
+	gint msg_length, c;
+	gboolean ascii;
+	
+	g_assert (self && number && message);
+
+	priv = SMS_PRIVATE (self);
+	
+	/* TODO: Delivery report */
+	sms.ask_ds = 0;
+	
+	/* Set destination number */
+	if (strlen (number) > GSMD_ADDR_MAXLEN + 1) {
+		*error = g_error_new (PHONE_KIT_SMS_ERROR,
+			PK_SMS_ERROR_NO_TOOLONG, "Number too long");
+		return FALSE;
+	} else {
+		strcpy (sms.addr, number);
+	}
+	
+	/* Set message */
+	/* Check if the text is ascii (and pack in 7 bits if so) */
+	ascii = TRUE;
+	for (c = 0; message[c] != '\0'; c++) {
+		if (((guint8)message[c]) > 0x7F) {
+			ascii = FALSE;
+			break;
+		}
+	}
+	msg_length = strlen (message);
+	if ((ascii && (msg_length > 160)) || (msg_length > 140)) {
+			*error = g_error_new (PHONE_KIT_SMS_ERROR,
+				PK_SMS_ERROR_MSG_TOOLONG, "Message too long");
+			return FALSE;
+	}
+	if (ascii) {
+		packing_7bit_character (message, &sms);
+	} else {
+		sms.alpha = ALPHABET_8BIT;
+		sms.length = strlen (message);
+		strcpy ((gchar *)sms.data, message);
+	}
+	
+	/* Send message */
+	lgsm_sms_send (priv->handle, &sms);
+	
+	return TRUE;
 }
 
 void
