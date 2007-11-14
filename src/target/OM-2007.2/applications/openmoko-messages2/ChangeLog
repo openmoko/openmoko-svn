@@ -1,0 +1,8 @@
+2007-11-14  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-main.c: (main):
+	* src/sms-notes.c: (page_hidden), (unmap_cb),
+	(sms_notes_data_func), (store_opened_cb), (sms_notes_page_new):
+	* src/sms.h:
+	Add a toggleable SMS input area
+

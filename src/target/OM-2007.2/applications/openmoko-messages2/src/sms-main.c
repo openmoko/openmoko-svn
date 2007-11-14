@@ -54,10 +54,10 @@ main (int argc, char **argv)
 	/* Create toolbar */
 	toolbar = gtk_toolbar_new ();
 	
-	/* New/send button */
-	data.new_send_button = gtk_tool_button_new_from_stock (GTK_STOCK_NEW);
-	gtk_tool_item_set_expand (data.new_send_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.new_send_button, 0);
+	/* New button */
+	data.new_button = gtk_toggle_tool_button_new_from_stock (GTK_STOCK_NEW);
+	gtk_tool_item_set_expand (data.new_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.new_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 1);
 	

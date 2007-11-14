@@ -20,6 +20,7 @@
 #include "sms-notes.h"
 #include <libjana-ecal/jana-ecal.h>
 #include <libmokoui2/moko-finger-scroll.h>
+#include <libmokoui2/moko-search-bar.h>
 #include <libhito/hito-contact-store.h>
 #include <libebook/e-book.h>
 
@@ -71,6 +72,8 @@ page_hidden (SmsData *data)
 {
 	jana_gtk_note_store_set_view (JANA_GTK_NOTE_STORE (
 		data->note_store), NULL);
+	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
+		data->new_button), FALSE);
 }
 
 static void
@@ -105,6 +108,18 @@ unmap_cb (GtkWidget *widget, SmsData *data)
 		hidden = TRUE;
 		page_hidden (data);
 	}
+}
+
+static void
+new_toggled_cb (GtkToggleToolButton *button, SmsData *data)
+{
+	gboolean active = gtk_toggle_tool_button_get_active (button);
+
+	if (active)
+		gtk_notebook_set_current_page (GTK_NOTEBOOK (
+			data->notebook), SMS_PAGE_NOTES);
+	g_object_set (data->sms_hbox, "visible", active, NULL);
+	gtk_widget_grab_focus (data->sms_textview);
 }
 
 static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
@@ -147,7 +162,8 @@ store_opened_cb (JanaStore *store, SmsData *data)
 GtkWidget *
 sms_notes_page_new (SmsData *data)
 {
-	GtkWidget *treeview, *scroll, *vbox;
+	GtkWidget *treeview, *scroll, *vbox, *searchbar,
+		*sms_vbox, *frame, *label, *button;
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	
@@ -174,12 +190,46 @@ sms_notes_page_new (SmsData *data)
 		"Messages", renderer, (GtkTreeCellDataFunc)sms_notes_data_func,
 		data, NULL);
 	
+	/* Create search bar */
+	data->notes_combo = gtk_combo_box_new_text ();
+	searchbar = moko_search_bar_new_with_combo (
+		GTK_COMBO_BOX (data->notes_combo));
+	
+	/* Create text entry bits */
+	data->sms_textview = gtk_text_view_new ();
+	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (data->sms_textview),
+		GTK_WRAP_WORD_CHAR);
+	frame = gtk_frame_new (NULL);
+	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
+	gtk_container_add (GTK_CONTAINER (frame), data->sms_textview);
+	
+	label = gtk_label_new (NULL);
+	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+	gtk_label_set_markup (GTK_LABEL (label),
+		"<small>0\n  /\n     160</small>");
+	
+	button = gtk_button_new_with_label ("Send");
+	
+	sms_vbox = gtk_vbox_new (FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (sms_vbox), label, FALSE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (sms_vbox), button, TRUE, TRUE, 0);
+
+	data->sms_hbox = gtk_hbox_new (FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (data->sms_hbox), frame, TRUE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (data->sms_hbox), sms_vbox, FALSE, TRUE, 0);
+
+	gtk_widget_show_all (data->sms_hbox);
+	gtk_widget_set_no_show_all (data->sms_hbox, TRUE);
+	gtk_widget_hide (data->sms_hbox);
+	
 	/* Pack widgets */
 	scroll = moko_finger_scroll_new ();
 	gtk_container_add (GTK_CONTAINER (scroll), treeview);
 	
 	vbox = gtk_vbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), scroll, TRUE, TRUE, 0);
+	gtk_box_pack_end (GTK_BOX (vbox), data->sms_hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all (vbox);
 	
 	/* Add events for detecting whether the page has been hidden/shown */
@@ -190,6 +240,10 @@ sms_notes_page_new (SmsData *data)
 		G_CALLBACK (notify_visible_cb), data);
 	g_signal_connect (vbox, "unmap",
 		G_CALLBACK (unmap_cb), data);
+	
+	/* Connect to new button toggle */
+	g_signal_connect (data->new_button, "toggled",
+		G_CALLBACK (new_toggled_cb), data);
 	
 	jana_store_open (data->notes);
 

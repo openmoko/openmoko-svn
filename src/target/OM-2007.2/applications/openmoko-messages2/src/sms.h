@@ -34,10 +34,13 @@ typedef struct {
 	
 	GtkWidget *window;
 	GtkWidget *notebook;
-	GtkToolItem *new_send_button;
+	GtkToolItem *new_button;
 	GtkToolItem *delete_all_button;
 	GtkToolItem *delete_button;
 	GtkWidget *contacts_treeview;
+	GtkWidget *notes_combo;
+	GtkWidget *sms_hbox;
+	GtkWidget *sms_textview;
 	
 	gulong delete_all_handler;
 	gulong delete_handler;
