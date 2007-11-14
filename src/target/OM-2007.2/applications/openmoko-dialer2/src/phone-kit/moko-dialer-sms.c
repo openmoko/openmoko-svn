@@ -22,16 +22,8 @@ typedef struct _MokoDialerSMSPrivate MokoDialerSMSPrivate;
 struct _MokoDialerSMSPrivate {
 	struct lgsm_handle *handle;
 	JanaStore *note_store;
+	JanaNote *last_msg;
 };
-
-enum {
-  SENDING,
-  SENT,
-  REJECTED,
-  LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL];
 
 static void
 moko_dialer_sms_get_property (GObject *object, guint property_id,
@@ -77,30 +69,36 @@ moko_dialer_sms_class_init (MokoDialerSMSClass *klass)
 	object_class->set_property = moko_dialer_sms_set_property;
 	object_class->dispose = moko_dialer_sms_dispose;
 	object_class->finalize = moko_dialer_sms_finalize;
+}
+
+static void
+status_report_added_cb (JanaStoreView *view, GList *components, gchar *ref)
+{
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (
+		moko_dialer_sms_get_default ());
+
+	for (; components; components = components->next) {
+		gchar *compref;
+		JanaComponent *comp = JANA_COMPONENT (components->data);
+		
+		compref = jana_component_get_custom_prop (
+			comp, "X-PHONEKIT-SMS-REF");
+		if (compref && (strcmp (compref, ref) == 0)) {
+			jana_utils_component_remove_category (comp, "Sending");
+			jana_utils_component_insert_category (comp, "Sent", 0);
+			jana_store_modify_component (priv->note_store, comp);
+		}
+		g_free (ref);
+	}
+}
+
+static void
+status_report_progress_cb (JanaStoreView *view, gint percent, gchar *ref)
+{
+	if (percent != 100) return;
 	
-	signals[SENDING] = g_signal_new ("sending", 
-		G_TYPE_FROM_CLASS (object_class),
-		G_SIGNAL_RUN_LAST,
-		G_STRUCT_OFFSET (MokoDialerSMSClass, sending),
-		NULL, NULL,
-		g_cclosure_marshal_VOID__VOID,
-		G_TYPE_NONE, 0);
-
-	signals[SENT] = g_signal_new ("sent", 
-		G_TYPE_FROM_CLASS (object_class),
-		G_SIGNAL_RUN_LAST,
-		G_STRUCT_OFFSET (MokoDialerSMSClass, sent),
-		NULL, NULL,
-		g_cclosure_marshal_VOID__VOID,
-		G_TYPE_NONE, 0);
-
-	signals[REJECTED] = g_signal_new ("rejected", 
-		G_TYPE_FROM_CLASS (object_class),
-		G_SIGNAL_RUN_LAST,
-		G_STRUCT_OFFSET (MokoDialerSMSClass, rejected),
-		NULL, NULL,
-		g_cclosure_marshal_VOID__STRING,
-		G_TYPE_NONE, 1, G_TYPE_STRING);
+	g_object_unref (view);
+	g_free (ref);
 }
 
 static int 
@@ -110,8 +108,11 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 	MokoDialerSMSPrivate *priv = SMS_PRIVATE (
 		moko_dialer_sms_get_default ());
 	
+	/* TODO: Handle events that aren't in-line */
+	
 	switch (evt_type) {
 	    case GSMD_EVT_IN_SMS : /* Incoming SMS */
+		/* TODO: Read UDH for multi-part messages */
 		if (aux->u.sms.inlined) {
 			gchar *message;
 
@@ -172,12 +173,70 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 				lgsm_sms_delete (priv->handle, &sms_del);
 			}
 		} else {
+			g_warning ("Not an in-line event, unhandled");
 		}
 		break;
 	    case GSMD_EVT_IN_DS : /* SMS status report */
+		if (aux->u.ds.inlined) {
+			struct gsmd_sms_list *sms =
+				(struct gsmd_sms_list *) aux->data;
+			
+			/* TODO: I'm not entirely sure of the spec when if 
+			 *       storing an unsent message means it failed?
+			 */
+			if (sms->payload.coding_scheme == LGSM_SMS_STO_SENT) {
+				gchar *ref = g_strdup_printf ("%d", sms->index);
+				JanaStoreView *view = jana_store_get_view (
+					priv->note_store);
+				jana_store_view_add_match (view,
+					JANA_STORE_VIEW_CATEGORY, "Sending");
+				g_signal_connect (view, "added", G_CALLBACK (
+					status_report_added_cb), ref);
+				g_signal_connect (view, "progress", G_CALLBACK (
+					status_report_progress_cb), ref);
+			}
+		} else {
+			g_warning ("Not an in-line event, unhandled");
+		}
 		break;
 	    default :
 		g_warning ("Unhandled gsmd event (%d)", evt_type);
+	}
+	
+	return 0;
+}
+
+static int
+sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	MokoDialerSMS *sms = moko_dialer_sms_get_default ();
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (sms);
+
+	/* Store sent messages */
+	if ((gmh->msg_subtype == GSMD_SMS_SEND) && priv->last_msg) {
+		int *result = (int *) ((void *) gmh + sizeof(*gmh));
+		gchar *uid = jana_component_get_uid (
+			JANA_COMPONENT (priv->last_msg));
+		
+		if (*result >= 0) {
+			gchar *ref = g_strdup_printf ("%d", *result);
+			jana_component_set_custom_prop (
+				JANA_COMPONENT (priv->last_msg),
+				"X-PHONEKIT-SMS-REF", ref);
+			g_free (ref);
+		} else {
+			jana_utils_component_remove_category (
+				JANA_COMPONENT(priv->last_msg), "Sending");
+			jana_utils_component_insert_category (
+				JANA_COMPONENT(priv->last_msg), "Rejected", 0);
+			/* TODO: Add error codes? 42 = congestion? */
+		}
+		jana_store_modify_component (priv->note_store,
+			JANA_COMPONENT (priv->last_msg));
+		
+		g_free (uid);
+		g_object_unref (priv->last_msg);
+		priv->last_msg = NULL;
 	}
 	
 	return 0;
@@ -201,13 +260,18 @@ moko_dialer_sms_init (MokoDialerSMS *self)
 	
 	/* Initialise gsmd and connect event handler */
 	if (!(priv->handle = lgsm_init (LGSMD_DEVICE_GSMD))) {
-		g_warning ("Failed to connect to gsmd, signals won't work");
+		g_error ("Failed to connect to gsmd");
 	} else {
 		lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_SMS,
 			gsmd_eventhandler);
 		lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_DS,
 			gsmd_eventhandler);
 	}
+	
+	/* Connect SMS message handler (to get sent message references) */
+	lgsm_register_handler (priv->handle, GSMD_MSG_SMS, &sms_msghandler);
+	
+	/* TODO: Move any existing SMS messages off of sim and to journal */
 }
 
 MokoDialerSMS*
@@ -230,19 +294,21 @@ moko_dialer_sms_get_default (void)
 
 gboolean
 moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
-		      const gchar *message, GError **error)
+		      const gchar *message, gchar **uid, GError **error)
 {
 	MokoDialerSMSPrivate *priv;
 	struct lgsm_sms sms;
 	gint msg_length, c;
 	gboolean ascii;
+	JanaNote *note;
+	gchar *author;
 	
 	g_assert (self && number && message);
 
 	priv = SMS_PRIVATE (self);
 	
-	/* TODO: Delivery report */
-	sms.ask_ds = 0;
+	/* Ask for delivery report */
+	sms.ask_ds = 1;
 	
 	/* Set destination number */
 	if (strlen (number) > GSMD_ADDR_MAXLEN + 1) {
@@ -262,6 +328,8 @@ moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
 			break;
 		}
 	}
+	
+	/* TODO: Multi-part messages using UDH */
 	msg_length = strlen (message);
 	if ((ascii && (msg_length > 160)) || (msg_length > 140)) {
 			*error = g_error_new (PHONE_KIT_SMS_ERROR,
@@ -279,24 +347,31 @@ moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
 	/* Send message */
 	lgsm_sms_send (priv->handle, &sms);
 	
+	/* Store sent message in journal */
+	note = jana_ecal_note_new ();
+	jana_note_set_recipient (note, number);
+	
+	/* TODO: Normalise number necessary? */
+	author = g_strdup_printf ("%d",
+		lgsm_get_subscriber_num (priv->handle));
+	jana_note_set_author (note, author);
+	g_free (author);
+	
+	jana_note_set_body (note, message);
+	jana_component_set_categories (JANA_COMPONENT (note),
+		(const gchar *[]){ "Sending", NULL});
+	
+	jana_store_add_component (priv->note_store,
+		JANA_COMPONENT (note));
+	if (uid) *uid = jana_component_get_uid (JANA_COMPONENT (note));
+	
+	if (priv->last_msg) {
+		g_warning ("Confirmation not received for last sent SMS, "
+			"delivery report will be lost.");
+		g_object_unref (priv->last_msg);
+		priv->last_msg = NULL;
+	}
+	priv->last_msg = note;
+	
 	return TRUE;
 }
-
-void
-moko_dialer_sms_sending (MokoDialerSMS *sms)
-{
-	g_signal_emit (sms, signals[SENDING], 0);
-}
-
-void
-moko_dialer_sms_sent (MokoDialerSMS *sms)
-{
-	g_signal_emit (sms, signals[SENT], 0);
-}
-
-void
-moko_dialer_sms_rejected (MokoDialerSMS *sms, const gchar *message)
-{
-	g_signal_emit (sms, signals[REJECTED], 0, message);
-}
-

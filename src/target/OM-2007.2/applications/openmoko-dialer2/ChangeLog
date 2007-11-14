@@ -1,5 +1,18 @@
 2007-11-14  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-dialer-sms-dbus.xml:
+	Remove signals, handled by the storage (jana/eds), return the UID of a
+	sent message
+
+	* src/phone-kit/moko-dialer-sms.c: (gsmd_eventhandler),
+	(sms_msghandler), (moko_dialer_sms_init), (moko_dialer_sms_new),
+	(moko_dialer_sms_get_default), (moko_dialer_sms_send):
+	* src/phone-kit/moko-dialer-sms.h:
+	Add status reports, sending confirmation and synchronisation with
+	storage
+
+2007-11-14  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/dialer-main.c: (main):
 	Register MokoDialerSMS object
 

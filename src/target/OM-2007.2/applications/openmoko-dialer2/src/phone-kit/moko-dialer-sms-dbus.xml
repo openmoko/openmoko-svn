@@ -5,18 +5,8 @@
   <method name="Send">
     <arg type="s" name="number" />
     <arg type="s" name="message" />
+    <arg type="s" name="uid" direction="out" />
   </method>
-
-  <signal name="Sending">
-  </signal>
-
-  <signal name="Sent">
-  </signal>
-
-  <signal name="Rejected">
-    <arg type="s" name="message" />
-  </signal>
-
 </interface>
 </node>
 

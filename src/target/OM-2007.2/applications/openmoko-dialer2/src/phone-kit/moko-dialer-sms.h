@@ -40,10 +40,6 @@ typedef struct {
 
 typedef struct {
 	GObjectClass parent_class;
-	
-	void	(*sending)	(MokoDialerSMS *sms);
-	void	(*sent)		(MokoDialerSMS *sms);
-	void	(*rejected)	(MokoDialerSMS *sms, const gchar *message);
 } MokoDialerSMSClass;
 
 GType moko_dialer_sms_get_type (void);
@@ -53,11 +49,8 @@ MokoDialerSMS * moko_dialer_sms_new (void);
 MokoDialerSMS * moko_dialer_sms_get_default (void);
 
 gboolean moko_dialer_sms_send (MokoDialerSMS *sms, const gchar *number,
-			       const gchar *message, GError **error);
-
-void moko_dialer_sms_sending (MokoDialerSMS *sms);
-void moko_dialer_sms_sent (MokoDialerSMS *sms);
-void moko_dialer_sms_rejected (MokoDialerSMS *sms, const gchar *message);
+			       const gchar *message, gchar **uid,
+			       GError **error);
 
 G_END_DECLS
 
