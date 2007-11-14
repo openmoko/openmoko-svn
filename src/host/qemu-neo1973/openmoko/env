@@ -24,4 +24,4 @@ rootfs_wildcard="OpenMoko-openmoko-image-*.rootfs.jffs2"
 uboot_wildcard="u-boot-gta01bv4-1*.bin"
 
 download_dir="http://buildhost.openmoko.org/OM2007.2/tmp/deploy/glibc/images/neo1973/"
-dev_download_dir="http://buildhost.openmoko.org/OM2007.2/tmp/deploy/glibc/images/fic-gta01/"
+dev_download_dir="http://buildhost.openmoko.org/snapshots/2007.08/images/"
