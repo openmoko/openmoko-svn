@@ -3,4 +3,4 @@ Name=PIM Suite
 Comment=PIM Suite
 Icon=gnome-applications.png
 Type=Directory
-Match=PIM;
+Match=Office;
