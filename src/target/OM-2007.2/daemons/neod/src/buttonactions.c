@@ -841,7 +841,11 @@ gboolean neod_buttonactions_power_while_aux()
         "authors", authors,
         "comments", "open. mobile. free.",
         "copyright", "2006-2007 OpenMoko, Inc.",
-        "program-name", "OpenMoko 2007.2",
+#if GTK_MINOR_VERSION < 12
+        "name", "OpenMoko 2007.2", /* Gtk+ up to 2.10.x */
+#else
+        "program-name", "OpenMoko 2007.2", /* Gtk+ >= 2.11 */
+#endif
         "website", "http://www.openmoko.org",
         "logo", gdk_pixbuf_new_from_file( PKGDATADIR "/openmoko-logo.jpg", NULL ),
         NULL );
