@@ -1,4 +1,9 @@
-2007-11-14	Michael Lauer <mickey@openmoko.org
+2007-11-14  Thomas Wood  <thomas@openedhand.com>
+
+	* src/search-bar.c: (text_changed_cb): Remove the model from the
+	treeview while refiltering
+
+2007-11-14	Michael Lauer <mickey@openmoko.org>
 
 	* data/openmoko-appmanager.desktop: remove PIM and Office categories,
 	  add Utilities

@@ -45,7 +45,11 @@ text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationMan
   data->searchbar_needle = needle;
 
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
+  g_object_ref (G_OBJECT (filter));
+  gtk_tree_view_set_model (GTK_TREE_VIEW (data->tvpkglist), NULL);
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
+  gtk_tree_view_set_model (GTK_TREE_VIEW (data->tvpkglist), filter);
+  g_object_unref (G_OBJECT (filter));
 }
 
 static void
