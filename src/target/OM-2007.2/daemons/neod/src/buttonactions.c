@@ -422,6 +422,13 @@ gboolean neod_buttonactions_aux_timeout( guint timeout )
     neod_buttonactions_powersave_reset();
     neod_buttonactions_set_display( 100 );
 
+    if ( aux_menu && GTK_WIDGET_MAPPED(aux_menu) )
+    {
+        g_debug( "aux menu already open -- closing." );
+        gtk_widget_hide( aux_menu );
+        return FALSE;
+    }
+
     aux_timer = -1;
     if ( timeout < 1 )
     {
@@ -533,6 +540,7 @@ void neod_buttonactions_popup_selected_screenshot( GtkWidget* button, gpointer u
 
 void neod_buttonactions_popup_selected_lock( GtkWidget* button, gpointer user_data )
 {
+    gtk_widget_hide( power_menu );
     int fd = open( "/sys/power/state", O_WRONLY );
     if ( fd != -1 )
     {
@@ -770,6 +778,7 @@ void neod_buttonactions_show_power_menu()
         g_signal_connect_swapped( power_menu, "response", G_CALLBACK(gtk_widget_hide), power_menu);
         gtk_box_pack_start_defaults( GTK_BOX(GTK_DIALOG(power_menu)->vbox), box );
     }
+
     gtk_button_set_label( gsmpower, g_strdup_printf( "Turn %s GSM", is_turned_on( GSM ) ? "off" : "on" ) );
     gtk_button_set_label( btpower, g_strdup_printf( "Turn %s Bluetooth", is_turned_on( BLUETOOTH ) ? "off" : "on" ) );
     gtk_button_set_label( gpspower, g_strdup_printf( "Turn %s GPS", is_turned_on( GPS ) ? "off" : "on" ) );
@@ -846,6 +855,13 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
     neod_buttonactions_sound_play( "touchscreen" );
     neod_buttonactions_powersave_reset();
     neod_buttonactions_set_display( 100 );
+
+    if ( power_menu && GTK_WIDGET_MAPPED(power_menu) )
+    {
+        g_debug( "power menu already open -- closing." );
+        gtk_widget_hide( power_menu );
+        return;
+    }
 
     power_timer = -1;
 
