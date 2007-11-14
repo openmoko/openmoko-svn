@@ -493,10 +493,11 @@ void neod_buttonactions_popup_selected_fullscreen( GtkWidget* button, gpointer u
     static int is_fullscreen = 0;
 
     gtk_widget_hide( aux_menu );
-    
+    // wait until it's really closed
+    while ( GTK_WIDGET_MAPPED( aux_menu ) )
+        gtk_main_iteration();
 
-    Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), //gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
-    gdk_x11_get_xatom_by_name("_MB_CURRENT_APP_WINDOW") );
+    Window xwindow = get_window_property( gdk_x11_get_default_root_xwindow(), gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW") );
     const char* title = get_text_property( xwindow, gdk_x11_get_xatom_by_name("_NET_WM_NAME") );
     g_debug( "active Window = %d ('%s')", (int) xwindow, title );
 
