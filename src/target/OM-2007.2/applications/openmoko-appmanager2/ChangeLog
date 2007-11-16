@@ -1,5 +1,9 @@
 2007-11-16  Thomas Wood  <thomas@openedhand.com>
 
+	* data/openmoko-appmanager.desktop: Update application name and summary
+
+2007-11-16  Thomas Wood  <thomas@openedhand.com>
+
 	* src/appmanager-data.h:
 	* src/appmanager-window.c: (main):
 	* src/navigation-area.c: (model_filter_func):
