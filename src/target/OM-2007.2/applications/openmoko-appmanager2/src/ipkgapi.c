@@ -101,7 +101,8 @@ int def_ipkg_message_callback(ipkg_conf_t *conf, message_level_t level, char *ms
     	  DBG(msg);
         strcat(errMsg, msg);
     } else {
-        DBG(msg);
+      DBG(msg);
+      printf ("IPKG <%d>: %s", level, msg);
     }
     return 0;
 }

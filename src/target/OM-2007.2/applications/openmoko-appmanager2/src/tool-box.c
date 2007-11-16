@@ -32,7 +32,26 @@
 void 
 on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
 {
+  GList *list;
+  int upgrades;
+  
   update_package_list (data);
+  
+  list = get_upgrade_list ();
+  
+  if ((upgrades = g_list_length (list)) > 0)
+  {
+    GtkWidget *dlg;
+    
+    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_INFO, GTK_BUTTONS_YES_NO,
+                            "There are %d updates available. Would you like to install them now?",
+                            upgrades);
+    gtk_dialog_run (GTK_DIALOG (dlg));
+    gtk_widget_destroy (dlg);
+  }
+  
+  g_list_free (list);
+  
   /*
   GtkWidget *dialog;
 

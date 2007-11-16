@@ -1,5 +1,14 @@
 2007-11-16  Thomas Wood  <thomas@openedhand.com>
 
+	* src/ipkg-utils.c: (update_package_list):
+	* src/ipkg-utils.h:
+	* src/ipkgapi.c: (def_ipkg_message_callback):
+	* src/tool-box.c:
+
+	Add check for upgradeable packages
+
+2007-11-16  Thomas Wood  <thomas@openedhand.com>
+
 	* data/openmoko-appmanager.desktop: Update application name and summary
 
 2007-11-16  Thomas Wood  <thomas@openedhand.com>
