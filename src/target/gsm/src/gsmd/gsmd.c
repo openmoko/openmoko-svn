@@ -56,29 +56,23 @@ static int daemonize = 0;
  * either OK or ERROR is allowed since, both mean the modem still responds
  */
 
-
-struct gsmd_alive_priv {
-	struct gsmd *gsmd;
-	int alive_responded;
-};
-
 static int gsmd_alive_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	struct gsmd_alive_priv *alp = ctx;
+	struct gsmd *g = ctx;
 
 	if (!strcmp(resp, "OK") || !strcmp(resp, "ERROR") ||
-	    ((alp->gsmd->flags & GSMD_FLAG_V0) && resp[0] == '0'))
-		alp->alive_responded = 1;
+	    ((g->flags & GSMD_FLAG_V0) && resp[0] == '0'))
+		g->alive_responded = 1;
 	return 0;
 }
 
 static void alive_tmr_cb(struct gsmd_timer *tmr, void *data)
 {
-	struct gsmd_alive_priv *alp = data;
+	struct gsmd *g = data;
 
-	DEBUGP("gsmd_alive timer expired\n", alp);
+	DEBUGP("gsmd_alive timer expired\n");
 
-	if (alp->alive_responded == 0) {
+	if (g->alive_responded == 0) {
 		gsmd_log(GSMD_FATAL, "modem dead!\n");
 		exit(3);
 	} else
@@ -87,33 +81,29 @@ static void alive_tmr_cb(struct gsmd_timer *tmr, void *data)
 	/* FIXME: update some global state */
 
 	gsmd_timer_free(tmr);
-	talloc_free(alp);
+}
+
+static struct gsmd_timer * alive_timer(struct gsmd *g)
+{
+ 	struct timeval tv;
+	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
+	tv.tv_usec = 0;
+
+	return gsmd_timer_create(&tv, &alive_tmr_cb, g);
 }
 
 static int gsmd_modem_alive(struct gsmd *gsmd)
 {
 	struct gsmd_atcmd *cmd;
-	struct gsmd_alive_priv *alp;
-	struct timeval tv;
 
-	alp = talloc(gsmd_tallocs, struct gsmd_alive_priv);
-	if (!alp)
-		return -ENOMEM;
-
-	alp->gsmd = gsmd;
-	alp->alive_responded = 0;
+	gsmd->alive_responded = 0;
 
 	cmd = atcmd_fill(GSMD_ALIVECMD, strlen(GSMD_ALIVECMD)+1, 
-			 &gsmd_alive_cb, alp, 0);
+			 &gsmd_alive_cb, gsmd, 0, alive_timer);
 	if (!cmd) {
-		talloc_free(alp);
 		return -ENOMEM;
 	}
 
-	tv.tv_sec = GSMD_ALIVE_TIMEOUT;
-	tv.tv_usec = 0;
-	gsmd_timer_create(&tv, &alive_tmr_cb, alp);
-	
 	return atcmd_submit(gsmd, cmd);
 }
 
@@ -158,7 +148,7 @@ static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0);
+	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0, NULL);
 	if (!cmd)
 		return -ENOMEM;
 	
@@ -239,7 +229,7 @@ int gsmd_initsettings(struct gsmd *gsmd)
 	struct gsmd_atcmd *cmd;
 	struct timeval tv;
 
-	cmd = atcmd_fill("ATZ", strlen("ATZ")+1, &firstcmd_atcb, gsmd, 0);
+	cmd = atcmd_fill("ATZ", strlen("ATZ")+1, &firstcmd_atcb, gsmd, 0, NULL);
 	if (!cmd)
 		return -ENOMEM;
 

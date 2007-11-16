@@ -90,7 +90,7 @@ typedef int usock_msg_handler(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, in
 static int usock_rcv_passthrough(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill((char *)gph+sizeof(*gph), gph->len, &usock_cmd_cb, gu, gph->id);
+	cmd = atcmd_fill((char *)gph+sizeof(*gph), gph->len, &usock_cmd_cb, gu, gph->id, NULL);
 	if (!cmd)
 		return -ENOMEM;
 
@@ -127,7 +127,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		ga = (struct gsmd_addr *) ((void *)gph + sizeof(*gph));
 		ga->number[GSMD_ADDR_MAXLEN] = '\0';
 		cmd = atcmd_fill("ATD", 5 + strlen(ga->number),
-				 &usock_cmd_cb, gu, gph->id);
+				 &usock_cmd_cb, gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 		sprintf(cmd->buf, "ATD%s;", ga->number);
@@ -135,7 +135,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_VOICECALL_HANGUP:
 		/* ATH0 is not supported by QC, we hope ATH is supported by everone */
-		cmd = atcmd_fill("ATH", 4, &usock_cmd_cb, gu, gph->id);
+		cmd = atcmd_fill("ATH", 4, &usock_cmd_cb, gu, gph->id, NULL);
                 
                 /* This command is special because it needs to be sent to
                 * the MS even if a command is currently executing.  */
@@ -144,7 +144,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
                 }
 		break;
 	case GSMD_VOICECALL_ANSWER:
-		cmd = atcmd_fill("ATA", 4, &usock_cmd_cb, gu, gph->id);
+		cmd = atcmd_fill("ATA", 4, &usock_cmd_cb, gu, gph->id, NULL);
 		break;
 	case GSMD_VOICECALL_DTMF:
 		if (len < sizeof(*gph) + sizeof(*gd))
@@ -160,7 +160,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 		atcmd_len = 1 + strlen("AT+VTS=") + (gd->len * 2);
 		cmd = atcmd_fill("AT+VTS=", atcmd_len, &usock_cmd_cb,
-				 gu, gph->id);
+				 gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 
@@ -224,7 +224,7 @@ static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	}
 
 	cmd = atcmd_fill("AT+CPIN=\"", 9+GSMD_PIN_MAXLEN+3+GSMD_PIN_MAXLEN+2,
-			 &pin_cmd_cb, gu, 0);
+			 &pin_cmd_cb, gu, 0, NULL);
 	if (!cmd)
 		return -ENOMEM;
 
@@ -271,12 +271,12 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	switch (gph->msg_subtype) {
 	case GSMD_PHONE_POWERUP:
 		cmd = atcmd_fill("AT+CFUN=1", 9+1,
-				 &phone_powerup_cb, gu, 0);
+				 &phone_powerup_cb, gu, 0, NULL);
 		break;
 
 	case GSMD_PHONE_POWERDOWN:
 		cmd = atcmd_fill("AT+CFUN=0", 9+1,
-				 &null_cmd_cb, gu, 0);
+				 &null_cmd_cb, gu, 0, NULL);
 		gu->gsmd->dev_state.on = 0;
 		break;
 	default:
@@ -592,7 +592,7 @@ static int network_ownnumbers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		num->service = GSMD_SERVICE_UNKNOWN;
 	num->name[len] = 0;
 	num->addr.type = type;
-	num->is_last = (cmd->ret == 0);
+	num->is_last = (cmd->ret == 0, NULL);
 
 	usock_cmd_enqueue(ucmd, gu);
 
@@ -615,52 +615,52 @@ static int usock_rcv_network(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 					sizeof(gsmd_oper_numeric), oper);
 		else
 			cmdlen = sprintf(buffer, "AT+COPS=0");
-		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0);
+		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_DEREGISTER:
-		cmd = atcmd_fill("AT+COPS=2", 9+1, &null_cmd_cb, gu, 0);
+		cmd = atcmd_fill("AT+COPS=2", 9+1, &null_cmd_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_VMAIL_GET:
-		cmd = atcmd_fill("AT+CSVM?", 8+1, &network_vmail_cb, gu, 0);
+		cmd = atcmd_fill("AT+CSVM?", 8+1, &network_vmail_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_VMAIL_SET:
-		cmd = atcmd_fill("AT+CSVM=", 8+1, &network_vmail_cb, gu, 0);
+		cmd = atcmd_fill("AT+CSVM=", 8+1, &network_vmail_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_SIGQ_GET:
-		cmd = atcmd_fill("AT+CSQ", 6+1, &network_sigq_cb, gu, 0);
+		cmd = atcmd_fill("AT+CSQ", 6+1, &network_sigq_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_OPER_GET:
 		/* Set long alphanumeric format */
 		atcmd_submit(gu->gsmd, atcmd_fill("AT+COPS=3,0", 11+1,
-					&null_cmd_cb, gu, 0));
-		cmd = atcmd_fill("AT+COPS?", 8+1, &network_oper_cb, gu, 0);
+					&null_cmd_cb, gu, 0, NULL));
+		cmd = atcmd_fill("AT+COPS?", 8+1, &network_oper_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_OPER_LIST:
-		cmd = atcmd_fill("AT+COPS=?", 9+1, &network_opers_cb, gu, 0);
+		cmd = atcmd_fill("AT+COPS=?", 9+1, &network_opers_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_PREF_LIST:
 		/* Set long alphanumeric format */
 		atcmd_submit(gu->gsmd, atcmd_fill("AT+CPOL=,0", 10 + 1,
-					&null_cmd_cb, gu, 0));
+					&null_cmd_cb, gu, 0, NULL));
 		cmd = atcmd_fill("AT+CPOL?", 8 + 1,
-				&network_pref_opers_cb, gu, 0);
+				&network_pref_opers_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_PREF_DEL:
 		cmdlen = sprintf(buffer, "AT+CPOL=%i", *(int *) gph->data);
-		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0);
+		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_PREF_ADD:
 		cmdlen = sprintf(buffer, "AT+CPOL=,2,\"%.*s\"",
 				sizeof(gsmd_oper_numeric), oper);
-		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0);
+		cmd = atcmd_fill(buffer, cmdlen + 1, &null_cmd_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_PREF_SPACE:
 		cmd = atcmd_fill("AT+CPOL=?", 9 + 1,
-				&network_pref_num_cb, gu, 0);
+				&network_pref_num_cb, gu, 0, NULL);
 		break;
 	case GSMD_NETWORK_GET_NUMBER:
 		cmd = atcmd_fill("AT+CNUM", 7 + 1,
-				&network_ownnumbers_cb, gu, 0);
+				&network_ownnumbers_cb, gu, 0, NULL);
 		break;
 	default:
 		return -EINVAL;
@@ -987,7 +987,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 	case GSMD_PHONEBOOK_LIST_STORAGE:
 		cmd = atcmd_fill("AT+CPBS=?", 9 + 1,
 				&phonebook_list_storage_cb,
-				gu, gph->id);
+				gu, gph->id, NULL);
 		break;
 	case GSMD_PHONEBOOK_SET_STORAGE:
 		if (len < sizeof(*gph) + 3)
@@ -998,7 +998,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		/* ex. AT+CPBS="ME" */
 		atcmd_len = 1 + strlen("AT+CPBS=\"") + 2 + strlen("\"");
 		cmd = atcmd_fill("AT+CPBS=\"", atcmd_len,
-				&usock_cmd_cb, gu, gph->id);
+				&usock_cmd_cb, gu, gph->id, NULL);
 
 		if (!cmd)
 			return -ENOMEM;
@@ -1013,7 +1013,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		atcmd_len = 1 + strlen("AT+CPBF=\"") +
 			strlen(gpf->findtext) + strlen("\"");
 		cmd = atcmd_fill("AT+CPBF=\"", atcmd_len,
-				 &phonebook_find_cb, gu, gph->id);
+				 &phonebook_find_cb, gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 		sprintf(cmd->buf, "AT+CPBF=\"%s\"", gpf->findtext);
@@ -1029,7 +1029,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		/* ex, AT+CPBR=23 */
 		atcmd_len = 1 + strlen("AT+CPBR=") + strlen(buf);
 		cmd = atcmd_fill("AT+CPBR=", atcmd_len,
-				 &phonebook_read_cb, gu, gph->id);
+				 &phonebook_read_cb, gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 		sprintf(cmd->buf, "AT+CPBR=%d", *index);
@@ -1044,7 +1044,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		/* ex, AT+CPBR=1,100 */
 		atcmd_len = 1 + strlen("AT+CPBR=") + strlen(buf);
 		cmd = atcmd_fill("AT+CPBR=", atcmd_len,
-				 &phonebook_readrg_cb, gu, gph->id);
+				 &phonebook_readrg_cb, gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 		sprintf(cmd->buf, "AT+CPBR=%s", buf);
@@ -1059,7 +1059,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 
 		atcmd_len = 1 + strlen("AT+CPBW=") + strlen(buf);
 		cmd = atcmd_fill("AT+CPBW=", atcmd_len,
-				 &phonebook_write_cb, gu, gph->id);
+				 &phonebook_write_cb, gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 		sprintf(cmd->buf, "AT+CPBW=%s", buf);
@@ -1074,14 +1074,14 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		/* ex, AT+CPBW=3*/
 		atcmd_len = 1 + strlen("AT+CPBW=") + strlen(buf);
 		cmd = atcmd_fill("AT+CPBW=", atcmd_len,
-				 &phonebook_delete_cb, gu, gph->id);
+				 &phonebook_delete_cb, gu, gph->id, NULL);
 		if (!cmd)
 			return -ENOMEM;
 		sprintf(cmd->buf, "AT+CPBW=%s", buf);
 		break;	
 	case GSMD_PHONEBOOK_GET_SUPPORT:
 		cmd = atcmd_fill("AT+CPBR=?", 9+1,
-				 &phonebook_get_support_cb, gu, gph->id);
+				 &phonebook_get_support_cb, gu, gph->id, NULL);
 		break;
 	case GSMD_PHONEBOOK_RETRIEVE_READRG:
 		if (len < sizeof(*gph) + sizeof(int))
@@ -1145,7 +1145,7 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		break;
         
 	case GSMD_PHONEBOOK_GET_IMSI:
-		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0);
+		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0, NULL);
 		break;
 
 	default:

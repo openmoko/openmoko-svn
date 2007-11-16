@@ -45,7 +45,7 @@ static int gsmd_test_atcb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 int gsmd_simplecmd(struct gsmd *gsmd, char *cmdtxt)
 {
 	struct gsmd_atcmd *cmd;
-	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0);
+	cmd = atcmd_fill(cmdtxt, strlen(cmdtxt)+1, &gsmd_test_atcb, NULL, 0, NULL);
 	if (!cmd)
 		return -ENOMEM;
 
@@ -261,7 +261,7 @@ static int tihtc_initsettings(struct gsmd *g)
 	rc |= gsmd_simplecmd(g, "AT%CUNS=0");
 
 	/* enable %CPI: call progress indication */
-	cmd = atcmd_fill("AT%CPI=?", 9, &cpi_detect_cb, g, 0);
+	cmd = atcmd_fill("AT%CPI=?", 9, &cpi_detect_cb, g, 0, NULL);
 	if (cmd)
 		atcmd_submit(g, cmd);
 

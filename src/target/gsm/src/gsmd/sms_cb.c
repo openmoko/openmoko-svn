@@ -320,7 +320,7 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 			atcmd_len = sprintf(buf, "AT+CMGL=%i", *stat);
 
 		cmd = atcmd_fill(buf, atcmd_len + 1,
-				&sms_list_cb, gu, gph->id);
+				&sms_list_cb, gu, gph->id, NULL);
 		break;
 
 	case GSMD_SMS_READ:
@@ -331,7 +331,7 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 		atcmd_len = sprintf(buf, "AT+CMGR=%i", *index);
 
 		cmd = atcmd_fill(buf, atcmd_len + 1,
-				&sms_read_cb, gu, gph->id);
+				&sms_read_cb, gu, gph->id, NULL);
 		break;
 
 	case GSMD_SMS_SEND:
@@ -353,7 +353,7 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 		buf[atcmd_len ++] = 26;	/* ^Z ends the message */
 		buf[atcmd_len ++] = 0;
 
-		cmd = atcmd_fill(buf, atcmd_len, &sms_send_cb, gu, gph->id);
+		cmd = atcmd_fill(buf, atcmd_len, &sms_send_cb, gu, gph->id, NULL);
 		break;
 
 	case GSMD_SMS_WRITE:
@@ -378,7 +378,7 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 		buf[atcmd_len ++] = 26;	/* ^Z ends the message */
 		buf[atcmd_len ++] = 0;
 
-		cmd = atcmd_fill(buf, atcmd_len, &sms_write_cb, gu, gph->id);
+		cmd = atcmd_fill(buf, atcmd_len, &sms_write_cb, gu, gph->id, NULL);
 		break;
 
 	case GSMD_SMS_DELETE:
@@ -390,11 +390,11 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 				gsd->index, gsd->delflg);
 
 		cmd = atcmd_fill(buf, atcmd_len + 1,
-				&sms_delete_cb, gu, gph->id);
+				&sms_delete_cb, gu, gph->id, NULL);
 		break;
 
 	case GSMD_SMS_GET_MSG_STORAGE:
-		cmd = atcmd_fill("AT+CPMS?", 8 + 1, usock_cpms_cb, gu, 0);
+		cmd = atcmd_fill("AT+CPMS?", 8 + 1, usock_cpms_cb, gu, 0, NULL);
 		break;
 
 	case GSMD_SMS_SET_MSG_STORAGE:
@@ -406,11 +406,11 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 				ts0705_memtype_name[storage[0]],
 				ts0705_memtype_name[storage[1]],
 				ts0705_memtype_name[storage[2]]);
-		cmd = atcmd_fill(buf, atcmd_len + 1, NULL, gu, gph->id);
+		cmd = atcmd_fill(buf, atcmd_len + 1, NULL, gu, gph->id, NULL);
 		break;
 
 	case GSMD_SMS_GET_SERVICE_CENTRE:
-		cmd = atcmd_fill("AT+CSCA?", 8 + 1, &usock_get_smsc_cb, gu, 0);
+		cmd = atcmd_fill("AT+CSCA?", 8 + 1, &usock_get_smsc_cb, gu, 0, NULL);
 		break;
 
 	case GSMD_SMS_SET_SERVICE_CENTRE:
@@ -419,7 +419,7 @@ int usock_rcv_sms(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 		ga = (struct gsmd_addr *) ((void *) gph + sizeof(*gph));
 		atcmd_len = sprintf(buf, "AT+CSCA=\"%s\",%i",
 				ga->number, ga->type);
-		cmd = atcmd_fill(buf, atcmd_len + 1, NULL, gu, gph->id);
+		cmd = atcmd_fill(buf, atcmd_len + 1, NULL, gu, gph->id, NULL);
 		break;
 
 	default:
@@ -440,10 +440,10 @@ int usock_rcv_cb(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int len)
 
 	switch (gph->msg_subtype) {
 	case GSMD_CB_SUBSCRIBE:
-		cmd = atcmd_fill("AT+CSCB=1", 9 + 1, NULL, gu->gsmd, 0);
+		cmd = atcmd_fill("AT+CSCB=1", 9 + 1, NULL, gu->gsmd, 0, NULL);
 		break;
 	case GSMD_CB_UNSUBSCRIBE:
-		cmd = atcmd_fill("AT+CSCB=0", 9 + 1, NULL, gu->gsmd, 0);
+		cmd = atcmd_fill("AT+CSCB=0", 9 + 1, NULL, gu->gsmd, 0, NULL);
 		break;
 	default:
 		return -ENOSYS;
@@ -681,7 +681,7 @@ int sms_cb_init(struct gsmd *gsmd)
 
 	/* If text mode, set the encoding */
 	if (gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) {
-		atcmd = atcmd_fill("AT+CSCS=\"IRA\"", 13 + 1, NULL, gsmd, 0);
+		atcmd = atcmd_fill("AT+CSCS=\"IRA\"", 13 + 1, NULL, gsmd, 0, NULL);
 		if (!atcmd)
 			return -ENOMEM;
 		atcmd_submit(gsmd, atcmd);
@@ -692,7 +692,7 @@ int sms_cb_init(struct gsmd *gsmd)
 				"AT+CMGF=%i",
 				(gsmd->flags & GSMD_FLAG_SMS_FMT_TEXT) ?
 				GSMD_SMS_FMT_TEXT : GSMD_SMS_FMT_PDU) + 1,
-			NULL, gsmd, 0);
+			NULL, gsmd, 0, NULL);
 	if (!atcmd)
 		return -ENOMEM;
 

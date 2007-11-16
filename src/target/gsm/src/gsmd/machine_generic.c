@@ -56,6 +56,7 @@ static int generic_init(struct gsmd *g, int fd)
 
 struct gsmd_machine_plugin gsmd_machine_plugin = {
 	.name = "generic",
+	.ex_submit = NULL,
 	.detect = &generic_detect,
 	.init = &generic_init,
 };

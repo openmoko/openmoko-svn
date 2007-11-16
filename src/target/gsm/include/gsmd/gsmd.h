@@ -19,6 +19,7 @@ void *gsmd_tallocs;
 #define LGSM_ATCMD_F_PARAM	0x02	/* as opposed to action */
 #define LGSM_ATCMD_F_LFCR	0x04	/* accept LFCR as a line terminator */
 
+typedef struct gsmd_timer * (create_timer_t)(struct gsmd *data);
 struct gsmd_atcmd {
 	struct llist_head list;
 	void *ctx;
@@ -28,6 +29,8 @@ struct gsmd_atcmd {
 	u_int32_t buflen;
 	u_int16_t id;
 	u_int8_t flags;
+        struct gsmd_timer *timeout;
+	create_timer_t * create_timer_func;  
 	char *cur;
 	char buf[];
 };
@@ -67,7 +70,7 @@ struct gsmd;
 #define GSMD_FLAG_V0		0x0001	/* V0 responses to be expected from TA */
 #define GSMD_FLAG_SMS_FMT_TEXT	0x0002	/* TODO Use TEXT rather than PDU mode */
 
-#define GSMD_MODEM_WAKEUP_TIMEOUT     3
+#define GSMD_ATCMD_TIMEOUT	60	/* If doesn get respond within 60 secs, discard */
 
 struct gsmd {
 	unsigned int flags;
@@ -86,7 +89,7 @@ struct gsmd {
 	unsigned char *mlbuf;		/* ml_parse buffer */
 	unsigned int mlbuf_len;
 	int mlunsolicited;
-        struct gsmd_timer *wakeup_timer;
+	int alive_responded;
 };
 
 struct gsmd_user {

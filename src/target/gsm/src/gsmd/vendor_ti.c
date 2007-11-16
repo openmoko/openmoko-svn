@@ -262,7 +262,7 @@ static int cpi_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		return -EINVAL;
 	
 	/* retrieve voicemail number */
-	cmd = atcmd_fill("AT%CPMB=1", 10, &cpmb_detect_cb, g, 0);
+	cmd = atcmd_fill("AT%CPMB=1", 10, &cpmb_detect_cb, g, 0, NULL);
 	if (cmd)
 		atcmd_submit(g, cmd);
 	
@@ -304,7 +304,7 @@ static int ticalypso_initsettings(struct gsmd *g)
 	rc |= gsmd_simplecmd(g, "AT%CPHS=1");
 	
 	/* enable %CPI: call progress indication */
-	cmd = atcmd_fill("AT%CPI=?", 9, &cpi_detect_cb, g, 0);
+	cmd = atcmd_fill("AT%CPI=?", 9, &cpi_detect_cb, g, 0, NULL);
 	if (cmd)
 		atcmd_submit(g, cmd);
 

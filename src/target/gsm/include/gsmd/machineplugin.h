@@ -11,6 +11,7 @@ struct gsmd;
 struct gsmd_machine_plugin {
 	struct llist_head list;
 	unsigned char *name;
+	int (*ex_submit)(struct gsmd *g);
 	int (*detect)(struct gsmd *g);
 	int (*init)(struct gsmd *g, int fd);
 };
