@@ -28,6 +28,14 @@ echo "    "Retrieving available builds list...
 files=`lynx -dump $download_dir | grep http | sed "s,[0-9 \t\.]*$download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
 dev_files=`lynx -dump $dev_download_dir | grep http | sed "s,[0-9 \t\.]*$dev_download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
 
+if [[ "${files}" == "" ]]; then
+	echo "    "Trying alternative sources
+	download_dir="$backup_download_dir"
+	dev_download_dir="$backup_download_dir"
+	files=`lynx -dump $download_dir | grep http | sed "s,[0-9 \t\.]*$download_dir\([a-zA-Z0-9_\.-]\)[ \t]*,\1,"`
+	dev_files="$files"
+fi
+
 most_recent () {
 	${echo} > .list
 	f=$3files; for name in ${!f}; do
@@ -37,7 +45,7 @@ most_recent () {
 	done
 	export $2=`sort -n .list | tail -n 1`
 	rm -rf .list
-	[ -z "${!2}" ] && ( ${echo} not found; exit -1 )
+	[ -z "${!2}" ] && ${echo} not found && exit -1
 	${echo} ${!2}
 }
 

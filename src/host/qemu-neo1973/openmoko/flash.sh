@@ -48,7 +48,7 @@ most_recent () {
 		%(os.stat('$img_dir/${!2}').st_size)\"`"
 	cd $script_dir
 	[ -e "${!2}" ] || ln -sf $img_dir/${!2} ${!2}
-	[ -n "${!3}" ]
+	[ -s "${!2}" ]
 }
 
 most_recent "$kernel_wildcard" kernel_image kernel_size || exit -1
