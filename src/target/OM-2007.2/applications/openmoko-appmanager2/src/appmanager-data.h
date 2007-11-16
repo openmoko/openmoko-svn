@@ -76,7 +76,7 @@ typedef struct _ApplicationManagerData {
   
   GtkWidget        *searchbar;
   /* these are used to optimise the filter function */
-  gboolean          searchbar_name_search;
+  gint              searchbar_search_type;
   const gchar      *searchbar_needle;
 } ApplicationManagerData;
 
@@ -86,6 +86,12 @@ typedef struct _ApplicationManagerData {
 typedef struct _ApplicationManagerDataClass {
   GObjectClass    parent_class;        /* The parent class */
 } ApplicationManagerDataClass;
+
+enum {
+  SEARCH_ON_SECTION,
+  SEARCH_ON_STATUS,
+  SEARCH_ON_NAME
+};
 
 GType application_manager_data_get_type (void);
 

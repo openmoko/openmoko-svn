@@ -41,7 +41,7 @@ text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationMan
   entry = moko_search_bar_get_entry (MOKO_SEARCH_BAR (data->searchbar));
   needle = gtk_entry_get_text (entry);
  
-  data->searchbar_name_search = TRUE;
+  data->searchbar_search_type = SEARCH_ON_NAME;
   data->searchbar_needle = needle;
 
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
@@ -59,20 +59,37 @@ combo_changed_cb (MokoSearchBar *searchbar, GtkComboBox *combo, ApplicationManag
   const gchar *needle;
   GtkTreeIter cb_iter;
   GtkTreeModel *cb_model;
+  gint active;
 
   if (!combo)
     combo = moko_search_bar_get_combo_box (MOKO_SEARCH_BAR (data->searchbar));
 
-  if (!gtk_combo_box_get_active_iter (combo, &cb_iter))
+  active = gtk_combo_box_get_active (combo);
+    
+  if (active < 0)
     return;
-
-  cb_model = gtk_combo_box_get_model (combo);
-  gtk_tree_model_get (cb_model, &cb_iter, 0, &needle, -1);
   
-  data->searchbar_name_search = FALSE;
-  data->searchbar_needle = needle;
+  if (active <= 1)
+  {
+    data->searchbar_search_type = SEARCH_ON_STATUS;
+    if (active == FILTER_INSTALLED)
+      data->searchbar_needle = GINT_TO_POINTER (SS_INSTALLED);
+    else
+      data->searchbar_needle = GINT_TO_POINTER (SS_NOT_INSTALLED);
+  }
+  else
+  {
+    
+    if (!gtk_combo_box_get_active_iter (combo, &cb_iter))
+      return;
 
-  
+    cb_model = gtk_combo_box_get_model (combo);
+    gtk_tree_model_get (cb_model, &cb_iter, 0, &needle, -1);
+    
+    data->searchbar_search_type = SEARCH_ON_SECTION;
+    data->searchbar_needle = needle;
+  }
+
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
 }
@@ -144,7 +161,7 @@ search_bar_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
   appdata->filter_store = GTK_TREE_MODEL (filter);
 
   gtk_list_store_insert_with_values (filter, NULL, FILTER_INSTALLED, 0, "Installed", -1);
-  gtk_list_store_insert_with_values (filter, NULL, FILTER_UPGRADEABLE, 0, "Upgradeable", -1);
+  gtk_list_store_insert_with_values (filter, NULL, FILTER_NOT_INSTALLED, 0, "Not Installed", -1);
   gtk_list_store_insert_with_values (filter, NULL, 3, 0, NULL, -1);
 
   /* profile these two methods to see which is quicker */

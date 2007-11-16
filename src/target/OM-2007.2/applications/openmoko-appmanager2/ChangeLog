@@ -1,3 +1,14 @@
+2007-11-16  Thomas Wood  <thomas@openedhand.com>
+
+	* src/appmanager-data.h:
+	* src/appmanager-window.c: (main):
+	* src/navigation-area.c: (model_filter_func):
+	* src/search-bar.c: (text_changed_cb), (combo_changed_cb),
+	(slist_insert), (search_bar_new):
+	* src/search-bar.h:
+
+	Implement Installed/Not Installed filtering
+
 2007-11-14  Thomas Wood  <thomas@openedhand.com>
 
 	* src/search-bar.c: (text_changed_cb): Remove the model from the

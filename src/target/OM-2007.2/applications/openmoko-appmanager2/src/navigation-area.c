@@ -84,15 +84,20 @@ model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerDat
     return FALSE;
 
  
-  if (data->searchbar_name_search)
+  if (data->searchbar_search_type == SEARCH_ON_SECTION)
   {
     return (strstr (pkg->name, data->searchbar_needle) != NULL);
   }
-  else
+  else if (data->searchbar_search_type == SEARCH_ON_NAME)
   {
     return (!strcmp (pkg->section, data->searchbar_needle));
   }
-  
+  else if (data->searchbar_search_type == SEARCH_ON_STATUS)
+  {
+    return (pkg->state_status == GPOINTER_TO_INT (data->searchbar_needle));
+  }
+
+  return FALSE;
 
 }
 

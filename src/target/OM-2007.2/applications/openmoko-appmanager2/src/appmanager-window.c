@@ -73,6 +73,7 @@ main (int argc, char* argv[])
   pkg_list = package_store_new ();
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_size_request (window, 400, 600);
   g_signal_connect (G_OBJECT (window), "delete_event",
                     G_CALLBACK (gtk_main_quit), NULL);
   application_manager_data_set_main_window (appdata, GTK_WINDOW (window));
