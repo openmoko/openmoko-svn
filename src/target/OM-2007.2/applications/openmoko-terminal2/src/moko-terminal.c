@@ -113,10 +113,18 @@ moko_terminal_init(MokoTerminal* self)
     priv->scrollbar = gtk_vscrollbar_new( vte->adjustment );
     gtk_box_pack_start( GTK_BOX(self), priv->scrollbar, FALSE, FALSE, 0 );
 
-    GdkColor fore = { 0, 0x0, 0x0, 0x0 };
-    GdkColor back = { 0, 0xfffff, 0xfffff, 0xfffff };
-    GdkColor colors[16];
-    vte_terminal_set_colors( vte, &fore, &back, &colors, 16 );
+    GdkColor fore = { 0, 0x0000, 0x0000, 0x0000 };
+    GdkColor back = { 0, 0xffff, 0xffff, 0xffff };
+    GdkColor colors[8] = { { 0, 0x0000, 0x0000, 0x0000 },
+                           { 0, 0x8000, 0x0000, 0x0000 },
+                           { 0, 0x0000, 0x8000, 0x0000 },
+                           { 0, 0x8000, 0x8000, 0x0000 },
+                           { 0, 0x0000, 0x0000, 0x8000 },
+                           { 0, 0x8000, 0x0000, 0x8000 },
+                           { 0, 0x0000, 0x8000, 0x8000 },
+                           { 0, 0x8000, 0x8000, 0x8000 } };
+
+    vte_terminal_set_colors( vte, &fore, &back, &colors, 8 );
 
     //vte_terminal_set_size( vte, 30, 30);
     vte_terminal_set_scrollback_lines( vte, 1000 );
@@ -130,7 +138,7 @@ moko_terminal_init(MokoTerminal* self)
                                NULL,
                                NULL,
                                NULL,
-                               NULL,
+                               "~/",
                                TRUE,
                                TRUE,
                                TRUE);

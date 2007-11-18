@@ -1,8 +1,14 @@
-2007-11-05	Michael Lauer <mickey@openmoko.org>
+2007-11-18  Michael Lauer <mickey@openmoko.org>
+
+	* src/moko-terminal.c: fix terminal colors, start in '~'
+    Closes #1000 -- patch by cwixon@usa.net (Clarke 'Quicksand' Wixon)
+    * data/openmoko-terminal.desktop: fix Category synxtax (';')
+
+2007-11-05  Michael Lauer <mickey@openmoko.org>
 
 	* data/openmoko-terminal.desktop: terminal is not a PIM application
 
-2007-09-14	Michael Lauer <mickey@openmoko.org>
+2007-09-14  Michael Lauer <mickey@openmoko.org>
 
 	* src/moko-terminal.c: Set default font spec to "LiberationMono 5"
 
