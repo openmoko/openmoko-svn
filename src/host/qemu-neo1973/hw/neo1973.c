@@ -397,7 +397,7 @@ static void neo_reset(void *opaque)
     s->cpu->env->regs[15] = S3C_SRAM_BASE;
 #else
     load_image("u-boot.bin", phys_ram_base + 0x03f80000);
-    load_image(s->kernel, phys_ram_base + 0x01000000);
+    load_image(s->kernel, phys_ram_base + 0x00800000);
     s->cpu->env->regs[15] = S3C_RAM_BASE | 0x03f80000;
 #endif
 

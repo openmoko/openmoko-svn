@@ -14,7 +14,7 @@ echo=echo
 which gecho && echo=gecho
 export make echo
 
-kernel_addr=0x31000000
+kernel_addr=0x30800000
 splash_addr=0x36000000
 splash_size=0x5000
 
