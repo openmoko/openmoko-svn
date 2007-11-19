@@ -157,10 +157,9 @@ void s3c_lcd_reset(struct s3c_lcd_state_s *s);
 /* s3c24xx_mmci.c */
 struct s3c_mmci_state_s;
 struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
-                qemu_irq irq, qemu_irq *dma);
-void s3c_mmci_handlers(struct s3c_mmci_state_s *s, void *opaque,
-                void (*readonly_cb)(void *, int),
-                void (*coverswitch_cb)(void *, int));
+                BlockDriverState *bd, qemu_irq irq, qemu_irq *dma);
+void s3c_mmci_handlers(struct s3c_mmci_state_s *s, qemu_irq readonly_cb,
+                qemu_irq coverswitch_cb);
 void s3c_mmci_reset(struct s3c_mmci_state_s *s);
 
 /* s3c24xx_rtc.c */

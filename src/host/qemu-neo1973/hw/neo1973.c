@@ -183,15 +183,6 @@ static void neo_gps_rst_switch(void *opaque, int line, int level)
 }
 
 /* Handlers for input ports */
-static void neo_mmc_cover_switch(void *irq, int in)
-{
-    qemu_set_irq((qemu_irq) irq, !in);
-}
-
-static void neo_mmc_writeprotect_switch(void *irq, int wp)
-{
-}
-
 static void neo_nand_wp_switch(void *opaque, int line, int level)
 {
     struct neo_board_s *s = (struct neo_board_s *) opaque;
@@ -262,10 +253,9 @@ static void neo_gpio_setup(struct neo_board_s *s)
     s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
     /* MMC/SD host */
-    s3c_mmci_handlers(s->cpu->mmci,
-                    s3c_gpio_in_get(s->cpu->io)[GTA01_IRQ_nSD_DETECT],
-                    neo_mmc_writeprotect_switch,
-                    neo_mmc_cover_switch);
+    s3c_mmci_handlers(s->cpu->mmci, 0,
+                    qemu_irq_invert(s3c_gpio_in_get(
+                                    s->cpu->io)[GTA01_IRQ_nSD_DETECT]));
 }
 
 /* PMB 2520 Hammerhead A-GPS chip */

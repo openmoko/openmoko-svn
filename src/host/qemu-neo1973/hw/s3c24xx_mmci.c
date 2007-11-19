@@ -10,7 +10,6 @@
 #include "s3c.h"
 #include "sd.h"
 #include "hw.h"
-#include "sysemu.h"
 
 struct s3c_mmci_state_s {
     target_phys_addr_t base;
@@ -415,7 +414,7 @@ static int s3c_mmci_load(QEMUFile *f, void *opaque, int version_id)
 }
 
 struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
-                qemu_irq irq, qemu_irq *dma)
+                BlockDriverState *bd, qemu_irq irq, qemu_irq *dma)
 {
     int iomemtype;
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *)
@@ -434,14 +433,13 @@ struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
     register_savevm("s3c24xx_mmci", 0, 0, s3c_mmci_save, s3c_mmci_load, s);
 
     /* Instantiate the actual storage */
-    s->card = sd_init(sd_bdrv);
+    s->card = sd_init(bd);
 
     return s;
 }
 
-void s3c_mmci_handlers(struct s3c_mmci_state_s *s, void *opaque,
-                void (*readonly_cb)(void *, int),
-                void (*coverswitch_cb)(void *, int))
+void s3c_mmci_handlers(struct s3c_mmci_state_s *s, qemu_irq readonly_cb,
+                qemu_irq coverswitch_cb)
 {
-    /*sd_set_cb(s->card, opaque, readonly_cb, coverswitch_cb);*/
+    sd_set_cb(s->card, readonly_cb, coverswitch_cb);
 }
