@@ -184,12 +184,13 @@ check_for_upgrade (IPK_PACKAGE *package, PKG_LIST_HEAD *list)
     {
       gint ret;
       
-      ret = verrevcmp (package->version, p->version);
+      ret = verrevcmp (p->version, package->version);
       
       if (ret > 0)
+      {
+        g_debug ("Found upgradeable package: %s (old: %s, new: %s)", p->name, package->version, p->version);
         return TRUE;
-      else
-        return FALSE;
+      }
     }
     p = p->next;
   }
@@ -213,11 +214,39 @@ get_upgrade_list ()
     if (check_for_upgrade (p, &list))
     {
       upgradelist = g_list_prepend (upgradelist, p);
-      g_debug ("Found upgradeable package: %p", p->name);
     }
     p = p->next;
   }
   return upgradelist;
+}
+
+static gpointer
+upgrade_packages_thread (AmProgressDialog *dlg)
+{
+  args_t args;
+
+  memset (&args, 0, sizeof (args));
+  args_init (&args);
+
+  ipkg_packages_upgrade (&args);
+
+  gdk_threads_enter ();
+  am_progress_dialog_set_progress (dlg, 1);
+  am_progress_dialog_set_label_text (dlg, "Upgrading finished");
+  gdk_threads_leave ();
+}
+
+void
+upgrade_packages ()
+{
+  GtkWidget *dlg;
+
+  dlg = am_progress_dialog_new_full ("Upgrade", "Upgrading packages...", -1);
+  
+  g_thread_create ((GThreadFunc) upgrade_packages_thread, dlg, FALSE, NULL);
+
+  gtk_dialog_run (GTK_DIALOG (dlg));
+  gtk_widget_destroy (dlg);
 }
 
 /*

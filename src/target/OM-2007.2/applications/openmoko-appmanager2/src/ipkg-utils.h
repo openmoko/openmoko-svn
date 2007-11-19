@@ -23,5 +23,6 @@ void install_package (ApplicationManagerData *data, gchar *name);
 void remove_package (ApplicationManagerData *data, gchar *name);
 void update_package_list (ApplicationManagerData *data);
 GList * get_upgrade_list ();
+void upgrade_pacakges ();
 
 #endif /* IPKG_UTILS_H */

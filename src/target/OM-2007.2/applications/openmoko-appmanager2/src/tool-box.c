@@ -46,8 +46,15 @@ on_upgrade_clicked (GtkButton *bupgrade, gpointer data)
     dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_INFO, GTK_BUTTONS_YES_NO,
                             "There are %d updates available. Would you like to install them now?",
                             upgrades);
-    gtk_dialog_run (GTK_DIALOG (dlg));
-    gtk_widget_destroy (dlg);
+    if (gtk_dialog_run (GTK_DIALOG (dlg)) == GTK_RESPONSE_YES)
+    {
+      gtk_widget_destroy (dlg);
+      upgrade_packages ();
+    }
+    else
+    {
+      gtk_widget_destroy (dlg);
+    }
   }
   
   g_list_free (list);

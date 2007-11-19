@@ -1,5 +1,13 @@
 2007-11-19  Thomas Wood  <thomas@openedhand.com>
 
+	* src/ipkg-utils.c: (check_for_upgrade), (get_upgrade_list):
+	* src/ipkg-utils.h:
+	* src/tool-box.c: (on_upgrade_clicked):
+
+	Add upgrade package functionality
+
+2007-11-19  Thomas Wood  <thomas@openedhand.com>
+
 	* src/search-bar.c: (text_changed_cb): Don't leak the search string
 
 2007-11-19  Thomas Wood <thomas@openedhand.com>
