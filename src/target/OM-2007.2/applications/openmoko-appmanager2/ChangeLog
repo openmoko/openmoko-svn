@@ -1,3 +1,11 @@
+2007-11-19  Thomas Wood <thomas@openedhand.com>
+
+	* src/navigation-area.c: (model_filter_func),
+	(navigation_area_new): Enable fixed height rows in treeview to speed up
+	 filtering
+
+	* src/search-bar.c: (text_changed_cb): Fast path blank search
+
 2007-11-19  Thomas Wood  <thomas@openedhand.com>
 
 	* src/navigation-area.c: (model_filter_func):

@@ -90,7 +90,11 @@ model_filter_func (GtkTreeModel *model, GtkTreeIter *iter, ApplicationManagerDat
   }
   else if (data->searchbar_search_type == SEARCH_ON_NAME)
   {
-    return (g_strrstr (pkg->name, data->searchbar_needle));
+    /* fast path initial blank search */
+    if (g_str_equal ("", data->searchbar_needle))
+      return FALSE;
+
+    return (g_strrstr (pkg->name, data->searchbar_needle) != NULL);
   }
   else if (data->searchbar_search_type == SEARCH_ON_STATUS)
   {
@@ -123,9 +127,10 @@ navigation_area_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
   gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeview), FALSE);
 
   /* Add the status as the first column. */
+  /*
   col = gtk_tree_view_column_new ();
   gtk_tree_view_column_set_title (col, _("S"));
-
+  */
   /*
   renderer = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_column_pack_start (col, renderer, FALSE);
@@ -142,7 +147,7 @@ navigation_area_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
 
   renderer = gtk_cell_renderer_text_new ();
   gtk_tree_view_column_pack_start (col, renderer, TRUE);
-  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+  gtk_tree_view_column_set_sizing (col, GTK_TREE_VIEW_COLUMN_FIXED);
   gtk_tree_view_column_set_attributes (col, renderer, "text", COL_NAME, NULL);
   g_object_set (G_OBJECT (renderer), "ellipsize", PANGO_ELLIPSIZE_END, NULL);
 
@@ -161,6 +166,9 @@ navigation_area_new (ApplicationManagerData *appdata, GtkTreeModel *pkg_list)
   scrollwindow = moko_finger_scroll_new ();
   gtk_container_add (GTK_CONTAINER (scrollwindow), treeview);
   application_manager_data_set_tvpkglist (appdata, treeview);
+
+  /* set fixed height mode to speed up filtering */
+  gtk_tree_view_set_fixed_height_mode (GTK_TREE_VIEW (treeview), TRUE);
 
   /* Connect signal to the treeview */
   g_signal_connect (gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview)),

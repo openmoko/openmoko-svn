@@ -46,7 +46,6 @@ text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationMan
 
   g_debug ("Search = %s", needle);
 
-
   GTimer *timer = g_timer_new ();
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
   g_object_ref (G_OBJECT (filter));
