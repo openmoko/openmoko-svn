@@ -1,3 +1,9 @@
+2007-11-19  Thomas Wood  <thomas@openedhand.com>
+
+	* src/navigation-area.c: (model_filter_func):
+	* src/search-bar.c: (text_changed_cb), (combo_changed_cb): Fix text
+	   searching
+
 2007-11-16  Thomas Wood  <thomas@openedhand.com>
 
 	* src/ipkg-utils.c: (update_package_list):

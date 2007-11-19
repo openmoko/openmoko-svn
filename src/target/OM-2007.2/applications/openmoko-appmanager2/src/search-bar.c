@@ -42,13 +42,32 @@ text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationMan
   needle = gtk_entry_get_text (entry);
  
   data->searchbar_search_type = SEARCH_ON_NAME;
-  data->searchbar_needle = needle;
+  data->searchbar_needle = g_strdup (needle);
 
+  g_debug ("Search = %s", needle);
+
+
+  GTimer *timer = g_timer_new ();
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
   g_object_ref (G_OBJECT (filter));
   gtk_tree_view_set_model (GTK_TREE_VIEW (data->tvpkglist), NULL);
+
+  g_timer_stop (timer);
+  g_debug ("Unsetting model took %f seconds", g_timer_elapsed (timer, NULL));
+  g_timer_start (timer);
+
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
+
+  g_timer_stop (timer);
+  g_debug ("Search took %f seconds", g_timer_elapsed (timer, NULL));
+  g_timer_start (timer);
+
   gtk_tree_view_set_model (GTK_TREE_VIEW (data->tvpkglist), filter);
+
+  g_timer_stop (timer);
+  g_debug ("Setting model took %f seconds", g_timer_elapsed (timer, NULL));
+  g_timer_destroy (timer);
+
   g_object_unref (G_OBJECT (filter));
 }
 
@@ -91,7 +110,11 @@ combo_changed_cb (MokoSearchBar *searchbar, GtkComboBox *combo, ApplicationManag
   }
 
   filter = gtk_tree_view_get_model (GTK_TREE_VIEW (data->tvpkglist));
+  g_object_ref (filter);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (data->tvpkglist), NULL);
   gtk_tree_model_filter_refilter (GTK_TREE_MODEL_FILTER (filter));
+  gtk_tree_view_set_model (GTK_TREE_VIEW (data->tvpkglist), filter);
+  g_object_unref (filter);
 }
 
 static void
