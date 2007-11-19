@@ -87,6 +87,7 @@ status_report_added_cb (JanaStoreView *view, GList *components, gchar *ref)
 			jana_utils_component_remove_category (comp, "Sending");
 			jana_utils_component_insert_category (comp, "Sent", 0);
 			jana_store_modify_component (priv->note_store, comp);
+			g_debug ("Setting message status to confirmed sent");
 		}
 		g_free (ref);
 	}
@@ -101,6 +102,76 @@ status_report_progress_cb (JanaStoreView *view, gint percent, gchar *ref)
 	g_free (ref);
 }
 
+static void
+store_sms (MokoDialerSMS *dialer_sms, struct gsmd_sms_list *sms)
+{
+	gchar *message;
+
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (dialer_sms);
+
+	/* Ignore voicemail notifications */
+	if (sms->payload.is_voicemail) return;
+
+	/* TODO: Verify type of message for journal (sent/received) - 
+	 *       Assuming received for now, as messages sent with phone-kit 
+	 *       will be marked already.
+	 */
+	message = NULL;
+	switch (sms->payload.coding_scheme) {
+	    case ALPHABET_DEFAULT :
+		message = g_malloc (GSMD_SMS_DATA_MAXLEN);
+		unpacking_7bit_character (
+			&sms->payload, message);
+		break;
+	    case ALPHABET_8BIT :
+		/* TODO: Verify: Is this encoding just UTF-8? */
+		message = g_strdup (sms->payload.data);
+		break;
+	    case ALPHABET_UCS2 :
+		message = g_utf16_to_utf8 ((const gunichar2 *)
+			sms->payload.data, sms->payload.length,
+			NULL, NULL, NULL);
+		break;
+	}
+	
+	/* Store message in the journal */
+	if (message) {
+		struct lgsm_sms_delete sms_del;
+		gchar *author, *recipient;
+		JanaNote *note = jana_ecal_note_new ();
+		
+		g_debug ("Moving message to journal:\n\"%s\"", message);
+		
+		author = g_strconcat (((sms->addr.type &
+			__GSMD_TOA_TON_MASK) ==
+			GSMD_TOA_TON_INTERNATIONAL) ? "+" : "",
+			sms->addr.number, NULL);
+		jana_note_set_author (note, author);
+		g_free (author);
+		
+		/* TODO: Normalise number necessary? */
+		recipient = g_strdup_printf ("%d",
+			lgsm_get_subscriber_num (priv->handle));
+		jana_note_set_recipient (note, recipient);
+		g_free (recipient);
+		
+		jana_note_set_body (note, message);
+		
+		/* TODO: Set creation time from SMS timestamp */
+		
+		/* Add SMS to store */
+		jana_store_add_component (priv->note_store,
+			JANA_COMPONENT (note));
+		
+		/* Delete SMS from internal storage */
+		sms_del.index = sms->index;
+		sms_del.delflg = LGSM_SMS_DELFLG_INDEX;
+		lgsm_sms_delete (priv->handle, &sms_del);
+		
+		g_free (message);
+	}
+}
+
 static int 
 gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 		   struct gsmd_evt_auxdata *aux)
@@ -113,67 +184,13 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 	switch (evt_type) {
 	    case GSMD_EVT_IN_SMS : /* Incoming SMS */
 		/* TODO: Read UDH for multi-part messages */
+		g_debug ("Received incoming SMS");
 		if (aux->u.sms.inlined) {
-			gchar *message;
-
 			struct gsmd_sms_list * sms =
 				(struct gsmd_sms_list *)aux->data;
-
-			/* Ignore voicemail notifications */
-			if (sms->payload.is_voicemail) break;
-
-			message = NULL;
-			switch (sms->payload.coding_scheme) {
-			    case ALPHABET_DEFAULT :
-				message = g_malloc (GSMD_SMS_DATA_MAXLEN);
-				unpacking_7bit_character (
-					&sms->payload, message);
-				break;
-			    case ALPHABET_8BIT :
-				/* TODO: Verify: Is this encoding just UTF-8? */
-				message = g_strdup (sms->payload.data);
-				break;
-			    case ALPHABET_UCS2 :
-				message = g_utf16_to_utf8 ((const gunichar2 *)
-					sms->payload.data, sms->payload.length,
-					NULL, NULL, NULL);
-				break;
-			}
-			
-			/* Store message in the journal */
-			if (message) {
-				struct lgsm_sms_delete sms_del;
-				gchar *author, *recipient;
-				JanaNote *note = jana_ecal_note_new ();
-				
-				author = g_strconcat (((sms->addr.type &
-					__GSMD_TOA_TON_MASK) ==
-					GSMD_TOA_TON_INTERNATIONAL) ? "+" : "",
-					sms->addr.number, NULL);
-				jana_note_set_author (note, author);
-				g_free (author);
-				
-				/* TODO: Normalise number necessary? */
-				recipient = g_strdup_printf ("%d",
-					lgsm_get_subscriber_num (priv->handle));
-				jana_note_set_recipient (note, recipient);
-				g_free (recipient);
-				
-				jana_note_set_body (note, message);
-				
-				/* TODO: Set creation time from SMS timestamp */
-				
-				/* Add SMS to store */
-				jana_store_add_component (priv->note_store,
-					JANA_COMPONENT (note));
-				
-				/* Delete SMS from internal storage */
-				sms_del.index = sms->index;
-				sms_del.delflg = LGSM_SMS_DELFLG_INDEX;
-				lgsm_sms_delete (priv->handle, &sms_del);
-			}
+			store_sms (moko_dialer_sms_get_default (), sms);
 		} else {
-			g_warning ("Not an in-line event, unhandled");
+			lgsm_sms_read (priv->handle, aux->u.sms.index);
 		}
 		break;
 	    case GSMD_EVT_IN_DS : /* SMS status report */
@@ -188,6 +205,7 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 				gchar *ref = g_strdup_printf ("%d", sms->index);
 				JanaStoreView *view = jana_store_get_view (
 					priv->note_store);
+				g_debug ("Received sent SMS status report");
 				jana_store_view_add_match (view,
 					JANA_STORE_VIEW_CATEGORY, "Sending");
 				g_signal_connect (view, "added", G_CALLBACK (
@@ -224,7 +242,9 @@ sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 				JANA_COMPONENT (priv->last_msg),
 				"X-PHONEKIT-SMS-REF", ref);
 			g_free (ref);
+			g_debug ("Sent message accepted");
 		} else {
+			g_debug ("Sent message rejected");
 			jana_utils_component_remove_category (
 				JANA_COMPONENT(priv->last_msg), "Sending");
 			jana_utils_component_insert_category (
@@ -237,6 +257,13 @@ sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		g_free (uid);
 		g_object_unref (priv->last_msg);
 		priv->last_msg = NULL;
+	} else if ((gmh->msg_subtype == GSMD_SMS_LIST) ||
+		   (gmh->msg_subtype == GSMD_SMS_READ)) {
+		struct gsmd_sms_list *sms_list = (struct gsmd_sms_list *)
+			((void *) gmh + sizeof(*gmh));
+
+		g_debug ("Storing message on SIM");
+		store_sms (sms, sms_list);
 	}
 	
 	return 0;
@@ -271,7 +298,8 @@ moko_dialer_sms_init (MokoDialerSMS *self)
 	/* Connect SMS message handler (to get sent message references) */
 	lgsm_register_handler (priv->handle, GSMD_MSG_SMS, &sms_msghandler);
 	
-	/* TODO: Move any existing SMS messages off of sim and to journal */
+	/* List all messages to move to journal */
+	lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
 }
 
 MokoDialerSMS*

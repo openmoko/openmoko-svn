@@ -1,3 +1,11 @@
+2007-11-19  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-dialer-sms.c: (status_report_added_cb),
+	(store_sms), (gsmd_eventhandler), (sms_msghandler),
+	(moko_dialer_sms_init):
+	Handle non in-line SMS events, move all SMS's on SIM to journal on 
+	startup, add lots of debugging statements
+
 2007-11-14  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-dialer-sms-dbus.xml:
