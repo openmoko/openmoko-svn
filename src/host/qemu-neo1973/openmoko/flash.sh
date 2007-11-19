@@ -59,6 +59,9 @@ echo Using \'$kernel_image\' as the kernel image.
 echo Using \'$rootfs_image\' as the root filesystem image.
 echo Using \'$uboot_image\' as bootloader.
 
+# Make sure ^C wipes everything we might have spawned along the way.
+trap 'kill -- -$$' INT EXIT
+
 # Currently we just make the u-boot image accessible under u-boot.bin
 # and qemu will load it from the working directory.  This is a
 # temporary solution.
