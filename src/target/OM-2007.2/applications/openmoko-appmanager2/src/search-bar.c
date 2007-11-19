@@ -42,7 +42,7 @@ text_changed_cb (MokoSearchBar *searchbar, GtkEditable *editable, ApplicationMan
   needle = gtk_entry_get_text (entry);
  
   data->searchbar_search_type = SEARCH_ON_NAME;
-  data->searchbar_needle = g_strdup (needle);
+  data->searchbar_needle = needle;
 
   g_debug ("Search = %s", needle);
 

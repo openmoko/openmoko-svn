@@ -1,3 +1,7 @@
+2007-11-19  Thomas Wood  <thomas@openedhand.com>
+
+	* src/search-bar.c: (text_changed_cb): Don't leak the search string
+
 2007-11-19  Thomas Wood <thomas@openedhand.com>
 
 	* src/navigation-area.c: (model_filter_func),
