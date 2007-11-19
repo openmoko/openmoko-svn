@@ -7,8 +7,13 @@
  * This code is licenced under the GPL
  */
 
-#include "vl.h"
-#include "arm_pic.h"
+#include "hw.h"
+#include "primecell.h"
+#include "devices.h"
+#include "sysemu.h"
+#include "boards.h"
+#include "arm-misc.h"
+#include "net.h"
 
 void DMA_run (void)
 {
@@ -466,7 +471,6 @@ static void icp_control_init(uint32_t base)
 
 static void integratorcp_init(int ram_size, int vga_ram_size,
                      const char *boot_device, DisplayState *ds,
-                     const char **fd_filename, int snapshot,
                      const char *kernel_filename, const char *kernel_cmdline,
                      const char *initrd_filename, const char *cpu_model)
 {

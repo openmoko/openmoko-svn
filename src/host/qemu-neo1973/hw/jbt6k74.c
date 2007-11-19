@@ -7,7 +7,7 @@
  * This file is licensed under GNU GPL v2.
  */
 
-#include "vl.h"
+#include "hw.h"
 
 struct jbt6k74_s {
     uint8_t command;

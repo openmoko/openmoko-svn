@@ -8,7 +8,9 @@
  * This code is licenced under the GPL.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "sh.h"
+#include "qemu-timer.h"
 
 //#define DEBUG_TIMER
 
@@ -50,7 +52,7 @@ static void sh_timer_update(sh_timer_state *s)
 #endif
 }
 
-uint32_t sh_timer_read(void *opaque, target_phys_addr_t offset)
+static uint32_t sh_timer_read(void *opaque, target_phys_addr_t offset)
 {
     sh_timer_state *s = (sh_timer_state *)opaque;
 

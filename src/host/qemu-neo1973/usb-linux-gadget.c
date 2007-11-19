@@ -34,7 +34,10 @@
 # include <signal.h>
 
 /* Must be after usb_ch9.h */
-# include "vl.h"
+# include "qemu-common.h"
+# include "qemu-char.h"
+# include "sysemu.h"
+# include "hw/usb.h"
 
 # define USBGADGETFS_PATH "/dev/gadget"
 
@@ -811,7 +814,7 @@ void usb_gadget_config_set(USBPort *port, int config)
 }
 
 #else
-# include "vl.h"
+# include "hw/usb.h"
 
 int usb_gadget_init(void)
 {

@@ -3,7 +3,9 @@
 include config-host.mak
 
 .PHONY: all clean distclean dvi info install install-doc tar tarbin \
-	speed test test2 html dvi info
+	speed test html dvi info
+
+VPATH=$(SRC_PATH):$(SRC_PATH)/hw
 
 BASE_CFLAGS=
 BASE_LDFLAGS=
@@ -48,8 +50,15 @@ BLOCK_OBJS+=block-qcow2.o block-parallels.o
 # CPUs and machines.
 
 OBJS=$(BLOCK_OBJS)
-OBJS+=readline.o console.o 
+OBJS+=readline.o console.o
 OBJS+=block.o
+
+OBJS+=irq.o
+OBJS+=i2c.o smbus.o smbus_eeprom.o max7310.o max111x.o wm8750.o wm8753.o
+OBJS+=ssd0303.o ssd0323.o ads7846.o pcf5060x.o stellaris_input.o
+OBJS+=scsi-disk.o cdrom.o
+OBJS+=usb.o usb-hub.o usb-linux.o usb-linux-gadget.o
+OBJS+=usb-hid.o usb-msd.o usb-wacom.o usb-net.o usb-bt.o
 
 ifdef CONFIG_WIN32
 OBJS+=tap-win32.o
@@ -102,7 +111,7 @@ sdl.o: sdl.c keymaps.c sdl_keysym.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(SDL_CFLAGS) $(BASE_CFLAGS) -c -o $@ $<
 
 vnc.o: vnc.c keymaps.c sdl_keysym.h vnchextile.h d3des.c d3des.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(BASE_CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(BASE_CFLAGS) $(CONFIG_VNC_TLS_CFLAGS) -c -o $@ $<
 
 audio/sdlaudio.o: audio/sdlaudio.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(SDL_CFLAGS) $(BASE_CFLAGS) -c -o $@ $<
@@ -193,7 +202,7 @@ endif
 	done
 
 # various test targets
-test speed test2: all
+test speed: all
 	$(MAKE) -C tests $@
 
 TAGS:

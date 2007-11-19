@@ -8,7 +8,8 @@
  * This code is licenced under the GPL.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "primecell.h"
 
 //#define DEBUG_PL061 1
 
@@ -208,7 +209,7 @@ static void pl061_reset(pl061_state *s)
   s->cr = 0xff;
 }
 
-void pl061_set_irq(void * opaque, int irq, int level)
+static void pl061_set_irq(void * opaque, int irq, int level)
 {
     pl061_state *s = (pl061_state *)opaque;
     uint8_t mask;

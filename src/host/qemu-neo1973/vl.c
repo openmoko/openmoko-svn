@@ -21,7 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "hw/hw.h"
+#include "hw/boards.h"
+#include "hw/usb.h"
+#include "hw/pcmcia.h"
+#include "hw/pc.h"
+#include "hw/fdc.h"
+#include "hw/audiodev.h"
+#include "hw/isa.h"
+#include "net.h"
+#include "console.h"
+#include "sysemu.h"
+#include "gdbstub.h"
+#include "qemu-timer.h"
+#include "qemu-char.h"
+#include "block.h"
+#include "audio/audio.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -229,7 +244,7 @@ struct modem_ops_s modem_ops;
 target_phys_addr_t isa_mem_base = 0;
 PicState2 *isa_pic;
 
-uint32_t default_ioport_readb(void *opaque, uint32_t address)
+static uint32_t default_ioport_readb(void *opaque, uint32_t address)
 {
 #ifdef DEBUG_UNUSED_IOPORT
     fprintf(stderr, "unused inb: port=0x%04x\n", address);
@@ -237,7 +252,7 @@ uint32_t default_ioport_readb(void *opaque, uint32_t address)
     return 0xff;
 }
 
-void default_ioport_writeb(void *opaque, uint32_t address, uint32_t data)
+static void default_ioport_writeb(void *opaque, uint32_t address, uint32_t data)
 {
 #ifdef DEBUG_UNUSED_IOPORT
     fprintf(stderr, "unused outb: port=0x%04x data=0x%02x\n", address, data);
@@ -245,7 +260,7 @@ void default_ioport_writeb(void *opaque, uint32_t address, uint32_t data)
 }
 
 /* default is to make two byte accesses */
-uint32_t default_ioport_readw(void *opaque, uint32_t address)
+static uint32_t default_ioport_readw(void *opaque, uint32_t address)
 {
     uint32_t data;
     data = ioport_read_table[0][address](ioport_opaque[address], address);
@@ -254,14 +269,14 @@ uint32_t default_ioport_readw(void *opaque, uint32_t address)
     return data;
 }
 
-void default_ioport_writew(void *opaque, uint32_t address, uint32_t data)
+static void default_ioport_writew(void *opaque, uint32_t address, uint32_t data)
 {
     ioport_write_table[0][address](ioport_opaque[address], address, data & 0xff);
     address = (address + 1) & (MAX_IOPORTS - 1);
     ioport_write_table[0][address](ioport_opaque[address], address, (data >> 8) & 0xff);
 }
 
-uint32_t default_ioport_readl(void *opaque, uint32_t address)
+static uint32_t default_ioport_readl(void *opaque, uint32_t address)
 {
 #ifdef DEBUG_UNUSED_IOPORT
     fprintf(stderr, "unused inl: port=0x%04x\n", address);
@@ -269,14 +284,14 @@ uint32_t default_ioport_readl(void *opaque, uint32_t address)
     return 0xffffffff;
 }
 
-void default_ioport_writel(void *opaque, uint32_t address, uint32_t data)
+static void default_ioport_writel(void *opaque, uint32_t address, uint32_t data)
 {
 #ifdef DEBUG_UNUSED_IOPORT
     fprintf(stderr, "unused outl: port=0x%04x data=0x%02x\n", address, data);
 #endif
 }
 
-void init_ioports(void)
+static void init_ioports(void)
 {
     int i;
 
@@ -948,7 +963,7 @@ QEMUClock *vm_clock;
 
 static QEMUTimer *active_timers[2];
 
-QEMUClock *qemu_new_clock(int type)
+static QEMUClock *qemu_new_clock(int type)
 {
     QEMUClock *clock;
     clock = qemu_mallocz(sizeof(QEMUClock));
@@ -1526,7 +1541,7 @@ static void init_timer_alarm(void)
     alarm_timer = t;
 }
 
-void quit_timers(void)
+static void quit_timers(void)
 {
     alarm_timer->stop(alarm_timer);
     alarm_timer = NULL;
@@ -1819,7 +1834,7 @@ static void mux_chr_update_read_handler(CharDriverState *chr)
     d->mux_cnt++;
 }
 
-CharDriverState *qemu_chr_open_mux(CharDriverState *drv)
+static CharDriverState *qemu_chr_open_mux(CharDriverState *drv)
 {
     CharDriverState *chr;
     MuxDriver *d;
@@ -3372,7 +3387,8 @@ void qemu_chr_close(CharDriverState *chr)
 /***********************************************************/
 /* network device redirectors */
 
-void hex_dump(FILE *f, const uint8_t *buf, int size)
+__attribute__ (( unused ))
+static void hex_dump(FILE *f, const uint8_t *buf, int size)
 {
     int len, i, j, c;
 
@@ -3720,7 +3736,7 @@ static void smb_exit(void)
 }
 
 /* automatic user mode samba server configuration */
-void net_slirp_smb(const char *exported_dir)
+static void net_slirp_smb(const char *exported_dir)
 {
     char smb_conf[1024];
     char smb_cmdline[1024];
@@ -5340,7 +5356,7 @@ QEMUFile *qemu_fopen(const char *filename, const char *mode)
     return NULL;
 }
 
-QEMUFile *qemu_fopen_bdrv(BlockDriverState *bs, int64_t offset, int is_writable)
+static QEMUFile *qemu_fopen_bdrv(BlockDriverState *bs, int64_t offset, int is_writable)
 {
     QEMUFile *f;
 
@@ -5574,7 +5590,7 @@ int register_savevm(const char *idstr,
 #define QEMU_VM_FILE_MAGIC   0x5145564d
 #define QEMU_VM_FILE_VERSION 0x00000002
 
-int qemu_savevm_state(QEMUFile *f)
+static int qemu_savevm_state(QEMUFile *f)
 {
     SaveStateEntry *se;
     int len, ret;
@@ -5597,7 +5613,6 @@ int qemu_savevm_state(QEMUFile *f)
         /* record size: filled later */
         len_pos = qemu_ftell(f);
         qemu_put_be32(f, 0);
-
         se->save_state(f, se->opaque);
 
         /* fill record size */
@@ -5628,7 +5643,7 @@ static SaveStateEntry *find_se(const char *idstr, int instance_id)
     return NULL;
 }
 
-int qemu_loadvm_state(QEMUFile *f)
+static int qemu_loadvm_state(QEMUFile *f)
 {
     SaveStateEntry *se;
     int len, ret, instance_id, record_len, version_id;
@@ -6857,7 +6872,7 @@ int qemu_register_machine(QEMUMachine *m)
     return 0;
 }
 
-QEMUMachine *find_machine(const char *name)
+static QEMUMachine *find_machine(const char *name)
 {
     QEMUMachine *m;
 
@@ -6871,7 +6886,7 @@ QEMUMachine *find_machine(const char *name)
 /***********************************************************/
 /* main execution loop */
 
-void gui_update(void *opaque)
+static void gui_update(void *opaque)
 {
     DisplayState *ds = opaque;
     ds->dpy_refresh(ds);
@@ -7155,7 +7170,7 @@ void main_loop_wait(int timeout)
 
 static CPUState *cur_cpu;
 
-int main_loop(void)
+static int main_loop(void)
 {
     int ret, timeout;
 #ifdef CONFIG_PROFILER
@@ -7619,7 +7634,7 @@ static void read_passwords(void)
 }
 
 /* XXX: currently we cannot use simultaneously different CPUs */
-void register_machines(void)
+static void register_machines(void)
 {
 #if defined(TARGET_I386)
     qemu_register_machine(&pc_machine);
@@ -7656,6 +7671,7 @@ void register_machines(void)
     qemu_register_machine(&palmte_machine);
     qemu_register_machine(&lm3s811evb_machine);
     qemu_register_machine(&lm3s6965evb_machine);
+    qemu_register_machine(&connex_machine);
 #elif defined(TARGET_SH4)
     qemu_register_machine(&shix_machine);
     qemu_register_machine(&r2d_machine);
@@ -8490,20 +8506,21 @@ int main(int argc, char **argv)
         kqemu_allowed = 0;
 #endif
     linux_boot = (kernel_filename != NULL);
-    net_boot = (boot_devices_bitmap >> ('n' - 'a')) && 0xF;
-    
+    net_boot = (boot_devices_bitmap >> ('n' - 'a')) & 0xF;
+
     /* XXX: this should not be: some embedded targets just have flash */
     if (!linux_boot && net_boot == 0 &&
-        hd_filename[0] == '\0' &&
-        (cdrom_index >= 0 && hd_filename[cdrom_index] == '\0') &&
-        fd_filename[0] == '\0')
+        hd_filename[0] == NULL &&
+        (cdrom_index >= 0 && hd_filename[cdrom_index] == NULL) &&
+        fd_filename[0] == NULL &&
+        pflash_filename[0] == NULL)
         help(1);
 
     /* boot to floppy or the default cd if no hard disk defined yet */
     if (!boot_devices[0]) {
-        if (hd_filename[0] != '\0')
+        if (hd_filename[0] != NULL)
             boot_devices = "c";
-        else if (fd_filename[0] != '\0')
+        else if (fd_filename[0] != NULL)
             boot_devices = "a";
         else
             boot_devices = "d";
@@ -8694,6 +8711,8 @@ int main(int argc, char **argv)
         sdl_display_init(ds, full_screen, no_frame);
 #elif defined(CONFIG_COCOA)
         cocoa_display_init(ds, full_screen);
+#else
+        dumb_display_init(ds);
 #endif
     }
 
@@ -8749,8 +8768,7 @@ int main(int argc, char **argv)
 
     local_piconet = qemu_mallocz(sizeof(struct bt_piconet_s));
 
-    machine->init(ram_size, vga_ram_size, boot_devices,
-                  ds, fd_filename, snapshot,
+    machine->init(ram_size, vga_ram_size, boot_devices, ds,
                   kernel_filename, kernel_cmdline, initrd_filename, cpu_model);
 
     /* init USB devices */

@@ -23,7 +23,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * http://www.gnu.org/copyleft/gpl.html
  */
-#include "vl.h"
+
+#include "qemu-common.h"
+#include "qemu-char.h"
+#include "qemu-timer.h"
 
 #include <math.h>
 

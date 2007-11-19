@@ -6,7 +6,10 @@
  *
  * This code is licenced under the GNU GPL v2.
  */
-#include "vl.h"
+
+#include "s3c.h"
+#include "hw.h"
+#include "console.h"
 
 typedef void (*s3c_drawfn_t)(uint32_t *, uint8_t *, const uint8_t *, int, int);
 

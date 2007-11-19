@@ -18,7 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#include "vl.h"
+#include "hw.h"
+#include "audio/audio.h"
+#include "sysemu.h"
+#include "console.h"
+#include "omap.h"
+#include "boards.h"
+#include "arm-misc.h"
 
 static uint32_t static_readb(void *opaque, target_phys_addr_t offset)
 {
@@ -179,7 +185,6 @@ static void palmte_gpio_setup(struct omap_mpu_state_s *cpu)
 
 static void palmte_init(int ram_size, int vga_ram_size,
                 const char *boot_device, DisplayState *ds,
-                const char **fd_filename, int snapshot,
                 const char *kernel_filename, const char *kernel_cmdline,
                 const char *initrd_filename, const char *cpu_model)
 {

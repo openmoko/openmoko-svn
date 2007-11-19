@@ -22,7 +22,13 @@
  * THE SOFTWARE.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "mips.h"
+#include "isa.h"
+#include "pc.h"
+#include "fdc.h"
+#include "sysemu.h"
+#include "boards.h"
 
 #ifdef TARGET_WORDS_BIGENDIAN
 #define BIOS_FILENAME "mips_bios.bin"
@@ -54,8 +60,8 @@ static void main_cpu_reset(void *opaque)
 }
 
 static
-void mips_pica61_init (int ram_size, int vga_ram_size, const char *boot_device,
-                    DisplayState *ds, const char **fd_filename, int snapshot,
+void mips_pica61_init (int ram_size, int vga_ram_size,
+                       const char *boot_device, DisplayState *ds,
                     const char *kernel_filename, const char *kernel_cmdline,
                     const char *initrd_filename, const char *cpu_model)
 {

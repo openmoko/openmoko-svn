@@ -19,7 +19,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA  02110-1301  USA
  */
-#include "vl.h"
+
+#include "qemu-common.h"
+#include "qemu-timer.h"
+#include "usb.h"
+#include "bt.h"
 
 void bt_submit_lmp(struct bt_device_s *bt, int length, uint8_t *data)
 {

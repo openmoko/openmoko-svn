@@ -22,7 +22,10 @@
  * THE SOFTWARE.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "pc.h"
+#include "pci.h"
+
 typedef uint32_t pci_addr_t;
 #include "pci_host.h"
 
@@ -311,7 +314,7 @@ static int piix_load(QEMUFile* f, void *opaque, int version_id)
     return pci_device_load(d, f);
 }
 
-int piix_init(PCIBus *bus, int devfn)
+static int piix_init(PCIBus *bus, int devfn)
 {
     PCIDevice *d;
     uint8_t *pci_conf;

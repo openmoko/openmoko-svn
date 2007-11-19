@@ -491,6 +491,11 @@ struct i2s_codec_s {
     qemu_irq rx_swallow;
     qemu_irq tx_start;
 
+    int tx_rate;
+    int cts;
+    int rx_rate;
+    int rts;
+
     struct i2s_fifo_s {
         uint8_t *fifo;
         int len;
@@ -513,6 +518,7 @@ struct omap_lcd_panel_s *omap_lcdc_init(target_phys_addr_t base, qemu_irq irq,
 /* omap_mmc.c */
 struct omap_mmc_s;
 struct omap_mmc_s *omap_mmc_init(target_phys_addr_t base,
+                BlockDriverState *bd,
                 qemu_irq irq, qemu_irq dma[], omap_clk clk);
 void omap_mmc_reset(struct omap_mmc_s *s);
 void omap_mmc_handlers(struct omap_mmc_s *s, qemu_irq ro, qemu_irq cover);
@@ -661,6 +667,9 @@ struct omap_mpu_state_s {
 #  error TARGET_PHYS_ADDR_BITS undefined
 # endif
 
+uint32_t omap_badwidth_read8(void *opaque, target_phys_addr_t addr);
+void omap_badwidth_write8(void *opaque, target_phys_addr_t addr,
+                uint32_t value);
 uint32_t omap_badwidth_read16(void *opaque, target_phys_addr_t addr);
 void omap_badwidth_write16(void *opaque, target_phys_addr_t addr,
                 uint32_t value);
@@ -787,5 +796,11 @@ inline static int debug_register_io_memory(int io_index,
 }
 #  define cpu_register_io_memory	debug_register_io_memory
 # endif
+
+/* Not really omap specific, but is the only thing that uses the
+   uwire interface.  */
+/* tsc210x.c */
+struct uwire_slave_s *tsc2102_init(qemu_irq pint, AudioState *audio);
+struct i2s_codec_s *tsc210x_codec(struct uwire_slave_s *chip);
 
 #endif /* hw_omap_h */

@@ -7,8 +7,9 @@
  * This code is licenced under the GPL.
  */
 
-#include "vl.h"
-#include "arm_pic.h"
+#include "hw.h"
+#include "primecell.h"
+#include "arm-misc.h"
 
 /* The number of virtual priority levels.  16 user vectors plus the
    unvectored IRQ.  Chained interrupts would require an additional level
@@ -215,7 +216,7 @@ static CPUWriteMemoryFunc *pl190_writefn[] = {
    pl190_write
 };
 
-void pl190_reset(pl190_state *s)
+static void pl190_reset(pl190_state *s)
 {
   int i;
 

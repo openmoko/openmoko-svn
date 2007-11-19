@@ -6,7 +6,11 @@
  *
  * This code is licenced under the GNU GPL v2.
  */
-#include "vl.h"
+
+#include "s3c.h"
+#include "qemu-timer.h"
+#include "hw.h"
+#include "sysemu.h"
 
 struct s3c_rtc_state_s {
     target_phys_addr_t base;

@@ -106,8 +106,8 @@ void do_drotr (void)
     target_ulong tmp;
 
     if (T1) {
-       tmp = T0 << (0x40 - T1);
-       T0 = (T0 >> T1) | tmp;
+        tmp = T0 << (0x40 - T1);
+        T0 = (T0 >> T1) | tmp;
     }
 }
 
@@ -115,10 +115,8 @@ void do_drotr32 (void)
 {
     target_ulong tmp;
 
-    if (T1) {
-       tmp = T0 << (0x40 - (32 + T1));
-       T0 = (T0 >> (32 + T1)) | tmp;
-    }
+    tmp = T0 << (0x40 - (32 + T1));
+    T0 = (T0 >> (32 + T1)) | tmp;
 }
 
 void do_dsllv (void)
@@ -142,10 +140,10 @@ void do_drotrv (void)
 
     T0 &= 0x3F;
     if (T0) {
-       tmp = T1 << (0x40 - T0);
-       T0 = (T1 >> T0) | tmp;
+        tmp = T1 << (0x40 - T0);
+        T0 = (T1 >> T0) | tmp;
     } else
-       T0 = T1;
+        T0 = T1;
 }
 
 void do_dclo (void)
@@ -626,12 +624,10 @@ void do_unassigned_access(target_phys_addr_t addr, int is_write, int is_exec,
 
 /* Complex FPU operations which may need stack space. */
 
-#define FLOAT_SIGN32 (1 << 31)
-#define FLOAT_SIGN64 (1ULL << 63)
-#define FLOAT_ONE32 (0x3f8 << 20)
-#define FLOAT_ONE64 (0x3ffULL << 52)
-#define FLOAT_TWO32 (1 << 30)
-#define FLOAT_TWO64 (1ULL << 62)
+#define FLOAT_ONE32 make_float32(0x3f8 << 20)
+#define FLOAT_ONE64 make_float64(0x3ffULL << 52)
+#define FLOAT_TWO32 make_float32(1 << 30)
+#define FLOAT_TWO64 make_float64(1ULL << 62)
 #define FLOAT_QNAN32 0x7fbfffff
 #define FLOAT_QNAN64 0x7ff7ffffffffffffULL
 #define FLOAT_SNAN32 0x7fffffff
@@ -1054,7 +1050,7 @@ FLOAT_OP(name, d)         \
     FDT2 = float64_ ## name (FDT0, FDT1, &env->fpu->fp_status);    \
     update_fcr31();                                                \
     if (GET_FP_CAUSE(env->fpu->fcr31) & FP_INVALID)                \
-        FDT2 = FLOAT_QNAN64;                                       \
+        DT2 = FLOAT_QNAN64;                                        \
 }                         \
 FLOAT_OP(name, s)         \
 {                         \
@@ -1062,7 +1058,7 @@ FLOAT_OP(name, s)         \
     FST2 = float32_ ## name (FST0, FST1, &env->fpu->fp_status);    \
     update_fcr31();                                                \
     if (GET_FP_CAUSE(env->fpu->fcr31) & FP_INVALID)                \
-        FST2 = FLOAT_QNAN32;                                       \
+        WT2 = FLOAT_QNAN32;                                        \
 }                         \
 FLOAT_OP(name, ps)        \
 {                         \
@@ -1071,8 +1067,8 @@ FLOAT_OP(name, ps)        \
     FSTH2 = float32_ ## name (FSTH0, FSTH1, &env->fpu->fp_status); \
     update_fcr31();       \
     if (GET_FP_CAUSE(env->fpu->fcr31) & FP_INVALID) {              \
-        FST2 = FLOAT_QNAN32;                                       \
-        FSTH2 = FLOAT_QNAN32;                                      \
+        WT2 = FLOAT_QNAN32;                                        \
+        WTH2 = FLOAT_QNAN32;                                       \
     }                     \
 }
 FLOAT_BINOP(add)
@@ -1086,14 +1082,14 @@ FLOAT_OP(recip2, d)
 {
     set_float_exception_flags(0, &env->fpu->fp_status);
     FDT2 = float64_mul(FDT0, FDT2, &env->fpu->fp_status);
-    FDT2 = float64_sub(FDT2, FLOAT_ONE64, &env->fpu->fp_status) ^ FLOAT_SIGN64;
+    FDT2 = float64_chs(float64_sub(FDT2, FLOAT_ONE64, &env->fpu->fp_status));
     update_fcr31();
 }
 FLOAT_OP(recip2, s)
 {
     set_float_exception_flags(0, &env->fpu->fp_status);
     FST2 = float32_mul(FST0, FST2, &env->fpu->fp_status);
-    FST2 = float32_sub(FST2, FLOAT_ONE32, &env->fpu->fp_status) ^ FLOAT_SIGN32;
+    FST2 = float32_chs(float32_sub(FST2, FLOAT_ONE32, &env->fpu->fp_status));
     update_fcr31();
 }
 FLOAT_OP(recip2, ps)
@@ -1101,8 +1097,8 @@ FLOAT_OP(recip2, ps)
     set_float_exception_flags(0, &env->fpu->fp_status);
     FST2 = float32_mul(FST0, FST2, &env->fpu->fp_status);
     FSTH2 = float32_mul(FSTH0, FSTH2, &env->fpu->fp_status);
-    FST2 = float32_sub(FST2, FLOAT_ONE32, &env->fpu->fp_status) ^ FLOAT_SIGN32;
-    FSTH2 = float32_sub(FSTH2, FLOAT_ONE32, &env->fpu->fp_status) ^ FLOAT_SIGN32;
+    FST2 = float32_chs(float32_sub(FST2, FLOAT_ONE32, &env->fpu->fp_status));
+    FSTH2 = float32_chs(float32_sub(FSTH2, FLOAT_ONE32, &env->fpu->fp_status));
     update_fcr31();
 }
 
@@ -1111,7 +1107,7 @@ FLOAT_OP(rsqrt2, d)
     set_float_exception_flags(0, &env->fpu->fp_status);
     FDT2 = float64_mul(FDT0, FDT2, &env->fpu->fp_status);
     FDT2 = float64_sub(FDT2, FLOAT_ONE64, &env->fpu->fp_status);
-    FDT2 = float64_div(FDT2, FLOAT_TWO64, &env->fpu->fp_status) ^ FLOAT_SIGN64;
+    FDT2 = float64_chs(float64_div(FDT2, FLOAT_TWO64, &env->fpu->fp_status));
     update_fcr31();
 }
 FLOAT_OP(rsqrt2, s)
@@ -1119,7 +1115,7 @@ FLOAT_OP(rsqrt2, s)
     set_float_exception_flags(0, &env->fpu->fp_status);
     FST2 = float32_mul(FST0, FST2, &env->fpu->fp_status);
     FST2 = float32_sub(FST2, FLOAT_ONE32, &env->fpu->fp_status);
-    FST2 = float32_div(FST2, FLOAT_TWO32, &env->fpu->fp_status) ^ FLOAT_SIGN32;
+    FST2 = float32_chs(float32_div(FST2, FLOAT_TWO32, &env->fpu->fp_status));
     update_fcr31();
 }
 FLOAT_OP(rsqrt2, ps)
@@ -1129,8 +1125,8 @@ FLOAT_OP(rsqrt2, ps)
     FSTH2 = float32_mul(FSTH0, FSTH2, &env->fpu->fp_status);
     FST2 = float32_sub(FST2, FLOAT_ONE32, &env->fpu->fp_status);
     FSTH2 = float32_sub(FSTH2, FLOAT_ONE32, &env->fpu->fp_status);
-    FST2 = float32_div(FST2, FLOAT_TWO32, &env->fpu->fp_status) ^ FLOAT_SIGN32;
-    FSTH2 = float32_div(FSTH2, FLOAT_TWO32, &env->fpu->fp_status) ^ FLOAT_SIGN32;
+    FST2 = float32_chs(float32_div(FST2, FLOAT_TWO32, &env->fpu->fp_status));
+    FSTH2 = float32_chs(float32_div(FSTH2, FLOAT_TWO32, &env->fpu->fp_status));
     update_fcr31();
 }
 
@@ -1164,8 +1160,8 @@ void do_cmp_d_ ## op (long cc)                 \
 void do_cmpabs_d_ ## op (long cc)              \
 {                                              \
     int c;                                     \
-    FDT0 &= ~FLOAT_SIGN64;                     \
-    FDT1 &= ~FLOAT_SIGN64;                     \
+    FDT0 = float64_chs(FDT0);                  \
+    FDT1 = float64_chs(FDT1);                  \
     c = cond;                                  \
     update_fcr31();                            \
     if (c)                                     \
@@ -1222,8 +1218,8 @@ void do_cmp_s_ ## op (long cc)                 \
 void do_cmpabs_s_ ## op (long cc)              \
 {                                              \
     int c;                                     \
-    FST0 &= ~FLOAT_SIGN32;                     \
-    FST1 &= ~FLOAT_SIGN32;                     \
+    FST0 = float32_abs(FST0);                  \
+    FST1 = float32_abs(FST1);                  \
     c = cond;                                  \
     update_fcr31();                            \
     if (c)                                     \
@@ -1285,10 +1281,10 @@ void do_cmp_ps_ ## op (long cc)                \
 void do_cmpabs_ps_ ## op (long cc)             \
 {                                              \
     int cl, ch;                                \
-    FST0 &= ~FLOAT_SIGN32;                     \
-    FSTH0 &= ~FLOAT_SIGN32;                    \
-    FST1 &= ~FLOAT_SIGN32;                     \
-    FSTH1 &= ~FLOAT_SIGN32;                    \
+    FST0 = float32_abs(FST0);                  \
+    FSTH0 = float32_abs(FSTH0);                \
+    FST1 = float32_abs(FST1);                  \
+    FSTH1 = float32_abs(FSTH1);                \
     cl = condl;                                \
     ch = condh;                                \
     update_fcr31();                            \

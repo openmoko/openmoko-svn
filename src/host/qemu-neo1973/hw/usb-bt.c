@@ -19,7 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#include "vl.h"
+
+#include "qemu-common.h"
+#include "usb.h"
+#include "bt.h"
 
 struct USBBtState {
     int altsetting;

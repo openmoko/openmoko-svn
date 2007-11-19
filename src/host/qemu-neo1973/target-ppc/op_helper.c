@@ -33,11 +33,9 @@
 #define MEMSUFFIX _kernel
 #include "op_helper.h"
 #include "op_helper_mem.h"
-#if defined(TARGET_PPC64H)
 #define MEMSUFFIX _hypv
 #include "op_helper.h"
 #include "op_helper_mem.h"
-#endif
 #endif
 
 //#define DEBUG_OP
@@ -1427,7 +1425,7 @@ void cpu_dump_rfi (target_ulong RA, target_ulong msr);
 
 void do_store_msr (void)
 {
-    T0 = hreg_store_msr(env, T0);
+    T0 = hreg_store_msr(env, T0, 0);
     if (T0 != 0) {
         env->interrupt_request |= CPU_INTERRUPT_EXITTB;
         do_raise_exception(T0);
@@ -1453,7 +1451,7 @@ static always_inline void __do_rfi (target_ulong nip, target_ulong msr,
 #endif
     /* XXX: beware: this is false if VLE is supported */
     env->nip = nip & ~((target_ulong)0x00000003);
-    hreg_store_msr(env, msr);
+    hreg_store_msr(env, msr, 1);
 #if defined (DEBUG_OP)
     cpu_dump_rfi(env->nip, env->msr);
 #endif
@@ -1475,8 +1473,7 @@ void do_rfid (void)
     __do_rfi(env->spr[SPR_SRR0], env->spr[SPR_SRR1],
              ~((target_ulong)0xFFFF0000), 0);
 }
-#endif
-#if defined(TARGET_PPC64H)
+
 void do_hrfid (void)
 {
     __do_rfi(env->spr[SPR_HSRR0], env->spr[SPR_HSRR1],

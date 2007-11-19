@@ -706,7 +706,7 @@ static always_inline int find_pte (CPUState *env, mmu_ctx_t *ctx,
                                    int h, int rw, int type)
 {
 #if defined(TARGET_PPC64)
-    if (env->mmu_model == POWERPC_MMU_64B)
+    if (env->mmu_model & POWERPC_MMU_64)
         return find_pte64(ctx, h, rw, type);
 #endif
 
@@ -916,7 +916,7 @@ static always_inline int get_segment (CPUState *env, mmu_ctx_t *ctx,
 
     pr = msr_pr;
 #if defined(TARGET_PPC64)
-    if (env->mmu_model == POWERPC_MMU_64B) {
+    if (env->mmu_model & POWERPC_MMU_64) {
 #if defined (DEBUG_MMU)
         if (loglevel != 0) {
             fprintf(logfile, "Check SLBs\n");
@@ -973,7 +973,7 @@ static always_inline int get_segment (CPUState *env, mmu_ctx_t *ctx,
             sdr = env->sdr1;
             pgidx = (eaddr & page_mask) >> TARGET_PAGE_BITS;
 #if defined(TARGET_PPC64)
-            if (env->mmu_model == POWERPC_MMU_64B) {
+            if (env->mmu_model & POWERPC_MMU_64) {
                 htab_mask = 0x0FFFFFFF >> (28 - (sdr & 0x1F));
                 /* XXX: this is false for 1 TB segments */
                 hash = ((vsid ^ pgidx) << vsid_sh) & vsid_mask;
@@ -1002,7 +1002,7 @@ static always_inline int get_segment (CPUState *env, mmu_ctx_t *ctx,
 #endif
             ctx->pg_addr[1] = get_pgaddr(sdr, sdr_sh, hash, mask);
 #if defined(TARGET_PPC64)
-            if (env->mmu_model == POWERPC_MMU_64B) {
+            if (env->mmu_model & POWERPC_MMU_64) {
                 /* Only 5 bits of the page index are used in the AVPN */
                 ctx->ptem = (vsid << 12) | ((pgidx >> 4) & 0x0F80);
             } else
@@ -1357,11 +1357,12 @@ static always_inline int check_physical (CPUState *env, mmu_ctx_t *ctx,
     case POWERPC_MMU_SOFT_6xx:
     case POWERPC_MMU_SOFT_74xx:
     case POWERPC_MMU_SOFT_4xx:
-    case POWERPC_MMU_REAL_4xx:
+    case POWERPC_MMU_REAL:
     case POWERPC_MMU_BOOKE:
         ctx->prot |= PAGE_WRITE;
         break;
 #if defined(TARGET_PPC64)
+    case POWERPC_MMU_620:
     case POWERPC_MMU_64B:
         /* Real address are 60 bits long */
         ctx->raddr &= 0x0FFFFFFFFFFFFFFFULL;
@@ -1391,6 +1392,10 @@ static always_inline int check_physical (CPUState *env, mmu_ctx_t *ctx,
                 ctx->prot |= PAGE_WRITE;
             }
         }
+        break;
+    case POWERPC_MMU_MPC8xx:
+        /* XXX: TODO */
+        cpu_abort(env, "MPC8xx MMU model is not implemented\n");
         break;
     case POWERPC_MMU_BOOKE_FSL:
         /* XXX: TODO */
@@ -1426,6 +1431,7 @@ int get_physical_address (CPUState *env, mmu_ctx_t *ctx, target_ulong eaddr,
         case POWERPC_MMU_SOFT_6xx:
         case POWERPC_MMU_SOFT_74xx:
 #if defined(TARGET_PPC64)
+        case POWERPC_MMU_620:
         case POWERPC_MMU_64B:
 #endif
             /* Try to find a BAT */
@@ -1445,12 +1451,16 @@ int get_physical_address (CPUState *env, mmu_ctx_t *ctx, target_ulong eaddr,
             ret = mmubooke_get_physical_address(env, ctx, eaddr,
                                                 rw, access_type);
             break;
+        case POWERPC_MMU_MPC8xx:
+            /* XXX: TODO */
+            cpu_abort(env, "MPC8xx MMU model is not implemented\n");
+            break;
         case POWERPC_MMU_BOOKE_FSL:
             /* XXX: TODO */
             cpu_abort(env, "BookE FSL MMU model not implemented\n");
             return -1;
-        case POWERPC_MMU_REAL_4xx:
-            cpu_abort(env, "PowerPC 401 does not do any translation\n");
+        case POWERPC_MMU_REAL:
+            cpu_abort(env, "PowerPC in real mode do not do any translation\n");
             return -1;
         default:
             cpu_abort(env, "Unknown or invalid MMU model\n");
@@ -1530,6 +1540,7 @@ int cpu_ppc_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
                 case POWERPC_MMU_32B:
                 case POWERPC_MMU_601:
 #if defined(TARGET_PPC64)
+                case POWERPC_MMU_620:
                 case POWERPC_MMU_64B:
 #endif
                     env->exception_index = POWERPC_EXCP_ISI;
@@ -1537,15 +1548,19 @@ int cpu_ppc_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
                     break;
                 case POWERPC_MMU_BOOKE:
                     /* XXX: TODO */
-                    cpu_abort(env, "MMU model not implemented\n");
+                    cpu_abort(env, "BookE MMU model is not implemented\n");
                     return -1;
                 case POWERPC_MMU_BOOKE_FSL:
                     /* XXX: TODO */
-                    cpu_abort(env, "MMU model not implemented\n");
+                    cpu_abort(env, "BookE FSL MMU model is not implemented\n");
                     return -1;
-                case POWERPC_MMU_REAL_4xx:
-                    cpu_abort(env, "PowerPC 401 should never raise any MMU "
-                              "exceptions\n");
+                case POWERPC_MMU_MPC8xx:
+                    /* XXX: TODO */
+                    cpu_abort(env, "MPC8xx MMU model is not implemented\n");
+                    break;
+                case POWERPC_MMU_REAL:
+                    cpu_abort(env, "PowerPC in real mode should never raise "
+                              "any MMU exceptions\n");
                     return -1;
                 default:
                     cpu_abort(env, "Unknown or invalid MMU model\n");
@@ -1571,8 +1586,14 @@ int cpu_ppc_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
 #if defined(TARGET_PPC64)
             case -5:
                 /* No match in segment table */
-                env->exception_index = POWERPC_EXCP_ISEG;
-                env->error_code = 0;
+                if (env->mmu_model == POWERPC_MMU_620) {
+                    env->exception_index = POWERPC_EXCP_ISI;
+                    /* XXX: this might be incorrect */
+                    env->error_code = 0x40000000;
+                } else {
+                    env->exception_index = POWERPC_EXCP_ISEG;
+                    env->error_code = 0;
+                }
                 break;
 #endif
             }
@@ -1622,6 +1643,7 @@ int cpu_ppc_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
                 case POWERPC_MMU_32B:
                 case POWERPC_MMU_601:
 #if defined(TARGET_PPC64)
+                case POWERPC_MMU_620:
                 case POWERPC_MMU_64B:
 #endif
                     env->exception_index = POWERPC_EXCP_DSI;
@@ -1632,17 +1654,21 @@ int cpu_ppc_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
                     else
                         env->spr[SPR_DSISR] = 0x40000000;
                     break;
+                case POWERPC_MMU_MPC8xx:
+                    /* XXX: TODO */
+                    cpu_abort(env, "MPC8xx MMU model is not implemented\n");
+                    break;
                 case POWERPC_MMU_BOOKE:
                     /* XXX: TODO */
-                    cpu_abort(env, "MMU model not implemented\n");
+                    cpu_abort(env, "BookE MMU model is not implemented\n");
                     return -1;
                 case POWERPC_MMU_BOOKE_FSL:
                     /* XXX: TODO */
-                    cpu_abort(env, "MMU model not implemented\n");
+                    cpu_abort(env, "BookE FSL MMU model is not implemented\n");
                     return -1;
-                case POWERPC_MMU_REAL_4xx:
-                    cpu_abort(env, "PowerPC 401 should never raise any MMU "
-                              "exceptions\n");
+                case POWERPC_MMU_REAL:
+                    cpu_abort(env, "PowerPC in real mode should never raise "
+                              "any MMU exceptions\n");
                     return -1;
                 default:
                     cpu_abort(env, "Unknown or invalid MMU model\n");
@@ -1700,9 +1726,20 @@ int cpu_ppc_handle_mmu_fault (CPUState *env, target_ulong address, int rw,
 #if defined(TARGET_PPC64)
             case -5:
                 /* No match in segment table */
-                env->exception_index = POWERPC_EXCP_DSEG;
-                env->error_code = 0;
-                env->spr[SPR_DAR] = address;
+                if (env->mmu_model == POWERPC_MMU_620) {
+                    env->exception_index = POWERPC_EXCP_DSI;
+                    env->error_code = 0;
+                    env->spr[SPR_DAR] = address;
+                    /* XXX: this might be incorrect */
+                    if (rw == 1)
+                        env->spr[SPR_DSISR] = 0x42000000;
+                    else
+                        env->spr[SPR_DSISR] = 0x40000000;
+                } else {
+                    env->exception_index = POWERPC_EXCP_DSEG;
+                    env->error_code = 0;
+                    env->spr[SPR_DAR] = address;
+                }
                 break;
 #endif
             }
@@ -1921,20 +1958,25 @@ void ppc_tlb_invalidate_all (CPUPPCState *env)
     case POWERPC_MMU_SOFT_4xx_Z:
         ppc4xx_tlb_invalidate_all(env);
         break;
-    case POWERPC_MMU_REAL_4xx:
+    case POWERPC_MMU_REAL:
         cpu_abort(env, "No TLB for PowerPC 4xx in real mode\n");
+        break;
+    case POWERPC_MMU_MPC8xx:
+        /* XXX: TODO */
+        cpu_abort(env, "MPC8xx MMU model is not implemented\n");
         break;
     case POWERPC_MMU_BOOKE:
         /* XXX: TODO */
-        cpu_abort(env, "MMU model not implemented\n");
+        cpu_abort(env, "BookE MMU model is not implemented\n");
         break;
     case POWERPC_MMU_BOOKE_FSL:
         /* XXX: TODO */
-        cpu_abort(env, "MMU model not implemented\n");
+        cpu_abort(env, "BookE MMU model is not implemented\n");
         break;
     case POWERPC_MMU_32B:
     case POWERPC_MMU_601:
 #if defined(TARGET_PPC64)
+    case POWERPC_MMU_620:
     case POWERPC_MMU_64B:
 #endif /* defined(TARGET_PPC64) */
         tlb_flush(env, 1);
@@ -1961,16 +2003,20 @@ void ppc_tlb_invalidate_one (CPUPPCState *env, target_ulong addr)
     case POWERPC_MMU_SOFT_4xx_Z:
         ppc4xx_tlb_invalidate_virt(env, addr, env->spr[SPR_40x_PID]);
         break;
-    case POWERPC_MMU_REAL_4xx:
+    case POWERPC_MMU_REAL:
         cpu_abort(env, "No TLB for PowerPC 4xx in real mode\n");
+        break;
+    case POWERPC_MMU_MPC8xx:
+        /* XXX: TODO */
+        cpu_abort(env, "MPC8xx MMU model is not implemented\n");
         break;
     case POWERPC_MMU_BOOKE:
         /* XXX: TODO */
-        cpu_abort(env, "MMU model not implemented\n");
+        cpu_abort(env, "BookE MMU model is not implemented\n");
         break;
     case POWERPC_MMU_BOOKE_FSL:
         /* XXX: TODO */
-        cpu_abort(env, "MMU model not implemented\n");
+        cpu_abort(env, "BookE FSL MMU model is not implemented\n");
         break;
     case POWERPC_MMU_32B:
     case POWERPC_MMU_601:
@@ -1997,6 +2043,7 @@ void ppc_tlb_invalidate_one (CPUPPCState *env, target_ulong addr)
         tlb_flush_page(env, addr | (0xF << 28));
         break;
 #if defined(TARGET_PPC64)
+    case POWERPC_MMU_620:
     case POWERPC_MMU_64B:
         /* tlbie invalidate TLBs for all segments */
         /* XXX: given the fact that there are too many segments to invalidate,
@@ -2100,7 +2147,7 @@ void ppc_store_xer (CPUPPCState *env, target_ulong value)
 /* GDBstub can read and write MSR... */
 void ppc_store_msr (CPUPPCState *env, target_ulong value)
 {
-    hreg_store_msr(env, value);
+    hreg_store_msr(env, value, 0);
 }
 
 /*****************************************************************************/
@@ -2134,12 +2181,17 @@ static always_inline void powerpc_excp (CPUState *env,
 {
     target_ulong msr, new_msr, vector;
     int srr0, srr1, asrr0, asrr1;
-#if defined(TARGET_PPC64H)
     int lpes0, lpes1, lev;
 
-    lpes0 = (env->spr[SPR_LPCR] >> 1) & 1;
-    lpes1 = (env->spr[SPR_LPCR] >> 2) & 1;
-#endif
+    if (0) {
+        /* XXX: find a suitable condition to enable the hypervisor mode */
+        lpes0 = (env->spr[SPR_LPCR] >> 1) & 1;
+        lpes1 = (env->spr[SPR_LPCR] >> 2) & 1;
+    } else {
+        /* Those values ensure we won't enter the hypervisor mode */
+        lpes0 = 0;
+        lpes1 = 1;
+    }
 
     if (loglevel & CPU_LOG_INT) {
         fprintf(logfile, "Raise exception at 0x" ADDRX " => 0x%08x (%02x)\n",
@@ -2190,9 +2242,10 @@ static always_inline void powerpc_excp (CPUState *env,
         }
         new_msr &= ~((target_ulong)1 << MSR_RI);
         new_msr &= ~((target_ulong)1 << MSR_ME);
-#if defined(TARGET_PPC64H)
-        new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+        if (0) {
+            /* XXX: find a suitable condition to enable the hypervisor mode */
+            new_msr |= (target_ulong)MSR_HVB;
+        }
         /* XXX: should also have something loaded in DAR / DSISR */
         switch (excp_model) {
         case POWERPC_EXCP_40x:
@@ -2217,10 +2270,8 @@ static always_inline void powerpc_excp (CPUState *env,
         }
 #endif
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_ISI:       /* Instruction storage exception            */
 #if defined (DEBUG_EXCEPTIONS)
@@ -2230,25 +2281,19 @@ static always_inline void powerpc_excp (CPUState *env,
         }
 #endif
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         msr |= env->error_code;
         goto store_next;
     case POWERPC_EXCP_EXTERNAL:  /* External input                           */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes0 == 1)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_ALIGN:     /* Alignment exception                      */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         /* XXX: this is false */
         /* Get rS/rD and rA from faulting opcode */
         env->spr[SPR_DSISR] |= (ldl_code((env->nip - 4)) & 0x03FF0000) >> 16;
@@ -2267,10 +2312,8 @@ static always_inline void powerpc_excp (CPUState *env,
                 return;
             }
             new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
             if (lpes1 == 0)
-                new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+                new_msr |= (target_ulong)MSR_HVB;
             msr |= 0x00100000;
             if (msr_fe0 == msr_fe1)
                 goto store_next;
@@ -2284,26 +2327,20 @@ static always_inline void powerpc_excp (CPUState *env,
             }
 #endif
             new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
             if (lpes1 == 0)
-                new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+                new_msr |= (target_ulong)MSR_HVB;
             msr |= 0x00080000;
             break;
         case POWERPC_EXCP_PRIV:
             new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
             if (lpes1 == 0)
-                new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+                new_msr |= (target_ulong)MSR_HVB;
             msr |= 0x00040000;
             break;
         case POWERPC_EXCP_TRAP:
             new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
             if (lpes1 == 0)
-                new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+                new_msr |= (target_ulong)MSR_HVB;
             msr |= 0x00020000;
             break;
         default:
@@ -2315,10 +2352,8 @@ static always_inline void powerpc_excp (CPUState *env,
         goto store_current;
     case POWERPC_EXCP_FPU:       /* Floating-point unavailable exception     */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_current;
     case POWERPC_EXCP_SYSCALL:   /* System call exception                    */
         /* NOTE: this is a temporary hack to support graphics OSI
@@ -2336,21 +2371,17 @@ static always_inline void powerpc_excp (CPUState *env,
             dump_syscall(env);
         }
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         lev = env->error_code;
         if (lev == 1 || (lpes0 == 0 && lpes1 == 0))
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_APU:       /* Auxiliary processor unavailable          */
         new_msr &= ~((target_ulong)1 << MSR_RI);
         goto store_current;
     case POWERPC_EXCP_DECR:      /* Decrementer exception                    */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_FIT:       /* Fixed-interval timer interrupt           */
         /* FIT on 4xx */
@@ -2434,68 +2465,55 @@ static always_inline void powerpc_excp (CPUState *env,
         goto store_next;
     case POWERPC_EXCP_RESET:     /* System reset exception                   */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
-        new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+        if (0) {
+            /* XXX: find a suitable condition to enable the hypervisor mode */
+            new_msr |= (target_ulong)MSR_HVB;
+        }
         goto store_next;
-#if defined(TARGET_PPC64)
     case POWERPC_EXCP_DSEG:      /* Data segment exception                   */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_ISEG:      /* Instruction segment exception            */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
-#endif /* defined(TARGET_PPC64) */
-#if defined(TARGET_PPC64H)
     case POWERPC_EXCP_HDECR:     /* Hypervisor decrementer exception         */
         srr0 = SPR_HSRR0;
         srr1 = SPR_HSRR1;
-        new_msr |= (target_ulong)1 << MSR_HV;
+        new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
-#endif
     case POWERPC_EXCP_TRACE:     /* Trace exception                          */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
-#if defined(TARGET_PPC64H)
     case POWERPC_EXCP_HDSI:      /* Hypervisor data storage exception        */
         srr0 = SPR_HSRR0;
         srr1 = SPR_HSRR1;
-        new_msr |= (target_ulong)1 << MSR_HV;
+        new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_HISI:      /* Hypervisor instruction storage exception */
         srr0 = SPR_HSRR0;
         srr1 = SPR_HSRR1;
-        new_msr |= (target_ulong)1 << MSR_HV;
+        new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_HDSEG:     /* Hypervisor data segment exception        */
         srr0 = SPR_HSRR0;
         srr1 = SPR_HSRR1;
-        new_msr |= (target_ulong)1 << MSR_HV;
+        new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
     case POWERPC_EXCP_HISEG:     /* Hypervisor instruction segment exception */
         srr0 = SPR_HSRR0;
         srr1 = SPR_HSRR1;
-        new_msr |= (target_ulong)1 << MSR_HV;
+        new_msr |= (target_ulong)MSR_HVB;
         goto store_next;
-#endif /* defined(TARGET_PPC64H) */
     case POWERPC_EXCP_VPU:       /* Vector unavailable exception             */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         goto store_current;
     case POWERPC_EXCP_PIT:       /* Programmable interval timer interrupt    */
 #if defined (DEBUG_EXCEPTIONS)
@@ -2519,10 +2537,8 @@ static always_inline void powerpc_excp (CPUState *env,
         goto store_next;
     case POWERPC_EXCP_IFTLB:     /* Instruction fetch TLB error              */
         new_msr &= ~((target_ulong)1 << MSR_RI); /* XXX: check this */
-#if defined(TARGET_PPC64H) /* XXX: check this */
-        if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+        if (lpes1 == 0) /* XXX: check this */
+            new_msr |= (target_ulong)MSR_HVB;
         switch (excp_model) {
         case POWERPC_EXCP_602:
         case POWERPC_EXCP_603:
@@ -2540,10 +2556,8 @@ static always_inline void powerpc_excp (CPUState *env,
         break;
     case POWERPC_EXCP_DLTLB:     /* Data load TLB miss                       */
         new_msr &= ~((target_ulong)1 << MSR_RI); /* XXX: check this */
-#if defined(TARGET_PPC64H) /* XXX: check this */
-        if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+        if (lpes1 == 0) /* XXX: check this */
+            new_msr |= (target_ulong)MSR_HVB;
         switch (excp_model) {
         case POWERPC_EXCP_602:
         case POWERPC_EXCP_603:
@@ -2561,10 +2575,8 @@ static always_inline void powerpc_excp (CPUState *env,
         break;
     case POWERPC_EXCP_DSTLB:     /* Data store TLB miss                      */
         new_msr &= ~((target_ulong)1 << MSR_RI); /* XXX: check this */
-#if defined(TARGET_PPC64H) /* XXX: check this */
-        if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+        if (lpes1 == 0) /* XXX: check this */
+            new_msr |= (target_ulong)MSR_HVB;
         switch (excp_model) {
         case POWERPC_EXCP_602:
         case POWERPC_EXCP_603:
@@ -2648,6 +2660,10 @@ static always_inline void powerpc_excp (CPUState *env,
         cpu_abort(env, "Floating point assist exception "
                   "is not implemented yet !\n");
         goto store_next;
+    case POWERPC_EXCP_DABR:      /* Data address breakpoint                  */
+        /* XXX: TODO */
+        cpu_abort(env, "DABR exception is not implemented yet !\n");
+        goto store_next;
     case POWERPC_EXCP_IABR:      /* Instruction address breakpoint           */
         /* XXX: TODO */
         cpu_abort(env, "IABR exception is not implemented yet !\n");
@@ -2663,10 +2679,8 @@ static always_inline void powerpc_excp (CPUState *env,
         goto store_next;
     case POWERPC_EXCP_PERFM:     /* Embedded performance monitor interrupt   */
         new_msr &= ~((target_ulong)1 << MSR_RI);
-#if defined(TARGET_PPC64H)
         if (lpes1 == 0)
-            new_msr |= (target_ulong)1 << MSR_HV;
-#endif
+            new_msr |= (target_ulong)MSR_HVB;
         /* XXX: TODO */
         cpu_abort(env,
                   "Performance counter exception is not implemented yet !\n");
@@ -2684,6 +2698,16 @@ static always_inline void powerpc_excp (CPUState *env,
         /* XXX: TODO */
         cpu_abort(env,
                   "970 maintenance exception is not implemented yet !\n");
+        goto store_next;
+    case POWERPC_EXCP_MEXTBR:    /* Maskable external breakpoint             */
+        /* XXX: TODO */
+        cpu_abort(env, "Maskable external exception "
+                  "is not implemented yet !\n");
+        goto store_next;
+    case POWERPC_EXCP_NMEXTBR:   /* Non maskable external breakpoint         */
+        /* XXX: TODO */
+        cpu_abort(env, "Non maskable external exception "
+                  "is not implemented yet !\n");
         goto store_next;
     default:
     excp_invalid:
@@ -2753,8 +2777,7 @@ static always_inline void powerpc_excp (CPUState *env,
     /* XXX: we don't use hreg_store_msr here as already have treated
      *      any special case that could occur. Just store MSR and update hflags
      */
-    env->msr = new_msr;
-    env->hflags_nmsr = 0x00000000;
+    env->msr = new_msr & env->msr_mask;
     hreg_compute_hflags(env);
     env->nip = vector;
     /* Reset exception state */
@@ -2769,9 +2792,7 @@ void do_interrupt (CPUState *env)
 
 void ppc_hw_interrupt (CPUPPCState *env)
 {
-#if defined(TARGET_PPC64H)
     int hdice;
-#endif
 
 #if 0
     if (loglevel & CPU_LOG_INT) {
@@ -2800,8 +2821,12 @@ void ppc_hw_interrupt (CPUPPCState *env)
         return;
     }
 #endif
-#if defined(TARGET_PPC64H)
-    hdice = env->spr[SPR_LPCR] & 1;
+    if (0) {
+        /* XXX: find a suitable condition to enable the hypervisor mode */
+        hdice = env->spr[SPR_LPCR] & 1;
+    } else {
+        hdice = 0;
+    }
     if ((msr_ee != 0 || msr_hv == 0 || msr_pr != 0) && hdice != 0) {
         /* Hypervisor decrementer exception */
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_HDECR)) {
@@ -2810,7 +2835,6 @@ void ppc_hw_interrupt (CPUPPCState *env)
             return;
         }
     }
-#endif
     if (msr_ce != 0) {
         /* External critical interrupt */
         if (env->pending_interrupts & (1 << PPC_INTERRUPT_CEXT)) {
@@ -2919,9 +2943,10 @@ void cpu_ppc_reset (void *opaque)
 
     env = opaque;
     msr = (target_ulong)0;
-#if defined(TARGET_PPC64)
-    msr |= (target_ulong)0 << MSR_HV; /* Should be 1... */
-#endif
+    if (0) {
+        /* XXX: find a suitable condition to enable the hypervisor mode */
+        msr |= (target_ulong)MSR_HVB;
+    }
     msr |= (target_ulong)0 << MSR_AP; /* TO BE CHECKED */
     msr |= (target_ulong)0 << MSR_SA; /* TO BE CHECKED */
     msr |= (target_ulong)1 << MSR_EP;
@@ -2935,7 +2960,7 @@ void cpu_ppc_reset (void *opaque)
     msr |= (target_ulong)1 << MSR_PR;
 #else
     env->nip = env->hreset_vector | env->excp_prefix;
-    if (env->mmu_model != POWERPC_MMU_REAL_4xx)
+    if (env->mmu_model != POWERPC_MMU_REAL)
         ppc_tlb_invalidate_all(env);
 #endif
     env->msr = msr;

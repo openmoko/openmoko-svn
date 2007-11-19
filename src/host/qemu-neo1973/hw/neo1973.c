@@ -8,7 +8,18 @@
  * This code is licensed under the GNU GPL v2.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "s3c.h"
+#include "arm-misc.h"
+#include "sysemu.h"
+#include "i2c.h"
+#include "qemu-timer.h"
+#include "devices.h"
+#include "audio/audio.h"
+#include "boards.h"
+#include "console.h"
+#include "usb.h"
+#include "net.h"
 
 #define neo_printf(format, ...)	\
     fprintf(stderr, "%s: " format, __FUNCTION__, ##__VA_ARGS__)
@@ -416,9 +427,9 @@ static const int gta01_ts_scale[6] = {
 
 /* Board init.  */
 static void neo_init(int ram_size, int vga_ram_size, const char *boot_device,
-                DisplayState *ds, const char **fd_filename, int snapshot,
-                const char *kernel_filename, const char *kernel_cmdline,
-                const char *initrd_filename, const char *cpu_model)
+                DisplayState *ds, const char *kernel_filename,
+                const char *kernel_cmdline, const char *initrd_filename,
+                const char *cpu_model)
 {
     struct neo_board_s *s = (struct neo_board_s *)
             qemu_mallocz(sizeof(struct neo_board_s));

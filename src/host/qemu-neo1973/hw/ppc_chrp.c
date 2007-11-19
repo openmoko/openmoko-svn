@@ -22,8 +22,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "hw.h"
+#include "ppc.h"
 #include "ppc_mac.h"
+#include "nvram.h"
+#include "pc.h"
+#include "pci.h"
+#include "net.h"
+#include "sysemu.h"
+#include "boards.h"
 
 /* UniN device */
 static void unin_writel (void *opaque, target_phys_addr_t addr, uint32_t value)
@@ -50,7 +57,6 @@ static CPUReadMemoryFunc *unin_read[] = {
 /* PowerPC Mac99 hardware initialisation */
 static void ppc_core99_init (int ram_size, int vga_ram_size,
                              const char *boot_device, DisplayState *ds,
-                             const char **fd_filename, int snapshot,
                              const char *kernel_filename,
                              const char *kernel_cmdline,
                              const char *initrd_filename,

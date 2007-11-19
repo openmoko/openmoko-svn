@@ -22,7 +22,10 @@
  * THE SOFTWARE.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "mips.h"
+#include "pci.h"
+#include "pc.h"
 
 typedef target_phys_addr_t pci_addr_t;
 #include "pci_host.h"
@@ -905,7 +908,7 @@ static void pci_gt64120_set_irq(qemu_irq *pic, int irq_num, int level)
 }
 
 
-void gt64120_reset(void *opaque)
+static void gt64120_reset(void *opaque)
 {
     GT64120State *s = opaque;
 

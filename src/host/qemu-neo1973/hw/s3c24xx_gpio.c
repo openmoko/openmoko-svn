@@ -6,7 +6,9 @@
  *
  * This code is licenced under the GNU GPL v2.
  */
-#include "vl.h"
+
+#include "s3c.h"
+#include "hw.h"
 
 #define S3C_IO_BANKS	8
 

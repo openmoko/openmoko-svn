@@ -21,7 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "hw/hw.h"
+#include "hw/usb.h"
+#include "hw/pcmcia.h"
+#include "hw/pc.h"
+#include "hw/pci.h"
+#include "gdbstub.h"
+#include "net.h"
+#include "qemu-char.h"
+#include "sysemu.h"
+#include "console.h"
+#include "block.h"
+#include "audio/audio.h"
 #include "disas.h"
 #include <dirent.h>
 
@@ -253,7 +264,7 @@ static void do_info_block(void)
 }
 
 /* get the current CPU defined by the user */
-int mon_set_cpu(int cpu_index)
+static int mon_set_cpu(int cpu_index)
 {
     CPUState *env;
 
@@ -266,7 +277,7 @@ int mon_set_cpu(int cpu_index)
     return -1;
 }
 
-CPUState *mon_get_cpu(void)
+static CPUState *mon_get_cpu(void)
 {
     if (!mon_cpu) {
         mon_set_cpu(0);

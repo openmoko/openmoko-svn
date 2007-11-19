@@ -6,7 +6,11 @@
  *
  * This code is licenced under the GNU GPL v2.
  */
-#include "vl.h"
+
+#include "qemu-common.h"
+#include "qemu-char.h"
+#include "qemu-timer.h"
+#include "sysemu.h"
 
 #include "misc.h"
 #include "gnokii.h"

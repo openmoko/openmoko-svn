@@ -7,7 +7,11 @@
  * This file is licensed under GNU GPL v2.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "qemu-timer.h"
+#include "i2c.h"
+#include "sysemu.h"
+#include "console.h"
 
 #define VERBOSE 1
 
@@ -949,8 +953,10 @@ i2c_slave *pcf5060x_init(i2c_bus *bus, qemu_irq irq, int tsc)
 void pcf_gpo_handler_set(i2c_slave *i2c, int line, qemu_irq handler)
 {
     struct pcf_s *s = (struct pcf_s *) i2c;
-    if (line >= 6 || line < 0)
-        cpu_abort(cpu_single_env, "%s: No GPO line %i\n", __FUNCTION__, line);
+    if (line >= 6 || line < 0) {
+        fprintf(stderr, "%s: No GPO line %i\n", __FUNCTION__, line);
+        exit(-1);
+    }
     s->gpo_handler[line] = handler;
 }
 

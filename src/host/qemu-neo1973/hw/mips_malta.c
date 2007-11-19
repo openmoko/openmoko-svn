@@ -22,7 +22,17 @@
  * THE SOFTWARE.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "pc.h"
+#include "net.h"
+#include "boards.h"
+#include "smbus.h"
+#include "mips.h"
+#include "pci.h"
+#include "qemu-char.h"
+#include "sysemu.h"
+#include "audio/audio.h"
+#include "boards.h"
 
 #ifdef TARGET_WORDS_BIGENDIAN
 #define BIOS_FILENAME "mips_bios.bin"
@@ -388,7 +398,7 @@ static CPUWriteMemoryFunc *malta_fpga_write[] = {
    malta_fpga_writel
 };
 
-void malta_fpga_reset(void *opaque)
+static void malta_fpga_reset(void *opaque)
 {
     MaltaFPGAState *s = opaque;
 
@@ -405,7 +415,7 @@ void malta_fpga_reset(void *opaque)
     malta_fpga_update_display(s);
 }
 
-MaltaFPGAState *malta_fpga_init(target_phys_addr_t base, CPUState *env)
+static MaltaFPGAState *malta_fpga_init(target_phys_addr_t base, CPUState *env)
 {
     MaltaFPGAState *s;
     CharDriverState *uart_chr;
@@ -746,8 +756,8 @@ static void main_cpu_reset(void *opaque)
 }
 
 static
-void mips_malta_init (int ram_size, int vga_ram_size, const char *boot_device,
-                      DisplayState *ds, const char **fd_filename, int snapshot,
+void mips_malta_init (int ram_size, int vga_ram_size,
+                      const char *boot_device, DisplayState *ds,
                       const char *kernel_filename, const char *kernel_cmdline,
                       const char *initrd_filename, const char *cpu_model)
 {

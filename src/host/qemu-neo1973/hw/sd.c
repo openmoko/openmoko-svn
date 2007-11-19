@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "hw.h"
+#include "block.h"
 #include "sd.h"
 
 //#define DEBUG_SD 1
@@ -90,9 +92,8 @@ struct SDState {
     uint32_t data_start;
     uint32_t data_offset;
     uint8_t data[512];
-    void (*readonly_cb)(void *, int);
-    void (*inserted_cb)(void *, int);
-    void *opaque;
+    qemu_irq readonly_cb;
+    qemu_irq inserted_cb;
     BlockDriverState *bdrv;
 };
 
@@ -307,8 +308,8 @@ static int sd_req_crc_validate(struct sd_request_s *req)
     return sd_crc7(buffer, 5) != req->crc;	/* TODO */
 }
 
-void sd_response_r1_make(SDState *sd,
-                         uint8_t *response, uint32_t last_status)
+static void sd_response_r1_make(SDState *sd,
+                                uint8_t *response, uint32_t last_status)
 {
     uint32_t mask = CARD_STATUS_B ^ ILLEGAL_COMMAND;
     uint32_t status;
@@ -322,7 +323,7 @@ void sd_response_r1_make(SDState *sd,
     response[3] = (status >> 0) & 0xff;
 }
 
-void sd_response_r3_make(SDState *sd, uint8_t *response)
+static void sd_response_r3_make(SDState *sd, uint8_t *response)
 {
     response[0] = (sd->ocr >> 24) & 0xff;
     response[1] = (sd->ocr >> 16) & 0xff;
@@ -330,7 +331,7 @@ void sd_response_r3_make(SDState *sd, uint8_t *response)
     response[3] = (sd->ocr >> 0) & 0xff;
 }
 
-void sd_response_r6_make(SDState *sd, uint8_t *response)
+static void sd_response_r6_make(SDState *sd, uint8_t *response)
 {
     uint16_t arg;
     uint16_t status;
@@ -372,9 +373,10 @@ static void sd_reset(SDState *sd, BlockDriverState *bdrv)
 
     sd->bdrv = bdrv;
 
+    if (sd->wp_groups)
+        qemu_free(sd->wp_groups);
     sd->wp_switch = bdrv_is_read_only(bdrv);
     sd->wp_groups = (int *) qemu_mallocz(sizeof(int) * sect);
-    memset(sd->wp_groups, 0, sizeof(int) * sect);
     memset(sd->function_group, 0, sizeof(int) * 6);
     sd->erase_start = 0;
     sd->erase_end = 0;
@@ -386,12 +388,10 @@ static void sd_reset(SDState *sd, BlockDriverState *bdrv)
 static void sd_cardchange(void *opaque)
 {
     SDState *sd = opaque;
-    if (sd->inserted_cb)
-        sd->inserted_cb(sd->opaque, bdrv_is_inserted(sd->bdrv));
+    qemu_set_irq(sd->inserted_cb, bdrv_is_inserted(sd->bdrv));
     if (bdrv_is_inserted(sd->bdrv)) {
         sd_reset(sd, sd->bdrv);
-        if (sd->readonly_cb)
-            sd->readonly_cb(sd->opaque, sd->wp_switch);
+        qemu_set_irq(sd->readonly_cb, sd->wp_switch);
     }
 }
 
@@ -401,21 +401,16 @@ SDState *sd_init(BlockDriverState *bs)
 
     sd = (SDState *) qemu_mallocz(sizeof(SDState));
     sd_reset(sd, bs);
+    bdrv_set_change_cb(sd->bdrv, sd_cardchange, sd);
     return sd;
 }
 
-void sd_set_cb(SDState *sd, void *opaque,
-                void (*readonly_cb)(void *, int),
-                void (*inserted_cb)(void *, int))
+void sd_set_cb(SDState *sd, qemu_irq readonly, qemu_irq insert)
 {
-    sd->opaque = opaque;
-    sd->readonly_cb = readonly_cb;
-    sd->inserted_cb = inserted_cb;
-    if (sd->readonly_cb)
-        sd->readonly_cb(sd->opaque, bdrv_is_read_only(sd->bdrv));
-    if (sd->inserted_cb)
-        sd->inserted_cb(sd->opaque, bdrv_is_inserted(sd->bdrv));
-    bdrv_set_change_cb(sd->bdrv, sd_cardchange, sd);
+    sd->readonly_cb = readonly;
+    sd->inserted_cb = insert;
+    qemu_set_irq(readonly, bdrv_is_read_only(sd->bdrv));
+    qemu_set_irq(insert, bdrv_is_inserted(sd->bdrv));
 }
 
 static void sd_erase(SDState *sd)

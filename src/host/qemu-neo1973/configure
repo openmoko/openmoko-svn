@@ -320,6 +320,8 @@ for opt do
   ;;
   --disable-werror) werror="no"
   ;;
+  *) echo "ERROR: unknown option $opt"; show_help="yes"
+  ;;
   esac
 done
 
@@ -358,11 +360,15 @@ case $cpu in
                ARCH_LDFLAGS="${SP_LDFLAGS}"
            fi
            ;;
+    s390)
+           ARCH_CFLAGS="-march=z900"
+           ;;
 esac
 
 if [ "$solaris" = "yes" -a  "$cpu" = "x86_64" ] ; then
     CFLAGS="${CFLAGS} -m64"
     OS_CFLAGS="${OS_CFLAGS} -m64"
+    OS_LDFLAGS="${OS_LDFLAGS} -m64"
 fi
 
 if [ "$solaris" = "yes" -a  "$cpu" = "i386" ] ; then
@@ -598,7 +604,7 @@ cat > $TMPC << EOF
 #undef main /* We don't want SDL to override our main() */
 int main( void ) { return SDL_Init (SDL_INIT_VIDEO); }
 EOF
-        if $cc -o $TMPE `$sdl_config --cflags 2> /dev/null` $TMPC `$sdl_config --libs 2> /dev/null` 2> /tmp/qemu-$$-sdl-config.log ; then
+        if $cc -o $TMPE ${OS_CFLAGS} `$sdl_config --cflags 2> /dev/null` $TMPC `$sdl_config --libs 2> /dev/null` 2> /tmp/qemu-$$-sdl-config.log ; then
             _sdlversion=`$sdl_config --version | sed 's/[^0-9]//g'`
             if test "$_sdlversion" -lt 121 ; then
                 sdl_too_old=yes
@@ -617,7 +623,7 @@ EOF
                     sdl_static_libs="$sdl_static_libs `aalib-config --static-libs`"
                 fi
 
-                if $cc -o $TMPE `$sdl_config --cflags 2> /dev/null` $TMPC $sdl_static_libs 2> /dev/null; then
+                if $cc -o $TMPE ${OS_CFLAGS} `$sdl_config --cflags 2> /dev/null` $TMPC $sdl_static_libs 2> /dev/null; then
                     sdl_static=yes
                 fi
             fi # static link
@@ -1035,7 +1041,6 @@ target_bigendian="no"
 [ "$target_cpu" = "ppcemb" ] && target_bigendian=yes
 [ "$target_cpu" = "ppc64" ] && target_bigendian=yes
 [ "$target_cpu" = "ppc64abi32" ] && target_bigendian=yes
-[ "$target_cpu" = "ppc64h" ] && target_bigendian=yes
 [ "$target_cpu" = "mips" ] && target_bigendian=yes
 [ "$target_cpu" = "mipsn32" ] && target_bigendian=yes
 [ "$target_cpu" = "mips64" ] && target_bigendian=yes
@@ -1144,24 +1149,17 @@ elif test "$target_cpu" = "ppcemb" ; then
   echo "#define TARGET_PPCEMB 1" >> $config_h
 elif test "$target_cpu" = "ppc64" ; then
   echo "TARGET_ARCH=ppc64" >> $config_mak
-  echo "#define TARGET_ARCH \"ppc64\"" >> $config_h
   echo "TARGET_ABI_DIR=ppc" >> $config_mak
+  echo "#define TARGET_ARCH \"ppc64\"" >> $config_h
   echo "#define TARGET_PPC 1" >> $config_h
   echo "#define TARGET_PPC64 1" >> $config_h
 elif test "$target_cpu" = "ppc64abi32" ; then
   echo "TARGET_ARCH=ppc64" >> $config_mak
-  echo "#define TARGET_ARCH \"ppc64\"" >> $config_h
   echo "TARGET_ABI_DIR=ppc" >> $config_mak
+  echo "#define TARGET_ARCH \"ppc64\"" >> $config_h
   echo "#define TARGET_PPC 1" >> $config_h
   echo "#define TARGET_PPC64 1" >> $config_h
   echo "#define TARGET_ABI32 1" >> $config_h
-elif test "$target_cpu" = "ppc64h" ; then
-  echo "TARGET_ARCH=ppc64h" >> $config_mak
-  echo "#define TARGET_ARCH \"ppc64h\"" >> $config_h
-  echo "TARGET_ABI_DIR=ppc" >> $config_mak
-  echo "#define TARGET_PPC 1" >> $config_h
-  echo "#define TARGET_PPC64 1" >> $config_h
-  echo "#define TARGET_PPC64H 1" >> $config_h
 elif test "$target_cpu" = "x86_64" ; then
   echo "TARGET_ARCH=x86_64" >> $config_mak
   echo "#define TARGET_ARCH \"x86_64\"" >> $config_h

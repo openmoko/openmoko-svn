@@ -8,7 +8,8 @@
  * This code is licenced under the GPL.
  */
 
-#include "vl.h"
+#include "hw.h"
+#include "pxa.h"
 
 struct pxa2xx_dma_channel_s {
     target_phys_addr_t descr;
@@ -347,8 +348,10 @@ static void pxa2xx_dma_write(void *opaque,
 
         if (value & DCSR_NODESCFETCH) {
             /* No-descriptor-fetch mode */
-            if (value & DCSR_RUN)
+            if (value & DCSR_RUN) {
+                s->chan[channel].state &= ~DCSR_STOPINTR;
                 pxa2xx_dma_run(s);
+            }
         } else {
             /* Descriptor-fetch mode */
             if (value & DCSR_RUN) {

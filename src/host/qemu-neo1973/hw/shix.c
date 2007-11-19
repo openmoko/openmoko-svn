@@ -27,7 +27,10 @@
 
    More information in target-sh4/README.sh4
 */
-#include "vl.h"
+#include "hw.h"
+#include "sh.h"
+#include "sysemu.h"
+#include "boards.h"
 
 #define BIOS_FILENAME "shix_bios.bin"
 #define BIOS_ADDRESS 0xA0000000
@@ -62,8 +65,8 @@ void vga_screen_dump(const char *filename)
     /* XXXXX */
 }
 
-static void shix_init(int ram_size, int vga_ram_size, const char *boot_device,
-	       DisplayState * ds, const char **fd_filename, int snapshot,
+static void shix_init(int ram_size, int vga_ram_size,
+               const char *boot_device, DisplayState * ds,
 	       const char *kernel_filename, const char *kernel_cmdline,
 	       const char *initrd_filename, const char *cpu_model)
 {

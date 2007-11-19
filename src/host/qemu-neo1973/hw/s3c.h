@@ -9,7 +9,8 @@
 #ifndef S3C_H
 # define S3C_H	"s3c.h"
 
-# include "arm_pic.h"
+# include "qemu-common.h"
+# include "flash.h"
 
 /* Interrupt numbers */
 # define S3C_PIC_EINT0	0
@@ -109,6 +110,9 @@ qemu_irq *s3c_pic_get(struct s3c_pic_state_s *s);
 struct s3c_dma_state_s;
 struct s3c_dma_state_s *s3c_dma_init(target_phys_addr_t base, qemu_irq *pic);
 qemu_irq *s3c_dma_get(struct s3c_dma_state_s *s);
+
+/* GPIO TODO: remove this out, replace with qemu_irq or sumpthin */
+typedef void (*gpio_handler_t)(int line, int level, void *opaque);
 
 struct s3c_timers_state_s;
 struct s3c_timers_state_s *s3c_timers_init(target_phys_addr_t base,

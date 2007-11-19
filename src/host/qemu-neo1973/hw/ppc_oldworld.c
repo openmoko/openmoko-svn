@@ -22,8 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "hw.h"
+#include "ppc.h"
 #include "ppc_mac.h"
+#include "nvram.h"
+#include "pc.h"
+#include "sysemu.h"
+#include "net.h"
+#include "isa.h"
+#include "pci.h"
+#include "boards.h"
 
 /* temporary frame buffer OSI calls for the video.x driver. The right
    solution is to modify the driver to use VGA PCI I/Os */
@@ -94,7 +102,6 @@ static int vga_osi_call (CPUState *env)
 
 static void ppc_heathrow_init (int ram_size, int vga_ram_size,
                                const char *boot_device, DisplayState *ds,
-                               const char **fd_filename, int snapshot,
                                const char *kernel_filename,
                                const char *kernel_cmdline,
                                const char *initrd_filename,

@@ -21,7 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "hw.h"
+#include "pc.h"
+#include "isa.h"
+#include "console.h"
 
 /* debug PIC */
 //#define DEBUG_PIC
@@ -175,7 +178,7 @@ void pic_update_irq(PicState2 *s)
 int64_t irq_time[16];
 #endif
 
-void i8259_set_irq(void *opaque, int irq, int level)
+static void i8259_set_irq(void *opaque, int irq, int level)
 {
     PicState2 *s = opaque;
 

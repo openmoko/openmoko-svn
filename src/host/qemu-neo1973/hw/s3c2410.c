@@ -6,7 +6,16 @@
  *
  * This code is licenced under the GNU GPL v2.
  */
-#include "vl.h"
+
+#include "s3c.h"
+#include "qemu-timer.h"
+#include "qemu-char.h"
+#include "hw.h"
+#include "console.h"
+#include "devices.h"
+#include "arm-misc.h"
+#include "i2c.h"
+#include "sysemu.h"
 
 /* Interrupt controller */
 struct s3c_pic_state_s {

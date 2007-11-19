@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "qemu-common.h"
 #include "disas.h"
+#include "sysemu.h"
 #include "uboot_image.h"
 
 /* return the size or -1 if error */

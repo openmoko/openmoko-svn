@@ -6,8 +6,11 @@
  *
  * This code is licenced under the GNU GPL v2.
  */
-#include "vl.h"
+
+#include "s3c.h"
 #include "sd.h"
+#include "hw.h"
+#include "sysemu.h"
 
 struct s3c_mmci_state_s {
     target_phys_addr_t base;
@@ -440,5 +443,5 @@ void s3c_mmci_handlers(struct s3c_mmci_state_s *s, void *opaque,
                 void (*readonly_cb)(void *, int),
                 void (*coverswitch_cb)(void *, int))
 {
-    sd_set_cb(s->card, opaque, readonly_cb, coverswitch_cb);
+    /*sd_set_cb(s->card, opaque, readonly_cb, coverswitch_cb);*/
 }

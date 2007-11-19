@@ -7,8 +7,9 @@
  * This code is licenced under the GPL.
  */
 
-#include "vl.h"
-#include "arm_pic.h"
+#include "hw.h"
+#include "primecell.h"
+#include "sysemu.h"
 
 #define LOCK_VALUE 0xa05f
 

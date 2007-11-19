@@ -21,10 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifdef QEMU_IMG
 #include "qemu-common.h"
-#else
-#include "vl.h"
+#ifndef QEMU_IMG
+#include "console.h"
 #endif
 #include "block_int.h"
 
@@ -125,7 +124,7 @@ void path_combine(char *dest, int dest_size,
 }
 
 
-void bdrv_register(BlockDriver *bdrv)
+static void bdrv_register(BlockDriver *bdrv)
 {
     if (!bdrv->bdrv_aio_read) {
         /* add AIO emulation layer */

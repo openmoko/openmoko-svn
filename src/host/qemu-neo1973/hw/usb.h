@@ -203,15 +203,6 @@ void usb_packet_complete(USBPacket *p);
 /* usb hub */
 USBDevice *usb_hub_init(int nb_ports);
 
-/* usb-uhci.c */
-void usb_uhci_piix3_init(PCIBus *bus, int devfn);
-void usb_uhci_piix4_init(PCIBus *bus, int devfn);
-
-/* usb-ohci.c */
-void usb_ohci_init_pci(struct PCIBus *bus, int num_ports, int devfn);
-void usb_ohci_init_memio(target_phys_addr_t base, int num_ports, int devfn,
-                         qemu_irq irq);
-
 /* usb-linux.c */
 USBDevice *usb_host_device_open(const char *devname);
 void usb_host_info(void);
@@ -232,7 +223,19 @@ USBDevice *usb_msd_init(const char *filename);
 USBDevice *usb_net_init(NICInfo *nd);
 
 /* usb-bt.c */
+struct bt_piconet_s;
 USBDevice *usb_bt_init(struct bt_piconet_s *net);
 
 /* usb-wacom.c */
 USBDevice *usb_wacom_init(void);
+
+/* usb ports of the VM */
+
+#define USB_INDEX_HOST  -1
+void qemu_register_usb_port(USBPort *port, void *opaque, int index,
+                            usb_attachfn attach);
+void qemu_register_usb_gadget(USBDevice *device);
+
+#define VM_USB_HUB_SIZE 8
+
+int usb_device_attach(USBDevice *dev);

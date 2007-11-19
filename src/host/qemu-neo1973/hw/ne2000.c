@@ -21,7 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "vl.h"
+#include "hw.h"
+#include "pci.h"
+#include "pc.h"
+#include "net.h"
 
 /* debug NE2000 card */
 //#define DEBUG_NE2000

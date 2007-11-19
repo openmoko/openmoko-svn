@@ -5,7 +5,12 @@
  *
  * This code is licenced under the GPL
  */
-#include "vl.h"
+#include "hw.h"
+#include "mcf.h"
+#include "qemu-timer.h"
+#include "sysemu.h"
+#include "net.h"
+#include "boards.h"
 
 #define SYS_FREQ 66000000
 
@@ -199,7 +204,6 @@ static void mcf5208_sys_init(qemu_irq *pic)
 
 static void mcf5208evb_init(int ram_size, int vga_ram_size,
                      const char *boot_device, DisplayState *ds,
-                     const char **fd_filename, int snapshot,
                      const char *kernel_filename, const char *kernel_cmdline,
                      const char *initrd_filename, const char *cpu_model)
 {
