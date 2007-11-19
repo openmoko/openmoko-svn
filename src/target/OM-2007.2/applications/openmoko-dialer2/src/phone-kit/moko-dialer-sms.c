@@ -9,6 +9,7 @@
 #include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "moko-dialer-sms-glue.h"
 
@@ -19,10 +20,17 @@ G_DEFINE_TYPE (MokoDialerSMS, moko_dialer_sms, G_TYPE_OBJECT)
 
 typedef struct _MokoDialerSMSPrivate MokoDialerSMSPrivate;
 
+typedef struct {
+	GSource source;
+	GPollFD pollfd;
+	struct lgsm_handle *handle;
+} MokoDialerSMSSource;
+
 struct _MokoDialerSMSPrivate {
 	struct lgsm_handle *handle;
 	JanaStore *note_store;
 	JanaNote *last_msg;
+	MokoDialerSMSSource *source;
 };
 
 static void
@@ -55,6 +63,11 @@ moko_dialer_sms_dispose (GObject *object)
 static void
 moko_dialer_sms_finalize (GObject *object)
 {
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (object);
+	
+	g_source_destroy ((GSource *)priv->source);
+	lgsm_exit (priv->handle);
+
 	G_OBJECT_CLASS (moko_dialer_sms_parent_class)->finalize (object);
 }
 
@@ -269,10 +282,52 @@ sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	return 0;
 }
 
+static gboolean 
+connection_source_prepare (GSource* self, gint* timeout)
+{
+    return FALSE;
+}
+
+static gboolean 
+connection_source_check (GSource* source)
+{
+	MokoDialerSMSSource *self = (MokoDialerSMSSource *)source;
+	return self->pollfd.revents & G_IO_IN;
+}
+
+static gboolean 
+connection_source_dispatch (GSource *source, GSourceFunc callback,
+			    gpointer data)
+{
+	char buf[1025];
+	int size;
+
+	MokoDialerSMSSource *self = (MokoDialerSMSSource *)source;
+
+	size = read (self->pollfd.fd, &buf, sizeof(buf));
+	if (size < 0) {
+		g_warning ("moko_gsmd_connection_source_dispatch:%s %s",
+			"read error from libgsmd:", strerror (errno));
+	} else {
+		if (size == 0) /* EOF */
+			return FALSE;
+		lgsm_handle_packet (self->handle, buf, size);
+	}
+	
+	return TRUE;
+}
+
 static void
 moko_dialer_sms_init (MokoDialerSMS *self)
 {
 	static gboolean first_init = TRUE;
+	static GSourceFuncs funcs = {
+		connection_source_prepare,
+		connection_source_check,
+		connection_source_dispatch,
+		NULL,
+	};
+	
 	MokoDialerSMSPrivate *priv = SMS_PRIVATE (self);
 	
 	/* We can only have one of these objects per process, as the gsmd 
@@ -300,6 +355,16 @@ moko_dialer_sms_init (MokoDialerSMS *self)
 	
 	/* List all messages to move to journal */
 	lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
+	
+	/* Start polling for events */
+	priv->source = (MokoDialerSMSSource *)
+		g_source_new (&funcs, sizeof (MokoDialerSMSSource));
+	priv->source->handle = priv->handle;
+	priv->source->pollfd.fd = lgsm_fd (priv->handle);
+	priv->source->pollfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
+	priv->source->pollfd.revents = 0;
+	g_source_add_poll ((GSource*)priv->source, &priv->source->pollfd);
+	g_source_attach ((GSource*)priv->source, NULL);
 }
 
 MokoDialerSMS*
