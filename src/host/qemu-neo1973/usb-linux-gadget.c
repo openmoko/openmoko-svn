@@ -814,6 +814,7 @@ void usb_gadget_config_set(USBPort *port, int config)
 }
 
 #else
+# include "qemu-common.h"
 # include "hw/usb.h"
 
 int usb_gadget_init(void)
