@@ -29,6 +29,8 @@ typedef struct
 {
   GtkWidget *notebook;
   GtkWidget *history;
+  
+  GtkWidget *main_window;
 
   DBusGProxy *dialer_proxy;
 } DialerData;
@@ -61,7 +63,13 @@ dial_clicked_cb (GtkWidget *widget, const gchar *number, DialerData *data)
 
   if (error)
   {
+    GtkWidget *dlg;
+    dlg = gtk_message_dialog_new (GTK_WINDOW (data->main_window), GTK_DIALOG_MODAL,
+                                  GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+                                  "Dialer Error:\n%s", error->message);
     g_warning (error->message);
+    gtk_dialog_run (GTK_DIALOG (dlg));
+    gtk_widget_destroy (dlg);
   }
   else
   {
@@ -76,7 +84,6 @@ int main (int argc, char **argv)
   MokoJournal *journal;
   DBusGConnection *connection;
   GError *error = NULL;
-  DBusGProxy *proxy;
   DialerData *data;
 
   data = g_new0 (DialerData, 1);
@@ -127,7 +134,7 @@ int main (int argc, char **argv)
     journal = NULL;
   }
 
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  data->main_window = window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (window, "delete-event", G_CALLBACK (gtk_main_quit), NULL);
   gtk_window_set_title (GTK_WINDOW (window), "Dialer");
 
