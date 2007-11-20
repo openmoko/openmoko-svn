@@ -358,7 +358,8 @@ opened_cb (JanaStore *store, MokoDialerSMS *self)
 
 	/* Initialise gsmd and connect event handler */
 	if (!(priv->handle = lgsm_init (LGSMD_DEVICE_GSMD))) {
-		g_error ("Failed to connect to gsmd");
+		g_warning ("Failed to connect to gsmd");
+		return;
 	} else {
 		g_debug ("Connected to gsmd");
 		lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_SMS,

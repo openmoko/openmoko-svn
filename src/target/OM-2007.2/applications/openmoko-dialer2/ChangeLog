@@ -1,5 +1,10 @@
 2007-11-20  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-dialer-sms.c: (opened_cb): Don't abort if
+	connecting to gsmd fails
+
+2007-11-20  Thomas Wood  <thomas@openedhand.com>
+
 	* data/openmoko-dialer.desktop: Set single instance to true
 
 2007-11-20  Thomas Wood  <thomas@openedhand.com>
