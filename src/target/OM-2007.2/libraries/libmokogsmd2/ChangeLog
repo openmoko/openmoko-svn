@@ -1,6 +1,12 @@
 2007-11-20  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
+	(moko_gsmd_connection_dispose): Remove the reference to the current
+	instance when object is disposed
+
+2007-11-20  Thomas Wood  <thomas@openedhand.com>
+
+	* libmokogsmd/moko-gsmd-connection.c:
 	(moko_gsmd_connection_dispose): Check validity of source and gsm handle
 	before trying to disconnect from them
 

@@ -120,6 +120,9 @@ moko_gsmd_connection_dispose(GObject* object)
     if (priv->handle)
       lgsm_exit( priv->handle );
 
+    if (moko_gsmd_connection_instance)
+      moko_gsmd_connection_instance = NULL;
+
     /* call parent destructor */
     if (G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose)
         G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose (object);
