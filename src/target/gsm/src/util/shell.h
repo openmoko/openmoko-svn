@@ -1,2 +1,2 @@
 
-extern int shell_main(struct lgsm_handle *lgsmh);
+extern int shell_main(struct lgsm_handle *lgsmh, int sync);

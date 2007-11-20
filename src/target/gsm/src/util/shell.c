@@ -44,6 +44,8 @@
 static int nFIND = 0;
 static int nREADRG = 0;
 
+static int pending_responses = 0;
+
 /* this is the handler for receiving passthrough responses */
 static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
@@ -88,6 +90,7 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	case GSMD_PHONEBOOK_GET_SUPPORT:
 		gps = (struct gsmd_phonebook_support *) ((char *)gmh + sizeof(*gmh));
 		printf("(1-%d), %d, %d\n", gps->index, gps->nlength, gps->tlength);
+		pending_responses --;
 		break;
 
 	case GSMD_PHONEBOOK_LIST_STORAGE:
@@ -131,6 +134,7 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	case GSMD_PHONEBOOK_GET_IMSI:
 		payload = (char *)gmh + sizeof(*gmh);
 		printf("imsi <%s>\n", payload);
+		pending_responses --;
 		break;
 	default:
 		return -EINVAL;
@@ -186,8 +190,11 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 			printf("8-bit encoded data\n");
 		else if (sms->payload.coding_scheme == ALPHABET_UCS2)
 			printf("Unicode-16 encoded text\n");
+		if (sms->is_last)
+			pending_responses --;
 		break;
 	case GSMD_SMS_SEND:
+		pending_responses --;
 		result = (int *) ((void *) gmh + sizeof(*gmh));
 		if (*result >= 0) {
 			printf("Send: message sent as ref %i\n", *result);
@@ -204,6 +211,7 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		}
 		break;
 	case GSMD_SMS_WRITE:
+		pending_responses --;
 		result = (int *) ((void *) gmh + sizeof(*gmh));
 		if (*result >= 0) {
 			printf("Store: message stored with index %i\n",
@@ -221,6 +229,7 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		}
 		break;
 	case GSMD_SMS_DELETE:
+		pending_responses --;
 		result = (int *) ((void *) gmh + sizeof(*gmh));
 		switch (*result) {
 		case 0:
@@ -255,13 +264,16 @@ static int sms_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 				mem->mem[2].memtype,
 				mem->mem[2].used,
 				mem->mem[2].total);
+		pending_responses --;
 		break;
 	case GSMD_SMS_GET_SERVICE_CENTRE:
 		addr = (struct gsmd_addr *) ((void *) gmh + sizeof(*gmh));
 		printf("Number of the default Service Centre is %s\n",
 				addr->number);
+		pending_responses --;
 		break;
 	default:
+		pending_responses --;
 		return -EINVAL;
 	}
 }
@@ -301,12 +313,14 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 			printf("Error rate undetectable\n");
 		else
 			printf("Bit error rate %i\n", sq->ber);
+		pending_responses --;
 		break;
 	case GSMD_NETWORK_OPER_GET:
 		if (oper[0])
 			printf("Our current operator is %s\n", oper);
 		else
 			printf("No current operator\n");
+		pending_responses --;
 		break;
 	case GSMD_NETWORK_OPER_LIST:
 		for (; !opers->is_last; opers ++)
@@ -318,6 +332,7 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 					sizeof(opers->opname_shortalpha),
 					opers->opname_shortalpha,
 					oper_stat[opers->stat]);
+		pending_responses --;
 		break;
 	case GSMD_NETWORK_GET_NUMBER:
 		printf("\t%s\t%10s%s%s%s\n", num->addr.number, num->name,
@@ -327,6 +342,7 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 				"" : srvname[num->service],
 				(num->service == GSMD_SERVICE_UNKNOWN) ?
 				"" : " services");
+		pending_responses --;
 		break;
 	default:
 		return -EINVAL;
@@ -373,7 +389,7 @@ static int shell_help(void)
 		);
 }
 
-int shell_main(struct lgsm_handle *lgsmh)
+int shell_main(struct lgsm_handle *lgsmh, int sync)
 {
 	int rc;
 	char buf[STDIN_BUF_SIZE+1];
@@ -381,6 +397,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 	int rlen = sizeof(rbuf);
 	fd_set readset;
 	char *ptr, *fcomma, *lcomma;
+	int gsm_fd = lgsm_fd(lgsmh);
 
 	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
 	lgsm_register_handler(lgsmh, GSMD_MSG_PHONEBOOK, &pb_msghandler);
@@ -388,7 +405,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 	lgsm_register_handler(lgsmh, GSMD_MSG_NETWORK, &net_msghandler);
 
 	fcntl(0, F_SETFD, O_NONBLOCK);
-	fcntl(lgsm_fd(lgsmh), F_SETFD, O_NONBLOCK);
+	fcntl(gsm_fd, F_SETFD, O_NONBLOCK);
 
 	FD_ZERO(&readset);
 
@@ -396,12 +413,11 @@ int shell_main(struct lgsm_handle *lgsmh)
 
 	while (1) {
 		fd_set readset;
-		int gsm_fd = lgsm_fd(lgsmh);
 		FD_SET(0, &readset);
 		FD_SET(gsm_fd, &readset);
 
 		rc = select(gsm_fd+1, &readset, NULL, NULL, NULL);
-		if (rc <= 0)	
+		if (rc <= 0)
 			break;
 		if (FD_ISSET(gsm_fd, &readset)) {
 			/* we've received something on the gsmd socket, pass it
@@ -466,12 +482,15 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if (!strcmp(buf, "P")) {
 				printf("Read current opername\n");
 				lgsm_oper_get(lgsmh);
+				pending_responses ++;
 			} else if (!strcmp(buf, "L")) {
 				printf("List operators\n");
 				lgsm_opers_get(lgsmh);
+				pending_responses ++;
 			} else if (!strcmp(buf, "Q")) {
 				printf("Signal strength\n");
 				lgsm_signal_quality(lgsmh);
+				pending_responses ++;
 			} else if (!strcmp(buf, "q")) {
 				exit(0);
                         } else if (buf[0] == 'S' ) {
@@ -545,6 +564,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if ( !strncmp(buf, "ps", 2)) {	
 				printf("Get Phonebook Support\n");
 				lgsm_pb_get_support(lgsmh);
+				pending_responses ++;
 			} else if( !strncmp(buf, "pRr", 3) ) {
 				printf("Retrieve Readrg Records\n");
 
@@ -565,16 +585,19 @@ int shell_main(struct lgsm_handle *lgsmh)
 				sms_del.delflg = atoi(ptr+1);	
 			
 				lgsm_sms_delete(lgsmh, &sms_del);
-			} else if ( !strncmp(buf, "sl", 2)) {		
-				printf("List SMS\n");	
-				ptr = strchr(buf, '=');	
-					
-				lgsm_sms_list(lgsmh, atoi(ptr+1));			
-			} else if ( !strncmp(buf, "sr", 2)) {				
-				printf("Read SMS\n");	
-				ptr = strchr(buf, '=');	
-					
-				lgsm_sms_read(lgsmh, atoi(ptr+1));				
+				pending_responses ++;
+			} else if ( !strncmp(buf, "sl", 2)) {
+				printf("List SMS\n");
+				ptr = strchr(buf, '=');
+
+				lgsm_sms_list(lgsmh, atoi(ptr+1));
+				pending_responses ++;
+			} else if ( !strncmp(buf, "sr", 2)) {
+				printf("Read SMS\n");
+				ptr = strchr(buf, '=');
+
+				lgsm_sms_read(lgsmh, atoi(ptr+1));
+				pending_responses ++;
 			} else if ( !strncmp(buf, "ss", 2)) {
 				struct lgsm_sms sms;
 
@@ -602,6 +625,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 				packing_7bit_character(lcomma+1, &sms);
 
 				lgsm_sms_send(lgsmh, &sms);
+				pending_responses ++;
 			} else if ( !strncmp(buf, "sw", 2)) {	
 				printf("Write SMS\n");				
 				struct lgsm_sms_write sms_write;
@@ -618,9 +642,11 @@ int shell_main(struct lgsm_handle *lgsmh)
 				sms_write.sms.ask_ds = 0;
 
 				lgsm_sms_write(lgsmh, &sms_write);
+				pending_responses ++;
 			} else if (!strncmp(buf, "sm", 2)) {
 				printf("Get SMS storage preferences\n");
 				lgsm_sms_get_storage(lgsmh);
+				pending_responses ++;
 			} else if (!strncmp(buf, "sM", 2)) {
 				int mem[3];
 
@@ -634,6 +660,7 @@ int shell_main(struct lgsm_handle *lgsmh)
 			} else if (!strncmp(buf, "sc", 2)) {
 				printf("Get the default SMSC\n");
 				lgsm_sms_get_smsc(lgsmh);
+				pending_responses ++;
 			} else if (!strncmp(buf, "sC", 2)) {
 				printf("Set the default SMSC\n");
 				ptr = strchr(buf, '=');
@@ -643,9 +670,11 @@ int shell_main(struct lgsm_handle *lgsmh)
 					lgsm_sms_set_smsc(lgsmh, ptr + 1);
 			} else if (!strcmp(buf, "n")) {
 				lgsm_get_subscriber_num(lgsmh);
+				pending_responses ++;
 			} else if (!strncmp(buf, "im", 2)) {
 				printf("Get imsi\n");
 				lgsm_get_imsi(lgsmh);
+				pending_responses ++;
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}

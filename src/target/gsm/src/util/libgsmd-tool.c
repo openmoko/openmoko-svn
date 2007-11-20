@@ -74,6 +74,7 @@ static struct option opts[] = {
 	{ "verbose", 0, 0, 'v' },
 	{ "mode", 1, 0, 'm' },
 	{ "pin", 1, 0, 'p' },
+	{ "wait", 0, 0, 'w' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -84,20 +85,21 @@ static void help(void)
 		"\t-V\t--version\tPrint version number\n"
 		"\t-v\t--verbose\tBe more verbose\n"
 		"\t-m\t--mode\tSet mode {shell,eventlog,atcmd}\n"
+		"\t-w\t--wait\tIn shell mode wait for responses on exit\n"
 		);
 }
 
 int main(int argc, char **argv)
 {
 	char *pin = NULL;
-	int rc, i, mode;
+	int rc, i, mode, shellwait = 0;
 
 	printf("libgsm-tool - (C) 2006 by Harald Welte\n"
 		"This program is Free Software and has ABSOLUTELY NO WARRANTY\n\n");
 
 	while (1) {
 		int c, option_index = 0;
-		c = getopt_long(argc, argv, "vVhm:p:", opts, &option_index);
+		c = getopt_long(argc, argv, "vVhwm:p:", opts, &option_index);
 		if (c == -1)
 			break;
 
@@ -122,6 +124,9 @@ int main(int argc, char **argv)
 		case 'p':
 			pin = optarg;
 			break;
+		case 'w':
+			shellwait = 1;
+			break;
 		}
 	}
 
@@ -139,7 +144,7 @@ int main(int argc, char **argv)
 		atcmd_main(lgsmh);
 		break;
 	case MODE_SHELL:
-		shell_main(lgsmh);
+		shell_main(lgsmh, shellwait);
 		break;
 	}
 
