@@ -1,3 +1,10 @@
+2007-11-20  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_finalize),
+	(store_sms), (gsmd_eventhandler), (sms_msghandler),
+	(net_msghandler), (opened_cb), (moko_dialer_sms_send):
+	Add more debugging, get own phone number correctly
+
 2007-11-19  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-dialer-sms.c: (opened_cb), (moko_dialer_sms_init):

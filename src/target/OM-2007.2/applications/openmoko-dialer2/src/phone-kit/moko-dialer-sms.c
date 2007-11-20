@@ -31,6 +31,7 @@ struct _MokoDialerSMSPrivate {
 	JanaStore *note_store;
 	JanaNote *last_msg;
 	MokoDialerSMSSource *source;
+	gchar *own_number;
 };
 
 static void
@@ -66,6 +67,7 @@ moko_dialer_sms_finalize (GObject *object)
 	MokoDialerSMSPrivate *priv = SMS_PRIVATE (object);
 	
 	g_source_destroy ((GSource *)priv->source);
+	g_free (priv->own_number);
 	lgsm_exit (priv->handle);
 
 	G_OBJECT_CLASS (moko_dialer_sms_parent_class)->finalize (object);
@@ -132,15 +134,18 @@ store_sms (MokoDialerSMS *dialer_sms, struct gsmd_sms_list *sms)
 	message = NULL;
 	switch (sms->payload.coding_scheme) {
 	    case ALPHABET_DEFAULT :
-		message = g_malloc (GSMD_SMS_DATA_MAXLEN);
+		g_debug ("Decoding 7-bit ASCII message");
+		message = g_malloc0 (GSMD_SMS_DATA_MAXLEN);
 		unpacking_7bit_character (
 			&sms->payload, message);
 		break;
 	    case ALPHABET_8BIT :
 		/* TODO: Verify: Is this encoding just UTF-8? */
+		g_debug ("Decoding UTF-8 message");
 		message = g_strdup (sms->payload.data);
 		break;
 	    case ALPHABET_UCS2 :
+		g_debug ("Decoding UCS-2 message");
 		message = g_utf16_to_utf8 ((const gunichar2 *)
 			sms->payload.data, sms->payload.length,
 			NULL, NULL, NULL);
@@ -162,11 +167,7 @@ store_sms (MokoDialerSMS *dialer_sms, struct gsmd_sms_list *sms)
 		jana_note_set_author (note, author);
 		g_free (author);
 		
-		/* TODO: Normalise number necessary? */
-		recipient = g_strdup_printf ("%d",
-			lgsm_get_subscriber_num (priv->handle));
-		jana_note_set_recipient (note, recipient);
-		g_free (recipient);
+		jana_note_set_recipient (note, priv->own_number);
 		
 		jana_note_set_body (note, message);
 		
@@ -201,8 +202,10 @@ gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
 		if (aux->u.sms.inlined) {
 			struct gsmd_sms_list * sms =
 				(struct gsmd_sms_list *)aux->data;
+			g_debug ("Message inline");
 			store_sms (moko_dialer_sms_get_default (), sms);
 		} else {
+			g_debug ("Message stored on SIM, reading...");
 			lgsm_sms_read (priv->handle, aux->u.sms.index);
 		}
 		break;
@@ -277,7 +280,29 @@ sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 
 		g_debug ("Storing message on SIM");
 		store_sms (sms, sms_list);
+	} else {
+		return -EINVAL;
 	}
+	
+	return 0;
+}
+
+static int
+net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	MokoDialerSMS *sms = moko_dialer_sms_get_default ();
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (sms);
+
+	const struct gsmd_own_number *num = (struct gsmd_own_number *)
+		((void *) gmh + sizeof(*gmh));
+
+	if (gmh->msg_subtype != GSMD_NETWORK_GET_NUMBER) return -EINVAL;
+	
+	g_free (priv->own_number);
+	
+	/* TODO: Normalise number necessary? */
+	priv->own_number = g_strdup (num->addr.number);
+	g_debug ("Got phone number: %s", priv->own_number);
 	
 	return 0;
 }
@@ -345,8 +370,8 @@ opened_cb (JanaStore *store, MokoDialerSMS *self)
 	/* Connect SMS message handler (to get sent message references) */
 	lgsm_register_handler (priv->handle, GSMD_MSG_SMS, &sms_msghandler);
 	
-	/* List all messages to move to journal */
-	lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
+	/* Connect network message handler (to get phone number) */
+	lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
 	
 	/* Start polling for events */
 	priv->source = (MokoDialerSMSSource *)
@@ -357,6 +382,12 @@ opened_cb (JanaStore *store, MokoDialerSMS *self)
 	priv->source->pollfd.revents = 0;
 	g_source_add_poll ((GSource*)priv->source, &priv->source->pollfd);
 	g_source_attach ((GSource*)priv->source, NULL);
+
+	/* Get phone number */
+	lgsm_get_subscriber_num (priv->handle);
+	
+	/* List all messages to move to journal */
+	lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
 }
 
 static void
@@ -456,12 +487,7 @@ moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
 	/* Store sent message in journal */
 	note = jana_ecal_note_new ();
 	jana_note_set_recipient (note, number);
-	
-	/* TODO: Normalise number necessary? */
-	author = g_strdup_printf ("%d",
-		lgsm_get_subscriber_num (priv->handle));
-	jana_note_set_author (note, author);
-	g_free (author);
+	jana_note_set_author (note, priv->own_number);
 	
 	jana_note_set_body (note, message);
 	jana_component_set_categories (JANA_COMPONENT (note),
