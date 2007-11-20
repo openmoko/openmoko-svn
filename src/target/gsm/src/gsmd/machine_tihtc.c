@@ -66,6 +66,7 @@ static int tihtc_init(struct gsmd *g, int fd)
 
 struct gsmd_machine_plugin gsmd_machine_plugin = {
 	.name = "TI Calypso / HTC firmware",
+	.power = NULL,
 	.ex_submit = NULL,
 	.detect = &tihtc_detect,
 	.init = &tihtc_init,

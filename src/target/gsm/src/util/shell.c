@@ -356,6 +356,8 @@ static int shell_help(void)
 		"\tH\tHangup call\n"
 		"\tO\tPower On\n"
 		"\to\tPower Off\n"
+		"\tM\tModem Power On\n"
+		"\tm\tModem Power Off\n"
 		"\tr\tRegister to network\n"
 		"\tR\tRegister to given operator (R=number)\n"
 		"\tU\tUnregister from netowrk\n"
@@ -675,6 +677,12 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				printf("Get imsi\n");
 				lgsm_get_imsi(lgsmh);
 				pending_responses ++;
+                        } else if (!strncmp(buf, "M", 1)) {
+                                printf("Modem Power On\n");
+                                lgsm_modem_power(lgsmh, 1);
+                        } else if (!strncmp(buf, "m", 1)) {
+                                printf("Modem Power Off\n");
+                                lgsm_modem_power(lgsmh, 0);
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}

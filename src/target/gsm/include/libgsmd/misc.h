@@ -9,6 +9,7 @@
 #include <libgsmd/libgsmd.h>
 
 extern int lgsm_phone_power(struct lgsm_handle *lh, int power);
+extern int lgsm_modem_power(struct lgsm_handle *lh, int power);
 
 enum lgsm_info_type {
 	LGSM_INFO_TYPE_NONE		= 0,

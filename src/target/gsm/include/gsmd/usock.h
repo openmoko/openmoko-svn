@@ -24,6 +24,7 @@ enum gsmd_msg_type {
 	GSMD_MSG_PIN		= 8,
 	GSMD_MSG_SMS		= 9,
 	GSMD_MSG_CB		= 10,
+	GSMD_MSG_MODEM		= 11,
 	__NUM_GSMD_MSGS
 };
 
@@ -55,6 +56,11 @@ enum gsmd_msg_pin_type {
 enum gsmd_msg_phone {
 	GSMD_PHONE_POWERUP	= 1,
 	GSMD_PHONE_POWERDOWN	= 2,
+};
+
+enum gsmd_msg_modem {
+	GSMD_MODEM_POWERUP	= 1,
+	GSMD_MODEM_POWERDOWN	= 2,
 };
 
 enum gsmd_msg_cb {

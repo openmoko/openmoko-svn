@@ -288,6 +288,18 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	return atcmd_submit(gu->gsmd, cmd);
 }
 
+static int usock_rcv_modem(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
+			   int len)
+{
+	struct gsmd *g = gu->gsmd;
+
+	if (g->machinepl->power) {
+		g->machinepl->power(g, gph->msg_subtype);
+	}
+
+	return 0; 
+}
+
 static int network_vmail_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
@@ -1168,6 +1180,7 @@ static usock_msg_handler *pcmd_type_handlers[__NUM_GSMD_MSGS] = {
 	[GSMD_MSG_SMS]		= &usock_rcv_sms,
 	[GSMD_MSG_CB]		= &usock_rcv_cb,
 	[GSMD_MSG_PHONEBOOK]	= &usock_rcv_phonebook,
+	[GSMD_MSG_MODEM]	= &usock_rcv_modem,
 };
 
 static int usock_rcv_pcmd(struct gsmd_user *gu, char *buf, int len)

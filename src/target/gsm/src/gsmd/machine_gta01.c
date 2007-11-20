@@ -15,6 +15,52 @@
 #include <gsmd/atcmd.h>
 
 #define GSMD_MODEM_WAKEUP_TIMEOUT     3
+#define GSMD_MODEM_POWEROFF_TIMEOUT	3   	 
+
+static void poweroff_timeout(struct gsmd_timer *tmr, void *data) 
+{
+	exit(0);
+}
+
+static struct gsmd_timer * poweroff_timer(struct gsmd *g)
+{
+	struct timeval tv;
+	tv.tv_sec = GSMD_MODEM_POWEROFF_TIMEOUT;
+	tv.tv_usec = 0;
+	DEBUGP("Create power off timer\n");
+
+	return gsmd_timer_create(&tv,&poweroff_timeout,g);
+}
+
+static int gta01_power(struct gsmd *g, int power)
+{
+	struct gsmd_atcmd * cmd = NULL;
+
+	switch (power) 
+	{
+		case GSMD_MODEM_POWERUP: 
+			break;
+
+		case GSMD_MODEM_POWERDOWN:  	
+
+			//After send AT@POFF to GSM modem, modem will not work anymore and gsmd get no response
+			cmd = atcmd_fill("AT@POFF", 7+1, NULL, g, 0, poweroff_timer);
+
+			if (!cmd)
+				return -ENOMEM;
+
+			llist_add_tail(&cmd->list, &g->pending_atcmds);
+			if (llist_empty(&g->busy_atcmds) && !llist_empty(&g->pending_atcmds)) {
+				atcmd_wake_pending_queue(g);
+			}
+			break;
+
+		default:
+			return -EINVAL;
+	}
+
+	return 0;
+}
 
 static int null_wakeup_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp) 
 {
@@ -103,6 +149,7 @@ static int gta01_init(struct gsmd *g, int fd)
 
 struct gsmd_machine_plugin gsmd_machine_plugin = {
 	.name = "TI Calypso / FIC firmware",
+	.power = &gta01_power,
 	.ex_submit = &atcmd_wakeup_modem,
 	.detect = &gta01_detect,
 	.init = &gta01_init,
