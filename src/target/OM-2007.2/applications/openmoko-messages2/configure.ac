@@ -25,6 +25,7 @@ PKG_CHECK_MODULES(EBOOK, libebook-1.2)
 PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.6.0)
 PKG_CHECK_MODULES(MOKOUI, libmokoui2 >= 0.3)
 PKG_CHECK_MODULES(JANA, libjana libjana-ecal libjana-gtk)
+PKG_CHECK_MODULES(DBUS, dbus-glib-1)
 
 AC_OUTPUT([
 Makefile

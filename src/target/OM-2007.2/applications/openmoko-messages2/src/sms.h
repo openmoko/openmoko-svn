@@ -23,6 +23,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <libjana-gtk/jana-gtk.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
 
 typedef struct {
 	JanaStore *notes;
@@ -44,6 +46,8 @@ typedef struct {
 	
 	gulong delete_all_handler;
 	gulong delete_handler;
+	
+	DBusGProxy *sms_proxy;
 } SmsData;
 
 typedef enum {

@@ -42,9 +42,23 @@ int
 main (int argc, char **argv)
 {
 	SmsData data;
+	DBusGConnection *connection;
 	GtkWidget *vbox, *toolbar;
+	GError *error = NULL;
 	
 	gtk_init (&argc, &argv);
+	
+	/* Get SMS dbus proxy */
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+	if (!connection) {
+		g_warning ("Failed to get dbus connection: %s", error->message);
+		g_error_free (error);
+		data.sms_proxy = NULL;
+	} else {
+		data.sms_proxy = dbus_g_proxy_new_for_name (connection,
+			"org.openmoko.Dialer", "/org/openmoko/Dialer/SMS",
+			"org.openmoko.Dialer");
+	}
 
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (data.window), "Messages");

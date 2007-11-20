@@ -1,3 +1,14 @@
+2007-11-20  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/sms-main.c: (main):
+	* src/sms-notes.c: (get_selected_contact), (page_shown),
+	(new_toggled_cb), (send_clicked_cb), (sms_notes_page_new):
+	* src/sms.h:
+	Hook up send button, don't show all messages when a contact has no 
+	phone numbers, don't focus in text view when toggling off send
+
 2007-11-14  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-main.c: (main):
