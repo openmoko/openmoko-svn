@@ -84,6 +84,9 @@ moko_dialer_sms_class_init (MokoDialerSMSClass *klass)
 	object_class->set_property = moko_dialer_sms_set_property;
 	object_class->dispose = moko_dialer_sms_dispose;
 	object_class->finalize = moko_dialer_sms_finalize;
+	
+	dbus_g_object_type_install_info (G_TYPE_FROM_CLASS (klass),
+		&dbus_glib_moko_dialer_sms_object_info);
 }
 
 static void

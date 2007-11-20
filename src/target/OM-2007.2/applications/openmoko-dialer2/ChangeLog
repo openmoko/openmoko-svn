@@ -1,5 +1,10 @@
 2007-11-20  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_class_init):
+	Don't forget to register introspection data
+
+2007-11-20  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_send):
 	* src/phone-kit/moko-dialer-sms.h:
 	Return error message when trying to send an SMS after failing to 
