@@ -41,35 +41,25 @@
 static int csq_parse(char *buf, int len, const char *param,
 		     struct gsmd *gsmd)
 {
-	char *tok;
 	struct gsmd_evt_auxdata *aux;
-	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_SIGNAL,
-					     sizeof(*aux));
+	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT,
+			GSMD_EVT_SIGNAL, sizeof(*aux));
 
 	DEBUGP("entering csq_parse param=`%s'\n", param);
 	if (!ucmd)
 		return -EINVAL;
-	
-	
+
 	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
-	tok = strtok(param, ",");
-	if (!tok)
+	if (sscanf(param, " %hhi, %hhi",
+				&aux->u.signal.sigq.rssi,
+				&aux->u.signal.sigq.ber) < 2)
 		goto out_free_io;
-	
-	aux->u.signal.sigq.rssi = atoi(tok);
-
-	tok = strtok(NULL, ",");
-	if (!tok)
-		goto out_free_io;
-
-	aux->u.signal.sigq.ber = atoi(tok);
 
 	usock_evt_send(gsmd, ucmd, GSMD_EVT_SIGNAL);
-
 	return 0;
 
 out_free_io:
-	free(ucmd);
+	talloc_free(ucmd);
 	return -EIO;
 }
 
@@ -236,12 +226,13 @@ static int cpmb_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	if (er->num_tokens == 5 &&
 	    er->tokens[2].type == GSMD_ECMD_RTT_STRING &&
 		er->tokens[3].type == GSMD_ECMD_RTT_NUMERIC &&
-		er->tokens[4].type == GSMD_ECMD_RTT_STRING)
-		rc = sprintf(atcmd_buf, "AT+CSVM=1,\"%s\",%d", 
-			er->tokens[2].u.string, er->tokens[3].u.numeric);
-
-	if(rc)
-		return gsmd_simplecmd(g, atcmd_buf);
+		er->tokens[4].type == GSMD_ECMD_RTT_STRING) {
+                snprintf(atcmd_buf, sizeof(atcmd_buf), "AT+CSVM=1,\"%s\",%d",
+                        er->tokens[2].u.string, er->tokens[3].u.numeric);
+                rc = gsmd_simplecmd(g, atcmd_buf);
+       } else {
+                rc  -EINVAL;
+       }
 
 	talloc_free(er);
 
