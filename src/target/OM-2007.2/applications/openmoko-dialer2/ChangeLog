@@ -1,5 +1,10 @@
 2007-11-19  Chris Lord  <chris@openedhand.com>
 
+	* src/phone-kit/moko-dialer-sms.c: (opened_cb), (moko_dialer_sms_init):
+	Don't forget to open the note store before trying to do anything
+
+2007-11-19  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_finalize),
 	(connection_source_prepare), (connection_source_check),
 	(connection_source_dispatch), (moko_dialer_sms_init):

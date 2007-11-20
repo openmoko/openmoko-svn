@@ -318,9 +318,8 @@ connection_source_dispatch (GSource *source, GSourceFunc callback,
 }
 
 static void
-moko_dialer_sms_init (MokoDialerSMS *self)
+opened_cb (JanaStore *store, MokoDialerSMS *self)
 {
-	static gboolean first_init = TRUE;
 	static GSourceFuncs funcs = {
 		connection_source_prepare,
 		connection_source_check,
@@ -330,20 +329,13 @@ moko_dialer_sms_init (MokoDialerSMS *self)
 	
 	MokoDialerSMSPrivate *priv = SMS_PRIVATE (self);
 	
-	/* We can only have one of these objects per process, as the gsmd 
-	 * event handling callback does not allow for custom data...
-	 */
-	if (!first_init)
-		g_error ("MokoDialerSMS already created in this process");
-	first_init = FALSE;
-	
-	/* Get the note store */
-	priv->note_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
-	
+	g_debug ("Journal opened, connecting to gsmd");
+
 	/* Initialise gsmd and connect event handler */
 	if (!(priv->handle = lgsm_init (LGSMD_DEVICE_GSMD))) {
 		g_error ("Failed to connect to gsmd");
 	} else {
+		g_debug ("Connected to gsmd");
 		lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_SMS,
 			gsmd_eventhandler);
 		lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_DS,
@@ -365,6 +357,27 @@ moko_dialer_sms_init (MokoDialerSMS *self)
 	priv->source->pollfd.revents = 0;
 	g_source_add_poll ((GSource*)priv->source, &priv->source->pollfd);
 	g_source_attach ((GSource*)priv->source, NULL);
+}
+
+static void
+moko_dialer_sms_init (MokoDialerSMS *self)
+{
+	static gboolean first_init = TRUE;
+	
+	MokoDialerSMSPrivate *priv = SMS_PRIVATE (self);
+	
+	/* We can only have one of these objects per process, as the gsmd 
+	 * event handling callback does not allow for custom data...
+	 */
+	if (!first_init)
+		g_error ("MokoDialerSMS already created in this process");
+	first_init = FALSE;
+	
+	/* Get the note store */
+	priv->note_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
+	g_signal_connect (priv->note_store, "opened",
+		G_CALLBACK (opened_cb), self);
+	jana_store_open (priv->note_store);
 }
 
 MokoDialerSMS*
