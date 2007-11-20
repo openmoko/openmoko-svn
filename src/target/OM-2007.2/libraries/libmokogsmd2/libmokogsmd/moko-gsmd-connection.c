@@ -114,8 +114,11 @@ moko_gsmd_connection_dispose(GObject* object)
 
     priv = GSMD_CONNECTION_GET_PRIVATE( MOKO_GSMD_CONNECTION( object ) );
 
-    g_source_destroy( (GSource*) priv->source );
-    lgsm_exit( priv->handle );
+    if (priv->source)
+      g_source_destroy( (GSource*) priv->source );
+
+    if (priv->handle)
+      lgsm_exit( priv->handle );
 
     /* call parent destructor */
     if (G_OBJECT_CLASS (moko_gsmd_connection_parent_class)->dispose)
