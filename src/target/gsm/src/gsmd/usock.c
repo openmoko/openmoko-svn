@@ -1205,9 +1205,11 @@ static int gsmd_usock_user_cb(int fd, unsigned int what, void *data)
 			/* EOF, this client has just vanished */
 			gsmd_unregister_fd(&gu->gfd);
 			close(fd);
+			/* finish pending atcmd's from this client thus
+			 * destroying references to the user structure.  */
+			atcmd_terminate_matching(gu->gsmd, gu);
 			/* destroy whole user structure */
 			llist_del(&gu->list);
-			/* FIXME: delete busy ucmds from finished_ucmds */
 			talloc_free(gu);
 			return 0;
 		} else if (rcvlen < 0)

@@ -719,3 +719,30 @@ int atcmd_init(struct gsmd *g, int sockfd)
 
 	return gsmd_register_fd(&g->gfd_uart);
 }
+
+/* remove from the queues any command whose .ctx matches given */
+int atcmd_terminate_matching(struct gsmd *g, void *ctx)
+{
+	int num = 0;
+	struct gsmd_atcmd *cmd, *pos;
+
+	llist_for_each_entry_safe(cmd, pos, &g->busy_atcmds, list)
+		if (cmd->ctx == ctx) {
+			cmd->ret = -ESHUTDOWN;
+			cmd->cb(cmd, cmd->ctx, "ERROR");
+			cmd->cb = NULL;
+			cmd->ctx = NULL;
+			num ++;
+		}
+
+	llist_for_each_entry_safe(cmd, pos, &g->pending_atcmds, list)
+		if (cmd->ctx == ctx) {
+			llist_del(&cmd->list);
+			cmd->ret = -ESHUTDOWN;
+			cmd->cb(cmd, cmd->ctx, "ERROR");
+			talloc_free(cmd);
+			num ++;
+		}
+
+	return num;
+}

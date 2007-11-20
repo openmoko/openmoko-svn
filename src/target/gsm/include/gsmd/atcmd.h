@@ -13,8 +13,9 @@ extern int atcmd_submit(struct gsmd *g, struct gsmd_atcmd *cmd);
 extern int cancel_atcmd(struct gsmd *g, struct gsmd_atcmd *cmd);
 extern int atcmd_init(struct gsmd *g, int sockfd);
 extern void atcmd_drain(int fd);
+extern int atcmd_terminate_matching(struct gsmd *g, void *ctx);
 extern void atcmd_wake_pending_queue (struct gsmd *g);
-extern void atcmd_wait_pending_queue (struct gsmd *g); 
+extern void atcmd_wait_pending_queue (struct gsmd *g);
 
 #endif /* __GSMD__ */
 
