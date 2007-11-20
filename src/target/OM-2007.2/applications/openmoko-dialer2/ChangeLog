@@ -1,5 +1,9 @@
 2007-11-20  Thomas Wood  <thomas@openedhand.com>
 
+	* data/openmoko-dialer.desktop: Set single instance to true
+
+2007-11-20  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-dialer.c: (moko_dialer_get_status),
 	(moko_dialer_dial), (moko_dialer_class_init), (dialer_init_gsmd):
 	* src/phone-kit/moko-dialer.h:
