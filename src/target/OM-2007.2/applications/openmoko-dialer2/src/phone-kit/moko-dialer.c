@@ -76,10 +76,12 @@ enum
 
 static guint dialer_signals[LAST_SIGNAL] = {0, };
 
+static MokoGsmdConnection * dialer_init_gsmd (MokoDialer *dialer);
+
 /* DBus functions */
 
 static gboolean
-moko_dialer_get_status (MokoDialer *dialer, gint *OUT_status, GError *error)
+moko_dialer_get_status (MokoDialer *dialer, gint *OUT_status, GError **error)
 {
   MokoDialerPrivate *priv;
   
@@ -92,7 +94,7 @@ moko_dialer_get_status (MokoDialer *dialer, gint *OUT_status, GError *error)
 }
 
 gboolean
-moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
+moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
 {
 
   MokoDialerPrivate *priv;
@@ -104,6 +106,16 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
 
   g_debug ("Received dial request: %s", number);
 
+
+  if (!priv->connection)
+    priv->connection = dialer_init_gsmd (dialer);
+  
+  if (!priv->connection)
+  {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD, "Could not connect to gsmd");
+    return FALSE;
+  }
+
   /* check current dialer state */
   if (0 || priv->status != DIALER_STATUS_NORMAL)
   {
@@ -113,14 +125,10 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
       "Dialing",
       "Outgoing Call"
     };
-	/*
-	GtkWidget *dlg;
-    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-        "Cannot dial when dialer is busy.\nCurrent status = %s", strings[priv->status]);
-    gtk_dialog_run (GTK_DIALOG (dlg));
-    gtk_widget_destroy (dlg);
-    */
+
     g_warning ("Cannot dial when dialer is busy. Current status = %s\n", strings[priv->status]);
+    
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_BUSY, "Dialer busy");
 
     return FALSE;
   }
@@ -140,14 +148,9 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
       "",
       "Roaming network registered"
     };
-      /*
-	GtkWidget *dlg;
-    dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-        "Not connected to network.\nCurrent status = %s ", strings[priv->registered]);
-    gtk_dialog_run (GTK_DIALOG (dlg));
-    gtk_widget_destroy (dlg);
-	*/
-	g_warning ("Not connected to network.\nCurrent status = %s ", strings[priv->registered]);
+
+    g_warning ("Not connected to network.\nCurrent status = %s ", strings[priv->registered]);
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_NOT_CONNECTED, "No Network");
 
     /* no point continuing if we're not connected to a network! */
     priv->status = DIALER_STATUS_NORMAL;
@@ -176,10 +179,23 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error)
 }
 
 static gboolean
-moko_dialer_hang_up (MokoDialer *dialer, const gchar *message, GError *error)
+moko_dialer_hang_up (MokoDialer *dialer, const gchar *message, GError **error)
 {
+  MokoDialerPrivate *priv;
+
+  priv = dialer->priv; 
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
+
+  /* check for gsmd connection */
+  if (!priv->connection)
+    priv->connection = dialer_init_gsmd (dialer);
   
+  if (!priv->connection)
+  {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD, "Could not connect to gsmd");
+    return FALSE;
+  }
+
   /* FIXME: Create a dialog and let the user know that another program is
    * requesting the connection be dropped, and why ($message).
    */
@@ -661,45 +677,30 @@ moko_dialer_class_init (MokoDialerClass *klass)
 static void
 dialer_display_error (GError *err)
 {
-  /* GtkWidget *dlg; */
-
   if (!err)
     return;
-  /*
-  dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "Dialer: %s", err->message);
-  gtk_dialog_run (GTK_DIALOG (dlg));
-  gtk_widget_destroy (dlg);
-  */
   g_warning (err->message);
 }
 
-static void
-moko_dialer_init (MokoDialer *dialer)
+static MokoGsmdConnection *
+dialer_init_gsmd (MokoDialer *dialer)
 {
-  MokoDialerPrivate *priv;
-  MokoGsmdConnection *conn;
   GError *err = NULL;
-
+  MokoGsmdConnection *conn;
+  MokoDialerPrivate *priv;
   priv = dialer->priv = MOKO_DIALER_GET_PRIVATE (dialer);
 
-  /* create the dialer_data struct */
-  priv->status = DIALER_STATUS_NORMAL;
-  
-  /* clear incoming clip */
-  priv->incoming_clip = NULL;
-
-  /* Initialise the contacts list */
-  //contact_init_contact_data (&(priv->data->g_contactlist));
-
   /* Init the gsmd connection, and power it up */
-  conn = priv->connection = moko_gsmd_connection_new ();
+  conn = moko_gsmd_connection_new ();
   moko_gsmd_connection_set_antenna_power (conn, TRUE, &err);
 
   dialer_display_error (err);
   if (err && err->code == MOKO_GSMD_ERROR_CONNECT)
-    exit (1); /* no point continuing if we can't connect to gsmd? */
+  {
+    g_object_unref (conn);
+    return NULL;
+  }
 
- 
   /* Connect to the gsmd signals */
   g_signal_connect (G_OBJECT (conn), "network-registration", 
                     G_CALLBACK (on_network_registered), (gpointer)dialer);
@@ -716,7 +717,28 @@ moko_dialer_init (MokoDialer *dialer)
    *  moko_gsmd_connection_get_network_status always seems to return 0 here */
   priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
   moko_gsmd_connection_network_register (conn);
- 
+
+  return conn;
+}
+
+static void
+moko_dialer_init (MokoDialer *dialer)
+{
+  MokoDialerPrivate *priv;
+
+  priv = dialer->priv = MOKO_DIALER_GET_PRIVATE (dialer);
+
+  /* create the dialer_data struct */
+  priv->status = DIALER_STATUS_NORMAL;
+  
+  /* clear incoming clip */
+  priv->incoming_clip = NULL;
+
+  /* Initialise the contacts list */
+  //contact_init_contact_data (&(priv->data->g_contactlist));
+
+  priv->connection = dialer_init_gsmd (dialer);
+
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
   if (!priv->journal || !moko_journal_load_from_storage (priv->journal))

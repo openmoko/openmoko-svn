@@ -43,6 +43,14 @@ G_BEGIN_DECLS
 #define MOKO_DIALER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), \
         MOKO_TYPE_DIALER, MokoDialerClass))
 
+#define PHONE_KIT_DIALER_ERROR g_quark_from_static_string("phone-kit-dialer")
+
+typedef enum {
+  PK_DIALER_ERROR_BUSY,
+  PK_DIALER_ERROR_GSMD,
+  PK_DIALER_ERROR_NOT_CONNECTED
+} PhoneKitDialerError;
+
 typedef struct _MokoDialer MokoDialer;
 typedef struct _MokoDialerClass MokoDialerClass;
 typedef struct _MokoDialerPrivate MokoDialerPrivate;
@@ -53,7 +61,6 @@ enum
   DIALER_STATUS_INCOMING,
   DIALER_STATUS_DIALING,
   DIALER_STATUS_TALKING
-
 };
 
 struct _MokoDialer
@@ -97,13 +104,13 @@ MokoDialer*
 moko_dialer_get_default (void);
 
 gboolean
-moko_dialer_show_dialer (MokoDialer *dialer, GError *error);
+moko_dialer_show_dialer (MokoDialer *dialer, GError **error);
 
 gboolean
-moko_dialer_show_missed_calls (MokoDialer *dialer, GError *error);
+moko_dialer_show_missed_calls (MokoDialer *dialer, GError **error);
 
 gboolean
-moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError *error);
+moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error);
 
 void
 moko_dialer_outgoing_call (MokoDialer *dialer, const gchar *number);
