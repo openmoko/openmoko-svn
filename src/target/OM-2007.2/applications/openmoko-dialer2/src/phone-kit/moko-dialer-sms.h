@@ -31,7 +31,8 @@ G_BEGIN_DECLS
 
 typedef enum {
 	PK_SMS_ERROR_NO_TOOLONG,
-	PK_SMS_ERROR_MSG_TOOLONG
+	PK_SMS_ERROR_MSG_TOOLONG,
+	PK_SMS_ERROR_GSMD,
 } PhoneKitSMSError;
 
 typedef struct {

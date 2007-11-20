@@ -445,6 +445,13 @@ moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
 
 	priv = SMS_PRIVATE (self);
 	
+	if (!priv->handle) {
+		/* Failed to connect to gsmd earlier */
+		*error = g_error_new (PHONE_KIT_SMS_ERROR,
+			PK_SMS_ERROR_GSMD, "Failed to connect to gsmd");
+		return FALSE;
+	}
+	
 	/* Ask for delivery report */
 	sms.ask_ds = 1;
 	
