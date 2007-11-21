@@ -66,7 +66,7 @@ moko_dialer_sms_finalize (GObject *object)
 {
 	MokoDialerSMSPrivate *priv = SMS_PRIVATE (object);
 	
-	g_source_destroy ((GSource *)priv->source);
+	if (priv->source) g_source_destroy ((GSource *)priv->source);
 	g_free (priv->own_number);
 	lgsm_exit (priv->handle);
 
@@ -158,7 +158,7 @@ store_sms (MokoDialerSMS *dialer_sms, struct gsmd_sms_list *sms)
 	/* Store message in the journal */
 	if (message) {
 		struct lgsm_sms_delete sms_del;
-		gchar *author, *recipient;
+		gchar *author;
 		JanaNote *note = jana_ecal_note_new ();
 		
 		g_debug ("Moving message to journal:\n\"%s\"", message);
@@ -442,7 +442,6 @@ moko_dialer_sms_send (MokoDialerSMS *self, const gchar *number,
 	gint msg_length, c;
 	gboolean ascii;
 	JanaNote *note;
-	gchar *author;
 	
 	g_assert (self && number && message);
 

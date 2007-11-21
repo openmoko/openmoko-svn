@@ -1,3 +1,10 @@
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_finalize),
+	(store_sms), (moko_dialer_sms_send):
+	Fix compiler warnings, check the source exists before trying to 
+	destroy it on finalize
+
 2007-11-20  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_class_init):
