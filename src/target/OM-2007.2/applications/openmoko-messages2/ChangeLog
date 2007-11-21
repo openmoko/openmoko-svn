@@ -1,5 +1,12 @@
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (nophoto_filter_func),
+	(sms_contacts_page_new):
+	Use a filter modify func to set contacts with no photo to the
+	stock_person icon
+
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
 	* configure.ac:
 	* Makefile.am:
 	Remove libhito

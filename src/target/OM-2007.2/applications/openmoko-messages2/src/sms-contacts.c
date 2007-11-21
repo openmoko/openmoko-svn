@@ -149,6 +149,33 @@ free_iter_slice (GtkTreeIter *iter)
 	g_slice_free (GtkTreeIter, iter);
 }
 
+static void
+nophoto_filter_func (GtkTreeModel *model, GtkTreeIter *iter, GValue *value,
+		     gint column, SmsData *data)
+{
+	GtkTreeIter real_iter;
+	gpointer pointer;
+	
+	gtk_tree_model_filter_convert_iter_to_child_iter (
+	     (GtkTreeModelFilter *)model, &real_iter, iter);
+	
+	gtk_tree_model_get (data->contacts_store, &real_iter,
+		column, &pointer, -1);
+	switch (column) {
+	    case COL_UID :
+	    case COL_NAME :
+	    case COL_DETAIL :
+		g_value_take_string (value, pointer);
+		break;
+	    case COL_ICON :
+		if (pointer)
+			g_value_take_object (value, pointer);
+		else
+			g_value_set_object (value, data->no_photo);
+		break;
+	}
+}
+
 GtkWidget *
 sms_contacts_page_new (SmsData *data)
 {
@@ -212,6 +239,11 @@ sms_contacts_page_new (SmsData *data)
 	/* Create filter */
 	data->contacts_filter = gtk_tree_model_filter_new (
 		data->contacts_store, NULL);
+	gtk_tree_model_filter_set_modify_func ((GtkTreeModelFilter *)
+		data->contacts_filter, COL_LAST,
+		(GType []){G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING, GDK_TYPE_PIXBUF},
+		(GtkTreeModelFilterModifyFunc)nophoto_filter_func, data, NULL);
 	
 	/* Create groups model */
 	data->contacts_combo = gtk_combo_box_new_text ();
