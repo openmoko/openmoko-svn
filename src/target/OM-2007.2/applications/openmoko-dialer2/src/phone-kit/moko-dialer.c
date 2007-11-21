@@ -34,6 +34,7 @@
 #include "moko-notify.h"
 #include "moko-talking.h"
 #include "moko-sound.h"
+#include "moko-pin.h"
 
 G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
@@ -434,7 +435,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   if (priv->status == DIALER_STATUS_INCOMING  
         || priv->status == DIALER_STATUS_TALKING)
   {
-    /*g_debug ("We are already showing the incoming page");*/
+    g_debug ("We are already showing the incoming page");
     return;
   }
   priv->status = DIALER_STATUS_INCOMING;
@@ -497,11 +498,17 @@ static void
 on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
 {
   MokoDialerPrivate *priv;
+  gchar *pin;
 
   g_return_if_fail (MOKO_IS_DIALER (dialer));
+  g_debug ("Pin Requested");
   priv = dialer->priv;
   
-  g_debug ("Pin Requested");
+  pin = get_pin_from_user ();
+  if (!pin)
+    return;
+  moko_gsmd_connection_send_pin (priv->connection, pin);
+  g_free (pin);
 }
 
 static void
@@ -770,7 +777,6 @@ moko_dialer_init (MokoDialer *dialer)
                     G_CALLBACK (on_talking_silence), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->talking), "speaker_toggle",
                     G_CALLBACK (on_talking_speaker_toggle), (gpointer)dialer);
-
 
 }
 

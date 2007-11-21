@@ -11,7 +11,9 @@ phone_kit_SOURCES = \
 	moko-notify.c moko-notify.h \
 	moko-sound.c moko-sound.h \
 	moko-talking.c moko-talking.h \
-	moko-dialer-sms.c moko-dialer-sms.h
+	moko-dialer-sms.c moko-dialer-sms.h \
+	moko-pin.c \
+	moko-pin.h
 
 phone_kit_LDADD = @DIALER_LIBS@ @JANA_LIBS@ $(top_srcdir)/src/common/libdialer-common.a
 

@@ -1,3 +1,13 @@
+2007-11-21  Thomas Wood  <thomas@openedhand.com>
+
+	* src/phone-kit/Makefile.am:
+	* src/phone-kit/moko-dialer.c: (on_incoming_call),
+	(on_pin_requested), (moko_dialer_init):
+	* src/phone-kit/moko-pin.c:
+	* src/phone-kit/moko-pin.h:
+
+	Add new code to request PIN from user
+
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-dialer-sms.c: (moko_dialer_sms_finalize),
