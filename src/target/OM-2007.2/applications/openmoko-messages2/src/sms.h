@@ -37,6 +37,7 @@ typedef struct {
 	GtkTreeModel *contacts_store;
 	GtkTreeModel *contacts_filter;
 	GHashTable *contacts;
+	GHashTable *numbers;
 	
 	GtkWidget *window;
 	GtkWidget *notebook;
@@ -49,6 +50,8 @@ typedef struct {
 	GtkWidget *sms_textview;
 	GdkPixbuf *author_icon;
 	GdkPixbuf *recipient_icon;
+	gchar *recipient_number;
+	gchar *author_uid;
 
 	GtkWidget *contacts_treeview;
 	GtkWidget *contacts_combo;

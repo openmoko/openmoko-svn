@@ -1,5 +1,25 @@
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (sms_contacts_load_photo),
+	(clear_numbers_cb), (clear_numbers), (contacts_store),
+	(contacts_changed_cb), (contacts_removed_cb),
+	(sms_contacts_page_new):
+	Maintain a number->contact uid hash table
+
+	* src/sms-contacts.h:
+	Make contact photo-loading function public
+
+	* src/sms-notes.c: (get_selected_contact), (note_changed_cb),
+	(page_shown), (page_hidden), (send_clicked_cb),
+	(sms_notes_data_func), (sms_notes_page_new):
+	Don't use categories to determine outgoing status, retrieve avatars for
+	conversation participants
+
+	* src/sms.h:
+	Extra variables for new features
+
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (sms_notes_page_new):
 	Check if no-photo icon is NULL before reffing it
 

@@ -31,6 +31,7 @@ enum {
 };
 
 GtkWidget *sms_contacts_page_new (SmsData *data);
+GdkPixbuf *sms_contacts_load_photo (EContact *contact);
 
 #endif
 

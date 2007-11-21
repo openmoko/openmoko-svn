@@ -40,7 +40,7 @@ contact_photo_size (GdkPixbufLoader * loader, gint width, gint height,
 }
 
 GdkPixbuf *
-contacts_load_photo (EContact *contact)
+sms_contacts_load_photo (EContact *contact)
 {
 	EContactPhoto *photo;
 	GdkPixbuf *pixbuf = NULL;
@@ -85,15 +85,50 @@ contacts_load_photo (EContact *contact)
 	return pixbuf;
 }
 
+static const gchar *clear_numbers_uid;
+
+static void
+clear_numbers_cb (gchar *number, gchar *uid, GList **list)
+{
+	if (strcmp (uid, clear_numbers_uid) == 0)
+		*list = g_list_prepend (*list, number);
+}
+
+static void
+clear_numbers (SmsData *data, const gchar *uid)
+{
+	GList *n, *numbers = NULL;
+
+	clear_numbers_uid = uid;
+	g_hash_table_foreach (data->numbers,
+		(GHFunc)clear_numbers_cb, &numbers);
+	
+	for (n = numbers; n; n = n->next)
+		g_hash_table_remove (data->numbers, n->data);
+	g_list_free (numbers);
+}
+
 static void
 contacts_store (SmsData *data, GtkTreeIter *iter, EContact *contact)
 {
-	GdkPixbuf *photo = contacts_load_photo (contact);
+	gint i;
+	
+	GdkPixbuf *photo = sms_contacts_load_photo (contact);
+
 	gtk_list_store_set ((GtkListStore *)data->contacts_store, iter,
 		COL_UID, e_contact_get_const (contact, E_CONTACT_UID),
 		COL_NAME, e_contact_get_const (contact, E_CONTACT_FULL_NAME),
 		COL_ICON, photo, -1);
 	if (photo) g_object_unref (photo);
+	
+	for (i = E_CONTACT_FIRST_PHONE_ID; i <= E_CONTACT_LAST_PHONE_ID; i++) {
+		gchar *number = e_contact_get (contact, (EContactField)i);
+
+		if (!number) continue;
+		
+		g_hash_table_insert (data->numbers, number,
+			e_contact_get (contact, E_CONTACT_UID));
+	}
 }
 
 static void
@@ -127,7 +162,10 @@ contacts_changed_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 		
 		uid = e_contact_get_const (contact, E_CONTACT_UID);
 		iter = g_hash_table_lookup (data->contacts, uid);
-		if (iter) contacts_store (data, iter, contact);
+		if (iter) {
+			clear_numbers (data, uid);
+			contacts_store (data, iter, contact);
+		}
 	}
 }
 
@@ -140,6 +178,7 @@ contacts_removed_cb (EBookView *ebookview, GList *uids, SmsData *data)
 
 		if (!iter) continue;
 		
+		clear_numbers (data, (const gchar *)uids->data);
 		gtk_list_store_remove ((GtkListStore *)
 			data->contacts_store, iter);
 		g_hash_table_remove (data->contacts, uids->data);
@@ -270,6 +309,8 @@ sms_contacts_page_new (SmsData *data)
 		data->contacts_store), COL_NAME, GTK_SORT_ASCENDING);
 	data->contacts = g_hash_table_new_full (g_str_hash, g_str_equal,
 		(GDestroyNotify)g_free, (GDestroyNotify)free_iter_slice);
+	data->numbers = g_hash_table_new_full (g_str_hash, g_str_equal,
+		(GDestroyNotify)g_free, (GDestroyNotify)g_free);
 	
 	/* Create filter */
 	data->contacts_filter = gtk_tree_model_filter_new (

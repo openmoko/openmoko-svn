@@ -36,7 +36,6 @@ get_selected_contact (SmsData *data)
 	GtkTreeModel *model;
 	EContact *contact;
 	GtkTreeIter iter;
-	gchar *uid;
 	
 	GError *error = NULL;
 	
@@ -45,18 +44,64 @@ get_selected_contact (SmsData *data)
 	
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
 		return NULL;
-	gtk_tree_model_get (model, &iter, COL_UID, &uid,
+	gtk_tree_model_get (model, &iter, COL_UID, &data->author_uid,
 		COL_ICON, &data->author_icon, -1);
 	
-	if (!e_book_get_contact (data->ebook, uid, &contact, &error)) {
+	if (!e_book_get_contact (data->ebook,
+	     data->author_uid, &contact, &error)) {
 		g_warning ("Error retrieving contact: %s", error->message);
 		g_error_free (error);
 		contact = NULL;
 	}
 	
-	g_free (uid);
-	
 	return contact;
+}
+
+static void
+note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
+{
+	if (data->recipient_number) goto note_changed_cb_end;
+	
+	/* Set recipient icon */
+	for (; components; components = components->next) {
+		EContact *contact;
+		const gchar *uid;
+		JanaNote *note;
+		
+		GError *error = NULL;
+
+		note = JANA_NOTE (components->data);
+		data->recipient_number = jana_note_get_recipient (note);
+		
+		if (!data->recipient_number) continue;
+		
+		uid = g_hash_table_lookup (data->numbers,
+			data->recipient_number);
+		if ((!uid) || (!data->author_uid) ||
+		    strcmp (uid, data->author_uid) == 0) {
+			g_free (data->recipient_number);
+			data->recipient_number = NULL;
+			continue;
+		}
+
+		if (!e_book_get_contact (data->ebook, uid, &contact, &error)) {
+			/* TODO: Unknown contact, probably */
+		} else {
+			data->recipient_icon =
+				sms_contacts_load_photo (contact);
+			if ((!data->recipient_icon) && (data->no_photo))
+				data->recipient_icon =
+					g_object_ref (data->no_photo);
+			g_object_unref (contact);
+			break;
+		}
+	}
+
+note_changed_cb_end:
+	/* Remove handlers */
+	if (data->recipient_number)
+		g_signal_handlers_disconnect_by_func (
+			store_view, note_changed_cb, data);
 }
 
 static void
@@ -88,6 +133,10 @@ page_shown (SmsData *data)
 	if (found_match) {
 		jana_gtk_note_store_set_view (JANA_GTK_NOTE_STORE (
 			data->note_store), store_view);
+		g_signal_connect (store_view, "added",
+			G_CALLBACK (note_changed_cb), data);
+		g_signal_connect (store_view, "modified",
+			G_CALLBACK (note_changed_cb), data);
 		jana_store_view_start (store_view);
 	}
 	g_object_unref (store_view);
@@ -102,6 +151,18 @@ page_hidden (SmsData *data)
 		data->note_store), NULL);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
 		data->new_button), FALSE);
+	if (data->author_uid) {
+		g_free (data->author_uid);
+		data->author_uid = NULL;
+	}
+	if (data->author_icon) {
+		g_object_unref (data->author_icon);
+		data->author_icon = NULL;
+	}
+	if (data->recipient_number) {
+		g_free (data->recipient_number);
+		data->recipient_number = NULL;
+	}
 	if (data->recipient_icon) {
 		g_object_unref (data->recipient_icon);
 		data->recipient_icon = NULL;
@@ -198,7 +259,7 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 		if (!dbus_g_proxy_call (data->sms_proxy, "Send", &error,
 			G_TYPE_STRING, number, G_TYPE_STRING, message,
 			G_TYPE_INVALID, G_TYPE_STRING, NULL, G_TYPE_INVALID)) {
-			g_debug ("Error sending message: %s", error->message);
+			g_warning ("Error sending message: %s", error->message);
 			g_error_free (error);
 		}
 		
@@ -214,9 +275,9 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 				 GtkTreeIter *iter,
 				 SmsData *data)
 {
-	gchar *author, *recipient, *body, **categories;
+	gchar *author, *recipient, *body;
 	JanaTime *created, *modified;
-	gboolean outgoing = FALSE;
+	gboolean outgoing;
 	gint i;
 	
 	gtk_tree_model_get (model, iter,
@@ -225,19 +286,13 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 		JANA_GTK_NOTE_STORE_COL_BODY, &body,
 		JANA_GTK_NOTE_STORE_COL_CREATED, &created,
 		JANA_GTK_NOTE_STORE_COL_MODIFIED, &modified,
-		JANA_GTK_NOTE_STORE_COL_CATEGORIES, &categories, -1);
+		-1);
 
-	if (categories) for (i = 0; categories[i]; i++) {
-		/* Note that this category is not meant for display and 
-		 * shouldn't be translated... (see phone-kit)
-		 */
-		if ((strcmp (categories[i], "Sent") == 0) ||
-		    (strcmp (categories[i], "Sending") == 0) ||
-		    (strcmp (categories[i], "Rejected") == 0)) {
-			outgoing = TRUE;
-			break;
-		}
-	}
+	if (recipient && data->recipient_number &&
+	    (strcmp (recipient, data->recipient_number) == 0))
+		outgoing = TRUE;
+	else
+		outgoing = FALSE;
 	
 	g_object_set (cell,
 		"author", author,
@@ -254,7 +309,6 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 	g_free (author);
 	g_free (recipient);
 	g_free (body);
-	g_strfreev (categories);
 	if (created) g_object_unref (created);
 	if (modified) g_object_unref (modified);
 }
@@ -274,9 +328,10 @@ sms_notes_page_new (SmsData *data)
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	
-	/* FIXME: Set recipient pixbuf */
-	data->recipient_icon = data->no_photo ?
-		g_object_ref (data->no_photo) : NULL;
+	data->author_uid = NULL;
+	data->author_icon = NULL;
+	data->recipient_number = NULL;
+	data->recipient_icon = NULL;
 	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);
