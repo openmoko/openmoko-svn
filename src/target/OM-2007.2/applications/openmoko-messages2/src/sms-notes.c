@@ -23,6 +23,7 @@
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
 #include <libebook/e-book.h>
+#include <string.h>
 
 static GdkColor alt_color;
 static gboolean hidden = TRUE;
@@ -44,7 +45,8 @@ get_selected_contact (SmsData *data)
 	
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
 		return NULL;
-	gtk_tree_model_get (model, &iter, COL_UID, &uid, -1);
+	gtk_tree_model_get (model, &iter, COL_UID, &uid,
+		COL_ICON, &data->author_icon, -1);
 	
 	if (!e_book_get_contact (data->ebook, uid, &contact, &error)) {
 		g_warning ("Error retrieving contact: %s", error->message);
@@ -100,6 +102,10 @@ page_hidden (SmsData *data)
 		data->note_store), NULL);
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
 		data->new_button), FALSE);
+	if (data->recipient_icon) {
+		g_object_unref (data->recipient_icon);
+		data->recipient_icon = NULL;
+	}
 }
 
 static void
@@ -208,26 +214,47 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 				 GtkTreeIter *iter,
 				 SmsData *data)
 {
-	gchar *author, *recipient, *body;
+	gchar *author, *recipient, *body, **categories;
 	JanaTime *created, *modified;
+	gboolean outgoing = FALSE;
+	gint i;
 	
 	gtk_tree_model_get (model, iter,
 		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author,
 		JANA_GTK_NOTE_STORE_COL_RECIPIENT, &recipient,
 		JANA_GTK_NOTE_STORE_COL_BODY, &body,
 		JANA_GTK_NOTE_STORE_COL_CREATED, &created,
-		JANA_GTK_NOTE_STORE_COL_MODIFIED, &modified, -1);
+		JANA_GTK_NOTE_STORE_COL_MODIFIED, &modified,
+		JANA_GTK_NOTE_STORE_COL_CATEGORIES, &categories, -1);
 
+	if (categories) for (i = 0; categories[i]; i++) {
+		/* Note that this category is not meant for display and 
+		 * shouldn't be translated... (see phone-kit)
+		 */
+		if ((strcmp (categories[i], "Sent") == 0) ||
+		    (strcmp (categories[i], "Sending") == 0) ||
+		    (strcmp (categories[i], "Rejected") == 0)) {
+			outgoing = TRUE;
+			break;
+		}
+	}
+	
 	g_object_set (cell,
 		"author", author,
 		"recipient", recipient,
 		"body", body,
 		"created", created,
-		"modified", modified, NULL);
+		"modified", modified,
+		"justify", outgoing ?
+		      GTK_JUSTIFY_LEFT : GTK_JUSTIFY_RIGHT,
+		"icon", outgoing ?
+		      data->author_icon : data->recipient_icon,
+		NULL);
 	
 	g_free (author);
 	g_free (recipient);
 	g_free (body);
+	g_strfreev (categories);
 	if (created) g_object_unref (created);
 	if (modified) g_object_unref (modified);
 }
@@ -247,6 +274,9 @@ sms_notes_page_new (SmsData *data)
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	
+	/* FIXME: Set recipient pixbuf */
+	data->recipient_icon = g_object_ref (data->no_photo);
+	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);
 	g_signal_connect (data->notes, "opened",
@@ -259,6 +289,7 @@ sms_notes_page_new (SmsData *data)
 	/* Create a category-colour hash for the cell renderer */
 	colours_hash = g_hash_table_new (g_str_hash, g_str_equal);
 	g_hash_table_insert (colours_hash, "Sent", &alt_color);
+	g_hash_table_insert (colours_hash, "Sending", &alt_color);
 	
 	/* Create treeview and cell renderer */
 	treeview = gtk_tree_view_new_with_model (data->note_filter);

@@ -47,6 +47,8 @@ typedef struct {
 	GtkWidget *notes_combo;
 	GtkWidget *sms_hbox;
 	GtkWidget *sms_textview;
+	GdkPixbuf *author_icon;
+	GdkPixbuf *recipient_icon;
 
 	GtkWidget *contacts_treeview;
 	GtkWidget *contacts_combo;

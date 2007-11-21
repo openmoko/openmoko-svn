@@ -1,5 +1,13 @@
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (get_selected_contact), (page_hidden),
+	(sms_notes_data_func), (sms_notes_page_new):
+	* src/sms.h:
+	Add some code to show avatars/change justification depending on whether
+	a message was sent or received (unfinished)
+
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-contacts.c: (contacts_iter_compare_func),
 	(sms_contacts_page_new):
 	Add a sort function for the contacts
