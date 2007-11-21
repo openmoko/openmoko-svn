@@ -1,5 +1,11 @@
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-contacts.c: (contacts_iter_compare_func),
+	(sms_contacts_page_new):
+	Add a sort function for the contacts
+
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-contacts.c: (nophoto_filter_func),
 	(sms_contacts_page_new):
 	Use a filter modify func to set contacts with no photo to the

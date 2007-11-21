@@ -20,7 +20,10 @@
 #include "sms-contacts.h"
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
-#include <config.h>
+#include <string.h>
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 /* Following two functions taken from pimlico Contacts */
 static void
@@ -176,6 +179,32 @@ nophoto_filter_func (GtkTreeModel *model, GtkTreeIter *iter, GValue *value,
 	}
 }
 
+static gint
+contacts_iter_compare_func (GtkTreeModel *model, GtkTreeIter *a,
+			    GtkTreeIter *b, SmsData *data)
+{
+	gint result;
+	gchar *name1, *name2, *name1c, *name2c;
+	
+	gtk_tree_model_get (model, a, COL_NAME, &name1, -1);
+	gtk_tree_model_get (model, b, COL_NAME, &name2, -1);
+	
+	name1c = g_utf8_casefold (name1, -1);
+	name2c = g_utf8_casefold (name2, -1);
+	
+	if (name1c && name2c) result = strcmp (name1c, name2c);
+	else if (name1c) result = 1;
+	else if (name2c) result = -1;
+	else result = 0;
+	
+	g_free (name1c);
+	g_free (name1);
+	g_free (name2c);
+	g_free (name2);
+	
+	return result;
+}
+
 GtkWidget *
 sms_contacts_page_new (SmsData *data)
 {
@@ -231,8 +260,14 @@ sms_contacts_page_new (SmsData *data)
 		gtk_icon_theme_get_default (), "stock_person", 48, 0, NULL);
 
 	/* Create contacts model */
-	data->contacts_store = gtk_list_store_new (COL_LAST,
+	data->contacts_store = (GtkTreeModel *)gtk_list_store_new (COL_LAST,
 		G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
+	gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (
+		data->contacts_store), COL_NAME,
+		(GtkTreeIterCompareFunc)contacts_iter_compare_func,
+		data, NULL);
+	gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (
+		data->contacts_store), COL_NAME, GTK_SORT_ASCENDING);
 	data->contacts = g_hash_table_new_full (g_str_hash, g_str_equal,
 		(GDestroyNotify)g_free, (GDestroyNotify)free_iter_slice);
 	
