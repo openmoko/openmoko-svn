@@ -1,5 +1,10 @@
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
+	* src/Makefile.am:
+	Remove spurious libhito bits
+
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
 	* src/sms-notes.c: (get_selected_contact), (page_hidden),
 	(sms_notes_data_func), (sms_notes_page_new):
 	* src/sms.h:

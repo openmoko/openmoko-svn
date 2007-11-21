@@ -1,5 +1,4 @@
 
-INCLUDES = -I$(top_srcdir)/libhito
 AM_CPPFLAGS = -DPKGDATADIR=\"$(pkgdatadir)\" $(GTK_CFLAGS) $(JANA_CFLAGS) $(MOKOUI_CFLAGS) $(EBOOK_CFLAGS) $(DBUS_CFLAGS) -Wall
 AM_LDFLAGS = $(GTK_LIBS) $(JANA_LIBS) $(MOKOUI_LIBS) $(EBOOK_LIBS) $(DBUS_LIBS)
 
@@ -12,6 +11,4 @@ openmoko_messages_SOURCES = \
 	sms-contacts.h \
 	sms-notes.c \
 	sms-notes.h
-
-openmoko_messages_LDADD = $(top_srcdir)/libhito/libhito.a
 
