@@ -1,5 +1,10 @@
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
+	* src/sms-notes.c: (sms_notes_page_new):
+	Check if no-photo icon is NULL before reffing it
+
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
 	* src/Makefile.am:
 	Remove spurious libhito bits
 

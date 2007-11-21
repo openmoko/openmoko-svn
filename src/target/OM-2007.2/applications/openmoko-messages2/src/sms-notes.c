@@ -275,7 +275,8 @@ sms_notes_page_new (SmsData *data)
 	GHashTable *colours_hash;
 	
 	/* FIXME: Set recipient pixbuf */
-	data->recipient_icon = g_object_ref (data->no_photo);
+	data->recipient_icon = data->no_photo ?
+		g_object_ref (data->no_photo) : NULL;
 	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);
