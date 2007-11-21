@@ -25,24 +25,32 @@
 #include <libjana-gtk/jana-gtk.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
+#include <libebook/e-book.h>
 
 typedef struct {
 	JanaStore *notes;
 	JanaStoreView *notes_view;
-	GtkTreeModel *contacts_store;
-	GtkTreeModel *contacts_filter;
 	GtkTreeModel *note_store;
 	GtkTreeModel *note_filter;
+
+	EBook *ebook;
+	GtkTreeModel *contacts_store;
+	GtkTreeModel *contacts_filter;
+	GHashTable *contacts;
 	
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkToolItem *new_button;
 	GtkToolItem *delete_all_button;
 	GtkToolItem *delete_button;
-	GtkWidget *contacts_treeview;
+
 	GtkWidget *notes_combo;
 	GtkWidget *sms_hbox;
 	GtkWidget *sms_textview;
+
+	GtkWidget *contacts_treeview;
+	GtkWidget *contacts_combo;
+	GdkPixbuf *no_photo;
 	
 	gulong delete_all_handler;
 	gulong delete_handler;

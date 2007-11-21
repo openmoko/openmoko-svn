@@ -1,3 +1,17 @@
+2007-11-21  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* Makefile.am:
+	Remove libhito
+
+	* src/sms.h:
+	* src/sms-contacts.[ch]:
+	Replace libhito code with ebook code, implement showing of contact
+	avatars.
+
+	* src/sms-notes.c:
+	Update due to new ebook code
+
 2007-11-20  Chris Lord  <chris@openedhand.com>
 
 	* configure.ac:

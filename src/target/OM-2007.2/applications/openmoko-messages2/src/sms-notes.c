@@ -18,10 +18,10 @@
  */
 
 #include "sms-notes.h"
+#include "sms-contacts.h"
 #include <libjana-ecal/jana-ecal.h>
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
-#include <libhito/hito-contact-store.h>
 #include <libebook/e-book.h>
 
 static GdkColor alt_color;
@@ -33,15 +33,26 @@ get_selected_contact (SmsData *data)
 {
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
+	EContact *contact;
 	GtkTreeIter iter;
-	EContact *contact = NULL;
+	gchar *uid;
+	
+	GError *error = NULL;
 	
 	selection = gtk_tree_view_get_selection (
 		GTK_TREE_VIEW (data->contacts_treeview));
 	
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
 		return NULL;
-	gtk_tree_model_get (model, &iter, COLUMN_CONTACT, &contact, -1);
+	gtk_tree_model_get (model, &iter, COL_UID, &uid, -1);
+	
+	if (!e_book_get_contact (data->ebook, uid, &contact, &error)) {
+		g_warning ("Error retrieving contact: %s", error->message);
+		g_error_free (error);
+		contact = NULL;
+	}
+	
+	g_free (uid);
 	
 	return contact;
 }
