@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Messages
+Comment=View and send SMS messages
+Exec=openmoko-messages
+Icon=openmoko-messages
+Terminal=false
+Type=Application
+Categories=GTK;Office;PIM;
+SingleInstance=true
+StartupNotify=true

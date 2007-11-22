@@ -1,5 +1,13 @@
 2007-11-22  Chris Lord  <chris@openedhand.com>
 
+	* Makefile.am:
+	* configure.ac:
+	* data/Makefile.am:
+	* data/openmoko-messages.desktop:
+	Add a .desktop entry
+
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
 	* src/Makefile.am:
 	Add new files sms-compose.[ch] and sms-utils.[ch]
 
