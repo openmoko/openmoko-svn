@@ -14,6 +14,12 @@
     <arg type="s" name="message" direction="in" />
   </method>
 
+  <method name="SendSms">
+    <arg type="s" name="number" />
+    <arg type="s" name="message" />
+    <arg type="s" name="uid" direction="out" />
+  </method>
+
   <signal name="IncomingCall">
     <arg type="s" name="number"/>
   </signal>

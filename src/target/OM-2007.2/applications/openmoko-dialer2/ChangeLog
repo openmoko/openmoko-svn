@@ -1,3 +1,27 @@
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/Makefile.am:
+	* src/phone-kit/dialer-main.c: (main):
+	* src/phone-kit/moko-dialer-dbus.xml:
+	* src/phone-kit/moko-dialer-sms-dbus.xml:
+	* src/phone-kit/moko-dialer-sms.c:
+	* src/phone-kit/moko-dialer-sms.h:
+	* src/phone-kit/moko-dialer.c: (moko_dialer_dial),
+	(moko_dialer_hang_up), (moko_dialer_hung_up),
+	(moko_dialer_rejected), (on_talking_accept_call),
+	(on_talking_reject_call), (on_talking_cancel_call),
+	(on_network_registered), (on_incoming_call), (on_incoming_clip),
+	(on_pin_requested), (on_call_progress_changed),
+	(moko_dialer_dispose), (moko_dialer_finalize),
+	(status_report_added_cb), (status_report_progress_cb), (store_sms),
+	(gsmd_eventhandler), (sms_msghandler), (net_msghandler),
+	(connection_source_prepare), (connection_source_check),
+	(connection_source_dispatch), (sms_store_opened_cb),
+	(dialer_init_gsmd), (moko_dialer_init), (moko_dialer_send_sms):
+	* src/phone-kit/moko-dialer.h:
+	Remove use of libmokogsmd, integrate SMS code with the rest of the
+	dialer code
+
 2007-11-21  Thomas Wood  <thomas@openedhand.com>
 
 	* src/phone-kit/Makefile.am:

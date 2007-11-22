@@ -20,13 +20,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 
-#include <moko-gsmd-connection.h>
 #include <moko-journal.h>
 #include <moko-stock.h>
+
+#include <libgsmd/libgsmd.h>
+#include <libgsmd/event.h>
+#include <libgsmd/misc.h>
+#include <libgsmd/sms.h>
+#include <libgsmd/voicecall.h>
+
+#include <libjana/jana.h>
+#include <libjana-ecal/jana-ecal.h>
 
 #include "moko-dialer.h"
 
@@ -41,18 +50,33 @@ G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 #define MOKO_DIALER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE(obj, \
         MOKO_TYPE_DIALER, MokoDialerPrivate))
 
+typedef struct {
+  GSource source;
+  GPollFD pollfd;
+  struct lgsm_handle *handle;
+} MokoDialerSource;
+
 struct _MokoDialerPrivate
 {
-  gint                status;
-  gchar               *incoming_clip;
+  gint               status;
+  gchar              *incoming_clip;
+  gchar              *own_number;
 
   /* handles user interaction */
   GtkWidget          *talking;
 
-  /* Special objects */
-  MokoGsmdConnection *connection;
+  /* gsmd connection variables */
+  struct lgsm_handle *handle;
+  MokoDialerSource   *source;
+  
+  /* Storage objects */
+  JanaStore          *sms_store;
+  gboolean           sms_store_open;
+	JanaNote           *last_msg;
   MokoJournal        *journal;
   MokoContacts       *contacts;
+  
+  /* Notification handling object */
   MokoNotify         *notify;
 
   /* The shared MokoJournalEntry which is constantly created */
@@ -60,8 +84,8 @@ struct _MokoDialerPrivate
   MokoTime           *time;
 
   /* Registration variables */
-  MokoGsmdConnectionNetregType registered;
-  MokoGSMLocation     gsm_location;
+  enum lgsm_netreg_state registered;
+  MokoGSMLocation    gsm_location;
 };
 
 enum
@@ -77,7 +101,7 @@ enum
 
 static guint dialer_signals[LAST_SIGNAL] = {0, };
 
-static MokoGsmdConnection * dialer_init_gsmd (MokoDialer *dialer);
+static void dialer_init_gsmd (MokoDialer *dialer);
 
 /* DBus functions */
 
@@ -99,6 +123,7 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
 {
 
   MokoDialerPrivate *priv;
+  struct lgsm_addr addr;
   MokoContactEntry *entry = NULL;
 
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
@@ -108,10 +133,9 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
   g_debug ("Received dial request: %s", number);
 
 
-  if (!priv->connection)
-    priv->connection = dialer_init_gsmd (dialer);
+  if (!priv->handle) dialer_init_gsmd (dialer);
   
-  if (!priv->connection)
+  if (!priv->handle)
   {
     *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD, "Could not connect to gsmd");
     return FALSE;
@@ -136,9 +160,9 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
   priv->status = DIALER_STATUS_DIALING;
 
   /* check for network connection */
-  if (priv->registered != MOKO_GSMD_CONNECTION_NETREG_HOME
-      && priv->registered != MOKO_GSMD_CONNECTION_NETREG_ROAMING
-      && priv->registered != MOKO_GSMD_CONNECTION_NETREG_DENIED)
+  if (priv->registered != GSMD_NETREG_REG_HOME
+      && priv->registered != GSMD_NETREG_REG_ROAMING
+      && priv->registered != GSMD_NETREG_DENIED)
   {
 
     gchar *strings[] = {
@@ -174,7 +198,12 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
   }
   moko_talking_outgoing_call (MOKO_TALKING (priv->talking), number, entry);
 
-  moko_gsmd_connection_voice_dial (MOKO_GSMD_CONNECTION (priv->connection), number);
+  /* TODO: No idea where '129' comes from, taken from libmokogsmd - refer to 
+   * libgsmd.h in gsmd - It says "Refer to GSM 04.08 [8] subclause 10.5.4.7"
+   */
+  addr.type = 129;
+  g_stpcpy (&addr.addr[0], number);
+  lgsm_voice_out_init (priv->handle, &addr);
 
   return TRUE;
 }
@@ -188,10 +217,9 @@ moko_dialer_hang_up (MokoDialer *dialer, const gchar *message, GError **error)
   g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
 
   /* check for gsmd connection */
-  if (!priv->connection)
-    priv->connection = dialer_init_gsmd (dialer);
+  if (!priv->handle) dialer_init_gsmd (dialer);
   
-  if (!priv->connection)
+  if (!priv->handle)
   {
     *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD, "Could not connect to gsmd");
     return FALSE;
@@ -231,7 +259,7 @@ moko_dialer_hung_up (MokoDialer *dialer)
   
   priv->status = DIALER_STATUS_NORMAL;
 
-  moko_gsmd_connection_voice_hangup (priv->connection);   
+  lgsm_voice_hangup (priv->handle);
   g_signal_emit (G_OBJECT (dialer), dialer_signals[HUNG_UP], 0);
   
 }
@@ -249,7 +277,7 @@ moko_dialer_rejected (MokoDialer *dialer)
   /* Stop the notification */
   moko_notify_stop (priv->notify);
 
-  moko_gsmd_connection_voice_hangup (priv->connection);
+  lgsm_voice_hangup (priv->handle);
 
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
 }
@@ -288,7 +316,7 @@ on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
   if (priv->status != DIALER_STATUS_INCOMING)
     return;
 
-  moko_gsmd_connection_voice_accept (priv->connection);
+  lgsm_voice_in_accept (priv->handle);
   priv->status = DIALER_STATUS_TALKING;
 
   /* Stop the notification */
@@ -306,7 +334,7 @@ on_talking_reject_call (MokoTalking *talking, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
 
-  moko_gsmd_connection_voice_hangup (priv->connection);
+  lgsm_voice_hangup (priv->handle);
   priv->status = DIALER_STATUS_NORMAL;
 
   /* Finalise and add the journal entry */
@@ -334,7 +362,7 @@ on_talking_cancel_call (MokoTalking *talking, MokoDialer *dialer)
   g_return_if_fail (MOKO_IS_DIALER (dialer));
   priv = dialer->priv;
   
-  moko_gsmd_connection_voice_hangup (priv->connection);
+  lgsm_voice_hangup (priv->handle);
   
   priv->status = DIALER_STATUS_NORMAL;
   
@@ -387,13 +415,12 @@ on_keypad_digit_pressed (MokoKeypad *keypad,
     moko_gsmd_connection_voice_dtmf (priv->connection, digit);
 }
 #endif
-/* Callbacks for MokoGsmdConnection */
+/* Callbacks for gsmd events */
 static void
-on_network_registered (MokoGsmdConnection *conn, 
+on_network_registered (MokoDialer *dialer,
                        int type, 
                        int lac,  
-                       int cell,
-                       MokoDialer *dialer)
+                       int cell)
 {
   MokoDialerPrivate *priv;
   
@@ -402,16 +429,16 @@ on_network_registered (MokoGsmdConnection *conn,
 
   switch (type)
   {
-    case MOKO_GSMD_CONNECTION_NETREG_NONE:
-    case MOKO_GSMD_CONNECTION_NETREG_SEARCHING:
+    case GSMD_NETREG_UNREG:
+    case GSMD_NETREG_UNREG_BUSY:
       /* Do nothing */
       g_debug ("Searching for network");
       break;
-    case MOKO_GSMD_CONNECTION_NETREG_DENIED:
+    case GSMD_NETREG_DENIED:
       /* This may be a pin issue*/
       break;
-    case MOKO_GSMD_CONNECTION_NETREG_HOME:
-    case MOKO_GSMD_CONNECTION_NETREG_ROAMING:
+    case GSMD_NETREG_REG_HOME:
+    case GSMD_NETREG_REG_ROAMING:
       g_debug ("Network registered: LocationAreaCode: %x. CellID: %x.", lac, cell);
       priv->gsm_location.lac = lac;
       priv->gsm_location.cid = cell;
@@ -424,7 +451,7 @@ on_network_registered (MokoGsmdConnection *conn,
 }
 
 static void
-on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
+on_incoming_call (MokoDialer *dialer, int type)
 {
   MokoDialerPrivate *priv;
   
@@ -462,9 +489,7 @@ on_incoming_call (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
 }
 
 static void
-on_incoming_clip (MokoGsmdConnection *conn,
-                  const gchar        *number,
-                  MokoDialer         *dialer)
+on_incoming_clip (MokoDialer *dialer, const gchar *number)
 {
   MokoDialerPrivate *priv;
   MokoContactEntry *entry;
@@ -495,7 +520,7 @@ on_incoming_clip (MokoGsmdConnection *conn,
 }
 
 static void
-on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
+on_pin_requested (MokoDialer *dialer, int type)
 {
   MokoDialerPrivate *priv;
   gchar *pin;
@@ -507,14 +532,13 @@ on_pin_requested (MokoGsmdConnection *conn, int type, MokoDialer *dialer)
   pin = get_pin_from_user ();
   if (!pin)
     return;
-  moko_gsmd_connection_send_pin (priv->connection, pin);
+  
+  lgsm_pin (priv->handle, 1, pin, NULL);
   g_free (pin);
 }
 
 static void
-on_call_progress_changed (MokoGsmdConnection *conn, 
-                          int type, 
-                          MokoDialer *dialer)
+on_call_progress_changed (MokoDialer *dialer, int type)
 {
   MokoDialerPrivate *priv;
 
@@ -523,8 +547,8 @@ on_call_progress_changed (MokoGsmdConnection *conn,
  
   switch (type) 
   {
-    case MOKO_GSMD_PROG_DISCONNECT:
-    case MOKO_GSMD_PROG_RELEASE:
+    case GSMD_CALLPROG_DISCONNECT:
+    case GSMD_CALLPROG_RELEASE:
       /* Finalise and add the journal entry */
       if (priv->journal && priv->entry)
       {
@@ -553,12 +577,12 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       g_debug ("mokogsmd disconnect");
       break;
     
-    case MOKO_GSMD_PROG_REJECT:
+    case GSMD_CALLPROG_REJECT:
       moko_dialer_rejected (dialer);
       g_debug ("mokogsmd reject");
       break;
     
-    case MOKO_GSMD_PROG_CONNECTED:
+    case GSMD_CALLPROG_CONNECTED:
       if (priv->status != DIALER_STATUS_TALKING)
         moko_dialer_talking (dialer);
       moko_talking_accepted_call (MOKO_TALKING (priv->talking), NULL, NULL);
@@ -571,22 +595,22 @@ on_call_progress_changed (MokoGsmdConnection *conn,
       }
       g_debug ("mokogsmd connected");
       break;
-    case MOKO_GSMD_PROG_SETUP:
+    case GSMD_CALLPROG_SETUP:
       g_debug ("mokogsmd setup");
       break;
-    case MOKO_GSMD_PROG_ALERT:
+    case GSMD_CALLPROG_ALERT:
       g_debug ("mokogsmd alert");
       break;
-    case  MOKO_GSMD_PROG_CALL_PROCEED:
+    case  GSMD_CALLPROG_CALL_PROCEED:
       g_debug ("mokogsmd proceed");
       break;
-    case MOKO_GSMD_PROG_SYNC:
+    case GSMD_CALLPROG_SYNC:
       g_debug ("mokogsmd sync");
       break;
-    case  MOKO_GSMD_PROG_PROGRESS:
+    case GSMD_CALLPROG_PROGRESS:
       g_debug ("mokogsmd progress");
       break;
-    case MOKO_GSMD_PROG_UNKNOWN:
+    case GSMD_CALLPROG_UNKNOWN:
     default:
       g_debug ("mokogsmd unknown");
       break;
@@ -603,19 +627,43 @@ moko_dialer_dispose (GObject *object)
   dialer = MOKO_DIALER (object);
   priv = dialer->priv;
 
+  if (priv->handle) {
+    lgsm_exit (priv->handle);
+    priv->handle = NULL;
+  }
+
+  if (priv->source) {
+    g_source_destroy ((GSource *)priv->source);
+    priv->source = NULL;
+  }
+
+  if (priv->sms_store) {
+    g_object_unref (priv->sms_store);
+    priv->sms_store = NULL;
+  }
+
   /* Close journal */
   if (priv->journal)
   {
     moko_journal_write_to_storage (priv->journal);
     moko_journal_close (priv->journal);
+    priv->journal = NULL;
   }
   G_OBJECT_CLASS (moko_dialer_parent_class)->dispose (object);
 }
 
 static void
-moko_dialer_finalize (GObject *dialer)
+moko_dialer_finalize (GObject *object)
 {
-  G_OBJECT_CLASS (moko_dialer_parent_class)->finalize (dialer);
+  MokoDialer *dialer;
+  MokoDialerPrivate *priv;
+  
+  dialer = MOKO_DIALER (object);
+  priv = dialer->priv;
+
+  g_free (priv->own_number);
+  
+  G_OBJECT_CLASS (moko_dialer_parent_class)->finalize (object);
 }
 
 #include "moko-dialer-glue.h"
@@ -682,50 +730,340 @@ moko_dialer_class_init (MokoDialerClass *klass)
 }
 
 static void
-dialer_display_error (GError *err)
+status_report_added_cb (JanaStoreView *view, GList *components, gchar *ref)
 {
-  if (!err)
-    return;
-  g_warning (err->message);
+  MokoDialerPrivate *priv = moko_dialer_get_default ()->priv;
+
+  for (; components; components = components->next) {
+    gchar *compref;
+    JanaComponent *comp = JANA_COMPONENT (components->data);
+    
+    compref = jana_component_get_custom_prop (
+      comp, "X-PHONEKIT-SMS-REF");
+    if (compref && (strcmp (compref, ref) == 0)) {
+      jana_utils_component_remove_category (comp, "Sending");
+      jana_utils_component_insert_category (comp, "Sent", 0);
+      jana_store_modify_component (priv->sms_store, comp);
+      g_debug ("Setting message status to confirmed sent");
+    }
+    g_free (ref);
+  }
 }
 
-static MokoGsmdConnection *
-dialer_init_gsmd (MokoDialer *dialer)
+static void
+status_report_progress_cb (JanaStoreView *view, gint percent, gchar *ref)
 {
-  GError *err = NULL;
-  MokoGsmdConnection *conn;
-  MokoDialerPrivate *priv;
-  priv = dialer->priv = MOKO_DIALER_GET_PRIVATE (dialer);
+  if (percent != 100) return;
+  
+  g_object_unref (view);
+  g_free (ref);
+}
 
-  /* Init the gsmd connection, and power it up */
-  conn = moko_gsmd_connection_new ();
-  moko_gsmd_connection_set_antenna_power (conn, TRUE, &err);
+static void
+store_sms (MokoDialer *dialer, struct gsmd_sms_list *sms)
+{
+  gchar *message;
 
-  dialer_display_error (err);
-  if (err && err->code == MOKO_GSMD_ERROR_CONNECT)
-  {
-    g_object_unref (conn);
-    return NULL;
+  MokoDialerPrivate *priv = dialer->priv;
+
+  /* Return if we haven't opened the journal yet - signals will be re-fired 
+   * when the journal is opened anyway.
+   */
+  if (!priv->sms_store_open) return;
+
+  /* Ignore voicemail notifications */
+  if (sms->payload.is_voicemail) return;
+
+  /* TODO: Verify type of message for journal (sent/received) - 
+   *       Assuming received for now, as messages sent with phone-kit 
+   *       will be marked already.
+   */
+  message = NULL;
+  switch (sms->payload.coding_scheme) {
+  case ALPHABET_DEFAULT :
+    g_debug ("Decoding 7-bit ASCII message");
+    message = g_malloc0 (GSMD_SMS_DATA_MAXLEN);
+    unpacking_7bit_character (&sms->payload, message);
+    break;
+  case ALPHABET_8BIT :
+    /* TODO: Verify: Is this encoding just UTF-8? (it is on my Samsung phone) */
+    g_debug ("Decoding UTF-8 message");
+    message = g_strdup (sms->payload.data);
+    break;
+  case ALPHABET_UCS2 :
+    g_debug ("Decoding UCS-2 message");
+    message = g_utf16_to_utf8 ((const gunichar2 *)sms->payload.data,
+                               sms->payload.length, NULL, NULL, NULL);
+    break;
+  }
+  
+  /* Store message in the journal */
+  if (message) {
+    struct lgsm_sms_delete sms_del;
+    gchar *author;
+    JanaNote *note = jana_ecal_note_new ();
+    
+    g_debug ("Moving message to journal:\n\"%s\"", message);
+    
+    author = g_strconcat (((sms->addr.type & __GSMD_TOA_TON_MASK) ==
+                          GSMD_TOA_TON_INTERNATIONAL) ? "+" : "",
+                          sms->addr.number, NULL);
+    jana_note_set_author (note, author);
+    g_free (author);
+    
+    jana_note_set_recipient (note, priv->own_number);
+    
+    jana_note_set_body (note, message);
+    
+    /* TODO: Set creation time from SMS timestamp */
+    
+    /* Add SMS to store */
+    jana_store_add_component (priv->sms_store, JANA_COMPONENT (note));
+    
+    /* Delete SMS from internal storage */
+    sms_del.index = sms->index;
+    sms_del.delflg = LGSM_SMS_DELFLG_INDEX;
+    lgsm_sms_delete (priv->handle, &sms_del);
+    
+    g_free (message);
+  }
+}
+
+static int 
+gsmd_eventhandler (struct lgsm_handle *lh, int evt_type,
+                   struct gsmd_evt_auxdata *aux)
+{
+  MokoDialer *dialer = moko_dialer_get_default ();
+  MokoDialerPrivate *priv = dialer->priv;
+  
+  switch (evt_type) {
+  case GSMD_EVT_IN_CALL :
+    on_incoming_call (dialer, aux->u.call.type);
+    break;
+  case GSMD_EVT_IN_SMS : /* Incoming SMS */
+    /* TODO: Read UDH for multi-part messages */
+    g_debug ("Received incoming SMS");
+    if (aux->u.sms.inlined) {
+      struct gsmd_sms_list * sms = (struct gsmd_sms_list *)aux->data;
+      g_debug ("Message inline");
+      store_sms (dialer, sms);
+    } else {
+      g_debug ("Message stored on SIM, reading...");
+      lgsm_sms_read (lh, aux->u.sms.index);
+    }
+    break;
+  case GSMD_EVT_IN_DS : /* SMS status report */
+    if (aux->u.ds.inlined) {
+      struct gsmd_sms_list *sms = (struct gsmd_sms_list *) aux->data;
+      
+      /* TODO: I'm not entirely sure of the spec when if 
+       *       storing an unsent message means it failed?
+       */
+      if (sms->payload.coding_scheme == LGSM_SMS_STO_SENT) {
+        gchar *ref = g_strdup_printf ("%d", sms->index);
+        JanaStoreView *view = jana_store_get_view (priv->sms_store);
+        
+        g_debug ("Received sent SMS status report");
+        jana_store_view_add_match (view, JANA_STORE_VIEW_CATEGORY, "Sending");
+        g_signal_connect (view, "added",
+                          G_CALLBACK (status_report_added_cb), ref);
+        g_signal_connect (view, "progress",
+                          G_CALLBACK (status_report_progress_cb), ref);
+      }
+    } else {
+      g_warning ("Not an in-line event, unhandled");
+    }
+    break;
+  case GSMD_EVT_IN_CLIP :
+    on_incoming_clip (dialer, aux->u.clip.addr.number);
+    break;
+  case GSMD_EVT_NETREG :
+    on_network_registered (dialer, aux->u.netreg.state,
+                           aux->u.netreg.lac, aux->u.netreg.ci);
+    break;
+  case GSMD_EVT_PIN :
+    on_pin_requested (dialer, aux->u.pin.type);
+    break;
+  case GSMD_EVT_OUT_STATUS :
+    on_call_progress_changed (dialer, aux->u.call_status.prog);
+    break;
+  default :
+    g_warning ("Unhandled gsmd event (%d)", evt_type);
+  }
+  
+  return 0;
+}
+
+static int
+sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+  MokoDialer *dialer = moko_dialer_get_default ();
+  MokoDialerPrivate *priv = dialer->priv;
+
+  /* Store sent messages */
+  if ((gmh->msg_subtype == GSMD_SMS_SEND) && priv->last_msg) {
+    int *result = (int *) ((void *) gmh + sizeof(*gmh));
+    gchar *uid = jana_component_get_uid (
+      JANA_COMPONENT (priv->last_msg));
+    
+    if (*result >= 0) {
+      gchar *ref = g_strdup_printf ("%d", *result);
+      jana_component_set_custom_prop (JANA_COMPONENT (priv->last_msg),
+                                      "X-PHONEKIT-SMS-REF", ref);
+      g_free (ref);
+      g_debug ("Sent message accepted");
+    } else {
+      g_debug ("Sent message rejected");
+      jana_utils_component_remove_category (JANA_COMPONENT(priv->last_msg),
+                                            "Sending");
+      jana_utils_component_insert_category (JANA_COMPONENT(priv->last_msg),
+                                            "Rejected", 0);
+      /* TODO: Add error codes? 42 = congestion? */
+    }
+    jana_store_modify_component (priv->sms_store,
+                                 JANA_COMPONENT (priv->last_msg));
+    
+    g_free (uid);
+    g_object_unref (priv->last_msg);
+    priv->last_msg = NULL;
+  } else if ((gmh->msg_subtype == GSMD_SMS_LIST) ||
+             (gmh->msg_subtype == GSMD_SMS_READ)) {
+    struct gsmd_sms_list *sms_list = (struct gsmd_sms_list *)
+                                     ((void *) gmh + sizeof(*gmh));
+
+    g_debug ("Storing message on SIM");
+    store_sms (dialer, sms_list);
+  } else {
+    return -EINVAL;
+  }
+  
+  return 0;
+}
+
+static int
+net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+  MokoDialer *dialer = moko_dialer_get_default ();
+  MokoDialerPrivate *priv = dialer->priv;
+
+  const struct gsmd_own_number *num = (struct gsmd_own_number *)
+                                      ((void *) gmh + sizeof(*gmh));
+
+  if (gmh->msg_subtype != GSMD_NETWORK_GET_NUMBER) return -EINVAL;
+  
+  g_free (priv->own_number);
+  
+  /* TODO: Normalise number necessary? */
+  priv->own_number = g_strdup (num->addr.number);
+  g_debug ("Got phone number: %s", priv->own_number);
+  
+  return 0;
+}
+
+static gboolean 
+connection_source_prepare (GSource* self, gint* timeout)
+{
+    return FALSE;
+}
+
+static gboolean
+connection_source_check (GSource* source)
+{
+  MokoDialerSource *self = (MokoDialerSource *)source;
+  return self->pollfd.revents & G_IO_IN;
+}
+
+static gboolean 
+connection_source_dispatch (GSource *source, GSourceFunc callback,
+                            gpointer data)
+{
+  char buf[1025];
+  int size;
+
+  MokoDialerSource *self = (MokoDialerSource *)source;
+
+  size = read (self->pollfd.fd, &buf, sizeof(buf));
+  if (size < 0) {
+    g_warning ("moko_gsmd_connection_source_dispatch:%s %s",
+               "read error from libgsmd:", strerror (errno));
+  } else {
+    if (size == 0) /* EOF */
+      return FALSE;
+    lgsm_handle_packet (self->handle, buf, size);
   }
 
-  /* Connect to the gsmd signals */
-  g_signal_connect (G_OBJECT (conn), "network-registration", 
-                    G_CALLBACK (on_network_registered), (gpointer)dialer);
-  g_signal_connect (G_OBJECT (conn), "incoming-call", 
-                    G_CALLBACK (on_incoming_call), (gpointer)dialer);
-  g_signal_connect (G_OBJECT (conn), "incoming-clip",
-                    G_CALLBACK (on_incoming_clip), (gpointer)dialer);
-  g_signal_connect (G_OBJECT (conn), "pin-requested", 
-                    G_CALLBACK (on_pin_requested), (gpointer)dialer);
-  g_signal_connect (G_OBJECT (conn), "call-progress", 
-                    G_CALLBACK (on_call_progress_changed), (gpointer)dialer);
+  return TRUE;
+}
 
-  /* FIXME:
-   *  moko_gsmd_connection_get_network_status always seems to return 0 here */
-  priv->registered = MOKO_GSMD_CONNECTION_NETREG_SEARCHING;
-  moko_gsmd_connection_network_register (conn);
+static void
+sms_store_opened_cb (JanaStore *store, MokoDialer *self)
+{
+  MokoDialerPrivate *priv = self->priv;
+  priv->sms_store_open = TRUE;
 
-  return conn;
+  g_debug ("SMS store opened");
+  
+  if (!priv->handle) return;
+  
+  /* Register SMS handling callback */
+  lgsm_register_handler (priv->handle, GSMD_MSG_SMS, &sms_msghandler);
+
+  /* List all messages to move to journal */
+  lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
+}
+
+static void
+dialer_init_gsmd (MokoDialer *dialer)
+{
+  static GSourceFuncs funcs = {
+    connection_source_prepare,
+    connection_source_check,
+    connection_source_dispatch,
+    NULL,
+  };
+
+  MokoDialerPrivate *priv;
+  priv = dialer->priv;
+
+  /* Get a gsmd handle */
+  if (!(priv->handle = lgsm_init (LGSMD_DEVICE_GSMD))) {
+    g_warning ("Error connecting to gsmd");
+    return;
+  }
+  
+  /* Power the gsm modem up */
+  if (lgsm_phone_power (priv->handle, 1) == -1) {
+    g_warning ("Error powering up gsm modem");
+    lgsm_exit (priv->handle);
+    priv->handle = NULL;
+    return;
+  }
+  
+  /* Add event handlers */
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_CALL, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_CLIP, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_SMS, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_DS, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_NETREG, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
+  lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
+
+  /* Register with network */
+  priv->registered = GSMD_NETREG_UNREG;
+  lgsm_netreg_register (priv->handle, "");
+
+  /* Get phone number */
+  lgsm_get_subscriber_num (priv->handle);
+  
+  /* Start polling for events */
+  priv->source = (MokoDialerSource *)
+    g_source_new (&funcs, sizeof (MokoDialerSource));
+  priv->source->handle = priv->handle;
+  priv->source->pollfd.fd = lgsm_fd (priv->handle);
+  priv->source->pollfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
+  priv->source->pollfd.revents = 0;
+  g_source_add_poll ((GSource*)priv->source, &priv->source->pollfd);
+  g_source_attach ((GSource*)priv->source, NULL);
 }
 
 static void
@@ -744,7 +1082,7 @@ moko_dialer_init (MokoDialer *dialer)
   /* Initialise the contacts list */
   //contact_init_contact_data (&(priv->data->g_contactlist));
 
-  priv->connection = dialer_init_gsmd (dialer);
+  dialer_init_gsmd (dialer);
 
   /* Set up the journal */
   priv->journal = moko_journal_open_default ();
@@ -755,6 +1093,12 @@ moko_dialer_init (MokoDialer *dialer)
   }
   else
     g_debug ("Journal Loaded");
+
+  /* Get the SMS note store */
+  priv->sms_store = jana_ecal_store_new (JANA_COMPONENT_NOTE);
+  g_signal_connect (priv->sms_store, "opened",
+                    G_CALLBACK (sms_store_opened_cb), dialer);
+  jana_store_open (priv->sms_store);
 
   /* Load the contacts store */
   priv->contacts = moko_contacts_get_default ();
@@ -791,3 +1135,95 @@ moko_dialer_get_default (void)
 
   return dialer;
 }
+
+gboolean
+moko_dialer_send_sms (MokoDialer *self, const gchar *number,
+                      const gchar *message, gchar **uid, GError **error)
+{
+  MokoDialerPrivate *priv;
+  struct lgsm_sms sms;
+  gint msg_length, c;
+  gboolean ascii;
+  JanaNote *note;
+  
+  g_assert (self && number && message);
+
+  priv = self->priv;
+  
+  if (!priv->handle) {
+    /* Failed to connect to gsmd earlier */
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD,
+                          "Failed to connect to gsmd");
+    return FALSE;
+  }
+  
+  if (!priv->sms_store_open) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_SMS_STORE,
+                          "SMS store not opened");
+    return FALSE;
+  }
+  
+  /* Ask for delivery report */
+  sms.ask_ds = 1;
+  
+  /* Set destination number */
+  if (strlen (number) > GSMD_ADDR_MAXLEN + 1) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_NO_TOOLONG,
+                          "Number too long");
+    return FALSE;
+  } else {
+    strcpy (sms.addr, number);
+  }
+  
+  /* Set message */
+  /* Check if the text is ascii (and pack in 7 bits if so) */
+  ascii = TRUE;
+  for (c = 0; message[c] != '\0'; c++) {
+    if (((guint8)message[c]) > 0x7F) {
+      ascii = FALSE;
+      break;
+    }
+  }
+  
+  /* TODO: Multi-part messages using UDH */
+  msg_length = strlen (message);
+  if ((ascii && (msg_length > 160)) || (msg_length > 140)) {
+      *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_SMS_TOOLONG,
+                            "Message too long");
+      return FALSE;
+  }
+  if (ascii) {
+    packing_7bit_character (message, &sms);
+  } else {
+    sms.alpha = ALPHABET_8BIT;
+    sms.length = strlen (message);
+    strcpy ((gchar *)sms.data, message);
+  }
+  
+  /* Send message */
+  lgsm_sms_send (priv->handle, &sms);
+  
+  /* Store sent message in journal */
+  note = jana_ecal_note_new ();
+  jana_note_set_recipient (note, number);
+  jana_note_set_author (note, priv->own_number);
+  
+  jana_note_set_body (note, message);
+  jana_component_set_categories (JANA_COMPONENT (note),
+    (const gchar *[]){ "Sending", NULL});
+  
+  jana_store_add_component (priv->sms_store,
+    JANA_COMPONENT (note));
+  if (uid) *uid = jana_component_get_uid (JANA_COMPONENT (note));
+  
+  if (priv->last_msg) {
+    g_warning ("Confirmation not received for last sent SMS, "
+      "delivery report will be lost.");
+    g_object_unref (priv->last_msg);
+    priv->last_msg = NULL;
+  }
+  priv->last_msg = note;
+  
+  return TRUE;
+}
+

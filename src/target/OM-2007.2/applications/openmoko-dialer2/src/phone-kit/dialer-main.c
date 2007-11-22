@@ -23,11 +23,9 @@
 #include <moko-stock.h>
 
 #include "moko-dialer.h"
-#include "moko-dialer-sms.h"
 
 #define DIALER_NAMESPACE "org.openmoko.Dialer"
 #define DIALER_OBJECT "/org/openmoko/Dialer"
-#define SMS_OBJECT "/org/openmoko/Dialer/SMS"
 
 static gchar *number = NULL;
 
@@ -57,7 +55,6 @@ int
 main (int argc, char **argv)
 {
   MokoDialer *dialer;
-  MokoDialerSMS *sms;
   DBusGConnection *connection;
   DBusGProxy *proxy;
   GError *error = NULL;
@@ -110,17 +107,13 @@ main (int argc, char **argv)
   gtk_init (&argc, &argv);
   moko_stock_register ();
 
-   /* Create the MokoDialer/MokoDialerSMS objects */
+   /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();
-  sms = moko_dialer_sms_get_default ();
 
   /* Add the objects onto the bus */
   dbus_g_connection_register_g_object (connection, 
                                        DIALER_OBJECT,
                                        G_OBJECT (dialer));
-  dbus_g_connection_register_g_object (connection, 
-                                       SMS_OBJECT,
-                                       G_OBJECT (sms));
 
   /* application object */
   g_set_application_name ("OpenMoko Dialer");

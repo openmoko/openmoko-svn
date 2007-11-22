@@ -48,7 +48,10 @@ G_BEGIN_DECLS
 typedef enum {
   PK_DIALER_ERROR_BUSY,
   PK_DIALER_ERROR_GSMD,
-  PK_DIALER_ERROR_NOT_CONNECTED
+  PK_DIALER_ERROR_NOT_CONNECTED,
+  PK_DIALER_ERROR_SMS_STORE,
+  PK_DIALER_ERROR_SMS_TOOLONG,
+  PK_DIALER_ERROR_NO_TOOLONG
 } PhoneKitDialerError;
 
 typedef struct _MokoDialer MokoDialer;
@@ -123,6 +126,10 @@ moko_dialer_hung_up (MokoDialer *dialer);
 
 void
 moko_dialer_rejected (MokoDialer *dialer);
+
+gboolean
+moko_dialer_send_sms (MokoDialer *self, const gchar *number,
+                      const gchar *message, gchar **uid, GError **error);
 
 G_END_DECLS
 

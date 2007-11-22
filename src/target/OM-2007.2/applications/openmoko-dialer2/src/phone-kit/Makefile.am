@@ -11,7 +11,6 @@ phone_kit_SOURCES = \
 	moko-notify.c moko-notify.h \
 	moko-sound.c moko-sound.h \
 	moko-talking.c moko-talking.h \
-	moko-dialer-sms.c moko-dialer-sms.h \
 	moko-pin.c \
 	moko-pin.h
 
@@ -21,7 +20,7 @@ phone_kit_LDADD = @DIALER_LIBS@ @JANA_LIBS@ $(top_srcdir)/src/common/libdialer-c
 %-glue.h: %-dbus.xml
 	$(LIBTOOL) --mode=execute $(DBUS_GLIB_BIN)/dbus-binding-tool --prefix=$(subst -,_,$*) --mode=glib-server --output=$@ $<
 	
-BUILT_SOURCES = moko-dialer-glue.h moko-dialer-sms-glue.h
+BUILT_SOURCES = moko-dialer-glue.h
 
-EXTRA_DIST = moko-dialer-dbus.xml moko-dialer-sms-dbus.xml
+EXTRA_DIST = moko-dialer-dbus.xml
 
