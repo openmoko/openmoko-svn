@@ -1,3 +1,12 @@
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
+	* src/today-launcher.c: (item_added_cb):
+	* src/today-main.c: (today_messages_button_clicked_cb),
+	(today_create_home_page):
+	* src/today-pim-journal.c: (unread_messages_button_press_cb):
+	* src/today.h:
+        Enable openmoko-messages launcher
+
 2007-11-02  Chris Lord  <chris@openedhand.com>
 
 	* src/today-launcher.c: (item_added_cb), (item_removed_cb),

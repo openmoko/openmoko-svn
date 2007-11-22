@@ -157,7 +157,9 @@ static gboolean
 unread_messages_button_press_cb (GtkWidget *widget, GdkEventButton *event,
 				 TodayData *data)
 {
-	g_debug ("TODO: Launch messages app");
+	if (data->messages_item) launcher_start (data->window,
+		data->messages_item,
+		(gchar *[]){ "openmoko-messages", NULL }, TRUE, TRUE);
 
 	return FALSE;
 }

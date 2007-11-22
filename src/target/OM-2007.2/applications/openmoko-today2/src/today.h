@@ -55,6 +55,7 @@ typedef struct {
 	TakuMenuItem *tasks_item;
 	TakuMenuItem *dates_item;
 	TakuMenuItem *clock_item;
+	TakuMenuItem *messages_item;
 	
 	/* App manager */
 	GdkWindow *root_window;

@@ -39,6 +39,10 @@ item_added_cb (TakuMenu *menu, TakuMenuItem *item, TodayData *data)
 		data->dates_item = item;
 	} else if (strcmp (name, "World Clock") == 0) {
 		data->clock_item = item;
+	} else if (strcmp (name, "Messages") == 0) {
+		gtk_widget_set_sensitive (GTK_WIDGET (
+			data->messages_button), TRUE);
+		data->messages_item = item;
 	}
 
 	if (GTK_IS_WIDGET (tile))
