@@ -1,5 +1,13 @@
 2007-11-22  Chris Lord  <chris@openedhand.com>
 
+	* configure.ac:
+	Replace libmokogsmd2 with libgsmd
+
+	* src/dialer/moko-history.c:
+	Remove unnecessary include
+
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
 	* src/phone-kit/Makefile.am:
 	* src/phone-kit/dialer-main.c: (main):
 	* src/phone-kit/moko-dialer-dbus.xml:

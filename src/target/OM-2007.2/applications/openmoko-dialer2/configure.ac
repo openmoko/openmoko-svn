@@ -15,8 +15,8 @@ PKG_CHECK_MODULES(DIALER,
                   dbus-glib-1 
                   gtk+-2.0 
                   libebook-1.2 
+		  libgsmd 
                   libmokojournal2
-                  libmokogsmd2 
                   libmokoui2
                   libpulse)
 

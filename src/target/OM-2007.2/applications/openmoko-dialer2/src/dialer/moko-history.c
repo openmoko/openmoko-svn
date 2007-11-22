@@ -23,7 +23,6 @@
 
 #include <string.h>
 
-#include <moko-gsmd-connection.h>
 #include <moko-journal.h>
 #include <moko-stock.h>
 #include <moko-finger-scroll.h>
