@@ -30,7 +30,7 @@ GtkToolItem *
 today_toolbutton_new (const gchar *icon_name)
 {
 	GtkWidget *icon = gtk_image_new_from_icon_name (icon_name,
-		GTK_ICON_SIZE_DIALOG);
+		GTK_ICON_SIZE_LARGE_TOOLBAR);
 	GtkToolItem *button = gtk_tool_button_new (icon, NULL);
 	gtk_tool_item_set_expand (button, TRUE);
 	return button;

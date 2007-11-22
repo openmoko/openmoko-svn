@@ -1,5 +1,10 @@
 2007-11-22  Chris Lord  <chris@openedhand.com>
 
+	* src/today-utils.c: (today_toolbutton_new):
+        Use GTK_ICON_SIZE_LARGE_TOOLBAR instead of DIALOG for toolbar icons
+
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
 	* src/today-launcher.c: (item_added_cb):
 	* src/today-main.c: (today_messages_button_clicked_cb),
 	(today_create_home_page):
