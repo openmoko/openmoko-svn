@@ -168,7 +168,7 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 		message = gtk_text_buffer_get_text (
 			buffer, &start, &end, FALSE);
 		
-		if (message[0] != '\0') {
+		if (message && (message[0] != '\0')) {
 			g_debug ("Sending message '%s' to %s", message, number);
 			if (!dbus_g_proxy_call (data->sms_proxy, "Send", &error,
 			     G_TYPE_STRING, number, G_TYPE_STRING, message,
@@ -177,6 +177,12 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 				g_warning ("Error sending message: %s",
 					error->message);
 				g_error_free (error);
+			} else {
+				/* Switch page back on successful send */
+				gtk_text_buffer_set_text (buffer, "", -1);
+				gtk_notebook_set_current_page (
+					GTK_NOTEBOOK (data->notebook),
+					SMS_PAGE_NOTES);
 			}
 		} else {
 			/* TODO: Error dialog for empty message */
@@ -188,9 +194,6 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 	}
 	
 	g_object_unref (contact);
-
-	gtk_notebook_set_current_page (
-		GTK_NOTEBOOK (data->notebook), SMS_PAGE_NOTES);
 }
 
 GtkWidget *
