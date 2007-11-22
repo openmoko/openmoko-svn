@@ -1,6 +1,12 @@
 2007-11-22  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-compose.c: (send_clicked_cb):
+	* src/sms-main.c: (main):
+	Adjust due to phone-kit changes
+
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-compose.c: (send_clicked_cb):
 	Check if message is NULL, only switch page back on successful send and
 	empty text entry after sending text
 

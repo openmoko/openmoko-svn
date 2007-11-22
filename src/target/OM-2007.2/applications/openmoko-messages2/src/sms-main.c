@@ -66,7 +66,7 @@ main (int argc, char **argv)
 		data.sms_proxy = NULL;
 	} else {
 		data.sms_proxy = dbus_g_proxy_new_for_name (connection,
-			"org.openmoko.Dialer", "/org/openmoko/Dialer/SMS",
+			"org.openmoko.Dialer", "/org/openmoko/Dialer",
 			"org.openmoko.Dialer");
 	}
 

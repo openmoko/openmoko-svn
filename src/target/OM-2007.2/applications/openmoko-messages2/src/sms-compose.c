@@ -170,9 +170,9 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 		
 		if (message && (message[0] != '\0')) {
 			g_debug ("Sending message '%s' to %s", message, number);
-			if (!dbus_g_proxy_call (data->sms_proxy, "Send", &error,
-			     G_TYPE_STRING, number, G_TYPE_STRING, message,
-			     G_TYPE_INVALID, G_TYPE_STRING, NULL,
+			if (!dbus_g_proxy_call (data->sms_proxy, "SendSms",
+			     &error, G_TYPE_STRING, number, G_TYPE_STRING,
+			     message, G_TYPE_INVALID, G_TYPE_STRING, NULL,
 			     G_TYPE_INVALID)) {
 				g_warning ("Error sending message: %s",
 					error->message);
