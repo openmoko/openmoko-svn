@@ -20,6 +20,8 @@
 #include "sms.h"
 #include "sms-contacts.h"
 #include "sms-notes.h"
+#include "sms-compose.h"
+#include <moko-stock.h>
 
 static void
 notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
@@ -38,6 +40,13 @@ notebook_add_page_with_icon (GtkWidget *notebook, GtkWidget *child,
 		"tab-expand", TRUE, NULL);
 }
 
+static void
+new_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	gtk_notebook_set_current_page (
+		GTK_NOTEBOOK (data->notebook), SMS_PAGE_COMPOSE);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -47,6 +56,7 @@ main (int argc, char **argv)
 	GError *error = NULL;
 	
 	gtk_init (&argc, &argv);
+	moko_stock_register ();
 	
 	/* Get SMS dbus proxy */
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
@@ -69,25 +79,27 @@ main (int argc, char **argv)
 	toolbar = gtk_toolbar_new ();
 	
 	/* New button */
-	data.new_button = gtk_toggle_tool_button_new_from_stock (GTK_STOCK_NEW);
+	data.new_button = gtk_tool_button_new_from_stock (MOKO_STOCK_SMS_NEW);
 	gtk_tool_item_set_expand (data.new_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.new_button, 0);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
-		gtk_separator_tool_item_new (), 1);
+	/*gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
+		gtk_separator_tool_item_new (), 1);*/
+	g_signal_connect (data.new_button, "clicked",
+		G_CALLBACK (new_clicked_cb), &data);
 	
 	/* Delete all button */
 	data.delete_all_button = gtk_tool_button_new_from_stock (
 		GTK_STOCK_MISSING_IMAGE);
 	gtk_tool_item_set_expand (data.delete_all_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_all_button, 2);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
-		gtk_separator_tool_item_new (), 3);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_all_button, 1);
+	/*gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
+		gtk_separator_tool_item_new (), 3);*/
 	
 	/* Delete button */
 	data.delete_button = gtk_tool_button_new_from_stock (
 		GTK_STOCK_DELETE);
 	gtk_tool_item_set_expand (data.delete_button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_button, 4);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_button, 2);
 	
 	/* Create notebook */
 	data.notebook = gtk_notebook_new ();
@@ -97,10 +109,14 @@ main (int argc, char **argv)
 	notebook_add_page_with_icon (data.notebook,
 		sms_contacts_page_new (&data), GTK_STOCK_INDEX, 6);
 
-	/* Add message view/send page */
+	/* Add message view page */
 	notebook_add_page_with_icon (data.notebook,
-		sms_notes_page_new (&data), GTK_STOCK_EDIT, 6);
+		sms_notes_page_new (&data), GTK_STOCK_FILE, 6);
 
+	/* Add message compose page */
+	notebook_add_page_with_icon (data.notebook,
+		sms_compose_page_new (&data), GTK_STOCK_EDIT, 6);
+	
 	/* Pack and show */
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), toolbar, FALSE, TRUE, 0);

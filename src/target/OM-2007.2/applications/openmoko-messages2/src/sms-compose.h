@@ -17,20 +17,11 @@
  *  Current Version: $Rev$ ($Date$) [$Author$]
  */
 
-#ifndef _SMS_CONTACTS_H
-#define _SMS_CONTACTS_H
+#ifndef SMS_COMPOSE_H
+#define SMS_COMPOSE_H
 
 #include "sms.h"
 
-enum {
-	COL_UID,
-	COL_NAME,
-	COL_DETAIL,
-	COL_ICON,
-	COL_LAST
-};
+GtkWidget *sms_compose_page_new (SmsData *data);
 
-GtkWidget *sms_contacts_page_new (SmsData *data);
-
-#endif
-
+#endif /* SMS_COMPOSE_H */

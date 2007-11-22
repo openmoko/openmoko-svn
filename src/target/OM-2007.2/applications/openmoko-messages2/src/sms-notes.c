@@ -18,7 +18,7 @@
  */
 
 #include "sms-notes.h"
-#include "sms-contacts.h"
+#include "sms-utils.h"
 #include <libjana-ecal/jana-ecal.h>
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
@@ -28,34 +28,6 @@
 static GdkColor alt_color;
 static gboolean hidden = TRUE;
 static gboolean open = FALSE;
-
-static EContact *
-get_selected_contact (SmsData *data)
-{
-	GtkTreeSelection *selection;
-	GtkTreeModel *model;
-	EContact *contact;
-	GtkTreeIter iter;
-	
-	GError *error = NULL;
-	
-	selection = gtk_tree_view_get_selection (
-		GTK_TREE_VIEW (data->contacts_treeview));
-	
-	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
-		return NULL;
-	gtk_tree_model_get (model, &iter, COL_UID, &data->author_uid,
-		COL_ICON, &data->author_icon, -1);
-	
-	if (!e_book_get_contact (data->ebook,
-	     data->author_uid, &contact, &error)) {
-		g_warning ("Error retrieving contact: %s", error->message);
-		g_error_free (error);
-		contact = NULL;
-	}
-	
-	return contact;
-}
 
 static void
 note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
@@ -88,7 +60,7 @@ note_changed_cb (JanaStoreView *store_view, GList *components, SmsData *data)
 			/* TODO: Unknown contact, probably */
 		} else {
 			data->recipient_icon =
-				sms_contacts_load_photo (contact);
+				sms_contact_load_photo (contact);
 			if ((!data->recipient_icon) && (data->no_photo))
 				data->recipient_icon =
 					g_object_ref (data->no_photo);
@@ -115,7 +87,7 @@ page_shown (SmsData *data)
 	
 	if (!open) return;
 	
-	if (!(contact = get_selected_contact (data))) return;
+	if (!(contact = sms_get_selected_contact (data))) return;
 	
 	store_view = jana_store_get_view (data->notes);
 	for (i = E_CONTACT_FIRST_PHONE_ID; i <= E_CONTACT_LAST_PHONE_ID; i++) {
@@ -149,8 +121,6 @@ page_hidden (SmsData *data)
 {
 	jana_gtk_note_store_set_view (JANA_GTK_NOTE_STORE (
 		data->note_store), NULL);
-	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
-		data->new_button), FALSE);
 	if (data->author_uid) {
 		g_free (data->author_uid);
 		data->author_uid = NULL;
@@ -203,72 +173,6 @@ unmap_cb (GtkWidget *widget, SmsData *data)
 	}
 }
 
-static void
-new_toggled_cb (GtkToggleToolButton *button, SmsData *data)
-{
-	gboolean active = gtk_toggle_tool_button_get_active (button);
-
-	g_object_set (data->sms_hbox, "visible", active, NULL);
-	if (active) {
-		gtk_notebook_set_current_page (GTK_NOTEBOOK (
-			data->notebook), SMS_PAGE_NOTES);
-		gtk_widget_grab_focus (data->sms_textview);
-	}
-}
-
-static void
-send_clicked_cb (GtkButton *button, SmsData *data)
-{
-	GtkTextIter start, end;
-	GtkTextBuffer *buffer;
-	const gchar *number;
-	EContact *contact;
-	gchar *message;
-	
-	/* TODO: Spawn an error dialog or something */
-	if (!(contact = get_selected_contact (data))) return;
-	
-	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
-		data->new_button), FALSE);
-
-	/* Try getting mobile and primary number first, before looping through 
-	 * all numbers.
-	 */
-	number = NULL;
-	if (!(number = e_contact_get_const (contact, E_CONTACT_PHONE_MOBILE)) &&
-	    !(number = e_contact_get_const (contact, E_CONTACT_PHONE_PRIMARY))){
-		gint i;
-		for (i = E_CONTACT_FIRST_PHONE_ID;
-		     i <= E_CONTACT_LAST_PHONE_ID; i++) {
-			number = e_contact_get_const (
-				contact, (EContactField)i);
-			if (number) break;
-		}
-	}
-	
-	if (number) {
-		GError *error = NULL;
-		buffer = gtk_text_view_get_buffer (
-			GTK_TEXT_VIEW (data->sms_textview));
-		gtk_text_buffer_get_start_iter (buffer, &start);
-		gtk_text_buffer_get_end_iter (buffer, &end);
-		message = gtk_text_buffer_get_text (
-			buffer, &start, &end, FALSE);
-		
-		g_debug ("Sending message '%s' to %s", message, number);
-		if (!dbus_g_proxy_call (data->sms_proxy, "Send", &error,
-			G_TYPE_STRING, number, G_TYPE_STRING, message,
-			G_TYPE_INVALID, G_TYPE_STRING, NULL, G_TYPE_INVALID)) {
-			g_warning ("Error sending message: %s", error->message);
-			g_error_free (error);
-		}
-		
-		g_free (message);
-	}
-	
-	g_object_unref (contact);
-}
-
 static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 				 GtkCellRenderer *cell,
 				 GtkTreeModel *model,
@@ -278,7 +182,6 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 	gchar *author, *recipient, *body;
 	JanaTime *created, *modified;
 	gboolean outgoing;
-	gint i;
 	
 	gtk_tree_model_get (model, iter,
 		JANA_GTK_NOTE_STORE_COL_AUTHOR, &author,
@@ -301,7 +204,7 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 		"created", created,
 		"modified", modified,
 		"justify", outgoing ?
-		      GTK_JUSTIFY_LEFT : GTK_JUSTIFY_RIGHT,
+		      GTK_JUSTIFY_RIGHT : GTK_JUSTIFY_LEFT,
 		"icon", outgoing ?
 		      data->author_icon : data->recipient_icon,
 		NULL);
@@ -323,8 +226,7 @@ store_opened_cb (JanaStore *store, SmsData *data)
 GtkWidget *
 sms_notes_page_new (SmsData *data)
 {
-	GtkWidget *treeview, *scroll, *vbox, *searchbar,
-		*sms_vbox, *frame, *label, *button;
+	GtkWidget *treeview, *scroll, *vbox, *searchbar;
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	
@@ -361,36 +263,6 @@ sms_notes_page_new (SmsData *data)
 	searchbar = moko_search_bar_new_with_combo (
 		GTK_COMBO_BOX (data->notes_combo));
 	
-	/* Create text entry bits */
-	data->sms_textview = gtk_text_view_new ();
-	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (data->sms_textview),
-		GTK_WRAP_WORD_CHAR);
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
-	gtk_container_add (GTK_CONTAINER (frame), data->sms_textview);
-	
-	label = gtk_label_new (NULL);
-	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
-	gtk_label_set_markup (GTK_LABEL (label),
-		"<small>0\n  /\n     160</small>");
-	
-	button = gtk_button_new_with_label ("Send");
-	g_signal_connect (button, "clicked",
-		G_CALLBACK (send_clicked_cb), data);
-	if (!data->sms_proxy) gtk_widget_set_sensitive (button, FALSE);
-	
-	sms_vbox = gtk_vbox_new (FALSE, 6);
-	gtk_box_pack_start (GTK_BOX (sms_vbox), label, FALSE, TRUE, 0);
-	gtk_box_pack_end (GTK_BOX (sms_vbox), button, TRUE, TRUE, 0);
-
-	data->sms_hbox = gtk_hbox_new (FALSE, 6);
-	gtk_box_pack_start (GTK_BOX (data->sms_hbox), frame, TRUE, TRUE, 0);
-	gtk_box_pack_end (GTK_BOX (data->sms_hbox), sms_vbox, FALSE, TRUE, 0);
-
-	gtk_widget_show_all (data->sms_hbox);
-	gtk_widget_set_no_show_all (data->sms_hbox, TRUE);
-	gtk_widget_hide (data->sms_hbox);
-	
 	/* Pack widgets */
 	scroll = moko_finger_scroll_new ();
 	gtk_container_add (GTK_CONTAINER (scroll), treeview);
@@ -398,7 +270,6 @@ sms_notes_page_new (SmsData *data)
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, TRUE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), scroll, TRUE, TRUE, 0);
-	gtk_box_pack_end (GTK_BOX (vbox), data->sms_hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all (vbox);
 	
 	/* Add events for detecting whether the page has been hidden/shown */
@@ -409,10 +280,6 @@ sms_notes_page_new (SmsData *data)
 		G_CALLBACK (notify_visible_cb), data);
 	g_signal_connect (vbox, "unmap",
 		G_CALLBACK (unmap_cb), data);
-	
-	/* Connect to new button toggle */
-	g_signal_connect (data->new_button, "toggled",
-		G_CALLBACK (new_toggled_cb), data);
 	
 	jana_store_open (data->notes);
 

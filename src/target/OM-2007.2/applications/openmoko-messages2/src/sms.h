@@ -46,8 +46,6 @@ typedef struct {
 	GtkToolItem *delete_button;
 
 	GtkWidget *notes_combo;
-	GtkWidget *sms_hbox;
-	GtkWidget *sms_textview;
 	GdkPixbuf *author_icon;
 	GdkPixbuf *recipient_icon;
 	gchar *recipient_number;
@@ -57,6 +55,12 @@ typedef struct {
 	GtkWidget *contacts_combo;
 	GdkPixbuf *no_photo;
 	
+	GtkWidget *sms_textview;
+	GtkWidget *length_label;
+	GtkWidget *contact_image;
+	GtkWidget *contact_label;
+	GtkWidget *number_combo;
+
 	gulong delete_all_handler;
 	gulong delete_handler;
 	
@@ -66,6 +70,7 @@ typedef struct {
 typedef enum {
 	SMS_PAGE_CONTACTS,
 	SMS_PAGE_NOTES,
+	SMS_PAGE_COMPOSE,
 } SmsPage;
 
 #endif /* _SMS_H */

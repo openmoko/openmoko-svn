@@ -10,5 +10,9 @@ openmoko_messages_SOURCES = \
 	sms-contacts.c \
 	sms-contacts.h \
 	sms-notes.c \
-	sms-notes.h
+	sms-notes.h \
+	sms-compose.c \
+	sms-compose.h \
+	sms-utils.c \
+	sms-utils.h
 

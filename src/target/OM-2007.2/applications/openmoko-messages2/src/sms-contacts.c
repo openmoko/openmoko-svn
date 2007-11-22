@@ -25,66 +25,6 @@
 #  include <config.h>
 #endif
 
-/* Following two functions taken from pimlico Contacts */
-static void
-contact_photo_size (GdkPixbufLoader * loader, gint width, gint height,
-		    gpointer user_data)
-{
-	/* Max height of GTK_ICON_SIZE_DIALOG */
-	gint iconwidth, iconheight;
-	gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &iconwidth, &iconheight);
-	
-	gdk_pixbuf_loader_set_size (loader,
-				    width / ((gdouble) height /
-					     iconheight), iconheight);
-}
-
-GdkPixbuf *
-sms_contacts_load_photo (EContact *contact)
-{
-	EContactPhoto *photo;
-	GdkPixbuf *pixbuf = NULL;
-	
-	/* Retrieve contact picture and resize */
-	photo = e_contact_get (contact, E_CONTACT_PHOTO);
-	if (photo) {
-		GdkPixbufLoader *loader = gdk_pixbuf_loader_new ();
-		if (loader) {
-			g_signal_connect (G_OBJECT (loader),
-					  "size-prepared",
-					  G_CALLBACK (contact_photo_size),
-					  NULL);
-#if HAVE_PHOTO_TYPE
-			switch (photo->type) {
-			case E_CONTACT_PHOTO_TYPE_INLINED :
-				gdk_pixbuf_loader_write (loader,
-					photo->data.inlined.data,
-					photo->data.inlined.length, NULL);
-				break;
-			case E_CONTACT_PHOTO_TYPE_URI :
-			default :
-				g_warning ("Cannot handle URI photos yet");
-				g_object_unref (loader);
-				loader = NULL;
-				break;
-			}
-#else
-			gdk_pixbuf_loader_write (loader, (const guchar *)
-				photo->data, photo->length, NULL);
-#endif
-			if (loader) {
-				gdk_pixbuf_loader_close (loader, NULL);
-				pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
-				if (pixbuf) g_object_ref (pixbuf);
-				g_object_unref (loader);
-			}
-		}
-		e_contact_photo_free (photo);
-	}
-	
-	return pixbuf;
-}
-
 static const gchar *clear_numbers_uid;
 
 static void
@@ -113,7 +53,7 @@ contacts_store (SmsData *data, GtkTreeIter *iter, EContact *contact)
 {
 	gint i;
 	
-	GdkPixbuf *photo = sms_contacts_load_photo (contact);
+	GdkPixbuf *photo = sms_contact_load_photo (contact);
 
 	gtk_list_store_set ((GtkListStore *)data->contacts_store, iter,
 		COL_UID, e_contact_get_const (contact, E_CONTACT_UID),
@@ -252,7 +192,7 @@ sms_contacts_page_new (SmsData *data)
 	GtkCellRenderer *renderer;
 	EBookQuery *tel_query;
 	EBookView *view;
-	gint i;
+	gint i, width;
 
 	GError *error = NULL;
 	
@@ -295,8 +235,9 @@ sms_contacts_page_new (SmsData *data)
 	}
 	
 	/* Get icon to use when no contact photo exists */
+	gtk_icon_size_lookup (GTK_ICON_SIZE_DIALOG, &width, NULL);
 	data->no_photo = gtk_icon_theme_load_icon (
-		gtk_icon_theme_get_default (), "stock_person", 48, 0, NULL);
+		gtk_icon_theme_get_default (), "stock_person", width, 0, NULL);
 
 	/* Create contacts model */
 	data->contacts_store = (GtkTreeModel *)gtk_list_store_new (COL_LAST,

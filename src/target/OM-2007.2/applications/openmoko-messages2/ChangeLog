@@ -1,3 +1,36 @@
+2007-11-22  Chris Lord  <chris@openedhand.com>
+
+	* src/Makefile.am:
+	Add new files sms-compose.[ch] and sms-utils.[ch]
+
+	* src/sms-compose.c: (page_shown), (page_hidden),
+	(notify_visible_cb), (visibility_notify_event_cb), (unmap_cb),
+	(send_clicked_cb), (sms_compose_page_new):
+	* src/sms-compose.h:
+	Separate message sending in its own page, not enough room to do inline
+
+	* src/sms-contacts.c: (contacts_store), (sms_contacts_page_new):
+	* src/sms-contacts.h:
+	Move parts to sms-utils.[ch], lookup icon size instead of using fixed
+	for the missing photo image
+
+	* src/sms-main.c: (new_clicked_cb), (main):
+	Add callback for new button to switch to sending page, new button is a
+	button instead of a toggle-button
+
+	* src/sms-notes.c: (note_changed_cb), (page_shown), (page_hidden),
+	(sms_notes_data_func), (sms_notes_page_new):
+	Move SMS sending to separate page, move get_selected_contact function to
+	sms-utils.[ch], swap alignment of sent/received messages
+
+	* src/sms-utils.c: (sms_get_selected_contact),
+	(contact_photo_size), (sms_contact_load_photo):
+	* src/sms-utils.h:
+	New utility functions collected from other files
+
+	* src/sms.h:
+	New variables for sending page
+
 2007-11-21  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-contacts.c: (sms_contacts_load_photo),
