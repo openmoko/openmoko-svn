@@ -32,7 +32,7 @@ static GMainLoop *mainloop = NULL;
 
 /* Forwards */
 static gboolean _list (MokoJournal *journal);
-static void     _add (MokoJournal *journal);
+/*static void     _add (MokoJournal *journal);*/
 
 /* Command line params */
 static gchar *action = NULL;
@@ -141,6 +141,7 @@ main (int argc, gchar *argv[])
   return 0;
 }
 
+/*
 static void
 _add (MokoJournal *journal)
 {
@@ -165,6 +166,7 @@ _add (MokoJournal *journal)
 
   g_main_loop_quit (mainloop);
 }
+*/
 
 static gboolean
 _list (MokoJournal *journal)
