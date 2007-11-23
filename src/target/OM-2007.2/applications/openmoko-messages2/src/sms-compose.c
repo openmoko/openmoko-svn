@@ -145,13 +145,9 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 	GtkTextIter start, end;
 	GtkTextBuffer *buffer;
 	const gchar *number;
-	EContact *contact;
 	gchar *message;
 	
 	if (hidden) return;
-	
-	/* TODO: Spawn an error dialog or something */
-	if (!(contact = sms_get_selected_contact (data))) return;
 	
 	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
 		data->new_button), FALSE);
@@ -192,8 +188,6 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 	} else {
 		/* TODO: Error dialog for empty number */
 	}
-	
-	g_object_unref (contact);
 }
 
 GtkWidget *

@@ -1,3 +1,8 @@
+2007-11-23  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-compose.c: (send_clicked_cb):
+	Don't try to get selected contact to send a message, unnecessary
+
 2007-11-22  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-compose.c: (send_clicked_cb):
