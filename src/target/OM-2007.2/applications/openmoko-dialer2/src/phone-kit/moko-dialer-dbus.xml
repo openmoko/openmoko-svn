@@ -20,6 +20,22 @@
     <arg type="s" name="uid" direction="out" />
   </method>
 
+  <method name="GetProviderName">
+    <arg type="s" name="name" direction="out" />
+  </method>
+
+  <method name="GetSubscriberNumber">
+    <arg type="s" name="number" direction="out" />
+  </method>
+
+  <method name="GetCountryCode">
+    <arg type="s" name="dial_code" direction="out" />
+  </method>
+
+  <method name="GetHomeCountryCode">
+    <arg type="s" name="dial_code" direction="out" />
+  </method>
+
   <signal name="IncomingCall">
     <arg type="s" name="number"/>
   </signal>

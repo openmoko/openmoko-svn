@@ -1,3 +1,22 @@
+2007-11-23  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/Makefile.am:
+	* src/phone-kit/moko-dialer-mcc-dc.h:
+	Add a header with mappings from MCC to dialing codes
+
+	* src/phone-kit/moko-dialer-dbus.xml:
+	* src/phone-kit/moko-dialer.c: (on_network_registered),
+	(moko_dialer_finalize), (net_msghandler), (pb_msghandler),
+	(dialer_init_gsmd), (moko_dialer_check_gsmd),
+	(moko_dialer_check_registration), (moko_dialer_cc_from_mcc),
+	(moko_dialer_send_sms), (moko_dialer_get_provider_name),
+	(moko_dialer_get_subscriber_number),
+	(moko_dialer_get_country_code),
+	(moko_dialer_get_home_country_code):
+	* src/phone-kit/moko-dialer.h:
+	Add new methods to get current country code, home country code,
+	provider name and subscriber number
+
 2007-11-23  Thomas Wood  <thomas@openedhand.com>
 
 	* src/phone-kit/moko-dialer.c: (moko_dialer_dial),

@@ -33,6 +33,8 @@
 #include <libgsmd/misc.h>
 #include <libgsmd/sms.h>
 #include <libgsmd/voicecall.h>
+#include <libgsmd/phonebook.h>
+#include <gsmd/usock.h>
 
 #include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
@@ -44,6 +46,8 @@
 #include "moko-talking.h"
 #include "moko-sound.h"
 #include "moko-pin.h"
+
+#include "moko-dialer-mcc-dc.h"
 
 G_DEFINE_TYPE (MokoDialer, moko_dialer, G_TYPE_OBJECT)
 
@@ -61,6 +65,9 @@ struct _MokoDialerPrivate
   gint               status;
   gchar              *incoming_clip;
   gchar              *own_number;
+  gchar              *network_name;
+  gchar              *network_number;
+  gchar              *imsi;
 
   /* handles user interaction */
   GtkWidget          *talking;
@@ -421,6 +428,19 @@ on_network_registered (MokoDialer *dialer,
       g_debug ("Network registered: LocationAreaCode: %x. CellID: %x.", lac, cell);
       priv->gsm_location.lac = lac;
       priv->gsm_location.cid = cell;
+      
+      if ((priv->registered != GSMD_NETREG_REG_HOME) &&
+          (priv->registered != GSMD_NETREG_REG_ROAMING)) {
+        /* Retrieve operator name */
+        lgsm_oper_get (priv->handle);
+        
+        /* Retrieve operator list to get current country code */
+        lgsm_opers_get (priv->handle);
+        
+        /* Retrieve IMSI to get home country code */
+        lgsm_get_imsi (priv->handle);
+      }
+      
       break;
     default:
       g_warning ("Unhandled register event type = %d\n", type);
@@ -654,6 +674,9 @@ moko_dialer_finalize (GObject *object)
   priv = dialer->priv;
 
   g_free (priv->own_number);
+  g_free (priv->network_name);
+  g_free (priv->network_number);
+  g_free (priv->imsi);
   
   G_OBJECT_CLASS (moko_dialer_parent_class)->finalize (object);
 }
@@ -938,16 +961,52 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   MokoDialer *dialer = moko_dialer_get_default ();
   MokoDialerPrivate *priv = dialer->priv;
 
+	const char *oper = (char *) gmh + sizeof(*gmh);
   const struct gsmd_own_number *num = (struct gsmd_own_number *)
                                       ((void *) gmh + sizeof(*gmh));
+	const struct gsmd_msg_oper *opers = (struct gsmd_msg_oper *)
+		((void *) gmh + sizeof(*gmh));
 
-  if (gmh->msg_subtype != GSMD_NETWORK_GET_NUMBER) return -EINVAL;
+  switch (gmh->msg_subtype) {
+    case GSMD_NETWORK_GET_NUMBER :
+      g_free (priv->own_number);
+      priv->own_number = g_strdup (num->addr.number);
+      break;
+    case GSMD_NETWORK_OPER_GET :
+      g_free (priv->network_name);
+      if (oper[0]) priv->network_name = g_strdup (oper);
+      else priv->network_name = NULL;
+      break;
+    case GSMD_NETWORK_OPER_LIST :
+      for (; !opers->is_last; opers++) {
+        if (opers->stat == GSMD_OPER_CURRENT) {
+          g_free (priv->network_number);
+          priv->network_number = g_strndup (opers->opname_num,
+                                            sizeof(opers->opname_num));
+          break;
+        }
+      }
+      break;
+    default :
+      return -EINVAL;
+  }
   
-  g_free (priv->own_number);
-  
-  /* TODO: Normalise number necessary? */
-  priv->own_number = g_strdup (num->addr.number);
-  g_debug ("Got phone number: %s", priv->own_number);
+  return 0;
+}
+
+static int
+pb_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+  MokoDialer *dialer = moko_dialer_get_default ();
+  MokoDialerPrivate *priv = dialer->priv;
+
+  switch (gmh->msg_subtype) {
+    case GSMD_PHONEBOOK_GET_IMSI :
+      priv->imsi = g_strdup ((char *)gmh + sizeof (*gmh));
+      break;
+    default :
+      return -EINVAL;
+  }
   
   return 0;
 }
@@ -1039,6 +1098,7 @@ dialer_init_gsmd (MokoDialer *dialer)
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_NETREG, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
+  lgsm_register_handler (priv->handle, GSMD_MSG_PHONEBOOK, &pb_msghandler);
 
   /* Register with network */
   priv->registered = GSMD_NETREG_UNREG;
@@ -1129,6 +1189,48 @@ moko_dialer_get_default (void)
   return dialer;
 }
 
+static gboolean
+moko_dialer_check_gsmd (MokoDialer *self, GError **error)
+{
+  MokoDialerPrivate *priv = self->priv;
+  
+  if (!priv->handle) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD,
+                          "Failed to connect to gsmd");
+    return FALSE;
+  }
+  
+  return TRUE;
+}
+
+static gboolean
+moko_dialer_check_registration (MokoDialer *self, GError **error)
+{
+  MokoDialerPrivate *priv = self->priv;
+  
+  if ((priv->registered != GSMD_NETREG_REG_HOME) &&
+      (priv->registered != GSMD_NETREG_REG_ROAMING)) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_NOT_CONNECTED,
+                          "Not registered to a network");
+    return FALSE;
+  }
+  
+  return TRUE;
+}
+
+static const gchar *
+moko_dialer_cc_from_mcc (gchar *mcc)
+{
+  gint i;
+  for (i = 0; mcc_to_dc[i][0]; i++) {
+    if (strncmp (mcc, mcc_to_dc[i][0], 3) == 0) {
+      return mcc_to_dc[i][1];
+    }
+  }
+  
+  return NULL;
+}
+
 gboolean
 moko_dialer_send_sms (MokoDialer *self, const gchar *number,
                       const gchar *message, gchar **uid, GError **error)
@@ -1141,14 +1243,9 @@ moko_dialer_send_sms (MokoDialer *self, const gchar *number,
   
   g_assert (self && number && message);
 
+  if (!moko_dialer_check_gsmd (self, error)) return FALSE;
+  if (!moko_dialer_check_registration (self, error)) return FALSE;
   priv = self->priv;
-  
-  if (!priv->handle) {
-    /* Failed to connect to gsmd earlier */
-    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD,
-                          "Failed to connect to gsmd");
-    return FALSE;
-  }
   
   if (!priv->sms_store_open) {
     *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_SMS_STORE,
@@ -1216,6 +1313,90 @@ moko_dialer_send_sms (MokoDialer *self, const gchar *number,
     priv->last_msg = NULL;
   }
   priv->last_msg = note;
+  
+  return TRUE;
+}
+
+gboolean
+moko_dialer_get_provider_name (MokoDialer *self, gchar **name, GError **error)
+{
+  MokoDialerPrivate *priv;
+  
+  if (!moko_dialer_check_gsmd (self, error)) return FALSE;
+  if (!moko_dialer_check_registration (self, error)) return FALSE;
+  priv = self->priv;
+  
+  if (!priv->network_name) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_NO_PROVIDER,
+                          "No current provider");
+    return FALSE;
+  }
+
+  if (name) *name = g_strdup (priv->network_name);
+  return TRUE;
+}
+
+gboolean
+moko_dialer_get_subscriber_number (MokoDialer *self, gchar **number,
+                                   GError **error)
+{
+  MokoDialerPrivate *priv;
+  
+  if (!moko_dialer_check_gsmd (self, error)) return FALSE;
+  priv = self->priv;
+  
+  if (!priv->own_number) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_NO_NUMBER,
+                          "Unable to retrieve subscriber number");
+    return FALSE;
+  }
+  
+  if (number) *number = g_strdup (priv->own_number);
+  return TRUE;
+}
+
+gboolean
+moko_dialer_get_country_code (MokoDialer *self, gchar **dial_code,
+                              GError **error)
+{
+  MokoDialerPrivate *priv;
+  
+  if (!moko_dialer_check_gsmd (self, error)) return FALSE;
+  if (!moko_dialer_check_registration (self, error)) return FALSE;
+  priv = self->priv;
+  
+  if (!priv->network_number) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR,
+                          PK_DIALER_ERROR_NO_PROVIDER_NUM,
+                          "Unable to retrieve provider number");
+    return FALSE;
+  }
+  
+  if (dial_code)
+    *dial_code = g_strdup (moko_dialer_cc_from_mcc (priv->network_number));
+  
+  return TRUE;
+}
+
+gboolean
+moko_dialer_get_home_country_code (MokoDialer *self, gchar **dial_code,
+                                   GError **error)
+{
+  MokoDialerPrivate *priv;
+  
+  if (!moko_dialer_check_gsmd (self, error)) return FALSE;
+  if (!moko_dialer_check_registration (self, error)) return FALSE;
+  priv = self->priv;
+  
+  if (!priv->network_number) {
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR,
+                          PK_DIALER_ERROR_NO_IMSI,
+                          "Unable to retrieve IMSI");
+    return FALSE;
+  }
+  
+  if (dial_code)
+    *dial_code = g_strdup (moko_dialer_cc_from_mcc (priv->imsi));
   
   return TRUE;
 }

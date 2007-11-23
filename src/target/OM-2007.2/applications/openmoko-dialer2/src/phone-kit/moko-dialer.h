@@ -51,7 +51,11 @@ typedef enum {
   PK_DIALER_ERROR_NOT_CONNECTED,
   PK_DIALER_ERROR_SMS_STORE,
   PK_DIALER_ERROR_SMS_TOOLONG,
-  PK_DIALER_ERROR_NO_TOOLONG
+  PK_DIALER_ERROR_NO_TOOLONG,
+  PK_DIALER_ERROR_NO_PROVIDER,
+  PK_DIALER_ERROR_NO_PROVIDER_NUM,
+  PK_DIALER_ERROR_NO_IMSI,
+  PK_DIALER_ERROR_NO_NUMBER,
 } PhoneKitDialerError;
 
 typedef struct _MokoDialer MokoDialer;
@@ -130,6 +134,21 @@ moko_dialer_rejected (MokoDialer *dialer);
 gboolean
 moko_dialer_send_sms (MokoDialer *self, const gchar *number,
                       const gchar *message, gchar **uid, GError **error);
+
+gboolean
+moko_dialer_get_provider_name (MokoDialer *self, gchar **name, GError **error);
+
+gboolean
+moko_dialer_get_subscriber_number (MokoDialer *self, gchar **number,
+                                   GError **error);
+
+gboolean
+moko_dialer_get_country_code (MokoDialer *self, gchar **dial_code,
+                              GError **error);
+
+gboolean
+moko_dialer_get_home_country_code (MokoDialer *self, gchar **dial_code,
+                                   GError **error);
 
 G_END_DECLS
 
