@@ -1,0 +1,1363 @@
+Index: xserver/hw/kdrive/glamo/Makefile.am
+===================================================================
+--- xserver.orig/hw/kdrive/glamo/Makefile.am	2007-11-23 17:05:49.000000000 +0800
++++ xserver/hw/kdrive/glamo/Makefile.am	2007-11-23 17:07:50.000000000 +0800
+@@ -13,6 +13,10 @@
+ noinst_LIBRARIES = libglamo.a
+ 
+ libglamo_a_SOURCES = 	\
++	glamo_dma.c	\
++	glamo_dma.h	\
++	glamo_draw.c	\
++	glamo_draw.h	\
+ 	glamo.c		\
+ 	glamo.h		\
+ 	glamo-regs.h
+Index: xserver/hw/kdrive/glamo/glamo.c
+===================================================================
+--- xserver.orig/hw/kdrive/glamo/glamo.c	2007-11-23 17:05:49.000000000 +0800
++++ xserver/hw/kdrive/glamo/glamo.c	2007-11-23 17:07:50.000000000 +0800
+@@ -442,11 +442,10 @@
+ 	0,			/* recolorCursor */
+ #endif
+ 
+-
+-	0,			/* initAccel */
+-	0,			/* enableAccel */
+-	0,			/* disableAccel */
+-	0,			/* finiAccel */
++	GLAMODrawInit,		/* initAccel */
++	GLAMODrawEnable,	/* enableAccel */
++	GLAMODrawDisable,	/* disableAccel */
++	GLAMODrawFini,		/* finiAccel */
+ 
+ 	GLAMOGetColors,		/* getColors */
+ 	GLAMOPutColors,		/* putColors */
+Index: xserver/hw/kdrive/glamo/glamo.h
+===================================================================
+--- xserver.orig/hw/kdrive/glamo/glamo.h	2007-11-23 17:05:49.000000000 +0800
++++ xserver/hw/kdrive/glamo/glamo.h	2007-11-23 17:07:50.000000000 +0800
+@@ -307,6 +307,22 @@
+ void
+ GLAMOUnmapReg(KdCardInfo *card, GLAMOCardInfo *glamoc);
+ 
++/* glamo_draw.c */
++void
++GLAMODrawSetup(ScreenPtr pScreen);
++
++Bool
++GLAMODrawInit(ScreenPtr pScreen);
++
++void
++GLAMODrawEnable(ScreenPtr pScreen);
++
++void
++GLAMODrawDisable(ScreenPtr pScreen);
++
++void
++GLAMODrawFini(ScreenPtr pScreen);
++
+ /* glamo_dri.c */
+ #ifdef USE_DRI
+ Bool
+Index: xserver/hw/kdrive/glamo/glamo_dma.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/kdrive/glamo/glamo_dma.c	2007-11-23 17:07:50.000000000 +0800
+@@ -0,0 +1,530 @@
++/*
++ * Copyright © 2007 OpenMoko, Inc.
++ *
++ * This driver is based on Xati,
++ * Copyright © 2004 Eric Anholt
++ *
++ * Permission to use, copy, modify, distribute, and sell this software and its
++ * documentation for any purpose is hereby granted without fee, provided that
++ * the above copyright notice appear in all copies and that both that copyright
++ * notice and this permission notice appear in supporting documentation, and
++ * that the name of the copyright holders not be used in advertising or
++ * publicity pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no representations
++ * about the suitability of this software for any purpose.  It is provided "as
++ * is" without express or implied warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
++ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
++ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
++ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
++ * OF THIS SOFTWARE.
++ */
++
++#include <sys/time.h>
++
++#include "glamo.h"
++#include "glamo-regs.h"
++#include "glamo_dma.h"
++#include "glamo_draw.h"
++
++#ifdef USE_DRI
++#include "radeon_common.h"
++#include "glamo_sarea.h"
++#endif /* USE_DRI */
++
++#define DEBUG_FIFO 0
++
++#if DEBUG_FIFO
++static void
++GLAMODebugFifo(GLAMOScreenInfo *glamos)
++{
++	GLAMOCardInfo *glamoc = glamos->glamoc;
++	char *mmio = glamoc->reg_base;
++	CARD32 offset;
++
++	ErrorF("GLAMO_REG_CMDQ_STATUS: 0x%04x\n",
++	    MMIO_IN16(mmio, GLAMO_REG_CMDQ_STATUS));
++
++	offset = MMIO_IN16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRL);
++	offset |= (MMIO_IN16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH) << 16) & 0x7;
++	ErrorF("GLAMO_REG_CMDQ_WRITE_ADDR: 0x%08x\n", (unsigned int) offset);
++
++	offset = MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRL);
++	offset |= (MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRH) << 16) & 0x7;
++	ErrorF("GLAMO_REG_CMDQ_READ_ADDR: 0x%08x\n", (unsigned int) offset);
++}
++#endif
++
++void
++GLAMOEngineReset(ScreenPtr pScreen, enum glamo_engine engine)
++{
++	KdScreenPriv(pScreen);
++	GLAMOCardInfo(pScreenPriv);
++	CARD32 reg;
++	CARD16 mask;
++	char *mmio = glamoc->reg_base;
++
++	if (!mmio)
++		return;
++
++	switch (engine) {
++	case GLAMO_ENGINE_CMDQ:
++		reg = GLAMO_REG_CLOCK_2D;
++		mask = GLAMO_CLOCK_2D_CMDQ_RESET;
++		break;
++	case GLAMO_ENGINE_ISP:
++		reg = GLAMO_REG_CLOCK_ISP;
++		mask = GLAMO_CLOCK_ISP2_RESET;
++		break;
++	case GLAMO_ENGINE_2D:
++		reg = GLAMO_REG_CLOCK_2D;
++		mask = GLAMO_CLOCK_2D_RESET;
++		break;
++	default:
++		return;
++		break;
++	}
++
++	MMIOSetBitMask(mmio, reg, mask, 0xffff);
++	usleep(1000);
++	MMIOSetBitMask(mmio, reg, mask, 0);
++	usleep(1000);
++}
++
++void
++GLAMOEngineDisable(ScreenPtr pScreen, enum glamo_engine engine)
++{
++	KdScreenPriv(pScreen);
++	GLAMOCardInfo(pScreenPriv);
++	char *mmio = glamoc->reg_base;
++
++	if (!mmio)
++		return;
++
++	switch (engine) {
++	case GLAMO_ENGINE_CMDQ:
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_2D,
++			       GLAMO_CLOCK_2D_EN_M6CLK,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_HOSTBUS(2),
++			       GLAMO_HOSTBUS2_MMIO_EN_CMDQ,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_1,
++			       GLAMO_CLOCK_GEN51_EN_DIV_MCLK,
++			       0);
++		break;
++	case GLAMO_ENGINE_ISP:
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_ISP,
++			       GLAMO_CLOCK_ISP_EN_M2CLK |
++			       GLAMO_CLOCK_ISP_EN_I1CLK,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_2,
++			       GLAMO_CLOCK_GEN52_EN_DIV_ICLK,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_1,
++			       GLAMO_CLOCK_GEN51_EN_DIV_JCLK,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_HOSTBUS(2),
++			       GLAMO_HOSTBUS2_MMIO_EN_ISP,
++			       0);
++		break;
++	case GLAMO_ENGINE_2D:
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_2D,
++			       GLAMO_CLOCK_2D_EN_M7CLK |
++			       GLAMO_CLOCK_2D_EN_GCLK |
++			       GLAMO_CLOCK_2D_DG_M7CLK |
++			       GLAMO_CLOCK_2D_DG_GCLK,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_HOSTBUS(2),
++			       GLAMO_HOSTBUS2_MMIO_EN_2D,
++			       0);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_1,
++			       GLAMO_CLOCK_GEN51_EN_DIV_GCLK,
++			       0);
++		break;
++	default:
++		break;
++	}
++	return;
++}
++
++void
++GLAMOEngineEnable(ScreenPtr pScreen, enum glamo_engine engine)
++{
++	KdScreenPriv(pScreen);
++	GLAMOCardInfo(pScreenPriv);
++	char *mmio = glamoc->reg_base;
++
++	if (!mmio)
++		return;
++
++	switch (engine) {
++	case GLAMO_ENGINE_CMDQ:
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_2D,
++			       GLAMO_CLOCK_2D_EN_M6CLK,
++			       0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_HOSTBUS(2),
++			       GLAMO_HOSTBUS2_MMIO_EN_CMDQ,
++			       0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_1,
++			       GLAMO_CLOCK_GEN51_EN_DIV_MCLK,
++			       0xffff);
++		break;
++	case GLAMO_ENGINE_ISP:
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_ISP,
++			       GLAMO_CLOCK_ISP_EN_M2CLK |
++			       GLAMO_CLOCK_ISP_EN_I1CLK,
++			       0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_2,
++			       GLAMO_CLOCK_GEN52_EN_DIV_ICLK,
++			       0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_1,
++			       GLAMO_CLOCK_GEN51_EN_DIV_JCLK,
++			       0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_HOSTBUS(2),
++			       GLAMO_HOSTBUS2_MMIO_EN_ISP,
++			       0xffff);
++		break;
++	case GLAMO_ENGINE_2D:
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_2D,
++				GLAMO_CLOCK_2D_EN_M7CLK |
++				GLAMO_CLOCK_2D_EN_GCLK |
++				GLAMO_CLOCK_2D_DG_M7CLK |
++				GLAMO_CLOCK_2D_DG_GCLK,
++				0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_HOSTBUS(2),
++			       GLAMO_HOSTBUS2_MMIO_EN_2D,
++			       0xffff);
++		MMIOSetBitMask(mmio, GLAMO_REG_CLOCK_GEN5_1,
++			       GLAMO_CLOCK_GEN51_EN_DIV_GCLK,
++			       0xffff);
++		break;
++	default:
++		break;
++	}
++}
++
++int
++GLAMOEngineBusy(ScreenPtr pScreen, enum glamo_engine engine)
++{
++	KdScreenPriv(pScreen);
++	GLAMOCardInfo(pScreenPriv);
++	GLAMOScreenInfo(pScreenPriv);
++	char *mmio = glamoc->reg_base;
++	CARD16 status, mask, val;
++
++	if (!mmio)
++		return FALSE;
++
++	if (glamos->indirectBuffer != NULL)
++		GLAMOFlushIndirect(glamos, 0);
++
++	switch (engine)
++	{
++	case GLAMO_ENGINE_CMDQ:
++		mask = 0x3;
++		val  = mask;
++		break;
++	case GLAMO_ENGINE_ISP:
++		mask = 0x3 | (1 << 8);
++		val  = 0x3;
++		break;
++	case GLAMO_ENGINE_2D:
++		mask = 0x3 | (1 << 4);
++		val  = 0x3;
++		break;
++	case GLAMO_ENGINE_ALL:
++	default:
++		mask = 1 << 2;
++		val  = mask;
++		break;
++	}
++
++	status = MMIO_IN16(mmio, GLAMO_REG_CMDQ_STATUS);
++
++	return !((status & mask) == val);
++}
++
++void
++GLAMOEngineWait(ScreenPtr pScreen, enum glamo_engine engine)
++{
++	KdScreenPriv(pScreen);
++	GLAMOCardInfo(pScreenPriv);
++	GLAMOScreenInfo(pScreenPriv);
++	char *mmio = glamoc->reg_base;
++	CARD16 status, mask, val;
++	TIMEOUT_LOCALS;
++
++	if (!mmio)
++		return;
++
++	if (glamos->indirectBuffer != NULL)
++		GLAMOFlushIndirect(glamos, 0);
++
++	switch (engine)
++	{
++	case GLAMO_ENGINE_CMDQ:
++		mask = 0x3;
++		val  = mask;
++		break;
++	case GLAMO_ENGINE_ISP:
++		mask = 0x3 | (1 << 8);
++		val  = 0x3;
++		break;
++	case GLAMO_ENGINE_2D:
++		mask = 0x3 | (1 << 4);
++		val  = 0x3;
++		break;
++	case GLAMO_ENGINE_ALL:
++	default:
++		mask = 1 << 2;
++		val  = mask;
++		break;
++	}
++
++#ifdef USE_DRI
++	if (glamos->using_dri) {
++		int ret = 0;
++		int cmd = (glamoc->is_3362 ? DRM_RADEON_CP_IDLE :
++		    DRM_R128_CCE_IDLE);
++		WHILE_NOT_TIMEOUT(2) {
++			ret = drmCommandNone(glamoc->drmFd, cmd);
++			if (ret != -EBUSY)
++				break;
++		}
++		if (TIMEDOUT()) {
++			GLAMODebugFifo(glamos);
++			FatalError("Timed out idling CCE (card hung)\n");
++		}
++		if (ret != 0)
++			ErrorF("Failed to idle DMA, returned %d\n", ret);
++		return;
++	}
++#endif
++
++	WHILE_NOT_TIMEOUT(.5) {
++		status = MMIO_IN16(mmio, GLAMO_REG_CMDQ_STATUS);
++		if ((status & mask) == val)
++			break;
++	}
++	if (TIMEDOUT()) {
++		ErrorF("Timeout idling accelerator (0x%x), resetting...\n",
++				status);
++		GLAMOEngineReset(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ);
++		GLAMODrawSetup(glamos->screen->pScreen);
++	}
++
++#if DEBUG_FIFO
++	ErrorF("Idle?\n");
++	GLAMODebugFifo(glamos);
++#endif
++}
++
++static dmaBuf *
++GLAMOGetDMABuffer(GLAMOScreenInfo *glamos)
++{
++	dmaBuf *buf;
++
++	buf = (dmaBuf *)xalloc(sizeof(dmaBuf));
++	if (buf == NULL)
++		return NULL;
++
++#ifdef USE_DRI
++	if (glamos->using_dri) {
++		buf->drmBuf = GLAMODRIGetBuffer(glamos);
++		if (buf->drmBuf == NULL) {
++			xfree(buf);
++			return NULL;
++		}
++		buf->size = buf->drmBuf->total;
++		buf->used = buf->drmBuf->used;
++		buf->address = buf->drmBuf->address;
++		return buf;
++	}
++#endif /* USE_DRI */
++
++	buf->size = glamos->ring_len / 2;
++	buf->address = xalloc(buf->size);
++	if (buf->address == NULL) {
++		xfree(buf);
++		return NULL;
++	}
++	buf->used = 0;
++
++	return buf;
++}
++
++static void
++GLAMODispatchIndirectDMA(GLAMOScreenInfo *glamos)
++{
++	GLAMOCardInfo *glamoc = glamos->glamoc;
++	dmaBuf *buf = glamos->indirectBuffer;
++	char *mmio = glamoc->reg_base;
++	CARD16 *addr;
++	int count, ring_count;
++	TIMEOUT_LOCALS;
++
++	addr = (CARD16 *)((char *)buf->address + glamos->indirectStart);
++	count = (buf->used - glamos->indirectStart) / 2;
++	ring_count = glamos->ring_len / 2;
++
++	/* write pointer can be ring_size, but not zero */
++	WHILE_NOT_TIMEOUT(.5) {
++		if (count <= 0)
++			break;
++
++		if (glamos->ring_write >= ring_count)
++			glamos->ring_write = 0;
++
++		glamos->ring_addr[glamos->ring_write++] = *addr++;
++
++		while (glamos->ring_write == glamos->ring_read)
++		{
++			glamos->ring_read =
++				MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRL);
++			glamos->ring_read |=
++				(MMIO_IN16(mmio, GLAMO_REG_CMDQ_READ_ADDRH) & 0x7) << 16;
++		}
++
++		count--;
++	}
++	if (TIMEDOUT()) {
++		ErrorF("Timeout submitting packets, resetting...\n");
++		GLAMOEngineReset(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ);
++		GLAMODrawSetup(glamos->screen->pScreen);
++	}
++
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH,
++			 (glamos->ring_write >> 15) & 0x7);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRL,
++			 (glamos->ring_write <<  1) & 0xffff);
++}
++
++void
++GLAMOFlushIndirect(GLAMOScreenInfo *glamos, Bool discard)
++{
++	dmaBuf *buf = glamos->indirectBuffer;
++
++	if ((glamos->indirectStart == buf->used) && !discard)
++		return;
++
++#if DEBUG_FIFO
++	ErrorF("Dispatching %d WORDS\n", (buf->used - glamos->indirectStart) /
++	    2);
++#endif
++
++#ifdef USE_DRI
++	if (glamos->using_dri) {
++		buf->drmBuf->used = buf->used;
++		GLAMODRIDispatchIndirect(glamos, discard);
++		if (discard) {
++			buf->drmBuf = GLAMODRIGetBuffer(glamos);
++			buf->size = buf->drmBuf->total;
++			buf->used = buf->drmBuf->used;
++			buf->address = buf->drmBuf->address;
++			glamos->indirectStart = 0;
++		} else {
++			/* Start on a double word boundary */
++			glamos->indirectStart = buf->used = (buf->used + 7) & ~7;
++		}
++		return;
++	}
++#endif /* USE_DRI */
++
++	GLAMODispatchIndirectDMA(glamos);
++
++	buf->used = 0;
++	glamos->indirectStart = 0;
++}
++
++static Bool
++GLAMODMAInit(ScreenPtr pScreen)
++{
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++	GLAMOCardInfo(pScreenPriv);
++	char *mmio = glamoc->reg_base;
++	int cq_len = 63;
++
++	glamos->ring_len = (cq_len + 1) * 1024;
++
++	glamos->dma_space = KdOffscreenAlloc(pScreen, glamos->ring_len + 4,
++			                     16, TRUE, NULL, NULL);
++	if (!glamos->dma_space)
++		return FALSE;
++
++	glamos->ring_addr = (CARD16 *) (pScreenPriv->screen->memory_base +
++			                glamos->dma_space->offset);
++	glamos->ring_read = 0;
++	glamos->ring_write = 0;
++
++	/* make the decoder happy? */
++	glamos->ring_addr[glamos->ring_len / 2] = 0x0;
++	glamos->ring_addr[glamos->ring_len / 2 + 1] = 0x0;
++
++	GLAMOEngineEnable(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ);
++	GLAMOEngineReset(glamos->screen->pScreen, GLAMO_ENGINE_CMDQ);
++
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_BASE_ADDRL,
++			 glamos->dma_space->offset & 0xffff);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_BASE_ADDRH,
++			 (glamos->dma_space->offset >> 16) & 0x7f);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_LEN, cq_len);
++
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRH, 0);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_WRITE_ADDRL, 0);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_READ_ADDRH, 0);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_READ_ADDRL, 0);
++	MMIO_OUT16(mmio, GLAMO_REG_CMDQ_CONTROL,
++			 1 << 12 |
++			 5 << 8 |
++			 8 << 4);
++
++	return TRUE;
++}
++
++void
++GLAMODMASetup(ScreenPtr pScreen)
++{
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++
++#ifdef USE_DRI
++	if (glamos->using_dri)
++		GLAMODRIDMAStart(glamos);
++#endif /* USE_DRI */
++
++	if (!glamos->using_dri)
++		GLAMODMAInit(pScreen);
++
++	glamos->indirectBuffer = GLAMOGetDMABuffer(glamos);
++
++	if (glamos->indirectBuffer == FALSE)
++		FatalError("Failed to allocate DMA buffer.\n");
++
++	if (glamos->using_dri)
++		ErrorF("Initialized DRI DMA\n");
++	else
++		ErrorF("Initialized DMA\n");
++}
++
++void
++GLAMODMATeardown(ScreenPtr pScreen)
++{
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++
++	GLAMOEngineWait(pScreen, GLAMO_ENGINE_ALL);
++
++#ifdef USE_DRI
++	if (glamos->using_dri)
++		GLAMODRIDMAStop(glamos);
++#endif /* USE_DRI */
++
++	xfree(glamos->indirectBuffer->address);
++	xfree(glamos->indirectBuffer);
++	glamos->indirectBuffer = NULL;
++}
+Index: xserver/hw/kdrive/glamo/glamo_dma.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/kdrive/glamo/glamo_dma.h	2007-11-23 17:07:50.000000000 +0800
+@@ -0,0 +1,153 @@
++/*
++ * Copyright © 2007 OpenMoko, Inc.
++ *
++ * This driver is based on Xati,
++ * Copyright © 2004 Eric Anholt
++ *
++ * Permission to use, copy, modify, distribute, and sell this software and its
++ * documentation for any purpose is hereby granted without fee, provided that
++ * the above copyright notice appear in all copies and that both that copyright
++ * notice and this permission notice appear in supporting documentation, and
++ * that the name of the copyright holders not be used in advertising or
++ * publicity pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no representations
++ * about the suitability of this software for any purpose.  It is provided "as
++ * is" without express or implied warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
++ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
++ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
++ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
++ * OF THIS SOFTWARE.
++ */
++
++#ifndef _GLAMO_DMA_H_
++#define _GLAMO_DMA_H_
++
++#define CCE_DEBUG 1
++
++#if !CCE_DEBUG
++
++#define RING_LOCALS	CARD16 *__head; int __count
++#define BEGIN_DMA(n)							\
++do {									\
++	if ((glamos->indirectBuffer->used + 2 * (n)) >			\
++	    glamos->indirectBuffer->size) {				\
++		GLAMOFlushIndirect(glamos, 1);				\
++	}								\
++	__head = (CARD16 *)((char *)glamos->indirectBuffer->address +	\
++	    glamos->indirectBuffer->used);				\
++	__count = 0;							\
++} while (0)
++#define END_DMA() do {							\
++	glamos->indirectBuffer->used += __count * 2;			\
++} while (0)
++
++#else
++
++#define RING_LOCALS	\
++	CARD16 *__head; int __count, __total, __reg, __packet0count
++#define BEGIN_DMA(n)							\
++do {									\
++	if ((glamos->indirectBuffer->used + 2 * (n)) >			\
++	    glamos->indirectBuffer->size) {				\
++		GLAMOFlushIndirect(glamos, 1);				\
++	}								\
++	__head = (CARD16 *)((char *)glamos->indirectBuffer->address +	\
++	    glamos->indirectBuffer->used);				\
++	__count = 0;							\
++	__total = n;							\
++	__reg = 0;							\
++	__packet0count = 0;						\
++} while (0)
++#define END_DMA() do {							\
++	if (__count != __total)						\
++		FatalError("count != total (%d vs %d) at %s:%d\n",	\
++		     __count, __total, __FILE__, __LINE__);		\
++	glamos->indirectBuffer->used += __count * 2;			\
++} while (0)
++
++#endif
++
++#define OUT_PAIR(v1, v2)						\
++do {									\
++	__head[__count++] = (v1);					\
++	__head[__count++] = (v2);					\
++} while (0)
++
++#define OUT_BURST_REG(reg, val) do {					\
++	if (__reg != reg)						\
++		FatalError("unexpected reg (0x%x vs 0x%x) at %s:%d\n",	\
++		    reg, __reg, __FILE__, __LINE__);			\
++	if (__packet0count-- <= 0)					\
++		FatalError("overrun of packet0 at %s:%d\n",		\
++		    __FILE__, __LINE__);				\
++	__head[__count++] = (val);					\
++	__reg += 2;							\
++} while (0)
++
++#define OUT_REG(reg, val)						\
++	OUT_PAIR(reg, val)
++
++#define OUT_BURST(reg, n)						\
++do {									\
++	OUT_PAIR((1 << 15) | reg, n);					\
++	__reg = reg;							\
++	__packet0count = n;						\
++} while (0)
++
++#define TIMEOUT_LOCALS struct timeval _target, _curtime
++
++static inline Bool
++tv_le(struct timeval *tv1, struct timeval *tv2)
++{
++	if (tv1->tv_sec < tv2->tv_sec ||
++	    (tv1->tv_sec == tv2->tv_sec && tv1->tv_usec < tv2->tv_usec))
++		return TRUE;
++	else
++		return FALSE;
++}
++
++#define WHILE_NOT_TIMEOUT(_timeout)					\
++	gettimeofday(&_target, NULL);					\
++	_target.tv_usec += ((_timeout) * 1000000);			\
++	_target.tv_sec += _target.tv_usec / 1000000;			\
++	_target.tv_usec = _target.tv_usec % 1000000;			\
++	while (gettimeofday(&_curtime, NULL), tv_le(&_curtime, &_target))
++
++#define TIMEDOUT()	(!tv_le(&_curtime, &_target))
++
++void
++GLAMOFlushIndirect(GLAMOScreenInfo *glamos, Bool discard);
++
++void
++GLAMODMASetup(ScreenPtr pScreen);
++
++void
++GLAMODMATeardown(ScreenPtr pScreen);
++
++enum glamo_engine {
++	GLAMO_ENGINE_CMDQ,
++	GLAMO_ENGINE_ISP,
++	GLAMO_ENGINE_2D,
++	GLAMO_ENGINE_ALL /* for GLAMOEngineWait */
++};
++
++void
++GLAMOEngineEnable(ScreenPtr pScreen, enum glamo_engine engine);
++
++void
++GLAMOEngineDisable(ScreenPtr pScreen, enum glamo_engine engine);
++
++void
++GLAMOEngineReset(ScreenPtr pScreen, enum glamo_engine engine);
++
++int
++GLAMOEngineBusy(ScreenPtr pScreen, enum glamo_engine engine);
++
++void
++GLAMOEngineWait(ScreenPtr pScreen, enum glamo_engine engine);
++
++#endif /* _GLAMO_DMA_H_ */
+Index: xserver/hw/kdrive/glamo/glamo_draw.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/kdrive/glamo/glamo_draw.c	2007-11-23 17:07:50.000000000 +0800
+@@ -0,0 +1,541 @@
++/*
++ * Copyright © 2007 OpenMoko, Inc.
++ *
++ * This driver is based on Xati,
++ * Copyright © 2003 Eric Anholt
++ *
++ * Permission to use, copy, modify, distribute, and sell this software and its
++ * documentation for any purpose is hereby granted without fee, provided that
++ * the above copyright notice appear in all copies and that both that copyright
++ * notice and this permission notice appear in supporting documentation, and
++ * that the name of the copyright holders not be used in advertising or
++ * publicity pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no representations
++ * about the suitability of this software for any purpose.  It is provided "as
++ * is" without express or implied warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
++ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
++ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
++ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
++ * OF THIS SOFTWARE.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include <kdrive-config.h>
++#endif
++#include "glamo.h"
++#include "glamo-regs.h"
++#include "glamo_dma.h"
++#include "glamo_draw.h"
++#include "kaa.h"
++
++#define ENGINE_MAX_WIDTH 640
++#define ENGINE_MAX_HEIGHT 640
++#define ENGINE_MAX_PITCH (ENGINE_MAX_WIDTH * 2)
++
++#define ENGINE_CHECK(pPix) \
++	(((pPix)->drawable.width > ENGINE_MAX_WIDTH) || \
++	 ((pPix)->drawable.height > ENGINE_MAX_HEIGHT) || \
++	 ((pPix)->devKind > ENGINE_MAX_PITCH))
++
++static const CARD8 GLAMOSolidRop[16] = {
++    /* GXclear      */      0x00,         /* 0 */
++    /* GXand        */      0xa0,         /* src AND dst */
++    /* GXandReverse */      0x50,         /* src AND NOT dst */
++    /* GXcopy       */      0xf0,         /* src */
++    /* GXandInverted*/      0x0a,         /* NOT src AND dst */
++    /* GXnoop       */      0xaa,         /* dst */
++    /* GXxor        */      0x5a,         /* src XOR dst */
++    /* GXor         */      0xfa,         /* src OR dst */
++    /* GXnor        */      0x05,         /* NOT src AND NOT dst */
++    /* GXequiv      */      0xa5,         /* NOT src XOR dst */
++    /* GXinvert     */      0x55,         /* NOT dst */
++    /* GXorReverse  */      0xf5,         /* src OR NOT dst */
++    /* GXcopyInverted*/     0x0f,         /* NOT src */
++    /* GXorInverted */      0xaf,         /* NOT src OR dst */
++    /* GXnand       */      0x5f,         /* NOT src OR NOT dst */
++    /* GXset        */      0xff,         /* 1 */
++};
++
++static const CARD8 GLAMOBltRop[16] = {
++    /* GXclear      */      0x00,         /* 0 */
++    /* GXand        */      0x88,         /* src AND dst */
++    /* GXandReverse */      0x44,         /* src AND NOT dst */
++    /* GXcopy       */      0xcc,         /* src */
++    /* GXandInverted*/      0x22,         /* NOT src AND dst */
++    /* GXnoop       */      0xaa,         /* dst */
++    /* GXxor        */      0x66,         /* src XOR dst */
++    /* GXor         */      0xee,         /* src OR dst */
++    /* GXnor        */      0x11,         /* NOT src AND NOT dst */
++    /* GXequiv      */      0x99,         /* NOT src XOR dst */
++    /* GXinvert     */      0x55,         /* NOT dst */
++    /* GXorReverse  */      0xdd,         /* src OR NOT dst */
++    /* GXcopyInverted*/     0x33,         /* NOT src */
++    /* GXorInverted */      0xbb,         /* NOT src OR dst */
++    /* GXnand       */      0x77,         /* NOT src OR NOT dst */
++    /* GXset        */      0xff,         /* 1 */
++};
++
++static struct {
++	GLAMOScreenInfo *glamos;
++	CARD32 src_offset, dst_offset;
++	CARD16 src_pitch, dst_pitch;
++} glamo_blt;
++
++static int sample_count;
++static float sample_offsets_x[255];
++static float sample_offsets_y[255];
++
++void
++GLAMODrawSetup(ScreenPtr pScreen)
++{
++	GLAMOEngineEnable(pScreen, GLAMO_ENGINE_2D);
++	GLAMOEngineReset(pScreen, GLAMO_ENGINE_2D);
++}
++
++static void
++GLAMOWaitMarker(ScreenPtr pScreen, int marker)
++{
++	ENTER_DRAW(0);
++	GLAMOEngineWait(pScreen, GLAMO_ENGINE_ALL);
++	LEAVE_DRAW(0);
++}
++
++#if GLAMO_TRACE_DRAW
++void
++GLAMOEnterDraw (PixmapPtr pPix, const char *function)
++{
++    if (pPix != NULL) {
++	KdScreenPriv(pPix->drawable.pScreen);
++	CARD32 offset;
++
++	offset = ((CARD8 *)pPix->devPrivate.ptr -
++		  pScreenPriv->screen->memory_base);
++
++	ErrorF ("Enter %s 0x%x (%dx%dx%d/%d)\n",
++			function, (unsigned int) offset,
++			pPix->drawable.width, pPix->drawable.height,
++			pPix->drawable.depth,
++			(unsigned int) pPix->drawable.bitsPerPixel);
++    } else
++	ErrorF ("Enter %s\n", function);
++}
++
++void
++GLAMOLeaveDraw (PixmapPtr pPix, const char *function)
++{
++    if (pPix != NULL) {
++	KdScreenPriv(pPix->drawable.pScreen);
++	CARD32 offset;
++
++	offset = ((CARD8 *)pPix->devPrivate.ptr -
++		  pScreenPriv->screen->memory_base);
++
++	ErrorF ("Leave %s 0x%x\n", function, (unsigned int) offset);
++    } else
++	ErrorF ("Leave %s\n", function);
++}
++#endif
++
++static Bool
++GLAMOPrepareSolid(PixmapPtr pPix, int alu, Pixel pm, Pixel fg)
++{
++	KdScreenPriv(pPix->drawable.pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++	FbBits mask;
++	CARD16 cmd2;
++	RING_LOCALS;
++
++	if (pPix->drawable.bitsPerPixel != 16)
++		GLAMO_FALLBACK(("Only 16bpp is supported\n"));
++
++	mask = FbFullMask(16);
++	if ((pm & mask) != mask)
++		GLAMO_FALLBACK(("Can't do planemask 0x%08x\n",
++					(unsigned int) pm));
++
++	if (ENGINE_CHECK(pPix))
++		GLAMO_FALLBACK(("Out of engine's capability\n"));
++
++	glamo_blt.glamos = glamos;
++	glamo_blt.dst_offset = (CARD8 *) pPix->devPrivate.ptr -
++					 pScreenPriv->screen->memory_base;
++	glamo_blt.dst_pitch = pPix->devKind;
++
++	cmd2 = GLAMOSolidRop[alu] << 8;
++
++	ENTER_DRAW(pPix);
++
++	BEGIN_DMA(12);
++	OUT_REG(GLAMO_REG_2D_DST_ADDRL, glamo_blt.dst_offset & 0xffff);
++	OUT_REG(GLAMO_REG_2D_DST_ADDRH, (glamo_blt.dst_offset >> 16) & 0x7f);
++	OUT_REG(GLAMO_REG_2D_DST_PITCH, glamo_blt.dst_pitch);
++	OUT_REG(GLAMO_REG_2D_DST_HEIGHT, ENGINE_MAX_HEIGHT - 1);
++	OUT_REG(GLAMO_REG_2D_PAT_FG, fg);
++	OUT_REG(GLAMO_REG_2D_COMMAND2, cmd2);
++	END_DMA();
++
++	LEAVE_DRAW(pPix);
++
++	return TRUE;
++}
++
++static void
++GLAMOSolid(int x1, int y1, int x2, int y2)
++{
++	GLAMOScreenInfo *glamos = glamo_blt.glamos;
++	RING_LOCALS;
++
++	ENTER_DRAW(0);
++
++	BEGIN_DMA(14);
++	OUT_REG(GLAMO_REG_2D_DST_X, x1);
++	OUT_REG(GLAMO_REG_2D_DST_Y, y1);
++	OUT_REG(GLAMO_REG_2D_RECT_WIDTH, x2 - x1);
++	OUT_REG(GLAMO_REG_2D_RECT_HEIGHT, y2 - y1);
++	OUT_REG(GLAMO_REG_2D_COMMAND3, 0);
++	OUT_REG(GLAMO_REG_2D_ID1, 0);
++	OUT_REG(GLAMO_REG_2D_ID2, 0);
++	END_DMA();
++
++	LEAVE_DRAW(0);
++}
++
++static void
++GLAMODoneSolid(void)
++{
++	ENTER_DRAW(0);
++	LEAVE_DRAW(0);
++}
++
++static Bool
++GLAMOPrepareCopy(PixmapPtr pSrc, PixmapPtr pDst, int dx, int dy,
++		int alu, Pixel pm)
++{
++	KdScreenPriv(pDst->drawable.pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++	CARD16 cmd2;
++	FbBits mask;
++	RING_LOCALS;
++
++	if (pSrc->drawable.bitsPerPixel != 16 ||
++	    pDst->drawable.bitsPerPixel != 16)
++		GLAMO_FALLBACK(("Only 16bpp is supported"));
++
++	mask = FbFullMask(16);
++	if ((pm & mask) != mask)
++		GLAMO_FALLBACK(("Can't do planemask 0x%08x",
++					(unsigned int) pm));
++
++	if ((ENGINE_CHECK(pSrc) || ENGINE_CHECK(pDst)))
++		GLAMO_FALLBACK(("Out of engine's capability\n"));
++
++	glamo_blt.glamos = glamos;
++	glamo_blt.src_offset = (CARD8 *) pSrc->devPrivate.ptr -
++					 pScreenPriv->screen->memory_base;
++	glamo_blt.src_pitch = pSrc->devKind;
++	glamo_blt.dst_offset = (CARD8 *) pDst->devPrivate.ptr -
++					 pScreenPriv->screen->memory_base;
++	glamo_blt.dst_pitch = pDst->devKind;
++
++	cmd2 = GLAMOBltRop[alu] << 8;
++
++	ENTER_DRAW(pDst);
++
++	BEGIN_DMA(16);
++	OUT_REG(GLAMO_REG_2D_SRC_ADDRL, glamo_blt.src_offset & 0xffff);
++	OUT_REG(GLAMO_REG_2D_SRC_ADDRH, (glamo_blt.src_offset >> 16) & 0x7f);
++	OUT_REG(GLAMO_REG_2D_SRC_PITCH, glamo_blt.src_pitch);
++	OUT_REG(GLAMO_REG_2D_DST_ADDRL, glamo_blt.dst_offset & 0xffff);
++	OUT_REG(GLAMO_REG_2D_DST_ADDRH, (glamo_blt.dst_offset >> 16) & 0x7f);
++	OUT_REG(GLAMO_REG_2D_DST_PITCH, glamo_blt.dst_pitch);
++	OUT_REG(GLAMO_REG_2D_DST_HEIGHT, ENGINE_MAX_HEIGHT - 1);
++	OUT_REG(GLAMO_REG_2D_COMMAND2, cmd2);
++	END_DMA();
++
++	LEAVE_DRAW(pDst);
++
++	return TRUE;
++}
++
++static void
++GLAMOCopy(int srcX, int srcY, int dstX, int dstY, int w, int h)
++{
++	GLAMOScreenInfo *glamos = glamo_blt.glamos;
++	RING_LOCALS;
++
++	ENTER_DRAW (0);
++
++	BEGIN_DMA(18);
++	OUT_REG(GLAMO_REG_2D_SRC_X, srcX);
++	OUT_REG(GLAMO_REG_2D_SRC_Y, srcY);
++	OUT_REG(GLAMO_REG_2D_DST_X, dstX);
++	OUT_REG(GLAMO_REG_2D_DST_Y, dstY);
++	OUT_REG(GLAMO_REG_2D_RECT_WIDTH, w);
++	OUT_REG(GLAMO_REG_2D_RECT_HEIGHT, h);
++	OUT_REG(GLAMO_REG_2D_COMMAND3, 0);
++	OUT_REG(GLAMO_REG_2D_ID1, 0);
++	OUT_REG(GLAMO_REG_2D_ID2, 0);
++	END_DMA();
++
++	LEAVE_DRAW(0);
++}
++
++static void
++GLAMODoneCopy(void)
++{
++	ENTER_DRAW(0);
++	LEAVE_DRAW(0);
++}
++
++static Bool
++GLAMOUploadToScreen(PixmapPtr pDst, char *src, int src_pitch)
++{
++	int width, height, bpp, i;
++	CARD8 *dst_offset;
++	int dst_pitch;
++
++	dst_offset = (CARD8 *)pDst->devPrivate.ptr;
++	dst_pitch = pDst->devKind;
++	width = pDst->drawable.width;
++	height = pDst->drawable.height;
++	bpp = pDst->drawable.bitsPerPixel;
++	bpp /= 8;
++
++	for (i = 0; i < height; i++)
++	{
++		memcpy(dst_offset, src, width * bpp);
++
++		dst_offset += dst_pitch;
++		src += src_pitch;
++	}
++
++	ErrorF("hostdata upload %d,%d %dbpp\n", width, height, bpp);
++
++	return TRUE;
++}
++
++
++#if 0
++static Bool
++GLAMOUploadToScratch(PixmapPtr pSrc, PixmapPtr pDst)
++{
++	KdScreenPriv(pSrc->drawable.pScreen);
++	GLAMOCardInfo(pScreenPriv);
++	GLAMOScreenInfo(pScreenPriv);
++	int dst_pitch, src_pitch, w, i, size, bytes;
++	unsigned char *dst, *src;
++	RING_LOCALS;
++
++	ENTER_DRAW(pSrc);
++	/* Align width to log 2, useful for R128 composite.  This should be a
++	 * KAA flag we check for (and supported in kaa.c in general) since many
++	 * older bits of hardware are going to want POT pitches.
++	 */
++	w = pSrc->drawable.width;
++	if (glamos->kaa.flags & KAA_OFFSCREEN_ALIGN_POT)
++		w = 1 << (GLAMOLog2(w - 1) + 1);
++	dst_pitch = (w * pSrc->drawable.bitsPerPixel / 8 +
++	    glamos->kaa.pitchAlign - 1) & ~(glamos->kaa.pitchAlign - 1);
++
++	size = dst_pitch * pSrc->drawable.height;
++	if (size > glamos->scratch_area->size)
++		GLAMO_FALLBACK(("Pixmap too large for scratch (%d,%d)\n",
++		    pSrc->drawable.width, pSrc->drawable.height));
++
++	glamos->scratch_next = (glamos->scratch_next + glamos->kaa.offsetAlign - 1) &
++	    ~(glamos->kaa.offsetAlign - 1);
++	if (glamos->scratch_next + size > glamos->scratch_area->offset +
++	    glamos->scratch_area->size) {
++		/* Only sync when we've used all of the scratch area. */
++		kaaWaitSync(pSrc->drawable.pScreen);
++		glamos->scratch_next = glamos->scratch_area->offset;
++	}
++	memcpy(pDst, pSrc, sizeof(*pDst));
++	pDst->devKind = dst_pitch;
++	pDst->devPrivate.ptr = pScreenPriv->screen->memory_base +
++	    glamos->scratch_next;
++	glamos->scratch_next += size;
++
++	src = pSrc->devPrivate.ptr;
++	src_pitch = pSrc->devKind;
++	dst = pDst->devPrivate.ptr;
++	bytes = src_pitch < dst_pitch ? src_pitch : dst_pitch;
++
++	i = pSrc->drawable.height;
++	while (i--) {
++		memcpy(dst, src, bytes);
++		dst += dst_pitch;
++		src += src_pitch;
++	}
++
++	/* Flush the pixel cache */
++	if (glamoc->is_3362) {
++		BEGIN_DMA(4);
++		OUT_REG(RADEON_REG_RB3D_DSTCACHE_CTLSTAT,
++		    RADEON_RB3D_DC_FLUSH_ALL);
++		OUT_REG(GLAMO_REG_WAIT_UNTIL, RADEON_WAIT_HOST_IDLECLEAN);
++		END_DMA();
++	} else {
++		BEGIN_DMA(2);
++		OUT_REG(R128_REG_PC_GUI_CTLSTAT, R128_PC_FLUSH_ALL);
++		END_DMA();
++	}
++
++	LEAVE_DRAW(pSrc);
++	return TRUE;
++}
++#endif
++
++static void
++GLAMOBlockHandler(pointer blockData, OSTimePtr timeout, pointer readmask)
++{
++	ScreenPtr pScreen = (ScreenPtr) blockData;
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++
++	/* When the server is going to sleep, make sure that all DMA data has
++	 * been flushed.
++	 */
++	if (glamos->indirectBuffer)
++		GLAMOFlushIndirect(glamos, 1);
++}
++
++static void
++GLAMOWakeupHandler(pointer blockData, int result, pointer readmask)
++{
++}
++
++Bool
++GLAMODrawInit(ScreenPtr pScreen)
++{
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++
++	ErrorF("Screen: %d/%d depth/bpp\n", pScreenPriv->screen->fb[0].depth,
++	    pScreenPriv->screen->fb[0].bitsPerPixel);
++
++	RegisterBlockAndWakeupHandlers(GLAMOBlockHandler, GLAMOWakeupHandler,
++	    pScreen);
++
++	glamos->using_dri = FALSE;
++#ifdef USE_DRI
++	glamos->using_dri = GLAMODRIScreenInit(pScreen);
++#endif /* USE_DRI */
++
++	memset(&glamos->kaa, 0, sizeof(KaaScreenInfoRec));
++	glamos->kaa.waitMarker = GLAMOWaitMarker;
++	glamos->kaa.PrepareSolid = GLAMOPrepareSolid;
++	glamos->kaa.Solid = GLAMOSolid;
++	glamos->kaa.DoneSolid = GLAMODoneSolid;
++	glamos->kaa.PrepareCopy = GLAMOPrepareCopy;
++	glamos->kaa.Copy = GLAMOCopy;
++	glamos->kaa.DoneCopy = GLAMODoneCopy;
++	/* Other acceleration will be hooked in in DrawEnable depending on
++	 * what type of DMA gets initialized.
++	 */
++
++	glamos->kaa.flags = KAA_OFFSCREEN_PIXMAPS;
++	glamos->kaa.offsetAlign = 2;
++	glamos->kaa.pitchAlign = 2;
++
++	kaaInitTrapOffsets(8, sample_offsets_x, sample_offsets_y, 0.0, 0.0);
++	sample_count = (1 << 8) - 1;
++
++	if (!kaaDrawInit(pScreen, &glamos->kaa))
++		return FALSE;
++
++	return TRUE;
++}
++
++#if 0
++static void
++GLAMOScratchSave(ScreenPtr pScreen, KdOffscreenArea *area)
++{
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++
++	glamos->scratch_area = NULL;
++}
++#endif
++
++void
++GLAMODrawEnable(ScreenPtr pScreen)
++{
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++
++	GLAMODMASetup(pScreen);
++	GLAMODrawSetup(pScreen);
++
++	glamos->scratch_area = NULL;
++	glamos->kaa.PrepareBlend = NULL;
++	glamos->kaa.Blend = NULL;
++	glamos->kaa.DoneBlend = NULL;
++	glamos->kaa.CheckComposite = NULL;
++	glamos->kaa.PrepareComposite = NULL;
++	glamos->kaa.Composite = NULL;
++	glamos->kaa.DoneComposite = NULL;
++	glamos->kaa.UploadToScreen = NULL;
++    	glamos->kaa.UploadToScratch = NULL;
++
++#ifdef USE_DRI
++	if (glamos->using_dri) {
++		if (!glamoc->is_3362) {
++			/*glamos->kaa.PrepareTrapezoids = R128PrepareTrapezoids;
++			glamos->kaa.Trapezoids = R128Trapezoids;
++			glamos->kaa.DoneTrapezoids = R128DoneTrapezoids;*/
++		} else if (glamoc->is_r100 || glamoc->is_r200) {
++			glamos->kaa.PrepareTrapezoids = RadeonPrepareTrapezoids;
++			glamos->kaa.Trapezoids = RadeonTrapezoids;
++			glamos->kaa.DoneTrapezoids = RadeonDoneTrapezoids;
++		}
++	}
++#endif /* USE_DRI */
++
++	glamos->kaa.UploadToScreen = GLAMOUploadToScreen;
++
++	/* Reserve a scratch area.  It'll be used for storing glyph data during
++	 * Composite operations, because glyphs aren't in real pixmaps and thus
++	 * can't be migrated.
++	 */
++#if 0
++	glamos->scratch_area = KdOffscreenAlloc(pScreen, 131072,
++	    glamos->kaa.offsetAlign, TRUE, GLAMOScratchSave, glamos);
++	if (glamos->scratch_area != NULL) {
++		glamos->scratch_next = glamos->scratch_area->offset;
++		glamos->kaa.UploadToScratch = GLAMOUploadToScratch;
++	}
++#endif
++
++	kaaMarkSync(pScreen);
++}
++
++void
++GLAMODrawDisable(ScreenPtr pScreen)
++{
++	kaaWaitSync(pScreen);
++
++	GLAMODMATeardown(pScreen);
++}
++
++void
++GLAMODrawFini(ScreenPtr pScreen)
++{
++#ifdef USE_DRI
++	KdScreenPriv(pScreen);
++	GLAMOScreenInfo(pScreenPriv);
++	if (glamos->using_dri) {
++		GLAMODRICloseScreen(pScreen);
++		glamos->using_dri = FALSE;
++	}
++#endif /* USE_DRI */
++
++	RemoveBlockAndWakeupHandlers(GLAMOBlockHandler, GLAMOWakeupHandler,
++	    pScreen);
++
++	kaaDrawFini(pScreen);
++}
+Index: xserver/hw/kdrive/glamo/glamo_draw.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ xserver/hw/kdrive/glamo/glamo_draw.h	2007-11-23 17:07:50.000000000 +0800
+@@ -0,0 +1,57 @@
++/*
++ * Copyright © 2007 OpenMoko, Inc.
++ *
++ * This driver is based on Xati,
++ * Copyright © 2004 Eric Anholt
++ *
++ * Permission to use, copy, modify, distribute, and sell this software and its
++ * documentation for any purpose is hereby granted without fee, provided that
++ * the above copyright notice appear in all copies and that both that copyright
++ * notice and this permission notice appear in supporting documentation, and
++ * that the name of the copyright holders not be used in advertising or
++ * publicity pertaining to distribution of the software without specific,
++ * written prior permission.  The copyright holders make no representations
++ * about the suitability of this software for any purpose.  It is provided "as
++ * is" without express or implied warranty.
++ *
++ * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
++ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
++ * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
++ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
++ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
++ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
++ * OF THIS SOFTWARE.
++ */
++
++#ifndef _GLAMO_DRAW_H_
++#define _GLAMO_DRAW_H_
++
++#define GLAMO_TRACE_FALL 1
++#define GLAMO_TRACE_DRAW 0
++
++#if GLAMO_TRACE_FALL
++#define GLAMO_FALLBACK(x)			\
++do {					\
++	ErrorF("%s: ", __FUNCTION__);	\
++	ErrorF x;			\
++	return FALSE;			\
++} while (0)
++#else
++#define GLAMO_FALLBACK(x) return FALSE
++#endif
++
++#if GLAMO_TRACE_DRAW
++#define ENTER_DRAW(pix) GLAMOEnterDraw(pix, __FUNCTION__)
++#define LEAVE_DRAW(pix) GLAMOLeaveDraw(pix, __FUNCTION__)
++
++void
++GLAMOEnterDraw (PixmapPtr pPixmap, const char *function);
++
++void
++GLAMOLeaveDraw (PixmapPtr pPixmap, const char *function);
++#else /* GLAMO_TRACE */
++#define ENTER_DRAW(pix)
++#define LEAVE_DRAW(pix)
++#endif /* !GLAMO_TRACE */
++
++#endif /* _GLAMO_DRAW_H_ */

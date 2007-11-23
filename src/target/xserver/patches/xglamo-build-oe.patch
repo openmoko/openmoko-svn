@@ -1,0 +1,31 @@
+Index: xserver/configure.ac
+===================================================================
+--- xserver.orig/configure.ac	2007-11-23 17:31:22.000000000 +0800
++++ xserver/configure.ac	2007-11-23 17:31:48.000000000 +0800
+@@ -1826,6 +1826,7 @@
+ hw/kdrive/epson/Makefile
+ hw/kdrive/fake/Makefile
+ hw/kdrive/fbdev/Makefile
++hw/kdrive/glamo/Makefile
+ hw/kdrive/w100/Makefile
+ hw/kdrive/i810/Makefile
+ hw/kdrive/linux/Makefile
+Index: xserver/hw/kdrive/Makefile.am
+===================================================================
+--- xserver.orig/hw/kdrive/Makefile.am	2007-11-23 17:31:27.000000000 +0800
++++ xserver/hw/kdrive/Makefile.am	2007-11-23 17:32:21.000000000 +0800
+@@ -4,7 +4,7 @@
+ endif
+ 
+ if KDRIVEFBDEV
+-FBDEV_SUBDIRS = fbdev epson
++FBDEV_SUBDIRS = fbdev epson glamo
+ endif
+ 
+ if KDRIVEW100
+@@ -34,4 +34,4 @@
+ 	fake
+ 
+ DIST_SUBDIRS = vesa ati chips epson i810 mach64 mga neomagic nvidia pm2 r128 \
+-               smi via fbdev sdl ephyr src linux fake sis300
++               smi via fbdev sdl ephyr src linux fake sis300 glamo
