@@ -96,6 +96,7 @@ CPUState *first_cpu;
 /* current CPU in the current thread. It is only valid inside
    cpu_exec() */
 CPUState *cpu_single_env;
+int env_pending_request;
 
 typedef struct PageDesc {
     /* list of TBs intersecting this ram page */
@@ -1193,6 +1194,12 @@ void cpu_interrupt(CPUState *env, int mask)
 {
     TranslationBlock *tb;
     static int interrupt_lock;
+
+    /* cause an interrupt in the first cpu that tries to start running */
+    if (!env) {
+        env_pending_request |= mask;
+        return;
+    }
 
     env->interrupt_request |= mask;
     /* if the cpu is currently executing code, we must unlink it and

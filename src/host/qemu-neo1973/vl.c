@@ -1184,15 +1184,14 @@ static void host_alarm_handler(int host_signum)
         SetEvent(data->host_alarm);
 #endif
         CPUState *env = cpu_single_env;
-        if (env) {
-            /* stop the currently executing cpu because a timer occured */
-            cpu_interrupt(env, CPU_INTERRUPT_EXIT);
+
+        /* stop the currently executing cpu because a timer occured */
+        cpu_interrupt(env, CPU_INTERRUPT_EXIT);
 #ifdef USE_KQEMU
-            if (env->kqemu_enabled) {
-                kqemu_cpu_interrupt(env);
-            }
-#endif
+        if (env && env->kqemu_enabled) {
+            kqemu_cpu_interrupt(env);
         }
+#endif
     }
 }
 

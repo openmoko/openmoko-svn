@@ -258,6 +258,11 @@ int cpu_exec(CPUState *env1)
 
     cpu_single_env = env1;
 
+    if (env_pending_request) {
+        cpu_interrupt(env1, env_pending_request);
+        env_pending_request = 0;
+    }
+
     /* first we save global registers */
 #define SAVE_HOST_REGS 1
 #include "hostregs_helper.h"

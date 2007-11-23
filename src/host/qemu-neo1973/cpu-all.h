@@ -706,6 +706,7 @@ void cpu_abort(CPUState *env, const char *fmt, ...)
     __attribute__ ((__noreturn__));
 extern CPUState *first_cpu;
 extern CPUState *cpu_single_env;
+extern int env_pending_request;
 extern int code_copy_enabled;
 
 #define CPU_INTERRUPT_EXIT   0x01 /* wants exit from main loop */
