@@ -24,6 +24,8 @@
 
 #include "moko-sound.h"
 #include "moko-talking.h"
+#include "moko-dialer-panel.h"
+#include "moko-dialer-textview.h"
 
 G_DEFINE_TYPE (MokoTalking, moko_talking, GTK_TYPE_WIDGET)
 
@@ -40,28 +42,31 @@ enum
 
 struct _MokoTalkingPrivate
 {
-  MokoJournal        *journal;
+  MokoJournal *journal;
 
-  GtkWidget          *window;
+  GtkWidget *window;
 
-  GtkWidget          *incoming_bar;
-  GtkWidget          *main_bar;
+  GtkWidget *incoming_bar;
+  GtkWidget *main_bar;
 
-  GtkWidget          *title;
-  GtkWidget          *duration;
-  GtkWidget          *icon;
+  GtkWidget *title;
+  GtkWidget *duration;
+  GtkWidget *icon;
 
-  GtkWidget          *person;
-  GtkWidget          *status;
-
-  GdkPixbuf          *talking[N_PICS];
-  GdkPixbuf          *incoming[4];
-  GdkPixbuf          *outgoing[4];
-
-  GTimer             *dtimer;
-  guint               timeout;
+  GtkWidget *person;
+  GtkWidget *status;
   
-  gint                call_direction;
+  GtkWidget *dtmf_display;
+  GtkWidget *dtmf_pad;
+
+  GdkPixbuf *talking[N_PICS];
+  GdkPixbuf *incoming[4];
+  GdkPixbuf *outgoing[4];
+
+  GTimer *dtimer;
+  guint timeout;
+  
+  gint call_direction;
 };
 
 enum
@@ -71,12 +76,12 @@ enum
   CANCEL_CALL,
   SILENCE,
   SPEAKER_TOGGLE,
+  DTMF_KEY_PRESS,
 
   LAST_SIGNAL
 };
 
 static guint talking_signals[LAST_SIGNAL] = {0, };
-
 
 void
 moko_talking_set_clip (MokoTalking      *talking, 
@@ -406,6 +411,15 @@ moko_talking_class_init (MokoTalkingClass *klass)
                   g_cclosure_marshal_VOID__BOOLEAN,
                   G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
+   talking_signals[DTMF_KEY_PRESS] =
+    g_signal_new ("dtmf_key_press", 
+                  G_TYPE_FROM_CLASS (obj_class),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MokoTalkingClass,  dtmf_key_press),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__CHAR,
+                  G_TYPE_NONE, 1, G_TYPE_CHAR);
+
   g_type_class_add_private (obj_class, sizeof (MokoTalkingPrivate)); 
 }
 
@@ -422,9 +436,28 @@ window_delete_event_cb (GtkWidget *widget, GdkEvent  *event, MokoTalking *talkin
 }
 
 static void
+on_pad_user_input (MokoDialerPanel *panel, const gchar digit,
+                   MokoTalking *talking)
+{
+  MokoTalkingPrivate *priv;
+  gchar buf[2];
+  priv = MOKO_TALKING_GET_PRIVATE (talking);
+
+  /* Create a string from the new digit */
+  buf[0] = digit;
+  buf[1] = '\0';
+  
+  moko_dialer_textview_insert (MOKO_DIALER_TEXTVIEW (priv->dtmf_display), buf);
+
+  g_signal_emit (G_OBJECT (talking), talking_signals[DTMF_KEY_PRESS],
+                0, digit);
+}
+
+static void
 moko_talking_init (MokoTalking *talking)
 {
   MokoTalkingPrivate *priv;
+  GtkWidget *notebook;
   GtkWidget *toolbar, *image, *vbox, *hbox, *label, *align, *frame, *main_vbox;
   GtkWidget *duration;
   GtkToolItem *item;
@@ -432,7 +465,15 @@ moko_talking_init (MokoTalking *talking)
 
   priv = talking->priv = MOKO_TALKING_GET_PRIVATE (talking);
 
+  notebook = gtk_notebook_new ();
+  gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);
+
+  /* status page */
   main_vbox = gtk_vbox_new (FALSE, 0);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), main_vbox,
+                            gtk_image_new_from_file (PKGDATADIR"/phone.png"));
+  gtk_container_child_set (GTK_CONTAINER (notebook), main_vbox, "tab-expand",
+                           TRUE, NULL);
   
   priv->incoming_bar = toolbar = gtk_toolbar_new ();
   gtk_box_pack_start (GTK_BOX (main_vbox), toolbar, FALSE, FALSE, 0);
@@ -505,7 +546,7 @@ moko_talking_init (MokoTalking *talking)
   priv->person = image = gtk_image_new ();
   gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
 
-  priv->status = label = gtk_label_new ("01923 820 124");
+  priv->status = label = gtk_label_new ("");
   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
   /* Load the pixbufs */
@@ -540,12 +581,29 @@ moko_talking_init (MokoTalking *talking)
       g_object_ref (priv->incoming[i]);
 
   }
+  
+  /* dtmf page */
+  GtkWidget *pad, *display;
+  main_vbox = gtk_vbox_new (FALSE, 0);
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook), main_vbox,
+                            gtk_image_new_from_file (PKGDATADIR"/dtmf.png"));
+  gtk_container_child_set (GTK_CONTAINER (notebook), main_vbox, "tab-expand",
+                           TRUE, NULL);
+  
+  display = moko_dialer_textview_new ();
+  gtk_box_pack_start_defaults (GTK_BOX (main_vbox), display);
+  priv->dtmf_display = display;
+  
+  pad = moko_dialer_panel_new ();
+  gtk_box_pack_start_defaults (GTK_BOX (main_vbox), pad);
+  g_signal_connect (pad, "user_input", G_CALLBACK (on_pad_user_input), talking);
+  priv->dtmf_pad = pad;
 
   priv->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   g_signal_connect (priv->window, "delete-event", G_CALLBACK (window_delete_event_cb), talking);
-  gtk_container_add (GTK_CONTAINER (priv->window), main_vbox);
+  gtk_container_add (GTK_CONTAINER (priv->window), notebook);
   
-  gtk_widget_show_all (main_vbox);
+  gtk_widget_show_all (notebook);
 
 }
 

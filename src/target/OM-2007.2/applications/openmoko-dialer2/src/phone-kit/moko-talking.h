@@ -67,6 +67,7 @@ struct _MokoTalkingClass
   void (*cancel_call) (MokoTalking *talking);
   void (*silence) (MokoTalking *talking);
   void (*speaker_toggle) (MokoTalking *talking, gboolean speaker_phone);
+  void (*dtmf_key_press) (MokoTalking *talking, const char key);
 }; 
 
 GType moko_talking_get_type (void) G_GNUC_CONST;

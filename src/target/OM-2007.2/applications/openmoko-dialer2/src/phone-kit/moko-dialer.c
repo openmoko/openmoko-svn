@@ -282,29 +282,6 @@ moko_dialer_rejected (MokoDialer *dialer)
   g_signal_emit (G_OBJECT (dialer), dialer_signals[REJECTED], 0);
 }
 
-
-#if 0
-static void
-on_keypad_pin_entry (MokoKeypad  *keypad,
-                     const gchar *in_pin,
-                     MokoDialer  *dialer)
-{
-  MokoDialerPrivate *priv;
-  gchar *pin;
-  
-  g_return_if_fail (MOKO_IS_DIALER (dialer));
-  priv = dialer->priv;
-
-  pin = g_strdup (in_pin);
-
-  g_debug ("Sending pin %s", pin);
-  moko_gsmd_connection_send_pin (priv->connection, pin);
-
-  moko_keypad_set_pin_mode (MOKO_KEYPAD (priv->keypad), FALSE);
-  g_free (pin);
-}
-#endif
-
 static void
 on_talking_accept_call (MokoTalking *talking, MokoDialer *dialer)
 {
@@ -397,9 +374,9 @@ on_talking_speaker_toggle (MokoTalking *talking,
 
   g_debug ("Speaker toggled");
 }
-#if 0
+
 static void
-on_keypad_digit_pressed (MokoKeypad *keypad,
+on_keypad_digit_pressed (MokoTalking *talking,
                          const gchar digit,
                          MokoDialer *dialer)
 {
@@ -412,9 +389,11 @@ on_keypad_digit_pressed (MokoKeypad *keypad,
     return;
 
   if (priv->status == DIALER_STATUS_TALKING)
-    moko_gsmd_connection_voice_dtmf (priv->connection, digit);
+  {
+    lgsm_voice_dtmf (priv->handle, digit);
+  }
 }
-#endif
+
 /* Callbacks for gsmd events */
 static void
 on_network_registered (MokoDialer *dialer,
@@ -1121,7 +1100,8 @@ moko_dialer_init (MokoDialer *dialer)
                     G_CALLBACK (on_talking_silence), (gpointer)dialer);
   g_signal_connect (G_OBJECT (priv->talking), "speaker_toggle",
                     G_CALLBACK (on_talking_speaker_toggle), (gpointer)dialer);
-
+  g_signal_connect (priv->talking, "dtmf_key_press",
+                    G_CALLBACK (on_keypad_digit_pressed), dialer);
 }
 
 MokoDialer*
