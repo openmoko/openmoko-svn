@@ -1,5 +1,10 @@
 2007-11-23  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-dialer.c: (on_pin_requested): Send registration
+	request one second after sending pin
+
+2007-11-23  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-dialer.c: (moko_dialer_rejected):
 	* src/phone-kit/moko-talking.c: (moko_talking_class_init),
 	(window_delete_event_cb), (on_pad_user_input), (moko_talking_init):

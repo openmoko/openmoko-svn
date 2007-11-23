@@ -498,6 +498,15 @@ on_incoming_clip (MokoDialer *dialer, const gchar *number)
   g_debug ("Incoming Number = %s", number);
 }
 
+static gboolean
+register_to_network (MokoDialer *dialer)
+{
+  g_return_val_if_fail (MOKO_IS_DIALER (dialer), FALSE);
+
+  lgsm_netreg_register (dialer->priv->handle, "");
+  return FALSE;
+}
+
 static void
 on_pin_requested (MokoDialer *dialer, int type)
 {
@@ -514,6 +523,10 @@ on_pin_requested (MokoDialer *dialer, int type)
   
   lgsm_pin (priv->handle, 1, pin, NULL);
   g_free (pin);
+  
+  /* temporary delay before we try registering
+   * FIXME: this should check if pin was OK */
+  g_timeout_add_seconds (1, (GSourceFunc) register_to_network, dialer);
 }
 
 static void
