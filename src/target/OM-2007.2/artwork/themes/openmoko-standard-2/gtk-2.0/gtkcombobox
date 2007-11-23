@@ -53,6 +53,16 @@ style "gtkcombobox"
 }
 widget "*Combo*" style "gtkcombobox"
 
+style "gtkcomboboxentry"
+{
+    text[NORMAL] = "#000"
+    text[PRELIGHT]    = "#000"
+    text[ACTIVE]      = "#000"
+    text[SELECTED]    = "#000"
+    text[INSENSITIVE] = "#666666"
+}
+widget "*ComboBoxEntry*" style "gtkcomboboxentry"
+
 style "gtkcombobox/combobox-cellrenderer"
 {
     font_name = "Vera Sans 16"
