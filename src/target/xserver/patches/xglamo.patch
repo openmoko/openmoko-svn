@@ -1,7 +1,7 @@
 Index: xserver/hw/kdrive/glamo/Makefile.am
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/Makefile.am	2007-11-23 17:24:26.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/Makefile.am
 @@ -0,0 +1,37 @@
 +if KDRIVEFBDEV
 +FBDEV_INCLUDES =-I$(top_srcdir)/hw/kdrive/fbdev
@@ -42,8 +42,8 @@ Index: xserver/hw/kdrive/glamo/Makefile.am
 +	rm -f $(bin_PROGRAMS) && make $(bin_PROGRAMS)
 Index: xserver/hw/kdrive/glamo/glamo-regs.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo-regs.h	2007-11-23 17:24:26.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo-regs.h
 @@ -0,0 +1,757 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
@@ -804,8 +804,8 @@ Index: xserver/hw/kdrive/glamo/glamo-regs.h
 +#endif /* _GLAMO_REGS_H */
 Index: xserver/hw/kdrive/glamo/glamo.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo.c	2007-11-23 17:24:26.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo.c
 @@ -0,0 +1,453 @@
 +/*
 + * Copyright Â© 2007 OpenMoko, Inc.
@@ -1262,8 +1262,8 @@ Index: xserver/hw/kdrive/glamo/glamo.c
 +};
 Index: xserver/hw/kdrive/glamo/glamo.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo.h	2007-11-23 17:24:26.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo.h
 @@ -0,0 +1,340 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.
@@ -1607,8 +1607,8 @@ Index: xserver/hw/kdrive/glamo/glamo.h
 +#endif /* _GLAMO_H_ */
 Index: xserver/hw/kdrive/glamo/glamo_stub.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo_stub.c	2007-11-23 17:24:26.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo_stub.c
 @@ -0,0 +1,72 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.

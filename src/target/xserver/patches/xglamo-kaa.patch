@@ -1,7 +1,7 @@
 Index: xserver/hw/kdrive/glamo/Makefile.am
 ===================================================================
---- xserver.orig/hw/kdrive/glamo/Makefile.am	2007-11-23 17:05:49.000000000 +0800
-+++ xserver/hw/kdrive/glamo/Makefile.am	2007-11-23 17:07:50.000000000 +0800
+--- xserver.orig/hw/kdrive/glamo/Makefile.am
++++ xserver/hw/kdrive/glamo/Makefile.am
 @@ -13,6 +13,10 @@
  noinst_LIBRARIES = libglamo.a
  
@@ -15,8 +15,8 @@ Index: xserver/hw/kdrive/glamo/Makefile.am
  	glamo-regs.h
 Index: xserver/hw/kdrive/glamo/glamo.c
 ===================================================================
---- xserver.orig/hw/kdrive/glamo/glamo.c	2007-11-23 17:05:49.000000000 +0800
-+++ xserver/hw/kdrive/glamo/glamo.c	2007-11-23 17:07:50.000000000 +0800
+--- xserver.orig/hw/kdrive/glamo/glamo.c
++++ xserver/hw/kdrive/glamo/glamo.c
 @@ -442,11 +442,10 @@
  	0,			/* recolorCursor */
  #endif
@@ -35,8 +35,8 @@ Index: xserver/hw/kdrive/glamo/glamo.c
  	GLAMOPutColors,		/* putColors */
 Index: xserver/hw/kdrive/glamo/glamo.h
 ===================================================================
---- xserver.orig/hw/kdrive/glamo/glamo.h	2007-11-23 17:05:49.000000000 +0800
-+++ xserver/hw/kdrive/glamo/glamo.h	2007-11-23 17:07:50.000000000 +0800
+--- xserver.orig/hw/kdrive/glamo/glamo.h
++++ xserver/hw/kdrive/glamo/glamo.h
 @@ -307,6 +307,22 @@
  void
  GLAMOUnmapReg(KdCardInfo *card, GLAMOCardInfo *glamoc);
@@ -62,8 +62,8 @@ Index: xserver/hw/kdrive/glamo/glamo.h
  Bool
 Index: xserver/hw/kdrive/glamo/glamo_dma.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo_dma.c	2007-11-23 17:07:50.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo_dma.c
 @@ -0,0 +1,530 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.
@@ -597,8 +597,8 @@ Index: xserver/hw/kdrive/glamo/glamo_dma.c
 +}
 Index: xserver/hw/kdrive/glamo/glamo_dma.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo_dma.h	2007-11-23 17:07:50.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo_dma.h
 @@ -0,0 +1,153 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.
@@ -755,8 +755,8 @@ Index: xserver/hw/kdrive/glamo/glamo_dma.h
 +#endif /* _GLAMO_DMA_H_ */
 Index: xserver/hw/kdrive/glamo/glamo_draw.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo_draw.c	2007-11-23 17:07:50.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo_draw.c
 @@ -0,0 +1,541 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.
@@ -1301,8 +1301,8 @@ Index: xserver/hw/kdrive/glamo/glamo_draw.c
 +}
 Index: xserver/hw/kdrive/glamo/glamo_draw.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo_draw.h	2007-11-23 17:07:50.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo_draw.h
 @@ -0,0 +1,57 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.

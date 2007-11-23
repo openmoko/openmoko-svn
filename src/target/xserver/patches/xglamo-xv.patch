@@ -1,7 +1,7 @@
 Index: xserver/hw/kdrive/glamo/Makefile.am
 ===================================================================
---- xserver.orig/hw/kdrive/glamo/Makefile.am	2007-11-23 17:08:34.000000000 +0800
-+++ xserver/hw/kdrive/glamo/Makefile.am	2007-11-23 17:08:40.000000000 +0800
+--- xserver.orig/hw/kdrive/glamo/Makefile.am
++++ xserver/hw/kdrive/glamo/Makefile.am
 @@ -17,6 +17,7 @@
  	glamo_dma.h	\
  	glamo_draw.c	\
@@ -12,8 +12,8 @@ Index: xserver/hw/kdrive/glamo/Makefile.am
  	glamo-regs.h
 Index: xserver/hw/kdrive/glamo/glamo.h
 ===================================================================
---- xserver.orig/hw/kdrive/glamo/glamo.h	2007-11-23 17:08:34.000000000 +0800
-+++ xserver/hw/kdrive/glamo/glamo.h	2007-11-23 17:08:40.000000000 +0800
+--- xserver.orig/hw/kdrive/glamo/glamo.h
++++ xserver/hw/kdrive/glamo/glamo.h
 @@ -351,6 +351,19 @@
  int
  GLAMOLog2(int val);
@@ -36,8 +36,8 @@ Index: xserver/hw/kdrive/glamo/glamo.h
  #endif /* _GLAMO_H_ */
 Index: xserver/hw/kdrive/glamo/glamo_draw.c
 ===================================================================
---- xserver.orig/hw/kdrive/glamo/glamo_draw.c	2007-11-23 17:08:34.000000000 +0800
-+++ xserver/hw/kdrive/glamo/glamo_draw.c	2007-11-23 17:08:40.000000000 +0800
+--- xserver.orig/hw/kdrive/glamo/glamo_draw.c
++++ xserver/hw/kdrive/glamo/glamo_draw.c
 @@ -448,6 +448,10 @@
  	if (!kaaDrawInit(pScreen, &glamos->kaa))
  		return FALSE;
@@ -83,8 +83,8 @@ Index: xserver/hw/kdrive/glamo/glamo_draw.c
  	GLAMOScreenInfo(pScreenPriv);
 Index: xserver/hw/kdrive/glamo/glamo_video.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ xserver/hw/kdrive/glamo/glamo_video.c	2007-11-23 17:08:58.000000000 +0800
+--- /dev/null
++++ xserver/hw/kdrive/glamo/glamo_video.c
 @@ -0,0 +1,974 @@
 +/*
 + * Copyright © 2007 OpenMoko, Inc.
