@@ -19,7 +19,6 @@
 
 #include <gtk/gtk.h>
 
-#include <moko-journal.h>
 #include <moko-stock.h>
 
 #include "moko-sound.h"
@@ -42,8 +41,6 @@ enum
 
 struct _MokoTalkingPrivate
 {
-  MokoJournal *journal;
-
   GtkWidget *window;
   GtkWidget *notebook;
 
@@ -629,13 +626,11 @@ moko_talking_init (MokoTalking *talking)
 }
 
 GtkWidget*
-moko_talking_new (MokoJournal *journal)
+moko_talking_new ()
 {
   MokoTalking *talking = NULL;
     
   talking = g_object_new (MOKO_TYPE_TALKING, NULL);
-
-  talking->priv->journal = journal;
 
   return GTK_WIDGET (talking);
 }

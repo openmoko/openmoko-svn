@@ -189,7 +189,7 @@ moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error)
   {
     priv->entry = moko_journal_entry_new (VOICE_JOURNAL_ENTRY);
     priv->time = moko_time_new_today ();
-    moko_journal_entry_set_direction (priv->entry, DIRECTION_IN);
+    moko_journal_entry_set_direction (priv->entry, DIRECTION_OUT);
     moko_journal_entry_set_dtstart (priv->entry, priv->time);
     moko_journal_entry_set_source (priv->entry, "OpenMoko Dialer");
     moko_journal_voice_info_set_distant_number (priv->entry, number);
@@ -1100,7 +1100,7 @@ moko_dialer_init (MokoDialer *dialer)
 
 
   /* Talking: This is the object that handles interaction with the user */
-  priv->talking = moko_talking_new (priv->journal);
+  priv->talking = moko_talking_new ();
   g_object_ref (G_OBJECT (priv->talking));
   gtk_widget_show_all (priv->talking);
   g_signal_connect (G_OBJECT (priv->talking), "accept_call",

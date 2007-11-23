@@ -1,5 +1,15 @@
 2007-11-23  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-dialer.c: (moko_dialer_dial),
+	(moko_dialer_init):
+	Fix direction field of log entry when dialing calls (outgoing)
+
+	* src/phone-kit/moko-talking.c:
+	* src/phone-kit/moko-talking.h:
+	Remove moko-journal requirement
+
+2007-11-23  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-talking.c: (moko_talking_set_clip),
 	(incoming_timeout), (moko_talking_incoming_call),
 	(outgoing_timeout), (moko_talking_outgoing_call),

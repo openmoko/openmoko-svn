@@ -72,8 +72,7 @@ struct _MokoTalkingClass
 
 GType moko_talking_get_type (void) G_GNUC_CONST;
 
-GtkWidget*        
-moko_talking_new (MokoJournal *journal);
+GtkWidget* moko_talking_new ();
 
 void
 moko_talking_incoming_call (MokoTalking      *talking, 
