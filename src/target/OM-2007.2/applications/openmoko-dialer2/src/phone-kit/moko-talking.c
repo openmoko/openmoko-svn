@@ -45,6 +45,7 @@ struct _MokoTalkingPrivate
   MokoJournal *journal;
 
   GtkWidget *window;
+  GtkWidget *notebook;
 
   GtkWidget *incoming_bar;
   GtkWidget *main_bar;
@@ -55,6 +56,8 @@ struct _MokoTalkingPrivate
 
   GtkWidget *person;
   GtkWidget *status;
+  
+  GtkToolItem *speaker_toggle_btn;
   
   GtkWidget *dtmf_display;
   GtkWidget *dtmf_pad;
@@ -113,6 +116,17 @@ moko_talking_set_clip (MokoTalking      *talking,
   g_free (markup);
 }
 
+static void
+moko_talking_reset_ui (MokoTalking *talking)
+{
+  MokoTalkingPrivate *priv;
+  priv = MOKO_TALKING_GET_PRIVATE (talking);
+  gtk_toggle_tool_button_set_active (
+                      GTK_TOGGLE_TOOL_BUTTON (priv->speaker_toggle_btn), FALSE);
+  moko_dialer_textview_empty (MOKO_DIALER_TEXTVIEW (priv->dtmf_display));
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
+}
+
 static gboolean
 incoming_timeout (MokoTalking *talking)
 {
@@ -138,6 +152,8 @@ moko_talking_incoming_call (MokoTalking      *talking,
                             MokoContactEntry *entry)
 {
   MokoTalkingPrivate *priv;
+  
+  moko_talking_reset_ui (talking);
 
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
@@ -191,6 +207,8 @@ moko_talking_outgoing_call (MokoTalking      *talking,
 
   g_return_if_fail (MOKO_IS_TALKING (talking));
   priv = talking->priv;
+  
+  moko_talking_reset_ui (talking);
 
   gtk_widget_hide (priv->incoming_bar);
   gtk_widget_show_all (priv->main_bar);
@@ -220,6 +238,7 @@ moko_talking_outgoing_call (MokoTalking      *talking,
 
   g_free (markup);
   priv->call_direction = CALL_DIRECTION_OUTGOING;
+  
   gtk_window_present (GTK_WINDOW (priv->window));
 }
 
@@ -467,6 +486,7 @@ moko_talking_init (MokoTalking *talking)
 
   notebook = gtk_notebook_new ();
   gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook), GTK_POS_BOTTOM);
+  priv->notebook = notebook;
 
   /* status page */
   main_vbox = gtk_vbox_new (FALSE, 0);
@@ -505,6 +525,7 @@ moko_talking_init (MokoTalking *talking)
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "toggled", G_CALLBACK (on_speaker_toggled), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
+  priv->speaker_toggle_btn = item;
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
 

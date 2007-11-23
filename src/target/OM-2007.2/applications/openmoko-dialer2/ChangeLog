@@ -1,5 +1,14 @@
 2007-11-23  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-talking.c: (moko_talking_set_clip),
+	(incoming_timeout), (moko_talking_incoming_call),
+	(outgoing_timeout), (moko_talking_outgoing_call),
+	(on_pad_user_input), (moko_talking_init):
+
+	Reset "talking" UI on new call
+
+2007-11-23  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-dialer.c: (on_pin_requested): Send registration
 	request one second after sending pin
 
