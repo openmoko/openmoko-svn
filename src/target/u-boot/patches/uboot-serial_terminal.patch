@@ -5,15 +5,14 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -39,7 +39,7 @@
- 	  cmd_nand.o cmd_net.o cmd_nvedit.o \
- 	  cmd_pci.o cmd_pcmcia.o cmd_portio.o \
- 	  cmd_reginfo.o cmd_reiser.o cmd_sata.o cmd_scsi.o cmd_spi.o \
--	  cmd_universe.o cmd_usb.o cmd_vfd.o \
-+	  cmd_terminal.o cmd_universe.o cmd_usb.o cmd_vfd.o \
- 	  command.o console.o cyclon2.o devices.o dlmalloc.o docecc.o \
- 	  environment.o env_common.o \
- 	  env_nand.o env_dataflash.o env_flash.o env_eeprom.o \
+@@ -78,6 +78,7 @@
+ COBJS-y += cmd_sata.o
+ COBJS-y += cmd_scsi.o
+ COBJS-y += cmd_spi.o
++COBJS-y += cmd_terminal.o
+ COBJS-y += cmd_universe.o
+ COBJS-y += cmd_usb.o
+ COBJS-y += cmd_vfd.o
 Index: u-boot/common/cmd_terminal.c
 ===================================================================
 --- /dev/null
@@ -125,7 +124,7 @@ Index: u-boot/include/config_cmd_all.h
 ===================================================================
 --- u-boot.orig/include/config_cmd_all.h
 +++ u-boot/include/config_cmd_all.h
-@@ -72,6 +72,7 @@
+@@ -73,6 +73,7 @@
  #define CONFIG_CMD_SETGETDCR	/* DCR support on 4xx		*/
  #define CONFIG_CMD_SNTP		/* SNTP support			*/
  #define CONFIG_CMD_SPI		/* SPI utility			*/

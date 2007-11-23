@@ -2,15 +2,14 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -34,7 +34,7 @@
- 	  cmd_dynenv.o cmd_eeprom.o cmd_elf.o cmd_ext2.o \
- 	  cmd_fat.o cmd_fdc.o cmd_fdt.o cmd_fdos.o cmd_flash.o cmd_fpga.o \
- 	  cmd_i2c.o cmd_ide.o cmd_immap.o cmd_itest.o cmd_jffs2.o \
--	  cmd_load.o cmd_log.o \
-+	  cmd_license.o cmd_load.o cmd_log.o \
- 	  cmd_mem.o cmd_mii.o cmd_misc.o cmd_mmc.o \
- 	  cmd_nand.o cmd_net.o cmd_nvedit.o \
- 	  cmd_pci.o cmd_pcmcia.o cmd_portio.o \
+@@ -62,6 +62,7 @@
+ COBJS-y += cmd_immap.o
+ COBJS-y += cmd_itest.o
+ COBJS-y += cmd_jffs2.o
++COBJS-y += cmd_license.o
+ COBJS-y += cmd_load.o
+ COBJS-y += cmd_log.o
+ COBJS-y += cmd_mem.o
 Index: u-boot/common/cmd_license.c
 ===================================================================
 --- /dev/null

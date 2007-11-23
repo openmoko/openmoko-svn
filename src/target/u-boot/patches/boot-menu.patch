@@ -151,7 +151,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/gta01.c
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -229,10 +229,15 @@
+@@ -230,10 +230,15 @@
  	extern unsigned char booted_from_nand;
  	unsigned char tmp;
  	char buf[32];
@@ -167,7 +167,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
  	if (!booted_from_nand)
  		goto woken_by_reset;
  
-@@ -242,45 +247,41 @@
+@@ -243,45 +248,41 @@
  	setenv("pcf50606_int1", buf);
  
  	if (tmp & PCF50606_INT1_ALARM) {
@@ -235,7 +235,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
  
  continue_boot:
  	jbt6k74_init();
-@@ -304,6 +305,11 @@
+@@ -305,6 +306,11 @@
  	}
  #endif
  
@@ -247,8 +247,8 @@ Index: u-boot/board/neo1973/gta01/gta01.c
  	return 0;
  }
  
-@@ -369,7 +375,17 @@
- #endif
+@@ -433,7 +439,17 @@
+ 	printf("not implemented yet!\n");
  }
  
 -int neo1973_911_key_pressed(void)
@@ -283,7 +283,7 @@ Index: u-boot/board/neo1973/common/neo1973.h
 ===================================================================
 --- u-boot.orig/board/neo1973/common/neo1973.h
 +++ u-boot/board/neo1973/common/neo1973.h
-@@ -29,4 +29,10 @@
+@@ -32,4 +32,10 @@
  const char *neo1973_get_charge_status(void);
  int neo1973_set_charge_mode(enum neo1973_charger_cmd cmd);
  
@@ -354,16 +354,14 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -50,7 +50,8 @@
- 	  memsize.o miiphybb.o miiphyutil.o \
- 	  s_record.o serial.o soft_i2c.o soft_spi.o spartan2.o spartan3.o \
- 	  usb.o usb_kbd.o usb_storage.o \
--	  virtex2.o xilinx.o crc16.o xyzModem.o cmd_mac.o cmd_mfsl.o
-+	  virtex2.o xilinx.o crc16.o xyzModem.o cmd_mac.o cmd_mfsl.o \
-+	  bootmenu.o
- 
- SRCS	:= $(AOBJS:.o=.S) $(COBJS:.o=.c)
- OBJS	:= $(addprefix $(obj),$(AOBJS) $(COBJS))
+@@ -31,6 +31,7 @@
+ COBJS-y += ACEX1K.o
+ COBJS-y += altera.o
+ COBJS-y += bedbug.o
++COBJS-y += bootmenu.o
+ COBJS-y += circbuf.o
+ COBJS-y += cmd_autoscript.o
+ COBJS-y += cmd_bdinfo.o
 Index: u-boot/common/bootmenu.c
 ===================================================================
 --- /dev/null
@@ -769,7 +767,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -148,6 +148,8 @@
+@@ -150,6 +150,8 @@
  /* valid baudrates */
  #define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
  

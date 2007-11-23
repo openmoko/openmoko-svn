@@ -1164,15 +1164,14 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -48,7 +48,7 @@
- 	  ti_pci1410a.o tigon3.o tsec.o \
- 	  tsi108_eth.o tsi108_i2c.o tsi108_pci.o \
- 	  usb_ohci.o \
--	  usbdcore.o usbdcore_ep0.o usbdcore_mpc8xx.o usbdcore_omap1510.o usbdcore_s3c2410.o \
-+	  usbdcore.o usbdfu.o usbdcore_ep0.o usbdcore_mpc8xx.o usbdcore_omap1510.o usbdcore_s3c2410.o \
- 	  usbtty.o \
- 	  videomodes.o w83c553f.o \
- 	  ks8695eth.o \
+@@ -132,6 +132,7 @@
+ COBJS-y += isp116x-hcd.o
+ COBJS-y += sl811_usb.o
+ COBJS-y += usb_ohci.o
++COBJS-y += usbdfu.o
+ COBJS-y += usbdcore.o
+ COBJS-y += usbdcore_ep0.o
+ COBJS-y += usbdcore_mpc8xx.o
 Index: u-boot/drivers/usbdcore.c
 ===================================================================
 --- u-boot.orig/drivers/usbdcore.c
@@ -1309,7 +1308,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -157,7 +157,7 @@
+@@ -159,7 +159,7 @@
   */
  #define CONFIG_STACKSIZE	(128*1024)	/* regular stack */
  #ifdef CONFIG_USE_IRQ
@@ -1318,7 +1317,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
  #define CONFIG_STACKSIZE_FIQ	(4*1024)	/* FIQ stack */
  #endif
  
-@@ -174,6 +174,10 @@
+@@ -176,6 +176,10 @@
  #define CONFIG_USBD_MANUFACTURER	"OpenMoko, Inc"
  #define CONFIG_USBD_PRODUCT_NAME	"Neo1973 Bootloader " U_BOOT_VERSION
  #define CONFIG_EXTRA_ENV_SETTINGS 	"usbtty=cdc_acm\0"
@@ -1994,7 +1993,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -267,6 +267,12 @@
+@@ -270,6 +270,12 @@
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
  

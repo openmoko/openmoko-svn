@@ -4,15 +4,14 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -48,7 +48,7 @@
- 	  ti_pci1410a.o tigon3.o tsec.o \
- 	  tsi108_eth.o tsi108_i2c.o tsi108_pci.o \
- 	  usb_ohci.o \
--	  usbdcore.o usbdcore_ep0.o usbdcore_mpc8xx.o usbdcore_omap1510.o \
-+	  usbdcore.o usbdcore_ep0.o usbdcore_mpc8xx.o usbdcore_omap1510.o usbdcore_s3c2410.o \
- 	  usbtty.o \
- 	  videomodes.o w83c553f.o \
- 	  ks8695eth.o \
+@@ -136,6 +136,7 @@
+ COBJS-y += usbdcore_ep0.o
+ COBJS-y += usbdcore_mpc8xx.o
+ COBJS-y += usbdcore_omap1510.o
++COBJS-y += usbdcore_s3c2410.o
+ 
+ #
+ # Miscellaneous Drivers
 Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
 --- /dev/null
@@ -1135,7 +1134,7 @@ Index: u-boot/include/configs/neo1973_gta01.h
 ===================================================================
 --- u-boot.orig/include/configs/neo1973_gta01.h
 +++ u-boot/include/configs/neo1973_gta01.h
-@@ -161,6 +161,16 @@
+@@ -163,6 +163,16 @@
  #define CONFIG_USB_OHCI		1
  #endif
  
@@ -1187,7 +1186,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
 ===================================================================
 --- u-boot.orig/board/neo1973/common/cmd_neo1973.c
 +++ u-boot/board/neo1973/common/cmd_neo1973.c
-@@ -86,6 +86,18 @@
+@@ -94,6 +94,18 @@
  			neo1973_gps(1);
  		else
  			neo1973_gps(0);
@@ -1206,7 +1205,7 @@ Index: u-boot/board/neo1973/common/cmd_neo1973.c
  	} else {
  out_help:
  		printf("Usage:\n%s\n", cmdtp->usage);
-@@ -111,5 +123,6 @@
+@@ -120,5 +132,6 @@
  	"neo1973 vibrator (on|off) - switch vibrator on or off\n"
  	"neo1973 gsm (on|off) - switch GSM Modem on or off\n"
  	"neo1973 gps (on|off) - switch GPS system on or off\n"
@@ -1273,7 +1272,7 @@ Index: u-boot/board/neo1973/gta01/gta01.c
 ===================================================================
 --- u-boot.orig/board/neo1973/gta01/gta01.c
 +++ u-boot/board/neo1973/gta01/gta01.c
-@@ -333,6 +333,7 @@
+@@ -334,6 +334,7 @@
  void neo1973_poweroff(void)
  {
  	serial_printf("poweroff\n");

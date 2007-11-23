@@ -97,15 +97,14 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -31,7 +31,7 @@
- 	  cmd_bdinfo.o cmd_bedbug.o cmd_bmp.o cmd_boot.o cmd_bootm.o \
- 	  cmd_cache.o cmd_console.o \
- 	  cmd_date.o cmd_dcr.o cmd_diag.o cmd_display.o cmd_doc.o cmd_dtt.o \
--	  cmd_eeprom.o cmd_elf.o cmd_ext2.o \
-+	  cmd_dynenv.o cmd_eeprom.o cmd_elf.o cmd_ext2.o \
- 	  cmd_fat.o cmd_fdc.o cmd_fdt.o cmd_fdos.o cmd_flash.o cmd_fpga.o \
- 	  cmd_i2c.o cmd_ide.o cmd_immap.o cmd_itest.o cmd_jffs2.o \
- 	  cmd_load.o cmd_log.o \
+@@ -46,6 +46,7 @@
+ COBJS-y += cmd_display.o
+ COBJS-y += cmd_doc.o
+ COBJS-y += cmd_dtt.o
++COBJS-y += cmd_dynenv.o
+ COBJS-y += cmd_eeprom.o
+ COBJS-y += cmd_elf.o
+ COBJS-y += cmd_ext2.o
 Index: u-boot/common/cmd_dynenv.c
 ===================================================================
 --- /dev/null

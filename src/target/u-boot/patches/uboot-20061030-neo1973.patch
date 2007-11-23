@@ -8,7 +8,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2175,6 +2175,14 @@
+@@ -2195,6 +2195,14 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -48,14 +48,14 @@ Index: u-boot/drivers/Makefile
 ===================================================================
 --- u-boot.orig/drivers/Makefile
 +++ u-boot/drivers/Makefile
-@@ -52,6 +52,7 @@
- 	  usbtty.o \
- 	  videomodes.o w83c553f.o \
- 	  ks8695eth.o \
-+	  pcf50606.o \
- 	  pxa_pcmcia.o mpc8xx_pcmcia.o tqm8xx_pcmcia.o	\
- 	  rpx_pcmcia.o \
- 	  fsl_i2c.o fsl_pci_init.o ati_radeon_fb.o s3c2410_fb.o
+@@ -142,6 +142,7 @@
+ #
+ COBJS-y += ali512x.o
+ COBJS-y += ns87308.o
++COBJS-y += pcf50606.o
+ COBJS-y += status_led.o
+ 
+ COBJS	:= $(COBJS-y)
 Index: u-boot/drivers/pcf50606.c
 ===================================================================
 --- /dev/null
