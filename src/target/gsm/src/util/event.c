@@ -238,7 +238,7 @@ static int error_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdat
 	if(aux->u.cme_err.number)
 		printf("cme error: %u\n", aux->u.cme_err.number);
 	else if(aux->u.cms_err.number)
-		printf("cme error: %u\n", aux->u.cms_err.number);
+		printf("cms error: %u\n", aux->u.cms_err.number);
 		
 	return 0;
 }

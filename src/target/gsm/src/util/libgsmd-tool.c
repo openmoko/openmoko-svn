@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 	char *pin = NULL;
 	int rc, i, mode, shellwait = 0;
 
-	printf("libgsm-tool - (C) 2006 by Harald Welte\n"
+	printf("libgsm-tool - (C) 2006-2007 by Harald Welte and OpenMoko, Inc.\n"
 		"This program is Free Software and has ABSOLUTELY NO WARRANTY\n\n");
 
 	while (1) {

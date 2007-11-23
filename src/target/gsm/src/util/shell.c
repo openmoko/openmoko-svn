@@ -354,17 +354,17 @@ static int shell_help(void)
 	printf( "\tA\tAnswer incoming call\n"
 		"\tD\tDial outgoing number\n"
 		"\tH\tHangup call\n"
-		"\tO\tPower On\n"
-		"\to\tPower Off\n"
+		"\tO\tAntenna Power On\n"
+		"\to\tAntenna Power Off\n"
 		"\tM\tModem Power On\n"
 		"\tm\tModem Power Off\n"
 		"\tr\tRegister to network\n"
 		"\tR\tRegister to given operator (R=number)\n"
 		"\tU\tUnregister from netowrk\n"
 		"\tP\tPrint current operator\n"
-		"\tL\tDetect available operators\n"
+		"\tL\tList available operators\n"
 		"\tQ\tRead signal quality\n"
-                "\tS\tSleep (S[=second], default 5)\n"
+		"\tS\tSleep (S[=second], default 5)\n"
 		"\tT\tSend DTMF Tone\n"
 		"\tn\tPrint subscriber numbers\n"
 		"\tpd\tPB Delete (pb=index)\n"
@@ -426,7 +426,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			 * on to the library */
 			rc = read(gsm_fd, buf, sizeof(buf));
 			if (rc <= 0) {
-				printf("ERROR reding from gsm_fd\n");
+				printf("ERROR reading from gsm_fd\n");
 				break;
 			}
 			rc = lgsm_handle_packet(lgsmh, buf, rc);
@@ -495,14 +495,14 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				pending_responses ++;
 			} else if (!strcmp(buf, "q")) {
 				exit(0);
-                        } else if (buf[0] == 'S' ) {
-                                if(!strchr(buf,'=') || atoi((strchr(buf,'=')+1)) < 0) {
-                                        printf("Sleep 5 secs\n");
-                                        sleep(5);
-                                }else {
-                                        printf("Sleep %d secs\n",atoi(strchr(buf,'=')+1));
-                                        sleep(atoi(strchr(buf,'=')+1));
-                                }
+			} else if (buf[0] == 'S' ) {
+				if(!strchr(buf,'=') || atoi((strchr(buf,'=')+1)) < 0) {
+					printf("Sleep 5 secs\n");
+					sleep(5);
+				}else {
+					printf("Sleep %d secs\n",atoi(strchr(buf,'=')+1));
+					sleep(atoi(strchr(buf,'=')+1));
+				}
 			} else if (buf[0] == 'T') {
 				if (strlen(buf) < 2)
 					continue;
@@ -610,18 +610,16 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				strncpy(sms.addr, fcomma+1, lcomma-fcomma-1);
 				sms.addr[lcomma-fcomma-1] = '\0';
 				/* todo define \" to allow " in text */
-				if (lcomma[1]=='"' &&
-						!strchr(lcomma+2, '"')) {
-						/* read until closing '"' */
-						rc = fscanf(stdin, "%[^\"]\"",
-							lcomma+strlen(lcomma));
-						if (rc == EOF) {
-							printf("EOF\n");
-							return -1;
-						}
-						/* remove brackets */
-						lcomma++;
-						lcomma[strlen(lcomma)] = '\0';
+				if (lcomma[1]=='"' && !strchr(lcomma+2, '"')) {
+					/* read until closing '"' */
+					rc = fscanf(stdin, "%[^\"]\"", lcomma+strlen(lcomma));
+					if (rc == EOF) {
+						printf("EOF\n");
+						return -1;
+					}
+					/* remove brackets */
+					lcomma++;
+					lcomma[strlen(lcomma)] = '\0';
 				}
 				printf("Send SMS\n");
 				packing_7bit_character(lcomma+1, &sms);
@@ -677,12 +675,12 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				printf("Get imsi\n");
 				lgsm_get_imsi(lgsmh);
 				pending_responses ++;
-                        } else if (!strncmp(buf, "M", 1)) {
-                                printf("Modem Power On\n");
-                                lgsm_modem_power(lgsmh, 1);
-                        } else if (!strncmp(buf, "m", 1)) {
-                                printf("Modem Power Off\n");
-                                lgsm_modem_power(lgsmh, 0);
+			} else if (!strncmp(buf, "M", 1)) {
+				printf("Modem Power On\n");
+				lgsm_modem_power(lgsmh, 1);
+			} else if (!strncmp(buf, "m", 1)) {
+				printf("Modem Power Off\n");
+				lgsm_modem_power(lgsmh, 0);
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}
