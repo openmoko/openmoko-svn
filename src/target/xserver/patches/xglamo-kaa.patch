@@ -372,7 +372,7 @@ Index: xserver/hw/kdrive/glamo/glamo_dma.c
 +	}
 +#endif
 +
-+	WHILE_NOT_TIMEOUT(.5) {
++	WHILE_NOT_TIMEOUT(5) {
 +		status = MMIO_IN16(mmio, GLAMO_REG_CMDQ_STATUS);
 +		if ((status & mask) == val)
 +			break;
@@ -439,7 +439,7 @@ Index: xserver/hw/kdrive/glamo/glamo_dma.c
 +	ring_count = glamos->ring_len / 2;
 +
 +	/* write pointer can be ring_size, but not zero */
-+	WHILE_NOT_TIMEOUT(.5) {
++	WHILE_NOT_TIMEOUT(5) {
 +		if (count <= 0)
 +			break;
 +
