@@ -1,3 +1,9 @@
+2007-11-23  Thomas Wood  <thomas@openedhand.com>
+
+	* src/today-main.c: (main): Initialise OpenMoko stock items
+	* src/today-task-manager.c: (today_task_manager_page_create): Use
+	gtk_tool_button_new_from_stock when loading stock items
+
 2007-11-22  Chris Lord  <chris@openedhand.com>
 
 	* src/today-utils.c: (today_toolbutton_new):

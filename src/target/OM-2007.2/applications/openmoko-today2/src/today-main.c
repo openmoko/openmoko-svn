@@ -6,6 +6,7 @@
 #include <gtk/gtk.h>
 #include <gconf/gconf-client.h>
 #include <moko-finger-scroll.h>
+#include <moko-stock.h>
 #include <libtaku/launcher-util.h>
 #include <libtaku/xutil.h>
 #include <unistd.h>
@@ -373,6 +374,9 @@ main (int argc, char **argv)
 	g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
 	g_option_context_add_group (context, gtk_get_option_group (TRUE));
 	g_option_context_parse (context, &argc, &argv, NULL);
+
+	/* init openmoko stock items */
+	moko_stock_register ();
 
 	/* Create widgets */
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);

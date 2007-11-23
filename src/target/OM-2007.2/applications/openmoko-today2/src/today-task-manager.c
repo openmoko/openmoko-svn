@@ -724,7 +724,8 @@ today_task_manager_page_create (TodayData *data)
 	gtk_box_pack_start (GTK_BOX (vbox), toolbar, FALSE, TRUE, 0);
 
 	/* Kill all apps button */
-	button = today_toolbutton_new (MOKO_STOCK_FOLDER_DELETE);
+	button = gtk_tool_button_new_from_stock (MOKO_STOCK_FOLDER_DELETE);
+	gtk_tool_item_set_expand (button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
@@ -732,7 +733,8 @@ today_task_manager_page_create (TodayData *data)
 		G_CALLBACK (today_task_manager_killall_clicked_cb), data);
 
 	/* Switch to app button */
-	button = today_toolbutton_new (GTK_STOCK_JUMP_TO);
+	button = gtk_tool_button_new_from_stock (GTK_STOCK_JUMP_TO);
+	gtk_tool_item_set_expand (button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
@@ -740,7 +742,8 @@ today_task_manager_page_create (TodayData *data)
 		G_CALLBACK (today_task_manager_raise_clicked_cb), data);
 
 	/* Kill app button */
-	button = today_toolbutton_new (GTK_STOCK_DELETE);
+	button = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
+	gtk_tool_item_set_expand (button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
 	g_signal_connect (G_OBJECT (button), "clicked",
 		G_CALLBACK (today_task_manager_kill_clicked_cb), data);
