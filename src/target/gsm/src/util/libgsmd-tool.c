@@ -35,6 +35,8 @@
 #include "shell.h"
 #include "atcmd.h"
 
+#include "../gsmd/gsmd-version.h"
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
@@ -89,10 +91,15 @@ static void help(void)
 		);
 }
 
+static void dump_version(void)
+{
+	printf("Version: " GSMD_VERSION "\n");
+}
+
 int main(int argc, char **argv)
 {
 	char *pin = NULL;
-	int rc, i, mode, shellwait = 0;
+	int mode = MODE_NONE, shellwait = 0;
 
 	printf("libgsm-tool - (C) 2006-2007 by Harald Welte and OpenMoko, Inc.\n"
 		"This program is Free Software and has ABSOLUTELY NO WARRANTY\n\n");
@@ -108,7 +115,8 @@ int main(int argc, char **argv)
 			verbose = 1;
 			break;
 		case 'V':
-			/* FIXME */
+			dump_version();
+			exit(0);
 			break;
 		case 'h':
 			help();
