@@ -231,7 +231,7 @@ static int cpmb_detect_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
                         er->tokens[2].u.string, er->tokens[3].u.numeric);
                 rc = gsmd_simplecmd(g, atcmd_buf);
        } else {
-                rc  -EINVAL;
+                rc = -EINVAL;
        }
 
 	talloc_free(er);
