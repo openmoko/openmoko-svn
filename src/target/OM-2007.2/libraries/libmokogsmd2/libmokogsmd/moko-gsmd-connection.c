@@ -28,7 +28,7 @@
 #include <errno.h>
 
 #define DEBUG_THIS_FILE
-#undef DEBUG_THIS_FILE
+//#undef DEBUG_THIS_FILE
 
 #ifdef DEBUG_THIS_FILE
 #define moko_debug(fmt,...) g_debug(fmt,##__VA_ARGS__)
@@ -40,6 +40,11 @@ G_DEFINE_TYPE (MokoGsmdConnection, moko_gsmd_connection, G_TYPE_OBJECT)
 
 #define GSMD_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), MOKO_TYPE_GSMD_CONNECTION, MokoGsmdConnectionPrivate))
 
+#define MOKO_GSMD_CHECK_CONNECTION_GET_PRIV \
+        g_return_if_fail( MOKO_IS_GSMD_CONNECTION( self ) ); \
+        MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE( self ); \
+        if ( !priv->handle ) moko_gsmd_connection_init( self ); \
+        g_return_if_fail( priv->handle );
 
 GQuark
 moko_gsmd_error_quark ()
@@ -91,6 +96,9 @@ enum {
     SIGNAL_GSMD_EVT_IN_CBM         = 14, /* Incoming Cell Broadcast message */
     SIGNAL_GSMD_EVT_IN_DS          = 15, /* SMS Status Report */
     SIGNAL_GSMD_EVT_IN_ERROR       = 16, /* CME/CMS error */
+
+    SIGNAL_GSMD_NET_CURRENT_OPERATOR = 100, /* Current Operator */
+
     LAST_SIGNAL,
 };
 static guint moko_gsmd_connection_signals[LAST_SIGNAL] = { 0 };
@@ -241,7 +249,7 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
     //TODO add SIGNAL_GSMD_EVT_IN_CBM         = 14, /* Incoming Cell Broadcast message */
     //TODO add SIGNAL_GSMD_EVT_IN_DS          = 15, /* SMS Status Report */
 
-    moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_OUT_STATUS] = g_signal_new
+    moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_ERROR] = g_signal_new
         ("cme-cms-error",
         G_TYPE_FROM_CLASS (klass),
         G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
@@ -253,6 +261,20 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         1,
         G_TYPE_INT,
         NULL );
+
+    moko_gsmd_connection_signals[SIGNAL_GSMD_NET_CURRENT_OPERATOR] = g_signal_new
+        ("network-current-operator",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, network_current_operator),
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__STRING,
+        G_TYPE_NONE,
+        1,
+        G_TYPE_STRING,
+        NULL);
+
 
     /* virtual methods */
 
@@ -298,9 +320,7 @@ _moko_gsmd_connection_source_dispatch( GSource *source,
     size = read( self->pollfd.fd, &buf, sizeof( buf ) );
     if ( size < 0 )
     {
-        g_warning( "moko_gsmd_connection_source_dispatch:%s %s",
-                   "read error from libgsmd:", 
-                   strerror( errno ) );
+        g_warning( "moko_gsmd_connection_source_dispatch:%s %s", "read error from libgsmd:", strerror( errno ) );
     }
     else
     {
@@ -312,10 +332,101 @@ _moko_gsmd_connection_source_dispatch( GSource *source,
     return TRUE;
 }
 
-int 
-_moko_gsmd_connection_eventhandler (struct lgsm_handle *lh, 
-                                    int evt_type, 
-                                    struct gsmd_evt_auxdata *aux)
+static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+    printf( "=================== new code here ==========================\n");
+
+    moko_debug( "moko_gsmd_connection_network_eventhandler type = %d", gmh->msg_subtype );
+    MokoGsmdConnection* self = moko_gsmd_connection_instance;
+
+    struct gsmd_msg_auxdata* aux = (struct gsmd_msg_auxdata*) ((void *) gmh + sizeof(*gmh));
+
+    switch ( gmh->msg_subtype )
+    {
+        case GSMD_NETWORK_SIGQ_GET:
+            g_signal_emit( G_OBJECT(self),
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_SIGNAL],
+                           0,
+                           aux->u.signal.sigq.rssi );
+            break;
+        case GSMD_NETWORK_OPER_GET:
+            g_signal_emit( G_OBJECT(self),
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_NET_CURRENT_OPERATOR],
+                           0,
+                           aux->u.current_operator.name );
+            break;
+    }
+    printf( "=================== old code here ==========================\n");
+
+    const struct gsmd_signal_quality *sq = (struct gsmd_signal_quality *)
+            ((void *) gmh + sizeof(*gmh));
+    const char *oper = (char *) gmh + sizeof(*gmh);
+    const struct gsmd_msg_oper *opers = (struct gsmd_msg_oper *)
+            ((void *) gmh + sizeof(*gmh));
+    const struct gsmd_own_number *num = (struct gsmd_own_number *)
+            ((void *) gmh + sizeof(*gmh));
+    static const char *oper_stat[] = {
+        [GSMD_OPER_UNKNOWN] = "of unknown status",
+        [GSMD_OPER_AVAILABLE] = "available",
+        [GSMD_OPER_CURRENT] = "our current operator",
+        [GSMD_OPER_FORBIDDEN] = "forbidden",
+    };
+    static const char *srvname[] = {
+        [GSMD_SERVICE_ASYNC_MODEM] = "asynchronous modem",
+        [GSMD_SERVICE_SYNC_MODEM] = "synchronous modem",
+        [GSMD_SERVICE_PAD_ACCESS] = "PAD Access (asynchronous)",
+        [GSMD_SERVICE_PACKET_ACCESS] = "Packet Access (synchronous)",
+        [GSMD_SERVICE_VOICE] = "voice",
+        [GSMD_SERVICE_FAX] = "fax",
+    };
+
+    //printf( "a = %p, b = %p\n", (void*)aux->u.current_operator.name, oper );
+
+    switch (gmh->msg_subtype)
+    {
+        case GSMD_NETWORK_SIGQ_GET:
+            if (sq->rssi == 99)
+                printf("Signal undetectable\n");
+            else
+                printf("Signal quality %i dBm\n", -113 + sq->rssi * 2);
+            if (sq->ber == 99)
+                printf("Error rate undetectable\n");
+            else
+                printf("Bit error rate %i\n", sq->ber);
+            break;
+        case GSMD_NETWORK_OPER_GET:
+            if (oper[0])
+                printf("Our current operator is %s\n", oper);
+            else
+                printf("No current operator\n");
+            break;
+        case GSMD_NETWORK_OPER_LIST:
+            for (; !opers->is_last; opers ++)
+                printf("%8.*s   %16.*s,   %.*s for short, is %s\n",
+                       sizeof(opers->opname_num),
+                              opers->opname_num,
+                              sizeof(opers->opname_longalpha),
+                                     opers->opname_longalpha,
+                                     sizeof(opers->opname_shortalpha),
+                                            opers->opname_shortalpha,
+                                            oper_stat[opers->stat]);
+            break;
+        case GSMD_NETWORK_GET_NUMBER:
+            printf("\t%s\t%10s%s%s%s\n", num->addr.number, num->name,
+                   (num->service == GSMD_SERVICE_UNKNOWN) ?
+                           "" : " related to ",
+                           (num->service == GSMD_SERVICE_UNKNOWN) ?
+                                   "" : srvname[num->service],
+                                   (num->service == GSMD_SERVICE_UNKNOWN) ?
+                                           "" : " services");
+            break;
+        default:
+            return -EINVAL;
+    }
+}
+
+int
+_moko_gsmd_connection_eventhandler (struct lgsm_handle *lh, int evt_type, struct gsmd_evt_auxdata *aux)
 {
     moko_debug( "moko_gsmd_connection_eventhandler type = %d", evt_type );
     MokoGsmdConnection* self = moko_gsmd_connection_instance;
@@ -409,15 +520,10 @@ pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
     return 0;
 }
 
-static void
-moko_gsmd_connection_init(MokoGsmdConnection* self)
+static gboolean
+moko_gsmd_connection_try_connect(MokoGsmdConnection* self)
 {
-    moko_debug( "moko_gsmd_connection_init" );
-    /* fail here on more than one MokoGsmdConnection object per process */
-    g_assert( !moko_gsmd_connection_instance);
-
-    moko_gsmd_connection_instance = self;
-
+    moko_debug( "moko_gsmd_connection_try_reconnect" );
     MokoGsmdConnectionPrivate* priv = GSMD_CONNECTION_GET_PRIVATE(self);
 
     priv->handle = lgsm_init( LGSMD_DEVICE_GSMD );
@@ -430,7 +536,7 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
             g_warning( "libgsmd: %s",
                        "can't connect to gsmd. You won't receive any events." );
 
-            return;
+            return TRUE; // can't connect, please call me again
         }
     }
     else
@@ -446,8 +552,8 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
         NULL,
     };
 
-    priv->source = (MokoGsmdConnectionSource*) g_source_new( &funcs, 
-                                            sizeof( MokoGsmdConnectionSource) );
+    priv->source = (MokoGsmdConnectionSource*) g_source_new( &funcs,
+                    sizeof( MokoGsmdConnectionSource) );
     priv->source->handle = priv->handle;
     priv->source->pollfd.fd = lgsm_fd( priv->handle );
     priv->source->pollfd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
@@ -458,12 +564,24 @@ moko_gsmd_connection_init(MokoGsmdConnection* self)
     int rc = 0;
     for ( int i = GSMD_EVT_IN_CALL; i < __NUM_GSMD_EVT; ++i )
     {
-        rc |= lgsm_evt_handler_register( priv->handle, i, 
+        rc |= lgsm_evt_handler_register( priv->handle, i,
                                          _moko_gsmd_connection_eventhandler );
         moko_debug( "-- registered for event %d, return code %d", i, rc );
     }
 
     lgsm_register_handler( priv->handle, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
+    lgsm_register_handler( priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
+
+    return FALSE; // connection established, don't call again
+}
+
+static void
+moko_gsmd_connection_init(MokoGsmdConnection* self)
+{
+    moko_debug( "moko_gsmd_connection_init" );
+    moko_gsmd_connection_instance = self;
+
+    g_timeout_add_seconds( 5, (GSourceFunc)moko_gsmd_connection_try_connect, self );
 }
 
 /* public API */
@@ -490,7 +608,7 @@ moko_gsmd_connection_set_antenna_power(MokoGsmdConnection* self, gboolean on, GE
     }
 }
 
-void 
+void
 moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
 {
     MokoGsmdConnectionPrivate* priv;
@@ -509,7 +627,7 @@ moko_gsmd_connection_send_pin(MokoGsmdConnection* self, const gchar* pin)
     lgsm_pin( priv->handle, 1, pin, NULL);
 }
 
-void 
+void
 moko_gsmd_connection_network_register(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv;
@@ -523,7 +641,7 @@ moko_gsmd_connection_network_register(MokoGsmdConnection* self)
 }
 
 int
-moko_gsmd_connection_get_network_status (MokoGsmdConnection* self)
+moko_gsmd_connection_get_network_status(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv;
     enum lgsm_netreg_state state;
@@ -538,33 +656,33 @@ moko_gsmd_connection_get_network_status (MokoGsmdConnection* self)
     return state;
 }
 
-void 
+void
 moko_gsmd_connection_voice_accept(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv;
-    
+
     g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-    
+
     g_return_if_fail( priv->handle );
 
     lgsm_voice_in_accept( priv->handle );
 }
 
-void 
+void
 moko_gsmd_connection_voice_hangup(MokoGsmdConnection* self)
 {
     MokoGsmdConnectionPrivate* priv;
-    
+
     g_return_if_fail ( MOKO_IS_GSMD_CONNECTION ( self ) );
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-    
+
     g_return_if_fail( priv->handle );
-    
+
     lgsm_voice_hangup( priv->handle );
 }
 
-void 
+void
 moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
 {
     MokoGsmdConnectionPrivate* priv;
@@ -575,39 +693,39 @@ moko_gsmd_connection_voice_dial(MokoGsmdConnection* self, const gchar* number)
     g_return_if_fail( strlen( number ) > 2 );
 
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-    
+
     g_return_if_fail( priv->handle );
-    
+
 
     addr.type = 129; /* ??? */
     g_stpcpy( &addr.addr[0], number );
     lgsm_voice_out_init( priv->handle, &addr );
 }
 
-void 
+void
 moko_gsmd_connection_voice_dtmf(MokoGsmdConnection* self, const gchar number)
 {
     MokoGsmdConnectionPrivate* priv;
-    
+
     g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
-    
+
     priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-    
+
     g_return_if_fail( priv->handle );
-    
+
     lgsm_voice_dtmf( priv->handle, number );
 }
 
-void 
+void
 moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self)
 {
-    MokoGsmdConnectionPrivate* priv;
-    
-    g_return_if_fail ( MOKO_IS_GSMD_CONNECTION (self) );
-    
-    priv  = GSMD_CONNECTION_GET_PRIVATE( self );
-    
-    g_return_if_fail( priv->handle );
-    
+    MOKO_GSMD_CHECK_CONNECTION_GET_PRIV
     lgsm_signal_quality( priv->handle );
+}
+
+void
+moko_gsmd_connection_trigger_current_operator_event(MokoGsmdConnection* self)
+{
+    MOKO_GSMD_CHECK_CONNECTION_GET_PRIV
+    lgsm_oper_get( priv->handle );
 }

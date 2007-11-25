@@ -12,7 +12,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Public License for more details.
  *
- *  Current Version: $Rev$ ($Date: 2006/12/21 18:03:04 $) [$Author: mickey $]
  */
 
 #ifndef _MOKO_GSMD_CONNECTION_H_
@@ -39,23 +38,22 @@ struct _MokoGsmdConnection {
 struct _MokoGsmdConnectionClass {
     GObjectClass parent_class;
 
-    /* Voice signals */
-    void (*incoming_call) (MokoGsmdConnection *self, int type);
-    void (*call_status_progress) (MokoGsmdConnection *self, int type);
-    void (*pin_requested) (MokoGsmdConnection *self, int type);
+    /* Call signals */
+    void (*incoming_call) (MokoGsmdConnection* self, int type);
+    void (*call_status_progress) (MokoGsmdConnection* self, int type);
+    void (*pin_requested) (MokoGsmdConnection* self, int type);
+    void (*incoming_clip) (MokoGsmdConnection* self, const gchar* number);
 
     /* SMS signals */
 
     /* GPRS signals */
 
-    /* Misc signals */
-    void (*incoming_clip) (MokoGsmdConnection *self, const gchar *number);
-    void (*network_registration) (MokoGsmdConnection *self,
-                                  int type,
-                                  int lac,
-                                  int cell);
-    void (*trigger_signal_strength_event) (MokoGsmdConnection *self);
-    void (*signal_strength_changed) (MokoGsmdConnection *self, int strength);
+    /* Network signals */
+    void (*network_registration) (MokoGsmdConnection* self, int type, int lac, int cell);
+    void (*signal_strength_changed) (MokoGsmdConnection* self, int strength);
+    void (*network_current_operator) (MokoGsmdConnection* self, const gchar* name );
+
+    /* Misc */
     void (*cme_cms_error) (MokoGsmdConnection *self, int code);
 
     /* Future padding */
@@ -112,6 +110,8 @@ void moko_gsmd_connection_send_pin (MokoGsmdConnection *self, const gchar *pin);
 /* network */
 void moko_gsmd_connection_network_register (MokoGsmdConnection *self);
 int moko_gsmd_connection_get_network_status (MokoGsmdConnection *self);
+void moko_gsmd_connection_trigger_current_operator_event(MokoGsmdConnection* self);
+void moko_gsmd_connection_trigger_signal_strength_event(MokoGsmdConnection* self);
 
 /* TODO add type, i.e. MOKO_GSMD_CONNECTION_NETREG_AUTO */
 /* voice calls */

@@ -1,3 +1,12 @@
+2007-11-25	Michael Lauer	<mickey@openmoko.org>
+
+	* libmokogsmd/moko-gsmd-connection.[c|h]:
+	Register network message handler with libgsmd to get
+	answers for trigger messages.
+	Keep trying to connect to gsmd, if not available on startup.
+	Add new g_signal for incoming operator name
+	
+
 2007-11-20  Thomas Wood  <thomas@openedhand.com>
 
 	* libmokogsmd/moko-gsmd-connection.c:
