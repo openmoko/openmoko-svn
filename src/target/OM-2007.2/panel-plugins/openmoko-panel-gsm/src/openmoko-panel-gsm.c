@@ -31,6 +31,10 @@ typedef struct {
     MokoPanelApplet* mokoapplet;
     gboolean gprs_mode;
     MokoGsmdConnection* gsm;
+    int type;
+    int lac;
+    int cell;
+    char operator_name[255];
 } GsmApplet;
 
 static GsmApplet* theApplet = NULL;
@@ -77,25 +81,32 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
     g_free( image );
 }
 
+static void gsm_applet_network_current_operator_cb (MokoGsmdConnection *self, const gchar* name )
+{
+    if ( strcmp( name, theApplet->operator_name ) != 0 )
+    {
+        strcpy( theApplet->operator_name, name );
+        gsm_applet_update_signal_strength( self, 0, theApplet );
+        notify_notification_show( notify_notification_new( g_strdup_printf( "Connected to '%s'", name ), NULL, NULL, NULL ), NULL );
+    }
+}
+
 static void
 gsm_applet_network_registration_cb (MokoGsmdConnection *self,
                                   int type,
                                   int lac,
                                   int cell)
 {
-    NotifyNotification* nn;
-    static MokoGsmdConnectionNetregType prev_type = MOKO_GSMD_CONNECTION_NETREG_NONE;
+    theApplet->type = type;
+    theApplet->lac = lac;
+    theApplet->cell = cell;
 
-    if ( (type == MOKO_GSMD_CONNECTION_NETREG_HOME) || (type == MOKO_GSMD_CONNECTION_NETREG_ROAMING) &&
-       ( (prev_type != MOKO_GSMD_CONNECTION_NETREG_HOME) && (prev_type != MOKO_GSMD_CONNECTION_NETREG_ROAMING) ) )
+    if ( (type == MOKO_GSMD_CONNECTION_NETREG_HOME) || (type == MOKO_GSMD_CONNECTION_NETREG_ROAMING) )
     {
-        gsm_applet_update_signal_strength( self, 0, theApplet );
-        nn = notify_notification_new ("Connected to GSM Network", NULL, NULL, NULL);
-        notify_notification_show (nn, NULL);
+        g_debug( "gsm_applet_network_registration_cb: NETREG type = %d", type );
+        moko_gsmd_connection_trigger_current_operator_event( self );
     }
-    prev_type = type;
 }
-
 
 static void
 gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet)
@@ -117,10 +128,16 @@ gsm_applet_power_down_antenna(GtkWidget* menu, GsmApplet* applet)
     moko_gsmd_connection_set_antenna_power( applet->gsm, FALSE, NULL );
 }
 
+static void
+gsm_applet_test_operation(GtkWidget* menu, GsmApplet* applet)
+{
+    moko_gsmd_connection_trigger_current_operator_event( applet->gsm );
+}
+
 G_MODULE_EXPORT GtkWidget*
 mb_panel_applet_create(const char* id, GtkOrientation orientation)
 {
-    GsmApplet* applet = g_slice_new(GsmApplet);
+    GsmApplet* applet = g_slice_new0(GsmApplet);
     theApplet = applet; // nasty global variable
     MokoPanelApplet* mokoapplet = applet->mokoapplet = MOKO_PANEL_APPLET(moko_panel_applet_new());
 
@@ -134,6 +151,7 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     applet->gsm = moko_gsmd_connection_new();
     g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "network-registration", G_CALLBACK(gsm_applet_network_registration_cb), applet );
+    g_signal_connect( G_OBJECT(applet->gsm), "network-current-operator", G_CALLBACK(gsm_applet_network_current_operator_cb), applet );
 
     // tap-with-hold menu (NOTE: temporary: left button atm.)
     GtkMenu* menu = GTK_MENU (gtk_menu_new());
@@ -146,6 +164,9 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     GtkWidget* item3 = gtk_menu_item_new_with_label( "Power-Down GSM Antenna" );
     g_signal_connect( G_OBJECT(item3), "activate", G_CALLBACK(gsm_applet_power_down_antenna), applet );
     gtk_menu_shell_append( GTK_MENU_SHELL(menu), item3 );
+    GtkWidget* item4 = gtk_menu_item_new_with_label( "Trigger Operation (TEST)" );
+    g_signal_connect( G_OBJECT(item4), "activate", G_CALLBACK(gsm_applet_test_operation), applet );
+    gtk_menu_shell_append( GTK_MENU_SHELL(menu), item4 );
     gtk_widget_show_all( GTK_WIDGET(menu) );
 
     moko_panel_applet_set_popup( mokoapplet, GTK_WIDGET (menu), MOKO_PANEL_APPLET_CLICK_POPUP );
