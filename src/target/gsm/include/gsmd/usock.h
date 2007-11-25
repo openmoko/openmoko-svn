@@ -583,6 +583,19 @@ struct gsmd_msg_hdr {
 	u_int8_t data[];
 } __attribute__((packed));
 
+struct gsmd_msg_auxdata {
+    union {
+        struct {
+            struct gsmd_signal_quality sigq;
+        } signal;
+        struct {
+            char name[16];
+        } current_operator;
+        /* add more here please */
+    } u;
+    u_int8_t data[0];
+} __attribute__ ((packed));
+
 #ifdef __GSMD__
 
 #include <gsmd/usock.h>
