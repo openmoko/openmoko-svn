@@ -93,6 +93,7 @@ int powersave_timer3 = -1;
 
 GtkWidget* aux_menu = 0;
 GtkWidget* power_menu = 0;
+GtkWidget* lock_display = 0;
 
 GConfClient* gconfc = 0;
 
@@ -552,6 +553,12 @@ void neod_buttonactions_popup_selected_lock( GtkWidget* button, gpointer user_da
     }
 }
 
+void neod_buttonactions_popup_selected_lock_display(GtkWidget* button, 
+													gpointer user_data) {
+    gtk_widget_hide(power_menu);
+	neod_buttonactions_lock_display();
+}
+
 void neod_buttonactions_popup_selected_restartUI( GtkWidget* button, gpointer user_data )
 {
     gtk_widget_hide( power_menu );
@@ -772,7 +779,12 @@ void neod_buttonactions_show_power_menu()
 
         gtk_box_pack_start_defaults( GTK_BOX(box), gtk_hseparator_new() );
 
-        GtkWidget* lock = gtk_button_new_with_label( "Lock Now" );
+        GtkWidget* lock_display = gtk_button_new_with_label("Lock Display");
+        g_signal_connect(G_OBJECT(lock_display), "clicked", 
+			G_CALLBACK(neod_buttonactions_popup_selected_lock_display), NULL);
+		gtk_box_pack_start_defaults(GTK_BOX(box), lock_display);
+
+        GtkWidget* lock = gtk_button_new_with_label("Lock Phone");
         g_signal_connect( G_OBJECT(lock), "clicked", G_CALLBACK(neod_buttonactions_popup_selected_lock), NULL );
         gtk_box_pack_start_defaults( GTK_BOX(box), lock );
 
@@ -874,7 +886,7 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
     {
         g_debug( "power menu already open -- closing." );
         gtk_widget_hide( power_menu );
-        return;
+        return TRUE;
     }
 
     power_timer = -1;
@@ -893,7 +905,10 @@ gboolean neod_buttonactions_power_timeout( guint timeout )
         {
             g_debug( "sorry, i'm not going to close the today window" );
             return FALSE;
-        }
+        } else if(gtk_window_is_active(GTK_WINDOW(lock_display))) {
+            g_debug("sorry, i'm not going to close the lock window");
+            return FALSE;
+		}
 
         Display* display = XOpenDisplay( NULL );
 
@@ -940,7 +955,7 @@ void neod_buttonactions_powersave_reset()
 
     //TODO load this from preferences
     powersave_timer1 = g_timeout_add( 10 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout1, (gpointer)1 );
-    powersave_timer2 = g_timeout_add( 20 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout2, (gpointer)1 );
+    powersave_timer2 = g_timeout_add( 30 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout2, (gpointer)1 );
     powersave_timer3 = g_timeout_add( 60 * 5 * 1000, (GSourceFunc) neod_buttonactions_powersave_timeout3, (gpointer)1 );
 }
 
@@ -987,11 +1002,16 @@ void neod_buttonactions_set_display( int brightness )
     else
     {
         char buf[10];
-        int numbytes = g_sprintf( buf, "%d\0", backlight_max_brightness * brightness / 100 );
+        int numbytes = g_sprintf(
+			buf, "%d", backlight_max_brightness * brightness / 100);
+
         g_debug( "writing '%s' to '%s'", buf, backlight_node );
         write( fd, buf, numbytes );
         close( fd );
     }
+
+	if(brightness == 0)
+		neod_buttonactions_lock_display();
 }
 
 gboolean neod_buttonactions_powersave_timeout1( guint timeout )
@@ -1124,3 +1144,130 @@ gboolean neod_buttonactions_initial_update()
 
     return FALSE;
 }
+
+/**
+ * This callback function gets triggered when the drop was successful. The
+ * lock_display window gets hidden in this situation.
+ */
+void neod_buttonactions_lock_display_on_drag(GtkWidget *widget, 
+										     GdkDragContext *context, 
+											 int x, int y,
+                        					 GtkSelectionData *seldata, 
+											 guint info, 
+											 guint time,
+					                         gpointer userdata) {
+	gtk_widget_hide(lock_display);
+}
+
+/**
+ * This callback function sets the data which is send throug the
+ * drag and drop. It is necassery to set something here to allow 
+ * dragging.
+ */
+void neod_buttonactions_lock_display_data_get(GtkWidget *widget, 
+											  GdkDragContext *context, 
+                        					  GtkSelectionData *seldata, 
+											  guint info, 
+											  guint time,
+					                          gpointer userdata) {
+	guchar str[] = "LOCK";
+	gtk_selection_data_set(seldata, seldata->target, 8, str, sizeof(str));
+}
+
+/**
+ * This callback function should be triggered whenever the dragging
+ * on the display lock begins. The drag image gets set as icon
+ * and gets hidden as a picture in the window.
+ */
+void neod_buttonactions_lock_display_drag_begin(GtkWidget *widget, 
+												GdkDragContext *context, 
+												gpointer userdata) {
+	gtk_widget_hide(GTK_WIDGET(userdata));
+	
+	g_debug("lock display drag begins");
+}
+
+/**
+ * This callback function should be triggered whenever the dragging
+ * on the display lock ends. 
+ */
+void neod_buttonactions_lock_display_drag_end(GtkWidget *widget, 
+											  GdkDragContext *context, 
+											  gpointer userdata) {
+	gtk_widget_show(GTK_WIDGET(userdata));
+	g_debug("lock display drag ends");
+}
+
+/**
+ * Activates the display lock. An uncloseable window is implemented,
+ * which can only be hidden if the user draws a specif motion
+ * on the display.
+ */
+void neod_buttonactions_lock_display() {
+
+    // remember last active window before showing display lock 
+    last_active_window = get_window_property( 
+		gdk_x11_get_default_root_xwindow(), 
+		gdk_x11_get_xatom_by_name("_NET_ACTIVE_WINDOW"));
+
+    if(!lock_display) {
+		// lock display gui
+        lock_display = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+		GtkWidget *fixed = gtk_fixed_new();
+		gtk_fixed_put(GTK_FIXED(fixed), 
+			gtk_image_new_from_file(PKGDATADIR "/south.png"), 0, 0);
+		GtkWidget *drag = gtk_image_new_from_file(PKGDATADIR "/drag.png");
+		gtk_fixed_put(GTK_FIXED(fixed), drag, 190, 0);
+		
+		GtkWidget *south = gtk_event_box_new();
+		gtk_container_add(GTK_CONTAINER(south), fixed);
+		
+		GtkWidget *north = gtk_event_box_new();
+		gtk_container_add(GTK_CONTAINER(north), 
+			gtk_image_new_from_file(PKGDATADIR "/north.png"));
+		
+        GtkWidget *mid = gtk_image_new_from_file(PKGDATADIR "/mid.png");
+
+        GtkWidget *box1 = gtk_vbox_new(0, 0);
+		gtk_box_pack_start(GTK_BOX(box1), north, 0, 0, 0);
+		gtk_box_pack_start(GTK_BOX(box1), mid, 0, 0, 0);
+		gtk_box_pack_start(GTK_BOX(box1), south, 0, 0, 0);
+
+		gtk_window_fullscreen(GTK_WINDOW(lock_display));
+		gtk_container_add(GTK_CONTAINER(lock_display), box1);
+
+		static GtkTargetEntry targetentries[] = {{"text/plain", 0, 0}};
+
+		gtk_drag_dest_set(north, GTK_DEST_DEFAULT_ALL, targetentries, 1,
+			GDK_ACTION_COPY);
+		gtk_drag_source_set(south, GDK_BUTTON1_MASK, targetentries, 1,
+			GDK_ACTION_COPY);
+
+		// drag and drop signals
+		gtk_signal_connect(GTK_OBJECT(north), "drag_data_received",
+			GTK_SIGNAL_FUNC(neod_buttonactions_lock_display_on_drag), NULL);
+		gtk_signal_connect(GTK_OBJECT(south), "drag_data_get",
+			GTK_SIGNAL_FUNC(neod_buttonactions_lock_display_data_get), NULL);
+		gtk_signal_connect(GTK_OBJECT(south), "drag_begin",
+			GTK_SIGNAL_FUNC(neod_buttonactions_lock_display_drag_begin), drag);
+		gtk_signal_connect(GTK_OBJECT(south), "drag_end",
+			GTK_SIGNAL_FUNC(neod_buttonactions_lock_display_drag_end), drag);
+	
+		// drag and drop icon
+		GdkPixmap *pixmap = NULL;
+		GdkBitmap *mask = NULL;
+
+		GdkPixbuf *drag_gdk = 
+			gdk_pixbuf_new_from_file(PKGDATADIR "/drag.png", NULL);
+
+		gdk_pixbuf_render_pixmap_and_mask(drag_gdk,  &pixmap, &mask, 128);
+		gtk_drag_set_default_icon(gdk_colormap_get_system(), pixmap, mask,
+			gdk_pixbuf_get_width(drag_gdk) / 2,
+			gdk_pixbuf_get_height(drag_gdk) / 2);
+    }
+	gtk_widget_show_all(lock_display);
+
+    g_debug("display locked");
+}
+

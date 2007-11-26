@@ -40,6 +40,9 @@ gboolean neod_buttonactions_powersave_timeout3( guint timeout );
 void neod_buttonactions_sound_init();
 void neod_buttonactions_set_display( int brightness );
 void neod_buttonactions_sound_play( const gchar* samplename );
-gboolean neod_buttonactions_initial_update();
 
+gboolean neod_buttonactions_initial_update();
+gboolean neod_buttonactions_install_watcher();
+
+void neod_buttonactions_lock_display();
 #endif
