@@ -96,7 +96,6 @@ CPUState *first_cpu;
 /* current CPU in the current thread. It is only valid inside
    cpu_exec() */
 CPUState *cpu_single_env;
-int env_pending_request;
 
 typedef struct PageDesc {
     /* list of TBs intersecting this ram page */
@@ -1195,12 +1194,6 @@ void cpu_interrupt(CPUState *env, int mask)
     TranslationBlock *tb;
     static int interrupt_lock;
 
-    /* cause an interrupt in the first cpu that tries to start running */
-    if (!env) {
-        env_pending_request |= mask;
-        return;
-    }
-
     env->interrupt_request |= mask;
     /* if the cpu is currently executing code, we must unlink it and
        all the potentially executing TB */
@@ -1288,8 +1281,10 @@ int cpu_str_to_log_mask(const char *str)
 void cpu_abort(CPUState *env, const char *fmt, ...)
 {
     va_list ap;
+    va_list ap2;
 
     va_start(ap, fmt);
+    va_copy(ap2, ap);
     fprintf(stderr, "qemu: fatal: ");
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
@@ -1305,7 +1300,7 @@ void cpu_abort(CPUState *env, const char *fmt, ...)
 #endif
     if (logfile) {
         fprintf(logfile, "qemu: fatal: ");
-        vfprintf(logfile, fmt, ap);
+        vfprintf(logfile, fmt, ap2);
         fprintf(logfile, "\n");
 #ifdef TARGET_I386
         cpu_dump_state(env, logfile, fprintf, X86_DUMP_FPU | X86_DUMP_CCOP);
@@ -1315,6 +1310,7 @@ void cpu_abort(CPUState *env, const char *fmt, ...)
         fflush(logfile);
         fclose(logfile);
     }
+    va_end(ap2);
     va_end(ap);
     abort();
 }

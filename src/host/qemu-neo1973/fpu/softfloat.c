@@ -3012,7 +3012,7 @@ int float64_eq( float64 a, float64 b STATUS_PARAM )
         return 0;
     }
     av = float64_val(a);
-    bv = float64_val(a);
+    bv = float64_val(b);
     return ( av == bv ) || ( (bits64) ( ( av | bv )<<1 ) == 0 );
 
 }
@@ -3038,7 +3038,7 @@ int float64_le( float64 a, float64 b STATUS_PARAM )
     aSign = extractFloat64Sign( a );
     bSign = extractFloat64Sign( b );
     av = float64_val(a);
-    bv = float64_val(a);
+    bv = float64_val(b);
     if ( aSign != bSign ) return aSign || ( (bits64) ( ( av | bv )<<1 ) == 0 );
     return ( av == bv ) || ( aSign ^ ( av < bv ) );
 
@@ -3064,7 +3064,7 @@ int float64_lt( float64 a, float64 b STATUS_PARAM )
     aSign = extractFloat64Sign( a );
     bSign = extractFloat64Sign( b );
     av = float64_val(a);
-    bv = float64_val(a);
+    bv = float64_val(b);
     if ( aSign != bSign ) return aSign && ( (bits64) ( ( av | bv )<<1 ) != 0 );
     return ( av != bv ) && ( aSign ^ ( av < bv ) );
 
@@ -3088,7 +3088,7 @@ int float64_eq_signaling( float64 a, float64 b STATUS_PARAM )
         return 0;
     }
     av = float64_val(a);
-    bv = float64_val(a);
+    bv = float64_val(b);
     return ( av == bv ) || ( (bits64) ( ( av | bv )<<1 ) == 0 );
 
 }
@@ -3116,7 +3116,7 @@ int float64_le_quiet( float64 a, float64 b STATUS_PARAM )
     aSign = extractFloat64Sign( a );
     bSign = extractFloat64Sign( b );
     av = float64_val(a);
-    bv = float64_val(a);
+    bv = float64_val(b);
     if ( aSign != bSign ) return aSign || ( (bits64) ( ( av | bv )<<1 ) == 0 );
     return ( av == bv ) || ( aSign ^ ( av < bv ) );
 
@@ -3145,7 +3145,7 @@ int float64_lt_quiet( float64 a, float64 b STATUS_PARAM )
     aSign = extractFloat64Sign( a );
     bSign = extractFloat64Sign( b );
     av = float64_val(a);
-    bv = float64_val(a);
+    bv = float64_val(b);
     if ( aSign != bSign ) return aSign && ( (bits64) ( ( av | bv )<<1 ) != 0 );
     return ( av != bv ) && ( aSign ^ ( av < bv ) );
 
@@ -5391,7 +5391,7 @@ INLINE int float ## s ## _compare_internal( float ## s a, float ## s b,      \
     aSign = extractFloat ## s ## Sign( a );                                  \
     bSign = extractFloat ## s ## Sign( b );                                  \
     av = float ## s ## _val(a);                                              \
-    bv = float ## s ## _val(a);                                              \
+    bv = float ## s ## _val(b);                                              \
     if ( aSign != bSign ) {                                                  \
         if ( (bits ## s) ( ( av | bv )<<1 ) == 0 ) {                         \
             /* zero case */                                                  \
@@ -5420,6 +5420,50 @@ int float ## s ## _compare_quiet( float ## s a, float ## s b STATUS_PARAM )  \
 
 COMPARE(32, 0xff)
 COMPARE(64, 0x7ff)
+
+INLINE int float128_compare_internal( float128 a, float128 b,
+                                      int is_quiet STATUS_PARAM )
+{
+    flag aSign, bSign;
+
+    if (( ( extractFloat128Exp( a ) == 0x7fff ) &&
+          ( extractFloat128Frac0( a ) | extractFloat128Frac1( a ) ) ) ||
+        ( ( extractFloat128Exp( b ) == 0x7fff ) &&
+          ( extractFloat128Frac0( b ) | extractFloat128Frac1( b ) ) )) {
+        if (!is_quiet ||
+            float128_is_signaling_nan( a ) ||
+            float128_is_signaling_nan( b ) ) {
+            float_raise( float_flag_invalid STATUS_VAR);
+        }
+        return float_relation_unordered;
+    }
+    aSign = extractFloat128Sign( a );
+    bSign = extractFloat128Sign( b );
+    if ( aSign != bSign ) {
+        if ( ( ( ( a.high | b.high )<<1 ) | a.low | b.low ) == 0 ) {
+            /* zero case */
+            return float_relation_equal;
+        } else {
+            return 1 - (2 * aSign);
+        }
+    } else {
+        if (a.low == b.low && a.high == b.high) {
+            return float_relation_equal;
+        } else {
+            return 1 - 2 * (aSign ^ ( lt128( a.high, a.low, b.high, b.low ) ));
+        }
+    }
+}
+
+int float128_compare( float128 a, float128 b STATUS_PARAM )
+{
+    return float128_compare_internal(a, b, 0 STATUS_VAR);
+}
+
+int float128_compare_quiet( float128 a, float128 b STATUS_PARAM )
+{
+    return float128_compare_internal(a, b, 1 STATUS_VAR);
+}
 
 /* Multiply A by 2 raised to the power N.  */
 float32 float32_scalbn( float32 a, int n STATUS_PARAM )

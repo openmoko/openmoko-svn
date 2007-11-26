@@ -30,7 +30,6 @@
 typedef uint64_t ppc_gpr_t;
 #define TARGET_GPR_BITS  64
 #define TARGET_LONG_BITS 64
-#define REGX "%016" PRIx64
 #define TARGET_PAGE_BITS 12
 
 #else /* defined (TARGET_PPC64) */
@@ -43,11 +42,9 @@ typedef uint64_t ppc_gpr_t;
  */
 typedef uint64_t ppc_gpr_t;
 #define TARGET_GPR_BITS  64
-#define REGX "%08" PRIx64
 #else /* (HOST_LONG_BITS >= 64) */
 typedef uint32_t ppc_gpr_t;
 #define TARGET_GPR_BITS  32
-#define REGX "%08" PRIx32
 #endif /* (HOST_LONG_BITS >= 64) */
 
 #define TARGET_LONG_BITS 32
@@ -74,6 +71,7 @@ typedef uint32_t ppc_gpr_t;
 
 #include "cpu-defs.h"
 
+#define REGX "%016" PRIx64
 #define ADDRX TARGET_FMT_lx
 #define PADDRX TARGET_FMT_plx
 
@@ -357,6 +355,7 @@ union ppc_tlb_t {
 /*****************************************************************************/
 /* Machine state register bits definition                                    */
 #define MSR_SF   63 /* Sixty-four-bit mode                            hflags */
+#define MSR_TAG  62 /* Tag-active mode (POWERx ?)                            */
 #define MSR_ISF  61 /* Sixty-four-bit interrupt mode on 630                  */
 #define MSR_SHV  60 /* hypervisor state                               hflags */
 #define MSR_CM   31 /* Computation mode for BookE                     hflags */
@@ -791,6 +790,24 @@ int ppcemb_tlb_search (CPUPPCState *env, target_ulong address, uint32_t pid);
 #endif
 #endif
 
+static always_inline uint64_t ppc_dump_gpr (CPUPPCState *env, int gprn)
+{
+    uint64_t gprv;
+
+    gprv = env->gpr[gprn];
+#if !defined(TARGET_PPC64)
+    if (env->flags & POWERPC_FLAG_SPE) {
+        /* If the CPU implements the SPE extension, we have to get the
+         * high bits of the GPR from the gprh storage area
+         */
+        gprv &= 0xFFFFFFFFULL;
+        gprv |= (uint64_t)env->gprh[gprn] << 32;
+    }
+#endif
+
+    return gprv;
+}
+
 /* Device control registers */
 int ppc_dcr_read (ppc_dcr_t *dcr_env, int dcrn, target_ulong *valp);
 int ppc_dcr_write (ppc_dcr_t *dcr_env, int dcrn, target_ulong val);
@@ -1115,16 +1132,29 @@ static inline int cpu_mmu_index (CPUState *env)
 #define SPR_440_CCR1          (0x378)
 #define SPR_DCRIPR            (0x37B)
 #define SPR_PPR               (0x380)
+#define SPR_750_GQR0          (0x390)
 #define SPR_440_DNV0          (0x390)
+#define SPR_750_GQR1          (0x391)
 #define SPR_440_DNV1          (0x391)
+#define SPR_750_GQR2          (0x392)
 #define SPR_440_DNV2          (0x392)
+#define SPR_750_GQR3          (0x393)
 #define SPR_440_DNV3          (0x393)
+#define SPR_750_GQR4          (0x394)
 #define SPR_440_DTV0          (0x394)
+#define SPR_750_GQR5          (0x395)
 #define SPR_440_DTV1          (0x395)
+#define SPR_750_GQR6          (0x396)
 #define SPR_440_DTV2          (0x396)
+#define SPR_750_GQR7          (0x397)
 #define SPR_440_DTV3          (0x397)
+#define SPR_750_THRM4         (0x398)
+#define SPR_750CL_HID2        (0x398)
 #define SPR_440_DVLIM         (0x398)
+#define SPR_750_WPAR          (0x399)
 #define SPR_440_IVLIM         (0x399)
+#define SPR_750_DMAU          (0x39A)
+#define SPR_750_DMAL          (0x39B)
 #define SPR_440_RSTCFG        (0x39B)
 #define SPR_BOOKE_DCDBTRL     (0x39C)
 #define SPR_BOOKE_DCDBTRH     (0x39D)
@@ -1231,9 +1261,11 @@ static inline int cpu_mmu_index (CPUState *env)
 #define SPR_Exxx_L1CSR0       (0x3F2)
 #define SPR_ICTRL             (0x3F3)
 #define SPR_HID2              (0x3F3)
+#define SPR_750CL_HID4        (0x3F3)
 #define SPR_Exxx_L1CSR1       (0x3F3)
 #define SPR_440_DBDR          (0x3F3)
 #define SPR_LDSTDB            (0x3F4)
+#define SPR_750_TDCL          (0x3F4)
 #define SPR_40x_IAC1          (0x3F4)
 #define SPR_MMUCSR0           (0x3F4)
 #define SPR_DABR              (0x3F5)
@@ -1250,12 +1282,13 @@ static inline int cpu_mmu_index (CPUState *env)
 #define SPR_MMUCFG            (0x3F7)
 #define SPR_LDSTCR            (0x3F8)
 #define SPR_L2PMCR            (0x3F8)
-#define SPR_750_HID2          (0x3F8)
+#define SPR_750FX_HID2        (0x3F8)
 #define SPR_620_BUSCSR        (0x3F8)
 #define SPR_Exxx_L1FINV0      (0x3F8)
 #define SPR_L2CR              (0x3F9)
 #define SPR_620_L2CR          (0x3F9)
 #define SPR_L3CR              (0x3FA)
+#define SPR_750_TDCH          (0x3FA)
 #define SPR_IABR2             (0x3FA)
 #define SPR_40x_DCCR          (0x3FA)
 #define SPR_620_L2SR          (0x3FA)

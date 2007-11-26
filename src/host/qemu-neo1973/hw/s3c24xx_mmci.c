@@ -433,7 +433,7 @@ struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
     register_savevm("s3c24xx_mmci", 0, 0, s3c_mmci_save, s3c_mmci_load, s);
 
     /* Instantiate the actual storage */
-    s->card = sd_init(bd);
+    s->card = sd_init(bd, 0);
 
     return s;
 }
