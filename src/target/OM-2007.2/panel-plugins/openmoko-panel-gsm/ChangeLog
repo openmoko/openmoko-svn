@@ -1,4 +1,11 @@
+2007-11-26	Michael Lauer	<mickey@openmoko.org>
+
+	* src/openmoko-panel-gsm.c:
+	Add menu button for redisplaying status notification
+	Show some details in the notification
+
 2007-11-25	Michael Lauer	<mickey@openmoko.org>
+	
 	* src/openmoko-panel-gsm.c:
 	Query operator name on network registration event.
 	Show operator name in notification.
