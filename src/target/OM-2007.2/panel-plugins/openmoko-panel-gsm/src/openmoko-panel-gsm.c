@@ -144,7 +144,7 @@ gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
         case 5:
             summary = g_strdup_printf( "Connected to '%s'", applet->operator_name );
             details = g_strdup_printf( "Type: Roaming\nCell ID: %04x : %04x\nSignal: %i dbM", applet->lac, applet->cell, -113 + applet->strength*2 );
-
+        break;
         default: summary = g_strdup( "Unknown" );
     }
 
