@@ -4,6 +4,14 @@
 	* src/sms-notes.c: (page_shown):
 	* src/sms-utils.c: (sms_get_selected_contact):
 	* src/sms-utils.h:
+	Fix contacts without avatars not getting the stock_person icon
+
+2007-11-26  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-compose.c: (page_shown):
+	* src/sms-notes.c: (page_shown):
+	* src/sms-utils.c: (sms_get_selected_contact):
+	* src/sms-utils.h:
 	Fix leak in function to get selected contact
 
 2007-11-23  Chris Lord  <chris@openedhand.com>

@@ -22,7 +22,7 @@
 
 #include "sms.h"
 
-EContact *sms_get_selected_contact (SmsData *data, GdkPixbuf **icon);
+EContact *sms_get_selected_contact (SmsData *data);
 GdkPixbuf *sms_contact_load_photo (EContact *contact);
 
 #endif /* SMS_UTILS_H */

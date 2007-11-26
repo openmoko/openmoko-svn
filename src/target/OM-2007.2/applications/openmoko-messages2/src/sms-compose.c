@@ -46,7 +46,7 @@ page_shown (SmsData *data)
 		gtk_combo_box_remove_text (GTK_COMBO_BOX (
 			data->number_combo), 0);
 
-	if (!(contact = sms_get_selected_contact (data, NULL))) {
+	if (!(contact = sms_get_selected_contact (data))) {
 		gtk_image_set_from_icon_name (GTK_IMAGE (data->contact_image),
 			"stock_person", GTK_ICON_SIZE_DIALOG);
 		gtk_label_set_markup (GTK_LABEL (data->contact_label),
