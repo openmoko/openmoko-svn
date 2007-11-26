@@ -1,3 +1,20 @@
+2007-11-26  Chris Lord  <chris@openedhand.com>
+
+	* src/phone-kit/moko-dialer-mcc-dc.h:
+	Replace "+1-" with "+1"
+
+	* src/phone-kit/moko-dialer.c: (on_network_registered),
+	(start_handling_sms), (net_msghandler), (pb_msghandler),
+	(sms_store_opened_cb), (dialer_init_gsmd),
+	(moko_dialer_check_gsmd), (moko_dialer_send_sms):
+	Try to resolve local numbers (numbers beginning in '0'), make gsmd
+	requests in more reliable places, be a bit better with failures (all to
+	do with SMS code)
+
+	* src/phone-kit/moko-dialer.h:
+	Remove error code PK_DIALER_ERROR_NO_TOOLONG, add error code
+	PK_DIALER_ERROR_INVALID_NUMBER
+
 2007-11-23  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/Makefile.am:

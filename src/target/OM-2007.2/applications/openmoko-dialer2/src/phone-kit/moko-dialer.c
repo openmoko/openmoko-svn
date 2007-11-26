@@ -75,11 +75,12 @@ struct _MokoDialerPrivate
   /* gsmd connection variables */
   struct lgsm_handle *handle;
   MokoDialerSource   *source;
+  gboolean           handling_sms;
   
   /* Storage objects */
   JanaStore          *sms_store;
   gboolean           sms_store_open;
-	JanaNote           *last_msg;
+  JanaNote           *last_msg;
   MokoJournal        *journal;
   MokoContacts       *contacts;
   
@@ -109,6 +110,8 @@ enum
 static guint dialer_signals[LAST_SIGNAL] = {0, };
 
 static void dialer_init_gsmd (MokoDialer *dialer);
+
+static const gchar *moko_dialer_cc_from_mcc (gchar *mcc);
 
 /* DBus functions */
 
@@ -426,11 +429,9 @@ on_network_registered (MokoDialer *dialer,
     case GSMD_NETREG_REG_HOME:
     case GSMD_NETREG_REG_ROAMING:
       g_debug ("Network registered: LocationAreaCode: %x. CellID: %x.", lac, cell);
-      priv->gsm_location.lac = lac;
-      priv->gsm_location.cid = cell;
       
-      if ((priv->registered != GSMD_NETREG_REG_HOME) &&
-          (priv->registered != GSMD_NETREG_REG_ROAMING)) {
+      /* Retrieve details when we switch location/type */
+      if ((priv->registered != type) || (priv->gsm_location.lac != lac)) {
         /* Retrieve operator name */
         lgsm_oper_get (priv->handle);
         
@@ -440,6 +441,9 @@ on_network_registered (MokoDialer *dialer,
         /* Retrieve IMSI to get home country code */
         lgsm_get_imsi (priv->handle);
       }
+      
+      priv->gsm_location.lac = lac;
+      priv->gsm_location.cid = cell;
       
       break;
     default:
@@ -955,6 +959,20 @@ sms_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   return 0;
 }
 
+static void
+start_handling_sms (MokoDialer *dialer)
+{
+  MokoDialerPrivate *priv = dialer->priv;
+  
+  /* Register SMS handling callback */
+  lgsm_register_handler (priv->handle, GSMD_MSG_SMS, &sms_msghandler);
+
+  /* List all messages to move to journal */
+  lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
+  
+  priv->handling_sms = TRUE;
+}
+
 static int
 net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
@@ -970,7 +988,17 @@ net_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   switch (gmh->msg_subtype) {
     case GSMD_NETWORK_GET_NUMBER :
       g_free (priv->own_number);
-      priv->own_number = g_strdup (num->addr.number);
+      
+      if ((num->addr.number) && (num->addr.number[0] == '0') && (priv->imsi))
+        priv->own_number = g_strconcat (moko_dialer_cc_from_mcc (priv->imsi),
+                                        num->addr.number + 1, NULL);
+      else
+        priv->own_number = g_strdup (num->addr.number);
+      
+      if ((priv->sms_store_open) && (!priv->handling_sms)) {
+        start_handling_sms (dialer);
+      }
+      
       break;
     case GSMD_NETWORK_OPER_GET :
       g_free (priv->network_name);
@@ -1003,6 +1031,9 @@ pb_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   switch (gmh->msg_subtype) {
     case GSMD_PHONEBOOK_GET_IMSI :
       priv->imsi = g_strdup ((char *)gmh + sizeof (*gmh));
+      
+      /* Get phone number */
+      lgsm_get_subscriber_num (priv->handle);
       break;
     default :
       return -EINVAL;
@@ -1054,13 +1085,9 @@ sms_store_opened_cb (JanaStore *store, MokoDialer *self)
 
   g_debug ("SMS store opened");
   
-  if (!priv->handle) return;
-  
-  /* Register SMS handling callback */
-  lgsm_register_handler (priv->handle, GSMD_MSG_SMS, &sms_msghandler);
-
-  /* List all messages to move to journal */
-  lgsm_sms_list (priv->handle, GSMD_SMS_ALL);
+  if (priv->handle && priv->own_number) {
+    start_handling_sms (self);
+  }
 }
 
 static void
@@ -1103,10 +1130,10 @@ dialer_init_gsmd (MokoDialer *dialer)
   /* Register with network */
   priv->registered = GSMD_NETREG_UNREG;
   lgsm_netreg_register (priv->handle, "");
-
+  
   /* Get phone number */
   lgsm_get_subscriber_num (priv->handle);
-  
+
   /* Start polling for events */
   priv->source = (MokoDialerSource *)
     g_source_new (&funcs, sizeof (MokoDialerSource));
@@ -1194,6 +1221,8 @@ moko_dialer_check_gsmd (MokoDialer *self, GError **error)
 {
   MokoDialerPrivate *priv = self->priv;
   
+  if (!priv->handle) dialer_init_gsmd (self);
+  
   if (!priv->handle) {
     *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_GSMD,
                           "Failed to connect to gsmd");
@@ -1240,6 +1269,7 @@ moko_dialer_send_sms (MokoDialer *self, const gchar *number,
   gint msg_length, c;
   gboolean ascii;
   JanaNote *note;
+  const gchar *dialcode;
   
   g_assert (self && number && message);
 
@@ -1258,8 +1288,9 @@ moko_dialer_send_sms (MokoDialer *self, const gchar *number,
   
   /* Set destination number */
   if (strlen (number) > GSMD_ADDR_MAXLEN + 1) {
-    *error = g_error_new (PHONE_KIT_DIALER_ERROR, PK_DIALER_ERROR_NO_TOOLONG,
-                          "Number too long");
+    *error = g_error_new (PHONE_KIT_DIALER_ERROR,
+                          PK_DIALER_ERROR_INVALID_NUMBER,
+                          "Invalid number");
     return FALSE;
   } else {
     strcpy (sms.addr, number);
@@ -1286,16 +1317,22 @@ moko_dialer_send_sms (MokoDialer *self, const gchar *number,
     packing_7bit_character (message, &sms);
   } else {
     sms.alpha = ALPHABET_8BIT;
-    sms.length = strlen (message);
     strcpy ((gchar *)sms.data, message);
   }
+  sms.length = msg_length;
   
   /* Send message */
   lgsm_sms_send (priv->handle, &sms);
   
   /* Store sent message in journal */
   note = jana_ecal_note_new ();
-  jana_note_set_recipient (note, number);
+  if ((number[0] == '0') && (priv->network_number) &&
+      (dialcode = moko_dialer_cc_from_mcc (priv->network_number))) {
+    gchar *full_number = g_strconcat (dialcode, number + 1, NULL);
+    jana_note_set_recipient (note, full_number);
+    g_free (full_number);
+  } else
+    jana_note_set_recipient (note, number);
   jana_note_set_author (note, priv->own_number);
   
   jana_note_set_body (note, message);
