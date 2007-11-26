@@ -5,6 +5,10 @@ style "openmoko-panel-clock" {
 }
 widget "*.MatchboxPanelClock" style "openmoko-panel-clock"
 
-# add styling for other panel plugins here...
+style "openmoko-panel-gsm" {
+    font_name = "Sans Bold 12"
+}
+widget "*.GsmAppletMenu*" style "openmoko-panel-gsm"
 
+# add styling for other panel plugins here...
 
