@@ -87,7 +87,8 @@ page_shown (SmsData *data)
 	
 	if (!open) return;
 	
-	if (!(contact = sms_get_selected_contact (data))) return;
+	if (!(contact = sms_get_selected_contact (
+	      data, &data->author_icon))) return;
 	
 	store_view = jana_store_get_view (data->notes);
 	for (i = E_CONTACT_FIRST_PHONE_ID; i <= E_CONTACT_LAST_PHONE_ID; i++) {

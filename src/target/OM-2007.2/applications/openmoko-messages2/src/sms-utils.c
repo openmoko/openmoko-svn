@@ -24,7 +24,7 @@
 #endif
 
 EContact *
-sms_get_selected_contact (SmsData *data)
+sms_get_selected_contact (SmsData *data, GdkPixbuf **icon)
 {
 	GtkTreeSelection *selection;
 	GtkTreeModel *model;
@@ -38,8 +38,12 @@ sms_get_selected_contact (SmsData *data)
 	
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
 		return NULL;
-	gtk_tree_model_get (model, &iter, COL_UID, &data->author_uid,
-		COL_ICON, &data->author_icon, -1);
+	if (icon)
+		gtk_tree_model_get (model, &iter, COL_UID, &data->author_uid,
+			COL_ICON, icon, -1);
+	else
+		gtk_tree_model_get (model, &iter,
+			COL_UID, &data->author_uid, -1);
 	
 	if (!e_book_get_contact (data->ebook,
 	     data->author_uid, &contact, &error)) {
