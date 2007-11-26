@@ -1,5 +1,10 @@
 2007-11-26	Michael Lauer	<mickey@openmoko.org>
 
+	* src/openmoko-panel-gsm.c: (gsm_applet_update_signal_strength):
+	Fix crash on signal strength == 99 (applet != applet->mokoapplet)
+
+2007-11-26	Michael Lauer	<mickey@openmoko.org>
+
 	* src/openmoko-panel-gsm.c:
 	Add menu button for redisplaying status notification
 	Show some details in the notification

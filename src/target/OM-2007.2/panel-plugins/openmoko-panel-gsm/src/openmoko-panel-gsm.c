@@ -63,7 +63,7 @@ gsm_applet_update_signal_strength(MokoGsmdConnection* connection,
 
     if ( strength == 99 )
     {
-        moko_panel_applet_set_icon( applet, PKGDATADIR "/SignalStrength_NR.png" );
+        moko_panel_applet_set_icon( applet->mokoapplet, PKGDATADIR "/SignalStrength_NR.png" );
         return;
     }
 
