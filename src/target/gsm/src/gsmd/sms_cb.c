@@ -125,7 +125,7 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	if (
 			sscanf(resp, "+CMGR: %i,,%i\n%n",
 				&stat, &len, &cr) < 2 &&
-			sscanf(resp, "+CMGR: %i,%*i,%i\n%n",
+                        sscanf(resp, "+CMGR: %i,\"%*[^\"]\",%i\n%n",
 				&stat, &len, &cr) < 2)
 		return -EINVAL;
 	if (len > 164)
