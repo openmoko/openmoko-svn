@@ -94,6 +94,7 @@ struct _MokoDialerPrivate
   /* Registration variables */
   enum lgsm_netreg_state registered;
   MokoGSMLocation    gsm_location;
+  gboolean           pin_requested;
 };
 
 enum
@@ -1029,7 +1030,7 @@ pb_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   MokoDialerPrivate *priv = dialer->priv;
 
   switch (gmh->msg_subtype) {
-    case GSMD_PHONEBOOK_GET_IMSI :
+    case GSMD_PHONE_GET_IMSI :
       priv->imsi = g_strdup ((char *)gmh + sizeof (*gmh));
       
       /* Get phone number */

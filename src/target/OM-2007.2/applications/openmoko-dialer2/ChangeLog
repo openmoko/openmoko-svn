@@ -1,3 +1,9 @@
+2007-11-27  Thomas Wood  <thomas@openedhand.com>
+
+	* src/phone-kit/moko-dialer.c: (pb_msghandler):
+
+	Fix for change in gsmd api: GSMD_PHONEBOOK_GET_IMSI -> GSMD_PHONE_GET_IMSI
+
 2007-11-26  Chris Lord  <chris@openedhand.com>
 
 	* src/phone-kit/moko-dialer-mcc-dc.h:
