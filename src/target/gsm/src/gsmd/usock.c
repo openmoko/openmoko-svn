@@ -263,6 +263,25 @@ static int phone_powerup_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 	return 0;
 }
 
+static int get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd;
+
+	DEBUGP("resp: %s\n", resp);
+
+	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONE,
+				  GSMD_PHONE_GET_IMSI, 0);
+	if (!ucmd)
+		return -ENOMEM;
+
+	strcpy(ucmd->buf, resp);
+
+	usock_cmd_enqueue(ucmd, gu);
+
+	return 0;
+}
+
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -279,9 +298,14 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 				 &null_cmd_cb, gu, 0, NULL);
 		gu->gsmd->dev_state.on = 0;
 		break;
+	case GSMD_PHONE_GET_IMSI:
+		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0, NULL);
+		break;
+
 	default:
 		return -EINVAL;
 	}
+
 	if (!cmd)
 		return -ENOMEM;
 
@@ -961,25 +985,6 @@ static int phonebook_list_storage_cb(struct gsmd_atcmd *cmd,
 	return 0;
 }
 
-static int get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
-{
-	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
-
-	DEBUGP("resp: %s\n", resp);
-
-	ucmd = gsmd_ucmd_fill(strlen(resp)+1, GSMD_MSG_PHONEBOOK,
-				  GSMD_PHONEBOOK_GET_IMSI, 0);
-	if (!ucmd)
-		return -ENOMEM;
-
-	strcpy(ucmd->buf, resp);
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
-}
-
 
 static int usock_rcv_phonebook(struct gsmd_user *gu,
 		struct gsmd_msg_hdr *gph,int len)
@@ -1156,9 +1161,6 @@ static int usock_rcv_phonebook(struct gsmd_user *gu,
 		usock_cmd_enqueue(ucmd, gu);
 		break;
         
-	case GSMD_PHONEBOOK_GET_IMSI:
-		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0, NULL);
-		break;
 
 	default:
 		return -EINVAL;

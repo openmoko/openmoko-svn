@@ -131,11 +131,6 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 
 		nFIND = 0;
 		break;
-	case GSMD_PHONEBOOK_GET_IMSI:
-		payload = (char *)gmh + sizeof(*gmh);
-		printf("imsi <%s>\n", payload);
-		pending_responses --;
-		break;
 	default:
 		return -EINVAL;
 	}	
@@ -349,6 +344,20 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	}
 }
 
+static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh) {
+        char *payload;
+        switch (gmh->msg_subtype) {
+	case GSMD_PHONE_GET_IMSI:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("imsi <%s>\n", payload);
+		pending_responses --;
+		break;
+        default:
+                return -EINVAL;
+        }
+        return 0;
+}
+
 static int shell_help(void)
 {
 	printf( "\tA\tAnswer incoming call\n"
@@ -405,6 +414,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 	lgsm_register_handler(lgsmh, GSMD_MSG_PHONEBOOK, &pb_msghandler);
 	lgsm_register_handler(lgsmh, GSMD_MSG_SMS, &sms_msghandler);
 	lgsm_register_handler(lgsmh, GSMD_MSG_NETWORK, &net_msghandler);
+	lgsm_register_handler(lgsmh, GSMD_MSG_PHONE, &phone_msghandler);
 
 	fcntl(0, F_SETFD, O_NONBLOCK);
 	fcntl(gsm_fd, F_SETFD, O_NONBLOCK);

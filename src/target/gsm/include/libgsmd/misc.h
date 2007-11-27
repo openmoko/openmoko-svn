@@ -77,5 +77,7 @@ extern int lgsm_get_subscriber_num(struct lgsm_handle *lh);
 /* GPRS related functions */
 /* TBD */
 
+/* Retrieve IMSI information */
+extern int lgsm_get_imsi(struct lgsm_handle *lh);
 
 #endif
