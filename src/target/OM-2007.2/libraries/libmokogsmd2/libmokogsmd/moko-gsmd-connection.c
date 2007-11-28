@@ -99,6 +99,8 @@ enum {
 
     SIGNAL_GSMD_NET_CURRENT_OPERATOR = 100, /* Current Operator */
 
+    SIGNAL_GSMD_CONNECTION_STATUS = 200, /* Status of connection to gsmd */
+
     LAST_SIGNAL,
 };
 static guint moko_gsmd_connection_signals[LAST_SIGNAL] = { 0 };
@@ -107,13 +109,12 @@ static guint moko_gsmd_connection_signals[LAST_SIGNAL] = { 0 };
 GObjectClass* parent_class = NULL;
 
 /* forward declarations */
+static gboolean
+moko_gsmd_connection_try_connect(MokoGsmdConnection* self);
 static int
-_moko_gsmd_connection_eventhandler(struct lgsm_handle *lh,
-                                   int evt_type, 
-                                   struct gsmd_evt_auxdata *aux);
+_moko_gsmd_connection_eventhandler(struct lgsm_handle *lh, int evt_type, struct gsmd_evt_auxdata *aux);
 
 /* class definition */
-
 static void
 moko_gsmd_connection_dispose(GObject* object)
 {
@@ -158,6 +159,19 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
     object_class->finalize = moko_gsmd_connection_finalize;
 
     /* register signals */
+    moko_gsmd_connection_signals[SIGNAL_GSMD_CONNECTION_STATUS] = g_signal_new
+        ("gmsd-connection-status",
+        G_TYPE_FROM_CLASS (klass),
+        G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+        G_STRUCT_OFFSET (MokoGsmdConnectionClass, gsmd_connection_status),
+        NULL,
+        NULL,
+        g_cclosure_marshal_VOID__BOOLEAN,
+        G_TYPE_NONE,
+        1,
+        G_TYPE_BOOLEAN,
+        NULL );
+
     moko_gsmd_connection_signals[SIGNAL_GSMD_EVT_IN_CALL] = g_signal_new
         ("incoming-call",
         G_TYPE_FROM_CLASS (klass),
@@ -275,7 +289,6 @@ moko_gsmd_connection_class_init(MokoGsmdConnectionClass* klass)
         G_TYPE_STRING,
         NULL);
 
-
     /* virtual methods */
 
     /* install properties */
@@ -285,6 +298,15 @@ MokoGsmdConnection*
 moko_gsmd_connection_new(void)
 {
     return g_object_new(MOKO_TYPE_GSMD_CONNECTION, NULL);
+}
+
+static void
+moko_gsmd_connection_init(MokoGsmdConnection* self)
+{
+    moko_debug( "moko_gsmd_connection_init" );
+    moko_gsmd_connection_instance = self;
+
+    g_timeout_add_seconds( 5, (GSourceFunc)moko_gsmd_connection_try_connect, self );
 }
 
 static gboolean 
@@ -536,6 +558,10 @@ moko_gsmd_connection_try_connect(MokoGsmdConnection* self)
             g_warning( "libgsmd: %s",
                        "can't connect to gsmd. You won't receive any events." );
 
+            g_signal_emit( G_OBJECT(self),
+                           moko_gsmd_connection_signals[SIGNAL_GSMD_CONNECTION_STATUS],
+                           0,
+                           FALSE );
             return TRUE; // can't connect, please call me again
         }
     }
@@ -572,16 +598,12 @@ moko_gsmd_connection_try_connect(MokoGsmdConnection* self)
     lgsm_register_handler( priv->handle, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
     lgsm_register_handler( priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
 
+    g_signal_emit( G_OBJECT(self),
+                   moko_gsmd_connection_signals[SIGNAL_GSMD_CONNECTION_STATUS],
+                   0,
+                   TRUE );
+
     return FALSE; // connection established, don't call again
-}
-
-static void
-moko_gsmd_connection_init(MokoGsmdConnection* self)
-{
-    moko_debug( "moko_gsmd_connection_init" );
-    moko_gsmd_connection_instance = self;
-
-    g_timeout_add_seconds( 5, (GSourceFunc)moko_gsmd_connection_try_connect, self );
 }
 
 /* public API */

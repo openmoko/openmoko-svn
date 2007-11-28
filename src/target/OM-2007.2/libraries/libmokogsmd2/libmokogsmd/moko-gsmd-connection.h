@@ -54,6 +54,7 @@ struct _MokoGsmdConnectionClass {
     void (*network_current_operator) (MokoGsmdConnection* self, const gchar* name );
 
     /* Misc */
+    void (*gsmd_connection_status) (MokoGsmdConnection* self, gboolean status);
     void (*cme_cms_error) (MokoGsmdConnection *self, int code);
 
     /* Future padding */

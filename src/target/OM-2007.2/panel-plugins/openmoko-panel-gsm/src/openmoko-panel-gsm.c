@@ -41,12 +41,41 @@ typedef struct {
 
 static GsmApplet* theApplet = NULL;
 
-static void gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet);
+/* forwards */
+static void
+gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet);
+static void
+gsm_applet_update_signal_strength(MokoGsmdConnection* connection, int, GsmApplet* );
+static void
+gsm_applet_power_up_antenna(GtkWidget* menu, GsmApplet* applet);
 
+/* internal */
 static void
 gsm_applet_free(GsmApplet *applet)
 {
     g_slice_free( GsmApplet, applet );
+}
+
+static void
+gsm_applet_autoregister_trigger(GsmApplet* applet)
+{
+    moko_gsmd_connection_network_register( applet->gsm );
+}
+
+static void
+gsm_applet_gsmd_connection_status(MokoGsmdConnection* connection, gboolean status)
+{
+    g_debug( "gsm_applet_gsmd_connection_status: status = %s", status ? "TRUE" : "FALSE" );
+    if ( status )
+    {
+        gsm_applet_power_up_antenna( NULL, theApplet );
+    }
+    else
+    {
+        strcpy( theApplet->operator_name, "<unknown>" );
+        gsm_applet_update_signal_strength(connection, 99, theApplet );
+        gsm_applet_show_status(NULL, theApplet);
+    }
 }
 
 static void
@@ -120,6 +149,21 @@ gsm_applet_network_registration_cb(MokoGsmdConnection *self,
 }
 
 static void
+gsm_applet_sim_pin_requested(MokoGsmdConnection* self, int type)
+{
+    static pin_requested = 0;
+    pin_requested++;
+    g_debug( "gsm_applet_sim_pin_requested: PIN type = %d", type );
+    if ( pin_requested == 1 )
+    {
+        const char* thePIN = get_pin_from_user();
+        moko_gsmd_connection_send_pin( self, thePIN );
+
+        g_timeout_add_seconds( 1, (GSourceFunc)gsm_applet_autoregister_trigger, theApplet );
+    }
+}
+
+static void
 gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
 {
     const gchar* summary = 0;
@@ -129,23 +173,25 @@ gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
         case 0:
             summary = g_strdup( "Not searching" );
         break;
-        
+
         case 1:
             summary = g_strdup_printf( "Connected to '%s'", applet->operator_name );
             details = g_strdup_printf( "Type: Home Network\nCell ID: %04x : %04x\nSignal: %i dbM", applet->lac, applet->cell, -113 + applet->strength*2 );
         break;
-        
+
         case 2: summary = g_strdup( "Searching for Service" );
         break;
-        
+
         case 3: summary = g_strdup( "Registration Denied" );
         break;
-        
+
         case 5:
             summary = g_strdup_printf( "Connected to '%s'", applet->operator_name );
             details = g_strdup_printf( "Type: Roaming\nCell ID: %04x : %04x\nSignal: %i dbM", applet->lac, applet->cell, -113 + applet->strength*2 );
         break;
-        default: summary = g_strdup( "Unknown" );
+
+        default:
+            summary = g_strdup( "Unknown" );
     }
 
     notify_notification_show( notify_notification_new( summary, details, NULL, NULL ), NULL );
@@ -193,9 +239,11 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     gtk_widget_show_all( GTK_WIDGET(mokoapplet) );
 
     applet->gsm = moko_gsmd_connection_new();
+    g_signal_connect( G_OBJECT(applet->gsm), "gmsd-connection-status", G_CALLBACK(gsm_applet_gsmd_connection_status), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "network-registration", G_CALLBACK(gsm_applet_network_registration_cb), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "network-current-operator", G_CALLBACK(gsm_applet_network_current_operator_cb), applet );
+    g_signal_connect( G_OBJECT(applet->gsm), "pin-requested", G_CALLBACK(gsm_applet_sim_pin_requested), applet );
 
     // tap-with-hold menu (NOTE: temporary: left button atm.)
     GtkMenu* menu = GTK_MENU (gtk_menu_new());
