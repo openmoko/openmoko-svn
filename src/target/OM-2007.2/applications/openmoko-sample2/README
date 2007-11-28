@@ -1,0 +1,13 @@
+OpenMoko Sample
+===================
+
+Here you add some text that describes what your application does.
+
+Note: For the sake of simplicity, this sample contains a lot of shortcuts.
+
+For a real program you should
+ * split every page into a dedicated source/header file,
+ * derive GObjects, if necessary to implement custom behaviour,
+ * use the MokoSearchBar,
+ * ...
+

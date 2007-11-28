@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Sample
+Comment=This is a sample application
+Encoding=UTF-8
+Version=0.0.1
+Type=Application
+Exec=openmoko-sample
+Terminal=false
+Categories=GTK;Utilities;Applications;
+X-MB-SingleInstance=true
+
