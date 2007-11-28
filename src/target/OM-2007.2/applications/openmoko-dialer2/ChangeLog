@@ -1,3 +1,8 @@
+2007-11-28  Thomas Wood  <thomas@openedhand.com>
+
+	* src/phone-kit/moko-dialer.c: (dialer_init_gsmd): Connect gsmd handlers
+	before setting phone power
+
 2007-11-27  Thomas Wood  <thomas@openedhand.com>
 
 	* src/phone-kit/moko-dialer.c: (pb_msghandler):

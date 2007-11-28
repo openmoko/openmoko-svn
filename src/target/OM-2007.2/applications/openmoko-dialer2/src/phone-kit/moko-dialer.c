@@ -1109,15 +1109,7 @@ dialer_init_gsmd (MokoDialer *dialer)
     g_warning ("Error connecting to gsmd");
     return;
   }
-  
-  /* Power the gsm modem up */
-  if (lgsm_phone_power (priv->handle, 1) == -1) {
-    g_warning ("Error powering up gsm modem");
-    lgsm_exit (priv->handle);
-    priv->handle = NULL;
-    return;
-  }
-  
+
   /* Add event handlers */
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_CALL, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_CLIP, gsmd_eventhandler);
@@ -1127,6 +1119,14 @@ dialer_init_gsmd (MokoDialer *dialer)
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_PHONEBOOK, &pb_msghandler);
+
+  /* Power the gsm modem up */
+  if (lgsm_phone_power (priv->handle, 1) == -1) {
+    g_warning ("Error powering up gsm modem");
+    lgsm_exit (priv->handle);
+    priv->handle = NULL;
+    return;
+  }
 
   /* Register with network */
   priv->registered = GSMD_NETREG_UNREG;
