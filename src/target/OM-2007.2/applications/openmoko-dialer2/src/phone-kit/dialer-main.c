@@ -20,8 +20,6 @@
 #include <dbus/dbus-glib-bindings.h>
 #include <glib-object.h>
 
-#include <moko-stock.h>
-
 #include "moko-dialer.h"
 
 #define DIALER_NAMESPACE "org.openmoko.Dialer"
@@ -105,7 +103,6 @@ main (int argc, char **argv)
 
   /* Initialize Threading & GTK+ */
   gtk_init (&argc, &argv);
-  moko_stock_register ();
 
    /* Create the MokoDialer object */
   dialer = moko_dialer_get_default ();

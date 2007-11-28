@@ -8,17 +8,12 @@ dist_pkgdata_DATA =unkown.png\
                 speaker.png\
                 email.png\
                 phone.png\
-                delete.png\
                 dtmf.png\
                 talking.png\
                 sms.png\
                 all.png\
                 history.png\
-                delete_01.png\
-                answer.png\
-                cancel.png\
                 hangup.png\
-                redial.png\
                 failure.png\
                 incoming_0.png\
                 incoming_1.png\
@@ -34,7 +29,12 @@ dist_pkgdata_DATA =unkown.png\
                 talking_3.png\
                 exit.png\
                 connecting.png\
-                incall.png
+                incall.png \
+                moko-call-answer.png \
+                moko-call-hangup.png \
+                moko-call-hold.png \
+                moko-call-ignore.png
+
 #
 # desktop integration: .desktop file
 #

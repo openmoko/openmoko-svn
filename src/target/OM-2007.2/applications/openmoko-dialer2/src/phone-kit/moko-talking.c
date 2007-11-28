@@ -19,8 +19,6 @@
 
 #include <gtk/gtk.h>
 
-#include <moko-stock.h>
-
 #include "moko-sound.h"
 #include "moko-talking.h"
 #include "moko-dialer-panel.h"
@@ -495,21 +493,21 @@ moko_talking_init (MokoTalking *talking)
   priv->incoming_bar = toolbar = gtk_toolbar_new ();
   gtk_box_pack_start (GTK_BOX (main_vbox), toolbar, FALSE, FALSE, 0);
 
-  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_ANSWER);
+  item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-answer.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_answer_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
 
-  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_IGNORE);
+  item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-ignore.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_silence_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 3);
 
-  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_REJECT);
+  item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-hangup.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_reject_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 4);
@@ -518,7 +516,10 @@ moko_talking_init (MokoTalking *talking)
   priv->main_bar = toolbar = gtk_toolbar_new ();
   gtk_box_pack_start (GTK_BOX (main_vbox), toolbar, FALSE, FALSE, 0);
 
-  item = gtk_toggle_tool_button_new_from_stock (MOKO_STOCK_SPEAKER);
+  item = gtk_toggle_tool_button_new ();
+  gtk_tool_button_set_icon_widget (GTK_TOOL_BUTTON (item),
+      gtk_image_new_from_file (PKGDATADIR"/speaker.png"));
+
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "toggled", G_CALLBACK (on_speaker_toggled), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 0);
@@ -526,7 +527,7 @@ moko_talking_init (MokoTalking *talking)
 
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), gtk_separator_tool_item_new (), 1);
 
-  item = gtk_tool_button_new_from_stock (MOKO_STOCK_CALL_HANGUP);
+  item = gtk_tool_button_new (gtk_image_new_from_file (PKGDATADIR"/moko-call-hangup.png"), NULL);
   gtk_tool_item_set_expand (item, TRUE);
   g_signal_connect (item, "clicked", G_CALLBACK (on_cancel_clicked), talking);
   gtk_toolbar_insert (GTK_TOOLBAR (toolbar), item, 2);  
