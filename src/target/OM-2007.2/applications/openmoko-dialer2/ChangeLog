@@ -1,5 +1,11 @@
 2007-11-28  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-dialer.c: (dialer_init_gsmd):
+	- Add back PIN handler registration
+	- Correct error handling from lgsm_phone_power
+
+2007-11-28  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-dialer.c: (dialer_init_gsmd): Connect gsmd handlers
 	before setting phone power
 

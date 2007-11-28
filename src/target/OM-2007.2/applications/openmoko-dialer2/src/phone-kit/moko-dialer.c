@@ -94,7 +94,6 @@ struct _MokoDialerPrivate
   /* Registration variables */
   enum lgsm_netreg_state registered;
   MokoGSMLocation    gsm_location;
-  gboolean           pin_requested;
 };
 
 enum
@@ -1117,11 +1116,12 @@ dialer_init_gsmd (MokoDialer *dialer)
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_DS, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_NETREG, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_PIN, gsmd_eventhandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, &net_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_PHONEBOOK, &pb_msghandler);
 
   /* Power the gsm modem up */
-  if (lgsm_phone_power (priv->handle, 1) == -1) {
+  if (lgsm_phone_power (priv->handle, 1) < 0) {
     g_warning ("Error powering up gsm modem");
     lgsm_exit (priv->handle);
     priv->handle = NULL;
