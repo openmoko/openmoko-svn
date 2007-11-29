@@ -97,6 +97,7 @@ GtkWidget* lock_display = 0;
 
 GConfClient* gconfc = 0;
 
+
 enum PeripheralUnit
 {
     GSM = 0,
@@ -112,7 +113,8 @@ enum PowerManagementMode
 };
 
 int pm_value = 0;
-gboolean orientation = TRUE;
+gboolean orientation = FALSE;
+gboolean lock_display_last_orientation = FALSE;
 
 typedef enum _PowerState
 {
@@ -528,11 +530,15 @@ void neod_buttonactions_popup_selected_fullscreen( GtkWidget* button, gpointer u
 void neod_buttonactions_popup_selected_orientation( GtkWidget* button, gpointer user_data )
 {
     gtk_widget_hide( aux_menu );
-    if ( orientation )
+	neod_buttonactions_set_orientation(!orientation);
+}
+
+void neod_buttonactions_set_orientation(gboolean new_o) {
+    if(new_o)
         g_spawn_command_line_async( "xrandr -o 1", NULL );
     else
         g_spawn_command_line_async( "xrandr -o 0", NULL );
-    orientation = !orientation;
+    orientation = new_o;
 }
 
 void neod_buttonactions_popup_selected_screenshot( GtkWidget* button, gpointer user_data )
@@ -1157,6 +1163,7 @@ void neod_buttonactions_lock_display_on_drag(GtkWidget *widget,
 											 guint time,
 					                         gpointer userdata) {
 	gtk_widget_hide(lock_display);
+	neod_buttonactions_set_orientation(lock_display_last_orientation);
 }
 
 /**
@@ -1204,7 +1211,6 @@ void neod_buttonactions_lock_display_drag_end(GtkWidget *widget,
  * on the display.
  */
 void neod_buttonactions_lock_display() {
-
     // remember last active window before showing display lock 
     last_active_window = get_window_property( 
 		gdk_x11_get_default_root_xwindow(), 
@@ -1266,8 +1272,10 @@ void neod_buttonactions_lock_display() {
 			gdk_pixbuf_get_width(drag_gdk) / 2,
 			gdk_pixbuf_get_height(drag_gdk) / 2);
     }
+
+	lock_display_last_orientation = orientation;
+	neod_buttonactions_set_orientation(FALSE);
 	gtk_widget_show_all(lock_display);
 
     g_debug("display locked");
 }
-
