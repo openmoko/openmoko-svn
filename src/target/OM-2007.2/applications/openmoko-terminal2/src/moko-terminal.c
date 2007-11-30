@@ -18,6 +18,7 @@
 #include "moko-terminal.h"
 
 #include <vte/vte.h>
+#include <stdlib.h>
 
 #undef DEBUG_THIS_FILE
 #ifdef DEBUG_THIS_FILE
@@ -138,7 +139,7 @@ moko_terminal_init(MokoTerminal* self)
                                NULL,
                                NULL,
                                NULL,
-                               "~/",
+                               getenv( "HOME" ),
                                TRUE,
                                TRUE,
                                TRUE);

@@ -1,3 +1,7 @@
+2007-11-30	Michael Lauer	<mickey@openmoko.org>
+
+	* src/moko-terminal.c: '~' doesn't seem to work, try $HOME instead.
+
 2007-11-18  Michael Lauer <mickey@openmoko.org>
 
 	* src/moko-terminal.c: fix terminal colors, start in '~'
