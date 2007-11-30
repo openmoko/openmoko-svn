@@ -1,3 +1,9 @@
+2007-11-29	Michael Lauer	<mickey@openmoko.org>
+
+	* libmokogsmd/moko-gsmd-connection.[c|h]:
+	Register and emit gobject signal for when the 
+	"gsmd-connection-status" changes.
+
 2007-11-25	Michael Lauer	<mickey@openmoko.org>
 
 	* libmokogsmd/moko-gsmd-connection.[c|h]:
