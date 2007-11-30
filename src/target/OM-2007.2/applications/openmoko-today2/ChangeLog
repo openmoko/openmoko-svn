@@ -1,5 +1,10 @@
 2007-11-30  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (workarea_changed), (main):
+        Migrate to x_monitor_workarea from x_get_workarea
+
+2007-11-30  Chris Lord  <chris@openedhand.com>
+
 	* src/today-launcher.c: (item_removed_cb):
         Grey out messages launcher-button if the .desktop gets removed
 

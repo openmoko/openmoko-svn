@@ -349,6 +349,15 @@ location_notify (GConfClient *client, guint cnxn_id,
 	}
 }
 
+static GtkWidget *window;
+
+static void
+workarea_changed (int x, int y, int w, int h)
+{
+	gtk_window_resize (GTK_WINDOW (window), w, h);
+	gtk_window_move (GTK_WINDOW (window), x, y);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -426,10 +435,8 @@ main (int argc, char **argv)
 	gtk_window_set_type_hint (GTK_WINDOW (data.window),
 		GDK_WINDOW_TYPE_HINT_DESKTOP);
 	gtk_window_set_skip_taskbar_hint (GTK_WINDOW (data.window), TRUE);
-	if (x_get_workarea (&x, &y, &w, &h)) {
-		gtk_window_set_default_size (GTK_WINDOW (data.window), w, h);
-		gtk_window_move (GTK_WINDOW (data.window), x, y);
-	}
+	window = data.window;
+	x_monitor_workarea (gtk_widget_get_screen (window), workarea_changed);
 #else
 	gtk_window_set_default_size (GTK_WINDOW (data.window), 480, 600);
 #endif
