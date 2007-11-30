@@ -37,7 +37,7 @@ style "mokoentry"
 {
   xthickness = 7
   ythickness = 16
-  GtkEntry::inner_border = {10, 10, 2, 2}
+  GtkEntry::inner_border = {10, 10, 8, 8}
   engine "pixmap" 
   {
     image 
