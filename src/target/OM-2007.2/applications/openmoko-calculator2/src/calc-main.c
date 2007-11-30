@@ -68,11 +68,11 @@ static GtkWidget* displayed_label;
 #define CALC_ROWS 5
 #define CALC_COLS 4
 static const gchar *label[CALC_ROWS][CALC_COLS] = {
-    {N_("CE"), N_("C"), "/", "*" },
+  {N_("CE"), N_("C"), "\303\267" /* divide */, "\303\227" /* multiply */ },
     {"7", "8", "9", "+"},
-    {"4", "5", "6", "-"},
+    {"4", "5", "6", "\342\210\222" /* minus */},
     {"1", "2", "3", "="},
-    {"0", N_("."), "+/-", "none"},
+    {"0", N_("."), "\302\261" /* plus/minus */, "none"},
   };
 static enum operation ops[CALC_ROWS][CALC_COLS] = {
     { clearall, clear, div, mult},

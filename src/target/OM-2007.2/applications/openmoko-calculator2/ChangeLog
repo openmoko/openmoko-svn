@@ -1,0 +1,5 @@
+2007-30-11	Michael Lauer	<mickey@openmoko.org>
+
+	* src/openmoko-calculator.c: use proper glyphs for /, *, etc.
+	(patch by Ross Burton)
+
