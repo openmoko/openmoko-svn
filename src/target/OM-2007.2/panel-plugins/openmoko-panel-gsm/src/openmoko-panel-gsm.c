@@ -68,7 +68,9 @@ gsm_applet_gsmd_connection_status(MokoGsmdConnection* connection, gboolean statu
     g_debug( "gsm_applet_gsmd_connection_status: status = %s", status ? "TRUE" : "FALSE" );
     if ( status )
     {
+#ifdef GSM_APPLET_HANDLES_PIN_DIALOG
         gsm_applet_power_up_antenna( NULL, theApplet );
+#endif
     }
     else
     {
@@ -148,6 +150,7 @@ gsm_applet_network_registration_cb(MokoGsmdConnection *self,
     }
 }
 
+#ifdef GSM_APPLET_HANDLES_PIN_DIALOG
 static void
 gsm_applet_sim_pin_requested(MokoGsmdConnection* self, int type)
 {
@@ -162,6 +165,7 @@ gsm_applet_sim_pin_requested(MokoGsmdConnection* self, int type)
         g_timeout_add_seconds( 1, (GSourceFunc)gsm_applet_autoregister_trigger, theApplet );
     }
 }
+#endif
 
 static void
 gsm_applet_show_status(GtkWidget* menu, GsmApplet* applet)
@@ -243,7 +247,9 @@ mb_panel_applet_create(const char* id, GtkOrientation orientation)
     g_signal_connect( G_OBJECT(applet->gsm), "signal-strength-changed", G_CALLBACK(gsm_applet_update_signal_strength), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "network-registration", G_CALLBACK(gsm_applet_network_registration_cb), applet );
     g_signal_connect( G_OBJECT(applet->gsm), "network-current-operator", G_CALLBACK(gsm_applet_network_current_operator_cb), applet );
+#ifdef GSM_APPLET_HANDLES_PIN_DIALOG
     g_signal_connect( G_OBJECT(applet->gsm), "pin-requested", G_CALLBACK(gsm_applet_sim_pin_requested), applet );
+#endif
 
     // tap-with-hold menu (NOTE: temporary: left button atm.)
     GtkMenu* menu = GTK_MENU (gtk_menu_new());
