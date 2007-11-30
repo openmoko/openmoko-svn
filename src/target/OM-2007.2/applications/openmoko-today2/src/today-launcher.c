@@ -71,6 +71,10 @@ item_removed_cb (TakuMenu *menu, TakuMenuItem *item, TodayData *data)
 			GTK_WIDGET (data->dates_button), FALSE);
 	} else if (data->clock_item == item) {
 		data->clock_item = NULL;
+	} else if (data->messages_item == item) {
+		data->messages_item = NULL;
+		gtk_widget_set_sensitive (
+			GTK_WIDGET (data->messages_button), FALSE);
 	}
 
 	tiles = gtk_container_get_children (
