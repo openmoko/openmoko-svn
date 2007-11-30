@@ -1,5 +1,16 @@
 2007-11-30  Chris Lord  <chris@openedhand.com>
 
+	* src/today-task-manager.c: (today_task_manager_populate_tasks),
+	(set_focus_cb), (page_shown), (page_hidden),
+	(today_task_manager_notify_visible_cb),
+	(today_task_manager_visibility_notify_event_cb),
+	(today_task_manager_unmap_cb), (today_task_manager_page_create):
+	* src/today.h:
+        Grey out kill/jump-to/killall buttons where appropriate, fix spurious
+        warnings on app exit
+
+2007-11-30  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (workarea_changed), (main):
         Migrate to x_monitor_workarea from x_get_workarea
 

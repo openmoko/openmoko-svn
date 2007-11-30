@@ -343,6 +343,9 @@ today_task_manager_populate_tasks (TodayData *data)
 	/* Empty list */
 	today_task_manager_free_tasks (data);
 	
+	/* Return if our main window has gone (e.g. on quit) */
+	if ((!data->window) || (!data->window->window)) return;
+	
         /* Retrieve list of app windows from root window */
         display = gtk_widget_get_display (data->tasks_table);
 	screen = gtk_widget_get_screen (data->tasks_table);
@@ -380,7 +383,7 @@ today_task_manager_populate_tasks (TodayData *data)
 		GdkPixbuf *icon;
 		GdkWindow *window;
 
-		if (GDK_WINDOW_XID (current) == windows[i]) continue;
+		if (current && GDK_WINDOW_XID (current) == windows[i]) continue;
 		if (GDK_WINDOW_XID (data->window->window) == windows[i])
 			continue;
 		
@@ -427,25 +430,53 @@ today_task_manager_populate_tasks (TodayData *data)
 			task_tile);
                 gtk_widget_show (task_tile);
         }
-	g_object_unref (current);
+	if (current) g_object_unref (current);
 
-        /* If no windows were found, insert an insensitive "No tasks" item */
-        if (nitems == 0) {
-                GtkWidget *task_tile;
-                
-                task_tile = taku_icon_tile_new ();
+	/* If no windows were found, insert an insensitive "No tasks" item */
+	if (nitems == 0) {
+		GtkWidget *task_tile;
+		
+		task_tile = taku_icon_tile_new ();
 		taku_icon_tile_set_primary (TAKU_ICON_TILE (task_tile),
 			_("No active tasks"));
 		
-                gtk_widget_set_sensitive (task_tile, FALSE);
+		gtk_widget_set_sensitive (task_tile, FALSE);
 
 		gtk_container_add (GTK_CONTAINER (data->tasks_table),
 			task_tile);
                 gtk_widget_show (task_tile);
+		
+		gtk_widget_set_sensitive (
+			GTK_WIDGET (data->killall_button), FALSE);
+        } else {
+		gtk_widget_set_sensitive (
+			GTK_WIDGET (data->killall_button), TRUE);
         }
 
-        /* Cleanup */
-        XFree (windows);
+	/* Cleanup */
+	XFree (windows);
+}
+
+static void
+set_focus_cb (GtkWindow *window, GtkWidget *widget, TodayData *data)
+{
+	gtk_widget_set_sensitive (data->kill_button, TAKU_IS_TILE (widget));
+	gtk_widget_set_sensitive (data->switch_button, TAKU_IS_TILE (widget));
+}
+
+static void
+page_shown (TodayData *data)
+{
+	today_task_manager_populate_tasks (data);
+	g_signal_connect (data->window, "set-focus",
+		G_CALLBACK (set_focus_cb), data);
+}
+
+static void
+page_hidden (TodayData *data)
+{
+	today_task_manager_free_tasks (data);
+	g_signal_handlers_disconnect_by_func (data->window, set_focus_cb, data);
 }
 
 static void
@@ -455,7 +486,7 @@ today_task_manager_notify_visible_cb (GObject *gobject,
 {
 	if ((!hidden) && (!GTK_WIDGET_VISIBLE (gobject))) {
 		hidden = TRUE;
-		today_task_manager_free_tasks (data);
+		page_hidden (data);
 	}
 }
 
@@ -467,11 +498,11 @@ today_task_manager_visibility_notify_event_cb (GtkWidget *widget,
 	if (((event->state == GDK_VISIBILITY_PARTIAL) ||
 	     (event->state == GDK_VISIBILITY_UNOBSCURED)) && (hidden)) {
 		hidden = FALSE;
-		today_task_manager_populate_tasks (data);
+		page_shown (data);
 	} else if ((event->state == GDK_VISIBILITY_FULLY_OBSCURED) &&
 		   (!hidden)) {
 		hidden = TRUE;
-		today_task_manager_free_tasks (data);
+		page_hidden (data);
 	}
 	
 	return FALSE;
@@ -482,7 +513,7 @@ today_task_manager_unmap_cb (GtkWidget *widget, TodayData *data)
 {
 	if (!hidden) {
 		hidden = TRUE;
-		today_task_manager_free_tasks (data);
+		page_hidden (data);
 	}
 }
 
@@ -715,7 +746,6 @@ GtkWidget *
 today_task_manager_page_create (TodayData *data)
 {
 	GtkWidget *vbox, *toolbar, *viewport, *scroll;
-	GtkToolItem *button;
 	
 	vbox = gtk_vbox_new (FALSE, 0);
 	
@@ -724,28 +754,29 @@ today_task_manager_page_create (TodayData *data)
 	gtk_box_pack_start (GTK_BOX (vbox), toolbar, FALSE, TRUE, 0);
 
 	/* Kill all apps button */
-	button = gtk_tool_button_new_from_stock (MOKO_STOCK_FOLDER_DELETE);
-	gtk_tool_item_set_expand (button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
+	data->kill_button = gtk_tool_button_new_from_stock (
+		MOKO_STOCK_FOLDER_DELETE);
+	gtk_tool_item_set_expand (data->kill_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->kill_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
-	g_signal_connect (G_OBJECT (button), "clicked",
+	g_signal_connect (data->kill_button, "clicked",
 		G_CALLBACK (today_task_manager_killall_clicked_cb), data);
 
 	/* Switch to app button */
-	button = gtk_tool_button_new_from_stock (GTK_STOCK_JUMP_TO);
-	gtk_tool_item_set_expand (button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
+	data->switch_button = gtk_tool_button_new_from_stock (GTK_STOCK_JUMP_TO);
+	gtk_tool_item_set_expand (data->switch_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->switch_button, 0);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar),
 		gtk_separator_tool_item_new (), 0);
-	g_signal_connect (G_OBJECT (button), "clicked",
+	g_signal_connect (data->switch_button, "clicked",
 		G_CALLBACK (today_task_manager_raise_clicked_cb), data);
 
 	/* Kill app button */
-	button = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
-	gtk_tool_item_set_expand (button, TRUE);
-	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), button, 0);
-	g_signal_connect (G_OBJECT (button), "clicked",
+	data->killall_button = gtk_tool_button_new_from_stock (GTK_STOCK_DELETE);
+	gtk_tool_item_set_expand (data->killall_button, TRUE);
+	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data->killall_button, 0);
+	g_signal_connect (data->killall_button, "clicked",
 		G_CALLBACK (today_task_manager_kill_clicked_cb), data);
 
 	/* Viewport / tasks table */

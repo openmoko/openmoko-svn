@@ -60,6 +60,9 @@ typedef struct {
 	/* App manager */
 	GdkWindow *root_window;
 	GtkWidget *tasks_table;
+	GtkToolItem *kill_button;
+	GtkToolItem *killall_button;
+	GtkToolItem *switch_button;
 } TodayData;
 #endif
 
