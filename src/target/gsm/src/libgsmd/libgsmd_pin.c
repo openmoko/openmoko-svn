@@ -55,7 +55,8 @@ const char *lgsm_pin_name(enum gsmd_pin_type ptype)
 	return pin_type_names[ptype];
 }
 
-int lgsm_pin(struct lgsm_handle *lh, unsigned int type, char *pin, char *newpin)
+int lgsm_pin(struct lgsm_handle *lh, unsigned int type,
+		const char *pin, const char *newpin)
 {
 	int rc;
 	struct {
@@ -74,9 +75,7 @@ int lgsm_pin(struct lgsm_handle *lh, unsigned int type, char *pin, char *newpin)
 		return -ENOMEM;
 
 	gm->gp.type = type;
-
-	gm->gp.pin[0] = '\0';
-	strcat(gm->gp.pin, pin);
+	strcpy(gm->gp.pin, pin);
 
 	switch (type) {
 	case GSMD_PIN_SIM_PUK:
@@ -84,10 +83,11 @@ int lgsm_pin(struct lgsm_handle *lh, unsigned int type, char *pin, char *newpin)
 		/* GSM 07.07 explicitly states that only those two PUK types
 		 * require a new pin to be specified! Don't know if this is a
 		 * bug or a feature. */
-		if (!newpin)
+		if (!newpin) {
+			free(gm);
 			return -EINVAL;
-		gm->gp.newpin[0] = '\0';
-		strcat(gm->gp.newpin, newpin);
+		}
+		strcpy(gm->gp.newpin, newpin);
 		break;
 	default:
 		break;

@@ -3,6 +3,7 @@
 
 extern const char *lgsm_pin_name(enum gsmd_pin_type ptype);
 
-extern int lgsm_pin(struct lgsm_handle *lh, unsigned int type, char *pin, char *newpin);
+extern int lgsm_pin(struct lgsm_handle *lh, unsigned int type,
+		const char *pin, const char *newpin);
 
 #endif

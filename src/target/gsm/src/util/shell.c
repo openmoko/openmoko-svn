@@ -44,7 +44,7 @@
 static int nFIND = 0;
 static int nREADRG = 0;
 
-static int pending_responses = 0;
+int pending_responses = 0;
 
 /* this is the handler for receiving passthrough responses */
 static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
@@ -373,6 +373,32 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	return 0;
 }
 
+static int pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	int result = *(int *) gmh->data;
+
+	if (result)
+		printf("PIN error %i\n", result);
+	else
+		printf("PIN accepted!\n");
+	pending_responses --;
+	return 0;
+}
+
+static const struct msghandler_s {
+	int type;
+	lgsm_msg_handler *fn;
+} msghandlers[] = {
+	{ GSMD_MSG_PASSTHROUGH,	pt_msghandler },
+	{ GSMD_MSG_PHONEBOOK,	pb_msghandler },
+	{ GSMD_MSG_SMS,		sms_msghandler },
+	{ GSMD_MSG_NETWORK,	net_msghandler },
+	{ GSMD_MSG_PHONE,	phone_msghandler },
+	{ GSMD_MSG_PIN,		pin_msghandler },
+
+	{ 0, 0 }
+};
+
 static int shell_help(void)
 {
 	printf( "\tA\tAnswer incoming call\n"
@@ -424,12 +450,10 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 	fd_set readset;
 	char *ptr, *fcomma, *lcomma;
 	int gsm_fd = lgsm_fd(lgsmh);
+	const struct msghandler_s *hndl;
 
-	lgsm_register_handler(lgsmh, GSMD_MSG_PASSTHROUGH, &pt_msghandler);
-	lgsm_register_handler(lgsmh, GSMD_MSG_PHONEBOOK, &pb_msghandler);
-	lgsm_register_handler(lgsmh, GSMD_MSG_SMS, &sms_msghandler);
-	lgsm_register_handler(lgsmh, GSMD_MSG_NETWORK, &net_msghandler);
-	lgsm_register_handler(lgsmh, GSMD_MSG_PHONE, &phone_msghandler);
+	for (hndl = msghandlers; hndl->fn; hndl ++)
+		lgsm_register_handler(lgsmh, hndl->type, hndl->fn);
 
 	fcntl(0, F_SETFD, O_NONBLOCK);
 	fcntl(gsm_fd, F_SETFD, O_NONBLOCK);

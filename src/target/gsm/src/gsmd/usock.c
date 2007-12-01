@@ -185,19 +185,18 @@ static int null_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 /* PIN command callback. Gets called for response to AT+CPIN cmcd */
 static int pin_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	gsmd_log(GSMD_DEBUG, "pin cmd cb\n");
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_PIN,
+			GSMD_PIN_INPUT, 0);
 
-	/* We need to verify if there is some error */
-	switch (cmd->ret) {
-	case 0:
-		break;
-	case GSM0707_CME_INCORRECT_PASSWORD:
-		/* prompt for pin again */
-		break;
-	default:	
-		/* something went wrong */
-		break;
-	}
+	if (!ucmd)
+		return -ENOMEM;
+
+	/* Pass a GSM07.07 CME code directly, don't issue a new PIN
+	 * request because the client waits for a response to her
+	 * PIN submission rather than an event.  */
+	((int *) ucmd->buf)[0] = cmd->ret;
+	usock_cmd_enqueue(ucmd, gu);
 	return 0;
 }
 
@@ -409,7 +408,7 @@ struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type,
 	ucmd = ucmd_alloc(len);
 	if (!ucmd)
 		return NULL;
-	
+
 	ucmd->hdr.version = GSMD_PROTO_VERSION;
 	ucmd->hdr.msg_type = msg_type;
 	ucmd->hdr.msg_subtype = msg_subtype;
@@ -651,7 +650,7 @@ static int network_ownnumbers_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		num->service = GSMD_SERVICE_UNKNOWN;
 	num->name[len] = 0;
 	num->addr.type = type;
-	num->is_last = (cmd->ret == 0, NULL);
+	num->is_last = (cmd->ret == 0);
 
 	usock_cmd_enqueue(ucmd, gu);
 

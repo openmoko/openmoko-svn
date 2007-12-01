@@ -27,24 +27,28 @@
 #include <libgsmd/event.h>
 #include <libgsmd/pin.h>
 
+#include "shell.h"
+
 #define PIN_SIZE 8
 
-static char *pin;
+static const char *pin;
 static char pinbuf[PIN_SIZE+1];
 static char pinbuf2[PIN_SIZE+1];
 
-static int pin_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata *aux)
+static int pin_handler(struct lgsm_handle *lh,
+		int evt, struct gsmd_evt_auxdata *aux)
 {
 	int rc;
 	int type = aux->u.pin.type;
 	char *newpin = NULL;
 
-	printf("EVENT: PIN request (type='%s') ", lgsm_pin_name(aux->u.pin.type));
+	printf("EVENT: PIN request (type='%s') ", lgsm_pin_name(type));
 
 	/* FIXME: read pin from STDIN and send it back via lgsm_pin */
 	if (type == 1 && pin) {
 		printf("Auto-responding with pin `%s'\n", pin);
-		lgsm_pin(lh, type, pin, NULL);
+		pending_responses ++;
+		return lgsm_pin(lh, type, pin, NULL);
 	} else {
 		do {
 			printf("Please enter %s: ", lgsm_pin_name(type));
@@ -64,10 +68,9 @@ static int pin_handler(struct lgsm_handle *lh, int evt, struct gsmd_evt_auxdata 
 			break;
 		}
 
+		pending_responses ++;
 		return lgsm_pin(lh, type, pinbuf, newpin);
 	}
-
-	return 0;
 }
 
 int pin_init(struct lgsm_handle *lh, const char *pin_preset)
