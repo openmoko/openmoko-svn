@@ -248,6 +248,7 @@ static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 static int phone_powerup_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd;
 
 	/* We need to verify if there is some error */
 	switch (cmd->ret) {
@@ -260,7 +261,29 @@ static int phone_powerup_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		gsmd_log(GSMD_DEBUG, "Radio power-up failed\n");
 		break;
 	}
-	return 0;
+
+	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_PHONE,
+			GSMD_PHONE_POWERUP, 0);
+	if (ucmd) {
+		((int *) ucmd->buf)[0] = cmd->ret;
+		usock_cmd_enqueue(ucmd, gu);
+		return 0;
+	}
+	return -ENOMEM;
+}
+
+static int phone_powerdown_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_ucmd *ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_PHONE,
+			GSMD_PHONE_POWERDOWN, 0);
+
+	if (ucmd) {
+		((int *) ucmd->buf)[0] = cmd->ret;
+		usock_cmd_enqueue(ucmd, gu);
+		return 0;
+	}
+	return -ENOMEM;
 }
 
 static int get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -295,7 +318,7 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 
 	case GSMD_PHONE_POWERDOWN:
 		cmd = atcmd_fill("AT+CFUN=0", 9+1,
-				 &null_cmd_cb, gu, 0, NULL);
+				 &phone_powerdown_cb, gu, 0, NULL);
 		gu->gsmd->dev_state.on = 0;
 		break;
 	case GSMD_PHONE_GET_IMSI:

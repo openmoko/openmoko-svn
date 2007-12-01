@@ -344,18 +344,33 @@ static int net_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	}
 }
 
-static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh) {
-        char *payload;
-        switch (gmh->msg_subtype) {
+static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	char *payload;
+	int *intresult = (void *)gmh + sizeof(*gmh);
+
+	switch (gmh->msg_subtype) {
 	case GSMD_PHONE_GET_IMSI:
 		payload = (char *)gmh + sizeof(*gmh);
 		printf("imsi <%s>\n", payload);
-		pending_responses --;
 		break;
-        default:
-                return -EINVAL;
-        }
-        return 0;
+	case GSMD_PHONE_POWERUP:
+		if (*intresult)
+			printf("Modem power-up failed: %i\n", *intresult);
+		else
+			printf("Modem powered-up okay\n");
+		break;
+	case GSMD_PHONE_POWERDOWN:
+		if (*intresult)
+			printf("Modem power-down failed: %i\n", *intresult);
+		else
+			printf("Modem down\n");
+		break;
+	default:
+		return -EINVAL;
+	}
+	pending_responses --;
+	return 0;
 }
 
 static int shell_help(void)
@@ -688,9 +703,11 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strncmp(buf, "M", 1)) {
 				printf("Modem Power On\n");
 				lgsm_modem_power(lgsmh, 1);
+				pending_responses ++;
 			} else if (!strncmp(buf, "m", 1)) {
 				printf("Modem Power Off\n");
 				lgsm_modem_power(lgsmh, 0);
+				pending_responses ++;
 			} else {
 				printf("Unknown command `%s'\n", buf);
 			}
