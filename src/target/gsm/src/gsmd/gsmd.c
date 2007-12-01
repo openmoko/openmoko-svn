@@ -475,8 +475,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-  write(fd, "\r", 1);
-  sleep(1);
+        write(fd,'\r',1);
 	atcmd_drain(fd);
 
 	if (usock_init(&g) < 0) {
