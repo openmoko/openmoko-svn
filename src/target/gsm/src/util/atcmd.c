@@ -92,6 +92,7 @@ int atcmd_main(struct lgsm_handle *lgsmh)
 
 			/* this is a synchronous call for a passthrough
 			 * command */
+			rlen = STDIN_BUF_SIZE + 1;
 			lgsm_passthrough(lgsmh, buf, rbuf, &rlen);
 			printf("RSTR=`%s'\n", rbuf);
 

@@ -75,7 +75,7 @@ int lgsm_pin(struct lgsm_handle *lh, unsigned int type,
 		return -ENOMEM;
 
 	gm->gp.type = type;
-	strcpy(gm->gp.pin, pin);
+	strncpy(gm->gp.pin, pin, sizeof(gm->gp.pin));
 
 	switch (type) {
 	case GSMD_PIN_SIM_PUK:
@@ -87,7 +87,7 @@ int lgsm_pin(struct lgsm_handle *lh, unsigned int type,
 			free(gm);
 			return -EINVAL;
 		}
-		strcpy(gm->gp.newpin, newpin);
+		strncpy(gm->gp.newpin, newpin, sizeof(gm->gp.newpin));
 		break;
 	default:
 		break;

@@ -133,7 +133,7 @@ void lgsm_unregister_handler(struct lgsm_handle *lh, int type)
 }
 
 /* blocking read and processing of packets until packet matching 'id' is found */
-int lgsm_blocking_wait_packet(struct lgsm_handle *lh, u_int16_t id, 
+int lgsm_blocking_wait_packet(struct lgsm_handle *lh, u_int16_t id,
 			      struct gsmd_msg_hdr *gmh, int rlen)
 {
 	int rc;

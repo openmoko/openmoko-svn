@@ -66,5 +66,7 @@ extern int lgsm_subscriptions(struct lgsm_handle *lh, u_int32_t subscriptions);
 extern struct gsmd_msg_hdr *lgsm_gmh_fill(int type, int subtype, int payload_len);
 extern int lgsm_send(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh);
 extern int lgsm_handle_packet(struct lgsm_handle *lh, char *buf, int len);
+extern int lgsm_blocking_wait_packet(struct lgsm_handle *lh, u_int16_t id,
+		struct gsmd_msg_hdr *gmh, int rlen);
 
 #endif

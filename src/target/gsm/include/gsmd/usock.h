@@ -620,8 +620,8 @@ extern int usock_init(struct gsmd *g);
 extern void usock_cmd_enqueue(struct gsmd_ucmd *ucmd, struct gsmd_user *gu);
 extern struct gsmd_ucmd *usock_build_event(u_int8_t type, u_int8_t subtype, u_int16_t len);
 extern int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt);
-extern struct gsmd_ucmd *gsmd_ucmd_fill(int len, u_int8_t msg_type,
-		u_int8_t msg_subtype, u_int16_t id);
+extern int gsmd_ucmd_submit(struct gsmd_user *gu, u_int8_t msg_type,
+		u_int8_t msg_subtype, u_int16_t id, int len, const void *data);
 
 #endif /* __GSMD__ */
 

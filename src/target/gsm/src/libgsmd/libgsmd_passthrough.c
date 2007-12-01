@@ -59,7 +59,8 @@ int lgsm_passthrough_send(struct lgsm_handle *lh, const char *tx)
 	return gmh->id;
 }
 
-int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned int *rx_len)
+int lgsm_passthrough(struct lgsm_handle *lh, const char *tx,
+		char *rx, unsigned int *rx_len)
 {
 	struct gsmd_msg_hdr *rgmh = (struct gsmd_msg_hdr *)passthrough_rbuf;
 	char *rx_buf = (char *)rgmh + sizeof(*rgmh);
@@ -72,8 +73,7 @@ int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned 
 	/* since we synchronously want to wait for a response, we need to
 	 * _internally_ loop over incoming packets and call the callbacks for
 	 * intermediate messages (if applicable) */
-	rc = lgsm_blocking_wait_packet(lh, rc, passthrough_rbuf, 
-					sizeof(passthrough_rbuf));
+	rc = lgsm_blocking_wait_packet(lh, rc, rgmh, sizeof(passthrough_rbuf));
 	if (rc <= 0)
 		return rc;
 
@@ -82,10 +82,11 @@ int lgsm_passthrough(struct lgsm_handle *lh, const char *tx, char *rx, unsigned 
 
 	if (rc < sizeof(*rgmh) + rgmh->len)
 		return -EINVAL;
-	
-	/* FIXME: make sure rx_buf is zero-terminated */
-	strcpy(rx, rx_buf);
-	*rx_len = rgmh->len;
 
-	return rx_len;
+	rx[*--rx_len] = 0;
+	if (rgmh->len < *rx_len)
+		*rx_len = rgmh->len;
+	memcpy(rx, rx_buf, *rx_len);
+
+	return *rx_len;
 }

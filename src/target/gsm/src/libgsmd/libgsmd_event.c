@@ -52,9 +52,10 @@ void lgsm_evt_handler_unregister(struct lgsm_handle *lh, int evt_type)
 }
 
 
-static int evt_demux_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+static int evt_demux_msghandler(struct lgsm_handle *lh,
+		struct gsmd_msg_hdr *gmh)
 {
-	struct gsmd_evt_auxdata *aux = gmh->data;
+	struct gsmd_evt_auxdata *aux = (struct gsmd_evt_auxdata *) gmh->data;
 
 	if (gmh->len < sizeof(*aux))
 		return -EIO;

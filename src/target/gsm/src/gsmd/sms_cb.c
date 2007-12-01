@@ -64,13 +64,12 @@ static inline int parse_memtype(char *memtype)
 static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
 	struct gsmd_sms_list msg;
 	int i, idx, stat, len, cr;
 	u_int8_t pdu[SMS_MAX_PDU_SIZE];
 
 	if (cmd->ret && cmd->ret != -255)
-		return 0;
+		return 0;	/* TODO: Send a response */
 
 	/* FIXME: TEXT mode */
 	if (
@@ -78,9 +77,9 @@ static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 				&idx, &stat, &len, &cr) < 3 &&
 			sscanf(resp, "+CMGL: %i,%i,\"%*[^\"]\",%i\n%n",
 				&idx, &stat, &len, &cr) < 3)
-		return -EINVAL;
+		return -EINVAL;	/* TODO: Send a response */
 	if (len > 164)
-		return -EINVAL;
+		return -EINVAL;	/* TODO: Send a response */
 
 	msg.index = idx;
 	msg.stat = stat;
@@ -89,37 +88,29 @@ static int sms_list_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			i < SMS_MAX_PDU_SIZE; i ++) {
 		if (sscanf(resp + cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
-			return -EINVAL;
+			return -EINVAL;	/* TODO: Send a response */
 		}
 		cr += 2;
 	}
 	if (sms_pdu_to_msg(&msg, pdu, len, i)) {
 		gsmd_log(GSMD_DEBUG, "malformed PDU\n");
-		return -EINVAL;
+		return -EINVAL;	/* TODO: Send a response */
 	}
 
-	ucmd = gsmd_ucmd_fill(sizeof(msg), GSMD_MSG_SMS,
-			GSMD_SMS_LIST, cmd->id);
-	if (!ucmd)
-		return -ENOMEM;
-	memcpy(ucmd->buf, &msg, sizeof(msg));
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
+	return gsmd_ucmd_submit(gu, GSMD_MSG_SMS, GSMD_SMS_LIST,
+			cmd->id, sizeof(msg), &msg);
 }
 
 static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
 	struct gsmd_sms_list msg;
 	int i, stat, len, cr;
 	u_int8_t pdu[SMS_MAX_PDU_SIZE];
 	const char *colon;
 
 	if (cmd->ret)
-		return 0;
+		return 0;	/* TODO: Send a response */
 
 	/* FIXME: TEXT mode */
 	if (
@@ -127,9 +118,9 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 				&stat, &len, &cr) < 2 &&
                         sscanf(resp, "+CMGR: %i,\"%*[^\"]\",%i\n%n",
 				&stat, &len, &cr) < 2)
-		return -EINVAL;
+		return -EINVAL;	/* TODO: Send a response */
 	if (len > 164)
-		return -EINVAL;
+		return -EINVAL;	/* TODO: Send a response */
 
 	msg.index = 0;
 	colon = strchr(cmd->buf, '=');
@@ -143,7 +134,7 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			i < SMS_MAX_PDU_SIZE; i ++) {
 		if (sscanf(resp + cr, "%2hhX", &pdu[i]) < 1) {
 			gsmd_log(GSMD_DEBUG, "malformed input (%i)\n", i);
-			return -EINVAL;
+			return -EINVAL;	/* TODO: Send a response */
 		}
 		cr += 2;
 	}
@@ -152,80 +143,44 @@ static int sms_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		return -EINVAL;
 	}
 
-	ucmd = gsmd_ucmd_fill(sizeof(msg), GSMD_MSG_SMS,
-			GSMD_SMS_READ, cmd->id);
-	if (!ucmd)
-		return -ENOMEM;
-	memcpy(ucmd->buf, &msg, sizeof(msg));
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
+	return gsmd_ucmd_submit(gu, GSMD_MSG_SMS, GSMD_SMS_READ,
+			cmd->id, sizeof(msg), &msg);
 }
 
 static int sms_send_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
 	int msgref;
 
 	if (cmd->ret == 0 || cmd->ret == -255) {
 		if (sscanf(resp, "+CMGS: %i", &msgref) < 1)
-			return -EINVAL;
+			msgref = -EINVAL;
 	} else
 		msgref = -cmd->ret;
 
-	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_SMS,
-			GSMD_SMS_SEND, cmd->id);
-	if (!ucmd)
-		return -ENOMEM;
-	*(int *) ucmd->buf = msgref;
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_SMS, GSMD_SMS_SEND,
+			cmd->id, sizeof(msgref), &msgref);
 }
 
 static int sms_write_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
 	int result;
 
 	if (cmd->ret == 0) {
 		if (sscanf(resp, "+CMGW: %i", &result) < 1)
-			return -EINVAL;
+			result = -EINVAL;
 	} else
 		result = -cmd->ret;
 
-	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_SMS,
-			GSMD_SMS_WRITE, cmd->id);
-	if (!ucmd)
-		return -ENOMEM;
-	*(int *) ucmd->buf = result;
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_SMS, GSMD_SMS_WRITE,
+			cmd->id, sizeof(result), &result);
 }
 
 static int sms_delete_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
-	int *result;
+	int result = cmd->ret;
 
-	ucmd = gsmd_ucmd_fill(sizeof(int), GSMD_MSG_SMS,
-			GSMD_SMS_DELETE, cmd->id);
-	if (!ucmd)
-		return -ENOMEM;
-
-	result = (int *) ucmd->buf;
-	*result = cmd->ret;
-
-	usock_cmd_enqueue(ucmd, gu);
-
-	return 0;
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_SMS, GSMD_SMS_DELETE,
+			cmd->id, sizeof(result), &result);
 }
 
 static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
@@ -253,7 +208,7 @@ static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 				buf[2], &gss->mem[2].used, &gss->mem[2].total)
 			< 9) {
 		talloc_free(ucmd);
-		return -EINVAL;
+		return -EINVAL;	/* TODO: Send a response */
 	}
 
 	gss->mem[0].memtype = parse_memtype(buf[0]);
@@ -267,24 +222,15 @@ static int usock_cpms_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 
 static int usock_get_smsc_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
-	struct gsmd_user *gu = ctx;
-	struct gsmd_ucmd *ucmd;
-	struct gsmd_addr *ga;
+	struct gsmd_addr ga;
 
-	ucmd = gsmd_ucmd_fill(sizeof(struct gsmd_addr), GSMD_MSG_SMS,
-			GSMD_SMS_GET_SERVICE_CENTRE, cmd->id);
-	if (!ucmd)
-		return -ENOMEM;
-
-	ga = (struct gsmd_addr *) ucmd->buf;
 	if (sscanf(resp, "+CSCA: \"%31[^\"]\",%hhi",
-				ga->number, &ga->type) < 2) {
-		talloc_free(ucmd);
-		return -EINVAL;
-	}
+				ga.number, &ga.type) < 2)
+		return -EINVAL;	/* TODO: Send a response */
 
-	usock_cmd_enqueue(ucmd, gu);
-	return 0;
+	return gsmd_ucmd_submit(ctx,
+			GSMD_MSG_SMS, GSMD_SMS_GET_SERVICE_CENTRE,
+			cmd->id, sizeof(ga), &ga);
 }
 
 static const char *gsmd_cmgl_stat[] = {
