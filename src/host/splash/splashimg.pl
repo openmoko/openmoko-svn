@@ -22,7 +22,7 @@
 #
 
 
-%bpp = 16;
+$bpp = 16;
 
 
 sub usage
