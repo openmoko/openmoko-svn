@@ -231,6 +231,7 @@ static int atcmd_done(struct gsmd *g, struct gsmd_atcmd *cmd, const char *buf)
                 }
                 rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
                 DEBUGP("Clearing mlbuf\n");
+                memset(g->mlbuf, 0, MLPARSE_BUF_SIZE);
                 g->mlbuf_len = 0;
         }
         
@@ -371,6 +372,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 					cmd->resp = g->mlbuf;
 					rc = cmd->cb(cmd, cmd->ctx, cmd->resp);
 					DEBUGP("Clearing mlbuf\n");
+					memset(g->mlbuf, 0, MLPARSE_BUF_SIZE);
 				}
 				g->mlbuf_len = 0;
 			}
