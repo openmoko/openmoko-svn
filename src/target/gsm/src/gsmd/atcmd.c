@@ -113,7 +113,7 @@ static int llparse_byte(struct llparser *llp, char byte)
 	case LLPARSE_STATE_IDLE_CR:
 		if (byte == '\n')
 			llp->state = LLPARSE_STATE_IDLE_LF;
-		else
+		else if (byte != '\r')
 			llp->state = LLPARSE_STATE_ERROR;
 		break;
 	case LLPARSE_STATE_IDLE_LF:
