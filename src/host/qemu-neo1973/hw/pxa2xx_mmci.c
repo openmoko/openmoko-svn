@@ -16,7 +16,7 @@ struct pxa2xx_mmci_s {
     qemu_irq irq;
     void *dma;
 
-    SDState *card;
+    struct sd_card_s *card;
 
     uint32_t status;
     uint32_t clkrt;

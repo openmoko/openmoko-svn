@@ -16,7 +16,7 @@ struct s3c_mmci_state_s {
     qemu_irq irq;
     qemu_irq *dma;
 
-    SDState *card;
+    struct sd_card_s *card;
 
     int blklen;
     int blknum;

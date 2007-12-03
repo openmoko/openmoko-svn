@@ -23,7 +23,7 @@ do { printf("pl181: " fmt , ##args); } while (0)
 #define PL181_FIFO_LEN 16
 
 typedef struct {
-    SDState *card;
+    sd_card *card;
     uint32_t base;
     uint32_t clock;
     uint32_t power;

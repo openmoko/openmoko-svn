@@ -27,7 +27,7 @@ struct omap_mmc_s {
     qemu_irq irq;
     qemu_irq *dma;
     omap_clk clk;
-    SDState *card;
+    struct sd_card_s *card;
     uint16_t last_cmd;
     uint16_t sdio;
     uint16_t rsp[8];

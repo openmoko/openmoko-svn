@@ -1,7 +1,7 @@
 /*
- * SD Memory Card emulation.  Mostly correct for MMC too.
+ * MMC bus cards emulation.  Used for MMC/SD/SDIO.
  *
- * Copyright (c) 2006 Andrzej Zaborowski  <balrog@zabor.org>
+ * Copyright (c) 2006-2007 Andrzej Zaborowski  <balrog@zabor.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,15 +65,40 @@ struct sd_request_s {
     uint8_t crc;
 };
 
-typedef struct SDState SDState;
+typedef struct sd_card_s {
+    void *opaque;
+    int (*do_command)(void *opaque, struct sd_request_s *req,
+                    uint8_t *response);
+    void (*write_data)(void *opaque, uint8_t value);
+    uint8_t (*read_data)(void *opaque);
+    int (*data_ready)(void *opaque);
+    qemu_irq irq;
+} sd_card;
 
-SDState *sd_init(BlockDriverState *bs, int is_spi);
-int sd_do_command(SDState *sd, struct sd_request_s *req,
-                  uint8_t *response);
-void sd_write_data(SDState *sd, uint8_t value);
-uint8_t sd_read_data(SDState *sd);
-void sd_set_cb(SDState *sd, qemu_irq readonly, qemu_irq insert);
-int sd_data_ready(SDState *sd);
+static inline int sd_do_command(struct sd_card_s *sd, struct sd_request_s *req,
+                uint8_t *response)
+{
+    return sd->do_command(sd->opaque, req, response);
+}
+
+static inline void sd_write_data(struct sd_card_s *sd, uint8_t value)
+{
+    sd->write_data(sd->opaque, value);
+}
+
+static inline uint8_t sd_read_data(struct sd_card_s *sd)
+{
+    return sd->read_data(sd->opaque);
+}
+
+static inline int sd_data_ready(struct sd_card_s *sd)
+{
+    return sd->data_ready(sd->opaque);
+}
+
+/* sd.c */
+struct sd_card_s *sd_init(BlockDriverState *bs, int is_spi);
+void sd_set_cb(struct sd_card_s *sd, qemu_irq readonly, qemu_irq insert);
 
 /* ssi-sd.c */
 int ssi_sd_xfer(void *opaque, int val);

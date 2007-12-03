@@ -42,6 +42,8 @@ do { printf("SD: " fmt , ##args); } while (0)
 #define DPRINTF(fmt, args...) do {} while(0)
 #endif
 
+typedef struct SDState SDState;
+
 typedef enum {
     sd_r0 = 0,    /* no response */
     sd_r1,        /* normal response command */
@@ -96,6 +98,7 @@ struct SDState {
     qemu_irq readonly_cb;
     qemu_irq inserted_cb;
     BlockDriverState *bdrv;
+    struct sd_card_s card;
 };
 
 static void sd_set_status(SDState *sd)
@@ -396,29 +399,6 @@ static void sd_cardchange(void *opaque)
     }
 }
 
-/* We do not model the chip select pin, so allow the board to select
-   whether card should be in SSI or MMC/SD mode.  It is also up to the
-   board to ensure that ssi transfers only occur when the chip select
-   is asserted.  */
-SDState *sd_init(BlockDriverState *bs, int is_spi)
-{
-    SDState *sd;
-
-    sd = (SDState *) qemu_mallocz(sizeof(SDState));
-    sd->spi = is_spi;
-    sd_reset(sd, bs);
-    bdrv_set_change_cb(sd->bdrv, sd_cardchange, sd);
-    return sd;
-}
-
-void sd_set_cb(SDState *sd, qemu_irq readonly, qemu_irq insert)
-{
-    sd->readonly_cb = readonly;
-    sd->inserted_cb = insert;
-    qemu_set_irq(readonly, bdrv_is_read_only(sd->bdrv));
-    qemu_set_irq(insert, bdrv_is_inserted(sd->bdrv));
-}
-
 static void sd_erase(SDState *sd)
 {
     int i, start, end;
@@ -559,8 +539,7 @@ static void sd_lock_command(SDState *sd)
         sd->card_status &= ~CARD_IS_LOCKED;
 }
 
-static sd_rsp_type_t sd_normal_command(SDState *sd,
-                                       struct sd_request_s req)
+static sd_rsp_type_t sd_normal_command(SDState *sd, struct sd_request_s req)
 {
     uint32_t rca = 0x0000;
 
@@ -1079,8 +1058,8 @@ static sd_rsp_type_t sd_normal_command(SDState *sd,
     return sd_r0;
 }
 
-static sd_rsp_type_t sd_app_command(SDState *sd,
-                                    struct sd_request_s req) {
+static sd_rsp_type_t sd_app_command(SDState *sd, struct sd_request_s req)
+{
     uint32_t rca;
 
     if (sd_cmd_type[req.cmd] == sd_ac || sd_cmd_type[req.cmd] == sd_adtc)
@@ -1189,8 +1168,9 @@ static sd_rsp_type_t sd_app_command(SDState *sd,
     return sd_r0;
 }
 
-int sd_do_command(SDState *sd, struct sd_request_s *req,
-                  uint8_t *response) {
+static int _sd_do_command(SDState *sd, struct sd_request_s *req,
+                uint8_t *response)
+{
     uint32_t last_status = sd->card_status;
     sd_rsp_type_t rtype;
     int rsplen;
@@ -1342,7 +1322,7 @@ static void sd_blk_write(BlockDriverState *bdrv,
 #define APP_READ_BLOCK(a, len)	memset(sd->data, 0xec, len)
 #define APP_WRITE_BLOCK(a, len)
 
-void sd_write_data(SDState *sd, uint8_t value)
+static void _sd_write_data(SDState *sd, uint8_t value)
 {
     int i;
 
@@ -1463,7 +1443,7 @@ void sd_write_data(SDState *sd, uint8_t value)
     }
 }
 
-uint8_t sd_read_data(SDState *sd)
+static uint8_t _sd_read_data(SDState *sd)
 {
     /* TODO: Append CRCs */
     uint8_t ret;
@@ -1579,7 +1559,38 @@ uint8_t sd_read_data(SDState *sd)
     return ret;
 }
 
-int sd_data_ready(SDState *sd)
+static int _sd_data_ready(SDState *sd)
 {
     return sd->state == sd_sendingdata_state;
+}
+
+/* We do not model the chip select pin, so allow the board to select
+   whether card should be in SSI or MMC/SD mode.  It is also up to the
+   board to ensure that ssi transfers only occur when the chip select
+   is asserted.  */
+struct sd_card_s *sd_init(BlockDriverState *bs, int is_spi)
+{
+    SDState *sd;
+
+    sd = (SDState *) qemu_mallocz(sizeof(SDState));
+    sd->spi = is_spi;
+    sd_reset(sd, bs);
+    bdrv_set_change_cb(sd->bdrv, sd_cardchange, sd);
+
+    sd->card.opaque = sd;
+    sd->card.do_command = (void *) _sd_do_command;
+    sd->card.write_data = (void *) _sd_write_data;
+    sd->card.read_data  = (void *) _sd_read_data;
+    sd->card.data_ready = (void *) _sd_data_ready;
+    return &sd->card;
+}
+
+void sd_set_cb(struct sd_card_s *card, qemu_irq readonly, qemu_irq insert)
+{
+    SDState *sd = (SDState *) card->opaque;
+
+    sd->readonly_cb = readonly;
+    sd->inserted_cb = insert;
+    qemu_set_irq(readonly, bdrv_is_read_only(sd->bdrv));
+    qemu_set_irq(insert, bdrv_is_inserted(sd->bdrv));
 }

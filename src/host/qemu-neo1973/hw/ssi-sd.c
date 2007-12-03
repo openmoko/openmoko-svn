@@ -39,7 +39,7 @@ typedef struct {
     int arglen;
     int response_pos;
     int stopping;
-    SDState *sd;
+    sd_card *sd;
 } ssi_sd_state;
 
 /* State word bits.  */
