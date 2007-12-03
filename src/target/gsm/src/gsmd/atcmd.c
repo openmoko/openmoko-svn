@@ -363,8 +363,6 @@ static int ml_parse(const char *buf, int len, void *ctx)
 			/* it might be a multiline response, so if there's a previous
 			   response, send out mlbuf and start afresh with an empty buffer */
 			if (g->mlbuf_len) {
-				/* remove timer if get respond before timeout */
-				remove_timer(cmd);
 				if (!cmd->cb) {
 					gsmd_log(GSMD_NOTICE, "command without cb!!!\n");
 				} else {
