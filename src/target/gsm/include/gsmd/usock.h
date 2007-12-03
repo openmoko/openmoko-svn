@@ -254,8 +254,6 @@ enum gsmd_msg_phonebook {
 	GSMD_PHONEBOOK_GET_SUPPORT	= 6,
 	GSMD_PHONEBOOK_LIST_STORAGE	= 7,
 	GSMD_PHONEBOOK_SET_STORAGE	= 8,
-	GSMD_PHONEBOOK_RETRIEVE_READRG	= 9,
-	GSMD_PHONEBOOK_RETRIEVE_FIND	= 10,
 };
 
 /* Type-of-Address, Numbering-Plan-Identification field, GSM 03.40, 9.1.2.5 */
@@ -496,10 +494,15 @@ struct gsmd_phonebook_readrg {
 #define	GSMD_PB_NUMB_MAXLEN	44
 #define GSMD_PB_TEXT_MAXLEN	14
 struct gsmd_phonebook {
-	u_int8_t index;
+	int8_t index;
 	char numb[GSMD_PB_NUMB_MAXLEN+1];
 	u_int8_t type;
 	char text[GSMD_PB_TEXT_MAXLEN+1];
+} __attribute__ ((packed));
+
+struct gsmd_phonebooks {
+	struct gsmd_phonebook pb;
+	int8_t is_last;
 } __attribute__ ((packed));
 
 /* Refer to GSM 07.07 subclause 8.13 */
@@ -608,11 +611,6 @@ struct gsmd_ucmd {
 	struct llist_head list;
 	struct gsmd_msg_hdr hdr;
 	char buf[];
-} __attribute__ ((packed));
-
-struct gsmd_phonebooks {
-	struct llist_head list;
-	struct gsmd_phonebook pb;
 } __attribute__ ((packed));
 
 extern struct gsmd_ucmd *ucmd_alloc(int extra_size);

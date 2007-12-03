@@ -41,8 +41,6 @@
 #endif
 
 #define STDIN_BUF_SIZE	1024
-static int nFIND = 0;
-static int nREADRG = 0;
 
 int pending_responses = 0;
 
@@ -57,39 +55,63 @@ static int pt_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	struct gsmd_phonebook *gp;
-	struct gsmd_phonebook_support *gps;
+	struct gsmd_phonebooks *gps;
+	struct gsmd_phonebook_support *gpsu;
 	struct gsmd_phonebook_storage *gpst;
 	char *payload;
-	char *fcomma, *lcomma, *ptr = NULL;
-	int *num;
-	char buf[128];
 	int i;
 
 	switch (gmh->msg_subtype) {
 	case GSMD_PHONEBOOK_FIND:		
-		num = (int *) ((char *)gmh + sizeof(*gmh));
-		printf("Records:%d\n", *num);
+		gps = (struct gsmd_phonebooks *) ((char *)gmh + sizeof(*gmh));
 
-		nFIND = *num;
+		if (gps->pb.index > 0)
+			printf("%d, %s, %d, %s\n",
+					gps->pb.index, gps->pb.numb,
+					gps->pb.type, gps->pb.text);
+		else if (gps->pb.index < 0)
+			/* If index < 0, error happens */
+			printf("+CME ERROR %d\n", (0-(gps->pb.index)));
+		else
+			/* The record doesn't exist or could not read yet */
+			printf("Doesn't exist or couldn't read it yet\n");
+
+		if (gps->is_last)
+			pending_responses --;
 		break;
 	case GSMD_PHONEBOOK_READRG:
-		num = (int *) ((char *)gmh + sizeof(*gmh));
-		printf("Records:%d\n", *num);
+		gps = (struct gsmd_phonebooks *) ((char *)gmh + sizeof(*gmh));
 
-		nREADRG = *num;
+		if (gps->pb.index > 0)
+			printf("%d, %s, %d, %s\n",
+					gps->pb.index, gps->pb.numb,
+					gps->pb.type, gps->pb.text);
+		else if (gps->pb.index < 0)
+			/* If index < 0, error happens */
+			printf("+CME ERROR %d\n", (0-(gps->pb.index)));
+		else
+			/* The record doesn't exist or could not read yet */
+			printf("Doesn't exist or couldn't read it yet\n");
+
+		if (gps->is_last)
+			pending_responses --;
 		break;
 	case GSMD_PHONEBOOK_READ:
 		gp = (struct gsmd_phonebook *) ((char *)gmh + sizeof(*gmh));
-		if (gp->index)
+		if (gp->index > 0)
 			printf("%d, %s, %d, %s\n",
 					gp->index, gp->numb,
 					gp->type, gp->text);
+		else if (gp->index < 0)
+			/* If index < 0, error happens */
+			printf("+CME ERROR %d\n", (0-(gp->index)));
 		else
-			printf("Empty\n");
+			/* The record doesn't exist or could not read yet */
+			printf("Doesn't exist or couldn't read it yet\n");
 		break;
 	case GSMD_PHONEBOOK_GET_SUPPORT:
-		gps = (struct gsmd_phonebook_support *) ((char *)gmh + sizeof(*gmh));
-		printf("(1-%d), %d, %d\n", gps->index, gps->nlength, gps->tlength);
+		gpsu = (struct gsmd_phonebook_support *) ((char *)gmh + sizeof(*gmh));
+		printf("(1-%d), %d, %d\n", gpsu->index, gpsu->nlength, gpsu->tlength);
 		pending_responses --;
 		break;
 
@@ -110,26 +132,6 @@ static int pb_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		/* TODO: Need to handle error */
 		payload = (char *)gmh + sizeof(*gmh);
 		printf("%s\n", payload);
-		break;
-	case GSMD_PHONEBOOK_RETRIEVE_READRG:
-		gp = (struct gsmd_phonebook *) ((char *)gmh + sizeof(*gmh));
-
-		for (i=0; i<nREADRG; i++) {
-			printf("%d,%s,%d,%s\n", gp->index, gp->numb, gp->type, gp->text);
-			gp++;
-		}
-
-		nREADRG = 0;
-		break;
-	case GSMD_PHONEBOOK_RETRIEVE_FIND:
-		gp = (struct gsmd_phonebook *) ((char *)gmh + sizeof(*gmh));
-
-		for (i = 0; i < nFIND; i++) {
-			printf("%d,%s,%d,%s\n", gp->index, gp->numb, gp->type, gp->text);
-			gp++;
-		}
-
-		nFIND = 0;
 		break;
 	default:
 		return -EINVAL;
@@ -425,8 +427,6 @@ static int shell_help(void)
 		"\tps\tPB Support\n"
 		"\tpm\tPB Memory\n"
 		"\tpp\tPB Set Memory (pp=storage)\n"
-		"\tpRr\tRetrieve Readrg Records\n"
-		"\tpRf\tRetrieve Find Records\n"
 		"\tsd\tSMS Delete (sd=index,delflg)\n"
 		"\tsl\tSMS List (sl=stat)\n"
 		"\tsr\tSMS Read (sr=index)\n"
@@ -570,6 +570,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				ptr = strchr(buf, ',');
 				pb_readrg.index2 = atoi(ptr+1);
 				lgsm_pb_read_entries(lgsmh, &pb_readrg);
+				pending_responses ++;
 			} else if ( !strncmp(buf, "pr", 2)) {
 				ptr = strchr(buf, '=');
 				lgsm_pb_read_entry(lgsmh, atoi(ptr+1));
@@ -584,6 +585,7 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				pb_find.findtext[strlen(ptr+1)] = '\0';	
 			
 				lgsm_pb_find_entry(lgsmh, &pb_find);
+				pending_responses ++;
 			} else if ( !strncmp(buf, "pw", 2)) {
 				printf("Write Phonebook Entry\n");
 				struct lgsm_phonebook pb;
@@ -616,16 +618,6 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 				printf("Get Phonebook Support\n");
 				lgsm_pb_get_support(lgsmh);
 				pending_responses ++;
-			} else if( !strncmp(buf, "pRr", 3) ) {
-				printf("Retrieve Readrg Records\n");
-
-				if ( nREADRG )
-					lgsm_pb_retrieve_readrg(lgsmh, nREADRG);
-			} else if( !strncmp(buf, "pRf", 3) ) {
-				printf("Retrieve Find Records\n");
-
-				if ( nFIND )
-					lgsm_pb_retrieve_find(lgsmh, nFIND);
 			} else if ( !strncmp(buf, "sd", 2)) {		
 				printf("Delete SMS\n");			
 				struct lgsm_sms_delete sms_del;
