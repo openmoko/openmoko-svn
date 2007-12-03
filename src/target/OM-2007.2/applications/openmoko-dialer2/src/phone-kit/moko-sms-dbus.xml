@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<node name="/org/openmoko/PhoneKit">
+<interface name="org.openmoko.PhoneKit.Sms">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="moko_sms"/>
+
+  <property name="Status" type="i" access="read" />
+  
+  <method name="Send">
+    <arg type="s" name="number" />
+    <arg type="s" name="message" />
+    <arg type="s" name="uid" direction="out" />
+  </method>
+
+  <signal name="StatusChanged">
+    <arg type="i" name="status" />
+  </signal>
+
+</interface>
+</node>

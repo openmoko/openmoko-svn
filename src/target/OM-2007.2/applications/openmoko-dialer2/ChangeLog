@@ -1,3 +1,21 @@
+2007-11-30  Chris Lord  <chris@openedhand.com>
+
+	* src/dialer/dialer-main.c: (main):
+	Change object path/interface name to match re-factoring
+
+	* src/phone-kit/Makefile.am:
+	* src/phone-kit/dialer-main.c: (_dial_number), (main):
+	* src/phone-kit/moko-dialer-dbus.xml:
+	* src/phone-kit/moko-dialer-mcc-dc.h:
+	* src/phone-kit/moko-dialer.[ch]:
+	* src/phone-kit/moko-listener.[ch]:
+	* src/phone-kit/moko-network-dbus.xml:
+	* src/phone-kit/moko-network.[ch]:
+	* src/phone-kit/moko-sms-dbus.xml:
+	* src/phone-kit/moko-sms.[ch]:
+	Re-factor into three separate objects for Network, Dialer and SMS
+	interaction that share a common gsmd connection
+
 2007-11-28  Thomas Wood  <thomas@openedhand.com>
 
 	* data/Makefile.am:

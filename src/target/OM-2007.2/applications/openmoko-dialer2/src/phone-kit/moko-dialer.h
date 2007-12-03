@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include "moko-network.h"
 
 G_BEGIN_DECLS
 
@@ -45,30 +46,21 @@ G_BEGIN_DECLS
 
 #define PHONE_KIT_DIALER_ERROR g_quark_from_static_string("phone-kit-dialer")
 
-typedef enum {
-  PK_DIALER_ERROR_BUSY,
-  PK_DIALER_ERROR_GSMD,
-  PK_DIALER_ERROR_NOT_CONNECTED,
-  PK_DIALER_ERROR_SMS_STORE,
-  PK_DIALER_ERROR_SMS_TOOLONG,
-  PK_DIALER_ERROR_NO_PROVIDER,
-  PK_DIALER_ERROR_NO_PROVIDER_NUM,
-  PK_DIALER_ERROR_NO_IMSI,
-  PK_DIALER_ERROR_NO_NUMBER,
-  PK_DIALER_ERROR_INVALID_NUMBER,
-} PhoneKitDialerError;
-
 typedef struct _MokoDialer MokoDialer;
 typedef struct _MokoDialerClass MokoDialerClass;
 typedef struct _MokoDialerPrivate MokoDialerPrivate;
 
-enum
-{
-  DIALER_STATUS_NORMAL=0,
-  DIALER_STATUS_INCOMING,
-  DIALER_STATUS_DIALING,
-  DIALER_STATUS_TALKING
-};
+typedef enum {
+  PK_DIALER_ERROR_BUSY,
+  PK_DIALER_ERROR_INVALID_NUMBER,
+} PhoneKitDialerError;
+
+typedef enum {
+  PK_DIALER_NORMAL,
+  PK_DIALER_INCOMING,
+  PK_DIALER_DIALING,
+  PK_DIALER_TALKING,
+} PhoneKitDialerStatus;
 
 struct _MokoDialer
 {
@@ -84,6 +76,7 @@ struct _MokoDialerClass
   GObjectClass    parent_class;
   
   /* signals */
+  void (*status_changed) (MokoDialer *dialer, PhoneKitDialerStatus status);
 
     /* Initiating a connection */
   void (*incoming_call) (MokoDialer *dialer, const gchar *number);
@@ -108,13 +101,18 @@ struct _MokoDialerClass
 GType moko_dialer_get_type (void) G_GNUC_CONST;
 
 MokoDialer*        
-moko_dialer_get_default (void);
+moko_dialer_get_default (MokoNetwork *network);
 
 gboolean
 moko_dialer_show_dialer (MokoDialer *dialer, GError **error);
 
 gboolean
 moko_dialer_show_missed_calls (MokoDialer *dialer, GError **error);
+
+PhoneKitDialerStatus
+moko_dialer_get_status (MokoDialer *dialer);
+
+/* Dialer interface */
 
 gboolean
 moko_dialer_dial (MokoDialer *dialer, const gchar *number, GError **error);
@@ -130,25 +128,6 @@ moko_dialer_hung_up (MokoDialer *dialer);
 
 void
 moko_dialer_rejected (MokoDialer *dialer);
-
-gboolean
-moko_dialer_send_sms (MokoDialer *self, const gchar *number,
-                      const gchar *message, gchar **uid, GError **error);
-
-gboolean
-moko_dialer_get_provider_name (MokoDialer *self, gchar **name, GError **error);
-
-gboolean
-moko_dialer_get_subscriber_number (MokoDialer *self, gchar **number,
-                                   GError **error);
-
-gboolean
-moko_dialer_get_country_code (MokoDialer *self, gchar **dial_code,
-                              GError **error);
-
-gboolean
-moko_dialer_get_home_country_code (MokoDialer *self, gchar **dial_code,
-                                   GError **error);
 
 G_END_DECLS
 

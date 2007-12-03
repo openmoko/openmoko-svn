@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
-<node name="/org/openmoko/Dialer">
-<interface name="org.openmoko.Dialer">
+<node name="/org/openmoko/PhoneKit">
+<interface name="org.openmoko.PhoneKit.Dialer">
 <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="moko_dialer"/>
-  <method name="GetStatus">
-    <arg type="i" name="status" direction="out" />
-  </method>
+
+  <property name="Status" type="i" access="read" />
 
   <method name="Dial">
     <arg type="s" name="number" direction="in" />
@@ -12,28 +11,6 @@
 
   <method name="HangUp">
     <arg type="s" name="message" direction="in" />
-  </method>
-
-  <method name="SendSms">
-    <arg type="s" name="number" />
-    <arg type="s" name="message" />
-    <arg type="s" name="uid" direction="out" />
-  </method>
-
-  <method name="GetProviderName">
-    <arg type="s" name="name" direction="out" />
-  </method>
-
-  <method name="GetSubscriberNumber">
-    <arg type="s" name="number" direction="out" />
-  </method>
-
-  <method name="GetCountryCode">
-    <arg type="s" name="dial_code" direction="out" />
-  </method>
-
-  <method name="GetHomeCountryCode">
-    <arg type="s" name="dial_code" direction="out" />
   </method>
 
   <signal name="IncomingCall">
@@ -50,6 +27,10 @@
   </signal>
 
   <signal name="Rejected">
+  </signal>
+
+  <signal name="StatusChanged">
+    <arg type="i" name="status" />
   </signal>
 
 </interface>

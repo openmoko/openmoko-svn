@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<node name="/org/openmoko/PhoneKit">
+<interface name="org.openmoko.PhoneKit.Network">
+<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="moko_network"/>
+
+  <property name="Status" type="i" access="read" />
+
+  <method name="GetProviderName">
+    <arg type="s" name="name" direction="out" />
+  </method>
+
+  <method name="GetSubscriberNumber">
+    <arg type="s" name="number" direction="out" />
+  </method>
+
+  <method name="GetCountryCode">
+    <arg type="s" name="dial_code" direction="out" />
+  </method>
+
+  <method name="GetHomeCountryCode">
+    <arg type="s" name="dial_code" direction="out" />
+  </method>
+
+  <signal name="SubscriberNumberChanged">
+    <arg type="s" name="number" />
+  </signal>
+
+  <signal name="ProviderChanged">
+    <arg type="s" name="name" />
+  </signal>
+
+  <signal name="StatusChanged">
+    <arg type="i" name="status" />
+  </signal>
+
+</interface>
+</node>
+

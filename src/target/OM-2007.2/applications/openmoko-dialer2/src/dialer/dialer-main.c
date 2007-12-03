@@ -120,8 +120,9 @@ int main (int argc, char **argv)
     exit (1);
   }
 
-  data->dialer_proxy = dbus_g_proxy_new_for_name (connection, "org.openmoko.Dialer",
-      "/org/openmoko/Dialer", "org.openmoko.Dialer");
+  data->dialer_proxy = dbus_g_proxy_new_for_name (connection,
+      "org.openmoko.PhoneKit",
+      "/org/openmoko/PhoneKit/Dialer", "org.openmoko.PhoneKit.Dialer");
 
    /* application object */
   g_set_application_name ("OpenMoko Dialer");

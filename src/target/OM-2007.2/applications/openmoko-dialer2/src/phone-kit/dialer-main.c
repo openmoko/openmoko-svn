@@ -20,10 +20,15 @@
 #include <dbus/dbus-glib-bindings.h>
 #include <glib-object.h>
 
+#include "moko-network.h"
 #include "moko-dialer.h"
+#include "moko-sms.h"
 
-#define DIALER_NAMESPACE "org.openmoko.Dialer"
-#define DIALER_OBJECT "/org/openmoko/Dialer"
+#define PHONEKIT_NAMESPACE "org.openmoko.PhoneKit"
+#define NETWORK_PATH "/org/openmoko/PhoneKit/Network"
+#define DIALER_PATH "/org/openmoko/PhoneKit/Dialer"
+#define SMS_PATH "/org/openmoko/PhoneKit/Sms"
+#define DIALER_INTERFACE "org.openmoko.PhoneKit.Dialer"
 
 static gchar *number = NULL;
 
@@ -34,9 +39,9 @@ _dial_number (DBusGConnection *conn)
   GError *error = NULL;
 
   proxy = dbus_g_proxy_new_for_name (conn,
-                                      DIALER_NAMESPACE,
-                                      DIALER_OBJECT,
-                                      DIALER_NAMESPACE);
+                                      PHONEKIT_NAMESPACE,
+                                      DIALER_PATH,
+                                      DIALER_INTERFACE);
 
   if (!proxy)
     return;
@@ -52,7 +57,9 @@ _dial_number (DBusGConnection *conn)
 int
 main (int argc, char **argv)
 {
+  MokoNetwork *network;
   MokoDialer *dialer;
+  MokoSms *sms;
   DBusGConnection *connection;
   DBusGProxy *proxy;
   GError *error = NULL;
@@ -75,7 +82,7 @@ main (int argc, char **argv)
                                      DBUS_PATH_DBUS, 
                                      DBUS_INTERFACE_DBUS);
   if (!org_freedesktop_DBus_request_name (proxy,
-                                          DIALER_NAMESPACE,
+                                          PHONEKIT_NAMESPACE,
                                           0, &ret, &error))
   {
     /* Error requesting the name */
@@ -104,13 +111,21 @@ main (int argc, char **argv)
   /* Initialize Threading & GTK+ */
   gtk_init (&argc, &argv);
 
-   /* Create the MokoDialer object */
-  dialer = moko_dialer_get_default ();
+  /* Create the PhoneKit objects */
+  network = moko_network_get_default ();
+  dialer = moko_dialer_get_default (network);
+  sms = moko_sms_get_default (network);
 
   /* Add the objects onto the bus */
   dbus_g_connection_register_g_object (connection, 
-                                       DIALER_OBJECT,
+                                       NETWORK_PATH,
+                                       G_OBJECT (network));
+  dbus_g_connection_register_g_object (connection, 
+                                       DIALER_PATH,
                                        G_OBJECT (dialer));
+  dbus_g_connection_register_g_object (connection, 
+                                       SMS_PATH,
+                                       G_OBJECT (sms));
 
   /* application object */
   g_set_application_name ("OpenMoko Dialer");
