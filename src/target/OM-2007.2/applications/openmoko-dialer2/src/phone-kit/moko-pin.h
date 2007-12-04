@@ -14,3 +14,4 @@
  */
 
 char *get_pin_from_user ();
+void *display_pin_error (char *message);

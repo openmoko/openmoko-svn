@@ -104,3 +104,14 @@ get_pin_from_user ()
 
   return pin;
 }
+
+void
+display_pin_error (char *message)
+{
+  GtkWidget *dlg;
+  
+  dlg = gtk_message_dialog_new (NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+                                message);
+  gtk_dialog_run (GTK_DIALOG (dlg));
+  gtk_widget_destroy (dlg);
+}

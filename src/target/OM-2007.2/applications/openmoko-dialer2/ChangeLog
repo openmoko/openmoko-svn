@@ -1,3 +1,10 @@
+2007-12-04  Thomas Wood  <thomas@openedhand.com>
+
+	* src/phone-kit/moko-pin.c:
+	* src/phone-kit/moko-pin.h:
+
+	Add error message function
+
 2007-11-30  Chris Lord  <chris@openedhand.com>
 
 	* src/dialer/dialer-main.c: (main):
