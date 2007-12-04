@@ -2836,7 +2836,7 @@ void s3c2410_reset(void *opaque)
 struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
 {
     struct s3c_state_s *s;
-    int iomemtype, i;
+    int iomemtype, i, sd_idx;
     s = (struct s3c_state_s *) qemu_mallocz(sizeof(struct s3c_state_s));
 
     s->env = cpu_init("arm920t");
@@ -2908,7 +2908,11 @@ struct s3c_state_s *s3c2410_init(unsigned int sdram_size, DisplayState *ds)
                     s->irq[S3C_PIC_SPI0], s->drq[S3C_RQ_SPI0],
                     s->irq[S3C_PIC_SPI1], s->drq[S3C_RQ_SPI1], s->io);
 
-    s->mmci = s3c_mmci_init(0x5a000000, sd_bdrv, s->irq[S3C_PIC_SDI], s->drq);
+    sd_idx = drive_get_index(IF_SD, 0, 0);
+    if (sd_idx != -1) {
+        s->mmci = s3c_mmci_init(0x5a000000, drives_table[sd_idx].bdrv,
+                        s->irq[S3C_PIC_SDI], s->drq);
+    }
 
     if (usb_enabled) {
         usb_ohci_init_memio(0x49000000, 3, -1, s->irq[S3C_PIC_USBH]);
