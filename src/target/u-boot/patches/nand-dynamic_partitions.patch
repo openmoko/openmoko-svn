@@ -17,8 +17,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c
-+++ u-boot/drivers/nand/nand_bbt.c
+--- u-boot.orig/drivers/mtd/nand/nand_bbt.c
++++ u-boot/drivers/mtd/nand/nand_bbt.c
 @@ -1044,9 +1044,86 @@
  	switch ((int)res) {
  	case 0x00:	return 0;

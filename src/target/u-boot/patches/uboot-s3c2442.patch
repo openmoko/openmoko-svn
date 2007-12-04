@@ -519,8 +519,8 @@ Index: u-boot/cpu/arm920t/start.S
  	   So we need to copy the interrupt vectors, etc.  */
 Index: u-boot/drivers/usbdcore_s3c2410.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_s3c2410.c
-+++ u-boot/drivers/usbdcore_s3c2410.c
+--- u-boot.orig/drivers/usb/usbdcore_s3c2410.c
++++ u-boot/drivers/usb/usbdcore_s3c2410.c
 @@ -24,7 +24,8 @@
  
  #include <config.h>
@@ -533,8 +533,8 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h
-+++ u-boot/drivers/usbtty.h
+--- u-boot.orig/drivers/serial/usbtty.h
++++ u-boot/drivers/serial/usbtty.h
 @@ -29,7 +29,8 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
@@ -646,10 +646,10 @@ Index: u-boot/include/s3c24x0.h
  	S3C24X0_REG32	SDIIMSK;
  	S3C24X0_REG32	SDIDAT;
  #endif
-Index: u-boot/rtc/s3c24x0_rtc.c
+Index: u-boot/drivers/rtc/s3c24x0_rtc.c
 ===================================================================
---- u-boot.orig/rtc/s3c24x0_rtc.c
-+++ u-boot/rtc/s3c24x0_rtc.c
+--- u-boot.orig/drivers/rtc/s3c24x0_rtc.c
++++ u-boot/drivers/rtc/s3c24x0_rtc.c
 @@ -34,7 +34,7 @@
  #include <s3c2400.h>
  #elif defined(CONFIG_S3C2410)

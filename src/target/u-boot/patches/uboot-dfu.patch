@@ -1,7 +1,7 @@
-Index: u-boot/drivers/usbdcore_ep0.c
+Index: u-boot/drivers/usb/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c
-+++ u-boot/drivers/usbdcore_ep0.c
+--- u-boot.orig/drivers/usb/usbdcore_ep0.c
++++ u-boot/drivers/usb/usbdcore_ep0.c
 @@ -51,10 +51,15 @@
   */
  
@@ -86,10 +86,10 @@ Index: u-boot/drivers/usbdcore_ep0.c
  			return 0;
  
  		case USB_REQ_GET_STATUS:
-Index: u-boot/drivers/usbdfu.c
+Index: u-boot/drivers/usb/usbdfu.c
 ===================================================================
 --- /dev/null
-+++ u-boot/drivers/usbdfu.c
++++ u-boot/drivers/usb/usbdfu.c
 @@ -0,0 +1,1069 @@
 +/*
 + * (C) 2007 by OpenMoko, Inc.
@@ -154,7 +154,7 @@ Index: u-boot/drivers/usbdfu.c
 +extern struct list_head devices;
 +
 +#include "usbdcore_s3c2410.h"
-+#include "usbtty.h"			/* for STR_* defs */
++#include "../serial/usbtty.h"			/* for STR_* defs */
 +
 +#define RET_NOTHING	0
 +#define RET_ZLP		1
@@ -1160,11 +1160,11 @@ Index: u-boot/drivers/usbdfu.c
 +	}
 +}
 +#endif /* CONFIG_USBD_DFU */
-Index: u-boot/drivers/Makefile
+Index: u-boot/drivers/usb/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile
-+++ u-boot/drivers/Makefile
-@@ -132,6 +132,7 @@
+--- u-boot.orig/drivers/usb/Makefile
++++ u-boot/drivers/usb/Makefile
+@@ -28,6 +28,7 @@
  COBJS-y += isp116x-hcd.o
  COBJS-y += sl811_usb.o
  COBJS-y += usb_ohci.o
@@ -1172,10 +1172,10 @@ Index: u-boot/drivers/Makefile
  COBJS-y += usbdcore.o
  COBJS-y += usbdcore_ep0.o
  COBJS-y += usbdcore_mpc8xx.o
-Index: u-boot/drivers/usbdcore.c
+Index: u-boot/drivers/usb/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c
-+++ u-boot/drivers/usbdcore.c
+--- u-boot.orig/drivers/usb/usbdcore.c
++++ u-boot/drivers/usb/usbdcore.c
 @@ -31,6 +31,7 @@
  
  #include <malloc.h>
@@ -1228,10 +1228,10 @@ Index: u-boot/drivers/usbdcore.c
 +	dfu_event(device, event, data);
 +#endif
  }
-Index: u-boot/drivers/usbtty.c
+Index: u-boot/drivers/serial/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c
-+++ u-boot/drivers/usbtty.c
+--- u-boot.orig/drivers/serial/usbtty.c
++++ u-boot/drivers/serial/usbtty.c
 @@ -31,6 +31,8 @@
  #include "usbtty.h"
  #include "usb_cdc_acm.h"
@@ -1577,10 +1577,10 @@ Index: u-boot/include/usbdcore.h
  void urb_link_init (urb_link * ul);
  void urb_detach (struct urb *urb);
  urb_link *first_urb_link (urb_link * hd);
-Index: u-boot/drivers/usbtty.h
+Index: u-boot/drivers/serial/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h
-+++ u-boot/drivers/usbtty.h
+--- u-boot.orig/drivers/serial/usbtty.h
++++ u-boot/drivers/serial/usbtty.h
 @@ -70,4 +70,10 @@
  #define STR_CTRL_INTERFACE	0x06
  #define STR_COUNT		0x07
@@ -1993,7 +1993,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -270,6 +270,12 @@
+@@ -278,6 +278,12 @@
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
  

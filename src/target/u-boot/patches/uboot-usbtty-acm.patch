@@ -4,10 +4,10 @@ It was taken (almost blindly) from the Linux for Siemens SX1 project on
 handhelds.org.  Please don't complain to me about coding style issues
 or whitespace changes in this one - HW.
 
-Index: u-boot/drivers/usbtty.c
+Index: u-boot/drivers/serial/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c
-+++ u-boot/drivers/usbtty.c
+--- u-boot.orig/drivers/serial/usbtty.c
++++ u-boot/drivers/serial/usbtty.c
 @@ -1,7 +1,7 @@
  /*
   * (C) Copyright 2003
@@ -40,10 +40,10 @@ Index: u-boot/drivers/usbtty.c
  	/* prepare buffers... */
  	buf_init (&usbtty_input, USBTTY_BUFFER_SIZE);
  	buf_init (&usbtty_output, USBTTY_BUFFER_SIZE);
-Index: u-boot/drivers/usbtty.h
+Index: u-boot/drivers/serial/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h
-+++ u-boot/drivers/usbtty.h
+--- u-boot.orig/drivers/serial/usbtty.h
++++ u-boot/drivers/serial/usbtty.h
 @@ -27,7 +27,7 @@
  #include "usbdcore.h"
  #if defined(CONFIG_PPC)
@@ -70,8 +70,8 @@ Index: u-boot/drivers/usbtty.h
  
 Index: u-boot/drivers/usbdcore_omap1510.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_omap1510.c
-+++ u-boot/drivers/usbdcore_omap1510.c
+--- u-boot.orig/drivers/usb/usbdcore_omap1510.c
++++ u-boot/drivers/usb/usbdcore_omap1510.c
 @@ -960,7 +960,7 @@
  /* Handle general USB interrupts and dispatch according to type.
   * This function implements TRM Figure 14-13.

@@ -1199,10 +1199,10 @@ Index: u-boot/include/pcf50633.h
 +
 +#endif /* _PCF50633_H */
 +
-Index: u-boot/drivers/pcf50633.c
+Index: u-boot/drivers/misc/pcf50633.c
 ===================================================================
 --- /dev/null
-+++ u-boot/drivers/pcf50633.c
++++ u-boot/drivers/misc/pcf50633.c
 @@ -0,0 +1,218 @@
 +#include <common.h>
 +
@@ -1670,10 +1670,10 @@ Index: u-boot/board/neo1973/gta02/config.mk
 +sinclude $(OBJTREE)/board/$(BOARDDIR)/config.tmp
 +
 +TEXT_BASE = 0x33F80000
-Index: u-boot/drivers/smedia3362.c
+Index: u-boot/drivers/video/smedia3362.c
 ===================================================================
 --- /dev/null
-+++ u-boot/drivers/smedia3362.c
++++ u-boot/drivers/video/smedia3362.c
 @@ -0,0 +1,188 @@
 +/*
 + * (C) Copyright 2007 by OpenMoko, Inc.
@@ -1865,8 +1865,8 @@ Index: u-boot/drivers/smedia3362.c
 +#endif /* CONFIG_VIDEO_GLAMO3362 */
 Index: u-boot/drivers/Makefile
 ===================================================================
---- u-boot.orig/drivers/Makefile
-+++ u-boot/drivers/Makefile
+--- u-boot.orig/drivers/video/Makefile
++++ u-boot/drivers/video/Makefile
 @@ -67,6 +67,7 @@
  COBJS-y += serial_max3100.o
  COBJS-y += serial_xuartlite.o
@@ -1875,6 +1875,10 @@ Index: u-boot/drivers/Makefile
  COBJS-y += smiLynxEM.o
  COBJS-y += usbtty.o
  COBJS-y += videomodes.o
+Index: u-boot/drivers/misc/Makefile
+===================================================================
+--- u-boot.orig/drivers/misc/Makefile
++++ u-boot/drivers/misc/Makefile
 @@ -145,6 +146,7 @@
  COBJS-y += ali512x.o
  COBJS-y += ns87308.o
@@ -1899,10 +1903,10 @@ Index: u-boot/common/cmd_nand.c
  					nand_info[i].erasesize >> 10);
  		}
  		return 0;
-Index: u-boot/drivers/nand/nand_ids.c
+Index: u-boot/drivers/mtd/nand/nand_ids.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_ids.c
-+++ u-boot/drivers/nand/nand_ids.c
+--- u-boot.orig/drivers/mtd/nand/nand_ids.c
++++ u-boot/drivers/mtd/nand/nand_ids.c
 @@ -67,7 +67,7 @@
  
  	{"NAND 256MiB 3,3V 8-bit", 	0x71, 512, 256, 0x4000, 0},
@@ -1948,10 +1952,10 @@ Index: u-boot/board/neo1973/common/udc.c
  #endif
  		break;
  	default:
-Index: u-boot/drivers/smedia3362.h
+Index: u-boot/drivers/video/smedia3362.h
 ===================================================================
 --- /dev/null
-+++ u-boot/drivers/smedia3362.h
++++ u-boot/drivers/video/smedia3362.h
 @@ -0,0 +1,385 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H

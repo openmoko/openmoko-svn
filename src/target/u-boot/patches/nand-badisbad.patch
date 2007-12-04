@@ -6,10 +6,10 @@ Experimental.
 
 - Werner Almesberger <werner@openmoko.org>
 
-Index: u-boot/drivers/nand/nand_base.c
+Index: u-boot/drivers/mtd/nand/nand_base.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_base.c
-+++ u-boot/drivers/nand/nand_base.c
+--- u-boot.orig/drivers/mtd/nand/nand_base.c
++++ u-boot/drivers/mtd/nand/nand_base.c
 @@ -517,11 +517,14 @@ static int nand_block_checkbad (struct m
  {
  	struct nand_chip *this = mtd->priv;

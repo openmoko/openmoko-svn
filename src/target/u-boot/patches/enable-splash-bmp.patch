@@ -6,10 +6,10 @@ include/configs/neo1973.h: remove #if 1 ... #endif around video definitions
 
 - Werner Almesberger <werner@openmoko.org>
 
-Index: u-boot/drivers/cfb_console.c
+Index: u-boot/drivers/video/cfb_console.c
 ===================================================================
---- u-boot.orig/drivers/cfb_console.c
-+++ u-boot/drivers/cfb_console.c
+--- u-boot.orig/drivers/video/cfb_console.c
++++ u-boot/drivers/video/cfb_console.c
 @@ -191,6 +191,7 @@
  #if defined(CONFIG_CMD_BMP) || defined(CONFIG_SPLASH_SCREEN)
  #include <watchdog.h>

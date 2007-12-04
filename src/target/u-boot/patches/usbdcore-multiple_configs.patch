@@ -11,10 +11,10 @@ configuration index, and the resulting off-by-one errors resulted in:
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: u-boot/drivers/usbdcore_ep0.c
+Index: u-boot/drivers/usb/usbdcore_ep0.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_ep0.c
-+++ u-boot/drivers/usbdcore_ep0.c
+--- u-boot.orig/drivers/usb/usbdcore_ep0.c
++++ u-boot/drivers/usb/usbdcore_ep0.c
 @@ -237,8 +237,8 @@
  				return -1;
  			}
@@ -43,10 +43,10 @@ Index: u-boot/drivers/usbdcore_ep0.c
  			/* reset interface and alternate settings */
  			device->interface = device->alternate = 0;
  
-Index: u-boot/drivers/usbdcore.c
+Index: u-boot/drivers/usb/usbdcore.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore.c
-+++ u-boot/drivers/usbdcore.c
+--- u-boot.orig/drivers/usb/usbdcore.c
++++ u-boot/drivers/usb/usbdcore.c
 @@ -147,12 +147,9 @@
  static struct usb_configuration_instance *usbd_device_configuration_instance (struct usb_device_instance *device,
  		unsigned int port, unsigned int configuration)

@@ -110,10 +110,10 @@ Index: u-boot/common/cmd_nand.c
  
  static int nand_load_image(cmd_tbl_t *cmdtp, nand_info_t *nand,
  			   ulong offset, ulong addr, char *cmd)
-Index: u-boot/drivers/nand/nand_bbt.c
+Index: u-boot/drivers/mtd/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c
-+++ u-boot/drivers/nand/nand_bbt.c
+--- u-boot.orig/drivers/mtd/nand/nand_bbt.c
++++ u-boot/drivers/mtd/nand/nand_bbt.c
 @@ -795,7 +795,8 @@
  
  	len = mtd->size >> (this->bbt_erase_shift + 2);

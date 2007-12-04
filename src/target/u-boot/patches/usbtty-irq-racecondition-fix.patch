@@ -2,10 +2,10 @@ This patch adds some local_irq_{save,restore}() code to usbtty to cope with the
 lack of lacking in the case of irq-accelerated usb device drivers (such as our
 s3c24xx udc driver).
 
-Index: u-boot/drivers/usbtty.c
+Index: u-boot/drivers/serial/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c
-+++ u-boot/drivers/usbtty.c
+--- u-boot.orig/drivers/serial/usbtty.c
++++ u-boot/drivers/serial/usbtty.c
 @@ -26,6 +26,7 @@
  #ifdef CONFIG_USB_TTY
  

@@ -3,10 +3,10 @@ drivers/cfb_console.c (video_logo): if "splashimage" doesn't contain an
 
 - Werner Almesberger <werner@openmoko.org>
 
-Index: u-boot/drivers/cfb_console.c
+Index: u-boot/drivers/video/cfb_console.c
 ===================================================================
---- u-boot.orig/drivers/cfb_console.c
-+++ u-boot/drivers/cfb_console.c
+--- u-boot.orig/drivers/video/cfb_console.c
++++ u-boot/drivers/video/cfb_console.c
 @@ -1121,7 +1121,13 @@ static void *video_logo (void)
  	ulong addr;
  

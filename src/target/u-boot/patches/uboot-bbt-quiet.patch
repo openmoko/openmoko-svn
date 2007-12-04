@@ -4,8 +4,8 @@ Signed-off-by: Harald Welte <laforge@openmoko.org>
 
 Index: u-boot/drivers/nand/nand_bbt.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_bbt.c	2007-02-16 23:54:02.000000000 +0100
-+++ u-boot/drivers/nand/nand_bbt.c	2007-02-16 23:54:05.000000000 +0100
+--- u-boot.orig/drivers/mtd/nand/nand_bbt.c	2007-02-16 23:54:02.000000000 +0100
++++ u-boot/drivers/mtd/nand/nand_bbt.c	2007-02-16 23:54:05.000000000 +0100
 @@ -157,10 +157,6 @@
  					this->bbt[offs + (act >> 3)] |= 0x2 << (act & 0x06);
  					continue;

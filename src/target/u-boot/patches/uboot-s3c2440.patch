@@ -161,10 +161,10 @@ Index: u-boot/include/s3c24x0.h
  } /*__attribute__((__packed__))*/ S3C2410_SDI;
  
  
-Index: u-boot/rtc/s3c24x0_rtc.c
+Index: u-boot/drivers/rtc/s3c24x0_rtc.c
 ===================================================================
---- u-boot.orig/rtc/s3c24x0_rtc.c
-+++ u-boot/rtc/s3c24x0_rtc.c
+--- u-boot.orig/drivers/rtc/s3c24x0_rtc.c
++++ u-boot/rtc/drivers/s3c24x0_rtc.c
 @@ -34,6 +34,8 @@
  #include <s3c2400.h>
  #elif defined(CONFIG_S3C2410)
@@ -717,10 +717,10 @@ Index: u-boot/cpu/arm920t/s3c24x0/i2c.c
  		gpio->GPECON = old_gpecon;
  #endif
  #ifdef CONFIG_S3C2400
-Index: u-boot/drivers/usbdcore_s3c2410.c
+Index: u-boot/drivers/usb/usbdcore_s3c2410.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_s3c2410.c
-+++ u-boot/drivers/usbdcore_s3c2410.c
+--- u-boot.orig/drivers/usb/usbdcore_s3c2410.c
++++ u-boot/drivers/usb/usbdcore_s3c2410.c
 @@ -24,7 +24,7 @@
  
  #include <config.h>
@@ -730,10 +730,10 @@ Index: u-boot/drivers/usbdcore_s3c2410.c
  
  #include <common.h>
  
-Index: u-boot/drivers/usbtty.h
+Index: u-boot/drivers/serial/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h
-+++ u-boot/drivers/usbtty.h
+--- u-boot.orig/drivers/serial/usbtty.h
++++ u-boot/drivers/serial/usbtty.h
 @@ -29,7 +29,7 @@
  #include "usbdcore_mpc8xx.h"
  #elif defined(CONFIG_OMAP1510)
@@ -1347,10 +1347,10 @@ Index: u-boot/cpu/arm920t/s3c24x0/usb.c
 -# endif /* defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) */
 +# endif /* defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440) */
  #endif /* defined(CONFIG_USB_OHCI) && defined(CFG_USB_OHCI_CPU_INIT) */
-Index: u-boot/drivers/usb_ohci.c
+Index: u-boot/drivers/usb/usb_ohci.c
 ===================================================================
---- u-boot.orig/drivers/usb_ohci.c
-+++ u-boot/drivers/usb_ohci.c
+--- u-boot.orig/drivers/usb/usb_ohci.c
++++ u-boot/drivers/usb/usb_ohci.c
 @@ -62,6 +62,7 @@
  #if defined(CONFIG_ARM920T) || \
      defined(CONFIG_S3C2400) || \

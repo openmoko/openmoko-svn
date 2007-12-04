@@ -4,10 +4,10 @@ drivers/cfb_console.c (video_putc): make \r return to the beginning of the line
 
 - Werner Almesberger <werner@openmoko.org>
 
-Index: u-boot/drivers/cfb_console.c
+Index: u-boot/drivers/video/cfb_console.c
 ===================================================================
---- u-boot.orig/drivers/cfb_console.c
-+++ u-boot/drivers/cfb_console.c
+--- u-boot.orig/drivers/video/cfb_console.c
++++ u-boot/drivers/video/cfb_console.c
 @@ -181,6 +181,7 @@ CONFIG_VIDEO_HW_CURSOR:	     - Uses the 
  
  #include <version.h>

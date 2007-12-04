@@ -5,13 +5,13 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -78,6 +78,7 @@
+@@ -86,6 +86,7 @@
  COBJS-y += cmd_sata.o
- COBJS-y += cmd_scsi.o
- COBJS-y += cmd_spi.o
-+COBJS-y += cmd_terminal.o
- COBJS-y += cmd_universe.o
- COBJS-y += cmd_usb.o
+ COBJS-$(CONFIG_CMD_SCSI) += cmd_scsi.o
+ COBJS-$(CONFIG_CMD_SPI) += cmd_spi.o
++COBJS-$(CONFIG_CMD_TERMINAL) += cmd_terminal.o
+ COBJS-$(CONFIG_CMD_UNIVERSE) += cmd_universe.o
+ COBJS-$(CONFIG_CMD_USB) += cmd_usb.o
  COBJS-y += cmd_vfd.o
 Index: u-boot/common/cmd_terminal.c
 ===================================================================

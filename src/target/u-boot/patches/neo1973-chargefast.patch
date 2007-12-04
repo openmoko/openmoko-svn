@@ -1,7 +1,7 @@
-Index: u-boot/drivers/usbtty.c
+Index: u-boot/drivers/serial/usbtty.c
 ===================================================================
---- u-boot.orig/drivers/usbtty.c
-+++ u-boot/drivers/usbtty.c
+--- u-boot.orig/drivers/serial/usbtty.c
++++ u-boot/drivers/serial/usbtty.c
 @@ -54,7 +54,7 @@
  /*
   * Defines
@@ -263,8 +263,8 @@ Index: u-boot/drivers/usbtty.c
  
 Index: u-boot/drivers/usbtty.h
 ===================================================================
---- u-boot.orig/drivers/usbtty.h
-+++ u-boot/drivers/usbtty.h
+--- u-boot.orig/drivers/serial/usbtty.h
++++ u-boot/drivers/serial/usbtty.h
 @@ -59,7 +59,7 @@
  #define USBTTY_DEVICE_CLASS	COMMUNICATIONS_DEVICE_CLASS
  

@@ -144,10 +144,10 @@ Index: u-boot/cpu/arm920t/s3c24x0/interrupts.c
        defined(CONFIG_VCMA9)
  	tbclk = CFG_HZ;
  #else
-Index: u-boot/drivers/usbdcore_s3c2410.c
+Index: u-boot/drivers/usb/usbdcore_s3c2410.c
 ===================================================================
---- u-boot.orig/drivers/usbdcore_s3c2410.c
-+++ u-boot/drivers/usbdcore_s3c2410.c
+--- u-boot.orig/drivers/usb/usbdcore_s3c2410.c
++++ u-boot/drivers/usb/usbdcore_s3c2410.c
 @@ -25,7 +25,7 @@
  #include <config.h>
  

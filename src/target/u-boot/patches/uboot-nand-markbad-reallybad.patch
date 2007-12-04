@@ -5,10 +5,10 @@ we need this to preserve the bad block status when re-creating the bad block tab
 at some later point.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
-Index: u-boot/drivers/nand/nand_base.c
+Index: u-boot/drivers/mtd/nand/nand_base.c
 ===================================================================
---- u-boot.orig/drivers/nand/nand_base.c	2007-03-01 12:47:31.000000000 +0100
-+++ u-boot/drivers/nand/nand_base.c	2007-03-01 12:48:08.000000000 +0100
+--- u-boot.orig/drivers/mtd/nand/nand_base.c	2007-03-01 12:47:31.000000000 +0100
++++ u-boot/drivers/mtd/nand/nand_base.c	2007-03-01 12:48:08.000000000 +0100
 @@ -481,7 +481,7 @@
  
  	/* Do we have a flash based bad block table ? */

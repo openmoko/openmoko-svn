@@ -1410,10 +1410,10 @@ Index: u-boot/board/smdk2443/udc.c
 +		break;
 +	}
 +}
-Index: u-boot/drivers/usb_ohci.c
+Index: u-boot/drivers/usb/usb_ohci.c
 ===================================================================
---- u-boot.orig/drivers/usb_ohci.c
-+++ u-boot/drivers/usb_ohci.c
+--- u-boot.orig/drivers/usb/usb_ohci.c
++++ u-boot/drivers/usb/usb_ohci.c
 @@ -63,6 +63,7 @@
      defined(CONFIG_S3C2400) || \
      defined(CONFIG_S3C2410) || \

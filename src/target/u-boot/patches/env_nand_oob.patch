@@ -97,14 +97,14 @@ Index: u-boot/common/Makefile
 ===================================================================
 --- u-boot.orig/common/Makefile
 +++ u-boot/common/Makefile
-@@ -46,6 +46,7 @@
- COBJS-y += cmd_display.o
- COBJS-y += cmd_doc.o
- COBJS-y += cmd_dtt.o
+@@ -50,6 +50,7 @@
+ COBJS-$(CONFIG_CMD_DISPLAY) += cmd_display.o
+ COBJS-$(CONFIG_CMD_DOC) += cmd_doc.o
+ COBJS-$(CONFIG_CMD_DTT) += cmd_dtt.o
 +COBJS-y += cmd_dynenv.o
  COBJS-y += cmd_eeprom.o
- COBJS-y += cmd_elf.o
- COBJS-y += cmd_ext2.o
+ COBJS-$(CONFIG_CMD_ELF) += cmd_elf.o
+ COBJS-$(CONFIG_CMD_EXT2) += cmd_ext2.o
 Index: u-boot/common/cmd_dynenv.c
 ===================================================================
 --- /dev/null
