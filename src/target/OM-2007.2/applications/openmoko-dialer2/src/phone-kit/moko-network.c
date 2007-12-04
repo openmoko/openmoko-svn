@@ -152,15 +152,6 @@ on_network_registered (MokoListener *listener,
   }
 }
 
-static gboolean
-register_to_network (MokoNetwork *network)
-{
-  g_return_val_if_fail (MOKO_IS_NETWORK (network), FALSE);
-
-  lgsm_netreg_register (network->priv->handle, "");
-  return FALSE;
-}
-
 static void
 on_pin_requested (MokoListener *listener, struct lgsm_handle *handle,
                   int type)
@@ -179,10 +170,6 @@ on_pin_requested (MokoListener *listener, struct lgsm_handle *handle,
   
   lgsm_pin (handle, 1, pin, NULL);
   g_free (pin);
-  
-  /* temporary delay before we try registering
-   * FIXME: this should check if pin was OK */
-  g_timeout_add_seconds (1, (GSourceFunc) register_to_network, listener);
 }
 
 static void
@@ -514,18 +501,76 @@ phone_msghandler (struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
   GList *l;
   MokoNetwork *network = moko_network_get_default ();
   MokoNetworkPrivate *priv = network->priv;
+  int *intresult = (void *)gmh + sizeof(*gmh);
 
-  switch (gmh->msg_subtype) {
-    case GSMD_PHONE_GET_IMSI :
-      for (l = priv->listeners; l; l = l->next) {
+  switch (gmh->msg_subtype)
+  {
+    case GSMD_PHONE_GET_IMSI:
+      for (l = priv->listeners; l; l = l->next)
+      {
         moko_listener_on_imsi (MOKO_LISTENER (l->data), priv->handle,
                                (const gchar *)gmh + sizeof (*gmh));
       }
       break;
+    case GSMD_PHONE_POWERUP:
+      if (*intresult == 0)
+      {
+        /* phone has been powered on successfully */
+        g_debug ("Phone powered on");
+        /* Register with network */
+        priv->registered = GSMD_NETREG_UNREG;
+        lgsm_netreg_register (priv->handle, "");
+        
+        /* Get phone number */
+        lgsm_get_subscriber_num (priv->handle);
+      }
+      break;
+    
     default :
       return -EINVAL;
   }
   
+  return 0;
+}
+
+static int
+pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+  int result = *(int *) gmh->data;
+  static int attempt = 0;
+  
+  /* store the number of pin attempts */
+  attempt++;
+  
+  /* must not do more than three attempts */
+  if (attempt > 3)
+  {
+    char *msg = "Maximum number of PIN attempts reached";
+    g_debug (msg);
+    display_pin_error (msg);
+  }
+ 
+  if (result)
+  {
+    gchar *pin = NULL;
+    char *msg = g_strdup_printf ("PIN error: %i", result);
+    
+    g_debug (msg);
+    display_pin_error (msg);
+    g_free (msg);
+    
+    pin = get_pin_from_user ();
+    if (!pin) return 0;
+    lgsm_pin (lh, 1, pin, NULL);
+    g_free (pin);
+  }
+  else
+  {
+    /* PIN accepted, so let's make sure the phone is now powered on */
+    g_debug ("PIN accepted!");
+    lgsm_phone_power (lh, 1);
+  }
+
   return 0;
 }
 
@@ -594,24 +639,15 @@ network_init_gsmd (MokoNetwork *network)
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_IN_DS, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_NETREG, gsmd_eventhandler);
   lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_OUT_STATUS, gsmd_eventhandler);
+  lgsm_evt_handler_register (priv->handle, GSMD_EVT_PIN, gsmd_eventhandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_NETWORK, net_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_PHONE, phone_msghandler);
   lgsm_register_handler (priv->handle, GSMD_MSG_SMS, sms_msghandler);
+  lgsm_register_handler (priv->handle, GSMD_MSG_PIN, pin_msghandler);
 
-  /* Power the gsm modem up */
-  if (lgsm_phone_power (priv->handle, 1) == -1) {
-    g_warning ("Error powering up gsm modem");
-    lgsm_exit (priv->handle);
-    priv->handle = NULL;
-    return;
-  }
-
-  /* Register with network */
-  priv->registered = GSMD_NETREG_UNREG;
-  lgsm_netreg_register (priv->handle, "");
-  
-  /* Get phone number */
-  lgsm_get_subscriber_num (priv->handle);
+  /* Power the gsm modem up - this should trigger a PIN requiest if needed */
+  lgsm_phone_power (priv->handle, 1);
 
   /* Start polling for events */
   priv->source = (MokoNetworkSource *)

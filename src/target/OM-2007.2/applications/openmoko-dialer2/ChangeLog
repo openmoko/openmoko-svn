@@ -1,5 +1,14 @@
 2007-12-04  Thomas Wood  <thomas@openedhand.com>
 
+	* src/phone-kit/moko-network.c: (on_network_registered),
+	(phone_msghandler), (connection_source_dispatch),
+	(network_init_gsmd):
+
+	Fix bug 1028 (PIN dialog appears multiple times) by using the pin and
+	phone power callback messages.
+
+2007-12-04  Thomas Wood  <thomas@openedhand.com>
+
 	* src/phone-kit/moko-pin.c:
 	* src/phone-kit/moko-pin.h:
 
