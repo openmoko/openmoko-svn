@@ -95,3 +95,8 @@ int lgsm_voice_volume_set(struct lgsm_handle *lh, int volume)
 	/* FIXME: we need to pass along the parameter */
 	return lgsm_send_simple(lh, GSMD_MSG_VOICECALL, GSMD_VOICECALL_VOL_SET);
 }
+
+int lgsm_voice_get_status(struct lgsm_handle *lh)
+{
+	return lgsm_send_simple(lh, GSMD_MSG_VOICECALL, GSMD_VOICECALL_GET_STAT);
+}

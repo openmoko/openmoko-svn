@@ -18,4 +18,7 @@ extern int lgsm_voice_hangup(struct lgsm_handle *lh);
 /* Send DTMF character during voice call */
 extern int lgsm_voice_dtmf(struct lgsm_handle *lh, char dtmf_char);
 
+/* Get call status */
+extern int lgsm_voice_get_status(struct lgsm_handle *lh); 
+
 #endif

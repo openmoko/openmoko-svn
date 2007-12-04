@@ -41,6 +41,44 @@ enum gsmd_msg_voicecall_type {
 	GSMD_VOICECALL_DTMF	= 4,
 	GSMD_VOICECALL_VOL_SET	= 5,
 	GSMD_VOICECALL_VOL_GET	= 6,
+	GSMD_VOICECALL_GET_STAT	= 7,
+};
+
+
+/*  call direction from 3GPP TS 07.07, Clause 7.17 */
+enum gsmd_call_dire {
+	GSMD_CALL_DIRE_MO	= 0,
+	GSMD_CALL_DIRE_MT	= 1,
+};
+
+/*  call state from 3GPP TS 07.07, Clause 7.17 */
+enum gsmd_call_stat {
+	GSMD_CALL_STAT_ACTIVE	= 0,
+	GSMD_CALL_STAT_HELD	= 1,
+	GSMD_CALL_STAT_DIALING	= 2,
+	GSMD_CALL_STAT_ALERTING	= 3,
+	GSMD_CALL_STAT_INCOMING	= 4,
+	GSMD_CALL_STAT_WAITING	= 5,
+};
+
+/*  call mode from 3GPP TS 07.07, Clause 7.17 */
+enum gsmd_call_mode {
+	GSMD_CALL_MODE_VOICE		= 0,
+	GSMD_CALL_MODE_DATA		= 1,
+	GSMD_CALL_MODE_FAX		= 2,
+	GSMD_CALL_MODE_VOICE_DATA	= 3,
+	GSMD_CALL_MODE_VOICE_DATA_ALT	= 4,
+	GSMD_CALL_MODE_VOICE_FAX_ALT	= 5,	
+	GSMD_CALL_MODE_DATA_VOICE	= 6,
+	GSMD_CALL_MODE_DATA_VOICE_ALT	= 7,
+	GSMD_CALL_MODE_FAX_VOICE_ALT	= 8,
+	GSMD_CALL_MODE_UNKNOWN		= 9,
+};
+
+/*  multiparty(conference) from 3GPP TS 07.07, Clause 7.17 */
+enum gsmd_call_mpty {
+	GSMD_CALL_MPTY_NO	= 0,
+	GSMD_CALL_MPTY_YES	= 1,
 };
 
 /* Handset / MT related commands */
@@ -306,6 +344,19 @@ struct gsmd_signal_quality {
 struct gsmd_voicemail {
 	u_int8_t enable;
 	struct gsmd_addr addr;
+} __attribute__ ((packed));
+
+/* call status from 3GPP TS 07.07 clause 07.17 */
+struct gsmd_call_status {
+	int8_t idx;
+	u_int8_t dir;
+	u_int8_t stat;
+	u_int8_t mode;
+	u_int8_t mpty;
+	char number[GSMD_ADDR_MAXLEN+1];	
+	u_int8_t type;
+	char alpha[8+1];
+	int is_last;	
 } __attribute__ ((packed));
 
 #define GSMD_PIN_MAXLEN		8

@@ -387,6 +387,37 @@ static int pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 	return 0;
 }
 
+static int call_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
+{
+	struct gsmd_call_status *gcs;
+
+	switch (gmh->msg_subtype) {
+	case GSMD_VOICECALL_GET_STAT:
+		gcs = (struct  gsmd_call_status*) ((char *)gmh + sizeof(*gmh));
+		
+		if (gcs->idx > 0)
+			printf("%d, %d, %d, %d, %d, %s, %d\n",
+					gcs->idx, gcs->dir,
+					gcs->stat, gcs->mode,
+					gcs->mpty, gcs->number,
+					gcs->type);
+		else if (gcs->idx < 0)
+			/* If index < 0, error happens */
+			printf("+CME ERROR %d\n", (0-(gcs->idx)));
+		else
+			/* No existing call */
+			printf("Doesn't exist\n");
+
+		if (gcs->is_last)
+			pending_responses --;
+		break;
+	default:
+		return -EINVAL;
+	}
+	pending_responses --;
+	return 0;
+}
+
 static const struct msghandler_s {
 	int type;
 	lgsm_msg_handler *fn;
@@ -397,6 +428,7 @@ static const struct msghandler_s {
 	{ GSMD_MSG_NETWORK,	net_msghandler },
 	{ GSMD_MSG_PHONE,	phone_msghandler },
 	{ GSMD_MSG_PIN,		pin_msghandler },
+	{ GSMD_MSG_VOICECALL,	call_msghandler },
 
 	{ 0, 0 }
 };
@@ -437,6 +469,7 @@ static int shell_help(void)
 		"\tsc\tSMS Show Service Centre\n"
 		"\tsC\tSMS Set Service Centre (sC=number)\n"
 		"\tim\tGet imsi\n"
+		"\tcs\tGet Call status\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -723,6 +756,10 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if (!strncmp(buf, "m", 1)) {
 				printf("Modem Power Off\n");
 				lgsm_modem_power(lgsmh, 0);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "cs", 2)) {
+				printf("List current call status\n");
+				lgsm_voice_get_status(lgsmh);
 				pending_responses ++;
 			} else {
 				printf("Unknown command `%s'\n", buf);

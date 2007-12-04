@@ -114,6 +114,92 @@ static int usock_rcv_event(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, int l
 	gu->subscriptions = *evtmask;
 }
 
+static int voicecall_get_stat_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp) 
+{
+	struct gsmd_user *gu = ctx;
+	struct gsmd_call_status gcs;
+	struct gsm_extrsp *er;
+
+	DEBUGP("resp: %s\n", resp);
+
+	er = extrsp_parse(cmd, resp);
+
+	if ( !er )
+		return -ENOMEM;
+
+	gcs.is_last = (cmd->ret == 0 || cmd->ret == 4)? 1:0;
+	
+	if ( !strncmp(resp, "OK", 2) ) {
+		/* No existing call */
+		gcs.idx = 0;
+	}
+	else if ( !strncmp(resp, "+CME", 4) ) {
+		/* +CME ERROR: <err> */
+		DEBUGP("+CME error\n");
+		gcs.idx = 0 - atoi(strpbrk(resp, "0123456789"));
+	}
+	else if ( er->num_tokens == 7 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[3].type == GSMD_ECMD_RTT_NUMERIC && 
+			er->tokens[4].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[5].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[6].type == GSMD_ECMD_RTT_NUMERIC ) {
+		/*
+		 * [+CLCC: <id1>,<dir>,<stat>,<mode>,<mpty>[,
+		 * <number>,<type>[,<alpha>]]
+		 * [<CR><LF>+CLCC: <id2>,<dir>,<stat>,<mode>,<mpty>[,
+		 * <number>,<type>[,<alpha>]]
+		 * [...]]]
+		 */
+
+		gcs.idx = er->tokens[0].u.numeric;
+		gcs.dir = er->tokens[1].u.numeric;
+		gcs.stat = er->tokens[2].u.numeric;
+		gcs.mode = er->tokens[3].u.numeric;
+		gcs.mpty = er->tokens[4].u.numeric;
+		strcpy(gcs.number, er->tokens[5].u.string);
+		gcs.type = er->tokens[6].u.numeric;
+	}
+	else if ( er->num_tokens == 8 &&
+			er->tokens[0].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[1].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[2].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[3].type == GSMD_ECMD_RTT_NUMERIC && 
+			er->tokens[4].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[5].type == GSMD_ECMD_RTT_STRING &&
+			er->tokens[6].type == GSMD_ECMD_RTT_NUMERIC &&
+			er->tokens[7].type == GSMD_ECMD_RTT_STRING ) {
+
+		/*
+		 * [+CLCC: <id1>,<dir>,<stat>,<mode>,<mpty>[,
+		 * <number>,<type>[,<alpha>]]
+		 * [<CR><LF>+CLCC: <id2>,<dir>,<stat>,<mode>,<mpty>[,
+		 * <number>,<type>[,<alpha>]]
+		 * [...]]]
+		 */
+
+		gcs.idx = er->tokens[0].u.numeric;
+		gcs.dir = er->tokens[1].u.numeric;
+		gcs.stat = er->tokens[2].u.numeric;
+		gcs.mode = er->tokens[3].u.numeric;
+		gcs.mpty = er->tokens[4].u.numeric;
+		strcpy(gcs.number, er->tokens[5].u.string);
+		gcs.type = er->tokens[6].u.numeric;
+		strncpy(gcs.alpha, er->tokens[7].u.string, 8+1);
+	}
+	else {
+		DEBUGP("Invalid Input : Parse error\n");
+		return -EINVAL;
+	}
+	
+	talloc_free(er);
+
+	return gsmd_ucmd_submit(gu, GSMD_MSG_VOICECALL, GSMD_VOICECALL_GET_STAT,
+			cmd->id, sizeof(gcs), &gcs);
+}
+
 static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 				int len)
 {
@@ -121,7 +207,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	struct gsmd_addr *ga;
 	struct gsmd_dtmf *gd;
 	int atcmd_len;
-
+		
 	switch (gph->msg_subtype) {
 	case GSMD_VOICECALL_DIAL:
 		if (len < sizeof(*gph) + sizeof(*ga))
@@ -167,6 +253,12 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 			return -ENOMEM;
 
 		sprintf(cmd->buf, "AT+VTS=%c;", gd->dtmf[0]);
+		break;
+	case GSMD_VOICECALL_GET_STAT:
+		cmd = atcmd_fill("AT+CLCC", 7+1, &voicecall_get_stat_cb, 
+				 gu, gph->id, NULL);
+		if (!cmd)
+			return -ENOMEM;
 		break;
 	default:
 		return -EINVAL;
@@ -731,7 +823,7 @@ static int phonebook_read_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		gp.index = 0;
 	}
 	else if ( !strncmp(resp, "+CME", 4) ) {
-		DEBUGP("== +CME error\n");
+		DEBUGP("+CME error\n");
 		/* +CME ERROR: 21 */
 		gp.index = 0 - atoi(strpbrk(resp, "0123456789"));
 	}
@@ -782,7 +874,7 @@ static int phonebook_readrg_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 		gps.pb.index = 0;
 	}
 	else if ( !strncmp(resp, "+CME", 4) ) {
-		DEBUGP("== +CME error\n");
+		DEBUGP("+CME error\n");
 		/* +CME ERROR: 21 */
 		gps.pb.index = 0 - atoi(strpbrk(resp, "0123456789"));
 	}
