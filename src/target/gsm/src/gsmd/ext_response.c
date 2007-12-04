@@ -109,16 +109,16 @@ struct gsm_extrsp *extrsp_parse(const void *ctx, const char *input)
 			}
 			break;
 		case TOKEN_NUMERIC:
-			if (*cur == ',') {
+			if (isdigit(*cur)) {
+				*cur_buf = *cur;
+				cur_buf++;
+			}
+
+			if (*cur == ',' || *(cur+1) == '\0') {
 				/* end of number */
 				cur_token->u.numeric = atoi(buf);
 				er->num_tokens++;
 				state = IDLE;
-			} else if (isdigit(*cur)) {
-				*cur_buf = *cur;
-				cur_buf++;
-			} else {
-				/* ERORR */
 			}
 			break;
 		case TOKEN_STRING:
