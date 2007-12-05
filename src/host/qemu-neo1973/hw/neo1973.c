@@ -1,5 +1,5 @@
 /*
- * Neo1973/GTA01 mobile telephone platform emulation.
+ * Neo1973 mobile telephone platforms emulation.
  * Detailed information at openmoko.org.
  *
  * Copyright (c) 2007 OpenMoko, Inc.
@@ -415,7 +415,7 @@ static const int gta01_ts_scale[6] = {
 };
 
 /* Board init.  */
-static void neo_init(int ram_size, int vga_ram_size, const char *boot_device,
+static void gta01_init(int ram_size, int vga_ram_size, const char *boot_device,
                 DisplayState *ds, const char *kernel_filename,
                 const char *kernel_cmdline, const char *initrd_filename,
                 const char *cpu_model)
@@ -470,8 +470,8 @@ static void neo_init(int ram_size, int vga_ram_size, const char *boot_device,
     dpy_resize(ds, 480, 640);
 }
 
-QEMUMachine neo1973_machine = {
-    "neo",
-    "Neo1973 phone aka FIC GTA01 aka OpenMoko (S3C2410A)",
-    neo_init,
+QEMUMachine gta01_machine = {
+    "gta01",
+    "FIC Neo1973 rev GTA01 aka OpenMoko phone (S3C2410A)",
+    gta01_init,
 };
