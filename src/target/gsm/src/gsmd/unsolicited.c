@@ -92,17 +92,75 @@ int usock_evt_send(struct gsmd *gsmd, struct gsmd_ucmd *ucmd, u_int32_t evt)
 	return num_sent;
 }
 
+static void state_ringing_timeout(struct gsmd_timer *timer, void *opaque)
+{
+	struct gsmd *gsmd = (struct gsmd *) opaque;
+	struct gsmd_ucmd *ucmd;
+	struct gsmd_evt_auxdata *aux;
+
+	gsmd->dev_state.ring_check = 0;
+	gsmd_timer_free(timer);
+
+	/* Update state */
+	if (!gsmd->dev_state.ringing)
+		return;
+	gsmd->dev_state.ringing = 0;
+
+	gsmd_log(GSMD_INFO, "an incoming call timed out\n");
+
+	/* Generate a timeout event */
+	ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
+			sizeof(struct gsmd_evt_auxdata));	
+	if (!ucmd)
+		goto err;
+
+	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
+	aux->u.call.type = GSMD_CALL_TIMEOUT;
+
+	if (usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CALL) < 0)
+		goto err;
+	return;
+err:
+	gsmd_log(GSMD_ERROR, "event generation failed\n");
+}
+
+#define GSMD_RING_MAX_JITTER (200 * 1000)	/* 0.2 s */
+
+static void state_ringing_update(struct gsmd *gsmd)
+{
+	struct timeval tv;
+
+	if (gsmd->dev_state.ring_check)
+		gsmd_timer_unregister(gsmd->dev_state.ring_check);
+
+	/* Update state */
+	gsmd->dev_state.ringing = 1;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = GSMD_RING_MAX_JITTER;
+
+	if (gsmd->dev_state.ring_check) {
+		gsmd->dev_state.ring_check->expires = tv;
+		gsmd_timer_register(gsmd->dev_state.ring_check);
+	} else
+		gsmd->dev_state.ring_check = gsmd_timer_create(&tv,
+				&state_ringing_timeout, gsmd);
+}
+
 static int ring_parse(char *buf, int len, const char *param,
 		      struct gsmd *gsmd)
 {
-	/* FIXME: generate ring event */
-	struct gsmd_ucmd *ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
-					     sizeof(struct gsmd_evt_auxdata));	
+        struct gsmd_ucmd *ucmd;
 	struct gsmd_evt_auxdata *aux;
+
+        state_ringing_update(gsmd);
+        ucmd = usock_build_event(GSMD_MSG_EVENT, GSMD_EVT_IN_CALL,
+                        sizeof(struct gsmd_evt_auxdata));
+	/* FIXME: generate ring event */
 	if (!ucmd)
 		return -ENOMEM;
 
-	aux = (struct gsmd_evt_auxdata *)ucmd->buf;
+	aux = (struct gsmd_evt_auxdata *) ucmd->buf;
 
 	aux->u.call.type = GSMD_CALL_UNSPEC;
 
@@ -134,7 +192,9 @@ static int cring_parse(char *buf, int len, const char *param, struct gsmd *gsmd)
 		/* FIXME: change event type to GPRS */
 		talloc_free(ucmd);
 		return 0;
-	}
+	} else {
+                aux->u.call.type = GSMD_CALL_UNSPEC;
+        }
 	/* FIXME: parse all the ALT* profiles, Chapter 6.11 */
 
 	return usock_evt_send(gsmd, ucmd, GSMD_EVT_IN_CALL);

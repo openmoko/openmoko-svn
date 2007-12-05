@@ -13,9 +13,10 @@ struct gsmd_device_state {
 		unsigned int network_state_gsm;
 		unsigned int network_state_gprs;
 	} ciph_ind;
-
 	unsigned int on;
 	unsigned int registered;
+        unsigned int ringing;
+        struct gsmd_timer *ring_check;
 };
 
 #endif /* __GSMD__ */

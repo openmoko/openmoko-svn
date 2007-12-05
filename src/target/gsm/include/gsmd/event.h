@@ -51,6 +51,7 @@ enum gsmd_call_type {
 	GSMD_CALL_DATA_SYNC	= 5,
 	GSMD_CALL_DATA_REL_ASYNC= 6,
 	GSMD_CALL_DATA_REL_SYNC	= 7,
+        GSMD_CALL_TIMEOUT       = 8,
 	__NUM_GSMD_CALL
 };
 

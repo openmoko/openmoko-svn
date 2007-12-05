@@ -200,6 +200,17 @@ static int voicecall_get_stat_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(gcs), &gcs);
 }
 
+static int usock_ringing_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+        struct gsmd_user *gu = ctx;
+
+        /* If the incoming call answer/rejection succeeded then we
+        * know the modem isn't ringing and we update the state info.  */
+        if (cmd->ret == 0)
+                gu->gsmd->dev_state.ringing = 0;
+        return usock_cmd_cb(cmd, ctx, resp);
+}
+
 static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 				int len)
 {
@@ -223,7 +234,10 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 		break;
 	case GSMD_VOICECALL_HANGUP:
 		/* ATH0 is not supported by QC, we hope ATH is supported by everone */
-		cmd = atcmd_fill("ATH", 4, &usock_cmd_cb, gu, gph->id, NULL);
+		cmd = atcmd_fill("ATH", 4,
+                                gu->gsmd->dev_state.ringing ?
+                                usock_ringing_cb : usock_cmd_cb,
+                                gu, gph->id,NULL);
                 
                 /* This command is special because it needs to be sent to
                 * the MS even if a command is currently executing.  */
@@ -232,7 +246,7 @@ static int usock_rcv_voicecall(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
                 }
 		break;
 	case GSMD_VOICECALL_ANSWER:
-		cmd = atcmd_fill("ATA", 4, &usock_cmd_cb, gu, gph->id, NULL);
+                cmd = atcmd_fill("ATA", 4, &usock_ringing_cb, gu, gph->id,NULL);
 		break;
 	case GSMD_VOICECALL_DTMF:
 		if (len < sizeof(*gph) + sizeof(*gd))

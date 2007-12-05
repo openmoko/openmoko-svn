@@ -404,7 +404,7 @@ static int ml_parse(const char *buf, int len, void *ctx)
 
 		/* FIXME: handling of those special commands in response to
 		 * ATD / ATA */
-		if (!strncmp(buf, "NO CARRIER", 11) ||
+		if (!strncmp(buf, "NO CARRIER", 10) ||
 		    ((g->flags & GSMD_FLAG_V0) && buf[0] == '3')) {
 			/* Part of Case 'D' */
 			goto final_cb;
