@@ -1,6 +1,3 @@
-arm-atag-kexec.patch
-asoc-platform-hw_init-pcm_emulation-fix.patch
-asoc-kconfig-fix.patch
 asoc-neo1973_wm8753-power.patch
 missing_defs.patch
 openmoko-logo.patch
@@ -37,7 +34,7 @@ ts0710.patch
 s3c2410-qt2410-buttons.patch
 config-nr-tty-devices.patch
 hxd8-core.patch
-s3c2410_fb-truecolor.patch
+# s3c2410_fb-truecolor.patch evaluate
 s3c2440-nand-disable-hwecc.patch
 hxd8-tsl256x.patch
 pcf50633.patch
@@ -45,10 +42,7 @@ smedia-glamo.patch
 s3c24xx-nand-largepage.patch
 s3c2442b-cpuid.patch
 gta02-core.patch
-s3c2410-nand-include-fix.patch
-s3c2410-udc-include-fix.patch
 neo1973-soc-include-fix.patch
 explicitly-link-notes-section.patch
-fix-s3c2410fb-register-access.patch
 lis302dl.patch
 gta02-leds.patch
