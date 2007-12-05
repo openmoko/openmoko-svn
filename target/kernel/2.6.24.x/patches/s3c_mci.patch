@@ -75,7 +75,7 @@ Index: linux-2.6/drivers/mmc/host/mmc_debug.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/mmc/host/mmc_debug.c
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,57 @@
 +/*
 + *  linux/drivers/mmc/mmc_debug.c
 + *
@@ -124,15 +124,11 @@ Index: linux-2.6/drivers/mmc/host/mmc_debug.c
 +char *mmc_err2str(int err)
 +{
 +	switch(err) {
-+		case MMC_ERR_NONE:	return "OK";
-+		case MMC_ERR_TIMEOUT:	return "TIMEOUT";
-+		case MMC_ERR_BADCRC: 	return "BADCRC";
-+		case MMC_ERR_FIFO: 	return "FIFO";
-+		case MMC_ERR_FAILED: 	return "FAILED";
-+		case MMC_ERR_INVALID: 	return "INVALID";
-+		case MMC_ERR_BUSY:	return "BUSY";
-+		case MMC_ERR_DMA:	return "DMA";
-+		case MMC_ERR_CANCELED:	return "CANCELED";
++		case 0:	return "OK";
++		case -ETIMEDOUT:	return "TIMEOUT";
++		case -EILSEQ: 		return "BADCRC";
++		case -EINVAL: 		return "EINVAL";
++		case -ENOMEDIUM: 	return "NOMEDIUM";
 +		default: return "UNKNOWN";
 +	}
 +}
@@ -284,7 +280,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	if (!cmd)
 +		return;
 +
-+	if (cmd->error == MMC_ERR_NONE) {
++	if (cmd->error == 0) {
 +
 +		dbg(host, dbglvl, "CMD[OK] %s R0:0x%08x\n",
 +			host->dbgmsg_cmd, cmd->resp[0]);
@@ -297,7 +293,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	if (!cmd->data)
 +		return;
 +
-+	if (cmd->data->error == MMC_ERR_NONE) {
++	if (cmd->data->error == 0) {
 +		dbg(host, dbglvl, "DAT[%s] %s\n",
 +			mmc_err2str(cmd->data->error), host->dbgmsg_dat);
 +	} else {
@@ -356,7 +352,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	sg = &host->mrq->data->sg[host->pio_sgptr];
 +
 +	*words	= sg->length >> 2;
-+	*pointer= page_address(sg->page) + sg->offset;
++	*pointer= page_address(sg_page(sg)) + sg->offset;
 +
 +	host->pio_sgptr++;
 +
@@ -488,7 +484,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +				(host->pio_active == XFER_READ)?"read":"write",
 +				host->pio_count, host->pio_words);
 +
-+			host->mrq->data->error = MMC_ERR_DMA;
++			host->mrq->data->error = -EIO;
 +		}
 +
 +		disable_irq(host->irq);
@@ -585,7 +581,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	}
 +
 +	if (mci_csta & S3C2410_SDICMDSTAT_CMDTIMEOUT) {
-+		cmd->error = MMC_ERR_TIMEOUT;
++		cmd->error = -ETIMEDOUT;
 +		host->status = "error: command timeout";
 +		goto fail_transfer;
 +	}
@@ -601,7 +597,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	if (mci_csta & S3C2410_SDICMDSTAT_CRCFAIL) {
 +		if (cmd->flags & MMC_RSP_CRC) {
-+			cmd->error = MMC_ERR_BADCRC;
++			cmd->error = -EILSEQ;
 +			host->status = "error: bad command crc";
 +			goto fail_transfer;
 +		}
@@ -630,32 +626,32 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	/* Check for FIFO failure */
 +	if (host->is2440) {
 +		if (mci_fsta & S3C2440_SDIFSTA_FIFOFAIL) {
-+			host->mrq->data->error = MMC_ERR_FIFO;
++			host->mrq->data->error = -EIO;
 +			host->status = "error: 2440 fifo failure";
 +			goto fail_transfer;
 +		}
 +	} else {
 +		if (mci_dsta & S3C2410_SDIDSTA_FIFOFAIL) {
-+			cmd->data->error = MMC_ERR_FIFO;
++			cmd->data->error = -EIO;
 +			host->status = "error:  fifo failure";
 +			goto fail_transfer;
 +		}
 +	}
 +
 +	if (mci_dsta & S3C2410_SDIDSTA_RXCRCFAIL) {
-+		cmd->data->error = MMC_ERR_BADCRC;
++		cmd->data->error = -EILSEQ;
 +		host->status = "error: bad data crc (outgoing)";
 +		goto fail_transfer;
 +	}
 +
 +	if (mci_dsta & S3C2410_SDIDSTA_CRCFAIL) {
-+		cmd->data->error = MMC_ERR_BADCRC;
++		cmd->data->error = -EIO;
 +		host->status = "error: bad data crc (incoming)";
 +		goto fail_transfer;
 +	}
 +
 +	if (mci_dsta & S3C2410_SDIDSTA_DATATIMEOUT) {
-+		cmd->data->error = MMC_ERR_TIMEOUT;
++		cmd->data->error = -ETIMEDOUT;
 +		host->status = "error: data timeout";
 +		goto fail_transfer;
 +	}
@@ -766,7 +762,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +
 +fail_request:
-+	host->mrq->data->error = MMC_ERR_DMA;
++	host->mrq->data->error = -EIO;
 +	host->complete_what = COMPLETION_FINALIZE;
 +	writel(0, host->base + host->sdiimsk);
 +	goto out;
@@ -785,8 +781,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +	if (!mrq)
 +		return;
 +
-+	if (cmd->data && (cmd->error == MMC_ERR_NONE) &&
-+		  (cmd->data->error == MMC_ERR_NONE)) {
++	if (cmd->data && (cmd->error == 0) &&
++		  (cmd->data->error == 0)) {
 +
 +		if (host->dodma && (!host->dma_complete)) {
 +			dbg(host, dbg_dma, "DMA Missing!\n");
@@ -835,7 +831,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	// Calulate the amout of bytes transfer, but only if there was
 +	// no error
-+	if (mrq->data->error == MMC_ERR_NONE) {
++	if (mrq->data->error == 0) {
 +		mrq->data->bytes_xfered =
 +			(mrq->data->blocks * mrq->data->blksz);
 +	} else {
@@ -844,7 +840,7 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +
 +	// If we had an error while transfering data we flush the
 +	// DMA channel and the fifo to clear out any garbage
-+	if (mrq->data->error != MMC_ERR_NONE) {
++	if (mrq->data->error) {
 +		if (host->dodma)
 +			s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_FLUSH);
 +
@@ -1104,8 +1100,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		host->dcnt++;
 +
 +		if (res) {
-+			cmd->error = MMC_ERR_DMA;
-+			cmd->data->error = MMC_ERR_DMA;
++			cmd->error = -EIO;
++			cmd->data->error = -EIO;
 +
 +			mmc_request_done(mmc, mrq);
 +			return;
@@ -1119,8 +1115,8 @@ Index: linux-2.6/drivers/mmc/host/s3cmci.c
 +		}
 +
 +		if (res) {
-+			cmd->error = MMC_ERR_DMA;
-+			cmd->data->error = MMC_ERR_DMA;
++			cmd->error = -EIO;
++			cmd->data->error = -EIO;
 +
 +			mmc_request_done(mmc, mrq);
 +			return;
