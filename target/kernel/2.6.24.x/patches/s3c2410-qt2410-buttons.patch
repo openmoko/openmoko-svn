@@ -1,8 +1,8 @@
-Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-qt2410.c
+Index: linux-2.6/arch/arm/mach-s3c2410/mach-qt2410.c
 ===================================================================
---- linux-2.6.21-moko.orig/arch/arm/mach-s3c2410/mach-qt2410.c
-+++ linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-qt2410.c
-@@ -408,6 +408,24 @@
+--- linux-2.6.orig/arch/arm/mach-s3c2410/mach-qt2410.c
++++ linux-2.6/arch/arm/mach-s3c2410/mach-qt2410.c
+@@ -331,6 +331,24 @@
  	.ocr_avail 	= MMC_VDD_32_33,
  };
  
@@ -27,11 +27,11 @@ Index: linux-2.6.21-moko/arch/arm/mach-s3c2410/mach-qt2410.c
  static void __init qt2410_map_io(void)
  {
  	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-Index: linux-2.6.21-moko/drivers/input/keyboard/Kconfig
+Index: linux-2.6/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/input/keyboard/Kconfig
-+++ linux-2.6.21-moko/drivers/input/keyboard/Kconfig
-@@ -240,5 +240,10 @@
+--- linux-2.6.orig/drivers/input/keyboard/Kconfig
++++ linux-2.6/drivers/input/keyboard/Kconfig
+@@ -304,5 +304,10 @@
  	  To compile this driver as a module, choose M here: the
  	  module will be called gta01kbd.
  
@@ -42,11 +42,11 @@ Index: linux-2.6.21-moko/drivers/input/keyboard/Kconfig
 +
  
  endif
-Index: linux-2.6.21-moko/drivers/input/keyboard/Makefile
+Index: linux-2.6/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/input/keyboard/Makefile
-+++ linux-2.6.21-moko/drivers/input/keyboard/Makefile
-@@ -14,6 +14,7 @@
+--- linux-2.6.orig/drivers/input/keyboard/Makefile
++++ linux-2.6/drivers/input/keyboard/Makefile
+@@ -15,6 +15,7 @@
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
  obj-$(CONFIG_KEYBOARD_CORGI)		+= corgikbd.o
  obj-$(CONFIG_KEYBOARD_GTA01)		+= gta01kbd.o
@@ -54,13 +54,13 @@ Index: linux-2.6.21-moko/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6.21-moko/drivers/input/keyboard/qt2410kbd.c
+Index: linux-2.6/drivers/input/keyboard/qt2410kbd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/drivers/input/keyboard/qt2410kbd.c
++++ linux-2.6/drivers/input/keyboard/qt2410kbd.c
 @@ -0,0 +1,218 @@
 +/*
-+ * Keyboard driver for Armzone QT2410 
++ * Keyboard driver for Armzone QT2410
 + *
 + * (C) 2006 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
@@ -200,8 +200,8 @@ Index: linux-2.6.21-moko/drivers/input/keyboard/qt2410kbd.c
 +
 +	s3c2410_gpio_cfgpin(S3C2410_GPF0, S3C2410_GPF0_EINT0);
 +	if (request_irq(irq_911, gta01kbd_interrupt,
-+			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
-+			"qt2410kbd_eint0", gta01kbd))
++			IRQF_DISABLED | IRQF_TRIGGER_RISING |
++			IRQF_TRIGGER_FALLING, "qt2410kbd_eint0", gta01kbd))
 +		printk(KERN_WARNING "gta01kbd: Can't get IRQ\n");
 +	enable_irq_wake(irq_911);
 +

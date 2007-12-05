@@ -1,9 +1,9 @@
 This is the PCF50606 power management unit driver for FIC GTA01
 
-Index: linux-2.6.22/drivers/i2c/chips/pcf50606.c
+Index: linux-2.6/drivers/i2c/chips/pcf50606.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/drivers/i2c/chips/pcf50606.c
++++ linux-2.6/drivers/i2c/chips/pcf50606.c
 @@ -0,0 +1,1929 @@
 +/* Philips PCF50606 Power Management Unit (PMU) driver
 + *
@@ -1643,7 +1643,7 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50606.c
 +	reg_write(data, PCF50606_REG_INT2M, 0x00);
 +	reg_write(data, PCF50606_REG_INT3M, PCF50606_INT3_TSCPRES);
 +
-+	err = request_irq(irq, pcf50606_irq, SA_INTERRUPT,
++	err = request_irq(irq, pcf50606_irq, IRQF_DISABLED,
 +			  "pcf50606", data);
 +	if (err < 0)
 +		goto exit_input;
@@ -1934,10 +1934,10 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50606.c
 +
 +module_init(pcf50606_init);
 +module_exit(pcf50606_exit);
-Index: linux-2.6.22/drivers/i2c/chips/pcf50606.h
+Index: linux-2.6/drivers/i2c/chips/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/drivers/i2c/chips/pcf50606.h
++++ linux-2.6/drivers/i2c/chips/pcf50606.h
 @@ -0,0 +1,302 @@
 +#ifndef _PCF50606_H
 +#define _PCF50606_H
@@ -2241,10 +2241,10 @@ Index: linux-2.6.22/drivers/i2c/chips/pcf50606.h
 +
 +#endif /* _PCF50606_H */
 +
-Index: linux-2.6.22/drivers/i2c/chips/Kconfig
+Index: linux-2.6/drivers/i2c/chips/Kconfig
 ===================================================================
---- linux-2.6.22.orig/drivers/i2c/chips/Kconfig
-+++ linux-2.6.22/drivers/i2c/chips/Kconfig
+--- linux-2.6.orig/drivers/i2c/chips/Kconfig
++++ linux-2.6/drivers/i2c/chips/Kconfig
 @@ -51,6 +51,17 @@
  	  This driver can also be built as a module.  If so, the module
  	  will be called eeprom.
@@ -2263,10 +2263,10 @@ Index: linux-2.6.22/drivers/i2c/chips/Kconfig
  config SENSORS_PCF8574
  	tristate "Philips PCF8574 and PCF8574A"
  	depends on EXPERIMENTAL
-Index: linux-2.6.22/drivers/i2c/chips/Makefile
+Index: linux-2.6/drivers/i2c/chips/Makefile
 ===================================================================
---- linux-2.6.22.orig/drivers/i2c/chips/Makefile
-+++ linux-2.6.22/drivers/i2c/chips/Makefile
+--- linux-2.6.orig/drivers/i2c/chips/Makefile
++++ linux-2.6/drivers/i2c/chips/Makefile
 @@ -9,6 +9,7 @@
  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
  obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
@@ -2275,11 +2275,11 @@ Index: linux-2.6.22/drivers/i2c/chips/Makefile
  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
  obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
-Index: linux-2.6.22/include/linux/i2c-id.h
+Index: linux-2.6/include/linux/i2c-id.h
 ===================================================================
---- linux-2.6.22.orig/include/linux/i2c-id.h
-+++ linux-2.6.22/include/linux/i2c-id.h
-@@ -161,6 +161,7 @@
+--- linux-2.6.orig/include/linux/i2c-id.h
++++ linux-2.6/include/linux/i2c-id.h
+@@ -163,6 +163,7 @@
  #define I2C_DRIVERID_FSCHER 1046
  #define I2C_DRIVERID_W83L785TS 1047
  #define I2C_DRIVERID_OV7670 1048	/* Omnivision 7670 camera */
@@ -2287,10 +2287,10 @@ Index: linux-2.6.22/include/linux/i2c-id.h
  
  /*
   * ---- Adapter types ----------------------------------------------------
-Index: linux-2.6.22/include/linux/pcf50606.h
+Index: linux-2.6/include/linux/pcf50606.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/include/linux/pcf50606.h
++++ linux-2.6/include/linux/pcf50606.h
 @@ -0,0 +1,104 @@
 +#ifndef _LINUX_PCF50606_H
 +#define _LINUX_PCF50606_H

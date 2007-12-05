@@ -625,8 +625,8 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +	s3c2410_gpio_setpin(GTA01_GPIO_LCD_RESET, 1);
 +
 +	set_irq_type(GTA02_IRQ_MODEM, IRQT_RISING);
-+	request_irq(GTA02_IRQ_MODEM, gta02_modem_irq,
-+		    IRQF_TRIGGER_RISING, "modem", NULL);
++	request_irq(GTA02_IRQ_MODEM, gta02_modem_irq, IRQF_DISABLED, "modem",
++		    NULL);
 +	enable_irq_wake(GTA02_IRQ_MODEM);
 +}
 +

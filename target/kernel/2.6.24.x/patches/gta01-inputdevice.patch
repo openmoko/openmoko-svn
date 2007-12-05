@@ -1,12 +1,12 @@
 This provides support for the GTA01 keyboard
 
-Index: linux-2.6.21-moko/drivers/input/keyboard/Kconfig
+Index: linux-2.6/drivers/input/keyboard/Kconfig
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/input/keyboard/Kconfig
-+++ linux-2.6.21-moko/drivers/input/keyboard/Kconfig
-@@ -229,4 +229,16 @@
+--- linux-2.6.orig/drivers/input/keyboard/Kconfig
++++ linux-2.6/drivers/input/keyboard/Kconfig
+@@ -293,4 +293,16 @@
  	  To compile this driver as a module, choose M here: the
- 	  module will be called gpio-keys.
+ 	  module will be called bf54x-keys.
  
 +config KEYBOARD_GTA01
 +	tristate "FIC Neo1973 (GTA01) buttons"
@@ -21,11 +21,11 @@ Index: linux-2.6.21-moko/drivers/input/keyboard/Kconfig
 +
 +
  endif
-Index: linux-2.6.21-moko/drivers/input/keyboard/Makefile
+Index: linux-2.6/drivers/input/keyboard/Makefile
 ===================================================================
---- linux-2.6.21-moko.orig/drivers/input/keyboard/Makefile
-+++ linux-2.6.21-moko/drivers/input/keyboard/Makefile
-@@ -13,6 +13,7 @@
+--- linux-2.6.orig/drivers/input/keyboard/Makefile
++++ linux-2.6/drivers/input/keyboard/Makefile
+@@ -14,6 +14,7 @@
  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
  obj-$(CONFIG_KEYBOARD_STOWAWAY)		+= stowaway.o
  obj-$(CONFIG_KEYBOARD_CORGI)		+= corgikbd.o
@@ -33,11 +33,11 @@ Index: linux-2.6.21-moko/drivers/input/keyboard/Makefile
  obj-$(CONFIG_KEYBOARD_SPITZ)		+= spitzkbd.o
  obj-$(CONFIG_KEYBOARD_HIL)		+= hil_kbd.o
  obj-$(CONFIG_KEYBOARD_HIL_OLD)		+= hilkbd.o
-Index: linux-2.6.21-moko/drivers/input/keyboard/gta01kbd.c
+Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21-moko/drivers/input/keyboard/gta01kbd.c
-@@ -0,0 +1,249 @@
++++ linux-2.6/drivers/input/keyboard/gta01kbd.c
+@@ -0,0 +1,250 @@
 +/*
 + * Keyboard driver for FIC GTA01 (Neo1973) GSM phone
 + *
@@ -202,8 +202,9 @@ Index: linux-2.6.21-moko/drivers/input/keyboard/gta01kbd.c
 +	input_register_device(gta01kbd->input);
 +
 +	if (request_irq(irq_aux, gta01kbd_aux_irq,
-+			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
-+			"Neo1973 AUX button", gta01kbd)) {
++			IRQF_DISABLED | IRQF_TRIGGER_RISING |
++			IRQF_TRIGGER_FALLING, "Neo1973 AUX button",
++			gta01kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_aux);
 +		goto out_aux;
 +	}
