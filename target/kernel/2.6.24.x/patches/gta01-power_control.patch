@@ -1,16 +1,16 @@
-Index: linux-2.6.21.3-moko/arch/arm/common/Makefile
+Index: linux-2.6/arch/arm/common/Makefile
 ===================================================================
---- linux-2.6.21.3-moko.orig/arch/arm/common/Makefile
-+++ linux-2.6.21.3-moko/arch/arm/common/Makefile
-@@ -17,3 +17,4 @@
- obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
+--- linux-2.6.orig/arch/arm/common/Makefile
++++ linux-2.6/arch/arm/common/Makefile
+@@ -18,3 +18,4 @@
  obj-$(CONFIG_ARCH_IXP2000)	+= uengine.o
  obj-$(CONFIG_ARCH_IXP23XX)	+= uengine.o
+ obj-$(CONFIG_PCI_HOST_ITE8152)  += it8152.o
 +obj-$(CONFIG_MACH_NEO1973_GTA01)+= gta01_pm_gsm.o gta01_pm_gps.o gta01_pm_bt.o
-Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gps.c
+Index: linux-2.6/arch/arm/common/gta01_pm_gps.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gps.c
++++ linux-2.6/arch/arm/common/gta01_pm_gps.c
 @@ -0,0 +1,558 @@
 +/*
 + * GPS Power Management code for the FIC Neo1973 GSM Phone
@@ -570,10 +570,10 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gps.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GPS Power Management");
-Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
+Index: linux-2.6/arch/arm/common/gta01_pm_gsm.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
++++ linux-2.6/arch/arm/common/gta01_pm_gsm.c
 @@ -0,0 +1,217 @@
 +/*
 + * GSM Management code for the FIC Neo1973 GSM Phone
@@ -792,10 +792,10 @@ Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_gsm.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC GTA01 (Neo1973) GSM Management");
-Index: linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
+Index: linux-2.6/arch/arm/common/gta01_pm_bt.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.21.3-moko/arch/arm/common/gta01_pm_bt.c
++++ linux-2.6/arch/arm/common/gta01_pm_bt.c
 @@ -0,0 +1,154 @@
 +/*
 + * Bluetooth PM code for the FIC Neo1973 GSM Phone

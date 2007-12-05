@@ -1,9 +1,9 @@
 This is the latest S3C MMC/SD driver by Thomas Kleffel
 
-Index: linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h
+Index: linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
 ===================================================================
---- linux-2.6.22.1.orig/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-07-19 01:10:32.537282965 +0200
-+++ linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h	2007-07-19 01:10:38.565626502 +0200
+--- linux-2.6.orig/include/asm-arm/arch-s3c2410/regs-sdi.h
++++ linux-2.6/include/asm-arm/arch-s3c2410/regs-sdi.h
 @@ -28,9 +28,15 @@
  #define S3C2410_SDIDCNT               (0x30)
  #define S3C2410_SDIDSTA               (0x34)
@@ -71,10 +71,10 @@ Index: linux-2.6.22.1/include/asm-arm/arch-s3c2410/regs-sdi.h
  #define S3C2410_SDIFSTA_RFLAST         (1<<9)
  #define S3C2410_SDIFSTA_RFFULL         (1<<8)
  #define S3C2410_SDIFSTA_RFHALF         (1<<7)
-Index: linux-2.6.22.1/drivers/mmc/host/mmc_debug.c
+Index: linux-2.6/drivers/mmc/host/mmc_debug.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22.1/drivers/mmc/host/mmc_debug.c	2007-07-19 01:15:25.233962797 +0200
+--- /dev/null
++++ linux-2.6/drivers/mmc/host/mmc_debug.c
 @@ -0,0 +1,61 @@
 +/*
 + *  linux/drivers/mmc/mmc_debug.c
@@ -137,10 +137,10 @@ Index: linux-2.6.22.1/drivers/mmc/host/mmc_debug.c
 +	}
 +}
 +EXPORT_SYMBOL(mmc_err2str);
-Index: linux-2.6.22.1/drivers/mmc/host/mmc_debug.h
+Index: linux-2.6/drivers/mmc/host/mmc_debug.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22.1/drivers/mmc/host/mmc_debug.h	2007-07-19 01:10:38.597628323 +0200
+--- /dev/null
++++ linux-2.6/drivers/mmc/host/mmc_debug.h
 @@ -0,0 +1,7 @@
 +#ifndef MMC_DEBUG_H
 +#define MMC_DEBUG_H
@@ -149,10 +149,10 @@ Index: linux-2.6.22.1/drivers/mmc/host/mmc_debug.h
 +char *mmc_err2str(int err);
 +
 +#endif /* MMC_DEBUG_H */
-Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.c
+Index: linux-2.6/drivers/mmc/host/s3cmci.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22.1/drivers/mmc/host/s3cmci.c	2007-07-19 01:13:22.862989265 +0200
+--- /dev/null
++++ linux-2.6/drivers/mmc/host/s3cmci.c
 @@ -0,0 +1,1341 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1495,10 +1495,10 @@ Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.c
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Thomas Kleffel <tk@maintech.de>");
 +
-Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.h
+Index: linux-2.6/drivers/mmc/host/s3cmci.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.22.1/drivers/mmc/host/s3cmci.h	2007-07-19 01:13:22.334959182 +0200
+--- /dev/null
++++ linux-2.6/drivers/mmc/host/s3cmci.h
 @@ -0,0 +1,71 @@
 +/*
 + *  linux/drivers/mmc/s3cmci.h - Samsung S3C MCI driver
@@ -1571,13 +1571,13 @@ Index: linux-2.6.22.1/drivers/mmc/host/s3cmci.h
 +	unsigned int		ccnt, dcnt;
 +	struct tasklet_struct	pio_tasklet;
 +};
-Index: linux-2.6.22.1/drivers/mmc/host/Kconfig
+Index: linux-2.6/drivers/mmc/host/Kconfig
 ===================================================================
---- linux-2.6.22.1.orig/drivers/mmc/host/Kconfig	2007-07-19 01:10:43.497907574 +0200
-+++ linux-2.6.22.1/drivers/mmc/host/Kconfig	2007-07-19 01:11:57.214108422 +0200
-@@ -100,3 +100,14 @@
-           To compile this driver as a module, choose M here: the
- 	  module will be called tifm_sd.
+--- linux-2.6.orig/drivers/mmc/host/Kconfig
++++ linux-2.6/drivers/mmc/host/Kconfig
+@@ -130,3 +130,14 @@
+ 
+ 	  If unsure, or if your system has no SPI master driver, say N.
  
 +config MMC_S3C
 +	tristate "Samsung S3C SD/MMC Card Interface support"
@@ -1590,14 +1590,14 @@ Index: linux-2.6.22.1/drivers/mmc/host/Kconfig
 +
 +	  If unsure, say N.
 +
-Index: linux-2.6.22.1/drivers/mmc/host/Makefile
+Index: linux-2.6/drivers/mmc/host/Makefile
 ===================================================================
---- linux-2.6.22.1.orig/drivers/mmc/host/Makefile	2007-07-19 01:10:43.517908714 +0200
-+++ linux-2.6.22.1/drivers/mmc/host/Makefile	2007-07-19 01:11:07.043249347 +0200
-@@ -15,4 +15,6 @@
- obj-$(CONFIG_MMC_OMAP)		+= omap.o
+--- linux-2.6.orig/drivers/mmc/host/Makefile
++++ linux-2.6/drivers/mmc/host/Makefile
+@@ -17,4 +17,5 @@
  obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
  obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
+ obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
+-
 +obj-$(CONFIG_MMC_S3C)   	+= s3cmci.o
-+obj-$(CONFIG_MMC)			+= mmc_debug.o
- 
++obj-$(CONFIG_MMC)		+= mmc_debug.o

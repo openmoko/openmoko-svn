@@ -5,22 +5,23 @@ and optional additional usb/bluetooth mice that might be attached.
 
 Signed-off-by: Harald Welte <laforge@openmoko.org>
 
-Index: linux-2.6.17.14-fic4.test/drivers/input/mousedev.c
+Index: linux-2.6/drivers/input/mousedev.c
 ===================================================================
---- linux-2.6.17.14-fic4.test.orig/drivers/input/mousedev.c	2007-02-09 13:47:15.000000000 +0100
-+++ linux-2.6.17.14-fic4.test/drivers/input/mousedev.c	2007-02-09 13:47:40.000000000 +0100
-@@ -689,12 +689,14 @@
- 		.evbit = { BIT(EV_KEY) | BIT(EV_REL) },
- 		.relbit = { BIT(REL_WHEEL) },
+--- linux-2.6.orig/drivers/input/mousedev.c
++++ linux-2.6/drivers/input/mousedev.c
+@@ -1009,6 +1009,7 @@
+ 		.evbit = { BIT_MASK(EV_KEY) | BIT_MASK(EV_REL) },
+ 		.relbit = { BIT_MASK(REL_WHEEL) },
  	},	/* A separate scrollwheel */
 +#if 0
  	{
- 		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
- 		.keybit = { [LONG(BTN_TOUCH)] = BIT(BTN_TOUCH) },
- 		.absbit = { BIT(ABS_X) | BIT(ABS_Y) },
- 	},	/* A tablet like device, at least touch detection, two absolute axes */
+ 		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
+ 				INPUT_DEVICE_ID_MATCH_KEYBIT |
+@@ -1018,6 +1019,7 @@
+ 		.absbit = { BIT_MASK(ABS_X) | BIT_MASK(ABS_Y) },
+ 	},	/* A tablet like device, at least touch detection,
+ 		   two absolute axes */
 +#endif
  	{
- 		.flags = INPUT_DEVICE_ID_MATCH_EVBIT | INPUT_DEVICE_ID_MATCH_KEYBIT | INPUT_DEVICE_ID_MATCH_ABSBIT,
- 		.evbit = { BIT(EV_KEY) | BIT(EV_ABS) },
+ 		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
+ 				INPUT_DEVICE_ID_MATCH_KEYBIT |

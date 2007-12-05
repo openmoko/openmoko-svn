@@ -2,10 +2,10 @@ This patch adds driver support for the FIC GTA01 vibrator device.  The driver
 uses the existing LED class driver framework, since there's a lot of
 similarity between the LED and the vibrator function.
 
-Index: linux-2.6.23/drivers/leds/leds-gta01.c
+Index: linux-2.6/drivers/leds/leds-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23/drivers/leds/leds-gta01.c
++++ linux-2.6/drivers/leds/leds-gta01.c
 @@ -0,0 +1,177 @@
 +/*
 + * LED driver for the FIC GTA01 (Neo1973) GSM Phone Vibrator
@@ -184,10 +184,10 @@ Index: linux-2.6.23/drivers/leds/leds-gta01.c
 +
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("FIC GTA01 Vibrator driver");
-Index: linux-2.6.23/drivers/leds/Kconfig
+Index: linux-2.6/drivers/leds/Kconfig
 ===================================================================
---- linux-2.6.23.orig/drivers/leds/Kconfig
-+++ linux-2.6.23/drivers/leds/Kconfig
+--- linux-2.6.orig/drivers/leds/Kconfig
++++ linux-2.6/drivers/leds/Kconfig
 @@ -57,7 +57,7 @@
  
  config LEDS_S3C24XX
@@ -197,9 +197,9 @@ Index: linux-2.6.23/drivers/leds/Kconfig
  	help
  	  This option enables support for LEDs connected to GPIO lines
  	  on Samsung S3C24XX series CPUs, such as the S3C2410 and S3C2440.
-@@ -101,6 +101,12 @@
- 	  outputs. To be useful the particular board must have LEDs
- 	  and they must be connected to the GPIO lines.
+@@ -114,6 +114,12 @@
+ 	help
+ 	  This option enables support for the CM-X270 LEDs.
  
 +config LEDS_GTA01
 +	tristate "Vibrator Support for the FIC Neo1973 (GTA01) Vibrator"
@@ -210,14 +210,14 @@ Index: linux-2.6.23/drivers/leds/Kconfig
  comment "LED Triggers"
  
  config LEDS_TRIGGERS
-Index: linux-2.6.23/drivers/leds/Makefile
+Index: linux-2.6/drivers/leds/Makefile
 ===================================================================
---- linux-2.6.23.orig/drivers/leds/Makefile
-+++ linux-2.6.23/drivers/leds/Makefile
-@@ -17,6 +17,7 @@
- obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
- obj-$(CONFIG_LEDS_COBALT)		+= leds-cobalt.o
+--- linux-2.6.orig/drivers/leds/Makefile
++++ linux-2.6/drivers/leds/Makefile
+@@ -19,6 +19,7 @@
+ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
  obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
+ obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
 +obj-$(CONFIG_LEDS_GTA01)		+= leds-gta01.o
  
  # LED Triggers
