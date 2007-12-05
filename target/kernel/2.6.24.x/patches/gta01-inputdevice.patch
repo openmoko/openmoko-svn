@@ -37,7 +37,7 @@ Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/input/keyboard/gta01kbd.c
-@@ -0,0 +1,250 @@
+@@ -0,0 +1,249 @@
 +/*
 + * Keyboard driver for FIC GTA01 (Neo1973) GSM phone
 + *
@@ -201,25 +201,24 @@ Index: linux-2.6/drivers/input/keyboard/gta01kbd.c
 +
 +	input_register_device(gta01kbd->input);
 +
-+	if (request_irq(irq_aux, gta01kbd_aux_irq,
-+			IRQF_DISABLED | IRQF_TRIGGER_RISING |
-+			IRQF_TRIGGER_FALLING, "Neo1973 AUX button",
-+			gta01kbd)) {
++	if (request_irq(irq_aux, gta01kbd_aux_irq, IRQF_DISABLED |
++			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++			"Neo1973 AUX button", gta01kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_aux);
 +		goto out_aux;
 +	}
 +	enable_irq_wake(irq_aux);
 +
-+	if (request_irq(irq_hold, gta01kbd_hold_irq,
-+			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
++	if (request_irq(irq_hold, gta01kbd_hold_irq, IRQF_DISABLED |
++			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 +			"Neo1973 HOLD button", gta01kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_hold);
 +		goto out_hold;
 +	}
 +	enable_irq_wake(irq_hold);
 +
-+	if (request_irq(irq_jack, gta01kbd_headphone_irq,
-+			SA_INTERRUPT | SA_TRIGGER_RISING | SA_TRIGGER_FALLING,
++	if (request_irq(irq_jack, gta01kbd_headphone_irq, IRQF_DISABLED |
++			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 +			"Neo1973 Headphone Jack", gta01kbd)) {
 +		dev_err(&pdev->dev, "Can't get IRQ %u\n", irq_jack);
 +		goto out_jack;
