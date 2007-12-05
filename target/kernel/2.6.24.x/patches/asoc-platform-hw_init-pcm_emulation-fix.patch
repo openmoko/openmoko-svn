@@ -1,0 +1,45 @@
+Since the PCM emulation can call multiple times to hw_setup(), but we 
+can only once allocate/request the DMA channel, we have to handle
+this gracefully.
+
+Signed-off-by: Harald Welte <laforge@openmoko.org>
+
+Index: linux-2.6.23-rc8/sound/soc/s3c24xx/s3c24xx-pcm.c
+===================================================================
+--- linux-2.6.23-rc8.orig/sound/soc/s3c24xx/s3c24xx-pcm.c
++++ linux-2.6.23-rc8/sound/soc/s3c24xx/s3c24xx-pcm.c
+@@ -158,18 +158,22 @@
+ 	if (!dma)
+ 		return 0;
+ 
+-	/* prepare DMA */
+-	prtd->params = dma;
+-
+-	DBG("params %p, client %p, channel %d\n", prtd->params,
+-		prtd->params->client, prtd->params->channel);
+-
+-	ret = s3c2410_dma_request(prtd->params->channel,
+-				  prtd->params->client, NULL);
+-
+-	if (ret) {
+-		DBG(KERN_ERR "failed to get dma channel\n");
+-		return ret;
++	/* this may get called several times by oss emulation
++	 * with different params -HW */
++	if (prtd->params == NULL) {
++		/* prepare DMA */
++		prtd->params = dma;
++
++		DBG("params %p, client %p, channel %d\n", prtd->params,
++			prtd->params->client, prtd->params->channel);
++
++		ret = s3c2410_dma_request(prtd->params->channel,
++					  prtd->params->client, NULL);
++
++		if (ret) {
++			DBG(KERN_ERR "failed to get dma channel\n");
++			return ret;
++		}
+ 	}
+ 
+ 	/* channel needs configuring for mem=>device, increment memory addr,

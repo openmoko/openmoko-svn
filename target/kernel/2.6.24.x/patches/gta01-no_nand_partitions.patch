@@ -1,0 +1,80 @@
+--- linux-2.6.22.1.orig/arch/arm/mach-s3c2410/mach-gta01.c
++++ linux-2.6.22.1/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -336,40 +336,10 @@
+ 	&s3c_device_ts,
+ };
+ 
+-static struct mtd_partition gta01_nand_part[] = {
+-	[0] = {
+-		.name	= "U-Boot",
+-		.size	= 0x30000,
+-		.offset	= 0,
+-	},
+-	[1] = {
+-		.name	= "U-Boot environment",
+-		.offset = 0x30000,
+-		.size	= 0x4000,
+-	},
+-	[2] = {
+-		.name	= "kernel",
+-		.offset = 0x34000,
+-		.size	= SZ_2M,
+-	},
+-	[3] = {
+-		.name	= "initrd",
+-		.offset	= 0x234000,
+-		.size	= SZ_4M,
+-	},
+-	[4] = {
+-		.name	= "jffs2",
+-		.offset = 0x634000,
+-		.size	= 0x39cc000,
+-	},
+-};
+-
+ static struct s3c2410_nand_set gta01_nand_sets[] = {
+ 	[0] = {
+-		.name		= "NAND",
++		.name		= "neo1973-nand",
+ 		.nr_chips	= 1,
+-		.nr_partitions	= ARRAY_SIZE(gta01_nand_part),
+-		.partitions	= gta01_nand_part,
+ 	},
+ };
+ 
+--- linux-2.6.22.1.orig/drivers/mtd/nand/s3c2410.c
++++ linux-2.6.22.1/drivers/mtd/nand/s3c2410.c
+@@ -547,17 +547,31 @@
+ }
+ 
+ #ifdef CONFIG_MTD_PARTITIONS
++const char *part_probes[] = { "cmdlinepart", NULL };
+ static int s3c2410_nand_add_partition(struct s3c2410_nand_info *info,
+ 				      struct s3c2410_nand_mtd *mtd,
+ 				      struct s3c2410_nand_set *set)
+ {
++	struct mtd_partition *part_info;
++	int nr_part = 0;
++
+ 	if (set == NULL)
+ 		return add_mtd_device(&mtd->mtd);
+ 
+-	if (set->nr_partitions > 0 && set->partitions != NULL) {
+-		return add_mtd_partitions(&mtd->mtd, set->partitions, set->nr_partitions);
++	if (set->nr_partitions == 0) {
++		mtd->mtd.name = set->name;
++		nr_part = parse_mtd_partitions(&mtd->mtd, part_probes,
++						&part_info, 0);
++	} else {
++		if (set->nr_partitions > 0 && set->partitions != NULL) {
++			nr_part = set->nr_partitions;
++			part_info = set->partitions;
++		}
+ 	}
+ 
++	if (nr_part > 0 && part_info)
++		return add_mtd_partitions(&mtd->mtd, part_info, nr_part);
++
+ 	return add_mtd_device(&mtd->mtd);
+ }
+ #else

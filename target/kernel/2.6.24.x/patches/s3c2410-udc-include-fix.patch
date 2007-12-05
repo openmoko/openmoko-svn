@@ -1,0 +1,16 @@
+Index: linux-2.6.22/drivers/usb/gadget/s3c2410_udc.c
+===================================================================
+--- linux-2.6.22.orig/drivers/usb/gadget/s3c2410_udc.c
++++ linux-2.6.22/drivers/usb/gadget/s3c2410_udc.c
+@@ -54,8 +54,9 @@
+ #include <asm/arch/hardware.h>
+ #include <asm/arch/regs-clock.h>
+ #include <asm/arch/regs-gpio.h>
+-#include <asm/arch/regs-udc.h>
+-#include <asm/arch/udc.h>
++
++#include <asm/plat-s3c24xx/udc.h>
++#include <asm/plat-s3c24xx/regs-udc.h>
+ 
+ #include <asm/mach-types.h>
+ 
