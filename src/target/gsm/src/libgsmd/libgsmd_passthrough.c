@@ -83,7 +83,7 @@ int lgsm_passthrough(struct lgsm_handle *lh, const char *tx,
 	if (rc < sizeof(*rgmh) + rgmh->len)
 		return -EINVAL;
 
-	rx[(*rx_len)-1] = 0;
+	rx[--*rx_len] = 0;
 	if (rgmh->len < *rx_len)
 		*rx_len = rgmh->len;
 	memcpy(rx, rx_buf, *rx_len);
