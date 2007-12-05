@@ -1,34 +1,8 @@
-Index: linux-2.6.23-rc8/include/linux/mmc/core.h
+Index: linux-2.6/include/linux/mmc/mmc.h
 ===================================================================
---- linux-2.6.23-rc8.orig/include/linux/mmc/core.h
-+++ linux-2.6.23-rc8/include/linux/mmc/core.h
-@@ -54,12 +54,15 @@
- 	unsigned int		retries;	/* max number of retries */
- 	unsigned int		error;		/* command error */
- 
--#define MMC_ERR_NONE	0
--#define MMC_ERR_TIMEOUT	1
--#define MMC_ERR_BADCRC	2
--#define MMC_ERR_FIFO	3
--#define MMC_ERR_FAILED	4
--#define MMC_ERR_INVALID	5
-+#define MMC_ERR_NONE		0
-+#define MMC_ERR_TIMEOUT		1
-+#define MMC_ERR_BADCRC		2
-+#define MMC_ERR_FIFO		3
-+#define MMC_ERR_DMA		4
-+#define MMC_ERR_BUSY		5
-+#define MMC_ERR_FAILED		6
-+#define MMC_ERR_INVALID		7
-+#define MMC_ERR_CANCELED	8
- 
- 	struct mmc_data		*data;		/* data segment associated with cmd */
- 	struct mmc_request	*mrq;		/* associated request */
-Index: linux-2.6.23-rc8/include/linux/mmc/mmc.h
-===================================================================
---- linux-2.6.23-rc8.orig/include/linux/mmc/mmc.h
-+++ linux-2.6.23-rc8/include/linux/mmc/mmc.h
-@@ -78,6 +78,21 @@
+--- linux-2.6.orig/include/linux/mmc/mmc.h
++++ linux-2.6/include/linux/mmc/mmc.h
+@@ -80,6 +80,21 @@
  #define MMC_APP_CMD              55   /* ac   [31:16] RCA        R1  */
  #define MMC_GEN_CMD              56   /* adtc [0] RD/WR          R1  */
  
@@ -50,23 +24,10 @@ Index: linux-2.6.23-rc8/include/linux/mmc/mmc.h
  /*
   * MMC_SWITCH argument format:
   *
-@@ -90,6 +105,27 @@
+@@ -92,6 +107,14 @@
   */
  
  /*
-+ * SD_SWITCH argument format:
-+ *
-+ *      [31] Check (0) or switch (1)
-+ *      [30:24] Reserved (0)
-+ *      [23:20] Function group 6
-+ *      [19:16] Function group 5
-+ *      [15:12] Function group 4
-+ *      [11:8] Function group 3
-+ *      [7:4] Function group 2
-+ *      [3:0] Function group 1
-+ */
-+
-+/*
 + * SD_SEND_IF_COND argument format:
 + *
 + *	[31:12] Reserved (0)
@@ -75,10 +36,10 @@ Index: linux-2.6.23-rc8/include/linux/mmc/mmc.h
 + */
 +
 +/*
-   MMC status in R1
+   MMC status in R1, for native mode (SPI bits are different)
    Type
-   	e : error bit
-@@ -172,9 +208,30 @@
+ 	e : error bit
+@@ -197,9 +220,30 @@
  	u8  ecc;
  };
  
@@ -112,7 +73,7 @@ Index: linux-2.6.23-rc8/include/linux/mmc/mmc.h
  #define MMC_CARD_BUSY	0x80000000	/* Card Power up status bit */
  
  /*
-@@ -253,5 +310,19 @@
+@@ -280,5 +324,19 @@
  #define MMC_SWITCH_MODE_CLEAR_BITS	0x02	/* Clear bits which are 1 in value */
  #define MMC_SWITCH_MODE_WRITE_BYTE	0x03	/* Set target to value */
  
