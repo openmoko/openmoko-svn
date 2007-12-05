@@ -394,7 +394,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 +
 +	platform_device_register(&hxd8_pmu_dev);
 +
-+    platform_add_devices(hxd8_devices, ARRAY_SIZE(hxd8_devices));
++	platform_add_devices(hxd8_devices, ARRAY_SIZE(hxd8_devices));
 +
 +	s3c2410_pm_init();
 +}
