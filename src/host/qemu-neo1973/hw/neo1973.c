@@ -20,6 +20,7 @@
 #include "console.h"
 #include "usb.h"
 #include "net.h"
+#include "sd.h"
 
 #define neo_printf(format, ...)	\
     fprintf(stderr, "%s: " format, __FUNCTION__, ##__VA_ARGS__)
@@ -81,6 +82,7 @@ struct neo_board_s {
     i2c_slave *wm;
     i2c_slave *lcm;
     CharDriverState *modem;
+    CharDriverState *gps;
     QEMUTimer *modem_timer;
     qemu_irq *kbd_pic;
     const char *kernel;
@@ -106,7 +108,12 @@ static void neo_bl_intensity(int line, int level, void *opaque)
 
 static void neo_gpspwr_switch(void *opaque, int line, int level)
 {
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+
     neo_printf("GPS powered %s.\n", level ? "up" : "down");
+
+    if (s->gps)
+        gps_enable(s->gps, level);
 }
 
 static void neo_modem_rst_switch(void *opaque, int line, int level)
@@ -390,6 +397,13 @@ static void neo_gsm_setup(struct neo_board_s *s)
 #endif
 }
 
+static void neo_gps_setup(struct neo_board_s *s)
+{
+    s->gps = gps_antaris_serial_init();
+
+    s3c_uart_attach(s->cpu->uart[1], s->gps);
+}
+
 static void neo_reset(void *opaque)
 {
     struct neo_board_s *s = (struct neo_board_s *) opaque;
@@ -415,19 +429,16 @@ static const int gta01_ts_scale[6] = {
 };
 
 /* Board init.  */
-static void gta01_init(int ram_size, int vga_ram_size, const char *boot_device,
-                DisplayState *ds, const char *kernel_filename,
-                const char *kernel_cmdline, const char *initrd_filename,
-                const char *cpu_model)
+static struct neo_board_s *neo1973_init_common(int ram_size, DisplayState *ds,
+                const char *kernel_filename, const char *cpu_model,
+                struct sd_card_s *mmc)
 {
     struct neo_board_s *s = (struct neo_board_s *)
             qemu_mallocz(sizeof(struct neo_board_s));
-    int sd_idx = drive_get_index(IF_SD, 0, 0);
 
     s->ram = 0x08000000;
     s->kernel = kernel_filename;
-    if (sd_idx >= 0)
-        s->mmc = sd_init(drives_table[sd_idx].bdrv, 0);
+    s->mmc = mmc;
 
     /* Setup CPU & memory */
     if (ram_size < s->ram + S3C_SRAM_SIZE) {
@@ -468,10 +479,44 @@ static void gta01_init(int ram_size, int vga_ram_size, const char *boot_device,
     neo_reset(s);
 
     dpy_resize(ds, 480, 640);
+
+    return s;
+}
+
+static void gta01_init(int ram_size, int vga_ram_size,
+                const char *boot_device, DisplayState *ds,
+                const char *kernel_filename, const char *kernel_cmdline,
+                const char *initrd_filename, const char *cpu_model)
+{
+    int sd_idx = drive_get_index(IF_SD, 0, 0);
+    struct sd_card_s *sd = 0;
+
+    if (sd_idx >= 0)
+        sd = sd_init(drives_table[sd_idx].bdrv, 0);
+
+    neo1973_init_common(ram_size, ds, kernel_filename, cpu_model, sd);
+}
+
+static void gta02f_init(int ram_size, int vga_ram_size,
+                const char *boot_device, DisplayState *ds,
+                const char *kernel_filename, const char *kernel_cmdline,
+                const char *initrd_filename, const char *cpu_model)
+{
+    struct neo_board_s *neo;
+
+    neo = neo1973_init_common(ram_size, ds, kernel_filename, cpu_model, 0);
+
+    neo_gps_setup(neo);
 }
 
 QEMUMachine gta01_machine = {
     "gta01",
     "FIC Neo1973 rev GTA01 aka OpenMoko phone (S3C2410A)",
     gta01_init,
+};
+
+QEMUMachine gta02f_machine = {
+    "gta02fake",
+    "Paravirtual FIC Neo1973 rev GTA02 (S3C2410A)",
+    gta02f_init,
 };

@@ -8072,6 +8072,7 @@ static void register_machines(void)
     qemu_register_machine(&borzoipda_machine);
     qemu_register_machine(&terrierpda_machine);
     qemu_register_machine(&gta01_machine);
+    qemu_register_machine(&gta02f_machine);
     qemu_register_machine(&palmte_machine);
     qemu_register_machine(&lm3s811evb_machine);
     qemu_register_machine(&lm3s6965evb_machine);

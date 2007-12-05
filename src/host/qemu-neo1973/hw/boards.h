@@ -75,6 +75,7 @@ extern QEMUMachine terrierpda_machine;
 
 /* neo1973.c */
 extern QEMUMachine gta01_machine;
+extern QEMUMachine gta02f_machine;
 
 /* palm.c */
 extern QEMUMachine palmte_machine;
