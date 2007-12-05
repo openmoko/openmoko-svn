@@ -1,11 +1,11 @@
 This patch adds support for the FIC GTA01 machine type to the ARM port of
 the linux kernel.
 
-Index: linux-2.6.22/arch/arm/mach-s3c2410/Kconfig
+Index: linux-2.6/arch/arm/mach-s3c2410/Kconfig
 ===================================================================
---- linux-2.6.22.orig/arch/arm/mach-s3c2410/Kconfig
-+++ linux-2.6.22/arch/arm/mach-s3c2410/Kconfig
-@@ -110,5 +110,12 @@
+--- linux-2.6.orig/arch/arm/mach-s3c2410/Kconfig
++++ linux-2.6/arch/arm/mach-s3c2410/Kconfig
+@@ -116,5 +116,12 @@
  	help
  	   Say Y here if you are using the Armzone QT2410
  
@@ -18,20 +18,20 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/Kconfig
 +
  endmenu
  
-Index: linux-2.6.22/arch/arm/mach-s3c2410/Makefile
+Index: linux-2.6/arch/arm/mach-s3c2410/Makefile
 ===================================================================
---- linux-2.6.22.orig/arch/arm/mach-s3c2410/Makefile
-+++ linux-2.6.22/arch/arm/mach-s3c2410/Makefile
-@@ -29,3 +29,4 @@
+--- linux-2.6.orig/arch/arm/mach-s3c2410/Makefile
++++ linux-2.6/arch/arm/mach-s3c2410/Makefile
+@@ -30,3 +30,4 @@
  obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
  obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
  obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
 +obj-$(CONFIG_MACH_NEO1973_GTA01)+= mach-gta01.o
-Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
+Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,755 @@
++++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
+@@ -0,0 +1,760 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -309,24 +309,22 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
 +/* LCD driver info */
 +
 +/* Configuration for 480x640 toppoly TD028TTEC1 */
-+static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
-+	.regs	= {
-+		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
-+				  S3C2410_LCDCON1_TFT |
-+				  S3C2410_LCDCON1_CLKVAL(0x01),	/* HCLK/4 */
++static struct s3c2410fb_display gta01_displays[] __initdata =  {
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 480,
++		.height		= 640,
++		.xres		= 480,
++		.yres		= 640,
++		.bpp		= 16,
 +
-+		.lcdcon2	= S3C2410_LCDCON2_VBPD(1) |	/* 2 */
-+				  S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
-+				  S3C2410_LCDCON2_VFPD(15) |	/* 16 */
-+				  S3C2410_LCDCON2_VSPW(1),	/* 2 */
-+
-+		.lcdcon3	= S3C2410_LCDCON3_HBPD(7) |	/* 8 */
-+				  S3C2410_LCDCON3_HOZVAL(479) |	/* 480 */
-+				  S3C2410_LCDCON3_HFPD(103),	/* 104 */
-+
-+		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
-+				  S3C2410_LCDCON4_HSPW(7),	/* 8 */
-+
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 104,
++		.right_margin	= 8,
++		.hsync_len	= 8,
++		.upper_margin	= 16,
++		.lower_margin	= 2,
++		.vsync_len	= 2,
 +		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
 +				  S3C2410_LCDCON5_INVVCLK |
 +				  S3C2410_LCDCON5_INVVLINE |
@@ -334,31 +332,38 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
 +				  S3C2410_LCDCON5_PWREN |
 +				  S3C2410_LCDCON5_HWSWP,
 +	},
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 240,
++		.height		= 320,
++		.xres		= 240,
++		.yres		= 320,
++		.bpp		= 16,
 +
-+	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
-+	.type		= S3C2410_LCDCON1_TFT,
-+
-+	.width		= 480,
-+	.height		= 640,
-+
-+	.xres		= {
-+		.min	= 240,
-+		.max	= 480,
-+		.defval	= 480,
-+	},
-+
-+	.yres		= {
-+		.min	= 320,
-+		.max	= 640,
-+		.defval = 640,
-+	},
-+
-+	.bpp		= {
-+		.min	= 1,
-+		.max	= 16,
-+		.defval = 16,
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 104,
++		.right_margin	= 8,
++		.hsync_len	= 8,
++		.upper_margin	= 16,
++		.lower_margin	= 2,
++		.vsync_len	= 2,
++		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVCLK |
++				  S3C2410_LCDCON5_INVVLINE |
++				  S3C2410_LCDCON5_INVVFRAME |
++				  S3C2410_LCDCON5_PWREN |
++				  S3C2410_LCDCON5_HWSWP,
 +	},
 +};
++
++static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
++	.displays	= gta01_displays,
++	.num_displays	= ARRAY_SIZE(gta01_displays),
++	.default_display= 1,
++
++	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
++};
++
 +static struct platform_device *gta01_devices[] __initdata = {
 +	&s3c_device_usb,
 +	&s3c_device_lcd,
@@ -772,7 +777,7 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +	set_irq_type(GTA01_IRQ_MODEM, IRQT_RISING);
 +	request_irq(GTA01_IRQ_MODEM, gta01_modem_irq,
-+		    SA_INTERRUPT, "modem", NULL);
++		    IRQF_TRIGGER_RISING, "modem", NULL);
 +	enable_irq_wake(GTA01_IRQ_MODEM);
 +}
 +
@@ -787,10 +792,10 @@ Index: linux-2.6.22/arch/arm/mach-s3c2410/mach-gta01.c
 +MACHINE_END
 +
 +
-Index: linux-2.6.22/include/asm-arm/arch-s3c2410/gta01.h
+Index: linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/include/asm-arm/arch-s3c2410/gta01.h
++++ linux-2.6/include/asm-arm/arch-s3c2410/gta01.h
 @@ -0,0 +1,70 @@
 +#ifndef _GTA01_H
 +#define _GTA01_H

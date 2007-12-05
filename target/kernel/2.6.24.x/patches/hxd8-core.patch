@@ -1,8 +1,8 @@
 This patch adds another machine, the FIC HXD8
-Index: linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
+Index: linux-2.6/arch/arm/mach-s3c2440/Kconfig
 ===================================================================
---- linux-2.6.22.orig/arch/arm/mach-s3c2440/Kconfig
-+++ linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
+--- linux-2.6.orig/arch/arm/mach-s3c2440/Kconfig
++++ linux-2.6/arch/arm/mach-s3c2440/Kconfig
 @@ -67,6 +67,12 @@
  	default y if ARCH_S3C2440
  	select CPU_S3C2440
@@ -16,20 +16,20 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/Kconfig
  
  endmenu
  
-Index: linux-2.6.22/arch/arm/mach-s3c2440/Makefile
+Index: linux-2.6/arch/arm/mach-s3c2440/Makefile
 ===================================================================
---- linux-2.6.22.orig/arch/arm/mach-s3c2440/Makefile
-+++ linux-2.6.22/arch/arm/mach-s3c2440/Makefile
+--- linux-2.6.orig/arch/arm/mach-s3c2440/Makefile
++++ linux-2.6/arch/arm/mach-s3c2440/Makefile
 @@ -21,3 +21,4 @@
  obj-$(CONFIG_MACH_RX3715)	+= mach-rx3715.o
  obj-$(CONFIG_ARCH_S3C2440)	+= mach-smdk2440.o
  obj-$(CONFIG_MACH_NEXCODER_2440) += mach-nexcoder.o
 +obj-$(CONFIG_MACH_HXD8)		+= mach-hxd8.o
-Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-hxd8.c
+Index: linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/arch/arm/mach-s3c2440/mach-hxd8.c
-@@ -0,0 +1,399 @@
++++ linux-2.6/arch/arm/mach-s3c2440/mach-hxd8.c
+@@ -0,0 +1,380 @@
 +/* linux/arch/arm/mach-s3c2440/mach-hxd8.c
 + *
 + * S3C2440 Machine Support for the FIC HXD8
@@ -279,53 +279,34 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-hxd8.c
 +
 +/* LCD driver info */
 +
-+static struct s3c2410fb_mach_info hxd8_lcd_cfg __initdata = {
-+	.regs	= {
++static struct s3c2410fb_display hxd8_displays[] __initdata =  {
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 480,
++		.height		= 272,
++		.xres		= 480,
++		.yres		= 272,
++		.bpp		= 16,
 +
-+		.lcdcon1	= S3C2410_LCDCON1_TFT24BPP |
-+				  S3C2410_LCDCON1_TFT |
-+				  S3C2410_LCDCON1_CLKVAL(0x05),
-+
-+		.lcdcon2	= S3C2410_LCDCON2_VBPD(1) |
-+				  S3C2410_LCDCON2_LINEVAL(271) |
-+				  S3C2410_LCDCON2_VFPD(1) |
-+				  S3C2410_LCDCON2_VSPW(9),
-+
-+		.lcdcon3	= S3C2410_LCDCON3_HBPD(1) |
-+				  S3C2410_LCDCON3_HOZVAL(479) |
-+				  S3C2410_LCDCON3_HFPD(1),
-+
-+		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
-+				  S3C2410_LCDCON4_HSPW(40),
-+
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 2,
++		.right_margin	= 2,
++		.hsync_len	= 41,
++		.upper_margin	= 2,
++		.lower_margin	= 2,
++		.vsync_len	= 10,
 +		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
 +				  S3C2410_LCDCON5_INVVLINE |
 +				  S3C2410_LCDCON5_INVVFRAME,
 +	},
++};
++
++static struct s3c2410fb_mach_info hxd8_lcd_cfg __initdata = {
++	.displays	= hxd8_displays,
++	.num_displays	= ARRAY_SIZE(hxd8_displays),
++	.default_display = 1,
 +
 +	.lpcsel		= ((0xCE6) & ~7),
-+	.type		= S3C2410_LCDCON1_TFT,
-+
-+	.width		= 480,
-+	.height		= 272,
-+
-+	.xres		= {
-+		.min	= 480,
-+		.max	= 480,
-+		.defval	= 480,
-+	},
-+
-+	.yres		= {
-+		.min	= 272,
-+		.max	= 272,
-+		.defval = 272,
-+	},
-+
-+	.bpp		= {
-+		.min	= 16,
-+		.max	= 32,
-+		.defval = 32,
-+	},
 +};
 +
 +static struct platform_device hxd8_pm_gsm_dev = {
@@ -429,10 +410,10 @@ Index: linux-2.6.22/arch/arm/mach-s3c2440/mach-hxd8.c
 +	.init_machine	= hxd8_machine_init,
 +	.timer		= &s3c24xx_timer,
 +MACHINE_END
-Index: linux-2.6.22/include/asm-arm/arch-s3c2440/hxd8.h
+Index: linux-2.6/include/asm-arm/arch-s3c2440/hxd8.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.22/include/asm-arm/arch-s3c2440/hxd8.h
++++ linux-2.6/include/asm-arm/arch-s3c2440/hxd8.h
 @@ -0,0 +1,16 @@
 +#ifndef _HXD8_H
 +#define _HXD8_H
