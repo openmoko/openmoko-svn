@@ -128,7 +128,7 @@ Index: linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
-@@ -0,0 +1,427 @@
+@@ -0,0 +1,428 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -400,8 +400,9 @@ Index: linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
 +	}
 +
 +	ts.dev = input_dev;
-+	ts.dev->evbit[0] = BIT(EV_SYN) | BIT(EV_KEY) | BIT(EV_ABS);
-+	ts.dev->keybit[LONG(BTN_TOUCH)] = BIT(BTN_TOUCH);
++	ts.dev->evbit[0] = BIT_MASK(EV_SYN) | BIT_MASK(EV_KEY) |
++			   BIT_MASK(EV_ABS);
++	ts.dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
 +	input_set_abs_params(ts.dev, ABS_X, 0, 0x3FF, 0, 0);
 +	input_set_abs_params(ts.dev, ABS_Y, 0, 0x3FF, 0, 0);
 +	input_set_abs_params(ts.dev, ABS_PRESSURE, 0, 1, 0, 0);
