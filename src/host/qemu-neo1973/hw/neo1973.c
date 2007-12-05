@@ -84,6 +84,7 @@ struct neo_board_s {
     QEMUTimer *modem_timer;
     qemu_irq *kbd_pic;
     const char *kernel;
+    struct sd_card_s *mmc;
 };
 
 /* Handlers for output ports */
@@ -252,9 +253,7 @@ static void neo_gpio_setup(struct neo_board_s *s)
 
     s3c_timers_cmp_handler_set(s->cpu->timers, 0, neo_bl_intensity, s);
 
-    /* MMC/SD host */
-    s3c_mmci_handlers(s->cpu->mmci, 0,
-                    qemu_irq_invert(s3c_gpio_in_get(
+    sd_set_cb(s->mmc, 0, qemu_irq_invert(s3c_gpio_in_get(
                                     s->cpu->io)[GTA01_IRQ_nSD_DETECT]));
 }
 
@@ -423,8 +422,12 @@ static void neo_init(int ram_size, int vga_ram_size, const char *boot_device,
 {
     struct neo_board_s *s = (struct neo_board_s *)
             qemu_mallocz(sizeof(struct neo_board_s));
+    int sd_idx = drive_get_index(IF_SD, 0, 0);
+
     s->ram = 0x08000000;
     s->kernel = kernel_filename;
+    if (sd_idx >= 0)
+        s->mmc = sd_init(drives_table[sd_idx].bdrv, 0);
 
     /* Setup CPU & memory */
     if (ram_size < s->ram + S3C_SRAM_SIZE) {
@@ -436,7 +439,7 @@ static void neo_init(int ram_size, int vga_ram_size, const char *boot_device,
         fprintf(stderr, "This platform requires an ARM920T core\n");
         exit(2);
     }
-    s->cpu = s3c2410_init(s->ram, ds);
+    s->cpu = s3c2410_init(s->ram, ds, s->mmc);
 
     s3c_nand_register(s->cpu, nand_init(NAND_MFR_SAMSUNG, 0x76));
 

@@ -1587,7 +1587,12 @@ struct sd_card_s *sd_init(BlockDriverState *bs, int is_spi)
 
 void sd_set_cb(struct sd_card_s *card, qemu_irq readonly, qemu_irq insert)
 {
-    SDState *sd = (SDState *) card->opaque;
+    SDState *sd;
+
+    if (!card)
+        return;
+
+    sd = (SDState *) card->opaque;
 
     sd->readonly_cb = readonly;
     sd->inserted_cb = insert;

@@ -41,6 +41,9 @@ struct s3c_mmci_state_s {
 
 void s3c_mmci_reset(struct s3c_mmci_state_s *s)
 {
+    if (!s)
+        return;
+
     s->blklen = 0;
     s->blknum = 0;
     s->blklen_cnt = 0;
@@ -357,6 +360,20 @@ static CPUWriteMemoryFunc *s3c_mmci_writefn[] = {
     s3c_mmci_write,
 };
 
+static void s3c_mmci_cardirq(void *opaque, int line, int level)
+{
+    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
+
+    if (~s->control & (1 << 3))					/* RcvIOInt */
+        return;
+    if (!level)
+        return;
+
+    s->dstatus |= 1 << 9;					/* IOIntDet */
+    if (s->mask & (1 << 12))					/* IOIntDet */
+        qemu_irq_raise(s->irq);
+}
+
 static void s3c_mmci_save(QEMUFile *f, void *opaque)
 {
     struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *) opaque;
@@ -414,15 +431,22 @@ static int s3c_mmci_load(QEMUFile *f, void *opaque, int version_id)
 }
 
 struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
-                BlockDriverState *bd, qemu_irq irq, qemu_irq *dma)
+                struct sd_card_s *mmc, qemu_irq irq, qemu_irq *dma)
 {
     int iomemtype;
-    struct s3c_mmci_state_s *s = (struct s3c_mmci_state_s *)
-            qemu_mallocz(sizeof(struct s3c_mmci_state_s));
+    struct s3c_mmci_state_s *s;
 
+    if (!mmc)
+        return 0;
+
+    s = (struct s3c_mmci_state_s *)
+            qemu_mallocz(sizeof(struct s3c_mmci_state_s));
     s->base = base;
     s->irq = irq;
     s->dma = dma;
+    s->card = mmc;
+
+    mmc->irq = qemu_allocate_irqs(s3c_mmci_cardirq, s, 1)[0];
 
     s3c_mmci_reset(s);
 
@@ -432,14 +456,5 @@ struct s3c_mmci_state_s *s3c_mmci_init(target_phys_addr_t base,
 
     register_savevm("s3c24xx_mmci", 0, 0, s3c_mmci_save, s3c_mmci_load, s);
 
-    /* Instantiate the actual storage */
-    s->card = sd_init(bd, 0);
-
     return s;
-}
-
-void s3c_mmci_handlers(struct s3c_mmci_state_s *s, qemu_irq readonly_cb,
-                qemu_irq coverswitch_cb)
-{
-    sd_set_cb(s->card, readonly_cb, coverswitch_cb);
 }
