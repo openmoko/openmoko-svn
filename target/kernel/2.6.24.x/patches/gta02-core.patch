@@ -461,17 +461,17 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +
 +static struct resource gta02_led_resources[] = {
 +	{
-+		.name	= "gta02-power:color",
-+		.start	= GTA02_GPIO_PWR_LED,
-+		.end	= GTA02_GPIO_PWR_LED,
++		.name	= "gta02-power:orange",
++		.start	= GTA02_GPIO_PWR_LED1,
++		.end	= GTA02_GPIO_PWR_LED1,
 +	}, {
-+		.name	= "gta02-aux:foo",
-+		.start	= GTA02_GPIO_AUX_LED1,
-+		.end	= GTA02_GPIO_AUX_LED1,
++		.name	= "gta02-power:blue",
++		.start	= GTA02_GPIO_PWR_LED2,
++		.end	= GTA02_GPIO_PWR_LED2,
 +	}, {
-+		.name	= "gta02-aux:bar",
-+		.start	= GTA02_GPIO_AUX_LED2,
-+		.end	= GTA02_GPIO_AUX_LED2,
++		.name	= "gta02-aux:red",
++		.start	= GTA02_GPIO_AUX_LED,
++		.end	= GTA02_GPIO_AUX_LED,
 +	},
 +};
 +
@@ -685,9 +685,9 @@ Index: linux-2.6/include/asm-arm/arch-s3c2410/gta02.h
 +
 +#define GTA02_GPIO_n3DL_GSM	S3C2410_GPA13	/* v1 + v2 + v3 only */
 +
-+#define GTA02_GPIO_AUX_LED1	S3C2410_GPB0
-+#define GTA02_GPIO_AUX_LED2	S3C2410_GPB1
-+#define GTA02_GPIO_PWR_LED	S3C2410_GPB2
++#define GTA02_GPIO_PWR_LED1	S3C2410_GPB0
++#define GTA02_GPIO_PWR_LED2	S3C2410_GPB1
++#define GTA02_GPIO_AUX_LED	S3C2410_GPB2
 +#define GTA02_GPIO_VIBRATOR_ON	S3C2410_GPB3
 +#define GTA02v1_GPIO_GPS_PWRON	S3C2410_GPB4	/* v1 only */
 +#define GTA02_GPIO_MODEM_RST	S3C2410_GPB5
