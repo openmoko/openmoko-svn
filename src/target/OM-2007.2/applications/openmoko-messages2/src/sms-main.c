@@ -66,8 +66,8 @@ main (int argc, char **argv)
 		data.sms_proxy = NULL;
 	} else {
 		data.sms_proxy = dbus_g_proxy_new_for_name (connection,
-			"org.openmoko.Dialer", "/org/openmoko/Dialer",
-			"org.openmoko.Dialer");
+			"org.openmoko.PhoneKit", "/org/openmoko/PhoneKit/Sms",
+			"org.openmoko.PhoneKit.Sms");
 	}
 
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);

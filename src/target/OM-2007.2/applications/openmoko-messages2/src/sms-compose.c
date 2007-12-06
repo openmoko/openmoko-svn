@@ -149,9 +149,6 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 	
 	if (hidden) return;
 	
-	gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (
-		data->new_button), FALSE);
-
 	number = gtk_entry_get_text (GTK_ENTRY (
 		GTK_BIN (data->number_combo)->child));
 	
@@ -166,7 +163,7 @@ send_clicked_cb (GtkButton *button, SmsData *data)
 		
 		if (message && (message[0] != '\0')) {
 			g_debug ("Sending message '%s' to %s", message, number);
-			if (!dbus_g_proxy_call (data->sms_proxy, "SendSms",
+			if (!dbus_g_proxy_call (data->sms_proxy, "Send",
 			     &error, G_TYPE_STRING, number, G_TYPE_STRING,
 			     message, G_TYPE_INVALID, G_TYPE_STRING, NULL,
 			     G_TYPE_INVALID)) {
