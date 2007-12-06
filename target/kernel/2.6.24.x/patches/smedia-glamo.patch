@@ -1,10 +1,10 @@
-Index: linux-2.6.23-rc8/drivers/video/Kconfig
+Index: linux-2.6/drivers/video/Kconfig
 ===================================================================
---- linux-2.6.23-rc8.orig/drivers/video/Kconfig
-+++ linux-2.6.23-rc8/drivers/video/Kconfig
-@@ -1837,6 +1837,38 @@
- 	source "drivers/video/omap/Kconfig"
- endif
+--- linux-2.6.orig/drivers/video/Kconfig
++++ linux-2.6/drivers/video/Kconfig
+@@ -1880,6 +1880,38 @@
+ 	  framebuffer. ML300 carries a 640*480 LCD display on the board,
+ 	  ML403 uses a standard DB15 VGA connector.
  
 +config GLAMO
 +	bool
@@ -41,10 +41,10 @@ Index: linux-2.6.23-rc8/drivers/video/Kconfig
  config FB_VIRTUAL
  	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
  	depends on FB
-Index: linux-2.6.23-rc8/drivers/video/Makefile
+Index: linux-2.6/drivers/video/Makefile
 ===================================================================
---- linux-2.6.23-rc8.orig/drivers/video/Makefile
-+++ linux-2.6.23-rc8/drivers/video/Makefile
+--- linux-2.6.orig/drivers/video/Makefile
++++ linux-2.6/drivers/video/Makefile
 @@ -113,6 +113,7 @@
  obj-$(CONFIG_FB_SM501)            += sm501fb.o
  obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
@@ -52,11 +52,11 @@ Index: linux-2.6.23-rc8/drivers/video/Makefile
 +obj-$(CONFIG_GLAMO)               += glamo/
  
  # Platform or fallback drivers go here
- obj-$(CONFIG_FB_VESA)             += vesafb.o
-Index: linux-2.6.23-rc8/drivers/video/glamo/Makefile
+ obj-$(CONFIG_FB_UVESA)            += uvesafb.o
+Index: linux-2.6/drivers/video/glamo/Makefile
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/Makefile
++++ linux-2.6/drivers/video/glamo/Makefile
 @@ -0,0 +1,11 @@
 +#
 +# Makefile for the Smedia Glamo framebuffer driver
@@ -69,10 +69,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/Makefile
 +obj-$(CONFIG_FB_GLAMO)		+= glamo-fb.o
 +obj-$(CONFIG_FB_GLAMO_SPI)	+= glamo-lcm-spi.o
 +
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-regs.h
+Index: linux-2.6/drivers/video/glamo/glamo-regs.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-regs.h
++++ linux-2.6/drivers/video/glamo/glamo-regs.h
 @@ -0,0 +1,467 @@
 +#ifndef _GLAMO_REGS_H
 +#define _GLAMO_REGS_H
@@ -541,10 +541,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-regs.h
 +};
 +
 +#endif /* _GLAMO_REGS_H */
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
+Index: linux-2.6/drivers/video/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
++++ linux-2.6/drivers/video/glamo/glamo-core.c
 @@ -0,0 +1,1020 @@
 +/* Smedia Glamo 336x/337x driver
 + *
@@ -1566,11 +1566,11 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.c
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x core/resource driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.23-rc8/include/asm-arm/arch-s3c2410/irqs.h
+Index: linux-2.6/include/asm-arm/arch-s3c2410/irqs.h
 ===================================================================
---- linux-2.6.23-rc8.orig/include/asm-arm/arch-s3c2410/irqs.h
-+++ linux-2.6.23-rc8/include/asm-arm/arch-s3c2410/irqs.h
-@@ -148,9 +148,37 @@
+--- linux-2.6.orig/include/asm-arm/arch-s3c2410/irqs.h
++++ linux-2.6/include/asm-arm/arch-s3c2410/irqs.h
+@@ -155,9 +155,37 @@
  #define IRQ_S3C2443_AC97	S3C2410_IRQSUB(28)
  
  #ifdef CONFIG_CPU_S3C2443
@@ -1610,11 +1610,11 @@ Index: linux-2.6.23-rc8/include/asm-arm/arch-s3c2410/irqs.h
 +#define IRQ_GLAMO_RISC		IRQ_GLAMO(8)
 +
  #endif /* __ASM_ARCH_IRQ_H */
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
+Index: linux-2.6/drivers/video/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
-@@ -0,0 +1,627 @@
++++ linux-2.6/drivers/video/glamo/glamo-fb.c
+@@ -0,0 +1,624 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1670,8 +1670,6 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
 +#include "glamo-core.h"
 +
 +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
-+
-+#define GLAMO_FB_ALLOC	(640*480*2)
 +
 +struct glamofb_handle {
 +	struct fb_info *fb;
@@ -1841,7 +1839,6 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
 +	}
 +
 +	glamo->fb->fix.line_length = (var->width * var->bits_per_pixel) / 8;
-+	glamo->fb->fix.smem_len = info->fix.line_length * var->yres_virtual;
 +
 +	return 0;
 +}
@@ -2070,7 +2067,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
 +	}
 +
 +	glamofb->fb_res = request_mem_region(glamofb->fb_res->start,
-+					     GLAMO_FB_ALLOC, pdev->name);
++					     RESSIZE(glamofb->fb_res), pdev->name);
 +	if (!glamofb->fb_res) {
 +		dev_err(&pdev->dev, "failed to request vram region\n");
 +		goto out_release_reg;
@@ -2084,6 +2081,7 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
 +		goto out_release_fb;
 +	}
 +	fbinfo->fix.smem_start = (unsigned long) glamofb->fb_res->start;
++	fbinfo->fix.smem_len = RESSIZE(glamofb->fb_res);
 +
 +	fbinfo->screen_base = ioremap(glamofb->fb_res->start,
 +				       RESSIZE(glamofb->fb_res));
@@ -2139,11 +2137,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
 +	fbinfo->var.green.length = 6;
 +	fbinfo->var.blue.length = 5;
 +	fbinfo->var.transp.length = 0;
-+	fbinfo->fix.smem_len = mach_info->xres.max *
-+			       mach_info->yres.max *
-+			       mach_info->bpp.max / 8;
 +
-+	memset(fbinfo->screen_base, 0, fbinfo->fix.smem_len);
++	memset(fbinfo->screen_base, 0, mach_info->xres.max *
++				       mach_info->yres.max *
++				       mach_info->bpp.max / 8);
 +
 +	glamo_engine_enable(mach_info->glamo, GLAMO_ENGINE_LCD);
 +	glamo_engine_reset(mach_info->glamo, GLAMO_ENGINE_LCD);
@@ -2242,10 +2239,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-fb.c
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x framebuffer driver");
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.23-rc8/include/linux/glamofb.h
+Index: linux-2.6/include/linux/glamofb.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/include/linux/glamofb.h
++++ linux-2.6/include/linux/glamofb.h
 @@ -0,0 +1,29 @@
 +#ifndef _LINUX_GLAMOFB_H
 +#define _LINUX_GLAMOFB_H
@@ -2276,10 +2273,10 @@ Index: linux-2.6.23-rc8/include/linux/glamofb.h
 +int glamofb_cmd_write(struct glamofb_handle *gfb, u_int16_t val);
 +
 +#endif
-Index: linux-2.6.23-rc8/include/linux/spi/glamo.h
+Index: linux-2.6/include/linux/spi/glamo.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/include/linux/spi/glamo.h
++++ linux-2.6/include/linux/spi/glamo.h
 @@ -0,0 +1,28 @@
 +#ifndef __GLAMO_SPI_H
 +#define __GLAMO_SPI_H
@@ -2309,10 +2306,10 @@ Index: linux-2.6.23-rc8/include/linux/spi/glamo.h
 +
 +
 +#endif
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.h
+Index: linux-2.6/drivers/video/glamo/glamo-core.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-core.h
++++ linux-2.6/drivers/video/glamo/glamo-core.h
 @@ -0,0 +1,51 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
@@ -2365,10 +2362,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-core.h
 +void glamo_engine_reset(struct glamo_core *glamo, enum glamo_engine engine);
 +
 +#endif /* __GLAMO_CORE_H */
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-gpio.c
+Index: linux-2.6/drivers/video/glamo/glamo-gpio.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-gpio.c
++++ linux-2.6/drivers/video/glamo/glamo-gpio.c
 @@ -0,0 +1,62 @@
 +
 +#include <linux/kernel.h>
@@ -2432,10 +2429,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-gpio.c
 +}
 +EXPORT_SYMBOL(glamo_gpio_cfgpin);
 +
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-lcm-spi.c
+Index: linux-2.6/drivers/video/glamo/glamo-lcm-spi.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-lcm-spi.c
++++ linux-2.6/drivers/video/glamo/glamo-lcm-spi.c
 @@ -0,0 +1,241 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
@@ -2678,10 +2675,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-lcm-spi.c
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-spi-gpio.c
+Index: linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/drivers/video/glamo/glamo-spi-gpio.c
++++ linux-2.6/drivers/video/glamo/glamo-spi-gpio.c
 @@ -0,0 +1,251 @@
 +/*
 + * Copyright (C) 2007 OpenMoko, Inc.
@@ -2934,10 +2931,10 @@ Index: linux-2.6.23-rc8/drivers/video/glamo/glamo-spi-gpio.c
 +MODULE_DESCRIPTION("Smedia Glamo 336x/337x LCM serial command SPI Driver");
 +MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>")
 +MODULE_LICENSE("GPL");
-Index: linux-2.6.23-rc8/include/linux/glamo-gpio.h
+Index: linux-2.6/include/linux/glamo-gpio.h
 ===================================================================
 --- /dev/null
-+++ linux-2.6.23-rc8/include/linux/glamo-gpio.h
++++ linux-2.6/include/linux/glamo-gpio.h
 @@ -0,0 +1,98 @@
 +#ifndef __GLAMO_GPIO_H
 +#define __GLAMO_GPIO_H
