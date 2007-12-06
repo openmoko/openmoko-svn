@@ -12,12 +12,14 @@
 #define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
 #define GCONF_POKY_WALLPAPER "/wallpaper"
 #define GCONF_POKY_DIGITAL "/digital_clock"
+#define GCONF_POKY_SMALLCLOCK "/small_clock"
 
 typedef struct {
 	/* Home */
 	GtkWidget *window;
 	GtkWidget *notebook;
 	GtkWidget *home_toolbar;
+	GtkWidget *home_vbox;
 	GtkWidget *clock;
 	GtkWidget *message_box;
 	GtkWidget *summary_box;
@@ -32,6 +34,8 @@ typedef struct {
 	gchar *network_name;
 	
 	GtkWidget *date_button;
+	GtkWidget *date_aspect;
+	GtkWidget *date_label;
 	GtkWidget *missed_calls_box;
 	GtkWidget *missed_calls_label;
 	gint n_missed_calls;

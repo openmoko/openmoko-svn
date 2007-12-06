@@ -143,7 +143,7 @@ set_time_idle (TodayData *data)
 	time = jana_ecal_utils_time_now (data->location);
 	jana_gtk_clock_set_time (JANA_GTK_CLOCK (data->clock), time);
 	date_str = jana_utils_strftime (time, "%A, %d. %B %Y");
-	gtk_button_set_label (GTK_BUTTON (data->date_button), date_str);
+	gtk_label_set_text (GTK_LABEL (data->date_label), date_str);
 	g_free (date_str);
 	
 	/* Update query every half-hour */
@@ -171,14 +171,14 @@ set_time_idle (TodayData *data)
 static void
 clock_clicked_cb (JanaGtkClock *clock, GdkEventButton *event, TodayData *data)
 {
-	if (data->clock_item) launcher_start (data->window, data->clock_item,
-		(gchar *[]){ "openmoko-worldclock", NULL }, TRUE, TRUE);
+	/*if (data->clock_item) launcher_start (data->window, data->clock_item,
+		(gchar *[]){ "openmoko-worldclock", NULL }, TRUE, TRUE);*/
 }
 
 static GtkWidget *
 today_create_home_page (TodayData *data)
 {
-	GtkWidget *main_vbox, *vbox, *align;
+	GtkWidget *main_vbox, *align;
 	
 	/* Add home page */
 	main_vbox = gtk_vbox_new (FALSE, 0);
@@ -239,6 +239,7 @@ today_create_home_page (TodayData *data)
 	gtk_widget_show (data->clock);
 	g_signal_connect (data->clock, "clicked",
 		G_CALLBACK (clock_clicked_cb), data);
+	g_object_ref_sink (data->clock);
 
 	/* Pack widgets */
 	align = gtk_alignment_new (0.5, 0, 1, 0);
@@ -250,12 +251,11 @@ today_create_home_page (TodayData *data)
 	gtk_widget_show (data->message_box);
 	gtk_widget_show (align);
 	
-	vbox = gtk_vbox_new (FALSE, 6);
+	data->home_vbox = gtk_vbox_new (FALSE, 6);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 6, 6, 6);
-	gtk_box_pack_start (GTK_BOX (vbox), data->clock, TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), align, FALSE, TRUE, 0);
-	gtk_container_add (GTK_CONTAINER (data->bg_ebox), vbox);
-	gtk_widget_show (vbox);
+	gtk_box_pack_end (GTK_BOX (data->home_vbox), align, FALSE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (data->bg_ebox), data->home_vbox);
+	gtk_widget_show (data->home_vbox);
 	
 	/* Set the time on the clock */
 	set_time_idle (data);
@@ -329,8 +329,37 @@ digital_clock_notify (GConfClient *client, guint cnxn_id,
 	GConfValue *value;
 
 	value = gconf_entry_get_value (entry);
-	if (value) jana_gtk_clock_set_digital (JANA_GTK_CLOCK (data->clock),
-		gconf_value_get_bool (value));
+	if (value && (!gconf_value_get_bool (value))) {
+		gtk_aspect_frame_set (GTK_ASPECT_FRAME (data->date_aspect),
+			1.0, 0.5, 1.0, FALSE);
+		jana_gtk_clock_set_digital (JANA_GTK_CLOCK (data->clock),
+			FALSE);
+	} else {
+		gtk_aspect_frame_set (GTK_ASPECT_FRAME (data->date_aspect),
+			1.0, 0.5, 2.0, FALSE);
+		jana_gtk_clock_set_digital (JANA_GTK_CLOCK (data->clock),
+			TRUE);
+	}
+}
+
+static void
+small_clock_notify (GConfClient *client, guint cnxn_id,
+		    GConfEntry *entry, TodayData *data)
+{
+	GConfValue *value;
+	GtkWidget *parent;
+
+	if ((parent = gtk_widget_get_parent (data->clock)))
+		gtk_container_remove (GTK_CONTAINER (parent), data->clock);
+	
+	value = gconf_entry_get_value (entry);
+	if (value && (gconf_value_get_bool (value))) {
+		gtk_container_add (GTK_CONTAINER (
+			data->date_aspect), data->clock);
+	} else {
+		gtk_box_pack_start (GTK_BOX (data->home_vbox),
+			data->clock, TRUE, TRUE, 0);
+	}
 }
 
 static void
@@ -378,6 +407,7 @@ provider_changed_cb (DBusGProxy *proxy, const gchar *name, TodayData *data)
 	if (active) set_window_title (data);
 }
 
+#ifndef STANDALONE
 static GtkWidget *window;
 
 static void
@@ -386,6 +416,7 @@ workarea_changed (int x, int y, int w, int h)
 	gtk_window_resize (GTK_WINDOW (window), w, h);
 	gtk_window_move (GTK_WINDOW (window), x, y);
 }
+#endif
 
 int
 main (int argc, char **argv)
@@ -496,13 +527,14 @@ main (int argc, char **argv)
 		G_CALLBACK (is_active_notify), &data);
 	gtk_widget_show (data.window);
 
-	/* Listen to wallpaper setting */
+	/* Listen to settings */
 	gconf_client_add_dir (gconf_client_get_default (),
 		JANA_ECAL_LOCATION_KEY_DIR, GCONF_CLIENT_PRELOAD_NONE, NULL);
 	gconf_client_notify_add (gconf_client_get_default (),
 		JANA_ECAL_LOCATION_KEY,
 		(GConfClientNotifyFunc)location_notify,
 		&data, NULL, NULL);
+	
 	gconf_client_add_dir (gconf_client_get_default (),
 		GCONF_POKY_INTERFACE_PREFIX, GCONF_CLIENT_PRELOAD_NONE, NULL);
 	gconf_client_notify_add (gconf_client_get_default (),
@@ -513,10 +545,18 @@ main (int argc, char **argv)
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL,
 		(GConfClientNotifyFunc)digital_clock_notify,
 		&data, NULL, NULL);
+	gconf_client_notify_add (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_SMALLCLOCK,
+		(GConfClientNotifyFunc)small_clock_notify,
+		&data, NULL, NULL);
+	
+	/* Fire off signals */
 	gconf_client_notify (gconf_client_get_default (),
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_WALLPAPER);
 	gconf_client_notify (gconf_client_get_default (),
 		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_DIGITAL);
+	gconf_client_notify (gconf_client_get_default (),
+		GCONF_POKY_INTERFACE_PREFIX GCONF_POKY_SMALLCLOCK);
 
 	gtk_main ();
 

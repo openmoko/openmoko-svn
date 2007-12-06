@@ -1,5 +1,17 @@
 2007-12-06  Chris Lord  <chris@openedhand.com>
 
+	* src/today-main.c: (set_time_idle), (clock_clicked_cb),
+	(today_create_home_page), (digital_clock_notify),
+	(small_clock_notify), (main):
+	* src/today-pim-journal.c: (today_pim_journal_box_new):
+	* src/today-task-manager.c: (today_task_manager_populate_tasks):
+	* src/today.h:
+        Allow the clock to be placed next to the date inside the date button,
+        fixes bug #965 - This is controlled by gconf key
+        /desktop/poky/interface/small_clock
+
+2007-12-06  Chris Lord  <chris@openedhand.com>
+
 	* src/today-task-manager.c: (window_get_icon),
 	(today_task_manager_populate_tasks), (set_focus_cb),
 	(today_task_manager_page_create):

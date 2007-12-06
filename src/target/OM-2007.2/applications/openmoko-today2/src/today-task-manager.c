@@ -379,7 +379,7 @@ today_task_manager_populate_tasks (TodayData *data)
         /* Load into menu */
 	current = gdk_screen_get_active_window (screen);
         for (i = 0; i < nitems; i++) {
-                char *name, *bname;
+                char *name;
 		GtkWidget *task_tile;
 		GdkPixbuf *icon;
 		GdkWindow *window;
