@@ -42,6 +42,7 @@ smedia-glamo.patch
 s3c24xx-nand-largepage.patch
 s3c2442b-cpuid.patch
 gta02-core.patch
+gta02-sound.patch
 neo1973-soc-include-fix.patch
 explicitly-link-notes-section.patch
 lis302dl.patch
