@@ -2,7 +2,7 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
-@@ -0,0 +1,636 @@
+@@ -0,0 +1,643 @@
 +/*
 + * linux/arch/arm/mach-s3c2440/mach-gta02.c
 + *
@@ -513,8 +513,15 @@ Index: linux-2.6/arch/arm/mach-s3c2440/mach-gta02.c
 +/* Smedia Glamo 3362 */
 +
 +static struct glamofb_platform_data gta02_glamo_pdata = {
-+	.width		= 480,
-+	.height		= 640,
++	.width		= 43,
++	.height		= 58,
++	.pixclock	= 50 * 1000, /* 50 ns */
++	.left_margin	= 8,
++	.right_margin	= 104,
++	.upper_margin	= 2,
++	.lower_margin	= 16,
++	.hsync_len	= 8,
++	.vsync_len	= 2,
 +	.xres		= {
 +		.min	= 240,
 +		.max	= 480,

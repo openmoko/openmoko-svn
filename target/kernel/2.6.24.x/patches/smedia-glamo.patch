@@ -2243,7 +2243,7 @@ Index: linux-2.6/include/linux/glamofb.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6/include/linux/glamofb.h
-@@ -0,0 +1,29 @@
+@@ -0,0 +1,33 @@
 +#ifndef _LINUX_GLAMOFB_H
 +#define _LINUX_GLAMOFB_H
 +
@@ -2259,6 +2259,10 @@ Index: linux-2.6/include/linux/glamofb.h
 +
 +struct glamofb_platform_data {
 +	int width, height;
++	int pixclock;
++	int left_margin, right_margin;
++	int upper_margin, lower_margin;
++	int hsync_len, vsync_len;
 +
 +	struct glamofb_val xres;
 +	struct glamofb_val yres;
