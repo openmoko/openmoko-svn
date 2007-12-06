@@ -1,4 +1,6 @@
 asoc-neo1973_wm8753-power.patch
+asoc-s3c24xx-iis-suspend_resume.patch
+asoc-core-suspend_resume.patch
 missing_defs.patch
 openmoko-logo.patch
 yaffs2-20070905.patch
