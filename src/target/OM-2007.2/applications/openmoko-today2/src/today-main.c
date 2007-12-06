@@ -430,6 +430,8 @@ main (int argc, char **argv)
 			"org.openmoko.PhoneKit",
 			"/org/openmoko/PhoneKit/Network",
 			"org.openmoko.PhoneKit.Network");
+		dbus_g_proxy_add_signal (data.network_proxy,
+			"ProviderChanged", G_TYPE_STRING, G_TYPE_INVALID);
 		dbus_g_proxy_connect_signal (data.network_proxy,
 			"ProviderChanged", G_CALLBACK (provider_changed_cb),
 			&data, NULL);
