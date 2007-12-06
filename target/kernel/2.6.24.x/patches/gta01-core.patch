@@ -31,7 +31,7 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,760 @@
+@@ -0,0 +1,783 @@
 +/*
 + * linux/arch/arm/mach-s3c2410/mach-gta01.c
 + *
@@ -308,12 +308,13 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +
 +/* LCD driver info */
 +
-+/* Configuration for 480x640 toppoly TD028TTEC1 */
-+static struct s3c2410fb_display gta01_displays[] __initdata =  {
++/* Configuration for 480x640 toppoly TD028TTEC1.
++ * Do not mark this as __initdata or it will break! */
++static struct s3c2410fb_display gta01_displays[] =  {
 +	{
 +		.type		= S3C2410_LCDCON1_TFT,
-+		.width		= 480,
-+		.height		= 640,
++		.width		= 43,
++		.height		= 58,
 +		.xres		= 480,
 +		.yres		= 640,
 +		.bpp		= 16,
@@ -322,8 +323,8 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +		.left_margin	= 104,
 +		.right_margin	= 8,
 +		.hsync_len	= 8,
-+		.upper_margin	= 16,
-+		.lower_margin	= 2,
++		.upper_margin	= 2,
++		.lower_margin	= 16,
 +		.vsync_len	= 2,
 +		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
 +				  S3C2410_LCDCON5_INVVCLK |
@@ -334,8 +335,30 @@ Index: linux-2.6/arch/arm/mach-s3c2410/mach-gta01.c
 +	},
 +	{
 +		.type		= S3C2410_LCDCON1_TFT,
-+		.width		= 240,
-+		.height		= 320,
++		.width		= 43,
++		.height		= 58,
++		.xres		= 480,
++		.yres		= 640,
++		.bpp		= 32,
++
++		.pixclock	= 40000,	/* HCLK/4 */
++		.left_margin	= 104,
++		.right_margin	= 8,
++		.hsync_len	= 8,
++		.upper_margin	= 2,
++		.lower_margin	= 16,
++		.vsync_len	= 2,
++		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++				  S3C2410_LCDCON5_INVVCLK |
++				  S3C2410_LCDCON5_INVVLINE |
++				  S3C2410_LCDCON5_INVVFRAME |
++				  S3C2410_LCDCON5_PWREN |
++				  S3C2410_LCDCON5_HWSWP,
++	},
++	{
++		.type		= S3C2410_LCDCON1_TFT,
++		.width		= 43,
++		.height		= 58,
 +		.xres		= 240,
 +		.yres		= 320,
 +		.bpp		= 16,
