@@ -1,5 +1,12 @@
 2007-12-06  Chris Lord  <chris@openedhand.com>
 
+	* src/today-task-manager.c: (window_get_icon),
+	(today_task_manager_populate_tasks), (set_focus_cb),
+	(today_task_manager_page_create):
+        Set the icon size correctly
+
+2007-12-06  Chris Lord  <chris@openedhand.com>
+
 	* src/today-main.c: (main):
         Add dbus signal before trying to connect to it
 

@@ -29,6 +29,7 @@ enum {
 
 static gboolean hidden = TRUE;
 static Atom atoms[N_ATOMS];
+static GtkIconSize icon_size;
 
 static GdkFilterReturn
 filter_func (GdkXEvent *xevent, GdkEvent *event, TodayData *data);
@@ -201,7 +202,7 @@ window_get_icon (TodayData *tdata, Window window)
         /* Got it. Now what size icon are we looking for? */
         settings = gtk_widget_get_settings (GTK_WIDGET (tdata->tasks_table));
         gtk_icon_size_lookup_for_settings (settings,
-                                           GTK_ICON_SIZE_MENU,
+                                           icon_size,
                                            &ideal_width,
                                            &ideal_height);
 
@@ -378,7 +379,7 @@ today_task_manager_populate_tasks (TodayData *data)
         /* Load into menu */
 	current = gdk_screen_get_active_window (screen);
         for (i = 0; i < nitems; i++) {
-                char *name;
+                char *name, *bname;
 		GtkWidget *task_tile;
 		GdkPixbuf *icon;
 		GdkWindow *window;
@@ -403,8 +404,8 @@ today_task_manager_populate_tasks (TodayData *data)
                 name = window_get_name (data, windows[i]);
                 task_tile = taku_icon_tile_new ();
 		taku_icon_tile_set_primary (TAKU_ICON_TILE (task_tile), name);
-		taku_icon_tile_set_secondary (TAKU_ICON_TILE (task_tile), "");
                 g_free (name);
+		taku_icon_tile_set_secondary (TAKU_ICON_TILE (task_tile), "");
 		
 		icon = window_get_icon (data, windows[i]);
 		if (icon) {
@@ -460,8 +461,10 @@ today_task_manager_populate_tasks (TodayData *data)
 static void
 set_focus_cb (GtkWindow *window, GtkWidget *widget, TodayData *data)
 {
-	gtk_widget_set_sensitive (data->kill_button, TAKU_IS_TILE (widget));
-	gtk_widget_set_sensitive (data->switch_button, TAKU_IS_TILE (widget));
+	gtk_widget_set_sensitive (GTK_WIDGET (data->kill_button),
+		TAKU_IS_TILE (widget));
+	gtk_widget_set_sensitive (GTK_WIDGET (data->switch_button),
+		TAKU_IS_TILE (widget));
 }
 
 static void
@@ -746,6 +749,11 @@ GtkWidget *
 today_task_manager_page_create (TodayData *data)
 {
 	GtkWidget *vbox, *toolbar, *viewport, *scroll;
+	
+	icon_size = gtk_icon_size_from_name ("taku-icon");
+	if (icon_size == GTK_ICON_SIZE_INVALID) {
+		icon_size = GTK_ICON_SIZE_BUTTON;
+	}
 	
 	vbox = gtk_vbox_new (FALSE, 0);
 	
