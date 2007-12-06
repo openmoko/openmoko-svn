@@ -34,6 +34,7 @@
 #include "guitools.h"
 #include "persistent.h"
 #include "playlist.h"
+#include "utils.h"
 
 /// Enumeration of the file list columns
 enum

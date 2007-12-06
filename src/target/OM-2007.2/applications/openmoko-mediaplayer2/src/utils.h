@@ -20,27 +20,27 @@
  */
 
 /**
- * @file guitools.h
- * Various helper functions to aid with GUI creation and handling
+ * @file utils.h
+ * Various utility functions
  */
 
-#ifndef GUITOOLS_H
-#define GUITOOLS_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <gtk/gtk.h>
 
-#include "main.h"
+extern gchar *omp_ui_image_path;
 
-GdkPixbuf *pixbuf_new_from_file(const gchar* file_name);
 
-GtkWidget *label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
-	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale, PangoEllipsizeMode ellipsize_mode);
 
 GtkWidget *button_create_with_image(gchar *widget_name, gchar *image_name, GtkWidget **image, GCallback callback);
+GtkWidget *widget_wrap(GtkWidget *widget, gchar *name);
 
-void container_add_image_with_ref(GtkContainer *container, gchar *image_name, GtkWidget **image);
-void container_add_image(GtkContainer *container, gchar *image_name);
+void notebook_add_page_with_stock(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding);
 
-void notebook_add_page_with_image(GtkWidget *notebook, GtkWidget *child, const gchar *image_name, int padding);
+void error_dialog(gchar *message);
+void error_dialog_modal(gchar *message);
+
+gchar *get_base_file_name(gchar *file_name);
 
 #endif

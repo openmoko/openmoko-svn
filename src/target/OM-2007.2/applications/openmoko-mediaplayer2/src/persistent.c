@@ -226,6 +226,13 @@ omp_config_init()
 
 	// Set up GConf, fetch default values and attach notification handler
 	omp_gconf_client = gconf_client_get_default();
+
+	if (!omp_gconf_client)
+	{
+		g_printerr("GConf error: could not connect to gconfd\nWill continue execution, though program will have limited functionality.\n");
+		return;
+	}
+
 	gconf_client_add_dir(omp_gconf_client, OMP_GCONF_PATH, GCONF_CLIENT_PRELOAD_ONELEVEL, NULL);
 
 	omp_config->shuffle =

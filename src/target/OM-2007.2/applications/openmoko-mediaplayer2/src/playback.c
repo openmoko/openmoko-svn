@@ -29,11 +29,12 @@
 #include <gst/interfaces/xoverlay.h>
 #include <uriparser/Uri.h>
 
-#include "guitools.h"
 #include "main.h"
 #include "main_page.h"
+#include "mplayer_playback.h"
 #include "persistent.h"
 #include "playback.h"
+#include "utils.h"
 
 /// Our ticket to the gstreamer world
 GstElement *omp_gst_playbin = NULL;
@@ -151,7 +152,8 @@ omp_playback_init()
 
 	gst_object_unref(bus);
 
-	return TRUE;
+	// Initialize mplayer interface and return its result as we would return TRUE now
+	return omp_mplayback_init();
 }
 
 /**
@@ -164,6 +166,10 @@ omp_playback_free()
 
 	if (!omp_gst_playbin) return;
 
+	// Free resources used by the mplayer interface
+	omp_mplayback_free();
+
+	// Free resources used by gstreamer
 	bus = gst_pipeline_get_bus(GST_PIPELINE(omp_gst_playbin));
 	gst_bus_remove_signal_watch(bus);
 	gst_object_unref(bus);
@@ -189,6 +195,7 @@ omp_playback_save_state()
 void
 omp_playback_reset()
 {
+	omp_mplayback_pause();
 	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
 
 	g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_RESET);
@@ -209,12 +216,25 @@ omp_playback_load_track_from_uri(gchar *uri)
 		g_printf("Loading track: %s\n", uri);
 	#endif
 
-	// Update gstreamer pipe
-	gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
-	g_object_set(G_OBJECT(omp_gst_playbin), "uri", uri, NULL);
-	gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
+	// Make sure mplayer stays quiet
+	omp_mplayback_pause();
 
-	return (gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED) != GST_STATE_CHANGE_FAILURE);
+	if (omp_mplayback_load_video_from_uri(uri))
+	{
+		// As gstreamer won't be fed a new track we need to make sure it's silent
+		gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
+
+		return TRUE;
+
+	} else {
+
+		// Update gstreamer pipe
+		gst_element_set_state(omp_gst_playbin, GST_STATE_NULL);
+		g_object_set(G_OBJECT(omp_gst_playbin), "uri", uri, NULL);
+		gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
+
+		return (gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED) != GST_STATE_CHANGE_FAILURE);
+	}
 }
 
 /**
@@ -272,6 +292,14 @@ omp_playback_play()
 		g_print("Starting playback\n");
 	#endif
 
+	// Start mplayer playback if a video was loaded
+	if (omp_mplayback_video_loaded())
+	{
+		omp_mplayback_play();
+		return;
+	}
+
+	// No video loaded, let's try playing with gstreamer
 	g_object_get(G_OBJECT(omp_gst_playbin), "uri", &track_uri, NULL);
 	if (!track_uri)
 	{
@@ -306,8 +334,10 @@ omp_playback_pause()
 		g_print("Suspending playback\n");
 	#endif
 
-	// Set state
-	gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
+	if (omp_mplayback_video_loaded())
+		omp_mplayback_pause();
+	else
+		gst_element_set_state(omp_gst_playbin, GST_STATE_PAUSED);
 
 	// Stop timer
 	omp_playback_ui_timeout_halted = TRUE;
@@ -321,7 +351,13 @@ omp_playback_get_state()
 {
 	GstState state;
 
-	// Poll state with an immediate timeout
+	// Query mplayer interface first
+	if (omp_mplayback_is_playing())
+	{
+		return omp_mplayback_get_state();
+	}
+
+	// Poll gstreamer state with an immediate timeout
 	state = GST_STATE(omp_gst_playbin);
 
 	// The NULL and READY element states are no different from PAUSED for more abstract layers
@@ -342,6 +378,13 @@ omp_playback_get_track_position()
 	GstFormat format = GST_FORMAT_TIME;
 	gint64 position = 0;
 
+	// Query mplayer interface first
+	if (omp_mplayback_is_playing())
+	{
+		return omp_mplayback_get_video_position();
+	}
+
+	// Let's see if gstreamer has anything to say
 	if (!omp_gst_playbin) return 0;
 
 	// Return 0 if function returns FALSE, position otherwise
@@ -357,6 +400,14 @@ omp_playback_set_track_position(gulong position)
 {
 	GstState pipe_state;
 	gint64 pos;
+
+	// Use the mplayer interface if a video had been loaded
+	if (omp_mplayback_video_loaded())
+	{
+		omp_mplayback_set_video_position(position);
+		omp_playback_save_state();
+		return;
+	}
 
 	if (!omp_gst_playbin) return;
 
@@ -431,6 +482,9 @@ omp_playback_set_volume(guint volume)
 
 		g_signal_emit_by_name(G_OBJECT(omp_window), OMP_EVENT_PLAYBACK_VOLUME_CHANGED);
 	}
+
+	// Update mplayer interface, too
+	omp_mplayback_set_volume(volume);
 }
 
 /**
@@ -442,6 +496,9 @@ omp_playback_get_volume()
 {
 	gdouble volume;
 	g_object_get(G_OBJECT(omp_gst_playbin), "volume", &volume, NULL);
+
+	// We don't care about the mplayer interface here because
+	// gstreamer's and mplayer's volume are always kept in sync
 
 	return volume*100;
 }
@@ -586,10 +643,7 @@ static gboolean
 omp_gst_message_element(GstBus *bus, GstMessage *message, gpointer data)
 {
 	if (gst_structure_has_name(message->structure, "prepare-xwindow-id"))
-	{
 		gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(GST_MESSAGE_SRC(message)), omp_main_get_video_window());
-	}
 
 	return TRUE;
 }
-

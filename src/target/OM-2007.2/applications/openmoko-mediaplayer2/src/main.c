@@ -47,12 +47,12 @@
 #include "main.h"
 #include "editor_page.h"
 #include "files_page.h"
-#include "guitools.h"
 #include "main_page.h"
 #include "persistent.h"
 #include "playlist_page.h"
 #include "playlist.h"
 #include "playback.h"
+#include "utils.h"
 
 // Determines how the segfault handler terminates the program
 //define HANDLE_SIGSEGV

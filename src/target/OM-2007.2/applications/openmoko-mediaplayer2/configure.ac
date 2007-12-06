@@ -53,8 +53,11 @@ AC_CHECK_LIB(spiff, spiff_parse, , [echo "Error: XSPF library (libspiff) not fou
 LIBS="-lmokoui2 $LIBS"
 AC_CHECK_LIB(mokoui2, moko_stock_register, , [echo "Error: libmokoui2 not found"; exit -1])
 
+LIBS="-lts $LIBS"
+AC_CHECK_LIB(ts, ts_open, , [echo "Error: libts not found"; exit -1])
 
-CFLAGS="$OPENMOKO_CFLAGS $GSTREAMER_CFLAGS $GCONF_CFLAGS $CFLAGS"
+
+CFLAGS="$TS_CFLAGS $OPENMOKO_CFLAGS $GSTREAMER_CFLAGS $GCONF_CFLAGS $CFLAGS"
 
 localedir=$datadir/locale
 AC_SUBST(localedir)

@@ -34,12 +34,13 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "playlist.h"
 #include "guitools.h"
-#include "omp_spiff_c.h"
 #include "main.h"
-#include "playback.h"
+#include "omp_spiff_c.h"
 #include "persistent.h"
+#include "playback.h"
+#include "playlist.h"
+#include "utils.h"
 
 /// Loaded playlist
 omp_spiff_list *omp_playlist = NULL;
@@ -1062,41 +1063,6 @@ omp_playlist_track_append_directory(gchar *dir_name)
 	g_dir_close(dir);
 
 	return file_count;
-}
-
-/**
- * Utility function that removes the path and extension of a file name
- * @param file_name File name to extract title from, can contain a path
- * @return String holding the title, must be freed after use
- * @todo Make unicode safe
- * @note Yes, this is quick'n'dirty. It will be replaced.
- */
-gchar *
-get_base_file_name(gchar *file_name)
-{
-	gchar base[256];
-	guint i, j, last_delim, extension_pos;
-
-	// Find last directory delimiter
-	last_delim = 0;
-	for (i=0; file_name[i]; i++)
-	{
-		if (file_name[i] == '/') last_delim = i+1;
-	}
-
-	// Find file extension
-	for(extension_pos = strlen(file_name);
-		(extension_pos) && (file_name[extension_pos] != '.');
-		extension_pos--);
-
-	// Extract title
-	for (j=0, i=last_delim; i<extension_pos; i++)
-	{
-		base[j++] = file_name[i];
-	}
-	base[j] = 0;
-	
-	return g_strdup((gchar *)&base);
 }
 
 /**

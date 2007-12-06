@@ -27,9 +27,7 @@
 #include <gtk/gtk.h>
 
 #include "guitools.h"
-
-/// Absolute path to the UI pixmaps
-gchar *omp_ui_image_path = NULL;
+#include "utils.h"
 
 
 
@@ -104,91 +102,6 @@ pixbuf_new_from_file(const gchar *file_name)
 }
 
 /**
- * Creates a button containing a stock image
- * @param widget_name Name to set for the button and image widgets
- * @param image_name Name of the stock image to use
- * @param image Destination for the image's handle (can be NULL)
- * @param callback Callback to set
- * @return The button
- */
-GtkWidget *
-button_create_with_image(gchar *widget_name, gchar *image_name, GtkWidget **image, GCallback callback)
-{
-	GtkWidget *btn_image, *button;
-
-	button = gtk_button_new();
-	gtk_widget_set_name(GTK_WIDGET(button), widget_name);
-	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), NULL);
-	GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(button), GTK_CAN_FOCUS);
-
-	btn_image = gtk_image_new();
-	gtk_widget_set_name(GTK_WIDGET(btn_image), widget_name);
-	gtk_image_set_from_stock(GTK_IMAGE(btn_image), image_name, -1);
-	gtk_container_add(GTK_CONTAINER(button), GTK_WIDGET(btn_image));
-
-	if (image) *image = btn_image;
-
-	return button;
-}
-
-/**
- * Wraps a widget in an invisible GtkFrame so the widget can be padded using x/ythickness in the frame's style
- * @param widget Widget to be put inside the frame
- * @param name Name to assign to the frame, uses the widget's name if NULL
- * @return Frame containing the widget
- */
-GtkWidget *
-widget_wrap(GtkWidget *widget, gchar *name)
-{
-	GtkWidget *frame;
-
-	frame = gtk_frame_new(NULL);
-	gtk_widget_set_name(GTK_WIDGET(frame), (name) ? name : gtk_widget_get_name(widget));
-	gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
-	gtk_container_add(GTK_CONTAINER(frame), GTK_WIDGET(widget));
-
-	return frame;
-}
-
-/**
- * Presents a simple non-modal error dialog to the user
- */
-void
-error_dialog(gchar *message)
-{
-	GtkWidget *dialog;
-
-	dialog = gtk_message_dialog_new(0,
-		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-		"%s", message);
-
-	// We don't want a title of "<unnamed>"
-	gtk_window_set_title(GTK_WINDOW(dialog), " ");
-
-	g_signal_connect_swapped(dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
-	gtk_widget_show_all(dialog);
-}
-
-/**
- * Presents a simple modal error dialog to the user
- */
-void
-error_dialog_modal(gchar *message)
-{
-	GtkWidget *dialog;
-
-	dialog = gtk_message_dialog_new(0,
-		GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-		"%s", message);
-
-	// We don't want a title of "<unnamed>"
-	gtk_window_set_title(GTK_WINDOW(dialog), " ");
-
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(dialog);
-}
-
-/**
  * Loads an image from disk and adds it to a given container, returning a reference to the image as well
  */
 void
@@ -210,25 +123,6 @@ container_add_image(GtkContainer *container, gchar *image_name)
 {
 	GtkWidget *image;
 	container_add_image_with_ref(container, image_name, &image);
-}
-
-/**
- * Adds a child to a GtkNotebook, filling the page handle with a stock icon
- */
-void
-notebook_add_page_with_stock(GtkWidget *notebook, GtkWidget *child, const gchar *icon_name, int padding)
-{
-	GtkWidget *icon, *alignment;
-
-	icon = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_LARGE_TOOLBAR);
-
-	alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
-	gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), padding, padding, padding, padding);
-	gtk_container_add(GTK_CONTAINER(alignment), icon);
-	gtk_widget_show_all(GTK_WIDGET(alignment));
-
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), child, alignment);
-	gtk_container_child_set(GTK_CONTAINER(notebook), child, "tab-expand", TRUE, NULL);
 }
 
 /**

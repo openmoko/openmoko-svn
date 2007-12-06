@@ -37,6 +37,7 @@
 #include "persistent.h"
 #include "playlist.h"
 #include "playlist_page.h"
+#include "utils.h"
 
 /// Enumeration of the playlist list columns
 enum

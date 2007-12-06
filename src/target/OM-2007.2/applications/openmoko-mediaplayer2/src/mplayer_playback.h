@@ -20,27 +20,24 @@
  */
 
 /**
- * @file guitools.h
- * Various helper functions to aid with GUI creation and handling
+ * @file mplayer_playback.h
+ * Playback engine interface for utilizing mplayer
  */
 
-#ifndef GUITOOLS_H
-#define GUITOOLS_H
+#ifndef MPLAYER_PLAYBACK_H
+#define MPLAYER_PLAYBACK_H
 
-#include <gtk/gtk.h>
+gboolean omp_mplayback_init();
+void omp_mplayback_free();
 
-#include "main.h"
+gboolean omp_mplayback_load_video_from_uri(gchar *uri);
+gboolean omp_mplayback_video_loaded();
 
-GdkPixbuf *pixbuf_new_from_file(const gchar* file_name);
-
-GtkWidget *label_create(GtkWidget **label, gchar *font_info, gchar *color_desc,
-	gfloat xalign, gfloat yalign, gfloat xscale, gfloat yscale, PangoEllipsizeMode ellipsize_mode);
-
-GtkWidget *button_create_with_image(gchar *widget_name, gchar *image_name, GtkWidget **image, GCallback callback);
-
-void container_add_image_with_ref(GtkContainer *container, gchar *image_name, GtkWidget **image);
-void container_add_image(GtkContainer *container, gchar *image_name);
-
-void notebook_add_page_with_image(GtkWidget *notebook, GtkWidget *child, const gchar *image_name, int padding);
+void omp_mplayback_play();
+gboolean omp_mplayback_is_playing();
+gint omp_mplayback_get_state();
+gulong omp_mplayback_get_video_position();
+void omp_mplayback_set_video_position(gulong position);
+void omp_mplayback_set_volume(guint volume);
 
 #endif

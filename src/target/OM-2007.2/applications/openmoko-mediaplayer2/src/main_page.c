@@ -42,6 +42,7 @@
 #include "playlist.h"
 #include "playback.h"
 #include "persistent.h"
+#include "utils.h"
 
 // This is the amount the cursor must have moved in either direction to be considered moving
 // If we don't do this then it will constantly trigger gesture recognition due to jitter on the touchscreen
@@ -289,28 +290,20 @@ omp_main_gesture_trigger()
 	switch (main_gesture_data.gesture)
 	{
 		case OMP_MAIN_GESTURE_LEFT:
-		{
 			omp_main_rewind_clicked(NULL, NULL);
 			break;
-		}
 
 		case OMP_MAIN_GESTURE_RIGHT:
-		{
 			omp_main_fast_forward_clicked(NULL, NULL);
 			break;
-		}
 
 		case OMP_MAIN_GESTURE_UP:
-		{
 			omp_playback_set_volume(min(100, omp_playback_get_volume()+10));
 			break;
-		}
 
 		case OMP_MAIN_GESTURE_DOWN:
-		{
 			omp_playback_set_volume(max(0, omp_playback_get_volume()-10));
 			break;
-		}
 
 		default: break;
 	}
@@ -732,8 +725,8 @@ omp_main_page_create()
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_CHANGED,
 		G_CALLBACK(omp_main_update_track_change), NULL);
 
-	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
-		G_CALLBACK(omp_main_update_track_info_changed), NULL);
+//	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_INFO_CHANGED,
+//		G_CALLBACK(omp_main_update_track_info_changed), NULL);
 
 	g_signal_connect(G_OBJECT(omp_window), OMP_EVENT_PLAYLIST_TRACK_COUNT_CHANGED,
 		G_CALLBACK(omp_main_update_track_change), NULL);
@@ -817,7 +810,7 @@ gulong
 omp_main_get_video_window()
 {
 	if (GTK_WIDGET_NO_WINDOW(omp_main_widgets.cover_eventbox))
-		g_error(_("Video display widget has no window!\n"));
+		g_error("Video display widget has no window!\n");
 
 	return GDK_WINDOW_XWINDOW(omp_main_widgets.cover_eventbox->window);
 }
@@ -844,7 +837,8 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 	static gint old_track_id = 0;
 	static gulong old_track_length = 0;
 
-	gulong track_length, track_position;
+	gulong track_length = 0;
+	gulong track_position = 0;
 	gchar *artist = NULL;
 	gchar *title = NULL;
 	gchar *text;
@@ -854,7 +848,7 @@ omp_main_update_track_change(gpointer instance, gpointer user_data)
 	if (omp_config_get_main_ui_show_cover())
 	{
 		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.cover_image), "no_cover", -1);
-		gtk_widget_queue_draw(omp_main_widgets.cover_image);	// Re-draw the default cover
+		gtk_widget_queue_draw(omp_main_widgets.cover_frame);	// Re-draw the default cover
 	}
 
 	// Set preliminary artist/title strings (updated on incoming metadata)
@@ -950,10 +944,10 @@ omp_main_update_repeat_mode(gpointer instance, guint mode, gpointer user_data)
 void
 omp_main_update_show_cover_art(gpointer instance, gboolean flag, gpointer user_data)
 {
-/*	if (flag)
+	if (flag)
 		gtk_widget_show(omp_main_widgets.cover_frame);
 	else
-		gtk_widget_hide(omp_main_widgets.cover_frame); */
+		gtk_widget_hide(omp_main_widgets.cover_frame);
 }
 
 /**
@@ -964,11 +958,9 @@ omp_main_update_status_change(gpointer instance, gpointer user_data)
 {
 	// Update Play/Pause button pixmap
 	if (omp_playback_get_state() == OMP_PLAYBACK_STATE_PAUSED)
-	{
 		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.play_pause_button_image), "play", -1);
-	} else {
+	else
 		gtk_image_set_from_stock(GTK_IMAGE(omp_main_widgets.play_pause_button_image), "pause", -1);
-	}
 }
 
 /**
@@ -1097,4 +1089,3 @@ omp_main_update_label_type(gpointer instance, guint new_type, gpointer user_data
 	if ( (frame) && (new_type != OMP_MAIN_LABEL_HIDDEN) )
 		gtk_widget_show(frame);
 }
-

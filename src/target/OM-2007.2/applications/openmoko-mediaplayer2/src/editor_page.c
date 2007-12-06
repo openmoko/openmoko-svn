@@ -30,8 +30,9 @@
 #include <string.h>
 
 #include "editor_page.h"
-#include "playlist.h"
 #include "guitools.h"
+#include "playlist.h"
+#include "utils.h"
 
 /// Enumeration of the track list columns
 enum
