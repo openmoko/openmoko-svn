@@ -545,7 +545,7 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/video/glamo/glamo-core.c
-@@ -0,0 +1,1020 @@
+@@ -0,0 +1,1067 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1036,8 +1036,84 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 +	spin_lock(&glamo->lock);
 +	__reg_clear_bit(glamo, rst->reg, rst->val);
 +	spin_unlock(&glamo->lock);
++
++	msleep(1);
 +}
 +EXPORT_SYMBOL_GPL(glamo_engine_reset);
++
++enum glamo_pll {
++	GLAMO_PLL1,
++	GLAMO_PLL2,
++};
++
++static int glamo_pll_rate(struct glamo_core *glamo,
++			  enum glamo_pll pll)
++{
++	u_int16_t reg;
++	unsigned int div = 512;
++	/* FIXME: move osci into platform_data */
++	unsigned int osci = 32768;
++
++	if (osci == 32768)
++		div = 1;
++
++	switch (pll) {
++	case GLAMO_PLL1:
++		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN1);
++		break;
++	case GLAMO_PLL2:
++		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN3);
++		break;
++	default:
++		return -EINVAL;
++	}
++	return (osci/div)*reg;
++}
++
++int glamo_engine_reclock(struct glamo_core *glamo,
++			 enum glamo_engine engine,
++			 int ps)
++{
++	int pll, khz;
++	u_int16_t reg, mask, val = 0;
++
++	if (!ps)
++		return 0;
++
++	switch (engine) {
++	case GLAMO_ENGINE_LCD:
++		pll = GLAMO_PLL1;
++		reg = GLAMO_REG_CLOCK_GEN7;
++		mask = 0xff;
++		break;
++	default:
++		dev_warn(&glamo->pdev->dev,
++			 "reclock of engine 0x%x not supported\n", engine);
++		return -EINVAL;
++		break;
++	}
++
++	pll = glamo_pll_rate(glamo, pll);
++	khz = 1000000000UL / ps;
++
++	if (khz)
++		val = (pll / khz) / 1000;
++
++	dev_dbg(&glamo->pdev->dev,
++			"PLL %d, kHZ %d, div %d\n", pll, khz, val);
++
++	if (val) {
++		val--;
++
++		reg_set_bit_mask(glamo, reg, mask, val);
++		msleep(5); /* wait some time to stabilize */
++
++		return 0;
++	} else {
++		return -EINVAL;
++	}
++}
++EXPORT_SYMBOL_GPL(glamo_engine_reclock);
 +
 +/***********************************************************************
 + * script support
@@ -1190,35 +1266,6 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.c
 +		{ 0xfffe, 1 },
 +};
 +#endif
-+
-+enum glamo_pll {
-+	GLAMO_PLL1,
-+	GLAMO_PLL2,
-+};
-+
-+static int glamo_pll_rate(struct glamo_core *glamo,
-+				   enum glamo_pll pll)
-+{
-+	u_int16_t reg;
-+	unsigned int div = 512;
-+	/* FIXME: move osci into platform_data */
-+	unsigned int osci = 32768;
-+
-+	if (osci == 32768)
-+		div = 1;
-+
-+	switch (pll) {
-+	case GLAMO_PLL1:
-+		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN1);
-+		break;
-+	case GLAMO_PLL2:
-+		reg = __reg_read(glamo, GLAMO_REG_PLL_GEN3);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return (osci/div)*reg;
-+}
 +
 +enum glamo_power {
 +	GLAMO_POWER_ON,
@@ -1614,7 +1661,7 @@ Index: linux-2.6/drivers/video/glamo/glamo-fb.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/video/glamo/glamo-fb.c
-@@ -0,0 +1,653 @@
+@@ -0,0 +1,658 @@
 +/* Smedia Glamo 336x/337x driver
 + *
 + * (C) 2007 by OpenMoko, Inc.
@@ -1815,6 +1862,11 @@ Index: linux-2.6/drivers/video/glamo/glamo-fb.c
 +	int sync, bp, disp, fp, total;
 +
 +	glamofb_cmd_mode(glamo, 1);
++
++	if (var->pixclock)
++		glamo_engine_reclock(glamo->mach_info->glamo,
++				     GLAMO_ENGINE_LCD,
++				     var->pixclock);
 +
 +	/* XXX highest bits of the following two regs have other meanings */
 +	reg_write(glamo, GLAMO_REG_LCD_WIDTH, var->xres);
@@ -2343,7 +2395,7 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.h
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/video/glamo/glamo-core.h
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,53 @@
 +#ifndef __GLAMO_CORE_H
 +#define __GLAMO_CORE_H
 +
@@ -2393,6 +2445,8 @@ Index: linux-2.6/drivers/video/glamo/glamo-core.h
 +int glamo_engine_enable(struct glamo_core *glamo, enum glamo_engine engine);
 +int glamo_engine_disable(struct glamo_core *glamo, enum glamo_engine engine);
 +void glamo_engine_reset(struct glamo_core *glamo, enum glamo_engine engine);
++int glamo_engine_reclock(struct glamo_core *glamo,
++			 enum glamo_engine engine, int ps);
 +
 +#endif /* __GLAMO_CORE_H */
 Index: linux-2.6/drivers/video/glamo/glamo-gpio.c
