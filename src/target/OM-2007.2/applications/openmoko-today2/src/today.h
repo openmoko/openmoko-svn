@@ -6,6 +6,8 @@
 #include <libtaku/taku-launcher-tile.h>
 #include <moko-journal.h>
 #include <libjana/jana.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
 
 #define GCONF_POKY_INTERFACE_PREFIX "/desktop/poky/interface"
 #define GCONF_POKY_WALLPAPER "/wallpaper"
@@ -26,6 +28,8 @@ typedef struct {
 	GtkWidget *bg_ebox;
 	GdkPixmap *wallpaper;
 	gchar *location;
+	DBusGProxy *network_proxy;
+	gchar *network_name;
 	
 	GtkWidget *date_button;
 	GtkWidget *missed_calls_box;

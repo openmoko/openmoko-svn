@@ -42,6 +42,7 @@ PKG_CHECK_MODULES(ECAL, libecal-1.2 >= $LIBECAL_VERSION)
 PKG_CHECK_MODULES(EBOOK, libebook-1.2 >= $LIBEBOOK_VERSION)
 PKG_CHECK_MODULES(GCONF, gconf-2.0)
 PKG_CHECK_MODULES(JANA, libjana libjana-ecal libjana-gtk)
+PKG_CHECK_MODULES(DBUS, dbus-glib-1)
 
 AC_ARG_ENABLE(startup_notification,
         AC_HELP_STRING([--enable-startup-notification], [enable startup notification support]),

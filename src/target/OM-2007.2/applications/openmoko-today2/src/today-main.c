@@ -349,6 +349,35 @@ location_notify (GConfClient *client, guint cnxn_id,
 	}
 }
 
+static gboolean active = TRUE;
+
+static void
+set_window_title (TodayData *data)
+{
+	gtk_window_set_title (GTK_WINDOW (data->window),
+		data->network_name ? data->network_name :
+		"Registering...");
+}
+
+static void
+is_active_notify (GObject *window, GParamSpec *arg1, TodayData *data)
+{
+	g_object_get (window, "is-active", &active, NULL);
+	if (!active)
+		gtk_window_set_title (GTK_WINDOW (data->window), "Home");
+	else
+		set_window_title (data);
+}
+
+static void
+provider_changed_cb (DBusGProxy *proxy, const gchar *name, TodayData *data)
+{
+	g_free (data->network_name);
+	data->network_name = g_strdup (name);
+	
+	if (active) set_window_title (data);
+}
+
 static GtkWidget *window;
 
 static void
@@ -362,17 +391,20 @@ int
 main (int argc, char **argv)
 {
 	TodayData data;
+	DBusGConnection *connection;
 	GOptionContext *context;
 	GtkWidget *widget;
 #ifndef STANDALONE
 	gint x, y, w, h;
 #endif
+	GError *error = NULL;
 	
 	static GOptionEntry entries[] = {
 		{ NULL }
 	};
 	
 	data.wallpaper = NULL;
+	data.network_name = NULL;
 
 	/* Initialise */
 	bindtextdomain (GETTEXT_PACKAGE, TODAY_LOCALE_DIR);;
@@ -386,6 +418,22 @@ main (int argc, char **argv)
 
 	/* init openmoko stock items */
 	moko_stock_register ();
+
+	/* Get phone-kit Network dbus proxy */
+	connection = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+	if (!connection) {
+		g_warning ("Failed to get dbus connection: %s", error->message);
+		g_error_free (error);
+		data.network_proxy = NULL;
+	} else {
+		data.network_proxy = dbus_g_proxy_new_for_name (connection,
+			"org.openmoko.PhoneKit",
+			"/org/openmoko/PhoneKit/Network",
+			"org.openmoko.PhoneKit.Network");
+		dbus_g_proxy_connect_signal (data.network_proxy,
+			"ProviderChanged", G_CALLBACK (provider_changed_cb),
+			&data, NULL);
+	}
 
 	/* Create widgets */
 	data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -442,6 +490,8 @@ main (int argc, char **argv)
 #endif
 	
 	/* Show and start */
+	g_signal_connect (data.window, "notify::is-active",
+		G_CALLBACK (is_active_notify), &data);
 	gtk_widget_show (data.window);
 
 	/* Listen to wallpaper setting */

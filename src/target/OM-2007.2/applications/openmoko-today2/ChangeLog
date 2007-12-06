@@ -1,3 +1,12 @@
+2007-12-06  Chris Lord  <chris@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/today-main.c: (set_window_title), (is_active_notify),
+	(provider_changed_cb), (main):
+	* src/today.h:
+        Use phone-kit to display network name (bug #367)
+
 2007-11-30  Chris Lord  <chris@openedhand.com>
 
 	* src/today-task-manager.c: (today_task_manager_populate_tasks),

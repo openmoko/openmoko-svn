@@ -6,7 +6,7 @@ AM_CPPFLAGS  = -DPKGDATADIR=\"$(pkgdatadir)\" 				\
 
 AM_CFLAGS    = -Wall -pedantic -std=c99 @GTK_CFLAGS@ @ECAL_CFLAGS@ \
 		@EBOOK_CFLAGS@ @MOKOUI_CFLAGS@ @MOKOJOURNAL_CFLAGS@ \
-		@GCONF_CFLAGS@ @JANA_CFLAGS@
+		@GCONF_CFLAGS@ @JANA_CFLAGS@ @DBUS_CFLAGS@
 
 bin_PROGRAMS = openmoko-today
 
@@ -30,7 +30,7 @@ openmoko_today_LDADD  = $(top_builddir)/libkoto/libkoto.a 	\
 			$(top_builddir)/libtaku/libtaku.a	\
 			@GTK_LIBS@ @ECAL_LIBS@ @EBOOK_LIBS@ @SEXY_LIBS@ \
 			@SN_LIBS@ @MOKOUI_LIBS@ @MOKOJOURNAL_LIBS@ \
-			@GCONF_LIBS@ @JANA_LIBS@
+			@GCONF_LIBS@ @JANA_LIBS@ @DBUS_LIBS@
 
 # Optional inotify support
 if HAVE_INOTIFY
