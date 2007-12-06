@@ -29,7 +29,7 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 ===================================================================
 --- /dev/null
 +++ linux-2.6/drivers/spi/jbt6k74.c
-@@ -0,0 +1,654 @@
+@@ -0,0 +1,646 @@
 +/* Linux kernel driver for the tpo JBT6K74-AS LCM ASIC
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
@@ -213,7 +213,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	rc |= jbt_reg_write(jbt, JBT_REG_BOOSTER_OP, 0x56);
 +	rc |= jbt_reg_write(jbt, JBT_REG_BOOSTER_MODE, 0x33);
 +	rc |= jbt_reg_write(jbt, JBT_REG_BOOSTER_FREQ, 0x11);
-+	rc |= jbt_reg_write(jbt, JBT_REG_BOOSTER_FREQ, 0x11);
 +	rc |= jbt_reg_write(jbt, JBT_REG_OPAMP_SYSCLK, 0x02);
 +	rc |= jbt_reg_write(jbt, JBT_REG_VSC_VOLTAGE, 0x2b);
 +	rc |= jbt_reg_write(jbt, JBT_REG_VCOM_VOLTAGE, 0x40);
@@ -234,13 +233,11 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_FINE_2, 0x00);
 +	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_INCLINATION, 0x00);
 +	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_BLUE_OFFSET, 0x00);
-+	rc |= jbt_reg_write(jbt, JBT_REG_GAMMA1_BLUE_OFFSET, 0x00);
 +
 +	if (!qvga) {
 +		DEBUGP("entering VGA mode\n");
 +		rc |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_VGA, 0x1f0);
 +		rc |= jbt_reg_write(jbt, JBT_REG_BLANK_CONTROL, 0x02);
-+		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
 +		rc |= jbt_reg_write16(jbt, JBT_REG_BLANK_TH_TV, 0x0804);
 +
 +		rc |= jbt_reg_write(jbt, JBT_REG_CKV_ON_OFF, 0x01);
@@ -264,11 +261,6 @@ Index: linux-2.6/drivers/spi/jbt6k74.c
 +		rc |= jbt_reg_write16(jbt, JBT_REG_ASW_TIMING_1_QVGA, 0x0a19);
 +		rc |= jbt_reg_write(jbt, JBT_REG_ASW_TIMING_2_QVGA, 0x0a);
 +	}
-+
-+#if 0
-+	rc |= jct_reg_write16(jbt, JBT_REG_HCLOCK_QVGA, 0x00ffe;
-+	ic |= jbt_reg_write16(jbt, JBT_REG_HCLOCK_QVGA, 0x00ff);
-+#endif
 +
 +	return rc;
 +}
