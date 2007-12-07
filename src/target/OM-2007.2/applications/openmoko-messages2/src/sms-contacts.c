@@ -18,6 +18,7 @@
  */
 
 #include "sms-contacts.h"
+#include "sms-utils.h"
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
 #include <string.h>
@@ -87,6 +88,9 @@ contacts_added_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 		g_hash_table_insert (data->contacts,
 			e_contact_get (contact, E_CONTACT_UID), iter);
 	}
+
+	if (!data->note_count_idle) data->note_count_idle =
+		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
 }
 
 static void
@@ -107,6 +111,9 @@ contacts_changed_cb (EBookView *ebookview, GList *contacts, SmsData *data)
 			contacts_store (data, iter, contact);
 		}
 	}
+
+	if (!data->note_count_idle) data->note_count_idle =
+		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
 }
 
 static void
@@ -123,6 +130,9 @@ contacts_removed_cb (EBookView *ebookview, GList *uids, SmsData *data)
 			data->contacts_store, iter);
 		g_hash_table_remove (data->contacts, uids->data);
 	}
+
+	if (!data->note_count_idle) data->note_count_idle =
+		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
 }
 
 static void
@@ -162,8 +172,12 @@ static gint
 contacts_iter_compare_func (GtkTreeModel *model, GtkTreeIter *a,
 			    GtkTreeIter *b, SmsData *data)
 {
-	gint result;
+	gint result, prio1, prio2;
 	gchar *name1, *name2, *name1c, *name2c;
+	
+	gtk_tree_model_get (model, a, COL_PRIORITY, &prio1, -1);
+	gtk_tree_model_get (model, b, COL_PRIORITY, &prio2, -1);
+	if (prio1 != prio2) return prio1 - prio2;
 	
 	gtk_tree_model_get (model, a, COL_NAME, &name1, -1);
 	gtk_tree_model_get (model, b, COL_NAME, &name2, -1);
@@ -241,7 +255,8 @@ sms_contacts_page_new (SmsData *data)
 
 	/* Create contacts model */
 	data->contacts_store = (GtkTreeModel *)gtk_list_store_new (COL_LAST,
-		G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
+		G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF,
+		G_TYPE_INT);
 	gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (
 		data->contacts_store), COL_NAME,
 		(GtkTreeIterCompareFunc)contacts_iter_compare_func,
@@ -259,7 +274,7 @@ sms_contacts_page_new (SmsData *data)
 	gtk_tree_model_filter_set_modify_func ((GtkTreeModelFilter *)
 		data->contacts_filter, COL_LAST,
 		(GType []){G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING, GDK_TYPE_PIXBUF},
+			G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_INT},
 		(GtkTreeModelFilterModifyFunc)nophoto_filter_func, data, NULL);
 	
 	/* Create groups model */

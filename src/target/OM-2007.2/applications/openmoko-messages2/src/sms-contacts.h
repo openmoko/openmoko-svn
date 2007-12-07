@@ -27,6 +27,7 @@ enum {
 	COL_NAME,
 	COL_DETAIL,
 	COL_ICON,
+	COL_PRIORITY,
 	COL_LAST
 };
 

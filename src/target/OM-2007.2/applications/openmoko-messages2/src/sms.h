@@ -28,11 +28,18 @@
 #include <libebook/e-book.h>
 
 typedef struct {
+	GList *unread;	/* List of JanaNote uids for unread messages */
+	GList *read;	/* The same for read messages */
+} SmsNoteCountData;
+
+typedef struct {
 	JanaStore *notes;
 	JanaStoreView *notes_view;
 	GtkTreeModel *note_store;
 	GtkTreeModel *note_filter;
-
+	GHashTable *note_count;
+	guint note_count_idle;
+	
 	EBook *ebook;
 	GtkTreeModel *contacts_store;
 	GtkTreeModel *contacts_filter;

@@ -19,6 +19,7 @@
 
 #include "sms-notes.h"
 #include "sms-utils.h"
+#include <libjana/jana.h>
 #include <libjana-ecal/jana-ecal.h>
 #include <libmokoui2/moko-finger-scroll.h>
 #include <libmokoui2/moko-search-bar.h>
@@ -221,10 +222,169 @@ static void sms_notes_data_func (GtkTreeViewColumn *tree_column,
 }
 
 static void
+global_note_added_cb (JanaStoreView *store_view, GList *components,
+		      SmsData *data)
+{
+	for (; components; components = components->next) {
+		SmsNoteCountData *ncdata;
+		JanaNote *note;
+		gint i;
+		
+		if (!JANA_IS_NOTE (components->data)) continue;
+		
+		note = JANA_NOTE (components->data);
+		
+		for (i = 0; i < 2; i++) {
+			gchar *uid;
+			gchar *key = i ? jana_note_get_author (note) :
+				jana_note_get_recipient (note);
+			if (!key) continue;
+			ncdata = g_hash_table_lookup (data->note_count, key);
+			
+			if (!ncdata) {
+				ncdata = g_slice_new0 (SmsNoteCountData);
+				g_hash_table_insert (
+					data->note_count, key, ncdata);
+			}
+			
+			uid = jana_component_get_uid (
+				JANA_COMPONENT (note));
+			if (jana_utils_component_has_category (
+			     JANA_COMPONENT (note), "Read")) {
+				ncdata->read = g_list_prepend (
+					ncdata->read, uid);
+			} else {
+				ncdata->unread = g_list_prepend (
+					ncdata->unread, uid);
+			}
+		}
+	}
+	
+	if (!data->note_count_idle) data->note_count_idle =
+		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
+}
+
+static void
+global_note_modified_cb (JanaStoreView *store_view, GList *components,
+			 SmsData *data)
+{
+	for (; components; components = components->next) {
+		SmsNoteCountData *ncdata;
+		JanaNote *note;
+		gchar *uid;
+		gint i;
+		
+		if (!JANA_IS_NOTE (components->data)) continue;
+		
+		note = JANA_NOTE (components->data);
+		
+		uid = jana_component_get_uid (JANA_COMPONENT (note));
+		for (i = 0; i < 2; i++) {
+			GList *u, *r;
+			gchar *key = i ? jana_note_get_author (note) :
+				jana_note_get_recipient (note);
+			ncdata = g_hash_table_lookup (data->note_count, key);
+			g_free (key);
+			
+			if (!ncdata) continue;
+			
+			/* Swap from read/unread lists if necessary */
+			u = g_list_find_custom (ncdata->unread, uid,
+				(GCompareFunc)strcmp);
+			r = g_list_find_custom (ncdata->read, uid,
+				(GCompareFunc)strcmp);
+			if (jana_utils_component_has_category (
+			    JANA_COMPONENT (note), "Read")) {
+				if (u) {
+					ncdata->read = g_list_prepend (
+						ncdata->read, u->data);
+					ncdata->unread = g_list_delete_link (
+						ncdata->unread, u);
+				}
+			} else if (r) {
+				ncdata->unread = g_list_prepend (
+					ncdata->unread, r->data);
+				ncdata->read = g_list_delete_link (
+					ncdata->read, r);
+			}
+		}
+		g_free (uid);
+	}
+
+	if (!data->note_count_idle) data->note_count_idle =
+		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
+}
+
+static gboolean
+global_note_removed_ghrfunc (gchar *key, SmsNoteCountData *value,
+			     gchar *uid)
+{
+	GList *u, *r;
+	
+	u = g_list_find_custom (value->unread, uid, (GCompareFunc)strcmp);
+	r = g_list_find_custom (value->read, uid, (GCompareFunc)strcmp);
+	
+	if (u) {
+		g_free (u->data);
+		value->unread = g_list_delete_link (value->unread, u);
+	}
+	
+	if (r) {
+		g_free (r->data);
+		value->read = g_list_delete_link (value->read, r);
+	}
+	
+	if ((!value->read) && (!value->unread))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+static void
+global_note_removed_cb (JanaStoreView *store_view, GList *uids,
+			SmsData *data)
+{
+	for (; uids; uids = uids->next) {
+		g_hash_table_foreach_remove (data->note_count,
+			(GHRFunc)global_note_removed_ghrfunc, uids->data);
+	}
+
+	if (!data->note_count_idle) data->note_count_idle =
+		g_idle_add ((GSourceFunc)sms_contacts_note_count_update, data);
+}
+
+static void
 store_opened_cb (JanaStore *store, SmsData *data)
 {
+	JanaStoreView *store_view;
+	
 	open = TRUE;
 	if (!hidden) page_shown (data);
+
+	/* Create and start global view to bind notes to contacts */
+	store_view = jana_store_get_view (store);
+	g_signal_connect (store_view, "added",
+		G_CALLBACK (global_note_added_cb), data);
+	g_signal_connect (store_view, "modified",
+		G_CALLBACK (global_note_modified_cb), data);
+	g_signal_connect (store_view, "removed",
+		G_CALLBACK (global_note_removed_cb), data);
+	jana_store_view_start (store_view);
+}
+
+static void
+free_count_data (SmsNoteCountData *data)
+{
+	while (data->read) {
+		g_free (data->read->data);
+		data->read = g_list_delete_link (data->read, data->read);
+	}
+	while (data->unread) {
+		g_free (data->unread->data);
+		data->unread = g_list_delete_link (data->unread, data->unread);
+	}
+	
+	g_slice_free (SmsNoteCountData, data);
 }
 
 GtkWidget *
@@ -238,6 +398,9 @@ sms_notes_page_new (SmsData *data)
 	data->author_icon = NULL;
 	data->recipient_number = NULL;
 	data->recipient_icon = NULL;
+	data->note_count = g_hash_table_new_full (g_str_hash, g_str_equal,
+		(GDestroyNotify)g_free, (GDestroyNotify)free_count_data);
+	data->note_count_idle = 0;
 	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);

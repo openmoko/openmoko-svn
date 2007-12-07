@@ -1,3 +1,19 @@
+2007-12-07  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-contacts.c: (contacts_added_cb), (contacts_changed_cb),
+	(contacts_removed_cb), (contacts_iter_compare_func),
+	(sms_contacts_page_new):
+	* src/sms-contacts.h:
+	* src/sms-notes.c: (global_note_added_cb),
+	(global_note_modified_cb), (global_note_removed_ghrfunc),
+	(global_note_removed_cb), (store_opened_cb), (free_count_data),
+	(sms_notes_page_new):
+	* src/sms-utils.c: (sms_contacts_note_count_update):
+	* src/sms-utils.h:
+	* src/sms.h:
+	Keep a count of read/unread notes per number and generate detail strings
+	for contacts to display their read/unread message count
+
 2007-12-06  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-compose.c: (send_clicked_cb):

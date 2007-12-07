@@ -109,3 +109,56 @@ sms_contact_load_photo (EContact *contact)
 	
 	return pixbuf;
 }
+
+gboolean
+sms_contacts_note_count_update (SmsData *data)
+{
+	GtkTreeIter iter;
+	
+	if (!gtk_tree_model_get_iter_first (data->contacts_store, &iter)) {
+		data->note_count_idle = 0;
+		return FALSE;
+	}
+	
+	do {
+		gint i;
+		EContact *contact;
+		gchar *uid, *detail;
+		gint unread, read;
+		
+		gtk_tree_model_get (data->contacts_store, &iter, COL_UID,
+			&uid, -1);
+		if (!uid) continue;
+		
+		if (!e_book_get_contact (data->ebook, uid, &contact, NULL)) {
+			g_free (uid);
+			continue;
+		}
+		g_free (uid);
+		
+		unread = 0;
+		read = 0;
+		for (i = E_CONTACT_FIRST_PHONE_ID;
+		     i <= E_CONTACT_LAST_PHONE_ID; i++) {
+			SmsNoteCountData *ncdata;
+			const gchar *number = e_contact_get_const (
+				contact, (EContactField)i);
+			if (!number) continue;
+			
+			ncdata = g_hash_table_lookup (data->note_count, number);
+			if (!ncdata) continue;
+			
+			read += g_list_length (ncdata->read);
+			unread += g_list_length (ncdata->unread);
+		}
+		
+		detail = g_strdup_printf ("%d unread\n%d read", unread, read);
+		gtk_list_store_set (GTK_LIST_STORE (data->contacts_store),
+			&iter, COL_DETAIL, detail, -1);
+		g_free (detail);
+	} while (gtk_tree_model_iter_next (data->contacts_store, &iter));
+	
+	data->note_count_idle = 0;
+	
+	return FALSE;
+}
