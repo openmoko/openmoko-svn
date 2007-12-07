@@ -110,18 +110,18 @@ moko_shade_colour (GdkColor *src,
 
   color_to_hlsx (&_src, &h, &l, &s);
 
-  l = CFX_MUL (l, shade);
+  l = l + CFX_MUL (CFX_ONE - l, shade);
   if (l > CFX_ONE)
     l = CFX_ONE;
   else if (l < 0)
     l = 0;
-
-  s = CFX_MUL (s, shade);
+/*
+  s = s + CFX_MUL (CFX_ONE - s, shade);
   if (s > CFX_ONE)
     s = CFX_ONE;
   else if (s < 0)
     s = 0;
-  
+*/
   color_from_hlsx (dest, h, l, s);
 
   /* convert back to 16 bit per channel */

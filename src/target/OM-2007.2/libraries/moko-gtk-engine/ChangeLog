@@ -1,3 +1,13 @@
+2007-12-07  Thomas Wood  <thomas@openedhand.com>
+
+	* src/moko-draw.c: (moko_gradient):
+	* src/moko-utils.c: (moko_shade_colour):
+	Change how shading operates to allow shading up from black.
+
+	* data/gtk-2.0/gtkrc:
+	Change the default fg colour to black (used as bg colour in some
+	widgets, e.g. toolbars)
+
 2007-11-14  Thomas Wood  <thomas@openedhand.com>
 
 	* data/gtk-2.0/gtkrc: Minor colour tweaks. Lighten the normal background

@@ -102,10 +102,10 @@ moko_gradient (GtkStyle * style, GdkWindow * window, GtkStateType state_type,
   gc = gdk_gc_new (window);
 
   /* get the start and end colours */
-  moko_shade_colour (&style->bg[state_type], &c1, 1.8);
-  moko_shade_colour (&style->bg[state_type], &c2, 1.4);
-  moko_shade_colour (&style->bg[state_type], &c3, 1.3);
-  moko_shade_colour (&style->bg[state_type], &c4, 1.0);
+  moko_shade_colour (&style->bg[state_type], &c1, 0.8);
+  moko_shade_colour (&style->bg[state_type], &c2, 0.4);
+  moko_shade_colour (&style->bg[state_type], &c3, 0.3);
+  moko_shade_colour (&style->bg[state_type], &c4, 0.0);
 
   /* set line for 1px */
   gdk_gc_set_line_attributes (gc, 1, GDK_LINE_SOLID, GDK_CAP_BUTT,
