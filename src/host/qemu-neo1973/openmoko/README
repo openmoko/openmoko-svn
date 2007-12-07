@@ -1,0 +1,42 @@
+This directory contains files used for OpenMoko which are not qemu
+code but are in some way related or useful to have at hand.
+
+The kernel patch with GTA02fake support is based on:
+ * kernel 2.6.22.5
+ * OpenMoko patchset revision 3610 from
+   http://svn.openmoko.org/trunk/src/target/kernel/patches/
+ * Samuel's Atheros WLAN driver revision 3610 from
+   http://svn.openmoko.org/developers/sameo/patches/ar6k-atheros/
+
+The following sequence can be used to obtain a working tree on which the
+patch can be applied:
+
+tar -xvjf linux-2.6.22.5.tar.bz2
+cd linux-2.6.22.5
+cg-init
+git-add -r .
+cg-commit -C -m "Linux 2.6.22.5"
+svn co -r 3610 http://svn.openmoko.org/trunk/src/target/kernel/patches/
+quilt -a push
+cg-add -r * patches/*
+cg-rm include/sound/wavefront_fx.h
+cg-commit -m "Linux-OpenMoko"
+svn co -r 3610 http://svn.openmoko.org/developers/sameo/patches/ar6k-atheros/
+mv ar6k-atheros patches/
+wget -O patches/fix-EVIOCGRAB-semantics-2.6.22.5.patch http://www.openembedded.org/viewmtn/revision/downloadfile/105955293719b2a1414f1b03af410b8ff8dbdb1b/packages/linux/linux-openmoko/fix-EVIOCGRAB-semantics-2.6.22.5.patch
+wget -O patches/fix-gta01-flowcontrol2-2.6.22.5.patch http://www.openembedded.org/viewmtn/revision/downloadfile/105955293719b2a1414f1b03af410b8ff8dbdb1b/packages/linux/linux-openmoko/fix-gta01-flowcontrol2-2.6.22.5.patch
+cat >> patches/series
+fix-EVIOCGRAB-semantics-2.6.22.5.patch -p1
+fix-gta01-flowcontrol2-2.6.22.5.patch -p1
+ar6k-atheros/common_atheros_sdiostack.patch
+ar6k-atheros/common_atheros_sdiostack_functions.patch
+ar6k-atheros/common_atheros_sdiostack_shcd.patch
+ar6k-atheros/common_atheros_sdiostack_ar6000_wlan.patch
+ar6k-atheros/pnp_fixes_2.6.22.5.patch
+ar6k-atheros/mach-gta02_wifi.patch
+ar6k-atheros/s3c24xx_hcd_atheros.patch
+^D
+quilt -a push
+cg-add -r * patches/* patches/ar6k-atheros/*
+cg-commit -m "Linux-sameo-WLAN"
+cg-patch < ../linux-gta02-pseudo.patch
