@@ -1,5 +1,12 @@
 2007-12-07  Thomas Wood  <thomas@openedhand.com>
 
+	* src/moko-draw.c: (moko_draw_vline), (moko_draw_hline),
+	(moko_draw_style_class_init):
+
+	Add hline and vline functions, but don't actually draw anything
+
+2007-12-07  Thomas Wood  <thomas@openedhand.com>
+
 	* src/moko-draw.c: (moko_gradient):
 	* src/moko-utils.c: (moko_shade_colour):
 	Change how shading operates to allow shading up from black.

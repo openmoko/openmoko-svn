@@ -448,6 +448,23 @@ moko_draw_extension (GtkStyle * style, GdkWindow * window,
 
 }
 
+void
+moko_draw_vline (GtkStyle *style, GdkWindow *window, GtkStateType state_type,
+    GdkRectangle *area, GtkWidget *widget, const gchar *detail, gint x1, gint
+    x2, gint y)
+{
+  /* don't paint anything for the moment */
+}
+
+void
+moko_draw_hline (GtkStyle *style, GdkWindow *window, GtkStateType state_type,
+    GdkRectangle *area, GtkWidget *widget, const gchar *detail, gint x1, gint
+    x2, gint y)
+{
+  /* don't paint anything for the moment */
+}
+
+
 
 void
 moko_draw_style_class_init (GtkStyleClass * style_class)
@@ -463,4 +480,7 @@ moko_draw_style_class_init (GtkStyleClass * style_class)
   style_class->draw_shadow_gap = moko_draw_box_gap;
   style_class->draw_extension = moko_draw_extension;
   style_class->draw_focus = moko_draw_focus;
+  style_class->draw_vline = moko_draw_vline;
+  style_class->draw_hline = moko_draw_hline;
+
 }
