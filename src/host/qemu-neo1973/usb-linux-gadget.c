@@ -428,7 +428,7 @@ static void gadget_ep_parse(USBPacket *packet, void *opaque)
     cfg->bmAttributes = 0xc0; /* dummy_hcd is picky about power */
 
     if (hci->hosthighspeed) {
-        /* For high-speed devies we need to set the interval for
+        /* For high-speed devices we need to set the interval for
          * Interrupt Enpoints as high as possible so that the host doesn't
          * expect really fast responses from the emulator and thus
          * time-out on some packets.  */

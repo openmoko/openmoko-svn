@@ -3,6 +3,8 @@
 
 /* timers */
 
+//#define TIMER_DEBUG
+
 typedef struct QEMUClock QEMUClock;
 typedef void QEMUTimerCB(void *opaque);
 
@@ -19,11 +21,25 @@ extern QEMUClock *vm_clock;
 
 int64_t qemu_get_clock(QEMUClock *clock);
 
-QEMUTimer *qemu_new_timer(QEMUClock *clock, QEMUTimerCB *cb, void *opaque);
 void qemu_free_timer(QEMUTimer *ts);
 void qemu_del_timer(QEMUTimer *ts);
-void qemu_mod_timer(QEMUTimer *ts, int64_t expire_time);
 int qemu_timer_pending(QEMUTimer *ts);
+#ifdef TIMER_DEBUG
+QEMUTimer *__qemu_new_timer(QEMUClock *clock,
+                QEMUTimerCB *cb, void *opaque, const char *line);
+# define qemu_new_timer(clock, cb, opaque)	\
+    __qemu_new_timer(clock, cb, opaque,		\
+                __FILE__ ":" stringify(__LINE__) " in " __FUNCTION__)
+void __qemu_mod_timer(QEMUTimer *ts, int64_t expire_time, const char *line);
+# define qemu_mod_timer(ts, time)		\
+    __qemu_mod_timer(ts, time,			\
+                __FILE__ ":" stringify(__LINE__) " in " __FUNCTION__)
+#else
+QEMUTimer *qemu_new_timer(QEMUClock *clock, QEMUTimerCB *cb, void *opaque);
+# define _qemu_new_timer	qemu_new_timer
+void qemu_mod_timer(QEMUTimer *ts, int64_t expire_time);
+# define _qemu_mod_timer	qemu_mod_timer
+#endif
 
 extern int64_t ticks_per_sec;
 

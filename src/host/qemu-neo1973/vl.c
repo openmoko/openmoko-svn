@@ -811,6 +811,10 @@ struct QEMUTimer {
     QEMUTimerCB *cb;
     void *opaque;
     struct QEMUTimer *next;
+#ifdef TIMER_DEBUG
+    const char *new_line;
+    const char *mod_line;
+#endif
 };
 
 struct qemu_alarm_timer {
@@ -976,7 +980,7 @@ static QEMUClock *qemu_new_clock(int type)
     return clock;
 }
 
-QEMUTimer *qemu_new_timer(QEMUClock *clock, QEMUTimerCB *cb, void *opaque)
+QEMUTimer *_qemu_new_timer(QEMUClock *clock, QEMUTimerCB *cb, void *opaque)
 {
     QEMUTimer *ts;
 
@@ -986,6 +990,17 @@ QEMUTimer *qemu_new_timer(QEMUClock *clock, QEMUTimerCB *cb, void *opaque)
     ts->opaque = opaque;
     return ts;
 }
+
+#ifdef TIMER_DEBUG
+QEMUTimer *__qemu_new_timer(QEMUClock *clock, QEMUTimerCB *cb, void *opaque,
+		const char *new_line)
+{
+    QEMUTimer *ts = _qemu_new_timer(clock, cb, opaque);
+
+    ts->new_line = new_line;
+    return ts;
+}
+#endif
 
 void qemu_free_timer(QEMUTimer *ts)
 {
@@ -1014,7 +1029,7 @@ void qemu_del_timer(QEMUTimer *ts)
 
 /* modify the current timer so that it will be fired when current_time
    >= expire_time. The corresponding callback will be called. */
-void qemu_mod_timer(QEMUTimer *ts, int64_t expire_time)
+void _qemu_mod_timer(QEMUTimer *ts, int64_t expire_time)
 {
     QEMUTimer **pt, *t;
 
@@ -1036,6 +1051,14 @@ void qemu_mod_timer(QEMUTimer *ts, int64_t expire_time)
     ts->next = *pt;
     *pt = ts;
 }
+
+#ifdef TIMER_DEBUG
+void __qemu_mod_timer(QEMUTimer *ts, int64_t expire_time, const char *mod_line)
+{
+    _qemu_mod_timer(ts, expire_time);
+    ts->mod_line = mod_line;
+}
+#endif
 
 int qemu_timer_pending(QEMUTimer *ts)
 {
@@ -1187,6 +1210,10 @@ static void host_alarm_handler(int host_signum)
         SetEvent(data->host_alarm);
 #endif
         CPUState *env = next_cpu;
+
+        /* FIXME Ugly hack only to make usb-gadgetfs work */
+        if (!alarm_has_dynticks(alarm_timer) && !cpu_single_env)
+            return;
 
         /* stop the currently executing cpu because a timer occured */
         cpu_interrupt(env, CPU_INTERRUPT_EXIT);
