@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openmoko calculator\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-26 22:34+0200\n"
+"POT-Creation-Date: 2007-12-08 20:04+0100\n"
 "PO-Revision-Date: 2007-04-04 11:18+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -15,36 +15,43 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/calc-main.c:83
-msgid "Clear All"
-msgstr "Töm allt"
-
-#: src/calc-main.c:83
-msgid "Clear"
-msgstr "Töm"
-
-#: src/calc-main.c:87
-msgid "<big><b>.</b></big>"
-msgstr "<big><b>.</b></big>"
-
-#: src/calc-main.c:132
-msgid "<big>Not a Number</big><span font_desc=\"48\" > <b>NaN</b></span>"
+#: src/calc-main.c:71
+msgid "CE"
 msgstr ""
 
-#: src/calc-main.c:136
+#: src/calc-main.c:71
+msgid "C"
+msgstr ""
+
+#: src/calc-main.c:75
+msgid "."
+msgstr ""
+
+#: src/calc-main.c:101
+msgid "Error"
+msgstr ""
+
+#: src/calc-main.c:105
 msgid ""
-"<big>Not a Number</big> <span font_desc=\"48\" ><b>NaN</b></span>\n"
+"Error\n"
 "<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
 "<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</"
 "span>"
 msgstr ""
 
-#. application object
-#. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-#: src/calc-main.c:374
+#. application
+#: src/calc-main.c:342
 msgid "Calculator"
 msgstr "Miniräknare"
 
-#: src/calc-main.c:381
-msgid "Close"
-msgstr "Stäng"
+#~ msgid "Clear All"
+#~ msgstr "Töm allt"
+
+#~ msgid "Clear"
+#~ msgstr "Töm"
+
+#~ msgid "<big><b>.</b></big>"
+#~ msgstr "<big><b>.</b></big>"
+
+#~ msgid "Close"
+#~ msgstr "Stäng"

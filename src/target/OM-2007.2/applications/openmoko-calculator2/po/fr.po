@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openmoko-calculator 0.0.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-07-26 22:34+0200\n"
+"POT-Creation-Date: 2007-12-08 20:04+0100\n"
 "PO-Revision-Date: 2007-07-26 22:39+0200\n"
 "Last-Translator: ortalo <rodolphe.ortalo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -16,25 +16,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: src/calc-main.c:83
-msgid "Clear All"
-msgstr "RAZ"
-
-#: src/calc-main.c:83
-msgid "Clear"
-msgstr "Effacer"
-
-#: src/calc-main.c:87
-msgid "<big><b>.</b></big>"
-msgstr "<big><b>,</b></big>"
-
-#: src/calc-main.c:132
-msgid "<big>Not a Number</big><span font_desc=\"48\" > <b>NaN</b></span>"
+#: src/calc-main.c:71
+msgid "CE"
 msgstr ""
 
-#: src/calc-main.c:136
+#: src/calc-main.c:71
+msgid "C"
+msgstr ""
+
+#: src/calc-main.c:75
+msgid "."
+msgstr ""
+
+#: src/calc-main.c:101
+msgid "Error"
+msgstr ""
+
+#: src/calc-main.c:105
+#, fuzzy
 msgid ""
-"<big>Not a Number</big> <span font_desc=\"48\" ><b>NaN</b></span>\n"
+"Error\n"
 "<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
 "<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</"
 "span>"
@@ -44,12 +45,19 @@ msgstr ""
 "<span foreground=\"orange\" style=\"italic\">T&#x00E9;l&#x00E9;portation "
 "demand&#x00E9;e...</span>"
 
-#. application object
-#. MokoApplication* app = MOKO_APPLICATION(moko_application_get_instance());
-#: src/calc-main.c:374
+#. application
+#: src/calc-main.c:342
 msgid "Calculator"
 msgstr "Calculatrice"
 
-#: src/calc-main.c:381
-msgid "Close"
-msgstr "Fermer"
+#~ msgid "Clear All"
+#~ msgstr "RAZ"
+
+#~ msgid "Clear"
+#~ msgstr "Effacer"
+
+#~ msgid "<big><b>.</b></big>"
+#~ msgstr "<big><b>,</b></big>"
+
+#~ msgid "Close"
+#~ msgstr "Fermer"
