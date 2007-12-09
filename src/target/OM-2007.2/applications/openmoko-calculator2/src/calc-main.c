@@ -81,6 +81,7 @@ static enum operation ops[CALC_ROWS][CALC_COLS] = {
     { one, two, three, equal},
     { zero, point, minus, notimplemented},
   };
+
 /*
  * Signal function and static helpers
  */
