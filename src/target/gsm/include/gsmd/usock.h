@@ -95,6 +95,7 @@ enum gsmd_msg_phone {
 	GSMD_PHONE_POWERUP	= 1,
 	GSMD_PHONE_POWERDOWN	= 2,
 	GSMD_PHONE_GET_IMSI     = 3,
+	GSMD_PIN_GET_STATUS     = 4,
 };
 
 enum gsmd_msg_modem {

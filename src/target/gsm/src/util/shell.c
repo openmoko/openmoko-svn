@@ -356,6 +356,10 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		payload = (char *)gmh + sizeof(*gmh);
 		printf("imsi <%s>\n", payload);
 		break;
+	case GSMD_PIN_GET_STATUS:
+		payload = (char *)gmh + sizeof(*gmh);
+		printf("%s\n", payload);
+		break;
 	case GSMD_PHONE_POWERUP:
 		if (*intresult)
 			printf("Modem power-up failed: %i\n", *intresult);
@@ -470,6 +474,7 @@ static int shell_help(void)
 		"\tsC\tSMS Set Service Centre (sC=number)\n"
 		"\tim\tGet imsi\n"
 		"\tcs\tGet Call status\n"
+		"\tgp\tGet PIN status\n"
 		"\tq\tQuit\n"
 		);
 }
@@ -760,6 +765,10 @@ int shell_main(struct lgsm_handle *lgsmh, int sync)
 			} else if ( !strncmp(buf, "cs", 2)) {
 				printf("List current call status\n");
 				lgsm_voice_get_status(lgsmh);
+				pending_responses ++;
+			} else if ( !strncmp(buf, "gp", 2)) {
+				printf("Get PIN status\n");
+				lgsm_pin_status(lgsmh);
 				pending_responses ++;
 			} else {
 				printf("Unknown command `%s'\n", buf);

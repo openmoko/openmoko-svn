@@ -79,5 +79,6 @@ extern int lgsm_get_subscriber_num(struct lgsm_handle *lh);
 
 /* Retrieve IMSI information */
 extern int lgsm_get_imsi(struct lgsm_handle *lh);
-
+/* Get PIN status information */
+extern int lgsm_pin_status(struct lgsm_handle *lh);
 #endif

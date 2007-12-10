@@ -383,6 +383,14 @@ static int get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, strlen(resp) + 1, resp);
 }
 
+static int get_cpin_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	DEBUGP("resp: %s\n", resp);
+
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_PHONE, GSMD_PIN_GET_STATUS,
+			cmd->id, strlen(resp) + 1, resp);
+}
+
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -402,7 +410,10 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	case GSMD_PHONE_GET_IMSI:
 		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0, NULL);
 		break;
-
+		
+	case GSMD_PIN_GET_STATUS:
+		cmd = atcmd_fill("AT+CPIN?", 8 + 1, &get_cpin_cb, gu, 0, NULL);
+		break;
 	default:
 		return -EINVAL;
 	}
