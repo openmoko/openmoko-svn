@@ -39,6 +39,7 @@ sms_get_selected_contact (SmsData *data)
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
 		return NULL;
 	gtk_tree_model_get (model, &iter, COL_UID, &data->author_uid, -1);
+	if (!data->author_uid) return NULL;
 	
 	if (!e_book_get_contact (data->ebook,
 	     data->author_uid, &contact, &error)) {
@@ -110,10 +111,29 @@ sms_contact_load_photo (EContact *contact)
 	return pixbuf;
 }
 
+static void
+set_message_count (SmsData *data, GtkTreeIter *iter, gint read, gint unread,
+		   gboolean unknown)
+{
+	gchar *detail;
+	gint priority;
+
+	detail = g_strdup_printf ("%d unread\n%d read", unread, read);
+	priority = unread ? (unknown ? 15 : 10) : (unknown ? 5 : 0);
+	gtk_list_store_set (GTK_LIST_STORE (data->contacts_store),
+		iter, COL_DETAIL, detail, COL_PRIORITY, priority, -1);
+	g_free (detail);
+}
+
 gboolean
 sms_contacts_note_count_update (SmsData *data)
 {
-	GtkTreeIter iter;
+	static guint assignment = 1;
+	GHashTable *indexed_uids;
+	GList *ncdatas, *n;
+	gint unread, read;
+
+	GtkTreeIter iter, unknown_iter;
 	
 	if (!gtk_tree_model_get_iter_first (data->contacts_store, &iter)) {
 		data->note_count_idle = 0;
@@ -123,12 +143,14 @@ sms_contacts_note_count_update (SmsData *data)
 	do {
 		gint i;
 		EContact *contact;
-		gchar *uid, *detail;
-		gint unread, read;
+		gchar *uid;
 		
 		gtk_tree_model_get (data->contacts_store, &iter, COL_UID,
 			&uid, -1);
-		if (!uid) continue;
+		if (!uid) {
+			unknown_iter = iter;
+			continue;
+		}
 		
 		if (!e_book_get_contact (data->ebook, uid, &contact, NULL)) {
 			g_free (uid);
@@ -150,15 +172,57 @@ sms_contacts_note_count_update (SmsData *data)
 			
 			read += g_list_length (ncdata->read);
 			unread += g_list_length (ncdata->unread);
+			ncdata->assigned = assignment;
 		}
 		
-		detail = g_strdup_printf ("%d unread\n%d read", unread, read);
-		gtk_list_store_set (GTK_LIST_STORE (data->contacts_store),
-			&iter, COL_DETAIL, detail, -1);
-		g_free (detail);
+		set_message_count (data, &iter, read, unread, FALSE);
 	} while (gtk_tree_model_iter_next (data->contacts_store, &iter));
 	
 	data->note_count_idle = 0;
+	
+	/* Make a list of unassigned note UIDs */
+	while (data->unassigned_notes) {
+		g_free (data->unassigned_notes->data);
+		data->unassigned_notes = g_list_delete_link (
+			data->unassigned_notes, data->unassigned_notes);
+	}
+	indexed_uids = g_hash_table_new (g_str_hash, g_str_equal);
+	ncdatas = g_hash_table_get_values (data->note_count);
+	read = 0;
+	unread = 0;
+	for (n = ncdatas; n; n = n->next) {
+		gint i;
+		GList *u;
+		SmsNoteCountData *ncdata = (SmsNoteCountData *)n->data;
+		
+		if (ncdata->assigned == assignment) continue;
+		
+		for (i = 0; i < 2; i++) {
+			for (u = i ? ncdata->read : ncdata->unread;
+			     u; u = u->next) {
+				gchar *uid = (gchar *)u->data;
+				if (!g_hash_table_lookup (indexed_uids, uid)) {
+					g_hash_table_insert (indexed_uids, uid,
+						GINT_TO_POINTER (1));
+					data->unassigned_notes =
+						g_list_prepend (
+							data->unassigned_notes,
+							g_strdup (uid));
+					if (i) read ++;
+					else unread ++;
+				}
+			}
+		}
+	}
+	g_list_free (ncdatas);
+	g_hash_table_destroy (indexed_uids);
+	
+	set_message_count (data, &unknown_iter, read, unread, TRUE);
+	
+	/* Add 2 to assignment so that when it eventually wraps (which will 
+	 * almost certainly not happen, but still), it won't ever equal 0.
+	 */
+	assignment += 2;
 	
 	return FALSE;
 }

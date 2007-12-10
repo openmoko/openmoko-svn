@@ -177,7 +177,7 @@ contacts_iter_compare_func (GtkTreeModel *model, GtkTreeIter *a,
 	
 	gtk_tree_model_get (model, a, COL_PRIORITY, &prio1, -1);
 	gtk_tree_model_get (model, b, COL_PRIORITY, &prio2, -1);
-	if (prio1 != prio2) return prio1 - prio2;
+	if (prio1 != prio2) return prio2 - prio1;
 	
 	gtk_tree_model_get (model, a, COL_NAME, &name1, -1);
 	gtk_tree_model_get (model, b, COL_NAME, &name2, -1);
@@ -267,6 +267,11 @@ sms_contacts_page_new (SmsData *data)
 		(GDestroyNotify)g_free, (GDestroyNotify)free_iter_slice);
 	data->numbers = g_hash_table_new_full (g_str_hash, g_str_equal,
 		(GDestroyNotify)g_free, (GDestroyNotify)g_free);
+	
+	/* Insert contact for 'unknown' messages */
+	gtk_list_store_insert_with_values (
+		GTK_LIST_STORE (data->contacts_store), NULL, 0,
+		COL_UID, NULL, COL_NAME, "Unknown sender", COL_PRIORITY, 5, -1);
 	
 	/* Create filter */
 	data->contacts_filter = gtk_tree_model_filter_new (

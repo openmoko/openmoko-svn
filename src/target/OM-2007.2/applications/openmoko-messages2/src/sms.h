@@ -30,6 +30,7 @@
 typedef struct {
 	GList *unread;	/* List of JanaNote uids for unread messages */
 	GList *read;	/* The same for read messages */
+	gint assigned;
 } SmsNoteCountData;
 
 typedef struct {
@@ -39,6 +40,7 @@ typedef struct {
 	GtkTreeModel *note_filter;
 	GHashTable *note_count;
 	guint note_count_idle;
+	GList *unassigned_notes;
 	
 	EBook *ebook;
 	GtkTreeModel *contacts_store;

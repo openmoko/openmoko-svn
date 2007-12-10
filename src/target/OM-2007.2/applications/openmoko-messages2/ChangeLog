@@ -1,3 +1,22 @@
+2007-12-10  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-contacts.c: (contacts_iter_compare_func),
+	(sms_contacts_page_new):
+	Sort higher priorities first, rather than last and add a special
+	'unknown' contact for messages from people not in the list
+
+	* src/sms-notes.c: (page_shown), (sms_notes_page_new):
+	Handle the 'unknown' contact
+
+	* src/sms-utils.c: (sms_get_selected_contact), (set_message_count),
+	(sms_contacts_note_count_update):
+	Add code to collect messages from contacts not in the contact list and
+	update the count for the 'unknown' contact
+
+	* src/sms.h:
+	Add a list for unassigned contacts, add an 'assigned' field to
+	SmsNoteCountData to detect when notes aren't assigned to a contact
+
 2007-12-07  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-contacts.c: (contacts_added_cb), (contacts_changed_cb),

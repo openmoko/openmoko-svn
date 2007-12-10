@@ -88,7 +88,37 @@ page_shown (SmsData *data)
 	
 	if (!open) return;
 	
-	if (!(contact = sms_get_selected_contact (data))) return;
+	if (!(contact = sms_get_selected_contact (data))) {
+		GList *u, *components = NULL;
+		
+		/* Assume the 'unknown' contact was selected */
+		data->author_icon = g_object_ref (data->no_photo);
+		
+		/* Manually feed the notes in - this is a bit naughty as if 
+		 * they change, we won't be notified...
+		 */
+		for (u = data->unassigned_notes; u; u = u->next) {
+			JanaComponent *component;
+			const gchar *uid = (const gchar *)u->data;
+			
+			component = jana_store_get_component (data->notes, uid);
+			if (component) components = g_list_prepend (
+				components, component);
+		}
+		
+		store_view = jana_store_get_view (data->notes);
+		jana_gtk_note_store_set_view (JANA_GTK_NOTE_STORE (
+			data->note_store), store_view);
+		note_changed_cb (store_view, components, data);
+		g_signal_emit_by_name (store_view, "added", components);
+		
+		for (u = components; u; u = u->next) {
+			g_object_unref (G_OBJECT (u->data));
+		}
+		g_list_free (components);
+		
+		return;
+	}
 	
 	data->author_icon = sms_contact_load_photo (contact);
 	if (!data->author_icon)
@@ -401,6 +431,7 @@ sms_notes_page_new (SmsData *data)
 	data->note_count = g_hash_table_new_full (g_str_hash, g_str_equal,
 		(GDestroyNotify)g_free, (GDestroyNotify)free_count_data);
 	data->note_count_idle = 0;
+	data->unassigned_notes = NULL;
 	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);
