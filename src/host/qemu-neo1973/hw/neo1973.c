@@ -87,6 +87,7 @@ struct neo_board_s {
     qemu_irq *kbd_pic;
     const char *kernel;
     struct sd_card_s *mmc;
+    uint32_t id;
 };
 
 /* Handlers for output ports */
@@ -431,7 +432,7 @@ static const int gta01_ts_scale[6] = {
 /* Board init.  */
 static struct neo_board_s *neo1973_init_common(int ram_size, DisplayState *ds,
                 const char *kernel_filename, const char *cpu_model,
-                struct sd_card_s *mmc)
+                struct sd_card_s *mmc, uint32_t id)
 {
     struct neo_board_s *s = (struct neo_board_s *)
             qemu_mallocz(sizeof(struct neo_board_s));
@@ -439,6 +440,7 @@ static struct neo_board_s *neo1973_init_common(int ram_size, DisplayState *ds,
     s->ram = 0x08000000;
     s->kernel = kernel_filename;
     s->mmc = mmc;
+    s->id = id;
 
     /* Setup CPU & memory */
     if (ram_size < s->ram + S3C_SRAM_SIZE) {
@@ -483,6 +485,34 @@ static struct neo_board_s *neo1973_init_common(int ram_size, DisplayState *ds,
     return s;
 }
 
+static uint32_t neo_machid_read(void *opaque, target_phys_addr_t addr)
+{
+    return 'Q';
+}
+
+static void neo_machid_write(void *opaque,
+                target_phys_addr_t addr, uint32_t val)
+{
+    struct neo_board_s *s = (struct neo_board_s *) opaque;
+
+    if ((val >> 4) == 'Q')
+        s->cpu->env->regs[val & 0xf] = s->id;
+}
+
+static void neo_machid_init(struct neo_board_s *s)
+{
+    static CPUReadMemoryFunc *readfn[] = {
+        neo_machid_read, neo_machid_read, neo_machid_read,
+    };
+    static CPUWriteMemoryFunc *writefn[] = {
+        neo_machid_write, neo_machid_write, neo_machid_write,
+    };
+    int iomemtype = cpu_register_io_memory(0, readfn, writefn, s);
+
+    /* SROM chipselect 5 base */
+    cpu_register_physical_memory(0x28000000, 1, iomemtype);
+}
+
 static void gta01_init(int ram_size, int vga_ram_size,
                 const char *boot_device, DisplayState *ds,
                 const char *kernel_filename, const char *kernel_cmdline,
@@ -494,7 +524,8 @@ static void gta01_init(int ram_size, int vga_ram_size,
     if (sd_idx >= 0)
         sd = sd_init(drives_table[sd_idx].bdrv, 0);
 
-    neo1973_init_common(ram_size, ds, kernel_filename, cpu_model, sd);
+    neo1973_init_common(ram_size, ds,
+                    kernel_filename, cpu_model, sd, 1304);
 }
 
 static void gta02f_init(int ram_size, int vga_ram_size,
@@ -504,9 +535,11 @@ static void gta02f_init(int ram_size, int vga_ram_size,
 {
     struct neo_board_s *neo;
 
-    neo = neo1973_init_common(ram_size, ds, kernel_filename, cpu_model, 0);
+    neo = neo1973_init_common(ram_size, ds,
+                    kernel_filename, cpu_model, 0, 1555);
 
     neo_gps_setup(neo);
+    neo_machid_init(neo);
 }
 
 QEMUMachine gta01_machine = {
