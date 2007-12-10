@@ -174,8 +174,6 @@ static int gsmd_initsettings2(struct gsmd *gsmd)
 	/* configure message format as PDU mode*/
 	/* FIXME: TEXT mode support!! */
 	rc |= gsmd_simplecmd(gsmd, "AT+CMGF=0");
-        /* ATH disconnects voice calls */
-        rc |= gsmd_simplecmd(gsmd, "AT+CVHU=0");
 
 
 	sms_cb_init(gsmd);
