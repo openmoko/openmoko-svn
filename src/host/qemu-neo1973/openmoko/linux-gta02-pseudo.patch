@@ -1,3 +1,56 @@
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index adddc71..0da1e56 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -50,6 +50,10 @@ ifeq ($(CONFIG_ARCH_AT91RM9200),y)
+ OBJS		+= head-at91rm9200.o
+ endif
+ 
++ifeq ($(CONFIG_MACH_NEO1973_GTA02F),y)
++OBJS		+= head-qemu.o
++endif
++
+ ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
+ ifeq ($(CONFIG_CPU_CP15),y)
+ OBJS		+= big-endian.o
+diff --git a/arch/arm/boot/compressed/head-qemu.S b/arch/arm/boot/compressed/head-qemu.S
+new file mode 100644
+index 0000000..abc1901
+--- /dev/null
++++ b/arch/arm/boot/compressed/head-qemu.S
+@@ -0,0 +1,32 @@
++/*
++ * arch/arm/boot/compressed/head-qemu.S
++ *
++ * Copyright (C) 2007 OpenMoko Inc.
++ *
++ * We want to check here whether we are running in the emulator, on
++ * an emulated machine that is equipped with more stuff than the one
++ * claimed by the machine ID from the bootloader.  In such case we
++ * override the machine ID, so that the we can still use standard
++ * bootloaders.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/linkage.h>
++
++	.section        ".start", "ax"
++__qemu_start:
++
++	/*
++	 * Check that the virtual register has the value it should have
++	 * and if so, write the number of register in which we want to
++	 * receive the machine ID, to our virtual register.  That's it.
++	 */
++	mov	r0, #0x28000000		@ Base address of machine ID register
++	mov	r1, #7			@ Our machine ID is in r7
++	orr	r1, r1, #('Q' << 4)	@ OR it with magic value 1
++	ldr	r2, [r0]		@ Load the register value
++	cmp	r2, #'Q'		@ Compare against magic value 2
++	streq	r1, [r0]		@ If ok, get the machine ID
 diff --git a/arch/arm/mach-s3c2410/Kconfig b/arch/arm/mach-s3c2410/Kconfig
 index dc833c0..2347376 100644
 --- a/arch/arm/mach-s3c2410/Kconfig
