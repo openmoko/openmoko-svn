@@ -1,0 +1,49 @@
+# Italian translation of openmoko-calculator.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the openmoko-calculator package.
+# Milo Casagrande <milo.casagrande@yahoo.it>, 2007
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: openmoko-calculatore trunk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-12-09 20:57+0100\n"
+"PO-Revision-Date: 2007-12-05 21:33+0100\n"
+"Last-Translator: Milo Casagrande <milo.casagrande@yahoo.it>\n"
+"Language-Team: Italian <tp@list.linux.it>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/calc-main.c:71
+msgid "CE"
+msgstr "CE"
+
+#: ../src/calc-main.c:71
+msgid "C"
+msgstr "C"
+
+#: ../src/calc-main.c:75
+msgid "."
+msgstr "."
+
+#: ../src/calc-main.c:101
+msgid "Error"
+msgstr "Errore"
+
+#: ../src/calc-main.c:105
+msgid ""
+"Error\n"
+"<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
+"<span foreground=\"orange\" style=\"italic\">Beam request transmitted...</"
+"span>"
+msgstr ""
+"Errore\n"
+"<span foreground=\"darkgrey\" size=\"smaller\">covert_channel/ack</span>\n"
+"<span foreground=\"orange\" style=\"italic\">Richiesta beam trasmessa...</"
+"span>"
+
+#. application
+#: ../src/calc-main.c:342
+msgid "Calculator"
+msgstr "Calcolatrice"
