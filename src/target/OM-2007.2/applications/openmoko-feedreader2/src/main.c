@@ -27,7 +27,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
-#include <webkitgtkglobal.h>
+#include <webkit.h>
 
 #include <moko-finger-scroll.h>
 #include <moko-stock.h>

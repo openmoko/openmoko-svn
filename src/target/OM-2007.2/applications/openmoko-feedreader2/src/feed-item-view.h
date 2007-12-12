@@ -39,7 +39,7 @@
 #define RSS_FEED_ITEM_VIEW_H
 
 #include <gtk/gtk.h>
-#include <webkitgtkpage.h>
+#include <webkitwebview.h>
 
 G_BEGIN_DECLS
 
@@ -56,7 +56,7 @@ typedef struct _FeedItemViewClass FeedItemViewClass;
 struct _FeedItemView {
     GtkVBox parent;
 
-    WebKitPage  *page;
+    WebKitWebView  *page;
     GtkToolItem    *back;
     GtkToolItem    *forward;
     GtkToolItem    *mail;

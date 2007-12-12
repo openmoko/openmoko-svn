@@ -121,7 +121,7 @@ feed_item_view_init (FeedItemView* view)
     GtkWidget* scrolled = moko_finger_scroll_new ();
     gtk_box_pack_start (GTK_BOX(view), scrolled, TRUE, TRUE, 0);
 
-    view->page = WEBKIT_PAGE(webkit_page_new ());
+    view->page = WEBKIT_WEB_VIEW(webkit_web_view_new ());
     gtk_container_add (GTK_CONTAINER(scrolled), GTK_WIDGET(view->page));
 
     /*
@@ -186,7 +186,7 @@ feed_item_view_display (FeedItemView* view, const gchar* text)
 {
     gtk_widget_set_sensitive (GTK_WIDGET(view->mail), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(view->page), TRUE);
-    webkit_page_load_html_string (view->page, text, "");
+    webkit_web_view_load_html_string (view->page, text, "");
 }
 
 void

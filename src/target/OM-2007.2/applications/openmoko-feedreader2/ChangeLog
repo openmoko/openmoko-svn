@@ -1,3 +1,14 @@
+2007-12-12  Holger Freyther  <zecke@selfish.org>
+
+        WebKitPage -> WebKitWebView
+        webkitglobal -> webkit
+
+        * src/feed-item-view.c:
+        (feed_item_view_init):
+        (feed_item_view_display):
+        * src/feed-item-view.h:
+        * src/main.c:
+
 2007-10-04  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
 
         s/WebKitGtk/WebKit/g
