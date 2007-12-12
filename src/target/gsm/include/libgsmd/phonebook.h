@@ -56,15 +56,6 @@ struct lgsm_pb_entry {
 	char 			text[LGSM_PB_TEXT_MAXLEN+1];
 };
 
-/* Get a specific phonebook entry  and store it to 'pb'
- * pb' is caller-allocated */
-extern int lgsm_pb_get_entry(struct lgsm_handle *lh,
-			     struct lgsm_pb_entry *pb);
-
-/* Store a specific phonebook entry 'pb' into phone */
-extern int lgsm_pb_set_entry(struct lgsm_handle *lh,
-			     struct lgsm_pb_entry *pb);
-
 /* List of supported phonebook memory storage */
 extern int lgsm_pb_list_storage(struct lgsm_handle *lh);
 
