@@ -1,6 +1,0 @@
-style "moko-message-dialog"
-{
-    bg_pixmap[NORMAL] = "openmoko-message-dialog-background.png"
-}
-class "MokoMessageDialog" style "moko-message-dialog"
-

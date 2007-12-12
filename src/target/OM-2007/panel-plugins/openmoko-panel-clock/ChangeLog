@@ -1,6 +1,0 @@
-2007-06-22  Stefan Schmidt <stefan@openmoko.org>
-
-        * configure.ac:
-        * data/Makefile.am:
-
-        Fix make distcheck. Patch from Rodolphe Ortalo. Closes #540

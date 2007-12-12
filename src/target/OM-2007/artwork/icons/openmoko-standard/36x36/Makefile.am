@@ -1,2 +1,0 @@
-SUBDIRS=stock
-MAINTAINERCLEANFILES = Makefile.in

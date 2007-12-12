@@ -1,7 +1,0 @@
-2007-06-21  Holger Hans Peter Freyther  <zecke@selfish.org>
-
-        Update the usage of MokoBanner to use moko_banner_get_instance
-
-        * src/demo-main.c:
-        (cb_searchbox_invisible):
-

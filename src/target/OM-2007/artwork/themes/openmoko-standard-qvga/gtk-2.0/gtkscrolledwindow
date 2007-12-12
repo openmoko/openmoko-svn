@@ -1,6 +1,0 @@
-style "gtkscrolledwindow" {
-    GtkScrolledWindow::scrollbar-spacing = 1
-}
-
-class "GtkScrolledWindow" style "gtkscrolledwindow"
-

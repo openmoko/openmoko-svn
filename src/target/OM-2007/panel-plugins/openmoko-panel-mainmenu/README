@@ -1,8 +1,0 @@
-OpenMoko Panel Plugin: openmoko-panel-mainmenu
-
-Specification:
-	On Tap: Toggle OpenMoko mainmenu visibility
-	On Hold: Show Root Window
-
-Todo:
-	Integrate main menu instead of just exec'ing / kill'ing

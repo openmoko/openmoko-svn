@@ -1,5 +1,0 @@
-data/contacts.desktop.in
-src/contacts-callbacks-ui.c
-src/contacts-main.c
-src/contacts-utils.c
-src/contacts-omoko.c

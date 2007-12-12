@@ -1,6 +1,0 @@
-2007-08-13  Neil J. Patel  <njp@o-hand.com>
-
-	reviewed by: <delete if not using a buddy>
-
-	* src/dialer-window-history.c: (history_add_entry):
-
