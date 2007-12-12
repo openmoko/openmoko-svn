@@ -123,7 +123,7 @@ static void go_clicked(GtkButton* btn, struct BrowserData* data)
     else
         url = autocorrect_url (gtk_entry_get_text (data->goUrlEntry));
 
-    webkit_page_open (data->currentPage->webKitPage, url);
+    webkit_web_view_open (data->currentPage->webKitPage, url);
     gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 0);
 }
 
@@ -138,10 +138,10 @@ static void create_new_page_clicked(GtkButton* btn, struct BrowserData* data)
     else
         url = autocorrect_url (gtk_entry_get_text (data->goUrlEntry));
 
-    BrowserPage* page = browser_page_new (WEBKIT_PAGE (webkit_page_new ()));
+    BrowserPage* page = browser_page_new (WEBKIT_WEB_VIEW (webkit_web_view_new ()));
     gtk_list_store_append (data->browserPages, &data->currentPageIter);
     gtk_list_store_set (data->browserPages, &data->currentPageIter, 0, page, -1);
-    webkit_page_open (page->webKitPage, url);
+    webkit_web_view_open (page->webKitPage, url);
     update_current_page_from_iter (data);
 
     gtk_notebook_set_current_page (GTK_NOTEBOOK (data->mainNotebook), 0);

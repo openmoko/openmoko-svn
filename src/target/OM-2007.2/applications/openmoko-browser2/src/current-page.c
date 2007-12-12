@@ -28,27 +28,27 @@
 #include "current-page.h"
 
 #include <moko-finger-scroll.h>
-#include <webkitgtkframe.h>
-#include <webkitgtkpage.h>
+#include <webkitwebframe.h>
+#include <webkitwebview.h>
 
 /*
  * From a list of BrowserPage's in BrowserData::currentPage show
  * one as the current one. This means we will GtkContainer::{add,remove}
- * the WebKitPage. To make that work, e.g. not destroying the WebKitPage
+ * the WebKitWebView. To make that work, e.g. not destroying the WebKitWebView
  * when we remove it from the container, we will keep a self added reference
- * on all WebKitPages we have created.
+ * on all WebKitWebViews we have created.
  */
 
 static void current_back_clicked_closure(GtkWidget* button, struct BrowserData* data)
 {
     g_return_if_fail (data->currentPage);
-    webkit_page_go_backward(data->currentPage->webKitPage);
+    webkit_web_view_go_backward(data->currentPage->webKitPage);
 }
 
 static void current_forward_clicked_closure(GtkWidget* button, struct BrowserData* data)
 {
     g_return_if_fail (data->currentPage);
-    webkit_page_go_forward(data->currentPage->webKitPage);
+    webkit_web_view_go_forward(data->currentPage->webKitPage);
 }
 
 static void current_stop_reload_clicked_closure(GtkWidget* button, struct BrowserData* data)
@@ -58,17 +58,17 @@ static void current_stop_reload_clicked_closure(GtkWidget* button, struct Browse
 static void current_add_bookmark_clicked_closure(GtkWidget* button, struct BrowserData* data)
 {
     g_return_if_fail (data->currentPage);
-    g_print ("Location to bookmark: %s\n", webkit_frame_get_title (webkit_page_get_main_frame (data->currentPage->webKitPage)));
+    g_print ("Location to bookmark: %s\n", webkit_web_frame_get_title (webkit_web_view_get_main_frame (data->currentPage->webKitPage)));
 }
 
-static void current_progress_changed(WebKitPage* page, int prog, struct BrowserData* data)
+static void current_progress_changed(WebKitWebView* page, int prog, struct BrowserData* data)
 {
     g_assert (page == data->currentPage->webKitPage);
 
     if (prog == 100) {
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_page_can_go_backward (page));
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_page_can_go_forward (page));
-        gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_frame_get_title (webkit_page_get_main_frame (page)) != NULL);
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_web_view_can_go_backward (page));
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_web_view_can_go_forward (page));
+        gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_web_frame_get_title (webkit_web_view_get_main_frame (page)) != NULL);
     }
 }
 
@@ -176,8 +176,8 @@ void update_current_page_from_iter(struct BrowserData* data)
      * Update the GtkToolItems
      */
     /* XXX ### FIXME TODO check if we should show stop/reload */
-    gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_page_can_go_backward (data->currentPage->webKitPage));
-    gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_page_can_go_forward (data->currentPage->webKitPage));
-    gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_frame_get_title (webkit_page_get_main_frame (data->currentPage->webKitPage)) != NULL);
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentBack), webkit_web_view_can_go_backward (data->currentPage->webKitPage));
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentForward), webkit_web_view_can_go_forward (data->currentPage->webKitPage));
+    gtk_widget_set_sensitive (GTK_WIDGET (data->currentAdd), webkit_web_frame_get_title (webkit_web_view_get_main_frame (data->currentPage->webKitPage)) != NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (data->currentClose), TRUE);
 }

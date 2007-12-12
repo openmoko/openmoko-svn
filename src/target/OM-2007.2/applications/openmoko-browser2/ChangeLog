@@ -1,3 +1,26 @@
+2007-12-12  Holger Freyther  <zecke@selfish.org>
+
+        Update to the recent API of WebKit/Gtk
+
+        WebKitFrame -> WebKitWebFrame
+        WebKitPage  -> WebKitWebView
+
+        * src/browser-data.c:
+        (browser_page_new):
+        * src/browser-data.h:
+        * src/current-page.c:
+        (current_back_clicked_closure):
+        (current_forward_clicked_closure):
+        (current_add_bookmark_clicked_closure):
+        (current_progress_changed):
+        (update_current_page_from_iter):
+        * src/go-page.c:
+        (go_clicked):
+        (create_new_page_clicked):
+        * src/main.c:
+        * src/open-pages-page.c:
+        (open_pages_page_cell_data_func):
+
 2007-10-04  Holger 'Siddhartha' Freyther  <zecke@selfish.org>
 
         s/WebKitGtk/WebKit/g

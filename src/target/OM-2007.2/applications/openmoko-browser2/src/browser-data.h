@@ -27,7 +27,7 @@
 #ifndef OPENMOKO_BROWSER_DATA_H
 #define OPENMOKO_BROWSER_DATA_H
 
-#include "webkitgtkpage.h"
+#include "webkitwebview.h"
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -46,7 +46,7 @@ typedef struct _BrowserPageClass BrowserPageClass;
 
 struct _BrowserPage {
     GObject parent;
-    WebKitPage* webKitPage;
+    WebKitWebView* webKitPage;
 };
 
 struct _BrowserPageClass {
@@ -54,7 +54,7 @@ struct _BrowserPageClass {
 };
 
 GType browser_page_get_type (void);
-BrowserPage* browser_page_new (WebKitPage* page);
+BrowserPage* browser_page_new (WebKitWebView* page);
 
 /*
  * The state of the Browser
@@ -74,8 +74,8 @@ struct BrowserData {
      * using HTML and JavaScript and binding the GObject(s) to
      * JavaScript.
      */
-    WebKitPage* pagesOverviewPage;
-    WebKitPage* bookmarkPage;
+    WebKitWebView* pagesOverviewPage;
+    WebKitWebView* bookmarkPage;
 
 
     /*
