@@ -303,46 +303,63 @@ static int pin_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
+static int get_cpin_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
+{
+	enum gsmd_pin_type type;
+
+	if (!strncmp(resp, "+CPIN: ", 7)) {
+		unsigned int i;
+		resp += 7;
+		for (i = 0; i < __NUM_GSMD_PIN; i++) {
+			if(!strcmp(resp,pin_type_names[i]))
+				type = i;
+		}
+	}
+
+	return gsmd_ucmd_submit(ctx, GSMD_MSG_PIN, GSMD_PIN_GET_STATUS,
+			cmd->id, sizeof(type), &type);
+}
+
 static int usock_rcv_pin(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			 int len)
 {
 	struct gsmd_pin *gp = (struct gsmd_pin *) ((void *)gph + sizeof(*gph));
 	struct gsmd_atcmd *cmd;
 
-	if (gph->len < sizeof(*gp) || len < sizeof(*gp)+sizeof(*gph))
-		return -EINVAL;
-
-	gsmd_log(GSMD_DEBUG, "pin type=%u, pin='%s', newpin='%s'\n",
-		 gp->type, gp->pin, gp->newpin);
-
 	switch (gph->msg_subtype) {
 	case GSMD_PIN_INPUT:
-		/* FIXME */
+		if (gph->len < sizeof(*gp) || len < sizeof(*gp)+sizeof(*gph))
+			return -EINVAL;
+
+		gsmd_log(GSMD_DEBUG, "pin type=%u, pin='%s', newpin='%s'\n",
+			 gp->type, gp->pin, gp->newpin);
+
+		cmd = atcmd_fill("AT+CPIN=\"", 9+GSMD_PIN_MAXLEN+3+GSMD_PIN_MAXLEN+2,
+			 &pin_cmd_cb, gu, 0, NULL);
+		if (!cmd)
+			return -ENOMEM;
+
+		strncat(cmd->buf, gp->pin, sizeof(gp->pin));
+
+		switch (gp->type) {
+			case GSMD_PIN_SIM_PUK:
+			case GSMD_PIN_SIM_PUK2:
+				strcat(cmd->buf, "\",\"");
+				strncat(cmd->buf, gp->newpin, sizeof(gp->newpin));
+			break;
+		default:
+			break;
+		}
+		strcat(cmd->buf, "\"");
+		break;
+	case GSMD_PIN_GET_STATUS:
+		cmd = atcmd_fill("AT+CPIN?", 8 + 1, &get_cpin_cb, gu, 0, NULL);
 		break;
 	default:
 		gsmd_log(GSMD_ERROR, "unknown pin type %u\n",
 			 gph->msg_subtype);
 		return -EINVAL;
 	}
-
-	cmd = atcmd_fill("AT+CPIN=\"", 9+GSMD_PIN_MAXLEN+3+GSMD_PIN_MAXLEN+2,
-			 &pin_cmd_cb, gu, 0, NULL);
-	if (!cmd)
-		return -ENOMEM;
-
-	strncat(cmd->buf, gp->pin, sizeof(gp->pin));
-
-	switch (gp->type) {
-	case GSMD_PIN_SIM_PUK:
-	case GSMD_PIN_SIM_PUK2:
-		strcat(cmd->buf, "\",\"");
-		strncat(cmd->buf, gp->newpin, sizeof(gp->newpin));
-		break;
-	default:
-		break;
-	}
-
-	strcat(cmd->buf, "\"");
 
 	return atcmd_submit(gu->gsmd, cmd);
 }
@@ -383,14 +400,6 @@ static int get_imsi_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, strlen(resp) + 1, resp);
 }
 
-static int get_cpin_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
-{
-	DEBUGP("resp: %s\n", resp);
-
-	return gsmd_ucmd_submit(ctx, GSMD_MSG_PHONE, GSMD_PIN_GET_STATUS,
-			cmd->id, strlen(resp) + 1, resp);
-}
-
 static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph, 
 			   int len)
 {
@@ -410,10 +419,7 @@ static int usock_rcv_phone(struct gsmd_user *gu, struct gsmd_msg_hdr *gph,
 	case GSMD_PHONE_GET_IMSI:
 		cmd = atcmd_fill("AT+CIMI", 7 + 1, &get_imsi_cb, gu, 0, NULL);
 		break;
-		
-	case GSMD_PIN_GET_STATUS:
-		cmd = atcmd_fill("AT+CPIN?", 8 + 1, &get_cpin_cb, gu, 0, NULL);
-		break;
+
 	default:
 		return -EINVAL;
 	}

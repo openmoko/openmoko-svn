@@ -356,10 +356,6 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 		payload = (char *)gmh + sizeof(*gmh);
 		printf("imsi <%s>\n", payload);
 		break;
-	case GSMD_PIN_GET_STATUS:
-		payload = (char *)gmh + sizeof(*gmh);
-		printf("%s\n", payload);
-		break;
 	case GSMD_PHONE_POWERUP:
 		if (*intresult)
 			printf("Modem power-up failed: %i\n", *intresult);
@@ -382,11 +378,19 @@ static int phone_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 static int pin_msghandler(struct lgsm_handle *lh, struct gsmd_msg_hdr *gmh)
 {
 	int result = *(int *) gmh->data;
-
-	if (result)
-		printf("PIN error %i\n", result);
-	else
-		printf("PIN accepted!\n");
+	switch (gmh->msg_subtype) {
+		case GSMD_PIN_GET_STATUS:
+			printf("PIN STATUS: %i\n", result);
+			break;
+		case GSMD_PIN_INPUT:
+			if (result)
+				printf("PIN error %i\n", result);
+			else
+				printf("PIN accepted!\n");
+			break;
+		default:
+			return -EINVAL;	
+	}
 	pending_responses --;
 	return 0;
 }
