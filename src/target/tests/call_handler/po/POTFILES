@@ -1,7 +1,0 @@
-     ../src/support.h \
-     ../src/support.c \
-     ../src/main.c \
-     ../src/interface.h \
-     ../src/interface.c \
-     ../src/callbacks.h \
-     ../src/callbacks.c

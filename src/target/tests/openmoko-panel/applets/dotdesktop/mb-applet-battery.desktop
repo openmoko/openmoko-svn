@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Battery Monitor
-Comment=Panel based Battery Monitor
-Exec=mb-applet-battery
-Type=PanelApp
-Icon=miniapm.png
-Categories=Panel;Utility;MB
-
