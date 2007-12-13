@@ -4,7 +4,7 @@ Index: u-boot/Makefile
 ===================================================================
 --- u-boot.orig/Makefile
 +++ u-boot/Makefile
-@@ -2201,6 +2201,13 @@
+@@ -2250,6 +2250,13 @@
  sbc2410x_config: unconfig
  	@$(MKCONFIG) $(@:_config=) arm arm920t sbc2410x NULL s3c24x0
  
@@ -1435,16 +1435,19 @@ Index: u-boot/board/neo1973/common/lowlevel_init.S
  #define B2_BWSCON	  	(DW16)
  #define B3_BWSCON	  	(DW16 + WAIT + UBLB)
  #define B4_BWSCON	  	(DW16)
-@@ -68,9 +68,9 @@
+@@ -66,11 +66,11 @@
+ #define B0_Tacp		 	0x0
+ #define B0_PMC		 	0x0	/* normal */
  
- /* BANK1CON */
+-/* BANK1CON */
++/* BANK1CON: Smedia Glamo 3362 (on GTA02) */
  #define B1_Tacs		 	0x0	/*  0clk */
 -#define B1_Tcos		 	0x0	/*  0clk */
 -#define B1_Tacc		 	0x7	/* 14clk */
 -#define B1_Tcoh		 	0x0	/*  0clk */
-+#define B1_Tcos		 	0x1	/*  1clk */
-+#define B1_Tacc		 	0x4	/*  4clk */
-+#define B1_Tcoh		 	0x1	/*  1clk */
++#define B1_Tcos		 	0x3	/*  4clk */
++#define B1_Tacc		 	0x3	/*  4clk */
++#define B1_Tcoh		 	0x3	/*  4clk */
  #define B1_Tah		 	0x0	/*  0clk */
  #define B1_Tacp		 	0x0
  #define B1_PMC		 	0x0
@@ -1863,23 +1866,23 @@ Index: u-boot/drivers/video/smedia3362.c
 +}
 +
 +#endif /* CONFIG_VIDEO_GLAMO3362 */
-Index: u-boot/drivers/Makefile
+Index: u-boot/drivers/video/Makefile
 ===================================================================
 --- u-boot.orig/drivers/video/Makefile
 +++ u-boot/drivers/video/Makefile
-@@ -67,6 +67,7 @@
- COBJS-y += serial_max3100.o
- COBJS-y += serial_xuartlite.o
+@@ -32,6 +32,7 @@
+ COBJS-y += sed13806.o
+ COBJS-y += sed156x.o
  COBJS-y += sm501.o
 +COBJS-y += smedia3362.o
  COBJS-y += smiLynxEM.o
- COBJS-y += usbtty.o
  COBJS-y += videomodes.o
+ 
 Index: u-boot/drivers/misc/Makefile
 ===================================================================
 --- u-boot.orig/drivers/misc/Makefile
 +++ u-boot/drivers/misc/Makefile
-@@ -145,6 +146,7 @@
+@@ -28,6 +28,7 @@
  COBJS-y += ali512x.o
  COBJS-y += ns87308.o
  COBJS-y += pcf50606.o
