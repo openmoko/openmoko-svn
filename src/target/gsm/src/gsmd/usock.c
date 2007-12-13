@@ -303,6 +303,25 @@ static int pin_cmd_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 			cmd->id, sizeof(ret), &ret);
 }
 
+static const char *pin_type_names[__NUM_GSMD_PIN] = {
+	[GSMD_PIN_READY]	= "READY",
+	[GSMD_PIN_SIM_PIN]	= "SIM PIN",
+	[GSMD_PIN_SIM_PUK]	= "SIM PUK",
+	[GSMD_PIN_PH_SIM_PIN]	= "Phone-to-SIM PIN",
+	[GSMD_PIN_PH_FSIM_PIN]	= "Phone-to-very-first SIM PIN",
+	[GSMD_PIN_PH_FSIM_PUK]	= "Phone-to-very-first SIM PUK",
+	[GSMD_PIN_SIM_PIN2]	= "SIM PIN2",
+	[GSMD_PIN_SIM_PUK2]	= "SIM PUK2",
+	[GSMD_PIN_PH_NET_PIN]	= "Network personalization PIN",
+	[GSMD_PIN_PH_NET_PUK]	= "Network personalizaiton PUK",
+	[GSMD_PIN_PH_NETSUB_PIN]= "Network subset personalisation PIN",
+	[GSMD_PIN_PH_NETSUB_PUK]= "Network subset personalisation PUK",
+	[GSMD_PIN_PH_SP_PIN]	= "Service provider personalisation PIN",
+	[GSMD_PIN_PH_SP_PUK]	= "Service provider personalisation PUK",
+	[GSMD_PIN_PH_CORP_PIN]	= "Corporate personalisation PIN",
+	[GSMD_PIN_PH_CORP_PUK]	= "Corporate personalisation PUK",
+};
+
 static int get_cpin_cb(struct gsmd_atcmd *cmd, void *ctx, char *resp)
 {
 	enum gsmd_pin_type type;
