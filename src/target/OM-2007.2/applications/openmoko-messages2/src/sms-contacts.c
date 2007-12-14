@@ -28,6 +28,49 @@
 
 static const gchar *clear_numbers_uid;
 
+static gboolean hidden = FALSE;
+
+static void
+page_shown (SmsData *data)
+{
+}
+
+static void
+page_hidden (SmsData *data)
+{
+}
+
+static void
+notify_visible_cb (GObject *gobject, GParamSpec *arg1, SmsData *data)
+{
+	if ((!hidden) && (!GTK_WIDGET_VISIBLE (gobject))) {
+		hidden = TRUE;
+		page_hidden (data);
+	}
+}
+
+static gboolean
+visibility_notify_event_cb (GtkWidget *widget, GdkEventVisibility *event,
+			    SmsData *data)
+{
+	if (((event->state == GDK_VISIBILITY_PARTIAL) ||
+	     (event->state == GDK_VISIBILITY_UNOBSCURED)) && (hidden)) {
+		hidden = FALSE;
+		page_shown (data);
+	}
+	
+	return FALSE;
+}
+
+static void
+unmap_cb (GtkWidget *widget, SmsData *data)
+{
+	if (!hidden) {
+		hidden = TRUE;
+		page_hidden (data);
+	}
+}
+
 static void
 clear_numbers_cb (gchar *number, gchar *uid, GList **list)
 {
@@ -165,6 +208,9 @@ nophoto_filter_func (GtkTreeModel *model, GtkTreeIter *iter, GValue *value,
 		else
 			g_value_set_object (value, data->no_photo);
 		break;
+	    case COL_UNKNOWN :
+		g_value_set_boolean (value, (gboolean)pointer);
+		break;
 	}
 }
 
@@ -196,6 +242,18 @@ contacts_iter_compare_func (GtkTreeModel *model, GtkTreeIter *a,
 	g_free (name2);
 	
 	return result;
+}
+
+static void
+delete_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	if (hidden) return;
+}
+
+static void
+delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	if (hidden) return;
 }
 
 GtkWidget *
@@ -256,7 +314,7 @@ sms_contacts_page_new (SmsData *data)
 	/* Create contacts model */
 	data->contacts_store = (GtkTreeModel *)gtk_list_store_new (COL_LAST,
 		G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF,
-		G_TYPE_INT);
+		G_TYPE_INT, G_TYPE_BOOLEAN);
 	gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (
 		data->contacts_store), COL_NAME,
 		(GtkTreeIterCompareFunc)contacts_iter_compare_func,
@@ -271,15 +329,16 @@ sms_contacts_page_new (SmsData *data)
 	/* Insert contact for 'unknown' messages */
 	gtk_list_store_insert_with_values (
 		GTK_LIST_STORE (data->contacts_store), NULL, 0,
-		COL_UID, NULL, COL_NAME, "Unknown sender", COL_PRIORITY, 5, -1);
+		COL_UID, NULL, COL_NAME, "Unknown sender", COL_PRIORITY, 5,
+		COL_UNKNOWN, TRUE, -1);
 	
 	/* Create filter */
 	data->contacts_filter = gtk_tree_model_filter_new (
 		data->contacts_store, NULL);
 	gtk_tree_model_filter_set_modify_func ((GtkTreeModelFilter *)
 		data->contacts_filter, COL_LAST,
-		(GType []){G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING, GDK_TYPE_PIXBUF, G_TYPE_INT},
+		(GType []){G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			GDK_TYPE_PIXBUF, G_TYPE_INT, G_TYPE_BOOLEAN },
 		(GtkTreeModelFilterModifyFunc)nophoto_filter_func, data, NULL);
 	
 	/* Create groups model */
@@ -329,6 +388,22 @@ sms_contacts_page_new (SmsData *data)
 	g_signal_connect (view, "contacts-removed",
 		G_CALLBACK (contacts_removed_cb), data);
 	e_book_view_start (view);
+	
+	/* Connect to toolbar delete buttons */
+	g_signal_connect (data->delete_button, "clicked",
+		G_CALLBACK (delete_clicked_cb), data);
+	g_signal_connect (data->delete_all_button, "clicked",
+		G_CALLBACK (delete_all_clicked_cb), data);
+
+	/* Add events for detecting whether the page has been hidden/shown */
+	gtk_widget_add_events (data->contacts_treeview,
+		GDK_VISIBILITY_NOTIFY_MASK);
+	g_signal_connect (data->contacts_treeview, "visibility-notify-event",
+		G_CALLBACK (visibility_notify_event_cb), data);
+	g_signal_connect (data->contacts_treeview, "notify::visible",
+		G_CALLBACK (notify_visible_cb), data);
+	g_signal_connect (vbox, "unmap",
+		G_CALLBACK (unmap_cb), data);
 	
 	return vbox;
 }

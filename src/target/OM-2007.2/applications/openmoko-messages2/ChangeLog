@@ -1,3 +1,30 @@
+2007-12-14  Chris Lord  <chris@openedhand.com>
+
+	* src/sms-compose.c: (page_shown), (page_hidden):
+	Connect to delete/delete-all button clicks (doesn't do anything yet)
+
+	* src/sms-contacts.h:
+	* src/sms-contacts.c: (page_shown), (page_hidden),
+	(notify_visible_cb), (visibility_notify_event_cb), (unmap_cb),
+	(nophoto_filter_func), (delete_clicked_cb),
+	(delete_all_clicked_cb), (sms_contacts_page_new):
+	Connect to delete/delete-all button clicks (doesn't do anything yet),
+	add extra column to identify meta-contacts
+
+	* src/sms-main.c: (main):
+	Use MOKO_STOCK_FOLDER_DELETE for delete-all button
+
+	* src/sms.h:
+	* src/sms-notes.c: (mark_messages_read_idle), (scroll_changed_cb),
+	(page_shown), (page_hidden), (global_note_added_cb),
+	(global_note_modified_cb), (delete_clicked_cb),
+	(delete_all_clicked_cb), (sms_notes_page_new):
+	Mark messages as read when they get displayed
+
+	* src/sms-utils.c: (sms_contacts_note_count_update):
+	Disable sorting while iterating over the contacts to fix breakage when 
+	contact priority causes re-ordering during iteration
+
 2007-12-10  Chris Lord  <chris@openedhand.com>
 
 	* src/sms-contacts.c: (contacts_iter_compare_func),

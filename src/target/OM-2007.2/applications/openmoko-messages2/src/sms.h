@@ -59,6 +59,8 @@ typedef struct {
 	GdkPixbuf *recipient_icon;
 	gchar *recipient_number;
 	gchar *author_uid;
+	GtkWidget *notes_treeview;
+	guint notes_scroll_idle;
 
 	GtkWidget *contacts_treeview;
 	GtkWidget *contacts_combo;
@@ -70,9 +72,6 @@ typedef struct {
 	GtkWidget *contact_label;
 	GtkWidget *number_combo;
 
-	gulong delete_all_handler;
-	gulong delete_handler;
-	
 	DBusGProxy *sms_proxy;
 } SmsData;
 

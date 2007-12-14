@@ -89,7 +89,7 @@ main (int argc, char **argv)
 	
 	/* Delete all button */
 	data.delete_all_button = gtk_tool_button_new_from_stock (
-		GTK_STOCK_MISSING_IMAGE);
+		MOKO_STOCK_FOLDER_DELETE);
 	gtk_tool_item_set_expand (data.delete_all_button, TRUE);
 	gtk_toolbar_insert (GTK_TOOLBAR (toolbar), data.delete_all_button, 1);
 	/*gtk_toolbar_insert (GTK_TOOLBAR (toolbar),

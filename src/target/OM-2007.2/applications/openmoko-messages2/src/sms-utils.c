@@ -135,24 +135,36 @@ sms_contacts_note_count_update (SmsData *data)
 
 	GtkTreeIter iter, unknown_iter;
 	
-	if (!gtk_tree_model_get_iter_first (data->contacts_store, &iter)) {
-		data->note_count_idle = 0;
+	data->note_count_idle = 0;
+
+	/* Change sort column so changing priorities doesn't break iterating 
+	 * through the model.
+	 */
+	gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (
+		data->contacts_store), COL_UID, GTK_SORT_ASCENDING);
+
+	if (!gtk_tree_model_get_iter_first (data->contacts_store, &iter))
 		return FALSE;
-	}
 	
 	do {
 		gint i;
 		EContact *contact;
 		gchar *uid;
+		gboolean unknown;
+		
+		GError *error = NULL;
 		
 		gtk_tree_model_get (data->contacts_store, &iter, COL_UID,
-			&uid, -1);
+			&uid, COL_UNKNOWN, &unknown, -1);
 		if (!uid) {
-			unknown_iter = iter;
+			if (unknown) unknown_iter = iter;
 			continue;
 		}
 		
-		if (!e_book_get_contact (data->ebook, uid, &contact, NULL)) {
+		if (!e_book_get_contact (data->ebook, uid, &contact, &error)) {
+			g_warning ("Error retrieving contact: %s",
+				error->message);
+			g_error_free (error);
 			g_free (uid);
 			continue;
 		}
@@ -224,5 +236,8 @@ sms_contacts_note_count_update (SmsData *data)
 	 */
 	assignment += 2;
 	
+	gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (
+		data->contacts_store), COL_NAME, GTK_SORT_ASCENDING);
+
 	return FALSE;
 }

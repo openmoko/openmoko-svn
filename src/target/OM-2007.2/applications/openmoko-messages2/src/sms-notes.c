@@ -77,16 +77,74 @@ note_changed_cb_end:
 			store_view, note_changed_cb, data);
 }
 
+static gboolean
+mark_messages_read_idle (SmsData *data)
+{
+	GtkTreePath *start_path, *end_path;
+	
+	if (gtk_tree_view_get_visible_range (
+	    GTK_TREE_VIEW (data->notes_treeview), &start_path, &end_path)) {
+		
+		do {
+			JanaComponent *comp;
+			GtkTreeIter iter;
+			gchar *uid;
+
+			gtk_tree_model_get_iter (data->note_filter,
+				&iter, start_path);
+			gtk_tree_model_get (data->note_filter, &iter,
+				JANA_GTK_NOTE_STORE_COL_UID, &uid, -1);
+			
+			comp = jana_store_get_component (data->notes, uid);
+			if (comp && (!jana_utils_component_has_category (comp,
+			    "Read"))) {
+				jana_utils_component_insert_category (comp,
+					"Read", 0);
+				jana_store_modify_component (data->notes, comp);
+			}
+			
+			g_free (uid);
+			
+			gtk_tree_path_next (start_path);
+		} while (gtk_tree_path_compare (start_path, end_path) <= 0);
+		
+		gtk_tree_path_free (start_path);
+		gtk_tree_path_free (end_path);
+	}
+	return FALSE;
+}
+
+static void
+scroll_changed_cb (GtkAdjustment *adjust, SmsData *data)
+{
+	if (data->notes_scroll_idle) g_source_remove (data->notes_scroll_idle);
+	data->notes_scroll_idle = g_timeout_add (500,
+		(GSourceFunc)mark_messages_read_idle, data);
+}
+
 static void
 page_shown (SmsData *data)
 {
 	JanaStoreView *store_view;
+	GtkAdjustment *hadjust, *vadjust;
 	gint i;
 
 	gboolean found_match = FALSE;
 	EContact *contact = NULL;
 	
 	if (!open) return;
+	
+	/* Attach to scrolling signals so we can mark messages as read */
+	g_object_get (G_OBJECT (data->notes_treeview),
+		"hadjustment", &hadjust, "vadjustment", &vadjust, NULL);
+	g_signal_connect (hadjust, "changed",
+		G_CALLBACK (scroll_changed_cb), data);
+	g_signal_connect (hadjust, "value-changed",
+		G_CALLBACK (scroll_changed_cb), data);
+	g_signal_connect (vadjust, "changed",
+		G_CALLBACK (scroll_changed_cb), data);
+	g_signal_connect (vadjust, "value-changed",
+		G_CALLBACK (scroll_changed_cb), data);
 	
 	if (!(contact = sms_get_selected_contact (data))) {
 		GList *u, *components = NULL;
@@ -154,6 +212,14 @@ page_shown (SmsData *data)
 static void
 page_hidden (SmsData *data)
 {
+	GtkAdjustment *hadjust, *vadjust;
+
+	if (data->notes_scroll_idle) g_source_remove (data->notes_scroll_idle);
+	g_object_get (G_OBJECT (data->notes_treeview),
+		"hadjustment", &hadjust, "vadjustment", &vadjust, NULL);
+	g_signal_handlers_disconnect_by_func (hadjust, scroll_changed_cb, data);
+	g_signal_handlers_disconnect_by_func (vadjust, scroll_changed_cb, data);
+	
 	jana_gtk_note_store_set_view (JANA_GTK_NOTE_STORE (
 		data->note_store), NULL);
 	if (data->author_uid) {
@@ -275,6 +341,8 @@ global_note_added_cb (JanaStoreView *store_view, GList *components,
 				ncdata = g_slice_new0 (SmsNoteCountData);
 				g_hash_table_insert (
 					data->note_count, key, ncdata);
+			} else {
+				g_free (key);
 			}
 			
 			uid = jana_component_get_uid (
@@ -307,12 +375,15 @@ global_note_modified_cb (JanaStoreView *store_view, GList *components,
 		if (!JANA_IS_NOTE (components->data)) continue;
 		
 		note = JANA_NOTE (components->data);
-		
 		uid = jana_component_get_uid (JANA_COMPONENT (note));
+		
 		for (i = 0; i < 2; i++) {
 			GList *u, *r;
 			gchar *key = i ? jana_note_get_author (note) :
 				jana_note_get_recipient (note);
+			
+			if (!key) continue;
+			
 			ncdata = g_hash_table_lookup (data->note_count, key);
 			g_free (key);
 			
@@ -417,10 +488,22 @@ free_count_data (SmsNoteCountData *data)
 	g_slice_free (SmsNoteCountData, data);
 }
 
+static void
+delete_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	if (hidden) return;
+}
+
+static void
+delete_all_clicked_cb (GtkToolButton *button, SmsData *data)
+{
+	if (hidden) return;
+}
+
 GtkWidget *
 sms_notes_page_new (SmsData *data)
 {
-	GtkWidget *treeview, *scroll, *vbox, *searchbar;
+	GtkWidget *scroll, *vbox, *searchbar;
 	GtkCellRenderer *renderer;
 	GHashTable *colours_hash;
 	
@@ -432,6 +515,7 @@ sms_notes_page_new (SmsData *data)
 		(GDestroyNotify)g_free, (GDestroyNotify)free_count_data);
 	data->note_count_idle = 0;
 	data->unassigned_notes = NULL;
+	data->notes_scroll_idle = 0;
 	
 	/* Create note store */
 	data->notes = jana_ecal_store_new (JANA_COMPONENT_NOTE);
@@ -448,13 +532,14 @@ sms_notes_page_new (SmsData *data)
 	g_hash_table_insert (colours_hash, "Sending", &alt_color);
 	
 	/* Create treeview and cell renderer */
-	treeview = gtk_tree_view_new_with_model (data->note_filter);
-	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (treeview), FALSE);
+	data->notes_treeview = gtk_tree_view_new_with_model (data->note_filter);
+	gtk_tree_view_set_headers_visible (
+		GTK_TREE_VIEW (data->notes_treeview), FALSE);
 	renderer = jana_gtk_cell_renderer_note_new ();
 	g_object_set (renderer, "draw_box", TRUE, "show_recipient", TRUE, NULL);
-	gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (treeview), 0,
-		"Messages", renderer, (GtkTreeCellDataFunc)sms_notes_data_func,
-		data, NULL);
+	gtk_tree_view_insert_column_with_data_func (
+		GTK_TREE_VIEW (data->notes_treeview), 0, "Messages", renderer,
+		(GtkTreeCellDataFunc)sms_notes_data_func, data, NULL);
 	
 	/* Create search bar */
 	data->notes_combo = gtk_combo_box_new_text ();
@@ -463,7 +548,7 @@ sms_notes_page_new (SmsData *data)
 	
 	/* Pack widgets */
 	scroll = moko_finger_scroll_new ();
-	gtk_container_add (GTK_CONTAINER (scroll), treeview);
+	gtk_container_add (GTK_CONTAINER (scroll), data->notes_treeview);
 	
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (vbox), searchbar, FALSE, TRUE, 0);
@@ -471,15 +556,21 @@ sms_notes_page_new (SmsData *data)
 	gtk_widget_show_all (vbox);
 	
 	/* Add events for detecting whether the page has been hidden/shown */
-	gtk_widget_add_events (treeview, GDK_VISIBILITY_NOTIFY_MASK);
-	g_signal_connect (treeview, "visibility-notify-event",
+	gtk_widget_add_events (data->notes_treeview, GDK_VISIBILITY_NOTIFY_MASK);
+	g_signal_connect (data->notes_treeview, "visibility-notify-event",
 		G_CALLBACK (visibility_notify_event_cb), data);
-	g_signal_connect (treeview, "notify::visible",
+	g_signal_connect (data->notes_treeview, "notify::visible",
 		G_CALLBACK (notify_visible_cb), data);
 	g_signal_connect (vbox, "unmap",
 		G_CALLBACK (unmap_cb), data);
 	
 	jana_store_open (data->notes);
 
+	/* Connect to toolbar delete buttons */
+	g_signal_connect (data->delete_button, "clicked",
+		G_CALLBACK (delete_clicked_cb), data);
+	g_signal_connect (data->delete_all_button, "clicked",
+		G_CALLBACK (delete_all_clicked_cb), data);
+	
 	return vbox;
 }

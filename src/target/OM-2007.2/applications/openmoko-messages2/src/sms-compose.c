@@ -34,6 +34,11 @@ page_shown (SmsData *data)
 	
 	gboolean set = FALSE;
 	
+	/* Make delete(-all) buttons insensitive */
+	/* TODO: Replace these with more useful buttons? */
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), FALSE);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), FALSE);
+	
 	if (!data->sms_proxy)
 		gtk_widget_set_sensitive (GTK_WIDGET (data->new_button), FALSE);
 	gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (data->new_button),
@@ -103,6 +108,8 @@ page_hidden (SmsData *data)
 	gtk_widget_set_sensitive (GTK_WIDGET (data->new_button), TRUE);
 	gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (data->new_button),
 		MOKO_STOCK_SMS_NEW);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_button), TRUE);
+	gtk_widget_set_sensitive (GTK_WIDGET (data->delete_all_button), TRUE);
 }
 
 static void
