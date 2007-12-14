@@ -427,7 +427,7 @@ Index: linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
 +	if (request_irq(IRQ_TC, stylus_updown, IRQF_SAMPLE_RANDOM,
 +			"s3c2410_action", ts.dev)) {
 +		printk(KERN_ERR "s3c2410_ts.c: Could not allocate ts IRQ_TC !\n");
-+		free_irq(IRQ_ADC);
++		free_irq(IRQ_ADC, ts.dev);
 +		iounmap(base_addr);
 +		return -EIO;
 +	}
@@ -437,10 +437,10 @@ Index: linux-2.6/drivers/input/touchscreen/s3c2410_ts.c
 +	/* All went ok, so register to the input system */
 +	rc = input_register_device(ts.dev);
 +	if (rc) {
-+		free_irq(IRQ_TC);
-+		free_irq(IRQ_ADC);
++		free_irq(IRQ_TC, ts.dev);
++		free_irq(IRQ_ADC, ts.dev);
 +		clk_disable(adc_clock);
-+		ionumap(base_addr);
++		iounmap(base_addr);
 +		return -EIO;
 +	}
 +
